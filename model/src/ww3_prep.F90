@@ -774,10 +774,10 @@
                         IF (FROMLL.EQ.'NAME') THEN
                             JJ     = LEN_TRIM(FNMPRE)
                             OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                                  FORM='UNFORMATTED',STATUS='OLD',    &
+                                  form='UNFORMATTED', convert='big_endian',STATUS='OLD',    &
                                   ERR=845,IOSTAT=IERR)
                           ELSE
-                            OPEN (NDSLL, FORM='UNFORMATTED',          &
+                            OPEN (NDSLL, form='UNFORMATTED', convert='big_endian',          &
                                   STATUS='OLD',ERR=845,IOSTAT=IERR)
                           END IF
                       ELSE
@@ -837,10 +837,10 @@
                         IF (FROMLL.EQ.'NAME') THEN
                             JJ     = LEN_TRIM(FNMPRE)
                             OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                                  FORM='UNFORMATTED',STATUS='OLD',    &
+                                  form='UNFORMATTED', convert='big_endian',STATUS='OLD',    &
                                   ERR=846,IOSTAT=IERR)
                           ELSE
-                            OPEN (NDSLL,FORM='UNFORMATTED',           &
+                            OPEN (NDSLL,form='UNFORMATTED', convert='big_endian',           &
                                   STATUS='OLD',ERR=846,IOSTAT=IERR)
                           END IF
                       ELSE
@@ -958,10 +958,10 @@
                 IF (FROMF.EQ.'NAME') THEN
                     JJ     = LEN_TRIM(FNMPRE)
                     OPEN (NDSF(J),FILE=FNMPRE(:JJ)//NAMEF,            &
-                          FORM='UNFORMATTED',STATUS='OLD',ERR=850,    &
+                          form='UNFORMATTED', convert='big_endian',STATUS='OLD',ERR=850,    &
                           IOSTAT=IERR)
                   ELSE
-                    OPEN (NDSF(J),FORM='UNFORMATTED',                 &
+                    OPEN (NDSF(J),form='UNFORMATTED', convert='big_endian',                 &
                           STATUS='OLD',ERR=850,IOSTAT=IERR)
                   END IF
 !

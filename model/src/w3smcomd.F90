@@ -541,7 +541,7 @@
                            ! output to a rotated pole grid...
 
       NDSMC = 50
-      OPEN(NDSMC, file='smcint.ww3', status='old', form='unformatted', iostat=ierr)
+      OPEN(NDSMC, file='smcint.ww3', status='old', form='unformatted', convert='big_endian', iostat=ierr)
       IF(ierr .NE. 0) THEN
          WRITE(*,*) "ERROR! Failed to open smcint.ww3 for reading"
          CALL EXTCDE(1)

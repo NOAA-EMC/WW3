@@ -277,7 +277,7 @@
 ! 4.b Check if weight files exist or create it
 !
         FNAMEWHT='WHTGRIDINT.bin'
-        OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),FORM='UNFORMATTED',IOSTAT=IERR,STATUS='OLD')
+        OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),form='UNFORMATTED', convert='big_endian',IOSTAT=IERR,STATUS='OLD')
         NSEA_FILE = 0
         IF (IERR.EQ.0) READ(994) NSEA_FILE ! basic consistency check ... 
         IF (NSEA_FILE.EQ.NSEA) THEN 
@@ -302,7 +302,7 @@
           END DO ! ISEA
 
         ELSE
-          OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),FORM='UNFORMATTED',IOSTAT=IERR)
+          OPEN (994,FILE=FNMPRE(:J)//TRIM(FNAMEWHT),form='UNFORMATTED', convert='big_endian',IOSTAT=IERR)
 
 !
 ! 4.b Loop through the wet points

@@ -1052,7 +1052,7 @@
       IF ( IT .EQ. 0 ) THEN
           J      = LEN_TRIM(FNMPRE)
           WRITE (FNAME(11:13),'(I3.3)') IAPROC
-          OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',   &
+          OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert='big_endian',   &
                 ERR=800,IOSTAT=IERR)
           WRITE (NDSD,ERR=801,IOSTAT=IERR) NK, NTH
           WRITE (NDSD,ERR=801,IOSTAT=IERR) SIG(1:NK) * TPIINV

@@ -541,7 +541,7 @@
 !/       -------------------------------------------------
 !/          Test unformatted read
 !/       -------------------------------------------------
-            OPEN(UNIT=11,FILE=FILENAME,FORM='UNFORMATTED',STATUS='OLD',ACCESS='STREAM')
+            OPEN(UNIT=11,FILE=FILENAME,form='UNFORMATTED', convert='big_endian',STATUS='OLD',ACCESS='STREAM')
             READ(11,ERR=802,IOSTAT=IOERR) I
             CLOSE(11)
 !/          --- First four-byte integer could possibly be byte-swapped,
@@ -697,7 +697,7 @@
                OPEN(unit=11,file=filename,status='old')
             ELSE
                OPEN(unit=11,file=filename,status='old', &
-                    form='unformatted')
+                    form='unformatted', convert='big_endian')
             END IF
             line = 1
             tstep = 1

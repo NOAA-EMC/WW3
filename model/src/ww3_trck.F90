@@ -145,7 +145,7 @@
 !
       WRITE (NDSO,920)
 !
-      OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',FORM='UNFORMATTED', &
+      OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',form='UNFORMATTED', convert='big_endian', &
             STATUS='OLD',ERR=800,IOSTAT=IERR)
       READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
 !

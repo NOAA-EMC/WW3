@@ -472,10 +472,10 @@
 
       IF ( WRITE ) THEN
           IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
-          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',       &
+          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert='big_endian',       &
                 ACCESS='STREAM',ERR=800,IOSTAT=IERR)
         ELSE
-          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,FORM='UNFORMATTED',       &
+          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert='big_endian',       &
                 ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
                 STATUS='OLD',ACTION='READ')
         END IF

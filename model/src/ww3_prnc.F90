@@ -1171,10 +1171,10 @@
                 IF (FROMLL.EQ.'NAME') THEN
                   JJ = LEN_TRIM(FNMPRE)
                   OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                              FORM='UNFORMATTED',STATUS='OLD',    &
+                              form='UNFORMATTED', convert='big_endian',STATUS='OLD',    &
                               ERR=845,IOSTAT=IERR)
                 ELSE
-                  OPEN (NDSLL, FORM='UNFORMATTED',          &
+                  OPEN (NDSLL, form='UNFORMATTED', convert='big_endian',          &
                                STATUS='OLD',ERR=845,IOSTAT=IERR)
                 END IF
               ELSE
@@ -1235,10 +1235,10 @@
                 IF (FROMLL.EQ.'NAME') THEN
                   JJ = LEN_TRIM(FNMPRE)
                   OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                            FORM='UNFORMATTED',STATUS='OLD',    &
+                            form='UNFORMATTED', convert='big_endian',STATUS='OLD',    &
                             ERR=846,IOSTAT=IERR)
                 ELSE
-                  OPEN (NDSLL,FORM='UNFORMATTED',           &
+                  OPEN (NDSLL,form='UNFORMATTED', convert='big_endian',           &
                               STATUS='OLD',ERR=846,IOSTAT=IERR)
                 END IF
               ELSE
@@ -1374,7 +1374,7 @@
      NREC = LRECL / LRB
      ALLOCATE(NULLBUFF(NREC))
      NULLBUFF(1:NREC) = 0.
-     OPEN (990,FILE='tidana.dat',FORM='UNFORMATTED', ACCESS='STREAM')
+     OPEN (990,FILE='tidana.dat',form='UNFORMATTED', convert='big_endian', ACCESS='STREAM')
      FNAMETXT  = 'tidanaNNN.txt'
      WRITE (FNAMETXT(7:9),'(I3.3)') IAPROC
      OPEN (989,FILE=FNAMETXT,status='unknown')

@@ -36,7 +36,7 @@ target_include_directories(ww3_lib
 # Set compiler flags.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
   set(compile_flags -no-fma -ip -g -traceback -i4 -real-size 32 -fp-model precise
-    -assume byterecl -convert big_endian -fno-alias -fno-fnalias)
+    -assume byterecl -fno-alias -fno-fnalias)
   # -sox only works on Linux
   if(LINUX)
     list(APPEND compile_flags -sox)
@@ -55,7 +55,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
   endif()
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
-  set(compile_flags -g -fno-second-underscore -ffree-line-length-none -fconvert=big-endian)
+  set(compile_flags -g -fno-second-underscore -ffree-line-length-none)
   set(compile_flags_release -O3)
   set(compile_flags_debug -Wall -fcheck=all -ffpe-trap=invalid,zero,overflow -frecursive -fbacktrace)
   
@@ -64,7 +64,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
   endif()
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
-  set(compile_flags -g -i4 -r4 -Kieee -byteswapio)
+  set(compile_flags -g -i4 -r4 -Kieee)
   set(compile_flags_release -O3)
   set(compile_flags_debug -O0 -Mbounds -Mchkfpstk -Mchkstk -Mdalign -Mdclchk -Mdepchk -Miomutex -Ktrap=fp -Mrecursive -traceback)
   

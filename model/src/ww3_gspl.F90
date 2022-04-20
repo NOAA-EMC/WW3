@@ -248,7 +248,7 @@
       CALL ITRACE ( NDSTRC, NTRACE )
 !
 #ifdef W3_O16
-      OPEN ( NDSG, FILE='./ww3.ww3_gspl', FORM='UNFORMATTED')
+      OPEN ( NDSG, FILE='./ww3.ww3_gspl', form='UNFORMATTED', convert='big_endian')
 #endif
 !
 ! 1.c Print header
@@ -911,7 +911,7 @@
 !
         IF ( IDFM1 .EQ. 3 ) THEN
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
-                  FORM='UNFORMATTED',ERR=860,IOSTAT=IERR)
+                  form='UNFORMATTED', convert='big_endian',ERR=860,IOSTAT=IERR)
           ELSE
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
           END IF
@@ -933,7 +933,7 @@
 !
             IF ( IDFM2 .EQ. 3 ) THEN
                 OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
-                      FORM='UNFORMATTED',ERR=860,IOSTAT=IERR)
+                      form='UNFORMATTED', convert='big_endian',ERR=860,IOSTAT=IERR)
               ELSE
                 OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
                       ERR=860,IOSTAT=IERR)
@@ -957,7 +957,7 @@
 !
         IF ( IDFM3 .EQ. 3 ) THEN
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
-                  FORM='UNFORMATTED',ERR=860,IOSTAT=IERR)
+                  form='UNFORMATTED', convert='big_endian',ERR=860,IOSTAT=IERR)
           ELSE
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
           END IF
