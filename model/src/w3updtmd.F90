@@ -1732,7 +1732,7 @@
       USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
       USE W3ADATMD, ONLY: NSEALM
       USE W3IDATMD, ONLY: TIN, ICEI, BERGI
-      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
+      USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
 !/
       IMPLICIT NONE
 !/
@@ -1980,11 +1980,13 @@
       USE W3IDATMD, ONLY: TLN, WLEV
       USE W3SERVMD, ONLY: EXTCDE
       USE W3DISPMD, ONLY: WAVNU1
-      USE W3TRIAMD, ONLY: SETUGIOBP
       USE W3TIMEMD
       USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
       USE W3PARALL, only : GET_JSEA_IBELONG
       USE W3DISPMD, ONLY: WAVNU1
+#ifdef W3_PDLIB
+      USE PDLIB_W3PROFSMD, ONLY : SET_IOBDP_PDLIB
+#endif
 #ifdef W3_TIDE
       USE W3GDATMD, ONLY: YGRD
       USE W3IDATMD, ONLY: FLLEVTIDE, WLTIDE, NTIDE
@@ -2157,7 +2159,8 @@
 #endif
 !
         WLV(ISEA) = WLEV(IX,IY)
-        WLVeff=WLV(ISEA)
+        WLVeff    = WLV(ISEA)
+
 #ifdef W3_SETUP
      IF (DO_CHANGE_WLV) THEN
        WLVeff=WLVeff + ZETA_SETUP(ISEA)
@@ -2167,7 +2170,9 @@
           ENDIF 
 #endif
         DW (ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
-        END DO
+
+      END DO ! NSEA 
+
 #ifdef W3_DEBUGW3ULEV
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 6'
            FLUSH(740+IAPROC)
@@ -2353,17 +2358,17 @@
 !
             DO ISPEC=1, NSPEC
               VA(ISPEC,JSEA) = VA(ISPEC,JSEA) / DWN(MAPWN(ISPEC))
-              END DO
+            END DO
 !
 ! 2.f Add tail if necessary
 !
             IF ( I2.LE.NK .AND. RD2.LE.0.95 ) THEN
-                DO IK=MAX(I2,2), NK
-                  DO ITH=1, NTH
-                    A(ITH,IK,JSEA) = FACHFA * A(ITH,IK-1,JSEA)
-                    END DO
-                  END DO
-              END IF
+              DO IK=MAX(I2,2), NK
+                DO ITH=1, NTH
+                  A(ITH,IK,JSEA) = FACHFA * A(ITH,IK-1,JSEA)
+                END DO
+              END DO
+            END IF
 !
 #ifdef W3_T3
             DO ISPEC=1, NSPEC
@@ -2384,7 +2389,7 @@
 #endif
           END IF
 !
-        END DO
+      END DO ! NSEA 
 #ifdef W3_DEBUGW3ULEV
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 7'
            FLUSH(740+IAPROC)
@@ -2405,7 +2410,10 @@
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 9'
            FLUSH(740+IAPROC)
 #endif
-        CALL SETUGIOBP
+        !CALL SET_UG_IOBP
+#ifdef W3_PDLIB
+         CALL SET_IOBDP_PDLIB
+#endif
 #ifdef W3_DEBUGW3ULEV
            WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 10'
            FLUSH(740+IAPROC)
