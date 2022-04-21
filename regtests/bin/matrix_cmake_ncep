@@ -43,12 +43,6 @@ fi
 #convert main_dir to absolute path
 main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
-# Compiler option. Choose appropriate compiler and set cmplOption to
-# y if using for the first time or using a different compiler
-
-  cmplr=intel
-  export cmplOption='y'
-
   #Module Versions from HPC-Stack that are common for all platforms 
   modnetcdf='netcdf/4.7.4'
   modjasper='jasper/2.0.25'
@@ -67,7 +61,6 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   if [ $ishera ]
   then
     # If no other h, assuming Hera 
-    cmplr='hera.intel'
     batchq='slurm'
     hpcstackpath='/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack'
     hpcstackversion='hpc/1.1.0'
@@ -77,7 +70,6 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
-    cmplr='orion.intel'
     batchq='slurm'
     hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
     hpcstackversion='hpc/1.1.0'
@@ -163,12 +155,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   fi
 
 # Compile option
-  if [ "$cmplOption" = 'y' ]
-  then
-     opt="-o all -c $cmplr -S -T"
-  else
-     opt="-o all -S"
-  fi
+  opt="-o all -S -T"
 
 # Batch queue option
   if [ "$batchq" = 'slurm' ]

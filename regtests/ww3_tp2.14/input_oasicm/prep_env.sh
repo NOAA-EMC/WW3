@@ -5,17 +5,15 @@ then
   echo "need four arguments:"
   echo '$1 : path_i'
   echo '$2 : path_w'
-  echo '$3 : complr'
-  echo '$4 : switch'
-  echo '$5 : ww3_dir'
+  echo '$3 : switch'
+  echo '$4 : ww3_dir'
   exit 1
 fi
 
 path_i=$1
 path_w=$2
-cmplr=$3
-swtstr=$4
-ww3_dir=$5
+swtstr=$3
+ww3_dir=$4
 
 echo ''
 echo '   setup coupling environment'
@@ -37,7 +35,7 @@ echo '   setup oasis make.inc file'
 
 echo '   compile oasis coupler'
 # Build OASIS with CMake wrapper
-rm -rf Makefile CMakeCache.txt  CMakeFiles  cmake_install.cmake cmplr src tmp
+rm -rf Makefile CMakeCache.txt  CMakeFiles  cmake_install.cmake src tmp
 cmake .
 make
 
