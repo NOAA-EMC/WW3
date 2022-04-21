@@ -1731,7 +1731,7 @@
                           NSPEC, FICEN
       USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
       USE W3ADATMD, ONLY: NSEALM
-#if defined(W3_UWM) || defined(CESMCOUPLED)
+#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
       USE W3GDATMD, ONLY: aalpha
       USE W3ADATMD, ONLY: charn
 #endif
@@ -1807,7 +1807,7 @@
                                   ICEI(IX,IY), 'ICE (NEW)'
 #endif
                 VA(:,JSEA) = 0.
-#if defined(W3_UWM) || defined(CESMCOUPLED)
+#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
                charn(jsea) = aalpha
 #endif
 #ifdef W3_T
@@ -1841,7 +1841,7 @@
                                       ICEI(IX,IY), 'SEA (NEW)'
 #endif
                     VA(:,JSEA) = 0.
-#if defined(W3_UWM) || defined(CESMCOUPLED)
+#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
                    charn(jsea) = aalpha
 #endif
 !

@@ -77,7 +77,8 @@
       INTEGER, PRIVATE        :: PRFTB(8)
       LOGICAL, PRIVATE        :: FLPROF = .FALSE.
       CHARACTER, PUBLIC       :: CALTYPE*8
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
+!TODO MV: test this can be removed if set after w3init
       LOGICAL, PUBLIC         :: NOLEAP = .TRUE.
 #endif
 !
@@ -284,7 +285,8 @@
       NM   = MOD(NYMD,10000) / 100
       NM   = MIN ( 12 , MAX(1,NM) )
       ND   = MOD(NYMD,100) + M
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
+!TODO MV: test this can be removed if set after w3init
       LEAP = .false.
 #else 
       ! Add override for simulations with no leap years
@@ -548,7 +550,8 @@
       NY   = NYMD / 10000
       NM   = MOD(NYMD,10000) / 100
       ND   = MOD(NYMD,100)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
+!TODO MV: test this can be removed if set after w3init
       LEAP=.false. ! seems to be not working when I made NOLEAP=.true., still getting leap day
 #else
       !Allow override for NoLeap simulations

@@ -45,7 +45,7 @@ module wav_comp_nuopc
   use w3odatmd              , only : nds, iaproc, napout
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
   use wav_shr_mod           , only : time_origin, calendar_name, elapsed_secs
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
   use wmwavemd              , only : wmwave
   use wmupdtmd              , only : wmupd2
   use wmmdatmd              , only : mdse, mdst, nrgrd, improc, nmproc, wmsetm, stime, etime
@@ -83,7 +83,7 @@ module wav_comp_nuopc
   logical                 :: histwr_is_active = .false.      !< default logical to control use of ESMF
                                                              !! alarms for writing history files
   logical                 :: root_task = .false.             !< logical to indicate root task
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
   logical :: cesmcoupled = .true.                            !< logical to indicate CESM use case
 #else
   logical :: cesmcoupled = .false.                           !< logical to indicate non-CESM use case
@@ -375,7 +375,7 @@ contains
     use w3idatmd     , only : w3seti, w3ninp
     use w3gdatmd     , only : nseal, nsea, nx, ny, mapsf, w3nmod, w3setg
     use w3wdatmd     , only : va, time, w3ndat, w3dimw, w3setw
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     use wminitmd     , only : wminit, wminitnml
     use wmunitmd     , only : wmuget, wmuset
 #endif
@@ -468,14 +468,14 @@ contains
 
     call ESMF_VMGet(vm, mpiCommunicator=mpi_comm, peCount=petcount, localPet=iam, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     nmproc = petcount
 #else
     naproc = petcount
 #endif
 
     ! naproc,iproc, napout, naperr are not available until after wminit
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     improc = iam + 1
     if (multigrid) then
        nmpscr = 1
@@ -597,7 +597,7 @@ contains
        write (stdout,'(a)')' Starting time : '//trim(dtme21)
        write (stdout,'(a,i8,2x,i8)') 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
     end if
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     stime = time0
     etime = timen
 #endif
@@ -606,7 +606,7 @@ contains
     ! Wave model initialization
     !--------------------------------------------------------------------
 
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     if (multigrid) then
        call ESMF_UtilIOUnitGet(idsi); open(unit=idsi, status='scratch')
        call ESMF_UtilIOUnitGet(idso); open(unit=idso, status='scratch')
@@ -762,7 +762,7 @@ contains
          flds_scalar_num=flds_scalar_num, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     !TODO: when is this required?
     if (multigrid) then
        do imod = 1,nrgrd
@@ -980,7 +980,7 @@ contains
     timen(2) = hh*10000 + mm*100 + ss
 
     time = time0
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     if (multigrid) then
        do imod = 1,nrgrd
           tend(1,imod) = timen(1)
@@ -1048,7 +1048,7 @@ contains
     end if
 
     ! Advance the wave model
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     if (multigrid) then
        call wmwave ( tend )
     else
@@ -1431,6 +1431,7 @@ contains
     dtcfl  = dtcfl_in
     dtcfli = dtcfli_in
     dtmin  = dtmin_in
+!TODO: MV add calendar setting here
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm

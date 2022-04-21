@@ -440,7 +440,7 @@
                                  XPRMS(:), XTPMS(:), XPHICE(:),       &
                                  XTAUICE(:,:)
         REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:), XUSSP(:,:)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         REAL, POINTER         ::  XLANGMT(:)
 #endif
 !
@@ -471,7 +471,7 @@
 !
         REAL, POINTER         ::  USERO(:,:)
         REAL, POINTER         :: XUSERO(:,:)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         ! Output fileds for Langmuir mixing in group 
         REAL, POINTER         :: LANGMT(:), LAPROJ(:), LASL(:),       &
                                  LASLPJ(:), LAMULT(:), ALPHAL(:),     &
@@ -557,7 +557,7 @@
 !/
 !/ Data aliases for structure WADAT(S)
 !/
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
      REAL, POINTER           :: LANGMT(:), LAPROJ(:), ALPHAL(:),      &
                                 ALPHALS(:), LAMULT(:), LASL(:),       &
                                 LASLPJ(:), USSXH(:), USSYH(:) 
@@ -1042,7 +1042,7 @@
                  STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ALLOCATE ( WADATS(IMOD)%USSXH(NSEALM)   , &
                  WADATS(IMOD)%USSYH(NSEALM)   , &
                  WADATS(IMOD)%LANGMT(NSEALM)  , &
@@ -1269,7 +1269,7 @@
       WADATS(IMOD)%TPMS   = UNDEF
       WADATS(IMOD)%PHICE  = UNDEF
       WADATS(IMOD)%TAUICE = UNDEF
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       WADATS(IMOD)%LANGMT = UNDEF
 #endif
       IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
@@ -2231,7 +2231,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       IF ( OUTFLAGS( 6, 14) ) THEN
           ALLOCATE ( WADATS(IMOD)%XLANGMT(NXXX), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
@@ -2261,7 +2261,7 @@
       WADATS(IMOD)%XUSSP   = UNDEF
       WADATS(IMOD)%XTAUOCX = UNDEF
       WADATS(IMOD)%XTAUOCY = UNDEF
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       WADATS(IMOD)%XLANGMT = UNDEF
 #endif
 !
@@ -2986,7 +2986,7 @@
           USERO  => WADATS(IMOD)%USERO
 !
           WN     => WADATS(IMOD)%WN
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
           ! USSX and USSY are already set
           LANGMT => WADATS(IMOD)%LANGMT
           LAPROJ => WADATS(IMOD)%LAPROJ
@@ -3318,7 +3318,7 @@
           BEDFORMS=> WADATS(IMOD)%XBEDFORMS
           PHIBBL => WADATS(IMOD)%XPHIBBL
           TAUBBL => WADATS(IMOD)%XTAUBBL
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
           LANGMT => WADATS(IMOD)%XLANGMT
 #endif
 !

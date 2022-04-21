@@ -646,7 +646,7 @@
       J      = LEN_TRIM(FNMPRE)
 !
 
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
 #ifdef W3_DEBUGINIT
       IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
        WRITE(*,*) '1: w3initmd f=', TRIM(FNMPRE(:J)//LFILE(:IFL))
@@ -1194,7 +1194,7 @@
         TOLAST(1,J) =        ODAT(J0+4) 
         TOLAST(2,J) =        ODAT(J0+5)
       END DO
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ! CMB, FYI NOTYPE=7 is hardwired in w3odatmd.F90
       IF ( IAPROC .EQ. NAPLOG ) THEN
          write(ndso,*) 'CMB distribute odat ', j, TONEXT(:,J), DTOUT (  J)
@@ -1246,9 +1246,6 @@
 !
       FLOUT(2) = NPT .GT. 0
 !
-#ifdef CESMCOUPLED
-     !CMB FLOUT(3) = .TRUE. ???
-#endif
       FLOUT(3) = .TRUE.
 !
       FLOUT(4) = .TRUE.
@@ -1415,7 +1412,7 @@
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1")
 #endif
 #endif
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ! 1 & 4 are T, rest are F
       ! 1 is supposed to be gridded
       ! 4 is supposed to be restart
@@ -2494,7 +2491,7 @@
                           TAUOCX, TAUOCY, WNMEAN
 #endif
 
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       USE W3ADATMD, ONLY: LANGMT, LAPROJ, ALPHAL, LASL, LASLPJ,  &
                           ALPHALS, LAMULT
 #endif
@@ -3704,7 +3701,7 @@
 #endif
 
 
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 14) ) THEN
                   IH     = IH + 1
@@ -5125,7 +5122,7 @@
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/13', IFROM, IT, IRQGO2(IH), IERR
 #endif
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 14) ) THEN
                   IH     = IH + 1
