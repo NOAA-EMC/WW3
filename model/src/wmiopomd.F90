@@ -629,7 +629,7 @@
 !> @brief Gather and write unified point output.
 !>
 !> @details Per-grid point output is already gathered. All data are
-!>  gathered in the porper storage, and writen using the standard
+!>  gathered in the proper storage, and written using the standard
 !>  W3IOPO routint from grid number 0.
 !>
 !> @param[in] TOUT Time for output file.
