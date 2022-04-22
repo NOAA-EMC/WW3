@@ -1950,7 +1950,7 @@
 !
 !  2. Method :
 !
-!     Standard send and recieves using defined communicator. Send
+!     Standard send and receives using defined communicator. Send
 !     form first processor in communicator.
 !
 !  3. Parameters :
