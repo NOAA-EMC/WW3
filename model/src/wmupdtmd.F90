@@ -90,7 +90,7 @@
       CONTAINS
 !/ ------------------------------------------------------------------- /
 !>
-!> @brief Update inputs for seleceted wave model grid.
+!> @brief Update inputs for selected wave model grid.
 !>
 !> @details Reading from native grid files if update is needed based
 !>  on time of data.
@@ -857,7 +857,7 @@
 !>
 !> @brief Update selected input using input grids.
 !>
-!> @details Managing data, interpolation done inother routines.
+!> @details Managing data, interpolation done in other routines.
 !>
 !> @param[in] IMOD Model number.
 !> @param[in] J Input type.
@@ -2720,8 +2720,8 @@
 !> @brief Perform interpolation from regular to curvilinear grid
 !>  for a scalar field.
 !>
-!> @details this function uses bilinear interpolation to 
-!>  estimate the value of a function f at point (x,y) f is assumed 
+!> @details This function uses bilinear interpolation to 
+!>  estimate the value of a function f at point (x,y). f is assumed 
 !>  to be on a regular grid, with the grid x values specified by 
 !>  xarray with dimension x_len and the grid y values specified by
 !>  yarray with dimension y_len.
@@ -2862,10 +2862,10 @@
 !>  vector field.
 !>
 !> @details This function uses bilinear interpolation to 
-!>  estimate the value of a function f at point (x,y) f is assumed
+!>  estimate the value of a function f at point (x,y). f is assumed
 !>  to be on a regular grid, with the grid x values specified by 
 !>  xarray with dimension x_len and the grid y values specified by 
-!>  yarray with dimension y_len
+!>  yarray with dimension y_len.
 !>
 !> @param[in] X_LEN Dimension in X
 !> @param[in] XARRAY 1D array for Longitudes
@@ -2876,8 +2876,8 @@
 !> @param[in] X Long for point the curv grid
 !> @param[in] Y Lat for point the curv grid
 !> @param[in] DELTA Threshold to determine if two values are equal
-!> @param[out] VAL1 Interpolated vallue at a point in curvi grid
-!> @param[out] VAL2 Interpolated vallue at a point in curvi grid
+!> @param[out] VAL1 Interpolated value at a point in curv grid
+!> @param[out] VAL2 Interpolated value at a point in curv grid
 !>       
 !> @author H. L. Tolman  @date 25-Jul-2019
 !>
@@ -3007,9 +3007,8 @@
 !>
 !> @details f is assumed to be on a regular grid, with the grid x values specified
 !>  by xarray with dimension x_len 
-!>  and the grid y values specified by yarray with dimension y_len
-!>  inini and inend, the number of point to be taken into account
-!>  in x and y.
+!>  and the grid y values specified by yarray with dimension y_len,
+!>  the number of point to be taken into account in x and y.
 !>
 !> @param X_LEN
 !> @param XARRAY
