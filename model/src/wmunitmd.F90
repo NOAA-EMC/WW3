@@ -1,5 +1,5 @@
 !> @file
-!> @brief 
+!> @brief Contains module WMUNITMD.
 !> 
 !> @author H. L. Tolman @date 29-May-2009
 !>
