@@ -97,7 +97,7 @@
 !> @param[in] ID_SRC
 !> @param[in] ID_DST
 !> @param[in] MAPSTA_SRC
-!> @param[in] MAPSTA2_SRC
+!> @param[in] MAPST2_SRC
 !> @param[in] FLAGLL
 !> @param[in] GRIDSHIFT
 !> @param[in] L_MASTER
@@ -532,12 +532,12 @@
 !> @param[in]  ID_GRD
 !> @param[out] GRID_CENTER_LON
 !> @param[out] GRID_CENTER_LAT
-!> @param[out] GRID_MASK
 !> @param[out] GRID_CORNER_LON
 !> @param[out] GRID_CORNER_LAT
+!> @param[out] GRID_MASK
 !> @param[out] GRID_DIMS
 !> @param[out] GRID_SIZE
-!> @param[out] GRID_CORNER
+!> @param[out] GRID_CORNERS
 !> @param[out] GRID_RANK
 !>
 !> @author M. Dutour
