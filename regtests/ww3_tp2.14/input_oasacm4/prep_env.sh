@@ -38,7 +38,7 @@ echo '   setup oasis make.inc file'
 echo '   compile oasis coupler'
 # Build OASIS with CMake wrapper
 rm -rf Makefile CMakeCache.txt  CMakeFiles  cmake_install.cmake cmplr src tmp
-cmake .
+cmake . ${CMAKE_OPTIONS:-}
 make
 
 echo '   setup toy Makefile'
