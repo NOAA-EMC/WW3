@@ -1917,10 +1917,10 @@
 !>
 !> @details Non-blocking broadcast, initially for times only, 
 !>  but made for any integer array. Sending data from first process
-!>  in the model cummunicator to all processes that are in the overall 
+!>  in the model communicator to all processes that are in the overall 
 !>  communicator but not in the model communicator.
 !> 
-!>  Standard send and recieves using defined communicator. Send
+!>  Standard send and receives using defined communicator. Send
 !>  form first processor in communicator.    
 !>
 !> @param[inout] DATA Data to be send/received.
