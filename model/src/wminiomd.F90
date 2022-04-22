@@ -477,9 +477,9 @@
 !>
 !> @brief Gather internal boundary data for a given model.
 !>
-!> @details For the shared memory version, datat are gathered from
+!> @details For the shared memory version, data are gathered from
 !>  the data structure BPSTGE. For the distributed memory version,
-!>  the gathering of thee data are finished first.
+!>  the gathering of the data are finished first.
 !>
 !>  Gathering of data is triggered by the time stamp of the data
 !>  that is presently in the storage arrays.
@@ -1718,7 +1718,7 @@
 !>
 !> @details For distributed memory version first receive all staged data.
 !>  After staged data is present, average, convert as necessary,
-!>  and store in basic spatral arrays.
+!>  and store in basic spectral arrays.
 !>
 !>  Using storage array HGSTAGE and time stamps.
 !>      
@@ -1748,7 +1748,7 @@
 !
 !     For distributed memory version first receive all staged data.
 !     After staged data is present, average, convert as necessary,
-!     and store in basic spatral arrays.
+!     and store in basic spectral arrays.
 !
 !  2. Method :
 !
@@ -2814,7 +2814,7 @@
 !>
 !> @details For distributed memory version first receive all staged
 !>  data. After staged data is present, average, convert as necessary,
-!>  and store in basic spatral arrays.
+!>  and store in basic spectral arrays.
 !>
 !>  Using storage array EQSTGE and time stamps.
 !>      
@@ -2845,7 +2845,7 @@
 !
 !     For distributed memory version first receive all staged data.
 !     After staged data is present, average, convert as necessary,
-!     and store in basic spatral arrays.
+!     and store in basic spectral arrays.
 !
 !  2. Method :
 !
