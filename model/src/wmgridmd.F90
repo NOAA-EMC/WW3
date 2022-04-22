@@ -5128,7 +5128,7 @@
       END SUBROUTINE WMGEQL
 !/ ------------------------------------------------------------------- /
 !>
-!> @brief Generate map with flogs for need of spectral grid conversion 
+!> @brief Generate map with flags for need of spectral grid conversion 
 !>  between models.
 !>
 !> @details Test of parameters as introduced before in W3IOBC.
