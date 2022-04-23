@@ -554,6 +554,11 @@
       LOGICAL, POINTER        :: FLFORM, FLCOMB, O6INIT
       INTEGER, POINTER        :: PTMETH   ! C. Bunney; Partitioning method
       REAL, POINTER           :: PTFCUT   ! C. Bunney; Part. 5 freq cut
+
+      logical            :: user_histname = .false.  !<@public logical flag for user set history filenames
+      logical            :: user_restname = .false.  !<@public logical flag for user set restart filenames
+      character(len=512) :: user_histfname = ''      !<@public user history filename
+      character(len=512) :: user_restfname = ''      !<@public user restart filename
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /

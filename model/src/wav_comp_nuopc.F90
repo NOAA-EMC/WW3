@@ -43,6 +43,7 @@ module wav_comp_nuopc
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
   use wav_shr_mod           , only : runtype, merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
+  use w3odatmd              , only : user_histname, user_histfname, user_restname, user_restfname
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
   use wav_shr_mod           , only : time_origin, calendar_name, elapsed_secs
 #ifndef W3_CESMCOUPLED
@@ -1433,6 +1434,18 @@ contains
     dtmin  = dtmin_in
 !TODO: MV add calendar setting here
 
+    ! custom restart and history file names are used for CESM
+    user_histname = .true.
+    user_restname = .true.
+
+    if (len_trim(inst_suffix) > 0) then
+       user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
+       user_histfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.'
+    else
+       user_restfname = trim(casename)//'.ww3.r.'
+       user_histfname = trim(casename)//'.ww3.hi.'
+    endif
+
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm
 
@@ -1484,6 +1497,17 @@ contains
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
+!test
+    ! custom restart and history file names are used for UFS
+    user_histname = .true.
+    user_restname = .true.
+
+    user_restfname = trim(casename)//'.ww3.r.'
+    user_histfname = trim(casename)//'.ww3.hi.'
+!#ifdef W3_UWMNCOUT
+!    ! custom history file names are used for UWM netCDF output
+!    user_histname = .true.
+!#endif
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_ufs

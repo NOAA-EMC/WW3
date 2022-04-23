@@ -37,7 +37,9 @@ contains
 #ifdef W3_CESMCOUPLED
     USE W3ADATMD, ONLY: LANGMT
 #endif
+    use w3timemd   , only: set_user_timestring
     use wav_shr_mod, only: time_origin, calendar_name, elapsed_secs
+    use w3odatmd   , only: user_histname, user_histfname
     USE NETCDF
 
     IMPLICIT NONE
@@ -59,6 +61,7 @@ contains
     INTEGER                 :: NCID, DIMID(5)
     CHARACTER(len=1024)     :: FNAME
     LOGICAL                 :: EXISTS
+    character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -80,7 +83,16 @@ contains
     ! -------------------------------------------------------------
     ! Create the netcdf file and return the ncid and dimid
     ! -------------------------------------------------------------
-    call hist_filename(fname)
+
+    if (user_histname) then
+       if (len_trim(user_histfname) == 0 ) then
+          call extcde (60, MSG="user history filename requested but not provided")
+       end if
+       call set_user_timestring(time,user_timestring)
+       fname = trim(user_histfname)//trim(user_timestring)//'.nc'
+    else
+       !fname = some default
+    end if
 
     ef_len = e3df(3,1) - e3df(2,1) + 1
     inquire(file=trim(fname),exist=exists)
@@ -707,42 +719,42 @@ contains
   end subroutine W3IOGONCD
 
 !/ ------------------------------------------------------------------- /
-  subroutine hist_filename(fname)
-
-    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX
-    USE W3WDATMD       , ONLY : TIME
-    USE W3ODATMD       , ONLY : NDS, IAPROC, NAPOUT
-
-    implicit none
-
-    ! input/output variables
-    character(len=*), intent(out) :: fname
-
-    ! local variables
-    integer :: yy,mm,dd,hh,mn,ss,totsec
-    !----------------------------------------------
-    
-    yy =  time(1)/10000
-    mm = (time(1)-yy*10000)/100
-    dd = (time(1)-yy*10000-mm*100)
-    hh = time(2)/10000
-    mn = (time(2)-hh*10000)/100
-    ss = (time(2)-hh*10000-mn*100)
-    totsec = hh*3600+mn*60+ss
-
-    if (len_trim(inst_suffix) > 0) then
-       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
-            trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
-    else
-       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
-            trim(casename)//'.ww3.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
-    endif
-
-    if (iaproc == napout) then
-        write(nds(1),'(a)') 'w3iogomdncd: writing history '//trim(fname)
-     end if
-
-   end subroutine hist_filename
+!  subroutine hist_filename(fname)
+!
+!    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX
+!    USE W3WDATMD       , ONLY : TIME
+!    USE W3ODATMD       , ONLY : NDS, IAPROC, NAPOUT
+!
+!    implicit none
+!
+!    ! input/output variables
+!    character(len=*), intent(out) :: fname
+!
+!    ! local variables
+!    integer :: yy,mm,dd,hh,mn,ss,totsec
+!    !----------------------------------------------
+!
+!    yy =  time(1)/10000
+!    mm = (time(1)-yy*10000)/100
+!    dd = (time(1)-yy*10000-mm*100)
+!    hh = time(2)/10000
+!    mn = (time(2)-hh*10000)/100
+!    ss = (time(2)-hh*10000-mn*100)
+!    totsec = hh*3600+mn*60+ss
+!
+!    if (len_trim(inst_suffix) > 0) then
+!       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
+!            trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
+!    else
+!       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
+!            trim(casename)//'.ww3.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
+!    endif
+!
+!    if (iaproc == napout) then
+!        write(nds(1),'(a)') 'w3iogomdncd: writing history '//trim(fname)
+!     end if
+!
+!   end subroutine hist_filename
 
 !/ ------------------------------------------------------------------- /
   SUBROUTINE HANDLE_ERR(IERR,STRING)
