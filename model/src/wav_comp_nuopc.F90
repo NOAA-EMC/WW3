@@ -1431,7 +1431,6 @@ contains
     dtcfl  = dtcfl_in
     dtcfli = dtcfli_in
     dtmin  = dtmin_in
-!TODO: MV add calendar setting here
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm

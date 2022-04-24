@@ -23,13 +23,13 @@
 !/    22-Feb-2008 ; Modify MAPTH2 declaration.          ( version 3.13 )
 !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
 !/    29-Oct-2010 : Adding unstructured grid data.      ( version 3.14 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    31-Oct-2010 : Adding output parameters            ( version 3.14 )
 !/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.08 )
 !/    26-Dec-2012 : Memory reduction for outputs.       ( version 4.11 )
 !/                  Add W3XETA.
 !/    28-Jun-2013 : Bug fix initialization P2SMS.       ( version 4.11 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main
 !/                  trunk                               ( version 4.13 )
 !/    14-Nov-2013 : Move orphaned arrays as scalar to W3SRCE.
 !/                  Here update of documentation only.
@@ -46,7 +46,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -217,7 +217,7 @@
 !     Empty dummy fields (NOEXTR)
 !
 !      USERO     R.A.  Public   Empty output arrays than can be
-!                               used by users as a simple means to 
+!                               used by users as a simple means to
 !                               add output.
 !
 !     Map data for propagation schemes (1Up).
@@ -228,13 +228,13 @@
 !     Map data for propagation schemes (UQ).
 !
 !      NMXn      Int.  Public    Counters for MAPX2, see W3MAP3.
-!      NMYn      Int.  Public 
+!      NMYn      Int.  Public
 !      NMXY      Int.  Public    Dimension of MAPXY.
 !      NACTn     Int.  Public    Dimension of MAPAXY.
 !      NCENT     Int.  Public    Dimension of MAPAXY.
 !      MAPX2     I.A.  Public    Map for prop. in 'x' (longitude) dir.
 !      MAPY2     I.A.  Public    Idem in y' (latitude) direction.
-!      MAPXY     I.A.  Public    
+!      MAPXY     I.A.  Public
 !      MAPAXY    I.A.  Public    List of active points used in W3QCK1.
 !      MAPCXY    I.A.  Public    List of central points used in avg.
 !      MAPTH2    I.A.  Public    Like MAPX2 for refraction (rotated
@@ -275,7 +275,7 @@
 !                               (1,NSPLOC,1).
 !      NSPLOC    Int.  Public   Total number of spectral bins for which
 !                               prop. is performed on present CPU.
-!      BSTAT     I.A.  Public   Status of buffer (size MPIBUF): 
+!      BSTAT     I.A.  Public   Status of buffer (size MPIBUF):
 !                                 0: Inactive.
 !                                 1: A --> STORE (active or finished).
 !                                 2: STORE --> A (active or finished).
@@ -358,7 +358,7 @@
       TYPE WADAT
 !
 ! The grid
-! 
+!
         REAL, POINTER         :: CG(:,:), WN(:,:)
 #ifdef W3_IC3
    REAL, POINTER         :: IC3WN_R(:,:), IC3WN_I(:,:), IC3CG(:,:)
@@ -472,7 +472,7 @@
         REAL, POINTER         ::  USERO(:,:)
         REAL, POINTER         :: XUSERO(:,:)
 #ifdef W3_CESMCOUPLED
-        ! Output fileds for Langmuir mixing in group 
+        ! Output fileds for Langmuir mixing in group
         REAL, POINTER         :: LANGMT(:), LAPROJ(:), LASL(:),       &
                                  LASLPJ(:), LAMULT(:), ALPHAL(:),     &
                                  ALPHALS(:), USSXH(:), USSYH(:)
@@ -507,7 +507,7 @@
         LOGICAL, POINTER      :: MAPTRN(:)
 #endif
 !
-! Warning Defined but not set if UGTYPE .EQ. .T. 
+! Warning Defined but not set if UGTYPE .EQ. .T.
             INTEGER, POINTER      :: ITER(:,:)
 !
 #ifdef W3_NL1
@@ -560,7 +560,7 @@
 #ifdef W3_CESMCOUPLED
      REAL, POINTER           :: LANGMT(:), LAPROJ(:), ALPHAL(:),      &
                                 ALPHALS(:), LAMULT(:), LASL(:),       &
-                                LASLPJ(:), USSXH(:), USSYH(:) 
+                                LASLPJ(:), USSXH(:), USSYH(:)
 #endif
       REAL, POINTER           :: CG(:,:), WN(:,:)
       REAL, POINTER           :: IC3WN_R(:,:), IC3WN_I(:,:), IC3CG(:,:)
@@ -605,7 +605,7 @@
                                  BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
 !
       REAL, POINTER           :: MSSX(:), MSSY(:), MSSD(:),           &
-                                 MSCX(:), MSCY(:), MSCD(:) 
+                                 MSCX(:), MSCY(:), MSCD(:)
 !
       REAL, POINTER           :: DTDYN(:), FCUT(:), CFLXYMAX(:),      &
                                  CFLTHMAX(:), CFLKMAX(:)
@@ -876,7 +876,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETA needs to be called after allocation to point to 
+!     - W3SETA needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -977,8 +977,8 @@
 !
       CALL W3SETA ( IMOD, NDSE, NDST )
 
-! 
-!AR: Check this below more ... 
+!
+!AR: Check this below more ...
       NXXX   = NSEALM * NAPROC
 !
 !     Output and input parameteres by output type
@@ -987,13 +987,13 @@
 !
       ALLOCATE ( WADATS(IMOD)%DW(0:NSEA) , STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
-      WADATS(IMOD)%DW(:)=0.            
+      WADATS(IMOD)%DW(:)=0.
 !
       ALLOCATE ( WADATS(IMOD)%CX(0:NSEA) , WADATS(IMOD)%CY(0:NSEA) , &
                  STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
       WADATS(IMOD)%CX(:)=0.
-      WADATS(IMOD)%CY(:)=0.     
+      WADATS(IMOD)%CY(:)=0.
 !
       ALLOCATE ( WADATS(IMOD)%UA(0:NSEA) , WADATS(IMOD)%UD(0:NSEA) , &
                  WADATS(IMOD)%U10(NSEA)  , WADATS(IMOD)%U10D(NSEA) , &
@@ -1004,7 +1004,7 @@
                  WADATS(IMOD)%TAUADIR(0:NSEA), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
       WADATS(IMOD)%TAUA(:)   =0.
-      WADATS(IMOD)%TAUADIR(:)=0.     
+      WADATS(IMOD)%TAUADIR(:)=0.
 
 #ifdef W3_MEMCHECK
        WRITE(740+IAPROC,*) 'memcheck_____:', 'W3DIMA 2'
@@ -1087,8 +1087,8 @@
 ! 3) Frequency-dependent standard parameters
 !
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
-!                    by specific variables defined through the mod_def file 
-!                    and read by w3iogr, which is called before W3DIMA. 
+!                    by specific variables defined through the mod_def file
+!                    and read by w3iogr, which is called before W3DIMA.
 #ifdef W3_DEBUGINIT
       WRITE(740+IAPROC,*) 'Before the EF allocation'
       WRITE(740+IAPROC,*) 'E3DF=', E3DF(1,1)
@@ -1234,8 +1234,8 @@
       CHECK_ALLOC_STATUS ( ISTAT )
 !
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
-!                    by specific variables defined through the mod_def file 
-!                    and read by w3iogr, which is called before W3DIMA. 
+!                    by specific variables defined through the mod_def file
+!                    and read by w3iogr, which is called before W3DIMA.
       IF (  P2MSF(1).GT.0 ) THEN
           ALLOCATE(WADATS(IMOD)%P2SMS(NSEALM,P2MSF(2):P2MSF(3)), &
                    STAT=ISTAT )
@@ -1830,7 +1830,7 @@
         ELSE
           ALLOCATE ( WADATS(IMOD)%XEF(1,1), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
-        END IF 
+        END IF
 
         IF ( OUTFLAGS( 3, 2) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTH1M(NXXX,E3DF(2,2):E3DF(3,2)), STAT=ISTAT )
@@ -2185,7 +2185,7 @@
         ELSE
           ALLOCATE ( WADATS(IMOD)%XUS3D(1,1), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
-        END IF 
+        END IF
 !
       IF ( OUTFLAGS( 6, 9) ) THEN
           ALLOCATE ( WADATS(IMOD)%XP2SMS(NXXX,P2MSF(2):P2MSF(3)), STAT=ISTAT )
@@ -2193,7 +2193,7 @@
         ELSE
           ALLOCATE ( WADATS(IMOD)%XP2SMS(1,1), STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
-        END IF 
+        END IF
 !
       IF ( OUTFLAGS( 6,10) ) THEN
           ALLOCATE ( WADATS(IMOD)%XTAUICE(NXXX,2), STAT=ISTAT )
@@ -2523,7 +2523,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETA needs to be called after allocation to point to 
+!     - W3SETA needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -2779,7 +2779,7 @@
       IF ( NADATA .EQ. -1 ) THEN
           WRITE (NDSE,1001)
           CALL EXTCDE (1)
-        END IF   
+        END IF
 !
       IF ( IMOD.LT.1 .OR. IMOD.GT.NADATA ) THEN
           WRITE (NDSE,1002) IMOD, NADATA
@@ -2889,7 +2889,7 @@
           WLM    => WADATS(IMOD)%WLM
           T02    => WADATS(IMOD)%T02
           T0M1   => WADATS(IMOD)%T0M1
-          T01    => WADATS(IMOD)%T01 
+          T01    => WADATS(IMOD)%T01
           FP0    => WADATS(IMOD)%FP0
           THM    => WADATS(IMOD)%THM
           THS    => WADATS(IMOD)%THS
@@ -3214,7 +3214,7 @@
       IF ( NADATA .EQ. -1 ) THEN
           WRITE (NDSE,1001)
           CALL EXTCDE (1)
-        END IF   
+        END IF
 !
       IF ( IMOD.LT.1 .OR. IMOD.GT.NADATA ) THEN
           WRITE (NDSE,1002) IMOD, NADATA
@@ -3239,7 +3239,7 @@
           WLM    => WADATS(IMOD)%XWLM
           T02    => WADATS(IMOD)%XT02
           T0M1   => WADATS(IMOD)%XT0M1
-          T01    => WADATS(IMOD)%XT01 
+          T01    => WADATS(IMOD)%XT01
           FP0    => WADATS(IMOD)%XFP0
           THM    => WADATS(IMOD)%XTHM
           THS    => WADATS(IMOD)%XTHS
