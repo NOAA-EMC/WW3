@@ -1194,12 +1194,6 @@
         TOLAST(1,J) =        ODAT(J0+4)
         TOLAST(2,J) =        ODAT(J0+5)
       END DO
-#ifdef W3_CESMCOUPLED
-      ! CMB, FYI NOTYPE=7 is hardwired in w3odatmd.F90
-      IF ( IAPROC .EQ. NAPLOG ) THEN
-         write(ndso,*) 'CMB distribute odat ', j, TONEXT(:,J), DTOUT (  J)
-      END IF
-#endif
 !
 ! J=8, second stream of restart files
         J=8
@@ -1411,16 +1405,6 @@
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1")
 #endif
-#endif
-#ifdef W3_CESMCOUPLED
-      ! 1 & 4 are T, rest are F
-      ! 1 is supposed to be gridded
-      ! 4 is supposed to be restart
-      IF ( IAPROC .EQ. NAPLOG ) THEN
-         do J=1,NOTYPE
-           write(ndso,*) 'CMB hist out ', J, FLOUT(J), TONEXT(:,J)
-         end do
-      END IF
 #endif
 !
 ! 4.d Preprocessing for point output.
