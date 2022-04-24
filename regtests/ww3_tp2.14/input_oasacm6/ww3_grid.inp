@@ -3,7 +3,7 @@ $ WAVEWATCH III Grid preprocessor input file                           $
 $ -------------------------------------------------------------------- $
 $ Grid name (C*30, in quotes)
 $
-  '***** WW3 Brest3km Grid ***** '
+  'BREST 3km Grid'
 $
 $ Frequency increment factor and first frequency (Hz) ---------------- $
 $ number of frequencies (wavenumbers) and directions
