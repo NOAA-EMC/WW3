@@ -2193,6 +2193,29 @@
     echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.3"                  >> matrix.body
   fi
 
+ #tripolar 1deg setup with ww3_multi and grib2 output
+  if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
+  then
+    echo ' ' >> matrix.body
+        if [ "$npl_b4b" = 'y' ]
+        then
+           halfnp=$(($npl / 2))
+           echo "$rtst -s MPI -w work_a_2mpi -m grdset_a -f -p $mpi -n $npl $ww3 ww3_ufs1.4"                         >> matrix.body
+           echo "$rtst -s MPI -w work_a_mpi -m grdset_a -f -p $mpi -n $halfnp $ww3 ww3_ufs1.4"                       >> matrix.body
+           echo "./bin/test.comp ww3_ufs1.4 work_a_2mpi work_a_mpi"                                                  >> matrix.body
+        fi
+    echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl -t $nth1 $ww3 ww3_ufs1.4"                       >> matrix.body
+    echo "./bin/test.comp ww3_ufs1.4 work_a work_a_2mpi"                                                             >> matrix.body
+    if [ "$rstrt_b4b" = 'y' ]
+    then
+       echo "mkdir -p ww3_ufs1.4/work_b"                                                                             >> matrix.body
+       echo "cp ww3_ufs1.4/work_a/20210401.030000.restart.glo_1deg ww3_ufs1.4/work_b/restart.glo_1deg"               >> matrix.body
+       echo "$rtst -s MPI_OMPH -w work_b -m grdset_b -f -p $mpi -n $npl -t $nth1 $ww3 ww3_ufs1.4"                    >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.4 work_a work_b"                                                               >> matrix.body
+    fi
+  fi
+
+
 
   # 365_day and 360_day calendars, no switch sharing here
   if [ "$calendar" = 'y' ]

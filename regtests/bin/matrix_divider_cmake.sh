@@ -31,7 +31,7 @@ maxlist3=104
 #Put the job requirement/spec in "before"
 sed -e "/run_cmake_test/,\$d" matrix.tmp > before
 #Put the list of tests in "list"
-command egrep 'ww3_ufs1.2|ww3_ufs1.3' matrix.tmp | cat >> list_ufs
+command egrep 'ww3_ufs1.2|ww3_ufs1.3|ww3_ufs1.4' matrix.tmp | cat >> list_ufs
 command egrep 'ww3_tp2.14|ww3_tp2.15|ww3_tp2.17|ww3_tp2.21|ww3_ufs1.1' matrix.tmp | cat >> list_heavy
 awk '!/ww3_tp2.14/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp
 awk '!/ww3_tp2.15/' matrix.tmp > tmpfile && mv tmpfile matrix.tmp

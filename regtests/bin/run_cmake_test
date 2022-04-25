@@ -1684,9 +1684,8 @@ do
         exit 1
       fi
 
-      for g in $model_grids
+      for g in $model_grids $intgl_grids
       do
-
         if [ $multi -eq 2 ]
         then
           if [ ! -e out_grd.$g ]
@@ -1698,8 +1697,10 @@ do
 # for ww3_grib only
         if [ $prog == 'ww3_grib' ]
         then
+         if [ -f ${path_i}/${prog}${gu}.??? ]
+         then
          ifile=`( ls ${path_i}/${prog}${gu}.??? )`
-
+         
 # link conf file
           if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
@@ -1752,6 +1753,7 @@ do
        
         else
             errmsg "Error occured during $path_e/$prog execution"
+        fi
         fi
 #for ww3_ounf, ww3_outp and ww3_gx_outf
         else
