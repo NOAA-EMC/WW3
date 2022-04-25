@@ -852,8 +852,8 @@
                    ELSE
                      JT=IT+1
                    END IF
-                   IM1=GRIDS(I)%TRIGP(ITRI,IT)
-                   IM2=GRIDS(I)%TRIGP(ITRI,JT)
+                   IM1=GRIDS(I)%TRIGP(IT,ITRI)
+                   IM2=GRIDS(I)%TRIGP(JT,ITRI)
                    EDIST=W3DIST(FLAGLL, REAL(GRIDS(I)%XGRD(1,IM1)), &
                          REAL(GRIDS(I)%YGRD(1,IM1)), REAL(GRIDS(I)%XGRD(1,IM2)), &
                          REAL(GRIDS(I)%YGRD(1,IM2)))
@@ -902,8 +902,8 @@
                    ELSE
                      JT=IT+1
                    END IF
-                   IM1=GRIDS(J)%TRIGP(ITRI,IT)
-                   IM2=GRIDS(J)%TRIGP(ITRI,JT)
+                   IM1=GRIDS(J)%TRIGP(IT,ITRI)
+                   IM2=GRIDS(J)%TRIGP(JT,ITRI)
                    EDIST=W3DIST(FLAGLL, REAL(GRIDS(J)%XGRD(1,IM1)), &
                          REAL(GRIDS(J)%YGRD(1,IM1)), REAL(GRIDS(J)%XGRD(1,IM2)), &
                          REAL(GRIDS(J)%YGRD(1,IM2)))
@@ -2424,11 +2424,11 @@
                      ELSE
                        JT=IT+1
                      END IF
-                     IM1=GRIDS(GDST)%TRIGP(ITRI,IT)
-                     IM2=GRIDS(GDST)%TRIGP(ITRI,JT)
-                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GDST)%XGRD(IM1,1)), &
-                           REAL(GRIDS(GDST)%YGRD(IM1,1)), &
-                           REAL(GRIDS(GDST)%XGRD(IM2,1)), REAL(GRIDS(GDST)%YGRD(IM2,1)))
+                     IM1=GRIDS(GDST)%TRIGP(IT,ITRI)
+                     IM2=GRIDS(GDST)%TRIGP(JT,ITRI)
+                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GDST)%XGRD(1,IM1)), &
+                           REAL(GRIDS(GDST)%YGRD(1,IM1)), &
+                           REAL(GRIDS(GDST)%XGRD(1,IM2)), REAL(GRIDS(GDST)%YGRD(1,IM2)))
                      IF (IsFirst.eq.1) THEN
                        DIST_MAX=eDist
                        DIST_MIN=eDist
@@ -2464,11 +2464,11 @@
                      ELSE
                        JT=IT+1
                      END IF
-                     IM1=GRIDS(GSRC)%TRIGP(ITRI,IT)
-                     IM2=GRIDS(GSRC)%TRIGP(ITRI,JT)
-                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GSRC)%XGRD(IM1,1)), &
-                           REAL(GRIDS(GSRC)%YGRD(IM1,1)), &
-                           REAL(GRIDS(GSRC)%XGRD(IM2,1)), REAL(GRIDS(GSRC)%YGRD(IM2,1)))
+                     IM1=GRIDS(GSRC)%TRIGP(IT,ITRI)
+                     IM2=GRIDS(GSRC)%TRIGP(JT,ITRI)
+                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GSRC)%XGRD(1,IM1)), &
+                           REAL(GRIDS(GSRC)%YGRD(1,IM1)), &
+                           REAL(GRIDS(GSRC)%XGRD(1,IM2)), REAL(GRIDS(GSRC)%YGRD(1,IM2)))
                      IF (IsFirst.eq.1) THEN
                        DIST_MAX=eDist
                        DIST_MIN=eDist

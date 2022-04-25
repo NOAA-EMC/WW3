@@ -656,15 +656,15 @@
         ALLOCATE(GRID_MASK(MNE), STAT=ISTAT)
         CHECK_ALLOC_STATUS ( ISTAT )
         DO IE=1,MNE
-          I1=GRIDS(ID_GRD)%TRIGP(IE,1)
-          I2=GRIDS(ID_GRD)%TRIGP(IE,2)
-          I3=GRIDS(ID_GRD)%TRIGP(IE,3)
+          I1=GRIDS(ID_GRD)%TRIGP(1,IE)
+          I2=GRIDS(ID_GRD)%TRIGP(2,IE)
+          I3=GRIDS(ID_GRD)%TRIGP(3,IE)
           ELON1=GRIDS(ID_GRD)%XGRD(1,I1)
           ELON2=GRIDS(ID_GRD)%XGRD(1,I2)
           ELON3=GRIDS(ID_GRD)%XGRD(1,I3)
           ELAT1=GRIDS(ID_GRD)%YGRD(1,I1)
           ELAT2=GRIDS(ID_GRD)%YGRD(1,I2)
-          ELAT3=GRIDS(ID_GRD)%XGRD(1,I3)
+          ELAT3=GRIDS(ID_GRD)%YGRD(1,I3)
           ELON=(ELON1 + ELON2 + ELON3)/3
           ELAT=(ELAT1 + ELAT2 + ELAT3)/3
           GRID_CENTER_LON(IE)=ELON
@@ -786,10 +786,9 @@
         NBPLUS=0
         NBMINUS=0
         DO IE=1,MNE
-          I1=GRIDS(ID_GRD)%TRIGP(IE,1)
-          I2=GRIDS(ID_GRD)%TRIGP(IE,2)
-          I3=GRIDS(ID_GRD)%TRIGP(IE,3)
-
+          I1=GRIDS(ID_GRD)%TRIGP(1,IE)
+          I2=GRIDS(ID_GRD)%TRIGP(2,IE)
+          I3=GRIDS(ID_GRD)%TRIGP(3,IE)
           PT(1,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I1))
           PT(2,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I2))
           PT(3,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I3))
@@ -836,9 +835,9 @@
         DO IE=1,MNE
           DO I=1,3
             CALL TRIANG_INDEXES(I, INEXT, IPREV)
-            IP=GRIDS(ID_GRD)%TRIGP(IE,I)
-            IPNEXT=GRIDS(ID_GRD)%TRIGP(IE,INEXT)
-            IPPREV=GRIDS(ID_GRD)%TRIGP(IE,IPREV)
+            IP=GRIDS(ID_GRD)%TRIGP(I,IE)
+            IPNEXT=GRIDS(ID_GRD)%TRIGP(INEXT,IE)
+            IPPREV=GRIDS(ID_GRD)%TRIGP(IPREV,IE)
             IF (STATUS(IP).EQ.0) THEN
               IF (NEIGHBOR_NEXT(IP).EQ.0) THEN
                 STATUS(IP)=1
@@ -864,9 +863,9 @@
             ELAT=LAT_CENT_TRIG(IE)
             DO I=1,3
               CALL TRIANG_INDEXES(I, INEXT, IPREV)
-              IP=GRIDS(ID_GRD)%TRIGP(IE,I)
-              IPNEXT=GRIDS(ID_GRD)%TRIGP(IE,INEXT)
-              IPPREV=GRIDS(ID_GRD)%TRIGP(IE,IPREV)
+              IP=GRIDS(ID_GRD)%TRIGP(I,IE)
+              IPNEXT=GRIDS(ID_GRD)%TRIGP(INEXT,IE)
+              IPPREV=GRIDS(ID_GRD)%TRIGP(IPREV,IE)
               IF (STATUS(IP).EQ.0) THEN
                 ISFINISHED=0
                 ZPREV=PREVVERT(IP)
@@ -1473,7 +1472,7 @@
       TRIGINCD=0
       DO IE=1,MNE
         DO I=1,3
-          IP=TRIGP(IE,I)
+          IP=TRIGP(I,IE)
           TRIGINCD(IP)=TRIGINCD(IP) + 1
         END DO
       END DO
@@ -1532,7 +1531,7 @@
         USE W3SERVMD, ONLY: EXTCDE
         IMPLICIT NONE
                
-        INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(MNE,3)
+        INTEGER, INTENT(IN)             :: MNP, MNE, TRIGP(3,MNE)
         INTEGER, INTENT(INOUT)          :: IOBP(MNP)
         INTEGER, INTENT(INOUT)          :: NEIGHBOR_PREV(MNP)
         INTEGER, INTENT(INOUT)          :: NEIGHBOR_NEXT(MNP)
@@ -1565,9 +1564,9 @@
         DO IE=1,MNE
           DO I=1,3
             CALL TRIANG_INDEXES(I, INEXT, IPREV)
-            IP=TRIGP(IE,I)
-            IPNEXT=TRIGP(IE,INEXT)
-            IPPREV=TRIGP(IE,IPREV)
+            IP=TRIGP(I,IE)
+            IPNEXT=TRIGP(INEXT,IE)
+            IPPREV=TRIGP(IPREV,IE)
             IF (STATUS(IP).EQ.0) THEN
               STATUS(IP)=1
               PREVVERT(IP)=IPPREV
@@ -1581,9 +1580,9 @@
           DO IE=1,MNE
             DO I=1,3
               CALL TRIANG_INDEXES(I, INEXT, IPREV)
-              IP=TRIGP(IE,I)
-              IPNEXT=TRIGP(IE,INEXT)
-              IPPREV=TRIGP(IE,IPREV)
+              IP=TRIGP(I,IE)
+              IPNEXT=TRIGP(INEXT,IE)
+              IPPREV=TRIGP(IPREV,IE)
               IF (STATUS(IP).EQ.0) THEN
                 ZNEXT=NEXTVERT(IP)
                 IF (ZNEXT.EQ.IPPREV) THEN
@@ -1619,9 +1618,9 @@
         DO IE=1,MNE
           DO I=1,3
             CALL TRIANG_INDEXES(I, INEXT, IPREV)
-            IP=TRIGP(IE,I)
-            IPNEXT=TRIGP(IE,INEXT)
-            IPPREV=TRIGP(IE,IPREV)
+            IP=TRIGP(I,IE)
+            IPNEXT=TRIGP(INEXT,IE)
+            IPPREV=TRIGP(IPREV,IE)
             IF (STATUS(IP).EQ.0) THEN
               STATUS(IP)=1
               PREVVERT(IP)=IPPREV
@@ -1635,9 +1634,9 @@
           DO IE=1,MNE
             DO I=1,3
               CALL TRIANG_INDEXES(I, INEXT, IPREV)
-              IP=TRIGP(IE,I)
-              IPNEXT=TRIGP(IE,INEXT)
-              IPPREV=TRIGP(IE,IPREV)
+              IP=TRIGP(I,IE)
+              IPNEXT=TRIGP(INEXT,IE)
+              IPPREV=TRIGP(IPREV,IE)
               IF (STATUS(IP).EQ.0) THEN
                 ZPREV=PREVVERT(IP)
                 IF (ZPREV.EQ.IPNEXT) THEN

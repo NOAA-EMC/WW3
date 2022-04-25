@@ -22,7 +22,7 @@
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%IOSTYP  = 3
+  DOMAIN%IOSTYP  = 1
   DOMAIN%START   = '20100801 000000'
   DOMAIN%STOP    = '20100801 001000'
 /

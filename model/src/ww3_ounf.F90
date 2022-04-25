@@ -958,8 +958,7 @@
       INTEGER, SAVE           :: IENT   =   0
 #endif
 !
-      INTEGER, ALLOCATABLE    :: TRIGP2(:,:)
-      ! Make the below allocatable to avoid stack overflow on some machines
+      ! Make the below allocatable to avoid stack overflow on some machines 
       INTEGER(KIND=2), ALLOCATABLE    :: MX1(:,:), MXX(:,:), MYY(:,:), &
                                          MXY(:,:), MAPOUT(:,:)
 !
@@ -2366,10 +2365,8 @@
               IF (GTYPE.EQ.UNGTYPE) THEN
                 LON(:)=XGRD(1,:)
                 LAT(:)=YGRD(1,:)
-                IF (.NOT.ALLOCATED(TRIGP2)) ALLOCATE(TRIGP2(3,NTRI))
                 DIMLN(2)=NX
                 DIMLN(3)=NTRI
-                TRIGP2=TRANSPOSE(TRIGP)
                 IF(FL_DEFAULT_GBL_META) THEN
                   IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL, &
                                        'latitude_resolution','n/a')
@@ -2520,7 +2517,7 @@
 
               ! Writes triangles to netcdf file
               IF (GTYPE.EQ.UNGTYPE) THEN
-                IRET=NF90_PUT_VAR(NCID,VARID(4),TRIGP2)
+                IRET=NF90_PUT_VAR(NCID,VARID(4),TRIGP)
                 CALL CHECK_ERR(IRET)
               END IF
 

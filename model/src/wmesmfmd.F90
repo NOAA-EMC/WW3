@@ -4442,7 +4442,7 @@
          do i = 1,NTRI
             do j = 1,3
                pos=3*(i-1)+j
-               elemConn(pos)=TRIGP(i,j)
+               elemConn(pos)=TRIGP(j,i)
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4872,7 +4872,7 @@
          do i = 1,NTRI
             do j = 1,3
                pos=3*(i-1)+j
-               elemConn(pos)=TRIGP(i,j)
+               elemConn(pos)=TRIGP(j,i)
             enddo
          enddo
 #ifdef W3_PDLIB

@@ -61,7 +61,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3FLX5 ( ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR, UST, USTD, Z0, CD )
+      SUBROUTINE W3FLX5 ( ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR, UST, USTD, Z0, CD, CHARN )
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -106,6 +106,7 @@
 !       USTD    Real   0   Direction of friction velocity.
 !       Z0      Real   O   z0 in profile law.
 !       CD      Real   O   Drag coefficient.
+!       CHARN   Real   O   Charnock coefficient
 !     ----------------------------------------------------------------
 !
 !  4. Subroutines used :
@@ -139,9 +140,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS, ONLY: KAPPA
+      USE CONSTANTS, ONLY: KAPPA, GRAV, nu_air
       USE W3ODATMD, ONLY: NDSE, IAPROC, NAPERR
-!     USE W3GDATMD, ONLY: FLX5A0
       USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
@@ -153,7 +153,7 @@
 !/ Parameter list
 !/
       REAL, INTENT(IN)        :: ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR
-      REAL, INTENT(OUT)       :: UST, USTD, Z0, CD
+      REAL, INTENT(OUT)       :: UST, USTD, Z0, CD, CHARN
       REAL                    :: UNZ, SQRTCDM1
 !/
 !/ ------------------------------------------------------------------- /
@@ -185,6 +185,13 @@
       USTD   = TAUADIR
       SQRTCDM1  = MIN(UNZ/UST,100.0)
       Z0        = ZWND*EXP(-KAPPA*SQRTCDM1)
+      IF (UNZ.GT.2.5) THEN
+        CHARN = (Z0 - 0.11 * NU_AIR / UST) * GRAV / UST**2
+        CHARN = MAX( CHARN , 0.0095 )
+        CHARN = MIN( 0.035 , CHARN )
+      ELSE
+        CHARN = 0.0095
+        END IF
 !
       RETURN
 !
