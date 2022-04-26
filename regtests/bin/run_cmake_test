@@ -43,7 +43,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="b:C:d:f:g:h:i:m:n:N:o:O:p:q:r:s:t:S:T:w:"  #option string for getopt function
+optstr="b:C:dfg:hi:m:n:No:Op:q:r:s:t:STw:" #option string for getopt function
 usage ()
 {
 
