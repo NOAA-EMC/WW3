@@ -440,11 +440,21 @@
 !      call CESM_REST_FILENAME(WRITE, FNAME)
 
       if (user_restname) then
+         ! if (user_restptr) then
+         !    inquire( file=trim(user_ptrfname), exist=exists)
+         !    if (.not. exists ) then
+         !       CALL EXTCDE (60, MSG="required restart pointer file " // trim(fname) // "does not exist")
+         !    else
+         !       read user_restfame from pointer file
+         !    end if
+         ! else (not using a pointer file)
+         ! use provided user_restfname
          if (len_trim(user_restfname) == 0 ) then
             call extcde (60, MSG="user restart filename requested but not provided")
          end if
          call set_user_timestring(time,user_timestring)
          fname = trim(user_restfname)//trim(user_timestring)
+         ! endif (not user_restptr)
          IFILE  = IFILE + 1
 
          IF ( WRITE ) THEN
