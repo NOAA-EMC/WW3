@@ -2283,10 +2283,17 @@
             END IF
 #ifdef W3_OASIS
           ELSE 
-            ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
-            IF ( (DTOUT(7).NE.0) .AND.                               &
-                 (MOD(ID_OASIS_TIME, NINT(DTOUT(7))) .EQ. 0 ) .AND. &
-                 (DSEC21 (TIME, TIMEEND) .GT. 0.0)) DTTST=0.
+            IF ( DTOUT(7).NE.0 ) THEN
+              ! TFN not initialized at TIME=TIME00, using TIME instead
+              IF(NINT(DSEC21(TIME00,TIME)) == 0) THEN
+                ID_OASIS_TIME = 0
+                DTTST=0.
+              ELSE
+                ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TFN(:,J) ))
+                IF ( NINT(MOD(DSEC21(TIME00,TIME), DTOUT(7))) .EQ. 0 .AND. &
+                     DSEC21 (TFN(:,J), TIMEEND) .GT. 0.0 ) DTTST=0.
+              ENDIF
+            ENDIF
 #endif
           END IF
 !
