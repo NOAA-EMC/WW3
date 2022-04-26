@@ -1438,11 +1438,18 @@ contains
     user_histname = .true.
     user_restname = .true.
 
+    if (runtype == 'initial') then
+       user_restfname = trim(initfile)
+    else
+       if (len_trim(inst_suffix) > 0) then
+          user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
+       else
+          user_restfname = trim(casename)//'.ww3.r.'
+       end if
+    end if
     if (len_trim(inst_suffix) > 0) then
-       user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
        user_histfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.'
     else
-       user_restfname = trim(casename)//'.ww3.r.'
        user_histfname = trim(casename)//'.ww3.hi.'
     endif
 

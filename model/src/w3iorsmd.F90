@@ -279,7 +279,6 @@
       USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
 #ifdef W3_CESMCOUPLED
-      USE W3ADATMD   , ONLY : LAMULT
       USE WAV_SHR_MOD, ONLY : RUNTYPE
 #endif
 !!!!!/PDLIB    USE PDLIB_FIELD_VEC!, only : UNST_PDLIB_READ_FROM_FILE, UNST_PDLIB_WRITE_TO_FILE
@@ -291,7 +290,7 @@
 #endif
 !
       use w3timemd, only: set_user_timestring
-      use w3odatmd, only: user_restname, user_restfname
+      use w3odatmd, only: user_restname, user_restfname, ndso, naplog
 
       IMPLICIT NONE
 !
@@ -343,6 +342,7 @@
       CHARACTER(LEN=30)       :: TNAME
       CHARACTER(LEN=15)       :: TIMETAG
       character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
+      logical                 :: exists
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -437,25 +437,31 @@
 !
 ! open file ---------------------------------------------------------- *
 !
-!      call CESM_REST_FILENAME(WRITE, FNAME)
-
       if (user_restname) then
-         ! if (user_restptr) then
-         !    inquire( file=trim(user_ptrfname), exist=exists)
-         !    if (.not. exists ) then
-         !       CALL EXTCDE (60, MSG="required restart pointer file " // trim(fname) // "does not exist")
-         !    else
-         !       read user_restfame from pointer file
-         !    end if
-         ! else (not using a pointer file)
-         ! use provided user_restfname
          if (len_trim(user_restfname) == 0 ) then
-            call extcde (60, MSG="user restart filename requested but not provided")
+            call extcde (60, msg="user restart filename requested but not provided")
+         else
+            if (.not. write) then
+               inquire( file=trim(user_restfname), exist=exists)
+               if (.not. exists) then
+                  call extcde (60, msg="required initial/restart file " // trim(user_restfname) // "does not exist")
+               end if
+            end if
          end if
-         call set_user_timestring(time,user_timestring)
-         fname = trim(user_restfname)//trim(user_timestring)
-         ! endif (not user_restptr)
-         IFILE  = IFILE + 1
+         if (write) then
+            call set_user_timestring(time,user_timestring)
+            fname = trim(user_restfname)//trim(user_timestring)
+         else
+            fname = trim(user_restfname)
+         end if
+         ! write out filename
+         if (iaproc == naplog) then
+            if (write) then
+               write (ndso,'(a)') ' writing restart file '//trim(fname)
+            else
+               write (ndso,'(a)') ' reading initial/restart file '//trim(fname)
+            end if
+         end if
 
          IF ( WRITE ) THEN
              IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
@@ -1656,71 +1662,6 @@
 !/ End of W3IORS ----------------------------------------------------- /
 !/
       END SUBROUTINE W3IORS
-!#ifdef W3_CESMCOUPLED
-!      SUBROUTINE CESM_REST_FILENAME(LWRITE, FNAME)
-!
-!        USE WAV_SHR_MOD , ONLY : CASENAME, INITFILE, INST_SUFFIX, RUNTYPE
-!        USE W3WDATMD    , ONLY : TIME
-!        USE W3SERVMD    , ONLY : EXTCDE
-!        USE W3ODATMD    , ONLY : NDS, IAPROC, NAPOUT
-!
-!        ! input/output variables
-!        logical, intent(in)           :: lwrite
-!        character(len=*), intent(out) :: fname
-!
-!        ! local variables
-!        integer :: yy,mm,dd,hh,mn,ss,totsec
-!        logical :: exists
-!        logical :: lread
-!        !----------------------------------------------
-!
-!        ! create local lread logical for clarity
-!        if (lwrite) then
-!           lread = .false.
-!        else
-!           lread = .true.
-!        end if
-!
-!        ! determine restart filename
-!        if (lread .and. runtype /= 'continue') then
-!           fname = initfile
-!        else
-!           yy =  time(1)/10000
-!           mm = (time(1)-yy*10000)/100
-!           dd = (time(1)-yy*10000-mm*100)
-!           hh = time(2)/10000
-!           mn = (time(2)-hh*10000)/100
-!           ss = (time(2)-hh*10000-mn*100)
-!           totsec = hh*3600+mn*60+ss
-!
-!           if (len_trim(inst_suffix) > 0) then
-!              write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5)') &
-!                   trim(casename)//'.ww3'//trim(inst_suffix)//'.r.',yy,'-',mm,'-',dd,'-',totsec
-!           else
-!              write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5)') &
-!                   trim(casename)//'.ww3.r.',yy,'-',mm,'-',dd,'-',totsec
-!           endif
-!        end if
-!
-!        ! check that if read the file exists
-!        if (lread) then
-!           inquire( file=fname, exist=exists)
-!           if (.not. exists ) then
-!              CALL EXTCDE (60, MSG="required initial/restart file " // trim(fname) // "does not exist")
-!           end if
-!        end if
-!
-!        ! write out filename
-!        if (iaproc == napout) then
-!           if (lwrite) then
-!              write (nds(1),'(a)') ' writing restart file '//trim(fname)
-!           else
-!              write (nds(1),'(a)') ' reading initial/restart file '//trim(fname)
-!           end if
-!        end if
-!
-!      end subroutine cesm_rest_filename
-!#endif
 !/
 !/ End of module W3IORSMD -------------------------------------------- /
 !/

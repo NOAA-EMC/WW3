@@ -557,8 +557,10 @@
 
       logical            :: user_histname = .false.  !<@public logical flag for user set history filenames
       logical            :: user_restname = .false.  !<@public logical flag for user set restart filenames
-      character(len=512) :: user_histfname = ''      !<@public user history filename
-      character(len=512) :: user_restfname = ''      !<@public user restart filename
+      character(len=512) :: user_histfname = ''      !<@public user history filename prefix, timestring
+                                                     !! YYYY-MM-DD-SSSSS will be appended
+      character(len=512) :: user_restfname = ''      !<@public user restart filename prefix, timestring
+                                                     !! YYYY-MM-DD-SSSSS will be appended
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
