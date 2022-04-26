@@ -423,7 +423,7 @@ then
 
   echo "Switch file is $path_build/switch with switches:" >> $ofile 
   cat $path_build/switch >> $ofile
-  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1  
+  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1
   rc=$?
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in cmake."
@@ -454,7 +454,7 @@ then
   \cp -f $file_c $path_build/switch
   echo "Switch file is $path_build/switch with switches:" >> $ofile 
   cat $path_build/switch >> $ofile  
-  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1 
+  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1
   rc=$?
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in cmake."
@@ -491,7 +491,7 @@ else
   fi
   echo "Switch file is $path_build/switch with switches:" >> $ofile
   cat $path_build/switch >> $ofile
-  cmake $path_cmake -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1 
+  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1
   rc=$?
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in cmake."
