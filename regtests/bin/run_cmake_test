@@ -400,12 +400,13 @@ ofile=$path_w/build.log
 echo "   Building WW3, exes will be in $path_e"
 
 echo "Exe directory is $path_e" > $ofile 
+path_build_root=${path_build_root:-$path_w/build}
 if [ $force_shrd ]
 then 
 
   # build pre- & post-processing programs with SHRD only
   echo "Forcing a SHRD build" >> $ofile
-  path_build=$path_w/build_SHRD
+  path_build=${path_build_root}_SHRD
   mkdir -p $path_build
   cd $path_build
   if [[ "$outopt" = "all" ]] || [[ "$outopt" = "grib" ]] ; 
@@ -445,42 +446,44 @@ then
   fi
 
   cp $path_build/install/bin/* $path_e/ 
-
-  echo "non-SHRD build" >> $ofile
-  #build without SHRD 
-  path_build=$path_w/build
-  mkdir -p $path_build
-  cd $path_build
-  \cp -f $file_c $path_build/switch
-  echo "Switch file is $path_build/switch with switches:" >> $ofile 
-  cat $path_build/switch >> $ofile  
-  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1
-  rc=$?
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in cmake."
-    echo "The build log is in $ofile"
-    exit
-  fi
-  make -j 8 > $ofile 2>&1 
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in make."
-    echo "The build log is in $ofile"
-    exit
-  fi
-  make install > $ofile 2>&1 
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in make install."
-    echo "The build log is in $ofile"
-    exit
-  fi
-  path_e=$path_w/exe
-  cp $path_build/install/bin/ww3_shel $path_e/
-  cp $path_build/install/bin/ww3_multi $path_e/
-  cp $path_build/install/bin/ww3_systrk $path_e/
-  cp $path_build/install/bin/ww3_prtide $path_e/
-
+  
+  if [ $pomp ] || [ $nproc ] 
+  then 
+    echo "non-SHRD build" >> $ofile
+    #build without SHRD 
+    path_build=${path_build_root} 
+    mkdir -p $path_build
+    cd $path_build
+    \cp -f $file_c $path_build/switch
+    echo "Switch file is $path_build/switch with switches:" >> $ofile 
+    cat $path_build/switch >> $ofile  
+    cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1
+    rc=$?
+    if [[ $rc -ne 0 ]] ; then
+      echo "Fatal error in cmake."
+      echo "The build log is in $ofile"
+      exit
+    fi
+    make -j 8 > $ofile 2>&1 
+    if [[ $rc -ne 0 ]] ; then
+      echo "Fatal error in make."
+      echo "The build log is in $ofile"
+      exit
+    fi
+    make install > $ofile 2>&1 
+    if [[ $rc -ne 0 ]] ; then
+      echo "Fatal error in make install."
+      echo "The build log is in $ofile"
+      exit
+    fi
+    path_e=$path_w/exe
+    cp $path_build/install/bin/ww3_shel $path_e/
+    cp $path_build/install/bin/ww3_multi $path_e/
+    cp $path_build/install/bin/ww3_systrk $path_e/
+    cp $path_build/install/bin/ww3_prtide $path_e/
+  fi 
 else
-  path_build=$path_w/build
+  path_build=${path_build_root}
   mkdir -p $path_build
   cd $path_build
   if [[ "$outopt" = "all" ]] || [[ "$outopt" = "grib" ]] ; 
@@ -523,7 +526,6 @@ then # Add time counter if -T
   cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
   printf "\n %8.2f sec compile time" $Maketime  >> time_count.txt
 fi
-
  
 # --------------------------------------------------------------------------- #
 # 3. Execute Test                                                             #

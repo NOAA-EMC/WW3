@@ -145,6 +145,8 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   echo "  module load $modesmf"                             >> matrix.head
 
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
+  echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'         >> matrix.head
   echo ' ' 
 
   if [ "$batchq" = 'slurm' ]
@@ -228,7 +230,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   echo "#submit all of the diveded matrix files" > msuball.sh
   if [ $batchq = "slurm" ] 
   then
-    files=`ls matrix? matrix??`
+    files=`ls matrix??`
     for file in $files 
     do
       echo "sbatch < $file"  >> msuball.sh

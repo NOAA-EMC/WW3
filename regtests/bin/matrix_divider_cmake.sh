@@ -67,57 +67,60 @@ rm matrix.tmp
 # parallel jobs
 count=0
   for i in `seq -f '%02g' 0 "$((matrixno1 - 1))"`; do
-#echo $i
-#Replace matrix.out > matrix?.out, model > model?
   (( count = count + 1 ))
-  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
-  cat before >> matrix${count}
-  cat list_mpi_$i >> matrix${count}
-  sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo '     *  end of WAVEWATCH III matrix${count} of regression tests     *'"   >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo " matrix${count} prepared"
+  countf=$(printf %02i $count)
+  if [ -f "matrix${countf}" ]; then rm -f matrix${countf}; fi
+  cat before >> matrix${countf}
+  cat list_mpi_$i >> matrix${countf}
+  sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
+  sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo " matrix${countf} prepared"
  done
 
 # --------------------------------------------------------------------------- #
 
 # parallel jobs +OMP/OMPH
   for i in `seq -f '%02g' 0 "$((matrixno2 - 1))"`; do
-#echo $i
-#Replace matrix.out > matrix?.out, model > model?
   (( count = count + 1 ))
-  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
-  cat before >> matrix${count}
-  cat list_omp_$i >> matrix${count}
-  sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo '     *  end of WAVEWATCH III matrix${count} of regression tests     *'"   >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo " matrix${count} prepared"
+  countf=$(printf %02i $count)
+  if [ -f "matrix${countf}" ]; then rm -f matrix${countf}; fi
+  cat before >> matrix${countf}
+  cat list_omp_$i >> matrix${countf}
+  sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
+  sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo " matrix${countf} prepared"
  done
 
 # --------------------------------------------------------------------------- #
 
 #serial jobs
  for i in `seq -f '%02g' 0 "$((matrixno3 - 1))"`; do
-#echo $i
-#Replace matrix.out > matrix?.out, model > model?
   (( count = count + 1 ))
-  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
-  cat before >> matrix${count}
-  cat list_serial_$i >> matrix${count}
-  sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo '     *  end of WAVEWATCH III matrix${count} of regression tests     *'"   >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo " matrix${count} prepared"
+  countf=$(printf %02i $count)
+  if [ -f "matrix${countf}" ]; then rm -f matrix${countf}; fi
+  cat before >> matrix${countf}
+  cat list_serial_$i >> matrix${countf}
+  sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
+  sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo " matrix${countf} prepared"
  done
 
 # --------------------------------------------------------------------------- #
@@ -125,34 +128,40 @@ count=0
 #ww3_tp2.14 is separated, as it has dependency. 
 #ww3_tp2.17 and ww3_tp2.21 is separated, as it takes a long time to finish
   (( count = count + 1 ))
-  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
-  cat before >> matrix${count}
-  cat list_heavy >> matrix${count}
-  sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo '     *  end of WAVEWATCH III matrix${count} of regression tests     *'"   >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo " matrix${count} prepared"
+  countf=$(printf %02i $count)
+  if [ -f "matrix${countf}" ]; then rm -f matrix${countf}; fi
+  cat before >> matrix${countf}
+  cat list_heavy >> matrix${countf}
+  sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
+  sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo " matrix${countf} prepared"
 
 # --------------------------------------------------------------------------- #
 
 #ncep operational tests including ww3_ufs and gfsv16 which require a large number of processor/esmf coupler and the ones for grib test are separated
   (( count = count + 1 ))
-  if [ -f "matrix${count}" ]; then rm -f matrix${count}; fi
-  cat before >> matrix${count}
-  sed -i 's/'n\ 24'/'n\ 140'/gI' matrix${count}
-  cat list_ufs >> matrix${count}
-  sed -i 's/'matrix.out'/'matrix${count}.out'/gI' matrix${count}
-  sed -i 's/'##SBATCH'/'#SBATCH'/gI' matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo '     *  end of WAVEWATCH III matrix${count} of regression tests     *'"   >> matrix${count}
-  echo "  echo '     **************************************************************'"   >> matrix${count}
-  echo "  echo ' '"                                                                     >> matrix${count}
+  countf=$(printf %02i $count)
+  if [ -f "matrix${countf}" ]; then rm -f matrix${countf}; fi
+  cat before >> matrix${countf}
+  sed -i 's/'n\ 24'/'n\ 140'/gI' matrix${countf}
+  cat list_ufs >> matrix${countf}
+  sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'##SBATCH'/'#SBATCH'/gI' matrix${countf}
+  sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
+  sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
+  echo "  echo '     **************************************************************'"   >> matrix${countf}
+  echo "  echo ' '"                                                                     >> matrix${countf}
 
- echo " matrix${count} prepared"
+ echo " matrix${countf} prepared"
 
 # --------------------------------------------------------------------------- #
 
