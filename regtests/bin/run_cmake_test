@@ -43,7 +43,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="b:C:d:f:g:h:i:m:n:N:o:O:p:q:r:s:t:S:T:w:"  #option string for getopt function
+optstr="b:C:dfg:hi:m:n:No:Op:q:r:s:t:STw:" #option string for getopt function
 usage ()
 {
 
@@ -144,7 +144,7 @@ do
   -g) shift; grdstr="$1" ;;
   -h) help=1 ;;
   -i) shift; inpdir="$1" ;;
-   -m) shift; grdset="$1" ;
+  -m) shift; grdset="$1" ;
       if [ $grdset = none ]
       then
         multi=1

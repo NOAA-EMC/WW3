@@ -43,6 +43,9 @@ fi
 #convert main_dir to absolute path
 main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
+#download 
+
+
   #Module Versions from HPC-Stack that are common for all platforms 
   modnetcdf='netcdf/4.7.4'
   modjasper='jasper/2.0.25'
@@ -237,7 +240,6 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
     done
   fi 
 
- 
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #
 # --------------------------------------------------------------------------- #

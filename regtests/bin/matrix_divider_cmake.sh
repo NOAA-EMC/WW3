@@ -75,6 +75,7 @@ count=0
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'                     >> matrix${countf}
   echo "  echo ' '"                                                                     >> matrix${countf}
   echo "  echo '     **************************************************************'"   >> matrix${countf}
   echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
@@ -95,6 +96,7 @@ count=0
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'                     >> matrix${countf}
   echo "  echo ' '"                                                                     >> matrix${countf}
   echo "  echo '     **************************************************************'"   >> matrix${countf}
   echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
@@ -115,6 +117,7 @@ count=0
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'                     >> matrix${countf}
   echo "  echo ' '"                                                                     >> matrix${countf}
   echo "  echo '     **************************************************************'"   >> matrix${countf}
   echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
@@ -135,6 +138,7 @@ count=0
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'                     >> matrix${countf}
   echo "  echo ' '"                                                                     >> matrix${countf}
   echo "  echo '     **************************************************************'"   >> matrix${countf}
   echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
@@ -155,6 +159,7 @@ count=0
   sed -i 's/'##SBATCH'/'#SBATCH'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'                     >> matrix${countf}
   echo "  echo ' '"                                                                     >> matrix${countf}
   echo "  echo '     **************************************************************'"   >> matrix${countf}
   echo "  echo '     *  end of WAVEWATCH III matrix${countf} of regression tests  *'"   >> matrix${countf}
