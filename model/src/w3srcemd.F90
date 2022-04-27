@@ -1411,15 +1411,29 @@
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
-                   eVS = VSDB(ISP) * JAC
-                   eVD = MIN(0.,VDDB(ISP))
+                eVS = VSDB(ISP) * JAC
+                eVD = MIN(0.,VDDB(ISP))
+                IF (eVS .gt. 0.) THEN
+                  evS = 2*evS
+                  evD = -evD 
+                ELSE
+                  evS = -evS
+                  evD = 2*evD
+                ENDIF
 #endif
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 
 #ifdef W3_TR1
-                   eVS = VSTR(ISP) * JAC 
-                   eVD = VDTR(ISP)
+                eVS = VSTR(ISP) * JAC 
+                eVD = VDTR(ISP)
+                IF (eVS .gt. 0.) THEN
+                  evS = 2*evS
+                  evD = -evD 
+                ELSE
+                  evS = -evS
+                  evD = 2*evD
+                ENDIF
 #endif
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
