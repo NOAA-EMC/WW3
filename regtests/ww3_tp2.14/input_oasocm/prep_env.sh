@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if [ $# -ne 5 ]
+if [ $# -ne 4 ]
 then
   echo "need four arguments:"
   echo '$1 : path_i'
