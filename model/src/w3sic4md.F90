@@ -535,43 +535,43 @@
 #ifdef CESMCOUPLED
         CASE (8) 
            !CMB added option of cubic fit to Meylan, Horvat & Bitz in prep
-	   ! ICECOEF1 is thickness 
-	   ! ICECOEF5 is floe size 
+           ! ICECOEF1 is thickness 
+           ! ICECOEF5 is floe size 
            ! TPI/SIG is period
-	   x3=min(ICECOEF1,3.5)        ! limit thickness to 3.5 m
-	   x3=max(x3,0.1)        ! limit thickness >0.1 m since I make fit below
+           x3=min(ICECOEF1,3.5)        ! limit thickness to 3.5 m
+           x3=max(x3,0.1)        ! limit thickness >0.1 m since I make fit below
            x2=min(ICECOEF5*0.5,100.0)  ! convert dia to radius, limit to 100m
            x2=max(2.5,x2)
-	   x2sqr=x2*x2
-	   x3sqr=x3*x3
+           x2sqr=x2*x2
+           x3sqr=x3*x3
            ! write(*,*) 'floe size', x2
            ! write(*,*) 'sic',iceconc
-	   amhb = 2.12e-3
-	   bmhb = 4.59e-2
+           amhb = 2.12e-3
+           bmhb = 4.59e-2
 
-	   DO IK=1, NK
+           DO IK=1, NK
               x1=TPI/SIG(IK)   ! period
-	      x1sqr=x1*x1
+              x1sqr=x1*x1
               KARG1(ik)=-0.26982 + 1.5043*x3 - 0.70112*x3sqr + 0.011037*x2 +  &
-                 -0.0073178*x2*x3 + 0.00036604*x2*x3sqr + &
-                 -0.00045789*x2sqr + 1.8034e-05*x2sqr*x3 + &
-                 -0.7246*x1 + 0.12068*x1*x3 + &
-                 -0.0051311*x1*x3sqr + 0.0059241*x1*x2 + &
+                 (-0.0073178)*x2*x3 + 0.00036604*x2*x3sqr + &
+                 (-0.00045789)*x2sqr + 1.8034e-05*x2sqr*x3 + &
+                 (-0.7246)*x1 + 0.12068*x1*x3 + &
+                 (-0.0051311)*x1*x3sqr + 0.0059241*x1*x2 + &
                   0.00010771*x1*x2*x3 - 1.0171e-05*x1*x2sqr + &
                   0.0035412*x1sqr - 0.0031893*x1sqr*x3 + &
-                 -0.00010791*x1sqr*x2 + &
+                 (-0.00010791)*x1sqr*x2 + &
                   0.00031073*x1**3 + 1.5996e-06*x2**3 + 0.090994*x3**3 
-       	      KARG1(ik)=min(karg1(ik),0.0)
+              KARG1(ik)=min(karg1(ik),0.0)
               WN_I(ik)  = 10.0**KARG1(ik)
               ! if (WN_I(ik).gt.0.9) then
               !    write(*,*) 'whacky',WN_I(ik),x1,x2,x3
               ! endif 
-	      perfour=x1sqr*x1sqr
-	      if ((x1.gt.5.0) .and. (x1.lt.20.0)) then
-	        WN_I(IK) = WN_I(IK) + amhb/x1sqr+bmhb/perfour
-	      else if (x1.gt.20.0) then
-	        WN_I(IK) = amhb/x1sqr+bmhb/perfour
-	      endif 
+              perfour=x1sqr*x1sqr
+              if ((x1.gt.5.0) .and. (x1.lt.20.0)) then
+                WN_I(IK) = WN_I(IK) + amhb/x1sqr+bmhb/perfour
+              else if (x1.gt.20.0) then
+                WN_I(IK) = amhb/x1sqr+bmhb/perfour
+              endif 
            end do
            ! write(*,*) 'Attena',(10.0**KARG1(IK),IK=1,5)
            ! write(*,*) 'Attenb',(WN_I(IK),IK=1,5)
