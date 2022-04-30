@@ -1678,8 +1678,8 @@
                 CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX5
-                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
                 DO ITT=1, 3
@@ -1856,8 +1856,8 @@
                 CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX5
-                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
                 DO ITT=1, 3

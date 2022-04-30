@@ -2143,7 +2143,7 @@
 #endif
 #ifdef W3_FLX5
                 CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
             DO ITT=1, 3
@@ -2326,7 +2326,7 @@
 #endif
 #ifdef W3_FLX5
                 CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
             DO ITT=1, 3

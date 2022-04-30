@@ -82,6 +82,16 @@ If a library is located in a non-standard location CMake will search
 multiple locations including `CMAKE_PREFIX_PATH` (a semi-colon
 separated list) or `<name>_ROOT`. 
 
+Note: If your system provides the paths to libraries and include directories
+automatically (e.g. via a compiler wrapper script, as is the case with the
+Cray Compiler Environment), then you might wish to stop CMake from trying
+to automatically finding particular libraries. This can be achieved by
+passing a list of libraries to ignore via the `EXCLUDE_FIND` option to
+CMake (currently only implemented for the netCDF library). E.g:
+```
+cmake .. -DEXCLUDE_FIND="netcdf"
+```
+
 ### Can set the compiler to MPI wrappers to find MPI
 ```
 export CC=mpicc
@@ -134,7 +144,7 @@ Append to [src_list.cmake](./src/cmake/src_list.cmake)
 
 Compiler flags are set per compiler in [CMakeLists.txt](./src/CMakeLists.txt)
 
-Supported compilers are Intel, GNU, and PGI.
+Supported compilers are Intel, GNU, PGI and Cray.
 
 ### How to build a single target?
 

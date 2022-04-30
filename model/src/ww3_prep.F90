@@ -667,7 +667,7 @@
             ELSE 
               DO IX=1, NX
                 X = XGRD(1,IX)
-                Y = YGRD(1,IX) !AR: hmm NX? 
+                Y = YGRD(1,IX)
  
                 IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
 !
