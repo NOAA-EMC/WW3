@@ -3999,7 +3999,7 @@
 
 !/ ------------------------------------------------------------------- /
 
-!> @brief Exapand the seapoint array to full grid with handling of
+!> @brief Expand the seapoint array to full grid with handling of
 !>  SMC regridding.
 !>
 !> @details The FLDIRN flag should be set to true for
