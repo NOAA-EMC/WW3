@@ -1615,7 +1615,7 @@
 !> @param[in] VA1p
 !> @param[in] ISEA1p
 !> @param[out] HSIG1p 
-!> @author <author name>  @date <dd-Mon-yyyy>
+!> @author Stelios Flampouris  @date 15-May-2017
 !>
       SUBROUTINE SWH_RSRT_1p (VA1p, ISEA1p, HSIG1p )  
 !/
