@@ -788,7 +788,7 @@
 !> @param[in] DIMLN
 !> @param[out] VARID
 !>      
-!> @author <author name>  @date <dd-Mon-yyyy>
+!> @author NA  @date NA
 !>      
       SUBROUTINE W3CRNC (NCTYPE,NCFILE,NCID,DIMID,DIMLN,VARID)
 
