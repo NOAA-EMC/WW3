@@ -19,6 +19,8 @@ contains
     USE W3WDATMD, ONLY: W3SETW, W3DIMW, TIME, WLV, ICE, ICEF, ICEH, BERG, UST, USTDIR, ASF
     USE W3GDATMD, ONLY: NX, NY, E3DF, MAPSF, MAPSTA, NSEA, W3SETG
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,  FLOGRD, NOSWLL, W3SETO
+    USE W3ODATMD, ONLY: FNMPRE
+    USE W3GDATMD, ONLY: FILEXT
     USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
     USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN
     USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0, WBT
@@ -92,7 +94,7 @@ contains
        call set_user_timestring(time,user_timestring)
        fname = trim(user_histfname)//trim(user_timestring)//'.nc'
     else
-       !fname = some default
+       write(fname,'(a,i8.8,a1,i6.6,a)')trim(fnmpre),time(1),'.',time(2),'.out_grd.'//trim(filext)//'.nc'
     end if
 
     ef_len = e3df(3,1) - e3df(2,1) + 1

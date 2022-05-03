@@ -278,9 +278,7 @@
 #ifdef W3_TIMINGS
       USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
-#ifdef W3_CESMCOUPLED
-      USE WAV_SHR_MOD, ONLY : RUNTYPE
-#endif
+      USE WAV_SHR_MOD, ONLY : RUNTYPE, INITFILE
 !!!!!/PDLIB    USE PDLIB_FIELD_VEC!, only : UNST_PDLIB_READ_FROM_FILE, UNST_PDLIB_WRITE_TO_FILE
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
@@ -438,28 +436,32 @@
 ! open file ---------------------------------------------------------- *
 !
       if (user_restname) then
-         if (len_trim(user_restfname) == 0 ) then
-            call extcde (60, msg="user restart filename requested but not provided")
-         else
-            if (.not. write) then
-               inquire( file=trim(user_restfname), exist=exists)
+         ierr = 0
+         if (.not. write) then
+            if (runtype == 'initial') then
+               if (len_trim(initfile) == 0) then       ! no IC file, use startup option
+                  goto 800
+               else
+                  user_restfname = trim(initfile)
+               end if
+            else
+               call set_user_timestring(time,user_timestring)
+               fname = trim(user_restfname)//trim(user_timestring)
+               inquire( file=trim(fname), exist=exists)
                if (.not. exists) then
-                  call extcde (60, msg="required initial/restart file " // trim(user_restfname) // "does not exist")
+                  call extcde (60, msg="required initial/restart file " // trim(user_restfname) // " does not exist")
                end if
             end if
-         end if
-         if (write) then
+         else
             call set_user_timestring(time,user_timestring)
             fname = trim(user_restfname)//trim(user_timestring)
-         else
-            fname = trim(user_restfname)
          end if
          ! write out filename
          if (iaproc == naplog) then
             if (write) then
-               write (ndso,'(a)') ' writing restart file '//trim(fname)
+               write (ndso,'(a)') 'WW3: writing restart file '//trim(fname)
             else
-               write (ndso,'(a)') ' reading initial/restart file '//trim(fname)
+               write (ndso,'(a)') 'WW3: reading initial/restart file '//trim(fname)
             end if
          end if
 

@@ -1414,6 +1414,19 @@ contains
     ! Determine module variables in wav_shel_inp that are used for call to w3init
     call set_shel_inp(dtime_sync)
 
+    ! custom restart and history file names are used for CESM
+    user_histname = .true.
+    user_restname = .true.
+
+    ! if runtype=initial, the initfile will be read in w3iorsmd
+    if (len_trim(inst_suffix) > 0) then
+       user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
+       user_histfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.'
+    else
+       user_restfname = trim(casename)//'.ww3.r.'
+       user_histfname = trim(casename)//'.ww3.hi.'
+    endif
+
     ! Read in initial/restart data and initialize the model
     ! ww3 read initialization occurs in w3iors (which is called by initmd in module w3initmd)
     ! ww3 always starts up from a 'restart' file type
@@ -1432,25 +1445,6 @@ contains
     dtcfl  = dtcfl_in
     dtcfli = dtcfli_in
     dtmin  = dtmin_in
-
-    ! custom restart and history file names are used for CESM
-    user_histname = .true.
-    user_restname = .true.
-
-    if (runtype == 'initial') then
-       user_restfname = trim(initfile)
-    else
-       if (len_trim(inst_suffix) > 0) then
-          user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
-       else
-          user_restfname = trim(casename)//'.ww3.r.'
-       end if
-    end if
-    if (len_trim(inst_suffix) > 0) then
-       user_histfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.'
-    else
-       user_histfname = trim(casename)//'.ww3.hi.'
-    endif
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_cesm
@@ -1500,10 +1494,6 @@ contains
     call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
     call read_shel_inp(mpi_comm)
 
-    call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
-    call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
-         npts, x, y, pnames, iprt, prtfrm, mpi_comm )
-!test
     ! custom restart and history file names are used for UFS
     user_histname = .true.
     user_restname = .true.
@@ -1514,6 +1504,10 @@ contains
 !    ! custom history file names are used for UWM netCDF output
 !    user_histname = .true.
 !#endif
+
+    call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
+    call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
+         npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_ufs
