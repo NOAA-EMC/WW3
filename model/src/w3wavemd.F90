@@ -85,7 +85,7 @@
 !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
 !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
-!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx ) 
+!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -893,7 +893,7 @@
 !
 ! 1.e Ice floe interval
 !
-#if defined(W3_IS2) || defined(W3_CESMCOUPLED)
+#ifdef W3_IS2
       IF ( FLIC5 ) THEN
           IF ( TIC5(1) .GE. 0 ) THEN
               DTI50   = DSEC21 ( TIC5 , TI5 )
@@ -3559,7 +3559,7 @@
                '     NEW ATM MOMENTUM BEFORE OLD ATM MOMENTUM '/)
  1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     NEW AIR DENSITY BEFORE OLD AIR DENSITY '/)
-#if defined(W3_IS2) || defined(W3_CESMCOUPLED)
+#ifdef W3_IS2
  1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                &
                '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
 #endif

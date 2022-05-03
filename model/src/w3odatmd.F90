@@ -862,7 +862,7 @@
 !
 ! 6) Wave-ocean layer
 !
-      NOGE(6) = 13 
+      NOGE(6) = 13
 !
       IDOUT( 6, 1)  = 'Radiation stresses  '
       IDOUT( 6, 2)  = 'Wave-ocean mom. flux'

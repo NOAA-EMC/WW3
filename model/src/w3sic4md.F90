@@ -401,14 +401,7 @@
       IF (INFLAGS2(-2)) ICECOEF6 = MUDD(IX,IY) ! a.k.a. MDN
       IF (INFLAGS2(-1)) ICECOEF7 = MUDT(IX,IY) ! a.k.a. MTH
       IF (INFLAGS2(0 )) ICECOEF8 = MUDV(IX,IY) ! a.k.a. MVS
-#ifdef W3_CESMCOUPLED
-!TODO MV: Test this can be removed with updated mod_def for cesm
-      ! It does not look like IC4PARS(1) is initialized anywhere - so
-      ! hard-wiring it here for now
-      IC4METHOD = 8
-#else
       IC4METHOD = IC4PARS(1)
-#endif
 !
 ! x.  No ice --------------------------------------------------------- /
 !

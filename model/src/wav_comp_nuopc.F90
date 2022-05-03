@@ -1432,7 +1432,6 @@ contains
     dtcfl  = dtcfl_in
     dtcfli = dtcfli_in
     dtmin  = dtmin_in
-!TODO: MV add calendar setting here
 
     ! custom restart and history file names are used for CESM
     user_histname = .true.
