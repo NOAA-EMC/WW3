@@ -9,9 +9,10 @@
 !>
 !> @details Data is interpolated from a combination of base grids to the
 !>  target grid. For each grid, if resolution is coarser or similar to 
-!>  targetgrid then a linear interpolation approach is used. On the other
+!>  target grid then a linear interpolation approach is used. On the other
 !>  hand if resolution is much higher then an averaging technique based on 
-!>  cell areas. 
+!>  cell areas.
+!>
 !>  Total number of base grids to be used for interpolation together with
 !>  their (and target grid) file extns are read from 'ww3_gint.inp'. 
 !>  Base grids can be arranged in any order but the target grid should 
