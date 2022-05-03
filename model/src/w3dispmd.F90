@@ -361,7 +361,7 @@
 !
 !  2. Method :
 !
-!     Linear interpolation from one-dimensional array.
+!     Direct computation by approximation
 !
 !  3. Parameters used :
 !
@@ -451,6 +451,108 @@
 !/ End of WAVNU3 ----------------------------------------------------- /
 !/      
       END SUBROUTINE WAVNU3 
+
+      PURE SUBROUTINE WAVNU_LOCAL (SIG,DW,WNL,CGL)
+!/
+!/                  +-----------------------------------+
+!/                  | WAVEWATCH III           NOAA/NCEP |
+!/                  |           Aron Roland             |
+!/                  |                        FORTRAN 90 |
+!/                  | Last update :         20-05-17    |
+!/                  +-----------------------------------+
+!/
+!/    20.05.17 : Initial Version, Aron Roland based on WAVNU1
+!/
+!  1. Purpose :
+!
+!     Calculate wavenumber and group velocity from the improved 
+!     Eckard's formula by Beji (2003) 
+!
+!  2. Method :
+!
+!     Linear interpolation from one-dimensional array.
+!
+!  3. Parameters used :
+!
+!     Parameter list
+!     ----------------------------------------------------------------
+!       SI      Real   I   Intrinsic frequency (moving frame)  (rad/s)
+!       H       Real   I   Waterdepth                            (m)
+!       K       Real   O   Wavenumber                          (rad/m)
+!       CG      Real   O   Group velocity                       (m/s)
+!     ----------------------------------------------------------------
+!
+!  4. Error messages :
+!
+!     - None.
+!
+!  5. Called by :
+!
+!     - Any main program
+!
+!  6. Subroutines used :
+!
+!     - None
+!
+!  7. Remarks :
+!
+!     - Calculated si* is always made positive without checks : check in
+!       main program assumed !
+!     - Depth is unlimited.
+!
+!  8. Structure :
+!
+!     +---------------------------------------------+
+!     | calculate non-dimensional frequency         |
+!     |---------------------------------------------|
+!     | T            si* in range ?               F |
+!     |----------------------|----------------------|
+!     | calculate k* and cg* | deep water approx.   |
+!     | calculate output     |                      |
+!     |      parameters      |                      |
+!     +---------------------------------------------+
+!
+!  9. Switches :
+!
+!     !/S  Enable subroutine tracing.
+!
+! 10. Source code :
+
+      USE W3GDATMD, ONLY: DMIN
+!
+!/ ------------------------------------------------------------------- /
+!/
+      IMPLICIT NONE
+
+!/
+!/ ------------------------------------------------------------------- /
+!/ Parameter list
+!/
+      REAL, INTENT(IN)        :: SIG, DW
+      REAL, INTENT(OUT)       :: WNL, CGL
+!/
+!/ ------------------------------------------------------------------- /
+!/ Local parameters
+      REAL                    :: DEPTH
+!/
+!/ ------------------------------------------------------------------- /
+!/
+#ifdef W3_S
+      CALL STRACE (IENT, 'WAVNU2')
+#endif
+!
+!/
+!/ End of WAVNU_LOCAL------------------------------------------------- /
+!/
+
+        DEPTH  = MAX ( DMIN , DW)
+!
+        CALL WAVNU3(SIG,DEPTH,WNL,CGL)
+
+      END SUBROUTINE WAVNU_LOCAL
+!/
+!/ ------------------------------------------------------------------- /
+
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DISTAB
 !/
