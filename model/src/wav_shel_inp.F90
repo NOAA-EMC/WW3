@@ -1,32 +1,51 @@
+!> @file wav_shel_inp
+!!
+!>  Set up for running in shel mode
+!!
+!> @details Contains public routines to sets up IO unit numbers and to
+!! either reads a shel.inp file (UWM) or set the required values directly
+!! (CESM).
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
 module wav_shel_inp
 
-  use w3odatmd, only: nogrp, ngrpp
+  use w3odatmd    , only : nogrp, ngrpp
+  use wav_shr_mod , only : wav_coupling_to_cice
 
   implicit none
   private ! except
 
-  public  :: set_shel_io
-  public  :: set_shel_inp
-  public  :: read_shel_inp
+  public  :: set_shel_io      !< @public set the IO unit numbers
+  public  :: set_shel_inp     !< @public directly set required input variabls (CESM)
+  public  :: read_shel_inp    !< @public read ww3_shel.inp (UWM)
 
-  integer, public :: odat(40)
-  character(len=40), allocatable, public :: pnames(:)
+  integer, public :: odat(40) !< @public output dates
+  character(len=40), allocatable, public :: pnames(:) !< @public point names
 
-  integer, public           :: npts
-  integer, public           :: iprt(6)
-  logical, public           :: prtfrm
-  logical, public           :: flgrd(nogrp,ngrpp) !flags for gridded output
-  logical, public           :: flgr2(nogrp,ngrpp) !flags for coupling output
-  logical, public           :: flgd(nogrp)        !flags for whole group - not currently used in cesm
-  logical, public           :: flg2(nogrp)        !flags for whole group - not currently used in cesm
-  real, allocatable, public :: x(:), y(:)
+  integer, public           :: npts               !< @public number of points for point output
+  integer, public           :: iprt(6)            !< @public partitioning grid information
+  logical, public           :: prtfrm             !< @public partitioning format flag
+  logical, public           :: flgrd(nogrp,ngrpp) !< @public flags for gridded output
+  logical, public           :: flgr2(nogrp,ngrpp) !< @public flags for coupling output
+  logical, public           :: flgd(nogrp)        !< @public flags for whole group - not currently used in cesm
+  logical, public           :: flg2(nogrp)        !< @public flags for whole group - not currently used in cesm
+  real, allocatable, public :: x(:)               !< @public x locations for point output
+  real, allocatable, public :: y(:)               !< @public y locations for point output
 
   include "mpif.h"
 
 !===============================================================================
 contains
 !===============================================================================
-
+!> Set IO unit numbers
+!!
+!! @param[in]    stdout           unit number for stdout
+!! @param[out]   mds              an array of 13 unit numbers
+!! @param[out]   ntrace           an array of 2 unit numbers used for trace output
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine set_shel_io(stdout,mds,ntrace)
 
     use ESMF, only : ESMF_UtilIOUnitGet
@@ -79,13 +98,17 @@ contains
     ntrace(2) = 10
 
   end subroutine set_shel_io
-
+!> Set up variables used in shel mode directly (CESM)
+!!
+!! @param[in]  dtime_sync         coupling interval in s
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine set_shel_inp(dtime_sync)
 
     use w3idatmd    , only : inflags1, inflags2
     use w3odatmd    , only : noge, idout, nds, notype, iaproc, napout
     use w3wdatmd    , only : time
-    use wav_shr_mod , only : wav_coupling_to_cice
 
     ! Input parameter
     integer , intent(in)  :: dtime_sync
@@ -325,6 +348,12 @@ contains
   end subroutine set_shel_inp
 
   !===============================================================================
+!> Read ww3_shel.inp (UWM)
+!!
+!! @param[in]  mpi_comm           mpi communicator
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine read_shel_inp(mpi_comm)
 
     USE W3GDATMD, ONLY: FLAGLL
@@ -437,7 +466,11 @@ contains
     ! If using experimental mud or ice physics, additional lines will
     !  be read in from ww3_shel.inp and applied, so JFIRST is changed from
     !  its initialization setting "JFIRST=1" to some lower value.
-    JFIRST=1
+    if (wav_coupling_to_cice) then
+       JFIRST=-7
+    else
+       JFIRST=1
+    end if
 
     ! process old ww3_shel.inp format
     OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_shel.inp',STATUS='OLD',IOSTAT=IERR)

@@ -126,6 +126,7 @@ set(SRCFILES constants.F90
              w3wdatmd.F90
              wav_comp_nuopc.F90
              wav_import_export.F90
+             wav_grdout.F90
              wav_kind_mod.F90
              wav_shel_inp.F90
              wav_shr_mod.F90)
