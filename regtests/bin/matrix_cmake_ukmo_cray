@@ -107,12 +107,7 @@ fi
   export   nr='4'
   export  nth='4'
 
-  if [ "$cmplOption" = 'y' ]
-  then
-     export rtst="./bin/run_cmake_test -o both -c $cmplr -S"
-  else
-     export rtst="./bin/run_cmake_test -o both -S"
-  fi
+  export rtst="./bin/run_cmake_test -o both -S"
 
   export  ww3='../model'
 
