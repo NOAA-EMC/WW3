@@ -80,7 +80,7 @@
 !>    two built-in template strings: SPART and IPART. These provide a
 !>    "string" description (e.g. "wind sea", "primary swell", etc) or an
 !>    integer partition number. These can be references in the meta data
-!>    using the template name surrounded by < .. >, e.g. <SPART>
+!>    using the template name surrounded by < .. >, e.g. \<SPART\>
 !>
 !>    It is also possible to supply user defined partitioned parameter
 !>    template strings in the ounfmeta.inp file using the TEMPLATE
@@ -1967,7 +1967,7 @@
 !> @brief Performs string substition of placeholder strings with
 !>    partition number specfic values.
 !>
-!> @details The placeholder <IPART> is automatically replaced with the
+!> @details The placeholder \<IPART\> is automatically replaced with the
 !>    partition number (0, 1, 2, etc).
 !>
 !>    Other template placeholders can be defined in the ounfmeta.inp
