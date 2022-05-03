@@ -367,6 +367,15 @@ fi
 
 mkdir -p $path_w
 
+cd $path_w
+
+if [ $stub ] && [ -f finished ]
+then
+  echo " Test already finished, skipping ..."
+  echo ' '
+  exit 0
+fi
+
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
   ww3_dir=${path_s}/..
@@ -406,7 +415,7 @@ then
   if [[ "$outopt" = "all" ]] || [[ "$outopt" = "grib" ]] ; 
   then 
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
-                  sed 's/OMPG //'    | sed 's/NOGRB/NCEP2/' \
+                  sed 's/OMPG //'    | sed 's/NOGRB/NCEP2/' | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
                   sed 's/B4B //' > $path_build/switch
   else 
@@ -546,13 +555,6 @@ echo ' '
 echo " Input directory: $path_i"
 echo " Switch file: $file_c"
 echo ' '
-
-if [ $stub ] && [ -f finished ]
-then
-  echo " Test already finished, skipping ..."
-  echo ' '
-  exit 0
-fi
 
 # 3.b2 Preprocess cdl files into nc files ----------------------------------- #
 

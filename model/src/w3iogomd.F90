@@ -1219,7 +1219,7 @@
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP
       USE W3ADATMD, ONLY: NSEALM
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ! USSX, USSY   : surface Stokes drift (SD)
       ! USSXH, USSYH : surface layer (SL) averaged SD
       ! LANGMT       : La_t
@@ -1295,7 +1295,7 @@
       REAL                       USSCO, FT1
       REAL, SAVE              :: HSMIN = 0.01
       LOGICAL                 :: FLOLOC(NOGRP,NGRPP)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ! SWW: angle between wind and waves
       ! HSL: surface layer depth (=0.2*HML)
       REAL                    :: SWW !angle between wind and waves
@@ -1426,7 +1426,7 @@
 !
       FP1    = UNDEF
       THP1   = UNDEF
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ETUSSX  = 0.
       ETUSSY  = 0.
       ETUSCX  = 0.
@@ -1570,7 +1570,7 @@
             TPMS(JSEA) = TPI/SIG(IK)
             END IF
 
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
 ! Get surface layer depth
           IX    = MAPSF(ISEA,1)
           IY    = MAPSF(ISEA,2)
@@ -1616,7 +1616,7 @@
             USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD)
             BHD(JSEA) = BHD(JSEA) +                             &
                 GRAV*WN(IK,ISEA) * EBD(IK,JSEA) / (SINH(2.*KD))
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
             ! Surface Stokes Drift
             ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
                  *WN(IK,ISEA)*COSH(2*WN(IK,ISEA)*DW(ISEA))          &
@@ -1636,7 +1636,7 @@
 #endif
           ELSE
             USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
             ! deep water limit
             ! Surface Stokes Drift
             ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
@@ -1961,7 +1961,7 @@
 !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         IX = MAPSF(ISEA,1)
         IY = MAPSF(ISEA,2)
         HS = HML(IX,IY)/5.     ! depth over which SD is averaged
@@ -1995,7 +1995,7 @@
         SXX(JSEA) = SXX(JSEA) + FTE * ABXX(JSEA) / CG(NK,ISEA)
         SYY(JSEA) = SYY(JSEA) + FTE * ABYY(JSEA) / CG(NK,ISEA)
         SXY(JSEA) = SXY(JSEA) + FTE * ABXY(JSEA) / CG(NK,ISEA)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         ! tail for SD
         ETUSSX(JSEA)  = ETUSSX(JSEA) + 2*GRAV*ETUSCX(JSEA)/SIG(NK)
         ETUSSY(JSEA)  = ETUSSY(JSEA) + 2*GRAV*ETUSCY(JSEA)/SIG(NK)
@@ -2073,7 +2073,7 @@
               T02(JSEA) = TPI / SIG(NK)
               T01(JSEA)= T02(JSEA)
               ENDIF
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
             !TODO is this affected by the NXXX vs. NSEALM?
             ! Should LAMULT, etc. be NSEAML length?
             ! Output Stokes drift and Langmuir numbers
