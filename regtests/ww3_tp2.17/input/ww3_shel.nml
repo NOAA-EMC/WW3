@@ -7,7 +7,7 @@
 ! Define top-level model parameters via DOMAIN_NML namelist
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%IOSTYP  = 3
+  DOMAIN%IOSTYP  = 0
   DOMAIN%START   = '20151214 000000'
   DOMAIN%STOP    = '20151214 040000'
 /

@@ -219,7 +219,7 @@ echo ${timestop[@]}
 # iostyp
 il=$(($il+1))
 iostyp="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-echo $iostyp
+echo "iostyp : $iostyp"
 
 
 # field date
