@@ -278,7 +278,7 @@
 #ifdef W3_TIMINGS
       USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       USE W3ADATMD   , ONLY : LAMULT
       USE WAV_SHR_MOD, ONLY : RUNTYPE
 #endif
@@ -335,7 +335,7 @@
       LOGICAL                 :: NDSROPN
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       CHARACTER(LEN=512)       :: FNAME
 #else
 !      CHARACTER(LEN=21)       :: FNAME
@@ -438,7 +438,7 @@
 !
 ! open file ---------------------------------------------------------- *
 !
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       call CESM_REST_FILENAME(WRITE, FNAME)
       IFILE  = IFILE + 1
 
@@ -592,7 +592,7 @@
               END IF
             ELSE
               READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TTIME
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
               if (runtype == 'branch' .or. runtype == 'continue') then
                 IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
                     IF ( IAPROC .EQ. NAPERR )                           &
@@ -1641,7 +1641,7 @@
 !/ End of W3IORS ----------------------------------------------------- /
 !/
       END SUBROUTINE W3IORS
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       SUBROUTINE CESM_REST_FILENAME(LWRITE, FNAME)
 
         USE WAV_SHR_MOD , ONLY : CASENAME, INITFILE, INST_SUFFIX, RUNTYPE
