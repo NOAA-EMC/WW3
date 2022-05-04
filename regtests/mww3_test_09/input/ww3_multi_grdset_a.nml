@@ -23,20 +23,13 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'Michi'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(1)%RESOURCE%COMM_FRAC    = 0.00,0.30
   MODEL(2)%NAME                  = 'Huron'
-  MODEL(2)%RESOURCE%RANK_ID      = no
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(2)%RESOURCE%BOUND_FLAG   = 0.30
+  MODEL(2)%RESOURCE%RANK_ID      = 1
+  MODEL(2)%RESOURCE%COMM_FRAC    = 0.30,0.65
   MODEL(3)%NAME                  = 'Super'
-  MODEL(3)%RESOURCE%RANK_ID      = no
-  MODEL(3)%RESOURCE%GROUP_ID     = no
-  MODEL(3)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(3)%RESOURCE%BOUND_FLAG   = 0.65
+  MODEL(3)%RESOURCE%RANK_ID      = 1
+  MODEL(3)%RESOURCE%COMM_FRAC    = 0.65,1.00
 /
 
 ! -------------------------------------------------------------------- !

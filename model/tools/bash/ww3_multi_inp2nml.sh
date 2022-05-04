@@ -133,17 +133,17 @@ do
   il=$(($il+1))
   echo ${lines[$il]}
   modid[$irgrd]="$(echo ${lines[$il]} | awk -F' ' '{print $1}' | cut -d \" -f2  | cut -d \' -f2)"
-  numvar=8
+  numvar=10
   for iflag in $(seq 2 $numvar)
   do
     ind=$(($iflag - 1))
     flggrd[$irgrd,$ind]="$(echo ${lines[$il]} | awk -F' ' "{print \$$iflag}" | cut -d \" -f2  | cut -d \' -f2)"
-    echo ${flggrd[$irgrd,$ind]}
+    echo "flag $iflag : ${flggrd[$irgrd,$ind]}"
   done
   rank[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 1))}" | cut -d \" -f2  | cut -d \' -f2)"
-  echo ${rank[$irgrd]}
+  echo "rank : ${rank[$irgrd]}"
   group[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 2))}" | cut -d \" -f2  | cut -d \' -f2)"
-  echo ${group[$irgrd]}
+  echo "group : ${group[$irgrd]}"
   comm0[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 3))}" | cut -d \" -f2  | cut -d \' -f2)"
   echo ${comm0[$irgrd]}
   comm1[$irgrd]="$(echo ${lines[$il]} | awk -F' ' "{print \$$(($numvar + 4))}" | cut -d \" -f2  | cut -d \' -f2)"

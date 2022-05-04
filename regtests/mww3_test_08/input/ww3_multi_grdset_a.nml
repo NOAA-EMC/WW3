@@ -27,17 +27,9 @@
   MODEL(1)%NAME                  = 'outer'
   MODEL(1)%FORCING%WINDS         = 'native'
   MODEL(1)%FORCING%ICE_CONC      = 'native'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
   MODEL(2)%NAME                  = 'inner'
   MODEL(2)%FORCING%WINDS         = 'native'
   MODEL(2)%FORCING%ICE_CONC      = 'native'
-  MODEL(2)%RESOURCE%RANK_ID      = no
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = 2,1
-  MODEL(2)%RESOURCE%BOUND_FLAG   = 0.00
 /
 
 ! -------------------------------------------------------------------- !

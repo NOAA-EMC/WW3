@@ -34,24 +34,15 @@
   MODEL(1)%NAME                  = 'glo_15m'
   MODEL(1)%FORCING%WINDS         = 'glo_15mxt'
   MODEL(1)%FORCING%ICE_CONC      = 'glo_15mxt'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,10
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(1)%RESOURCE%GROUP_ID     = 10
   MODEL(2)%NAME                  = 'so_20m'
   MODEL(2)%FORCING%WINDS         = 'glo_15mxt'
   MODEL(2)%FORCING%ICE_CONC      = 'glo_15mxt'
-  MODEL(2)%RESOURCE%RANK_ID      = no
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = 2,20
-  MODEL(2)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(2)%RESOURCE%GROUP_ID     = 20
   MODEL(3)%NAME                  = 'ao_20m'
   MODEL(3)%FORCING%WINDS         = 'glo_15mxt'
   MODEL(3)%FORCING%ICE_CONC      = 'glo_15mxt'
-  MODEL(3)%RESOURCE%RANK_ID      = no
-  MODEL(3)%RESOURCE%GROUP_ID     = no
-  MODEL(3)%RESOURCE%COMM_FRAC    = 3,30
-  MODEL(3)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(3)%RESOURCE%GROUP_ID     = 30
 /
 
 ! -------------------------------------------------------------------- !

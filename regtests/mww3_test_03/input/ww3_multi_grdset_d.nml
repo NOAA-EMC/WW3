@@ -24,35 +24,16 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'low1'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
   MODEL(2)%NAME                  = 'low2'
-  MODEL(2)%RESOURCE%RANK_ID      = no
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(2)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(2)%RESOURCE%RANK_ID      = 1
   MODEL(3)%NAME                  = 'low3'
-  MODEL(3)%RESOURCE%RANK_ID      = no
-  MODEL(3)%RESOURCE%GROUP_ID     = no
-  MODEL(3)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(3)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(3)%RESOURCE%RANK_ID      = 1
   MODEL(4)%NAME                  = 'hgh1'
-  MODEL(4)%RESOURCE%RANK_ID      = no
-  MODEL(4)%RESOURCE%GROUP_ID     = no
-  MODEL(4)%RESOURCE%COMM_FRAC    = 2,1
-  MODEL(4)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(4)%RESOURCE%RANK_ID      = 2
   MODEL(5)%NAME                  = 'hgh2'
-  MODEL(5)%RESOURCE%RANK_ID      = no
-  MODEL(5)%RESOURCE%GROUP_ID     = no
-  MODEL(5)%RESOURCE%COMM_FRAC    = 2,1
-  MODEL(5)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(5)%RESOURCE%RANK_ID      = 2
   MODEL(6)%NAME                  = 'hgh3'
-  MODEL(6)%RESOURCE%RANK_ID      = no
-  MODEL(6)%RESOURCE%GROUP_ID     = no
-  MODEL(6)%RESOURCE%COMM_FRAC    = 2,1
-  MODEL(6)%RESOURCE%BOUND_FLAG   = 0.00
+  MODEL(6)%RESOURCE%RANK_ID      = 2
 /
 
 ! -------------------------------------------------------------------- !

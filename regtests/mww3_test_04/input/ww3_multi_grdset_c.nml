@@ -24,21 +24,9 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'bound'
-  MODEL(1)%RESOURCE%RANK_ID      = no
-  MODEL(1)%RESOURCE%GROUP_ID     = no
-  MODEL(1)%RESOURCE%COMM_FRAC    = 1,1
-  MODEL(1)%RESOURCE%BOUND_FLAG   = 0.00
   MODEL(2)%NAME                  = 'outer'
-  MODEL(2)%RESOURCE%RANK_ID      = no
-  MODEL(2)%RESOURCE%GROUP_ID     = no
-  MODEL(2)%RESOURCE%COMM_FRAC    = 2,1
-  MODEL(2)%RESOURCE%BOUND_FLAG   = 0.00
   MODEL(3)%NAME                  = 'inner'
   MODEL(3)%FORCING%CURRENTS      = 'native'
-  MODEL(3)%RESOURCE%RANK_ID      = no
-  MODEL(3)%RESOURCE%GROUP_ID     = no
-  MODEL(3)%RESOURCE%COMM_FRAC    = 3,1
-  MODEL(3)%RESOURCE%BOUND_FLAG   = 0.00
 /
 
 ! -------------------------------------------------------------------- !
