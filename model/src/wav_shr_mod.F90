@@ -51,8 +51,6 @@ module wav_shr_mod
   end interface state_getfldptr
 
   ! used by both CESM and UFS
-  ! runtype is used by W3SRCE (values are startup, branch, continue)
-  character(len=cs)  , public :: runtype                        !< @public the run type (startup,branch,continue)
   logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
                                                                 !! fields for coupling to CICE (TODO: generalize)
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
@@ -60,10 +58,8 @@ module wav_shr_mod
   character(len= 36) , public :: time_origin                    !< @public the time_origin used for netCDF output
   character(len= 36) , public :: calendar_name                  !< @public the calendar used for netCDF output
   integer(i8)        , public :: elapsed_secs                   !< @public the time in seconds from the time_origin
-  character(len=256) , public :: initfile = ''                  !< @public name of wave initial condition file
 
   ! Only used by cesm
-  ! if a run is a startup or branch run, then initfile is used
   ! to construct the initial file and used in W3IORSMD
   ! if a run is a continue run, then casename is used to construct
   ! the restart filename in W3IORSMD

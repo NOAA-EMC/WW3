@@ -278,9 +278,7 @@
 #ifdef W3_TIMINGS
       USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
-#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
-      USE WAV_SHR_MOD, ONLY : RUNTYPE, INITFILE
-#endif
+      USE w3odatmd, ONLY : RUNTYPE, INITFILE
 !!!!!/PDLIB    USE PDLIB_FIELD_VEC!, only : UNST_PDLIB_READ_FROM_FILE, UNST_PDLIB_WRITE_TO_FILE
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
@@ -437,9 +435,8 @@
 !
 ! open file ---------------------------------------------------------- *
 !
-#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
       if (user_restname) then
-         ierr = 0
+         ierr = -99
          if (.not. write) then
             if (runtype == 'initial') then
                if (len_trim(initfile) == 0) then       ! no IC file, use startup option
@@ -478,7 +475,6 @@
                   STATUS='OLD',ACTION='READ')
          END IF
       else
-#endif
          I      = LEN_TRIM(FILEXT)
          J      = LEN_TRIM(FNMPRE)
 !
@@ -527,9 +523,7 @@
                    ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
                    STATUS='OLD',ACTION='READ')
            END IF
-#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
       end if
-#endif
 !
 ! test info ---------------------------------------------------------- *
 !

@@ -722,44 +722,6 @@ contains
   end subroutine W3IOGONCD
 
 !/ ------------------------------------------------------------------- /
-!  subroutine hist_filename(fname)
-!
-!    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX
-!    USE W3WDATMD       , ONLY : TIME
-!    USE W3ODATMD       , ONLY : NDS, IAPROC, NAPOUT
-!
-!    implicit none
-!
-!    ! input/output variables
-!    character(len=*), intent(out) :: fname
-!
-!    ! local variables
-!    integer :: yy,mm,dd,hh,mn,ss,totsec
-!    !----------------------------------------------
-!
-!    yy =  time(1)/10000
-!    mm = (time(1)-yy*10000)/100
-!    dd = (time(1)-yy*10000-mm*100)
-!    hh = time(2)/10000
-!    mn = (time(2)-hh*10000)/100
-!    ss = (time(2)-hh*10000-mn*100)
-!    totsec = hh*3600+mn*60+ss
-!
-!    if (len_trim(inst_suffix) > 0) then
-!       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
-!            trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
-!    else
-!       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
-!            trim(casename)//'.ww3.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
-!    endif
-!
-!    if (iaproc == napout) then
-!        write(nds(1),'(a)') 'w3iogomdncd: writing history '//trim(fname)
-!     end if
-!
-!   end subroutine hist_filename
-
-!/ ------------------------------------------------------------------- /
   SUBROUTINE HANDLE_ERR(IERR,STRING)
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE

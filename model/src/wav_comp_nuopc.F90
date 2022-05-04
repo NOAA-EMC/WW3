@@ -41,9 +41,9 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
-  use wav_shr_mod           , only : runtype, merge_import, dbug_flag
+  use wav_shr_mod           , only : merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
-  use w3odatmd              , only : user_histname, user_histfname, user_restname, user_restfname
+  use w3odatmd              , only : runtype, user_histname, user_histfname, user_restname, user_restfname
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
   use wav_shr_mod           , only : time_origin, calendar_name, elapsed_secs
 #ifndef W3_CESMCOUPLED
@@ -1297,7 +1297,8 @@ contains
 
     use w3initmd     , only : w3init
     use w3gdatmd     , only : dtcfl, dtcfli, dtmax, dtmin
-    use wav_shr_mod  , only : casename, initfile, outfreq
+    use w3odatmd     , only : initfile
+    use wav_shr_mod  , only : casename, outfreq
     use wav_shr_mod  , only : inst_index, inst_name, inst_suffix
     use wav_shel_inp , only : set_shel_inp
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
@@ -1331,7 +1332,7 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     inst_name = "WAV"//trim(inst_suffix)
-    ! Read namelist (set initfile in wav_shr_mod)
+    ! Read namelist (set initfile in w3odatmd)
     if ( root_task ) then
        open (newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
        read (unitn, ww3_inparm, iostat=ierr)
