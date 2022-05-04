@@ -1,4 +1,4 @@
 MODEL: glo_1deg
-INPUT: glo_15mxt glox_10m
+INPUT: glo_10mxt glox_10m
 POINT: points
-INTGL: glo_15mxt
+INTGL: glo_10mxt

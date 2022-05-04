@@ -31,7 +31,7 @@ $
 &PRO3 WDTHCG=1.5, WDTHTH=1.5 /
 END OF NAMELISTS
 $
-  'CURV'  T  'NONE'
+  'CURV'  T  'SMPL'
   360  320
   20 1.0 0.0 1 1 '(....)' 'NAME' '../input/tripolar100.lon'
   20 1.0 0.0 1 1 '(....)' 'NAME' '../input/tripolar100.lat'

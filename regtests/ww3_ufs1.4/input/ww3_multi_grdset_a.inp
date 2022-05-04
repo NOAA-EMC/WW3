@@ -7,14 +7,14 @@ $
   1 2 T 3 T F
 $
 $
-  'glo_15mxt' F T F T F F F F F
+  'glo_10mxt' F T F T F F F F F
   'glox_10m' F F T F F F F F F
 $
  'points'
 $
 $$ the presence of 1) water levels 2) currents 3) winds 4) ice and
 $ 5-7) assimilation data as in the file ww3_shel.inp.
-  'glo_1deg'  'no' 'glo_15mxt' 'glox_10m' 'glo_15mxt' 'no' 'no' 'no'  'no' 'no'  1  10  0.00 1.00  F
+  'glo_1deg'  'no' 'glo_10mxt' 'glox_10m' 'glo_10mxt' 'no' 'no' 'no'  'no' 'no'  1  10  0.00 1.00  F
 $
    20210401 000000   20210402 000000
 $
