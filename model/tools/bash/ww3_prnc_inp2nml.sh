@@ -203,7 +203,7 @@ if [ "$field" = "CUR" ]; then echo "  FORCING%FIELD%CURRENTS       = T" >> $nmlf
 if [ "$field" = "WND" ]; then echo "  FORCING%FIELD%WINDS          = T" >> $nmlfile; fi
 if [ "$field" = "WNS" ]; then echo "  FORCING%FIELD%WIND_AST       = T" >> $nmlfile; fi
 if [ "$field" = "TAU" ]; then echo "  FORCING%FIELD%ATM_MOMENTUM   = T" >> $nmlfile; fi
-if [ "$field" = "RHO" ]; then echo "  FORCING%FIELD%ATM_DENSITY    = T" >> $nmlfile; fi
+if [ "$field" = "RHO" ]; then echo "  FORCING%FIELD%AIR_DENSITY    = T" >> $nmlfile; fi
 if [ "$field" = "ICE" ]; then echo "  FORCING%FIELD%ICE_CONC       = T" >> $nmlfile; fi
 if [ "$field" = "ISI" ]; then echo "  FORCING%FIELD%ICE_BERG       = T" >> $nmlfile; fi
 if [ "$field" = "DAT" ]; then echo "  FORCING%FIELD%DATA_ASSIM     = T" >> $nmlfile; fi
