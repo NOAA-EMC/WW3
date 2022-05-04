@@ -168,6 +168,8 @@ cat >> $nmlfile << EOF
 !     FORCING%FIELD%CURRENTS       = F           ! Current                            (2-components)
 !     FORCING%FIELD%WINDS          = F           ! Wind                               (2-components)
 !     FORCING%FIELD%WIND_AST       = F           ! Wind and air-sea temp. dif.        (3-components)
+!     INPUT%FORCING%ATM_MOMENTUM   = f           ! Atmospheric momentum               (2-components)
+!     INPUT%FORCING%AIR_DENSITY    = f           ! Air density                        (1-component)
 !     FORCING%FIELD%ICE_CONC       = F           ! Ice concentration                  (1-component)
 !     FORCING%FIELD%ICE_BERG       = F           ! Icebergs and sea ice concentration (2-components)
 !     FORCING%FIELD%DATA_ASSIM     = F           ! Data for assimilation              (1-component)
@@ -200,6 +202,8 @@ if [ "$field" = "LEV" ]; then echo "  FORCING%FIELD%WATER_LEVELS   = T" >> $nmlf
 if [ "$field" = "CUR" ]; then echo "  FORCING%FIELD%CURRENTS       = T" >> $nmlfile; fi
 if [ "$field" = "WND" ]; then echo "  FORCING%FIELD%WINDS          = T" >> $nmlfile; fi
 if [ "$field" = "WNS" ]; then echo "  FORCING%FIELD%WIND_AST       = T" >> $nmlfile; fi
+if [ "$field" = "TAU" ]; then echo "  FORCING%FIELD%ATM_MOMENTUM   = T" >> $nmlfile; fi
+if [ "$field" = "RHO" ]; then echo "  FORCING%FIELD%ATM_DENSITY    = T" >> $nmlfile; fi
 if [ "$field" = "ICE" ]; then echo "  FORCING%FIELD%ICE_CONC       = T" >> $nmlfile; fi
 if [ "$field" = "ISI" ]; then echo "  FORCING%FIELD%ICE_BERG       = T" >> $nmlfile; fi
 if [ "$field" = "DAT" ]; then echo "  FORCING%FIELD%DATA_ASSIM     = T" >> $nmlfile; fi

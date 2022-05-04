@@ -7,6 +7,7 @@
 ! Define the forcing fields to preprocess via FORCING_NML namelist
 ! -------------------------------------------------------------------- !
 &FORCING_NML
+  FORCING%FIELD%ATM_MOMENTUM   = T
   FORCING%GRID%LATLON          = T
 /
 
