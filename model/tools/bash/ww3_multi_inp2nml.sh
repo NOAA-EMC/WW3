@@ -43,6 +43,7 @@ declare -A pointfiles
 declare -A trackdates
 declare -A trackflags
 declare -A restartdates
+declare -A restartdates2
 declare -A boundarydates
 declare -A partitiondates
 declare -A partfields
@@ -265,14 +266,20 @@ echo ${restartdate[@]}
 
 if [ "${restartdate[6]}" = 'T' ]
 then
-# restart date2
-echo 'restart date 2'
-il=$(($il+1))
-for i in $(seq 1 5)
-do
-  restartdate2[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
-done
-echo ${restartdate2[@]}
+  # restart date2
+  echo 'restart date 2'
+  il=$(($il+1))
+  for i in $(seq 1 5)
+  do
+    restartdate2[$i]="$(echo ${lines[$il]} | awk -F' ' "{print \$$i}" | cut -d \" -f2  | cut -d \' -f2)"
+  done
+  echo ${restartdate2[@]}
+else
+  for i in $(seq 1 5)
+  do
+    restartdate2[$i]='0'
+  done
+  echo ${restartdate2[@]}
 fi
 
 # boundary date
