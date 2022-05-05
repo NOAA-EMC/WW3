@@ -9,9 +9,7 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
-#                                                      December 2013          #
-#                                                      April 2018             #
-#                                                      March 2020             #
+#                                            Last update:   May 2022          #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -22,31 +20,28 @@
 
 usage ()
 {
-cat 2>&1 << EOF
+  cat 2>&1 << EOF
 
-Usage: $myname model_dir 
-Required:
-  model_dir : path to model dir of WW3 source
+  Usage: $myname model_dir 
+  Required:
+    model_dir : path to model dir of WW3 source
 EOF
 }
 
 
-# 0.e Get required arguments
-if [ ! $# = 0 ]
-then
-  main_dir="$1" ; shift
-else
-  usage
-  exit 1
-fi
+# Get required arguments
+  if [ ! $# = 0 ]
+  then
+    main_dir="$1" ; shift
+  else
+    usage
+    exit 1
+  fi
 
-#convert main_dir to absolute path
-main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
+# Convert main_dir to absolute path
+  main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
-#download 
-
-
-  #Module Versions from HPC-Stack that are common for all platforms 
+# Module Versions from HPC-Stack that are common for all platforms 
   modnetcdf='netcdf/4.7.4'
   modjasper='jasper/2.0.25'
   modzlib='zlib/1.2.11'
