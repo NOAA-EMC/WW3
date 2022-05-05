@@ -104,9 +104,9 @@ fi
 
   if [ "$cmplOption" = 'y' ]
   then
-     export rtst="./bin/run_test -c $cmplr -S"
+     export rtst="./bin/run_test -o both -c $cmplr -S"
   else
-     export rtst="./bin/run_test -S"
+     export rtst="./bin/run_test -o both -S"
   fi
 
   export  ww3='../model'

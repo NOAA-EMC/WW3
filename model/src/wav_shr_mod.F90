@@ -53,8 +53,8 @@ module wav_shr_mod
   ! used by both CESM and UFS
   ! runtype is used by W3SRCE (values are startup, branch, continue)
   character(len=cs)  , public :: runtype                        !< @public the run type (startup,branch,continue)
-  logical            , public :: wav_coupling_to_cice           !< @public flag to specify additional wave export
-                                                                !! fields for coupling to CICE
+  logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
+                                                                !! fields for coupling to CICE (TODO: generalize)
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
   character(len=256) , public :: casename                       !< @public the name pre-prended to an output file
   character(len= 36) , public :: time_origin                    !< @public the time_origin used for netCDF output

@@ -56,7 +56,7 @@ module wav_import_export
   real(r4), allocatable  :: import_mask(:)          !< the mask for valid import data
   real(r8), parameter    :: zero  = 0.0_r8          !< a named constant
 
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
   logical :: cesmcoupled = .true.                   !< logical defining a CESM use case
 #else
   logical :: cesmcoupled = .false.                  !< logical defining a non-CESM use case (UWM)
@@ -273,7 +273,7 @@ contains
     use w3idatmd    , only: tfn, w3seti
     use w3odatmd    , only: w3seto
     use w3wdatmd    , only: time, w3setw
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
     use w3idatmd    , only: HML
 #else
     use wmupdtmd    , only: wmupd2
@@ -330,7 +330,7 @@ contains
 
     def_value = 0.0_r4
 
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     call w3setg ( 1, mdse, mdst )
     call w3seti ( 1, mdse, mdst )
 #endif
@@ -476,7 +476,7 @@ contains
           call FillGlobalInput(global_data, ICEI)
        end if
     end if
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
     ! ---------------
     ! ocean boundary layer depth - always assume that this is being imported for CESM
     ! ---------------
@@ -538,7 +538,7 @@ contains
        end if
     end if
 
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     if (multigrid) then
        do j = lbound(inflags1,1),ubound(inflags1,1)
           if (inflags1(j)) then
@@ -591,7 +591,7 @@ contains
     use w3odatmd      , only : w3seto, naproc, iaproc
     use w3gdatmd      , only : nseal, mapsf, MAPSTA, USSPF, NK, w3setg
     use w3iogomd      , only : CALC_U3STOKES
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
     use w3adatmd      , only : LAMULT
 #else
     use wmmdatmd      , only : mdse, mdst, wmsetm
@@ -645,7 +645,7 @@ contains
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
     call w3setg ( 1, mdse, mdst )
     call w3setw ( 1, mdse, mdst )
     call w3seta ( 1, mdse, mdst )
@@ -754,10 +754,10 @@ contains
     end if
 
     if (wav_coupling_to_cice) then
-       !call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
-       !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       !call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
-       !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
