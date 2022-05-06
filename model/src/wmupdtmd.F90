@@ -1,5 +1,16 @@
+!> @file
+!> @brief Contains module WMUPDTMD.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Update model input at the driver level of the multi-grid
+!>  version of WAVEWATCH III.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
       MODULE WMUPDTMD
 !/
 !/                  +-----------------------------------+
@@ -74,10 +85,20 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !/
-      INTEGER, PARAMETER      :: SWPMAX = 5
+      INTEGER, PARAMETER      :: SWPMAX = 5   !< SWPMAX
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Update inputs for selected wave model grid.
+!>
+!> @details Reading from native grid files if update is needed based
+!>  on time of data.
+!>
+!> @param[in] IMOD Model number
+!> @param[inout] TDATA Time for which all is data available.
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>        
       SUBROUTINE WMUPDT ( IMOD ,TDATA )
 !/
 !/                  +-----------------------------------+
@@ -480,6 +501,17 @@
 !/
       END SUBROUTINE WMUPDT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Update selected input using native input files.
+!>
+!> @details Reading from native grid files.
+!>
+!> @param[in] IMOD Model number.
+!> @param[in] IDSTR ID string corresponding to J.
+!> @param[in] J Input type.
+!> @param[out] IERR Error indicator.
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>      
       SUBROUTINE WMUPD1 ( IMOD, IDSTR, J, IERR )
 !/
 !/                  +-----------------------------------+
@@ -794,10 +826,10 @@
         CASE ( 10 )
 ! notes: 
 ! SUBROUTINE W3FLDM in w3fldsmd.ftn : 
-!<       INTEGER, INTENT(INOUT)  :: NH, THO(2,6,NHM), TF0(2), TFN(2)
-!>       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:6,NHM), TF0(2), TFN(2)
-!<       REAL, INTENT(INOUT)     :: HA(NHM,6), HD(NHM,6), A0, AN, D0, DN
-!>       REAL, INTENT(INOUT)     :: HA(NHM,-7:6), HD(NHM,-7:6), A0, AN, D0, DN
+!       INTEGER, INTENT(INOUT)  :: NH, THO(2,6,NHM), TF0(2), TFN(2)
+!       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:6,NHM), TF0(2), TFN(2)
+!       REAL, INTENT(INOUT)     :: HA(NHM,6), HD(NHM,6), A0, AN, D0, DN
+!       REAL, INTENT(INOUT)     :: HA(NHM,-7:6), HD(NHM,-7:6), A0, AN, D0, DN
 ! Arguments #
 !   THO     8
 !   HA      9
@@ -822,6 +854,18 @@
 !/
       END SUBROUTINE WMUPD1
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Update selected input using input grids.
+!>
+!> @details Managing data, interpolation done in other routines.
+!>
+!> @param[in] IMOD Model number.
+!> @param[in] J Input type.
+!> @param[in] JMOD Model number source grid.
+!> @param[out] IERR Error indicator.
+!>     
+!> @author H. L. Tolman @date 22-Mar-2021
+!>      
       SUBROUTINE WMUPD2 ( IMOD, J, JMOD, IERR )
 !/
 !/                  +-----------------------------------+
@@ -1241,6 +1285,22 @@
 !/
       END SUBROUTINE WMUPD2
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Interpolate vector field from input grid to model grid.
+!>
+!> @details Interpolating or averaging from input grid.
+!>
+!> @param[in] IMOD Output model number
+!> @param[out] VX Output vector field
+!> @param[out] VY Output vector field
+!> @param[in] JMOD Input model number
+!> @param[in] VXI Input vector field
+!> @param[in] VYI Input vector field
+!> @param[in] UNDEF Value for mapped out point and points not covered.
+!> @param[in] CONSTP Convervation type
+!>      
+!> @author H. L. Tolman  @date 06-Dec-2010
+!>      
       SUBROUTINE WMUPDV ( IMOD, VX, VY, JMOD, VXI, VYI, UNDEF, CONSTP )
 !/
 !/                  +-----------------------------------+
@@ -1909,6 +1969,19 @@
 !/
       END SUBROUTINE WMUPDV
 !/ ------------------------------------------------------------------- /
+!>      
+!> @brief Interpolate scalar field from input grid to model grid.
+!>
+!> @details Interpolating or averaging from input grid.
+!>
+!> @param[in] IMOD Output model number
+!> @param[out] FD Output scalar field
+!> @param[in] JMOD Input model number
+!> @param[in] FDI Input scalar field
+!> @param[in] UNDEF Value for mapped out point and points not covered.
+!>       
+!> @author H. L. Tolman  @date 06-Dec-2010
+!>            
       SUBROUTINE WMUPDS ( IMOD, FD, JMOD, FDI, UNDEF )
 !/
 !/                  +-----------------------------------+
@@ -2527,7 +2600,27 @@
 !/
       END SUBROUTINE WMUPDS
 !=======================================================================
-
+!>
+!> @brief Search the location of a point(XC,YC) in a regular grid.
+!>
+!> @details Given an array and a value to search, it returns the index of
+!>  the element on the rectilinear grid that is closest to, but less
+!>  than, the given value. "delta" is the threshold used to determine
+!>  if two values are equal.
+!> @verbatim   
+!>       if ( abs(x1 - x2) <= delta) then
+!>          assume x1 = x2
+!>       endif
+!> @endverbatim      
+!>      
+!> @param LENGTH Dimension of input array 
+!> @param ARRAY 1D array for lats or longs
+!> @param VALUE Value to located in ARRAY
+!> @param DELTA Threshold to determine if two values are equal
+!> @returns XYCURVISEARCH
+!>
+!> @author H. L. Tolman @date 20-Jan-2017
+!>      
       FUNCTION XYCURVISEARCH(LENGTH, ARRAY, VALUE, DELTA)
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2621,7 +2714,31 @@
 
       END FUNCTION XYCURVISEARCH
 !  End of function -------------------------------------------------- /
-     
+!
+      
+!>      
+!> @brief Perform interpolation from regular to curvilinear grid
+!>  for a scalar field.
+!>
+!> @details This function uses bilinear interpolation to 
+!>  estimate the value of a function f at point (x,y). f is assumed 
+!>  to be on a regular grid, with the grid x values specified by 
+!>  xarray with dimension x_len and the grid y values specified by
+!>  yarray with dimension y_len.
+!>
+!> @param X_LEN Dimension in X
+!> @param XARRAY 1D array for Longitudes
+!> @param Y_LEN Dimension in Y
+!> @param YARRAY 1D array for Latitudes
+!> @param FUNC 1D Field
+!> @param X Long for point in the curv grid
+!> @param Y Lat for point in the curv grid
+!> @param DELTA Threshold to determine if two values are equal
+!>      
+!> @returns INTERPOLATE
+!>
+!> @author H. L. Tolman @date 25-Jul-2019
+!>     
       REAL FUNCTION INTERPOLATE(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC, &
                                 X,Y,DELTA)
 !/
@@ -2740,7 +2857,30 @@
       END FUNCTION INTERPOLATE
 
 !========================================================================
-
+!>
+!> @brief Perform interpolation from regular to curvilinear grid for a
+!>  vector field.
+!>
+!> @details This function uses bilinear interpolation to 
+!>  estimate the value of a function f at point (x,y). f is assumed
+!>  to be on a regular grid, with the grid x values specified by 
+!>  xarray with dimension x_len and the grid y values specified by 
+!>  yarray with dimension y_len.
+!>
+!> @param[in] X_LEN Dimension in X
+!> @param[in] XARRAY 1D array for Longitudes
+!> @param[in] Y_LEN Dimension in Y
+!> @param[in] YARRAY 1D array for Latitudes
+!> @param[in] FUNC1 First component of the 2D array
+!> @param[in] FUNC2 Second component of the 2D array
+!> @param[in] X Long for point the curv grid
+!> @param[in] Y Lat for point the curv grid
+!> @param[in] DELTA Threshold to determine if two values are equal
+!> @param[out] VAL1 Interpolated value at a point in curv grid
+!> @param[out] VAL2 Interpolated value at a point in curv grid
+!>       
+!> @author H. L. Tolman  @date 25-Jul-2019
+!>
        SUBROUTINE INTERPOLATE2D(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC1, &
                                 FUNC2,X,Y,DELTA,VAL1,VAL2)
 !/
@@ -2768,7 +2908,7 @@
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       X_LEN     Int.  Dimension in X 
+!       X_LEN     Int.  Dimension in X
 !       XARRAY    Int.  1D array for Longitudes
 !       Y_LEN     Int.  Dimension in Y
 !       YARRAY    Int.  1D array for Latitudes
@@ -2861,7 +3001,28 @@
 !
       END SUBROUTINE INTERPOLATE2D
 !====================================================================
-
+!>
+!> @brief This function uses averaging to estimate the value
+!>  of a function f at point (x,y).
+!>
+!> @details f is assumed to be on a regular grid, with the grid x values specified
+!>  by xarray with dimension x_len 
+!>  and the grid y values specified by yarray with dimension y_len,
+!>  the number of point to be taken into account in x and y.
+!>
+!> @param X_LEN
+!> @param XARRAY
+!> @param Y_LEN
+!> @param YARRAY
+!> @param FUNC
+!> @param X
+!> @param Y
+!> @param NPX
+!> @param NPY
+!> @returns AVERAGING
+!>
+!> @author H. L. Tolman @date 25-Jul-2019
+!>      
       REAL FUNCTION AVERAGING(X_LEN,XARRAY,Y_LEN,YARRAY,FUNC, &
                               X,Y,NPX,NPY)
 !/
