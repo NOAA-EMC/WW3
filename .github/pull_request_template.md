@@ -39,7 +39,6 @@ Please provide a short summary of this PR, which will be used during _Squash and
 * How were these changes tested?
 * Are the changes covered by regression tests? (If not, why? Do new tests need to be added?)
 * Have the matrix regression tests been run (if yes, please note HPC and compiler)?
-* Please provide the summary output of matrix.comp (_matrix.Diff.txt_, _matrixCompFull.txt_ and _matrixCompSummary.txt_):    
-* Please indicate the expected changes in the regression test output ([Note the known list of non-identical tests](https://github.com/NOAA-EMC/WW3/wiki/How-to-use-matrix.comp-to-compare-regtests-with-master#4-look-at-results)).
+* Please indicate the expected changes in the regression test output, (Note the [list](https://github.com/NOAA-EMC/WW3/wiki/How-to-use-matrix.comp-to-compare-regtests-with-develop#4-look-at-results) of known non-identical tests.)
 * Please provide the summary output of matrix.comp (_matrix.Diff.txt_, _matrixCompFull.txt_ and _matrixCompSummary.txt_):
 
