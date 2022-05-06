@@ -754,10 +754,10 @@ contains
     end if
 
     if (wav_coupling_to_cice) then
-       call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       !call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
+       !if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       !call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
+       !if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
