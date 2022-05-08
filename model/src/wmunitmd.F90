@@ -1,5 +1,20 @@
+!> @file
+!> @brief Contains module WMUNITMD.
+!> 
+!> @author H. L. Tolman @date 29-May-2009
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Dynamic assignement of unit numbers for the multi-grid wave
+!>  model.
+!> 
+!> @details Allowed range of unit numbers is set in parameter statements.
+!>
+!> @author H. L. Tolman  @date 29-May-2009
+!>
       MODULE WMUNITMD
 !/
 !/                  +-----------------------------------+
@@ -80,19 +95,33 @@
 !/
 !/ Define acceptable ranges of unit numbers
 !/
-      INTEGER, PARAMETER, PRIVATE   :: UNITLW =  1, UNITHG = 120
-      INTEGER, PARAMETER, PRIVATE   :: INPLOW = 10, INPHGH =  49
-      INTEGER, PARAMETER, PRIVATE   :: OUTLOW = 50, OUTHGH =  98
-      INTEGER, PARAMETER, PRIVATE   :: SCRLOW = 99, SCRHGH = 100
-!
-      LOGICAL, PRIVATE              :: FLINIT = .FALSE.
-      LOGICAL, PRIVATE, ALLOCATABLE :: U_USED(:)
-      CHARACTER(LEN= 3), PRIVATE, ALLOCATABLE :: U_TYPE(:)
-      CHARACTER(LEN=30), PRIVATE, ALLOCATABLE :: U_NAME(:)
-      CHARACTER(LEN=30), PRIVATE, ALLOCATABLE :: U_DESC(:)
+      INTEGER, PARAMETER, PRIVATE   :: UNITLW =   1          !< UNITLW
+      INTEGER, PARAMETER, PRIVATE   :: UNITHG = 120          !< UNITHG
+      INTEGER, PARAMETER, PRIVATE   :: INPLOW =  10          !< INPLOW
+      INTEGER, PARAMETER, PRIVATE   :: INPHGH =  49          !< INPHGH
+      INTEGER, PARAMETER, PRIVATE   :: OUTLOW =  50          !< OUTLOW
+      INTEGER, PARAMETER, PRIVATE   :: OUTHGH =  98          !< OUTHGH
+      INTEGER, PARAMETER, PRIVATE   :: SCRLOW =  99          !< SCRLOW
+      INTEGER, PARAMETER, PRIVATE   :: SCRHGH = 100          !< SCRHGH
+      !
+      LOGICAL,            PRIVATE   :: FLINIT = .FALSE.      !< FLINIT
+      
+      LOGICAL,            PRIVATE, ALLOCATABLE :: U_USED(:)  !< U_USED
+      CHARACTER(LEN= 3),  PRIVATE, ALLOCATABLE :: U_TYPE(:)  !< U_TYPE
+      CHARACTER(LEN=30),  PRIVATE, ALLOCATABLE :: U_NAME(:)  !< U_NAME
+      CHARACTER(LEN=30),  PRIVATE, ALLOCATABLE :: U_DESC(:)  !< U_DESC
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Allocate and initialize arrays of module.
+!> 
+!> @details Allocate and test parameter setting.
+!>        
+!> @param[in] NDSE Unit number for error output.
+!> @param[in] NDST Unit number for test output.
+!> @author H. L. Tolman @date 25-Mar-2005
+!>        
       SUBROUTINE WMUINI ( NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -297,6 +326,15 @@
 !/
       END SUBROUTINE WMUINI
 !/ ------------------------------------------------------------------- /
+!>      
+!> @brief Display assigned unit number information from private data base.
+!> 
+!> @param[in] NDS Unit number for output.
+!> @param[in] IREQ Request identifier.
+!>      
+!> @author H. L. Tolman @date 25-Mar-2005
+!>      
+      
       SUBROUTINE WMUDMP ( NDS, IREQ )
 !/
 !/                  +-----------------------------------+
@@ -442,6 +480,19 @@
 !/
       END SUBROUTINE WMUDMP
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Directly set information for a unit number in the data structure.
+!>
+!> @param[in] NDSE Unit number for error output.
+!> @param[in] NDST Unit number for test output.
+!> @param[in] NDS Unit number to be assigned.
+!> @param[in] FLAG Flag for assigning unit.
+!> @param[in] TYPE Type identifier to be used.
+!> @param[in] NAME Name of file.
+!> @param[in] DESC Description of file.
+!>
+!> @author H. L. Tolman @date 25-Mar-2005
+!>    
       SUBROUTINE WMUSET ( NDSE, NDST, NDS, FLAG, TYPE, NAME, DESC )
 !/
 !/                  +-----------------------------------+
@@ -598,6 +649,20 @@
 !/
       END SUBROUTINE WMUSET
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Find a free unit number for a given file type.
+!> 
+!> @details Search the data base.
+!>      
+!> @param[in] NDSE Unit number for error output.
+!> @param[in] NDST Unit number for test output.
+!> @param[out] NDS Unit number to be assigned.
+!> @param[in] TYPE Type identifier to be used.
+!> @param[in] NR Number of consecutive units needed for output
+!>               bounday data files.
+!>
+!> @author H. L. Tolman @date 20-Jan-2017
+!>
       SUBROUTINE WMUGET ( NDSE, NDST, NDS, TYPE, NR )
 !/
 !/                  +-----------------------------------+
@@ -759,6 +824,17 @@
 !/
       END SUBROUTINE WMUGET
 !/ ------------------------------------------------------------------- /
+!>      
+!> @brief Update data base information for a given unit number.
+!>
+!> @details FORTRAN INQUIRE statement.
+!>
+!> @param[in] NDSE Unit number for error output.
+!> @param[in] NDST Unit number for test output.
+!> @param[in] NDS  Unit number to be assigned.
+!>
+!> @author H. L. Tolman  @date 29-Mar-2005
+!>      
       SUBROUTINE WMUINQ ( NDSE, NDST, NDS )
 !/
 !/                  +-----------------------------------+
