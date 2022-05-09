@@ -1,5 +1,17 @@
+!> @file
+!> @brief Contains module WMIOPOMD.
+!> 
+!> @author H. L. Tolman @date 06-Jun-2012
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Module for generating a single point output file for a multi-
+!>  grid model implementation.
+!>
+!> @author H. L. Tolman @date 06-Jun-2012
+!>
       MODULE WMIOPOMD
 !/
 !/                  +-----------------------------------+
@@ -82,6 +94,18 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialization for unified point output.
+!>
+!> @details Find highest resolution grid for each point. 
+!>
+!> @param[in] NPT Number of output points in input.
+!> @param[in] XPT (longitude) coordinates of output points.
+!> @param[in] YPT (latitude) coordinates of output points.
+!> @param[in] PNAMES Names of output points.
+!>
+!> @author H. L. Tolman  @date 01-Sep-2012
+!>        
       SUBROUTINE WMIOPP ( NPT, XPT, YPT, PNAMES )
 !/
 !/                  +-----------------------------------+
@@ -109,7 +133,7 @@
 !
 !  2. Method :
 !
-!     Find highest resolution grid for each point.
+!     Find highest resolution grid for each point. 
 !
 !  3. Parameters :
 !
@@ -601,6 +625,17 @@
 !/
       END SUBROUTINE WMIOPP
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Gather and write unified point output.
+!>
+!> @details Per-grid point output is already gathered. All data are
+!>  gathered in the proper storage, and written using the standard
+!>  W3IOPO routint from grid number 0.
+!>
+!> @param[in] TOUT Time for output file.
+!>
+!> @author H. L. Tolman  @date 16-Mar-2012
+!>      
       SUBROUTINE WMIOPO ( TOUT )
 !/
 !/                  +-----------------------------------+
