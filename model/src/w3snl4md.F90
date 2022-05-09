@@ -395,7 +395,7 @@
 #endif
 !!
         open (UNIT=io_unit, FILE=grdfname, STATUS='old',              &
-              ACCESS='sequential', ACTION='read', form='unformatted', convert='big_endian')
+              ACCESS='sequential', ACTION='read', form='unformatted', convert=file_endian)
         read (io_unit)  kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
                         wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
                         tfac2_tbl, tfac4_tbl, grad_tbl,               &
