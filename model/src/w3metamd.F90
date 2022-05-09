@@ -1,4 +1,4 @@
-!> @file w3metamd.F90
+!> @file
 !> @brief Dynamic storage for meta data attribute/value pairs.
 !> @author Chris Bunney @date 16-Dec-2020
 !/ ------------------------------------------------------------------- /
