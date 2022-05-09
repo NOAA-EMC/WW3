@@ -272,7 +272,7 @@
 #endif
 !/
       USE W3SERVMD, ONLY: EXTCDE
-      USE CONSTANTS, only: LPDLIB
+      USE CONSTANTS, only: LPDLIB, file_endian
       USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
       USE W3GDATMD, ONLY: NK, NTH
 #ifdef W3_TIMINGS
@@ -472,10 +472,10 @@
 
       IF ( WRITE ) THEN
           IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
-          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert='big_endian',       &
+          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
                 ACCESS='STREAM',ERR=800,IOSTAT=IERR)
         ELSE
-          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert='big_endian',       &
+          OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
                 ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
                 STATUS='OLD',ACTION='READ')
         END IF

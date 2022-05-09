@@ -486,7 +486,7 @@
                     ERR=800,IOSTAT=IERR)
             ELSE
               OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
-                    form='UNFORMATTED', convert='big_endian',ERR=800,IOSTAT=IERR)
+                    form='UNFORMATTED',convert=file_endian,ERR=800,IOSTAT=IERR)
             END IF
 !
           REWIND (NDSPT)

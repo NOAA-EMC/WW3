@@ -472,7 +472,7 @@
                   WRITE (NDSO,1943) TFNAME, 'UNFORMATTED'
                   J      = LEN_TRIM(FNMPRE)
                   OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                         IOSTAT=IERR,form='UNFORMATTED', convert='big_endian')
+                         IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
                   WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',             &
                                   NK, NTH, NREQ, GNAME
                   WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
@@ -574,7 +574,7 @@
                   WRITE (NDSO,3943) TFNAME, 'UNFORMATTED'
                   J      = LEN_TRIM(FNMPRE)
                   OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                         IOSTAT=IERR,form='UNFORMATTED', convert='big_endian')
+                         IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
                   WRITE (NDSTAB) 'WAVEWATCH III SOURCES',             &
                                   NK, NTH, NREQ, FLSRCE
                   WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)

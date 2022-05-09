@@ -520,7 +520,7 @@
 #endif
         write( ndso,902 )
         open (UNIT=io_unit, FILE=grdfname, STATUS='new',              &
-             ACCESS='sequential', ACTION='write', form='unformatted', convert='big_endian')
+             ACCESS='sequential', ACTION='write', form='unformatted', convert=file_endian)
         write (io_unit) kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
                         wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
                         tfac2_tbl, tfac4_tbl, grad_tbl,               &

@@ -29,6 +29,18 @@ foreach(switch ${switches})
   target_compile_definitions(ww3_lib PUBLIC W3_${switch})
 endforeach()
 
+if(ENDIAN STREQUAL "BIG")
+  set(endianness "big_endian")
+elseif(ENDIAN STREQUAL "LITTLE")
+  set(endianness "little_endian")
+elseif(ENDIAN STREQUAL "NATIVE")
+  set(endianness "native")
+else()
+  message(FATAL_ERROR "Unknown option specified by ENDIAN: ${ENDIAN}")
+endif()
+
+add_compile_definitions(W3_ENDIANNESS=${endianness})
+
 target_include_directories(ww3_lib
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/mod>
   $<INSTALL_INTERFACE:mod>)

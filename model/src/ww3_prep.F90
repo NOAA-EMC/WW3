@@ -774,10 +774,10 @@
                         IF (FROMLL.EQ.'NAME') THEN
                             JJ     = LEN_TRIM(FNMPRE)
                             OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                                  form='UNFORMATTED', convert='big_endian',STATUS='OLD',    &
+                                  form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
                                   ERR=845,IOSTAT=IERR)
                           ELSE
-                            OPEN (NDSLL, form='UNFORMATTED', convert='big_endian',          &
+                            OPEN (NDSLL, form='UNFORMATTED', convert=file_endian,          &
                                   STATUS='OLD',ERR=845,IOSTAT=IERR)
                           END IF
                       ELSE
@@ -837,10 +837,10 @@
                         IF (FROMLL.EQ.'NAME') THEN
                             JJ     = LEN_TRIM(FNMPRE)
                             OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                                  form='UNFORMATTED', convert='big_endian',STATUS='OLD',    &
+                                  form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
                                   ERR=846,IOSTAT=IERR)
                           ELSE
-                            OPEN (NDSLL,form='UNFORMATTED', convert='big_endian',           &
+                            OPEN (NDSLL,form='UNFORMATTED', convert=file_endian,           &
                                   STATUS='OLD',ERR=846,IOSTAT=IERR)
                           END IF
                       ELSE
@@ -958,10 +958,10 @@
                 IF (FROMF.EQ.'NAME') THEN
                     JJ     = LEN_TRIM(FNMPRE)
                     OPEN (NDSF(J),FILE=FNMPRE(:JJ)//NAMEF,            &
-                          form='UNFORMATTED', convert='big_endian',STATUS='OLD',ERR=850,    &
+                          form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=850,    &
                           IOSTAT=IERR)
                   ELSE
-                    OPEN (NDSF(J),form='UNFORMATTED', convert='big_endian',                 &
+                    OPEN (NDSF(J),form='UNFORMATTED', convert=file_endian,                 &
                           STATUS='OLD',ERR=850,IOSTAT=IERR)
                   END IF
 !

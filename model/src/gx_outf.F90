@@ -387,7 +387,7 @@
       MSOUT  = .NOT. MSOUT
       MBOUT  = .NOT. MBOUT
 !
-      OPEN (NDSDAT,FILE=FNMPRE(:JLEN)//'ww3.grads',form='UNFORMATTED', convert='big_endian', &
+      OPEN (NDSDAT,FILE=FNMPRE(:JLEN)//'ww3.grads',form='UNFORMATTED', convert=file_endian, &
             ERR=811,IOSTAT=IERR)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

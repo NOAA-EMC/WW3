@@ -22,6 +22,7 @@ endif()
 
 set(MULTI_ESMF OFF CACHE BOOL "Build ww3_multi_esmf library")
 set(NETCDF ON CACHE BOOL "Build NetCDF programs (requires NetCDF)")
+set(ENDIAN "BIG" CACHE STRING "Endianness of unformatted output files. Valid values are 'BIG', 'LITTLE', 'NATIVE'.") 
 
 # Make Find modules visible to CMake
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

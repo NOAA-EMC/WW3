@@ -336,7 +336,7 @@
 ! 4. Tests the reading of the file
 !
       IF ( INXOUT.EQ.'READ') THEN 
-        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert='big_endian',status='old')
+        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='old')
         READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
         NSPEC1  = NK1 * NTH1
         IF ( IDTST .NE. IDSTRBC ) GOTO 803
@@ -424,14 +424,14 @@
 !
 #endif
 !
-        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert='big_endian',status='unknown')
+        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='unknown')
         ALLOCATE(DIMID(NBO2,3),DIMLN(NBO2,3),NCID(NBO2))
 
         ALLOCATE(LATS(NBO2),LONS(NBO2),STATION(16,NBO2))
 
         DO IP=1,NBO2
           ! open file
-          OPEN(NDSC,FILE=TRIM(SPECFILES(IP)),form='UNFORMATTED', convert='big_endian',      &
+          OPEN(NDSC,FILE=TRIM(SPECFILES(IP)),form='UNFORMATTED', convert=file_endian,      &
                status='old',iostat=ICODE)
           IF (ICODE.NE.0) THEN 
             LONS(IP)=-999.
