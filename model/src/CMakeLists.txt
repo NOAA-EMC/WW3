@@ -39,7 +39,7 @@ else()
   message(FATAL_ERROR "Unknown option specified by ENDIAN: ${ENDIAN}")
 endif()
 
-add_compile_definitions(W3_ENDIANNESS=${endianness})
+add_compile_definitions(ENDIANNESS='${endianness}')
 
 target_include_directories(ww3_lib
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/mod>

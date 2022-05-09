@@ -86,8 +86,8 @@
 !
       REAL                    :: UNDEF = -999.9
 
-      ! Filled in by the pre-processor
-      character(*), parameter :: FILE_ENDIAN = 'W3_ENDIANNESS'
+      ! Filled in by the pre-processor with 'big_endian', 'little_endian', or 'native'
+      character(*), parameter :: FILE_ENDIAN = ENDIANNESS
 !
 ! Parameters for friction factor table 
 !
