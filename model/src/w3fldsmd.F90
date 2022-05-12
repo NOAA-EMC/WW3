@@ -359,13 +359,13 @@
 #ifdef W3_DEBUGFLS
        WRITE(740+IAPROC,*) '1 : W3FLDSMD FNAME=', FNAME(:I)
 #endif
-              OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,convert='big_endian',ERR=803,       &
+              OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,convert=file_endian,ERR=803,       &
                     IOSTAT=IERR)
           ELSE
 #ifdef W3_DEBUGFLS
        WRITE(740+IAPROC,*) '2 : W3FLDSMD FNAME=', FNAME(:I)
 #endif
-              OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert='big_endian',ERR=803,IOSTAT=IERR)
+              OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian,ERR=803,IOSTAT=IERR)
             END IF
         ELSE
           IF ( PRESENT(FPRE) ) THEN

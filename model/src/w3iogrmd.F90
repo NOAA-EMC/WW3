@@ -551,10 +551,10 @@
 !AR: ADD DEBUGFLAG      WRITE(*,*) 'FILE=', FNMPRE(:J)//'mod_def.'//FILEXT(:I)
       IF ( WRITE ) THEN
           OPEN (NDSM,FILE=FNMPRE(:J)//'mod_def.'//FILEXT(:I),         &
-                form='UNFORMATTED', convert='big_endian',ERR=800,IOSTAT=IERR)
+                form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
         ELSE
           OPEN (NDSM,FILE=FNMPRE(:J)//'mod_def.'//FILEXT(:I),         &
-                form='UNFORMATTED', convert='big_endian',STATUS='OLD',ERR=800,IOSTAT=IERR)
+                form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=800,IOSTAT=IERR)
         ENDIF
 !
       REWIND ( NDSM )
