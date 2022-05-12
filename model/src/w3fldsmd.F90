@@ -203,6 +203,7 @@
 #ifdef W3_DEBUGFLS
       USE W3ODATMD, only : IAPROC
 #endif
+      use constants, only: file_endian
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
