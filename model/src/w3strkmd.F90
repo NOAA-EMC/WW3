@@ -572,7 +572,7 @@
                ELSE
 !                Input file in unformatted binary
                  WRITE(6,*) 'Reading binary formatted file...'
-                 OPEN(unit=11,file=filename,form='UNFORMATTED', &
+                 OPEN(unit=11,file=filename,form='UNFORMATTED', convert=file_endian, &
                       status='OLD')
                ENDIF
                REWIND(11)
