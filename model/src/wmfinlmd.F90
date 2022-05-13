@@ -1,5 +1,16 @@
+!> @file
+!> @brief Contains module WMFINLMD.
+!> 
+!> @author H. L. Tolman @date 04-Feb-2014
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Finalization of the multi-grid wave model.
+!> 
+!> @author H. L. Tolman @date 04-Feb-2014
+!>
       MODULE WMFINLMD
 !/
 !/                  +-----------------------------------+
@@ -55,6 +66,11 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize multi-grid version of WAVEWATCH III.
+!>
+!> @author H. L. Tolman  @date 28-Jan-2014
+!>        
       SUBROUTINE WMFINL
 !/
 !/                  +-----------------------------------+

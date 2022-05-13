@@ -62,16 +62,17 @@
       INTEGER, ALLOCATABLE :: JX_TO_JSEA(:), ISEA_TO_JSEA(:)
 #endif
 
-      REAL, ALLOCATABLE    :: AC_tot(:,:)
       INTEGER, ALLOCATABLE :: ListISPnextDir(:), ListISPprevDir(:)
       INTEGER, ALLOCATABLE :: ListISPnextFreq(:), ListISPprevFreq(:)
-      INTEGER, PARAMETER   :: IMEM = 2 
+
+      LOGICAL, PARAMETER   :: LSLOC = .true. 
+      INTEGER, PARAMETER   :: IMEM = 1 
 
       REAL,  PARAMETER     :: ONESIXTH  = 1.0d0/6.0d0
       REAL,  PARAMETER     :: ONETHIRD  = 1.0d0/3.0d0
       REAL,  PARAMETER     :: ZERO      = 0.0d0
 
-      REAL,  PARAMETER     :: THR8      = TINY(1.0)
+      REAL*8,  PARAMETER     :: THR8      = TINY(1.d0)
       REAL,  PARAMETER     :: THR       = TINY(1.0)
 !!/S      CALL STRACE (IENT, 'W3XXXX')
       CONTAINS
@@ -449,7 +450,7 @@
       USE CONSTANTS, ONLY : LPDLIB
       USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
                           EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-                          CTMAX, DMIN, DTH, CTHG0S, MAPSF
+                          CTMAX, DMIN, DTH, CTHG0S, MAPSF, SIG
       USE W3ADATMD, ONLY: CG, WN, DCXDX, DCXDY, DCYDX, DCYDY, DDDX,   &
                           DDDY, DW
       USE W3IDATMD, ONLY: FLCUR
@@ -473,20 +474,16 @@
       REAL :: FRK(NK), FRG(NK), DSDD(0:NK+1)
       REAL :: FACTH, DCXY, DCYX, DCXXYY, DTTST
       REAL :: eDCXDX, eDCXDY, eDCYDX, eDCYDY, eDDDX, eDDDY, eCTHG0
-      REAL :: VCFLT(NSPEC), DEPTH, FDG
+      REAL :: VCFLT(NSPEC), DEPTH, FDG, CG1(0:NK+1), WN1(0:NK+1)
       REAL :: FDDMAX, CFLTHMAX, VELNOFILT, CTMAX_eff
 #ifdef W3_S
       CALL STRACE (IENT, 'PROP_REFRACTION_PR3')
 #endif
-      IX=MAPSF(ISEA,1)
-      IY=MAPSF(ISEA,2)
-      IF (LPDLIB) THEN
-        eDDDX=DDDX(1,IP)
-        eDDDY=DDDY(1,IP)
-      ELSE
-        eDDDX=DDDX(IY,IX)
-        eDDDY=DDDY(IY,IX)
-      ENDIF
+
+      IX = MAPSF(ISEA,1)
+      IY = MAPSF(ISEA,2)
+      eDDDX=DDDX(1,IP)
+      eDDDY=DDDY(1,IP)
       eCTHG0 = CTHG0S(ISEA)
       FACTH  = 1.0 / DTH
       !
@@ -504,17 +501,10 @@
         FRG(IK) = FDG * CG(IK,ISEA)
       END DO
       IF (FLCUR) THEN
-        IF (LPDLIB) THEN
-          eDCXDX = DCXDX(1,IP)
-          eDCXDY = DCXDY(1,IP)
-          eDCYDX = DCYDX(1,IP)
-          eDCYDY = DCYDY(1,IP)
-        ELSE
-          eDCXDX = DCXDX(IY,IX)
-          eDCXDY = DCXDY(IY,IX)
-          eDCYDX = DCYDX(IY,IX)
-          eDCYDY = DCYDY(IY,IX)
-        ENDIF
+        eDCXDX = DCXDX(1,IP)
+        eDCXDY = DCXDY(1,IP)
+        eDCYDX = DCYDX(1,IP)
+        eDCYDY = DCYDY(1,IP)
         DCYX   = FACTH *   eDCYDX
         DCXXYY = FACTH * ( eDCXDX - eDCYDY )
         DCXY   = FACTH *   eDCXDY
@@ -542,7 +532,7 @@
 ! the filtering limits VCFLT to be less than CTMAX 
 ! this modification was proposed by F. Ardhuin 2011/03/06
 !
-        IF (DoLimiter .eqv. .TRUE.) THEN
+        IF (DoLimiter) THEN
           VCFLT(ISP)=SIGN(MIN(ABS(VELNOFILT),CTMAX_eff),VELNOFILT)
         ELSE
           VCFLT(ISP)=VELNOFILT
@@ -1122,7 +1112,6 @@
        IF (GTYPE .eq. UNGTYPE) THEN
          NSEALout  = PDLIB_NSEAL
          NSEALMout = PDLIB_NSEALM
-         WRITE(*,*) 'PDLIB_NSEAL=', PDLIB_NSEAL, ' PDLIB_NSEALM=', PDLIB_NSEALM
        ELSE
          IF ( IAPROC .LE. NAPROC ) THEN
            NSEALout  = 1 + (NSEA-IAPROC)/NAPROC
@@ -1345,7 +1334,7 @@
             JSEA=-1
           ELSE
             IBELONG=1
-            JSEA=JX_TO_JSEA(JX)
+            JSEA = JX_TO_JSEA(JX)
           END IF
         ELSE
           IBELONG=0
