@@ -1,0 +1,6 @@
+&UNST UGOBCAUTO = T EXPFSN = T /
+&UOST
+UOSTFILELOCAL = '../input/obstructions_local.glo_unst.in',
+UOSTFILESHADOW = '../input/obstructions_shadow.glo_unst.in',
+UOSTFACTORLOCAL = .9, UOSTFACTORSHADOW = .9 /
+END OF NAMELISTS

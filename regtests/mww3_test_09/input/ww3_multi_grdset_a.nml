@@ -2,18 +2,12 @@
 ! WAVEWATCH III ww3_multi.nml - multi-grid model                       !
 ! -------------------------------------------------------------------- !
 
+
 ! -------------------------------------------------------------------- !
 ! Define top-level model parameters via DOMAIN_NML namelist
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%NRGRD  =  3
-  DOMAIN%NRINP  =  0
-  DOMAIN%UNIPTS =  F
-  DOMAIN%IOSTYP =  1
-  DOMAIN%UPPROC =  F
-  DOMAIN%PSHARE =  F
-  DOMAIN%FLGHG1 =  F
-  DOMAIN%FLGHG2 =  F
+  DOMAIN%NRGRD	= 3
   DOMAIN%START  = '20160809 000000'
   DOMAIN%STOP   = '20160809 060000'
 /
@@ -29,11 +23,13 @@
 ! -------------------------------------------------------------------- !
 &MODEL_GRID_NML
   MODEL(1)%NAME                  = 'Michi'
-  MODEL(1)%RESOURCE              = 1 1 0.00 0.30 F
+  MODEL(1)%RESOURCE%COMM_FRAC    = 0.00,0.30
   MODEL(2)%NAME                  = 'Huron'
-  MODEL(2)%RESOURCE              = 1 1 0.30 0.65 F
+  MODEL(2)%RESOURCE%RANK_ID      = 1
+  MODEL(2)%RESOURCE%COMM_FRAC    = 0.30,0.65
   MODEL(3)%NAME                  = 'Super'
-  MODEL(3)%RESOURCE              = 1 1 0.65 1.00 F
+  MODEL(3)%RESOURCE%RANK_ID      = 1
+  MODEL(3)%RESOURCE%COMM_FRAC    = 0.65,1.00
 /
 
 ! -------------------------------------------------------------------- !
@@ -41,9 +37,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   ALLTYPE%FIELD%LIST       = 'HS FP DP'
-  ITYPE(1)%POINT%FILE      = '../input/points_michi.list'
-  ITYPE(2)%POINT%FILE      = '../input/points_huron.list'
-  ITYPE(3)%POINT%FILE      = '../input/points_super.list'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
 /
 
 ! -------------------------------------------------------------------- !
@@ -51,9 +45,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
   ALLDATE%FIELD          = '20160809 000000' '3600' '20160809 060000'
-  IDATE(1)%POINT         = '20160809 000000' '900' '20160809 060000'
-  IDATE(2)%POINT         = '20160809 000000' '900' '20160809 060000'
-  IDATE(3)%POINT         = '20160809 000000' '900' '20160809 060000'
+  ALLDATE%POINT          = '20160809 000000' '900' '20160810 000000'
 /
 
 ! -------------------------------------------------------------------- !
