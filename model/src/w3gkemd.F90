@@ -1222,6 +1222,8 @@ module w3gkemd
 !    finite-deep cases.
 !
 !/
+      USE CONSTANTS, ONLY: file_endian
+
         implicit none
 !
         integer, intent(in)          :: nk             ! # of frequencies
