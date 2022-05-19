@@ -361,7 +361,7 @@
 #ifdef W3_DEBUGFLS
           WRITE(740+IAPROC,*) '1 : W3FLDSMD FNAME=', FNAME(:I)
 #endif
-          OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM, convert=file_endiani, &
+          OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM, convert=file_endian, &
                 ERR=803, IOSTAT=IERR)
         ELSE
 #ifdef W3_DEBUGFLS
