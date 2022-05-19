@@ -1,0 +1,73 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.10
+  SPECTRUM%FREQ1     =  0.035
+  SPECTRUM%NK        =  36
+  SPECTRUM%NTH       =  36
+  SPECTRUM%THOFF     =  0.5
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+  RUN%FLCK         =  T
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  3600.
+  TIMESTEPS%DTXY         =  1800.
+  TIMESTEPS%DTKTH        =  1800.
+  TIMESTEPS%DTMIN        =  30.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'GFSv16-wave Global 1/6 deg exchange grid'
+  GRID%NML          =  '../input/namelists_glox_10m.nml'
+  GRID%TYPE         =  'RECT'
+  GRID%COORD        =  'SPHE'
+  GRID%CLOS         =  'SMPL'
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  2.50
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  2160
+  RECT%NY           =  1081
+  RECT%SX           =  1.
+  RECT%SY           =  1.
+  RECT%SF           =  6.
+  RECT%Y0           =  -90.
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  -1000.
+  DEPTH%FILENAME  =  '../input/glox_10m.depth'
+  DEPTH%IDLA      =  2
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

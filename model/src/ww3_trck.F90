@@ -1,5 +1,17 @@
+!> @file
+!> @brief Contains program W3TRCK for converting track output.
+!>
+!> @author H. L. Tolman @date 05-Mar-2014
+!
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!> @brief Convert direct access track output file to free-format
+!>  readable sequential file.
+!>
+!> @details Info read from track_o.ww3, written to track.ww3.
+!>
+!> @author H. L. Tolman @date 05-Mar-2014
       PROGRAM W3TRCK
 !/
 !/                  +-----------------------------------+

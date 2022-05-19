@@ -65,7 +65,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   echo ' '                                                  >> matrix.head
   echo '#PBS -q mpi_1'                                      >> matrix.head
   echo "#PBS -l select=1:ncpus=28:mpiprocs=$nr:ompthreads=$nth:mem=20G"  >> matrix.head
-  echo '#PBS -l walltime=08:00:00'                          >> matrix.head
+  echo '#PBS -l walltime=12:00:00'                          >> matrix.head
   echo "#PBS -N $(basename $(dirname $(dirname $PWD)))"     >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
