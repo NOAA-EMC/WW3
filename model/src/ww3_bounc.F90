@@ -1,5 +1,24 @@
+!> @file
+!> @brief Contains the boundary condition program, W3BOUNC.
+!>
+!> @author F Ardhuin
+!> @author M Accensi
+!> @date 21-Jul-2020
+!
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Combines spectra files into a nest.\ ww3 file for boundary conditions
+!>
+!> @details Finds nearest points and performs linear interpolation.
+!>  The initial conditions are written to the restart.ww3 using the
+!>  subroutine W3IORS. Note that the name of the restart file is set
+!>  in W3IORS.
+!>
+!> @author F Ardhuin
+!> @author M Accensi
+!> @date 21-Jul-2020
+!
       PROGRAM W3BOUNC
 !/
 !/                  +-----------------------------------+
@@ -828,7 +847,11 @@
 
 
 !==============================================================================
-
+!> @brief Check input return status for error value
+!>
+!> @param IRET return status to check
+!>
+!> @author NA @date NA
       SUBROUTINE CHECK_ERR(IRET)
 
       USE NETCDF

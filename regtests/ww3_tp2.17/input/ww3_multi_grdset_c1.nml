@@ -1,0 +1,62 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_multi.nml - multi-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%UPPROC = T
+  DOMAIN%PSHARE = T
+  DOMAIN%FLGHG1 = T
+  DOMAIN%FLGHG2 = T
+  DOMAIN%START  = '20151214 020000'
+  DOMAIN%STOP   = '20151214 040000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each input grid via the INPUT_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_GRID_NML
+/
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the MODEL_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&MODEL_GRID_NML
+  MODEL(1)%NAME                  = 'inlc'
+  MODEL(1)%FORCING%WATER_LEVELS  = 'native'
+  MODEL(1)%FORCING%CURRENTS      = 'native'
+  MODEL(1)%FORCING%WINDS         = 'native'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  ALLTYPE%FIELD%LIST       = 'WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  ALLDATE%FIELD          = '20151214 020000' '3600' '20151214 040000'
+  ALLDATE%POINT          = '20141214 020000' '3600' '20141214 040000'
+  ALLDATE%RESTART        = '20151214 020000' '3600' '20151214 040000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+/
+
+&HOMOG_INPUT_NML
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

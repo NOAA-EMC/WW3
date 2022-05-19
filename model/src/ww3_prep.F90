@@ -1,5 +1,19 @@
+!> @file
+!> @brief Contains program W3PREP for pre-processing of inputs.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Preprocessing of input data.
+!>
+!> @details Pre-processing of the input water level, current, wind, ice
+!>  fields, momentum and air density, as well as assimilation data
+!>  for the generic shell W3SHEL (ww3_shel.ftn).
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
       PROGRAM W3PREP
 !/
 !/                  +-----------------------------------+

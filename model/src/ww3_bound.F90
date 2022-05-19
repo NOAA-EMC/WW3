@@ -1,5 +1,17 @@
+!> @file
+!> @brief Contains program W3BOUND for boundary conditions.
+!>
+!> @author F. Ardhuin @date 21-Jul-2020
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Combines spectra files into a nest.\ ww3 file for boundary conditions.
+!>
+!> @details Finds nearest points and performs linear interpolation.
+!>  The initial conditions are written to the restart.ww3 using the
+!>  subroutine W3IORS. Note that the name of the restart file is set
+!>  in W3IORS.
+!> @author F. Ardhuin @date 21-Jul-2020
       PROGRAM W3BOUND
 !/
 !/                  +-----------------------------------+

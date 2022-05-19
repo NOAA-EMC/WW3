@@ -1,5 +1,18 @@
+!> @file
+!> @brief Contains generic shell for WAVEWATCH III, W3SHEL.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!> @brief A generic shell for WAVEWATCH III, using preformatted
+!>  input fields.
+!>
+!> @details Driver for the actual wave model (W3WAVE).
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
        PROGRAM W3SHEL
 !/
 !/                  +-----------------------------------+

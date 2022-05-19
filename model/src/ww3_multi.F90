@@ -1,5 +1,16 @@
+!> @file
+!> @brief Contains driver program for multi-grid, W3MLTI.
+!>
+!> @author H. L. Tolman @date 29-May-2009
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!
+!
+!> @brief Program shell or driver to run the multi-grid wave model
+!>  (uncoupled).
+!>
+!> @author H. L. Tolman @date 29-May-2009
       PROGRAM W3MLTI
 !/
 !/                  +-----------------------------------+
