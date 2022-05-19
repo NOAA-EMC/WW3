@@ -1,0 +1,56 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_shel.nml - single-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%IOSTYP  = 2
+  DOMAIN%START   = '20010101 000000'
+  DOMAIN%STOP    = '20010101 060000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each forcing via the INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_NML
+  INPUT%FORCING%WINDS         = 'H'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  TYPE%FIELD%LIST          = 'HS WND DIR'
+  TYPE%POINT%FILE          = '../input_std/points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  DATE%FIELD          = '20010101 000000' '3600' '20010101 060000'
+  DATE%POINT          = '20010101 000000' '3600' '20010101 060000'
+  DATE%BOUNDARY       = '20010101 000000' '3600' '20010101 060000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+  HOMOG_COUNT%N_WND                =  1
+/
+
+&HOMOG_INPUT_NML
+  HOMOG_INPUT(1)%NAME        = 'WND'
+  HOMOG_INPUT(1)%DATE        = '20010101 000000'
+  HOMOG_INPUT(1)%VALUE1      = 10.
+  HOMOG_INPUT(1)%VALUE2      = 180.
+  HOMOG_INPUT(1)%VALUE3      = 0.0
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
