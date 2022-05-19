@@ -1,5 +1,20 @@
+!> @file w3partmd.F90
+!> @brief Spectral partitioning module
+!>
+!> @authors Barbara Tracy, H. L. Tolman, M. Szyszka, Chris Bunney
+!> @date 23 Jul 2018
+!>
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Spectral partitioning according to the watershed method
+!>
+!> @details Multiple partitioning methods are provided in this
+!>  module that can be selected via the \c PTMETH namelist variable.
+!>  Please see the w3part() subroutine for details
+!>
+!> @author Barbara Tracey, H. L. Tolman, M. Szyszka, Chris Bunney
+!> @date 23 Jul 2018
+!>
       MODULE W3PARTMD
 !/
 !/                  +-----------------------------------+
@@ -69,11 +84,57 @@
 !
       PUBLIC
 !
-      INTEGER, PRIVATE              :: MK = -1, MTH = -1
+      !> Nearest neighbour array frequency dimension size
+      INTEGER, PRIVATE              :: MK = -1
+      !> Nearest neighbour array direction dimension size
+      INTEGER, PRIVATE              :: MTH = -1
+      !> Nearest neighbour array
       INTEGER, ALLOCATABLE, PRIVATE :: NEIGH(:,:)
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!> @brief Interface to watershed partitioning routines.
+!>
+!> @details Watershed Algorithm of Vincent and Soille, 1991,
+!>  implemented by Barbara Tracy (USACE/ERDC) for NOAA/NCEP.
+!>
+!>  This version of W3PART contains alternate Met Office partitioning
+!>  methods, selected at runtime using the \c PTMETH namlist variable:
+!>    -# Standard WW3 partitioning, as per original method described
+!>       by Barbary Tracy.
+!>    -# Met Office extended partitioning using split-partitions
+!>       (removes the wind sea part of any swell partiton and combines
+!>       with total wind sea partition).
+!>    -# Met Office "wave systems" - no classification or combining of
+!>       wind sea partitions. All partitions output and ordered simply
+!>       by wave height.
+!>    -# Classic, simple wave age based partitioning generating
+!>       a single wind sea and swell partition.
+!>    -# 2-band partitioning; produces hi and low freqency band partitions
+!>       using a user-defined cutoff frequency (\c PTFCUT).
+!>
+!> @remarks
+!>    - \c DIMXP will always be of size 2 when using \c PTMETH 4 or 5.
+!>
+!>    - To achieve minimum storage but guaranteed storage of all
+!>      partitions <tt>DIMXP = ((NK+1)/2) * ((NTH-1)/2)</tt>
+!>      unless specified otherwise below.
+!>
+!> @param[in]    SPEC    2-D spectrum E(f,theta)
+!> @param[in]    UABS    Wind speed
+!> @param[in]    UDIR    Wind direction
+!> @param[in]    DEPTH   Water depth
+!> @param[in]    WN      Wavenumebers for each frequency
+!> @param[out]   NP      Number of partitions found
+!>                       (-1=Spectrum without minumum energy; 
+!>                       0=Spectrum with minumum energy but no partitions)
+!> @param[out]   XP      Parameters describing partitions.
+!>                       Entry '0' contains entire spectrum
+!> @param[in]    DIMXP   Second dimension of XP
+!>
+!> @author Barbara Tracey, H. L. Tolman, M. Szyszka, Chris Bunney
+!> @date 23 Jul 2018
+!>
       SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, DIMXP )
 !/
 !/                  +-----------------------------------+
@@ -436,6 +497,18 @@
 !/
       END SUBROUTINE W3PART
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Sorts the image data in ascending order.
+!>
+!> @details This sort original to F. T. Tracy (2006)
+!>
+!> @param[in]   IMI     Input discretized spectrum
+!> @param[out]  IND     Sorted data
+!> @param[in]   IHMAX   Number of integer levels
+!>
+!> @author Barbara Tracy
+!> @date 19 Oct 2006
+!>
       SUBROUTINE PTSORT ( IMI, IND, IHMAX )
 !/
 !/                  +-----------------------------------+
@@ -540,6 +613,21 @@
 !/
       END SUBROUTINE PTSORT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Nearest neighbour calculation
+!>
+!> @details
+!>  Computes the nearest neighbors for each grid point. Wrapping of
+!>  directional distribution (0 to 360) is taken care of using the
+!>  nearest neighbor system
+!>
+!> @param[in]   IMI     Input discretized spectrum
+!> @param[out]  IMD     Sorted data
+!> @param[in]   IHMAX   Number of integer levels
+!>
+!> @author Barbara Tracy
+!> @date 20 Oct 2006
+!>
       SUBROUTINE PTNGHB 
 !/
 !/                  +-----------------------------------+
@@ -736,6 +824,22 @@
 !/
       END SUBROUTINE PTNGHB
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Image watersheding
+!>
+!> @details
+!>  This subroutine does incremental flooding of the image to
+!>  determine the watershed image.
+!>
+!> @param[in]   IMI     Input discretized spectrum
+!> @param[in]   IND     Sorted addresses
+!> @param[out]  IMO     Output partitioned spectrum
+!> @param[in]   ZP      Spectral array
+!> @param[out]  NPART   Number of partitions found
+!>
+!> @author H.L. Tolman
+!> @date 01 Nov 2006
+!>
       SUBROUTINE PT_FLD ( IMI, IND, IMO, ZP, NPART )
 !/
 !/                  +-----------------------------------+
@@ -994,10 +1098,14 @@
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!> @brief Add point to FIFO queue
+!>
+!> @param[in]  IV  Point to add
+!>
+!> @author Barbara Tracy
+!> @date 01 Nov 2006
       SUBROUTINE FIFO_ADD ( IV )
-!
-!     Add point to FIFO queue.
-!
+
       INTEGER, INTENT(IN)      :: IV
 !
       IQ(IQ_END) = IV
@@ -1008,10 +1116,15 @@
       RETURN
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
+!> @brief Check if queue is empty.
+!>
+!> @param[out]  IEMPTY  Set to 1 if queue is empty, else 0
+!>
+!> @author Barbara Tracy
+!> @date 01 Nov 2006
+!>
       SUBROUTINE FIFO_EMPTY ( IEMPTY )
-!
-!     Check if queue is empty.
-!
+
       INTEGER, INTENT(OUT)     :: IEMPTY
 !
       IF ( IQ_START .NE. IQ_END ) THEN
@@ -1023,10 +1136,15 @@
       RETURN
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
+!> @brief Get point out of queue.
+!>
+!> @param[out]  IV  Returned point
+!>
+!> @author Barbara Tracy
+!> @date 01 Nov 2006
+!>
       SUBROUTINE FIFO_FIRST ( IV )
-!
-!     Get point out of queue.
-!
+
       INTEGER, INTENT(OUT)     :: IV
 !
       IV = IQ(IQ_START)
@@ -1041,6 +1159,23 @@
 !/
       END SUBROUTINE PT_FLD
 !/ ------------------------------------------------------------------- /
+!> @brief Compute mean parameters per partition
+!>
+!> @param[in]    NPI     Number of partitions found.
+!> @param[in]    IMO     Partition map.
+!> @param[in]    ZP      Input spectrum.
+!> @param[in]    DEPTH   Water depth.
+!> @param[in]    UABS    Wind speed.
+!> @param[in]    UDIR    Wind direction.
+!> @param[in]    WN      Wavenumebers for each frequency.
+!> @param[out]   NPO     Number of partitions with mean parameters.
+!> @param[out]   XP      Array with output parameters.
+!> @param[in]    DIMXP   Second dimension of XP.
+!> @param[out]   PMAP    Mapping between orig. and combined partitions
+!>
+!> @author Barbara Tracy, H. L. Tolman, M. Szyszka, C. Bunney
+!> @date 02 Dec 2010
+!>
       SUBROUTINE PTMEAN ( NPI, IMO, ZP, DEPTH, UABS, UDIR, WN,        &
                           NPO, XP, DIMXP, PMAP )
 !/

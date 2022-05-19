@@ -15,8 +15,6 @@
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
-#                                                      December 2013          #
-#                                                      April 2018             #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -26,16 +24,31 @@
 # --------------------------------------------------------------------------- #
 # 0. Environment file
 
-  source $(dirname $0)/../../model/bin/w3_setenv
-  main_dir=$WWATCH3_DIR
-  temp_dir=$WWATCH3_TMP
-  source=$WWATCH3_SOURCE
-  list=$WWATCH3_LIST
 
-  echo "Main directory    : $main_dir"
-  echo "Scratch directory : $temp_dir"
-  echo "Save source codes : $source"
-  echo "Save listings     : $list"
+usage ()
+{
+  cat 2>&1 << EOF
+
+  Usage: $myname model_dir 
+  Required:
+    model_dir : path to model dir of WW3 source
+EOF
+}
+
+
+# Get required arguments
+  if [ ! $# = 0 ]
+  then
+    main_dir="$1" ; shift
+  else
+    usage
+    exit 1
+  fi
+
+# Convert main_dir to absolute path
+  main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
+
+
 
   # Set Cray compiler variant: CCE (Cray Compiler Environment) or GNU.
   #  - ukmo_cray[_debug]       : Cray Fortan (Cray Compiler Environment)
@@ -43,7 +56,6 @@
   #  - ukmo_cray_intel[_dubug] : Ifort using cray wrapper
   # Note: currently, Cray Fortran fails with some PDLIB regrests
   cmplr="ukmo_cray_gnu"
-  export cmplOption='y'
 
 # 1. Set up for compilation environemnt on Cray XC (broadwell processors)
   echo '#!/bin/bash'                                         > matrix.head
@@ -107,12 +119,7 @@ fi
   export   nr='4'
   export  nth='4'
 
-  if [ "$cmplOption" = 'y' ]
-  then
-     export rtst="./bin/run_cmake_test -o both -c $cmplr -S"
-  else
-     export rtst="./bin/run_cmake_test -o both -S"
-  fi
+  export rtst="./bin/run_cmake_test -o both -S"
 
   export  ww3='../model'
 
@@ -168,6 +175,8 @@ fi
 # --------------------------------------------------------------------------- #
              
   $main_dir/../regtests/bin/matrix.base
+
+  $main_dir/../regtests/bin/matrix_divider_cmake.sh
 
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #

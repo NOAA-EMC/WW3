@@ -1,14 +1,14 @@
 #!/bin/bash
 # --------------------------------------------------------------------------- #
 #                                                                             #
-# Script for running WW-III tests.                                            #
+# Script for running WW3 tests.                                               #
 #                                                                             #
-#                    Last update :         21-May-2020                        #
+#                    Last update :         21-Apr-2023                        #
 # --------------------------------------------------------------------------- #
 #    Modification history
 #    27-Jan-2014 : Adapts ww3_ounf section for multigrid            ( version 4.18 )
 #    04-May-2020 : F. Ardhuin added step 3.b2 for CDL input files   ( version 7.12 ) 
-#    20-April-2021 : A. Abdolali added ww3_grib bulid and execution ( version 7.12 )
+#    20-Apr-2021 : A. Abdolali added ww3_grib bulid and execution   ( version 7.12 )
 #    21-May-2021 : C. Bunney add support for ALPS job placement     ( version 7.12 )
 #
 # Limitations:
@@ -43,7 +43,7 @@ errmsg ()
 
 # 1.b Usage function
 myname="`basename $0`"  #name of script
-optstr="a:b:c:C:defg:Ghi:m:n:No:Op:q:r:s:t:STw:"  #option string for getopt function
+optstr="b:C:dfg:hi:m:n:No:Op:q:r:s:t:STw:" #option string for getopt function
 usage ()
 {
 
@@ -54,21 +54,15 @@ Required:
   source_dir : path to top-level of WW3 source
   test_name  : name of test case (directory)
 Options:
-  -a ww3_env       : use WW3 environment setup file <ww3_env>
-                   :   *default is <source_dir>/bin/wwatch3.env
-                   :   *file will be created if it does not already exist
   -b batchq        : optional setting to determine batch queue type (slurm or alps)
-  -c cmplr         : setup comp & link files for specified cmplr
   -C coupl         : invoke test using <coupl> coupled application
                    :   OASIS : OASIS3-mct ww3_shel coupled application
                    :   ESMF  : ESMF ww3_multi coupled application
   -d               : invoke main program using gdb (non-parallel)
-  -e               : prompt for changes to existing WW3 environment
   -f               : force pre- and post-processing programs to be compiled
                    : non-MPI (i.e., with SHRD switch); default is all programs
                    : compiled with unmodified switch settings
   -g grid_string   : use ww3_grid_<grid_string>.inp
-  -G               : create GrADS data files using gx_outX.inp
   -h               : print usage and exit
   -i inpdir        : use inputs in test_name/<inpdir> (default  test_name/input)
   -m grid_set      : execute multi-model test
@@ -137,24 +131,20 @@ multi=0
 dist=0
 inpdir=input
 outopt=native
-grads=0
 coupl=none
 batchq=none
 while :
 do
   case "$1" in
-  -a) shift; ww3_env="$1" ;;
   -b) shift; batchq="$1" ;;
-  -c) shift; cmplr="$1" ;;
   -C) shift; coupl="$1" ;;
   -d) use_gdb=1 ;;
   -e) prompt=1 ;;
   -f) force_shrd=1 ;;
   -g) shift; grdstr="$1" ;;
-  -G) grads=1 ;;
   -h) help=1 ;;
   -i) shift; inpdir="$1" ;;
-   -m) shift; grdset="$1" ;
+  -m) shift; grdset="$1" ;
       if [ $grdset = none ]
       then
         multi=1
@@ -376,10 +366,20 @@ then
   exit 0
 fi
 
+if [ $time_count ]
+then # Add time counter if -T
+  echo " REGTESTS Time counter: run_test $ARGS" >> time_count.txt
+  Tstart=`date +"%s.%2N"`
+fi
+
+# --------------------------------------------------------------------------- #
+# Build all executables 
+# --------------------------------------------------------------------------- #
+
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
   ww3_dir=${path_s}/..
-  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr $ww3_dir
+  if $path_i/prep_env.sh $path_i $path_w $swtstr $ww3_dir
   then :
   else
     errmsg "Error occured during WW3 $prog build"
@@ -387,10 +387,6 @@ then
   fi
   export OASISDIR=$path_w/work_oasis3-mct
 fi
-
-# --------------------------------------------------------------------------- #
-# Build all executables 
-# --------------------------------------------------------------------------- #
 
 cd $path_s
 cd ../ 
@@ -404,12 +400,13 @@ ofile=$path_w/build.log
 echo "   Building WW3, exes will be in $path_e"
 
 echo "Exe directory is $path_e" > $ofile 
+path_build_root=${path_build_root:-$path_w/build}
 if [ $force_shrd ]
 then 
 
   # build pre- & post-processing programs with SHRD only
   echo "Forcing a SHRD build" >> $ofile
-  path_build=$path_w/build_SHRD
+  path_build=${path_build_root}_SHRD
   mkdir -p $path_build
   cd $path_build
   if [[ "$outopt" = "all" ]] || [[ "$outopt" = "grib" ]] ; 
@@ -449,42 +446,44 @@ then
   fi
 
   cp $path_build/install/bin/* $path_e/ 
-
-  echo "non-SHRD build" >> $ofile
-  #build without SHRD 
-  path_build=$path_w/build
-  mkdir -p $path_build
-  cd $path_build
-  \cp -f $file_c $path_build/switch
-  echo "Switch file is $path_build/switch with switches:" >> $ofile 
-  cat $path_build/switch >> $ofile  
-  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1
-  rc=$?
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in cmake."
-    echo "The build log is in $ofile"
-    exit
-  fi
-  make -j 8 > $ofile 2>&1 
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in make."
-    echo "The build log is in $ofile"
-    exit
-  fi
-  make install > $ofile 2>&1 
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in make install."
-    echo "The build log is in $ofile"
-    exit
-  fi
-  path_e=$path_w/exe
-  cp $path_build/install/bin/ww3_shel $path_e/
-  cp $path_build/install/bin/ww3_multi $path_e/
-  cp $path_build/install/bin/ww3_systrk $path_e/
-  cp $path_build/install/bin/ww3_prtide $path_e/
-
+  
+  if [ $pomp ] || [ $nproc ] 
+  then 
+    echo "non-SHRD build" >> $ofile
+    #build without SHRD 
+    path_build=${path_build_root} 
+    mkdir -p $path_build
+    cd $path_build
+    \cp -f $file_c $path_build/switch
+    echo "Switch file is $path_build/switch with switches:" >> $ofile 
+    cat $path_build/switch >> $ofile  
+    cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1
+    rc=$?
+    if [[ $rc -ne 0 ]] ; then
+      echo "Fatal error in cmake."
+      echo "The build log is in $ofile"
+      exit
+    fi
+    make -j 8 > $ofile 2>&1 
+    if [[ $rc -ne 0 ]] ; then
+      echo "Fatal error in make."
+      echo "The build log is in $ofile"
+      exit
+    fi
+    make install > $ofile 2>&1 
+    if [[ $rc -ne 0 ]] ; then
+      echo "Fatal error in make install."
+      echo "The build log is in $ofile"
+      exit
+    fi
+    path_e=$path_w/exe
+    cp $path_build/install/bin/ww3_shel $path_e/
+    cp $path_build/install/bin/ww3_multi $path_e/
+    cp $path_build/install/bin/ww3_systrk $path_e/
+    cp $path_build/install/bin/ww3_prtide $path_e/
+  fi 
 else
-  path_build=$path_w/build
+  path_build=${path_build_root}
   mkdir -p $path_build
   cd $path_build
   if [[ "$outopt" = "all" ]] || [[ "$outopt" = "grib" ]] ; 
@@ -519,6 +518,14 @@ else
 
 fi
 echo "   Build log is in $ofile"
+
+if [ $time_count ]
+then # Add time counter if -T
+  Tend=`date +"%s.%2N"`
+  Maketime=`echo "$Tend - $Tstart" | bc`
+  cumult_comp=`echo "$Maketime + $cumult_comp" | bc`
+  printf "\n %8.2f sec compile time" $Maketime  >> time_count.txt
+fi
  
 # --------------------------------------------------------------------------- #
 # 3. Execute Test                                                             #
@@ -534,11 +541,6 @@ then
     \rm -f *.inp *.out *.txt $ncfiles finished
     \ls *.ww3  2>/dev/null | grep -v 'restart.ww3' | grep -v 'nest.ww3' | grep -v 'wind.ww3' | grep -v 'ice.ww3' | grep -v 'ice1.ww3' | xargs \rm 2>/dev/null
   fi
-fi
-
-if [ $time_count ]
-then # Add time counter if -T
-  echo " REGTESTS Time counter: run_test $ARGS" >> time_count.txt
 fi
 
 # 3.b Header
@@ -654,7 +656,7 @@ then
       Tend=`date +"%s.%2N"`
       Maketime=`echo "$Tend - $Tstart" | bc`
       cumult_run=`echo "$Maketime + $cumult_run" | bc`
-      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
     fi
 
   done
@@ -752,7 +754,7 @@ then
         Tend=`date +"%s.%2N"`
         Maketime=`echo "$Tend - $Tstart" | bc`
         cumult_run=`echo "$Maketime + $cumult_run" | bc`
-        printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+        printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
       fi
   
     done
@@ -851,7 +853,7 @@ then
         Tend=`date +"%s.%2N"`
         Maketime=`echo "$Tend - $Tstart" | bc`
         cumult_run=`echo "$Maketime + $cumult_run" | bc`
-        printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+        printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
       fi
   
     done
@@ -950,7 +952,7 @@ then
         Tend=`date +"%s.%2N"`
         Maketime=`echo "$Tend - $Tstart" | bc`
         cumult_run=`echo "$Maketime + $cumult_run" | bc`
-        printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+        printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
       fi
   
     done
@@ -1054,7 +1056,7 @@ then
           Tend=`date +"%s.%2N"`
           Maketime=`echo "$Tend - $Tstart" | bc`
           cumult_run=`echo "$Maketime + $cumult_run" | bc`
-          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+          printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
         fi
 
       done
@@ -1111,7 +1113,14 @@ then
         else
            inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
         fi
-        inputs_tmp=`( ls ${path_i}/${prog}${gu}* )`
+
+        if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+          then
+          inputs_tmp=`( ls ${path_i}/${prog}${gu}*nml)`
+         else
+          inputs_tmp=`( ls ${path_i}/${prog}${gu}*inp)`
+        fi
+
         if [ ! -z "$inputs_tmp" ];then
            inputs=$inputs_tmp
         fi
@@ -1172,7 +1181,7 @@ then
           Tend=`date +"%s.%2N"`
           Maketime=`echo "$Tend - $Tstart" | bc`
           cumult_run=`echo "$Maketime + $cumult_run" | bc`
-          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+          printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
         fi
 
       done
@@ -1294,7 +1303,7 @@ then
           Tend=`date +"%s.%2N"`
           Maketime=`echo "$Tend - $Tstart" | bc`
           cumult_run=`echo "$Maketime + $cumult_run" | bc`
-          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+          printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
         fi
 
       done
@@ -1393,10 +1402,6 @@ then
   
     if [ $multi -ge 1 ] && [ $coupl = "ESMF" ]
     then
-      if [ $cmplr ]
-      then
-        export WW3_COMP=$cmplr
-      fi
       if make -C $path_s/esmf $prgb
       then :
       else
@@ -1525,7 +1530,7 @@ then
       Tend=`date +"%s.%2N"`
       Maketime=`echo "$Tend - $Tstart" | bc`
       cumult_run=`echo "$Maketime + $cumult_run" | bc`
-      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
     fi
   fi
 fi
@@ -1607,7 +1612,7 @@ then
       Tend=`date +"%s.%2N"`
       Maketime=`echo "$Tend - $Tstart" | bc`
       cumult_run=`echo "$Maketime + $cumult_run" | bc`
-      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
     fi
 
   fi
@@ -1629,17 +1634,6 @@ case $outopt in
   all)    out_progs="ww3_outf ww3_ounf ww3_grib" ;;
   *)      out_progs="" ;;
 esac
-
-if [ "$grads" = '1' ]
-then
-  out_progs="$out_progs gx_outf"
-  if [ `ls $path_i | grep '.gs' | wc -l` -gt '0' ]
-  then
-    cp $path_i/*.gs .
-    cp $path_a/cbarn.gs .
-    cp $path_a/colorset.gs .
-  fi
-fi
 
 for prog in $out_progs
 do
@@ -1854,7 +1848,7 @@ do
             Tend=`date +"%s.%2N"`
             Maketime=`echo "$Tend - $Tstart" | bc`
             cumult_run=`echo "$Maketime + $cumult_run" | bc`
-            printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+            printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
           fi
 
        
@@ -1884,19 +1878,6 @@ case $outopt in
   all)   out_progs="ww3_outp ww3_ounp" ;;
   *)      out_progs="" ;;
 esac
-
-if [ "$grads" = '1' ]
-then
-  out_progs="$out_progs gx_outp"
-  if [ `ls $path_i | grep 'gx_outp' | wc -l` -gt '0' ]
-  then
-    cp $path_a/cbarn.gs .
-    cp $path_a/colorset.gs .
-    cp $path_a/source.gs .
-    cp $path_a/1source.gs .
-    cp $path_a/spec.gs .
-  fi
-fi
 
 for prog in $out_progs
 do
@@ -2001,7 +1982,7 @@ do
             Tend=`date +"%s.%2N"`
             Maketime=`echo "$Tend - $Tstart" | bc`
             cumult_run=`echo "$Maketime + $cumult_run" | bc`
-            printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+            printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
           fi
 
         done
@@ -2144,7 +2125,7 @@ do
           Tend=`date +"%s.%2N"`
           Maketime=`echo "$Tend - $Tstart" | bc`
           cumult_run=`echo "$Maketime + $cumult_run" | bc`
-          printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+          printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
         fi
       done
 
@@ -2228,35 +2209,8 @@ then
       Tend=`date +"%s.%2N"`
       Maketime=`echo "$Tend - $Tstart" | bc`
       cumult_run=`echo "$Maketime + $cumult_run" | bc`
-      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
     fi
-#  if [ $time_count ]
-#  then # Add time counter if -T
-#    Tstart=`date +"%s.%2N"`
-#  fi
-#
-#  if $path_e/$prog > $ofile
-#  then
-#    \rm -f $prog.inp
-#    for g in $intgl_grids
-#    do
-#      if [ -f "out_grd.$g" ]
-#      then
-#        model_grids="$model_grids $g"
-#      fi
-#    done
-#  else
-#    errmsg "Error occured during $path_e/$prog execution"
-#    exit 1
-#  fi
-#
-#   if [ $time_count ]
-#   then # Add time counter if -T
-#     Tend=`date +"%s.%2N"`
-#     Maketime=`echo "$Tend - $Tstart" | bc`
-#     cumult_run=`echo "$Maketime + $cumult_run" | bc`
-#     printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
-#   fi
 
   fi
 
@@ -2344,7 +2298,7 @@ then
        Tend=`date +"%s.%2N"`
       Maketime=`echo "$Tend - $Tstart" | bc`
       cumult_run=`echo "$Maketime + $cumult_run" | bc`
-      printf "\n %8.2f sec run time \n" $Maketime >> time_count.txt
+      printf "\n $prog \n %8.2f sec run time \n" $Maketime >> time_count.txt
     fi
   
   fi

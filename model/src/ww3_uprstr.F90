@@ -1,5 +1,24 @@
+!> @file
+!> @brief Contains the program W3UPRSTR.
+!>
+!> @author Stelios Flampouris @date 16-Feb-2017
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Update restart files based on Hs from DA.
+!>
+!> @details Update the WAVEWATCH III restart files based on the significant 
+!>  wave height analysis from any data assimilation system.
+!>
+!>  The W3UPRSTR is the intermediator between the background WW3
+!>  and the analysis of the wave field, it modifies the original restart 
+!>  file according to the analysis.
+!>  For the wave modeling and DA, the ww3_uprstr program applies the 
+!>  operator from the diagnostic to the prognostic variable.
+!>
+!> @author Stelios Flampouris @date 16-Feb-2017
+!>
    PROGRAM W3UPRSTR
 !/
 !/                  +-----------------------------------+
@@ -1182,7 +1201,15 @@
    CONTAINS
 !/
 !/ ------------------------------------------------------------------- /
-!/
+!>
+!> @brief Apply correction to the spectrum.
+!>
+!> @details The factor is (swh_anal/swh_bkg)**2 as applying to wave energy.
+!>
+!> @param[in] PRCNTG
+!> @param[inout] VATMP     
+!> @author Stelios Flampouris  @date 16-Oct-2018
+!>
    SUBROUTINE UPDATE_VA (PRCNTG, VATMP)
 !/
 !/                  +-----------------------------------+
@@ -1238,6 +1265,15 @@
 !/
 !/ ---------------------------------------------------------------------
 !/
+!>   
+!> @brief Last sanity check before the update of the spectrum.
+!>
+!> @details The percentage of change is compared against a user defined cap.
+!>
+!> @param[inout] PRCNTG
+!> @param[inout] PRCNTG_CAP
+!> @author Stelios Flampouris  @date 16-Oct-2018
+!>
    SUBROUTINE CHECK_PRCNTG (PRCNTG,PRCNTG_CAP) 
 !/
 !/                  +-----------------------------------+
@@ -1256,7 +1292,7 @@
 !/    No unauthorized use without permission.
 !/
 !  1. Purpose :
-!     Last sanity check before the update of the spectrum 
+!     Last sanity check before the update of the spectrum  
 !  2. Method :
 !     The percentage of change is compared against a user defined cap.
 !  3. Parameters :
@@ -1322,6 +1358,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
+!> @brief Read gribtxt files.
+!>
+!> @param[inout] UPDPRCNT
+!> @param[inout] FLNMCOR
+!> @param[inout] SMCGRD   
+!> @author Stelios Flampouris @date 16-Oct-2018
+!>   
       SUBROUTINE READ_GRBTXT(UPDPRCNT,FLNMCOR,SMCGRD)
 !/
 !/                  +-----------------------------------+
@@ -1434,6 +1477,17 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
+!>      
+!> @brief Read txt files that include wind data.
+!>
+!> @param[out] UPDPRCNT
+!> @param[out] WSPD
+!> @param[out] WDIR
+!> @param[in] FLNMCOR
+!> @param[in] SMCGRD
+!>      
+!> @author Andy Saulter @date 24-Oct-2018
+!>
       SUBROUTINE READ_GRBTXTWS(UPDPRCNT,WSPD,WDIR,FLNMCOR,SMCGRD)
 !/
 !/                  +-----------------------------------+
@@ -1555,7 +1609,14 @@
       END SUBROUTINE READ_GRBTXTWS
 !/
 !/ ------------------------------------------------------------------- /
-!/ 
+!/
+!> @brief Calculate the significant wave height from the restart file for 1 point.
+!>
+!> @param[in] VA1p
+!> @param[in] ISEA1p
+!> @param[out] HSIG1p 
+!> @author Stelios Flampouris  @date 15-May-2017
+!>
       SUBROUTINE SWH_RSRT_1p (VA1p, ISEA1p, HSIG1p )  
 !/
 !/                  +-----------------------------------+
@@ -1632,7 +1693,23 @@
       END SUBROUTINE SWH_RSRT_1p
 !/
 !/ ------------------------------------------------------------------- /
-!/ 
+!/
+!> @brief Calculate Hs from restart for 1 point.
+!>
+!> @details Calculate the significant wave height for total, wind sea and
+!>  swell components from the restart file for 1 point
+!>
+!> @param[in] VA1p 
+!> @param[in] WS
+!> @param[in] WD
+!> @param[in] ISEA1p
+!> @param[out] HSIG1p
+!> @param[out] HSIGwp
+!> @param[out] HSIGsp
+!> @param[out] VAMAPWS
+!>      
+!> @author Andy Saulter  @date 05-0ct-2019
+!>
       SUBROUTINE SWH_RSRT_1pw (VA1p, WS, WD, ISEA1p, HSIG1p, HSIGwp, HSIGsp, VAMAPWS )  
 !/
 !/                  +-----------------------------------+
@@ -1735,7 +1812,18 @@
       END SUBROUTINE SWH_RSRT_1pw
 !/
 !/ ------------------------------------------------------------------- /
-!/ 
+!/
+!> @brief Calculate speed and cartesian convention directions from u,v
+!>  input vectors.
+!>
+!> @param[in] UVEC
+!> @param[in] VVEC
+!> @param[out] SPD
+!> @param[out] DCART
+!> @param[in] SMCGRD     
+!>      
+!> @author Andy Saulter  @date 05-Oct-2019
+!>
       SUBROUTINE UVTOCART (UVEC, VVEC, SPD, DCART, SMCGRD)  
 !/
 !/                  +-----------------------------------+
@@ -1818,7 +1906,16 @@
       END SUBROUTINE UVTOCART
 !/
 !/ ------------------------------------------------------------------- /
-!/ 
+!/
+!> @brief Updates the wind-sea part of the wave spectrum only. 
+!>
+!> @param[inout] VATMP
+!> @param[in] PRCNTG
+!> @param[in] VAMAPWS
+!>      
+!> @author Andy Saulter  @date 05-Oct-2019
+!>
+!>      
       SUBROUTINE UPDTWSPEC(VATMP, PRCNTG, VAMAPWS)  
 !/
 !/                  +-----------------------------------+
@@ -1887,7 +1984,18 @@
       END SUBROUTINE UPDTWSPEC
 !/
 !/ ------------------------------------------------------------------- /
-!/ 
+!/
+!> @brief Updates the wind-sea part of the wave spectrum and shifts 
+!>  in frequency space.
+!>
+!> @param[inout] VATMP
+!> @param[in] PRCNTG
+!> @param[in] VAMAPWS
+!> @param[in] ISEA1p
+!> @param[in] ADJALL
+!>      
+!> @author Andy Saulter @date 05-Oct-2019
+!>      
       SUBROUTINE UPDTWSPECF(VATMP, PRCNTG, VAMAPWS, ISEA1p, ADJALL)  
 !/
 !/                  +-----------------------------------+
@@ -2038,6 +2146,13 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
+!> @brief Writes a 2D array to text file, column by column.
+!>
+!> @param[inout] FILENAME Path to the output file.
+!> @param[inout] RDA_A 2D array to write.
+!>      
+!> @author Stelios Flampouris  @date 15-Mar-2017
+!>      
       SUBROUTINE WRITEMATRIX(FILENAME, RDA_A)
 !/
 !/                  +-----------------------------------+
