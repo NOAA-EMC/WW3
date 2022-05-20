@@ -69,6 +69,11 @@
       REAL, PARAMETER :: G1PI1I = 1. / ( GRAV * TPI ) !> Inverse of gravity * 2 * Pi
 !
       REAL            :: UNDEF = -999.9 !> Value for undefined variable in output
+
+      ! Filled in by the pre-processor with 'big_endian', 'little_endian', or
+      ! 'native'
+      CHARACTER(*), PARAMETER :: FILE_ENDIAN = ENDIANNESS
+
 !
 ! Parameters for friction factor table
 !
@@ -83,7 +88,7 @@
       INTEGER, PARAMETER :: DEBUG_NODE = 1014 !> Node number used for debugging 
       INTEGER, PARAMETER :: DEBUG_ELEMENT = 50 !> Element number used for debug
       LOGICAL            :: LPDLIB = .FALSE. !> LDLIB is a logical for using the PDLIB library 
-      LOGICAL            :: LSETUP           !> This logical LSETUP is not used  
+      LOGICAL            :: LSETUP = .FALSE. !> This logical LSETUP is not used  
 !
 ! Parameters in support of running as ESMF component
 !

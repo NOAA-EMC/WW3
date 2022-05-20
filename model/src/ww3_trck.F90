@@ -1,5 +1,17 @@
+!> @file
+!> @brief Contains program W3TRCK for converting track output.
+!>
+!> @author H. L. Tolman @date 05-Mar-2014
+!
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!> @brief Convert direct access track output file to free-format
+!>  readable sequential file.
+!>
+!> @details Info read from track_o.ww3, written to track.ww3.
+!>
+!> @author H. L. Tolman @date 05-Mar-2014
       PROGRAM W3TRCK
 !/
 !/                  +-----------------------------------+
@@ -71,6 +83,7 @@
       USE W3TIMEMD, ONLY : STME21
 !
       USE W3ODATMD, ONLY: NDSO, NDSE, NDST
+      use constants, only: file_endian
 !
       IMPLICIT NONE
 !/
@@ -145,7 +158,7 @@
 !
       WRITE (NDSO,920)
 !
-      OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',FORM='UNFORMATTED', &
+      OPEN (NDSINP,FILE=FNMPRE(:J)//'track_o.ww3',form='UNFORMATTED', convert=file_endian, &
             STATUS='OLD',ERR=800,IOSTAT=IERR)
       READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
 !

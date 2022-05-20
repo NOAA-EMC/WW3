@@ -13,14 +13,20 @@ project(
 
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
-  # Unset flags that come from UFS because they (-r8/-r4) conflict
-  # with Ww3
+  # Unset flags that come from Parent (ie UFS or other coupled build) 
+  # for potential (-r8/-r4) conflict
   set(CMAKE_Fortran_FLAGS "")
   set(CMAKE_C_FLAGS "")
+  remove_definitions(-DDEBUG)
 endif()
 
 set(MULTI_ESMF OFF CACHE BOOL "Build ww3_multi_esmf library")
 set(NETCDF ON CACHE BOOL "Build NetCDF programs (requires NetCDF)")
+set(ENDIAN "BIG" CACHE STRING "Endianness of unformatted output files. Valid values are 'BIG', 'LITTLE', 'NATIVE'.") 
+set(EXCLUDE_FIND "" CACHE STRING "Don't try and search for these libraries (assumd to be handled by the compiler/wrapper)")
+
+# make sure all "exclude_find" entries are lower case
+list(TRANSFORM EXCLUDE_FIND TOLOWER)
 
 # Make Find modules visible to CMake
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

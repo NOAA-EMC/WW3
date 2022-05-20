@@ -203,6 +203,8 @@
 #ifdef W3_DEBUGFLS
       USE W3ODATMD, only : IAPROC
 #endif
+      USE CONSTANTS, ONLY: file_endian
+
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -349,44 +351,45 @@
 ! Open file ---------------------------------------------------------- *
 !
 #ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) 'W3FLDSMD 1 : WRITE=', WRITE
+      WRITE(740+IAPROC,*) 'W3FLDSMD 1 : WRITE=', WRITE
 #endif
       IF ( WRITE ) THEN
 #ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) 'W3FLDSMD 2 : WRITE=', WRITE
+        WRITE(740+IAPROC,*) 'W3FLDSMD 2 : WRITE=', WRITE
 #endif
-          IF ( PRESENT(FPRE) ) THEN
+        IF ( PRESENT(FPRE) ) THEN
 #ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) '1 : W3FLDSMD FNAME=', FNAME(:I)
+          WRITE(740+IAPROC,*) '1 : W3FLDSMD FNAME=', FNAME(:I)
 #endif
-              OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,ERR=803,       &
-                    IOSTAT=IERR)
-          ELSE
-#ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) '2 : W3FLDSMD FNAME=', FNAME(:I)
-#endif
-              OPEN (NDS,FILE=FNAME(:I),FORM=FORM,ERR=803,IOSTAT=IERR)
-            END IF
+          OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM, convert=file_endian, &
+                ERR=803, IOSTAT=IERR)
         ELSE
-          IF ( PRESENT(FPRE) ) THEN
 #ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) '3 : W3FLDSMD FNAME=', FNAME(:I)
+          WRITE(740+IAPROC,*) '2 : W3FLDSMD FNAME=', FNAME(:I)
 #endif
-              OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,               &
-                    STATUS='OLD',ERR=803,IOSTAT=IERR)
-          ELSE
-#ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) '4 : W3FLDSMD FNAME=', FNAME(:I)
-#endif
-              OPEN (NDS,FILE=FNAME(:I),FORM=FORM,                     &
-                    STATUS='OLD',ERR=803,IOSTAT=IERR)
-            END IF
+          OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian, & 
+                ERR=803,IOSTAT=IERR)
         END IF
+      ELSE
+        IF ( PRESENT(FPRE) ) THEN
+#ifdef W3_DEBUGFLS
+          WRITE(740+IAPROC,*) '3 : W3FLDSMD FNAME=', FNAME(:I)
+#endif
+          OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,convert=file_endian, &
+                STATUS='OLD',ERR=803,IOSTAT=IERR)
+        ELSE
+#ifdef W3_DEBUGFLS
+          WRITE(740+IAPROC,*) '4 : W3FLDSMD FNAME=', FNAME(:I)
+#endif
+          OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian,       &
+                    STATUS='OLD',ERR=803,IOSTAT=IERR)
+        END IF
+      END IF
 !
 ! Process test data -------------------------------------------------- *
 !
 #ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) 'WRITE=', WRITE
+      WRITE(740+IAPROC,*) 'WRITE=', WRITE
 #endif
       IF ( WRITE ) THEN
           IF ( FDHDR ) THEN

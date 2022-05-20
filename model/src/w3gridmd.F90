@@ -924,7 +924,7 @@
            LOGICAL :: SETUP_APPLY_WLV = .FALSE.
            INTEGER :: JGS_MAXITER=100
            INTEGER :: nbSel
-           INTEGER :: UNSTSCHEMES(4)
+           INTEGER :: UNSTSCHEMES(6)
            INTEGER :: UNSTSCHEME
            INTEGER :: JGS_NLEVEL = 0
            REAL*8  :: JGS_PMIN = 0.
@@ -2460,33 +2460,24 @@
        B_JGS_NLEVEL = JGS_NLEVEL
        B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
 
-       IF ((EXPFSN .eqv. .FALSE.).and.(EXPFSPSI .eqv. .FALSE.)     &
-           .and.(EXPFSFCT .eqv. .FALSE.)                           &
-           .and.(IMPFSN .eqv. .FALSE.)                             &
-           .and.(EXPTOTAL .eqv. .FALSE.)                           &
-           .and.(IMPTOTAL .eqv. .FALSE.)) THEN
-         EXPFSN=.TRUE. ! This is the default scheme ...
-       END IF
        nbSel=0
 
-       IF (EXPFSN) nbSel=nbSel+1
-       IF (EXPFSPSI) nbSel=nbSel+1
-       IF (EXPFSFCT) nbSel=nbSel+1
-       IF (IMPFSN) nbSel=nbSel+1
-       IF (IMPTOTAL) nbSel=nbSel+1
-       IF (EXPTOTAL) nbSel=nbSel+1
+       IF (EXPFSN)   nbSel = nbSel+1
+       IF (EXPFSPSI) nbSel = nbSel+1
+       IF (EXPFSFCT) nbSel = nbSel+1
+       IF (IMPFSN)   nbSel = nbSel+1
+       IF (IMPTOTAL) nbSel = nbSel+1
+       IF (EXPTOTAL) nbSel = nbSel+1
 
        IF (GTYPE .EQ. UNGTYPE) THEN
          IF (nbSel .ne. 1) THEN
-           WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN WW3_GRID:'
            IF (nbSel .gt. 1) THEN
-             WRITE (NDSE,*) 'More than one scheme selected'
+             WRITE (NDSE,*) 'MORE THAN ONE UNSTRUCTURED SCHEME SELECTED'
+             CALL EXTCDE ( 19 )
            ELSE IF (nbSel .eq. 0) THEN
-             WRITE (NDSE,*) 'no scheme selected'
+             WRITE (NDSE,*) 'NOTHING SELECTED FROM THE UNSTRUCTURED PART'
+             CALL EXTCDE ( 19 )
            END IF
-           WRITE (NDSE,*)'Select only one of EXPFSN, EXPFSFCT, EXPFSPSI'
-           WRITE (NDSE,*)'IMPFSN, IMPTOTAL'
-           CALL EXTCDE ( 30 )
          END IF
        END IF
 !
@@ -3613,13 +3604,24 @@
 !
       DO_CHANGE_WLV=.FALSE.
       IF ( GTYPE.EQ.UNGTYPE) THEN 
-        UNSTSCHEMES(:)=0
-        IF (EXPFSN)   UNSTSCHEMES(1)=1
-        IF (EXPFSPSI) UNSTSCHEMES(2)=1
-        IF (EXPFSFCT) UNSTSCHEMES(3)=1
-        IF (IMPFSN)   UNSTSCHEMES(4)=1
+        UNSTSCHEMES = 0
+        IF (EXPFSN)   UNSTSCHEMES(1) = 1
+        IF (EXPFSPSI) UNSTSCHEMES(2) = 1
+        IF (EXPFSFCT) UNSTSCHEMES(3) = 1
+        IF (IMPFSN)   UNSTSCHEMES(4) = 1
+        IF (IMPTOTAL) UNSTSCHEMES(5) = 1
+        IF (EXPTOTAL) UNSTSCHEMES(6) = 1
+
+        IF (SUM(UNSTSCHEMES) .eq. 0) THEN
+          WRITE(NDSE,*) 'NO UNST SCHEME SELECTED'
+          CALL EXTCDE ( 19 )
+        ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
+          WRITE(NDSE,*) 'MORE THAN ONE UNST SCHEME SELECTED'
+          CALL EXTCDE ( 19 )
+        ENDIF 
+
         UNSTSCHEME=-1
-        DO IX=1,4
+        DO IX=1,6
           IF (UNSTSCHEMES(IX).EQ.1) THEN 
             UNSTSCHEME=IX
             EXIT
@@ -3640,18 +3642,18 @@
         CASE (4) 
           FSNIMP = IMPFSN 
           PNAME2 = 'N Implicit (Fluctuation Splitting) '
-          END SELECT
+        CASE (5)
+          FSTOTALIMP = IMPTOTAL
+          PNAME2 = 'N Implicit (Fluctuation Splitting) for total implicit'
+        CASE (6)
+          FSTOTALEXP = EXPTOTAL 
+          PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
+        END SELECT
 !
         IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
         WRITE (NDSO,2951) PNAME2
-        IF (IMPTOTAL) THEN
-          FSTOTALIMP = IMPTOTAL
-          PNAME2 = 'N Implicit (Fluctuation Splitting) for total implicit'
-        END IF
-        IF (EXPTOTAL) THEN
-          FSTOTALEXP = EXPTOTAL 
-          PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
-        END IF
+
+
         IF (IMPREFRACTION .and. IMPTOTAL .AND. FLCTH) THEN
           FSREFRACTION = .TRUE.
           PNAME2 = 'Refraction done implicitly'
@@ -3777,11 +3779,11 @@
             IF ( IDFM .EQ. 3 ) THEN
               IF (FROM.EQ.'NAME') THEN
                 OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                      FORM='UNFORMATTED',                 &
+                      form='UNFORMATTED', convert=file_endian,                 &
                       STATUS='OLD',ERR=2000,IOSTAT=IERR)
               ELSE
                 OPEN (NDSG,                               &
-                      FORM='UNFORMATTED',                 &
+                      form='UNFORMATTED', convert=file_endian,                 &
                       STATUS='OLD',ERR=2000,IOSTAT=IERR)
               END IF
             ELSE
@@ -3836,11 +3838,11 @@
             IF ( IDFM .EQ. 3 ) THEN
               IF (FROM.EQ.'NAME') THEN
                 OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                      FORM='UNFORMATTED',                 &
+                      form='UNFORMATTED', convert=file_endian,                 &
                       STATUS='OLD',ERR=2000,IOSTAT=IERR)
               ELSE
                 OPEN (NDSG,                               &
-                      FORM='UNFORMATTED',                 &
+                      form='UNFORMATTED', convert=file_endian,                 &
                       STATUS='OLD',ERR=2000,IOSTAT=IERR)
               END IF
             ELSE
@@ -3955,10 +3957,10 @@
               IF ( IDFM .EQ. 3 ) THEN
                   IF (FROM.EQ.'NAME') THEN
                       OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME), &
-                            FORM='UNFORMATTED',&
+                            form='UNFORMATTED', convert=file_endian,&
                             STATUS='OLD',ERR=2000,IOSTAT=IERR)
                     ELSE
-                      OPEN (NDSG, FORM='UNFORMATTED',                &
+                      OPEN (NDSG, form='UNFORMATTED', convert=file_endian,                &
                             STATUS='OLD',ERR=2000,IOSTAT=IERR)
                     END IF
                 ELSE
@@ -4082,10 +4084,10 @@
           IF ( IDFT .EQ. 3 ) THEN
             IF (FROM.EQ.'NAME') THEN
               OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                    FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
+                    form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
                     IOSTAT=IERR)
             ELSE
-              OPEN (NDSTR,           FORM='UNFORMATTED',      &
+              OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
             END IF
           ELSE
@@ -4786,10 +4788,10 @@
               IF ( IDFT .EQ. 3 ) THEN
                   IF (FROM.EQ.'NAME') THEN
                       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                            FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
+                            form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
                             IOSTAT=IERR)
                     ELSE
-                      OPEN (NDSTR,           FORM='UNFORMATTED',      &
+                      OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
                             STATUS='OLD',ERR=2000,IOSTAT=IERR)
                     END IF
                 ELSE
@@ -5464,7 +5466,8 @@
 ! AR: this is not anymore needed and will be deleted ...
 !
       IF (GTYPE.EQ.UNGTYPE) THEN 
-        CALL SETUGIOBP 
+        CALL SET_UG_IOBP 
+
 #ifdef W3_REF1
       ELSE
         CALL W3SETREF
@@ -5522,10 +5525,10 @@
             IF ( IDFT .EQ. 3 ) THEN
               IF (FROM.EQ.'NAME') THEN
                 OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,                 &
-                        FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
+                        form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
                         IOSTAT=IERR)
               ELSE
-                OPEN (NDSTR,           FORM='UNFORMATTED',      &
+                OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
                 END IF
             ELSE
@@ -5648,10 +5651,10 @@
               IF ( IDFT .EQ. 3 ) THEN
                   IF (FROM.EQ.'NAME') THEN
                       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                            FORM='UNFORMATTED',STATUS='OLD',ERR=2000, &
+                            form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
                             IOSTAT=IERR)
                     ELSE
-                      OPEN (NDSTR,           FORM='UNFORMATTED',      &
+                      OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
                             STATUS='OLD',ERR=2000,IOSTAT=IERR)
                     END IF
                 ELSE
