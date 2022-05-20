@@ -72,18 +72,18 @@
 !
 ! Parameters for friction factor table
 !
-      INTEGER, PARAMETER :: SIZEFWTABLE=300
-      REAL            :: FWTABLE(0:SIZEFWTABLE)
-      REAL            :: DELAB
-      REAL, PARAMETER :: ABMIN = -1.
-      REAL, PRIVATE, PARAMETER :: ABMAX = 8.
-      INTEGER, PARAMETER :: srce_direct = 0
-      INTEGER, PARAMETER :: srce_imp_post = 1
-      INTEGER, PARAMETER :: srce_imp_pre = 2
-      INTEGER, PARAMETER :: DEBUG_NODE = 1014
-      INTEGER, PARAMETER :: DEBUG_ELEMENT = 50
-      LOGICAL            :: LPDLIB = .FALSE.
-      LOGICAL            :: LSETUP
+      INTEGER, PARAMETER :: SIZEFWTABLE=300 !> SIZEFWTABLE
+      REAL            :: FWTABLE(0:SIZEFWTABLE) !> FWTABLE
+      REAL            :: DELAB !> DELAB 
+      REAL, PARAMETER :: ABMIN = -1. !> ABMIN
+      REAL, PRIVATE, PARAMETER :: ABMAX = 8. !> ABMAX
+      INTEGER, PARAMETER :: srce_direct = 0  !> srce_direct 
+      INTEGER, PARAMETER :: srce_imp_post = 1 !> srce_imp_post 
+      INTEGER, PARAMETER :: srce_imp_pre = 2 !> srce_imp_pre 
+      INTEGER, PARAMETER :: DEBUG_NODE = 1014 !> Node number used for debugging 
+      INTEGER, PARAMETER :: DEBUG_ELEMENT = 50 !> Element number used for debug
+      LOGICAL            :: LPDLIB = .FALSE. !> LDLIB is a logical for using the PDLIB library 
+      LOGICAL            :: LSETUP           !> This logical LSETUP is not used  
 !
 ! Parameters in support of running as ESMF component
 !
