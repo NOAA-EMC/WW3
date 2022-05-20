@@ -97,6 +97,10 @@
 !
       CONTAINS
 ! ----------------------------------------------------------------------
+!> @brief estimate friction coefficients in oscillatory boundary layers
+!>        using tabulation on Kelvin functions 
+!>
+!> @author F. Ardhuin  @date 28-Feb-2013
       SUBROUTINE TABU_FW
 !/
 !/                  +-----------------------------------+
