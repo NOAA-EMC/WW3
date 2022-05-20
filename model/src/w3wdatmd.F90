@@ -380,7 +380,7 @@
       USE W3ODATMD, ONLY: NAPROC, IAPROC
       USE W3SERVMD, ONLY: EXTCDE
       USE CONSTANTS, ONLY : LPDLIB, DAIR
-      USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM
+      USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM, LSLOC 
 #ifdef W3_NL5
       USE W3GDATMD, ONLY: QI5NNZ
 #endif
@@ -516,6 +516,7 @@
     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
+        IF (.not. LSLOC) THEN
           ALLOCATE ( WDATAS(IMOD)%VSTOT(NSPEC,NSEAL), stat=istat )
 #endif
 #ifdef W3_DEBUGINIT
@@ -530,6 +531,7 @@
     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
+        ENDIF ! LSLOC 
           ALLOCATE ( WDATAS(IMOD)%VAOLD(NSPEC,NSEAL), stat=istat )
 #endif
 #ifdef W3_DEBUGINIT
@@ -537,15 +539,8 @@
     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
-          DO ISEA=1,NSEAL
-#endif
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) 'Setting to ZERO at ISEA=', ISEA
-        FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
-            WDATAS(IMOD)%VSTOT(:,ISEA)=0
-          END DO
+        IF (.not. LSLOC) THEN
+         WDATAS(IMOD)%VSTOT=0
 #endif
 #ifdef W3_DEBUGINIT
     WRITE(740+IAPROC,*) 'W3DIMW, step 8.8'
@@ -559,6 +554,7 @@
     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
+        ENDIF ! LSLOC 
           WDATAS(IMOD)%SHAVETOT=.FALSE.
 #endif
 #ifdef W3_DEBUGINIT

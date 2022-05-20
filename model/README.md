@@ -42,6 +42,8 @@ Options can be passed to CMake with `-D<option>`.
 
 * `NETCDF=ON/OFF` (optional) - Build NetCDF programs (ww3_ounf, ww3_ounp, ww3_bounc, ww3_trnc, and ww3_prnc). Requires NetCDF. Enabled by default.
 
+* `ENDIAN=BIG/LITTLE/NATIVE` - Endianness of unformatted output files. Defaults to `BIG` 
+
 ## Setting Compiler
 
 CMake uses the standard `CC`, `FC`, and `CXX` envrionment variables for compiler detection. May need to set if CMake picks up the wrong compiler (system GCC instead of Intel, for example).
@@ -81,6 +83,16 @@ CMake has a standardized way of searching for external libraries including defau
 If a library is located in a non-standard location CMake will search
 multiple locations including `CMAKE_PREFIX_PATH` (a semi-colon
 separated list) or `<name>_ROOT`. 
+
+Note: If your system provides the paths to libraries and include directories
+automatically (e.g. via a compiler wrapper script, as is the case with the
+Cray Compiler Environment), then you might wish to stop CMake from trying
+to automatically finding particular libraries. This can be achieved by
+passing a list of libraries to ignore via the `EXCLUDE_FIND` option to
+CMake (currently only implemented for the netCDF library). E.g:
+```
+cmake .. -DEXCLUDE_FIND="netcdf"
+```
 
 ### Can set the compiler to MPI wrappers to find MPI
 ```
@@ -134,7 +146,7 @@ Append to [src_list.cmake](./src/cmake/src_list.cmake)
 
 Compiler flags are set per compiler in [CMakeLists.txt](./src/CMakeLists.txt)
 
-Supported compilers are Intel, GNU, and PGI.
+Supported compilers are Intel, GNU, PGI and Cray.
 
 ### How to build a single target?
 

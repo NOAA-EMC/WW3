@@ -1,6 +1,18 @@
+!> @file
+!> @brief Contains module WMMDATMD.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!> 
+
 #include "w3macros.h"
 !
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Define data structures to set up wave model dynamic data for
+!>  several models simultaneously.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
       MODULE WMMDATMD
 !/
 !/                  +-----------------------------------+
@@ -289,150 +301,280 @@
 !/
 !/ Module private variable for checking error returns
 !/
-      INTEGER, PRIVATE        :: ISTAT
+      INTEGER, PRIVATE        :: ISTAT         !< ISTAT check error returns
 !/
 !/ Conventional declarations
 !/
-      INTEGER                 :: NMDATA = -1, IMDATA = -1
-      INTEGER                 :: MDSI = 8, MDSO = 9, MDSS = 6, MDST = 6,  &
-                                 MDSE = 6, MDSUP, NMPROC = 1,         &
-                                 IMPROC = 1, NMPLOG = 1, NMPSCR = 1,  &
-                                 NMPTST = 1, NMPERR = 1, NMPUPT = 1,  &
-                                 STIME(2), ETIME(2), NRGRD, NRINP,    &
-                                 NRGRP, NMVMAX, NGRPSMC
-      INTEGER                 :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
+      INTEGER                 :: NMDATA = -1   !< NMDATA
+      INTEGER                 :: IMDATA = -1   !< IMDATA
+      INTEGER                 :: MDSI = 8   !< MDSI
+      INTEGER                 :: MDSO = 9   !< MDSO
+      INTEGER                 :: MDSS = 6   !< MDSS
+      INTEGER                 :: MDST = 6   !< MDST
+      INTEGER                 :: MDSE = 6   !< MDSE
+      INTEGER                 :: MDSUP      !< MDSUP
+      INTEGER                 :: NMPROC = 1   !< NMPROC
+      INTEGER                 :: IMPROC = 1   !< IMPROC
+      INTEGER                 :: NMPLOG = 1   !< NMPLOG
+      INTEGER                 :: NMPSCR = 1   !< NMPSCR
+      INTEGER                 :: NMPTST = 1   !< NMPTST
+      INTEGER                 :: NMPERR = 1   !< NMPERR
+      INTEGER                 :: NMPUPT = 1   !< NMPUPT
+      INTEGER                 :: STIME(2)   !< STIME
+      INTEGER                 :: ETIME(2)   !< ETIME
+      INTEGER                 :: NRGRD   !< NRGRD
+      INTEGER                 :: NRINP   !< NRINP
+      INTEGER                 :: NRGRP   !< NRGRP
+      INTEGER                 :: NMVMAX   !< NMVMAX
+      INTEGER                 :: NGRPSMC   !< NGRPSMC
+      
+      INTEGER                 :: CLKDT1(8)   !< CLKDT1
+      INTEGER                 :: CLKDT2(8)   !< CLKDT2
+      INTEGER                 :: CLKDT3(8)   !< CLKDT3
+      
 #ifdef W3_MPRF
-      INTEGER                 :: MDSP
+      INTEGER                 :: MDSP   !< MDSP
 #endif
 #ifdef W3_MPI
-      INTEGER                 :: MPI_COMM_MWAVE
-      INTEGER, PARAMETER      :: MTAGB = 0
-      INTEGER, PARAMETER      :: MTAG0 = 1000
-      INTEGER, PARAMETER      :: MTAG1 = 100000
-      INTEGER, PARAMETER      :: MTAG2 = 1500000
-      INTEGER, PARAMETER      :: MTAG_UB = 2**21-1 !MPI_TAG_UB on Cray XC40
+      INTEGER                 :: MPI_COMM_MWAVE    !< MPI_COMM_MWAVE
+      INTEGER, PARAMETER      :: MTAGB = 0   !< MTAGB
+      INTEGER, PARAMETER      :: MTAG0 = 1000   !< MTAG0
+      INTEGER, PARAMETER      :: MTAG1 = 100000   !< MTAG1
+      INTEGER, PARAMETER      :: MTAG2 = 1500000   !< MTAG2
+      INTEGER, PARAMETER      :: MTAG_UB = 2**21-1 !< MPI_TAG_UB on Cray XC40
 #endif
-      INTEGER, ALLOCATABLE    :: MDSF(:,:), GRANK(:), GRGRP(:),       &
-                                 INGRP(:,:), GRDHGH(:,:), GRDEQL(:,:),&
-                                 GRDLOW(:,:), ALLPRC(:,:),            &
-                                 MODMAP(:,:), TSYNC(:,:), TMAX(:,:),  &
-                                 TOUTP(:,:), TDATA(:,:), GRSTAT(:),   &
-                                 NBI2G(:,:), INPMAP(:,:)
+      
+      INTEGER, ALLOCATABLE    :: MDSF(:,:)   !< MDSF
+      INTEGER, ALLOCATABLE    :: GRANK(:)   !< GRANK
+      INTEGER, ALLOCATABLE    :: GRGRP(:)   !< GRGRP
+      INTEGER, ALLOCATABLE    :: INGRP(:,:)   !< INGRP
+      INTEGER, ALLOCATABLE    :: GRDHGH(:,:)   !< GRDHGH
+      INTEGER, ALLOCATABLE    :: GRDEQL(:,:)   !< GRDEQL
+
+      INTEGER, ALLOCATABLE    :: GRDLOW(:,:)   !< GRDLOW
+      INTEGER, ALLOCATABLE    :: ALLPRC(:,:)   !< ALLPRC
+      INTEGER, ALLOCATABLE    :: MODMAP(:,:)   !< MODMAP
+      INTEGER, ALLOCATABLE    :: TSYNC(:,:)   !< TSYNC
+      INTEGER, ALLOCATABLE    :: TMAX(:,:)   !< TMAX
+      INTEGER, ALLOCATABLE    :: TOUTP(:,:)   !< TOUTP
+      INTEGER, ALLOCATABLE    :: TDATA(:,:)   !< TDATA
+      INTEGER, ALLOCATABLE    :: GRSTAT(:)   !< GRSTAT
+      INTEGER, ALLOCATABLE    :: NBI2G(:,:)   !< NBI2G
+      INTEGER, ALLOCATABLE    :: INPMAP(:,:)   !< INPMAP
+      
 #ifdef W3_MPI
-      INTEGER, ALLOCATABLE    :: NBISTA(:), HGHSTA(:), EQLSTA(:)
+      INTEGER, ALLOCATABLE    :: NBISTA(:)   !< NBISTA
+      INTEGER, ALLOCATABLE    :: HGHSTA(:)   !< HGHSTA
+      INTEGER, ALLOCATABLE    :: EQLSTA(:)   !< EQLSTA
 #endif
-      REAL                    :: CLKFIN
-      REAL, ALLOCATABLE       :: DTRES(:)
-      LOGICAL                 :: FLGBDI=.FALSE., FLGHG1, FLGHG2
-      LOGICAL, ALLOCATABLE    :: RESPEC(:,:), BCDUMP(:),              &
-                                 IFLSTI(:), IFLSTL(:), IFLSTR(:)
-      CHARACTER(LEN=3), ALLOCATABLE :: IDINP(:,:)
+      
+      REAL                    :: CLKFIN   !< CLKFIN
+      REAL,    ALLOCATABLE    :: DTRES(:)   !< DTRES
+      LOGICAL                 :: FLGBDI=.FALSE.   !< FLGBDI
+      LOGICAL                 :: FLGHG1   !< FLGHG1
+      LOGICAL                 :: FLGHG2   !< FLGHG2
+      LOGICAL, ALLOCATABLE    :: RESPEC(:,:)   !< RESPEC
+      LOGICAL, ALLOCATABLE    :: BCDUMP(:)   !< BCDUMP
+      LOGICAL, ALLOCATABLE    :: IFLSTI(:)   !< IFLSTI
+      LOGICAL, ALLOCATABLE    :: IFLSTL(:)   !< IFLSTL
+      LOGICAL, ALLOCATABLE    :: IFLSTR(:)   !< IFLSTR
+      CHARACTER(LEN=3), ALLOCATABLE :: IDINP(:,:)   !< IDINP
 !/
 !/ Data structures
 !/
       TYPE MDATA
-        INTEGER               :: RCLD(3), NDT(3), NMV, NRUPTS
+         INTEGER               :: RCLD(3)   !< RCLD
+         INTEGER               :: NDT(3)   !< NDT
+         INTEGER               :: NMV   !< NMV
+         INTEGER               :: NRUPTS   !< NRUPTS
+         
 #ifdef W3_MPI
-        INTEGER               :: MPI_COMM_GRD, MPI_COMM_BCT,     &
-                                 CROOT, NRQBPG, NRQHGG, NRQEQG
+         INTEGER               :: MPI_COMM_GRD   !< MPI_COMM_GRD
+         INTEGER               :: MPI_COMM_BCT   !< MPI_COMM_BCT
+         INTEGER               :: CROOT   !< CROOT
+         INTEGER               :: NRQBPG   !< NRQBPG
+         INTEGER               :: NRQHGG   !< NRQHGG
+         INTEGER               :: NRQEQG   !< NRQEQG
 #endif
-        INTEGER, POINTER      :: TMV(:,:,:), NBI2S(:,:), MAPMSK(:,:), &
-                                 UPTMAP(:)
+         INTEGER, POINTER      :: TMV(:,:,:)   !< TMV
+         INTEGER, POINTER      :: NBI2S(:,:)   !< NBI2S
+         INTEGER, POINTER      :: MAPMSK(:,:)   !< MAPMSK
+         INTEGER, POINTER      :: UPTMAP(:)   !< UPTMAP
+         
 #ifdef W3_MPI
-        INTEGER, POINTER      :: IRQBPG(:), IRQHGG(:), IRQEQG(:)
+         INTEGER, POINTER      :: IRQBPG(:)   !< IRQBPG
+         INTEGER, POINTER      :: IRQHGG(:)   !< IRQHGG
+         INTEGER, POINTER      :: IRQEQG(:)   !< IRQEQG
 #endif
-        REAL, POINTER         :: DATA0(:,:), DATA1(:,:), DATA2(:,:),  &
-                                 AMV(:,:), DMV(:,:)
-        REAL, POINTER         :: MAPBDI(:,:), MAPODI(:,:)
+         REAL, POINTER         :: DATA0(:,:)   !< DATA0
+         REAL, POINTER         :: DATA1(:,:)   !< DATA1
+         REAL, POINTER         :: DATA2(:,:)   !< DATA2
+         REAL, POINTER         :: AMV(:,:)   !< AMV
+         REAL, POINTER         :: DMV(:,:)   !< DMV
+         
+         REAL, POINTER         :: MAPBDI(:,:)   !< MAPBDI
+         REAL, POINTER         :: MAPODI(:,:)   !< MAPODI
 #ifdef W3_PDLIB
-     INTEGER, POINTER    :: SEA_IPGL(:), SEA_IPGL_TO_PROC(:)
+         INTEGER, POINTER      :: SEA_IPGL(:)   !< SEA_IPGL
+         INTEGER, POINTER      :: SEA_IPGL_TO_PROC(:)   !< SEA_IPGL_TO_PROC
 #endif
-        LOGICAL               :: MINIT, MSKINI, FLLSTL, FLLSTR,       &
-                                 FLLSTI, FLDAT0, FLDAT1, FLDAT2
+         LOGICAL               :: MINIT   !< MINIT
+         LOGICAL               :: MSKINI   !< MSKINI
+         LOGICAL               :: FLLSTL   !< FLLSTL
+         LOGICAL               :: FLLSTR   !< FLLSTR
+         LOGICAL               :: FLLSTI   !< FLLSTI
+         LOGICAL               :: FLDAT0   !< FLDAT0
+         LOGICAL               :: FLDAT1   !< FLDAT1
+         LOGICAL               :: FLDAT2   !< FLDAT2
+         
 #ifdef W3_MPI
-        LOGICAL               :: FBCAST
+        LOGICAL                :: FBCAST   !< FBCAST
 #endif
       END TYPE MDATA
+     
 !
+      
       TYPE BPST
 #ifdef W3_MPI
-        INTEGER               :: NRQBPS, STIME(2)
+         INTEGER                :: NRQBPS   !< NRQBPS
+         INTEGER                :: STIME(2)   !< STIME
 #endif
-        INTEGER               :: VTIME(2)
+        INTEGER                 :: VTIME(2)   !< VTIME
 #ifdef W3_MPI
-        INTEGER, POINTER      :: IRQBPS(:)
+        INTEGER, POINTER        :: IRQBPS(:)   !< IRQBPS
 #endif
-        REAL, POINTER         :: SBPI(:,:)
+        REAL, POINTER           :: SBPI(:,:)   !< SBPI
 #ifdef W3_MPI
-        REAL, POINTER         :: TSTORE(:,:)
+        REAL, POINTER           :: TSTORE(:,:)   !< TSTORE
 #endif
-        LOGICAL               :: INIT
+        LOGICAL                 :: INIT   !< INIT
       END TYPE BPST
 !
       TYPE HGST
-        INTEGER               :: VTIME(2), NTOT, NREC, NRC1,          &
-                                 NSND, NSN1, NSMX, XTIME(2)
+         INTEGER                 :: VTIME(2)   !< VTIME
+         INTEGER                 :: NTOT   !< NTOT
+         INTEGER                 :: NREC   !< NREC
+         INTEGER                 :: NRC1   !< NRC1
+         INTEGER                 :: NSND   !< NSND
+         INTEGER                 :: NSN1   !< NSN1
+         INTEGER                 :: NSMX   !< NSMX
+         INTEGER                 :: XTIME(2)   !< XTIME
+         
 #ifdef W3_MPI
-        INTEGER               :: NRQHGS, NRQOUT
+         INTEGER                 :: NRQHGS   !< NRQHGS
+         INTEGER                 :: NRQOUT   !< NRQOUT
 #endif
-        INTEGER, POINTER      :: LJSEA(:), NRAVG(:), IMPSRC(:,:),     &
-                                 ITAG(:,:), ISEND(:,:)
+         INTEGER, POINTER        :: LJSEA(:)   !< LJSEA
+         INTEGER, POINTER        :: NRAVG(:)   !< NRAVG
+         INTEGER, POINTER        :: IMPSRC(:,:)   !< IMPSRC
+         INTEGER, POINTER        :: ITAG(:,:)   !< ITAG
+         INTEGER, POINTER        :: ISEND(:,:)   !< ISEND
 #ifdef W3_MPI
-        INTEGER, POINTER      :: IRQHGS(:), OUTDAT(:,:)
+         INTEGER, POINTER        :: IRQHGS(:)   !< IRQHGS
+         INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
 #endif
-        REAL, POINTER         :: WGTH(:,:), SHGH(:,:,:)
+         REAL, POINTER           :: WGTH(:,:)   !< WGTH
+         REAL, POINTER           :: SHGH(:,:,:)   !< SHGH
 #ifdef W3_MPI
-        REAL, POINTER         :: TSTORE(:,:)
+        REAL, POINTER            :: TSTORE(:,:)   !< TSTORE
 #endif
-        LOGICAL               :: INIT
+        LOGICAL                  :: INIT   !< INIT
       END TYPE HGST
+     
 !
+      
       TYPE EQST
-        INTEGER               :: VTIME(2), NTOT, NREC, NSND, NAVMAX
+         INTEGER                 :: VTIME(2)   !< VTIME
+         INTEGER                 :: NTOT   !< NTOT
+         INTEGER                 :: NREC   !< NREC
+         INTEGER                 :: NSND   !< NSND
+         INTEGER                 :: NAVMAX   !< NAVMAX
 #ifdef W3_MPI
-        INTEGER               :: NRQEQS, NRQOUT
+         INTEGER                 :: NRQEQS   !< NRQEQS
+         INTEGER                 :: NRQOUT   !< NRQOUT
 #endif
-        INTEGER, POINTER      :: ISEA(:), JSEA(:), NAVG(:), RIP(:,:), &
-                                 RTG(:,:), SIS(:), SJS(:), SI1(:),    &
-                                 SI2(:), SIP(:), STG(:)
+         INTEGER, POINTER        :: ISEA(:)   !< ISEA
+         INTEGER, POINTER        :: JSEA(:)   !< JSEA
+         INTEGER, POINTER        :: NAVG(:)   !< NAVG
+         INTEGER, POINTER        :: RIP(:,:)   !< RIP
+         INTEGER, POINTER        :: RTG(:,:)   !< RTG
+         INTEGER, POINTER        :: SIS(:)   !< SIS
+         INTEGER, POINTER        :: SJS(:)   !< SJS
+         INTEGER, POINTER        :: SI1(:)   !< SI1
+         INTEGER, POINTER        :: SI2(:)   !< SI2
+         INTEGER, POINTER        :: SIP(:)   !< SIP
+         INTEGER, POINTER        :: STG(:)   !< STG
+         
 #ifdef W3_MPI
-        INTEGER, POINTER      :: IRQEQS(:), OUTDAT(:,:)
+         INTEGER, POINTER        :: IRQEQS(:)   !< IRQEQS
+         INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
 #endif
-        REAL, POINTER         :: SEQL(:,:,:), WGHT(:), WAVG(:,:)
+         REAL, POINTER           :: SEQL(:,:,:)   !< SEQL
+         REAL, POINTER           :: WGHT(:)   !< WGHT
+         REAL, POINTER           :: WAVG(:,:)   !< WAVG
 #ifdef W3_MPI
-        REAL, POINTER         :: TSTORE(:,:)
+        REAL, POINTER            :: TSTORE(:,:)   !< TSTORE
 #endif
-        LOGICAL               :: INIT
+        LOGICAL                  :: INIT   !< INIT
       END TYPE EQST
 !/
 !/ Data storage
 !/
-      TYPE(MDATA), TARGET, ALLOCATABLE :: MDATAS(:)
-      TYPE(BPST), TARGET, ALLOCATABLE  :: BPSTGE(:,:)
-      TYPE(HGST), TARGET, ALLOCATABLE  :: HGSTGE(:,:)
-      TYPE(EQST), TARGET, ALLOCATABLE  :: EQSTGE(:,:)
+      TYPE(MDATA), TARGET, ALLOCATABLE  :: MDATAS(:)   !< MDATAS
+      TYPE(BPST),  TARGET, ALLOCATABLE  :: BPSTGE(:,:)   !< BPSTGE
+      TYPE(HGST),  TARGET, ALLOCATABLE  :: HGSTGE(:,:)   !< HGSTGE
+      TYPE(EQST),  TARGET, ALLOCATABLE  :: EQSTGE(:,:)   !< EQSTGE
 !/
 !/ Data aliasses for structure MDATA(S)
 !/
-      INTEGER, POINTER        :: RCLD(:), NDT(:), NMV, TMV(:,:,:),    &
-                                 NBI2S(:,:), MAPMSK(:,:), UPTMAP(:)
+      INTEGER, POINTER           :: RCLD(:)   !< RCLD
+      INTEGER, POINTER           :: NDT(:)   !< NDT
+      INTEGER, POINTER           :: NMV   !< NMV
+      INTEGER, POINTER           :: TMV(:,:,:)   !< TMV
+      INTEGER, POINTER           :: NBI2S(:,:)   !< NBI2S
+      INTEGER, POINTER           :: MAPMSK(:,:)   !< MAPMSK
+      INTEGER, POINTER           :: UPTMAP(:)   !< UPTMAP
 #ifdef W3_MPI
-      INTEGER, POINTER        :: MPI_COMM_GRD, MPI_COMM_BCT, CROOT
+      INTEGER, POINTER           :: MPI_COMM_GRD   !< MPI_COMM_GRD
+      INTEGER, POINTER           :: MPI_COMM_BCT   !< MPI_COMM_BCT
+      INTEGER, POINTER           :: CROOT   !< CROOT
 #endif
-      REAL, POINTER           :: DATA0(:,:), DATA1(:,:), DATA2(:,:),  &
-                                 AMV(:,:), DMV(:,:)
-      REAL, POINTER           :: MAPBDI(:,:), MAPODI(:,:)
+      REAL, POINTER              :: DATA0(:,:)   !< DATA0
+      REAL, POINTER              :: DATA1(:,:)   !< DATA1
+      REAL, POINTER              :: DATA2(:,:)   !< DATA2
+      REAL, POINTER              :: AMV(:,:)   !< AMV
+      REAL, POINTER              :: DMV(:,:)   !< DMV
+      
+      REAL, POINTER              :: MAPBDI(:,:)   !< MAPBDI
+      REAL, POINTER              :: MAPODI(:,:)   !< MAPODI
 #ifdef W3_PDLIB
-      INTEGER, POINTER    :: SEA_IPGL(:), SEA_IPGL_TO_PROC(:)
+      INTEGER, POINTER           :: SEA_IPGL(:)   !< SEA_IPGL
+      INTEGER, POINTER           :: SEA_IPGL_TO_PROC(:)   !< SEA_IPGL_TO_PROC
 #endif
-      LOGICAL, POINTER        :: MINIT, FLLSTL, FLLSTR, FLLSTI,       &
-                                 FLDAT0, FLDAT1, FLDAT2
+      LOGICAL, POINTER           :: MINIT   !< MINIT
+      LOGICAL, POINTER           :: FLLSTL   !< FLLSTL
+      LOGICAL, POINTER           :: FLLSTR   !< FLLSTR
+      LOGICAL, POINTER           :: FLLSTI   !< FLLSTI
+      LOGICAL, POINTER           :: FLDAT0   !< FLDAT0
+      LOGICAL, POINTER           :: FLDAT1   !< FLDAT1
+      LOGICAL, POINTER           :: FLDAT2   !< FLDAT2
+      
 #ifdef W3_MPI
-      LOGICAL, POINTER        :: FBCAST
+      LOGICAL, POINTER           :: FBCAST   !< FBCAST
 #endif
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Set up the number of grids to be used.
+!>
+!> @details Use data stored in NGRIDS in W3GDATMD.
+!>
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!>
+!> @author H. L. Tolman  @date  22-Mar-2021
+!>
       SUBROUTINE WMNDAT ( NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -623,6 +765,19 @@
 !/
       END SUBROUTINE WMNDAT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize an individual data grid at the proper dimensions.
+!>
+!> @details Allocate directly into the structure array. Note that
+!>  this cannot be done through the pointer alias!
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!> @param[in] J    Data set [1,2,3].
+!>
+!> @author H. L. Tolman  @date 10-Dec-2014
+!>
       SUBROUTINE WMDIMD ( IMOD, NDSE, NDST, J )
 !/
 !/                  +-----------------------------------+
@@ -814,6 +969,18 @@
 !/
       END SUBROUTINE WMDIMD
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize an individual data grid at the proper dimensions.
+!>
+!> @details Allocate directly into the structure array. Note that
+!>  this cannot be done through the pointer alias!
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!>
+!> @author H. L. Tolman  @date 22-Feb-2005
+!>
       SUBROUTINE WMDIMM  ( IMOD, NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -981,6 +1148,18 @@
 !/
       END SUBROUTINE WMDIMM
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Select one of the WAVEWATCH III grids / models.
+!>
+!> @details Point pointers to the proper variables in the proper element of
+!>  the GRIDS array.
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
       SUBROUTINE WMSETM ( IMOD, NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -1134,6 +1313,17 @@
 !*                                                                    *
 !**********************************************************************
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Introduce mapping for ISPROC and JSEA when using PDLIB
+!>  in the Multigrid approach.
+!>
+!> @param[in]   ISEA 
+!> @param[in]   J
+!> @param[out]  JSEA
+!> @param[out]  ISPROC 
+!>
+!> @author Aron Roland  @date 14-Jun-2018
+!>
       SUBROUTINE INIT_GET_JSEA_ISPROC_GLOB(ISEA, J, JSEA, ISPROC)
 !/
 !/                  +-----------------------------------+

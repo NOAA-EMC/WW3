@@ -1,5 +1,21 @@
+!> @file
+!> @brief Contains module WMGRIDMD.
+!> 
+!> @author H. L. Tolman
+!> @author W. E. Rogers
+!> @date 10-Dec-2014
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Routines to determine and process grid dependencies in the 
+!>  multi-grid wave model.
+!> 
+!> @author H. L. Tolman
+!> @author W. E. Rogers
+!> @date 10-Dec-2014
+!>
       MODULE WMGRIDMD
 !/
 !/                  +-----------------------------------+
@@ -116,10 +132,22 @@
 !/
 !/ Module private variable for checking error returns
 !/
-      INTEGER, PRIVATE        :: ISTAT
+      INTEGER, PRIVATE        :: ISTAT  !< ISTAT Checking error returns.
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Determine relations to lower ranked grids for each grid.
+!>
+!> @details On the fly, the opposite relations are also saved.
+!>  Map active boundary points to lower ranked grids.        
+!>
+!> @param[out] FLRBPI Array with flags for external file use.
+!>
+!> @author H. L. Tolman
+!> @author W. E. Rogers
+!> @date 06-Jun-2018
+!>        
       SUBROUTINE WMGLOW ( FLRBPI )
 !/
 !/                  +-----------------------------------+
@@ -824,8 +852,8 @@
                    ELSE
                      JT=IT+1
                    END IF
-                   IM1=GRIDS(I)%TRIGP(ITRI,IT)
-                   IM2=GRIDS(I)%TRIGP(ITRI,JT)
+                   IM1=GRIDS(I)%TRIGP(IT,ITRI)
+                   IM2=GRIDS(I)%TRIGP(JT,ITRI)
                    EDIST=W3DIST(FLAGLL, REAL(GRIDS(I)%XGRD(1,IM1)), &
                          REAL(GRIDS(I)%YGRD(1,IM1)), REAL(GRIDS(I)%XGRD(1,IM2)), &
                          REAL(GRIDS(I)%YGRD(1,IM2)))
@@ -874,8 +902,8 @@
                    ELSE
                      JT=IT+1
                    END IF
-                   IM1=GRIDS(J)%TRIGP(ITRI,IT)
-                   IM2=GRIDS(J)%TRIGP(ITRI,JT)
+                   IM1=GRIDS(J)%TRIGP(IT,ITRI)
+                   IM2=GRIDS(J)%TRIGP(JT,ITRI)
                    EDIST=W3DIST(FLAGLL, REAL(GRIDS(J)%XGRD(1,IM1)), &
                          REAL(GRIDS(J)%YGRD(1,IM1)), REAL(GRIDS(J)%XGRD(1,IM2)), &
                          REAL(GRIDS(J)%YGRD(1,IM2)))
@@ -1058,6 +1086,16 @@
       END SUBROUTINE WMGLOW
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Determine relation to higher ranked grids for each grid.
+!>
+!> @details Base map set in WMGLOW, supplemental data computed here.
+!>  Map averaging information for higher ranked grid to lower ranked grid.
+!>
+!> @author H. L. Tolman
+!> @author W. E. Rogers
+!> @date 10-Dec-2014
+!>      
       SUBROUTINE WMGHGH
 !/
 !/                  +-----------------------------------+
@@ -2386,11 +2424,11 @@
                      ELSE
                        JT=IT+1
                      END IF
-                     IM1=GRIDS(GDST)%TRIGP(ITRI,IT)
-                     IM2=GRIDS(GDST)%TRIGP(ITRI,JT)
-                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GDST)%XGRD(IM1,1)), &
-                           REAL(GRIDS(GDST)%YGRD(IM1,1)), &
-                           REAL(GRIDS(GDST)%XGRD(IM2,1)), REAL(GRIDS(GDST)%YGRD(IM2,1)))
+                     IM1=GRIDS(GDST)%TRIGP(IT,ITRI)
+                     IM2=GRIDS(GDST)%TRIGP(JT,ITRI)
+                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GDST)%XGRD(1,IM1)), &
+                           REAL(GRIDS(GDST)%YGRD(1,IM1)), &
+                           REAL(GRIDS(GDST)%XGRD(1,IM2)), REAL(GRIDS(GDST)%YGRD(1,IM2)))
                      IF (IsFirst.eq.1) THEN
                        DIST_MAX=eDist
                        DIST_MIN=eDist
@@ -2426,11 +2464,11 @@
                      ELSE
                        JT=IT+1
                      END IF
-                     IM1=GRIDS(GSRC)%TRIGP(ITRI,IT)
-                     IM2=GRIDS(GSRC)%TRIGP(ITRI,JT)
-                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GSRC)%XGRD(IM1,1)), &
-                           REAL(GRIDS(GSRC)%YGRD(IM1,1)), &
-                           REAL(GRIDS(GSRC)%XGRD(IM2,1)), REAL(GRIDS(GSRC)%YGRD(IM2,1)))
+                     IM1=GRIDS(GSRC)%TRIGP(IT,ITRI)
+                     IM2=GRIDS(GSRC)%TRIGP(JT,ITRI)
+                     eDist=W3DIST(FLAGLL, REAL(GRIDS(GSRC)%XGRD(1,IM1)), &
+                           REAL(GRIDS(GSRC)%YGRD(1,IM1)), &
+                           REAL(GRIDS(GSRC)%XGRD(1,IM2)), REAL(GRIDS(GSRC)%YGRD(1,IM2)))
                      IF (IsFirst.eq.1) THEN
                        DIST_MAX=eDist
                        DIST_MIN=eDist
@@ -3659,7 +3697,15 @@
 !/
       END SUBROUTINE WMGHGH
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE WMGEQL
+!>
+!> @brief Determine relations to same ranked grids for each grid.
+!>
+!> @details Cross mapping of grid points, determine boundary distance
+!>  data and interpolation weights.
+!>
+!> @author H. L. Tolman  @date 10-Dec-2014
+!>
+        SUBROUTINE WMGEQL
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -5081,6 +5127,14 @@
 !/
       END SUBROUTINE WMGEQL
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Generate map with flags for need of spectral grid conversion 
+!>  between models.
+!>
+!> @details Test of parameters as introduced before in W3IOBC.
+!>
+!> @author H. L. Tolman  @date 10-Dec-2014
+!>
       SUBROUTINE WMRSPC
 !/
 !/                  +-----------------------------------+
@@ -5217,6 +5271,16 @@
       END SUBROUTINE WMRSPC
 !/
 !!
+!>
+!> @brief Determine relations to same ranked SMC grids for each grid.
+!>
+!> @details Set boundary points update for regular grid in same ranked group.
+!>
+!>  Cross mapping of grid points, use nearest sea points and no
+!>  interpolation is required so far. 
+!>      
+!> @author J G Li  @date 12-Apr-2021
+!>      
       SUBROUTINE WMSMCEQL
 !!
 !!    Adapted from multi-grid sub WMGEQL for set up equal ranked SMC

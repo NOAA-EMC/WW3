@@ -1,5 +1,39 @@
+!> @file
+!> @brief Contains program W3STRT for "cold start" initial conditions.
+!>
+!> @author H. L. Tolman @date 06-Jun-2018
+!
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!> @brief Generation of initial conditions for a "cold start" of
+!>  WAVEWATCH III.
+!>
+!> @details General model information is obtained from the model definition
+!>  file using W3IOGR. The type of the initial field is read
+!>  from the input file WW3_strt.inp (NDSI). Three types of initial
+!>  conditions are available.
+!>
+!>  1) Gaussian distribution in longitude, latitude and frequency,
+!>  cos power in directions. Can default to single spectral bin.
+!>          
+!>  2) Predefined JONSWAP spectrum, Gaussian height distribution
+!>  in space.
+!>
+!>  3) Fetch-limited JONSWAP spectrum based on the actual wind
+!>  speed. To avoid the need of reading a wind field, the
+!>  restart file is a "dummy", and the actual initial field
+!>  is constructed in the initialization routine W3INIT.
+!>
+!>  4) User defined spectrum throughout the model.
+!>
+!>  5) Starting from rest.
+!>
+!>  The initial conditions are written to the restart.WW3 using the
+!>  subroutine W3IORS. Note that the name of the restart file is set
+!>  in W3IORS.
+!>
+!> @author H. L. Tolman @date 06-Jun-2018
       PROGRAM W3STRT
 !/
 !/                  +-----------------------------------+
@@ -42,7 +76,7 @@
 !
 !  2. Method :
 !
-!     General model information os obtained from the model definition
+!     General model information is obtained from the model definition
 !     file using W3IOGR. The type of the initial field is read
 !     from the input file WW3_strt.inp (NDSI). Three types of initial
 !     conditions are available.
