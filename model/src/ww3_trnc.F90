@@ -241,7 +241,7 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Check consistency with input file and track_o.ww3
 !
-      OPEN (NDSINP,FILE=TRIM(FNMPRE)//'track_o.ww3',FORM='UNFORMATTED', &
+      OPEN (NDSINP,FILE=TRIM(FNMPRE)//'track_o.ww3',form='UNFORMATTED', convert=file_endian, &
             STATUS='OLD',ERR=800,IOSTAT=IERR)
       READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
 !

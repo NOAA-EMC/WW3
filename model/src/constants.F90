@@ -85,6 +85,9 @@
       REAL, PARAMETER         :: G1PI1I = 1. / ( GRAV * TPI )
 !
       REAL                    :: UNDEF = -999.9
+
+      ! Filled in by the pre-processor with 'big_endian', 'little_endian', or 'native'
+      character(*), parameter :: FILE_ENDIAN = ENDIANNESS
 !
 ! Parameters for friction factor table 
 !

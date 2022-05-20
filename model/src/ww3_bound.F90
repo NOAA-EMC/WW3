@@ -369,7 +369,7 @@
 ! 4. Tests the reading of the file
 !
       IF ( INXOUT.EQ.'READ') THEN 
-        OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='old')
+        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='old')
         READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
         NSPEC1  = NK1 * NTH1
         IF ( IDTST .NE. IDSTRBC ) THEN
@@ -456,7 +456,7 @@
           DEALLOCATE(XTMP, YTMP, ANGTMP)
         ENDIF
 #endif
-        OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='unknown')
+        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='unknown')
         ALLOCATE(LATS(NBO2),LONS(NBO2))
         DO IP=1,NBO2
           OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)

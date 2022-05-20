@@ -237,7 +237,7 @@
       WRITE (NDSO,901) COMSTR
 !
       OPEN (NDSGRD,FILE=FNMPRE(:J)//'ww3.spec.grads',                 &
-            FORM='UNFORMATTED', CONVERT='big_endian')
+            form='UNFORMATTED', convert=file_endian)
       OPEN (NDSPNT,FILE=FNMPRE(:J)//'ww3.mean.grads',FORM='FORMATTED')
       OPEN (NDSCGR,FILE=FNMPRE(:J)//'ww3.spec.ctl',FORM='FORMATTED')
 !
