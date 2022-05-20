@@ -1,3 +1,6 @@
+!> @file 
+!> @brief module for computing the quadruplet interaction
+!> @author Gerbrant van Vledder
 !------------------------------------------------------------------------------
 module m_xnldata
 !------------------------------------------------------------------------------
@@ -24,214 +27,214 @@ module m_xnldata
 !------------------------------------------------------------------------------------
 implicit none
 !
-character(len=60) q_version    ! version string
+character(len=60) q_version    !< version string
 !
-character(len=20) sub_name     ! Name of active subroutine
-character(len=20) qbase        ! base name for I/O files
-character(len=20) qf_error     ! name of file with error messages
+character(len=20) sub_name     !< Name of active subroutine
+character(len=20) qbase        !< base name for I/O files
+character(len=20) qf_error     !< name of file with error messages
 !
-integer iufind  ! Specifies handling of unit numbers, see Z_FILEIO
-integer iscreen ! identifier for screen, set in XNL_INIT
+integer iufind  !< Specifies handling of unit numbers, see Z_FILEIO
+integer iscreen !< identifier for screen, set in XNL_INIT
 !
 !  unit numbers for I/O
 !
-integer luq_bqf  ! binary file storing and retrieving precomputed loci
-integer luq_cfg  ! user defined configuration
-integer luq_err  ! file with error messages
-integer luq_fil  ! test output for filtering
-integer luq_grd  ! ASCII file storing and retrieving precomputed loci
-integer luq_int  ! test file for test output of integration
-integer luq_loc  ! statistics about computed loci
-integer luq_log  ! logging
-integer luq_prt  ! general print file for quadruplets
-integer luq_trf  ! testing transformation of loci
-integer luq_tst  ! test file for quadruplets
-integer luq_txt  ! reading (error) text file
-integer luq_t13  ! test of basis integration
+integer luq_bqf  !< binary file storing and retrieving precomputed loci
+integer luq_cfg  !< user defined configuration
+integer luq_err  !< file with error messages
+integer luq_fil  !< test output for filtering
+integer luq_grd  !< ASCII file storing and retrieving precomputed loci
+integer luq_int  !< test file for test output of integration
+integer luq_loc  !< statistics about computed loci
+integer luq_log  !< logging
+integer luq_prt  !< general print file for quadruplets
+integer luq_trf  !< testing transformation of loci
+integer luq_tst  !< test file for quadruplets
+integer luq_txt  !< reading (error) text file
+integer luq_t13  !< test of basis integration
 !------------------------------------------------------------------------------
 !  physical coefficients, to be obtained through interface XNL_INIT
 !------------------------------------------------------------------------------
-real q_grav     ! gravitational acceleration (Earth = 9.81 m/s^2)
-real qf_tail    ! power of spectral tail of E(f), e.g. -4,, -4.5, -5
-!               ! these values must be set in the interface routine
+real q_grav     !< gravitational acceleration (Earth = 9.81 m/s^2)
+real qf_tail    !< power of spectral tail of E(f), e.g. -4,, -4.5, -5
+                !< these values must be set in the interface routine
 !------------------------------------------------------------------------------
 !  filtering coefficients
 !------------------------------------------------------------------------------
-real qf_krat     ! maximum ratio of the interacting wave numbers k1 and k3
-real qf_dmax     ! maximum directional difference between k1 and k3
-real qf_frac     ! fraction of maximum action density to filter
+real qf_krat     !< maximum ratio of the interacting wave numbers k1 and k3
+real qf_dmax     !< maximum directional difference between k1 and k3
+real qf_frac     !< fraction of maximum action density to filter
 !
 !  program switches, optionally to be reset in routine Q_SETCONFIG
 !
-integer iq_compact ! switch to compact data
-!                 == 0, do not compact
-!                 == 1, compact data by elimiting zero contribution along locus
+integer iq_compact !< switch to compact data
+!<                 == 0, do not compact
+!<                 == 1, compact data by elimiting zero contribution along locus
 !
-integer iq_cple   ! type of coupling coefficient
-!                 == 1, deep water coefficient of Webb
-!                 == 2, deep water coefficient of Zakharov
-!                 == 3, finite depth coefficient of Hasselmann & Herterich
-!                 == 4, finite depth coefficient of Zakharov
-!                 == 5, finite depth coefficient of Lin & Perrie
+integer iq_cple   !< type of coupling coefficient
+!<                 == 1, deep water coefficient of Webb
+!<                 == 2, deep water coefficient of Zakharov
+!<                 == 3, finite depth coefficient of Hasselmann & Herterich
+!<                 == 4, finite depth coefficient of Zakharov
+!<                 == 5, finite depth coefficient of Lin & Perrie
 !
-integer iq_disp   ! type of dispersion relation, viz. depth dependency
-!                 == 1, deep water, possibly with geometric scaling
-!                 == 2, linear dispersion relation, w^2 = g.k.tanh(kd)
-!                 == 3, nonlinear dispersion relation
+integer iq_disp   !< type of dispersion relation, viz. depth dependency
+!<                 == 1, deep water, possibly with geometric scaling
+!<                 == 2, linear dispersion relation, w^2 = g.k.tanh(kd)
+!<                 == 3, nonlinear dispersion relation
 !
-integer iq_dscale !  switch to activate depth scaling according to
-                  !  Herterich and Hasselmann
-!                 !  == 0, No depth scaling
-!                 !  == 1, depth scaling activated
+integer iq_dscale !<  switch to activate depth scaling according to
+                  !<  Herterich and Hasselmann
+                  !<  == 0, No depth scaling
+                  !<  == 1, depth scaling activated
 !
-integer iq_filt   !  switch to activate filtering in wave number space
-!                 !  ==0, no filtering
-!                 !  ==1, filtering activated
+integer iq_filt   !<  switch to activate filtering in wave number space
+                  !<  ==0, no filtering
+                  !<  ==1, filtering activated
 !
-integer iq_gauleg ! switch for Gauss-Legendre interpolation
-!                 !  == 0, No Gauss-Legendre, default
-!                 !  > 0   Gauss-Legendre, iq_gauleg is number of points
+integer iq_gauleg !< switch for Gauss-Legendre interpolation
+                  !<  == 0, No Gauss-Legendre, default
+                  !<  > 0   Gauss-Legendre, iq_gauleg is number of points
 !
-integer iq_geom   !  type of scaling
-!                 == 0, no geometric scaling, only directional scaling of loci
-!                 == 1, geometric scaling using Resio/Tracy method
-!                       only possible in the case IQ_DISP=1
+integer iq_geom   !<  type of scaling
+!<                 == 0, no geometric scaling, only directional scaling of loci
+!<                 == 1, geometric scaling using Resio/Tracy method
+!<                       only possible in the case IQ_DISP=1
 !
-integer iq_grid   !  type of spectral grid
-!                 == 1, sector & symmetric around zero
-!                 == 2, sector & symmetric around zero & non-symmetric
-!                 == 3, full circle & non-symmetric
+integer iq_grid   !<  type of spectral grid
+!<                 == 1, sector & symmetric around zero
+!<                 == 2, sector & symmetric around zero & non-symmetric
+!<                 == 3, full circle & non-symmetric
 !
-integer iq_integ  ! option to output integration results
-!                 !  ==0 no output of integration
-!                 !  ==1 only sum per locus
-!                 !  ==2 also information per point on locus
-!                 !  ==3 only basic line integrals
+integer iq_integ  !< option to output integration results
+                  !<  ==0 no output of integration
+                  !<  ==1 only sum per locus
+                  !<  ==2 also information per point on locus
+                  !<  ==3 only basic line integrals
 !
-integer iq_interp ! type of interpolation to retrieve action density
-!                 !  == 1, bi-linear interpolation in discrete spectrum (default)
-!                 !  == 2, take nearest bins, on the basis of maximum weight
+integer iq_interp !< type of interpolation to retrieve action density
+                  !<  == 1, bi-linear interpolation in discrete spectrum (default)
+                  !<  == 2, take nearest bins, on the basis of maximum weight
 !
-integer iq_locus  !  Option for computation of locus
-!                 !  ==1, explicit polar method with fixed k-step
-!                 !  ==2, explicit polar method with adpative k-stepping
-!                 !  ==3, explicit polar method with geometric k-spacing
+integer iq_locus  !<  Option for computation of locus
+                  !<  ==1, explicit polar method with fixed k-step
+                  !<  ==2, explicit polar method with adpative k-stepping
+                  !<  ==3, explicit polar method with geometric k-spacing
 !
-integer iq_log    !  switch to activate logging to file QBASE//.LOG
-!                 !  == 0, No print output
-!                 !  == 1, print output
+integer iq_log    !<  switch to activate logging to file QBASE//.LOG
+                  !<  == 0, No print output
+                  !<  == 1, print output
 !
-integer iq_lump   !  switch to activate lumping on locus
-!                 !  == 0, No lumping
-!                 !  == 1, Lumping along locus
+integer iq_lump   !<  switch to activate lumping on locus
+                  !<  == 0, No lumping
+                  !<  == 1, Lumping along locus
 !
-integer iq_make   !  option to make quadruplet grid
-!                    == 1, make when needed (default)
-!                    == 2, always make quadruplet grid
-!                    == 3, only make grid file
+integer iq_make   !<  option to make quadruplet grid
+!<                    == 1, make when needed (default)
+!<                    == 2, always make quadruplet grid
+!<                    == 3, only make grid file
 !
-integer iq_mod    !  option to redistribute points on locus
-!                 !  == 0, Points will be used as computed by tracing algortihm
-!                 !  == 1, Equi-distant spacing on points along locus (NLOC1)
+integer iq_mod    !<  option to redistribute points on locus
+                  !<  == 0, Points will be used as computed by tracing algortihm
+                  !<  == 1, Equi-distant spacing on points along locus (NLOC1)
 !
-integer iq_prt    !  switch to activate print output, to file QBASE//.PRT
-!                 !  == 0, No print output
-!                 !  == 1, print output
+integer iq_prt    !<  switch to activate print output, to file QBASE//.PRT
+                  !<  == 0, No print output
+                  !<  == 1, print output
 !
-integer iq_search ! switch to determine search for a proper grid
-!                 == 0, no search is carried out
-!                 == 1, search nearest (relative) interaction grid
+integer iq_search !< switch to determine search for a proper grid
+                  !< == 0, no search is carried out
+                  !< == 1, search nearest (relative) interaction grid
 !
-integer iq_screen ! option to send output to the screen
-!                 !  == 0, no output is send to screen
-!                 !  == 1, output is send to screen
+integer iq_screen !< option to send output to the screen
+                  !<  == 0, no output is send to screen
+                  !<  == 1, output is send to screen
 !
-integer iq_sym    ! switch to activate use of symmetry reduction
-!                 !  == 0, no symmetries are used
-!                 !  == 1, symmetry activated (default)
+integer iq_sym    !< switch to activate use of symmetry reduction
+                  !<  == 0, no symmetries are used
+                  !<  == 1, symmetry activated (default)
 !
-integer iq_test   !  test level, output is directed to unit luqtst
-!                 !  == 0, no test output
-!                 !  == 1, output of basic I/O
-!                 !  == 2, extensive test output
+integer iq_test   !<  test level, output is directed to unit luqtst
+                  !<  == 0, no test output
+                  !<  == 1, output of basic I/O
+                  !<  == 2, extensive test output
 !
-integer iq_trace  !  trace option
-!                 !  == 0, no trace of subroutine calls
-!                 !  > 0,  maximum number of traces per subroutine
-!                 !  < 0,  as for >0 but now output is send to the screen
+integer iq_trace  !<  trace option
+                  !<  == 0, no trace of subroutine calls
+                  !<  > 0,  maximum number of traces per subroutine
+                  !<  < 0,  as for >0 but now output is send to the screen
 !
-integer iq_trf    !  option to print transformed loci to special output file
-!                 !  == 0, no output to data file unit luqtrf
-!                 !  == 1, test output from routine Q_GETLOCUS
+integer iq_trf    !<  option to print transformed loci to special output file
+                  !<  == 0, no output to data file unit luqtrf
+                  !<  == 1, test output from routine Q_GETLOCUS
 !
-integer iq_t13    ! option to output T13 integration
-!                 !  ==0, no output
-!                 !  ==1, test output of T13 per locus
+integer iq_t13    !< option to output T13 integration
+                  !<  ==0, no output
+                  !<  ==1, test output of T13 per locus
 !
-integer iq_xdia    ! switch to activate output to extended DIA data file
-!                    == 0, no output
-!                    >  0, output to data file, but only when lumping is also
-!                          activated
+integer iq_xdia   !< switch to activate output to extended DIA data file
+                  !<   == 0, no output
+                  !<   >  0, output to data file, but only when lumping is also
+                  !<         activated
 !---------------------------------------------------------------------------------------
 !
 !
 ! grid administration
 !
-character(len=13) aqname       ! name of ASCII grid file
-character(len=13) bqname       ! name of binary quadruplet grid file
-character(len=13) lastquadfile ! name of last retrieved BQF file
-character(len=21) q_header     ! header of Binary Quadruplet File as intended in BQF-file
-character(len=21) r_header     ! header of Binary Quadruplet File as exists in BQF-file
-logical lq_grid                ! flag to make (new) interaction grid
+character(len=13) aqname       !< name of ASCII grid file
+character(len=13) bqname       !< name of binary quadruplet grid file
+character(len=13) lastquadfile !< name of last retrieved BQF file
+character(len=21) q_header     !< header of Binary Quadruplet File as intended in BQF-file
+character(len=21) r_header     !< header of Binary Quadruplet File as exists in BQF-file
+logical lq_grid                !< flag to make (new) interaction grid
 !
-integer nkq     ! number of wave numbers of quad-grid
-integer naq     ! number of angles of quad-grad
-integer ncirc   ! number of angles on a full circle
+integer nkq     !< number of wave numbers of quad-grid
+integer naq     !< number of angles of quad-grad
+integer ncirc   !< number of angles on a full circle
 !
-integer ia_k1,ik_k1 ! indices of main loop variables
-integer ia_k3,ik_k3 ! indices of main loop variables
+integer ia_k1,ik_k1 !< indices of main loop variables
+integer ia_k3,ik_k3 !< indices of main loop variables
 !
-real fqmin      ! lowest frequency in Hz
-real fqmax      ! highest frequency in Hz
-real q_sector   ! half plane width in degrees (for iq_grid=1,2)
-real q_dstep    ! step size for generating BQF files
+real fqmin      !< lowest frequency in Hz
+real fqmax      !< highest frequency in Hz
+real q_sector   !< half plane width in degrees (for iq_grid=1,2)
+real q_dstep    !< step size for generating BQF files
 !
-integer, parameter :: mq_stack=10 ! maximum number of elements in stack
+integer, parameter :: mq_stack=10 !< maximum number of elements in stack
 !
-integer mlocus   ! maximum number of points on locus for defining arrays
-integer nlocus0  ! preferred number of points on locus
-integer nlocus1  ! number of points on locus as computed in Q_CMPLOCUS
-integer klocus   ! number of points on locus as stored in quadruplet database
-                 ! based on nlocus0, iq_gauleg and iq_lump (without compacting)
-                 ! used in Q_ALLOCATE to define size of data arrays
-integer nlocus   ! number of points on locus, equal to klocus
-integer nlocusx  ! number of points on locus for use in computation (nlocusx <= nlocus)
+integer mlocus   !< maximum number of points on locus for defining arrays
+integer nlocus0  !< preferred number of points on locus
+integer nlocus1  !< number of points on locus as computed in Q_CMPLOCUS
+integer klocus   !< number of points on locus as stored in quadruplet database
+                 !< based on nlocus0, iq_gauleg and iq_lump (without compacting)
+                 !< used in Q_ALLOCATE to define size of data arrays
+integer nlocus   !< number of points on locus, equal to klocus
+integer nlocusx  !< number of points on locus for use in computation (nlocusx <= nlocus)
 !
-real kqmin       ! lowest wave number
-real kqmax       ! highest wave number
-real wk_max      ! maximum weight for wave number interpolation, set in Q_INIT
+real kqmin       !< lowest wave number
+real kqmax       !< highest wave number
+real wk_max      !< maximum weight for wave number interpolation, set in Q_INIT
 !
-real k0x,k0y,dk0 ! components of initial wave number of locus,
-real krefx,krefy ! components of reference wave number for quad-grid
-real k1x,k1y     ! components of k1 wave number
-real k2x,k2y     ! components of k2 wave number
-real k3x,k3y     ! components of k3 wave number
-real k4x,k4y     ! components of k4 wave number
-real px,py       ! components of difference k1-k3 wave number
-real pmag        ! magnitude of P-vector
-real pang        ! angle related of P-vector, Pang = atan2(py,px), (radians)
-real sang        ! angle of symmytry axis of locus, SANG = PANG +/ pi° (radians)
-real xang        ! angle of locus for the case that w1=w3, Xang=atan2(-px,py), (radians)
-real q           ! difference of radian frequencies, used in Resio-Tracy method
-real kmin_loc    ! minimum wave number of locus along symmetry axis
-real kmax_loc    ! maximum wave number of locus along symmetry axis
-real kmid        ! wave number at midpoint of locus along symmetry axis
-real kmidx       ! x-component of wave number at midpoint of locus along symmetry axis
-real kmidy       ! y-component of wave number at midpoint of locus along symmetry axis
-real loc_crf     ! circumference of locus in (kx,ky)-space
-real loc_area    ! area of locus, measured in (kx-ky)- space
-real loc_xz      ! x-coordinate of center of gravity of locus in (kx,ky)-space
-real loc_yz      ! y-coordinate of center of gravity of locus in (kx,ky)-space
+real k0x,k0y,dk0 !< components of initial wave number of locus,
+real krefx,krefy !< components of reference wave number for quad-grid
+real k1x,k1y     !< components of k1 wave number
+real k2x,k2y     !< components of k2 wave number
+real k3x,k3y     !< components of k3 wave number
+real k4x,k4y     !< components of k4 wave number
+real px,py       !< components of difference k1-k3 wave number
+real pmag        !< magnitude of P-vector
+real pang        !< angle related of P-vector, Pang = atan2(py,px), (radians)
+real sang        !< angle of symmytry axis of locus, SANG = PANG +/ pi° (radians)
+real xang        !< angle of locus for the case that w1=w3, Xang=atan2(-px,py), (radians)
+real q           !< difference of radian frequencies, used in Resio-Tracy method
+real kmin_loc    !< minimum wave number of locus along symmetry axis
+real kmax_loc    !< maximum wave number of locus along symmetry axis
+real kmid        !< wave number at midpoint of locus along symmetry axis
+real kmidx       !< x-component of wave number at midpoint of locus along symmetry axis
+real kmidy       !< y-component of wave number at midpoint of locus along symmetry axis
+real loc_crf     !< circumference of locus in (kx,ky)-space
+real loc_area    !< area of locus, measured in (kx-ky)- space
+real loc_xz      !< x-coordinate of center of gravity of locus in (kx,ky)-space
+real loc_yz      !< y-coordinate of center of gravity of locus in (kx,ky)-space
 !
 !  data for extended input k-grid, necessary when input grid is smaller than
 !  internal k-grid.
@@ -244,144 +247,144 @@ real loc_yz      ! y-coordinate of center of gravity of locus in (kx,ky)-space
 !  information about pre_computed locus, only half the angles need to be saved
 !
 !
-integer, allocatable :: quad_nloc(:,:)   ! number of points on locus
-integer, allocatable :: quad_ik2(:,:,:)  ! lower wave number index of k2
-integer, allocatable :: quad_ia2(:,:,:)  ! lower direction index of k2
-integer, allocatable :: quad_ik4(:,:,:)  ! lower wave number index of k4
-integer, allocatable :: quad_ia4(:,:,:)  ! lower direction index of k4
-real, allocatable :: quad_w1k2(:,:,:)    ! weight 1 of k2
-real, allocatable :: quad_w2k2(:,:,:)    ! weight 2 of k2
-real, allocatable :: quad_w3k2(:,:,:)    ! weight 3 of k2
-real, allocatable :: quad_w4k2(:,:,:)    ! weight 4 of k2
-real, allocatable :: quad_w1k4(:,:,:)    ! weight 1 of k4
-real, allocatable :: quad_w2k4(:,:,:)    ! weight 2 of k4
-real, allocatable :: quad_w3k4(:,:,:)    ! weight 3 of k4
-real, allocatable :: quad_w4k4(:,:,:)    ! weight 4 of k4
-real, allocatable :: quad_zz  (:,:,:)    ! compound product of cple*ds*sym/jac
+integer, allocatable :: quad_nloc(:,:)   !< number of points on locus
+integer, allocatable :: quad_ik2(:,:,:)  !< lower wave number index of k2
+integer, allocatable :: quad_ia2(:,:,:)  !< lower direction index of k2
+integer, allocatable :: quad_ik4(:,:,:)  !< lower wave number index of k4
+integer, allocatable :: quad_ia4(:,:,:)  !< lower direction index of k4
+real, allocatable :: quad_w1k2(:,:,:)    !< weight 1 of k2
+real, allocatable :: quad_w2k2(:,:,:)    !< weight 2 of k2
+real, allocatable :: quad_w3k2(:,:,:)    !< weight 3 of k2
+real, allocatable :: quad_w4k2(:,:,:)    !< weight 4 of k2
+real, allocatable :: quad_w1k4(:,:,:)    !< weight 1 of k4
+real, allocatable :: quad_w2k4(:,:,:)    !< weight 2 of k4
+real, allocatable :: quad_w3k4(:,:,:)    !< weight 3 of k4
+real, allocatable :: quad_w4k4(:,:,:)    !< weight 4 of k4
+real, allocatable :: quad_zz  (:,:,:)    !< compound product of cple*ds*sym/jac
 !
 !  characteristic of computed locus
 !
-real, allocatable :: x2_loc(:)   ! k2x coordinates around locus
-real, allocatable :: y2_loc(:)   ! k2y coordinates around locus
-real, allocatable :: z_loc(:)    ! data value around locus
-real, allocatable :: s_loc(:)    ! coordinate along locus
-real, allocatable :: x4_loc(:)   ! k4x coordinates around locus
-real, allocatable :: y4_loc(:)   ! k4y coordinates around locus
-real, allocatable :: ds_loc(:)   ! step size around locus
-real, allocatable :: jac_loc(:)  ! jacobian term around locus
-real, allocatable :: cple_loc(:) ! coupling coefficient around locus
-real, allocatable :: sym_loc(:)  ! factor for symmetry between k3 and k4
+real, allocatable :: x2_loc(:)   !< k2x coordinates around locus
+real, allocatable :: y2_loc(:)   !< k2y coordinates around locus
+real, allocatable :: z_loc(:)    !< data value around locus
+real, allocatable :: s_loc(:)    !< coordinate along locus
+real, allocatable :: x4_loc(:)   !< k4x coordinates around locus
+real, allocatable :: y4_loc(:)   !< k4y coordinates around locus
+real, allocatable :: ds_loc(:)   !< step size around locus
+real, allocatable :: jac_loc(:)  !< jacobian term around locus
+real, allocatable :: cple_loc(:) !< coupling coefficient around locus
+real, allocatable :: sym_loc(:)  !< factor for symmetry between k3 and k4
 !
-real, allocatable :: k_pol(:)  ! wave numbers during polar generation of locus
-real, allocatable :: c_pol(:)  ! cosines during polar generation of locus
-real, allocatable :: a_pol(:)  ! angles of polar locus
+real, allocatable :: k_pol(:)  !< wave numbers during polar generation of locus
+real, allocatable :: c_pol(:)  !< cosines during polar generation of locus
+real, allocatable :: a_pol(:)  !< angles of polar locus
 !
 !  characteristics of modified locus, result
 !
-real, allocatable :: x2_mod(:)   ! k2x coordinates along locus
-real, allocatable :: y2_mod(:)   ! k2y coordinates along locus
-real, allocatable :: x4_mod(:)   ! k4x coordinates along locus
-real, allocatable :: y4_mod(:)   ! k4y coordinates along locus
-real, allocatable :: z_mod(:)    ! data value around locus
-real, allocatable :: s_mod(:)    ! coordinate along locus
-real, allocatable :: ds_mod(:)   ! step size around locus
-real, allocatable :: jac_mod(:)  ! jacobian term around locus
-real, allocatable :: cple_mod(:) ! coupling coefficient around locus
-real, allocatable :: sym_mod(:)  ! factor for symmetry between k3 and k4
+real, allocatable :: x2_mod(:)   !< k2x coordinates along locus
+real, allocatable :: y2_mod(:)   !< k2y coordinates along locus
+real, allocatable :: x4_mod(:)   !< k4x coordinates along locus
+real, allocatable :: y4_mod(:)   !< k4y coordinates along locus
+real, allocatable :: z_mod(:)    !< data value around locus
+real, allocatable :: s_mod(:)    !< coordinate along locus
+real, allocatable :: ds_mod(:)   !< step size around locus
+real, allocatable :: jac_mod(:)  !< jacobian term around locus
+real, allocatable :: cple_mod(:) !< coupling coefficient around locus
+real, allocatable :: sym_mod(:)  !< factor for symmetry between k3 and k4
 !
-real, allocatable :: k2m_mod(:) ! k2 magnitude around locus
-real, allocatable :: k2a_mod(:) ! k2 angle around locus
-real, allocatable :: k4m_mod(:) ! k4 magnitude around locus
-real, allocatable :: k4a_mod(:) ! k4 angle around locus
+real, allocatable :: k2m_mod(:) !< k2 magnitude around locus
+real, allocatable :: k2a_mod(:) !< k2 angle around locus
+real, allocatable :: k4m_mod(:) !< k4 magnitude around locus
+real, allocatable :: k4a_mod(:) !< k4 angle around locus
 !
 !   result of subroutine Q_weight
 !
-real, allocatable :: wk_k2(:)   ! position of k2 and k4 wave number
-real, allocatable :: wk_k4(:)   ! w.r.t. discrete k-grid
-real, allocatable :: wa_k2(:)   ! position of k2 and k4 wave number
-real, allocatable :: wa_k4(:)   ! w.r.t. discrete a-grid
-real, allocatable :: wt_k2(:)   ! weight factor in tail,
-real, allocatable :: wt_k4(:)   ! wt==1 for wave numbers inside k-grid
+real, allocatable :: wk_k2(:)   !< position of k2 and k4 wave number
+real, allocatable :: wk_k4(:)   !< w.r.t. discrete k-grid
+real, allocatable :: wa_k2(:)   !< position of k2 and k4 wave number
+real, allocatable :: wa_k4(:)   !< w.r.t. discrete a-grid
+real, allocatable :: wt_k2(:)   !< weight factor in tail,
+real, allocatable :: wt_k4(:)   !< wt==1 for wave numbers inside k-grid
 !
-integer, allocatable :: t_ik2(:)   ! transformed weight for k2-magnitude
-integer, allocatable :: t_ia2(:)   ! transformed direction for k2
-integer, allocatable :: t_ik4(:)   ! transformed tail factor for k2
-integer, allocatable :: t_ia4(:)   ! transformed weight for k4
-real, allocatable :: t_w1k2(:)  ! transformed weight 1 for k2
-real, allocatable :: t_w2k2(:)  ! transformed weight 2 for k2
-real, allocatable :: t_w3k2(:)  ! transformed weight 3 for k2
-real, allocatable :: t_w4k2(:)  ! transformed weight 4 for k2
-real, allocatable :: t_w1k4(:)  ! transformed weight 1 for k4
-real, allocatable :: t_w2k4(:)  ! transformed weight 2 for k4
-real, allocatable :: t_w3k4(:)  ! transformed weight 3 for k4
-real, allocatable :: t_w4k4(:)  ! transformed weight 4 for k4
-real, allocatable :: t_zz(:)    ! product term
+integer, allocatable :: t_ik2(:)   !< transformed weight for k2-magnitude
+integer, allocatable :: t_ia2(:)   !< transformed direction for k2
+integer, allocatable :: t_ik4(:)   !< transformed tail factor for k2
+integer, allocatable :: t_ia4(:)   !< transformed weight for k4
+real, allocatable :: t_w1k2(:)  !< transformed weight 1 for k2
+real, allocatable :: t_w2k2(:)  !< transformed weight 2 for k2
+real, allocatable :: t_w3k2(:)  !< transformed weight 3 for k2
+real, allocatable :: t_w4k2(:)  !< transformed weight 4 for k2
+real, allocatable :: t_w1k4(:)  !< transformed weight 1 for k4
+real, allocatable :: t_w2k4(:)  !< transformed weight 2 for k4
+real, allocatable :: t_w3k4(:)  !< transformed weight 3 for k4
+real, allocatable :: t_w4k4(:)  !< transformed weight 4 for k4
+real, allocatable :: t_zz(:)    !< product term
 !
 !  corresponding declarations
 !
-integer, allocatable :: r_ik2(:)
-integer, allocatable :: r_ia2(:)
-integer, allocatable :: r_ik4(:)
-integer, allocatable :: r_ia4(:)
-real, allocatable :: r_w1k2(:),r_w2k2(:),r_w3k2(:),r_w4k2(:)
-real, allocatable :: r_w1k4(:),r_w2k4(:),r_w3k4(:),r_w4k4(:)
-real, allocatable :: r_zz(:),r_jac(:),r_cple(:),r_sym(:),r_ws(:)
+integer, allocatable :: r_ik2(:) !< corresponding declarations r_ik2
+integer, allocatable :: r_ia2(:) !< corresponding declarations r_ia2
+integer, allocatable :: r_ik4(:) !< corresponding declarations r_ik4
+integer, allocatable :: r_ia4(:) !< corresponding declarations r_ia4
+real, allocatable :: r_w1k2(:),r_w2k2(:),r_w3k2(:),r_w4k2(:) !< corresponding declarations
+real, allocatable :: r_w1k4(:),r_w2k4(:),r_w3k4(:),r_w4k4(:) !< corresponding declarations
+real, allocatable :: r_zz(:),r_jac(:),r_cple(:),r_sym(:),r_ws(:) !< corresponding declarations
 !
-real, allocatable :: dt13(:)    ! increment along locus
+real, allocatable :: dt13(:)    !< increment along locus
 !
-real, allocatable :: q_xk(:)    ! extended wave number array starting at index 0
-real, allocatable :: q_sk(:)    ! step size of extended wave number array
-real sk_max                     ! maximum wave number in extended array
+real, allocatable :: q_xk(:)    !< extended wave number array starting at index 0
+real, allocatable :: q_sk(:)    !< step size of extended wave number array
+real sk_max                     !< maximum wave number in extended array
 !
-real, allocatable :: q_k(:)     !  wave number grid [1/m]
-real, allocatable :: q_dk(:)    !  width of wave number bins [1/m]
-real, allocatable :: q_kpow(:)  !  wave number to a certain power, used in filtering
-real, allocatable :: q_f(:)     !  frequencies accociated to wave number/depth
-real, allocatable :: q_df(:)    !  step size of frequency grid
-real, allocatable :: q_sig(:)   !  radian frequencies associated to wave number/depth
-real, allocatable :: q_dsig(:)  !  step size of radian frequency grid
-real, allocatable :: q_cg(:)    !  group velocity (m/s)
-real, allocatable :: q_a(:)     !  directions of quadruplet grid in radians
-real, allocatable :: q_ad(:)    !  directions of quadruplet grid in degrees
-real, allocatable :: a(:,:)     !  Action density on wave number grid A(sigma,theta)
-real, allocatable :: nspec(:,:) !  Action density on wave number grid N(kx,ky)
-real, allocatable :: nk1d(:)    !  Internal 1d action density spectrum N(k)
-real, allocatable :: qnl(:,:)   !  Nonlinear energy transfer Snl(k,theta)
+real, allocatable :: q_k(:)     !<  wave number grid [1/m]
+real, allocatable :: q_dk(:)    !<  width of wave number bins [1/m]
+real, allocatable :: q_kpow(:)  !<  wave number to a certain power, used in filtering
+real, allocatable :: q_f(:)     !<  frequencies accociated to wave number/depth
+real, allocatable :: q_df(:)    !<  step size of frequency grid
+real, allocatable :: q_sig(:)   !<  radian frequencies associated to wave number/depth
+real, allocatable :: q_dsig(:)  !<  step size of radian frequency grid
+real, allocatable :: q_cg(:)    !<  group velocity (m/s)
+real, allocatable :: q_a(:)     !<  directions of quadruplet grid in radians
+real, allocatable :: q_ad(:)    !<  directions of quadruplet grid in degrees
+real, allocatable :: a(:,:)     !<  Action density on wave number grid A(sigma,theta)
+real, allocatable :: nspec(:,:) !<  Action density on wave number grid N(kx,ky)
+real, allocatable :: nk1d(:)    !<  Internal 1d action density spectrum N(k)
+real, allocatable :: qnl(:,:)   !<  Nonlinear energy transfer Snl(k,theta)
 !
-integer id_facmax                   ! Factor for determining range of depth search (Q_SEARCHGRID)
-real q_dird1,q_dird2                ! first and last direction of host model (via XNL_INIT) degrees
-real q_depth                        ! local water depth in m
-real q_maxdepth                     ! maximum water depth, set in XNL_INIT, used in Q_CTRGRID
-real q_mindepth                     ! minimum water depth, set in XNL_INIT, used in Q_CTRGRID
-real q_lambda                       ! geometric scaling factor for 'deep' water loci
-real q_scale                        ! additional scale factor resulting from SEARCH for neasrest grid
+integer id_facmax                   !< Factor for determining range of depth search (Q_SEARCHGRID)
+real q_dird1,q_dird2                !< first and last direction of host model (via XNL_INIT) degrees
+real q_depth                        !< local water depth in m
+real q_maxdepth                     !< maximum water depth, set in XNL_INIT, used in Q_CTRGRID
+real q_mindepth                     !< minimum water depth, set in XNL_INIT, used in Q_CTRGRID
+real q_lambda                       !< geometric scaling factor for 'deep' water loci
+real q_scale                        !< additional scale factor resulting from SEARCH for neasrest grid
 !
-real eps_q                          ! absolute accuracy for check of Q
-real eps_k                          ! absolute accuracy for equality check of k
-real rel_k                          ! relative accuracy for equality check of k
+real eps_q                          !< absolute accuracy for check of Q
+real eps_k                          !< absolute accuracy for equality check of k
+real rel_k                          !< relative accuracy for equality check of k
 !
-integer iq_stack                    ! Sequence number of stack with subroutine calls
-character(len=21) cstack(mq_stack)  ! Stack with module names
+integer iq_stack                    !< Sequence number of stack with subroutine calls
+character(len=21) cstack(mq_stack)  !< Stack with module names
 !
 !  characteristics of locus
 !
-real crf1     ! estimated circumference of locus
+real crf1     !< estimated circumference of locus
 !---------------------------------------------------------------------------------
 !
 !  information about type of grid
 !
-integer iaref       !  index of first angle of reference wave numbers
-integer iamax       !  maximum difference in indices for sector grids
-integer iaq1,iaq2   !  indices of do-loop for directions
-integer iag1,iag2   !  range of directions for precomputed interaction grid
-real q_ang1,q_ang2  !  lower and upper angle of grid in degrees
-real q_delta        !  directional spacing of angular grid in radians
-real q_deltad       !  directional spacing of angular grid in degrees
+integer iaref       !<  index of first angle of reference wave numbers
+integer iamax       !<  maximum difference in indices for sector grids
+integer iaq1,iaq2   !<  indices of do-loop for directions
+integer iag1,iag2   !<  range of directions for precomputed interaction grid
+real q_ang1,q_ang2  !<  lower and upper angle of grid in degrees
+real q_delta        !<  directional spacing of angular grid in radians
+real q_deltad       !<  directional spacing of angular grid in degrees
 !
-real q_ffac         !  geometric factor between subsequent frequencies
-real q_kfac         !  geometric factor between subsequent wave numbers
-                    !  (only valid for IQ_IDISP==1)
-real qk_tail        ! power of spectral tail of N(k), computed from qf_tail
+real q_ffac         !<  geometric factor between subsequent frequencies
+real q_kfac         !<  geometric factor between subsequent wave numbers
+                    !<  (only valid for IQ_IDISP==1)
+real qk_tail        !< power of spectral tail of N(k), computed from qf_tail
 !
 !-----------------------------------------------------------------------------
 !
@@ -399,27 +402,43 @@ real qk_tail        ! power of spectral tail of N(k), computed from qf_tail
 !
 !============== General settings =================
 !
-integer iq_type   !  method for computing the nonlinear interactions
-!                    depending on the value of iq_type a number of settings
-!                    for other processes or schematizations are set in Q_COMPU
-!  iq_type==1: deep water, symmetric spectrum, Webb coupling coefficient
-!           2: deep water computation with WAM depth scaling based on Herterich
-!              and Hasselmann (1980)
-!           3: finite depth transfer
+integer iq_type   !<  method for computing the nonlinear interactions
+!<                    depending on the value of iq_type a number of settings
+!<                    for other processes or schematizations are set in Q_COMPU
+!<  iq_type==1: deep water, symmetric spectrum, Webb coupling coefficient
+!<           2: deep water computation with WAM depth scaling based on Herterich
+!<              and Hasselmann (1980)
+!<           3: finite depth transfer
 !
-integer iq_err    !  counts the number of errors
-!                    if no error occurred, IQ_ERR = 0
-!                    for each occuring error, iq_err is incremented
-!                    errors are always terminating
-!                    routine Q_ERROR handles the reporting on the error
+integer iq_err    !<  counts the number of errors
+!<                    if no error occurred, IQ_ERR = 0
+!<                    for each occuring error, iq_err is incremented
+!<                    errors are always terminating
+!<                    routine Q_ERROR handles the reporting on the error
 !
-integer iq_warn   !  counts the number of warnings
+integer iq_warn   !<  counts the number of warnings
 !
 !  indices for test output of actual integration
 !  these values are set and optionally modified in Q_SETCONFIG
 !
 contains
 !----------------------------------------------------------------------------------
+!> @brief Initialize coefficients, integration space, file i/o for computation
+!>        nonlinear quadruplet wave-wave interaction
+!> @author Gerbrant van Vledder @date 4 September 2003
+!> @param[in]  sigma   Radian frequencies
+!> @param[in]  dird    Directions (degrees)
+!> @param[in]  nsigma  Number of sigma values
+!> @param[in]  ndir    Number of directions
+!> @param[in]  pftail  power of spectral tail, e.g. -4 or -5
+!> @param[in]  x_grav  gravitational acceleration
+!> @param[in]  depth   depths for which integration space must be computed
+!> @param[in]  ndepth  Number of water depths
+!> @param[in]  iquad   Type of method for computing nonlinear interactions
+!> @param[in]  iqgrid  Type of grid for computing nonlinear interactions
+!> @param[in]  iproc   Processor number, controls output file for MPI
+!> @param[out] ierr    Error indicator. If no errors are detected IERR=0
+!>
 !------------------------------------------------------------------------------
 subroutine xnl_init(sigma,dird,nsigma,ndir,pftail,x_grav,depth,ndepth, &
 &   iquad,iqgrid,iproc,ierr)
@@ -490,7 +509,7 @@ real, intent(in)     ::  x_grav        ! gravitational acceleration
 integer, intent(in)  ::  iquad         ! Type of method for computing nonlinear interactions
 integer, intent(in)  ::  iqgrid        ! Type of grid for computing nonlinear interactions
 integer, intent(in)  ::  iproc         ! Processor number, controls output file for MPI
-integer, intent(out) ::  ierr        ! Error indicator. If no errors are detected IERR=0
+integer, intent(out) ::  ierr          ! Error indicator. If no errors are detected IERR=0
 !
 !  4. Error messages
 !
@@ -533,14 +552,14 @@ integer, intent(out) ::  ierr        ! Error indicator. If no errors are detecte
 !
 ! Local parameters
 !
-integer iuerr     ! error indicator
-integer idepth    ! index over water depths
-integer igrid     ! status of quadruplet grid file
-integer ia,ik     ! counters
+integer iuerr     !< error indicator
+integer idepth    !< index over water depths
+integer igrid     !< status of quadruplet grid file
+integer ia,ik     !< counters
 !
-real depmin       ! minimum water depth
-real dstep        ! directional step
-real dgap         ! directional gap between first and last direction
+real depmin       !< minimum water depth
+real dstep        !< directional step
+real dgap         !< directional gap between first and last direction
 !
 call q_setversion ! set version number
 !------------------------------------------------------------------------------
@@ -744,6 +763,22 @@ end do
 !
 return
 end subroutine
+!> @brief Compute nonlinear transfer for a given action density spectrum
+!> on a given sigma and direction grid (Webb/Resio/Tracy/Van Vledder)
+!> @author Gerbrant Ph. van Vledder @date 27 Sept. 2002
+!>
+!> @parm[in]   aspec    Action density spectrum as a function of (sigma,theta)
+!> @parm[in]   sigma    radian frequencies
+!> @parm[in]   angle    directions in radians (sector or full circle)
+!> @parm[in]   nsig     number of frequencies (sigma)
+!> @parm[in]   ndir     number of directions
+!> @parm[in]   depth    water depth
+!> @parm[in]   iquad    method of computing nonlinear quadruplet interactions
+!> @parm[out]  xnl      nonlinear quadruplet interaction computed with a certain exact method (k,theta)
+!> @parm[out]  diag     diagonal term for semi-implicit integration
+!> @parm[in]   iproc    MPI processor number
+!> @parm[out]  ierr     error indicator
+!> 
 !-----------------------------------------------------------------------------!
 subroutine xnl_main(aspec,sigma,angle,nsig,ndir,depth,iquad,xnl,diag, &
 &   iproc, ierr)
@@ -809,7 +844,7 @@ real,   intent(in)  :: depth            ! water depth
 real,   intent(out) :: xnl(nsig,ndir)   ! nonlinear quadruplet interaction computed with
 !                                         a certain exact method (k,theta)
 real,   intent(out) :: diag(nsig,ndir)  ! diagonal term for semi-implicit integration
-integer, intent(out) :: ierr          ! error indicator
+integer, intent(out) :: ierr            ! error indicator
 !
 !--------------------------------------------------------------------------------
 !
@@ -836,20 +871,20 @@ integer, intent(out) :: ierr          ! error indicator
 !--------------------------------------------------------------------------------
 !     local variables
 !
-integer, save :: i_qmain    ! counter number of calls of XNL_MAIN
-integer i_qlast             ! value of iquad in last call
+integer, save :: i_qmain    !< counter number of calls of XNL_MAIN
+integer i_qlast             !< value of iquad in last call
 !
-integer isig         ! counter for sigma values
-integer idir         ! counter of directions
-real q_dfac          ! depth scale factor for nonlinear transfer
+integer isig         !< counter for sigma values
+integer idir         !< counter of directions
+real q_dfac          !< depth scale factor for nonlinear transfer
 !
-real sum_e           ! sum of energy
-real sum_a           ! sum of action
-real sum_mx          ! sum of momentum in x-direction
-real sum_my          ! sum of momentum in y-direction
+real sum_e           !< sum of energy
+real sum_a           !< sum of action
+real sum_mx          !< sum of momentum in x-direction
+real sum_my          !< sum of momentum in y-direction
 !
-data i_qmain /0/     ! keep track of number of calls of XNL_MAIN
-data i_qlast /0/     ! keep track of last call with IQUAD
+data i_qmain /0/     !< keep track of number of calls of XNL_MAIN
+data i_qlast /0/     !< keep track of last call with IQUAD
 !
 !--------------------------------------------------------------------------------
 !
@@ -939,6 +974,8 @@ call q_stack('-xnl_main')
 return
 end subroutine
 !------------------------------------------------------------------------------
+!> @brief Check configuration for non-linear transfer
+!> @author Gerbrant van Vledder @date 8 August 2003
 subroutine q_allocate
 !------------------------------------------------------------------------------
 !
@@ -1003,8 +1040,8 @@ implicit none
 !
 !  Local variables
 !-------------------------------------------------------------------------------
-integer maq   ! number of theta elements in grid matrix
-integer mkq   ! number of k-elements in grid matrix
+integer maq   !< number of theta elements in grid matrix
+integer mkq   !< number of k-elements in grid matrix
 !-------------------------------------------------------------------------------
 call q_stack('+q_allocate')
 !
@@ -1155,6 +1192,8 @@ call q_stack('-q_allocate')
 return
 end subroutine
 !------------------------------------------------------------------------------
+!> @brief Check configuration for computation of non-linear transfer
+!> @author Gerbrant van Vledder @date 12 June 2003
 subroutine q_chkconfig
 !------------------------------------------------------------------------------
 !
@@ -1331,6 +1370,17 @@ call q_stack('-Q_CHKCONFIG')
 return
 end subroutine
 !------------------------------------------------------------------------------
+!> @brief Check conservation laws of non-linear transfer
+!> @author Gerbrant van Vledder @date 13 Aug. 2002 
+!> 
+!> @parm[in]   xnl           transfer rate
+!> @parm[in]   nk            number of wave numbers
+!> @parm[in]   ndir          number of directions
+!> @parm[out]  sum_e         sum of wave energy
+!> @parm[out]  sum_a         sum of wave action
+!> @parm[out]  sum_mx        sum of momentum in x-direction
+!> @parm[out]  sum_my        sum of momentum in y-direction
+!> 
 subroutine q_chkcons(xnl,nk,ndir,sum_e,sum_a,sum_mx,sum_my)
 !------------------------------------------------------------------------------
 !
