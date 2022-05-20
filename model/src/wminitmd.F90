@@ -620,7 +620,6 @@
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                      &
           WRITE (MDSS,910)  IFNAME, MDSI
 !
-      WRITE(*,*) 'TEST TEST TEST', TRIM(FNMPRE)//IFNAME
       OPEN (MDSI,FILE=TRIM(FNMPRE)//IFNAME,STATUS='OLD',ERR=2000,      &
             IOSTAT=IERR)
       REWIND (MDSI)
