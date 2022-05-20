@@ -70,9 +70,7 @@
 !
       REAL            :: UNDEF = -999.9 !> Value for undefined variable in output
 
-      ! Filled in by the pre-processor with 'big_endian', 'little_endian', or
-      ! 'native'
-      CHARACTER(*), PARAMETER :: FILE_ENDIAN = ENDIANNESS
+      CHARACTER(*), PARAMETER :: FILE_ENDIAN = ENDIANNESS !> Filled by preprocessor with 'big_endian', 'little_endian', or 'native'
 
 !
 ! Parameters for friction factor table
