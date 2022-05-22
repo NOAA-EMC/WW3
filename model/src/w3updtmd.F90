@@ -1979,11 +1979,10 @@
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3IDATMD, ONLY: TLN, WLEV
       USE W3SERVMD, ONLY: EXTCDE
-      USE W3DISPMD, ONLY: WAVNU1
+      USE W3DISPMD, ONLY: WAVNU1, WAVNU3
       USE W3TIMEMD
       USE W3PARALL, only : INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
       USE W3PARALL, only : GET_JSEA_IBELONG
-      USE W3DISPMD, ONLY: WAVNU1
 #ifdef W3_PDLIB
       USE PDLIB_W3PROFSMD, ONLY : SET_IOBDP_PDLIB
 #endif
@@ -2203,7 +2202,11 @@
               CGO(IK) = CG(IK,ISEA)
 !
 !             Calculate wavenumbers and group velocities.
+#ifdef W3_PDLIB
+              CALL WAVNU3(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA))
+#else
               CALL WAVNU1(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA))
+#endif
 !
               END DO
 !

@@ -274,7 +274,11 @@ END FUNCTION Df1f2theta
 !  
       DO iIG=1,NKIG
         DO ifr=1,nk
+#ifdef W3_PDLIB
+          CALL WAVNU3 (SIG(ifr)+SIG(iIG),DEPTH,WN1,CG2)
+#else
           CALL WAVNU1 (SIG(ifr)+SIG(iIG),DEPTH,WN1,CG2)
+#endif
           DO ith1=1,nth
             DO ith2=1,nth 
 !

@@ -4090,7 +4090,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE W3DISPMD, ONLY: WAVNU1
+      USE W3DISPMD, ONLY: WAVNU1, WAVNU3
       USE W3ADATMD, ONLY: U10, U10D, WBT
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3GDATMD, ONLY: NK, NTH, NSEAL, SIG, ESIN, ECOS, DTH, DSII, &
@@ -4243,7 +4243,11 @@
 ! N(k, θ) at first step is zero →  σp=0 → floating divided by zero error
           IF (SIGP < 1E-6) SIGP = SIG(NK)     ! Hsp & b_T will be still 0.
 !
+#ifdef W3_PDLIB
+          CALL WAVNU3 (SIGP, TDPT, KP, CGP)
+#else
           CALL WAVNU1 (SIGP, TDPT, KP, CGP)
+#endif
 !
 !                         { /1.3σp         }1/2
 ! peak wave height Hp = 4 { |      E(σ) dσ }

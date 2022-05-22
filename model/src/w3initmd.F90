@@ -1688,7 +1688,11 @@
         DO IK=0, NK+1
 !
 !         Calculate wavenumbers and group velocities.
+#ifdef W3_PDLIB 
+          CALL WAVNU3(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
+#else
           CALL WAVNU1(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
+#endif
 !
 #ifdef W3_T1
           WRITE (NDST,9052) IK, TPI/SIG(IK), WN(IK,IS), CG(IK,IS)

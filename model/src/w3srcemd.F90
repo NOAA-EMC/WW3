@@ -670,7 +670,7 @@
       REAL                    :: eInc1, eInc2, eVS, eVD, JAC
       REAL                    :: DeltaSRC(NSPEC)
       REAL, PARAMETER         :: DTMINTOT = 0.01
-      LOGICAL                 :: LNEWLIMITER = .FALSE.
+      LOGICAL                 :: LNEWLIMITER = .TRUE.
 #ifdef W3_PDLIB
   REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
@@ -1281,6 +1281,22 @@
           VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
         END IF
 !
+        IF (LNEWLIMITER) THEN
+          DO IK=1, NK
+            JAC      = CG1(IK)/CLATSL 
+            JAC2     = 1./TPI/SIG(IK)
+            FRLOCAL  = SIG(IK)*TPIINV
+            DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTMIN * JAC * JAC2
+            !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
+          END DO
+          DO IK=1, NK
+            IS0  = (IK-1)*NTH
+            DO ITH=2, NTH
+              DAM2(ITH+IS0) = DAM2(1+IS0)
+            END DO
+          END DO
+        ENDIF
+
         VS = 0
         VD = 0
         DO IS=IS1, NSPECH
@@ -1327,7 +1343,7 @@
 #endif
         END DO  ! end of loop on IS
 !
-        DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems. 
+        DT     = MAX ( 0.1, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems. 
 !
         DTDYN  = DTDYN + DT
 #ifdef W3_T

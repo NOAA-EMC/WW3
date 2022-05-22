@@ -846,10 +846,13 @@
         GET_CG  = .FALSE.
         !/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
         !/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
-             FWANTED=SIGMA(IK)/TPI
+             FWANTED=SIGMA(IK)/TPI 
         ! First guess for k :
-              
+#ifdef W3_PDLIB
+              CALL WAVNU3(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
+#else              
               CALL WAVNU1(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
+#endif
         !     KWN(1)  = 0.2 ! (old method)
               KWN(1)  =K_OPEN ! new method, Mar 10 2014
         !

@@ -169,7 +169,7 @@
                           CNLSFM, CNLSC1, CNLSC2, CNLSC3
       USE W3ODATMD, ONLY: NDST, NDSE
 !
-      USE W3DISPMD, ONLY: WAVNU1
+      USE W3DISPMD, ONLY: WAVNU1, WAVNU3
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
@@ -225,9 +225,15 @@
       XCG(1:NFR) = CG
 !
       XSI(NFR+1) = XSI(NFR) * XFR
+#ifdef W3_PDLIB
+      CALL WAVNU3 ( XSI(NFR+1), DEPTH, XWN(NFR+1), XCG(NFR+1) )
+      XSI(NFR+2) = XSI(NFR+1) * XFR
+      CALL WAVNU3 ( XSI(NFR+2), DEPTH, XWN(NFR+2), XCG(NFR+2) )
+#else
       CALL WAVNU1 ( XSI(NFR+1), DEPTH, XWN(NFR+1), XCG(NFR+1) )
       XSI(NFR+2) = XSI(NFR+1) * XFR
       CALL WAVNU1 ( XSI(NFR+2), DEPTH, XWN(NFR+2), XCG(NFR+2) )
+#endif
 !
 ! 1.b Expanded psuedo spectrum
 !
@@ -638,6 +644,7 @@
 !      Name      Type  Module   Description
 !     ----------------------------------------------------------------
 !      WAVNU2    Subr. W3DISPMD Solve dispersion relation.
+!      WAVNU3    Subr. W3DISPMD Solve dispersion relation based on fit-formula
 !      STRACE    Subr. W3SERVMD Subroutine tracing.
 !      EXTCDE    Subr. W3SERVMD Program abort.
 !     ----------------------------------------------------------------
@@ -678,7 +685,7 @@
       USE W3ODATMD, ONLY: NDST, NDSE
       USE W3GDATMD,       NFR => NK, A34 => CNLSA
 !
-      USE W3DISPMD, ONLY: WAVNU2
+      USE W3DISPMD, ONLY: WAVNU2, WAVNU3
       USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
@@ -747,9 +754,15 @@
         S3     = ( 1. + OFF ) * S0
         S4     = ( 1. - OFF ) * S0
 !
+#ifdef W3_PDLIB
+        CALL WAVNU3 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
+        CALL WAVNU3 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
+        CALL WAVNU3 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
+#else
         CALL WAVNU2 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
         CALL WAVNU2 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
         CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
+#endif
 !
 #ifdef W3_T
         WRITE (NDST,9020) IKD, WN0*DEPTH, S0*TPIINV, DEPTH

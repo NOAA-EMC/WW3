@@ -1088,7 +1088,7 @@ module w3gkemd
 !
 !    ✓ dispopt = 1 for WAVNU1
 !/
-        USE W3DISPMD, ONLY: WAVNU1
+        USE W3DISPMD, ONLY: WAVNU1, WAVNU3
 !
         implicit none
 !
@@ -1161,7 +1161,11 @@ module w3gkemd
 !
             else if (dispopt .eq. 1) then
 ! Calc k & cg (WAVNU1 from WW3)
+#ifdef W3_PDLIB
+                call WAVNU3(sig(ik), dpt, k, cg)
+#else
                 call WAVNU1(sig(ik), dpt, k, cg)
+#endif
             end if
             qr_wn1(ik) = k ! Store k in qr_wn1 ('ll used for interp.)
 #ifdef W3_TS

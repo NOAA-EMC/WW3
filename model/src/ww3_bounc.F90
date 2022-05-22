@@ -53,7 +53,6 @@
 !      STRACE    Subr.   Id.    Subroutine tracing.
 !      NEXTLN    Subr.   Id.    Get next line from input filw
 !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
-!      WAVNU1    Subr. W3DISPMD Solve dispersion relation.
 !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
 !      W3EQTOLL  Subr  W3SERVMD Convert coordinates from rotated pole.
 !     ----------------------------------------------------------------
