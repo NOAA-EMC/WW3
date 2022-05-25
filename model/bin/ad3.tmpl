@@ -210,6 +210,8 @@
        CPPFLAGS+=("-DW3_$sw")
     done 
 
+	CPPFLAGS+=("-DENDIANNESS='<endian>'")
+
     CPPFLAGS+=("-D__WW3_SWITCHES__='$sw_str'")
 
     <comp_seq> "${CPPFLAGS[@]}" <cppad3procflag> <cppad3flag2>  $path_i/$name.F90 <cppad3flag3> $name.F90
