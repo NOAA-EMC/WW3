@@ -4031,7 +4031,7 @@
       REAL  :: NM, IOBDTG
       REAL  :: IEN_LOCAL(6), CG2(NK,NTH), CGL(NK,3)
       REAL  :: TRIA03, SIDT, CCOS, CSIN
-      REAL    :: SPEC(NSPEC), DEPTH
+      REAL  :: SPEC(NSPEC), DEPTH
 
 #ifdef W3_MEMCHECK
       write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 0'
@@ -4101,11 +4101,12 @@
             K(2)  = LAMBDA(1) * IEN_LOCAL(3) + LAMBDA(2) * IEN_LOCAL(4)
             K(3)  = LAMBDA(1) * IEN_LOCAL(5) + LAMBDA(2) * IEN_LOCAL(6)
 
-            KP(:) = MAX(ZERO,K(:))
-            DELTAL(:) = CRFS(:) - KP(:)
-            KM(:) = MIN(ZERO,K(:))
-            NM = 1.d0/MIN(-THR,SUM(KM))
-            K1 =  KP(POS)
+            !KP(:) = MAX(ZERO,K(:))
+            !DELTAL(:) = CRFS(:) - KP(:)
+            !KM(:) = MIN(ZERO,K(:))
+            !NM = 1.d0/MIN(-THR,SUM(KM))
+            !K1 =  KP(POS)
+            K1 = MAX(ZERO,K(POS))
 
 #ifdef W3_REF1
             eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
@@ -4113,14 +4114,17 @@
               K1=ZERO
             END IF
 #endif
-
             TRIA03 = 1./3. * PDLIB_TRIA(IE)
             DTK    =  K1 * IOBDTG * IOBTH(ITH) 
-            TMP3   =  DTK * NM
+!            TMP3   =  DTK * NM
+            TMP3 = DTK * 1.d0/MIN(-THR,SUM(MIN(ZERO,K(:))))
 !            IF (FSGEOADVECT) THEN
-              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS) 
-              ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(IPP1)
-              ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(IPP2)
+              !ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS) 
+              !ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(IPP1)
+              !ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(IPP2)
+              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*(CRFS(POS) - MAX(ZERO,K(POS)))
+              ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*(CRFS(IPP1) - MAX(ZERO,K(IPP1)))
+              ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*(CRFS(IPP2) - MAX(ZERO,K(IPP2)))
 !            ELSE
 !              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 
 !            END IF
