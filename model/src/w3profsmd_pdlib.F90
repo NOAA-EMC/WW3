@@ -4016,7 +4016,7 @@
 #ifdef W3_REF1
       INTEGER :: eIOBPDR
 #endif
-      INTEGER :: IP1, IP2, IPP1, IPP2
+      INTEGER :: IP1, IP2, IPP1, IPP2, IOBTH(NTH), IOB, IOBA
       REAL  :: DTK, TMP3
       REAL  :: LAMBDA(2)
       REAL  :: FL11, FL12
@@ -4027,9 +4027,9 @@
       REAL  :: KM(3), CXY(3,2)
       REAL  :: K1, eSI, eVS, eVD
       REAL  :: eVal1, eVal2, eVal3
-      REAL  :: DELTAL(3)
-      REAL  :: NM
-      REAL  :: IEN_LOCAL(6), CG2(NK,NTH) 
+      REAL  :: DELTAL(3), CLATSL(3)
+      REAL  :: NM, IOBDTG
+      REAL  :: IEN_LOCAL(6), CG2(NK,NTH), CGL(NK,3)
       REAL  :: TRIA03, SIDT, CCOS, CSIN
       REAL    :: SPEC(NSPEC), DEPTH
 
@@ -4041,37 +4041,47 @@
 
       J = 0
       DO IP = 1, npa
+
         IP_glob=iplg(IP)
         ISEA=MAPFS(1,IP_glob)
+        IOB    = IOBDP_LOC(IP)
+        IOBA   = (1-IOBPA_LOC(IP))
+        IOBDTG = DTG * IOB * IOBA 
+        IOBTH  = IOBPD_LOC(:,IP)
+
         DO I = 1, PDLIB_CCON(IP)
           J = J + 1
-          IE    =  PDLIB_IE_CELL2(I,IP)
-          IEN_LOCAL = PDLIB_IEN(:,IE)
-          POS   =  PDLIB_POS_CELL2(I,IP)
-          I1    =  PDLIB_POSI(1,J)
-          I2    =  PDLIB_POSI(2,J)
-          I3    =  PDLIB_POSI(3,J)
-          IP1   =  INE(POS_TRICK(POS,1),IE)
-          IP2   =  INE(POS_TRICK(POS,2),IE)
-          IPP1  =  POS_TRICK(POS,1)
-          IPP2  =  POS_TRICK(POS,2)
-          NI    = INE(:,IE)
-          NI_GLOB = iplg(NI)
-          NI_ISEA = MAPFS(1,NI_GLOB)
+
+          IE        =  PDLIB_IE_CELL2(I,IP)
+          IEN_LOCAL =  PDLIB_IEN(:,IE)
+          POS       =  PDLIB_POS_CELL2(I,IP)
+          I1        =  PDLIB_POSI(1,J)
+          I2        =  PDLIB_POSI(2,J)
+          I3        =  PDLIB_POSI(3,J)
+          IP1       =  INE(POS_TRICK(POS,1),IE)
+          IP2       =  INE(POS_TRICK(POS,2),IE)
+          IPP1      =  POS_TRICK(POS,1)
+          IPP2      =  POS_TRICK(POS,2)
+          NI        =  INE(:,IE)
+          NI_GLOB   =  iplg(NI)
+          NI_ISEA   =  MAPFS(1,NI_GLOB)
+          CLATSL    =  CLATS(NI_ISEA)
+          CGL       =  CG(:,NI_ISEA)
+
           DO ISP=1,NSPEC
             ITH    = 1 + MOD(ISP-1,NTH)
             IK     = 1 + (ISP-1)/NTH
             CCOS   = FACX * ECOS(ITH)
             CSIN   = FACY * ESIN(ITH)
-            CXY(:,1) = CCOS * CG(IK,NI_ISEA) / CLATS(NI_ISEA)
-            CXY(:,2) = CSIN * CG(IK,NI_ISEA)
+            CXY(:,1) = CCOS * CGL(IK,:) / CLATSL
+            CXY(:,2) = CSIN * CGL(IK,:)
             IF (FLCUR) THEN
-              CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATS(NI_ISEA)
+              CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATSL
               CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)
             ENDIF
 #ifdef W3_MGP
-        CXY(:,1) = CXY(:,1) - CCURX*VGX/CLATS(ISEA)
-        CXY(:,2) = CXY(:,2) - CCURY*VGY
+            CXY(:,1) = CXY(:,1) - CCURX*VGX/CLATS(ISEA)
+            CXY(:,2) = CXY(:,2) - CCURY*VGY
 #endif
             FL11 = CXY(2,1)*IEN_LOCAL(1)+CXY(2,2)*IEN_LOCAL(2)
             FL12 = CXY(3,1)*IEN_LOCAL(1)+CXY(3,2)*IEN_LOCAL(2)
@@ -4079,36 +4089,42 @@
             FL22 = CXY(1,1)*IEN_LOCAL(3)+CXY(1,2)*IEN_LOCAL(4)
             FL31 = CXY(1,1)*IEN_LOCAL(5)+CXY(1,2)*IEN_LOCAL(6)
             FL32 = CXY(2,1)*IEN_LOCAL(5)+CXY(2,2)*IEN_LOCAL(6)
+
             CRFS(1) = - ONESIXTH *  (2.0d0 *FL31 + FL32 + FL21 + 2.0d0 * FL22 )
             CRFS(2) = - ONESIXTH *  (2.0d0 *FL32 + 2.0d0 * FL11 + FL12 + FL31 )
             CRFS(3) = - ONESIXTH *  (2.0d0 *FL12 + 2.0d0 * FL21 + FL22 + FL11 )
+
             LAMBDA(1) = ONESIXTH * SUM(CXY(:,1))
             LAMBDA(2) = ONESIXTH * SUM(CXY(:,2))
+
             K(1)  = LAMBDA(1) * IEN_LOCAL(1) + LAMBDA(2) * IEN_LOCAL(2)
             K(2)  = LAMBDA(1) * IEN_LOCAL(3) + LAMBDA(2) * IEN_LOCAL(4)
             K(3)  = LAMBDA(1) * IEN_LOCAL(5) + LAMBDA(2) * IEN_LOCAL(6)
+
             KP(:) = MAX(ZERO,K(:))
             DELTAL(:) = CRFS(:) - KP(:)
             KM(:) = MIN(ZERO,K(:))
             NM = 1.d0/MIN(-THR,SUM(KM))
             K1 =  KP(POS)
+
 #ifdef W3_REF1
             eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
             IF (eIOBPDR .eq. 1) THEN
               K1=ZERO
             END IF
 #endif
+
             TRIA03 = 1./3. * PDLIB_TRIA(IE)
-            DTK    =  K1 * DTG * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP) * (1-IOBPA_LOC(IP))
+            DTK    =  K1 * IOBDTG * IOBTH(ITH) 
             TMP3   =  DTK * NM
-            IF (FSGEOADVECT) THEN
+!            IF (FSGEOADVECT) THEN
               ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS) 
               ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(IPP1)
               ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(IPP2)
-            ELSE
-              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 
-            END IF
-            B_JAC(ISP,IP) = B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP)
+!            ELSE
+!              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 
+!            END IF
+            B_JAC(ISP,IP) = B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOB * IOBTH(ITH) 
           END DO
         END DO
       END DO
@@ -6429,7 +6445,10 @@
 !
 !     geographical advection  
 !
-      IF (IMEM == 1) call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
+      IF (IMEM == 1) then
+!        call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
+        call calcARRAY_JACOBI2(DTG,FACX,FACY,VGX,VGY)
+      endif
 
       do ip = 1, np
         IP_glob =iplg(IP)
