@@ -1224,25 +1224,6 @@
 #ifdef W3_T
             WRITE (NDST,9020)
 #endif
-! unless TFN has been changed in the do loop, the following line is essentally 
-!       "if not.flfrst"
-            IF ( TFN(1) .NE. -1 ) THEN
-                DO IX=1, NX
-                  DO IY=1, NY
-                    FX0(IX,IY) = FXN(IX,IY)
-                    IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
-                    END DO
-                  IF( FLST .OR. .NOT.FL2D ) THEN
-                      DO IY=1, NY
-                        FA0(IX,IY) = FAN(IX,IY)
-                        END DO
-                    END IF
-                  END DO
-#ifdef W3_T
-              ELSE
-                WRITE (NDST,9021)
-#endif
-              END IF
 !
           END IF
 

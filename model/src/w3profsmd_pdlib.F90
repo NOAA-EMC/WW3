@@ -6880,7 +6880,8 @@
         !
         ! Terminate via differences
         !
-        IF (B_JGS_TERMINATE_DIFFERENCE) THEN
+        !IF (B_JGS_TERMINATE_DIFFERENCE) THEN
+        IF (B_JGS_TERMINATE_DIFFERENCE .and. IMOD(NBITER,10) == 0) THEN
           !WRITE(740+IAPROC,*) myrank, 'solver before', nbiter, is_converged, prop_conv, B_JGS_PMIN
           CALL MPI_ALLREDUCE(is_converged, itmp, 1, MPI_INT, MPI_SUM, MPI_COMM_WCMP, ierr)
           is_converged = itmp
