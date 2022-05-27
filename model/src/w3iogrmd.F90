@@ -332,9 +332,9 @@
      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 
 
@@ -538,9 +538,9 @@
      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 2'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 2'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 !
 ! open file ---------------------------------------------------------- *
@@ -704,9 +704,9 @@
      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 
 !
@@ -805,9 +805,9 @@
      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
@@ -885,9 +885,9 @@
                 CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
               END IF
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 7.6'
@@ -917,9 +917,9 @@
      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 
 
@@ -934,6 +934,13 @@
      FLUSH(740+IAPROC)
 #endif
           IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST ) 
+
+#ifdef W3_MEMCHECK
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6a'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
+#endif
+
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 7.9'
      FLUSH(740+IAPROC)
@@ -1024,9 +1031,9 @@
         END IF
 
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 
 
@@ -1093,6 +1100,13 @@
                FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
         END IF
 
+#ifdef W3_MEMCHECK
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7a'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
+#endif
+
+
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 10'
      FLUSH(740+IAPROC)
@@ -1140,6 +1154,13 @@
      WRITE(740+IAPROC,*) 'W3IOGR, step 12'
      FLUSH(740+IAPROC)
 #endif
+
+#ifdef W3_MEMCHECK
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7b'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
+#endif
+
 !
 #ifdef W3_T
       WRITE (NDST,9020)
@@ -1304,6 +1325,13 @@
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
         END IF
 #endif
+
+#ifdef W3_MEMCHECK
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7c'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
+#endif
+
 !
 ! 
 #ifdef W3_LN1
@@ -1380,6 +1408,13 @@
             END IF
         END IF
 #endif
+
+#ifdef W3_MEMCHECK
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7d'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
+#endif
+
 !
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 17'
@@ -1417,6 +1452,13 @@
                 DIKCUMUL, CUMULW
         END IF
 #endif
+
+#ifdef W3_MEMCHECK
+       write(20000+IAPROC,*) 'memcheck_____:', 'AFTER READING ST4 STUFF'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
+#endif
+
 !
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 18'
@@ -1434,6 +1476,13 @@
                        SIN6WS, SIN6FC
         END IF
 #endif
+
+#ifdef W3_MEMCHECK
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7f'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
+#endif
+
 !
 ! ... Nonlinear interactions
 !
@@ -1629,9 +1678,9 @@
      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 8'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 8'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 
 #ifdef W3_DB1
@@ -1766,9 +1815,9 @@
       CLOSE ( NDSM )
 
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 9'
+       write(20000+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 9'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(20000+IAPROC,mallInfos)
 #endif
 !
       RETURN

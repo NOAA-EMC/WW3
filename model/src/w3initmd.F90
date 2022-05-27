@@ -327,6 +327,7 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
 #ifdef W3_MEMCHECK
+   aaeärlerw
       USE MallocInfo_m
 #endif
 !/
