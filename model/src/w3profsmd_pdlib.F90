@@ -4042,39 +4042,49 @@
       J = 0
       DO IP = 1, npa
 
-        IP_glob=iplg(IP)
-        ISEA=MAPFS(1,IP_glob)
-        IOB    = IOBDP_LOC(IP)
-        IOBA   = (1-IOBPA_LOC(IP))
-        IOBDTG = DTG * IOB * IOBA 
-        IOBTH  = IOBPD_LOC(:,IP)
+        IP_glob = iplg(IP)
+        ISEA    = MAPFS(1,IP_glob)
+        IOB     = IOBDP_LOC(IP)
+        IOBA    = (1-IOBPA_LOC(IP))
+        IOBDTG  = DTG * IOB * IOBA 
+        IOBTH   = IOBPD_LOC(:,IP)
 
         DO I = 1, PDLIB_CCON(IP)
+
           J = J + 1
 
           IE        =  PDLIB_IE_CELL2(I,IP)
+
           IEN_LOCAL =  PDLIB_IEN(:,IE)
+
           POS       =  PDLIB_POS_CELL2(I,IP)
+
           I1        =  PDLIB_POSI(1,J)
           I2        =  PDLIB_POSI(2,J)
           I3        =  PDLIB_POSI(3,J)
-          IP1       =  INE(POS_TRICK(POS,1),IE)
-          IP2       =  INE(POS_TRICK(POS,2),IE)
+
+          !IP1       =  INE(POS_TRICK(POS,1),IE)
+          !IP2       =  INE(POS_TRICK(POS,2),IE)
+
           IPP1      =  POS_TRICK(POS,1)
           IPP2      =  POS_TRICK(POS,2)
+
           NI        =  INE(:,IE)
           NI_GLOB   =  iplg(NI)
           NI_ISEA   =  MAPFS(1,NI_GLOB)
+
           CLATSL    =  CLATS(NI_ISEA)
           CGL       =  CG(:,NI_ISEA)
 
           DO ISP=1,NSPEC
+
             ITH    = 1 + MOD(ISP-1,NTH)
             IK     = 1 + (ISP-1)/NTH
             CCOS   = FACX * ECOS(ITH)
             CSIN   = FACY * ESIN(ITH)
             CXY(:,1) = CCOS * CGL(IK,:) / CLATSL
             CXY(:,2) = CSIN * CGL(IK,:)
+
             IF (FLCUR) THEN
               CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATSL
               CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)

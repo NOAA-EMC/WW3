@@ -212,8 +212,8 @@ CONTAINS
       READ(NDS,*) i,j,k
       CALL NEXTLN(COMSTR, NDS, NDSE)
       LPDLIB = .FALSE.
-#ifdef W3_PDLIB
- LPDLIB = .TRUE.
+#ifdef W3_PDLIB ! 
+      LPDLIB = .TRUE.
 #endif
 !
 ! read number of nodes and nodes from Gmsh files
@@ -347,14 +347,8 @@ CONTAINS
       CALL SPATIAL_GRID    
       CALL NVECTRI
       CALL COORDMAX
-
-#ifdef W3_PDLIB
- IF(.false.) THEN
-#endif
-        CALL AREA_SI(1)
-#ifdef W3_PDLIB
- ENDIF
-#endif
+      !WRITE(*,*) 'TEST LPDLIB 2nd',  LPDLIB
+      !IF(.not. LPDLIB) CALL AREA_SI(1)
 !
       CLOSE(NDS)
       END SUBROUTINE READMSH

@@ -2556,7 +2556,6 @@
 #ifdef W3_OASACM
                 IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
-                WRITE(*,*) 'CALLING W3FLDG' 
                 CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
                              NDST, NDSEN, NX, NY, NX, NY, TIME0, TIMEN, &
                              TW0, WX0, WY0, DT0, TWN, WXN, WYN, DTN,    &

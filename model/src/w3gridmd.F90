@@ -3649,6 +3649,10 @@
           FSTOTALEXP = EXPTOTAL 
           PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
         END SELECT
+ 
+        IF (FSTOTALIMP .or. FSTOTALEXP) THEN
+          LPDLIB = .TRUE. 
+        ENDIF
 !
         IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
         WRITE (NDSO,2951) PNAME2
@@ -3984,6 +3988,7 @@
 !
 ! Reading depths on unstructured grid (this also sets number of mesh points, NX)
 !
+        !WRITE(*,*) 'TEST LPDLIB',  LPDLIB
         CALL READMSH(NDSG,FNAME)
         ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
         ZBIN(:,1) = VSC * ZB(:)

@@ -744,18 +744,20 @@
 !
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 8")
       CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
+!
+! AR: Init UG Type 
+!
       IF (GTYPE .eq. UNGTYPE) THEN
         CALL SPATIAL_GRID
         CALL NVECTRI
         CALL COORDMAX
-#ifdef W3_PDLIB
- IF(.false.) THEN
-#endif
-        CALL AREA_SI(1)
-#ifdef W3_PDLIB
- ENDIF
-#endif
+        IF(.NOT. LPDLIB) THEN
+          CALL AREA_SI(1)
+        ENDIF
       ENDIF
+!
+! AR: End Init UG Type 
+!
 #ifdef W3_MEMCHECK
        WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2b'
        call getMallocInfo(mallinfos)
