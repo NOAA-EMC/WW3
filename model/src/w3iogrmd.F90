@@ -756,10 +756,8 @@
               !removed
               COUNTCON=0
               WRITE (NDSM)                                            &
-                X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
-                LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
-                DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
-                POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+              X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP,    &
+              MAXX, MAXY, IOBPD, IOBP 
             END SELECT !GTYPE
 !
           WRITE (NDSM)                                                &
@@ -895,11 +893,24 @@
      WRITE(740+IAPROC,*) 'W3IOGR, step 7.6'
      FLUSH(740+IAPROC)
 #endif
-              READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-                X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
-                LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
-                DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
-                POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+!
+!AR: Todo: write dedicated I/O for domain decomposition ...
+!
+                READ (NDSM,END=801 ,IOSTAT=IERR)                 &
+                X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP,&
+                MAXX, MAXY, IOBPD, IOBP 
+#ifdef W3_MEMCHECK
+                write(20000+IAPROC,*) 'SIZE OF XO YO', SIZEOF(X0), SIZEOF(Y0)
+                write(20000+IAPROC,*) 'SIZE OF SX SY', SIZEOF(SX), SIZEOF(SY)
+                write(20000+IAPROC,*) 'SIZE OF GRID', SIZEOF(XGRD), SIZEOF(YGRD), SIZEOF(ZB)
+                write(20000+IAPROC,*) 'SIZE OF TRIG', SIZEOF(TRIGP), SIZEOF(TRIA)
+                write(20000+IAPROC,*) 'SIZE OF MAXX', SIZEOF(MAXX), SIZEOF(MAXY)
+                write(20000+IAPROC,*) 'SIZE OF IOBP', SIZEOF(IOBPD), SIZEOF(IOBP)
+                WRITE(20000+IAPROC,*) 'SUM', (SIZEOF(X0)+SIZEOF(Y0)+SIZEOF(SX)+SIZEOF(SY)+ &
+                &  SIZEOF(XGRD)+SIZEOF(YGRD)+SIZEOF(ZB)+SIZEOF(TRIGP)+SIZEOF(TRIA)+&
+                &  SIZEOF(MAXX)+SIZEOF(MAXY)+SIZEOF(IOBPD)+SIZEOF(IOBP))/1024./1024.
+#endif
+
 
 #ifdef W3_DEBUGIOGR
      WRITE(740+IAPROC,*) 'W3IOGR, step 7.6.4'
