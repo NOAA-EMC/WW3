@@ -167,7 +167,7 @@
 !       compute time. Example: user says
 !       field=1   on 19680101 000000 and 
 !       field=100 on 20160101 000000 
-!       then on if 7.a.2 is reached on 19680101 010000, WW3 will set 
+!       then on if 7.a.2 is reached on 19680101 0100000, WW3 will set 
 !       field to 100.
 !
 !  8. Structure :
@@ -439,12 +439,6 @@
       CALL W3SETA ( 1, 6, 6 )
       CALL W3SETO ( 1, 6, 6 )
       CALL W3SETI ( 1, 6, 6 )
-
-#ifdef W3_MEMCHECK
-      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 1'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC,mallInfos)
-#endif
 !
 #ifdef W3_SHRD
       NAPROC = 1
@@ -512,9 +506,9 @@
 #endif
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 1'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 1'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 
       NDSI   = 10
@@ -693,9 +687,9 @@
 #endif
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 
 !
@@ -858,9 +852,9 @@
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 3'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 3'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 
 !
@@ -1218,9 +1212,9 @@
       END IF ! FLGNML
 !
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 4 AFTER NML'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 4 AFTER NML'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 !
 ! process old ww3_shel.inp format
@@ -1402,17 +1396,17 @@
 #endif
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION BEFORE IOGR'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION BEFORE IOGR'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 
         CALL W3IOGR ( 'GRID', NDSF(7) )
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION AFTER IOGR'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION AFTER IOGR'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 
         IF ( FLAGLL ) THEN
@@ -1429,9 +1423,9 @@
 
 !
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 !
 
@@ -1696,9 +1690,9 @@
 
 !
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5a'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5a'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 !
 
@@ -1707,9 +1701,9 @@
 
 !
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5b'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5b'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 !
 
@@ -1875,9 +1869,9 @@
       END IF
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5 AFTER READ'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5 AFTER READ'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 
 ! 2.1 input fields
@@ -1931,9 +1925,9 @@
 
 !
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 6 AFTER FIELD'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 6 AFTER FIELD'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 !
 
@@ -1984,9 +1978,9 @@
       END IF
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 7'
+       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 7'
        call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+       call printMallInfo(100000+IAPROC,mallInfos)
 #endif
 
 

@@ -3433,9 +3433,9 @@
 !        END OF CHECKPOINT
 !
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WW3_WAVE AFTER TIME LOOP 3'
+       write(40000+IAPROC,*) 'memcheck_____:', 'WW3_WAVE AFTER TIME LOOP 3'
        call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+       call printMallInfo(IAPROC+40000,mallInfos)
 #endif
 
 !

@@ -108,9 +108,6 @@
 !     ESMF Component.  This flag is set to true in the WMESMFMD ESMF
 !     module during initialization.
       LOGICAL :: IS_ESMF_COMPONENT = .FALSE.
-#ifdef W3_MEMCHECK
-     asererefasdf
-#endif 
 !
       CONTAINS
 ! ----------------------------------------------------------------------

@@ -327,7 +327,6 @@
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
 #ifdef W3_MEMCHECK
-   aaeärlerw
       USE MallocInfo_m
 #endif
 !/
@@ -745,6 +744,12 @@
 !
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 8")
       CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
+
+#ifdef W3_MEMCHECK
+       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2aa'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(10000+IAPROC,mallInfos)
+#endif
 !
 ! AR: Init UG Type 
 !
@@ -1428,10 +1433,6 @@
 !
         END DO
 !
-#ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
-#endif
-!
 ! J=8, second stream of restart files
 !
       J=8
@@ -1483,7 +1484,7 @@
 ! END J=8
 !
 #ifdef W3_MEMCHECK
-       WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
+       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
        call getMallocInfo(mallinfos)
        call printMallInfo(10000+IAPROC,mallInfos)
 #endif
@@ -1507,8 +1508,15 @@
 ! 4.d Preprocessing for point output.
 !
       IF ( FLOUT(2) ) CALL W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD )
+
+#ifdef W3_MEMCHECK
+       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5a'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(10000+IAPROC,mallInfos)
+#endif
+
 #ifdef W3_PDLIB
-        CALL DEALLOCATE_PDLIB_GLOBAL(IMOD)
+      CALL DEALLOCATE_PDLIB_GLOBAL(IMOD)
 #endif
 !
 #ifdef W3_T
@@ -1532,10 +1540,10 @@
       MAPST2 = MAPST2 - 2*MAPTST
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'Before INIT_GET_JSEA_ISPROC call'
-     WRITE(740+IAPROC,*) 'allocated(ISEA_TO_JSEA)=', allocated(ISEA_TO_JSEA)
-     WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
-     FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'Before INIT_GET_JSEA_ISPROC call'
+      WRITE(740+IAPROC,*) 'allocated(ISEA_TO_JSEA)=', allocated(ISEA_TO_JSEA)
+      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
+      FLUSH(740+IAPROC)
 #endif
 #endif
 
@@ -1598,50 +1606,64 @@
           VA(:,JSEA) = 0.
         END IF
       END DO
+
+#ifdef W3_MEMCHECK
+       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5b'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(10000+IAPROC,mallInfos)
+#endif
+
 !
 #ifdef W3_PDLIB
-  IF ( IAPROC .LE. NAPROC ) THEN
-     CALL SET_IOBDP_PDLIB
-  ENDIF
+    IF ( IAPROC .LE. NAPROC ) THEN
+      CALL SET_IOBDP_PDLIB
+    ENDIF
+#endif
+
+
+#ifdef W3_MEMCHECK
+       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5c'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
 !
 #ifdef W3_DEBUGSTP
-    FLUSH(740+IAPROC)
+     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_DEBUGINIT
      WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9'
      FLUSH(740+IAPROC)
 #endif
+
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.2")
+     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.2")
 #endif
 #endif
 
-!
 #ifdef W3_DEBUGINIT
      WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.1'
      WRITE(740+IAPROC,*) ' allocated(MAPTST)=', allocated(MAPTST)
      WRITE(740+IAPROC,*) 'NY=', NY, ' NX=', NX
      FLUSH(740+IAPROC)
 #endif
-      MAPST2 = MAPST2 + 2*MAPTST
+     MAPST2 = MAPST2 + 2*MAPTST
 #ifdef W3_DEBUGINIT
      WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.2'
      FLUSH(740+IAPROC)
 #endif
 !
-      DEALLOCATE ( MAPTST )
+     DEALLOCATE ( MAPTST )
 #ifdef W3_DEBUGINIT
      WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.3'
      FLUSH(740+IAPROC)
 #endif
 
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 6'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+     WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 6'
+     call getMallocInfo(mallinfos)
+     call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 !
 #ifdef W3_DEBUGINIT

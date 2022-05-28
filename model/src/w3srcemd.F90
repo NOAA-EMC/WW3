@@ -670,7 +670,7 @@
       REAL                    :: eInc1, eInc2, eVS, eVD, JAC
       REAL                    :: DeltaSRC(NSPEC)
       REAL, PARAMETER         :: DTMINTOT = 0.01
-      LOGICAL                 :: LNEWLIMITER = .TRUE.
+      LOGICAL                 :: LNEWLIMITER = .FALSE.
 #ifdef W3_PDLIB
   REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
