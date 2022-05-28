@@ -1113,6 +1113,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      USE W3ODATMD, ONLY: IAPROC
       USE CONSTANTS, ONLY: KAPPA, GRAV
       USE W3GDATMD, ONLY: ZZWND, AALPHA, ZZ0MAX
       IMPLICIT NONE
@@ -1132,6 +1133,7 @@
 !
       DELU    = UMAX/FLOAT(JUMAX)
       DELTAUW = TAUWMAX/FLOAT(ITAUMAX)
+      WRITE(IAPROC+740,*) 'DELTAUW, ITAUMAX', DELTAUW, ITAUMAX, TAUWMAX
       DO I=0,ITAUMAX
          ZTAUW   = (REAL(I)*DELTAUW)**2
          DO J=0,JUMAX
@@ -1612,6 +1614,7 @@
 !-----------------------------------------------------------------------------!
       USE CONSTANTS, ONLY: GRAV, KAPPA
       USE W3GDATMD,  ONLY: ZZWND, AALPHA
+      USE W3ODATMD, ONLY: IAPROC
 #ifdef W3_T
       USE W3ODATMD, ONLY: NDST
 #endif
@@ -1631,6 +1634,12 @@
       DELI2   = 1. - DELI1
       XJ      = WINDSPEED/DELU
       J       = MIN ( JUMAX-1, INT(XJ) )
+      IF (IND .LT. 0 .or. J .lt. 0) THEN
+        WRITE(740+IAPROC,*) 'TEST CRAP SOURCE TERM', XJ, J, XI, IND, &
+                        TAUW_LOCAL, DELTAUW, WINDSPEED, DELU, JUMAX
+        CALL FLUSH(740+IAPROC)
+        STOP 'ERROR IN SOURCE TERMS COMPUTATION DUE TO OTHER BUG' 
+      ENDIF
       DELJ1   = MIN(1.,XJ - REAL(J))
       DELJ2   = 1. - DELJ1
       USTAR=(TAUT(IND,J)*DELI2+TAUT(IND+1,J  )*DELI1)*DELJ2 &

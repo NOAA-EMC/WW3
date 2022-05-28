@@ -1,4 +1,5 @@
 #include "w3macros.h"
+#define W3_DEBUGRUN
 !/ ------------------------------------------------------------------- /
       MODULE W3WAVEMD
 !/
@@ -925,19 +926,22 @@
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.1'
         FLUSH(740+IAPROC)
 #endif
-!      DO JSEA = 1, NSEAL
-!        DO IS = 1, NSPEC
-!          IF (VA(IS, JSEA) .LT. 0.) THEN
-!            WRITE(740+IAPROC,*) 'TEST W3WAVE 2', VA(IS,JSEA)
-!            CALL FLUSH(740+IAPROC)
-!          ENDIF
-!        ENDDO
-!      ENDDO
-!      IF (SUM(VA) .NE. SUM(VA)) THEN
-!        WRITE(740+IAPROC,*) 'NAN in ACTION 2', IX, IY, SUM(VA)
-!        CALL FLUSH(740+IAPROC)
-!        STOP
-!      ENDIF
+
+#ifdef W3_DEBUGRUN
+      DO JSEA = 1, NSEAL
+        DO IS = 1, NSPEC
+          IF (VA(IS, JSEA) .LT. 0.) THEN
+            WRITE(740+IAPROC,*) 'TEST W3WAVE 2', VA(IS,JSEA)
+            CALL FLUSH(740+IAPROC)
+          ENDIF
+        ENDDO
+      ENDDO
+      IF (SUM(VA) .NE. SUM(VA)) THEN
+        WRITE(740+IAPROC,*) 'NAN in ACTION 2', IX, IY, SUM(VA)
+        CALL FLUSH(740+IAPROC)
+        STOP
+      ENDIF
+#endif
 
 
 #ifdef W3_PDLIB
@@ -1110,8 +1114,6 @@
         CALL FLUSH(740+IAPROC)
         STOP
       ENDIF
-        WRITE(740+IAPROC,*) 'IT0=', IT0, ' NT=', NT
-        FLUSH(740+IAPROC)
 #endif
 !
         DO IT = IT0, NT
@@ -1317,19 +1319,22 @@
             USTDIR = 0.05
           END IF
 
-!      DO JSEA = 1, NSEAL
-!        DO IS = 1, NSPEC
-!          IF (VA(IS, JSEA) .LT. 0.) THEN
-!            WRITE(740+IAPROC,*) 'TEST W3WAVE 5', VA(IS,JSEA)
-!            CALL FLUSH(740+IAPROC)
-!          ENDIF
-!        ENDDO
-!      ENDDO
-!      IF (SUM(VA) .NE. SUM(VA)) THEN
-!        WRITE(740+IAPROC,*) 'NAN in ACTION 5', IX, IY, SUM(VA)
-!        CALL FLUSH(740+IAPROC)
-!        STOP
-!      ENDIF
+#ifdef W3_DEBUGRUN
+      DO JSEA = 1, NSEAL
+        DO IS = 1, NSPEC
+          IF (VA(IS, JSEA) .LT. 0.) THEN
+            WRITE(740+IAPROC,*) 'TEST W3WAVE 5', VA(IS,JSEA)
+            CALL FLUSH(740+IAPROC)
+          ENDIF
+        ENDDO
+      ENDDO
+      IF (SUM(VA) .NE. SUM(VA)) THEN
+        WRITE(740+IAPROC,*) 'NAN in ACTION 5', IX, IY, SUM(VA)
+        CALL FLUSH(740+IAPROC)
+        STOP
+      ENDIF
+#endif
+
 
 #ifdef W3_MEMCHECK
        write(40000+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 6'
@@ -2137,7 +2142,7 @@
                   IY     = MAPSF(ISEA,2)
 
 #ifdef W3_DEBUGRUN
-                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
+                  IF (JSEA == DEBUG_NODE) WRITE(740+IAPROC,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
 #endif
 
                   IF ( GTYPE .EQ. UNGTYPE ) THEN
@@ -2288,7 +2293,6 @@
 #endif
 #ifdef W3_DEBUGRUN
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.3A'
-        WRITE(*,*), 'W3WAVE, step 6.12.3A'
         FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
@@ -2296,7 +2300,6 @@
 #endif
 #ifdef W3_DEBUGRUN
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.4A'
-        WRITE(*,*), 'W3WAVE, step 6.12.4A'
         FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
@@ -2304,7 +2307,6 @@
 #endif
 #ifdef W3_DEBUGRUN
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.3B'
-        WRITE(*,*), 'W3WAVE, step 6.12.3B'
         FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
@@ -2312,7 +2314,6 @@
 #endif
 #ifdef W3_DEBUGRUN
         WRITE(740+IAPROC,*) 'W3WAVE, step 6.12.4B'
-        WRITE(*,*), 'W3WAVE, step 6.12.4B'
         FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
@@ -2550,7 +2551,7 @@
                   IX     = MAPSF(ISEA,1)
                   IY     = MAPSF(ISEA,2)
 #ifdef W3_DEBUGRUN
-                  IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
+                  IF (JSEA == DEBUG_NODE) WRITE(740+IAPROC,*) 'W3WAVE TEST', SUM(VA(:,JSEA))
 #endif
                   DEPTH  = MAX ( DMIN , DW(ISEA) )
 
@@ -2703,7 +2704,7 @@
 #endif
 
 #ifdef W3_DEBUGRUN
-          IF (JSEA == DEBUG_NODE) WRITE(*,*) 'W3WAVE TEST', ISEA, JSEA, SUM(VA(:,JSEA))
+          IF (JSEA == DEBUG_NODE) WRITE(740+IAPROC,*) 'W3WAVE TEST', ISEA, JSEA, SUM(VA(:,JSEA))
 #endif
 
                 IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN

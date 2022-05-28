@@ -2173,7 +2173,6 @@
 
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
-!
 !      IF (MINVAL(VA) .LT. 0.) THEN
 !        WRITE(740+IAPROC,*) 'NEGATIVE ACTION SHELL 6', MINVAL(VA)
 !        CALL FLUSH(740+IAPROC)
