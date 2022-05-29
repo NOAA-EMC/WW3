@@ -37,7 +37,7 @@ $             2 : Last process is reserved for all output, and does no
 $                 computing.
 $             3 : Multiple dedicated output processes.
 $
-   3
+   1
 $
 $ Five output types are available (see below). All output types share
 $ a similar format for the first input line:

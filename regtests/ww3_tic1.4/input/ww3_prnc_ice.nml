@@ -5,36 +5,6 @@
 
 ! -------------------------------------------------------------------- !
 ! Define the forcing fields to preprocess via FORCING_NML namelist
-!
-! * only one FORCING%FIELD can be set at true
-! * only one FORCING%grid can be set at true
-! * tidal constituents FORCING%tidal is only available on grid%asis with FIELD%level or FIELD%current
-!
-! * namelist must be terminated with /
-! * definitions & defaults:
-!     FORCING%TIMESTART            = '19000101 000000'  ! Start date for the forcing field
-!     FORCING%TIMESTOP             = '29001231 000000'  ! Stop date for the forcing field
-!
-!     FORCING%FIELD%ICE_PARAM1     = F           ! Ice thickness                      (1-component)
-!     FORCING%FIELD%ICE_PARAM2     = F           ! Ice viscosity                      (1-component)
-!     FORCING%FIELD%ICE_PARAM3     = F           ! Ice density                        (1-component)
-!     FORCING%FIELD%ICE_PARAM4     = F           ! Ice modulus                        (1-component)
-!     FORCING%FIELD%ICE_PARAM5     = F           ! Ice floe mean diameter             (1-component)
-!     FORCING%FIELD%MUD_DENSITY    = F           ! Mud density                        (1-component)
-!     FORCING%FIELD%MUD_THICKNESS  = F           ! Mud thickness                      (1-component)
-!     FORCING%FIELD%MUD_VISCOSITY  = F           ! Mud viscosity                      (1-component)
-!     FORCING%FIELD%WATER_LEVELS   = F           ! Level                              (1-component)
-!     FORCING%FIELD%CURRENTS       = F           ! Current                            (2-components)
-!     FORCING%FIELD%WINDS          = F           ! Wind                               (2-components)
-!     FORCING%FIELD%WIND_AST       = F           ! Wind and air-sea temp. dif.        (3-components)
-!     FORCING%FIELD%ICE_CONC       = F           ! Ice concentration                  (1-component)
-!     FORCING%FIELD%ICE_BERG       = F           ! Icebergs and sea ice concentration (2-components)
-!     FORCING%FIELD%DATA_ASSIM     = F           ! Data for assimilation              (1-component)
-!
-!     FORCING%GRID%ASIS            = F           ! Transfert field 'as is' on the model grid
-!     FORCING%GRID%LATLON          = F           ! Define field on regular lat/lon or cartesian grid
-!
-!     FORCING%TIDAL                = 'unset'     ! Set the tidal constituents [FAST | VFAST | 'M2 S2 N2']
 ! -------------------------------------------------------------------- !
 &FORCING_NML
   FORCING%FIELD%ICE_CONC       = T
@@ -43,26 +13,6 @@
 
 ! -------------------------------------------------------------------- !
 ! Define the content of the input file via FILE_NML namelist
-!
-! * input file must respect netCDF format and CF conventions
-! * input file must contain :
-!      -dimension : time, name expected to be called time
-!      -dimension : longitude/latitude, names can defined in the namelist
-!      -variable : time defined along time dimension
-!      -attribute : time with attributes units written as ISO8601 convention
-!      -attribute : time with attributes calendar set to standard as CF convention
-!      -variable : longitude defined along longitude dimension
-!      -variable : latitude defined along latitude dimension
-!      -variable : field defined along time,latitude,longitude dimensions
-! * FILE%VAR(I) must be set for each field component
-!
-! * namelist must be terminated with /
-! * definitions & defaults:
-!     FILE%FILENAME      = 'unset'           ! relative path input file name
-!     FILE%LONGITUDE     = 'unset'           ! longitude/x dimension name
-!     FILE%LATITUDE      = 'unset'           ! latitude/y dimension name
-!     FILE%VAR(I)        = 'unset'           ! field component
-!     FILE%TIMESHIFT     = '00000000 000000' ! shift the time value to 'YYYYMMDD HHMMSS'
 ! -------------------------------------------------------------------- !
 &FILE_NML
   FILE%FILENAME      = '../input/ice.nc'

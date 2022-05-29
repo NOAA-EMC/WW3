@@ -1,3 +1,58 @@
+!> @file w3smcomd.F90
+!> @brief SMC grid interpolation and regridding functionality
+!>
+!> @author Chris Bunney
+!> @date 21-Jul-2021
+!/
+!> @brief Service module for support of SMC regridding and interpolation
+!>
+!> @details
+!>  For SMC grids, four types of output are possible:
+!>    1. Flat grid (seapoint) output of SMC cells with associated
+!>       cell size variables (cx and cy). Requires extra effort to
+!>       plot as grid is not regular.
+!>
+!>    2. Regular, uniformly gridded output to a specified output grid.
+!>       This is achieved by area averaging of the SMC cells. The output
+!>       grid will be aligned with the SMC grid cell edges which may
+!>       result in the actual output grid being slightly different to
+!>       the original user request. A land/sea mask is created by
+!>       keeping track of the cell coverage and setting cells with
+!>       total coverage of <50% UNDEF.
+!>
+!>    3. [<em>Experimental</em>] Arbitrary regualar grid re-gridding
+!>       using indices and weights generated from WW3_SMCINT*.
+!>       Uses the local gradient within the grid cell and distance
+!>       between cell centres to interpolate.
+!>
+!>    4. [<em>Experimental</em>] As type 3, but with no interpolation -
+!>       value from surrounding SMC cell only.
+!>
+!>  <em>* The ww3_smcint program is experimental and not yet included
+!>  in the official WW3 distribution; it is currently part of the UK
+!>  Met Office's suite of internal tools.</em>
+!>
+!>  @remark Note - directional fields are expected to be passed to
+!>    routines with units of <em>radians (cartesian convention)</em>.
+!>    They will be OUTPUT in units of <em>degrees (nautical convention)</em>.
+!>
+!> @author Chris Bunney
+!> @date 21-Jul-2021
+!>
+!> ### Change log
+!>   Date      | Ver  | Comments
+!> ------------|------|---------
+!> 18-Jan-2016 | 4.18 | Initial version
+!> 28-Sep-2016 | 4.18 | Bug fix EXO/EYO calcs for whole domain output
+!> 05-Oct-2016 | 4.18 | Bug fix regular grid indicies for type 2 output
+!> 29-Sep-2017 | 4.18 | Revise calculation of indicies to ensure selected cells fall inside user selected areas.
+!> 18-Apr-2018 | 4.18 | Added Type 3 and 4 SMC output
+!> 20-Jun-2018 | 4.18 | Directional fields output as nautical convention (deg)
+!> 27-Jun-2018 | 6.05 | Ported to V6
+!> 06-Jan-2021 | 7.12 | Use ARCTC option for SMC grid.
+!> 20-Jul-2021 | 7.12 | Fix bug where edge cells in design grid may not be matched due where SMC cell > base grid size.
+!> 21-Jul-2021 | 7.12 | Elevated some grid variables to DOUBLE PRECISION, fixed EXO/EYO bug
+!>
       MODULE W3SMCOMD
 !/
 !/                  +-----------------------------------+
@@ -7,124 +62,87 @@
 !/                  | Last update :         21-Jul-2021 |
 !/                  +-----------------------------------+
 !/
-!/    18-Jan-2016 : Initial version.                    ( version 4.18 )
-!/                        (Chris Bunney, UK Met Office)
-!/    28-Sep-2016 : Bug fix to EXO and EYO calcs for    ( version 4.18 )
-!/                  whole domain output. (C. Bunney, UK Met Office)
-!/    05-Oct-2016 : Bug fix to calculation of indicies  ( version 4.18 )
-!/                  into regular grid for type 2 output.
-!/                  (C. Bunney, UK Met Office)
-!/    29-Sep-2017 : Revise calculation of indicies to   ( version 4.18 )
-!/                  ensure selected cells fall inside
-!/                  user selected areas.
-!/                  (A. Saulter, UK Met Office)
-!/    18-Apr-2018 : Added Type 3 and 4 SMC output:      ( version 4.18 )
-!/                  re-gridding to an arbitrary regular 
-!/                  grid using pre-calculated indices and
-!/                  weights (see WW3_SMCINT). Chris Bunney, UKMO
-!/    20-Jun-2018   Updated routines to ensure that     ( version 4.18 )
-!/                  directional fields are converted to 
-!/                  degrees (nautical convention) on output.
-!/                  (Chris Bunney, UK Met Office)
-!/    27-Jun-2018   Ported to V6 (Chris Bunney)         ( version 6.05 )
-!/    06-Jan-2021   Use ARCTC option for SMC grid. JGLi ( version 7.12 )
-!/    20-Jul-2021   Fix bug where edge cells in design  ( version 7.12 )
-!/                  grid may not be matched due where
-!/                  SMC cell > base grid size.
-!/    21-Jul-2021   Output grid definition variables    ( version 7.12 )
-!/                  elevated to DOUBLE PRECISION. Fixed
-!/                  bug in EXO/EYO calculation for full
-!/                  grid extents. (Chris Bunney, UKMO)
-!/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
-!  1. Purpose :
-!
-!     Service module for support of SMC => regular grid output
-!
-!  2. Method :
-!
-!     For SMC grids, four types of output are possible:
-!       1 - Flat grid (seapoint) output of SMC cells with associated
-!           cell size variables (cx and cy). Requires extra effort to
-!           plot as grid is not regular.
-!
-!       2 - Regular, uniformly gridded output to a specified output grid.
-!           This is achieved by area averaging of the SMC cells. The output
-!           grid will be aligned with the SMC grid cell edges which may 
-!           result in the actual output grid being slightly different to
-!           the original user request. A land/sea mask is created by
-!           keeping track of the cell coverage and setting cells with
-!           total coverage of <50% UNDEF.
-!
-!       3 - Arbitrary regualar grid re-gridding using indices and weights
-!           generated from WW3_SMCINT. Uses the local gradient within the
-!           grid cell and distance between cell centres to interpolate.
-!
-!       4 - As type 3, but with no interpolation - value from surrounding
-!           SMC cell only.
-!
-!       Note - directional fields are expected to be passed to into
-!              routines with units of RADIANS (CARTESIAN CONVENTION).
-!              They will be OUTPUT in units of DEGREES (NAUTICAL CONVENTION).
-!
       USE W3GDATMD
       USE CONSTANTS
       USE W3ODATMD, ONLY: UNDEF
-        
+
       PUBLIC
 
       ! Output grid definition
-      DOUBLE PRECISION        :: SXO, SYO, EXO, EYO      ! First lat/lons ...
-      DOUBLE PRECISION        :: DXO, DYO                ! ... grid size ...
-      INTEGER                 :: NXO, NYO                ! ... and number grid cells.
+      DOUBLE PRECISION     :: SXO  !< Output grid longitude origin
+      DOUBLE PRECISION     :: SYO  !< Output grid latitude origin
+      DOUBLE PRECISION     :: EXO  !< Output grid final longitude
+      DOUBLE PRECISION     :: EYO  !< Output grid final latitude
+      DOUBLE PRECISION     :: DXO  !< Output grid cell longitude size
+      DOUBLE PRECISION     :: DYO  !< Output grid cell latitude size
+      INTEGER              :: NXO  !< Output grid number of longitude cells
+      INTEGER              :: NYO  !< Output grid number of latitude cells
 
       ! Variables for SMC regridding (type 2 output):
-      INTEGER                 :: SMCOTYPE                ! Type of SMC output
-      INTEGER                 :: CELFAC                  ! Requested output cell scaling factor
-      INTEGER, ALLOCATABLE    :: XIDX(:), YIDX(:)        ! Indices of SMC cells into regular grid
-      INTEGER, ALLOCATABLE    :: XSPAN(:), YSPAN(:)      ! How many regualr grid cells SMC grid spans
-      REAL, ALLOCATABLE       :: WTS(:), COV(:,:)        ! Regirdding weights and cell coverage (wet fraction)
-      INTEGER, ALLOCATABLE    :: MAPSMC(:,:)             ! Regridded MAPSTA
-      LOGICAL, ALLOCATABLE    :: SMCMASK(:)              ! Mask for type 1 output (flat array)
-      INTEGER, ALLOCATABLE    :: SMCIDX(:)               ! Indices of SMC cells witin output grid domain
-      
-      INTEGER, ALLOCATABLE    :: smccx(:), smccy(:)      ! Cell size factors
-      REAL                    :: dlat, dlon              ! Base lat/lon sizes
-      INTEGER                 :: cfac                    ! SMC scaling factor
+      !> Type of SMC output: 1=seapoint grid of SMC cells; 2=regridding to regular grid;
+      !> 3=interpolation to arbtrary grid; 4=nearest neighbour interpolation to
+      !> arbitrary grid.
+      INTEGER              :: SMCOTYPE
+      !> Output grid cell scaling factor; should be an integer power of 2.
+      INTEGER              :: CELFAC
+      INTEGER, ALLOCATABLE :: XIDX(:)  !< X-indices of SMC cells in regular grid
+      INTEGER, ALLOCATABLE :: YIDX(:)  !< Y-Indices of SMC cells in regular grid
+      INTEGER, ALLOCATABLE :: XSPAN(:) !< Number of longitude cells SMC cell spans
+      INTEGER, ALLOCATABLE :: YSPAN(:) !< Number of longitude cells SMC cell spans
+      REAL, ALLOCATABLE    :: WTS(:)   !< Regridding weights
+      REAL, ALLOCATABLE    :: COV(:,:) !< Wet fraction (coverage) of cell
+      INTEGER, ALLOCATABLE :: MAPSMC(:,:)  !< Regridded MAPSTA
+      LOGICAL, ALLOCATABLE :: SMCMASK(:)   !< Mask for type 1 output (flat array)
+      INTEGER, ALLOCATABLE :: SMCIDX(:)    !< Indices of SMC cells within output grid domain
 
-      REAL                    :: NOVAL                   ! Fill value for seapoints with no value
+      !> SMC grid definition
+      INTEGER, ALLOCATABLE :: SMCCX(:)  !< Longitude cell size factors
+      INTEGER, ALLOCATABLE :: SMCCY(:)  !< Latitude cell size factors
+      REAL                 :: DLAT      !< Base longitude cell size
+      REAL                 :: DLON      !< Base latitude cell size
+      INTEGER              :: CFAC      !< SMC scaling factor (number of levels)
+
+      REAL                 :: NOVAL     !< Fill value for seapoints with no value
 
       ! Variables for SMC nearest neighbour interpolation (type 3/4 output)
-      INTEGER, ALLOCATABLE    :: NNIDX(:,:)              ! nearest neighbour smc point to regular grid
-      REAL, ALLOCATABLE       :: XDIST(:,:), YDIST(:,:)  ! distance to nearest neighbour
-      INTEGER                 :: NDSMC                   ! ww3_smcint file unit number
+      INTEGER, ALLOCATABLE :: NNIDX(:,:)  !< Nearest neighbour SMC point to regular grid
+      REAL, ALLOCATABLE    :: XDIST(:,:)  !< Lng. distance to nearest neighbour
+      REAL, ALLOCATABLE    :: YDIST(:,:)  !< Lat. distance to nearest neighbour
+      INTEGER              :: NDSMC       !< ww3_smcint file unit number
 
       ! Counters:
-      INTEGER                 :: SMCNOUT, NSMC
+      INTEGER              :: SMCNOUT  !< Number of SMC output cells
+      INTEGER              :: NSMC     !< Number of SMC cells used in regridding
 
       CONTAINS
 
 !--------------------------------------------------------------------------
+!> @brief Generate SMC interpolation/output information
+!>
+!> @details
+!>  This subroutine generates index or mask values for extraction
+!>  of SMC data to either a flat grid or regular lat/lon grid,
+!>  depending on the type of SMC output grid selected:
+!>
+!>    Type 1: Generates a mask for extracting only points from
+!>            the user requested region.
+!>
+!>    Type 2: Calculate interpolation indices and weights for
+!>            regridding the irregular SMC grid onto a regular,
+!>            uniformly spaced lat/lon grid.
+!>
+!> @author Chris Bunney
+!> @date 22-Oct-2015
+!>
       SUBROUTINE SMC_INTERP()
-      ! This subroutine generates index or mask values for extraction
-      ! of SMC data to either a flat grid or regular lat/lon grid,
-      ! depending on the type of SMC output grid selected:
-      !
-      !   Type 1: Generates a mask for extracting only points from
-      !           the user requested region.
-      !
-      !   Type 2: Calculate interpolation indices and weights for
-      !           regridding the irregular SMC grid onto a regular,
-      !           uniformly spaced lat/lon grid.
-      !
-      ! Chris Bunney, UK Met Office. 22-Oct-2015
-      
+
       IMPLICIT NONE
-      
+
       ! Locals
       REAL    :: CX0, CY0   ! SW corner of origin of grid
       REAL    :: S0CHK, XSNAP, YSNAP
@@ -167,7 +185,7 @@
       ENDIF
       IF(ABS(SYO + 999.9) .LT. 1E-4) THEN
           SYO = CY0
-      ELSE 
+      ELSE
           S0CHK = CY0 + FLOOR((SYO - CY0) / YSNAP) * YSNAP
           ! Ensure first grid value falls within specified range
           IF (S0CHK .LT. SYO) THEN
@@ -209,7 +227,7 @@
 !          ! Note: NARC contains ALL the boundary cells (global + arctic).
 !          ! whereas NGLO contains only the global boundary cells.
 !          IF(ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
-          IF( ARCTC .AND. & 
+          IF( ARCTC .AND. &
               ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
 
           ! Get grid cell size:
@@ -253,7 +271,7 @@
 
           ! Find first SW cell in design grid:
           ! We add on 1/2 of the smallest SMC cell dlon/dlat values to ensure
-          ! source grid cell ends up in the correct target grid cell (after 
+          ! source grid cell ends up in the correct target grid cell (after
           ! integer trunction):
           ixx = FLOOR((lon + 0.5*dlon - SXO) / DXO) + 1
           iyy = FLOOR((lat + 0.5*dlat - SYO) / DYO) + 1
@@ -320,15 +338,26 @@
       SYO = SYO + 0.5 * DYO
 
       END SUBROUTINE SMC_INTERP
-      
-!--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!> @brief Regrid SMC data onto a regular grid
+!>
+!> @details Regrids scalar data from the SMC grid onto a regular grid.
+!>  Uses pre-calculated grid indices and weights generated from the
+!>  smc_interp() subroutine.
+!>
+!> @remark If source field is directional data, use the w3s2xy_smcrg_dir()
+!>  subroutine instead.
+!>
+!> @param[in]  S   Source field, on SMC grid.
+!> @param[out] XY  Storage for regridded field; must be 2D array with
+!>                 dimensions of (NXO,NYO).
+!>
+!> @author Chris Bunney
+!> @date 02-Jul-2013
+!>
       SUBROUTINE W3S2XY_SMCRG(S, XY)
-      ! Regrid SMC data onto a regular grid using pre-calculated grid
-      ! indices and weights.
-      ! Chris Bunney, 02-Jul-2013
- 
+
       IMPLICIT NONE
 
       ! Input parameters:
@@ -357,14 +386,14 @@
                IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
 
                ! Interpolate:
-               XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA) 
- 
+               XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
+
                ! Keep track of how much of cell is (wet) covered:
                COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
             ENDDO
          ENDDO
 
-      ENDDO 
+      ENDDO
 
       ! Create coastline by masking out areas with < 50% coverage:
       DO IX=1,NXO
@@ -374,7 +403,7 @@
                XY(IX,IY) = UNDEF
             ELSE IF(COV(IX,IY) .LT. 0.5) THEN
                ! More than half of cell has UNDEF values - set to NOVAL:
-               XY(IX,IY) = NOVAL 
+               XY(IX,IY) = NOVAL
             ELSE IF(COV(IX,IY) .LT. 1.0) THEN
                ! If coverage < 1.0, scale values back to full cell coverage.
                ! Without this step, points around coast could end up with lower
@@ -387,17 +416,27 @@
       RETURN
 
       END SUBROUTINE W3S2XY_SMCRG
-!--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!> @brief Regrid directional SMC data onto a regular grid
+!>
+!> @details Regrids directioanl scalar data from the SMC grid onto
+!>  a regular grid. Uses pre-calculated grid indices and weights
+!>  generated from the smc_interp() subroutine.
+!>
+!> @remark Functionality as per w3s2xy_smc(), but decomposes the field
+!>  into u/v components first to ensure proper area averaging of
+!>  directional data (handles cyclic transition between 359 -> 0 degrees).
+!>
+!> @param[in]  S   Directional source field, on SMC grid.
+!> @param[out] XY  Storage for regridded field; must be 2D array with
+!>                 dimensions of (NXO,NYO).
+!>
+!> @author Chris Bunney
+!> @date 02-Jul-2013
+!>
       SUBROUTINE W3S2XY_SMCRG_DIR(S, XY)
-      ! Regrid SMC data from a directional field onto a regular grid using
-      ! pre-calculated grid indices and weights. As W3S2XY_SMC, but
-      ! decomposes the field into u/v components first to ensure proper
-      ! area averaging of directional data.
 
-      ! Chris Bunney, 02-Jul-2013
- 
       IMPLICIT NONE
 
       ! Input parameters:
@@ -433,16 +472,16 @@
                IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
 
                ! Interpolate:
-               !XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA) 
-               AUX1(IX, IY) = AUX1(IX, IY) + COSS * WTS(ISEA) 
-               AUX2(IX, IY) = AUX2(IX, IY) + SINS * WTS(ISEA) 
- 
+               !XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
+               AUX1(IX, IY) = AUX1(IX, IY) + COSS * WTS(ISEA)
+               AUX2(IX, IY) = AUX2(IX, IY) + SINS * WTS(ISEA)
+
                ! Keep track of how much of cell is (wet) covered:
                COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
             ENDDO
          ENDDO
 
-      ENDDO 
+      ENDDO
 
       ! Create coastline by masking out areas with < 50% coverage:
       DO IX=1,NXO
@@ -469,12 +508,14 @@
       RETURN
 
       END SUBROUTINE W3S2XY_SMCRG_DIR
-!--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!> @brief Calculates a new MAPSTA using SMC grid cell averaging.
+!>
+!> @author Chris Bunney
+!> @date 02-Jul-2013
+!>
       SUBROUTINE MAPSTA_SMC()
-      ! Calculates a new MATSTA using SMC grid cell averaging.
-      ! Chris Bunney, 02-Jul-2013
 
       IMPLICIT NONE
 
@@ -509,7 +550,7 @@
             ENDDO
          ENDDO
 
-      ENDDO 
+      ENDDO
 
       ! Create coastline by masking out areas with < 50% coverage:
       DO IX=1,NXO
@@ -525,23 +566,28 @@
       RETURN
 
       END SUBROUTINE MAPSTA_SMC
-!--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!> @brief Read interpolation information from smcint.ww3
+!>
+!> @details Reads the interpolation indices and distance weights from the
+!>  smcint.ww3 file generated by ww3_smcint program.
+!>
+!> @author Chris Bunney
+!> @date 18-Apr-2018
+!>
       SUBROUTINE READ_SMCINT()
-!     Reads the interpolation indices and distance weights from the
-!     smcint.ww3 file generated by ww3_smcint.
-!--------------------------------------------------------------------------
+
       USE W3SERVMD, ONLY: EXTCDE
       IMPLICIT NONE
 
       ! Locals
       INTEGER :: IERR, I, J
-      REAL :: PLATO, PLONO ! Not used yet....future version might allow 
+      REAL :: PLATO, PLONO ! Not used yet....future version might allow
                            ! output to a rotated pole grid...
 
       NDSMC = 50
-      OPEN(NDSMC, file='smcint.ww3', status='old', form='unformatted', iostat=ierr)
+      OPEN(NDSMC, file='smcint.ww3', status='old', form='unformatted', convert=file_endian, iostat=ierr)
       IF(ierr .NE. 0) THEN
          WRITE(*,*) "ERROR! Failed to open smcint.ww3 for reading"
          CALL EXTCDE(1)
@@ -557,16 +603,24 @@
       CLOSE(NDSMC)
 
       END SUBROUTINE READ_SMCINT
-!--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!> @brief Calculates weights for SMC to arbitrary grid intepolation.
+!>
+!> @details
+!>  Calculates the interpolation indices and weights for regridding
+!>  an SMC grid to an arbitrary regular grid. Calculated index is that of
+!>  the SMC cell that contains output cell centre. Weights are the distance
+!>  in metres between the output and SMC cell centres.
+!>
+!>  A future version <em>may</em> allow for output grids to be on a
+!>  rotated pole.
+!>
+!> @author Chris Bunney
+!> @date 18-Apr-2018
+!>
       SUBROUTINE CALC_INTERP()
-!     Calculates the interpolation indices and weights for regirdding
-!     and SMC grid to an arbitrary regular grid. Index is that of 
-!     SMC cell that contains output cell centre. Weights are the distance
-!     in metres between the output and SMC cell centres.
-!     A future version ~may~ allow for output grids to be on a rotated pole.
-!--------------------------------------------------------------------------
+
       USE W3GDATMD, ONLY: CLATS
       USE CONSTANTS, ONLY : DERA, RADIUS
 #ifdef W3_RTD
@@ -606,12 +660,12 @@
       ENDDO
 
 #ifdef W3_RTD
-          tmplat = olat
-          tmplon = olon
-          PRINT*,'Rotating coordinates'
-          CALL W3LLTOEQ ( tmplat, tmplon, olat, olon,     &              
-                            ang, POLAT, POLON, NXO*NYO )             
-          PRINT*,'Rotating coordinates complete'
+      tmplat = olat
+      tmplon = olon
+      PRINT*,'Rotating coordinates'
+      CALL W3LLTOEQ ( tmplat, tmplon, olat, olon,                       &
+                       ang, POLAT, POLON, NXO*NYO )
+      PRINT*,'Rotating coordinates complete'
 #endif
 
       ! Cycle over output grid points and find containing SMC cell:
@@ -640,15 +694,23 @@
       ENDDO
 
       END SUBROUTINE CALC_INTERP
-!--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!> @brief Fill regular grid using nearest SMC point data
+!>
+!> @details Directional fields (DIRN=True) will be assumed to be in radians
+!>  and will be converted to degrees in nautical convention.
+!>
+!> @param[in]  S    Input array on SMC grid
+!> @param[out] XY   Output array to store interpolated 2D field
+!> @param[in]  DIRN Set to .TRUE. if S is a directional field
+!>
+!> @author Chris Bunney
+!> @date 18-Apr-2018
+!>
       SUBROUTINE W3S2XY_SMCNN(S, XY, DIRN)
-!     Fill regular grid using nearest SMC point data
-!     Directional fields (DIRN=True) will be assumed to be in radians
-!     and will be converted to degrees in nautical convention.
-!--------------------------------------------------------------------------
-      IMPLICIT NONE 
+
+      IMPLICIT NONE
 
       ! Input parameters:
       REAL, INTENT(IN)    :: S(:)        ! Inupt array
@@ -661,7 +723,7 @@
         DO IY = 1,NYO
            ISEA = NNIDX(IX,IY) ! Nearest neighbour SMC point
            IF(ISEA .EQ. -1) THEN
-              ! Land 
+              ! Land
               XY(IX,IY) = UNDEF
            ELSE
               IF(S(ISEA) .EQ. UNDEF) THEN
@@ -681,15 +743,26 @@
       END SUBROUTINE W3S2XY_SMCNN
 
 !--------------------------------------------------------------------------
+!> @brief Nearest neighbour interpolation
+!>
+!> @details Fill regular grid using nearest SMC point data and interpolate
+!>  output value based on local gradient and distance between grid
+!>  cell centres.
+!>
+!>  Directional fields (DIRN=True) will be assumed to be in radians
+!>  and will be converted to degrees in nautical convention.
+!>
+!> @param[in]  S    Input array on SMC grid
+!> @param[out] XY   Output array to store interpolated 2D field
+!> @param[in]  DIRN Set to .TRUE. if S is a directional field
+!>
+!> @author Chris Bunney
+!> @date 18-Apr-2018
+!>
       SUBROUTINE W3S2XY_SMCNN_INT(S, XY, DIRN)
-!     Fill regular grid using nearest SMC point data and interpolate
-!     output value based on local gradient and distance between grid
-!     cell centres.
-!     Directional fields (DIRN=True) will be assumed to be in radians
-!     and will be converted to degrees in nautical convention.
-!--------------------------------------------------------------------------
+
       USE W3PSMCMD, ONLY: SMCGradn
-      IMPLICIT NONE 
+      IMPLICIT NONE
 
       ! Input parameters:
       REAL, INTENT(IN)    :: S(:)        ! Input array
@@ -726,13 +799,22 @@
 !--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
+!> @brief Entry point for SMC version of W3S2XY.
+!>
+!> @details Dispatches to regridding subroutine based on SMCOTYPE.
+!>  Optional DIR logical specifies whether field is a directional
+!>  value; in which case it will be decomposed into u/v components
+!>  prior to any interpolation.
+!>
+!> @param[in]  S    Input array on SMC grid
+!> @param[out] XY   Output array to store interpolated 2D field
+!> @param[in]  DIR  (Optional) Set to .TRUE. if S is a directional field
+!>
+!> @author Chris Bunney
+!> @date 18-Apr-2018
+!>
       SUBROUTINE W3S2XY_SMC(S, XY, DIR)
-!     Entry point for SMC version of W3S2XY.
-!     Dispatches to regridding subroutine based on SMCOTYPE.
-!     Optional DIR logical specifies whether field is a directional
-!     value; in which case it will be decomposed into u/v components
-!     prior to any interpolation.
-!--------------------------------------------------------------------------
+
       IMPLICIT NONE
 
       REAL, INTENT(IN)  :: S(:)

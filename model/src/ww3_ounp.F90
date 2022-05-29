@@ -1,5 +1,24 @@
+!> @file
+!> @brief Contains program W3OUNP.
+!> 
+!> @author F Ardhuin
+!> @author M Accensi
+!> @date 06-Sep-2021
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!> @brief Post-processing of point output.
+!>
+!> @details Data is read from the grid output file out_pnt.ww3 (raw data)
+!>  and from the file ww3_ounp.nml or ww3_ounp.inp ( NDSI).
+!>  Model definition and raw data files are read using WAVEWATCH III
+!>  subroutines.
+!> 
+!> @author F. Ardhuin
+!> @author M. Accensi
+!> @date 06-Sep-2021
+!>
       PROGRAM W3OUNP
 !/
 !/                  +-----------------------------------+
@@ -1385,6 +1404,23 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>        
+!> @brief Perform actual point output.
+!>
+!> @details Spectra are relative frequency energy spectra.
+!>  Note that arrays CX and CY of the main program now contain
+!>  the absolute sea water speed and direction respectively.
+!>
+!> @param[in] I
+!> @param[in] NCID
+!> @param[in] NREQ
+!> @param[in] INDREQ
+!> @param[in] ORDER
+!>        
+!> @author F. Ardhuin
+!> @author M. Accensi
+!> @date 14-Mar-2013
+!>        
       SUBROUTINE W3EXNC(I,NCID,NREQ,INDREQ,ORDER)
 !/
 !/                  +-----------------------------------+
@@ -2107,7 +2143,7 @@
 #endif
 #ifdef W3_FLX5
                 CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
             DO ITT=1, 3
@@ -2290,7 +2326,7 @@
 #endif
 #ifdef W3_FLX5
                 CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
             DO ITT=1, 3
@@ -2994,6 +3030,22 @@
 
 
 !--------------------------------------------------------------------------
+!> @brief Desc not available.
+!>
+!> @param[in] ITYPE
+!> @param[in] OTYPE
+!> @param[in] NCTYPE
+!> @param[in] NCFILE
+!> @param[out] NCID
+!> @param[out] DIMID
+!> @param[in] DIMLN
+!> @param[out] VARID
+!> @param[in] ONE
+!> @param[in] TWO
+!> @param[in] FLSRCE
+!> @param[in] NCVARTYPE     
+!>      
+!> @author NA  @date NA
       SUBROUTINE W3CRNC (ITYPE, OTYPE, NCTYPE, NCFILE, NCID, DIMID, DIMLN, VARID, ONE, TWO, FLSRCE, NCVARTYPE)
 
 
@@ -5472,7 +5524,12 @@
       END SUBROUTINE W3CRNC
 
 !==============================================================================
-
+!> @brief Desc not available.
+!>
+!> @param IRET
+!> @param ICODE
+!>      
+!> @author NA  @date NA
       SUBROUTINE CHECK_ERR(IRET,ICODE)
 
       USE NETCDF

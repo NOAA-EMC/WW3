@@ -135,6 +135,7 @@ regtests/ww3_ufs1.2/input/gsh_15m.obs
 regtests/ww3_ufs1.2/input/gnh_10m.bot
 regtests/ww3_ufs1.2/input/gsh_15m.mask
 regtests/output
+regtests/build*
 *.nc
 */*.nc
 */*/*.nc

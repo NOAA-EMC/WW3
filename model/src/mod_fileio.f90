@@ -59,6 +59,7 @@ subroutine z_fileio(filename,qual,iufind,iunit,iostat)                        !
 !   +---+ |   |
 !         +---+
 !
+USE CONSTANTS, ONLY: file_endian
 implicit none
 !
 !  0. Update history
@@ -215,7 +216,11 @@ else
       if(iufind == 1) call z_flunit(iunit,iuerr)
       junit = iunit
       if(junit > 0) then
-        open(file=filename,unit=junit,form=cform,iostat=iostat)
+        if( cform == 'unformatted') then
+          open(file=filename,unit=junit,form=cform,convert=file_endian,iostat=iostat)
+        else  
+          open(file=filename,unit=junit,form=cform,iostat=iostat)
+        end if 
         if(iostat/=0) then
           iostat = -4
           goto 9999
@@ -254,7 +259,11 @@ else
       junit = iunit
 !
       if(junit > 0) then
-        open(file=filename,unit=junit,form=cform,status=cstat)
+        if( cform == 'unformatted') then
+          open(file=filename,unit=junit,form=cform,convert=file_endian,status=cstat)
+        else
+          open(file=filename,unit=junit,form=cform,status=cstat)
+        end if
       else
         iostat = -2
       end if
@@ -279,7 +288,11 @@ else
 !  open file to IUNIT, if possible
 !
       if(junit > 0) then
-        open(file=filename,unit=junit,form=cform,iostat=iuerr)
+        if( cform == 'unformatted') then
+          open(file=filename,unit=junit,form=cform,convert=file_endian,iostat=iuerr)
+        else
+          open(file=filename,unit=junit,form=cform,iostat=iuerr)
+        end if
 !
 ! check added 8/2/2003
 !

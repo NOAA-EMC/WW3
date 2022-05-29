@@ -1114,6 +1114,8 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
+
+      use constants, only: file_endian
 !
       IMPLICIT NONE
 !/
@@ -1185,10 +1187,10 @@
 #endif
           IF ( WRITE ) THEN
               OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
             ELSE
               OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
             END IF
 !
           REWIND ( NDSOP )
@@ -1269,7 +1271,7 @@
 #endif
           IF ( WRITE ) THEN
               OPEN (NDSOP,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
-                    //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                    //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
             END IF
 !
           REWIND ( NDSOP )

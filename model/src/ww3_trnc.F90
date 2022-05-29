@@ -1,5 +1,17 @@
+!> @file
+!> @brief Contains program W3TRNC.
+!>
+!> @author M. Accensi @date 15-May-2018
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Convert direct access track output file to netCDF file.
+!> 
+!> @details Info read from track_o.ww3, written to track.nc.
+!> 
+!> @author M. Accensi  @date 15-May-2018
+!>
       PROGRAM W3TRNC
 !/
 !/                  +-----------------------------------+
@@ -229,7 +241,7 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Check consistency with input file and track_o.ww3
 !
-      OPEN (NDSINP,FILE=TRIM(FNMPRE)//'track_o.ww3',FORM='UNFORMATTED', &
+      OPEN (NDSINP,FILE=TRIM(FNMPRE)//'track_o.ww3',form='UNFORMATTED', convert=file_endian, &
             STATUS='OLD',ERR=800,IOSTAT=IERR)
       READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
 !
@@ -416,6 +428,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+
+!> @brief Perform actual track output in NetCDF file.
+!>
+!> @param[in] FILEPREFIX 
+!> @param[in] NCTYPE
+!> @param[inout] NCID
+!> @param[inout] S3
+!> @param[in] STRTSTOPDATE
+!> @param[in] MK
+!> @param[in] MTH
+!>        
+!> @author M. Accensi  @date 08-Apr-2016
+!>        
       SUBROUTINE W3EXNC ( FILEPREFIX, NCTYPE, NCID, S3, STRSTOPDATE, MK, MTH )
 !/
 !/                  +-----------------------------------+
@@ -754,6 +779,17 @@
 
 
 !--------------------------------------------------------------------------
+!> @brief Desc not available.
+!>
+!> @param[in] NCTYPE
+!> @param[in] NCFILE
+!> @param[out] NCID
+!> @param[out] DIMID
+!> @param[in] DIMLN
+!> @param[out] VARID
+!>      
+!> @author NA  @date NA
+!>      
       SUBROUTINE W3CRNC (NCTYPE,NCFILE,NCID,DIMID,DIMLN,VARID)
 
       USE NETCDF
@@ -1059,7 +1095,12 @@
       END SUBROUTINE W3CRNC 
 
 !==============================================================================
-
+!>
+!> @brief Desc not available.
+!>
+!> @param IRET
+!> @author NA  @date NA
+!>
       SUBROUTINE CHECK_ERR(IRET)
 
       USE NETCDF

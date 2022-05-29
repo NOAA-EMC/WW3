@@ -326,9 +326,9 @@
     then
       echo ' ' >> matrix.body
       echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_a  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_b  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_c  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_d  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_b  -m grdset_b  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_c  -m grdset_c  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_d  -m grdset_d  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
@@ -2055,18 +2055,18 @@
  if [ "$assim" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD0F_U    -i input_UPD0F_U    $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD2_O     -i input_UPD2_O     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD2_U_cap -i input_UPD2_U_cap $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD5_O     -i input_UPD5_O     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD5_U_cap -i input_UPD5_U_cap $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD6_U     -i input_UPD6_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD6_U_cap -i input_UPD6_U_cap $ww3 ww3_ta1" >> matrix.body
   fi

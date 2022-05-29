@@ -1,5 +1,14 @@
+!> @file
+!> @brief Contains program for tide prediction, W3PRTIDE.
+!>
+!> @author F. Ardhuin @date 21-Apr-2020
+!
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Predicts tides (current or water level) to be used during 
+!>  run by ww3_shel or ww3_multi  (this takes much less memory).
+!>
+!> @author F. Ardhuin @date 21-Apr-2020
       PROGRAM W3PRTIDE
 !/
 !/                  +-----------------------------------+
@@ -15,6 +24,8 @@
 !/                  triangles for a given point         ( version 6.04 )   
 !/    21-Apr-2020 : MPI implementation                  ( version 7.13 )
 !/    21-Apr-2020 : bug fix for rectilinear grid        ( version 7.13 )
+!/     1-Feb-2020 : Improve indexing, A.Roland	        ( version 7.14 )
+
 !/
 !/    Copyright 2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -346,41 +357,41 @@
         DO II = 1, CCON(IP)
           J = J + 1
           IE = IE_CELL(J)
-          IF (IP == TRIGP(IE,1)) THEN
+          IF (IP == TRIGP(1,IE)) THEN
             DO IP2=2,3
               ALREADYFOUND = 0
               DO I=1,IFOUND
-                IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) ALREADYFOUND=ALREADYFOUND+1
+                IF (VNEIGH(IP,I).EQ.TRIGP(IP2,IE)) ALREADYFOUND=ALREADYFOUND+1
                 END DO
               IF (ALREADYFOUND.EQ.0) THEN
                 IFOUND=IFOUND+1
-                VNEIGH(IP,IFOUND)=TRIGP(IE,IP2)
+                VNEIGH(IP,IFOUND)=TRIGP(IP2,IE)
                 END IF
               END DO
            END IF
 
-         IF (IP == TRIGP(IE,2)) THEN
+         IF (IP == TRIGP(2,IE)) THEN
             DO IP2=3,4
               ALREADYFOUND = 0
               DO I=1,IFOUND
-                IF (VNEIGH(IP,I).EQ.TRIGP(IE,MOD(IP2-1,3)+1)) ALREADYFOUND=ALREADYFOUND+1
+                IF (VNEIGH(IP,I).EQ.TRIGP(MOD(IP2-1,3)+1,IE)) ALREADYFOUND=ALREADYFOUND+1
                 END DO
               IF (ALREADYFOUND.EQ.0) THEN
                 IFOUND=IFOUND+1
-                VNEIGH(IP,IFOUND)=TRIGP(IE,MOD(IP2-1,3)+1)
+                VNEIGH(IP,IFOUND)=TRIGP(MOD(IP2-1,3)+1,IE)
                 END IF
               END DO
             END IF
 
-         IF (IP == TRIGP(IE,3)) THEN
+         IF (IP == TRIGP(3,IE)) THEN
             DO IP2=1,2
               ALREADYFOUND = 0
               DO I=1,IFOUND
-                IF (VNEIGH(IP,I).EQ.TRIGP(IE,IP2)) ALREADYFOUND=ALREADYFOUND+1
+                IF (VNEIGH(IP,I).EQ.TRIGP(IP2,IE)) ALREADYFOUND=ALREADYFOUND+1
                 END DO
               IF (ALREADYFOUND.EQ.0) THEN
                 IFOUND=IFOUND+1
-                VNEIGH(IP,IFOUND)=TRIGP(IE,IP2)
+                VNEIGH(IP,IFOUND)=TRIGP(IP2,IE)
                 END IF
               END DO
             END IF

@@ -1,0 +1,77 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_multi.nml - multi-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%NRINP  = 1
+  DOMAIN%NRGRD	= 3
+  DOMAIN%UNIPTS = T
+  DOMAIN%IOSTYP = 3
+  DOMAIN%UPPROC = T
+  DOMAIN%FLGHG1 = T
+  DOMAIN%FLGHG2 = T
+  DOMAIN%START  = '20190830 030000'
+  DOMAIN%STOP   = '20190831 030000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each input grid via the INPUT_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_GRID_NML
+  INPUT(1)%NAME                  = 'glo_15mxt'
+  INPUT(1)%FORCING%WINDS         = T
+  INPUT(1)%FORCING%ICE_CONC      = T
+/
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the MODEL_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&MODEL_GRID_NML
+  MODEL(1)%NAME                  = 'glo_15m'
+  MODEL(1)%FORCING%WINDS         = 'glo_15mxt'
+  MODEL(1)%FORCING%ICE_CONC      = 'glo_15mxt'
+  MODEL(1)%RESOURCE%GROUP_ID     = 10
+  MODEL(2)%NAME                  = 'so_20m'
+  MODEL(2)%FORCING%WINDS         = 'glo_15mxt'
+  MODEL(2)%FORCING%ICE_CONC      = 'glo_15mxt'
+  MODEL(2)%RESOURCE%GROUP_ID     = 20
+  MODEL(3)%NAME                  = 'ao_20m'
+  MODEL(3)%FORCING%WINDS         = 'glo_15mxt'
+  MODEL(3)%FORCING%ICE_CONC      = 'glo_15mxt'
+  MODEL(3)%RESOURCE%GROUP_ID     = 30
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  ALLTYPE%FIELD%LIST       = 'WND ICE HS T01 T02 DIR FP DP PHS PTP PDIR'
+  ALLTYPE%POINT%NAME       = 'points'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  ALLDATE%FIELD          = '20190830 030000' '10800' '20190831 030000'
+  ALLDATE%POINT          = '20190830 030000' '10800' '20190831 030000'
+  ALLDATE%RESTART2       = '20190830 030000' '10800' '20190831 030000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+/
+
+&HOMOG_INPUT_NML
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
