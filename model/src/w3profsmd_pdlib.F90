@@ -6137,7 +6137,7 @@
       CONST = TPI**2*3.0*1.0E-7*DTG*eSPSIG
       SND   = TPI*5.6*1.0E-3
 
-      LLIMITER_WWM = .false.
+      LLIMITER_WWM = .true.
 
       IF (LLIMITER_WWM) THEN
         MAXDAC = 0
@@ -6161,7 +6161,7 @@
         END DO
       ELSE
         DO IK = 1, NK
-          eDam=DBLE(FACP / (SIG(IK) * WN(IK,ISEA)**3))
+          eDam = DBLE(FACP / (SIG(IK) * WN(IK,ISEA)**3))
           DO ITH=1,NTH
             isp = ITH + (IK-1)*NTH
             dac = ACLOC(isp) - ACOLD(isp)
@@ -6891,28 +6891,29 @@
         ! Terminate via differences
         !
         IF (B_JGS_TERMINATE_DIFFERENCE .and. IMOD(NBITER,10) == 0) THEN
+
           !WRITE(740+IAPROC,*) myrank, 'solver before', nbiter, is_converged, prop_conv, B_JGS_PMIN
           CALL MPI_ALLREDUCE(is_converged, itmp, 1, MPI_INT, MPI_SUM, MPI_COMM_WCMP, ierr)
           is_converged = itmp
           prop_conv = (DBLE(NX) - DBLE(is_converged))/DBLE(NX) * 100.
           !write(*,*) prop_conv, nbIter, is_converged
           !WRITE(740+IAPROC,*) myrank, 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
+
 #ifdef W3_DEBUGSOLVER
-       WRITE(740+IAPROC,*) 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
-       FLUSH(740+IAPROC)
+          WRITE(740+IAPROC,*) 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
+          FLUSH(740+IAPROC)
 #endif
           IF (myrank == 0) WRITE(*,*) 'No. of solver iterations', nbiter, is_converged, prop_conv, B_JGS_PMIN
           IF (prop_conv .le. B_JGS_PMIN + TINY(1.)) THEN
 #ifdef W3_DEBUGFREQSHIFT
-       WRITE(740+IAPROC,*) 'prop_conv=', prop_conv
-       WRITE(740+IAPROC,*) 'NX=', NX
-       WRITE(740+IAPROC,*) 'is_converged=', is_converged
-       WRITE(740+IAPROC,*) 'Exiting by TERMINATE_DIFFERENCE'
+            WRITE(740+IAPROC,*) 'prop_conv=', prop_conv
+            WRITE(740+IAPROC,*) 'NX=', NX
+            WRITE(740+IAPROC,*) 'is_converged=', is_converged
+            WRITE(740+IAPROC,*) 'Exiting by TERMINATE_DIFFERENCE'
 #endif
             EXIT
-          END IF
-        END IF
-
+          END IF 
+        END IF ! B_JGS_TERMINATE_DIFFERENCE
 #ifdef W3_MEMCHECK
       write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 5'
       call getMallocInfo(mallinfos)
@@ -6984,12 +6985,12 @@
           CALL MPI_ALLREDUCE(Sum_L2, Sum_L2_GL, 1, rtype, MPI_SUM, MPI_COMM_WCMP, ierr)
           !WRITE(*,*) 'Sum_L2_gl=', Sum_L2_gl
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'Sum_L2_gl=', Sum_L2_gl
-     FLUSH(740+IAPROC)
+          WRITE(740+IAPROC,*) 'Sum_L2_gl=', Sum_L2_gl
+          FLUSH(740+IAPROC)
 #endif
           IF (Sum_L2_gl .le. B_JGS_NORM_THR) THEN
 #ifdef W3_DEBUGFREQSHIFT
-       WRITE(740+IAPROC,*) 'Exiting by TERMINATE_NORM'
+          WRITE(740+IAPROC,*) 'Exiting by TERMINATE_NORM'
 #endif
             EXIT
           END IF
@@ -7005,8 +7006,8 @@
       END DO ! Open Do Loop ... End of Time Interval 
 
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' B_JGS_MAXITER=', B_JGS_MAXITER
-     FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' B_JGS_MAXITER=', B_JGS_MAXITER
+      FLUSH(740+IAPROC)
 #endif
 ! Tihs is below also goes into the matrix ... like the wave boundary ...
       DO IP = 1, npa
@@ -7038,41 +7039,48 @@
          ISEA    = MAPFS(1,IP_glob)
 !
 #ifdef W3_DEBUGSRC
-        IntDiff=0
-        SumVS=0
-        SumVD=0
-        SumVAin=0
-        SumVAout=0
-        SumVAw3srce=0
-        SumACout=0
+         IntDiff=0
+         SumVS=0
+         SumVD=0
+         SumVAin=0
+         SumVAout=0
+         SumVAw3srce=0
+         SumACout=0
 #endif
-!
-          DO ISP=1,NSPEC
 
-            IK     = 1 + (ISP-1)/NTH
+!
+! AR: Here comes the limiter, the stuff is still in wave action sigma,theta convention and below transposed to k,theta 
+!
+
+!
+!
+        DO ISP=1,NSPEC
+          IK     = 1 + (ISP-1)/NTH
 #ifdef NOCGTABLE
-            CALL WAVNU_LOCAL(SIG(IK),DW(ISEA),WN1(IK),CG1(IK))
+          CALL WAVNU_LOCAL(SIG(IK),DW(ISEA),WN1(IK),CG1(IK))
 #else
-            CG1(IK)    = CG(IK,ISEA)
+          CG1(IK) = CG(IK,ISEA)
 #endif
-            eVA = MAX ( ZERO ,CG1(IK)/CLATS(ISEA)*REAL(VA(ISP,IP)) )
+          eVA = MAX(ZERO,CG1(IK)/CLATS(ISEA)*VA(ISP,IP))
+
 #ifdef W3_DEBUGSRC
-          SumACout=SumACout + REAL(VA(ISP,IP))
-          VS_w3srce = VSTOT(ISP,JSEA) * DTG / MAX(1., (1. - DTG*VDTOT(ISP,JSEA)))
-          eVA_w3srce = MAX(0., VA(ISP,JSEA) + VS_w3srce)
-          IntDiff = IntDiff + abs(eVA - eVA_w3srce)
-          ACsolve=B_JAC(ISP,IP)/ASPAR_JAC(ISP,PDLIB_I_DIAG(IP))
-          eB=VA(ISP,JSEA) + DTG*(VSTOT(ISP,JSEA) - VDTOT(ISP,JSEA)*VA(ISP,JSEA))
-          eVAsolve=MAX(0., CG(IK,ISEA)/CLATS(ISEA)*ACsolve)
-          VAsolve(ISP)=eVAsolve
-          SumVS = SumVS + abs(VSTOT(ISP,JSEA))
-          SumVD = SumVD + abs(VDTOT(ISP,JSEA))
-          SumVAin = SumVAin + abs(VA(ISP,JSEA))
-          SumVAout = SumVAout + abs(eVA)
-          SumVAw3srce = SumVAw3srce + abs(eVA_w3srce)
+          SumACout      = SumACout + REAL(VA(ISP,IP))
+          VS_w3srce     = VSTOT(ISP,JSEA) * DTG / MAX(1., (1. - DTG*VDTOT(ISP,JSEA)))
+          eVA_w3srce    = MAX(0., VA(ISP,JSEA) + VS_w3srce)
+          IntDiff       = IntDiff + abs(eVA - eVA_w3srce)
+          ACsolve       = B_JAC(ISP,IP)/ASPAR_JAC(ISP,PDLIB_I_DIAG(IP))
+          eB            = VA(ISP,JSEA) + DTG*(VSTOT(ISP,JSEA) - VDTOT(ISP,JSEA)*VA(ISP,JSEA))
+          eVAsolve      = MAX(0., CG(IK,ISEA)/CLATS(ISEA)*ACsolve)
+          VAsolve(ISP)  = eVAsolve
+          SumVS         = SumVS + abs(VSTOT(ISP,JSEA))
+          SumVD         = SumVD + abs(VDTOT(ISP,JSEA))
+          SumVAin       = SumVAin + abs(VA(ISP,JSEA))
+          SumVAout      = SumVAout + abs(eVA)
+          SumVAw3srce   = SumVAw3srce + abs(eVA_w3srce)
 #endif
-            VA(ISP,JSEA) = eVA 
-          END DO
+          VA(ISP,JSEA) = eVA 
+        END DO
+
 #ifdef W3_DEBUGSRC
         WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' IntDiff=', IntDiff, ' DTG=', DTG
         IF (ISEA .eq. TESTNODE) THEN
