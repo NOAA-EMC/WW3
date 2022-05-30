@@ -1,0 +1,67 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_multi.nml - multi-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%NRINP  = 1
+  DOMAIN%UNIPTS = T
+  DOMAIN%UPPROC = T
+  DOMAIN%PSHARE = T
+  DOMAIN%START  = '20210401 000000'
+  DOMAIN%STOP   = '20210402 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each input grid via the INPUT_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_GRID_NML
+  INPUT(1)%NAME                  = 'glo_5deg'
+  INPUT(1)%FORCING%CURRENTS      = T
+  INPUT(1)%FORCING%WINDS         = T
+  INPUT(1)%FORCING%ICE_CONC      = T
+/
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the MODEL_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&MODEL_GRID_NML
+  MODEL(1)%NAME                  = 'glo_5deg'
+  MODEL(1)%FORCING%CURRENTS      = 'glo_5deg'
+  MODEL(1)%FORCING%WINDS         = 'glo_5deg'
+  MODEL(1)%FORCING%ICE_CONC      = 'glo_5deg'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  ALLTYPE%FIELD%LIST       = 'WND CUR ICE HS T01 T02 DIR FP DP PHS PTP PDIR UST CHA'
+  ALLTYPE%POINT%NAME       = 'points'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  ALLDATE%FIELD          = '20210401 030000' '10800' '20210402 000000'
+  ALLDATE%POINT          = '20210401 030000' '10800' '20210402 000000'
+  ALLDATE%RESTART2       = '20210401 000000' '10800' '20210402 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+/
+
+&HOMOG_INPUT_NML
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

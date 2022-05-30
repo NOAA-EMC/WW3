@@ -1222,6 +1222,8 @@ module w3gkemd
 !    finite-deep cases.
 !
 !/
+      USE CONSTANTS, ONLY: file_endian
+
         implicit none
 !
         integer, intent(in)          :: nk             ! # of frequencies
@@ -1366,7 +1368,7 @@ module w3gkemd
 !
 ! WRITE KGrid & Kernel into qs_cfg
             write(*, *) '[W] Writing |', trim(qs_cfg), '| ...'
-            open(51, file=trim(qs_cfg), form='unformatted', &
+            open(51, file=trim(qs_cfg), form='unformatted', convert=file_endian, &
                      access='stream', status='replace')
 !
 ! It is not necessary to store `ns` since `ns = nk * nth`
@@ -1408,7 +1410,7 @@ module w3gkemd
 !
         else if (trim(act) == 'READ') then
             write(*, *) '⊚ → [R] Reading |', trim(qs_cfg), '| ...'
-            open(51, file=trim(qs_cfg), form='unformatted', &
+            open(51, file=trim(qs_cfg), form='unformatted', convert=file_endian, &
                      access='stream', status='old')
 ! nk, nth, sig, th can be skipped by using pos
             rpos = 1_8 + qi_lrb * (2_8 + nk + nth)

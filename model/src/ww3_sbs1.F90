@@ -1,5 +1,38 @@
+!> @file
+!> @brief Contains program W3SBS1.
+!>
+!> @author H. L. Tolman
+!> @author A. Chawla
+!> @date 05-Dec-2012
+
 #include "w3macros.h"
 !/------------------------------------------------------------------- /
+!>
+!> @brief Program shell to run multi half-coupled.
+!>
+!> @details Program shell or driver to run the multi-grid wave model in 
+!>  'half-coupled' mode, that is running side-by-side with a weather
+!>   model while waiting for wind field to become available.
+!>
+!>  This version is set up for running at NCEP with a single input
+!>  wind file, and requires an additional input file. 
+!>  times.inp  Input file with time stamps. Add to this input file
+!>  a time stamp after the field has been properly 
+!>  added to the wind.ww3 or equavalent file.
+!>  This file should have the time stamps of fields available in
+!>  the first auxiliary wind input file (grid).
+!>
+!>  Apart from management of the time stepping, this code is
+!>  identical to ww3_multi.ftn, and reads the corresponding input
+!>  file ww3_multi.inp
+!>
+!>  Note hardwired options and system dependent parts as identified
+!>  in Section 7.
+!>
+!> @author H. L. Tolman
+!> @author A. Chawla
+!> @date 05-Dec-2012
+!>
       PROGRAM W3SBS1
 !/
 !/                  +-----------------------------------+
@@ -357,6 +390,16 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Internal subroutine to get next time in time file.
+!>
+!> @details Including wait until file is there.
+!>
+!> @param[in] NDS Unit number for times file.
+!> @param[out] TIME Next time in times file.
+!>        
+!> @author H. L. Tolman  @date 05-Dec-2012
+!>        
       SUBROUTINE RDTIME ( NDS, TIME )
 !/
 !/                  +-----------------------------------+
@@ -439,6 +482,20 @@
 !/
       END SUBROUTINE RDTIME
 !/ ------------------------------------------------------------------- /
+!>      
+!> @brief Internal subroutine to test readnext wind fields from the data
+!>  file. 
+!>
+!> @details Including testing to see if file was read properly.
+!>
+!> @param[in] NDS Unit number for times file.
+!> @param[in] TIME Next time in times file.
+!> @param[in] NX Grid size in X
+!> @param[in] NY Grid size in Y
+!> @param[in] REWIND Flag for wind file rewind
+!>      
+!> @author H. L. Tolman  @date 05-Dec-2012
+!>
       SUBROUTINE RDWIND ( NDS, TIME, NX, NY, REWIND )
 !/
 !/                  +-----------------------------------+

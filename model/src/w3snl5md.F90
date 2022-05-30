@@ -355,7 +355,7 @@
                   IUNT = 500 + JLOC
 ! Store data (binary)
 !                 OPEN(IUNT, FILE='NL5_'//trim(PNMS(JLOC))//'_src.bin',  &
-!                      FORM='unformatted', ACCESS='stream',             &
+!                      form='unformatted', convert=file_endian, ACCESS='stream',             &
 !                      STATUS='old', POSITION='append', ACTION='write')
 !                 WRITE(IUNT) T1ABS
 !                 WRITE(IUNT) KURT
@@ -774,7 +774,7 @@
           IUNT = 500 + NSEL
 ! Binary
 !         OPEN(IUNT, FILE='NL5_'//trim(PNMS(NSEL))//'_src.bin',       &
-!              FORM='unformatted', ACCESS='stream', STATUS='replace', &
+!              form='unformatted', convert=file_endian, ACCESS='stream', STATUS='replace', &
 !              ACTION='write')
 !         WRITE(IUNT) PLON, PLAT
 !         WRITE(IUNT) XGRD(JY, JX), YGRD(JY, JX)

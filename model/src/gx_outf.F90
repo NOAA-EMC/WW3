@@ -387,8 +387,8 @@
       MSOUT  = .NOT. MSOUT
       MBOUT  = .NOT. MBOUT
 !
-      OPEN (NDSDAT,FILE=FNMPRE(:JLEN)//'ww3.grads',FORM='UNFORMATTED', &
-            ERR=811,IOSTAT=IERR, CONVERT='big_endian')
+      OPEN (NDSDAT,FILE=FNMPRE(:JLEN)//'ww3.grads',form='UNFORMATTED', convert=file_endian, &
+            ERR=811,IOSTAT=IERR)
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 5.  Time management.
