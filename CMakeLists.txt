@@ -20,7 +20,9 @@ if(hasParent)
   remove_definitions(-DDEBUG)
 endif()
 
-set(MULTI_ESMF OFF CACHE BOOL "Build ww3_multi_esmf library")
+set(valid_caps "MULTI_ESMF" "NUOPC_MESH")
+
+set(UFS_CAP "" CACHE STRING "Valid options are ${valid_caps}")
 set(NETCDF ON CACHE BOOL "Build NetCDF programs (requires NetCDF)")
 set(ENDIAN "BIG" CACHE STRING "Endianness of unformatted output files. Valid values are 'BIG', 'LITTLE', 'NATIVE'.") 
 set(EXCLUDE_FIND "" CACHE STRING "Don't try and search for these libraries (assumd to be handled by the compiler/wrapper)")
@@ -41,6 +43,12 @@ else()
   set(switch_file ${CMAKE_CURRENT_SOURCE_DIR}/model/bin/switch_${SWITCH})
   if(NOT EXISTS ${switch_file})
     message(FATAL_ERROR "Switch file '${switch_file}' does not exist, set switch with -DSWITCH=<switch>")
+  endif()
+endif()
+
+if(UFS_CAP)
+  if(NOT UFS_CAP IN_LIST valid_caps)
+    message(FATAL_ERROR "Invalid UFS_CAP selection. Valids options are ${valid_caps}")
   endif()
 endif()
 

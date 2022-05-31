@@ -855,7 +855,7 @@
 !
 ! 6) Wave-ocean layer
 !
-      NOGE(6) = 13 
+      NOGE(6) = 13
 !
       IDOUT( 6, 1)  = 'Radiation stresses  '
       IDOUT( 6, 2)  = 'Wave-ocean mom. flux'
@@ -870,6 +870,9 @@
       IDOUT( 6,11)  = 'Wave-ice energy flux'
       IDOUT( 6,12)  = 'Split Surface Stokes'
       IDOUT( 6,13)  = 'Tot wav-ocn mom flux'
+#ifdef W3_CESMCOUPLED
+      IDOUT( 6,14)  = 'Turbulent Langmuir number'
+#endif
 !
 ! 7) Wave-bottom layer
 !
