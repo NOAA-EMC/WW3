@@ -164,7 +164,7 @@ EOF
   fi
 
 # Base run_test command line
-  export rtst="./bin/run_cmake_test $opt"
+  export rtst="./bin/run_test $opt"
 
   export  ww3='../model'
 
@@ -222,7 +222,7 @@ EOF
              
   $main_dir/../regtests/bin/matrix.base
 
-  $main_dir/../regtests/bin/matrix_divider_cmake.sh 
+  $main_dir/../regtests/bin/matrix_divider.sh 
 
 
   echo "#submit all of the diveded matrix files" > msuball.sh

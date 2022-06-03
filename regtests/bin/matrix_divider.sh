@@ -29,7 +29,7 @@ maxlist1=48
 maxlist2=35
 maxlist3=104
 #Put the job requirement/spec in "before"
-sed -e "/run_cmake_test/,\$d" matrix.tmp > before
+sed -e "/run_test/,\$d" matrix.tmp > before
 #Put the list of tests in "list"
 command egrep 'ww3_ufs1.2|ww3_ufs1.3' matrix.tmp | cat >> list_ufs
 command egrep 'ww3_tp2.14|ww3_tp2.15|ww3_tp2.17|ww3_tp2.21|ww3_ufs1.1' matrix.tmp | cat >> list_heavy
@@ -54,7 +54,7 @@ rm list_omp
 matrixno2=$(ls list_omp_* | wc -l)
 echo "Total nummber of matrix with parallel tests with OMP/OMPH = $matrixno2; each includes $maxlist2 tests"
 #serial jobs
-command egrep 'run_cmake_test' matrix.tmp | cat >> list_serial
+command egrep 'run_test' matrix.tmp | cat >> list_serial
 split -dl $maxlist3 list_serial list_serial_
 rm list_serial
 matrixno3=$(ls list_serial_* | wc -l)

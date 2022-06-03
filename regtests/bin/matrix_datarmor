@@ -131,7 +131,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   opt="-f -N -S -T"
 
 # Base run_test command line
-  export rtst="./bin/run_cmake_test $opt"
+  export rtst="./bin/run_test $opt"
 
   export  ww3='../model'
 
@@ -188,7 +188,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
              
   $main_dir/../regtests/bin/matrix.base
 
-  $main_dir/../regtests/bin/matrix_divider_cmake.sh 
+  $main_dir/../regtests/bin/matrix_divider.sh 
 
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #
