@@ -1,5 +1,14 @@
+!> @file
+!> @brief Contains program for tide prediction, W3PRTIDE.
+!>
+!> @author F. Ardhuin @date 21-Apr-2020
+!
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Predicts tides (current or water level) to be used during 
+!>  run by ww3_shel or ww3_multi  (this takes much less memory).
+!>
+!> @author F. Ardhuin @date 21-Apr-2020
       PROGRAM W3PRTIDE
 !/
 !/                  +-----------------------------------+

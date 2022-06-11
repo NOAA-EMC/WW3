@@ -1,4 +1,19 @@
+!> @file
+!> @brief Contains the "Grid" preprocessing program.
+!>
+!> @author No author listed @date 27-May-2021
+
 #include "w3macros.h"
+
+!> @brief "Grid" preprocessing program, which writes a model definition
+!>  file containing the model parameter settigs and grid data.
+!>
+!> @details Information is read from the file ww3_grid.inp/nml.
+!>  A model definition file mod_def.ww3 is then produced by W3IOGR.
+!>  Note that the name of the model definition file is set in W3IOGR.
+!>  This is now all done in the subroutine W3GRID.
+!>
+!> @author No author listed @date 27-May-2021
 !/ ------------------------------------------------------------------- /
       PROGRAM WW3GRID
 !/
