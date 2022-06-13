@@ -212,8 +212,8 @@ CONTAINS
       READ(NDS,*) i,j,k
       CALL NEXTLN(COMSTR, NDS, NDSE)
       LPDLIB = .FALSE.
-#ifdef W3_PDLIB ! 
-      LPDLIB = .TRUE.
+#ifdef W3_PDLIB
+ LPDLIB = .TRUE.
 #endif
 !
 ! read number of nodes and nodes from Gmsh files
@@ -347,8 +347,14 @@ CONTAINS
       CALL SPATIAL_GRID    
       CALL NVECTRI
       CALL COORDMAX
-      !WRITE(*,*) 'TEST LPDLIB 2nd',  LPDLIB
-      !IF(.not. LPDLIB) CALL AREA_SI(1)
+
+#ifdef W3_PDLIB
+ IF(.false.) THEN
+#endif
+        CALL AREA_SI(1)
+#ifdef W3_PDLIB
+ ENDIF
+#endif
 !
       CLOSE(NDS)
       END SUBROUTINE READMSH
@@ -2093,7 +2099,7 @@ END SUBROUTINE
       END DO
 
       DIST0 = SQRT(DIST0)
-      IF (DIST0.LE.DISTMIN) THEN          
+      IF (DIST0.LE.DISTMIN) THEN          s
         ISBPI(I) = IS
 #ifdef W3_T
         WRITE(NDSE ,'(A,I6,A,I7,A,I6)') 'MATCHED BOUNDARY POINT:',I,'GRID POINT:', &

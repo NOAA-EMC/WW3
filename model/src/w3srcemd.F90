@@ -501,10 +501,10 @@
       USE W3UOSTMD, ONLY : UOST_SRCTRMCOMPUTE
 #endif
 #ifdef W3_PDLIB
-    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES, ASPAR_DIAG_ALL 
+    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES, ASPAR_DIAG_ALL
     USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P, PDLIB_SI
-    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-    USE W3WDATMD, ONLY: VA
+    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, B_JGS_LIMITER
+    USE W3WDATMD, ONLY: VA, UST, VAOLD
     USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM, LSLOC
 #endif
 !/
@@ -1286,7 +1286,7 @@
             JAC      = CG1(IK)/CLATSL 
             JAC2     = 1./TPI/SIG(IK)
             FRLOCAL  = SIG(IK)*TPIINV
-            DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTMIN * JAC * JAC2
+            DAM2(1+(IK-1)*NTH) = 5E-7 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTMIN * JAC * JAC2
             !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
           END DO
           DO IK=1, NK
@@ -1305,8 +1305,10 @@
 #ifdef W3_ST6
           VS(IS) = VS(IS) + VSWL(IS)
 #endif
+#ifndef W3_PDLIB
 #ifdef W3_TR1
           VS(IS) = VS(IS) + VSTR(IS)
+#endif
 #endif
 #ifdef W3_BS1
           VS(IS) = VS(IS) + VSBS(IS)
@@ -1319,8 +1321,10 @@
 #ifdef W3_ST6
           VD(IS) = VD(IS) + VDWL(IS)
 #endif
+#ifndef W3_PDLIB
 #ifdef W3_TR1
           VD(IS) = VD(IS) + VDTR(IS)
+#endif
 #endif
 #ifdef W3_BS1
           VD(IS) = VD(IS) + VDBS(IS)
@@ -1420,39 +1424,41 @@
                    ENDIF
                    FAKS   = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
                    DVS    = VS(ISP) * FAKS
-                   DVS    = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                   IF (.NOT. B_JGS_LIMITER) THEN
+                     DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                   ENDIF
                    PreVS  = DVS / FAKS
-                   eVS    = PreVS / CG1(IK) * CLATSL
+                   eVS    = PreVS * JAC
                    eVD    = MIN(0.,VD(ISP))
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
-                eVS = VSDB(ISP) * JAC
-                eVD = MIN(0.,VDDB(ISP))
-                IF (eVS .gt. 0.) THEN
-                  evS = 2*evS
-                  evD = -evD 
-                ELSE
-                  evS = -evS
-                  evD = 2*evD
-                ENDIF
-#endif
+                   eVS = VSDB(ISP) * JAC
+                   eVD = MIN(0.,VDDB(ISP))
+                   IF (eVS .gt. 0.) THEN
+                     evS = 2*evS
+                     evD = -evD 
+                   ELSE
+                     evS = -evS
+                     evD = 2*evD
+                   ENDIF
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
 
 #ifdef W3_TR1
-                eVS = VSTR(ISP) * JAC 
-                eVD = VDTR(ISP)
-                IF (eVS .gt. 0.) THEN
-                  evS = 2*evS
-                  evD = -evD 
-                ELSE
-                  evS = -evS
-                  evD = 2*evD
-                ENDIF
-#endif
+                   eVS = VSTR(ISP) * JAC 
+                   eVD = VDTR(ISP)
+                   IF (eVS .gt. 0.) THEN
+                     evS = 2*evS
+                     evD = -evD 
+                   ELSE
+                     evS = -evS
+                     evD = 2*evD
+                   ENDIF
                    B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                    ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
                  END DO
                END DO
 
@@ -1471,7 +1477,9 @@
                    ENDIF
                    FAKS      = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
                    DVS       = VS(ISP) * FAKS
-                   DVS       = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                   IF (.NOT. B_JGS_LIMITER) THEN
+                     DVS       = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                   ENDIF
                    PreVS     = DVS / FAKS
                    eVS = PreVS / CG1(IK) * CLATSL
                    eVD = VD(ISP)
