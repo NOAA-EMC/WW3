@@ -2099,7 +2099,7 @@ END SUBROUTINE
       END DO
 
       DIST0 = SQRT(DIST0)
-      IF (DIST0.LE.DISTMIN) THEN          s
+      IF (DIST0.LE.DISTMIN) THEN      
         ISBPI(I) = IS
 #ifdef W3_T
         WRITE(NDSE ,'(A,I6,A,I7,A,I6)') 'MATCHED BOUNDARY POINT:',I,'GRID POINT:', &
