@@ -46,11 +46,7 @@ fi
 #convert main_dir to absolute path
 main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
-# Compiler option. Choose appropriate compiler and set cmplOption to
-# y if using for the first time or using a different compiler
-
   cmplr=datarmor_intel
-  export cmplOption='y'
 
 
 
@@ -69,7 +65,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   echo ' '                                                  >> matrix.head
   echo '#PBS -q mpi_1'                                      >> matrix.head
   echo "#PBS -l select=1:ncpus=28:mpiprocs=$nr:ompthreads=$nth:mem=20G"  >> matrix.head
-  echo '#PBS -l walltime=08:00:00'                          >> matrix.head
+  echo '#PBS -l walltime=12:00:00'                          >> matrix.head
   echo "#PBS -N $(basename $(dirname $(dirname $PWD)))"     >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
@@ -132,12 +128,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   export mpi='$MPI_LAUNCH'
 
 # Compile option
-  if [ "$cmplOption" = 'y' ]
-  then
-     opt="-c $cmplr -f -N -S -T"
-  else
-     opt="-f -N -S"
-  fi
+  opt="-f -N -S -T"
 
 # Base run_test command line
   export rtst="./bin/run_cmake_test $opt"

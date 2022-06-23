@@ -1,0 +1,60 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.07
+  SPECTRUM%FREQ1     =  0.035
+  SPECTRUM%NK        =  50
+  SPECTRUM%NTH       =  36
+  SPECTRUM%THOFF     =  0.5
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  900
+  TIMESTEPS%DTXY         =  900
+  TIMESTEPS%DTKTH        =  900
+  TIMESTEPS%DTMIN        =  900
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'glo_unst'
+  GRID%NML          =  '../input/namelists_glo_unst_b.nml'
+  GRID%TYPE         =  'UNST'
+  GRID%COORD        =  'SPHE'
+  GRID%CLOS         =  'T'
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  2.5
+/
+
+! -------------------------------------------------------------------- !
+! Define the unstructured grid type via UNST_NML namelist
+! -------------------------------------------------------------------- !
+&UNST_NML
+  UNST%SF          =  -1.0
+  UNST%FILENAME    =  '../input/mesh.msh'
+  UNST%IDLA      =  4
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

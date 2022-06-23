@@ -1,4 +1,25 @@
+!> @file
+!> @brief Contains program WW3_SYSTRK for tracking of wave systems.
+!>
+!> @author A. J. van der Westhuysen
+!> @author Jeff Hanson
+!> @author Eve-Marie Devaliere
+!> date 16-Jan-2017
+!
 !/ ------------------------------------------------------------------- /
+!> @brief Perform spatial and temporal tracking of wave systems, based 
+!>  on spectral partition (bulletin) output.
+!>
+!> @details This is a controller program. It reads the input parameter file 
+!>  ww3_systrk.inp and calls subroutine waveTracking_NWS_V2 to 
+!>  perform the actual tracking procedure. Write output (fields and 
+!>  point output).
+!>
+!> @author A. J. van der Westhuysen
+!> @author Jeff Hanson
+!> @author Eve-Marie Devaliere
+!> date 16-Jan-2017
+!
       PROGRAM WW3_SYSTRK
 !/
 !/                  +-----------------------------------+

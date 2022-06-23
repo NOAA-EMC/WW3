@@ -1,5 +1,18 @@
+!> @file
+!> @brief Contains generic shell for WAVEWATCH III, W3SHEL.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!> @brief A generic shell for WAVEWATCH III, using preformatted
+!>  input fields.
+!>
+!> @details Driver for the actual wave model (W3WAVE).
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
        PROGRAM W3SHEL
 !/
 !/                  +-----------------------------------+
@@ -57,6 +70,7 @@
 !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
 !/    22-Mar-2021 : Add new coupling fields             ( version 7.13 )
 !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
+!/    02-Feb-2022 : Scalability local                   ( version 7.14 )
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -877,6 +891,14 @@
 ! 2.3 Domain setup
 
         IOSTYP = NML_DOMAIN%IOSTYP
+
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
+
         CALL W3IOGR ( 'GRID', NDSF(7) )
         IF ( FLAGLL ) THEN
           FACTOR = 1.
@@ -1388,6 +1410,12 @@
       write(740+IAPROC,*), 'Before read 2002, case 6'
 #endif
         READ (NDSI,*) IOSTYP
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
 #ifdef W3_DEBUGINIT
       write(740+IAPROC,*), ' After read 2002, case 6'
 #endif
@@ -1929,6 +1957,13 @@
 ! 2.3 Domain setup
 
       IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
+
       IF ( IAPROC .EQ. NAPOUT ) THEN
         IF ( IOSTYP .EQ. 0 ) THEN
           WRITE (NDSO,940) 'No dedicated output process, ' //   &
@@ -2261,10 +2296,17 @@
             END IF
 #ifdef W3_OASIS
           ELSE 
-            ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
-            IF ( (DTOUT(7).NE.0) .AND.                               &
-                 (MOD(ID_OASIS_TIME, NINT(DTOUT(7))) .EQ. 0 ) .AND. &
-                 (DSEC21 (TIME, TIMEEND) .GT. 0.0)) DTTST=0.
+            IF ( DTOUT(7).NE.0 ) THEN
+              ! TFN not initialized at TIME=TIME00, using TIME instead
+              IF(NINT(DSEC21(TIME00,TIME)) == 0) THEN
+                ID_OASIS_TIME = 0
+                DTTST=0.
+              ELSE
+                ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TFN(:,J) ))
+                IF ( NINT(MOD(DSEC21(TIME00,TIME), DTOUT(7))) .EQ. 0 .AND. &
+                     DSEC21 (TFN(:,J), TIMEEND) .GT. 0.0 ) DTTST=0.
+              ENDIF
+            ENDIF
 #endif
           END IF
 !

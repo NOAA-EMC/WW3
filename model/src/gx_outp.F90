@@ -237,7 +237,7 @@
       WRITE (NDSO,901) COMSTR
 !
       OPEN (NDSGRD,FILE=FNMPRE(:J)//'ww3.spec.grads',                 &
-            FORM='UNFORMATTED', CONVERT='big_endian')
+            form='UNFORMATTED', convert=file_endian)
       OPEN (NDSPNT,FILE=FNMPRE(:J)//'ww3.mean.grads',FORM='FORMATTED')
       OPEN (NDSCGR,FILE=FNMPRE(:J)//'ww3.spec.ctl',FORM='FORMATTED')
 !
@@ -1089,8 +1089,8 @@
             CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX5
-                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,  &
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
             DO ITT=1, 3

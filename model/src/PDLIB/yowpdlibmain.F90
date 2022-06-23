@@ -42,6 +42,10 @@
 module yowpdlibMain
   use yowerr
   use yowDatapool, only: rkind
+#ifdef W3_MEMCHECK
+      USE MallocInfo_m
+ USE W3ADATMD, ONLY: MALLINFOS
+#endif
   implicit none
   private
   public :: initFromGridDim, finalizePD
@@ -58,38 +62,67 @@ module yowpdlibMain
   !> @param[in] thirdDim size of the third dimensions to exchange
   !> @param[in] MPIComm MPI communicator to use with pdlib
   !> @overload initPD1
-  subroutine initFromGridDim(MNP, XP, YP, DEP, MNE, INE, secDim, MPIcomm)
+  subroutine initFromGridDim(MNP, MNE, INE_global, secDim, MPIcomm)
     use yowDatapool,       only: myrank, debugPrePartition, debugPostPartition
     use yowNodepool,       only: np_global, np, np_perProcSum, ng, ipgl, iplg, npa
     use yowElementpool,    only: ne_global,ne
     use yowSidepool,       only: ns, ns_global
     use yowExchangeModule, only: nConnDomains, setDimSize
     use yowRankModule,     only: initRankModule, ipgl_npa
+#ifdef W3_MEMCHECK
+      USE MallocInfo_m
+ USE W3ADATMD, ONLY: MALLINFOS
+#endif
+
     implicit none
     integer, intent(in) :: MNP, MNE
-    integer, intent(in) :: INE(3,MNE)
-    real(kind=rkind), intent(in) :: XP(MNP), YP(MNP), DEP(MNP)
+    integer, intent(in) :: INE_global(3,MNE)
     integer, intent(in) :: secDim
     integer, intent(in) :: MPIcomm
     integer istat
 
     call setDimSize(secDim)
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 1'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
 #ifdef W3_DEBUGINIT
     Print *, '1: MPIcomm=', MPIcomm
 #endif
     call initMPI(MPIcomm)
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 2'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
 #ifdef W3_DEBUGINIT
     Print *, '2: After initMPI'
 #endif
-    call assignMesh(MNP, XP, YP, DEP, MNE, INE)
+    call assignMesh(MNP, MNE)
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 3'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
 #ifdef W3_DEBUGINIT
     Print *, '3: After assignMesh'
 #endif
     call prePartition()
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 4'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
 #ifdef W3_DEBUGINIT
     Print *, '3: After prePartition'
 #endif
-    call findConnNodes()
+    call findConnNodes(INE_global)
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 5'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
 #ifdef W3_DEBUGINIT
     Print *, '4: After findConnNodes'
 #endif
@@ -110,22 +143,67 @@ module yowpdlibMain
     Print *, '4.1: After findConnNodes'
 #endif
 !    CALL REAL_MPI_BARRIER_PDLIB(MPIcomm, "Before call to runParmetis")
-    call runParmetis(MNP, XP, YP)
+    call runParmetis(MNP)
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 6'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
 !    CALL REAL_MPI_BARRIER_PDLIB(MPIcomm, "After call to runParmetis")
 #ifdef W3_DEBUGINIT
     Print *, '5: After runParmetis'
 #endif
     call postPartition
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 7'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
 #ifdef W3_DEBUGINIT
     Print *, 'Before findGhostNodes'
 #endif
     call findGhostNodes
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 8'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
     call findConnDomains
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 9'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
     call exchangeGhostIds
-    call postPartition2(MNP, XP, YP, DEP)
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 10'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
+    call postPartition2(INE_global)
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 11'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
     call initRankModule
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 12'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
     call ComputeTRIA_IEN_SI_CCON
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 13'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
     call ComputeIA_JA_POSI_NNZ
+#ifdef W3_MEMCHECK
+       WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 14'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(70000+myrank,mallInfos)
+#endif
     if(debugPostPartition) then
       if(myrank == 0) then
         write(*,*) "New data after partition"
@@ -172,9 +250,6 @@ module yowpdlibMain
       END IF
 !      Print *, 'Passing barrier string=', string
       END SUBROUTINE
-
-
-
   !--------------------------------------------------------------------------
   ! Init MPI
   !--------------------------------------------------------------------------
@@ -227,14 +302,13 @@ module yowpdlibMain
   !> @param[in] MNE number of element global
   !> @param[in] INE element array
   !> alter: np_global, nodes_global(), ne_global, elements(), INE_global
-  subroutine assignMesh(MNP, XP, YP, DEP, MNE, INE)
+  subroutine assignMesh(MNP, MNE)
     use yowNodepool,    only: nodes_global, np_global
-    use yowElementpool, only: ne_global, INE_global
+    use yowElementpool, only: ne_global
     use yowerr,       only: parallel_abort
     implicit none
     integer, intent(in) :: MNP, MNE
-    integer, intent(in) :: INE(3,MNE)
-    real(kind=rkind), intent(in) :: XP(MNP), YP(MNP), DEP(MNP)
+    !integer, intent(in) :: INE(3,MNE)
     integer :: stat, i
 
     np_global=MNP
@@ -248,10 +322,10 @@ module yowpdlibMain
 
     ne_global=MNE
 
-    if(allocated(INE_global)) deallocate(INE_global)
-    allocate(INE_global(3, ne_global), stat=stat);
-    if(stat/=0) CALL ABORT('INE_global allocate failure')
-    INE_global = INE
+    !if(allocated(INE_global)) deallocate(INE_global)
+    !allocate(INE_global(3, ne_global), stat=stat);
+    !if(stat/=0) CALL ABORT('INE_global allocate failure')
+    !INE_global = INE
   end subroutine assignMesh
 
 
@@ -313,13 +387,14 @@ module yowpdlibMain
   !> loop over all elements and their nodes. get then the neighbor nodes
   !> finally calculate the number of sides
   !> alter: maxConnNodes, connNodes_data, ns, ns_global, node%nConnNodes
-  subroutine findConnNodes
+  subroutine findConnNodes(INE_global)
     use yowerr,       only: parallel_abort
     use yowNodepool,    only: np, np_global, nodes_global, nodes, maxConnNodes, t_Node, connNodes_data
-    use yowElementpool, only: ne_global, INE_global
+    use yowElementpool, only: ne_global
     use yowSidepool,    only: ns, ns_global
     implicit none
 
+    integer, intent(in) :: INE_global(3,ne_global) 
     integer :: i, j, stat
     type(t_Node), pointer :: node
     integer JPREV, JNEXT
@@ -393,24 +468,25 @@ module yowpdlibMain
   !> Collect all data for parmetis und partition the mesh
   !> after that, we know for every node the domain ID
   !> alter: t_Node::domainID
-  subroutine runParmetis(MNP, XP, YP)
+  subroutine runParmetis(MNP)
     use yowerr,    only: parallel_abort
     use yowDatapool, only: debugParmetis,debugPartition, nTasks, myrank, itype, comm
     use yowNodepool, only: np, npa, np_global, nodes, nodes_global, t_Node, iplg, np_perProcSum, np_perProc
     use yowSidepool, only: ns
     use yowElementpool, only: ne, ne_global
+    use w3gdatmd, only: xgrd, ygrd
     use MPI
     implicit none
     integer, intent(in) :: MNP
-    real(kind=rkind), intent(in) :: XP(MNP), YP(MNP)
 
     ! Parmetis
     ! Node neighbor information
     integer :: wgtflag, numflag, ndims, nparts, edgecut, ncon
-    integer, allocatable :: xadj(:), part(:), vwgt(:), adjwgt(:), vtxdist(:), options(:), adjncy(:)
+    integer, allocatable :: xadj(:), part(:), vwgt(:), adjwgt(:), vtxdist(:), options(:), adjncy(:), iweights(:)
     ! parmetis need single precision
     real(4), allocatable :: xyz(:), tpwgts(:), ubvec(:)
-    integer IP_glob
+    integer :: IP_glob, itmp
+    logical :: lexist = .false. 
 
     ! Node to domain mapping.
     ! np_global long. give the domain number for die global node number
@@ -466,17 +542,47 @@ module yowpdlibMain
     nparts = nTasks
     ! # weight per node
     ncon = 1
+    ! wgtflag: 0: none (vwgt and adjwgt are NULL); 1: edges (vwgt is NULL); 2: vertices (adjwgt is NULL); 3: both vertices & edges;
 
+#ifdef WEIGHTS
+    wgtflag = 2
+    INQUIRE ( FILE='weights.ww3', EXIST = lexist )
+    IF (lexist) THEN
+      OPEN(100001,FILE='weights.ww3',FORM='FORMATTED',status='unknown')
+      allocate(iweights(np_global)); iweights = 0
+      do i = 1, np_global
+        read(100001,*) iweights(i)
+      enddo 
+      CLOSE(100001)
+    ELSE
+      wgtflag = 0
+    ENDIF 
+#else
+    wgtflag = 0
+#endif
 
     ! Create weights
-    ! keep it simple. ignore weights
-
-    ! wgtflag: 0: none (vwgt and adjwgt are NULL); 1: edges (vwgt is NULL); 2: vertices (adjwgt is NULL); 3: both vertices & edges;
-    wgtflag = 0
     allocate(vwgt(np*ncon), stat=stat)
     if(stat/=0) call parallel_abort('vwgt allocation failure')
-    !> \todo
+
+#ifdef WEIGHTS
+    if (lexist) then
+      do i = 1, np
+        itmp = max(1,int(real((iweights(iplg(i))+100))))
+        !vwgt(i) = max(1,int(real(iweights(iplg(i)))/maxval(iweights)) * 10)
+        !vwgt(i) = max(1,iweights(iplg(i)))
+        !vwgt(i) = max(1,itmp)
+        vwgt(i) = itmp
+      enddo 
+      vwgt = 1
+      deallocate(iweights)
+    else
+      vwgt = 1
+    endif
+#else
     vwgt = 1
+#endif
+
     allocate(adjwgt(ns), stat=stat)
     if(stat/=0) call parallel_abort('adjwgt allocation failure')
     !> \todo
@@ -500,8 +606,9 @@ module yowpdlibMain
     if(debugParmetis) write(710+myrank,*) np_global, ne_global, np, npa, ne
     do i = 1, np
       IP_glob = iplg(i)
-      xyz(2*(i-1)+1) = REAL(XP(IP_glob))
-      xyz(2*(i-1)+2) = REAL(YP(IP_glob))
+!AR: this is questionable ...
+      xyz(2*(i-1)+1) = REAL(xgrd(1,IP_glob))
+      xyz(2*(i-1)+2) = REAL(ygrd(1,IP_glob))
       if(debugParmetis) then
         write(710+myrank,*) i, np, xyz(2*(i-1)+1), xyz(2*(i-1)+2)  
         call flush(710+myrank)
@@ -569,7 +676,7 @@ module yowpdlibMain
       call flush(710+myrank)
     endif
 
-    if(debugParmetis) write(710+myrank,*) "Run ParMETIS now..."
+    !if(debugParmetis) write(710+myrank,*) "Run ParMETIS now..."
     call ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
                                   vwgt, & !vwgt - ignore weights
                                   adjwgt, & ! adjwgt - ignore weights
@@ -579,12 +686,12 @@ module yowpdlibMain
 
     CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 9")
 
-  if(nTasks == 1) then
+    if(nTasks == 1) then
 !    write(*,*) myrank, "minval part", minval(part)
-    if(minval(part) == 0) then
-      part(:) = part(:) + 1
+      if(minval(part) == 0) then
+        part(:) = part(:) + 1
+      endif
     endif
-  endif
 
   ! write(*,*) myrank, "edge cuted", edgecut
 
@@ -632,6 +739,77 @@ module yowpdlibMain
   !------------------------------------------------------------------------
   ! with the new data from parmetis, recalculate some variables
   !------------------------------------------------------------------------
+
+  ! Create for every boundary node a dummy node and for every dummy node two local elements
+  ! extend x,y,z, INE
+  ! rebuild  NCONE, CONE, NCONN, CONN
+  ! alter nd, nde
+  !subroutine dummyNodes
+   ! use yowExchangeModule
+   ! use yowNodepool, only: npa, nb, nd, PDLIB_NCONN, PDLIB_CONN, boundaryNodes, nodes, x, y, z, outwardNormal, XY, dummy2boundary, BNDprevnext
+   ! use yowElementpool, only: ne, nde, INE, NCONE, CONE
+   ! implicit none
+   ! integer :: i, IP, IPprev, IPnext, newIP, newIE
+   ! integer, allocatable :: INEnew(:,:)
+   ! real(rkind) :: vec(2), newPoint(2), newLength
+   ! real(rkind), allocatable :: xNew(:), yNew(:), zNew(:)
+ !
+ !    nd = nb
+ !
+ !    allocate(dummy2boundary(nd))
+ !
+ !    nde = 2*nd
+ !    allocate(INEnew(3,ne+nde))
+ !    INEnew(:,1:ne) = INE(:,1:ne)
+ !
+ !    allocate(xNew(npa+nd), yNew(npa+nd), zNew(npa+nd))
+ !    xNew(1:npa) = x(1:npa)
+ !    yNew(1:npa) = y(1:npa)
+ !    zNew(1:npa) = z(1:npa)
+ !
+ !    nd = 0
+ !    nde = 0
+  !   do i=1, nb
+  !     nd = nd + 1
+  !     IP = boundaryNodes(i)
+  !     dummy2boundary(nd) = IP
+  !
+  !     call BNDprevnext(IP, IPprev, IPnext)
+  !     newLength = max(distanceTo(XY(IP), XY(IPprev)), distanceTo(XY(IP), XY(IPnext)))
+  !     newPoint  = XY(IP) + outwardNormal(:,i) * newLength
+   !    newIP = npa+i
+   !    xNew(newIP) = newPoint(1)
+   !    yNew(newIP) = newPoint(2)
+   !    zNew(newIP) = z(IP)
+   !    NCONN(IP) = NCONN(IP) + 1
+   !    CONN(NCONN(IP),IP) = newIP
+   !
+   !    nde = nde +1
+  !     newIE = ne+nde
+  !     INEnew(1,newIE) = IP
+  !     INEnew(2,newIE) = IPprev
+  !     INEnew(3,newIE) = newIP
+  !     NCONE(IP) = NCONE(IP) +1
+  !     CONE(NCONE(IP),IP) = newIE
+  !
+  !     nde = nde +1
+  !     newIE = ne+nde
+  !     INEnew(1,newIE) = IP
+  !     INEnew(2,newIE) = newIP
+  !     INEnew(3,newIE) = IPnext
+  !     NCONE(IP) = NCONE(IP) +1
+  !     CONE(NCONE(IP),IP) = newIE
+  !   end do
+  !
+  !   call move_alloc(INEnew, INE)
+  !   call move_alloc(xNew, x)
+  !   call move_alloc(yNew, y)
+  !   call move_alloc(zNew, z)
+  !
+  !   ! Die Anzahl der angeschlossenen Knoten fuer Geisterknoten wird fuer findBoundaryNodes and Dummynodes gebraucht.
+  !   call exchange(NCONN)
+  !   call exchange(NCONE)
+  !end subroutine
 
   !> recalculate some variables
   !> parmetis change the number of sides per domain. So recalculate some variables
@@ -1039,15 +1217,15 @@ module yowpdlibMain
 
   !> this collects all data which depends on ghost information
   !> alter: ne, INE, x, y, z, ielg
-  subroutine postPartition2(MNP, XP, YP, DEP)
-    use yowElementpool, only: ne, ne_global, INE, INE_global, belongto, ielg
-    use yowerr,       only: parallel_abort
+  subroutine postPartition2(INE_global)
+    use yowElementpool, only: ne, ne_global, INE, belongto, ielg
+    use yowerr,         only: parallel_abort
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa
     use yowNodepool,    only: x, y, z
+    use w3gdatmd,       only: xgrd, ygrd, zb  
     implicit none
-    integer, intent(in) :: MNP
-    REAL(kind=rkind), intent(in) :: XP(MNP), YP(MNP), DEP(MNP)
+    integer, intent(in) :: INE_global(3,ne_global)
 
     integer :: i, j, k, stat, IP_glob
     type(t_Node), pointer :: node
@@ -1146,17 +1324,18 @@ module yowpdlibMain
 
     do i=1, np
       IP_glob = iplg(i)
-      x(i) = XP(IP_glob)
-      y(i) = YP(IP_glob)
-      z(i) = DEP(IP_glob)
+      x(i) = xgrd(1,IP_glob)
+      y(i) = ygrd(1,IP_glob)
+      z(i) = zb(IP_glob)
     end do
 
     do i=1, ng
       IP_glob = ghostlg(i)
-      x(np+i) = XP(IP_glob)
-      y(np+i) = YP(IP_glob)
-      z(np+i) = DEP(IP_glob)
+      x(np+i) = xgrd(1,IP_glob)
+      y(np+i) = ygrd(1,IP_glob)
+      z(np+i) = zb(IP_glob)
     end do
+    
   end subroutine
 !**********************************************************************
 !*                                                                    *
@@ -1167,13 +1346,13 @@ module yowpdlibMain
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, iplg, t_Node, ghostlg, ng, npa
-    use yowNodepool,    only: x, y, z, PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, PDLIB_CCON
+    use yowNodepool,    only: x, y, z, PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, PDLIB_CCON, PDLIB_TRIA03
     implicit none
     integer I1, I2, I3, stat, IE, NI(3)
     real(rkind) :: DXP1, DXP2, DXP3, DYP1, DYP2, DYP3, DBLTMP, TRIA03
     logical     :: CROSSES_DATELINE
 
-    allocate(PDLIB_SI(npa), PDLIB_CCON(npa), PDLIB_IEN(6,ne), PDLIB_TRIA(ne), stat=stat)
+    allocate(PDLIB_SI(npa), PDLIB_CCON(npa), PDLIB_IEN(6,ne), PDLIB_TRIA(ne), PDLIB_TRIA03(ne), stat=stat)
     if(stat/=0) call parallel_abort('SI allocation failure')
 
     PDLIB_SI(:)   = 0.0d0 ! Median Dual Patch Area of each Node
@@ -1205,14 +1384,21 @@ module yowpdlibMain
       PDLIB_IEN(6,IE) =   DXP1
       DBLTMP = (DXP3*DYP1 - DYP3*DXP1)*0.5
       PDLIB_TRIA(IE) = DBLTMP
+      IF (PDLIB_TRIA(IE) .lt. TINY(1.)) THEN
+        WRITE(*,*) PDLIB_IEN(:,IE)
+        WRITE(*,*) 
+        WRITE(*,*) 'AREA SMALLER ZERO IN PDLIB', IE, NE, PDLIB_TRIA(IE)
+        STOP
+      ENDIF
 
       PDLIB_CCON(I1) = PDLIB_CCON(I1) + 1
       PDLIB_CCON(I2) = PDLIB_CCON(I2) + 1
       PDLIB_CCON(I3) = PDLIB_CCON(I3) + 1
-      TRIA03 = PDLIB_TRIA(IE)/3
+      TRIA03 = PDLIB_TRIA(IE)/3.d0
       PDLIB_SI(I1) = PDLIB_SI(I1) + TRIA03
       PDLIB_SI(I2) = PDLIB_SI(I2) + TRIA03
       PDLIB_SI(I3) = PDLIB_SI(I3) + TRIA03
+      PDLIB_TRIA03(IE) = TRIA03
     ENDDO
     CALL PDLIB_exchange1Dreal(PDLIB_SI)
   end subroutine
@@ -1297,7 +1483,7 @@ module yowpdlibMain
     COUNT_MAX = J
     ALLOCATE (PDLIB_IE_CELL(COUNT_MAX), PDLIB_POS_CELL(COUNT_MAX), stat=istat)
     IF (istat/=0) CALL PARALLEL_ABORT('wwm_fluctsplit, allocate error 5a')
-    ALLOCATE (PDLIB_IE_CELL2(npa,MAXMNECON), PDLIB_POS_CELL2(npa,MAXMNECON), stat=istat)
+    ALLOCATE (PDLIB_IE_CELL2(MAXMNECON,NPA), PDLIB_POS_CELL2(MAXMNECON, NPA), stat=istat)
     IF (istat/=0) CALL PARALLEL_ABORT('wwm_fluctsplit, allocate error 5b')
 ! Just a remapping from CELLVERTEX ... Element number in the
 ! order of the occurence in the loop during runtime
@@ -1305,15 +1491,14 @@ module yowpdlibMain
 ! Just a remapping from CELLVERTEX ... Position of the node
 ! in the Element index -"-
     PDLIB_POS_CELL = 0
-!
     J = 0
     DO IP = 1, npa
       DO I = 1, PDLIB_CCON(IP)
         J = J + 1
         PDLIB_IE_CELL(J)      = CELLVERTEX(IP,I,1)
         PDLIB_POS_CELL(J)     = CELLVERTEX(IP,I,2)
-        PDLIB_IE_CELL2(IP,I)  = CELLVERTEX(IP,I,1)
-        PDLIB_POS_CELL2(IP,I) = CELLVERTEX(IP,I,2)
+        PDLIB_IE_CELL2(I,IP)  = CELLVERTEX(IP,I,1)
+        PDLIB_POS_CELL2(I,IP) = CELLVERTEX(IP,I,2)
       END DO
     END DO
     deallocate(CELLVERTEX)
@@ -1362,8 +1547,9 @@ module yowpdlibMain
 !
     J = 0
     PDLIB_NNZ = 0
+    ITMP = 0
     DO IP = 1, npa
-      ITMP(:) = 0
+      ITMP = 0
       DO I = 1, PDLIB_CCON(IP)
         J = J + 1
         IP_J  = PTABLE(J,2)
@@ -1398,8 +1584,8 @@ module yowpdlibMain
       ITMP=0
       DO I = 1, PDLIB_CCON(IP) ! Check how many entries there are ...
         J = J + 1
-        IP_J  = PTABLE(J,2)
-        IP_K  = PTABLE(J,3)
+        IP_J = PTABLE(J,2)
+        IP_K = PTABLE(J,3)
         ITMP(IP)   = 1
         ITMP(IP_J) = 1
         ITMP(IP_K) = 1
@@ -1432,7 +1618,7 @@ module yowpdlibMain
     J=0
     DO IP=1,npa
       DO I = 1, PDLIB_CCON(IP)
-        J=J+1
+        J = J + 1
         IE    =  PDLIB_IE_CELL(J)
         POS   =  PDLIB_POS_CELL(J)
         I1    =  PDLIB_POSI(1,J)
@@ -1462,3 +1648,6 @@ module yowpdlibMain
   end subroutine
 
 end module yowpdlibMain
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************

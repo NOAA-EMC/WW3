@@ -1,0 +1,58 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_multi.nml - multi-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%UPPROC = T
+  DOMAIN%PSHARE = T
+  DOMAIN%START  = '20180902 000000'
+  DOMAIN%STOP   = '20180902 040000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each input grid via the INPUT_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_GRID_NML
+/
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the MODEL_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&MODEL_GRID_NML
+  MODEL(1)%NAME                  = 'glo_unst_a'
+  MODEL(1)%FORCING%WINDS         = 'native'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  ALLTYPE%FIELD%LIST       = 'WND HS FP DP'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  ALLDATE%FIELD          = '20180902 000000' '900' '20180903 000000'
+  ALLDATE%POINT          = '20180902 000000' '900' '20180903 000000'
+  ALLDATE%RESTART2       = '20130401 000000' '10800' '20130402 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+/
+
+&HOMOG_INPUT_NML
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

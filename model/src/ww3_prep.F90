@@ -1,5 +1,19 @@
+!> @file
+!> @brief Contains program W3PREP for pre-processing of inputs.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Preprocessing of input data.
+!>
+!> @details Pre-processing of the input water level, current, wind, ice
+!>  fields, momentum and air density, as well as assimilation data
+!>  for the generic shell W3SHEL (ww3_shel.ftn).
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!
       PROGRAM W3PREP
 !/
 !/                  +-----------------------------------+
@@ -653,7 +667,7 @@
             ELSE 
               DO IX=1, NX
                 X = XGRD(1,IX)
-                Y = YGRD(1,IX) !AR: hmm NX? 
+                Y = YGRD(1,IX)
  
                 IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
 !
@@ -774,10 +788,10 @@
                         IF (FROMLL.EQ.'NAME') THEN
                             JJ     = LEN_TRIM(FNMPRE)
                             OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                                  FORM='UNFORMATTED',STATUS='OLD',    &
+                                  form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
                                   ERR=845,IOSTAT=IERR)
                           ELSE
-                            OPEN (NDSLL, FORM='UNFORMATTED',          &
+                            OPEN (NDSLL, form='UNFORMATTED', convert=file_endian,          &
                                   STATUS='OLD',ERR=845,IOSTAT=IERR)
                           END IF
                       ELSE
@@ -837,10 +851,10 @@
                         IF (FROMLL.EQ.'NAME') THEN
                             JJ     = LEN_TRIM(FNMPRE)
                             OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                                  FORM='UNFORMATTED',STATUS='OLD',    &
+                                  form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
                                   ERR=846,IOSTAT=IERR)
                           ELSE
-                            OPEN (NDSLL,FORM='UNFORMATTED',           &
+                            OPEN (NDSLL,form='UNFORMATTED', convert=file_endian,           &
                                   STATUS='OLD',ERR=846,IOSTAT=IERR)
                           END IF
                       ELSE
@@ -958,10 +972,10 @@
                 IF (FROMF.EQ.'NAME') THEN
                     JJ     = LEN_TRIM(FNMPRE)
                     OPEN (NDSF(J),FILE=FNMPRE(:JJ)//NAMEF,            &
-                          FORM='UNFORMATTED',STATUS='OLD',ERR=850,    &
+                          form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=850,    &
                           IOSTAT=IERR)
                   ELSE
-                    OPEN (NDSF(J),FORM='UNFORMATTED',                 &
+                    OPEN (NDSF(J),form='UNFORMATTED', convert=file_endian,                 &
                           STATUS='OLD',ERR=850,IOSTAT=IERR)
                   END IF
 !

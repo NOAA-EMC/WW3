@@ -4,13 +4,6 @@
 
 ! -------------------------------------------------------------------- !
 ! Define the output fields to postprocess via TRACK_NML namelist
-!
-! * namelist must be terminated with /
-! * definitions & defaults:
-!     TRACK%TIMESTART            = '19000101 000000'  ! Stop date for the output field
-!     TRACK%TIMESTRIDE           = '0'                ! Time stride for the output field
-!     TRACK%TIMECOUNT            = '1000000000'       ! Number of time steps
-!     TRACK%TIMESPLIT            = 6                  ! [4(yearly),6(monthly),8(daily),10(hourly)]
 ! -------------------------------------------------------------------- !
 &TRACK_NML
   TRACK%TIMESTART        =  '19680606 000000'
@@ -19,11 +12,6 @@
 
 ! -------------------------------------------------------------------- !
 ! Define the content of the input file via FILE_NML namelist
-!
-! * namelist must be terminated with /
-! * definitions & defaults:
-!     FILE%PREFIX        = 'ww3.'            ! Prefix for output file name
-!     FILE%NETCDF        = 3                 ! Netcdf version [3|4]
 ! -------------------------------------------------------------------- !
 &FILE_NML
 /

@@ -342,7 +342,7 @@
                                 'UNFORMATTED'
 #endif
               OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-                    STATUS='OLD',ERR=800,FORM='UNFORMATTED',IOSTAT=IERR)
+                    STATUS='OLD',ERR=800,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
               READ (NDSTI,ERR=801,END=802,IOSTAT=IERR) IDTST
             END IF
 !
@@ -356,7 +356,7 @@
                                 'UNFORMATTED'
 #endif
               OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
-                    FORM='UNFORMATTED',ERR=810,IOSTAT=IERR)
+                    form='UNFORMATTED', convert=file_endian,ERR=810,IOSTAT=IERR)
               WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
                                                 NTH, XFR
               WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
