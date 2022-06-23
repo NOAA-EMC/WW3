@@ -1427,7 +1427,6 @@ contains
        user_restfname = trim(casename)//'.ww3.r.'
        user_histfname = trim(casename)//'.ww3.hi.'
     endif
-
     ! Read in initial/restart data and initialize the model
     ! ww3 read initialization occurs in w3iors (which is called by initmd in module w3initmd)
     ! ww3 always starts up from a 'restart' file type
@@ -1505,7 +1504,6 @@ contains
 !    ! custom history file names are used for UWM netCDF output
 !    user_histname = .true.
 !#endif
-
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )

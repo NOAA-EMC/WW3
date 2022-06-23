@@ -256,7 +256,7 @@
 !/
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
                           GNAME, FILEXT, GTYPE, UNGTYPE
-      USE W3TRIAMD, ONLY: SETUGIOBP
+      USE W3TRIAMD, ONLY: SET_UG_IOBP
       USE W3WDATMD
 #ifdef W3_WRST
       USE W3IDATMD, ONLY: WXN, WYN, W3SETI
@@ -272,7 +272,7 @@
 #endif
 !/
       USE W3SERVMD, ONLY: EXTCDE
-      USE CONSTANTS, only: LPDLIB
+      USE CONSTANTS, only: LPDLIB, file_endian
       USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
       USE W3GDATMD, ONLY: NK, NTH
 #ifdef W3_TIMINGS
@@ -906,7 +906,6 @@
           END IF
         END IF
 
-!AR: Must be checked better ... will do that when cleaning debugging switches!
         VA = MAX(0.,VA)
 !
 #ifdef W3_T
@@ -1185,8 +1184,8 @@
 !
 ! Updates reflections maps:
 !
-              IF (GTYPE.EQ.UNGTYPE) THEN
-                CALL SETUGIOBP
+              IF (GTYPE.EQ.UNGTYPE) THEN 
+!AR: not needed since already initialized on w3iogr                CALL SET_UG_IOBP
 #ifdef W3_REF1
               ELSE
                 CALL W3SETREF

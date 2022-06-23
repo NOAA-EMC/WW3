@@ -253,6 +253,9 @@ module MallocInfo_m
     integer(8) :: vmsize, vmRSS
     integer, intent(in)          :: ihdnl 
     type(MallInfo_t), intent(in) :: malinfo
+
+
+    if (ihdnl .lt. 1) stop 'ihndl not set' 
     ib2m=1./REAL(1024**2)
     vmsize = getVmSize()
     vmRSS  = getVMRSS()
@@ -263,9 +266,9 @@ module MallocInfo_m
     !write(*,'(A72,I10)') "Number of chunks not in use.                                 ", malinfo%ordblks
     !write(*,'(A72,2F20.10)') "Total size of memory occupied by free (not in use) chunks.   ", malinfo%fordblks*ib2m
     !write(*,'(A72,2F20.10)') "Size of the top-most releasable chunk borders end of the heap", malinfo%keepcost*ib2m    
-    write(740+ihdnl,'(A72,2F20.10)') "VM size in proc ", vmsize/1024. 
-    write(740+ihdnl,'(A72,2F20.10)') "RSS size in prof ", vmRSS/1024.
-    call flush(740+ihdnl)
+    write(ihdnl,'(A72,2F20.10)') "VM size in proc ", vmsize/1024. 
+    write(ihdnl,'(A72,2F20.10)') "RSS size in prof ", vmRSS/1024.
+    call flush(ihdnl)
   end subroutine
 
 !VmPeak: Peak virtual memory usage

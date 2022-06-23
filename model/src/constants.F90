@@ -85,6 +85,9 @@
       REAL, PARAMETER         :: G1PI1I = 1. / ( GRAV * TPI )
 !
       REAL                    :: UNDEF = -999.9
+
+      ! Filled in by the pre-processor with 'big_endian', 'little_endian', or 'native'
+      character(*), parameter :: FILE_ENDIAN = ENDIANNESS
 !
 ! Parameters for friction factor table 
 !
@@ -96,10 +99,11 @@
       INTEGER, PARAMETER       :: srce_direct = 0
       INTEGER, PARAMETER       :: srce_imp_post = 1
       INTEGER, PARAMETER       :: srce_imp_pre = 2
-      INTEGER, PARAMETER       :: DEBUG_NODE = 1014
+      INTEGER, PARAMETER       :: DEBUG_NODE = 1104
       INTEGER, PARAMETER       :: DEBUG_ELEMENT = 50
-      LOGICAL                  :: LPDLIB = .FALSE. 
-      LOGICAL                  :: LSETUP
+
+      LOGICAL                  :: LPDLIB      = .FALSE. 
+      LOGICAL                  :: LSETUP      = .FALSE. 
 !
 ! Parameters in support of running as ESMF component
 !
