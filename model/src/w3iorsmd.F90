@@ -467,10 +467,10 @@
 
          IF ( WRITE ) THEN
              IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
-             OPEN (NDSR,FILE=trim(FNAME),FORM='UNFORMATTED', &
+             OPEN (NDSR,FILE=trim(FNAME), form='UNFORMATTED', convert=file_endian,       &
                    ACCESS='STREAM',ERR=800,IOSTAT=IERR)
          ELSE  ! READ
-            OPEN (NDSR, FILE=trim(FNAME), FORM='UNFORMATTED',    &
+            OPEN (NDSR, FILE=trim(FNAME), form='UNFORMATTED', convert=file_endian,       &
                   ACCESS='STREAM',ERR=800,IOSTAT=IERR,           &
                   STATUS='OLD',ACTION='READ')
          END IF
@@ -516,10 +516,10 @@
 
          IF ( WRITE ) THEN
              IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
-             OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),FORM='UNFORMATTED', &
+          OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),form='UNFORMATTED', convert=file_endian,       &
                    ACCESS='STREAM',ERR=800,IOSTAT=IERR)
            ELSE
-             OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),FORM='UNFORMATTED', &
+          OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),form='UNFORMATTED', convert=file_endian,       &
                    ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
                    STATUS='OLD',ACTION='READ')
            END IF
