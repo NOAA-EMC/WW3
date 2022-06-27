@@ -1,4 +1,4 @@
-WAVEWATCH III® Software License
+### WAVEWATCH III® Software License
 
 © 2009 National Weather Service National Oceanic and Atmospheric Administration.
 WAVEWATCH III® is a trademark of the National Weather Service. 
