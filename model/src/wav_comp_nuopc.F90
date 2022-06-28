@@ -645,6 +645,10 @@ contains
 #endif
 
     ! call mpi_barrier ( mpi_comm, ierr )
+    if ( root_task ) then
+       inquire(unit=nds(1), name=logfile)
+       write(nds(1),'(a)') 'WW3 log written to '//trim(logfile)//' on root_task '
+    end if
 
     !--------------------------------------------------------------------
     ! Mesh initialization
@@ -721,7 +725,7 @@ contains
     EMeshTemp = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if ( root_task ) then
-       write(stdout,*)'mesh file for domain is ',trim(cvalue)
+       write(nds(1),*)'mesh file for domain is ',trim(cvalue)
     end if
 
     ! recreate the mesh using the above distGrid
@@ -1197,9 +1201,9 @@ contains
        call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          !----------------
-          ! History alarm
-          !----------------
+       !----------------
+       ! History alarm
+       !----------------
        call NUOPC_CompAttributeGet(gcomp, name="history_option", isPresent=isPresent, isSet=isSet, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (isPresent .and. isSet) then

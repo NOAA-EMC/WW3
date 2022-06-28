@@ -54,9 +54,9 @@ module wav_shr_mod
   logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
                                                                 !! fields for coupling to CICE (TODO: generalize)
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
-  character(len=256) , public :: casename                       !< @public the name pre-prended to an output file
-  character(len= 36) , public :: time_origin                    !< @public the time_origin used for netCDF output
-  character(len= 36) , public :: calendar_name                  !< @public the calendar used for netCDF output
+  character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
+  character(len= 36) , public :: time_origin = ''               !< @public the time_origin used for netCDF output
+  character(len= 36) , public :: calendar_name = ''             !< @public the calendar used for netCDF output
   integer(i8)        , public :: elapsed_secs                   !< @public the time in seconds from the time_origin
 
   ! Only used by cesm
