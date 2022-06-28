@@ -1499,8 +1499,8 @@ contains
     call read_shel_inp(mpi_comm)
 
     ! custom restart and history file names are used for UFS
-    user_histname = .true.
-    user_restname = .true.
+    user_histname = .false.
+    user_restname = .false.
 
     user_restfname = trim(casename)//'.ww3.r.'
     user_histfname = trim(casename)//'.ww3.hi.'
