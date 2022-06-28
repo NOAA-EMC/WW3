@@ -647,7 +647,7 @@ contains
     ! call mpi_barrier ( mpi_comm, ierr )
     if ( root_task ) then
        inquire(unit=nds(1), name=logfile)
-       write(nds(1),'(a)') 'WW3 log written to '//trim(logfile)//' on root_task '
+       print *,'WW3 log written to '//trim(logfile)
     end if
 
     !--------------------------------------------------------------------
@@ -1048,7 +1048,7 @@ contains
        end if
        if ( root_task ) then
           !  write(nds(1),*) 'wav_comp_nuopc time', time, timen
-          !  write(nds(1),*) 'ww3 hist flag ', histwr, outfreq, hh, mod(hh, outfreq)
+          !  write(nds(1),*) 'ww3 hist flag ', histwr, outfreq, hh
        end if
     end if
 
