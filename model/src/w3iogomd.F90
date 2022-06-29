@@ -2784,7 +2784,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
       use w3timemd   , only: set_user_timestring
-      use wav_shr_mod, only: time_origin, calendar_name, elapsed_secs
       use w3odatmd   , only: user_histname, user_histfname
 !
       IMPLICIT NONE
