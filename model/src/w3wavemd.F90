@@ -3256,16 +3256,18 @@
 #endif
                                           ) THEN
 
-                     if (user_gridncout .and. histwr .and. j .ne. 7) then
-                        CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
-                        FLGMPI(0) = .FALSE.
-                        !write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
-                        IF ( IAPROC .EQ. NAPFLD ) THEN
-                           IF ( FLGMPI(1) ) CALL MPI_WAITALL( NRQGO2, IRQGO2, STATIO, IERR_MPI )
-                              FLGMPI(1) = .FALSE.
-                              !write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
-                              CALL W3IOGONCD ()
-                        END IF
+                     if (user_gridncout) then
+                        if ( histwr .and. j .ne. 7) then
+                           CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
+                           FLGMPI(0) = .FALSE.
+                           !write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
+                           IF ( IAPROC .EQ. NAPFLD ) THEN
+                              IF ( FLGMPI(1) ) CALL MPI_WAITALL( NRQGO2, IRQGO2, STATIO, IERR_MPI )
+                                 FLGMPI(1) = .FALSE.
+                                 !write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
+                                 CALL W3IOGONCD ()
+                           END IF
+                        end if
                      else
                             IF ( IAPROC .EQ. NAPFLD ) THEN
 #ifdef W3_MPI

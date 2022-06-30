@@ -1507,15 +1507,17 @@ contains
     call read_shel_inp(mpi_comm)
 
     ! custom restart and history file names are used for UFS
-    user_histname = .false.
-    user_restname = .false.
+    user_histname = .true.
+    user_restname = .true.
 
     user_restfname = trim(casename)//'.ww3.r.'
     user_histfname = trim(casename)//'.ww3.hi.'
-!#ifdef W3_UWMNCOUT
-!    ! custom history file names are used for UWM netCDF output
-!    user_histname = .true.
-!#endif
+    ! netcdf gridded output is used for UFS
+    user_gridncout = .true.
+    ! restart and history alarms ....set via history_option config
+    !user_histalarm = .true.
+    !user_restalarm = .true.
+
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )

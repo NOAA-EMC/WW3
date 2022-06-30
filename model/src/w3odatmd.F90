@@ -569,14 +569,14 @@
                                                      !! using ESMF. If history_option is present as config
                                                      !! option, user_histalarm will be true and will be
                                                      !! set using history_option, history_n and history_ymd
-      logical            :: histwr = .false.         !<@public logical to control history write
+      logical            :: histwr = .false.         !<@public logical to trigger history write
                                                      !! if true => write history file (snapshot)
 
       logical            :: user_restalarm = .false. !<@public logical flag for user to set restart alarms
                                                      !! using ESMF. If restart_option is present as config
                                                      !! option, user_restalarm will be true and will be
                                                      !! set using restart_option, restart_n and restart_ymd
-      logical            :: rstwr = .false.          !<@public logical to control restart write
+      logical            :: rstwr = .false.          !<@public logical to trigger restart write
                                                      !! if true => write restart
 
       logical            :: user_gridncout = .false. !<@public logical flag to use netCDF for gridded
