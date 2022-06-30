@@ -44,8 +44,9 @@ module wav_comp_nuopc
   use wav_shr_mod           , only : merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
   use w3odatmd              , only : runtype, user_histname, user_histfname, user_restname, user_restfname
+  use w3odatmd              , only : user_histalarm, user_restalarm, user_gridncout
+  use w3odatmd              , only : time_origin, calendar_name, elapsed_secs
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
-  use wav_shr_mod           , only : time_origin, calendar_name, elapsed_secs
 #ifndef W3_CESMCOUPLED
   use wmwavemd              , only : wmwave
   use wmupdtmd              , only : wmupd2
@@ -81,8 +82,6 @@ module wav_comp_nuopc
   logical                 :: profile_memory = .false.        !< default logical to control use of ESMF
                                                              !! memory profiling
 
-  logical                 :: histwr_is_active = .false.      !< default logical to control use of ESMF
-                                                             !! alarms for writing history files
   logical                 :: root_task = .false.             !< logical to indicate root task
 #ifdef W3_CESMCOUPLED
   logical :: cesmcoupled = .true.                            !< logical to indicate CESM use case
@@ -906,7 +905,8 @@ contains
     use w3wdatmd          , only : time, w3setw
     use wav_import_export , only : import_fields, export_fields
     use wav_shel_inp      , only : odat
-    use wav_shr_mod       , only : rstwr, histwr, outfreq ! only used by cesm
+    use w3odatmd          , only : rstwr, histwr
+    use wav_shr_mod       , only : outfreq
 
     ! arguments:
     type(ESMF_GridComp)  :: gcomp
@@ -1034,7 +1034,7 @@ contains
        endif
     endif
     if (.not. histwr) then
-       if (histwr_is_active) then
+       if (user_histalarm) then
           call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
@@ -1156,6 +1156,7 @@ contains
        !----------------
        ! Restart alarm
        !----------------
+       !TODO: use to set flag user_restalarm
        call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -1226,12 +1227,12 @@ contains
 
           call ESMF_AlarmSet(history_alarm, clock=mclock, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          histwr_is_active = .true.
+          user_histalarm = .true.
        else
           ! If attribute is not present - write history native WW3 output if requested
           history_option = 'none'
           history_n = -999
-          histwr_is_active = .false.
+          user_histalarm = .false.
        end if
 
     end if
@@ -1431,6 +1432,13 @@ contains
        user_restfname = trim(casename)//'.ww3.r.'
        user_histfname = trim(casename)//'.ww3.hi.'
     endif
+
+    ! netcdf gridded output is used for CESM
+    user_gridncout = .true.
+    ! restart and history alarms are set for CESM
+    !user_histalarm = .true.
+    !user_restalarm = .true.
+
     ! Read in initial/restart data and initialize the model
     ! ww3 read initialization occurs in w3iors (which is called by initmd in module w3initmd)
     ! ww3 always starts up from a 'restart' file type

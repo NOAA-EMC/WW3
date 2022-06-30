@@ -564,6 +564,27 @@
                                                      !! YYYY-MM-DD-SSSSS will be appended
       character(len=512) :: user_restfname = ''      !<@public user restart filename prefix, timestring
                                                      !! YYYY-MM-DD-SSSSS will be appended
+
+      logical            :: user_histalarm = .false. !<@public logical flag for user to set history alarms
+                                                     !! using ESMF. If history_option is present as config
+                                                     !! option, user_histalarm will be true and will be
+                                                     !! set using history_option, history_n and history_ymd
+      logical            :: histwr = .false.         !<@public logical to control history write
+                                                     !! if true => write history file (snapshot)
+
+      logical            :: user_restalarm = .false. !<@public logical flag for user to set restart alarms
+                                                     !! using ESMF. If restart_option is present as config
+                                                     !! option, user_restalarm will be true and will be
+                                                     !! set using restart_option, restart_n and restart_ymd
+      logical            :: rstwr = .false.          !<@public logical to control restart write
+                                                     !! if true => write restart
+
+      logical            :: user_gridncout = .false. !<@public logical flag to use netCDF for gridded
+                                                     !! field output
+
+      character(len= 36) :: time_origin = ''         !< @public the time_origin used for netCDF output
+      character(len= 36) :: calendar_name = ''       !< @public the calendar used for netCDF output
+      integer(kind=8)    :: elapsed_secs = 0         !< @public the time in seconds from the time_origin
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
