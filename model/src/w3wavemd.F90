@@ -563,7 +563,7 @@
       REAL                    :: BACANGL
 
 #endif
-     logical :: set_write
+     logical :: setup_mpi_write, write_now
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
 !
@@ -3014,17 +3014,17 @@
 #endif
 !
 #ifdef W3_MPI
-      set_write = .false.
+      setup_mpi_write = .false.
       if (user_histalarm ) then
          if (  histwr .and.  &
-            (FLOUT(1) .OR.  FLOUT(7)) ) set_write = .true.
+            (FLOUT(1) .OR.  FLOUT(7)) ) setup_mpi_write = .true.
       else
          IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
               (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
-                 SBSED ) ) set_write = .true.
+                 SBSED ) ) setup_mpi_write = .true.
       end if
 
-     if (set_write ) then
+     if (setup_mpi_write ) then
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
 #endif
@@ -3249,6 +3249,7 @@
                   TOUT(:) = TONEXT(:,J)
                   DTTST   = DSEC21 ( TIME, TOUT )
 !
+
                   IF ( DTTST .EQ. 0. ) THEN
                         IF ( ( J .EQ. 1 )              &
 #ifdef W3_SBS
@@ -3257,17 +3258,33 @@
                                           ) THEN
 
                      if (user_gridncout) then
-                        if ( histwr .and. j .ne. 7) then
+                        ! if using alarms, restrict output writing to alarm
+                        ! frequencies, otherwise native (inp) frequencies will
+                        ! be used
+                        write_now = .false.
+                        if (user_histalarm) then
+                           if ( histwr .and. j .ne. 7) then
+                              write_now = .true.
+                           end if
+                        else
+                           write_now = .true.
+                        end if
+                        if (write_now) then
+#ifdef W3_MPI
                            CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
                            FLGMPI(0) = .FALSE.
-                           !write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
+#endif
+                           !write(*,*) 'w3wavemd, w3iogonc called : hist flag 1', j, histwr, time, IERR_MPI
                            IF ( IAPROC .EQ. NAPFLD ) THEN
+#ifdef W3_MPI
                               IF ( FLGMPI(1) ) CALL MPI_WAITALL( NRQGO2, IRQGO2, STATIO, IERR_MPI )
                                  FLGMPI(1) = .FALSE.
-                                 !write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
+#endif
+                                 !write(*,*) 'w3wavemd, w3iogonc called : hist flag 2', j, histwr, time, IERR_MPI
                                  CALL W3IOGONCD ()
                            END IF
                         end if
+                     ! default (binary) output
                      else
                             IF ( IAPROC .EQ. NAPFLD ) THEN
 #ifdef W3_MPI
@@ -3296,7 +3313,7 @@
                                 CLOSE( NDSOFLG )
 #endif
                             END IF
-                     end if
+                     end if ! user_grdncout
 
 
                         ELSE IF ( J .EQ. 2 ) THEN

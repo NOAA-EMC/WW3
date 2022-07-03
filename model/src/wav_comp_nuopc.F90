@@ -333,7 +333,9 @@ contains
     multigrid = .false.
     call NUOPC_CompAttributeGet(gcomp, name='multigrid', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent .and. isSet) multigrid=(trim(cvalue)=="true")
+    if (isPresent .and. isSet) then
+       multigrid=(trim(cvalue)=="true")
+    end if
     write(logmsg,'(A,l)') trim(subname)//': Wave multigrid setting is ',multigrid
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
@@ -1005,9 +1007,8 @@ contains
     !------------
     if(profile_memory) call ESMF_VMLogMemInfo("Entering WW3 Run : ")
 
-    if (cesmcoupled) then
-       ! Determine if time to write cesm ww3 restart files
-       ! rstwr is set in wav_shr_mod and used in w3wavmd to determine if restart should be written
+    if (user_restalarm) then
+       ! Determine if time to write ww3 restart files
        call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
@@ -1156,27 +1157,36 @@ contains
        !----------------
        ! Restart alarm
        !----------------
-       !TODO: use to set flag user_restalarm
-       call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
+       call NUOPC_CompAttributeGet(gcomp, name="restart_option", isPresent=isPresent, isSet=isSet, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (isPresent .and. isSet) then
+          call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call NUOPC_CompAttributeGet(gcomp, name="restart_n", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) restart_n
+          call NUOPC_CompAttributeGet(gcomp, name="restart_n", value=cvalue, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          read(cvalue,*) restart_n
 
-       call NUOPC_CompAttributeGet(gcomp, name="restart_ymd", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) restart_ymd
+          call NUOPC_CompAttributeGet(gcomp, name="restart_ymd", value=cvalue, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          read(cvalue,*) restart_ymd
 
-       call alarmInit(mclock, restart_alarm, restart_option, &
-            opt_n   = restart_n,           &
-            opt_ymd = restart_ymd,         &
-            RefTime = mCurrTime,           &
-            alarmname = 'alarm_restart', rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call alarmInit(mclock, restart_alarm, restart_option, &
+               opt_n   = restart_n,           &
+               opt_ymd = restart_ymd,         &
+               RefTime = mCurrTime,           &
+               alarmname = 'alarm_restart', rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          user_restalarm = .true.
+       else
+          ! If attribute is not present - write restarts at native WW3 freq
+          restart_option = 'none'
+          restart_n = -999
+          user_restalarm = .false.
+       end if
 
        !----------------
        ! Stop alarm
@@ -1214,6 +1224,7 @@ contains
           call NUOPC_CompAttributeGet(gcomp, name="history_n", value=cvalue, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           read(cvalue,*) history_n
+
           call NUOPC_CompAttributeGet(gcomp, name="history_ymd", value=cvalue, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           read(cvalue,*) history_ymd
@@ -1229,7 +1240,7 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           user_histalarm = .true.
        else
-          ! If attribute is not present - write history native WW3 output if requested
+          ! If attribute is not present - write history output at native WW3 frequency
           history_option = 'none'
           history_n = -999
           user_histalarm = .false.
@@ -1435,9 +1446,7 @@ contains
 
     ! netcdf gridded output is used for CESM
     user_gridncout = .true.
-    ! restart and history alarms are set for CESM
-    !user_histalarm = .true.
-    !user_restalarm = .true.
+    ! restart and history alarms are set for CESM by default through config
 
     ! Read in initial/restart data and initialize the model
     ! ww3 read initialization occurs in w3iors (which is called by initmd in module w3initmd)
@@ -1494,29 +1503,52 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
+    character(len=CL) :: logmsg
+    logical           :: isPresent, isSet
+    character(len=CL) :: cvalue
     character(len=*), parameter :: subname = '(wav_comp_nuopc:wavinit_ufs)'
     ! -------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
+    ! restart and history alarms are optional for UFS and used via allcomp config settings
+    call NUOPC_CompAttributeGet(gcomp, name='user_sets_histname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       user_histname=(trim(cvalue)=="true")
+    end if
+    write(logmsg,'(A,l)') trim(subname)//': Custom history names in use ',user_histname
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    call NUOPC_CompAttributeGet(gcomp, name='user_sets_restname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       user_restname=(trim(cvalue)=="true")
+    end if
+    write(logmsg,'(A,l)') trim(subname)//': Custom restart names in use ',user_restname
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    call NUOPC_CompAttributeGet(gcomp, name='gridded_netcdfout', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       user_gridncout=(trim(cvalue)=="true")
+    end if
+    write(logmsg,'(A,l)') trim(subname)//': Gridded netcdf output is requested ',user_gridncout
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    if (user_histname) then
+       user_histfname = trim(casename)//'.ww3.hi.'
+    end if
+    if (user_restname) then
+       user_restfname = trim(casename)//'.ww3.r.'
+    end if
+
     outfreq = 0
     fnmpre = './'
 
     call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
     call read_shel_inp(mpi_comm)
-
-    ! custom restart and history file names are used for UFS
-    user_histname = .true.
-    user_restname = .true.
-
-    user_restfname = trim(casename)//'.ww3.r.'
-    user_histfname = trim(casename)//'.ww3.hi.'
-    ! netcdf gridded output is used for UFS
-    user_gridncout = .true.
-    ! restart and history alarms ....set via history_option config
-    !user_histalarm = .true.
-    !user_restalarm = .true.
 
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
