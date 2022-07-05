@@ -1295,6 +1295,7 @@
 !> @author Jian-Guo Li
 !> @date 03-Mar-2022
 !>
+! Subroutine that calculate mid-flux values for x dimension 
       SUBROUTINE SMCxUNO2(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
 
       USE CONSTANTS
@@ -1470,9 +1471,9 @@
          N=IJKVFc(7,j)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel4(L) )
-           CNST3=FLOAT( IJKCel4(M) )
-           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+         CNST2=FLOAT( IJKCel4(L) )
+         CNST3=FLOAT( IJKCel4(M) )
+         CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell unit 
 !    Multiply by multi-resolution time step factor  FTS
@@ -1602,9 +1603,9 @@
          N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel3(L) )
-           CNST3=FLOAT( IJKCel3(M) )
-           CNST5=(CF(M)-CF(L))
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
+         CNST5=(CF(M)-CF(L))
 
 !    Averaged Courant number for base-level cell face 
          CNST6= 0.5*( UC(L)+UC(M) )
@@ -1793,10 +1794,10 @@
 !>
        SUBROUTINE SMCxUNO3(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
-         USE W3GDATMD, ONLY: IJKCel3
-         USE W3ODATMD, ONLY: NDSE, NDST 
+       USE CONSTANTS
+       USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
+       USE W3GDATMD, ONLY: IJKCel3
+       USE W3ODATMD, ONLY: NDSE, NDST 
 
        IMPLICIT NONE
        INTEGER, INTENT( IN):: NUA, NUB
@@ -1838,9 +1839,9 @@
          N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and central gradient
-           CNST2=FLOAT( IJKCel3(L) )
-           CNST3=FLOAT( IJKCel3(M) )
-           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
+         CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell, arithmetic average.
          CNST6=0.5*( UC(L)+UC(M) )*FTS
@@ -1956,22 +1957,22 @@
 !>
       SUBROUTINE SMCyUNO3(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY, FTS)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
-         USE W3GDATMD, ONLY: IJKCel4
-         USE W3ODATMD, ONLY: NDSE, NDST
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
+      USE W3GDATMD, ONLY: IJKCel4
+      USE W3ODATMD, ONLY: NDSE, NDST
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NVA, NVB
-         REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
-         REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
-                CNST7, CNST8, CNST9
+      IMPLICIT NONE
+      INTEGER, INTENT( IN):: NVA, NVB
+      REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
+      REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
+      INTEGER ::  i, j, k, L, M, N, ij
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
+             CNST7, CNST8, CNST9
 
-!    Notice an extra side length L is multiplied to mid-flux to give correct
-!    proportion of flux into the cells.  This length will be removed by the
-!    cell length when the tracer concentration is updated.
+!     Notice an extra side length L is multiplied to mid-flux to give correct
+!     proportion of flux into the cells.  This length will be removed by the
+!     cell length when the tracer concentration is updated.
 
 !     Diffusion Fourier no. at sub-time-step, proportional to face size,
 !     which is also equal to the sub-time-step factor FTS.
@@ -1999,9 +2000,9 @@
          N=IJKVFc(7,j)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel4(L) )
-           CNST3=FLOAT( IJKCel4(M) )
-           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+         CNST2=FLOAT( IJKCel4(L) )
+         CNST3=FLOAT( IJKCel4(M) )
+         CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell unit 
 !    Multiply by multi-resolution time step factor  FTS
@@ -2163,9 +2164,9 @@
          N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel3(L) )
-           CNST3=FLOAT( IJKCel3(M) )
-           CNST5=(CF(M)-CF(L))
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
+         CNST5=(CF(M)-CF(L))
 
 !    Averaged Courant number for base-level cell face 
          CNST6= 0.5*( UC(L)+UC(M) )
@@ -2627,12 +2628,12 @@
 !>
       SUBROUTINE SMCAverg(CVQ) 
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,    &
-                             IJKCel, IJKUFc, IJKVFC,  &
-                             IJKUFc5, IJKUFc6
-         USE W3GDATMD, ONLY: ARCTC 
-         USE W3ODATMD, ONLY: NDSE, NDST 
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,    &
+                          IJKCel, IJKUFc, IJKVFC,  &
+                          IJKUFc5, IJKUFc6
+      USE W3GDATMD, ONLY: ARCTC 
+      USE W3ODATMD, ONLY: NDSE, NDST 
 
       IMPLICIT NONE
       REAL, INTENT(INOUT) :: CVQ(-9:NSEA)
@@ -2667,8 +2668,8 @@
       DO i=1, NUFc
 
 !    Select Upstream, Central and Downstream cells
-           L=IJKUFc5(i)
-           M=IJKUFc6(i)
+        L=IJKUFc5(i)
+        M=IJKUFc6(i)
 
 !       Multi-resolution SMC grid requires flux multiplied by face factor.
         CNST5=Real( IJKUFc(3,i) )*(CVF(M)+CVF(L))
