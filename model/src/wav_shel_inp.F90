@@ -369,6 +369,12 @@ contains
     USE W3SERVMD, ONLY: NEXTLN, EXTCDE
     USE W3TIMEMD, ONLY: DSEC21, STME21, TICK21
 
+    use wav_shr_flags, only : debuginit_flag, couple_flag, oasis_flag
+    use wav_shr_flags, only : O7_flag, t_flag, mgw_flag, mgp_flag
+    use wav_shr_flags, only : nl5_flag, ic1_flag, ic2_flag, is2_flag
+    use wav_shr_flags, only : ic3_flag, bt8_flag, bt9_flag, ic4_flag
+    use wav_shr_flags, only : ic5_flag
+
     INTEGER, INTENT(IN) :: MPI_COMM
 
     ! Local parameters
@@ -381,7 +387,7 @@ contains
     INTEGER             :: jfirst, IERR_MPI
     REAL                :: FACTOR, DTTST, XX, YY, HA(NHMAX,-7:10), &
                            HD(NHMAX,-7:10), HS(NHMAX,-7:10)
-
+    DOUBLE PRECISION    :: STARTJULDAY, STOPJULDAY
     CHARACTER(LEN=1)    :: COMSTR, FLAGTFC(-7:10)
     CHARACTER(LEN=3)    :: IDSTR(-7:10), IDTST
     CHARACTER(LEN=6)    :: YESXNO
@@ -393,10 +399,12 @@ contains
     CHARACTER(LEN=80)   :: LINE
     CHARACTER(LEN=1024) :: FLDRST=''
     CHARACTER(LEN=80)   :: LINEIN
+    CHARACTER(LEN=30)   :: OFILE ! w3_cou only
     CHARACTER(LEN=8)    :: WORDS(7)=''
-    LOGICAL             :: FLFLG, FLHOM, TFLAGI, FLH(-7:10)
+    LOGICAL             :: FLFLG, FLHOM, TFLAGI, PRTFRM, FLGNML, FLGSTIDE(4), FLH(-7:10)
     INTEGER             :: THRLEV = 1
     INTEGER             :: TIME0(2), TIMEN(2), TTIME(2)
+    character(len=80)   :: msg
 
     DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
                   'ice param. 3 ' , 'ice param. 4 ' ,               &
@@ -424,8 +432,7 @@ contains
     FLGR2 = .FALSE.
     FLH(:) = .FALSE.
     iprt(:) = 0
-
-    ! IO setup comes next---do we want to move it from initreal?
+    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 1', debuginit_flag)
 
     NDSI   = 10
     NDSS   = 90
@@ -433,6 +440,11 @@ contains
     NDSE   =  6
     NDST   =  6
     NDSL   = 50
+    if (couple_flag) then
+       NDSO   =  333
+       NDSE   =  333
+       NDST   =  333
+    end if
 
     IF ( IAPROC .EQ. NAPERR ) THEN
        NDSEN  = NDSE
@@ -459,110 +471,721 @@ contains
     NDSF(7)  = 17
     NDSF(8)  = 18
     NDSF(9)  = 19
+    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 2', debuginit_flag)
+
+    if (nco_flag) then
+       NDSI   = 11
+       NDSS   = 90
+       NDSO   =  6
+       NDSE   = NDSO
+       NDST   = NDSO
+       NDSF(1)  = 12
+       NDSF(2)  = 13
+       NDSF(3)  = 14
+       NDSF(4)  = 15
+       NDSF(5)  = 16
+       NDSF(6)  = 17
+       NDSF(7)  = 18
+       NDSF(8)  = 19
+       NDSF(9)  = 20
+    end if
     ! 1.c Local parameters
 
     ! Default COMSTR to "$" (for when using nml input files)
     COMSTR = "$"
+    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 2', debuginit_flag)
+
     ! If using experimental mud or ice physics, additional lines will
-    !  be read in from ww3_shel.inp and applied, so JFIRST is changed from
+    !  be read in from wav_shel_inp.inp and applied, so JFIRST is changed from
     !  its initialization setting "JFIRST=1" to some lower value.
     JFIRST=1
+    if (ic1_flag) jfirst = -7
+    if (ic2_flag) jfirst = -7
+    if (is2_flag) jfirst = -7
+    if (ic3_flag) jfirst = -7
+    if (bt8_flag) jfirst = -7
+    if (bt9_flag) jfirst = -7
+    if (ic4_flag) jfirst = -7
+    if (ic5_flag) jfirst = -7
 
-    ! process old ww3_shel.inp format
-    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_shel.inp',STATUS='OLD',IOSTAT=IERR)
-    REWIND (NDSI)
-    READ (NDSI,'(A)') COMSTR
-    IF (COMSTR.EQ.' ') COMSTR = '$'
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
+    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 4', debuginit_flag)
 
-    ! 2.1 forcing flags
+!
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! 2.  Define input fields
+!
+!
+! process ww3_prnc namelist
+!
+      INQUIRE(FILE=TRIM(FNMPRE)//"ww3_shel.nml", EXIST=FLGNML)
+      IF (FLGNML) THEN
+        ! Read namelist
+        CALL W3NMLSHEL (MPI_COMM, NDSI, TRIM(FNMPRE)//'ww3_shel.nml',  &
+                        NML_DOMAIN, NML_INPUT, NML_OUTPUT_TYPE,        &
+                        NML_OUTPUT_DATE, NML_HOMOG_COUNT,             &
+                        NML_HOMOG_INPUT, IERR)
 
-    FLH(-7:10) = .FALSE.
-    DO J=JFIRST, 9
-       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-       IF ( J .LE. 6 ) THEN
-          READ (NDSI,*) FLAGTFC(J), FLH(J)
-       ELSE
-          READ (NDSI,*) FLAGTFC(J)
-       END IF
-    END DO
+! 2.1 forcing flags
 
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,920)
-    DO J=JFIRST, 9
-       IF (FLAGTFC(J).EQ.'T') THEN
-          INFLAGS1(J)=.TRUE.
-          FLAGSC(J)=.FALSE.
-       END IF
-       IF (FLAGTFC(J).EQ.'F') THEN
-          INFLAGS1(J)=.FALSE.
-          FLAGSC(J)=.FALSE.
-       END IF
-       IF (FLAGTFC(J).EQ.'C') THEN
-          INFLAGS1(J)=.TRUE.
-          FLAGSC(J)=.TRUE.
-       END IF
-       IF ( J .LE. 6 ) THEN
-          FLH(J) = FLH(J) .AND. INFLAGS1(J)
-       END IF
-       IF ( INFLAGS1(J) ) THEN
-          YESXNO = 'YES/--'
-       ELSE
-          YESXNO = '---/NO'
-       END IF
-       IF ( FLH(J) ) THEN
-          STRNG  = '(homogeneous field) '
-       ELSE IF ( FLAGSC(J) ) THEN
-          STRNG  = '(coupling field) '
-       ELSE
-          STRNG  = '                    '
-       END IF
-       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
-    END DO
+        FLH(-7:10)=.FALSE.
+        FLAGTFC(-7)=TRIM(NML_INPUT%FORCING%ICE_PARAM1)
+        FLAGTFC(-6)=TRIM(NML_INPUT%FORCING%ICE_PARAM2)
+        FLAGTFC(-5)=TRIM(NML_INPUT%FORCING%ICE_PARAM3)
+        FLAGTFC(-4)=TRIM(NML_INPUT%FORCING%ICE_PARAM4)
+        FLAGTFC(-3)=TRIM(NML_INPUT%FORCING%ICE_PARAM5)
+        FLAGTFC(-2)=TRIM(NML_INPUT%FORCING%MUD_DENSITY)
+        FLAGTFC(-1)=TRIM(NML_INPUT%FORCING%MUD_THICKNESS)
+        FLAGTFC(0)=TRIM(NML_INPUT%FORCING%MUD_VISCOSITY)
+        FLAGTFC(1)=TRIM(NML_INPUT%FORCING%WATER_LEVELS)
+        FLAGTFC(2)=TRIM(NML_INPUT%FORCING%CURRENTS)
+        FLAGTFC(3)=TRIM(NML_INPUT%FORCING%WINDS)
+        FLAGTFC(4)=TRIM(NML_INPUT%FORCING%ICE_CONC)
+        FLAGTFC(5)=TRIM(NML_INPUT%FORCING%ATM_MOMENTUM)
+        FLAGTFC(6)=TRIM(NML_INPUT%FORCING%AIR_DENSITY)
+        FLAGTFC(7)=TRIM(NML_INPUT%ASSIM%MEAN)
+        FLAGTFC(8)=TRIM(NML_INPUT%ASSIM%SPEC1D)
+        FLAGTFC(9)=TRIM(NML_INPUT%ASSIM%SPEC2D)
 
-    INFLAGS1(10) = .FALSE.
-    IF ( INFLAGS1(10) .AND. IAPROC.EQ.NAPOUT )                         &
-         WRITE (NDSO,921) IDFLDS(10), 'YES/--', ' '
-    FLFLG  = INFLAGS1(-7) .OR. INFLAGS1(-6) .OR. INFLAGS1(-5) .OR. INFLAGS1(-4) &
-         .OR. INFLAGS1(-3) .OR. INFLAGS1(-2) .OR. INFLAGS1(-1)           &
-         .OR. INFLAGS1(0)  .OR. INFLAGS1(1)  .OR. INFLAGS1(2)            &
-         .OR. INFLAGS1(3)  .OR. INFLAGS1(4)  .OR. INFLAGS1(5)            &
-         .OR. INFLAGS1(6)  .OR. INFLAGS1(7)  .OR. INFLAGS1(8)            &
-         .OR. INFLAGS1(9)
-    FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)       &
-         .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLH(0)   &
-         .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4)      &
-         .OR. FLH(5) .OR. FLH(6) .OR. FLH(10)
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
-    !
-    !       INFLAGS2 is just "initial value of INFLAGS1", i.e. does *not* get
-    !          changed when model reads last record of ice.ww3
-    INFLAGS2=INFLAGS1
-    ! 2.2 Time setup
+        IF (TRIM(NML_INPUT%FORCING%ICE_PARAM1) .EQ. 'H') THEN
+          FLAGTFC(-7)='T'
+          FLH(-7)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%ICE_PARAM2) .EQ. 'H') THEN
+          FLAGTFC(-6)='T'
+          FLH(-6)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%ICE_PARAM3) .EQ. 'H') THEN
+          FLAGTFC(-5)='T'
+          FLH(-5)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%ICE_PARAM4) .EQ. 'H') THEN
+          FLAGTFC(-4)='T'
+          FLH(-4)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%ICE_PARAM5) .EQ. 'H') THEN
+          FLAGTFC(-3)='T'
+          FLH(-3)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%MUD_DENSITY) .EQ. 'H') THEN
+          FLAGTFC(-2)='T'
+          FLH(-2)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%MUD_THICKNESS) .EQ. 'H') THEN
+          FLAGTFC(-1)='T'
+          FLH(-1)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%MUD_VISCOSITY) .EQ. 'H') THEN
+          FLAGTFC(0)='T'
+          FLH(0)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%WATER_LEVELS) .EQ. 'H') THEN
+          FLAGTFC(1)='T'
+          FLH(1)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%CURRENTS) .EQ. 'H') THEN
+          FLAGTFC(2)='T'
+          FLH(2)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%WINDS) .EQ. 'H') THEN
+          FLAGTFC(3)='T'
+          FLH(3)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%ICE_CONC) .EQ. 'H') THEN
+          FLAGTFC(4)='T'
+          FLH(4)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%ATM_MOMENTUM) .EQ. 'H') THEN
+          FLAGTFC(5)='T'
+          FLH(5)=.TRUE.
+        END IF
+        IF (TRIM(NML_INPUT%FORCING%AIR_DENSITY) .EQ. 'H') THEN
+          FLAGTFC(6)='T'
+          FLH(6)=.TRUE.
+        END IF
 
-    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*) TIME0
-    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*) TIMEN
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,920)
+        DO J=JFIRST, 9
+          IF (FLAGTFC(J).EQ.'T') THEN
+            INFLAGS1(J)=.TRUE.
+            FLAGSC(J)=.FALSE.
+          END IF
+          IF (FLAGTFC(J).EQ.'F') THEN
+            INFLAGS1(J)=.FALSE.
+            FLAGSC(J)=.FALSE.
+          END IF
+          IF (FLAGTFC(J).EQ.'C') THEN
+            INFLAGS1(J)=.TRUE.
+            FLAGSC(J)=.TRUE.
+          END IF
+          IF ( J .LE. 6 ) THEN
+            FLH(J) = FLH(J) .AND. INFLAGS1(J)
+          END IF
+          IF ( INFLAGS1(J) ) THEN
+            YESXNO = 'YES/--'
+          ELSE
+            YESXNO = '---/NO'
+          END IF
+          IF ( FLH(J) ) THEN
+            STRNG  = '(homogeneous field) '
+          ELSE IF ( FLAGSC(J) ) THEN
+            STRNG  = '(coupling field) '
+          ELSE
+            STRNG  = '                    '
+          END IF
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
+        END DO
+        if (couple_flag) then
+           IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
+           IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
+        end if
 
-    ! 2.3 Domain setup
 
-    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*) IOSTYP
-    CALL W3IOGR ( 'GRID', NDSF(7) )
-    IF ( FLAGLL ) THEN
-       FACTOR = 1.
-    ELSE
-       FACTOR = 1.E-3
-    END IF
+        INFLAGS1(10) = .FALSE.
+        if (mgw_flag) .or. (mgp_flag) then
+           INFLAGS1(10) = .TRUE.
+           FLH(10)   = .TRUE.
+        end if
+        IF ( INFLAGS1(10) .AND. IAPROC.EQ.NAPOUT )                         &
+             WRITE (NDSO,921) IDFLDS(10), 'YES/--', ' '
 
-    ! 2.4 Output dates
+        FLFLG  = INFLAGS1(-7) .OR. INFLAGS1(-6) .OR. INFLAGS1(-5) .OR. INFLAGS1(-4) &
+                 .OR. INFLAGS1(-3) .OR. INFLAGS1(-2) .OR. INFLAGS1(-1)           &
+                 .OR. INFLAGS1(0)  .OR. INFLAGS1(1)  .OR. INFLAGS1(2)            &
+                 .OR. INFLAGS1(3)  .OR. INFLAGS1(4)  .OR. INFLAGS1(5)            &
+                 .OR. INFLAGS1(6)  .OR. INFLAGS1(7)  .OR. INFLAGS1(8)            &
+                 .OR. INFLAGS1(9)
+        FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)       &
+                 .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLH(0)   &
+                 .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4)      &
+                 .OR. FLH(5) .OR. FLH(6) .OR. FLH(10)
 
-    NPTS   = 0
-    NOTYPE = 6
-    DO J = 1, NOTYPE
-       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-       ! CHECKPOINT
-       IF(J .EQ. 4) THEN
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
+!
+!       INFLAGS2 is just "initial value of INFLAGS1", i.e. does *not* get
+!          changed when model reads last record of ice.ww3
+        INFLAGS2=INFLAGS1
+        if (t_flag) then
+           WRITE (NDST,9020) FLFLG, INFLAGS1, FLHOM, FLH
+        end if
+
+
+
+! 2.2 Time setup
+
+        READ(NML_DOMAIN%START,*) TIME0
+        CALL T2D(TIME0,STARTDATE,IERR)
+        CALL D2J(STARTDATE,STARTJULDAY,IERR)
+        READ(NML_DOMAIN%STOP,*) TIMEN
+        CALL T2D(TIMEN,STOPDATE,IERR)
+        CALL D2J(STOPDATE,STOPJULDAY,IERR)
+
+! 2.3 Domain setup
+
+        IOSTYP = NML_DOMAIN%IOSTYP
+
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
+
+        CALL W3IOGR ( 'GRID', NDSF(7) )
+        IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
+
+! 2.4 Output dates
+
+        READ(NML_OUTPUT_DATE%FIELD%START, *)   ODAT(1), ODAT(2)
+        READ(NML_OUTPUT_DATE%FIELD%STRIDE, *)  ODAT(3)
+        READ(NML_OUTPUT_DATE%FIELD%STOP, *)    ODAT(4), ODAT(5)
+
+        READ(NML_OUTPUT_DATE%FIELD%OUTFFILE, *)  OFILES(1)
+!        OUTPTS(I)%OUTSTRIDE(1)=ODAT(3,I)
+
+        READ(NML_OUTPUT_DATE%POINT%START, *)   ODAT(6), ODAT(7)
+        READ(NML_OUTPUT_DATE%POINT%STRIDE, *)  ODAT(8)
+        READ(NML_OUTPUT_DATE%POINT%STOP, *)    ODAT(9), ODAT(10)
+
+        READ(NML_OUTPUT_DATE%POINT%OUTFFILE, *)  OFILES(2)
+!        OUTPTS(I)%OUTSTRIDE(2)=ODAT(8,I)
+
+        READ(NML_OUTPUT_DATE%TRACK%START, *)   ODAT(11), ODAT(12)
+        READ(NML_OUTPUT_DATE%TRACK%STRIDE, *)  ODAT(13)
+        READ(NML_OUTPUT_DATE%TRACK%STOP, *)    ODAT(14), ODAT(15)
+        READ(NML_OUTPUT_DATE%RESTART%START, *)   ODAT(16), ODAT(17)
+        READ(NML_OUTPUT_DATE%RESTART%STRIDE, *)  ODAT(18)
+        READ(NML_OUTPUT_DATE%RESTART%STOP, *)    ODAT(19), ODAT(20)
+        READ(NML_OUTPUT_DATE%RESTART2%START, *)   ODAT(36), ODAT(37)
+        READ(NML_OUTPUT_DATE%RESTART2%STRIDE, *)  ODAT(38)
+        READ(NML_OUTPUT_DATE%RESTART2%STOP, *)    ODAT(39), ODAT(40)
+        READ(NML_OUTPUT_DATE%BOUNDARY%START, *)   ODAT(21), ODAT(22)
+        READ(NML_OUTPUT_DATE%BOUNDARY%STRIDE, *)  ODAT(23)
+        READ(NML_OUTPUT_DATE%BOUNDARY%STOP, *)    ODAT(24), ODAT(25)
+        READ(NML_OUTPUT_DATE%PARTITION%START, *)   ODAT(26), ODAT(27)
+        READ(NML_OUTPUT_DATE%PARTITION%STRIDE, *)  ODAT(28)
+        READ(NML_OUTPUT_DATE%PARTITION%STOP, *)    ODAT(29), ODAT(30)
+        READ(NML_OUTPUT_DATE%COUPLING%START, *)   ODAT(31), ODAT(32)
+        READ(NML_OUTPUT_DATE%COUPLING%STRIDE, *)  ODAT(33)
+        READ(NML_OUTPUT_DATE%COUPLING%STOP, *)    ODAT(34), ODAT(35)
+
+        ! set the time stride at 0 or more
+        ODAT(3) = MAX ( 0 , ODAT(3) )
+        ODAT(8) = MAX ( 0 , ODAT(8) )
+        ODAT(13) = MAX ( 0 , ODAT(13) )
+        ODAT(18) = MAX ( 0 , ODAT(18) )
+        ODAT(23) = MAX ( 0 , ODAT(23) )
+        ODAT(28) = MAX ( 0 , ODAT(28) )
+        ODAT(33) = MAX ( 0 , ODAT(33) )
+        ODAT(38) = MAX ( 0 , ODAT(38) )
+
+        if (couple_flag) then
+        ! Test the validity of the coupling time step
+           IF (ODAT(33) == 0) THEN
+             IF ( IAPROC .EQ. NAPOUT ) THEN
+               WRITE(NDSO,1010) ODAT(33), INT(DTMAX)
+             END IF
+             ODAT(33) = INT(DTMAX)
+           ELSE IF (MOD(ODAT(33),INT(DTMAX)) .NE. 0) THEN
+             GOTO 2009
+           END IF
+        end if
+!
+! 2.5 Output types
+
+        NPTS   = 0
+        NOTYPE = 6
+        if (couple_flag) then
+           NOTYPE = 7
+        end if
+        DO J = 1, NOTYPE
+!          OUTPTS(I)%OFILES(J)=OFILES(J)
+          IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
+
+! Type 1: fields of mean wave parameters
+            IF ( J .EQ. 1 ) THEN
+              FLDOUT = NML_OUTPUT_TYPE%FIELD%LIST
+              CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLGD,     &
+                                 FLGRD, IAPROC, NAPOUT, IERR )
+              IF ( IERR .NE. 0 ) GOTO 2222
+
+
+! Type 2: point output
+            ELSE IF ( J .EQ. 2 ) THEN
+              OPEN (NDSL, FILE=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE%POINT%FILE), &
+                    FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
+
+              ! first loop to count the number of points
+              ! second loop to allocate the array and store the points
+              IPTS = 0
+              DO ILOOP=1,2
+                REWIND (NDSL)
+
+                IF ( ILOOP.EQ.2) THEN
+                  NPTS = IPTS
+                  IF ( NPTS.GT.0 ) THEN
+                    ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                    IPTS = 0 ! reset counter to be reused for next do loop
+                  ELSE
+                    ALLOCATE ( X(1), Y(1), PNAMES(1) )
+                    GOTO 2054
+                  END IF
+                END IF
+
+                DO
+                  READ (NDSL,*,ERR=2004,IOSTAT=IERR) TMPLINE
+                  ! if end of file or stopstring, then exit
+                  IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
+                  ! leading blanks removed and placed on the right
+                  TEST = ADJUSTL ( TMPLINE )
+                  IF ( TEST(1:1).EQ.COMSTR .OR. LEN_TRIM(TEST).EQ.0 ) THEN
+                    ! if comment or blank line, then skip
+                    CYCLE
+                  ELSE
+                    ! otherwise, backup to beginning of line
+                    BACKSPACE ( NDSL, ERR=2004, IOSTAT=IERR)
+                    READ (NDSL,*,ERR=2004,IOSTAT=IERR) XX, YY, PN
+                  END IF
+                  IPTS = IPTS + 1
+                  IF ( ILOOP .EQ. 1 ) CYCLE
+                  IF ( ILOOP .EQ. 2 ) THEN
+                    X(IPTS)      = XX
+                    Y(IPTS)      = YY
+                    PNAMES(IPTS) = PN
+                    IF ( IAPROC .EQ. NAPOUT ) THEN
+                      IF ( FLAGLL ) THEN
+                        IF ( IPTS .EQ. 1 ) THEN
+                          WRITE (NDSO,2945)                     &
+                                 FACTOR*XX, FACTOR*YY, PN
+                        ELSE
+                          WRITE (NDSO,2946) IPTS,               &
+                                 FACTOR*XX, FACTOR*YY, PN
+                        END IF
+                      ELSE
+                        IF ( IPTS .EQ. 1 ) THEN
+                          WRITE (NDSO,2955)                     &
+                                 FACTOR*XX, FACTOR*YY, PN
+                        ELSE
+                          WRITE (NDSO,2956) IPTS,               &
+                                 FACTOR*XX, FACTOR*YY, PN
+                        END IF
+                      END IF
+                    END IF
+                  END IF ! ILOOP.EQ.2
+                END DO ! end of file
+              END DO ! ILOOP
+              CLOSE(NDSL)
+
+! Type 3: track output
+            ELSE IF ( J .EQ. 3 ) THEN
+              TFLAGI = NML_OUTPUT_TYPE%TRACK%FORMAT
+              IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
+              IF ( IAPROC .EQ. NAPOUT ) THEN
+                IF ( .NOT. TFLAGI ) THEN
+                  WRITE (NDSO,3945) 'input', 'UNFORMATTED'
+                ELSE
+                  WRITE (NDSO,3945) 'input', 'FORMATTED'
+                END IF
+              END IF
+
+! Type 6: partitioning
+            ELSE IF ( J .EQ. 6 ) THEN
+              IPRT(1) = NML_OUTPUT_TYPE%PARTITION%X0
+              IPRT(2) = NML_OUTPUT_TYPE%PARTITION%XN
+              IPRT(3) = NML_OUTPUT_TYPE%PARTITION%NX
+              IPRT(4) = NML_OUTPUT_TYPE%PARTITION%Y0
+              IPRT(5) = NML_OUTPUT_TYPE%PARTITION%YN
+              IPRT(6) = NML_OUTPUT_TYPE%PARTITION%NY
+              PRTFRM = NML_OUTPUT_TYPE%PARTITION%FORMAT
+
+              IF ( IAPROC .EQ. NAPOUT ) THEN
+                IF ( PRTFRM ) THEN
+                  YESXNO = 'YES/--'
+                ELSE
+                  YESXNO = '---/NO'
+                END IF
+                WRITE (NDSO,6945) IPRT, YESXNO
+              END IF
+
+#ifdef W3_COU
+ ! Type 7: coupling
+            ELSE IF ( J .EQ. 7 ) THEN
+              FLDOUT = NML_OUTPUT_TYPE%COUPLING%SENT
+              CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLG2,  &
+                                 FLGR2, IAPROC, NAPOUT, IERR )
+              IF ( IERR .NE. 0 ) GOTO 2222
+              FLDIN = NML_OUTPUT_TYPE%COUPLING%RECEIVED
+              CPLT0 = NML_OUTPUT_TYPE%COUPLING%COUPLET0
+#endif
+
+            END IF ! J
+          END IF ! ODAT
+        END DO ! J
+
+        ! Extra fields to be written in the restart
+        FLDRST = NML_OUTPUT_TYPE%RESTART%EXTRA
+        CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
+                           FLOGRR, IAPROC, NAPOUT, IERR )
+        IF ( IERR .NE. 0 ) GOTO 2222
+
+        ! force minimal allocation to avoid memory seg fault
+        IF ( .NOT.ALLOCATED(X) .AND. NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
+
+! 2.6 Homogeneous field data
+
+        IF ( FLHOM ) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                   &
+                          'Homogeneous field data (and moving grid) ...'
+
+          NH(-7) = NML_HOMOG_COUNT%N_IC1
+          NH(-6) = NML_HOMOG_COUNT%N_IC2
+          NH(-5) = NML_HOMOG_COUNT%N_IC3
+          NH(-4) = NML_HOMOG_COUNT%N_IC4
+          NH(-3) = NML_HOMOG_COUNT%N_IC5
+          NH(-2) = NML_HOMOG_COUNT%N_MDN
+          NH(-1) = NML_HOMOG_COUNT%N_MTH
+          NH(0)  = NML_HOMOG_COUNT%N_MVS
+          NH(1)  = NML_HOMOG_COUNT%N_LEV
+          NH(2)  = NML_HOMOG_COUNT%N_CUR
+          NH(3)  = NML_HOMOG_COUNT%N_WND
+          NH(4)  = NML_HOMOG_COUNT%N_ICE
+          NH(5)  = NML_HOMOG_COUNT%N_TAU
+          NH(6)  = NML_HOMOG_COUNT%N_RHO
+          NH(10)  = NML_HOMOG_COUNT%N_MOV
+
+          N_TOT = NML_HOMOG_COUNT%N_TOT
+
+          DO J=JFIRST,10
+            IF ( NH(J) .GT. NHMAX ) GOTO 2006
+          END DO
+
+
+          ! Store homogeneous fields
+          IF ( N_TOT .GT. 0 ) THEN
+            IHH(:)=0
+            DO IH=1,N_TOT
+              READ(NML_HOMOG_INPUT(IH)%NAME,*) IDTST
+              SELECT CASE (IDTST)
+              CASE ('IC1')
+                J=-7
+              CASE ('IC2')
+                J=-6
+              CASE ('IC3')
+                J=-5
+              CASE ('IC4')
+                J=-4
+              CASE ('IC5')
+                J=-3
+              CASE ('MDN')
+                J=-2
+              CASE ('MTH')
+                J=-1
+              CASE ('MVS')
+                J=0
+              CASE ('LEV')
+                J=1
+              CASE ('CUR')
+                J=2
+              CASE ('WND')
+                J=3
+              CASE ('ICE')
+                J=4
+              CASE ('TAU')
+                J=5
+              CASE ('RHO')
+                J=6
+              CASE ('MOV')
+                J=10
+              CASE DEFAULT
+                GOTO 2062
+              END SELECT
+              IHH(J)=IHH(J)+1
+              READ(NML_HOMOG_INPUT(IH)%DATE,*) THO(:,J,IHH(J))
+              HA(IHH(J),J) = NML_HOMOG_INPUT(IH)%VALUE1
+              HD(IHH(J),J) = NML_HOMOG_INPUT(IH)%VALUE2
+              HS(IHH(J),J) = NML_HOMOG_INPUT(IH)%VALUE3
+            END DO
+          END IF
+
+          if (O7_flag) then
+             DO J=JFIRST, 10
+               IF ( FLH(J) .AND. IAPROC.EQ.NAPOUT ) THEN
+                 WRITE (NDSO,952) NH(J), IDFLDS(J)
+                 DO I=1, NH(J)
+                   IF ( ( J .LE. 1 ) .OR. ( J .EQ. 4 ) .OR.      &
+                        ( J .EQ. 6 ) ) THEN
+                     WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+                                      HA(I,J)
+                   ELSE IF ( ( J .EQ. 2 ) .OR. ( J .EQ. 5 ) .OR. &
+                             ( J .EQ. 10 ) ) THEN
+                     WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+                                      HA(I,J), HD(I,J)
+                   ELSE IF ( J .EQ. 3 ) THEN
+                     WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+                                      HA(I,J), HD(I,J), HS(I,J)
+                   END IF
+                 END DO
+               END IF
+             END DO
+          end if
+
+          IF ( ( FLH(-7) .AND. (NH(-7).EQ.0) ) .OR.                     &
+               ( FLH(-6) .AND. (NH(-6).EQ.0) ) .OR.                     &
+               ( FLH(-5) .AND. (NH(-5).EQ.0) ) .OR.                     &
+               ( FLH(-4) .AND. (NH(-4).EQ.0) ) .OR.                     &
+               ( FLH(-3) .AND. (NH(-3).EQ.0) ) .OR.                     &
+               ( FLH(-2) .AND. (NH(-2).EQ.0) ) .OR.                     &
+               ( FLH(-1) .AND. (NH(-1).EQ.0) ) .OR.                     &
+               ( FLH(0)  .AND. (NH(0).EQ.0)  ) .OR.                     &
+               ( FLH(1)  .AND. (NH(1).EQ.0)  ) .OR.                     &
+               ( FLH(2)  .AND. (NH(2).EQ.0)  ) .OR.                     &
+               ( FLH(3)  .AND. (NH(3).EQ.0)  ) .OR.                     &
+               ( FLH(4)  .AND. (NH(4).EQ.0)  ) .OR.                     &
+               ( FLH(5)  .AND. (NH(5).EQ.0)  ) .OR.                     &
+               ( FLH(6)  .AND. (NH(6).EQ.0)  ) .OR.                     &
+               ( FLH(10) .AND. (NH(10).EQ.0) ) ) GOTO 2007
+
+        END IF ! FLHOM
+
+
+      END IF ! FLGNML
+
+!
+! process old wav_shel_inp.inp format
+!
+      IF (.NOT. FLGNML) THEN
+        call debuginit_msg(740+iaproc, ' FNMPRE'//TRIM(FNMPRE), debuginit_flag)
+        OPEN (NDSI,FILE=TRIM(FNMPRE)//'wav_shel_inp.inp',STATUS='OLD',IOSTAT=IERR)
+        REWIND (NDSI)
+        call debuginit_msg(740+iaproc, 'Before read 2002, case 1', debuginit_flag)
+!AR: I changed the error handling for err=2002, see commit message ...
+        READ (NDSI,'(A)') COMSTR
+        call debuginit_msg(740+iaproc, ' COMSTR='//trim(COMSTR), debuginit_flag)
+        call debuginit_msg(740+iaproc, ' After read 2002, case 1', debuginit_flag)
+        IF (COMSTR.EQ.' ') COMSTR = '$'
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
+
+! 2.1 forcing flags
+
+        FLH(-7:10) = .FALSE.
+        DO J=JFIRST, 9
+          CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+          IF ( J .LE. 6 ) THEN
+            call debuginit_msg(740+iaproc, 'Before read 2002, case 2', debuginit_flag)
+            READ (NDSI,*) FLAGTFC(J), FLH(J)
+
+            write(msg,*)'     J=', J, ' FLAGTFC=', FLAGTFC(J), ' FLH=', FLH(J)
+            call debuginit_msg(740+iaproc, msg = trim(msg), debuginit_flag)
+            call debuginit_msg(740+iaproc, msg = ' After read 2002, case 2', debuginit_flag)
+          ELSE
+            call debuginit_msg(740+iaproc, 'Before read 2002, case 3', debuginit_flag)
+            READ (NDSI,*) FLAGTFC(J)
+
+            write(msg,*) '     J=', J, ' FLAGTFC=', FLAGTFC(J)
+            call debuginit_msg(740+iaproc, msg = trim(msg), debuginit_flag)
+            call debuginit_msg(740+iaproc, msg = ' After read 2002, case 3 ', debuginit_flag)
+          END IF
+        END DO
+
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,920)
+        DO J=JFIRST, 9
+          IF (FLAGTFC(J).EQ.'T') THEN
+            INFLAGS1(J)=.TRUE.
+            FLAGSC(J)=.FALSE.
+          END IF
+          IF (FLAGTFC(J).EQ.'F') THEN
+            INFLAGS1(J)=.FALSE.
+            FLAGSC(J)=.FALSE.
+          END IF
+          IF (FLAGTFC(J).EQ.'C') THEN
+            INFLAGS1(J)=.TRUE.
+            FLAGSC(J)=.TRUE.
+          END IF
+          IF ( J .LE. 6 ) THEN
+            FLH(J) = FLH(J) .AND. INFLAGS1(J)
+          END IF
+          IF ( INFLAGS1(J) ) THEN
+            YESXNO = 'YES/--'
+          ELSE
+            YESXNO = '---/NO'
+          END IF
+          IF ( FLH(J) ) THEN
+            STRNG  = '(homogeneous field) '
+          ELSE IF ( FLAGSC(J) ) THEN
+            STRNG  = '(coupling field) '
+          ELSE
+            STRNG  = '                    '
+          END IF
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
+        END DO
+        if (couple_flag) then
+           IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
+           IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
+        end if
+
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 2b'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif
+
+        call debuginit_msg(740+iaproc, 'wav_shel_inp, step 5', debuginit_flag)
+
+        INFLAGS1(10) = .FALSE.
+        if (mgw_flag) .or. (mgp_flag) then
+           INFLAGS1(10) = .TRUE.
+           FLH(10)   = .TRUE.
+        end if
+        IF ( INFLAGS1(10) .AND. IAPROC.EQ.NAPOUT )                         &
+             WRITE (NDSO,921) IDFLDS(10), 'YES/--', ' '
+
+        FLFLG  = INFLAGS1(-7) .OR. INFLAGS1(-6) .OR. INFLAGS1(-5) .OR. INFLAGS1(-4) &
+                 .OR. INFLAGS1(-3) .OR. INFLAGS1(-2) .OR. INFLAGS1(-1)           &
+                 .OR. INFLAGS1(0)  .OR. INFLAGS1(1)  .OR. INFLAGS1(2)            &
+                 .OR. INFLAGS1(3)  .OR. INFLAGS1(4)  .OR. INFLAGS1(5)            &
+                 .OR. INFLAGS1(6)  .OR. INFLAGS1(7)  .OR. INFLAGS1(8)            &
+                 .OR. INFLAGS1(9)
+        FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)       &
+                 .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLH(0)   &
+                 .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4)      &
+                 .OR. FLH(5) .OR. FLH(6) .OR. FLH(10)
+
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
+!
+!       INFLAGS2 is just "initial value of INFLAGS1", i.e. does *not* get
+!          changed when model reads last record of ice.ww3
+        INFLAGS2=INFLAGS1
+
+        if (t_flag) then
+           WRITE (NDST,9020) FLFLG, INFLAGS1, FLHOM, FLH
+        end if
+
+
+! 2.2 Time setup
+
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        call debuginit_msg(740+iaproc, 'Before read 2002, case 4', debuginit_flag)
+        READ (NDSI,*) TIME0
+        call debuginit_msg(740+iaproc, ' After read 2002, case 4', debuginit_flag)
+
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 2c'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif
+
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        call debuginit_msg(740+iaproc, 'Before read 2002, case 5', debuginit_flag)
+        READ (NDSI,*) TIMEN
+        call debuginit_msg(740+iaproc, ' After read 2002, case 5', debuginit_flag)
+        call debuginit_msg(740+iaproc, 'wav_shel_inp, step 6', debuginit_flag)
+!
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 2d'
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif
+
+! 2.3 Domain setup
+
+        call debuginit_msg(740+iaproc, 'wav_shel_inp, step 7', debuginit_flag)
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        call debuginit_msg(740+iaproc, 'Before read 2002, case 6', debuginit_flag)
+        READ (NDSI,*) IOSTYP
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
+        call debuginit_msg(740+iaproc, ' After read 2002, case 6', debuginit_flag)
+        CALL W3IOGR ( 'GRID', NDSF(7) )
+        IF ( FLAGLL ) THEN
+          FACTOR = 1.
+        ELSE
+          FACTOR = 1.E-3
+        END IF
+        call debuginit_msg(740+iaproc, 'wav_shel_inp, step 8', debuginit_flag)
+
+! 2.4 Output dates
+
+        NPTS   = 0
+        NOTYPE = 6
+        if (couple_flag) then
+           NOTYPE = 7
+        end if
+        call debuginit_msg(740+iaproc, 'Before NOTYPE loop', debuginit_flag)
+        DO J = 1, NOTYPE
+        write(msg,*)'J=', J, '/ NOTYPE=', NOTYPE
+        call debuginit_msg(740+iaproc, trim(msg), debuginit_flag)
+        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        call debuginit_msg(740+iaproc, 'Before read 2002, case 7', debuginit_flag)
+!
+! CHECKPOINT
+        IF(J .EQ. 4) THEN
           ODAT(38)=0
           WORDS(1:7)=''
           READ (NDSI,'(A)') LINEIN
@@ -573,302 +1196,473 @@ contains
           READ(WORDS( 4 ), * ) ODAT(19)
           READ(WORDS( 5 ), * ) ODAT(20)
           IF (WORDS(6) .EQ. 'T') THEN
-             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-             READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
+            CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+            READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
              if(iaproc .eq. naproc) WRITE(*,*)'odat(j=4): ',(ODAT(I),I=5*(8-1)+1,5*8)
           END IF
           IF (WORDS(7) .EQ. 'T') THEN
-             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-             READ (NDSI,'(A)',END=2001,ERR=2002) FLDRST
+            CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+            READ (NDSI,'(A)',END=2001,ERR=2002) FLDRST
           END IF
           CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
-               FLOGRR, IAPROC, NAPOUT, IERR )
+                             FLOGRR, IAPROC, NAPOUT, IERR )
           IF ( IERR .NE. 0 ) GOTO 2222
-       ELSE
-          !INLINE NEW VARIABLE TO READ IF PRESENT OFILES(J), IF NOT ==0
-          !          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
-          !          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
-          IF(J .LE. 2) THEN
-             WORDS(1:6)=''
-             !          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
-             READ (NDSI,'(A)') LINEIN
-             READ(LINEIN,*,iostat=ierr) WORDS
-             IF(J .EQ. 1) THEN
-                READ(WORDS( 1 ), * ) ODAT(1)
-                READ(WORDS( 2 ), * ) ODAT(2)
-                READ(WORDS( 3 ), * ) ODAT(3)
-                READ(WORDS( 4 ), * ) ODAT(4)
-                READ(WORDS( 5 ), * ) ODAT(5)
-             ELSE
-                READ(WORDS( 1 ), * ) ODAT(6)
-                READ(WORDS( 2 ), * ) ODAT(7)
-                READ(WORDS( 3 ), * ) ODAT(8)
-                READ(WORDS( 4 ), * ) ODAT(9)
-                READ(WORDS( 5 ), * ) ODAT(10)
-             END IF
+        ELSE
+!
+!INLINE NEW VARIABLE TO READ IF PRESENT OFILES(J), IF NOT ==0
+!          READ (NDSI,*) (ODAT(I),I=5*(J-1)+1,5*J)
+!          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+        IF(J .LE. 2) THEN
+          WORDS(1:6)=''
+!          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+          READ (NDSI,'(A)') LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
 
-             IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
-                OFILES(J)=0
-             ELSE
-                READ(WORDS( 6 ), * ) OFILES(J)
-             END IF
+          IF(J .EQ. 1) THEN
+            READ(WORDS( 1 ), * ) ODAT(1)
+            READ(WORDS( 2 ), * ) ODAT(2)
+            READ(WORDS( 3 ), * ) ODAT(3)
+            READ(WORDS( 4 ), * ) ODAT(4)
+            READ(WORDS( 5 ), * ) ODAT(5)
           ELSE
-             OFILES(J)=0
-             READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
+            READ(WORDS( 1 ), * ) ODAT(6)
+            READ(WORDS( 2 ), * ) ODAT(7)
+            READ(WORDS( 3 ), * ) ODAT(8)
+            READ(WORDS( 4 ), * ) ODAT(9)
+            READ(WORDS( 5 ), * ) ODAT(10)
           END IF
+
+          IF (WORDS(6) .NE. '0' .AND. WORDS(6) .NE. '1') THEN
+            OFILES(J)=0
+          ELSE
+            READ(WORDS( 6 ), * ) OFILES(J)
+          END IF
+
+
+#ifdef W3_COU
+        ELSE IF(J .EQ. 7) THEN
+          WORDS(1:6)=''
+          READ (NDSI,'(A)') LINEIN
+          READ(LINEIN,*,iostat=ierr) WORDS
+ 
+          READ(WORDS( 1 ), * ) ODAT(31)
+          READ(WORDS( 2 ), * ) ODAT(32)
+          READ(WORDS( 3 ), * ) ODAT(33)
+          READ(WORDS( 4 ), * ) ODAT(34)
+          READ(WORDS( 5 ), * ) ODAT(35)
+ 
+          IF (WORDS(6) .EQ. 'T') THEN
+            CPLT0 = .TRUE.
+          ELSE
+            CPLT0 = .FALSE.
+          END IF
+#endif
+        ELSE
+          OFILES(J)=0
+          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
+        END IF
+!          WRITE(*,*) 'OFILES(J)= ', OFILES(J),J
+!
+        call debuginit_msg(740+iaproc, ' After read 2002, case 7', debuginit_flag)
           ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
-          ! 2.5 Output types
+!
+#ifdef W3_MEMCHECK
+       write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp NOTTYPE', J
+       call getMallocInfo(mallinfos)
+       call printMallInfo(IAPROC,mallInfos)
+#endif
+
+
+! 2.5 Output types
 
           IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
 
-             ! Type 1: fields of mean wave parameters
-             IF ( J .EQ. 1 ) THEN
-                CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLGD,   &
-                     FLGRD, IAPROC, NAPOUT, IERR )
-                IF ( IERR .NE. 0 ) GOTO 2222
-                ! Type 2: point output
-             ELSE IF ( J .EQ. 2 ) THEN
-                DO ILOOP=1,2
-                   IF ( ILOOP .EQ. 1 ) THEN
-                      NDSI2  = NDSI
-                      IF ( IAPROC .EQ. 1 ) OPEN                       &
-                           (NDSS,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
-                   ELSE
-                      NDSI2  = NDSS
-                      CALL MPI_BARRIER (MPI_COMM,IERR_MPI)
-                      OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
-                      REWIND (NDSS)
+! Type 1: fields of mean wave parameters
+        call debuginit_msg(740+iaproc, ' Case analysis', debuginit_flag)
+            IF ( J .EQ. 1 ) THEN
+              CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLGD,   &
+                                 FLGRD, IAPROC, NAPOUT, IERR )
+              IF ( IERR .NE. 0 ) GOTO 2222
 
-                      IF ( .NOT.ALLOCATED(X) ) THEN
-                         IF ( NPTS.GT.0 ) THEN
-                            ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
-                         ELSE
-                            ALLOCATE ( X(1), Y(1), PNAMES(1) )
-                            GOTO 2054
-                         END IF
-                      END IF
-                   END IF
 
-                   NPTS   = 0
-                   DO
-                      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                      READ (NDSI2,*) XX, YY, PN
-                      IF ( ILOOP.EQ.1 .AND. IAPROC.EQ.1 ) THEN
-                         BACKSPACE (NDSI)
-                         READ (NDSI,'(A)') LINE
-                         WRITE (NDSS,'(A)') LINE
-                      END IF
-                      IF ( INDEX(PN,"STOPSTRING").NE.0 ) EXIT
-                      NPTS   = NPTS + 1
-                      IF ( ILOOP .EQ. 1 ) CYCLE
-                      X(NPTS)      = XX
-                      Y(NPTS)      = YY
-                      PNAMES(NPTS) = PN
-                      IF ( IAPROC .EQ. NAPOUT ) THEN
-                         IF ( FLAGLL ) THEN
-                            IF ( NPTS .EQ. 1 ) THEN
-                               WRITE (NDSO,2945)                     &
-                                    FACTOR*XX, FACTOR*YY, PN
-                            ELSE
-                               WRITE (NDSO,2946) NPTS,               &
-                                    FACTOR*XX, FACTOR*YY, PN
-                            END IF
-                         ELSE
-                            IF ( NPTS .EQ. 1 ) THEN
-                               WRITE (NDSO,2955)                     &
-                                    FACTOR*XX, FACTOR*YY, PN
-                            ELSE
-                               WRITE (NDSO,2956) NPTS,               &
-                                    FACTOR*XX, FACTOR*YY, PN
-                            END IF
-                         END IF
-                      END IF
-                   END DO
-                   IF ( IAPROC.EQ.1 .AND. ILOOP.EQ.1 ) CLOSE (NDSS)
-                END DO
-                IF ( NPTS.EQ.0 .AND. IAPROC.EQ.NAPOUT )               &
-                     WRITE (NDSO,2947)
-                IF ( IAPROC .EQ. 1 ) THEN
-                   CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
-                   CLOSE (NDSS,STATUS='DELETE')
+! Type 2: point output
+            ELSE IF ( J .EQ. 2 ) THEN
+              DO ILOOP=1,2
+                IF ( ILOOP .EQ. 1 ) THEN
+                  NDSI2  = NDSI
+                  IF ( IAPROC .EQ. 1 ) OPEN                       &
+                       (NDSS,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
                 ELSE
-                   CLOSE (NDSS)
-                   CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+                  NDSI2  = NDSS
+#ifdef W3_MPI
+                  CALL MPI_BARRIER (MPI_COMM,IERR_MPI)
+#endif
+                  OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_shel.scratch')
+                  REWIND (NDSS)
+
+                  IF ( .NOT.ALLOCATED(X) ) THEN
+                    IF ( NPTS.GT.0 ) THEN
+                      ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                    ELSE
+                      ALLOCATE ( X(1), Y(1), PNAMES(1) )
+                      GOTO 2054
+                    END IF
+                  END IF
                 END IF
 
-                ! Type 3: track output
-             ELSE IF ( J .EQ. 3 ) THEN
-                CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                READ (NDSI,*) TFLAGI
-                IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
-                IF ( IAPROC .EQ. NAPOUT ) THEN
-                   IF ( .NOT. TFLAGI ) THEN
-                      WRITE (NDSO,3945) 'input', 'UNFORMATTED'
-                   ELSE
-                      WRITE (NDSO,3945) 'input', 'FORMATTED'
-                   END IF
-                END IF
+                NPTS   = 0
+                DO
+                  CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 8', debuginit_flag)
+                  READ (NDSI2,*) XX, YY, PN
+                  call debuginit_msg(740+iaproc, ' After read 2002, case 8', debuginit_flag)
+                  IF ( ILOOP.EQ.1 .AND. IAPROC.EQ.1 ) THEN
+                    BACKSPACE (NDSI)
+                    READ (NDSI,'(A)') LINE
+                    WRITE (NDSS,'(A)') LINE
+                  END IF
+                  IF ( INDEX(PN,"STOPSTRING").NE.0 ) EXIT
+                  NPTS   = NPTS + 1
+                  IF ( ILOOP .EQ. 1 ) CYCLE
+                  X(NPTS)      = XX
+                  Y(NPTS)      = YY
+                  PNAMES(NPTS) = PN
+                  IF ( IAPROC .EQ. NAPOUT ) THEN
+                    IF ( FLAGLL ) THEN
+                      IF ( NPTS .EQ. 1 ) THEN
+                        WRITE (NDSO,2945)                     &
+                               FACTOR*XX, FACTOR*YY, PN
+                      ELSE
+                        WRITE (NDSO,2946) NPTS,               &
+                               FACTOR*XX, FACTOR*YY, PN
+                      END IF
+                    ELSE
+                      IF ( NPTS .EQ. 1 ) THEN
+                        WRITE (NDSO,2955)                     &
+                               FACTOR*XX, FACTOR*YY, PN
+                      ELSE
+                        WRITE (NDSO,2956) NPTS,               &
+                               FACTOR*XX, FACTOR*YY, PN
+                      END IF
+                    END IF
+                  END IF
+                END DO
 
-                ! Type 6: partitioning
-             ELSE IF ( J .EQ. 6 ) THEN
-                !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
-                CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                READ (NDSI,*) IPRT, PRTFRM
-                IF ( IAPROC .EQ. NAPOUT ) THEN
-                   IF ( PRTFRM ) THEN
-                      YESXNO = 'YES/--'
-                   ELSE
-                      YESXNO = '---/NO'
-                   END IF
-                   WRITE (NDSO,6945) IPRT, YESXNO
+                IF ( IAPROC.EQ.1 .AND. ILOOP.EQ.1 ) CLOSE (NDSS)
+              END DO
+
+              IF ( NPTS.EQ.0 .AND. IAPROC.EQ.NAPOUT )               &
+                   WRITE (NDSO,2947)
+              IF ( IAPROC .EQ. 1 ) THEN
+#ifdef W3_MPI
+                CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+#endif
+                CLOSE (NDSS,STATUS='DELETE')
+              ELSE
+                CLOSE (NDSS)
+#ifdef W3_MPI
+                CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+#endif
+              END IF
+
+! Type 3: track output
+            ELSE IF ( J .EQ. 3 ) THEN
+              CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+              call debuginit_msg(740+iaproc, 'Before read 2002, case 8', debuginit_flag)
+              READ (NDSI,*) TFLAGI
+              call debuginit_msg(740+iaproc, ' After read 2002, case 9', debuginit_flag)
+
+              IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
+              IF ( IAPROC .EQ. NAPOUT ) THEN
+                IF ( .NOT. TFLAGI ) THEN
+                  WRITE (NDSO,3945) 'input', 'UNFORMATTED'
+                ELSE
+                  WRITE (NDSO,3945) 'input', 'FORMATTED'
                 END IF
-             END IF ! J
+              END IF
+
+
+! Type 6: partitioning
+            ELSE IF ( J .EQ. 6 ) THEN
+!             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
+              CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+              call debuginit_msg(740+iproc, 'Before reading IPRT', debuginit_flag)
+              call debuginit_msg(740+iproc, 'Before read 2002, case 10', debuginit_flag)
+              READ (NDSI,*) IPRT, PRTFRM
+              call debuginit_msg(740+iaproc, ' After read 2002, case 10', debuginit_flag)
+
+              IF ( IAPROC .EQ. NAPOUT ) THEN
+                IF ( PRTFRM ) THEN
+                  YESXNO = 'YES/--'
+                ELSE
+                  YESXNO = '---/NO'
+                END IF
+                WRITE (NDSO,6945) IPRT, YESXNO
+              END IF
+
+
+#ifdef W3_COU
+ ! Type 7: coupling
+            ELSE IF ( J .EQ. 7 ) THEN
+              CALL W3READFLGRD ( NDSI, NDSO, NDSS, NDSEN, COMSTR, FLG2,     &
+                                 FLGR2, IAPROC, NAPOUT, IERR )
+              IF ( IERR .NE. 0 ) GOTO 2222
+              CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+              READ (NDSI,'(A)',END=2001,ERR=2002,IOSTAT=IERR) FLDIN
+#endif
+
+            END IF ! J
           END IF ! ODAT
-       END IF ! IF J=4
-    END DO ! J
+        END IF ! IF J=4
+        END DO ! J
 
-    ! force minimal allocation to avoid memory seg fault
-    IF ( .NOT.ALLOCATED(X) .AND. NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
+        ! force minimal allocation to avoid memory seg fault
+        IF ( .NOT.ALLOCATED(X) .AND. NPTS.EQ.0 ) ALLOCATE ( X(1), Y(1), PNAMES(1) )
 
-    ! 2.6 Homogeneous field data
+! 2.6 Homogeneous field data
 
-    IF ( FLHOM ) THEN
-       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
-            'Homogeneous field data (and moving grid) ...'
-       NH     = 0
-       ! Start of loop
-       DO
-          CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-          READ (NDSI,*) IDTST
+        IF ( FLHOM ) THEN
+          IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
+                          'Homogeneous field data (and moving grid) ...'
+          NH     = 0
 
-          ! Exit if illegal id
-          IF ( IDTST.NE.IDSTR(-7) .AND. IDTST.NE.IDSTR(-6) .AND.   &
-               IDTST.NE.IDSTR(-5) .AND. IDTST.NE.IDSTR(-4) .AND.   &
-               IDTST.NE.IDSTR(-3) .AND. IDTST.NE.IDSTR(-2) .AND.   &
-               IDTST.NE.IDSTR(-1) .AND. IDTST.NE.IDSTR(0)  .AND.   &
-               IDTST.NE.IDSTR(1)  .AND. IDTST.NE.IDSTR(2)  .AND.   &
-               IDTST.NE.IDSTR(3)  .AND. IDTST.NE.IDSTR(4)  .AND.   &
-               IDTST.NE.IDSTR(5)  .AND. IDTST.NE.IDSTR(6)  .AND.   &
-               IDTST.NE.IDSTR(10)  .AND. IDTST.NE.'STP' ) GOTO 2005
+          ! Start of loop
+          DO
+            CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+            call debuginit_msg(740+iaproc, 'Before read 2002, case 11', debuginit_flag)
+            READ (NDSI,*) IDTST
+            call debuginit_msg(740+iaproc, ' After read 2002, case 11', debuginit_flag)
 
-          ! Stop conditions
-          IF ( IDTST .EQ. 'STP' ) THEN
-             EXIT
-          ELSE
-             BACKSPACE ( NDSI )
-          END IF
 
-          ! Store data
-          DO J=LBOUND(IDSTR,1), 10
-             IF ( IDTST .EQ. IDSTR(J) ) THEN
+            ! Exit if illegal id
+            IF ( IDTST.NE.IDSTR(-7) .AND. IDTST.NE.IDSTR(-6) .AND.   &
+                 IDTST.NE.IDSTR(-5) .AND. IDTST.NE.IDSTR(-4) .AND.   &
+                 IDTST.NE.IDSTR(-3) .AND. IDTST.NE.IDSTR(-2) .AND.   &
+                 IDTST.NE.IDSTR(-1) .AND. IDTST.NE.IDSTR(0)  .AND.   &
+                 IDTST.NE.IDSTR(1)  .AND. IDTST.NE.IDSTR(2)  .AND.   &
+                 IDTST.NE.IDSTR(3)  .AND. IDTST.NE.IDSTR(4)  .AND.   &
+                 IDTST.NE.IDSTR(5)  .AND. IDTST.NE.IDSTR(6)  .AND.   &
+                 IDTST.NE.IDSTR(10)  .AND. IDTST.NE.'STP' ) GOTO 2005
+
+            ! Stop conditions
+            IF ( IDTST .EQ. 'STP' ) THEN
+              EXIT
+            ELSE
+              BACKSPACE ( NDSI )
+            END IF
+
+            ! Store data
+            DO J=LBOUND(IDSTR,1), 10
+              IF ( IDTST .EQ. IDSTR(J) ) THEN
                 NH(J)    = NH(J) + 1
                 IF ( NH(J) .GT. NHMAX ) GOTO 2006
                 IF ( J .LE. 1  ) THEN ! water levels, etc. : get HA
-                   READ (NDSI,*) IDTST,           &
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 12', debuginit_flag)
+                  READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J)
+                  call debuginit_msg(740+iaproc, ' After read 2002, case 12', debuginit_flag)
                 ELSE IF ( J .EQ. 2 ) THEN ! currents: get HA and HD
-                   READ (NDSI,*) IDTST,           &
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 13', debuginit_flag)
+                  READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),J)
+                  call debuginit_msg(740+iaproc, ' After read 2002, case 13', debuginit_flag)
                 ELSE IF ( J .EQ. 3 ) THEN ! wind: get HA HD and HS
-                   READ (NDSI,*) IDTST,           &
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 14', debuginit_flag)
+                  READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),J), HS(NH(J),J)
+                  call debuginit_msg(740+iaproc, ' After read 2002, case 14', debuginit_flag)
                 ELSE IF ( J .EQ. 4 ) THEN ! ice
-                   READ (NDSI,*) IDTST,           &
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 15', debuginit_flag)
+                  READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J)
+                  call debuginit_msg(740+iaproc, ' After read 2002, case 15', debuginit_flag)
                 ELSE IF ( J .EQ. 5 ) THEN ! atmospheric momentum
-                   READ (NDSI,*) IDTST,           &
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 16', debuginit_flag)
+                  READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),j)
+                  call debuginit_msg(740+iaproc, ' After read 2002, case 16', debuginit_flag)
                 ELSE IF ( J .EQ. 6 ) THEN ! air density
-                   READ (NDSI,*) IDTST,           &
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 17', debuginit_flag)
+                  READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J)
+                  call debuginit_msg(740+iaproc, ' After read 2002, case 17', debuginit_flag)
                 ELSE IF ( J .EQ. 10 ) THEN ! mov: HA and HD
-                   READ (NDSI,*) IDTST,           &
+                  call debuginit_msg(740+iaproc, 'Before read 2002, case 18', debuginit_flag)
+                  READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),J)
+                   call debuginit_msg(740+iaproc, ' After read 2002, case 18', debuginit_flag)
                 END IF
-             END IF
+              END IF
+            END DO
           END DO
-       END DO
-#ifdef W3_O7
-       DO J=JFIRST, 10
-          IF ( FLH(J) .AND. IAPROC.EQ.NAPOUT ) THEN
-             WRITE (NDSO,952) NH(J), IDFLDS(J)
-             DO I=1, NH(J)
-                IF ( ( J .LE. 1 ) .OR. ( J .EQ. 4 ) .OR.      &
-                     ( J .EQ. 6 ) ) THEN
-                   WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
-                        HA(I,J)
-                ELSE IF ( ( J .EQ. 2 ) .OR. ( J .EQ. 5 ) .OR. &
-                     ( J .EQ. 10 ) ) THEN
-                   WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
-                        HA(I,J), HD(I,J)
-                ELSE IF ( J .EQ. 3 ) THEN
-                   WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
-                        HA(I,J), HD(I,J), HS(I,J)
+
+#ifdef W3_MEMCHECK
+      write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 3'
+      call getMallocInfo(mallinfos)
+      call printMallInfo(IAPROC,mallInfos)
+#endif
+          if (O7_flag) then
+             DO J=JFIRST, 10
+                IF ( FLH(J) .AND. IAPROC.EQ.NAPOUT ) THEN
+                   WRITE (NDSO,952) NH(J), IDFLDS(J)
+                   DO I=1, NH(J)
+                      IF ( ( J .LE. 1 ) .OR. ( J .EQ. 4 ) .OR.      &
+                           ( J .EQ. 6 ) ) THEN
+                         WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+                                         HA(I,J)
+                      ELSE IF ( ( J .EQ. 2 ) .OR. ( J .EQ. 5 ) .OR. &
+                                ( J .EQ. 10 ) ) THEN
+                         WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+                                         HA(I,J), HD(I,J)
+                      ELSE IF ( J .EQ. 3 ) THEN
+                         WRITE (NDSO,953) I, THO(1,J,I), THO(2,J,I), &
+                                         HA(I,J), HD(I,J), HS(I,J)
+                      END IF
+                   END DO
                 END IF
              END DO
-          END IF
-       END DO
+          end if
+
+
+          IF ( ( FLH(-7) .AND. (NH(-7).EQ.0) ) .OR.                     &
+               ( FLH(-6) .AND. (NH(-6).EQ.0) ) .OR.                     &
+               ( FLH(-5) .AND. (NH(-5).EQ.0) ) .OR.                     &
+               ( FLH(-4) .AND. (NH(-4).EQ.0) ) .OR.                     &
+               ( FLH(-3) .AND. (NH(-3).EQ.0) ) .OR.                     &
+               ( FLH(-2) .AND. (NH(-2).EQ.0) ) .OR.                     &
+               ( FLH(-1) .AND. (NH(-1).EQ.0) ) .OR.                     &
+               ( FLH(0)  .AND. (NH(0).EQ.0)  ) .OR.                     &
+               ( FLH(1)  .AND. (NH(1).EQ.0)  ) .OR.                     &
+               ( FLH(2)  .AND. (NH(2).EQ.0)  ) .OR.                     &
+               ( FLH(3)  .AND. (NH(3).EQ.0)  ) .OR.                     &
+               ( FLH(4)  .AND. (NH(4).EQ.0)  ) .OR.                     &
+               ( FLH(5)  .AND. (NH(5).EQ.0)  ) .OR.                     &
+               ( FLH(6)  .AND. (NH(6).EQ.0)  ) .OR.                     &
+               ( FLH(10) .AND. (NH(10).EQ.0) ) ) GOTO 2007
+
+        END IF ! FLHOM
+
+      END IF
+
+!
+! ----------------
+!
+
+! 2.1 input fields
+
+! 2.1.a Opening field and data files
+
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,950)
+      IF ( FLFLG ) THEN
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
+                                         'Preparing input files ...'
+
+        DO J=JFIRST, 6
+            write(msg,*)'J=',J,'INFLAGS1(J)=',INFLAGS1(J), 'FLAGSC(J)=', FLAGSC(J)
+            call debuginit_msg(740+iaproc, trim(msg), debuginit_flag)
+          IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
+            IF ( FLH(J) ) THEN
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+            ELSE
+              FLAGTIDE = 0
+              CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
+                            NDSEN, NX, NY, GTYPE,               &
+                            IERR, FPRE=TRIM(FNMPRE), TIDEFLAGIN=FLAGTIDE )
+              IF ( IERR .NE. 0 ) GOTO 2222
+#ifdef W3_TIDE
+!?? is ifdef even required?
+              IF (FLAGTIDE.GT.0.AND.J.EQ.1) FLAGSTIDE(1)=.TRUE.
+              IF (FLAGTIDE.GT.0.AND.J.EQ.2) FLAGSTIDE(2)=.TRUE.
 #endif
-       IF ( ( FLH(-7) .AND. (NH(-7).EQ.0) ) .OR.                     &
-            ( FLH(-6) .AND. (NH(-6).EQ.0) ) .OR.                     &
-            ( FLH(-5) .AND. (NH(-5).EQ.0) ) .OR.                     &
-            ( FLH(-4) .AND. (NH(-4).EQ.0) ) .OR.                     &
-            ( FLH(-3) .AND. (NH(-3).EQ.0) ) .OR.                     &
-            ( FLH(-2) .AND. (NH(-2).EQ.0) ) .OR.                     &
-            ( FLH(-1) .AND. (NH(-1).EQ.0) ) .OR.                     &
-            ( FLH(0)  .AND. (NH(0).EQ.0)  ) .OR.                     &
-            ( FLH(1)  .AND. (NH(1).EQ.0)  ) .OR.                     &
-            ( FLH(2)  .AND. (NH(2).EQ.0)  ) .OR.                     &
-            ( FLH(3)  .AND. (NH(3).EQ.0)  ) .OR.                     &
-            ( FLH(4)  .AND. (NH(4).EQ.0)  ) .OR.                     &
-            ( FLH(5)  .AND. (NH(5).EQ.0)  ) .OR.                     &
-            ( FLH(6)  .AND. (NH(6).EQ.0)  ) .OR.                     &
-            ( FLH(10) .AND. (NH(10).EQ.0) ) ) GOTO 2007
-    END IF ! FLHOM
+              IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,955) IDFLDS(J)
+            END IF
+          ELSE
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+          END IF
+        END DO
 
-    !      END IF ! if not flgnml
+        DO J=7, 9
+          IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
+            CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
+                         RCLD(J), NY, NODATA(J),                 &
+                         IERR, FPRE=TRIM(FNMPRE) )
+            IF ( IERR .NE. 0 ) GOTO 2222
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
+                                             RCLD(J), NODATA(J)
+          ELSE
+            IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
+          END IF
+        END DO
 
-    ! 2.2 Time setup
+      END IF ! FLFLG
 
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930)
-    CALL STME21 ( TIME0 , DTME21 )
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,931) DTME21
-    TIME = TIME0
-    CALL STME21 ( TIMEN , DTME21 )
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) DTME21
-    DTTST  = DSEC21 ( TIME0 , TIMEN )
-    IF ( DTTST .LE. 0. ) GOTO 2003
 
-    ! 2.3 Domain setup
+#ifdef W3_MEMCHECK
+      write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 4'
+      call getMallocInfo(mallinfos)
+      call printMallInfo(IAPROC,mallInfos)
+#endif
 
-    IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
-    IF ( IAPROC .EQ. NAPOUT ) THEN
-       IF ( IOSTYP .EQ. 0 ) THEN
+
+! 2.2 Time setup
+
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930)
+      CALL STME21 ( TIME0 , DTME21 )
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,931) DTME21
+      TIME = TIME0
+      CALL STME21 ( TIMEN , DTME21 )
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,932) DTME21
+      if (oasis_flag ) then
+         TIME00 = TIME0
+         TIMEEND = TIMEN
+      end if
+      if (nl5_flag) then
+         QI5TBEG = TIME0
+      end if
+
+      DTTST  = DSEC21 ( TIME0 , TIMEN )
+      IF ( DTTST .LE. 0. ) GOTO 2003
+
+
+! 2.3 Domain setup
+
+      IOSTYP = MAX ( 0 , MIN ( 3 , IOSTYP ) )
+#ifdef W3_PDLIB
+     IF (IOSTYP .gt. 1) THEN
+       WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
+       CALL EXTCDE ( 6666 )
+     ENDIF
+#endif
+
+      IF ( IAPROC .EQ. NAPOUT ) THEN
+        IF ( IOSTYP .EQ. 0 ) THEN
           WRITE (NDSO,940) 'No dedicated output process, ' //   &
-               'parallel file system required.'
-       ELSE IF ( IOSTYP .EQ. 1 ) THEN
+                           'parallel file system required.'
+        ELSE IF ( IOSTYP .EQ. 1 ) THEN
           WRITE (NDSO,940) 'No dedicated output process, ' //   &
-               'any file system.'
-       ELSE IF ( IOSTYP .EQ. 2 ) THEN
+                           'any file system.'
+        ELSE IF ( IOSTYP .EQ. 2 ) THEN
           WRITE (NDSO,940) 'Single dedicated output process.'
-       ELSE IF ( IOSTYP .EQ. 3 ) THEN
+        ELSE IF ( IOSTYP .EQ. 3 ) THEN
           WRITE (NDSO,940) 'Multiple dedicated output processes.'
-       ELSE
+        ELSE
           WRITE (NDSO,940) 'IOSTYP NOT RECOGNIZED'
-       END IF
-    END IF
+        END IF
+      END IF
 
-    ! 2.4 Output dates
 
-    DO J = 1, NOTYPE
-       IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
+! 2.4 Output dates
+
+      DO J = 1, NOTYPE
+
+        IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941) J, IDOTYP(J)
           TTIME(1) = ODAT(5*(J-1)+1)
           TTIME(2) = ODAT(5*(J-1)+2)
@@ -884,174 +1678,122 @@ contains
           CALL TICK21 ( TTIME , DTTST  )
           CALL STME21 ( TTIME , DTME21 )
           IF ( ( ODAT(5*(J-1)+1) .NE. ODAT(5*(J-1)+4) .OR.          &
+                 ODAT(5*(J-1)+2) .NE. ODAT(5*(J-1)+5) ) .AND.       &
+                 IAPROC .EQ. NAPOUT ) THEN
+            IF ( DTME21(9:9) .NE. '0' ) THEN
+              WRITE (NDSO,1944) DTME21( 9:19)
+            ELSE IF ( DTME21(10:10) .NE. '0' ) THEN
+              WRITE (NDSO,2944) DTME21(10:19)
+            ELSE
+              WRITE (NDSO,3944) DTME21(12:19)
+            END IF
+          END IF
+        END IF
+      END DO
+!
+! CHECKPOINT
+      J=8
+      IF (ODAT(38) .NE. 0) THEN
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941) J, IDOTYP(J)
+        TTIME(1) = ODAT(5*(J-1)+1)
+        TTIME(2) = ODAT(5*(J-1)+2)
+        CALL STME21 ( TTIME , DTME21 )
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) DTME21
+        TTIME(1) = ODAT(5*(J-1)+4)
+        TTIME(2) = ODAT(5*(J-1)+5)
+        CALL STME21 ( TTIME , DTME21 )
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) DTME21
+        TTIME(1) = 0
+        TTIME(2) = 0
+        DTTST    = REAL ( ODAT(5*(J-1)+3) )
+        CALL TICK21 ( TTIME , DTTST  )
+        CALL STME21 ( TTIME , DTME21 )
+        IF ( ( ODAT(5*(J-1)+1) .NE. ODAT(5*(J-1)+4) .OR.          &
                ODAT(5*(J-1)+2) .NE. ODAT(5*(J-1)+5) ) .AND.       &
                IAPROC .EQ. NAPOUT ) THEN
-             IF ( DTME21(9:9) .NE. '0' ) THEN
-                WRITE (NDSO,1944) DTME21( 9:19)
-             ELSE IF ( DTME21(10:10) .NE. '0' ) THEN
-                WRITE (NDSO,2944) DTME21(10:19)
-             ELSE
-                WRITE (NDSO,3944) DTME21(12:19)
-             END IF
-          END IF
-       END IF
-    END DO
-
-    ! CHECKPOINT
-    J=8
-    IF (ODAT(38) .NE. 0) THEN
-       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,941) J, IDOTYP(J)
-       TTIME(1) = ODAT(5*(J-1)+1)
-       TTIME(2) = ODAT(5*(J-1)+2)
-       CALL STME21 ( TTIME , DTME21 )
-       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,942) DTME21
-       TTIME(1) = ODAT(5*(J-1)+4)
-       TTIME(2) = ODAT(5*(J-1)+5)
-       CALL STME21 ( TTIME , DTME21 )
-       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,943) DTME21
-       TTIME(1) = 0
-       TTIME(2) = 0
-       DTTST    = REAL ( ODAT(5*(J-1)+3) )
-       CALL TICK21 ( TTIME , DTTST  )
-       CALL STME21 ( TTIME , DTME21 )
-       IF ( ( ODAT(5*(J-1)+1) .NE. ODAT(5*(J-1)+4) .OR.          &
-            ODAT(5*(J-1)+2) .NE. ODAT(5*(J-1)+5) ) .AND.       &
-            IAPROC .EQ. NAPOUT ) THEN
           IF ( DTME21(9:9) .NE. '0' ) THEN
-             WRITE (NDSO,1944) DTME21( 9:19)
+            WRITE (NDSO,1944) DTME21( 9:19)
           ELSE IF ( DTME21(10:10) .NE. '0' ) THEN
-             WRITE (NDSO,2944) DTME21(10:19)
+            WRITE (NDSO,2944) DTME21(10:19)
           ELSE
-             WRITE (NDSO,3944) DTME21(12:19)
+            WRITE (NDSO,3944) DTME21(12:19)
           END IF
-       END IF
-    END IF
+        END IF
+      END IF
+!
+! 2.5 Output types
 
-    ! 2.5 Output types
-    ! For outputs with non-zero time step, check dates :
-    ! If output ends before run start OR output starts after run end,
-    ! deactivate output cleanly with output time step = 0
-    ! This is usefull for IOSTYP=3 (Multiple dedicated output processes)
-    ! to avoid the definition of dedicated proc. for unused output.
-    !
-    DO J = 1, NOTYPE
-       DTTST  = DSEC21 ( TIME0 , ODAT(5*(J-1)+4:5*(J-1)+5) )
-       IF ( DTTST .LT. 0 ) THEN
+      if (t_flag) then
+         WRITE (NDST,9040) ODAT
+         WRITE (NDST,9041) FLGRD
+         WRITE (NDST,9042) IPRT, PRTFRM
+      end if
+
+!
+! For outputs with non-zero time step, check dates :
+! If output ends before run start OR output starts after run end,
+! deactivate output cleanly with output time step = 0
+! This is usefull for IOSTYP=3 (Multiple dedicated output processes)
+! to avoid the definition of dedicated proc. for unused output.
+!
+      DO J = 1, NOTYPE
+        DTTST  = DSEC21 ( TIME0 , ODAT(5*(J-1)+4:5*(J-1)+5) )
+        IF ( DTTST .LT. 0 ) THEN
           ODAT(5*(J-1)+3) = 0
           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
           CONTINUE
-       END IF
-       DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
-       IF ( DTTST .LT. 0 ) THEN
+        END IF
+        DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
+        IF ( DTTST .LT. 0 ) THEN
           ODAT(5*(J-1)+3) = 0
           IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
           CONTINUE
-       END IF
-    END DO
-    ! CHECKPOINT
-    J = 8
-    DTTST  = DSEC21 ( TIME0 , ODAT(5*(J-1)+4:5*(J-1)+5) )
-    IF ( DTTST .LT. 0 ) THEN
-       ODAT(5*(J-1)+3) = 0
-       IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-       CONTINUE
-    END IF
-    DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
-    IF ( DTTST .LT. 0 ) THEN
-       ODAT(5*(J-1)+3) = 0
-       IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-       CONTINUE
-    END IF
+        END IF
+      END DO
+!
+! CHECKPOINT
+      J = 8
+      DTTST  = DSEC21 ( TIME0 , ODAT(5*(J-1)+4:5*(J-1)+5) )
+      IF ( DTTST .LT. 0 ) THEN
+        ODAT(5*(J-1)+3) = 0
+        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
+        CONTINUE
+      END IF
+      DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
+      IF ( DTTST .LT. 0 ) THEN
+        ODAT(5*(J-1)+3) = 0
+        IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
+        CONTINUE
+      END IF
+!
+#ifdef W3_MEMCHECK
+      write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 5'
+      call getMallocInfo(mallinfos)
+      call printMallInfo(IAPROC,mallInfos)
+#endif
+!--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!> Write a message for debuginit if requested
+!!
+!! @details Writes a debug message
+!!
+!! @param[in]   unum               unit number
+!! @param[in]   msg                debug message
+!! @param[in]   lwrite             logical to control message writing
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 06-01-2022
+   subroutine debuginit_msg(unum, msg, lwrite)
 
-    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    ! 5.  Initializations
+   integer          , intent(in)           :: unum
+   character(len=CL), intent(in)           :: msg
+   logical          , intent(in)           :: lwrite
 
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951) 'Wave model ...'
-    GOTO 2222
+   if (.not. lwrite) return
 
-    ! Error escape locations
-2001 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
-    CALL EXTCDE ( 1001 )
-2002 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
-    CALL EXTCDE ( 1002 )
-2003 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003)
-    CALL EXTCDE ( 1003 )
-2005 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1005) IDTST
-    CALL EXTCDE ( 1005 )
-2054 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1054)
-    CALL EXTCDE ( 1054 )
-2006 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006) IDTST, NH(J)
-    CALL EXTCDE ( 1006 )
-2007 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1007)
-    CALL EXTCDE ( 1007 )
+   write(unum,A) trim(msg)
+   flush(unum)
 
-2222 CONTINUE
-
-    ! Formats
-900 FORMAT (/15X,'      *** WAVEWATCH III Program shell ***      '/ &
-         15X,'==============================================='/)
-901 FORMAT ( '  Comment character is ''',A,''''/)
-905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
-         '     Requested: ', I2/                          &
-         '      Provided: ', I2/ )
-920 FORMAT (/'  Input fields : '/                                   &
-         ' --------------------------------------------------')
-921 FORMAT ( '       ',A,2X,A,2X,A)
-922 FORMAT ( ' ' )
-930 FORMAT (/'  Time interval : '/                                  &
-         ' --------------------------------------------------')
-931 FORMAT ( '       Starting time : ',A)
-932 FORMAT ( '       Ending time   : ',A/)
-940 FORMAT (/'  Output requests : '/                                &
-         ' --------------------------------------------------'/ &
-         '       ',A)
-941 FORMAT (/'       Type',I2,' : ',A/                              &
-         '      -----------------------------------------')
-942 FORMAT ( '            From     : ',A)
-943 FORMAT ( '            To       : ',A)
-1944 FORMAT ( '            Interval : ', 8X,A11/)
-2944 FORMAT ( '            Interval : ', 9X,A10/)
-2945 FORMAT ( '            Point  1 : ',2F8.2,2X,A)
-2955 FORMAT ( '            Point  1 : ',2(F8.1,'E3'),2X,A)
-2946 FORMAT ( '              ',I6,' : ',2F8.2,2X,A)
-2956 FORMAT ( '              ',I6,' : ',2(F8.1,'E3'),2X,A)
-2947 FORMAT ( '            No points defined')
-3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
-6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
-         '            IY first,last,inc :',3I5/                 &
-         '            Formatted file    :    ',A)
-3944 FORMAT ( '            Interval : ',11X,A8/)
-
-8945 FORMAT ( '            output dates out of run dates : ', A,     &
-         ' deactivated')
-951 FORMAT ( '       ',A)
-952 FORMAT ( '       ',I6,2X,A)
-953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     PREMATURE END OF INPUT FILE'/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM INPUT FILE'/               &
-         '     IOSTAT =',I5/)
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL TIME INTERVAL'/)
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
-1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
-1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
-1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING OUTPUT FILE'/                   &
-         '     IOSTAT =',I5/)
-1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
+   end subroutine debuginit_msg
   end subroutine read_shel_inp
 
 end module wav_shel_inp
