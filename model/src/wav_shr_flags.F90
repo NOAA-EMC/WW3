@@ -29,6 +29,11 @@ module wav_shr_flags
   logical, public :: ic5_flag              !< @public a flag for "W3_IC5"
   logical, public :: nco_flag              !< @public a flag for "W3_NCO"
 
+  public :: initialize_flags
+  public :: debuginit_msg
+
+  contains
+
   subroutine initialize_flags
 
   ! initialize all flags false by default
@@ -50,8 +55,9 @@ module wav_shr_flags
   ic5_flag = .false.
   nco_flag = .false.
 
-#ifdef W3_DEBUGINIT
+!#ifdef W3_DEBUGINIT
     debuginit_flag = .true.
+!#endif
 #ifdef W3_COU
     couple_flag = .true.
 #endif
@@ -101,4 +107,28 @@ module wav_shr_flags
       nco_flag = .true.
 #endif
   end subroutine initialize_flags
+
+  !========================================================================
+!> Write a message for debuginit if requested
+!!
+!! @details Writes a debug message
+!!
+!! @param[in]   unum               unit number
+!! @param[in]   msg                debug message
+!! @param[in]   lwrite             logical to control message writing
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 06-01-2022
+   subroutine debuginit_msg(unum, msg, lwrite)
+
+   integer         , intent(in)           :: unum
+   character(len=*), intent(in)           :: msg
+   logical         , intent(in)           :: lwrite
+
+   if (.not. lwrite) return
+
+   write(unum,'(a)') trim(msg)
+   flush(unum)
+
+   end subroutine debuginit_msg
 end module wav_shr_flags
