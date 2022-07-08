@@ -370,7 +370,6 @@ contains
     USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
     USE W3SERVMD, ONLY: NEXTLN, EXTCDE
     USE W3TIMEMD, ONLY: DSEC21, STME21, TICK21, T2D, D2J
-    USE W3FLDSMD, ONLY: W3FLDO
 #ifdef W3_OASIS
     USE W3WDATMD, ONLY: TIME00, TIMEEND
 #endif
@@ -397,13 +396,13 @@ contains
     TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE  :: NML_HOMOG_INPUT(:)
 
     INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST, NDSL,&
-         NDSEN, IERR, J, I, ILOOP, IPTS
+                           NDSEN, IERR, J, I, ILOOP, IPTS
     INTEGER             :: NDSF(-7:9), &
-         NH(-7:10), THO(2,-7:10,NHMAX), RCLD(7:9), &
-         NODATA(7:9), STARTDATE(8), STOPDATE(8), IHH(-7:10)
+                           NH(-7:10), THO(2,-7:10,NHMAX), RCLD(7:9), &
+                           NODATA(7:9), STARTDATE(8), STOPDATE(8), IHH(-7:10)
     INTEGER             :: jfirst, IERR_MPI, flagtide, ih, n_tot
     REAL                :: FACTOR, DTTST, XX, YY, HA(NHMAX,-7:10), &
-         HD(NHMAX,-7:10), HS(NHMAX,-7:10)
+                           HD(NHMAX,-7:10), HS(NHMAX,-7:10)
     DOUBLE PRECISION    :: STARTJULDAY, STOPJULDAY
     CHARACTER(LEN=1)    :: COMSTR, FLAGTFC(-7:10)
     CHARACTER(LEN=3)    :: IDSTR(-7:10), IDTST
@@ -419,7 +418,7 @@ contains
     CHARACTER(LEN=80)   :: LINEIN
     CHARACTER(LEN=30)   :: OFILE ! w3_cou only
     CHARACTER(LEN=8)    :: WORDS(7)=''
-    LOGICAL             :: FLFLG, FLHOM, TFLAGI, PRTFRM, FLGNML, FLGSTIDE(4), FLH(-7:10)
+    LOGICAL             :: FLFLG, FLHOM, TFLAGI, PRTFRM, FLGNML, FLH(-7:10)
     INTEGER             :: THRLEV = 1
     INTEGER             :: TIME0(2), TIMEN(2), TTIME(2)
     character(len=80)   :: printmsg
@@ -470,8 +469,10 @@ contains
     ELSE
        NDSEN  = -1
     END IF
+#ifdef W3_OMPH
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,905) &
          MPI_THREAD_FUNNELED, THRLEV
+#endif
     NDSF(-7)  = 1008
     NDSF(-6)  = 1009
     NDSF(-5)  = 1010
@@ -529,13 +530,12 @@ contains
 
     call debuginit_msg(740+iaproc, 'wav_shel_inp, step 4', debuginit_flag)
 
-    !
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 2.  Define input fields
     !
     !
     ! process ww3_prnc namelist
-    !
+
     INQUIRE(FILE=TRIM(FNMPRE)//"ww3_shel.nml", EXIST=FLGNML)
     IF (FLGNML) THEN
        ! Read namelist
@@ -687,8 +687,6 @@ contains
           WRITE (NDST,9020) FLFLG, INFLAGS1, FLHOM, FLH
        end if
 
-
-
        ! 2.2 Time setup
 
        READ(NML_DOMAIN%START,*) TIME0
@@ -775,110 +773,110 @@ contains
        !
        ! 2.5 Output types
 
-       NPTS   = 0
-       NOTYPE = 6
-       if (couple_flag) then
-          NOTYPE = 7
-       end if
-       DO J = 1, NOTYPE
-          ! OUTPTS(I)%OFILES(J)=OFILES(J)
-          IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
+      NPTS   = 0
+      NOTYPE = 6
+      if (couple_flag) then
+         NOTYPE = 7
+      end if
+      DO J = 1, NOTYPE
+         ! OUTPTS(I)%OFILES(J)=OFILES(J)
+         IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
 
-             ! Type 1: fields of mean wave parameters
-             IF ( J .EQ. 1 ) THEN
-                FLDOUT = NML_OUTPUT_TYPE%FIELD%LIST
-                CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLGD,     &
-                     FLGRD, IAPROC, NAPOUT, IERR )
-                IF ( IERR .NE. 0 ) GOTO 2222
+            ! Type 1: fields of mean wave parameters
+            IF ( J .EQ. 1 ) THEN
+               FLDOUT = NML_OUTPUT_TYPE%FIELD%LIST
+               CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLGD,     &
+                    FLGRD, IAPROC, NAPOUT, IERR )
+               IF ( IERR .NE. 0 ) GOTO 2222
 
 
-                ! Type 2: point output
-             ELSE IF ( J .EQ. 2 ) THEN
-                OPEN (NDSL, FILE=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE%POINT%FILE), &
-                     FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
+               ! Type 2: point output
+            ELSE IF ( J .EQ. 2 ) THEN
+               OPEN (NDSL, FILE=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE%POINT%FILE), &
+                    FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
 
-                ! first loop to count the number of points
-                ! second loop to allocate the array and store the points
-                IPTS = 0
-                DO ILOOP=1,2
-                   REWIND (NDSL)
+               ! first loop to count the number of points
+               ! second loop to allocate the array and store the points
+               IPTS = 0
+               DO ILOOP=1,2
+                  REWIND (NDSL)
 
-                   IF ( ILOOP.EQ.2) THEN
-                      NPTS = IPTS
-                      IF ( NPTS.GT.0 ) THEN
-                         ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
-                         IPTS = 0 ! reset counter to be reused for next do loop
-                      ELSE
-                         ALLOCATE ( X(1), Y(1), PNAMES(1) )
-                         GOTO 2054
-                      END IF
-                   END IF
+                  IF ( ILOOP.EQ.2) THEN
+                     NPTS = IPTS
+                     IF ( NPTS.GT.0 ) THEN
+                        ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
+                        IPTS = 0 ! reset counter to be reused for next do loop
+                     ELSE
+                        ALLOCATE ( X(1), Y(1), PNAMES(1) )
+                        GOTO 2054
+                     END IF
+                  END IF
 
-                   DO
-                      READ (NDSL,*,ERR=2004,IOSTAT=IERR) TMPLINE
-                      ! if end of file or stopstring, then exit
-                      IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
-                      ! leading blanks removed and placed on the right
-                      TEST = ADJUSTL ( TMPLINE )
-                      IF ( TEST(1:1).EQ.COMSTR .OR. LEN_TRIM(TEST).EQ.0 ) THEN
-                         ! if comment or blank line, then skip
-                         CYCLE
-                      ELSE
-                         ! otherwise, backup to beginning of line
-                         BACKSPACE ( NDSL, ERR=2004, IOSTAT=IERR)
-                         READ (NDSL,*,ERR=2004,IOSTAT=IERR) XX, YY, PN
-                      END IF
-                      IPTS = IPTS + 1
-                      IF ( ILOOP .EQ. 1 ) CYCLE
-                      IF ( ILOOP .EQ. 2 ) THEN
-                         X(IPTS)      = XX
-                         Y(IPTS)      = YY
-                         PNAMES(IPTS) = PN
-                         IF ( IAPROC .EQ. NAPOUT ) THEN
-                            IF ( FLAGLL ) THEN
-                               IF ( IPTS .EQ. 1 ) THEN
-                                  WRITE (NDSO,2945)                     &
-                                       FACTOR*XX, FACTOR*YY, PN
-                               ELSE
-                                  WRITE (NDSO,2946) IPTS,               &
-                                       FACTOR*XX, FACTOR*YY, PN
-                               END IF
-                            ELSE
-                               IF ( IPTS .EQ. 1 ) THEN
-                                  WRITE (NDSO,2955)                     &
-                                       FACTOR*XX, FACTOR*YY, PN
-                               ELSE
-                                  WRITE (NDSO,2956) IPTS,               &
-                                       FACTOR*XX, FACTOR*YY, PN
-                               END IF
-                            END IF
-                         END IF
-                      END IF ! ILOOP.EQ.2
-                   END DO ! end of file
-                END DO ! ILOOP
-                CLOSE(NDSL)
+                  DO
+                     READ (NDSL,*,ERR=2004,IOSTAT=IERR) TMPLINE
+                     ! if end of file or stopstring, then exit
+                     IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
+                     ! leading blanks removed and placed on the right
+                     TEST = ADJUSTL ( TMPLINE )
+                     IF ( TEST(1:1).EQ.COMSTR .OR. LEN_TRIM(TEST).EQ.0 ) THEN
+                        ! if comment or blank line, then skip
+                        CYCLE
+                     ELSE
+                        ! otherwise, backup to beginning of line
+                        BACKSPACE ( NDSL, ERR=2004, IOSTAT=IERR)
+                        READ (NDSL,*,ERR=2004,IOSTAT=IERR) XX, YY, PN
+                     END IF
+                     IPTS = IPTS + 1
+                     IF ( ILOOP .EQ. 1 ) CYCLE
+                     IF ( ILOOP .EQ. 2 ) THEN
+                        X(IPTS)      = XX
+                        Y(IPTS)      = YY
+                        PNAMES(IPTS) = PN
+                        IF ( IAPROC .EQ. NAPOUT ) THEN
+                           IF ( FLAGLL ) THEN
+                              IF ( IPTS .EQ. 1 ) THEN
+                                 WRITE (NDSO,2945)                     &
+                                      FACTOR*XX, FACTOR*YY, PN
+                              ELSE
+                                 WRITE (NDSO,2946) IPTS,               &
+                                      FACTOR*XX, FACTOR*YY, PN
+                              END IF
+                           ELSE
+                              IF ( IPTS .EQ. 1 ) THEN
+                                 WRITE (NDSO,2955)                     &
+                                      FACTOR*XX, FACTOR*YY, PN
+                              ELSE
+                                 WRITE (NDSO,2956) IPTS,               &
+                                      FACTOR*XX, FACTOR*YY, PN
+                              END IF
+                           END IF
+                        END IF
+                     END IF ! ILOOP.EQ.2
+                  END DO ! end of file
+               END DO ! ILOOP
+               CLOSE(NDSL)
 
-                ! Type 3: track output
-             ELSE IF ( J .EQ. 3 ) THEN
-                TFLAGI = NML_OUTPUT_TYPE%TRACK%FORMAT
-                IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
-                IF ( IAPROC .EQ. NAPOUT ) THEN
-                   IF ( .NOT. TFLAGI ) THEN
-                      WRITE (NDSO,3945) 'input', 'UNFORMATTED'
-                   ELSE
-                      WRITE (NDSO,3945) 'input', 'FORMATTED'
-                   END IF
-                END IF
+               ! Type 3: track output
+            ELSE IF ( J .EQ. 3 ) THEN
+               TFLAGI = NML_OUTPUT_TYPE%TRACK%FORMAT
+               IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
+               IF ( IAPROC .EQ. NAPOUT ) THEN
+                  IF ( .NOT. TFLAGI ) THEN
+                     WRITE (NDSO,3945) 'input', 'UNFORMATTED'
+                  ELSE
+                     WRITE (NDSO,3945) 'input', 'FORMATTED'
+                  END IF
+               END IF
 
-                ! Type 6: partitioning
-             ELSE IF ( J .EQ. 6 ) THEN
-                IPRT(1) = NML_OUTPUT_TYPE%PARTITION%X0
-                IPRT(2) = NML_OUTPUT_TYPE%PARTITION%XN
-                IPRT(3) = NML_OUTPUT_TYPE%PARTITION%NX
-                IPRT(4) = NML_OUTPUT_TYPE%PARTITION%Y0
-                IPRT(5) = NML_OUTPUT_TYPE%PARTITION%YN
-                IPRT(6) = NML_OUTPUT_TYPE%PARTITION%NY
-                PRTFRM = NML_OUTPUT_TYPE%PARTITION%FORMAT
+               ! Type 6: partitioning
+            ELSE IF ( J .EQ. 6 ) THEN
+               IPRT(1) = NML_OUTPUT_TYPE%PARTITION%X0
+               IPRT(2) = NML_OUTPUT_TYPE%PARTITION%XN
+               IPRT(3) = NML_OUTPUT_TYPE%PARTITION%NX
+               IPRT(4) = NML_OUTPUT_TYPE%PARTITION%Y0
+               IPRT(5) = NML_OUTPUT_TYPE%PARTITION%YN
+               IPRT(6) = NML_OUTPUT_TYPE%PARTITION%NY
+               PRTFRM = NML_OUTPUT_TYPE%PARTITION%FORMAT
 
                 IF ( IAPROC .EQ. NAPOUT ) THEN
                    IF ( PRTFRM ) THEN
@@ -1141,7 +1139,6 @@ contains
           WRITE (NDST,9020) FLFLG, INFLAGS1, FLHOM, FLH
        end if
 
-
        ! 2.2 Time setup
 
        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -1380,10 +1377,8 @@ contains
                       CLOSE (NDSS)
                    END IF
 
-                         call debuginit_msg(740+iaproc, ' After read 2002, case 8 3', debuginit_flag)
                 ! Type 3: track output
                 ELSE IF ( J .EQ. 3 ) THEN
-                         call debuginit_msg(740+iaproc, ' After read 2002, case 8 4', debuginit_flag)
                    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
                    call debuginit_msg(740+iaproc, 'Before read 2002, case 9', debuginit_flag)
                    READ (NDSI,*) TFLAGI
@@ -1565,67 +1560,13 @@ contains
 
        END IF ! FLHOM
 
-    END IF
-
-    !
-    ! ----------------
-    !
-
-    ! 2.1 input fields
-
-    ! 2.1.a Opening field and data files
-
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,950)
-    IF ( FLFLG ) THEN
-       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,951)                  &
-            'Preparing input files ...'
-
-       DO J=JFIRST, 6
-          write(printmsg,*)'J=',J,'INFLAGS1(J)=',INFLAGS1(J), 'FLAGSC(J)=', FLAGSC(J)
-          call debuginit_msg(740+iaproc, trim(printmsg), debuginit_flag)
-          IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
-             IF ( FLH(J) ) THEN
-                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-             ELSE
-                FLAGTIDE = 0
-                CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST,     &
-                     NDSEN, NX, NY, GTYPE,               &
-                     IERR, FPRE=TRIM(FNMPRE), TIDEFLAGIN=FLAGTIDE )
-                IF ( IERR .NE. 0 ) GOTO 2222
-#ifdef W3_TIDE
-                !?? is ifdef even required?
-                IF (FLAGTIDE.GT.0.AND.J.EQ.1) FLAGSTIDE(1)=.TRUE.
-                IF (FLAGTIDE.GT.0.AND.J.EQ.2) FLAGSTIDE(2)=.TRUE.
-#endif
-                IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,955) IDFLDS(J)
-             END IF
-          ELSE
-             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-          END IF
-       END DO
-
-       DO J=7, 9
-          IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
-             CALL W3FLDO ('READ', IDSTR(J), NDSF(J), NDST, NDSEN, &
-                  RCLD(J), NY, NODATA(J),                 &
-                  IERR, FPRE=TRIM(FNMPRE) )
-             IF ( IERR .NE. 0 ) GOTO 2222
-             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,956) IDFLDS(J),&
-                  RCLD(J), NODATA(J)
-          ELSE
-             IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
-          END IF
-       END DO
-
-    END IF ! FLFLG
-
+    END IF  ! .not. FLGNML
 
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 4'
     call getMallocInfo(mallinfos)
     call printMallInfo(IAPROC,mallInfos)
 #endif
-
 
     ! 2.2 Time setup
 
@@ -1645,7 +1586,6 @@ contains
 
     DTTST  = DSEC21 ( TIME0 , TIMEN )
     IF ( DTTST .LE. 0. ) GOTO 2003
-
 
     ! 2.3 Domain setup
 
@@ -1673,6 +1613,9 @@ contains
        END IF
     END IF
 
+    ! TODO: the following documents the output dates according to
+    ! the nml/inp files. Check if it be removed if user controls
+    ! output w/ alarms
 
     ! 2.4 Output dates
 
@@ -1836,29 +1779,30 @@ contains
          15X,'==============================================='/)
 901 FORMAT ( '  Comment character is ''',A,''''/)
 905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
-         '     Requested: ', I2/                          &
-         '      Provided: ', I2/ )
+             '     Requested: ', I2/                          &
+             '      Provided: ', I2/ )
 920 FORMAT (/'  Input fields : '/                                   &
-         ' --------------------------------------------------')
+             ' --------------------------------------------------')
 921 FORMAT ( '       ',A,2X,A,2X,A)
 922 FORMAT ( ' ' )
 930 FORMAT (/'  Time interval : '/                                  &
-         ' --------------------------------------------------')
+             ' --------------------------------------------------')
 931 FORMAT ( '       Starting time : ',A)
 932 FORMAT ( '       Ending time   : ',A/)
 940 FORMAT (/'  Output requests : '/                                &
-         ' --------------------------------------------------'/ &
-         '       ',A)
+             ' --------------------------------------------------'/ &
+             '       ',A)
 941 FORMAT (/'       Type',I2,' : ',A/                              &
-         '      -----------------------------------------')
+             '      -----------------------------------------')
 942 FORMAT ( '            From     : ',A)
 943 FORMAT ( '            To       : ',A)
 954 FORMAT ( '            ',A,': file not needed')
 955 FORMAT ( '            ',A,': file OK')
 956 FORMAT ( '            ',A,': file OK, recl =',I3,               &
-         '  undef = ',E10.3)
+             '  undef = ',E10.3)
 1944 FORMAT ( '            Interval : ', 8X,A11/)
 2944 FORMAT ( '            Interval : ', 9X,A10/)
+3944 FORMAT ( '            Interval : ',11X,A8/)
 2945 FORMAT ( '            Point  1 : ',2F8.2,2X,A)
 2955 FORMAT ( '            Point  1 : ',2(F8.1,'E3'),2X,A)
 2946 FORMAT ( '              ',I6,' : ',2F8.2,2X,A)
@@ -1866,58 +1810,56 @@ contains
 2947 FORMAT ( '            No points defined')
 3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
 6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
-         '            IY first,last,inc :',3I5/                 &
-         '            Formatted file    :    ',A)
-3944 FORMAT ( '            Interval : ',11X,A8/)
-
+              '            IY first,last,inc :',3I5/                 &
+              '            Formatted file    :    ',A)
 8945 FORMAT ( '            output dates out of run dates : ', A,     &
-         ' deactivated')
+              ' deactivated')
 950 FORMAT (/'  Initializations :'/                                 &
-         ' --------------------------------------------------')
+             ' --------------------------------------------------')
 951 FORMAT ( '       ',A)
 952 FORMAT ( '       ',I6,2X,A)
 953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     PREMATURE END OF INPUT FILE'/)
+               '     PREMATURE END OF INPUT FILE'/)
 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM INPUT FILE'/               &
-         '     IOSTAT =',I5/)
+              '     ERROR IN READING FROM INPUT FILE'/               &
+              '     IOSTAT =',I5/)
 1102 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
-         '     IT MUST BE FULLY COUPLED OR DISABLED '/)
+              '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
+              '     IT MUST BE FULLY COUPLED OR DISABLED '/)
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL TIME INTERVAL'/)
+              '     ILLEGAL TIME INTERVAL'/)
 1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING POINT FILE'/                    &
-         '     IOSTAT =',I5/)
+              '     ERROR IN OPENING POINT FILE'/                    &
+              '     IOSTAT =',I5/)
 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM POINT FILE'/               &
-         '     IOSTAT =',I5/)
+              '     ERROR IN READING FROM POINT FILE'/               &
+              '     IOSTAT =',I5/)
 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
+              '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
+              '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
 1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : ***'/             &
-         '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
+              '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
+              '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING OUTPUT FILE'/                   &
-         '     IOSTAT =',I5/)
+              '     ERROR IN OPENING OUTPUT FILE'/                   &
+              '     IOSTAT =',I5/)
 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
-         '     MODEL TIME STEP: ',I6, I6/)
+              '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
+              '     MODEL TIME STEP: ',I6, I6/)
 1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/         &
-         '     COUPLING TIME STEP NOT DEFINED, '/               &
-         '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
-         '     FROM ',I6, ' TO ',I6/)
+              '     COUPLING TIME STEP NOT DEFINED, '/               &
+              '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
+              '     FROM ',I6, ' TO ',I6/)
 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
+              '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)
 9020 FORMAT ( ' TEST W3SHEL : FLAGS DEF / HOM  : ',9L2,2X,9L2)
 9040 FORMAT ( ' TEST W3SHEL : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
-         4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
+                4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
 9041 FORMAT ( ' TEST W3SHEL : FLGRD  : ',20L2)
 9042 FORMAT ( ' TEST W3SHEL : IPR, PRFRM : ',6I6,1X,L1)
 
