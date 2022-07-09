@@ -356,32 +356,33 @@ contains
 !> @date 01-05-2022
   subroutine read_shel_inp(mpi_comm)
 
-    use w3nmlshelmd
-
-    USE W3GDATMD, ONLY: FLAGLL, DTMAX, NX, NY, GTYPE
-    USE W3WDATMD, ONLY: TIME, W3NDAT, W3DIMW, W3SETW
-    USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
-    USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, FLAGSC
-    USE W3ODATMD, ONLY: W3NOUT, W3SETO, NDS
-    USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR
-    USE W3ODATMD, ONLY: IDOUT, FNMPRE, IOSTYP, NOTYPE
-    USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
-    USE W3IOGRMD, ONLY: W3IOGR
-    USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
-    USE W3SERVMD, ONLY: NEXTLN, EXTCDE
-    USE W3TIMEMD, ONLY: DSEC21, STME21, TICK21, T2D, D2J
+    use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
+    use w3nmlshelmd    , only : nml_output_date_t, nml_homog_count_t, nml_homog_input_t
+    use w3nmlshelmd    , only : w3nmlshel
+    USE W3GDATMD       , ONLY: FLAGLL, DTMAX, NX, NY, GTYPE
+    USE W3WDATMD       , ONLY: TIME, W3NDAT, W3DIMW, W3SETW
+    USE W3ADATMD       , ONLY: W3NAUX, W3DIMA, W3SETA
+    USE W3IDATMD       , ONLY: INFLAGS1, INFLAGS2, FLAGSC
+    USE W3ODATMD       , ONLY: W3NOUT, W3SETO, NDS
+    USE W3ODATMD       , ONLY: NAPROC, IAPROC, NAPOUT, NAPERR
+    USE W3ODATMD       , ONLY: IDOUT, FNMPRE, IOSTYP, NOTYPE
+    USE W3ODATMD       , ONLY: FLOGRR, FLOGR, OFILES
+    USE W3IOGRMD       , ONLY: W3IOGR
+    USE W3IOGOMD       , ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
+    USE W3SERVMD       , ONLY: NEXTLN, EXTCDE
+    USE W3TIMEMD       , ONLY: DSEC21, STME21, TICK21, T2D, D2J
 #ifdef W3_OASIS
-    USE W3WDATMD, ONLY: TIME00, TIMEEND
+    USE W3WDATMD       , ONLY: TIME00, TIMEEND
 #endif
 #ifdef W3_NL5
-    USE W3WDATMD, ONLY: QI5TBEG
+    USE W3WDATMD       , ONLY: QI5TBEG
 #endif
-    use wav_shr_flags, only : debuginit_flag, couple_flag, oasis_flag
-    use wav_shr_flags, only : O7_flag, t_flag, mgw_flag, mgp_flag
-    use wav_shr_flags, only : nl5_flag, ic1_flag, ic2_flag, is2_flag
-    use wav_shr_flags, only : ic3_flag, bt8_flag, bt9_flag, ic4_flag
-    use wav_shr_flags, only : ic5_flag, nco_flag
-    use wav_shr_flags, only : debuginit_msg
+    use wav_shr_flags  , only : debuginit_flag, couple_flag, oasis_flag
+    use wav_shr_flags  , only : O7_flag, t_flag, mgw_flag, mgp_flag
+    use wav_shr_flags  , only : nl5_flag, ic1_flag, ic2_flag, is2_flag
+    use wav_shr_flags  , only : ic3_flag, bt8_flag, bt9_flag, ic4_flag
+    use wav_shr_flags  , only : ic5_flag, nco_flag
+    use wav_shr_flags  , only : debuginit_msg
 
     INTEGER, INTENT(IN) :: MPI_COMM
 
@@ -518,7 +519,7 @@ contains
     ! If using experimental mud or ice physics, additional lines will
     !  be read in from wav_shel_inp.inp and applied, so JFIRST is changed from
     !  its initialization setting "JFIRST=1" to some lower value.
-    JFIRST=1
+    jfirst=1
     if (ic1_flag) jfirst = -7
     if (ic2_flag) jfirst = -7
     if (is2_flag) jfirst = -7
@@ -790,7 +791,7 @@ contains
                IF ( IERR .NE. 0 ) GOTO 2222
 
 
-               ! Type 2: point output
+            ! Type 2: point output
             ELSE IF ( J .EQ. 2 ) THEN
                OPEN (NDSL, FILE=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE%POINT%FILE), &
                     FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
@@ -856,7 +857,7 @@ contains
                END DO ! ILOOP
                CLOSE(NDSL)
 
-               ! Type 3: track output
+            ! Type 3: track output
             ELSE IF ( J .EQ. 3 ) THEN
                TFLAGI = NML_OUTPUT_TYPE%TRACK%FORMAT
                IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
@@ -868,7 +869,7 @@ contains
                   END IF
                END IF
 
-               ! Type 6: partitioning
+            ! Type 6: partitioning
             ELSE IF ( J .EQ. 6 ) THEN
                IPRT(1) = NML_OUTPUT_TYPE%PARTITION%X0
                IPRT(2) = NML_OUTPUT_TYPE%PARTITION%XN
@@ -888,7 +889,7 @@ contains
                 END IF
 
 #ifdef W3_COU
-                ! Type 7: coupling
+             ! Type 7: coupling
              ELSE IF ( J .EQ. 7 ) THEN
                 FLDOUT = NML_OUTPUT_TYPE%COUPLING%SENT
                 CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDOUT, FLG2,  &

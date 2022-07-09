@@ -12,6 +12,10 @@ module wav_shr_flags
   implicit none
 
   logical, public :: debuginit_flag        !< @public a flag for "W3_DEBUGINIT"
+  logical, public :: debugrun_flag         !< @public a flag for "W3_DEBUGRUN"
+  logical, public :: debugio_flag          !< @public a flag for "W3_DEBUGIO"
+  logical, public :: timings_flag          !< @public a flag for "W3_TIMINGS"
+
   logical, public :: couple_flag           !< @public a flag for "W3_COU"
   logical, public :: oasis_flag            !< @public a flag for "W3_OASIS"
   logical, public :: O7_flag               !< @public a flag for "W3_O7"
@@ -38,6 +42,10 @@ module wav_shr_flags
 
   ! initialize all flags false by default
   debuginit_flag = .false.
+  debugrun_flag = .false.
+  debugio_flag = .false.
+  timings_flag = .false.
+
   couple_flag = .false.
   oasis_flag = .false.
   O7_flag = .false.
@@ -55,9 +63,18 @@ module wav_shr_flags
   ic5_flag = .false.
   nco_flag = .false.
 
-!#ifdef W3_DEBUGINIT
+#ifdef W3_DEBUGINIT
     debuginit_flag = .true.
-!#endif
+#endif
+#ifdef W3_DEBUGRUN
+    debugrun_flag = .true.
+#endif
+#ifdef W3_DEBUGIO
+    debugio_flag = .true.
+#endif
+#ifdef W3_TIMINGS
+    timings_flag = .true.
+#endif
 #ifdef W3_COU
     couple_flag = .true.
 #endif
