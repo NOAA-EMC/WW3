@@ -139,7 +139,7 @@ module wav_shr_flags
   !========================================================================
 !> Write a 1 line message if requested
 !!
-!! @details Writes a one line message
+!> @details Writes a one line message
 !!
 !! @param[in]   unum               unit number
 !! @param[in]   msg1               one line message
@@ -163,7 +163,7 @@ module wav_shr_flags
   !========================================================================
 !> Write a 2 line message if requested
 !!
-!! @details Writes a two line message
+!> @details Writes a two line message
 !!
 !! @param[in]   unum               unit number
 !! @param[in]   msg1               first line of message
@@ -190,7 +190,7 @@ module wav_shr_flags
   !========================================================================
 !> Write a 3 line message if requested
 !!
-!! @details Writes a three line message
+!> @details Writes a three line message
 !!
 !! @param[in]   unum               unit number
 !! @param[in]   msg1               first line of message
@@ -220,7 +220,7 @@ module wav_shr_flags
   !========================================================================
 !> Write a 4 line message if requested
 !!
-!! @details Writes a four line message
+!> @details Writes a four line message
 !!
 !! @param[in]   unum               unit number
 !! @param[in]   msg1               first line of message

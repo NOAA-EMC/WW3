@@ -286,13 +286,13 @@ contains
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 2.  Define input fields
 
-    INQUIRE(FILE=TRIM(FNMPRE)//"ww3_shel.nml", EXIST=FLGNML)
+    inquire(file=trim(fnmpre)//"ww3_shel.nml", exist=flgnml)
 
     ! ===============================================================
     ! process ww3_prnc namelist
     ! ===============================================================
 
-    IF (FLGNML) THEN
+    if (flgnml) then
 
        !--------------------
        ! Read namelist

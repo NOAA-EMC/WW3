@@ -786,7 +786,7 @@ contains
   !===============================================================================
 !> Initialize the field values in the export state
 !!
-!! @details Called by NUOPC to initialize the field values in the export state and
+!> @details Called by NUOPC to initialize the field values in the export state and
 !! the values for the scalar field which describes the wave model global domain
 !! size.
 !!
@@ -880,7 +880,7 @@ contains
   !=====================================================================
 !> Called by NUOPC to advance the model a single timestep
 !!
-!! @details At each model advance, the call to import_fields fills the
+!> @details At each model advance, the call to import_fields fills the
 !! import state with the updated values. If a history alarm is present
 !! and ringing, a logical to write a wave history file is set true. The
 !! wave model itself is then advanced during which a history file will
