@@ -1418,18 +1418,18 @@ contains
     call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
     call read_shel_config(mpi_comm)
 
+    ! Set the wav_coupling_to_cice flag in wav_shr_mod
+    ! inflags1(-7) = nml_input%forcing%ice_param1
+    ! inflags1(-3) = nml_input%forcing%ice_param5
+    wav_coupling_to_cice = (inflags1(-7) .and. inflags1(-3))
+
     ! Force inflags2 to be false - otherwise inflags2 will be set to inflags1 and answers will change
-    ! Need to set this to .false. to avoide scaling of ice in section 4. of w3srcemed.
+    ! Need to set this to .false. to avoid scaling of ice in section 4. of w3srcemed.
     ! inflags2(4) is true if ice concentration was ever read during this simulation
-    ! for CESM we do not want ice concentration to be read in -
-    ! we do not want to have this occur for cesm
-    ! Currently IC4 is used
+    ! Currently IC4 is used in cesm
     inflags2(:) = .false.
     if (wav_coupling_to_cice) then
-       inflags2( 4) = .true. ! inflags2(4) is true if ice concentration was read during initialization
-       ! TODO: these should be obtained by setting the following in ww3_shel.nml
-       !   input%forcing%ice_param1 = 'T' ! ice thickness
-       !   input%forcing%ice_param5 = 'T' ! ice floe size
+       inflags2(4) = .true. ! inflags2(4) is true if ice concentration was read during initialization
     end if
 
     ! Read in initial/restart data and initialize the model

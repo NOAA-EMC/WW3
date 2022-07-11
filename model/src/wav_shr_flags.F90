@@ -11,28 +11,31 @@ module wav_shr_flags
 
   implicit none
 
-  logical, public :: debuginit_flag        !< @public a flag for "W3_DEBUGINIT"
-  logical, public :: debugrun_flag         !< @public a flag for "W3_DEBUGRUN"
-  logical, public :: debugio_flag          !< @public a flag for "W3_DEBUGIO"
-  logical, public :: timings_flag          !< @public a flag for "W3_TIMINGS"
+  logical, public :: w3_debuginit_flag        !< @public a flag for "W3_DEBUGINIT"
+  logical, public :: w3_debugrun_flag         !< @public a flag for "W3_DEBUGRUN"
+  logical, public :: w3_debugio_flag          !< @public a flag for "W3_DEBUGIO"
+  logical, public :: w3_timings_flag          !< @public a flag for "W3_TIMINGS"
 
-  logical, public :: couple_flag           !< @public a flag for "W3_COU"
-  logical, public :: oasis_flag            !< @public a flag for "W3_OASIS"
-  logical, public :: O7_flag               !< @public a flag for "W3_O7"
-  logical, public :: t_flag                !< @public a flag for "W3_T"
-  logical, public :: mgw_flag              !< @public a flag for "W3_MGW"
-  logical, public :: mgp_flag              !< @public a flag for "W3_MGP"
-  logical, public :: nl5_flag              !< @public a flag for "W3_NL5"
-  logical, public :: ic1_flag              !< @public a flag for "W3_IC1"
-  logical, public :: ic2_flag              !< @public a flag for "W3_IC2"
-  logical, public :: is2_flag              !< @public a flag for "W3_IS2"
-  logical, public :: ic3_flag              !< @public a flag for "W3_IC3"
-  logical, public :: bt8_flag              !< @public a flag for "W3_BT8"
-  logical, public :: bt9_flag              !< @public a flag for "W3_BT9"
-  logical, public :: ic4_flag              !< @public a flag for "W3_IC4"
-  logical, public :: ic5_flag              !< @public a flag for "W3_IC5"
-  logical, public :: nco_flag              !< @public a flag for "W3_NCO"
-  logical, public :: pdlib_flag            !< @public a flag for "W3_PDLIB"
+  logical, public :: w3_cou_flag              !< @public a flag for "W3_COU"
+  logical, public :: w3_oasis_flag            !< @public a flag for "W3_OASIS"
+  logical, public :: w3_o7_flag               !< @public a flag for "W3_O7"
+  logical, public :: w3_t_flag                !< @public a flag for "W3_T"
+  logical, public :: w3_s_flag                !< @public a flag for "W3_S"
+  logical, public :: w3_mgw_flag              !< @public a flag for "W3_MGW"
+  logical, public :: w3_mgp_flag              !< @public a flag for "W3_MGP"
+  logical, public :: w3_nl5_flag              !< @public a flag for "W3_NL5"
+  logical, public :: w3_ic1_flag              !< @public a flag for "W3_IC1"
+  logical, public :: w3_ic2_flag              !< @public a flag for "W3_IC2"
+  logical, public :: w3_is2_flag              !< @public a flag for "W3_IS2"
+  logical, public :: w3_ic3_flag              !< @public a flag for "W3_IC3"
+  logical, public :: w3_bt8_flag              !< @public a flag for "W3_BT8"
+  logical, public :: w3_bt9_flag              !< @public a flag for "W3_BT9"
+  logical, public :: w3_ic4_flag              !< @public a flag for "W3_IC4"
+  logical, public :: w3_ic5_flag              !< @public a flag for "W3_IC5"
+  logical, public :: w3_nco_flag              !< @public a flag for "W3_NCO"
+  logical, public :: w3_pdlib_flag            !< @public a flag for "W3_PDLIB"
+  logical, public :: w3_cesmcoupled_flag      !< @public a flag for "W3_CESMCOUPLED"
+  logical, public :: w3_memcheck_flag         !< @public a flag for "W3_MEMCHECK"
 
   public :: initialize_flags
 
@@ -48,91 +51,105 @@ module wav_shr_flags
   subroutine initialize_flags
 
   ! initialize all flags false by default
-  debuginit_flag = .false.
-  debugrun_flag = .false.
-  debugio_flag = .false.
-  timings_flag = .false.
+    w3_debuginit_flag = .false.
+    w3_debugrun_flag = .false.
+    w3_debugio_flag = .false.
+    w3_timings_flag = .false.
 
-  couple_flag = .false.
-  oasis_flag = .false.
-  O7_flag = .false.
-  t_flag = .false.
-  mgw_flag = .false.
-  mgp_flag = .false.
-  nl5_flag = .false.
-  ic1_flag = .false.
-  ic2_flag = .false.
-  is2_flag = .false.
-  ic3_flag = .false.
-  bt8_flag = .false.
-  bt9_flag = .false.
-  ic4_flag = .false.
-  ic5_flag = .false.
-  nco_flag = .false.
-  pdlib_flag = .false.
+    w3_cou_flag = .false.
+    w3_oasis_flag = .false.
+    w3_o7_flag = .false.
+    w3_t_flag = .false.
+    w3_mgw_flag = .false.
+    w3_mgp_flag = .false.
+    w3_nl5_flag = .false.
+    w3_ic1_flag = .false.
+    w3_ic2_flag = .false.
+    w3_is2_flag = .false.
+    w3_ic3_flag = .false.
+    w3_bt8_flag = .false.
+    w3_bt9_flag = .false.
+    w3_ic4_flag = .false.
+    w3_ic5_flag = .false.
+    w3_nco_flag = .false.
+    w3_pdlib_flag = .false.
+    w3_cesmcoupled_flag = .false.
+    w3_memcheck_flag = .false.
 
 #ifdef W3_DEBUGINIT
-    debuginit_flag = .true.
+    w3_debuginit_flag = .true.
 #endif
 #ifdef W3_DEBUGRUN
-    debugrun_flag = .true.
+    w3_debugrun_flag = .true.
 #endif
 #ifdef W3_DEBUGIO
-    debugio_flag = .true.
+    w3_debugio_flag = .true.
 #endif
 #ifdef W3_TIMINGS
-    timings_flag = .true.
+    w3_timings_flag = .true.
 #endif
 #ifdef W3_COU
-    couple_flag = .true.
+    w3_cou_flag = .true.
 #endif
 #ifdef W3_OASIS
-    oasis_flag = .true.
+    w3_oasis_flag = .true.
 #endif
 #ifdef W3_O7
-    O7_flag = .true.
+    w3_o7_flag = .true.
 #endif
 #ifdef W3_T
-    t_flag = .true.
+    w3_t_flag = .true.
 #endif
 #ifdef W3_MGW
-    mgw_flag = .true.
+    w3_mgw_flag = .true.
 #endif
 #ifdef W3_MGP
-    mgp_flag = .true.
+    w3_mgp_flag = .true.
 #endif
 #ifdef W3_NL5
-    nl5_flag = .true.
+    w3_nl5_flag = .true.
 #endif
 #ifdef W3_IC1
-      ic1_flag = .true.
+    w3_ic1_flag = .true.
 #endif
 #ifdef W3_IC2
-      ic2_flag = .true.
+    w3_ic2_flag = .true.
 #endif
 #ifdef W3_IS2
-      is2_flag = .true.
+    w3_is2_flag = .true.
 #endif
 #ifdef W3_IC3
-      ic3_flag = .true.
+    w3_ic3_flag = .true.
 #endif
 #ifdef W3_BT8
-      bt8_flag = .true.
+    w3_bt8_flag = .true.
 #endif
 #ifdef W3_BT9
-      bt9_flag = .true.
+    w3_bt9_flag = .true.
 #endif
 #ifdef W3_IC4
-      ic4_flag = .true.
+    w3_ic4_flag = .true.
 #endif
 #ifdef W3_IC5
-      ic5_flag = .true.
+    w3_ic5_flag = .true.
 #endif
 #ifdef W3_NCO
-      nco_flag = .true.
+    w3_nco_flag = .true.
 #endif
 #ifdef W3_PDLIB
-      pdlib_flag = .true.
+    w3_pdlib_flag = .true.
+#endif
+#ifdef W3_S
+    w3_strace_flag = .true.
+#endif
+#ifdef W3_T
+    w3_t_flag = .true.
+#endif
+#ifdef W3_CESMCOUPLED
+    w3_cesmcoupled_flag = .true.
+#endif
+#ifdef W3_CESMCOUPLED
+    w3_memcheck_flag = .true.
 #endif
   end subroutine initialize_flags
 
