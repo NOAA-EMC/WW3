@@ -100,6 +100,8 @@ set(SRCFILES constants.F90
              w3iosfmd.F90
              w3iotrmd.F90
              w3meminfo.F90
+             wmmdatmd.F90
+             w3nmlshelmd.F90
              w3odatmd.F90
              w3parall.F90
              w3partmd.F90
@@ -128,7 +130,8 @@ set(SRCFILES constants.F90
              wav_import_export.F90
              wav_kind_mod.F90
              wav_shel_inp.F90
-             wav_shr_mod.F90)
+             wav_shr_mod.F90
+             wav_shr_flags.F90)
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.ww3/${FILE}")
