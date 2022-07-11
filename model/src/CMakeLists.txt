@@ -37,7 +37,7 @@ message("ESMF_F90COMPILEPATHS:   ${ESMF_F90COMPILEPATHS}")
 # These were the initial switch definitions in CESM
 # F90 NOGRB NC4 PR3 UQ FLX0 LN1 ST4 BT1 DB1 MLIM NL1 TR0 BS0 REF0 IS0 IC4 XX0 WNT1 WNX1 CRT1 CRX1 O0 O1 O2 O3 O4 O5 O6 O7 O11 MPI DIST
 
-add_compile_definitions(CESMCOUPLED)
+add_compile_definitions(W3_CESMCOUPLED)
 add_compile_definitions(W3_NCO)
 add_compile_definitions(W3_DIST)
 add_compile_definitions(W3_MPI)

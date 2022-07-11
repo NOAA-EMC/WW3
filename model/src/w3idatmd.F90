@@ -81,7 +81,7 @@
 !      FLCUR     Log.  Public   Flag for current input.
 !      FLWIND    Log.  Public   Flag for wind input.
 !      FLICE     Log.  Public   Flag for ice input.
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
 !      HML       R.A.  Public   Mixed layer depth
 #endif
 !      FLTAUA    Log.  Public   Flag for atmospheric momentum input
@@ -174,7 +174,7 @@
                                  BERGI(:,:), MUDT(:,:), MUDV(:,:),    &
                                  MUDD(:,:), ICEP1(:,:), ICEP2(:,:),   &
                                  ICEP3(:,:), ICEP4(:,:), ICEP5(:,:)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         REAL, POINTER         :: HML(:,:)
 #endif
 #ifdef W3_TIDE
@@ -230,7 +230,7 @@
       LOGICAL, POINTER        ::  FLLEVTIDE, FLCURTIDE,  &
                                   FLLEVRESI, FLCURRESI
 #endif
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       REAL   , POINTER        :: HML(:,:)
 #endif
 !/
@@ -683,7 +683,7 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         ALLOCATE ( INPUTS(IMOD)%HML(NX,NY), STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
 #endif
@@ -992,7 +992,7 @@
               ICEI   => INPUTS(IMOD)%ICEI
               BERGI  => INPUTS(IMOD)%BERGI
             END IF
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
           HML    => INPUTS(IMOD)%HML
 #endif
 !

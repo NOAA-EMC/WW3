@@ -33,6 +33,7 @@ module wav_shr_flags
   logical, public :: ic5_flag              !< @public a flag for "W3_IC5"
   logical, public :: nco_flag              !< @public a flag for "W3_NCO"
   logical, public :: pdlib_flag            !< @public a flag for "W3_PDLIB"
+  logical, public :: strace_flag           !< @public a flag for "W3_S"
 
   public :: initialize_flags
   public :: debuginit_msg
@@ -127,6 +128,9 @@ module wav_shr_flags
 #endif
 #ifdef W3_PDLIB
       pdlib_flag = .true.
+#endif
+#ifdef W3_S
+      strace_flag = .true.
 #endif
       
   end subroutine initialize_flags
