@@ -359,72 +359,72 @@ contains
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
     use w3nmlshelmd    , only : nml_output_date_t, nml_homog_count_t, nml_homog_input_t
     use w3nmlshelmd    , only : w3nmlshel
-    USE W3GDATMD       , ONLY: FLAGLL, DTMAX, NX, NY, GTYPE
-    USE W3WDATMD       , ONLY: TIME, W3NDAT, W3DIMW, W3SETW
-    USE W3ADATMD       , ONLY: W3NAUX, W3DIMA, W3SETA
-    USE W3IDATMD       , ONLY: INFLAGS1, INFLAGS2, FLAGSC
-    USE W3ODATMD       , ONLY: W3NOUT, W3SETO, NDS
-    USE W3ODATMD       , ONLY: NAPROC, IAPROC, NAPOUT, NAPERR
-    USE W3ODATMD       , ONLY: IDOUT, FNMPRE, IOSTYP, NOTYPE
-    USE W3ODATMD       , ONLY: FLOGRR, FLOGR, OFILES
-    USE W3IOGRMD       , ONLY: W3IOGR
-    USE W3IOGOMD       , ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
-    USE W3SERVMD       , ONLY: NEXTLN, EXTCDE
-    USE W3TIMEMD       , ONLY: DSEC21, STME21, TICK21, T2D, D2J
+    use w3gdatmd       , only : flagll, dtmax, nx, ny, gtype
+    use w3wdatmd       , only : time, w3ndat, w3dimw, w3setw
+    use w3adatmd       , only : w3naux, w3dima, w3seta
+    use w3idatmd       , only : inflags1, inflags2, flagsc
+    use w3odatmd       , only : w3nout, w3seto, nds
+    use w3odatmd       , only : naproc, iaproc, napout, naperr
+    use w3odatmd       , only : idout, fnmpre, iostyp, notype
+    use w3odatmd       , only : flogrr, flogr, ofiles
+    use w3iogrmd       , only : w3iogr
+    use w3iogomd       , only : w3readflgrd, fldout, w3flgrdflag
+    use w3servmd       , only : nextln, extcde
+    use w3timemd       , only : dsec21, stme21, tick21, t2d, d2j
 #ifdef W3_OASIS
-    USE W3WDATMD       , ONLY: TIME00, TIMEEND
+    use w3wdatmd       , only : time00, timeend
 #endif
 #ifdef W3_NL5
-    USE W3WDATMD       , ONLY: QI5TBEG
+    use w3wdatmd       , only : qi5tbeg
 #endif
     use wav_shr_flags  , only : debuginit_flag, couple_flag, oasis_flag
     use wav_shr_flags  , only : O7_flag, t_flag, mgw_flag, mgp_flag
     use wav_shr_flags  , only : nl5_flag, ic1_flag, ic2_flag, is2_flag
     use wav_shr_flags  , only : ic3_flag, bt8_flag, bt9_flag, ic4_flag
     use wav_shr_flags  , only : ic5_flag, nco_flag
-    use wav_shr_flags  , only : debuginit_msg
+    use wav_shr_flags  , only : print_logmsg
 
-    INTEGER, INTENT(IN) :: MPI_COMM
+    integer, intent(in) :: mpi_comm
 
-    ! Local parameters
-    INTEGER, PARAMETER  :: NHMAX =    200
+    ! local parameters
+    integer, parameter  :: nhmax =    200
 
-    TYPE(NML_DOMAIN_T)       :: NML_DOMAIN
-    TYPE(NML_INPUT_T)        :: NML_INPUT
-    TYPE(NML_OUTPUT_TYPE_T)  :: NML_OUTPUT_TYPE
-    TYPE(NML_OUTPUT_DATE_T)  :: NML_OUTPUT_DATE
-    TYPE(NML_HOMOG_COUNT_T)  :: NML_HOMOG_COUNT
-    TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE  :: NML_HOMOG_INPUT(:)
+    type(nml_domain_t)       :: nml_domain
+    type(nml_input_t)        :: nml_input
+    type(nml_output_type_t)  :: nml_output_type
+    type(nml_output_date_t)  :: nml_output_date
+    type(nml_homog_count_t)  :: nml_homog_count
+    type(nml_homog_input_t), allocatable  :: nml_homog_input(:)
 
-    INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST, NDSL,&
-                           NDSEN, IERR, J, I, ILOOP, IPTS
-    INTEGER             :: NDSF(-7:9), &
-                           NH(-7:10), THO(2,-7:10,NHMAX), RCLD(7:9), &
-                           NODATA(7:9), STARTDATE(8), STOPDATE(8), IHH(-7:10)
-    INTEGER             :: jfirst, IERR_MPI, flagtide, ih, n_tot
-    REAL                :: FACTOR, DTTST, XX, YY, HA(NHMAX,-7:10), &
-                           HD(NHMAX,-7:10), HS(NHMAX,-7:10)
-    DOUBLE PRECISION    :: STARTJULDAY, STOPJULDAY
-    CHARACTER(LEN=1)    :: COMSTR, FLAGTFC(-7:10)
-    CHARACTER(LEN=3)    :: IDSTR(-7:10), IDTST
-    CHARACTER(LEN=6)    :: YESXNO
-    CHARACTER(LEN=40)   :: PN
-    CHARACTER(LEN=13)   :: IDFLDS(-7:10)
-    CHARACTER(LEN=20)   :: STRNG
-    CHARACTER(LEN=23)   :: DTME21
-    CHARACTER(LEN=30)   :: IDOTYP(8)
-    CHARACTER(LEN=80)   :: LINE
-    CHARACTER(LEN=256)  :: TMPLINE, TEST
-    CHARACTER(LEN=1024) :: FLDRST=''
-    CHARACTER(LEN=80)   :: LINEIN
-    CHARACTER(LEN=30)   :: OFILE ! w3_cou only
-    CHARACTER(LEN=8)    :: WORDS(7)=''
-    LOGICAL             :: FLFLG, FLHOM, TFLAGI, PRTFRM, FLGNML, FLH(-7:10)
-    INTEGER             :: THRLEV = 1
-    INTEGER             :: TIME0(2), TIMEN(2), TTIME(2)
-    character(len=80)   :: printmsg
+    integer             :: ndsi, ndsi2, ndss, ndso, ndse, ndst, ndsl,&
+                           ndsen, ierr, j, i, iloop, ipts
+    integer             :: ndsf(-7:9), &
+                           nh(-7:10), tho(2,-7:10,nhmax), rcld(7:9), &
+                           nodata(7:9), startdate(8), stopdate(8), ihh(-7:10)
+    integer             :: jfirst, ierr_mpi, flagtide, ih, n_tot
+    real                :: factor, dttst, xx, yy, ha(nhmax,-7:10), &
+                           hd(nhmax,-7:10), hs(nhmax,-7:10)
+    double precision    :: startjulday, stopjulday
+    character(len=1)    :: comstr, flagtfc(-7:10)
+    character(len=3)    :: idstr(-7:10), idtst
+    character(len=6)    :: yesxno
+    character(len=40)   :: pn
+    character(len=13)   :: idflds(-7:10)
+    character(len=20)   :: strng
+    character(len=23)   :: dtme21
+    character(len=30)   :: idotyp(8)
+    character(len=80)   :: line
+    character(len=256)  :: tmpline, test
+    character(len=1024) :: fldrst=''
+    character(len=80)   :: linein
+    character(len=30)   :: ofile ! w3_cou only
+    character(len=8)    :: words(7)=''
+    logical             :: flflg, flhom, tflagi, prtfrm, flgnml, flh(-7:10)
+    integer             :: thrlev = 1
+    integer             :: time0(2), timen(2), ttime(2)
+    character(len=80)   :: msg1
 
-    DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
+    data idflds / 'ice param. 1 ' , 'ice param. 2 ' ,               &
          'ice param. 3 ' , 'ice param. 4 ' ,               &
          'ice param. 5 ' ,                                 &
          'mud density  ' , 'mud thkness  ' ,               &
@@ -432,17 +432,17 @@ contains
          'water levels ' , 'currents     ' ,               &
          'winds        ' , 'ice fields   ' ,               &
          'momentum     ' , 'air density  ' ,               &
-         'mean param.  ' , '1D spectra   ' ,               &
-         '2D spectra   ' , 'moving grid  ' /
-    DATA IDOTYP / 'Fields of mean wave parameters' ,                &
-         'Point output                  ' ,                &
-         'Track point output            ' ,                &
-         'Restart files                 ' ,                &
-         'Nesting data                  ' ,                &
-         'Partitioned wave field data   ' ,                &
-         'Fields for coupling           ' ,                &
-         'Restart files second request  '/
-    DATA IDSTR  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
+         'mean param.  ' , '1d spectra   ' ,               &
+         '2d spectra   ' , 'moving grid  ' /
+    data idotyp / 'fields of mean wave parameters' ,                &
+         'point output                  ' ,                &
+         'track point output            ' ,                &
+         'restart files                 ' ,                &
+         'nesting data                  ' ,                &
+         'partitioned wave field data   ' ,                &
+         'fields for coupling           ' ,                &
+         'restart files second request  '/
+    data idstr  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
          'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',  &
          'DT0', 'DT1', 'DT2', 'MOV' /
     !---------------------------------------------------
@@ -451,7 +451,7 @@ contains
     FLGR2 = .FALSE.
     FLH(:) = .FALSE.
     iprt(:) = 0
-    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 1', debuginit_flag)
+    call print_logmsg(740+iaproc, 'wav_shel_inp, step 1', debuginit_flag)
 
     NDSI   = 10
     NDSS   = 90
@@ -492,7 +492,7 @@ contains
     NDSF(7)  = 17
     NDSF(8)  = 18
     NDSF(9)  = 19
-    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 2', debuginit_flag)
+    call print_logmsg(740+iaproc, 'wav_shel_inp, step 2', debuginit_flag)
 
     if (nco_flag) then
        NDSI   = 11
@@ -514,7 +514,7 @@ contains
 
     ! Default COMSTR to "$" (for when using nml input files)
     COMSTR = "$"
-    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 2', debuginit_flag)
+    call print_logmsg(740+iaproc, 'wav_shel_inp, step 2', debuginit_flag)
 
     ! If using experimental mud or ice physics, additional lines will
     !  be read in from wav_shel_inp.inp and applied, so JFIRST is changed from
@@ -529,7 +529,9 @@ contains
     if (ic4_flag) jfirst = -7
     if (ic5_flag) jfirst = -7
 
-    call debuginit_msg(740+iaproc, 'wav_shel_inp, step 4', debuginit_flag)
+    write(msg1,*)'JFIRST=', JFIRST
+    call print_logmsg(740+iaproc, 'wav_shel_inp, step 4', &
+                                   trim(msg1), debuginit_flag)
 
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 2.  Define input fields
@@ -1035,14 +1037,14 @@ contains
     ! process old wav_shel_inp.inp format
     !
     IF (.NOT. FLGNML) THEN
-       call debuginit_msg(740+iaproc, ' FNMPRE'//TRIM(FNMPRE), debuginit_flag)
+       call print_logmsg(740+iaproc, ' FNMPRE'//TRIM(FNMPRE), debuginit_flag)
        OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_shel.inp',STATUS='OLD',IOSTAT=IERR)
        REWIND (NDSI)
-       call debuginit_msg(740+iaproc, 'Before read 2002, case 1', debuginit_flag)
+       call print_logmsg(740+iaproc, 'Before read 2002, case 1', debuginit_flag)
        !AR: I changed the error handling for err=2002, see commit message ...
        READ (NDSI,'(A)') COMSTR
-       call debuginit_msg(740+iaproc, ' COMSTR='//trim(COMSTR), debuginit_flag)
-       call debuginit_msg(740+iaproc, ' After read 2002, case 1', debuginit_flag)
+       call print_logmsg(740+iaproc, ' COMSTR='//trim(COMSTR), &
+                                     ' After read 2002, case 1', debuginit_flag)
        IF (COMSTR.EQ.' ') COMSTR = '$'
        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
 
@@ -1052,19 +1054,19 @@ contains
        DO J=JFIRST, 9
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
           IF ( J .LE. 6 ) THEN
-             call debuginit_msg(740+iaproc, 'Before read 2002, case 2', debuginit_flag)
+             call print_logmsg(740+iaproc, 'Before read 2002, case 2', debuginit_flag)
              READ (NDSI,*) FLAGTFC(J), FLH(J)
 
-             write(printmsg,*)'     J=', J, ' FLAGTFC=', FLAGTFC(J), ' FLH=', FLH(J)
-             call debuginit_msg(740+iaproc, trim(printmsg), debuginit_flag)
-             call debuginit_msg(740+iaproc, ' After read 2002, case 2', debuginit_flag)
+             write(msg1,*)'     J=', J, ' FLAGTFC=', FLAGTFC(J), ' FLH=', FLH(J)
+             call print_logmsg(740+iaproc, trim(msg1), &
+                                           ' After read 2002, case 2', debuginit_flag)
           ELSE
-             call debuginit_msg(740+iaproc, 'Before read 2002, case 3', debuginit_flag)
+             call print_logmsg(740+iaproc, 'Before read 2002, case 3', debuginit_flag)
              READ (NDSI,*) FLAGTFC(J)
 
-             write(printmsg,*) '     J=', J, ' FLAGTFC=', FLAGTFC(J)
-             call debuginit_msg(740+iaproc, trim(printmsg), debuginit_flag)
-             call debuginit_msg(740+iaproc, ' After read 2002, case 3 ', debuginit_flag)
+             write(msg1,*) '     J=', J, ' FLAGTFC=', FLAGTFC(J)
+             call print_logmsg(740+iaproc, trim(msg1), &
+                                           ' After read 2002, case 3 ', debuginit_flag)
           END IF
        END DO
 
@@ -1110,7 +1112,7 @@ contains
        call printMallInfo(IAPROC,mallInfos)
 #endif
 
-       call debuginit_msg(740+iaproc, 'wav_shel_inp, step 5', debuginit_flag)
+       call print_logmsg(740+iaproc, 'wav_shel_inp, step 5', debuginit_flag)
 
        INFLAGS1(10) = .FALSE.
        if (mgw_flag .or. mgp_flag) then
@@ -1143,9 +1145,9 @@ contains
        ! 2.2 Time setup
 
        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-       call debuginit_msg(740+iaproc, 'Before read 2002, case 4', debuginit_flag)
+       call print_logmsg(740+iaproc, 'Before read 2002, case 4', debuginit_flag)
        READ (NDSI,*) TIME0
-       call debuginit_msg(740+iaproc, ' After read 2002, case 4', debuginit_flag)
+       call print_logmsg(740+iaproc, ' After read 2002, case 4', debuginit_flag)
 
 #ifdef W3_MEMCHECK
        write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 2c'
@@ -1154,10 +1156,10 @@ contains
 #endif
 
        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-       call debuginit_msg(740+iaproc, 'Before read 2002, case 5', debuginit_flag)
+       call print_logmsg(740+iaproc, 'Before read 2002, case 5', debuginit_flag)
        READ (NDSI,*) TIMEN
-       call debuginit_msg(740+iaproc, ' After read 2002, case 5', debuginit_flag)
-       call debuginit_msg(740+iaproc, 'wav_shel_inp, step 6', debuginit_flag)
+       call print_logmsg(740+iaproc, ' After read 2002, case 5', &
+                                     'wav_shel_inp, step 6', debuginit_flag)
        !
 #ifdef W3_MEMCHECK
        write(740+IAPROC,*) 'memcheck_____:', 'wav_shel_inp SECTION 2d'
@@ -1167,9 +1169,9 @@ contains
 
        ! 2.3 Domain setup
 
-       call debuginit_msg(740+iaproc, 'wav_shel_inp, step 7', debuginit_flag)
+       call print_logmsg(740+iaproc, 'wav_shel_inp, step 7', debuginit_flag)
        CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-       call debuginit_msg(740+iaproc, 'Before read 2002, case 6', debuginit_flag)
+       call print_logmsg(740+iaproc, 'Before read 2002, case 6', debuginit_flag)
        READ (NDSI,*) IOSTYP
 #ifdef W3_PDLIB
        IF (IOSTYP .gt. 1) THEN
@@ -1177,14 +1179,14 @@ contains
           CALL EXTCDE ( 6666 )
        ENDIF
 #endif
-       call debuginit_msg(740+iaproc, ' After read 2002, case 6', debuginit_flag)
+       call print_logmsg(740+iaproc, ' After read 2002, case 6', debuginit_flag)
        CALL W3IOGR ( 'GRID', NDSF(7) )
        IF ( FLAGLL ) THEN
           FACTOR = 1.
        ELSE
           FACTOR = 1.E-3
        END IF
-       call debuginit_msg(740+iaproc, 'wav_shel_inp, step 8', debuginit_flag)
+       call print_logmsg(740+iaproc, 'wav_shel_inp, step 8', debuginit_flag)
 
        ! 2.4 Output dates
 
@@ -1193,12 +1195,12 @@ contains
        if (couple_flag) then
           NOTYPE = 7
        end if
-       call debuginit_msg(740+iaproc, 'Before NOTYPE loop', debuginit_flag)
+       call print_logmsg(740+iaproc, 'Before NOTYPE loop', debuginit_flag)
        DO J = 1, NOTYPE
-          write(printmsg,*)'J=', J, '/ NOTYPE=', NOTYPE
-          call debuginit_msg(740+iaproc, trim(printmsg), debuginit_flag)
+          write(msg1,*)'J=', J, '/ NOTYPE=', NOTYPE
+          call print_logmsg(740+iaproc, trim(msg1), debuginit_flag)
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-          call debuginit_msg(740+iaproc, 'Before read 2002, case 7', debuginit_flag)
+          call print_logmsg(740+iaproc, 'Before read 2002, case 7', debuginit_flag)
           !
           ! CHECKPOINT
           IF(J .EQ. 4) THEN
@@ -1214,8 +1216,7 @@ contains
              IF (WORDS(6) .EQ. 'T') THEN
                 CALL NEXTLN ( COMSTR , NDSI , NDSEN )
                 READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
-                !if(iaproc .eq. naproc) WRITE(*,*)'odat(j=4): ',(ODAT(I),I=5*(8-1)+1,5*8)
-                WRITE(740+iaproc,*)'odat(j=4): ',(ODAT(I),I=5*(8-1)+1,5*8)
+                if(iaproc .eq. naproc) WRITE(*,*)'odat(j=4): ',(ODAT(I),I=5*(8-1)+1,5*8)
              END IF
              IF (WORDS(7) .EQ. 'T') THEN
                 CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -1278,7 +1279,7 @@ contains
              END IF !j le 2
              ! WRITE(*,*) 'OFILES(J)= ', OFILES(J),J
              !
-             call debuginit_msg(740+iaproc, ' After read 2002, case 7', debuginit_flag)
+             call print_logmsg(740+iaproc, ' After read 2002, case 7', debuginit_flag)
              ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
              !
 #ifdef W3_MEMCHECK
@@ -1291,7 +1292,7 @@ contains
              IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
 
                 ! Type 1: fields of mean wave parameters
-                call debuginit_msg(740+iaproc, ' Case analysis', debuginit_flag)
+                call print_logmsg(740+iaproc, ' Case analysis', debuginit_flag)
                 IF ( J .EQ. 1 ) THEN
                    CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLGD,   &
                         FLGRD, IAPROC, NAPOUT, IERR )
@@ -1326,9 +1327,9 @@ contains
                       NPTS   = 0
                       DO
                          CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                         call debuginit_msg(740+iaproc, 'Before read 2002, case 8', debuginit_flag)
+                         call print_logmsg(740+iaproc, 'Before read 2002, case 8', debuginit_flag)
                          READ (NDSI2,*) XX, YY, PN
-                         call debuginit_msg(740+iaproc, ' After read 2002, case 8', debuginit_flag)
+                         call print_logmsg(740+iaproc, ' After read 2002, case 8', debuginit_flag)
                          IF ( ILOOP.EQ.1 .AND. IAPROC.EQ.1 ) THEN
                             BACKSPACE (NDSI)
                             READ (NDSI,'(A)') LINE
@@ -1381,9 +1382,9 @@ contains
                 ! Type 3: track output
                 ELSE IF ( J .EQ. 3 ) THEN
                    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                   call debuginit_msg(740+iaproc, 'Before read 2002, case 9', debuginit_flag)
+                   call print_logmsg(740+iaproc, 'Before read 2002, case 9', debuginit_flag)
                    READ (NDSI,*) TFLAGI
-                   call debuginit_msg(740+iaproc, ' After read 2002, case 9', debuginit_flag)
+                   call print_logmsg(740+iaproc, ' After read 2002, case 9', debuginit_flag)
 
                    IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
                    IF ( IAPROC .EQ. NAPOUT ) THEN
@@ -1399,10 +1400,10 @@ contains
                 ELSE IF ( J .EQ. 6 ) THEN
                    !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
                    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-                   call debuginit_msg(740+iaproc, 'Before reading IPRT', debuginit_flag)
-                   call debuginit_msg(740+iaproc, 'Before read 2002, case 10', debuginit_flag)
+                   call print_logmsg(740+iaproc, 'Before reading IPRT', &
+                                                 'Before read 2002, case 10', debuginit_flag)
                    READ (NDSI,*) IPRT, PRTFRM
-                   call debuginit_msg(740+iaproc, ' After read 2002, case 10', debuginit_flag)
+                   call print_logmsg(740+iaproc, ' After read 2002, case 10', debuginit_flag)
 
                    IF ( IAPROC .EQ. NAPOUT ) THEN
                       IF ( PRTFRM ) THEN
@@ -1442,9 +1443,9 @@ contains
           ! Start of loop
           DO
              CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-             call debuginit_msg(740+iaproc, 'Before read 2002, case 11', debuginit_flag)
+             call print_logmsg(740+iaproc, 'Before read 2002, case 11', debuginit_flag)
              READ (NDSI,*) IDTST
-             call debuginit_msg(740+iaproc, ' After read 2002, case 11', debuginit_flag)
+             call print_logmsg(740+iaproc, ' After read 2002, case 11', debuginit_flag)
 
 
              ! Exit if illegal id
@@ -1470,47 +1471,47 @@ contains
                    NH(J)    = NH(J) + 1
                    IF ( NH(J) .GT. NHMAX ) GOTO 2006
                    IF ( J .LE. 1  ) THEN ! water levels, etc. : get HA
-                      call debuginit_msg(740+iaproc, 'Before read 2002, case 12', debuginit_flag)
+                      call print_logmsg(740+iaproc, 'Before read 2002, case 12', debuginit_flag)
                       READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J)
-                      call debuginit_msg(740+iaproc, ' After read 2002, case 12', debuginit_flag)
+                      call print_logmsg(740+iaproc, ' After read 2002, case 12', debuginit_flag)
                    ELSE IF ( J .EQ. 2 ) THEN ! currents: get HA and HD
-                      call debuginit_msg(740+iaproc, 'Before read 2002, case 13', debuginit_flag)
+                      call print_logmsg(740+iaproc, 'Before read 2002, case 13', debuginit_flag)
                       READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J), HD(NH(J),J)
-                      call debuginit_msg(740+iaproc, ' After read 2002, case 13', debuginit_flag)
+                      call print_logmsg(740+iaproc, ' After read 2002, case 13', debuginit_flag)
                    ELSE IF ( J .EQ. 3 ) THEN ! wind: get HA HD and HS
-                      call debuginit_msg(740+iaproc, 'Before read 2002, case 14', debuginit_flag)
+                      call print_logmsg(740+iaproc, 'Before read 2002, case 14', debuginit_flag)
                       READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J), HD(NH(J),J), HS(NH(J),J)
-                      call debuginit_msg(740+iaproc, ' After read 2002, case 14', debuginit_flag)
+                      call print_logmsg(740+iaproc, ' After read 2002, case 14', debuginit_flag)
                    ELSE IF ( J .EQ. 4 ) THEN ! ice
-                      call debuginit_msg(740+iaproc, 'Before read 2002, case 15', debuginit_flag)
+                      call print_logmsg(740+iaproc, 'Before read 2002, case 15', debuginit_flag)
                       READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J)
-                      call debuginit_msg(740+iaproc, ' After read 2002, case 15', debuginit_flag)
+                      call print_logmsg(740+iaproc, ' After read 2002, case 15', debuginit_flag)
                    ELSE IF ( J .EQ. 5 ) THEN ! atmospheric momentum
-                      call debuginit_msg(740+iaproc, 'Before read 2002, case 16', debuginit_flag)
+                      call print_logmsg(740+iaproc, 'Before read 2002, case 16', debuginit_flag)
                       READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J), HD(NH(J),j)
-                      call debuginit_msg(740+iaproc, ' After read 2002, case 16', debuginit_flag)
+                      call print_logmsg(740+iaproc, ' After read 2002, case 16', debuginit_flag)
                    ELSE IF ( J .EQ. 6 ) THEN ! air density
-                      call debuginit_msg(740+iaproc, 'Before read 2002, case 17', debuginit_flag)
+                      call print_logmsg(740+iaproc, 'Before read 2002, case 17', debuginit_flag)
                       READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J)
-                      call debuginit_msg(740+iaproc, ' After read 2002, case 17', debuginit_flag)
+                      call print_logmsg(740+iaproc, ' After read 2002, case 17', debuginit_flag)
                    ELSE IF ( J .EQ. 10 ) THEN ! mov: HA and HD
-                      call debuginit_msg(740+iaproc, 'Before read 2002, case 18', debuginit_flag)
+                      call print_logmsg(740+iaproc, 'Before read 2002, case 18', debuginit_flag)
                       READ (NDSI,*) IDTST,           &
                            THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                            HA(NH(J),J), HD(NH(J),J)
-                      call debuginit_msg(740+iaproc, ' After read 2002, case 18', debuginit_flag)
+                      call print_logmsg(740+iaproc, ' After read 2002, case 18', debuginit_flag)
                    END IF
                 END IF
              END DO

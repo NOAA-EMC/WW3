@@ -34,7 +34,13 @@ module wav_shr_flags
   logical, public :: nco_flag              !< @public a flag for "W3_NCO"
 
   public :: initialize_flags
-  public :: debuginit_msg
+
+  interface print_logmsg
+    module procedure print_logmsg_1line
+    module procedure print_logmsg_2line
+    module procedure print_logmsg_3line
+    module procedure print_logmsg_4line
+  end interface
 
   contains
 
@@ -126,26 +132,117 @@ module wav_shr_flags
   end subroutine initialize_flags
 
   !========================================================================
-!> Write a message for debuginit if requested
+!> Write a 1 line message if requested
 !!
-!! @details Writes a debug message
+!! @details Writes a one line message
 !!
 !! @param[in]   unum               unit number
-!! @param[in]   msg                debug message
+!! @param[in]   msg1               one line message
 !! @param[in]   lwrite             logical to control message writing
 !!
 !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
 !> @date 06-01-2022
-   subroutine debuginit_msg(unum, msg, lwrite)
+   subroutine print_logmsg_1line(unum, msg1, lwrite)
 
    integer         , intent(in)           :: unum
-   character(len=*), intent(in)           :: msg
+   character(len=*), intent(in)           :: msg1
    logical         , intent(in)           :: lwrite
 
    if (.not. lwrite) return
 
-   write(unum,'(a)') trim(msg)
+   write(unum,'(a)') trim(msg1)
    flush(unum)
 
-   end subroutine debuginit_msg
+   end subroutine print_logmsg_1line
+
+  !========================================================================
+!> Write a 2 line message if requested
+!!
+!! @details Writes a two line message
+!!
+!! @param[in]   unum               unit number
+!! @param[in]   msg1               first line of message
+!! @param[in]   msg2               second line of message
+!! @param[in]   lwrite             logical to control message writing
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 06-01-2022
+   subroutine print_logmsg_2line(unum, msg1, msg2, lwrite)
+
+   integer         , intent(in)           :: unum
+   character(len=*), intent(in)           :: msg1
+   character(len=*), intent(in)           :: msg2
+   logical         , intent(in)           :: lwrite
+
+   if (.not. lwrite) return
+
+   write(unum,'(a)') trim(msg1)
+   write(unum,'(a)') trim(msg2)
+   flush(unum)
+
+   end subroutine print_logmsg_2line
+
+  !========================================================================
+!> Write a 3 line message if requested
+!!
+!! @details Writes a three line message
+!!
+!! @param[in]   unum               unit number
+!! @param[in]   msg1               first line of message
+!! @param[in]   msg2               second line of message
+!! @param[in]   msg3               third line of message
+!! @param[in]   lwrite             logical to control message writing
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 06-01-2022
+   subroutine print_logmsg_3line(unum, msg1, msg2, msg3, lwrite)
+
+   integer         , intent(in)           :: unum
+   character(len=*), intent(in)           :: msg1
+   character(len=*), intent(in)           :: msg2
+   character(len=*), intent(in)           :: msg3
+   logical         , intent(in)           :: lwrite
+
+   if (.not. lwrite) return
+
+   write(unum,'(a)') trim(msg1)
+   write(unum,'(a)') trim(msg2)
+   write(unum,'(a)') trim(msg3)
+   flush(unum)
+
+   end subroutine print_logmsg_3line
+
+  !========================================================================
+!> Write a 4 line message if requested
+!!
+!! @details Writes a four line message
+!!
+!! @param[in]   unum               unit number
+!! @param[in]   msg1               first line of message
+!! @param[in]   msg2               second line of message
+!! @param[in]   msg3               third line of message
+!! @param[in]   msg4               forth line of message
+!! @param[in]   lwrite             logical to control message writing
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 06-01-2022
+
+   subroutine print_logmsg_4line(unum, msg1, msg2, msg3, msg4, lwrite)
+
+   integer         , intent(in)           :: unum
+   character(len=*), intent(in)           :: msg1
+   character(len=*), intent(in)           :: msg2
+   character(len=*), intent(in)           :: msg3
+   character(len=*), intent(in)           :: msg4
+   logical         , intent(in)           :: lwrite
+
+   if (.not. lwrite) return
+
+   write(unum,'(a)') trim(msg1)
+   write(unum,'(a)') trim(msg2)
+   write(unum,'(a)') trim(msg3)
+   write(unum,'(a)') trim(msg4)
+   flush(unum)
+
+   end subroutine print_logmsg_4line
 end module wav_shr_flags
