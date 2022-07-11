@@ -403,7 +403,6 @@ contains
     character(CL)                  :: cvalue
     integer                        :: shrlogunit
     integer                        :: yy,mm,dd,hh,ss
-    integer                        :: dtime_sync        ! integer timestep size
     integer                        :: start_ymd         ! start date (yyyymmdd)
     integer                        :: start_tod         ! start time of day (sec)
     integer                        :: stop_ymd          ! stop date (yyyymmdd)
@@ -641,9 +640,7 @@ contains
     time = time0
     call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
+    call waveinit_cesm(gcomp, ntrace, mpi_comm, mds, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 #endif
 
@@ -1021,8 +1018,8 @@ contains
        rstwr = .false.
     end if
 
-    !TODO: what is outfreq used for if an alarm is created with history_n,history_option?
     ! Determine if time to write ww3 history files
+    ! history output is determined by the namelist variable outfreq
     ! histwr is set in wav_shr_mod and used in w3wavmd to determine if history should be written
     ! if history alarms are not active, control of WW3 grd output remains with WW3
     histwr = .false.
@@ -1200,9 +1197,9 @@ contains
        call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          !----------------
-          ! History alarm
-          !----------------
+       !----------------
+       ! History alarm
+       !----------------
        call NUOPC_CompAttributeGet(gcomp, name="history_option", isPresent=isPresent, isSet=isSet, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (isPresent .and. isSet) then
@@ -1285,24 +1282,28 @@ contains
   !===============================================================================
 !> Initialize the wave model for the CESM use case
 !!
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
+!! ww3_shel.nml file. Calls w3init to initialize the wave model
+!!
 !! @param[in]    gcomp        an ESMF_GridComp object
 !! @param[in]    ntrace       unit numbers for trace
 !! @param[in]    mpi_comm     an mpi communicator
-!! @param[in]    dtime_sync   the coupling interval
 !! @param[in]    mds          unit numbers
 !! @param[out]   rc           return code
 !!
 !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
 !> @date 01-05-2022
-  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
+  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, mds, rc)
 
     ! Initialize ww3 for cesm (called from InitializeRealize)
 
     use w3initmd     , only : w3init
     use w3gdatmd     , only : dtcfl, dtcfli, dtmax, dtmin
+    use w3idatmd     , only : inflags1, inflags2
     use wav_shr_mod  , only : casename, initfile, outfreq
     use wav_shr_mod  , only : inst_index, inst_name, inst_suffix
-    use wav_shel_inp , only : set_shel_inp
+    use wav_shr_mod  , only : wav_coupling_to_cice
+    use wav_shel_inp , only : read_shel_config
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
     use wav_shel_inp , only : flgrd, flgd, flgr2, flg2
 
@@ -1310,7 +1311,6 @@ contains
     type(ESMF_GridComp)   :: gcomp
     integer , intent(in)  :: ntrace(:)
     integer , intent(in)  :: mpi_comm
-    integer , intent(in)  :: dtime_sync
     integer , intent(in)  :: mds(:)
     integer , intent(out) :: rc
 
@@ -1414,8 +1414,23 @@ contains
     dtcfli_in = dtcfli
     dtmin_in  = dtmin
 
-    ! Determine module variables in wav_shel_inp that are used for call to w3init
-    call set_shel_inp(dtime_sync)
+    ! Read the namelist settings in ww3_shel.nml
+    call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
+    call read_shel_config(mpi_comm)
+
+    ! Force inflags2 to be false - otherwise inflags2 will be set to inflags1 and answers will change
+    ! Need to set this to .false. to avoide scaling of ice in section 4. of w3srcemed.
+    ! inflags2(4) is true if ice concentration was ever read during this simulation
+    ! for CESM we do not want ice concentration to be read in -
+    ! we do not want to have this occur for cesm
+    ! Currently IC4 is used
+    inflags2(:) = .false.
+    if (wav_coupling_to_cice) then
+       inflags2( 4) = .true. ! inflags2(4) is true if ice concentration was read during initialization
+       ! TODO: these should be obtained by setting the following in ww3_shel.nml
+       !   input%forcing%ice_param1 = 'T' ! ice thickness
+       !   input%forcing%ice_param5 = 'T' ! ice floe size
+    end if
 
     ! Read in initial/restart data and initialize the model
     ! ww3 read initialization occurs in w3iors (which is called by initmd in module w3initmd)
@@ -1426,6 +1441,7 @@ contains
     ! 1 is model number
     ! IsMulti does not appear to be used, setting to .false.
 
+    call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
@@ -1442,8 +1458,8 @@ contains
   !===============================================================================
 !> Initialize the wave model for the UWM use case
 !!
-!> @details Calls public routine read_shel_inp to read the ww3_shel.inp file. Calls
-!! w3init to initialize the wave model
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
+!! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
 !! @param[in]    gcomp        an ESMF_GridComp object
 !! @param[in]    ntrace       unit numbers for trace
@@ -1460,7 +1476,7 @@ contains
     use w3odatmd     , only : fnmpre
     use w3initmd     , only : w3init
     use wav_shr_mod  , only : outfreq
-    use wav_shel_inp , only : read_shel_inp
+    use wav_shel_inp , only : read_shel_config
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
     use wav_shel_inp , only : flgrd, flgd, flgr2, flg2
 
@@ -1481,8 +1497,8 @@ contains
     outfreq = 0
     fnmpre = './'
 
-    call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
-    call read_shel_inp(mpi_comm)
+    call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
+    call read_shel_config(mpi_comm)
 
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
