@@ -1282,6 +1282,7 @@ contains
     use w3idatmd     , only : inflags1, inflags2
     use wav_shr_mod  , only : casename, initfile, outfreq
     use wav_shr_mod  , only : inst_index, inst_name, inst_suffix
+    use wav_shr_mod  , only : wav_coupling_to_cice
     use wav_shel_inp , only : read_shel_inp
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
     use wav_shel_inp , only : flgrd, flgd, flgr2, flg2
@@ -1400,7 +1401,7 @@ contains
     ! Force inflags2 to be false - otherwise inflags2 will be set to inflags1 and answers will change
     ! Need to set this to .false. to avoide scaling of ice in section 4. of w3srcemed.
     ! inflags2(4) is true if ice concentration was ever read during this simulation
-    ! for CESM we do not want ice concentration to be read in - 
+    ! for CESM we do not want ice concentration to be read in -
     ! we do not want to have this occur for cesm
     ! Currently IC4 is used
     inflags2(:) = .false.
