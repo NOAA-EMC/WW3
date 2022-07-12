@@ -41,7 +41,8 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
-  use wav_shr_mod           , only : wav_coupling_to_cice, runtype, merge_import, dbug_flag
+  use wav_shr_mod           , only : runtype, merge_import, dbug_flag
+  use wav_shr_mod           , only : wav_coupling_to_cice
   use w3odatmd              , only : nds, iaproc, napout
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
   use wav_shr_mod           , only : time_origin, calendar_name, elapsed_secs
@@ -393,7 +394,6 @@ contains
     use wmunitmd     , only : wmuget, wmuset
 #endif
     use wav_shel_inp , only : set_shel_io
-    use wav_grdout   , only : wavinit_grdout
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -654,12 +654,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 #endif
 
-    !--------------------------------------------------------------------
-    ! Intialize the list of requested output variables
-    !--------------------------------------------------------------------
-
-    call wavinit_grdout
-
     ! call mpi_barrier ( mpi_comm, ierr )
 
     !--------------------------------------------------------------------
@@ -802,7 +796,7 @@ contains
   !===============================================================================
 !> Initialize the field values in the export state
 !!
-!! @details Called by NUOPC to initialize the field values in the export state and
+!> @details Called by NUOPC to initialize the field values in the export state and
 !! the values for the scalar field which describes the wave model global domain
 !! size.
 !!
@@ -814,7 +808,6 @@ contains
   subroutine DataInitialize(gcomp, rc)
 
     use wav_import_export, only : calcRoughl
-    use wav_shr_mod      , only : wav_coupling_to_cice
     use w3gdatmd         , only : nx, ny
 
     ! input/output variables
@@ -896,7 +889,7 @@ contains
   !=====================================================================
 !> Called by NUOPC to advance the model a single timestep
 !!
-!! @details At each model advance, the call to import_fields fills the
+!> @details At each model advance, the call to import_fields fills the
 !! import state with the updated values. If a history alarm is present
 !! and ringing, a logical to write a wave history file is set true. The
 !! wave model itself is then advanced during which a history file will
@@ -1297,11 +1290,12 @@ contains
 
   !===============================================================================
 !> Initialize the wave model for the CESM use case
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
+!! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
 !! @param[in]    gcomp        an ESMF_GridComp object
 !! @param[in]    ntrace       unit numbers for trace
 !! @param[in]    mpi_comm     an mpi communicator
-!! @param[in]    dtime_sync   the coupling interval
 !! @param[in]    mds          unit numbers
 !! @param[out]   rc           return code
 !!
@@ -1432,10 +1426,9 @@ contains
     call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
     call read_shel_config(mpi_comm)
 
-    ! Set the wav_coupling_to_cice flag in wav_shr_mod
-    ! inflags1(-7) = nml_input%forcing%ice_param1
-    ! inflags1(-3) = nml_input%forcing%ice_param5
-    wav_coupling_to_cice = (inflags1(-7) .and. inflags1(-3))
+    ! NOTE:  that wavice_coupling must be set BEFORE the call to advertise_fields
+    ! So the current mechanism is to force the inflags1(-7) and inflags1(-3) be set to true
+    ! if wavice coupling is active
 
     ! Force inflags2 to be false - otherwise inflags2 will be set to inflags1 and answers will change
     ! Need to set this to .false. to avoid scaling of ice in section 4. of w3srcemed.
@@ -1443,7 +1436,16 @@ contains
     ! Currently IC4 is used in cesm
     inflags2(:) = .false.
     if (wav_coupling_to_cice) then
-       inflags2(4) = .true. ! inflags2(4) is true if ice concentration was read during initialization
+       inflags2(4)  = .true. ! inflags2(4) is true if ice concentration was read during initialization
+       inflags1(-7) = .true. ! ice thickness
+       inflags2(-7) = .true. ! ice thickness
+       inflags1(-3) = .true. ! ice floe size
+       inflags2(-3) = .true. ! ice floe size
+    else
+       inflags1(-7) = .false. ! ice thickness
+       inflags2(-7) = .false. ! ice thickness
+       inflags1(-3) = .false. ! ice floe size
+       inflags2(-3) = .false. ! ice floe size
     end if
 
     ! Read in initial/restart data and initialize the model

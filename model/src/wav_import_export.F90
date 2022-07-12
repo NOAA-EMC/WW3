@@ -1417,7 +1417,7 @@ contains
 !> Obtain the import mask used to merge a field from the import state with values from
 !! a file
 !!
-!! @details Set the import mask for merging an import state field with values from
+!> @details Set the import mask for merging an import state field with values from
 !! a file. The import mask is set 0 where the field from the import state has a value
 !! of fillValue due to non-overlapping model domains. The field values read from a
 !! file will be used to provide the values in these regions. The values of the import
@@ -1518,7 +1518,7 @@ contains
   !====================================================================================
 !> Write a netCDF file containing the global field values for debugging
 !!
-!! @details Write a time-stamped netCDF file containing the values of a global field,
+!> @details Write a time-stamped netCDF file containing the values of a global field,
 !! where the global_field is provided on either on all points or only nsea points. In
 !! either case, the field will be written to the file on the mesh.
 !!
