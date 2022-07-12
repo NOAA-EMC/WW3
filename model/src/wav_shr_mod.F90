@@ -117,7 +117,7 @@ contains
 !===============================================================================
 !> Get scalar data from a state
 !!
-!> @details Obtain the field flds_scalar_name from a State and broadcast and
+!! @details Obtain the field flds_scalar_name from a State and broadcast and
 !! it to all PEs
 !!
 !! @param[in]    State            an ESMF_State
@@ -625,7 +625,7 @@ contains
 !===============================================================================
 !> Set up an alarm in a clock
 !!
-!> @details Create an ESMF_Alarm according to the desired frequency, where the
+!! @details Create an ESMF_Alarm according to the desired frequency, where the
 !! frequency is relative to a time frequency of seconds, days, hours etc.
 !!
 !! @param[inout]  clock           an ESMF_Clock

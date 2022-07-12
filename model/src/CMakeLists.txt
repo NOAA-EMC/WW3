@@ -75,6 +75,12 @@ add_compile_definitions(W3_IC4)
 add_compile_definitions(W3_IS0)
 add_compile_definitions(W3_REF0)
 
+set_property(SOURCE w3initmd.F90
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS
+  "__WW3_SWITCHES__=\'\'"
+  )
+
 # Note that w3iogocdmd is a new file for netcdf io
 # Set source files
 set(SRCFILES constants.F90
@@ -128,6 +134,7 @@ set(SRCFILES constants.F90
              w3wdatmd.F90
              wav_comp_nuopc.F90
              wav_import_export.F90
+             wav_grdout.F90
              wav_kind_mod.F90
              wav_shel_inp.F90
              wav_shr_mod.F90

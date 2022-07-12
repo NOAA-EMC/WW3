@@ -63,7 +63,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !/    Note: Changes in version numbers not logged above.
@@ -113,9 +113,8 @@
 !/
       REAL, PARAMETER                :: CRITOS = 15.
       CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.14  '
-! MV: the following is not allowed by CMake - claim is that __WW3_SWITCHES is not defined
-!      CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
-!                    __WW3_SWITCHES__ 
+      CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
+           __WW3_SWITCHES__
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -155,14 +154,14 @@
 !/    01-May-2007 : Move O7a output to W3IOPP.          ( version 3.11 )
 !/    08-May-2007 : Starting from calm as an option.    ( version 3.11 )
 !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-!/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 
+!/    21-Jun-2007 : Dedicated output processes.         ( version 3.11
 !/    13-Sep-2009 : Add coupling option                 ( version 3.14 )
 !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
 !/                  (W. E. Rogers & T. J. Campbell, NRL)
 !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.1 )
-!/                  (A. Roland and F. Ardhuin) 
+!/                  (A. Roland and F. Ardhuin)
 !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
 !/                  specify index closure for a grid.   ( version 3.14 )
 !/                  (T. J. Campbell, NRL)
@@ -185,14 +184,14 @@
 !     ----------------------------------------------------------------
 !       IMOD    Int.   I   Model number.
 !       FEXT    Char   I   Extension of data files.
-!       MDS     I.A.   I   Array with dataset numbers (see below), 
+!       MDS     I.A.   I   Array with dataset numbers (see below),
 !                          saved as NDS in W3ODATMD.
 !                           1: General output unit number ("log file").
 !                           2: Error output unit number.
 !                           3: Test output unit number.
 !                           4: "screen", i.e., direct output location,
 !                              can be the screen or the output file of
-!                              the shell. 
+!                              the shell.
 !                           5: Model definition file unit number.
 !                           6: Restart file unit number.
 !                           7: Grid output file unit number.
@@ -253,7 +252,7 @@
 !      W3IOGR    Subr. W3IOGRMD Read/write model definition file.
 !      W3IORS    Subr. W3IORSMD Read/write restart file.
 !      W3IOPP    Subr. W3IOPOMD Preprocess point output.
-!      CALL MPI_COMM_SIZE, CALL MPI_COMM_RANK 
+!      CALL MPI_COMM_SIZE, CALL MPI_COMM_RANK
 !                Subr. mpif.h   Standard MPI routines.
 !     ----------------------------------------------------------------
 !
@@ -276,9 +275,9 @@
 !       restart file. To assure consistency within the model, the
 !       water level and ice coverage are re-evaluated at the 0th
 !       time step in the actual wave model routine.
-!     - When running regtests in cases where disk is non-local 
+!     - When running regtests in cases where disk is non-local
 !       (i.e. NFS used), there can be a huge improvment in compute
-!       time by using /var/tmp/ for log files. 
+!       time by using /var/tmp/ for log files.
 !       See commented line at "OPEN (MDS(1),FILE=..."
 !
 !  8. Structure :
@@ -377,7 +376,7 @@
 #endif
       USE W3IDATMD, ONLY: FLLEV, FLCUR, FLWIND, FLICE, FLTAUA, FLRHOA,&
                           FLMDN, FLMTH, FLMVS, FLIC1, FLIC2, FLIC3,   &
-                          FLIC4, FLIC5 
+                          FLIC4, FLIC5
       USE W3DISPMD, ONLY: WAVNU1, WAVNU3
       USE W3PARALL, ONLY : AC_tot
       USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM
@@ -612,7 +611,7 @@
 #endif
 !!!/PDLIB    CALL W3SETG(IMOD, NDSE, NDST)
 !
-           LPDLIB = .FALSE. 
+           LPDLIB = .FALSE.
 #ifdef W3_PDLIB
     LPDLIB = .TRUE.
 #endif
@@ -637,7 +636,7 @@
 #endif
 #ifdef W3_DIST
       IW     = 1 + INT ( LOG10 ( REAL(NAPROC) + 0.5 ) )
-      IW     = MAX ( 3 , MIN ( 9 , IW ) ) 
+      IW     = MAX ( 3 , MIN ( 9 , IW ) )
       WRITE (FORMAT,'(A5,I1.1,A1,I1.1,A4)')                     &
                    '(A4,I', IW, '.', IW, ',2A)'
       WRITE (TFILE,FORMAT) 'test',                             &
@@ -767,7 +766,7 @@
 ! 2.b Save MAPSTA
 !
       ALLOCATE ( MAPTST(NY,NX) )
-      MAPTST  = MAPSTA 
+      MAPTST  = MAPSTA
 
 #ifdef W3_MEMCHECK
        WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2b'
@@ -942,7 +941,7 @@
                     IAPPRO(ISP) = -1
                  END IF
               END IF
-            END DO 
+            END DO
           END DO
 #endif
 !
@@ -1189,27 +1188,21 @@
 !
       DO J=1, NOTYPE
         J0 = (J-1)*5
-        TONEXT(1,J) =        ODAT(J0+1) 
+        TONEXT(1,J) =        ODAT(J0+1)
         TONEXT(2,J) =        ODAT(J0+2)
         DTOUT (  J) = REAL ( ODAT(J0+3) )
-        TOLAST(1,J) =        ODAT(J0+4) 
+        TOLAST(1,J) =        ODAT(J0+4)
         TOLAST(2,J) =        ODAT(J0+5)
       END DO
-#ifdef W3_CESMCOUPLED
-      ! CMB, FYI NOTYPE=7 is hardwired in w3odatmd.F90
-      IF ( IAPROC .EQ. NAPLOG ) THEN
-         write(ndso,*) 'CMB distribute odat ', j, TONEXT(:,J), DTOUT (  J)
-      END IF
-#endif
 !
 ! J=8, second stream of restart files
         J=8
         J0 = (J-1)*5
       IF(ODAT(J0+1) .NE. 0) THEN
-        TONEXT(1,J) =        ODAT(J0+1) 
+        TONEXT(1,J) =        ODAT(J0+1)
         TONEXT(2,J) =        ODAT(J0+2)
         DTOUT (  J) = REAL ( ODAT(J0+3) )
-        TOLAST(1,J) =        ODAT(J0+4) 
+        TOLAST(1,J) =        ODAT(J0+4)
         TOLAST(2,J) =        ODAT(J0+5)
         FLOUT(8) = .TRUE.
       ELSE
@@ -1247,9 +1240,6 @@
 !
       FLOUT(2) = NPT .GT. 0
 !
-#ifdef W3_CESMCOUPLED
-     !CMB FLOUT(3) = .TRUE. ???
-#endif
       FLOUT(3) = .TRUE.
 !
       FLOUT(4) = .TRUE.
@@ -1294,12 +1284,12 @@
 #endif
       DO J=1, NOTYPE
 !
-! ... check time step  
+! ... check time step
 !
         DTOUT(J) = MAX ( 0. , DTOUT(J) )
         FLOUT(J) = FLOUT(J) .AND. ( DTOUT(J) .GT. 0.5 )
 !
-! ... get first time 
+! ... get first time
 !
         IF ( FLOUT(J) ) THEN
 #ifdef W3_NL5
@@ -1348,12 +1338,12 @@
 !
       J=8
 !
-! ... check time step  
+! ... check time step
 !
         DTOUT(J) = MAX ( 0. , DTOUT(J) )
         FLOUT(J) = FLOUT(J) .AND. ( DTOUT(J) .GT. 0.5 )
 !
-! ... get first time 
+! ... get first time
 !
         IF ( FLOUT(J) ) THEN
             TOUT = TONEXT(:,J)
@@ -1416,16 +1406,6 @@
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1")
 #endif
 #endif
-#ifdef W3_CESMCOUPLED
-      ! 1 & 4 are T, rest are F
-      ! 1 is supposed to be gridded
-      ! 4 is supposed to be restart
-      IF ( IAPROC .EQ. NAPLOG ) THEN
-         do J=1,NOTYPE
-           write(ndso,*) 'CMB hist out ', J, FLOUT(J), TONEXT(:,J)
-         end do
-      END IF
-#endif
 !
 ! 4.d Preprocessing for point output.
 !
@@ -1442,7 +1422,7 @@
 !
 ! 5.  Define wavenumber grid ----------------------------------------- *
 ! 5.a Calculate depth
-! 
+!
 #ifdef W3_T
       ALLOCATE ( MAPOUT(NX,NY), XOUT(NX,NY) )
       XOUT = -1.
@@ -1594,7 +1574,7 @@
           DEPTH  = MAX ( DMIN , DW(IS) )
         ELSE
           DEPTH = DMIN
-          END IF 
+          END IF
 !
 #ifdef W3_T1
         WRITE (NDST,9051) IS, DEPTH
@@ -1616,7 +1596,7 @@
      FLUSH(740+IAPROC)
 #endif
 !
-! Commented by FA with version 4.12 
+! Commented by FA with version 4.12
 !      DO IK=1, NK
 !        CG(IK,0) = CG(IK,1)
 !        WN(IK,0) = WN(IK,1)
@@ -2025,7 +2005,7 @@
 !     - Each processor has to be able to send out individual error
 !       messages in this routine !
 !     - No testing on IMOD, since only called by W3INIT.
-!     - In version 3.09 STORE was split into a send and receive 
+!     - In version 3.09 STORE was split into a send and receive
 !       buffer, to avoid/reduce possible conflicts between the FORTRAN
 !       and MPI standards when a gather is posted in a given buffer
 !       right after a send is completed.
@@ -2595,7 +2575,7 @@
 #ifdef W3_MPI
           ! Calculation of NRQMAX splitted by output groups and field type
           !       scalar                2-comp   3-comp
-          NRQMAX =   1                +    0  +    0  +  &  ! group 1 
+          NRQMAX =   1                +    0  +    0  +  &  ! group 1
                     18                +    0  +    0  +  &  ! group 2
                      0                +    0  +    0  +  &  ! group 3 (extra contributions below)
              2+(NOGE(4)-2)*(NOSWLL+1) +    0  +    0  +  &  ! group 4
@@ -2619,7 +2599,7 @@
 #endif
 !
 #ifdef W3_MPI
-          IF ( NRQMAX .GT. 0 ) THEN 
+          IF ( NRQMAX .GT. 0 ) THEN
               ALLOCATE ( OUTPTS(IMOD)%OUT1%IRQGO(NRQMAX) )
               ALLOCATE ( OUTPTS(IMOD)%OUT1%IRQGO2(NRQMAX*NAPROC) )
             END IF
@@ -2909,7 +2889,7 @@
 #endif
 !
 #ifdef W3_MPI
-              IF ( FLGRDALL( 3, 1) ) THEN 
+              IF ( FLGRDALL( 3, 1) ) THEN
                   DO IK=E3DF(2,1),E3DF(3,1)
                     IH     = IH + 1
                     IT     = IT + 1
@@ -2923,9 +2903,9 @@
                     END DO
                  END IF
 #endif
-!      
+!
 #ifdef W3_MPI
-              IF ( FLGRDALL( 3, 2) ) THEN 
+              IF ( FLGRDALL( 3, 2) ) THEN
                   DO IK=E3DF(2,2),E3DF(3,2)
                     IH     = IH + 1
                     IT     = IT + 1
@@ -2939,9 +2919,9 @@
                     END DO
                  END IF
 #endif
-!      
+!
 #ifdef W3_MPI
-              IF ( FLGRDALL( 3, 3) ) THEN 
+              IF ( FLGRDALL( 3, 3) ) THEN
                   DO IK=E3DF(2,3),E3DF(3,3)
                     IH     = IH + 1
                     IT     = IT + 1
@@ -2955,9 +2935,9 @@
                     END DO
                  END IF
 #endif
-!       
+!
 #ifdef W3_MPI
-              IF ( FLGRDALL( 3, 4) ) THEN 
+              IF ( FLGRDALL( 3, 4) ) THEN
                   DO IK=E3DF(2,4),E3DF(3,4)
                     IH     = IH + 1
                     IT     = IT + 1
@@ -2971,9 +2951,9 @@
                     END DO
                  END IF
 #endif
-!      
+!
 #ifdef W3_MPI
-              IF ( FLGRDALL( 3, 5) ) THEN 
+              IF ( FLGRDALL( 3, 5) ) THEN
                   DO IK=E3DF(2,5),E3DF(3,5)
                     IH     = IH + 1
                     IT     = IT + 1
@@ -3286,7 +3266,7 @@
       WRITE (NDST,9011) IH, ' 5/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
-                END IF 
+                END IF
 #endif
 !
 #ifdef W3_MPI
@@ -3614,9 +3594,9 @@
                     END DO
                 END IF
 #endif
-!      
+!
 #ifdef W3_MPI
-             IF ( FLGRDALL( 6, 9) ) THEN     
+             IF ( FLGRDALL( 6, 9) ) THEN
                       DO K=P2MSF(2),P2MSF(3)
                         IH     = IH + 1
                         IT     = IT + 1
@@ -3668,6 +3648,7 @@
                 END IF
 #endif
 
+!
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 12) ) THEN
                   DO IK=1,2*NK
@@ -3681,9 +3662,10 @@
 #endif
 #ifdef W3_MPI
                     END DO
-                END IF 
+                END IF
 #endif
 
+!
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 13) ) THEN
                   IH     = IH + 1
@@ -3703,8 +3685,6 @@
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/13', IROOT, IT, IRQGO(IH), IERR
 #endif
-
-
 #ifdef W3_CESMCOUPLED
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 14) ) THEN
@@ -4333,7 +4313,7 @@
 #endif
 !
 #ifdef W3_MPI
-                IF ( FLGRDALL( 3, 1) ) THEN 
+                IF ( FLGRDALL( 3, 1) ) THEN
                     DO IK=E3DF(2,1),E3DF(3,1)
                       IH     = IH + 1
                       IT     = IT + 1
@@ -4347,9 +4327,9 @@
                       END DO
                     END IF
 #endif
-!       
+!
 #ifdef W3_MPI
-                IF ( FLGRDALL( 3, 2) ) THEN 
+                IF ( FLGRDALL( 3, 2) ) THEN
                     DO IK=E3DF(2,2),E3DF(3,2)
                       IH     = IH + 1
                       IT     = IT + 1
@@ -4363,9 +4343,9 @@
                       END DO
                     END IF
 #endif
-!      
+!
 #ifdef W3_MPI
-                IF ( FLGRDALL( 3, 3) ) THEN 
+                IF ( FLGRDALL( 3, 3) ) THEN
                     DO IK=E3DF(2,3),E3DF(3,3)
                       IH     = IH + 1
                       IT     = IT + 1
@@ -4379,9 +4359,9 @@
                       END DO
                     END IF
 #endif
-!       
+!
 #ifdef W3_MPI
-                IF ( FLGRDALL( 3, 4) ) THEN 
+                IF ( FLGRDALL( 3, 4) ) THEN
                     DO IK=E3DF(2,4),E3DF(3,4)
                       IH     = IH + 1
                       IT     = IT + 1
@@ -4395,9 +4375,9 @@
                       END DO
                     END IF
 #endif
-!      
+!
 #ifdef W3_MPI
-               IF ( FLGRDALL( 3, 5) ) THEN 
+               IF ( FLGRDALL( 3, 5) ) THEN
                     DO IK=E3DF(2,5),E3DF(3,5)
                       IH     = IH + 1
                       IT     = IT + 1
@@ -5037,7 +5017,7 @@
                       END DO
                   END IF
 #endif
-!      
+!
 #ifdef W3_MPI
                 IF (  FLGRDALL( 6, 9) ) THEN
                       DO K=P2MSF(2),P2MSF(3)
@@ -5104,7 +5084,7 @@
 #endif
 #ifdef W3_MPI
                       END DO
-                  END IF  
+                  END IF
 #endif
 !
 #ifdef W3_MPI
@@ -6669,7 +6649,7 @@
               ALLOCATE ( OUTPTS(IMOD)%OUT3%IRQTR(2*NAPROC) )
               IRQTR  => OUTPTS(IMOD)%OUT3%IRQTR
               DO I0=1, NAPROC
-                IFROM  = I0 - 1 
+                IFROM  = I0 - 1
                 IF ( I0 .NE. IAPROC ) THEN
                     IH     = IH + 1
                     IT     = IT0 + 1
@@ -6695,13 +6675,13 @@
 #endif
 !
 #ifdef W3_MPI
-          NRQTR  = IH 
+          NRQTR  = IH
           IT0    = IT0 + 2
 #endif
 !
 #ifdef W3_MPIT
           WRITE (NDST,9042)
-          WRITE (NDST,9043) NRQTR 
+          WRITE (NDST,9043) NRQTR
 #endif
 !
 #ifdef W3_MPI
@@ -7008,9 +6988,9 @@
 #ifdef W3_MPI
           DO I=1, NOPTS
             DO K=1,4
-              IX(K)=IPTINT(1,K,I)  
+              IX(K)=IPTINT(1,K,I)
               IY(K)=IPTINT(2,K,I)
-              END DO 
+              END DO
 #endif
 !
 #ifdef W3_MPI

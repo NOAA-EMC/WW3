@@ -9,14 +9,14 @@
 !> @date 01-05-2022
 module wav_shel_inp
 
-  use w3odatmd, only: nogrp, ngrpp
+  use w3odatmd    , only : nogrp, ngrpp
+  use wav_shr_mod , only : wav_coupling_to_cice
 
   implicit none
   private ! except
 
   public  :: set_shel_io         !< @public set the IO unit numbers
   public  :: read_shel_config    !< @public reads ww3_shel.nml if present, otherwise
-                                 !! read ww3_shel.inp
 
   integer, public :: odat(40) !< @public output dates
   character(len=40), allocatable, public :: pnames(:) !< @public point names
@@ -96,14 +96,269 @@ contains
     ntrace(2) = 10
 
   end subroutine set_shel_io
+<<<<<<< HEAD
 
   !===============================================================================
   !> Read ww3_shel.inp Or ww3_shel.nml
+=======
+!> Set up variables used in shel mode directly (CESM)
+!!
+!! @param[in]  dtime_sync         coupling interval in s
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
+  subroutine set_shel_inp(dtime_sync)
+
+    use w3idatmd    , only : inflags1, inflags2
+    use w3odatmd    , only : noge, idout, nds, notype, iaproc, napout
+    use w3wdatmd    , only : time
+
+    ! Input parameter
+    integer , intent(in)  :: dtime_sync
+
+    ! Local parameters
+    logical :: flt
+    integer :: i,j,j0
+    !---------------------------------------------------
+
+    !--------------------------------------------------------------------
+    ! Define input fields inflags1 and inflags2 settings
+    !--------------------------------------------------------------------
+
+    !  fllev   inflags1(1)  flag for water level input.
+    !  flcur   inflags1(2)  flag for current input.
+    !  flwind  inflags1(3)  flag for wind input.
+    !  flice   inflags1(4)  flag for ice input (ice fraction)
+
+    !  inflags1 array consolidating the above flags, as well as four additional data flags.
+    !  inflags2 like inflags1 but does *not* get changed when model reads last record of ice.ww3
+    !  inflags2 is just "initial value of INFLAGS1"
+
+    ! flags for passing variables from coupler to ww3, lev, curr, wind, ice and mixing layer depth
+    ! ice params        : inflags1(-7) => inflags1(-3)
+    ! mud density       : inflags1(-2)
+    ! mud thickness     : inflags1(-1)
+    ! muc viscos        : inflags1(0)
+    ! water levels      : inflags1(1)
+    ! currents          : inflags1(2)
+    ! winds             : inflags1(3)
+    ! ice fields        : inflags1(4)
+    ! momentum fluxes   : inflags1(5)
+
+    inflags1(:)   = .false.
+    inflags1(1:4) = .true.
+    inflags2(:)   = .false.
+    if (wav_coupling_to_cice) then
+       inflags1(-7) = .true. ! ice thickness
+       inflags1(-3) = .true. ! ice floe size
+       inflags2(-7) = .true. ! thickness
+       inflags2(-3) = .true. ! floe size
+       inflags2( 4) = .true. ! inflags2(4) is true if ice concentration was read during initialization
+    end if
+
+    !--------------------------------------------------------------------
+    ! Define output type and fields
+    !--------------------------------------------------------------------
+
+    ! Set number of output types. This is nomally set in w3_shel, CMB made 7.
+    notype = 7
+
+    if (iaproc == napout) then
+       write(nds(1),'(a)') '  Output requests : '
+       write(nds(1),'(a)')'--------------------------------------------------'
+       write(nds(1),'(a)')' no dedicated output process on any file system '
+    end if
+
+    ! Initialize ODAT. Normally set in w3_shel.
+    ! ODAT is initializated in w3initmd
+    ! Output data, five parameters per output type
+    !       1 YYYMMDD for first output.
+    !       2 HHMMSS for first output.
+    !       3 Output interval in seconds.
+    !       4 YYYMMDD for last output.
+    !       5 HHMMSS for last output.
+    !  1-5  Data for OTYPE = 1; gridded fields.
+    !  6-10 Id.  for OTYPE = 2; point output.
+    ! 11-15 Id.  for OTYPE = 3; track point output.
+    ! 16-20 Id.  for OTYPE = 4; restart files.
+    ! 21-25 Id.  for OTYPE = 5; boundary data.
+    ! 26-30 Id.  for OTYPE = 6; ?
+    ! 31-35 Id.  for OTYPE = 7; coupled fields
+    ! Hardwire gridded output for now
+    ! - first output time stamp is now read from file
+    ! - 1-5 for history files, 16-20 for restart files
+    ! - restart output interval is set to the total time of run, restart is taken over by rstwr
+    ! - output interval is set to coupling interval, so that variables calculated in W3IOGO
+    !   could be updated at every coupling interval
+    ! - changed odat so all 35 values are set, only permitting one frequency controlled by histwr
+    do j=1,7
+       J0 = (j-1)*5
+       odat(J0+1) = time(1)     ! YYYYMMDD for first output
+       odat(J0+2) = time(2)     ! HHMMSS for first output
+       odat(J0+3) = dtime_sync  ! output interval in sec
+       odat(J0+4) = 99990101    ! YYYYMMDD for last output
+       odat(J0+5) = 0           ! HHMMSS for last output
+    end do
+
+    ! FLGRD   L.A.   I   Flags for gridded output.
+    ! NPT     Int.   I   Number of output points
+    ! X/YPT   R.A.   I   Coordinates of output points.
+    ! PNAMES  C.A.   I   Output point names.
+    ! output index is now a in a 2D array
+
+    flgrd(:,:)  = .false.   ! gridded fields
+    flgr2(:,:)  = .false.   ! coupled fields, w3init w3iog are not ready to deal with these yet
+
+    ! 1) Forcing fields
+    flgrd( 1, 1)  = .false. ! Water depth
+    flgrd( 1, 2)  = .false. ! Current vel.
+    flgrd( 1, 3)  = .true.  ! Wind speed
+    flgrd( 1, 4)  = .false. ! Air-sea temp. dif.
+    flgrd( 1, 5)  = .false. ! Water level
+    flgrd( 1, 6)  = .true.  ! Ice concentration
+    flgrd( 1, 7)  = .false. ! Iceberg damp coeffic
+
+    ! 2) Standard mean wave parameters
+    flgrd( 2, 1)  = .true.  ! Wave height
+    flgrd( 2, 2)  = .false. ! Mean wave length
+    flgrd( 2, 3)  = .true.  ! Mean wave period(+2)
+    flgrd( 2, 4)  = .true.  ! Mean wave period(-1)
+    flgrd( 2, 5)  = .true.  ! Mean wave period(+1)
+    flgrd( 2, 6)  = .true.  ! Peak frequency
+    flgrd( 2, 7)  = .true.  ! Mean wave dir. a1b1
+    flgrd( 2, 8)  = .false. ! Mean dir. spr. a1b1
+    flgrd( 2, 9)  = .false. ! Peak direction
+    flgrd( 2, 10) = .false. ! Infragravity height
+    flgrd( 2, 11) = .false. ! Space-Time Max E
+    flgrd( 2, 12) = .false. ! Space-Time Max Std
+    flgrd( 2, 13) = .false. ! Space-Time Hmax
+    flgrd( 2, 14) = .false. ! Spc-Time Hmax^crest
+    flgrd( 2, 15) = .false. ! STD Space-Time Hmax
+    flgrd( 2, 16) = .false. ! STD ST Hmax^crest
+    flgrd( 2, 17) = .false. ! Dominant wave bT
+
+    ! 3) Frequency-dependent standard parameters
+    ! Whether the 1D Freq. Spectrum gets allocated is decided in the grid_inp file
+    ! ~/ww3_toolbox/grids/grid_inp/ww3_grid.inp.ww3a namelist section:  &OUTS E3D = 1 /
+    flgrd( 3, 1)  = .true.  ! 1D Freq. Spectrum
+    flgrd( 3, 2)  = .false. ! Mean wave dir. a1b1
+    flgrd( 3, 3)  = .false. ! Mean dir. spr. a1b1
+    flgrd( 3, 4)  = .false. ! Mean wave dir. a2b2
+    flgrd( 3, 5)  = .false. ! Mean dir. spr. a2b2
+    flgrd( 3, 6)  = .false. ! Wavenumber array   '
+
+    ! 4) Spectral Partitions parameters
+    flgrd( 4, 1)  =  .false. ! Part. wave height   '
+    flgrd( 4, 2)  =  .false. ! Part. peak period   '
+    flgrd( 4, 3)  =  .false. ! Part. peak wave len.'
+    flgrd( 4, 4)  =  .false. ! Part. mean direction'
+    flgrd( 4, 5)  =  .false. ! Part. dir. spread   '
+    flgrd( 4, 6)  =  .false. ! Part. wind sea frac.'
+    flgrd( 4, 7)  =  .false. ! Part. peak direction'
+    flgrd( 4, 8)  =  .false. ! Part. peakedness    '
+    flgrd( 4, 9)  =  .false. ! Part. peak enh. fac.'
+    flgrd( 4,10)  =  .false. ! Part. gaussian width'
+    flgrd( 4,11)  =  .false. ! Part. spectral width'
+    flgrd( 4,12)  =  .false. ! Part. mean per. (-1)'
+    flgrd( 4,13)  =  .false. ! Part. mean per. (+1)'
+    flgrd( 4,14)  =  .false. ! Part. mean per. (+2)'
+    flgrd( 4,15)  =  .false. ! Part. peak density  '
+    flgrd( 4,16)  =  .false. ! Total wind sea frac.'
+    flgrd( 4,17)  =  .false. ! Number of partitions'
+
+    ! 5) Atmosphere-waves layer
+    flgrd( 5, 1)  = .false. ! Friction velocity   '
+    flgrd( 5, 2)  = .false. ! Charnock parameter  '
+    flgrd( 5, 3)  = .false. ! Energy flux         '
+    flgrd( 5, 4)  = .false. ! Wind-wave enrgy flux'
+    flgrd( 5, 5)  = .false. ! Wind-wave net mom. f'
+    flgrd( 5, 6)  = .false. ! Wind-wave neg.mom.f.'
+    flgrd( 5, 7)  = .false. ! Whitecap coverage   '
+    flgrd( 5, 8)  = .false. ! Whitecap mean thick.'
+    flgrd( 5, 9)  = .false. ! Mean breaking height'
+    flgrd( 5,10)  = .false. ! Dominant break prob '
+    flgrd( 5,11)  = .false. ! Breaker passage rate'
+
+    ! 6) Wave-ocean layer
+    flgrd( 6, 1)  = .false. ! 'Radiation stresses  '
+    flgrd( 6, 2)  = .false. ! 'Wave-ocean mom. flux'
+    flgrd( 6, 3)  = .false. ! 'wave ind p Bern Head'
+    flgrd( 6, 4)  = .false. ! 'Wave-ocean TKE  flux'
+    flgrd( 6, 5)  = .false. ! 'Stokes transport    '
+    flgrd( 6, 6)  = .true.  ! 'Stokes drift at z=0 '
+    flgrd( 6, 7)  = .false. ! '2nd order pressure  '
+    flgrd( 6, 8)  = .false. ! 'Stokes drft spectrum'
+    flgrd( 6, 9)  = .false. ! '2nd ord press spectr'
+    flgrd( 6,10)  = .false. ! 'Wave-ice mom. flux  '
+    flgrd( 6,11)  = .false. ! 'Wave-ice energy flux'
+    flgrd( 6,12)  = .false. ! 'Split Surface Stokes'
+    flgrd( 6,13)  = .false. ! 'Tot wav-ocn mom flux'
+    flgrd( 6,13)  = .true.  ! 'Turbulent Langmuir number (La_t)'
+
+    ! 7) Wave-bottom layer
+    flgrd( 7, 1)  = .false. ! 'Bottom rms ampl.    '
+    flgrd( 7, 2)  = .false. ! 'Bottom rms velocity '
+    flgrd( 7, 3)  = .false. ! 'Bedform parameters  '
+    flgrd( 7, 4)  = .false. ! 'Energy diss. in WBBL'
+    flgrd( 7, 5)  = .false. ! 'Moment. loss in WBBL'
+
+    ! 8) Spectrum parameters
+    flgrd( 8, 1)  = .false. ! 'Mean square slopes  '
+    flgrd( 8, 2)  = .false. ! 'Phillips tail const'
+    flgrd( 8, 3)  = .false. ! 'Slope direction     '
+    flgrd( 8, 4)  = .false. ! 'Tail slope direction'
+    flgrd( 8, 5)  = .false. ! 'Goda peakedness parm'
+
+    ! 9) Numerical diagnostics
+    flgrd( 9, 1)  = .false. ! 'Avg. time step.     '
+    flgrd( 9, 2)  = .false. ! 'Cut-off freq.       '
+    flgrd( 9, 3)  = .false. ! 'Maximum spatial CFL '
+    flgrd( 9, 4)  = .false. ! 'Maximum angular CFL '
+    flgrd( 9, 5)  = .false. ! 'Maximum k advect CFL'
+
+    ! 10) is user defined
+
+    ! write out which fields will be output to first hist file
+    ! IDOUT(NOGRP,NGRPP)
+    !   NOGRP = number of output field groups
+    !   NGRPP = Max num of parameters per output
+    !   NOGE(NOGRP) = number of output group elements
+    if (iaproc == napout) then
+       flt = .true.
+       do i=1, nogrp
+          do j=1, noge(i)
+             if ( flgrd(i,j) ) then
+                if ( flt ) then
+                   write (nds(1),'(a)') '            Fields   : '//trim(idout(i,j))
+                   flt = .false.
+                else
+                   write (nds(1),'(a)')'                       '//trim(idout(i,j))
+                end if
+             end if
+          end do
+       end do
+       if ( flt ) then
+          write (nds(1),'(a)') '            Fields   : '//'no fields defined'
+       end if
+    end if
+
+    ! npts, pnames are fpr point output
+    allocate ( x(1), y(1), pnames(1) )
+    npts = 0
+    pnames(1) = ' '
+    prtfrm = .false.
+
+  end subroutine set_shel_inp
+
+  !===============================================================================
+!> Read ww3_shel.inp (UWM)
+>>>>>>> dev/unified
 !!
 !! @param[in]  mpi_comm           mpi communicator
 !!
 !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
 !> @date 01-05-2022
+<<<<<<< HEAD
   subroutine read_shel_config(mpi_comm)
 
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
@@ -175,6 +430,53 @@ contains
     character(len=80)   :: msg1
 
     data idflds / 'ice param. 1 ' , 'ice param. 2 ' ,               &
+=======
+  subroutine read_shel_inp(mpi_comm)
+
+    USE W3GDATMD, ONLY: FLAGLL
+    USE W3WDATMD, ONLY: TIME, VA, W3NDAT, W3DIMW, W3SETW
+    USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
+    USE W3IDATMD, ONLY: INFLAGS1, INFLAGS2, FLAGSC
+    USE W3ODATMD, ONLY: W3NOUT, W3SETO, NDS
+    USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR
+    USE W3ODATMD, ONLY: IDOUT, FNMPRE, IOSTYP, NOTYPE
+    USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
+    USE W3IOGRMD, ONLY: W3IOGR
+    USE W3IOGOMD, ONLY: W3READFLGRD, W3FLGRDFLAG
+    USE W3SERVMD, ONLY: NEXTLN, EXTCDE
+    USE W3TIMEMD, ONLY: DSEC21, STME21, TICK21
+
+    INTEGER, INTENT(IN) :: MPI_COMM
+
+    ! Local parameters
+    INTEGER, PARAMETER  :: NHMAX =    200
+
+    INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST, NDSL,&
+                           NDSEN, IERR, J, I, ILOOP, IPTS
+    INTEGER             :: NDSF(-7:9), &
+                           NH(-7:10), THO(2,-7:10,NHMAX)
+    INTEGER             :: jfirst, IERR_MPI
+    REAL                :: FACTOR, DTTST, XX, YY, HA(NHMAX,-7:10), &
+                           HD(NHMAX,-7:10), HS(NHMAX,-7:10)
+
+    CHARACTER(LEN=1)    :: COMSTR, FLAGTFC(-7:10)
+    CHARACTER(LEN=3)    :: IDSTR(-7:10), IDTST
+    CHARACTER(LEN=6)    :: YESXNO
+    CHARACTER(LEN=40)   :: PN
+    CHARACTER(LEN=13)   :: IDFLDS(-7:10)
+    CHARACTER(LEN=20)   :: STRNG
+    CHARACTER(LEN=23)   :: DTME21
+    CHARACTER(LEN=30)   :: IDOTYP(8)
+    CHARACTER(LEN=80)   :: LINE
+    CHARACTER(LEN=1024) :: FLDRST=''
+    CHARACTER(LEN=80)   :: LINEIN
+    CHARACTER(LEN=8)    :: WORDS(7)=''
+    LOGICAL             :: FLFLG, FLHOM, TFLAGI, FLH(-7:10)
+    INTEGER             :: THRLEV = 1
+    INTEGER             :: TIME0(2), TIMEN(2), TTIME(2)
+
+    DATA IDFLDS / 'ice param. 1 ' , 'ice param. 2 ' ,               &
+>>>>>>> dev/unified
                   'ice param. 3 ' , 'ice param. 4 ' ,               &
                   'ice param. 5 ' ,                                 &
                   'mud density  ' , 'mud thkness  ' ,               &
@@ -269,6 +571,7 @@ contains
     ! If using experimental mud or ice physics, additional lines will
     !  be read in from read_shel_config.inp and applied, so JFIRST is changed from
     !  its initialization setting "JFIRST=1" to some lower value.
+<<<<<<< HEAD
     jfirst=1
     if (w3_ic1_flag) jfirst = -7
     if (w3_ic2_flag) jfirst = -7
@@ -382,6 +685,84 @@ contains
           flagtfc(6)='T'
           flh(6)=.true.
        end if
+=======
+    if (wav_coupling_to_cice) then
+       JFIRST=-7
+    else
+       JFIRST=1
+    end if
+
+    ! process old ww3_shel.inp format
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_shel.inp',STATUS='OLD',IOSTAT=IERR)
+    REWIND (NDSI)
+    READ (NDSI,'(A)') COMSTR
+    IF (COMSTR.EQ.' ') COMSTR = '$'
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
+
+    ! 2.1 forcing flags
+
+    FLH(-7:10) = .FALSE.
+    DO J=JFIRST, 9
+       CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+       IF ( J .LE. 6 ) THEN
+          READ (NDSI,*) FLAGTFC(J), FLH(J)
+       ELSE
+          READ (NDSI,*) FLAGTFC(J)
+       END IF
+    END DO
+
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,920)
+    DO J=JFIRST, 9
+       IF (FLAGTFC(J).EQ.'T') THEN
+          INFLAGS1(J)=.TRUE.
+          FLAGSC(J)=.FALSE.
+       END IF
+       IF (FLAGTFC(J).EQ.'F') THEN
+          INFLAGS1(J)=.FALSE.
+          FLAGSC(J)=.FALSE.
+       END IF
+       IF (FLAGTFC(J).EQ.'C') THEN
+          INFLAGS1(J)=.TRUE.
+          FLAGSC(J)=.TRUE.
+       END IF
+       IF ( J .LE. 6 ) THEN
+          FLH(J) = FLH(J) .AND. INFLAGS1(J)
+       END IF
+       IF ( INFLAGS1(J) ) THEN
+          YESXNO = 'YES/--'
+       ELSE
+          YESXNO = '---/NO'
+       END IF
+       IF ( FLH(J) ) THEN
+          STRNG  = '(homogeneous field) '
+       ELSE IF ( FLAGSC(J) ) THEN
+          STRNG  = '(coupling field) '
+       ELSE
+          STRNG  = '                    '
+       END IF
+       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,921) IDFLDS(J), YESXNO, STRNG
+    END DO
+
+    INFLAGS1(10) = .FALSE.
+    IF ( INFLAGS1(10) .AND. IAPROC.EQ.NAPOUT )                         &
+         WRITE (NDSO,921) IDFLDS(10), 'YES/--', ' '
+    FLFLG  = INFLAGS1(-7) .OR. INFLAGS1(-6) .OR. INFLAGS1(-5) .OR. INFLAGS1(-4) &
+         .OR. INFLAGS1(-3) .OR. INFLAGS1(-2) .OR. INFLAGS1(-1)           &
+         .OR. INFLAGS1(0)  .OR. INFLAGS1(1)  .OR. INFLAGS1(2)            &
+         .OR. INFLAGS1(3)  .OR. INFLAGS1(4)  .OR. INFLAGS1(5)            &
+         .OR. INFLAGS1(6)  .OR. INFLAGS1(7)  .OR. INFLAGS1(8)            &
+         .OR. INFLAGS1(9)
+    FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)       &
+         .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLH(0)   &
+         .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4)      &
+         .OR. FLH(5) .OR. FLH(6) .OR. FLH(10)
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,922)
+    !
+    !       INFLAGS2 is just "initial value of INFLAGS1", i.e. does *not* get
+    !          changed when model reads last record of ice.ww3
+    INFLAGS2=INFLAGS1
+    ! 2.2 Time setup
+>>>>>>> dev/unified
 
        if ( iaproc .eq. napout ) write (ndso, 920)
        DO J=JFIRST, 9

@@ -11,7 +11,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -36,7 +36,7 @@
 !      DSEC21    R.F.  Public   Calculate the difference in seconds
 !                               between two data/time arrays.
 !      TDIFF     R.F.  Public   Calculate the difference in seconds
-!                               between two date/time arrays that 
+!                               between two date/time arrays that
 !                               were generated from DATE_AND_TIME
 !      MYMD21    I.F.  DSEC21   Julian date function.
 !      STME21    Subr. Public   Converts integer time to string.
@@ -77,9 +77,6 @@
       INTEGER, PRIVATE        :: PRFTB(8)
       LOGICAL, PRIVATE        :: FLPROF = .FALSE.
       CHARACTER, PUBLIC       :: CALTYPE*8
-#ifdef W3_CESMCOUPLED
-      LOGICAL, PUBLIC         :: NOLEAP = .TRUE.
-#endif
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -284,9 +281,6 @@
       NM   = MOD(NYMD,10000) / 100
       NM   = MIN ( 12 , MAX(1,NM) )
       ND   = MOD(NYMD,100) + M
-#ifdef W3_CESMCOUPLED
-      LEAP = .false.
-#else 
       ! Add override for simulations with no leap years
       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
          LEAP = MOD(NY,400).EQ.0 .OR.                           &
@@ -294,7 +288,6 @@
       ELSE
          LEAP = .false.
       END IF
-#endif
 !
 ! M = -1, change month if necessary :
 !
@@ -548,9 +541,6 @@
       NY   = NYMD / 10000
       NM   = MOD(NYMD,10000) / 100
       ND   = MOD(NYMD,100)
-#ifdef W3_CESMCOUPLED
-      LEAP=.false. ! seems to be not working when I made NOLEAP=.true., still getting leap day
-#else
       !Allow override for NoLeap simulations
       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
          LEAP = MOD(NY,400).EQ.0 .OR.                           &
@@ -558,7 +548,6 @@
       ELSE
          LEAP=.false.
       ENDIF
-#endif
 !
 ! Loop over months :
 !
@@ -599,18 +588,18 @@
 !  1. Purpose :
 !
 !     Calculate the time difference in seconds between two time arrays
-!     that have been generated from the F90 internal function 
+!     that have been generated from the F90 internal function
 !
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       Tn      I.A.   I   This is an integer array returned from the 
+!       Tn      I.A.   I   This is an integer array returned from the
 !                          internal subroutine DATE_AND_TIME. The type
 !                          is integer(8). Individual values are
-!                          Tn(1)    the year 
-!                          Tn(2)    the month 
-!                          Tn(3)    day of the month 
+!                          Tn(1)    the year
+!                          Tn(2)    the month
+!                          Tn(3)    day of the month
 !                          Tn(4)    time difference with UTC in minutes
 !                          Tn(5)    hour of the day
 !                          Tn(6)    minutes of the hour
@@ -630,7 +619,7 @@
 !     Any routine.
 !
 !  7. Remarks :
-!     
+!
 !     This code has been provided by Mark Szyszka of RPSGROUP
 !
 !  8. Structure :
@@ -929,7 +918,7 @@
       IH     = TIME(2) / 10000
       IMI    = MOD(TIME(2),10000) / 100
       IS     = MOD(TIME(2),100)
-      JDAY    = julday(id,IMO,iy)    
+      JDAY    = julday(id,IMO,iy)
       TIME2HOURS = 24.d0*dfloat(JDAY)+dfloat(IH)+dfloat(IS+IMI*60)/3600.d0
       RETURN
 !/
@@ -946,7 +935,7 @@
 !/                  | Last update :         06-May-2005 !
 !/                  +-----------------------------------+
 !/
-!/    06-May-2005 : Origination.                        ( version 3.07 )    
+!/    06-May-2005 : Origination.                        ( version 3.07 )
 !/
 !  1. Purpose :
 !
@@ -1250,7 +1239,7 @@
 !     Converts proleptic Gregorian date array to Julian Day
 !
 !
-! * UDUNITS standard : mixed Gregorian/Julian  calendar  system.   
+! * UDUNITS standard : mixed Gregorian/Julian  calendar  system.
 !                      Dates  prior to 1582-10-15 are assumed to use
 !                      the Julian calendar, which was introduced by Julius Caesar
 !                      in 46 BCE and is based on a year that is exactly 365.25 days
@@ -1343,7 +1332,7 @@
    JULIAN=DBLE(JDN) + DBLE(HOUR-12)/24.0d0 + DBLE(MINUTE)/1440.0d0 + DBLE(SECOND)/86400.0d0
 
    ! Check if Julian Day is non-negative
-   IF(JULIAN.lt.0.d0) THEN                  
+   IF(JULIAN.lt.0.d0) THEN
      IERR=1
    ELSE
      IERR=0
