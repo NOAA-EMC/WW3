@@ -1,5 +1,15 @@
+!> @file
+!> @brief Contains MODULE W3WAVEMD.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!> 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Contains wave model subroutine, w3wave.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
       MODULE W3WAVEMD
 !/
 !/                  +-----------------------------------+
@@ -181,6 +191,31 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Run WAVEWATCH III for a given time interval.
+!>
+!> @details Currents are updated before winds as currents are used in wind
+!> and USTAR processing.
+!>        
+!> Ice and water levels can be updated only once per call.
+!>        
+!> If ice or water level time are undefined, the update
+!> takes place asap, otherwise around the "half-way point"
+!> betweem the old and new times.
+!>        
+!> To increase accuracy, the calculation of the intra-spectral
+!> propagation is performed in two parts around the spatial propagation.
+!>        
+!> @param[in] IMOD      Model number.
+!> @param[in] TEND      Ending time of integration.
+!> @param[in] STAMP     WRITE(*,*)time stamp (optional, defaults to T).
+!> @param[in] NO_OUT    Skip output (optional, defaults to F).
+!> @param[in] ODAT
+!> @param[in] ID_LCOMM
+!> @param[in] TIMEN
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>        
       SUBROUTINE W3WAVE ( IMOD, ODAT, TEND, STAMP, NO_OUT &
 #ifdef W3_OASIS
                   ,ID_LCOMM, TIMEN                 &
@@ -3641,6 +3676,31 @@
 !/
       END SUBROUTINE W3WAVE
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Gather spectral bin information into a propagation field array.
+!>
+!> @details Direct copy or communication calls (MPP version).
+!> The field is extracted but not converted.
+!>      
+!> MPI version requires posing of send and receive calls in
+!> W3WAVE to match local calls.
+!>      
+!> MPI version does not require an MPI_TESTALL call for the
+!> posted gather operation as MPI_WAITALL is mandatory to
+!> reset persistent communication for next time step.
+!>      
+!> MPI version allows only two new pre-fetch postings per
+!> call to minimize chances to be slowed down by gathers that
+!> are not yet needed, while maximizing the pre-loading
+!> during the early (low-frequency) calls to the routine
+!> where the amount of calculation needed for proagation is
+!> the largest.
+!>      
+!> @param[in]  ISPEC Spectral bin considered.
+!> @param[out] FIELD Full field to be propagated.
+!>
+!> @author H. L. Tolman  @date 26-Dec-2012
+!>      
       SUBROUTINE W3GATH ( ISPEC, FIELD )
 !/
 !/                  +-----------------------------------+
@@ -3951,6 +4011,20 @@
 !/
       END SUBROUTINE W3GATH
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Scatter data back to spectral storage after propagation.
+!>
+!> @details Direct copy or communication calls (MPP version). See also W3GATH.
+!> The field is put back but not converted!
+!> MPI persistent communication calls initialize in W3MPII.
+!> See W3GATH and W3MPII for additional comments on data buffering.
+!>      
+!> @param[inout] Spectral bin considered.
+!> @param[inout] Status map for spatial grid.
+!> @param[inout] Full field to be propagated.
+!>
+!> @author H. L. Tolman  @date 13-Jun-2006
+!>      
       SUBROUTINE W3SCAT ( ISPEC, MAPSTA, FIELD )
 !/
 !/                  +-----------------------------------+
@@ -4259,6 +4333,15 @@
 !/
       END SUBROUTINE W3SCAT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Check minimum number of active sea points at given processor to
+!>  evaluate the need for a MPI_BARRIER call.
+!>
+!> @param[in]  MAPSTA Status map for spatial grid.
+!> @param[out] FLAG0  Flag to identify 0 as minimum.
+!>
+!> @author H. L. Tolman  @date 28-Dec-2004
+!>      
       SUBROUTINE W3NMIN ( MAPSTA, FLAG0 )
 !/
 !/                  +-----------------------------------+
