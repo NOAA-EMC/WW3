@@ -1,5 +1,16 @@
+!> @file
+!> @brief Contains MODULE W3UNO2MD, with UNO2 scheme.
+!> 
+!> @author Jain-Guo Li  @date 1-Jul-2013
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Portable UNO2 scheme on irregular grid.
+!> 
+!> @author Jain-Guo Li  @date 1-Jul-2013
+!>
       MODULE W3UNO2MD
 !/
 !/                  +-----------------------------------+
@@ -63,6 +74,31 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief UNO2 scheme for irregular grid.
+!>
+!> @param[in] MX Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
+!> @param[in] MY       Field dimensions
+!> @param[in] NX       Part of field actually used
+!> @param[in] NY       Part of field actually used
+!> @param[inout] VELO  Local velocities            (MY,  MX+1).
+!> @param[in] DT       Time step.
+!> @param[inout] DX1   Band width at points        (MY,  MX+1).
+!> @param[inout] DX2   Band width between points   (MY,0:MX+1).
+!> @param[inout] Q     Propagated quantity.
+!> @param[in] BCLOSE   Flag for closed 'X' dimension.
+!> @param[in] INC      Increment in 1-D array corresponding to increment in 2-D space.
+!> @param[in] MAPACT   List of active grid points.
+!> @param[in] NACT     Size of MAPACT.
+!> @param[in] MAPBOU   Map with boundary information (see W3MAP2).
+!> @param[in] NB0      Counter in MAPBOU
+!> @param[in] NB1      Counter in MAPBOU
+!> @param[in] NB2      Counter in MAPBOU
+!> @param[in] NDSE     Error output unit number.
+!> @param[in] NDST     Test output unit number.
+!>
+!> @author Jain-Guo Li  @date 1-Jul-2013        
+!>        
       SUBROUTINE W3UNO2 (MX, MY, NX, NY, VELO, DT, DX1, DX2, Q,BCLOSE,&
                         INC,  MAPACT, NACT, MAPBOU, NB0, NB1, NB2,    &
                         NDSE, NDST )
@@ -407,12 +443,32 @@
  9020 FORMAT (' TEST W3UNO2 : IP, IXY, 2Q, 2FL')
  9021 FORMAT ('            ',2I6,2(1X,2E11.3))
 #endif
-!/
-!/ End of W3UNO2 ----------------------------------------------------- /
-!/
       END SUBROUTINE W3UNO2
 !/
-!/
+!/ End of W3UNO2 ----------------------------------------------------- /
+!>
+!> @brief Preform one-dimensional propagation in a two-dimensional space
+!>  with irregular boundaries and regular grid.
+!>
+!> @param[in] MX Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
+!> @param[in] MY       Field dimensions
+!> @param[in] NX       Part of field actually used
+!> @param[in] NY       Part of field actually used
+!> @param[inout] CFLL  Local Courant numbers         (MY,  MX+1).
+!> @param[inout] Q     Propagated quantity           (MY,0:MX+2).
+!> @param[in] BCLOSE   Flag for closed 'X' dimension.
+!> @param[in] INC      Increment in 1-D array corresponding to increment in 2-D space.
+!> @param[in] MAPACT   List of active grid points.
+!> @param[in] NACT     Size of MAPACT.
+!> @param[in] MAPBOU   Map with boundary information (see W3MAP2).
+!> @param[in] NB0      Counter in MAPBOU
+!> @param[in] NB1      Counter in MAPBOU
+!> @param[in] NB2      Counter in MAPBOU
+!> @param[in] NDSE     Error output unit number.
+!> @param[in] NDST     Test output unit number.
+!>
+!> @author Jain-Guo Li  @date 8-Jan-2018        
+!>
       SUBROUTINE W3UNO2r (MX, MY, NX, NY, CFLL, Q, BCLOSE, INC,       &
                          MAPACT, NACT, MAPBOU, NB0, NB1, NB2,         &
                          NDSE, NDST )
@@ -746,11 +802,37 @@
  9021 FORMAT ('            ',2I6,2(1X,2E11.3))
 #endif
 !/
+    END SUBROUTINE W3UNO2r
+!/    
 !/ End of W3UNO2r ---------------------------------------------------- /
 !/
-      END SUBROUTINE W3UNO2r
-!/
-!/ ------------------------------------------------------------------- /
+!/    
+    
+!>
+!> @brief Like W3UNO2r with cell transparencies added.
+!>
+!> @details Adapted from W3QCK3 for UNO2 regular grid scheme with subgrid obstruction.
+!>
+!> @param[in] MX Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
+!> @param[in] MY       Field dimensions
+!> @param[in] NX       Part of field actually used
+!> @param[in] NY       Part of field actually used
+!> @param[in] TRANS
+!> @param[inout] CFLL  Local Courant numbers         (MY,  MX+1).
+!> @param[inout] Q     Propagated quantity           (MY,0:MX+2).
+!> @param[in] BCLOSE   Flag for closed 'X' dimension.
+!> @param[in] INC      Increment in 1-D array corresponding to increment in 2-D space.
+!> @param[in] MAPACT   List of active grid points.
+!> @param[in] NACT     Size of MAPACT.
+!> @param[in] MAPBOU   Map with boundary information (see W3MAP2).
+!> @param[in] NB0      Counter in MAPBOU
+!> @param[in] NB1      Counter in MAPBOU
+!> @param[in] NB2      Counter in MAPBOU
+!> @param[in] NDSE     Error output unit number.
+!> @param[in] NDST     Test output unit number.
+!>
+!> @author Jain-Guo Li  @date 8-Jan-2018        
+!>
       SUBROUTINE W3UNO2s (MX, MY, NX, NY, CFLL, TRANS, Q, BCLOSE,     &
                          INC, MAPACT, NACT, MAPBOU, NB0, NB1, NB2,    &
                          NDSE, NDST )
