@@ -159,8 +159,6 @@ contains
     ! also ensure compatibility with the ocean component since ocean will also receive these from the coupler.
 
     if (wav_coupling_to_cice) then
-       !call fldlist_add(fldsFrWav_num, fldsFrWav, 'wav_tauice1')
-       !call fldlist_add(fldsFrWav_num, fldsFrWav, 'wav_tauice2')
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'wave_elevation_spectrum', &
             ungridded_lbound=1, ungridded_ubound=nwav_elev_spectrum)
     end if
@@ -584,7 +582,7 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
+    use w3adatmd      , only : USSX, USSY, EF,  USSP
     use w3adatmd      , only : w3seta
     use w3idatmd      , only : w3seti
     use w3wdatmd      , only : va, w3setw
@@ -620,8 +618,6 @@ contains
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
-    real(r8), pointer :: wav_tauice1(:)
-    real(r8), pointer :: wav_tauice2(:)
 
     ! d2 is location, d1 is frequency  - nwav_elev_spectrum frequencies will be used
     real(r8), pointer :: wave_elevation_spectrum(:,:)
@@ -754,17 +750,10 @@ contains
     end if
 
     if (wav_coupling_to_cice) then
-       !call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
-       !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       !call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
-       !if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-
        ! Initialize wave elevation spectrum
-       !wav_tauice1(:) = fillvalue
-       !wav_tauice2(:) = fillvalue
        wave_elevation_spectrum(:,:) = fillvalue
 
        do jsea=1, nseal                         ! jsea is local
@@ -772,15 +761,10 @@ contains
           ix  = mapsf(isea,1)                   ! global ix
           iy  = mapsf(isea,2)                   ! global iy
           if (mapsta(iy,ix) .eq. 1) then        ! active sea point
-             !wav_tauice1(jsea) = TAUICE(jsea,1) ! tau ice is 2D
-             !wav_tauice2(jsea) = TAUICE(jsea,2) ! tau ice is 2D
-
              ! If wave_elevation_spectrum is UNDEF  - needs ouput flag to be turned on
              ! wave_elevation_spectrum as 25 variables
              wave_elevation_spectrum(1:nwav_elev_spectrum,jsea)  = EF(jsea,1:nwav_elev_spectrum)
           else
-             !wav_tauice1(jsea) = 0.
-             !wav_tauice2(jsea) = 0.
              wave_elevation_spectrum(:,jsea) = 0.
           endif
        enddo

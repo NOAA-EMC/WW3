@@ -821,8 +821,6 @@ contains
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
-    real(r8), pointer :: wav_tauice1(:)
-    real(r8), pointer :: wav_tauice2(:)
     real(r8), pointer :: wave_elevation_spectrum(:,:)
     character(len=*),parameter :: subname = '(wav_comp_nuopc:DataInitialize)'
     ! -------------------------------------------------------------------
@@ -859,16 +857,9 @@ contains
     endif
 
     if (wav_coupling_to_cice) then
-      !call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
-      !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      !call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
-      !if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       !wav_tauice1(:) = 0.
-       !wav_tauice2(:) = 0.
-       wave_elevation_spectrum(:,:) = 0.
+      wave_elevation_spectrum(:,:) = 0.
     endif
 
     ! Set global grid size scalars in export state
@@ -1290,6 +1281,7 @@ contains
 
   !===============================================================================
 !> Initialize the wave model for the CESM use case
+!!
 !> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
 !! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
@@ -1429,6 +1421,9 @@ contains
     ! NOTE:  that wavice_coupling must be set BEFORE the call to advertise_fields
     ! So the current mechanism is to force the inflags1(-7) and inflags1(-3) be set to true
     ! if wavice coupling is active
+    ! NOTE: 
+    ! inflags1(-7) = nml_input%forcing%ice_param1
+    ! inflags1(-3) = nml_input%forcing%ice_param5
 
     ! Force inflags2 to be false - otherwise inflags2 will be set to inflags1 and answers will change
     ! Need to set this to .false. to avoid scaling of ice in section 4. of w3srcemed.

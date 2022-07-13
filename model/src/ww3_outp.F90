@@ -472,7 +472,7 @@
                   WRITE (NDSO,1943) TFNAME, 'UNFORMATTED'
                   J      = LEN_TRIM(FNMPRE)
                   OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                         IOSTAT=IERR,FORM='UNFORMATTED')
+                         IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
                   WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',             &
                                   NK, NTH, NREQ, GNAME
                   WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
@@ -574,7 +574,7 @@
                   WRITE (NDSO,3943) TFNAME, 'UNFORMATTED'
                   J      = LEN_TRIM(FNMPRE)
                   OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                         IOSTAT=IERR,FORM='UNFORMATTED')
+                         IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
                   WRITE (NDSTAB) 'WAVEWATCH III SOURCES',             &
                                   NK, NTH, NREQ, FLSRCE
                   WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
@@ -1678,8 +1678,8 @@
                 CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX5
-                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
                 DO ITT=1, 3
@@ -1856,8 +1856,8 @@
                 CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX5
-                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,     &
-                                          RHOAIR, USTAR, USTD, Z0, CD )
+                CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
+                              RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
 !
                 DO ITT=1, 3

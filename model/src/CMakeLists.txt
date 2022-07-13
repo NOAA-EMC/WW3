@@ -74,6 +74,7 @@ add_compile_definitions(W3_O15)
 add_compile_definitions(W3_IC4)
 add_compile_definitions(W3_IS0)
 add_compile_definitions(W3_REF0)
+add_compile_definitions(ENDIANNESS="big_endian")
 
 set_property(SOURCE w3initmd.F90
   APPEND
