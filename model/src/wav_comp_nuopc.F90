@@ -41,6 +41,7 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
+  use wav_shr_mod           , only : wav_coupling_to_cice
   use wav_shr_mod           , only : merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
   use w3odatmd              , only : runtype, user_histname, user_histfname, user_restname, user_restfname
@@ -332,6 +333,7 @@ contains
        inst_index=1
     endif
 
+    ! Get Multigrid setting
     multigrid = .false.
     call NUOPC_CompAttributeGet(gcomp, name='multigrid', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -339,6 +341,14 @@ contains
        multigrid=(trim(cvalue)=="true")
     end if
     write(logmsg,'(A,l)') trim(subname)//': Wave multigrid setting is ',multigrid
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    ! Determine wave-ice coupling
+    wav_coupling_to_cice = .false.
+    call NUOPC_CompAttributeGet(gcomp, name='wavice_coupling', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) wav_coupling_to_cice=(trim(cvalue)==".true.")
+    write(logmsg,'(A,l)') trim(subname)//': Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
@@ -804,7 +814,6 @@ contains
   subroutine DataInitialize(gcomp, rc)
 
     use wav_import_export, only : calcRoughl
-    use wav_shr_mod      , only : wav_coupling_to_cice
     use w3gdatmd         , only : nx, ny
 
     ! input/output variables
@@ -818,8 +827,6 @@ contains
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
-    real(r8), pointer :: wav_tauice1(:)
-    real(r8), pointer :: wav_tauice2(:)
     real(r8), pointer :: wave_elevation_spectrum(:,:)
     character(len=*),parameter :: subname = '(wav_comp_nuopc:DataInitialize)'
     ! -------------------------------------------------------------------
@@ -856,16 +863,9 @@ contains
     endif
 
     if (wav_coupling_to_cice) then
-      call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       wav_tauice1(:) = 0.
-       wav_tauice2(:) = 0.
-       wave_elevation_spectrum(:,:) = 0.
+      wave_elevation_spectrum(:,:) = 0.
     endif
 
     ! Set global grid size scalars in export state
@@ -1299,7 +1299,7 @@ contains
   !===============================================================================
 !> Initialize the wave model for the CESM use case
 !!
-!> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or
 !! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
 !! @param[in]    gcomp        an ESMF_GridComp object
@@ -1436,10 +1436,12 @@ contains
     call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
     call read_shel_config(mpi_comm)
 
-    ! Set the wav_coupling_to_cice flag in wav_shr_mod
+    ! NOTE:  that wavice_coupling must be set BEFORE the call to advertise_fields
+    ! So the current mechanism is to force the inflags1(-7) and inflags1(-3) be set to true
+    ! if wavice coupling is active
+    ! NOTE:
     ! inflags1(-7) = nml_input%forcing%ice_param1
     ! inflags1(-3) = nml_input%forcing%ice_param5
-    wav_coupling_to_cice = (inflags1(-7) .and. inflags1(-3))
 
     ! Force inflags2 to be false - otherwise inflags2 will be set to inflags1 and answers will change
     ! Need to set this to .false. to avoid scaling of ice in section 4. of w3srcemed.
@@ -1447,7 +1449,16 @@ contains
     ! Currently IC4 is used in cesm
     inflags2(:) = .false.
     if (wav_coupling_to_cice) then
-       inflags2(4) = .true. ! inflags2(4) is true if ice concentration was read during initialization
+       inflags2(4)  = .true. ! inflags2(4) is true if ice concentration was read during initialization
+       inflags1(-7) = .true. ! ice thickness
+       inflags2(-7) = .true. ! ice thickness
+       inflags1(-3) = .true. ! ice floe size
+       inflags2(-3) = .true. ! ice floe size
+    else
+       inflags1(-7) = .false. ! ice thickness
+       inflags2(-7) = .false. ! ice thickness
+       inflags1(-3) = .false. ! ice floe size
+       inflags2(-3) = .false. ! ice floe size
     end if
 
     ! custom restart and history file names are used for CESM
@@ -1493,7 +1504,7 @@ contains
   !===============================================================================
 !> Initialize the wave model for the UWM use case
 !!
-!> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or
 !! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
 !! @param[in]    gcomp        an ESMF_GridComp object
