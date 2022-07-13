@@ -55,6 +55,7 @@ set(ftn_src
   wmupdtmd.F90
   wmwavemd.F90
   w3tidemd.F90
+  w3iogoncdmd.F90
   )
 
 set(nuopc_mesh_cap_src
