@@ -940,6 +940,18 @@
                      NLvCel, NLvUFc, NLvVFc
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
                      IJKCel, IJKUFc, IJKVFc, ISMCBP 
+          DO J=lbound(IJKCel,2), ubound(IJKCel,2)
+            IJKCel3(J) = IJKCel(3,J)
+            IJKCel4(J) = IJKCel(4,J)
+          END DO
+          DO J=lbound(IJKVFc,2), ubound(IJKVFc,2)
+            IJKVFc5(J) = IJKVFc(5,J)
+            IJKVFc6(J) = IJKVFc(6,J)
+          END DO
+          DO J=lbound(IJKUFc,2), ubound(IJKUFc,2)
+            IJKUFc5(J) = IJKUFc(5,J)
+            IJKUFc6(J) = IJKUFc(6,J)
+          END DO
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
                      ICLBAC 
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
