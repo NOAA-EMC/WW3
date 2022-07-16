@@ -1076,14 +1076,13 @@ contains
     use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
     use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
     use w3wdatmd,   only : va, ust
-    use w3odatmd,   only : naproc, iaproc
+    use w3odatmd,   only : naproc, iaproc, runtype
 #ifdef W3_ST3
     use w3src3md,   only : w3spr3
 #endif
 #ifdef W3_ST4
     use w3src4md,   only : w3spr4
 #endif
-    use wav_shr_mod, only : runtype
 
     ! input/output variables
     real(r8), pointer :: wrln(:) ! 1D roughness length export field ponter
