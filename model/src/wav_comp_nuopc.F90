@@ -214,8 +214,6 @@ contains
 !> @date 01-05-2022
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
 
-    use wav_shr_flags, only: initialize_flags
-
     ! input/output arguments
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -353,8 +351,6 @@ contains
 
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call initialize_flags()
 
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 

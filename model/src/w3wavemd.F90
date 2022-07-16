@@ -361,62 +361,117 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      USE CONSTANTS
-!/
-      USE W3GDATMD
-      USE W3WDATMD
-      USE W3ADATMD
-      USE W3IDATMD
-      USE W3ODATMD
-!/
-      USE W3UPDTMD
-      USE W3SRCEMD
+
+      USE CONSTANTS   , only : UNDEF, RADIUS, DERA, DAIR, SRCE_DIRECT, LPDLIB
+      USE CONSTANTS   , only : SRCE_DIRECT, LPDLIB, SRCE_IMP_POST, SRCE_IMP_PRE
+      USE CONSTANTS   , only : TPIINV
+
+      USE W3GDATMD    , only : IGRID, NSEAL, NSPEC, NX, NY, NK
+      USE W3GDATMD    , only : GTYPE, UNGTYPE, SMCTYPE, RSTYPE, FILEXT
+      USE W3GDATMD    , only : MAPSF, MAPFS, MAPSTA, IOBP, CTHG0S
+      USE W3GDATMD    , only : FLCTH, FSREFRACTION, FLCK, FSFREQSHIFT, FLAGLL, FLDRY
+      USE W3GDATMD    , only : FSTOTALIMP, FLCX, FLCY, FLSOU, FLAGST
+      USE W3GDATMD    , only : SIG, CLATS, TRNX, TRNY
+      USE W3GDATMD    , only : DTMAX, DTCFLI, DTH, DMIN
+
+      USE W3WDATMD    , only : UST, IWDATA, TIME, TLEV, TICE, TIC1, VA, ASF, RHOAIR
+      USE W3WDATMD    , only : USTDIR, ICE, ICEH, ICEF, ICEDMAX, BERG, FPIS
+
+      USE W3ADATMD    , only : FLIWND, FLCOLD,  IAPPRO, IDLAST
+      USE W3ADATMD    , only : IADATA, IPASS, ITIME, CFLXYMAX, CFLTHMAX, CFLKMAX, DTDYN
+      USE W3ADATMD    , only : CG, DW, CX, CY, DCDX, DCDY, DCXDX, DCXDY, DCYDX, DCYDY
+      USE W3ADATMD    , only : AS, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX, TAUWNY, DDDX, DDDY
+      USE W3ADATMD    , only : ALPHA, WN, U10, U10D, TAUA, TAUADIR, FCUT, WHITECAP, BEDFORMS
+      USE W3ADATMD    , only : TAUBBL, TAUICE, PHIBBL, TAUOCX, TAUOCY, WNMEAN, PHIAW, PHIOC
+      USE W3ADATMD    , only : TWS, PHICE, CHARN
+
+      USE W3IDATMD    , only : IIDATA
+      USE W3IDATMD    , only : INFLAGS1, FLLEV, FLCUR, FLWIND, FLICE, FLTAUA, FLRHOA
+      USE W3IDATMD    , only : FLIC1, FLIC2, FLIC3, FLIC4, FLIC5
+      USE W3IDATMD    , only : TLN, TC0, TCN, TW0, TWN, TIN, TU0, TUN, TI1, TGN, TG0, GA0, GAN
+      USE W3IDATMD    , only : GD0, GDN, TDN, TRN
+
+      USE W3ODATMD    , only : FLOUT, FLOGRD, FLOGR2, FLBPI, NOGE
+      USE W3ODATMD    , only : NDS, NOGE, NAPLOG, NAPOUT, NDSO, NDSE, NDST, NAPROC, NAPERR, SCREEN
+      USE W3ODATMD    , only : IAPROC, IOUTP, NOTYPE, NAPBPT
+      USE W3ODATMD    , only : TOFRST, TONEXT, TBPIN, TBPI0, TOLAST, DTOUT, NAPFLD, NAPPNT
+
+      USE W3GDATMD    , only : W3SETG
+      USE W3ADATMD    , only : W3SETA
+      USE W3WDATMD    , only : W3SETW
+      USE W3ODATMD    , only : W3SETO
+      USE W3IDATMD    , only : W3SETI
+      USE W3UPDTMD    , only : W3DZXY, W3UWND, W3UINI, W3UTAU, W3URHO, W3UBPT, W3UICE
+      USE W3UPDTMD    , only : W3ULEV, W3UCUR, W3UIC1, W3UTRN
+      USE W3SRCEMD    , only : W3SRCE
+      USE W3TRIAMD    , only : UG_GRADIENTS
+      USE W3IOGOMD    , only : W3IOGO, W3OUTG
+      USE W3IOPOMD    , only : W3IOPO, W3IOPE
+      USE W3IOTRMD    , only : W3IOTR
+      USE W3IORSMD    , only : W3IORS
+      USE W3IOBCMD    , only : W3IOBC
+      USE W3IOSFMD    , only : W3IOSF, W3CPRT
+      USE W3SERVMD    , only : EXTCDE, WWTIME
+      USE W3TIMEMD    , only : DSEC21, TICK21, STME21
 #ifdef W3_PR1
-      USE W3PRO1MD
+      USE W3PRO1MD    , only : W3MAP1, W3XYP1, W3KTP1
+      USE W3PROFSMD   , only : W3XYPUG
 #endif
 #ifdef W3_PR2
-      USE W3PRO2MD
+      USE W3PRO2MD    , only : W3XYP2, W3MAP2, W3KTP2
+      USE W3PROFSMD   , only : W3XYPUG
 #endif
 #ifdef W3_PR3
-      USE W3PRO3MD
+      USE W3PRO3MD    , only : W3MAPT, W3XYP3, W3CFLXY, W3MAP3, W3KTP3
+      USE W3PROFSMD   , only : W3XYPUG, W3CFLUG
 #endif
 #ifdef W3_SMC
-      USE W3PSMCMD
-#endif
-!
-#ifdef W3_PR1
-      USE W3PROFSMD
-#endif
-#ifdef W3_PR2
-      USE W3PROFSMD
-#endif
-#ifdef W3_PR3
-      USE W3PROFSMD
-#endif
-!/
-      USE W3TRIAMD
-      USE W3IOGRMD
-      USE W3IOGOMD
-      USE W3IOPOMD
-      USE W3IOTRMD
-      USE W3IORSMD
-      USE W3IOBCMD
-      USE W3IOSFMD
-#ifdef W3_PDLIB
-      USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA
-      USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
-      USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
-      USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
-      USE yowNodepool, only: npa, iplg, np
-#endif
-!/
-      USE W3SERVMD
-      USE W3TIMEMD
-#ifdef W3_IC3
-      USE W3SIC3MD
+      USE W3SERVMD    , only : W3ACTURN
+      USE W3PSMCMD    , only : SMCDHXY, SMCDCXY, W3SCATSMC, W3GATHSMC, W3PSMC, W3KRTN
 #endif
 #ifdef W3_IS2
-      USE W3SIS2MD
+      USE W3UPDTMD    , only : W3UIC5
+#endif
+
+!/
+#ifdef W3_MPI
+      USE W3ODATMD    , only : NRQGO, NRQGO2, IRQGO, IRQGO2, NRQPO, NRQPO2, IRQPO1, IRQPO2
+      USE W3ODATMD    , only : NRQRS, IRQRS, IRQPO1, NRQBP, IRQBP1, IRQBP2, NRQBP2
+      USE W3ADATMD    , only : NRQSG1, IRQSG1, NRQSG1, MPI_COMM_WAVE
+#endif
+#ifdef W3_REF1
+      USE W3GDATMD    , only : RLGTYPE, SX, SY, CLGTYPE, HPFAC, HQFAC, REFLC, REFLD
+#endif
+#ifdef W3_BT4
+      USE W3GDATMD    , only : SED_D50, SED_PSIC
+#endif
+#ifdef W3_SMC
+      USE W3GDATMD    , only : ANGARC, ARCTC, NBAC, NBGL, NGLO, NCel, ICLBAC, SPCBAC
+      USE W3ADATMD    , only : DHDX, DHDY, DHLMT
+      USE W3GDATMD    , only : NTH
+#endif
+!
+!/
+#ifdef W3_PDLIB
+      USE PDLIB_W3PROFSMD  , only : APPLY_BOUNDARY_CONDITION_VA
+      USE PDLIB_W3PROFSMD  , only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
+      USE PDLIB_W3PROFSMD  , only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
+      USE W3PARALL         , only : PDLIB_NSEAL, PDLIB_NSEALM
+      USE W3WDATMD         , only : VAOLD, VSTOT, VDTOT, SHAVETOT
+      USE W3GDATMD         , only : FSSOURCE, FSTOTALEXP
+      USE W3GDATMD         , only : IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+      USE yowNodepool      , only : npa, iplg, np
+#endif
+!/
+#ifdef W3_IC3
+      USE W3GDATMD    , only : IC3PARS
+      USE W3SIC3MD    , only : CALLEDIC3TABLE, IC3TABLE_CHENG, W3IC3WNCG_V1, W3IC3WNCG_CHENG
+      USE W3IDATMD    , only : ICEP1, ICEP2, ICEP3, ICEP4
+#endif
+#ifdef W3_IS2
+      USE W3WDATMD    , only : TIC5
+      USE W3IDATMD    , only : TI5
+      USE W3UPDTMD    , only : W3UIC5
 #endif
 #ifdef W3_UOST
       USE W3UOSTMD, ONLY: UOST_SETGRID
@@ -430,6 +485,7 @@
 #endif
 
 #ifdef W3_OASIS
+      USE W3WDATMD, ONLY: TIME00, TIMEEND
       USE W3OACPMD, ONLY: ID_OASIS_TIME, CPLT0
 #endif
 #ifdef W3_OASOCM
@@ -441,6 +497,7 @@
 #ifdef W3_OASICM
       USE W3IGCMMD, ONLY: SND_FIELDS_TO_ICE
 #endif
+
 #ifdef W3_PDLIB
       USE PDLIB_FIELD_VEC, only : DO_OUTPUT_EXCHANGES
       USE PDLIB_W3PROFSMD, ONLY: ASPAR_JAC, ASPAR_DIAG_ALL, B_JAC
@@ -450,6 +507,8 @@
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
       use w3iogoncdmd   , only : w3iogoncd
+      use w3odatmd      , only : user_histalarm, user_restalarm
+      use w3odatmd      , only : histwr, rstwr, user_gridncout
 !
       IMPLICIT NONE
 !
@@ -470,9 +529,6 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters :
 !/
-#ifdef W3_T
-      INTEGER                 :: ILEN
-#endif
 #ifdef W3_S
       INTEGER, SAVE           :: IENT = 0
 #endif
@@ -708,8 +764,7 @@
 ! 0.d Test output
 !
 #ifdef W3_T
-      ILEN   = LEN_TRIM(FILEXT)
-      WRITE (NDST,9000) IMOD, FILEXT(:ILEN), TEND
+      WRITE (NDST,9000) IMOD, trim(FILEXT), TEND
 #endif
 !
 ! 1.  Check the consistency of the input ----------------------------- /
@@ -1817,15 +1872,6 @@
                 END IF
 #endif
 !
-#ifdef W3_REF1
-       REFLEC=REFLC(:,ISEA)
-       REFLEC(4)=BERG(ISEA)*REFLEC(4)
-       REFLED=REFLD(:,ISEA)
-#endif
-#ifdef W3_BT4
-        D50=SED_D50(ISEA)
-        PSIC=SED_PSIC(ISEA)
-#endif
 #ifdef W3_REF1
        REFLEC=REFLC(:,ISEA)
        REFLEC(4)=BERG(ISEA)*REFLEC(4)

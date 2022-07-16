@@ -247,6 +247,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
       USE W3ODATMD, ONLY: W3SETO
+      USE W3WDATMD, only : W3SETW, W3DIMW
       USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
       USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, T01, FP0, THM, CHARN,&
                           TAUWIX, TAUWIY, TWS, TAUOX, TAUOY, BHD,     &
@@ -257,7 +258,8 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
                           GNAME, FILEXT, GTYPE, UNGTYPE
       USE W3TRIAMD, ONLY: SET_UG_IOBP
-      USE W3WDATMD
+      USE W3WDATMD, only : DINIT, VA, TIME, TLEV, TICE, TRHO, ICE, UST
+      USE W3WDATMD, only : USTDIR, ASF, FPIS, ICEF, TIC1, TIC5, WLV
 #ifdef W3_WRST
       USE W3IDATMD, ONLY: WXN, WYN, W3SETI
       USE W3IDATMD, ONLY: WXNwrst, WYNwrst
