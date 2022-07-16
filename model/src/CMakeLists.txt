@@ -75,6 +75,9 @@ add_compile_definitions(W3_IC4)
 add_compile_definitions(W3_IS0)
 add_compile_definitions(W3_REF0)
 add_compile_definitions(ENDIANNESS="big_endian")
+# add for debugging
+#add_compile_definitions(W3_DEBUGINIT)
+#add_compile_definitions(W3_DEBUGIO)
 
 set_property(SOURCE w3initmd.F90
   APPEND

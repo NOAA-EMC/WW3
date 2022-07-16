@@ -698,37 +698,26 @@
 !
   910 FORMAT (A,1X,A)
   911 FORMAT (A)
-!
   940 FORMAT (1X,I8.8,1X,I6.6,2F8.3,2X,'''',A10,'''',            &
               1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
   941 FORMAT (1X,I8.8,1X,I6.6,2(F8.1,'E3'),2X,'''',A10,'''',     &
               1X,I2,F7.1,F5.1,f6.1,F5.2,F6.1)
   942 FORMAT (I3,3F8.2,2F9.2,F7.2)
-!
  1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOSF : '/               &
                '     ERROR IN OPENING FILE'/                          &
                '     IOSTAT =',I5/)
-!
-#ifdef W3_T
  9000 FORMAT (' TEST W3IOSF : IPASS =',I4,',  FLFROM = ',L1,        &
               ',  NDSPT =',I3,',  IMOD =',I3,','/                   &
               '               IAPROC, NAPPRT =',2I4)
  9010 FORMAT (' TEST W3IOSF : OPENING NEW FILE [',A,']')
  9020 FORMAT (' TEST W3IOSF : SENDING ICPRT FROM',I3,' TO',I3,     &
               ' WITH SIZE :',I6)
-#endif
-#ifdef W3_MPIT
  9021 FORMAT (' TEST W3IOSF : SENDING DTPRT FROM',I3,' TO',I3,     &
               ' WITH SIZE :',I6)
-#endif
-#ifdef W3_T
  9030 FORMAT (' TEST W3IOSF : RECEIVING ICPRT FROM',I3,            &
               ' WITH SIZE :',I6)
-#endif
-#ifdef W3_MPIT
  9031 FORMAT (' TEST W3IOSF : RECEIVING DTPRT FROM',I3,            &
               ' WITH SIZE :',I6)
-#endif
 !/
 !/ End of W3IOSF ----------------------------------------------------- /
 !/
