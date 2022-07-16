@@ -1873,7 +1873,7 @@
                    VSioDummy, VDioDummy, SHAVETOT(JSEA),  &
                    ALPHA(1:NK,JSEA), WN(1:NK,ISEA),               &
                    CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),            &
-                   U10D(ISEA),                                    & 
+                   U10D(ISEA),                                    &
 #ifdef W3_FLX5
                    TAUA(ISEA), TAUADIR(ISEA),                  &
 #endif
@@ -1910,8 +1910,8 @@
               DTDYN (JSEA) = UNDEF
               FCUT  (JSEA) = UNDEF
             END IF
-          END DO ! JSEA 
-        END IF ! PDLIB 
+          END DO ! JSEA
+        END IF ! PDLIB
 #endif
 
 
@@ -2067,7 +2067,7 @@
              IX     = MAPSF(ISEA,1)
              IF (JSEA.EQ.1) &
                WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
-             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XGRD(1,IX), YGRD(2,IX), ZB(IX)  
+             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XGRD(1,IX), YGRD(2,IX), ZB(IX)
            END DO ! JSEA
            CLOSE(995)
          END IF
@@ -2448,8 +2448,8 @@
             ISPEC = 0
              JSEA = IY
 #endif
-#endif 
-! W3_SMC ... 
+#endif
+! W3_SMC ...
 !
 #ifdef W3_SMC
  !!Li   Assign boundary cell spectra.
