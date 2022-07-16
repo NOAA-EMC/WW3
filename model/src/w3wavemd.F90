@@ -441,7 +441,6 @@
 #ifdef W3_OASICM
       USE W3IGCMMD, ONLY: SND_FIELDS_TO_ICE
 #endif
-
 #ifdef W3_PDLIB
       USE PDLIB_FIELD_VEC, only : DO_OUTPUT_EXCHANGES
       USE PDLIB_W3PROFSMD, ONLY: ASPAR_JAC, ASPAR_DIAG_ALL, B_JAC
@@ -450,11 +449,7 @@
 #ifdef W3_TIMINGS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
-#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
-      ! flags for restart and history writes
-      USE WAV_SHR_MOD , only : RSTWR, HISTWR
-      USE W3IOGONCDMD , ONLY : W3IOGONCD
-#endif
+      use w3iogoncdmd   , only : w3iogoncd
 !
       IMPLICIT NONE
 !
@@ -568,7 +563,7 @@
       REAL                    :: BACANGL
 
 #endif
-
+     logical :: setup_mpi_write, write_now
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
 !
@@ -1873,7 +1868,7 @@
                    VSioDummy, VDioDummy, SHAVETOT(JSEA),  &
                    ALPHA(1:NK,JSEA), WN(1:NK,ISEA),               &
                    CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),            &
-                   U10D(ISEA),                                    & 
+                   U10D(ISEA),                                    &
 #ifdef W3_FLX5
                    TAUA(ISEA), TAUADIR(ISEA),                  &
 #endif
@@ -1910,8 +1905,8 @@
               DTDYN (JSEA) = UNDEF
               FCUT  (JSEA) = UNDEF
             END IF
-          END DO ! JSEA 
-        END IF ! PDLIB 
+          END DO ! JSEA
+        END IF ! PDLIB
 #endif
 
 
@@ -2067,7 +2062,7 @@
              IX     = MAPSF(ISEA,1)
              IF (JSEA.EQ.1) &
                WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
-             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XGRD(1,IX), YGRD(2,IX), ZB(IX)  
+             WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XGRD(1,IX), YGRD(2,IX), ZB(IX)
            END DO ! JSEA
            CLOSE(995)
          END IF
@@ -2325,10 +2320,12 @@
 #endif
 !
 #ifdef W3_MPI
+        write(6,*)'DEBUG: here3'
        IF ( NRQSG1 .GT. 0 ) THEN
          CALL MPI_STARTALL (NRQSG1, IRQSG1(1,1), IERR_MPI)
          CALL MPI_STARTALL (NRQSG1, IRQSG1(1,2), IERR_MPI)
        END IF
+        write(6,*)'DEBUG: here4'
 #endif
 !
 #ifdef W3_DEBUGRUN
@@ -2448,8 +2445,8 @@
             ISPEC = 0
              JSEA = IY
 #endif
-#endif 
-! W3_SMC ... 
+#endif
+! W3_SMC ...
 !
 #ifdef W3_SMC
  !!Li   Assign boundary cell spectra.
@@ -3019,19 +3016,17 @@
 #endif
 !
 #ifdef W3_MPI
-#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
-          ! CMB: dsec21 computes the difference between time1, time2 in sec
-          ! pretty sure tonext always equal to time on the hour
-          ! so this is getting called every hour
-          ! seems like it only needs to be done when histwr=T though
-          ! so am chaning
-     IF (  histwr .and.  &
-          (FLOUT(1) .OR.  FLOUT(7)) ) THEN
-#else
-     IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
-          (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
-             SBSED ) ) THEN
-#endif
+      setup_mpi_write = .false.
+      if (user_histalarm ) then
+         if (  histwr .and.  &
+            (FLOUT(1) .OR.  FLOUT(7)) ) setup_mpi_write = .true.
+      else
+         IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
+              (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
+                 SBSED ) ) setup_mpi_write = .true.
+      end if
+
+     if (setup_mpi_write ) then
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
 #endif
@@ -3042,9 +3037,7 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
-#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
-           write(*,*) 'UWM/CESM histwr mpi_startall', histwr, NRQGO, IERR_MPI
-#endif
+           !if(histwr) print *,'histwr mpi_startall', histwr, NRQGO, IERR_MPI'
 #endif
 #ifdef W3_DEBUGRUN
       WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO.NE.0, step 0'
@@ -3072,9 +3065,7 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
-#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
-           write(*,*) 'UWM/CESM: histwr mpi_startall', histwr, NRQGO, IERR_MPI
-#endif
+           !if(histwr) print *,'histwr mpi_startall', histwr, NRQGO2, IERR_MPI'
 #endif
 #ifdef W3_DEBUGRUN
            WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO2.NE.0, step 0'
@@ -3100,7 +3091,7 @@
 #endif
 #ifdef W3_MPI
        END IF
-     END IF
+     END IF ! set_write
 #endif
 
 #ifdef W3_MEMCHECK
@@ -3260,56 +3251,73 @@
                   TOUT(:) = TONEXT(:,J)
                   DTTST   = DSEC21 ( TIME, TOUT )
 !
+
                   IF ( DTTST .EQ. 0. ) THEN
-#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
-                      ! This assumes that W3_SBS is not defined
-                      IF ( ( J .EQ. 1 ) .AND. histwr) THEN
-                          CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
-                          FLGMPI(0) = .FALSE.
-                          write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
-                          IF ( IAPROC .EQ. NAPFLD ) THEN
-                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
-                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
-                              FLGMPI(1) = .FALSE.
-                              write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
-                              CALL W3IOGONCD ()
-                          END IF
-#else
-                      IF ( ( J .EQ. 1 )              &
+                        IF ( ( J .EQ. 1 )              &
 #ifdef W3_SBS
-                           .OR. ( J .EQ. 7 )         &
+                             .OR. ( J .EQ. 7 )         &
 #endif
-                                        ) THEN
-                          IF ( IAPROC .EQ. NAPFLD ) THEN
+                                          ) THEN
+
+                     if (user_gridncout) then
+                        ! if using alarms, restrict output writing to alarm
+                        ! frequencies, otherwise native (inp) frequencies will
+                        ! be used
+                        write_now = .false.
+                        if (user_histalarm) then
+                           if ( histwr .and. j .ne. 7) then
+                              write_now = .true.
+                           end if
+                        else
+                           write_now = .true.
+                        end if
+                        if (write_now) then
 #ifdef W3_MPI
-                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
-                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
-                              FLGMPI(1) = .FALSE.
+                           CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
+                           FLGMPI(0) = .FALSE.
+#endif
+                           !write(*,*) 'w3wavemd, w3iogonc called : hist flag 1', j, histwr, time, IERR_MPI
+                           IF ( IAPROC .EQ. NAPFLD ) THEN
+#ifdef W3_MPI
+                              IF ( FLGMPI(1) ) CALL MPI_WAITALL( NRQGO2, IRQGO2, STATIO, IERR_MPI )
+                                 FLGMPI(1) = .FALSE.
+#endif
+                                 !write(*,*) 'w3wavemd, w3iogonc called : hist flag 2', j, histwr, time, IERR_MPI
+                                 CALL W3IOGONCD ()
+                           END IF
+                        end if
+                     ! default (binary) output
+                     else
+                            IF ( IAPROC .EQ. NAPFLD ) THEN
+#ifdef W3_MPI
+                                IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
+                                   ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
+                                FLGMPI(1) = .FALSE.
 #endif
 !
 #ifdef W3_SBS
-                              IF ( J .EQ. 1 ) THEN
+                                IF ( J .EQ. 1 ) THEN
 #endif
-                                CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
+                                  CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
 #ifdef W3_SBS
-                              ENDIF
+                                ENDIF
  !
  !
  !     Generate output flag file for fields and SBS coupling.
  !
-                              JJ = LEN_TRIM ( FILEXT )
-                              CALL STME21 ( TIME, IDTIME )
-                              FOUTNAME = 'Field_done.' // IDTIME(1:4) &
-                                       // IDTIME(6:7) // IDTIME(9:10) &
-                                      // IDTIME(12:13) // '.' // FILEXT(1:JJ)
+                                JJ = LEN_TRIM ( FILEXT )
+                                CALL STME21 ( TIME, IDTIME )
+                                FOUTNAME = 'Field_done.' // IDTIME(1:4) &
+                                         // IDTIME(6:7) // IDTIME(9:10) &
+                                        // IDTIME(12:13) // '.' // FILEXT(1:JJ)
 !
-                              OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
-                              CLOSE( NDSOFLG )
+                                OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
+                                CLOSE( NDSOFLG )
 #endif
                             END IF
-!
-! end of UWMNCOUT/W3_CESMCOUPLED cppif-block
-#endif
+                     end if ! user_grdncout
+
+
                         ELSE IF ( J .EQ. 2 ) THEN
 !
 !   Point output
@@ -3327,14 +3335,15 @@
 ! Track output
 !
                           CALL W3IOTR ( NDS(11), NDS(12), VA, IMOD )
-#ifdef W3_CESMCOUPLED
-                        ! add restart flag
-                        ELSE IF ( J .EQ. 4 .AND. rstwr ) THEN
-                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
-#else
+
                         ELSE IF ( J .EQ. 4 ) THEN
-                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
-#endif
+                          if (user_restalarm ) then
+                             if (rstwr) CALL W3IORS ('HOT', NDS(6), XXX, &
+                                                    IMOD, FLOUT(8) )
+                          else
+                             CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
+                          end if
+
                           ITEST = RSTYPE
                         ELSE IF ( J .EQ. 5 ) THEN
                           IF ( IAPROC .EQ. NAPBPT ) THEN
@@ -3359,7 +3368,6 @@
                                   .NOT. CPLT0 ) THEN
                               IF (CPLT0) ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
 
-#endif
 #ifdef W3_OASACM
                              CALL SND_FIELDS_TO_ATMOS()
 #endif
@@ -3369,7 +3377,6 @@
 #ifdef W3_OASICM
                              CALL SND_FIELDS_TO_ICE()
 #endif
-#ifdef W3_OASIS
                               IF (.NOT. CPLT0) ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
                             ENDIF
                           ENDIF
@@ -3475,10 +3482,10 @@
 #ifdef W3_MPI
             IF ( FLGMPI(0) ) CALL MPI_WAITALL                    &
                              ( NRQGO, IRQGO , STATIO, IERR_MPI )
-#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
-            IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) ) CALL MPI_WAITALL   &
-                             ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
-#endif
+            if (user_gridncout) then
+               IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) )     &
+                  CALL MPI_WAITALL ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
+            end if
             IF ( FLGMPI(2) ) CALL MPI_WAITALL                    &
                              ( NRQPO, IRQPO1, STATIO, IERR_MPI )
             IF ( FLGMPI(4) ) CALL MPI_WAITALL                    &
