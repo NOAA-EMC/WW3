@@ -41,10 +41,13 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
-  use wav_shr_mod           , only : runtype, merge_import, dbug_flag
+  use wav_shr_mod           , only : wav_coupling_to_cice
+  use wav_shr_mod           , only : merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
+  use w3odatmd              , only : runtype, user_histname, user_histfname, user_restname, user_restfname
+  use w3odatmd              , only : user_histalarm, user_restalarm, user_gridncout
+  use w3odatmd              , only : time_origin, calendar_name, elapsed_secs
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
-  use wav_shr_mod           , only : time_origin, calendar_name, elapsed_secs
 #ifndef W3_CESMCOUPLED
   use wmwavemd              , only : wmwave
   use wmupdtmd              , only : wmupd2
@@ -80,8 +83,6 @@ module wav_comp_nuopc
   logical                 :: profile_memory = .false.        !< default logical to control use of ESMF
                                                              !! memory profiling
 
-  logical                 :: histwr_is_active = .false.      !< default logical to control use of ESMF
-                                                             !! alarms for writing history files
   logical                 :: root_task = .false.             !< logical to indicate root task
 #ifdef W3_CESMCOUPLED
   logical :: cesmcoupled = .true.                            !< logical to indicate CESM use case
@@ -330,11 +331,22 @@ contains
        inst_index=1
     endif
 
+    ! Get Multigrid setting
     multigrid = .false.
     call NUOPC_CompAttributeGet(gcomp, name='multigrid', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent .and. isSet) multigrid=(trim(cvalue)=="true")
+    if (isPresent .and. isSet) then
+       multigrid=(trim(cvalue)=="true")
+    end if
     write(logmsg,'(A,l)') trim(subname)//': Wave multigrid setting is ',multigrid
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    ! Determine wave-ice coupling
+    wav_coupling_to_cice = .false.
+    call NUOPC_CompAttributeGet(gcomp, name='wavice_coupling', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) wav_coupling_to_cice=(trim(cvalue)==".true.")
+    write(logmsg,'(A,l)') trim(subname)//': Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
@@ -400,7 +412,6 @@ contains
     character(CL)                  :: cvalue
     integer                        :: shrlogunit
     integer                        :: yy,mm,dd,hh,ss
-    integer                        :: dtime_sync        ! integer timestep size
     integer                        :: start_ymd         ! start date (yyyymmdd)
     integer                        :: start_tod         ! start time of day (sec)
     integer                        :: stop_ymd          ! stop date (yyyymmdd)
@@ -638,19 +649,23 @@ contains
     time = time0
     call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeIntervalGet( timeStep, s=dtime_sync, rc=rc )
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
+    call waveinit_cesm(gcomp, ntrace, mpi_comm, mds, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 #endif
 
-    !--------------------------------------------------------------------
-    ! Intialize the list of requested output variables
-    !--------------------------------------------------------------------
-
-    call wavinit_grdout
-
     ! call mpi_barrier ( mpi_comm, ierr )
+    if ( root_task ) then
+       inquire(unit=nds(1), name=logfile)
+       print *,'WW3 log written to '//trim(logfile)
+    end if
+
+    !--------------------------------------------------------------------
+    ! Intialize the list of requested output variables for netCDF output
+    !--------------------------------------------------------------------
+    
+    if (user_gridncout) then
+       call wavinit_grdout
+    end if
 
     !--------------------------------------------------------------------
     ! Mesh initialization
@@ -727,7 +742,7 @@ contains
     EMeshTemp = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if ( root_task ) then
-       write(stdout,*)'mesh file for domain is ',trim(cvalue)
+       write(nds(1),*)'mesh file for domain is ',trim(cvalue)
     end if
 
     ! recreate the mesh using the above distGrid
@@ -792,7 +807,7 @@ contains
   !===============================================================================
 !> Initialize the field values in the export state
 !!
-!! @details Called by NUOPC to initialize the field values in the export state and
+!> @details Called by NUOPC to initialize the field values in the export state and
 !! the values for the scalar field which describes the wave model global domain
 !! size.
 !!
@@ -804,7 +819,6 @@ contains
   subroutine DataInitialize(gcomp, rc)
 
     use wav_import_export, only : calcRoughl
-    use wav_shr_mod      , only : wav_coupling_to_cice
     use w3gdatmd         , only : nx, ny
 
     ! input/output variables
@@ -818,8 +832,6 @@ contains
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
-    real(r8), pointer :: wav_tauice1(:)
-    real(r8), pointer :: wav_tauice2(:)
     real(r8), pointer :: wave_elevation_spectrum(:,:)
     character(len=*),parameter :: subname = '(wav_comp_nuopc:DataInitialize)'
     ! -------------------------------------------------------------------
@@ -856,16 +868,9 @@ contains
     endif
 
     if (wav_coupling_to_cice) then
-      call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       wav_tauice1(:) = 0.
-       wav_tauice2(:) = 0.
-       wave_elevation_spectrum(:,:) = 0.
+      wave_elevation_spectrum(:,:) = 0.
     endif
 
     ! Set global grid size scalars in export state
@@ -886,7 +891,7 @@ contains
   !=====================================================================
 !> Called by NUOPC to advance the model a single timestep
 !!
-!! @details At each model advance, the call to import_fields fills the
+!> @details At each model advance, the call to import_fields fills the
 !! import state with the updated values. If a history alarm is present
 !! and ringing, a logical to write a wave history file is set true. The
 !! wave model itself is then advanced during which a history file will
@@ -908,7 +913,8 @@ contains
     use w3wdatmd          , only : time, w3setw
     use wav_import_export , only : import_fields, export_fields
     use wav_shel_inp      , only : odat
-    use wav_shr_mod       , only : rstwr, histwr, outfreq ! only used by cesm
+    use w3odatmd          , only : rstwr, histwr
+    use wav_shr_mod       , only : outfreq
 
     ! arguments:
     type(ESMF_GridComp)  :: gcomp
@@ -1007,9 +1013,8 @@ contains
     !------------
     if(profile_memory) call ESMF_VMLogMemInfo("Entering WW3 Run : ")
 
-    if (cesmcoupled) then
-       ! Determine if time to write cesm ww3 restart files
-       ! rstwr is set in wav_shr_mod and used in w3wavmd to determine if restart should be written
+    if (user_restalarm) then
+       ! Determine if time to write ww3 restart files
        call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
@@ -1024,8 +1029,8 @@ contains
        rstwr = .false.
     end if
 
-    !TODO: what is outfreq used for if an alarm is created with history_n,history_option?
     ! Determine if time to write ww3 history files
+    ! history output is determined by the namelist variable outfreq
     ! histwr is set in wav_shr_mod and used in w3wavmd to determine if history should be written
     ! if history alarms are not active, control of WW3 grd output remains with WW3
     histwr = .false.
@@ -1036,7 +1041,7 @@ contains
        endif
     endif
     if (.not. histwr) then
-       if (histwr_is_active) then
+       if (user_histalarm) then
           call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
@@ -1050,7 +1055,7 @@ contains
        end if
        if ( root_task ) then
           !  write(nds(1),*) 'wav_comp_nuopc time', time, timen
-          !  write(nds(1),*) 'ww3 hist flag ', histwr, outfreq, hh, mod(hh, outfreq)
+          !  write(nds(1),*) 'ww3 hist flag ', histwr, outfreq, hh
        end if
     end if
 
@@ -1158,26 +1163,36 @@ contains
        !----------------
        ! Restart alarm
        !----------------
-       call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
+       call NUOPC_CompAttributeGet(gcomp, name="restart_option", isPresent=isPresent, isSet=isSet, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (isPresent .and. isSet) then
+          call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call NUOPC_CompAttributeGet(gcomp, name="restart_n", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) restart_n
+          call NUOPC_CompAttributeGet(gcomp, name="restart_n", value=cvalue, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          read(cvalue,*) restart_n
 
-       call NUOPC_CompAttributeGet(gcomp, name="restart_ymd", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) restart_ymd
+          call NUOPC_CompAttributeGet(gcomp, name="restart_ymd", value=cvalue, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          read(cvalue,*) restart_ymd
 
-       call alarmInit(mclock, restart_alarm, restart_option, &
-            opt_n   = restart_n,           &
-            opt_ymd = restart_ymd,         &
-            RefTime = mCurrTime,           &
-            alarmname = 'alarm_restart', rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call alarmInit(mclock, restart_alarm, restart_option, &
+               opt_n   = restart_n,           &
+               opt_ymd = restart_ymd,         &
+               RefTime = mCurrTime,           &
+               alarmname = 'alarm_restart', rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          user_restalarm = .true.
+       else
+          ! If attribute is not present - write restarts at native WW3 freq
+          restart_option = 'none'
+          restart_n = -999
+          user_restalarm = .false.
+       end if
 
        !----------------
        ! Stop alarm
@@ -1215,6 +1230,7 @@ contains
           call NUOPC_CompAttributeGet(gcomp, name="history_n", value=cvalue, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           read(cvalue,*) history_n
+
           call NUOPC_CompAttributeGet(gcomp, name="history_ymd", value=cvalue, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           read(cvalue,*) history_ymd
@@ -1228,12 +1244,12 @@ contains
 
           call ESMF_AlarmSet(history_alarm, clock=mclock, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          histwr_is_active = .true.
+          user_histalarm = .true.
        else
-          ! If attribute is not present - write history native WW3 output if requested
+          ! If attribute is not present - write history output at native WW3 frequency
           history_option = 'none'
           history_n = -999
-          histwr_is_active = .false.
+          user_histalarm = .false.
        end if
 
     end if
@@ -1288,24 +1304,29 @@ contains
   !===============================================================================
 !> Initialize the wave model for the CESM use case
 !!
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or
+!! ww3_shel.nml file. Calls w3init to initialize the wave model
+!!
 !! @param[in]    gcomp        an ESMF_GridComp object
 !! @param[in]    ntrace       unit numbers for trace
 !! @param[in]    mpi_comm     an mpi communicator
-!! @param[in]    dtime_sync   the coupling interval
 !! @param[in]    mds          unit numbers
 !! @param[out]   rc           return code
 !!
 !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
 !> @date 01-05-2022
-  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, dtime_sync, mds, rc)
+  subroutine waveinit_cesm(gcomp, ntrace, mpi_comm, mds, rc)
 
     ! Initialize ww3 for cesm (called from InitializeRealize)
 
     use w3initmd     , only : w3init
     use w3gdatmd     , only : dtcfl, dtcfli, dtmax, dtmin
-    use wav_shr_mod  , only : casename, initfile, outfreq
+    use w3idatmd     , only : inflags1, inflags2
+    use w3odatmd     , only : initfile
+    use wav_shr_mod  , only : casename, outfreq
     use wav_shr_mod  , only : inst_index, inst_name, inst_suffix
-    use wav_shel_inp , only : set_shel_inp
+    use wav_shr_mod  , only : wav_coupling_to_cice
+    use wav_shel_inp , only : read_shel_config
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
     use wav_shel_inp , only : flgrd, flgd, flgr2, flg2
 
@@ -1313,7 +1334,6 @@ contains
     type(ESMF_GridComp)   :: gcomp
     integer , intent(in)  :: ntrace(:)
     integer , intent(in)  :: mpi_comm
-    integer , intent(in)  :: dtime_sync
     integer , intent(in)  :: mds(:)
     integer , intent(out) :: rc
 
@@ -1337,7 +1357,7 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     inst_name = "WAV"//trim(inst_suffix)
-    ! Read namelist (set initfile in wav_shr_mod)
+    ! Read namelist (set initfile in w3odatmd)
     if ( root_task ) then
        open (newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
        read (unitn, ww3_inparm, iostat=ierr)
@@ -1417,8 +1437,51 @@ contains
     dtcfli_in = dtcfli
     dtmin_in  = dtmin
 
-    ! Determine module variables in wav_shel_inp that are used for call to w3init
-    call set_shel_inp(dtime_sync)
+    ! Read the namelist settings in ww3_shel.nml
+    call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
+    call read_shel_config(mpi_comm)
+
+    ! NOTE:  that wavice_coupling must be set BEFORE the call to advertise_fields
+    ! So the current mechanism is to force the inflags1(-7) and inflags1(-3) be set to true
+    ! if wavice coupling is active
+    ! NOTE:
+    ! inflags1(-7) = nml_input%forcing%ice_param1
+    ! inflags1(-3) = nml_input%forcing%ice_param5
+
+    ! Force inflags2 to be false - otherwise inflags2 will be set to inflags1 and answers will change
+    ! Need to set this to .false. to avoid scaling of ice in section 4. of w3srcemed.
+    ! inflags2(4) is true if ice concentration was ever read during this simulation
+    ! Currently IC4 is used in cesm
+    inflags2(:) = .false.
+    if (wav_coupling_to_cice) then
+       inflags2(4)  = .true. ! inflags2(4) is true if ice concentration was read during initialization
+       inflags1(-7) = .true. ! ice thickness
+       inflags2(-7) = .true. ! ice thickness
+       inflags1(-3) = .true. ! ice floe size
+       inflags2(-3) = .true. ! ice floe size
+    else
+       inflags1(-7) = .false. ! ice thickness
+       inflags2(-7) = .false. ! ice thickness
+       inflags1(-3) = .false. ! ice floe size
+       inflags2(-3) = .false. ! ice floe size
+    end if
+
+    ! custom restart and history file names are used for CESM
+    user_histname = .true.
+    user_restname = .true.
+
+    ! if runtype=initial, the initfile will be read in w3iorsmd
+    if (len_trim(inst_suffix) > 0) then
+       user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
+       user_histfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.'
+    else
+       user_restfname = trim(casename)//'.ww3.r.'
+       user_histfname = trim(casename)//'.ww3.hi.'
+    endif
+
+    ! netcdf gridded output is used for CESM
+    user_gridncout = .true.
+    ! restart and history alarms are set for CESM by default through config
 
     ! Read in initial/restart data and initialize the model
     ! ww3 read initialization occurs in w3iors (which is called by initmd in module w3initmd)
@@ -1429,6 +1492,7 @@ contains
     ! 1 is model number
     ! IsMulti does not appear to be used, setting to .false.
 
+    call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
@@ -1445,8 +1509,8 @@ contains
   !===============================================================================
 !> Initialize the wave model for the UWM use case
 !!
-!> @details Calls public routine read_shel_inp to read the ww3_shel.inp file. Calls
-!! w3init to initialize the wave model
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or
+!! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
 !! @param[in]    gcomp        an ESMF_GridComp object
 !! @param[in]    ntrace       unit numbers for trace
@@ -1463,7 +1527,7 @@ contains
     use w3odatmd     , only : fnmpre
     use w3initmd     , only : w3init
     use wav_shr_mod  , only : outfreq
-    use wav_shel_inp , only : read_shel_inp
+    use wav_shel_inp , only : read_shel_config
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
     use wav_shel_inp , only : flgrd, flgd, flgr2, flg2
 
@@ -1475,17 +1539,52 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
+    character(len=CL) :: logmsg
+    logical           :: isPresent, isSet
+    character(len=CL) :: cvalue
     character(len=*), parameter :: subname = '(wav_comp_nuopc:wavinit_ufs)'
     ! -------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
+    ! restart and history alarms are optional for UFS and used via allcomp config settings
+    call NUOPC_CompAttributeGet(gcomp, name='user_sets_histname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       user_histname=(trim(cvalue)=="true")
+    end if
+    write(logmsg,'(A,l)') trim(subname)//': Custom history names in use ',user_histname
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    call NUOPC_CompAttributeGet(gcomp, name='user_sets_restname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       user_restname=(trim(cvalue)=="true")
+    end if
+    write(logmsg,'(A,l)') trim(subname)//': Custom restart names in use ',user_restname
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    call NUOPC_CompAttributeGet(gcomp, name='gridded_netcdfout', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       user_gridncout=(trim(cvalue)=="true")
+    end if
+    write(logmsg,'(A,l)') trim(subname)//': Gridded netcdf output is requested ',user_gridncout
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+
+    if (user_histname) then
+       user_histfname = trim(casename)//'.ww3.hi.'
+    end if
+    if (user_restname) then
+       user_restfname = trim(casename)//'.ww3.r.'
+    end if
+
     outfreq = 0
     fnmpre = './'
 
-    call ESMF_LogWrite(trim(subname)//' call read_shel_inp', ESMF_LOGMSG_INFO)
-    call read_shel_inp(mpi_comm)
+    call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
+    call read_shel_config(mpi_comm)
 
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &

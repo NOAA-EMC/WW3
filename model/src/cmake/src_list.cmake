@@ -55,6 +55,7 @@ set(ftn_src
   wmupdtmd.F90
   wmwavemd.F90
   w3tidemd.F90
+  w3iogoncdmd.F90
   )
 
 set(nuopc_mesh_cap_src
@@ -63,8 +64,8 @@ set(nuopc_mesh_cap_src
   wav_shel_inp.F90
   wav_comp_nuopc.F90
   wav_import_export.F90
-  w3iogoncdmd.F90
   wav_grdout.F90
+  wav_shr_flags.F90
   )
 
 set(esmf_multi_cap_src

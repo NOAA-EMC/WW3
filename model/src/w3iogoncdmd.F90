@@ -32,11 +32,16 @@ module W3IOGONCDMD
   real, allocatable, target :: var3dk(:,:,:)
 
   real, pointer :: var3d(:,:,:)
-contains
 
-!/ ------------------------------------------------------------------- /
+!===============================================================================
+contains
+!===============================================================================
+
   subroutine W3IOGONCD ()
 
+    USE W3ODATMD, ONLY: FNMPRE
+    USE W3GDATMD, ONLY: FILEXT
+    USE W3SERVMD, ONLY: EXTCDE
     USE W3WDATMD, ONLY: W3SETW, W3DIMW, TIME, WLV, ICE, ICEF, ICEH, BERG, UST, USTDIR, ASF, RHOAIR
     USE W3GDATMD, ONLY: XGRD, YGRD
     USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, W3SETG
@@ -59,26 +64,24 @@ contains
 #ifdef CESMCOUPLED
     USE W3ADATMD, ONLY: LANGMT
 #endif
-    use wav_grdout     , only: varatts, outvars
-    use wav_shr_mod    , only: time_origin, calendar_name, elapsed_secs
+    use wav_grdout , only: varatts, outvars
+    use w3timemd   , only: set_user_timestring
+    use w3odatmd   , only: time_origin, calendar_name, elapsed_secs
+    use w3odatmd   , only: user_histname, user_histfname
 
-!/
-!/ ------------------------------------------------------------------- /
-!/ Local parameters
-!/
+    ! local variables
     INTEGER                  :: IGRD
     integer    ,target       :: dimid3(3)
     integer    ,target       :: dimid4(4)
     integer    ,pointer      :: dimid(:)
     character(len=12)        :: vname
+    character(len=16)        :: user_timestring    !YYYY-MM-DD-SSSSS
 
     integer :: n, xtid, ytid, stid, mtid, ptid, ktid, timid, varid
     logical :: s_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
 
-!/
-!/ ------------------------------------------------------------------- /
-!/
-!
+    !-------------------------------------------------------------------------------
+
     IGRD   = 1
     CALL W3SETO ( IGRD, NDSE, NDST )
     CALL W3SETG ( IGRD, NDSE, NDST )
@@ -89,7 +92,16 @@ contains
     ! -------------------------------------------------------------
     ! Create the netcdf file
     ! -------------------------------------------------------------
-    call hist_filename(fname)
+
+    if (user_histname) then
+       if (len_trim(user_histfname) == 0 ) then
+          call extcde (60, MSG="user history filename requested but not provided")
+       end if
+       call set_user_timestring(time,user_timestring)
+       fname = trim(user_histfname)//trim(user_timestring)//'.nc'
+    else
+       write(fname,'(a,i8.8,a1,i6.6,a)')trim(fnmpre),time(1),'.',time(2),'.out_grd.'//trim(filext)//'.nc'
+    end if
 
     len_s = noswll + 1                  ! 0:noswll
     len_m = P2MSF(3)-P2MSF(2) + 1       ! ?
@@ -354,7 +366,7 @@ contains
 
   end subroutine W3IOGONCD
 
-!/ ------------------------------------------------------------------- /
+  !===============================================================================
   subroutine write_var2d(vname, var, dir, usemask, init0, init2)
     ! write (nsea) array as (nx,ny)
     ! if dir is present, write x or y component of (nsea) array as (nx,ny)
@@ -430,7 +442,7 @@ contains
 
   end subroutine write_var2d
 
-!/ ------------------------------------------------------------------- /
+  !===============================================================================
   subroutine write_var3d(vname, var, init2)
     ! write (nsea,:) array as (nx,ny,:)
     ! if init2 is present and true, apply a second initialization to
@@ -481,45 +493,7 @@ contains
     deallocate(varloc)
   end subroutine write_var3d
 
-!/ ------------------------------------------------------------------- /
-  subroutine hist_filename(fname)
-
-    USE WAV_SHR_MOD    , ONLY : CASENAME, INST_SUFFIX
-    USE W3WDATMD       , ONLY : TIME
-    USE W3ODATMD       , ONLY : NDS, IAPROC, NAPOUT
-
-    implicit none
-
-    ! input/output variables
-    character(len=*), intent(out) :: fname
-
-    ! local variables
-    integer :: yy,mm,dd,hh,mn,ss,totsec
-    !----------------------------------------------
-    
-    yy =  time(1)/10000
-    mm = (time(1)-yy*10000)/100
-    dd = (time(1)-yy*10000-mm*100)
-    hh = time(2)/10000
-    mn = (time(2)-hh*10000)/100
-    ss = (time(2)-hh*10000-mn*100)
-    totsec = hh*3600+mn*60+ss
-
-    if (len_trim(inst_suffix) > 0) then
-       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
-            trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
-    else
-       write(fname,'(a,i4.4,a,i2.2,a,i2.2,a,i5.5,a)') &
-            trim(casename)//'.ww3.hi.',yy,'-',mm,'-',dd,'-',totsec,'.nc'
-    endif
-
-    if (iaproc == napout) then
-        write(nds(1),'(a)') 'w3iogomdncd: writing history '//trim(fname)
-     end if
-
-   end subroutine hist_filename
-
-!/ ------------------------------------------------------------------- /
+  !===============================================================================
   subroutine handle_err(ierr,string)
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE

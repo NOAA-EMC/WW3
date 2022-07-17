@@ -159,8 +159,6 @@ contains
     ! also ensure compatibility with the ocean component since ocean will also receive these from the coupler.
 
     if (wav_coupling_to_cice) then
-       call fldlist_add(fldsFrWav_num, fldsFrWav, 'wav_tauice1')
-       call fldlist_add(fldsFrWav_num, fldsFrWav, 'wav_tauice2')
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'wave_elevation_spectrum', &
             ungridded_lbound=1, ungridded_ubound=nwav_elev_spectrum)
     end if
@@ -584,7 +582,7 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : USSX, USSY, EF, TAUICE, USSP
+    use w3adatmd      , only : USSX, USSY, EF, USSP
     use w3adatmd      , only : w3seta
     use w3idatmd      , only : w3seti
     use w3wdatmd      , only : va, w3setw
@@ -620,8 +618,6 @@ contains
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
-    real(r8), pointer :: wav_tauice1(:)
-    real(r8), pointer :: wav_tauice2(:)
 
     ! d2 is location, d1 is frequency  - nwav_elev_spectrum frequencies will be used
     real(r8), pointer :: wave_elevation_spectrum(:,:)
@@ -754,17 +750,10 @@ contains
     end if
 
     if (wav_coupling_to_cice) then
-       call state_getfldptr(exportState, 'wav_tauice1', wav_tauice1, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call state_getfldptr(exportState, 'wav_tauice2', wav_tauice2, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-
        ! Initialize wave elevation spectrum
-       wav_tauice1(:) = fillvalue
-       wav_tauice2(:) = fillvalue
        wave_elevation_spectrum(:,:) = fillvalue
 
        do jsea=1, nseal                         ! jsea is local
@@ -772,15 +761,10 @@ contains
           ix  = mapsf(isea,1)                   ! global ix
           iy  = mapsf(isea,2)                   ! global iy
           if (mapsta(iy,ix) .eq. 1) then        ! active sea point
-             wav_tauice1(jsea) = TAUICE(jsea,1) ! tau ice is 2D
-             wav_tauice2(jsea) = TAUICE(jsea,2) ! tau ice is 2D
-
              ! If wave_elevation_spectrum is UNDEF  - needs ouput flag to be turned on
              ! wave_elevation_spectrum as 25 variables
              wave_elevation_spectrum(1:nwav_elev_spectrum,jsea)  = EF(jsea,1:nwav_elev_spectrum)
           else
-             wav_tauice1(jsea) = 0.
-             wav_tauice2(jsea) = 0.
              wave_elevation_spectrum(:,jsea) = 0.
           endif
        enddo
@@ -1092,14 +1076,13 @@ contains
     use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
     use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
     use w3wdatmd,   only : va, ust
-    use w3odatmd,   only : naproc, iaproc
+    use w3odatmd,   only : naproc, iaproc, runtype
 #ifdef W3_ST3
     use w3src3md,   only : w3spr3
 #endif
 #ifdef W3_ST4
     use w3src4md,   only : w3spr4
 #endif
-    use wav_shr_mod, only : runtype
 
     ! input/output variables
     real(r8), pointer :: wrln(:) ! 1D roughness length export field ponter
@@ -1417,7 +1400,7 @@ contains
 !> Obtain the import mask used to merge a field from the import state with values from
 !! a file
 !!
-!! @details Set the import mask for merging an import state field with values from
+!> @details Set the import mask for merging an import state field with values from
 !! a file. The import mask is set 0 where the field from the import state has a value
 !! of fillValue due to non-overlapping model domains. The field values read from a
 !! file will be used to provide the values in these regions. The values of the import
@@ -1518,7 +1501,7 @@ contains
   !====================================================================================
 !> Write a netCDF file containing the global field values for debugging
 !!
-!! @details Write a time-stamped netCDF file containing the values of a global field,
+!> @details Write a time-stamped netCDF file containing the values of a global field,
 !! where the global_field is provided on either on all points or only nsea points. In
 !! either case, the field will be written to the file on the mesh.
 !!
