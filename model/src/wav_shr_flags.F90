@@ -107,7 +107,7 @@ module wav_shr_flags
    logical ::  w3_flx4_flag = .false.     !< @public a flag for "W3_FLX4"
 #endif
   
-!   lineinput
+!   linear input
   
 #ifdef W3_LN0
    logical ::  w3_ln0_flag = .true.      !< @public a flag for "W3_LN0"
@@ -822,7 +822,19 @@ module wav_shr_flags
 #else
    logical ::  w3_xw1_flag = .false.     !< @public a flag for "W3_XW1"
 #endif
-  
+ 
+#ifdef W3_CESMCOUPLED
+    w3_cesmcoupled_flag = .true.         !< @public a flag for "W3_CESMCOUPLED"
+#else
+    w3_cesmcoupled_flag = .false.        !< @public a flag for "W3_CESMCOUPLED"
+#endif
+
+#ifdef W3_UWM
+   logical ::  w3_uwm_flag = .true.      !< @public a flag for "W3_UWM"
+#else
+   logical ::  w3_uwm_flag = .false.     !< @public a flag for "W3_UWM"
+#endif
+
   interface print_logmsg
     module procedure print_logmsg_1line
     module procedure print_logmsg_2line
