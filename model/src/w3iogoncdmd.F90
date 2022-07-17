@@ -11,7 +11,7 @@ module W3IOGONCDMD
   USE W3GDATMD      , ONLY: NK, NX, NY, MAPSF, MAPSTA, NSEA
   USE W3ODATMD      , ONLY: NOSWLL, UNDEF
   use w3odatmd      , only : nds, iaproc, napout
-  use wav_shr_mod   , only : dbug_flag
+  !use wav_shr_mod   , only : dbug_flag
   USE NETCDF
 
   implicit none
@@ -401,9 +401,9 @@ contains
      linit2 = (trim(init2) == "true")
     end if
 
-    if (dbug_flag > 5 ) then
-     write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
-    end if
+    !if (dbug_flag > 5 ) then
+    ! write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
+    !end if
 
     var2d = undef
     do isea = 1,nsea
@@ -466,10 +466,10 @@ contains
     ub = ubound(var,2)
     allocate(varloc(lb:ub))
 
-    if (dbug_flag > 5 ) then
-     write(nds(1),'(a,2i6)')' writing variable ' //trim(vname)//' to history file ' &
-        //trim(fname)//' with bounds ',lb,ub
-    end if
+    !if (dbug_flag > 5 ) then
+    ! write(nds(1),'(a,2i6)')' writing variable ' //trim(vname)//' to history file ' &
+    !    //trim(fname)//' with bounds ',lb,ub
+    !end if
 
     var3d = undef
     do isea = 1,nsea
