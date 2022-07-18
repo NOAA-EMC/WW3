@@ -989,8 +989,7 @@ contains
              if (words(6) .eq. 'T') then
                 call nextln ( comstr , ndsi , ndsen )
                 read (ndsi,*,end=2001,err=2002)(odat(i),i=5*(8-1)+1,5*8)
-                !if(iaproc .eq. naproc) write(*,*)'odat(j=4): ',(odat(i),i=5*(8-1)+1,5*8)
-                write(740+iaproc,*)'odat(j=4): ',(odat(i),i=5*(8-1)+1,5*8)
+                if(iaproc .eq. naproc) write(*,*)'odat(j=4): ',(odat(i),i=5*(8-1)+1,5*8)
              end if
              if (words(7) .eq. 'T') then
                 call nextln ( comstr , ndsi , ndsen )
