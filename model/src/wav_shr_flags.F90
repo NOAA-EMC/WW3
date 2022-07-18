@@ -824,9 +824,9 @@ module wav_shr_flags
 #endif
  
 #ifdef W3_CESMCOUPLED
-    w3_cesmcoupled_flag = .true.         !< @public a flag for "W3_CESMCOUPLED"
+    logical :: w3_cesmcoupled_flag = .true.    !< @public a flag for "W3_CESMCOUPLED"
 #else
-    w3_cesmcoupled_flag = .false.        !< @public a flag for "W3_CESMCOUPLED"
+    logical :: w3_cesmcoupled_flag = .false.   !< @public a flag for "W3_CESMCOUPLED"
 #endif
 
 #ifdef W3_UWM

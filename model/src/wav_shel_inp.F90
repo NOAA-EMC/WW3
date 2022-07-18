@@ -208,7 +208,6 @@ contains
     ndso =  6
     ndse =  6
     ndst =  6
-    ndsl = 50
     if (w3_cou_flag) then
        ndso =  333
        ndse =  333
@@ -564,7 +563,7 @@ contains
              else if ( j .eq. 2 ) then
 
                 ! type 2: point output
-                open (ndsl, file=trim(fnmpre)//trim(nml_output_type%point%file), &
+                open (newunit=ndsl, file=trim(fnmpre)//trim(nml_output_type%point%file), &
                      form='formatted', status='old', err=2104, iostat=ierr)
 
                 ! first loop to count the number of points
