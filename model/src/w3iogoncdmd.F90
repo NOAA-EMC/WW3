@@ -42,7 +42,7 @@ contains
 #endif
     use w3timemd   , only: set_user_timestring
     use w3odatmd   , only: time_origin, calendar_name, elapsed_secs
-    use w3odatmd   , only: user_histname, user_histfname
+    use w3odatmd   , only: use_user_histname, user_histfname
     USE NETCDF
 
     IMPLICIT NONE
@@ -87,7 +87,7 @@ contains
     ! Create the netcdf file and return the ncid and dimid
     ! -------------------------------------------------------------
 
-    if (user_histname) then
+    if (use_user_histname) then
        if (len_trim(user_histfname) == 0 ) then
           call extcde (60, MSG="user history filename requested but not provided")
        end if

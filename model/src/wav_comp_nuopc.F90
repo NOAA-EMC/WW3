@@ -44,7 +44,7 @@ module wav_comp_nuopc
   use wav_shr_mod           , only : wav_coupling_to_cice
   use wav_shr_mod           , only : merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
-  use w3odatmd              , only : runtype, user_histname, user_histfname, user_restname, user_restfname
+  use w3odatmd              , only : runtype, use_user_histname, user_histfname, use_user_restname, user_restfname
   use w3odatmd              , only : user_histalarm, user_restalarm, user_gridncout
   use w3odatmd              , only : time_origin, calendar_name, elapsed_secs
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
@@ -1381,7 +1381,7 @@ contains
     end if
 
     ! ESMF does not have a broadcast for chars
-    call mpi_bcast(initfile, len_trim(initfile), MPI_CHARACTER, 0, mpi_comm, ierr)
+    call mpi_bcast(initfile, len(initfile), MPI_CHARACTER, 0, mpi_comm, ierr)
     if (ierr /= MPI_SUCCESS) then
        call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for initfile ', &
             ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
@@ -1458,8 +1458,8 @@ contains
     end if
 
     ! custom restart and history file names are used for CESM
-    user_histname = .true.
-    user_restname = .true.
+    use_user_histname = .true.
+    use_user_restname = .true.
 
     ! if runtype=initial, the initfile will be read in w3iorsmd
     if (len_trim(inst_suffix) > 0) then
@@ -1543,17 +1543,17 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='user_sets_histname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       user_histname=(trim(cvalue)=="true")
+       use_user_histname=(trim(cvalue)=="true")
     end if
-    write(logmsg,'(A,l)') trim(subname)//': Custom history names in use ',user_histname
+    write(logmsg,'(A,l)') trim(subname)//': Custom history names in use ',use_user_histname
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
     call NUOPC_CompAttributeGet(gcomp, name='user_sets_restname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       user_restname=(trim(cvalue)=="true")
+       use_user_restname=(trim(cvalue)=="true")
     end if
-    write(logmsg,'(A,l)') trim(subname)//': Custom restart names in use ',user_restname
+    write(logmsg,'(A,l)') trim(subname)//': Custom restart names in use ',use_user_restname
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
     call NUOPC_CompAttributeGet(gcomp, name='gridded_netcdfout', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
@@ -1564,10 +1564,10 @@ contains
     write(logmsg,'(A,l)') trim(subname)//': Gridded netcdf output is requested ',user_gridncout
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
-    if (user_histname) then
+    if (use_user_histname) then
        user_histfname = trim(casename)//'.ww3.hi.'
     end if
-    if (user_restname) then
+    if (use_user_restname) then
        user_restfname = trim(casename)//'.ww3.r.'
     end if
 

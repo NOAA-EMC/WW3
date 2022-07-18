@@ -290,7 +290,7 @@
 #endif
 !
       use w3timemd, only: set_user_timestring
-      use w3odatmd, only: user_restname, user_restfname, ndso, naplog
+      use w3odatmd, only: use_user_restname, user_restfname, ndso, naplog
 
       IMPLICIT NONE
 !
@@ -437,14 +437,16 @@
 !
 ! open file ---------------------------------------------------------- *
 !
-      if (user_restname) then
+      if (use_user_restname) then
          ierr = -99
          if (.not. write) then
             if (runtype == 'initial') then
-               if (len_trim(initfile) == 0) then       ! no IC file, use startup option
+               if (len_trim(initfile) == 0) then       
+                  ! no IC file, use startup option
                   goto 800
                else
-                  user_restfname = trim(initfile)
+                  ! IC file exists - use it
+                  fname = trim(initfile)
                end if
             else
                call set_user_timestring(time,user_timestring)
@@ -466,7 +468,6 @@
                write (ndso,'(a)') 'WW3: reading initial/restart file '//trim(fname)
             end if
          end if
-
          IF ( WRITE ) THEN
              IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
              OPEN (NDSR,FILE=trim(FNAME), form='UNFORMATTED', convert=file_endian,       &

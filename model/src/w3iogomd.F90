@@ -2784,7 +2784,7 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
       use w3timemd   , only: set_user_timestring
-      use w3odatmd   , only: user_histname, user_histfname
+      use w3odatmd   , only: use_user_histname, user_histfname
 !
       IMPLICIT NONE
 !/
@@ -2868,7 +2868,7 @@
          I      = LEN_TRIM(FILEXT)
          J      = LEN_TRIM(FNMPRE)
 
-         if (user_histname) then
+         if (use_user_histname) then
             if (len_trim(user_histfname) == 0 ) then
                call extcde (60, MSG="user history filename requested"// &
                " but not provided")
@@ -2952,7 +2952,7 @@
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
 
-         if (user_histname) then
+          if (use_user_histname) then
             if (len_trim(user_histfname) == 0 ) then
                call extcde (60, MSG="user history filename requested"// &
                " but not provided")
