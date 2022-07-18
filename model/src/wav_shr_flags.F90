@@ -13,6 +13,18 @@ module wav_shr_flags
 
 !   debug/logging
   
+#ifdef W3_DEBUGDCXDX
+   logical ::  w3_debugdcxdx_flag = .true.      !< @public a flag for "W3_DEBUGDCXDX"
+#else
+   logical ::  w3_debugdcxdx_flag = .false.     !< @public a flag for "W3_DEBUGDCXDX"
+#endif
+
+#ifdef W3_DEBUGIOBC
+   logical ::  w3_debugiobc_flag = .true.      !< @public a flag for "W3_DEBUGIOBC"
+#else
+   logical ::  w3_debugiobc_flag = .false.     !< @public a flag for "W3_DEBUGIOBC"
+#endif
+
 #ifdef W3_DEBUGINIT
    logical ::  w3_debuginit_flag = .true.      !< @public a flag for "W3_DEBUGINIT"
 #else
@@ -833,6 +845,12 @@ module wav_shr_flags
    logical ::  w3_uwm_flag = .true.      !< @public a flag for "W3_UWM"
 #else
    logical ::  w3_uwm_flag = .false.     !< @public a flag for "W3_UWM"
+#endif
+
+#ifdef W3_SBS
+   logical ::  w3_sbs_flag = .true.      !< @public a flag for "W3_SBS"
+#else
+   logical ::  w3_sbs_flag = .false.     !< @public a flag for "W3_SBS"
 #endif
 
   interface print_logmsg
