@@ -72,7 +72,7 @@ WW3 has dependent libraries depending on switch configuration.
 
 * METIS/ParMETIS - Required when `PDLIB` in switch list.
 
-* NCEPLIBS (g2, bacio, w3nco) - Required when `NCEP2` in switch list.
+* NCEPLIBS (g2, bacio, w3emc) - Required when `NCEP2` in switch list.
 
 * ESMF - Required when `MULTI_ESMF=ON`
 
@@ -112,7 +112,7 @@ export NetCDF_ROOT=<netcdf dir>
 
 The CMAKE_PREFIX_PATH CMake variable, or env variable, can be used to pass a list of semi-colon separated paths.
 ```
-cmake .. -DCMAKE_PREFIX_PATH=/path/to/g2;/path/to/w3nco;/path/to/bacio
+cmake .. -DCMAKE_PREFIX_PATH=/path/to/g2;/path/to/w3emc;/path/to/bacio
 ```
 
 ### OASIS is a special case and OASISDIR is used
