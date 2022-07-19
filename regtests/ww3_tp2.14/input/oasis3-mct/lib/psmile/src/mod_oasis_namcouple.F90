@@ -1680,6 +1680,7 @@ SUBROUTINE inipar_alloc()
   clhead   = ' $MODINFO'
   clprint  = ' $NLOGPRT'
   clcal    = ' $CALTYPE'
+  clinfo   = 'no'
 
   !* Initialize some variables 
   ntime = 0 ; niter = 5 

@@ -1782,6 +1782,7 @@
           PSIC=0.
 #endif
 
+
 #ifdef W3_PDLIB
           IF (.not. LSLOC) THEN
             VSTOT = 0.
@@ -1797,6 +1798,7 @@
 #ifdef W3_PDLIB
           DO JSEA = 1, NP
 #endif
+
 
 #ifdef W3_PDLIB
             CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -2445,8 +2447,8 @@
              JSEA = 1 + (IY - ISPEC - 1)/NAPROC
 #endif
 #ifdef W3_SHRD
-            ISPEC = 0
-             JSEA = IY
+            ISPEC = 0 
+             JSEA = IY 
 #endif
 #endif 
 ! W3_SMC ... 
