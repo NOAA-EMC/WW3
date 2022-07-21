@@ -2,7 +2,7 @@ module MallocInfo_m
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -69,25 +69,25 @@ module MallocInfo_m
     !> This structure type is used to return information about the dynamic memory allocator.
     type, bind(c) :: MallInfo_t
       !> This is the total size of memory allocated with sbrk by malloc, in bytes.
-      integer(c_int) :: arena                  
+      integer(c_int) :: arena
       !> This is the number of chunks not in use. (The memory allocator internally gets chunks of memory from the operating system, and then carves them up to satisfy individual malloc requests; see Efficiency and Malloc.)
-      integer(c_int) :: ordblks        
+      integer(c_int) :: ordblks
       !> This field is unused.
-      integer(c_int) :: smblks        
+      integer(c_int) :: smblks
       !> This is the total number of chunks allocated with mmap.
-      integer(c_int) :: hblks        
+      integer(c_int) :: hblks
       !> This is the total size of memory allocated with mmap, in bytes.
-      integer(c_int) :: hblkhd        
+      integer(c_int) :: hblkhd
       !> This field is unused.
-      integer(c_int) :: usmblks        
+      integer(c_int) :: usmblks
       !> This field is unused.
-      integer(c_int) :: fsmblks        
+      integer(c_int) :: fsmblks
       !> This is the total size of memory occupied by chunks handed out by malloc.
-      integer(c_int) :: uordblks        
+      integer(c_int) :: uordblks
       !> This is the total size of memory occupied by free (not in use) chunks.
-      integer(c_int) :: fordblks        
+      integer(c_int) :: fordblks
       !> This is the size of the top-most releasable chunk that normally borders the end of the heap (i.e., the high end of the virtual address space’s data segment).
-      integer(c_int) :: keepcost      
+      integer(c_int) :: keepcost
     end type
     
     interface
@@ -95,17 +95,17 @@ module MallocInfo_m
         use :: iso_c_binding
         implicit none
         
-        type, bind(c) :: MallInfo_t      
-          integer(c_int) :: arena                        
-          integer(c_int) :: ordblks              
-          integer(c_int) :: smblks        
-          integer(c_int) :: hblks        
-          integer(c_int) :: hblkhd        
-          integer(c_int) :: usmblks        
-          integer(c_int) :: fsmblks        
-          integer(c_int) :: uordblks        
-          integer(c_int) :: fordblks        
-          integer(c_int) :: keepcost      
+        type, bind(c) :: MallInfo_t
+          integer(c_int) :: arena
+          integer(c_int) :: ordblks
+          integer(c_int) :: smblks
+          integer(c_int) :: hblks
+          integer(c_int) :: hblkhd
+          integer(c_int) :: usmblks
+          integer(c_int) :: fsmblks
+          integer(c_int) :: uordblks
+          integer(c_int) :: fordblks
+          integer(c_int) :: keepcost
         end type
         type(MallInfo_t) :: data
       end function
@@ -117,7 +117,7 @@ module MallocInfo_m
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | THomas Huxhorn (BGS IT&E GmbH     |
 !/                  |                                   |
@@ -187,7 +187,7 @@ module MallocInfo_m
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -251,11 +251,11 @@ module MallocInfo_m
 #endif
     real :: ib2m
     integer(8) :: vmsize, vmRSS
-    integer, intent(in)          :: ihdnl 
+    integer, intent(in)          :: ihdnl
     type(MallInfo_t), intent(in) :: malinfo
 
 
-    if (ihdnl .lt. 1) stop 'ihndl not set' 
+    if (ihdnl .lt. 1) stop 'ihndl not set'
     ib2m=1./REAL(1024**2)
     vmsize = getVmSize()
     vmRSS  = getVMRSS()
@@ -265,8 +265,8 @@ module MallocInfo_m
     !write(*,'(A72,I10)') "Total number of chunks allocated with mmap.                  ", malinfo%hblks
     !write(*,'(A72,I10)') "Number of chunks not in use.                                 ", malinfo%ordblks
     !write(*,'(A72,2F20.10)') "Total size of memory occupied by free (not in use) chunks.   ", malinfo%fordblks*ib2m
-    !write(*,'(A72,2F20.10)') "Size of the top-most releasable chunk borders end of the heap", malinfo%keepcost*ib2m    
-    write(ihdnl,'(A72,2F20.10)') "VM size in proc ", vmsize/1024. 
+    !write(*,'(A72,2F20.10)') "Size of the top-most releasable chunk borders end of the heap", malinfo%keepcost*ib2m
+    write(ihdnl,'(A72,2F20.10)') "VM size in proc ", vmsize/1024.
     write(ihdnl,'(A72,2F20.10)') "RSS size in prof ", vmRSS/1024.
     call flush(ihdnl)
   end subroutine
@@ -287,7 +287,7 @@ module MallocInfo_m
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -373,7 +373,7 @@ module MallocInfo_m
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
+!/                  |                                   |
 !/                  | Aron Roland (BGS IT&E GmbH)       |
 !/                  | Mathieu Dutour-Sikiric (IRB)      |
 !/                  |                                   |
@@ -460,10 +460,10 @@ end module
 !program test
 !  use MallocInfo_m
 !  implicit none
-!  type(MallInfo_t) :: mallinfos(10000)  
+!  type(MallInfo_t) :: mallinfos(10000)
 !  integer :: i, nInfos
 !  integer, allocatable :: data(:)
-!  
+!
 !  allocate(data(0))
 !  nInfos = 0
 !  do i=1, 10
@@ -471,7 +471,7 @@ end module
 !    deallocate(data)
 !    allocate(data(i*100000))
 !    nInfos = nInfos+1
-!    call getMallocInfo(mallinfos(nInfos))    
+!    call getMallocInfo(mallinfos(nInfos))
 !    call printMallInfo(IAPROC,mallInfos(nInfos))
 !    call sleep(1)
 !  end do
@@ -481,8 +481,8 @@ end module
 !    deallocate(data)
 !    allocate(data(i*100000))
 !    nInfos = nInfos+1
-!    call getMallocInfo(mallinfos(nInfos))    
-!    call printMallInfo(IAPROC,mallInfos(nInfos))    
+!    call getMallocInfo(mallinfos(nInfos))
+!    call printMallInfo(IAPROC,mallInfos(nInfos))
 !    call sleep(1)
 !  end do
   

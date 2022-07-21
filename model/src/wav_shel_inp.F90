@@ -106,6 +106,7 @@ contains
 !> @date 01-05-2022
   subroutine read_shel_config(mpi_comm)
 
+    use wav_shr_flags
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
     use w3nmlshelmd    , only : nml_output_date_t, nml_homog_count_t, nml_homog_input_t
     use w3nmlshelmd    , only : w3nmlshel
@@ -127,12 +128,6 @@ contains
 #ifdef W3_NL5
     use w3wdatmd       , only: qi5tbeg
 #endif
-    use wav_shr_flags  , only : w3_debuginit_flag, w3_cou_flag, w3_oasis_flag
-    use wav_shr_flags  , only : w3_o7_flag, w3_t_flag, w3_mgw_flag, w3_mgp_flag
-    use wav_shr_flags  , only : w3_nl5_flag, w3_ic1_flag, w3_ic2_flag, w3_is2_flag
-    use wav_shr_flags  , only : w3_ic3_flag, w3_bt8_flag, w3_bt9_flag, w3_ic4_flag
-    use wav_shr_flags  , only : w3_ic5_flag, w3_nco_flag, w3_pdlib_flag
-    use wav_shr_flags  , only : print_logmsg
 
     integer, intent(in) :: mpi_comm
 
