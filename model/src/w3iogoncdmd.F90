@@ -6,13 +6,12 @@
 !> @date 01-05-2022
 #include "w3macros.h"
 
-module W3IOGONCDMD
+module w3iogoncdmd
 
-  USE W3GDATMD      , ONLY: NK, NX, NY, MAPSF, MAPSTA, NSEA
-  USE W3ODATMD      , ONLY: NOSWLL, UNDEF
+  use w3gdatmd      , only: nk, nx, ny, mapsf, mapsta, nsea
+  use w3odatmd      , only: noswll, undef
   use w3odatmd      , only : nds, iaproc, napout
-  !use wav_shr_mod   , only : dbug_flag
-  USE NETCDF
+  use netcdf
 
   implicit none
 
@@ -37,32 +36,32 @@ module W3IOGONCDMD
 contains
 !===============================================================================
 
-  subroutine W3IOGONCD ()
+  subroutine w3iogoncd ()
 
-    USE W3ODATMD, ONLY: FNMPRE
-    USE W3GDATMD, ONLY: FILEXT
-    USE W3SERVMD, ONLY: EXTCDE
-    USE W3WDATMD, ONLY: W3SETW, W3DIMW, TIME, WLV, ICE, ICEF, ICEH, BERG, UST, USTDIR, ASF, RHOAIR
-    USE W3GDATMD, ONLY: XGRD, YGRD
-    USE W3GDATMD, ONLY: E3DF, P2MSF, US3DF, USSPF, W3SETG
-    USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, NDST, NDSE,  NOSWLL, W3SETO
-    USE W3ADATMD, ONLY: W3SETA, W3DIMA, W3XETA
-    USE W3ADATMD, ONLY: AINIT, DW, UA, UD, AS, CX, CY, WN, TAUA, TAUADIR
-    USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0, WBT, WNMEAN
-    USE W3ADATMD, ONLY: FP1, THP1, DTDYN
-    USE W3ADATMD, ONLY: FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY
-    USE W3ADATMD, ONLY: PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR
-    USE W3ADATMD, ONLY: PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2
-    USE W3ADATMD, ONLY: PEP, USERO, TAUOX, TAUOY, TAUWIX, TAUWIY
-    USE W3ADATMD, ONLY: PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS
-    USE W3ADATMD, ONLY: USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY
-    USE W3ADATMD, ONLY: MSCD, QP, TAUWNX, TAUWNY, CHARN, TWS, BHD
-    USE W3ADATMD, ONLY: PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE, EF
-    USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D
-    USE W3ADATMD, ONLY: TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE
-    USE W3ADATMD, ONLY: STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD, USSP, TAUOCX, TAUOCY
-#ifdef CESMCOUPLED
-    USE W3ADATMD, ONLY: LANGMT
+    use w3odatmd, only: fnmpre
+    use w3gdatmd, only: filext
+    use w3servmd, only: extcde
+    use w3wdatmd, only: w3setw, w3dimw, time, wlv, ice, icef, iceh, berg, ust, ustdir, asf, rhoair
+    use w3gdatmd, only: xgrd, ygrd
+    use w3gdatmd, only: e3df, p2msf, us3df, usspf, w3setg
+    use w3odatmd, only: nogrp, ngrpp, idout, ndst, ndse,  noswll, w3seto
+    use w3adatmd, only: w3seta, w3dima, w3xeta
+    use w3adatmd, only: ainit, dw, ua, ud, as, cx, cy, wn, taua, tauadir
+    use w3adatmd, only: hs, wlm, t02, t0m1, t01, fp0, thm, ths, thp0, wbt, wnmean
+    use w3adatmd, only: fp1, thp1, dtdyn
+    use w3adatmd, only: fcut, aba, abd, uba, ubd, sxx, syy, sxy
+    use w3adatmd, only: phs, ptp, plp, pdir, psi, pws, pwst, pnr
+    use w3adatmd, only: pthp0, pqp, ppe, pgw, psw, ptm1, pt1, pt2
+    use w3adatmd, only: pep, usero, tauox, tauoy, tauwix, tauwiy
+    use w3adatmd, only: phiaw, phioc, tusx, tusy, prms, tpms
+    use w3adatmd, only: ussx, ussy, mssx, mssy, mssd, mscx, mscy
+    use w3adatmd, only: mscd, qp, tauwnx, tauwny, charn, tws, bhd
+    use w3adatmd, only: phibbl, taubbl, whitecap, bedforms, cge, ef
+    use w3adatmd, only: cflxymax, cflthmax, cflkmax, p2sms, us3d
+    use w3adatmd, only: th1m, sth1m, th2m, sth2m, hsig, phice, tauice
+    use w3adatmd, only: stmaxe, stmaxd, hmaxe, hcmaxe, hmaxd, hcmaxd, ussp, tauocx, tauocy
+#ifdef W3_CESMCOUPLED
+    use w3adatmd, only: langmt
 #endif
     use wav_grdout , only: varatts, outvars
     use w3timemd   , only: set_user_timestring
@@ -70,7 +69,7 @@ contains
     use w3odatmd   , only: use_user_histname, user_histfname
 
     ! local variables
-    INTEGER                  :: IGRD
+    integer                  :: igrd
     integer    ,target       :: dimid3(3)
     integer    ,target       :: dimid4(4)
     integer    ,pointer      :: dimid(:)
@@ -82,20 +81,20 @@ contains
 
     !-------------------------------------------------------------------------------
 
-    IGRD   = 1
-    CALL W3SETO ( IGRD, NDSE, NDST )
-    CALL W3SETG ( IGRD, NDSE, NDST )
-    CALL W3SETA ( IGRD, NDSE, NDST )  ! sets pointers into wadats in w3adatmd
-    CALL W3XETA ( IGRD, NDSE, NDST )  ! sets pointers into wadats in w3adatmd
-    CALL W3SETW ( IGRD, NDSE, NDST )  ! sets pointers into wdatas in w3wdatmd
+    igrd   = 1
+    call w3seto ( igrd, ndse, ndst )
+    call w3setg ( igrd, ndse, ndst )
+    call w3seta ( igrd, ndse, ndst )  ! sets pointers into wadats in w3adatmd
+    call w3xeta ( igrd, ndse, ndst )  ! sets pointers into wadats in w3adatmd
+    call w3setw ( igrd, ndse, ndst )  ! sets pointers into wdatas in w3wdatmd
 
     ! -------------------------------------------------------------
-    ! Create the netcdf file
+    ! create the netcdf file
     ! -------------------------------------------------------------
 
     if (use_user_histname) then
        if (len_trim(user_histfname) == 0 ) then
-          call extcde (60, MSG="user history filename requested but not provided")
+          call extcde (60, msg="user history filename requested but not provided")
        end if
        call set_user_timestring(time,user_timestring)
        fname = trim(user_histfname)//trim(user_timestring)//'.nc'
@@ -104,7 +103,7 @@ contains
     end if
 
     len_s = noswll + 1                  ! 0:noswll
-    len_m = P2MSF(3)-P2MSF(2) + 1       ! ?
+    len_m = p2msf(3)-p2msf(2) + 1       ! ?
     len_p = usspf(2)                    ! partitions
     len_k = e3df(3,1) - e3df(2,1) + 1   ! frequencies
 
@@ -323,7 +322,7 @@ contains
            if (vname .eq.   'PHICE') call write_var2d(vname, phice(1:nsea))
            if (vname .eq.  'TAUOCX') call write_var2d(vname, tauocx(1:nsea))
            if (vname .eq.  'TAUOCY') call write_var2d(vname, tauocy(1:nsea))
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
            if (vname .eq.  'LANGMT') call write_var2d(vname, langmt(1:nsea))
 #endif
            ! Group 7
@@ -362,9 +361,9 @@ contains
     if (k_axis) deallocate(var3dk)
 
     ! Flush the buffers for write
-    call W3SETA ( IGRD, NDSE, NDST )
+    call w3seta ( igrd, ndse, ndst )
 
-  end subroutine W3IOGONCD
+  end subroutine w3iogoncd
 
   !===============================================================================
   subroutine write_var2d(vname, var, dir, usemask, init0, init2)
@@ -401,9 +400,8 @@ contains
      linit2 = (trim(init2) == "true")
     end if
 
-    !if (dbug_flag > 5 ) then
+    ! DEBUG
     ! write(nds(1),'(a)')' writing variable ' //trim(vname)//' to history file '//trim(fname)
-    !end if
 
     var2d = undef
     do isea = 1,nsea
@@ -466,10 +464,9 @@ contains
     ub = ubound(var,2)
     allocate(varloc(lb:ub))
 
-    !if (dbug_flag > 5 ) then
+    ! DEBUG
     ! write(nds(1),'(a,2i6)')' writing variable ' //trim(vname)//' to history file ' &
     !    //trim(fname)//' with bounds ',lb,ub
-    !end if
 
     var3d = undef
     do isea = 1,nsea
@@ -495,8 +492,8 @@ contains
 
   !===============================================================================
   subroutine handle_err(ierr,string)
-    USE W3ODATMD, ONLY: NDSE
-    USE W3SERVMD, ONLY: EXTCDE
+    use w3odatmd, only: ndse
+    use w3servmd, only: extcde
 
     implicit none
 
@@ -505,9 +502,9 @@ contains
     character(len=*),intent(in) :: string
 
     if (ierr /= nf90_noerr) then
-         write(ndse,*) "*** WAVEWATCH III netCDF error: ",trim(string),':',trim(nf90_strerror(ierr))
+         write(ndse,*) "*** WAVEWATCH III netcdf error: ",trim(string),':',trim(nf90_strerror(ierr))
          call extcde ( 49 )
     end if
   end subroutine handle_err
 
-end module W3IOGONCDMD
+end module w3iogoncdmd
