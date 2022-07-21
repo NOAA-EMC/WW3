@@ -10,9 +10,27 @@
 module wav_shr_flags
 
   implicit none
+  public
 
 !   debug/logging
+#ifdef W3_DEBUG
+   logical ::  w3_debug_flag = .true.     !< @public a flag for "W3_DEBUG"
+#else
+   logical ::  w3_debug_flag = .false.     !< @public a flag for "W3_DEBUG"
+#endif
   
+#ifdef W3_DEBUGCOH
+   logical ::  w3_debugcoh_flag = .true.      !< @public a flag for "W3_DEBUGCOH"
+#else
+   logical ::  w3_debugcoh_flag = .false.     !< @public a flag for "W3_DEBUGCOH"
+#endif
+
+#ifdef W3_DEBUGIOBP
+   logical ::  w3_debugiobp_flag = .true.      !< @public a flag for "W3_DEBUGIOBP"
+#else
+   logical ::  w3_debugiobp_flag = .false.    !< @public a flag for "W3_DEBUGIOBP"
+#endif
+
 #ifdef W3_DEBUGDCXDX
    logical ::  w3_debugdcxdx_flag = .true.      !< @public a flag for "W3_DEBUGDCXDX"
 #else
@@ -23,6 +41,12 @@ module wav_shr_flags
    logical ::  w3_debugiobc_flag = .true.      !< @public a flag for "W3_DEBUGIOBC"
 #else
    logical ::  w3_debugiobc_flag = .false.     !< @public a flag for "W3_DEBUGIOBC"
+#endif
+
+#ifdef W3_DEBUGSRC
+   logical ::  w3_debugsrc_flag = .true.      !< @public a flag for "W3_DEBUGSRC"
+#else
+   logical ::  w3_debugsrc_flag = .false.     !< @public a flag for "W3_DEBUGSRC"
 #endif
 
 #ifdef W3_DEBUGINIT
@@ -119,6 +143,12 @@ module wav_shr_flags
    logical ::  w3_flx4_flag = .false.     !< @public a flag for "W3_FLX4"
 #endif
   
+#ifdef W3_FLX5
+   logical ::  w3_flx5_flag = .true.      !< @public a flag for "W3_FLX5"
+#else
+   logical ::  w3_flx5_flag = .false.     !< @public a flag for "W3_FLX5"
+#endif
+
 !   linear input
   
 #ifdef W3_LN0
@@ -667,6 +697,12 @@ module wav_shr_flags
    logical ::  w3_mlim_flag = .false.     !< @public a flag for "W3_MLIM"
 #endif
   
+#ifdef W3_MPI
+   logical ::  w3_mpi_flag = .true.      !< @public a flag for "W3_MPI"
+#else
+   logical ::  w3_mpi_flag = .false.     !< @public a flag for "W3_MPI"
+#endif
+
 #ifdef W3_MPIBDI
    logical ::  w3_mpibdi_flag = .true.      !< @public a flag for "W3_MPIBDI"
 #else
@@ -853,6 +889,24 @@ module wav_shr_flags
    logical ::  w3_sbs_flag = .false.     !< @public a flag for "W3_SBS"
 #endif
 
+#ifdef W3_BT4
+   logical ::  w3_bt4_flag = .true.      !< @public a flag for "W3_BT4"
+#else
+   logical ::  w3_bt4_flag = .false.     !< @public a flag for "W3_BT4"
+#endif
+
+#ifdef W3_WCOR
+   logical ::  w3_wcor_flag = .true.      !< @public a flag for "W3_WCOR"
+#else
+   logical ::  w3_wcor_flag = .false.     !< @public a flag for "W3_WCOR"
+#endif
+
+#ifdef W3_SETUP
+   logical ::  w3_setup_flag = .true.      !< @public a flag for "W3_SETUP"
+#else
+   logical ::  w3_setup_flag = .false.     !< @public a flag for "W3_SETUP"
+#endif
+
   interface print_logmsg
     module procedure print_logmsg_1line
     module procedure print_logmsg_2line
@@ -860,7 +914,7 @@ module wav_shr_flags
     module procedure print_logmsg_4line
   end interface
 
-  contains
+contains
 
   !========================================================================
 !> Write a 1 line message if requested
@@ -976,4 +1030,30 @@ module wav_shr_flags
    flush(unum)
 
    end subroutine print_logmsg_4line
+
+  !========================================================================
+!> Write memory statistics if requested
+!!
+!> @details Writes a single line of memory statistics to unit 40000+iaproc
+!!
+!! @param[in]   iun               unit number
+!! @param[in]   msg               message
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 06-01-2022
+
+   subroutine print_memcheck(iun, msg)
+#if W3_MEMCHECK
+     USE MallocInfo_m
+#endif
+     integer          , intent(in) :: iun
+     character(len=*) , intent(in) :: msg
+
+#if W3_MEMCHECK
+     write(iun,*) trim(msg)
+     call getMallocInfo(mallinfos)
+     call printMallInfo(iun, mallInfos)
+#endif
+   end subroutine print_memcheck
+
 end module wav_shr_flags

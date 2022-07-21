@@ -13,6 +13,7 @@ module wav_import_export
   use ESMF
   use NUOPC
   use NUOPC_Model
+  use wav_shr_flags
   use wav_kind_mod , only : r8 => shr_kind_r8, r4 => shr_kind_r4, i4 => shr_kind_i4
   use wav_kind_mod , only : CL => shr_kind_cl, CS => shr_kind_cs
   use wav_shr_mod  , only : ymd2date
@@ -275,8 +276,11 @@ contains
     use w3idatmd    , only: HML
 #else
     use wmupdtmd    , only: wmupd2
-    use wmmdatmd    , only: wmsetm, mpi_comm_grd
+    use wmmdatmd    , only: wmsetm
     use wmmdatmd    , only: mdse, mdst, nrgrd, inpmap
+#ifdef W3_MPI
+    use wmmdatmd    , only: mpi_comm_grd
+#endif
 #endif
 
     ! input/output variables
