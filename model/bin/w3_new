@@ -397,7 +397,6 @@
       'setup' ) cd $main_dir/src ; touch w3initmd.F90
                                    touch w3iogomd.F90
                                    touch w3iopomd.F90
-                                   touch w3netcdf.F90
                                    touch w3odatmd.F90
                                    touch w3updtmd.F90
                                    touch w3wavemd.F90
@@ -408,7 +407,6 @@
                                    touch w3gdatmd.F90
                                    touch w3initmd.F90
                                    touch w3iorsmd.F90
-                                   touch w3netcdf.F90
                                    touch w3parall.F90
                                    touch w3srcemd.F90
                                    touch w3triamd.F90
