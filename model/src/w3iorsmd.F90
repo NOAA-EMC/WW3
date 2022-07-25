@@ -247,6 +247,7 @@
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
       USE W3ODATMD, ONLY: W3SETO
+      USE W3WDATMD, only : W3SETW, W3DIMW
       USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
       USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, T01, FP0, THM, CHARN,&
                           TAUWIX, TAUWIY, TWS, TAUOX, TAUOY, BHD,     &
@@ -257,7 +258,8 @@
       USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
                           GNAME, FILEXT, GTYPE, UNGTYPE
       USE W3TRIAMD, ONLY: SET_UG_IOBP
-      USE W3WDATMD
+      USE W3WDATMD, only : DINIT, VA, TIME, TLEV, TICE, TRHO, ICE, UST
+      USE W3WDATMD, only : USTDIR, ASF, FPIS, ICEF, TIC1, TIC5, WLV
 #ifdef W3_WRST
       USE W3IDATMD, ONLY: WXN, WYN, W3SETI
       USE W3IDATMD, ONLY: WXNwrst, WYNwrst
@@ -435,10 +437,6 @@
 !
 ! open file ---------------------------------------------------------- *
 !
-      write(6,'(a,l)')'DEBUG: use_user_restname = ',use_user_restname
-      write(6,'(a)')'DEBUG: initfile = '//trim(initfile)
-      write(6,'(a)')'DEBUG: runtype = '//trim(runtype)
-
       if (use_user_restname) then
          ierr = -99
          if (.not. write) then
@@ -449,7 +447,6 @@
                else
                   ! IC file exists - use it
                   fname = trim(initfile)
-                  write(6,'(a)')'DEBUG: fname = '//trim(fname)
                end if
             else
                call set_user_timestring(time,user_timestring)
@@ -471,17 +468,14 @@
                write (ndso,'(a)') 'WW3: reading initial/restart file '//trim(fname)
             end if
          end if
-
          IF ( WRITE ) THEN
              IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
              OPEN (NDSR,FILE=trim(FNAME), form='UNFORMATTED', convert=file_endian,       &
                    ACCESS='STREAM',ERR=800,IOSTAT=IERR)
          ELSE  ! READ
-            write(6,*)'DEBUG: here1'
             OPEN (NDSR, FILE=trim(FNAME), form='UNFORMATTED', convert=file_endian,       &
                   ACCESS='STREAM',ERR=800,IOSTAT=IERR,           &
                   STATUS='OLD',ACTION='READ')
-            write(6,*)'DEBUG: here2'
          END IF
       else
          I      = LEN_TRIM(FILEXT)

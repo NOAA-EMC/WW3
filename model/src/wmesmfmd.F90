@@ -4242,7 +4242,7 @@
 !
 ! Allocate and fill the node id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeIds(NX))
          do i = 1,NX
@@ -4281,7 +4281,7 @@
 ! Since this is a 2D Mesh the size is 2x the
 ! number of nodes.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeCoords(2*NX))
          do i = 1,NX
@@ -4332,7 +4332,7 @@
 ! Allocate and fill the node owner array.
 ! Since this mesh is all on PET 0, it’s just set to all 0.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeOwners(NX))
          nodeOwners=0 ! everything on PET 0
@@ -4364,7 +4364,7 @@
 
 ! Allocate and fill the element id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemIds(NTRI))
          do i = 1,NTRI
@@ -4400,7 +4400,7 @@
 
 ! Allocate and fill the element topology type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemTypes(NTRI))
          do i = 1,NTRI
@@ -4436,7 +4436,7 @@
 
 ! Allocate and fill the element connection type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemConn(3*NTRI))
          do i = 1,NTRI
@@ -4673,7 +4673,7 @@
 !
 ! Allocate and fill the node id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeIds(NX))
          do i = 1,NX
@@ -4712,7 +4712,7 @@
 ! Since this is a 2D Mesh the size is 2x the
 ! number of nodes.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeCoords(2*NX))
          do i = 1,NX
@@ -4762,7 +4762,7 @@
 
 ! Allocate and fill the node owner array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeOwners(NX))
          nodeOwners=0 ! TODO: For now, export everything via PET 0
@@ -4794,7 +4794,7 @@
 
 ! Allocate and fill the element id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemIds(NTRI))
          do i = 1,NTRI
@@ -4830,7 +4830,7 @@
 
 ! Allocate and fill the element topology type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemTypes(NTRI))
          do i = 1,NTRI
@@ -4866,7 +4866,7 @@
 
 ! Allocate and fill the element connection type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemConn(3*NTRI))
          do i = 1,NTRI
@@ -4947,7 +4947,7 @@
       natGridIsLocal = iaproc .gt. 0 .and. iaproc .le. naproc
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
 !
 ! 3.b Setup arbitrary sequence index list
@@ -5774,7 +5774,7 @@
         call ESMF_VMbroadcast( vm, bcstData=floc1d, count=count, rootPet=0, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
         do k = 1, n1
           fout(k,1) = floc1d(k)
@@ -7029,7 +7029,7 @@
          if (ESMF_LogFoundError(rc, PASSTHRU)) return
       elseif (GTYPE.eq.UNGTYPE) then
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          sxxnField = ESMF_FieldCreate( natGrid, natArraySpec1D, &
            staggerLoc=natStaggerLoc, rc=rc )
@@ -7046,7 +7046,7 @@
       endif
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
       call FieldFill( sxxnField, zeroValue, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -7061,7 +7061,7 @@
       if ( natGridIsLocal ) then
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 !        Use auxiliary native grid/mesh to populate and redistribute data
 #endif
         call ESMF_FieldGet( sxxnField, farrayPtr=sxxn, rc=rc )
@@ -7084,7 +7084,7 @@
 
         facd = dwat*grav
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
         jsea_loop: do jsea = 1,nseal
 #ifdef W3_DIST
@@ -7141,7 +7141,7 @@
       endif !natGridIsLocal
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
       call ESMF_FieldRedist( sxxnField, sxxField, n2eRH, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return

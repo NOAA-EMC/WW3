@@ -214,8 +214,6 @@ contains
 !> @date 01-05-2022
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
 
-    use wav_shr_flags, only: initialize_flags
-
     ! input/output arguments
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -354,8 +352,6 @@ contains
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call initialize_flags()
-
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine InitializeAdvertise
@@ -396,6 +392,7 @@ contains
     use wmunitmd     , only : wmuget, wmuset
 #endif
     use wav_shel_inp , only : set_shel_io
+    use wav_grdout   , only : wavinit_grdout
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -660,6 +657,14 @@ contains
     if ( root_task ) then
        inquire(unit=nds(1), name=logfile)
        print *,'WW3 log written to '//trim(logfile)
+    end if
+
+    !--------------------------------------------------------------------
+    ! Intialize the list of requested output variables for netCDF output
+    !--------------------------------------------------------------------
+    
+    if (user_gridncout) then
+       call wavinit_grdout
     end if
 
     !--------------------------------------------------------------------
@@ -1299,7 +1304,7 @@ contains
   !===============================================================================
 !> Initialize the wave model for the CESM use case
 !!
-!> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or
 !! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
 !! @param[in]    gcomp        an ESMF_GridComp object
@@ -1439,7 +1444,7 @@ contains
     ! NOTE:  that wavice_coupling must be set BEFORE the call to advertise_fields
     ! So the current mechanism is to force the inflags1(-7) and inflags1(-3) be set to true
     ! if wavice coupling is active
-    ! NOTE: 
+    ! NOTE:
     ! inflags1(-7) = nml_input%forcing%ice_param1
     ! inflags1(-3) = nml_input%forcing%ice_param5
 
@@ -1504,7 +1509,7 @@ contains
   !===============================================================================
 !> Initialize the wave model for the UWM use case
 !!
-!> @details Calls public routine read_shel_config to read the ww3_shel.inp or 
+!> @details Calls public routine read_shel_config to read the ww3_shel.inp or
 !! ww3_shel.nml file. Calls w3init to initialize the wave model
 !!
 !! @param[in]    gcomp        an ESMF_GridComp object

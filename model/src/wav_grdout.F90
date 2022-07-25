@@ -34,6 +34,7 @@ contains
   !====================================================================================
   subroutine wavinit_grdout
 
+    use w3gdatmd    , only: e3df, p2msf, us3df, usspf
     use w3odatmd    , only: nds, iaproc, napout
     use w3iogomd    , only: fldout
     use w3servmd    , only: strsplit
@@ -41,6 +42,7 @@ contains
     ! local variables
     character(len=100)      :: inptags(100) = ''
     integer                 :: j,k,n,nout
+    character(len= 12)      :: ttag
 
     ! obtain all possible output variable tags and attributes
     call initialize_gridout
@@ -60,6 +62,25 @@ contains
           end if
        end do
     end do
+
+    ! remove requested variables which are only allocated if specific
+    ! options are set in mod_def (see w3adatmd, '3D arrays')
+    do k = 1,nogrp
+       do j = 1,maxvars
+          if (gridoutdefs(k,j)%validout) then
+             ttag = trim(gridoutdefs(k,j)%tag)
+             if (ttag == 'EF'    .and. e3df(1,1) == 0) gridoutdefs(k,j)%validout = .false.
+             if (ttag == 'TH1M'  .and. e3df(1,2) == 0) gridoutdefs(k,j)%validout = .false.
+             if (ttag == 'STH1M' .and. e3df(1,3) == 0) gridoutdefs(k,j)%validout = .false.
+             if (ttag == 'TH2M'  .and. e3df(1,4) == 0) gridoutdefs(k,j)%validout = .false.
+             if (ttag == 'STH2M' .and. e3df(1,5) == 0) gridoutdefs(k,j)%validout = .false.
+
+             if (ttag == 'P2L' .and. p2msf(1) == 0) gridoutdefs(k,j)%validout = .false.
+             if (ttag == 'USF' .and. us3df(1) == 0) gridoutdefs(k,j)%validout = .false.
+             if (ttag == 'USP' .and. usspf(1) == 0) gridoutdefs(k,j)%validout = .false.
+          end if
+       end do
+     end do
 
     ! determine number of output variables (not the same as the number of tags)
     n = 0
