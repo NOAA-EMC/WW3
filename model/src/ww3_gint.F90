@@ -26,7 +26,7 @@
 !/                  | WAVEWATCH-III           NOAA/NCEP |
 !/                  |             A. Chawla             |SX
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         02-Jun-2021 |
+!/                  | Last update :         25-Jul-2022 |
 !/                  +-----------------------------------+
 !/
 !/    15-Mar-2007 : Origination.                        ( version 3.13 )
@@ -42,8 +42,7 @@
 !/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
 !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
 !/    02-Jun-2021 : Bug fix (*SUMGRD; Q. Liu)           ( version 7.13 )
-!/    18-Feb-2021 : Modify to keep ice points active    ( version 7.12 )
-!/                  unless masked (B. Pouliot, CMC)
+!/    25-Jul-2022 : Keep ice points active (B. Pouliot) ( version 7.14 )
 !/
 !   1. Purpose : 
 !
@@ -956,6 +955,7 @@
 !/    30-Apr-2014 : Add group 3                         ( version 5.00 )
 !/    27-Aug-2015 : ice thick. and floe added as output ( version 5.10 )
 !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+!/    25-Jul-2022 : Add PNR. ACTIVE label for ice       ( version 7.14 )
 !/
 !   1. Purpose :
 !
@@ -1036,7 +1036,7 @@
         REAL          :: PHSAUX(0:NOSWLL_MIN), PTPAUX(0:NOSWLL_MIN),   &
                          PLPAUX(0:NOSWLL_MIN), PSIAUX(0:NOSWLL_MIN),   &
                          PWSAUX(0:NOSWLL_MIN), PDIRAUX1(0:NOSWLL_MIN), &
-                         PWSTAUX, PDIRAUX2(0:NOSWLL_MIN),              &
+                         PWSTAUX, PNRAUX, PDIRAUX2(0:NOSWLL_MIN),      &
                          PTHP0AUX1(0:NOSWLL_MIN),                      &
                          PTHP0AUX2(0:NOSWLL_MIN),                      &
                          PQPAUX(0:NOSWLL_MIN), PPEAUX(0:NOSWLL_MIN),   &
@@ -1380,6 +1380,7 @@
                 PSIAUX      = UNDEF
                 PWSAUX      = UNDEF
                 PWSTAUX     = UNDEF
+                PNRAUX      = UNDEF
                 PTHP0AUX1   = UNDEF
                 PTHP0AUX2   = UNDEF
                 PQPAUX      = UNDEF
@@ -2055,6 +2056,17 @@
                         PWSTAUX = WADATS(IGRID)%PWST(GSEA)*WT
                       ELSE
                         PWSTAUX = PWSTAUX + WADATS(IGRID)%PWST(GSEA)*WT
+                      END IF
+                    END IF
+                  END IF
+!
+                  IF ( FLOGRD(4,17) .AND. ACTIVE ) THEN
+                    IF ( WADATS(IGRID)%PNR(GSEA) .NE. UNDEF ) THEN
+                        SUMWT4(17,0) = SUMWT4(17,0) + WT
+                      IF ( PNRAUX .EQ. UNDEF ) THEN
+                        PNRAUX = WADATS(IGRID)%PNR(GSEA)*WT
+                      ELSE
+                        PNRAUX = PNRAUX + WADATS(IGRID)%PNR(GSEA)*WT
                       END IF
                     END IF
                   END IF
@@ -2957,6 +2969,15 @@
                     PWST(ISEA) = PWSTAUX / REAL( SUMGRD )
                   ELSE
                     PWST(ISEA) = PWST(ISEA) + PWSTAUX / REAL( SUMGRD )
+                  END IF
+                END IF
+!
+                IF ( PNRAUX .NE. UNDEF ) THEN
+                  PNRAUX = PNRAUX / SUMWT4(17,0)
+                  IF ( PNR(ISEA) .EQ. UNDEF )  THEN
+                    PNR(ISEA) = PNRAUX / REAL( SUMGRD )
+                  ELSE
+                    PNR(ISEA) = PNR(ISEA) + PNRAUX / REAL( SUMGRD )
                   END IF
                 END IF
 !
