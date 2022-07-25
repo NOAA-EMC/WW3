@@ -92,6 +92,9 @@ module wav_comp_nuopc
                                                              !! run with multigrid=true
 #endif
 
+  integer :: time0(2)
+  integer :: timen(2)
+
   character(*), parameter :: modName =  "(wav_comp_nuopc)"   !< the name of this module
   character(*), parameter :: u_FILE_u = &                    !< a character string for an ESMF log message
        __FILE__
@@ -418,8 +421,7 @@ contains
     integer                        :: stop_tod          ! stop time of day (sec)
     integer                        :: ix, iy
     character(CL)                  :: starttype
-    integer                        :: time0(2), ntrace(2)
-    integer                        :: timen(2)
+    integer                        :: ntrace(2)
     integer                        :: i,j
     integer                        :: ierr
     integer                        :: n, jsea,isea, ncnt
@@ -931,8 +933,6 @@ contains
     integer                 :: imod
     integer                 :: ymd        ! current year-month-day
     integer                 :: tod        ! current time of day (sec)
-    integer                 :: time0(2)
-    integer                 :: timen(2)
     integer                 :: shrlogunit ! original log unit and level
     character(ESMF_MAXSTR)  :: msgString
     character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '
@@ -1439,7 +1439,7 @@ contains
 
     ! Read the namelist settings in ww3_shel.nml
     call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
-    call read_shel_config(mpi_comm)
+    call read_shel_config(mpi_comm, time0_overwrite=time0, timen_overwrite=timen)
 
     ! NOTE:  that wavice_coupling must be set BEFORE the call to advertise_fields
     ! So the current mechanism is to force the inflags1(-7) and inflags1(-3) be set to true

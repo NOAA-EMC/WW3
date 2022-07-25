@@ -453,7 +453,7 @@
                fname = trim(user_restfname)//trim(user_timestring)
                inquire( file=trim(fname), exist=exists)
                if (.not. exists) then
-                  call extcde (60, msg="required initial/restart file " // trim(user_restfname) // " does not exist")
+                  call extcde (60, msg="required initial/restart file " // trim(fname) // " does not exist")
                end if
             end if
          else
