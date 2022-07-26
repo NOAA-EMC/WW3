@@ -104,32 +104,35 @@ contains
 !!
 !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
 !> @date 01-05-2022
-  subroutine read_shel_config(mpi_comm)
+  subroutine read_shel_config(mpi_comm, time0_overwrite, timen_overwrite)
 
     use wav_shr_flags
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
     use w3nmlshelmd    , only : nml_output_date_t, nml_homog_count_t, nml_homog_input_t
     use w3nmlshelmd    , only : w3nmlshel
-    use w3gdatmd       , only: flagll, dtmax, nx, ny, gtype
-    use w3wdatmd       , only: time, w3ndat, w3dimw, w3setw
-    use w3adatmd       , only: w3naux, w3dima, w3seta
-    use w3idatmd       , only: inflags1, inflags2, flagsc
-    use w3odatmd       , only: w3nout, w3seto, nds
-    use w3odatmd       , only: naproc, iaproc, napout, naperr
-    use w3odatmd       , only: idout, fnmpre, iostyp, notype
-    use w3odatmd       , only: flogrr, flogr, ofiles
-    use w3iogrmd       , only: w3iogr
-    use w3iogomd       , only: w3readflgrd, fldout, w3flgrdflag
-    use w3servmd       , only: nextln, extcde
-    use w3timemd       , only: dsec21, stme21, tick21, t2d, d2j
+    use w3gdatmd       , only : flagll, dtmax, nx, ny, gtype
+    use w3wdatmd       , only : time, w3ndat, w3dimw, w3setw
+    use w3adatmd       , only : w3naux, w3dima, w3seta
+    use w3idatmd       , only : inflags1, inflags2, flagsc
+    use w3odatmd       , only : w3nout, w3seto, nds
+    use w3odatmd       , only : naproc, iaproc, napout, naperr
+    use w3odatmd       , only : idout, fnmpre, iostyp, notype
+    use w3odatmd       , only : flogrr, flogr, ofiles
+    use w3iogrmd       , only : w3iogr
+    use w3iogomd       , only : w3readflgrd, fldout, w3flgrdflag
+    use w3servmd       , only : nextln, extcde
+    use w3timemd       , only : dsec21, stme21, tick21, t2d, d2j
 #ifdef W3_OASIS
-    use w3wdatmd       , only: time00, timeend
+    use w3wdatmd       , only : time00, timeend
 #endif
 #ifdef W3_NL5
-    use w3wdatmd       , only: qi5tbeg
+    use w3wdatmd       , only : qi5tbeg
 #endif
 
+    ! input/output parameters
     integer, intent(in) :: mpi_comm
+    integer, intent(in), optional :: time0_overwrite(2)
+    integer, intent(in), optional :: timen_overwrite(2)
 
     ! local parameters
     integer, parameter  :: nhmax =    200
@@ -1336,7 +1339,14 @@ contains
     call printMallInfo(IAPROC,mallInfos)
 #endif
 
+    !--------------------
     ! 2.2 Time setup
+    !--------------------
+
+    if (present(time0_overwrite) .and. present(timen_overwrite)) then
+       time0(:) = time0_overwrite(:)
+       timen(:) = timen_overwrite(:)
+    end if
 
     if ( iaproc .eq. napout ) write (ndso,930)
     call stme21 ( time0 , dtme21 )
@@ -1355,7 +1365,9 @@ contains
     dttst  = dsec21 ( time0 , timen )
     if ( dttst .le. 0. ) goto 2003
 
+    !--------------------
     ! 2.3 Domain setup
+    !--------------------
 
     iostyp = max ( 0 , min ( 3 , iostyp ) )
     if (w3_pdlib_flag) then
@@ -1452,27 +1464,29 @@ contains
        write (ndst,9042) iprt, prtfrm
     end if
 
-    !
-    ! For outputs with non-zero time step, check dates :
-    ! If output ends before run start OR output starts after run end,
-    ! deactivate output cleanly with output time step = 0
-    ! This is usefull for IOSTYP=3 (Multiple dedicated output processes)
-    ! to avoid the definition of dedicated proc. for unused output.
-    !
-    do j = 1, notype
-       dttst  = dsec21 ( time0 , odat(5*(j-1)+4:5*(j-1)+5) )
-       if ( dttst .lt. 0 ) then
-          odat(5*(j-1)+3) = 0
-          if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
-          continue
-       end if
-       dttst  = dsec21 ( odat(5*(j-1)+1:5*(j-1)+2), timen )
-       if ( dttst .lt. 0 ) then
-          odat(5*(j-1)+3) = 0
-          if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
-          continue
-       end if
-    end do
+    if (.not. present(time0_overwrite) .and. .not. present(timen_overwrite)) then
+       !
+       ! For outputs with non-zero time step, check dates :
+       ! If output ends before run start OR output starts after run end,
+       ! deactivate output cleanly with output time step = 0
+       ! This is usefull for IOSTYP=3 (Multiple dedicated output processes)
+       ! to avoid the definition of dedicated proc. for unused output.
+       !
+       do j = 1, notype
+          dttst  = dsec21 ( time0 , odat(5*(j-1)+4:5*(j-1)+5) )
+          if ( dttst .lt. 0 ) then
+             odat(5*(j-1)+3) = 0
+             if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
+             continue
+          end if
+          dttst  = dsec21 ( odat(5*(j-1)+1:5*(j-1)+2), timen )
+          if ( dttst .lt. 0 ) then
+             odat(5*(j-1)+3) = 0
+             if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
+             continue
+          end if
+       end do
+    end if
 
     ! checkpoint
     j = 8

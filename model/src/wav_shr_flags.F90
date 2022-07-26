@@ -19,6 +19,18 @@ module wav_shr_flags
    logical ::  w3_debug_flag = .false.     !< @public a flag for "W3_DEBUG"
 #endif
   
+#ifdef W3_DEBUGSTP
+   logical ::  w3_debugstp_flag = .true.     !< @public a flag for "W3_DEBUGSTP"
+#else
+   logical ::  w3_debugstp_flag = .false.     !< @public a flag for "W3_DEBUGSTP"
+#endif
+
+#ifdef W3_DEBUGFLS
+   logical ::  w3_debugfls_flag = .true.     !< @public a flag for "W3_DEBUGFLS"
+#else
+   logical ::  w3_debugfls_flag = .false.     !< @public a flag for "W3_DEBUGFLS"
+#endif
+
 #ifdef W3_DEBUGCOH
    logical ::  w3_debugcoh_flag = .true.      !< @public a flag for "W3_DEBUGCOH"
 #else
@@ -41,6 +53,18 @@ module wav_shr_flags
    logical ::  w3_debugiobc_flag = .true.      !< @public a flag for "W3_DEBUGIOBC"
 #else
    logical ::  w3_debugiobc_flag = .false.     !< @public a flag for "W3_DEBUGIOBC"
+#endif
+
+#ifdef W3_DEBUSETIOBP
+   logical ::  w3_debugsetiobp_flag = .true.      !< @public a flag for "W3_DEBUSETIOBP"
+#else
+   logical ::  w3_debugsetiobp_flag = .false.     !< @public a flag for "W3_DEBUSETIOBP"
+#endif
+
+#ifdef W3_DEBUSETUGIOBP
+   logical ::  w3_debugsetugiobp_flag = .true.      !< @public a flag for "W3_DEBUSETUGIOBP"
+#else
+   logical ::  w3_debugsetugiobp_flag = .false.     !< @public a flag for "W3_DEBUSETUGIOBP"
 #endif
 
 #ifdef W3_DEBUGSRC
@@ -823,6 +847,12 @@ module wav_shr_flags
    logical ::  w3_t_flag = .false.     !< @public a flag for "W3_T"
 #endif
   
+#ifdef W3_T1
+   logical ::  w3_t1_flag = .true.      !< @public a flag for "W3_T1"
+#else
+   logical ::  w3_t1_flag = .false.     !< @public a flag for "W3_T1"
+#endif
+
 #ifdef W3_TDYN
    logical ::  w3_tdyn_flag = .true.      !< @public a flag for "W3_TDYN"
 #else
@@ -905,6 +935,18 @@ module wav_shr_flags
    logical ::  w3_setup_flag = .true.      !< @public a flag for "W3_SETUP"
 #else
    logical ::  w3_setup_flag = .false.     !< @public a flag for "W3_SETUP"
+#endif
+
+#ifdef W3_T0
+   logical ::  w3_t0_flag = .true.      !< @public a flag for "W3_T0"
+#else
+   logical ::  w3_t0_flag = .false.     !< @public a flag for "W3_T0"
+#endif
+
+#ifdef W3_T38
+   logical ::  w3_t38_flag = .true.      !< @public a flag for "W3_T38"
+#else
+   logical ::  w3_t38_flag = .false.     !< @public a flag for "W3_T38"
 #endif
 
   interface print_logmsg
