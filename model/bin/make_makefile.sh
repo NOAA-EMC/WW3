@@ -453,6 +453,7 @@
          'wav_kind_mod'      ) modtest=wav_kind_mod.o ;;
          'wav_shr_mod'       ) modtest=wav_shr_mod.o ;;
          'wav_shel_inp'      ) modtest=wav_shel_inp.o ;;
+         'wav_grdout'        ) modtest=wav_grdout.o ;;
          'wav_comp_nuopc'    ) modtest=wav_comp_nuopc.o ;;
          'wav_import_export' ) modtest=wav_import_export.o ;;
          'w3iogoncdmd'       ) modtest=w3iogoncdmd.o ;;

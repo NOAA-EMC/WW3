@@ -392,6 +392,7 @@ contains
     use wmunitmd     , only : wmuget, wmuset
 #endif
     use wav_shel_inp , only : set_shel_io
+    use wav_grdout   , only : wavinit_grdout
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -656,6 +657,14 @@ contains
     if ( root_task ) then
        inquire(unit=nds(1), name=logfile)
        print *,'WW3 log written to '//trim(logfile)
+    end if
+
+    !--------------------------------------------------------------------
+    ! Intialize the list of requested output variables for netCDF output
+    !--------------------------------------------------------------------
+    
+    if (user_gridncout) then
+       call wavinit_grdout
     end if
 
     !--------------------------------------------------------------------

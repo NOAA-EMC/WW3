@@ -24,7 +24,7 @@
 !/
 !/    Copyright 2009-2013 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -49,7 +49,7 @@
 !     ----------------------------------------------------------------
 !      TIME      I.A.  Public   Valid time for spectra.
 !      TIME00    I.A.  Public   Initial time
-!      TIMEEND   I.A.  Public   Final time 
+!      TIMEEND   I.A.  Public   Final time
 !      QI5TBEG   I.A.  Public   Initial time for NL5 (absol. time)
 !      QR5TIM0   R.A.  Public   Previous time step t0 (relat. time)
 !      QR5CVK0   R.A.  Public   Cvk @ t0
@@ -57,16 +57,16 @@
 !      QR5TMIX   R.A.  Public   Previous time for phase mixing
 !      TLEV      I.A.  Public   Valid time for water levels.
 !      TICE      I.A.  Public   Valid time for ice concentration
-!      TRHO      I.A.  Public   Valid time for air density 
+!      TRHO      I.A.  Public   Valid time for air density
 !      TIC1      I.A.  Public   Valid time for ice thickness
 !      TIC5      I.A.  Public   Valid time for ice floe
 !      VA        R.A.  Public   Storage array for spectra.
-!      WLV       R.A.  Public   Water levels.  
-!      ICE       R.A.  Public   Ice coverage.  
+!      WLV       R.A.  Public   Water levels.
+!      ICE       R.A.  Public   Ice coverage.
 !      RHOAIR    R.A.  Public   Air density
 !      ICEH      R.A.  Public   Ice thickness.
-!      ICEF      R.A.  Public   Ice flow maximum diameter. 
-!      ICEDMAX   R.A.  Public   Ice flow maximum diameter for updates. 
+!      ICEF      R.A.  Public   Ice flow maximum diameter.
+!      ICEDMAX   R.A.  Public   Ice flow maximum diameter for updates.
 !      BERG      R.A.  Public   Iceberg damping.
 !      UST       R.A.  Public   Friction velocity (absolute).
 !      USTDIR    R.A.  Public   Friction velocity direction.
@@ -361,7 +361,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETW needs to be called after allocation to point to 
+!     - W3SETW needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -380,7 +380,7 @@
       USE W3ODATMD, ONLY: NAPROC, IAPROC
       USE W3SERVMD, ONLY: EXTCDE
       USE CONSTANTS, ONLY : LPDLIB, DAIR
-      USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM, LSLOC 
+      USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM, LSLOC
 #ifdef W3_NL5
       USE W3GDATMD, ONLY: QI5NNZ
 #endif
@@ -531,7 +531,7 @@
     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
-        ENDIF ! LSLOC 
+        ENDIF ! LSLOC
           ALLOCATE ( WDATAS(IMOD)%VAOLD(NSPEC,NSEAL), stat=istat )
 #endif
 #ifdef W3_DEBUGINIT
@@ -554,7 +554,7 @@
     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
-        ENDIF ! LSLOC 
+        ENDIF ! LSLOC
           WDATAS(IMOD)%SHAVETOT=.FALSE.
 #endif
 #ifdef W3_DEBUGINIT
@@ -800,7 +800,7 @@
       IF ( NWDATA .EQ. -1 ) THEN
           WRITE (NDSE,1001)
           CALL EXTCDE (1)
-        END IF   
+        END IF
 !
       IF ( IMOD.LT.0 .OR. IMOD.GT.NWDATA ) THEN
           WRITE (NDSE,1002) IMOD, NWDATA
