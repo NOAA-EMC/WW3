@@ -1,8 +1,16 @@
 !> @file
-!> 
-!> @brief module for m_constants 
+!> @brief Module for m_constants.
 !>
+!> @author N/A @date N/A
+!>
+
 !------------------------------------------------------------------------------
+!>
+!> @brief Module for m_constants.
+!> 
+!> @author N/A  @date N/A
+!>
+
 module m_constants
 !------------------------------------------------------------------------------
 !
@@ -29,8 +37,14 @@ real sqrt2  !< square root of 2 ~ 1.41
 !
 contains
 !
+  
 !------------------------------------------------------------------------------
-!> @brief subroutine init_constants sets constant values
+!>
+!> @brief Subroutine init_constants sets constant values.
+!>
+!> @author N/A  @date N/A
+!>
+
 subroutine init_constants
 !------------------------------------------------------------------------------
 !
