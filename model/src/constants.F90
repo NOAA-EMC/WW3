@@ -1,8 +1,16 @@
-!> @brief Defines commonly used constants as parameters for global use
+!> @file
+!> @brief Defines commonly used constants as parameters for global use.
 !>
 !> @author H. L. Tolman  @date 05-Jun-2018
 !>
 #include "w3macros.h"
+
+!>
+!> @brief Define some much-used constants for global use (all defined
+!>  as PARAMETER).
+!> 
+!> @author  H. L. Tolman  @date 05-Jun-2018
+!>
 !/ ------------------------------------------------------------------- /
       MODULE CONSTANTS
 !/
@@ -97,10 +105,12 @@
 !
       CONTAINS
 ! ----------------------------------------------------------------------
-!> @brief estimate friction coefficients in oscillatory boundary layers
-!>        using tabulation on Kelvin functions 
+!>        
+!> @brief Estimate friction coefficients in oscillatory boundary layers
+!>        using tabulation on Kelvin functions. 
 !>
 !> @author F. Ardhuin  @date 28-Feb-2013
+!>        
       SUBROUTINE TABU_FW
 !/
 !/                  +-----------------------------------+
@@ -199,7 +209,35 @@
       END SUBROUTINE TABU_FW
 
 ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
+!>
+!> @brief June 1999 adaptation to CRESTb, all tests on range of (x,y)
+!>  have been bypassed, we implicitly expect X to be positive or |x,y|
+!>  non zero.      
+!>
+!> @details The variables X and Y are the real and imaginary parts of
+!> the argument of the first two modified bessel functions
+!> of the second kind,k0 and k1.  Re0,im0,re1 and im1 give
+!> the real and imaginary parts of exp(x)*k0 and exp(x)*k1,
+!> respectively.  Although the real notation used in this
+!> subroutine may seem inelegant when compared with the
+!> complex notation that fortran allows, this version runs
+!> about 30 percent faster than one written using complex
+!> variables.
+!>      
+!> @copyright{This subroutine is copyright by ACM, see
+!>  http://www.acm.org/pubs/copyright_policy/softwareCRnotice.html.
+!>  ACM declines any responsibility of any kind.}
+!>      
+!> @param X    Real part of argument to modified Bessel functions.
+!> @param Y    Imaginary part of argument to modified Bessel functions.
+!> @param RE0  Real part of exp(x)*k0.
+!> @param IM0  Imaginary part of exp(x)*k0.
+!> @param RE1  Real part of exp(x)*k1.
+!> @param IM1  Imaginary part of exp(x)*k1.
+!>
+!> @author N/A  @date N/A
+!>      
+   SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
 !  June 1999 adaptation to CRESTb, all tests on range of (x,y) have been
 !  bypassed, we implicitly expect X to be positive or |x,y| non zero
 !
@@ -365,7 +403,21 @@ SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
       END SUBROUTINE KZEONE
 
 ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-SUBROUTINE KERKEI(X,KER,KEI)
+!>
+!> @brief Computes the values of the zeroth order Kelvin function
+!>  Ker and Kei.
+!>
+!> @details These functions are used to determine the friction factor
+!>  fw as a function of the bottom roughness length assuming a linear
+!>  profile of eddy viscosity (See Grant and Madsen, 1979).
+!>
+!> @param X
+!> @param KER
+!> @param KEI
+!>
+!> @author  N/A  @date N/A
+!>      
+    SUBROUTINE KERKEI(X,KER,KEI)
 !**********************************************************************
 ! Computes the values of the zeroth order Kelvin function Ker and Kei
 ! These functions are used to determine the friction factor fw as a
