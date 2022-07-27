@@ -1,9 +1,19 @@
 !> @file 
-!> @brief Module for storing file i/o related variables
+!> @brief Module for storing file i/o related variables.
 !> 
-!> @author Gerbrant van Vledder
+!> @author Gerbrant van Vledder @date 8-Feb-2003
 !>
+
 !-----------------------------------------------------------------------------!
+!>
+!> @brief Module for storing file i/o related variables.
+!> 
+!> @details The values for the parameter i_log, i_prt and iw_tst must be set
+!>  in one of the routines of the host program or in subroutine sys_init.
+!>
+!> @author Gerbrant van Vledder @date 8-Feb-2003
+!>
+
 module m_fileio
 !-----------------------------------------------------------------------------!
 !
@@ -53,12 +63,23 @@ integer lu_prt  !< standard print output
 integer lu_tst  !< standard test output
 !
 contains
+  
 !-----------------------------------------------------------------------------!
-!> @brief Open file with name FILENAME and determine unit number IUNIT
-!>     With file type determined in QUAL
-!>     Depending on the value of IUFIND a search is performed for a
-!>     free unit number
-!> @author Gerbrant van Vledder
+!>  
+!> @brief Open file with name FILENAME and determine unit number IUNIT.
+!>  
+!> @details File type determined in QUAL. Depending on the value of IUFIND
+!>  a search is performed for a free unit number.
+!>
+!> @param[in]    filename File name.
+!> @param[in]    qual     File qualifyer.
+!> @param[in]    iufind   Indicator for search of unit number.
+!> @param[inout] iunit    Unit number.
+!> @param[out]   iostat   Error indicator.
+!>  
+!> @author Gerbrant van Vledder  @date 8-Feb-2003
+!> 
+  
 subroutine z_fileio(filename,qual,iufind,iunit,iostat)                        !
 !-----------------------------------------------------------------------------!
 !
@@ -126,11 +147,11 @@ implicit none
 !
 !Type       I/O           Name           Description
 !----------------------------------------------------
-character(len=*), intent(in)  :: filename  !< File name
-character(len=2), intent(in)  :: qual      !< File qualifyer
-integer,   intent(in)         :: iufind    !< Indicator for search of unit number
-integer,   intent(inout)      :: iunit     !< Unit number
-integer,   intent(out)        :: iostat    !< Error indicator
+character(len=*), intent(in)  :: filename
+character(len=2), intent(in)  :: qual
+integer,   intent(in)         :: iufind
+integer,   intent(inout)      :: iunit
+integer,   intent(out)        :: iostat
 !
 !  4. Subroutines used
 !
@@ -208,7 +229,7 @@ else
 !
   if(qual(2:2) == 'F') cform = 'formatted'
   if(qual(2:2) == 'U') cform = 'unformatted'
-  if(qual(2:2) == 'B') cform = 'binary'          ! extension to FORTRAN 95 standard
+  if(qual(2:2) == 'B') cform = 'binary'          !< extension to FORTRAN 95 standard
   if(qual(2:2) == 'R') cform = 'unformatted'
 !
 !  Check if file exists
@@ -331,8 +352,14 @@ return
 end  subroutine
 !
 !-----------------------------------------------------------------------------!
-!> @brief Close file with unit number IUNIT, and set IUNIT=-1
-!> @author Gerbrant van Vledder
+!>
+!> @brief Close file with unit number IUNIT, and set IUNIT=-1.
+!>
+!> @param[inout] iunit Unit number.
+!>
+!> @author Gerbrant van Vledder  @date 24-Aug-2000
+!>
+
 subroutine z_fclose(iunit)                                                    !
 !-----------------------------------------------------------------------------!
 !
@@ -360,7 +387,7 @@ implicit none
 !
 !Type       I/O           Name           Description
 !-----------------------------------------------------------------------------
-integer, intent(inout)  :: iunit         !< Unit number
+integer, intent(inout)  :: iunit          
 !-----------------------------------------------------------------------------
 close(iunit)
 iunit = -1
@@ -369,8 +396,24 @@ return
 end subroutine
 !
 !-----------------------------------------------------------------------------!
-!> @brief Find a free unit number
-!> @author Gerbrant van Vledder
+!>
+!> @brief Find a free unit number.
+!>
+!> @details Starting at LU_MIN till LU_MAX are investigated until
+!>  a free (i.e. not connected to a file) is found.
+!>  Use is made of the standard fortran INQUIRE function.
+!>  The values of LU_MIN and LU_MAX should be specified
+!>  in an initialisation routine
+!>
+!>  If no free unit number if found in the range
+!>  lu_min - lu_high, then the function returns IUNIT = -1.
+!>
+!> @param[out] iunit Resulting unit number.
+!> @param[out] ierr  Error level.
+!>
+!> @author Gerbrant van Vledder @date 14-Apr-2000
+!>
+
 subroutine z_flunit(iunit,ierr)                                               !
 !-----------------------------------------------------------------------------!
 !
@@ -416,8 +459,8 @@ implicit none
 !
 !Type     I/O           Name         Description
 !----------------------------------------------------------
-integer, intent(out) :: iunit       !< resulting unit number
-integer, intent(out) :: ierr        !< error level
+integer, intent(out) :: iunit
+integer, intent(out) :: ierr
 !
 !  4. Subroutines used
 !
