@@ -20,6 +20,14 @@ Module has two parts: a **header**, and **inline documentation** for module vari
 !> @details <extended description>
 !>
 !> @author <author name> @date <dd-Mon-yyyy>
+                                                    # ALL module variables documented
+module_var_1       !<  <module_var_1 description>
+ ...
+!>  <module_var_i description>                      # multiples lines can be used
+!>  <module_var_i description cont.>                # if needed.
+module_var_i
+ ...
+module_var_N       !<  <module_var_N description>
 ```
 
 ###### inline documentation
