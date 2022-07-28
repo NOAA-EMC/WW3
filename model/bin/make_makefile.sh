@@ -420,7 +420,6 @@
          'W3NMLSHELMD'  ) modtest=w3nmlshelmd.o ;;
          'W3NMLGRIDMD'  ) modtest=w3nmlgridmd.o ;;
          'W3NMLUPRSTRMD' ) modtest=w3nmluprstrmd.o ;;
-         'W3NETCDF'     ) modtest=w3netcdf.o ;;
          'YOWFUNCTION'  ) modtest=yowfunction.o ;;
          'YOWDATAPOOL'  ) modtest=yowdatapool.o ;;
          'YOWNODEPOOL'  ) modtest=yownodepool.o ;;
