@@ -211,11 +211,12 @@
 !> @param[in] STAMP     Write time stamp (optional, defaults to T).
 !> @param[in] NO_OUT    Skip output (optional, defaults to F).
 !> @param[in] ODAT
-!> @param[in] ID_LCOMM
-!> @param[in] TIMEN
+!> @param[in] ID_LCOMM  Present only when using W3_OASIS.
+!> @param[in] TIMEN     Present only when using W3_OASIS.
 !>
 !> @author H. L. Tolman  @date 22-Mar-2021
-!>        
+!>
+        
       SUBROUTINE W3WAVE ( IMOD, ODAT, TEND, STAMP, NO_OUT &
 #ifdef W3_OASIS
                   ,ID_LCOMM, TIMEN                 &
@@ -3680,21 +3681,21 @@
 !> @brief Gather spectral bin information into a propagation field array.
 !>
 !> @details Direct copy or communication calls (MPP version).
-!> The field is extracted but not converted.
+!>  The field is extracted but not converted.
 !>      
-!> MPI version requires posing of send and receive calls in
-!> W3WAVE to match local calls.
+!>  MPI version requires posing of send and receive calls in
+!>  W3WAVE to match local calls.
 !>      
-!> MPI version does not require an MPI_TESTALL call for the
-!> posted gather operation as MPI_WAITALL is mandatory to
-!> reset persistent communication for next time step.
+!>  MPI version does not require an MPI_TESTALL call for the
+!>  posted gather operation as MPI_WAITALL is mandatory to
+!>  reset persistent communication for next time step.
 !>      
-!> MPI version allows only two new pre-fetch postings per
-!> call to minimize chances to be slowed down by gathers that
-!> are not yet needed, while maximizing the pre-loading
-!> during the early (low-frequency) calls to the routine
-!> where the amount of calculation needed for proagation is
-!> the largest.
+!>  MPI version allows only two new pre-fetch postings per
+!>  call to minimize chances to be slowed down by gathers that
+!>  are not yet needed, while maximizing the pre-loading
+!>  during the early (low-frequency) calls to the routine
+!>  where the amount of calculation needed for proagation is
+!>  the largest.
 !>      
 !> @param[in]  ISPEC Spectral bin considered.
 !> @param[out] FIELD Full field to be propagated.
@@ -4015,13 +4016,13 @@
 !> @brief Scatter data back to spectral storage after propagation.
 !>
 !> @details Direct copy or communication calls (MPP version). See also W3GATH.
-!> The field is put back but not converted!
-!> MPI persistent communication calls initialize in W3MPII.
-!> See W3GATH and W3MPII for additional comments on data buffering.
+!>  The field is put back but not converted!
+!>  MPI persistent communication calls initialize in W3MPII.
+!>  See W3GATH and W3MPII for additional comments on data buffering.
 !>      
-!> @param[inout] Spectral bin considered.
-!> @param[inout] Status map for spatial grid.
-!> @param[inout] Full field to be propagated.
+!> @param[inout] ISPEC  Spectral bin considered.
+!> @param[inout] MAPSTA Status map for spatial grid.
+!> @param[inout] FIELD  Full field to be propagated.
 !>
 !> @author H. L. Tolman  @date 13-Jun-2006
 !>      
