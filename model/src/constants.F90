@@ -48,60 +48,60 @@
 !     ----------------------------------------------------------------
 !/ ------------------------------------------------------------------- /
 !/
-      LOGICAL, PARAMETER :: TSTOUT = .FALSE. !> Flag for generation of test files
+      LOGICAL, PARAMETER :: TSTOUT = .FALSE. !< TSTOUT Flag for generation of test files.
 !        The flag for generating test output files is included here as
 !        it is needed in both ww3_shel and ww3_multi at the same time.
 !        Make sure that this flag is true if you want to write to the
 !        test output file !
-      REAL, PARAMETER :: GRAV = 9.806 !> Acc. of gravity (m/s2)
-      REAL, PARAMETER :: DWAT = 1000. !> Density of water (kg/m3)
-      REAL, PARAMETER :: DAIR = 1.225 !> Density of air (kg/m3)
-      REAL, PARAMETER :: NU_AIR = 1.4E-5 !> Kinematic viscosity of air (m2/s)
+      REAL, PARAMETER :: GRAV = 9.806 !< GRAV Acc. of gravity (m/s2).
+      REAL, PARAMETER :: DWAT = 1000. !< DWAT Density of water (kg/m3).
+      REAL, PARAMETER :: DAIR = 1.225 !< DAIR Density of air (kg/m3).
+      REAL, PARAMETER :: NU_AIR = 1.4E-5 !< NU_AIR Kinematic viscosity of air (m2/s).
 !mdo  *** Changing nu_water to be consistent with DWAT=1000 (assumes 10degC)
 !mdo   WAS: 3.E-6
-      REAL, PARAMETER :: NU_WATER = 1.31E-6 !> Kinematic viscosity of water (m2/s)
-      REAL, PARAMETER :: SED_SG = 2.65 !> Specific gravity of sediments (N.D.)
-      REAL, PARAMETER :: KAPPA = 0.40 !> von Karman's constant (N.D.)
+      REAL, PARAMETER :: NU_WATER = 1.31E-6 !< NU_WATER Kinematic viscosity of water (m2/s).
+      REAL, PARAMETER :: SED_SG = 2.65 !< SED_SG Specific gravity of sediments (N.D.).
+      REAL, PARAMETER :: KAPPA = 0.40 !< KAPPA von Karman's constant (N.D.).
 !
-      REAL, PARAMETER :: PI = 3.141592653589793 !> Pi
-      REAL, PARAMETER :: TPI = 2.0 * PI !> 2*Pi
-      REAL, PARAMETER :: HPI = 0.5 * PI !> 0.5*Pi
-      REAL, PARAMETER :: TPIINV = 1. / TPI !> Inverse of 2*Pi
-      REAL, PARAMETER :: HPIINV = 1. / HPI !> Inverse of 0.5*Pi
-      REAL, PARAMETER :: RADE = 180. / PI !> Conv. factor from radians to degrees
-      REAL, PARAMETER :: DERA = PI / 180. !> Conv. factor from degrees to radians
+      REAL, PARAMETER :: PI = 3.141592653589793 !< PI Value of Pi.
+      REAL, PARAMETER :: TPI = 2.0 * PI !< TPI 2*Pi.
+      REAL, PARAMETER :: HPI = 0.5 * PI !< HPI 1/2*Pi.
+      REAL, PARAMETER :: TPIINV = 1. / TPI !< TPIINV Inverse of 2*Pi.
+      REAL, PARAMETER :: HPIINV = 1. / HPI !< HPIINV Inverse of 1/2*Pi.
+      REAL, PARAMETER :: RADE = 180. / PI !< RADE Conversion factor from radians to degrees.
+      REAL, PARAMETER :: DERA = PI / 180. !< DERA Conversion factor from degrees to radians.
 !
-      REAL, PARAMETER :: RADIUS = 4.E7 * TPIINV !> Radius of the earth. (m) 
+      REAL, PARAMETER :: RADIUS = 4.E7 * TPIINV !< RADIUS Radius of the earth (m).
 !
-      REAL, PARAMETER :: G2PI3I = 1. / ( GRAV**2 * TPI**3 ) !> Inverse of gravity^2 * (2*Pi)^3
-      REAL, PARAMETER :: G1PI1I = 1. / ( GRAV * TPI ) !> Inverse of gravity * 2 * Pi
+      REAL, PARAMETER :: G2PI3I = 1. / ( GRAV**2 * TPI**3 ) !< G2PI3I Inverse of gravity^2 * (2*Pi)^3.
+      REAL, PARAMETER :: G1PI1I = 1. / ( GRAV * TPI ) !< G1PI1I Inverse of gravity * 2 * Pi.
 !
-      REAL            :: UNDEF = -999.9 !> Value for undefined variable in output
+      REAL            :: UNDEF = -999.9 !< UNDEF Value for undefined variable in output.
 
-      CHARACTER(*), PARAMETER :: FILE_ENDIAN = ENDIANNESS !> Filled by preprocessor with 'big_endian', 'little_endian', or 'native'
-
+      CHARACTER(*), PARAMETER :: FILE_ENDIAN = ENDIANNESS !< FILE_ENDIAN Filled by preprocessor with 'big_endian', 
+                                                          !< 'little_endian', or 'native'.
 !
 ! Parameters for friction factor table
 !
-      INTEGER, PARAMETER :: SIZEFWTABLE=300 !> SIZEFWTABLE
-      REAL            :: FWTABLE(0:SIZEFWTABLE) !> FWTABLE
-      REAL            :: DELAB !> DELAB 
-      REAL, PARAMETER :: ABMIN = -1. !> ABMIN
-      REAL, PRIVATE, PARAMETER :: ABMAX = 8. !> ABMAX
-      INTEGER, PARAMETER :: srce_direct = 0  !> srce_direct 
-      INTEGER, PARAMETER :: srce_imp_post = 1 !> srce_imp_post 
-      INTEGER, PARAMETER :: srce_imp_pre = 2 !> srce_imp_pre 
-      INTEGER, PARAMETER :: DEBUG_NODE = 1014 !> Node number used for debugging 
-      INTEGER, PARAMETER :: DEBUG_ELEMENT = 50 !> Element number used for debug
-      LOGICAL            :: LPDLIB = .FALSE. !> LDLIB is a logical for using the PDLIB library 
-      LOGICAL            :: LSETUP = .FALSE. !> This logical LSETUP is not used  
+      INTEGER, PARAMETER :: SIZEFWTABLE=300 !< SIZEFWTABLE
+      REAL            :: FWTABLE(0:SIZEFWTABLE) !< FWTABLE
+      REAL            :: DELAB !< DELAB 
+      REAL, PARAMETER :: ABMIN = -1. !< ABMIN
+      REAL, PRIVATE, PARAMETER :: ABMAX = 8. !< ABMAX
+      INTEGER, PARAMETER :: srce_direct = 0  !< srce_direct 
+      INTEGER, PARAMETER :: srce_imp_post = 1 !< srce_imp_post 
+      INTEGER, PARAMETER :: srce_imp_pre = 2 !< srce_imp_pre 
+      INTEGER, PARAMETER :: DEBUG_NODE = 1014 !< DEBUG_NODE Node number used for debugging.
+      INTEGER, PARAMETER :: DEBUG_ELEMENT = 50 !< DEBUG_ELEMENT Element number used for debug.
+      LOGICAL            :: LPDLIB = .FALSE. !< LPDLIB Logical for using the PDLIB library.
+      LOGICAL            :: LSETUP = .FALSE. !< LSETUP Logical LSETUP is not used.
 !
 ! Parameters in support of running as ESMF component
 !
 ! --- Flag indicating whether or not the model has been invoked as an
 !     ESMF Component.  This flag is set to true in the WMESMFMD ESMF
 !     module during initialization.
-      LOGICAL :: IS_ESMF_COMPONENT = .FALSE. !< Flag for model invoked via ESMF
+      LOGICAL :: IS_ESMF_COMPONENT = .FALSE. !< IS_ESMF_COMPONENT Flag for model invoked via ESMF.
 !
       CONTAINS
 ! ----------------------------------------------------------------------
@@ -224,9 +224,9 @@
 !> about 30 percent faster than one written using complex
 !> variables.
 !>      
-!> @copyright{This subroutine is copyright by ACM, see
+!> @copyright This subroutine is copyright by ACM, see
 !>  http://www.acm.org/pubs/copyright_policy/softwareCRnotice.html.
-!>  ACM declines any responsibility of any kind.}
+!>  ACM declines any responsibility of any kind.
 !>      
 !> @param X    Real part of argument to modified Bessel functions.
 !> @param Y    Imaginary part of argument to modified Bessel functions.
