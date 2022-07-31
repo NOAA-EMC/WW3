@@ -168,11 +168,9 @@
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      INTEGER, PARAMETER      :: NITER=100 !> Number of iterations to obtain total stress
-      REAL   , PARAMETER      :: XM=0.50 !> Power of Tauw/Tau in roughness lenghth
-      REAL   , PARAMETER      :: EPS1=0.00001 !> Small number to make sure a
-                                              !> solution is obtain in iteration
-                                              !> with Tau>Tauw
+      INTEGER, PARAMETER      :: NITER=100 
+      REAL   , PARAMETER      :: XM=0.50 
+      REAL   , PARAMETER      :: EPS1=0.00001
 ! ----------------------------------------------------------------------
       INTEGER I,ITER
       REAL KER, KEI
