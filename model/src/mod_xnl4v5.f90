@@ -1565,7 +1565,7 @@ end subroutine
 !> @param[inout] dep     Depth in m
 !> @param[inout] sum_kx  Sum of x-components of quadruplet
 !> @param[inout] sum_ky  Sum of y-components of quadruplet
-!> @param[inout] sub_w   Sum of radian frequencies
+!> @param[inout] sum_w   Sum of radian frequencies
 !>
 !> @author  Gerbrant Van Vledder  @date 9-Aug-2002
 !>
@@ -1943,6 +1943,19 @@ end subroutine
 !>
 !>    The maximum number of points on the locus, as stored in the BQF file
 !>    is read from the header and stored in the variable NLOCUS.
+!>
+!>  Input parameter values:
+!>
+!>    itask - task to perform by Q_CTRGRID
+!>                ==1: read and check header block
+!>                ==2: read and write grid file, according to setting of IQ_MAKE
+!>
+!>    igrid - status of grid checking 
+!>                ==0: a proper grid exists
+!>                ==1: grid file does not exist
+!>                ==2: grid file exists, but it is incorrect
+!>                ==3: read error in accessing grid information
+!>
 !> @endverbatim
 !>
 !> @param[in]  itask Task to perform by Q_CTRGRID.
@@ -2007,16 +2020,8 @@ implicit none
 !
 !  3. Parameters used
 !
-integer, intent(in)  :: itask  !<  task to perform by Q_CTRGRID
-!                              !<   ==1: read and check header block
-!                              !<   ==2: read and write grid file, according to
-!                              !<        setting of IQ_MAKE
-!
-integer, intent(out) :: igrid  !<  status of grid checking 
-!                              !<   ==0: a proper grid exists
-!                              !<   ==1: grid file does not exist
-!                              !<   ==2: grid file exists, but it is incorrect
-!                              !<   ==3: read error in accessing grid information
+integer, intent(in)  :: itask
+integer, intent(out) :: igrid
 !
 !  4. Error messages
 !
