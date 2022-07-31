@@ -201,14 +201,14 @@
 !>        
 !> If ice or water level time are undefined, the update
 !> takes place asap, otherwise around the "half-way point"
-!> betweem the old and new times.
+!> between the old and new times.
 !>        
 !> To increase accuracy, the calculation of the intra-spectral
 !> propagation is performed in two parts around the spatial propagation.
 !>        
 !> @param[in] IMOD      Model number.
 !> @param[in] TEND      Ending time of integration.
-!> @param[in] STAMP     WRITE(*,*)time stamp (optional, defaults to T).
+!> @param[in] STAMP     Write time stamp (optional, defaults to T).
 !> @param[in] NO_OUT    Skip output (optional, defaults to F).
 !> @param[in] ODAT
 !> @param[in] ID_LCOMM
