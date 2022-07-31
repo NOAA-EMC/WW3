@@ -488,24 +488,26 @@
 !>  This routine can be used independently from WAVEWATCH III.
 !>
 !>      
-!> @param[in]    MX  Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
-!> @param[in]    MY  Field dimension (See MX)
-!> @param[in]    NX  Part of field actually used
-!> @param[in]    NY  Part of field actually used
+!> @param[in]    MX      Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
+!> @param[in]    MY      Field dimension (See MX).
+!> @param[in]    NX      Part of field actually used.
+!> @param[in]    NY      Part of field actually used.
 !> @param[in]    MAPACT  List of active grid points.
 !> @param[in]    NACT    Size of MAPACT.
 !> @param[in]    MAPBOU  Map with boundary information (See W3MAP2).
-!> @param[in]    NB0     Counter in MAPBOU
-!> @param[in]    NB1     Counter in MAPBOU
-!> @param[in]    NB2     Counter in MAPBOU
-!> @param[inout] VELO    Local velocities          (MY,  MX+1)
+!> @param[in]    NB0     Counter in MAPBOU.
+!> @param[in]    NB1     Counter in MAPBOU.
+!> @param[in]    NB2     Counter in MAPBOU.
+!> @param[inout] VELO    Local velocities          (MY,  MX+1).
 !> @param[in]    DT      Time step.
-!> @param[inout] DX1     Band width at points      (MY,  MX+1)
+!> @param[inout] DX1     Band width at points      (MY,  MX+1).
 !> @param[inout] DX2     Band width between points (MY,0:MX+1)
 !> @param[in]    NDSE    Error output unit number.
 !> @param[in]    NDST    Test output unit number.
-!> @param[inout] Q       Propagated quantity       (MY,0:MX+2)
+!> @param[inout] Q       Propagated quantity       (MY,0:MX+2).
 !> @param[in]    CLOSE   Flag for closed 'X' dimension.
+!> @param[in]    INC     Increment in 1-D array corresponding to
+!>                       increment in 2-D space.      
 !>
 !> @author  H. L. Tolman  @date 30-Oct-2009
 !>        
