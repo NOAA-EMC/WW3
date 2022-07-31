@@ -789,17 +789,17 @@ end subroutine xnl_init
 !>  on a given sigma and direction grid (Webb/Resio/Tracy/Van Vledder).
 !>
 !>
-!> @parm[in]   aspec    Action density spectrum as a function of (sigma,theta)
-!> @parm[in]   sigma    radian frequencies
-!> @parm[in]   angle    directions in radians (sector or full circle)
-!> @parm[in]   nsig     number of frequencies (sigma)
-!> @parm[in]   ndir     number of directions
-!> @parm[in]   depth    water depth
-!> @parm[in]   iquad    method of computing nonlinear quadruplet interactions
-!> @parm[out]  xnl      nonlinear quadruplet interaction computed with a certain exact method (k,theta)
-!> @parm[out]  diag     diagonal term for semi-implicit integration
-!> @parm[in]   iproc    MPI processor number
-!> @parm[out]  ierr     error indicator
+!> @param[in]   aspec    Action density spectrum as a function of (sigma,theta)
+!> @param[in]   sigma    radian frequencies
+!> @param[in]   angle    directions in radians (sector or full circle)
+!> @param[in]   nsig     number of frequencies (sigma)
+!> @param[in]   ndir     number of directions
+!> @param[in]   depth    water depth
+!> @param[in]   iquad    method of computing nonlinear quadruplet interactions
+!> @param[out]  xnl      nonlinear quadruplet interaction computed with a certain exact method (k,theta)
+!> @param[out]  diag     diagonal term for semi-implicit integration
+!> @param[in]   iproc    MPI processor number
+!> @param[out]  ierr     error indicator
 !>
 !> @author Gerbrant Ph. van Vledder @date 27-Sep-2002
 !>
@@ -1420,13 +1420,13 @@ end subroutine
 !>     Momentum vector    SUMMX,SUMMY=0
 !> @endverbatim
 !> 
-!> @parm[in]   xnl           Transfer rate
-!> @parm[in]   nk            Number of wave numbers
-!> @parm[in]   ndir          Number of directions
-!> @parm[out]  sum_e         Sum of wave energy
-!> @parm[out]  sum_a         Sum of wave action
-!> @parm[out]  sum_mx        Sum of momentum in x-direction
-!> @parm[out]  sum_my        Sum of momentum in y-direction
+!> @param[in]   xnl           Transfer rate.
+!> @param[in]   nk            Number of wave numbers.
+!> @param[in]   ndir          Number of directions.
+!> @param[out]  sum_e         Sum of wave energy.
+!> @param[out]  sum_a         Sum of wave action.
+!> @param[out]  sum_mx        Sum of momentum in x-direction.
+!> @param[out]  sum_my        Sum of momentum in y-direction.
 !>
 !> @author Gerbrant van Vledder @date 13-Aug-2002 
 !>
