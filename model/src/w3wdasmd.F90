@@ -8,24 +8,24 @@
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Intended as the interface for externally supplied
-!>  data assimlation software.
+!>  data assimilation software.
 !> 
 !> @details This module is intended as the interface for externally 
-!>  supplied data assimlation software to be used with WAVEWATCH III. 
+!>  supplied data assimilation software to be used with WAVEWATCH III. 
 !>  The main subroutine W3WDAS is incorporated in the generic WAVEWATCH
 !>  III shell ww3_shel, and thus provides integrated time management
 !>  and running of the wave model and data assimilation side by side.
 !>
 !>  Present wave conditions (including dynamically changing wave
 !>  grids), as well as wave data are passed to the routine through
-!>  the dynamic data structrure, as introduced in model version 3.06
+!>  the dynamic data structrure, as introduced in model version 3.06.
 !>
 !>  A three tier data structure is used with three separate data
 !>  sets. Tentatively, they are intended for mean wave parameters,
 !>  1-D and 2-D spectral data. This separation is made only for 
-!>  economy in file and menory usage. All three data sets are defined
-!>  here onlt by a record length and a number of records. All data are
-!>  treated as real numbers, but the meaing of all record components
+!>  economy in file and memory usage. All three data sets are defined
+!>  here only by a record length and a number of records. All data are
+!>  treated as real numbers, but the meaning of all record components
 !>  is completely at the discretion of the author of the data
 !>  assimilation scheme.
 !>
