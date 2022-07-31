@@ -503,12 +503,11 @@
       USE W3PARALL, only : LSLOC
 #endif
 #ifdef W3_TIMINGS
-    USE W3PARALL, only : PRINT_MY_TIME
+      USE W3PARALL, only : PRINT_MY_TIME
 #endif
       use w3iogoncdmd   , only : w3iogoncd
-      use w3odatmd      , only : user_histalarm, user_restalarm
-      use w3odatmd      , only : histwr, rstwr, user_gridncout
-!
+      use w3odatmd      , only : user_netcdf_grdout
+
       IMPLICIT NONE
 !
 #ifdef W3_MPI
@@ -521,8 +520,8 @@
       INTEGER, INTENT(IN)           :: IMOD, TEND(2),ODAT(35)
       LOGICAL, INTENT(IN), OPTIONAL :: STAMP, NO_OUT
 #ifdef W3_OASIS
- INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
- INTEGER, INTENT(IN), OPTIONAL :: TIMEN(2)
+      INTEGER, INTENT(IN), OPTIONAL :: ID_LCOMM
+      INTEGER, INTENT(IN), OPTIONAL :: TIMEN(2)
 #endif
 !/
 !/ ------------------------------------------------------------------- /
@@ -3060,14 +3059,9 @@
 !
 #ifdef W3_MPI
       setup_mpi_write = .false.
-      if (user_histalarm ) then
-         if (  histwr .and.  &
-            (FLOUT(1) .OR.  FLOUT(7)) ) setup_mpi_write = .true.
-      else
-         IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
-              (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
-                 SBSED ) ) setup_mpi_write = .true.
-      end if
+      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
+           (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
+           SBSED ) ) setup_mpi_write = .true.
 
      if (setup_mpi_write ) then
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
@@ -3080,7 +3074,6 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
-           !if(histwr) print *,'histwr mpi_startall', histwr, NRQGO, IERR_MPI'
 #endif
 #ifdef W3_DEBUGRUN
       WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO.NE.0, step 0'
@@ -3108,7 +3101,6 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
-           !if(histwr) print *,'histwr mpi_startall', histwr, NRQGO2, IERR_MPI'
 #endif
 #ifdef W3_DEBUGRUN
            WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO2.NE.0, step 0'
@@ -3302,35 +3294,19 @@
 #endif
                                           ) THEN
 
-                     if (user_gridncout) then
-                        ! if using alarms, restrict output writing to alarm
-                        ! frequencies, otherwise native (inp) frequencies will
-                        ! be used
-                        write_now = .false.
-                        if (user_histalarm) then
-                           if ( histwr .and. j .ne. 7) then
-                              write_now = .true.
-                           end if
-                        else
-                           write_now = .true.
-                        end if
-                        if (write_now) then
+                     if (user_netcdf_grdout) then
 #ifdef W3_MPI
                            CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
                            FLGMPI(0) = .FALSE.
 #endif
-                           !write(*,*) 'w3wavemd, w3iogonc called : hist flag 1', j, histwr, time, IERR_MPI
                            IF ( IAPROC .EQ. NAPFLD ) THEN
 #ifdef W3_MPI
                               IF ( FLGMPI(1) ) CALL MPI_WAITALL( NRQGO2, IRQGO2, STATIO, IERR_MPI )
                                  FLGMPI(1) = .FALSE.
 #endif
-                                 !write(*,*) 'w3wavemd, w3iogonc called : hist flag 2', j, histwr, time, IERR_MPI
                                  CALL W3IOGONCD ()
                            END IF
-                        end if
-                     ! default (binary) output
-                     else
+                     else  ! default (binary) output
                             IF ( IAPROC .EQ. NAPFLD ) THEN
 #ifdef W3_MPI
                                 IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
@@ -3358,7 +3334,7 @@
                                 CLOSE( NDSOFLG )
 #endif
                             END IF
-                     end if ! user_grdncout
+                     end if ! user_netcdf_grdout
 
 
                         ELSE IF ( J .EQ. 2 ) THEN
@@ -3380,13 +3356,7 @@
                           CALL W3IOTR ( NDS(11), NDS(12), VA, IMOD )
 
                         ELSE IF ( J .EQ. 4 ) THEN
-                          if (user_restalarm ) then
-                             if (rstwr) CALL W3IORS ('HOT', NDS(6), XXX, &
-                                                    IMOD, FLOUT(8) )
-                          else
-                             CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
-                          end if
-
+                          CALL W3IORS('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
                           ITEST = RSTYPE
                         ELSE IF ( J .EQ. 5 ) THEN
                           IF ( IAPROC .EQ. NAPBPT ) THEN
@@ -3525,7 +3495,7 @@
 #ifdef W3_MPI
             IF ( FLGMPI(0) ) CALL MPI_WAITALL                    &
                              ( NRQGO, IRQGO , STATIO, IERR_MPI )
-            if (user_gridncout) then
+            if (user_netcdf_grdout) then
                IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) )     &
                   CALL MPI_WAITALL ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
             end if

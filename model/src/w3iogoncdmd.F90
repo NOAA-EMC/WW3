@@ -69,12 +69,12 @@ contains
     use w3odatmd   , only : use_user_histname, user_histfname
 
     ! local variables
-    integer                  :: igrd
-    integer    ,target       :: dimid3(3)
-    integer    ,target       :: dimid4(4)
-    integer    ,pointer      :: dimid(:)
-    character(len=12)        :: vname
-    character(len=16)        :: user_timestring    !YYYY-MM-DD-SSSSS
+    integer               :: igrd
+    integer    ,target    :: dimid3(3)
+    integer    ,target    :: dimid4(4)
+    integer    ,pointer   :: dimid(:)
+    character(len=12)     :: vname
+    character(len=16)     :: user_timestring    !YYYY-MM-DD-SSSSS
 
     integer :: n, xtid, ytid, stid, mtid, ptid, ktid, timid, varid
     logical :: s_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
@@ -326,10 +326,10 @@ contains
           if (vname .eq.  'LANGMT') call write_var2d(vname, langmt   (1:nsea) )
 #endif
           ! Group 7
-          if (vname .eq.    'ABAX') call write_var2d(vname, aba      (1:nsea), cos(abd(1:nsea)) )
-          if (vname .eq.    'ABAY') call write_var2d(vname, aba      (1:nsea), sin(abd(1:nsea)) )
-          if (vname .eq.    'UBAX') call write_var2d(vname, uba      (1:nsea), cos(ubd(1:nsea)) )
-          if (vname .eq.    'UBAY') call write_var2d(vname, uba      (1:nsea), sin(ubd(1:nsea)) )
+          if (vname .eq.    'ABAX') call write_var2d(vname, aba      (1:nsea), dir=cos(abd(1:nsea)) )
+          if (vname .eq.    'ABAY') call write_var2d(vname, aba      (1:nsea), dir=sin(abd(1:nsea)) )
+          if (vname .eq.    'UBAX') call write_var2d(vname, uba      (1:nsea), dir=cos(ubd(1:nsea)) )
+          if (vname .eq.    'UBAY') call write_var2d(vname, uba      (1:nsea), dir=sin(ubd(1:nsea)) )
           if (vname .eq.     'BED') call write_var2d(vname, bedforms (1:nsea,1), init2='true')
           if (vname .eq. 'RIPPLEX') call write_var2d(vname, bedforms (1:nsea,2), init2='true')
           if (vname .eq. 'RIPPLEY') call write_var2d(vname, bedforms (1:nsea,3), init2='true')
@@ -375,9 +375,9 @@ contains
     ! ice. if init2 is present and true, apply a second initialization to
     ! a subset of variables for where mapsta==2
 
-    character(len=*),  intent(in)          :: vname
-    real            ,  intent(in)          :: var(:)
-    real, optional  ,  intent(in)          :: dir(:)
+    character(len=*),           intent(in) :: vname
+    real            ,           intent(in) :: var(:)
+    real, optional  ,           intent(in) :: dir(:)
     character(len=*), optional, intent(in) :: usemask
     character(len=*), optional, intent(in) :: init0
     character(len=*), optional, intent(in) :: init2
@@ -498,8 +498,8 @@ contains
     implicit none
 
     ! input/output variables
-    integer         ,intent(in) :: ierr
-    character(len=*),intent(in) :: string
+    integer         , intent(in) :: ierr
+    character(len=*), intent(in) :: string
 
     if (ierr /= nf90_noerr) then
        write(ndse,*) "*** WAVEWATCH III netcdf error: ",trim(string),':',trim(nf90_strerror(ierr))

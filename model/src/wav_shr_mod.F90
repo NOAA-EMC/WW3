@@ -60,7 +60,6 @@ module wav_shr_mod
   ! to construct the initial file and used in W3IORSMD
   ! if a run is a continue run, then casename is used to construct
   ! the restart filename in W3IORSMD
-  integer            , public :: outfreq     !< @public output frequency in hours (TODO: not used?)
   integer            , public :: inst_index  !< @public number of current instance (ie 1)
   character(len=16)  , public :: inst_name   !< @public fullname of current instance (ie "wav_0001")
   character(len=16)  , public :: inst_suffix !< @public  char string associated with instance
