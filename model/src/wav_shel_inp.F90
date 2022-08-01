@@ -793,7 +793,6 @@ contains
 
        end if ! flhom
 
-
     end if ! flgnml
 
     !
@@ -1310,6 +1309,7 @@ contains
 
        end if ! flhom
 
+       close (ndsi)
     end if  ! .not. flgnml
 
     call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 4')

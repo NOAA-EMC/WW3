@@ -290,7 +290,7 @@
 #endif
 !
       use w3timemd, only: set_user_timestring
-      use w3odatmd, only: use_user_restname, user_restfname, ndso, naplog
+      use w3odatmd, only: use_user_restname, user_restfname, ndso
 
       IMPLICIT NONE
 !
@@ -441,7 +441,7 @@
          ierr = -99
          if (.not. write) then
             if (runtype == 'initial') then
-               if (len_trim(initfile) == 0) then       
+               if (len_trim(initfile) == 0) then
                   ! no IC file, use startup option
                   goto 800
                else
@@ -461,22 +461,22 @@
             fname = trim(user_restfname)//trim(user_timestring)
          end if
          ! write out filename
-         if (iaproc == naplog) then
+         if (iaproc == naprst) then
             if (write) then
                write (ndso,'(a)') 'WW3: writing restart file '//trim(fname)
             else
                write (ndso,'(a)') 'WW3: reading initial/restart file '//trim(fname)
             end if
          end if
-         IF ( WRITE ) THEN
-             IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
-             OPEN (NDSR,FILE=trim(FNAME), form='UNFORMATTED', convert=file_endian,       &
-                   ACCESS='STREAM',ERR=800,IOSTAT=IERR)
-         ELSE  ! READ
-            OPEN (NDSR, FILE=trim(FNAME), form='UNFORMATTED', convert=file_endian,       &
-                  ACCESS='STREAM',ERR=800,IOSTAT=IERR,           &
-                  STATUS='OLD',ACTION='READ')
-         END IF
+         if ( write ) then
+             if ( .not.iosflg .or. iaproc.eq.naprst )        &
+             open (ndsr,file=trim(fname), form='unformatted', convert=file_endian,       &
+                   access='stream',err=800,iostat=ierr)
+         else  ! read
+            open (ndsr, file=trim(fname), form='unformatted', convert=file_endian,       &
+                  access='stream',err=800,iostat=ierr,           &
+                  status='old',action='read')
+         end if
       else
          I      = LEN_TRIM(FILEXT)
          J      = LEN_TRIM(FNMPRE)
@@ -1187,7 +1187,7 @@
 !
 ! Updates reflections maps:
 !
-              IF (GTYPE.EQ.UNGTYPE) THEN 
+              IF (GTYPE.EQ.UNGTYPE) THEN
 !AR: not needed since already initialized on w3iogr                CALL SET_UG_IOBP
 #ifdef W3_REF1
               ELSE
