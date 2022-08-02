@@ -1,5 +1,29 @@
+!> @file
+!> @brief Contains program W3GRIB for post-processing grid output.
+!>
+!> @author H. L. Tolman
+!> @author A. Chawla
+!> @author J.-H. Alves
+!> @date 22-Mar-2021
+!
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Post-processing of grid output.
+!>
+!> @details Data is read from the grid output file out_grd.ww3 (raw data)
+!>  and from the file ww3_grib.inp ( NDSI, output requests ).
+!>  Model definition and raw data files are read using WAVEWATCH III
+!>  subroutines.
+!>  GRIB packing is performed using NCEP's W3 library (not supplied).
+!>
+!>  When adding new parameters to GRIB packing, keep in mind that
+!>  packing is done differently for scalar and vector quantities
+!>
+!> @author H. L. Tolman
+!> @author A. Chawla
+!> @author J.-H. Alves
+!> @date 22-Mar-2021
+!
       PROGRAM W3GRIB
 !/
 !/                  +-----------------------------------+
@@ -878,6 +902,15 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!> @brief Perform actual GRIB output.
+!>
+!> @param[in] NX X array dimension
+!> @param[in] NY Y array dimension
+!> @param[in] NSEA Seapoint array dimension
+!>        
+!> @author H. L. Tolman
+!> @author A. Chawla
+!> @date 22-Mar-2021
       SUBROUTINE W3EXGB ( NX, NY, NSEA )
 !/
 !/                  +-----------------------------------+

@@ -299,7 +299,7 @@
 #ifdef W3_T
           WRITE (NDST,9001) FILEN(:5+I), NDSB
 #endif
-          OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),FORM='UNFORMATTED', &
+          OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
                 ERR=801,IOSTAT=IERR,STATUS='OLD')
         END IF
 !
@@ -312,7 +312,7 @@
             WRITE (NDST,9001) FILEN(:6+I), NDSL(IFILE)
 #endif
             OPEN (NDSL(IFILE),FILE=FNMPRE(:J)//FILEN(:6+I),           &
-                  FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                  form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
             END DO
         END IF
 !
@@ -321,7 +321,7 @@
 #ifdef W3_T
           WRITE (NDST,9001) FILEN(:5+I), NDSB
 #endif
-          OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),FORM='UNFORMATTED', &
+          OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
                 ERR=800,IOSTAT=IERR)
         END IF
 !

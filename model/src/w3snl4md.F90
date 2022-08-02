@@ -308,6 +308,7 @@
 #ifdef W3_MPI
       USE WMMDATMD, ONLY: NMPSCR, IMPROC
 #endif
+      USE CONSTANTS, ONLY: file_endian
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -395,7 +396,7 @@
 #endif
 !!
         open (UNIT=io_unit, FILE=grdfname, STATUS='old',              &
-              ACCESS='sequential', ACTION='read', FORM='unformatted')
+              ACCESS='sequential', ACTION='read', form='unformatted', convert=file_endian)
         read (io_unit)  kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
                         wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
                         tfac2_tbl, tfac4_tbl, grad_tbl,               &
@@ -520,7 +521,7 @@
 #endif
         write( ndso,902 )
         open (UNIT=io_unit, FILE=grdfname, STATUS='new',              &
-             ACCESS='sequential', ACTION='write', FORM='unformatted')
+             ACCESS='sequential', ACTION='write', form='unformatted', convert=file_endian)
         write (io_unit) kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
                         wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
                         tfac2_tbl, tfac4_tbl, grad_tbl,               &

@@ -1,5 +1,20 @@
+!> @file
+!> @brief Contains module WMINITMD.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialization of the multi-grid wave model.
+!> 
+!> @details As a preparation for coupled modeling, all initialization,
+!>  including the processing of the input file has ben included in the
+!>  routine.
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
       MODULE WMINITMD
 !/
 !/                  +-----------------------------------+
@@ -86,10 +101,31 @@
 !/ ------------------------------------------------------------------- /
       PUBLIC
 !/
-      INTEGER, PRIVATE        :: NTRMAX = 1000
+                                               !< NTRMAX Maximum number
+                                               !< of subroutine trace
+                                               !< printouts (NTRACE in
+                                               !< subr. ITRACE).
+      INTEGER, PRIVATE        :: NTRMAX = 1000 
+                                                    
+                                               
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize multi-grid version of WAVEWATCH III.
+!>
+!> @param[in] IDSI Unit number for input file.
+!> @param[in] IDSO Unit number for output file.
+!> @param[in] IDSS Unit number for "screen" output. Switch off
+!>                 by setting equal to IDSO.
+!> @param[in] IDST Unit number for test output.
+!> @param[in] IDSE Unit number for error output.
+!> @param[in] IFNAME File name for input file.
+!> @param[in] MPI_COMM MPI communicator to be used.
+!> @param[in] PREAMB File name preamble (optional).
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!>        
       SUBROUTINE WMINIT ( IDSI, IDSO, IDSS, IDST, IDSE, IFNAME,       &
                           MPI_COMM, PREAMB )
 !/
@@ -3373,8 +3409,6 @@
  9050 FORMAT ( ' TEST WMINIT : GRID NUMBER',I3,' =================')
  9051 FORMAT ( ' TEST WMINIT : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
                                   5(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
- 9053 FORMAT ( ' TEST WMINITNML : OUTFF   : ',I9.8 &
-                                  5(/24X,I9.8) )
  9052 FORMAT ( ' TEST WMINIT : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
 #endif
 !
@@ -3409,6 +3443,21 @@
 
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize multi-grid version of WAVEWATCH III.
+!>
+!> @param[in] IDSI Unit number for input file.
+!> @param[in] IDSO Unit number for output file.
+!> @param[in] IDSS Unit number for "screen" output. Switch off
+!>                 by setting equal to IDSO.
+!> @param[in] IDST Unit number for test output.
+!> @param[in] IDSE Unit number for error output.
+!> @param[in] IFNAME File name for input file.
+!> @param[in] MPI_COMM MPI communicator to be used.
+!> @param[in] PREAMB File name preamble (optional).
+!>
+!> @author H. L. Tolman @date 22-Mar-2021
+!>              
       SUBROUTINE WMINITNML ( IDSI, IDSO, IDSS, IDST, IDSE, IFNAME,       &
                           MPI_COMM, PREAMB )
 !/
@@ -6496,6 +6545,8 @@
  9051 FORMAT ( ' TEST WMINITNML : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
                                   5(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
  9052 FORMAT ( ' TEST WMINITNML : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
+ 9053 FORMAT ( ' TEST WMINITNML : OUTFF   : ',I9.8 &
+                                  5(/24X,I9.8) )
 #endif
 !
 #ifdef W3_T

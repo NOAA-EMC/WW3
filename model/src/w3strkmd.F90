@@ -27,7 +27,8 @@
 !/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
 !/
-      IMPLICIT NONE
+        use constants, only: file_endian
+        IMPLICIT NONE
 !
 !  1. Purpose :
 !
@@ -541,7 +542,7 @@
 !/       -------------------------------------------------
 !/          Test unformatted read
 !/       -------------------------------------------------
-            OPEN(UNIT=11,FILE=FILENAME,FORM='UNFORMATTED',STATUS='OLD',ACCESS='STREAM')
+            OPEN(UNIT=11,FILE=FILENAME,form='UNFORMATTED', convert=file_endian,STATUS='OLD',ACCESS='STREAM')
             READ(11,ERR=802,IOSTAT=IOERR) I
             CLOSE(11)
 !/          --- First four-byte integer could possibly be byte-swapped,
@@ -563,7 +564,7 @@
 !/           --- Stop here. The file appears to be endian encoded
 !                different from the native machine format. And, the
 !                compiler option will override support for FORTRAN
-!                convert statements convert='big_endian' or
+!                convert statements convert=file_endian or
 !                convert='little_endian'. ---
                  WRITE(20,1200)
                  WRITE(6,1200)
@@ -571,7 +572,7 @@
                ELSE
 !                Input file in unformatted binary
                  WRITE(6,*) 'Reading binary formatted file...'
-                 OPEN(unit=11,file=filename,form='UNFORMATTED', &
+                 OPEN(unit=11,file=filename,form='UNFORMATTED', convert=file_endian, &
                       status='OLD')
                ENDIF
                REWIND(11)
@@ -697,7 +698,7 @@
                OPEN(unit=11,file=filename,status='old')
             ELSE
                OPEN(unit=11,file=filename,status='old', &
-                    form='unformatted')
+                    form='unformatted', convert=file_endian)
             END IF
             line = 1
             tstep = 1

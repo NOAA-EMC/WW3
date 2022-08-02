@@ -1,4 +1,8 @@
 ! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
 ! Define the spectrum parameterization via SPECTRUM_NML namelist
 ! -------------------------------------------------------------------- !
 &SPECTRUM_NML
@@ -15,17 +19,16 @@
   RUN%FLCX         =  T
   RUN%FLCY         =  T
   RUN%FLCTH        =  T
-  RUN%FLSOU        =  F
 /
 
 ! -------------------------------------------------------------------- !
 ! Define the timesteps parameterization via TIMESTEPS_NML namelist
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
-  TIMESTEPS%DTMAX        =  600.0
-  TIMESTEPS%DTXY         =  120.0
-  TIMESTEPS%DTKTH        =  120.0
-  TIMESTEPS%DTMIN        =  120.0
+  TIMESTEPS%DTMAX        =  600.
+  TIMESTEPS%DTXY         =  120.
+  TIMESTEPS%DTKTH        =  120.
+  TIMESTEPS%DTMIN        =  120.
 /
 
 ! -------------------------------------------------------------------- !
@@ -33,7 +36,7 @@
 ! -------------------------------------------------------------------- !
 &GRID_NML
   GRID%NAME         =  'Michi'
-  GRID%NML          =  '../input/namelists_michi.nml'
+  GRID%NML          =  '../input/namelists_Michi.nml'
   GRID%TYPE         =  'SMCG'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
@@ -47,21 +50,21 @@
 &RECT_NML
   RECT%NX           =  384
   RECT%NY           =  256
-  RECT%SX           =  0.0448
-  RECT%SY           =  0.0320
-  RECT%X0           =  267.2996
-  RECT%Y0           =  41.174
+  RECT%SX           =  0.04480000
+  RECT%SY           =  0.03200000
+  RECT%X0           =  267.29960
+  RECT%Y0           =  41.17400
 /
 
 ! -------------------------------------------------------------------- !
-! Define the SMC grid input files
+! Define the spherical multiple-cell grid via SMC_NML namelist
 ! -------------------------------------------------------------------- !
 &SMC_NML
-  SMC%MCELS%FILENAME = '../input/GtLkMichiCels.dat' 
-  SMC%ISIDE%FILENAME = '../input/GtLkMichiISid.dat'
-  SMC%JSIDE%FILENAME = '../input/GtLkMichiJSid.dat'
-  SMC%SUBTR%FILENAME = '../input/GtLkMichiObst.dat'
-  SMC%BUNDY%FILENAME = '../input/GtLkMichiBlst.dat'
+  SMC%MCELS%FILENAME        =  '../input/GtLkMichiCels.dat'
+  SMC%ISIDE%FILENAME        =  '../input/GtLkMichiISid.dat'
+  SMC%JSIDE%FILENAME        =  '../input/GtLkMichiJSid.dat'
+  SMC%SUBTR%FILENAME        =  '../input/GtLkMichiObst.dat'
+  SMC%BUNDY%FILENAME        =  '../input/GtLkMichiBlst.dat'
 /
 
 ! -------------------------------------------------------------------- !

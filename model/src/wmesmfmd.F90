@@ -1,3 +1,12 @@
+!> @file
+!> @brief Contains module WMESMFMD.
+!> 
+!> @author T. J. Campell
+!> @author J. Meixner
+!> @author A. J. van der Westhuysen
+!> @date 09-Aug-2017
+!> 
+
 #include "w3macros.h"
 !/
 !/ ------------------------------------------------------------------- /
@@ -42,6 +51,19 @@
 #define TEST_WMESMFMD_READFROMFILE___disabled
 !/
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief National Unified Prediction Capability (NUOPC) based
+!>  Earth System Modeling Framework (ESMF) interface module for
+!>  multi-grid wave model.
+!> 
+!> @details All module variables and types are scoped private by default.
+!>  The private module variables and types are not listed in this section.
+!>
+!> @author T. J. Campell
+!> @author J. Meixner
+!> @author A. J. van der Westhuysen
+!> @date 09-Aug-2017
+!>
       module WMESMFMD
 !/
 !/                  +-----------------------------------+
@@ -192,121 +214,130 @@
 !/ Private module parameters
 !/
 ! --- Default Mask Convention for import/export fields
-      INTEGER, PARAMETER :: DEFAULT_MASK_WATER =  0
-      INTEGER, PARAMETER :: DEFAULT_MASK_LAND  =  1
+      INTEGER, PARAMETER :: DEFAULT_MASK_WATER =  0 !< DEFAULT_MASK_WATER
+      INTEGER, PARAMETER :: DEFAULT_MASK_LAND  =  1 !< DEFAULT_MASK_LAND
 
 ! --- Miscellaneous
-      integer, parameter :: stdo = 6
-      type(ESMF_VM) :: vm
-      integer :: lpet, npet
-      integer :: verbosity
-      logical :: realizeAllExport = .false.
-      integer :: maskValueWater = DEFAULT_MASK_WATER
-      integer :: maskValueLand  = DEFAULT_MASK_LAND
-      integer              :: nz    ! Number of z-levels for SDC
-      real(4), allocatable :: zl(:) ! Array of z-levels for SDC
-      character(256)       :: zlfile = 'none' ! File containing z-levels for SDC
-      character(ESMF_MAXSTR) :: msg
-      real(ESMF_KIND_RX) :: zeroValue
-      real(ESMF_KIND_RX) :: missingValue
-      real(ESMF_KIND_RX) :: fillValue
+      integer, parameter :: stdo = 6 !< stdo
+      type(ESMF_VM) :: vm            !< vm
+      integer :: lpet                !< lpet
+      integer :: npet                !< npet
+      integer :: verbosity           !< verbosity
+      logical :: realizeAllExport = .false.           !< realizeAllExport
+      integer :: maskValueWater = DEFAULT_MASK_WATER  !< maskValueWater
+      integer :: maskValueLand  = DEFAULT_MASK_LAND   !< maskValueLand
+      integer              :: nz    !< nz Number of z-levels for SDC
+      real(4), allocatable :: zl(:) !< zl Array of z-levels for SDC
+      character(256)       :: zlfile = 'none' !< zlfile File containing z-levels for SDC
+      character(ESMF_MAXSTR) :: msg           !< msg
+      real(ESMF_KIND_RX) :: zeroValue         !< zeroValue
+      real(ESMF_KIND_RX) :: missingValue      !< missingValue
+      real(ESMF_KIND_RX) :: fillValue         !< fillValue
 !
 ! --- Timing
-      integer, parameter :: numwt=10
-      character(32) :: wtnam(numwt)
-      integer       :: wtcnt(numwt)
-      real(8)       :: wtime(numwt)
+      integer, parameter :: numwt=10          !< numwt
+      character(32) :: wtnam(numwt)           !< wtnam
+      integer       :: wtcnt(numwt)           !< wtcnt
+      real(8)       :: wtime(numwt)           !< wtime
 !
 ! --- Import fields
-      type(ESMF_ArraySpec)          :: impArraySpec2D
-      type(ESMF_StaggerLoc)         :: impStaggerLoc
-      type(ESMF_Index_Flag)         :: impIndexFlag
-      type(ESMF_Grid)               :: impGrid
-      integer                       :: impGridID
-      logical                       :: impGridIsLocal
-      integer, parameter            :: impHaloWidth = 3
-      integer                       :: impHaloLWidth(2)
-      integer                       :: impHaloUWidth(2)
-      type(ESMF_RouteHandle)        :: impHaloRH
-      type(ESMF_Field)              :: impMask
-      logical                       :: noActiveImpFields
-      integer                       :: numImpFields
-      character(64), allocatable    :: impFieldName(:)
-      character(128), allocatable   :: impFieldStdName(:)
-      logical, allocatable          :: impFieldInitRqrd(:)
-      logical, allocatable          :: impFieldActive(:)
-      type(ESMF_Field), allocatable :: impField(:)
+      type(ESMF_ArraySpec)          :: impArraySpec2D        !< impArraySpec2D
+      type(ESMF_StaggerLoc)         :: impStaggerLoc         !< impStaggerLoc
+      type(ESMF_Index_Flag)         :: impIndexFlag         !< impIndexFlag
+      type(ESMF_Grid)               :: impGrid         !< impGrid
+      integer                       :: impGridID         !< impGridID
+      logical                       :: impGridIsLocal         !< impGridIsLocal
+      integer, parameter            :: impHaloWidth = 3         !< impHaloWidth
+      integer                       :: impHaloLWidth(2)         !< impHaloLWidth
+      integer                       :: impHaloUWidth(2)         !< impHaloUWidth
+      type(ESMF_RouteHandle)        :: impHaloRH         !< impHaloRH
+      type(ESMF_Field)              :: impMask         !< impMask
+      logical                       :: noActiveImpFields         !< noActiveImpFields
+      integer                       :: numImpFields         !< numImpFields
+      character(64), allocatable    :: impFieldName(:)         !< impFieldName
+      character(128), allocatable   :: impFieldStdName(:)         !< impFieldStdName
+      logical, allocatable          :: impFieldInitRqrd(:)         !< impFieldInitRqrd
+      logical, allocatable          :: impFieldActive(:)         !< impFieldActive
+      type(ESMF_Field), allocatable :: impField(:)         !< impField
 !
 ! --- Background import fields
-      character(10), allocatable    :: mbgFieldName(:)
-      character(128), allocatable   :: mbgFieldStdName(:)
-      logical, allocatable          :: mbgFieldActive(:)
-      type(ESMF_Field), allocatable :: mbgField(:)
-      type(ESMF_Field), allocatable :: bmskField(:)
+      character(10), allocatable    :: mbgFieldName(:)     !< mbgFieldName
+      character(128), allocatable   :: mbgFieldStdName(:)  !< mbgFieldStdName
+      logical, allocatable          :: mbgFieldActive(:)         !< mbgFieldActive
+      type(ESMF_Field), allocatable :: mbgField(:)         !< mbgField
+      type(ESMF_Field), allocatable :: bmskField(:)         !< bmskField
 !
 ! --- Unstructured import meshes
-      type(ESMF_Mesh)               :: impMesh
-!      integer                       :: impMeshID
-!      logical                       :: impMeshIsLocal
+      type(ESMF_Mesh)               :: impMesh         !< impMesh
+!      integer                       :: impMeshID         !< impMeshID
+!      logical                       :: impMeshIsLocal         !< impMeshIsLocal
 !
 ! --- Export fields
-      type(ESMF_ArraySpec)          :: expArraySpec2D
-      type(ESMF_ArraySpec)          :: expArraySpec3D
-      type(ESMF_StaggerLoc)         :: expStaggerLoc
-      type(ESMF_Index_Flag)         :: expIndexFlag
-      type(ESMF_Grid)               :: expGrid
-      integer                       :: expGridID = 1
-      logical                       :: expGridIsLocal
-      integer, parameter            :: expHaloWidth = 3
-      integer                       :: expHaloLWidth(2)
-      integer                       :: expHaloUWidth(2)
-      type(ESMF_RouteHandle)        :: expHaloRH
-      type(ESMF_Field)              :: expMask
-      logical                       :: noActiveExpFields
-      integer                       :: numExpFields
-      character(64), allocatable    :: expFieldName(:)
-      character(128), allocatable   :: expFieldStdName(:)
-      integer, allocatable          :: expFieldDim(:)
-      logical, allocatable          :: expFieldActive(:)
-      type(ESMF_Field), allocatable :: expField(:)
+      type(ESMF_ArraySpec)          :: expArraySpec2D         !< expArraySpec2D
+      type(ESMF_ArraySpec)          :: expArraySpec3D         !< expArraySpec3D
+      type(ESMF_StaggerLoc)         :: expStaggerLoc         !< expStaggerLoc
+      type(ESMF_Index_Flag)         :: expIndexFlag         !< expIndexFlag
+      type(ESMF_Grid)               :: expGrid         !< expGrid
+      integer                       :: expGridID = 1         !< expGridID
+      logical                       :: expGridIsLocal         !< expGridIsLocal
+      integer, parameter            :: expHaloWidth = 3         !< expHaloWidth
+      integer                       :: expHaloLWidth(2)         !< expHaloLWidth
+      integer                       :: expHaloUWidth(2)         !< expHaloUWidth
+      type(ESMF_RouteHandle)        :: expHaloRH         !< expHaloRH
+      type(ESMF_Field)              :: expMask         !< expMask
+      logical                       :: noActiveExpFields         !< noActiveExpFields
+      integer                       :: numExpFields         !< numExpFields
+      character(64), allocatable    :: expFieldName(:)         !< expFieldName
+      character(128), allocatable   :: expFieldStdName(:)         !< expFieldStdName
+      integer, allocatable          :: expFieldDim(:)         !< expFieldDim
+      logical, allocatable          :: expFieldActive(:)         !< expFieldActive
+      type(ESMF_Field), allocatable :: expField(:)         !< expField
 !
 ! --- Unstructured export meshes
-      type(ESMF_Mesh)               :: expMesh
-      integer                       :: expMeshID
-      logical                       :: expMeshIsLocal
+      type(ESMF_Mesh)               :: expMesh         !< expMesh
+      integer                       :: expMeshID         !<  expMeshID
+      logical                       :: expMeshIsLocal         !< expMeshIsLocal
 !
 ! --- Native field stuff
-      type(ESMF_ArraySpec)  :: natArraySpec1D
-      type(ESMF_ArraySpec)  :: natArraySpec2D
-      type(ESMF_ArraySpec)  :: natArraySpec3D
-      type(ESMF_StaggerLoc) :: natStaggerLoc
-      type(ESMF_Index_Flag) :: natIndexFlag
-      type(ESMF_Grid)       :: natGrid
-      integer               :: natGridID
-      logical               :: natGridIsLocal
-      type(ESMF_RouteHandle):: n2eRH
+      type(ESMF_ArraySpec)  :: natArraySpec1D         !< natArraySpec1D
+      type(ESMF_ArraySpec)  :: natArraySpec2D         !< natArraySpec2D
+      type(ESMF_ArraySpec)  :: natArraySpec3D         !< natArraySpec3D
+      type(ESMF_StaggerLoc) :: natStaggerLoc         !< natStaggerLoc
+      type(ESMF_Index_Flag) :: natIndexFlag         !< natIndexFlag
+      type(ESMF_Grid)       :: natGrid         !< natGrid
+      integer               :: natGridID         !< natGridID
+      logical               :: natGridIsLocal         !< natGridIsLocal
+      type(ESMF_RouteHandle):: n2eRH         !< n2eRH
 !
 ! --- Mediator
-      logical        :: med_present = .false.
-      character(256) :: flds_scalar_name = ''
-      integer        :: flds_scalar_num = 0
+      logical        :: med_present = .false.         !< med_present
+      character(256) :: flds_scalar_name = ''         !< flds_scalar_name
+      integer        :: flds_scalar_num = 0         !< flds_scalar_num
       ! flds_scalar_index_nx and flds_scalar_index_nx are domain
       ! metadata that allows CMEPS to convert a mesh back to 2d 
       ! space for mediator restart and history outputs
-      integer        :: flds_scalar_index_nx = 0
-      integer        :: flds_scalar_index_ny = 0
+      integer        :: flds_scalar_index_nx = 0         !< flds_scalar_index_nx
+      integer        :: flds_scalar_index_ny = 0         !< flds_scalar_index_ny
 ! --- Memory Profiling
-      logical        :: profile_memory = .false.
+      logical        :: profile_memory = .false.         !< profile_memory
 !
 ! --- Coupling stuff for non completely overlapped domains
-      logical                       :: merge_import = .false.
-      logical, allocatable          :: mmskCreated(:)
-      type(ESMF_Field), allocatable :: mmskField(:)
-      type(ESMF_Field), allocatable :: mdtField(:)
+      logical                       :: merge_import = .false.         !< merge_import
+      logical, allocatable          :: mmskCreated(:)         !< mmskCreated
+      type(ESMF_Field), allocatable :: mmskField(:)         !< mmskField
+      type(ESMF_Field), allocatable :: mdtField(:)         !< mdtField
 !/
 !/ ------------------------------------------------------------------- /
       contains
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Wave model ESMF set services.
+!>
+!> @param      gcomp Gridded component.
+!> @param[out] rc Return code.
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>        
 #undef METHOD
 #define METHOD "SetServices"
       subroutine SetServices ( gcomp, rc )
@@ -465,6 +496,19 @@
 !/
       end subroutine SetServices
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief  Initialize wave model (phase 0).
+!>
+!> @details Define the NUOPC Initialize Phase Mapping.
+!>
+!> @param gcomp Gridded component.
+!> @param impState Import state.
+!> @param expState Export state.
+!> @param extClock External clock.
+!> @param[out] rc  Return code.
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "InitializeP0"
       subroutine InitializeP0 ( gcomp, impState, expState, extClock, rc )
@@ -609,6 +653,19 @@
 !/
       end subroutine InitializeP0
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief  Initialize wave model (phase 1).
+!>
+!> @details Advertise fields in import and export states.
+!>
+!> @param gcomp Gridded component.
+!> @param impState Import state.
+!> @param expState Export state.
+!> @param extClock External clock.
+!> @param[out] rc  Return code.      
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "InitializeP1"
       subroutine InitializeP1 ( gcomp, impState, expState, extClock, rc )
@@ -1339,6 +1396,21 @@
 !/
       end subroutine InitializeP1
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize wave model (phase 3).
+!>
+!> @details Realize fields in import and export states.
+!>
+!> @param gcomp Gridded component.
+!> @param impState Import state.
+!> @param expState Export state.
+!> @param extClock External clock.
+!> @param[out] rc  Return code.      
+!>
+!> @author T. J. Campbell
+!> @author A. J. van der Westhuysen
+!> @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "InitializeP3"
       subroutine InitializeP3 ( gcomp, impState, expState, extClock, rc )
@@ -1682,6 +1754,14 @@
 !/
       end subroutine InitializeP3
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Finalize wave model.
+!>
+!> @param gcomp Gridded component.
+!> @param[out] rc Return code.
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "Finalize"
       subroutine Finalize ( gcomp, rc )
@@ -1898,6 +1978,14 @@
 !/
       end subroutine Finalize
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief  Initialize wave model export data
+!>
+!> @param gcomp Gridded component.
+!> @param[out] rc Return code.
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "DataInitialize"
       subroutine DataInitialize ( gcomp, rc )
@@ -2112,6 +2200,14 @@
 !/
       end subroutine DataInitialize
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Advance wave model in time.
+!>
+!> @param      gcomp Gridded component.
+!> @param[out] rc    Return code.      
+!>
+!> @author T. J. Campbell   @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "ModelAdvance"
       subroutine ModelAdvance ( gcomp, rc )
@@ -2308,6 +2404,14 @@
 !/
       end subroutine ModelAdvance
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Get import fields and put in internal data structures.
+!>
+!> @param      gcomp Gridded component.
+!> @param[out] rc    Return code.
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "GetImport"
       subroutine GetImport ( gcomp, rc )
@@ -2687,6 +2791,14 @@
 !/
       end subroutine GetImport
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Set export fields from internal data structures.
+!>
+!> @param      gcomp Gridded component
+!> @param[out] rc    Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "SetExport"
       subroutine SetExport ( gcomp, rc )
@@ -2913,6 +3025,14 @@
 !/
       end subroutine SetExport
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Create ESMF grid for import fields.
+!>
+!> @param      gcomp Gridded component
+!> @param[out] rc    Return code
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "CreateImpGrid"
       subroutine CreateImpGrid ( gcomp, rc )
@@ -3366,6 +3486,14 @@
 !/
       end subroutine CreateImpGrid
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Create ESMF grid for export fields
+!> 
+!> @param      gcomp Gridded component
+!> @param[out] rc    Return code
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "CreateExpGrid"
       subroutine CreateExpGrid ( gcomp, rc )
@@ -3381,7 +3509,7 @@
 !/
 !  1. Purpose :
 !
-!     Create ESMF grid for export fields
+!     
 !
 !  2. Method :
 !
@@ -3971,6 +4099,20 @@
 !/
       end subroutine CreateExpGrid
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Create ESMF mesh (unstructured) for import fields.
+!>
+!> @details Create an ESMF Mesh for import using the unstructured mesh
+!>  description in W3GDATMD. At present, this import mesh is not 
+!>  domain decomposed, but instead is defined on PET 0 only. (In 
+!>  future, when the unstructured mesh will run on domain decomposition,
+!>  we will use that decomposition.)      
+!>     
+!> @param      gcomp Gridded component
+!> @param[out] rc    Return code
+!>
+!> @author A. J. van der Westhuysen  @date 28-Feb-2018
+!>            
 #undef METHOD
 #define METHOD "CreateImpMesh"
       subroutine CreateImpMesh ( gcomp, rc )
@@ -4100,7 +4242,7 @@
 !
 ! Allocate and fill the node id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeIds(NX))
          do i = 1,NX
@@ -4139,7 +4281,7 @@
 ! Since this is a 2D Mesh the size is 2x the
 ! number of nodes.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeCoords(2*NX))
          do i = 1,NX
@@ -4190,7 +4332,7 @@
 ! Allocate and fill the node owner array.
 ! Since this mesh is all on PET 0, it’s just set to all 0.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeOwners(NX))
          nodeOwners=0 ! everything on PET 0
@@ -4222,7 +4364,7 @@
 
 ! Allocate and fill the element id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemIds(NTRI))
          do i = 1,NTRI
@@ -4258,7 +4400,7 @@
 
 ! Allocate and fill the element topology type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemTypes(NTRI))
          do i = 1,NTRI
@@ -4294,13 +4436,13 @@
 
 ! Allocate and fill the element connection type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemConn(3*NTRI))
          do i = 1,NTRI
             do j = 1,3
                pos=3*(i-1)+j
-               elemConn(pos)=TRIGP(i,j)
+               elemConn(pos)=TRIGP(j,i)
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4365,6 +4507,27 @@
 !/
       end subroutine CreateImpMesh
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Create ESMF mesh (unstructured) for export fields.
+!>
+!> @details Create an ESMF Mesh for export using the unstructured mesh 
+!>  description in W3GDATMD. At present, this export mesh is not domain
+!>  decomposed, but instead is defined on PET 0 only. (In future, when the
+!>  unstructured mesh will run on domain decomposition, we will use that
+!>  decomposition.)
+!>
+!>  Since the internal parallel data is currently stored accross grid points 
+!>  in a "card deck" fashion, we will define an intermediate native grid, as
+!>  is done for regular/curvilinear grids, and perform an ESMF regrid to the
+!>  export mesh. This code segment is taken from T. J. Campbell, and 
+!>  modified to 1D, because the internal data structure for unstructred 
+!>  meshes is an array with dimensions [NX,NY=1].     
+!>     
+!> @param      gcomp Gridded component
+!> @param[out] rc    Return code
+!>
+!> @author A. J. van der Westhuysen  @date 28-Feb-2018
+!>                  
 #undef METHOD
 #define METHOD "CreateExpMesh"
       subroutine CreateExpMesh ( gcomp, rc )
@@ -4510,7 +4673,7 @@
 !
 ! Allocate and fill the node id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeIds(NX))
          do i = 1,NX
@@ -4549,7 +4712,7 @@
 ! Since this is a 2D Mesh the size is 2x the
 ! number of nodes.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeCoords(2*NX))
          do i = 1,NX
@@ -4599,7 +4762,7 @@
 
 ! Allocate and fill the node owner array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(nodeOwners(NX))
          nodeOwners=0 ! TODO: For now, export everything via PET 0
@@ -4631,7 +4794,7 @@
 
 ! Allocate and fill the element id array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemIds(NTRI))
          do i = 1,NTRI
@@ -4667,7 +4830,7 @@
 
 ! Allocate and fill the element topology type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemTypes(NTRI))
          do i = 1,NTRI
@@ -4703,13 +4866,13 @@
 
 ! Allocate and fill the element connection type array.
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          allocate(elemConn(3*NTRI))
          do i = 1,NTRI
             do j = 1,3
                pos=3*(i-1)+j
-               elemConn(pos)=TRIGP(i,j)
+               elemConn(pos)=TRIGP(j,i)
             enddo
          enddo
 #ifdef W3_PDLIB
@@ -4784,7 +4947,7 @@
       natGridIsLocal = iaproc .gt. 0 .and. iaproc .le. naproc
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
 !
 ! 3.b Setup arbitrary sequence index list
@@ -4874,6 +5037,16 @@
 !/
       end subroutine CreateExpMesh
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Setup background blending mask field for an import field.
+!>
+!> @param bmskField   Blending mask field
+!> @param impField    Import field
+!> @param missingVal  Missing value
+!> @param rc          Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "SetupImpBmsk"
       subroutine SetupImpBmsk( bmskField, impField, missingVal, rc )
@@ -5092,6 +5265,16 @@
 !/
       end subroutine SetupImpBmsk
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Blend import field with background field.
+!>
+!> @param[inout] impField Import field
+!> @param[in] mbgField    Import background field
+!> @param[in] bmskField   Blending mask field
+!> @param[inout] rc       Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "BlendImpField"
       subroutine BlendImpField( impField, mbgField, bmskField, rc )
@@ -5194,6 +5377,18 @@
 !/
       end subroutine BlendImpField
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Setup merging mask field for an import field for the cases
+!>  that model domains does not overlap completely.
+!>
+!> @param mmskField  Merging mask field
+!> @param impField   Import field
+!> @param fillVal    Fill value
+!> @param mskCreated Mask is created or not
+!> @param rc         Return code
+!>
+!> @author U. Turuncoglu  @date 18-May-2021
+!>      
 #undef METHOD
 #define METHOD "SetupImpMmsk"
       subroutine SetupImpMmsk( mmskField, impField, fillVal, mskCreated, rc )
@@ -5323,6 +5518,15 @@
 !/
       end subroutine SetupImpMmsk
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Fill ESMF field.
+!>
+!> @param field
+!> @param fillVal
+!> @param rc
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "FieldFill"
       subroutine FieldFill(field, fillVal, rc)
@@ -5444,6 +5648,19 @@
 !/
       end subroutine FieldFill
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief All gather of ESMF field.
+!>
+!> @param field ESMF field
+!> @param n1    Dimension of output array
+!> @param n2    Dimension of output array
+!> @param fout  Global output array
+!> @param rc    Return code
+!>
+!> @author  T. J. Campbell
+!> @author  A. J. van der Westhuysen
+!> @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "FieldGather"
       subroutine FieldGather(field, n1, n2, fout, rc)
@@ -5557,7 +5774,7 @@
         call ESMF_VMbroadcast( vm, bcstData=floc1d, count=count, rootPet=0, rc=rc)
         if (ESMF_LogFoundError(rc, PASSTHRU)) return
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
         do k = 1, n1
           fout(k,1) = floc1d(k)
@@ -5598,6 +5815,16 @@
 !/
       end subroutine FieldGather
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Return index associated with field name.
+!>
+!> @param[inout] fnameList Array of field names
+!> @param[inout] fname     Field name
+!> @param[inout] rc        Return code
+!> @returns      indx      Returned index of fname
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "FieldIndex"
       function FieldIndex ( fnameList, fname, rc ) result (indx)
@@ -5682,6 +5909,16 @@
 !/
       end function FieldIndex
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Print wallclock timers to ESMF log file.
+!>
+!> @param cname
+!> @param wtnam
+!> @param wtcnt
+!> @param wtime
+!>
+!> @author T. J. Campbell  @date 20-Jan-2017
+!>      
 #undef METHOD
 #define METHOD "PrintTimers"
       subroutine PrintTimers ( cname, wtnam, wtcnt, wtime )
@@ -5767,6 +6004,20 @@
 !/
       end subroutine PrintTimers
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate a 2D processor layout
+!>
+!> @param[in] nx       Grid dimension x
+!> @param[in] ny       Grid dimension y
+!> @param[in] nproc    Total processor count
+!> @param[in] npmin    Min number of grid points per tile per direction
+!> @param[in] adjust   Enable/disable adjusting proc count downward
+!> @param[out] nxproc   Processor count in x-direction
+!> @param[out] nyproc   Processor count in y-direction
+!> @param[inout] rc       Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "CalcDecomp"
       subroutine CalcDecomp ( nx, ny, nproc, npmin, adjust, nxproc, nyproc, rc )
@@ -5899,6 +6150,15 @@
 !/
       end subroutine CalcDecomp
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Get value of environment variable.
+!>
+!> @param cenv Name of environment variable
+!> @param cval Value of environment variable
+!> @param rc   Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "GetEnvValue"
       subroutine GetEnvValue ( cenv, cval, rc )
@@ -5987,6 +6247,13 @@
 !/
       end subroutine GetEnvValue
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Get array of z-levels from zlfile for SDC.
+!>
+!> @param[inout] rc Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "GetZlevels"
       subroutine GetZlevels ( rc )
@@ -6095,6 +6362,14 @@
 !/
       end subroutine GetZlevels
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate Charnock for export.
+!>
+!> @param chkField 2D Charnock export field
+!> @param rc       Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "CalcCharnk"
       subroutine CalcCharnk ( chkField, rc )
@@ -6236,6 +6511,14 @@
 !/
       end subroutine CalcCharnk
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate 2D wave roughness length for export.
+!>
+!> @param wrlField  2D roughness length export field
+!> @param rc        Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "CalcRoughl"
       subroutine CalcRoughl ( wrlField, rc )
@@ -6381,6 +6664,17 @@
 !/
       end subroutine CalcRoughl
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate wave-bottom currents for export.
+!>
+!> @param a         Input spectra (in par list to change shape)
+!> @param wbxField  WBC 2D eastward-component export field
+!> @param wbyField  WBC 2D northward-component export field
+!> @param wbpField  WBC 2D period export field
+!> @param rc        Return code
+!>
+!> @author T. J. Campbell @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "CalcBotcur"
       subroutine CalcBotcur ( a, wbxField, wbyField, wbpField, rc )
@@ -6605,6 +6899,17 @@
 !/
       end subroutine CalcBotcur
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate 2D radiation stresses for export.
+!>
+!> @param[inout] a         Input spectra (in par list to change shape)
+!> @param[inout] sxxField  RS 2D eastward-component export field
+!> @param[inout] sxyField  RS 2D eastward-northward-component export field
+!> @param[inout] syyField  RS 2D northward-component field
+!> @param[inout] rc        Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "CalcRadstr2D"
       subroutine CalcRadstr2D ( a, sxxField, sxyField, syyField, rc )
@@ -6724,7 +7029,7 @@
          if (ESMF_LogFoundError(rc, PASSTHRU)) return
       elseif (GTYPE.eq.UNGTYPE) then
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
          sxxnField = ESMF_FieldCreate( natGrid, natArraySpec1D, &
            staggerLoc=natStaggerLoc, rc=rc )
@@ -6741,7 +7046,7 @@
       endif
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
       call FieldFill( sxxnField, zeroValue, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -6756,7 +7061,7 @@
       if ( natGridIsLocal ) then
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 !        Use auxiliary native grid/mesh to populate and redistribute data
 #endif
         call ESMF_FieldGet( sxxnField, farrayPtr=sxxn, rc=rc )
@@ -6779,7 +7084,7 @@
 
         facd = dwat*grav
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
         jsea_loop: do jsea = 1,nseal
 #ifdef W3_DIST
@@ -6836,7 +7141,7 @@
       endif !natGridIsLocal
 
 #ifdef W3_PDLIB
-      if ( LPDLIB == .FALSE. ) then
+      if ( LPDLIB .EQV. .FALSE. ) then
 #endif
       call ESMF_FieldRedist( sxxnField, sxxField, n2eRH, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -6872,6 +7177,16 @@
 !/
       end subroutine CalcRadstr2D
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate 3D Stokes drift current for export.
+!>
+!> @param a        Input spectra (in par list to change shape)
+!> @param usxField 3D SDC eastward-component export field
+!> @param usyField 3D SDC northward-component export field
+!> @param rc       Return code
+!>
+!> @author T. J. Campbell  @date 09-Aug-2017
+!>      
 #undef METHOD
 #define METHOD "CalcStokes3D"
       subroutine CalcStokes3D ( a, usxField, usyField, rc )
@@ -7122,6 +7437,20 @@
 !/
       end subroutine CalcStokes3D
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate partitioned Stokes drift for export.
+!>
+!> @param a         Input spectra (in par list to change shape)
+!> @param p1xField
+!> @param p1yField
+!> @param p2xField
+!> @param p2yField
+!> @param p3xField
+!> @param p3yField
+!> @param rc       Return code
+!>
+!> @author J. Meixner  @date 29-Oct-2019
+!>      
 #undef METHOD
 #define METHOD "CalcPStokes"
       subroutine CalcPStokes ( a, p1xField, p1yField, p2xField,   &
@@ -7320,6 +7649,18 @@
 !/
       end subroutine CalcPStokes
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Read input file to fill unmapped point for regional applications.
+!>
+!> @param[inout] idfld  Field name
+!> @param[inout] fldwx  2D eastward-component of field
+!> @param[inout] fldwy  2D northward-component of field
+!> @param[in] time0  Time stamp for current time
+!> @param[in] timen  Time stamp for end time
+!> @param[inout] rc     Return code
+!>
+!> @author U. Turuncoglu  @date 18-May-2021
+!>      
 #undef METHOD
 #define METHOD "ReadFromFile"
       subroutine ReadFromFile (idfld, fldwx, fldwy, time0, timen, rc)

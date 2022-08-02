@@ -2693,10 +2693,10 @@
 #endif
           IF ( WRITE ) THEN
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
             ELSE
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
             END IF
 !
           REWIND ( NDSOG )
@@ -2767,10 +2767,10 @@
 #endif
           IF ( WRITE ) THEN
               OPEN (NDSOG,FILE=FNMPRE(:J)//TIMETAG//'.out_grd.'  &
-                    //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                    //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
           ELSE
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
             END IF
 !
           REWIND ( NDSOG )
