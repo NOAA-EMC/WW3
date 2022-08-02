@@ -201,8 +201,16 @@
   if [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_shel"
+    if [ $ESMFMKFILE ]
+    then
+      cdf_programs="$cdf_programs ww3_shel_esmf"
+    fi
   else
     reg_programs="$reg_programs ww3_shel"
+    if [ $ESMFMKFILE ]
+    then
+      reg_programs="$reg_programs ww3_shel_esmf"
+    fi
   fi
 
   #Shared Object

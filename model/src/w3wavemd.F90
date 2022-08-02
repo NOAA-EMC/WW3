@@ -85,7 +85,7 @@
 !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
 !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
-!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx ) 
+!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -449,6 +449,11 @@
 #endif
 #ifdef W3_TIMINGS
     USE W3PARALL, only : PRINT_MY_TIME
+#endif
+#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
+      ! flags for restart and history writes
+      USE WAV_SHR_MOD , only : RSTWR, HISTWR
+      USE W3IOGONCDMD , ONLY : W3IOGONCD
 #endif
 !
       IMPLICIT NONE
@@ -1269,8 +1274,8 @@
             IF (GTYPE .EQ. SMCTYPE) THEN
               IX = 1
 #ifdef W3_SMC
- !!Li  Use new sub for DCXDX/Y and DCYDX/Y assignment.  
-         CALL SMCDCXY 
+ !!Li  Use new sub for DCXDX/Y and DCYDX/Y assignment.
+         CALL SMCDCXY
 #endif
             ELSE IF (GTYPE .EQ. UNGTYPE) THEN
 #ifdef W3_DEBUGDCXDX
@@ -1283,7 +1288,7 @@
             ELSE
               CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
               CALL W3DZXY(CY(1:UBOUND(CY,1)),'m/s',DCYDX, DCYDY) !CY GRADIENT
-            ENDIF  !! End GTYPE 
+            ENDIF  !! End GTYPE
 !
 #ifdef W3_MEMCHECK
        write(40000+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 4'
@@ -1544,9 +1549,7 @@
 !
 #ifdef W3_IS2
           IF ( FLIC5 .AND. DTI50.NE.0. ) THEN
-#endif
 !
-#ifdef W3_IS2
               IF ( TIC5(1).GE.0 ) THEN
                   IF ( DTI50 .LT. 0. ) THEN
                       IDACT(18:18) = 'B'
@@ -1557,18 +1560,14 @@
                 ELSE
                   IDACT(18:18) = 'I'
                 END IF
-#endif
 !
-#ifdef W3_IS2
               IF ( IDACT(18:18).NE.' ' ) THEN
                CALL W3UIC5( FLFRST )
                   DTI50   = 0.
                   FLACT  = .TRUE.
                   FLMAP  = .TRUE.
                 END IF
-#endif
 !
-#ifdef W3_IS2
             END IF
 #endif
 
@@ -1674,7 +1673,7 @@
 #ifdef W3_PR3
               CALL W3MAPT
 #endif
-            END IF  !! GTYPE 
+            END IF  !! GTYPE
               CALL W3NMIN ( MAPSTA, FLAG0 )
               IF ( FLAG0 .AND. IAPROC.EQ.NAPERR ) WRITE (NDSE,1030) IMOD
               FLMAP  = .FALSE.
@@ -1694,8 +1693,8 @@
             IF (GTYPE .EQ. SMCTYPE) THEN
               IX = 1
 #ifdef W3_SMC
- !!Li  Use new sub for DDDX and DDDY assignment.  
-         CALL SMCDHXY 
+ !!Li  Use new sub for DDDX and DDDY assignment.
+         CALL SMCDHXY
 #endif
             ELSE IF (GTYPE .EQ. UNGTYPE) THEN
               CALL UG_GRADIENTS(DW, DDDX, DDDY)
@@ -2166,8 +2165,8 @@
                            CG(:,ISEA), WN(:,ISEA), DEPTH,            &
                            DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
                            CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
-                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
-                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
+                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), &
+                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )
 #endif
 !
                       ELSE
@@ -2196,10 +2195,10 @@
                            CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                            DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                            DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA), &
-                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )  
+                           CFLTHMAX(JSEA), CFLKMAX(JSEA) )
 #endif
 !
-                      END IF  !!  GTYPE  
+                      END IF  !!  GTYPE
 !
                     END IF
                   END DO
@@ -2432,17 +2431,17 @@
 #ifdef W3_SMC
   !Li    Find source boundary spectra and assign to SPCBAC
         IF( ARCTC ) THEN
- 
+
         DO IK = 1, NBAC
            IF( IK .LE. (NBAC-NBGL) ) THEN
                    IY = ICLBAC(IK)
            ELSE
-                   IY = NGLO + IK 
-           ENDIF 
- 
-  !Li    Work out root PE (ISPEC) and JSEA numbers for IY 
+                   IY = NGLO + IK
+           ENDIF
+
+  !Li    Work out root PE (ISPEC) and JSEA numbers for IY
 #ifdef W3_DIST
-            ISPEC = MOD( IY-1, NAPROC ) 
+            ISPEC = MOD( IY-1, NAPROC )
              JSEA = 1 + (IY - ISPEC - 1)/NAPROC
 #endif
 #ifdef W3_SHRD
@@ -2453,7 +2452,7 @@
 ! W3_SMC ... 
 !
 #ifdef W3_SMC
- !!Li   Assign boundary cell spectra. 
+ !!Li   Assign boundary cell spectra.
               IF( IAPROC .EQ. ISPEC+1 ) THEN
                    SPCBAC(:,IK)=VA(:,JSEA)
               ENDIF
@@ -2476,32 +2475,32 @@
            ALLOCATE ( BACSPEC(NSPEC) )
         DO IK = 1, NBAC
            IF( IK .LE. (NBAC-NBGL) ) THEN
-                   IX = NGLO + IK 
+                   IX = NGLO + IK
                    BACANGL = ANGARC(IK)
            ELSE
                    IX = ICLBAC(IK)
                    BACANGL = - ANGARC(IK)
-           ENDIF 
+           ENDIF
 
- !!Li    Work out boundary PE (ISPEC) and JSEA numbers for IX 
+ !!Li    Work out boundary PE (ISPEC) and JSEA numbers for IX
 #ifdef W3_DIST
-            ISPEC = MOD( IX-1, NAPROC ) 
+            ISPEC = MOD( IX-1, NAPROC )
              JSEA = 1 + (IX - ISPEC - 1)/NAPROC
 #endif
 #ifdef W3_SHRD
-            ISPEC = 0 
-             JSEA = IX 
+            ISPEC = 0
+             JSEA = IX
 #endif
 #endif
 !
 #ifdef W3_SMC
               IF( IAPROC .EQ. ISPEC+1 ) THEN
                    BACSPEC = SPCBAC(:,IK)
-                  
+
                    CALL w3acturn( NTH, NK, BACANGL, BACSPEC )
 
-                   VA(:,JSEA) = BACSPEC 
- !!Li              WRITE(NDSE,*) "IAPROC, IX, JSEAx, IK=", IAPROC, IX, JSEA, IK 
+                   VA(:,JSEA) = BACSPEC
+ !!Li              WRITE(NDSE,*) "IAPROC, IX, JSEAx, IK=", IAPROC, IX, JSEA, IK
               ENDIF
 
         END DO  !! Loop IK ends.
@@ -2579,8 +2578,8 @@
                            CG(:,ISEA), WN(:,ISEA), DEPTH,            &
                            DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
                            CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
-                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), & 
-                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )  
+                           DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), &
+                           DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )
 #endif
 !
                       ELSE
@@ -2611,7 +2610,7 @@
                            CFLTHMAX(JSEA), CFLKMAX(JSEA) )
 #endif
 !
-                      END IF  !! GTYPE 
+                      END IF  !! GTYPE
 !
                     END IF
                   END DO
@@ -3020,9 +3019,19 @@
 #endif
 !
 #ifdef W3_MPI
+#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
+          ! CMB: dsec21 computes the difference between time1, time2 in sec
+          ! pretty sure tonext always equal to time on the hour
+          ! so this is getting called every hour
+          ! seems like it only needs to be done when histwr=T though
+          ! so am chaning
+     IF (  histwr .and.  &
+          (FLOUT(1) .OR.  FLOUT(7)) ) THEN
+#else
      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
           (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
              SBSED ) ) THEN
+#endif
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
 #endif
@@ -3033,6 +3042,9 @@
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
+#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
+           write(*,*) 'UWM/CESM histwr mpi_startall', histwr, NRQGO, IERR_MPI
+#endif
 #endif
 #ifdef W3_DEBUGRUN
       WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO.NE.0, step 0'
@@ -3054,16 +3066,19 @@
          IF (NRQGO2.NE.0 ) THEN
 #endif
 #ifdef W3_DEBUGRUN
-      WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO2.NE.0, step 0', &
-              NRQGO2, IRQGO2, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
-      FLUSH(740+IAPROC)
+            WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO2.NE.0, step 0', &
+                 NRQGO2, IRQGO2, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
+            FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MPI
            CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
+#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
+           write(*,*) 'UWM/CESM: histwr mpi_startall', histwr, NRQGO, IERR_MPI
+#endif
 #endif
 #ifdef W3_DEBUGRUN
-      WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO2.NE.0, step 0'
-      FLUSH(740+IAPROC)
+           WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO2.NE.0, step 0'
+           FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MPI
            FLGMPI(1) = .TRUE.
@@ -3077,11 +3092,11 @@
        ELSE
 #endif
 #ifdef W3_DEBUGRUN
-      WRITE(740+IAPROC,*) 'BEFORE DO_OUTPUT_EXCHANGES, step 0'
-      FLUSH(740+IAPROC)
+          WRITE(740+IAPROC,*) 'BEFORE DO_OUTPUT_EXCHANGES, step 0'
+          FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
-       CALL DO_OUTPUT_EXCHANGES(IMOD)
+          CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
 #ifdef W3_MPI
        END IF
@@ -3246,6 +3261,20 @@
                   DTTST   = DSEC21 ( TIME, TOUT )
 !
                   IF ( DTTST .EQ. 0. ) THEN
+#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
+                      ! This assumes that W3_SBS is not defined
+                      IF ( ( J .EQ. 1 ) .AND. histwr) THEN
+                          CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
+                          FLGMPI(0) = .FALSE.
+                          write(*,*) 'CESM w3wavemd: hist flag 1', j, histwr, time, IERR_MPI
+                          IF ( IAPROC .EQ. NAPFLD ) THEN
+                              IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
+                                 ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
+                              FLGMPI(1) = .FALSE.
+                              write(*,*) 'CESM w3wavemd: hist flag 2', j, histwr, time, IERR_MPI
+                              CALL W3IOGONCD ()
+                          END IF
+#else
                       IF ( ( J .EQ. 1 )              &
 #ifdef W3_SBS
                            .OR. ( J .EQ. 7 )         &
@@ -3264,9 +3293,7 @@
                                 CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
 #ifdef W3_SBS
                               ENDIF
-#endif
-!
-#ifdef W3_SBS
+ !
  !
  !     Generate output flag file for fields and SBS coupling.
  !
@@ -3275,14 +3302,14 @@
                               FOUTNAME = 'Field_done.' // IDTIME(1:4) &
                                        // IDTIME(6:7) // IDTIME(9:10) &
                                       // IDTIME(12:13) // '.' // FILEXT(1:JJ)
-#endif
 !
-#ifdef W3_SBS
                               OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
                               CLOSE( NDSOFLG )
 #endif
                             END IF
 !
+! end of UWMNCOUT/W3_CESMCOUPLED cppif-block
+#endif
                         ELSE IF ( J .EQ. 2 ) THEN
 !
 !   Point output
@@ -3300,8 +3327,14 @@
 ! Track output
 !
                           CALL W3IOTR ( NDS(11), NDS(12), VA, IMOD )
+#ifdef W3_CESMCOUPLED
+                        ! add restart flag
+                        ELSE IF ( J .EQ. 4 .AND. rstwr ) THEN
+                          CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
+#else
                         ELSE IF ( J .EQ. 4 ) THEN
                           CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
+#endif
                           ITEST = RSTYPE
                         ELSE IF ( J .EQ. 5 ) THEN
                           IF ( IAPROC .EQ. NAPBPT ) THEN
@@ -3321,7 +3354,7 @@
                         !
                         IF (DTOUT(7).NE.0) THEN
                           IF ( (MOD(ID_OASIS_TIME,NINT(DTOUT(7))) .EQ. 0 ) .AND. &
-                               (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN 
+                               (DSEC21 (TIME00, TIME) .GT. 0.0) ) THEN
                             IF ( (CPLT0 .AND. (DSEC21 (TIME, TIMEN) .GT. 0.0)) .OR. &
                                   .NOT. CPLT0 ) THEN
                               IF (CPLT0) ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TIME ))
@@ -3442,6 +3475,10 @@
 #ifdef W3_MPI
             IF ( FLGMPI(0) ) CALL MPI_WAITALL                    &
                              ( NRQGO, IRQGO , STATIO, IERR_MPI )
+#if defined(W3_UWMNCOUT) || defined(W3_CESMCOUPLED)
+            IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) ) CALL MPI_WAITALL   &
+                             ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
+#endif
             IF ( FLGMPI(2) ) CALL MPI_WAITALL                    &
                              ( NRQPO, IRQPO1, STATIO, IERR_MPI )
             IF ( FLGMPI(4) ) CALL MPI_WAITALL                    &
