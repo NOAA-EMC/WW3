@@ -1748,7 +1748,7 @@
                  GRIDS(IMOD)%NLvVFc(0:MRLv),     &
                  GRIDS(IMOD)%IJKCel(5, -9:MCel), &
                  GRIDS(IMOD)%IJKUFc(7,MUFc),     &
-                 GRIDS(IMOD)%IJKVFc(8,MVFc),     &
+                 GRIDS(IMOD)%IJKVFc(7,MVFc),     &
                  GRIDS(IMOD)%CTRNX(-9:MCel),     &  
                  GRIDS(IMOD)%CTRNY(-9:MCel),     &
                  GRIDS(IMOD)%CLATF(MVFc),        &
