@@ -94,9 +94,6 @@ module wav_comp_nuopc
                                                            !! using restart_option, restart_n and restart_ymd.
                                                            !! DTOUT(j=4 or j=8) will be set to the restart alarm
                                                            !! interval in seconds
- logical                  :: histwr = .false.              !< logical to trigger history
- logical                  :: rstwr = .false.               !< logical to trigger restart
-
   logical                 :: root_task = .false.           !< logical to indicate root task
 #ifdef W3_CESMCOUPLED
   logical :: cesmcoupled = .true.                          !< logical to indicate CESM use case
@@ -679,7 +676,7 @@ contains
     !--------------------------------------------------------------------
     ! Intialize the list of requested output variables for netCDF output
     !--------------------------------------------------------------------
-    
+
     if (user_netcdf_grdout) then
        call wavinit_grdout
     end if
@@ -930,6 +927,7 @@ contains
     use w3wdatmd          , only : time, w3setw
     use wav_import_export , only : import_fields, export_fields
     use wav_shel_inp      , only : odat
+    use w3odatmd          , only : rstwr, histwr
 
     ! arguments:
     type(ESMF_GridComp)        :: gcomp
@@ -1287,7 +1285,7 @@ contains
        end if
 
     end if
-    
+
     !--------------------------------
     ! Advance model clock to trigger alarms then reset model clock back to currtime
     !--------------------------------
@@ -1312,7 +1310,7 @@ contains
 !> @date 01-05-2022
   subroutine ModelFinalize(gcomp, rc)
 
-    ! input/output variables 
+    ! input/output variables
     type(ESMF_GridComp)        :: gcomp
     integer, intent(out)       :: rc
 
