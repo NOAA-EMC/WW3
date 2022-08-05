@@ -3409,8 +3409,6 @@
  9050 FORMAT ( ' TEST WMINIT : GRID NUMBER',I3,' =================')
  9051 FORMAT ( ' TEST WMINIT : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
                                   5(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
- 9053 FORMAT ( ' TEST WMINITNML : OUTFF   : ',I9.8 &
-                                  5(/24X,I9.8) )
  9052 FORMAT ( ' TEST WMINIT : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
 #endif
 !
@@ -6547,6 +6545,8 @@
  9051 FORMAT ( ' TEST WMINITNML : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
                                   5(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
  9052 FORMAT ( ' TEST WMINITNML : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
+ 9053 FORMAT ( ' TEST WMINITNML : OUTFF   : ',I9.8 &
+                                  5(/24X,I9.8) )
 #endif
 !
 #ifdef W3_T

@@ -1,4 +1,9 @@
 #include "w3macros.h"
+!
+#ifndef ENDIANNESS
+#define ENDIANNESS "native"
+#endif
+!
 !/ ------------------------------------------------------------------- /
       MODULE CONSTANTS
 !/
