@@ -670,7 +670,7 @@ contains
     ! call mpi_barrier ( mpi_comm, ierr )
     if ( root_task ) then
        inquire(unit=nds(1), name=logfile)
-       print *,'WW3 log written to '//trim(logfile)
+       print *,'WW3: log written to '//trim(logfile)
     end if
 
     !--------------------------------------------------------------------
@@ -756,7 +756,7 @@ contains
     EMeshTemp = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if ( root_task ) then
-       write(nds(1),*)'mesh file for domain is ',trim(cvalue)
+       write(nds(1),*)'WW3: mesh file for domain is ',trim(cvalue)
     end if
 
     ! recreate the mesh using the above distGrid

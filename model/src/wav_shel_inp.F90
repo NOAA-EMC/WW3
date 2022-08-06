@@ -1492,7 +1492,6 @@ contains
        if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
        continue
     end if
-
     !
 
     call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 5')

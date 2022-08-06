@@ -506,7 +506,7 @@
       USE W3PARALL, only : PRINT_MY_TIME
 #endif
       use w3iogoncdmd   , only : w3iogoncd
-      use w3odatmd      , only : user_netcdf_grdout, rstwr
+      use w3odatmd      , only : user_netcdf_grdout, rstwr, histwr
       use wav_shr_flags , only : w3_cesmcoupled_flag
       IMPLICIT NONE
 !
@@ -3304,7 +3304,11 @@
                               IF ( FLGMPI(1) ) CALL MPI_WAITALL( NRQGO2, IRQGO2, STATIO, IERR_MPI )
                                  FLGMPI(1) = .FALSE.
 #endif
-                                 CALL W3IOGONCD ()
+                                 if (w3_cesmcoupled_flag) then
+                                    if (histwr) CALL W3IOGONCD ()
+                                 else
+                                    call W3IOGONCD ()
+                                 end if
                            END IF
                      else  ! default (binary) output
                             IF ( IAPROC .EQ. NAPFLD ) THEN
@@ -3455,7 +3459,7 @@
               TOUT(:) = TONEXT(:,J)
               DTTST   = DSEC21 ( TIME, TOUT )
               IF ( DTTST .EQ. 0. ) THEN
-                 if (rstwr) CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
+                 CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
                  ITEST = RSTYPE
                  CALL TICK21 ( TOUT, DTOUT(J) )
                  TONEXT(:,J) = TOUT
