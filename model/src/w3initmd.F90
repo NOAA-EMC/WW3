@@ -743,8 +743,8 @@
       WRITE (NDST,9003) LFILE(:IFL), TFILE(:IFT)
 #endif
 !
-! 2.  Model defintition ---------------------------------------------- /
-! 2.a Read model defintition file
+! 2.  Model definition ---------------------------------------------- /
+! 2.a Read model definition file
 !
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 8")
       CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )

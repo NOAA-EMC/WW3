@@ -1321,6 +1321,21 @@ contains
     if (present(time0_overwrite) .and. present(timen_overwrite)) then
        time0(:) = time0_overwrite(:)
        timen(:) = timen_overwrite(:)
+       do j = 1,notype
+          if (odat(5*(j-1)+3) .ne. 0 ) then    ! non-zero stride
+             odat(5*(j-1)+1) = time0(1)
+             odat(5*(j-1)+2) = time0(2)
+             odat(5*(j-1)+4) = timen(1)
+             odat(5*(j-1)+5) = timen(2)
+          end if
+       end do
+       j=8
+       if (odat(5*(j-1)+3) .ne. 0) then       ! non-zero stride
+          odat(5*(j-1)+1) = time0(1)
+          odat(5*(j-1)+2) = time0(2)
+          odat(5*(j-1)+4) = timen(1)
+          odat(5*(j-1)+5) = timen(2)
+       end if
     end if
 
     if ( iaproc .eq. napout ) write (ndso,930)
@@ -1403,7 +1418,7 @@ contains
 
     ! CHECKPOINT
     j=8
-    if (odat(38) .ne. 0) then
+    if (odat(5*(j-1)+3) .ne. 0) then
        if ( iaproc .eq. napout ) write (ndso,941) j, idotyp(j)
        ttime(1) = odat(5*(j-1)+1)
        ttime(2) = odat(5*(j-1)+2)
@@ -1477,6 +1492,7 @@ contains
        if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
        continue
     end if
+
     !
 
     call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 5')
