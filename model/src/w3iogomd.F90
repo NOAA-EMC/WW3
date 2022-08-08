@@ -2114,7 +2114,9 @@
 !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
-        IF ( EC(JSEA) .GT. 0 ) FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
+        IF ( EC(JSEA) .GT. 0 .AND. IKP0(JSEA) .NE. NK ) THEN
+            FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
+        END IF
 #ifdef W3_ST1
         IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
 #endif
@@ -2143,18 +2145,14 @@
 !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
-        IF ( EC(JSEA) .GT. 0 ) THEN
+        IF ( EC(JSEA) .GT. 0 .AND. IKP0(JSEA) .NE. NK ) THEN
           IF ( IKP0(JSEA) .EQ. 1 ) THEN
             EL = - EBD(IKP0(JSEA), JSEA)
           ELSE
             EL = EBD(IKP0(JSEA)-1, JSEA) - EBD(IKP0(JSEA), JSEA)
           END IF
 
-          IF ( IKP0(JSEA) .EQ. NK ) THEN
-            EH = - EBD(IKP0(JSEA), JSEA)
-          ELSE
-            EH = EBD(IKP0(JSEA)+1, JSEA) - EBD(IKP0(JSEA), JSEA)
-          END IF
+          EH = EBD(IKP0(JSEA)+1, JSEA) - EBD(IKP0(JSEA), JSEA)
 
           DENOM  = XL*EH - XH*EL
           FP0(JSEA) = FP0 (JSEA) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )   &

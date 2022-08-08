@@ -2033,21 +2033,17 @@
             END IF
           END DO
 !
-          IF ( IKM .EQ. 1 ) THEN
-            EL = - E1(IKM)
-          ELSE
-            EL = E1(IKM-1) - E1(IKM)
-          END IF
+          IF ( HSIG .GE. HSMIN .AND. IKM .NE. NK ) THEN
+            IF ( IKM .EQ. 1 ) THEN
+              EL = - E1(IKM)
+            ELSE
+              EL = E1(IKM-1) - E1(IKM)
+            END IF
 
-          IF ( IKM .EQ. NK ) THEN
-            EH = - E1(IKM)
-          ELSE
             EH = E1(IKM+1) - E1(IKM)
-          END IF
 
-          DENOM  = XL*EH - XH*EL
+            DENOM  = XL*EH - XH*EL
 !
-          IF ( HSIG .GE. HSMIN ) THEN
             FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
                         / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
             THP    = THBND(IKM)
