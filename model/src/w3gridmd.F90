@@ -300,10 +300,10 @@
 !     cell size and starting from the south-west corner of the usual 
 !     rectuangular domain.  Each sea cell is then given a pair of x-y 
 !     index, plus a pair of increments.  These four index are stored in 
-!     the cell array IJKCel(5, NCel), each row holds i, j, di, dj, ndps
-!     where ndps is an integer depth in metre.  If precision higher than
-!     a metre is required, it may use other unit (cm for instance) with a
-!     conversion factor.  
+!     the cell array IJKCel(4, NCel), each row holds i, j, di, dj, and
+!     IJKDep holds ndps, where ndps is an integer depth in metre.  If 
+!     precision higher than a metre is required, it may use other unit 
+!     (cm for instance) with a conversion factor.  
 !    
 !     For transport calculation, two face arrays, IJKUFc(7, NUFc) and 
 !     IJKVFc(7, NVFc), are also created to store the neighbouring cell 
@@ -686,6 +686,7 @@
       INTEGER, ALLOCATABLE    :: NBICelin(:),  IJKObstr(:,:)
       REAL                    :: PoLonAC, PoLatAC
       INTEGER, ALLOCATABLE    :: IJKCelAC(:,:),IJKUFcAC(:,:),IJKVFcAC(:,:)
+      INTEGER, ALLOCATABLE    :: IJKDep(:), IJKVFc8(:)
       REAL,    ALLOCATABLE    :: XLONAC(:),YLATAC(:),ELONAC(:),ELATAC(:) 
 #endif
 !
@@ -4188,7 +4189,8 @@
        NGLO=NCel
        WRITE (NDSO,4004)  NCel, NLvCelsk
 
-       ALLOCATE (   IJKCelin( 5, NCel) )
+       ALLOCATE (   IJKCelin( 5, NCel))
+       ALLOCATE ( IJKDep(NCel) )
        CALL INA2I ( IJKCelin, 5, NCel, 1, 5, 1, NCel, NDSTR, NDST, NDSE, &
                     IDFM, RFORM, IDLA, 1, 0)
        CLOSE(NDSTR)
@@ -4252,6 +4254,7 @@
        WRITE (NDSO,4010)   NVFc, NLvVFcsk
 
        ALLOCATE (   IJKVFcin( 8, NVFc) )
+       ALLOCATE ( IJKVFc8(NVFc) )
        CALL INA2I ( IJKVFcin, 8, NVFc, 1, 8, 1, NVFc, NDSTR, NDST, NDSE, &
                     IDFM, RFORM, IDLA, 1, 0)
        CLOSE(NDSTR)
@@ -5063,20 +5066,24 @@
 
  !Li     Pass input SMC arrays to newly declared grid arrays.
        WRITE (NDSO,4025)   NCel
-       IJKCel(1:5, 1:NGLO)=IJKCelin(1:5, 1:NGLO)
+       IJKCel(1:4, 1:NGLO)=IJKCelin(1:4, 1:NGLO)
+       IJKDep(1:NGLO)=IJKCelin(5, 1:NGLO)
        IJKUFc(1:7, 1:NGUI)=IJKUFcin(1:7, 1:NGUI)
        IJKVFc(1:7, 1:NGVJ)=IJKVFcin(1:7, 1:NGVJ)
+       IJKVFc8(1:NGVJ)=IJKVFcin(8, 1:NGVJ)
  !Li     Append Arctic part
        IF( ARCTC ) THEN
-       IJKCel(1:5, NGLO+1:NCel)=IJKCelAC(1:5, 1:NARC)
+       IJKCel(1:4, NGLO+1:NCel)=IJKCelAC(1:4, 1:NARC)
+       IJKDep(NGLO+1:NCel)=IJKCelAC(5, 1:NARC)
        IJKUFc(1:7, NGUI+1:NUFc)=IJKUFcAC(1:7, 1:NAUI)
        IJKVFc(1:7, NGVJ+1:NVFc)=IJKVFcAC(1:7, 1:NAVJ)
+       IJKVFc8(NGVJ+1:NVFc)=IJKVFcAC(8, 1:NAVJ)
        ENDIF !! ARCTC
 
        WRITE (NDSO,4026) 
-       WRITE (NDSO,4006)    1,(IJKCel(ix,  1), ix=1,5)
+       WRITE (NDSO,4006)    1,(IJKCel(ix,  1), ix=1,4), IJKDep(1)
        JJ=NCel
-       WRITE (NDSO,4006)   JJ,(IJKCel(ix, JJ), ix=1,5)
+       WRITE (NDSO,4006)   JJ,(IJKCel(ix, JJ), ix=1,4), IJKDep(JJ)
        WRITE (NDSO,*) ' '
        WRITE (NDSO,4027) 
        WRITE (NDSO,4009)    1,(IJKUFc(ix,  1), ix=1,7)
@@ -5084,9 +5091,9 @@
        WRITE (NDSO,4009)   JJ,(IJKUFc(ix, JJ), ix=1,7)
        WRITE (NDSO,*) ' '
        WRITE (NDSO,4028) 
-       WRITE (NDSO,4009)    1,(IJKVFc(ix,  1), ix=1,7)
+       WRITE (NDSO,4012)    1,(IJKVFc(ix,  1), ix=1,7), IJKVFc8(1)
        JJ=NVFc
-       WRITE (NDSO,4009)   JJ,(IJKVFc(ix, JJ), ix=1,7)
+       WRITE (NDSO,4012)   JJ,(IJKVFc(ix, JJ), ix=1,7), IJKVFc8(JJ)
        WRITE (NDSO,*) ' '
 
  !Li    Boundary -9 to 0 cells for cell x-size 2**n
@@ -5101,16 +5108,16 @@
  !Li    Y-size is restricted below base-cell value. 
  !Li    For refined boundary cells, its y-size is replaced with 
  !Li    the inner cell y-size for flux gradient. 
-       IJKCel(5,    0)=10
+       IJKDep(0)=10
        DO ip=1,9
           IJKCel(3,-ip)=IJKCel(3,-ip+1)*2
           IK=MIN(ip, NRLv-1) 
           IJKCel(4,-ip)=2**IK 
-          IJKCel(5,-ip)=10
+          IJKDep(-ip)=10
        ENDDO
        WRITE (NDSO,4029) 
        DO ip=0, -9, -1
-       WRITE (NDSO,4030)  IJKCel(:,ip)
+       WRITE (NDSO,4030)  IJKCel(:,ip), IJKDep(ip)
        ENDDO
 
        WRITE (NDSO,4031)   NCel
@@ -5150,7 +5157,7 @@
         END IF
 
  !Li  Minimum DMIN depth is used as well for SMC. 
-          ZB(ISEA)= - MAX( DMIN, FLOAT( IJKCel(5, ISEA) ) )
+          ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
           MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
          MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
          MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
@@ -6952,7 +6959,7 @@
  4008 FORMAT ( '       IJKUFc(7,NCel) read from ', A)
  4009 FORMAT (8I8)
  4010 FORMAT ( '       SMC NVFc   = ',6I9)
- 4011 FORMAT ( '       IJKVFc(7,NCel) read from ', A)
+ 4011 FORMAT ( '       IJKVFc(8,NCel) read from ', A)
  4110 FORMAT ( '       SMC NCObsr = ',6I9)
  4111 FORMAT ( '       IJKObstr(1,NCel) read from ', A)
  4012 FORMAT (9I8)
@@ -6963,7 +6970,7 @@
  4017 FORMAT ( '       ARC NAUI   = ',6I9)
  4018 FORMAT ( '       IJKUFc(7,NAUI) read from ', A)
  4019 FORMAT ( '       ARC NAVJ   = ',6I9)
- 4020 FORMAT ( '       IJKVFc(7,NAVJ) read from ', A)
+ 4020 FORMAT ( '       IJKVFc(8,NAVJ) read from ', A)
  4021 FORMAT ( '       Varables by W3DIMX NCel = ',I9)
  4022 FORMAT ( '       Defined NLvCel ',6I9)
  4023 FORMAT ( '       Defined NLvUFc ',6I9)
@@ -6971,7 +6978,7 @@
  4025 FORMAT ( '       Define IJKCel from -9 to ',I9)
  4026 FORMAT ( '       IJKCel(5,NCel) defined : ')
  4027 FORMAT ( '       IJKUFc(7,NUFc) defined : ')
- 4028 FORMAT ( '       IJKVFc(7,NVFc) defined : ')
+ 4028 FORMAT ( '       IJKVFc(8,NVFc) defined : ')
  4029 FORMAT ( '       Boundary cells IJKCel(:,-9:0) : ')
  4030 FORMAT (5I8)
  4031 FORMAT ( '       Define MAPSF ...    1 to ',I9)
