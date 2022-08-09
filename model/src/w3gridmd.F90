@@ -4190,7 +4190,6 @@
        WRITE (NDSO,4004)  NCel, NLvCelsk
 
        ALLOCATE (   IJKCelin( 5, NCel))
-       ALLOCATE ( IJKDep(NCel) )
        CALL INA2I ( IJKCelin, 5, NCel, 1, 5, 1, NCel, NDSTR, NDST, NDSE, &
                     IDFM, RFORM, IDLA, 1, 0)
        CLOSE(NDSTR)
@@ -4254,7 +4253,6 @@
        WRITE (NDSO,4010)   NVFc, NLvVFcsk
 
        ALLOCATE (   IJKVFcin( 8, NVFc) )
-       ALLOCATE ( IJKVFc8(NVFc) )
        CALL INA2I ( IJKVFcin, 8, NVFc, 1, 8, 1, NVFc, NDSTR, NDST, NDSE, &
                     IDFM, RFORM, IDLA, 1, 0)
        CLOSE(NDSTR)
@@ -5063,6 +5061,9 @@
        MAPSTA = 0
        MAPST2 = 1
        MAPFS  = 0
+!LS    Allocation for read-in variables that remain local only.
+       ALLOCATE ( IJKVFc8(NVFc) )
+       ALLOCATE ( IJKDep(-9:NCel) )
 
  !Li     Pass input SMC arrays to newly declared grid arrays.
        WRITE (NDSO,4025)   NCel
