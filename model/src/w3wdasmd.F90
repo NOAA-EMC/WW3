@@ -1,5 +1,39 @@
+!> @file
+!> @brief Contains module W3WDASMD.
+!> 
+!> @author H. L. Tolman @date 06-Dec-2010
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Intended as the interface for externally supplied
+!>  data assimilation software.
+!> 
+!> @details This module is intended as the interface for externally 
+!>  supplied data assimilation software to be used with WAVEWATCH III. 
+!>  The main subroutine W3WDAS is incorporated in the generic WAVEWATCH
+!>  III shell ww3_shel, and thus provides integrated time management
+!>  and running of the wave model and data assimilation side by side.
+!>
+!>  Present wave conditions (including dynamically changing wave
+!>  grids), as well as wave data are passed to the routine through
+!>  the dynamic data structrure, as introduced in model version 3.06.
+!>
+!>  A three tier data structure is used with three separate data
+!>  sets. Tentatively, they are intended for mean wave parameters,
+!>  1-D and 2-D spectral data. This separation is made only for 
+!>  economy in file and memory usage. All three data sets are defined
+!>  here only by a record length and a number of records. All data are
+!>  treated as real numbers, but the meaning of all record components
+!>  is completely at the discretion of the author of the data
+!>  assimilation scheme.
+!>
+!>  To promote portability, it is suggested to use this module only
+!>  as an interface to your own assimilation routine(s).
+!>
+!> @author H. L. Tolman @date 06-Dec-2010
+!>
       MODULE W3WDASMD
 !/
 !/                  +-----------------------------------+
@@ -83,6 +117,18 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief WAVEWATCH III data assimilation interface routine.
+!>
+!> @param[in] DASFLAG FLags for three data sets.
+!> @param[in] RECL Record lengths for three data sets.
+!> @param[in] NDAT Number of data for three data sets.
+!> @param[in] DATA0 Observations.
+!> @param[in] DATA1 Observations.
+!> @param[in] DATA2 Observations.
+!>
+!> @author H. L. Tolman  @date 06-Dec-2010
+!>        
       SUBROUTINE W3WDAS ( DASFLAG, RECL, NDAT, DATA0, DATA1, DATA2 )
 !/
 !/                  +-----------------------------------+

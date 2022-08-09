@@ -1,4 +1,16 @@
+!> @file
+!> @brief Defines commonly used constants as parameters for global use.
+!>
+!> @author H. L. Tolman  @date 05-Jun-2018
+!>
 #include "w3macros.h"
+
+!>
+!> @brief Define some much-used constants for global use (all defined
+!>  as PARAMETER).
+!> 
+!> @author  H. L. Tolman  @date 05-Jun-2018
+!>
 !
 #ifndef ENDIANNESS
 #define ENDIANNESS "native"
@@ -25,7 +37,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -37,88 +49,73 @@
 !
 !      Name      Type  Scope    Description
 !     ----------------------------------------------------------------
-!      GRAV      Real  Global   Acc. of gravity                 (m/s2)
-!      DWAT      Real  Global   Density of water               (kg/m3)
-!      DAIR      Real  Global   Density of air                 (kg/m3)
-!      NU_AIR    Real  Global   Kinematic viscosity of air      (m2/s)
-!      NU_WATER  Real  Global   Kinematic viscosity of water    (m2/s)
-!      SED_SG    Real  Global   Specific gravity of sediments   (N.D.)
-!      KAPPA     Real  Global   von Karman's constant           (N.D.)
-!      PI        Real  Global   pi.
-!      TPI       Real  Global   2pi.
-!      HPI       Real  Global   0.5pi.
-!      TPIINV    Real  Global   1/2pi.
-!      HPIINV    Real  Global   2/pi.
-!      RADE      Real  Global   Conv. factor from radians to degrees.
-!      DERA      Real  Global   Conv. factor from degrees to radians.
-!      RADIUS    Real  Global   Radius of the earth.             (m)
-!      TSTOUT    Log.  Global   Flag for generation of test files.
 !      UNDEF     Real  Global   Value for undefined variable in output
 !     ----------------------------------------------------------------
-!
-!  5. Remarks
-!
-!      - The flag for generating test output files is included here as
-!        it is needed in both ww3_shel and ww3_multi at the same time.
-!        Make sure that this flag is true if you want to write to the 
-!        test output file !
-!
 !/ ------------------------------------------------------------------- /
 !/
-      LOGICAL, PARAMETER      :: TSTOUT = .FALSE.
-!
-      REAL, PARAMETER         :: GRAV   =    9.806
-      REAL, PARAMETER         :: DWAT   = 1000.
-      REAL, PARAMETER         :: DAIR   =    1.225
-      REAL, PARAMETER         :: nu_air  = 1.4E-5        
+      LOGICAL, PARAMETER :: TSTOUT = .FALSE. !< TSTOUT Flag for generation of test files.
+!        The flag for generating test output files is included here as
+!        it is needed in both ww3_shel and ww3_multi at the same time.
+!        Make sure that this flag is true if you want to write to the
+!        test output file !
+      REAL, PARAMETER :: GRAV = 9.806 !< GRAV Acc. of gravity (m/s2).
+      REAL, PARAMETER :: DWAT = 1000. !< DWAT Density of water (kg/m3).
+      REAL, PARAMETER :: DAIR = 1.225 !< DAIR Density of air (kg/m3).
+      REAL, PARAMETER :: NU_AIR = 1.4E-5 !< NU_AIR Kinematic viscosity of air (m2/s).
 !mdo  *** Changing nu_water to be consistent with DWAT=1000 (assumes 10degC)
-      REAL, PARAMETER         :: nu_water  = 1.31E-6    !mdo   WAS: 3.E-6        
-      REAL, PARAMETER         :: sed_sg  = 2.65        
-      REAL, PARAMETER         :: KAPPA = 0.40       !Von Karman's constant
+!mdo   WAS: 3.E-6
+      REAL, PARAMETER :: NU_WATER = 1.31E-6 !< NU_WATER Kinematic viscosity of water (m2/s).
+      REAL, PARAMETER :: SED_SG = 2.65 !< SED_SG Specific gravity of sediments (N.D.).
+      REAL, PARAMETER :: KAPPA = 0.40 !< KAPPA von Karman's constant (N.D.).
 !
-      REAL, PARAMETER         :: PI     = 3.141592653589793
-      REAL, PARAMETER         :: TPI    = 2.0 * PI
-      REAL, PARAMETER         :: HPI    = 0.5 * PI
-      REAL, PARAMETER         :: TPIINV = 1. / TPI
-      REAL, PARAMETER         :: HPIINV = 1. / HPI
-      REAL, PARAMETER         :: RADE   = 180. / PI
-      REAL, PARAMETER         :: DERA   = PI / 180.
+      REAL, PARAMETER :: PI = 3.141592653589793 !< PI Value of Pi.
+      REAL, PARAMETER :: TPI = 2.0 * PI !< TPI 2*Pi.
+      REAL, PARAMETER :: HPI = 0.5 * PI !< HPI 1/2*Pi.
+      REAL, PARAMETER :: TPIINV = 1. / TPI !< TPIINV Inverse of 2*Pi.
+      REAL, PARAMETER :: HPIINV = 1. / HPI !< HPIINV Inverse of 1/2*Pi.
+      REAL, PARAMETER :: RADE = 180. / PI !< RADE Conversion factor from radians to degrees.
+      REAL, PARAMETER :: DERA = PI / 180. !< DERA Conversion factor from degrees to radians.
 !
-      REAL, PARAMETER         :: RADIUS = 4.E7 * TPIINV
+      REAL, PARAMETER :: RADIUS = 4.E7 * TPIINV !< RADIUS Radius of the earth (m).
 !
-      REAL, PARAMETER         :: G2PI3I = 1. / ( GRAV**2 * TPI**3 )
-      REAL, PARAMETER         :: G1PI1I = 1. / ( GRAV * TPI )
+      REAL, PARAMETER :: G2PI3I = 1. / ( GRAV**2 * TPI**3 ) !< G2PI3I Inverse of gravity^2 * (2*Pi)^3.
+      REAL, PARAMETER :: G1PI1I = 1. / ( GRAV * TPI ) !< G1PI1I Inverse of gravity * 2 * Pi.
 !
-      REAL                    :: UNDEF = -999.9
+      REAL            :: UNDEF = -999.9 !< UNDEF Value for undefined variable in output.
 
-      ! Filled in by the pre-processor with 'big_endian', 'little_endian', or 'native'
-      character(*), parameter :: FILE_ENDIAN = ENDIANNESS
+      CHARACTER(*), PARAMETER :: FILE_ENDIAN = ENDIANNESS !< FILE_ENDIAN Filled by preprocessor with 'big_endian', 
+                                                          !< 'little_endian', or 'native'.
 !
-! Parameters for friction factor table 
+! Parameters for friction factor table
 !
-      INTEGER, PARAMETER       :: SIZEFWTABLE=300  
-      REAL                     :: FWTABLE(0:SIZEFWTABLE)
-      REAL                     :: DELAB
-      REAL,    PARAMETER       :: ABMIN = -1. 
-      REAL, PRIVATE, PARAMETER :: ABMAX = 8.
-      INTEGER, PARAMETER       :: srce_direct = 0
-      INTEGER, PARAMETER       :: srce_imp_post = 1
-      INTEGER, PARAMETER       :: srce_imp_pre = 2
-      INTEGER, PARAMETER       :: DEBUG_NODE = 1104
-      INTEGER, PARAMETER       :: DEBUG_ELEMENT = 50
-
-      LOGICAL                  :: LPDLIB      = .FALSE. 
-      LOGICAL                  :: LSETUP      = .FALSE. 
+      INTEGER, PARAMETER :: SIZEFWTABLE=300 !< SIZEFWTABLE
+      REAL            :: FWTABLE(0:SIZEFWTABLE) !< FWTABLE
+      REAL            :: DELAB !< DELAB 
+      REAL, PARAMETER :: ABMIN = -1. !< ABMIN
+      REAL, PRIVATE, PARAMETER :: ABMAX = 8. !< ABMAX
+      INTEGER, PARAMETER :: srce_direct = 0  !< srce_direct 
+      INTEGER, PARAMETER :: srce_imp_post = 1 !< srce_imp_post 
+      INTEGER, PARAMETER :: srce_imp_pre = 2 !< srce_imp_pre 
+      INTEGER, PARAMETER :: DEBUG_NODE = 1014 !< DEBUG_NODE Node number used for debugging.
+      INTEGER, PARAMETER :: DEBUG_ELEMENT = 50 !< DEBUG_ELEMENT Element number used for debug.
+      LOGICAL            :: LPDLIB = .FALSE. !< LPDLIB Logical for using the PDLIB library.
+      LOGICAL            :: LSETUP = .FALSE. !< LSETUP Logical LSETUP is not used.
 !
 ! Parameters in support of running as ESMF component
 !
 ! --- Flag indicating whether or not the model has been invoked as an
 !     ESMF Component.  This flag is set to true in the WMESMFMD ESMF
 !     module during initialization.
-      LOGICAL :: IS_ESMF_COMPONENT = .FALSE.
+      LOGICAL :: IS_ESMF_COMPONENT = .FALSE. !< IS_ESMF_COMPONENT Flag for model invoked via ESMF.
 !
       CONTAINS
 ! ----------------------------------------------------------------------
+!>        
+!> @brief Estimate friction coefficients in oscillatory boundary layers
+!>        using tabulation on Kelvin functions. 
+!>
+!> @author F. Ardhuin  @date 28-Feb-2013
+!>        
       SUBROUTINE TABU_FW
 !/
 !/                  +-----------------------------------+
@@ -176,20 +173,13 @@
 !
 !/ ------------------------------------------------------------------- /
       IMPLICIT NONE
-      INTEGER, PARAMETER      :: NITER=100
-      REAL   , PARAMETER      :: XM=0.50, EPS1=0.00001
-!     VARIABLE.   TYPE.     PURPOSE.
-!      *XM*        REAL      POWER OF TAUW/TAU IN ROUGHNESS LENGTH.
-!      *XNU*       REAL      KINEMATIC VISCOSITY OF AIR.
-!      *NITER*     INTEGER   NUMBER OF ITERATIONS TO OBTAIN TOTAL STRESS
-!      *EPS1*      REAL      SMALL NUMBER TO MAKE SURE THAT A SOLUTION
-!                            IS OBTAINED IN ITERATION WITH TAU>TAUW.
+      INTEGER, PARAMETER      :: NITER=100 
+      REAL   , PARAMETER      :: XM=0.50 
+      REAL   , PARAMETER      :: EPS1=0.00001
 ! ----------------------------------------------------------------------
       INTEGER I,ITER
       REAL KER, KEI
       REAL ABR,ABRLOG,L10,FACT,FSUBW,FSUBWMEMO,dzeta0,dzeta0memo
-!
-!
 !
       DELAB   = (ABMAX-ABMIN)/REAL(SIZEFWTABLE)
       L10=ALOG(10.)
@@ -210,26 +200,54 @@
             fsubw=.08/(ker**2+kei**2)
             fsubw=.5*(fsubwmemo+fsubw)
             dzeta0=.5*(dzeta0memo+dzeta0)
-            END DO   
+            END DO
 !
-! Maximum value of 0.5 for fe is based on field 
-! and lab experiment by Lowe et al. JGR 2005, 2007 
-! 
-            FWTABLE(I)  = MIN(fsubw,0.5) 
+! Maximum value of 0.5 for fe is based on field
+! and lab experiment by Lowe et al. JGR 2005, 2007
+!
+            FWTABLE(I)  = MIN(fsubw,0.5)
 !           WRITE(994,*) 'Friction factor:',I,ABR,FWTABLE(I)
          END DO
       RETURN
       END SUBROUTINE TABU_FW
 
 ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)                      
+!>
+!> @brief June 1999 adaptation to CRESTb, all tests on range of (x,y)
+!>  have been bypassed, we implicitly expect X to be positive or |x,y|
+!>  non zero.      
+!>
+!> @details The variables X and Y are the real and imaginary parts of
+!> the argument of the first two modified bessel functions
+!> of the second kind,k0 and k1.  Re0,im0,re1 and im1 give
+!> the real and imaginary parts of exp(x)*k0 and exp(x)*k1,
+!> respectively.  Although the real notation used in this
+!> subroutine may seem inelegant when compared with the
+!> complex notation that fortran allows, this version runs
+!> about 30 percent faster than one written using complex
+!> variables.
+!>      
+!> @copyright This subroutine is copyright by ACM, see
+!>  http://www.acm.org/pubs/copyright_policy/softwareCRnotice.html.
+!>  ACM declines any responsibility of any kind.
+!>      
+!> @param X    Real part of argument to modified Bessel functions.
+!> @param Y    Imaginary part of argument to modified Bessel functions.
+!> @param RE0  Real part of exp(x)*k0.
+!> @param IM0  Imaginary part of exp(x)*k0.
+!> @param RE1  Real part of exp(x)*k1.
+!> @param IM1  Imaginary part of exp(x)*k1.
+!>
+!> @author N/A  @date N/A
+!>      
+   SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
 !  June 1999 adaptation to CRESTb, all tests on range of (x,y) have been
 !  bypassed, we implicitly expect X to be positive or |x,y| non zero
-! 
+!
 ! This subroutine is copyright by ACM
 ! see http://www.acm.org/pubs/copyright_policy/softwareCRnotice.html
 ! ACM declines any responsibility of any kind
-! 
+!
 ! THE VARIABLES X AND Y ARE THE REAL AND IMAGINARY PARTS OF
 ! THE ARGUMENT OF THE FIRST TWO MODIFIED BESSEL FUNCTIONS
 ! OF THE SECOND KIND,K0 AND K1.  RE0,IM0,RE1 AND IM1 GIVE
@@ -245,7 +263,7 @@ SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
    DOUBLE PRECISION X, Y, X2, Y2, RE0, IM0, RE1, IM1, &
       R1, R2, T1, T2, P1, P2, RTERM, ITERM, L
    DOUBLE PRECISION , PARAMETER, DIMENSION(8) :: EXSQ = &
-         (/ 0.5641003087264D0,0.4120286874989D0,0.1584889157959D0, & 
+         (/ 0.5641003087264D0,0.4120286874989D0,0.1584889157959D0, &
             0.3078003387255D-1,0.2778068842913D-2,0.1000044412325D-3, &
             0.1059115547711D-5,0.1522475804254D-8 /)
    DOUBLE PRECISION , PARAMETER, DIMENSION(8) :: TSQ = &
@@ -386,20 +404,34 @@ SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
       IM1 = T1*R2 + T2*R1
       RETURN
       END SUBROUTINE KZEONE
-      
+
 ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-SUBROUTINE KERKEI(X,KER,KEI)
+!>
+!> @brief Computes the values of the zeroth order Kelvin function
+!>  Ker and Kei.
+!>
+!> @details These functions are used to determine the friction factor
+!>  fw as a function of the bottom roughness length assuming a linear
+!>  profile of eddy viscosity (See Grant and Madsen, 1979).
+!>
+!> @param X
+!> @param KER
+!> @param KEI
+!>
+!> @author  N/A  @date N/A
+!>      
+    SUBROUTINE KERKEI(X,KER,KEI)
 !**********************************************************************
 ! Computes the values of the zeroth order Kelvin function Ker and Kei
-! These functions are used to determine the friction factor fw as a 
+! These functions are used to determine the friction factor fw as a
 ! function of the bottom roughness length assuming a linear profile
 ! of eddy viscosity (See Grant and Madsen, 1979)
 !**********************************************************************
    IMPLICIT NONE
-   
+
    DOUBLE PRECISION ZR,ZI,CYR,CYI,CYR1,CYI1
    REAL X,KER,KEI
-   
+
    ZR=X*.50D0*SQRT(2.0D0)
    ZI=ZR
    CALL KZEONE(ZR, ZI, CYR, CYI,CYR1,CYI1)
