@@ -11,6 +11,11 @@
 !> 
 !> @author  H. L. Tolman  @date 05-Jun-2018
 !>
+!
+#ifndef ENDIANNESS
+#define ENDIANNESS "native"
+#endif
+!
 !/ ------------------------------------------------------------------- /
       MODULE CONSTANTS
 !/
