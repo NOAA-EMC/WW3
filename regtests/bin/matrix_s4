@@ -57,7 +57,7 @@
     modhdf5='hdf5/1.10.6'
     modbacio='bacio/2.4.1'
     modg2='g2/3.4.1'
-    modw3nco='w3nco/2.4.1'
+    modw3emc='w3emc/2.9.2'
     modesmf='esmf/8_1_1'
   else
     echo This matrix setup script is only intended for S4!
@@ -104,7 +104,7 @@
   echo "  module load $modhdf5"                             >> matrix.head
   echo "  module load $modbacio"                            >> matrix.head
   echo "  module load $modg2"                               >> matrix.head
-  echo "  module load $modw3nco"                            >> matrix.head
+  echo "  module load $modw3emc"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
   echo "  export WWATCH3_NETCDF=NC4"                        >> matrix.head
   echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head

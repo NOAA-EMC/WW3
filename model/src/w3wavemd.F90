@@ -2445,8 +2445,8 @@
              JSEA = 1 + (IY - ISPEC - 1)/NAPROC
 #endif
 #ifdef W3_SHRD
-            ISPEC = 0
-             JSEA = IY
+            ISPEC = 0 
+             JSEA = IY 
 #endif
 #endif 
 ! W3_SMC ... 
