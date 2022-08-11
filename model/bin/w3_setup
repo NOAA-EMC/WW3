@@ -394,7 +394,7 @@ then
        [ "$cmplr" == "ukmo_cray_gnu" ] || [ "$cmplr" == "ukmo_cray_gnu_debug" ]     || \
        [ "$cmplr" == "ukmo_cray_intel" ] || [ "$cmplr" == "ukmo_cray_intel_debug" ]; then
      source $path_b/cmplr.env
-     sed -e "s/<comp_seq>/$comp_seq/" -e "s/<cppad3procflag>/$cppad3procflag/" -e "s/<cppad3flag2>/$cppad3flag2/" -e "s/<cppad3flag3>/$cppad3flag3/" -e "s/<cppad3flag4>/$cppad3flag4/" $path_b/ad3.tmpl > $path_b/ad3
+     sed -e "s/<comp_seq>/$comp_seq/" -e "s/<cppad3procflag>/$cppad3procflag/" -e "s/<cppad3flag2>/$cppad3flag2/" -e "s/<cppad3flag3>/$cppad3flag3/" -e "s/<cppad3flag4>/$cppad3flag4/" -e "s/<endian>/${endian}/" $path_b/ad3.tmpl > $path_b/ad3
     echo "      sed $path_b/ad3.tmpl => $path_b/ad3"
   else
     errmsg "$path_b/ad3.$cmplr not found"

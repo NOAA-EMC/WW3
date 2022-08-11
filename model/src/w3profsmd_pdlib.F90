@@ -5628,6 +5628,9 @@
 #ifdef W3_TRX
         CALL W3STRX
 #endif
+#ifdef W3_TRX
+        CALL W3STRX
+#endif
 
 #ifdef W3_DB1
         SELECT CASE (NINT(SDBSC))

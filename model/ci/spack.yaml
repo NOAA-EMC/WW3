@@ -10,7 +10,7 @@ spack:
   - jasper@2.0.32
   - g2@3.4.5
   - bacio@2.4.1
-  - w3nco@2.4.1
+  - w3emc@2.9.2
   - esmf@8.1.1~pio~pnetcdf~xerces
   view: true
   concretization: together
