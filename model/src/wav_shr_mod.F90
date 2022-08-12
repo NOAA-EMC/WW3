@@ -175,7 +175,7 @@ contains
 !! Called by fldlist_realize to set the required scalar data into a state. The
 !! scalar_value will be set into a field with name flds_scalar_name. The scalar_id
 !! identifies which dimension in the scalar field is given by the scalar_value. The
-!! number of scalars is used to ensure that the scalar_id is within the bounds of 
+!! number of scalars is used to ensure that the scalar_id is within the bounds of
 !! the scalar field
 !!
 !! @param[inout]   State            an ESMF_State

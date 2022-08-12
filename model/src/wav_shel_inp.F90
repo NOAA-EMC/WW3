@@ -16,7 +16,7 @@ module wav_shel_inp
 
   public  :: set_shel_io         !< @public set the IO unit numbers
   public  :: read_shel_config    !< @public reads ww3_shel.nml if present, otherwise
-                                 !! read ww3_shel.inp
+  !! read ww3_shel.inp
 
   integer, public :: odat(40) !< @public output dates
   character(len=40), allocatable, public :: pnames(:) !< @public point names
@@ -33,17 +33,17 @@ module wav_shel_inp
 
   include "mpif.h"
 
-!===============================================================================
+  !===============================================================================
 contains
-!===============================================================================
-!> Set IO unit numbers
-!!
-!! @param[in]    stdout           unit number for stdout
-!! @param[out]   mds              an array of 13 unit numbers
-!! @param[out]   ntrace           an array of 2 unit numbers used for trace output
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Set IO unit numbers
+  !!
+  !! @param[in]    stdout           unit number for stdout
+  !! @param[out]   mds              an array of 13 unit numbers
+  !! @param[out]   ntrace           an array of 2 unit numbers used for trace output
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine set_shel_io(stdout,mds,ntrace)
 
     use ESMF, only : ESMF_UtilIOUnitGet
@@ -99,11 +99,11 @@ contains
 
   !===============================================================================
   !> Read ww3_shel.inp Or ww3_shel.nml
-!!
-!! @param[in]  mpi_comm           mpi communicator
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !!
+  !! @param[in]  mpi_comm           mpi communicator
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine read_shel_config(mpi_comm, time0_overwrite, timen_overwrite)
 
     use wav_shr_flags
@@ -171,39 +171,36 @@ contains
     integer             :: thrlev = 1
     integer             :: time0(2), timen(2), ttime(2)
     character(len=80)   :: msg1
-    integer             :: msgunit
 
     data idflds / 'ice param. 1 ' , 'ice param. 2 ' ,               &
-                  'ice param. 3 ' , 'ice param. 4 ' ,               &
-                  'ice param. 5 ' ,                                 &
-                  'mud density  ' , 'mud thkness  ' ,               &
-                  'mud viscos.  ' ,                                 &
-                  'water levels ' , 'currents     ' ,               &
-                  'winds        ' , 'ice fields   ' ,               &
-                  'momentum     ' , 'air density  ' ,               &
-                  'mean param.  ' , '1D spectra   ' ,               &
-                  '2D spectra   ' , 'moving grid  ' /
+         'ice param. 3 ' , 'ice param. 4 ' ,               &
+         'ice param. 5 ' ,                                 &
+         'mud density  ' , 'mud thkness  ' ,               &
+         'mud viscos.  ' ,                                 &
+         'water levels ' , 'currents     ' ,               &
+         'winds        ' , 'ice fields   ' ,               &
+         'momentum     ' , 'air density  ' ,               &
+         'mean param.  ' , '1D spectra   ' ,               &
+         '2D spectra   ' , 'moving grid  ' /
     data idotyp / 'Fields of mean wave parameters' ,                &
-                  'Point output                  ' ,                &
-                  'Track point output            ' ,                &
-                  'Restart files                 ' ,                &
-                  'Nesting data                  ' ,                &
-                  'Partitioned wave field data   ' ,                &
-                  'Fields for coupling           ' ,                &
-                  'Restart files second request  '/
+         'Point output                  ' ,                &
+         'Track point output            ' ,                &
+         'Restart files                 ' ,                &
+         'Nesting data                  ' ,                &
+         'Partitioned wave field data   ' ,                &
+         'Fields for coupling           ' ,                &
+         'Restart files second request  '/
     data idstr  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
-                  'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',  &
-                  'DT0', 'DT1', 'DT2', 'MOV' /
+         'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',  &
+         'DT0', 'DT1', 'DT2', 'MOV' /
     !---------------------------------------------------
     !
     !---------------------------------------------------
 
-    msgunit = 740+iaproc
-
     flgr2 = .false.
     flh(:) = .false.
     iprt(:) = 0
-    call print_logmsg(msgunit, 'read_shel_config, step 1', w3_debuginit_flag)
+    call print_logmsg(740+IAPROC, 'read_shel_config, step 1', w3_debuginit_flag)
 
     ndsi = 10
     ndss = 90
@@ -242,7 +239,7 @@ contains
     ndsf(7)  = 17
     ndsf(8)  = 18
     ndsf(9)  = 19
-    call print_logmsg(msgunit, 'read_shel_config, step 2', w3_debuginit_flag)
+    call print_logmsg(740+IAPROC, 'read_shel_config, step 2', w3_debuginit_flag)
 
     if (w3_nco_flag) then
        ndsi    = 11
@@ -265,7 +262,7 @@ contains
 
     ! Default COMSTR to "$" (for when using nml input files)
     COMSTR = "$"
-    call print_logmsg(msgunit, 'read_shel_config, step 2', w3_debuginit_flag)
+    call print_logmsg(740+IAPROC, 'read_shel_config, step 2', w3_debuginit_flag)
 
     ! If using experimental mud or ice physics, additional lines will
     !  be read in from read_shel_config.inp and applied, so JFIRST is
@@ -282,7 +279,7 @@ contains
     if (w3_ic5_flag) jfirst = -7
 
     write(msg1,*)'JFIRST=', JFIRST
-    call print_logmsg(msgunit, 'read_shel_config, step 4', trim(msg1), w3_debuginit_flag)
+    call print_logmsg(740+IAPROC, 'read_shel_config, step 4', trim(msg1), w3_debuginit_flag)
 
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 2.  Define input fields
@@ -802,14 +799,14 @@ contains
     !
     if (.not. flgnml) then
 
-       call print_logmsg(msgunit, ' fnmpre'//trim(fnmpre), w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, ' fnmpre'//trim(fnmpre), w3_debuginit_flag)
        open (ndsi,file=trim(fnmpre)//'ww3_shel.inp',status='old',iostat=ierr)
        rewind (ndsi)
-       call print_logmsg(msgunit, 'Before read 2002, case 1', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, 'Before read 2002, case 1', w3_debuginit_flag)
        !ar: i changed the error handling for err=2002, see commit message ...
 
        read (ndsi,'(a)') comstr
-       call print_logmsg(msgunit, ' comstr='//trim(comstr), ' After read 2002, case 1', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, ' comstr='//trim(comstr), ' After read 2002, case 1', w3_debuginit_flag)
        if (comstr.eq.' ') comstr = '$'
        if ( iaproc .eq. napout ) write (ndso,901) comstr
 
@@ -821,17 +818,17 @@ contains
        do j=jfirst, 9
           call nextln ( comstr , ndsi , ndsen )
           if ( j .le. 6 ) then
-             call print_logmsg(msgunit, 'Before read 2002, case 2', w3_debuginit_flag)
+             call print_logmsg(740+IAPROC, 'Before read 2002, case 2', w3_debuginit_flag)
              read (ndsi,*) flagtfc(j), flh(j)
 
              write(msg1,*)'     J=', j, ' FLAGTFC=', flagtfc(j), ' FLH=', flh(j)
-             call print_logmsg(msgunit, trim(msg1), ' After read 2002, case 2', w3_debuginit_flag)
+             call print_logmsg(740+IAPROC, trim(msg1), ' After read 2002, case 2', w3_debuginit_flag)
           else
-             call print_logmsg(msgunit, 'Before read 2002, case 3', w3_debuginit_flag)
+             call print_logmsg(740+IAPROC, 'Before read 2002, case 3', w3_debuginit_flag)
              read (ndsi,*) flagtfc(j)
 
              write(msg1,*) '     J=', j, ' FLAGTFC=', flagtfc(j)
-             call print_logmsg(msgunit, trim(msg1), ' After read 2002, case 3 ', w3_debuginit_flag)
+             call print_logmsg(740+IAPROC, trim(msg1), ' After read 2002, case 3 ', w3_debuginit_flag)
           end if
        end do
 
@@ -871,8 +868,8 @@ contains
           if (flagsc(2) .and. inflags1(1) .and. .not. flagsc(1)) goto 2102
        end if
 
-       call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 2b')
-       call print_logmsg(msgunit, 'read_shel_config, step 5', w3_debuginit_flag)
+       call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2b')
+       call print_logmsg(740+IAPROC, 'read_shel_config, step 5', w3_debuginit_flag)
 
        inflags1(10) = .false.
        if (w3_mgw_flag .or. w3_mgp_flag) then
@@ -907,25 +904,25 @@ contains
        !--------------------
 
        call nextln ( comstr , ndsi , ndsen )
-       call print_logmsg(msgunit, 'Before read 2002, case 4', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, 'Before read 2002, case 4', w3_debuginit_flag)
        read (ndsi,*) time0
 
-       call print_logmsg(msgunit, ' After read 2002, case 4', w3_debuginit_flag)
-       call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 2c')
+       call print_logmsg(740+IAPROC, ' After read 2002, case 4', w3_debuginit_flag)
+       call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2c')
 
        call nextln ( comstr , ndsi , ndsen )
-       call print_logmsg(msgunit, 'Before read 2002, case 5', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, 'Before read 2002, case 5', w3_debuginit_flag)
        read (ndsi,*) timen
-       call print_logmsg(msgunit, ' After read 2002, case 5', 'read_shel_config, step 6', w3_debuginit_flag)
-       call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 2d')
+       call print_logmsg(740+IAPROC, ' After read 2002, case 5', 'read_shel_config, step 6', w3_debuginit_flag)
+       call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2d')
 
        !--------------------
        ! 2.3 Domain setup
        !--------------------
 
-       call print_logmsg(msgunit, 'read_shel_config, step 7', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, 'read_shel_config, step 7', w3_debuginit_flag)
        call nextln ( COMSTR , NDSI , NDSEN )
-       call print_logmsg(msgunit, 'Before read 2002, case 6', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, 'Before read 2002, case 6', w3_debuginit_flag)
        read (ndsi,*) iostyp
        if (w3_pdlib_flag) then
           if (iostyp .gt. 1) then
@@ -933,14 +930,14 @@ contains
              call extcde ( 6666 )
           endif
        end if
-       call print_logmsg(msgunit, ' After read 2002, case 6', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, ' After read 2002, case 6', w3_debuginit_flag)
        call w3iogr ( 'GRID', ndsf(7) )
        if ( flagll ) then
           factor = 1.
        else
           factor = 1.e-3
        end if
-       call print_logmsg(msgunit, 'read_shel_config, step 8', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, 'read_shel_config, step 8', w3_debuginit_flag)
 
        !--------------------
        ! 2.4 Output dates
@@ -951,12 +948,12 @@ contains
        if (w3_cou_flag) then
           notype = 7
        end if
-       call print_logmsg(msgunit, 'Before NOTYPE loop', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, 'Before NOTYPE loop', w3_debuginit_flag)
        do j = 1, notype
           write(msg1,*)'J=', J, '/ NOTYPE=', NOTYPE
-          call print_logmsg(msgunit, trim(msg1), w3_debuginit_flag)
+          call print_logmsg(740+IAPROC, trim(msg1), w3_debuginit_flag)
           call nextln ( comstr , ndsi , ndsen )
-          call print_logmsg(msgunit, 'Before read 2002, case 7', w3_debuginit_flag)
+          call print_logmsg(740+IAPROC, 'Before read 2002, case 7', w3_debuginit_flag)
 
           ! checkpoint
           if (j .eq. 4) then
@@ -1040,11 +1037,11 @@ contains
              end if !j le 2
              ! write(*,*) 'ofiles(j)= ', ofiles(j),j
              !
-             call print_logmsg(msgunit, ' After read 2002, case 7', w3_debuginit_flag)
+             call print_logmsg(740+IAPROC, ' After read 2002, case 7', w3_debuginit_flag)
              odat(5*(j-1)+3) = max ( 0 , odat(5*(j-1)+3) )
              !
              write(msg1, *) 'read_shel_config NOTTYPE', J
-             call print_memcheck(msgunit, 'memcheck_____:'//trim(msg1))
+             call print_memcheck(740+IAPROC, 'memcheck_____:'//trim(msg1))
 
              !--------------------
              ! 2.5 Output types
@@ -1052,7 +1049,7 @@ contains
 
              if ( odat(5*(j-1)+3) .ne. 0 ) then
 
-                call print_logmsg(msgunit, ' Case analysis', w3_debuginit_flag)
+                call print_logmsg(740+IAPROC, ' Case analysis', w3_debuginit_flag)
                 if ( j .eq. 1 ) then
 
                    ! type 1: fields of mean wave parameters
@@ -1087,9 +1084,9 @@ contains
                       npts   = 0
                       do
                          call nextln ( comstr , ndsi , ndsen )
-                         call print_logmsg(msgunit, 'before read 2002, case 8', w3_debuginit_flag)
+                         call print_logmsg(740+IAPROC, 'before read 2002, case 8', w3_debuginit_flag)
                          read (ndsi2,*) xx, yy, pn
-                         call print_logmsg(msgunit, ' After read 2002, case 8', w3_debuginit_flag)
+                         call print_logmsg(740+IAPROC, ' After read 2002, case 8', w3_debuginit_flag)
                          if ( iloop.eq.1 .and. iaproc.eq.1 ) then
                             backspace (ndsi)
                             read (ndsi,'(a)') line
@@ -1138,9 +1135,9 @@ contains
 
                    ! Type 3: track output
                    call nextln ( comstr , ndsi , ndsen )
-                   call print_logmsg(msgunit, 'Before read 2002, case 9', w3_debuginit_flag)
+                   call print_logmsg(740+IAPROC, 'Before read 2002, case 9', w3_debuginit_flag)
                    read (ndsi,*) tflagi
-                   call print_logmsg(msgunit, ' After read 2002, case 9', w3_debuginit_flag)
+                   call print_logmsg(740+IAPROC, ' After read 2002, case 9', w3_debuginit_flag)
 
                    if ( .not. tflagi ) nds(11) = -nds(11)
                    if ( iaproc .eq. napout ) then
@@ -1156,9 +1153,9 @@ contains
                    ! Type 6: partitioning
                    !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
                    call nextln ( comstr , ndsi , ndsen )
-                   call print_logmsg(msgunit, 'Before reading IPRT', 'Before read 2002, case 10', w3_debuginit_flag)
+                   call print_logmsg(740+IAPROC, 'Before reading IPRT', 'Before read 2002, case 10', w3_debuginit_flag)
                    read (ndsi,*) iprt, prtfrm
-                   call print_logmsg(msgunit, ' After read 2002, case 10', w3_debuginit_flag)
+                   call print_logmsg(740+IAPROC, ' After read 2002, case 10', w3_debuginit_flag)
 
                    if ( iaproc .eq. napout ) then
                       if ( prtfrm ) then
@@ -1199,9 +1196,9 @@ contains
           ! Start of loop
           do
              call nextln ( comstr , ndsi , ndsen )
-             call print_logmsg(msgunit, 'before read 2002, case 11', w3_debuginit_flag)
+             call print_logmsg(740+IAPROC, 'before read 2002, case 11', w3_debuginit_flag)
              read (ndsi,*) idtst
-             call print_logmsg(msgunit, ' after read 2002, case 11', w3_debuginit_flag)
+             call print_logmsg(740+IAPROC, ' after read 2002, case 11', w3_debuginit_flag)
 
 
              ! Exit if illegal id
@@ -1227,52 +1224,52 @@ contains
                    nh(j)    = nh(j) + 1
                    if ( nh(j) .gt. nhmax ) goto 2006
                    IF ( J .LE. 1  ) THEN ! water levels, etc. : get HA
-                      call print_logmsg(msgunit, 'Before read 2002, case 12', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, 'Before read 2002, case 12', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j)
-                      call print_logmsg(msgunit, ' After read 2002, case 12', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, ' After read 2002, case 12', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 2 ) THEN ! currents: get HA and HD
-                      call print_logmsg(msgunit, 'Before read 2002, case 13', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, 'Before read 2002, case 13', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j)
-                      call print_logmsg(msgunit, ' After read 2002, case 13', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, ' After read 2002, case 13', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 3 ) THEN ! wind: get HA HD and HS
-                      call print_logmsg(msgunit, 'Before read 2002, case 14', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, 'Before read 2002, case 14', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j), hs(nh(j),j)
-                      call print_logmsg(msgunit, ' After read 2002, case 14', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, ' After read 2002, case 14', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 4 ) THEN ! ice
-                      call print_logmsg(msgunit, 'Before read 2002, case 15', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, 'Before read 2002, case 15', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j)
-                      call print_logmsg(msgunit, ' After read 2002, case 15', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, ' After read 2002, case 15', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 5 ) THEN ! atmospheric momentum
-                      call print_logmsg(msgunit, 'Before read 2002, case 16', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, 'Before read 2002, case 16', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j)
-                      call print_logmsg(msgunit, ' After read 2002, case 16', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, ' After read 2002, case 16', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 6 ) THEN ! air density
-                      call print_logmsg(msgunit, 'Before read 2002, case 17', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, 'Before read 2002, case 17', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j)
-                      call print_logmsg(msgunit, ' After read 2002, case 17', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, ' After read 2002, case 17', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 10 ) THEN ! mov: HA and HD
-                      call print_logmsg(msgunit, 'Before read 2002, case 18', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, 'Before read 2002, case 18', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j)
-                      call print_logmsg(msgunit, ' After read 2002, case 18', w3_debuginit_flag)
+                      call print_logmsg(740+IAPROC, ' After read 2002, case 18', w3_debuginit_flag)
                    END IF
                 end if
              end do
           end do
-          call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 3')
+          call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 3')
 
           if (w3_o7_flag) then
              do j=jfirst, 10
@@ -1308,11 +1305,10 @@ contains
                ( flh(10) .and. (nh(10).eq.0) ) ) goto 2007
 
        end if ! flhom
-
-       close (ndsi)
+       close(ndsi)
     end if  ! .not. flgnml
 
-    call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 4')
+    call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 4')
 
     !--------------------
     ! 2.2 Time setup
@@ -1321,6 +1317,7 @@ contains
     if (present(time0_overwrite) .and. present(timen_overwrite)) then
        time0(:) = time0_overwrite(:)
        timen(:) = timen_overwrite(:)
+       !TODO: determine if needed
        do j = 1,notype
           if (odat(5*(j-1)+3) .ne. 0 ) then    ! non-zero stride
              odat(5*(j-1)+1) = time0(1)
@@ -1453,7 +1450,7 @@ contains
        write (ndst,9041) flgrd
        write (ndst,9042) iprt, prtfrm
     end if
-
+    !TODO: Determine if needed
     if (.not. present(time0_overwrite) .and. .not. present(timen_overwrite)) then
        !
        ! For outputs with non-zero time step, check dates :
@@ -1494,7 +1491,7 @@ contains
     end if
     !
 
-    call print_memcheck(msgunit, 'memcheck_____:'//'read_shel_config SECTION 5')
+    call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 5')
 
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1545,27 +1542,27 @@ contains
          15X,'==============================================='/)
 901 FORMAT ( '  Comment character is ''',A,''''/)
 905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
-             '     Requested: ', I2/                          &
-             '      Provided: ', I2/ )
+         '     Requested: ', I2/                          &
+         '      Provided: ', I2/ )
 920 FORMAT (/'  Input fields : '/                                   &
-             ' --------------------------------------------------')
+         ' --------------------------------------------------')
 921 FORMAT ( '       ',A,2X,A,2X,A)
 922 FORMAT ( ' ' )
 930 FORMAT (/'  Time interval : '/                                  &
-             ' --------------------------------------------------')
+         ' --------------------------------------------------')
 931 FORMAT ( '       Starting time : ',A)
 932 FORMAT ( '       Ending time   : ',A/)
 940 FORMAT (/'  Output requests : '/                                &
-             ' --------------------------------------------------'/ &
-             '       ',A)
+         ' --------------------------------------------------'/ &
+         '       ',A)
 941 FORMAT (/'       Type',I2,' : ',A/                              &
-             '      -----------------------------------------')
+         '      -----------------------------------------')
 942 FORMAT ( '            From     : ',A)
 943 FORMAT ( '            To       : ',A)
 954 FORMAT ( '            ',A,': file not needed')
 955 FORMAT ( '            ',A,': file OK')
 956 FORMAT ( '            ',A,': file OK, recl =',I3,               &
-             '  undef = ',E10.3)
+         '  undef = ',E10.3)
 1944 FORMAT ( '            Interval : ', 8X,A11/)
 2944 FORMAT ( '            Interval : ', 9X,A10/)
 3944 FORMAT ( '            Interval : ',11X,A8/)
@@ -1576,56 +1573,56 @@ contains
 2947 FORMAT ( '            No points defined')
 3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
 6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
-              '            IY first,last,inc :',3I5/                 &
-              '            Formatted file    :    ',A)
+         '            IY first,last,inc :',3I5/                 &
+         '            Formatted file    :    ',A)
 8945 FORMAT ( '            output dates out of run dates : ', A,     &
-              ' deactivated')
+         ' deactivated')
 950 FORMAT (/'  Initializations :'/                                  &
-             ' --------------------------------------------------')
+         ' --------------------------------------------------')
 951 FORMAT ( '       ',A)
 952 FORMAT ( '       ',I6,2X,A)
 953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     PREMATURE END OF INPUT FILE'/)
+         '     PREMATURE END OF INPUT FILE'/)
 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     ERROR IN READING FROM INPUT FILE'/               &
-              '     IOSTAT =',I5/)
+         '     ERROR IN READING FROM INPUT FILE'/               &
+         '     IOSTAT =',I5/)
 1102 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
-              '     IT MUST BE FULLY COUPLED OR DISABLED '/)
+         '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
+         '     IT MUST BE FULLY COUPLED OR DISABLED '/)
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     ILLEGAL TIME INTERVAL'/)
+         '     ILLEGAL TIME INTERVAL'/)
 1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     ERROR IN OPENING POINT FILE'/                    &
-              '     IOSTAT =',I5/)
+         '     ERROR IN OPENING POINT FILE'/                    &
+         '     IOSTAT =',I5/)
 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     ERROR IN READING FROM POINT FILE'/               &
-              '     IOSTAT =',I5/)
+         '     ERROR IN READING FROM POINT FILE'/               &
+         '     IOSTAT =',I5/)
 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
+         '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
+         '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
 1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : ***'/            &
-              '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
+         '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
+         '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     ERROR IN OPENING OUTPUT FILE'/                   &
-              '     IOSTAT =',I5/)
+         '     ERROR IN OPENING OUTPUT FILE'/                   &
+         '     IOSTAT =',I5/)
 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
-              '     MODEL TIME STEP: ',I6, I6/)
+         '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
+         '     MODEL TIME STEP: ',I6, I6/)
 1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/         &
-              '     COUPLING TIME STEP NOT DEFINED, '/               &
-              '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
-              '     FROM ',I6, ' TO ',I6/)
+         '     COUPLING TIME STEP NOT DEFINED, '/               &
+         '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
+         '     FROM ',I6, ' TO ',I6/)
 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-              '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
+         '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)
 9020 FORMAT ( ' TEST W3SHEL : FLAGS DEF / HOM  : ',9L2,2X,9L2)
 9040 FORMAT ( ' TEST W3SHEL : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
-                4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
+         4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
 9041 FORMAT ( ' TEST W3SHEL : FLGRD  : ',20L2)
 9042 FORMAT ( ' TEST W3SHEL : IPR, PRFRM : ',6I6,1X,L1)
 

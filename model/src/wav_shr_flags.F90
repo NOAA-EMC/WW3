@@ -12,11 +12,26 @@ module wav_shr_flags
   implicit none
   public
 
+#ifdef W3_DIST
+  logical ::  w3_dist_flag = .true.           !< @public a flag for "W3_DIST"
+#else
+  logical ::  w3_dist_flag = .false.          !< @public a flag for "W3_DIST"
+#endif
+#ifdef W3_SHRD
+  logical ::  w3_shrd_flag = .true.           !< @public a flag for "W3_SHRD"
+#else
+  logical ::  w3_shrd_flag = .false.          !< @public a flag for "W3_SHRD"
+#endif
   !   debug/logging
 #ifdef W3_DEBUG
   logical ::  w3_debug_flag = .true.           !< @public a flag for "W3_DEBUG"
 #else
   logical ::  w3_debug_flag = .false.          !< @public a flag for "W3_DEBUG"
+#endif
+#ifdef W3_DEBUGGRID
+  logical ::  w3_debuggrid_flag = .true.      !< @public a flag for "W3_DEBUGGRID"
+#else
+  logical ::  w3_debuggrid_flag = .false.     !< @public a flag for "W3_DEBUGGRID"
 #endif
 
 #ifdef W3_DEBUGSTP
@@ -43,16 +58,21 @@ module wav_shr_flags
   logical ::  w3_debugiobp_flag = .false.      !< @public a flag for "W3_DEBUGIOBP"
 #endif
 
-#ifdef W3_DEBUGDCXDX
-  logical ::  w3_debugdcxdx_flag = .true.      !< @public a flag for "W3_DEBUGDCXDX"
+#ifdef W3_DEBUGIOGR
+  logical ::  w3_debugiogr_flag = .true.      !< @public a flag for "W3_DEBUGIOGR"
 #else
-  logical ::  w3_debugdcxdx_flag = .false.     !< @public a flag for "W3_DEBUGDCXDX"
+  logical ::  w3_debugiogr_flag = .false.     !< @public a flag for "W3_DEBUGIOGR"
 #endif
 
 #ifdef W3_DEBUGIOBC
   logical ::  w3_debugiobc_flag = .true.       !< @public a flag for "W3_DEBUGIOBC"
 #else
   logical ::  w3_debugiobc_flag = .false.      !< @public a flag for "W3_DEBUGIOBC"
+#endif
+#ifdef W3_DEBUGDCXDX
+  logical ::  w3_debugdcxdx_flag = .true.     !< @public a flag for "W3_DEBUGDCXDX"
+#else
+  logical ::  w3_debugdcxdx_flag = .false.    !< @public a flag for "W3_DEBUGDCXDX"
 #endif
 
 #ifdef W3_DEBUSETIOBP
@@ -90,11 +110,21 @@ module wav_shr_flags
 #else
   logical ::  w3_debugio_flag = .false.        !< @public a flag for "W3_DEBUGIO"
 #endif
+#ifdef W3_DEBUGW3ULEV
+  logical ::  w3_debugw3ulev_flag = .true.    !< @public a flag for "W3_DEBUGW3ULEV"
+#else
+  logical ::  w3_debugw3ulev_flag = .false.   !< @public a flag for "W3_DEBUGW3ULEV"
+#endif
 
 #ifdef W3_TIMINGS
   logical ::  w3_timings_flag = .true.         !< @public a flag for "W3_TIMINGS"
 #else
   logical ::  w3_timings_flag = .false.        !< @public a flag for "W3_TIMINGS"
+#endif
+#ifdef W3_TS
+  logical ::  w3_ts_flag = .true.             !< @public a flag for "W3_TS"
+#else
+  logical ::  w3_ts_flag = .false.            !< @public a flag for "W3_TS"
 #endif
 
   !   propagation/gse
@@ -846,6 +876,11 @@ module wav_shr_flags
 #else
   logical ::  w3_t_flag = .false.              !< @public a flag for "W3_T"
 #endif
+#ifdef W3_T0
+  logical ::  w3_t0_flag = .true.             !< @public a flag for "W3_T0"
+#else
+  logical ::  w3_t0_flag = .false.            !< @public a flag for "W3_T0"
+#endif
 
 #ifdef W3_T1
   logical ::  w3_t1_flag = .true.              !< @public a flag for "W3_T1"
@@ -853,6 +888,51 @@ module wav_shr_flags
   logical ::  w3_t1_flag = .false.             !< @public a flag for "W3_T1"
 #endif
 
+#ifdef W3_T2
+  logical ::  w3_t2_flag = .true.             !< @public a flag for "W3_T2"
+#else
+  logical ::  w3_t2_flag = .false.            !< @public a flag for "W3_T2"
+#endif
+#ifdef W3_T3
+  logical ::  w3_t3_flag = .true.             !< @public a flag for "W3_T3"
+#else
+  logical ::  w3_t3_flag = .false.            !< @public a flag for "W3_T3"
+#endif
+#ifdef W3_T4
+  logical ::  w3_t4_flag = .true.             !< @public a flag for "W3_T4"
+#else
+  logical ::  w3_t4_flag = .false.            !< @public a flag for "W3_T4"
+#endif
+#ifdef W3_T5
+  logical ::  w3_t5_flag = .true.             !< @public a flag for "W3_T5"
+#else
+  logical ::  w3_t5_flag = .false.            !< @public a flag for "W3_T5"
+#endif
+#ifdef W3_T6
+  logical ::  w3_t6_flag = .true.             !< @public a flag for "W3_T6"
+#else
+  logical ::  w3_t6_flag = .false.            !< @public a flag for "W3_T6"
+#endif
+#ifdef W3_T7
+  logical ::  w3_t7_flag = .true.             !< @public a flag for "W3_T7"
+#else
+  logical ::  w3_t7_flag = .false.            !< @public a flag for "W3_T7"
+#endif
+#ifdef W3_T8
+  logical ::  w3_t8_flag = .true.             !< @public a flag for "W3_T8"
+#else
+  logical ::  w3_t8_flag = .false.            !< @public a flag for "W3_T8"
+#endif
+#ifdef W3_T9
+  logical ::  w3_t9_flag = .true.             !< @public a flag for "W3_T9"
+#else
+  logical ::  w3_t9_flag = .false.            !< @public a flag for "W3_T9"
+#endif
+#ifdef W3_T38
+  logical ::  w3_t38_flag = .true.            !< @public a flag for "W3_T38"
+#else
+  logical ::  w3_t38_flag = .false.           !< @public a flag for "W3_T38"
+#endif
 #ifdef W3_TDYN
   logical ::  w3_tdyn_flag = .true.            !< @public a flag for "W3_TDYN"
 #else
@@ -937,16 +1017,36 @@ module wav_shr_flags
   logical ::  w3_setup_flag = .false.          !< @public a flag for "W3_SETUP"
 #endif
 
-#ifdef W3_T0
-  logical ::  w3_t0_flag = .true.              !< @public a flag for "W3_T0"
+#ifdef W3_O2A
+  logical ::  w3_O2a_flag = .true.            !< @public a flag for "W3_O2A"
 #else
-  logical ::  w3_t0_flag = .false.             !< @public a flag for "W3_T0"
+  logical ::  w3_O2a_flag = .false.           !< @public a flag for "W3_O2A"
 #endif
 
-#ifdef W3_T38
-  logical ::  w3_t38_flag = .true.             !< @public a flag for "W3_T38"
+#ifdef W3_O2B
+  logical ::  w3_O2b_flag = .true.            !< @public a flag for "W3_O2B"
 #else
-  logical ::  w3_t38_flag = .false.            !< @public a flag for "W3_T38"
+  logical ::  w3_O2b_flag = .false.           !< @public a flag for "W3_O2B"
+#endif
+#ifdef W3_O2C
+  logical ::  w3_O2c_flag = .true.            !< @public a flag for "W3_O2C"
+#else
+  logical ::  w3_O2c_flag = .false.           !< @public a flag for "W3_O2C"
+#endif
+#ifdef W3_O7A
+  logical ::  w3_O7a_flag = .true.            !< @public a flag for "W3_O7A"
+#else
+  logical ::  w3_O7a_flag = .false.           !< @public a flag for "W3_O7A"
+#endif
+#ifdef W3_O7B
+  logical ::  w3_O7b_flag = .true.            !< @public a flag for "W3_O7B"
+#else
+  logical ::  w3_O7b_flag = .false.           !< @public a flag for "W3_O7B"
+#endif
+#ifdef W3_01
+  logical ::  w3_01_flag = .true.             !< @public a flag for "W3_01"
+#else
+  logical ::  w3_01_flag = .false.            !< @public a flag for "W3_01"
 #endif
 
   interface print_logmsg
@@ -1076,7 +1176,7 @@ contains
   !========================================================================
   !> Write memory statistics if requested
   !!
-  !> @details Writes a single line of memory statistics to unit 40000+iaproc
+  !> @details Writes a single line of memory statistics
   !!
   !! @param[in]   iun               unit number
   !! @param[in]   msg               message

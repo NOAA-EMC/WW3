@@ -564,12 +564,15 @@
                                                          !! YYYY-MM-DD-SSSSS will be appended
       character(len=512) :: user_restfname = ''          !<@public user restart filename prefix, timestring
                                                          !! YYYY-MM-DD-SSSSS will be appended
-      logical            :: user_netcdf_grdout = .false. !<@public logical flag to use netCDF for gridded
-                                                         !! field output
       logical            :: histwr = .false.             !<@public logical to trigger history write
                                                          !! if true => write history file (snapshot)
+
       logical            :: rstwr = .false.              !<@public logical to trigger restart write
                                                          !! if true => write restart
+
+      logical            :: user_netcdf_grdout = .false. !<@public logical flag to use netCDF for gridded
+                                                         !! field output
+
       character(len= 36) :: time_origin = ''             !< @public the time_origin used for netCDF output
       character(len= 36) :: calendar_name = ''           !< @public the calendar used for netCDF output
       integer(kind=8)    :: elapsed_secs = 0             !< @public the time in seconds from the time_origin
