@@ -1580,11 +1580,7 @@
                     EL = E1(IKM-1) - E1(IKM)
                 END IF
 
-                IF ( IKM .EQ. NK ) THEN
-                    EH = - E1(IKM)
-                ELSE
-                    EH = E1(IKM+1) - E1(IKM)
-                END IF
+                EH = E1(IKM+1) - E1(IKM)
 
                 DENOM  = XL*EH - XH*EL
 !

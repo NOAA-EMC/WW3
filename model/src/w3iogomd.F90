@@ -2114,7 +2114,7 @@
 !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
-        IF ( EC(JSEA) .GT. 0 .AND. IKP0(JSEA) .NE. NK ) THEN
+        IF ( IKP0(JSEA) .NE. NK ) THEN
             FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
         END IF
 #ifdef W3_ST1
@@ -2145,7 +2145,7 @@
 !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
-        IF ( EC(JSEA) .GT. 0 .AND. IKP0(JSEA) .NE. NK ) THEN
+        IF ( IKP0(JSEA) .NE. NK ) THEN
           IF ( IKP0(JSEA) .EQ. 1 ) THEN
             EL = - EBD(IKP0(JSEA), JSEA)
           ELSE
@@ -2217,7 +2217,7 @@
 !
         DO JSEA=1, NSEAL
           CALL INIT_GET_ISEA(ISEA, JSEA)
-          IF ( EC(JSEA) .GT. 0 ) THEN
+          IF ( IKP0(JSEA) .NE. NK ) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
             END IF
