@@ -602,7 +602,7 @@ MODULE W3ADATMD
 #ifdef W3_NL1
   INTEGER, POINTER :: NFR, NFRHGH, NFRCHG, NSPECX, NSPECY
   INTEGER, POINTER :: IP11(:), IP12(:), IP13(:), IP14(:)
-  INTEGER, POINTER ::IM11(:), IM12(:), IM13(:), IM14(:)
+  INTEGER, POINTER :: IM11(:), IM12(:), IM13(:), IM14(:)
   INTEGER, POINTER :: IP21(:), IP22(:), IP23(:), IP24(:)
   INTEGER, POINTER :: IM21(:), IM22(:), IM23(:), IM24(:)
   INTEGER, POINTER :: IC11(:), IC12(:), IC21(:), IC22(:)
@@ -753,8 +753,8 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3NAUX : NGRIDS NOT YET SET *** '/         &
-         '                    NGRIDS = ',I10/                   &
-         '                    RUN W3NMOD FIRST'/)
+              '                    NGRIDS = ',I10/                   &
+              '                    RUN W3NMOD FIRST'/)
     !
 9000 FORMAT (' TEST W3NAUX : SETTING UP FOR ',I4,' GRIDS') ! W3_T
     !/
@@ -1436,10 +1436,10 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3DIMA : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3DIMA : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NADATA = ',I10/)
+              '                    IMOD   = ',I10/                   &
+              '                    NADATA = ',I10/)
 1003 FORMAT (/' *** ERROR W3DIMA : ARRAY(S) ALREADY ALLOCATED *** ')
     !
 9000 FORMAT (' TEST W3DIMA : MODEL ',I4) ! W3_T
@@ -1472,12 +1472,11 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA,    &
-         NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF,      &
-         USSPF, GTYPE, UNGTYPE
-    USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD,             &
-         NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2,      &
-         NOGRP, NGRPP
+    USE W3GDATMD, ONLY: NGRIDS, IGRID, W3SETG, NK, NX, NY, NSEA
+    USE W3GDATMD, ONLY: NSEAL, NSPEC, NTH, E3DF, P2MSF, US3DF
+    USE W3GDATMD, ONLY: USSPF, GTYPE, UNGTYPE
+    USE W3ODATMD, ONLY: IAPROC, NAPROC, NTPROC, NAPFLD
+    USE W3ODATMD, ONLY: NOSWLL, NOEXTR, UNDEF, FLOGRD, FLOGR2, NOGRP, NGRPP
     USE W3SERVMD, ONLY: EXTCDE
     USE W3SERVMD, ONLY: STRACE ! W3_S
     !
@@ -2327,12 +2326,11 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3XDMA : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3XDMA : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NADATA = ',I10/)
+              '                    IMOD   = ',I10/                   &
+              '                    NADATA = ',I10/)
 1003 FORMAT (/' *** ERROR W3XDMA : ARRAY(S) ALREADY ALLOCATED *** ')
-    !
 9000 FORMAT (' TEST W3XDMA : MODEL ',I4) ! W3_T
 9001 FORMAT (' TEST W3XDMA : ARRAYS ALLOCATED')
 9002 FORMAT (' TEST W3XDMA : POINTERS RESET')
@@ -2526,10 +2524,10 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3DMNL : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3DMNL : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NADATA = ',I10/)
+              '                    IMOD   = ',I10/                   &
+              '                    NADATA = ',I10/)
 #ifdef W3_NL1
 1003 FORMAT (/' *** ERROR W3DMNL : ARRAY(S) ALREADY ALLOCATED *** ')
 #endif

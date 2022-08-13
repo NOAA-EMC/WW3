@@ -1542,27 +1542,27 @@ contains
          15X,'==============================================='/)
 901 FORMAT ( '  Comment character is ''',A,''''/)
 905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
-         '     Requested: ', I2/                          &
-         '      Provided: ', I2/ )
+             '     Requested: ', I2/                          &
+             '      Provided: ', I2/ )
 920 FORMAT (/'  Input fields : '/                                   &
-         ' --------------------------------------------------')
+             ' --------------------------------------------------')
 921 FORMAT ( '       ',A,2X,A,2X,A)
 922 FORMAT ( ' ' )
 930 FORMAT (/'  Time interval : '/                                  &
-         ' --------------------------------------------------')
+             ' --------------------------------------------------')
 931 FORMAT ( '       Starting time : ',A)
 932 FORMAT ( '       Ending time   : ',A/)
 940 FORMAT (/'  Output requests : '/                                &
-         ' --------------------------------------------------'/ &
-         '       ',A)
+             ' --------------------------------------------------'/ &
+             '       ',A)
 941 FORMAT (/'       Type',I2,' : ',A/                              &
-         '      -----------------------------------------')
+             '      -----------------------------------------')
 942 FORMAT ( '            From     : ',A)
 943 FORMAT ( '            To       : ',A)
 954 FORMAT ( '            ',A,': file not needed')
 955 FORMAT ( '            ',A,': file OK')
 956 FORMAT ( '            ',A,': file OK, recl =',I3,               &
-         '  undef = ',E10.3)
+             '  undef = ',E10.3)
 1944 FORMAT ( '            Interval : ', 8X,A11/)
 2944 FORMAT ( '            Interval : ', 9X,A10/)
 3944 FORMAT ( '            Interval : ',11X,A8/)
@@ -1573,51 +1573,51 @@ contains
 2947 FORMAT ( '            No points defined')
 3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
 6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
-         '            IY first,last,inc :',3I5/                 &
-         '            Formatted file    :    ',A)
+              '            IY first,last,inc :',3I5/                 &
+              '            Formatted file    :    ',A)
 8945 FORMAT ( '            output dates out of run dates : ', A,     &
          ' deactivated')
 950 FORMAT (/'  Initializations :'/                                  &
-         ' --------------------------------------------------')
+             ' --------------------------------------------------')
 951 FORMAT ( '       ',A)
 952 FORMAT ( '       ',I6,2X,A)
 953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     PREMATURE END OF INPUT FILE'/)
+              '     PREMATURE END OF INPUT FILE'/)
 1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM INPUT FILE'/               &
-         '     IOSTAT =',I5/)
+              '     ERROR IN READING FROM INPUT FILE'/               &
+              '     IOSTAT =',I5/)
 1102 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
-         '     IT MUST BE FULLY COUPLED OR DISABLED '/)
+              '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
+              '     IT MUST BE FULLY COUPLED OR DISABLED '/)
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL TIME INTERVAL'/)
+              '     ILLEGAL TIME INTERVAL'/)
 1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING POINT FILE'/                    &
-         '     IOSTAT =',I5/)
+              '     ERROR IN OPENING POINT FILE'/                    &
+              '     IOSTAT =',I5/)
 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM POINT FILE'/               &
-         '     IOSTAT =',I5/)
+              '     ERROR IN READING FROM POINT FILE'/               &
+              '     IOSTAT =',I5/)
 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
+              '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
+              '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
 1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : ***'/            &
-         '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
+              '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
+              '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
 1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING OUTPUT FILE'/                   &
-         '     IOSTAT =',I5/)
+              '     ERROR IN OPENING OUTPUT FILE'/                   &
+              '     IOSTAT =',I5/)
 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
-         '     MODEL TIME STEP: ',I6, I6/)
+              '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
+              '     MODEL TIME STEP: ',I6, I6/)
 1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/         &
-         '     COUPLING TIME STEP NOT DEFINED, '/               &
-         '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
-         '     FROM ',I6, ' TO ',I6/)
+              '     COUPLING TIME STEP NOT DEFINED, '/               &
+              '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
+              '     FROM ',I6, ' TO ',I6/)
 1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
+              '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)
 9020 FORMAT ( ' TEST W3SHEL : FLAGS DEF / HOM  : ',9L2,2X,9L2)

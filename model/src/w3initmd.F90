@@ -109,8 +109,9 @@ MODULE W3INITMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
-
+  !/
   use wav_shr_flags
+
   ! module default
   IMPLICIT NONE
   !
@@ -351,61 +352,56 @@ CONTAINS
     USE W3TIMEMD, ONLY: DSEC21, TICK21, STME21
     USE W3ARRYMD, ONLY: PRTBLK
     !/
-    USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSTA, MAPST2, MAPFS, &
-         MAPSF, FLAGLL,   &
-         ICLOSE, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
-         FLCK, NK, NTH, NSPEC, SIG, GNAME
+    USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, MAPSTA, MAPST2, MAPFS
+    USE W3GDATMD, ONLY: MAPSF, FLAGLL, ICLOSE, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX
+    USE W3GDATMD, ONLY: FLCK, NK, NTH, NSPEC, SIG, GNAME
 #ifdef W3_PDLIB
     USE W3GDATMD, ONLY : FLCTH
 #endif
     USE W3WDATMD, ONLY: TIME, TLEV, TICE, TRHO, WLV, UST, USTDIR, VA
-    USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NDS, NTPROC,      &
-         NAPROC, IAPROC, NAPLOG, NAPOUT, NAPERR,     &
-         NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT,     &
-         NAPPRT, TOFRST, DTOUT, TONEXT, TOLAST,      &
-         FLOUT, FLOGRD, FLBPO, NOPTS, PTNME,         &
-         PTLOC, IPTINT, PTIFAC, UNDEF, IDOUT, FLBPI, &
-         OUTPTS, FNMPRE, IX0, IXN, IXS, IY0, IYN,    &
-         IYS, FLFORM, IOSTYP, UNIPTS, UPPROC, NOTYPE,&
-         FLOGR2, NOGRP, NGRPP, FLOGD, FLOG2
+    USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NDS, NTPROC
+    USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPLOG, NAPOUT, NAPERR
+    USE W3ODATMD, ONLY: NAPFLD, NAPPNT, NAPTRK, NAPRST, NAPBPT
+    USE W3ODATMD, ONLY: NAPPRT, TOFRST, DTOUT, TONEXT, TOLAST
+    USE W3ODATMD, ONLY: FLOUT, FLOGRD, FLBPO, NOPTS, PTNME
+    USE W3ODATMD, ONLY: PTLOC, IPTINT, PTIFAC, UNDEF, IDOUT, FLBPI
+    USE W3ODATMD, ONLY: OUTPTS, FNMPRE, IX0, IXN, IXS, IY0, IYN
+    USE W3ODATMD, ONLY: IYS, FLFORM, IOSTYP, UNIPTS, UPPROC, NOTYPE
+    USE W3ODATMD, ONLY: FLOGR2, NOGRP, NGRPP, FLOGD, FLOG2
 #ifdef W3_NL5
     USE W3ODATMD, ONLY: TOSNL5
 #endif
-    USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, &
-         UA, UD, U10, U10D, AS
+    USE W3ADATMD, ONLY: NSEALM, IAPPRO, FLCOLD, FLIWND, DW, CG, WN, UA, UD, U10, U10D, AS
 #ifdef W3_MPI
     USE W3ADATMD, ONLY: MPI_COMM_WAVE, MPI_COMM_WCMP
 #endif
-    USE W3IDATMD, ONLY: FLLEV, FLCUR, FLWIND, FLICE, FLTAUA, FLRHOA,&
-         FLMDN, FLMTH, FLMVS, FLIC1, FLIC2, FLIC3,   &
-         FLIC4, FLIC5
+    USE W3IDATMD, ONLY: FLLEV, FLCUR, FLWIND, FLICE, FLTAUA, FLRHOA
+    USE W3IDATMD, ONLY: FLMDN, FLMTH, FLMVS, FLIC1, FLIC2, FLIC3, FLIC4, FLIC5
     USE W3DISPMD, ONLY: WAVNU1, WAVNU3
     USE W3PARALL, ONLY: SET_UP_NSEAL_NSEALM
 #ifdef W3_PDLIB
-    USE W3PARALL, ONLY: SYNCHRONIZE_IPGL_ETC_ARRAY, ISEA_TO_JSEA
-    use yowNodepool, only: npa
-    use yowRankModule, only : rank
+    USE W3PARALL,      ONLY: SYNCHRONIZE_IPGL_ETC_ARRAY, ISEA_TO_JSEA
+    use yowNodepool,   only: npa
+    use yowRankModule, only: rank
 #endif
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
 #ifdef W3_PDLIB
-    USE PDLIB_W3PROFSMD, ONLY : PDLIB_MAPSTA_INIT, SET_IOBDP_PDLIB, PDLIB_IOBP_INIT, SET_IOBPA_PDLIB
-    USE PDLIB_W3PROFSMD, ONLY : BLOCK_SOLVER_INIT, PDLIB_INIT, DEALLOCATE_PDLIB_GLOBAL
-    use yowDatapool, only: istatus
+    USE PDLIB_W3PROFSMD, ONLY: PDLIB_MAPSTA_INIT, SET_IOBDP_PDLIB, PDLIB_IOBP_INIT, SET_IOBPA_PDLIB
+    USE PDLIB_W3PROFSMD, ONLY: BLOCK_SOLVER_INIT, PDLIB_INIT, DEALLOCATE_PDLIB_GLOBAL
+    use yowDatapool,     only: istatus
+    USE PDLIB_W3PROFSMD, ONLY: ALL_VA_INTEGRAL_PRINT, TEST_MPI_STATUS
+    USE PDLIB_W3PROFSMD, ONLY: PRINT_WN_STATISTIC
 #endif
 #ifdef W3_SETUP
-    USE W3WAVSET, ONLY : PREPARATION_FD_SCHEME
+    USE W3WAVSET, ONLY: PREPARATION_FD_SCHEME
     USE W3WDATMD, ONLY: ZETA_SETUP
-    USE W3GDATMD, ONLY : DO_CHANGE_WLV
+    USE W3GDATMD, ONLY: DO_CHANGE_WLV
 #endif
     USE W3TRIAMD, ONLY: NVECTRI, AREA_SI, COORDMAX, SPATIAL_GRID
     USE W3GDATMD, ONLY: FSN,FSPSI,FSFCT,FSNIMP, FSTOTALIMP, FSTOTALEXP, XGRD, YGRD
     USE W3GDATMD, ONLY: FSREFRACTION, FSFREQSHIFT
     USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
     USE W3PARALL, ONLY: PRINT_MY_TIME
-#ifdef W3_PDLIB
-    USE PDLIB_W3PROFSMD, ONLY: ALL_VA_INTEGRAL_PRINT, TEST_MPI_STATUS
-    USE PDLIB_W3PROFSMD, ONLY: PRINT_WN_STATISTIC
-#endif
 #ifdef W3_UOST
     USE W3UOSTMD, ONLY: UOST_SETGRID
 #endif
@@ -1745,18 +1741,18 @@ CONTAINS
 9977 FORMAT( ' ',A,' ice parameter 5')
     !
 975 FORMAT (/ ' Gridded output fields : '/                                &
-         '--------------------------------------------------')
+              '--------------------------------------------------')
 976 FORMAT ( '     ',A)
     !
 977 FORMAT (/' Point output requested for',I6,' points : '/               &
-         '------------------------------------------')
+             '------------------------------------------')
 978 FORMAT (/'      Point output disabled')
 979 FORMAT                                                                &
          (/'      point  |  longitude  |   latitude  |  name  '/          &
-         '     --------|-------------|-------------|----------------')
+           '     --------|-------------|-------------|----------------')
 985 FORMAT                                                                &
          (/'      point  |      X      |      Y      |  name  '/          &
-         '     --------|-------------|-------------|----------------')
+           '     --------|-------------|-------------|----------------')
 980 FORMAT ( 5X,I5,'   |',2(F10.2,'   |'),2X,A)
 986 FORMAT ( 5X,I5,'   |',2(F8.1,'E3   |'),2X,A)
     !
@@ -1775,42 +1771,42 @@ CONTAINS
          2X,'--------+------+---------------------+',                     &
          '---------------------------+--------------+')
 987 FORMAT (/' Coupling output fields : '/                                &
-         '--------------------------------------------------')
+             '--------------------------------------------------')
     !
 8000 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/                    &
-         '     ERROR IN OPENING LOG FILE'/                           &
-         '     IOSTAT =',I5/)
+              '     ERROR IN OPENING LOG FILE'/                           &
+              '     IOSTAT =',I5/)
 8001 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/                    &
-         '     ERROR IN OPENING TEST FILE'/                          &
-         '     IOSTAT =',I5/)
+              '     ERROR IN OPENING TEST FILE'/                          &
+              '     IOSTAT =',I5/)
 8002 FORMAT (/' *** WAVEWATCH III WARNING IN W3INIT : '/                  &
-         '     SIGNIFICANT PART OF RESOURCES RESERVED FOR',          &
-         ' OUTPUT :',F6.1,'%'/)
+              '     SIGNIFICANT PART OF RESOURCES RESERVED FOR',          &
+              ' OUTPUT :',F6.1,'%'/)
 8020 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/                    &
-         '     NUMBER OF SEA POINTS LESS THAN NUMBER OF PROC.'/      &
-         '     NSEA, NAPROC =',2I8/)
+              '     NUMBER OF SEA POINTS LESS THAN NUMBER OF PROC.'/      &
+              '     NSEA, NAPROC =',2I8/)
 8021 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/                    &
-         '     NUMBER OF SPECTRAL POINTS LESS THAN NUMBER OF PROC.'/ &
-         '     NSPEC, NAPROC =',2I8/)
+              '     NUMBER OF SPECTRAL POINTS LESS THAN NUMBER OF PROC.'/ &
+              '     NSPEC, NAPROC =',2I8/)
 8028 FORMAT (/' *** WAVEWATCH III WARNING IN W3INIT : '/                  &
-         '     INCREASING TARGET IN MPP PROPAGATION MAP.'/           &
-         '     IMBALANCE BETWEEN OVERALL AND CFL TIME STEPS'/)
+              '     INCREASING TARGET IN MPP PROPAGATION MAP.'/           &
+              '     IMBALANCE BETWEEN OVERALL AND CFL TIME STEPS'/)
 8029 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/                    &
-         '     SOMETHING WRONG WITH MPP PROPAGATION MAP.'/           &
-         '     CALL HENDRIK !!!'/)
+              '     SOMETHING WRONG WITH MPP PROPAGATION MAP.'/           &
+              '     CALL HENDRIK !!!'/)
 9000 FORMAT ( ' TEST W3INIT: MOD. NR. AND FILE EXT.: ',I4,' [',A,']')
 9001 FORMAT ( '             NR. OF PROCESSORS     : ',3I4/                &
-         '             ASSIGNED PROCESSORS     ',9I4)
+              '             ASSIGNED PROCESSORS     ',9I4)
 9002 FORMAT ( '             DATA SET NUMBERS      : ',4I4)
 9003 FORMAT ( '             LOG FILE              : [',A,']'/             &
-         '             TEST FILE             : [',A,']')
+              '             TEST FILE             : [',A,']')
 9020 FORMAT ( ' TEST W3INIT : IP, NTTOT, NTTARG :')
 9021 FORMAT ( '         ',3I8)
-9025 FORMAT (' TEST W3INIT : MPP PROPAGATION MAP SPECTRAL COMP.')
+9025 FORMAT ( ' TEST W3INIT : MPP PROPAGATION MAP SPECTRAL COMP.')
 9026 FORMAT (4X,I4,2X,24I4)
 9027 FORMAT (10X,24I4)
 9030 FORMAT (' TEST W3INIT : INITIALIZATION USING WINDS, ',               &
-         'PERFORMED IN W3WAVE')
+             'PERFORMED IN W3WAVE')
 9031 FORMAT (' TEST W3INIT : STARTING FROM CALM CONDITIONS')
 9040 FORMAT (' TEST W3INIT : OUTPUT DATA, FIRST TIME, STEP, FLAG')
 9041 FORMAT ('              ',I9.8,I7.6,F8.1,3X,L1)
@@ -1818,7 +1814,7 @@ CONTAINS
 9043 FORMAT ('              ',I9.8,I7.6)
 9050 FORMAT (' TEST W3INIT : INITIAL DEPTHS')
 9051 FORMAT (' TEST W3INIT : ISEA =',I6,'  DEPTH =',F7.1,                 &
-         '  IK, T, K, CG :')
+             '  IK, T, K, CG :')
 9052 FORMAT ('               ',I3,F8.2,F8.4,F8.2)
     !/
     !/ End of W3INIT ----------------------------------------------------- /
@@ -1914,10 +1910,10 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !
-    USE W3SERVMD, ONLY: STRACE ! W3_S
-    USE W3GDATMD, ONLY: NSEA
-    USE W3ADATMD, ONLY: NSEALM
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE
+    USE W3SERVMD,  ONLY: STRACE ! W3_S
+    USE W3GDATMD,  ONLY: NSEA
+    USE W3ADATMD,  ONLY: NSEALM
+    USE W3GDATMD,  ONLY: GTYPE, UNGTYPE
     USE CONSTANTS, ONLY: LPDLIB
     USE W3GDATMD,  ONLY: NSPEC                          ! W3_MPI
     USE W3WDATMD,  ONLY: VA                             ! W3_MPI
@@ -1941,7 +1937,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: NXXXX
+    INTEGER :: NXXXX
     INTEGER :: IERR_MPI, ISP, IH, ITARG, IERR1, IERR2, IP ! W3_MPI
     INTEGER :: IENT = 0 ! W3_S
     !/
@@ -2124,35 +2120,35 @@ CONTAINS
     ! Formats
     !
 9010 FORMAT (' TEST W3MPII: DATA TYPES DEFINED'/                       &
-         '              WW3_FIELD_VEC : ',I10/                     &
-         '              WW3_SPEC_VEC  : ',I10)
+             '              WW3_FIELD_VEC : ',I10/                     &
+             '              WW3_SPEC_VEC  : ',I10)
 9011 FORMAT (' TEST W3MPII: NO COMPUTATIONS ON THIS NODE')
 9020 FORMAT (' TEST W3MPII: W3WAVE COMM. SET UP FINISHED'/             &
-         '              NRQSG1        : ',I10)
+             '              NRQSG1        : ',I10)
 9021 FORMAT (/' TEST W3MPII: COMMUNICATION CALLS FOR W3WAVE '/         &
-         ' +------+------+------+--------------+--------------+'/ &
-         ' |  IH  |  ISP | TARG |    SCATTER   |    GATHER    |'/ &
-         ' |      |      |      |   handle err |   handle err |'/ &
-         ' +------+------+------+--------------+--------------+')
+              ' +------+------+------+--------------+--------------+'/ &
+              ' |  IH  |  ISP | TARG |    SCATTER   |    GATHER    |'/ &
+              ' |      |      |      |   handle err |   handle err |'/ &
+              ' +------+------+------+--------------+--------------+')
 9022 FORMAT ( ' |',3(I5,' |'),2(I9,I4,' |'))
 9023 FORMAT (                                                          &
-         ' +------+------+------+--------------+--------------+'/)
+              ' +------+------+------+--------------+--------------+'/)
 9030 FORMAT (' TEST W3MPII: GATH/SCAT COMM. SET UP FINISHED'/          &
-         '              NSPLOC        : ',I10/                     &
-         '              NRQSG2        : ',I10/                     &
-         '              TOTAL REQ.    : ',I10/)
+             '              NSPLOC        : ',I10/                     &
+             '              NRQSG2        : ',I10/                     &
+             '              TOTAL REQ.    : ',I10/)
 9031 FORMAT (/' TEST W3MPII: COMM. CALLS FOR W3GATH/W3SCAT '/          &
-         ' +------+------+------+------+--------------+',         &
-         '--------------+'/                                       &
-         ' |  IH  |  ISP | TARG | IBFR |     GATHER   |',         &
-         '    SCATTER   |'/                                       &
-         ' |      |      |      |      |   handle err |',         &
-         '   handle err |'/                                       &
-         ' +------+------+------+------+--------------+',         &
-         '--------------+')
+              ' +------+------+------+------+--------------+',         &
+              '--------------+'/                                       &
+              ' |  IH  |  ISP | TARG | IBFR |     GATHER   |',         &
+              '    SCATTER   |'/                                       &
+              ' |      |      |      |      |   handle err |',         &
+              '   handle err |'/                                       &
+              ' +------+------+------+------+--------------+',         &
+              '--------------+')
 9032 FORMAT ( ' |',4(I5,' |'),2(I9,I4,' |'))
 9033 FORMAT ( ' +------+------+------+------+--------------+',         &
-         '--------------+'/)
+              '--------------+'/)
     !/
     !/ End of W3MPII ----------------------------------------------------- /
     !/
@@ -2245,56 +2241,56 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     !
-    USE W3SERVMD, ONLY: EXTCDE
-    USE W3SERVMD, ONLY: STRACE ! W3_S
+    USE W3SERVMD,  ONLY: EXTCDE
+    USE W3SERVMD,  ONLY: STRACE ! W3_S
     !/
-    USE W3GDATMD, ONLY: NSEA
-    USE W3ADATMD, ONLY: NSEALM
+    USE W3GDATMD,  ONLY: NSEA
+    USE W3ADATMD,  ONLY: NSEALM
 #ifdef W3_MPI
-    USE W3ADATMD, ONLY: W3XDMA, W3SETA, W3XETA                      ! W3_MPI
-    USE W3IORSMD, ONLY: OARST                                       ! W3_MPI
-    USE W3GDATMD, ONLY: NX, NSPEC, MAPFS, E3DF, P2MSF, US3DF, USSPF ! W3_MPI
-    USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS, ICEF            ! W3_MPI
-    USE W3ADATMD, ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC                ! W3_MPI
-    USE W3ADATMD, ONLY: HS, WLM, T02                                ! W3_MPI
+    USE W3ADATMD,  ONLY: W3XDMA, W3SETA, W3XETA                      ! W3_MPI
+    USE W3IORSMD,  ONLY: OARST                                       ! W3_MPI
+    USE W3GDATMD,  ONLY: NX, NSPEC, MAPFS, E3DF, P2MSF, US3DF, USSPF ! W3_MPI
+    USE W3WDATMD,  ONLY: VA, UST, USTDIR, ASF, FPIS, ICEF            ! W3_MPI
+    USE W3ADATMD,  ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC                ! W3_MPI
+    USE W3ADATMD,  ONLY: HS, WLM, T02                                ! W3_MPI
 
 
-    USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1        ! W3_MPI
-    USE W3ADATMD, ONLY: DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD      ! W3_MPI
-    USE W3ADATMD, ONLY: SXX, SYY, SXY, USERO, PHS, PTP, PLP         ! W3_MPI
-    USE W3ADATMD, ONLY: PDIR, PSI, PWS, PWST, PNR, PHIAW, PHIOC     ! W3_MPI
-    USE W3ADATMD, ONLY: TUSX, TUSY, TAUWIX, TAUWIY, TAUOX           ! W3_MPI
-    USE W3ADATMD, ONLY: TAUOY, USSX, USSY, MSSX, MSSY, MSSD         ! W3_MPI
-    USE W3ADATMD, ONLY: MSCX, MSCY, MSCD, PRMS, TPMS, CHARN         ! W3_MPI
-    USE W3ADATMD, ONLY: TWS, TAUWNX, TAUWNY, BHD, CGE               ! W3_MPI
-    USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP       ! W3_MPI
-    USE W3ADATMD, ONLY: BEDFORMS, PHIBBL, TAUBBL, T01               ! W3_MPI
-    USE W3ADATMD, ONLY: P2SMS, US3D, EF,  TH1M, STH1M, TH2M         ! W3_MPI
-    USE W3ADATMD, ONLY: STH2M, HSIG, PHICE, TAUICE, USSP            ! W3_MPI
-    USE W3ADATMD, ONLY: STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD        ! W3_MPI
-    USE W3ADATMD, ONLY: HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW       ! W3_MPI
-    USE W3ADATMD, ONLY: PTM1, PT1, PT2, PEP, WBT, CX, CY            ! W3_MPI
-    USE W3ADATMD, ONLY: TAUOCX, TAUOCY, WNMEAN                      ! W3_MPI
+    USE W3ADATMD,  ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1        ! W3_MPI
+    USE W3ADATMD,  ONLY: DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD      ! W3_MPI
+    USE W3ADATMD,  ONLY: SXX, SYY, SXY, USERO, PHS, PTP, PLP         ! W3_MPI
+    USE W3ADATMD,  ONLY: PDIR, PSI, PWS, PWST, PNR, PHIAW, PHIOC     ! W3_MPI
+    USE W3ADATMD,  ONLY: TUSX, TUSY, TAUWIX, TAUWIY, TAUOX           ! W3_MPI
+    USE W3ADATMD,  ONLY: TAUOY, USSX, USSY, MSSX, MSSY, MSSD         ! W3_MPI
+    USE W3ADATMD,  ONLY: MSCX, MSCY, MSCD, PRMS, TPMS, CHARN         ! W3_MPI
+    USE W3ADATMD,  ONLY: TWS, TAUWNX, TAUWNY, BHD, CGE               ! W3_MPI
+    USE W3ADATMD,  ONLY: CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP       ! W3_MPI
+    USE W3ADATMD,  ONLY: BEDFORMS, PHIBBL, TAUBBL, T01               ! W3_MPI
+    USE W3ADATMD,  ONLY: P2SMS, US3D, EF,  TH1M, STH1M, TH2M         ! W3_MPI
+    USE W3ADATMD,  ONLY: STH2M, HSIG, PHICE, TAUICE, USSP            ! W3_MPI
+    USE W3ADATMD,  ONLY: STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD        ! W3_MPI
+    USE W3ADATMD,  ONLY: HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW       ! W3_MPI
+    USE W3ADATMD,  ONLY: PTM1, PT1, PT2, PEP, WBT, CX, CY            ! W3_MPI
+    USE W3ADATMD,  ONLY: TAUOCX, TAUOCY, WNMEAN                      ! W3_MPI
 
 
-    USE W3GDATMD, ONLY: NK                                          ! W3_MPI
-    USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT         ! W3_MPI
-    USE W3ODATMD, ONLY: NAPFLD, NAPPNT, NAPRST, NAPBPT, NAPTRK      ! W3_MPI
-    USE W3ODATMD, ONLY: NOGRP, NGRPP, NOGE, FLOGRR                  ! W3_MPI
-    USE W3ODATMD, ONLY: OUTPTS, NRQGO, NRQGO2, IRQGO, IRQGO2        ! W3_MPI
-    USE W3ODATMD, ONLY: FLOGRD, NRQPO, NRQPO2, IRQPO1, IRQPO2       ! W3_MPI
-    USE W3ODATMD, ONLY: NOPTS, IPTINT, NRQRS, IRQRS, NBLKRS         ! W3_MPI
-    USE W3ODATMD, ONLY: RSBLKS, IRQRSS, VAAUX, NRQBP, NRQBP2        ! W3_MPI
-    USE W3ODATMD, ONLY: IRQBP1, IRQBP2, NFBPO, NBO2, ISBPO          ! W3_MPI
-    USE W3ODATMD, ONLY: ABPOS, NRQTR, IRQTR, IT0PNT, IT0TRK         ! W3_MPI
-    USE W3ODATMD, ONLY: IT0PRT, NOSWLL, NOEXTR, NDSE, IOSTYP        ! W3_MPI
-    USE W3ODATMD, ONLY: FLOGR2                                      ! W3_MPI
-    USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC                        ! W3_MPI
+    USE W3GDATMD,  ONLY: NK                                          ! W3_MPI
+    USE W3ODATMD,  ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT         ! W3_MPI
+    USE W3ODATMD,  ONLY: NAPFLD, NAPPNT, NAPRST, NAPBPT, NAPTRK      ! W3_MPI
+    USE W3ODATMD,  ONLY: NOGRP, NGRPP, NOGE, FLOGRR                  ! W3_MPI
+    USE W3ODATMD,  ONLY: OUTPTS, NRQGO, NRQGO2, IRQGO, IRQGO2        ! W3_MPI
+    USE W3ODATMD,  ONLY: FLOGRD, NRQPO, NRQPO2, IRQPO1, IRQPO2       ! W3_MPI
+    USE W3ODATMD,  ONLY: NOPTS, IPTINT, NRQRS, IRQRS, NBLKRS         ! W3_MPI
+    USE W3ODATMD,  ONLY: RSBLKS, IRQRSS, VAAUX, NRQBP, NRQBP2        ! W3_MPI
+    USE W3ODATMD,  ONLY: IRQBP1, IRQBP2, NFBPO, NBO2, ISBPO          ! W3_MPI
+    USE W3ODATMD,  ONLY: ABPOS, NRQTR, IRQTR, IT0PNT, IT0TRK         ! W3_MPI
+    USE W3ODATMD,  ONLY: IT0PRT, NOSWLL, NOEXTR, NDSE, IOSTYP        ! W3_MPI
+    USE W3ODATMD,  ONLY: FLOGR2                                      ! W3_MPI
+    USE W3PARALL,  ONLY: INIT_GET_JSEA_ISPROC                        ! W3_MPI
 #ifdef W3_CESMCOUPLED
-    USE W3ADATMD, ONLY: LANGMT, LAPROJ, ALPHAL, LASL, LASLPJ, ALPHALS, LAMULT
+    USE W3ADATMD,  ONLY: LANGMT, LAPROJ, ALPHAL, LASL, LASLPJ, ALPHALS, LAMULT
 #endif
 #endif
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE
+    USE W3GDATMD,  ONLY: GTYPE, UNGTYPE
     USE CONSTANTS, ONLY: LPDLIB
     !/
     !
@@ -5396,46 +5392,46 @@ CONTAINS
 1010 FORMAT (/' *** ERROR W3MPIO : ARRAY IRQGO TOO SMALL *** '/)
 1011 FORMAT (/' *** ERROR W3MPIO : ARRAY IRQGO2 TOO SMALL *** '/)
 9010 FORMAT (/' TEST W3MPIO: COMMUNICATION CALLS FOR W3IOGO ',A/         &
-         ' +------+-------+------+------+--------------+'/          &
-         ' |  IH  |   ID  | TARG |  TAG |   handle err |'/          &
-         ' +------+-------+------+------+--------------+')
+              ' +------+-------+------+------+--------------+'/          &
+              ' |  IH  |   ID  | TARG |  TAG |   handle err |'/          &
+              ' +------+-------+------+------+--------------+')
 9011 FORMAT ( ' |',I5,' | ',A5,' |',2(I5,' |'),I9,I4,' |')
 9012 FORMAT ( ' +------+-------+------+------+--------------+')
 9013 FORMAT ( ' TEST W3MPIO: NRQGO :',2I10)
 9014 FORMAT ( ' TEST W3MPIO: NRQGO2:',2I10)
 9020 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (F)'/                &
-         ' +------+------+------+------+--------------+'/           &
-         ' |  IH  |  ID  | TARG |  TAG |   handle err |'/           &
-         ' +------+------+------+------+--------------+')
+              ' +------+------+------+------+--------------+'/           &
+              ' |  IH  |  ID  | TARG |  TAG |   handle err |'/           &
+              ' +------+------+------+------+--------------+')
 9021 FORMAT ( ' |',I5,' | ',A4,' |',2(I5,' |'),I9,I4,' |')
 9022 FORMAT ( ' +------+------+------+------+--------------+')
 9023 FORMAT ( ' TEST W3MPIO: NRQRS :',I10)
 9025 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (S)'/                &
-         '              BLOCK SIZE / BLOCKS : ',2I6/                &
-         ' +------+------+------+------+--------------+---------+'/ &
-         ' |  IH  |  ID  | TARG |  TAG |   handle err | spectra |'/ &
-         ' +------+------+------+------+--------------+---------+')
+              '              BLOCK SIZE / BLOCKS : ',2I6/                &
+              ' +------+------+------+------+--------------+---------+'/ &
+              ' |  IH  |  ID  | TARG |  TAG |   handle err | spectra |'/ &
+              ' +------+------+------+------+--------------+---------+')
 9026 FORMAT (                                                            &
-         ' |',I5,' | ',A1,I3,' |',2(I5,' |'),I9,I4,' |',I8,' |')
+              ' |',I5,' | ',A1,I3,' |',2(I5,' |'),I9,I4,' |',I8,' |')
 9027 FORMAT (                                                            &
-         ' +------+------+------+------+--------------+---------+')
+              ' +------+------+------+------+--------------+---------+')
 9028 FORMAT ( ' TEST W3MPIO: IHMAX :',I10)
 9030 FORMAT (/' TEST W3MPIO: ',A,' CALLS FOR W3IOBC'/                    &
-         ' +------+------+---+------+------+--------------+'/       &
-         ' |  IH  | IPT  | F | TARG |  TAG |   handle err |'/       &
-         ' +------+------+---+------+------+--------------+')
+              ' +------+------+---+------+------+--------------+'/       &
+              ' |  IH  | IPT  | F | TARG |  TAG |   handle err |'/       &
+              ' +------+------+---+------+------+--------------+')
 9031 FORMAT ( ' |',2(I5,' |'),I2,' |',2(I5,' |'),I9,I4,' |')
 9032 FORMAT (                                                            &
-         ' +------+------+---+------+------+--------------+')
+              ' +------+------+---+------+------+--------------+')
 9033 FORMAT ( ' TEST W3MPIO: NRQBC :',I10)
 9034 FORMAT ( ' TEST W3MPIO: TOTAL :',I10)
 9040 FORMAT (/' TEST W3MPIO: COMMUNICATION CALLS FOR W3IOTR'/            &
-         ' +------+------+------+------+--------------+'/           &
-         ' |  IH  |  ID  | TARG |  TAG |   handle err |'/           &
-         ' +------+------+------+------+--------------+')
+              ' +------+------+------+------+--------------+'/           &
+              ' |  IH  |  ID  | TARG |  TAG |   handle err |'/           &
+              ' +------+------+------+------+--------------+')
 9041 FORMAT ( ' |',I5,' | ',A4,' |',2(I5,' |'),I9,I4,' |')
 9042 FORMAT (                                                            &
-         ' +------+------+------+------+--------------+')
+              ' +------+------+------+------+--------------+')
 9043 FORMAT ( ' TEST W3MPIO: NRQTR :',I10)
     !/
     !/ End of W3MPIO ----------------------------------------------------- /
@@ -5684,12 +5680,12 @@ CONTAINS
     !
 1001 FORMAT (/' *** ERROR W3MPIP : ARRAYS ALREADY ALLOCATED *** '/)
 9010 FORMAT (/' TEST W3MPIP: ',A,' CALLS FOR W3IOPO'/              &
-         ' +------+------+---+------+------+--------------+'/ &
-         ' |  IH  | IPT  | J | TARG |  TAG |   handle err |'/ &
-         ' +------+------+---+------+------+--------------+')
+              ' +------+------+---+------+------+--------------+'/ &
+              ' |  IH  | IPT  | J | TARG |  TAG |   handle err |'/ &
+              ' +------+------+---+------+------+--------------+')
 9011 FORMAT ( ' |',2(I5,' |'),I2,' |',2(I5,' |'),I9,I4,' |')
 9012 FORMAT (                                                      &
-         ' +------+------+---+------+------+--------------+')
+              ' +------+------+---+------+------+--------------+')
 9013 FORMAT ( ' TEST W3MPIP: NRQPO :',I10)
 9014 FORMAT ( ' TEST W3MPIP: TOTAL :',I10)
     !/

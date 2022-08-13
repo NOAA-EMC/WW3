@@ -1478,14 +1478,14 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3NMOD : GRIDS ALREADY INITIALIZED *** '/  &
-         '                    NGRIDS = ',I10/)
+              '                    NGRIDS = ',I10/)
 1002 FORMAT (/' *** ERROR W3NMOD : ILLEGAL NUMBER OF GRIDS *** '/    &
-         '                    NUMBER = ',I10/)
+              '                    NUMBER = ',I10/)
 1003 FORMAT (/' *** ERROR W3NMOD : ILLEGAL NUMBER OF AUX GRIDS *** '/&
-         '                    NUMBER = ',I10/)
+              '                    NUMBER = ',I10/)
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3NMOD)
 9000 FORMAT (' TEST W3NMOD : SETTING UP FOR GRIDS ',I3,           &
-         ' THROUGH ',I3)
+             ' THROUGH ',I3)
 #endif
     !/
     !/ End of W3NMOD ----------------------------------------------------- /
@@ -1830,13 +1830,13 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3DIMX : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3DIMX : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NAUXGR = ',I10/                   &
-         '                    NGRIDS = ',I10/)
+              '                    IMOD   = ',I10/                   &
+              '                    NAUXGR = ',I10/                   &
+              '                    NGRIDS = ',I10/)
 1003 FORMAT (/' *** ERROR W3DIMX : ILLEGAL GRID DIMENSION(S) *** '/  &
-         '                    INPUT = ',4I10 /)
+              '                    INPUT = ',4I10 /)
 1004 FORMAT (/' *** ERROR W3DIMX : ARRAY(S) ALREADY ALLOCATED *** ')
 9000 FORMAT (' TEST W3DIMX : MODEL ',I4,' DIM. AT ',2I5,I7)
 9001 FORMAT (' TEST W3DIMX : ARRAYS ALLOCATED')
@@ -2047,13 +2047,13 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3DIMS : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3DIMS : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NAUXGR = ',I10/                   &
-         '                    NGRIDS = ',I10/)
+              '                    IMOD   = ',I10/                   &
+              '                    NAUXGR = ',I10/                   &
+              '                    NGRIDS = ',I10/)
 1003 FORMAT (/' *** ERROR W3DIMS : ILLEGAL GRID DIMENSION(S) *** '/  &
-         '                    INPUT = ',4I10/)
+              '                    INPUT = ',4I10/)
 1004 FORMAT (/' *** ERROR W3DIMS : ARRAY(S) ALREADY ALLOCATED *** ')
 9000 FORMAT (' TEST W3DIMS : MODEL ',I4,' DIM. AT ',3I5,I7)
 9001 FORMAT (' TEST W3DIMS : ARRAYS ALLOCATED')
@@ -2772,11 +2772,11 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3SETG : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3SETG : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NAUXGR = ',I10/                   &
-         '                    NGRIDS = ',I10/)
+              '                    IMOD   = ',I10/                   &
+              '                    NAUXGR = ',I10/                   &
+              '                    NGRIDS = ',I10/)
 9000 FORMAT (' TEST W3SETG : GRID/MODEL ',I4,' SELECTED')
     !/
     !/ End of W3SETG ----------------------------------------------------- /
@@ -2985,15 +2985,15 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3GNTX : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3GNTX : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NAUXGR = ',I10/                   &
-         '                    NGRIDS = ',I10/)
+              '                    IMOD   = ',I10/                   &
+              '                    NAUXGR = ',I10/                   &
+              '                    NGRIDS = ',I10/)
 1003 FORMAT (/' *** ERROR W3GNTX : UNSUPPORTED TYPE OF GRID *** '/   &
-         '                    GTYPE  = ',I10/)
+              '                    GTYPE  = ',I10/)
 1004 FORMAT (/' *** ERROR W3GNTX : ERROR OCCURED IN W3CGDM *** '/    &
-         '                    GTYPE  = ',I10/)
+              '                    GTYPE  = ',I10/)
 9000 FORMAT (' TEST W3GNTX : MODEL ',I4)
 9001 FORMAT (' TEST W3GNTX : SEARCH OBJECT CREATED')
 9002 FORMAT (' TEST W3GNTX : POINTERS RESET')
@@ -3172,10 +3172,10 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** ERROR W3DIMUG : GRIDS NOT INITIALIZED *** '/      &
-         '                    RUN W3NMOD FIRST '/)
+              '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3DIMUG : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NGRIDS = ',I10/)
+              '                    IMOD   = ',I10/                    &
+              '                    NGRIDS = ',I10/)
 1004 FORMAT (/' *** ERROR W3DIMUG : ARRAY(S) ALREADY ALLOCATED *** ')
 9000 FORMAT (' TEST W3DIMUG: MODEL ',I4,' DIM. AT ',2I5,I7)
 9001 FORMAT (' TEST W3DIMUG : ARRAYS ALLOCATED')

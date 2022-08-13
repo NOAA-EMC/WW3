@@ -3233,35 +3233,35 @@ CONTAINS
 900   FORMAT (4X,I6,'|',I6,'| ', A19  ,' | ',A,' | ',A,' |')
 901   FORMAT (4X,I6,'|',I6,'| ',11X,A8,' | ',A,' | ',A,' |')
 902   FORMAT (2X,'--------+------+---------------------+'               &
-           ,'-----------------------+------------------+')
+                ,'-----------------------+------------------+')
       !
 920   FORMAT ('     Updating k and Cg from ice param. 1,2,3,4.'/)
 950   FORMAT ('  WAVEWATCH III calculating for ',A,' at ',A)
 951   FORMAT ('  WAVEWATCH III reached the end of a computation',       &
-           ' loop at ',A)
+              ' loop at ',A)
 1000  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     ENDING TIME BEFORE STARTING TIME '/)
+               '     ENDING TIME BEFORE STARTING TIME '/)
 1001  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     NEW WATER LEVEL BEFORE OLD WATER LEVEL '/)
+               '     NEW WATER LEVEL BEFORE OLD WATER LEVEL '/)
 1002  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     ILLEGAL CURRENT INTERVAL '/)
+               '     ILLEGAL CURRENT INTERVAL '/)
 1003  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     ILLEGAL WIND INTERVAL '/)
+               '     ILLEGAL WIND INTERVAL '/)
 1004  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     NEW ICE FIELD BEFORE OLD ICE FIELD '/)
+               '     NEW ICE FIELD BEFORE OLD ICE FIELD '/)
 1005  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     NEW IC1 FIELD BEFORE OLD IC1 FIELD '/)
+               '     NEW IC1 FIELD BEFORE OLD IC1 FIELD '/)
 1007  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     NEW ATM MOMENTUM BEFORE OLD ATM MOMENTUM '/)
+               '     NEW ATM MOMENTUM BEFORE OLD ATM MOMENTUM '/)
 1008  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     NEW AIR DENSITY BEFORE OLD AIR DENSITY '/)
+               '     NEW AIR DENSITY BEFORE OLD AIR DENSITY '/)
 1006  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
+               '     NEW IC5 FIELD BEFORE OLD IC5 FIELD '/)
 1030  FORMAT (/' *** WAVEWATCH III WARING IN W3WAVE :'/                &
-           '     AT LEAST ONE PROCESSOR HAS 0 ACTIVE POINTS',      &
-           ' IN GRID',I3)
+               '     AT LEAST ONE PROCESSOR HAS 0 ACTIVE POINTS',      &
+               ' IN GRID',I3)
 1040  FORMAT (/' *** WAVEWATCH III ERROR IN W3WAVE :'/                 &
-           '     EXPERIMENTAL FEATURE !/REFRX NOT FULLY IMPLEMENTED.'/)
+               '     EXPERIMENTAL FEATURE !/REFRX NOT FULLY IMPLEMENTED.'/)
       !
 9000  FORMAT (                                                         &
            '============================================================', &
@@ -3273,11 +3273,11 @@ CONTAINS
 9010  FORMAT (' TEST W3WAVE : DT INT. =',F12.1,'   FLZERO = ',L1)
 9011  FORMAT (' TEST W3WAVE : DT LEV. =',F12.1)
 9012  FORMAT (' TEST W3WAVE : DT CUR. =',F12.1/                        &
-           '                        ',F12.1/                        &
-           '                        ',F12.1)
+              '                        ',F12.1/                        &
+              '                        ',F12.1)
 9013  FORMAT (' TEST W3WAVE : DT WIND =',F12.1/                        &
-           '                        ',F12.1/                        &
-           '                        ',F12.1)
+              '                        ',F12.1/                        &
+              '                        ',F12.1)
 9014  FORMAT (' TEST W3WAVE : DT ICE  =',F12.1)
 9015  FORMAT (' TEST W3WAVE : DT IC1  =',F12.1)
 9016  FORMAT (' TEST W3WAVE : DT IC5  =',F12.1)
@@ -3290,9 +3290,9 @@ CONTAINS
 9023  FORMAT (' TEST W3WAVE : SKIP TO 380 IN 3.5')
 9030  FORMAT (' TEST W3WAVE : END OF COMPUTATION LOOP')
 9040  FORMAT (' TEST W3WAVE : CHECKING FOR OUTPUT'/                    &
-           '               TOFRST           :',I9.8,I7.6/           &
-           '               TND              :',I9.8,I7.6/           &
-           '               DTTST[1], FLAG_O :',2F8.1,L4)
+              '               TOFRST           :',I9.8,I7.6/           &
+              '               TND              :',I9.8,I7.6/           &
+              '               DTTST[1], FLAG_O :',2F8.1,L4)
 9041  FORMAT (' TEST W3WAVE : PERFORMING OUTPUT')
 9042  FORMAT (' TEST W3WAVE : OUTPUT COMPUTATION FLAGS: ',3L2)
 9043  FORMAT (' TEST W3WAVE : TYPE, NRQ, NRQMAX, NA : ',A2,3I6)
@@ -3558,18 +3558,18 @@ CONTAINS
       ! Formats
       !
 9000  FORMAT ( ' TEST OF BUFFER MANAGEMENT MPI :'/                       &
-           ' -------------------------------'/                       &
-           '      RECORDS ALTERNATELY WRITTEN BY W3GATH AND W3SCAT'/ &
-           '      FRIST COLLUMN  : LOCAL ISPEC'/                     &
-           '      OTHER COLLUMNS : BUFFER STATUS INDICATOR '/        &
-           '                        0 : INACTIVE'/                   &
-           '                        1 : RECEIVING'/                  &
-           '                        2 : SENDING'/                    &
-           '                       LOCAL ISPEC FOR BUFFER'/          &
-           '                       A  : ACTIVE BUFFER'/              &
-           '                       g/G: START/FINISH RECIEVE'/       &
-           '                       s/S: START/FINISH SEND'/          &
-           ' +-----+',8A15)
+               ' -------------------------------'/                       &
+               '      RECORDS ALTERNATELY WRITTEN BY W3GATH AND W3SCAT'/ &
+               '      FRIST COLLUMN  : LOCAL ISPEC'/                     &
+               '      OTHER COLLUMNS : BUFFER STATUS INDICATOR '/        &
+               '                        0 : INACTIVE'/                   &
+               '                        1 : RECEIVING'/                  &
+               '                        2 : SENDING'/                    &
+               '                       LOCAL ISPEC FOR BUFFER'/          &
+               '                       A  : ACTIVE BUFFER'/              &
+               '                       g/G: START/FINISH RECIEVE'/       &
+               '                       s/S: START/FINISH SEND'/          &
+               ' +-----+',8A15)
 9010  FORMAT ( ' |',I4,' |',8A15)
       !/
       !/ End of W3GATH ----------------------------------------------------- /
