@@ -1,11 +1,11 @@
 !> @file
 !> @brief Contains module WMESMFMD.
-!> 
+!>
 !> @author T. J. Campell
 !> @author J. Meixner
 !> @author A. J. van der Westhuysen
 !> @date 09-Aug-2017
-!> 
+!>
 
 #include "w3macros.h"
 !/
@@ -55,7 +55,7 @@
 !> @brief National Unified Prediction Capability (NUOPC) based
 !>  Earth System Modeling Framework (ESMF) interface module for
 !>  multi-grid wave model.
-!> 
+!>
 !> @details All module variables and types are scoped private by default.
 !>  The private module variables and types are not listed in this section.
 !>
@@ -77,11 +77,11 @@
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
 !/    09-Aug-2017 : Add ocean forcing export fields     ( version 6.03 )
-!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 ) 
+!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -189,7 +189,7 @@
 #endif
       use W3IOGOMD, only: W3OUTG
 #ifdef W3_SCRIP
-      use WMSCRPMD, only: get_scrip_info_structured 
+      use WMSCRPMD, only: get_scrip_info_structured
 #endif
 !/
 !/ Specify default data typing
@@ -314,7 +314,7 @@
       character(256) :: flds_scalar_name = ''         !< flds_scalar_name
       integer        :: flds_scalar_num = 0         !< flds_scalar_num
       ! flds_scalar_index_nx and flds_scalar_index_nx are domain
-      ! metadata that allows CMEPS to convert a mesh back to 2d 
+      ! metadata that allows CMEPS to convert a mesh back to 2d
       ! space for mediator restart and history outputs
       integer        :: flds_scalar_index_nx = 0         !< flds_scalar_index_nx
       integer        :: flds_scalar_index_ny = 0         !< flds_scalar_index_ny
@@ -337,7 +337,7 @@
 !> @param[out] rc Return code.
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>        
+!>
 #undef METHOD
 #define METHOD "SetServices"
       subroutine SetServices ( gcomp, rc )
@@ -508,7 +508,7 @@
 !> @param[out] rc  Return code.
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "InitializeP0"
       subroutine InitializeP0 ( gcomp, impState, expState, extClock, rc )
@@ -662,10 +662,10 @@
 !> @param impState Import state.
 !> @param expState Export state.
 !> @param extClock External clock.
-!> @param[out] rc  Return code.      
+!> @param[out] rc  Return code.
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "InitializeP1"
       subroutine InitializeP1 ( gcomp, impState, expState, extClock, rc )
@@ -777,7 +777,7 @@
         ': entered InitializeP1', ESMF_LOGMSG_INFO)
 !
 ! -------------------------------------------------------------------- /
-! Query mediator specific attributes 
+! Query mediator specific attributes
 !
       if (med_present) then
         call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldName", &
@@ -970,7 +970,7 @@
 !
 ! Adjust internal start time to currTime in case of delayed start
 !
-      if ( cttmp.gt.ttmp ) ttmp=cttmp 
+      if ( cttmp.gt.ttmp ) ttmp=cttmp
       call ESMF_TimeGet(ttmp, yy=yy,mm=mm,dd=dd,h=h,m=m,s=s, rc=rc)
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       stime(1) = 10000*yy + 100*mm + dd
@@ -1019,7 +1019,7 @@
 ! 2.  Initialization of all wave models / grids
 !
 ! 2.a Call into WMINIT
-!     
+!
       if ( .not.lsep_ss ) idss = stdo
       if ( .not.lsep_st ) idst = stdo
       if ( .not.lsep_se ) idse = stdo
@@ -1296,10 +1296,10 @@
         expFieldDim(i)     = 2
       endif
 
-      if (med_present) then 
+      if (med_present) then
         i = i + 1
         if ( istep.eq.2 ) then
-          expFieldName(i)    = trim(flds_scalar_name) 
+          expFieldName(i)    = trim(flds_scalar_name)
           expFieldStdName(i) = trim(flds_scalar_name)
           expFieldDim(i)     = 1
         endif
@@ -1405,12 +1405,12 @@
 !> @param impState Import state.
 !> @param expState Export state.
 !> @param extClock External clock.
-!> @param[out] rc  Return code.      
+!> @param[out] rc  Return code.
 !>
 !> @author T. J. Campbell
 !> @author A. J. van der Westhuysen
 !> @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "InitializeP3"
       subroutine InitializeP3 ( gcomp, impState, expState, extClock, rc )
@@ -1425,7 +1425,7 @@
 !/
 !/    20-Jan-2017 : Origination.                        ( version 6.02 )
 !/    09-Aug-2017 : Update 3D export field setup        ( version 6.03 )
-!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 )  
+!/    28-Feb-2018 : Modifications for unstruc meshes    ( version 6.06 )
 !/
 !  1. Purpose :
 !
@@ -1761,7 +1761,7 @@
 !> @param[out] rc Return code.
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "Finalize"
       subroutine Finalize ( gcomp, rc )
@@ -1985,7 +1985,7 @@
 !> @param[out] rc Return code.
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "DataInitialize"
       subroutine DataInitialize ( gcomp, rc )
@@ -2204,10 +2204,10 @@
 !> @brief Advance wave model in time.
 !>
 !> @param      gcomp Gridded component.
-!> @param[out] rc    Return code.      
+!> @param[out] rc    Return code.
 !>
 !> @author T. J. Campbell   @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "ModelAdvance"
       subroutine ModelAdvance ( gcomp, rc )
@@ -2411,7 +2411,7 @@
 !> @param[out] rc    Return code.
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "GetImport"
       subroutine GetImport ( gcomp, rc )
@@ -2682,9 +2682,9 @@
           ! an atm model that does not have 10m wind speeds at
           ! initialization.  If there is no restart, wind is zero
           wxn = WXNwrst !replace with values from restart
-          wyn = WYNwrst 
-          wx0 = WXNwrst 
-          wy0 = WYNwrst  
+          wyn = WYNwrst
+          wx0 = WXNwrst
+          wy0 = WYNwrst
           do imod = 1,nrgrd
             call w3setg ( imod, mdse, mdst )
             call w3setw ( imod, mdse, mdst )
@@ -2694,22 +2694,22 @@
             if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
 #endif
             INPUTS(IMOD)%TW0(:) = INPUTS(impGridID)%TW0(:)
-            INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)              
+            INPUTS(IMOD)%TFN(:,3) = INPUTS(impGridID)%TFN(:,3)
             wxn = WXNwrst !replace with values from restart
-            wyn = WYNwrst 
-            wx0 = WXNwrst 
-            wy0 = WYNwrst  
+            wyn = WYNwrst
+            wx0 = WXNwrst
+            wy0 = WYNwrst
             if (ESMF_LogFoundError(rc, PASSTHRU)) return
           enddo
 #endif
         endif
     
 #ifdef W3_WRST
-       if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then 
+       if ( ((twn(1)-tw0(1))*1000000+((twn(2)-tw0(2)))) .le. 0  ) then
         !If the time of the field is still initial time, replace
         !with restart field
         wxn = WXNwrst !replace with values from restart
-        wyn = WYNwrst     
+        wyn = WYNwrst
        else    !twn>tw0
 #endif
         do imod = 1,nrgrd
@@ -2798,7 +2798,7 @@
 !> @param[out] rc    Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "SetExport"
       subroutine SetExport ( gcomp, rc )
@@ -2904,7 +2904,7 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! Surface Roughness 
+! Surface Roughness
 !
       i1 = FieldIndex( expFieldName, 'z0rlen', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2927,7 +2927,7 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! Partitioned Stokes Drift 3 2D fields 
+! Partitioned Stokes Drift 3 2D fields
 !
       i1 = FieldIndex( expFieldName, 'x1pstk', rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
@@ -2994,13 +2994,13 @@
           call ESMF_FieldGet(expField(i1), farrayPtr=farrayptr, rc=rc)
           if (ESMF_LogFoundError(rc, PASSTHRU)) return
           if (flds_scalar_index_nx > 0 .and. flds_scalar_index_nx < flds_scalar_num) then
-            farrayptr(flds_scalar_index_nx,1) = dble(nx) 
+            farrayptr(flds_scalar_index_nx,1) = dble(nx)
           endif
           if (flds_scalar_index_ny > 0 .and. flds_scalar_index_ny < flds_scalar_num) then
             farrayptr(flds_scalar_index_ny,1) = dble(ny)
           endif
         endif
-      endif 
+      endif
 !
 ! -------------------------------------------------------------------- /
 ! Post
@@ -3032,7 +3032,7 @@
 !> @param[out] rc    Return code
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CreateImpGrid"
       subroutine CreateImpGrid ( gcomp, rc )
@@ -3284,14 +3284,14 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       ! Calculate grid coordinates with help of SCRIP module
-      ! It does not return coordinates of top-most row and 
-      ! right-most column but ESMF expects it. So, top-most row 
+      ! It does not return coordinates of top-most row and
+      ! right-most column but ESMF expects it. So, top-most row
       ! and right-most column are theated specially in below
       call get_scrip_info_structured(impGridID, &
         xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
         land_sea, grid_dims, grid_size, grid_corners, grid_rank)
 
-      ! Add corner coordinates 
+      ! Add corner coordinates
       if ( impGridIsLocal ) then
         ! Retrieve pointers
         call ESMF_GridGetCoord( impGrid, 1, localDE=lde, &
@@ -3349,8 +3349,8 @@
           rptry(grid_dims(1)+1,grid_dims(2)+1) = &
             rptry(grid_dims(1),grid_dims(2)+1)
         end if
-      endif      
-#endif 
+      endif
+#endif
 !
 ! -------------------------------------------------------------------- /
 ! 3.  Create import field mask and routeHandle halo update
@@ -3488,12 +3488,12 @@
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Create ESMF grid for export fields
-!> 
+!>
 !> @param      gcomp Gridded component
 !> @param[out] rc    Return code
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CreateExpGrid"
       subroutine CreateExpGrid ( gcomp, rc )
@@ -3509,7 +3509,7 @@
 !/
 !  1. Purpose :
 !
-!     
+!
 !
 !  2. Method :
 !
@@ -3774,14 +3774,14 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 
       ! Calculate grid coordinates with help of SCRIP module
-      ! It does not return coordinates of top-most row and 
-      ! right-most column but ESMF expects it. So, top-most row 
+      ! It does not return coordinates of top-most row and
+      ! right-most column but ESMF expects it. So, top-most row
       ! and right-most column are theated specially in below
       call get_scrip_info_structured(expGridID, &
         xgrd_center, ygrd_center, xgrd_corner, ygrd_corner, &
         land_sea, grid_dims, grid_size, grid_corners, grid_rank)
 
-      ! Add corner coordinates 
+      ! Add corner coordinates
       if ( impGridIsLocal ) then
         ! Retrieve pointers
         call ESMF_GridGetCoord( expGrid, 1, localDE=lde, &
@@ -3987,7 +3987,7 @@
 !
 ! 5.b Store route handle
 !
-      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc ) 
+      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 5.c Clean up
@@ -4103,16 +4103,16 @@
 !> @brief Create ESMF mesh (unstructured) for import fields.
 !>
 !> @details Create an ESMF Mesh for import using the unstructured mesh
-!>  description in W3GDATMD. At present, this import mesh is not 
-!>  domain decomposed, but instead is defined on PET 0 only. (In 
+!>  description in W3GDATMD. At present, this import mesh is not
+!>  domain decomposed, but instead is defined on PET 0 only. (In
 !>  future, when the unstructured mesh will run on domain decomposition,
-!>  we will use that decomposition.)      
-!>     
+!>  we will use that decomposition.)
+!>
 !> @param      gcomp Gridded component
 !> @param[out] rc    Return code
 !>
 !> @author A. J. van der Westhuysen  @date 28-Feb-2018
-!>            
+!>
 #undef METHOD
 #define METHOD "CreateImpMesh"
       subroutine CreateImpMesh ( gcomp, rc )
@@ -4132,9 +4132,9 @@
 !
 !  2. Method :
 !
-!     Create an ESMF Mesh for import using the unstructured mesh description 
-!     in W3GDATMD. At present, this import mesh is not domain decomposed, 
-!     but instead is defined on PET 0 only. (In future, when the unstructured 
+!     Create an ESMF Mesh for import using the unstructured mesh description
+!     in W3GDATMD. At present, this import mesh is not domain decomposed,
+!     but instead is defined on PET 0 only. (In future, when the unstructured
 !     mesh will run on domain decomposition, we will use that decomposition.)
 !
 !  3. Parameters :
@@ -4253,7 +4253,7 @@
 !        -------------------------------------------------------------------
 !        ESMF Definition: The global id's of the nodes resident on this processor
 !        -------------------------------------------------------------------
-!        Allocate global node ids, including ghost nodes (npa=np+ng) 
+!        Allocate global node ids, including ghost nodes (npa=np+ng)
          allocate(nodeIds(npa))
          do i = 1,npa
             nodeIds(i)=iplg(i)
@@ -4287,7 +4287,7 @@
          do i = 1,NX
             do j = 1,2
                pos=2*(i-1)+j
-               if (j == 1) then 
+               if (j == 1) then
                  nodeCoords(pos) = xgrd(1,i)
                else
                  nodeCoords(pos) = ygrd(1,i)
@@ -4448,9 +4448,9 @@
 #ifdef W3_PDLIB
       else
 !        -------------------------------------------------------------------
-!        ESMF Definition: Connectivity table. The number of entries should 
-!        be equal to the number of nodes in the given topology. The indices 
-!        should be the local index (1 based) into the array of nodes that 
+!        ESMF Definition: Connectivity table. The number of entries should
+!        be equal to the number of nodes in the given topology. The indices
+!        should be the local index (1 based) into the array of nodes that
 !        was declared with MeshAddNodes.
 !        -------------------------------------------------------------------
 !        > INE is local element array. it stores the local node IDs
@@ -4510,24 +4510,24 @@
 !>
 !> @brief Create ESMF mesh (unstructured) for export fields.
 !>
-!> @details Create an ESMF Mesh for export using the unstructured mesh 
+!> @details Create an ESMF Mesh for export using the unstructured mesh
 !>  description in W3GDATMD. At present, this export mesh is not domain
 !>  decomposed, but instead is defined on PET 0 only. (In future, when the
 !>  unstructured mesh will run on domain decomposition, we will use that
 !>  decomposition.)
 !>
-!>  Since the internal parallel data is currently stored accross grid points 
+!>  Since the internal parallel data is currently stored accross grid points
 !>  in a "card deck" fashion, we will define an intermediate native grid, as
 !>  is done for regular/curvilinear grids, and perform an ESMF regrid to the
-!>  export mesh. This code segment is taken from T. J. Campbell, and 
-!>  modified to 1D, because the internal data structure for unstructred 
-!>  meshes is an array with dimensions [NX,NY=1].     
-!>     
+!>  export mesh. This code segment is taken from T. J. Campbell, and
+!>  modified to 1D, because the internal data structure for unstructred
+!>  meshes is an array with dimensions [NX,NY=1].
+!>
 !> @param      gcomp Gridded component
 !> @param[out] rc    Return code
 !>
 !> @author A. J. van der Westhuysen  @date 28-Feb-2018
-!>                  
+!>
 #undef METHOD
 #define METHOD "CreateExpMesh"
       subroutine CreateExpMesh ( gcomp, rc )
@@ -4547,16 +4547,16 @@
 !
 !  2. Method :
 !
-!     Create an ESMF Mesh for export using the unstructured mesh description 
-!     in W3GDATMD. At present, this export mesh is not domain decomposed, 
-!     but instead is defined on PET 0 only. (In future, when the unstructured 
+!     Create an ESMF Mesh for export using the unstructured mesh description
+!     in W3GDATMD. At present, this export mesh is not domain decomposed,
+!     but instead is defined on PET 0 only. (In future, when the unstructured
 !     mesh will run on domain decomposition, we will use that decomposition.)
 !
-!     Since the internal parallel data is currently stored accross grid points 
+!     Since the internal parallel data is currently stored accross grid points
 !     in a "card deck" fashion, we will define an intermediate native grid, as
 !     is done for regular/curvilinear grids, and perform an ESMF regrid to the
-!     export mesh. This code segment is taken from T. J. Campbell, and 
-!     modified to 1D, because the internal data structure for unstructred 
+!     export mesh. This code segment is taken from T. J. Campbell, and
+!     modified to 1D, because the internal data structure for unstructred
 !     meshes is an array with dimensions [NX,NY=1].
 !
 !  3. Parameters :
@@ -4667,7 +4667,7 @@
       natIndexFlag = ESMF_INDEX_DELOCAL
 !
 ! -------------------------------------------------------------------- /
-! 2.  Create ESMF mesh for export 
+! 2.  Create ESMF mesh for export
 !
 ! 2.a Create ESMF export mesh
 !
@@ -4684,7 +4684,7 @@
 !        -------------------------------------------------------------------
 !        ESMF Definition: The global id's of the nodes resident on this processor
 !        -------------------------------------------------------------------
-!        Allocate global node ids, including ghost nodes (npa=np+ng) 
+!        Allocate global node ids, including ghost nodes (npa=np+ng)
          allocate(nodeIds(npa))
          do i = 1,npa
             nodeIds(i)=iplg(i)
@@ -4878,9 +4878,9 @@
 #ifdef W3_PDLIB
       else
 !        -------------------------------------------------------------------
-!        ESMF Definition: Connectivity table. The number of entries should 
-!        be equal to the number of nodes in the given topology. The indices 
-!        should be the local index (1 based) into the array of nodes that 
+!        ESMF Definition: Connectivity table. The number of entries should
+!        be equal to the number of nodes in the given topology. The indices
+!        should be the local index (1 based) into the array of nodes that
 !        was declared with MeshAddNodes.
 !        -------------------------------------------------------------------
 !        > INE is local element array. it stores the local node IDs
@@ -5012,7 +5012,7 @@
 !
 ! 4.b Store route handle
 !
-      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc ) 
+      call ESMF_FieldRedistStore( nField, eField, n2eRH, rc=rc )
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
 !
 ! 4.c Clean up
@@ -5046,7 +5046,7 @@
 !> @param rc          Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "SetupImpBmsk"
       subroutine SetupImpBmsk( bmskField, impField, missingVal, rc )
@@ -5274,7 +5274,7 @@
 !> @param[inout] rc       Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "BlendImpField"
       subroutine BlendImpField( impField, mbgField, bmskField, rc )
@@ -5388,7 +5388,7 @@
 !> @param rc         Return code
 !>
 !> @author U. Turuncoglu  @date 18-May-2021
-!>      
+!>
 #undef METHOD
 #define METHOD "SetupImpMmsk"
       subroutine SetupImpMmsk( mmskField, impField, fillVal, mskCreated, rc )
@@ -5416,7 +5416,7 @@
 !       mmskField   Type   I/O merging mask field
 !       impField    Type   I   import field
 !       fillVal     Real   I   fill value
-!       mskCreated  Log.   I/O mask is created or not 
+!       mskCreated  Log.   I/O mask is created or not
 !       rc          Int    O   Return code
 !     ----------------------------------------------------------------
 !
@@ -5503,7 +5503,7 @@
       endif
 !
 ! -------------------------------------------------------------------- /
-! Set mask created flag 
+! Set mask created flag
 !
       mskCreated = .true.
 #if defined(TEST_WMESMFMD) || defined(TEST_WMESMFMD_SETUPIMPMMSK)
@@ -5526,7 +5526,7 @@
 !> @param rc
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "FieldFill"
       subroutine FieldFill(field, fillVal, rc)
@@ -5660,7 +5660,7 @@
 !> @author  T. J. Campbell
 !> @author  A. J. van der Westhuysen
 !> @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "FieldGather"
       subroutine FieldGather(field, n1, n2, fout, rc)
@@ -5824,7 +5824,7 @@
 !> @returns      indx      Returned index of fname
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "FieldIndex"
       function FieldIndex ( fnameList, fname, rc ) result (indx)
@@ -5918,7 +5918,7 @@
 !> @param wtime
 !>
 !> @author T. J. Campbell  @date 20-Jan-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "PrintTimers"
       subroutine PrintTimers ( cname, wtnam, wtcnt, wtime )
@@ -6017,7 +6017,7 @@
 !> @param[inout] rc       Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CalcDecomp"
       subroutine CalcDecomp ( nx, ny, nproc, npmin, adjust, nxproc, nyproc, rc )
@@ -6158,7 +6158,7 @@
 !> @param rc   Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "GetEnvValue"
       subroutine GetEnvValue ( cenv, cval, rc )
@@ -6253,7 +6253,7 @@
 !> @param[inout] rc Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "GetZlevels"
       subroutine GetZlevels ( rc )
@@ -6369,7 +6369,7 @@
 !> @param rc       Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CalcCharnk"
       subroutine CalcCharnk ( chkField, rc )
@@ -6483,7 +6483,7 @@
             call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
                          emean, fmean, fmean1, wnmean, amax,         &
                          u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                         tauwy, cd, z0, charn(jsea), llws, fmeanws,  & 
+                         tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
                          dlwmean )
 #endif
           endif !firstCall
@@ -6518,7 +6518,7 @@
 !> @param rc        Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CalcRoughl"
       subroutine CalcRoughl ( wrlField, rc )
@@ -6612,7 +6612,7 @@
 #endif
           IX = MAPSF(ISEA,1)
           IY = MAPSF(ISEA,2)
-          IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN 
+          IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
             if ( firstCall ) then
               charn(jsea) = zero
 #ifdef W3_ST3
@@ -6640,7 +6640,7 @@
 #endif
             endif !firstCall
             wrln(jsea) = charn(jsea)*ust(isea)**2/grav
-          endif 
+          endif
         enddo jsea_loop
 
       endif !natGridIsLocal
@@ -6674,7 +6674,7 @@
 !> @param rc        Return code
 !>
 !> @author T. J. Campbell @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CalcBotcur"
       subroutine CalcBotcur ( a, wbxField, wbyField, wbpField, rc )
@@ -6848,7 +6848,7 @@
             enddo ith_loop
             fack = dden(ik)/cg(ik,isea)
             kd = max(kdmin,min(kdmax,wn(ik,isea)*depth))
-            fkd = fack/sinh(kd)**2 
+            fkd = fack/sinh(kd)**2
             abr = abr + aka*fkd
             ubr = ubr + aka*sig2(ik)*fkd
             ubx = ubx + akx*sig2(ik)*fkd
@@ -6909,7 +6909,7 @@
 !> @param[inout] rc        Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CalcRadstr2D"
       subroutine CalcRadstr2D ( a, sxxField, sxyField, syyField, rc )
@@ -7126,7 +7126,7 @@
         enddo jsea_loop
 #ifdef W3_PDLIB
       else
-        jsea_loop2: do jsea = 1,np 
+        jsea_loop2: do jsea = 1,np
           isea = iplg(jsea)
 !          if ( dw(isea).le.zero ) cycle jsea_loop
           sxxn(jsea) = sxx(jsea)
@@ -7186,7 +7186,7 @@
 !> @param rc       Return code
 !>
 !> @author T. J. Campbell  @date 09-Aug-2017
-!>      
+!>
 #undef METHOD
 #define METHOD "CalcStokes3D"
       subroutine CalcStokes3D ( a, usxField, usyField, rc )
@@ -7450,7 +7450,7 @@
 !> @param rc       Return code
 !>
 !> @author J. Meixner  @date 29-Oct-2019
-!>      
+!>
 #undef METHOD
 #define METHOD "CalcPStokes"
       subroutine CalcPStokes ( a, p1xField, p1yField, p2xField,   &
@@ -7476,9 +7476,9 @@
 !     Parameter list
 !     ----------------------------------------------------------------
 !       a         Real   I   Input spectra (in par list to change shape)
-!       p1Field   Type   I/O 
-!       p2Field   Type   I/O 
-!       p3Field   Type   I/O 
+!       p1Field   Type   I/O
+!       p2Field   Type   I/O
+!       p3Field   Type   I/O
 !       rc        Int    O   Return code
 !     ----------------------------------------------------------------
 !
@@ -7523,7 +7523,7 @@
       real(ESMF_KIND_RX), pointer :: p1xn(:), p2xn(:), p3xn(:)
       real(ESMF_KIND_RX), pointer :: p1yn(:), p2yn(:), p3yn(:)
       integer, save :: timeSlice = 1
-      integer :: isea,jsea 
+      integer :: isea,jsea
 !
 ! -------------------------------------------------------------------- /
 !
@@ -7641,7 +7641,7 @@
       if (ESMF_LogFoundError(rc, PASSTHRU)) return
       call ESMF_FieldWrite( p3yField, "wmesmfmd_pstokes_3y.nc", &
         overwrite=.true., timeSlice=timeSlice, rc=rc )
-      if (ESMF_LogFoundError(rc, PASSTHRU)) return   
+      if (ESMF_LogFoundError(rc, PASSTHRU)) return
       timeSlice = timeSlice + 1
 #endif
 !/
@@ -7660,7 +7660,7 @@
 !> @param[inout] rc     Return code
 !>
 !> @author U. Turuncoglu  @date 18-May-2021
-!>      
+!>
 #undef METHOD
 #define METHOD "ReadFromFile"
       subroutine ReadFromFile (idfld, fldwx, fldwy, time0, timen, rc)
@@ -7687,8 +7687,8 @@
 !       idfld     Str    I/O Field name
 !       fldwx     Type   I/O 2D eastward-component of field
 !       fldwy     Type   I/O 2D northward-component of field
-!       time0     Int    I   Time stamp for current time 
-!       timen     Int    I   Time stamp for end time 
+!       time0     Int    I   Time stamp for current time
+!       timen     Int    I   Time stamp for end time
 !       rc        Int    I/O Return code
 !     ----------------------------------------------------------------
 !
@@ -7752,12 +7752,12 @@
 !
       rc = ESMF_SUCCESS
 
-      if (firstCall) then 
-        ! assign unit number for input file 
+      if (firstCall) then
+        ! assign unit number for input file
         call wmuget(mdse, mdst, mdsf, 'INP')
         call wmuset(mdse, mdst, mdsf, .true., desc='Input data file')
 
-        ! open file      
+        ! open file
         call w3fldo('READ', idfld, mdsf, mdst, mdse, nx, ny, gtype, ierr)
         if (ierr.ne.0) then
           write(logmsg,*) "Error in opening "//idfld//", iostat = ", ierr
@@ -7778,7 +7778,7 @@
       dtnl = 0.0
 
       ! need to rewind to the begining of the file to access
-      ! data of requested date correctly 
+      ! data of requested date correctly
       rewind(mdsf)
 
       ! read header information
@@ -7790,7 +7790,7 @@
       ! read input
       call w3fldg('READ', idfld, mdsf, mdst, mdse, nx, ny, &
              nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
-             wxnl, wynl, dtnl, ierr, flagsc) 
+             wxnl, wynl, dtnl, ierr, flagsc)
 
       ! fill fields with data belong to current time
       if ( impGridIsLocal ) then

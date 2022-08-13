@@ -15,9 +15,9 @@
 !  1. Purpose :
 !
 !     Calculate ice source term S_{ice} according to simple methods.
-!          Attenuation is a function of frequency and specified directly 
+!          Attenuation is a function of frequency and specified directly
 !          by the user. Example: a function is based on an exponential fit to
-!          the empirical data of Wadhams et al. (1988). 
+!          the empirical data of Wadhams et al. (1988).
 !
 !  2. Variables and types :
 !
@@ -38,24 +38,24 @@
 !         1) Wadhams et al. JGR 1988
 !         2) Meylan et al. GRL 2014
 !         3) Kohout & Meylan JGR 2008 in Horvat & Tziperman Cryo. 2015
-!         4) Kohout et al. Nature 2014 
+!         4) Kohout et al. Nature 2014
 !         5) Doble et al. GRL 2015
 !         6) Rogers et al. JGR 2016
 !     Documentation of IC4:
 !         1) Collins and Rogers, NRL Memorandum report 2017
-!         ---> "A Source Term for Wave Attenuation by Sea 
+!         ---> "A Source Term for Wave Attenuation by Sea
 !               Ice in WAVEWATCH III® : IC4"
 !         ---> describes original IC4 methods, 1 to 6
 !         2) Rogers et al., NRL Memorandum report 2018a
 !         ---> "Forecasting and hindcasting waves in and near the
-!              marginal ice zone: wave modeling and the ONR “Sea 
+!              marginal ice zone: wave modeling and the ONR “Sea
 !              State” Field Experiment"
 !         ---> IC4 method 7 added
 !         2) Rogers et al., NRL Memorandum report 2018b
-!         ---> "Frequency Distribution of Dissipation of Energy of 
+!         ---> "Frequency Distribution of Dissipation of Energy of
 !               Ocean Waves by Sea Ice Using Data from Wave Array 3 of
 !               the ONR “Sea State” Field Experiment"
-!         ---> New recommendations for IC4 Method 2 (polynomial fit) 
+!         ---> New recommendations for IC4 Method 2 (polynomial fit)
 !              and IC4 Method 6 (step function via namelist)
 !
 !  6. Switches :
@@ -96,7 +96,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -117,11 +117,11 @@
 !     3) Quadratic fit to Kohout & Meylan'08 in Horvat & Tziperman'15
 !        Here, note that their eqn is given as ln(alpha)=blah, so we
 !        have alpha=exp(blah)
-!     4) Eq. 1 from Kohout et al. 2014 
+!     4) Eq. 1 from Kohout et al. 2014
 !
 !     5) Simple step function for ki as a function of frequency
 !          with up to 4 "steps". Controlling parameters KIx and FCx are
-!          read in as input fields, so they may be nonstationary and 
+!          read in as input fields, so they may be nonstationary and
 !          non-uniform in the same manner that ice concentration and
 !          water levels may be nonstationary and non-uniform.
 !                                          444444444444
@@ -157,7 +157,7 @@
 !             ICEP5=FC5=0.10
 !             MUDD=FC6=0.12
 !             MUDT=FC7=0.16
-!             In terms of the 3-character IDs for "Homogeneous field 
+!             In terms of the 3-character IDs for "Homogeneous field
 !             data" in ww3_shel.inp, these are, respectively, IC1, IC2,
 !             IC3, IC4, IC5, MDN, MTH, and so this might look like:
 !                'IC1' 19680606 000000   5.0e-6
@@ -183,17 +183,17 @@
 !          ic4_fc(1)   ic4_fc(2)   ic4_fc(3) ic4_fc(4)=large number
 !       Example: Beaufort Sea, AWAC mooring, 2012, Oct 27 to 30
 !           &SIC4  IC4METHOD = 6,
-!                  IC4KI =    0.50E-05,   0.70E-05,   0.15E-04,  
-!                             0.10E+00,   0.00E+00,   0.00E+00,   
+!                  IC4KI =    0.50E-05,   0.70E-05,   0.15E-04,
+!                             0.10E+00,   0.00E+00,   0.00E+00,
 !                             0.00E+00,   0.00E+00,   0.00E+00,
 !                             0.00E+00,
-!                  IC4FC =    0.100,      0.120,      0.160, 
+!                  IC4FC =    0.100,      0.120,      0.160,
 !                             99.00,      0.000,      0.000,
 !                             0.000,      0.000,      0.000,
 !                             0.000
 !                             /
 !
-!     7) Doble et al. (GRL 2015), eq. 3. This is a function of ice 
+!     7) Doble et al. (GRL 2015), eq. 3. This is a function of ice
 !        thickness and wave period.
 !        ALPHA  = 0.2*(T^(-2.13)*HICE or
 !        ALPHA  = 0.2*(FREQ^2.13)*HICE
@@ -250,11 +250,11 @@
 !        Method 5 : E. Rogers
 !        Method 6 : E. Rogers
 !        Method 7 : E. Rogers
-!     
+!
 !     ALPHA = 2 * WN_I
 !     Though it may seem redundant/unnecessary to have *both* in the
-!       code, we do it this way to make the code easier to read and 
-!       relate to other codes and source material, and hopefully avoid 
+!       code, we do it this way to make the code easier to read and
+!       relate to other codes and source material, and hopefully avoid
 !       mistakes.
 !/ ------------------------------------------------------------------- /
 !
@@ -316,6 +316,7 @@
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                  ICECOEF4, ICECOEF5, ICECOEF6, &
                                  ICECOEF7, ICECOEF8
+
       REAL                    :: KI1,KI2,KI3,KI4,FC5,FC6,FC7,FREQ
       REAL                    :: HS, EMEAN, HICE
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential decay rate for amplitude
@@ -358,7 +359,7 @@
       ICECOEF8 = 0.0
       HS       = 0.0
       HICE     = 0.0
-      EMEAN    = 0.0      
+      EMEAN    = 0.0
 !
 !     IF (.NOT.INFLAGS2(-7))THEN
 !        WRITE (NDSE,1001) 'ICE PARAMETER 1'
@@ -366,7 +367,7 @@
 !     ENDIF
 
 !
-!   We cannot remove the other use of INFLAGS below, 
+!   We cannot remove the other use of INFLAGS below,
 !   because we would get 'array not allocated' error for the methods
 !   that don't use MUDV, etc. and don't have MUDV allocated.
 
@@ -375,7 +376,6 @@
       IF (INFLAGS2(-5)) ICECOEF3 = ICEP3(IX,IY)
       IF (INFLAGS2(-4)) ICECOEF4 = ICEP4(IX,IY)
       IF (INFLAGS2(-3)) ICECOEF5 = ICEP5(IX,IY)
-
 ! Borrow from Smud (error if BT8 or BT9)
 #ifdef W3_BT8
     WRITE (NDSE,*) 'DUPLICATE USE OF MUD PARAMETERS'
@@ -388,7 +388,6 @@
       IF (INFLAGS2(-2)) ICECOEF6 = MUDD(IX,IY) ! a.k.a. MDN
       IF (INFLAGS2(-1)) ICECOEF7 = MUDT(IX,IY) ! a.k.a. MTH
       IF (INFLAGS2(0 )) ICECOEF8 = MUDV(IX,IY) ! a.k.a. MVS
-
       IC4METHOD = IC4PARS(1)
 !
 ! x.  No ice --------------------------------------------------------- /
@@ -409,7 +408,7 @@
 #endif
 !
 ! 1.  Make calculations ---------------------------------------------- /
-!                
+!
 ! 1.a Calculate WN_I
 
       SELECT CASE (IC4METHOD)
@@ -419,7 +418,7 @@
           WN_I = 0.5 * ALPHA
         
         CASE (2) ! IC4M2 : Polynomial fit, Eq. 3 from Meylan et al. 2014
-                 !NB: Eq. 3 only includes T^2 and T^4 terms, 
+                 !NB: Eq. 3 only includes T^2 and T^4 terms,
                  !  which correspond to ICECOEF3, ICECOEF5, so in
                  !  regtest: ICECOEF1=ICECOEF2=ICECOEF4=0
           MARG1 = ICECOEF1 + ICECOEF2*(SIG/TPI) + ICECOEF3*(SIG/TPI)**2
@@ -430,12 +429,12 @@
         CASE (3) ! IC4M3 : Quadratic fit to Kohout & Meylan'08 in Horvat & Tziperman'15
           HICE=ICECOEF1 ! For this method, ICECOEF1=ice thickness
           KARG1 = -0.3203 + 2.058*HICE - 0.9375*(TPI/SIG)
-          KARG2 = -0.4269*HICE**2 + 0.1566*HICE*(TPI/SIG) 
-          KARG3 =  0.0006 * (TPI/SIG)**2 
+          KARG2 = -0.4269*HICE**2 + 0.1566*HICE*(TPI/SIG)
+          KARG3 =  0.0006 * (TPI/SIG)**2
           ALPHA  = EXP(KARG1 + KARG2 + KARG3)
           WN_I = 0.5 * ALPHA
         
-        CASE (4) !Eq. 1 from Kohout et al. 2014 
+        CASE (4) !Eq. 1 from Kohout et al. 2014
           !Calculate HS
           DO IK=1, NK
             EB(IK) = 0.
@@ -513,7 +512,6 @@
               ALPHA(IK)  = 0.2*(FREQ**2.13)*HICE
            END DO
            WN_I= 0.5 * ALPHA
-
         CASE DEFAULT
           WN_I = ICECOEF1 !Default to IC1: Uniform in k
       
@@ -521,7 +519,7 @@
 
 !
 ! 1.b Calculate DID
-!        
+!
          DO IK=1, NK
 !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
 !             recall that D=S/E=-2*Cg*k_i

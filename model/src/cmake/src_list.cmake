@@ -55,6 +55,7 @@ set(ftn_src
   wmupdtmd.F90
   wmwavemd.F90
   w3tidemd.F90
+  wav_shr_flags.F90
   )
 
 # Built when PDLIB is enabled

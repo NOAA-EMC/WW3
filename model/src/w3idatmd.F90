@@ -21,7 +21,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -83,7 +83,7 @@
 !      FLICE     Log.  Public   Flag for ice input.
 !      FLTAUA    Log.  Public   Flag for atmospheric momentum input
 !      FLRHOA    Log.  Public   Flag for air density input
-!      INFLAGS1  L.A.  Public   Array consolidating the above six 
+!      INFLAGS1  L.A.  Public   Array consolidating the above six
 !                               flags, as well as four additional
 !                               data flags.
 !      INFLAGS2  L.A.  Public   Like INFLAGS1 but does *not* get changed
@@ -124,7 +124,7 @@
 !     - The number of grids is taken from W3GDATMD, and needs to be
 !       set first with W3DIMG.
 !
-!     - INFLAGS1 dimensioning is hardwired as INFLAGS1(-7:14) where lowest possible 
+!     - INFLAGS1 dimensioning is hardwired as INFLAGS1(-7:14) where lowest possible
 !       value of JFIRST is JFIRST=-7
 !
 !  6. Switches :
@@ -198,7 +198,6 @@
          REAL, POINTER         :: ICEP3(:,:)
          REAL, POINTER         :: ICEP4(:,:)
          REAL, POINTER         :: ICEP5(:,:)
-                                 
 #ifdef W3_TIDE
          REAL, POINTER         :: CXTIDE(:,:,:,:)
          REAL, POINTER         :: CYTIDE(:,:,:,:)
@@ -226,7 +225,7 @@
                                  TIN(:), TR0(:), TRN(:), T0N(:),      &
                                  T1N(:), T2N(:), TDN(:), TG0(:),      &
                                  TGN(:), TTN(:), TVN(:), TZN(:),      &
-                                 TI1(:), TI2(:), TI3(:), TI4(:), TI5(:) 
+                                 TI1(:), TI2(:), TI3(:), TI4(:), TI5(:)
       REAL, POINTER           :: GA0, GD0, GAN, GDN
       REAL, POINTER           :: WX0(:,:), WY0(:,:), DT0(:,:),        &
                                  WXN(:,:), WYN(:,:), DTN(:,:),        &
@@ -249,7 +248,7 @@
       LOGICAL, POINTER        :: FLLEV, FLCUR, FLWIND, FLICE, FLTAUA, &
                                  FLRHOA
       LOGICAL, POINTER        :: FLMTH, FLMVS, FLMDN
-      LOGICAL, POINTER        :: FLIC1, FLIC2, FLIC3, FLIC4, FLIC5 
+      LOGICAL, POINTER        :: FLIC1, FLIC2, FLIC3, FLIC4, FLIC5
 #ifdef W3_TIDE
       LOGICAL, POINTER        ::  FLLEVTIDE, FLCURTIDE,  &
                                   FLLEVRESI, FLCURRESI
@@ -438,7 +437,7 @@
 !     See module documentation.
 !
 !  5. Called by :
-!       
+!
 !     Main wave model drivers.
 !
 !  6. Error messages :
@@ -448,7 +447,7 @@
 !
 !  7. Remarks :
 !
-!     - W3SETI needs to be called after allocation to point to 
+!     - W3SETI needs to be called after allocation to point to
 !       proper allocated arrays.
 !
 !  8. Structure :
@@ -548,7 +547,7 @@
       FLLEVTIDE = FLAGSTIDE(1)
       FLCURTIDE = FLAGSTIDE(2)
       FLLEVRESI = FLAGSTIDE(3)
-      FLCURRESI = FLAGSTIDE(4)     
+      FLCURRESI = FLAGSTIDE(4)
 #endif
  
       FLWIND => INPUTS(IMOD)%INFLAGS1(3)
@@ -556,7 +555,7 @@
       FLTAUA => INPUTS(IMOD)%INFLAGS1(5)
       FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
 !
-! notes: future improvement: flags for ICEPx should be 
+! notes: future improvement: flags for ICEPx should be
 !     "all or nothing" rather than 5 individual flags
 
       IF ( FLIC1  ) THEN
@@ -632,7 +631,7 @@
 !
 
 #ifdef W3_WRST
-      IF(.NOT.(INPUTS(IMOD)%WRSTIINIT)) THEN 
+      IF(.NOT.(INPUTS(IMOD)%WRSTIINIT)) THEN
         ALLOCATE (   INPUTS(IMOD)%WXNwrst(NX,NY) ,              &
                      INPUTS(IMOD)%WYNwrst(NX,NY) , STAT=ISTAT )
         INPUTS(IMOD)%WRSTIINIT=.TRUE.
@@ -861,7 +860,7 @@
       IF ( NIDATA .EQ. -1 ) THEN
           WRITE (NDSE,1001)
           CALL EXTCDE (1)
-        END IF   
+        END IF
 !
       IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NIDATA ) THEN
           WRITE (NDSE,1002) IMOD, -NAUXGR, NIDATA
@@ -982,10 +981,10 @@
               CYN    => INPUTS(IMOD)%CYN
             END IF
 #ifdef W3_TIDE
-          IF ( FLLEVTIDE ) THEN 
+          IF ( FLLEVTIDE ) THEN
               WLTIDE => INPUTS(IMOD)%WLTIDE
             END IF
-          IF ( FLCURTIDE ) THEN 
+          IF ( FLCURTIDE ) THEN
               CXTIDE => INPUTS(IMOD)%CXTIDE
               CYTIDE => INPUTS(IMOD)%CYTIDE
             END IF

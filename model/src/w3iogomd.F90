@@ -444,7 +444,7 @@
 !
           TESTSTR=OUT_NAMES(IOUT+1)
           CALL W3FLDTOIJ(TESTSTR, IFI, IFJ, IAPROC, NAPOUT, NDSEN)
-          
+
           IF(IFI .NE. -1) THEN
             FLG2D(IFI, IFJ) = .TRUE.
           ENDIF
@@ -642,7 +642,7 @@
 !
         TESTSTR=OUT_NAMES(IOUT+1)
         CALL W3FLDTOIJ(TESTSTR, IFI, IFJ, IAPROC, NAPOUT, NDSEN)
-         
+
         IF(IFI .NE. -1) THEN
           FLG2D(IFI, IFJ) = .TRUE.
         ENDIF
@@ -653,7 +653,7 @@
 !
       FLT    = .TRUE.
       DO IFI=1, NOGRP
-        IF ( IAPROC .EQ. NAPOUT ) THEN 
+        IF ( IAPROC .EQ. NAPOUT ) THEN
           DO IFJ=1, NGRPP
             IF ( FLG2D(IFI,IFJ) ) THEN
               IF ( FLT ) THEN
@@ -667,7 +667,7 @@
         ENDIF
         IF(ANY(FLG2D(IFI,:))) FLG1D(IFI)=.TRUE. !Update FLG1D
       END DO
-      IF ( IAPROC .EQ. NAPOUT ) THEN 
+      IF ( IAPROC .EQ. NAPOUT ) THEN
         IF ( FLT ) WRITE (NDSO,1945) 'no fields defined'
       ENDIF
 !
@@ -1433,7 +1433,7 @@
             ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
             ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
 ! These are the integrals with cos^2 and sin^2
-            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)        
+            ABX2(JSEA) = ABX2(JSEA) + A(ITH,IK,JSEA)*EC2(ITH)
             ABY2(JSEA) = ABY2(JSEA) + A(ITH,IK,JSEA)*ES2(ITH)
 ! Using trig identities to represent cos2theta and sin2theta.
             AB2X(JSEA) = AB2X(JSEA) + A(ITH,IK,JSEA)*(2*EC2(ITH) - 1)
@@ -1522,7 +1522,6 @@
             ETTPMM(JSEA) = FACTOR2
             TPMS(JSEA) = TPI/SIG(IK)
             END IF
-
 !
 ! Directional moments in the last freq. band
 !
@@ -1564,7 +1563,7 @@
                 GRAV*WN(IK,ISEA) * EBD(IK,JSEA) / (SINH(2.*KD))
           ELSE
             USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
-            END IF
+          END IF
 !
           ABXX(JSEA)   = MAX ( 0. , ABXX(JSEA) ) * FACTOR
           ABYY(JSEA)   = MAX ( 0. , ABYY(JSEA) ) * FACTOR
@@ -1977,7 +1976,7 @@
             ELSE
               T02(JSEA) = TPI / SIG(NK)
               T01(JSEA)= T02(JSEA)
-              ENDIF
+           ENDIF
 !
 !  Add here USERO(JSEA,1) ...
 !
@@ -2685,21 +2684,21 @@
 ! ( IPASS = 1 )
 !
       IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
-          I      = LEN_TRIM(FILEXT)
-          J      = LEN_TRIM(FNMPRE)
+         I      = LEN_TRIM(FILEXT)
+         J      = LEN_TRIM(FNMPRE)
 !
 #ifdef W3_T
           WRITE (NDST,9001) FNMPRE(:J)//'out_grd.'//FILEXT(:I)
 #endif
-          IF ( WRITE ) THEN
+         IF ( WRITE ) THEN
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
-            ELSE
+                   form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+           ELSE
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
-            END IF
+                   form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
+           END IF
 !
-          REWIND ( NDSOG )
+         REWIND ( NDSOG )
 !
 ! test info --------------------------------------------------------- *
 ! ( IPASS = 1 )
@@ -2761,17 +2760,18 @@
           J      = LEN_TRIM(FNMPRE)
 !
 ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
-          WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+            WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
 #ifdef W3_T
-          WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)
+            WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)
 #endif
+
           IF ( WRITE ) THEN
               OPEN (NDSOG,FILE=FNMPRE(:J)//TIMETAG//'.out_grd.'  &
                     //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
           ELSE
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
                     form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
-            END IF
+          END IF
 !
           REWIND ( NDSOG )
 !
