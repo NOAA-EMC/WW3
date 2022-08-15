@@ -15,13 +15,13 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
 !
-!     This peace of code computes the triad interaction term in the same way  
-!     as done in the SWAN model. 
+!     This peace of code computes the triad interaction term in the same way
+!     as done in the SWAN model.
 !
 !  2. Variables and types :
 !
@@ -45,15 +45,15 @@
 !     ----------------------------------------------------------------
 !
 !  5. Remarks : The approach is truncated version of the work of Elderberky.
-!               In SWAN the wave spectra is treated as one-dimensional and 
+!               In SWAN the wave spectra is treated as one-dimensional and
 !               only the transfer to the higher harmoics is taken into account
 !               for this no justification is given and it has to be further investigated.
 !               The approximation of Elderberky is for a flat bottom (actually bragg-0 resonance)
 !               The biggest problem is that it is not conservative, which is the biggest limitation factor.
-!               Moreover it is questionable if it was taken into account the in spectral wave models the 
+!               Moreover it is questionable if it was taken into account the in spectral wave models the
 !               freq. bandwidths are exponentially distributed in freq. space, which leads to the problem that
-!               it is possible that some jacobian transformation is missing the derivation of hte discrete form, 
-!               I am now looking into this and I hope that I can give some closure soon.  
+!               it is possible that some jacobian transformation is missing the derivation of hte discrete form,
+!               I am now looking into this and I hope that I can give some closure soon.
 !
 !
 !     See notes in the file below where to add these elements.
@@ -212,7 +212,7 @@
       INTEGER I1, I2, ID, IDDUM, IENT, II, IS, ISM, ISM1, ISMAX, &
               ISP, ISP1, ITH, IK
       REAL    AUX1, AUX2, BIPH, C0, CM, DEP, DEP_2, DEP_3, E0, EM, HS, &
-              FT, RINT, SIGPICG, SINBPH, STRI, WISM, WISM1, WISP, & 
+              FT, RINT, SIGPICG, SINBPH, STRI, WISM, WISM1, WISP, &
               WISP1, W0, WM, WN0, WNM, XIS, XISLN
       REAL, ALLOCATABLE :: E(:), SA(:,:)
       REAL              :: EB(NK), EBAND, EMEAN, SIGM01
@@ -251,7 +251,7 @@
         END DO
       END DO
 !
-! 2.  Integrate over wave numbers  
+! 2.  Integrate over wave numbers
 !
       DO IK=1, NK
         EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
@@ -335,7 +335,7 @@
 !
            DO IK = 1, NK
               E(IK) = A(ITH+(IK-1)*NTH) * TPI * SIG(IK) / CG(IK)
-              EF(IK) = EF(IK) + E(IK)        
+              EF(IK) = EF(IK) + E(IK)
            END DO
 !
            DO IK = 1, ISMAX
@@ -384,7 +384,7 @@
                                     2.*(WISP  * SA(ITH,IK+ISP1) + &
                                         WISP1 * SA(ITH,IK+ISP )) ) / &
                                     SIGPICG
-!             --- Functional derivative 
+!             --- Functional derivative
               SF(IK) = 2.*( SA(ITH,IK) - &
                          2.*(WISP  * SA(ITH,IK+ISP1) + &
                          WISP1 * SA(ITH,IK+ISP )) ) + SF(IK)
@@ -407,4 +407,4 @@
       END SUBROUTINE W3STR2
 !/ ------------------------------------------------------------------- /
 !/
-      END MODULE W3STR1MD
+      END MODULE W3STR2MD
