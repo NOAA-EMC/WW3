@@ -1317,7 +1317,6 @@ contains
     if (present(time0_overwrite) .and. present(timen_overwrite)) then
        time0(:) = time0_overwrite(:)
        timen(:) = timen_overwrite(:)
-       !TODO: determine if needed
        do j = 1,notype
           if (odat(5*(j-1)+3) .ne. 0 ) then    ! non-zero stride
              odat(5*(j-1)+1) = time0(1)
@@ -1450,7 +1449,6 @@ contains
        write (ndst,9041) flgrd
        write (ndst,9042) iprt, prtfrm
     end if
-    !TODO: Determine if needed
     if (.not. present(time0_overwrite) .and. .not. present(timen_overwrite)) then
        !
        ! For outputs with non-zero time step, check dates :

@@ -90,14 +90,15 @@ module wav_comp_nuopc
   logical :: cesmcoupled = .false.                         !< logical to indicate non-CESM use case
 #endif
   integer, allocatable :: tend(:,:)                        !< the ending time of ModelAdvance when
-  !! run with multigrid=true
-  logical                 :: user_histalarm = .false.      !< logical flag for user to set history alarms                                                                                       !! using ESMF. If history_option is present as config
-  !! option, user_histalarm will be true and will be
-  !! set using history_option, history_n and history_ymd
+                                                           !! run with multigrid=true
+  logical                 :: user_histalarm = .false.      !< logical flag for user to set history alarms
+                                                           !! using ESMF. If history_option is present as config
+                                                           !! option, user_histalarm will be true and will be
+                                                           !! set using history_option, history_n and history_ymd
   logical                 :: user_restalarm = .false.      !< logical flag for user to set restart alarms
-  !! using ESMF. If restart_option is present as config
-  !! option, user_restalarm will be true and will be
-  !! set using restart_option, restart_n and restart_ymd
+                                                           !! using ESMF. If restart_option is present as config
+                                                           !! option, user_restalarm will be true and will be
+                                                           !! set using restart_option, restart_n and restart_ymd
   integer :: time0(2)
   integer :: timen(2)
 

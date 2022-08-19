@@ -77,12 +77,17 @@ MODULE W3SERVMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
-  use wav_shr_flags
 
   ! module default
   IMPLICIT NONE
 
   PUBLIC
+  !
+#ifdef W3_S
+  logical, parameter ::  w3_s_flag = .true.           !< @public a flag for "W3_S"
+#else
+  logical, parameter ::  w3_s_flag = .false.          !< @public a flag for "W3_S"
+#endif
   !
   INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0
   !
