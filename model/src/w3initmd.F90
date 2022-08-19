@@ -4222,7 +4222,7 @@ CONTAINS
                 IH     = IH + 1
                 IT     = IT + 1
                 CALL MPI_RECV_INIT (LANGMT  (1),NSEALM , MPI_REAL, IROOT,   &
-                     IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+                     IT, MPI_COMM_WAVE, IRQGO2(IH), IERR)
              END IF
              if (w3_mpit_flag) then
                 WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
