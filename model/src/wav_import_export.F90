@@ -120,7 +120,6 @@ contains
        call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_u10m'    )
        call fldlist_add(fldsToWav_num, fldsToWav, 'Sa_v10m'    )
     end if
-
     if (wav_coupling_to_cice) then
        call fldlist_add(fldsToWav_num, fldsToWav, 'Si_thick'   )
        call fldlist_add(fldsToWav_num, fldsToWav, 'Si_floediam')
@@ -158,7 +157,6 @@ contains
     ! is not initialized yet. It is set during w3init which gets called at a later phase (realize). A permanent solution
     ! will be implemented soon based on receiving USSP and USSPF from the coupler instead of the mod_def file. This will
     ! also ensure compatibility with the ocean component since ocean will also receive these from the coupler.
-
     if (wav_coupling_to_cice) then
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'wave_elevation_spectrum', &
             ungridded_lbound=1, ungridded_ubound=nwav_elev_spectrum)
@@ -752,7 +750,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRadstr2D( va, sxxn, sxyn, syyn)
     end if
-
     if (wav_coupling_to_cice) then
        call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return

@@ -353,9 +353,12 @@ contains
 
     ! Determine wave-ice coupling
     wav_coupling_to_cice = .false.
-    call NUOPC_CompAttributeGet(gcomp, name='wavice_coupling', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    call NUOPC_CompAttributeGet(gcomp, name='wav_coupling_to_cice', value=cvalue, isPresent=isPresent, &
+         isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent .and. isSet) wav_coupling_to_cice=(trim(cvalue)==".true.")
+    if (isPresent .and. isSet) then
+       wav_coupling_to_cice=(trim(cvalue)=="true")
+    end if
     write(logmsg,'(A,l)') trim(subname)//': Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
@@ -875,7 +878,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call CalcRoughl(z0rlen)
     endif
-
     if (wav_coupling_to_cice) then
        call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
