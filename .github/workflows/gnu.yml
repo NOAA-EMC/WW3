@@ -71,7 +71,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
+        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF, NUOPC_MESH]
     runs-on: ubuntu-20.04
 
     steps:
@@ -100,10 +100,10 @@ jobs:
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
           mkdir build && cd build
           if [[ ${{ matrix.switch }} == "MULTI_ESMF" ]]; then
-            cmake .. -DMULTI_ESMF=ON -DSWITCH=multi_esmf
+            cmake .. -DUFS_CAP=MULTI_ESMF -DSWITCH=multi_esmf
+          elif [[ ${{ matrix.switch }} == "NUOPC_MESH" ]]; then
+            cmake .. -DUFS_CAP=NUOPC_MESH -DSWITCH=meshcap
           else
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
           make -j2 VERBOSE=1
-
-          
