@@ -1,14 +1,20 @@
 name: GNU Linux Build
 on: [push, pull_request]
 
+# Cancel in-progress workflows when pushing to a branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
-  cache_key: gnu4
+  cache_key: gnu5
   CC: gcc-10
   FC: gfortran-10
   CXX: g++-10
 
+
 # Split into a steup step, and a WW3 build step which
-# builds multiple switches in a matrix. The setup is run once and 
+# builds multiple switches in a matrix. The setup is run once and
 # the environment is cached so each build of WW3 can share the dependencies.
 
 jobs:
@@ -16,6 +22,11 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: checkout-ww3
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+            path: ww3
       # Cache spack, OASIS, and compiler
       # No way to flush Action cache, so key may have # appended
       - name: cache-env
@@ -26,13 +37,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
-
-      - name: checkout-ww3
-        if: steps.cache-env.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with: 
-            path: ww3
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
@@ -66,13 +71,13 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF, NUOPC_MESH]
+        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
     runs-on: ubuntu-20.04
 
     steps:
       - name: checkout-ww3
         uses: actions/checkout@v2
-        with: 
+        with:
             path: ww3
 
       - name: cache-env
@@ -83,7 +88,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       - name: build-ww3
         run: |
@@ -95,9 +100,7 @@ jobs:
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
           mkdir build && cd build
           if [[ ${{ matrix.switch }} == "MULTI_ESMF" ]]; then
-            cmake .. -DUFS_CAP=MULTI_ESMF -DSWITCH=multi_esmf
-          elif [[ ${{ matrix.switch }} == "NUOPC_MESH" ]]; then
-            cmake .. -DUFS_CAP=NUOPC_MESH -DSWITCH=meshcap
+            cmake .. -DMULTI_ESMF=ON -DSWITCH=multi_esmf
           else
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi

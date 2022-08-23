@@ -1,6 +1,11 @@
 name: Intel Linux Build
 on: [push, pull_request]
 
+# Cancel in-progress workflows when pushing to a branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # Use custom shell with -l so .bash_profile is sourced which loads intel/oneapi/setvars.sh
 # without having to do it in manually every step
 defaults:
@@ -9,7 +14,7 @@ defaults:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel5
+  cache_key: intel6
   CC: icc
   FC: ifort
   CXX: icpc
@@ -17,7 +22,7 @@ env:
   I_MPI_F90: ifort
 
 # Split into a dependency build step, and a WW3 build step which
-# builds multiple switches in a matrix. The setup is run once and 
+# builds multiple switches in a matrix. The setup is run once and
 # the environment is cached so each build of WW3 can share the dependencies.
 
 jobs:
@@ -25,6 +30,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: checkout-ww3
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+            path: ww3
+
       # Cache spack, OASIS, and compiler
       # No way to flush Action cache, so key may have # appended
       - name: cache-env
@@ -36,7 +48,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -47,12 +59,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
           echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
-
-      - name: checkout-ww3
-        if: steps.cache-env.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with: 
-            path: ww3
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
@@ -86,13 +92,13 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF, NUOPC_MESH]
+        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
     runs-on: ubuntu-latest
 
     steps:
       - name: checkout-ww3
         uses: actions/checkout@v2
-        with: 
+        with:
             path: ww3
 
       - name: install-intel
@@ -108,7 +114,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       - name: build-ww3
         run: |
@@ -120,9 +126,7 @@ jobs:
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
           mkdir build && cd build
           if [[ ${{ matrix.switch }} == "MULTI_ESMF" ]]; then
-            cmake .. -DUFS_CAP=MULTI_ESMF -DSWITCH=multi_esmf
-          elif [[ ${{ matrix.switch }} == "NUOPC_MESH" ]]; then
-            cmake .. -DUFS_CAP=NUOPC_MESH -DSWITCH=meshcap
+            cmake .. -DMULTI_ESMF=ON -DSWITCH=multi_esmf
           else
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
