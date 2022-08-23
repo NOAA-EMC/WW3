@@ -603,12 +603,14 @@ CONTAINS
       !/ ------------------------------------------------------------------- /
       ! 0.  Initializations
       !
-      ! 0.a Set pointers to data structure
-      !
+      XXX = undef
       memunit = 40000+iaproc
 #ifdef W3_COU
       SCREEN   =  333
 #endif
+      !
+      ! 0.a Set pointers to data structure
+      !
       !
       if (w3_debuginit_flag) then
          WRITE(740+IAPROC,*) 'W3WAVE, step 1'
