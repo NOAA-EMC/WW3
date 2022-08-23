@@ -2046,8 +2046,8 @@ CONTAINS
        !
        NRQSG2 = MAX( 1 , NAPROC-1 )
        ALLOCATE ( WADATS(IMOD)%IRQSG2(NRQSG2*NSPLOC,2),           &
-            WADATS(IMOD)%GSTORE(NAPROC*NSEALM,MPIBUF),      &
-            WADATS(IMOD)%SSTORE(NAPROC*NSEALM,MPIBUF) )
+                  WADATS(IMOD)%GSTORE(NAPROC*NSEALM,MPIBUF),      &
+                  WADATS(IMOD)%SSTORE(NAPROC*NSEALM,MPIBUF) )
        NRQSG2 = NAPROC - 1
        !
        IRQSG2 => WADATS(IMOD)%IRQSG2
@@ -2080,14 +2080,10 @@ CONTAINS
                    !
                    ITARG  = IP - 1
                    IH     = IH + 1
-                   CALL MPI_RECV_INIT                             &
-                        ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1,        &
-                        WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, &
-                        IRQSG2(IH,1), IERR2 )
-                   CALL MPI_SEND_INIT                             &
-                        ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1,        &
-                        WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, &
-                        IRQSG2(IH,2), IERR2 )
+                   CALL MPI_RECV_INIT ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1,      &
+                        WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,1), IERR2 )
+                   CALL MPI_SEND_INIT ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1,      &
+                        WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,2), IERR2 )
                    if (w3_mpit_flag) then
                       WRITE (NDST,9032) IH, ISP, ITARG+1, IBFLOC,   &
                            IRQSG2(IH,1), IERR1, IRQSG2(IH,2), IERR2
@@ -3181,7 +3177,7 @@ CONTAINS
           IF ( FLGRDALL( 6, 14) ) THEN
              IH     = IH + 1
              IT     = IT + 1
-             CALL MPI_SEND_INIT (LANGMT  (1),NSEALM , MPI_REAL, IROOT,   &
+             CALL MPI_SEND_INIT (LANGMT(1),NSEALM , MPI_REAL, IROOT,   &
                   IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
           END IF
           if (w3_mpit_flag) then
@@ -4221,11 +4217,11 @@ CONTAINS
              IF ( FLGRDALL( 6, 14) ) THEN
                 IH     = IH + 1
                 IT     = IT + 1
-                CALL MPI_RECV_INIT (LANGMT  (1),NSEALM , MPI_REAL, IROOT,   &
-                     IT, MPI_COMM_WAVE, IRQGO2(IH), IERR)
+                CALL MPI_RECV_INIT (LANGMT(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                     MPI_COMM_WAVE, IRQGO2(IH), IERR)
              END IF
              if (w3_mpit_flag) then
-                WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
+                WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
              endif
 #endif
              !
