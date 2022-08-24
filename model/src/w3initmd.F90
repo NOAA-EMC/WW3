@@ -109,7 +109,10 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      PUBLIC
+  ! module default
+  IMPLICIT NONE
+
+  PUBLIC
 !/
       REAL, PARAMETER                :: CRITOS = 15.
       CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.14  '
@@ -414,8 +417,6 @@
      USE W3UOSTMD, ONLY: UOST_SETGRID
 #endif
 !/
-      IMPLICIT NONE
-!
 #ifdef W3_MPI
       INCLUDE "mpif.h"
 #endif
@@ -2047,7 +2048,6 @@
 #endif
       USE W3ODATMD, ONLY: NDST, NAPROC, IAPROC
 !/
-      IMPLICIT NONE
 !
 #ifdef W3_MPI
       INCLUDE "mpif.h"
@@ -2085,16 +2085,14 @@
       NXXXX  = NSEALM * NAPROC
 !
 #ifdef W3_MPI
-      CALL MPI_TYPE_VECTOR ( NSEALM, 1, NAPROC, MPI_REAL,        &
-                             WW3_FIELD_VEC, IERR_MPI )
+      CALL MPI_TYPE_VECTOR ( NSEALM, 1, NAPROC, MPI_REAL, WW3_FIELD_VEC, IERR_MPI )
 #endif
 #ifdef W3_DEBUGINIT
       WRITE(740+IAPROC,*) 'W3MPII, step 1'
       FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MPI
-      CALL MPI_TYPE_VECTOR ( NSEALM, 1, NSPEC, MPI_REAL,         &
-                             WW3_SPEC_VEC, IERR_MPI )
+      CALL MPI_TYPE_VECTOR ( NSEALM, 1, NSPEC, MPI_REAL, WW3_SPEC_VEC, IERR_MPI )
 #endif
 #ifdef W3_DEBUGINIT
       WRITE(740+IAPROC,*) 'W3MPII, step 1'
@@ -2180,14 +2178,11 @@
         IF ( IAPPRO(ISP) .NE. IAPROC ) THEN
             ITARG  = IAPPRO(ISP) - 1
             IH     = IH + 1
-            CALL MPI_SEND_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC,     &
-                 ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,1), IERR1 )
-            CALL MPI_RECV_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC,     &
-                 ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,2), IERR2 )
+            CALL MPI_SEND_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,1), IERR1 )
+            CALL MPI_RECV_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,2), IERR2 )
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9022) IH, ISP, ITARG+1,                 &
-                   IRQSG1(IH,1), IERR1, IRQSG1(IH,2), IERR2
+            WRITE (NDST,9022) IH, ISP, ITARG+1, IRQSG1(IH,1), IERR1, IRQSG1(IH,2), IERR2
 #endif
 #ifdef W3_MPI
           END IF
@@ -2260,18 +2255,14 @@
 #endif
 !
 #ifdef W3_MPI
-                  CALL MPI_RECV_INIT                             &
-                     ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1,        &
-                       WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, &
-                       IRQSG2(IH,1), IERR2 )
-                  CALL MPI_SEND_INIT                             &
-                     ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1,        &
-                       WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, &
-                       IRQSG2(IH,2), IERR2 )
+                  CALL MPI_RECV_INIT ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1,        &
+                       WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,1), IERR2 )
+                  CALL MPI_SEND_INIT ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1,        &
+                       WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,2), IERR2 )
 #endif
 #ifdef W3_MPIT
-                  WRITE (NDST,9032) IH, ISP, ITARG+1, IBFLOC,   &
-                         IRQSG2(IH,1), IERR1, IRQSG2(IH,2), IERR2
+                  WRITE (NDST,9032) IH, ISP, ITARG+1, IBFLOC, &
+                       IRQSG2(IH,1), IERR1, IRQSG2(IH,2), IERR2
 #endif
 !
 ! ... End of loops
@@ -2498,7 +2489,6 @@
       USE W3GDATMD, ONLY: GTYPE, UNGTYPE
       USE CONSTANTS, ONLY: LPDLIB
 !/
-      IMPLICIT NONE
 !
 #ifdef W3_MPI
       INCLUDE "mpif.h"
@@ -3690,7 +3680,7 @@
               IF ( FLGRDALL( 6, 14) ) THEN
                   IH     = IH + 1
                   IT     = IT + 1
-      CALL MPI_SEND_INIT (LANGMT  (1),NSEALM , MPI_REAL, IROOT,   &
+      CALL MPI_SEND_INIT (LANGMT(1),NSEALM , MPI_REAL, IROOT,   &
                                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
                 END IF
 #endif
@@ -5111,12 +5101,12 @@
               IF ( FLGRDALL( 6, 14) ) THEN
                   IH     = IH + 1
                   IT     = IT + 1
-      CALL MPI_RECV_INIT (LANGMT  (1),NSEALM , MPI_REAL, IROOT,   &
-                                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
-                END IF
+      CALL MPI_RECV_INIT (LANGMT(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                                MPI_COMM_WAVE, IRQGO2(IH), IERR)
+               END IF
 #endif
 #ifdef W3_MPIT
-      WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
+      WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #endif
 #ifdef W3_MPI
@@ -6848,7 +6838,6 @@
       USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 #endif
 !/
-      IMPLICIT NONE
 !
 #ifdef W3_MPI
       INCLUDE "mpif.h"
