@@ -73,7 +73,7 @@
 #endif
 !
       ! module default
-      implict none
+      implicit none
       PUBLIC
 !
       INTEGER, PRIVATE        :: PRFTB(8)
@@ -2021,7 +2021,7 @@ DAT(8) = 0  ! force milliseconds to 0
 !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
 !> @date 01-05-2022
   subroutine set_user_timestring(time, user_timestring)
-  
+
      integer          , intent(in)  :: time(2)
      character(len=16), intent(out) :: user_timestring
 
