@@ -484,9 +484,7 @@
       INTEGER                 :: TTEST(2),DTTEST
       REAL                    :: ICEDAVE
 !
-#ifdef W3_MPI
       LOGICAL                 :: SBSED
-#endif
 #ifdef W3_SEC1
       INTEGER                 :: ISEC1
 #endif
@@ -694,15 +692,12 @@
         FACX   =  1.
         END IF
 !
-#ifdef W3_SBS
-      NDSOFLG = 99
-#endif
-#ifdef W3_MPI
       SBSED = .FALSE.
-#endif
-#ifdef W3_SBS
-      SBSED = .TRUE.
-#endif
+      if (w3_sbs_flag) then
+         NDSOFLG = 99
+         SBSED = .TRUE.
+      end if
+
 !
       TAUWX  = 0.
       TAUWY  = 0.
@@ -1947,7 +1942,7 @@
                       IF (.NOT. LPDLIB) THEN
 #endif
 #ifdef W3_PR3
-                              CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG, MAPFS, CFLXYMAX(JSEA), VGX, VGY )
+                         CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG, MAPFS, CFLXYMAX(JSEA), VGX, VGY )
 #endif
 #ifdef W3_PDLIB
                       ENDIF
@@ -2208,7 +2203,7 @@
 #endif
 #ifdef W3_PDLIB
          DO ISPEC=1,NSPEC
-                        CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+            CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
          END DO
 #endif
 #ifdef W3_DEBUGRUN
@@ -2935,7 +2930,6 @@
 #ifdef W3_MPI
             FLGMPI = .FALSE.
             NRQMAX = 0
-#endif
 !
      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
           (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
@@ -2943,6 +2937,7 @@
 
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
+#endif
 #ifdef W3_DEBUGRUN
       WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO.NE.0 , step 0', &
                  NRQGO, IRQGO, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)

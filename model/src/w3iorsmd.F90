@@ -335,12 +335,12 @@
       LOGICAL                 :: NDSROPN
       CHARACTER(LEN=4)        :: TYPE
       CHARACTER(LEN=10)       :: VERTST
-      CHARACTER(LEN=512)       :: FNAME
+      CHARACTER(LEN=512)      :: FNAME
       CHARACTER(LEN=26)       :: IDTST
       CHARACTER(LEN=30)       :: TNAME
       CHARACTER(LEN=15)       :: TIMETAG
-    character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
-    logical                 :: exists
+      character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
+      logical                 :: exists
 !/
 !/ ------------------------------------------------------------------- /
 !/
