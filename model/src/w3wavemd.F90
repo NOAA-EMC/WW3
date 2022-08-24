@@ -490,9 +490,7 @@
 #ifdef W3_SEC1
       INTEGER                 :: ISEC1
 #endif
-#ifdef W3_SBS
       INTEGER                 :: JJ, NDSOFLG
-#endif
 #ifdef W3_MPI
       INTEGER                 :: IERR_MPI, NRQMAX
       INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
@@ -548,9 +546,7 @@
 #endif
 
 !
-#ifdef W3_SBS
       CHARACTER(LEN=30)       :: FOUTNAME
-#endif
 !
 #ifdef W3_T
      REAL             :: INDSORT(NSEA), DTCFL1(NSEA)
@@ -1671,8 +1667,6 @@
               CALL W3MAPT
 #endif
             END IF  !! GTYPE
-              CALL W3NMIN ( MAPSTA, FLAG0 )
-              IF ( FLAG0 .AND. IAPROC.EQ.NAPERR ) WRITE (NDSE,1030) IMOD
               FLMAP  = .FALSE.
           END IF
 !
@@ -2946,10 +2940,9 @@
      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
           (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
              SBSED ) ) THEN
-#endif
+
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
-#endif
 #ifdef W3_DEBUGRUN
       WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO.NE.0 , step 0', &
                  NRQGO, IRQGO, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
