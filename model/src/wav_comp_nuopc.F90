@@ -1387,7 +1387,7 @@ contains
     end if
 
     ! ESMF does not have a broadcast for chars
-    call mpi_bcast(initfile, len(initfile), MPI_CHARACTER, 0, mpi_comm, ierr)
+    call mpi_bcast(initfile, len_trim(initfile), MPI_CHARACTER, 0, mpi_comm, ierr)
     if (ierr /= MPI_SUCCESS) then
        call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for initfile ', &
             ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
