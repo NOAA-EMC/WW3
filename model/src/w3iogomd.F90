@@ -134,6 +134,8 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY : STRACE
 #endif
+      !module default
+      IMPLICIT NONE
 !/
       PUBLIC
       CHARACTER(LEN=1024)                   :: FLDOUT
@@ -207,8 +209,6 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
-!
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -362,7 +362,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -597,7 +596,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -716,7 +714,6 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: US3DF, USSPF
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1241,7 +1238,6 @@
 #endif
 !
       USE W3PARALL, ONLY : INIT_GET_ISEA
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -2786,7 +2782,6 @@
       use w3timemd   , only: set_user_timestring
       use w3odatmd   , only: use_user_histname, user_histfname
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -4080,7 +4075,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -4305,7 +4299,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list

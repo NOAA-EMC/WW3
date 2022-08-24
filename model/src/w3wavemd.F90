@@ -3130,10 +3130,11 @@ CONTAINS
             call print_memcheck(memunit, 'memcheck_____:'// ' WW3_WAVE AFTER TIME LOOP 3')
             !
 #ifdef W3_MPI
-            IF ( FLGMPI(0) ) CALL MPI_WAITALL ( NRQGO, IRQGO , STATIO, IERR_MPI )
-            if (user_netcdf_grdout) then
-               IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) )     &
-                    CALL MPI_WAITALL ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
+            IF ( FLGMPI(0) ) CALL MPI_WAITALL ( NRQGO, IRQGO , STATIO, IERR_MPI)
+	    if (user_netcdf_grdout) then
+               IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) ) then
+                  CALL MPI_WAITALL ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
+               end if
             end if
             IF ( FLGMPI(2) ) CALL MPI_WAITALL ( NRQPO, IRQPO1, STATIO, IERR_MPI )
             IF ( FLGMPI(4) ) CALL MPI_WAITALL ( NRQRS, IRQRS , STATIO, IERR_MPI )

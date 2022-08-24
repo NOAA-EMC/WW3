@@ -310,6 +310,8 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY : UNDEF
+      ! module default
+      IMPLICIT NONE
       PUBLIC
 !/
 !/ Module private variable for checking error returns
@@ -646,7 +648,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1045,7 +1046,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1243,7 +1243,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1415,7 +1414,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1620,7 +1618,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !
 !/
 !/ ------------------------------------------------------------------- /

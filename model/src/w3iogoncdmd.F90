@@ -495,8 +495,6 @@ contains
     use w3odatmd  , only : ndse
     use w3servmd  , only : extcde
 
-    implicit none
-
     ! input/output variables
     integer         , intent(in) :: ierr
     character(len=*), intent(in) :: string
