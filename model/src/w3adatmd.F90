@@ -1331,8 +1331,7 @@ CONTAINS
                WADATS(IMOD)%DCXDX(1,NSEAL) ,                      &
                WADATS(IMOD)%DCYDX(1,NSEAL) ,                      &
                WADATS(IMOD)%DCXDY(1,NSEAL) ,                      &
-               WADATS(IMOD)%DCYDY(1,NSEAL) ,                      &
-               STAT=ISTAT           )
+               WADATS(IMOD)%DCYDY(1,NSEAL) , STAT=ISTAT           )
        ENDIF
        CHECK_ALLOC_STATUS ( ISTAT )
        WADATS(IMOD)%DDDX = 0.

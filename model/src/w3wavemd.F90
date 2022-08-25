@@ -3131,7 +3131,7 @@ CONTAINS
             !
 #ifdef W3_MPI
             IF ( FLGMPI(0) ) CALL MPI_WAITALL ( NRQGO, IRQGO , STATIO, IERR_MPI)
-	    if (user_netcdf_grdout) then
+            if (user_netcdf_grdout) then
                IF ( FLGMPI(1) .and. ( IAPROC .EQ. NAPFLD ) ) then
                   CALL MPI_WAITALL ( NRQGO2, IRQGO2 , STATIO, IERR_MPI )
                end if
