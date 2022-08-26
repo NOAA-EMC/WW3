@@ -121,9 +121,9 @@
 # Compile option
   if [ "$cmplOption" = 'y' ]
   then
-     opt="-c $cmplr -S -T"
+     opt="-o all -c $cmplr -S -T"
   else
-     opt="-S"
+     opt="-o all -S"
   fi
 # Batch queue option
   opt="-b $batchq $opt"

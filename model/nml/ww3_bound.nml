@@ -1,0 +1,23 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_bound.nml - Boundary input post-processing       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define the input boundaries to preprocess via BOUND_NML namelist
+! Note: When using a rotated pole WW3 grid, the input spectra are
+! always assumed to be formulated on a standard pole.
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!     BOUND%MODE                 = 'WRITE'            ! ['WRITE'|'READ']
+!     BOUND%INTERP               = 2                  ! interpolation [1(nearest),2(linear)]
+!     BOUND%VERBOSE              = 1                  ! [0|1|2]
+!     BOUND%FILE                 = 'spec.list'        ! input _spec.nc listing file
+! -------------------------------------------------------------------- !
+&BOUND_NML
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

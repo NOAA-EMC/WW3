@@ -20,7 +20,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -55,7 +55,7 @@
 !
 !      - The flag for generating test output files is included here as
 !        it is needed in both ww3_shel and ww3_multi at the same time.
-!        Make sure that this flag is true if you want to write to the 
+!        Make sure that this flag is true if you want to write to the
 !        test output file !
 !
 !/ ------------------------------------------------------------------- /
@@ -65,10 +65,10 @@
       REAL, PARAMETER         :: GRAV   =    9.806
       REAL, PARAMETER         :: DWAT   = 1000.
       REAL, PARAMETER         :: DAIR   =    1.225
-      REAL, PARAMETER         :: nu_air  = 1.4E-5        
+      REAL, PARAMETER         :: nu_air  = 1.4E-5
 !mdo  *** Changing nu_water to be consistent with DWAT=1000 (assumes 10degC)
-      REAL, PARAMETER         :: nu_water  = 1.31E-6    !mdo   WAS: 3.E-6        
-      REAL, PARAMETER         :: sed_sg  = 2.65        
+      REAL, PARAMETER         :: nu_water  = 1.31E-6    !mdo   WAS: 3.E-6
+      REAL, PARAMETER         :: sed_sg  = 2.65
       REAL, PARAMETER         :: KAPPA = 0.40       !Von Karman's constant
 !
       REAL, PARAMETER         :: PI     = 3.141592653589793
@@ -85,20 +85,23 @@
       REAL, PARAMETER         :: G1PI1I = 1. / ( GRAV * TPI )
 !
       REAL                    :: UNDEF = -999.9
+
+      ! Filled in by the pre-processor with 'big_endian', 'little_endian', or 'native'
+      character(*), parameter :: FILE_ENDIAN = ENDIANNESS
 !
-! Parameters for friction factor table 
+! Parameters for friction factor table
 !
-      INTEGER, PARAMETER       :: SIZEFWTABLE=300  
+      INTEGER, PARAMETER       :: SIZEFWTABLE=300
       REAL                     :: FWTABLE(0:SIZEFWTABLE)
       REAL                     :: DELAB
-      REAL,    PARAMETER       :: ABMIN = -1. 
+      REAL,    PARAMETER       :: ABMIN = -1.
       REAL, PRIVATE, PARAMETER :: ABMAX = 8.
       INTEGER, PARAMETER       :: srce_direct = 0
       INTEGER, PARAMETER       :: srce_imp_post = 1
       INTEGER, PARAMETER       :: srce_imp_pre = 2
       INTEGER, PARAMETER       :: DEBUG_NODE = 1014
       INTEGER, PARAMETER       :: DEBUG_ELEMENT = 50
-      LOGICAL                  :: LPDLIB = .FALSE. 
+      LOGICAL                  :: LPDLIB = .FALSE.
       LOGICAL                  :: LSETUP
 !
 ! Parameters in support of running as ESMF component
@@ -201,26 +204,26 @@
             fsubw=.08/(ker**2+kei**2)
             fsubw=.5*(fsubwmemo+fsubw)
             dzeta0=.5*(dzeta0memo+dzeta0)
-            END DO   
+            END DO
 !
-! Maximum value of 0.5 for fe is based on field 
-! and lab experiment by Lowe et al. JGR 2005, 2007 
-! 
-            FWTABLE(I)  = MIN(fsubw,0.5) 
+! Maximum value of 0.5 for fe is based on field
+! and lab experiment by Lowe et al. JGR 2005, 2007
+!
+            FWTABLE(I)  = MIN(fsubw,0.5)
 !           WRITE(994,*) 'Friction factor:',I,ABR,FWTABLE(I)
          END DO
       RETURN
       END SUBROUTINE TABU_FW
 
 ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)                      
+SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
 !  June 1999 adaptation to CRESTb, all tests on range of (x,y) have been
 !  bypassed, we implicitly expect X to be positive or |x,y| non zero
-! 
+!
 ! This subroutine is copyright by ACM
 ! see http://www.acm.org/pubs/copyright_policy/softwareCRnotice.html
 ! ACM declines any responsibility of any kind
-! 
+!
 ! THE VARIABLES X AND Y ARE THE REAL AND IMAGINARY PARTS OF
 ! THE ARGUMENT OF THE FIRST TWO MODIFIED BESSEL FUNCTIONS
 ! OF THE SECOND KIND,K0 AND K1.  RE0,IM0,RE1 AND IM1 GIVE
@@ -236,7 +239,7 @@ SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
    DOUBLE PRECISION X, Y, X2, Y2, RE0, IM0, RE1, IM1, &
       R1, R2, T1, T2, P1, P2, RTERM, ITERM, L
    DOUBLE PRECISION , PARAMETER, DIMENSION(8) :: EXSQ = &
-         (/ 0.5641003087264D0,0.4120286874989D0,0.1584889157959D0, & 
+         (/ 0.5641003087264D0,0.4120286874989D0,0.1584889157959D0, &
             0.3078003387255D-1,0.2778068842913D-2,0.1000044412325D-3, &
             0.1059115547711D-5,0.1522475804254D-8 /)
    DOUBLE PRECISION , PARAMETER, DIMENSION(8) :: TSQ = &
@@ -382,7 +385,7 @@ SUBROUTINE KZEONE(X, Y, RE0, IM0, RE1, IM1)
 SUBROUTINE KERKEI(X,KER,KEI)
 !**********************************************************************
 ! Computes the values of the zeroth order Kelvin function Ker and Kei
-! These functions are used to determine the friction factor fw as a 
+! These functions are used to determine the friction factor fw as a
 ! function of the bottom roughness length assuming a linear profile
 ! of eddy viscosity (See Grant and Madsen, 1979)
 !**********************************************************************

@@ -429,6 +429,7 @@
          'W3NMLOUNPMD'  ) modtest=w3nmlounpmd.o ;;
          'W3NMLTRNCMD'  ) modtest=w3nmltrncmd.o ;;
          'W3NMLBOUNCMD' ) modtest=w3nmlbouncmd.o ;;
+         'W3NMLBOUNDMD' ) modtest=w3nmlboundmd.o ;;
          'W3NMLSHELMD'  ) modtest=w3nmlshelmd.o ;;
          'W3NMLGRIDMD'  ) modtest=w3nmlgridmd.o ;;
          'W3NMLUPRSTRMD' ) modtest=w3nmluprstrmd.o ;;

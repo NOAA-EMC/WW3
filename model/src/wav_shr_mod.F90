@@ -1,3 +1,11 @@
+!> @file wav_shr_mod
+!!
+!> Shared utility routines
+!!
+!> @details Contains public routines to execute repeated operations
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
 module wav_shr_mod
 
   use ESMF            , only : operator(<), operator(/=), operator(+)
@@ -25,81 +33,92 @@ module wav_shr_mod
   implicit none
   private
 
-  public  :: state_getscalar
-  public  :: state_setscalar
-  public  :: state_reset
-  public  :: state_getfldptr
-  public  :: state_fldchk
-  public  :: state_diagnose
-  public  :: alarmInit
-  public  :: chkerr
-  public  :: ymd2date
-  private :: timeInit
-  private :: field_getfldptr
+  public  :: state_getscalar   !< @public obtain a scalar field from a state
+  public  :: state_setscalar   !< @public set scalar data from state for a particular name
+  public  :: state_reset       !< @public reset field values in a state
+  public  :: state_getfldptr   !< @public obtain a pointer to a field in a state
+  public  :: state_fldchk      !< @public check whether a field is in a state
+  public  :: state_diagnose    !< @public print min,max,sum and size of a field in a state
+  public  :: alarmInit         !< @public set up an alarm in a clock
+  public  :: chkerr            !< @public check if an error was returned from and ESMF call
+  public  :: ymd2date          !< @public convert  year,month,day to integer
+  private :: timeInit          !< @public create an ESMF_Time object
+  private :: field_getfldptr   !< @private obtain a pointer to a field
+
+  interface state_getfldptr
+     module procedure state_getfldptr_1d
+     module procedure state_getfldptr_2d
+  end interface state_getfldptr
 
   ! used by both CESM and UFS
-  ! runtype is used by W3SRCE (values are startup, branch, continue)
-  character(len=cs) , public :: runtype
-  logical           , public :: wav_coupling_to_cice = .false. ! TODO: generalize this
-  integer           , public :: dbug_flag = 0
-  character(len=256) , public :: casename
-  character(len= 36) , public :: time_origin
-  character(len= 36) , public :: calendar_name
-  integer(i8)        , public :: elapsed_secs
+  logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
+                                                                !! fields for coupling to CICE (TODO: generalize)
+  integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
+  character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
 
   ! Only used by cesm
-  ! if a run is a startup or branch run, then initfile is used
   ! to construct the initial file and used in W3IORSMD
   ! if a run is a continue run, then casename is used to construct
   ! the restart filename in W3IORSMD
-  character(len=256) , public :: initfile
-  logical            , public :: rstwr       ! true => write restart
-  logical            , public :: histwr      ! true => write history file (snapshot)
-  integer            , public :: outfreq     ! output frequency in hours
-  integer            , public :: inst_index  ! number of current instance (ie. 1)
-  character(len=16)  , public :: inst_name   ! fullname of current instance (ie. "wav_0001")
-  character(len=16)  , public :: inst_suffix ! char string associated with instance
+  integer            , public :: inst_index  !< @public number of current instance (ie 1)
+  character(len=16)  , public :: inst_name   !< @public fullname of current instance (ie "wav_0001")
+  character(len=16)  , public :: inst_suffix !< @public  char string associated with instance
 
   ! Only used by ufs
-  logical            , public :: merge_import  = .false.
-  logical           , public :: multigrid = .false.
+  logical            , public :: merge_import  = .false.  !< @public logical to specify whether import fields will
+                                                          !! be merged with a field provided from a file
+  logical            , public :: multigrid = .false.      !< @public logical to control whether wave model is run
+                                                          !! as multigrid
 
   interface ymd2date
      module procedure ymd2date_int
      module procedure ymd2date_long
   end interface ymd2date
 
-  ! Clock and alarm options
+  ! Clock and alarm option
   character(len=*), private, parameter :: &
-       optNONE           = "none"      , &
-       optNever          = "never"     , &
-       optNSteps         = "nsteps"    , &
-       optNStep          = "nstep"     , &
-       optNSeconds       = "nseconds"  , &
-       optNSecond        = "nsecond"   , &
-       optNMinutes       = "nminutes"  , &
-       optNMinute        = "nminute"   , &
-       optNHours         = "nhours"    , &
-       optNHour          = "nhour"     , &
-       optNDays          = "ndays"     , &
-       optNDay           = "nday"      , &
-       optNMonths        = "nmonths"   , &
-       optNMonth         = "nmonth"    , &
-       optNYears         = "nyears"    , &
-       optNYear          = "nyear"     , &
-       optMonthly        = "monthly"   , &
-       optYearly         = "yearly"    , &
-       optDate           = "date"      , &
-       optIfdays0        = "ifdays0"
+       optNONE           = "none"      , &             !< alarm option none
+       optNever          = "never"     , &             !< alarm option never
+       optNSteps         = "nsteps"    , &             !< alarm option nsteps
+       optNStep          = "nstep"     , &             !< alarm option nstep
+       optNSeconds       = "nseconds"  , &             !< alarm option nseconds
+       optNSecond        = "nsecond"   , &             !< alarm option nsecond
+       optNMinutes       = "nminutes"  , &             !< alarm option nminutes
+       optNMinute        = "nminute"   , &             !< alarm option nminute
+       optNHours         = "nhours"    , &             !< alarm option nhours
+       optNHour          = "nhour"     , &             !< alarm option nhour
+       optNDays          = "ndays"     , &             !< alarm option ndays
+       optNDay           = "nday"      , &             !< alarm option nday
+       optNMonths        = "nmonths"   , &             !< alarm option nmonths
+       optNMonth         = "nmonth"    , &             !< alarm option nmonth
+       optNYears         = "nyears"    , &             !< alarm option nyears
+       optNYear          = "nyear"     , &             !< alarm option nyear
+       optMonthly        = "monthly"   , &             !< alarm option monthly
+       optYearly         = "yearly"    , &             !< alarm option yearly
+       optDate           = "date"      , &             !< alarm option date
+       optIfdays0        = "ifdays0"                   !< alarm option for number of days 0
 
   ! Module data
-  character(len=*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &          !< a character string for an ESMF log message
        __FILE__
 
 !===============================================================================
 contains
 !===============================================================================
-
+!> Get scalar data from a state
+!!
+!> @details Obtain the field flds_scalar_name from a State and broadcast and
+!! it to all PEs
+!!
+!! @param[in]    State            an ESMF_State
+!! @param[in]    scalar_value     the value of the scalar
+!! @param[in]    scalar_id        the identity of the scalar
+!! @param[in]    flds_scalar_name the name of the scalar
+!! @param[in]    flds_scalar_num  the number of scalars
+!! @param[out]   rc               a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine state_getscalar(state, scalar_id, scalar_value, flds_scalar_name, flds_scalar_num, rc)
 
     ! ----------------------------------------------
@@ -151,7 +170,23 @@ contains
   end subroutine state_getscalar
 
 !================================================================================
-
+!> Set scalar data into a state
+!!
+!! Called by fldlist_realize to set the required scalar data into a state. The
+!! scalar_value will be set into a field with name flds_scalar_name. The scalar_id
+!! identifies which dimension in the scalar field is given by the scalar_value. The
+!! number of scalars is used to ensure that the scalar_id is within the bounds of
+!! the scalar field
+!!
+!! @param[inout]   State            an ESMF_State
+!! @param[in]      scalar_value     the value of the scalar
+!! @param[in]      scalar_id        the identity of the scalar
+!! @param[in]      flds_scalar_name the name of the scalar
+!! @param[in]      flds_scalar_num  the number of scalars
+!! @param[inout]   rc               a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine state_setscalar(scalar_value, scalar_id, State, flds_scalar_name, flds_scalar_num,  rc)
 
     ! ----------------------------------------------
@@ -199,7 +234,14 @@ contains
   end subroutine state_setscalar
 
 !===============================================================================
-
+!> Reset all fields in a state to a value
+!!
+!! @param[inout] State            an ESMF_State
+!! @param[in]    reset_value      the reset value
+!! @param[out]   rc               a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine state_reset(State, reset_value, rc)
 
     ! ----------------------------------------------
@@ -256,31 +298,33 @@ contains
   end subroutine state_reset
 
   !===============================================================================
-  subroutine state_getfldptr(State, fldname, fldptr1d, fldptr2d, rc)
+!> Obtain a 1-D pointer to a field in a state
+!!
+!! @param[in]    State            an ESMF_State
+!! @param[in]    fldname          the name of an ESMF field
+!! @param[inout] fldptr           a 1-d pointer to an ESMF field
+!! @param[out]   rc               a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
+  subroutine state_getfldptr_1d(State, fldname, fldptr, rc)
     ! ----------------------------------------------
     ! Get pointer to a state field
     ! ----------------------------------------------
-    use ESMF , only : ESMF_State, ESMF_Field, ESMF_Mesh, ESMF_FieldStatus_Flag
-    use ESMF , only : ESMF_StateGet, ESMF_FieldGet, ESMF_MeshGet
-    use ESMF , only : ESMF_FIELDSTATUS_COMPLETE, ESMF_FAILURE
 
     ! input/output variables
-    type(ESMF_State),            intent(in)    :: State
-    character(len=*),            intent(in)    :: fldname
-    real(R8), pointer, optional, intent(out)   :: fldptr1d(:)
-    real(R8), pointer, optional, intent(out)   :: fldptr2d(:,:)
-    integer,                     intent(out)   :: rc
+    type(ESMF_State)              , intent(in)     :: State
+    character(len=*)              , intent(in)     :: fldname
+    real(R8)            , pointer , intent(inout)  :: fldptr(:)
+    integer, optional             , intent(out)    :: rc
 
     ! local variables
+    type(ESMF_Field) :: lfield
     type(ESMF_FieldStatus_Flag) :: status
-    type(ESMF_Field)            :: lfield
-    type(ESMF_Mesh)             :: lmesh
-    integer                     :: nnodes, nelements
-    character(len=*), parameter :: subname='(wav_import_export:state_getfldptr)'
+    character(len=*),parameter :: subname='(wav_import_export:state_getfldptr_1d)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -293,32 +337,66 @@ contains
        rc = ESMF_FAILURE
        return
     else
-       call ESMF_FieldGet(lfield, mesh=lmesh, rc=rc)
+       call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
-       call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       if (nnodes == 0 .and. nelements == 0) then
-          call ESMF_LogWrite(trim(subname)//": no local nodes or elements ", ESMF_LOGMSG_INFO)
-          rc = ESMF_FAILURE
-          return
-       end if
-
-       if (present(fldptr1d)) then
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
-       else ! 2D
-         call ESMF_FieldGet(lfield, farrayPtr=fldptr2d, rc=rc)
-       endif
-
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif  ! status
-
-    if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
-
-  end subroutine state_getfldptr
+  end subroutine state_getfldptr_1d
 
   !===============================================================================
+!> Obtain a 2-D pointer to a field in a state
+!!
+!! @param[in]    State            an ESMF_State
+!! @param[in]    fldname          the name of an ESMF field
+!! @param[inout] fldptr           a 2-d pointer to an ESMF field
+!! @param[out]   rc               a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
+  subroutine state_getfldptr_2d(State, fldname, fldptr, rc)
+    ! ----------------------------------------------
+    ! Get pointer to a state field
+    ! ----------------------------------------------
+
+    ! input/output variables
+    type(ESMF_State)    ,            intent(in)     :: State
+    character(len=*)    ,            intent(in)     :: fldname
+    real(R8)            , pointer  , intent(inout)  :: fldptr(:,:)
+    integer             , optional , intent(out)    :: rc
+
+    ! local variables
+    type(ESMF_Field) :: lfield
+    type(ESMF_FieldStatus_Flag) :: status
+    character(len=*),parameter :: subname='(wav_import_export:state_getfldptr_2d)'
+    ! ----------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_FieldGet(lfield, status=status, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (status /= ESMF_FIELDSTATUS_COMPLETE) then
+       call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+       rc = ESMF_FAILURE
+       return
+    else
+       call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+  end subroutine state_getfldptr_2d
+
+  !===============================================================================
+!> Return true if a field is in a state
+!!
+!! @param[in] State               an ESMF_State
+!! @param[in] fldname             the name of an ESMF field
+!! @return    state_fldchk        logical indicating a field is present in a state
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   logical function state_fldchk(State, fldname)
     ! ----------------------------------------------
     ! Determine if field is in state
@@ -338,7 +416,14 @@ contains
   end function state_fldchk
 
 !===============================================================================
-
+!> Print minimum, maximum, sum and size for a field in a state
+!!
+!! @param[in] State               an ESMF_State
+!! @param[in] string              a string for denoting the location of the call
+!! @param[out] rc                 a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine state_diagnose(State, string, rc)
 
     ! ----------------------------------------------
@@ -405,7 +490,17 @@ contains
   end subroutine state_diagnose
 
 !===============================================================================
-
+!> Obtain a 1 or 2-D pointer to a field
+!!
+!! @param[in]    field            an ESMF_Field
+!! @param[inout] fldptr1          a 1-d pointer to an ESMF field
+!! @param[inout] fldptr2          a 2-d pointer to an ESMF field
+!! @param[out]   rank             the field rank
+!! @param[in]    abort            an optional flag to override the default abort value
+!! @param[out]   rc               a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine field_getfldptr(field, fldptr1, fldptr2, rank, abort, rc)
 
     ! ----------------------------------------------
@@ -518,7 +613,24 @@ contains
   end subroutine field_getfldptr
 
 !===============================================================================
-
+!> Set up an alarm in a clock
+!!
+!> @details Create an ESMF_Alarm according to the desired frequency, where the
+!! frequency is relative to a time frequency of seconds, days, hours etc.
+!!
+!! @param[inout]  clock           an ESMF_Clock
+!! @param[inout]  alarm           an ESMF_Alarm
+!! @param[in]     option          the alarm option (day,hour etc)
+!! @param[in]     opt_n           the alarm frequency
+!! @param[in]     opt_ymd         the YMD, required for alarm_option when option is
+!!                                date
+!! @param[in]     opt_tod         the time-of-day in seconds
+!! @param[in]     Reftime         initial guess of next alarm time
+!! @param[in]     alarmname       the alarm name
+!! @param[inout]  rc              a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine alarmInit( clock, alarm, option, &
        opt_n, opt_ymd, opt_tod, RefTime, alarmname, rc)
 
@@ -555,6 +667,7 @@ contains
     type(ESMF_Time)         :: NextAlarm        ! Next restart alarm time
     type(ESMF_TimeInterval) :: AlarmInterval    ! Alarm interval
     integer                 :: sec
+
     character(len=*), parameter :: subname = ' (wav_shr_mod:set_alarmInit) '
     !-------------------------------------------------------------------------------
 
@@ -908,7 +1021,19 @@ contains
   end subroutine alarmInit
 
 !===============================================================================
-
+!> Create an ESMF_Time object
+!!
+!> @details Create a ESMF_Time corresponding to a input time YYYYMMMDD and
+!! time of day in seconds
+!!
+!! @param[inout] Time             an ESMF_Time object
+!! @param[in]    ymd              year, month, day YYYYMMDD
+!! @param[in]    cal              an ESMF_Calendar
+!! @param[in]    tod              time of day in secons
+!! @param[out]   rc               a return code
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine timeInit( Time, ymd, cal, tod, rc)
 
     ! Create the ESMF_Time object corresponding to the given input time,
@@ -950,7 +1075,15 @@ contains
   end subroutine timeInit
 
   !===============================================================================
-
+!> Convert  year, month, day to integer*4 coded-date
+!!
+!! @param[in]   year              calendar year
+!! @param[in]   month             calendary month
+!! @param[in]   day               calendar day
+!! @param[out]  date              calendar date yyyymmmdd
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine ymd2date_int(year,month,day,date)
     ! Converts  year, month, day to coded-date
 
@@ -964,6 +1097,16 @@ contains
     if (year < 0) date = -date
   end subroutine ymd2date_int
 
+  !===============================================================================
+!> Converts  year, month, day to integer*8 coded-date
+!!
+!! @param[in]   year              calendar year
+!! @param[in]   month             calendary month
+!! @param[in]   day               calendar day
+!! @param[out]  date              calendar date yyyymmmdd
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   subroutine ymd2date_long(year,month,day,date)
     ! Converts  year, month, day to coded-date
 
@@ -978,7 +1121,15 @@ contains
   end subroutine ymd2date_long
 
 !===============================================================================
-
+!> Return a logical true if ESMF_LogFoundError detects an error
+!!
+!! @param[in]  rc                 return code
+!! @param[in]  line               source code line number
+!! @param[in]  file               user provided source file name
+!! @return     chkerr             logical indicating an error was found
+!!
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
   logical function chkerr(rc, line, file)
 
     integer, intent(in) :: rc

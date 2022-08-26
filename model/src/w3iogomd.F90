@@ -134,6 +134,8 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY : STRACE
 #endif
+      !module default
+      IMPLICIT NONE
 !/
       PUBLIC
       CHARACTER(LEN=1024)                   :: FLDOUT
@@ -207,8 +209,6 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
-!
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -362,7 +362,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -597,7 +596,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -716,7 +714,6 @@
 !
 !/ ------------------------------------------------------------------- /
       USE W3GDATMD, ONLY: US3DF, USSPF
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -1219,7 +1216,7 @@
                           ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
                           NOGRP, NGRPP
       USE W3ADATMD, ONLY: NSEALM
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ! USSX, USSY   : surface Stokes drift (SD)
       ! USSXH, USSYH : surface layer (SL) averaged SD
       ! LANGMT       : La_t
@@ -1241,7 +1238,6 @@
 #endif
 !
       USE W3PARALL, ONLY : INIT_GET_ISEA
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1295,7 +1291,7 @@
       REAL                       USSCO, FT1
       REAL, SAVE              :: HSMIN = 0.01
       LOGICAL                 :: FLOLOC(NOGRP,NGRPP)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ! SWW: angle between wind and waves
       ! HSL: surface layer depth (=0.2*HML)
       REAL                    :: SWW !angle between wind and waves
@@ -1426,7 +1422,7 @@
 !
       FP1    = UNDEF
       THP1   = UNDEF
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
       ETUSSX  = 0.
       ETUSSY  = 0.
       ETUSCX  = 0.
@@ -1570,7 +1566,7 @@
             TPMS(JSEA) = TPI/SIG(IK)
             END IF
 
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
 ! Get surface layer depth
           IX    = MAPSF(ISEA,1)
           IY    = MAPSF(ISEA,2)
@@ -1616,7 +1612,7 @@
             USSCO=FKD*SIG(IK)*WN(IK,ISEA)*COSH(2.*KD)
             BHD(JSEA) = BHD(JSEA) +                             &
                 GRAV*WN(IK,ISEA) * EBD(IK,JSEA) / (SINH(2.*KD))
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
             ! Surface Stokes Drift
             ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
                  *WN(IK,ISEA)*COSH(2*WN(IK,ISEA)*DW(ISEA))          &
@@ -1636,7 +1632,7 @@
 #endif
           ELSE
             USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
             ! deep water limit
             ! Surface Stokes Drift
             ETUSSX(JSEA)  = ETUSSX(JSEA) + ABX(JSEA)*FACTOR*SIG(IK) &
@@ -1961,7 +1957,7 @@
 !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         IX = MAPSF(ISEA,1)
         IY = MAPSF(ISEA,2)
         HS = HML(IX,IY)/5.     ! depth over which SD is averaged
@@ -1995,7 +1991,7 @@
         SXX(JSEA) = SXX(JSEA) + FTE * ABXX(JSEA) / CG(NK,ISEA)
         SYY(JSEA) = SYY(JSEA) + FTE * ABYY(JSEA) / CG(NK,ISEA)
         SXY(JSEA) = SXY(JSEA) + FTE * ABXY(JSEA) / CG(NK,ISEA)
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
         ! tail for SD
         ETUSSX(JSEA)  = ETUSSX(JSEA) + 2*GRAV*ETUSCX(JSEA)/SIG(NK)
         ETUSSY(JSEA)  = ETUSSY(JSEA) + 2*GRAV*ETUSCY(JSEA)/SIG(NK)
@@ -2073,7 +2069,7 @@
               T02(JSEA) = TPI / SIG(NK)
               T01(JSEA)= T02(JSEA)
               ENDIF
-#ifdef CESMCOUPLED
+#ifdef W3_CESMCOUPLED
             !TODO is this affected by the NXXX vs. NSEALM?
             ! Should LAMULT, etc. be NSEAML length?
             ! Output Stokes drift and Langmuir numbers
@@ -2783,8 +2779,9 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
+      use w3timemd   , only: set_user_timestring
+      use w3odatmd   , only: use_user_histname, user_histfname
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -2812,6 +2809,8 @@
 #endif
       CHARACTER(LEN=30)       :: IDTST, TNAME
       CHARACTER(LEN=10)       :: VERTST
+      CHARACTER(len=512)      :: FNAME
+      character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -2863,16 +2862,26 @@
       IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
+         if (use_user_histname) then
+            if (len_trim(user_histfname) == 0 ) then
+               call extcde (60, MSG="user history filename requested"// &
+               " but not provided")
+            end if
+            call set_user_timestring(time,user_timestring)
+            fname = trim(user_histfname)//trim(user_timestring)
+         else
+            fname = 'out_grd.'//FILEXT(:I)
+         end if
 !
 #ifdef W3_T
-          WRITE (NDST,9001) FNMPRE(:J)//'out_grd.'//FILEXT(:I)
+         WRITE (NDST,9001) FNMPRE(:J)//trim(fname)
 #endif
           IF ( WRITE ) THEN
-              OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+             OPEN (NDSOG,FILE=FNMPRE(:J)//trim(fname),     &
+                   form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
             ELSE
-              OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+             OPEN (NDSOG,FILE=FNMPRE(:J)//trim(fname),     &
+                   form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
             END IF
 !
           REWIND ( NDSOG )
@@ -2935,18 +2944,28 @@
       IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
           I      = LEN_TRIM(FILEXT)
           J      = LEN_TRIM(FNMPRE)
+          if (use_user_histname) then
+            if (len_trim(user_histfname) == 0 ) then
+               call extcde (60, MSG="user history filename requested"// &
+               " but not provided")
+            end if
+            call set_user_timestring(time,user_timestring)
+            fname = trim(user_histfname)//trim(user_timestring)
+         else
 !
 ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
           WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
 #ifdef W3_T
           WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)
 #endif
+            fname = TIMETAG//'.out_grd.'//FILEXT(:I)
+         end if
           IF ( WRITE ) THEN
-              OPEN (NDSOG,FILE=FNMPRE(:J)//TIMETAG//'.out_grd.'  &
-                    //FILEXT(:I),FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+              OPEN (NDSOG,FILE=FNMPRE(:J)//trim(fname),  &
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
           ELSE
               OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR,STATUS='OLD')
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
             END IF
 !
           REWIND ( NDSOG )
@@ -4052,7 +4071,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -4277,7 +4295,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list

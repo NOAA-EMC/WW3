@@ -11,7 +11,7 @@
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
+!/       reserved.  WAVEWATCH III is a trademark of the NWS.
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -36,7 +36,7 @@
 !      DSEC21    R.F.  Public   Calculate the difference in seconds
 !                               between two data/time arrays.
 !      TDIFF     R.F.  Public   Calculate the difference in seconds
-!                               between two date/time arrays that 
+!                               between two date/time arrays that
 !                               were generated from DATE_AND_TIME
 !      MYMD21    I.F.  DSEC21   Julian date function.
 !      STME21    Subr. Public   Converts integer time to string.
@@ -72,14 +72,14 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
+      ! module default
+      implicit none
+
       PUBLIC
 !
       INTEGER, PRIVATE        :: PRFTB(8)
       LOGICAL, PRIVATE        :: FLPROF = .FALSE.
       CHARACTER, PUBLIC       :: CALTYPE*8
-#ifdef CESMCOUPLED
-      LOGICAL, PUBLIC         :: NOLEAP = .TRUE.
-#endif
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
@@ -133,8 +133,6 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-!/
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -247,7 +245,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -284,9 +281,6 @@
       NM   = MOD(NYMD,10000) / 100
       NM   = MIN ( 12 , MAX(1,NM) )
       ND   = MOD(NYMD,100) + M
-#ifdef CESMCOUPLED
-      LEAP = .false.
-#else 
       ! Add override for simulations with no leap years
       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
          LEAP = MOD(NY,400).EQ.0 .OR.                           &
@@ -294,7 +288,6 @@
       ELSE
          LEAP = .false.
       END IF
-#endif
 !
 ! M = -1, change month if necessary :
 !
@@ -390,7 +383,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -512,7 +504,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -548,9 +539,6 @@
       NY   = NYMD / 10000
       NM   = MOD(NYMD,10000) / 100
       ND   = MOD(NYMD,100)
-#ifdef CESMCOUPLED
-      LEAP=.false. ! seems to be not working when I made NOLEAP=.true., still getting leap day
-#else
       !Allow override for NoLeap simulations
       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
          LEAP = MOD(NY,400).EQ.0 .OR.                           &
@@ -558,7 +546,6 @@
       ELSE
          LEAP=.false.
       ENDIF
-#endif
 !
 ! Loop over months :
 !
@@ -599,18 +586,18 @@
 !  1. Purpose :
 !
 !     Calculate the time difference in seconds between two time arrays
-!     that have been generated from the F90 internal function 
+!     that have been generated from the F90 internal function
 !
 !  3. Parameters :
 !
 !     Parameter list
 !     ----------------------------------------------------------------
-!       Tn      I.A.   I   This is an integer array returned from the 
+!       Tn      I.A.   I   This is an integer array returned from the
 !                          internal subroutine DATE_AND_TIME. The type
 !                          is integer(8). Individual values are
-!                          Tn(1)    the year 
-!                          Tn(2)    the month 
-!                          Tn(3)    day of the month 
+!                          Tn(1)    the year
+!                          Tn(2)    the month
+!                          Tn(3)    day of the month
 !                          Tn(4)    time difference with UTC in minutes
 !                          Tn(5)    hour of the day
 !                          Tn(6)    minutes of the hour
@@ -630,7 +617,7 @@
 !     Any routine.
 !
 !  7. Remarks :
-!     
+!
 !     This code has been provided by Mark Szyszka of RPSGROUP
 !
 !  8. Structure :
@@ -645,7 +632,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -725,7 +711,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -776,7 +761,6 @@
 !
 !/ ------------------------------------------------------------------- /
 !/
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
       INTEGER(KIND=4),    INTENT(in)  :: id,mm,iyyy
@@ -929,7 +913,7 @@
       IH     = TIME(2) / 10000
       IMI    = MOD(TIME(2),10000) / 100
       IS     = MOD(TIME(2),100)
-      JDAY    = julday(id,IMO,iy)    
+      JDAY    = julday(id,IMO,iy)
       TIME2HOURS = 24.d0*dfloat(JDAY)+dfloat(IH)+dfloat(IS+IMI*60)/3600.d0
       RETURN
 !/
@@ -946,7 +930,7 @@
 !/                  | Last update :         06-May-2005 !
 !/                  +-----------------------------------+
 !/
-!/    06-May-2005 : Origination.                        ( version 3.07 )    
+!/    06-May-2005 : Origination.                        ( version 3.07 )
 !/
 !  1. Purpose :
 !
@@ -1250,7 +1234,7 @@
 !     Converts proleptic Gregorian date array to Julian Day
 !
 !
-! * UDUNITS standard : mixed Gregorian/Julian  calendar  system.   
+! * UDUNITS standard : mixed Gregorian/Julian  calendar  system.
 !                      Dates  prior to 1582-10-15 are assumed to use
 !                      the Julian calendar, which was introduced by Julius Caesar
 !                      in 46 BCE and is based on a year that is exactly 365.25 days
@@ -1343,7 +1327,7 @@
    JULIAN=DBLE(JDN) + DBLE(HOUR-12)/24.0d0 + DBLE(MINUTE)/1440.0d0 + DBLE(SECOND)/86400.0d0
 
    ! Check if Julian Day is non-negative
-   IF(JULIAN.lt.0.d0) THEN                  
+   IF(JULIAN.lt.0.d0) THEN
      IERR=1
    ELSE
      IERR=0
@@ -2028,7 +2012,27 @@ DAT(8) = 0  ! force milliseconds to 0
 !/ End of T2ISO ------------------------------------------------------ /
 !/
       END SUBROUTINE T2ISO
+!> Create a timestring for custom user filenames
+!! @details Creates a character string of form YYYY-MM-DD-SSSSS
+!! @param[in]   time(2)            YYYYMMDD HHMMSS
+!! @param[out]  user_timestring    YYYY-MM-DD-SSSSS
+!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+!> @date 01-05-2022
+  subroutine set_user_timestring(time, user_timestring)
+     integer          , intent(in)  :: time(2)
+     character(len=16), intent(out) :: user_timestring
 
+     ! local variables
+     integer :: yy,mm,dd,hh,mn,ss,totsec
+     yy =  time(1)/10000
+     mm = (time(1)-yy*10000)/100
+     dd = (time(1)-yy*10000-mm*100)
+     hh = time(2)/10000
+     mn = (time(2)-hh*10000)/100
+     ss = (time(2)-hh*10000-mn*100)
+     totsec = hh*3600+mn*60+ss
+     write(user_timestring,'(i4.4,a,i2.2,a,i2.2,a,i5.5)')yy,'-',mm,'-',dd,'-',totsec
+  end subroutine set_user_timestring
 !/ End of module W3TIMEMD -------------------------------------------- /
 !/
       END MODULE W3TIMEMD
