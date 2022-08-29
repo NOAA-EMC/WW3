@@ -121,8 +121,7 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
-                          , FLGRD,                               &
+  SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT , FLGRD, &
                            FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
                           IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
 

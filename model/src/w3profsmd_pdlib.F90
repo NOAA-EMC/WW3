@@ -5623,10 +5623,7 @@
 #endif
 
 #ifdef W3_TR1
-        CALL W3STR1 ( SPEC_VA, SPEC_VA, CG1, WN1, DEPTH, IX,VSTR, VDTR )
-#endif
-#ifdef W3_TRX
-        CALL W3STRX
+        CALL W3STR1 ( SPEC_VA, CG1, WN1, DEPTH, IX,VSTR, VDTR )
 #endif
 #ifdef W3_TRX
         CALL W3STRX

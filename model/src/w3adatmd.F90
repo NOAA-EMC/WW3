@@ -340,6 +340,9 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      ! module default
+      IMPLICIT NONE
+
       PUBLIC
 !/
 !/ Module private variable for checking error returns
@@ -743,8 +746,6 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
-!
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -907,8 +908,6 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
-!
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1438,8 +1437,7 @@
                        WADATS(IMOD)%DCXDX(1,NSEAL) ,                      &
                        WADATS(IMOD)%DCYDX(1,NSEAL) ,                      &
                        WADATS(IMOD)%DCXDY(1,NSEAL) ,                      &
-                       WADATS(IMOD)%DCYDY(1,NSEAL) ,                      &
-                       STAT=ISTAT           )
+                       WADATS(IMOD)%DCYDY(1,NSEAL) , STAT=ISTAT           )
           ENDIF
           CHECK_ALLOC_STATUS ( ISTAT )
           WADATS(IMOD)%DDDX = 0.
@@ -1543,7 +1541,7 @@
 ! 5.  Restore previous grid setting if necessary
 !
       IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
- 
+
 #ifdef W3_MEMCHECK
        WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA END'
        call getMallocInfo(mallinfos)
@@ -1604,7 +1602,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -2547,7 +2544,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -2756,7 +2752,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -3191,7 +3186,6 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list

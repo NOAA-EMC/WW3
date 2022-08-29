@@ -2991,7 +2991,7 @@
      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
           (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
              SBSED ) ) THEN
-
+#endif
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
 #endif
@@ -3253,8 +3253,8 @@
 #endif
                               CALL W3IOGONCD ()
                            END IF
-                           ! default (binary) output
                         else
+                           ! default (binary) gridded output
                            IF ( IAPROC .EQ. NAPFLD ) THEN
 #ifdef W3_MPI
                               IF ( FLGMPI(1) ) CALL MPI_WAITALL( NRQGO2, IRQGO2, STATIO, IERR_MPI )
@@ -3289,7 +3289,6 @@
 
                      ELSE IF ( do_restart_output ) THEN
                           CALL W3IORS ('HOT', NDS(6), XXX, IMOD, FLOUT(8) )
-#endif
                           ITEST = RSTYPE
 
                      ELSE IF ( do_wavefield_separation_output ) THEN
