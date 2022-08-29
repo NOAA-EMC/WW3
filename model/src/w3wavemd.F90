@@ -2991,7 +2991,7 @@
      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
           (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
              SBSED ) ) THEN
-#endif
+
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
 #endif
