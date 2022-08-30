@@ -2923,18 +2923,30 @@
             WRITE (NDST,9042) LOCAL, FLPART, FLOUTG
 #endif
 !
-            IF ( LOCAL .AND. FLPART ) CALL W3CPRT ( IMOD )
-            IF ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) )                   &
-                 CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
+            IF ( LOCAL .AND. FLPART ) then
+               CALL W3CPRT ( IMOD )
+            end IF
+
+#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
+            IF (  histwr ) then
+               CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
+            end IF
+#else
+            IF ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) ) then
+               CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
+            end IF
+#endif
 !
 #ifdef W3_MPI
             FLGMPI = .FALSE.
             NRQMAX = 0
 !
+#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
+     IF (  histwr .and. (FLOUT(1) .OR.  FLOUT(7)) ) THEN
+#else
      IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
-          (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
-             SBSED ) ) THEN
-
+          ( (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
+#endif
        IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
          IF (NRQGO.NE.0 ) THEN
 #endif
