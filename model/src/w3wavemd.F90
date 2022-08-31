@@ -565,6 +565,8 @@
       logical :: do_sf_output
       logical :: do_coupler_output
       logical :: do_wavefield_separation_output
+      logical :: do_startall
+      logical :: do_w3outg
 !/ ------------------------------------------------------------------- /
 ! 0.  Initializations
 !
@@ -2927,90 +2929,75 @@
                CALL W3CPRT ( IMOD )
             end IF
 
-#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
-            IF (  histwr ) then
+            do_w3outg = .false.
+            if ((w3_uwm_flag .or. w3_cesmcoupled_flag) .and. histwr) then
+               do_w3outg = .true.
+            else if ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) ) then
+               do_w3outg = .true.
+            end if
+            if (do_w3outg) then
                CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
-            end IF
-#else
-            IF ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) ) then
-               CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
-            end IF
-#endif
+            end if
 !
 #ifdef W3_MPI
             FLGMPI = .FALSE.
             NRQMAX = 0
-!
-#if defined(W3_UWM) || defined(W3_CESMCOUPLED)
-     IF (  histwr .and. (FLOUT(1) .OR.  FLOUT(7)) ) THEN
-#else
-     IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
-          ( (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
-#endif
-       IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
-         IF (NRQGO.NE.0 ) THEN
-#endif
+            !
+            do_startall = .false.
+            if (w3_uwm_flag .or. w3_cesmcoupled_flag) then  
+               IF (  histwr .and. (FLOUT(1) .OR.  FLOUT(7)) ) THEN
+                  do_startall = .true.
+               end IF
+            else
+               IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
+                    ( (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
+                  do_startall = .true.
+               end IF
+            end if
+            if (do_startall) then
+               IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
+                  IF (NRQGO.NE.0 ) THEN
 #ifdef W3_DEBUGRUN
-      WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO.NE.0 , step 0', &
-                 NRQGO, IRQGO, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
-      FLUSH(740+IAPROC)
+                     WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO.NE.0 , step 0', &
+                          NRQGO, IRQGO, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
 #endif
-#ifdef W3_MPI
-           CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
-#endif
+                     CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
 #ifdef W3_DEBUGRUN
-      WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO.NE.0, step 0'
-      FLUSH(740+IAPROC)
+                     WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO.NE.0, step 0'
 #endif
 
-#ifdef W3_MPI
-           FLGMPI(0) = .TRUE.
-           NRQMAX    = MAX ( NRQMAX , NRQGO )
-#endif
+                     FLGMPI(0) = .TRUE.
+                     NRQMAX    = MAX ( NRQMAX , NRQGO )
 #ifdef W3_MPIT
-          WRITE (NDST,9043) '1a', NRQGO, NRQMAX, NAPFLD
+                     WRITE (NDST,9043) '1a', NRQGO, NRQMAX, NAPFLD
 #endif
-#ifdef W3_MPI
-         END IF
-#endif
-!
-#ifdef W3_MPI
-         IF (NRQGO2.NE.0 ) THEN
-#endif
+                  END IF
+                  !
+                  IF (NRQGO2.NE.0 ) THEN
 #ifdef W3_DEBUGRUN
-            WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO2.NE.0, step 0', &
-                 NRQGO2, IRQGO2, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
-            FLUSH(740+IAPROC)
+                     WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO2.NE.0, step 0', &
+                          NRQGO2, IRQGO2, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
 #endif
-#ifdef W3_MPI
-           CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
+                     CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
 
-#endif
 #ifdef W3_DEBUGRUN
-           WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO2.NE.0, step 0'
-           FLUSH(740+IAPROC)
+                     WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO2.NE.0, step 0'
 #endif
-#ifdef W3_MPI
-           FLGMPI(1) = .TRUE.
-           NRQMAX    = MAX ( NRQMAX , NRQGO2 )
-#endif
+                     FLGMPI(1) = .TRUE.
+                     NRQMAX    = MAX ( NRQMAX , NRQGO2 )
 #ifdef W3_MPIT
-          WRITE (NDST,9043) '1b', NRQGO2, NRQMAX, NAPFLD
+                     WRITE (NDST,9043) '1b', NRQGO2, NRQMAX, NAPFLD
 #endif
-#ifdef W3_MPI
-         END IF
-       ELSE
-#endif
+                  END IF
+               ELSE
 #ifdef W3_DEBUGRUN
-          WRITE(740+IAPROC,*) 'BEFORE DO_OUTPUT_EXCHANGES, step 0'
-          FLUSH(740+IAPROC)
+                  WRITE(740+IAPROC,*) 'BEFORE DO_OUTPUT_EXCHANGES, step 0'
 #endif
 #ifdef W3_PDLIB
-          CALL DO_OUTPUT_EXCHANGES(IMOD)
+                  CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
-#ifdef W3_MPI
-       END IF
-     END IF
+               END IF ! IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE))
+            END IF ! if (do_startall)
 #endif
 
 #ifdef W3_MEMCHECK
