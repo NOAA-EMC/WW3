@@ -3654,7 +3654,6 @@
                     END DO
                 END IF
 #endif
-
 !
 #ifdef W3_MPI
               IF ( FLGRDALL( 6, 13) ) THEN
@@ -3675,23 +3674,23 @@
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/13', IROOT, IT, IRQGO(IH), IERR
 #endif
-#ifdef W3_CESMCOUPLED
 #ifdef W3_MPI
+                END IF
+#endif
+!
+#ifdef W3_MPI
+#ifdef W3_CESMCOUPLED
               IF ( FLGRDALL( 6, 14) ) THEN
                   IH     = IH + 1
                   IT     = IT + 1
       CALL MPI_SEND_INIT (LANGMT(1),NSEALM , MPI_REAL, IROOT,   &
                                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
-                END IF
-#endif
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
 #endif
-#endif
-
-#ifdef W3_MPI
-                END IF
-#endif
+              END IF
+#endif !W3_CESMCOUPLED
+#endif !W3_MPI
 !
 #ifdef W3_MPI
               IF ( FLGRDALL( 7, 1) ) THEN
@@ -5096,22 +5095,23 @@
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/13', IFROM, IT, IRQGO2(IH), IERR
 #endif
-#ifdef W3_CESMCOUPLED
 #ifdef W3_MPI
+                  END IF
+#endif
+!
+#ifdef W3_MPI
+#ifdef W3_CESMCOUPLED
               IF ( FLGRDALL( 6, 14) ) THEN
                   IH     = IH + 1
                   IT     = IT + 1
       CALL MPI_RECV_INIT (LANGMT(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
                                 MPI_COMM_WAVE, IRQGO2(IH), IERR)
-               END IF
-#endif
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
 #endif
-#endif
-#ifdef W3_MPI
                   END IF
-#endif
+#endif ! W3_CESMCOUPLED
+#endif ! W3_MPI
 !
 #ifdef W3_MPI
                 IF ( FLGRDALL( 7, 1) ) THEN

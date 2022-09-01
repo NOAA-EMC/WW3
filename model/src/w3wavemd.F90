@@ -2930,7 +2930,7 @@
             end IF
 
             do_w3outg = .false.
-            if ((w3_uwm_flag .or. w3_cesmcoupled_flag) .and. histwr) then
+            if (w3_cesmcoupled_flag .and. histwr) then
                do_w3outg = .true.
             else if ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) ) then
                do_w3outg = .true.
@@ -2944,8 +2944,8 @@
             NRQMAX = 0
             !
             do_startall = .false.
-            if (w3_uwm_flag .or. w3_cesmcoupled_flag) then  
-               IF (  histwr .and. (FLOUT(1) .OR.  FLOUT(7)) ) THEN
+            if (w3_cesmcoupled_flag .and. histwr) then
+               IF ( FLOUT(1) .OR.  FLOUT(7) ) THEN
                   do_startall = .true.
                end IF
             else
@@ -3152,7 +3152,7 @@
                   if (w3_sbs_flag) then
                      do_gridded_output = ( j .eq. 1 )  .or. ( j .eq. 7 )
                   else
-                     if (w3_uwm_flag .or. w3_cesmcoupled_flag) then
+                     if (w3_cesmcoupled_flag) then
                         do_gridded_output = ( j .eq. 1 ) .and. histwr
                      else
                         do_gridded_output = ( j .eq. 1 )
