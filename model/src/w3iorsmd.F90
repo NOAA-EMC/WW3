@@ -274,7 +274,7 @@
 #endif
 !/
       USE W3SERVMD, ONLY: EXTCDE
-    USE CONSTANTS, only: LPDLIB, file_endian
+      USE CONSTANTS, only: LPDLIB, file_endian
       USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
       USE W3GDATMD, ONLY: NK, NTH
 #ifdef W3_TIMINGS

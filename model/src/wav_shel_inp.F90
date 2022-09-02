@@ -1018,6 +1018,7 @@ contains
 
              end if !j le 2
              odat(5*(j-1)+3) = max ( 0 , odat(5*(j-1)+3) )
+             write(msg1, *) 'read_shel_config NOTTYPE', J
              call print_memcheck(740+IAPROC, 'memcheck_____:'//trim(msg1))
 
              !--------------------
@@ -1123,7 +1124,7 @@ contains
                    call print_logmsg(740+IAPROC, ' 2.6 Partitioning output ', w3_debuginit_flag)
                    ! Type 6: partitioning
                    !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
-                   call nextln ( comstr , ndsi , ndsen ) 
+                   call nextln ( comstr , ndsi , ndsen )
                    read (ndsi,*) iprt, prtfrm
 
                    if ( iaproc .eq. napout ) then
