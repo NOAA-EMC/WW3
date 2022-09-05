@@ -802,11 +802,8 @@ contains
        call print_logmsg(740+IAPROC, ' fnmpre'//trim(fnmpre), w3_debuginit_flag)
        open (ndsi,file=trim(fnmpre)//'ww3_shel.inp',status='old',iostat=ierr)
        rewind (ndsi)
-       call print_logmsg(740+IAPROC, 'Before read 2002, case 1', w3_debuginit_flag)
-       !ar: i changed the error handling for err=2002, see commit message ...
 
        read (ndsi,'(a)') comstr
-       call print_logmsg(740+IAPROC, ' comstr='//trim(comstr), ' After read 2002, case 1', w3_debuginit_flag)
        if (comstr.eq.' ') comstr = '$'
        if ( iaproc .eq. napout ) write (ndso,901) comstr
 
@@ -814,22 +811,19 @@ contains
        ! 2.1 forcing flags
        !--------------------
 
+       call print_logmsg(740+IAPROC, '2.1 Forcing flags', w3_debuginit_flag)
        flh(-7:10) = .false.
        do j=jfirst, 9
           call nextln ( comstr , ndsi , ndsen )
           if ( j .le. 6 ) then
-             call print_logmsg(740+IAPROC, 'Before read 2002, case 2', w3_debuginit_flag)
              read (ndsi,*) flagtfc(j), flh(j)
 
-             write(msg1,*)'     J=', j, ' FLAGTFC=', flagtfc(j), ' FLH=', flh(j)
-             call print_logmsg(740+IAPROC, trim(msg1), ' After read 2002, case 2', w3_debuginit_flag)
           else
-             call print_logmsg(740+IAPROC, 'Before read 2002, case 3', w3_debuginit_flag)
              read (ndsi,*) flagtfc(j)
 
-             write(msg1,*) '     J=', j, ' FLAGTFC=', flagtfc(j)
-             call print_logmsg(740+IAPROC, trim(msg1), ' After read 2002, case 3 ', w3_debuginit_flag)
           end if
+          write(msg1,*)'     J=', j, ' FLAGTFC=', flagtfc(j), ' FLH=', flh(j)
+          call print_logmsg(740+IAPROC, trim(msg1), w3_debuginit_flag)
        end do
 
        if ( iaproc .eq. napout ) write (ndso,920)
@@ -869,7 +863,6 @@ contains
        end if
 
        call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2b')
-       call print_logmsg(740+IAPROC, 'read_shel_config, step 5', w3_debuginit_flag)
 
        inflags1(10) = .false.
        if (w3_mgw_flag .or. w3_mgp_flag) then
@@ -903,26 +896,22 @@ contains
        ! 2.2 Time setup
        !--------------------
 
+       call print_logmsg(740+IAPROC, '2.2 Time setup ',  w3_debuginit_flag)
        call nextln ( comstr , ndsi , ndsen )
-       call print_logmsg(740+IAPROC, 'Before read 2002, case 4', w3_debuginit_flag)
        read (ndsi,*) time0
 
-       call print_logmsg(740+IAPROC, ' After read 2002, case 4', w3_debuginit_flag)
        call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2c')
 
        call nextln ( comstr , ndsi , ndsen )
-       call print_logmsg(740+IAPROC, 'Before read 2002, case 5', w3_debuginit_flag)
        read (ndsi,*) timen
-       call print_logmsg(740+IAPROC, ' After read 2002, case 5', 'read_shel_config, step 6', w3_debuginit_flag)
        call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2d')
 
        !--------------------
        ! 2.3 Domain setup
        !--------------------
 
-       call print_logmsg(740+IAPROC, 'read_shel_config, step 7', w3_debuginit_flag)
+       call print_logmsg(740+IAPROC, '2.3 Domain setup ',  w3_debuginit_flag)
        call nextln ( COMSTR , NDSI , NDSEN )
-       call print_logmsg(740+IAPROC, 'Before read 2002, case 6', w3_debuginit_flag)
        read (ndsi,*) iostyp
        if (w3_pdlib_flag) then
           if (iostyp .gt. 1) then
@@ -930,30 +919,26 @@ contains
              call extcde ( 6666 )
           endif
        end if
-       call print_logmsg(740+IAPROC, ' After read 2002, case 6', w3_debuginit_flag)
        call w3iogr ( 'GRID', ndsf(7) )
        if ( flagll ) then
           factor = 1.
        else
           factor = 1.e-3
        end if
-       call print_logmsg(740+IAPROC, 'read_shel_config, step 8', w3_debuginit_flag)
 
        !--------------------
        ! 2.4 Output dates
        !--------------------
 
+       call print_logmsg(740+IAPROC, '2.4 Output dates ',  w3_debuginit_flag)
        npts   = 0
        notype = 6
        if (w3_cou_flag) then
           notype = 7
        end if
-       call print_logmsg(740+IAPROC, 'Before NOTYPE loop', w3_debuginit_flag)
        do j = 1, notype
           write(msg1,*)'J=', J, '/ NOTYPE=', NOTYPE
-          call print_logmsg(740+IAPROC, trim(msg1), w3_debuginit_flag)
           call nextln ( comstr , ndsi , ndsen )
-          call print_logmsg(740+IAPROC, 'Before read 2002, case 7', w3_debuginit_flag)
 
           ! checkpoint
           if (j .eq. 4) then
@@ -1035,11 +1020,7 @@ contains
                 read (ndsi,*,end=2001,err=2002)(odat(i),i=5*(j-1)+1,5*j)
 
              end if !j le 2
-             ! write(*,*) 'ofiles(j)= ', ofiles(j),j
-             !
-             call print_logmsg(740+IAPROC, ' After read 2002, case 7', w3_debuginit_flag)
              odat(5*(j-1)+3) = max ( 0 , odat(5*(j-1)+3) )
-             !
              write(msg1, *) 'read_shel_config NOTTYPE', J
              call print_memcheck(740+IAPROC, 'memcheck_____:'//trim(msg1))
 
@@ -1047,9 +1028,9 @@ contains
              ! 2.5 Output types
              !--------------------
 
+             call print_logmsg(740+IAPROC, ' 2.5 Output types ', w3_debuginit_flag)
              if ( odat(5*(j-1)+3) .ne. 0 ) then
 
-                call print_logmsg(740+IAPROC, ' Case analysis', w3_debuginit_flag)
                 if ( j .eq. 1 ) then
 
                    ! type 1: fields of mean wave parameters
@@ -1084,9 +1065,7 @@ contains
                       npts   = 0
                       do
                          call nextln ( comstr , ndsi , ndsen )
-                         call print_logmsg(740+IAPROC, 'before read 2002, case 8', w3_debuginit_flag)
                          read (ndsi2,*) xx, yy, pn
-                         call print_logmsg(740+IAPROC, ' After read 2002, case 8', w3_debuginit_flag)
                          if ( iloop.eq.1 .and. iaproc.eq.1 ) then
                             backspace (ndsi)
                             read (ndsi,'(a)') line
@@ -1132,12 +1111,10 @@ contains
                    end if
 
                 else if ( j .eq. 3 ) then
-
+                   call print_logmsg(740+IAPROC, ' 2.5 Track output ', w3_debuginit_flag)
                    ! Type 3: track output
                    call nextln ( comstr , ndsi , ndsen )
-                   call print_logmsg(740+IAPROC, 'Before read 2002, case 9', w3_debuginit_flag)
                    read (ndsi,*) tflagi
-                   call print_logmsg(740+IAPROC, ' After read 2002, case 9', w3_debuginit_flag)
 
                    if ( .not. tflagi ) nds(11) = -nds(11)
                    if ( iaproc .eq. napout ) then
@@ -1149,13 +1126,11 @@ contains
                    end if
 
                 else if ( j .eq. 6 ) then
-
+                   call print_logmsg(740+IAPROC, ' 2.6 Partitioning output ', w3_debuginit_flag)
                    ! Type 6: partitioning
                    !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
                    call nextln ( comstr , ndsi , ndsen )
-                   call print_logmsg(740+IAPROC, 'Before reading IPRT', 'Before read 2002, case 10', w3_debuginit_flag)
                    read (ndsi,*) iprt, prtfrm
-                   call print_logmsg(740+IAPROC, ' After read 2002, case 10', w3_debuginit_flag)
 
                    if ( iaproc .eq. napout ) then
                       if ( prtfrm ) then
@@ -1189,6 +1164,7 @@ contains
        ! 2.6 Homogeneous field data
        !--------------------
 
+       call print_logmsg(740+IAPROC, ' 2.6 Homogeneous field data ', w3_debuginit_flag)
        if ( flhom ) then
           if ( iaproc .eq. napout ) write (ndso,951) 'homogeneous field data (and moving grid) ...'
           nh = 0
@@ -1196,9 +1172,7 @@ contains
           ! Start of loop
           do
              call nextln ( comstr , ndsi , ndsen )
-             call print_logmsg(740+IAPROC, 'before read 2002, case 11', w3_debuginit_flag)
              read (ndsi,*) idtst
-             call print_logmsg(740+IAPROC, ' after read 2002, case 11', w3_debuginit_flag)
 
 
              ! Exit if illegal id
@@ -1218,53 +1192,40 @@ contains
                 backspace ( ndsi )
              end if
 
+             call print_logmsg(740+IAPROC, ' 2.6 Store data ', w3_debuginit_flag)
              ! Store data
              do j=lbound(idstr,1), 10
                 if ( idtst .eq. idstr(j) ) then
                    nh(j)    = nh(j) + 1
                    if ( nh(j) .gt. nhmax ) goto 2006
                    IF ( J .LE. 1  ) THEN ! water levels, etc. : get HA
-                      call print_logmsg(740+IAPROC, 'Before read 2002, case 12', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j)
-                      call print_logmsg(740+IAPROC, ' After read 2002, case 12', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 2 ) THEN ! currents: get HA and HD
-                      call print_logmsg(740+IAPROC, 'Before read 2002, case 13', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j)
-                      call print_logmsg(740+IAPROC, ' After read 2002, case 13', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 3 ) THEN ! wind: get HA HD and HS
-                      call print_logmsg(740+IAPROC, 'Before read 2002, case 14', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j), hs(nh(j),j)
-                      call print_logmsg(740+IAPROC, ' After read 2002, case 14', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 4 ) THEN ! ice
-                      call print_logmsg(740+IAPROC, 'Before read 2002, case 15', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j)
-                      call print_logmsg(740+IAPROC, ' After read 2002, case 15', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 5 ) THEN ! atmospheric momentum
-                      call print_logmsg(740+IAPROC, 'Before read 2002, case 16', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j)
-                      call print_logmsg(740+IAPROC, ' After read 2002, case 16', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 6 ) THEN ! air density
-                      call print_logmsg(740+IAPROC, 'Before read 2002, case 17', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j)
-                      call print_logmsg(740+IAPROC, ' After read 2002, case 17', w3_debuginit_flag)
                    ELSE IF ( J .EQ. 10 ) THEN ! mov: HA and HD
-                      call print_logmsg(740+IAPROC, 'Before read 2002, case 18', w3_debuginit_flag)
                       read (ndsi,*) idtst,           &
                            tho(1,j,nh(j)), tho(2,j,nh(j)),            &
                            ha(nh(j),j), hd(nh(j),j)
-                      call print_logmsg(740+IAPROC, ' After read 2002, case 18', w3_debuginit_flag)
                    END IF
                 end if
              end do

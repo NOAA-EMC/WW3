@@ -1188,7 +1188,6 @@
 ! Updates reflections maps:
 !
               IF (GTYPE.EQ.UNGTYPE) THEN 
-!AR: not needed since already initialized on w3iogr                CALL SET_UG_IOBP
 #ifdef W3_REF1
               ELSE
                 CALL W3SETREF

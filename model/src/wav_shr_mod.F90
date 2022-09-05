@@ -56,7 +56,7 @@ module wav_shr_mod
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
   character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
 
-  ! Only used by cesm
+  ! Only used by cesm and optionally by uwm
   ! to construct the initial file and used in W3IORSMD
   ! if a run is a continue run, then casename is used to construct
   ! the restart filename in W3IORSMD
