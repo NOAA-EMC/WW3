@@ -104,7 +104,7 @@ contains
   !!
   !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
   !> @date 01-05-2022
-  subroutine read_shel_config(mpi_comm, time0_overwrite, timen_overwrite)
+  subroutine read_shel_config(mpi_comm, mds, time0_overwrite, timen_overwrite)
 
     use wav_shr_flags
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
@@ -131,6 +131,7 @@ contains
 
     ! input/output parameters
     integer, intent(in) :: mpi_comm
+    integer, intent(in) :: mds(:)
     integer, intent(in), optional :: time0_overwrite(2)
     integer, intent(in), optional :: timen_overwrite(2)
 
@@ -145,8 +146,7 @@ contains
     type(nml_homog_input_t), allocatable  :: nml_homog_input(:)
 
     integer             :: ndsi, ndsi2, ndss, ndso, ndse, ndst, ndsl
-    integer             :: ndsen, ierr, j, i, iloop, ipts
-    integer             :: ndsf(-7:9)
+    integer             :: ndsm, ndsen, ierr, j, i, iloop, ipts
     integer             :: nh(-7:10), tho(2,-7:10,nhmax), rcld(7:9)
     integer             :: nodata(7:9), startdate(8), stopdate(8), ihh(-7:10)
     integer             :: jfirst, ierr_mpi, flagtide, ih, n_tot
@@ -171,6 +171,7 @@ contains
     integer             :: thrlev = 1
     integer             :: time0(2), timen(2), ttime(2)
     character(len=80)   :: msg1
+    logical             :: is_open
 
     data idflds / 'ice param. 1 ' , 'ice param. 2 ' ,               &
          'ice param. 3 ' , 'ice param. 4 ' ,               &
@@ -202,17 +203,24 @@ contains
     iprt(:) = 0
     call print_logmsg(740+IAPROC, 'read_shel_config, step 1', w3_debuginit_flag)
 
-    ndsi = 10
-    ndss = 90
-    ndso =  6
-    ndse =  6
-    ndst =  6
-    if (w3_cou_flag) then
-       ndso =  333
-       ndse =  333
-       ndst =  333
+    ! ndso, ndse, ndst are set in w3initmd using mds;  w3initmd is called by either
+    ! cesm_init or uwm_int after calling the read_shel_config routine
+    ndso =  mds(1)
+    ndse =  mds(1)
+    ndst =  mds(1)
+    ! set a unit number passed to w3iogr routine for reading mod_def file; this unit
+    ! is closed at the end of w3iogr
+    ndsm = 17
+    inquire(unit=ndsm, opened=is_open)
+    if (is_open) then
+       call extcde (60, msg='unit ndsm is already in use ')
     end if
-
+    ndss = 90
+    inquire(unit=ndss, opened=is_open)
+    if (is_open) then
+       call extcde (60, msg='unit ndss is already in use ')
+    end if
+    ! naperr is set in InitializeRealize
     if ( iaproc .eq. naperr ) then
        ndsen  = ndse
     else
@@ -221,42 +229,6 @@ contains
 #ifdef W3_OMPH
     if ( iaproc .eq. napout ) write (ndso,905) MPI_THREAD_FUNNELED, thrlev
 #endif
-    ndsf(-7) = 1008
-    ndsf(-6) = 1009
-    ndsf(-5) = 1010
-    ndsf(-4) = 1011
-    ndsf(-3) = 1012
-    ndsf(-2) = 1013
-    ndsf(-1) = 1014
-    ndsf(0)  = 1015
-
-    ndsf(1)  = 11
-    ndsf(2)  = 12
-    ndsf(3)  = 13
-    ndsf(4)  = 14
-    ndsf(5)  = 15
-    ndsf(6)  = 16
-    ndsf(7)  = 17
-    ndsf(8)  = 18
-    ndsf(9)  = 19
-    call print_logmsg(740+IAPROC, 'read_shel_config, step 2', w3_debuginit_flag)
-
-    if (w3_nco_flag) then
-       ndsi    = 11
-       ndss    = 90
-       ndso    =  6
-       ndse    = ndso
-       ndst    = ndso
-       ndsf(1) = 12
-       ndsf(2) = 13
-       ndsf(3) = 14
-       ndsf(4) = 15
-       ndsf(5) = 16
-       ndsf(6) = 17
-       ndsf(7) = 18
-       ndsf(8) = 19
-       ndsf(9) = 20
-    end if
 
     ! 1.c Local parameters
 
@@ -281,16 +253,14 @@ contains
     write(msg1,*)'JFIRST=', JFIRST
     call print_logmsg(740+IAPROC, 'read_shel_config, step 4', trim(msg1), w3_debuginit_flag)
 
-    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    ! 2.  Define input fields
+    !--------------------
+    ! Read nml file if available
+    !--------------------
 
     inquire(file=trim(fnmpre)//"ww3_shel.nml", exist=flgnml)
 
-    ! ===============================================================
-    ! process ww3_prnc namelist
-    ! ===============================================================
-
     if (flgnml) then
+       open(newunit=ndsi, file=trim(fnmpre)//"ww3_shel.nml", status='old', iostat=ierr)
 
        !--------------------
        ! Read namelist
@@ -467,7 +437,7 @@ contains
           endif
        end if
 
-       call w3iogr ( 'GRID', ndsf(7) )
+       call w3iogr ( 'GRID', ndsm )
        if ( flagll ) then
           factor = 1.
        else
@@ -800,7 +770,7 @@ contains
     if (.not. flgnml) then
 
        call print_logmsg(740+IAPROC, ' fnmpre'//trim(fnmpre), w3_debuginit_flag)
-       open (ndsi,file=trim(fnmpre)//'ww3_shel.inp',status='old',iostat=ierr)
+       open (newunit=ndsi,file=trim(fnmpre)//'ww3_shel.inp',status='old',iostat=ierr)
        rewind (ndsi)
 
        read (ndsi,'(a)') comstr
@@ -893,7 +863,6 @@ contains
        !--------------------
        ! 2.2 Time setup
        !--------------------
-
        call print_logmsg(740+IAPROC, '2.2 Time setup ',  w3_debuginit_flag)
        call nextln ( comstr , ndsi , ndsen )
        read (ndsi,*) time0
@@ -917,7 +886,7 @@ contains
              call extcde ( 6666 )
           endif
        end if
-       call w3iogr ( 'GRID', ndsf(7) )
+       call w3iogr ( 'GRID', ndsm )
        if ( flagll ) then
           factor = 1.
        else

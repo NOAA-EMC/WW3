@@ -1429,7 +1429,7 @@ contains
 
     ! Read the namelist settings in ww3_shel.nml
     call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
-    call read_shel_config(mpi_comm, time0_overwrite=time0, timen_overwrite=timen)
+    call read_shel_config(mpi_comm, mds, time0_overwrite=time0, timen_overwrite=timen)
 
     ! NOTE:  that wavice_coupling must be set BEFORE the call to advertise_fields
     ! So the current mechanism is to force the inflags1(-7) and inflags1(-3) be set to true
@@ -1572,7 +1572,7 @@ contains
     fnmpre = './'
 
     call ESMF_LogWrite(trim(subname)//' call read_shel_config', ESMF_LOGMSG_INFO)
-    call read_shel_config(mpi_comm, time0_overwrite=time0, timen_overwrite=timen)
+    call read_shel_config(mpi_comm, mds, time0_overwrite=time0, timen_overwrite=timen)
 
     call ESMF_LogWrite(trim(subname)//' call w3init', ESMF_LOGMSG_INFO)
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
