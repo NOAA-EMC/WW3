@@ -194,7 +194,7 @@
       USE W3ODATMD, only: IAPROC, NAPROC, NTPROC
       USE yowDatapool, only: istatus
       USE yowpdlibMain, only: initFromGridDim
-      USE YOWNODEPOOL, only: npa, iplg
+      USE YOWNODEPOOL, only: npa, np, iplg
       USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
       USE W3PARALL, only : JX_TO_JSEA, ISEA_TO_JSEA
       USE yowfunction, only : ComputeListNP_ListNPA_ListIPLG, pdlib_abort
@@ -267,12 +267,12 @@
           IF (ISEA .gt. 0) PDLIB_NSEAL = PDLIB_NSEAL + 1
         END DO
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'npa is augmented domain over NX'
-     WRITE(740+IAPROC,*) 'PDLIB_NSEAL is basicall npa but only over the wet points'
-     WRITE(740+IAPROC,*) 'NSEAL is set to PDLIB_NSEAL'
-     WRITE(740+IAPROC,*) 'PDLIB_NSEAL=', PDLIB_NSEAL
-     WRITE(740+IAPROC,*) 'npa=', npa
-     FLUSH(740+IAPROC)
+       WRITE(740+IAPROC,*) 'npa is augmented domain over NX'
+       WRITE(740+IAPROC,*) 'PDLIB_NSEAL is basicall npa but only over the wet points'
+       WRITE(740+IAPROC,*) 'NSEAL is set to PDLIB_NSEAL'
+       WRITE(740+IAPROC,*) 'PDLIB_NSEAL=', PDLIB_NSEAL
+       WRITE(740+IAPROC,*) 'NSEAL =', NSEAL, 'NP    =', NP, 'NPA   =', NPA
+       FLUSH(740+IAPROC)
 #endif
         ALLOCATE(JX_TO_JSEA(npa), ISEA_TO_JSEA(NSEA), stat=istat)
 #ifdef W3_DEBUGSOLVER
@@ -1879,230 +1879,7 @@
       CALL SCAL_INTEGRAL_PRINT_GENERAL(V8, string, NSEAL, CheckUncovered, PrintFullValue)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-!/ ------- FIELD(NSPEC,NSEAL) printint-------------------------------- /
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string, PrintHs, PrintHsNode, ScalMeth)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
-!/                  | Aron Roland (BGS IT&E GmbH)       |
-!/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :        01-June-2018 |
-!/                  +-----------------------------------+
-!/
-!/    01-June-2018 : Origination.                        ( version 6.04 )
-!/
-!  1. Purpose : Source code for parallel debugging 
-!  2. Method :
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD Subroutine tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!  7. Remarks
-!  8. Structure :
-!  9. Switches :
-!
-!     !/S  Enable subroutine tracing.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-
-      USE W3GDATMD, only : CLATS, SIG
-      USE W3ADATMD, only : CG
-      USE W3GDATMD, only : NK, NTH, FTE
-      USE W3WDATMD, only : VA
-      USE W3GDATMD, only : NSPEC, NX, NY, NSEAL, MAPFS
-      USE W3ADATMD, only : MPI_COMM_WCMP
-      USE W3GDATMD, only : GTYPE, UNGTYPE
-      USE W3GDATMD, only : DTH, DSII
-      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
-      USE CONSTANTS, only: TPIINV
-      use yowDatapool, only: rtype, istatus
-      USE YOWNODEPOOL, only: npa, iplg
-      USE W3PARALL, only: INIT_GET_ISEA
-      IMPLICIT NONE
-      INCLUDE "mpif.h"
-      REAL sumHS, avgHS, maxHS
-      REAL ET, HSIG, EBND
-      REAL, INTENT(in) :: FIELD(NSPEC,NSEAL)
-      CHARACTER(*), INTENT(in) :: string
-      LOGICAL, INTENT(in) :: PrintHs, PrintHsNode
-      INTEGER, INTENT(in) :: ScalMeth
-      REAL Vcoll(NSPEC,NX)
-      REAL VcollExp(NSPEC*NX)
-      REAL rVect(NSPEC*NX)
-      REAL Vhs(NX), rHs(NX)
-      REAL VminCG(NX), rMinCG(NX)
-      REAL VmaxCG(NX), rMaxCG(NX)
-      REAL eFact
-      REAL CoherencyError, eVal1, eVal2, eErr
-      INTEGER rStatus(NX), Status(NX)
-      INTEGER JSEA, ISEA, iProc, I, IX, ierr, ISP, IP, IP_glob
-      INTEGER nbIncorr
-      INTEGER ITH, IK
-!      WRITE(740+IAPROC,*) 'IAPROC=', IAPROC
-!      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
-!      WRITE(740+IAPROC,*) 'NTPROC=', NTPROC
-!      WRITE(740+IAPROC,*) 'Beginning of routine'
-!      WRITE(740+IAPROC,*) 'string=', string
-!      FLUSH(740+IAPROC)
-      IF (IAPROC .gt. NAPROC) THEN
-        RETURN
-      END IF
-      IF (GTYPE .ne. UNGTYPE) THEN
-        RETURN
-      END IF
-      VcollExp=0
-      Vhs=0
-      Status=0
-      WRITE(740+IAPROC,*) 'ScalMeth=', ScalMeth
-      FLUSH(740+IAPROC)
-      WRITE(740+IAPROC,*) 'min(CLATS)=', minval(CLATS)
-      FLUSH(740+IAPROC)
-      WRITE(740+IAPROC,*) 'max(CLATS)=', maxval(CLATS)
-      FLUSH(740+IAPROC)
-      WRITE(740+IAPROC,*) 'min(CG)=', minval(CG)
-      FLUSH(740+IAPROC)
-      WRITE(740+IAPROC,*) 'max(CG)=', maxval(CG)
-      FLUSH(740+IAPROC)
-      WRITE(740+IAPROC,*) 'FTE=', FTE
-      FLUSH(740+IAPROC)
-      DO JSEA=1,NSEAL
-        IP      = JSEA
-        IP_glob = iplg(IP)
-        ISEA=MAPFS(1,IP_glob)
-        DO ISP=1,NSPEC
-          VcollExp(ISP+NSPEC*(IP_glob-1))=FIELD(ISP,JSEA)
-        END DO
-        !
-        ET = 0
-        DO IK=1, NK
-          EBND   = 0.
-          DO ITH=1, NTH
-            ISP    = ITH + (IK-1)*NTH
-            IF (ScalMeth .eq. 1) THEN
-              eFact=1
-            END IF
-            IF (ScalMeth .eq. 2) THEN
-              eFact=SIG(IK)/CG(IK,ISEA)
-            END IF
-            IF (ScalMeth .eq. 3) THEN
-              eFact=CLATS(ISEA)/CG(IK,ISEA)
-            END IF
-            IF (ScalMeth .eq. 4) THEN
-              eFact=DTH * DSII(IK) * TPIINV
-            END IF
-            EBND   = EBND + FIELD(ISP,JSEA)*eFact
-          END DO
-          ET     = ET  + EBND
-        END DO
-        ET     = ET  + FTE *EBND
-        IF (PrintHs) THEN
-          HSIG   = 4. * SQRT ( ET )
-          Vhs(IP_glob)=HSIG
-        END IF
-        VminCG(IP_glob)=minval(CG(:,ISEA))
-        VmaxCG(IP_glob)=maxval(CG(:,ISEA))
-        Status(IP_glob)=1
-      END DO
-      !
-      ! Now find global arrays
-      !
-      CoherencyError=0
-      IF (IAPROC .eq. 1) THEN
-        DO iProc=2,NAPROC
-          CALL MPI_RECV(rVect,NSPEC*NX,MPI_REAL, iProc-1, 37, MPI_COMM_WCMP, istatus, ierr)
-          CALL MPI_RECV(rHs,NX,MPI_REAL, iProc-1, 38, MPI_COMM_WCMP, istatus, ierr)
-          CALL MPI_RECV(rMinCG,NX,MPI_REAL, iProc-1, 39, MPI_COMM_WCMP, istatus, ierr)
-          CALL MPI_RECV(rMaxCG,NX,MPI_REAL, iProc-1, 40, MPI_COMM_WCMP, istatus, ierr)
-          CALL MPI_RECV(rStatus,NX,MPI_INTEGER, iProc-1, 43, MPI_COMM_WCMP, istatus, ierr)
-          DO I=1,NX
-            IF (rStatus(I) .eq. 1) THEN
-              DO ISP=1,NSPEC
-                eVal1=VcollExp(ISP+NSPEC*(I-1))
-                eVal2=rVect(ISP+NSPEC*(I-1))
-                VcollExp(ISP+NSPEC*(I-1))=rVect(ISP+NSPEC*(I-1))
-                Vhs(I)=rHs(I)
-                VminCG(I)=rMinCG(I)
-                VmaxCG(I)=rMaxCG(I)
-                IF (Status(I) .eq. 1) THEN
-                  eErr=abs(eVal1 - eVal2)
-                  CoherencyError = CoherencyError + eErr
-                ELSE
-                  VcollExp(ISP+NSPEC*(I-1))=eVal2
-                END IF
-              END DO
-              Status(I)=1
-            END IF
-          END DO
-        END DO
-      ELSE
-        CALL MPI_SEND(VcollExp,NSPEC*NX,MPI_REAL, 0, 37, MPI_COMM_WCMP, ierr)
-        CALL MPI_SEND(Vhs,NX,MPI_REAL, 0, 38, MPI_COMM_WCMP, ierr)
-        CALL MPI_SEND(VminCG,NX,MPI_REAL, 0, 39, MPI_COMM_WCMP, ierr)
-        CALL MPI_SEND(VmaxCG,NX,MPI_REAL, 0, 40, MPI_COMM_WCMP, ierr)
-        CALL MPI_SEND(Status,NX,MPI_INTEGER, 0, 43, MPI_COMM_WCMP, ierr)
-      END IF
-      IF (IAPROC .eq. 1) THEN
-        DO I=1,NX
-          DO ISP=1,NSPEC
-            Vcoll(ISP,I)=VcollExp(ISP + NSPEC*(I-1))
-          END DO
-        END DO
-        nbIncorr=0
-        DO IX=1,NX
-          ISEA=MAPFS(1,IX)
-          IF (ISEA .gt. 0) THEN
-            IF (Status(IX) .eq. 0) THEN
-              nbIncorr=nbIncorr+1
-            END IF
-          END IF
-        END DO
-        IF (nbIncorr .gt. 0) THEN
-          WRITE(*,*) '    nbIncorr=', nbIncorr
-          WRITE(*,*) '          NX=', NX
-          WRITE(*,*) '         npa=', npa
-          STOP
-        END IF
-        WRITE(740+IAPROC,*) 'FIELD_INTEGRAL sum,coh=', sum(Vcoll), CoherencyError, TRIM(string)
-        IF (PrintHs) THEN
-          sumHS=sum(Vhs)
-          avgHS=sumHS/REAL(NX)
-          maxHS=maxval(Vhs)
-          WRITE(740+IAPROC,*) 'HS max,avg=', maxHS, avgHS
-        END IF
-        IF (PrintHsNode) THEN
-          WRITE(740+IAPROC,*) 'Value of HS at nodes'
-          DO IX=1,NX
-            WRITE(740+IAPROC,*) 'IX=', IX, ' hs/sumV=', Vhs(IX), sum(Vcoll(:,IX))
-          END DO
-          FLUSH(740+IAPROC)
-        END IF
-        FLUSH(740+IAPROC)
-      END IF
-      END SUBROUTINE
-!/ ------------------------------------------------------------------- /
-      SUBROUTINE ALL_VAOLD_INTEGRAL_PRINT(string)
+      SUBROUTINE ALL_VAOLD_INTEGRAL_PRINT(string, choice)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2152,22 +1929,27 @@
       USE W3WDATMD, only : VAOLD
       USE W3ODATMD, only : IAPROC
       USE W3GDATMD, only : NSPEC
+      USE YOWNODEPOOL, only: np, npa
       IMPLICIT NONE
-      REAL :: FIELD(NSPEC,NSEAL)
       CHARACTER(*), INTENT(in) :: string
-      LOGICAL :: PrintHs = .TRUE.
-      LOGICAL :: PrintHsNode = .FALSE.
-      INTEGER :: ScalMeth = 4
-      INTEGER ISPEC, JSEA
+      INTEGER, INTENT(in) :: choice
+      REAL :: FIELD(NSPEC,NSEAL)
+      INTEGER ISPEC, JSEA, maxidx
       DO JSEA=1,NSEAL
         DO ISPEC=1,NSPEC
           FIELD(ISPEC,JSEA) = VAOLD(ISPEC,JSEA)
         END DO
       END DO
-      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string, PrintHs, PrintHsNode, ScalMeth)
+      IF (choice .eq. 1) THEN
+         maxidx = npa
+      ELSE
+         maxidx = np
+      END IF
+!      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string)
+      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, .FALSE. , .FALSE.)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE ALL_VA_INTEGRAL_PRINT(IMOD, string)
+      SUBROUTINE ALL_VA_INTEGRAL_PRINT(IMOD, string, choice)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2217,15 +1999,15 @@
       USE W3WDATMD, only : VA
       USE W3ODATMD, only : IAPROC, NAPROC
       USE W3GDATMD, only : NSPEC, GRIDS, GTYPE, UNGTYPE
+      USE YOWNODEPOOL, only: npa, np, iplg
       IMPLICIT NONE
-      REAL :: FIELD(NSPEC,NSEAL)
       INTEGER, INTENT(in) :: IMOD
       CHARACTER(*), INTENT(in) :: string
-      LOGICAL :: PrintHs = .TRUE.
-      LOGICAL :: PrintHsNode = .FALSE.
-      INTEGER :: ScalMeth = 4
-      INTEGER ISTAT
-      INTEGER ISPEC, JSEA
+      INTEGER, INTENT(in) :: choice
+      REAL :: FIELD(NSPEC,NSEAL)
+      INTEGER ISPEC, JSEA, IP_glob, maxidx
+      INTEGER :: TEST_IP = 46
+      INTEGER :: TEST_ISP = 370
       IF (GRIDS(IMOD)%GTYPE .ne. UNGTYPE) THEN
         RETURN
       END IF
@@ -2234,16 +2016,30 @@
       END IF
       WRITE(740+IAPROC,*) 'Entering ALL_INTEGRAL_PRINT, NSEAL=', NSEAL
       FLUSH(740+IAPROC)
+      IF (NSEAL .ne. npa) THEN
+         Print *, 'NSEAL=', NSEAL, " npa=", npa
+         STOP
+      END IF
       DO JSEA=1,NSEAL
+        IP_glob=iplg(JSEA)
         DO ISPEC=1,NSPEC
           FIELD(ISPEC,JSEA) = VA(ISPEC,JSEA)
+          IF ((IP_glob .eq. TEST_IP).and.(ISPEC .eq. TEST_ISP)) THEN
+             WRITE(740+IAPROC,*) 'ASS TEST_IP=', TEST_IP, ' TEST_ISP=', TEST_ISP, ' val=', VA(ISPEC,JSEA)
+          END IF
         END DO
       END DO
-      WRITE(740+IAPROC,*) 'Before call to ALL_FIELD_INTEGRAL_PRINT_GENERAL'
+      WRITE(740+IAPROC,*) 'Before call to ALL_FIELD_INTEGRAL'
       WRITE(740+IAPROC,*) 'NSPEC=', NSPEC, ' NX=', NX
       FLUSH(740+IAPROC)
-      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string, PrintHs, PrintHsNode, ScalMeth)
-      WRITE(740+IAPROC,*) 'After call to ALL_FIELD_INTEGRAL_PRINT_GENERAL'
+      IF (choice .eq. 1) THEN
+         maxidx = npa
+      ELSE
+         maxidx = np
+      END IF
+!      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string)
+      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, .FALSE. , .FALSE.)
+      WRITE(740+IAPROC,*) 'After call to ALL_FIELD_INTEGRAL'
       FLUSH(740+IAPROC)
 !      IF (NSEAL >= 40) THEN
 !        WRITE(740+IAPROC,*) 'min/max/sum(VA(:,TESTNODE))=', minval(VA(:,TESTNODE)), maxval(VA(:,TESTNODE)), sum(VA(:,TESTNODE))
@@ -2302,12 +2098,11 @@
       USE W3ODATMD, only : IAPROC
       USE W3GDATMD, only : NSPEC
       IMPLICIT NONE
+      INTEGER maxidx
       REAL, INTENT(in) :: FIELD(NSPEC,NSEAL)
       CHARACTER(*), INTENT(in) :: string
-      LOGICAL :: PrintHs = .FALSE.
-      LOGICAL :: PrintHsNode = .FALSE.
-      INTEGER :: ScalMeth = 1
-      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string, PrintHs, PrintHsNode, ScalMeth)
+      maxidx = NSEAL
+      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, .FALSE. , .FALSE.)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 !/ ------- Coherency info for TheARR(NSPEC,npa) ---------------------- /
@@ -2360,7 +2155,6 @@
 !/ ------------------------------------------------------------------- /
 
       USE W3GDATMD, only : NK, NTH
-      USE W3WDATMD, only : VA
       USE W3GDATMD, only : NSPEC, NX, NY, NSEAL, MAPFS
       USE W3ADATMD, only : MPI_COMM_WCMP
       USE W3GDATMD, only : GTYPE, UNGTYPE
@@ -2376,34 +2170,47 @@
       LOGICAL, INTENT(in) :: PrintMinISP, LocalizeMaximum
       !
       REAL Vcoll(NSPEC,NX), VcollExp(NSPEC*NX), rVect(NSPEC*NX)
-      REAL CoherencyError, eVal1, eVal2, eErr
+      REAL CoherencyError_Max, CoherencyError_Sum
+      REAL eVal1, eVal2, eErr
+      INTEGER LocateMax_I, LocateMax_ISP
       INTEGER rStatus(NX), Status(NX)
       INTEGER JSEA, ISEA, iProc, I, IX, ierr, ISP, IP, IP_glob
       REAL :: mval, eVal, eSum
       REAL :: TheMax, TheSum, TheNb, TheAvg
       REAL :: eFact, Threshold
       LOGICAL :: IsFirst
-      INTEGER nbIncorr
+      INTEGER nbIncorr, n_control
       INTEGER ITH, IK
+      INTEGER :: TEST_IP = 46
+      INTEGER :: TEST_ISP = 370
       IF (IAPROC .gt. NAPROC) THEN
         RETURN
       END IF
       IF (GTYPE .ne. UNGTYPE) THEN
         RETURN
       END IF
+      WRITE(740+IAPROC,*) 'CHECK_ARRAY_INTEGRAL NSEAL=', NSEAL, ' npa=', npa, ' maxidx=', maxidx
       VcollExp=0
       Status=0
       DO IP=1,maxidx
         IP_glob=iplg(IP)
         DO ISP=1,NSPEC
-          VcollExp(ISP+NSPEC*(IP_glob-1))=TheARR(ISP,IP)
+          VcollExp(ISP+NSPEC*(IP_glob-1)) = TheARR(ISP,IP)
+          IF ((IP_glob .eq. TEST_IP).and.(ISP .eq. TEST_ISP)) THEN
+             WRITE(740+IAPROC,*) 'TEST_IP=', TEST_IP, ' TEST_ISP=', TEST_ISP, ' val=', TheARR(ISP,IP)
+          END IF
         END DO
         Status(IP_glob)=1
       END DO
       !
       ! Now find global arrays
       !
-      CoherencyError=0
+      CoherencyError_Max = 0
+      CoherencyError_Sum = 0
+      LocateMax_I = -1
+      LocateMax_ISP = -1
+
+      n_control = 0
       IF (IAPROC .eq. 1) THEN
         DO iProc=2,NAPROC
           CALL MPI_RECV(rVect  ,NSPEC*NX,MPI_REAL   , iProc-1, 37, MPI_COMM_WCMP, istatus, ierr)
@@ -2411,12 +2218,19 @@
           DO I=1,NX
             IF (rStatus(I) .eq. 1) THEN
               DO ISP=1,NSPEC
-                eVal1=VcollExp(ISP+NSPEC*(I-1))
-                eVal2=rVect(ISP+NSPEC*(I-1))
-                VcollExp(ISP+NSPEC*(I-1))=rVect(ISP+NSPEC*(I-1))
+                eVal1 = VcollExp(ISP+NSPEC*(I-1))
+                eVal2 = rVect(ISP+NSPEC*(I-1))
                 IF (Status(I) .eq. 1) THEN
                   eErr=abs(eVal1 - eVal2)
-                  CoherencyError = CoherencyError + eErr
+                  CoherencyError_Sum = CoherencyError_Sum + eErr
+                  IF (eErr .gt. CoherencyError_Max) THEN
+                     CoherencyError_Max = eErr
+                     LocateMax_I = I
+                     LocateMax_ISP = ISP
+                  END IF
+                  IF (ISP .eq. 1) THEN
+                     n_control = n_control + 1
+                  END IF
                 ELSE
                   VcollExp(ISP+NSPEC*(I-1))=eVal2
                 END IF
@@ -2450,7 +2264,9 @@
           WRITE(*,*) '         npa=', npa
           STOP
         END IF
-        WRITE(740+IAPROC,*) 'ARRAY_NX sum,coh=', sum(Vcoll), CoherencyError, TRIM(string)
+        WRITE(740+IAPROC,*) 'CHECK_ARRAY_INTEGRAL n_control=', n_control
+        WRITE(740+IAPROC,*) 'ARRAY_NX sum,coh=', sum(Vcoll), CoherencyError_Sum, TRIM(string)
+        WRITE(740+IAPROC,*) 'ARRAY_NX max,loc=', CoherencyError_Max,LocateMax_I,LocateMax_ISP, TRIM(string)
         IF (PrintMinISP) THEN
           DO ISP=1,NSPEC
             IsFirst=.true.
@@ -2555,11 +2371,16 @@
       INTEGER, INTENT(in) :: maxidx
       REAL, INTENT(in) :: TheARR(NSPEC, npa)
       REAL*8 :: TheARR_red(npa)
-      LOGICAL :: FULL_NSPEC = .FALSE.
-      LOGICAL :: PrintMinISP = .FALSE.
-      LOGICAL :: LocalizeMaximum = .FALSE.
-      LOGICAL :: CheckUncovered = .FALSE.
-      LOGICAL :: PrintFullValue = .FALSE.
+!      LOGICAL :: FULL_NSPEC = .FALSE.
+!      LOGICAL :: PrintMinISP = .FALSE.
+!      LOGICAL :: LocalizeMaximum = .FALSE.
+!      LOGICAL :: CheckUncovered = .FALSE.
+!      LOGICAL :: PrintFullValue = .FALSE.
+      LOGICAL :: FULL_NSPEC = .TRUE.
+      LOGICAL :: PrintMinISP = .TRUE.
+      LOGICAL :: LocalizeMaximum = .TRUE.
+      LOGICAL :: CheckUncovered = .TRUE.
+      LOGICAL :: PrintFullValue = .TRUE.
       
 
       IF (FULL_NSPEC) THEN
@@ -2857,7 +2678,7 @@
 !/
       END SUBROUTINE PDLIB_W3XYPFSFCT2
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT(FACX, FACY, DTG, VGX, VGY)
+      SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/ ------------------------------------------------------------------- /
 !/
 !/                  +-----------------------------------+
@@ -2910,6 +2731,7 @@
       USE W3ODATMD, only: IAPROC
       USE W3GDATMD, only: B_JGS_USE_JACOBI
       IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IMOD
       REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
       INTEGER DoSomething
 #ifdef W3_DEBUGSOLVER
@@ -2918,7 +2740,7 @@
 #endif
       DoSomething=0
       IF (B_JGS_USE_JACOBI) THEN
-        CALL PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(FACX, FACY, DTG, VGX, VGY)
+        CALL PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
         DoSomething=1
       END IF
       IF (DoSomething .eq. 0) THEN
@@ -2930,7 +2752,7 @@
 !/
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE PDLIB_W3XYPUG_BLOCK_EXPLICIT(FACX, FACY, DTG, VGX, VGY)
+      SUBROUTINE PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2981,9 +2803,11 @@
 !
       USE W3ODATMD, only: IAPROC
       USE W3GDATMD, only: B_JGS_USE_JACOBI
-        IMPLICIT NONE
-        REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
-        CALL PDLIB_EXPLICIT_BLOCK(FACX, FACY, DTG, VGX, VGY)
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IMOD
+      REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
+      Print *, 'Before PDLIB_EXPLICIT_BLOCK'
+      CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
@@ -5836,7 +5660,7 @@
       END IF
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE APPLY_BOUNDARY_CONDITION
+      SUBROUTINE APPLY_BOUNDARY_CONDITION(IMOD)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -5899,6 +5723,7 @@
 #endif
 !/
       IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IMOD
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -5926,8 +5751,8 @@
       CALL STRACE (IENT, 'APPLY_BOUNDARY_CONDITION')
 #endif
 #ifdef W3_DEBUGSOLVERCOH
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(np) before boundary", np)
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) before boundary", npa)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) before boundary", 0)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) before boundary", 1)
 #endif
       IF ( FLBPI ) THEN
         RD10    = DSEC21 ( TBPI0, TIME )
@@ -6010,8 +5835,8 @@
      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_DEBUGSOLVERCOH
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(np) after boundary", np)
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) after boundary", npa)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) after boundary", 0)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) after boundary", 1)
 #endif
       END IF
       END SUBROUTINE
@@ -6142,7 +5967,7 @@
       ENDIF
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(FACX, FACY, DTG, VGX, VGY)
+      SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -6235,6 +6060,7 @@
       USE MallocInfo_m
 #endif
       implicit none
+      INTEGER, INTENT(IN) :: IMOD
       REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
       !
       INTEGER :: IP, ISP, ITH, IK, JSEA, ISEA, IP_glob
@@ -6261,7 +6087,6 @@
       REAL  :: eVal1, eVal2!, extmp(nspec,nseal)
       REAL  :: eVA, CG2
       REAL  :: CG1(0:NK+1), WN1(0:NK+1)
-
       LOGICAL :: LCONVERGED(NSEAL), lexist
 #ifdef WEIGHTS 
       INTEGER :: ipiter(nseal), ipitergl(np_global), ipiterout(np_global) 
@@ -6343,6 +6168,11 @@
 #ifdef W3_DEBUGSRC
         WRITE(740+IAPROC,*) 'NSEAL =', NSEAL, 'NP    =', NP, 'NPA   =', NPA
 #endif
+#ifdef W3_DEBUGSOLVERCOH
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) before transform", 0)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) before transform", 1)
+#endif
+! We have NSEAL = NPA so the whole field is assigned
       DO JSEA=1,NSEAL
         IP      = JSEA
         IP_glob = iplg(IP)
@@ -6368,8 +6198,8 @@
       END DO
 #endif
 #ifdef W3_DEBUGSOLVERCOH
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(np) just defined", np)
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) just defined", npa)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) just defined", 0)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) just defined", 1)
 #endif
 #ifdef W3_DEBUGSOLVER
      FLUSH(740+IAPROC)
@@ -6469,7 +6299,7 @@
      !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 2', sum(B_JAC), SUM(ASPAR_JAC)
 #endif
 !
-      CALL APPLY_BOUNDARY_CONDITION
+      CALL APPLY_BOUNDARY_CONDITION(IMOD)
 
 #ifdef W3_DEBUGSOLVER
      !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 3', sum(B_JAC), SUM(ASPAR_JAC)
@@ -6486,7 +6316,7 @@
       DO IP=1,npa
         TheArr(:, IP)=REAL(ASPAR_JAC(:, PDLIB_I_DIAG(IP)))
       END DO
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(TheArr, "ASPAR(:,I_DIAG) after calArr", np)
+      CALL CHECK_ARRAY_INTEGRAL_NX_R8(TheArr, "ASPAR diag after calArr", np)
 #endif
 
 #ifdef W3_DEBUGSOLVER
@@ -6822,7 +6652,7 @@
       CALL CHECK_ARRAY_INTEGRAL_NX_R8(OffDiag, "OffDiag(np) just check", np)
  !     CALL WRITE_VAR_TO_TEXT_FILE(PRE_VA, eFile)
       CALL CHECK_ARRAY_INTEGRAL_NX_R8(PRE_VA, "PRE_VA(np) just check", np)
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(np) before exchanges", np)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) before exchanges", 0)
 #endif
         IF (B_JGS_BLOCK_GAUSS_SEIDEL) THEN
           CALL PDLIB_exchange2DREAL_zero(VA)
@@ -6835,8 +6665,6 @@
       call getMallocInfo(mallinfos)
       call printMallInfo(IAPROC+50000,mallInfos)
 #endif
-
-!!/DEBUGSOLVERCOH      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) after exchanges", npa)
         !
         ! Terminate via number of iteration
         !
@@ -6991,7 +6819,7 @@
 #endif
       END DO
 #ifdef W3_DEBUGSOLVERCOH
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) after loop", npa)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) after loop", 1)
 #endif
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'FLBPI=', FLBPI
@@ -7106,7 +6934,7 @@
 #endif
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE PDLIB_EXPLICIT_BLOCK(FACX, FACY, DTG, VGX, VGY)
+      SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -7191,6 +7019,7 @@
       USE W3GDATMD, only: B_JGS_NLEVEL
 !
       implicit none
+      INTEGER, INTENT(IN)     :: IMOD
       REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
       !
       INTEGER :: IP, ISP, ITH, IK, JSEA, ISEA, IP_glob, IE, IPOS
@@ -7284,8 +7113,8 @@
 #endif
 
 #ifdef W3_DEBUGSOLVERCOH
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(np) just defined", np)
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) just defined", npa)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) just defined", 0)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) just defined", 1)
 #endif
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'JACOBI_SOLVER, step 3'
@@ -7393,7 +7222,7 @@
       END DO
       
 #ifdef W3_DEBUGSOLVERCOH
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8(VA, "VA(npa) after loop", npa)
+      CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) after loop", 1)
 #endif
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'FLBPI=', FLBPI

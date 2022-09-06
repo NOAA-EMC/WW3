@@ -1125,7 +1125,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before W3IORS call")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before W3IORS call", 1)
 #endif
 #endif
 #ifdef W3_DEBUGINIT
@@ -1152,7 +1152,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After W3IORS call")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After W3IORS call", 1)
 #endif
 #endif
 #ifdef W3_DEBUGINIT
@@ -1178,7 +1178,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.2")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.2", 1)
 #endif
 #endif
 #ifdef W3_TIMINGS
@@ -1209,7 +1209,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.3")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.3", 1)
 #endif
 #endif
 !
@@ -1236,7 +1236,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 5")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 5", 1)
 #endif
 #endif
       IF ( RSTYPE .EQ. 4 ) THEN
@@ -1316,7 +1316,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 6")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 6", 1)
 #endif
 #endif
 !
@@ -1364,7 +1364,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 7")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 7", 1)
 #endif
 #endif
 #ifdef W3_DEBUGINIT
@@ -1497,7 +1497,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1", 1)
 #endif
 #endif
 !
@@ -1612,7 +1612,7 @@
 #endif
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.2")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.2", 1)
 #endif
 #endif
 
@@ -1834,13 +1834,13 @@
 !
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.3")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.3", 1)
 #endif
 #endif
 !!/PDLIB         CALL VA_SETUP_IOBPD
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.4")
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.4", 1)
 #endif
 #endif
 #ifdef W3_DEBUGINIT
