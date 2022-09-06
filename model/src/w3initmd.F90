@@ -743,8 +743,8 @@
       WRITE (NDST,9003) LFILE(:IFL), TFILE(:IFT)
 #endif
 !
-! 2.  Model defintition ---------------------------------------------- /
-! 2.a Read model defintition file
+! 2.  Model definition ---------------------------------------------- /
+! 2.a Read model definition file
 !
 !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 8")
       CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
@@ -3792,8 +3792,7 @@
 #ifdef W3_MPIT
       WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
 #endif
-
-                END IF
+              END IF
 #endif !W3_CESMCOUPLED
 #endif !W3_MPI
 !
