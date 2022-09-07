@@ -1,5 +1,18 @@
+!> @file
+!> @brief I/O and computational routines for the wave-field separation
+!>  output.
+!> 
+!> @author H. L. Tolman  @date 25-Jul-2018
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief I/O and computational routines for the wave-field separation
+!>  output.
+!> 
+!> @author H. L. Tolman  @date 25-Jul-2018
+!> 
       MODULE W3IOSFMD
 !/
 !/                  +-----------------------------------+
@@ -84,6 +97,14 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Partitioning of spectra into fields for all grid points that
+!>  are locally stored.
+!>
+!> @param[in] IMOD  Grid number.
+!>
+!> @author H. L. Tolman  @date 25-Jul-2018
+!>        
       SUBROUTINE W3CPRT ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -323,6 +344,19 @@
       END SUBROUTINE W3CPRT
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Write partitioned spectral data to file.
+!>
+!> @details  Unlike other WAVEWATCH III IO routines, this one writes only.
+!>  First ad-hoc version.
+!>
+!>  Writing to formatted or unformatted file with ID headers.
+!>
+!> @param[in] NDSPT  Unit number.
+!> @param[in] IMOD   Grid number.
+!>
+!> @author H. L. Tolman  @date 30-Oct-2009
+!>      
       SUBROUTINE W3IOSF ( NDSPT, IMOD )
 !/
 !/                  +-----------------------------------+
