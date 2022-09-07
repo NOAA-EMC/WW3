@@ -1,5 +1,16 @@
+!> @file
+!> @brief Read/write restart files.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Read/write restart files.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
       MODULE W3IORSMD
 !/
 !/                  +-----------------------------------+
@@ -64,6 +75,40 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Reads/writes restart files.
+!>
+!> @details
+!> @verbatim
+!>     The file is opened within the routine, the name is pre-defined
+!>     and the unit number is given in the parameter list. The restart
+!>     file is written using UNFORMATTED write statements. The routine
+!>     generates new names when called more than once. File names are :
+!>
+!>                                 restart000.FILEXT
+!>                                 restart001.FILEXT
+!>                                 restart002.FILEXT etc.
+!>
+!>     Optionally, a second stream of restart files is generated given
+!>     a secondary stride definad by an additional start/end time line
+!>     triggered by an optional argument added to the end of the stan-
+!>     dard restart request line (a sixth argument flag set to T). File
+!>     names include a time-tag prefix:
+!>
+!>                                YYYYMMDD.HHMMSS.restart.FILEXT
+!>
+!>     The file to be read thus always is unnumbered, whereas all
+!>     written files are automatically numbered.
+!> @endverbatim        
+!>
+!> @param[in]    INXOUT   Test string for read/write.
+!> @param[inout] NDSR     File unit number.
+!> @param[in]    DUMFPI   Dummy values for FPIS for cold start.
+!> @param[in]    IMOD     Optional grid number, defaults to 1.
+!> @param[in]    FLRSTRT  A second request for restart files (optional TRUE).
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>        
       SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
 !/
 !/                  +-----------------------------------+
