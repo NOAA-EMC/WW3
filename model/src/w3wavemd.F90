@@ -609,15 +609,6 @@
       SCREEN   =  333
 #endif
 !
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3WAVE, step 1'
-#endif
-#ifdef W3_DEBUGSRC
-      WRITE(740+IAPROC,*) 'Step 1 : max(UST)=', maxval(UST)
-#endif
-#ifdef W3_DEBUGINIT
-      FLUSH(740+IAPROC)
-#endif
       IF ( IOUTP  .NE. IMOD ) CALL W3SETO ( IMOD, NDSE, NDST )
       IF ( IGRID  .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
       IF ( IWDATA .NE. IMOD ) CALL W3SETW ( IMOD, NDSE, NDST )
@@ -629,10 +620,8 @@
 
 
 
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 1", 1)
-#endif
 #endif
 
 !
@@ -652,14 +641,8 @@
         ELSE
           SKIP_O = .FALSE.
         END IF
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3WAVE, step 2'
-      FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 2", 1)
-#endif
 #endif
 !
 ! 0.b Subroutine tracing
@@ -760,14 +743,8 @@
         ELSE
           DTL0   = 0.
         END IF
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3WAVE, step 4'
-      FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 4", 1)
-#endif
 #endif
 !
 ! 1.c Current interval
@@ -807,14 +784,8 @@
               TOFRST = TIME
             END IF
         END IF
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3WAVE, step 5'
-      FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 5", 1)
-#endif
 #endif
 !
 ! 1.e Ice concentration interval
@@ -835,14 +806,8 @@
         ELSE
           DTI0   = 0.
         END IF
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3WAVE, step 6'
-      FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6", 1)
-#endif
 #endif
 !
 ! 1.f Momentum interval
@@ -946,10 +911,8 @@
 !      ENDIF
 
 
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6.1", 1)
-#endif
 #endif
 !
 !
@@ -1110,10 +1073,8 @@
      END DO
 #endif
 !
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Beginning time loop", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After assigning VAOLD")
@@ -1170,11 +1131,6 @@
         WRITE (NDST,9021) ITIME, IT, TIME, FLMAP, FLDDIR,          &
                           VGX, VGY, DTG, DTRES
 #endif
-#ifdef W3_DEBUGSRC
-      WRITE(740+IAPROC,*) 'DTG 2 : DTG=', DTG
-      WRITE(740+IAPROC,*) 'max(UST)=', maxval(UST)
-      FLUSH(740+IAPROC)
-#endif
 !
 ! 3.1 Interpolate winds, currents, and momentum.
 !     (Initialize wave fields with winds)
@@ -1189,10 +1145,8 @@
 #endif
 
           IF ( FLCUR  ) THEN
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before UCUR", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("W3WAVE, step 6.4.1")
@@ -1280,10 +1234,8 @@
          CALL PRINT_MY_TIME("After U10, etc. assignation")
 #endif
 !
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before call to W3UINI", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before call W3UINI")
@@ -1305,10 +1257,8 @@
 !
 ! 3.2 Update boundary conditions if boundary flag is true (FLBPI)
 !
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before boundary update", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before boundary update")
@@ -1405,10 +1355,8 @@
                   FLMAP  = .TRUE.
               END IF
           END IF
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLICE and DTI0", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After FLICE and DTI0")
@@ -1518,10 +1466,8 @@
                         .OR. FLCK .OR. FSFREQSHIFT
               END IF
           END IF
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FFLEV and DTL0", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After FFLEV and DTL0")
@@ -1912,10 +1858,8 @@
 !
 ! 3.6.2 Intra-spectral part 1
 !
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before intraspectral part 1", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before intraspectral")
@@ -2012,10 +1956,8 @@
        call printMallInfo(IAPROC+40000,mallInfos)
 #endif
 
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
   CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before spatial advection", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("Before spatial advection")
@@ -2049,10 +1991,8 @@
 #ifdef W3_PDLIB
        IF (FSTOTALIMP .and. (IT .ne. 0)) THEN
 #endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
         CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before Block implicit", 1)
-#endif
 #endif
 #ifdef W3_PDLIB
          CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY)
@@ -2255,10 +2195,8 @@
 !
         END IF
 
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
         CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After spatial advection", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After spatial advection")
@@ -2350,10 +2288,8 @@
 !
                 END DO
             END IF
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
        CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After intraspectral adv.", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("fter intraspectral adv.")
@@ -2527,10 +2463,8 @@
 !!/MPI              CALL MPI_BARRIER (MPI_COMM_WCMP,IERR_MPI)
 !
             END IF
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After source terms", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("After source terms")
@@ -2570,10 +2504,8 @@
               IDACT  = '         '
           END IF
 !
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
             CALL ALL_VA_INTEGRAL_PRINT(IMOD, "end of time loop", 1)
-#endif
 #endif
 #ifdef W3_TIMINGS
          CALL PRINT_MY_TIME("end of time loop")
