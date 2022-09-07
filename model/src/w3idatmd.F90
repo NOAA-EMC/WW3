@@ -816,9 +816,9 @@
 !> @details Point pointers to the proper variables in the proper element of
 !>  the GRIDS array.
 !>
-!> @param[in] Model number to point to.
-!> @param[in] Error output unit number.
-!> @param[in] Test output unit number.
+!> @param[in] IMOD  Model number to point to.
+!> @param[in] NDSE  Error output unit number.
+!> @param[in] NDST  Test output unit number.
 !>
 !> @author H. L. Tolman  @date 22-Mar-2021
 !>      
