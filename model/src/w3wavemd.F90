@@ -1281,23 +1281,10 @@
                     IF (READBC.AND.IDACT(1:1).EQ.' ') IDACT(1:1) = 'X'
                 END IF
                 FLACT  = READBC .OR. FLACT
-#ifdef W3_DEBUGIOBC
-     WRITE(740+IAPROC,*) 'READBC=', READBC
-     FLUSH(740+IAPROC)
-#endif
 
                 IF ( READBC ) THEN
-#ifdef W3_DEBUGIOBC
-       WRITE(740+IAPROC,*) 'Before call to W3IOBC'
-       FLUSH(740+IAPROC)
-#endif
                   CALL W3IOBC ( 'READ', NDS(9), TBPI0, TBPIN,       &
                                 ITEST, IMOD )
-#ifdef W3_DEBUGIOBC
-       WRITE(740+IAPROC,*) 'After call to W3IOBC'
-       WRITE(740+IAPROC,*) 'ITEST=', ITEST
-       FLUSH(740+IAPROC)
-#endif
                   IF ( ITEST .NE. 1 ) CALL W3UBPT
                 ELSE
                   ITEST  = 0
