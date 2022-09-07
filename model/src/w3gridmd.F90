@@ -3978,13 +3978,6 @@
         CALL READMSH(NDSG,FNAME)
         ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
         ZBIN(:,1) = VSC * ZB(:)
-#ifdef W3_DEBUGSTP
-        WRITE(740,*) 'VSC=', VSC
-        WRITE(740,*) 'Printing ZBIN 1'
-        DO IX=1,NX
-          WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-        END DO
-#endif
 !
 ! subgrid obstructions are not yet handled in unstructured grids
 !
@@ -3998,12 +3991,6 @@
       ALLOCATE ( TMPSTA(NY,NX), TMPMAP(NY,NX) )
       TMPSTA = 0
 !
-#ifdef W3_DEBUGSTP
-          WRITE(740,*) 'Printing ZBIN 2'
-          DO IX=1,NX
-            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-          END DO
-#endif
       IF (GTYPE .EQ. UNGTYPE) THEN
         TMPSTA = 1
       ELSE
@@ -4433,12 +4420,6 @@
         CALL READMSHOBC(NDSG,UGOBCFILE,TMPSTA,UGOBCOK)
        IF ((GTYPE.EQ.UNGTYPE).AND.UGOBCAUTO.AND.(.NOT.UGOBCOK))  &
           CALL UG_GETOPENBOUNDARY(TMPSTA,ZBIN,UGOBCDEPTH)
-#ifdef W3_DEBUGSTP
-          WRITE(740,*) 'Printing ZBIN 4'
-          DO IX=1,NX
-            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-          END DO
-#endif
 !
 ! 8.b Determine where to get the data
 !
@@ -4898,12 +4879,6 @@
                    1, NX, IX3, 1, NY, IY3, 'Zb', 'm')
 #endif
 !
-#ifdef W3_DEBUGSTP
-          WRITE(740,*) 'Printing ZBIN 5'
-          DO IX=1,NX
-            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-          END DO
-#endif
       TRNX   = 0.
       TRNY   = 0.
 !
@@ -4954,12 +4929,6 @@
 
           END DO
         END DO
-#ifdef W3_DEBUGSTP
-        DO ISEA=1,NSEA
-          WRITE(740,*) 'ISEA,ZB=', ISEA, ZB(ISEA)
-        END DO
-        FLUSH(740)
-#endif
 !
 #ifdef W3_SMC
  !!Li SMC grid definition of mapping arrays.

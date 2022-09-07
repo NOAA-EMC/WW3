@@ -1284,18 +1284,6 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'W3OUTG')
 #endif
-!
-#ifdef W3_DEBUGSTP
-    WRITE(740+IAPROC,*) 'NTH=', NTH
-    WRITE(740+IAPROC,*) 'NK=', NK
-    WRITE(740+IAPROC,*) 'NSPEC=', NSPEC
-    WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
-    WRITE(740+IAPROC,*) 'W3OUTG, initial A printing'
-    WRITE(740+IAPROC,*) 'size(A,1)=', size(A,1)
-    WRITE(740+IAPROC,*) 'size(A,2)=', size(A,2)
-    WRITE(740+IAPROC,*) 'size(A,3)=', size(A,3)
-    FLUSH(740+IAPROC)
-#endif
       DO I=1,NOGRP
         DO J=1,NGRPP
           FLOLOC(I,J) =   &
