@@ -643,13 +643,6 @@
       ! STK_WN are the decays for Stokes drift partitions
       REAL                    :: STK_WN(25)
 
-#ifdef W3_DEBUGGRID
-       INTEGER     :: nbCase1, nbCase2, nbCase3,           &
-                      nbCase4, nbCase5, nbCase6,           &
-                      nbCase7, nbCase8
-       INTEGER     :: nbTMPSTA0, nbTMPSTA1, nbTMPSTA2
-       INTEGER     :: IAPROC
-#endif
 !
 #ifdef W3_LN1
       REAL                    :: CLIN, RFPM, RFHF
@@ -1160,9 +1153,6 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  IO set-up.
 !
-#ifdef W3_DEBUGGRID
-      IAPROC = 1
-#endif
       NDSI   = 10
       NDSS   = 99
       NDSM   = 20
@@ -4468,9 +4458,6 @@
 !
 ! ... Data to be read in parts
 !
-#ifdef W3_DEBUGGRID
-             WRITE(740+IAPROC,*) 'FROM=', TRIM(FROM)
-#endif
       IF ( FROM .EQ. 'PART' ) THEN
 !
 ! 8.b Update TMPSTA with input boundary data (ILOOP=1)
@@ -4482,16 +4469,6 @@
           'TO READ DATA IN PARTS. STOPPING NOW (107).'
           CALL EXTCDE ( 107 )
         END IF
-#ifdef W3_DEBUGGRID
-       nbCase1=0
-       nbCase2=0
-       nbCase3=0
-       nbCase4=0
-       nbCase5=0
-       nbCase6=0
-       nbCase7=0
-       nbCase8=0
-#endif
         DO ILOOP=1, 2
 !
           I = 1
@@ -4531,12 +4508,6 @@
               CALL NEXTLN ( COMSTR , NDSI , NDSE )
               READ (NDSI,*,END=2001,ERR=2002) IX, IY, CONNCT
             END IF
-#ifdef W3_DEBUGGRID
-  		 WRITE(740+IAPROC,*) 'read IX=', IX
-  		 WRITE(740+IAPROC,*) 'read IY=', IY
-  		 WRITE(740+IAPROC,*) 'read CONNCT=', CONNCT
-#endif
-
 !
 ! ... Check if last point reached.
 !
@@ -4553,10 +4524,6 @@
 !
 ! ... Check if intermediate points are to be added.
 !
-#ifdef W3_DEBUGGRID
-  		 WRITE(740+IAPROC,*) 'CONNCT=', CONNCT
-  		 WRITE(740+IAPROC,*) 'FIRST=', FIRST
-#endif
             IF ( CONNCT .AND. .NOT.FIRST ) THEN
                 IDX    = IX - IXO
                 IDY    = IY - IYO
@@ -4589,9 +4556,6 @@
 ! ... Check if point itself is to be added
 !
             IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
-#ifdef W3_DEBUGGRID
-                nbCase2=nbCase2+1
-#endif
               TMPSTA(IY,IX) = NSTAT
             END IF
 !
@@ -4653,9 +4617,6 @@
               IY1    = IY
 !
               JJ     = TMPSTA(IY,IX)
-#ifdef W3_DEBUGGRID
-             nbCase3=nbCase3 + 1
-#endif
               TMPSTA(IY,IX) = NSTAT
               DO
                 NBT    = 0
@@ -4665,36 +4626,24 @@
                       IF (IX.GT.1) THEN
                         IF (TMPSTA(IY  ,IX-1).EQ.NSTAT           &
                             .AND. TMPMAP(IY  ,IX-1).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-               nbCase4=nbCase4 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
                       IF (IX.LT.NX) THEN
                         IF (TMPSTA(IY  ,IX+1).EQ.NSTAT           &
                             .AND. TMPMAP(IY  ,IX+1).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-               nbCase5=nbCase5 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
                       IF (IY.LT.NY) THEN
                         IF (TMPSTA(IY+1,IX  ).EQ.NSTAT           &
                             .AND. TMPMAP(IY+1,IX  ).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-  	          nbCase6=nbCase6 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
                       IF (IY.GT.1) THEN
                         IF (TMPSTA(IY-1,IX  ).EQ.NSTAT           &
                            .AND. TMPMAP(IY-1,IX  ).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-               nbCase7=nbCase7 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
@@ -4734,31 +4683,6 @@
 ! ... Branch back input / excluded points ( ILOOP in 8.b )
 !
         END DO
-#ifdef W3_DEBUGGRID
-      WRITE(740+IAPROC,*) 'nbCase1=', nbCase1
-      WRITE(740+IAPROC,*) 'nbCase2=', nbCase2
-      WRITE(740+IAPROC,*) 'nbCase3=', nbCase3
-      WRITE(740+IAPROC,*) 'nbCase4=', nbCase4
-      WRITE(740+IAPROC,*) 'nbCase5=', nbCase5
-      WRITE(740+IAPROC,*) 'nbCase6=', nbCase6
-      WRITE(740+IAPROC,*) 'nbCase7=', nbCase7
-      WRITE(740+IAPROC,*) 'nbCase8=', nbCase8
-      nbTMPSTA0=0
-      nbTMPSTA1=0
-      nbTMPSTA2=0
-      DO IX=1,NX
-        DO IY=1,NY
-          WRITE(740+IAPROC,*) 'IX/IY/TMPSTA=', IX, IY, TMPSTA(IY,IX)
-          IF (TMPSTA(IY,IX) .eq. 0) nbTMPSTA0=nbTMPSTA0+1
-          IF (TMPSTA(IY,IX) .eq. 1) nbTMPSTA1=nbTMPSTA1+1
-          IF (TMPSTA(IY,IX) .eq. 2) nbTMPSTA2=nbTMPSTA2+1
-        END DO
-      END DO
-      WRITE(740+IAPROC,*) 'nbTMPSTA0=', nbTMPSTA0
-      WRITE(740+IAPROC,*) 'nbTMPSTA1=', nbTMPSTA1
-      WRITE(740+IAPROC,*) 'nbTMPSTA2=', nbTMPSTA2
-      FLUSH(740+IAPROC)
-#endif
 !
         ELSE ! FROM .EQ. PART
 !
