@@ -2939,7 +2939,7 @@
                 ELSE ! IF(SMCGRD)
                   DO IX=IX1, IXN
                     DO IY=IY1, IYN
-                      IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
+                      IF ( X1(IX,IY) .EQ. UNDEF ) THEN
                         MXX(IX,IY) = MFILL
                         MYY(IX,IY) = MFILL
                         MXY(IX,IY) = MFILL
@@ -2998,7 +2998,7 @@
                   ELSE ! IF(SMCGRD)
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
+                        IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                           MXX(IX,IY) = MFILL
                           MYY(IX,IY) = MFILL
                         ELSE
@@ -3057,7 +3057,7 @@
                     ELSE ! IF(SMCGRD)
                       DO IX=IX1, IXN
                         DO IY=IY1, IYN
-                          IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
+                          IF ( XXK(IX,IY,IK) .EQ. UNDEF ) THEN
                             MXX(IX,IY) = MFILL
                             MYY(IX,IY) = MFILL
                           ELSE
@@ -3102,7 +3102,7 @@
                   ELSE ! IF(SMCGRD)
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
+                        IF ( X1(IX,IY) .EQ. UNDEF ) THEN
                           MX1(IX,IY) = MFILL
                         ELSE
                           MX1(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
@@ -3144,7 +3144,7 @@
                     ELSE ! IF(SMCGRD)
                       DO IX=IX1, IXN
                         DO IY=IY1, IYN
-                          IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
+                          IF ( XK(IX,IY,IK) .EQ. UNDEF ) THEN
                             MX1(IX,IY) = MFILL
                           ELSE
                             MX1(IX,IY) = NINT(XK(IX,IY,IK)/META(1)%FSC)
@@ -3204,7 +3204,7 @@
                 ELSE ! IF(SMCGRD)
                   DO IX=IX1, IXN
                     DO IY=IY1, IYN
-                      IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
+                      IF ( X1(IX,IY) .EQ. UNDEF ) THEN
                         MXXR(IX,IY) = MFILLR
                         MYYR(IX,IY) = MFILLR
                         MXYR(IX,IY) = MFILLR
@@ -3263,7 +3263,7 @@
                   ELSE ! IF SMCGRD
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
+                        IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                           MXXR(IX,IY) = MFILLR
                           MYYR(IX,IY) = MFILLR
                         ELSE
@@ -3318,7 +3318,7 @@
                     ELSE ! IF SMCGRD
                       DO IX=IX1, IXN
                         DO IY=IY1, IYN
-                          IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
+                          IF ( XXK(IX,IY,IK) .EQ. UNDEF ) THEN
                             MXXR(IX,IY) = MFILLR
                             MYYR(IX,IY) = MFILLR
                           ELSE
@@ -3363,7 +3363,7 @@
                   ELSE ! IF SMCGRD
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
+                        IF ( X1(IX,IY) .EQ. UNDEF ) THEN
                           MX1R(IX,IY) = MFILLR
                         ELSE
                           MX1R(IX,IY) = X1(IX,IY)
@@ -3404,7 +3404,7 @@
                     ELSE ! IF SMCGRD
                       DO IX=IX1, IXN
                         DO IY=IY1, IYN
-                          IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
+                          IF ( XK(IX,IY,IK) .EQ. UNDEF ) THEN
                             MX1R(IX,IY) = MFILLR
                           ELSE
                             MX1R(IX,IY) = XK(IX,IY,IK)

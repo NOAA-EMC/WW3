@@ -2319,8 +2319,7 @@
 !
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .GT. 0 .AND.                   &
-                         X1(IX,IY) .NE. UNDEF ) THEN
+                    IF ( X1(IX,IY) .NE. UNDEF ) THEN
                         NINGRD = NINGRD + 1
                         XMIN   = MIN ( XMIN , X1(IX,IY) )
                         XMAX   = MAX ( XMAX , X1(IX,IY) )
@@ -2409,8 +2408,7 @@
                   IF ( FLTRI ) THEN
                    DO IX=IX1, IXN
                      DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                             XX(IX,IY) .EQ. UNDEF ) THEN
+                        IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                             MXX(IX,IY) = MFILL
                             MYY(IX,IY) = MFILL
                             MXY(IX,IY) = MFILL
@@ -2449,8 +2447,7 @@
                   IF ( FLTWO .OR. FLDIR ) THEN
                     DO IX=IX1, IXN
                      DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                             XX(IX,IY) .EQ. UNDEF ) THEN
+                        IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                             MXX(IX,IY) = MFILL
                             MYY(IX,IY) = MFILL
                           ELSE
@@ -2489,8 +2486,7 @@
                   ELSE
                     DO IX=IX1, IXN
                       DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                             X1(IX,IY) .EQ. UNDEF ) THEN
+                        IF ( X1(IX,IY) .EQ. UNDEF ) THEN
                             MX1(IX,IY) = MFILL
                           ELSE
                             MX1(IX,IY) = NINT(X1(IX,IY)/FSC)
