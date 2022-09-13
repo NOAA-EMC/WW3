@@ -4442,6 +4442,10 @@
 !
       NMIN   = NSEA
 !
+#ifdef W3_OMPG
+!$OMP PARALLEL PRIVATE (IPROC,NLOC,ISEA,JSEA,ISPROC,IXY,NMIN)
+!$OMP DO SCHEDULE (DYNAMIC,1)
+#endif
       DO IPROC=1, NAPROC
         NLOC   = 0
         DO ISEA=1, NSEA
@@ -4462,6 +4466,10 @@
 #endif
         NMIN   = MIN ( NMIN , NLOC )
         END DO
+#ifdef W3_OMPG
+!$OMP END DO
+!$OMP END PARALLEL
+#endif
 !
       FLAG0  = NMIN .EQ. 0
 #ifdef W3_T
