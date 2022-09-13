@@ -16,7 +16,7 @@
 !/                  | WAVEWATCH III           NOAA/NCEP |
 !/                  |           H. L. Tolman            |
 !/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
+!/                  | Last update :         13-Sep-2022 |
 !/                  +-----------------------------------+
 !/
 !/    04-Feb-2000 : Origination.                        ( version 2.00 )
@@ -95,7 +95,9 @@
 !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
 !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
-!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx ) 
+!/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx )
+!/    13-Sep-2022 : Add OMP for W3NMIN loops. Hide
+!/                  W3NMIN in W3_DEBUGRUN for scaling.  ( version 7.xx )
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -162,7 +164,10 @@
 !                Subr.          Basic MPI routines.
 !     ----------------------------------------------------------------
 !
-!  5. Remarks :
+!  5. Remarks : Call to W3NMIN hidden behind W3_DEBUGRUN. This call
+!               currently only serves to warn when one or more procs
+!               have no active seapoints. It has been hid as this
+!               dramatically increases runtime performance.
 !
 !  6. Switches :
 !
