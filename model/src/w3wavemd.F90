@@ -1715,9 +1715,14 @@
 #ifdef W3_PR3
               CALL W3MAPT
 #endif
-            END IF  !! GTYPE 
+            END IF  !! GTYPE
+
+!! Hides call to W3NMIN, which currently only serves to warn when
+!! one or more procs have zero active seapoints.
+#ifdef W3_DEBUGRUN
               CALL W3NMIN ( MAPSTA, FLAG0 )
               IF ( FLAG0 .AND. IAPROC.EQ.NAPERR ) WRITE (NDSE,1030) IMOD
+#endif
               FLMAP  = .FALSE.
           END IF
 !
