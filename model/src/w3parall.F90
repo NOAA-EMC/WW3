@@ -1212,13 +1212,13 @@
          ISPROC = ISEA - (JSEA-1)*NAPROC
 #ifdef W3_PDLIB
       ELSE
-         IP_glob = MAPSF(ISEA,1)
-         IF (IAPROC .le. NAPROC) THEN
-            JSEA   = ISEA_TO_JSEA(ISEA)
-         ELSE
-            JSEA   = -1
-         END IF
-         ISPROC = IPGL_TO_PROC(IP_glob)
+        IP_glob = MAPSF(ISEA,1)
+        IF (IAPROC .le. NAPROC) THEN
+          JSEA   = ISEA_TO_JSEA(ISEA)
+        ELSE
+          JSEA   = -1
+        END IF
+        ISPROC = IPGL_TO_PROC(IP_glob)
       ENDIF
 #endif
 !/
