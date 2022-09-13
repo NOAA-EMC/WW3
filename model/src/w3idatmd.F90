@@ -275,8 +275,8 @@
 !>
 !> @details Use data stored in NGRIDS in W3GDATMD.
 !>
-!> @param[in] NDSE
-!> @param[in] NDST        
+!> @param[in] NDSE  Error output unit number.
+!> @param[in] NDST  Test output unit number.
 !>
 !> @author H. L. Tolman  @date 22-Mar-2021
 !>        
