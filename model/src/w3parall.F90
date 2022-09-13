@@ -1204,28 +1204,23 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'INIT_GET_JSEA_ISPROC')
 #endif
-!!/DEBUG      WRITE(740+IAPROC,*) 'PDLIB=', PDLIB
-!!/DEBUG      WRITE(740+IAPROC,*) 'GTYPE=', GTYPE, ' UNGTYPE=', UNGTYPE
-!!/DEBUG      FLUSH(740+IAPROC)
-      IF (.NOT. LPDLIB) THEN
-        JSEA   = 1 + (ISEA-1)/NAPROC
-        ISPROC = ISEA - (JSEA-1)*NAPROC
-      ELSE
+
 #ifdef W3_PDLIB
-      IF (GTYPE .ne. UNGTYPE) THEN
-        JSEA   = 1 + (ISEA-1)/NAPROC
-        ISPROC = ISEA - (JSEA-1)*NAPROC
+      IF ((.NOT. LPDLIB ).or.(GTYPE .ne. UNGTYPE)) THEN
+#endif
+         JSEA   = 1 + (ISEA-1)/NAPROC
+         ISPROC = ISEA - (JSEA-1)*NAPROC
+#ifdef W3_PDLIB
       ELSE
-        IP_glob = MAPSF(ISEA,1)
-        IF (IAPROC .le. NAPROC) THEN
-          JSEA   = ISEA_TO_JSEA(ISEA)
-        ELSE
-          JSEA   = -1
-        END IF
-        ISPROC = IPGL_TO_PROC(IP_glob)
+         IP_glob = MAPSF(ISEA,1)
+         IF (IAPROC .le. NAPROC) THEN
+            JSEA   = ISEA_TO_JSEA(ISEA)
+         ELSE
+            JSEA   = -1
+         END IF
+         ISPROC = IPGL_TO_PROC(IP_glob)
       ENDIF
 #endif
-      ENDIF
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
