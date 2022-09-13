@@ -10,9 +10,9 @@
 !/                  +-----------------------------------+
 !/
 !/    For update log see individual subroutines.
-!/    12-Jun-2012 : Add /RTD option or rotated grid option.
+!/    12-Jun-2012 : Add /RTD option or rotated grid option. 
 !/                  (Jian-Guo Li)                       ( version 4.06 )
-!/    11-Nov-2013 : SMC and rotated grid incorporated in the main
+!/    11-Nov-2013 : SMC and rotated grid incorporated in the main 
 !/                  trunk                               ( version 4.13 )
 !/    18-Aug-2016 : Add dist_sphere: angular distance   ( version 5.11 )
 !/    01-Mar-2016 : Added W3THRTN and W3XYRTN for post  ( version 6.02 )
@@ -21,7 +21,7 @@
 !/
 !/    Copyright 2009-2012 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS.
+!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
 !/       No unauthorized use without permission.
 !/
 !  1. Purpose :
@@ -45,17 +45,17 @@
 !     ----------------------------------------------------------------
 !      ITRACE    Subr. Public   (Re-) Initialization for STRACE.
 !      STRACE    Subr. Public   Enable subroutine tracing, usually
-!                               activated with the !/S switch.
+!                               activated with the !/S switch.   
 !      NEXTLN    Subr. Public   Get to next line in input command file.
 !      W3S2XY    Subr. Public   Grid conversion routine.
 !      EJ5P      R.F.  Public   Five parameter JONSWAP spectrum.
 !      WWDATE    Subr. Public   Get system date.
 !      WWTIME    Subr. Public   Get system time.
 !      EXTCDE    Subr. Public   Abort program with exit code.
-!     Four subs for rotated grid are appended to this module.  As they
-!     are shared with SMC grid, they are not quoted by option /RTD but
+!     Four subs for rotated grid are appended to this module.  As they 
+!     are shared with SMC grid, they are not quoted by option /RTD but 
 !     are available for general use.     JGLi12Jun2012
-!     W3SPECTN       turns wave spectrum anti-clockwise by AnglD
+!     W3SPECTN       turns wave spectrum anti-clockwise by AnglD 
 !     W3ACTURN       turns wave action(k,nth) anti-clockwise by AnglD.
 !     W3LLTOEQ       convert standard into rotated lat/lon, plus AnglD
 !     W3EQTOLL       revers of the LLTOEQ, but AnglD unchanged.
@@ -77,8 +77,6 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      ! module default
-      IMPLICIT NONE
       PUBLIC
 !
       INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0
@@ -125,6 +123,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -187,6 +186,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -263,6 +263,9 @@
 !
 ! 10. Source code :
 !
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+!/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -374,6 +377,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -389,11 +393,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-    DO ISEA=1, NSEA
+      DO 100, ISEA=1, NSEA
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         XY(IX,IY) = S(ISEA)
-    END DO
+  100   CONTINUE
 !/
 !/ End of W3S2XY ----------------------------------------------------- /
 !/
@@ -465,6 +469,8 @@
 !
 ! 10. Source code :
 !
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -562,11 +568,12 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS
+      IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
-      REAL, INTENT(IN)        :: LO1, LA1, LO2, LA2
+      REAL, INTENT(IN)        :: LO1, LA1, LO2, LA2 
 !/
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
@@ -575,14 +582,14 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-     DIST_SPHERE=acos(sin(la2*DERA)*sin(la1*DERA)+ &
+     DIST_SPHERE=acos(sin(la2*DERA)*sin(la1*DERA)+ &   
                       cos(la2*DERA)*cos(la1*DERA)*cos((lo2-lo1)*DERA))*RADE
 !
       RETURN
 !/
 !/ End of NEXTLN ----------------------------------------------------- /
 !/
-  END FUNCTION DIST_SPHERE
+      END FUNCTION
 !/ ------------------------------------------------------------------- /
 
 !/ ------------------------------------------------------------------- /
@@ -625,6 +632,9 @@
 !
 ! 10. Source code :
 !
+!/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+!/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
@@ -696,6 +706,9 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
+!/
+!/ ------------------------------------------------------------------- /
 !/ Parameter list
 !/
       CHARACTER, INTENT(OUT)  :: STRNG*8
@@ -743,10 +756,10 @@
 !
 !     Perform a program stop with an exit code.
 !
-!     If exit code IEXIT=0, then it is not an error, but
+!     If exit code IEXIT=0, then it is not an error, but 
 !     a stop has been requested by the calling routine:
 !     wait for other processes in communicator to catch up.
-!
+!     
 !     If exit code IEXIT.ne.0, then abort program w/out
 !     waiting for other processes to catch up (important for example
 !     when not all processes are used by WW3).
@@ -780,6 +793,7 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
+      IMPLICIT NONE
 !
 #ifdef W3_MPI
       INCLUDE "mpif.h"
@@ -835,34 +849,54 @@
 #ifdef W3_MPI
       CALL MPI_INITIALIZED ( RUN, IERR_MPI )
       IF ( RUN ) THEN
-         IF ( IEXIT.EQ.0 ) THEN ! non-error state
-            IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
-            CALL MPI_FINALIZE (IERR_MPI )
-         ELSE ! error state
-            WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
-            IF (PRESENT(UNIT)) THEN
-               WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
-            END IF
+        IF ( IEXIT.EQ.0 ) THEN ! non-error state
+          IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
+          CALL MPI_FINALIZE (IERR_MPI )
+        ELSE ! error state
+          WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
+          IF (PRESENT(UNIT)) THEN
+            WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
+#endif
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE UNIT missing'
+#ifdef W3_MPI
+          END IF
           IF (PRESENT(MSG)) THEN
-             WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
+            WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
+#endif
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE MSG missing'
+#ifdef W3_MPI
           END IF
           IF (PRESENT(FILE)) THEN
-             WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
+            WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
+#endif
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE FILE missing'
+#ifdef W3_MPI
           END IF
           IF (PRESENT(LINE)) THEN
-             WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
+            WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
+#endif
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE LINE missing'
+#ifdef W3_MPI
           END IF
           IF (PRESENT(COMM)) THEN
-             WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
+            WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
+#endif
+!!/MPI          ELSE
+!!/MPI            WRITE(*,'(A)') 'EXTCDE COMM missing'
+#ifdef W3_MPI
           END IF
           CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
-       END IF
-    END IF
+        END IF
+      END IF
 #endif
 !/
 !/ Handle non-MPI exit
 !/
-    CALL EXIT ( IEXIT )
+      CALL EXIT ( IEXIT )
 !/
 !/ End of EXTCDE ----------------------------------------------------- /
 !/
@@ -877,13 +911,13 @@
 ! Subroutine Interface:
 
        Subroutine W3SPECTN( NFreq, NDirc, Alpha, Spectr )
-
+ 
 ! Description:
 !   Rotates wave spectrum anticlockwise by angle alpha in degree
 !   This routine is distinct from W3ACTURN since orders spectrum as freq, dirn
 !
 ! Subroutine arguments
-
+        IMPLICIT NONE
         INTEGER, INTENT(IN) :: NFreq, NDirc         ! No. freq and dirn bins
         REAL,    INTENT(IN) :: Alpha                ! Turning angle (degrees)
         REAL, INTENT(INOUT) :: Spectr(NFreq,NDirc)  ! Wave spectrum in/out
@@ -916,7 +950,7 @@
 ! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
 ! So shift nsft bins anticlockwise results in local bin number decreasing by nsft
               jj=ii - nsft
-
+ 
 ! As nsft may be either positive or negative depends on alpha, wrapping may
 ! happen in either ends of the bin number train
               IF( jj > NDirc )  jj=jj - NDirc
@@ -924,7 +958,7 @@
 
 ! Copy the selected bin to the loop bin number
               Wrkspc(:,ii)=Spectr(:,jj)
-
+ 
            ENDDO
 
 ! If nsft=0, no need to shift, simply copy
@@ -946,15 +980,15 @@
 ! Negative or clockwise case, larger bin upstream
            Tmpfrq=Wrkspc(:,1)*frac
            DO kk=NDirc, 1, -1
-              Wrkfrq=Wrkspc(:,kk)*frac
-              Spectr(:,kk)=Wrkspc(:,kk) + Wrkfrq - Tmpfrq
+              Wrkfrq=Wrkspc(:,kk)*frac 
+              Spectr(:,kk)=Wrkspc(:,kk) + Wrkfrq - Tmpfrq 
               Tmpfrq=Wrkfrq
            ENDDO
          ENDIF
 
 ! Spectral turning completed
 
-        RETURN
+        RETURN 
         END SUBROUTINE W3SPECTN
 !
 !  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -966,13 +1000,13 @@
 ! Subroutine Interface:
 
        Subroutine W3ACTURN( NDirc, NFreq, Alpha, Spectr )
-
+ 
 ! Description:
 !   Rotates wave spectrum anticlockwise by angle alpha
 !   Routine is distinct from W3SPECTN since orders spectrum as dirn, freq
 !
 ! Subroutine arguments
-
+        IMPLICIT NONE
         INTEGER, INTENT(IN) :: NFreq, NDirc          ! No. freq and dirn bins
         REAL,    INTENT(IN) :: Alpha                 ! Turning angle (degrees)
         REAL, INTENT(INOUT) :: Spectr(NDirc, NFreq)  ! Wave action in/out
@@ -1005,7 +1039,7 @@
 ! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
 ! So shift nsft bins anticlockwise results in local bin number decreasing by nsft
              jj=ii - nsft
-
+ 
 ! As nsft may be either positive or negative depends on alpha, wrapping may
 ! happen in either ends of the bin number train
              IF( jj > NDirc )  jj=jj - NDirc
@@ -1013,7 +1047,7 @@
 
 ! Copy the selected bin to the loop bin number
              Wrkspc(ii,:)=Spectr(jj,:)
-
+ 
           ENDDO
 
 ! If nsft=0, no need to shift, simply copy
@@ -1035,15 +1069,15 @@
 ! Negative or clockwise case, larger bin upstream
           Tmpfrq=Wrkspc(1,:)*frac
           DO kk=NDirc, 1, -1
-             Wrkfrq=Wrkspc(kk,:)*frac
-             Spectr(kk,:)=Wrkspc(kk,:) + Wrkfrq - Tmpfrq
+             Wrkfrq=Wrkspc(kk,:)*frac 
+             Spectr(kk,:)=Wrkspc(kk,:) + Wrkfrq - Tmpfrq 
              Tmpfrq=Wrkfrq
           ENDDO
         ENDIF
 
 ! Spectral turning completed
 
-       RETURN
+       RETURN 
        END SUBROUTINE W3ACTURN
 !
 !Li  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1056,31 +1090,32 @@
 !Li         Jian-Guo Li     26 May 2005
 !Li
 !Li  The WCOEFF1A subroutine is merged into LLTOEQ to reduce repetition
-!Li  of the same calculations. Subroutine interface changed to
+!Li  of the same calculations. Subroutine interface changed to 
 !Li  LLTOEQANGLE
 !Li         Jian-GUo Li     23 Aug 2005
 !Li
-!Li  Subroutine W3LLTOEQ   --------------------------------------------
-!Li
-!Li  Purpose:  Calculates latitude and longitude on equatorial
-!Li            latitude-longitude (eq) grid used in regional
-!Li            models from input arrays of latitude and
-!Li            longitude on standard grid. Both input and output
-!Li            latitudes and longitudes are in degrees.
+!Li  Subroutine W3LLTOEQ   --------------------------------------------    
+!Li                                                                        
+!Li  Purpose:  Calculates latitude and longitude on equatorial             
+!Li            latitude-longitude (eq) grid used in regional               
+!Li            models from input arrays of latitude and                    
+!Li            longitude on standard grid. Both input and output           
+!Li            latitudes and longitudes are in degrees.                    
 !Li            Also calculate rotation angle in degree to tranform
 !Li            standard wind velocity into equatorial wind.
 !Li            Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
-!Li
-!* Arguments:--------------------------------------------------------
-      SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ,     &
-     &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
-
-
-      INTEGER:: POINTS    !IN  Number of points to be processed
+!Li                                                                        
+!* Arguments:--------------------------------------------------------    
+      SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ,     &              
+     &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )             
+                                                                           
+      IMPLICIT NONE                                                        
+                                                                           
+      INTEGER:: POINTS    !IN  Number of points to be processed             
 
       REAL :: PHI_POLE,  & !IN  Latitude of equatorial lat-lon pole
      &        LAMBDA_POLE  !INOUT  Longitude of equatorial lat-lon pole
-
+                                                                           
       REAL, DIMENSION(POINTS) ::         &
      &        PHI,       & !IN  Latitude
      &        LAMBDA,    & !IN  Longitude
@@ -1092,16 +1127,16 @@
       REAL(KIND=8) :: A_LAMBDA, A_PHI, E_LAMBDA, E_PHI,                 &
                       SIN_PHI_POLE, COS_PHI_POLE,                       &
                       TERM1, TERM2, ARG, LAMBDA_ZERO, LAMBDA_POLE_KEEP
-      INTEGER      :: I
+      INTEGER      :: I 
 
       REAL(KIND=8), PARAMETER :: SMALL=1.0E-6
 
       ! Double precision versions of values in constants.ftn:
-      REAL(KIND=8), PARAMETER         :: PI = 3.141592653589793
+      REAL(KIND=8), PARAMETER         :: PI = 3.141592653589793 
       REAL(KIND=8), PARAMETER         :: RECIP_PI_OVER_180 = 180. / PI
       REAL(KIND=8), PARAMETER         :: PI_OVER_180   = PI / 180.
 
-!*----------------------------------------------------------------------
+!*----------------------------------------------------------------------   
 
 ! 1. Initialise local constants
 ! Scale lambda pole to range -180 to 180 degs
@@ -1186,8 +1221,8 @@
       LAMBDA_POLE=LAMBDA_POLE_KEEP
 
       RETURN
-      END SUBROUTINE W3LLTOEQ
-!
+      END SUBROUTINE W3LLTOEQ 
+! 
 !Li  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 !Li
 !Li  Merged UM source code for rotated grid, consiting the following
@@ -1198,7 +1233,7 @@
 !Li         Jian-Guo Li     26 May 2005
 !Li
 !Li  The WCOEFF1A subroutine is merged into EQTOLL to reduce repetition
-!Li  of the same calculations. Subroutine interface changed to
+!Li  of the same calculations. Subroutine interface changed to 
 !Li  EQTOLLANGLE
 !Li  First created:   Jian-GUo Li     23 Aug 2005
 !Li  Last modified:   Jian-GUo Li     25 Feb 2008
@@ -1219,6 +1254,7 @@
       SUBROUTINE W3EQTOLL( PHI_EQ, LAMBDA_EQ, PHI, LAMBDA,   &
      &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
 
+      IMPLICIT NONE
 
       INTEGER:: POINTS      !IN  Number of points to be processed
 
@@ -1241,7 +1277,7 @@
       REAL(KIND=8), PARAMETER :: SMALL=1.0E-6
 
       ! Double precision versions of values in constants.ftn:
-      REAL(KIND=8), PARAMETER         :: PI = 3.141592653589793
+      REAL(KIND=8), PARAMETER         :: PI = 3.141592653589793 
       REAL(KIND=8), PARAMETER         :: RECIP_PI_OVER_180 = 180. / PI
       REAL(KIND=8), PARAMETER         :: PI_OVER_180   = PI / 180.
 
@@ -1324,9 +1360,10 @@
       ENDDO
 
       RETURN
-      END SUBROUTINE W3EQTOLL
+      END SUBROUTINE W3EQTOLL  
 
 !Li
+!/ ------------------------------------------------------------------- /
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3THRTN ( NSEA, THETA, AnglD, Degrees )
 !/
@@ -1348,6 +1385,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY : DERA, TPI, UNDEF
+      IMPLICIT NONE
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1377,9 +1415,10 @@
         ENDIF
       END DO
 
-      RETURN
+      RETURN 
       END SUBROUTINE W3THRTN
 !
+!/ ------------------------------------------------------------------- /
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3XYRTN ( NSEA, XVEC, YVEC, AnglD )
 !/
@@ -1401,6 +1440,7 @@
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY : DERA, TPI, UNDEF
+      IMPLICIT NONE
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -1430,9 +1470,10 @@
         END IF
       END DO
 
-      RETURN
+      RETURN 
       END SUBROUTINE W3XYRTN
 !
+!/ ------------------------------------------------------------------- /
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE STRSPLIT(STRING,TAB)
@@ -1463,6 +1504,7 @@
 !     ----------------------------------------------------------------
 !
 
+      IMPLICIT NONE
 
 
 
@@ -1502,13 +1544,13 @@
    SUBROUTINE STR_TO_UPPER(STR)
      character(*), intent(inout) :: str
      integer :: i
-
+ 
      DO i = 1, len(str)
        select case(str(i:i))
          case("a":"z")
            str(i:i) = achar(iachar(str(i:i))-32)
        end select
-       END DO
+       END DO 
 !/ End of STR_TO_UPPER
 !/ ------------------------------------------------------------------- /
 END SUBROUTINE STR_TO_UPPER
@@ -1841,7 +1883,7 @@ END SUBROUTINE STR_TO_UPPER
 !*********************************************************************
    SUBROUTINE DIAGONALIZE(a1,d,v,nrot)
 !*********************************************************************
-
+   IMPLICIT NONE
    INTEGER,                          INTENT(out)   :: nrot
    DOUBLE PRECISION, DIMENSION(:)  , INTENT(OUT)   ::d
    DOUBLE PRECISION, DIMENSION(:,:), INTENT(IN)    ::a1  ! Modified from INOUT to IN by F.A. on 2018/01/21
@@ -1852,7 +1894,7 @@ END SUBROUTINE STR_TO_UPPER
    DOUBLE PRECISION    , DIMENSION(size(d)) ::b,z
    DOUBLE PRECISION, DIMENSION(size(d),size(d)) :: a
    LOGICAL, DIMENSION(size(d),size(d)) :: upper_triangle
-
+   
    a=a1
    n=size(d)
    v(:,:)=0.
@@ -1938,7 +1980,7 @@ END SUBROUTINE STR_TO_UPPER
 !     Converts seapoint arrays formulated as U/V vectors into magnitude
 !     and direction arrays.
 !
-!     If MAG and DIR input parameters are not specificed then the
+!     If MAG and DIR input parameters are not specificed then the 
 !     conversion is performed in-place (U => MAG, v => DIR).
 !
 !  2. Parameters
@@ -1962,7 +2004,8 @@ END SUBROUTINE STR_TO_UPPER
 !
 !/ ------------------------------------------------------------------- /
       USE CONSTANTS, ONLY: RADE, UNDEF
-
+      IMPLICIT NONE
+ 
       REAL, INTENT(INOUT)             :: U(NSEA), V(NSEA)
       INTEGER, INTENT(IN)             :: NSEA
       REAL, INTENT(OUT), OPTIONAL     :: MAG(NSEA), DIR(NSEA)
