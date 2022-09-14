@@ -124,9 +124,9 @@ These header should be placed directly *above* the Fortran90 component declarati
                                                                                                  
 #include "w3macros.h"                                                                            
 !/ ------------------------------------------------------------------- /                         
-!  
+!
 ```
-![file_doxygen](https://user-images.githubusercontent.com/86749872/190180300-980669ca-0fec-4fa6-a65d-02d937540956.png)
+![file_doxygen](./docs/.imgs/file_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
