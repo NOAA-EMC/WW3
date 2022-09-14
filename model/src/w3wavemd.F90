@@ -173,7 +173,6 @@
 !  7. Source code :
 !
 !/ ------------------------------------------------------------------- /
-      use wav_shr_flags
 #ifdef W3_MPI
       USE W3ADATMD, ONLY: MPIBUF
 #endif
@@ -558,7 +557,17 @@
       REAL                    :: BACANGL
 
 #endif
-      !
+      ! locally defined flags
+#ifdef W3_SBS
+      logical, parameter ::  w3_sbs_flag = .true.
+#else
+      logical, parameter ::  w3_sbs_flag = .false.
+#endif
+#ifdef W3_CESMCOUPLED
+      logical, parameter :: w3_cesmcoupled_flag = .true.
+#else
+      logical, parameter :: w3_cesmcoupled_flag = .false.
+#endif
       integer :: memunit
       logical :: do_gridded_output
       logical :: do_point_output
