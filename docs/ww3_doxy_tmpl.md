@@ -126,7 +126,7 @@ These header should be placed directly *above* the Fortran90 component declarati
 !/ ------------------------------------------------------------------- /                         
 !
 ```
-![file_doxygen](./docs/.imgs/file_doxygen.png)
+![file_doxygen](docs/.imgs/file_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
