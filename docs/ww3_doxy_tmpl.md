@@ -126,7 +126,7 @@ These header should be placed directly *above* the Fortran90 component declarati
 !/ ------------------------------------------------------------------- /                         
 !
 ```
-![file_doxygen](docs/.imgs/file_doxygen.png)
+![file_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/file_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -200,7 +200,7 @@ These header should be placed directly *above* the Fortran90 component declarati
 !/                                                                                               
       PUBLIC
 ```
-![module_doxygen](https://user-images.githubusercontent.com/86749872/190187843-da2497b4-0619-4873-b72b-944a1d8cab36.png)
+![module_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/module_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -339,7 +339,7 @@ These header should be placed directly *above* the Fortran90 component declarati
 !/ ------------------------------------------------------------------- /                         
 !/
 ```
-![subroutine_doxygen](https://user-images.githubusercontent.com/86749872/190173406-e74a4c24-9419-4cc0-ac5c-e535665184c2.png)
+![subroutine_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/subroutine_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -452,7 +452,7 @@ These header should be placed directly *above* the Fortran90 component declarati
 !       -                                                                                        
 !                           
 ```
-![function_doxygen](https://user-images.githubusercontent.com/86749872/190191845-e63c7a7c-8013-4bcc-bf8a-4955db4d0b22.png)
+![function_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/function_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -662,7 +662,7 @@ These header should be placed directly *above* the Fortran90 component declarati
 !                                                                                                
 !/ ------------------------------------------------------------------- / 
 ```
-![program_doxygen](https://user-images.githubusercontent.com/86749872/190195057-d6d54fe3-9e78-42e2-aba7-3c7cc8daf27c.png)
+![program_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/program_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -708,9 +708,9 @@ real sqrt2  !< square root of 2 ~ 1.41
 contains                                                                        
 !                                                                               
                                                                                 
-!------------------------------------------------------------------------------                                                                           
+!------------------------------------------------------------------------------ 
 ```
-![inline_mod_var](https://user-images.githubusercontent.com/86749872/190250429-d1ca3a36-cf3e-404f-809a-ff503dbbed10.png)
+![inline_mod_var](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/inline_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
