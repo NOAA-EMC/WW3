@@ -140,6 +140,11 @@ These header should be placed directly *above* the Fortran90 component declarati
 !>  dissipation.                                                                                 
 !>                                                                                               
 !> @author H. L. Tolman  @date 29-May-2009                                                       
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
 !>                                                                                               
 !/ ------------------------------------------------------------------- /                         
       MODULE W3SRC0MD                                                                            
@@ -467,7 +472,13 @@ These header should be placed directly *above* the Fortran90 component declarati
 !>  fields, momentum and air density, as well as assimilation data                               
 !>  for the generic shell W3SHEL (ww3_shel.ftn).                                                 
 !>                                                                                               
-!> @author H. L. Tolman @date 22-Mar-2021                                                        
+!> @author H. L. Tolman 
+!> @date 22-Mar-2021                                                                             
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
 !                                                                                                
       PROGRAM W3PREP                                                                             
 !/                                                                                               
