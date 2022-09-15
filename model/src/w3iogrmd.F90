@@ -1,5 +1,22 @@
+!> @file
+!> @brief Reading/writing of model definition file.
+!> 
+!> @author H. L. Tolman
+!> @author F. Ardhuin
+!> @date   15-Apr-2020
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Reading/writing of model definition file.
+!> 
+!> @details Arrays allocated here on read or ing ww3_grid on write.
+!>
+!> @author H. L. Tolman
+!> @author F. Ardhuin
+!> @date   15-Apr-2020
+!>
       MODULE W3IOGRMD
 !/
 !/                  +-----------------------------------+
@@ -76,6 +93,22 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Reading and writing of the model definition file.
+!>
+!> @details The file is opened within the routine, the name is pre-defined
+!>  and the unit number is given in the parameter list. The model
+!>  definition file is written using UNFORMATTED write statements.
+!>
+!> @param[in] INXOUT  Test string for read/write.
+!> @param[in] NDSM    File unit number.
+!> @param[in] IMOD    Model number for W3GDAT etc.
+!> @param[in] FEXT    File extension to be used.
+!>
+!> @author H. L. Tolman
+!> @author F. Ardhuin
+!> @date   19-Oct-2020
+        
       SUBROUTINE W3IOGR ( INXOUT, NDSM, IMOD, FEXT )
 !/
 !/                  +-----------------------------------+

@@ -1,4 +1,15 @@
+!> @file
+!> @brief Contains module W3INITMD.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
+
 #include "w3macros.h"
+!> 
+!> @brief Contains module W3INITMD.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3INITMD
 !/
@@ -118,6 +129,33 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize WAVEWATCH III.
+!>
+!> @details Initialize data structure and wave fields from data files.
+!>  Initialize grid from local and instantaneous data.
+!>
+!> @param[in] IMOD        Model number.
+!> @param[in] IsMulti  
+!> @param[in] FEXT        Extension of data files.
+!> @param[in] MDS         Array with dataset numbers saved as NDS in W3ODATMD.
+!> @param[in] MTRACE      Array with subroutine tracing information.
+!> @param[in] ODAT        Output data, five parameters per output type.
+!> @param[inout] FLGRD    Flags for gridded output.
+!> @param[inout] FLGR2    Flags for coupling output.
+!> @param[inout] FLGD     
+!> @param[inout] FLG2 
+!> @param[in] NPT           Number of output points.
+!> @param[inout] XPT        Coordinates of output points.
+!> @param[inout] YPT        Coordinates of output points.
+!> @param[in] PNAMES        Output point names.
+!> @param[in] IPRT          Partitioning grid info. 
+!> @param[inout] PRTFRM     Partitioning format flag.
+!> @param[in] MPI_COMM      MPI communicator to be used for model.
+!> @param[in] FLAGSTIDEIN
+!>
+!> @author H. L. Tolman  @date 03-Sep-2012
+!>        
       SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
                           , FLGRD,                               &
                            FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
@@ -2039,6 +2077,19 @@
 !/
       END SUBROUTINE W3INIT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Perform initializations for MPI version of model.
+!>  Data transpose only.
+!>
+!> @details Some derived data types are defined.  All communiction in
+!>  W3GATH, W3SCAT and W3WAVE are initialized so that all
+!>  communication can be performed with single MPI_STARTALL,
+!>  MPI_TESTALL and MPI_WAITALL calls.
+!>
+!> @param[in] IMOD  Model number.
+!>
+!> @author H. L. Tolman  @date 11-May-2007
+!>      
       SUBROUTINE W3MPII ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -2450,6 +2501,19 @@
 !/
       END SUBROUTINE W3MPII
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Prepare MPI persistent communication needed for WAVEWATCH I/O
+!>  routines.
+!>
+!> @details Create handles as needed. The communication as set up 
+!>  in W3MPII uses tags with number ranging from 1 through NSPEC. 
+!>  New and unique tags for IO related communication are assigned 
+!>  here dynamically. No testing on IMOD, since only called by W3INIT.
+!>
+!> @param[in] IMOD  Model number.
+!>
+!> @author H. L. Tolman  @date 11-Nov-2015
+!>      
       SUBROUTINE W3MPIO ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -6832,6 +6896,16 @@
 !/
       END SUBROUTINE W3MPIO
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Prepare MPI persistent communication needed for WAVEWATCH I/O
+!>  routines.
+!>
+!> @details Create handles as needed.
+!>
+!> @param[in] IMOD  Model number.
+!>
+!> @author H. L. Tolman  @date 30-Oct-2009
+!>      
       SUBROUTINE W3MPIP ( IMOD )
 !/
 !/                  +-----------------------------------+

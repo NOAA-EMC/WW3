@@ -435,7 +435,7 @@
 !> @param[in] NCTYPE
 !> @param[inout] NCID
 !> @param[inout] S3
-!> @param[in] STRTSTOPDATE
+!> @param[in] STRSTOPDATE
 !> @param[in] MK
 !> @param[in] MTH
 !>        
