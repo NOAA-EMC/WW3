@@ -126,7 +126,6 @@ These header should be placed directly *above* the Fortran90 component declarati
 !/ ------------------------------------------------------------------- /                         
 !
 ```
-![file_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/file_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -205,7 +204,6 @@ These header should be placed directly *above* the Fortran90 component declarati
 !/                                                                                               
       PUBLIC
 ```
-![module_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/module_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -344,7 +342,6 @@ These header should be placed directly *above* the Fortran90 component declarati
 !/ ------------------------------------------------------------------- /                         
 !/
 ```
-![subroutine_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/subroutine_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -457,7 +454,6 @@ These header should be placed directly *above* the Fortran90 component declarati
 !       -                                                                                        
 !                           
 ```
-![function_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/function_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -673,7 +669,6 @@ These header should be placed directly *above* the Fortran90 component declarati
 !                                                                                                
 !/ ------------------------------------------------------------------- / 
 ```
-![program_doxygen](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/program_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
@@ -721,7 +716,6 @@ contains
                                                                                 
 !------------------------------------------------------------------------------ 
 ```
-![inline_mod_var](https://github.com/MatthewMasarik-NOAA/WW3/blob/doc/doxygen_templates_update/docs/.imgs/inline_doxygen.png)
 ---
 [\[Return to Contents\]](#contents)
 <br>
