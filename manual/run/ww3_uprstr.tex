@@ -40,7 +40,7 @@ as for all the WAVEWATCH III programs. In summary:
 \begin{enumerate}
    \item \textbf{Download the source code} \newline
    The \textbf{ww3\_uprstr} source code is included to the official WAVEWATCH III
-   release, starting with the version x.xx.
+   release, starting with the version 6.07.
    \item \textbf{Compile the code} \newline
    The \textbf{ww3\_uprstr} is compiled the same way as all the auxiliary programs 
    of WAVEWATCH III, see the appropriate section of the manual. For debugging outputs, 
@@ -124,12 +124,12 @@ restart file. Additional methods can be implemented by adding UPD options to the
 
 The following UPD options are available:
 \begin{enumerate} 
-   \item UPD0C:: \textbf{ELIMINATED from version x.xx} Option 0C  All the spectra are 
+   \item UPD0C:: \textbf{ELIMINATED from version 5.16} Option 0C  All the spectra are 
    updated with a constant: \newline
       \(fac=(SWH\_Bckg-SWH\_Anl)/SWH\_Anl \).
    \item UPD0F:: Option 0F  All the spectra are updated with a constant: \newline 
       \(fac=SWH\_Anl/SWH\_Bckg \).
-   \item UPD1 ::  \textbf{ELIMINATED from version x.xx} Option 1  The fac(x,y,frq,theta), 
+   \item UPD1 ::  \textbf{ELIMINATED from version 5.16} Option 1  The fac(x,y,frq,theta), 
    is weighted according to the \% of energy at each spectral bin; fac the same as UPDOF.
    \item UPD2 :: Option 2   The fac(x,y,frq,theta), is calculated at each grid point 
    according to SWH\_Bckg and SWH\_Anl
