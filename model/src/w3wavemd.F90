@@ -1,5 +1,5 @@
 #include "w3macros.h"
-#define W3_DEBUGRUN
+!#define W3_DEBUGRUN
 !/ ------------------------------------------------------------------- /
       MODULE W3WAVEMD
 !/
@@ -1859,7 +1859,7 @@
 !
 #ifdef W3_PDLIB
     IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
-       & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
+       & .and. (IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0)) THEN
 #endif
 !!/PDLIB               IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN
 

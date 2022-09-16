@@ -117,7 +117,7 @@
       INTEGER               :: POS_TRICK(3,2)
 
 #ifdef W3_DEBUGSRC
-        INTEGER  :: TESTNODE = 1
+        INTEGER  :: TESTNODE = 115867
 #endif
 !
 !/ ------------------------------------------------------------------- /
@@ -2245,10 +2245,6 @@
       CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string, PrintHs, PrintHsNode, ScalMeth)
       WRITE(740+IAPROC,*) 'After call to ALL_FIELD_INTEGRAL_PRINT_GENERAL'
       FLUSH(740+IAPROC)
-!      IF (NSEAL >= 40) THEN
-!        WRITE(740+IAPROC,*) 'min/max/sum(VA(:,TESTNODE))=', minval(VA(:,TESTNODE)), maxval(VA(:,TESTNODE)), sum(VA(:,TESTNODE))
-!        FLUSH(740+IAPROC)
-!      END IF
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ALL_FIELD_INTEGRAL_PRINT(FIELD, string)
@@ -4065,10 +4061,10 @@
             CSIN   = FACY * ESIN(ITH)
             CXY(:,1) = CCOS * CG(IK,NI_ISEA) / CLATS(NI_ISEA)
             CXY(:,2) = CSIN * CG(IK,NI_ISEA)
-            IF (FLCUR) THEN
-              CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATS(NI_ISEA)
-              CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)
-            ENDIF
+            !IF (FLCUR) THEN
+            !  CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATS(NI_ISEA)
+            !  CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)
+            !ENDIF
 #ifdef W3_MGP
         CXY(:,1) = CXY(:,1) - CCURX*VGX/CLATS(ISEA)
         CXY(:,2) = CXY(:,2) - CCURY*VGY
@@ -4892,7 +4888,7 @@
             END IF
             CAS_SIG(:,IP) = CAS
           ELSE IF (FreqShiftMethod .eq. 2) THEN
-            IF (IOBP_LOC(IP).eq.1) THEN
+            IF (IOBP_LOC(IP).eq.1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
               CALL PROP_FREQ_SHIFT_M2(IP, ISEA, CWNB_M2, DWNI_M2, DTG)
 #ifdef W3_DEBUGFREQSHIFT
          WRITE(740+IAPROC,*) 'sum(CWNB_M2)=', sum(CWNB_M2)

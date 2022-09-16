@@ -1919,8 +1919,9 @@ END SUBROUTINE
       USE W3ADATMD, ONLY : NSEALM
 #ifdef W3_PDLIB
      USE yowElementpool
-     use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
-      USE yowExchangeModule, only : PDLIB_exchange1Dreal
+     USE yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
+     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+     USE yowExchangeModule, only : PDLIB_exchange1Dreal
 #endif
 
       IMPLICIT NONE     
@@ -1933,7 +1934,7 @@ END SUBROUTINE
       
       INTEGER              :: VERTICES(3), NI(3), NI_GL(3)
       REAL                 :: TMP1(3), TMP2(3)
-      INTEGER              :: I, IX, IE, IE_GL
+      INTEGER              :: I, IX, IE, IE_GL, IP
       REAL                 :: VAR(3), FACT, LATMEAN
       REAL                 :: DIFFXTMP, DIFFYTMP
       REAL                 :: DEDX(3), DEDY(3)
@@ -1996,8 +1997,14 @@ END SUBROUTINE
        DIFFX(1,:) = DIFFX(1,:)/WEI_LOCAL
        DIFFY(1,:) = DIFFY(1,:)/WEI_LOCAL
      ENDIF
-  CALL PDLIB_exchange1Dreal(DIFFX(1,:))
-  CALL PDLIB_exchange1Dreal(DIFFY(1,:))
+     DO IP = 1, NSEAL
+       IF (IOBP_LOC(IP) == 0) THEN
+         DIFFX(1,IP) = 0.
+         DIFFY(1,IP) = 0.
+       ENDIF
+     ENDDO
+     CALL PDLIB_exchange1Dreal(DIFFX(1,:))
+     CALL PDLIB_exchange1Dreal(DIFFY(1,:))
 #endif
 !
     END SUBROUTINE UG_GRADIENTS
