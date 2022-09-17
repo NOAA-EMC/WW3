@@ -1119,7 +1119,7 @@
         DO IP = 1, npa
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
 #ifdef W3_REF1
-    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
+          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
 #endif
         END DO
 #ifdef W3_DEBUGSOLVER
@@ -1400,7 +1400,7 @@
         DO IP = 1, npa
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
-    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
+          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
 #endif
         END DO
         AC = REAL(U)
@@ -2773,7 +2773,7 @@
         DO IP = 1, npa
          UL(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
-    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
+         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
 #endif
         END DO
 
@@ -2812,7 +2812,7 @@
         DO IP = 1,npa
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
-    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
+          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
 #endif
         END DO
         AC = REAL(U)
@@ -3612,12 +3612,12 @@
             ITH    = 1 + MOD(ISP-1,NTH)
             IK     = 1 + (ISP-1)/NTH
             K1    =  KP(POS,ISP,IE)
-#ifdef W3_REF1
-            eIOBPDR=(1-IOBP_LOC(IP_glob))*(1-IOBPD_LOC(ITH,IP_glob))
-            IF (eIOBPDR .eq. 1) THEN
-              K1=ZERO
-            END IF
-#endif
+!#ifdef W3_REF1
+!            eIOBPDR=(1-IOBP_LOC(IP_glob))*(1-IOBPD_LOC(ITH,IP_glob))
+!            IF (eIOBPDR .eq. 1) THEN
+!              K1=ZERO
+!            END IF
+!#endif
             TRIA03        =  1./3. * PDLIB_TRIA(IE)
             DTK           =  K1 * DTG * IOBDP_LOC(IP) * (1-IOBPA_LOC(IP)) * IOBPD_LOC(ITH,IP)
             B_JAC(ISP,IP) =  B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOBDP_LOC(IP) * (1-IOBPA_LOC(IP)) * IOBPD_LOC(ITH,IP)
@@ -3856,12 +3856,12 @@
 #ifdef W3_DEBUGSRC
         WRITE(740+IAPROC,*) 'I1=', I1, ' PDLIB_I_DIAG=', PDLIB_I_DIAG(IP)
 #endif
-#ifdef W3_REF1
-              eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
-              IF (eIOBPDR .eq. 1) THEN
-                K1=ZERO
-              END IF
-#endif
+!#ifdef W3_REF1
+!              eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
+!              IF (eIOBPDR .eq. 1) THEN
+!                K1=ZERO
+!              END IF
+!#endif
               DTK               = KP(POS,IE) * DTG * IB1
 
               I1                =  PDLIB_POSI(1,J)
@@ -4088,12 +4088,12 @@
             KM(:) = MIN(ZERO,K(:))
             NM = 1.d0/MIN(-THR,SUM(KM))
             K1 =  KP(POS)
-#ifdef W3_REF1
-            eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
-            IF (eIOBPDR .eq. 1) THEN
-              K1=ZERO
-            END IF
-#endif
+!#ifdef W3_REF1
+!            eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
+!            IF (eIOBPDR .eq. 1) THEN
+!              K1=ZERO
+!            END IF
+!#endif
             TRIA03 = 1./3. * PDLIB_TRIA(IE)
             DTK    =  K1 * DTG * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP) * (1-IOBPA_LOC(IP))
             TMP3   =  DTK * NM
@@ -4303,12 +4303,12 @@
           DELTAL(:) = CRFS(:) - KP(:)
           KM(:) = MIN(ZERO,K(:))
           NM = 1.d0/MIN(-THR,SUM(KM))
-#ifdef W3_REF1
-          eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
-          IF (eIOBPDR .eq. 1) THEN
-            K1=ZERO
-          END IF
-#endif
+!#ifdef W3_REF1
+!          eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
+!          IF (eIOBPDR .eq. 1) THEN
+!            K1=ZERO
+!          END IF
+!#endif
           TRIA03 = ONETHIRD * PDLIB_TRIA(IE)
           DTK    =  KP(POS) * DBLE(DTG) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP) * (1-IOBPA_LOC(IP))
           TMP3   =  DTK * NM
@@ -6605,8 +6605,8 @@
               DO i = PDLIB_IA_P(IP)+1, PDLIB_IA_P(IP+1)
                 JP = PDLIB_JA(I)
                 IF (JP .ne. IP) THEN
-                  eProd = ASPAR_JAC(1:NSPEC,i) * VA(1:NSPEC,JP)
-                  eSum  = eSum - eProd
+                  eProd(1:NSPEC) = ASPAR_JAC(1:NSPEC,i) * VA(1:NSPEC,JP)
+                  eSum(1:NSPEC)  = eSum(1:NSPEC) - eProd(1:NSPEC)
 #ifdef W3_DEBUGSOLVERALL
      WRITE(740+IAPROC,'(A20,3I10,20E20.10)') 'OFF DIAGONAL', IP, i, jp, sum(B_JAC(:,IP)), sum(eSum), SUM(ASPAR_JAC(:,i)), SUM(VA(:,JP))
 #endif
@@ -6990,6 +6990,9 @@
           ITH    = 1 + MOD(ISP-1,NTH)
           !IF (IOBPD_LOC(ITH,IP) .ne. IOBPD(ITH,IP_glob)) STOP 'ERROR IN BOUNDARY'
           VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
+#ifdef W3_REF1
+          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
+#endif
         END DO
         !WRITE(*,'(4I10,A20)') IP, IOBDP_LOC(IP), IOBP_LOC(IP), IOBPA_LOC(IP), 'IOBP TEST'
 #ifdef W3_DEBUGSRC
