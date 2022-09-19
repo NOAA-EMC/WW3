@@ -578,11 +578,6 @@
      FACTOR = 1.
 #endif
             VA(:,JSEA) = FACTOR * E21
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'JSEA=', JSEA, '  FACTOR=', FACTOR
-     WRITE(740+IAPROC,*) '   sum(E21)=', sum(E21)
-     WRITE(740+IAPROC,*) '   sum(VA)=', sum(VA(:,JSEA))
-#endif
 !
 
 !
@@ -830,9 +825,6 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 9.  Convert E(sigma) to N(k)
 !
-#ifdef W3_DEBUGINIT
-       WRITE(740+IAPROC,*) 'ITYPE=', ITYPE
-#endif
       IF ( ITYPE.NE.3 .AND. ITYPE.NE.5 ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,990)
 !
@@ -841,18 +833,12 @@
           HSIG   = 0.
 #endif
 !
-#ifdef W3_DEBUGINIT
-       WRITE(740+IAPROC,*) 'Doing rescaling operation'
-#endif
           DO JSEA=1, NSEAL
 #ifdef W3_DIST
             ISEA   = IAPROC + (JSEA-1)*NAPROC
 #endif
 #ifdef W3_SHRD
             ISEA   = JSEA
-#endif
-#ifdef W3_DEBUGINIT
-       WRITE(740+IAPROC,*) ' rescal ISEA=', ISEA, ' JSEA=', JSEA
 #endif
             DEPTH  = MAX ( DMIN , -ZB(ISEA) )
 #ifdef W3_O6
@@ -907,15 +893,9 @@
 #ifdef W3_O6
           NSX    = 1 + NX/35
           NSY    = 1 + NY/35
-#ifdef W3_DEBUGINIT
-         Print *, 'Before call to PRTBLK'
-#endif
           IF ( IAPROC .EQ. NAPOUT ) CALL PRTBLK                   &
                       (NDSO, NX, NY, NX, HSIG, MAPO, 0, 0.,       &
                        1, NX, NSX, 1, NY, NSY, 'Hs', 'm')
-#ifdef W3_DEBUGINIT
-         Print *, 'After call to PRTBLK'
-#endif
 #endif
 #ifdef W3_MPI
         END IF
@@ -927,20 +907,7 @@
 !10.  Write restart file.
 !
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,995)
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before call to W3IORS'
-      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
-      FLUSH(740+IAPROC)
-#endif
       CALL W3IORS ( INXOUT, NDSR, SIG(NK) )
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before call to W3IORS'
-      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
-      DO ISEA=1,NSEA
-        WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VA)=', sum(VA(:,ISEA))
-      END DO
-      FLUSH(740+IAPROC)
-#endif
 !
       GOTO 888
 !

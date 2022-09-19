@@ -473,9 +473,6 @@
    CALL CPL_OASIS_INIT(MPI_COMM)
  ELSE
 #endif
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'Before MPI_INIT, ww3_shel'
-#endif
 #ifdef W3_OMPH
        ! For hybrid MPI-OpenMP specify required thread level. JGLi06Sep2019
        IF( FLHYBR ) THEN
@@ -488,9 +485,6 @@
 #ifdef W3_OMPH
        ENDIF
 #endif
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'After MPI_INIT, ww3_shel'
-#endif
 #ifdef W3_MPI
       MPI_COMM = MPI_COMM_WORLD
 #endif
@@ -501,9 +495,6 @@
 !
 #ifdef W3_MPI
       CALL MPI_COMM_SIZE ( MPI_COMM, NAPROC, IERR_MPI )
-#endif
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*) 'After MPI_COMM_SIZE, NAPROC=', NAPROC
 #endif
 #ifdef W3_MPI
       CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
@@ -525,10 +516,6 @@
 ! 1.  IO set-up
 ! 1.a For shell
 !
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'ww3_shel, step 1'
-      FLUSH(740+IAPROC)
-#endif
       NDSI   = 10
       NDSS   = 90
       NDSO   =  6
@@ -560,10 +547,6 @@
       NDSF(7)  = 17
       NDSF(8)  = 18
       NDSF(9)  = 19
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'ww3_shel, step 2'
-      FLUSH(740+IAPROC)
-#endif
 !
 #ifdef W3_NCO
 !
@@ -665,10 +648,6 @@
       FLLSTI = .FALSE. ! This is associated with J.EQ.4 (ice)
       FLLSTR = .FALSE. ! This is associated with J.EQ.6 (rhoa)
       FLLST_ALL = .FALSE. ! For all
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'ww3_shel, step 3'
-      FLUSH(740+IAPROC)
-#endif
 
 ! If using experimental mud or ice physics, additional lines will
 !  be read in from ww3_shel.inp and applied, so JFIRST is changed from
@@ -698,11 +677,6 @@
       JFIRST=-7
 #endif
 
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'ww3_shel, step 4'
-      WRITE(740+IAPROC,*) 'JFIRST=', JFIRST
-      FLUSH(740+IAPROC)
-#endif
 
 #ifdef W3_MEMCHECK
        write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2a'
@@ -1229,23 +1203,10 @@
 !
       IF (.NOT. FLGNML) THEN
 
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) ' FNMPRE=', TRIM(FNMPRE)
-        FLUSH(740+IAPROC)
-#endif
         OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_shel.inp',STATUS='OLD',IOSTAT=IERR)
         REWIND (NDSI)
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) 'Before read 2002, case 1'
-        FLUSH(740+IAPROC)
-#endif
 !AR: I changed the error handling for err=2002, see commit message ...
         READ (NDSI,'(A)') COMSTR
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) ' COMSTR=', COMSTR
-        WRITE(740+IAPROC,*) ' After read 2002, case 1'
-        FLUSH(740+IAPROC)
-#endif
         IF (COMSTR.EQ.' ') COMSTR = '$'
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
 
@@ -1255,27 +1216,9 @@
         DO J=JFIRST, 9
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
           IF ( J .LE. 6 ) THEN
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before read 2002, case 2'
-      FLUSH(740+IAPROC)
-#endif
             READ (NDSI,*) FLAGTFC(J), FLH(J)
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) '     J=', J, ' FLAGTFC=', FLAGTFC(J), ' FLH=', FLH(J)
-      WRITE(740+IAPROC,*) ' After read 2002, case 2'
-      FLUSH(740+IAPROC)
-#endif
           ELSE
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before read 2002, case 3'
-      FLUSH(740+IAPROC)
-#endif
             READ (NDSI,*) FLAGTFC(J)
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) '     J=', J, ' FLAGTFC=', FLAGTFC(J)
-      WRITE(740+IAPROC,*) ' After read 2002, case 3'
-      FLUSH(740+IAPROC)
-#endif
           END IF
         END DO
 
@@ -1321,10 +1264,6 @@
        call printMallInfo(IAPROC,mallInfos)
 #endif
 
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'ww3_shel, step 5'
-      FLUSH(740+IAPROC)
-#endif
 !
         INFLAGS1(10) = .FALSE.
 #ifdef W3_MGW
@@ -1367,13 +1306,7 @@
 ! 2.2 Time setup
 
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'Before read 2002, case 4'
-#endif
         READ (NDSI,*) TIME0
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), ' After read 2002, case 4'
-#endif
 
 #ifdef W3_MEMCHECK
        write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2c'
@@ -1382,17 +1315,7 @@
 #endif
 
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'Before read 2002, case 5'
-#endif
         READ (NDSI,*) TIMEN
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), ' After read 2002, case 5'
-#endif
-
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'ww3_shel, step 6'
-#endif
 !
 #ifdef W3_MEMCHECK
        write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2d'
@@ -1402,22 +1325,13 @@
 
 ! 2.3 Domain setup
 
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'ww3_shel, step 7'
-#endif
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'Before read 2002, case 6'
-#endif
         READ (NDSI,*) IOSTYP
 #ifdef W3_PDLIB
      IF (IOSTYP .gt. 1) THEN
        WRITE(*,*) 'IOSTYP not supported in domain decomposition mode'
        CALL EXTCDE ( 6666 )
      ENDIF
-#endif
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), ' After read 2002, case 6'
 #endif
         CALL W3IOGR ( 'GRID', NDSF(7) )
         IF ( FLAGLL ) THEN
@@ -1426,9 +1340,6 @@
           FACTOR = 1.E-3
         END IF
 
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'ww3_shel, step 8'
-#endif
 
 ! 2.4 Output dates
 
@@ -1437,17 +1348,8 @@
 #ifdef W3_COU
         NOTYPE = 7
 #endif
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), 'Before NOTYPE loop'
-#endif
         DO J = 1, NOTYPE
-#ifdef W3_DEBUGINIT
-        write(740+IAPROC,*), 'J=', J, '/ NOTYPE=', NOTYPE
-#endif
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-        write(740+IAPROC,*), 'Before read 2002, case 7'
-#endif
 !
 ! CHECKPOINT
         IF(J .EQ. 4) THEN
@@ -1528,9 +1430,6 @@
         END IF
 !          WRITE(*,*) 'OFILES(J)= ', OFILES(J),J
 !
-#ifdef W3_DEBUGINIT
-        write(740+IAPROC,*), ' After read 2002, case 7'
-#endif
           ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
 !
 #ifdef W3_MEMCHECK
@@ -1545,9 +1444,6 @@
           IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
 
 ! Type 1: fields of mean wave parameters
-#ifdef W3_DEBUGINIT
-            write(740+IAPROC,*), 'Case analysis'
-#endif
             IF ( J .EQ. 1 ) THEN
               CALL W3READFLGRD ( NDSI, NDSO, 9, NDSEN, COMSTR, FLGD,   &
                                  FLGRD, IAPROC, NAPOUT, IERR )
@@ -1583,13 +1479,7 @@
                 NPTS   = 0
                 DO
                   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-                  write(740+IAPROC,*), 'Before read 2002, case 8'
-#endif
                   READ (NDSI2,*) XX, YY, PN
-#ifdef W3_DEBUGINIT
-                  write(740+IAPROC,*), ' After read 2002, case 8'
-#endif
                   IF ( ILOOP.EQ.1 .AND. IAPROC.EQ.1 ) THEN
                     BACKSPACE (NDSI)
                     READ (NDSI,'(A)') LINE
@@ -1644,13 +1534,7 @@
 ! Type 3: track output
             ELSE IF ( J .EQ. 3 ) THEN
               CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-              write(740+IAPROC,*), 'Before read 2002, case 9'
-#endif
               READ (NDSI,*) TFLAGI
-#ifdef W3_DEBUGINIT
-              write(740+IAPROC,*), ' After read 2002, case 9'
-#endif
 !
               IF ( .NOT. TFLAGI ) NDS(11) = -NDS(11)
               IF ( IAPROC .EQ. NAPOUT ) THEN
@@ -1666,14 +1550,7 @@
             ELSE IF ( J .EQ. 6 ) THEN
 !             IPRT: IX0, IXN, IXS, IY0, IYN, IYS
               CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-              write(740+IAPROC,*), 'Before reading IPRT'
-              write(740+IAPROC,*), 'Before read 2002, case 10'
-#endif
               READ (NDSI,*) IPRT, PRTFRM
-#ifdef W3_DEBUGINIT
-              write(740+IAPROC,*), ' After read 2002, case 10'
-#endif
 !
               IF ( IAPROC .EQ. NAPOUT ) THEN
                 IF ( PRTFRM ) THEN
@@ -1713,13 +1590,7 @@
           ! Start of loop
           DO
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-#ifdef W3_DEBUGINIT
-            write(740+IAPROC,*), 'Before read 2002, case 11'
-#endif
             READ (NDSI,*) IDTST
-#ifdef W3_DEBUGINIT
-            write(740+IAPROC,*), ' After read 2002, case 11'
-#endif
 
 
             ! Exit if illegal id
@@ -1745,75 +1616,33 @@
                 NH(J)    = NH(J) + 1
                 IF ( NH(J) .GT. NHMAX ) GOTO 2006
                 IF ( J .LE. 1  ) THEN ! water levels, etc. : get HA
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), 'Before read 2002, case 12'
-#endif
                   READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J)
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), ' After read 2002, case 12'
-#endif
                 ELSE IF ( J .EQ. 2 ) THEN ! currents: get HA and HD
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), 'Before read 2002, case 13'
-#endif
                   READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),J)
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), ' After read 2002, case 13'
-#endif
                 ELSE IF ( J .EQ. 3 ) THEN ! wind: get HA HD and HS
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), 'Before read 2002, case 14'
-#endif
                   READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),J), HS(NH(J),J)
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), ' After read 2002, case 14'
-#endif
                 ELSE IF ( J .EQ. 4 ) THEN ! ice
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), 'Before read 2002, case 15'
-#endif
                   READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J)
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), ' After read 2002, case 15'
-#endif
                 ELSE IF ( J .EQ. 5 ) THEN ! atmospheric momentum
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), 'Before read 2002, case 16'
-#endif
                   READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),j)
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), ' After read 2002, case 16'
-#endif
                 ELSE IF ( J .EQ. 6 ) THEN ! air density
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), 'Before read 2002, case 17'
-#endif
                   READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J)
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), ' After read 2002, case 16'
-#endif
                 ELSE IF ( J .EQ. 10 ) THEN ! mov: HA and HD
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), 'Before read 2002, case 18'
-#endif
                   READ (NDSI,*) IDTST,           &
                         THO(1,J,NH(J)), THO(2,J,NH(J)),            &
                         HA(NH(J),J), HD(NH(J),J)
-#ifdef W3_DEBUGINIT
-                     write(740+IAPROC,*), ' After read 2002, case 18'
-#endif
                 END IF
               END IF
             END DO
@@ -1888,9 +1717,6 @@
 !
 
         DO J=JFIRST, 6 
-#ifdef W3_DEBUGINIT
-     write(740+IAPROC,*), 'J=',J,'INFLAGS1(J)=',INFLAGS1(J), 'FLAGSC(J)=', FLAGSC(J) 
-#endif
           IF ( INFLAGS1(J) .AND. .NOT. FLAGSC(J)) THEN
             IF ( FLH(J) ) THEN
               IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,954) IDFLDS(J)
