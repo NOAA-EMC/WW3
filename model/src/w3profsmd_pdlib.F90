@@ -439,7 +439,6 @@
       USE W3GDATMD, only : MAPSTA_LOC, NBND_MAP, INDEX_MAP
       USE W3ODATMD, only : IAPROC, NAPROC
       USE YOWNODEPOOL, only: iplg, npa
-      use yowExchangeModule, only : PDLIB_exchange1DREAL
       USE yowfunction, only: pdlib_abort
       USE W3ODATMD, only: IAPROC
 !/
@@ -557,7 +556,6 @@
       USE W3GDATMD, only : IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC 
       USE W3ODATMD, only : IAPROC, NAPROC
       USE YOWNODEPOOL, only: iplg, npa
-      use yowExchangeModule, only : PDLIB_exchange1DREAL
       USE yowfunction, only: pdlib_abort
       USE W3ODATMD, only: IAPROC
 !/
@@ -727,10 +725,9 @@
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
-!      
-      
+!
 #ifdef W3_S
-      CALL STRACE (IENT, 'W3XYPUG')      
+      CALL STRACE (IENT, 'W3XYPUG')
 #endif
 #ifdef W3_DEBUGSOLVER
      WRITE(740+IAPROC,*) 'Begin of PDLIB_W3XYPUG'
@@ -738,7 +735,6 @@
 #endif
       ITH    = 1 + MOD(ISP-1,NTH)
       IK     = 1 + (ISP-1)/NTH
-   
       CCOS   = FACX * ECOS(ITH)
       CSIN   = FACY * ESIN(ITH)
       CCURX  = FACX
@@ -1261,8 +1257,7 @@
       USE W3PARALL, only : INIT_GET_JSEA_ISPROC
       USE W3PARALL, only : ONESIXTH, THR, ZERO
       USE yowRankModule, only : IPGL_npa
-      IMPLICIT NONE  
-     
+      IMPLICIT NONE
       INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
                                      ! actual Wave Direction
       REAL,    INTENT(IN)    :: DT   ! Time interval for which the
@@ -1947,14 +1942,9 @@
       ELSE
          maxidx = np
       END IF
-!      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string)
       CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, PrintMinISP, LocalizeMaximum)
       WRITE(740+IAPROC,*) 'After call to ALL_FIELD_INTEGRAL'
       FLUSH(740+IAPROC)
-!      IF (NSEAL >= 40) THEN
-!        WRITE(740+IAPROC,*) 'min/max/sum(VA(:,TESTNODE))=', minval(VA(:,TESTNODE)), maxval(VA(:,TESTNODE)), sum(VA(:,TESTNODE))
-!        FLUSH(740+IAPROC)
-!      END IF
       END SUBROUTINE ALL_VA_INTEGRAL_PRINT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ALL_FIELD_INTEGRAL_PRINT(FIELD, string)
@@ -2373,8 +2363,7 @@
       USE W3PARALL, only : THR
       use yowExchangeModule, only : PDLIB_exchange1DREAL
       USE yowRankModule, only : IPGL_npa
-      IMPLICIT NONE  
-     
+      IMPLICIT NONE
       INTEGER, INTENT(IN)    :: ISP   ! Actual Frequency/Wavenumber,
                                       ! actual Wave Direction
       REAL,    INTENT(IN)    :: DT    ! Time intervall for which the
@@ -2643,20 +2632,16 @@
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: IMOD
       REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
-      INTEGER DoSomething
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'B_JGS_USE_JACOBI=', B_JGS_USE_JACOBI
-     FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'B_JGS_USE_JACOBI=', B_JGS_USE_JACOBI
+      FLUSH(740+IAPROC)
 #endif
-      DoSomething=0
       IF (B_JGS_USE_JACOBI) THEN
-        CALL PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
-        DoSomething=1
+         CALL PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
+         RETURN
       END IF
-      IF (DoSomething .eq. 0) THEN
-        WRITE(*,*) 'Error: You need to use with JGS_USE_JACOBI'
-        STOP 'Correct your implicit solver options'
-      END IF
+      WRITE(*,*) 'Error: You need to use with JGS_USE_JACOBI'
+      STOP 'Correct your implicit solver options'
 !/
 !/ End of W3XYPFSN --------------------------------------------------- /
 !/
@@ -4281,8 +4266,6 @@
         DO ISP = 1, NSPEC
           ITH     = 1 + MOD(ISP-1,NTH)
           IK      = 1 + (ISP-1)/NTH
-!          CCOS    = FACX * ECOS(ITH)
-!          CSIN    = FACY * ESIN(ITH)
           K(1)     = K_X(1,IK) * CCOSA(ITH) + K_Y(1,IK) * CSINA(ITH) + K_U(1)
           K(2)     = K_X(2,IK) * CCOSA(ITH) + K_Y(2,IK) * CSINA(ITH) + K_U(2)
           K(3)     = K_X(3,IK) * CCOSA(ITH) + K_Y(3,IK) * CSINA(ITH) + K_U(3)
@@ -4442,8 +4425,7 @@
       IEN_LOCAL = PDLIB_IEN(:,IE)
       NI        = INE(:,IE)
       NI_GLOB   = iplg(NI)
-      NI_ISEA   = MAPFS(1,NI_GLOB)      
-      
+      NI_ISEA   = MAPFS(1,NI_GLOB)
       CRFS_U    = ZERO
       K_U       = ZERO
 
@@ -5850,10 +5832,6 @@
         ENDIF
         B_JAC = ZERO
       ENDIF
-!
-#ifdef W3_DEBUGSOLVER
-     !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC INIT', sum(B_JAC), SUM(ASPAR_JAC)
-#endif
 
 #ifdef W3_MEMCHECK
       write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 3'
@@ -5917,17 +5895,7 @@
           call calcARRAY_JACOBI_SPECTRAL_2(DTG,ASPAR_DIAG_ALL)
         ENDIF
       END IF
-
-#ifdef W3_DEBUGSOLVER
-     !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 2', sum(B_JAC), SUM(ASPAR_JAC)
-#endif
-!
       CALL APPLY_BOUNDARY_CONDITION(IMOD)
-
-#ifdef W3_DEBUGSOLVER
-     !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 3', sum(B_JAC), SUM(ASPAR_JAC)
-#endif
-
 #ifdef W3_MEMCHECK
       write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 6'
       call getMallocInfo(mallinfos)
@@ -5941,11 +5909,6 @@
       END DO
       CALL CHECK_ARRAY_INTEGRAL_NX_R8(TheArr, "ASPAR diag after calArr", np)
 #endif
-
-#ifdef W3_DEBUGSOLVER
-     !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 4', sum(B_JAC), SUM(ASPAR_JAC)
-#endif
-
       nbIter=0
       do ip = 1, np
         Lconverged(ip) = .false.
@@ -6207,32 +6170,13 @@
           ELSE 
             esum = VA(1:NSPEC,IP) 
           ENDIF ! LCONVERGED
-!
-          !write(50000+IAPROC,*) 'SOLVER ITER', ISEA, JSEA, nbiter, & 
-          !             &  SUM(B_JAC(:,IP)), sum(ASPAR_DIAG), sum(ACLOC), sum(esum), 
-          !if (isea == testknoten) then
-          !  write(740+IAPROC,*) p_is_converged, sum(ASPAR_DIAG), SUM(B_JAC(:,IP)), &
-          !       & sum(ACLOC), sum(esum), iobp_loc(jsea), iobpa_loc(jsea), iobdp_loc(jsea)
-          !endif
-          !write(740+IAPROC,*) isea, jsea, ip, sum(ASPAR_DIAG), SUM(B_JAC(:,IP)), sum(ACLOC), & 
-          !          & sum(esum), iobp_loc(ip), iobpd_loc(ith,ip), iobpa_loc(ip), iobdp_loc(ip)
 
           IF (B_JGS_TERMINATE_DIFFERENCE) THEN
             Sum_New = sum(eSum)
             if (Sum_new .gt. 0.d0) then
-              !DiffNew = 0.d0 
-              !Sum_prev = 0.d0 
-              !DO ISP =1, NSPEC
-              !  if (eSum(isp) .gt. 0.d0) then 
-              !    DiffNew  = DiffNew + abs(eSum(isp) - acloc(isp))
-              !    Sum_prev = Sum_prev + eSum(isp)
-              !  endif
-              !ENDDO
               DiffNew = abs(sum(ACLOC-eSum))/Sum_new
-              !DiffNew = DiffNew / Sum_prev
-             ! write(*,'(I10,4F20.10)') jsea, Sum_new, Sum_prev, DiffNew
 #ifdef W3_DEBUGFREQSHIFT
-         WRITE(740+IAPROC,*) 'DiffNew=', DiffNew, ' Sum_new=', Sum_new
+              WRITE(740+IAPROC,*) 'DiffNew=', DiffNew, ' Sum_new=', Sum_new
 #endif
               p_is_converged = DiffNew
             else
