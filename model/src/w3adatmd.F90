@@ -1061,21 +1061,11 @@
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
 !                    by specific variables defined through the mod_def file 
 !                    and read by w3iogr, which is called before W3DIMA. 
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before the EF allocation'
-      WRITE(740+IAPROC,*) 'E3DF=', E3DF(1,1)
-#endif
       IF (  E3DF(1,1).GT.0 ) THEN
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) 'Now the allocation'
-#endif
           ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)),    &
                    STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
-#ifdef W3_DEBUGINIT
-      FLUSH(740+IAPROC)
-#endif
       IF (  E3DF(1,2).GT.0 ) THEN
           ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)),  &
                    STAT=ISTAT )

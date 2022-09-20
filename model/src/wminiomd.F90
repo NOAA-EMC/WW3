@@ -640,10 +640,6 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'WMIOBG')
 #endif
-#ifdef W3_DEBUGIOBC
-      WRITE(740+IAPROC,*)  'Begin of W3IOBG'
-      FLUSH(740+IAPROC)
-#endif
 
 
 !
@@ -1136,10 +1132,6 @@
 ! 5.  Successful update
 !
       IF ( PRESENT(DONE) ) DONE = .TRUE.
-#ifdef W3_DEBUGIOBC
-      WRITE(740+IAPROC,*)  'End of W3IOBG'
-      FLUSH(740+IAPROC)
-#endif
 !
       RETURN
 !
