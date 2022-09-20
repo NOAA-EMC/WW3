@@ -501,7 +501,7 @@
 !/
 !/ End of W3SPR4 ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_MAPSTA_INIT
 !/ ------------------------------------------------------------------- /      
       SUBROUTINE PDLIB_IOBP_INIT(IMOD)
 !/
@@ -620,7 +620,7 @@
 !/
 !/ End of W3SPR4 ----------------------------------------------------- /
 !/
-      END SUBROUTINE      
+      END SUBROUTINE PDLIB_IOBP_INIT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_W3XYPUG ( ISP, FACX, FACY, DTG, VGX, VGY, LCALC )
 !/
@@ -861,7 +861,7 @@
 !/
 !/ End of W3SPR4 ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_W3XYPUG
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_W3XYPFSN2(ISP, C, LCALC, RD10, RD20, DT, AC)
 !/
@@ -1190,10 +1190,10 @@
 #endif
       END DO
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'PDLIB_W3XYPFSN2, step 6'
-     FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'PDLIB_W3XYPFSN2, step 6'
+      FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_W3XYPFSN2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_W3XYPFSPSI2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
 !/
@@ -1427,7 +1427,7 @@
         END IF
         CALL PDLIB_exchange1DREAL(AC)
       END DO ! IT
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_W3XYPFSPSI2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE TEST_MPI_STATUS(string)
 !/
@@ -1504,7 +1504,7 @@
       END IF
       WRITE(740+IAPROC,*) 'Leaving the TEST_MPI_STATUS'
       FLUSH(740+IAPROC)
-      END SUBROUTINE
+      END SUBROUTINE TEST_MPI_STATUS
 !/ ------------------------------------------------------------------- /
 !/ ------------ SCALAR FUNCTIONALITY --------------------------------- /
 !/ --------------- REAL V(NSEAL) ------------------------------------- /
@@ -1671,7 +1671,7 @@
         CALL MPI_SEND(ListIdx, NSEAL, MPI_INTEGER, 0, 430, MPI_COMM_WCMP, ierr)
         deallocate(ListVal, ListIdx)
       END IF
-      END SUBROUTINE
+      END SUBROUTINE SCAL_INTEGRAL_PRINT_GENERAL
 !/ ------------------------------------------------------------------- /
       SUBROUTINE SCAL_INTEGRAL_PRINT_R8(V, string)
 !/
@@ -1728,7 +1728,7 @@
       LOGICAL :: PrintFullValue = .FALSE.
       V8 = V
       CALL SCAL_INTEGRAL_PRINT_GENERAL(V8, string, NSEAL, CheckUncovered, PrintFullValue)
-      END SUBROUTINE
+      END SUBROUTINE SCAL_INTEGRAL_PRINT_R8
 !/ ------------------------------------------------------------------- /
       SUBROUTINE SCAL_INTEGRAL_PRINT_R4(V, string)
 !/
@@ -1785,7 +1785,7 @@
       REAL*8 V8(NSEAL)
       V8 = DBLE(V)
       CALL SCAL_INTEGRAL_PRINT_GENERAL(V8, string, NSEAL, CheckUncovered, PrintFullValue)
-      END SUBROUTINE
+      END SUBROUTINE SCAL_INTEGRAL_PRINT_R4
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ALL_VAOLD_INTEGRAL_PRINT(string, choice)
 !/
@@ -1857,7 +1857,7 @@
       END IF
 !      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string)
       CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, PrintMinISP, LocalizeMaximum)
-      END SUBROUTINE
+      END SUBROUTINE ALL_VAOLD_INTEGRAL_PRINT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ALL_VA_INTEGRAL_PRINT(IMOD, string, choice)
 !/
@@ -1957,7 +1957,7 @@
 !        WRITE(740+IAPROC,*) 'min/max/sum(VA(:,TESTNODE))=', minval(VA(:,TESTNODE)), maxval(VA(:,TESTNODE)), sum(VA(:,TESTNODE))
 !        FLUSH(740+IAPROC)
 !      END IF
-      END SUBROUTINE
+      END SUBROUTINE ALL_VA_INTEGRAL_PRINT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ALL_FIELD_INTEGRAL_PRINT(FIELD, string)
 !/
@@ -2017,7 +2017,7 @@
       LOGICAL LocalizeMaximum = .FALSE.
       maxidx = NSEAL
       CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, PrintMinISP, LocalizeMaximum)
-      END SUBROUTINE
+      END SUBROUTINE ALL_FIELD_INTEGRAL_PRINT
 !/ ------------------------------------------------------------------- /
 !/ ------- Coherency info for TheARR(NSPEC,npa) ---------------------- /
 !/ ----------- maxidx is np or npa ----------------------------------- /
@@ -2303,7 +2303,7 @@
         END DO
         CALL SCAL_INTEGRAL_PRINT_GENERAL(TheARR_red, string, maxidx, CheckUncovered, PrintFullValue)
       END IF
-      END SUBROUTINE
+      END SUBROUTINE CHECK_ARRAY_INTEGRAL_NX_R8
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_W3XYPFSFCT2 ( ISP, C, LCALC, RD10, RD20, DT, AC)
 !/
@@ -2662,7 +2662,7 @@
 !/
 !/ End of W3XYPFSN --------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/
@@ -2723,7 +2723,7 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_W3XYPUG_BLOCK_EXPLICIT
 !/ --------------------------------------------------------------------- /
       SUBROUTINE PRINT_WN_STATISTIC(string)
 !/
@@ -2804,7 +2804,7 @@
 !/
 !/ End of W3XYPFSN --------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE PRINT_WN_STATISTIC
 !/ ------------------------------------------------------------------- /
       SUBROUTINE WRITE_VAR_TO_TEXT_FILE(TheArr, eFile)
 !/
@@ -2937,7 +2937,7 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE WRITE_VAR_TO_TEXT_FILE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PrintTotalOffContrib(string)
 !/
@@ -3024,7 +3024,7 @@
 !/
 !/ End of W3XYPFSN --------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE PrintTotalOffContrib
 !/ ------------------------------------------------------------------- /
       SUBROUTINE COMPUTE_MEAN_PARAM (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
 !/
@@ -3147,7 +3147,7 @@
 !/
 !/ End of W3SPR0 ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE COMPUTE_MEAN_PARAM
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI(DTG,FACX,FACY,VGX,VGY)
 !/
@@ -3385,7 +3385,7 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE calcARRAY_JACOBI
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
 !/
@@ -3642,7 +3642,7 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE calcARRAY_JACOBI_VEC
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI2(DTG,FACX,FACY,VGX,VGY)
 !/
@@ -3857,7 +3857,7 @@
 !/
 !/ End of W3XYPFSN ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE calcARRAY_JACOBI2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI3(IP,J,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
 !/
@@ -4067,7 +4067,7 @@
 !/
 !/ End of W3XYPFSN --------------------------------------------------- /
 !/
-      END SUBROUTINE
+      END SUBROUTINE calcARRAY_JACOBI3
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI4(IP,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
 !/
@@ -4310,7 +4310,7 @@
           B_JAC_LOCAL(ISP) = B_JAC_LOCAL(ISP) + TRIA03 * VAOLD(ISP,IP) * IOBPTH2(ITH)!IOBDP(IP_glob) * IOBPD(ITH,IP_glob)
         END DO
       END DO
-      END SUBROUTINE
+      END SUBROUTINE calcARRAY_JACOBI4
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI5(IE,DTG,FACX,FACY,VGX,VGY)
 !/
@@ -4524,7 +4524,7 @@
         !ASPAR_OFF_DIAG(:,IP1) = ASPAR_OFF_DIAG(:,IP1)              - TMP3(:,IPP1) * DELTAL(:,IPP1) * VA(:,IP1)
         !ASPAR_OFF_DIAG(:,IP2) = ASPAR_OFF_DIAG(:,IP2)              - TMP3(:,IPP2) * DELTAL(:,IPP2) * VA(:,IP2)
       ENDDO
-      END SUBROUTINE      
+      END SUBROUTINE calcARRAY_JACOBI5
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI_SPECTRAL_1(DTG)
 !/
@@ -4675,7 +4675,7 @@
           ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_THE(:)*eSI
         END IF
       END DO
-      END SUBROUTINE
+      END SUBROUTINE calcARRAY_JACOBI_SPECTRAL_1
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI_SPECTRAL_2(DTG,ASPAR_DIAG_LOCAL)
 !/
@@ -4838,7 +4838,7 @@
         END IF
 
       END DO
-      END SUBROUTINE
+      END SUBROUTINE calcARRAY_JACOBI_SPECTRAL_2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE CALCARRAY_JACOBI_SOURCE_1(DTG)
 !/
@@ -5006,7 +5006,7 @@
           !IF (IP .eq. 100) WRITE(*,*) 'SUM A and B', IP, SUM(B_JAC(:,IP)), SUM(ASPAR_JAC(:,PDLIB_I_DIAG(IP)))
         END IF
       END DO
-      END SUBROUTINE
+      END SUBROUTINE CALCARRAY_JACOBI_SOURCE_1
 !/ ------------------------------------------------------------------- /
       SUBROUTINE CALCARRAY_JACOBI_SOURCE_2(DTG,ASPAR_DIAG_LOCAL)
 !/
@@ -5168,7 +5168,7 @@
           END DO
         END IF
       END DO
-      END SUBROUTINE
+      END SUBROUTINE CALCARRAY_JACOBI_SOURCE_2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE APPLY_BOUNDARY_CONDITION_VA
 !/
@@ -5284,7 +5284,7 @@
           END DO
         END IF
       END IF
-      END SUBROUTINE
+      END SUBROUTINE APPLY_BOUNDARY_CONDITION_VA
 !/ ------------------------------------------------------------------- /
       SUBROUTINE APPLY_BOUNDARY_CONDITION(IMOD)
 !/
@@ -5465,7 +5465,7 @@
       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) after boundary", 1)
 #endif
       END IF
-      END SUBROUTINE
+      END SUBROUTINE APPLY_BOUNDARY_CONDITION
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ACTION_LIMITER_LOCAL(IP,ACLOC,ACOLD, DTG)
 !/
@@ -5591,7 +5591,7 @@
           END DO
         END DO
       ENDIF
-      END SUBROUTINE
+      END SUBROUTINE ACTION_LIMITER_LOCAL
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/
@@ -6549,10 +6549,10 @@
 
 
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK, end'
-     FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK, end'
+      FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
 !/
@@ -6908,10 +6908,10 @@
 
 
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK, end'
-     FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK, end'
+      FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+      END SUBROUTINE PDLIB_EXPLICIT_BLOCK
 !/ ------------------------------------------------------------------- /
       SUBROUTINE BLOCK_SOLVER_INIT(IMOD)
 !/
@@ -7052,7 +7052,7 @@
     WRITE(740+IAPROC,*) 'BLOCK_SOLVER_INIT, step 6'
     FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+      END SUBROUTINE BLOCK_SOLVER_INIT
 !/ ------------------------------------------------------------------ /
       SUBROUTINE SET_IOBDP_PDLIB
 !/
