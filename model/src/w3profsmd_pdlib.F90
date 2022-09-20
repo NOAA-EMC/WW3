@@ -610,13 +610,10 @@
       END DO
 
       IOBDP_loc = 0
-      !DEALLOCATE(IOBP,IOBPD)
       IOBP => NULL()
       IOBPD => NULL()
       DEALLOCATE(GRIDS(IMOD)%IOBP,GRIDS(IMOD)%IOBPD)
-!
-     CALL SET_IOBPA_PDLIB
-
+      CALL SET_IOBPA_PDLIB
 !/
 !/ End of W3SPR4 ----------------------------------------------------- /
 !/
@@ -1655,6 +1652,7 @@
           END DO
         END IF
         FLUSH(740+IAPROC)
+        deallocate(Vcoll, Status)
       ELSE
         singV(1) = NSEAL
         singV(2) = maxidx
@@ -7459,25 +7457,6 @@
       WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 8'
       FLUSH(740+IAPROC)
 #endif
-          
-
-!DO IX=1,NX
-!DO ITH=1,NTH
-!  WRITE(500+IAPROC,*) IX,ITH,IOBP(IX),IOBPA(IX),IOBPD(ITH,IX) !,REFLD(1:2,MAPFS(1,IX))
-!ENDDO 
-!ENDDO
-
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 9'
-      FLUSH(740+IAPROC)
-#endif
-!
-! Recomputes the angles used in the gradients estimation 
-! 
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 10'
-      FLUSH(740+IAPROC)
-#endif
       END SUBROUTINE SET_UG_IOBP_PDLIB_INIT
 !/ ------------------------------------------------------------------- /      
 !/ ------------------------------------------------------------------- /
@@ -7729,79 +7708,31 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      INTEGER, INTENT(IN) :: IMOD 
+      INTEGER, INTENT(IN) :: IMOD
 
       INTEGER istat
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'JACOBI_INIT, step 1'
-    FLUSH(740+IAPROC)
-#endif
       IF (IMEM == 1) THEN
         ALLOCATE(ASPAR_JAC(NSPEC, PDLIB_NNZ), stat=istat)
-        !ASPAR_JAC = 0.
         if(istat /= 0) CALL PDLIB_ABORT(9)
       ELSE IF (IMEM == 2) THEN
         ALLOCATE(ASPAR_DIAG_ALL(NSPEC, npa), stat=istat)
-        !ASPAR_DIAG_ALL = 0.
         if(istat /= 0) CALL PDLIB_ABORT(9)
       ENDIF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'JACOBI_INIT, step 2'
-    FLUSH(740+IAPROC)
-#endif
       ALLOCATE(B_JAC(NSPEC,NSEAL), stat=istat)
-      !B_JAC = 0.
       if(istat /= 0) CALL PDLIB_ABORT(10)
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'JACOBI_INIT, step 3'
-    FLUSH(740+IAPROC)
-#endif
       ALLOCATE(CAD_THE(NSPEC,NSEAL), stat=istat)
-      !CAD_THE = 0.
       if(istat /= 0) CALL PDLIB_ABORT(11)
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'JACOBI_INIT, step 4'
-    FLUSH(740+IAPROC)
-#endif
       IF (FreqShiftMethod .eq. 1) THEN
         ALLOCATE(CAS_SIG(NSPEC,NSEAL), stat=istat)
-        !CAS_SIG = 0.
         if(istat /= 0) CALL PDLIB_ABORT(11)
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'JACOBI_INIT, step 5, FreqShiftMethod=', FreqShiftMethod
-    FLUSH(740+IAPROC)
-#endif
       ELSE IF (FreqShiftMethod .eq. 2) THEN
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'Before CWNB_SIG_M2 allocation, NTH=', NTH
-    FLUSH(740+IAPROC)
-#endif
-        ALLOCATE(CWNB_SIG_M2(1-NTH:NSPEC,NSEAL), stat=istat)
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'After CWNB_SIG_M2 allocation, istat=', istat
-    FLUSH(740+IAPROC)
-#endif
-        !CWNB_SIG_M2 = 0.
-        if(istat /= 0) CALL PDLIB_ABORT(11)
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'After istat test'
-    FLUSH(740+IAPROC)
-    WRITE(740+IAPROC,*) 'After CWNB_SIG_M2 setting to zero'
-    FLUSH(740+IAPROC)
-#endif
+         ALLOCATE(CWNB_SIG_M2(1-NTH:NSPEC,NSEAL), stat=istat)
+         if(istat /= 0) CALL PDLIB_ABORT(11)
       END IF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'JACOBI_INIT, step 6'
-    FLUSH(740+IAPROC)
-#endif
       IF (.NOT. B_JGS_BLOCK_GAUSS_SEIDEL) THEN
         ALLOCATE(U_JAC(NSPEC,npa), stat=istat)
         if(istat /= 0) CALL PDLIB_ABORT(12)
       END IF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'JACOBI_INIT, step 7'
-    FLUSH(740+IAPROC)
-#endif
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
@@ -7873,7 +7804,21 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'JACOBI_FINALIZE')
 #endif
-      DEALLOCATE(ASPAR_JAC, B_JAC)
+      IF (IMEM == 1) THEN
+         DEALLOCATE(ASPAR_JAC)
+      ELSE IF (IMEM == 2) THEN
+         DEALLOCATE(ASPAR_DIAG_ALL)
+      ENDIF
+      DEALLOCATE(B_JAC)
+      DEALLOCATE(CAD_THE)
+      IF (FreqShiftMethod .eq. 1) THEN
+        DEALLOCATE(CAS_SIG)
+      ELSE IF (FreqShiftMethod .eq. 2) THEN
+         ALLOCATE(CWNB_SIG_M2)
+      END IF
+      IF (.NOT. B_JGS_BLOCK_GAUSS_SEIDEL) THEN
+         DEALLOCATE(U_JAC)
+      END IF
 !/
 !/ End of JACOBI_FINALIZE -------------------------------------------- /
 !/
