@@ -799,13 +799,6 @@
 
       C(:,1) = VLCFLX(:) * IOBDP_LOC
       C(:,2) = VLCFLY(:) * IOBDP_LOC
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'CCURXY=', CCURX, CCURY
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'max(CX)=', maxval(CX)
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'max(CY)=', maxval(CY)
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'min(CLATS)=', minval(CLATS)
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) '2: maxval(VLCFLX)=', maxval(VLCFLX)
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) '2: maxval(VLCFLY)=', maxval(VLCFLY)
-!!/DEBUGSOLVER     FLUSH(740+IAPROC)
 !
 ! 4. Prepares boundary update
 !
@@ -1513,91 +1506,6 @@
       FLUSH(740+IAPROC)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
-      SUBROUTINE HACK_CHECK(string)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |                                   |  
-!/                  | Aron Roland (BGS IT&E GmbH)       |
-!/                  | Mathieu Dutour-Sikiric (IRB)      |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :        01-June-2018 |
-!/                  +-----------------------------------+
-!/
-!/    01-June-2018 : Origination.                        ( version 6.04 )
-!/
-!  1. Purpose : Source code for parallel debugging 
-!  2. Method :
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD Subroutine tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!  7. Remarks
-!  8. Structure :
-!  9. Switches :
-!
-!     !/S  Enable subroutine tracing.
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-#ifdef W3_S
-      USE W3SERVMD, only: STRACE
-#endif
-      USE W3GDATMD, only : NK, NTH
-      USE W3WDATMD, only : VA
-      USE W3GDATMD, only : NSPEC, NX, NY, NSEAL
-      USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
-      IMPLICIT NONE
-      CHARACTER(*), INTENT(in) :: string
-      INTEGER ITH_F, IK
-      INTEGER ITH, ISP, JSEA
-      REAL eVal, eErr
-      ITH_F=4
-      WRITE(740+IAPROC,*) 'HACK_CHECK, begin'
-      DO ITH=1,NTH
-        IF (ITH .eq. ITH_F) THEN
-          eVal=0.1
-        ELSE
-          eVal=0
-        END IF
-        DO IK=1,NK
-          ISP=ITH + (IK-1)*NTH
-          DO JSEA=1,NSEAL
-            eErr=abs(VA(ISP,JSEA) - eVal)
-            IF (eErr .gt. 0.01) THEN
-              WRITE(740+IAPROC,*) 'HACK CHECK, str=', string
-              WRITE(740+IAPROC,*) 'ITH=', ITH
-              WRITE(740+IAPROC,*) 'IK=', IK
-              WRITE(740+IAPROC,*) 'ISP=', ISP
-              WRITE(740+IAPROC,*) 'JSEA=', JSEA
-              WRITE(740+IAPROC,*) 'eVal=', eVal
-              WRITE(740+IAPROC,*) 'VA(ISP,JSEA)=', VA(ISP,JSEA)
-              FLUSH(740+IAPROC)
-            END IF
-          END DO
-        END DO
-      END DO
-      WRITE(740+IAPROC,*) 'HACK_CHECK, end'
-      END SUBROUTINE
-!/ ------------------------------------------------------------------- /
 !/ ------------ SCALAR FUNCTIONALITY --------------------------------- /
 !/ --------------- REAL V(NSEAL) ------------------------------------- /
 !/ --------------- NSEAL = npa --------------------------------------- /
@@ -1935,6 +1843,8 @@
       INTEGER, INTENT(in) :: choice
       REAL :: FIELD(NSPEC,NSEAL)
       INTEGER ISPEC, JSEA, maxidx
+      LOGICAL PrintMinISP = .FALSE.
+      LOGICAL LocalizeMaximum = .FALSE.
       DO JSEA=1,NSEAL
         DO ISPEC=1,NSPEC
           FIELD(ISPEC,JSEA) = VAOLD(ISPEC,JSEA)
@@ -1946,7 +1856,7 @@
          maxidx = np
       END IF
 !      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string)
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, .FALSE. , .FALSE.)
+      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, PrintMinISP, LocalizeMaximum)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ALL_VA_INTEGRAL_PRINT(IMOD, string, choice)
@@ -2006,6 +1916,8 @@
       INTEGER, INTENT(in) :: choice
       REAL :: FIELD(NSPEC,NSEAL)
       INTEGER ISPEC, JSEA, IP_glob, maxidx
+      LOGICAL PrintMinISP = .FALSE.
+      LOGICAL LocalizeMaximum = .FALSE.
       INTEGER :: TEST_IP = 46
       INTEGER :: TEST_ISP = 370
       IF (GRIDS(IMOD)%GTYPE .ne. UNGTYPE) THEN
@@ -2038,7 +1950,7 @@
          maxidx = np
       END IF
 !      CALL ALL_FIELD_INTEGRAL_PRINT_GENERAL(FIELD, string)
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, .FALSE. , .FALSE.)
+      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, PrintMinISP, LocalizeMaximum)
       WRITE(740+IAPROC,*) 'After call to ALL_FIELD_INTEGRAL'
       FLUSH(740+IAPROC)
 !      IF (NSEAL >= 40) THEN
@@ -2101,8 +2013,10 @@
       INTEGER maxidx
       REAL, INTENT(in) :: FIELD(NSPEC,NSEAL)
       CHARACTER(*), INTENT(in) :: string
+      LOGICAL PrintMinISP = .FALSE.
+      LOGICAL LocalizeMaximum = .FALSE.
       maxidx = NSEAL
-      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, .FALSE. , .FALSE.)
+      CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, PrintMinISP, LocalizeMaximum)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 !/ ------- Coherency info for TheARR(NSPEC,npa) ---------------------- /
@@ -2381,8 +2295,6 @@
       LOGICAL :: LocalizeMaximum = .TRUE.
       LOGICAL :: CheckUncovered = .TRUE.
       LOGICAL :: PrintFullValue = .TRUE.
-      
-
       IF (FULL_NSPEC) THEN
         CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(TheARR, string, maxidx, PrintMinISP, LocalizeMaximum)
       ELSE
@@ -4742,13 +4654,12 @@
         !
         IF (FSREFRACTION) THEN
 !
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'refraction IP=', IP
           !IF ((MAPSTA(1,IP_glob) .eq. 1).and.(SUM(IOBPD(:,IP_glob)) .EQ. NTH)) THEN
           !IF (MAPSTA(1,IP_glob) .eq. 1) THEN
           !IF (IOBP(IP_glob) .eq. 1) THEN
           IF (IOBP_LOC(IP) .eq. 1 .and. IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-!!/PR1            CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
-!!/PR3            CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
+!            CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
+!            CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
             CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
           ELSE
             CAD=ZERO
@@ -4764,7 +4675,6 @@
           ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_THE(:)*eSI
         END IF
       END DO
-!!/DEBUGSOLVER     CALL PrintTotalOffContrib("Offdiag after the refraction")
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE calcARRAY_JACOBI_SPECTRAL_2(DTG,ASPAR_DIAG_LOCAL)
@@ -4906,13 +4816,12 @@
         END IF
         !
         IF (FSREFRACTION) THEN
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'refraction IP=', IP
           !IF ((MAPSTA(1,IP_glob) .eq. 1).and.(SUM(IOBPD(:,IP_glob)) .EQ. NTH)) THEN
           !IF (MAPSTA(1,IP_glob) .eq. 1) THEN
           !IF (IOBP(IP_glob) .eq. 1) THEN
           IF (IOBP_LOC(IP) .eq. 1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-!!/PR1            CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
-!!/PR3            CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
+!            CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
+!            CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
             CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
           ELSE
             CAD=ZERO
@@ -4929,7 +4838,6 @@
         END IF
 
       END DO
-!!/DEBUGSOLVER     CALL PrintTotalOffContrib("Offdiag after the refraction")
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE CALCARRAY_JACOBI_SOURCE_1(DTG)
@@ -5098,9 +5006,6 @@
           !IF (IP .eq. 100) WRITE(*,*) 'SUM A and B', IP, SUM(B_JAC(:,IP)), SUM(ASPAR_JAC(:,PDLIB_I_DIAG(IP)))
         END IF
       END DO
-!!/DEBUGSOLVER     CALL PrintTotalOffContrib("Offdiag after the source terms") !AR: Need to rewrite for IMEM == 2
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'Before frequency shifting business'
-!!/DEBUGSOLVER     FLUSH(740+IAPROC)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE CALCARRAY_JACOBI_SOURCE_2(DTG,ASPAR_DIAG_LOCAL)
@@ -5263,9 +5168,6 @@
           END DO
         END IF
       END DO
-!!/DEBUGSOLVER     CALL PrintTotalOffContrib("Offdiag after the source terms") !AR: Need to rewrite for IMEM == 2
-!!/DEBUGSOLVER     WRITE(740+IAPROC,*) 'Before frequency shifting business'
-!!/DEBUGSOLVER     FLUSH(740+IAPROC)
       END SUBROUTINE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE ADD_SOURCE_TERMS_NONLINEAR(DTG)
@@ -6177,7 +6079,6 @@
         IP      = JSEA
         IP_glob = iplg(IP)
         ISEA    = MAPFS(1,IP_glob)
-!!/DEBUGSRC        WRITE(740+IAPROC,*) 'IP      =', IP, 'IP_glob =', IP_glob, 'ISEA    =', ISEA
         DO ISP=1,NSPEC
           ITH    = 1 + MOD(ISP-1,NTH)
           IK     = 1 + (ISP-1)/NTH
@@ -6390,11 +6291,6 @@
         END DO
         WRITE(740+IAPROC,*) 'sum(VAold/VAinput/VAacloc)=', sum(VAold), sum(VAinput), sum(VAacloc)
 #endif
-!!/DEBUGFREQSHIFT        DO ISP=1,NSPEC
-!!/DEBUGFREQSHIFT          eVal1 = eSI * VA(ISP,IP)
-!!/DEBUGFREQSHIFT          eVal2 = B_JAC(ISP,IP)
-!!/DEBUGFREQSHIFT          WRITE(740+IAPROC,*) 'eVal12=', eVal1, eVal2
-!!/DEBUGFREQSHIFT        END DO
 
             Sum_Prev = sum(ACLOC)
 
@@ -7089,10 +6985,6 @@
         IP = JSEA
         IP_glob=iplg(IP)
         ISEA=MAPFS(1,IP_glob)
-    
-!!/DEBUGSRC        WRITE(740+IAPROC,*) 'IP      =', IP
-!!/DEBUGSRC        WRITE(740+IAPROC,*) 'IP_glob =', IP_glob
-!!/DEBUGSRC        WRITE(740+IAPROC,*) 'ISEA    =', ISEA
         DO ISP=1,NSPEC
           ITH    = 1 + MOD(ISP-1,NTH)
           IK     = 1 + (ISP-1)/NTH
