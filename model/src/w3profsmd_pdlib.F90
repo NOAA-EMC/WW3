@@ -1836,8 +1836,8 @@
       INTEGER, INTENT(in) :: choice
       REAL :: FIELD(NSPEC,NSEAL)
       INTEGER ISPEC, JSEA, maxidx
-      LOGICAL PrintMinISP = .FALSE.
-      LOGICAL LocalizeMaximum = .FALSE.
+      LOGICAL :: PrintMinISP = .FALSE.
+      LOGICAL :: LocalizeMaximum = .FALSE.
       DO JSEA=1,NSEAL
         DO ISPEC=1,NSPEC
           FIELD(ISPEC,JSEA) = VAOLD(ISPEC,JSEA)
@@ -1909,8 +1909,8 @@
       INTEGER, INTENT(in) :: choice
       REAL :: FIELD(NSPEC,NSEAL)
       INTEGER ISPEC, JSEA, IP_glob, maxidx
-      LOGICAL PrintMinISP = .FALSE.
-      LOGICAL LocalizeMaximum = .FALSE.
+      LOGICAL :: PrintMinISP = .FALSE.
+      LOGICAL :: LocalizeMaximum = .FALSE.
       INTEGER :: TEST_IP = 46
       INTEGER :: TEST_ISP = 370
       IF (GRIDS(IMOD)%GTYPE .ne. UNGTYPE) THEN
@@ -2001,8 +2001,8 @@
       INTEGER maxidx
       REAL, INTENT(in) :: FIELD(NSPEC,NSEAL)
       CHARACTER(*), INTENT(in) :: string
-      LOGICAL PrintMinISP = .FALSE.
-      LOGICAL LocalizeMaximum = .FALSE.
+      LOGICAL :: PrintMinISP = .FALSE.
+      LOGICAL :: LocalizeMaximum = .FALSE.
       maxidx = NSEAL
       CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(FIELD, string, maxidx, PrintMinISP, LocalizeMaximum)
       END SUBROUTINE ALL_FIELD_INTEGRAL_PRINT
@@ -7727,9 +7727,8 @@
 ! 10. Source code :
 !
 !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-      USE W3SERVMD, only: STRACE
-#endif
+      USE W3GDATMD, only: B_JGS_BLOCK_GAUSS_SEIDEL
+      USE W3PARALL, only: IMEM
 !/
       IMPLICIT NONE
 !/
@@ -7758,7 +7757,7 @@
       IF (FreqShiftMethod .eq. 1) THEN
         DEALLOCATE(CAS_SIG)
       ELSE IF (FreqShiftMethod .eq. 2) THEN
-         ALLOCATE(CWNB_SIG_M2)
+         DEALLOCATE(CWNB_SIG_M2)
       END IF
       IF (.NOT. B_JGS_BLOCK_GAUSS_SEIDEL) THEN
          DEALLOCATE(U_JAC)
