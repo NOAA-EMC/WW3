@@ -119,7 +119,7 @@ fi
   export   nr='4'
   export  nth='4'
 
-  export rtst="./bin/run_test -o both -S"
+  export rtst="./bin/run_cmake_test -o both -S"
 
   export  ww3='../model'
 
@@ -176,7 +176,7 @@ fi
              
   $main_dir/../regtests/bin/matrix.base
 
-  $main_dir/../regtests/bin/matrix_divider.sh
+  $main_dir/../regtests/bin/matrix_divider_cmake.sh
 
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #

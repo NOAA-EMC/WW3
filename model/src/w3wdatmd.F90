@@ -1,5 +1,20 @@
+!> @file
+!> @brief Contains module W3WDATMD.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Define data structures to set up wave model dynamic data for
+!>  several models simultaneously.
+!> 
+!> @details The number of grids is taken from W3GDATMD, and needs to be
+!>  set first with W3DIMG.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
       MODULE W3WDATMD
 !/
 !/                  +-----------------------------------+
@@ -183,6 +198,16 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Set up the number of grids to be used.
+!>
+!> @details Use data stored in NGRIDS in W3GDATMD.
+!>
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!> 
+!> @author H. L. Tolman  @date 10-Dec-2014
+!>        
       SUBROUTINE W3NDAT ( NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -303,6 +328,19 @@
 !/
       END SUBROUTINE W3NDAT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief  Initialize an individual data grid at the proper dimensions.
+!>
+!> @details Allocate directly into the structure array. Note that
+!>  this cannot be done through the pointer alias!
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!> @param[in] F_ONLY FLag for initializing field arrays only.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>      
       SUBROUTINE W3DIMW  ( IMOD, NDSE, NDST, F_ONLY )
 !/
 !/                  +-----------------------------------+
@@ -417,10 +455,6 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'W3DIMW')
 #endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 1'
-    FLUSH(740+IAPROC)
-#endif
 
 !
 ! -------------------------------------------------------------------- /
@@ -431,37 +465,21 @@
         ELSE
           FL_ALL = .TRUE.
         END IF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 2'
-    FLUSH(740+IAPROC)
-#endif
 !
       IF ( NGRIDS .EQ. -1 ) THEN
           WRITE (NDSE,1001)
           CALL EXTCDE (1)
         END IF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 3'
-    FLUSH(740+IAPROC)
-#endif
 !
       IF ( IMOD.LT.1 .OR. IMOD.GT.NWDATA ) THEN
           WRITE (NDSE,1002) IMOD, NWDATA
           CALL EXTCDE (2)
         END IF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 4'
-    FLUSH(740+IAPROC)
-#endif
 !
       IF ( WDATAS(IMOD)%DINIT ) THEN
           WRITE (NDSE,1003)
           CALL EXTCDE (3)
         END IF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 5'
-    FLUSH(740+IAPROC)
-#endif
 !
 #ifdef W3_T
       WRITE (NDST,9000) IMOD
@@ -469,99 +487,40 @@
 !
       JGRID  = IGRID
       IF ( JGRID .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 6'
-    FLUSH(740+IAPROC)
-#endif
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
       CALL SET_UP_NSEAL_NSEALM(NSEAL_DUMMY, NSEALM)
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 7'
-    FLUSH(740+IAPROC)
-#endif
       NSEATM = NSEALM * NAPROC
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8'
-    FLUSH(740+IAPROC)
-#endif
 !
       IF ( FL_ALL ) THEN
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8'
-    FLUSH(740+IAPROC)
-#endif
           ALLOCATE ( WDATAS(IMOD)%VA(NSPEC,0:NSEALM), STAT=ISTAT ); WDATAS(IMOD)%VA = 0.
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.1'
-    FLUSH(740+IAPROC)
-#endif
           CHECK_ALLOC_STATUS ( ISTAT )
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.2'
-    FLUSH(740+IAPROC)
-#endif
-!!/PDLIB          ALLOCATE ( WDATAS(IMOD)%VAOLD(NSPEC,0:NSEALM) )
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.3'
-    FLUSH(740+IAPROC)
-#endif
 #ifdef W3_PDLIB
           ALLOCATE ( WDATAS(IMOD)%SHAVETOT(NSEAL), stat=istat )
-#endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.4, stat=', istat
-    FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
         IF (.not. LSLOC) THEN
           ALLOCATE ( WDATAS(IMOD)%VSTOT(NSPEC,NSEAL), stat=istat )
 #endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.5, stat=', istat
-    FLUSH(740+IAPROC)
-#endif
 #ifdef W3_PDLIB
           ALLOCATE ( WDATAS(IMOD)%VDTOT(NSPEC,NSEAL), stat=istat )
-#endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.6, stat=', istat
-    FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
         ENDIF ! LSLOC 
           ALLOCATE ( WDATAS(IMOD)%VAOLD(NSPEC,NSEAL), stat=istat )
 #endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.7, stat=', istat
-    FLUSH(740+IAPROC)
-#endif
 #ifdef W3_PDLIB
         IF (.not. LSLOC) THEN
          WDATAS(IMOD)%VSTOT=0
 #endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.8'
-    FLUSH(740+IAPROC)
-#endif
 #ifdef W3_PDLIB
           WDATAS(IMOD)%VDTOT=0
-#endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.9'
-    FLUSH(740+IAPROC)
 #endif
 #ifdef W3_PDLIB
         ENDIF ! LSLOC 
           WDATAS(IMOD)%SHAVETOT=.FALSE.
-#endif
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.10'
-    FLUSH(740+IAPROC)
-    WRITE(740+IAPROC,*) 'NSEAL=', NSEAL, ' NSEALM=', NSEALM
-    FLUSH(740+IAPROC)
 #endif
 !
 ! * Four arrays for NL5 (QL)
@@ -591,15 +550,7 @@
 #endif
 !
           IF ( NSEAL .NE. NSEALM ) THEN
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'Before settings to ZERO'
-    FLUSH(740+IAPROC)
-#endif
             DO ISEA=NSEAL+1,NSEALM
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'ISEA=', ISEA
-    FLUSH(740+IAPROC)
-#endif
               WDATAS(IMOD)%VA(:,ISEA) = 0.
 !
 #ifdef W3_NL5
@@ -610,16 +561,8 @@
 #endif
             END DO
           END IF
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 8.11'
-    FLUSH(740+IAPROC)
-#endif
         END IF
 !
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 9'
-    FLUSH(740+IAPROC)
-#endif
       ! ICE, ICEH, ICEF must be defined from 0:NSEA
       ALLOCATE ( WDATAS(IMOD)%WLV(NSEA),                              &
                  WDATAS(IMOD)%ICE(0:NSEA),                            &
@@ -636,10 +579,6 @@
                  WDATAS(IMOD)%ASF(NSEATM),                            &
                  WDATAS(IMOD)%FPIS(NSEATM), STAT=ISTAT                )
       CHECK_ALLOC_STATUS ( ISTAT )
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 10'
-    FLUSH(740+IAPROC)
-#endif
 
       WDATAS(IMOD)%WLV   (:) = 0.
       WDATAS(IMOD)%ICE   (0:NSEA) = 0.
@@ -656,10 +595,6 @@
       WDATAS(IMOD)%ASF   (:) = 0.
       WDATAS(IMOD)%FPIS  (:) = 0.
       WDATAS(IMOD)%DINIT     = .TRUE.
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 11'
-    FLUSH(740+IAPROC)
-#endif
       CALL W3SETW ( IMOD, NDSE, NDST )
 !
 #ifdef W3_T
@@ -671,10 +606,6 @@
 !
       IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
 !
-#ifdef W3_DEBUGINIT
-    WRITE(740+IAPROC,*) 'W3DIMW, step 12'
-    FLUSH(740+IAPROC)
-#endif
       RETURN
 !
 ! Formats
@@ -715,6 +646,18 @@
 !/
       END SUBROUTINE W3DIMW
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Select one of the WAVEWATCH III grids / models.
+!>
+!> @details Point pointers to the proper variables in the proper element of
+!>  the GRIDS array.
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>      
       SUBROUTINE W3SETW ( IMOD, NDSE, NDST )
 !/
 !/                  +-----------------------------------+

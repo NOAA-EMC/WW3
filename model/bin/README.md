@@ -50,7 +50,7 @@ METIS_PATH = < path before lib/libparmetis.a and lib/libmetis.a >
 
 The following paths/libraries are expected to be set: 
 
-G2_LIB4, W3NCO_LIB4, BACIO_LIB4, JASPER_LIB, PNG_LIB, and Z_LIB
+G2_LIB4, W3EMC_LIB4, BACIO_LIB4, JASPER_LIB, PNG_LIB, and Z_LIB
 
 If using NCEP hpc-stack, you just need to set the following: 
 

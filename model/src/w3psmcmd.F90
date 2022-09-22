@@ -251,6 +251,8 @@
       USE W3GDATMD, ONLY: NK, NTH, DTH, XFR, ESIN, ECOS, SIG, NX, NY,  &
                           NSEA, SX, SY, MAPSF, FUNO3, FVERG,           &
                           IJKCel, IJKUFc, IJKVFc, NCel, NUFc, NVFc,    &
+                          IJKCel3, IJKCel4,                            &
+                          IJKVFc5, IJKVFc6,IJKUFc5,IJKUFc6,            &
                           NLvCel, NLvUFc, NLvVFc, NRLv, MRFct,         &
                           DTCFL, CLATS, DTMS, CTRNX, CTRNY 
       USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC  
@@ -496,8 +498,8 @@
 !$OMP Parallel DO Private(i, M, N, FUTRN)
 #endif
            DO i=1, NUFc
-              M=IJKUFc(5,i)
-              N=IJKUFc(6,i)
+              M=IJKUFc5(i)
+              N=IJKUFc6(i)
               FUTRN = FUMD(i)*ULCFLX(i) - FUDIFX(i)
 
 !! Add sub-grid transparency for input flux update.  JGLi16May2011
@@ -568,8 +570,8 @@
 !$OMP Parallel DO Private(n)
 #endif
            DO n=1, NSEA
-              CQA(n)=CQ(n) + FCNt(n)/FLOAT(IJKCel(3,n))
-              CQ (n)=CQ(n) + AFCN(n)/FLOAT(IJKCel(3,n))
+              CQA(n)=CQ(n) + FCNt(n)/FLOAT(IJKCel3(n))
+              CQ (n)=CQ(n) + AFCN(n)/FLOAT(IJKCel3(n))
            ENDDO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
@@ -588,8 +590,8 @@
 !$OMP Parallel DO Private(j, M, N, FVTRN)
 #endif
            DO j=1, NVFc
-              M=IJKVFc(5,j)
-              N=IJKVFc(6,j)
+              M=IJKVFc5(j)
+              N=IJKVFc6(j)
               FVTRN = FVMD(j)*VLCFLY(j) - FVDIFY(j)
 
 !! Add sub-grid transparency for input flux update.  JGLi16May2011
@@ -646,7 +648,7 @@
 !$OMP Parallel DO Private(n)
 #endif
            DO n=1, NSEA
-              CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*FLOAT(IJKCel(3,n)) )
+              CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*FLOAT(IJKCel3(n)) )
            ENDDO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
@@ -694,8 +696,8 @@
 !$OMP Parallel DO Private(i, L, M, FUTRN)
 #endif
            DO i=iuf, juf 
-              L=IJKUFc(5,i)
-              M=IJKUFc(6,i)
+              L=IJKUFc5(i)
+              M=IJKUFc6(i)
               FUTRN = FUMD(i)*ULCFLX(i) - FUDIFX(i)
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
 !! !$OMP CRITICAL 
@@ -761,8 +763,8 @@
 !$OMP Parallel DO Private(n)
 #endif
            DO n=icl, jcl 
-              CQA(n)=CQ(n) + FCNt(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
-              CQ (n)=CQ(n) + AFCN(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
+              CQA(n)=CQ(n) + FCNt(n)/FLOAT( IJKCel3(n)*IJKCel4(n) )
+              CQ (n)=CQ(n) + AFCN(n)/FLOAT( IJKCel3(n)*IJKCel4(n) )
               FCNt(n)=0.0
               AFCN(n)=0.0
            ENDDO
@@ -783,8 +785,8 @@
 !$OMP Parallel DO Private(j, L, M, FVTRN)
 #endif
            DO j=ivf, jvf 
-              L=IJKVFc(5,j)
-              M=IJKVFc(6,j)
+              L=IJKVFc5(j)
+              M=IJKVFc6(j)
               FVTRN = FVMD(j)*VLCFLY(j) - FVDIFY(j)
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
 !! !$OMP CRITICAL 
@@ -842,7 +844,7 @@
 #endif
            DO n=icl, jcl
               CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*            &
-      &             FLOAT( IJKCel(3, n)*IJKCel(4, n) ) )
+      &             FLOAT( IJKCel3(n)*IJKCel4(n) ) )
               BCNt(n)=0.0
            ENDDO
 #ifdef W3_OMPG
@@ -1293,10 +1295,12 @@
 !> @author Jian-Guo Li
 !> @date 03-Mar-2022
 !>
+! Subroutine that calculate mid-flux values for x dimension 
       SUBROUTINE SMCxUNO2(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
 
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
+      USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS, &
+                          IJKCel3, IJKCel4
       USE W3ODATMD, ONLY: NDSE, NDST 
 
       IMPLICIT NONE
@@ -1338,8 +1342,8 @@
            N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and central gradient
-           CNST2=FLOAT( IJKCel(3,L) )
-           CNST3=FLOAT( IJKCel(3,M) )
+           CNST2=FLOAT( IJKCel3(L) )
+           CNST3=FLOAT( IJKCel3(M) )
            CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell, arithmetic average.
@@ -1363,7 +1367,7 @@
            IF( M .LE. 0) UFLX(i) = UC(L)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,K) )
+           CNST1=FLOAT( IJKCel3(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Use minimum gradient all region.
@@ -1379,7 +1383,7 @@
            IF( L .LE. 0) UFLX(i) = UC(M)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,N) )
+           CNST1=FLOAT( IJKCel3(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Use minimum gradient outside monotonic region. 
@@ -1427,7 +1431,7 @@
       SUBROUTINE SMCyUNO2(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY, FTS)
 
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
+      USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF, IJKCel4
       USE W3ODATMD, ONLY: NDSE, NDST
 
       IMPLICIT NONE
@@ -1467,8 +1471,8 @@
          N=IJKVFc(7,j)
 
 !    Face bounding cell lengths and gradient
-         CNST2=FLOAT( IJKCel(4,L) )
-         CNST3=FLOAT( IJKCel(4,M) )
+         CNST2=FLOAT( IJKCel4(L) )
+         CNST3=FLOAT( IJKCel4(M) )
          CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell unit 
@@ -1493,7 +1497,7 @@
            ENDIF
 
 !    Upstream cell size and irregular grid gradient, depending on VFLY.
-           CNST1=FLOAT( IJKCel(4,K) )
+           CNST1=FLOAT( IJKCel4(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Use minimum gradient outside monotonic region
@@ -1514,7 +1518,7 @@
 
 !    Upstream cell size and gradient, depending on VFLY sign.
 !    Side gradients for central cell includs 0.5 factor.
-           CNST1=FLOAT( IJKCel(4,N) )
+           CNST1=FLOAT( IJKCel4(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Use minimum gradient outside monotonic region
@@ -1563,6 +1567,7 @@
 
        USE CONSTANTS
        USE W3GDATMD, ONLY: NSEA, NY, NCel, NUFc, IJKCel, IJKUFc, CLATS
+       USE W3GDATMD, ONLY: IJKCel3
        USE W3ODATMD, ONLY: NDSE, NDST 
 
        IMPLICIT NONE
@@ -1598,8 +1603,8 @@
          N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and gradient
-         CNST2=FLOAT( IJKCel(3,L) )
-         CNST3=FLOAT( IJKCel(3,M) )
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
          CNST5=(CF(M)-CF(L))
 
 !    Averaged Courant number for base-level cell face 
@@ -1791,6 +1796,7 @@
 
        USE CONSTANTS
        USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
+       USE W3GDATMD, ONLY: IJKCel3
        USE W3ODATMD, ONLY: NDSE, NDST 
 
        IMPLICIT NONE
@@ -1833,8 +1839,8 @@
          N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and central gradient
-         CNST2=FLOAT( IJKCel(3,L) )
-         CNST3=FLOAT( IJKCel(3,M) )
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
          CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell, arithmetic average.
@@ -1857,7 +1863,7 @@
            IF( M .LE. 0) UFLX(i) = UC(L)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,K) )
+           CNST1=FLOAT( IJKCel3(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Second order gradient
@@ -1888,7 +1894,7 @@
            IF( L .LE. 0) UFLX(i) = UC(M)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,N) )
+           CNST1=FLOAT( IJKCel3(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Second order gradient
@@ -1953,6 +1959,7 @@
 
       USE CONSTANTS
       USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
+      USE W3GDATMD, ONLY: IJKCel4
       USE W3ODATMD, ONLY: NDSE, NDST
 
       IMPLICIT NONE
@@ -1960,8 +1967,8 @@
       REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
       REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
       INTEGER ::  i, j, k, L, M, N, ij
-      REAL    :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
-                 CNST7, CNST8, CNST9
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
+             CNST7, CNST8, CNST9
 
 !     Notice an extra side length L is multiplied to mid-flux to give correct
 !     proportion of flux into the cells.  This length will be removed by the
@@ -1993,8 +2000,8 @@
          N=IJKVFc(7,j)
 
 !    Face bounding cell lengths and gradient
-         CNST2=FLOAT( IJKCel(4,L) )
-         CNST3=FLOAT( IJKCel(4,M) )
+         CNST2=FLOAT( IJKCel4(L) )
+         CNST3=FLOAT( IJKCel4(M) )
          CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell unit 
@@ -2019,7 +2026,7 @@
            ENDIF
 
 !    Upstream cell size and irregular grid gradient, depending on VFLY.
-           CNST1=FLOAT( IJKCel(4,K) )
+           CNST1=FLOAT( IJKCel4(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Second order gradient
@@ -2056,7 +2063,7 @@
 
 !    Upstream cell size and gradient, depending on VFLY sign.
 !    Side gradients for central cell includs 0.5 factor.
-           CNST1=FLOAT( IJKCel(4,N) )
+           CNST1=FLOAT( IJKCel4(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Second order gradient
@@ -2121,6 +2128,7 @@
 
          USE CONSTANTS
          USE W3GDATMD, ONLY: NSEA, NY, NCel, NUFc, IJKCel, IJKUFc, CLATS
+         USE W3GDATMD, ONLY: IJKCel3
          USE W3ODATMD, ONLY: NDSE, NDST 
 
          IMPLICIT NONE
@@ -2156,8 +2164,8 @@
          N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and gradient
-         CNST2=FLOAT( IJKCel(3,L) )
-         CNST3=FLOAT( IJKCel(3,M) )
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
          CNST5=(CF(M)-CF(L))
 
 !    Averaged Courant number for base-level cell face 
@@ -2621,8 +2629,9 @@
       SUBROUTINE SMCAverg(CVQ) 
 
       USE CONSTANTS
-      USE W3GDATMD, ONLY: NSEA, NUFc, NVFc,      &
-                          IJKCel, IJKUFc, IJKVFC 
+      USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,    &
+                          IJKCel, IJKUFc, IJKVFC,  &
+                          IJKUFc5, IJKUFc6
       USE W3GDATMD, ONLY: ARCTC 
       USE W3ODATMD, ONLY: NDSE, NDST 
 
@@ -2658,9 +2667,9 @@
 !!    Calculate x-gradient by averaging U-face gradients. 
       DO i=1, NUFc
 
-!     Select Upstream, Central and Downstream cells
-        L=IJKUFc(5,i)
-        M=IJKUFc(6,i)
+!    Select Upstream, Central and Downstream cells
+        L=IJKUFc5(i)
+        M=IJKUFc6(i)
 
 !       Multi-resolution SMC grid requires flux multiplied by face factor.
         CNST5=Real( IJKUFc(3,i) )*(CVF(M)+CVF(L))
@@ -3151,9 +3160,6 @@
       CXCY(1:NSEA)= CX(1:NSEA) 
 
 !!   Initialize full grid gradient arrays
-#ifdef W3_DEBUGDCXDX
-      WRITE(740+IAPROC,*) 'Before assigning DCXDX to ZERO'
-#endif
       DCXDX = 0.0
       DCXDY = 0.0
 
@@ -3191,10 +3197,6 @@
       END DO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
-#endif
-
-#ifdef W3_DEBUGDCXDX
-      WRITE(740+IAPROC,*) 'After non-trivial assination to DCXDX array'
 #endif
 
 !!    Assign current CY speed to CXCY and set negative cells.

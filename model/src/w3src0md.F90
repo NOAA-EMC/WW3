@@ -1,4 +1,16 @@
+!> @file
+!> @brief Contains MODULE W3SRC0MD.
+!> 
+!> @author H. L. Tolman  @date 29-May-2009
+!> 
+
 #include "w3macros.h"
+!>
+!> @brief Mean wave parameter computation for case without input and
+!>  dissipation.
+!> 
+!> @author H. L. Tolman  @date 29-May-2009
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3SRC0MD
 !/
@@ -53,6 +65,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate mean wave parameters.
+!>
+!> @param[in]  A      Action as a function of direction and wavenumber.
+!> @param[in]  CG     Group velocities.
+!> @param[in]  WN     Wavenumbers.
+!> @param[out] EMEAN  Mean wave energy.
+!> @param[out] FMEAN  Mean wave frequency.
+!> @param[out] WNMEAN Mean wavenumber.
+!> @param[out] AMAX   Maximum action density in spectrum.
+!>
+!> @author H. L. Tolman  @date 05-Jul-2006
+!>        
       SUBROUTINE W3SPR0 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
 !/
 !/                  +-----------------------------------+

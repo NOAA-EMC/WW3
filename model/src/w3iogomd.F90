@@ -1,4 +1,16 @@
+!> @file
+!> @brief Gridded output of mean wave parameters.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!> 
+
 #include "w3macros.h"
+
+!>
+!> @brief Gridded output of mean wave parameters.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3IOGOMD
 !/
@@ -146,6 +158,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Updates the flags for output parameters based on the mod_def file
+!>  this is to prevent the allocation of big 3D arrays when not requested.
+!>
+!> @param[in]    NDSO   Output file logical unit number. 
+!> @param[in]    NDSEN  Error output file logical unit number.
+!> @param[inout] FLGRD  1D array of flags for groups.
+!> @param[inout] FLGR2  1D array of flags for groups.
+!> @param[inout] FLGD   2D array of flags.
+!> @param[inout] FLG2   2D array of flags.
+!>
+!> @author F. Ardhuin  @date 15-Apr-2013
+!>        
       SUBROUTINE W3FLGRDUPDT ( NDSO, NDSEN, FLGRD, FLGR2, FLGD, FLG2 )
 !/
 !/                  +-----------------------------------+
@@ -287,6 +312,22 @@
 !
       END SUBROUTINE W3FLGRDUPDT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Fills in FLG1D and FLG2D arrays from ASCII input file.
+!>
+!> @param[in] NDSI    Input file logical unit number.
+!> @param[in] NDSO    Output file logical unit number.
+!> @param[in] NDSS    Screen file logical unit number.
+!> @param[in] NDSEN   Error output file logical unit number.
+!> @param[in] COMSTR  Comment string, usually '$'.
+!> @param[out] FLG1D  1D array of flags for groups.
+!> @param[out] FLG2D  2D array of flags.
+!> @param[in] IAPROC  Index of current processor.
+!> @param[in] NAPOUT  Index of processor for output (screen).
+!> @param[out] IERR   Error message number.
+!>
+!> @author F. Ardhuin  @date 25-Sep-2020
+!>
       SUBROUTINE W3READFLGRD ( NDSI , NDSO, NDSS, NDSEN, COMSTR,      &
                                FLG1D, FLG2D, IAPROC, NAPOUT, IERR)
 !/
@@ -522,6 +563,21 @@
       END SUBROUTINE W3READFLGRD
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Fills in FLG1D and FLG2D arrays from ASCII input file.
+!>
+!> @param[in] NDSO    Output file logical unit number.
+!> @param[in] NDSS    Screen file logical unit number.
+!> @param[in] NDSEN   Error output file logical unit number.
+!> @param[in] FLDOUT  List of field names.
+!> @param[out] FLG1D  1D array of flags for groups.
+!> @param[out] FLG2D  2D array of flags.
+!> @param[in] IAPROC  Index of current processor.
+!> @param[in] NAPOUT  Index of processor for output (screen).
+!> @param[out] IERR   Error message number.
+!>
+!> @author F. Ardhuin  @date 25-Sep-2020
+!>      
       SUBROUTINE W3FLGRDFLAG ( NDSO, NDSS, NDSEN, FLDOUT,      &
                                FLG1D, FLG2D, IAPROC, NAPOUT, IERR)
 !/
@@ -686,6 +742,18 @@
       END SUBROUTINE W3FLGRDFLAG
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Returns the group/field (I/J) indices for a named output field.
+!>
+!> @param[in]  FLD     Field names.
+!> @param[out] I       Output group number (IFI).
+!> @param[out] J       Output field number (IFJ).
+!> @param[in]  IAPROC  Index of current processor.
+!> @param[in]  NAPOUT  Index of processor for output (screen).
+!> @param[in]  NDSEN   Error output file logical unit number.
+!>
+!> @author C. Bunney  @date 22-Mar-2021
+!>      
       SUBROUTINE W3FLDTOIJ(FLD, I, J, IAPROC, NAPOUT, NDSEN)
 !/
 !/                  +-----------------------------------+
@@ -1101,6 +1169,16 @@
       END SUBROUTINE W3FLDTOIJ
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Fill necessary arrays with gridded data for output.
+!>
+!> @param[in] A        Input spectra, left in par list to changeshape.
+!> @param[in] FLPART   Flag for filling fields with partition data.
+!> @param[in] FLOUTG   Flag for file field output.
+!> @param[in] FLOUTG2  Flag for coupling field output.
+!>
+!> @author H. L. Tolman  @date 10-Apr-2015
+!>      
       SUBROUTINE W3OUTG ( A, FLPART, FLOUTG, FLOUTG2 )
 !/
 !/                  +-----------------------------------+
@@ -1283,18 +1361,6 @@
 !/
 #ifdef W3_S
       CALL STRACE (IENT, 'W3OUTG')
-#endif
-!
-#ifdef W3_DEBUGSTP
-    WRITE(740+IAPROC,*) 'NTH=', NTH
-    WRITE(740+IAPROC,*) 'NK=', NK
-    WRITE(740+IAPROC,*) 'NSPEC=', NSPEC
-    WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
-    WRITE(740+IAPROC,*) 'W3OUTG, initial A printing'
-    WRITE(740+IAPROC,*) 'size(A,1)=', size(A,1)
-    WRITE(740+IAPROC,*) 'size(A,2)=', size(A,2)
-    WRITE(740+IAPROC,*) 'size(A,3)=', size(A,3)
-    FLUSH(740+IAPROC)
 #endif
       DO I=1,NOGRP
         DO J=1,NGRPP
@@ -2458,6 +2524,18 @@
       END SUBROUTINE W3OUTG
 !/ ------------------------------------------------------------------- /
 !/
+!>
+!> @brief  Read/write gridded output.
+!>
+!> @details Fields in file are determined by flags in FLOGRD in W3ODATMD.
+!>
+!> @param[inout] INXOUT  Test string for read/write.
+!> @param[inout] NDSOG   File unit number.
+!> @param[inout] IOTST   Test indictor for reading.
+!> @param[inout] IMOD    Model number for W3GDAT etc.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>      
       SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD )
 !/
 !/                  +-----------------------------------+
@@ -3787,6 +3865,18 @@
       END SUBROUTINE W3IOGO
 !/
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Output Stokes drift related parameters.
+!>
+!> @details This code is built for the purpose of outputting Stokes 
+!>  drift related parameters that can be utilized to obtain full
+!>  Stokes drift profiles external to the wave model.
+!>
+!> @param[in] A  Input spectra, left in par list to change shape.
+!> @param[in] USS_SWITCH  Switch if computing US3D (spectral) or USSP (partitions).
+!>
+!> @author H. L. Tolman  @date 10-Jan-2017
+!>      
       SUBROUTINE CALC_U3STOKES ( A , USS_SWITCH )
 !/
 !/                  +-----------------------------------+
@@ -4030,6 +4120,29 @@
       END SUBROUTINE CALC_U3STOKES
 !/
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Estimate the dominant wave breaking probability b_T.
+!>
+!> @details Estimate the dominant wave breaking probability b_T based on
+!>  the empirical parameterization proposed by Babanin et al. (2001).
+!>
+!> @verbatim
+!>     From their Fig. 12, we have
+!>
+!>         b_T = 85.1 * [(εp - 0.055) * (1 + H_s/d)]^2.33,
+!>
+!>     where ε is the significant steepness of the spectral peak, H_s is
+!>     the significant wave height, d is the water depth.
+!>
+!>     For more details, please see
+!>         Banner et al.  2000: JPO,      30,  3145 -  3160.
+!>         Babanin et al. 2001: JGR, 106(C6), 11569 - 11676.      
+!> @endverbatim
+!>  
+!> @param[in] A  Input wave action spectra N(j, θ, k).
+!>
+!> @author Q. Liu  @date 24-Aug-2018
+!>      
       SUBROUTINE CALC_WBT (A)
 !/
 !/                  +-----------------------------------+

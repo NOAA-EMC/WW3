@@ -1,4 +1,16 @@
+!> @file
+!> @brief Contains MODULE W3SRC1MD.
+!> 
+!> @author H. L. Tolman  @date 29-May-2009
+!> 
+
 #include "w3macros.h"
+!>
+!> @brief Bundle WAM cycle 3 input and dissipation source terms with
+!>  their defining parameters.
+!> 
+!> @author  H. L. Tolman  @date 29-May-2009
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3SRC1MD
 !/
@@ -59,6 +71,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief  
+!>
+!> @param[in]  A      Action as a function of direction and wavenumber.
+!> @param[in]  CG     Group velocities.
+!> @param[in]  WN     Wavenumber.
+!> @param[out] EMEAN  Mean wave energy.
+!> @param[out] FMEAN  Mean wave frequency.
+!> @param[out] WNMEAN mean wavenumber.
+!> @param[out] AMAX   Maximum action density in spectrum.
+!>
+!> @author H. L. Tolman  @date 23-Dec-2004
+!>        
       SUBROUTINE W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
 !/
 !/                  +-----------------------------------+
@@ -214,6 +239,19 @@
 !/
       END SUBROUTINE W3SPR1
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate diagonal of input source (actual source term put
+!>  together in W3SRCE).
+!>
+!> @param[in]  A     Action density spectrum (1-D).
+!> @param[in]  K     Wavenumber for entire spectrum.
+!> @param[in]  USTAR Friction velocity.
+!> @param[in]  USDIR Direction of USTAR.
+!> @param[out] S     Source term (1-D version).
+!> @param[out] D     Diagonal term of derivative.
+!>
+!> @author H. L. Tolman  @date 23-Dec-2004
+!>      
       SUBROUTINE W3SIN1 (A, K, USTAR, USDIR, S, D)
 !/
 !/                  +-----------------------------------+
@@ -381,6 +419,19 @@
 !/
       END SUBROUTINE W3SIN1
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate whitecapping source term and diagonal term of derivative.
+!>
+!> @param[in]  A      Action density spectrum (1-D).
+!> @param[in]  K      Wavenumber for entire spectrum.
+!> @param[in]  EMEAN  Mean wave energy.
+!> @param[in]  FMEAN  Mean wave frequency.
+!> @param[in]  WNMEAN Mean wavenumber.
+!> @param[out] S      Source term (1-D version).
+!> @param[out] D      Diagonal term of derivative.
+!>
+!> @author H. L. Tolman  @date 23-Dec-2004
+!>      
       SUBROUTINE W3SDS1 (A, K, EMEAN, FMEAN, WNMEAN, S, D)
 !/
 !/                  +-----------------------------------+

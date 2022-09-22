@@ -1,4 +1,30 @@
+!> @file
+!> @brief Contains module W3STR2MD.
+!> 
+!> @author A. Roland @date 29-May-2012
+!> 
+
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief This piece of code computes the triad interaction term in
+!>  the same way as done in the SWAN model. 
+!> 
+!> @details The approach is truncated version of the work of Elderberky.
+!>  In SWAN the wave spectra is treated as one-dimensional and the 
+!>  transfer to the higher harmoics is taken into account for this
+!>  no justification is given and it has to be further investigated.             
+!>  The approximation of Elderberky is for a flat bottom (actually 
+!>  bragg-0 resonance).  The biggest problem is that it is not 
+!>  conservative, which is the biggest limitation factor.  Moreover it 
+!>  is questionable if it was taken into account the in spectral 
+!>  wave models the freq. bandwidths are exponentially distributed in 
+!>  freq. space, which leads to the problem that it is possible that 
+!>  some jacobian transformation is missing the derivation of the 
+!>  discrete form, I am now looking into this and I hope that I can 
+!>  give some closure soon.
+!>
+!> @author A. Roland @date 29-May-2012
+!>
       MODULE W3STR2MD
 !/
 !/                  +-----------------------------------+
@@ -75,6 +101,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Slot for user-supplied triad interaction source term.
+!>
+!> @param[in] A
+!> @param[in] CG
+!> @param[in] WN
+!> @param[in] DEPTH
+!> @param[in] IX
+!> @param[out] S
+!> @param[out] D
+!>
+!> @author A. Roland   @date 02-Feb-2014
+!>        
       SUBROUTINE W3STR2 (A, CG, WN, DEPTH, IX, S, D)
 !/
 !/                  +-----------------------------------+
@@ -407,4 +446,4 @@
       END SUBROUTINE W3STR2
 !/ ------------------------------------------------------------------- /
 !/
-      END MODULE W3STR1MD
+      END MODULE W3STR2MD
