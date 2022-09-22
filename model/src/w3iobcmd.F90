@@ -752,11 +752,11 @@
 #endif
       TIME1(1) = TIME2(1)
       TIME1(2) = TIME2(2)
-      DO 812, IP=0, NBI2
-        DO 811, ISP=1, NSPEC
+    DO IP=0, NBI2
+       DO ISP=1, NSPEC
           ABPI0(ISP,IP) = ABPIN(ISP,IP)
-  811     CONTINUE
-  812   CONTINUE
+       END DO
+    END DO
 !
       IOTST  = -1
       FLBPI  = .FALSE.
