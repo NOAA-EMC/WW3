@@ -1683,12 +1683,7 @@
 !  Compute spectral parameters wrt the mean wave direction
 !  (no tail contribution - Prognostic)
       DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA   = JSEA
-#endif
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
@@ -1709,16 +1704,10 @@
         DO ITH=1, NTH
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
           DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA      = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA      = JSEA
-#endif
             ABX2M(JSEA) = ABX2M(JSEA) + A(ITH,IK,JSEA)*                &
               (ECOS(ITH)*COS(THMP(JSEA))+ESIN(ITH)*SIN(THMP(JSEA)))**2
             ABY2M(JSEA) = ABY2M(JSEA) + A(ITH,IK,JSEA)*                &
@@ -1743,12 +1732,7 @@
 #endif
 !
         DO JSEA=1, NSEAL
-#ifdef W3_DIST
-          ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-          ISEA         = JSEA
-#endif
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           FACTOR       = DDEN(IK) / CG(IK,ISEA)
           MSSXM(JSEA)  = MSSXM(JSEA) + ABX2M(JSEA)*FACTOR*             &
             WN(IK,ISEA)**2
@@ -1769,18 +1753,10 @@
         END DO
 
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY,STEX,STEY,STED,ITL,IK)
+!$OMP PARALLEL DO PRIVATE(JSEA,STEX,STEY,STED,ITL,IK)
 #endif
 !
         DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA      = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA      = JSEA
-#endif
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
 !
 !  Mean wave period (no tail contribution - Prognostic)
         IF ( ET02(JSEA) .GT. 1.E-7 ) THEN
@@ -2160,11 +2136,10 @@
       DO ITH=1, NTH
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
         DO JSEA=1, NSEAL
-          CALL INIT_GET_ISEA(ISEA, JSEA)
           IF (IKP0(JSEA).NE.0) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
@@ -2178,11 +2153,10 @@
         END DO
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
       DO JSEA=1, NSEAL
-        CALL INIT_GET_ISEA(ISEA, JSEA)
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP0(JSEA).NE.UNDEF )                                     &
             THP0(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
@@ -3810,6 +3784,7 @@
       USE W3ADATMD,  ONLY: CG, WN, DW
       USE W3ADATMD,  ONLY: USSX, USSY,  US3D, USSP
       USE W3ODATMD, ONLY: IAPROC, NAPROC
+      USE W3PARALL, ONLY: INIT_GET_ISEA
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
@@ -3881,16 +3856,10 @@
          DO ITH=1, NTH
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
             DO JSEA=1, NSEAL
-#ifdef W3_DIST
-                ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-                ISEA         = JSEA
-#endif
                ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
                ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
             END DO
@@ -3909,12 +3878,7 @@
 #endif
 !
          DO JSEA=1, NSEAL
-#ifdef W3_DIST
-              ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-              ISEA         = JSEA
-#endif
+            CALL INIT_GET_ISEA(ISEA, JSEA)
             FACTOR       = DDEN(IK) / CG(IK,ISEA)
 !
 ! Deep water limits
