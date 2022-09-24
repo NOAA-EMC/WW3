@@ -432,7 +432,7 @@
 !!      ================================================================
 !!
 !!
-        do 29 nd = 1,ndep
+       do nd = 1,ndep
 !!
 !!
 !!-4b     For given new depth dep2 = dep_tbl(nd) calculate
@@ -486,12 +486,12 @@
           dwka    = ( wka2(2) - wkfnc(frqa(1)/dfrq,dep2) ) / 2.
           pha2(1) = wka2(1)*dwka*ainc
 !!
-          do 23 irng=2,nrng-1
+          do irng=2,nrng-1
 !!          Below: variable dwka = dk centered at irng (between irng-1 & irng+1)
 !!          and computed    pha2(irng) = k*dk*dtheta at irng
             dwka       = ( wka2(irng+1) - wka2(irng-1) ) / 2.
             pha2(irng) = wka2(irng)*dwka*ainc
-  23      continue
+          end do
 !!
 !!        Below: variable dwka = dk centered at nrng (between nrng-1 & nrng+1)
 !!        and computed    pha2(nrng) = k*dk*dtheta at nrng
@@ -509,7 +509,7 @@
 !!        ==============================================================
 !!
 !!
-  29    continue      !* End do 29 nd = 1,ndep
+       end do ! nd = 1,ndep
 !!      ----------------------------------------------------------------
 !!      ================================================================
 !!
@@ -1077,27 +1077,26 @@
 !!    to 2D Energy Density spectrum "ef2(theta,f)" & reverse indices
 !!    ==>  ef2(f,theta) = A(theta,k) * 2*pi*oma(f)/cga(f)
 !!    ------------------------------------------------------------------
-      do 32 irng=1,nrng
+    do irng=1,nrng
         fac = twopi*oma(irng)/cga(irng)
-        do 31 iang=1,nang
+       do  iang=1,nang
           ef2(irng,iang) = A(iang,irng) * fac
-  31    continue
-  32  continue
+       end do
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!
 !!*i5 Calculte the 1D Energy Density "ef1(f)"
 !!    ------------------------------------------------------------------
-      do 42 irng=1,nrng
+    do irng=1,nrng
         sum1 = 0.0
-        do 41 iang=1,nang
+       do iang=1,nang
           sum1 = sum1 + ef2(irng,iang)
-  41    continue
+       end do
         ef1(irng) = sum1 * ainc
-  42  continue
+    end do
 !!    ------------------------------------------------------------------
 !!    ==================================================================
-!!    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!------------------------------------------------------------------------------
 !!==============================================================================
 !!
@@ -1146,7 +1145,7 @@
       e1max  = 0.0
       npeaks = 0
 !!    Look in the freq range that works for TSA call (see condition below)
-      do 43 irng=2,nrng-1             !* last peak loc. is at nrng-1      <<<<<
+    do irng=2,nrng-1             !* last peak loc. is at nrng-1      <<<<<
 !!      Pick the 1st local abs. max in [2,nrng-1] using (ef1(irng).gt.e1max)
 !!      so that if 2 equal adj. peaks are found it will pick the 1st e1max
 !!      encountered (i.e. the lower freq. one)
@@ -1159,7 +1158,7 @@
           e1max  = ef1(npk)           !* update e1max
           npeaks = 1
         endif
-  43  continue
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!B   if a 1st peak is not found (npeaks=0 & e1max=0.0 < eps) or
@@ -1187,7 +1186,7 @@
       e1max2 = 0.0
 !!    Again look in the freq range that is in line with TSA min condition
 !!    and find the 2nd highest peak with  eps < e1max2 < e1max
-      do 45 irng=2,nrng-1           !* last peak loc. is at nrng-1      <<<<<
+    do irng=2,nrng-1           !* last peak loc. is at nrng-1      <<<<<
 !!      Pick the 2nd local abs. max in [2,nrng-1] that is at least 'nsep'
 !!      bins away from the 1st peak using (ef1(irng).ge.e1max2) so that
 !!      if 2 equal adj. peaks are found it will pick the 2nd e1max2
@@ -1201,7 +1200,7 @@
           e1max2 = ef1(npk2)        !* update e1max2
           npeaks = 2
         endif
-  45  continue
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!B   if a 2nd peak is not found (npeaks=1 & e1max2=0.0 < eps)
@@ -1243,7 +1242,6 @@
  200  continue
 !!    ------------------------------------------------------------ !!op2
 !!    ==================================================================
-!!    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!
 !!    Bash; With the new "optsa2" you are allowed one call (if 1 peak)
@@ -1293,7 +1291,7 @@
 !!      ================================================================
 !!
 !!-3    Remove the step like jump (if exists) in dens1() between nfs & nfs+1
-        do 440 iang=1,nang
+       do iang=1,nang
           sumd1 = dens1(nfs,iang)   + dens2(nfs,iang)   !* sum at nfs
           sumd2 = dens1(nfs+1,iang) + dens2(nfs+1,iang) !* sum at nfs+1
 !!
@@ -1311,11 +1309,10 @@
 !!        recalculate dens2(nfs,iang) & dens2(nfs+1,iang)
           dens2(nfs,iang)   = sumd1 - densat1     ! dens2 at nfs
           dens2(nfs+1,iang) = sumd2 - densat2     ! dens2 at nfs+1
- 440    continue
+       end do
 !!
       endif   !! if ( npeaks.eq.2 )
 !!    ==================================================================
-!!    $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!
 !!
@@ -1340,15 +1337,15 @@
 !!
 !!      Pack results in proper format ---------------------------------- *
 !!      S() & D() arrays are to be returned to WW3 in (k,theta) space
-        do 52 irng=1,nrng
-        do 51 iang=1,nang
+       do irng=1,nrng
+          do iang=1,nang
 !!        Convert the Norm. (in k) Polar tsa(k,theta) to Polar S(theta,k)
 !!        and  reverse indices back to (iang,irng) as in WW3
           S(iang,irng) = tsa(irng,iang) * wka(irng)   !* <=============
           D(iang,irng) = diag(irng,iang)
 !!        ---------------------------
-  51    continue
-  52    continue
+          end do
+       end do
 !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
 !!
@@ -1365,15 +1362,15 @@
 !!
 !!      Pack results in proper format ---------------------------------- *
 !!      S() & D() arrays are to be returned to WW3 in (k,theta) space
-        do 54 irng=1,nrng
-        do 53 iang=1,nang
+       do irng=1,nrng
+          do iang=1,nang
 !!        Convert the Norm. (in k) Polar fbi(k,theta) to Polar S(theta,k)
 !!        and  reverse indices back to (iang,irng) as in WW3
           S(iang,irng) = fbi(irng,iang) * wka(irng)   !* <=============
           D(iang,irng) = diag2(irng,iang)
 !!        --------------------------------
-  53    continue
-  54    continue
+          end do
+       end do
 !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
       else
@@ -1393,7 +1390,6 @@
       END SUBROUTINE W3SNL4
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE gridsetr ( dep, wka1, cgnrng1 )
@@ -1848,13 +1844,13 @@
               jref4(ipt,kang,izz) = i
 !mpc          jref4(ipt,kang,izz) = MOD(i,nang) !* is this better that the above two lines?
 !!
-  50        continue                              !* end of ipt loop
+50           end do                              !* end of ipt loop
 !!
-  40      continue                                !* end of kang loop
+40        end do                                !* end of kang loop
 !!
-  30    continue                                  !* end of krng loop
+30     end do                                  !* end of krng loop
 !!
-  20  continue                                    !* end of irng loop
+20  end do                                    !* end of irng loop
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -1863,7 +1859,6 @@
       END SUBROUTINE gridsetr
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE shloxr ( dep, wk1x,wk1y, wk3x,wk3y )
@@ -2062,7 +2057,7 @@
       halfp = 0.5*p
 !!
 !!
-      do 10 n=np2p1,npts                      !* for npts = 30
+    do n=np2p1,npts                      !* for npts = 30
 !!                                            !* n = 16 --> 30
 !!
 !b       b   = 0.5 * db  + float(n-np2p1) * db
@@ -2089,7 +2084,7 @@
          wk4y(m) = wk2y(m) - py
          ds(m)   = db
 !!
-  10  continue
+    end do !  do n=np2p1,npts
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -2098,7 +2093,6 @@
       END SUBROUTINE shloxr
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE shlocr ( dep, wk1x,wk1y, wk3x,wk3y )
@@ -2364,7 +2358,7 @@
       rnew1 = (t1 + t2 + t3) / (t*t)
 !!
 !!
-      do 10 n=1,4
+    do n=1,4
         rold2 = rold1 + 0.1
         tp    = tanh(rold2 * p)
         tm    = tanh((1.-rold2) * p)
@@ -2379,14 +2373,14 @@
         end if
         rold1 = rold2
         rnew1 = rnew2
-  10  continue
+    end do  ! do n=1,4
       rold = 0.9                       !* default if not otherwise found
   11  continue
 !!    ------------------------------------------------------------------
 !!
 !!
 !!    iterative replacement search for rmin
-      do 20 n=1,50
+    do n=1,50
         tp   = tanh(rold * p)
         tm   = tanh((1.-rold) * p)
         t    = tp + tm
@@ -2399,7 +2393,7 @@
           go to 21
         end if
         rold = 0.5 * (rold + rnew)
-  20  continue
+    end do
       ierr_gr = ierr_gr + 1  !* set 1's flag in ierr_gr if no convergence
       rmin = rnew
   21  continue
@@ -2455,7 +2449,7 @@
 !!    -----------------------------------------------------------------#
 !!
       rold = 1.0
-      do 30 n=1,200
+    do n=1,200
         rold = rold + 10.
         tp   = tanh(rold * p)
         tm   = tanh((rold-1.) * p)
@@ -2467,7 +2461,7 @@
           rold = rold - 10.
           go to 31
         end if
-  30  continue
+    end do
       ierr_gr = ierr_gr + 10    !* set 10's place in ierr_gr if no sol'n
   31  continue
 !!    ------------------------------------------------------------------
@@ -2475,9 +2469,9 @@
 !!
 !!    successive decimation search to refine rmax
       dr = 10.
-      do 40 nplace=1,6
+    do nplace=1,6
         dr = dr/10.
-        do 50 n=1,10
+       do n=1,10
           rold = rold + dr
           tp   = tanh(rold * p)
           tm   = tanh((rold-1.) * p)
@@ -2489,9 +2483,9 @@
             rold = rold - dr
             go to 51
           end if
-  50    continue
+       end do
   51    continue
-  40  continue
+    end do
 !!
       rmax = rold
 !!
@@ -2553,7 +2547,7 @@
       dbqrtp  = dble(qrtp)
 !!
 !!
-      do 60 np=2,npts/2                        !* np = 2 --> 15
+    do np=2,npts/2                        !* np = 2 --> 15
 !!
         cphi    = cos(float(np-1)*dphi)
         dbz     = dsqrt(dble(t1-t2*cphi))
@@ -2571,12 +2565,12 @@
           wate2 = 0.5d0
         end if
 !!
-        do 70 n=1,25
+       do  n=1,25
           cdthnew = dbt4 - dbt5 / ((dtanh(dbt6))**2)
           if ( dabs(cdthnew-cdthold) .lt. 0.0000001d0 ) go to 71
           cdthold = wate1 * cdthnew + wate2 * cdthold
           dbt6    = dbp * dsqrt(dbt3-2.d0*dbz*cdthold)
-  70    continue
+       end do
         ierr_gr = ierr_gr + 100   !* add to 100's place for every failure
   71    continue
 !!
@@ -2596,7 +2590,7 @@
         wk4x(nnp) = wk2x(nnp) - pxod
         wk4y(nnp) = wk2y(nnp) - pyod
 !!
-  60  continue
+    end do ! do np=2,npts/2
 !!    ------------------------------------------------------------------
 !!
 !!
@@ -2612,12 +2606,12 @@
 !!
       ds1   = sqrt((wk2x(2)-wk2x(1))**2+(wk2y(2)-wk2y(1))**2)
       ds(1) = ds1
-      do 80 np=3,npts/2+1
+    do np=3,npts/2+1
         ds2   = sqrt((wk2x(np)-wk2x(np-1))**2+(wk2y(np)-wk2y(np-1))**2)
         ds(np-1)      = 0.5*(ds1+ds2)
         ds(npts-np+3) = ds(np-1)
         ds1           = ds2
-  80  continue
+    end do
       ds(npts/2+1)    = ds2
 !!    ------------------------------------------------------------------
 !!    ==================================================================
@@ -2629,7 +2623,6 @@
       END SUBROUTINE shlocr
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE cplshr ( w1x0,w1y0, w2x0,w2y0, w3x0,w3y0,            &
@@ -2788,7 +2781,7 @@
 !!ini---
 !!    ------------------------------------------------------------------
 !!
-      do 10 ipass=1,3
+    do ipass=1,3
 !p1
         if (ipass .eq. 1) then            !* initial pass (+1,+1,-1)
           s1   =  1.d0
@@ -2967,7 +2960,7 @@
 !!
         scple = scple + t1 + t2 + t3 + t4 + t5
 !!
-  10  continue  !! end do 10 ipass=1,3
+    end do  ! do ipass=1,3
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -2991,7 +2984,6 @@
       END SUBROUTINE cplshr
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE optsa2 ( nrmn,nrmx,    npk,fpk, nbins, wka, cga )
@@ -3205,18 +3197,18 @@
 !!
 !!*   Convert 2D Energy Density ef2(f,theta)
 !!         to 2D Polar Action Density act2d(k,theta) Norm. (in k)
-      do 25 irng=nrmn,nrmx
+    do irng=nrmn,nrmx
         fac   = cga(irng)/(twopi*oma(irng)*wka(irng))
-        do 24 iang=1,nang
+       do iang=1,nang
           act2d(irng,iang) = ef2(irng,iang) * fac
-  24    continue
+       end do
 !!
 !!*     Convert ef1(f) to fk(k); both are 1d Energy Density
         fk(irng)    = cga(irng)*ef1(irng)/twopi  !* fk(k) energy
 !!
 !!*     Normalize the 1d wavenumber Energy Density fk(k) to give fknrm(k)
         fknrm(irng) = fk(irng)*wka(irng)**2.5    !* fknrm(k) = Norm. fk(k)
-  25  continue
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!
@@ -3239,7 +3231,7 @@
 !eq       sum1 = sum1 + fknrm(irng)
 !eq       neq  = neq + 1
 !eq     endif
-! 26  continue
+! 26  end do
 !eq   beta = sum1 / neq
 !eq   gam  = fknrm(npk) / beta
 !!eq---
@@ -3250,9 +3242,9 @@
 !!eq---
 !!    ------------------------------------------------------------------
 !!
-      do 226 irng=nrmn,nrmx
+    do irng=nrmn,nrmx
          fknrm(irng) = fknrm(irng) / beta
- 226  continue
+    end do
 !!    ==================================================================
 !!
 !!
@@ -3264,15 +3256,15 @@
 !!    Note: n1, n2 spans half circle (from -pi/2 to +pi/2 going through 0.)
 !p2   n1 = -nang/4 + 1
 !p2   n2 =  nang/4 + 1
-!p2   do 16 m=1,16
+!p2   do m=1,16
 !p2     sum1 = 0.
-!p2     do 15 iang=n1,n2
+!p2     do iang=n1,n2
 !p2       ii = iang
 !p2       if ( iang .lt. 1 ) ii = iang + nang
 !p2       sum1 = sum1 + cosan(ii)**m
-! 15    continue
+!       end do
 !p2     q(m) = 1./(sum1*ainc)
-! 16  continue
+!     end do
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
 !!    Find peak direction "maxang" in ef2() at "npk" the peak in ef1()
@@ -3281,36 +3273,36 @@
 !!          in "maxang" location causing the 2D Snl to lose symmetry
 !p2   emax   = 0.
 !p2   maxang = 0
-!p2   do 27 iang=1,nang
+!p2   do iang=1,nang
 !p2     if ( ef2(npk,iang).gt.emax ) then
 !p2       emax   = ef2(npk,iang)
 !p2       maxang = iang                          !* in [1,nang]
 !p2     endif
-! 27  continue
+!     end do
 !p2   y  = ef2(npk,maxang)/ef1(npk)              !* Bash; Energy Spread
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
 !!    Compare value of peak with q-array for closest fit to cos()**m at peak
 !p2   mm   = 1
 !p2   qmin = abs(q(1)-y)
-!p2   do 28 m=2,16
+!p2   do m=2,16
 !p2     adif = abs(q(m)-y)
 !p2     if ( adif.lt.qmin ) then
 !p2       qmin = adif
 !p2       mm   = m
 !p2     endif
-! 28  continue
+!     end do
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
 !p2   nn1 = maxang - nang/4           !* nn1 in [-8, 27], -ve/+ve (incl. 0)
 !p2   nn2 = maxang + nang/4           !* nn2 in [10, 45], all +ve  (no  0)
-!p2   do 29 iang=nn1,nn2              !* Bash; nn1 -> nn2 covers half circle
+!p2   do iang=nn1,nn2              !* Bash; nn1 -> nn2 covers half circle
 !p2     ii = iang                                !* ii always in range [1,nang]
 !p2     if ( ii .lt.    1 ) ii = ii + nang       !* ""
 !p2     if ( ii .gt. nang ) ii = ii - nang       !* ""
 !p2     idif = iabs(maxang-iang) + 1             !* =10,9,..,2,1,2,..,9,10
 !p2     psi2(ii) = q(mm) * cos(angl(idif))**mm   !* Normalized psi2 distr.
-!  29  continue
+!     end do
 !!p2---
 !!    ==================================================================
 !!
@@ -3325,13 +3317,13 @@
 !!    Note: n1, n2 spans half circle (from 0 to +pi)
 !p3   n1 =  1
 !p3   n2 =  nang/2 + 1
-!p3   do 36 m=1,16
+!p3   do m=1,16
 !p3     sum1 = 0.
-!p3     do 35 iang=n1,n2
+!p3     do iang=n1,n2
 !p3       sum1 = sum1 + sinan(iang)**m
-! 35    continue
+!       end do
 !p3     q(m) = 1./(sum1*ainc)
-! 36  continue
+!     end do
 !!p3---
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
@@ -3384,13 +3376,13 @@
 !!          the 2D Snl, now with better symmetry, didn't always have the side lobes.
 !p3   mm   = 1
 !p3   qmin = abs(q(1)-y)
-!p3   do 38 m=2,16
+!p3   do m=2,16
 !p3     adif = abs(q(m)-y)
 !p3     if ( adif.lt.qmin ) then
 !p3       qmin = adif
 !p3       mm   = m
 !p3     endif
-! 38  continue
+!     end do
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
 !!    Final step, use 'mm' for sin()**mm
@@ -3414,9 +3406,9 @@
       n1 =  1
       n2 =  nang/2 + 1
 !p4   sum1 = 0.
-!p4   do 39 iang=n1,n2
+!p4   do iang=n1,n2
 !p4     sum1 = sum1 + sinan(iang)**4
-! 39  continue
+!     end do
 !p4   q4 = 1.0/(sum1*ainc)
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !!
@@ -3441,7 +3433,7 @@
       fdenp = gam * beta / wka(npk)**2.5
 !!
 !!
-      do 40 irng=nrmn,nrmx
+    do irng=nrmn,nrmx
         fr = frqa(irng) / fpk
         if ( fr.le.1.0001 ) then
           if ( fr.ge.0.85 ) then
@@ -3459,12 +3451,12 @@
           bscl1(irng)  = fkscl1(irng)/oma(irng)
         endif
 !!
-        do 41 iang=1,nang
+       do iang=1,nang
           ddd = bscl1(irng) * psi2(iang) / wka(irng)  !* large-scale
           dens1(irng,iang) = ddd                      !* large-scale
           dens2(irng,iang) = act2d(irng,iang) - ddd   !* small-scale
-  41    continue
-  40  continue
+       end do
+    end do ! do irng=nrmn,nrmx
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -3473,7 +3465,6 @@
       END SUBROUTINE optsa2
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE snlr_fbi ( pha, ialt )
@@ -3988,7 +3979,7 @@
 !!              ========================================================
 !!
 !!
-  90          continue                        !* end of ipt (locus) loop
+90              end do                        !* end of ipt (locus) loop
 !!            ----------------------------------------------------------
 !!
 !!
@@ -4042,13 +4033,13 @@
               diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
 !!            ----------------------------------------------------------
 !!
-  80        continue                              !* end of kang loop
+80           end do                              !* end of kang loop
 !!
-  70      continue                                !* end of krng loop
+70        end do                                !* end of krng loop
 !!
-  60    continue                                  !* end of iang loop
+60     end do                                  !* end of iang loop
 !!
-  50  continue                                    !* end of irng loop
+50  end do                                    !* end of irng loop
 !!------------------------------------------------------------------------------
 !!==============================================================================
 !!
@@ -4088,7 +4079,6 @@
       END SUBROUTINE snlr_fbi
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE snlr_tsa ( pha, ialt )
@@ -4603,7 +4593,7 @@
 !!              ========================================================
 !!
 !!
-  90          continue                        !* end of ipt (locus) loop
+90              end do                        !* end of ipt (locus) loop
 !!            ----------------------------------------------------------
 !!
 !!
@@ -4657,13 +4647,13 @@
 !fbi          diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
 !!            ----------------------------------------------------------
 !!
-  80        continue                              !* end of kang loop
+80           end do                              !* end of kang loop
 !!
-  70      continue                                !* end of krng loop
+70        end do                                !* end of krng loop
 !!
-  60    continue                                  !* end of iang loop
+60     end do                                  !* end of iang loop
 !!
-  50  continue                                    !* end of irng loop
+50  end do                                    !* end of irng loop
 !!------------------------------------------------------------------------------
 !!==============================================================================
 !!
@@ -4703,7 +4693,6 @@
       END SUBROUTINE snlr_tsa
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       SUBROUTINE interp2 ( X )
@@ -4820,26 +4809,26 @@
 !!
 !!-1a For every calculated iang (1,3,5,..,nang-1=35)
 !!    fill in missing irng's    (2,4,6,..,nrng-1=34)
-      do 12 iang=1,nang-1,2      !* = 1,3,5,...,nang-1=35
-      do 11 irng=2,nrng-1,2      !* = 2,4,6,...,nrng-1=34
+    do iang=1,nang-1,2      !* = 1,3,5,...,nang-1=35
+       do  irng=2,nrng-1,2      !* = 2,4,6,...,nrng-1=34
         X(irng,iang) = 0.5 * ( X(irng-1,iang) + X(irng+1,iang) )
-  11  continue
-  12  continue
+       end do
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!-1b Now, for every irng (1,2,3,..,nrng  =35)
 !!    fill missing iang's (2,4,6,..,nang-2=34)
-      do 14 irng=1,nrng          !* 1,2,3,..,nrng  =35
-      do 13 iang=2,nang-2,2      !* 2,4,6,..,nang-2=34
+    do irng=1,nrng          !* 1,2,3,..,nrng  =35
+       do iang=2,nang-2,2      !* 2,4,6,..,nang-2=34
         X(irng,iang) = 0.5 * ( X(irng,iang-1) + X(irng,iang+1) )
-  13  continue
-  14  continue
+       end do
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!-1c for iang = nang (special case since nang is an even number)
-      do 15 irng=1,nrng
+    do irng=1,nrng
         X(irng,nang) = 0.5 * ( X(irng,nang-1) + X(irng,1) )
-  15  continue
+    end do
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -4857,13 +4846,13 @@
 !!-2a Smoothing the interior [2;nrng-1] x [2:nang-1]
 !!-   Using 9 points averaged with equal weights.
 !!-   Here use the dummy array so we don't spoil the original array.
-      do 22 irng=2,nrng-1
-      do 21 iang=2,nang-1
+    do irng=2,nrng-1
+       do iang=2,nang-1
         Y(irng,iang)=(X(irng-1,iang-1)+X(irng-1,iang)+X(irng-1,iang+1) + &
                       X(irng,  iang-1)+X(irng,  iang)+X(irng,  iang+1) + &
                       X(irng+1,iang-1)+X(irng+1,iang)+X(irng+1,iang+1))/9.
-  21  continue
-  22  continue
+       end do
+    end do
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -4872,20 +4861,20 @@
 !!
 !!-3a Smooth line at iang = 1     (special case)
 !!-   Using 9 points averaged with equal weights.
-      do 31 irng=2,nrng-1
+    do irng=2,nrng-1
         Y(irng, 1) = (X(irng-1,nang) + X(irng-1, 1) + X(irng-1, 2) +  &
                       X(irng,  nang) + X(irng,   1) + X(irng,   2) +  &
                       X(irng+1,nang) + X(irng+1, 1) + X(irng+1, 2) )/9.
-  31  continue
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!-3b Smooth line at iang = nang  (special case)
 !!-   Using 9 points averaged with equal weights.
-      do 32 irng=2,nrng-1
+    do irng=2,nrng-1
         Y(irng,nang)=(X(irng-1,nang-1) +X(irng-1,nang) +X(irng-1,1) + &
                       X(irng,  nang-1) +X(irng,  nang) +X(irng,  1) + &
                       X(irng+1,nang-1) +X(irng+1,nang) +X(irng+1,1))/9.
-  32  continue
+    end do
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -4894,18 +4883,18 @@
 !!
 !!-4a Smooth col. at irng = 1     (low frq. can be skipped)
 !!-   Using 6 points averaged with equal weights.
-      do 33 iang=2,nang-1
+    do iang=2,nang-1
         Y(1,iang)   = (X(1,iang-1) + X(1,iang) + X(1,iang+1) +        &
                        X(2,iang-1) + X(2,iang) + X(2,iang+1) )/6.
-  33  continue
+    end do
 !!    ------------------------------------------------------------------
 !!
 !!-4b Smooth col. at irng = nrng  (high frq. can be skipped)
 !!-   Using 6 points averaged with equal weights.
-      do 34 iang=2,nang-1
+    do iang=2,nang-1
         Y(nrng,iang)=(X(nrng-1,iang-1)+X(nrng-1,iang)+X(nrng-1,iang+1)+ &
                       X(nrng, iang-1)+X(nrng, iang)+X(nrng, iang+1) )/6.
-  34  continue
+    end do
 !!    ------------------------------------------------------------------
 !!    ==================================================================
 !!
@@ -4943,11 +4932,11 @@
 !!ini---
 !!
 !!-6b Dump smoothed array Y(:,:) into X(:,:) to be returned
-      do 52 iang=1,nang
-      do 51 irng=1,nrng
+    do iang=1,nang
+       do irng=1,nrng
         X(irng,iang) = Y(irng,iang)
-  51  continue
-  52  continue
+       end do
+    end do
 !!    Bash; can simplify in one line
 !b    X(1:nrng, 1:nang) = Y(1:nrng, 1:nang)
 !!    ------------------------------------------------------------------
@@ -4963,7 +4952,6 @@
       END SUBROUTINE interp2
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       REAL FUNCTION wkfnc ( f, dep )
@@ -5052,7 +5040,6 @@
       END FUNCTION wkfnc
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       REAL FUNCTION cgfnc ( f, dep, cvel )
@@ -5131,10 +5118,8 @@
       END FUNCTION cgfnc
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 !!
 !!
       END MODULE W3SNL4MD
 !!
 !!==============================================================================
-!!$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

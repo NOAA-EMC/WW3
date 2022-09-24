@@ -2283,7 +2283,7 @@
                 I2     = 2
               END IF
 !
-            DO 250, IK=IK0, NK
+          DO IK=IK0, NK
 !
   230         CONTINUE
               IF ( WNO(IK) .GT. WN(I2,ISEA) ) THEN
@@ -2315,6 +2315,7 @@
                   END IF
 !
   250         CONTINUE
+          END DO
   251       CONTINUE
 !
 ! 2.f Convert discrete action densities to spectrum

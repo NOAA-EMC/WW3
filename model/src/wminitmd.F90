@@ -2852,7 +2852,12 @@
               ELSE
                 NDS(9) = -1
               END IF
+#ifdef W3_MPI          
           END IF
+#endif
+#ifdef W3_SHRD
+       END IF
+#endif
 !
         END DO
 !
@@ -5680,7 +5685,8 @@
         WRITE (MDST,9082) GRSTAT(I), TOUTP(:,I), TSYNC(:,I)
 #endif
 !
-        END DO
+    END DO ! DO I=1, NRGRD
+
 !
 #ifdef W3_MPI
       CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
@@ -5969,7 +5975,12 @@
               ELSE
                 NDS(9) = -1
               END IF
-          END IF
+#ifdef W3_MPI
+          END IF ! IF ( .NOT. FLRBPI(I) .AND. FLBPI .AND. MPI_COMM_GRD .NE. MPI_COMM_NULL)
+#endif
+#ifdef W3_SHRD
+       END IF ! IF ( .NOT. FLRBPI(I) .AND. FLBPI )
+#endif
 !
         END DO
 !
@@ -6081,7 +6092,7 @@
             END DO
 #endif
 !
-        END IF
+    END IF ! IF ( UNIPTS )
 !
 ! 8.c.6 Output
 !
@@ -6119,7 +6130,7 @@
               WRITE (MDSS,937) 'No lower rank grid dependencies'
           IF ( NMPLOG .EQ. IMPROC )                                   &
               WRITE (MDSO,937) 'No lower rank grid dependencies'
-        END IF
+    END IF ! IF ( MAXVAL(GRDLOW(:,0)) .GT. 0 )
       DEALLOCATE ( FLRBPI )
 !
       IF ( MAXVAL(GRDEQL(:,0)) .GT. 0 ) THEN
@@ -6150,7 +6161,7 @@
               WRITE (MDSS,937) 'No same rank grid dependencies'
           IF ( NMPLOG .EQ. IMPROC )                                   &
               WRITE (MDSO,937) 'No same rank grid dependencies'
-        END IF
+    END IF ! IF ( MAXVAL(GRDEQL(:,0)) .GT. 0 )
 !
       IF ( MAXVAL(GRDHGH(:,0)) .GT. 0 ) THEN
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                  &
@@ -6180,7 +6191,7 @@
               WRITE (MDSS,937) 'No higher rank grid dependencies'
           IF ( NMPLOG .EQ. IMPROC )                                   &
               WRITE (MDSO,937) 'No higher rank grid dependencies'
-        END IF
+    END IF ! IF ( MAXVAL(GRDHGH(:,0)) .GT. 0 )
 !
 #ifdef W3_T
       WRITE (MDST,9083)
