@@ -95,7 +95,7 @@ module yowExchangeModule
     procedure :: finalize
     procedure :: createMPIType
 
-  end type
+  end type t_neighborDomain
 
   !> Knows for all domains neighbors, which node we must send or revc from neighbor domains
   !> from 1 to nConnDomains
@@ -141,7 +141,7 @@ module yowExchangeModule
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
     call mpi_type_free(this%p2DRrecvType2, ierr)
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("freeMPItype", ierr)
-  end subroutine
+  end subroutine finalize
 
   ! create MPI indexed datatype for this neighborDomain
   subroutine createMPIType(this)
@@ -215,7 +215,7 @@ module yowExchangeModule
     if(ierr /= MPI_SUCCESS) CALL PARALLEL_ABORT("createMPIType", ierr)
 
 
-  end subroutine
+  end subroutine createMPIType
 
   subroutine initNbrDomains(nConnD)
     use yowerr
@@ -227,7 +227,7 @@ module yowExchangeModule
     nConnDomains = nConnD
     allocate(neighborDomains(nConnDomains), stat=stat)
     if(stat/=0)  CALL ABORT('neighborDomains allocation failure')
-  end subroutine
+  end subroutine initNbrDomains
 
   subroutine createMPITypes()
     implicit none
@@ -236,7 +236,7 @@ module yowExchangeModule
     do i=1, nConnDomains
       call neighborDomains(i)%createMPIType()
     end do
-  end subroutine
+  end subroutine createMPITypes
 
   !> exchange values in U.
   !> \param[inout] U array with values to exchange. np+ng long.
@@ -289,7 +289,7 @@ module yowExchangeModule
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
     call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-  end subroutine
+  end subroutine PDLIB_exchange1Dreal
 
 
   !> \overload PDLIB_exchange1Dreal
@@ -362,7 +362,7 @@ module yowExchangeModule
      WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 12'
      FLUSH(740+IAPROC)
 #endif
-  end subroutine
+  end subroutine PDLIB_exchange2Dreal
 
 
   !> set the size of the second and third dimension for exchange
@@ -384,7 +384,7 @@ module yowExchangeModule
       end do
       deallocate(neighborDomains)
     endif
-  end subroutine
+  end subroutine finalizeExchangeModule
 !> exchange values in U.
   !> \param[inout] U array with values to exchange. np+ng+1 long.
   !> U[0:npa] Send values from U(1:np) to other threads.
@@ -458,7 +458,7 @@ module yowExchangeModule
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
     call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-  end subroutine
+  end subroutine PDLIB_exchange1Dreal_zero
   !> \note MPI recv tag: 30001 + MPI rank
   !> \note MPI send tag: 30001 + neighbor MPI rank
   subroutine PDLIB_exchange2Dreal_zero(U)
@@ -533,7 +533,7 @@ module yowExchangeModule
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
     call mpi_waitall(nConnDomains, sendRqst, sendStat,ierr)
     if(ierr/=MPI_SUCCESS) CALL PARALLEL_ABORT("waitall", ierr)
-  end subroutine 
+  end subroutine PDLIB_exchange2Dreal_zero
 
 
 end module yowExchangeModule
