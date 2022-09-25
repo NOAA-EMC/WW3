@@ -216,7 +216,7 @@
       END DO
       CALL PDLIB_exchange1Dreal(DVDX)
       CALL PDLIB_exchange1Dreal(DVDY)
-      END SUBROUTINE
+  END SUBROUTINE DIFFERENTIATE_XYDIR_NATIVE
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Differentiate xy based on mapsta, using linear shape function.
@@ -356,7 +356,7 @@
       END DO
       CALL PDLIB_exchange1Dreal(DVDX)
       CALL PDLIB_exchange1Dreal(DVDY)
-      END SUBROUTINE
+  END SUBROUTINE DIFFERENTIATE_XYDIR_MAPSTA
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Driver routine for xydir.
@@ -441,7 +441,7 @@
       REAL(8), INTENT(OUT) :: DVDX(npa), DVDY(npa)
       CALL DIFFERENTIATE_XYDIR_MAPSTA(VAR, DVDX, DVDY)
 !      CALL DIFFERENTIATE_XYDIR_NATIVE(VAR, DVDX, DVDY)
-      END SUBROUTINE
+  END SUBROUTINE DIFFERENTIATE_XYDIR
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Setup boundary pointer.
@@ -594,7 +594,7 @@
       WRITE(740+IAPROC,*) 'sum(F_Y)=', sum(F_Y)
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE TRIG_COMPUTE_LH_STRESS
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Differentiate other way around.
@@ -696,7 +696,7 @@
       h=2.0*PDLIB_TRIA(IE)
       UGRAD=-(y(IP3) - y(IP2))/h
       VGRAD= (x(IP3) - x(IP2))/h
-      END SUBROUTINE
+  END SUBROUTINE TRIG_COMPUTE_DIFF
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Setup system matrix for solutions of wave setup eq.
@@ -876,7 +876,7 @@
           eOff=0
         END DO
       END IF
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_COMPUTE_SYSTEM
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Preconditioner. 
@@ -1010,7 +1010,7 @@
         WRITE(740+IAPROC,*) 'Diag, quot=', maxval(ListDiag)/minval(ListDiag)
       END IF
       CALL PDLIB_exchange1Dreal(TheOut)
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_APPLY_PRECOND
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief  
@@ -1113,7 +1113,7 @@
         END IF
       END DO
       CALL PDLIB_exchange1Dreal(TheOut)
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_APPLY_FCT
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Scalar product plus exchange.
@@ -1224,7 +1224,7 @@
         CALL MPI_RECV(lScal,1,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
       END IF
       eScal=lScal(1)
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_SCALAR_PROD
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Poisson equation solver.
@@ -1404,7 +1404,7 @@
         END DO
       END DO
       TheOut=V_X
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Set mean value.
@@ -1528,7 +1528,7 @@
       DO IP=1,npa
         TheVar(IP)=TheVar(IP) - TheMean
       END DO
-      END SUBROUTINE
+  END SUBROUTINE TRIG_SET_MEANVALUE_TO_ZERO
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Compute active node for setup comp.
@@ -1634,7 +1634,7 @@
       WRITE(740+IAPROC,*) 'nbActive=', nbActive, ' npa=', npa
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE COMPUTE_ACTIVE_NODE
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Setup computation.
@@ -1792,7 +1792,7 @@
       WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_COMPUTATION
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Wave setup for FD grids.
@@ -1959,7 +1959,7 @@
         PDLIB_I_DIAG(ISEA)=J
         PDLIB_IA(ISEA+1)=J+1
       END DO
-      END SUBROUTINE
+  END SUBROUTINE PREPARATION_FD_SCHEME
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Compute off diagonal for FD grids.
@@ -2054,7 +2054,7 @@
           TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
         END DO
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_APPLY_FCT
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Preconditioning for FD grids.
@@ -2168,7 +2168,7 @@
           TheOut(IP)=TheIn(IP)/ASPAR(J)
         END DO
       END IF
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_APPLY_PRECOND
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Radiation stresses for FD grids.
@@ -2296,7 +2296,7 @@
         CALL MPI_SEND(SXY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
         CALL MPI_SEND(SYY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
       END IF
-      END SUBROUTINE
+  END SUBROUTINE FD_COLLECT_SXX_XY_YY
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Setup fluxes.
@@ -2449,7 +2449,7 @@
         FX(ISEA)=eFX
         FY(ISEA)=eFY
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_COMPUTE_LH_STRESS
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Differences on FD grids.
@@ -2557,7 +2557,7 @@
         UGRAD=-deltaX/dist
         VGRAD=-deltaY/dist
       END IF
-      END SUBROUTINE
+  END SUBROUTINE FD_COMPUTE_DIFF
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Setup matrix on FD grids.
@@ -2675,7 +2675,7 @@
           END DO
         END DO
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_COMPUTE_SYSTEM
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Scalar product.
@@ -2763,7 +2763,7 @@
       DO IP=1,NX
         eScal=eScal + V1(IP)*V2(IP)
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_SCALAR_PROD
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Poisson solver on FD grids.
@@ -2887,7 +2887,7 @@
         END DO
       END DO
       TheOut=V_X
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Set mean value.
@@ -2979,7 +2979,7 @@
       DO IP=1,NX
         TheVar(IP)=TheVar(IP) - TheMean
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_SET_MEANVALUE_TO_ZERO
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Wave setup comp on FD grids.
@@ -3088,7 +3088,7 @@
       DO ISEA=1,NSEA
         ZETA_SETUP(ISEA)=ZETA_WORK(ISEA)
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_COMPUTATION
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief General driver.
@@ -3191,7 +3191,7 @@
       WRITE(740+IAPROC,*) 'Begin WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE WAVE_SETUP_COMPUTATION
 !/ ------------------------------------------------------------------- /
-      END MODULE
+END MODULE W3WAVSET
 !/ ------------------------------------------------------------------- /
