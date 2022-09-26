@@ -385,7 +385,7 @@ MODULE PDLIB_FIELD_VEC
         END IF
       END DO
       TheSize=IH
-      END SUBROUTINE
+  END SUBROUTINE GET_ARRAY_SIZE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE UNST_PDLIB_READ_FROM_FILE(NDREAD)
 !/
@@ -600,7 +600,7 @@ MODULE PDLIB_FIELD_VEC
       IF (IAPROC .eq. 1) THEN
         deallocate(DATAread)
       END IF
-      END SUBROUTINE
+  END SUBROUTINE UNST_PDLIB_READ_FROM_FILE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE UNST_PDLIB_WRITE_TO_FILE(NDWRITE)
 !/
@@ -780,7 +780,7 @@ MODULE PDLIB_FIELD_VEC
           END IF
         END IF
       END DO
-      END SUBROUTINE
+  END SUBROUTINE UNST_PDLIB_WRITE_TO_FILE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DO_OUTPUT_EXCHANGES(IMOD)
 !/

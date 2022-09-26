@@ -42,4 +42,4 @@
 !/
 !/ End of CTEST  ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+END SUBROUTINE CTEST

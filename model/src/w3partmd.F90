@@ -1114,7 +1114,7 @@
       IF ( IQ_END .GT. NSPEC ) IQ_END = 1
 !
       RETURN
-      END SUBROUTINE
+    END SUBROUTINE FIFO_ADD
 !/ ------------------------------------------------------------------- /
 !> @brief Check if queue is empty.
 !>
@@ -1134,7 +1134,7 @@
       END IF
 !
       RETURN
-      END SUBROUTINE
+    END SUBROUTINE FIFO_EMPTY
 !/ ------------------------------------------------------------------- /
 !> @brief Get point out of queue.
 !>
@@ -1153,7 +1153,7 @@
       IF ( IQ_START .GT. NSPEC ) IQ_START = 1
 !
       RETURN
-      END SUBROUTINE
+    END SUBROUTINE FIFO_FIRST
 !/
 !/ End of PT_FLD ----------------------------------------------------- /
 !/

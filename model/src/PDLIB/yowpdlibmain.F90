@@ -249,7 +249,7 @@ module yowpdlibMain
         CALL MPI_RECV(iField, 1, MPI_INTEGER, 0, 712, TheComm, istatus, ierr)
       END IF
 !      Print *, 'Passing barrier string=', string
-      END SUBROUTINE
+  END SUBROUTINE REAL_MPI_BARRIER_PDLIB
   !--------------------------------------------------------------------------
   ! Init MPI
   !--------------------------------------------------------------------------
@@ -458,7 +458,7 @@ module yowpdlibMain
       node => nodes_global(i)
       ns_global = ns_global + node%nConnNodes
     end do
-  end subroutine
+  end subroutine findConnNodes
 
 
   !------------------------------------------------------------------------
@@ -993,7 +993,7 @@ module yowpdlibMain
     end do
 
     iplg(np+1: npa) = ghostlg(1:ng)
-  end subroutine
+  end subroutine findGhostNodes
   !-------------------------------------------------------------------------------
   ! find the number of connected domains and their ghosts
   !-------------------------------------------------------------------------------
@@ -1336,7 +1336,7 @@ module yowpdlibMain
       z(np+i) = zb(IP_glob)
     end do
     
-  end subroutine
+  end subroutine postPartition2
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -1401,7 +1401,7 @@ module yowpdlibMain
       PDLIB_TRIA03(IE) = TRIA03
     ENDDO
     CALL PDLIB_exchange1Dreal(PDLIB_SI)
-  end subroutine
+  end subroutine ComputeTRIA_IEN_SI_CCON
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -1420,7 +1420,7 @@ module yowpdlibMain
 ! if R1GT180+R2GT180+R3GT180 .eq. 1 the element contains the pole
 ! if R1GT180+R2GT180+R3GT180 .eq. 2 the element crosses the dateline
     CROSSES_DATELINE = R1GT180+R2GT180+R3GT180 .EQ. 2
-  end subroutine
+  end subroutine ELEMENT_CROSSES_DATELINE
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -1436,7 +1436,7 @@ module yowpdlibMain
     IF (DXP .ge. 180) THEN
       DXP=DXP - 360
     END IF
-  end subroutine
+  end subroutine CORRECT_DX_GT180
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -1630,7 +1630,7 @@ module yowpdlibMain
       END DO
     END DO
   deallocate(PTABLE)
-  end subroutine
+  end subroutine ComputeIA_JA_POSI_NNZ
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -1645,7 +1645,7 @@ module yowpdlibMain
     call finalizeExchangeModule()
     call finalizeElementpool()
     call finalizeNodepool()
-  end subroutine
+  end subroutine finalizePD
 
 end module yowpdlibMain
 !**********************************************************************
