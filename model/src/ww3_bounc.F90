@@ -1,5 +1,24 @@
+!> @file
+!> @brief Contains the boundary condition program, W3BOUNC.
+!>
+!> @author F Ardhuin
+!> @author M Accensi
+!> @date 21-Jul-2020
+!
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Combines spectra files into a nest.\ ww3 file for boundary conditions
+!>
+!> @details Finds nearest points and performs linear interpolation.
+!>  The initial conditions are written to the restart.ww3 using the
+!>  subroutine W3IORS. Note that the name of the restart file is set
+!>  in W3IORS.
+!>
+!> @author F Ardhuin
+!> @author M Accensi
+!> @date 21-Jul-2020
+!
       PROGRAM W3BOUNC
 !/
 !/                  +-----------------------------------+
@@ -336,7 +355,7 @@
 ! 4. Tests the reading of the file
 !
       IF ( INXOUT.EQ.'READ') THEN 
-        OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='old')
+        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='old')
         READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
         NSPEC1  = NK1 * NTH1
         IF ( IDTST .NE. IDSTRBC ) GOTO 803
@@ -424,14 +443,14 @@
 !
 #endif
 !
-        OPEN(NDSB,FILE='nest.ww3',FORM='UNFORMATTED',status='unknown')
+        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='unknown')
         ALLOCATE(DIMID(NBO2,3),DIMLN(NBO2,3),NCID(NBO2))
 
         ALLOCATE(LATS(NBO2),LONS(NBO2),STATION(16,NBO2))
 
         DO IP=1,NBO2
           ! open file
-          OPEN(NDSC,FILE=TRIM(SPECFILES(IP)),FORM='UNFORMATTED',      &
+          OPEN(NDSC,FILE=TRIM(SPECFILES(IP)),form='UNFORMATTED', convert=file_endian,      &
                status='old',iostat=ICODE)
           IF (ICODE.NE.0) THEN 
             LONS(IP)=-999.
@@ -828,7 +847,11 @@
 
 
 !==============================================================================
-
+!> @brief Check input return status for error value
+!>
+!> @param IRET return status to check
+!>
+!> @author NA @date NA
       SUBROUTINE CHECK_ERR(IRET)
 
       USE NETCDF

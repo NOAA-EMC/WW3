@@ -407,4 +407,4 @@
       END SUBROUTINE W3STR2
 !/ ------------------------------------------------------------------- /
 !/
-      END MODULE W3STR1MD
+      END MODULE W3STR2MD

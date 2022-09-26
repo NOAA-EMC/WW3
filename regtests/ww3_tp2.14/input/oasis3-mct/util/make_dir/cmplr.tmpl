@@ -30,7 +30,7 @@ COUPLE          = @oasis_input_path@
 ARCHDIR         = @oasis_work_path@
 #
 # NetCDF library
-NETCDF_INCLUDE  = -I@NetCDF_C_INCLUDE_DIRS@ -I@NetCDF_Fortran_INCLUDE_DIRS@
+NETCDF_INCLUDE  = @NetCDF_INCLUDES_STR@
 NETCDF_LIBRARY  = @NetCDF_LIBRARIES_STR@
 #
 # Compilers and options

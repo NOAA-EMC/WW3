@@ -46,11 +46,7 @@ fi
 #convert main_dir to absolute path
 main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
-# Compiler option. Choose appropriate compiler and set cmplOption to
-# y if using for the first time or using a different compiler
-
   cmplr=datarmor_intel
-  export cmplOption='y'
 
 
 
@@ -69,7 +65,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   echo ' '                                                  >> matrix.head
   echo '#PBS -q mpi_1'                                      >> matrix.head
   echo "#PBS -l select=1:ncpus=28:mpiprocs=$nr:ompthreads=$nth:mem=20G"  >> matrix.head
-  echo '#PBS -l walltime=08:00:00'                          >> matrix.head
+  echo '#PBS -l walltime=12:00:00'                          >> matrix.head
   echo "#PBS -N $(basename $(dirname $(dirname $PWD)))"     >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
@@ -126,18 +122,13 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   echo "  export CMAKE_PREFIX_PATH=/home/datawork-wave/NETCDF2019/${COMP}"      >> matrix.head
   echo "  export g2_DIR=/home/datawork-wave/NCEPLIBS/${COMP}/g2-3.4.5/lib64/cmake/g2"      >> matrix.head
   echo "  export bacio_DIR=/home/datawork-wave/NCEPLIBS/${COMP}/bacio-2.4.1/lib/cmake/bacio"      >> matrix.head
-  echo "  export w3nco_DIR=/home/datawork-wave/NCEPLIBS/${COMP}/w3nco-2.4.1/lib/cmake/w3nco"      >> matrix.head
+  echo "  export w3emc_DIR=/home/datawork-wave/NCEPLIBS/${COMP}/w3emc-2.9.2/lib/cmake/w3emc"      >> matrix.head
   echo ' '
 
   export mpi='$MPI_LAUNCH'
 
 # Compile option
-  if [ "$cmplOption" = 'y' ]
-  then
-     opt="-c $cmplr -f -N -S -T"
-  else
-     opt="-f -N -S"
-  fi
+  opt="-f -N -S -T"
 
 # Base run_test command line
   export rtst="./bin/run_cmake_test $opt"

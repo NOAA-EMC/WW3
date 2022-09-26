@@ -1,5 +1,20 @@
+!> @file w3psmcmd.F90
+!> @brief Spherical Multiple-Cell (SMC) grid
+!>
+!> @author Jian-Guo Li
+!> @date 23 Mar 2020
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!> @brief Spherical Multiple-Cell (SMC) grid routines.
+!>
+!> @details Bundles routines for SMC advection (UNO2) and diffusion
+!>  schemes in single module, including great circile turning and
+!>  refraction rotation schemes.
+!>
+!> @author Jian-Guo Li
+!> @date 23 Mar 2020
+!>
       MODULE W3PSMCMD
 !/
 !/                  +------------------------------------+
@@ -101,12 +116,23 @@
       PUBLIC
 !/
 !/ Private data !/
-      REAL, PRIVATE, PARAMETER:: TRNMIN = 0.95
+      REAL, PRIVATE, PARAMETER:: TRNMIN = 0.95 !< Minimum transparancy for local
 !/
       CONTAINS
 
 !/ ------------------------------------------------------------------- /
-!/
+!> @brief Propagation in phyiscal space for a given spectral component
+!>
+!> @details Unstructured SMC grid, point-oriented face and cell loops.
+!>  UNO2 advection scheme and isotropic FTCS diffusion scheme
+!>
+!> @param[in]     ISP     Number of spectral bin (IK-1)*NTH+ITH
+!> @param[in]     DTG     Total time step.
+!> @param[inout]  VQ      Field to propagate.
+!>
+!> @author Jian-Guo Li
+!> @date 18 Apr 2018
+!>
       SUBROUTINE W3PSMC ( ISP, DTG, VQ )
 !/
 !/                  +------------------------------------+
@@ -225,6 +251,8 @@
       USE W3GDATMD, ONLY: NK, NTH, DTH, XFR, ESIN, ECOS, SIG, NX, NY,  &
                           NSEA, SX, SY, MAPSF, FUNO3, FVERG,           &
                           IJKCel, IJKUFc, IJKVFc, NCel, NUFc, NVFc,    &
+                          IJKCel3, IJKCel4,                            &
+                          IJKVFc5, IJKVFc6,IJKUFc5,IJKUFc6,            &
                           NLvCel, NLvUFc, NLvVFc, NRLv, MRFct,         &
                           DTCFL, CLATS, DTMS, CTRNX, CTRNY 
       USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC  
@@ -245,7 +273,6 @@
 !/ Parameter list
 !/
       INTEGER, INTENT(IN)     :: ISP
-!/    REAL,    INTENT(IN)     :: FACX, FACY, DTG
       REAL,    INTENT(IN)     :: DTG
       REAL,    INTENT(INOUT)  :: VQ(NSEA)
 !/
@@ -375,7 +402,7 @@
 !$OMP Parallel DO Private(ISEA)
 #endif
       DO ISEA=1, NSEA
-!Li  Transported variable is divided by CG as in WW3 (???)
+!Li  Transported variable is divided by CG as in WW3.
            CQ(ISEA) = VQ(ISEA)/CG(IK,ISEA) 
 !Li  Resetting NaNQ VQ to zero if any.   JGLi18Mar2013
          IF( .NOT. (CQ(ISEA) .EQ. CQ(ISEA)) )  CQ(ISEA) = 0.0
@@ -471,8 +498,8 @@
 !$OMP Parallel DO Private(i, M, N, FUTRN)
 #endif
            DO i=1, NUFc
-              M=IJKUFc(5,i)
-              N=IJKUFc(6,i)
+              M=IJKUFc5(i)
+              N=IJKUFc6(i)
               FUTRN = FUMD(i)*ULCFLX(i) - FUDIFX(i)
 
 !! Add sub-grid transparency for input flux update.  JGLi16May2011
@@ -543,8 +570,8 @@
 !$OMP Parallel DO Private(n)
 #endif
            DO n=1, NSEA
-              CQA(n)=CQ(n) + FCNt(n)/FLOAT(IJKCel(3,n))
-              CQ (n)=CQ(n) + AFCN(n)/FLOAT(IJKCel(3,n))
+              CQA(n)=CQ(n) + FCNt(n)/FLOAT(IJKCel3(n))
+              CQ (n)=CQ(n) + AFCN(n)/FLOAT(IJKCel3(n))
            ENDDO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
@@ -563,8 +590,8 @@
 !$OMP Parallel DO Private(j, M, N, FVTRN)
 #endif
            DO j=1, NVFc
-              M=IJKVFc(5,j)
-              N=IJKVFc(6,j)
+              M=IJKVFc5(j)
+              N=IJKVFc6(j)
               FVTRN = FVMD(j)*VLCFLY(j) - FVDIFY(j)
 
 !! Add sub-grid transparency for input flux update.  JGLi16May2011
@@ -621,7 +648,7 @@
 !$OMP Parallel DO Private(n)
 #endif
            DO n=1, NSEA
-              CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*FLOAT(IJKCel(3,n)) )
+              CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*FLOAT(IJKCel3(n)) )
            ENDDO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
@@ -669,8 +696,8 @@
 !$OMP Parallel DO Private(i, L, M, FUTRN)
 #endif
            DO i=iuf, juf 
-              L=IJKUFc(5,i)
-              M=IJKUFc(6,i)
+              L=IJKUFc5(i)
+              M=IJKUFc6(i)
               FUTRN = FUMD(i)*ULCFLX(i) - FUDIFX(i)
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
 !! !$OMP CRITICAL 
@@ -736,8 +763,8 @@
 !$OMP Parallel DO Private(n)
 #endif
            DO n=icl, jcl 
-              CQA(n)=CQ(n) + FCNt(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
-              CQ (n)=CQ(n) + AFCN(n)/FLOAT( IJKCel(3, n)*IJKCel(4, n) )
+              CQA(n)=CQ(n) + FCNt(n)/FLOAT( IJKCel3(n)*IJKCel4(n) )
+              CQ (n)=CQ(n) + AFCN(n)/FLOAT( IJKCel3(n)*IJKCel4(n) )
               FCNt(n)=0.0
               AFCN(n)=0.0
            ENDDO
@@ -758,8 +785,8 @@
 !$OMP Parallel DO Private(j, L, M, FVTRN)
 #endif
            DO j=ivf, jvf 
-              L=IJKVFc(5,j)
-              M=IJKVFc(6,j)
+              L=IJKVFc5(j)
+              M=IJKVFc6(j)
               FVTRN = FVMD(j)*VLCFLY(j) - FVDIFY(j)
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
 !! !$OMP CRITICAL 
@@ -817,7 +844,7 @@
 #endif
            DO n=icl, jcl
               CQ(n)=CQA(n) + BCNt(n)/( CLATS(n)*            &
-      &             FLOAT( IJKCel(3, n)*IJKCel(4, n) ) )
+      &             FLOAT( IJKCel3(n)*IJKCel4(n) ) )
               BCNt(n)=0.0
            ENDDO
 #ifdef W3_OMPG
@@ -914,7 +941,37 @@
       END SUBROUTINE W3PSMC
 !/
 !/ ------------------------------------------------------------------- /
-!/
+!> @brief Refraction and great-circle turning by spectral rotation
+!>
+!> @details Linear interpolation equivalent to 1st order upstream scheme
+!>  but without restriction on rotation angle.  However, refraction
+!>  is limited towards the depth gradient direction (< 90 degree).
+!>  Refraction induced spectral shift in the k-space will remain
+!>  to be advected using the UNO2 scheme.
+!>
+!> @param[in]    ISEA     Number of sea point
+!> @param[in]    FACTH    Factor in propagation velocity (th)
+!> @param[in]    FACK     Factor in propagation velocity (k)
+!> @param[in]    CTHG0    Factor in great circle refraction term
+!> @param[in]    CG       Local group velocities
+!> @param[in]    WN       Local wavenumbers
+!> @param[in]    DEPTH    Depth
+!> @param[in]    DDDX     Depth x-gradient
+!> @param[in]    DDDY     Depth y-gradient
+!> @param[in]    ALFLMT   Refraction limiter
+!> @param[in]    CX       Current x-component
+!> @param[in]    CY       Current y-component
+!> @param[in]    DCXDX    Current gradient (dCX/dX)
+!> @param[in]    DCXDY    Current gradient (dCX/dY)
+!> @param[in]    DCYDX    Current gradient (dCY/dX)
+!> @param[in]    DCYDY    Current gradient (dCY/dY)
+!> @param[in]    DCDX     Phase speed x-gradient
+!> @param[in]    DCDY     Phase speed y-gradient
+!> @param[inout] VA       Spectrum
+!>
+!> @author Jian-Guo Li
+!> @date 06-Jun-2018
+!>
       SUBROUTINE W3KRTN ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
                           DDDX, DDDY, ALFLMT, CX, CY, DCXDX, DCXDY,   &
                           DCYDX, DCYDY, DCDX, DCDY, VA )
@@ -1223,30 +1280,44 @@
       END SUBROUTINE W3KRTN
 
 
-
+!> @brief Calculate mid-flux values for x dimension
+!>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
 ! Subroutine that calculate mid-flux values for x dimension 
-       SUBROUTINE SMCxUNO2(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
-!!Li         CALL SMCxUNO2(iuf, juf, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX, FMR)
+      SUBROUTINE SMCxUNO2(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
-         USE W3ODATMD, ONLY: NDSE, NDST 
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS, &
+                          IJKCel3, IJKCel4
+      USE W3ODATMD, ONLY: NDSE, NDST 
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NUA, NUB
-         REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif, FTS
-         REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
+      IMPLICIT NONE
+      INTEGER, INTENT( IN):: NUA, NUB
+      REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif, FTS
+      REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
 !
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, CNST8, CNST9
+      INTEGER ::  i, j, k, L, M, N, ij
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, CNST8, CNST9
 
-!    Two layer of boundary cells are added to each boundary cell face
-!    with all boundary cell values CF(-9:0)=0.0.
+!     Two layer of boundary cells are added to each boundary cell face
+!     with all boundary cell values CF(-9:0)=0.0.
 
-!    Diffusion Fourier no. at sub-time-step, proportional to face size,
-!    which is also equal to the sub-time-step factor FTS.
-         CNST0=AKDif*FTS*FTS
-!    Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
+!     Diffusion Fourier no. at sub-time-step, proportional to face size,
+!     which is also equal to the sub-time-step factor FTS.
+      CNST0=AKDif*FTS*FTS
+!     Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
 !        CNST0=AKDif*MRFct*FTS
 
 #ifdef W3_OMPG
@@ -1271,8 +1342,8 @@
            N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and central gradient
-           CNST2=FLOAT( IJKCel(3,L) )
-           CNST3=FLOAT( IJKCel(3,M) )
+           CNST2=FLOAT( IJKCel3(L) )
+           CNST3=FLOAT( IJKCel3(M) )
            CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell, arithmetic average.
@@ -1296,7 +1367,7 @@
            IF( M .LE. 0) UFLX(i) = UC(L)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,K) )
+           CNST1=FLOAT( IJKCel3(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Use minimum gradient all region.
@@ -1312,7 +1383,7 @@
            IF( L .LE. 0) UFLX(i) = UC(M)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,N) )
+           CNST1=FLOAT( IJKCel3(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Use minimum gradient outside monotonic region. 
@@ -1342,31 +1413,44 @@
       END SUBROUTINE SMCxUNO2
 
 
-! Subroutine that calculate mid-flux values for x dimension 
+!> @brief Calculate mid-flux values for y dimension
+!>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
       SUBROUTINE SMCyUNO2(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY, FTS)
-!!Li        CALL SMCyUNO2(ivf, jvf, CQ, VCFL, VLCFLY, DNND, FVMD, FVDIFY, FMR)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
-         USE W3ODATMD, ONLY: NDSE, NDST
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF, IJKCel4
+      USE W3ODATMD, ONLY: NDSE, NDST
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NVA, NVB
-         REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
-         REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, CNST8
+      IMPLICIT NONE
+      INTEGER, INTENT( IN):: NVA, NVB
+      REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
+      REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
+      INTEGER ::  i, j, k, L, M, N, ij
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, CNST8
 
-!    Notice an extra side length L is multiplied to mid-flux to give correct
-!    proportion of flux into the cells.  This length will be removed by the
-!    cell length when the tracer concentration is updated.
+!     Notice an extra side length L is multiplied to mid-flux to give correct
+!     proportion of flux into the cells.  This length will be removed by the
+!     cell length when the tracer concentration is updated.
 
-!    Diffusion Fourier no. at sub-time-step, proportional to face size,
-!    which is also equal to the sub-time-step factor FTS.
+!     Diffusion Fourier no. at sub-time-step, proportional to face size,
+!     which is also equal to the sub-time-step factor FTS.
 !        CNST0=AKDif*FTS*FTS
-!    2.0 factor to cancel that in gradient CNST5.  JGLi08Mar2012
-         CNST0=AKDif*FTS*FTS*2.0
-!    Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
+!     2.0 factor to cancel that in gradient CNST5.  JGLi08Mar2012
+      CNST0=AKDif*FTS*FTS*2.0
+!     Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
 !        CNST0=AKDif*MRFct*FTS
 
 #ifdef W3_OMPG
@@ -1381,20 +1465,20 @@
       DO j=NVA, NVB
 
 !    Select Upstream, Central and Downstream cells
-           K=IJKVFc(4,j)
-           L=IJKVFc(5,j)
-           M=IJKVFc(6,j)
-           N=IJKVFc(7,j)
+         K=IJKVFc(4,j)
+         L=IJKVFc(5,j)
+         M=IJKVFc(6,j)
+         N=IJKVFc(7,j)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel(4,L) )
-           CNST3=FLOAT( IJKCel(4,M) )
-           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+         CNST2=FLOAT( IJKCel4(L) )
+         CNST3=FLOAT( IJKCel4(M) )
+         CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell unit 
 !    Multiply by multi-resolution time step factor  FTS
-           CNST6=0.5*( VC(L)+VC(M) )*FTS
-           VFLY(j) = CNST6
+         CNST6=0.5*( VC(L)+VC(M) )*FTS
+         VFLY(j) = CNST6
 
 !    Face size integer and cosine factor.  
 !    CLATF is defined on V-face for SMC grid.  JGLi28Feb2012
@@ -1413,7 +1497,7 @@
            ENDIF
 
 !    Upstream cell size and irregular grid gradient, depending on VFLY.
-           CNST1=FLOAT( IJKCel(4,K) )
+           CNST1=FLOAT( IJKCel4(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Use minimum gradient outside monotonic region
@@ -1434,7 +1518,7 @@
 
 !    Upstream cell size and gradient, depending on VFLY sign.
 !    Side gradients for central cell includs 0.5 factor.
-           CNST1=FLOAT( IJKCel(4,N) )
+           CNST1=FLOAT( IJKCel4(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Use minimum gradient outside monotonic region
@@ -1465,28 +1549,41 @@
       END SUBROUTINE SMCyUNO2
 
 
-! Subroutine that calculate mid-flux values for x dimension 
+!> @brief Calculate mid-flux values for x dimension
+!>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
        SUBROUTINE SMCxUNO2r(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX)
-!!Li         CALL SMCxUNO2r(1, NUFc, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NSEA, NY, NCel, NUFc, IJKCel, IJKUFc, CLATS
-         USE W3ODATMD, ONLY: NDSE, NDST 
+       USE CONSTANTS
+       USE W3GDATMD, ONLY: NSEA, NY, NCel, NUFc, IJKCel, IJKUFc, CLATS
+       USE W3GDATMD, ONLY: IJKCel3
+       USE W3ODATMD, ONLY: NDSE, NDST 
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NUA, NUB
-         REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif
-         REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
+       IMPLICIT NONE
+       INTEGER, INTENT( IN):: NUA, NUB
+       REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif
+       REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
 !
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
+       INTEGER ::  i, j, k, L, M, N, ij
+       REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
 
-!    Two layer of boundary cells are added to each boundary cell face
-!    with all boundary cell values CF(-9:0)=0.0.
+!      Two layer of boundary cells are added to each boundary cell face
+!      with all boundary cell values CF(-9:0)=0.0.
 
-!    Notice an extra side length L is multiplied to mid-flux to give correct
-!    proportion of flux into the cells.  This length will be removed by the
-!    cell length when the tracer concentration is updated.
+!      Notice an extra side length L is multiplied to mid-flux to give correct
+!      proportion of flux into the cells.  This length will be removed by the
+!      cell length when the tracer concentration is updated.
 
 #ifdef W3_OMPG
 !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
@@ -1500,24 +1597,24 @@
       DO i=NUA, NUB
 
 !    Select Upstream, Central and Downstream cells
-           K=IJKUFc(4,i)
-           L=IJKUFc(5,i)
-           M=IJKUFc(6,i)
-           N=IJKUFc(7,i)
+         K=IJKUFc(4,i)
+         L=IJKUFc(5,i)
+         M=IJKUFc(6,i)
+         N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel(3,L) )
-           CNST3=FLOAT( IJKCel(3,M) )
-           CNST5=(CF(M)-CF(L))
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
+         CNST5=(CF(M)-CF(L))
 
 !    Averaged Courant number for base-level cell face 
-           CNST6= 0.5*( UC(L)+UC(M) )
-           UFLX(i) = CNST6
+         CNST6= 0.5*( UC(L)+UC(M) )
+         UFLX(i) = CNST6
 
 !    Diffusion Fourier number in local cell size
 !    To avoid boundary cell number, use maximum of L and M.
-           ij= MAX(L, M)
-           CNST0 = 2.0/( CLATS(ij)*CLATS(ij) )
+         ij= MAX(L, M)
+         CNST0 = 2.0/( CLATS(ij)*CLATS(ij) )
 
 !    For positive velocity case
          IF(CNST6 >= 0.0)  THEN
@@ -1570,24 +1667,36 @@
       END SUBROUTINE SMCxUNO2r
 
 
-! Subroutine that calculate mid-flux values for y dimension 
+!> @brief Calculate mid-flux values for y dimension
+!>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
       SUBROUTINE SMCyUNO2r(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY)
-!!Li        CALL SMCyUNO2r(1, NVFc, CQ, VCFL, VLCFLY, DNND, FVMD, FVDIFY)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NSEA, NY, NCel, NVFc, IJKCel, IJKVFc, CLATF
-         USE W3ODATMD, ONLY: NDSE, NDST
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NSEA, NY, NCel, NVFc, IJKCel, IJKVFc, CLATF
+      USE W3ODATMD, ONLY: NDSE, NDST
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NVA, NVB
-         REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif
-         REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, CNST8
+      IMPLICIT NONE
+      INTEGER, INTENT( IN):: NVA, NVB
+      REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif
+      REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
+      INTEGER ::  i, j, k, L, M, N, ij
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, CNST8
 
-!    Notice an extra side length L is multiplied to mid-flux to give correct
-!    proportion of flux into the cells.  This length will be removed by the
-!    cell length when the tracer concentration is updated.
+!     Notice an extra side length L is multiplied to mid-flux to give correct
+!     proportion of flux into the cells.  This length will be removed by the
+!     cell length when the tracer concentration is updated.
 
 #ifdef W3_OMPG
 !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
@@ -1601,17 +1710,17 @@
       DO j=NVA, NVB
 
 !    Select Upstream, Central and Downstream cells
-           K=IJKVFc(4,j)
-           L=IJKVFc(5,j)
-           M=IJKVFc(6,j)
-           N=IJKVFc(7,j)
+         K=IJKVFc(4,j)
+         L=IJKVFc(5,j)
+         M=IJKVFc(6,j)
+         N=IJKVFc(7,j)
 
 !    Central face gradient.
-           CNST5=(CF(M)-CF(L))
+         CNST5=(CF(M)-CF(L))
 
 !    Courant number in basic cell unit as dy is constant
-           CNST6=0.5*( VC(L)+VC(M) )
-           VFLY(j) = CNST6
+         CNST6=0.5*( VC(L)+VC(M) )
+         VFLY(j) = CNST6
 
 !    Face size integer and cosine factor
 !    CLATF is defined on V-face for SMC grid.  JGLi28Feb2012
@@ -1668,35 +1777,49 @@
       END SUBROUTINE SMCyUNO2r
 
 
-! Subroutine that calculate mid-flux values for x dimension with UNO3 scheme 
+!> @brief Calculate mid-flux values for x dimension with UNO3 scheme
+!>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
        SUBROUTINE SMCxUNO3(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX, FTS)
-!!Li         CALL SMCxUNO3(iuf, juf, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX, FMR)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
-         USE W3ODATMD, ONLY: NDSE, NDST 
+       USE CONSTANTS
+       USE W3GDATMD, ONLY: NCel, MRFct, NUFc, IJKCel, IJKUFc, CLATS
+       USE W3GDATMD, ONLY: IJKCel3
+       USE W3ODATMD, ONLY: NDSE, NDST 
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NUA, NUB
-         REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif, FTS
-         REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
+       IMPLICIT NONE
+       INTEGER, INTENT( IN):: NUA, NUB
+       REAL,    INTENT( IN):: CF(-9:NCel), UC(-9:NCel), AKDif, FTS
+       REAL,    INTENT(Out):: UFLX(NUFc), FU(NUFc), FX(NUFc)
 !
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
-      &        CNST7, CNST8, CNST9
+       INTEGER ::  i, j, k, L, M, N, ij
+       REAL    :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
+                  CNST7, CNST8, CNST9
 
-!    Two layer of boundary cells are added to each boundary cell face
-!    with all boundary cell values CF(-9:0)=0.0.
+!     Two layer of boundary cells are added to each boundary cell face
+!     with all boundary cell values CF(-9:0)=0.0.
 
-!    Diffusion Fourier no. at sub-time-step, proportional to face size,
-!    which is also equal to the sub-time-step factor FTS.
-!        CNST0=AKDif*FTS*FTS
-!    2.0 factor to cancel that in gradient CNST5.  JGLi03Sep2015
-         CNST0=AKDif*FTS*FTS*2.0
+!     Diffusion Fourier no. at sub-time-step, proportional to face size,
+!     which is also equal to the sub-time-step factor FTS.
+!         CNST0=AKDif*FTS*FTS
+!     2.0 factor to cancel that in gradient CNST5.  JGLi03Sep2015
+      CNST0=AKDif*FTS*FTS*2.0
 
-!    Notice an extra side length L is multiplied to mid-flux to give correct
-!    proportion of flux into the cells.  This length will be removed by the
-!    cell length when the tracer concentration is updated.
+!     Notice an extra side length L is multiplied to mid-flux to give correct
+!     proportion of flux into the cells.  This length will be removed by the
+!     cell length when the tracer concentration is updated.
 
 #ifdef W3_OMPG
 !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
@@ -1710,28 +1833,28 @@
       DO i=NUA, NUB
 
 !    Select Upstream, Central and Downstream cells
-           K=IJKUFc(4,i)
-           L=IJKUFc(5,i)
-           M=IJKUFc(6,i)
-           N=IJKUFc(7,i)
+         K=IJKUFc(4,i)
+         L=IJKUFc(5,i)
+         M=IJKUFc(6,i)
+         N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and central gradient
-           CNST2=FLOAT( IJKCel(3,L) )
-           CNST3=FLOAT( IJKCel(3,M) )
-           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
+         CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell, arithmetic average.
-           CNST6=0.5*( UC(L)+UC(M) )*FTS
-           UFLX(i) = CNST6
+         CNST6=0.5*( UC(L)+UC(M) )*FTS
+         UFLX(i) = CNST6
 
 !    Multi-resolution SMC grid requires flux multiplied by face factor.
-           CNST8 = FLOAT( IJKUFc(3,i) )
+         CNST8 = FLOAT( IJKUFc(3,i) )
 
 !    Diffusion factor in local size-1 cell, plus the cosine factors.
 !    2.0 factor to cancel that in gradient CNST5.  JGLi08Mar2012
 !    The maximum cell number is used to avoid the boundary cell number
 !    in selection of the cosine factor.
-           ij= MAX(L, M)
+         ij= MAX(L, M)
 
 !    For positive velocity case
          IF(CNST6 >= 0.0)  THEN
@@ -1740,7 +1863,7 @@
            IF( M .LE. 0) UFLX(i) = UC(L)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,K) )
+           CNST1=FLOAT( IJKCel3(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Second order gradient
@@ -1771,7 +1894,7 @@
            IF( L .LE. 0) UFLX(i) = UC(M)*FTS
 
 !    Upstream cell length and gradient, depending on UFLX sign.
-           CNST1=FLOAT( IJKCel(3,N) )
+           CNST1=FLOAT( IJKCel3(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Second order gradient
@@ -1816,32 +1939,47 @@
       END SUBROUTINE SMCxUNO3
 
 
-! Subroutine that calculate mid-flux values for y dimension with UNO3 scheme
+!> @brief Calculate mid-flux values for y dimension with UNO3 scheme
+!>
+!>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
+!> @param[in]   FTS      Timestep fraction for sub-timestep.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
       SUBROUTINE SMCyUNO3(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY, FTS)
-!!Li        CALL SMCyUNO3(ivf, jvf, CQ, VCFL, VLCFLY, DNND, FVMD, FVDIFY, FMR)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
-         USE W3ODATMD, ONLY: NDSE, NDST
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NCel, MRFct, NVFc, IJKCel, IJKVFc, CLATF
+      USE W3GDATMD, ONLY: IJKCel4
+      USE W3ODATMD, ONLY: NDSE, NDST
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NVA, NVB
-         REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
-         REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
-      &        CNST7, CNST8, CNST9
+      IMPLICIT NONE
+      INTEGER, INTENT( IN):: NVA, NVB
+      REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif, FTS
+      REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
+      INTEGER ::  i, j, k, L, M, N, ij
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6,  &
+             CNST7, CNST8, CNST9
 
-!    Notice an extra side length L is multiplied to mid-flux to give correct
-!    proportion of flux into the cells.  This length will be removed by the
-!    cell length when the tracer concentration is updated.
+!     Notice an extra side length L is multiplied to mid-flux to give correct
+!     proportion of flux into the cells.  This length will be removed by the
+!     cell length when the tracer concentration is updated.
 
-!    Diffusion Fourier no. at sub-time-step, proportional to face size,
-!    which is also equal to the sub-time-step factor FTS.
+!     Diffusion Fourier no. at sub-time-step, proportional to face size,
+!     which is also equal to the sub-time-step factor FTS.
 !        CNST0=AKDif*FTS*FTS
-!    2.0 factor to cancel that in gradient CNST5.  JGLi08Mar2012
-         CNST0=AKDif*FTS*FTS*2.0
-!    Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
+!     2.0 factor to cancel that in gradient CNST5.  JGLi08Mar2012
+      CNST0=AKDif*FTS*FTS*2.0
+!     Uniform diffusion coefficient for all sizes.  JGLi24Feb2012
 !        CNST0=AKDif*MRFct*FTS
 
 #ifdef W3_OMPG
@@ -1856,20 +1994,20 @@
       DO j=NVA, NVB
 
 !    Select Upstream, Central and Downstream cells
-           K=IJKVFc(4,j)
-           L=IJKVFc(5,j)
-           M=IJKVFc(6,j)
-           N=IJKVFc(7,j)
+         K=IJKVFc(4,j)
+         L=IJKVFc(5,j)
+         M=IJKVFc(6,j)
+         N=IJKVFc(7,j)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel(4,L) )
-           CNST3=FLOAT( IJKCel(4,M) )
-           CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
+         CNST2=FLOAT( IJKCel4(L) )
+         CNST3=FLOAT( IJKCel4(M) )
+         CNST5=(CF(M)-CF(L))/( CNST2 + CNST3 )
 
 !    Courant number in local size-1 cell unit 
 !    Multiply by multi-resolution time step factor  FTS
-           CNST6=0.5*( VC(L)+VC(M) )*FTS
-           VFLY(j) = CNST6
+         CNST6=0.5*( VC(L)+VC(M) )*FTS
+         VFLY(j) = CNST6
 
 !    Face size integer and cosine factor.  
 !    CLATF is defined on V-face for SMC grid.  JGLi28Feb2012
@@ -1888,7 +2026,7 @@
            ENDIF
 
 !    Upstream cell size and irregular grid gradient, depending on VFLY.
-           CNST1=FLOAT( IJKCel(4,K) )
+           CNST1=FLOAT( IJKCel4(K) )
            CNST4=(CF(L)-CF(K))/( CNST2 + CNST1 )
 
 !    Second order gradient
@@ -1925,7 +2063,7 @@
 
 !    Upstream cell size and gradient, depending on VFLY sign.
 !    Side gradients for central cell includs 0.5 factor.
-           CNST1=FLOAT( IJKCel(4,N) )
+           CNST1=FLOAT( IJKCel4(N) )
            CNST4=(CF(N)-CF(M))/( CNST1 + CNST3 )
 
 !    Second order gradient
@@ -1972,12 +2110,25 @@
       END SUBROUTINE SMCyUNO3
 
 
-! Subroutine that calculate mid-flux values for x dimension with UNO3 
+!> @brief Calculate mid-flux values for x dimension with UNO3
+!>
+!> @param[in]   NUA      Start number of U-face list.
+!> @param[in]   NUB      End number of U-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   UC       Veclocity U-component at cell centre.
+!> @param[out]  UFLX     Mid-flux U-component on U-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FU       Advection Mid-flux on U-face.
+!> @param[out]  FX       Diffusion Mid-flux on U-face.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
        SUBROUTINE SMCxUNO3r(NUA, NUB, CF, UC, UFLX, AKDif, FU, FX)
-!!Li         CALL SMCxUNO3r(1, NUFc, CQ, UCFL, ULCFLX, DNND, FUMD, FUDIFX)
 
          USE CONSTANTS
          USE W3GDATMD, ONLY: NSEA, NY, NCel, NUFc, IJKCel, IJKUFc, CLATS
+         USE W3GDATMD, ONLY: IJKCel3
          USE W3ODATMD, ONLY: NDSE, NDST 
 
          IMPLICIT NONE
@@ -2007,24 +2158,24 @@
       DO i=NUA, NUB
 
 !    Select Upstream, Central and Downstream cells
-           K=IJKUFc(4,i)
-           L=IJKUFc(5,i)
-           M=IJKUFc(6,i)
-           N=IJKUFc(7,i)
+         K=IJKUFc(4,i)
+         L=IJKUFc(5,i)
+         M=IJKUFc(6,i)
+         N=IJKUFc(7,i)
 
 !    Face bounding cell lengths and gradient
-           CNST2=FLOAT( IJKCel(3,L) )
-           CNST3=FLOAT( IJKCel(3,M) )
-           CNST5=(CF(M)-CF(L))
+         CNST2=FLOAT( IJKCel3(L) )
+         CNST3=FLOAT( IJKCel3(M) )
+         CNST5=(CF(M)-CF(L))
 
 !    Averaged Courant number for base-level cell face 
-           CNST6= 0.5*( UC(L)+UC(M) )
-           UFLX(i) = CNST6
+         CNST6= 0.5*( UC(L)+UC(M) )
+         UFLX(i) = CNST6
 
 !    Diffusion Fourier number in local cell size
 !    To avoid boundary cell number, use maximum of L and M.
-           ij= MAX(L, M)
-           CNST0 = 2.0/( CLATS(ij)*CLATS(ij) )
+         ij= MAX(L, M)
+         CNST0 = 2.0/( CLATS(ij)*CLATS(ij) )
 
 !    For positive velocity case
          IF(CNST6 >= 0.0)  THEN
@@ -2096,25 +2247,37 @@
       END SUBROUTINE SMCxUNO3r
 
 
-! Subroutine that calculate mid-flux values for y dimension with UNO3
+!> @brief Calculate mid-flux values for y dimension with UNO3
+!>
+!> @param[in]   NVA      Start number of V-face list.
+!> @param[in]   NVB      End number of V-face list.
+!> @param[in]   CF       Transported variable.
+!> @param[in]   VC       Veclocity V-component at cell centre.
+!> @param[out]  VFLY     Mid-flux V-component on V-face.
+!> @param[in]   AKDif    Diffusion coefficient.
+!> @param[out]  FV       Advection Mid-flux on V-face.
+!> @param[out]  FY       Diffusion Mid-flux on V-face.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
       SUBROUTINE SMCyUNO3r(NVA, NVB, CF, VC, VFLY, AKDif, FV, FY)
-!!Li        CALL SMCyUNO3r(1, NVFc, CQ, VCFL, VLCFLY, DNND, FVMD, FVDIFY)
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NSEA, NY, NCel, NVFc, IJKCel, IJKVFc, CLATF
-         USE W3ODATMD, ONLY: NDSE, NDST
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NSEA, NY, NCel, NVFc, IJKCel, IJKVFc, CLATF
+      USE W3ODATMD, ONLY: NDSE, NDST
 
-         IMPLICIT NONE
-         INTEGER, INTENT( IN):: NVA, NVB
-         REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif
-         REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
-         INTEGER ::  i, j, k, L, M, N, ij
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, &
-      &               CNST7, CNST8, CNST9 
+      IMPLICIT NONE
+      INTEGER, INTENT( IN):: NVA, NVB
+      REAL,    INTENT( IN):: CF(-9:NCel), VC(-9:NCel), AKDif
+      REAL,    INTENT(Out):: VFLY(NVFc), FV(NVFc), FY(NVFc)
+      INTEGER ::  i, j, k, L, M, N, ij
+      REAL    :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6, &
+                 CNST7, CNST8, CNST9
 
-!    Notice an extra side length L is multiplied to mid-flux to give correct
-!    proportion of flux into the cells.  This length will be removed by the
-!    cell length when the tracer concentration is updated.
+!     Notice an extra side length L is multiplied to mid-flux to give correct
+!     proportion of flux into the cells.  This length will be removed by the
+!     cell length when the tracer concentration is updated.
 
 #ifdef W3_OMPG
 !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
@@ -2128,17 +2291,17 @@
       DO j=NVA, NVB
 
 !    Select Upstream, Central and Downstream cells
-           K=IJKVFc(4,j)
-           L=IJKVFc(5,j)
-           M=IJKVFc(6,j)
-           N=IJKVFc(7,j)
+         K=IJKVFc(4,j)
+         L=IJKVFc(5,j)
+         M=IJKVFc(6,j)
+         N=IJKVFc(7,j)
 
 !    Central face gradient.
-           CNST5=(CF(M)-CF(L))
+         CNST5=(CF(M)-CF(L))
 
 !    Courant number in basic cell unit as dy is constant
-           CNST6=0.5*( VC(L)+VC(M) )
-           VFLY(j) = CNST6
+         CNST6=0.5*( VC(L)+VC(M) )
+         VFLY(j) = CNST6
 
 !    Face size integer and cosine factor
 !    CLATF is defined on V-face for SMC grid.  JGLi28Feb2012
@@ -2218,50 +2381,63 @@
       END SUBROUTINE SMCyUNO3r
 
 !
-! Subroutine that calculate cell centre gradient for any input variable.
-! Nemerical average is applied to size-changing faces and the gradients 
-! are along the lat-lon local east-north directions.    JGLi18Aug2015
+!> @brief Evaluate local gradient for sea points.
+!>
+!> @details
+!>  Calculate cell centre gradient for any input variable.
+!>  Nemerical average is applied to size-changing faces and the gradients
+!>  are along the lat-lon local east-north directions.
+!>
+!>
+!> @param[in]   CVQ      Input cell values.
+!> @param[out]  GrdX     Gradient along x-axis.
+!> @param[out]  GrdY     Gradient along y-axis.
+!> @param[in]   L0r1     Zero or 1st-order boundary condiiton.
+!>
+!> @author Jian-Guo Li
+!> @date 08 Aug 2017
+!>
 ! Add optional zero-gradient bounday conditions.    JGLi08Aug2017
 !
-       SUBROUTINE SMCGradn(CVQ, GrdX, GrdY, L0r1) 
+      SUBROUTINE SMCGradn(CVQ, GrdX, GrdY, L0r1) 
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,   MRFct,       &
-      &                      IJKCel, IJKUFc, IJKVFC, CLATS, SX, SY
-         USE W3GDATMD, ONLY: ARCTC 
-         USE W3ODATMD, ONLY: NDSE, NDST 
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,   MRFct,       &
+                           IJKCel, IJKUFc, IJKVFC, CLATS, SX, SY
+      USE W3GDATMD, ONLY: ARCTC 
+      USE W3ODATMD, ONLY: NDSE, NDST 
 
-         IMPLICIT NONE
-!!   New boundary conditions depending on user defined L0r1.
-!!   L0r1 = 0 will set zero at land points while L0r1 > 0 invokes 
-!!   the zero-gradient boundary condition.    JGLi08Aug2017
-         REAL,    INTENT( IN)::  CVQ(NSEA)
-         REAL,    INTENT(Out):: GrdX(NSEA), GrdY(NSEA)
-         INTEGER, INTENT( IN):: L0r1      
+      IMPLICIT NONE
+!!    New boundary conditions depending on user defined L0r1.
+!!    L0r1 = 0 will set zero at land points while L0r1 > 0 invokes 
+!!    the zero-gradient boundary condition.    JGLi08Aug2017
+      REAL,    INTENT( IN)::  CVQ(NSEA)
+      REAL,    INTENT(Out):: GrdX(NSEA), GrdY(NSEA)
+      INTEGER, INTENT( IN):: L0r1      
 !
-         INTEGER :: I, J, K, L, M, N
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6 
-         REAL :: DX0I, DY0I
+      INTEGER :: I, J, K, L, M, N
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6 
+      REAL :: DX0I, DY0I
 
-!    Use a few working arrays
-         REAL,  Dimension(-9:NSEA):: CVF, AUN, AVN  
+!     Use a few working arrays
+      REAL,  Dimension(-9:NSEA):: CVF, AUN, AVN  
 
-!    Two layer of boundary cells are added to each boundary cell face
-!    with all boundary cell default values CVF(-9:0)= 0.0.
-         CVF(-9:0)  = 0.0
-         CVF(1:NSEA)=CVQ(1:NSEA) 
+!     Two layer of boundary cells are added to each boundary cell face
+!     with all boundary cell default values CVF(-9:0)= 0.0.
+      CVF(-9:0)  = 0.0
+      CVF(1:NSEA)=CVQ(1:NSEA) 
 
-!!   Initialize arrays
-         AUN = 0.
-         AVN = 0.
-        GrdX = 0.
-        GrdY = 0.
+!!    Initialize arrays
+      AUN = 0.
+      AVN = 0.
+      GrdX = 0.
+      GrdY = 0.
 
-!!   Multi-resolution base-cell size defined by refined levels.
-!!   So the MRFct converts the base cell SX, SY into size-1 cell lenth.
-!!   Constant size-1 dy=DY0 and dx on Equator DX0, inverted.
-        DX0I   = MRFct/ ( SX * DERA * RADIUS )
-        DY0I   = MRFct/ ( SY * DERA * RADIUS )
+!!    Multi-resolution base-cell size defined by refined levels.
+!!    So the MRFct converts the base cell SX, SY into size-1 cell lenth.
+!!    Constant size-1 dy=DY0 and dx on Equator DX0, inverted.
+      DX0I   = MRFct/ ( SX * DERA * RADIUS )
+      DY0I   = MRFct/ ( SY * DERA * RADIUS )
 
 #ifdef W3_OMPG
 !$OMP Parallel Default(Shared), Private(i, j, K, L, M, N),  &
@@ -2272,29 +2448,29 @@
 !$OMP DO
 #endif
 
-!!   Calculate x-gradient by averaging U-face gradients. 
-        DO i=1, NUFc
+!!    Calculate x-gradient by averaging U-face gradients. 
+      DO i=1, NUFc
 
-!    Select Upstream, Central and Downstream cells
-           L=IJKUFc(5,i)
-           M=IJKUFc(6,i)
+!     Select Upstream, Central and Downstream cells
+        L=IJKUFc(5,i)
+        M=IJKUFc(6,i)
 
-!!   For zero-gradient boundary conditions, simply skip boundary faces.
+!!      For zero-gradient boundary conditions, simply skip boundary faces.
         IF( L0r1 .EQ. 0 .OR. (L > 0 .AND. M > 0) ) THEN
 
-!    Multi-resolution SMC grid requires flux multiplied by face factor.
-           CNST1=FLOAT( IJKUFc(3,i) ) 
+!         Multi-resolution SMC grid requires flux multiplied by face factor.
+          CNST1=FLOAT( IJKUFc(3,i) ) 
 
-!    Face bounding cell lengths and central gradient
-           CNST2=FLOAT( IJKCel(3,L) ) 
-           CNST3=FLOAT( IJKCel(3,M) ) 
+!         Face bounding cell lengths and central gradient
+          CNST2=FLOAT( IJKCel(3,L) ) 
+          CNST3=FLOAT( IJKCel(3,M) ) 
 
-!    Side gradients over 2 cell lengths for central cell.
-!    Face size factor is also included for average.
-           CNST5=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
+!         Side gradients over 2 cell lengths for central cell.
+!         Face size factor is also included for average.
+          CNST5=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
 #ifdef W3_B4B
 #ifdef W3_OMPG
-           CNST5=INT(CNST5 * 1.0e6)   ! CB: B4B
+          CNST5=INT(CNST5 * 1.0e6)   ! CB: B4B
 #endif
 #endif
 
@@ -2302,22 +2478,22 @@
 !! !$OMP CRITICAL
 !    Store side gradient in two neighbouring cells
 !! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
-           IF( L > 0 ) THEN
+          IF( L > 0 ) THEN
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AUN(L) = AUN(L) + CNST5
-           ENDIF
-           IF( M > 0 ) THEN
+            AUN(L) = AUN(L) + CNST5
+          ENDIF
+          IF( M > 0 ) THEN
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AUN(M) = AUN(M) + CNST5
-           ENDIF
+            AUN(M) = AUN(M) + CNST5
+          ENDIF
 !! !$OMP END CRITICAL
 
         ENDIF
-        END DO
+      END DO
 
 #ifdef W3_OMPG
 !$OMP END DO
@@ -2326,7 +2502,7 @@
 #ifdef W3_B4B
 #ifdef W3_OMPG
 !$OMP SINGLE 
-        AUN = AUN / 1.0e6  ! CB B4B
+      AUN = AUN / 1.0e6  ! CB B4B
 !$OMP END SINGLE 
 #endif
 #endif
@@ -2339,13 +2515,13 @@
 !$OMP DO
 #endif
 
-        DO n=1, NSEA
-!  Cell y-size IJKCel(4,i) is used to cancel the face size-factor in AUN. 
-!  Plus the actual physical length scale for size-1 cell. 
-!  Note polar cell (if any) AUN = 0.0 as it has no U-face.
-           GrdX(n)=DX0I*AUN(n)/( CLats(n)*IJKCel(4,n) )
+      DO n=1, NSEA
+!       Cell y-size IJKCel(4,i) is used to cancel the face size-factor in AUN. 
+!       Plus the actual physical length scale for size-1 cell. 
+!       Note polar cell (if any) AUN = 0.0 as it has no U-face.
+        GrdX(n)=DX0I*AUN(n)/( CLats(n)*IJKCel(4,n) )
 
-        ENDDO
+      ENDDO
 
 #ifdef W3_OMPG
 !$OMP END DO
@@ -2355,52 +2531,52 @@
 !$OMP DO
 #endif
 
-!!   Calculate y-gradient by averaging V-face gradients. 
-        DO j=1, NVFc
+!!    Calculate y-gradient by averaging V-face gradients. 
+      DO j=1, NVFc
 
-!    Select Central and Downstream cells
-           L=IJKVFc(5,j)
-           M=IJKVFc(6,j)
+!       Select Central and Downstream cells
+        L=IJKVFc(5,j)
+        M=IJKVFc(6,j)
 
-!!   For zero-gradient boundary conditions, simply skip boundary faces.
+!!      For zero-gradient boundary conditions, simply skip boundary faces.
         IF( L0r1 .EQ. 0 .OR. (L > 0 .AND. M > 0) ) THEN
 
-!    Face size is required for multi-resolution grid.
-           CNST1=Real( IJKVFc(3,j) )
+!       Face size is required for multi-resolution grid.
+          CNST1=Real( IJKVFc(3,j) )
 
-!    Cell y-length of UCD cells
-           CNST2=Real( IJKCel(4,L) )
-           CNST3=Real( IJKCel(4,M) )
+!         Cell y-length of UCD cells
+          CNST2=Real( IJKCel(4,L) )
+          CNST3=Real( IJKCel(4,M) )
 
-!    Side gradients over 2 cell lengths for central cell.
-!    Face size factor is also included for average.
-           CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
+!         Side gradients over 2 cell lengths for central cell.
+!         Face size factor is also included for average.
+          CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
 #ifdef W3_B4B
 #ifdef W3_OMPG
-           CNST6 = int(CNST6 * 1.0e6) ! CB B4B
+          CNST6 = int(CNST6 * 1.0e6) ! CB B4B
 #endif
 #endif
 
 !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
 !! !$OMP CRITICAL 
 !! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
-           IF( L > 0 ) THEN
+          IF( L > 0 ) THEN
 !    Store side gradient in two neighbouring cells
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AVN(L) = AVN(L) + CNST6 
-           ENDIF
-           IF( M > 0 ) THEN
+            AVN(L) = AVN(L) + CNST6 
+          ENDIF
+          IF( M > 0 ) THEN
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AVN(M) = AVN(M) + CNST6 
-           ENDIF
+            AVN(M) = AVN(M) + CNST6 
+          ENDIF
 !! !$OMP END CRITICAL 
 
         ENDIF
-        END DO
+      END DO
 
 #ifdef W3_OMPG
 !$OMP END DO
@@ -2409,7 +2585,7 @@
 #ifdef W3_B4B
 #ifdef W3_OMPG
 !$OMP SINGLE 
-        AVN = AVN / 1.0e6  !CB B4B
+      AVN = AVN / 1.0e6  !CB B4B
 !$OMP END SINGLE 
 #endif
 #endif
@@ -2419,12 +2595,12 @@
 #endif
 
 !  Assign averaged side-gradient to GrdY.
-        DO n=1, NSEA 
+      DO n=1, NSEA 
 !  AV is divided by the cell x-size IJKCel(3,i) to cancel face
 !  size-factor, and physical y-distance of size-1 cell.
-           GrdY(n)=DY0I*AVN(n)/Real( IJKCel(3,n) )
+        GrdY(n)=DY0I*AVN(n)/Real( IJKCel(3,n) )
 
-        END DO
+      END DO
 
 #ifdef W3_OMPG
 !$OMP END DO
@@ -2435,44 +2611,49 @@
 #endif
 
 !!Li  Y-gradient for polar cell in Arctic part is set to zero.
-        IF( ARCTC ) GrdY(NSEA) = 0.0
+      IF( ARCTC ) GrdY(NSEA) = 0.0
 
 ! 999  PRINT*, ' Sub SMCGradn ended.'
 
-        RETURN
-        END SUBROUTINE SMCGradn
+      RETURN
+      END SUBROUTINE SMCGradn
 
 
+!> @brief Average sea point values with a 1-2-1 scheme.
+!>
+!> @param[inout]  CVQ  Input field.
+!>
+!> @author Jian-Guo Li
+!> @date 15-Jan-2019
+!>
+      SUBROUTINE SMCAverg(CVQ) 
+
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,    &
+                          IJKCel, IJKUFc, IJKVFC,  &
+                          IJKUFc5, IJKUFc6
+      USE W3GDATMD, ONLY: ARCTC 
+      USE W3ODATMD, ONLY: NDSE, NDST 
+
+      IMPLICIT NONE
+      REAL, INTENT(INOUT) :: CVQ(-9:NSEA)
 !
-! Subroutine that average sea point values with a 1-2-1 scheme. 
-!
-       SUBROUTINE SMCAverg(CVQ) 
+      INTEGER :: I, J, K, L, M, N
+      REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NSEA,   NUFc,   NVFc,    &
-      &                      IJKCel, IJKUFc, IJKVFC 
-         USE W3GDATMD, ONLY: ARCTC 
-         USE W3ODATMD, ONLY: NDSE, NDST 
+!     Use a few working arrays
+      REAL, Dimension(-9:NSEA) :: CVF, AUN, AVN  
 
-         IMPLICIT NONE
-         REAL,    INTENT(INOUT)::  CVQ(-9:NSEA)
-!
-         INTEGER :: I, J, K, L, M, N
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
+!     Two layer of boundary cells are added to each boundary cell face
+!     with all boundary cell values stored in CVF(-9:0).
+      CVF=CVQ 
 
-!    Use a few working arrays
-         REAL,  Dimension(-9:NSEA):: CVF, AUN, AVN  
-
-!    Two layer of boundary cells are added to each boundary cell face
-!    with all boundary cell values stored in CVF(-9:0).
-         CVF=CVQ 
-
-!!   Initialize arrays
-         AUN = 0.
-         AVN = 0.
+!!    Initialize arrays
+      AUN = 0.
+      AVN = 0.
 
 !!Li  Save polar cell value if any.
-         CNST0 = CVQ(NSEA)
+      CNST0 = CVQ(NSEA)
 
 #ifdef W3_OMPG
 !$OMP Parallel Default(Shared), Private(i, j, L, M, n),  &
@@ -2483,15 +2664,15 @@
 !$OMP DO
 #endif
 
-!!   Calculate x-gradient by averaging U-face gradients. 
-        DO i=1, NUFc
+!!    Calculate x-gradient by averaging U-face gradients. 
+      DO i=1, NUFc
 
 !    Select Upstream, Central and Downstream cells
-           L=IJKUFc(5,i)
-           M=IJKUFc(6,i)
+        L=IJKUFc5(i)
+        M=IJKUFc6(i)
 
-!    Multi-resolution SMC grid requires flux multiplied by face factor.
-           CNST5=Real( IJKUFc(3,i) )*(CVF(M)+CVF(L))
+!       Multi-resolution SMC grid requires flux multiplied by face factor.
+        CNST5=Real( IJKUFc(3,i) )*(CVF(M)+CVF(L))
 #ifdef W3_B4B
 !OMPG           CNST5=int(CNST5 * 1.0e6)
 #endif
@@ -2500,21 +2681,21 @@
 !! !$OMP CRITICAL 
 !    Store side gradient in two neighbouring cells
 !! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
-           IF( L > 0 ) THEN
+        IF( L > 0 ) THEN
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AUN(L) = AUN(L) + CNST5 
-           ENDIF
-           IF( M > 0 ) THEN
+          AUN(L) = AUN(L) + CNST5 
+        ENDIF
+        IF( M > 0 ) THEN
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AUN(M) = AUN(M) + CNST5 
-           ENDIF
+          AUN(M) = AUN(M) + CNST5 
+         ENDIF
 !! !$OMP END CRITICAL 
 
-        END DO
+      END DO
 
 #ifdef W3_OMPG
 !$OMP END DO
@@ -2523,7 +2704,7 @@
 #ifdef W3_B4B
 #ifdef W3_OMPG
 !$OMP SINGLE 
-        AUN = AUN / 1.0e6  !CB B4B
+      AUN = AUN / 1.0e6  !CB B4B
 !$OMP END SINGLE 
 #endif
 #endif
@@ -2532,18 +2713,18 @@
 !$OMP DO
 #endif
 
-!!   Calculate y-gradient by averaging V-face gradients. 
-        DO j=1, NVFc
+!!    Calculate y-gradient by averaging V-face gradients. 
+      DO j=1, NVFc
 
-!    Select Central and Downstream cells
-           L=IJKVFc(5,j)
-           M=IJKVFc(6,j)
+!       Select Central and Downstream cells
+        L=IJKVFc(5,j)
+        M=IJKVFc(6,j)
 
-!    Face size is required for multi-resolution grid.
-           CNST6=Real( IJKVfc(3,j) )*(CVF(M)+CVF(L))
+!       Face size is required for multi-resolution grid.
+        CNST6=Real( IJKVfc(3,j) )*(CVF(M)+CVF(L))
 #ifdef W3_B4B
 #ifdef W3_OMPG
-           CNST6=INT(CNST6 * 1e6)
+        CNST6=INT(CNST6 * 1e6)
 #endif
 #endif
 
@@ -2551,21 +2732,21 @@
 !! !$OMP CRITICAL 
 !    Store side gradient in two neighbouring cells
 !! Remove boundary cell flux update or L M > 0.  JGLi28Mar2019
-           IF( L > 0 ) THEN
+        IF( L > 0 ) THEN
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AVN(L) = AVN(L) + CNST6 
-           ENDIF
-           IF( M > 0 ) THEN
+          AVN(L) = AVN(L) + CNST6 
+        ENDIF
+        IF( M > 0 ) THEN
 #ifdef W3_OMPG
 !$OMP ATOMIC 
 #endif
-              AVN(M) = AVN(M) + CNST6 
-           ENDIF
+          AVN(M) = AVN(M) + CNST6 
+        ENDIF
 !! !$OMP END CRITICAL 
 
-       END DO
+      END DO
 
 #ifdef W3_OMPG
 !$OMP END DO
@@ -2574,7 +2755,7 @@
 #ifdef W3_B4B
 #ifdef W3_OMPG
 !$OMP SINGLE 
-        AVN = AVN / 1.0e6  !CB B4B
+      AVN = AVN / 1.0e6  !CB B4B
 !$OMP END SINGLE 
 #endif
 #endif
@@ -2584,13 +2765,13 @@
 #endif
 
 !  Assign averaged value back to CVQ.
-       DO n=1, NSEA 
+      DO n=1, NSEA 
 
-            CNST3=0.125/Real( IJKCel(3,n) )
-            CNST4=0.125/Real( IJKCel(4,n) )
-!  AUN is divided by the cell y-size IJKCel(4,n) and AVN by 
-!  the cell x-size IJKCel(3,n) to cancel face size factors. 
-            CVQ(n)= AUN(n)*CNST4 + AVN(n)*CNST3 
+        CNST3=0.125/Real( IJKCel(3,n) )
+        CNST4=0.125/Real( IJKCel(4,n) )
+!       AUN is divided by the cell y-size IJKCel(4,n) and AVN by 
+!       the cell x-size IJKCel(3,n) to cancel face size factors. 
+        CVQ(n)= AUN(n)*CNST4 + AVN(n)*CNST3 
 
        END DO
 
@@ -2603,7 +2784,7 @@
 #endif
 
 !!Li  Polar cell (if any) keep original value. 
-       IF( ARCTC ) CVQ(NSEA) = CNST0
+      IF( ARCTC ) CVQ(NSEA) = CNST0
 
 ! 999  PRINT*, ' Sub SMCAverg ended.'
 
@@ -2611,83 +2792,88 @@
       END SUBROUTINE SMCAverg
 
 
-!Li
-! Subroutine that calculate great circle turning (GCT) and refraction.
-! The refraction and GCT terms are equivalent to a simgle rotation by each 
-! element and does not need to be calculated as advection.  A simple rotation
-! scheme similar to the 1st order upstream scheme but without any restriction 
-! on the rotation angle or the CFL limit by an Eulerian advection scheme. 
-!                 Jian-Guo Li  12 Nov 2010
-!Li
+!> @brief Calculate great circle turning (GCT) and refraction.
+!>
+!> @details
+!>  The refraction and GCT terms are equivalent to a single rotation by each
+!>  element and does not need to be calculated as advection.  A simple rotation
+!>  scheme similar to the 1st order upstream scheme but without any restriction
+!>  on the rotation angle or the CFL limit by an Eulerian advection scheme.
+!>
+!> @param[in]  CoRfr   Courant number for refraction and GCT rotation.
+!> @param[in]  SpeTHK  Wave spectrum to be rotated and output.
+!>
+!> @author Jian-Guo Li
+!> @date 12 Nov 2010
+!>
+      SUBROUTINE SMCGtCrfr(CoRfr, SpeTHK)
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NK, NTH, DTH, CTMAX
 
-       SUBROUTINE SMCGtCrfr(CoRfr, SpeTHK)
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NK, NTH, DTH, CTMAX
+      IMPLICIT NONE
+      REAL, INTENT(IN)   ::  CoRfr(NTH, NK)
+      REAL, INTENT(INOUT):: SpeTHK(NTH, NK)
+      INTEGER ::  I, J, K, L, M, N 
+      REAL, Dimension(NTH):: SpeGCT, Spectr
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
 
-         IMPLICIT NONE
-         REAL, INTENT(IN)   ::  CoRfr(NTH, NK)
-         REAL, INTENT(INOUT):: SpeTHK(NTH, NK)
-         INTEGER ::  I, J, K, L, M, N 
-         REAL, Dimension(NTH):: SpeGCT, Spectr
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
-
-!    Loop through NK spectral bins.
+!     Loop through NK spectral bins.
       DO n=1, NK
 
-!!   Asign cell spectrum to temporary variable Spcetr
-         Spectr=SpeTHK(1:NTH,n)
-         SpeGCT=0.0 
+!!      Asign cell spectrum to temporary variable Spcetr
+        Spectr=SpeTHK(1:NTH,n)
+        SpeGCT=0.0 
 
-!!   Loop through NTH directional bins for each cell spectrum
-         DO j=1, NTH
+!!      Loop through NTH directional bins for each cell spectrum
+        DO j=1, NTH
 
-!    GCT + refraction Courant number for this dirctional bin
-           CNST6=CoRfr(j,n)
+!         GCT + refraction Courant number for this dirctional bin
+          CNST6=CoRfr(j,n)
 
-!    Work out integer number of bins to be skipped.
-!    If K is great than NTH, full circle turning is removed.
-           CNST5=ABS( CNST6 )
-           K= MOD( INT(CNST5), NTH ) 
+!         Work out integer number of bins to be skipped.
+!         If K is great than NTH, full circle turning is removed.
+          CNST5=ABS( CNST6 )
+          K= MOD( INT(CNST5), NTH ) 
 
-!    Partitioning faraction of the spectral component
-           CNST1=CNST5 - FLOAT( INT(CNST5) )
-           CNST2=1.0 - CNST1
+!         Partitioning faraction of the spectral component
+          CNST1=CNST5 - FLOAT( INT(CNST5) )
+          CNST2=1.0 - CNST1
 
-!    For positive turning case
-         IF(CNST6 > 0.0)  THEN
+!         For positive turning case
+          IF(CNST6 > 0.0)  THEN
  
-!    Select the upstream and downstream bins to rotate in, wrap at end
-           L=j+K
-           M=j+K+1
-           IF( L .GT. NTH ) L = L - NTH
-           IF( M .GT. NTH ) M = M - NTH
+!           Select the upstream and downstream bins to rotate in, wrap at end
+            L=j+K
+            M=j+K+1
+            IF( L .GT. NTH ) L = L - NTH
+            IF( M .GT. NTH ) M = M - NTH
 
-!!   Divid the j bin energy by fraction of CNST6 and store in SpeGCT
-           SpeGCT(L)=SpeGCT(L)+Spectr(j)*CNST2
-           SpeGCT(M)=SpeGCT(M)+Spectr(j)*CNST1
+!!          Divide the j bin energy by fraction of CNST6 and store in SpeGCT
+            SpeGCT(L)=SpeGCT(L)+Spectr(j)*CNST2
+            SpeGCT(M)=SpeGCT(M)+Spectr(j)*CNST1
 
-!    For negative or no turning case
-         ELSE 
+!         For negative or no turning case
+          ELSE 
 
-!    Select the upstream and downstream bins to rotate in, wrap at end
-           L=j-K
-           M=j-K-1
-           IF( L .LT. 1 ) L = L + NTH
-           IF( M .LT. 1 ) M = M + NTH
+!           Select the upstream and downstream bins to rotate in, wrap at end
+            L=j-K
+            M=j-K-1
+            IF( L .LT. 1 ) L = L + NTH
+            IF( M .LT. 1 ) M = M + NTH
 
-!!   Divid the bin energy by fraction of CNST6 and store in SpeGCT
-           SpeGCT(L)=SpeGCT(L)+Spectr(j)*CNST2
-           SpeGCT(M)=SpeGCT(M)+Spectr(j)*CNST1
+!!          Divide the bin energy by fraction of CNST6 and store in SpeGCT
+            SpeGCT(L)=SpeGCT(L)+Spectr(j)*CNST2
+            SpeGCT(M)=SpeGCT(M)+Spectr(j)*CNST1
 
-         ENDIF
+          ENDIF
 
-!!   End of directional loop j
-         END DO
+!!      End of directional loop j
+        END DO
 
-!!   Store GCT spectrum
-         SpeTHK(1:NTH,n) = SpeGCT
+!!      Store GCT spectrum
+        SpeTHK(1:NTH,n) = SpeGCT
 
-!!   End of cell loop n
+!!    End of cell loop n
       END DO
 
 ! 999  PRINT*, ' Sub SMCGtCrfr ended.'
@@ -2696,349 +2882,372 @@
       END SUBROUTINE SMCGtCrfr
 
 
-!Li
-! Subroutine that calculates refraction induced shift in k-space. 
-! The term is equivalent to advection on an irregular k-space grid.
-! The UNO2 scheme on irregular grid is used for this term. 
-!                 Jian-Guo Li  15 Nov 2010
+!>
+!> @brief Calculates refraction induced shift in k-space.
+!>
+!> @details
+!>  The term is equivalent to advection on an irregular k-space grid.
+!>  The UNO2 scheme on irregular grid is used for this term.
+!>
+!>  Cell and side indices for k-dimension are arranged as:
+!>  @verbatim
+!>    Cell:    | -1 | 0 | 1 | 2 | ... | NK | NK+1 | NK+2 |
+!>    Side:        -1   0   1   2 ...     NK     NK+1
+!>  @endverbatim
+!>  The wave action in k-space is extended at the high-wavenumber
+!>  (frequency) end by the (m+2)th negative power of frequency for
+!>  boundary conditions.  Outside low-wavenumber (frequncy) end, wave
+!>  action is assumed to be zero.
+!>
+!> @param[in]    CoRfr      Courant number for refraction k-shift.
+!> @param[inout] SpeTHK     Spectrum to be shifted and output.
+!> @param[in]    DKC        Wave number increment at k-bin centre.
+!> @param[in]    DKS        Wave number increment at k-bin edges.
+!>
+!>
+!> @author Jian-Guo Li
+!> @date 15 Nov 2010
+!
 ! Fix bug on CFL limiter and add positive filter.  JGLi28Jun2017
-!Li
+!
+      SUBROUTINE SMCkUNO2(CoRfr, SpeTHK, DKC, DKS)
 
-       SUBROUTINE SMCkUNO2(CoRfr, SpeTHK, DKC, DKS)
-!!Li         CALL SMCkUNO2(CFLK,      VQ,  DB, DM)
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NK, NK2, NTH, DTH, XFR, CTMAX
 
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NK, NK2, NTH, DTH, XFR, CTMAX
+      IMPLICIT NONE
+      REAL, INTENT(IN)   ::  CoRfr(NTH, 0:NK), DKC(0:NK+1), DKS(-1:NK+1)
+      REAL, INTENT(INOUT):: SpeTHK(NTH, NK)
+      INTEGER ::  I, J, K, L, M, N
+      REAL, Dimension(-1:NK+2):: SpeRfr, Spectr, SpeFlx
+      REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
 
-         IMPLICIT NONE
-         REAL, INTENT(IN)   ::  CoRfr(NTH, 0:NK), DKC(0:NK+1), DKS(-1:NK+1)
-         REAL, INTENT(INOUT):: SpeTHK(NTH, NK)
-         INTEGER ::  I, J, K, L, M, N
-         REAL, Dimension(-1:NK+2):: SpeRfr, Spectr, SpeFlx
-         REAL:: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
+      CNST=XFR**(-7)
 
-!Li  Cell and side indices for k-dimension are arranged as 
-!    Cell:    | -1 | 0 | 1 | 2 | ... | NK | NK+1 | NK+2 |
-!    Side:        -1   0   1   2 ...     NK     NK+1
-!    The wave action in k-space is extended at the high-wavenumber (frequency) end 
-!    by the (m+2)th negative power of frequency for boundary conditions.  Outside 
-!    low-wavenumber (frequncy) end, wave action is assumed to be zero.
-        CNST=XFR**(-7)
+      DO n=1, NTH
 
-        DO n=1, NTH
+!!      Asign cell spectrum to temporary variable Spcetr
+        Spectr(-1)  =0.0
+        Spectr( 0)  =0.0
+        Spectr(1:NK)=SpeTHK(n,1:NK)
+        Spectr(NK+1)=Spectr(NK  )*CNST
+        Spectr(NK+2)=Spectr(NK+1)*CNST
 
-!!   Asign cell spectrum to temporary variable Spcetr
-         Spectr(-1)  =0.0
-         Spectr( 0)  =0.0
-         Spectr(1:NK)=SpeTHK(n,1:NK)
-         Spectr(NK+1)=Spectr(NK  )*CNST
-         Spectr(NK+2)=Spectr(NK+1)*CNST
+!!      Calculate k-space gradient for NK+2 faces by UNO2 scheme 
+        SpeRfr(-1)= 0.0
+        DO j=-1, NK+1
+          SpeRfr(j)=(Spectr(j+1)-Spectr(j))/DKS(j)
+        ENDDO
 
-!!   Calculate k-space gradient for NK+2 faces by UNO2 scheme 
-            SpeRfr(-1)= 0.0
-         DO j=-1, NK+1
-            SpeRfr(j)=(Spectr(j+1)-Spectr(j))/DKS(j)
-         ENDDO
+!!      Calculate k-space fluxes for NK+1 faces by UNO2 scheme 
+        DO j=0, NK
 
-!!   Calculate k-space fluxes for NK+1 faces by UNO2 scheme 
-         DO j=0, NK
+!         Final refraction Courant number for this k-space face 
+          CNST6=CoRfr(n,j)
+!!        Note CoRfr is CFL for k but without dividing dk.
 
-!    Final refraction Courant number for this k-space face 
-         CNST6=CoRfr(n,j)
-!!   Note CoRfr is CFL for k but without dividing dk.
-
-!    For positive case
-         IF(CNST6 > 0.0)  THEN
+!         For positive case
+          IF(CNST6 > 0.0)  THEN
 
             CNST0 = MIN( CTMAX*DKC(j), CNST6 )
-         SpeFlx(j) = CNST0*( Spectr(j) + SIGN(0.5, SpeRfr(j))*(DKC(j)-CNST0)  &
+            SpeFlx(j) = CNST0*( Spectr(j) + SIGN(0.5, SpeRfr(j))*(DKC(j)-CNST0)  &
                       *MIN( ABS(SpeRfr(j-1)), ABS(SpeRfr(j)) ) )
  
-!    For negative or no turning case
-         ELSE 
+!         For negative or no turning case
+          ELSE 
 
             CNST0 = MIN( CTMAX*DKC(j+1), -CNST6 )
-         SpeFlx(j) = -CNST0*( Spectr(j+1) - SIGN(0.5, SpeRfr(j))*(DKC(j+1)-CNST0) &
+            SpeFlx(j) = -CNST0*( Spectr(j+1) - SIGN(0.5, SpeRfr(j))*(DKC(j+1)-CNST0) &
                       *MIN( ABS(SpeRfr(j+1)), ABS(SpeRfr(j)) ) )
 
-         ENDIF
+          ENDIF
 
-!!   End of flux loop j
-         END DO
-
-!!   Update spectrum for the given direction
-         DO j=1, NK
-!    Final refraction Courant number for this k-space face 
-!           SpeTHK(n, j) = Spectr(j) + (SpeFlx(j-1) - SpeFlx(j))/DKC(j)
-!    Add positive filter in case negative values.  JGLi27Jun2017
-            SpeTHK(n, j) = MAX( 0.0, Spectr(j)+(SpeFlx(j-1)-SpeFlx(j))/DKC(j) )
-         END DO
-
-!!   End of directional loop n
+!!      End of flux loop j
         END DO
+
+!!      Update spectrum for the given direction
+        DO j=1, NK
+!         Final refraction Courant number for this k-space face 
+!         SpeTHK(n, j) = Spectr(j) + (SpeFlx(j-1) - SpeFlx(j))/DKC(j)
+!         Add positive filter in case negative values.  JGLi27Jun2017
+          SpeTHK(n, j) = MAX( 0.0, Spectr(j)+(SpeFlx(j-1)-SpeFlx(j))/DKC(j) )
+        END DO
+
+!!    End of directional loop n
+      END DO
 
 ! 999   PRINT*, ' Sub SMCkUNO2 ended.'
 
-        RETURN
-        END SUBROUTINE SMCkUNO2
+      RETURN
+      END SUBROUTINE SMCkUNO2
 
 
-! Subroutine that calculates water-depth gradient for refraction.
-! For consistency with the lat-lon grid, full grid DDDX, DDDY are
-! also assigned here.  DHDX, DHDY are used for refraction at present.
-! It has to be rotated to map-east system in the Arctic part.
-       SUBROUTINE SMCDHXY
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel,  &
+!> @brief Calculates water-depth gradient for refraction.
+!>
+!> @details
+!>  For consistency with the lat-lon grid, full grid DDDX, DDDY are
+!>  also assigned here.  DHDX, DHDY are used for refraction at present.
+!>  It has to be rotated to map-east system in the Arctic part.
+!>
+!> @author Jian-Guo Li
+!> @date 03-Mar-2022
+!>
+      SUBROUTINE SMCDHXY
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel,  &
                              CLATS, NTH, DTH, ESIN, ECOS, Refran, DMIN
-         USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC
-         USE W3ADATMD, ONLY: DW, DDDX, DDDY, DHDX, DHDY, DHLMT
-         USE W3ODATMD, ONLY: NDSE, NDST
+      USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC
+      USE W3ADATMD, ONLY: DW, DDDX, DDDY, DHDX, DHDY, DHLMT
+      USE W3ODATMD, ONLY: NDSE, NDST
 
-         IMPLICIT NONE
+      IMPLICIT NONE
 
-         INTEGER :: I, J, K, L, M, N 
-         REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
-         REAL, Dimension(NSEA) :: HCel, GrHx, GrHy
-!        REAL, Dimension(-9:NSEA) :: HCel
+      INTEGER :: I, J, K, L, M, N 
+      REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
+      REAL, Dimension(NSEA) :: HCel, GrHx, GrHy
+!     REAL, Dimension(-9:NSEA) :: HCel
 
-!!   Assign water depth to HCel from DW integer values.
-!!   set half the minimum depth DMIN for negative cells.
-!      HCel(-9:0) = 0.5*DMIN
-       HCel(1:NSEA)= DW(1:NSEA) 
+!!    Assign water depth to HCel from DW integer values.
+!!    set half the minimum depth DMIN for negative cells.
+!     HCel(-9:0) = 0.5*DMIN
+      HCel(1:NSEA)= DW(1:NSEA) 
 
-!!   Reset shallow water depth with minimum depth
+!!    Reset shallow water depth with minimum depth
 #ifdef W3_OMPG
 !$OMP Parallel DO Private(k)
 #endif
-       DO k=1, NSEA
-          IF(DW(k) .LT. DMIN)  HCel(k)=DMIN
-       ENDDO
+      DO k=1, NSEA
+        IF(DW(k) .LT. DMIN)  HCel(k)=DMIN
+      ENDDO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
 #endif
 
-!!   Initialize full grid gradient arrays
-       DDDX = 0.
-       DDDY = 0.
+!!    Initialize full grid gradient arrays
+      DDDX = 0.
+      DDDY = 0.
 
-!!   Use zero-gradient boundary condition or L0r1 > 0
-       L = 1
+!!    Use zero-gradient boundary condition or L0r1 > 0
+      L = 1
 
-!!   Calculate sea point water depth gradient
-       CALL SMCGradn(HCel, GrHx, GrHy, L)
+!!    Calculate sea point water depth gradient
+      CALL SMCGradn(HCel, GrHx, GrHy, L)
 
-!!   Pass gradient values to DHDX, DHDY
-       DHDX(1:NSEA) = GrHx
-       DHDY(1:NSEA) = GrHy
+!!    Pass gradient values to DHDX, DHDY
+      DHDX(1:NSEA) = GrHx
+      DHDY(1:NSEA) = GrHy
 
 !!   Apply limiter to depth-gradient and copy to full grid.
 #ifdef W3_OMPG
 !$OMP Parallel DO Private(i,j,k,m,n, CNST0, CNST1, CNST2)
 #endif
-       DO n=1,NSEA
+      DO n=1,NSEA
 
 !  A limiter of gradient <= 0.1 is applied.
-           IF( ABS( DHDX(n) ) .GT.  0.1) DHDX(n)=SIGN( 0.1, DHDX(n) )
-           IF( ABS( DHDY(n) ) .GT.  0.1) DHDY(n)=SIGN( 0.1, DHDY(n) )
+        IF( ABS( DHDX(n) ) .GT.  0.1) DHDX(n)=SIGN( 0.1, DHDX(n) )
+        IF( ABS( DHDY(n) ) .GT.  0.1) DHDY(n)=SIGN( 0.1, DHDY(n) )
 
 !! Asign DHDX value to full grid variable DDDX
-           i= IJKCel(1,n)/MRFct + 1
-           j= IJKCel(2,n)/MRFct + 1
-           k= MAX(1, IJKCel(3,n)/MRFct)
-           m= MAX(1, IJKCel(4,n)/MRFct)
-           DDDX(j:j+m-1,i:i+k-1)  = DHDX(n)
-           DDDY(j:j+m-1,i:i+k-1)  = DHDY(n)
+        i= IJKCel(1,n)/MRFct + 1
+        j= IJKCel(2,n)/MRFct + 1
+        k= MAX(1, IJKCel(3,n)/MRFct)
+        m= MAX(1, IJKCel(4,n)/MRFct)
+        DDDX(j:j+m-1,i:i+k-1)  = DHDX(n)
+        DDDY(j:j+m-1,i:i+k-1)  = DHDY(n)
 
 !Li  Depth gradient in the Arctic part has to be rotated into 
 !Li  the map-east system for calculation of refraction. 
-           IF( ARCTC .AND. n .GT. NGLO ) THEN
-              CNST0 = ANGARC(n - NGLO)*DERA 
-              CNST1 = DHDX(n)*COS(CNST0) - DHDY(n)*SIN(CNST0)
-              CNST2 = DHDX(n)*SIN(CNST0) + DHDY(n)*COS(CNST0)
-              DHDX(n) = CNST1
-              DHDY(n) = CNST2
-           ENDIF
+        IF( ARCTC .AND. n .GT. NGLO ) THEN
+          CNST0 = ANGARC(n - NGLO)*DERA 
+          CNST1 = DHDX(n)*COS(CNST0) - DHDY(n)*SIN(CNST0)
+          CNST2 = DHDX(n)*SIN(CNST0) + DHDY(n)*COS(CNST0)
+          DHDX(n) = CNST1
+          DHDY(n) = CNST2
+        ENDIF
 
-       END DO
+      END DO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
 #endif
 
 !! Calculate the depth gradient limiter for refraction.  
 #ifdef W3_T
-       L = 0 !CB - added T switch
+      L = 0 !CB - added T switch
 #endif
 
 #ifdef W3_OMPG
 !$OMP Parallel DO Private(i, n, CNST4, CNST6)
 #endif
-       DO n=1,NSEA
+      DO n=1,NSEA
 
 !Li   Work out magnitude of depth gradient
-             CNST4 = 1.0001*SQRT(DHDX(n)*DHDX(n) + DHDY(n)*DHDY(n))
+        CNST4 = 1.0001*SQRT(DHDX(n)*DHDX(n) + DHDY(n)*DHDY(n))
 !
 !Li   Directional depedent depth gradient limiter.  JGLi16Jun2011
-          IF ( CNST4 .GT. 1.0E-5 ) THEN
+        IF ( CNST4 .GT. 1.0E-5 ) THEN
 
 #ifdef W3_T
 #ifdef W3_OMPG
 !$OMP ATOMIC Update   !CB - added T switch
 #endif
-             L = L + 1       !CB - added T switch
+        L = L + 1       !CB - added T switch
 #ifdef W3_OMPG
 !$OMP END ATOMIC      !CB - added T switch
 #endif
 #endif
 
-             DO i=1, NTH
-!Li   Refraction is done only when depth gradient is non-zero.
-!Li   Note ACOS returns value between [0, Pi), always positive.
-               CNST6 = ACOS(-(DHDX(n)*ECOS(i)+DHDY(n)*ESIN(i))/CNST4 )
+        DO i=1, NTH
+!Li       Refraction is done only when depth gradient is non-zero.
+!Li       Note ACOS returns value between [0, Pi), always positive.
+          CNST6 = ACOS(-(DHDX(n)*ECOS(i)+DHDY(n)*ESIN(i))/CNST4 )
 !Li   User-defined refraction limiter added.   JGLi09Jan2012 
-               DHLMT(i,n)=MIN(Refran, 0.75*MIN(CNST6,ABS(PI-CNST6)))/DTH
-             END DO
+          DHLMT(i,n)=MIN(Refran, 0.75*MIN(CNST6,ABS(PI-CNST6)))/DTH
+        END DO
 !Li   Output some values for inspection.  JGLi22Jul2011
 #ifdef W3_T
-       IF( MOD(n, 1000) .EQ. 0 )   &
-     &    WRITE(NDST,'(i8,18F5.1)' ) n, (DHLMT(i,n), i=1,18)
+        IF( MOD(n, 1000) .EQ. 0 )   &
+          WRITE(NDST,'(i8,18F5.1)' ) n, (DHLMT(i,n), i=1,18)
 #endif
 
-          ELSE
-               DHLMT(:,n) = 0.0
-          ENDIF
+        ELSE
+          DHLMT(:,n) = 0.0
+        ENDIF
 
-       ENDDO
+      ENDDO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
 #endif
 
 #ifdef W3_T
-    WRITE(NDST,*) ' No. Refraction points =', L 
+      WRITE(NDST,*) ' No. Refraction points =', L 
 #endif
 
 #ifdef W3_T
  999  PRINT*, ' Sub SMCDHXY ended.'
 #endif
 
-       RETURN
-       END SUBROUTINE SMCDHXY 
+      RETURN
+      END SUBROUTINE SMCDHXY 
 
 
-! Subroutine that calculates current velocity gradient for refraction.
-! For consistency with the lat-lon grid, full grid DCXDXY, DCYDXY are
-! assigned here.  They are rotated to map-east system in the Arctic part.
-!                 JGLi23Mar2016
-!
-       SUBROUTINE SMCDCXY
-         USE CONSTANTS
-         USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel 
-         USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC
-         USE W3ADATMD, ONLY: CX, CY, DCXDX, DCXDY, DCYDX, DCYDY 
-         USE W3ODATMD, ONLY: NDSE, NDST
+!> @brief Calculates current velocity gradient for refraction.
+!>
+!> @details
+!>  For consistency with the lat-lon grid, full grid DCXDXY, DCYDXY are
+!>  assigned here.  They are rotated to map-east system in the Arctic part.
+!>
+!> @author Jian-Guo Li
+!> @date 23 Mar 2016
+!>
+      SUBROUTINE SMCDCXY
+      USE CONSTANTS
+      USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSTA, MAPFS, MRFct, IJKCel 
+      USE W3GDATMD, ONLY: NGLO, ANGARC, ARCTC
+      USE W3ADATMD, ONLY: CX, CY, DCXDX, DCXDY, DCYDX, DCYDY 
+      USE W3ODATMD, ONLY: NDSE, NDST
 
-         IMPLICIT NONE
+      IMPLICIT NONE
 
-         INTEGER :: I, J, K, L, M, N
-         REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
-         REAL, Dimension(NSEA) :: CXCY, GrHx, GrHy
-!        REAL, Dimension(-9:NSEA) :: CXCY
+      INTEGER :: I, J, K, L, M, N
+      REAL :: CNST, CNST0, CNST1, CNST2, CNST3, CNST4, CNST5, CNST6
+      REAL, Dimension(NSEA) :: CXCY, GrHx, GrHy
+!     REAL, Dimension(-9:NSEA) :: CXCY
 
-!!   Assign current CX speed to CXCY and set negative cells.
-!      CXCY(-9:0) = 0.0
-!!   Use zero-gradient boundary condition or L0r1 > 0
-       L = 1
-       CXCY(1:NSEA)= CX(1:NSEA) 
+!!    Assign current CX speed to CXCY and set negative cells.
+!     CXCY(-9:0) = 0.0
+!!    Use zero-gradient boundary condition or L0r1 > 0
+      L = 1
+      CXCY(1:NSEA)= CX(1:NSEA) 
 
 !!   Initialize full grid gradient arrays
 #ifdef W3_DEBUGDCXDX
-        WRITE(740+IAPROC,*) 'Before assigning DCXDX to ZERO'
+      WRITE(740+IAPROC,*) 'Before assigning DCXDX to ZERO'
 #endif
-       DCXDX = 0.0
-       DCXDY = 0.0
+      DCXDX = 0.0
+      DCXDY = 0.0
 
-!!   Calculate sea point water depth gradient
-       CALL SMCGradn(CXCY, GrHx, GrHy, L)
+!!    Calculate sea point water depth gradient
+      CALL SMCGradn(CXCY, GrHx, GrHy, L)
 
 !!   Apply limiter to CX-gradient and copy to full grid.
 #ifdef W3_OMPG
 !$OMP Parallel DO Private(i, j, k, m, n, CNST0, CNST1, CNST2)
 #endif
-       DO n=1,NSEA
+      DO n=1,NSEA
 
-!  A limiter of gradient <= 0.01 is applied.
-           IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
-           IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
+!       A limiter of gradient <= 0.01 is applied.
+        IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
+        IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
 
-!Li  Current gradient in the Arctic part has to be rotated into 
-!Li  the map-east system for calculation of refraction. 
-           IF( ARCTC .AND. n .GT. NGLO ) THEN
-              CNST0 = ANGARC(n - NGLO)*DERA 
-              CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
-              CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
-              GrHx(n) = CNST1
-              GrHy(n) = CNST2
-           ENDIF
+!Li     Current gradient in the Arctic part has to be rotated into 
+!Li     the map-east system for calculation of refraction. 
+        IF( ARCTC .AND. n .GT. NGLO ) THEN
+          CNST0 = ANGARC(n - NGLO)*DERA 
+          CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
+          CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
+          GrHx(n) = CNST1
+          GrHy(n) = CNST2
+        ENDIF
 
 !! Asign CX gradients to full grid variable DCXDX/Y
-           i= IJKCel(1,n)/MRFct + 1
-           j= IJKCel(2,n)/MRFct + 1
-           k= MAX(1, IJKCel(3,n)/MRFct)
-           m= MAX(1, IJKCel(4,n)/MRFct)
-           DCXDX(j:j+m-1,i:i+k-1)  = GrHx(n)
-           DCXDY(j:j+m-1,i:i+k-1)  = GrHy(n)
+        i= IJKCel(1,n)/MRFct + 1
+        j= IJKCel(2,n)/MRFct + 1
+        k= MAX(1, IJKCel(3,n)/MRFct)
+        m= MAX(1, IJKCel(4,n)/MRFct)
+        DCXDX(j:j+m-1,i:i+k-1)  = GrHx(n)
+        DCXDY(j:j+m-1,i:i+k-1)  = GrHy(n)
 
-       END DO
+      END DO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
 #endif
 
 #ifdef W3_DEBUGDCXDX
-        WRITE(740+IAPROC,*) 'After non-trivial assination to DCXDX array'
+      WRITE(740+IAPROC,*) 'After non-trivial assination to DCXDX array'
 #endif
 
-!!   Assign current CY speed to CXCY and set negative cells.
-!      CXCY(-9:0) = 0.0
-!!   Use zero-gradient boundary condition or L0r1 > 0
-       L = 1
-       CXCY(1:NSEA)= CY(1:NSEA) 
+!!    Assign current CY speed to CXCY and set negative cells.
+!     CXCY(-9:0) = 0.0
+!!    Use zero-gradient boundary condition or L0r1 > 0
+      L = 1
+      CXCY(1:NSEA)= CY(1:NSEA) 
 
-!!   Initialize full grid gradient arrays
-       DCYDX = 0.0
-       DCYDY = 0.0
+!!    Initialize full grid gradient arrays
+      DCYDX = 0.0
+      DCYDY = 0.0
 
-!!   Calculate sea point water depth gradient
-       CALL SMCGradn(CXCY, GrHx, GrHy, L)
+!!    Calculate sea point water depth gradient
+      CALL SMCGradn(CXCY, GrHx, GrHy, L)
 
-!!   Apply limiter to CX-gradient and copy to full grid.
+!!    Apply limiter to CX-gradient and copy to full grid.
 #ifdef W3_OMPG
 !$OMP Parallel DO Private(i, j, k, m, n, CNST0, CNST1, CNST2)
 #endif
-       DO n=1,NSEA
+      DO n=1,NSEA
 
-!!   A limiter of gradient <= 0.1 is applied.
-           IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
-           IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
+!!      A limiter of gradient <= 0.1 is applied.
+        IF( ABS( GrHx(n) ) .GT.  0.01) GrHx(n)=SIGN( 0.01, GrHx(n) )
+        IF( ABS( GrHy(n) ) .GT.  0.01) GrHy(n)=SIGN( 0.01, GrHy(n) )
 
-!!   Current gradient in the Arctic part has to be rotated into 
-!!   the map-east system for calculation of refraction. 
-           IF( ARCTC .AND. n .GT. NGLO ) THEN
-              CNST0 = ANGARC(n - NGLO)*DERA 
-              CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
-              CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
-              GrHx(n) = CNST1
-              GrHy(n) = CNST2
-           ENDIF
+!!      Current gradient in the Arctic part has to be rotated into 
+!!      the map-east system for calculation of refraction. 
+        IF( ARCTC .AND. n .GT. NGLO ) THEN
+          CNST0 = ANGARC(n - NGLO)*DERA 
+          CNST1 = GrHx(n)*COS(CNST0) - GrHy(n)*SIN(CNST0)
+          CNST2 = GrHx(n)*SIN(CNST0) + GrHy(n)*COS(CNST0)
+          GrHx(n) = CNST1
+          GrHy(n) = CNST2
+        ENDIF
 
-!!   Asign CX gradients to full grid variable DCXDX/Y
-           i= IJKCel(1,n)/MRFct + 1
-           j= IJKCel(2,n)/MRFct + 1
-           k= MAX(1, IJKCel(3,n)/MRFct)
-           m= MAX(1, IJKCel(4,n)/MRFct)
-           DCYDX(j:j+m-1,i:i+k-1)  = GrHx(n)
-           DCYDY(j:j+m-1,i:i+k-1)  = GrHy(n)
+!!      Asign CX gradients to full grid variable DCXDX/Y
+        i= IJKCel(1,n)/MRFct + 1
+        j= IJKCel(2,n)/MRFct + 1
+        k= MAX(1, IJKCel(3,n)/MRFct)
+        m= MAX(1, IJKCel(4,n)/MRFct)
+        DCYDX(j:j+m-1,i:i+k-1)  = GrHx(n)
+        DCYDY(j:j+m-1,i:i+k-1)  = GrHy(n)
 
-       END DO
+      END DO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
 #endif
@@ -3047,13 +3256,37 @@
  999  PRINT*, ' Sub SMCDCXY ended.'
 #endif
 
-       RETURN
-       END SUBROUTINE SMCDCXY 
-
+      RETURN
+      END SUBROUTINE SMCDCXY 
 
 !/
 !/ ------------------------------------------------------------------- /
-!/ Two modified subs for SMC grid.   JGLi 15Mar2011
+!> @brief SMC version of W3GATH
+!>
+!> @details
+!>  Gather spectral bin information into a propagation field array.
+!>  Direct copy or communication calls (MPP version).
+!>
+!> @remarks
+!>  - The field is extracted but not converted.
+!>  - Array FIELD is not initialized.
+!>  - MPI version requires posing of send and receive calls in
+!>    W3WAVE to match local calls.
+!>  - MPI version does not require an MPI_TESTALL call for the
+!>    posted gather operation as MPI_WAITALL is mandatory to
+!>    reset persistent communication for next time step.
+!>  - MPI version allows only two new pre-fetch postings per
+!>    call to minimize chances to be slowed down by gathers that
+!>    are not yet needed, while maximizing the pre-loading
+!>    during the early (low-frequency) calls to the routine
+!>    where the amount of calculation needed for proagation is
+!>    the largest.
+!>
+!> @param[in]   ISPEC   Spectral bin considered
+!> @param[out]  FIELD   Full field to be propagated
+!>
+!> @author Jian-Guo Li
+!> @date 15 Mar 2011
 !/ ------------------------------------------------------------------- /
 !/
       SUBROUTINE W3GATHSMC ( ISPEC, FIELD )
@@ -3291,6 +3524,26 @@
       END SUBROUTINE W3GATHSMC
 !
 !/ ------------------------------------------------------------------- /
+!> @brief SMC version of W3GATH
+!>
+!> @details
+!> 'Scatter' data back to spectral storage after propagation.
+!>  Direct copy or communication calls (MPP version).
+!>  See also W3GATH.
+!>
+!> @param[in]  ISPEC   Spectral bin considered
+!> @param[in]  MAPSTA  Status map for spatial grid
+!> @param[in]  FIELD   SMC grid field to be propagated
+!>
+!> @remarks
+!>  - The field is put back but not converted !
+!>  - MPI persistent communication calls initialize in W3MPII.
+!>  - See W3GATH and W3MPII for additional comments on data
+!>    buffering.
+!>
+!> @author Jian-Guo Li
+!> @date 16 Jan 2012
+!>
       SUBROUTINE W3SCATSMC ( ISPEC, MAPSTA, FIELD )
 !/
 !/                  +-----------------------------------+
@@ -3533,7 +3786,28 @@
 !/ End of two new subs for SMC grid.    JGLi 15Mar2011
 !/
 
-!!
+!> @brief Calculate cell centre lat-lon for given ids.
+!>
+!> @details
+!>  Calculate the cell centre longitude and latitude in degree for a given
+!>  list of cell identity or sequential numbers in the IMOD sub-grid.
+!>
+!>  Regular grid SX, SY, X0, Y0 and SMC grid MRFct and IJKCel arrays
+!>  in W3GDATMD are used to work out SMC grid origin and increments.
+!>  Then given cell centre coordinates are calculated.  Longitude is
+!>  wrapped into [0, 360) range, latitude in in (-90, 90) range.
+!>  The polar cell centre is off the N-Pole to avoid singularity but
+!>  its centre values are not used for propagation schemes.
+!>
+!> @param[in]   IMOD   Model number to point to
+!> @param[in]   NC     Numcer of cells to be calculated
+!> @param[in]   IDCl   List of cell id or sequential numbers
+!> @param[out]  XLon   X-Longitude in degree of listed cells
+!> @param[out]  YLat   Y-Latitude in degree of listed cells
+!>
+!> @author Jian-Guo Li
+!> @date 19 Oct 2020
+!>
       SUBROUTINE W3SMCELL( IMOD, NC, IDCl, XLon, YLat )
 !! -------------------------------------------------------------------
 !!
@@ -3658,6 +3932,26 @@
 !!
  
 !!
+!> @brief Map lat-lon points to SMC grid cells
+!>
+!> @details
+!>  Determine whether a list of points are inside the IMOD SMC sub-grid
+!>  and return the IMOD sub-grid cell indexes, if any.
+!>
+!>  Convert point XLon and YLat values into cell indices i, j.
+!>  Match with cell ranges (i,i+di) and (j,j+dj) to see i,j in
+!>  which cell.  Return the matched cell number.  Otherwise,
+!>  return an index of 0, or no matching cell found.
+!>
+!> @param[in]   IMOD    Model number to point to
+!> @param[in]   XLon    X-Longitude in degree of search points
+!> @param[in]   YLat    Y-Latitude  in degree of search points
+!> @param[in]   NC      Number of points to be searched
+!> @param[out]  IDCl    Model number to point to
+!>
+!> @author Jian-Guo Li
+!> @date 20 Oct 2020
+!>
       SUBROUTINE W3SMCGMP( IMOD, NC, XLon, YLat, IDCl )
 !! -------------------------------------------------------------------
 !!

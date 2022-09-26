@@ -133,12 +133,12 @@
                           FLCX, FLCY, NK, NTH, DTH, XFR,              &
                           ECOS, ESIN, SIG,  PFMOVE,IEN,               &
                           NTRI, TRIGP, CCON ,                         &
-                          IE_CELL, POS_CELL, IOBP, IOBPD,             &
+                          IE_CELL, POS_CELL, IOBP, IOBPD, IOBDP,      &
                           FSN, FSPSI, FSFCT, FSNIMP, GTYPE, UNGTYPE
 
       USE W3WDATMD, ONLY: TIME
       USE W3ODATMD, ONLY: TBPI0, TBPIN, FLBPI
-      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX
+      USE W3ADATMD, ONLY: CG, CX, CY, ATRNX, ATRNY, ITIME, CFLXYMAX, DW
       USE W3IDATMD, ONLY: FLCUR
 !      USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN,       &
 !                          ISBPI, BBPI0, BBPIN
@@ -200,10 +200,10 @@
 !
 ! 2.  Calculate velocities ---------------- *
 ! 
-      DO ISEA=1, NSEA
-        IXY         =  MAPSF(ISEA,3)
-        VQ(IXY)     = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
-        VLCFLX(IXY) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
+      DO ISEA = 1, NSEA
+        IXY         = MAPSF(ISEA,3)
+        VQ(IXY)     = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA) 
+        VLCFLX(IXY) = CCOS * CG(IK,ISEA) / CLATS(ISEA) 
         VLCFLY(IXY) = CSIN * CG(IK,ISEA)
 #ifdef W3_MGP
         VLCFLX(IXY) = VLCFLX(IXY) - CCURX*VGX/CLATS(ISEA)
@@ -227,9 +227,10 @@
 !
 ! 3. initialize fluctuation splitting arrays ( to fit with WWM notations)    
 !
-      AC(1:NX) = DBLE(VQ(1:NX))  
-      C(1:NX,1)  = VLCFLX(1:NX)
-      C(1:NX,2)  = VLCFLY(1:NX)
+      AC(1:NX)   = DBLE(VQ(1:NX)) * IOBDP(1:NX)
+      C(1:NX,1)  = VLCFLX(1:NX)   * IOBDP(1:NX)
+      C(1:NX,2)  = VLCFLY(1:NX)   * IOBDP(1:NX)
+
 !
 ! 4. Prepares boundary update
 !
@@ -256,7 +257,7 @@
        DO IX=1,NX
          ISEA=MAPFS(1,IX)
          VQ(IX)=REAL(AC(IX))
-         ENDDO          
+       ENDDO          
     
 ! 6.  Store results in VQ in proper format --------------------------- *
 !
@@ -415,9 +416,9 @@
 !MA: you are right but now it is only called if CFX and UNST for CFL profiling
 
           DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  with IV=POS_CELL(I)
+            IE=IE_CELL(I)       ! TRIGP(IV,IE)=IP  with IV=POS_CELL(I)
             DO J=1,3
-              IP2=TRIGP(IE,J)
+              IP2=TRIGP(J,IE)
               ISEA2=MAPFS(IP2)
               C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
               C(IP2,2) = CSIN * CG(IK,ISEA2)
@@ -438,11 +439,11 @@
 !
           KKSUM = 0.d0
           DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-            IE=IE_CELL(I)       ! TRIGP(IE,IV)=IP  
+            IE=IE_CELL(I)       ! TRIGP(IV,IE)=IP  
             IV=POS_CELL(I)
-            I1 = TRIGP(IE,1) 
-            I2 = TRIGP(IE,2)
-            I3 = TRIGP(IE,3)
+            I1 = TRIGP(1,IE) 
+            I2 = TRIGP(2,IE)
+            I3 = TRIGP(3,IE)
             LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Advection speed in X direction
             LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2)) ! Advection speed in Y direction
             KELEM(1) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
@@ -530,7 +531,7 @@
    USE W3GDATMD, ONLY : REFPARS
 #endif
        USE W3WDATMD, ONLY: TIME      
-       USE W3ADATMD, ONLY: CG, ITER    
+       USE W3ADATMD, ONLY: CG, ITER, DW
        USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
        USE W3TIMEMD, ONLY: DSEC21
 #ifdef W3_S
@@ -571,7 +572,7 @@
 ! local real
 !
          REAL    :: RD1, RD2
-!:
+!
 ! local double
 !
          REAL*8  :: UTILDE, BOUNDARY_FORCING
@@ -580,7 +581,7 @@
          REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
          REAL*8  :: DTSI(NX), U(NX)
          REAL*8  :: DTMAXGL, DTMAXEXP, REST
-         REAL*8  :: LAMBDA(2), KTMP(3)
+         REAL*8  :: LAMBDA(2), KTMP(3), CLOC(2,3)
          REAL*8  :: KELEM(3,NTRI), FLALL(3,NTRI)
          REAL*8  :: KKSUM(NX), ST(NX)
          REAL*8  :: NM(NTRI) 
@@ -599,9 +600,11 @@
 !2.a     Calculate K-Values and contour based quantities ...
 !
          DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
-           I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
-           I2 = TRIGP(IE,2)
-           I3 = TRIGP(IE,3)
+
+           I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+           I2 = TRIGP(2,IE)
+           I3 = TRIGP(3,IE)
+           NI = TRIGP(:,IE)            
            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
            KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
@@ -627,51 +630,52 @@
            FLALL(2,IE) = (FL111 + FL312) * ONESIXTH + KELEM(2,IE)
            FLALL(3,IE) = (FL211 + FL112) * ONESIXTH + KELEM(3,IE)
            ! IF (I1.EQ.1.OR.I2.EQ.1.OR.I3.EQ.1) WRITE(6,*) 'TEST N1 :',IK,ITH,IP,IE,KELEM(:,IE),'##',LAMBDA
-           END DO ! NTRI
+         END DO ! NTRI
 
-           IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
-             KKSUM = 0.d0
-             DO IE = 1, NTRI
-               NI = TRIGP(IE,:)
-               KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
-             END DO ! IE
-             DTMAXEXP = 1E10 ! initialize to large number 
-             DO IP = 1, NX
-               IF (IOBP(IP) .EQ. 1.OR.FSBCCFL) THEN
-                 DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
-                 DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
-                 END IF
-             END DO ! IP
-             CFLXY = DBLE(DT)/DTMAXGL
-             REST  = ABS(MOD(CFLXY,1.0d0))
-             IF (REST .LT. THR8) THEN
-               ITER(IK,ITH) = ABS(NINT(CFLXY))
-             ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
-               ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
-             ELSE
-               ITER(IK,ITH) = ABS(NINT(CFLXY))
-             END IF
-           END IF ! LCALC
+         IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
+           KKSUM = 0.d0
+           DO IE = 1, NTRI
+             NI = TRIGP(:,IE)
+             KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
+           END DO ! IE
+           DTMAXEXP = 1E10 ! initialize to large number 
+           DO IP = 1, NX
+             IF (IOBP(IP) .EQ. 1 .OR. FSBCCFL) THEN
+               DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
+               DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+               END IF
+           END DO ! IP
+           CFLXY = DBLE(DT)/DTMAXGL
+           REST  = ABS(MOD(CFLXY,1.0d0))
+           IF (REST .LT. THR8) THEN
+             ITER(IK,ITH) = ABS(NINT(CFLXY))
+           ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
+             ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
+           ELSE
+             ITER(IK,ITH) = ABS(NINT(CFLXY))
+           END IF
+         END IF ! LCALC
  
-           DO IP = 1, NX               
-             DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
-           END DO
+         DO IP = 1, NX               
+           DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
+         END DO
 
-           DO IT = 1, ITER(IK,ITH)
-             U = AC
-             ST = 0.d0
-             DO IE = 1, NTRI
-               NI     = TRIGP(IE,:)
-               UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-               ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
-               END DO ! IE
+         DO IT = 1, ITER(IK,ITH)
+           U = AC
+           ST = 0.d0
+           DO IE = 1, NTRI
+             NI     = TRIGP(:,IE)
+             UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
+             ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
+           END DO ! IE
 
-             DO IP = 1, NX
+           DO IP = 1, NX
 !
 ! IOBPD=0  : waves coming from land (or outside grid) 
 ! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
 !
                U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
+
 #ifdef W3_REF1
              IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values 
 #endif
@@ -840,9 +844,9 @@
 !2.a     Calculate K-Values and contour based quantities ...
 !
          DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
-           I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
-           I2 = TRIGP(IE,2)
-           I3 = TRIGP(IE,3)
+           I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+           I2 = TRIGP(2,IE)
+           I3 = TRIGP(3,IE)
            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
            KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
@@ -871,7 +875,7 @@
            IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
              KKSUM = 0.d0
              DO IE = 1, NTRI
-               NI = TRIGP(IE,:)
+               NI = TRIGP(:,IE)
                KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
              END DO ! IE
              DTMAXEXP = 1E10 ! initialize to large number 
@@ -900,7 +904,7 @@
              ST = 0.d0
 
              DO IE = 1, NTRI
-               NI   = TRIGP(IE,:)
+               NI   = TRIGP(:,IE)
                FT     =-ONESIXTH*DOT_PRODUCT(U(NI),FLALL(:,IE))
                UTILDE = NM(IE) * ( DOT_PRODUCT(KELEM(:,IE),U(NI)) - FT )
                THETA_L(:) = KELEM(:,IE) * (U(NI) - UTILDE)
@@ -1128,9 +1132,9 @@
 !2.a     Calculate K-Values and contour based quantities ...
 !
          DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
-           I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
-           I2 = TRIGP(IE,2)
-           I3 = TRIGP(IE,3)
+           I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+           I2 = TRIGP(2,IE)
+           I3 = TRIGP(3,IE)
            LAMBDA(1) = ONESIXTH * (C(I1,1)+C(I2,1)+C(I3,1))
            LAMBDA(2) = ONESIXTH * (C(I1,2)+C(I2,2)+C(I3,2))
            K(1)  = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2)
@@ -1402,9 +1406,9 @@
 !2.a     Calculate K-Values and contour based quantities ...
 !
          DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ... 
-           I1 = TRIGP(IE,1) ! Index of the Element Nodes (TRIGP)
-           I2 = TRIGP(IE,2)
-           I3 = TRIGP(IE,3)
+           I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+           I2 = TRIGP(2,IE)
+           I3 = TRIGP(3,IE)
            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
            KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians 
@@ -1432,7 +1436,7 @@
          IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
            KKSUM = 0.d0
            DO IE = 1, NTRI
-             NI = TRIGP(IE,:)
+             NI = TRIGP(:,IE)
              KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
            END DO ! IE
            DTMAXEXP = 1E10 ! initialize to large number 
@@ -1464,7 +1468,7 @@
            ST = 0.d0
          
            DO IE = 1, NTRI 
-              NI      = TRIGP(IE,:)
+              NI      = TRIGP(:,IE)
               UTMP    = U(NI)
               FT      =  - ONESIXTH*DOT_PRODUCT(UTMP,FLALL(:,IE))
               TMP     =  MAX(0.d0,KELEM(:,IE))
@@ -1505,7 +1509,7 @@
             PP  = 0.d0
             PM  = 0.d0
             DO IE = 1, NTRI 
-              NI = TRIGP(IE,:)
+              NI = TRIGP(:,IE)
               PP(NI)  = PP(NI) + MAX(  THR8, -THETA_ACE(:,IE)) 
               PM(NI)  = PM(NI) + MIN( -THR8, -THETA_ACE(:,IE)) 
               UIP(NI) = MAX (UIP(NI), MAXVAL( USTARI(1,NI) ))
@@ -1518,7 +1522,7 @@
             ST = 0.d0
             DO IE = 1, NTRI 
               DO I = 1, 3
-                IP = TRIGP(IE,I)
+                IP = TRIGP(I,IE)
                 IF (-THETA_ACE(I,IE) .GE. 0.) THEN
                   TMP(I) = WII(1,IP)
                 ELSE
@@ -1526,7 +1530,7 @@
                 END IF
               END DO
               BETA = MINVAL(TMP)
-              NI = TRIGP(IE,:)
+              NI = TRIGP(:,IE)
               ST(NI) = ST(NI) + BETA * THETA_ACE(:,IE)
             END DO
          

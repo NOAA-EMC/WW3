@@ -1,4 +1,17 @@
+!> @file
+!> @brief Contains the grid splitting program.
+!>
+!> @author H. L. Tolman @date 18-Nov-2013
+
 #include "w3macros.h"
+
+!> @brief Grid splitting program
+!>
+!> @details Take an existing grid and create from this the grid data 
+!>  for a set of overlapping grids to be used in the ww3_multi code 
+!>  for hybid paralellization.
+!>
+!> @author H. L. Tolman @date 18-Nov-2013
 !/ ------------------------------------------------------------------- /
       PROGRAM W3GSPL
 !/
@@ -248,7 +261,7 @@
       CALL ITRACE ( NDSTRC, NTRACE )
 !
 #ifdef W3_O16
-      OPEN ( NDSG, FILE='./ww3.ww3_gspl', FORM='UNFORMATTED')
+      OPEN ( NDSG, FILE='./ww3.ww3_gspl', form='UNFORMATTED', convert=file_endian)
 #endif
 !
 ! 1.c Print header
@@ -911,7 +924,7 @@
 !
         IF ( IDFM1 .EQ. 3 ) THEN
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
-                  FORM='UNFORMATTED',ERR=860,IOSTAT=IERR)
+                  form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
           ELSE
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
           END IF
@@ -933,7 +946,7 @@
 !
             IF ( IDFM2 .EQ. 3 ) THEN
                 OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
-                      FORM='UNFORMATTED',ERR=860,IOSTAT=IERR)
+                      form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
               ELSE
                 OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
                       ERR=860,IOSTAT=IERR)
@@ -957,7 +970,7 @@
 !
         IF ( IDFM3 .EQ. 3 ) THEN
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
-                  FORM='UNFORMATTED',ERR=860,IOSTAT=IERR)
+                  form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
           ELSE
             OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
           END IF
@@ -1271,6 +1284,10 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+
+!> @brief Compile statistical info on all sub grids (no halo).
+!>
+!> @author H. L. Tolman  @date 13-Sep-2012
       SUBROUTINE GRINFO
 !/
 !/                  +-----------------------------------+
@@ -1441,6 +1458,14 @@
 !/
       END SUBROUTINE GRINFO
 !/ ------------------------------------------------------------------- /
+
+!> @brief Trim edges of all grids where they are next to another grid
+!>  or next to unassigned grid points. 
+!>
+!> @details This trimming is done in preparation for reassigning edges
+!>  of grids to smaller adjacent grids.            
+!>
+!> @author H. L. Tolman  @date 01-Feb-2013
       SUBROUTINE GRTRIM
 !/
 !/                  +-----------------------------------+
@@ -1607,6 +1632,12 @@
 !/
       END SUBROUTINE GRTRIM
 !/ ------------------------------------------------------------------- /
+
+!> @brief Reassign unassigned grid points to grids, starting with the
+!>  smallest grids.
+!>
+!> @param[in] ND Depth of halo for first sweep.
+!> @author H. L. Tolman  @date 01-Feb-2013
       SUBROUTINE GRFILL ( ND )
 !/
 !/                  +-----------------------------------+
@@ -1862,6 +1893,12 @@
 !/
       END SUBROUTINE GRFILL
 !/ ------------------------------------------------------------------- /
+
+!> @brief Reassign unassigned grid points to grids.
+!>
+!> @details Dealing with lost point by finding closest grids.
+!>
+!> @author H. L. Tolman  @date 09-Jan-2013
       SUBROUTINE GRLOST
 !/
 !/                  +-----------------------------------+
@@ -1875,8 +1912,8 @@
 !/
 !  1. Purpose :
 !
-!     Reassign unassigned grid points to gridsR. Dealing with lost 
-!     point by finding clostst grids.
+!     Reassign unassigned grid points to grids. Dealing with lost 
+!     point by finding closest grids.
 !
 ! 10. Source code :
 !
@@ -1958,6 +1995,14 @@
 !/
       END SUBROUTINE GRLOST
 !/ ------------------------------------------------------------------- /
+
+!> @brief Attempt to square-up grid.
+!>
+!> @details Attempt to square-up grid by taking off grid point in
+!>  outermost grid point in X and Y only, after which GRFILL is to be
+!>  run to re-assign grid points.
+!>
+!> @author H. L. Tolman  @date 07-Sep-2012
       SUBROUTINE GRSQRG
 !/
 !/                  +-----------------------------------+
@@ -2054,6 +2099,16 @@
 !/
       END SUBROUTINE GRSQRG
 !/ ------------------------------------------------------------------- /
+      
+!> @brief Remove seapoints with only one adjacent point in same grid.
+!>
+!> @details Remove points from a grid that are in the middle of the 
+!>  sea, but that have omly one adjacent point in the same grid. Directly
+!>  select a new grid for this point rather than deactivate and use
+!>  GRFILL.
+!>
+!> @param[inout] OK Flag for grid status
+!> @author H. L. Tolman  @date 09-Sep-2012
       SUBROUTINE GRSNGL ( OK )
 !/
 !/                  +-----------------------------------+
@@ -2216,6 +2271,15 @@
 !/
       END SUBROUTINE GRSNGL
 !/ ------------------------------------------------------------------- /
+
+!> @brief Remove smaller grid parts.
+!>
+!> @details Remove smller parts of a grid that are separated from
+!>  the main body, and that can be attached to other grids.
+!>
+!> @param[inout] OK
+!> @param[inout] FRAC Fraction of average size used to remove grid part.
+!> @author H. L. Tolman  @date 01-Feb-2013
       SUBROUTINE GRSEPA ( OK, FRAC )
 !/
 !/                  +-----------------------------------+
@@ -2553,6 +2617,14 @@
 !/
       END SUBROUTINE GRSEPA
 !/ ------------------------------------------------------------------- /
+      
+!> @brief Subroutine called when lowest grid size is stuck.
+!>
+!> @details Attempting to joint to neighbor grid, otherwise mark 
+!>  as accepted small grid. note that small grid does not influence 
+!>  parallel scaling like a big grid does .....
+!>
+!> @author H. L. Tolman  @date  04-Feb-2013
       SUBROUTINE GRFSML
 !/
 !/                  +-----------------------------------+
@@ -2832,7 +2904,12 @@
 !
 !/ End of GRFSML ----------------------------------------------------- /
 !/
-      END SUBROUTINE GRFSML
+    END SUBROUTINE GRFSML
+
+
+!> @brief Like GRFSML for largest grid ...
+!>
+!> @author H. L. Tolman  @date 29-Jan-2013
 !/ ------------------------------------------------------------------- /
       SUBROUTINE GRFLRG
 !/
@@ -2984,6 +3061,13 @@
 !/
       END SUBROUTINE GRFLRG
 !/ ------------------------------------------------------------------- /
+
+!> @brief Extract single grid from master map.
+!>
+!> @details Extract single grid from master map, including halo needed
+!>  for grid overlap in ww3_multi.
+!>
+!> @author H. L. Tolman  @date 18-Nov-2012
       SUBROUTINE GR1GRD
 !/
 !/                  +-----------------------------------+

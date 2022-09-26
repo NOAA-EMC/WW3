@@ -290,6 +290,7 @@
 !/ Local parameters
 !/
       INTEGER                 :: IGRD, IERR, I, J, MTH, MK, ISEA, IX, IY
+      INTEGER                 :: IEXT, IPRE
 #ifdef W3_ST4
  INTEGER                 :: IK, ITH, IK2, ITH2
 #endif
@@ -545,16 +546,16 @@
 !
 ! open file ---------------------------------------------------------- *
 !
-      I      = LEN_TRIM(FILEXT)
-      J      = LEN_TRIM(FNMPRE)
+      IEXT   = LEN_TRIM(FILEXT)
+      IPRE   = LEN_TRIM(FNMPRE)
 !
-!AR: ADD DEBUGFLAG      WRITE(*,*) 'FILE=', FNMPRE(:J)//'mod_def.'//FILEXT(:I)
+!AR: ADD DEBUGFLAG      WRITE(*,*) 'FILE=', FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT)
       IF ( WRITE ) THEN
-          OPEN (NDSM,FILE=FNMPRE(:J)//'mod_def.'//FILEXT(:I),         &
-                FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+          OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
+                form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
         ELSE
-          OPEN (NDSM,FILE=FNMPRE(:J)//'mod_def.'//FILEXT(:I),         &
-                FORM='UNFORMATTED',STATUS='OLD',ERR=800,IOSTAT=IERR)
+          OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
+                form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=800,IOSTAT=IERR)
         ENDIF
 !
       REWIND ( NDSM )
@@ -629,49 +630,49 @@
             END IF
           IF ( FNAME0 .NE. TNAME0 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 0, FILEXT(:I), FNAME0, TNAME0,     &
+                  WRITE (NDSE,905) 0, FILEXT(:IEXT), FNAME0, TNAME0,  &
                                    MESSAGE
                CALL EXTCDE ( 14 )
             END IF
           IF ( FNAME1 .NE. TNAME1 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 1, FILEXT(:I), FNAME1, TNAME1,     &
+                  WRITE (NDSE,905) 1, FILEXT(:IEXT), FNAME1, TNAME1,  &
                                    MESSAGE
                CALL EXTCDE ( 15 )
             END IF
           IF ( FNAME2 .NE. TNAME2 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 2, FILEXT(:I), FNAME2, TNAME2,     &
+                  WRITE (NDSE,905) 2, FILEXT(:IEXT), FNAME2, TNAME2,  &
                                    MESSAGE
                CALL EXTCDE ( 16 )
             END IF
           IF ( FNAME3 .NE. TNAME3 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 3, FILEXT(:I), FNAME3, TNAME3,     &
+                  WRITE (NDSE,905) 3, FILEXT(:IEXT), FNAME3, TNAME3,  &
                                    MESSAGE
                CALL EXTCDE ( 17 )
             END IF
           IF ( FNAMEI .NE. TNAMEI ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 3, FILEXT(:I), FNAMEI, TNAMEI,     &
+                  WRITE (NDSE,905) 3, FILEXT(:IEXT), FNAMEI, TNAMEI,  &
                                    MESSAGE
                CALL EXTCDE ( 17 )
             END IF
           IF ( FNAME4 .NE. TNAME4 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 4, FILEXT(:I), FNAME4, TNAME4,     &
+                  WRITE (NDSE,905) 4, FILEXT(:IEXT), FNAME4, TNAME4,  &
                                    MESSAGE
                CALL EXTCDE ( 18 )
             END IF
           IF ( FNAME5 .NE. TNAME5 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 5, FILEXT(:I), FNAME5, TNAME5,     &
+                  WRITE (NDSE,905) 5, FILEXT(:IEXT), FNAME5, TNAME5,  &
                                    MESSAGE
                CALL EXTCDE ( 19 )
             END IF
           IF ( FNAME6 .NE. TNAME6 ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,905) 6, FILEXT(:I), FNAME6, TNAME6,     &
+                  WRITE (NDSE,905) 6, FILEXT(:IEXT), FNAME6, TNAME6,  &
                                    MESSAGE
                CALL EXTCDE ( 20 )
             END IF
@@ -687,7 +688,7 @@
             END IF
           IF ( FNAMEF .NE. TNAMEF ) THEN
                IF ( IAPROC .EQ. NAPERR )                              &
-                  WRITE (NDSE,908) FILEXT(:I), FNAMEF, TNAMEF, MESSAGE
+                  WRITE (NDSE,908) FILEXT(:IEXT), FNAMEF, TNAMEF, MESSAGE
                CALL EXTCDE ( 24 )
             END IF
 !
@@ -940,6 +941,18 @@
                      NLvCel, NLvUFc, NLvVFc
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
                      IJKCel, IJKUFc, IJKVFc, ISMCBP 
+          DO J=lbound(IJKCel,2), ubound(IJKCel,2)
+            IJKCel3(J) = IJKCel(3,J)
+            IJKCel4(J) = IJKCel(4,J)
+          END DO
+          DO J=lbound(IJKVFc,2), ubound(IJKVFc,2)
+            IJKVFc5(J) = IJKVFc(5,J)
+            IJKVFc6(J) = IJKVFc(6,J)
+          END DO
+          DO J=lbound(IJKUFc,2), ubound(IJKUFc,2)
+            IJKUFc5(J) = IJKUFc(5,J)
+            IJKUFc6(J) = IJKUFc(6,J)
+          END DO
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
                      ICLBAC 
           READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
@@ -1765,15 +1778,15 @@
 ! Escape locations read errors --------------------------------------- *
 !
   800 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:IEXT), IERR
       CALL EXTCDE ( 50 )
 !
   801 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) FILEXT(:I)
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) FILEXT(:IEXT)
       CALL EXTCDE ( 51 )
 !
   802 CONTINUE
-      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) FILEXT(:I), IERR,   &
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) FILEXT(:IEXT), IERR, &
                                                   MESSAGE
       CALL EXTCDE ( 52 )
 !
