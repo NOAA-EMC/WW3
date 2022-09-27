@@ -1408,7 +1408,12 @@
           WRITE(20,*) '*** SIZE(sysA(1:tsA)%sys) at end of time step', &
                        tsA,':'
           WRITE(20,*) SIZE(sysA(tsA)%sys)
+#ifdef W3_SHRD
       END DO
+#endif
+#ifdef W3_MPI
+    END DO
+#endif
 
 #ifdef W3_MPI
       CALL MPI_Barrier(MPI_COMM_WORLD,IERR)

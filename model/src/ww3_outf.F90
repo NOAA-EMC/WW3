@@ -123,7 +123,7 @@
       USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST,      &
                           USTDIR, RHOAIR
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM, &
-                          THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
+                          THS, FP0, THP0, DTDYN, FCUT,                &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
                           PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &

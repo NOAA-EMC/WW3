@@ -158,7 +158,7 @@ module yowerr
     write(*,*)
     stop
   
-  end subroutine
+        end subroutine abort
 
   !> print warning
   !> Call this to print an warning string and optional line number, and file
@@ -216,5 +216,5 @@ module yowerr
     endif
 
     write(*,*)
-  end subroutine
+        end subroutine warn
 end module yowerr

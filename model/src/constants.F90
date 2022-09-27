@@ -299,7 +299,7 @@
       P2 = DSQRT(R2)
       L = 2.106D0*P2 + 4.4D0
       IF (P2.LT.8.0D-1) L = 2.129D0*P2 + 4.0D0
-      DO 20 N=1,INT(L)
+      DO N=1,INT(L)
         P1 = N
         P2 = N*N
         R1 = RTERM
@@ -312,7 +312,7 @@
         T1 = T1 + 0.5D0/P1
         RE1 = RE1 + (T1*RTERM-T2*ITERM)/P1
         IM1 = IM1 + (T1*ITERM+T2*RTERM)/P1
-   20 CONTINUE
+      END DO
       R1 = X/R2 - 0.5D0*(X*RE1-Y*IM1)
       R2 = -Y/R2 - 0.5D0*(X*IM1+Y*RE1)
       P1 = DEXP(X)
@@ -334,7 +334,7 @@
       IM0 = T1/P2
       RE1 = 0.0D0
       IM1 = 0.0D0
-      DO 40 N=2,8
+      DO N=2,8
         T2 = X2 + TSQ(N)
         P1 = DSQRT(T2*T2+R1)
         P2 = DSQRT(P1+T2)
@@ -344,7 +344,7 @@
         T1 = EXSQ(N)*TSQ(N)
         RE1 = RE1 + T1*P2
         IM1 = IM1 + T1/P2
-   40 CONTINUE
+      END DO
       T2 = -Y2*IM0
       RE1 = RE1/R2
       R2 = Y2*IM1/R2
@@ -374,7 +374,7 @@
       R2 = 1.0D0
       M = -8
       K = 3
-      DO 60 N=1,INT(L)
+      DO N=1,INT(L)
         M = M + 8
         K = K - M
         R1 = FLOAT(K-4)*R1
@@ -387,7 +387,7 @@
         IM0 = IM0 + R1*ITERM
         RE1 = RE1 + R2*RTERM
         IM1 = IM1 + R2*ITERM
-   60 CONTINUE
+      END DO
       T1 = DSQRT(P2+X)
       T2 = -Y/T1
       P1 = 8.86226925452758D-1/P2

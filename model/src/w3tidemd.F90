@@ -998,23 +998,23 @@
       PARAMETER (NMAX=500)
       INTEGER i,j,jj
       DOUBLE PRECISION s,tmp(NMAX)
-      do 12 j=1,n
+    do j=1,n
         s=0.0d0
         IF (w(j).ne.0.0d0)then
-          do 11 i=1,m
+          do i=1,m
             s=s+u(i,j)*b(i)
-11        continue
+          end do
           s=s/w(j)
         endif
         tmp(j)=s
-12    continue
-      do 14 j=1,n
+    end do
+    do  j=1,n
         s=0.0d0
-        do 13 jj=1,n
+       do  jj=1,n
           s=s+v(j,jj)*tmp(jj)
-13      continue
+       end do
         x(j)=s
-14    continue
+    end do
       return
       END SUBROUTINE dsvbksb
 
@@ -1031,7 +1031,7 @@
       g=0.0d0
       scale=0.0d0
       anorm=0.0d0
-      do 25 i=1,n
+    do i=1,n
         l=i+1
         rv1(i)=scale*g
         g=0.0d0
@@ -1073,100 +1073,100 @@
         s=0.0d0
         scale=0.0d0
         IF ((i.le.m).and.(i.ne.n))then
-          do 17 k=l,n
+          do k=l,n
             scale=scale+abs(a(i,k))
-17        continue
+          end do
           IF (scale.ne.0.0d0)then
-            do 18 k=l,n
+             do k=l,n
               a(i,k)=a(i,k)/scale
               s=s+a(i,k)*a(i,k)
-18          continue
+             end do
             f=a(i,l)
             g=-sign(sqrt(s),f)
             h=f*g-s
             a(i,l)=f-g
-            do 19 k=l,n
+             do k=l,n
               rv1(k)=a(i,k)/h
-19          continue
-            do 23 j=l,m
+             end do
+             do j=l,m
               s=0.0d0
-              do 21 k=l,n
+                do k=l,n
                 s=s+a(j,k)*a(i,k)
-21            continue
-              do 22 k=l,n
+                end do
+                do k=l,n
                 a(j,k)=a(j,k)+s*rv1(k)
-22            continue
-23          continue
-            do 24 k=l,n
+                end do
+             end do
+             do k=l,n
               a(i,k)=scale*a(i,k)
-24          continue
+             end do
           endif
         endif
         anorm=max(anorm,(abs(w(i))+abs(rv1(i))))
-25    continue
-      do 32 i=n,1,-1
+    end do
+    do i=n,1,-1
         IF (i.lt.n)then
           IF (g.ne.0.0d0)then
-            do 26 j=l,n
+             do j=l,n
               v(j,i)=(a(i,j)/a(i,l))/g
-26          continue
-            do 29 j=l,n
+             end do
+             do j=l,n
               s=0.0d0
-              do 27 k=l,n
+                do k=l,n
                 s=s+a(i,k)*v(k,j)
-27            continue
-              do 28 k=l,n
+                end do
+                do k=l,n
                 v(k,j)=v(k,j)+s*v(k,i)
-28            continue
-29          continue
+                end do
+             end do
           endif
-          do 31 j=l,n
+          do j=l,n
             v(i,j)=0.0d0
             v(j,i)=0.0d0
-31        continue
+          end do
         endif
         v(i,i)=1.0d0
         g=rv1(i)
         l=i
-32    continue
-      do 39 i=min(m,n),1,-1
+    end do
+    do i=min(m,n),1,-1
         l=i+1
         g=w(i)
-        do 33 j=l,n
+       do  j=l,n
           a(i,j)=0.0d0
-33      continue
+       end do
         IF (g.ne.0.0d0)then
           g=1.0d0/g
-          do 36 j=l,n
+          do j=l,n
             s=0.0d0
-            do 34 k=l,m
+             do k=l,m
               s=s+a(k,i)*a(k,j)
-34          continue
+             end do
             f=(s/a(i,i))*g
-            do 35 k=i,m
+             do k=i,m
               a(k,j)=a(k,j)+f*a(k,i)
-35          continue
-36        continue
-          do 37 j=i,m
+             end do
+          end do
+          do j=i,m
             a(j,i)=a(j,i)*g
-37        continue
+          end do
         else
-          do 38 j= i,m
+          do  j= i,m
             a(j,i)=0.0d0
-38        continue
+          end do
         endif
         a(i,i)=a(i,i)+1.0d0
-39    continue
-      do 49 k=n,1,-1
-        do 48 its=1,30
-          do 41 l=k,1,-1
+    end do
+    do k=n,1,-1
+       do  its=1,30
+          do  l=k,1,-1
             nm=l-1
             IF ((abs(rv1(l))+anorm).eq.anorm)  goto 2
             IF ((abs(w(nm))+anorm).eq.anorm)  goto 1
-41        continue
+          end do
 1         c=0.0d0
           s=1.0d0
-          do 43 i=l,k
+          do  i=l,k
             f=s*rv1(i)
             rv1(i)=c*rv1(i)
             IF ((abs(f)+anorm).eq.anorm) goto 2
@@ -1176,20 +1176,20 @@
             h=1.0d0/h
             c= (g*h)
             s=-(f*h)
-            do 42 j=1,m
+             do j=1,m
               y=a(j,nm)
               z=a(j,i)
               a(j,nm)=(y*c)+(z*s)
               a(j,i)=-(y*s)+(z*c)
-42          continue
-43        continue
+             end do
+          end do
 2         z=w(k)
           IF (l.eq.k)then
             IF (z.lt.0.0d0)then
               w(k)=-z
-              do 44 j=1,n
+                do j=1,n
                 v(j,k)=-v(j,k)
-44            continue
+                end do
             endif
             goto 3
           endif
@@ -1207,7 +1207,7 @@
           f=((x-z)*(x+z)+h*((y/(f+sign(g,f)))-h))/x
           c=1.0d0
           s=1.0d0
-          do 47 j=l,nm
+          do  j=l,nm
             i=j+1
             g=rv1(i)
             y=w(i)
@@ -1221,12 +1221,12 @@
             g=-(x*s)+(g*c)
             h=y*s
             y=y*c
-            do 45 jj=1,n
+             do  jj=1,n
               x=v(jj,j)
               z=v(jj,i)
               v(jj,j)= (x*c)+(z*s)
               v(jj,i)=-(x*s)+(z*c)
-45          continue
+             end do
             z=dpythag(f,h)
             w(j)=z
             IF (z.ne.0.0d0)then
@@ -1236,19 +1236,19 @@
             endif
             f= (c*g)+(s*y)
             x=-(s*g)+(c*y)
-            do 46 jj=1,m
+             do jj=1,m
               y=a(jj,j)
               z=a(jj,i)
               a(jj,j)= (y*c)+(z*s)
               a(jj,i)=-(y*s)+(z*c)
-46          continue
-47        continue
+             end do
+          end do
           rv1(l)=0.0d0
           rv1(k)=f
           w(k)=x
-48      continue
+       end do
 3       continue
-49    continue
+    end do
       return
       END SUBROUTINE dsvdcmp
 
@@ -1774,7 +1774,7 @@
       open(unit=KR,file=filename,status='old',form='formatted')
 
       JBASE=0
-      DO 90 K=1,1000
+    DO K=1,1000
         READ(KR,60)TIDECON_ALLNAMES(K),II(K),JJ(K),KK(K),LL(K),MM(K),NN(K),SEMI(K), &
                    NJ(K)
 60      FORMAT(6X,A5,1X,6I3,F5.2,I4)
@@ -1814,8 +1814,8 @@
           READ(KR,80)(LDEL(J),MDEL(J),NDEL(J),PH(J),EE(J),IR(J),J=J1,JL)
 80        FORMAT((11X,3(3I3,F4.2,F7.4,1X,I1,1X)))
           END IF
-90      JBASE=JL
-
+       JBASE=JL
+    end do
 100   NTIDAL_CON=K-1
       JLM=JL
 
@@ -1832,14 +1832,15 @@
 !
       JBASE=0
       K1=NTIDAL_CON+1
-      DO 160 K=K1,1000
+    DO  K=K1,1000
         J1=JBASE+1
         J4=J1+3
         READ(KR,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
 130     FORMAT(6X,A5,I1,2X,4(F5.2,A5,5X))
         !WRITE(995,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
         IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 170
-160     JBASE=JBASE+NJ(K)
+       JBASE=JBASE+NJ(K)
+    end do
 
 170   NTOTAL_CON=K-1
 
@@ -1940,12 +1941,12 @@
 !*  TING THE LUNAR TIME TAU.
 !
       JBASE=0
-      DO 210 K=1,NTIDAL_CON
-      do 209 l=1,TIDE_MF
+    DO  K=1,NTIDAL_CON
+       do l=1,TIDE_MF
       IF (TIDECON_ALLNAMES(k).eq.TIDECON_NAME(l)) then
       indx(k)=l
       END IF
-209   continue
+       end do
       VDBL=II(K)*TAU+JJ(K)*S+KK(K)*H+LL(K)*P+MM(K)*ENP+NN(K)*PP+SEMI(K)
       IV=VDBL
       IV=(IV/2)*2
@@ -1954,7 +1955,7 @@
       JL=JBASE+NJ(K)
       SUMC=1.
       SUMS=0.
-      DO 200 J=J1,JL
+       DO J=J1,JL
 !
 !***********************************************************************
 !*  HERE THE SATELLITE AMPLITUDE RATIO ADJUSTMENT FOR LATITUDE IS MADE
@@ -1971,11 +1972,12 @@
       UU=UUDBL-IUU
       SUMC=SUMC+RR*COS(UU*TWOPI)
       SUMS=SUMS+RR*SIN(UU*TWOPI)
-  200 CONTINUE
+       end do
       F_ARG(K,ITIME)=SQRT(SUMC*SUMC+SUMS*SUMS)
       v_ARG(k,ITIME)=vv
       U_ARG(K,ITIME)=ATAN2(SUMS,SUMC)/TWOPI
-210   JBASE=JL
+       JBASE=JL
+    end do
 !
 !***********************************************************************
 !*  HERE F AND V+U OF THE SHALLOW WATER CONSTITUENTS ARE COMPUTED FROM
@@ -2326,14 +2328,14 @@
 
       rmsr(IDEF)=0.d0
       resmax(IDEF)=0.
-            do 100 i=1,n
+       do  i=1,n
             yy=q(i,nmaxp1)
             rmsr(IDEF)=rmsr(IDEF)+yy*yy
       IF (abs(yy).gt.resmax(IDEF)) then
       resmax(IDEF)=abs(yy)
       imax(IDEF)=i
       END IF
-100            continue
+       end do
 160      format(' ',7i2,f15.5,f10.5,i6)
       IF (rmsr(IDEF).gt.1.e-10) then
       rmsr(IDEF)=dsqrt(rmsr(IDEF)/(n-m))
