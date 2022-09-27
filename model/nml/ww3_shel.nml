@@ -9,7 +9,7 @@
 ! * IOSTYP defines the output server mode for parallel implementation.
 !             0 : No data server processes, direct access output from
 !                 each process (requires true parallel file system).
-!             1 : No data server process. All output for each type 
+!             1 : No data server process. All output for each type
 !                 performed by process that performs computations too.
 !             2 : Last process is reserved for all output, and does no
 !                 computing.
@@ -18,7 +18,7 @@
 ! * namelist must be terminated with /
 ! * definitions & defaults:
 !     DOMAIN%IOSTYP =  1                 ! Output server type
-!     DOMAIN%START  = '19680606 000000'  ! Start date for the entire model 
+!     DOMAIN%START  = '19680606 000000'  ! Start date for the entire model
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
@@ -76,9 +76,9 @@
 ! * the point file is a space separated values per line :
 !   longitude latitude 'name' (C*40)
 !
-! * the full list of field names is : 
+! * the full list of field names is :
 !  All parameters listed below are available in output file of the types
-!  ASCII and NetCDF. If selected output file types are grads or grib, 
+!  ASCII and NetCDF. If selected output file types are grads or grib,
 !  some parameters may not be available. The first two columns in the
 !  table below identify such cases by flags, cols 1 (GRB) and 2 (GXO)
 !  refer to grib (ww3_grib) and grads (gx_outf), respectively.
@@ -86,13 +86,13 @@
 ! Columns 3 and 4 provide group and parameter numbers per group.
 ! Columns 5, 6 and 7 provide:
 !   5 - code name (internal)
-!   6 - output tags (names used is ASCII file extensions, NetCDF 
+!   6 - output tags (names used is ASCII file extensions, NetCDF
 !       variable names and namelist-based selection
 !   7 - Long parameter name/definition
 !
 !  G  G
 !  R  X Grp  Param Code     Output  Parameter/Group
-!  B  O Numb Numbr Name        Tag  Definition 
+!  B  O Numb Numbr Name        Tag  Definition
 !  --------------------------------------------------
 !        1                          Forcing Fields
 !   -------------------------------------------------
@@ -139,7 +139,7 @@
 !  F  F  3     5   STH2M      STH2M Directional spreading from a2,b2
 !  F  F  3     6   WN         WN    Wavenumber array
 !   -------------------------------------------------
-!        4                          Spectral Partition Parameters 
+!        4                          Spectral Partition Parameters
 !   -------------------------------------------------
 !  T  T  4     1   PHS        PHS   Partitioned wave heights.
 !  T  T  4     2   PTP        PTP   Partitioned peak period.
@@ -173,15 +173,15 @@
 !  F  F  5    10   WHITECAP   WCM   Whitecap moment
 !  F  F  5    11   FWS        FWS   Wind sea mean period
 !   -------------------------------------------------
-!        6                          Wave-ocean layer 
+!        6                          Wave-ocean layer
 !   -------------------------------------------------
 !  F  F  6     1   S[XX,YY,XY] SXY  Radiation stresses.
 !  F  F  6     2   TAUO[X,Y]  TWO   Wave to ocean momentum flux
-!  F  F  6     3   BHD        BHD   Bernoulli head (J term) 
+!  F  F  6     3   BHD        BHD   Bernoulli head (J term)
 !  F  F  6     4   PHIOC      FOC   Wave to ocean energy flux
 !  F  F  6     5   TUS[X,Y]   TUS   Stokes transport
 !  F  F  6     6   USS[X,Y]   USS   Surface Stokes drift
-!  F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure 
+!  F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure
 !  F  F  6     8   US3D       USF   Spectrum of surface Stokes drift
 !  F  F  6     9   P2SMS      P2L   Micro seism  source term
 !  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
@@ -189,12 +189,12 @@
 !  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
 !  F  F  6    13   TAUOC[X,Y] TOC   Total momentum to the ocean
 !   -------------------------------------------------
-!        7                          Wave-bottom layer 
+!        7                          Wave-bottom layer
 !   -------------------------------------------------
 !  F  F  7     1   ABA        ABR   Near bottom rms amplitides.
 !  F  F  7     2   UBA        UBR   Near bottom rms velocities.
 !  F  F  7     3   BEDFORMS   BED   Bedforms
-!  F  F  7     4   PHIBBL     FBB   Energy flux due to bottom friction 
+!  F  F  7     4   PHIBBL     FBB   Energy flux due to bottom friction
 !  F  F  7     5   TAUBBL     TBB   Momentum flux due to bottom friction
 !   -------------------------------------------------
 !        8                          Spectrum parameters
@@ -206,15 +206,15 @@
 !  F  F  8     5   ALPYT      AYT   Correl sea surface gradients (y,t)
 !  F  F  8     6   ALPXY      AXY   Correl sea surface gradients (x,y)
 !   -------------------------------------------------
-!        9                          Numerical diagnostics  
+!        9                          Numerical diagnostics
 !   -------------------------------------------------
 !  T  T  9     1   DTDYN      DTD   Average time step in integration.
 !  T  T  9     2   FCUT       FC    Cut-off frequency.
-!  T  T  9     3   CFLXYMAX   CFX   Max. CFL number for spatial advection. 
-!  T  T  9     4   CFLTHMAX   CFD   Max. CFL number for theta-advection. 
-!  F  F  9     5   CFLKMAX    CFK   Max. CFL number for k-advection. 
+!  T  T  9     3   CFLXYMAX   CFX   Max. CFL number for spatial advection.
+!  T  T  9     4   CFLTHMAX   CFD   Max. CFL number for theta-advection.
+!  F  F  9     5   CFLKMAX    CFK   Max. CFL number for k-advection.
 !   -------------------------------------------------
-!        10                         User defined          
+!        10                         User defined
 !   -------------------------------------------------
 !  F  F  10    1              U1    User defined #1. (requires coding ...)
 !  F  F  10    2              U2    User defined #1. (requires coding ...)
@@ -386,9 +386,3 @@
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
-
-
-
-
-
-

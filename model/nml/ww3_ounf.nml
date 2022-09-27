@@ -42,7 +42,7 @@
 !
 ! Note: If FCVARS = T, the following auxiliary variables will be generated
 ! (see the manual entry for ww3_ounf for more information):
-!  
+!
 !    - forecast_reference_time: The time associated with the "analysis" of
 !      the current forecast. Defaults to TIMESTART if TIMEREF not set.
 !
@@ -107,4 +107,3 @@
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
-

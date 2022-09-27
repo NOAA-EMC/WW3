@@ -35,7 +35,7 @@ $
 $ -------------------------------------------------------------------- $
 $ ITYPE = 3, transfer files.
 $            IX, IY range, IDLA and IDFM as in ww3_grid.inp.
-$            The additional option IDLA=5 gives longitude, latitude 
+$            The additional option IDLA=5 gives longitude, latitude
 $            and parameter value(s) per record (defined points only),
 $
 $ 2 11 2 11 1 2

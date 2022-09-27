@@ -36,7 +36,7 @@ $ and the file wind.input to provide the corresponding wind data.
 $
 $ -------------------------------------------------------------------- $
 $ If all point output is gathered in a unified point output file
-$ ( UNIPTS = .TRUE. ), then the output spectral grid needs to be 
+$ ( UNIPTS = .TRUE. ), then the output spectral grid needs to be
 $ defined. This information is taken from a wave model grid, and only
 $ the spectral definitions from this grid are relevant. Define the
 $ name of this grid here
@@ -52,22 +52,22 @@ $ Now each actual wave model grid is defined using 13 parameters to be
 $ read from a single line in the file. Each line contains the following
 $ parameters
 $     1)   Define the grid with the extension of the mod_def file.
-$    2-10) Define the inputs used by the grids with 10 keywords 
+$    2-10) Define the inputs used by the grids with 10 keywords
 $          corresponding to the 10 flags defining the input in the
 $          input files. Valid keywords are:
 $            'no'      : This input is not used.
 $            'native'  : This grid has its own input files, e.g. grid
 $                        grdX (mod_def.grdX) uses ice.grdX.
-$            'MODID'   : Take input from the grid identified by 
+$            'MODID'   : Take input from the grid identified by
 $                        MODID. In the example below, all grids get
 $                        their wind from wind.input (mod_def.input).
 $    11)   Rank number of grid (internally sorted and reassigned).
 $    12)   Group number (internally reassigned so that different
 $          ranks result in different group numbers.
 $   13-14) Define fraction of communicator (processes) used for this
-$          grid. '0.00 1.00' is appropriate in many cases. Partial 
-$          fractions, i.e. settings other than '0.00 1.00', are 
-$          intended for equal rank grids, to improve scaling. The 
+$          grid. '0.00 1.00' is appropriate in many cases. Partial
+$          fractions, i.e. settings other than '0.00 1.00', are
+$          intended for equal rank grids, to improve scaling. The
 $          commented example provided here (partial fractions with
 $          non-equal rank) is not generally recommended.
 $    15)   Flag identifying dumping of boundary data used by this
@@ -89,7 +89,7 @@ $
 $ Limitations relevant to irregular (curvilinear) grids:
 $   1) Equal rank is not supported when one or more is an irregular
 $       grid. Use non-equal rank instead. (see wmgridmd.ftn)
-$   2) Non-native input grids: feature is not supported when either 
+$   2) Non-native input grids: feature is not supported when either
 $      an input grid or computational grids is irregular.
 $      (see wmupdtmd.ftn)
 $   3) Irregular grids with unified point output: This is supported
@@ -103,7 +103,7 @@ $
 $
 $ -------------------------------------------------------------------- $
 $ Specific multi-scale model settings (single line).
-$    Flag for masking computation in two-way nesting (except at 
+$    Flag for masking computation in two-way nesting (except at
 $                                                     output times).
 $    Flag for masking at printout time.
 $
@@ -165,7 +165,7 @@ $
        0.E3     0.E3  'STOPSTRING'
 $
 $  Four additional output types: see ww3_shel.inp for documentation.
-$ 
+$
 $  track output
    19680606 000000      0  19680608 000000
 $
@@ -183,15 +183,15 @@ $ Output requests per grid and type to overwrite general setup
 $ as defined above. First record per set is the grid name MODID
 $ and the output type number. Then follows the standard time string,
 $ and conventional data as per output type. In mww3_test_05 this is
-$ not used. Below, one example generating partitioning output for 
+$ not used. Below, one example generating partitioning output for
 $ the inner grid is included but commented out.
 $
 $ 'grd3'  6
 $  19680606 000000    900  19680608 000000
-$     0 999 1 0 999 1 T 
+$     0 999 1 0 999 1 T
 $
 $ -------------------------------------------------------------------- $
-$ Mandatory end of output requests per grid, identified by output 
+$ Mandatory end of output requests per grid, identified by output
 $ type set to 0.
 $
   'the_end'  0

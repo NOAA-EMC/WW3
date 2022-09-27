@@ -17,7 +17,7 @@ $
 $   Format types :  AI    Transfer field 'as is'. (ITYPE 1)
 $                   LL    Field defined on regular longitude-latitude
 $                         or Cartesian grid. (ITYPE 2)
-$   Format types :  AT    Transfer field 'as is', performs tidal 
+$   Format types :  AT    Transfer field 'as is', performs tidal
 $                         analysis on the time series (ITYPE 6)
 $                         When using AT, another line should be added
 $                         with the choice of tidal constituents:
@@ -33,7 +33,7 @@ $
   'WND' 'LL' T T
 $
 $ Name of spatial dimensions------------------------------------------ $
-$ NB: time dimension is expected to be called 'time' and must respect 
+$ NB: time dimension is expected to be called 'time' and must respect
 $     Julian or Gregorian calendar with leap day.
 $
  longitude latitude

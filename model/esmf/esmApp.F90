@@ -22,7 +22,7 @@ program esmApp
   integer                 :: argCount
   type(ESMF_Config)       :: config
   character(ESMF_MAXSTR)  :: configFile
-  
+
   ! Initialize ESMF
   call ESMF_Initialize(logkindflag=ESMF_LOGKIND_MULTI, &
     defaultCalkind=ESMF_CALKIND_GREGORIAN, rc=rc)
@@ -53,31 +53,31 @@ program esmApp
   if (ESMF_LogFoundError(rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   call ESMF_GridCompSet(gcomp, config=config, rc=rc)
   if (ESMF_LogFoundError(rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-    
+
   ! SetServices for the driver Component
   call ESMF_GridCompSetServices(gcomp, drmSS, userRc=urc, rc=rc)
   if (ESMF_LogFoundError( rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   if (ESMF_LogFoundError(urc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-    
+
   ! Call Initialize for the driver Component
   call ESMF_GridCompInitialize(gcomp, userRc=urc, rc=rc)
   if (ESMF_LogFoundError( rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   if (ESMF_LogFoundError(urc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-  
+
   ! Call Run for the driver Component
   call ESMF_GridCompRun(gcomp, userRc=urc, rc=rc)
   if (ESMF_LogFoundError( rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   if (ESMF_LogFoundError(urc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-  
+
   ! Call Finalize for the driver Component
   call ESMF_GridCompFinalize(gcomp, userRc=urc, rc=rc)
   if (ESMF_LogFoundError( rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
   if (ESMF_LogFoundError(urc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-    
+
   ! Destroy the driver Component
   call ESMF_GridCompDestroy(gcomp, rc=rc)
   if (ESMF_LogFoundError(rc, PASSTHRU)) call ESMF_Finalize(endflag=ESMF_END_ABORT)
-  
+
   ! Finalize ESMF
   call ESMF_Finalize()
 
@@ -95,4 +95,4 @@ program esmApp
 
   end subroutine
 
-end program  
+end program

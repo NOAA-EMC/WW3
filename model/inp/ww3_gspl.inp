@@ -9,7 +9,7 @@ $ Number of sub-grids to be created, maximum number of iterations,
 $ target grid point count std in percent. user defined halo extension
 $ (default should be 2, used because of inconsistencies between halo
 $ computation in this code and in the main wave model code). Increase
-$ the latter number if ww3_multi fails on halo overlaps between 
+$ the latter number if ww3_multi fails on halo overlaps between
 $ equally ranked grids.
 $
   12  250  0.75  2
