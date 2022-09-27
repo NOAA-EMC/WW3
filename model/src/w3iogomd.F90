@@ -1317,8 +1317,7 @@
 !/
       INTEGER                 :: IK, ITH, JSEA, ISEA, IX, IY,         &
                                  IKP0(NSEAL), NKH(NSEAL),             &
-                                 ILOW, ICEN, IHGH, I, J, LKMS, HKMS,  &
-                                 ITL
+                                 I, J, LKMS, HKMS, ITL
 #ifdef W3_S
       INTEGER, SAVE           :: IENT = 0
 #endif
