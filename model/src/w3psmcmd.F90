@@ -3160,9 +3160,6 @@
       CXCY(1:NSEA)= CX(1:NSEA) 
 
 !!   Initialize full grid gradient arrays
-#ifdef W3_DEBUGDCXDX
-      WRITE(740+IAPROC,*) 'Before assigning DCXDX to ZERO'
-#endif
       DCXDX = 0.0
       DCXDY = 0.0
 
@@ -3200,10 +3197,6 @@
       END DO
 #ifdef W3_OMPG
 !$OMP END Parallel DO
-#endif
-
-#ifdef W3_DEBUGDCXDX
-      WRITE(740+IAPROC,*) 'After non-trivial assination to DCXDX array'
 #endif
 
 !!    Assign current CY speed to CXCY and set negative cells.

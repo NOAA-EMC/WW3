@@ -200,9 +200,7 @@
       USE W3SERVMD, ONLY: STRACE
 #endif
 !
-#ifdef W3_DEBUGFLS
       USE W3ODATMD, only : IAPROC
-#endif
       USE CONSTANTS, ONLY: file_endian
 
       IMPLICIT NONE
@@ -350,37 +348,19 @@
 !
 ! Open file ---------------------------------------------------------- *
 !
-#ifdef W3_DEBUGFLS
-      WRITE(740+IAPROC,*) 'W3FLDSMD 1 : WRITE=', WRITE
-#endif
       IF ( WRITE ) THEN
-#ifdef W3_DEBUGFLS
-        WRITE(740+IAPROC,*) 'W3FLDSMD 2 : WRITE=', WRITE
-#endif
         IF ( PRESENT(FPRE) ) THEN
-#ifdef W3_DEBUGFLS
-          WRITE(740+IAPROC,*) '1 : W3FLDSMD FNAME=', FNAME(:I)
-#endif
           OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM, convert=file_endian, &
                 ERR=803, IOSTAT=IERR)
         ELSE
-#ifdef W3_DEBUGFLS
-          WRITE(740+IAPROC,*) '2 : W3FLDSMD FNAME=', FNAME(:I)
-#endif
           OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian, & 
                 ERR=803,IOSTAT=IERR)
         END IF
       ELSE
         IF ( PRESENT(FPRE) ) THEN
-#ifdef W3_DEBUGFLS
-          WRITE(740+IAPROC,*) '3 : W3FLDSMD FNAME=', FNAME(:I)
-#endif
           OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,convert=file_endian, &
                 STATUS='OLD',ERR=803,IOSTAT=IERR)
         ELSE
-#ifdef W3_DEBUGFLS
-          WRITE(740+IAPROC,*) '4 : W3FLDSMD FNAME=', FNAME(:I)
-#endif
           OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian,       &
                     STATUS='OLD',ERR=803,IOSTAT=IERR)
         END IF
@@ -388,9 +368,6 @@
 !
 ! Process test data -------------------------------------------------- *
 !
-#ifdef W3_DEBUGFLS
-      WRITE(740+IAPROC,*) 'WRITE=', WRITE
-#endif
       IF ( WRITE ) THEN
           IF ( FDHDR ) THEN
              IF ( FORM .EQ. 'UNFORMATTED' ) THEN
@@ -409,22 +386,9 @@
           IF ( FORM .EQ. 'UNFORMATTED' ) THEN
               READ (NDS,END=806,ERR=805,IOSTAT=IERR)                  &
                     TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
-#ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) '1: NXT=', NXT, ' NYT=', NYT
-       WRITE(740+IAPROC,*)            '1: TSSTR=', TSSTR
-       WRITE(740+IAPROC,*)            '1: TSFLD=', TSFLD
-       WRITE(740+IAPROC,*)            '1: NXT=', NXT, ' NYT=', NYT
-       WRITE(740+IAPROC,*)            '1: GTYPET=', GTYPET
-       WRITE(740+IAPROC,*)            '1: FILLER=', FILLER
-       WRITE(740+IAPROC,*)            '1: TIDEFLAG=', TIDEFLAG
-#endif
           ELSE
               READ (NDS,900,END=806,ERR=805,IOSTAT=IERR)              &
                     TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
-#ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) '2: NXT=', NXT, ' NYT=', NYT
-       WRITE(740+IAPROC,*) '2: NXT=', NXT, ' NYT=', NYT
-#endif
           END IF
           IF ((FILLER(1).NE.0.OR.FILLER(2).NE.0).AND.TIDEFLAG.GE.0) TIDEFLAG=0
           IF (TIDEFLAG.NE.0.AND.(.NOT.TIDEOK)) THEN     
@@ -442,11 +406,6 @@
           IF ( IDFLD .NE. TSFLD ) GOTO 808
           IF ( IDFLD(1:2) .NE. 'DT' ) THEN
             IF ( NX.NE.NXT .OR. NY.NE.NYT ) THEN 
-#ifdef W3_DEBUGFLS
-       WRITE(740+IAPROC,*) 'Dimension error'
-       WRITE(740+IAPROC,*) 'NX =', NX , ' NY =', NY
-       WRITE(740+IAPROC,*) 'NXT=', NXT, ' NYT=', NYT
-#endif
               GOTO 809
             ELSE
               NX     = NXT
@@ -2002,8 +1961,8 @@
       ICLO   = ICLO_NONE
       IF ( FLAGLL .AND. CLOSED ) ICLO = ICLO_SMPL
 !
-      DO 110, IX=1, NX
-        DO 100, IY=1, NY
+      DO  IX=1, NX
+        DO  IY=1, NY
           RD11(IX,IY) = 0.
           RD12(IX,IY) = 0.
           RD21(IX,IY) = 0.
@@ -2012,8 +1971,8 @@
           IX2(IX,IY)  = 1
           IY1(IX,IY)  = 1
           IY2(IX,IY)  = 1
-  100     CONTINUE
-  110   CONTINUE
+        END DO
+      END DO
 !
 ! 1.b Setup logical mask
 !
@@ -2032,8 +1991,8 @@
 !
 ! 2.  Loop over output grid ------------------------------------------ *
 !
-      DO 500, IY=1, NY
-        DO 400, IX=1, NX
+      DO IY=1, NY
+        DO  IX=1, NX
 !
           X = TLON(IY,IX)
           Y = TLAT(IY,IX)
@@ -2129,8 +2088,8 @@
 !
 ! ... End loop over output grid -------------------------------------- *
 !
-  400     CONTINUE
-  500   CONTINUE
+        END DO
+      END DO
 !
 ! 3.  Finalizations -------------------------------------------------- *
 ! 3.a Final output

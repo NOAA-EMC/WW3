@@ -200,10 +200,6 @@ CONTAINS
       INTEGER(KIND=4),ALLOCATABLE        :: IFOUND(:), VERTEX(:), BOUNDTMP(:)
       DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:),XYBTMP2(:,:)
       REAL                               :: z
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'Beginning of READMSH routine'
-     FLUSH(740+IAPROC)
-#endif
 
       OPEN(NDS,FILE = FNAME,STATUS='old')
       READ (NDS,'(A)') COMSTR
@@ -312,11 +308,6 @@ CONTAINS
 !count points connections to allocate array in W3DIMUG 
 !
       CALL COUNT(TRIGPTMP2)
-#ifdef W3_DEBUGINIT
-     WRITE(*,*) 'Call W3DIMUG from READMSH'
-     WRITE(740+IAPROC,*) 'Call W3DIMUG from READMSH'
-     FLUSH(740+IAPROC)
-#endif
       CALL W3DIMUG ( 1, NTRI, NX, COUNTOT, NNZ, NDSE, NDST ) 
 !
 ! fills arrays
@@ -326,14 +317,6 @@ CONTAINS
         YGRD(1,I) = XYBTMP2(2,I) 
         ZB(I)     = XYBTMP2(3,I)
       END DO
-!
-#ifdef W3_DEBUGSTP
-    WRITE(740,*) 'Writing XYB(3,:)'
-    DO I=1,NX
-      WRITE(740,*) 'I,XYB(3,I)=', I, XYB(3,I)
-    END DO
-    FLUSH(740)
-#endif
 !
       DO I=1, NTRI
         ITMP = TRIGPTMP2(:,I)
@@ -449,10 +432,6 @@ CONTAINS
       LOGICAL                            :: lfile_exists
       CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
       DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:)
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'Beginning of READMSH routine'
-     FLUSH(740+IAPROC)
-#endif
 
       INQUIRE(FILE=FNAME, EXIST=lfile_exists)
       IF (.NOT. lfile_exists) RETURN
@@ -618,7 +597,7 @@ CONTAINS
           EXIT
         END IF
       END DO
-      END SUBROUTINE
+  END SUBROUTINE GET_BOUNDARY_STATUS
 
 !/ -------------------------------------------------------------------/
       SUBROUTINE READMSHOBC(NDS, FNAME, TMPSTA, UGOBCOK) 
@@ -921,7 +900,7 @@ CONTAINS
          !STOP 
          END IF    
        END DO
-     END SUBROUTINE
+  END SUBROUTINE SPATIAL_GRID
 !/--------------------------------------------------------------------/
 !
 !/--------------------------------------------------------------------/
@@ -1041,7 +1020,7 @@ CONTAINS
     
          END DO
 
-     END SUBROUTINE
+  END SUBROUTINE NVECTRI
 !/---------------------------------------------------------------------------
 
 !/------------------------------------------------------------------------
@@ -1150,7 +1129,7 @@ J=0
  ENDDO
  COUNTOT=J  
 
-END SUBROUTINE
+  END SUBROUTINE COUNT
 
 !/----------------------------------------------------------------------------  
       SUBROUTINE COORDMAX
@@ -1222,7 +1201,7 @@ END SUBROUTINE
     SX = MINVAL(LEN(:,:))
     SY = SX
 ! 
- END SUBROUTINE
+  END SUBROUTINE COORDMAX
 !-------------------------------------------------------------------------
 
   SUBROUTINE AREA_SI(IMOD)
@@ -1473,7 +1452,7 @@ END SUBROUTINE
 
          DEALLOCATE(PTABLE)
 
-       END SUBROUTINE
+  END SUBROUTINE AREA_SI
        
      SUBROUTINE IS_IN_UNGRID(IMOD, XTIN, YTIN, ITOUT, IS, JS, RW)
 !/ -------------------------------------------------------------------
@@ -2122,7 +2101,7 @@ END SUBROUTINE
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/                &
              '     NUMBER OF MAPSTA=2 DIFFERS FROM NUMBER IN nest.ww3    '/                &
              '     CHECK nest.ww3 AND ww3_grid.inp ',2I8/)
-END SUBROUTINE
+  END SUBROUTINE W3NESTUG
 
 
 !/ ------------------------------------------------------------------- /
@@ -2198,17 +2177,9 @@ END SUBROUTINE
       INTEGER :: INEXT(3), IPREV(3)
       INTEGER          :: ZNEXT, IP, I, IE, IPNEXT, IPPREV, COUNT
       integer nb0, nb1, nbM1
-#ifdef W3_DEBUGSETIOBP
-      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 1'
-      FLUSH(740+IAPROC)
-#endif
       STATUS = -1
       INEXT=(/ 2, 3, 1 /) !IPREV=1+MOD(I+1,3)
       IPREV=(/ 3, 1, 2 /) !INEXT=1+MOD(I,3)
-#ifdef W3_DEBUGSETIOBP
-      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 2'
-      FLUSH(740+IAPROC)
-#endif
       DO IE=1,NTRI 
 ! If one of the points of the triangle is masked out (land) then do as if triangle does not exist... 
 !        IF ((MASK(TRIGP(1,IE)).GT.0).AND.(MASK(TRIGP(2,IE)).GT.0).AND.(MASK(TRIGP(3,IE)).GT.0)) THEN 
@@ -2271,32 +2242,13 @@ END SUBROUTINE
           EXIT
         END IF
       END DO
-#ifdef W3_DEBUGSETIOBP
-      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 3'
-      FLUSH(740+IAPROC)
-#endif
 
       STATUS = 1 
       CALL GET_BOUNDARY(NX, NTRI, TRIGP, STATUS, PREVVERT, NEXTVERT)
-#ifdef W3_DEBUGSETIOBP
-      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 4'
-      FLUSH(740+IAPROC)
-#endif
-!      DO IP= 1, NX
-!        WRITE(12000,*) IP, STATUS(IP)
-!      ENDDO
-#ifdef W3_DEBUGSETIOBP
-      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 5'
-      FLUSH(740+IAPROC)
-#endif
 
 !#ifdef MPI_PARALL_GRID
 !      CALL exchange_p2di(STATUS)
 !#endif
-#ifdef W3_DEBUGSETIOBP
-      WRITE(740+IAPROC,*) 'Calling SETIOBP, step 6'
-      FLUSH(740+IAPROC)
-#endif
       END SUBROUTINE SET_IOBP
 !/ ------------------------------------------------------------------- /
 
@@ -2525,7 +2477,7 @@ END SUBROUTINE
         DEALLOCATE(PREVVERT, STAT=ISTAT)
         CHECK_DEALLOC_STATUS ( ISTAT )
 
-      END SUBROUTINE
+  END SUBROUTINE GET_BOUNDARY
 
 !/ ------------------------------------------------------------------- /
 
@@ -2606,7 +2558,7 @@ END SUBROUTINE
         ELSE
           IPREV=I+1
         END IF
-      END SUBROUTINE
+  END SUBROUTINE TRIANG_INDEXES
 
 !/ ------------------------------------------------------------------- /
 
@@ -2713,7 +2665,7 @@ END SUBROUTINE
  ENDIF
 #endif
    
-   END SUBROUTINE
+  END SUBROUTINE GET_INTERFACE
 !/ ------------------------------------------------------------------- /
    SUBROUTINE SET_UG_IOBP()
 !/
@@ -2820,12 +2772,7 @@ END SUBROUTINE
 !
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Set constants
-!      
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 1'
-      FLUSH(740+IAPROC)
-#endif
-      
+!
 #ifdef W3_S
       CALL STRACE (IENT, 'SETUGIOBP')
 #endif
@@ -2833,18 +2780,10 @@ END SUBROUTINE
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  Searches for boundary points
 ! 
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 2'
-      FLUSH(740+IAPROC)
-#endif
       ITMP = MAPSTA(1,:)
       CALL SET_IOBP(ITMP, IOBP) 
       FNAME = 'meshbnd.msh'
       CALL READMSH_IOBP(23456,FNAME) 
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 3'
-      FLUSH(740+IAPROC)
-#endif
 !
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3. Defines directions pointing into land or sea 
@@ -2858,10 +2797,6 @@ END SUBROUTINE
           IOBP(IP)  = 2 
         ENDIF
       END DO
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 4'
-      FLUSH(740+IAPROC)
-#endif
 
       DO IE = 1,NTRI
         I1   =   TRIGP(1,IE)
@@ -2911,10 +2846,6 @@ END SUBROUTINE
           END DO
         END DO
       END DO
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 5'
-      FLUSH(740+IAPROC)
-#endif
       DO IP = 1, NX 
         IF ( IOBPA(IP) .eq. 1 .OR. IOBP(IP) .eq. 3 .OR. IOBP(IP) .eq. 4) IOBPD(:,IP) = 1
       END DO
@@ -2932,10 +2863,6 @@ END SUBROUTINE
 !        IOBPD(ID,:) = iwild
 !      ENDDO
 !#endif
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 7'
-      FLUSH(740+IAPROC)
-#endif
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3. Updates the reflection direction and sharp / flat shoreline angle
 
@@ -2962,29 +2889,9 @@ END SUBROUTINE
               END IF
             END DO
 #endif
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 8'
-      FLUSH(740+IAPROC)
-#endif
-          
-
-!DO IX=1,NX
-!DO ITH=1,NTH
-!  WRITE(500+IAPROC,*) IX,ITH,IOBP(IX),IOBPA(IX),IOBPD(ITH,IX) !,REFLD(1:2,MAPFS(1,IX))
-!ENDDO 
-!ENDDO
-
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 9'
-      FLUSH(740+IAPROC)
-#endif
 !
 ! Recomputes the angles used in the gradients estimation 
 ! 
-#ifdef W3_DEBUGSETUGIOBP
-      WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 10'
-      FLUSH(740+IAPROC)
-#endif
 !
       RETURN    
       END SUBROUTINE SET_UG_IOBP

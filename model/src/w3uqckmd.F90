@@ -1,6 +1,16 @@
+!> @file
+!> @brief Contains MODULE W3UQCKMD.
+!> 
+!> @author H. L. Tolman  @date 27-May-2014
+!>
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Portable ULTIMATE QUICKEST schemes.
+!>
+!> @author H. L. Tolman  @date 27-May-2014
+!>
       MODULE W3UQCKMD
 !/
 !/                  +-----------------------------------+
@@ -71,6 +81,39 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Preform one-dimensional propagation in a two-dimensional space
+!>  with irregular boundaries and regular grid.
+!>
+!> @details ULTIMATE QUICKEST scheme (see manual).
+!>        
+!>  Note that the check on monotonous behavior of QCN is performed
+!>  using weights CFAC, to avoid the need for IF statements.
+!>
+!>  Called by:  W3KTP2   Propagation in spectral space.
+!>
+!>  This routine can be used independently from WAVEWATCH III.
+!>
+!>        
+!> @param[in]    MX  Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
+!> @param[in]    MY  Field dimension (See MX)
+!> @param[in]    NX  Part of field actually used
+!> @param[in]    NY  Part of field actually used
+!> @param[in]    INC     Increment in 1-D array corresponding to increment in 2-D space.
+!> @param[in]    MAPACT  List of active grid points.
+!> @param[in]    NACT    Size of MAPACT.
+!> @param[in]    MAPBOU  Map with boundary information (See W3MAP2).
+!> @param[in]    NB0     Counter in MAPBOU
+!> @param[in]    NB1     Counter in MAPBOU
+!> @param[in]    NB2     Counter in MAPBOU
+!> @param[in]    NDSE    Error output unit number.
+!> @param[in]    NDST    Test output unit number.
+!> @param[inout] CFLL    Local Courant numbers (MY,  MX+1)
+!> @param[inout] Q       Propagated quantity   (MY,0:MX+2)
+!> @param[in]    CLOSE   Flag for closed 'X' dimension.
+!>
+!> @author  H. L. Tolman  @date 30-Oct-2009
+!>        
       SUBROUTINE W3QCK1 (MX, MY, NX, NY, CFLL, Q, CLOSE, INC,         &
                          MAPACT, NACT, MAPBOU, NB0, NB1, NB2,         &
                          NDSE, NDST )
@@ -433,6 +476,41 @@
 !/
       END SUBROUTINE W3QCK1
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Like W3QCK1 with variable grid spacing.
+!>
+!> @details VELO amd Q need only bee filled in the (MY,MX) range,
+!>  extension is used internally for closure.
+!>  VELO and Q are defined as 1-D arrays internally.
+!>        
+!>  Called by:  W3KTP2   Propagation in spectral space.
+!>
+!>  This routine can be used independently from WAVEWATCH III.
+!>
+!>      
+!> @param[in]    MX      Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
+!> @param[in]    MY      Field dimension (See MX).
+!> @param[in]    NX      Part of field actually used.
+!> @param[in]    NY      Part of field actually used.
+!> @param[in]    MAPACT  List of active grid points.
+!> @param[in]    NACT    Size of MAPACT.
+!> @param[in]    MAPBOU  Map with boundary information (See W3MAP2).
+!> @param[in]    NB0     Counter in MAPBOU.
+!> @param[in]    NB1     Counter in MAPBOU.
+!> @param[in]    NB2     Counter in MAPBOU.
+!> @param[inout] VELO    Local velocities          (MY,  MX+1).
+!> @param[in]    DT      Time step.
+!> @param[inout] DX1     Band width at points      (MY,  MX+1).
+!> @param[inout] DX2     Band width between points (MY,0:MX+1)
+!> @param[in]    NDSE    Error output unit number.
+!> @param[in]    NDST    Test output unit number.
+!> @param[inout] Q       Propagated quantity       (MY,0:MX+2).
+!> @param[in]    CLOSE   Flag for closed 'X' dimension.
+!> @param[in]    INC     Increment in 1-D array corresponding to
+!>                       increment in 2-D space.      
+!>
+!> @author  H. L. Tolman  @date 30-Oct-2009
+!>        
       SUBROUTINE W3QCK2 (MX, MY, NX, NY, VELO, DT, DX1, DX2, Q, CLOSE,&
                         INC,  MAPACT, NACT, MAPBOU, NB0, NB1, NB2,    &
                         NDSE, NDST )
@@ -806,6 +884,38 @@
 !/
       END SUBROUTINE W3QCK2
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Like W3QCK1 with cell transparencies added. 
+!>
+!> @details CFLL amd Q need only bee filled in the (MY,MX) range,
+!>  extension is used internally for closure.
+!>  CFLL and Q are defined as 1-D arrays internally.      
+!>        
+!>  Called by:  W3XYP2   Propagation in physical space.
+!>
+!>  This routine can be used independently from WAVEWATCH III.
+!>
+!>      
+!> @param[in]    MX    Field dimensions, if grid is 'closed' or circular, MX is the closed dimension.
+!> @param[in]    MY    Field dimension (See MX)
+!> @param[in]    NX    Part of field actually used
+!> @param[in]    NY    Part of field actually used
+!> @param[inout] CFLL  Local Courant numbers      (MY,  MX+1).
+!> @param[in]    TRANS
+!> @param[in]    INC     Increment in 1-D array corresponding to increment in 2-D space.
+!> @param[in]    MAPACT  List of active grid points.
+!> @param[in]    NACT    Size of MAPACT.
+!> @param[in]    MAPBOU  Map with boundary information (See W3MAP2).
+!> @param[in]    NB0     Counter in MAPBOU
+!> @param[in]    NB1     Counter in MAPBOU
+!> @param[in]    NB2     Counter in MAPBOU
+!> @param[in]    NDSE    Error output unit number.
+!> @param[in]    NDST    Test output unit number.
+!> @param[inout] Q       Propagated quantity       (MY,0:MX+2)
+!> @param[in]    CLOSE   Flag for closed 'X' dimension.
+!>
+!> @author  H. L. Tolman  @date 30-Oct-2009
+!>      
       SUBROUTINE W3QCK3 (MX, MY, NX, NY, CFLL, TRANS, Q, CLOSE,       &
                          INC, MAPACT, NACT, MAPBOU, NB0, NB1, NB2,    &
                          NDSE, NDST )

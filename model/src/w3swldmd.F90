@@ -1,5 +1,20 @@
+!> @file
+!> @brief Contains MODULE W3SWLMD, for swell dissipation source term.
+!> 
+!> @author H. L. Tolman  @date 21-Nov-2011
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Source term module for swell dissipation.
+!> 
+!> @details Source term for swell dissipation based on different
+!>  physics that can be independently selected from the input
+!>  and whitecapping dissipation terms in the model setup.
+!>
+!> @author H. L. Tolman  @date 21-Nov-2011
+!>
       MODULE W3SWLDMD
 !/
 !/                  +-----------------------------------+
@@ -60,6 +75,21 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief FIXME
+!>
+!> @details A, S, D all stored as 1-D arrays with dimension NTH*NK
+!>  (column by column).
+!>        
+!> @param[in]  A     Action density spectrum.
+!> @param[in]  CG    Group velocities.
+!> @param[in]  WN    Wavenumbers.
+!> @param[in]  DAIR  Air density.
+!> @param[out] S     Source term.
+!> @param[out] D     Diagonal term of the derivative.
+!>
+!> @author H. L. Tolman  @date 13-Aug-2021
+!>        
       SUBROUTINE W3SWL4 (A, CG, WN, DAIR, S, D)
 !/
 !/                  +-----------------------------------+
@@ -198,6 +228,26 @@
 !/
       END SUBROUTINE W3SWL4
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Turbulent dissipation of narrow-banded swell.
+!>       
+!>
+!> @details A, S, D all stored as 1-D arrays with dimension NTH*NK
+!>  (column by column).
+!>
+!> Described in Babanin (2011, Section 7.5). 
+!> Babanin 2011: Cambridge Press, 295-321, 463pp.
+!>
+!> S = D * A
+!>      
+!> @param[in]  A     Action density spectrum.
+!> @param[in]  CG    Group velocities.
+!> @param[in]  WN    Wavenumbers.
+!> @param[out] S     Source term.
+!> @param[out] D     Diagonal term of the derivative.
+!>
+!> @author H. L. Tolman  @date 16-Feb-2012
+!>              
       SUBROUTINE W3SWL6 (A, CG, WN, S, D)
 !/
 !/                  +-----------------------------------+
@@ -363,6 +413,20 @@
       END SUBROUTINE W3SWL6
 !/ ------------------------------------------------------------------- /
 !/
+!>
+!> @brief Generate a linear-spaced sequence of integer numbers.
+!>
+!> @details Used for array addressing (indexing).
+!>
+!> @param   X0 
+!> @param   X1 
+!> @param   DX   
+!> @returns IX 
+!>
+!> @author H. L. Tolman
+!> @author S. Zieger
+!> @date 15-Feb-2011 
+!>      
       FUNCTION IRANGE(X0,X1,DX) RESULT(IX)
 !/
 !/                  +-----------------------------------+

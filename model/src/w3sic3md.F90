@@ -2535,7 +2535,7 @@ END SUBROUTINE IC3TABLE_CHENG
         (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
     ENDIF
   RETURN
-  END SUBROUTINE
+  END SUBROUTINE SMOOTH_K
 
 
 !/ ------------------------------------------------------------------- /

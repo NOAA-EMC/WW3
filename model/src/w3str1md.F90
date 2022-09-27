@@ -1,5 +1,18 @@
+!> @file
+!> @brief Contains module W3STR1MD.
+!> 
+!> @author A. J. van der Westhuysen @date 13-Jan-2013
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Module for inclusion of triad nonlinear interaction 
+!>  according to Eldeberky's (1996) Lumped Triad Interaction (LTA) 
+!>  source term.
+!>
+!> @author A. J. van der Westhuysen @date 13-Jan-2013
+!>
       MODULE W3STR1MD
 !/
 !/                  +-----------------------------------+
@@ -102,6 +115,70 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Triad interaction source term computed using the Lumped 
+!>  Triad Appproximation (LTA) of Eldeberky (1996).
+!>
+!> @verbatim
+!>     The parametrized biphase is given by:
+!>
+!>                                  0.2
+!>     beta = - pi/2 + pi/2 tanh ( ----- )
+!>                                   Ur
+!>
+!>     where Ur is the Ursell number.
+!>
+!>     The source term as function of frequency p is:
+!>
+!>             +      -
+!>     S(p) = S(p) + S(p)
+!>
+!>     in which
+!>
+!>      +
+!>     S(p) = alpha Cp Cg,p (R(p/2,p/2))**2 sin (|beta|) ( E(p/2)**2 -2 E(p) E(p/2) )
+!>
+!>      -          +
+!>     S(p) = - 2 S(2p)
+!>
+!>     with alpha a tunable coefficient and R(p/2,p/2) is the interaction
+!>     coefficient of which the expression can be found in Eldeberky (1996).
+!>
+!>     Note that a slightly adapted formulation of the LTA is used in
+!>     in the SWAN model:
+!>
+!>     - Only positive contributions to higher harmonics are considered
+!>       here (no energy is transferred to lower harmonics).
+!>
+!>     - The mean frequency in the expression of the Ursell number
+!>       is calculated according to the first order moment over the
+!>       zeroth order moment (personal communication, Y.Eldeberky, 1997).
+!>
+!>     - The interactions are calculated up to 2.5 times the mean
+!>       frequency only.
+!>
+!>     - Since the spectral grid is logarithmically distributed in frequency
+!>       space, the interactions between central bin and interacting bin
+!>       are interpolated such that the distance between these bins is
+!>       factor 2 (nearly).
+!>
+!>     - The interactions are calculated in terms of energy density
+!>       instead of action density. So the action density spectrum
+!>       is firstly converted to the energy density grid, then the
+!>       interactions are calculated and then the spectrum is converted
+!>       to the action density spectrum back.
+!> @endverbatim
+!>
+!> @param[in] A Action density spectrum (1-D)
+!> @param[in] CG Group velocities.
+!> @param[in] WN Wavenumbers.
+!> @param[in] DEPTH Mean water depth.
+!> @param[in] IX 
+!> @param[out] S Source term (1-D version).
+!> @param[out] D Diagonal term of derivative (1-D version).
+!>
+!> @author A. J. van der Westhuysen  @date 13-Jan-2013
+!>        
       SUBROUTINE W3STR1 (A, CG, WN, DEPTH, IX, S, D)
 !/
 !/                  +-----------------------------------+

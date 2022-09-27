@@ -1,11 +1,17 @@
 name: GNU Linux Build
 on: [push, pull_request]
 
+# Cancel in-progress workflows when pushing to a branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
-  cache_key: gnu4
+  cache_key: gnu5
   CC: gcc-10
   FC: gfortran-10
   CXX: g++-10
+
 
 # Split into a steup step, and a WW3 build step which
 # builds multiple switches in a matrix. The setup is run once and 
@@ -16,6 +22,11 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: checkout-ww3
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with: 
+            path: ww3
       # Cache spack, OASIS, and compiler
       # No way to flush Action cache, so key may have # appended
       - name: cache-env
@@ -26,13 +37,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
-
-      - name: checkout-ww3
-        if: steps.cache-env.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with: 
-            path: ww3
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
@@ -83,7 +88,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       - name: build-ww3
         run: |

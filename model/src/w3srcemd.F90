@@ -2384,7 +2384,7 @@
         DO IS=1,NSPEC
           VD(IS) = MIN(0., VD(IS))
         END DO
-      END SUBROUTINE
+  END SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3
 !/ ------------------------------------------------------------------- /
       SUBROUTINE SIGN_VSD_PATANKAR_WW3(SPEC, VS, VD)
 !/
@@ -2461,7 +2461,7 @@
           VD(IS) = MIN(0., VD(IS))
           VS(IS) = MAX(0., VS(IS))
         END DO
-      END SUBROUTINE
+  END SUBROUTINE SIGN_VSD_PATANKAR_WW3
 !/
 !/ End of module W3SRCEMD -------------------------------------------- /
 !/

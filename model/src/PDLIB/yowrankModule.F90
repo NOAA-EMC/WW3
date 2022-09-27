@@ -60,7 +60,7 @@ module yowRankModule
 
     !> global start node number for every thread
     integer:: IStart = 0
-  end type
+  end type t_rank
 
   !> Provides access to some information of all threads e.g. iplg
   !> \note range [1:nTasks]
@@ -83,7 +83,7 @@ module yowRankModule
 
     call exchangeIPLG()
     call calcISTART()
-  end subroutine
+  end subroutine initRankModule
 
   !> send iplg from this thread to every neighbor thread
   !> \internal
@@ -231,7 +231,7 @@ module yowRankModule
       IPglob=rank(myrank+1)%iplg(J)
       ipgl_npa(IPglob)=J
     END DO
-  end subroutine
+  end subroutine exchangeIPLG
 
   !> \internal
   subroutine calcISTART()
@@ -243,7 +243,7 @@ module yowRankModule
     do ir=2, nTasks
       rank(ir)%IStart = rank(ir-1)%IStart + rank(ir-1)%np
     end do
-  end subroutine
+  end subroutine calcISTART
 
   subroutine finalizeRankModule()
     implicit none
@@ -255,5 +255,5 @@ module yowRankModule
       end do
       deallocate(rank)
     endif
-  end subroutine
-end module
+  end subroutine finalizeRankModule
+end module yowRankModule
