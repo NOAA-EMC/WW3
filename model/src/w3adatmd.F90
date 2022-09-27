@@ -174,11 +174,6 @@
 !      CFLTHMAX  R.A.  Public   Max. CFL number for refraction.
 !      CFLKMAX   R.A.  Public   Max. CFL number for wavenumber shift.
 !
-!    Old parameters not yet in new structure ...
-!
-!      FP1       R.A.  Public   Wind sea peak frequency. (parked in 2)
-!      THP1      R.A.  Public   Wind sea peak direction. (parked in 2)
-!
 !    Orphans, commented out here, now automatic arrays in W3WAVE, ....
 !
 !      DRAT      R.A.  Public   Density ration air/water. Was
@@ -381,13 +376,13 @@
 !
         REAL, POINTER         :: HS(:),  WLM(:),  T02(:), T0M1(:),   &
                                  T01 (:),  FP0(:),  THM(:),          &
-                                 THS(:),  THP0(:),  FP1(:), THP1(:), &
+                                 THS(:),  THP0(:),                   &
                                  HSIG(:), STMAXE(:), STMAXD(:),      &
                                  HMAXE(:), HCMAXE(:), HMAXD(:),      &
                                  HCMAXD(:), QP(:), WBT(:), WNMEAN(:)
         REAL, POINTER         :: XHS(:), XWLM(:), XT02(:), XT0M1(:),  &
                                  XT01 (:), XFP0(:), XTHM(:),          &
-                                 XTHS(:), XTHP0(:), XFP1(:), XTHP1(:),&
+                                 XTHS(:), XTHP0(:),                   &
                                  XHSIG(:), XSTMAXE(:), XSTMAXD(:),    &
                                  XHMAXE(:), XHCMAXE(:), XHMAXD(:),    &
                                  XHCMAXD(:), XQP(:), XWBT(:),         &
@@ -576,7 +571,7 @@
 !
       REAL, POINTER           :: HS(:), WLM(:),  T02(:), T0M1(:),     &
                                  T01 (:), FP0(:), THM(:), THS(:),     &
-                                 THP0(:), FP1(:), THP1(:), HSIG(:),   &
+                                 THP0(:), HSIG(:),                    &
                                  STMAXE(:), STMAXD(:), HMAXE(:),      &
                                  HCMAXE(:), HMAXD(:), HCMAXD(:),      &
                                  QP(:), WBT(:), WNMEAN(:)
@@ -1030,8 +1025,7 @@
                  WADATS(IMOD)%T02  (NSEALM), WADATS(IMOD)%T0M1(NSEALM), &
                  WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0 (NSEALM), &
                  WADATS(IMOD)%THM  (NSEALM), WADATS(IMOD)%THS (NSEALM), &
-                 WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%FP1 (NSEALM), &
-                 WADATS(IMOD)%THP1 (NSEALM), WADATS(IMOD)%HSIG(NSEALM), &
+                 WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%HSIG(NSEALM), &
                  WADATS(IMOD)%STMAXE (NSEALM),                          &
                  WADATS(IMOD)%STMAXD(NSEALM),                           &
                  WADATS(IMOD)%HMAXE(NSEALM), WADATS(IMOD)%HMAXD(NSEALM),&
@@ -1065,8 +1059,6 @@
       WADATS(IMOD)%THM    = UNDEF
       WADATS(IMOD)%THS    = UNDEF
       WADATS(IMOD)%THP0   = UNDEF
-      WADATS(IMOD)%FP1    = UNDEF
-      WADATS(IMOD)%THP1   = UNDEF
       WADATS(IMOD)%HSIG   = UNDEF
       WADATS(IMOD)%STMAXE = UNDEF
       WADATS(IMOD)%STMAXD = UNDEF
@@ -1087,23 +1079,13 @@
 ! 3) Frequency-dependent standard parameters
 !
 ! For the 3D arrays: the allocation is performed only if these arrays are allowed
-!                    by specific variables defined through the mod_def file
-!                    and read by w3iogr, which is called before W3DIMA.
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before the EF allocation'
-      WRITE(740+IAPROC,*) 'E3DF=', E3DF(1,1)
-#endif
+!                    by specific variables defined through the mod_def file 
+!                    and read by w3iogr, which is called before W3DIMA. 
       IF (  E3DF(1,1).GT.0 ) THEN
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) 'Now the allocation'
-#endif
           ALLOCATE(WADATS(IMOD)%EF(NSEALM,E3DF(2,1):E3DF(3,1)),    &
                    STAT=ISTAT )
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
-#ifdef W3_DEBUGINIT
-      FLUSH(740+IAPROC)
-#endif
       IF (  E3DF(1,2).GT.0 ) THEN
           ALLOCATE(WADATS(IMOD)%TH1M(NSEALM,E3DF(2,2):E3DF(3,2)),  &
                    STAT=ISTAT )
@@ -1788,22 +1770,6 @@
           CHECK_ALLOC_STATUS ( ISTAT )
         END IF
 !
-!     IF ( OUTFLAGS( 2,xx) ) THEN
-!         ALLOCATE ( WADATS(IMOD)%XFP1(NXXX), STAT=ISTAT )
-!         CHECK_ALLOC_STATUS ( ISTAT )
-!       ELSE
-!         ALLOCATE ( WADATS(IMOD)%XFP1(1), STAT=ISTAT )
-!         CHECK_ALLOC_STATUS ( ISTAT )
-!       END IF
-!
-!     IF ( OUTFLAGS( 2,xx) ) THEN
-!         ALLOCATE ( WADATS(IMOD)%XTHP1(NXXX), STAT=ISTAT )
-!         CHECK_ALLOC_STATUS ( ISTAT )
-!       ELSE
-!         ALLOCATE ( WADATS(IMOD)%XTHP1(1), STAT=ISTAT )
-!         CHECK_ALLOC_STATUS ( ISTAT )
-!       END IF
-!
       WADATS(IMOD)%XHS    = UNDEF
       WADATS(IMOD)%XWLM   = UNDEF
       WADATS(IMOD)%XT02   = UNDEF
@@ -1822,8 +1788,6 @@
       WADATS(IMOD)%XHCMAXD= UNDEF
       WADATS(IMOD)%XWBT   = UNDEF
       WADATS(IMOD)%XWNMEAN= UNDEF
-!     WADATS(IMOD)%XFP1   = UNDEF
-!     WADATS(IMOD)%XTHP1  = UNDEF
 !
       IF ( OUTFLAGS( 3, 1) ) THEN
           ALLOCATE ( WADATS(IMOD)%XEF(NXXX,E3DF(2,1):E3DF(3,1)), STAT=ISTAT )
@@ -2895,8 +2859,6 @@
           THM    => WADATS(IMOD)%THM
           THS    => WADATS(IMOD)%THS
           THP0   => WADATS(IMOD)%THP0
-          FP1    => WADATS(IMOD)%FP1
-          THP1   => WADATS(IMOD)%THP1
           HSIG   => WADATS(IMOD)%HSIG
           STMAXE => WADATS(IMOD)%STMAXE
           STMAXD => WADATS(IMOD)%STMAXD
@@ -3255,8 +3217,6 @@
           QP     => WADATS(IMOD)%XQP
           WBT    => WADATS(IMOD)%XWBT
           WNMEAN => WADATS(IMOD)%XWNMEAN
-!         FP1    => WADATS(IMOD)%XFP1
-!         THP1   => WADATS(IMOD)%XTHP1
 !
           EF     => WADATS(IMOD)%XEF
           TH1M   => WADATS(IMOD)%XTH1M

@@ -95,7 +95,7 @@ module yowElementpool
         belongTo = .true.
       END IF
     END DO
-  end function
+  end function belongTo
 
 
   subroutine finalizeElementpool()
@@ -104,5 +104,5 @@ module yowElementpool
     if(allocated(INE))        deallocate(INE)
     !if(allocated(INE_global)) deallocate(INE_global)
     if(allocated(ielg))       deallocate(ielg)
-  end subroutine
+  end subroutine finalizeElementpool
 end module yowElementpool

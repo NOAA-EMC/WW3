@@ -300,13 +300,13 @@
 !     cell size and starting from the south-west corner of the usual 
 !     rectuangular domain.  Each sea cell is then given a pair of x-y 
 !     index, plus a pair of increments.  These four index are stored in 
-!     the cell array IJKCel(NCel, 5), each row holds i, j, di, dj, ndps
-!     where ndps is an integer depth in metre.  If precision higher than
-!     a metre is required, it may use other unit (cm for instance) with a
-!     conversion factor.  
+!     the cell array IJKCel(4, NCel), each row holds i, j, di, dj, and
+!     IJKDep holds ndps, where ndps is an integer depth in metre.  If 
+!     precision higher than a metre is required, it may use other unit 
+!     (cm for instance) with a conversion factor.  
 !    
-!     For transport calculation, two face arrays, IJKUFc(NUFc, 7) and 
-!     IJKVFc(NVFc,8), are also created to store the neighbouring cell 
+!     For transport calculation, two face arrays, IJKUFc(7, NUFc) and 
+!     IJKVFc(7, NVFc), are also created to store the neighbouring cell 
 !     sequential numbers and the face location and size.  The 3 arrays 
 !     are calculated outside the wave model and input from text files.
 !
@@ -643,13 +643,6 @@
       ! STK_WN are the decays for Stokes drift partitions
       REAL                    :: STK_WN(25)
 
-#ifdef W3_DEBUGGRID
-       INTEGER     :: nbCase1, nbCase2, nbCase3,           &
-                      nbCase4, nbCase5, nbCase6,           &
-                      nbCase7, nbCase8
-       INTEGER     :: nbTMPSTA0, nbTMPSTA1, nbTMPSTA2
-       INTEGER     :: IAPROC
-#endif
 !
 #ifdef W3_LN1
       REAL                    :: CLIN, RFPM, RFHF
@@ -686,6 +679,7 @@
       INTEGER, ALLOCATABLE    :: NBICelin(:),  IJKObstr(:,:)
       REAL                    :: PoLonAC, PoLatAC
       INTEGER, ALLOCATABLE    :: IJKCelAC(:,:),IJKUFcAC(:,:),IJKVFcAC(:,:)
+      INTEGER, ALLOCATABLE    :: IJKDep(:), IJKVFc8(:)
       REAL,    ALLOCATABLE    :: XLONAC(:),YLATAC(:),ELONAC(:),ELATAC(:) 
 #endif
 !
@@ -1159,9 +1153,6 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 2.  IO set-up.
 !
-#ifdef W3_DEBUGGRID
-      IAPROC = 1
-#endif
       NDSI   = 10
       NDSS   = 99
       NDSM   = 20
@@ -3987,13 +3978,6 @@
         CALL READMSH(NDSG,FNAME)
         ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
         ZBIN(:,1) = VSC * ZB(:)
-#ifdef W3_DEBUGSTP
-        WRITE(740,*) 'VSC=', VSC
-        WRITE(740,*) 'Printing ZBIN 1'
-        DO IX=1,NX
-          WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-        END DO
-#endif
 !
 ! subgrid obstructions are not yet handled in unstructured grids
 !
@@ -4007,12 +3991,6 @@
       ALLOCATE ( TMPSTA(NY,NX), TMPMAP(NY,NX) )
       TMPSTA = 0
 !
-#ifdef W3_DEBUGSTP
-          WRITE(740,*) 'Printing ZBIN 2'
-          DO IX=1,NX
-            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-          END DO
-#endif
       IF (GTYPE .EQ. UNGTYPE) THEN
         TMPSTA = 1
       ELSE
@@ -4188,7 +4166,7 @@
        NGLO=NCel
        WRITE (NDSO,4004)  NCel, NLvCelsk
 
-       ALLOCATE (   IJKCelin( 5, NCel) )
+       ALLOCATE (   IJKCelin( 5, NCel))
        CALL INA2I ( IJKCelin, 5, NCel, 1, 5, 1, NCel, NDSTR, NDST, NDSE, &
                     IDFM, RFORM, IDLA, 1, 0)
        CLOSE(NDSTR)
@@ -4442,12 +4420,6 @@
         CALL READMSHOBC(NDSG,UGOBCFILE,TMPSTA,UGOBCOK)
        IF ((GTYPE.EQ.UNGTYPE).AND.UGOBCAUTO.AND.(.NOT.UGOBCOK))  &
           CALL UG_GETOPENBOUNDARY(TMPSTA,ZBIN,UGOBCDEPTH)
-#ifdef W3_DEBUGSTP
-          WRITE(740,*) 'Printing ZBIN 4'
-          DO IX=1,NX
-            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-          END DO
-#endif
 !
 ! 8.b Determine where to get the data
 !
@@ -4467,9 +4439,6 @@
 !
 ! ... Data to be read in parts
 !
-#ifdef W3_DEBUGGRID
-             WRITE(740+IAPROC,*) 'FROM=', TRIM(FROM)
-#endif
       IF ( FROM .EQ. 'PART' ) THEN
 !
 ! 8.b Update TMPSTA with input boundary data (ILOOP=1)
@@ -4481,16 +4450,6 @@
           'TO READ DATA IN PARTS. STOPPING NOW (107).'
           CALL EXTCDE ( 107 )
         END IF
-#ifdef W3_DEBUGGRID
-       nbCase1=0
-       nbCase2=0
-       nbCase3=0
-       nbCase4=0
-       nbCase5=0
-       nbCase6=0
-       nbCase7=0
-       nbCase8=0
-#endif
         DO ILOOP=1, 2
 !
           I = 1
@@ -4530,12 +4489,6 @@
               CALL NEXTLN ( COMSTR , NDSI , NDSE )
               READ (NDSI,*,END=2001,ERR=2002) IX, IY, CONNCT
             END IF
-#ifdef W3_DEBUGGRID
-  		 WRITE(740+IAPROC,*) 'read IX=', IX
-  		 WRITE(740+IAPROC,*) 'read IY=', IY
-  		 WRITE(740+IAPROC,*) 'read CONNCT=', CONNCT
-#endif
-
 !
 ! ... Check if last point reached.
 !
@@ -4552,10 +4505,6 @@
 !
 ! ... Check if intermediate points are to be added.
 !
-#ifdef W3_DEBUGGRID
-  		 WRITE(740+IAPROC,*) 'CONNCT=', CONNCT
-  		 WRITE(740+IAPROC,*) 'FIRST=', FIRST
-#endif
             IF ( CONNCT .AND. .NOT.FIRST ) THEN
                 IDX    = IX - IXO
                 IDY    = IY - IYO
@@ -4588,9 +4537,6 @@
 ! ... Check if point itself is to be added
 !
             IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
-#ifdef W3_DEBUGGRID
-                nbCase2=nbCase2+1
-#endif
               TMPSTA(IY,IX) = NSTAT
             END IF
 !
@@ -4652,9 +4598,6 @@
               IY1    = IY
 !
               JJ     = TMPSTA(IY,IX)
-#ifdef W3_DEBUGGRID
-             nbCase3=nbCase3 + 1
-#endif
               TMPSTA(IY,IX) = NSTAT
               DO
                 NBT    = 0
@@ -4664,36 +4607,24 @@
                       IF (IX.GT.1) THEN
                         IF (TMPSTA(IY  ,IX-1).EQ.NSTAT           &
                             .AND. TMPMAP(IY  ,IX-1).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-               nbCase4=nbCase4 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
                       IF (IX.LT.NX) THEN
                         IF (TMPSTA(IY  ,IX+1).EQ.NSTAT           &
                             .AND. TMPMAP(IY  ,IX+1).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-               nbCase5=nbCase5 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
                       IF (IY.LT.NY) THEN
                         IF (TMPSTA(IY+1,IX  ).EQ.NSTAT           &
                             .AND. TMPMAP(IY+1,IX  ).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-  	          nbCase6=nbCase6 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
                       IF (IY.GT.1) THEN
                         IF (TMPSTA(IY-1,IX  ).EQ.NSTAT           &
                            .AND. TMPMAP(IY-1,IX  ).EQ.JJ ) THEN
-#ifdef W3_DEBUGGRID
-               nbCase7=nbCase7 + 1
-#endif
                           TMPSTA(IY,IX) = NSTAT
                         END IF
                       END IF
@@ -4733,31 +4664,6 @@
 ! ... Branch back input / excluded points ( ILOOP in 8.b )
 !
         END DO
-#ifdef W3_DEBUGGRID
-      WRITE(740+IAPROC,*) 'nbCase1=', nbCase1
-      WRITE(740+IAPROC,*) 'nbCase2=', nbCase2
-      WRITE(740+IAPROC,*) 'nbCase3=', nbCase3
-      WRITE(740+IAPROC,*) 'nbCase4=', nbCase4
-      WRITE(740+IAPROC,*) 'nbCase5=', nbCase5
-      WRITE(740+IAPROC,*) 'nbCase6=', nbCase6
-      WRITE(740+IAPROC,*) 'nbCase7=', nbCase7
-      WRITE(740+IAPROC,*) 'nbCase8=', nbCase8
-      nbTMPSTA0=0
-      nbTMPSTA1=0
-      nbTMPSTA2=0
-      DO IX=1,NX
-        DO IY=1,NY
-          WRITE(740+IAPROC,*) 'IX/IY/TMPSTA=', IX, IY, TMPSTA(IY,IX)
-          IF (TMPSTA(IY,IX) .eq. 0) nbTMPSTA0=nbTMPSTA0+1
-          IF (TMPSTA(IY,IX) .eq. 1) nbTMPSTA1=nbTMPSTA1+1
-          IF (TMPSTA(IY,IX) .eq. 2) nbTMPSTA2=nbTMPSTA2+1
-        END DO
-      END DO
-      WRITE(740+IAPROC,*) 'nbTMPSTA0=', nbTMPSTA0
-      WRITE(740+IAPROC,*) 'nbTMPSTA1=', nbTMPSTA1
-      WRITE(740+IAPROC,*) 'nbTMPSTA2=', nbTMPSTA2
-      FLUSH(740+IAPROC)
-#endif
 !
         ELSE ! FROM .EQ. PART
 !
@@ -4973,12 +4879,6 @@
                    1, NX, IX3, 1, NY, IY3, 'Zb', 'm')
 #endif
 !
-#ifdef W3_DEBUGSTP
-          WRITE(740,*) 'Printing ZBIN 5'
-          DO IX=1,NX
-            WRITE(740,*) 'IX/ZBIN=', IX, ZBIN(IX,1)
-          END DO
-#endif
       TRNX   = 0.
       TRNY   = 0.
 !
@@ -5029,12 +4929,6 @@
 
           END DO
         END DO
-#ifdef W3_DEBUGSTP
-        DO ISEA=1,NSEA
-          WRITE(740,*) 'ISEA,ZB=', ISEA, ZB(ISEA)
-        END DO
-        FLUSH(740)
-#endif
 !
 #ifdef W3_SMC
  !!Li SMC grid definition of mapping arrays.
@@ -5060,23 +4954,30 @@
        MAPSTA = 0
        MAPST2 = 1
        MAPFS  = 0
+!LS    Allocation for read-in variables that remain local only.
+       ALLOCATE ( IJKVFc8(NVFc) )
+       ALLOCATE ( IJKDep(-9:NCel) )
 
  !Li     Pass input SMC arrays to newly declared grid arrays.
        WRITE (NDSO,4025)   NCel
-       IJKCel(:, 1:NGLO)=IJKCelin(:, 1:NGLO)
-       IJKUFc(:, 1:NGUI)=IJKUFcin(:, 1:NGUI)
-       IJKVFc(:, 1:NGVJ)=IJKVFcin(:, 1:NGVJ)
+       IJKCel(1:4, 1:NGLO)=IJKCelin(1:4, 1:NGLO)
+       IJKDep(1:NGLO)=IJKCelin(5, 1:NGLO)
+       IJKUFc(1:7, 1:NGUI)=IJKUFcin(1:7, 1:NGUI)
+       IJKVFc(1:7, 1:NGVJ)=IJKVFcin(1:7, 1:NGVJ)
+       IJKVFc8(1:NGVJ)=IJKVFcin(8, 1:NGVJ)
  !Li     Append Arctic part
        IF( ARCTC ) THEN
-       IJKCel(:, NGLO+1:NCel)=IJKCelAC(:, 1:NARC)
-       IJKUFc(:, NGUI+1:NUFc)=IJKUFcAC(:, 1:NAUI)
-       IJKVFc(:, NGVJ+1:NVFc)=IJKVFcAC(:, 1:NAVJ)
+       IJKCel(1:4, NGLO+1:NCel)=IJKCelAC(1:4, 1:NARC)
+       IJKDep(NGLO+1:NCel)=IJKCelAC(5, 1:NARC)
+       IJKUFc(1:7, NGUI+1:NUFc)=IJKUFcAC(1:7, 1:NAUI)
+       IJKVFc(1:7, NGVJ+1:NVFc)=IJKVFcAC(1:7, 1:NAVJ)
+       IJKVFc8(NGVJ+1:NVFc)=IJKVFcAC(8, 1:NAVJ)
        ENDIF !! ARCTC
 
        WRITE (NDSO,4026) 
-       WRITE (NDSO,4006)    1,(IJKCel(ix,  1), ix=1,5)
+       WRITE (NDSO,4006)    1,(IJKCel(ix,  1), ix=1,4), IJKDep(1)
        JJ=NCel
-       WRITE (NDSO,4006)   JJ,(IJKCel(ix, JJ), ix=1,5)
+       WRITE (NDSO,4006)   JJ,(IJKCel(ix, JJ), ix=1,4), IJKDep(JJ)
        WRITE (NDSO,*) ' '
        WRITE (NDSO,4027) 
        WRITE (NDSO,4009)    1,(IJKUFc(ix,  1), ix=1,7)
@@ -5084,9 +4985,9 @@
        WRITE (NDSO,4009)   JJ,(IJKUFc(ix, JJ), ix=1,7)
        WRITE (NDSO,*) ' '
        WRITE (NDSO,4028) 
-       WRITE (NDSO,4012)    1,(IJKVFc(ix,  1), ix=1,8)
+       WRITE (NDSO,4012)    1,(IJKVFc(ix,  1), ix=1,7), IJKVFc8(1)
        JJ=NVFc
-       WRITE (NDSO,4012)   JJ,(IJKVFc(ix, JJ), ix=1,8)
+       WRITE (NDSO,4012)   JJ,(IJKVFc(ix, JJ), ix=1,7), IJKVFc8(JJ)
        WRITE (NDSO,*) ' '
 
  !Li    Boundary -9 to 0 cells for cell x-size 2**n
@@ -5101,16 +5002,16 @@
  !Li    Y-size is restricted below base-cell value. 
  !Li    For refined boundary cells, its y-size is replaced with 
  !Li    the inner cell y-size for flux gradient. 
-       IJKCel(5,    0)=10
+       IJKDep(0)=10
        DO ip=1,9
           IJKCel(3,-ip)=IJKCel(3,-ip+1)*2
           IK=MIN(ip, NRLv-1) 
           IJKCel(4,-ip)=2**IK 
-          IJKCel(5,-ip)=10
+          IJKDep(-ip)=10
        ENDDO
        WRITE (NDSO,4029) 
        DO ip=0, -9, -1
-       WRITE (NDSO,4030)  IJKCel(:,ip)
+       WRITE (NDSO,4030)  IJKCel(:,ip), IJKDep(ip)
        ENDDO
 
        WRITE (NDSO,4031)   NCel
@@ -5150,7 +5051,7 @@
         END IF
 
  !Li  Minimum DMIN depth is used as well for SMC. 
-          ZB(ISEA)= - MAX( DMIN, FLOAT( IJKCel(5, ISEA) ) )
+          ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
           MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
          MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
          MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
@@ -7254,7 +7155,7 @@
  9096 FORMAT ( '            ',I3,2I8)
 #endif
 
-      END SUBROUTINE 
+  END SUBROUTINE W3GRID
 !/
 !/ Internal function READNL ------------------------------------------ /
 !/
@@ -7572,7 +7473,7 @@
 !/
 !/ End of READNL ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+  END SUBROUTINE READNL
 !/
 !/ End of W3GRID ----------------------------------------------------- /
 !/

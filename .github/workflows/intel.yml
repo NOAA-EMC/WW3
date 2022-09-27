@@ -34,7 +34,7 @@ jobs:
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
-        with:
+        with: 
             path: ww3
 
       # Cache spack, OASIS, and compiler
