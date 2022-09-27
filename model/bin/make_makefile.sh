@@ -36,7 +36,7 @@
   echo '                *****************************'
   echo ' '
 
-# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -48,7 +48,7 @@
 . ${main_dir}/bin/build_utils.sh
 
 
-# 1.d Go to temp dir 
+# 1.d Go to temp dir
   cd $temp_dir
 
 
@@ -123,10 +123,10 @@
   for prog in $progs
   do
 
-    # Get file - the list of files to be compiled 
-    # and filel - list of files for linking a particular prog 
+    # Get file - the list of files to be compiled
+    # and filel - list of files for linking a particular prog
     create_file_list
- 
+
     case $prog in
       ww3_grid) IDstring='Grid preprocessor' ;;
       ww3_strt) IDstring='Initial conditions program' ;;
@@ -160,7 +160,7 @@
     echo "# $IDstring"                           >> makefile
     echo ' '                                     >> makefile
 
-    # if esmf is included in program name or if 
+    # if esmf is included in program name or if
     # the target is compile and create archive
     if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
     then

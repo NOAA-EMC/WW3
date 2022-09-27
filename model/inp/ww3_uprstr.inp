@@ -47,7 +47,7 @@ $          for the last gross check.                                   $
 $  UPD4 :: [NOT INCLUDED in this Version, Just keeping the spot]       $
 $          Option 4    The generalization of the UPD3. The update      $
 $          factor is the sum of surfaces which are applied on the      $
-$          background spectrum.                                        $ 
+$          background spectrum.                                        $
 $          The algorithm requires the mapping of each partition on the $
 $          individual spectra; the map is used to determine the        $
 $          weighting surfaces.                                         $

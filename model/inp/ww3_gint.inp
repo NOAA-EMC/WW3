@@ -5,10 +5,10 @@ $ Time, time increment and number of outputs
 $
   19680606 060000 10800. 1
 $
-$ Total number of grids (NGR). The code assumes that the first NGR-1  
-$ grids are the input grids and the last grid is the target grid in 
+$ Total number of grids (NGR). The code assumes that the first NGR-1
+$ grids are the input grids and the last grid is the target grid in
 $ which the output fields are to be interpolated. It also assumes
-$ that all the grids have the same output fields switched on 
+$ that all the grids have the same output fields switched on
 $
 $ NGR
 $
@@ -36,4 +36,4 @@ $   2: Nearest (curvilinear and rectangular)
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
-$ -------------------------------------------------------------------- $ 
+$ -------------------------------------------------------------------- $
