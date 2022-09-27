@@ -1806,7 +1806,7 @@
 !     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_PDLIB
       use yowNodepool, only: npa
-      USE yowExchangeModule, only : PDLIB_exchange2Dreal
+      USE yowExchangeModule, only : PDLIB_exchange2Dreal_zero
 #endif
       USE W3PARALL, ONLY : INIT_GET_ISEA
 #ifdef W3_S
@@ -2268,7 +2268,7 @@
       IF ( PRESENT(DONE) ) DONE = .TRUE.
 !
 #ifdef W3_PDLIB
-      CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
+      CALL PDLIB_exchange2Dreal_zero(VA)
 #endif
 !
 ! Formats
@@ -2903,7 +2903,7 @@
       USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_PDLIB
       use yowNodepool, only: npa
-      USE yowExchangeModule, only : PDLIB_exchange2Dreal
+      USE yowExchangeModule, only : PDLIB_exchange2Dreal_zero
 #endif
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
@@ -3343,7 +3343,7 @@
       IF ( PRESENT(DONE) ) DONE = .TRUE.
 !       
 #ifdef W3_PDLIB
-  CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
+  CALL PDLIB_exchange2Dreal_zero(VA)
 #endif
 !
 ! Formats
