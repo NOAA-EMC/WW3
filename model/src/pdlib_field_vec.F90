@@ -814,7 +814,7 @@ MODULE PDLIB_FIELD_VEC
       USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS
       USE W3ADATMD, ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC
       USE W3ADATMD, ONLY: HS, WLM, T02
-      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1,  &
+      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0,             &
                           DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
                           SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
                           PDIR, PSI, PWS, PWST, PNR, PHIAW,      &
