@@ -6230,6 +6230,9 @@
       USE W3DISPMD, only : WAVNU_LOCAL
       USE W3ADATMD, ONLY: U10, U10D
       USE W3SRC4MD, only: W3SPR4
+#ifdef W3_REF1
+      USE W3GDATMD, only: REFPARS
+#endif
 #ifdef W3_MEMCHECK
       USE MallocInfo_m
 #endif
@@ -6262,6 +6265,8 @@
       REAL  :: eVal1, eVal2!, extmp(nspec,nseal)
       REAL  :: eVA, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC 
       REAL  :: CG1(0:NK+1), WN1(0:NK+1)
+
+
 
       LOGICAL :: LCONVERGED(NSEAL), lexist, LLWS(NSPEC)
 #ifdef WEIGHTS 
