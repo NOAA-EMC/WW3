@@ -837,9 +837,9 @@
 ! 1.g Air density time
 !
       IF ( FLRHOA ) THEN
-          DTTST1 = DSEC21 ( TU0 , TUN )
-          DTTST2 = DSEC21 ( TU0 , TIME )
-          DTTST3 = DSEC21 ( TEND , TUN )
+          DTTST1 = DSEC21 ( TR0 , TRN )
+          DTTST2 = DSEC21 ( TR0 , TIME )
+          DTTST3 = DSEC21 ( TEND , TRN )
 #ifdef W3_T
           WRITE (NDST,9018) DTTST1, DTTST2, DTTST3
 #endif
