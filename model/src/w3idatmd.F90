@@ -211,7 +211,6 @@ MODULE W3IDATMD
     REAL, POINTER         :: ICEP3(:,:)
     REAL, POINTER         :: ICEP4(:,:)
     REAL, POINTER         :: ICEP5(:,:)
-
 #ifdef W3_TIDE
     REAL, POINTER         :: CXTIDE(:,:,:,:)
     REAL, POINTER         :: CYTIDE(:,:,:,:)

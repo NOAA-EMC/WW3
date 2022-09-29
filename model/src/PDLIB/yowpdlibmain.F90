@@ -1135,7 +1135,7 @@ contains
            neighborDomains(i)%domainID-1, &
            tag, &
            comm, &
-                                !> todo use a second sendRequest array here
+           !> todo use a second sendRequest array here
            sendRequest(i), &
            ierr);
       if(ierr/=MPI_SUCCESS) then
