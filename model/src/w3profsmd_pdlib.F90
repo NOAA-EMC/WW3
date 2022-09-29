@@ -1105,7 +1105,7 @@
         DO IP = 1, npa
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
 #ifdef W3_REF1
-          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
+    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
 #endif
         END DO
 #ifdef W3_DEBUGSOLVER
@@ -1385,7 +1385,7 @@
         DO IP = 1, npa
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
-          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
+    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
 #endif
         END DO
         AC = REAL(U)
@@ -2497,7 +2497,7 @@
         DO IP = 1, npa
          UL(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
-         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
+    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values 
 #endif
         END DO
 
@@ -2536,7 +2536,7 @@
         DO IP = 1,npa
           U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
-          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
+    IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
 #endif
         END DO
         AC = REAL(U)
@@ -3784,10 +3784,10 @@
             CSIN   = FACY * ESIN(ITH)
             CXY(:,1) = CCOS * CG(IK,NI_ISEA) / CLATS(NI_ISEA)
             CXY(:,2) = CSIN * CG(IK,NI_ISEA)
-            !IF (FLCUR) THEN
-            !  CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATS(NI_ISEA)
-            !  CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)
-            !ENDIF
+            IF (FLCUR) THEN
+              CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATS(NI_ISEA)
+              CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)
+            ENDIF
 #ifdef W3_MGP
         CXY(:,1) = CXY(:,1) - CCURX*VGX/CLATS(ISEA)
         CXY(:,2) = CXY(:,2) - CCURY*VGY
@@ -6269,16 +6269,16 @@
           !WRITE(740+IAPROC,*) myrank, 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
 
 #ifdef W3_DEBUGSOLVER
-          WRITE(740+IAPROC,*) 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
-          FLUSH(740+IAPROC)
+       WRITE(740+IAPROC,*) 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
+       FLUSH(740+IAPROC)
 #endif
           IF (myrank == 0) WRITE(*,*) 'No. of solver iterations', nbiter, is_converged, prop_conv, B_JGS_PMIN
           IF (prop_conv .le. B_JGS_PMIN + TINY(1.)) THEN
 #ifdef W3_DEBUGFREQSHIFT
-            WRITE(740+IAPROC,*) 'prop_conv=', prop_conv
-            WRITE(740+IAPROC,*) 'NX=', NX
-            WRITE(740+IAPROC,*) 'is_converged=', is_converged
-            WRITE(740+IAPROC,*) 'Exiting by TERMINATE_DIFFERENCE'
+       WRITE(740+IAPROC,*) 'prop_conv=', prop_conv
+       WRITE(740+IAPROC,*) 'NX=', NX
+       WRITE(740+IAPROC,*) 'is_converged=', is_converged
+       WRITE(740+IAPROC,*) 'Exiting by TERMINATE_DIFFERENCE'
 #endif
             EXIT
           END IF 
