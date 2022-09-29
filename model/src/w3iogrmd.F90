@@ -824,57 +824,8 @@
 !
 ! Reads different kind of information depending on grid type
 !
-     SELECT CASE ( GTYPE )
+          SELECT CASE ( GTYPE )
 !!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020 
-     CASE ( RLGTYPE, SMCTYPE )
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-            SX, SY, X0, Y0
-       DO IX=1,NX
-         XGRD(:,IX) = REAL(X0 + REAL(IX-1)*SX)
-         END DO
-       DO IY=1,NY
-         YGRD(IY,:) = REAL(Y0 + REAL(IY-1)*SY)
-         END DO
-     CASE ( CLGTYPE )
-       ALLOCATE(XGRD4(NY,NX),YGRD4(NY,NX)); XGRD4 = 0.; YGRD4 = 0. 
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) XGRD4, YGRD4
-       DEALLOCATE(XGRD4, YGRD4)
-       !Set SX, SY, X0, Y0 to large values if curvilinear grid
-       X0 = HUGE(X0); Y0 = HUGE(Y0)
-       SX = HUGE(SX); SY = HUGE(SY)
-     CASE (UNGTYPE) 
-#ifdef W3_DEBUGIOGR
-       WRITE(740+IAPROC,*) 'W3IOGR, step 7.4'
-       FLUSH(740+IAPROC)
-#endif
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 & 
-         FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-         FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
-         DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
-         NTRI,COUNTOT, COUNTRI, NNZ,                           &
-         B_JGS_TERMINATE_MAXITER,                              &
-         B_JGS_TERMINATE_DIFFERENCE,                           &
-         B_JGS_TERMINATE_NORM,                                 &
-         B_JGS_LIMITER,                                        &
-         B_JGS_BLOCK_GAUSS_SEIDEL,                             &
-         B_JGS_USE_JACOBI,                                     &
-         B_JGS_MAXITER,                                        &
-         B_JGS_PMIN,                                           &
-         B_JGS_DIFF_THR,                                       &
-         B_JGS_NORM_THR,                                       &
-         B_JGS_NLEVEL,                                         &
-         B_JGS_SOURCE_NONLINEAR
-#ifdef W3_DEBUGIOGR
-        WRITE(740+IAPROC,*) 'W3IOGR, step 7.5, GUGINIT=', GUGINIT
-        FLUSH(740+IAPROC)
-#endif
-        IF (.NOT. GUGINIT) THEN
-#ifdef W3_DEBUGIOGR
-         WRITE(740+IAPROC,*) 'Before call to W3DIMUG from W3IOGR'
-         FLUSH(740+IAPROC)
-#endif
-         CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
-        END IF
             CASE ( RLGTYPE, SMCTYPE )
               READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
                    SX, SY, X0, Y0
