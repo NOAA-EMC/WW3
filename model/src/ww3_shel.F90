@@ -504,20 +504,6 @@
 ! 1.  IO set-up
 ! 1.a For shell
 !
-<<<<<<< HEAD
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'ww3_shel, step 1'
-      FLUSH(740+IAPROC)
-#endif
-
-#ifdef W3_MEMCHECK
-       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 1'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(100000+IAPROC,mallInfos)
-#endif
-
-=======
->>>>>>> develop
       NDSI   = 10
       NDSS   = 90
       NDSO   =  6
@@ -1345,19 +1331,6 @@
        CALL EXTCDE ( 6666 )
      ENDIF
 #endif
-<<<<<<< HEAD
-#ifdef W3_DEBUGINIT
-      write(740+IAPROC,*), ' After read 2002, case 6'
-#endif
-
-#ifdef W3_MEMCHECK
-       WRITE(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION BEFORE IOGR'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(100000+IAPROC,mallInfos)
-#endif
-
-=======
->>>>>>> develop
         CALL W3IOGR ( 'GRID', NDSF(7) )
 
 #ifdef W3_MEMCHECK
