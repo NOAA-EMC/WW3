@@ -7155,7 +7155,7 @@
  9096 FORMAT ( '            ',I3,2I8)
 #endif
 
-      END SUBROUTINE 
+  END SUBROUTINE W3GRID
 !/
 !/ Internal function READNL ------------------------------------------ /
 !/
@@ -7473,7 +7473,7 @@
 !/
 !/ End of READNL ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+  END SUBROUTINE READNL
 !/
 !/ End of W3GRID ----------------------------------------------------- /
 !/

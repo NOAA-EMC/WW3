@@ -49,7 +49,7 @@ module yowfunction
       integer, intent(in) :: istat
       Print *, 'Error with istat=', istat
       CALL ABORT
-      END SUBROUTINE
+  END SUBROUTINE PDLIB_ABORT
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -187,7 +187,7 @@ module yowfunction
      WRITE(740+IAPROC,*) 'ComputeListNP_ListNPA_Kernel, step 8'
      FLUSH(740+IAPROC)
 #endif
-  END SUBROUTINE
+  END SUBROUTINE ComputeListNP_ListNPA_ListIPLG_Kernel
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -275,7 +275,7 @@ module yowfunction
      FLUSH(740+IAPROC)
 #endif
     END IF
-    END SUBROUTINE
+  END SUBROUTINE ComputeListNP_ListNPA_ListIPLG
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
@@ -301,5 +301,5 @@ module yowfunction
       END DO
       NbSend(IPROC)=eSend
     END DO
-  END SUBROUTINE
+  END SUBROUTINE ComputeBoundaryInformation
 end module yowfunction

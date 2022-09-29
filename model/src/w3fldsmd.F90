@@ -1961,8 +1961,8 @@
       ICLO   = ICLO_NONE
       IF ( FLAGLL .AND. CLOSED ) ICLO = ICLO_SMPL
 !
-      DO 110, IX=1, NX
-        DO 100, IY=1, NY
+      DO  IX=1, NX
+        DO  IY=1, NY
           RD11(IX,IY) = 0.
           RD12(IX,IY) = 0.
           RD21(IX,IY) = 0.
@@ -1971,8 +1971,8 @@
           IX2(IX,IY)  = 1
           IY1(IX,IY)  = 1
           IY2(IX,IY)  = 1
-  100     CONTINUE
-  110   CONTINUE
+        END DO
+      END DO
 !
 ! 1.b Setup logical mask
 !
@@ -1991,8 +1991,8 @@
 !
 ! 2.  Loop over output grid ------------------------------------------ *
 !
-      DO 500, IY=1, NY
-        DO 400, IX=1, NX
+      DO IY=1, NY
+        DO  IX=1, NX
 !
           X = TLON(IY,IX)
           Y = TLAT(IY,IX)
@@ -2088,8 +2088,8 @@
 !
 ! ... End loop over output grid -------------------------------------- *
 !
-  400     CONTINUE
-  500   CONTINUE
+        END DO
+      END DO
 !
 ! 3.  Finalizations -------------------------------------------------- *
 ! 3.a Final output
