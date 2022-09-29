@@ -47,7 +47,7 @@ module yowElementpool
   !> number of local elements
   integer, public :: ne = 0
 
-  !> number of elements of the augmented domain 
+  !> number of elements of the augmented domain
 
   !> local element array. it stores the local node IDs
   !> first index from 1 to 3.
@@ -64,7 +64,7 @@ module yowElementpool
   !> ne long. give the global element id
   integer, public, target, allocatable :: ielg(:)
 
-  contains
+contains
 
 
   !> Returns true if the element belongs to rank.
@@ -83,17 +83,17 @@ module yowElementpool
     integer J
 
     if(present(rank) .eqv. .true.) then
-      myDomainID = rank +1
+       myDomainID = rank +1
     else
-      myDomainID = myrank + 1
+       myDomainID = myrank + 1
     endif
 
     ! check if this element adjoint to three different domains.
     belongTo = .false.
     DO J=1,3
-      IF (nodes_global(ele_in(J)) % domainID == myDomainID) THEN
-        belongTo = .true.
-      END IF
+       IF (nodes_global(ele_in(J)) % domainID == myDomainID) THEN
+          belongTo = .true.
+       END IF
     END DO
   end function belongTo
 
