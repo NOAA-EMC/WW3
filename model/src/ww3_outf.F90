@@ -123,7 +123,7 @@
       USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG, UST,      &
                           USTDIR, RHOAIR
       USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM, &
-                          THS, FP0, THP0, FP1, THP1, DTDYN, FCUT,     &
+                          THS, FP0, THP0, DTDYN, FCUT,                &
                           ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
                           PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &
@@ -2356,7 +2356,7 @@
                   IF(GTYPE .NE. UNGTYPE) THEN
                     JJ     = LEN_TRIM(FNMPRE)
                     OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,             &
-                          FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                          form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
                     WRITE (NDSDAT) FILEID, TIME,                      &
                        MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
                        MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
@@ -2365,7 +2365,7 @@
                        ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
                   ELSE 
                     OPEN (NDSDAT,FILE=FNAME,             &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
                     WRITE (NDSDAT) FILEID, TIME,                      &
                          X0,MAXX,NX, &
                          Y0,MAXY,NY, &

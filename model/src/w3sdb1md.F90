@@ -228,11 +228,6 @@
 ! 1.a. Maximum wave height
 ! 1.a.1. Simple limit
 !
-#ifdef W3_DEBUGDB1
-      WRITE(740+IAPROC,*) 'FDONLY=', FDONLY
-      WRITE(740+IAPROC,*) 'FSSOURCE=', FSSOURCE
-      FLUSH(740+IAPROC)
-#endif
       IF ( FDONLY ) THEN
           HM     = DBLE(SDBC2) * DBLE(DEPTH)
       ELSE
@@ -315,11 +310,6 @@
         WRITE(*,'(A200)') 'IX, DEPTH, CBJ, BB, QB, SDBC1, SDBC2, FMEAN, FMEAN2, HS'
         WRITE(*,'(I10,20F20.10)') IX, DEPTH, CBJ, BB, QB, SDBC1, SDBC2, FMEAN, FMEAN2, 4*SQRT(ETOT)
       ENDIF
-#endif
-
-#ifdef W3_DEBUGDB1
-      WRITE(740+IAPROC,*) 'CBJ=', CBJ
-      FLUSH(740+IAPROC)
 #endif
 !
 ! ... Test output of arrays

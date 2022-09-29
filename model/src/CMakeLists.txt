@@ -29,6 +29,18 @@ foreach(switch ${switches})
   target_compile_definitions(ww3_lib PUBLIC W3_${switch})
 endforeach()
 
+if(ENDIAN STREQUAL "BIG")
+  set(endianness "big_endian")
+elseif(ENDIAN STREQUAL "LITTLE")
+  set(endianness "little_endian")
+elseif(ENDIAN STREQUAL "NATIVE")
+  set(endianness "native")
+else()
+  message(FATAL_ERROR "Unknown option specified by ENDIAN: ${ENDIAN}")
+endif()
+
+add_compile_definitions(ENDIANNESS='${endianness}')
+
 target_include_directories(ww3_lib
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/mod>
   $<INSTALL_INTERFACE:mod>)
@@ -36,7 +48,7 @@ target_include_directories(ww3_lib
 # Set compiler flags.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
   set(compile_flags -no-fma -ip -g -traceback -i4 -real-size 32 -fp-model precise
-    -assume byterecl -convert big_endian -fno-alias -fno-fnalias)
+    -assume byterecl -fno-alias -fno-fnalias)
   # -sox only works on Linux
   if(LINUX)
     list(APPEND compile_flags -sox)
@@ -55,7 +67,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
   endif()
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
-  set(compile_flags -g -fno-second-underscore -ffree-line-length-none -fconvert=big-endian)
+  set(compile_flags -g -fno-second-underscore -ffree-line-length-none)
   set(compile_flags_release -O3)
   set(compile_flags_debug -Wall -fcheck=all -ffpe-trap=invalid,zero,overflow -frecursive -fbacktrace)
   
@@ -64,7 +76,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
   endif()
 
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
-  set(compile_flags -g -i4 -r4 -Kieee -byteswapio)
+  set(compile_flags -g -i4 -r4 -Kieee)
   set(compile_flags_release -O3)
   set(compile_flags_debug -O0 -Mbounds -Mchkfpstk -Mchkstk -Mdalign -Mdclchk -Mdepchk -Miomutex -Ktrap=fp -Mrecursive -traceback)
   
@@ -168,8 +180,8 @@ endif()
 if("NCEP2" IN_LIST switches)
   find_package(g2 REQUIRED)
   find_package(bacio REQUIRED)
-  find_package(w3nco REQUIRED)
-  target_link_libraries(ww3_lib PUBLIC g2::g2_4 bacio::bacio_4 w3nco::w3nco_4)
+  find_package(w3emc REQUIRED)
+  target_link_libraries(ww3_lib PUBLIC g2::g2_4 bacio::bacio_4 w3emc::w3emc_4)
 endif()
 
 if("TIDE" IN_LIST switches)

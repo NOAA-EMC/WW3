@@ -620,7 +620,6 @@
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                      &
           WRITE (MDSS,910)  IFNAME, MDSI
 !
-      WRITE(*,*) 'TEST TEST TEST', TRIM(FNMPRE)//IFNAME
       OPEN (MDSI,FILE=TRIM(FNMPRE)//IFNAME,STATUS='OLD',ERR=2000,      &
             IOSTAT=IERR)
       REWIND (MDSI)
@@ -2853,7 +2852,12 @@
               ELSE
                 NDS(9) = -1
               END IF
+#ifdef W3_MPI          
           END IF
+#endif
+#ifdef W3_SHRD
+       END IF
+#endif
 !
         END DO
 !
@@ -3410,8 +3414,6 @@
  9050 FORMAT ( ' TEST WMINIT : GRID NUMBER',I3,' =================')
  9051 FORMAT ( ' TEST WMINIT : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
                                   5(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
- 9053 FORMAT ( ' TEST WMINITNML : OUTFF   : ',I9.8 &
-                                  5(/24X,I9.8) )
  9052 FORMAT ( ' TEST WMINIT : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
 #endif
 !
@@ -5683,7 +5685,8 @@
         WRITE (MDST,9082) GRSTAT(I), TOUTP(:,I), TSYNC(:,I)
 #endif
 !
-        END DO
+    END DO ! DO I=1, NRGRD
+
 !
 #ifdef W3_MPI
       CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
@@ -5972,7 +5975,12 @@
               ELSE
                 NDS(9) = -1
               END IF
-          END IF
+#ifdef W3_MPI
+          END IF ! IF ( .NOT. FLRBPI(I) .AND. FLBPI .AND. MPI_COMM_GRD .NE. MPI_COMM_NULL)
+#endif
+#ifdef W3_SHRD
+       END IF ! IF ( .NOT. FLRBPI(I) .AND. FLBPI )
+#endif
 !
         END DO
 !
@@ -6084,7 +6092,7 @@
             END DO
 #endif
 !
-        END IF
+    END IF ! IF ( UNIPTS )
 !
 ! 8.c.6 Output
 !
@@ -6122,7 +6130,7 @@
               WRITE (MDSS,937) 'No lower rank grid dependencies'
           IF ( NMPLOG .EQ. IMPROC )                                   &
               WRITE (MDSO,937) 'No lower rank grid dependencies'
-        END IF
+    END IF ! IF ( MAXVAL(GRDLOW(:,0)) .GT. 0 )
       DEALLOCATE ( FLRBPI )
 !
       IF ( MAXVAL(GRDEQL(:,0)) .GT. 0 ) THEN
@@ -6153,7 +6161,7 @@
               WRITE (MDSS,937) 'No same rank grid dependencies'
           IF ( NMPLOG .EQ. IMPROC )                                   &
               WRITE (MDSO,937) 'No same rank grid dependencies'
-        END IF
+    END IF ! IF ( MAXVAL(GRDEQL(:,0)) .GT. 0 )
 !
       IF ( MAXVAL(GRDHGH(:,0)) .GT. 0 ) THEN
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                  &
@@ -6183,7 +6191,7 @@
               WRITE (MDSS,937) 'No higher rank grid dependencies'
           IF ( NMPLOG .EQ. IMPROC )                                   &
               WRITE (MDSO,937) 'No higher rank grid dependencies'
-        END IF
+    END IF ! IF ( MAXVAL(GRDHGH(:,0)) .GT. 0 )
 !
 #ifdef W3_T
       WRITE (MDST,9083)
@@ -6548,6 +6556,8 @@
  9051 FORMAT ( ' TEST WMINITNML : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
                                   5(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
  9052 FORMAT ( ' TEST WMINITNML : FLGRD  : ',5(5L2,1X)/24X,5(5L2,1X))
+ 9053 FORMAT ( ' TEST WMINITNML : OUTFF   : ',I9.8 &
+                                  5(/24X,I9.8) )
 #endif
 !
 #ifdef W3_T

@@ -393,11 +393,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      DO 100, ISEA=1, NSEA
+    DO ISEA=1, NSEA
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         XY(IX,IY) = S(ISEA)
-  100   CONTINUE
+    end do
 !/
 !/ End of W3S2XY ----------------------------------------------------- /
 !/
@@ -511,7 +511,7 @@
 !/
 !/ End of NEXTLN ----------------------------------------------------- /
 !/
-      END FUNCTION
+  END FUNCTION EJ5P
 !/ ------------------------------------------------------------------- /
       REAL FUNCTION DIST_SPHERE ( lo1,la1,lo2,la2 )
 !/
@@ -589,7 +589,7 @@
 !/
 !/ End of NEXTLN ----------------------------------------------------- /
 !/
-      END FUNCTION
+  END FUNCTION DIST_SPHERE
 !/ ------------------------------------------------------------------- /
 
 !/ ------------------------------------------------------------------- /
@@ -1635,9 +1635,9 @@ END SUBROUTINE STR_TO_UPPER
 !     Alter array X to get decreasing order if needed
 !
       IF (KFLAG .LE. -1) THEN
-         DO 10 I=1,NN
+       DO  I=1,NN
             X(I) = -X(I)
-   10    CONTINUE
+       end do
       ENDIF
 !
       IF (KK .EQ. 2) GO TO 100
@@ -1871,9 +1871,9 @@ END SUBROUTINE STR_TO_UPPER
 !     Clean up
 !
   190 IF (KFLAG .LE. -1) THEN
-         DO 200 I=1,NN
+       DO  I=1,NN
             X(I) = -X(I)
-  200    CONTINUE
+       end do
       ENDIF
       RETURN
       END SUBROUTINE SSORT1

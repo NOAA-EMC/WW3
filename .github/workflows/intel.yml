@@ -1,6 +1,11 @@
 name: Intel Linux Build
 on: [push, pull_request]
 
+# Cancel in-progress workflows when pushing to a branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # Use custom shell with -l so .bash_profile is sourced which loads intel/oneapi/setvars.sh
 # without having to do it in manually every step
 defaults:
@@ -9,7 +14,7 @@ defaults:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel5
+  cache_key: intel6
   CC: icc
   FC: ifort
   CXX: icpc
@@ -25,6 +30,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: checkout-ww3
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with: 
+            path: ww3
+
       # Cache spack, OASIS, and compiler
       # No way to flush Action cache, so key may have # appended
       - name: cache-env
@@ -36,7 +48,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -47,12 +59,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
           echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
-
-      - name: checkout-ww3
-        if: steps.cache-env.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
-        with: 
-            path: ww3
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
@@ -108,7 +114,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-${{ env.cache_key }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
 
       - name: build-ww3
         run: |
@@ -124,6 +130,6 @@ jobs:
           else
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
-          make -j2
+          make -j2 VERBOSE=1
 
           

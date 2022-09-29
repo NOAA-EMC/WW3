@@ -1,70 +1,171 @@
-WAVEWATCH III® Software License
+### WAVEWATCH III® Software License
 
-Software, as understood herein, shall be broadly interpreted as being 
-inclusive of algorithms, source code, object code, data bases and 
-related documentation, all of which shall be furnished free of charge 
-to the Licensee.
+© 2009 National Weather Service National Oceanic and Atmospheric Administration.
+WAVEWATCH III® is a trademark of the National Weather Service. 
+The WAVEWATCH III code is free software: you can use, redistribute, and modify it under the terms of the Lesser GNU Public License v3. 
 
-Corrections, upgrades or enhancements may be furnished and, if 
-furnished, shall also be furnished to the Licensee without charge. NOAA,
-however, is not required to develop or furnish such corrections, 
-upgrades or enhancements.
+GNU LESSER GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
 
-NOAA's software, whether that initially furnished or corrections or 
-upgrades, are furnished "as is". NOAA furnishes its software without any 
-warranty whatsoever and is not responsible for any direct, indirect or 
-consequential damages that may be incurred by the Licensee. Warranties 
-of merchantability, fitness for any particular purpose, title, and 
-non-infringement, are specifically negated.
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
 
-The Licensee is not required to develop any software related to the 
-licensed software. However, in the event that the Licensee does so, the 
-Licensee is required to offer same to NOAA for inclusion under the 
-instant licensing terms with NOAA's licensed software along with 
-documentation regarding its principles, use and its advantages. This 
-includes changes to the wave model proper including numerical and 
-physical approaches to wave modeling, and boundary layer 
-parameterizations embedded in the wave model The Licensee is encouraged 
-but not obligated to provide pre-and post processing tools for model 
-input and output. The software required to be offered shall not include 
-additional models to which the wave model may be coupled, such as 
-oceanic or atmospheric circulation models. The software provided by the 
-Licensee shall be consistent with the latest model version available to 
-the Licensee, and interface routines to the software provided shall 
-conform to programming standards as outlined in the model documentation. 
-The software offered to NOAA shall be offered as is, without any 
-warranties whatsoever and without any liability for damages whatsoever. 
-NOAA shall not be required to include a Licensee's software as part of 
-its software. Licensee's offered software shall not include software 
-developed by others.
+This version of the GNU Lesser General Public License incorporates
+the terms and conditions of version 3 of the GNU General Public
+License, supplemented by the additional permissions listed below.
 
-A Licensee may reproduce sufficient software to satisfy its needs. All 
-copies shall bear the name of the software with any version number as 
-well as replicas of any applied copyright notice, trademark notice, 
-other notices and credit lines. Additionally, if the copies have been 
-modified, e.g. with deletions or additions, this shall be so stated and 
-identified.
+0. Additional Definitions.
 
-All of Licensee's employees who have a need to use the software may 
-have access to the software but only after reading the instant license 
-and stating, in writing, that they have read and understood the license 
-and have agreed to its terms. Licensee is responsible for employing 
-reasonable efforts to assure that only those of its employees that 
-should have access to the software, in fact, have access.
+As used herein, "this License" refers to version 3 of the GNU Lesser
+General Public License, and the "GNU GPL" refers to version 3 of the GNU
+General Public License.
 
-The Licensee may use the software for any purpose relating to sea state 
-prediction.
+"The Library" refers to a covered work governed by this License,
+other than an Application or a Combined Work as defined below.
 
-No disclosure of any portion of the software, whether by means of a 
-media or verbally, may be made to any third party by the Licensee or the 
-Licensee's employees
+An "Application" is any work that makes use of an interface provided
+by the Library, but which is not otherwise based on the Library.
+Defining a subclass of a class defined by the Library is deemed a mode
+of using an interface provided by the Library.
 
-The Licensee is responsible for compliance with any applicable export or 
-import control laws of the United States.
+A "Combined Work" is a work produced by combining or linking an
+Application with the Library.  The particular version of the Library
+with which the Combined Work was made is also called the "Linked
+Version".
 
-© 2009 National Weather Service
-National Oceanic and Atmospheric Administration. 
+The "Minimal Corresponding Source" for a Combined Work means the
+Corresponding Source for the Combined Work, excluding any source code
+for portions of the Combined Work that, considered in isolation, are
+based on the Application, and not on the Linked Version.
 
-All rights reserved. WAVEWATCH III® is a trademark of the National 
-Weather Service. No unauthorized use without permission.
+The "Corresponding Application Code" for a Combined Work means the
+object code and/or source code for the Application, including any data
+and utility programs needed for reproducing the Combined Work from the
+Application, but excluding the System Libraries of the Combined Work.
 
+1. Exception to Section 3 of the GNU GPL.
+
+You may convey a covered work under sections 3 and 4 of this License
+without being bound by section 3 of the GNU GPL.
+
+2. Conveying Modified Versions.
+
+If you modify a copy of the Library, and, in your modifications, a
+facility refers to a function or data to be supplied by an Application
+that uses the facility (other than as an argument passed when the
+facility is invoked), then you may convey a copy of the modified
+version:
+
+a) under this License, provided that you make a good faith effort to
+ensure that, in the event an Application does not supply the
+function or data, the facility still operates, and performs
+whatever part of its purpose remains meaningful, or
+
+b) under the GNU GPL, with none of the additional permissions of
+this License applicable to that copy.
+
+3. Object Code Incorporating Material from Library Header Files.
+
+The object code form of an Application may incorporate material from
+a header file that is part of the Library.  You may convey such object
+code under terms of your choice, provided that, if the incorporated
+material is not limited to numerical parameters, data structure
+layouts and accessors, or small macros, inline functions and templates
+(ten or fewer lines in length), you do both of the following:
+
+a) Give prominent notice with each copy of the object code that the
+Library is used in it and that the Library and its use are
+covered by this License.
+
+b) Accompany the object code with a copy of the GNU GPL and this license
+document.
+
+4. Combined Works.
+
+You may convey a Combined Work under terms of your choice that,
+taken together, effectively do not restrict modification of the
+portions of the Library contained in the Combined Work and reverse
+engineering for debugging such modifications, if you also do each of
+the following:
+
+a) Give prominent notice with each copy of the Combined Work that
+the Library is used in it and that the Library and its use are
+covered by this License.
+
+b) Accompany the Combined Work with a copy of the GNU GPL and this license
+document.
+
+c) For a Combined Work that displays copyright notices during
+execution, include the copyright notice for the Library among
+these notices, as well as a reference directing the user to the
+copies of the GNU GPL and this license document.
+
+d) Do one of the following:
+
+0) Convey the Minimal Corresponding Source under the terms of this
+License, and the Corresponding Application Code in a form
+suitable for, and under terms that permit, the user to
+recombine or relink the Application with a modified version of
+the Linked Version to produce a modified Combined Work, in the
+manner specified by section 6 of the GNU GPL for conveying
+Corresponding Source.
+       
+1) Use a suitable shared library mechanism for linking with the
+Library.  A suitable mechanism is one that (a) uses at run time
+a copy of the Library already present on the user's computer
+system, and (b) will operate properly with a modified version
+of the Library that is interface-compatible with the Linked
+Version.
+       
+
+e) Provide Installation Information, but only if you would otherwise
+be required to provide such information under section 6 of the
+GNU GPL, and only to the extent that such information is
+necessary to install and execute a modified version of the
+Combined Work produced by recombining or relinking the
+Application with a modified version of the Linked Version. (If
+you use option 4d0, the Installation Information must accompany
+the Minimal Corresponding Source and Corresponding Application
+Code. If you use option 4d1, you must provide the Installation
+Information in the manner specified by section 6 of the GNU GPL
+for conveying Corresponding Source.)
+
+5. Combined Libraries.
+
+You may place library facilities that are a work based on the
+Library side by side in a single library together with other library
+facilities that are not Applications and are not covered by this
+License, and convey such a combined library under terms of your
+choice, if you do both of the following:
+
+a) Accompany the combined library with a copy of the same work based
+on the Library, uncombined with any other library facilities,
+conveyed under the terms of this License.
+
+b) Give prominent notice with the combined library that part of it
+is a work based on the Library, and explaining where to find the
+accompanying uncombined form of the same work.
+
+6. Revised Versions of the GNU Lesser General Public License.
+
+The Free Software Foundation may publish revised and/or new versions
+of the GNU Lesser General Public License from time to time. Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.
+
+Each version is given a distinguishing version number. If the
+Library as you received it specifies that a certain numbered version
+of the GNU Lesser General Public License "or any later version"
+applies to it, you have the option of following the terms and
+conditions either of that published version or of any later version
+published by the Free Software Foundation. If the Library as you
+received it does not specify a version number of the GNU Lesser
+General Public License, you may choose any version of the GNU Lesser
+General Public License ever published by the Free Software Foundation.
+
+If the Library as you received it specifies that a proxy can decide
+whether future versions of the GNU Lesser General Public License shall
+apply, that proxy's public statement of acceptance of any version is
+permanent authorization for you to choose that version for the
+Library.

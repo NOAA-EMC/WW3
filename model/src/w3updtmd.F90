@@ -1335,10 +1335,6 @@
 ! 1.  Process BBPI0 -------------------------------------------------- *
 ! 1.a First intialization
 
-#ifdef W3_DEBUGIOBC
-     WRITE(740+IAPROC,*) 'Beginning of W3UBPT'
-     FLUSH(740+IAPROC)
-#endif
 
 !
       IF ( BBPI0(1,0) .EQ. -1. ) THEN
@@ -1410,14 +1406,6 @@
         END DO
 #endif
 !
-#ifdef W3_DEBUGIOBC
-     WRITE(740+IAPROC,*) 'sum(abs(ABPI0))=', sum(abs(ABPI0))
-     WRITE(740+IAPROC,*) 'sum(abs(ABPIN))=', sum(abs(ABPIN))
-     WRITE(740+IAPROC,*) 'sum(abs(BBPI0))=', sum(abs(BBPI0))
-     WRITE(740+IAPROC,*) 'sum(abs(BBPIN))=', sum(abs(BBPIN))
-     WRITE(740+IAPROC,*) 'End of W3UBPT'
-     FLUSH(740+IAPROC)
-#endif
       RETURN
 !
 ! Formats
@@ -2035,11 +2023,6 @@
       REAL(KIND=8)     :: d1,h,TIDE_HOUR,HH,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau
       REAL             :: FX(44),UX(44),VX(44)
 #endif
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 1'
-           FLUSH(740+IAPROC)
-#endif
-      
 !/
 !/ ------------------------------------------------------------------- /
 !/
@@ -2048,10 +2031,6 @@
 #endif
 !
       LOCAL   = IAPROC .LE. NAPROC
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 2'
-           FLUSH(740+IAPROC)
-#endif
 !
 #ifdef W3_T
       WRITE (NDST,9000) KDMAX, RDKMIN
@@ -2060,10 +2039,6 @@
 ! 1.  Preparations --------------------------------------------------- *
 ! 1.a Check NK
 !
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 3'
-           FLUSH(740+IAPROC)
-#endif
       IF ( NK .LT. 2 ) THEN
           IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000)
           CALL EXTCDE ( 1 )
@@ -2083,10 +2058,6 @@
 !
       MAPDRY = MOD(MAPST2/2,2)
       MAPST2 = MAPST2 - 2*MAPDRY
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 4'
-           FLUSH(740+IAPROC)
-#endif
 !
 ! 1.d Update water levels and save old
 !
@@ -2110,10 +2081,6 @@
 !  ONLY THE FRACTIONAL PART OF A SOLAR DAY NEED BE RETAINED FOR COMPU-
 !  TING THE LUNAR TIME TAU.
 !
-#endif
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 5'
-           FLUSH(740+IAPROC)
 #endif
       DO ISEA=1, NSEA
         IX     = MAPSF(ISEA,1)
@@ -2172,10 +2139,6 @@
 
       END DO ! NSEA 
 
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 6'
-           FLUSH(740+IAPROC)
-#endif
 !
 ! 2.  Loop over all sea points --------------------------------------- *
 !
@@ -2323,7 +2286,7 @@
                 I2     = 2
               END IF
 !
-            DO 250, IK=IK0, NK
+          DO IK=IK0, NK
 !
   230         CONTINUE
               IF ( WNO(IK) .GT. WN(I2,ISEA) ) THEN
@@ -2355,6 +2318,7 @@
                   END IF
 !
   250         CONTINUE
+          END DO
   251       CONTINUE
 !
 ! 2.f Convert discrete action densities to spectrum
@@ -2393,10 +2357,6 @@
           END IF
 !
       END DO ! NSEA 
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 7'
-           FLUSH(740+IAPROC)
-#endif
 !
 ! 3.  Reconstruct new MAPST2 ----------------------------------------- *
 !
@@ -2404,32 +2364,16 @@
 !
 ! 4. Re-generates the boundary data ---------------------------------- *
 !
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 8'
-           FLUSH(740+IAPROC)
-#endif
       IF (GTYPE.EQ.UNGTYPE) THEN 
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 9'
-           FLUSH(740+IAPROC)
-#endif
         !CALL SET_UG_IOBP
 #ifdef W3_PDLIB
          CALL SET_IOBDP_PDLIB
-#endif
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 10'
-           FLUSH(740+IAPROC)
 #endif
 #ifdef W3_REF1
       ELSE 
         CALL W3SETREF
 #endif
       ENDIF 
-#ifdef W3_DEBUGW3ULEV
-           WRITE(740+IAPROC,*) 'Beginning of W3ULEV, step 11'
-           FLUSH(740+IAPROC)
-#endif
 !
       RETURN
 !

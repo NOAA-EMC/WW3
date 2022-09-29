@@ -156,7 +156,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE WAV_MY_WTIME
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_MY_TIME(string)
 !/
@@ -231,7 +231,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PRINT_MY_TIME
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PROP_REFRACTION_PR1(ISEA,DTG, CAD)
 !/
@@ -338,11 +338,6 @@
       DO ITH=1, NTH
         FDDMAX = MAX ( FDDMAX , ABS(ESIN(ITH)*eDDDX - ECOS(ITH)*eDDDY ) )
       END DO
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'eDDDX=', eDDDX, ' Y=', eDDDY
-      WRITE(740+IAPROC,*) 'FDDMAX=', FDDMAX
-      FLUSH(740+IAPROC)
-#endif
       DO IK=1, NK
         FRK(IK) = FACTH * DSDD(IK) / WN(IK,ISEA)
         !FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
@@ -352,17 +347,6 @@
         VCFLT(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP) +                     &
            FRK(MAPWN(ISP)) * ( ESIN(ISP)*eDDDX - ECOS(ISP)*eDDDY )
       END DO
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'pdlib: FACTH=', FACTH
-      WRITE(740+IAPROC,*) 'pdlib: CTHG0=', eCTHG0
-      WRITE(740+IAPROC,*) 'pdlib: FDG=', FDG
-      WRITE(740+IAPROC,*) 'pdlib: FDDMAX=', FDDMAX
-      WRITE(740+IAPROC,*) 'pdlib: sum(FRK)=', sum(FRK)
-      WRITE(740+IAPROC,*) 'pdlib: sum(FRG)=', sum(FRG)
-      WRITE(740+IAPROC,*) 'pdlib: sum(DSDD)=', sum(DSDD)
-      WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VCTH)=', sum(VCFLT)
-      FLUSH(740+IAPROC)
-#endif
 !
 #ifdef W3_REFRX
 ! 3.c @C/@x refraction and great-circle propagation
@@ -396,7 +380,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_REFRACTION_PR1
 !/ ------------------------------------------------------------------- /
 !
       SUBROUTINE PROP_REFRACTION_PR3(IP, ISEA, DTG, CAD, DoLimiter)
@@ -544,7 +528,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_REFRACTION_PR3
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PROP_FREQ_SHIFT(IP, ISEA, CAS, DMM, DTG)
 !/
@@ -647,12 +631,6 @@
       DCYY   =  -   eDCYDY
       FKD    =    ( eCX*eDDDX + eCY*eDDDY )
       FACK = DTG
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'DCXX=', DCXX, ' DCXYYX=', DCXYYX
-      WRITE(740+IAPROC,*) 'DCYY=', DCYY, ' FKD=', FKD
-      WRITE(740+IAPROC,*) 'DTG=', DTG
-      FLUSH(740+IAPROC)
-#endif
       DO ITH=1, NTH
         FKC(ITH) = EC2(ITH)*DCXX + ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
       END DO
@@ -672,10 +650,6 @@
           DSDD(IK) = 0.
         END IF
       END DO
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'DSDD(min/max)=', minval(DSDD), maxval(DSDD)
-      FLUSH(740+IAPROC)
-#endif
       DO IK=0, NK+1
         FKD0   = FKD / CG(IK,ISEA) * DSDD(IK)
         VELFAC =  FACK/DB(IK+1) 
@@ -684,24 +658,16 @@
           CFLK(IK+1,ITH) = VELNOFILT/VELFAC
         END DO
       END DO
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'sum(CFLK)=', sum(CFLK)
-      FLUSH(740+IAPROC)
-#endif
       DO IK=1,NK
         DO ITH=1,NTH
           ISP=ITH + (IK-1)*NTH
           CAS(ISP)=DBLE(CFLK(IK,ITH))
         END DO
       END DO
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'sum(abs(CAS))=', sum(abs(CAS))
-      FLUSH(740+IAPROC)
-#endif
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_FREQ_SHIFT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PROP_FREQ_SHIFT_M2(IP, ISEA, CWNB_M2, DWNI_M2, DTG)
 !/
@@ -788,10 +754,6 @@
       CALL STRACE (IENT, 'PROP_FREQ_SHIFT_M2')
 #endif
 
-#ifdef W3_DEBUGDCXDX
-       WRITE(740+IAPROC,*) 'Now we use DCXDX array in PROP_FREQ_SHIFT_M2'
-#endif
-
       IF (LPDLIB) THEN
         eDCXDX = DCXDX(1,IP)
         eDCXDY = DCXDY(1,IP)
@@ -818,33 +780,9 @@
       DCYY   =  - FACK *   eDCYDY
       FKD    =    FACK * ( eCX*eDDDX + eCY*eDDDY )
 
-#ifdef W3_DEBUGDCXDX
-      sumDiff0=0
-      sumDiff1=0
-      sumDiff2=0
-      sumDiff3=0
-      sumDiff4=0
-      sumDiff5=0
-#endif
       DO ITH=1, NTH
         FKC(ITH) = EC2(ITH)*DCXX + ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
-#ifdef W3_DEBUGDCXDX
-        sumDiff0 = sumDiff0 + MIN(EC2(ITH), ZERO)
-        sumDiff1 = sumDiff1 + MIN(DCXX, ZERO)
-        sumDiff2 = sumDiff2 + MIN(ESC(ITH), ZERO)
-        sumDiff3 = sumDiff3 + MIN(DCXYYX, ZERO)
-        sumDiff4 = sumDiff4 + MIN(ES2(ITH), ZERO)
-        sumDiff5 = sumDiff5 + MIN(DCYY, ZERO)
-#endif
       END DO
-#ifdef W3_DEBUGDCXDX
-    WRITE(740+IAPROC,*) 'sumDiff0=', sumDiff0
-    WRITE(740+IAPROC,*) 'sumDiff1=', sumDiff1
-    WRITE(740+IAPROC,*) 'sumDiff2=', sumDiff2
-    WRITE(740+IAPROC,*) 'sumDiff3=', sumDiff3
-    WRITE(740+IAPROC,*) 'sumDiff4=', sumDiff4
-    WRITE(740+IAPROC,*) 'sumDiff5=', sumDiff5
-#endif
 !
       DEPTH  = MAX ( DMIN , DW(ISEA) )
       DO IK=0, NK+1
@@ -855,47 +793,26 @@
         END IF
       END DO
       ISP = -NTH
-#ifdef W3_DEBUGDCXDX
-      sumDiff=0
-      sumDiff1=0
-      sumDiff2=0
-      sumDiff3=0
-#endif
       DO IK=0, NK+1
         FKD0   = FKD / CG(IK,ISEA) * DSDD(IK)
         DO ITH=1, NTH
           ISP = ISP + 1
           VCWN(ISP) = FKD0 + WN(IK,ISEA)*FKC(ITH)
-#ifdef W3_DEBUGDCXDX
-          sumDiff = sumDiff + MAX(VCWN(ISP),ZERO)
-          sumDiff1 = sumDiff1 + MAX(FKD0,ZERO)
-          sumDiff2 = sumDiff2 + MAX(WN(IK,ISEA),ZERO)
-          sumDiff3 = sumDiff3 + MAX(FKC(ITH),ZERO)
-#endif
         END DO
       END DO
-#ifdef W3_DEBUGDCXDX
-    WRITE(740+IAPROC,*) 'sumDiff=', sumDiff
-    WRITE(740+IAPROC,*) 'sumDiff1=', sumDiff1
-    WRITE(740+IAPROC,*) 'sumDiff2=', sumDiff2
-    WRITE(740+IAPROC,*) 'sumDiff3=', sumDiff3
-#endif
 
       sumDiff=0
       DO ISP=1-NTH,NSPEC
         CWNB_M2(ISP) = DBLE(0.5 * ( VCWN(ISP) + VCWN(ISP+NTH) ))
         sumDiff = sumDiff + MAX(CWNB_M2(ISP), ZERO)
       END DO
-#ifdef W3_DEBUGDCXDX
-    WRITE(740+IAPROC,*) 'sumDiff=', sumDiff
-#endif
       DO IK=1,NK
         DWNI_M2(IK) = DBLE( CG(IK,ISEA) / DSIP(IK) )
       END DO
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_FREQ_SHIFT_M2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
 !/
@@ -1009,7 +926,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY
 !/ ....................----------------------------------------------- /
       SUBROUTINE SET_UP_NSEAL_NSEALM(NSEALout, NSEALMout)
 !/
@@ -1086,12 +1003,6 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'SET_UP_NSEAL_NSEALM')
 #endif
-!!/PDLIB      WRITE(*,*) 'LPDLIB=', LPDLIB
-!!/PDLIB      WRITE(*,*) 'GTYPE=', GTYPE, ' UNGTYPE=', UNGTYPE
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'SET_UP, PDLIB=', LPDLIB
-      FLUSH(740+IAPROC)
-#endif
 
 #ifdef W3_SHRD
       NSEALout  = NSEA
@@ -1127,7 +1038,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE SET_UP_NSEAL_NSEALM
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
 !/ ------------------------------------------------------------------- /
@@ -1204,17 +1115,13 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'INIT_GET_JSEA_ISPROC')
 #endif
-!!/DEBUG      WRITE(740+IAPROC,*) 'PDLIB=', PDLIB
-!!/DEBUG      WRITE(740+IAPROC,*) 'GTYPE=', GTYPE, ' UNGTYPE=', UNGTYPE
-!!/DEBUG      FLUSH(740+IAPROC)
-      IF (.NOT. LPDLIB) THEN
-        JSEA   = 1 + (ISEA-1)/NAPROC
-        ISPROC = ISEA - (JSEA-1)*NAPROC
-      ELSE
+
 #ifdef W3_PDLIB
-      IF (GTYPE .ne. UNGTYPE) THEN
-        JSEA   = 1 + (ISEA-1)/NAPROC
-        ISPROC = ISEA - (JSEA-1)*NAPROC
+      IF ((.NOT. LPDLIB ).or.(GTYPE .ne. UNGTYPE)) THEN
+#endif
+         JSEA   = 1 + (ISEA-1)/NAPROC
+         ISPROC = ISEA - (JSEA-1)*NAPROC
+#ifdef W3_PDLIB
       ELSE
         IP_glob = MAPSF(ISEA,1)
         IF (IAPROC .le. NAPROC) THEN
@@ -1225,11 +1132,10 @@
         ISPROC = IPGL_TO_PROC(IP_glob)
       ENDIF
 #endif
-      ENDIF
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE INIT_GET_JSEA_ISPROC
 !/ ------------------------------------------------------------------- /
       SUBROUTINE GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
 !/ ------------------------------------------------------------------- /
@@ -1346,7 +1252,7 @@
 !/
 !/ End of INIT_GET_ISEA ---------------------------------------------- /
 !/
-      END SUBROUTINE
+  END SUBROUTINE GET_JSEA_IBELONG
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_GET_ISEA(ISEA, JSEA)
 !/ ------------------------------------------------------------------- /
@@ -1453,7 +1359,7 @@
 !/
 !/ End of INIT_GET_ISEA ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE INIT_GET_ISEA
 !**********************************************************************
 !*  An array of size (NSEA) is send but only the (1:NSEAL) values     *
 !*  are correct. The program synchonizes everything on all nodes.     *
@@ -1570,7 +1476,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE SYNCHRONIZE_GLOBAL_ARRAY
 !/ ------------------------------------------------------------------- /
       END MODULE W3PARALL
 !/ ------------------------------------------------------------------- /

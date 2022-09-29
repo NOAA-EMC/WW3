@@ -1,3 +1,20 @@
+!> @file
+!> @brief Contains MODULE W3WAVSET for implicit solution of wave
+!>        setup problem.
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date 1-Jun-2018
+!>
+!     ----------------------------------------------------------------
+!>
+!> @brief Implicit solution of wave setup problem following
+!>        Dingemans for structured and unstructured grids.
+!> 
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date 1-Jun-2018
+!>
       MODULE W3WAVSET
 !/                  +-----------------------------------+
 !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -81,6 +98,17 @@
       LOGICAL :: DO_WAVE_SETUP = .TRUE.
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Differentiate xy, using linear shape function.
+!>
+!> @param[in]  VAR 
+!> @param[out] DVDX 
+!> @param[out] DVDY
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date 1-May-2018
+!>        
       SUBROUTINE DIFFERENTIATE_XYDIR_NATIVE(VAR, DVDX, DVDY)
 !/
 !/                  +-----------------------------------+
@@ -188,8 +216,19 @@
       END DO
       CALL PDLIB_exchange1Dreal(DVDX)
       CALL PDLIB_exchange1Dreal(DVDY)
-      END SUBROUTINE
+  END SUBROUTINE DIFFERENTIATE_XYDIR_NATIVE
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Differentiate xy based on mapsta, using linear shape function.
+!>
+!> @param[in]  VAR
+!> @param[out] DVDX
+!> @param[out] DVDY
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date 1-May-2018
+!>      
       SUBROUTINE DIFFERENTIATE_XYDIR_MAPSTA(VAR, DVDX, DVDY)
 !/
 !/                  +-----------------------------------+
@@ -317,8 +356,19 @@
       END DO
       CALL PDLIB_exchange1Dreal(DVDX)
       CALL PDLIB_exchange1Dreal(DVDY)
-      END SUBROUTINE
+  END SUBROUTINE DIFFERENTIATE_XYDIR_MAPSTA
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Driver routine for xydir.
+!>
+!> @param[in]  VAR
+!> @param[out] DVDX
+!> @param[out] DVDY
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE DIFFERENTIATE_XYDIR(VAR, DVDX, DVDY)
 !/
 !/                  +-----------------------------------+
@@ -391,8 +441,19 @@
       REAL(8), INTENT(OUT) :: DVDX(npa), DVDY(npa)
       CALL DIFFERENTIATE_XYDIR_MAPSTA(VAR, DVDX, DVDY)
 !      CALL DIFFERENTIATE_XYDIR_NATIVE(VAR, DVDX, DVDY)
-      END SUBROUTINE
+  END SUBROUTINE DIFFERENTIATE_XYDIR
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Setup boundary pointer.
+!>
+!> @param[out] F_X
+!> @param[out] F_Y
+!> @param[out] DWNX
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_COMPUTE_LH_STRESS(F_X, F_Y, DWNX)
 !/
 !/                  +-----------------------------------+
@@ -533,8 +594,20 @@
       WRITE(740+IAPROC,*) 'sum(F_Y)=', sum(F_Y)
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE TRIG_COMPUTE_LH_STRESS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Differentiate other way around.
+!>
+!> @param[in] IE
+!> @param[in] I1
+!> @param[inout] UGRAD
+!> @param[inout] VGRAD
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_COMPUTE_DIFF(IE, I1, UGRAD, VGRAD)
 !/
 !/                  +-----------------------------------+
@@ -623,8 +696,23 @@
       h=2.0*PDLIB_TRIA(IE)
       UGRAD=-(y(IP3) - y(IP2))/h
       VGRAD= (x(IP3) - x(IP2))/h
-      END SUBROUTINE
+  END SUBROUTINE TRIG_COMPUTE_DIFF
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Setup system matrix for solutions of wave setup eq.
+!>
+!> @param[in]  FX
+!> @param[in]  FY
+!> @param[in]  DWNX
+!> @param[out] ASPAR
+!> @param[out] B
+!> @param[in]  ACTIVE
+!> @param[out] ACTIVESEC
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_WAVE_SETUP_COMPUTE_SYSTEM(ASPAR, B, FX, FY, DWNX, ACTIVE, ACTIVESEC)
 !/
 !/                  +-----------------------------------+
@@ -788,8 +876,21 @@
           eOff=0
         END DO
       END IF
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_COMPUTE_SYSTEM
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Preconditioner. 
+!>
+!> @param[in]  ASPAR
+!> @param[in]  TheIn
+!> @param[out] TheOut
+!> @param[in]  ACTIVE
+!> @param[in]  ACTIVESEC
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_WAVE_SETUP_APPLY_PRECOND(ASPAR, TheIn, TheOut, ACTIVE, ACTIVESEC)
 !/
 !/                  +-----------------------------------+
@@ -909,8 +1010,21 @@
         WRITE(740+IAPROC,*) 'Diag, quot=', maxval(ListDiag)/minval(ListDiag)
       END IF
       CALL PDLIB_exchange1Dreal(TheOut)
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_APPLY_PRECOND
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief  
+!>
+!> @param[in]  ASPAR
+!> @param[in]  TheIn
+!> @param[out] TheOut
+!> @param[in]  ACTIVE
+!> @param[in]  ACTIVESEC
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018      
+!>      
       SUBROUTINE TRIG_WAVE_SETUP_APPLY_FCT(ASPAR, TheIn, TheOut, ACTIVE, ACTIVESEC)
 !/
 !/                  +-----------------------------------+
@@ -999,8 +1113,19 @@
         END IF
       END DO
       CALL PDLIB_exchange1Dreal(TheOut)
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_APPLY_FCT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Scalar product plus exchange.
+!>
+!> @param[in]     V1
+!> @param[in]     V2
+!> @param[inout]  eScal
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_WAVE_SETUP_SCALAR_PROD(V1, V2, eScal)
 !/
 !/                  +-----------------------------------+
@@ -1099,8 +1224,21 @@
         CALL MPI_RECV(lScal,1,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
       END IF
       eScal=lScal(1)
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_SCALAR_PROD
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Poisson equation solver.
+!>
+!> @param[in]  ASPAR
+!> @param[in]  B
+!> @param[out] TheOut
+!> @param[in]  ACTIVE
+!> @param[in]  ACTIVESEC
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR(ASPAR, B, TheOut, ACTIVE, ACTIVESEC)
 !/
 !/                  +-----------------------------------+
@@ -1266,8 +1404,17 @@
         END DO
       END DO
       TheOut=V_X
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Set mean value.
+!>
+!> @param[inout] TheVar
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_SET_MEANVALUE_TO_ZERO(TheVar)
 !/
 !/                  +-----------------------------------+
@@ -1381,8 +1528,18 @@
       DO IP=1,npa
         TheVar(IP)=TheVar(IP) - TheMean
       END DO
-      END SUBROUTINE
+  END SUBROUTINE TRIG_SET_MEANVALUE_TO_ZERO
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Compute active node for setup comp.
+!>
+!> @param[in] DWNX
+!> @param[out] ACTIVE
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date 1-May-2018
+!>      
       SUBROUTINE COMPUTE_ACTIVE_NODE(DWNX, ACTIVE)
 !/
 !/                  +-----------------------------------+
@@ -1477,8 +1634,15 @@
       WRITE(740+IAPROC,*) 'nbActive=', nbActive, ' npa=', npa
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE COMPUTE_ACTIVE_NODE
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Setup computation.
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE TRIG_WAVE_SETUP_COMPUTATION
 !/
 !/                  +-----------------------------------+
@@ -1628,8 +1792,17 @@
       WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE TRIG_WAVE_SETUP_COMPUTATION
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Wave setup for FD grids.
+!>
+!> @param[in] IMOD
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE PREPARATION_FD_SCHEME(IMOD)
 !/
 !/                  +-----------------------------------+
@@ -1786,8 +1959,19 @@
         PDLIB_I_DIAG(ISEA)=J
         PDLIB_IA(ISEA+1)=J+1
       END DO
-      END SUBROUTINE
+  END SUBROUTINE PREPARATION_FD_SCHEME
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Compute off diagonal for FD grids.
+!>
+!> @param[in]  ASPAR
+!> @param[in]  TheIn
+!> @param[out] TheOut
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE FD_WAVE_SETUP_APPLY_FCT(ASPAR, TheIn, TheOut)
 !/
 !/                  +-----------------------------------+
@@ -1870,8 +2054,19 @@
           TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
         END DO
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_APPLY_FCT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Preconditioning for FD grids.
+!>
+!> @param[in]  ASPAR
+!> @param[in]  TheIn
+!> @param[out] TheOut
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE FD_WAVE_SETUP_APPLY_PRECOND(ASPAR, TheIn, TheOut)
 !/
 !/                  +-----------------------------------+
@@ -1973,8 +2168,19 @@
           TheOut(IP)=TheIn(IP)/ASPAR(J)
         END DO
       END IF
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_APPLY_PRECOND
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Radiation stresses for FD grids.
+!>
+!> @param[out] SXX_t
+!> @param[out] SXY_t
+!> @param[out] SYY_t
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE FD_COLLECT_SXX_XY_YY(SXX_t, SXY_t, SYY_t)
 !/
 !/                  +-----------------------------------+
@@ -2090,8 +2296,21 @@
         CALL MPI_SEND(SXY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
         CALL MPI_SEND(SYY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
       END IF
-      END SUBROUTINE
+  END SUBROUTINE FD_COLLECT_SXX_XY_YY
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Setup fluxes.
+!>
+!> @param[in] SXX_t
+!> @param[in] SXY_t
+!> @param[in] SYY_t
+!> @param[out] FX
+!> @param[out] FY      
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>            
       SUBROUTINE FD_COMPUTE_LH_STRESS(SXX_t, SXY_t, SYY_t, FX, FY)
 !/
 !/                  +-----------------------------------+
@@ -2230,8 +2449,21 @@
         FX(ISEA)=eFX
         FY(ISEA)=eFY
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_COMPUTE_LH_STRESS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Differences on FD grids.
+!>
+!> @param[in]  IEDGE
+!> @param[in]  ISEA
+!> @param[inout] UGRAD
+!> @param[inout] VGRAD
+!> @param[inout] dist
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE FD_COMPUTE_DIFF(IEDGE, ISEA, UGRAD, VGRAD, dist)
 !/
 !/                  +-----------------------------------+
@@ -2325,8 +2557,20 @@
         UGRAD=-deltaX/dist
         VGRAD=-deltaY/dist
       END IF
-      END SUBROUTINE
+  END SUBROUTINE FD_COMPUTE_DIFF
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Setup matrix on FD grids.
+!>
+!> @param[out]  ASPAR
+!> @param[out]  B
+!> @param[in] FX
+!> @param[in] FY
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>       
       SUBROUTINE FD_WAVE_SETUP_COMPUTE_SYSTEM(ASPAR, B, FX, FY)
 !/
 !/                  +-----------------------------------+
@@ -2431,8 +2675,19 @@
           END DO
         END DO
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_COMPUTE_SYSTEM
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Scalar product.
+!>
+!> @param[in]    V1
+!> @param[in]    V2
+!> @param[inout] eScal
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>             
       SUBROUTINE FD_WAVE_SETUP_SCALAR_PROD(V1, V2, eScal)
 !/
 !/                  +-----------------------------------+
@@ -2508,8 +2763,19 @@
       DO IP=1,NX
         eScal=eScal + V1(IP)*V2(IP)
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_SCALAR_PROD
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Poisson solver on FD grids.
+!>
+!> @param[in]    ASPAR
+!> @param[in]    B
+!> @param[out] TheOut
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE FD_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR(ASPAR, B, TheOut)
 !/
 !/                  +-----------------------------------+
@@ -2621,8 +2887,17 @@
         END DO
       END DO
       TheOut=V_X
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Set mean value.
+!>
+!> @param[inout] TheVar
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>            
       SUBROUTINE FD_SET_MEANVALUE_TO_ZERO(TheVar)
 !/
 !/                  +-----------------------------------+
@@ -2704,8 +2979,17 @@
       DO IP=1,NX
         TheVar(IP)=TheVar(IP) - TheMean
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_SET_MEANVALUE_TO_ZERO
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Wave setup comp on FD grids.
+!>
+!> @param[inout] TheVar
+!>
+!> @author Mathieu Dutour-Sikiric
+!> @author Aron Roland
+!> @date 1-May-2018
+!>      
       SUBROUTINE FD_WAVE_SETUP_COMPUTATION
 !/
 !/                  +-----------------------------------+
@@ -2804,8 +3088,15 @@
       DO ISEA=1,NSEA
         ZETA_SETUP(ISEA)=ZETA_WORK(ISEA)
       END DO
-      END SUBROUTINE
+  END SUBROUTINE FD_WAVE_SETUP_COMPUTATION
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief General driver.
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric      
+!> @date 1-May-2018
+!>      
       SUBROUTINE WAVE_SETUP_COMPUTATION
 !/
 !/                  +-----------------------------------+
@@ -2900,7 +3191,7 @@
       WRITE(740+IAPROC,*) 'Begin WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
 #endif
-      END SUBROUTINE
+  END SUBROUTINE WAVE_SETUP_COMPUTATION
 !/ ------------------------------------------------------------------- /
-      END MODULE
+END MODULE W3WAVSET
 !/ ------------------------------------------------------------------- /

@@ -1,4 +1,19 @@
+!> @file 
+!> @brief Module for storing file i/o related variables.
+!> 
+!> @author Gerbrant van Vledder @date 8-Feb-2003
+!>
+
 !-----------------------------------------------------------------------------!
+!>
+!> @brief Module for storing file i/o related variables.
+!> 
+!> @details The values for the parameter i_log, i_prt and iw_tst must be set
+!>  in one of the routines of the host program or in subroutine sys_init.
+!>
+!> @author Gerbrant van Vledder @date 8-Feb-2003
+!>
+
 module m_fileio
 !-----------------------------------------------------------------------------!
 !
@@ -24,31 +39,47 @@ module m_fileio
 ! The following two parameters must be set by the user
 ! They define the overall test level and the output channel
 !
-integer,parameter :: i_print=0  ! (0/1/2)  Test output printing off/on
-!                               ! Output channel defined by i_out
+integer,parameter :: i_print=0  !< (0/1/2)  Test output printing off/on
+                                !< Output channel defined by i_out
 !
-integer,parameter :: i_out=6    ! Output channel to screen
-!                               ! ==1 screen output for Unix/Linux systems
-!                               ! ==6 screen output for Windows
+integer,parameter :: i_out=6    !< Output channel to screen
+                                !< ==1 screen output for Unix/Linux systems
+                                !< ==6 screen output for Windows
 !------------------------------------------------------------------------------
 !
 ! Standard switches to activate Logging, Test and Print ouput
 !
-integer i_log        ! (0/1)      Logging off/on
-integer i_prt        ! (0/1)      Printing off/on
-integer i_tst        ! (0,1,2...) Test level off/on
+integer i_log        !< (0/1)      Logging off/on
+integer i_prt        !< (0/1)      Printing off/on
+integer i_tst        !< (0,1,2...) Test level off/on
 !
 !
 ! Standard unit numbers of input & output files
 !
-integer lu_err  ! standard error file
-integer lu_inp  ! standard input file
-integer lu_log  ! standard logging
-integer lu_prt  ! standard print output
-integer lu_tst  ! standard test output
+integer lu_err  !< standard error file
+integer lu_inp  !< standard input file
+integer lu_log  !< standard logging
+integer lu_prt  !< standard print output
+integer lu_tst  !< standard test output
 !
 contains
+  
 !-----------------------------------------------------------------------------!
+!>  
+!> @brief Open file with name FILENAME and determine unit number IUNIT.
+!>  
+!> @details File type determined in QUAL. Depending on the value of IUFIND
+!>  a search is performed for a free unit number.
+!>
+!> @param[in]    filename File name.
+!> @param[in]    qual     File qualifyer.
+!> @param[in]    iufind   Indicator for search of unit number.
+!> @param[inout] iunit    Unit number.
+!> @param[out]   iostat   Error indicator.
+!>  
+!> @author Gerbrant van Vledder  @date 8-Feb-2003
+!> 
+  
 subroutine z_fileio(filename,qual,iufind,iunit,iostat)                        !
 !-----------------------------------------------------------------------------!
 !
@@ -59,6 +90,7 @@ subroutine z_fileio(filename,qual,iufind,iunit,iostat)                        !
 !   +---+ |   |
 !         +---+
 !
+USE CONSTANTS, ONLY: file_endian
 implicit none
 !
 !  0. Update history
@@ -115,11 +147,11 @@ implicit none
 !
 !Type       I/O           Name           Description
 !----------------------------------------------------
-character(len=*), intent(in)  :: filename  ! File name
-character(len=2), intent(in)  :: qual      ! File qualifyer
-integer,   intent(in)         :: iufind    ! Indicator for search of unit number
-integer,   intent(inout)      :: iunit     ! Unit number
-integer,   intent(out)        :: iostat    ! Error indicator
+character(len=*), intent(in)  :: filename
+character(len=2), intent(in)  :: qual
+integer,   intent(in)         :: iufind
+integer,   intent(inout)      :: iunit
+integer,   intent(out)        :: iostat
 !
 !  4. Subroutines used
 !
@@ -159,12 +191,12 @@ integer,   intent(out)        :: iostat    ! Error indicator
 !------------------------------------------------------------------------------
 ! Local variables
 !
-character(len=7)  :: cstat  ! string with status of file I/O
-character(len=11) :: cform  ! string with format of file I/O
-integer junit               ! temporary unit number
-logical lexist              ! indicator if a file exists
-logical lopen               ! indicator if a file is opened
-integer iuerr               ! error indicator from Z_FLUNIT
+character(len=7)  :: cstat  !< string with status of file I/O
+character(len=11) :: cform  !< string with format of file I/O
+integer junit               !< temporary unit number
+logical lexist              !< indicator if a file exists
+logical lopen               !< indicator if a file is opened
+integer iuerr               !< error indicator from Z_FLUNIT
 !-------------------------------------------------------------------------------------
 ! initialisations
 !-------------------------------------------------------------------------------------
@@ -197,7 +229,7 @@ else
 !
   if(qual(2:2) == 'F') cform = 'formatted'
   if(qual(2:2) == 'U') cform = 'unformatted'
-  if(qual(2:2) == 'B') cform = 'binary'          ! extension to FORTRAN 95 standard
+  if(qual(2:2) == 'B') cform = 'binary'          !< extension to FORTRAN 95 standard
   if(qual(2:2) == 'R') cform = 'unformatted'
 !
 !  Check if file exists
@@ -215,7 +247,11 @@ else
       if(iufind == 1) call z_flunit(iunit,iuerr)
       junit = iunit
       if(junit > 0) then
-        open(file=filename,unit=junit,form=cform,iostat=iostat)
+        if( cform == 'unformatted') then
+          open(file=filename,unit=junit,form=cform,convert=file_endian,iostat=iostat)
+        else  
+          open(file=filename,unit=junit,form=cform,iostat=iostat)
+        end if 
         if(iostat/=0) then
           iostat = -4
           goto 9999
@@ -254,7 +290,11 @@ else
       junit = iunit
 !
       if(junit > 0) then
-        open(file=filename,unit=junit,form=cform,status=cstat)
+        if( cform == 'unformatted') then
+          open(file=filename,unit=junit,form=cform,convert=file_endian,status=cstat)
+        else
+          open(file=filename,unit=junit,form=cform,status=cstat)
+        end if
       else
         iostat = -2
       end if
@@ -279,7 +319,11 @@ else
 !  open file to IUNIT, if possible
 !
       if(junit > 0) then
-        open(file=filename,unit=junit,form=cform,iostat=iuerr)
+        if( cform == 'unformatted') then
+          open(file=filename,unit=junit,form=cform,convert=file_endian,iostat=iuerr)
+        else
+          open(file=filename,unit=junit,form=cform,iostat=iuerr)
+        end if
 !
 ! check added 8/2/2003
 !
@@ -308,6 +352,14 @@ return
 end  subroutine
 !
 !-----------------------------------------------------------------------------!
+!>
+!> @brief Close file with unit number IUNIT, and set IUNIT=-1.
+!>
+!> @param[inout] iunit Unit number.
+!>
+!> @author Gerbrant van Vledder  @date 24-Aug-2000
+!>
+
 subroutine z_fclose(iunit)                                                    !
 !-----------------------------------------------------------------------------!
 !
@@ -335,7 +387,7 @@ implicit none
 !
 !Type       I/O           Name           Description
 !-----------------------------------------------------------------------------
-integer, intent(inout)  :: iunit          ! Unit number
+integer, intent(inout)  :: iunit          
 !-----------------------------------------------------------------------------
 close(iunit)
 iunit = -1
@@ -344,6 +396,24 @@ return
 end subroutine
 !
 !-----------------------------------------------------------------------------!
+!>
+!> @brief Find a free unit number.
+!>
+!> @details Starting at LU_MIN till LU_MAX are investigated until
+!>  a free (i.e. not connected to a file) is found.
+!>  Use is made of the standard fortran INQUIRE function.
+!>  The values of LU_MIN and LU_MAX should be specified
+!>  in an initialisation routine
+!>
+!>  If no free unit number if found in the range
+!>  lu_min - lu_high, then the function returns IUNIT = -1.
+!>
+!> @param[out] iunit Resulting unit number.
+!> @param[out] ierr  Error level.
+!>
+!> @author Gerbrant van Vledder @date 14-Apr-2000
+!>
+
 subroutine z_flunit(iunit,ierr)                                               !
 !-----------------------------------------------------------------------------!
 !
@@ -389,8 +459,8 @@ implicit none
 !
 !Type     I/O           Name         Description
 !----------------------------------------------------------
-integer, intent(out) :: iunit       ! resulting unit number
-integer, intent(out) :: ierr        ! error level
+integer, intent(out) :: iunit
+integer, intent(out) :: ierr
 !
 !  4. Subroutines used
 !
@@ -414,21 +484,21 @@ integer, intent(out) :: ierr        ! error level
 !----------------------------------------------------------------------------------
 ! local parameters
 !
-integer junit                       ! counter for unit numbers
-logical lopen                       ! indicator if a unit number is connected to a file
-logical lnot                        ! indicates if a forbidden unit number is checked
-integer i_not                       ! counter to check forbidded unit numbers
+integer junit                       !< counter for unit numbers
+logical lopen                       !< indicator if a unit number is connected to a file
+logical lnot                        !< indicates if a forbidden unit number is checked
+integer i_not                       !< counter to check forbidded unit numbers
 !
 !---------------------------------------------------------------------------------
 !  range of unit numbers to search
 !
-integer, parameter :: lu_min=60     ! minimum unit number
-integer, parameter :: lu_max=200    ! maximum unit number
+integer, parameter :: lu_min=60     !< minimum unit number
+integer, parameter :: lu_max=200    !< maximum unit number
 !
 ! specification of forbidden unit numbers
 !
-integer, parameter :: lu_nr=3   ! number of forbidden unit numbers
-integer lu_not(lu_nr)           ! list of forbidden unit numbers
+integer, parameter :: lu_nr=3   !< number of forbidden unit numbers
+integer lu_not(lu_nr)           !< list of forbidden unit numbers
 !----------------------------------------------------------------------------------
 lu_not(1) = 100
 lu_not(2) = 101

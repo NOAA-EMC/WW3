@@ -1,4 +1,16 @@
+!> @file
+!> @brief Module used for coupling applications between ice model and WW3 with OASIS3-MCT.
+!> 
+!> @author G. Boutin  @date Aug-2016
+!>
+
 #include "w3macros.h"
+
+!>
+!> @brief Module used for coupling applications between ice model and WW3 with OASIS3-MCT. 
+!> 
+!> @author G. Boutin @date Aug-2016
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3IGCMMD
 !/
@@ -56,6 +68,11 @@
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Send coupling fields to ice model.
+!>
+!> @author G. Boutin  @date Aug-2016
+!>
       SUBROUTINE SND_FIELDS_TO_ICE()
 !/
 !/                  +-----------------------------------+
@@ -149,6 +166,17 @@
 !/ ------------------------------------------------------------------- /
       END SUBROUTINE SND_FIELDS_TO_ICE
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Receive coupling fields from ice model.
+!>
+!> @param[in] ID_LCOMM  MPI communicator.
+!> @param[in] IDFLD  Name of the exchange fields.
+!> @param[inout] FXN  First exchange field.
+!> @param[inout] FYN  Second exchange field.
+!> @param[inout] FAN  Third exchange field.
+!>
+!> @author G. Boutin  @date Apr-2016
+!>      
       SUBROUTINE RCV_FIELDS_FROM_ICE(ID_LCOMM, IDFLD, FXN, FYN, FAN)
 !/
 !/                  +-----------------------------------+

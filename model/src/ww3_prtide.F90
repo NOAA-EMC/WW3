@@ -657,13 +657,14 @@
                 FX1DL(IND) = WCURTIDEX
                 FY1DL(IND) = WCURTIDEY
                 FA1DL(IND) = 0.
+              END DO ! NX
 #endif
 #ifdef W3_SHRD
                 FX(IX,IY) = WCURTIDEX
                 FY(IX,IY) = WCURTIDEY
                 FA(IX,IY) = 0.
-#endif
             END DO ! NX
+#endif
 
 !
 ! Gather from other MPI tasks
@@ -749,14 +750,16 @@
               FX1DL(IND) = 0.
               FY1DL(IND) = 0.
               FA1DL(IND) = WCURTIDEX
+              END DO ! NX
 #endif
 #ifdef W3_SHRD
               FX(IX,IY) = 0.       
               FY(IX,IY) = 0.
               FA(IX,IY) = WCURTIDEX
+           END DO ! NX
 #endif
 
-            END DO ! NX
+
 
 !
 ! Gather from other MPI tasks

@@ -1,4 +1,15 @@
+!> @file
+!> @brief Contains module W3INITMD.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
+
 #include "w3macros.h"
+!> 
+!> @brief Contains module W3INITMD.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3INITMD
 !/
@@ -117,6 +128,33 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize WAVEWATCH III.
+!>
+!> @details Initialize data structure and wave fields from data files.
+!>  Initialize grid from local and instantaneous data.
+!>
+!> @param[in] IMOD        Model number.
+!> @param[in] IsMulti  
+!> @param[in] FEXT        Extension of data files.
+!> @param[in] MDS         Array with dataset numbers saved as NDS in W3ODATMD.
+!> @param[in] MTRACE      Array with subroutine tracing information.
+!> @param[in] ODAT        Output data, five parameters per output type.
+!> @param[inout] FLGRD    Flags for gridded output.
+!> @param[inout] FLGR2    Flags for coupling output.
+!> @param[inout] FLGD     
+!> @param[inout] FLG2 
+!> @param[in] NPT           Number of output points.
+!> @param[inout] XPT        Coordinates of output points.
+!> @param[inout] YPT        Coordinates of output points.
+!> @param[in] PNAMES        Output point names.
+!> @param[in] IPRT          Partitioning grid info. 
+!> @param[inout] PRTFRM     Partitioning format flag.
+!> @param[in] MPI_COMM      MPI communicator to be used for model.
+!> @param[in] FLAGSTIDEIN
+!>
+!> @author H. L. Tolman  @date 03-Sep-2012
+!>        
       SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
                           , FLGRD,                               &
                            FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
@@ -531,12 +569,6 @@
 #ifdef W3_UOST
       CALL UOST_SETGRID(IMOD)
 #endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Beginning of W3INIT'
-      WRITE(740+IAPROC,*) '  FLGR2(10,1)=', FLGR2(10,1)
-      WRITE(740+IAPROC,*) '  FLGR2(10,2)=', FLGR2(10,2)
-      FLUSH(740+IAPROC)
-#endif
 #ifdef W3_TIMINGS
        CALL PRINT_MY_TIME("Case 2")
 #endif
@@ -678,16 +710,10 @@
       J      = LEN_TRIM(FNMPRE)
 !
       IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
-#ifdef W3_DEBUGINIT
-       WRITE(*,*) '1: w3initmd f=', TRIM(FNMPRE(:J)//LFILE(:IFL))
-#endif
           OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
 !
       IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
           INQUIRE (MDS(3),OPENED=OPENED)
-#ifdef W3_DEBUGINIT
-       WRITE(*,*) '2: w3initmd f=', TRIM(FNMPRE(:J)//TFILE(:IFT))
-#endif
           IF ( .NOT. OPENED ) OPEN                                    &
                (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT),ERR=889,IOSTAT=IERR)
         END IF
@@ -780,12 +806,6 @@
 #endif
 
 #ifdef W3_PDLIB
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'Before PDLIB_INIT'
-#endif
-#endif
-
-#ifdef W3_PDLIB
       CALL PDLIB_INIT(IMOD)
 #endif
 
@@ -793,15 +813,6 @@
        WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2c'
        call getMallocInfo(mallinfos)
        call printMallInfo(10000+IAPROC,mallInfos)
-#endif
-
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'After set up of NSEAL, NSEALM=', NSEALM
-     WRITE(740+IAPROC,*) 'After PDLIB_INIT'
-     WRITE(740+IAPROC,*) 'allocated(ISEA_TO_JSEA)=', allocated(ISEA_TO_JSEA)
-     FLUSH(740+IAPROC)
-#endif
 #endif
 
 #ifdef W3_TIMINGS
@@ -829,11 +840,6 @@
 #endif
 
 ! Update of output parameter flags based on mod_def parameters (for 3D arrays)
-
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before W3FLGRDUPDT'
-      FLUSH(740+IAPROC)
-#endif
 
       CALL W3FLGRDUPDT ( NDSO, NDSE, FLGRD, FLGR2, FLGD, FLG2 )
 
@@ -874,16 +880,6 @@
        call getMallocInfo(mallinfos)
        call printMallInfo(10000+IAPROC,mallInfos)
 #endif
-!
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'After set up of NSEAL, NSEAL=', NSEAL
-     WRITE(740+IAPROC,*) 'After set up of NSEAL, NSEALM=', NSEALM
-     WRITE(740+IAPROC,*) 'NSEA=', NSEA, ' NSPEC=', NSPEC
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_DEBUGMPI
-     CALL TEST_MPI_STATUS("Case 11")
-#endif
 
 #ifdef W3_DIST
         IF ( NSEA .LT. NAPROC ) GOTO 820
@@ -892,31 +888,14 @@
         END IF
 #endif
 
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'Before PDLIB related allocations'
-     FLUSH(740+IAPROC)
-#endif
-
 #ifdef W3_PDLIB
          IF ((IAPROC .LE. NAPROC).and.(GTYPE .eq. UNGTYPE)) THEN
-#endif
-
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) 'After test 1'
-        FLUSH(740+IAPROC)
-        WRITE(740+IAPROC,*) 'Before BLOCK_SOLVER_INIT'
-        FLUSH(740+IAPROC)
 #endif
 
 #ifdef W3_PDLIB
             CALL BLOCK_SOLVER_INIT(IMOD)
             CALL PDLIB_IOBP_INIT(IMOD)
             CALL SET_IOBPA_PDLIB
-#endif
-
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*) 'After BLOCK_SOLVER_INIT'
-        FLUSH(740+IAPROC)
 #endif
 
 #ifdef W3_PDLIB
@@ -934,19 +913,11 @@
       call getMallocInfo(mallinfos)
       call printMallInfo(10000+IAPROC,mallInfos)
 #endif
-
-#ifdef W3_DEBUGMPI
-      CALL TEST_MPI_STATUS("Case 12")
-#endif
 !
 !
 ! 2.c.2 Allocate arrays
 !
       IF ( IAPROC .LE. NAPROC ) THEN
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'Calling W3DIMW at W3INIT, case 1'
-     FLUSH(740+IAPROC)
-#endif
           CALL W3DIMW ( IMOD, NDSE, NDST )
 #ifdef W3_MEMCHECK
       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2h'
@@ -954,10 +925,6 @@
       call printMallInfo(10000+IAPROC,mallInfos)
 #endif
         ELSE
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'Calling W3DIMW at W3INIT, case 2'
-     FLUSH(740+IAPROC)
-#endif
           CALL W3DIMW ( IMOD, NDSE, NDST, .FALSE. )
 #ifdef W3_MEMCHECK
       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2i'
@@ -965,11 +932,6 @@
       call printMallInfo(10000+IAPROC,mallInfos)
 #endif
         END IF
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) ' 1: NSEAL=', NSEAL
-     WRITE(740+IAPROC,*) ' maxval(UST)=', maxval(UST)
-     FLUSH(740+IAPROC)
-#endif
 #ifdef W3_TIMINGS
        CALL PRINT_MY_TIME("After W3DIMW")
 #endif
@@ -1110,34 +1072,14 @@
         END DO
     END IF
 #endif
-!
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 4'
-     FLUSH(740+IAPROC)
-#endif
       DEALLOCATE ( NT )
 !
 ! 3.  Model initialization ------------------------------------------- /
 ! 3.a Read restart file
 !
       VA(:,:) = 0.
-#ifdef W3_DEBUGMPI
-     CALL TEST_MPI_STATUS("Case 15")
-#endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 4.0'
-     WRITE(740+IAPROC,*) ' 1: min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
-     WRITE(740+IAPROC,*) ' 1: NSEAL=', NSEAL
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before W3IORS call")
-#endif
-#endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) ' After ALL_VA_INTEGRAL_PRINT'
-     FLUSH(740+IAPROC)
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before W3IORS call", 1)
 #endif
 #ifdef W3_TIMINGS
        CALL PRINT_MY_TIME("Before W3IORS")
@@ -1152,20 +1094,8 @@
       call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) ' 2: min/max/sum(VA)=', minval(VA), maxval(VA), sum(VA)
-     WRITE(740+IAPROC,*) ' 2: NSEAL=', NSEAL
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After W3IORS call")
-#endif
-#endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 4.1'
-     WRITE(740+IAPROC,*) '    sum(VA)=', sum(VA)
-     FLUSH(740+IAPROC)
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After W3IORS call", 1)
 #endif
       FLCOLD = RSTYPE.LE.1  .OR. RSTYPE.EQ.4
       IF ( IAPROC .EQ. NAPLOG ) THEN
@@ -1179,14 +1109,8 @@
               WRITE (NDSO,930) 'full restart.'
             END IF
         END IF
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 4.2'
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.2")
-#endif
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.2", 1)
 #endif
 #ifdef W3_TIMINGS
        CALL PRINT_MY_TIME("After restart inits")
@@ -1210,14 +1134,8 @@
       call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 !
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 4.3'
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.3")
-#endif
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.3", 1)
 #endif
 !
 ! 3.b2 Set MAPSTA associated to PDLIB
@@ -1237,14 +1155,8 @@
 !
 ! 3.d Initialization with calm conditions
 !
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 5'
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 5")
-#endif
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 5", 1)
 #endif
       IF ( RSTYPE .EQ. 4 ) THEN
           VA(:,:) = 0.
@@ -1263,22 +1175,12 @@
 !
       IF ( .NOT. FLCUR ) FLCK = .FALSE.
 #ifdef W3_PDLIB
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT definition of FSREFR and FRFREQ'
-     WRITE(740+IAPROC,*) 'FSTOTALIMP=', FSTOTALIMP
-     WRITE(740+IAPROC,*) 'FSREFRACTION=', FSREFRACTION
-     WRITE(740+IAPROC,*) 'FSFREQSHIFT=', FSFREQSHIFT
-     WRITE(740+IAPROC,*) 'Before FLCTH=', FLCTH, 'FLCK=', FLCK
-#endif
         IF (FSTOTALIMP .and. FSREFRACTION) THEN
           FLCTH = .FALSE.
         END IF
         IF (FSTOTALIMP .and. FSFREQSHIFT) THEN
           FLCK = .FALSE.
         END IF
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) ' After FLCTH=', FLCTH, 'FLCK=', FLCK
-#endif
 #endif
 !
 ! 4.  Set-up output times -------------------------------------------- *
@@ -1317,14 +1219,8 @@
           FLOUT(1) = FLOUT(1) .OR. FLOGRD(J,K)
         END DO
       END DO
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 6'
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 6")
-#endif
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 6", 1)
 #endif
 !
       FLOUT(7) = .FALSE.
@@ -1365,17 +1261,8 @@
 !
 !      WRITE(*,*) 'We set NOTYPE=0 just for DEBUGGING'
 !      NOTYPE=0 ! ONLY FOR DEBUGGING PURPOSE
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 7'
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 7")
-#endif
-#endif
-#ifdef W3_DEBUGINIT
-      WRITE(*,*) 'Starting the NOTYPE loop, takes time'
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 7", 1)
 #endif
 #ifdef W3_TIMINGS
        CALL PRINT_MY_TIME("Before NOTYPE loop")
@@ -1488,20 +1375,11 @@
        call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
-#ifdef W3_DEBUGINIT
-      WRITE(*,*) 'Ending the NOTYPE loop, takes time'
-#endif
 #ifdef W3_TIMINGS
        CALL PRINT_MY_TIME("After NOTYPE loop")
 #endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 8'
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1")
-#endif
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.1", 1)
 #endif
 !
 ! 4.d Preprocessing for point output.
@@ -1537,14 +1415,6 @@
 !
       MAPTST = MOD(MAPST2/2,2)
       MAPST2 = MAPST2 - 2*MAPTST
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'Before INIT_GET_JSEA_ISPROC call'
-      WRITE(740+IAPROC,*) 'allocated(ISEA_TO_JSEA)=', allocated(ISEA_TO_JSEA)
-      WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
-      FLUSH(740+IAPROC)
-#endif
-#endif
 
 !
 !Li   For multi-resolution SMC grid, these 1-NX and 1-NY nested loops
@@ -1554,13 +1424,7 @@
 !Li   DO IY=1, NY
 !Li     DO IX=1, NX
 !Li       ISEA   = MAPFS(IY,IX)
-#ifdef W3_DEBUGSTP
-    WRITE(740+IAPROC,*) 'Debugging the SETUP / WLV'
-#endif
       DO ISEA=1, NSEA
-#ifdef W3_DEBUGSTP
-    WRITE(740+IAPROC,*) 'ISEA/WLV/ZB=', ISEA, WLV(ISEA), ZB(ISEA)
-#endif
         IX = MAPSF(ISEA,1)
         IY = MAPSF(ISEA,2)
 #ifdef W3_T
@@ -1627,48 +1491,20 @@
 #endif
 
 !
-#ifdef W3_DEBUGSTP
-     FLUSH(740+IAPROC)
-#endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9'
-     FLUSH(740+IAPROC)
-#endif
-
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.2")
-#endif
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.2", 1)
 #endif
 
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.1'
-     WRITE(740+IAPROC,*) ' allocated(MAPTST)=', allocated(MAPTST)
-     WRITE(740+IAPROC,*) 'NY=', NY, ' NX=', NX
-     FLUSH(740+IAPROC)
-#endif
-     MAPST2 = MAPST2 + 2*MAPTST
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.2'
-     FLUSH(740+IAPROC)
-#endif
 !
-     DEALLOCATE ( MAPTST )
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.3'
-     FLUSH(740+IAPROC)
-#endif
-
+      MAPST2 = MAPST2 + 2*MAPTST
+!
+      DEALLOCATE ( MAPTST )
 #ifdef W3_MEMCHECK
      WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 6'
      call getMallocInfo(mallinfos)
      call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 !
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.4'
-     FLUSH(740+IAPROC)
-#endif
 #ifdef W3_T
       WRITE (NDST,9050)
       NX0    = 1
@@ -1690,15 +1526,7 @@
 !
 ! 5.b Fill wavenumber and group velocity arrays.
 !
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.5'
-     FLUSH(740+IAPROC)
-#endif
       DO IS=0, NSEA
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'IS=', IS
-     FLUSH(740+IAPROC)
-#endif
         IF (IS.GT.0) THEN
           DEPTH  = MAX ( DMIN , DW(IS) )
         ELSE
@@ -1725,10 +1553,6 @@
           END DO
         END DO
 
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.6'
-     FLUSH(740+IAPROC)
-#endif
 !
 ! 6.  Initialize arrays ---------------------------------------------- /
 !     Some initialized in W3IORS
@@ -1742,10 +1566,6 @@
 !
       AS    (0) = 0.
       DW    (0) = 0.
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.7'
-     FLUSH(740+IAPROC)
-#endif
 !
 ! 7.  Write info to log file ----------------------------------------- /
 !
@@ -1841,10 +1661,6 @@
           WRITE (NDSO,984)
 !
         END IF
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.8'
-     FLUSH(740+IAPROC)
-#endif
 !
       IF ( NOPTS .EQ. 0 ) FLOUT(2) = .FALSE.
 
@@ -1853,27 +1669,15 @@
        call getMallocInfo(mallinfos)
        call printMallInfo(10000+IAPROC,mallInfos)
 #endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.9'
-     FLUSH(740+IAPROC)
-#endif
 !
 ! Boundary set up for the directions
 !
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.3")
-#endif
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.3", 1)
 #endif
 !!/PDLIB         CALL VA_SETUP_IOBPD
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGCOH
-          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.4")
-#endif
-#endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'W3INIT, aft BLOCK_SOLVER_INIT, step 9.10'
-     FLUSH(740+IAPROC)
+          CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.4", 1)
 #endif
 !
 ! 8.  Final MPI set up ----------------------------------------------- /
@@ -1881,29 +1685,15 @@
 #ifdef W3_MPI
       CALL W3MPII ( IMOD )
 #endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'After W3MPII'
-     FLUSH(740+IAPROC)
-#endif
 #ifdef W3_MPI
       CALL W3MPIO ( IMOD )
-#endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'After W3MPIO'
-     FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MPI
       IF ( FLOUT(2) ) CALL W3MPIP ( IMOD )
 #endif
-#ifdef W3_DEBUGINIT
-     WRITE(740+IAPROC,*) 'After W3MPIP'
-     FLUSH(740+IAPROC)
-#endif
 !
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGINIT
          CALL PRINT_WN_STATISTIC("W3INIT leaving")
-#endif
 #endif
 #ifdef W3_TIMINGS
        CALL PRINT_MY_TIME("Leaving W3INIT")
@@ -2067,6 +1857,19 @@
 !/
       END SUBROUTINE W3INIT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Perform initializations for MPI version of model.
+!>  Data transpose only.
+!>
+!> @details Some derived data types are defined.  All communiction in
+!>  W3GATH, W3SCAT and W3WAVE are initialized so that all
+!>  communication can be performed with single MPI_STARTALL,
+!>  MPI_TESTALL and MPI_WAITALL calls.
+!>
+!> @param[in] IMOD  Model number.
+!>
+!> @author H. L. Tolman  @date 11-May-2007
+!>      
       SUBROUTINE W3MPII ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -2206,49 +2009,25 @@
 !
 ! 1.  Set up derived data types -------------------------------------- /
 !
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
-#endif
       NXXXX  = NSEALM * NAPROC
 !
 #ifdef W3_MPI
       CALL MPI_TYPE_VECTOR ( NSEALM, 1, NAPROC, MPI_REAL,        &
                              WW3_FIELD_VEC, IERR_MPI )
 #endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
-#endif
 #ifdef W3_MPI
       CALL MPI_TYPE_VECTOR ( NSEALM, 1, NSPEC, MPI_REAL,         &
                              WW3_SPEC_VEC, IERR_MPI )
 #endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
-#endif
 #ifdef W3_MPI
       CALL MPI_TYPE_COMMIT ( WW3_FIELD_VEC, IERR_MPI )
-#endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
 #endif
 #ifdef W3_MPI
       CALL MPI_TYPE_COMMIT ( WW3_SPEC_VEC, IERR_MPI )
 #endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
-#endif
 !
 #ifdef W3_MPIT
       WRITE (NDST,9010) WW3_FIELD_VEC, WW3_SPEC_VEC
-#endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
 #endif
 !
 #ifdef W3_MPI
@@ -2264,10 +2043,6 @@
           RETURN
         END IF
 #endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
-#endif
 !
 ! 2.  Set up scatters and gathers for W3WAVE ------------------------- /
 !     ( persistent communication calls )
@@ -2281,10 +2056,6 @@
         IF ( IAPPRO(ISP) .EQ. IAPROC ) NSPLOC = NSPLOC + 1
         END DO
 #endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
-#endif
 !
 #ifdef W3_MPI
       NRQSG1 = NSPEC - NSPLOC
@@ -2292,16 +2063,9 @@
       IRQSG1 => WADATS(IMOD)%IRQSG1
       IH     = 0
 #endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
-#endif
 !
 #ifdef W3_MPIT
       WRITE (NDST,9021)
-#endif
-#ifdef W3_DEBUGINIT
-          WRITE(*,*) 'Before VA MPI_SEND/RECV_INIT inits'
 #endif
 #ifdef W3_MPI
       DO ISP=1, NSPEC
@@ -2321,16 +2085,9 @@
           END IF
         END DO
 #endif
-#ifdef W3_DEBUGINIT
-           WRITE(*,*) 'After VA MPI_SEND/RECV_INIT inits'
-#endif
 #ifdef W3_MPIT
       WRITE (NDST,9023)
       WRITE (NDST,9020) NRQSG1
-#endif
-#ifdef W3_DEBUGINIT
-      WRITE(740+IAPROC,*) 'W3MPII, step 1'
-      FLUSH(740+IAPROC)
 #endif
 !
 ! 3.  Set up scatters and gathers for W3SCAT and W3GATH -------------- /
@@ -2478,6 +2235,19 @@
 !/
       END SUBROUTINE W3MPII
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Prepare MPI persistent communication needed for WAVEWATCH I/O
+!>  routines.
+!>
+!> @details Create handles as needed. The communication as set up 
+!>  in W3MPII uses tags with number ranging from 1 through NSPEC. 
+!>  New and unique tags for IO related communication are assigned 
+!>  here dynamically. No testing on IMOD, since only called by W3INIT.
+!>
+!> @param[in] IMOD  Model number.
+!>
+!> @author H. L. Tolman  @date 11-Nov-2015
+!>      
       SUBROUTINE W3MPIO ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -2585,7 +2355,7 @@
 
 
 #ifdef W3_MPI
-      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1,   &
+      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0,             &
                           DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
                           SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
                           PDIR, PSI, PWS, PWST, PNR, PHIAW, PHIOC,&
@@ -6860,6 +6630,16 @@
 !/
       END SUBROUTINE W3MPIO
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Prepare MPI persistent communication needed for WAVEWATCH I/O
+!>  routines.
+!>
+!> @details Create handles as needed.
+!>
+!> @param[in] IMOD  Model number.
+!>
+!> @author H. L. Tolman  @date 30-Oct-2009
+!>      
       SUBROUTINE W3MPIP ( IMOD )
 !/
 !/                  +-----------------------------------+

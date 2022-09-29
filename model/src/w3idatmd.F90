@@ -1,4 +1,17 @@
+!> @file
+!> @brief Define data structures to set up wave model input data for
+!>  several models simultaneously.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
+
 #include "w3macros.h"
+
+!> @brief Define data structures to set up wave model input data for
+!>  several models simultaneously.
+!> 
+!> @author H. L. Tolman @date 22-Mar-2021
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3IDATMD
 !/
@@ -257,6 +270,16 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Set up the number of grids to be used.
+!>
+!> @details Use data stored in NGRIDS in W3GDATMD.
+!>
+!> @param[in] NDSE  Error output unit number.
+!> @param[in] NDST  Test output unit number.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>        
       SUBROUTINE W3NINP ( NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -399,6 +422,19 @@
 !/
       END SUBROUTINE W3NINP
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize an individual data grid at the proper dimensions.
+!>
+!> @details Allocate directly into the structure array. Note that
+!>  this cannot be done through the pointer alias!
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!> @param[in] FLAGSTIDEIN 
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>      
       SUBROUTINE W3DIMI  ( IMOD, NDSE, NDST, FLAGSTIDEIN )
 !/
 !/                  +-----------------------------------+
@@ -774,6 +810,18 @@
 !/
       END SUBROUTINE W3DIMI
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Select one of the WAVEWATCH III grids / models.
+!>
+!> @details Point pointers to the proper variables in the proper element of
+!>  the GRIDS array.
+!>
+!> @param[in] IMOD  Model number to point to.
+!> @param[in] NDSE  Error output unit number.
+!> @param[in] NDST  Test output unit number.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>      
       SUBROUTINE W3SETI ( IMOD, NDSE, NDST )
 !/
 !/                  +-----------------------------------+

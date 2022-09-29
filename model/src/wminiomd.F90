@@ -640,10 +640,6 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'WMIOBG')
 #endif
-#ifdef W3_DEBUGIOBC
-      WRITE(740+IAPROC,*)  'Begin of W3IOBG'
-      FLUSH(740+IAPROC)
-#endif
 
 
 !
@@ -1136,10 +1132,6 @@
 ! 5.  Successful update
 !
       IF ( PRESENT(DONE) ) DONE = .TRUE.
-#ifdef W3_DEBUGIOBC
-      WRITE(740+IAPROC,*)  'End of W3IOBG'
-      FLUSH(740+IAPROC)
-#endif
 !
       RETURN
 !
@@ -1814,7 +1806,7 @@
 !     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_PDLIB
       use yowNodepool, only: npa
-      USE yowExchangeModule, only : PDLIB_exchange2Dreal
+      USE yowExchangeModule, only : PDLIB_exchange2Dreal_zero
 #endif
       USE W3PARALL, ONLY : INIT_GET_ISEA
 #ifdef W3_S
@@ -2276,7 +2268,7 @@
       IF ( PRESENT(DONE) ) DONE = .TRUE.
 !
 #ifdef W3_PDLIB
-      CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
+      CALL PDLIB_exchange2Dreal_zero(VA)
 #endif
 !
 ! Formats
@@ -2911,7 +2903,7 @@
       USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_PDLIB
       use yowNodepool, only: npa
-      USE yowExchangeModule, only : PDLIB_exchange2Dreal
+      USE yowExchangeModule, only : PDLIB_exchange2Dreal_zero
 #endif
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
@@ -3351,7 +3343,7 @@
       IF ( PRESENT(DONE) ) DONE = .TRUE.
 !       
 #ifdef W3_PDLIB
-  CALL PDLIB_exchange2Dreal(VA(:,1:NPA))
+  CALL PDLIB_exchange2Dreal_zero(VA)
 #endif
 !
 ! Formats

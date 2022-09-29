@@ -1,5 +1,16 @@
+!> @file
+!> @brief Generate track output.
+!> 
+!> @author H. L. Tolman  @date 26-Dec-2012
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Generate track output.
+!> 
+!> @author H. L. Tolman  @date 26-Dec-2012
+!>
       MODULE W3IOTRMD
 !/
 !/                  +-----------------------------------+
@@ -66,6 +77,30 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Perform output of spectral information along provided tracks.
+!>
+!> @details
+!> @verbatim        
+!>     Time and location data for the track is read from the file
+!>     track_i.FILEXT, and output spectra additional information are
+!>     written to track_o.FILEXT.
+!>
+!>     The spectrum dumped is the frequency-direction spectrum in
+!>     m**2/Hz/rad.
+!>
+!>     The output spectra are energy density spectra in terms of the
+!>     true frequency and a direction in radians. The corresponding
+!>     band widths are part of the file header.
+!> @endverbatim                
+!>
+!> @param[inout] NDSINP  Unit number of input file track_i.FILEXT.
+!> @param[inout] NDSOUT  Unit number of output file track_o.FILEXT.
+!> @param[inout] A       Spectra (shape conversion through par list).
+!> @param[inout] IMOD    Model grid number.
+!>
+!> @author H. L. Tolman  @date 08-Jun-2018
+!>        
       SUBROUTINE W3IOTR ( NDSINP, NDSOUT, A, IMOD )
 !/
 !/                  +-----------------------------------+
@@ -342,7 +377,7 @@
                                 'UNFORMATTED'
 #endif
               OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-                    STATUS='OLD',ERR=800,FORM='UNFORMATTED',IOSTAT=IERR)
+                    STATUS='OLD',ERR=800,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
               READ (NDSTI,ERR=801,END=802,IOSTAT=IERR) IDTST
             END IF
 !
@@ -356,7 +391,7 @@
                                 'UNFORMATTED'
 #endif
               OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
-                    FORM='UNFORMATTED',ERR=810,IOSTAT=IERR)
+                    form='UNFORMATTED', convert=file_endian,ERR=810,IOSTAT=IERR)
               WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
                                                 NTH, XFR
               WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
