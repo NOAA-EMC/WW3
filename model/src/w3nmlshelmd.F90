@@ -25,137 +25,137 @@ MODULE W3NMLSHELMD
 
   ! domain structure
   TYPE NML_DOMAIN_T
-     INTEGER                     :: IOSTYP
-     CHARACTER(15)               :: START
-     CHARACTER(15)               :: STOP
-     CHARACTER(1)                :: OUTFFILE
+    INTEGER                     :: IOSTYP
+    CHARACTER(15)               :: START
+    CHARACTER(15)               :: STOP
+    CHARACTER(1)                :: OUTFFILE
   END TYPE NML_DOMAIN_T
 
 
 
   ! input structure
   TYPE NML_FORCING_T
-     CHARACTER(13)               :: WATER_LEVELS
-     CHARACTER(13)               :: CURRENTS
-     CHARACTER(13)               :: WINDS
-     CHARACTER(13)               :: ATM_MOMENTUM
-     CHARACTER(13)               :: AIR_DENSITY
-     CHARACTER(13)               :: ICE_CONC
-     CHARACTER(13)               :: ICE_PARAM1
-     CHARACTER(13)               :: ICE_PARAM2
-     CHARACTER(13)               :: ICE_PARAM3
-     CHARACTER(13)               :: ICE_PARAM4
-     CHARACTER(13)               :: ICE_PARAM5
-     CHARACTER(13)               :: MUD_DENSITY
-     CHARACTER(13)               :: MUD_THICKNESS
-     CHARACTER(13)               :: MUD_VISCOSITY
+    CHARACTER(13)               :: WATER_LEVELS
+    CHARACTER(13)               :: CURRENTS
+    CHARACTER(13)               :: WINDS
+    CHARACTER(13)               :: ATM_MOMENTUM
+    CHARACTER(13)               :: AIR_DENSITY
+    CHARACTER(13)               :: ICE_CONC
+    CHARACTER(13)               :: ICE_PARAM1
+    CHARACTER(13)               :: ICE_PARAM2
+    CHARACTER(13)               :: ICE_PARAM3
+    CHARACTER(13)               :: ICE_PARAM4
+    CHARACTER(13)               :: ICE_PARAM5
+    CHARACTER(13)               :: MUD_DENSITY
+    CHARACTER(13)               :: MUD_THICKNESS
+    CHARACTER(13)               :: MUD_VISCOSITY
   END TYPE NML_FORCING_T
   !
   TYPE NML_ASSIM_T
-     CHARACTER(13)               :: MEAN
-     CHARACTER(13)               :: SPEC1D
-     CHARACTER(13)               :: SPEC2D
+    CHARACTER(13)               :: MEAN
+    CHARACTER(13)               :: SPEC1D
+    CHARACTER(13)               :: SPEC2D
   END TYPE NML_ASSIM_T
   !
   TYPE NML_INPUT_T
-     TYPE(NML_FORCING_T)         :: FORCING
-     TYPE(NML_ASSIM_T)           :: ASSIM
+    TYPE(NML_FORCING_T)         :: FORCING
+    TYPE(NML_ASSIM_T)           :: ASSIM
   END TYPE NML_INPUT_T
 
   ! output type structure
   TYPE NML_FIELD_T
-     CHARACTER(1024)             :: LIST
+    CHARACTER(1024)             :: LIST
   END TYPE NML_FIELD_T
   !
   TYPE NML_POINT_T
-     CHARACTER(64)               :: FILE
+    CHARACTER(64)               :: FILE
   END TYPE NML_POINT_T
   !
   TYPE NML_TRACK_T
-     LOGICAL                     :: FORMAT
+    LOGICAL                     :: FORMAT
   END TYPE NML_TRACK_T
   !
   TYPE NML_PARTITION_T
-     INTEGER                     :: X0
-     INTEGER                     :: XN
-     INTEGER                     :: NX
-     INTEGER                     :: Y0
-     INTEGER                     :: YN
-     INTEGER                     :: NY
-     LOGICAL                     :: FORMAT
+    INTEGER                     :: X0
+    INTEGER                     :: XN
+    INTEGER                     :: NX
+    INTEGER                     :: Y0
+    INTEGER                     :: YN
+    INTEGER                     :: NY
+    LOGICAL                     :: FORMAT
   END TYPE NML_PARTITION_T
   !
 #ifdef W3_COU
   TYPE NML_COUPLING_T
-     CHARACTER(1024)             :: SENT
-     CHARACTER(1024)             :: RECEIVED
-     LOGICAL                     :: COUPLET0
+    CHARACTER(1024)             :: SENT
+    CHARACTER(1024)             :: RECEIVED
+    LOGICAL                     :: COUPLET0
   END TYPE NML_COUPLING_T
 #endif
   !
   TYPE NML_RESTART_T
-     CHARACTER(1024)             :: EXTRA
+    CHARACTER(1024)             :: EXTRA
   END TYPE NML_RESTART_T
   !
   TYPE NML_OUTPUT_TYPE_T
-     TYPE(NML_POINT_T)               :: POINT
-     TYPE(NML_FIELD_T)               :: FIELD
-     TYPE(NML_TRACK_T)               :: TRACK
-     TYPE(NML_PARTITION_T)           :: PARTITION
+    TYPE(NML_POINT_T)               :: POINT
+    TYPE(NML_FIELD_T)               :: FIELD
+    TYPE(NML_TRACK_T)               :: TRACK
+    TYPE(NML_PARTITION_T)           :: PARTITION
 #ifdef W3_COU
-     TYPE(NML_COUPLING_T)           :: COUPLING
+    TYPE(NML_COUPLING_T)           :: COUPLING
 #endif
-     TYPE(NML_RESTART_T)             :: RESTART
+    TYPE(NML_RESTART_T)             :: RESTART
   END TYPE NML_OUTPUT_TYPE_T
 
 
 
   ! output date structure
   TYPE NML_OUTPUT_TIME_T
-     CHARACTER(15)               :: START
-     CHARACTER(15)               :: STRIDE
-     CHARACTER(15)               :: STOP
-     CHARACTER(15)               :: OUTFFILE
+    CHARACTER(15)               :: START
+    CHARACTER(15)               :: STRIDE
+    CHARACTER(15)               :: STOP
+    CHARACTER(15)               :: OUTFFILE
   END TYPE NML_OUTPUT_TIME_T
   !
   TYPE NML_OUTPUT_DATE_T
-     TYPE(NML_OUTPUT_TIME_T)         :: FIELD
-     TYPE(NML_OUTPUT_TIME_T)         :: POINT
-     TYPE(NML_OUTPUT_TIME_T)         :: TRACK
-     TYPE(NML_OUTPUT_TIME_T)         :: RESTART
-     TYPE(NML_OUTPUT_TIME_T)         :: RESTART2
-     TYPE(NML_OUTPUT_TIME_T)         :: BOUNDARY
-     TYPE(NML_OUTPUT_TIME_T)         :: PARTITION
-     TYPE(NML_OUTPUT_TIME_T)         :: COUPLING
+    TYPE(NML_OUTPUT_TIME_T)         :: FIELD
+    TYPE(NML_OUTPUT_TIME_T)         :: POINT
+    TYPE(NML_OUTPUT_TIME_T)         :: TRACK
+    TYPE(NML_OUTPUT_TIME_T)         :: RESTART
+    TYPE(NML_OUTPUT_TIME_T)         :: RESTART2
+    TYPE(NML_OUTPUT_TIME_T)         :: BOUNDARY
+    TYPE(NML_OUTPUT_TIME_T)         :: PARTITION
+    TYPE(NML_OUTPUT_TIME_T)         :: COUPLING
   END TYPE NML_OUTPUT_DATE_T
 
 
   ! homogeneous input structure
   TYPE NML_HOMOG_COUNT_T
-     INTEGER                     :: N_IC1
-     INTEGER                     :: N_IC2
-     INTEGER                     :: N_IC3
-     INTEGER                     :: N_IC4
-     INTEGER                     :: N_IC5
-     INTEGER                     :: N_MDN
-     INTEGER                     :: N_MTH
-     INTEGER                     :: N_MVS
-     INTEGER                     :: N_LEV
-     INTEGER                     :: N_CUR
-     INTEGER                     :: N_WND
-     INTEGER                     :: N_ICE
-     INTEGER                     :: N_TAU
-     INTEGER                     :: N_RHO
-     INTEGER                     :: N_MOV
-     INTEGER                     :: N_TOT
+    INTEGER                     :: N_IC1
+    INTEGER                     :: N_IC2
+    INTEGER                     :: N_IC3
+    INTEGER                     :: N_IC4
+    INTEGER                     :: N_IC5
+    INTEGER                     :: N_MDN
+    INTEGER                     :: N_MTH
+    INTEGER                     :: N_MVS
+    INTEGER                     :: N_LEV
+    INTEGER                     :: N_CUR
+    INTEGER                     :: N_WND
+    INTEGER                     :: N_ICE
+    INTEGER                     :: N_TAU
+    INTEGER                     :: N_RHO
+    INTEGER                     :: N_MOV
+    INTEGER                     :: N_TOT
   END TYPE NML_HOMOG_COUNT_T
   !
   TYPE NML_HOMOG_INPUT_T
-     CHARACTER(15)               :: NAME
-     CHARACTER(15)               :: DATE
-     REAL                        :: VALUE1
-     REAL                        :: VALUE2
-     REAL                        :: VALUE3
+    CHARACTER(15)               :: NAME
+    CHARACTER(15)               :: DATE
+    REAL                        :: VALUE1
+    REAL                        :: VALUE2
+    REAL                        :: VALUE3
   END TYPE NML_HOMOG_INPUT_T
 
 
@@ -288,19 +288,19 @@ CONTAINS
 
     ! open namelist log file
     IF ( NMPLOG .EQ. IMPROC ) THEN
-       NDSN = 3
-       OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
-       IF (IERR.NE.0) THEN
-          WRITE (MDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-          RETURN
-       END IF
+      NDSN = 3
+      OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
+      IF (IERR.NE.0) THEN
+        WRITE (MDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+        RETURN
+      END IF
     END IF
 
     ! open input file
     open (NDSI, FILE=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (MDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (MDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read domain namelist
@@ -427,16 +427,16 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=DOMAIN_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (MDSE,'(A,/A)') &
-            'ERROR: READ_DOMAIN_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (MDSE,'(A,/A)') &
+           'ERROR: READ_DOMAIN_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! set/check return values
     IF (DOMAIN%IOSTYP.LT.0.OR.DOMAIN%IOSTYP.GT.3) THEN
-       WRITE (MDSE,'(A,I3)') 'ERROR: BAD IOSTYP INPUT: ',DOMAIN%IOSTYP
-       CALL EXTCDE (2)
+      WRITE (MDSE,'(A,I3)') 'ERROR: BAD IOSTYP INPUT: ',DOMAIN%IOSTYP
+      CALL EXTCDE (2)
     END IF
 
     ! save namelist
@@ -560,10 +560,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=INPUT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (MDSE,'(A,/A)') &
-            'ERROR: READ_INPUT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (3)
+      WRITE (MDSE,'(A,/A)') &
+           'ERROR: READ_INPUT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (3)
     END IF
 
     ! save namelist
@@ -685,10 +685,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=OUTPUT_TYPE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (MDSE,'(A,/A)') &
-            'ERROR: READ_OUTPUT_TYPE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (4)
+      WRITE (MDSE,'(A,/A)') &
+           'ERROR: READ_OUTPUT_TYPE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (4)
     END IF
 
     ! save namelist
@@ -820,10 +820,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=OUTPUT_DATE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (MDSE,'(A,/A)') &
-            'ERROR: READ_OUTPUT_DATE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (5)
+      WRITE (MDSE,'(A,/A)') &
+           'ERROR: READ_OUTPUT_DATE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (5)
     END IF
 
     ! save namelist
@@ -949,10 +949,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=HOMOG_COUNT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (MDSE,'(A,/A)') &
-            'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_COUNT read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (6)
+      WRITE (MDSE,'(A,/A)') &
+           'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_COUNT read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (6)
     END IF
 
     ! allocate the total count of homogeneous input
@@ -964,23 +964,23 @@ CONTAINS
 
     ! set default values for homogeneous structure
     IF (HOMOG_COUNT%N_TOT .NE. 0 ) THEN
-       DO I=1,HOMOG_COUNT%N_TOT
-          HOMOG_INPUT(I)%NAME      = 'unset'
-          HOMOG_INPUT(I)%DATE      = '19680606 000000'
-          HOMOG_INPUT(I)%VALUE1    = 0.
-          HOMOG_INPUT(I)%VALUE2    = 0.
-          HOMOG_INPUT(I)%VALUE3    = 0.
-       END DO
+      DO I=1,HOMOG_COUNT%N_TOT
+        HOMOG_INPUT(I)%NAME      = 'unset'
+        HOMOG_INPUT(I)%DATE      = '19680606 000000'
+        HOMOG_INPUT(I)%VALUE1    = 0.
+        HOMOG_INPUT(I)%VALUE2    = 0.
+        HOMOG_INPUT(I)%VALUE3    = 0.
+      END DO
     END IF
 
     ! read homogeneous input namelist
     REWIND (NDSI)
     READ (NDSI, nml=HOMOG_INPUT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (MDSE,'(A,/A)') &
-            'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_INPUT_NML read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (7)
+      WRITE (MDSE,'(A,/A)') &
+           'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_INPUT_NML read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (7)
     END IF
 
     ! save namelist
@@ -1524,16 +1524,16 @@ CONTAINS
     WRITE (NDSN,11) TRIM(MSG),'N_MOV       = ', NML_HOMOG_COUNT%N_MOV
 
     IF (NML_HOMOG_COUNT%N_TOT .NE. 0) THEN
-       DO I=1,NML_HOMOG_COUNT%N_TOT
-          WRITE (MSG,'(A,I5,A)') 'HOMOG_INPUT(',I,') % '
-          WRITE (NDSN,'(A)')
-          WRITE (NDSN,10) TRIM(MSG),'NAME      = ', TRIM(NML_HOMOG_INPUT(I)%NAME)
-          WRITE (NDSN,10) TRIM(MSG),'DATE      = ', TRIM(NML_HOMOG_INPUT(I)%DATE)
-          WRITE (NDSN,14) TRIM(MSG),'VALUE1    = ', NML_HOMOG_INPUT(I)%VALUE1
-          WRITE (NDSN,14) TRIM(MSG),'VALUE2    = ', NML_HOMOG_INPUT(I)%VALUE2
-          WRITE (NDSN,14) TRIM(MSG),'VALUE3    = ', NML_HOMOG_INPUT(I)%VALUE3
-          WRITE (NDSN,'(A)')
-       END DO
+      DO I=1,NML_HOMOG_COUNT%N_TOT
+        WRITE (MSG,'(A,I5,A)') 'HOMOG_INPUT(',I,') % '
+        WRITE (NDSN,'(A)')
+        WRITE (NDSN,10) TRIM(MSG),'NAME      = ', TRIM(NML_HOMOG_INPUT(I)%NAME)
+        WRITE (NDSN,10) TRIM(MSG),'DATE      = ', TRIM(NML_HOMOG_INPUT(I)%DATE)
+        WRITE (NDSN,14) TRIM(MSG),'VALUE1    = ', NML_HOMOG_INPUT(I)%VALUE1
+        WRITE (NDSN,14) TRIM(MSG),'VALUE2    = ', NML_HOMOG_INPUT(I)%VALUE2
+        WRITE (NDSN,14) TRIM(MSG),'VALUE3    = ', NML_HOMOG_INPUT(I)%VALUE3
+        WRITE (NDSN,'(A)')
+      END DO
     END IF
 
 

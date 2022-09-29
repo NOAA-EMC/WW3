@@ -25,42 +25,42 @@ MODULE W3NMLOUNFMD
 
   ! field structure
   TYPE NML_FIELD_T
-     CHARACTER(15)               :: TIMESTART
-     CHARACTER(15)               :: TIMESTRIDE
-     CHARACTER(15)               :: TIMECOUNT
-     INTEGER                     :: TIMESPLIT
-     CHARACTER(1024)             :: LIST
-     CHARACTER(15)               :: PARTITION
-     LOGICAL                     :: SAMEFILE
-     LOGICAL                     :: VECTOR
-     INTEGER                     :: TYPE
-     CHARACTER(15)               :: TIMEREF
-     LOGICAL                     :: FCVARS
-     CHARACTER                   :: TIMEVAR
-     CHARACTER                   :: TIMEUNIT
-     CHARACTER(15)               :: TIMEEPOCH
-     REAL                        :: NOVAL
-     LOGICAL                     :: MAPSTA
+    CHARACTER(15)               :: TIMESTART
+    CHARACTER(15)               :: TIMESTRIDE
+    CHARACTER(15)               :: TIMECOUNT
+    INTEGER                     :: TIMESPLIT
+    CHARACTER(1024)             :: LIST
+    CHARACTER(15)               :: PARTITION
+    LOGICAL                     :: SAMEFILE
+    LOGICAL                     :: VECTOR
+    INTEGER                     :: TYPE
+    CHARACTER(15)               :: TIMEREF
+    LOGICAL                     :: FCVARS
+    CHARACTER                   :: TIMEVAR
+    CHARACTER                   :: TIMEUNIT
+    CHARACTER(15)               :: TIMEEPOCH
+    REAL                        :: NOVAL
+    LOGICAL                     :: MAPSTA
   END TYPE NML_FIELD_T
 
   ! file structure
   TYPE NML_FILE_T
-     CHARACTER(30)               :: PREFIX
-     INTEGER                     :: NETCDF
-     INTEGER                     :: IX0
-     INTEGER                     :: IXN
-     INTEGER                     :: IY0
-     INTEGER                     :: IYN
+    CHARACTER(30)               :: PREFIX
+    INTEGER                     :: NETCDF
+    INTEGER                     :: IX0
+    INTEGER                     :: IXN
+    INTEGER                     :: IY0
+    INTEGER                     :: IYN
   END TYPE NML_FILE_T
 
   ! smc grid structure
   TYPE NML_SMC_T
-     INTEGER                     :: TYPE
-     REAL                        :: SXO
-     REAL                        :: SYO
-     REAL                        :: EXO
-     REAL                        :: EYO
-     INTEGER                     :: CELFAC
+    INTEGER                     :: TYPE
+    REAL                        :: SXO
+    REAL                        :: SYO
+    REAL                        :: EXO
+    REAL                        :: EYO
+    INTEGER                     :: CELFAC
   END TYPE NML_SMC_T
 
   ! miscellaneous
@@ -160,15 +160,15 @@ CONTAINS
     NDSN = 3
     OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+      RETURN
     END IF
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read field namelist
@@ -301,10 +301,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=FIELD_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_FIELD_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_FIELD_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! Default forecast reference time to start time
@@ -412,10 +412,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=FILE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_FILE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (2)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_FILE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (2)
     END IF
 
     ! save namelist
@@ -520,10 +520,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=SMC_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_SMC_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (3)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_SMC_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (3)
     END IF
 
     ! save namelist

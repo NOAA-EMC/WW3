@@ -209,34 +209,34 @@ MODULE W3OUNFMETAMD
 
   !> Type for storing WW3 netCDF metadata for a variable
   TYPE META_T
-     REAL :: FSC                             !< Scaling factor for data
-     REAL :: VMIN                            !< "valid_min" attribute
-     REAL :: VMAX = UNSETR                   !< "valid_max" attribute
-     CHARACTER(LEN=24)  :: UNITS = UNSETC    !< SI units for field
-     CHARACTER(LEN=50)  :: ENAME = UNSETC    !< Field name used in output filename
-     CHARACTER(LEN=80)  :: VARNM = UNSETC, & !< netCDF variable name
-          VARNL = UNSETC    !< "long_name" attibute
-     CHARACTER(LEN=120) :: VARNS = UNSETC, & !< "standard_name" attribute
-          VARNG = UNSETC, & !< "globwave_name" attribute
-          VARND = UNSETC    !< "direction_convention" attribute
-     CHARACTER(LEN=512) :: VARNC = UNSETC    !< "comment attribute
-     TYPE(META_LIST_T) :: EXTRA              !< List of user defined meta data
+    REAL :: FSC                             !< Scaling factor for data
+    REAL :: VMIN                            !< "valid_min" attribute
+    REAL :: VMAX = UNSETR                   !< "valid_max" attribute
+    CHARACTER(LEN=24)  :: UNITS = UNSETC    !< SI units for field
+    CHARACTER(LEN=50)  :: ENAME = UNSETC    !< Field name used in output filename
+    CHARACTER(LEN=80)  :: VARNM = UNSETC, & !< netCDF variable name
+         VARNL = UNSETC    !< "long_name" attibute
+    CHARACTER(LEN=120) :: VARNS = UNSETC, & !< "standard_name" attribute
+         VARNG = UNSETC, & !< "globwave_name" attribute
+         VARND = UNSETC    !< "direction_convention" attribute
+    CHARACTER(LEN=512) :: VARNC = UNSETC    !< "comment attribute
+    TYPE(META_LIST_T) :: EXTRA              !< List of user defined meta data
 
-     ! For updating meta only:
-     INTEGER :: IFI = 0, &           !< Group index to update
-          IFJ = 0, &           !< Field index to update
-          IFC = 1              !< Component index to update
-     CHARACTER(LEN=6) :: FLDID = ''  !< Field ID to update
+    ! For updating meta only:
+    INTEGER :: IFI = 0, &           !< Group index to update
+         IFJ = 0, &           !< Field index to update
+         IFC = 1              !< Component index to update
+    CHARACTER(LEN=6) :: FLDID = ''  !< Field ID to update
   ENDTYPE META_T
 
   !> Type for storage of meta data aggregated by component (NFIELD)
   TYPE FIELD_T
-     TYPE(META_T), POINTER :: META(:) !< Pointer to meta data for field
+    TYPE(META_T), POINTER :: META(:) !< Pointer to meta data for field
   END TYPE FIELD_T
 
   !> Type for storage of meta data aggregated by field (IFI)
   TYPE GROUP_T
-     TYPE(FIELD_T), ALLOCATABLE :: FIELD(:) !< Pointer to fields in group
+    TYPE(FIELD_T), ALLOCATABLE :: FIELD(:) !< Pointer to fields in group
   END TYPE GROUP_T
 
   !> Storage for meta data aggregated by group (IFJ)
@@ -259,10 +259,10 @@ MODULE W3OUNFMETAMD
   !> Type for storing partitioned parameter template strings.
   !> Defined as a linked-list
   TYPE PART_TMPL_T
-     CHARACTER(LEN=128)              :: TMPL         !< Placeholder
-     CHARACTER(LEN=128), ALLOCATABLE :: PART_TEXT(:) !< Partition description
-     INTEGER(KIND=2)                 :: NP           !< Num parts (max NOSWLL)
-     TYPE(PART_TMPL_T), POINTER      :: NEXT         !< LinkedList pointer
+    CHARACTER(LEN=128)              :: TMPL         !< Placeholder
+    CHARACTER(LEN=128), ALLOCATABLE :: PART_TEXT(:) !< Partition description
+    INTEGER(KIND=2)                 :: NP           !< Num parts (max NOSWLL)
+    TYPE(PART_TMPL_T), POINTER      :: NEXT         !< LinkedList pointer
   END TYPE PART_TMPL_T
 
   !> User-defined partitionted paratmeters template strings
@@ -343,10 +343,10 @@ CONTAINS
     ! 1. Allocate nested GROUP, FIELD structure:
     ALLOCATE(GROUP(NOGRP))
     DO I = 1,NOGRP
-       ALLOCATE(GROUP(I)%FIELD(NOGE(I)))
-       DO J = 1,NOGE(I)
-          ALLOCATE(GROUP(I)%FIELD(J)%META(3)) ! Hardcode to 3 components for the moment
-       ENDDO
+      ALLOCATE(GROUP(I)%FIELD(NOGE(I)))
+      DO J = 1,NOGE(I)
+        ALLOCATE(GROUP(I)%FIELD(J)%META(3)) ! Hardcode to 3 components for the moment
+      ENDDO
     ENDDO
 
     ! 1.1 Make sure partitioned template pointer is null (i.e. empty list)
@@ -356,45 +356,45 @@ CONTAINS
     DIRCOM = ""
 #ifdef W3_RTD
     IF( FLRTD ) THEN
-       IF ( FLAGUNR ) THEN
-          DIRCOM = 'True North'
-       ELSE IF ( .NOT. FLAGUNR ) THEN
-          DIRCOM = 'Rotated Pole Grid North'
-       ENDIF
+      IF ( FLAGUNR ) THEN
+        DIRCOM = 'True North'
+      ELSE IF ( .NOT. FLAGUNR ) THEN
+        DIRCOM = 'Rotated Pole Grid North'
+      ENDIF
     ENDIF
 #endif
 
     !  Set partitioning method comment and standard name templates:
     IF( PTMETH .LE. 3 ) THEN
-       SNAMEP(1) = 'wind'
-       SNAMEP(2) = 'primary swell'
-       SNAMEP(3) = 'secondary swell'
-       SNAMEP(4) = 'tertiary swell'
-       SNAMEP(5) = 'swell'
+      SNAMEP(1) = 'wind'
+      SNAMEP(2) = 'primary swell'
+      SNAMEP(3) = 'secondary swell'
+      SNAMEP(4) = 'tertiary swell'
+      SNAMEP(5) = 'swell'
     ELSE
-       SNAMEP(1) = 'wind'
-       SNAMEP(2) = 'swell'
-       SNAMEP(3:5) = ''
+      SNAMEP(1) = 'wind'
+      SNAMEP(2) = 'swell'
+      SNAMEP(3:5) = ''
     ENDIF
 
     IF ( PTMETH .EQ. 1 ) THEN
-       PARTCOM = "Wind sea and swells defined using topographic " //   &
-            "partitions and partition wave-age cut-off "     //   &
-            "(WWIII default scheme)"
+      PARTCOM = "Wind sea and swells defined using topographic " //   &
+           "partitions and partition wave-age cut-off "     //   &
+           "(WWIII default scheme)"
     ELSE IF ( PTMETH .EQ. 2 ) THEN
-       PARTCOM = "Wind sea and swells defined using topographic " //   &
-            "partitions and spectral wave-age cut-off"
+      PARTCOM = "Wind sea and swells defined using topographic " //   &
+           "partitions and spectral wave-age cut-off"
     ELSE IF ( PTMETH .EQ. 3 ) THEN
-       PARTCOM = "Wave components defined using topographic "     //   &
-            "partitions only"
+      PARTCOM = "Wave components defined using topographic "     //   &
+           "partitions only"
     ELSE IF ( PTMETH .EQ. 4 ) THEN
-       PARTCOM = "Wind sea and swell defined using spectral "     //   &
-            "wave-age cut-off"
+      PARTCOM = "Wind sea and swell defined using spectral "     //   &
+           "wave-age cut-off"
     ELSE IF ( PTMETH .EQ. 5 ) THEN
-       WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //   &
-            '"Hz spectral frequency cutoff")') PTFCUT
+      WRITE(PARTCOM, '("Wave components defined using ",F5.3,'   //   &
+           '"Hz spectral frequency cutoff")') PTFCUT
     ELSE
-       WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
+      WRITE(PARTCOM, '("PTM_",I1,"_Unknown")') PTMETH
     ENDIF
 
     ! 3. Set the default values for the OUNF netCDF meta data.
@@ -406,7 +406,7 @@ CONTAINS
     ! If the ounfmeta.inp exists, read this in to override defaults:
     INQUIRE(FILE=TRIM(FNMPRE)//"ounfmeta.inp", EXIST=FLGNML)
     IF(FLGNML) THEN
-       CALL READ_META()
+      CALL READ_META()
     ENDIF
 
   END SUBROUTINE INIT_META
@@ -442,10 +442,10 @@ CONTAINS
     INTEGER :: I, J
 
     DO I = 1,NOGRP
-       DO J = 1,NOGE(I)
-          DEALLOCATE(GROUP(I)%FIELD(J)%META)
-       ENDDO
-       DEALLOCATE(GROUP(I)%FIELD)
+      DO J = 1,NOGE(I)
+        DEALLOCATE(GROUP(I)%FIELD(J)%META)
+      ENDDO
+      DEALLOCATE(GROUP(I)%FIELD)
     ENDDO
     DEALLOCATE(GROUP)
 
@@ -537,53 +537,53 @@ CONTAINS
     !   - a comment line (starting with $)
     !   - the end of the file
     DO
-       READ(NDMI, '(A)', iostat=IERR, err=101, end=100) BUF
+      READ(NDMI, '(A)', iostat=IERR, err=101, end=100) BUF
 
-       ILINE = ILINE + 1
+      ILINE = ILINE + 1
 
-       ! Remove any tab characters from buffer (replace with a space)
-       CALL NOTABS(BUF)
+      ! Remove any tab characters from buffer (replace with a space)
+      CALL NOTABS(BUF)
 
-       ! Empty line?
-       IF(TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank line]'
-          CYCLE
-       ENDIF
+      ! Empty line?
+      IF(TRIM(BUF) == '') THEN
+        IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[blank line]'
+        CYCLE
+      ENDIF
 
-       IF(TRIM(BUF) == "$ DEBUG ON") THEN
-          WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG ON]'
-          DEBUG = .TRUE.
-          CYCLE
-       ENDIF
+      IF(TRIM(BUF) == "$ DEBUG ON") THEN
+        WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG ON]'
+        DEBUG = .TRUE.
+        CYCLE
+      ENDIF
 
-       IF(TRIM(BUF) == "$ DEBUG OFF") THEN
-          WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG OFF]'
-          DEBUG = .FALSE.
-          CYCLE
-       ENDIF
+      IF(TRIM(BUF) == "$ DEBUG OFF") THEN
+        WRITE(*,'(I5,1X,A20)') ILINE, '[DEBUG OFF]'
+        DEBUG = .FALSE.
+        CYCLE
+      ENDIF
 
-       ! Read first token on line:
-       READ(BUF, *) TEST
+      ! Read first token on line:
+      READ(BUF, *) TEST
 
-       ! Check for comment:
-       IF(TEST(1:1) == "$" .OR. TRIM(BUF) == '') THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[comment line]'
-          CYCLE
-       ENDIF
+      ! Check for comment:
+      IF(TEST(1:1) == "$" .OR. TRIM(BUF) == '') THEN
+        IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[comment line]'
+        CYCLE
+      ENDIF
 
-       ! Check if is section header
-       IF(PRESENT(NEW_SECTION)) THEN
-          CALL STR_TO_UPPER(TEST)
-          SELECT CASE(TEST)
-          CASE ("META", "TEMPLATE", "CRS")
-             NEW_SECTION = .TRUE.
-          CASE DEFAULT
-             NEW_SECTION = .FALSE.
-          END SELECT
-       ENDIF
+      ! Check if is section header
+      IF(PRESENT(NEW_SECTION)) THEN
+        CALL STR_TO_UPPER(TEST)
+        SELECT CASE(TEST)
+        CASE ("META", "TEMPLATE", "CRS")
+          NEW_SECTION = .TRUE.
+        CASE DEFAULT
+          NEW_SECTION = .FALSE.
+        END SELECT
+      ENDIF
 
-       ! Anything else can be considered the "next line"
-       RETURN
+      ! Anything else can be considered the "next line"
+      RETURN
     ENDDO
 
     !/    Escape locations
@@ -657,9 +657,9 @@ CONTAINS
     SLEN = LEN_TRIM(STR)
 
     DO I=1,SLEN
-       IF(ICHAR(STR(I:I)) == ASCII_TAB) THEN
-          STR(I:I) = ' '
-       ENDIF
+      IF(ICHAR(STR(I:I)) == ASCII_TAB) THEN
+        STR(I:I) = ' '
+      ENDIF
     ENDDO
 
   END SUBROUTINE NOTABS
@@ -713,9 +713,9 @@ CONTAINS
 
     OSTR = TRIM(STR)
     DO
-       I = INDEX(TRIM(OSTR), C)
-       IF(I .LE. 0) EXIT
-       OSTR(I:I) = REP
+      I = INDEX(TRIM(OSTR), C)
+      IF(I .LE. 0) EXIT
+      OSTR(I:I) = REP
     ENDDO
 
   END FUNCTION REPLACE_CHAR
@@ -772,76 +772,76 @@ CONTAINS
          STATUS="OLD", IOSTAT=IERR)
 
     IF(IERR .NE. 0) THEN
-       WRITE(NDSE, 5010) TRIM(FNMPRE)//TRIM(FN_META), IERR
-       CALL EXTCDE(10)
+      WRITE(NDSE, 5010) TRIM(FNMPRE)//TRIM(FN_META), IERR
+      CALL EXTCDE(10)
     ENDIF
 
     ! Loop over file, skipping comments or blank lines, until we find
     ! a META line.
     DO
-       CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
-       IF(EOF) EXIT
+      CALL NEXT_LINE(NDMI, BUF, ILINE, EOF)
+      IF(EOF) EXIT
 
-       ! Read first token on line:
-       READ(BUF, *) TEST
+      ! Read first token on line:
+      READ(BUF, *) TEST
 
-       ! A new meta-data section will start with the keyword "META"
-       TESTU = TEST
-       CALL STR_TO_UPPER(TESTU)
-       IF(TESTU == "META") THEN
-          MCNT = MCNT + 1
+      ! A new meta-data section will start with the keyword "META"
+      TESTU = TEST
+      CALL STR_TO_UPPER(TESTU)
+      IF(TESTU == "META") THEN
+        MCNT = MCNT + 1
 
-          IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META header]', TRIM(BUF)
+        IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META header]', TRIM(BUF)
 
-          ! Get the IFI, IFJ, IFC values from the header:
-          I = INDEX(BUF, TRIM(TEST)) + 4 ! Handles lower/mixed-case META keyword
-          CALL DECODE_HEADER(BUF(I:), ILINE, IFI, IFJ, IFC)
-          IF(IFI .EQ. -1) THEN
-             WRITE(NDSE, 5011) TRIM(BUF(I:)), TRIM(FN_META), ILINE
-             CALL EXTCDE(10)
-          ENDIF
-
-          ! IFI = 999 is a section for the "global" meta data
-          IF(IFI .EQ. 999) THEN
-             CALL READ_FREEFORM_META_LIST(NDMI, ILINE, GLOBAL_META)
-             CYCLE
-          ENDIF
-
-          ! Error checking on size of IFJ, ICOMP, IPART.
-          IF(IFI .LT. 1 .OR. IFI .GT. NOGRP) THEN
-             WRITE(NDSE,5013) NOGRP, TRIM(FN_META), ILINE
-             CALL EXTCDE(1)
-          ENDIF
-          IF(IFJ .LT. 1 .OR. IFJ .GT. NOGE(IFI)) THEN
-             WRITE(NDSE,5014) NOGE(IFI), TRIM(FN_META), ILINE
-             CALL EXTCDE(1)
-          ENDIF
-          IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
-             WRITE(NDSE,5015) TRIM(FN_META), ILINE
-             CALL EXTCDE(1)
-          ENDIF
-
-          ! Select correct variable metadata entry:
-          PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC)
-
-          ! Update the metadata with values from file:
-          CALL READ_META_PAIRS(NDMI, PMETA, ILINE)
-
-       ELSE IF(TESTU == "TEMPLATE") THEN
-          BACKSPACE(NDMI) ! We will reprocess this line
-          CALL READ_PART_TMPL(NDMI, ILINE)
-          CYCLE
-
-       ELSE IF(TESTU == "CRS") THEN
-          BACKSPACE(NDMI) ! We will reprocess this line
-          CALL READ_CRS_META(NDMI, ILINE)
-          CYCLE
-
-       ELSE
-          ! Anything else is a syntax error
-          WRITE(NDSE, 5012) TRIM(FN_META), ILINE, TRIM(BUF)
+        ! Get the IFI, IFJ, IFC values from the header:
+        I = INDEX(BUF, TRIM(TEST)) + 4 ! Handles lower/mixed-case META keyword
+        CALL DECODE_HEADER(BUF(I:), ILINE, IFI, IFJ, IFC)
+        IF(IFI .EQ. -1) THEN
+          WRITE(NDSE, 5011) TRIM(BUF(I:)), TRIM(FN_META), ILINE
           CALL EXTCDE(10)
-       ENDIF
+        ENDIF
+
+        ! IFI = 999 is a section for the "global" meta data
+        IF(IFI .EQ. 999) THEN
+          CALL READ_FREEFORM_META_LIST(NDMI, ILINE, GLOBAL_META)
+          CYCLE
+        ENDIF
+
+        ! Error checking on size of IFJ, ICOMP, IPART.
+        IF(IFI .LT. 1 .OR. IFI .GT. NOGRP) THEN
+          WRITE(NDSE,5013) NOGRP, TRIM(FN_META), ILINE
+          CALL EXTCDE(1)
+        ENDIF
+        IF(IFJ .LT. 1 .OR. IFJ .GT. NOGE(IFI)) THEN
+          WRITE(NDSE,5014) NOGE(IFI), TRIM(FN_META), ILINE
+          CALL EXTCDE(1)
+        ENDIF
+        IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
+          WRITE(NDSE,5015) TRIM(FN_META), ILINE
+          CALL EXTCDE(1)
+        ENDIF
+
+        ! Select correct variable metadata entry:
+        PMETA => GROUP(IFI)%FIELD(IFJ)%META(IFC)
+
+        ! Update the metadata with values from file:
+        CALL READ_META_PAIRS(NDMI, PMETA, ILINE)
+
+      ELSE IF(TESTU == "TEMPLATE") THEN
+        BACKSPACE(NDMI) ! We will reprocess this line
+        CALL READ_PART_TMPL(NDMI, ILINE)
+        CYCLE
+
+      ELSE IF(TESTU == "CRS") THEN
+        BACKSPACE(NDMI) ! We will reprocess this line
+        CALL READ_CRS_META(NDMI, ILINE)
+        CYCLE
+
+      ELSE
+        ! Anything else is a syntax error
+        WRITE(NDSE, 5012) TRIM(FN_META), ILINE, TRIM(BUF)
+        CALL EXTCDE(10)
+      ENDIF
     ENDDO
 
     CLOSE(NDMI)
@@ -968,25 +968,25 @@ CONTAINS
     ! Is first value an int?
     READ(BUF, *, IOSTAT=IERR) IFI
     IF(IERR .EQ. 0) THEN
-       ! Try reading 3 values:
-       READ(BUF, *, iostat=IERR) IFI, IFJ, IFC
-       IF(IERR .NE. 0) THEN
-          ! Try just two values:
-          READ(BUF, *, IOSTAt=IERR) IFI, IFJ
-       ENDIF
+      ! Try reading 3 values:
+      READ(BUF, *, iostat=IERR) IFI, IFJ, IFC
+      IF(IERR .NE. 0) THEN
+        ! Try just two values:
+        READ(BUF, *, IOSTAt=IERR) IFI, IFJ
+      ENDIF
     ELSE
-       ! Try reading field ID plus component
-       READ(BUF, *, IOSTAT=IERR) FLD, IFC
+      ! Try reading field ID plus component
+      READ(BUF, *, IOSTAT=IERR) FLD, IFC
 
-       IF(ierr .NE. 0) THEN
-          ! Try just fldid
-          READ(BUF, *, IOSTAT=IERR) FLD
-       ENDIF
+      IF(ierr .NE. 0) THEN
+        ! Try just fldid
+        READ(BUF, *, IOSTAT=IERR) FLD
+      ENDIF
     ENDIF
 
     IF(IERR .NE. 0) THEN
-       WRITE(NDSE, 6000) TRIM(FN_META), ILINE, TRIM(BUF)
-       CALL EXTCDE(10)
+      WRITE(NDSE, 6000) TRIM(FN_META), ILINE, TRIM(BUF)
+      CALL EXTCDE(10)
     ENDIf
 
     OFLD = FLD
@@ -994,28 +994,28 @@ CONTAINS
 
     ! If string value (FLDID), then decode into IFI,IFJ value:
     IF(FLD /= '') THEN
-       ! Special case for "global" attributes
-       IF(TRIM(FLD) == "GLOBAL") THEN
-          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
-          IFI = 999  ! Marker for global section
+      ! Special case for "global" attributes
+      IF(TRIM(FLD) == "GLOBAL") THEN
+        IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta sec.]', TRIM(BUF)
+        IFI = 999  ! Marker for global section
 
-          ! check for any options:
-          I = INDEX(BUF, TRIM(OFLD)) + LEN_TRIM(OFLD)
-          OPT = ADJUSTL(BUF(I:))
-          CALL STR_TO_UPPER(OPT)
-          SELECT CASE(TRIM(OPT))
-          CASE("")
-             CONTINUE ! no option
-          CASE("NODEFAULT")
-             FL_DEFAULT_GBL_META = .FALSE.
-             IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta]', 'Defaults disabled'
-          CASE DEFAULT
-             WRITE(NDSE, *) "Unknown GLOBAL extra option: [", TRIM(OPT), "]"
-          END SELECT
-       ELSE
-          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
-          CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
-       ENDIF
+        ! check for any options:
+        I = INDEX(BUF, TRIM(OFLD)) + LEN_TRIM(OFLD)
+        OPT = ADJUSTL(BUF(I:))
+        CALL STR_TO_UPPER(OPT)
+        SELECT CASE(TRIM(OPT))
+        CASE("")
+          CONTINUE ! no option
+        CASE("NODEFAULT")
+          FL_DEFAULT_GBL_META = .FALSE.
+          IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[GLOBAL meta]', 'Defaults disabled'
+        CASE DEFAULT
+          WRITE(NDSE, *) "Unknown GLOBAL extra option: [", TRIM(OPT), "]"
+        END SELECT
+      ELSE
+        IF(DEBUG) WRITE(*,'(6X,A20,1X,A)') '[Decoding field ID]', TRIM(BUF)
+        CALL W3FLDTOIJ(FLD, IFI, IFJ, 1, 1, 1)
+      ENDIF
     ENDIF
 
     IF(DEBUG) WRITE(*,'(6X,A20,1X,I4,2I2)') '[IFI, IFJ, IFC]', IFI,IFJ,IFC
@@ -1097,95 +1097,95 @@ CONTAINS
 
     ! Keep reading lines until we hit EOF or anoter META keyword
     DO
-       CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
-       IF(EOF) THEN
-          BACKSPACE(NDMI)
-          RETURN
-       ENDIF
+      CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
+      IF(EOF) THEN
+        BACKSPACE(NDMI)
+        RETURN
+      ENDIF
 
-       IF(NEW) THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
-          ILINE = ILINE - 1
-          BACKSPACE(NDMI)
-          EXIT
-       ENDIF
+      IF(NEW) THEN
+        IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+        ILINE = ILINE - 1
+        BACKSPACE(NDMI)
+        EXIT
+      ENDIF
 
-       IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META pair]', TRIM(BUF)
+      IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META pair]', TRIM(BUF)
 
-       ! Meta data should be formatted as "attr_name = attr_value"
-       I = INDEX(BUF, "=")
-       IF( I .LT. 1 ) THEN
-          WRITE(NDSE, 7000) FN_META, ILINE, TRIM(BUF)
-          CALL EXTCDE(10)
-       ENDIF
+      ! Meta data should be formatted as "attr_name = attr_value"
+      I = INDEX(BUF, "=")
+      IF( I .LT. 1 ) THEN
+        WRITE(NDSE, 7000) FN_META, ILINE, TRIM(BUF)
+        CALL EXTCDE(10)
+      ENDIF
 
-       ATTN = ADJUSTL(BUF(1:I-1))
-       ATTV = ADJUSTL(BUF(I+1:))
+      ATTN = ADJUSTL(BUF(1:I-1))
+      ATTV = ADJUSTL(BUF(I+1:))
 
-       ! Some compilers won't read an "empty" string unless quoted:
-       IF(TRIM(ATTV) == '') THEN
-          ATTV='""'
-       ENDIF
+      ! Some compilers won't read an "empty" string unless quoted:
+      IF(TRIM(ATTV) == '') THEN
+        ATTV='""'
+      ENDIF
 
-       IERR = 0
-       SELECT CASE(TRIM(attn))
-          ! Character variables
-          ! Note: Using internal reads will allow the use of quote marks in strings
-       CASE("varnm")
-          READ(attv, *, IOSTAT=IERR) META%VARNM
+      IERR = 0
+      SELECT CASE(TRIM(attn))
+        ! Character variables
+        ! Note: Using internal reads will allow the use of quote marks in strings
+      CASE("varnm")
+        READ(attv, *, IOSTAT=IERR) META%VARNM
 
-       CASE("ename")
-          READ(attv, *, IOSTAT=IERR) META%ENAME
+      CASE("ename")
+        READ(attv, *, IOSTAT=IERR) META%ENAME
 
-       CASE("standard_name", "varns")
-          READ(attv, *, IOSTAT=IERR) META%VARNS
+      CASE("standard_name", "varns")
+        READ(attv, *, IOSTAT=IERR) META%VARNS
 
-       CASE("long_name", "varnl")
-          READ(attv, *, IOSTAT=IERR) META%VARNL
+      CASE("long_name", "varnl")
+        READ(attv, *, IOSTAT=IERR) META%VARNL
 
-       CASE("globwave_name", "varng")
-          READ(attv, *, IOSTAT=IERR) META%VARNG
+      CASE("globwave_name", "varng")
+        READ(attv, *, IOSTAT=IERR) META%VARNG
 
-       CASE("direction_reference", "dir_ref", "varnd")
-          READ(attv, *, IOSTAT=IERR) META%VARND
+      CASE("direction_reference", "dir_ref", "varnd")
+        READ(attv, *, IOSTAT=IERR) META%VARND
 
-       CASE("comment", "varnc")
-          READ(attv, *, IOSTAT=IERR) META%VARNC
+      CASE("comment", "varnc")
+        READ(attv, *, IOSTAT=IERR) META%VARNC
 
-       CASE("units")
-          READ(attv, *, IOSTAT=IERR) META%UNITS
+      CASE("units")
+        READ(attv, *, IOSTAT=IERR) META%UNITS
 
-          ! Real variables
-       CASE("valid_min", "vmin")
-          READ(attv, *, IOSTAT=IERR) META%VMIN
+        ! Real variables
+      CASE("valid_min", "vmin")
+        READ(attv, *, IOSTAT=IERR) META%VMIN
 
-       CASE("valid_max", "vmax")
-          READ(attv, *, IOSTAT=IERR) META%VMAX
+      CASE("valid_max", "vmax")
+        READ(attv, *, IOSTAT=IERR) META%VMAX
 
-       CASE("scale_factor", "fsc")
-          READ(attv, *, IOSTAT=IERR) META%FSC
+      CASE("scale_factor", "fsc")
+        READ(attv, *, IOSTAT=IERR) META%FSC
 
-          ! Default case will be the "extra" meta data variable
-       CASE DEFAULT
-          TMP = ATTV
-          CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
+        ! Default case will be the "extra" meta data variable
+      CASE DEFAULT
+        TMP = ATTV
+        CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
 
-          IF(DEBUG) THEN
-             WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META extra]', &
-                  TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
-          ENDIF
+        IF(DEBUG) THEN
+          WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[META extra]', &
+               TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
+        ENDIF
 
-          EXTRA%ATTNAME = TRIM(attn)
-          EXTRA%ATTVAL = TRIM(attv)
-          EXTRA%TYPE = TRIM(att_type)
-          CALL META_LIST_APPEND(META%EXTRA, EXTRA)
+        EXTRA%ATTNAME = TRIM(attn)
+        EXTRA%ATTVAL = TRIM(attv)
+        EXTRA%TYPE = TRIM(att_type)
+        CALL META_LIST_APPEND(META%EXTRA, EXTRA)
 
-       END SELECT
+      END SELECT
 
-       IF(IERR /= 0) THEN
-          WRITE(NDSE, 7002) FN_META, ILINE, TRIM(BUF)
-          CALL EXTCDE(10)
-       ENDIF
+      IF(IERR /= 0) THEN
+        WRITE(NDSE, 7002) FN_META, ILINE, TRIM(BUF)
+        CALL EXTCDE(10)
+      ENDIF
 
     ENDDO
 
@@ -1287,25 +1287,25 @@ CONTAINS
     SELECT CASE(TRIM(att_type))
 
     CASE("i")
-       READ(attv, *, iostat=ierr) i
-       IF(ierr .ne. 0) then
-          WRITE(NDSE, 8001) "INTEGER", TRIM(FN_META), ILINE, TRIM(ATTV)
-          CALL EXTCDE(10)
-       ENDIF
+      READ(attv, *, iostat=ierr) i
+      IF(ierr .ne. 0) then
+        WRITE(NDSE, 8001) "INTEGER", TRIM(FN_META), ILINE, TRIM(ATTV)
+        CALL EXTCDE(10)
+      ENDIF
 
     CASE("r", "f")
-       READ(attv, *, iostat=ierr) r
-       IF(ierr .ne. 0) THEN
-          WRITE(NDSE, 8001) "REAL/FLOAT", TRIM(FN_META), ILINE, TRIM(ATTV)
-          CALL EXTCDE(10)
-       ENDIF
+      READ(attv, *, iostat=ierr) r
+      IF(ierr .ne. 0) THEN
+        WRITE(NDSE, 8001) "REAL/FLOAT", TRIM(FN_META), ILINE, TRIM(ATTV)
+        CALL EXTCDE(10)
+      ENDIF
 
     CASE("c")
-       ! Always ok.
+      ! Always ok.
 
     CASE DEFAULT
-       WRITE(NDSE, 8002) TRIM(FN_META), ILINE, TRIM(BUF)
-       CALL EXTCDE(10)
+      WRITE(NDSE, 8002) TRIM(FN_META), ILINE, TRIM(BUF)
+      CALL EXTCDE(10)
 
     END SELECT
     !
@@ -1393,43 +1393,43 @@ CONTAINS
     !
     ! Keep reading lines until we hit EOF or anoter META keyword
     DO
-       CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
-       IF(EOF) THEN
-          BACKSPACE(NDMI)
-          RETURN
-       ENDIF
+      CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
+      IF(EOF) THEN
+        BACKSPACE(NDMI)
+        RETURN
+      ENDIF
 
-       IF(NEW) THEN
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
-          ILINE = ILINE - 1
-          BACKSPACE(NDMI)
-          EXIT
-       ENDIF
+      IF(NEW) THEN
+        IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+        ILINE = ILINE - 1
+        BACKSPACE(NDMI)
+        EXIT
+      ENDIF
 
-       ! Split attr name/value pair
-       I = INDEX(BUF, "=")
-       IF( I .LT. 1 ) THEN
-          WRITE(NDSE, 9000) TRIM(FN_META), ILINE, TRIM(BUF)
-          CALL EXTCDE(10)
-       ENDIF
+      ! Split attr name/value pair
+      I = INDEX(BUF, "=")
+      IF( I .LT. 1 ) THEN
+        WRITE(NDSE, 9000) TRIM(FN_META), ILINE, TRIM(BUF)
+        CALL EXTCDE(10)
+      ENDIF
 
-       ATTN = ADJUSTL(BUF(1:I-1))
-       TMP = ADJUSTL(BUF(I+1:))
+      ATTN = ADJUSTL(BUF(1:I-1))
+      TMP = ADJUSTL(BUF(I+1:))
 
-       ! Get type, if set:
-       CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
+      ! Get type, if set:
+      CALL GET_ATTVAL_TYPE(TMP, ILINE, ATTV, ATT_TYPE)
 
-       IF(DEBUG) THEN
-          WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[FREEFORM meta]', &
-               TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
-       ENDIF
+      IF(DEBUG) THEN
+        WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[FREEFORM meta]', &
+             TRIM(attn)//' = '//TRIM(attv)//' (type: '//TRIM(att_type)//")"
+      ENDIF
 
 
-       META%ATTNAME = TRIM(ATTN)
-       META%ATTVAL = TRIM(ATTV)
-       META%TYPE = TRIM(ATT_TYPE)
+      META%ATTNAME = TRIM(ATTN)
+      META%ATTVAL = TRIM(ATTV)
+      META%TYPE = TRIM(ATT_TYPE)
 
-       CALL META_LIST_APPEND(METALIST, META)
+      CALL META_LIST_APPEND(METALIST, META)
 
     ENDDO
     !
@@ -1496,30 +1496,30 @@ CONTAINS
     READ(NDMI, '(A)') BUF
     READ(BUF, *, IOSTAT=IERR) CRS_NAME, CRS_NAME
     IF(IERR /= 0 ) THEN
-       WRITE(NDSE,1000)
-       WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
-       CALL EXTCDE(10)
+      WRITE(NDSE,1000)
+      WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
+      CALL EXTCDE(10)
     ENDIF
     IF(DEBUG) WRITE(*,'(I5,1X,A20,1X,A)') ILINE, '[CRS id]', TRIM(CRS_NAME)
 
     IF(CRS_META%N .NE. 0) THEN
-       IF(CRS_IS_DEFAULT) THEN
-          WRITE(NDSE,1001) TRIM(PREV_NAME)
-          CRS_IS_DEFAULT = .FALSE.
-       ELSE
-          WRITE(NDSE,1002) TRIM(PREV_NAME)
-       ENDIF
-       WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
-       CALL DEL_META_LIST(CRS_META)
+      IF(CRS_IS_DEFAULT) THEN
+        WRITE(NDSE,1001) TRIM(PREV_NAME)
+        CRS_IS_DEFAULT = .FALSE.
+      ELSE
+        WRITE(NDSE,1002) TRIM(PREV_NAME)
+      ENDIF
+      WRITE(NDSE,2000) TRIM(FN_META), ILINE, TRIM(BUF)
+      CALL DEL_META_LIST(CRS_META)
     ENDIF
 
     CALL READ_FREEFORM_META_LIST(NDMI, ILINE, CRS_META)
 
     ! Check that "grid_mapping_name" is defined
     IF(.NOT.  META_LIST_HAS_ATTR(CRS_META, "grid_mapping_name")) THEN
-       WRITE(NDSE, 1003)
-       WRITE(NDSE, 2000) TRIM(FN_META), ILINE, ""
-       CALL EXTCDE(10)
+      WRITE(NDSE, 1003)
+      WRITE(NDSE, 2000) TRIM(FN_META), ILINE, ""
+      CALL EXTCDE(10)
     ENDIF
 
     RETURN
@@ -1566,28 +1566,28 @@ CONTAINS
 
     IF(FLRTD) THEN
 #ifdef W3_RTD
-       ! Rotated pole location
-       CRS_NAME = 'rotated_pole'
-       CALL META_LIST_APPEND(CRS_META,                                 &
-            'grid_mapping_name', 'rotated_latitude_longitude')
-       CALL META_LIST_APPEND(CRS_META,                                 &
-            'grid_north_pole_latitude', POLAT)
-       CALL META_LIST_APPEND(CRS_META,                                 &
-            'grid_north_pole_longitude', POLON)
-       CRS_IS_DEFAULT = .TRUE.
+      ! Rotated pole location
+      CRS_NAME = 'rotated_pole'
+      CALL META_LIST_APPEND(CRS_META,                                 &
+           'grid_mapping_name', 'rotated_latitude_longitude')
+      CALL META_LIST_APPEND(CRS_META,                                 &
+           'grid_north_pole_latitude', POLAT)
+      CALL META_LIST_APPEND(CRS_META,                                 &
+           'grid_north_pole_longitude', POLON)
+      CRS_IS_DEFAULT = .TRUE.
 #endif
     ELSE IF(GTYPE .EQ. UNGTYPE) THEN
-       !       ! What do we want for unstructure grids?
+      !       ! What do we want for unstructure grids?
     ELSE
-       ! Lat/lon grid
-       CRS_NAME = 'crs'
-       CALL META_LIST_APPEND(CRS_META,                                &
-            'grid_mapping_name', 'latitude_longitude')
-       ! TODO: Default to a spherical Earth?
-       CALL META_LIST_APPEND(CRS_META,                                &
-            'semi_major_axis', 6371000.0)
-       CALL META_LIST_APPEND(CRS_META,                                &
-            'inverse_flattening', 0.0)
+      ! Lat/lon grid
+      CRS_NAME = 'crs'
+      CALL META_LIST_APPEND(CRS_META,                                &
+           'grid_mapping_name', 'latitude_longitude')
+      ! TODO: Default to a spherical Earth?
+      CALL META_LIST_APPEND(CRS_META,                                &
+           'semi_major_axis', 6371000.0)
+      CALL META_LIST_APPEND(CRS_META,                                &
+           'inverse_flattening', 0.0)
     ENDIF
 
   END SUBROUTINE DEFAULT_CRS_META
@@ -1663,23 +1663,23 @@ CONTAINS
 
     ! Error checking on size of IFJ, ICOMP, IPART.
     IF(IFI .LT. 1 .OR. IFI .GT. NOGRP) THEN
-       WRITE(NDSE,1000) NOGRP
-       CALL EXTCDE(1)
+      WRITE(NDSE,1000) NOGRP
+      CALL EXTCDE(1)
     ENDIF
     IF(IFJ .LT. 1 .OR. IFJ .GT. NOGE(IFI)) THEN
-       WRITE(NDSE,1001) NOGE(IFI)
-       CALL EXTCDE(1)
+      WRITE(NDSE,1001) NOGE(IFI)
+      CALL EXTCDE(1)
     ENDIF
     IF(IFC .LT. 1 .OR. IFC .GT. 3) THEN
-       WRITE(NDSE,1002)
-       CALL EXTCDE(1)
+      WRITE(NDSE,1002)
+      CALL EXTCDE(1)
     ENDIF
 
     META = META_DEEP_COPY(GROUP(IFI)%FIELD(IFJ)%META(IFC))
 
     ! For partitioned data, expand in the partition number:
     IF(IFI .EQ. 4) THEN
-       CALL ADD_PARTNO(META, IFP)
+      CALL ADD_PARTNO(META, IFP)
     ENDIF
 
     RETURN
@@ -1772,8 +1772,8 @@ CONTAINS
     READ(NDMI, '(A)') BUF
     READ(BUF, *, IOSTAT=IERR) ID, ID
     IF(IERR /= 0) THEN
-       WRITE(NDSE, 1000) FN_META, ILINE, BUF
-       CALL EXTCDE(10)
+      WRITE(NDSE, 1000) FN_META, ILINE, BUF
+      CALL EXTCDE(10)
     ENDIF
     ID = "<" // TRIM(ID) // ">"
 
@@ -1781,16 +1781,16 @@ CONTAINS
 
     ! Extend list of partition template types:
     IF(ASSOCIATED(PART_TMPL)) THEN
-       ! Got to end of list
-       P => PART_TMPL
-       DO WHILE(ASSOCIATED(P%NEXT))
-          P => P%NEXT
-       ENDDO
-       ALLOCATE(P%NEXT)
-       P => P%NEXT
+      ! Got to end of list
+      P => PART_TMPL
+      DO WHILE(ASSOCIATED(P%NEXT))
+        P => P%NEXT
+      ENDDO
+      ALLOCATE(P%NEXT)
+      P => P%NEXT
     ELSE
-       ALLOCATE(PART_TMPL)
-       P => PART_TMPL
+      ALLOCATE(PART_TMPL)
+      P => PART_TMPL
     ENDIF
 
     ! Set template id and read template strings from file:
@@ -1800,34 +1800,34 @@ CONTAINS
     P%NP = 0
 
     DO
-       CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
-       IF(EOF) THEN
-          BACKSPACE(NDMI)
-          RETURN
-       ENDIF
+      CALL NEXT_LINE(NDMI, BUF, ILINE, EOF, NEW_SECTION=NEW)
+      IF(EOF) THEN
+        BACKSPACE(NDMI)
+        RETURN
+      ENDIF
 
-       IF(NEW) THEN
-          ! Start of new meta data entry
-          IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
-          ILINE = ILINE - 1
-          BACKSPACE(NDMI)
-          EXIT
-       ENDIF
+      IF(NEW) THEN
+        ! Start of new meta data entry
+        IF(DEBUG) WRITE(*,'(I5,1X,A20)') ILINE, '[--end of section--]'
+        ILINE = ILINE - 1
+        BACKSPACE(NDMI)
+        EXIT
+      ENDIF
 
-       ! Check we have not exceeded NOSWLL
-       IF(P%NP .GT. NOSWLL) THEN
-          WRITE(*,*) "Too many partition entries (NOSWLL=",NOSWLL,"). Ignoring"
-          CYCLE
-       ENDIF
+      ! Check we have not exceeded NOSWLL
+      IF(P%NP .GT. NOSWLL) THEN
+        WRITE(*,*) "Too many partition entries (NOSWLL=",NOSWLL,"). Ignoring"
+        CYCLE
+      ENDIF
 
-       ! Add string to array of partition text
-       IF(DEBUG) THEN
-          WRITE(*,'(I5,1X,A20,1X,I1,1X,A)') ILINE, '[part template]', &
-               P%NP, TRIM(BUF)
-       ENDIF
+      ! Add string to array of partition text
+      IF(DEBUG) THEN
+        WRITE(*,'(I5,1X,A20,1X,I1,1X,A)') ILINE, '[part template]', &
+             P%NP, TRIM(BUF)
+      ENDIF
 
-       P%PART_TEXT(P%NP) = TRIM(ADJUSTL(BUF)) ! Zero indexed
-       P%NP = P%NP + 1
+      P%PART_TEXT(P%NP) = TRIM(ADJUSTL(BUF)) ! Zero indexed
+      P%NP = P%NP + 1
     ENDDO
 
     RETURN
@@ -1872,18 +1872,18 @@ CONTAINS
 
     PRINT*,'=============='
     IF(.NOT. ASSOCIATED(PART_TMPL)) THEN
-       PRINT*,'Empty partition list'
-       RETURN
+      PRINT*,'Empty partition list'
+      RETURN
     ENDIF
 
     P => PART_TMPL
     DO
-       PRINT*,P%TMPL
-       DO I=0,P%NP - 1
-          PRINT*,'   - ',I,TRIM(P%PART_TEXT(I))
-       ENDDO
-       IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-       P => P%NEXT
+      PRINT*,P%TMPL
+      DO I=0,P%NP - 1
+        PRINT*,'   - ',I,TRIM(P%PART_TEXT(I))
+      ENDDO
+      IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+      P => P%NEXT
     ENDDO
     PRINT*,'=============='
   END SUBROUTINE PRINT_PART_TMPL
@@ -1950,15 +1950,15 @@ CONTAINS
     CALL PARTNO_STRING_SUB(META%VARNC, IPART)
     CALL PARTNO_STRING_SUB(META%VARND, IPART)
     IF(META%EXTRA%N .GT. 0) THEN
-       P => META%EXTRA%HEAD
-       DO
-          CALL PARTNO_STRING_SUB(P%ATTNAME, IPART)
-          IF(P%TYPE .EQ. "c") THEN
-             CALL PARTNO_STRING_SUB(P%ATTVAL, IPART)
-          ENDIF
-          IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-          P => P%NEXT
-       ENDDO
+      P => META%EXTRA%HEAD
+      DO
+        CALL PARTNO_STRING_SUB(P%ATTNAME, IPART)
+        IF(P%TYPE .EQ. "c") THEN
+          CALL PARTNO_STRING_SUB(P%ATTVAL, IPART)
+        ENDIF
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
     ENDIF
 
   END SUBROUTINE ADD_PARTNO
@@ -2025,17 +2025,17 @@ CONTAINS
 
     ISN = IPART + 1
     IF(PTMETH .LE. 3) THEN
-       IF (ISN .GT. 5) ISN = 5
+      IF (ISN .GT. 5) ISN = 5
     ELSE
-       IF (ISN .GT. 2) ISN = 2
+      IF (ISN .GT. 2) ISN = 2
     ENDIF
 
     ! Set partition number (built-in IPART template)
     I = INDEX(INSTR, IPART_TOKEN)
     J = I + LEN_TRIM(IPART_TOKEN)
     IF(I .GT. 0) THEN
-       WRITE(TMPL, '(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
-       INSTR = TMPL
+      WRITE(TMPL, '(A,I1,A)') INSTR(1:I-1), IPART, INSTR(J:LEN(INSTR))
+      INSTR = TMPL
     ENDIF
 
     ! Set standard name string (built-in SPART template)
@@ -2043,7 +2043,7 @@ CONTAINS
     J = I + LEN_TRIM(SPART_TOKEN)
 
     IF(I .GT. 0) THEN
-       INSTR = INSTR(1:I-1) // TRIM(SNAMEP(ISN)) // INSTR(J:LEN(INSTR))
+      INSTR = INSTR(1:I-1) // TRIM(SNAMEP(ISN)) // INSTR(J:LEN(INSTR))
     ENDIF
 
     ! Also try underscore separated version: <SPART_>
@@ -2051,8 +2051,8 @@ CONTAINS
     J = I + LEN_TRIM(SPART_TOKEN_)
 
     IF(I .GT. 0) THEN
-       INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(SNAMEP(ISN), " ", "_")) &
-            // INSTR(J:LEN(INSTR))
+      INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(SNAMEP(ISN), " ", "_")) &
+           // INSTR(J:LEN(INSTR))
     ENDIF
 
     ! Merge in user defined partition templates (if any):
@@ -2060,29 +2060,29 @@ CONTAINS
 
     P => PART_TMPL
     DO
-       I = INDEX(INSTR, TRIM(P%TMPL))
-       J = I + LEN_TRIM(P%TMPL)
+      I = INDEX(INSTR, TRIM(P%TMPL))
+      J = I + LEN_TRIM(P%TMPL)
 
-       IF(I .GT. 0) THEN
-          IF(IPART .GE. P%NP) THEN
-             WRITE(NDSE, 1000) TRIM(P%TMPL), P%NP, IPART
-             CALL EXTCDE(10)
-          ENDIF
-          INSTR = INSTR(1:I-1) // TRIM(P%PART_TEXT(IPART)) // INSTR(J:LEN(INSTR))
-       ENDIF
+      IF(I .GT. 0) THEN
+        IF(IPART .GE. P%NP) THEN
+          WRITE(NDSE, 1000) TRIM(P%TMPL), P%NP, IPART
+          CALL EXTCDE(10)
+        ENDIF
+        INSTR = INSTR(1:I-1) // TRIM(P%PART_TEXT(IPART)) // INSTR(J:LEN(INSTR))
+      ENDIF
 
-       ! Try "underscore" version <TMPL_>:
-       I = LEN_TRIM(P%TMPL)
-       TMPL = P%TMPL(1:I-1) // "_>"
-       I = INDEX(INSTR, TRIM(TMPL))
-       J = I + LEN_TRIM(TMPL)
-       IF(I .GT. 0) THEN
-          INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(P%PART_TEXT(IPART), " ", "_")) &
-               // INSTR(J:LEN(INSTR))
-       ENDIF
+      ! Try "underscore" version <TMPL_>:
+      I = LEN_TRIM(P%TMPL)
+      TMPL = P%TMPL(1:I-1) // "_>"
+      I = INDEX(INSTR, TRIM(TMPL))
+      J = I + LEN_TRIM(TMPL)
+      IF(I .GT. 0) THEN
+        INSTR = INSTR(1:I-1) // TRIM(REPLACE_CHAR(P%PART_TEXT(IPART), " ", "_")) &
+             // INSTR(J:LEN(INSTR))
+      ENDIF
 
-       IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-       P => P%NEXT
+      IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+      P => P%NEXT
     ENDDO
 
     RETURN
@@ -2160,13 +2160,13 @@ CONTAINS
     IF(ERR /= NF90_NOERR) RETURN
 
     IF(META%VARNS .NE. '' .AND. META%VARNS .NE. UNSETC) THEN
-       ERR = NF90_PUT_ATT(NCID, VARID, 'standard_name', META%VARNS)
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID, 'standard_name', META%VARNS)
+      IF(ERR /= NF90_NOERR) RETURN
     ENDIF
 
     IF(META%VARNG .NE. '' .AND. META%VARNG .NE. UNSETC) THEN
-       ERR = NF90_PUT_ATT(NCID, VARID, 'globwave_name', META%VARNG)
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID, 'globwave_name', META%VARNG)
+      IF(ERR /= NF90_NOERR) RETURN
     ENDIF
 
     ERR = NF90_PUT_ATT(NCID, VARID, 'units', META%UNITS)
@@ -2174,9 +2174,9 @@ CONTAINS
 
     ! Fill value dependent on variable type
     IF(NCVARTYPE .EQ. 2) THEN
-       ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_SHORT)
+      ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_SHORT)
     ELSE
-       ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_FLOAT)
+      ERR = NF90_PUT_ATT(NCID, VARID, '_FillValue', NF90_FILL_FLOAT)
     END IF
     IF(ERR /= NF90_NOERR) RETURN
 
@@ -2191,44 +2191,44 @@ CONTAINS
     ! If vartype is FLOAT, then no scaling is performed and
     ! valid min/max are written out directly as floats.
     IF(NCVARTYPE .EQ. 2) THEN
-       VAL = NINT(META%VMIN / META%FSC)
-       ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', VAL)
-       IF(ERR /= NF90_NOERR) RETURN
+      VAL = NINT(META%VMIN / META%FSC)
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', VAL)
+      IF(ERR /= NF90_NOERR) RETURN
 
-       VAL = NINT(META%VMAX / META%FSC)
-       ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', VAL)
-       IF(ERR /= NF90_NOERR) RETURN
+      VAL = NINT(META%VMAX / META%FSC)
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', VAL)
+      IF(ERR /= NF90_NOERR) RETURN
     ELSE
-       ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_min', META%VMIN)
+      IF(ERR /= NF90_NOERR) RETURN
 
-       ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID,'valid_max', META%VMAX)
+      IF(ERR /= NF90_NOERR) RETURN
     ENDIF
 
     IF(META%VARNC .NE. '' .AND. META%VARNC .NE. UNSETC) THEN
-       ERR = NF90_PUT_ATT(NCID, VARID, 'comment', META%VARNC)
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID, 'comment', META%VARNC)
+      IF(ERR /= NF90_NOERR) RETURN
     ENDIF
 
     IF(META%VARND .NE. '' .AND. META%VARND .NE. UNSETC) THEN
-       ERR = NF90_PUT_ATT(NCID, VARID, 'direction_reference', META%VARND)
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID, 'direction_reference', META%VARND)
+      IF(ERR /= NF90_NOERR) RETURN
     END IF
 
     IF(CRS_NAME .NE. '' .AND. CRS_NAME .NE. UNSETC) THEN
-       ERR = NF90_PUT_ATT(NCID, VARID, 'grid_mapping', CRS_NAME)
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID, 'grid_mapping', CRS_NAME)
+      IF(ERR /= NF90_NOERR) RETURN
     ENDIF
 
     IF(COORDS_ATTR .NE. '' .AND. COORDS_ATTR .NE. UNSETC) THEN
-       ERR = NF90_PUT_ATT(NCID, VARID, 'coordinates', ADJUSTL(COORDS_ATTR))
-       IF(ERR /= NF90_NOERR) RETURN
+      ERR = NF90_PUT_ATT(NCID, VARID, 'coordinates', ADJUSTL(COORDS_ATTR))
+      IF(ERR /= NF90_NOERR) RETURN
     ENDIF
 
     IF (META%EXTRA%N .GT. 0) THEN
-       CALL WRITE_FREEFORM_META_LIST(NCID, VARID, META%EXTRA, ERR)
-       IF(ERR /= NF90_NOERR) RETURN
+      CALL WRITE_FREEFORM_META_LIST(NCID, VARID, META%EXTRA, ERR)
+      IF(ERR /= NF90_NOERR) RETURN
     ENDIF
 
     RETURN
@@ -2342,33 +2342,33 @@ CONTAINS
     ! Loop over global metadata pairs:
     DO
 
-       IF (P%ATTNAME .EQ. '' .OR.                      &
-            P%ATTNAME .EQ. UNSETC) CYCLE
+      IF (P%ATTNAME .EQ. '' .OR.                      &
+           P%ATTNAME .EQ. UNSETC) CYCLE
 
-       SELECT CASE(P%TYPE)
+      SELECT CASE(P%TYPE)
 
-       CASE('i')
-          READ(P%ATTVAL, *) IVAL
-          ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, IVAL)
-          IF(ERR /= NF90_NOERR) RETURN
+      CASE('i')
+        READ(P%ATTVAL, *) IVAL
+        ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, IVAL)
+        IF(ERR /= NF90_NOERR) RETURN
 
-       CASE('r', 'f')
-          READ(P%ATTVAL, *) RVAL
-          ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, RVAL)
-          IF(ERR /= NF90_NOERR) RETURN
+      CASE('r', 'f')
+        READ(P%ATTVAL, *) RVAL
+        ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME, RVAL)
+        IF(ERR /= NF90_NOERR) RETURN
 
-       CASE('c')
-          ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME,    &
-               P%ATTVAL)
-          IF(ERR /= NF90_NOERR) RETURN
+      CASE('c')
+        ERR = NF90_PUT_ATT(NCID, VARID, P%ATTNAME,    &
+             P%ATTVAL)
+        IF(ERR /= NF90_NOERR) RETURN
 
-       CASE DEFAULT
-          WRITE(NDSE,1000) P%TYPE
-          CALL EXTCDE(10)
-       END SELECT
+      CASE DEFAULT
+        WRITE(NDSE,1000) P%TYPE
+        CALL EXTCDE(10)
+      END SELECT
 
-       IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-       P => P%NEXT
+      IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+      P => P%NEXT
     ENDDO
     !
 1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNFMETA : '            / &
@@ -2425,12 +2425,12 @@ CONTAINS
     WRITE(*,"(A20,':',1X,A)") "Comment", TRIM(META%VARNC)
     WRITE(*,"(A20,':',1X,2F12.3)") "Min/Max", META%VMIN, META%VMAX
     IF(META%EXTRA%N .GT. 0) THEN
-       P => META%EXTRA%HEAD
-       DO
-          WRITE(*,"(A20,':',1X,A)") TRIM(P%ATTNAME), TRIM(P%ATTVAL)
-          IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-          P => P%NEXT
-       ENDDO
+      P => META%EXTRA%HEAD
+      DO
+        WRITE(*,"(A20,':',1X,A)") TRIM(P%ATTNAME), TRIM(P%ATTVAL)
+        IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+        P => P%NEXT
+      ENDDO
     ENDIF
 
   END SUBROUTINE PRINT_META
@@ -2552,86 +2552,86 @@ CONTAINS
     META(1)%ENAME  = '.cur'
     META(1)%VARND = DIRCOM
     IF(VECTOR) THEN
-       META(1)%FSC    = 0.01
-       META(1)%UNITS  = 'm s-1'
-       META(1)%VMIN = -9.9
-       META(1)%VMAX =  9.9
-       META(1)%VARNM='ucur'
-       META(1)%VARNL='eastward current'
-       META(1)%VARNS='eastward_sea_water_velocity'
-       META(1)%VARNG='eastward_sea_water_velocity'
-       META(1)%VARNC='cur=sqrt(U**2+V**2)'
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VMIN = -9.9
+      META(1)%VMAX =  9.9
+      META(1)%VARNM='ucur'
+      META(1)%VARNL='eastward current'
+      META(1)%VARNS='eastward_sea_water_velocity'
+      META(1)%VARNG='eastward_sea_water_velocity'
+      META(1)%VARNC='cur=sqrt(U**2+V**2)'
 
-       ! Second component
-       META(2) = META(1)
-       META(2)%VARNM='vcur'
-       META(2)%VARNL='northward current'
-       META(2)%VARNS='northward_sea_water_velocity'
-       META(2)%VARNG='northward_sea_water_velocity'
-       META(2)%VARNC='cur=sqrt(U**2+V**2)'
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vcur'
+      META(2)%VARNL='northward current'
+      META(2)%VARNS='northward_sea_water_velocity'
+      META(2)%VARNG='northward_sea_water_velocity'
+      META(2)%VARNC='cur=sqrt(U**2+V**2)'
     ELSE
-       META(1)%FSC    = 0.01
-       META(1)%UNITS  = 'm s-1'
-       META(1)%VMIN = 0
-       META(1)%VMAX = 10.0
-       META(1)%VARNM='cspd'
-       META(1)%VARNL='current speed'
-       META(1)%VARNS='sea_water_speed'
-       META(1)%VARNG='sea_water_speed'
+      META(1)%FSC    = 0.01
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VMIN = 0
+      META(1)%VMAX = 10.0
+      META(1)%VARNM='cspd'
+      META(1)%VARNL='current speed'
+      META(1)%VARNS='sea_water_speed'
+      META(1)%VARNG='sea_water_speed'
 
-       ! Second component
-       META(2) = META(1)
-       META(2)%FSC = 0.1
-       META(2)%VARNM='cdir'
-       META(2)%UNITS= 'degrees'
-       META(2)%VARNL='current direction (toward)'
-       META(2)%VARNS='direction_of_sea_water_velocity'
-       META(2)%VARNG='direction_of_sea_water_velocity'
-       META(2)%VMIN = 0
-       META(2)%VMAX = 360.0
+      ! Second component
+      META(2) = META(1)
+      META(2)%FSC = 0.1
+      META(2)%VARNM='cdir'
+      META(2)%UNITS= 'degrees'
+      META(2)%VARNL='current direction (toward)'
+      META(2)%VARNS='direction_of_sea_water_velocity'
+      META(2)%VARNG='direction_of_sea_water_velocity'
+      META(2)%VMIN = 0
+      META(2)%VMAX = 360.0
     ENDIF ! VECTOR
     ! IFI=1, IFJ=3
     META => GROUP(1)%FIELD(3)%META
     META(1)%ENAME  = '.wnd'
     META(1)%VARND = DIRCOM
     IF(VECTOR) THEN
-       META(1)%FSC    = 0.1
-       META(1)%UNITS  = 'm s-1'
-       META(1)%VARNM='uwnd'
-       META(1)%VARNL='eastward_wind'
-       META(1)%VARNS='eastward_wind'
-       META(1)%VARNG='eastward_wind'
-       META(1)%VARNC='wind=sqrt(U10**2+V10**2)'
-       META(1)%VMIN = -99.0
-       META(1)%VMAX =  99.0
+      META(1)%FSC    = 0.1
+      META(1)%UNITS  = 'm s-1'
+      META(1)%VARNM='uwnd'
+      META(1)%VARNL='eastward_wind'
+      META(1)%VARNS='eastward_wind'
+      META(1)%VARNG='eastward_wind'
+      META(1)%VARNC='wind=sqrt(U10**2+V10**2)'
+      META(1)%VMIN = -99.0
+      META(1)%VMAX =  99.0
 
-       ! Second component
-       META(2) = META(1)
-       META(2)%VARNM='vwnd'
-       META(2)%VARNL='northward_wind'
-       META(2)%VARNS='northward_wind'
-       META(2)%VARNG='northward_wind'
-       META(2)%VARNC='wind=sqrt(U10**2+V10**2)'
+      ! Second component
+      META(2) = META(1)
+      META(2)%VARNM='vwnd'
+      META(2)%VARNL='northward_wind'
+      META(2)%VARNS='northward_wind'
+      META(2)%VARNG='northward_wind'
+      META(2)%VARNC='wind=sqrt(U10**2+V10**2)'
     ELSE
-       META(1)%FSC = 0.01
-       META(1)%UNITS= 'm s-1'
-       META(1)%VARNM='wspd'
-       META(1)%VARNL='wind speed'
-       META(1)%VARNS='wind_speed'
-       META(1)%VARNG='wind_speed'
-       META(1)%VMIN = 0.0
-       META(1)%VMAX = 100.0
+      META(1)%FSC = 0.01
+      META(1)%UNITS= 'm s-1'
+      META(1)%VARNM='wspd'
+      META(1)%VARNL='wind speed'
+      META(1)%VARNS='wind_speed'
+      META(1)%VARNG='wind_speed'
+      META(1)%VMIN = 0.0
+      META(1)%VMAX = 100.0
 
-       ! Second component
-       META(2) = META(1)
-       META(2)%FSC = 0.1
-       META(2)%VARNM='wdir'
-       META(2)%UNITS='degrees'
-       META(2)%VARNL='wind direction (from)'
-       META(2)%VARNS='wind_from_direction'
-       META(2)%VARNG='wind_from_direction'
-       META(2)%VMIN = 0.0
-       META(2)%VMAX = 360.0
+      ! Second component
+      META(2) = META(1)
+      META(2)%FSC = 0.1
+      META(2)%VARNM='wdir'
+      META(2)%UNITS='degrees'
+      META(2)%VARNL='wind direction (from)'
+      META(2)%VARNS='wind_from_direction'
+      META(2)%VARNG='wind_from_direction'
+      META(2)%VMIN = 0.0
+      META(2)%VMAX = 360.0
     ENDIF ! VECTOR
     ! IFI=1, IFJ=4, AST
     META => GROUP(1)%FIELD(4)%META
@@ -2988,17 +2988,17 @@ CONTAINS
     META(1)%VARNL='wave_elevation_spectrum'
     META(1)%VARNS='sea_surface_wave_variance_spectral_density'
     IF (NCVARTYPE.LE.3) THEN
-       META(1)%UNITS  = 'log10(m2 s+1E-12)'
-       !META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
-       META(1)%VARNC='base_ten_logarithm'
-       META(1)%FSC = 0.0004
-       META(1)%VMIN = -12.
-       META(1)%VMAX = 12.
+      META(1)%UNITS  = 'log10(m2 s+1E-12)'
+      !META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_surface_elevation'
+      META(1)%VARNC='base_ten_logarithm'
+      META(1)%FSC = 0.0004
+      META(1)%VMIN = -12.
+      META(1)%VMAX = 12.
     ELSE
-       META(1)%UNITS  = 'm2 s'
-       META(1)%FSC = 1.
-       META(1)%VMIN = 0.
-       META(1)%VMAX = 1.e12
+      META(1)%UNITS  = 'm2 s'
+      META(1)%FSC = 1.
+      META(1)%VMIN = 0.
+      META(1)%VMAX = 1.e12
     END IF
     META(1)%ENAME  = '.ef'
     META(1)%VARNG = META(1)%VARNS
@@ -3653,16 +3653,16 @@ CONTAINS
     META(1)%VARNS=''
     META(1)%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
     IF (NCVARTYPE.EQ.2) THEN
-       META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
-       META(1)%VMIN = -12.
-       META(1)%VMAX = 12.
+      META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
+      META(1)%VMIN = -12.
+      META(1)%VMAX = 12.
     ELSE
-       META(1)%UNITS='Pa2 m2 s'
-       META(1)%VARNL='power spectral density of equivalent surface pressure'
-       !META(1)%VARNS='power_spectral_density_of_equivalent_surface_pressure'
-       META(1)%VARNG='power_spectral_density_of_equivalent_surface_pressure'
-       META(1)%VMIN = 0.
-       META(1)%VMAX = 1.e12
+      META(1)%UNITS='Pa2 m2 s'
+      META(1)%VARNL='power spectral density of equivalent surface pressure'
+      !META(1)%VARNS='power_spectral_density_of_equivalent_surface_pressure'
+      META(1)%VARNG='power_spectral_density_of_equivalent_surface_pressure'
+      META(1)%VMIN = 0.
+      META(1)%VMAX = 1.e12
     ENDIF
     META(1)%VARNC=''
     META(1)%VARND=''

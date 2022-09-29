@@ -136,31 +136,31 @@ MODULE W3WDATMD
   !/ Data structures
   !/
   TYPE WDATA
-     INTEGER               :: TIME(2), TLEV(2), TICE(2), TRHO(2),  &
-          TIC1(2), TIC5(2)
+    INTEGER               :: TIME(2), TLEV(2), TICE(2), TRHO(2),  &
+         TIC1(2), TIC5(2)
 #ifdef W3_OASIS
-     INTEGER               :: TIME00(2)
-     INTEGER               :: TIMEEND(2)
+    INTEGER               :: TIME00(2)
+    INTEGER               :: TIMEEND(2)
 #endif
 #ifdef W3_NL5
-     INTEGER               :: QI5TBEG(2)
-     REAL, POINTER         :: QR5TIM0(:), QR5CVK0(:, :), QR5TMIX(:)
-     COMPLEX, POINTER      :: QC5INT0(:, :)
+    INTEGER               :: QI5TBEG(2)
+    REAL, POINTER         :: QR5TIM0(:), QR5CVK0(:, :), QR5TMIX(:)
+    COMPLEX, POINTER      :: QC5INT0(:, :)
 #endif
-     REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), RHOAIR(:),   &
-          UST(:), USTDIR(:), ASF(:), FPIS(:),  &
-          BERG(:), ICEH(:), ICEF(:), ICEDMAX(:)
+    REAL, POINTER         :: VA(:,:), WLV(:), ICE(:), RHOAIR(:),   &
+         UST(:), USTDIR(:), ASF(:), FPIS(:),  &
+         BERG(:), ICEH(:), ICEF(:), ICEDMAX(:)
 #ifdef W3_SETUP
-     REAL, POINTER :: ZETA_SETUP(:), FX_zs(:), FY_zs(:)
-     REAL, POINTER :: SXX_zs(:), SXY_zs(:), SYY_zs(:)
+    REAL, POINTER :: ZETA_SETUP(:), FX_zs(:), FY_zs(:)
+    REAL, POINTER :: SXX_zs(:), SXY_zs(:), SYY_zs(:)
 #endif
 #ifdef W3_PDLIB
-     REAL, POINTER     :: VSTOT(:,:), VDTOT(:,:)
-     REAL, POINTER     :: VAOLD(:,:)
-     LOGICAL, POINTER  :: SHAVETOT(:)
+    REAL, POINTER     :: VSTOT(:,:), VDTOT(:,:)
+    REAL, POINTER     :: VAOLD(:,:)
+    LOGICAL, POINTER  :: SHAVETOT(:)
 #endif
-     !!/PDLIB     REAL, POINTER     :: VAOLD(:,:)
-     LOGICAL               :: DINIT, FL_ALL
+    !!/PDLIB     REAL, POINTER     :: VAOLD(:,:)
+    LOGICAL               :: DINIT, FL_ALL
   END TYPE WDATA
   !
   !/
@@ -289,8 +289,8 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001) NGRIDS
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001) NGRIDS
+      CALL EXTCDE (1)
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -304,8 +304,8 @@ CONTAINS
     ! 3.  Initialize parameters
     !
     DO I=0, NGRIDS
-       WDATAS(I)%DINIT  = .FALSE.
-       WDATAS(I)%FL_ALL = .FALSE.
+      WDATAS(I)%DINIT  = .FALSE.
+      WDATAS(I)%FL_ALL = .FALSE.
     END DO
     !
 #ifdef W3_T
@@ -461,24 +461,24 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( PRESENT(F_ONLY) ) THEN
-       FL_ALL = .NOT. F_ONLY
+      FL_ALL = .NOT. F_ONLY
     ELSE
-       FL_ALL = .TRUE.
+      FL_ALL = .TRUE.
     END IF
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.1 .OR. IMOD.GT.NWDATA ) THEN
-       WRITE (NDSE,1002) IMOD, NWDATA
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NWDATA
+      CALL EXTCDE (2)
     END IF
     !
     IF ( WDATAS(IMOD)%DINIT ) THEN
-       WRITE (NDSE,1003)
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003)
+      CALL EXTCDE (3)
     END IF
     !
 #ifdef W3_T
@@ -495,72 +495,72 @@ CONTAINS
     NSEATM = NSEALM * NAPROC
     !
     IF ( FL_ALL ) THEN
-       ALLOCATE ( WDATAS(IMOD)%VA(NSPEC,0:NSEALM), STAT=ISTAT ); WDATAS(IMOD)%VA = 0.
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WDATAS(IMOD)%VA(NSPEC,0:NSEALM), STAT=ISTAT ); WDATAS(IMOD)%VA = 0.
+      CHECK_ALLOC_STATUS ( ISTAT )
 #ifdef W3_PDLIB
-       ALLOCATE ( WDATAS(IMOD)%SHAVETOT(NSEAL), stat=istat )
+      ALLOCATE ( WDATAS(IMOD)%SHAVETOT(NSEAL), stat=istat )
 #endif
 #ifdef W3_PDLIB
-       IF (.not. LSLOC) THEN
-          ALLOCATE ( WDATAS(IMOD)%VSTOT(NSPEC,NSEAL), stat=istat )
+      IF (.not. LSLOC) THEN
+        ALLOCATE ( WDATAS(IMOD)%VSTOT(NSPEC,NSEAL), stat=istat )
 #endif
 #ifdef W3_PDLIB
-          ALLOCATE ( WDATAS(IMOD)%VDTOT(NSPEC,NSEAL), stat=istat )
+        ALLOCATE ( WDATAS(IMOD)%VDTOT(NSPEC,NSEAL), stat=istat )
 #endif
 #ifdef W3_PDLIB
-       ENDIF ! LSLOC
-       ALLOCATE ( WDATAS(IMOD)%VAOLD(NSPEC,NSEAL), stat=istat )
+      ENDIF ! LSLOC
+      ALLOCATE ( WDATAS(IMOD)%VAOLD(NSPEC,NSEAL), stat=istat )
 #endif
 #ifdef W3_PDLIB
-       IF (.not. LSLOC) THEN
-          WDATAS(IMOD)%VSTOT=0
+      IF (.not. LSLOC) THEN
+        WDATAS(IMOD)%VSTOT=0
 #endif
 #ifdef W3_PDLIB
-          WDATAS(IMOD)%VDTOT=0
+        WDATAS(IMOD)%VDTOT=0
 #endif
 #ifdef W3_PDLIB
-       ENDIF ! LSLOC
-       WDATAS(IMOD)%SHAVETOT=.FALSE.
+      ENDIF ! LSLOC
+      WDATAS(IMOD)%SHAVETOT=.FALSE.
 #endif
-       !
-       ! * Four arrays for NL5 (QL)
-       ! * AFAIK, the set up of QR5TIM0, QR5CVK0, QC5INT0 should be similar
-       ! * to VA, though I am not really clear about how FL_ALL works.
-       ! *
+      !
+      ! * Four arrays for NL5 (QL)
+      ! * AFAIK, the set up of QR5TIM0, QR5CVK0, QC5INT0 should be similar
+      ! * to VA, though I am not really clear about how FL_ALL works.
+      ! *
 #ifdef W3_NL5
-       ALLOCATE ( WDATAS(IMOD)%QR5TIM0(0:NSEALM),             &
-            WDATAS(IMOD)%QR5CVK0(NSPEC, 0:NSEALM),      &
-            WDATAS(IMOD)%QC5INT0(QI5NNZ, 0:NSEALM),     &
-            WDATAS(IMOD)%QR5TMIX(0:NSEALM), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WDATAS(IMOD)%QR5TIM0(0:NSEALM),             &
+           WDATAS(IMOD)%QR5CVK0(NSPEC, 0:NSEALM),      &
+           WDATAS(IMOD)%QC5INT0(QI5NNZ, 0:NSEALM),     &
+           WDATAS(IMOD)%QR5TMIX(0:NSEALM), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
 #endif
-       !
-       ! * Initialized NL5 arrays with zero (QL)
+      !
+      ! * Initialized NL5 arrays with zero (QL)
 #ifdef W3_NL5
-       WDATAS(IMOD)%QR5TIM0 = 0.0
-       WDATAS(IMOD)%QR5CVK0 = 0.0
-       WDATAS(IMOD)%QC5INT0 = (0.0, 0.0)
-       WDATAS(IMOD)%QR5TMIX = 0.0
+      WDATAS(IMOD)%QR5TIM0 = 0.0
+      WDATAS(IMOD)%QR5CVK0 = 0.0
+      WDATAS(IMOD)%QC5INT0 = (0.0, 0.0)
+      WDATAS(IMOD)%QR5TMIX = 0.0
 #endif
-       !
+      !
 #ifdef W3_NL5
-       WRITE(*, *)
-       WRITE(*, '(A, I4, I12)') '⊚ → [WW3 WDAT]: IMOD & QI5NNZ: ', IMOD, QI5NNZ
-       WRITE(*, *)
+      WRITE(*, *)
+      WRITE(*, '(A, I4, I12)') '⊚ → [WW3 WDAT]: IMOD & QI5NNZ: ', IMOD, QI5NNZ
+      WRITE(*, *)
 #endif
-       !
-       IF ( NSEAL .NE. NSEALM ) THEN
-          DO ISEA=NSEAL+1,NSEALM
-             WDATAS(IMOD)%VA(:,ISEA) = 0.
-             !
+      !
+      IF ( NSEAL .NE. NSEALM ) THEN
+        DO ISEA=NSEAL+1,NSEALM
+          WDATAS(IMOD)%VA(:,ISEA) = 0.
+          !
 #ifdef W3_NL5
-             WDATAS(IMOD)%QR5TIM0(ISEA)   = 0.0
-             WDATAS(IMOD)%QR5CVK0(:,ISEA) = 0.0
-             WDATAS(IMOD)%QC5INT0(:,ISEA) = (0.0, 0.0)
-             WDATAS(IMOD)%QR5TMIX(ISEA)   = 0.0
+          WDATAS(IMOD)%QR5TIM0(ISEA)   = 0.0
+          WDATAS(IMOD)%QR5CVK0(:,ISEA) = 0.0
+          WDATAS(IMOD)%QC5INT0(:,ISEA) = (0.0, 0.0)
+          WDATAS(IMOD)%QR5TMIX(ISEA)   = 0.0
 #endif
-          END DO
-       END IF
+        END DO
+      END IF
     END IF
     !
     ! ICE, ICEH, ICEF must be defined from 0:NSEA
@@ -741,13 +741,13 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NWDATA .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.0 .OR. IMOD.GT.NWDATA ) THEN
-       WRITE (NDSE,1002) IMOD, NWDATA
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NWDATA
+      CALL EXTCDE (2)
     END IF
     !
 #ifdef W3_T
@@ -779,41 +779,41 @@ CONTAINS
     FL_ALL => WDATAS(IMOD)%FL_ALL
     !
     IF ( DINIT ) THEN
-       IF ( FL_ALL ) THEN
-          VA     => WDATAS(IMOD)%VA
+      IF ( FL_ALL ) THEN
+        VA     => WDATAS(IMOD)%VA
 #ifdef W3_NL5
-          QR5TIM0 => WDATAS(IMOD)%QR5TIM0
-          QR5CVK0 => WDATAS(IMOD)%QR5CVK0
-          QC5INT0 => WDATAS(IMOD)%QC5INT0
-          QR5TMIX => WDATAS(IMOD)%QR5TMIX
+        QR5TIM0 => WDATAS(IMOD)%QR5TIM0
+        QR5CVK0 => WDATAS(IMOD)%QR5CVK0
+        QC5INT0 => WDATAS(IMOD)%QC5INT0
+        QR5TMIX => WDATAS(IMOD)%QR5TMIX
 #endif
-          !!/PDLIB            VAOLD     => WDATAS(IMOD)%VAOLD
+        !!/PDLIB            VAOLD     => WDATAS(IMOD)%VAOLD
 #ifdef W3_PDLIB
-          SHAVETOT     => WDATAS(IMOD)%SHAVETOT
-          VSTOT     => WDATAS(IMOD)%VSTOT
-          VDTOT     => WDATAS(IMOD)%VDTOT
-          VAOLD     => WDATAS(IMOD)%VAOLD
+        SHAVETOT     => WDATAS(IMOD)%SHAVETOT
+        VSTOT     => WDATAS(IMOD)%VSTOT
+        VDTOT     => WDATAS(IMOD)%VDTOT
+        VAOLD     => WDATAS(IMOD)%VAOLD
 #endif
-       END IF
-       WLV    => WDATAS(IMOD)%WLV
-       ICE    => WDATAS(IMOD)%ICE
-       RHOAIR => WDATAS(IMOD)%RHOAIR
+      END IF
+      WLV    => WDATAS(IMOD)%WLV
+      ICE    => WDATAS(IMOD)%ICE
+      RHOAIR => WDATAS(IMOD)%RHOAIR
 #ifdef W3_SETUP
-       ZETA_SETUP => WDATAS(IMOD)%ZETA_SETUP
-       FX_zs => WDATAS(IMOD)%FX_zs
-       FY_zs => WDATAS(IMOD)%FY_zs
-       SXX_zs => WDATAS(IMOD)%SXX_zs
-       SXY_zs => WDATAS(IMOD)%SXY_zs
-       SYY_zs => WDATAS(IMOD)%SYY_zs
+      ZETA_SETUP => WDATAS(IMOD)%ZETA_SETUP
+      FX_zs => WDATAS(IMOD)%FX_zs
+      FY_zs => WDATAS(IMOD)%FY_zs
+      SXX_zs => WDATAS(IMOD)%SXX_zs
+      SXY_zs => WDATAS(IMOD)%SXY_zs
+      SYY_zs => WDATAS(IMOD)%SYY_zs
 #endif
-       BERG   => WDATAS(IMOD)%BERG
-       ICEH   => WDATAS(IMOD)%ICEH
-       ICEF   => WDATAS(IMOD)%ICEF
-       ICEDMAX=> WDATAS(IMOD)%ICEDMAX
-       UST    => WDATAS(IMOD)%UST
-       USTDIR => WDATAS(IMOD)%USTDIR
-       ASF    => WDATAS(IMOD)%ASF
-       FPIS   => WDATAS(IMOD)%FPIS
+      BERG   => WDATAS(IMOD)%BERG
+      ICEH   => WDATAS(IMOD)%ICEH
+      ICEF   => WDATAS(IMOD)%ICEF
+      ICEDMAX=> WDATAS(IMOD)%ICEDMAX
+      UST    => WDATAS(IMOD)%UST
+      USTDIR => WDATAS(IMOD)%USTDIR
+      ASF    => WDATAS(IMOD)%ASF
+      FPIS   => WDATAS(IMOD)%FPIS
     END IF
     !
     RETURN

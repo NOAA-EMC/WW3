@@ -262,108 +262,108 @@ CONTAINS
     !  WRITE(*,*) 'Computing coupling coefficient for SURFACE ELEVATION'
 
     IF (IACTION.EQ.0) THEN
-       ESPEC=E
+      ESPEC=E
     ELSE
-       DO IK = 1,NK
-          DO ITH = 1, NTH
-             ISP1=ITH+(IK-1)*NTH
-             ESPEC(ISP1)=E(ISP1)*SIG(IK)*TPI / CG(IK)
-          END DO
-       END DO
+      DO IK = 1,NK
+        DO ITH = 1, NTH
+          ISP1=ITH+(IK-1)*NTH
+          ESPEC(ISP1)=E(ISP1)*SIG(IK)*TPI / CG(IK)
+        END DO
+      END DO
     END IF
     !
     DO iIG=1,NKIG
-       DO ifr=1,nk
-          CALL WAVNU1 (SIG(ifr)+SIG(iIG),DEPTH,WN1,CG2)
-          DO ith1=1,nth
-             DO ith2=1,nth
-                !
-                ! This is the coupling coefficient for the SURFACE ELEVATION. See .e.g. forristall (JPO 2000)
-                !
-                DD(iIG,ifr,ith1,ith2)=(Df1f2theta(SIG(ifr)+SIG(iIG),-SIG(ifr), WN1,WN(IFR), &
-                     (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2
+      DO ifr=1,nk
+        CALL WAVNU1 (SIG(ifr)+SIG(iIG),DEPTH,WN1,CG2)
+        DO ith1=1,nth
+          DO ith2=1,nth
+            !
+            ! This is the coupling coefficient for the SURFACE ELEVATION. See .e.g. forristall (JPO 2000)
+            !
+            DD(iIG,ifr,ith1,ith2)=(Df1f2theta(SIG(ifr)+SIG(iIG),-SIG(ifr), WN1,WN(IFR), &
+                 (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2
 
-             END DO
           END DO
-          !
-          ! weights
-          !
-          wfr1(iIG,ifr)=dble(DSIP(ifr))*dth
-          !
-          ! Computes indices for a proper integration over the spectral domain using Rectangle's rule
-          ! since we integrate E(f)*E(f+fIG)*df  for a fixed fIG
+        END DO
+        !
+        ! weights
+        !
+        wfr1(iIG,ifr)=dble(DSIP(ifr))*dth
+        !
+        ! Computes indices for a proper integration over the spectral domain using Rectangle's rule
+        ! since we integrate E(f)*E(f+fIG)*df  for a fixed fIG
 
-          iloc=1
+        iloc=1
 
-          if (SIG(iIG) < 0.5*DSIP(ifr))THEN
-             ifr2c(iIG,ifr)=ifr
+        if (SIG(iIG) < 0.5*DSIP(ifr))THEN
+          ifr2c(iIG,ifr)=ifr
+        else
+          iloc=minloc(abs((SIG(1:NK)-DSIP(1:NK))-(SIG(iIG)+SIG(ifr))), 1)
+          !find(f-df< (fIG(iIG)+f(ifr)))
+          if (iloc /= 0) THEN
+            ifr2c(iIG,ifr)=iloc  ! index of frequency f+fIG
           else
-             iloc=minloc(abs((SIG(1:NK)-DSIP(1:NK))-(SIG(iIG)+SIG(ifr))), 1)
-             !find(f-df< (fIG(iIG)+f(ifr)))
-             if (iloc /= 0) THEN
-                ifr2c(iIG,ifr)=iloc  ! index of frequency f+fIG
-             else
-                ifr2c(iIG,ifr)=nk
-             end if
-
-             !wfr1(iIG,ifr)=0.0
+            ifr2c(iIG,ifr)=nk
           end if
-       end do
+
+          !wfr1(iIG,ifr)=0.0
+        end if
+      end do
     end do
 
 
     DO iIG=1,NKIG
-       DO IFR = 1,NK-1
+      DO IFR = 1,NK-1
 
-          ! AR calculating k1 and k2 before loops on th1 and th2
+        ! AR calculating k1 and k2 before loops on th1 and th2
 
-          k1=WN(ifr)
-          k2=WN(ifr2c(iIG,ifr))
+        k1=WN(ifr)
+        k2=WN(ifr2c(iIG,ifr))
 
-          DO ith1 = 1,NTH
-             DO ith2 = 1,NTH
+        DO ith1 = 1,NTH
+          DO ith2 = 1,NTH
 
-                ! Adds the effect of interaction of frequency f(ifr), theta(ith1) with f(ifr)+fIG(:), theta(ith2)
-                ISP1 = ITH1 + (ifr2c(iIG,ifr)-1)*NTH
-                ISP2 = ITH2 + (ifr-1)*NTH
+            ! Adds the effect of interaction of frequency f(ifr), theta(ith1) with f(ifr)+fIG(:), theta(ith2)
+            ISP1 = ITH1 + (ifr2c(iIG,ifr)-1)*NTH
+            ISP2 = ITH2 + (ifr-1)*NTH
 
-                Eadd=DD(iIG,ifr,ith1,ith2)*wfr1(iIG,ifr) &
-                     *ESPEC(ISP1)*ESPEC(ISP2) ! Rectangle rule by AR
-                Dkx=k2*cos(dble(dth*ith2))- k1*cos(dble(dth*ith1))
-                Dky=k2*sin(dble(dth*ith2))- k1*sin(dble(dth*ith1))
+            Eadd=DD(iIG,ifr,ith1,ith2)*wfr1(iIG,ifr) &
+                 *ESPEC(ISP1)*ESPEC(ISP2) ! Rectangle rule by AR
+            Dkx=k2*cos(dble(dth*ith2))- k1*cos(dble(dth*ith1))
+            Dky=k2*sin(dble(dth*ith2))- k1*sin(dble(dth*ith1))
 
-                thetaIG=atan2(Dky,Dkx)
+            thetaIG=atan2(Dky,Dkx)
 
-                if (thetaIG.LT.0) thetaIG=2*pi+thetaIG
-                ! Finding corresponding index of theta IG in theta array
-                !I=INT((thetaIG/(2*pi))*nth)
+            if (thetaIG.LT.0) thetaIG=2*pi+thetaIG
+            ! Finding corresponding index of theta IG in theta array
+            !I=INT((thetaIG/(2*pi))*nth)
 
-                I=minloc(abs(thetaIG-TH), 1)-1
-                if (I==0) I=nth
-                ISP3 = I + (iIG-1)*NTH
-                !            memo=EfthIG(ISP3)
-                EfthIG(ISP3)= EfthIG(ISP3)+Eadd;
-                !              IF (EfthIG(ISP3).NE.EfthIG(ISP3).AND.Eadd.NE.0) WRITE(6,*) 'EfthIG:',IIG, IFR, ITH1,ITH2,ISP3, &
-                !                                                                        EfthIG(ISP3),Eadd,memo
-             END DO
+            I=minloc(abs(thetaIG-TH), 1)-1
+            if (I==0) I=nth
+            ISP3 = I + (iIG-1)*NTH
+            !            memo=EfthIG(ISP3)
+            EfthIG(ISP3)= EfthIG(ISP3)+Eadd;
+            !              IF (EfthIG(ISP3).NE.EfthIG(ISP3).AND.Eadd.NE.0) WRITE(6,*) 'EfthIG:',IIG, IFR, ITH1,ITH2,ISP3, &
+            !                                                                        EfthIG(ISP3),Eadd,memo
           END DO
-       end do
+        END DO
+      end do
     end do
 
     !   ESPEC(1:NSPECIG)=ESPEC(1:NSPECIG)+EfthIG(:)
     ESPEC(1:NSPECIG)=EfthIG(:)
 
     IF (IACTION.EQ.0) THEN
-       DO ISP1=1,NSPECIG
-          E(ISP1)=ESPEC(ISP1)
-       END DO
+      DO ISP1=1,NSPECIG
+        E(ISP1)=ESPEC(ISP1)
+      END DO
     ELSE
-       DO IK = 1,NKIG
-          DO ITH = 1, NTH
-             ISP1=ITH+(IK-1)*NTH
-             E(ISP1)=ESPEC(ISP1)*CG(IK)/(SIG(IK)*TPI)
-          END DO
-       END DO
+      DO IK = 1,NKIG
+        DO ITH = 1, NTH
+          ISP1=ITH+(IK-1)*NTH
+          E(ISP1)=ESPEC(ISP1)*CG(IK)/(SIG(IK)*TPI)
+        END DO
+      END DO
     END IF
 
     ! OPEN(5555,FILE='testos.dat',status='unknown')

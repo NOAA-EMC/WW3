@@ -261,8 +261,8 @@ CONTAINS
     !     **********************************************************
     !
     IF ( FIRST ) THEN
-       CALL INFLD
-       FIRST  = .FALSE.
+      CALL INFLD
+      FIRST  = .FALSE.
     END IF
     wnd_in_mag = sqrt( wndx**2 + wndy**2 )
     wnd_in_dir = atan2(wndy, wndx)
@@ -274,9 +274,9 @@ CONTAINS
     u10 = wnd_in_mag
     ! - Get tail level
     if (Tail_Choice.eq.0) then
-       SAT=Tail_Level
+      SAT=Tail_Level
     elseif (Tail_Choice.eq.1) then
-       CALL WND2SAT(U10,SAT)
+      CALL WND2SAT(U10,SAT)
     endif
     !
     ! 1.  Attach Tail ---------------------------------------------------- *
@@ -292,8 +292,8 @@ CONTAINS
     NKT = NK
     ! ii. Find additional wavenumber bins to extended to cm scale waves
     DO WHILE ( KMAX .LT. 366.0 )
-       NKT = NKT + 1
-       KMAX = ( KMAX * XFR**2 )
+      NKT = NKT + 1
+      KMAX = ( KMAX * XFR**2 )
     ENDDO!K<366
     ! iii. Allocate new "extended" spectrum
     ALLOCATE( WN(NKT), DWN(NKT), CP(NKT), SIG2(NKT),SPC2(NKT,NTH), &
@@ -306,19 +306,19 @@ CONTAINS
     !
     !i. Copy existing sig to extended sig2, calculate phase speed.
     DO K = 1, NK !existing spectrum
-       call sig2wn(sig(k),depth,wn(k))
-       CP(K) = ( SIG(K) / WN(K) )
-       sig2(k) = sig(k)
+      call sig2wn(sig(k),depth,wn(k))
+      CP(K) = ( SIG(K) / WN(K) )
+      sig2(k) = sig(k)
     ENDDO!K
     !ii. Calculate extended sig2 and phase speed.
     DO K = ( NK + 1 ), ( NKT) !extension
-       sig2(k) = sig2(k-1) *XFR
-       call sig2wn(sig2(k),depth,wn(k))
-       CP(K) = SIG2(K) / WN(K)
+      sig2(k) = sig2(k-1) *XFR
+      call sig2wn(sig2(k),depth,wn(k))
+      CP(K) = SIG2(K) / WN(K)
     ENDDO!K
     !iii. Calculate dk's for integrations.
     DO K = 1, NKT-1
-       DWN(K) = WN(K+1) - WN(K)
+      DWN(K) = WN(K+1) - WN(K)
     ENDDO
     DWN(NKT) = WN(NKT)*XFR**2 - WN(NKT)
     !
@@ -329,16 +329,16 @@ CONTAINS
     ! This could be redone for computational efficiency
     I=0
     DO K=1, NK
-       DO T=1, NTH
-          I = I + 1
-          SPC2(K,T) = ASPC(I)  * SIG(K)
-       ENDDO!T
+      DO T=1, NTH
+        I = I + 1
+        SPC2(K,T) = ASPC(I)  * SIG(K)
+      ENDDO!T
     ENDDO!K
     !ii. Extend k^-3 tail to extended spectrum
     DO K=NK+1, NKT
-       DO T=1, NTH
-          SPC2(K,T)=SPC2(NK,T)*WN(NK)**3.0/WN(K)**(3.0)
-       ENDDO!T
+      DO T=1, NTH
+        SPC2(K,T)=SPC2(NK,T)*WN(NK)**3.0/WN(K)**(3.0)
+      ENDDO!T
     ENDDO!K
     !
     ! 1c. Calculate transitions for new (constant saturation ) tail ------ *
@@ -353,15 +353,15 @@ CONTAINS
     !iv. Find corresponding indices of wavenumber transitions
     KA1 = 2     ! Do not modify 1st wavenumber bin
     DO WHILE ( ( KTAILA .GE. WN(KA1) ) .AND. (KA1 .LT. NKT-6) )
-       KA1 = KA1 + 1
+      KA1 = KA1 + 1
     ENDDO
     KA2 = KA1+2
     DO WHILE ( ( KTAILB .GE. WN(KA2) ) .AND. (KA2 .LT. NKT-4) )
-       KA2 = KA2 + 1
+      KA2 = KA2 + 1
     ENDDO
     KA3 = KA2+2
     DO WHILE ( ( KTAILC .GE. WN(KA3)) .AND. (KA3 .LT. NKT-2) )
-       KA3 = KA3 + 1
+      KA3 = KA3 + 1
     ENDDO
     !v. Call subroutine to perform actually tail truncation
     ! only if there is some energy in spectrum
@@ -382,14 +382,14 @@ CONTAINS
     IT_FLAG1 = .true.
     ITERATION = 0
     DO WHILE( IT_FLAG1 )
-       ITERATION = ITERATION + 1
-       Z1 = Z0SM
-       USTSM = KAPPA * wnd_in_mag / ( LOG( ZWND / Z1 ) )
-       Z0SM = 0.132 * NU / USTSM
-       IF ( (ABS( Z0SM - Z1 ) .LT. 10.0**(-6)) .OR.&
-            ( ITERATION .GT. 5 )) THEN
-          IT_FLAG1 = .false.
-       ENDIF
+      ITERATION = ITERATION + 1
+      Z1 = Z0SM
+      USTSM = KAPPA * wnd_in_mag / ( LOG( ZWND / Z1 ) )
+      Z0SM = 0.132 * NU / USTSM
+      IF ( (ABS( Z0SM - Z1 ) .LT. 10.0**(-6)) .OR.&
+           ( ITERATION .GT. 5 )) THEN
+        IT_FLAG1 = .false.
+      ENDIF
     ENDDO
 
     ITERATION = 1
@@ -401,352 +401,352 @@ CONTAINS
     !
     IT_FLAG1 = .true.
     DO WHILE (IT_FLAG1)
-       DO ITER=1, 3 !3 loops for TAUNU iteration
-          Z2 = NKT
-          ! First : TAUNUX + DX
-          IF (ITER .EQ. 1) THEN
-             TAUNUX = TAUNUX + DTX
-             ! Second : TAUNUY + DY
-          ELSEIF (ITER .EQ. 2) THEN
-             TAUNUX = TAUNUX - DTX
-             TAUNUY = TAUNUY + DTY
-             ! Third : unmodified
-          ELSEIF (ITER .EQ. 3) THEN
-             TAUNUY = TAUNUY - DTY
-          ENDIF
-          ! Near surface turbulent stress = taunu
-          TLTN(1) = TAUNUY
-          TLTE(1) = TAUNUX
+      DO ITER=1, 3 !3 loops for TAUNU iteration
+        Z2 = NKT
+        ! First : TAUNUX + DX
+        IF (ITER .EQ. 1) THEN
+          TAUNUX = TAUNUX + DTX
+          ! Second : TAUNUY + DY
+        ELSEIF (ITER .EQ. 2) THEN
+          TAUNUX = TAUNUX - DTX
+          TAUNUY = TAUNUY + DTY
+          ! Third : unmodified
+        ELSEIF (ITER .EQ. 3) THEN
+          TAUNUY = TAUNUY - DTY
+        ENDIF
+        ! Near surface turbulent stress = taunu
+        TLTN(1) = TAUNUY
+        TLTE(1) = TAUNUX
 
-          CALL APPENDTAIL(SPC2, WN, NKT, KA1, KA2, KA3,&
-               atan2(TAUNUY,TAUNUX), SAT)
+        CALL APPENDTAIL(SPC2, WN, NKT, KA1, KA2, KA3,&
+             atan2(TAUNUY,TAUNUX), SAT)
+        !|---------------------------------------------------------------------|
+        !|-----Calculate first guess at growth rate and local turbulent stress-|
+        !|-----for integration as a function of wavedirection------------------|
+        !|---------------------------------------------------------------------|
+        DO ZI = 2, NKT
+          USTL=0.0
+          TLTND(zi)=0.0
+          TLTED(zi)=0.0
+          Z2 = Z2 - 1
+          ! Use value of prev. wavenumber/height
+          TAUD(ZI) = ATAN2( TLTN(ZI-1), TLTE(ZI-1))
+          USTL = SQRT( SQRT( TLTN(ZI-1)**2 + TLTE(ZI-1)**2 )/ DAIR )
+          DO T = 1, NTH
+            ANGDIF=TAUD(ZI)-TH(T) !stress/wave angle
+            IF ( COS( ANGDIF ) .GE. 0.0 ) THEN !Waves aligned
+              WAGE = CP(Z2) / (USTL)
+              ! First, waves much slower than wind.
+              IF ( WAGE .LT. 10. ) THEN
+                CBETA = 25.0
+                ! Transition from waves slower than wind to faster
+              ELSEIF ( ( WAGE .GE. 10.0 ) .AND. &
+                   ( WAGE .LE. 25.0 ) ) THEN
+                CBETA = 10.0 + 15.0 * COS( PI * ( WAGE - 10.0 ) &
+                     / 15.0 )
+                ! Waves faster than wind
+              ELSEIF ( WAGE .GT. 25.0 ) THEN
+                CBETA = -5.0
+              ENDIF
+              ! Waves opposing wind
+            ELSE
+              CBETA = -25.0
+            ENDIF
+            !Integrate turbulent stress
+            TLTND(ZI) =TLTND(ZI)+( SIN( TH(T) ) * COS( ANGDIF )**2)&
+                 * CBETA * SPC2(Z2,T) * &
+                 SQRT( TLTE(ZI-1)**2 + TLTN(ZI-1)**2.0 ) &
+                 * ( WN(Z2)**2.0 )*DTH
+            TLTED(ZI) = TLTED(ZI)+(COS( TH(T) ) * COS( ANGDIF )**2)&
+                 * CBETA * SPC2(Z2,T) * &
+                 SQRT( TLTE(ZI-1)**2 + TLTN(ZI-1)**2.0 ) &
+                 * ( WN(Z2)**2.0 )*DTH
+          ENDDO
           !|---------------------------------------------------------------------|
-          !|-----Calculate first guess at growth rate and local turbulent stress-|
-          !|-----for integration as a function of wavedirection------------------|
+          !|-----Complete the integrations---------------------------------------|
           !|---------------------------------------------------------------------|
-          DO ZI = 2, NKT
-             USTL=0.0
-             TLTND(zi)=0.0
-             TLTED(zi)=0.0
-             Z2 = Z2 - 1
-             ! Use value of prev. wavenumber/height
-             TAUD(ZI) = ATAN2( TLTN(ZI-1), TLTE(ZI-1))
-             USTL = SQRT( SQRT( TLTN(ZI-1)**2 + TLTE(ZI-1)**2 )/ DAIR )
-             DO T = 1, NTH
-                ANGDIF=TAUD(ZI)-TH(T) !stress/wave angle
-                IF ( COS( ANGDIF ) .GE. 0.0 ) THEN !Waves aligned
-                   WAGE = CP(Z2) / (USTL)
-                   ! First, waves much slower than wind.
-                   IF ( WAGE .LT. 10. ) THEN
-                      CBETA = 25.0
-                      ! Transition from waves slower than wind to faster
-                   ELSEIF ( ( WAGE .GE. 10.0 ) .AND. &
-                        ( WAGE .LE. 25.0 ) ) THEN
-                      CBETA = 10.0 + 15.0 * COS( PI * ( WAGE - 10.0 ) &
-                           / 15.0 )
-                      ! Waves faster than wind
-                   ELSEIF ( WAGE .GT. 25.0 ) THEN
-                      CBETA = -5.0
-                   ENDIF
-                   ! Waves opposing wind
-                ELSE
-                   CBETA = -25.0
+          IF (ZI .EQ. 2) THEN
+            !First turbulent stress bin above taunu
+            TLTNA(ZI) = TLTND(ZI) * DWN(Z2) * 0.5
+            TLTEA(ZI) = TLTED(ZI) * DWN(Z2) * 0.5
+          ELSE
+            TLTNA(ZI)=(TLTND(ZI)+TLTND(ZI-1))*0.5*DWN(Z2)
+            TLTEA(ZI)=(TLTED(ZI)+TLTED(ZI-1))*0.5*DWN(Z2)
+          ENDIF
+          TLTN(ZI)=TLTN(ZI-1)+TLTNA(ZI)
+          TLTE(ZI)=TLTE(ZI-1)+TLTEA(ZI)
+        ENDDO
+        TAUY=TLTN(NKT)
+        TAUX=TLTE(NKT)
+        ! This is the first guess at the stress.
+        !|---------------------------------------------------------------------|
+        !|----Iterate til convergence------------------------------------------|
+        !|---------------------------------------------------------------------|
+        USTRB=SQRT(SQRT(TAUY**2.0+TAUX**2.0)/DAIR)
+        TAUDIRB=atan2(TAUY,TAUX)
+        IT_FLAG2 = .TRUE.
+        CTR=1
+        DO WHILE ( (IT_FLAG2) .AND. ( CTR .LT. 10 ) )
+          Z2=NKT+1
+          DO ZI=1, NKT
+            Z2=Z2-1
+            USTL=0.0
+            TLTED(zi)=0.0
+            TLTND(zi)=0.0
+            FTILDE(z2)=0.0
+            TAUD(ZI) = ATAN2(TLTN(ZI),TLTE(ZI))
+            USTL = SQRT(SQRT(TLTN(ZI)**2+TLTE(ZI)**2)/DAIR)
+            DO T=1, NTH
+              BETAG=0.0
+              ANGDIF = TAUD(ZI)-TH(T)
+              IF ( COS( ANGDIF ) .GE. 0.0 ) THEN
+                WAGE = CP(Z2)  / (USTL)
+                IF ( WAGE .LT. 10 ) THEN
+                  CBETA = 25.0
+                ELSEIF ( ( WAGE .GE. 10.0 ) .AND. &
+                     ( WAGE .LE. 25.0 ) ) THEN
+                  CBETA = 10.0 + 15.0 * COS( PI * ( WAGE - 10.0 ) &
+                       / 15.0 )
+                ELSEIF ( WAGE .GT. 25.0 ) THEN
+                  CBETA = -5.0
                 ENDIF
-                !Integrate turbulent stress
-                TLTND(ZI) =TLTND(ZI)+( SIN( TH(T) ) * COS( ANGDIF )**2)&
-                     * CBETA * SPC2(Z2,T) * &
-                     SQRT( TLTE(ZI-1)**2 + TLTN(ZI-1)**2.0 ) &
-                     * ( WN(Z2)**2.0 )*DTH
-                TLTED(ZI) = TLTED(ZI)+(COS( TH(T) ) * COS( ANGDIF )**2)&
-                     * CBETA * SPC2(Z2,T) * &
-                     SQRT( TLTE(ZI-1)**2 + TLTN(ZI-1)**2.0 ) &
-                     * ( WN(Z2)**2.0 )*DTH
-             ENDDO
-             !|---------------------------------------------------------------------|
-             !|-----Complete the integrations---------------------------------------|
-             !|---------------------------------------------------------------------|
-             IF (ZI .EQ. 2) THEN
-                !First turbulent stress bin above taunu
-                TLTNA(ZI) = TLTND(ZI) * DWN(Z2) * 0.5
-                TLTEA(ZI) = TLTED(ZI) * DWN(Z2) * 0.5
-             ELSE
-                TLTNA(ZI)=(TLTND(ZI)+TLTND(ZI-1))*0.5*DWN(Z2)
-                TLTEA(ZI)=(TLTED(ZI)+TLTED(ZI-1))*0.5*DWN(Z2)
-             ENDIF
-             TLTN(ZI)=TLTN(ZI-1)+TLTNA(ZI)
-             TLTE(ZI)=TLTE(ZI-1)+TLTEA(ZI)
+              ELSE
+                CBETA = -25.0
+              ENDIF
+              BP = SQRT( (COS( TH(T) ) * COS( ANGDIF )**2.0)**2.0 &
+                   + (SIN( TH(T) ) * COS( ANGDIF )**2.0)**2.0 )
+              BETAG=BP*CBETA*SQRT(TLTE(ZI)**2.0+TLTN(ZI)**2.0) &
+                   /(DWAT)*SIG2(Z2)/CP(Z2)**2
+              FTILDE(Z2) = FTILDE(Z2) + BETAG * DWAT * GRAV &
+                   * SPC2(Z2,T) * DTH
+              TLTND(zi) =tltnd(zi)+ (SIN( TH(T) ) * COS( ANGDIF )**2.0)&
+                   * CBETA * SPC2(Z2,T) * SQRT( &
+                   TLTE(ZI)**2.0 + TLTN(ZI)**2.0 ) * &
+                   ( WN(Z2)**2.0 )*dth
+              TLTED(zi) = tlted(zi)+(COS( TH(T) ) * COS( ANGDIF )**2.0)&
+                   * CBETA * SPC2(Z2,T) * SQRT( &
+                   TLTE(ZI)**2.0 + TLTN(ZI)**2.0 ) * &
+                   ( WN(Z2)**2.0 )*dth
+            ENDDO
+            IF (ZI .EQ. 1) THEN
+              TLTNA(ZI)=TLTND(ZI)*DWN(Z2)*0.5
+              TLTEA(ZI)=TLTED(ZI)*DWN(Z2)*0.5
+            ELSE
+              TLTNA(ZI)=(TLTND(ZI)+TLTND(ZI-1))*0.5*DWN(Z2)
+              TLTEA(ZI)=(TLTED(ZI)+TLTED(ZI-1))*0.5*DWN(Z2)
+            ENDIF
+            IF (ZI.GT.1) then
+              TLTN(ZI)=TLTN(ZI-1)+TLTNA(ZI)
+              TLTE(ZI)=TLTE(ZI-1)+TLTEA(ZI)
+            else
+              TLTN(ZI)=TAUNUY+TLTNA(ZI)
+              TLTE(ZI)=TAUNUX+TLTEA(ZI)
+            endif
           ENDDO
-          TAUY=TLTN(NKT)
-          TAUX=TLTE(NKT)
-          ! This is the first guess at the stress.
-          !|---------------------------------------------------------------------|
-          !|----Iterate til convergence------------------------------------------|
-          !|---------------------------------------------------------------------|
-          USTRB=SQRT(SQRT(TAUY**2.0+TAUX**2.0)/DAIR)
-          TAUDIRB=atan2(TAUY,TAUX)
-          IT_FLAG2 = .TRUE.
-          CTR=1
-          DO WHILE ( (IT_FLAG2) .AND. ( CTR .LT. 10 ) )
-             Z2=NKT+1
-             DO ZI=1, NKT
-                Z2=Z2-1
-                USTL=0.0
-                TLTED(zi)=0.0
-                TLTND(zi)=0.0
-                FTILDE(z2)=0.0
-                TAUD(ZI) = ATAN2(TLTN(ZI),TLTE(ZI))
-                USTL = SQRT(SQRT(TLTN(ZI)**2+TLTE(ZI)**2)/DAIR)
-                DO T=1, NTH
-                   BETAG=0.0
-                   ANGDIF = TAUD(ZI)-TH(T)
-                   IF ( COS( ANGDIF ) .GE. 0.0 ) THEN
-                      WAGE = CP(Z2)  / (USTL)
-                      IF ( WAGE .LT. 10 ) THEN
-                         CBETA = 25.0
-                      ELSEIF ( ( WAGE .GE. 10.0 ) .AND. &
-                           ( WAGE .LE. 25.0 ) ) THEN
-                         CBETA = 10.0 + 15.0 * COS( PI * ( WAGE - 10.0 ) &
-                              / 15.0 )
-                      ELSEIF ( WAGE .GT. 25.0 ) THEN
-                         CBETA = -5.0
-                      ENDIF
-                   ELSE
-                      CBETA = -25.0
-                   ENDIF
-                   BP = SQRT( (COS( TH(T) ) * COS( ANGDIF )**2.0)**2.0 &
-                        + (SIN( TH(T) ) * COS( ANGDIF )**2.0)**2.0 )
-                   BETAG=BP*CBETA*SQRT(TLTE(ZI)**2.0+TLTN(ZI)**2.0) &
-                        /(DWAT)*SIG2(Z2)/CP(Z2)**2
-                   FTILDE(Z2) = FTILDE(Z2) + BETAG * DWAT * GRAV &
-                        * SPC2(Z2,T) * DTH
-                   TLTND(zi) =tltnd(zi)+ (SIN( TH(T) ) * COS( ANGDIF )**2.0)&
-                        * CBETA * SPC2(Z2,T) * SQRT( &
-                        TLTE(ZI)**2.0 + TLTN(ZI)**2.0 ) * &
-                        ( WN(Z2)**2.0 )*dth
-                   TLTED(zi) = tlted(zi)+(COS( TH(T) ) * COS( ANGDIF )**2.0)&
-                        * CBETA * SPC2(Z2,T) * SQRT( &
-                        TLTE(ZI)**2.0 + TLTN(ZI)**2.0 ) * &
-                        ( WN(Z2)**2.0 )*dth
-                ENDDO
-                IF (ZI .EQ. 1) THEN
-                   TLTNA(ZI)=TLTND(ZI)*DWN(Z2)*0.5
-                   TLTEA(ZI)=TLTED(ZI)*DWN(Z2)*0.5
-                ELSE
-                   TLTNA(ZI)=(TLTND(ZI)+TLTND(ZI-1))*0.5*DWN(Z2)
-                   TLTEA(ZI)=(TLTED(ZI)+TLTED(ZI-1))*0.5*DWN(Z2)
-                ENDIF
-                IF (ZI.GT.1) then
-                   TLTN(ZI)=TLTN(ZI-1)+TLTNA(ZI)
-                   TLTE(ZI)=TLTE(ZI-1)+TLTEA(ZI)
-                else
-                   TLTN(ZI)=TAUNUY+TLTNA(ZI)
-                   TLTE(ZI)=TAUNUX+TLTEA(ZI)
-                endif
-             ENDDO
-             TAUY=TLTN(NKT) !by NKT full stress is entirely
-             TAUX=TLTE(NKT) !from turbulent stress
-             TAUT=SQRT(TAUY**2.0+TAUX**2.0)
-             USTAR=SQRT(SQRT(TAUY**2.0+TAUX**2.0)/DAIR)
-             TAUDIR=atan2(TAUY, TAUX)
-             ! Note: add another criterion (stress direction) for iteration.
-             CRIT1=(ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1
-             CRIT2=(ABS(TAUDIR-TAUDIRB)*100.0/(TAUDIR+TAUDIRB)*0.5) .GT. 0.1
-             IF (CRIT1 .OR. CRIT2) THEN
-                !            IF ((ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1) THEN
-                USTRB=USTAR
-                TAUDIRB=TAUDIR
-                CTR=CTR+1
-             ELSE
-                IT_FLAG2 = .FALSE.
-             ENDIF
-          ENDDO
-          ! Note: search for the top of WBL from top to bottom (avoid problems
-          ! caused by  for very long swell)
-          KB=NKT
-          DO WHILE(((TLTN(KB)**2+TLTE(KB)**2)/(TAUX**2+TAUY**2)).GT. &
-               .99)
-             KB=KB-1
-          ENDDO
-          KB=KB+1
-          !|---------------------------------------------------------------------|
-          !|----Now begin work on wind profile-----------------------------------|
-          !|---------------------------------------------------------------------|
-          DO I=1,NKT
-             ZOFK(I)=DELTA/WN(I)
-          ENDDO
-          ZNU=0.1 * 1.45E-5 / SQRT(SQRT(TAUNUX**2.0+TAUNUY**2.0)/DAIR)
-          UPROF(1:NKT+1)=0.0
-          VPROF(1:NKT+1)=0.0
-          UPROFV=0.0
-          VPROFV=0.0
-          ZI=1
-          Z2=NKT
-          UP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
+          TAUY=TLTN(NKT) !by NKT full stress is entirely
+          TAUX=TLTE(NKT) !from turbulent stress
+          TAUT=SQRT(TAUY**2.0+TAUX**2.0)
+          USTAR=SQRT(SQRT(TAUY**2.0+TAUX**2.0)/DAIR)
+          TAUDIR=atan2(TAUY, TAUX)
+          ! Note: add another criterion (stress direction) for iteration.
+          CRIT1=(ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1
+          CRIT2=(ABS(TAUDIR-TAUDIRB)*100.0/(TAUDIR+TAUDIRB)*0.5) .GT. 0.1
+          IF (CRIT1 .OR. CRIT2) THEN
+            !            IF ((ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1) THEN
+            USTRB=USTAR
+            TAUDIRB=TAUDIR
+            CTR=CTR+1
+          ELSE
+            IT_FLAG2 = .FALSE.
+          ENDIF
+        ENDDO
+        ! Note: search for the top of WBL from top to bottom (avoid problems
+        ! caused by  for very long swell)
+        KB=NKT
+        DO WHILE(((TLTN(KB)**2+TLTE(KB)**2)/(TAUX**2+TAUY**2)).GT. &
+             .99)
+          KB=KB-1
+        ENDDO
+        KB=KB+1
+        !|---------------------------------------------------------------------|
+        !|----Now begin work on wind profile-----------------------------------|
+        !|---------------------------------------------------------------------|
+        DO I=1,NKT
+          ZOFK(I)=DELTA/WN(I)
+        ENDDO
+        ZNU=0.1 * 1.45E-5 / SQRT(SQRT(TAUNUX**2.0+TAUNUY**2.0)/DAIR)
+        UPROF(1:NKT+1)=0.0
+        VPROF(1:NKT+1)=0.0
+        UPROFV=0.0
+        VPROFV=0.0
+        ZI=1
+        Z2=NKT
+        UP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
+             ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT( &
+             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
+             * ( TLTE(ZI) ) / ( TLTE(ZI) * TAUX &
+             + TLTN(ZI) * TAUY )
+        VP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
+             ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT ( &
+             TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
+             * ( TLTN(ZI) ) / ( TLTE(ZI) * TAUX &
+             + TLTN(ZI) * TAUY )
+        UP(ZI) = UP1(ZI)
+        VP(ZI) = VP1(ZI)
+        UPROF(ZI) = DAIR / KAPPA * ( SQRT( TAUNUX**2.0 + TAUNUY**2.0 ) &
+             / DAIR )**(1.5) * ( TAUNUX / ( TAUX * &
+             TAUNUX + TAUY * TAUNUY ) ) * LOG( &
+             ZOFK(Z2) / ZNU )
+        VPROF(ZI) = DAIR / KAPPA * ( SQRT( TAUNUX**2.0 + TAUNUY**2.0 ) &
+             / DAIR )**(1.5) * ( TAUNUY / ( TAUX * &
+             TAUNUX + TAUY * TAUNUY ) ) * LOG( &
+             ZOFK(Z2) / ZNU )
+        !Noted: wind profile computed till the inner layer height of the longest
+        !wave, not just to the top of wave boundary layer (previous)
+        DO ZI=2, NKT
+          Z2 = Z2 - 1
+          UP1(ZI) = ( ( ( WN(Z2)**2.0 / DELTA ) * FTILDE(Z2) ) + &
                ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT( &
-               TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
-               * ( TLTE(ZI) ) / ( TLTE(ZI) * TAUX &
-               + TLTN(ZI) * TAUY )
-          VP1(ZI) = ( ( ( WN(Z2)**2 / DELTA ) * FTILDE(z2) ) + &
-               ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT ( &
-               TLTN(ZI)**2 + TLTE(ZI)**2 ) / DAIR )**(3/2) ) &
-               * ( TLTN(ZI) ) / ( TLTE(ZI) * TAUX &
-               + TLTN(ZI) * TAUY )
-          UP(ZI) = UP1(ZI)
-          VP(ZI) = VP1(ZI)
-          UPROF(ZI) = DAIR / KAPPA * ( SQRT( TAUNUX**2.0 + TAUNUY**2.0 ) &
-               / DAIR )**(1.5) * ( TAUNUX / ( TAUX * &
-               TAUNUX + TAUY * TAUNUY ) ) * LOG( &
-               ZOFK(Z2) / ZNU )
-          VPROF(ZI) = DAIR / KAPPA * ( SQRT( TAUNUX**2.0 + TAUNUY**2.0 ) &
-               / DAIR )**(1.5) * ( TAUNUY / ( TAUX * &
-               TAUNUX + TAUY * TAUNUY ) ) * LOG( &
-               ZOFK(Z2) / ZNU )
-          !Noted: wind profile computed till the inner layer height of the longest
-          !wave, not just to the top of wave boundary layer (previous)
-          DO ZI=2, NKT
-             Z2 = Z2 - 1
-             UP1(ZI) = ( ( ( WN(Z2)**2.0 / DELTA ) * FTILDE(Z2) ) + &
-                  ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT( &
-                  TLTN(ZI)**2.0 + TLTE(ZI)**2.0 ) / DAIR )**(1.5) ) &
-                  * ( TLTE(ZI) ) / ( TLTE(ZI) * TAUX + &
-                  TLTN(ZI) * TAUY )
-             VP1(ZI) = ( ( ( WN(Z2)**2.0 / DELTA ) * FTILDE(Z2) ) + &
-                  ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT( &
-                  TLTN(ZI)**2.0 + TLTE(ZI)**2.0 ) / DAIR )**(1.5) ) &
-                  * ( TLTN(ZI) ) / ( TLTE(ZI) * TAUX + &
-                  TLTN(ZI) * TAUY )
-             UP(ZI) = UP1(ZI) * 0.5 + UP1(ZI-1) * 0.5
-             VP(ZI) = VP1(ZI) * 0.5 + VP1(ZI-1) * 0.5
-             UPROF(ZI) = UPROF(ZI-1) + UP(ZI) * ( ZOFK(Z2) - ZOFK(Z2+1) )
-             VPROF(ZI) = VPROF(ZI-1) + VP(ZI) * ( ZOFK(Z2) - ZOFK(Z2+1) )
-          ENDDO
-          !|---------------------------------------------------------------------|
-          !|----Iteration completion/checks--------------------------------------|
-          !|---------------------------------------------------------------------|
-          !ZI = ( KB + 1 )
-          ! Now solving for 'ZWND' height wind
-          UPROF(NKT+1) = UPROF(NKT) + ( SQRT( SQRT( TAUY**2.0 + &
-               TAUX**2.0 ) / DAIR ) ) / KAPPA * TAUX &
-               / SQRT( TAUY**2.0 +TAUX**2.0 ) * LOG( ZWND &
-               / ZOFK(Z2) )
-          VPROF(NKT+1) = VPROF(NKT) + ( SQRT( SQRT( TAUY**2.0 + &
-               TAUX**2.0 ) / DAIR ) ) / KAPPA * TAUY &
-               / SQRT( TAUY**2.0 +TAUX**2.0 ) * LOG( ZWND &
-               / ZOFK(Z2) )
-          IF (ITER .EQ. 3) THEN
-             WND_1X = UPROF(NKT+1)
-             WND_1Y = VPROF(NKT+1)
-          ELSEIF (ITER .EQ. 2) THEN
-             WND_2X = UPROF(NKT+1)
-             WND_2Y = VPROF(NKT+1)
-          ELSEIF (ITER .EQ. 1) THEN
-             WND_3X = UPROF(NKT+1)
-             WND_3Y = VPROF(NKT+1)
-          ENDIF
+               TLTN(ZI)**2.0 + TLTE(ZI)**2.0 ) / DAIR )**(1.5) ) &
+               * ( TLTE(ZI) ) / ( TLTE(ZI) * TAUX + &
+               TLTN(ZI) * TAUY )
+          VP1(ZI) = ( ( ( WN(Z2)**2.0 / DELTA ) * FTILDE(Z2) ) + &
+               ( DAIR / ( ZOFK(Z2) * KAPPA ) ) * ( SQRT( &
+               TLTN(ZI)**2.0 + TLTE(ZI)**2.0 ) / DAIR )**(1.5) ) &
+               * ( TLTN(ZI) ) / ( TLTE(ZI) * TAUX + &
+               TLTN(ZI) * TAUY )
+          UP(ZI) = UP1(ZI) * 0.5 + UP1(ZI-1) * 0.5
+          VP(ZI) = VP1(ZI) * 0.5 + VP1(ZI-1) * 0.5
+          UPROF(ZI) = UPROF(ZI-1) + UP(ZI) * ( ZOFK(Z2) - ZOFK(Z2+1) )
+          VPROF(ZI) = VPROF(ZI-1) + VP(ZI) * ( ZOFK(Z2) - ZOFK(Z2+1) )
+        ENDDO
+        !|---------------------------------------------------------------------|
+        !|----Iteration completion/checks--------------------------------------|
+        !|---------------------------------------------------------------------|
+        !ZI = ( KB + 1 )
+        ! Now solving for 'ZWND' height wind
+        UPROF(NKT+1) = UPROF(NKT) + ( SQRT( SQRT( TAUY**2.0 + &
+             TAUX**2.0 ) / DAIR ) ) / KAPPA * TAUX &
+             / SQRT( TAUY**2.0 +TAUX**2.0 ) * LOG( ZWND &
+             / ZOFK(Z2) )
+        VPROF(NKT+1) = VPROF(NKT) + ( SQRT( SQRT( TAUY**2.0 + &
+             TAUX**2.0 ) / DAIR ) ) / KAPPA * TAUY &
+             / SQRT( TAUY**2.0 +TAUX**2.0 ) * LOG( ZWND &
+             / ZOFK(Z2) )
+        IF (ITER .EQ. 3) THEN
+          WND_1X = UPROF(NKT+1)
+          WND_1Y = VPROF(NKT+1)
+        ELSEIF (ITER .EQ. 2) THEN
+          WND_2X = UPROF(NKT+1)
+          WND_2Y = VPROF(NKT+1)
+        ELSEIF (ITER .EQ. 1) THEN
+          WND_3X = UPROF(NKT+1)
+          WND_3Y = VPROF(NKT+1)
+        ENDIF
 
 
-          !-------------------------------------+
-          !  Guide for adding stability effects +
-          !-------------------------------------+
-          !Get Wind at top of wave boundary layer
-          ! WND_TOP=SQRT(UPROF(KB)**2+VPROF(KB)**2)
-          ! Get Wind Angle at top of wave boundary layer
-          ! ANG_TOP=ATAN2(VPROF(KB),UPROF(KB))
-          ! Stress and direction
-          ! USTD = ATAN2(TAUY,TAUX)
-          ! UST = SQRT( SQRT( TAUX**2 + TAUY**2 ) / DAIR)
-          ! Calclate along (PA) and across (PE) wind components
-          ! WND_PA=WND_TOP*COS(ANG_TOP-USTD)
-          ! WND_PE=WND_TOP*SIN(ANG_TOP-USTD)
-          ! Calculate cartesian aligned wind
-          ! WND_PAx=WND_PA*cos(ustd)
-          ! WND_PAy=WND_PA*sin(USTd)
-          !Calculate cartesion across wind
-          ! WND_PEx=WND_PE*cos(ustd+pi/2.)
-          ! WND_PEy=WND_PE*sin(ustd+pi/2.)
-          !----------------------------------------------------+
-          ! If a non-neutral profile is used the effective z0  +
-          ! should be computed.  This z0 can then be used      +
-          ! with stability information to derive a Cd, which   +
-          ! can be used to project the along-stress wind to    +
-          ! the given height.                                  +
-          ! i.e.: Assume neutral inside WBL calculate Z0       +
-          ! Z0=ZOFK(Z2)*EXP(-WND_PA*kappa/UST)                 +
-          ! WND_PA=UST/SQRT(CDM)                               +
-          !----------------------------------------------------+
-          ! WND_PAx=WND_PA*cos(ustd)
-          ! WND_PAy=WND_PA*sin(USTd)
-          ! IF (ITER .EQ. 3) THEN
-          !   WND_1X = WND_PAx+WND_PEx
-          !   WND_1Y = WND_PAy+WND_PEy
-          ! ELSEIF (ITER .EQ. 2) THEN
-          !   WND_2X = WND_PAx+WND_PEx
-          !   WND_2Y = WND_PAy+WND_PEy
-          ! ELSEIF (ITER .EQ. 1) THEN
-          !   WND_3X = WND_PAx+WND_PEx
-          !   WND_3Y = WND_PAy+WND_PEy
-          ! ENDIF
-       ENDDO
-       ITERATION = ITERATION + 1
-       DIFU10XX = WND_3X - WND_1X
-       DIFU10YX = WND_3Y - WND_1Y
-       DIFU10XY = WND_2X - WND_1X
-       DIFU10YY = WND_2Y - WND_1Y
-       FD_A = DIFU10XX / DTX
-       FD_B = DIFU10XY / DTY
-       FD_C = DIFU10YX / DTX
-       FD_D = DIFU10YY / DTY
-       DWNDX = - WNDX + WND_1X
-       DWNDY = - WNDY + WND_1Y
-       UITV = ABS( DWNDX )
-       VITV = ABS( DWNDY )
-       CH = SQRT( UITV**2.0 + VITV**2.0 )
-       IF (CH .GT. 15.) THEN
-          APAR = 0.5 / ( FD_A * FD_D - FD_B * FD_C )
-       ELSE
-          APAR = 1.0 / ( FD_A * FD_D - FD_B * FD_C )
-       ENDIF
-       CK=4.
-       IF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
-            (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
-            (ITERATION .LT. 2)) THEN
-          TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
-          TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
-       ELSEIF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
-            (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
-            (ITERATION .LT. 24)) THEN
-          iter_thresh = 0.001
-          TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
-          TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
-       ELSEIF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
-            (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
-            (ITERATION .LT. 26)) THEN
-          iter_thresh = 0.01
-          TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
-          TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
-       ELSEIF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
-            (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
-            (ITERATION .LT. 30)) THEN
-          iter_thresh = 0.05
-          TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
-          TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
-       ELSEIF (ITERATION .GE. 30) THEN
-          write(*,*)'Attn: W3FLD1 not converged.'
-          write(*,*)'      Wind (X/Y): ',WNDX,WNDY
-          IT_FLAG1 = .FALSE.
-          UST=-999
-          TAUNUX=0.
-          TAUNUY=0.
-       ELSEIF (((VITV/MAX(ABS(WNDY),CK) .LT. iter_thresh) .AND.&
-            (UITV/MAX(ABS(WNDX),CK) .LT. iter_thresh)) .AND. &
-            (ITERATION .GE. 2)) THEN
-          IT_FLAG1 = .FALSE.
-       ENDIF
-       ! if taunu iteration is unstable try to reset with new guess...
-       if (.not.(cos(wnd_in_dir-atan2(taunuy,taunux)).ge.0.0)) then
-          TAUNUX = USTSM**2 * DAIR * wndx / wnd_in_mag*.95
-          TAUNUY = USTSM**2 * DAIR * wndy / wnd_in_mag*.95
-       endif
+        !-------------------------------------+
+        !  Guide for adding stability effects +
+        !-------------------------------------+
+        !Get Wind at top of wave boundary layer
+        ! WND_TOP=SQRT(UPROF(KB)**2+VPROF(KB)**2)
+        ! Get Wind Angle at top of wave boundary layer
+        ! ANG_TOP=ATAN2(VPROF(KB),UPROF(KB))
+        ! Stress and direction
+        ! USTD = ATAN2(TAUY,TAUX)
+        ! UST = SQRT( SQRT( TAUX**2 + TAUY**2 ) / DAIR)
+        ! Calclate along (PA) and across (PE) wind components
+        ! WND_PA=WND_TOP*COS(ANG_TOP-USTD)
+        ! WND_PE=WND_TOP*SIN(ANG_TOP-USTD)
+        ! Calculate cartesian aligned wind
+        ! WND_PAx=WND_PA*cos(ustd)
+        ! WND_PAy=WND_PA*sin(USTd)
+        !Calculate cartesion across wind
+        ! WND_PEx=WND_PE*cos(ustd+pi/2.)
+        ! WND_PEy=WND_PE*sin(ustd+pi/2.)
+        !----------------------------------------------------+
+        ! If a non-neutral profile is used the effective z0  +
+        ! should be computed.  This z0 can then be used      +
+        ! with stability information to derive a Cd, which   +
+        ! can be used to project the along-stress wind to    +
+        ! the given height.                                  +
+        ! i.e.: Assume neutral inside WBL calculate Z0       +
+        ! Z0=ZOFK(Z2)*EXP(-WND_PA*kappa/UST)                 +
+        ! WND_PA=UST/SQRT(CDM)                               +
+        !----------------------------------------------------+
+        ! WND_PAx=WND_PA*cos(ustd)
+        ! WND_PAy=WND_PA*sin(USTd)
+        ! IF (ITER .EQ. 3) THEN
+        !   WND_1X = WND_PAx+WND_PEx
+        !   WND_1Y = WND_PAy+WND_PEy
+        ! ELSEIF (ITER .EQ. 2) THEN
+        !   WND_2X = WND_PAx+WND_PEx
+        !   WND_2Y = WND_PAy+WND_PEy
+        ! ELSEIF (ITER .EQ. 1) THEN
+        !   WND_3X = WND_PAx+WND_PEx
+        !   WND_3Y = WND_PAy+WND_PEy
+        ! ENDIF
+      ENDDO
+      ITERATION = ITERATION + 1
+      DIFU10XX = WND_3X - WND_1X
+      DIFU10YX = WND_3Y - WND_1Y
+      DIFU10XY = WND_2X - WND_1X
+      DIFU10YY = WND_2Y - WND_1Y
+      FD_A = DIFU10XX / DTX
+      FD_B = DIFU10XY / DTY
+      FD_C = DIFU10YX / DTX
+      FD_D = DIFU10YY / DTY
+      DWNDX = - WNDX + WND_1X
+      DWNDY = - WNDY + WND_1Y
+      UITV = ABS( DWNDX )
+      VITV = ABS( DWNDY )
+      CH = SQRT( UITV**2.0 + VITV**2.0 )
+      IF (CH .GT. 15.) THEN
+        APAR = 0.5 / ( FD_A * FD_D - FD_B * FD_C )
+      ELSE
+        APAR = 1.0 / ( FD_A * FD_D - FD_B * FD_C )
+      ENDIF
+      CK=4.
+      IF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
+           (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
+           (ITERATION .LT. 2)) THEN
+        TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
+        TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
+      ELSEIF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
+           (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
+           (ITERATION .LT. 24)) THEN
+        iter_thresh = 0.001
+        TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
+        TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
+      ELSEIF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
+           (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
+           (ITERATION .LT. 26)) THEN
+        iter_thresh = 0.01
+        TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
+        TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
+      ELSEIF (((VITV/MAX(ABS(WNDY),CK) .GT. iter_thresh) .OR. &
+           (UITV/MAX(ABS(WNDX),CK) .GT. iter_thresh)) .AND. &
+           (ITERATION .LT. 30)) THEN
+        iter_thresh = 0.05
+        TAUNUX = TAUNUX - APAR * ( FD_D * DWNDX - FD_B * DWNDY )
+        TAUNUY = TAUNUY - APAR * ( -FD_C * DWNDX +FD_A * DWNDY )
+      ELSEIF (ITERATION .GE. 30) THEN
+        write(*,*)'Attn: W3FLD1 not converged.'
+        write(*,*)'      Wind (X/Y): ',WNDX,WNDY
+        IT_FLAG1 = .FALSE.
+        UST=-999
+        TAUNUX=0.
+        TAUNUY=0.
+      ELSEIF (((VITV/MAX(ABS(WNDY),CK) .LT. iter_thresh) .AND.&
+           (UITV/MAX(ABS(WNDX),CK) .LT. iter_thresh)) .AND. &
+           (ITERATION .GE. 2)) THEN
+        IT_FLAG1 = .FALSE.
+      ENDIF
+      ! if taunu iteration is unstable try to reset with new guess...
+      if (.not.(cos(wnd_in_dir-atan2(taunuy,taunux)).ge.0.0)) then
+        TAUNUX = USTSM**2 * DAIR * wndx / wnd_in_mag*.95
+        TAUNUY = USTSM**2 * DAIR * wndy / wnd_in_mag*.95
+      endif
     ENDDO
     !|---------------------------------------------------------------------|
     !|----Finish-----------------------------------------------------------|
@@ -758,17 +758,17 @@ CONTAINS
     Z0 = ZWND/exp(wnd_pa*kappa/ust)
     CD = UST**2 / wnd_in_mag**2
     IF (PRESENT(CHARN)) THEN
-       CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
+      CHARN = 0.01/SQRT(SQRT( TAUNUX**2 + TAUNUY**2 )/(UST**2))
     ENDIF
     FSFL1=.not.((CD .LT. 0.01).AND.(CD .GT. 0.0001))
     FSFL2=.not.(cos(wnd_in_dir-ustd).GT.0.9)
     IF (FSFL1 .or. FSFL2) THEN
-       !Fail safe to bulk
-       write(*,*)'Attn: W3FLD1 failed, will output bulk...'
-       CALL wnd2z0m(wnd_in_mag,z0)
-       UST = wnd_in_mag*kappa/log(zwnd/z0)
-       USTD = wnd_in_dir
-       CD = UST**2 / wnd_in_mag**2
+      !Fail safe to bulk
+      write(*,*)'Attn: W3FLD1 failed, will output bulk...'
+      CALL wnd2z0m(wnd_in_mag,z0)
+      UST = wnd_in_mag*kappa/log(zwnd/z0)
+      USTD = wnd_in_dir
+      CD = UST**2 / wnd_in_mag**2
     ENDIF
     DEALLOCATE(WN, DWN, CP,SIG2, SPC2, TLTN, TLTE, TAUD, &
          TLTND, TLTED, ZOFK, UPROF, &
@@ -979,7 +979,7 @@ CONTAINS
     BT(KA1) = 0
     ANG = 0.0
     DO T=1, NTH
-       BT(KA1)=BT(KA1)+INSPC(KA1,T)*WN2(KA1)**3.0*DTH
+      BT(KA1)=BT(KA1)+INSPC(KA1,T)*WN2(KA1)**3.0*DTH
     ENDDO
     !-----------------------------------------------
     ! 1b, Set saturation level at KA2 (3xFPI) to SAT
@@ -999,7 +999,7 @@ CONTAINS
     !     transition region A
     !------------------------------------------------------
     DO K=KA1,KA2
-       BT(K)=M*WN2(K)+IC
+      BT(K)=M*WN2(K)+IC
     ENDDO
     !|###############################################################|
     !|##2. Determine the directionality at each wavenumber in
@@ -1010,9 +1010,9 @@ CONTAINS
     !-----------------------------------------------
     MAXANG = 0.0
     DO T=1, NTH
-       IF (INSPC(KA2,T) .GT. MAXANG) THEN
-          MAXANG=INSPC(KA2,T)
-       ENDIF
+      IF (INSPC(KA2,T) .GT. MAXANG) THEN
+        MAXANG=INSPC(KA2,T)
+      ENDIF
     ENDDO
     !-------------------------------
     ! 2b, Check if peak spans 2 bins
@@ -1020,9 +1020,9 @@ CONTAINS
     !MAI = total number of angles of peak (if it spans more than 1)
     MAI = 0
     DO T=1, NTH
-       IF (MAXANG .EQ. INSPC(KA2,T)) THEN
-          MAI = MAI+1
-       ENDIF
+      IF (MAXANG .EQ. INSPC(KA2,T)) THEN
+        MAI = MAI+1
+      ENDIF
     ENDDO
     !ANGLE1 = angles that correspond to peak (array)
     MAI = MAX(1,MAI)
@@ -1032,124 +1032,124 @@ CONTAINS
     !-----------------------------------------------------
     K=1
     DO T=1, NTH
-       IF (MAXANG .EQ. INSPC(KA2,T)) THEN
-          ANGLE1(K) = TH(T)
-          K=K+1
-       ENDIF
+      IF (MAXANG .EQ. INSPC(KA2,T)) THEN
+        ANGLE1(K) = TH(T)
+        K=K+1
+      ENDIF
     ENDDO
     DO K=1, MAI
-       DO WHILE (ANGLE1(K) .LT. 0.0)
-          ANGLE1(K) = ANGLE1(K) + TPI
-       ENDDO
-       DO WHILE (ANGLE1(K) .GE. TPI)
-          ANGLE1(K) = ANGLE1(K) - TPI
-       ENDDO
+      DO WHILE (ANGLE1(K) .LT. 0.0)
+        ANGLE1(K) = ANGLE1(K) + TPI
+      ENDDO
+      DO WHILE (ANGLE1(K) .GE. TPI)
+        ANGLE1(K) = ANGLE1(K) - TPI
+      ENDDO
     ENDDO
     IF (MAI .GT. 1) THEN
-       MAXAN = ANGLE1(1)
-       MINAN = ANGLE1(1)
-       DO I=2, MAI
-          IF (MAXAN .LT. ANGLE1(I) )THEN
-             MAXAN = ANGLE1(I)
+      MAXAN = ANGLE1(1)
+      MINAN = ANGLE1(1)
+      DO I=2, MAI
+        IF (MAXAN .LT. ANGLE1(I) )THEN
+          MAXAN = ANGLE1(I)
+        ENDIF
+        IF (MINAN .GT. ANGLE1(I) )THEN
+          MINAN = ANGLE1(I)
+        ENDIF
+      ENDDO
+      !------------------------------------------------------
+      !  Need to distinguish if mean cross the origin (0/2pi)
+      !------------------------------------------------------
+      IF (MAXAN-MINAN .GT. PI) THEN
+        DO I=1, MAI
+          IF (MAXAN - ANGLE1(I) .GT. PI) THEN
+            ANGLE1(I) = ANGLE1(I) + TPI
           ENDIF
-          IF (MINAN .GT. ANGLE1(I) )THEN
-             MINAN = ANGLE1(I)
-          ENDIF
-       ENDDO
-       !------------------------------------------------------
-       !  Need to distinguish if mean cross the origin (0/2pi)
-       !------------------------------------------------------
-       IF (MAXAN-MINAN .GT. PI) THEN
-          DO I=1, MAI
-             IF (MAXAN - ANGLE1(I) .GT. PI) THEN
-                ANGLE1(I) = ANGLE1(I) + TPI
-             ENDIF
-          ENDDO
-          ANGLE2=SUM(ANGLE1)/MAX(REAL(MAI),1.)
-       ELSE
-          ANGLE2=SUM(ANGLE1)/MAX(REAL(MAI),1.)
-       ENDIF
+        ENDDO
+        ANGLE2=SUM(ANGLE1)/MAX(REAL(MAI),1.)
+      ELSE
+        ANGLE2=SUM(ANGLE1)/MAX(REAL(MAI),1.)
+      ENDIF
     ELSE
-       ANGLE2=ANGLE1(1)
+      ANGLE2=ANGLE1(1)
     ENDIF
     DO WHILE (ANGLE2 .LT. 0.0)
-       ANGLE2 = ANGLE2 + TPI
+      ANGLE2 = ANGLE2 + TPI
     ENDDO
     DO WHILE (ANGLE2 .GE. TPI)
-       ANGLE2 = ANGLE2 - TPI
+      ANGLE2 = ANGLE2 - TPI
     ENDDO
     !
     !---------------------------------------------------
     ! This deals with angles that are less than 90
     !---------------------------------------------------
     if (cos(angle2-wnddir) .ge. 0.) then  !Less than 90
-       m=asin(sin(wnddir-angle2))/(wn2(ka3)-wn2(ka2))
-       ic=angle2
-       do k=ka2, ka3
-          ang(k)=ic +m*(wn2(k)-wn2(ka2))
-       enddo
+      m=asin(sin(wnddir-angle2))/(wn2(ka3)-wn2(ka2))
+      ic=angle2
+      do k=ka2, ka3
+        ang(k)=ic +m*(wn2(k)-wn2(ka2))
+      enddo
     else
-       !----------------------------------------------------
-       !  This deals with angels that turn clockwise
-       !----------------------------------------------------
-       if (sin(wnddir-angle2).GE.0) then
-          m=acos(cos(wnddir-angle2))/(wn2(ka3)-wn2(ka2))
-          ic=angle2
-          do k=ka2, ka3
-             ang(k)=ic+m*(wn2(k)-wn2(ka2))
-          enddo
-       else
-          !-----------------------------------------------------
-          !  This deals with angels that cross counter-clockwise
-          !-----------------------------------------------------
-          m=acos(cos(wnddir-angle2))/(wn2(ka3)-wn2(ka2))
-          ic=angle2
-          do k=ka2, ka3
-             ang(k)=ic-m*(wn2(k)-wn2(ka2))
-          enddo
-       endif
+      !----------------------------------------------------
+      !  This deals with angels that turn clockwise
+      !----------------------------------------------------
+      if (sin(wnddir-angle2).GE.0) then
+        m=acos(cos(wnddir-angle2))/(wn2(ka3)-wn2(ka2))
+        ic=angle2
+        do k=ka2, ka3
+          ang(k)=ic+m*(wn2(k)-wn2(ka2))
+        enddo
+      else
+        !-----------------------------------------------------
+        !  This deals with angels that cross counter-clockwise
+        !-----------------------------------------------------
+        m=acos(cos(wnddir-angle2))/(wn2(ka3)-wn2(ka2))
+        ic=angle2
+        do k=ka2, ka3
+          ang(k)=ic-m*(wn2(k)-wn2(ka2))
+        enddo
+      endif
     endif
     !----------------------------------------------
     ! Region A, Saturation level decreased linearly
     ! while direction is maintained
     !----------------------------------------------
     DO K=KA1, KA2-1
-       AVG=SUM(INSPC(K,:))/MAX(REAL(NTH),1.)
-       DO T=1,NTH
-          INSPC(K,T)=BT(K)*INSPC(K,T)/TPI/(WN2(K)**3.0)/AVG
-       ENDDO
+      AVG=SUM(INSPC(K,:))/MAX(REAL(NTH),1.)
+      DO T=1,NTH
+        INSPC(K,T)=BT(K)*INSPC(K,T)/TPI/(WN2(K)**3.0)/AVG
+      ENDDO
     ENDDO
     !-----------------------------------------------------------
     ! Region B, Saturation level left flat while spectrum turned
     ! to direction of wind
     !-----------------------------------------------------------
     DO K = KA2, KA3
-       DO T=1, NTH
-          angdif=th(t)-ang(k)
-          IF (COS(ANGDIF) .GT. 0.0) THEN
-             NORMSPC(T) = COS(ANGDIF)**2.0
-          ELSE
-             NORMSPC(T)=0.0
-          ENDIF
-       ENDDO
-       AVG=SUM(NORMSPC)/MAX(REAL(NTH),1.)
-       DO T=1, NTH
-          INSPC(K,T) = SAT * NORMSPC(T)/TPI/(WN2(K)**3.0)/AVG
-       ENDDO
+      DO T=1, NTH
+        angdif=th(t)-ang(k)
+        IF (COS(ANGDIF) .GT. 0.0) THEN
+          NORMSPC(T) = COS(ANGDIF)**2.0
+        ELSE
+          NORMSPC(T)=0.0
+        ENDIF
+      ENDDO
+      AVG=SUM(NORMSPC)/MAX(REAL(NTH),1.)
+      DO T=1, NTH
+        INSPC(K,T) = SAT * NORMSPC(T)/TPI/(WN2(K)**3.0)/AVG
+      ENDDO
     ENDDO
     DO T=1, NTH
-       angdif=th(t)-wnddir
-       IF (COS(ANGDIF) .GT. 0.0) THEN
-          NORMSPC(T) = COS(ANGDIF)**2.0
-       ELSE
-          NORMSPC(T) = 0.0
-       ENDIF
+      angdif=th(t)-wnddir
+      IF (COS(ANGDIF) .GT. 0.0) THEN
+        NORMSPC(T) = COS(ANGDIF)**2.0
+      ELSE
+        NORMSPC(T) = 0.0
+      ENDIF
     ENDDO
     AVG=SUM(NORMSPC)/MAX(REAL(NTH),1.)!1./4.
     DO K=KA3+1, NKT
-       DO T=1, NTH
-          INSPC(K,T)=NORMSPC(T)*(SAT)/TPI/(WN2(K)**3.0)/AVG
-       ENDDO
+      DO T=1, NTH
+        INSPC(K,T)=NORMSPC(T)*(SAT)/TPI/(WN2(K)**3.0)/AVG
+      ENDDO
     ENDDO
     DEALLOCATE(ANGLE1)
     !
@@ -1194,20 +1194,20 @@ CONTAINS
     SWITCH=.true.
     !/ Updated code with Newton's method by XYC:
     if (tanh(wn1*depth) .LT. 0.99) then
-       do while (SWITCH)
-          fk=grav*wn1*tanh(wn1*depth) - sig**2
-          fk_slp = grav*tanh(wn1*depth) + grav*wn1*depth/(cosh(wn1*depth))**2
+      do while (SWITCH)
+        fk=grav*wn1*tanh(wn1*depth) - sig**2
+        fk_slp = grav*tanh(wn1*depth) + grav*wn1*depth/(cosh(wn1*depth))**2
 
-          wn2=wn1 - fk/fk_slp
+        wn2=wn1 - fk/fk_slp
 
-          if (abs(wn2-wn1)/wn1 .LT. 0.0001 ) then
-             SWITCH = .FALSE.
-          else
-             wn1=wn2
-          endif
-       enddo
+        if (abs(wn2-wn1)/wn1 .LT. 0.0001 ) then
+          SWITCH = .FALSE.
+        else
+          wn1=wn2
+        endif
+      enddo
     else
-       wn2=wn1
+      wn2=wn1
     endif
     WN=WN2
     !/ END of update
@@ -1342,15 +1342,15 @@ CONTAINS
 
     !Calculation of z0 as in znot_m_v1
     IF ( U10 .LE. 5.0 ) THEN
-       ZNOTM = (0.0185 / 9.8*(7.59e-4*U10**2+2.46e-2*U10)**2)
+      ZNOTM = (0.0185 / 9.8*(7.59e-4*U10**2+2.46e-2*U10)**2)
     ELSEIF (U10 .GT. 5.0 .AND. U10 .LT. 10.0) THEN
-       ZNOTM =.00000235*(U10**2 - 25 ) + 3.805129199617346e-05
+      ZNOTM =.00000235*(U10**2 - 25 ) + 3.805129199617346e-05
     ELSEIF ( U10 .GE. 10.0  .AND. U10 .LT. 60.0) THEN
-       ZNOTM = bs6 + bs5*U10 + bs4*U10**2 + bs3*U10**3 + bs2*U10**4 +&
-            bs1*U10**5 + bs0*U10**6
+      ZNOTM = bs6 + bs5*U10 + bs4*U10**2 + bs3*U10**3 + bs2*U10**4 +&
+           bs1*U10**5 + bs0*U10**6
     ELSE
-       ZNOTM = cf6 + cf5*U10 + cf4*U10**2 + cf3*U10**3 + cf2*U10**4 +&
-            cf1*U10**5 + cf0*U10**6
+      ZNOTM = cf6 + cf5*U10 + cf4*U10**2 + cf3*U10**3 + cf2*U10**4 +&
+           cf1*U10**5 + cf0*U10**6
     END IF
 
     !Modifications as in znot_wind10m for icoef_sf=4
@@ -1359,9 +1359,9 @@ CONTAINS
     TMP=0.4*0.4/(ALOG(10.0/ZNOTM))**2   ! cd at zlev
     AAA=0.75
     IF (U10 < 20) THEN
-       AAA=0.99
+      AAA=0.99
     ELSEIF(U10 < 45.0) THEN
-       AAA=0.99+(U10-20)*(0.75-0.99)/(45.0-20.0)
+      AAA=0.99+(U10-20)*(0.75-0.99)/(45.0-20.0)
     END IF
     ZNOTM=Z10/EXP( SQRT(0.4*0.4/(TMP*AAA)) )
 
@@ -1451,18 +1451,18 @@ CONTAINS
     !     SAT values based on
     !     HWRF 2016 CD curve, created with  fetch limited cases ST4 physics
     IF (WND10<20.0) THEN
-       SAT = -0.000018541921682*WND10**2  &
-            +0.000751515452434*WND10     &
-            +0.002466529381004
+      SAT = -0.000018541921682*WND10**2  &
+           +0.000751515452434*WND10     &
+           +0.002466529381004
     ELSEIF (WND10<45) THEN
-       SAT = -0.000000009060349*WND10**4  &
-            +0.000001276678367*WND10**3  &
-            -0.000068274393789*WND10**2  &
-            +0.001418180888868*WND10     &
-            +0.000262277682984
+      SAT = -0.000000009060349*WND10**4  &
+           +0.000001276678367*WND10**3  &
+           -0.000068274393789*WND10**2  &
+           +0.001418180888868*WND10     &
+           +0.000262277682984
     ELSE
-       SAT = -0.000155976275073*WND10     &
-            +0.012027763023184
+      SAT = -0.000155976275073*WND10     &
+           +0.012027763023184
     ENDIF
 
     SAT = min(max(SAT,0.002),0.014)

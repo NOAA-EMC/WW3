@@ -40,28 +40,28 @@
 
 !-----------------------------------------------------------------------
 
-      use SCRIP_KindsMod        ! defines common data types
+      use SCRIP_KindsMod ! defines common data types
 
       implicit none
 
       integer (SCRIP_i4), parameter ::
-     &     max_timers = 99      ! max number of timers allowed
+     &     max_timers = 99  ! max number of timers allowed
 
       integer (SCRIP_i4), save ::
-     &     cycles_max           ! max value of clock allowed by system
+     &     cycles_max       ! max value of clock allowed by system
 
       integer (SCRIP_i4), dimension(max_timers), save ::
-     &     cycles1,             ! cycle number at start for each timer
-     &     cycles2              ! cycle number at stop  for each timer
+     &     cycles1,         ! cycle number at start for each timer
+     &     cycles2          ! cycle number at stop  for each timer
 
       real (SCRIP_r4), save ::
-     &     clock_rate           ! clock_rate in seconds for each cycle
+     &     clock_rate       ! clock_rate in seconds for each cycle
 
       real (SCRIP_r4), dimension(max_timers), save ::
-     &     cputime              ! accumulated cpu time in each timer
+     &     cputime          ! accumulated cpu time in each timer
 
       character (len=8), dimension(max_timers), save ::
-     &     status               ! timer status string
+     &     status           ! timer status string
 
 !***********************************************************************
 
@@ -86,13 +86,13 @@
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4), intent(in) ::
-     &     timer                ! timer number
+     &    timer            ! timer number
 
 !-----------------------------------------------------------------------
 
       if (status(timer) .eq. 'running') then
-         call timer_stop (timer)
-         call timer_start(timer)
+        call timer_stop (timer)
+        call timer_start(timer)
       endif
 
 !-----------------------------------------------------------------------

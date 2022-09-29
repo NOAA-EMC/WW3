@@ -245,60 +245,60 @@ CONTAINS
     ! 1.c.1 Wind too weak
     !
     IF ( UABS .LT. XSI(NFR)/XWN(NFR) ) THEN
-       SIGP   = GRAV / MAX ( 0.01 , UABS )
+      SIGP   = GRAV / MAX ( 0.01 , UABS )
     ELSE
-       !
-       ! 1.c.2 Compute 1D spectrum
-       !
-       E1(NFR+2) = SUM(A(:,NFR)) * FACHFA**2 * XSI(NFR+2)          &
-            / XCG(NFR+2) * TPI * DTH
-       E1(NFR+1) = SUM(A(:,NFR)) * FACHFA    * XSI(NFR+1)          &
-            / XCG(NFR+1) * TPI * DTH
-       !
-       DO IFR=NFR, 1, -1
-          E1(IFR) = SUM(A(:,IFR)) * XSI(IFR) / XCG(IFR) * TPI * DTH
+      !
+      ! 1.c.2 Compute 1D spectrum
+      !
+      E1(NFR+2) = SUM(A(:,NFR)) * FACHFA**2 * XSI(NFR+2)          &
+           / XCG(NFR+2) * TPI * DTH
+      E1(NFR+1) = SUM(A(:,NFR)) * FACHFA    * XSI(NFR+1)          &
+           / XCG(NFR+1) * TPI * DTH
+      !
+      DO IFR=NFR, 1, -1
+        E1(IFR) = SUM(A(:,IFR)) * XSI(IFR) / XCG(IFR) * TPI * DTH
+        !
+        ! 1.c.3 Reached PM frequency
+        !
+        IF ( UABS .LT. XSI(IFR)/XWN(IFR) ) THEN
+          CP     = XSI(IFR)/XWN(IFR)
+          CM     = XSI(IFR+1)/XWN(IFR+1)
+          SIGP   = XSI( IFR ) * (UABS-CM)/(CP-CM) +             &
+               XSI(IFR+1) * (CP-UABS)/(CP-CM)
+          EXIT
           !
-          ! 1.c.3 Reached PM frequency
+        ELSE IF ( E1(IFR) .LT. E1(IFR+1) ) THEN
           !
-          IF ( UABS .LT. XSI(IFR)/XWN(IFR) ) THEN
-             CP     = XSI(IFR)/XWN(IFR)
-             CM     = XSI(IFR+1)/XWN(IFR+1)
-             SIGP   = XSI( IFR ) * (UABS-CM)/(CP-CM) +             &
-                  XSI(IFR+1) * (CP-UABS)/(CP-CM)
-             EXIT
-             !
-          ELSE IF ( E1(IFR) .LT. E1(IFR+1) ) THEN
-             !
-             ! 1.c.4 Reached first peak
-             !
-             EL     = E1(IFR  ) - E1(IFR+1)
-             EH     = E1(IFR+2) - E1(IFR+1)
-             DENOM  = XL*EH - XH*EL
-             SIGP   = XSI(IFR+1) * (1.+0.5*(XL**2*EH-XH**2*EL)     &
-                  / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
-             EXIT
-          ENDIF
+          ! 1.c.4 Reached first peak
           !
-          ! ... End loop 1.c.2
+          EL     = E1(IFR  ) - E1(IFR+1)
+          EH     = E1(IFR+2) - E1(IFR+1)
+          DENOM  = XL*EH - XH*EL
+          SIGP   = XSI(IFR+1) * (1.+0.5*(XL**2*EH-XH**2*EL)     &
+               / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
+          EXIT
+        ENDIF
+        !
+        ! ... End loop 1.c.2
+        !
+      END DO
+      !
+      ! 1.c.5 Nothing found
+      !
+      IF ( SIGP .LT. 0. ) THEN
+        !
+        ! 1.c.5.a No energy there
+        !
+        IF ( E1(1) .EQ. 0. ) THEN
+          SIGP   = 2. * SIG(NFR)
           !
-       END DO
-       !
-       ! 1.c.5 Nothing found
-       !
-       IF ( SIGP .LT. 0. ) THEN
+          ! 1.c.5.b Peak at low boundary
           !
-          ! 1.c.5.a No energy there
-          !
-          IF ( E1(1) .EQ. 0. ) THEN
-             SIGP   = 2. * SIG(NFR)
-             !
-             ! 1.c.5.b Peak at low boundary
-             !
-          ELSE
-             SIGP   = XSI(1)
-          END IF
-       END IF
-       !
+        ELSE
+          SIGP   = XSI(1)
+        END IF
+      END IF
+      !
     END IF
     !
     ! 1.d Set up filter function etc.
@@ -311,19 +311,19 @@ CONTAINS
 #endif
     !
     DO IFR=NFR+2, 1, -1
-       !
-       FILTFP(IFR) = EXP(-CNLSC1/(XSI(IFR)/(CNLSC2*SIGP))**CNLSC3)
-       FPROP (IFR) = FILTFP(IFR) * CNLSC * XWN(IFR)**8 *             &
-            XSI(IFR)**4 / TPI**9 / XCG(IFR)
-       SIT      = XSI(IFR) * SQRT(DEPTH/GRAV)
-       IKD      = 1 + NINT ( ( LOG(SIT) - LOG(SITMIN) ) / XSITLN )
-       JKD(IFR) = MAX ( 1 , MIN(IKD,NKD) )
-       !
-       IF ( FILTFP(IFR) .LT. 1.E-10 ) THEN
-          IFRMIN = IFR
-          EXIT
-       END IF
-       !
+      !
+      FILTFP(IFR) = EXP(-CNLSC1/(XSI(IFR)/(CNLSC2*SIGP))**CNLSC3)
+      FPROP (IFR) = FILTFP(IFR) * CNLSC * XWN(IFR)**8 *             &
+           XSI(IFR)**4 / TPI**9 / XCG(IFR)
+      SIT      = XSI(IFR) * SQRT(DEPTH/GRAV)
+      IKD      = 1 + NINT ( ( LOG(SIT) - LOG(SITMIN) ) / XSITLN )
+      JKD(IFR) = MAX ( 1 , MIN(IKD,NKD) )
+      !
+      IF ( FILTFP(IFR) .LT. 1.E-10 ) THEN
+        IFRMIN = IFR
+        EXIT
+      END IF
+      !
     END DO
     !
     IFRMN2 = MAX ( 1 , IFRMIN - 1 )
@@ -337,8 +337,8 @@ CONTAINS
 #ifdef W3_T1
     WRITE (NDST,9011)
     DO IFR=1, NFR
-       WRITE (NDST,9012) IFR, XSI(IFR)/TPI, XSI(IFR)/XWN(IFR),   &
-            E1(IFR), FILTFP(IFR)
+      WRITE (NDST,9012) IFR, XSI(IFR)/TPI, XSI(IFR)/XWN(IFR),   &
+           E1(IFR), FILTFP(IFR)
     END DO
 #endif
     !
@@ -349,54 +349,54 @@ CONTAINS
     ! 2.a Loop over frequencies
     !
     DO IFR=IFRMIN, NFR+1
-       !
-       ISPX0  = (IFR-1)*NTHX
-       IKD    = JKD(IFR)
-       !
-       MC     = SNSST( 1,IKD)
-       F3A    = SNSST( 2,IKD)
-       F3B    = SNSST( 3,IKD)
-       F3C    = SNSST( 4,IKD)
-       F4A    = SNSST( 5,IKD)
-       F4B    = SNSST( 6,IKD)
-       F4C    = F3C
-       !
-       ! 2.b Loop over directions
-       !
-       DO ITH=1, NTH
-          !
-          ISPX   = ISPX0 + ITH
-          !
-          F00    = UP(ISPX)
-          F31    = UP(ISPX)*F3A + UP(ISPX+1)*F3B + UP(ISPX+NTHX)*F3C
-          F41    = UP(ISPX)*F4A + UP(ISPX-1)*F4B + UP(ISPX-NTHX)*F4C
-          F32    = UP(ISPX)*F3A + UP(ISPX-1)*F3B + UP(ISPX+NTHX)*F3C
-          F42    = UP(ISPX)*F4A + UP(ISPX+1)*F4B + UP(ISPX-NTHX)*F4C
-          !
-          DS1(ISPX) = FPROP(IFR) * (F00**2*(F31+F41)-2.*F00*F31*F41)
-          DS2(ISPX) = FPROP(IFR) * (F00**2*(F32+F42)-2.*F00*F32*F42)
-          !
-          AUX11  = DT * DS1(ISPX)
-          AUX21  = DT * DS2(ISPX)
-          AUXB   = CNLSFM * FILTFP(IFR) * MAX(1.E-10,UN(ISPX)) /   &
-               MAX ( 1.E-10 , ABS(AUX11)+ABS(AUX21) ) / MC
-          AUX12  = AUXB * ABS(AUX11)
-          AUX22  = AUXB * ABS(AUX21)
-          !
-          ! Expensive but more smooth limiter
-          !
-          !         DA1(ISPX) = AUX12 * TANH(AUX11/MAX(1.E-10,AUX12))
-          !         DA2(ISPX) = AUX22 * TANH(AUX21/MAX(1.E-10,AUX22))
-          !
-          ! Crude but cheaper limiter
-          !
-          DA1(ISPX) = MAX ( -AUX12 , MIN ( AUX11 , AUX12 ) )
-          DA2(ISPX) = MAX ( -AUX22 , MIN ( AUX21 , AUX22 ) )
-          !
-       END DO
-       !
-       ! ... End loop 2.b
-       !
+      !
+      ISPX0  = (IFR-1)*NTHX
+      IKD    = JKD(IFR)
+      !
+      MC     = SNSST( 1,IKD)
+      F3A    = SNSST( 2,IKD)
+      F3B    = SNSST( 3,IKD)
+      F3C    = SNSST( 4,IKD)
+      F4A    = SNSST( 5,IKD)
+      F4B    = SNSST( 6,IKD)
+      F4C    = F3C
+      !
+      ! 2.b Loop over directions
+      !
+      DO ITH=1, NTH
+        !
+        ISPX   = ISPX0 + ITH
+        !
+        F00    = UP(ISPX)
+        F31    = UP(ISPX)*F3A + UP(ISPX+1)*F3B + UP(ISPX+NTHX)*F3C
+        F41    = UP(ISPX)*F4A + UP(ISPX-1)*F4B + UP(ISPX-NTHX)*F4C
+        F32    = UP(ISPX)*F3A + UP(ISPX-1)*F3B + UP(ISPX+NTHX)*F3C
+        F42    = UP(ISPX)*F4A + UP(ISPX+1)*F4B + UP(ISPX-NTHX)*F4C
+        !
+        DS1(ISPX) = FPROP(IFR) * (F00**2*(F31+F41)-2.*F00*F31*F41)
+        DS2(ISPX) = FPROP(IFR) * (F00**2*(F32+F42)-2.*F00*F32*F42)
+        !
+        AUX11  = DT * DS1(ISPX)
+        AUX21  = DT * DS2(ISPX)
+        AUXB   = CNLSFM * FILTFP(IFR) * MAX(1.E-10,UN(ISPX)) /   &
+             MAX ( 1.E-10 , ABS(AUX11)+ABS(AUX21) ) / MC
+        AUX12  = AUXB * ABS(AUX11)
+        AUX22  = AUXB * ABS(AUX21)
+        !
+        ! Expensive but more smooth limiter
+        !
+        !         DA1(ISPX) = AUX12 * TANH(AUX11/MAX(1.E-10,AUX12))
+        !         DA2(ISPX) = AUX22 * TANH(AUX21/MAX(1.E-10,AUX22))
+        !
+        ! Crude but cheaper limiter
+        !
+        DA1(ISPX) = MAX ( -AUX12 , MIN ( AUX11 , AUX12 ) )
+        DA2(ISPX) = MAX ( -AUX22 , MIN ( AUX21 , AUX22 ) )
+        !
+      END DO
+      !
+      ! ... End loop 2.b
+      !
     END DO
     !
     ! 2.c Complete expanded arrays
@@ -408,57 +408,57 @@ CONTAINS
     !
     IF ( PRESENT(SNL) ) THEN
 #ifdef W3_T
-       WRITE (NDST,9030) 'YES/--'
+      WRITE (NDST,9030) 'YES/--'
 #endif
-       !
-       ! 3.b Initializations
-       !
-       SNL(:,1:IFRMN2-1) = 0.
-       !
-       DS1(NSPL:IFRMN2*NTHX-1) = 0.
-       DS2(NSPL:IFRMN2*NTHX-1) = 0.
-       DS3(NSPL:IFRMN2*NTHX-1) = 0.
-       !
-       ISPX  = IFRMN2*NTHX
-       DS1(ISPX+NTH+1:NSPH:NTHX) = DS1(ISPX+ 1 :NSPH:NTHX)
-       DS1(ISPX      :NSPH:NTHX) = DS1(ISPX+NTH:NSPH:NTHX)
-       DS2(ISPX+NTH+1:NSPH:NTHX) = DS2(ISPX+ 1 :NSPH:NTHX)
-       DS2(ISPX      :NSPH:NTHX) = DS2(ISPX+NTH:NSPH:NTHX)
-       DS3(IFRMN2*NTHX:NSPH)     = DS1(IFRMN2*NTHX:NSPH)  +        &
-            DS2(IFRMN2*NTHX:NSPH)
-       !
-       ! 3.c Loop over frequencies
-       !
-       DO IFR=IFRMN2, NFR
+      !
+      ! 3.b Initializations
+      !
+      SNL(:,1:IFRMN2-1) = 0.
+      !
+      DS1(NSPL:IFRMN2*NTHX-1) = 0.
+      DS2(NSPL:IFRMN2*NTHX-1) = 0.
+      DS3(NSPL:IFRMN2*NTHX-1) = 0.
+      !
+      ISPX  = IFRMN2*NTHX
+      DS1(ISPX+NTH+1:NSPH:NTHX) = DS1(ISPX+ 1 :NSPH:NTHX)
+      DS1(ISPX      :NSPH:NTHX) = DS1(ISPX+NTH:NSPH:NTHX)
+      DS2(ISPX+NTH+1:NSPH:NTHX) = DS2(ISPX+ 1 :NSPH:NTHX)
+      DS2(ISPX      :NSPH:NTHX) = DS2(ISPX+NTH:NSPH:NTHX)
+      DS3(IFRMN2*NTHX:NSPH)     = DS1(IFRMN2*NTHX:NSPH)  +        &
+           DS2(IFRMN2*NTHX:NSPH)
+      !
+      ! 3.c Loop over frequencies
+      !
+      DO IFR=IFRMN2, NFR
+        !
+        ISPX0  = (IFR-1)*NTHX
+        IKD    = JKD(IFR)
+        !
+        FC1    = - SNSST(1,IKD)
+        FC2    =   SNSST(4,IKD)
+        FC3    =   SNSST(3,IKD)
+        FC4    =   SNSST(6,IKD)
+        !
+        ! 3.d Loop over directions
+        !
+        DO ITH=1, NTH
+          ISPX         = ISPX0 + ITH
+          SNL(ITH,IFR) = FC1 *             DS3(   ISPX  )         &
+               +    FC2 * ( DS3(ISPX-NTHX) + DS3(ISPX+NTHX) )       &
+               +    FC3 * ( DS1(ISPX-  1 ) + DS2(ISPX+  1 ) )       &
+               +    FC4 * ( DS1(ISPX+  1 ) + DS2(ISPX-  1 ) )
           !
-          ISPX0  = (IFR-1)*NTHX
-          IKD    = JKD(IFR)
-          !
-          FC1    = - SNSST(1,IKD)
-          FC2    =   SNSST(4,IKD)
-          FC3    =   SNSST(3,IKD)
-          FC4    =   SNSST(6,IKD)
-          !
-          ! 3.d Loop over directions
-          !
-          DO ITH=1, NTH
-             ISPX         = ISPX0 + ITH
-             SNL(ITH,IFR) = FC1 *             DS3(   ISPX  )         &
-                  +    FC2 * ( DS3(ISPX-NTHX) + DS3(ISPX+NTHX) )       &
-                  +    FC3 * ( DS1(ISPX-  1 ) + DS2(ISPX+  1 ) )       &
-                  +    FC4 * ( DS1(ISPX+  1 ) + DS2(ISPX-  1 ) )
-             !
-          END DO
-          !
-          ! ... End loop 3.d
-          !
-       END DO
-       !
-       ! ... End loop 3.c
-       !
+        END DO
+        !
+        ! ... End loop 3.d
+        !
+      END DO
+      !
+      ! ... End loop 3.c
+      !
 #ifdef W3_T
     ELSE
-       WRITE (NDST,9030) '---/NO'
+      WRITE (NDST,9030) '---/NO'
 #endif
     END IF
     !
@@ -467,57 +467,57 @@ CONTAINS
     !
     IF ( PRESENT(AA) ) THEN
 #ifdef W3_T
-       WRITE (NDST,9040) 'YES/--'
+      WRITE (NDST,9040) 'YES/--'
 #endif
-       !
-       ! 4.b Initializations
-       !
-       AA(:,1:IFRMN2-1) = A(:,1:IFRMN2-1)
-       !
-       DA1(NSPL:IFRMN2*NTHX-1) = 0.
-       DA2(NSPL:IFRMN2*NTHX-1) = 0.
-       DA3(NSPL:IFRMN2*NTHX-1) = 0.
-       !
-       ISPX  = IFRMN2*NTHX
-       DA1(ISPX+NTH+1:NSPH:NTHX) = DA1(ISPX+ 1 :NSPH:NTHX)
-       DA1(ISPX      :NSPH:NTHX) = DA1(ISPX+NTH:NSPH:NTHX)
-       DA2(ISPX+NTH+1:NSPH:NTHX) = DA2(ISPX+ 1 :NSPH:NTHX)
-       DA2(ISPX      :NSPH:NTHX) = DA2(ISPX+NTH:NSPH:NTHX)
-       DA3(IFRMN2*NTHX:NSPH)     = DA1(IFRMN2*NTHX:NSPH)  +        &
-            DA2(IFRMN2*NTHX:NSPH)
-       !
-       ! 4.c Loop over frequencies
-       !
-       DO IFR=IFRMN2, NFR
-          !
-          ISPX0  = (IFR-1)*NTHX
-          IKD    = JKD(IFR)
-          !
-          FC1    = - SNSST(1,IKD)
-          FC2    =   SNSST(4,IKD)
-          FC3    =   SNSST(3,IKD)
-          FC4    =   SNSST(6,IKD)
-          !
-          ! 4.d Loop over directions
-          !
-          DO ITH=1, NTH
-             ISPX         = ISPX0 + ITH
-             AA(ITH,IFR) = MAX ( 0. , A(ITH,IFR) +                   &
-                  FC1 *   DA3(ISPX)                                  &
-                  + FC2 * ( DA3(ISPX-NTHX) + DA3(ISPX+NTHX) )          &
-                  + FC3 * ( DA1(ISPX-  1 ) + DA2(ISPX+  1 ) )          &
-                  + FC4 * ( DA1(ISPX+  1 ) + DA2(ISPX-  1 ) ) )
-          END DO
-          !
-          ! ... End loop 4.d
-          !
-       END DO
-       !
-       ! ... End loop 4.c
-       !
+      !
+      ! 4.b Initializations
+      !
+      AA(:,1:IFRMN2-1) = A(:,1:IFRMN2-1)
+      !
+      DA1(NSPL:IFRMN2*NTHX-1) = 0.
+      DA2(NSPL:IFRMN2*NTHX-1) = 0.
+      DA3(NSPL:IFRMN2*NTHX-1) = 0.
+      !
+      ISPX  = IFRMN2*NTHX
+      DA1(ISPX+NTH+1:NSPH:NTHX) = DA1(ISPX+ 1 :NSPH:NTHX)
+      DA1(ISPX      :NSPH:NTHX) = DA1(ISPX+NTH:NSPH:NTHX)
+      DA2(ISPX+NTH+1:NSPH:NTHX) = DA2(ISPX+ 1 :NSPH:NTHX)
+      DA2(ISPX      :NSPH:NTHX) = DA2(ISPX+NTH:NSPH:NTHX)
+      DA3(IFRMN2*NTHX:NSPH)     = DA1(IFRMN2*NTHX:NSPH)  +        &
+           DA2(IFRMN2*NTHX:NSPH)
+      !
+      ! 4.c Loop over frequencies
+      !
+      DO IFR=IFRMN2, NFR
+        !
+        ISPX0  = (IFR-1)*NTHX
+        IKD    = JKD(IFR)
+        !
+        FC1    = - SNSST(1,IKD)
+        FC2    =   SNSST(4,IKD)
+        FC3    =   SNSST(3,IKD)
+        FC4    =   SNSST(6,IKD)
+        !
+        ! 4.d Loop over directions
+        !
+        DO ITH=1, NTH
+          ISPX         = ISPX0 + ITH
+          AA(ITH,IFR) = MAX ( 0. , A(ITH,IFR) +                   &
+               FC1 *   DA3(ISPX)                                  &
+               + FC2 * ( DA3(ISPX-NTHX) + DA3(ISPX+NTHX) )          &
+               + FC3 * ( DA1(ISPX-  1 ) + DA2(ISPX+  1 ) )          &
+               + FC4 * ( DA1(ISPX+  1 ) + DA2(ISPX-  1 ) ) )
+        END DO
+        !
+        ! ... End loop 4.d
+        !
+      END DO
+      !
+      ! ... End loop 4.c
+      !
 #ifdef W3_T
     ELSE
-       WRITE (NDST,9040) '---/NO'
+      WRITE (NDST,9040) '---/NO'
 #endif
     END IF
     !
@@ -596,7 +596,7 @@ CONTAINS
       SPEC(  0  ,1:NFR+2) = SPEC(NTH,1:NFR+2)
       !
       DO IFR=1, NFR+2
-         PSPC(:,IFR) = SPEC(:,IFR) / XWN(IFR)
+        PSPC(:,IFR) = SPEC(:,IFR) / XWN(IFR)
       END DO
       !
       RETURN
@@ -740,48 +740,48 @@ CONTAINS
     ! 2.a Loop over relative depths
     !
     DO IKD=1, NKD
-       !
-       ! 2.b Base quadruplet set up
-       !
-       S0     = S0 * XSIT
-       S3     = ( 1. + OFF ) * S0
-       S4     = ( 1. - OFF ) * S0
-       !
-       CALL WAVNU2 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
-       CALL WAVNU2 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
-       CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
-       !
+      !
+      ! 2.b Base quadruplet set up
+      !
+      S0     = S0 * XSIT
+      S3     = ( 1. + OFF ) * S0
+      S4     = ( 1. - OFF ) * S0
+      !
+      CALL WAVNU2 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
+      CALL WAVNU2 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
+      CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
+      !
 #ifdef W3_T
-       WRITE (NDST,9020) IKD, WN0*DEPTH, S0*TPIINV, DEPTH
+      WRITE (NDST,9020) IKD, WN0*DEPTH, S0*TPIINV, DEPTH
 #endif
-       !
-       ! 2.c Offset angles
-       !
-       WN12   = 2. * WN0
-       DT3    = ACOS( (WN3**2+WN12**2-WN4**2) / (2.*WN12*WN3) )
-       DT4    = ACOS( (WN4**2+WN12**2-WN3**2) / (2.*WN12*WN4) )
-       !
-       B3     = DT3 / DTH
-       B4     = DT4 / DTH
-       !
+      !
+      ! 2.c Offset angles
+      !
+      WN12   = 2. * WN0
+      DT3    = ACOS( (WN3**2+WN12**2-WN4**2) / (2.*WN12*WN3) )
+      DT4    = ACOS( (WN4**2+WN12**2-WN3**2) / (2.*WN12*WN4) )
+      !
+      B3     = DT3 / DTH
+      B4     = DT4 / DTH
+      !
 #ifdef W3_T
-       WRITE (NDST,9021) A34, B3, B4, DT3*RADE, DT4*RADE
+      WRITE (NDST,9021) A34, B3, B4, DT3*RADE, DT4*RADE
 #endif
-       !
-       IF ( A34.GT.ABMAX .OR. B3.GT.ABMAX .OR. B4.GT.ABMAX .OR.     &
-            A34.LT.0. .OR. B3.LT.0. .OR. B4.LT.0. ) GOTO 801
-       !
-       ! 2.d Store weights
-       !
-       SNSST( 1,IKD) = 2.*A34 + B3 + B4
-       SNSST( 2,IKD) = 1. - A34 - B3
-       SNSST( 3,IKD) = B3
-       SNSST( 4,IKD) = A34
-       SNSST( 5,IKD) = 1. - A34 - B4
-       SNSST( 6,IKD) = B4
-       !
-       ! ... End loop 2.a
-       !
+      !
+      IF ( A34.GT.ABMAX .OR. B3.GT.ABMAX .OR. B4.GT.ABMAX .OR.     &
+           A34.LT.0. .OR. B3.LT.0. .OR. B4.LT.0. ) GOTO 801
+      !
+      ! 2.d Store weights
+      !
+      SNSST( 1,IKD) = 2.*A34 + B3 + B4
+      SNSST( 2,IKD) = 1. - A34 - B3
+      SNSST( 3,IKD) = B3
+      SNSST( 4,IKD) = A34
+      SNSST( 5,IKD) = 1. - A34 - B4
+      SNSST( 6,IKD) = B4
+      !
+      ! ... End loop 2.a
+      !
     END DO
     !
     RETURN

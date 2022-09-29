@@ -239,9 +239,9 @@ CONTAINS
 #endif
     !
     IF ( IMPROC .EQ. NMPERR ) THEN
-       MDSEN  = MDSE
+      MDSEN  = MDSE
     ELSE
-       MDSEN  = -1
+      MDSEN  = -1
     END IF
     !
     ! 0.b Point to proper grids and initialize
@@ -259,8 +259,8 @@ CONTAINS
     ! 0.c Output
     !
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-       CALL STME21 ( TIME , DTME21 )
-       WRITE (MDSS,900) IMOD, DTME21
+      CALL STME21 ( TIME , DTME21 )
+      WRITE (MDSS,900) IMOD, DTME21
     END IF
     !
 #ifdef W3_T
@@ -289,127 +289,127 @@ CONTAINS
     ! 1.  Loop over input types ------------------------------------------ /
     !
     DO J=JFIRST, 10
-       !
-       ! 1.a Check if update needed
-       !
-       IF ( .NOT. INFLAGS1(J) ) CYCLE
-       !
+      !
+      ! 1.a Check if update needed
+      !
+      IF ( .NOT. INFLAGS1(J) ) CYCLE
+      !
 #ifdef W3_T
-       WRITE (MDST,9010) J, INFLAGS1(J), INPMAP(IMOD,J)
+      WRITE (MDST,9010) J, INFLAGS1(J), INPMAP(IMOD,J)
 #endif
-       !
-       ! 1.b Test time
-       !
-       IF ( TFN(1,J) .EQ. -1 ) THEN
-          FIRST  = .TRUE.
+      !
+      ! 1.b Test time
+      !
+      IF ( TFN(1,J) .EQ. -1 ) THEN
+        FIRST  = .TRUE.
+        DTTST  = 0.
+      ELSE
+        FIRST  = .FALSE.
+        DTTST  = DSEC21 ( TIME , TFN(:,J) )
+      END IF
+      !
+#ifdef W3_T
+      WRITE (MDST,9011) IDINP(IMOD,J), DTTST, TFN(:,J)
+#endif
+      !
+      IF ( DTTST .GT. 0. ) CYCLE
+      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
+           WRITE (MDSS,901) IDFLDS(J)
+      !
+      ! 2.  Forcing input from file & defined on the native grid ----------- /
+      !
+      IF ( INPMAP(IMOD,J) .EQ. 0 ) THEN
+        !
+#ifdef W3_T
+        WRITE (MDST,9020)
+#endif
+        !
+        CALL WMUPD1 ( IMOD, IDINP(IMOD,J), J, IERR )
+        !
+        ! 3.  Forcing input from file & defined on an input grid ------------- /
+        !
+      ELSE IF ( INPMAP(IMOD,J) .GT. 0 ) THEN
+        !
+#ifdef W3_T
+        WRITE (MDST,9030) INPMAP(IMOD,J)
+#endif
+        !
+        ! 3.a Check if input grid is available
+        !
+        JJ     = -INPMAP(IMOD,J)
+        CALL W3SETG ( JJ, MDSE, MDST )
+        CALL W3SETI ( JJ, MDSE, MDST )
+        !
+        IF ( TFN(1,J) .EQ. -1 ) THEN
           DTTST  = 0.
-       ELSE
-          FIRST  = .FALSE.
-          DTTST  = DSEC21 ( TIME , TFN(:,J) )
-       END IF
-       !
-#ifdef W3_T
-       WRITE (MDST,9011) IDINP(IMOD,J), DTTST, TFN(:,J)
-#endif
-       !
-       IF ( DTTST .GT. 0. ) CYCLE
-       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
-            WRITE (MDSS,901) IDFLDS(J)
-       !
-       ! 2.  Forcing input from file & defined on the native grid ----------- /
-       !
-       IF ( INPMAP(IMOD,J) .EQ. 0 ) THEN
-          !
-#ifdef W3_T
-          WRITE (MDST,9020)
-#endif
-          !
-          CALL WMUPD1 ( IMOD, IDINP(IMOD,J), J, IERR )
-          !
-          ! 3.  Forcing input from file & defined on an input grid ------------- /
-          !
-       ELSE IF ( INPMAP(IMOD,J) .GT. 0 ) THEN
-          !
-#ifdef W3_T
-          WRITE (MDST,9030) INPMAP(IMOD,J)
-#endif
-          !
-          ! 3.a Check if input grid is available
-          !
-          JJ     = -INPMAP(IMOD,J)
-          CALL W3SETG ( JJ, MDSE, MDST )
-          CALL W3SETI ( JJ, MDSE, MDST )
-          !
-          IF ( TFN(1,J) .EQ. -1 ) THEN
-             DTTST  = 0.
+        ELSE
+          IF ( FIRST .OR. ( J.EQ.1 .AND. IFLSTL(-JJ) )          &
+               .OR. ( J.EQ.4 .AND. IFLSTI(-JJ) )          &
+               .OR. ( J.EQ.6 .AND. IFLSTR(-JJ) ) ) THEN
+            DTTST  = 1.
           ELSE
-             IF ( FIRST .OR. ( J.EQ.1 .AND. IFLSTL(-JJ) )          &
-                  .OR. ( J.EQ.4 .AND. IFLSTI(-JJ) )          &
-                  .OR. ( J.EQ.6 .AND. IFLSTR(-JJ) ) ) THEN
-                DTTST  = 1.
-             ELSE
-                DTTST  = DSEC21 ( TIME , TFN(:,J) )
-             END IF
+            DTTST  = DSEC21 ( TIME , TFN(:,J) )
           END IF
-          !
-          IF ( J .EQ. 1 ) FLLSTL = IFLSTL(-JJ)
-          IF ( J .EQ. 4 ) FLLSTI = IFLSTI(-JJ)
-          IF ( J .EQ. 6 ) FLLSTR = IFLSTR(-JJ)
-          !
+        END IF
+        !
+        IF ( J .EQ. 1 ) FLLSTL = IFLSTL(-JJ)
+        IF ( J .EQ. 4 ) FLLSTI = IFLSTI(-JJ)
+        IF ( J .EQ. 6 ) FLLSTR = IFLSTR(-JJ)
+        !
 #ifdef W3_T
-          WRITE (MDST,9031) J, IDINP(JJ,J), DTTST, TFN(:,J)
+        WRITE (MDST,9031) J, IDINP(JJ,J), DTTST, TFN(:,J)
 #endif
+        !
+        ! 3.b If needed, update input grid
+        !     Note: flags in WMMDATMD set for grid IMOD !
+        !
+        IF ( DTTST .LE. 0. ) THEN
           !
-          ! 3.b If needed, update input grid
-          !     Note: flags in WMMDATMD set for grid IMOD !
+          IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )            &
+               WRITE (MDSS,930) FILEXT
           !
-          IF ( DTTST .LE. 0. ) THEN
-             !
-             IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )            &
-                  WRITE (MDSS,930) FILEXT
-             !
-             CALL WMUPD1 ( JJ, IDINP(JJ,J), J, IERR )
-             !
-             IF ( J .EQ. 1 ) IFLSTL(-JJ) = FLLSTL
-             IF ( J .EQ. 4 ) IFLSTI(-JJ) = FLLSTI
-             IF ( J .EQ. 6 ) IFLSTR(-JJ) = FLLSTR
-             !
-          END IF
+          CALL WMUPD1 ( JJ, IDINP(JJ,J), J, IERR )
           !
-          ! 3.c Set up for update, and call updating routine
+          IF ( J .EQ. 1 ) IFLSTL(-JJ) = FLLSTL
+          IF ( J .EQ. 4 ) IFLSTI(-JJ) = FLLSTI
+          IF ( J .EQ. 6 ) IFLSTR(-JJ) = FLLSTR
           !
-          CALL W3SETG ( IMOD, MDSE, MDST )
-          CALL W3SETI ( IMOD, MDSE, MDST )
-          !
-          CALL WMUPD2 ( IMOD, J, JJ, IERR )
-          !
-          ! 4.  Forcing input from CPL ----------------------------------------- /
-          !
-       ELSE ! INPMAP(IMOD,J) .LT. 0
-          ! Data input and time stamp settings for forcing input from
-          ! CPL are handled in wmesmfmd.ftn:GetImport
-          !
+        END IF
+        !
+        ! 3.c Set up for update, and call updating routine
+        !
+        CALL W3SETG ( IMOD, MDSE, MDST )
+        CALL W3SETI ( IMOD, MDSE, MDST )
+        !
+        CALL WMUPD2 ( IMOD, J, JJ, IERR )
+        !
+        ! 4.  Forcing input from CPL ----------------------------------------- /
+        !
+      ELSE ! INPMAP(IMOD,J) .LT. 0
+        ! Data input and time stamp settings for forcing input from
+        ! CPL are handled in wmesmfmd.ftn:GetImport
+        !
 #ifdef W3_T
-          IF ( INPMAP(IMOD,J) .EQ. -999 ) THEN
-             ! *** Forcing input from CPL & defined on native grid ***
-             WRITE (MDST,9040)
-          ELSE
-             ! *** Forcing input from CPL & defined on an input grid ***
-             WRITE (MDST,9050) -INPMAP(IMOD,J)
-          END IF
+        IF ( INPMAP(IMOD,J) .EQ. -999 ) THEN
+          ! *** Forcing input from CPL & defined on native grid ***
+          WRITE (MDST,9040)
+        ELSE
+          ! *** Forcing input from CPL & defined on an input grid ***
+          WRITE (MDST,9050) -INPMAP(IMOD,J)
+        END IF
 #endif
-          !
-       END IF
-       !
-       ! 5.  Finalize for each type ----------------------------------------- /
-       ! 5.a Process IERR output
-       !
-       IF ( IERR.GT.0 ) GOTO 2000
-       IF ( IERR.LT.0 .AND. MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )    &
-            WRITE (MDSS,950) IDFLDS(J)
-       !
-       ! 5.b End of master loop
-       !
+        !
+      END IF
+      !
+      ! 5.  Finalize for each type ----------------------------------------- /
+      ! 5.a Process IERR output
+      !
+      IF ( IERR.GT.0 ) GOTO 2000
+      IF ( IERR.LT.0 .AND. MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )    &
+           WRITE (MDSS,950) IDFLDS(J)
+      !
+      ! 5.b End of master loop
+      !
     END DO
     !
     ! 6.  Compute TDATA -------------------------------------------------- /
@@ -417,13 +417,13 @@ CONTAINS
     TDATA  = ETIME
     !
     DO J=JFIRST, 10
-       IF ( .NOT. INFLAGS1(J) ) CYCLE
-       DTTST  = DSEC21 ( TFN(:,J) , TDATA )
-       IF ( DTTST.GT.0. .AND. .NOT.  ( (FLLSTL .AND. J.EQ.1) .OR.    &
-            (FLLSTI .AND. J.EQ.4) .OR.    &
-            (FLLSTR .AND. J.EQ.6) ) ) THEN
-          TDATA  = TFN(:,J)
-       END IF
+      IF ( .NOT. INFLAGS1(J) ) CYCLE
+      DTTST  = DSEC21 ( TFN(:,J) , TDATA )
+      IF ( DTTST.GT.0. .AND. .NOT.  ( (FLLSTL .AND. J.EQ.1) .OR.    &
+           (FLLSTI .AND. J.EQ.4) .OR.    &
+           (FLLSTR .AND. J.EQ.6) ) ) THEN
+        TDATA  = TFN(:,J)
+      END IF
     END DO
     !
     ! 6.  Compute TDN ---------------------------------------------------- /
@@ -431,10 +431,10 @@ CONTAINS
     TDN    = TDATA
     CALL TICK21 ( TDN, 1. )
     DO J=7, 9
-       IF ( INFLAGS1(J) ) THEN
-          DTTST  = DSEC21 ( TFN(:,J) , TDN )
-          IF ( DTTST.GT.0. ) TDN = TFN(:,J)
-       END IF
+      IF ( INFLAGS1(J) ) THEN
+        DTTST  = DSEC21 ( TFN(:,J) , TDN )
+        IF ( DTTST.GT.0. ) TDN = TFN(:,J)
+      END IF
     END DO
     !
     ! 7.  Final test output ---------------------------------------------- /
@@ -632,212 +632,212 @@ CONTAINS
 #endif
     !
     IF ( IMPROC .EQ. NMPERR ) THEN
-       MDSEN  = MDSE
+      MDSEN  = MDSE
     ELSE
-       MDSEN  = -1
+      MDSEN  = -1
     END IF
     !
     ! 0.b Start case selection
     !
     SELECT CASE (J)
-       !
-       ! -7.  Ice parameter 1 ---------------------------------------------- /
-       !
+      !
+      ! -7.  Ice parameter 1 ---------------------------------------------- /
+      !
     CASE (-7)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
-       !
-       ! -6.  Ice parameter 2 ---------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TI1, XXX, XXX, ICEP1, IERR)
+      !
+      ! -6.  Ice parameter 2 ---------------------------------------------- /
+      !
     CASE (-6)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TI2, XXX, XXX, ICEP2, IERR)
-       !
-       ! -5.  Ice parameter 3 ---------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TI2, XXX, XXX, ICEP2, IERR)
+      !
+      ! -5.  Ice parameter 3 ---------------------------------------------- /
+      !
     CASE (-5)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TI3, XXX, XXX, ICEP3, IERR)
-       !
-       ! -4.  Ice parameter 4 ---------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TI3, XXX, XXX, ICEP3, IERR)
+      !
+      ! -4.  Ice parameter 4 ---------------------------------------------- /
+      !
     CASE (-4)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TI4, XXX, XXX, ICEP4, IERR)
-       !
-       ! -3.  Ice parameter 5 ---------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TI4, XXX, XXX, ICEP4, IERR)
+      !
+      ! -3.  Ice parameter 5 ---------------------------------------------- /
+      !
     CASE (-3)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
-       !
-       ! -2.  Mud Density -------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TI5, XXX, XXX, ICEP5, IERR)
+      !
+      ! -2.  Mud Density -------------------------------------------------- /
+      !
     CASE (-2)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TZN, XXX, XXX, MUDD, IERR)
-       !
-       ! -1.  Mud Thickness -------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TZN, XXX, XXX, MUDD, IERR)
+      !
+      ! -1.  Mud Thickness -------------------------------------------------- /
+      !
     CASE (-1)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TTN, XXX, XXX, MUDT, IERR)
-       !
-       ! 0.  Mud Viscosity -------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TTN, XXX, XXX, MUDT, IERR)
+      !
+      ! 0.  Mud Viscosity -------------------------------------------------- /
+      !
     CASE (0)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TVN, XXX, XXX, MUDV, IERR)
-       !
-       ! 1.  Water levels --------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TVN, XXX, XXX, MUDV, IERR)
+      !
+      ! 1.  Water levels --------------------------------------------------- /
+      !
     CASE (1)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
-       IF ( IERR .LT. 0 ) FLLSTL = .TRUE.
-       !
-       ! 2.  Currents ------------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TLN, XXX, XXX, WLEV, IERR)
+      IF ( IERR .LT. 0 ) FLLSTL = .TRUE.
+      !
+      ! 2.  Currents ------------------------------------------------------- /
+      !
     CASE (2)
 #ifdef W3_SMC
-       !!Li  For sea point current option FSWND.   JGLi08Feb2021
-       IF( FSWND ) THEN
-          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-               NSEA, 1, NSEA, 1, TIME, ETIME, TC0,            &
-               CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
-       ELSE
+      !!Li  For sea point current option FSWND.   JGLi08Feb2021
+      IF( FSWND ) THEN
+        CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+             NSEA, 1, NSEA, 1, TIME, ETIME, TC0,            &
+             CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+      ELSE
 #endif
-          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-               NX, NY, NX, NY, TIME, ETIME, TC0,              &
-               CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
+        CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+             NX, NY, NX, NY, TIME, ETIME, TC0,              &
+             CX0, CY0, XXX, TCN, CXN, CYN, XXX, IERR)
 #ifdef W3_SMC
-       END IF
+      END IF
 #endif
-       !
-       ! 3.  Winds ---------------------------------------------------------- /
-       !
+      !
+      ! 3.  Winds ---------------------------------------------------------- /
+      !
     CASE (3)
 #ifdef W3_SMC
-       !!Li  For sea point wind option FSWND.   JGLi08Feb2021
-       IF( FSWND ) THEN
-          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-               NSEA, 1, NSEA, 1, TIME, ETIME, TW0,            &
-               WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
-       ELSE
+      !!Li  For sea point wind option FSWND.   JGLi08Feb2021
+      IF( FSWND ) THEN
+        CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+             NSEA, 1, NSEA, 1, TIME, ETIME, TW0,            &
+             WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+      ELSE
 #endif
-          CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-               NX, NY, NX, NY, TIME, ETIME, TW0,              &
-               WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
+        CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+             NX, NY, NX, NY, TIME, ETIME, TW0,              &
+             WX0, WY0, DT0, TWN, WXN, WYN, DTN, IERR)
 #ifdef W3_SMC
-       END IF
+      END IF
 #endif
-       !
-       ! 4.  Ice ------------------------------------------------------------ /
-       !
+      !
+      ! 4.  Ice ------------------------------------------------------------ /
+      !
     CASE (4)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, DTIME,            &
-            XXX, XXX, XXX, TIN, XXX , BERGI, ICEI, IERR)
-       IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
-       !
-       ! 5.  Momentum ------------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, DTIME,            &
+           XXX, XXX, XXX, TIN, XXX , BERGI, ICEI, IERR)
+      IF ( IERR .LT. 0 ) FLLSTI = .TRUE.
+      !
+      ! 5.  Momentum ------------------------------------------------------- /
+      !
     CASE (5)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, TU0,              &
-            UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
-       !
-       ! 6.  Air density ---------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, TU0,              &
+           UX0, UY0, XXX, TUN, UXN, UYN, XXX, IERR)
+      !
+      ! 6.  Air density ---------------------------------------------------- /
+      !
     CASE (6)
-       CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            NX, NY, NX, NY, TIME, ETIME, TR0,              &
-            XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
-       IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
-       !
-       ! 7.  Data type 0 ---------------------------------------------------- /
-       !
+      CALL W3FLDG ('READ', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           NX, NY, NX, NY, TIME, ETIME, TR0,              &
+           XXX, XXX, RH0, TRN, XXX, XXX, RHN, IERR)
+      IF ( IERR .LT. 0 ) FLLSTR = .TRUE.
+      !
+      ! 7.  Data type 0 ---------------------------------------------------- /
+      !
     CASE (7)
-       CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            TIME, T0N, RCLD(1), NDT(1), NDTNEW,           &
-            DATA0, IERR )
-       IF ( IERR .LT. 0 ) THEN
-          INFLAGS1(J) = .FALSE.
-          RCLD(1)  = 1
-          NDT(1)   = 1
-          CALL WMDIMD ( IMOD, MDSE, MDST, 1 )
-       ELSE
-          NDT(J) = NDTNEW
-          CALL WMDIMD ( IMOD, MDSE, MDST, 1 )
-          CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST,         &
-               MDSEN, TIME, T0N, RCLD(1), NDT(1),        &
-               NDTNEW, DATA0, IERR )
-       END IF
-       !
-       ! 8.  Data type 1 ---------------------------------------------------- /
-       !
+      CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           TIME, T0N, RCLD(1), NDT(1), NDTNEW,           &
+           DATA0, IERR )
+      IF ( IERR .LT. 0 ) THEN
+        INFLAGS1(J) = .FALSE.
+        RCLD(1)  = 1
+        NDT(1)   = 1
+        CALL WMDIMD ( IMOD, MDSE, MDST, 1 )
+      ELSE
+        NDT(J) = NDTNEW
+        CALL WMDIMD ( IMOD, MDSE, MDST, 1 )
+        CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST,         &
+             MDSEN, TIME, T0N, RCLD(1), NDT(1),        &
+             NDTNEW, DATA0, IERR )
+      END IF
+      !
+      ! 8.  Data type 1 ---------------------------------------------------- /
+      !
     CASE ( 8 )
-       CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            TIME, T1N, RCLD(2), NDT(2), NDTNEW,           &
-            DATA1, IERR )
-       IF ( IERR .LT. 0 ) THEN
-          INFLAGS1(J) = .FALSE.
-          RCLD(2)  = 1
-          NDT(2)   = 1
-          CALL WMDIMD ( IMOD, MDSE, MDST, 2 )
-       ELSE
-          NDT(J) = NDTNEW
-          CALL WMDIMD ( IMOD, MDSE, MDST, 2 )
-          CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST,         &
-               MDSEN, TIME, T1N, RCLD(2), NDT(2),         &
-               NDTNEW, DATA1, IERR )
-       END IF
-       !
-       ! 9.  Data type 2 ---------------------------------------------------- /
-       !
+      CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           TIME, T1N, RCLD(2), NDT(2), NDTNEW,           &
+           DATA1, IERR )
+      IF ( IERR .LT. 0 ) THEN
+        INFLAGS1(J) = .FALSE.
+        RCLD(2)  = 1
+        NDT(2)   = 1
+        CALL WMDIMD ( IMOD, MDSE, MDST, 2 )
+      ELSE
+        NDT(J) = NDTNEW
+        CALL WMDIMD ( IMOD, MDSE, MDST, 2 )
+        CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST,         &
+             MDSEN, TIME, T1N, RCLD(2), NDT(2),         &
+             NDTNEW, DATA1, IERR )
+      END IF
+      !
+      ! 9.  Data type 2 ---------------------------------------------------- /
+      !
     CASE ( 9 )
-       CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
-            TIME, T2N, RCLD(3), NDT(3), NDTNEW,           &
-            DATA2, IERR )
-       IF ( IERR .LT. 0 ) THEN
-          INFLAGS1(J) = .FALSE.
-          RCLD(3)  = 1
-          NDT(3)   = 1
-          CALL WMDIMD ( IMOD, MDSE, MDST, 3 )
-       ELSE
-          NDT(J) = NDTNEW
-          CALL WMDIMD ( IMOD, MDSE, MDST, 3 )
-          CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST,         &
-               MDSEN, TIME, T2N, RCLD(3), NDT(3),         &
-               NDTNEW, DATA2, IERR )
-       END IF
-       !
-       ! 10. Moving grid data ---------------------------------------------- /
-       !
+      CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST, MDSEN,      &
+           TIME, T2N, RCLD(3), NDT(3), NDTNEW,           &
+           DATA2, IERR )
+      IF ( IERR .LT. 0 ) THEN
+        INFLAGS1(J) = .FALSE.
+        RCLD(3)  = 1
+        NDT(3)   = 1
+        CALL WMDIMD ( IMOD, MDSE, MDST, 3 )
+      ELSE
+        NDT(J) = NDTNEW
+        CALL WMDIMD ( IMOD, MDSE, MDST, 3 )
+        CALL W3FLDD ('SIZE', IDSTR, MDSF(IMOD,J), MDST,         &
+             MDSEN, TIME, T2N, RCLD(3), NDT(3),         &
+             NDTNEW, DATA2, IERR )
+      END IF
+      !
+      ! 10. Moving grid data ---------------------------------------------- /
+      !
     CASE ( 10 )
-       ! notes:
-       ! SUBROUTINE W3FLDM in w3fldsmd.ftn :
-       !       INTEGER, INTENT(INOUT)  :: NH, THO(2,6,NHM), TF0(2), TFN(2)
-       !       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:6,NHM), TF0(2), TFN(2)
-       !       REAL, INTENT(INOUT)     :: HA(NHM,6), HD(NHM,6), A0, AN, D0, DN
-       !       REAL, INTENT(INOUT)     :: HA(NHM,-7:6), HD(NHM,-7:6), A0, AN, D0, DN
-       ! Arguments #
-       !   THO     8
-       !   HA      9
-       !   HD     10
-       ! Here, that is TMV AMV DMV
-       CALL W3FLDM ( 4, MDST, MDSEN, TIME, ETIME, NMV, NMVMAX, TMV,&
-            AMV, DMV, TG0, GA0, GD0, TGN, GAN, GDN, IERR )
-       !
+      ! notes:
+      ! SUBROUTINE W3FLDM in w3fldsmd.ftn :
+      !       INTEGER, INTENT(INOUT)  :: NH, THO(2,6,NHM), TF0(2), TFN(2)
+      !       INTEGER, INTENT(INOUT)  :: NH, THO(2,-7:6,NHM), TF0(2), TFN(2)
+      !       REAL, INTENT(INOUT)     :: HA(NHM,6), HD(NHM,6), A0, AN, D0, DN
+      !       REAL, INTENT(INOUT)     :: HA(NHM,-7:6), HD(NHM,-7:6), A0, AN, D0, DN
+      ! Arguments #
+      !   THO     8
+      !   HA      9
+      !   HD     10
+      ! Here, that is TMV AMV DMV
+      CALL W3FLDM ( 4, MDST, MDSEN, TIME, ETIME, NMV, NMVMAX, TMV,&
+           AMV, DMV, TG0, GA0, GD0, TGN, GAN, GDN, IERR )
+      !
     END SELECT
     !
     ! 9. End of routine -------------------------------------------------- /
@@ -1012,50 +1012,50 @@ CONTAINS
     ! 1. Shift fields ( currents and winds only ) ------------------------ /
     !
     SELECT CASE (J)
-       !
-       ! 1.a Currents
-       !
+      !
+      ! 1.a Currents
+      !
     CASE (2)
-       IF ( INPUTS(IMOD)%TFN(1,J) .GT. 0 ) THEN
-          INPUTS(IMOD)%TC0(:) = INPUTS(IMOD)%TFN(:,J)
-          INPUTS(IMOD)%CX0    = INPUTS(IMOD)%CXN
-          INPUTS(IMOD)%CY0    = INPUTS(IMOD)%CYN
+      IF ( INPUTS(IMOD)%TFN(1,J) .GT. 0 ) THEN
+        INPUTS(IMOD)%TC0(:) = INPUTS(IMOD)%TFN(:,J)
+        INPUTS(IMOD)%CX0    = INPUTS(IMOD)%CXN
+        INPUTS(IMOD)%CY0    = INPUTS(IMOD)%CYN
 #ifdef W3_T
-          WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
-       ELSE
-          WRITE (MDST,9011) J
+        WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
+      ELSE
+        WRITE (MDST,9011) J
 #endif
-       END IF
-       !
-       ! 1.b Winds
-       !
+      END IF
+      !
+      ! 1.b Winds
+      !
     CASE (3)
-       IF ( INPUTS(IMOD)%TFN(1,J) .GT. 0 ) THEN
-          INPUTS(IMOD)%TW0(:) = INPUTS(IMOD)%TFN(:,J)
-          INPUTS(IMOD)%WX0    = INPUTS(IMOD)%WXN
-          INPUTS(IMOD)%WY0    = INPUTS(IMOD)%WYN
-          INPUTS(IMOD)%DT0    = INPUTS(IMOD)%DTN
+      IF ( INPUTS(IMOD)%TFN(1,J) .GT. 0 ) THEN
+        INPUTS(IMOD)%TW0(:) = INPUTS(IMOD)%TFN(:,J)
+        INPUTS(IMOD)%WX0    = INPUTS(IMOD)%WXN
+        INPUTS(IMOD)%WY0    = INPUTS(IMOD)%WYN
+        INPUTS(IMOD)%DT0    = INPUTS(IMOD)%DTN
 #ifdef W3_T
-          WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
-       ELSE
-          WRITE (MDST,9011) J
+        WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
+      ELSE
+        WRITE (MDST,9011) J
 #endif
-       END IF
-       !
-       ! 1.c Momentum
-       !
+      END IF
+      !
+      ! 1.c Momentum
+      !
     CASE (5)
-       IF ( INPUTS(IMOD)%TFN(1,J) .GT. 0 ) THEN
-          INPUTS(IMOD)%TU0(:) = INPUTS(IMOD)%TFN(:,J)
-          INPUTS(IMOD)%UX0    = INPUTS(IMOD)%UXN
-          INPUTS(IMOD)%UY0    = INPUTS(IMOD)%UYN
+      IF ( INPUTS(IMOD)%TFN(1,J) .GT. 0 ) THEN
+        INPUTS(IMOD)%TU0(:) = INPUTS(IMOD)%TFN(:,J)
+        INPUTS(IMOD)%UX0    = INPUTS(IMOD)%UXN
+        INPUTS(IMOD)%UY0    = INPUTS(IMOD)%UYN
 #ifdef W3_T
-          WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
-       ELSE
-          WRITE (MDST,9011) J
+        WRITE (MDST,9010) J, INPUTS(IMOD)%TFN(:,J)
+      ELSE
+        WRITE (MDST,9011) J
 #endif
-       END IF
-       !
+      END IF
+      !
     END SELECT
     !
     ! 2. Process fields at ending time ----------------------------------- /
@@ -1066,192 +1066,192 @@ CONTAINS
     INPUTS(IMOD)%TFN(:,J) = INPUTS(JMOD)%TFN(:,J)
     !
     SELECT CASE (J)
-       !
-       ! 2.a-3 Ice parameter 1
-       !
+      !
+      ! 2.a-3 Ice parameter 1
+      !
     CASE (-7)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP1,                      &
-            JMOD, INPUTS(JMOD)%ICEP1, 0. )
-       !
-       ! 2.a-3 Ice parameter 2
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP1,                      &
+           JMOD, INPUTS(JMOD)%ICEP1, 0. )
+      !
+      ! 2.a-3 Ice parameter 2
+      !
     CASE (-6)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP2,                      &
-            JMOD, INPUTS(JMOD)%ICEP2, 0. )
-       !
-       ! 2.a-3 Ice parameter 3
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP2,                      &
+           JMOD, INPUTS(JMOD)%ICEP2, 0. )
+      !
+      ! 2.a-3 Ice parameter 3
+      !
     CASE (-5)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP3,                      &
-            JMOD, INPUTS(JMOD)%ICEP3, 0. )
-       !
-       ! 2.a-3 Ice parameter 4
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP3,                      &
+           JMOD, INPUTS(JMOD)%ICEP3, 0. )
+      !
+      ! 2.a-3 Ice parameter 4
+      !
     CASE (-4)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP4,                      &
-            JMOD, INPUTS(JMOD)%ICEP4, 0. )
-       !
-       ! 2.a-3 Ice parameter 5
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP4,                      &
+           JMOD, INPUTS(JMOD)%ICEP4, 0. )
+      !
+      ! 2.a-3 Ice parameter 5
+      !
     CASE (-3)
 
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP5,                      &
-            JMOD, INPUTS(JMOD)%ICEP5, 0. )
-       !
-       ! 2.a-2 Mud densities
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEP5,                      &
+           JMOD, INPUTS(JMOD)%ICEP5, 0. )
+      !
+      ! 2.a-2 Mud densities
+      !
     CASE (-2)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%MUDD,                      &
-            JMOD, INPUTS(JMOD)%MUDD, 0. )
-       !
-       ! 2.a-1 Mud viscosities
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%MUDD,                      &
+           JMOD, INPUTS(JMOD)%MUDD, 0. )
+      !
+      ! 2.a-1 Mud viscosities
+      !
     CASE (-1)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%MUDT,                      &
-            JMOD, INPUTS(JMOD)%MUDT, 0. )
-       !
-       ! 2.a-0 Mud thicknesses
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%MUDT,                      &
+           JMOD, INPUTS(JMOD)%MUDT, 0. )
+      !
+      ! 2.a-0 Mud thicknesses
+      !
     CASE (0)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%MUDV,                      &
-            JMOD, INPUTS(JMOD)%MUDV, 0. )
-       !
-       ! 2.a Water levels
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%MUDV,                      &
+           JMOD, INPUTS(JMOD)%MUDV, 0. )
+      !
+      ! 2.a Water levels
+      !
     CASE (1)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%WLEV,                      &
-            JMOD, INPUTS(JMOD)%WLEV, 0. )
-       !
-       ! 2.b Curents
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%WLEV,                      &
+           JMOD, INPUTS(JMOD)%WLEV, 0. )
+      !
+      ! 2.b Curents
+      !
     CASE (2)
-       CALL WMUPDV ( IMOD, INPUTS(IMOD)%CXN, INPUTS(IMOD)%CYN,     &
-            JMOD, INPUTS(JMOD)%CXN, INPUTS(JMOD)%CYN,     &
-            0., ICONSC )
-       !
-       ! 2.c Wind speeds
-       !
+      CALL WMUPDV ( IMOD, INPUTS(IMOD)%CXN, INPUTS(IMOD)%CYN,     &
+           JMOD, INPUTS(JMOD)%CXN, INPUTS(JMOD)%CYN,     &
+           0., ICONSC )
+      !
+      ! 2.c Wind speeds
+      !
     CASE (3)
-       CALL WMUPDV ( IMOD, INPUTS(IMOD)%WXN, INPUTS(IMOD)%WYN,     &
-            JMOD, INPUTS(JMOD)%WXN, INPUTS(JMOD)%WYN,     &
-            0., ICONSW )
-       !
-       IF ( IDINP(IMOD,J) .EQ. 'WNS' ) CALL WMUPDS                 &
-            ( IMOD, INPUTS(IMOD)%DTN,                       &
-            JMOD, INPUTS(JMOD)%DTN, 0. )
-       !
-       ! 2.d Ice concentrations
-       !
+      CALL WMUPDV ( IMOD, INPUTS(IMOD)%WXN, INPUTS(IMOD)%WYN,     &
+           JMOD, INPUTS(JMOD)%WXN, INPUTS(JMOD)%WYN,     &
+           0., ICONSW )
+      !
+      IF ( IDINP(IMOD,J) .EQ. 'WNS' ) CALL WMUPDS                 &
+           ( IMOD, INPUTS(IMOD)%DTN,                       &
+           JMOD, INPUTS(JMOD)%DTN, 0. )
+      !
+      ! 2.d Ice concentrations
+      !
     CASE (4)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEI,                      &
-            JMOD, INPUTS(JMOD)%ICEI, 0. )
-       IF ( IDINP(IMOD,J) .EQ. 'ISI' ) CALL WMUPDS                 &
-            ( IMOD, INPUTS(IMOD)%BERGI,                     &
-            JMOD, INPUTS(JMOD)%BERGI, 0. )
-       !
-       ! 2.e Momentum
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%ICEI,                      &
+           JMOD, INPUTS(JMOD)%ICEI, 0. )
+      IF ( IDINP(IMOD,J) .EQ. 'ISI' ) CALL WMUPDS                 &
+           ( IMOD, INPUTS(IMOD)%BERGI,                     &
+           JMOD, INPUTS(JMOD)%BERGI, 0. )
+      !
+      ! 2.e Momentum
+      !
     CASE (5)
-       CALL WMUPDV ( IMOD, INPUTS(IMOD)%UXN, INPUTS(IMOD)%UYN,     &
-            JMOD, INPUTS(JMOD)%UXN, INPUTS(JMOD)%UYN,     &
-            0., ICONSU )
-       !
-       ! 2.f Air density
-       !
+      CALL WMUPDV ( IMOD, INPUTS(IMOD)%UXN, INPUTS(IMOD)%UYN,     &
+           JMOD, INPUTS(JMOD)%UXN, INPUTS(JMOD)%UYN,     &
+           0., ICONSU )
+      !
+      ! 2.f Air density
+      !
     CASE (6)
-       CALL WMUPDS ( IMOD, INPUTS(IMOD)%RHN,                       &
-            JMOD, INPUTS(JMOD)%RHN, DAIR )
-       !
-       ! 2.g Assimilation data 0
-       !
+      CALL WMUPDS ( IMOD, INPUTS(IMOD)%RHN,                       &
+           JMOD, INPUTS(JMOD)%RHN, DAIR )
+      !
+      ! 2.g Assimilation data 0
+      !
     CASE (7)
-       GOTO 2999
-       !
-       ! 2.h Assimilation data 1
-       !
+      GOTO 2999
+      !
+      ! 2.h Assimilation data 1
+      !
     CASE (8)
-       GOTO 2999
-       !
-       ! 2.i Assimilation data 2
-       !
+      GOTO 2999
+      !
+      ! 2.i Assimilation data 2
+      !
     CASE (9)
-       GOTO 2999
-       !
+      GOTO 2999
+      !
     END SELECT
     !
     ! 3. Check and update first fields ( currents and winds only ) ------- /
     !
     SELECT CASE (J)
-       !
-       ! 3.a Currents
-       !
+      !
+      ! 3.a Currents
+      !
     CASE (2)
-       IF ( INPUTS(IMOD)%TC0(1) .LT. 0 ) THEN
-          INPUTS(IMOD)%TC0(:) = INPUTS(JMOD)%TC0(:)
+      IF ( INPUTS(IMOD)%TC0(1) .LT. 0 ) THEN
+        INPUTS(IMOD)%TC0(:) = INPUTS(JMOD)%TC0(:)
 #ifdef W3_T
-          WRITE (MDST,9030) J, INPUTS(IMOD)%TC0(:)
+        WRITE (MDST,9030) J, INPUTS(IMOD)%TC0(:)
 #endif
 #ifdef W3_CRX0
-          ICONSC = 0
+        ICONSC = 0
 #endif
 #ifdef W3_CRX1
-          ICONSC = 1
+        ICONSC = 1
 #endif
 #ifdef W3_CRX2
-          ICONSC = 2
+        ICONSC = 2
 #endif
-          CALL WMUPDV ( IMOD, INPUTS(IMOD)%CX0, INPUTS(IMOD)%CY0, &
-               JMOD, INPUTS(JMOD)%CX0, INPUTS(JMOD)%CY0, &
-               0., ICONSC )
-       END IF
-       !
-       ! 3.b Winds
-       !
+        CALL WMUPDV ( IMOD, INPUTS(IMOD)%CX0, INPUTS(IMOD)%CY0, &
+             JMOD, INPUTS(JMOD)%CX0, INPUTS(JMOD)%CY0, &
+             0., ICONSC )
+      END IF
+      !
+      ! 3.b Winds
+      !
     CASE (3)
-       IF ( INPUTS(IMOD)%TW0(1) .LT. 0 ) THEN
-          INPUTS(IMOD)%TW0(:) = INPUTS(JMOD)%TW0(:)
+      IF ( INPUTS(IMOD)%TW0(1) .LT. 0 ) THEN
+        INPUTS(IMOD)%TW0(:) = INPUTS(JMOD)%TW0(:)
 #ifdef W3_T
-          WRITE (MDST,9030) J, INPUTS(IMOD)%TW0(:)
+        WRITE (MDST,9030) J, INPUTS(IMOD)%TW0(:)
 #endif
 #ifdef W3_WNX0
-          ICONSW = 0
+        ICONSW = 0
 #endif
 #ifdef W3_WNX1
-          ICONSW = 1
+        ICONSW = 1
 #endif
 #ifdef W3_WNX2
-          ICONSW = 2
+        ICONSW = 2
 #endif
-          CALL WMUPDV ( IMOD, INPUTS(IMOD)%WX0, INPUTS(IMOD)%WY0, &
-               JMOD, INPUTS(JMOD)%WX0, INPUTS(JMOD)%WY0, &
-               0., ICONSW )
-          IF ( IDINP(IMOD,J) .EQ. 'WNS' ) CALL WMUPDS             &
-               ( IMOD, INPUTS(IMOD)%DT0,                   &
-               JMOD, INPUTS(JMOD)%DT0, 0. )
-       END IF
-       !
-       ! 3.c Momentum
-       !
+        CALL WMUPDV ( IMOD, INPUTS(IMOD)%WX0, INPUTS(IMOD)%WY0, &
+             JMOD, INPUTS(JMOD)%WX0, INPUTS(JMOD)%WY0, &
+             0., ICONSW )
+        IF ( IDINP(IMOD,J) .EQ. 'WNS' ) CALL WMUPDS             &
+             ( IMOD, INPUTS(IMOD)%DT0,                   &
+             JMOD, INPUTS(JMOD)%DT0, 0. )
+      END IF
+      !
+      ! 3.c Momentum
+      !
     CASE (5)
-       IF ( INPUTS(IMOD)%TU0(1) .LT. 0 ) THEN
-          INPUTS(IMOD)%TU0(:) = INPUTS(JMOD)%TU0(:)
+      IF ( INPUTS(IMOD)%TU0(1) .LT. 0 ) THEN
+        INPUTS(IMOD)%TU0(:) = INPUTS(JMOD)%TU0(:)
 #ifdef W3_T
-          WRITE (MDST,9030) J, INPUTS(IMOD)%TU0(:)
+        WRITE (MDST,9030) J, INPUTS(IMOD)%TU0(:)
 #endif
 #ifdef W3_WNX0
-          ICONSU = 0
+        ICONSU = 0
 #endif
 #ifdef W3_WNX1
-          ICONSU = 1
+        ICONSU = 1
 #endif
 #ifdef W3_WNX2
-          ICONSU = 2
+        ICONSU = 2
 #endif
-          CALL WMUPDV ( IMOD, INPUTS(IMOD)%UX0, INPUTS(IMOD)%UY0, &
-               JMOD, INPUTS(JMOD)%UX0, INPUTS(JMOD)%UY0, &
-               0., ICONSU )
-       END IF
-       !
+        CALL WMUPDV ( IMOD, INPUTS(IMOD)%UX0, INPUTS(IMOD)%UY0, &
+             JMOD, INPUTS(JMOD)%UX0, INPUTS(JMOD)%UY0, &
+             0., ICONSU )
+      END IF
+      !
     END SELECT
     !
     ! 4. End of routine -------------------------------------------------- /
@@ -1454,9 +1454,9 @@ CONTAINS
     !
     IF ( GRIDS(IMOD)%GTYPE .EQ. UNGTYPE .OR. &
          GRIDS(JMOD)%GTYPE .EQ. UNGTYPE ) THEN
-       WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
-            'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
-       CALL EXTCDE ( 999 )
+      WRITE (MDSE,'(/2A)') ' *** ERROR WMUPDV: ', &
+           'UNSTRUCTURED GRID SUPPORT NOT YET IMPLEMENTED ***'
+      CALL EXTCDE ( 999 )
     END IF
     !
     NXI    => GRIDS(JMOD)%NX
@@ -1472,9 +1472,9 @@ CONTAINS
     ICLOSE => GRIDS(JMOD)%ICLOSE
     !
     IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
-       IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDV IS'// &
-            ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
-       CALL EXTCDE ( 1 )
+      IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDV IS'// &
+           ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+      CALL EXTCDE ( 1 )
     END IF
 
     !
@@ -1491,66 +1491,66 @@ CONTAINS
     CURVI=0
     IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
          GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-       CURVI=1
+      CURVI=1
     END IF
 
     ! 1. Case of identical resolution and coinciding grids --------------- /
     IF(CURVI .EQ. 0) THEN
-       !
-       IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
-            ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
-            ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
-            ABS(MOD((ABS(Y0-Y0I))/SY+0.5,1.)-0.5) .LT. 1.E-2 ) THEN
-          !
-          ! 1.a Offsets
-          !
+      !
+      IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
+           ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
+           ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
+           ABS(MOD((ABS(Y0-Y0I))/SY+0.5,1.)-0.5) .LT. 1.E-2 ) THEN
+        !
+        ! 1.a Offsets
+        !
 
-          IXO    = NINT((X0-X0I)/SX)
-          !
-          IF ( FLAGLL ) THEN
-             IXF0   = 1
-             IXFN   = NX
-             IXS0   = -999
-             IXSN   = -999
-          ELSE
-             IXF0   = MAX (  1  , 1-IXO )
-             IXFN   = MIN ( NX  , NXI-IXO )
-             IXS0   = MAX (  1  , 1+IXO )
-             IXSN   = IXS0 + IXFN - IXF0
-          END IF
-          !
-          IYO    = NINT((Y0-Y0I)/SY)
-          !
-          IYF0   = MAX (  1  , 1-IYO )
-          IYFN   = MIN ( NY  , NYI-IYO )
-          IYS0   = MAX (  1  , 1+IYO )
-          IYSN   = IYS0 + IYFN - IYF0
-          !
+        IXO    = NINT((X0-X0I)/SX)
+        !
+        IF ( FLAGLL ) THEN
+          IXF0   = 1
+          IXFN   = NX
+          IXS0   = -999
+          IXSN   = -999
+        ELSE
+          IXF0   = MAX (  1  , 1-IXO )
+          IXFN   = MIN ( NX  , NXI-IXO )
+          IXS0   = MAX (  1  , 1+IXO )
+          IXSN   = IXS0 + IXFN - IXF0
+        END IF
+        !
+        IYO    = NINT((Y0-Y0I)/SY)
+        !
+        IYF0   = MAX (  1  , 1-IYO )
+        IYFN   = MIN ( NY  , NYI-IYO )
+        IYS0   = MAX (  1  , 1+IYO )
+        IYSN   = IYS0 + IYFN - IYF0
+        !
 #ifdef W3_T
-          WRITE (MDST,9010) IXO, IYO, IXF0, IXFN, IYF0, IYFN,      &
-               IXS0, IXSN, IYS0, IYSN
+        WRITE (MDST,9010) IXO, IYO, IXF0, IXFN, IYF0, IYFN,      &
+             IXS0, IXSN, IYS0, IYSN
 #endif
-          !
-          ! 1.b Fill arrays for sea points only
-          !
+        !
+        ! 1.b Fill arrays for sea points only
+        !
 
-          DO IX=IXF0, IXFN
-             IF ( FLAGLL ) THEN
-                IXS    = 1 + NINT ( MOD (                             &
-                     1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
-                IF ( IXS .GT. NXI ) CYCLE
-             ELSE
-                IXS    = IX + IXO
-             END IF
-             VX(IX,IYF0:IYFN) = VXI(IXS,IYS0:IYSN)
-             VY(IX,IYF0:IYFN) = VYI(IXS,IYS0:IYSN)
-          END DO
-          !
-          ! 1.c Return to calling routine
-          !
-          RETURN
-          !
-       END IF
+        DO IX=IXF0, IXFN
+          IF ( FLAGLL ) THEN
+            IXS    = 1 + NINT ( MOD (                             &
+                 1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
+            IF ( IXS .GT. NXI ) CYCLE
+          ELSE
+            IXS    = IX + IXO
+          END IF
+          VX(IX,IYF0:IYFN) = VXI(IXS,IYS0:IYSN)
+          VY(IX,IYF0:IYFN) = VYI(IXS,IYS0:IYSN)
+        END DO
+        !
+        ! 1.c Return to calling routine
+        !
+        RETURN
+        !
+      END IF
     END IF !CURVI
     !
     ! 2.  General case --------------------------------------------------- /
@@ -1560,256 +1560,256 @@ CONTAINS
     IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
          GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
 
-       XGRDI => GRIDS(JMOD)%XGRD   !LONS FOR INPUT FIELD
-       YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
+      XGRDI => GRIDS(JMOD)%XGRD   !LONS FOR INPUT FIELD
+      YGRDI => GRIDS(JMOD)%YGRD    !LATS FOR INPUT FIELD
 
-       !       GETTING THE INFO FOR THE CURVILINEAR GRID
-       XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
-       YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
-       !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
-       !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
-       !
-       !
-       !  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2
-       MXA=2
-       MYA=2
-       ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-       NXA    = 0
-       RXA    = 0.
-       ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-       NYA    = 0
-       RYA    = 0.
+      !       GETTING THE INFO FOR THE CURVILINEAR GRID
+      XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
+      YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
+      !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAS IN LON FOR CURVI GRID
+      !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+      !
+      !
+      !  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2
+      MXA=2
+      MYA=2
+      ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+      NXA    = 0
+      RXA    = 0.
+      ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+      NYA    = 0
+      RYA    = 0.
 
-       !IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
-       DTOLER = 1E-5
-       ! 2.a.1  running over the curvilinear grid
-       ALLOCATE (XGRTMP(NXI),YGRTMP(NYI))
-       XGRTMP=REAL(XGRDI(1,:))
-       YGRTMP=REAL(YGRDI(:,1))
+      !IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
+      DTOLER = 1E-5
+      ! 2.a.1  running over the curvilinear grid
+      ALLOCATE (XGRTMP(NXI),YGRTMP(NYI))
+      XGRTMP=REAL(XGRDI(1,:))
+      YGRTMP=REAL(YGRDI(:,1))
 #ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE(J,I,LONC,LATC,VALUEX,VALUEY)
+      !$OMP PARALLEL DO PRIVATE(J,I,LONC,LATC,VALUEX,VALUEY)
 #endif
-       DO J=1,NY
-          DO I=1,NX
-             LONC=REAL(XGRDC(J,I))   !LON FOR EVERY CURVL GRID POINT
-             LATC=REAL(YGRDC(J,I))   !LAT FOR EVERY CURVL GRID POINT
+      DO J=1,NY
+        DO I=1,NX
+          LONC=REAL(XGRDC(J,I))   !LON FOR EVERY CURVL GRID POINT
+          LATC=REAL(YGRDC(J,I))   !LAT FOR EVERY CURVL GRID POINT
 
-             CALL INTERPOLATE2D(NXI,REAL(XGRTMP),NYI,REAL(YGRTMP), &
-                  VXI,VYI,LONC,LATC,DTOLER,VALUEX,VALUEY)
-             VX(I,J)=VALUEX
-             VY(I,J)=VALUEY
+          CALL INTERPOLATE2D(NXI,REAL(XGRTMP),NYI,REAL(YGRTMP), &
+               VXI,VYI,LONC,LATC,DTOLER,VALUEX,VALUEY)
+          VX(I,J)=VALUEX
+          VY(I,J)=VALUEY
 
-          END DO  !END I
-       END DO  !END J
+        END DO  !END I
+      END DO  !END J
 #ifdef W3_OMPH
-       !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 #endif
-       DEALLOCATE (XGRTMP, YGRTMP)
+      DEALLOCATE (XGRTMP, YGRTMP)
 
     ELSE
-       !
-       ! 2.b Rectilinear grids
-       !
-       ! 2.b.1 Interpolation / averaging data for X axis
-       !
-       IF ( SX/SXI .LT. 1.0001 ) THEN
-          MXA    = 2
-       ELSE
-          MXA    = 2 + INT(SX/SXI)
-       END IF
-       !
+      !
+      ! 2.b Rectilinear grids
+      !
+      ! 2.b.1 Interpolation / averaging data for X axis
+      !
+      IF ( SX/SXI .LT. 1.0001 ) THEN
+        MXA    = 2
+      ELSE
+        MXA    = 2 + INT(SX/SXI)
+      END IF
+      !
 #ifdef W3_T
-       WRITE (MDST,9020) 'X'
+      WRITE (MDST,9020) 'X'
 #endif
 #ifdef W3_T1
-       WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
-       WRITE (MDST,9021) NX, MXA
+      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
+      WRITE (MDST,9021) NX, MXA
 #endif
-       !
-       ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-       NXA    = 0
-       RXA    = 0.
-       !
-       IF ( MXA .EQ. 2 ) THEN
+      !
+      ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+      NXA    = 0
+      RXA    = 0.
+      !
+      IF ( MXA .EQ. 2 ) THEN
+        !
+        DO IX=1, NX
+          IF ( FLAGLL ) THEN
+            XR     = 1. + MOD       &
+                 ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
+          ELSE
+            XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
+          END IF
+          IF ( XR.GT.0. ) THEN
+            J1     = INT(XR)
+            J2     = J1 + 1
+            R2     = MAX ( 0. , XR-REAL(J1) )
+            R1     = 1. - R2
+            IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
+              J1 = 1 + MOD(J1-1,NXI)
+              J2 = 1 + MOD(J2-1,NXI)
+            END IF
+            IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
+              NXA(IX,0) = NXA(IX,0) + 1
+              NXA(IX,NXA(IX,0)) = J1
+              RXA(IX,NXA(IX,0)) = R1
+            END IF
+            IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
+              NXA(IX,0) = NXA(IX,0) + 1
+              NXA(IX,NXA(IX,0)) = J2
+              RXA(IX,NXA(IX,0)) = R2
+            END IF
+            IF ( NXA(IX,0)  .GT. 0 ) THEN
+              RT     = SUM ( RXA(IX,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NXA(IX,:) = 0
+                RXA(IX,:) = 0.
+              END IF
+            END IF
+          END IF
+        END DO
+        !
+      ELSE
+        !
+        DO IX=1, NX
           !
-          DO IX=1, NX
-             IF ( FLAGLL ) THEN
-                XR     = 1. + MOD       &
-                     ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
-             ELSE
-                XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
-             END IF
-             IF ( XR.GT.0. ) THEN
-                J1     = INT(XR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , XR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
-                   J1 = 1 + MOD(J1-1,NXI)
-                   J2 = 1 + MOD(J2-1,NXI)
-                END IF
-                IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
-                   NXA(IX,0) = NXA(IX,0) + 1
-                   NXA(IX,NXA(IX,0)) = J1
-                   RXA(IX,NXA(IX,0)) = R1
-                END IF
-                IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
-                   NXA(IX,0) = NXA(IX,0) + 1
-                   NXA(IX,NXA(IX,0)) = J2
-                   RXA(IX,NXA(IX,0)) = R2
-                END IF
-                IF ( NXA(IX,0)  .GT. 0 ) THEN
-                   RT     = SUM ( RXA(IX,:) )
-                   IF ( RT .LT. 0.7 ) THEN
-                      NXA(IX,:) = 0
-                      RXA(IX,:) = 0.
-                   END IF
-                END IF
-             END IF
+          XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
+          XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
+          IF ( FLAGLL ) THEN
+            IXC    = 1 + NINT ( MOD (                             &
+                 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
+            IXS0   = IXC - 1 - MXA/2
+            IXSN   = IXC + 1 + MXA/2
+          ELSE
+            IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
+            IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
+            IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
+          END IF
+          DO J=IXS0, IXSN
+            JJ=J
+            IF ( FLAGLL ) THEN
+              IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1+NXI,NXI)
+              IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
+              IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
+              IF ( IXC .NE. 0 ) THEN
+                XFL    = XFL - REAL(IXC) * 360.
+                XFR    = XFR - REAL(IXC) * 360.
+              END IF
+            ELSE
+              JJ     = J
+            END IF
+            XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
+            XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
+            R1     = MAX ( 0. , XSR - XSL ) / SX
+            IF ( R1 .GT. 0 ) THEN
+              NXA(IX,0) = NXA(IX,0) + 1
+              NXA(IX,NXA(IX,0)) = JJ
+              RXA(IX,NXA(IX,0)) = R1
+            END IF
           END DO
-          !
-       ELSE
-          !
-          DO IX=1, NX
-             !
-             XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
-             XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
-             IF ( FLAGLL ) THEN
-                IXC    = 1 + NINT ( MOD (                             &
-                     1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
-                IXS0   = IXC - 1 - MXA/2
-                IXSN   = IXC + 1 + MXA/2
-             ELSE
-                IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
-                IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
-                IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
-             END IF
-             DO J=IXS0, IXSN
-                JJ=J
-                IF ( FLAGLL ) THEN
-                   IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1+NXI,NXI)
-                   IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
-                   IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
-                   IF ( IXC .NE. 0 ) THEN
-                      XFL    = XFL - REAL(IXC) * 360.
-                      XFR    = XFR - REAL(IXC) * 360.
-                   END IF
-                ELSE
-                   JJ     = J
-                END IF
-                XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
-                XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
-                R1     = MAX ( 0. , XSR - XSL ) / SX
-                IF ( R1 .GT. 0 ) THEN
-                   NXA(IX,0) = NXA(IX,0) + 1
-                   NXA(IX,NXA(IX,0)) = JJ
-                   RXA(IX,NXA(IX,0)) = R1
-                END IF
-             END DO
-             IF ( NXA(IX,0)  .GT. 0 ) THEN
-                RT     = SUM ( RXA(IX,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                   NXA(IX,:) = 0
-                   RXA(IX,:) = 0.
-                END IF
-             END IF
-          END DO
-          !
-       END IF
-       !
+          IF ( NXA(IX,0)  .GT. 0 ) THEN
+            RT     = SUM ( RXA(IX,:) )
+            IF ( RT .LT. 0.7 ) THEN
+              NXA(IX,:) = 0
+              RXA(IX,:) = 0.
+            END IF
+          END IF
+        END DO
+        !
+      END IF
+      !
 #ifdef W3_T1
-       DO, IX=1, NX
-          IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
-               IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
-       END DO
+      DO, IX=1, NX
+        IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
+             IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
+      END DO
 #endif
-       !
-       ! 2.b.2 Interpolation / averaging data for Y axis
-       !
-       IF ( SY/SYI .LT. 1.0001 ) THEN
-          MYA    = 2
-       ELSE
-          MYA    = 2 + INT(SY/SYI)
-       END IF
-       !
+      !
+      ! 2.b.2 Interpolation / averaging data for Y axis
+      !
+      IF ( SY/SYI .LT. 1.0001 ) THEN
+        MYA    = 2
+      ELSE
+        MYA    = 2 + INT(SY/SYI)
+      END IF
+      !
 #ifdef W3_T
-       WRITE (MDST,9020) 'Y'
+      WRITE (MDST,9020) 'Y'
 #endif
 #ifdef W3_T1
-       FORMAT1 = '(10X,  I5,  F6.2)'
-       WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
-       WRITE (MDST,9021) NY, MYA
+      FORMAT1 = '(10X,  I5,  F6.2)'
+      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
+      WRITE (MDST,9021) NY, MYA
 #endif
-       !
-       ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-       NYA    = 0
-       RYA    = 0.
-       !
-       IF ( MYA .EQ. 2 ) THEN
-          !
-          DO IY=1, NY
-             YR     = 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI
-             IF ( YR.GT.0. ) THEN
-                J1     = INT(YR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , YR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
-                   NYA(IY,0) = NYA(IY,0) + 1
-                   NYA(IY,NYA(IY,0)) = J1
-                   RYA(IY,NYA(IY,0)) = R1
-                END IF
-                IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
-                   NYA(IY,0) = NYA(IY,0) + 1
-                   NYA(IY,NYA(IY,0)) = J2
-                   RYA(IY,NYA(IY,0)) = R2
-                END IF
-                IF ( NYA(IY,0)  .GT. 0 ) THEN
-                   RT     = SUM ( RYA(IY,:) )
-                   IF ( RT .LT. 0.7 ) THEN
-                      NYA(IY,:) = 0
-                      RYA(IY,:) = 0.
-                   END IF
-                END IF
-             END IF
+      !
+      ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+      NYA    = 0
+      RYA    = 0.
+      !
+      IF ( MYA .EQ. 2 ) THEN
+        !
+        DO IY=1, NY
+          YR     = 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI
+          IF ( YR.GT.0. ) THEN
+            J1     = INT(YR)
+            J2     = J1 + 1
+            R2     = MAX ( 0. , YR-REAL(J1) )
+            R1     = 1. - R2
+            IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
+              NYA(IY,0) = NYA(IY,0) + 1
+              NYA(IY,NYA(IY,0)) = J1
+              RYA(IY,NYA(IY,0)) = R1
+            END IF
+            IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
+              NYA(IY,0) = NYA(IY,0) + 1
+              NYA(IY,NYA(IY,0)) = J2
+              RYA(IY,NYA(IY,0)) = R2
+            END IF
+            IF ( NYA(IY,0)  .GT. 0 ) THEN
+              RT     = SUM ( RYA(IY,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NYA(IY,:) = 0
+                RYA(IY,:) = 0.
+              END IF
+            END IF
+          END IF
+        END DO
+        !
+      ELSE
+        !
+        DO IY=1, NY
+          YFL    = Y0 + REAL(IY-1)*SY - 0.5*SY
+          YFR    = Y0 + REAL(IY-1)*SY + 0.5*SY
+          IYC    = NINT ( 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI )
+          IYS0   = MAX (  1  , IYC - 1 - MYA/2 )
+          IYSN   = MIN ( NYI , IYC + 1 + MYA/2 )
+          DO J=IYS0, IYSN
+            YSL    = MAX ( YFL , Y0I + REAL(J-1)*SYI - 0.5*SYI )
+            YSR    = MIN ( YFR , Y0I + REAL(J-1)*SYI + 0.5*SYI )
+            R1     = MAX ( 0. , YSR - YSL ) / SY
+            IF ( R1 .GT. 0 ) THEN
+              NYA(IY,0) = NYA(IY,0) + 1
+              NYA(IY,NYA(IY,0)) = J
+              RYA(IY,NYA(IY,0)) = R1
+            END IF
           END DO
-          !
-       ELSE
-          !
-          DO IY=1, NY
-             YFL    = Y0 + REAL(IY-1)*SY - 0.5*SY
-             YFR    = Y0 + REAL(IY-1)*SY + 0.5*SY
-             IYC    = NINT ( 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI )
-             IYS0   = MAX (  1  , IYC - 1 - MYA/2 )
-             IYSN   = MIN ( NYI , IYC + 1 + MYA/2 )
-             DO J=IYS0, IYSN
-                YSL    = MAX ( YFL , Y0I + REAL(J-1)*SYI - 0.5*SYI )
-                YSR    = MIN ( YFR , Y0I + REAL(J-1)*SYI + 0.5*SYI )
-                R1     = MAX ( 0. , YSR - YSL ) / SY
-                IF ( R1 .GT. 0 ) THEN
-                   NYA(IY,0) = NYA(IY,0) + 1
-                   NYA(IY,NYA(IY,0)) = J
-                   RYA(IY,NYA(IY,0)) = R1
-                END IF
-             END DO
-             IF ( NYA(IY,0)  .GT. 0 ) THEN
-                RT     = SUM ( RYA(IY,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                   NYA(IY,:) = 0
-                   RYA(IY,:) = 0.
-                END IF
-             END IF
-          END DO
-          !
-       END IF
-       !
+          IF ( NYA(IY,0)  .GT. 0 ) THEN
+            RT     = SUM ( RYA(IY,:) )
+            IF ( RT .LT. 0.7 ) THEN
+              NYA(IY,:) = 0
+              RYA(IY,:) = 0.
+            END IF
+          END IF
+        END DO
+        !
+      END IF
+      !
     END IF
 
     !
 #ifdef W3_T1
     DO, IY=1, NY
-       IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
-            IY, NYA(IY,1:MYA), RYA(IY,1:MYA), SUM(RYA(IY,1:MYA))
+      IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
+           IY, NYA(IY,1:MYA), RYA(IY,1:MYA), SUM(RYA(IY,1:MYA))
     END DO
 #endif
     !
@@ -1821,50 +1821,50 @@ CONTAINS
     !
 
     DO IX=1, NX
-       IF ( NXA(IX,0) .EQ. 0 ) CYCLE
-       DO IY=1, NY
-          IF ( NYA(IY,0) .EQ. 0 ) CYCLE
-          IF ( MAP(IY,IX).NE.0 ) THEN
-             VXL    = 0.
-             VYL    = 0.
-             VA     = 0.
-             VA2    = 0.
-             WTOT   = 0.
-             DO J1=1, NXA(IX,0)
-                JX     = NXA(IX,J1)
-                DO J2=1, NYA(IY,0)
-                   JY     = NYA(IY,J2)
-                   IF ( MAPI(JY,JX) .NE. 0 ) THEN
-                      WL     = RXA(IX,J1) * RYA(IY,J2)
-                      WTOT   = WTOT + WL
-                      VXL    = VXL + WL * VXI(JX,JY)
-                      VYL    = VYL + WL * VYI(JX,JY)
-                      VA     = VA  + WL * SQRT                        &
-                           ( VXI(JX,JY)**2 + VYI(JX,JY)**2 )
-                      VA2    = VA2 + WL *                             &
-                           ( VXI(JX,JY)**2 + VYI(JX,JY)**2 )
-                   END IF
-                END DO
-             END DO
-             IF ( WTOT .LT. 0.05 ) THEN
-                MAP1(IX,IY) = .TRUE.
-             ELSE
-                MAP2(IX,IY) = .TRUE.
-                VXL    = VXL / WTOT
-                VYL    = VYL / WTOT
-                VA     = VA  / WTOT
-                VA2    = SQRT ( VA2 / WTOT )
-                VA0    = SQRT ( VXL**2 + VYL**2 )
-                IF ( CONSTP .EQ. 1 ) THEN
-                   FACTOR    = MIN ( 1.25 , VA/MAX(1.E-7,VA0) )
-                ELSE IF ( CONSTP .EQ. 2 ) THEN
-                   FACTOR    = MIN ( 1.25 , VA2/MAX(1.E-7,VA0) )
-                END IF
-                VX(IX,IY) = FACTOR * VXL
-                VY(IX,IY) = FACTOR * VYL
-             END IF
+      IF ( NXA(IX,0) .EQ. 0 ) CYCLE
+      DO IY=1, NY
+        IF ( NYA(IY,0) .EQ. 0 ) CYCLE
+        IF ( MAP(IY,IX).NE.0 ) THEN
+          VXL    = 0.
+          VYL    = 0.
+          VA     = 0.
+          VA2    = 0.
+          WTOT   = 0.
+          DO J1=1, NXA(IX,0)
+            JX     = NXA(IX,J1)
+            DO J2=1, NYA(IY,0)
+              JY     = NYA(IY,J2)
+              IF ( MAPI(JY,JX) .NE. 0 ) THEN
+                WL     = RXA(IX,J1) * RYA(IY,J2)
+                WTOT   = WTOT + WL
+                VXL    = VXL + WL * VXI(JX,JY)
+                VYL    = VYL + WL * VYI(JX,JY)
+                VA     = VA  + WL * SQRT                        &
+                     ( VXI(JX,JY)**2 + VYI(JX,JY)**2 )
+                VA2    = VA2 + WL *                             &
+                     ( VXI(JX,JY)**2 + VYI(JX,JY)**2 )
+              END IF
+            END DO
+          END DO
+          IF ( WTOT .LT. 0.05 ) THEN
+            MAP1(IX,IY) = .TRUE.
+          ELSE
+            MAP2(IX,IY) = .TRUE.
+            VXL    = VXL / WTOT
+            VYL    = VYL / WTOT
+            VA     = VA  / WTOT
+            VA2    = SQRT ( VA2 / WTOT )
+            VA0    = SQRT ( VXL**2 + VYL**2 )
+            IF ( CONSTP .EQ. 1 ) THEN
+              FACTOR    = MIN ( 1.25 , VA/MAX(1.E-7,VA0) )
+            ELSE IF ( CONSTP .EQ. 2 ) THEN
+              FACTOR    = MIN ( 1.25 , VA2/MAX(1.E-7,VA0) )
+            END IF
+            VX(IX,IY) = FACTOR * VXL
+            VY(IX,IY) = FACTOR * VYL
           END IF
-       END DO
+        END IF
+      END DO
     END DO
 
     !
@@ -1878,64 +1878,64 @@ CONTAINS
     ICLOSE => GRIDS(IMOD)%ICLOSE
     !
     DO
-       IF ( JJ .GT. SWPMAX ) EXIT
-       FLAGUP = .FALSE.
-       MAP3   = .FALSE.
-       JJ     = JJ + 1
+      IF ( JJ .GT. SWPMAX ) EXIT
+      FLAGUP = .FALSE.
+      MAP3   = .FALSE.
+      JJ     = JJ + 1
 #ifdef W3_T
-       WRITE (MDST,9023) JJ
+      WRITE (MDST,9023) JJ
 #endif
-       DO IX=1, NX
-          DO IY=1, NY
-             IF ( MAP1(IX,IY) ) THEN
-                VXL    = 0.
-                VYL    = 0.
-                J1     = 0
-                IF ( FLAGLL ) THEN
-                   DO J2=IX-1, IX+1
-                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. ICLOSE.NE.ICLOSE_NONE ) THEN
-                         JX     = 1 + MOD(NX+J2-1,NX)
-                         DO JY=IY-1, IY+1
-                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
-                               IF ( MAP2(JX,JY) ) THEN
-                                  VXL     = VXL + VX(JX,JY)
-                                  VYL     = VYL + VY(JX,JY)
-                                  J1      = J1 + 1
-                               END IF
-                            END IF
-                         END DO
+      DO IX=1, NX
+        DO IY=1, NY
+          IF ( MAP1(IX,IY) ) THEN
+            VXL    = 0.
+            VYL    = 0.
+            J1     = 0
+            IF ( FLAGLL ) THEN
+              DO J2=IX-1, IX+1
+                IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. ICLOSE.NE.ICLOSE_NONE ) THEN
+                  JX     = 1 + MOD(NX+J2-1,NX)
+                  DO JY=IY-1, IY+1
+                    IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                      IF ( MAP2(JX,JY) ) THEN
+                        VXL     = VXL + VX(JX,JY)
+                        VYL     = VYL + VY(JX,JY)
+                        J1      = J1 + 1
                       END IF
-                   END DO
-                ELSE
-                   DO JX=IX-1, IX+1
-                      IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
-                         DO JY=IY-1, IY+1
-                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
-                               IF ( MAP2(JX,JY) ) THEN
-                                  VXL     = VXL + VX(JX,JY)
-                                  VYL     = VYL + VY(JX,JY)
-                                  J1      = J1 + 1
-                               END IF
-                            END IF
-                         END DO
-                      END IF
-                   END DO
-                END IF !FLAGLL
-                IF ( J1 .GT. 0 ) THEN
-                   VX(IX,IY) = VXL / REAL(J1)
-                   VY(IX,IY) = VYL / REAL(J1)
-                   MAP1(IX,IY) = .FALSE.
-                   MAP3(IX,IY) = .TRUE.
-                   FLAGUP = .TRUE.
+                    END IF
+                  END DO
                 END IF
-             END IF
-          END DO
-       END DO
-       IF ( FLAGUP ) THEN
-          MAP2   = MAP2 .OR. MAP3
-       ELSE
-          EXIT
-       END IF
+              END DO
+            ELSE
+              DO JX=IX-1, IX+1
+                IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
+                  DO JY=IY-1, IY+1
+                    IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                      IF ( MAP2(JX,JY) ) THEN
+                        VXL     = VXL + VX(JX,JY)
+                        VYL     = VYL + VY(JX,JY)
+                        J1      = J1 + 1
+                      END IF
+                    END IF
+                  END DO
+                END IF
+              END DO
+            END IF !FLAGLL
+            IF ( J1 .GT. 0 ) THEN
+              VX(IX,IY) = VXL / REAL(J1)
+              VY(IX,IY) = VYL / REAL(J1)
+              MAP1(IX,IY) = .FALSE.
+              MAP3(IX,IY) = .TRUE.
+              FLAGUP = .TRUE.
+            END IF
+          END IF
+        END DO
+      END DO
+      IF ( FLAGUP ) THEN
+        MAP2   = MAP2 .OR. MAP3
+      ELSE
+        EXIT
+      END IF
     END DO
 
     !
@@ -2140,9 +2140,9 @@ CONTAINS
     ICLOSE => GRIDS(JMOD)%ICLOSE
     !
     IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
-       IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDS IS'// &
-            ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
-       CALL EXTCDE ( 1 )
+      IF ( IMPROC.EQ.NMPERR ) WRITE(MDSE,*)'SUBROUTINE WMUPDS IS'// &
+           ' NOT YET ADAPTED FOR TRIPOLE GRIDS. STOPPING NOW.'
+      CALL EXTCDE ( 1 )
     END IF
     !
 #ifdef W3_T
@@ -2157,66 +2157,66 @@ CONTAINS
     CURVI=0
     IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
          GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
-       CURVI=1
+      CURVI=1
     END IF
 
     ! 1. Case of identical resolution and coinciding grids --------------- /
     !
     IF(CURVI .EQ. 0) THEN
-       IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
-            ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
-            ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
-            ABS(MOD((ABS(Y0-Y0I))/SY+0.5,1.)-0.5) .LT. 1.E-2 ) THEN
-          !
-          ! 1.a Offsets
-          !
-          IXO    = NINT((X0-X0I)/SX)
-          !
-          IF ( FLAGLL ) THEN
-             IXF0   = 1
-             IXFN   = NX
-             IXS0   = -999
-             IXSN   = -999
-          ELSE
-             IXF0   = MAX (  1  , 1-IXO )
-             IXFN   = MIN ( NX  , NXI-IXO )
-             IXS0   = MAX (  1  , 1+IXO )
-             IXSN   = IXS0 + IXFN - IXF0
-          END IF
-          !
-          IYO    = NINT((Y0-Y0I)/SY)
-          !
-          IYF0   = MAX (  1  , 1-IYO )
-          IYFN   = MIN ( NY  , NYI-IYO )
-          IYS0   = MAX (  1  , 1+IYO )
-          IYSN   = IYS0 + IYFN - IYF0
-          !
+      IF ( ABS(SX/SXI-1.) .LT. 1.E-3                         .AND.    &
+           ABS(SY/SYI-1.) .LT. 1.E-3                         .AND.    &
+           ABS(MOD((ABS(X0-X0I))/SX+0.5,1.)-0.5) .LT. 1.E-2  .AND.    &
+           ABS(MOD((ABS(Y0-Y0I))/SY+0.5,1.)-0.5) .LT. 1.E-2 ) THEN
+        !
+        ! 1.a Offsets
+        !
+        IXO    = NINT((X0-X0I)/SX)
+        !
+        IF ( FLAGLL ) THEN
+          IXF0   = 1
+          IXFN   = NX
+          IXS0   = -999
+          IXSN   = -999
+        ELSE
+          IXF0   = MAX (  1  , 1-IXO )
+          IXFN   = MIN ( NX  , NXI-IXO )
+          IXS0   = MAX (  1  , 1+IXO )
+          IXSN   = IXS0 + IXFN - IXF0
+        END IF
+        !
+        IYO    = NINT((Y0-Y0I)/SY)
+        !
+        IYF0   = MAX (  1  , 1-IYO )
+        IYFN   = MIN ( NY  , NYI-IYO )
+        IYS0   = MAX (  1  , 1+IYO )
+        IYSN   = IYS0 + IYFN - IYF0
+        !
 #ifdef W3_T
-          WRITE (MDST,9010) IXO, IYO, IXF0, IXFN, IYF0, IYFN,      &
-               IXS0, IXSN, IYS0, IYSN
+        WRITE (MDST,9010) IXO, IYO, IXF0, IXFN, IYF0, IYFN,      &
+             IXS0, IXSN, IYS0, IYSN
 #endif
-          !
-          ! 1.b Fill arrays for sea points only
-          !
-          IF ( FLAGLL ) THEN
-             DO IX=IXF0, IXFN
-                IXS    = 1 + NINT ( MOD (                             &
-                     1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
-                IF ( IXS .GT. NXI ) CYCLE
-                FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
-             END DO
-          ELSE
-             DO IX=IXF0, IXFN
-                IXS    = IX + IXO
-                FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
-             END DO
-          END IF
-          !
-          ! 1.c Return to calling routine
-          !
-          RETURN
-          !
-       END IF
+        !
+        ! 1.b Fill arrays for sea points only
+        !
+        IF ( FLAGLL ) THEN
+          DO IX=IXF0, IXFN
+            IXS    = 1 + NINT ( MOD (                             &
+                 1080.+X0+(REAL(IX)-0.5)*SX-X0I , 360. ) / SX - 0.5 )
+            IF ( IXS .GT. NXI ) CYCLE
+            FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
+          END DO
+        ELSE
+          DO IX=IXF0, IXFN
+            IXS    = IX + IXO
+            FD(IX,IYF0:IYFN) = FDI(IXS,IYS0:IYSN)
+          END DO
+        END IF
+        !
+        ! 1.c Return to calling routine
+        !
+        RETURN
+        !
+      END IF
     END IF !CURVI
     !
     ! 2.  General case --------------------------------------------------- /
@@ -2227,246 +2227,246 @@ CONTAINS
     IF ( GRIDS(IMOD)%GTYPE .EQ. CLGTYPE .OR. &
          GRIDS(JMOD)%GTYPE .EQ. CLGTYPE ) THEN
 
-       ! 2.a.1    Getting the info for reg and curvi grids
-       XGRDI => GRIDS(JMOD)%XGRD !LONS FOR INPUT FIELD
-       YGRDI => GRIDS(JMOD)%YGRD !LATS FOR INPUT FIELD
+      ! 2.a.1    Getting the info for reg and curvi grids
+      XGRDI => GRIDS(JMOD)%XGRD !LONS FOR INPUT FIELD
+      YGRDI => GRIDS(JMOD)%YGRD !LATS FOR INPUT FIELD
 
-       !       GETTING THE INFO FOR THE CURVILINEAR GRID
-       XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
-       YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
-       !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAYGRDC(:,:)YGRDC(:,:)YGRDC(:,:)YGRDC(:,:)S IN LON FOR CURVI GRID
-       !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
+      !       GETTING THE INFO FOR THE CURVILINEAR GRID
+      XGRDC => GRIDS(IMOD)%XGRD     !LONS FOR CURVI GRID
+      YGRDC => GRIDS(IMOD)%YGRD     !LATS FOR CURVI GRID
+      !HPFAC => GRIDS(IMOD)%HPFAC   !DELTAYGRDC(:,:)YGRDC(:,:)YGRDC(:,:)YGRDC(:,:)S IN LON FOR CURVI GRID
+      !HQFAC => GRIDS(IMOD)%HQFAC   !DELTAS IN LAT FOR CURVI  GRID
 
-       !  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2
-       MXA=2
-       MYA=2
-       ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-       NXA    = 0
-       RXA    = 0.
-       ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-       NYA    = 0
-       RYA    = 0.
-       !
-       !IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
-       DTOLER = 1E-5
-       ! 2.a.2  running over the curvilinear grid
-       DO J=1,NY
-          DO I=1,NX
-             LONC=REAL(XGRDC(J,I))   !LON FOR EVERY CURVL GRID POINT
-             LATC=REAL(YGRDC(J,I))   !LAT FOR EVERY CURVL GRID POINT
-             !SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
-             !SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
+      !  FOR NOW ONLY INTERPOLATION NOT AVERAGING THEN MXA=2
+      MXA=2
+      MYA=2
+      ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+      NXA    = 0
+      RXA    = 0.
+      ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+      NYA    = 0
+      RYA    = 0.
+      !
+      !IS THE TOLERANCE USED TO DETERMINE IF TWO VALUES ARE EQUAL IN LOCATION
+      DTOLER = 1E-5
+      ! 2.a.2  running over the curvilinear grid
+      DO J=1,NY
+        DO I=1,NX
+          LONC=REAL(XGRDC(J,I))   !LON FOR EVERY CURVL GRID POINT
+          LATC=REAL(YGRDC(J,I))   !LAT FOR EVERY CURVL GRID POINT
+          !SXC  =HPFAC(J,I)  !DELTA IN LON FOR CURVI GRID
+          !SYC  =HQFAC(J,I)  !DELTA IN LAT FOR CURVI GRID
 
-             VALUEINTER=INTERPOLATE(NXI,REAL(XGRDI(1,:)),NYI,REAL(YGRDI(:,1)),  &
-                  FDI,LONC,LATC,DTOLER)
-             FD(I,J)=VALUEINTER
-          END DO  !END I
-       END DO  !END J
+          VALUEINTER=INTERPOLATE(NXI,REAL(XGRDI(1,:)),NYI,REAL(YGRDI(:,1)),  &
+               FDI,LONC,LATC,DTOLER)
+          FD(I,J)=VALUEINTER
+        END DO  !END I
+      END DO  !END J
 
     ELSE
-       !
-       ! 2.b Rectilinear grids
-       !
-       ! 2.b.1 Interpolation / averaging data for X axis
-       !
-       IF ( SX/SXI .LT. 1.0001 ) THEN
-          MXA    = 2
-       ELSE
-          MXA    = 2 + INT(SX/SXI)
-       END IF
-       !
+      !
+      ! 2.b Rectilinear grids
+      !
+      ! 2.b.1 Interpolation / averaging data for X axis
+      !
+      IF ( SX/SXI .LT. 1.0001 ) THEN
+        MXA    = 2
+      ELSE
+        MXA    = 2 + INT(SX/SXI)
+      END IF
+      !
 #ifdef W3_T
-       WRITE (MDST,9020) 'X'
+      WRITE (MDST,9020) 'X'
 #endif
 #ifdef W3_T1
-       FORMAT1 = '(10X,  I5,  F6.2)'
-       WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
-       WRITE (MDST,9021) NX, MXA
+      FORMAT1 = '(10X,  I5,  F6.2)'
+      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MXA+1,'I5,',MXA+1,"F6.2)'"
+      WRITE (MDST,9021) NX, MXA
 #endif
-       !
-       ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
-       NXA    = 0
-       RXA    = 0.
-       !
-       !
-       IF ( MXA .EQ. 2 ) THEN
+      !
+      ALLOCATE ( NXA(NX,0:MXA) , RXA(NX,MXA) )
+      NXA    = 0
+      RXA    = 0.
+      !
+      !
+      IF ( MXA .EQ. 2 ) THEN
+        !
+        DO IX=1, NX
+          IF ( FLAGLL ) THEN
+            XR     = 1. + MOD       &
+                 ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
+          ELSE
+            XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
+          END IF
+          IF ( XR.GT.0. ) THEN
+            J1     = INT(XR)
+            J2     = J1 + 1
+            R2     = MAX ( 0. , XR-REAL(J1) )
+            R1     = 1. - R2
+            IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
+              J1 = 1 + MOD(J1-1,NXI)
+              J2 = 1 + MOD(J2-1,NXI)
+            END IF
+            IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
+              NXA(IX,0) = NXA(IX,0) + 1
+              NXA(IX,NXA(IX,0)) = J1
+              RXA(IX,NXA(IX,0)) = R1
+            END IF
+            IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
+              NXA(IX,0) = NXA(IX,0) + 1
+              NXA(IX,NXA(IX,0)) = J2
+              RXA(IX,NXA(IX,0)) = R2
+            END IF
+            IF ( NXA(IX,0)  .GT. 0 ) THEN
+              RT     = SUM ( RXA(IX,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NXA(IX,:) = 0
+                RXA(IX,:) = 0.
+              END IF
+            END IF
+          END IF
+        END DO
+        !
+      ELSE
+        !
+        DO IX=1, NX
           !
-          DO IX=1, NX
-             IF ( FLAGLL ) THEN
-                XR     = 1. + MOD       &
-                     ( 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI
-             ELSE
-                XR     = 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI
-             END IF
-             IF ( XR.GT.0. ) THEN
-                J1     = INT(XR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , XR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( FLAGLL .AND. ICLOSE.NE.ICLOSE_NONE ) THEN
-                   J1 = 1 + MOD(J1-1,NXI)
-                   J2 = 1 + MOD(J2-1,NXI)
-                END IF
-                IF ( J1.GE.1 .AND. J1.LE.NXI .AND. R1.GT.0.05 ) THEN
-                   NXA(IX,0) = NXA(IX,0) + 1
-                   NXA(IX,NXA(IX,0)) = J1
-                   RXA(IX,NXA(IX,0)) = R1
-                END IF
-                IF ( J2.GE.1 .AND. J2.LE.NXI .AND. R2.GT.0.05 ) THEN
-                   NXA(IX,0) = NXA(IX,0) + 1
-                   NXA(IX,NXA(IX,0)) = J2
-                   RXA(IX,NXA(IX,0)) = R2
-                END IF
-                IF ( NXA(IX,0)  .GT. 0 ) THEN
-                   RT     = SUM ( RXA(IX,:) )
-                   IF ( RT .LT. 0.7 ) THEN
-                      NXA(IX,:) = 0
-                      RXA(IX,:) = 0.
-                   END IF
-                END IF
-             END IF
+          XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
+          XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
+          IF ( FLAGLL ) THEN
+            IXC    = 1 + NINT ( MOD (                             &
+                 1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
+            IXS0   = IXC - 1 - MXA/2
+            IXSN   = IXC + 1 + MXA/2
+          ELSE
+            IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
+            IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
+            IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
+          END IF
+          DO J=IXS0, IXSN
+            IF ( FLAGLL ) THEN
+              IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1+NXI,NXI)
+              IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
+              IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
+              IF ( IXC .NE. 0 ) THEN
+                XFL    = XFL - REAL(IXC) * 360.
+                XFR    = XFR - REAL(IXC) * 360.
+              END IF
+            ELSE
+              JJ     = J
+            END IF
+            XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
+            XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
+            R1     = MAX ( 0. , XSR - XSL ) / SX
+            IF ( R1 .GT. 0 ) THEN
+              NXA(IX,0) = NXA(IX,0) + 1
+              NXA(IX,NXA(IX,0)) = JJ
+              RXA(IX,NXA(IX,0)) = R1
+            END IF
           END DO
-          !
-       ELSE
-          !
-          DO IX=1, NX
-             !
-             XFL    = X0 + REAL(IX-1)*SX - 0.5*SX
-             XFR    = X0 + REAL(IX-1)*SX + 0.5*SX
-             IF ( FLAGLL ) THEN
-                IXC    = 1 + NINT ( MOD (                             &
-                     1080.+X0+REAL(IX-1)*SX-X0I , 360. ) / SXI )
-                IXS0   = IXC - 1 - MXA/2
-                IXSN   = IXC + 1 + MXA/2
-             ELSE
-                IXC    = NINT ( 1. + ( X0+REAL(IX-1)*SX - X0I ) / SXI )
-                IXS0   = MAX (  1  , IXC - 1 - MXA/2 )
-                IXSN   = MIN ( NXI , IXC + 1 + MXA/2 )
-             END IF
-             DO J=IXS0, IXSN
-                IF ( FLAGLL ) THEN
-                   IF ( ICLOSE.NE.ICLOSE_NONE ) JJ = 1 + MOD(J-1+NXI,NXI)
-                   IF ( JJ.LT.1 .OR. JJ.GT. NXI ) CYCLE
-                   IXC   = NINT((0.5*(XFL+XFR)-X0I-REAL(JJ-1)*SXI)/360.)
-                   IF ( IXC .NE. 0 ) THEN
-                      XFL    = XFL - REAL(IXC) * 360.
-                      XFR    = XFR - REAL(IXC) * 360.
-                   END IF
-                ELSE
-                   JJ     = J
-                END IF
-                XSL    = MAX ( XFL , X0I + REAL(JJ-1)*SXI - 0.5*SXI )
-                XSR    = MIN ( XFR , X0I + REAL(JJ-1)*SXI + 0.5*SXI )
-                R1     = MAX ( 0. , XSR - XSL ) / SX
-                IF ( R1 .GT. 0 ) THEN
-                   NXA(IX,0) = NXA(IX,0) + 1
-                   NXA(IX,NXA(IX,0)) = JJ
-                   RXA(IX,NXA(IX,0)) = R1
-                END IF
-             END DO
-             IF ( NXA(IX,0)  .GT. 0 ) THEN
-                RT     = SUM ( RXA(IX,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                   NXA(IX,:) = 0
-                   RXA(IX,:) = 0.
-                END IF
-             END IF
-          END DO
-          !
-       END IF
-       !
+          IF ( NXA(IX,0)  .GT. 0 ) THEN
+            RT     = SUM ( RXA(IX,:) )
+            IF ( RT .LT. 0.7 ) THEN
+              NXA(IX,:) = 0
+              RXA(IX,:) = 0.
+            END IF
+          END IF
+        END DO
+        !
+      END IF
+      !
 #ifdef W3_T1
-       DO, IX=1, NX
-          IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
-               IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
-       END DO
+      DO, IX=1, NX
+        IF ( NXA(IX,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
+             IX, NXA(IX,1:MXA), RXA(IX,1:MXA), SUM(RXA(IX,1:MXA))
+      END DO
 #endif
-       !
-       ! 2.b.2 Interpolation / averaging data for Y axis
-       !
-       IF ( SY/SYI .LT. 1.0001 ) THEN
-          MYA    = 2
-       ELSE
-          MYA    = 2 + INT(SY/SYI)
-       END IF
-       !
+      !
+      ! 2.b.2 Interpolation / averaging data for Y axis
+      !
+      IF ( SY/SYI .LT. 1.0001 ) THEN
+        MYA    = 2
+      ELSE
+        MYA    = 2 + INT(SY/SYI)
+      END IF
+      !
 #ifdef W3_T
-       WRITE (MDST,9020) 'Y'
+      WRITE (MDST,9020) 'Y'
 #endif
 #ifdef W3_T1
-       WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
-       WRITE (MDST,9021) NY, MYA
+      WRITE (FORMAT1,'(A,I2,A,I2,A)') "'(10X,",MYA+1,'I5,',MYA+1,"F6.2)'"
+      WRITE (MDST,9021) NY, MYA
 #endif
-       !
-       ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
-       NYA    = 0
-       RYA    = 0.
-       !
-       !
-       IF ( MYA .EQ. 2 ) THEN
-          !
-          DO IY=1, NY
-             YR     = 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI
-             IF ( YR.GT.0. ) THEN
-                J1     = INT(YR)
-                J2     = J1 + 1
-                R2     = MAX ( 0. , YR-REAL(J1) )
-                R1     = 1. - R2
-                IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
-                   NYA(IY,0) = NYA(IY,0) + 1
-                   NYA(IY,NYA(IY,0)) = J1
-                   RYA(IY,NYA(IY,0)) = R1
-                END IF
-                IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
-                   NYA(IY,0) = NYA(IY,0) + 1
-                   NYA(IY,NYA(IY,0)) = J2
-                   RYA(IY,NYA(IY,0)) = R2
-                END IF
-                IF ( NYA(IY,0)  .GT. 0 ) THEN
-                   RT     = SUM ( RYA(IY,:) )
-                   IF ( RT .LT. 0.7 ) THEN
-                      NYA(IY,:) = 0
-                      RYA(IY,:) = 0.
-                   END IF
-                END IF
-             END IF
+      !
+      ALLOCATE ( NYA(NY,0:MYA) , RYA(NY,MYA) )
+      NYA    = 0
+      RYA    = 0.
+      !
+      !
+      IF ( MYA .EQ. 2 ) THEN
+        !
+        DO IY=1, NY
+          YR     = 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI
+          IF ( YR.GT.0. ) THEN
+            J1     = INT(YR)
+            J2     = J1 + 1
+            R2     = MAX ( 0. , YR-REAL(J1) )
+            R1     = 1. - R2
+            IF ( J1.GE.1 .AND. J1.LE.NYI .AND. R1.GT.0.05 ) THEN
+              NYA(IY,0) = NYA(IY,0) + 1
+              NYA(IY,NYA(IY,0)) = J1
+              RYA(IY,NYA(IY,0)) = R1
+            END IF
+            IF ( J2.GE.1 .AND. J2.LE.NYI .AND. R2.GT.0.05 ) THEN
+              NYA(IY,0) = NYA(IY,0) + 1
+              NYA(IY,NYA(IY,0)) = J2
+              RYA(IY,NYA(IY,0)) = R2
+            END IF
+            IF ( NYA(IY,0)  .GT. 0 ) THEN
+              RT     = SUM ( RYA(IY,:) )
+              IF ( RT .LT. 0.7 ) THEN
+                NYA(IY,:) = 0
+                RYA(IY,:) = 0.
+              END IF
+            END IF
+          END IF
+        END DO
+        !
+      ELSE
+        !
+        DO IY=1, NY
+          YFL    = Y0 + REAL(IY-1)*SY - 0.5*SY
+          YFR    = Y0 + REAL(IY-1)*SY + 0.5*SY
+          IYC    = NINT ( 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI )
+          IYS0   = MAX (  1  , IYC - 1 - MYA/2 )
+          IYSN   = MIN ( NYI , IYC + 1 + MYA/2 )
+          DO J=IYS0, IYSN
+            YSL    = MAX ( YFL , Y0I + REAL(J-1)*SYI - 0.5*SYI )
+            YSR    = MIN ( YFR , Y0I + REAL(J-1)*SYI + 0.5*SYI )
+            R1     = MAX ( 0. , YSR - YSL ) / SY
+            IF ( R1 .GT. 0 ) THEN
+              NYA(IY,0) = NYA(IY,0) + 1
+              NYA(IY,NYA(IY,0)) = J
+              RYA(IY,NYA(IY,0)) = R1
+            END IF
           END DO
-          !
-       ELSE
-          !
-          DO IY=1, NY
-             YFL    = Y0 + REAL(IY-1)*SY - 0.5*SY
-             YFR    = Y0 + REAL(IY-1)*SY + 0.5*SY
-             IYC    = NINT ( 1. + ( Y0+REAL(IY-1)*SY - Y0I ) / SYI )
-             IYS0   = MAX (  1  , IYC - 1 - MYA/2 )
-             IYSN   = MIN ( NYI , IYC + 1 + MYA/2 )
-             DO J=IYS0, IYSN
-                YSL    = MAX ( YFL , Y0I + REAL(J-1)*SYI - 0.5*SYI )
-                YSR    = MIN ( YFR , Y0I + REAL(J-1)*SYI + 0.5*SYI )
-                R1     = MAX ( 0. , YSR - YSL ) / SY
-                IF ( R1 .GT. 0 ) THEN
-                   NYA(IY,0) = NYA(IY,0) + 1
-                   NYA(IY,NYA(IY,0)) = J
-                   RYA(IY,NYA(IY,0)) = R1
-                END IF
-             END DO
-             IF ( NYA(IY,0)  .GT. 0 ) THEN
-                RT     = SUM ( RYA(IY,:) )
-                IF ( RT .LT. 0.7 ) THEN
-                   NYA(IY,:) = 0
-                   RYA(IY,:) = 0.
-                END IF
-             END IF
-          END DO
-          !
-       END IF
-       !
+          IF ( NYA(IY,0)  .GT. 0 ) THEN
+            RT     = SUM ( RYA(IY,:) )
+            IF ( RT .LT. 0.7 ) THEN
+              NYA(IY,:) = 0
+              RYA(IY,:) = 0.
+            END IF
+          END IF
+        END DO
+        !
+      END IF
+      !
     END IF
     !
 #ifdef W3_T1
     DO, IY=1, NY
-       IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
-            IY, NYA(IY,1:MYA), RYA(IY,1:MYA), SUM(RYA(IY,1:MYA))
+      IF ( NYA(IY,0) .GT. 0 ) WRITE (MDST,FORMAT1)                &
+           IY, NYA(IY,1:MYA), RYA(IY,1:MYA), SUM(RYA(IY,1:MYA))
     END DO
 #endif
     !
@@ -2476,32 +2476,32 @@ CONTAINS
     MAP2   = .FALSE.
     !
     DO IX=1, NX
-       IF ( NXA(IX,0) .EQ. 0 ) CYCLE
-       DO IY=1, NY
-          IF ( NYA(IY,0) .EQ. 0 ) CYCLE
-          IF ( MAP(IY,IX).NE.0 ) THEN
-             FDL    = 0.
-             WTOT   = 0.
-             DO J1=1, NXA(IX,0)
-                JX     = NXA(IX,J1)
-                DO J2=1, NYA(IY,0)
-                   JY     = NYA(IY,J2)
-                   IF ( MAPI(JY,JX) .NE. 0 ) THEN
-                      WL     = RXA(IX,J1) * RYA(IY,J2)
-                      WTOT   = WTOT + WL
-                      FDL    = FDL + WL * FDI(JX,JY)
-                   END IF
-                END DO
-             END DO
-             IF ( WTOT .LT. 0.05 ) THEN
-                MAP1(IX,IY) = .TRUE.
-             ELSE
-                MAP2(IX,IY) = .TRUE.
-                FDL    = FDL / WTOT
-                FD(IX,IY) = FDL
-             END IF
+      IF ( NXA(IX,0) .EQ. 0 ) CYCLE
+      DO IY=1, NY
+        IF ( NYA(IY,0) .EQ. 0 ) CYCLE
+        IF ( MAP(IY,IX).NE.0 ) THEN
+          FDL    = 0.
+          WTOT   = 0.
+          DO J1=1, NXA(IX,0)
+            JX     = NXA(IX,J1)
+            DO J2=1, NYA(IY,0)
+              JY     = NYA(IY,J2)
+              IF ( MAPI(JY,JX) .NE. 0 ) THEN
+                WL     = RXA(IX,J1) * RYA(IY,J2)
+                WTOT   = WTOT + WL
+                FDL    = FDL + WL * FDI(JX,JY)
+              END IF
+            END DO
+          END DO
+          IF ( WTOT .LT. 0.05 ) THEN
+            MAP1(IX,IY) = .TRUE.
+          ELSE
+            MAP2(IX,IY) = .TRUE.
+            FDL    = FDL / WTOT
+            FD(IX,IY) = FDL
           END IF
-       END DO
+        END IF
+      END DO
     END DO
     !
     ! 2.d Reconcile mask differences
@@ -2514,60 +2514,60 @@ CONTAINS
     ICLOSE => GRIDS(IMOD)%ICLOSE
     !
     DO
-       IF ( JJ .GT. SWPMAX ) EXIT
-       FLAGUP = .FALSE.
-       MAP3   = .FALSE.
-       JJ     = JJ + 1
+      IF ( JJ .GT. SWPMAX ) EXIT
+      FLAGUP = .FALSE.
+      MAP3   = .FALSE.
+      JJ     = JJ + 1
 #ifdef W3_T
-       WRITE (MDST,9023) JJ
+      WRITE (MDST,9023) JJ
 #endif
-       DO IX=1, NX
-          DO IY=1, NY
-             IF ( MAP1(IX,IY) ) THEN
-                FDL    = 0.
-                J1     = 0
-                IF ( FLAGLL ) THEN
-                   DO J2=IX-1, IX+1
-                      IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. ICLOSE.NE.ICLOSE_NONE ) THEN
-                         JX     = 1 + MOD(NX+J2-1,NX)
-                         DO JY=IY-1, IY+1
-                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
-                               IF ( MAP2(JX,JY) ) THEN
-                                  FDL     = FDL + FD(JX,JY)
-                                  J1      = J1 + 1
-                               END IF
-                            END IF
-                         END DO
+      DO IX=1, NX
+        DO IY=1, NY
+          IF ( MAP1(IX,IY) ) THEN
+            FDL    = 0.
+            J1     = 0
+            IF ( FLAGLL ) THEN
+              DO J2=IX-1, IX+1
+                IF ( (J2.GT.1 .AND. J2.LE.NX) .OR. ICLOSE.NE.ICLOSE_NONE ) THEN
+                  JX     = 1 + MOD(NX+J2-1,NX)
+                  DO JY=IY-1, IY+1
+                    IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                      IF ( MAP2(JX,JY) ) THEN
+                        FDL     = FDL + FD(JX,JY)
+                        J1      = J1 + 1
                       END IF
-                   END DO
-                ELSE
-                   DO JX=IX-1, IX+1
-                      IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
-                         DO JY=IY-1, IY+1
-                            IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
-                               IF ( MAP2(JX,JY) ) THEN
-                                  FDL     = FDL + FD(JX,JY)
-                                  J1      = J1 + 1
-                               END IF
-                            END IF
-                         END DO
-                      END IF
-                   END DO
-                END IF !FLAGLL
-                IF ( J1 .GT. 0 ) THEN
-                   FD(IX,IY) = FDL / REAL(J1)
-                   MAP1(IX,IY) = .FALSE.
-                   MAP3(IX,IY) = .TRUE.
-                   FLAGUP = .TRUE.
+                    END IF
+                  END DO
                 END IF
-             END IF
-          END DO
-       END DO
-       IF ( FLAGUP ) THEN
-          MAP2   = MAP2 .OR. MAP3
-       ELSE
-          EXIT
-       END IF
+              END DO
+            ELSE
+              DO JX=IX-1, IX+1
+                IF ( JX.GT.1 .AND. JX.LE.NX ) THEN
+                  DO JY=IY-1, IY+1
+                    IF ( JY.GT.1 .AND. JY.LE.NY ) THEN
+                      IF ( MAP2(JX,JY) ) THEN
+                        FDL     = FDL + FD(JX,JY)
+                        J1      = J1 + 1
+                      END IF
+                    END IF
+                  END DO
+                END IF
+              END DO
+            END IF !FLAGLL
+            IF ( J1 .GT. 0 ) THEN
+              FD(IX,IY) = FDL / REAL(J1)
+              MAP1(IX,IY) = .FALSE.
+              MAP3(IX,IY) = .TRUE.
+              FLAGUP = .TRUE.
+            END IF
+          END IF
+        END DO
+      END DO
+      IF ( FLAGUP ) THEN
+        MAP2   = MAP2 .OR. MAP3
+      ELSE
+        EXIT
+      END IF
     END DO
     !
     ! 3. End of routine -------------------------------------------------- /
@@ -2697,18 +2697,18 @@ CONTAINS
     LEFT = 1
     RIGHT = LENGTH
     DO
-       IF (LEFT > RIGHT) THEN
-          EXIT
-       ENDIF
-       MIDDLE = NINT((LEFT+RIGHT) / 2.0)
-       IF ( ABS(ARRAY(MIDDLE) - VALUE) <= DELTA) THEN
-          XYCURVISEARCH = MIDDLE
-          RETURN
-       ELSE IF (ARRAY(MIDDLE) > VALUE) THEN
-          RIGHT = MIDDLE - 1
-       ELSE
-          LEFT = MIDDLE + 1
-       END IF
+      IF (LEFT > RIGHT) THEN
+        EXIT
+      ENDIF
+      MIDDLE = NINT((LEFT+RIGHT) / 2.0)
+      IF ( ABS(ARRAY(MIDDLE) - VALUE) <= DELTA) THEN
+        XYCURVISEARCH = MIDDLE
+        RETURN
+      ELSE IF (ARRAY(MIDDLE) > VALUE) THEN
+        RIGHT = MIDDLE - 1
+      ELSE
+        LEFT = MIDDLE + 1
+      END IF
     END DO
     XYCURVISEARCH = RIGHT
 
@@ -2836,10 +2836,10 @@ CONTAINS
     JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y, DELTA)
     !
     IF (INX .GE. X_LEN) THEN
-       INX=INX-1
+      INX=INX-1
     END IF
     IF (JNX .GE. Y_LEN) THEN
-       JNX=JNX-1
+      JNX=JNX-1
     END IF
     !
     X1 = XARRAY(INX)
@@ -2977,10 +2977,10 @@ CONTAINS
     JNX = XYCURVISEARCH(Y_LEN, YARRAY, Y, DELTA)
     !
     IF (INX .GE. X_LEN) THEN
-       INX=INX-1
+      INX=INX-1
     END IF
     IF (JNX .GE. Y_LEN) THEN
-       JNX=JNX-1
+      JNX=JNX-1
     END IF
     !
     X1 = XARRAY(INX)
@@ -3070,37 +3070,37 @@ CONTAINS
     INYEND=NPY+1
     ! LETS FIX THE INITIAL INDEX =1 NEGATIVE INDEXES IN LONG
     IF (INX-NPX .LT. 1) THEN
-       INITIALX=1
+      INITIALX=1
     ELSE
-       INITIALX=INX-NPX
+      INITIALX=INX-NPX
     END IF
     ! LETS FIX THE FINAL INDEX =NX IF LOOKING FOR INDEXES > NX
     IF (INX+INXEND .GT. X_LEN) THEN
-       INFINX=X_LEN
+      INFINX=X_LEN
     ELSE
-       INFINX=INX+INXEND
+      INFINX=INX+INXEND
     END IF
     ! LETS FIX THE INITIAL INDEX =1 FOR NEGATIVE INDEXES FOR LAT
     IF (INY-NPY .LT. 1) THEN
-       INITIALY=1
+      INITIALY=1
     ELSE
-       INITIALY=INY-NPY
+      INITIALY=INY-NPY
     END IF
     ! LETS FIX THE FINAL INDEX =NX IF LOOKING FOR INDEXES > NX
     IF (INY+INYEND .GT. Y_LEN) THEN
-       INFINY=Y_LEN
+      INFINY=Y_LEN
     ELSE
-       INFINY=INY+INYEND
+      INFINY=INY+INYEND
     END IF
 
 
     SUM=0.0
     ICOUNT=0
     DO J=INITIALY,INFINY
-       DO I=INITIALX,INFINX
-          ICOUNT=ICOUNT+1
-          SUM=SUM+FUNC(I,J)
-       END DO
+      DO I=INITIALX,INFINX
+        ICOUNT=ICOUNT+1
+        SUM=SUM+FUNC(I,J)
+      END DO
     END DO
     AVERAGING=SUM/REAL(ICOUNT)
 

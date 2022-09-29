@@ -184,29 +184,29 @@ CONTAINS
     DELAB   = (ABMAX-ABMIN)/REAL(SIZEFWTABLE)
     L10=ALOG(10.)
     DO I=0,SIZEFWTABLE
-       !
-       !  index I in this table corresponds to a normalized roughness z0/ABR = 10^ABMIN+REAL(I)*DELAB
-       !
-       ABRLOG=ABMIN+REAL(I)*DELAB
-       ABR=EXP(ABRLOG*L10)
-       FACT=1/ABR/(21.2*KAPPA)
-       FSUBW=0.05
-       dzeta0=0.
-       DO ITER=1,NITER
-          fsubwmemo=fsubw
-          dzeta0memo=dzeta0
-          dzeta0=fact*fsubw**(-.5)
-          CALL KERKEI(2.*SQRT(dzeta0),ker,kei)
-          fsubw=.08/(ker**2+kei**2)
-          fsubw=.5*(fsubwmemo+fsubw)
-          dzeta0=.5*(dzeta0memo+dzeta0)
-       END DO
-       !
-       ! Maximum value of 0.5 for fe is based on field
-       ! and lab experiment by Lowe et al. JGR 2005, 2007
-       !
-       FWTABLE(I)  = MIN(fsubw,0.5)
-       !           WRITE(994,*) 'Friction factor:',I,ABR,FWTABLE(I)
+      !
+      !  index I in this table corresponds to a normalized roughness z0/ABR = 10^ABMIN+REAL(I)*DELAB
+      !
+      ABRLOG=ABMIN+REAL(I)*DELAB
+      ABR=EXP(ABRLOG*L10)
+      FACT=1/ABR/(21.2*KAPPA)
+      FSUBW=0.05
+      dzeta0=0.
+      DO ITER=1,NITER
+        fsubwmemo=fsubw
+        dzeta0memo=dzeta0
+        dzeta0=fact*fsubw**(-.5)
+        CALL KERKEI(2.*SQRT(dzeta0),ker,kei)
+        fsubw=.08/(ker**2+kei**2)
+        fsubw=.5*(fsubwmemo+fsubw)
+        dzeta0=.5*(dzeta0memo+dzeta0)
+      END DO
+      !
+      ! Maximum value of 0.5 for fe is based on field
+      ! and lab experiment by Lowe et al. JGR 2005, 2007
+      !
+      FWTABLE(I)  = MIN(fsubw,0.5)
+      !           WRITE(994,*) 'Friction factor:',I,ABR,FWTABLE(I)
     END DO
     RETURN
   END SUBROUTINE TABU_FW
@@ -300,18 +300,18 @@ CONTAINS
     L = 2.106D0*P2 + 4.4D0
     IF (P2.LT.8.0D-1) L = 2.129D0*P2 + 4.0D0
     DO N=1,INT(L)
-       P1 = N
-       P2 = N*N
-       R1 = RTERM
-       RTERM = (R1*X2-ITERM*Y2)/P2
-       ITERM = (R1*Y2+ITERM*X2)/P2
-       T1 = T1 + 0.5D0/P1
-       RE0 = RE0 + T1*RTERM - T2*ITERM
-       IM0 = IM0 + T1*ITERM + T2*RTERM
-       P1 = P1 + 1.0D0
-       T1 = T1 + 0.5D0/P1
-       RE1 = RE1 + (T1*RTERM-T2*ITERM)/P1
-       IM1 = IM1 + (T1*ITERM+T2*RTERM)/P1
+      P1 = N
+      P2 = N*N
+      R1 = RTERM
+      RTERM = (R1*X2-ITERM*Y2)/P2
+      ITERM = (R1*Y2+ITERM*X2)/P2
+      T1 = T1 + 0.5D0/P1
+      RE0 = RE0 + T1*RTERM - T2*ITERM
+      IM0 = IM0 + T1*ITERM + T2*RTERM
+      P1 = P1 + 1.0D0
+      T1 = T1 + 0.5D0/P1
+      RE1 = RE1 + (T1*RTERM-T2*ITERM)/P1
+      IM1 = IM1 + (T1*ITERM+T2*RTERM)/P1
     END DO
     R1 = X/R2 - 0.5D0*(X*RE1-Y*IM1)
     R2 = -Y/R2 - 0.5D0*(X*IM1+Y*RE1)
@@ -335,15 +335,15 @@ CONTAINS
     RE1 = 0.0D0
     IM1 = 0.0D0
     DO N=2,8
-       T2 = X2 + TSQ(N)
-       P1 = DSQRT(T2*T2+R1)
-       P2 = DSQRT(P1+T2)
-       T1 = EXSQ(N)/P1
-       RE0 = RE0 + T1*P2
-       IM0 = IM0 + T1/P2
-       T1 = EXSQ(N)*TSQ(N)
-       RE1 = RE1 + T1*P2
-       IM1 = IM1 + T1/P2
+      T2 = X2 + TSQ(N)
+      P1 = DSQRT(T2*T2+R1)
+      P2 = DSQRT(P1+T2)
+      T1 = EXSQ(N)/P1
+      RE0 = RE0 + T1*P2
+      IM0 = IM0 + T1/P2
+      T1 = EXSQ(N)*TSQ(N)
+      RE1 = RE1 + T1*P2
+      IM1 = IM1 + T1/P2
     END DO
     T2 = -Y2*IM0
     RE1 = RE1/R2
@@ -375,18 +375,18 @@ CONTAINS
     M = -8
     K = 3
     DO N=1,INT(L)
-       M = M + 8
-       K = K - M
-       R1 = FLOAT(K-4)*R1
-       R2 = FLOAT(K)*R2
-       T1 = FLOAT(N)*P1
-       T2 = RTERM
-       RTERM = (T2*X+ITERM*Y)/T1
-       ITERM = (-T2*Y+ITERM*X)/T1
-       RE0 = RE0 + R1*RTERM
-       IM0 = IM0 + R1*ITERM
-       RE1 = RE1 + R2*RTERM
-       IM1 = IM1 + R2*ITERM
+      M = M + 8
+      K = K - M
+      R1 = FLOAT(K-4)*R1
+      R2 = FLOAT(K)*R2
+      T1 = FLOAT(N)*P1
+      T2 = RTERM
+      RTERM = (T2*X+ITERM*Y)/T1
+      ITERM = (-T2*Y+ITERM*X)/T1
+      RE0 = RE0 + R1*RTERM
+      IM0 = IM0 + R1*ITERM
+      RE1 = RE1 + R2*RTERM
+      IM1 = IM1 + R2*ITERM
     END DO
     T1 = DSQRT(P2+X)
     T2 = -Y/T1

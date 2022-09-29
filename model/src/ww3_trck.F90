@@ -163,9 +163,9 @@ PROGRAM W3TRCK
   READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
   !
   IF ( FLAGLL ) THEN
-     FACTOR  = 1.
+    FACTOR  = 1.
   ELSE
-     FACTOR  = 1.E-3
+    FACTOR  = 1.E-3
   END IF
   !
   IF ( IDSTR .NE. IDTST ) GOTO 810
@@ -204,25 +204,25 @@ PROGRAM W3TRCK
   READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR,  &
        TRCKID
   IF ( FLAGLL ) THEN
-     WRITE (NDSOUT,984,ERR=803,IOSTAT=IERR)                      &
-          TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
+    WRITE (NDSOUT,984,ERR=803,IOSTAT=IERR)                      &
+         TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
   ELSE
-     WRITE (NDSOUT,974,ERR=803,IOSTAT=IERR)                      &
-          TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
+    WRITE (NDSOUT,974,ERR=803,IOSTAT=IERR)                      &
+         TIME, FACTOR*X, FACTOR*Y, TSTSTR, TRCKID
   END IF
   !
   IF ( TIME(1).EQ.TTST(1) .AND. TIME(2).EQ.TTST(2) ) THEN
-     ILOC = ILOC + 1
-     IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+    ILOC = ILOC + 1
+    IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
   ENDIF
   IF ( TIME(1).NE.TTST(1) .OR. TIME(2).NE.TTST(2) ) THEN
-     CALL STME21 ( TTST , STIME )
-     WRITE (NDSO,941) STIME, ILOC, ISPEC
-     ILOC    = 1
-     ISPEC   = 0
-     IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
-     TTST(1) = TIME(1)
-     TTST(2) = TIME(2)
+    CALL STME21 ( TTST , STIME )
+    WRITE (NDSO,941) STIME, ILOC, ISPEC
+    ILOC    = 1
+    ISPEC   = 0
+    IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+    TTST(1) = TIME(1)
+    TTST(2) = TIME(2)
   ENDIF
   !
   ! 4.b Check if sea point
@@ -249,72 +249,72 @@ PROGRAM W3TRCK
   ! 4.e.1 Loop over spectrum
   !
   DO IK=1, NK
-     DO ITH=1, NTH
-        VALUE  = MAX ( 0.1 , 1.1*SPEC(IK,ITH)/SCALE )
-        IWDTH  = 2 + MAX( 0 , INT( ALOG10(VALUE) ) )
+    DO ITH=1, NTH
+      VALUE  = MAX ( 0.1 , 1.1*SPEC(IK,ITH)/SCALE )
+      IWDTH  = 2 + MAX( 0 , INT( ALOG10(VALUE) ) )
+      !
+      ! 4.e.2 Put value in string and test overflow
+      !
+      IF ( IWDTH .GT. 9 ) THEN
+        IWDTH   = 9
+        PART    = ' 99999999'
+      ELSE
+        WRITE (PART,987) NINT(SPEC(IK,ITH)/SCALE)
+        IF ( PART(11-IWDTH:11-IWDTH) .EQ. ' ' )                 &
+             IWDTH   = IWDTH - 1
+      ENDIF
+      !
+      ! 4.e.3 It's a zero, wait with writing
+      !
+      IF ( PART(8:9) .EQ. ' 0' ) THEN
+        NZERO  = NZERO + 1
+      ELSE
         !
-        ! 4.e.2 Put value in string and test overflow
+        ! 4.e.4 It's not a zero, write unwritten zeros
         !
-        IF ( IWDTH .GT. 9 ) THEN
-           IWDTH   = 9
-           PART    = ' 99999999'
-        ELSE
-           WRITE (PART,987) NINT(SPEC(IK,ITH)/SCALE)
-           IF ( PART(11-IWDTH:11-IWDTH) .EQ. ' ' )                 &
-                IWDTH   = IWDTH - 1
-        ENDIF
-        !
-        ! 4.e.3 It's a zero, wait with writing
-        !
-        IF ( PART(8:9) .EQ. ' 0' ) THEN
-           NZERO  = NZERO + 1
-        ELSE
-           !
-           ! 4.e.4 It's not a zero, write unwritten zeros
-           !
-           IF ( NZERO .NE. 0 ) THEN
-              IF ( NZERO .EQ. 1 ) THEN
-                 ZEROS  = '        0'
-                 IWZERO = 2
+        IF ( NZERO .NE. 0 ) THEN
+          IF ( NZERO .EQ. 1 ) THEN
+            ZEROS  = '        0'
+            IWZERO = 2
+          ELSE
+            WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
+            IWZERO = 4
+            DO
+              ICH    = 10 - IWZERO
+              IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
+                IWZERO = IWZERO + 1
               ELSE
-                 WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
-                 IWZERO = 4
-                 DO
-                    ICH    = 10 - IWZERO
-                    IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
-                       IWZERO = IWZERO + 1
-                    ELSE
-                       EXIT
-                    ENDIF
-                 END DO
+                EXIT
               ENDIF
-              IF ( ILAST+IWZERO .GT. LINELN ) THEN
-                 WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)          &
-                      STRING(2:ILAST)
-                 STRING = EMPTY
-                 ILAST  = 0
-              ENDIF
-              STRING(ILAST+1:ILAST+IWZERO) =                      &
-                   ZEROS(10-IWZERO:9)
-              ILAST  = ILAST + IWZERO
-              NZERO  = 0
-           ENDIF
-           !
-           ! 4.e.5 It's not a zero, put in string
-           !
-           IF ( ILAST+IWDTH .GT. LINELN ) THEN
-              WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)              &
-                   STRING(2:ILAST)
-              STRING = EMPTY
-              ILAST  = 0
-           ENDIF
-           !
-           STRING(ILAST+1:ILAST+IWDTH) = PART(10-IWDTH:9)
-           ILAST  = ILAST + IWDTH
-           !
+            END DO
+          ENDIF
+          IF ( ILAST+IWZERO .GT. LINELN ) THEN
+            WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)          &
+                 STRING(2:ILAST)
+            STRING = EMPTY
+            ILAST  = 0
+          ENDIF
+          STRING(ILAST+1:ILAST+IWZERO) =                      &
+               ZEROS(10-IWZERO:9)
+          ILAST  = ILAST + IWZERO
+          NZERO  = 0
         ENDIF
         !
-     END DO
+        ! 4.e.5 It's not a zero, put in string
+        !
+        IF ( ILAST+IWDTH .GT. LINELN ) THEN
+          WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)              &
+               STRING(2:ILAST)
+          STRING = EMPTY
+          ILAST  = 0
+        ENDIF
+        !
+        STRING(ILAST+1:ILAST+IWDTH) = PART(10-IWDTH:9)
+        ILAST  = ILAST + IWDTH
+        !
+      ENDIF
+      !
+    END DO
   END DO
   !
   ! ..... End of loop over spectrum (4.e.1)
@@ -322,36 +322,36 @@ PROGRAM W3TRCK
   ! 4.e.6 Write trailing zeros
   !
   IF ( NZERO .NE. 0 ) THEN
-     IF ( NZERO .EQ. 1 ) THEN
-        ZEROS  = '        0'
-        IWZERO = 2
-     ELSE
-        WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
-        IWZERO = 4
-        DO
-           ICH    = 10 - IWZERO
-           IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
-              IWZERO = IWZERO + 1
-           ELSE
-              EXIT
-           ENDIF
-        END DO
-     ENDIF
-     IF ( ILAST+IWZERO .GT. LINELN ) THEN
-        WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)                  &
-             STRING(2:ILAST)
-        STRING = EMPTY
-        ILAST  = 0
-     ENDIF
-     STRING(ILAST+1:ILAST+IWZERO) = ZEROS(10-IWZERO:9)
-     ILAST  = ILAST + IWZERO
-     NZERO  = 0
+    IF ( NZERO .EQ. 1 ) THEN
+      ZEROS  = '        0'
+      IWZERO = 2
+    ELSE
+      WRITE (ZEROS,'(I7,A2)') NZERO, '*0'
+      IWZERO = 4
+      DO
+        ICH    = 10 - IWZERO
+        IF ( ZEROS(ICH:ICH) .NE. ' ' ) THEN
+          IWZERO = IWZERO + 1
+        ELSE
+          EXIT
+        ENDIF
+      END DO
+    ENDIF
+    IF ( ILAST+IWZERO .GT. LINELN ) THEN
+      WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR)                  &
+           STRING(2:ILAST)
+      STRING = EMPTY
+      ILAST  = 0
+    ENDIF
+    STRING(ILAST+1:ILAST+IWZERO) = ZEROS(10-IWZERO:9)
+    ILAST  = ILAST + IWZERO
+    NZERO  = 0
   ENDIF
   !
   ! 4.e.7 Write last line
   !
   IF ( ILAST .NE. 0 ) THEN
-     WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR) STRING(2:ILAST)
+    WRITE (NDSOUT,986,ERR=803,IOSTAT=IERR) STRING(2:ILAST)
   ENDIF
   !
   ! ... Loop back to top

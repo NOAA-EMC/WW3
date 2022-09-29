@@ -117,76 +117,76 @@ CONTAINS
     ! * Executable part
     !
     DO IB_DO = 1, IL_NB_SND
-       !
-       ! Ocean sea surface current (m.s-1) (u-component)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_WSSU') THEN
-          TMP(1:NSEAL) = 0.0
-          DO JSEA=1, NSEAL
-             ISEA=IAPROC+(JSEA-1)*NAPROC
-             IF(CX(ISEA) /= UNDEF) TMP(JSEA)=CX(ISEA)
-          END DO
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Ocean sea surface current (m.s-1) (v-component)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_WSSV') THEN
-          TMP(1:NSEAL) = 0.0
-          DO JSEA=1, NSEAL
-             ISEA=IAPROC+(JSEA-1)*NAPROC
-             IF(CY(ISEA) /= UNDEF) TMP(JSEA)=CY(ISEA)
-          END DO
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Charnock Coefficient (-)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ACHA') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(CHARN(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=CHARN(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Significant wave height (m)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__AHS') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(HS(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=HS(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Peak frequency (s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___FP') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(FP0(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=FP0(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Peak period (s)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___TP') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(FP0(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=1./FP0(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wind sea Mean period (s)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FWS') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TWS(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TWS(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
+      !
+      ! Ocean sea surface current (m.s-1) (u-component)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_WSSU') THEN
+        TMP(1:NSEAL) = 0.0
+        DO JSEA=1, NSEAL
+          ISEA=IAPROC+(JSEA-1)*NAPROC
+          IF(CX(ISEA) /= UNDEF) TMP(JSEA)=CX(ISEA)
+        END DO
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Ocean sea surface current (m.s-1) (v-component)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_WSSV') THEN
+        TMP(1:NSEAL) = 0.0
+        DO JSEA=1, NSEAL
+          ISEA=IAPROC+(JSEA-1)*NAPROC
+          IF(CY(ISEA) /= UNDEF) TMP(JSEA)=CY(ISEA)
+        END DO
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Charnock Coefficient (-)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ACHA') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(CHARN(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=CHARN(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Significant wave height (m)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__AHS') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(HS(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=HS(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Peak frequency (s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___FP') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(FP0(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=FP0(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Peak period (s)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___TP') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(FP0(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=1./FP0(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wind sea Mean period (s)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FWS') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TWS(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TWS(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
 
     ENDDO
     !
@@ -274,144 +274,144 @@ CONTAINS
     RLA_OASIS_RCV(:,:) = 0.0
     !
     DO IB_DO = 1, IL_NB_RCV
-       IF (IDFLD == 'WND') THEN
-          !
-          ! Wind speed at 10m (m.s-1) (u-component)
-          ! ----------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__U10') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                ENDDO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
-                     RCV_BUFF(1:NSEA), &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
-                !
-             ENDIF
+      IF (IDFLD == 'WND') THEN
+        !
+        ! Wind speed at 10m (m.s-1) (u-component)
+        ! ----------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__U10') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            ENDDO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                 RCV_BUFF(1:NSEA), &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
+            !
           ENDIF
-          !
-          ! Wind speed at 10m (m.s-1) (v-component)
-          ! ----------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__V10') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                END DO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
-                     RCV_BUFF(1:NSEA),       &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
-                !
-             ENDIF
+        ENDIF
+        !
+        ! Wind speed at 10m (m.s-1) (v-component)
+        ! ----------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__V10') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            END DO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
+                 RCV_BUFF(1:NSEA),       &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
+            !
           ENDIF
-          !
-       ENDIF
-       IF (IDFLD == 'TAU') THEN
-          !
-          ! Atmospheric momentum (Pa) (u-component)
-          ! ----------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UTAU') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                ENDDO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
-                     RCV_BUFF(1:NSEA), &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
-                !
-             ENDIF
+        ENDIF
+        !
+      ENDIF
+      IF (IDFLD == 'TAU') THEN
+        !
+        ! Atmospheric momentum (Pa) (u-component)
+        ! ----------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UTAU') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            ENDDO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                 RCV_BUFF(1:NSEA), &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
+            !
           ENDIF
-          !
-          ! Atmospheric momentum (Pa) (v-component)
-          ! ----------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_VTAU') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                END DO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
-                     RCV_BUFF(1:NSEA),       &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
-                !
-             ENDIF
+        ENDIF
+        !
+        ! Atmospheric momentum (Pa) (v-component)
+        ! ----------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_VTAU') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            END DO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
+                 RCV_BUFF(1:NSEA),       &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
+            !
           ENDIF
-          !
-       ENDIF
-       IF (IDFLD == 'RHO') THEN
-          !
-          ! Air density (kg.m-3)
-          ! ----------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_RHOA') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                ENDDO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
-                     RCV_BUFF(1:NSEA), &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
-                !
-             ENDIF
+        ENDIF
+        !
+      ENDIF
+      IF (IDFLD == 'RHO') THEN
+        !
+        ! Air density (kg.m-3)
+        ! ----------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_RHOA') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            ENDDO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                 RCV_BUFF(1:NSEA), &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+            !
           ENDIF
-       ENDIF
+        ENDIF
+      ENDIF
     ENDDO
     !/ ------------------------------------------------------------------- /
   END SUBROUTINE RCV_FIELDS_FROM_ATMOS

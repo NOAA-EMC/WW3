@@ -25,10 +25,10 @@ MODULE W3NMLBOUNCMD
 
   ! bound structure
   TYPE NML_BOUND_T
-     CHARACTER(5)                :: MODE
-     INTEGER                     :: INTERP
-     INTEGER                     :: VERBOSE
-     CHARACTER(128)              :: FILE
+    CHARACTER(5)                :: MODE
+    INTEGER                     :: INTERP
+    INTEGER                     :: VERBOSE
+    CHARACTER(128)              :: FILE
   END TYPE NML_BOUND_T
 
 
@@ -125,15 +125,15 @@ CONTAINS
     NDSN = 3
     OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+      RETURN
     END IF
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read bound namelist
@@ -245,10 +245,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=BOUND_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_BOUND_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_BOUND_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! save namelist

@@ -430,62 +430,62 @@ CONTAINS
     IF (INFLAGS2(-7)) NUMIN=NUMIN+1
     IF (FIXEDHICE.GE.0.0) NUMIN=NUMIN+1
     IF (NUMIN.NE.1) THEN
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 1 (HICE)',NUMIN
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 1 (HICE)',NUMIN
+      CALL EXTCDE(2)
     ENDIF
 
     NUMIN=0
     IF (INFLAGS2(-6)) NUMIN=NUMIN+1
     IF (FIXEDVISC.GE.0.0) NUMIN=NUMIN+1
     IF (NUMIN.NE.1) THEN
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 2 (VISC)',NUMIN
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 2 (VISC)',NUMIN
+      CALL EXTCDE(2)
     ENDIF
 
     NUMIN=0
     IF (INFLAGS2(-5)) NUMIN=NUMIN+1
     IF (FIXEDDENS.GE.0.0) NUMIN=NUMIN+1
     IF (NUMIN.NE.1) THEN
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 3 (DENS)',NUMIN
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 3 (DENS)',NUMIN
+      CALL EXTCDE(2)
     ENDIF
 
     NUMIN=0
     IF (INFLAGS2(-4)) NUMIN=NUMIN+1
     IF (FIXEDELAS.GE.0.0) NUMIN=NUMIN+1
     IF (NUMIN.NE.1) THEN
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 4 (ELAS)',NUMIN
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 4 (ELAS)',NUMIN
+      CALL EXTCDE(2)
     ENDIF
 
     !     --- Set local value to be used subsequently (ICEPx variables
     !         are not used beyond this point). --------------------------- /
     IF (INFLAGS2(-7)) THEN
-       ICECOEF1 = ICEP1(IX,IY) ! ice thickness
+      ICECOEF1 = ICEP1(IX,IY) ! ice thickness
     ELSE
-       ICECOEF1 = FIXEDHICE
+      ICECOEF1 = FIXEDHICE
     ENDIF
 
     IF (INFLAGS2(-6)) THEN
-       ICECOEF2 = ICEP2(IX,IY) ! effective viscosity of ice cover
+      ICECOEF2 = ICEP2(IX,IY) ! effective viscosity of ice cover
     ELSE
-       ICECOEF2 = FIXEDVISC
+      ICECOEF2 = FIXEDVISC
     ENDIF
 
     IF (INFLAGS2(-5)) THEN
-       ICECOEF3 = ICEP3(IX,IY) ! density of ice
+      ICECOEF3 = ICEP3(IX,IY) ! density of ice
     ELSE
-       ICECOEF3 = FIXEDDENS
+      ICECOEF3 = FIXEDDENS
     ENDIF
 
     IF (INFLAGS2(-4)) THEN
-       ICECOEF4 = ICEP4(IX,IY) ! effective shear modulus of ice
+      ICECOEF4 = ICEP4(IX,IY) ! effective shear modulus of ice
     ELSE
-       ICECOEF4 = FIXEDELAS
+      ICECOEF4 = FIXEDELAS
     ENDIF
 
     !     ICECOEF5 = ICEP5(IX,IY) ! ICEP5 is inactive in W3SIC3
@@ -501,119 +501,119 @@ CONTAINS
 
     IF ( NOICE ) THEN
 
-       D1D=0.0
-       !
-       ! 2.  Ice ------------------------------------------------------------ /
+      D1D=0.0
+      !
+      ! 2.  Ice ------------------------------------------------------------ /
     ELSEIF ( USE_CHENG==1.0 .AND.  &
          ((ICECOEF1.LE.MAXTHK).OR.(ICECONC.LE.MAXCNC)) ) THEN
 
-       ! 2.a Write test output ---------------------------------------------- /
+      ! 2.a Write test output ---------------------------------------------- /
 #ifdef W3_T38
-       WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+      WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
 #endif
 
-       ! 2.b Make calculations using Cheng routines ------------------------- /
+      ! 2.b Make calculations using Cheng routines ------------------------- /
 
-       !     --- Input to routine (part 1): 6 ice parameters from single
-       !         precision variables. ---------------------------------------
+      !     --- Input to routine (part 1): 6 ice parameters from single
+      !         precision variables. ---------------------------------------
 
-       CALL W3IC3WNCG_CHENG(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
-            ICECOEF3, ICECOEF4, DEPTH)
-       !
-       !    --- calculate source term --------------------------------------- /
-       !    --- see Remarks section re: array size -------------------------- /
-       IF ( USE_CGICE==1.0 ) THEN
-          CG_TMP=CG_IC3
-       ELSE
-          CG_TMP=CG
-       ENDIF
-       DO IK=1, NK
-          !            recall that D=S/E=-2*Cg*k_i
-          D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
+      CALL W3IC3WNCG_CHENG(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
+           ICECOEF3, ICECOEF4, DEPTH)
+      !
+      !    --- calculate source term --------------------------------------- /
+      !    --- see Remarks section re: array size -------------------------- /
+      IF ( USE_CGICE==1.0 ) THEN
+        CG_TMP=CG_IC3
+      ELSE
+        CG_TMP=CG
+      ENDIF
+      DO IK=1, NK
+        !            recall that D=S/E=-2*Cg*k_i
+        D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
 
-       END DO
+      END DO
 
     ELSEIF ( (ICECOEF1 .LE. MAXTHK) .OR. (ICECONC .LE. MAXCNC) ) THEN
-       !.......... e.g. if ice thickness is .le. 10 cm
-       !...............or concentration is .le. 1.0
-       !
-       ! 2.a Write test output ---------------------------------------------- /
+      !.......... e.g. if ice thickness is .le. 10 cm
+      !...............or concentration is .le. 1.0
+      !
+      ! 2.a Write test output ---------------------------------------------- /
 #ifdef W3_T38
-       WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+      WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
 #endif
-       !
-       ! 2.b Make calculations using original routines ---------------------- /
-       !     --- Input to routine (part 1): 6 ice parameters from single
-       !         precision variables. ---------------------------------------
+      !
+      ! 2.b Make calculations using original routines ---------------------- /
+      !     --- Input to routine (part 1): 6 ice parameters from single
+      !         precision variables. ---------------------------------------
 
-       CALL W3IC3WNCG_V1(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
-            ICECOEF3, ICECOEF4, DEPTH     )
-       !
-       !    --- calculate source term --------------------------------------- /
-       IF ( USE_CGICE==1.0 ) THEN
-          CG_TMP=CG_IC3
-       ELSE
-          CG_TMP=CG
-       ENDIF
-       DO IK=1, NK
-          !            recall that D=S/E=-2*Cg*k_i
-          D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
-       END DO
-       !
+      CALL W3IC3WNCG_V1(WN_R, WN_I, CG_IC3, ICECOEF1, ICECOEF2, &
+           ICECOEF3, ICECOEF4, DEPTH     )
+      !
+      !    --- calculate source term --------------------------------------- /
+      IF ( USE_CGICE==1.0 ) THEN
+        CG_TMP=CG_IC3
+      ELSE
+        CG_TMP=CG
+      ENDIF
+      DO IK=1, NK
+        !            recall that D=S/E=-2*Cg*k_i
+        D1D(IK)= -2.0 * CG_TMP(IK) * WN_I(IK)
+      END DO
+      !
     ELSE ! .. e.g. if ice thickness is .gt. 10 cm
-       ! Alternative by F.A., see Remarks section.
-       IF (IC3PARS(2).GT.0.) THEN
-          UORB=0.
-          AORB=0.
-          FTURB = IC3PARS(2)
-          IF (IC3PARS(7).GT.0) THEN
-             IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) &
-                  FTURB = IC3PARS(7)
-          END IF
-          DO IK=1, NK
-             EB  = 0.
-             DO ITH=1, NTH
-                IS=ITH+(IK-1)*NTH
-                EB  = EB  + A(IS)
-             END DO
-             !
-             !  UORB and AORB are the variances of the orbital
-             !  velocity and surface elevation
-             !
-             UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
-             AORB = AORB + EB             * DDEN(IK) / CG(IK)
-             !deep water only
+      ! Alternative by F.A., see Remarks section.
+      IF (IC3PARS(2).GT.0.) THEN
+        UORB=0.
+        AORB=0.
+        FTURB = IC3PARS(2)
+        IF (IC3PARS(7).GT.0) THEN
+          IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) &
+               FTURB = IC3PARS(7)
+        END IF
+        DO IK=1, NK
+          EB  = 0.
+          DO ITH=1, NTH
+            IS=ITH+(IK-1)*NTH
+            EB  = EB  + A(IS)
           END DO
           !
-          AORB = 2*SQRT(AORB)  ! significant amplitude
-          UORB = 2*SQRT(UORB)  ! significant amplitude
+          !  UORB and AORB are the variances of the orbital
+          !  velocity and surface elevation
+          !
+          UORB = UORB + EB *SIG(IK)**2 * DDEN(IK) / CG(IK)
+          AORB = AORB + EB             * DDEN(IK) / CG(IK)
+          !deep water only
+        END DO
+        !
+        AORB = 2*SQRT(AORB)  ! significant amplitude
+        UORB = 2*SQRT(UORB)  ! significant amplitude
 
-          RE = UORB*AORB / VISCM
-          SMOOTH = 0.5*TANH((RE-IC3PARS(4))/IC3PARS(5))
-          PTURB=(0.5+SMOOTH)
-          PVISC=(0.5-SMOOTH)
+        RE = UORB*AORB / VISCM
+        SMOOTH = 0.5*TANH((RE-IC3PARS(4))/IC3PARS(5))
+        PTURB=(0.5+SMOOTH)
+        PVISC=(0.5-SMOOTH)
 
-          XI=(ALOG10(MAX(AORB/IC3PARS(3),3.))-ABMIN)/DELAB
-          IND  = MIN (SIZEFWTABLE-1, INT(XI))
-          DELI1= MIN (1. ,XI-FLOAT(IND))
-          DELI2= 1. - DELI1
-          FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
-          DTURB=-1.* FTURB*FW*UORB/GRAV
-       ELSE ! so case of IC3PARS(2).LE.0.
-          DTURB = 0.
-       END IF ! IF (IC3PARS(2).GT.0.)
+        XI=(ALOG10(MAX(AORB/IC3PARS(3),3.))-ABMIN)/DELAB
+        IND  = MIN (SIZEFWTABLE-1, INT(XI))
+        DELI1= MIN (1. ,XI-FLOAT(IND))
+        DELI2= 1. - DELI1
+        FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
+        DTURB=-1.* FTURB*FW*UORB/GRAV
+      ELSE ! so case of IC3PARS(2).LE.0.
+        DTURB = 0.
+      END IF ! IF (IC3PARS(2).GT.0.)
 
-       DO IK=1, NK
-          DVISC = -1. *IC3PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.)
-          D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
-       END DO
+      DO IK=1, NK
+        DVISC = -1. *IC3PARS(6) * WN(IK) * SQRT(VISCM* SIG(IK) / 2.)
+        D1D(IK) = PTURB*DTURB*SIG(IK)**2 +  PVISC*DVISC
+      END DO
 
     END IF !   IF ( NOICE ) THEN
 
     ! 2.c Fill diagional matrix ------------------------------------------ /
     !
     DO IKTH=1, NSPEC
-       D(IKTH) = D1D(MAPWN(IKTH))
+      D(IKTH) = D1D(MAPWN(IKTH))
     END DO
 
     !
@@ -627,9 +627,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !
@@ -776,54 +776,54 @@ CONTAINS
     HICE=MIN(DBLE(IC3HILIM),HICE)
 
     IF (SIZE(WN_R,1).EQ.NK) THEN
-       KL    = 1
-       KU    = NK
-       SIGMA = SIG(1:NK)
+      KL    = 1
+      KU    = NK
+      SIGMA = SIG(1:NK)
     ELSE IF (SIZE(WN_R,1).EQ.NK+2) THEN
-       KL    = 1
-       KU    = NK+2
-       SIGMA = SIG(0:NK+1)
+      KL    = 1
+      KU    = NK+2
+      SIGMA = SIG(0:NK+1)
     ELSE
-       WRITE(NDSE,900)
-       CALL EXTCDE(3)
+      WRITE(NDSE,900)
+      CALL EXTCDE(3)
     END IF
     !
     WNCOMPLEX_OLD=CMPLX(0.0D0,0.0D0)
 
     DO IK = KL,KU
-       !     --- Input to routine (part 2): set 2 double precision variables
-       !         using single precision variable. --------------------------- /
-       CALL WAVNU1(SIGMA(IK),DPT,K_OCEAN,CG_OCEAN)
-       K_NOICE = DBLE(K_OCEAN)
-       !
-       !     --- Muller Method fails for deep water: workaround follows ----- /
-       KH        = K_NOICE * HWAT ! kh w/out ice
-       IF (KH.GT.KHMAX) THEN
-          HWAT   = KHMAX / K_NOICE
-       ENDIF
-       !     --- Calculate complex wavenumber ------------------------------- /
+      !     --- Input to routine (part 2): set 2 double precision variables
+      !         using single precision variable. --------------------------- /
+      CALL WAVNU1(SIGMA(IK),DPT,K_OCEAN,CG_OCEAN)
+      K_NOICE = DBLE(K_OCEAN)
+      !
+      !     --- Muller Method fails for deep water: workaround follows ----- /
+      KH        = K_NOICE * HWAT ! kh w/out ice
+      IF (KH.GT.KHMAX) THEN
+        HWAT   = KHMAX / K_NOICE
+      ENDIF
+      !     --- Calculate complex wavenumber ------------------------------- /
 
-       IF((IK.GT.KL).AND.(SIGMA(IK).GT.STENSEC))THEN
+      IF((IK.GT.KL).AND.(SIGMA(IK).GT.STENSEC))THEN
 
-          WNCOMPLEX = WN_CMPLX_HF(DBLE(SIGMA(IK)),K_NOICE,ES_MOD,NU, &
-               DICE,HICE,HWAT,DBLE(SIGMA(IK-1)),WNCOMPLEX_OLD)
-          WNCOMPLEX_OLD=WNCOMPLEX
+        WNCOMPLEX = WN_CMPLX_HF(DBLE(SIGMA(IK)),K_NOICE,ES_MOD,NU, &
+             DICE,HICE,HWAT,DBLE(SIGMA(IK-1)),WNCOMPLEX_OLD)
+        WNCOMPLEX_OLD=WNCOMPLEX
 
-       ELSE
+      ELSE
 
-          WNCOMPLEX = WN_CMPLX_V1(DBLE(SIGMA(IK)),K_NOICE,ES_MOD,NU, &
-               DICE,HICE,HWAT)
-          WNCOMPLEX_OLD=WNCOMPLEX
+        WNCOMPLEX = WN_CMPLX_V1(DBLE(SIGMA(IK)),K_NOICE,ES_MOD,NU, &
+             DICE,HICE,HWAT)
+        WNCOMPLEX_OLD=WNCOMPLEX
 
-       ENDIF
+      ENDIF
 
-       !     --- Output from function is type of DOUBLE COMPLEX. Set
-       !         precision of imaginary to single precision array element --- /
-       WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))
+      !     --- Output from function is type of DOUBLE COMPLEX. Set
+      !         precision of imaginary to single precision array element --- /
+      WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))
 
-       ! Optional : limit ki
-       WN_I(IK)  = MIN(WN_I(IK),IC3KILIM) ! see Remarks above
-       WN_R(IK)  = REAL(WNCOMPLEX)
+      ! Optional : limit ki
+      WN_I(IK)  = MIN(WN_I(IK),IC3KILIM) ! see Remarks above
+      WN_R(IK)  = REAL(WNCOMPLEX)
 
     END DO
     !     --- Update group velocitiy ----
@@ -948,37 +948,37 @@ CONTAINS
     NSUB = INT((TS-T) * 10.)
     !/
     IF (HICE<0.001) THEN
-       WN  = CMPLX(WN_O,0.)
+      WN  = CMPLX(WN_O,0.)
     ELSE IF (T.LT.TS) THEN
-       X0  = 0.01
-       X1  = 0.1
-       X2  = 1.0
-       WN0 = CMPLX_ROOT_MULLER_V1(X0,X1,X2,0,DBLE(TPI)/TS, &
-            ES,NU,DICE,HICE,DEPTH    )
-       X0  = 0.90 * WN0
-       X1  = WN0
-       X2  = 1.1*WN0
-       WN  = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TS, &
-            ES,NU,DICE,HICE,DEPTH    )
-       DO I=1,NSUB
-          X0 = 0.90 * WN
-          X1 = WN
-          X2 = 1.1 * WN
-          TT = TS - (TS-T) / REAL(NSUB) * REAL(I)
-          WN = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TT, &
-               ES,NU,DICE,HICE,DEPTH    )
-       ENDDO
+      X0  = 0.01
+      X1  = 0.1
+      X2  = 1.0
+      WN0 = CMPLX_ROOT_MULLER_V1(X0,X1,X2,0,DBLE(TPI)/TS, &
+           ES,NU,DICE,HICE,DEPTH    )
+      X0  = 0.90 * WN0
+      X1  = WN0
+      X2  = 1.1*WN0
+      WN  = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TS, &
+           ES,NU,DICE,HICE,DEPTH    )
+      DO I=1,NSUB
+        X0 = 0.90 * WN
+        X1 = WN
+        X2 = 1.1 * WN
+        TT = TS - (TS-T) / REAL(NSUB) * REAL(I)
+        WN = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TT, &
+             ES,NU,DICE,HICE,DEPTH    )
+      ENDDO
     ELSE
-       X0  = 0.01
-       X1  = 0.1
-       X2  = 1.0
-       WN0 = CMPLX_ROOT_MULLER_V1(X0,X1,X2,0,SIGMA,        &
-            ES,NU,DICE,HICE,DEPTH    )
-       X0  = 0.8 * WN0
-       X1  = WN0
-       X2  = 1.2 * WN0
-       WN  = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,SIGMA,        &
-            ES,NU,DICE,HICE,DEPTH    )
+      X0  = 0.01
+      X1  = 0.1
+      X2  = 1.0
+      WN0 = CMPLX_ROOT_MULLER_V1(X0,X1,X2,0,SIGMA,        &
+           ES,NU,DICE,HICE,DEPTH    )
+      X0  = 0.8 * WN0
+      X1  = WN0
+      X2  = 1.2 * WN0
+      WN  = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,SIGMA,        &
+           ES,NU,DICE,HICE,DEPTH    )
     ENDIF
     !/
   END FUNCTION WN_CMPLX_V1
@@ -1085,21 +1085,21 @@ CONTAINS
     NSUB = INT((TS-T) * 10.)
     !/
     IF (HICE<0.001) THEN
-       WN  = CMPLX(WN_O,0.)
+      WN  = CMPLX(WN_O,0.)
     ELSE
-       X0  = 0.90 * WN_LAST
-       X1  = WN_LAST
-       X2  = 1.1 * WN_LAST
-       WN  = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TS, &
-            ES,NU,DICE,HICE,DEPTH    )
-       DO I=1,NSUB
-          X0 = 0.90 * WN
-          X1 = WN
-          X2 = 1.1 * WN
-          TT = TS - (TS-T) / REAL(NSUB) * REAL(I)
-          WN = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TT, &
-               ES,NU,DICE,HICE,DEPTH    )
-       ENDDO
+      X0  = 0.90 * WN_LAST
+      X1  = WN_LAST
+      X2  = 1.1 * WN_LAST
+      WN  = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TS, &
+           ES,NU,DICE,HICE,DEPTH    )
+      DO I=1,NSUB
+        X0 = 0.90 * WN
+        X1 = WN
+        X2 = 1.1 * WN
+        TT = TS - (TS-T) / REAL(NSUB) * REAL(I)
+        WN = CMPLX_ROOT_MULLER_V1(X0,X1,X2,1,DBLE(TPI)/TT, &
+             ES,NU,DICE,HICE,DEPTH    )
+      ENDDO
     ENDIF
     !/
   END FUNCTION WN_CMPLX_HF
@@ -1217,50 +1217,50 @@ CONTAINS
     Y2      = F_ZHAO_V1(P2,JUDGE,SIGMA,ES,NU,DICE,HICE,DEPTH)
     !
     DO I = 1,IMAX
-       Q = (P2 - P1) / (P1 - P0)
-       A = Q * Y2 - Q * (1.+Q) * Y1 + Q**2. * Y0
-       B = (2. * Q + 1.) * Y2 - (1 + Q)**2. * Y1 + Q**2. * Y0
-       C = (1. + Q) * Y2
-       !
-       IF ( ABS(A).NE.0. ) THEN
+      Q = (P2 - P1) / (P1 - P0)
+      A = Q * Y2 - Q * (1.+Q) * Y1 + Q**2. * Y0
+      B = (2. * Q + 1.) * Y2 - (1 + Q)**2. * Y1 + Q**2. * Y0
+      C = (1. + Q) * Y2
+      !
+      IF ( ABS(A).NE.0. ) THEN
 
-          DISC = B**2. - 4 * A * C;
-          !
-          DEN1 = ( B + SQRT ( DISC ) )
-          DEN2 = ( B - SQRT ( DISC ) )
-          !
-          IF ( ABS ( DEN1 ) .LT. ABS ( DEN2 ) )THEN
-             P3 = P2 - (P2 - P1) * (2 * C / DEN2)
-          ELSE
-             P3 = P2 - (P2 - P1) * (2 * C / DEN1)
-          ENDIF
-          !
-       ELSE
-          !
-          IF ( ABS(B) .NE. 0. )THEN
-             P3 = P2 - (P2 - P1) * (C / B)
-          ELSE
-             WRITE(NDSE,800)
-             WRITE(NDSE,801)X0,X1,X2
-             WRITE(NDSE,802)SIGMA,ES,NU,DICE,HICE,DEPTH
-             WRITE(NDSE,803)JUDGE
-             CALL EXTCDE(2)
-          ENDIF
-       ENDIF
+        DISC = B**2. - 4 * A * C;
+        !
+        DEN1 = ( B + SQRT ( DISC ) )
+        DEN2 = ( B - SQRT ( DISC ) )
+        !
+        IF ( ABS ( DEN1 ) .LT. ABS ( DEN2 ) )THEN
+          P3 = P2 - (P2 - P1) * (2 * C / DEN2)
+        ELSE
+          P3 = P2 - (P2 - P1) * (2 * C / DEN1)
+        ENDIF
+        !
+      ELSE
+        !
+        IF ( ABS(B) .NE. 0. )THEN
+          P3 = P2 - (P2 - P1) * (C / B)
+        ELSE
+          WRITE(NDSE,800)
+          WRITE(NDSE,801)X0,X1,X2
+          WRITE(NDSE,802)SIGMA,ES,NU,DICE,HICE,DEPTH
+          WRITE(NDSE,803)JUDGE
+          CALL EXTCDE(2)
+        ENDIF
+      ENDIF
 
-       Y3 = F_ZHAO_V1(P3,JUDGE,SIGMA,ES,NU,DICE,HICE,DEPTH);
+      Y3 = F_ZHAO_V1(P3,JUDGE,SIGMA,ES,NU,DICE,HICE,DEPTH);
 
-       IF ( ABS(P3-P2).LT.DLTA .OR. ABS(Y3).LT.EPSI ) THEN
-          RETURN
-       ENDIF
+      IF ( ABS(P3-P2).LT.DLTA .OR. ABS(Y3).LT.EPSI ) THEN
+        RETURN
+      ENDIF
 
-       P0 = P1
-       P1 = P2
-       P2 = P3
+      P0 = P1
+      P1 = P2
+      P2 = P3
 
-       Y0 = Y1
-       Y1 = Y2
-       Y2 = Y3
+      Y0 = Y1
+      Y1 = Y2
+      Y2 = Y3
 
     ENDDO
     !
@@ -1364,9 +1364,9 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     IF (JUDGE.EQ.0) THEN
-       FZHAO = FUNC0_ZHAO(X,SIGMA,DEPTH)
+      FZHAO = FUNC0_ZHAO(X,SIGMA,DEPTH)
     ELSE
-       FZHAO = FUNC1_ZHAO(X,SIGMA,ES,NU,DICE,HICE,DEPTH)
+      FZHAO = FUNC1_ZHAO(X,SIGMA,ES,NU,DICE,HICE,DEPTH)
     ENDIF
     !
   END FUNCTION F_ZHAO_V1
@@ -1455,11 +1455,11 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     IF (REAL(WN*DEPTH).LE.4.) THEN
-       TH = (EXP(WN*DEPTH)-EXP(-WN*DEPTH)) &
-            / (EXP(WN*DEPTH)+EXP(-WN*DEPTH))
-       FUNC0 = SIGMA**2. - TH * WN * DBLE(GRAV)
+      TH = (EXP(WN*DEPTH)-EXP(-WN*DEPTH)) &
+           / (EXP(WN*DEPTH)+EXP(-WN*DEPTH))
+      FUNC0 = SIGMA**2. - TH * WN * DBLE(GRAV)
     ELSE
-       FUNC0 = SIGMA**2. -      WN * DBLE(GRAV)
+      FUNC0 = SIGMA**2. -      WN * DBLE(GRAV)
     END IF
     !/
   END FUNCTION FUNC0_ZHAO
@@ -1566,46 +1566,46 @@ CONTAINS
     CA    = (EXP(ALPHA*HICE)+EXP(-ALPHA*HICE))/2.
     !
     IF (REAL(WN*DEPTH).LE.4.) THEN
-       TH  = (EXP(WN*DEPTH)-EXP(-WN*DEPTH))                        &
-            / (EXP(WN*DEPTH)+EXP(-WN*DEPTH))
-       THH = ( EXP(WN*(DEPTH-HICE)) - EXP(-WN*(DEPTH-HICE)) )      &
-            / ( EXP(WN*(DEPTH-HICE)) + EXP(-WN*(DEPTH-HICE)) )
+      TH  = (EXP(WN*DEPTH)-EXP(-WN*DEPTH))                        &
+           / (EXP(WN*DEPTH)+EXP(-WN*DEPTH))
+      THH = ( EXP(WN*(DEPTH-HICE)) - EXP(-WN*(DEPTH-HICE)) )      &
+           / ( EXP(WN*(DEPTH-HICE)) + EXP(-WN*(DEPTH-HICE)) )
     ELSE
-       TH  = 1.0
-       THH = 1.0
+      TH  = 1.0
+      THH = 1.0
     END IF
     !
     M     = (DBLE(DWAT)/DICE - 1) * DBLE(GRAV) * WN               &
          - DBLE(DWAT) / DICE * SIGMA**2 / TH
     !
     IF (ES.GT.1.E7) THEN
-       AA(1,1) = 0.
-       AA(1,2) = 2 * CMPLX(0.,1.) * WN**2.
-       AA(1,3) = ALPHA**2. + WN**2.
-       AA(1,4) = 0.
-       !
-       AA(2,1) = N * SIGMA
-       AA(2,2) = -WN * DBLE(GRAV)
-       AA(2,3) = CMPLX(0.,1.) * WN * DBLE(GRAV)
-       AA(2,4) = L
-       !
-       AA(3,1) = -2. * CMPLX(0.,1.) * WN**2. * SK
-       AA(3,2) =  2. * CMPLX(0.,1.) * WN**2. * CK
-       AA(3,3) =  (ALPHA**2. + WN**2.) * CA
-       AA(3,4) = -(ALPHA**2. + WN**2.) * SA
-       !
-       AA(4,1) =   N * SIGMA * CK - M * SK
-       AA(4,2) = - N * SIGMA * SK + M * CK
-       AA(4,3) = -CMPLX(0.,1.) * M * CA - L * SA
-       AA(4,4) =  CMPLX(0.,1.) * M * SA + L * CA
-       !
-       FUNC1   = BSDET(AA,4)
+      AA(1,1) = 0.
+      AA(1,2) = 2 * CMPLX(0.,1.) * WN**2.
+      AA(1,3) = ALPHA**2. + WN**2.
+      AA(1,4) = 0.
+      !
+      AA(2,1) = N * SIGMA
+      AA(2,2) = -WN * DBLE(GRAV)
+      AA(2,3) = CMPLX(0.,1.) * WN * DBLE(GRAV)
+      AA(2,4) = L
+      !
+      AA(3,1) = -2. * CMPLX(0.,1.) * WN**2. * SK
+      AA(3,2) =  2. * CMPLX(0.,1.) * WN**2. * CK
+      AA(3,3) =  (ALPHA**2. + WN**2.) * CA
+      AA(3,4) = -(ALPHA**2. + WN**2.) * SA
+      !
+      AA(4,1) =   N * SIGMA * CK - M * SK
+      AA(4,2) = - N * SIGMA * SK + M * CK
+      AA(4,3) = -CMPLX(0.,1.) * M * CA - L * SA
+      AA(4,4) =  CMPLX(0.,1.) * M * SA + L * CA
+      !
+      FUNC1   = BSDET(AA,4)
     ELSE
-       FUNC1 = SIGMA**2. - TH*WN*DBLE(GRAV) - TH*DICE/DBLE(DWAT)* &
-            (WN**2.*DBLE(GRAV)**2.*SK*SA - (N**4. + 16.* &
-            VE**4.*WN**6.*ALPHA**2.)*SK*SA - 8. &
-            *WN**3.*ALPHA*VE**2.*N**2.*(CK*CA-1.))/(4.*WN**3. &
-            *ALPHA*VE**2.*SK*CA+N**2.*SA*CK-DBLE(GRAV)*WN*SK*SA)
+      FUNC1 = SIGMA**2. - TH*WN*DBLE(GRAV) - TH*DICE/DBLE(DWAT)* &
+           (WN**2.*DBLE(GRAV)**2.*SK*SA - (N**4. + 16.* &
+           VE**4.*WN**6.*ALPHA**2.)*SK*SA - 8. &
+           *WN**3.*ALPHA*VE**2.*N**2.*(CK*CA-1.))/(4.*WN**3. &
+           *ALPHA*VE**2.*SK*CA+N**2.*SA*CK-DBLE(GRAV)*WN*SK*SA)
     ENDIF
     !/
   END FUNCTION FUNC1_ZHAO
@@ -1687,43 +1687,43 @@ CONTAINS
     F = 1.0
     DET = 1.0
     LOOP100: DO K = 1,N-1
-       Q = 0.0
-       LOOP10A: DO I = K,N
-          LOOP10B: DO J = K,N
-             IF (ABS(MAT(I,J)).GT.Q) THEN
-                Q = ABS(MAT(I,J))
-                IS = I
-                JS = J
-             END IF
-          END DO LOOP10B
-       END DO LOOP10A
-       IF (Q+1.0.EQ.1.0) THEN
-          DET = 0.0
-          RETURN
-       END IF
-       IF (IS.NE.K) THEN
-          F = -F
-          LOOP20: DO J = K,N
-             D         = MAT(K,J)
-             MAT(K,J)  = MAT(IS,J)
-             MAT(IS,J) = D
-          END DO LOOP20
-       END IF
-       IF (JS.NE.K) THEN
-          F = -F
-          LOOP30: DO I = K,N
-             D         = MAT(I,JS)
-             MAT(I,JS) = MAT(I,K)
-             MAT(I,K)  = D
-          END DO LOOP30
-       END IF
-       DET = DET * MAT(K,K)
-       LOOP50: DO I = K+1,N
-          D = MAT(I,K) / MAT(K,K)
-          LOOP40: DO J = K+1,N
-             MAT(I,J) = MAT(I,J) - D * MAT(K,J)
-          END DO LOOP40
-       END DO LOOP50
+      Q = 0.0
+      LOOP10A: DO I = K,N
+        LOOP10B: DO J = K,N
+          IF (ABS(MAT(I,J)).GT.Q) THEN
+            Q = ABS(MAT(I,J))
+            IS = I
+            JS = J
+          END IF
+        END DO LOOP10B
+      END DO LOOP10A
+      IF (Q+1.0.EQ.1.0) THEN
+        DET = 0.0
+        RETURN
+      END IF
+      IF (IS.NE.K) THEN
+        F = -F
+        LOOP20: DO J = K,N
+          D         = MAT(K,J)
+          MAT(K,J)  = MAT(IS,J)
+          MAT(IS,J) = D
+        END DO LOOP20
+      END IF
+      IF (JS.NE.K) THEN
+        F = -F
+        LOOP30: DO I = K,N
+          D         = MAT(I,JS)
+          MAT(I,JS) = MAT(I,K)
+          MAT(I,K)  = D
+        END DO LOOP30
+      END IF
+      DET = DET * MAT(K,K)
+      LOOP50: DO I = K+1,N
+        D = MAT(I,K) / MAT(K,K)
+        LOOP40: DO J = K+1,N
+          MAT(I,J) = MAT(I,J) - D * MAT(K,J)
+        END DO LOOP40
+      END DO LOOP50
     END DO LOOP100
     !/
     DET =  F * DET * MAT(N,N)
@@ -1781,13 +1781,13 @@ CONTAINS
     DX = 0.
     !/
     DO IX = 1,NX
-       IF (IX==1) THEN
-          DX(IX) = (X(IX+1)-X(IX  ))
-       ELSE IF (IX==NX) THEN
-          DX(IX) = (X(IX  )-X(IX-1))
-       ELSE
-          DX(IX) = (X(IX+1)-X(IX-1)) / 2.
-       END IF
+      IF (IX==1) THEN
+        DX(IX) = (X(IX+1)-X(IX  ))
+      ELSE IF (IX==NX) THEN
+        DX(IX) = (X(IX  )-X(IX-1))
+      ELSE
+        DX(IX) = (X(IX+1)-X(IX-1)) / 2.
+      END IF
     END DO
     !/
   END FUNCTION DELTA
@@ -1897,20 +1897,20 @@ CONTAINS
     ALLOCATE(  SIGMA( SIZE(CG) ) )
     SIGMA = 0.
     IF (SIZE(WN_R,1).EQ.NK) THEN
-       KL    = 1
-       KU    = NK
-       I1    = 1
-       I2    = NK
-       SIGMA = SIG(1:NK)
+      KL    = 1
+      KU    = NK
+      I1    = 1
+      I2    = NK
+      SIGMA = SIG(1:NK)
     ELSE IF (SIZE(WN_R,1).EQ.NK+2) THEN
-       KL    = 1
-       KU    = NK+2
-       I1    = 0
-       I2    = NK+1
-       SIGMA = SIG(0:NK+1)
+      KL    = 1
+      KU    = NK+2
+      I1    = 0
+      I2    = NK+1
+      SIGMA = SIG(0:NK+1)
     ELSE
-       WRITE(NDSE,900)
-       CALL EXTCDE(3)
+      WRITE(NDSE,900)
+      CALL EXTCDE(3)
     END IF
     DEPTH   =   DPT     ! water depth
     HICE    =   ICE1    ! ice thickness
@@ -1933,23 +1933,23 @@ CONTAINS
     !/ --- CHECK If it's shallow water situation, then it needs recalculate
     !              kr,ki,cg
     DO IK   =   KL,KU
-       IF (WN_R(IK)*DEPTH>4.0)THEN ! exit do-loop
-          EXIT  ! assume kr is proportional to frequency
-       ELSE
-          X1  = CMPLX(WN_R(IK),WN_I(IK))
-          x0  = X1*(1-RR)
-          x2  = X1*(1+RR)
-          WNCOMPLEX = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1, &
-               DBLE(SIGMA(IK)),ES_MOD,NU,DICE,HICE,DEPTH)
-          WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))  !  ki
-          WN_R(IK)  = REAL(WNCOMPLEX)         !  kr
-       ENDIF
+      IF (WN_R(IK)*DEPTH>4.0)THEN ! exit do-loop
+        EXIT  ! assume kr is proportional to frequency
+      ELSE
+        X1  = CMPLX(WN_R(IK),WN_I(IK))
+        x0  = X1*(1-RR)
+        x2  = X1*(1+RR)
+        WNCOMPLEX = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1, &
+             DBLE(SIGMA(IK)),ES_MOD,NU,DICE,HICE,DEPTH)
+        WN_I(IK)  = REAL(AIMAG(WNCOMPLEX))  !  ki
+        WN_R(IK)  = REAL(WNCOMPLEX)         !  kr
+      ENDIF
     ENDDO
 
     CALL SMOOTH_K(WN_R,WN_I,SIGMA,KU-KL+ 1,0)
     ! Optional : limit ki
     DO IK   =   KL,KU
-       WN_I(IK)  = MIN(WN_I(IK),IC3KILIM)
+      WN_I(IK)  = MIN(WN_I(IK),IC3KILIM)
     ENDDO
 
 !!!     --- Update group velocitiy ----
@@ -2038,9 +2038,9 @@ CONTAINS
     IC3WN_R(:,0) = SIG**2/GRAV
     IC3WN_I(:,0) = 0
     DO JITK = 1,ITKNUM
-       ICE1 = JITK*IC3_DITK  !HICE
-       CALL IC3PRECALC_CHENG(IC3WN_R(:,JITK), IC3WN_I(:,JITK), &
-            IC3CG(:,JITK), ICE1, ICE2, ICE3, ICE4, DPT)
+      ICE1 = JITK*IC3_DITK  !HICE
+      CALL IC3PRECALC_CHENG(IC3WN_R(:,JITK), IC3WN_I(:,JITK), &
+           IC3CG(:,JITK), ICE1, ICE2, ICE3, ICE4, DPT)
     ENDDO
 
     RETURN
@@ -2136,26 +2136,26 @@ CONTAINS
     SWITCHID = 0
 
     DO IK = KL,KU
-       CALL WAVNU1(SIG(IK),DPT,K_OCEAN,CG_OCEAN)
-       K_NOICE = K_OCEAN
+      CALL WAVNU1(SIG(IK),DPT,K_OCEAN,CG_OCEAN)
+      K_NOICE = K_OCEAN
 
-       !     --- Calculate complex wavenumber ------------------------------- /
-       IF(IK<KL+2)THEN
-          WNM1     = CMPLX(0.,0.)
-          WNM2     = CMPLX(0.,0.)
-          SIGMAM1  = 0.0
-       ELSE
-          WNM1     = cmplx(WN_R(IK-1),WN_I(IK-1))
-          WNM2     = cmplx(WN_R(IK-2),WN_I(IK-2))
-          SIGMAM1  = SIG(IK-1)
-       ENDIF
+      !     --- Calculate complex wavenumber ------------------------------- /
+      IF(IK<KL+2)THEN
+        WNM1     = CMPLX(0.,0.)
+        WNM2     = CMPLX(0.,0.)
+        SIGMAM1  = 0.0
+      ELSE
+        WNM1     = cmplx(WN_R(IK-1),WN_I(IK-1))
+        WNM2     = cmplx(WN_R(IK-2),WN_I(IK-2))
+        SIGMAM1  = SIG(IK-1)
+      ENDIF
 
-       WN_O = CMPLX(K_NOICE,0.0)
-       CALL WN_PRECALC_CHENG(WNCOMPLEX,dble(SIG(IK)),dble(SIGMAM1),WN_O, &
-            WNM1,WNM2,ES_MOD,NU,DICE,HICE,DEPTH,SWITCHID,IK,KU)
-       !     --- Output to routine
-       WN_R(IK)  = REAL(WNCOMPLEX)         !  kr
-       WN_I(IK)  = IMAG(WNCOMPLEX)         !  ki
+      WN_O = CMPLX(K_NOICE,0.0)
+      CALL WN_PRECALC_CHENG(WNCOMPLEX,dble(SIG(IK)),dble(SIGMAM1),WN_O, &
+           WNM1,WNM2,ES_MOD,NU,DICE,HICE,DEPTH,SWITCHID,IK,KU)
+      !     --- Output to routine
+      WN_R(IK)  = REAL(WNCOMPLEX)         !  kr
+      WN_I(IK)  = IMAG(WNCOMPLEX)         !  ki
     ENDDO
     CALL SMOOTH_K(WN_R,WN_I,SIG,KU-KL+1,SWITCHID)
     CALL CGinIC3_CHENG(CG,SIG,WN_R,KU-KL+1)
@@ -2290,130 +2290,130 @@ CONTAINS
     !   redo searching using simplified dispersion relation form, index 2
     IF (REAL(WN1)<0.or.abs(wn1-ks)/abs(ks)<0.03 .or. &
          abs(wn1-kp)/abs(kp)<0.03.and.Es_mod>1.e7*nu)THEN
-       WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA, &
-            ES_MOD,NU,DICE,HICE,DEPTH)
+      WN1 = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA, &
+           ES_MOD,NU,DICE,HICE,DEPTH)
     ENDIF
     !   similar as wn1, but search with opposite order of inital guesses
     WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,1,SIGMA, &
          ES_MOD,NU,DICE,HICE,DEPTH)
     IF (REAL(WN2)<0.or.abs(wn2-ks)/abs(ks)<0.03)THEN
-       WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,2,SIGMA, &
-            ES_MOD,NU,DICE,HICE,DEPTH)
+      WN2 = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,2,SIGMA, &
+           ES_MOD,NU,DICE,HICE,DEPTH)
     ENDIF
     IF(ABS(REAL(WN1)-REAL(WN_O))<ABS(REAL(WN2)-REAL(WN_O)))THEN
-       WN0 = WN1
+      WN0 = WN1
     ELSE
-       WN0 = WN2
+      WN0 = WN2
     ENDIF
 
     IF(SIGMAM1==0.)THEN
-       WN = WN0
+      WN = WN0
     ELSE
-       !      compute root 2
-       !      Calculate the other wave number based on last frequency
-       !      in the frequency array
-       R2    = MAX(ABS(WNM1-WNM2)/ABS(WNM2), ABS((SIGMA-SIGMAM1)/SIGMA))
-       DO I  = 1,7,2
-          IF(I<3.AND.SIGMA>4)THEN
-             CYCLE
+      !      compute root 2
+      !      Calculate the other wave number based on last frequency
+      !      in the frequency array
+      R2    = MAX(ABS(WNM1-WNM2)/ABS(WNM2), ABS((SIGMA-SIGMAM1)/SIGMA))
+      DO I  = 1,7,2
+        IF(I<3.AND.SIGMA>4)THEN
+          CYCLE
+        ENDIF
+        NUM = 2**(I-1)
+        RR  = MIN(MAX(R2/REAL(NUM,8),0.001D0),0.5D0)
+        X1  = WNM1
+        DO IX  = 1,NUM
+          X0 = X1*(1-RR)
+          X2 = X1*(1+RR)
+          SIGMA0 = SIGMAM1 + (1.0*IX)/NUM*(SIGMA-SIGMAM1)
+          WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1,SIGMA0, &
+               ES_MOD,NU,DICE,HICE,DEPTH)
+          IF(REAL(WN)<0)THEN   ! try another searching direction
+            WN = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,1,SIGMA0, &
+                 ES_MOD,NU,DICE,HICE,DEPTH)
           ENDIF
-          NUM = 2**(I-1)
-          RR  = MIN(MAX(R2/REAL(NUM,8),0.001D0),0.5D0)
-          X1  = WNM1
-          DO IX  = 1,NUM
-             X0 = X1*(1-RR)
-             X2 = X1*(1+RR)
-             SIGMA0 = SIGMAM1 + (1.0*IX)/NUM*(SIGMA-SIGMAM1)
-             WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,1,SIGMA0, &
-                  ES_MOD,NU,DICE,HICE,DEPTH)
-             IF(REAL(WN)<0)THEN   ! try another searching direction
-                WN = CMPLX_ROOT_MULLER_CHENG(X2,X1,X0,1,SIGMA0, &
-                     ES_MOD,NU,DICE,HICE,DEPTH)
-             ENDIF
-             IF(REAL(WN)<0)THEN   ! try another dispersion relation form
-                WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,3,SIGMA0, &
-                     ES_MOD,NU,DICE,HICE,DEPTH)
-             ENDIF
-             KP = SIGMA0/SQRT(4*GV/DICE)
-             KS = 2*KP
-             !               set 3 means simple dispersion relation form
-             IF(ABS(WN-KS)/ABS(KS)<0.03.OR.REAL(WN)<0)THEN
-                WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA0, &
-                     ES_MOD,NU,DICE,HICE,DEPTH)
-             ENDIF
-             X1 = WN
-             IF( REAL(WN)<0.99*REAL(WNM1).OR. ABS(WN-WN0)>EPS .AND. &
-                  (ABS(X1-WN)/ABS(WN)>0.3 .OR.                  &
-                  IMAG(WN)/(IMAG(X1)+EPS)>10.OR. REAL(WN)<0))THEN
-                EXIT  ! redo with smaller intervals
-             ENDIF
-             X0 = X1
-             X1 = WN
-          ENDDO !            DO IX  = 1,NUM
-
-          IF(IX==NUM+1)THEN
-             EXIT
+          IF(REAL(WN)<0)THEN   ! try another dispersion relation form
+            WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,3,SIGMA0, &
+                 ES_MOD,NU,DICE,HICE,DEPTH)
           ENDIF
-          WN = X1  !/ --- if exit of inner loop: give an approximate wn
-       ENDDO !         DO I  = 1,7,2
-
-       ! part 2
-       ! assume found two roots, choose from the two condidates.
-       KP = SIGMA/SQRT(4*GV/DICE)
-       IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)>EPS)THEN
-          !do switch at last 3 points is not worth numerically.
-          !For v>5.e-2, it is low chance to be wrong at the last 3 points
-          ! we suppose to use two mode in the future
-          IF(NU>0.AND.IK>=KU-1.OR.   &
-               NU>0.AND.SWITCHID/=0)THEN
-             ! assume one mode switch for general viscoelastic model
-          ELSE
-             DIS   = ABS(REAL(WN)-REAL(WN_O))/ABS(REAL(WN0)-REAL(WN_O))
-             KAPPA = (IMAG(WN)+ EPS)/(IMAG(WN0) + EPS)
-             ! wn0 has smaller attenuation and closer to k0
-             IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
-                  IMAG(WN0)>=0.1*IMAG(WNM1).AND. &
-                  ABS(WN-KP)<ABS(WN0-KP)) .OR.  &
-                  ! wn0 has larger attenuation and closer to k0
-                  ( DIS>=1 .AND. KAPPA<1 .AND. &
-                  ((KAPPA> 0.2 .AND. IMAG(WN0)/REAL(WN0)<0.5).or. &
-                  ABS(REAL(WN)-REAL(KP))<ABS(REAL(WN0)-REAL(KP)))).OR.&
-                  ! wn0 has smaller attenuation and farther to k0,
-                  ! wn0 could be wrong at high G
-                  ! (kappa>1 .and. dis<1 .and. dis>  0.8 ))then
-                  ( KAPPA>1 .AND. DIS<1 .AND. &
-                  ABS(REAL(WN)-REAL(WNM1))>   &
-                  ABS(REAL(WN0)-REAL(WNM1)) ))THEN
-                WN = WN0
-                SWITCHID = IK
-                ! wn0 has lager attenuation and farther to k0
-             ELSEIF(DIS<1 .AND. KAPPA<1) THEN
-                ! keep wn without change
-             ENDIF !  IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
-          ENDIF !   IF(NU>0.AND.IK>=KU-2.OR.   &
-
-          ! choose dominant mode is farther than pressure wave.
-          !but it doens't work for high viscosity.
-          if (abs(wn-kp)/abs(kp)<0.03) then
-             wn = wn0
-             SWITCHID = IK
-          endif
-          !if (real(wn)<=real(wnm1))then
-          !    wn = wn0
-          !    switchid = ik
-          !endif
-
-          IF (REAL(WN0)>REAL(WNM1).AND.REAL(WN0)<REAL(WN).and. &
-               ABS(IMAG(WN0)-IMAG(WNM1))<ABS(IMAG(WN)-IMAG(WNM1)))THEN
-             ! mainly for pure elastic case has multiple branchs
-             WN = WN0
-             SWITCHID = IK
+          KP = SIGMA0/SQRT(4*GV/DICE)
+          KS = 2*KP
+          !               set 3 means simple dispersion relation form
+          IF(ABS(WN-KS)/ABS(KS)<0.03.OR.REAL(WN)<0)THEN
+            WN = CMPLX_ROOT_MULLER_CHENG(X0,X1,X2,2,SIGMA0, &
+                 ES_MOD,NU,DICE,HICE,DEPTH)
           ENDIF
-       ENDIF ! IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)....
+          X1 = WN
+          IF( REAL(WN)<0.99*REAL(WNM1).OR. ABS(WN-WN0)>EPS .AND. &
+               (ABS(X1-WN)/ABS(WN)>0.3 .OR.                  &
+               IMAG(WN)/(IMAG(X1)+EPS)>10.OR. REAL(WN)<0))THEN
+            EXIT  ! redo with smaller intervals
+          ENDIF
+          X0 = X1
+          X1 = WN
+        ENDDO !            DO IX  = 1,NUM
+
+        IF(IX==NUM+1)THEN
+          EXIT
+        ENDIF
+        WN = X1  !/ --- if exit of inner loop: give an approximate wn
+      ENDDO !         DO I  = 1,7,2
+
+      ! part 2
+      ! assume found two roots, choose from the two condidates.
+      KP = SIGMA/SQRT(4*GV/DICE)
+      IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)>EPS)THEN
+        !do switch at last 3 points is not worth numerically.
+        !For v>5.e-2, it is low chance to be wrong at the last 3 points
+        ! we suppose to use two mode in the future
+        IF(NU>0.AND.IK>=KU-1.OR.   &
+             NU>0.AND.SWITCHID/=0)THEN
+          ! assume one mode switch for general viscoelastic model
+        ELSE
+          DIS   = ABS(REAL(WN)-REAL(WN_O))/ABS(REAL(WN0)-REAL(WN_O))
+          KAPPA = (IMAG(WN)+ EPS)/(IMAG(WN0) + EPS)
+          ! wn0 has smaller attenuation and closer to k0
+          IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
+               IMAG(WN0)>=0.1*IMAG(WNM1).AND. &
+               ABS(WN-KP)<ABS(WN0-KP)) .OR.  &
+                                ! wn0 has larger attenuation and closer to k0
+               ( DIS>=1 .AND. KAPPA<1 .AND. &
+               ((KAPPA> 0.2 .AND. IMAG(WN0)/REAL(WN0)<0.5).or. &
+               ABS(REAL(WN)-REAL(KP))<ABS(REAL(WN0)-REAL(KP)))).OR.&
+                                ! wn0 has smaller attenuation and farther to k0,
+                                ! wn0 could be wrong at high G
+                                ! (kappa>1 .and. dis<1 .and. dis>  0.8 ))then
+               ( KAPPA>1 .AND. DIS<1 .AND. &
+               ABS(REAL(WN)-REAL(WNM1))>   &
+               ABS(REAL(WN0)-REAL(WNM1)) ))THEN
+            WN = WN0
+            SWITCHID = IK
+            ! wn0 has lager attenuation and farther to k0
+          ELSEIF(DIS<1 .AND. KAPPA<1) THEN
+            ! keep wn without change
+          ENDIF !  IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
+        ENDIF !   IF(NU>0.AND.IK>=KU-2.OR.   &
+
+        ! choose dominant mode is farther than pressure wave.
+        !but it doens't work for high viscosity.
+        if (abs(wn-kp)/abs(kp)<0.03) then
+          wn = wn0
+          SWITCHID = IK
+        endif
+        !if (real(wn)<=real(wnm1))then
+        !    wn = wn0
+        !    switchid = ik
+        !endif
+
+        IF (REAL(WN0)>REAL(WNM1).AND.REAL(WN0)<REAL(WN).and. &
+             ABS(IMAG(WN0)-IMAG(WNM1))<ABS(IMAG(WN)-IMAG(WNM1)))THEN
+          ! mainly for pure elastic case has multiple branchs
+          WN = WN0
+          SWITCHID = IK
+        ENDIF
+      ENDIF ! IF(REAL(WN0)>0.AND.IMAG(WN0)>=0.AND.ABS(WN - WN0)....
     ENDIF   !      IF(SIGMAM1==0.)THEN
 
     IF(REAL(WN)<0)THEN
-       PRINT*, "MULLER METHOD FAILED, ES_MOD,NU,HICE:",ES_MOD,NU,HICE
+      PRINT*, "MULLER METHOD FAILED, ES_MOD,NU,HICE:",ES_MOD,NU,HICE
     ENDIF
     RETURN
 
@@ -2487,9 +2487,9 @@ CONTAINS
     IK = N
     CG(IK)=(SIGMA(IK)-SIGMA(IK-1))/(WN_R(IK)-WN_R(IK-1))
     DO IK = 2,N-1
-       CG1 = (SIGMA(IK)-SIGMA(IK-1))/(WN_R(IK)-WN_R(IK-1))
-       CG2 = (SIGMA(IK+1)-SIGMA(IK))/(WN_R(IK+1)-WN_R(IK))
-       CG(IK) = 2.0/(1./CG1 + 1./CG2)
+      CG1 = (SIGMA(IK)-SIGMA(IK-1))/(WN_R(IK)-WN_R(IK-1))
+      CG2 = (SIGMA(IK+1)-SIGMA(IK))/(WN_R(IK+1)-WN_R(IK))
+      CG(IK) = 2.0/(1./CG1 + 1./CG2)
     END DO
 
     RETURN
@@ -2506,33 +2506,33 @@ CONTAINS
     ! remove kr in mode switch zone,
     ! if it is a local extremum or suddenly increasing
     DO J = 1,3 ! 3 times to guarantee wavenumber increases monotonically
-       REMOVEID = 0
-       DO I = 2,N
-          DIFF(I) = WN_R(I) - WN_R(I-1)
-       ENDDO
-       DO I = 3,N
-          IF(DIFF(I)<=0.OR.DIFF(I)>3*DIFF(I-1).OR.SWITCHID==I)THEN
-             REMOVEID(I) = 1
-             REMOVEID(I-1) = 1
-          ENDIF
-       ENDDO
-       ! fill removed location with kr,ki by interpolation
-       DO I = 2,N-1
-          IF (REMOVEID(I) ==1) THEN
-             WN_R(I) = WN_R(I-1) + (WN_R(I+1)-WN_R(I-1))/    &
-                  (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
-             WN_I(I) = WN_I(I-1) + (WN_I(I+1)-WN_I(I-1))/    &
-                  (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
-          ENDIF
-       ENDDO
+      REMOVEID = 0
+      DO I = 2,N
+        DIFF(I) = WN_R(I) - WN_R(I-1)
+      ENDDO
+      DO I = 3,N
+        IF(DIFF(I)<=0.OR.DIFF(I)>3*DIFF(I-1).OR.SWITCHID==I)THEN
+          REMOVEID(I) = 1
+          REMOVEID(I-1) = 1
+        ENDIF
+      ENDDO
+      ! fill removed location with kr,ki by interpolation
+      DO I = 2,N-1
+        IF (REMOVEID(I) ==1) THEN
+          WN_R(I) = WN_R(I-1) + (WN_R(I+1)-WN_R(I-1))/    &
+               (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
+          WN_I(I) = WN_I(I-1) + (WN_I(I+1)-WN_I(I-1))/    &
+               (SIGMA(I+1)-SIGMA(I-1))*(SIGMA(I)-SIGMA(I-1))
+        ENDIF
+      ENDDO
     ENDDO
     ! mode switch upward at the last frequencies
     IF (DIFF(N)>3*DIFF(N-1))THEN
-       I = N
-       WN_R(I) = WN_R(I-1) + (WN_R(I-1)-WN_R(I-2))/   &
-            (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
-       WN_I(I) = WN_I(I-1) + (WN_I(I-1)-WN_I(I-2))/   &
-            (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
+      I = N
+      WN_R(I) = WN_R(I-1) + (WN_R(I-1)-WN_R(I-2))/   &
+           (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
+      WN_I(I) = WN_I(I-1) + (WN_I(I-1)-WN_I(I-2))/   &
+           (SIGMA(I-1)-SIGMA(I-2))*(SIGMA(I)-SIGMA(I-1))
     ENDIF
     RETURN
   END SUBROUTINE SMOOTH_K
@@ -2653,58 +2653,58 @@ CONTAINS
     Y2      = F_ZHAO_CHENG(JUDGE,P2,SIGMA,ES,NU,DICE,HICE,DEPTH)
 
     DO I = 1,IMAX
-       Q = (P2 - P1) / (P1 - P0)
-       A = Q * Y2 - Q * (1.D0+Q) * Y1 + Q**2.D0 * Y0
-       B = (2.D0 * Q + 1.D0) * Y2 - (1.D0 + Q)**2.D0 * Y1 &
-            + Q**2.D0 * Y0
-       C = (1.D0 + Q) * Y2
+      Q = (P2 - P1) / (P1 - P0)
+      A = Q * Y2 - Q * (1.D0+Q) * Y1 + Q**2.D0 * Y0
+      B = (2.D0 * Q + 1.D0) * Y2 - (1.D0 + Q)**2.D0 * Y1 &
+           + Q**2.D0 * Y0
+      C = (1.D0 + Q) * Y2
 
-       IF ( ABS(A).NE.0.D0 ) THEN
+      IF ( ABS(A).NE.0.D0 ) THEN
 
-          DISC = B**2.D0 - 4.D0 * A * C;
+        DISC = B**2.D0 - 4.D0 * A * C;
 
-          DEN1 = ( B + SQRT ( DISC ) )
-          DEN2 = ( B - SQRT ( DISC ) )
+        DEN1 = ( B + SQRT ( DISC ) )
+        DEN2 = ( B - SQRT ( DISC ) )
 
-          IF ( ABS ( DEN1 ) .LT. ABS ( DEN2 ) )THEN
-             P3 = P2 - (P2 - P1) * (2.D0 * C / DEN2)
-          ELSE
-             P3 = P2 - (P2 - P1) * (2.D0 * C / DEN1)
-          ENDIF
+        IF ( ABS ( DEN1 ) .LT. ABS ( DEN2 ) )THEN
+          P3 = P2 - (P2 - P1) * (2.D0 * C / DEN2)
+        ELSE
+          P3 = P2 - (P2 - P1) * (2.D0 * C / DEN1)
+        ENDIF
 
-       ELSE
+      ELSE
 
-          IF ( ABS(B) .NE. 0.D0 )THEN
-             P3 = P2 - (P2 - P1) * (C / B)
-          ELSE
-             P3 = P2
-             RETURN
-          ENDIF
-       ENDIF
-
-       IF (IMAG(P3).LT.0)THEN
-          P3 = REAL(P3) - CMPLX(0.,1.)*IMAG(P3)
-       ENDIF
-       IF (REAL(P3).LT.0)THEN
-          P3 = -REAL(P3) + CMPLX(0.,1.)*IMAG(P3)
-       ENDIF
-
-       IF(NU==0)THEN
-          P3 = CMPLX(REAL(P3),0)
-       ENDIF
-       Y3 = F_ZHAO_CHENG(JUDGE,P3,SIGMA,ES,NU,DICE,HICE,DEPTH);
-       IF ( ABS(P3-P2).LT.DLTA .AND. ABS(Y3).LT.EPSI ) THEN
-          ! exit before finding a true root,Result may not be accurate
+        IF ( ABS(B) .NE. 0.D0 )THEN
+          P3 = P2 - (P2 - P1) * (C / B)
+        ELSE
+          P3 = P2
           RETURN
-       ENDIF
+        ENDIF
+      ENDIF
 
-       P0 = P1
-       P1 = P2
-       P2 = P3
+      IF (IMAG(P3).LT.0)THEN
+        P3 = REAL(P3) - CMPLX(0.,1.)*IMAG(P3)
+      ENDIF
+      IF (REAL(P3).LT.0)THEN
+        P3 = -REAL(P3) + CMPLX(0.,1.)*IMAG(P3)
+      ENDIF
 
-       Y0 = Y1
-       Y1 = Y2
-       Y2 = Y3
+      IF(NU==0)THEN
+        P3 = CMPLX(REAL(P3),0)
+      ENDIF
+      Y3 = F_ZHAO_CHENG(JUDGE,P3,SIGMA,ES,NU,DICE,HICE,DEPTH);
+      IF ( ABS(P3-P2).LT.DLTA .AND. ABS(Y3).LT.EPSI ) THEN
+        ! exit before finding a true root,Result may not be accurate
+        RETURN
+      ENDIF
+
+      P0 = P1
+      P1 = P2
+      P2 = P3
+
+      Y0 = Y1
+      Y1 = Y2
+      Y2 = Y3
     ENDDO
 
     P3 = CMPLX(-100.,0)
@@ -2804,9 +2804,9 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     IF (JUDGE >0) THEN
-       FZHAO = DRFUN_dble_CHENG(X,SIGMA,ES,NU,DICE,HICE,DEPTH,JUDGE)
+      FZHAO = DRFUN_dble_CHENG(X,SIGMA,ES,NU,DICE,HICE,DEPTH,JUDGE)
     ELSEIF(JUDGE ==0)THEN
-       FZHAO = DRFUN_quad_CHENG(X,SIGMA,ES,NU,DICE,HICE,DEPTH)
+      FZHAO = DRFUN_quad_CHENG(X,SIGMA,ES,NU,DICE,HICE,DEPTH)
     ENDIF
     !
   END FUNCTION F_ZHAO_CHENG
@@ -2918,48 +2918,48 @@ CONTAINS
     !
     TEMP  = (WN*DEPTH)
     IF ( REAL(TEMP).LT.18.D0 ) THEN
-       TEMP = EXP(TEMP)
-       TH = (TEMP - 1./TEMP)/(TEMP + 1./TEMP)
+      TEMP = EXP(TEMP)
+      TH = (TEMP - 1./TEMP)/(TEMP + 1./TEMP)
     ELSE
-       TH = 1.D0
+      TH = 1.D0
     ENDIF
     !      JUDGE==3 is not used yet
     IF ((ES>=1.E5.AND.JUDGE/=2).or.JUDGE==3) THEN
-       L     = 2 * WN * ALPHA * SIGMA * VE
-       M     = (DBLE(DWAT)/DICE - 1) * DBLE(GRAV) * WN             &
-            - DBLE(DWAT) / DICE * SIGMA**2 / TH
-       AA(1,1) = 0.
-       AA(1,2) = 2 * CMPLX(0.,1.) * WN**2.
-       AA(1,3) = ALPHA**2. + WN**2.
-       AA(1,4) = 0.
-       !
-       AA(2,1) = N * SIGMA
-       AA(2,2) = -WN * DBLE(GRAV)
-       AA(2,3) = CMPLX(0.,1.) * WN * DBLE(GRAV)
-       AA(2,4) = L
-       !
-       AA(3,1) = -2. * CMPLX(0.,1.) * WN**2. * SK
-       AA(3,2) =  2. * CMPLX(0.,1.) * WN**2. * CK
-       AA(3,3) =  (ALPHA**2. + WN**2.) * CA
-       AA(3,4) = -(ALPHA**2. + WN**2.) * SA
-       !
-       AA(4,1) =   N * SIGMA * CK - M * SK
-       AA(4,2) = - N * SIGMA * SK + M * CK
-       AA(4,3) = -CMPLX(0.,1.) * M * CA - L * SA
-       AA(4,4) =  CMPLX(0.,1.) * M * SA + L * CA
-       !
-       FUNC1   = BSDET(AA,4)
+      L     = 2 * WN * ALPHA * SIGMA * VE
+      M     = (DBLE(DWAT)/DICE - 1) * DBLE(GRAV) * WN             &
+           - DBLE(DWAT) / DICE * SIGMA**2 / TH
+      AA(1,1) = 0.
+      AA(1,2) = 2 * CMPLX(0.,1.) * WN**2.
+      AA(1,3) = ALPHA**2. + WN**2.
+      AA(1,4) = 0.
+      !
+      AA(2,1) = N * SIGMA
+      AA(2,2) = -WN * DBLE(GRAV)
+      AA(2,3) = CMPLX(0.,1.) * WN * DBLE(GRAV)
+      AA(2,4) = L
+      !
+      AA(3,1) = -2. * CMPLX(0.,1.) * WN**2. * SK
+      AA(3,2) =  2. * CMPLX(0.,1.) * WN**2. * CK
+      AA(3,3) =  (ALPHA**2. + WN**2.) * CA
+      AA(3,4) = -(ALPHA**2. + WN**2.) * SA
+      !
+      AA(4,1) =   N * SIGMA * CK - M * SK
+      AA(4,2) = - N * SIGMA * SK + M * CK
+      AA(4,3) = -CMPLX(0.,1.) * M * CA - L * SA
+      AA(4,4) =  CMPLX(0.,1.) * M * SA + L * CA
+      !
+      FUNC1   = BSDET(AA,4)
     ELSE
-       J1    = DICE/DBLE(DWAT)*(WN**2.*DBLE(GRAV)**2.*SK*SA - (N**4. &
-            + 16.* VE**4.*WN**6.*ALPHA**2.)*SK*SA - 8. &
-            *WN**3.*ALPHA*VE**2.*N**2.*(CK*CA-1.))
-       J2    = (4.*WN**3.*ALPHA*VE**2.*SK*CA+N**2.*SA*CK &
-            -DBLE(GRAV)*WN*SK*SA)
-       IF (JUDGE==2)THEN
-          FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV)) - TH*J1/(J2+1.e-20)
-       ELSEIF (JUDGE==1)THEN
-          FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV))*J2 - TH*J1
-       ENDIF
+      J1    = DICE/DBLE(DWAT)*(WN**2.*DBLE(GRAV)**2.*SK*SA - (N**4. &
+           + 16.* VE**4.*WN**6.*ALPHA**2.)*SK*SA - 8. &
+           *WN**3.*ALPHA*VE**2.*N**2.*(CK*CA-1.))
+      J2    = (4.*WN**3.*ALPHA*VE**2.*SK*CA+N**2.*SA*CK &
+           -DBLE(GRAV)*WN*SK*SA)
+      IF (JUDGE==2)THEN
+        FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV)) - TH*J1/(J2+1.e-20)
+      ELSEIF (JUDGE==1)THEN
+        FUNC1 = (SIGMA**2. - TH*WN*DBLE(GRAV))*J2 - TH*J1
+      ENDIF
     ENDIF
     !/
   END FUNCTION DRFUN_DBLE_CHENG
@@ -3075,10 +3075,10 @@ CONTAINS
     !
     TEMP  = (WN*DEPTH)
     IF ( REAL(TEMP).LT.18.D0 ) THEN
-       TEMP = EXP(TEMP)
-       TH = (TEMP - 1./TEMP)/(TEMP + 1./TEMP)
+      TEMP = EXP(TEMP)
+      TH = (TEMP - 1./TEMP)/(TEMP + 1./TEMP)
     ELSE
-       TH = 1.D0
+      TH = 1.D0
     ENDIF
     !
     J1    = DICE/DBLE(DWAT)*(WN**2.*DBLE(GRAV)**2.*SK*SA - (N**4. &

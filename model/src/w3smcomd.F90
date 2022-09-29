@@ -173,35 +173,35 @@ CONTAINS
     ! Get start lat,lon (must be aligned with SMC grid edges). Use
     ! regular grid origins if SXO or SYO is -999.9 (use full grid):
     IF(ABS(SXO + 999.9) .LT. 1E-4) THEN
-       SXO = CX0
+      SXO = CX0
     ELSE
-       S0CHK = CX0 + FLOOR((SXO - CX0) / XSNAP) * XSNAP
-       ! Ensure first grid value falls within specified range
-       IF (S0CHK .LT. SXO) THEN
-          SXO = S0CHK + XSNAP
-       ELSE
-          SXO = S0CHK
-       ENDIF
+      S0CHK = CX0 + FLOOR((SXO - CX0) / XSNAP) * XSNAP
+      ! Ensure first grid value falls within specified range
+      IF (S0CHK .LT. SXO) THEN
+        SXO = S0CHK + XSNAP
+      ELSE
+        SXO = S0CHK
+      ENDIF
     ENDIF
     IF(ABS(SYO + 999.9) .LT. 1E-4) THEN
-       SYO = CY0
+      SYO = CY0
     ELSE
-       S0CHK = CY0 + FLOOR((SYO - CY0) / YSNAP) * YSNAP
-       ! Ensure first grid value falls within specified range
-       IF (S0CHK .LT. SYO) THEN
-          SYO = S0CHK + YSNAP
-       ELSE
-          SYO = S0CHK
-       ENDIF
+      S0CHK = CY0 + FLOOR((SYO - CY0) / YSNAP) * YSNAP
+      ! Ensure first grid value falls within specified range
+      IF (S0CHK .LT. SYO) THEN
+        SYO = S0CHK + YSNAP
+      ELSE
+        SYO = S0CHK
+      ENDIF
     ENDIF
 
     ! Use regular grid extents for last lat/lon if user
     ! specifies -999.9 for EXO/EYO (use full grid):
     IF(ABS(EXO + 999.9) .LT. 1E-4) THEN
-       EXO = CX0 + SX * NX ! TRHC of last cell
+      EXO = CX0 + SX * NX ! TRHC of last cell
     ENDIF
     IF(ABS(EYO + 999.9) .LT. 1E-4) THEN
-       EYO = CY0 + SY * NY ! TRHC of last cell
+      EYO = CY0 + SY * NY ! TRHC of last cell
     ENDIF
 
     ! Ouput grid cell dx/dy will be integer factor of smallest
@@ -214,122 +214,122 @@ CONTAINS
     NYO = NINT((EYO - SYO) / DYO)
 
     IF(SMCOTYPE .EQ. 2) THEN
-       ! Initialise all indices to "missing":
-       XIDX(:) = -1
-       YIDX(:) = -1
+      ! Initialise all indices to "missing":
+      XIDX(:) = -1
+      YIDX(:) = -1
     ENDIF
 
     ! Loop over cell array and calculate regidding factors:
     DO ISEA=1, NSEA
-       !          ! For grids with Arctic region: make sure we don't double count
-       !          ! the overlapping boundary cells. Also, don't process the arctic
-       !          ! cell (which is always the last cell).
-       !          ! Note: NARC contains ALL the boundary cells (global + arctic).
-       !          ! whereas NGLO contains only the global boundary cells.
-       !          IF(ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
-       IF( ARCTC .AND. &
-            ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
+      !          ! For grids with Arctic region: make sure we don't double count
+      !          ! the overlapping boundary cells. Also, don't process the arctic
+      !          ! cell (which is always the last cell).
+      !          ! Note: NARC contains ALL the boundary cells (global + arctic).
+      !          ! whereas NGLO contains only the global boundary cells.
+      !          IF(ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
+      IF( ARCTC .AND. &
+           ISEA .GT. NGLO-NBAC .AND. ISEA .LT. NSEA-NARC+1) CYCLE
 
-       ! Get grid cell size:
-       mx = IJKCel(3,ISEA)
-       my = IJKCel(4,ISEA)
+      ! Get grid cell size:
+      mx = IJKCel(3,ISEA)
+      my = IJKCel(4,ISEA)
 
-       ! Determine cell lat/lon (bottom left corner of cell)
-       lon = CX0 + IJKCel(1,ISEA) * dlon
-       lat = CY0 + IJKCel(2,ISEA) * dlat
+      ! Determine cell lat/lon (bottom left corner of cell)
+      lon = CX0 + IJKCel(1,ISEA) * dlon
+      lat = CY0 + IJKCel(2,ISEA) * dlat
 
-       ! For output type 1 (seapoint array), just check whether
-       ! cell centre is within specified domain range, and update
-       ! output mask accordingly:
-       IF( SMCOTYPE .EQ. 1 ) THEN
-          ! Ensure longitude ranges are aligned
-          lon = lon + 0.5 * mx * dlon
-          lat = lat + 0.5 * my * dlat
-          IF(lon .LT. SXO) lon = lon + 360.0
-          IF(lon .GT. EXO) lon = lon - 360.0
+      ! For output type 1 (seapoint array), just check whether
+      ! cell centre is within specified domain range, and update
+      ! output mask accordingly:
+      IF( SMCOTYPE .EQ. 1 ) THEN
+        ! Ensure longitude ranges are aligned
+        lon = lon + 0.5 * mx * dlon
+        lat = lat + 0.5 * my * dlat
+        IF(lon .LT. SXO) lon = lon + 360.0
+        IF(lon .GT. EXO) lon = lon - 360.0
 
-          ! Now check if it is within range of requested domain:
-          IF(lon .GE. SXO .AND. lon .LE. EXO .AND.           &
-               lat .GE. SYO .AND. lat .LE. EYO ) THEN
-             SMCMASK(ISEA) = .TRUE.
-             SMCIDX(J) = ISEA
-             J = J + 1
-          ENDIF
-          CYCLE
-       ENDIF ! SMCOTYPE == 1
+        ! Now check if it is within range of requested domain:
+        IF(lon .GE. SXO .AND. lon .LE. EXO .AND.           &
+             lat .GE. SYO .AND. lat .LE. EYO ) THEN
+          SMCMASK(ISEA) = .TRUE.
+          SMCIDX(J) = ISEA
+          J = J + 1
+        ENDIF
+        CYCLE
+      ENDIF ! SMCOTYPE == 1
 
-       ! For output type 2 (area averaged regular grid), determine
-       ! SMC grid cell location and coverage in output grid:
+      ! For output type 2 (area averaged regular grid), determine
+      ! SMC grid cell location and coverage in output grid:
 
-       ! Align lons
-       IF(lon .LT. SXO) THEN
-          lon = lon + 360.
-       ENDIF
-       IF(lon .GT. EXO) THEN
-          lon = lon - 360.
-       ENDIF
+      ! Align lons
+      IF(lon .LT. SXO) THEN
+        lon = lon + 360.
+      ENDIF
+      IF(lon .GT. EXO) THEN
+        lon = lon - 360.
+      ENDIF
 
-       ! Find first SW cell in design grid:
-       ! We add on 1/2 of the smallest SMC cell dlon/dlat values to ensure
-       ! source grid cell ends up in the correct target grid cell (after
-       ! integer trunction):
-       ixx = FLOOR((lon + 0.5*dlon - SXO) / DXO) + 1
-       iyy = FLOOR((lat + 0.5*dlat - SYO) / DYO) + 1
+      ! Find first SW cell in design grid:
+      ! We add on 1/2 of the smallest SMC cell dlon/dlat values to ensure
+      ! source grid cell ends up in the correct target grid cell (after
+      ! integer trunction):
+      ixx = FLOOR((lon + 0.5*dlon - SXO) / DXO) + 1
+      iyy = FLOOR((lat + 0.5*dlat - SYO) / DYO) + 1
 
-       ! If we fall outside the left/bottom edge of the design grid,
-       ! check for cases where the SMC cell has a lon or lat
-       ! scaling factor > cfac (design grid is assumed to align
-       ! its origin with cells of size cfac). For such cells,
-       ! keep moving the left/bottom edge up by cfac until
-       ! the SW corner (possibly) matches a design grid cell.
-       IF(ixx .LE. 0 .AND. ixx + mx / celfac .GT. 0) THEN
-          DO WHILE(mx .GT. cfac)
-             mx = mx - cfac
-             lon = lon + dlon * cfac
-             ixx = FLOOR((lon + 0.5*dlon - SXO) / DXO) + 1
-             IF(ixx .GT. 0) EXIT ! Found cell lon-edge in design grid
-          ENDDO
-       ENDIF
-       IF(iyy .LE. 0 .AND. iyy + my / celfac .GT. 0) THEN
-          DO WHILE(my .GT. cfac)
-             my = my - cfac
-             lat = lat + dlat * cfac
-             iyy = FLOOR((lat + 0.5*dlat - SYO) / DYO) + 1
-             IF(iyy .GT. 0) EXIT ! Found cell lat-edge in design grid
-          ENDDO
-       ENDIF
+      ! If we fall outside the left/bottom edge of the design grid,
+      ! check for cases where the SMC cell has a lon or lat
+      ! scaling factor > cfac (design grid is assumed to align
+      ! its origin with cells of size cfac). For such cells,
+      ! keep moving the left/bottom edge up by cfac until
+      ! the SW corner (possibly) matches a design grid cell.
+      IF(ixx .LE. 0 .AND. ixx + mx / celfac .GT. 0) THEN
+        DO WHILE(mx .GT. cfac)
+          mx = mx - cfac
+          lon = lon + dlon * cfac
+          ixx = FLOOR((lon + 0.5*dlon - SXO) / DXO) + 1
+          IF(ixx .GT. 0) EXIT ! Found cell lon-edge in design grid
+        ENDDO
+      ENDIF
+      IF(iyy .LE. 0 .AND. iyy + my / celfac .GT. 0) THEN
+        DO WHILE(my .GT. cfac)
+          my = my - cfac
+          lat = lat + dlat * cfac
+          iyy = FLOOR((lat + 0.5*dlat - SYO) / DYO) + 1
+          IF(iyy .GT. 0) EXIT ! Found cell lat-edge in design grid
+        ENDDO
+      ENDIF
 
-       ! If SMC cell definitely out of design grid domain, then cycle.
-       IF(ixx .LE. 0 .OR. ixx .GT. NXO .OR.                          &
-            iyy .LE. 0 .OR. iyy .GT. NYO) THEN
-          xidx(ISEA) = -1
-          yidx(ISEA) = -1
-          CYCLE
-       ENDIF
+      ! If SMC cell definitely out of design grid domain, then cycle.
+      IF(ixx .LE. 0 .OR. ixx .GT. NXO .OR.                          &
+           iyy .LE. 0 .OR. iyy .GT. NYO) THEN
+        xidx(ISEA) = -1
+        yidx(ISEA) = -1
+        CYCLE
+      ENDIF
 
-       XIDX(ISEA) = ixx
-       YIDX(ISEA) = iyy
-       NSMC = NSMC + 1
-       SMCIDX(NSMC) = ISEA
+      XIDX(ISEA) = ixx
+      YIDX(ISEA) = iyy
+      NSMC = NSMC + 1
+      SMCIDX(NSMC) = ISEA
 
-       ! find out how many cells it covers in the x/y directions:
-       XSPAN(ISEA) = MAX(1, INT(mx / CELFAC))
-       YSPAN(ISEA) = MAX(1, INT(my / CELFAC))
+      ! find out how many cells it covers in the x/y directions:
+      XSPAN(ISEA) = MAX(1, INT(mx / CELFAC))
+      YSPAN(ISEA) = MAX(1, INT(my / CELFAC))
 
-       ! Do a bit of error checking (non fatal - just produced warning):
-       IF(XSPAN(ISEA) .GT. 1) THEN
-          IF(ABS((sxo+(ixx-1)*dxo) - lon) .GT. dxo/100.0) THEN
-             PRINT*, 'Potential problem with SMC grid cell span:'
-             PRINT*, xspan(ISEA), FLOAT(mx) / celfac
-             PRINT*, lon,lat
-             PRINT*, sxo+(ixx-1)*dxo,syo+iyy*dyo,dxo,dyo
-             PRINT*, "diff:", (sxo+(ixx-1)*dxo) - lon
-          ENDIF
-       ENDIF
+      ! Do a bit of error checking (non fatal - just produced warning):
+      IF(XSPAN(ISEA) .GT. 1) THEN
+        IF(ABS((sxo+(ixx-1)*dxo) - lon) .GT. dxo/100.0) THEN
+          PRINT*, 'Potential problem with SMC grid cell span:'
+          PRINT*, xspan(ISEA), FLOAT(mx) / celfac
+          PRINT*, lon,lat
+          PRINT*, sxo+(ixx-1)*dxo,syo+iyy*dyo,dxo,dyo
+          PRINT*, "diff:", (sxo+(ixx-1)*dxo) - lon
+        ENDIF
+      ENDIF
 
-       ! calc cell weight in relation to output grid:
-       WTS(ISEA) = MIN(1., DBLE(MIN(CELFAC, mx) * MIN(CELFAC, my)) / &
-            (CELFAC**2))
+      ! calc cell weight in relation to output grid:
+      WTS(ISEA) = MIN(1., DBLE(MIN(CELFAC, mx) * MIN(CELFAC, my)) / &
+           (CELFAC**2))
 
     ENDDO
 
@@ -372,45 +372,45 @@ CONTAINS
     XY(:,:) = 0.0
 
     DO ISMC=1,NSMC
-       ISEA = SMCIDX(ISMC)
+      ISEA = SMCIDX(ISMC)
 
-       IF(S(ISEA) .EQ. UNDEF) CYCLE   ! MDI
+      IF(S(ISEA) .EQ. UNDEF) CYCLE   ! MDI
 
-       ! Loop over number of spanned cells:
-       DO I=0, XSPAN(ISEA) - 1
-          DO J=0, YSPAN(ISEA) - 1
-             IX = XIDX(ISEA) + I
-             IY = YIDX(ISEA) + J
+      ! Loop over number of spanned cells:
+      DO I=0, XSPAN(ISEA) - 1
+        DO J=0, YSPAN(ISEA) - 1
+          IX = XIDX(ISEA) + I
+          IY = YIDX(ISEA) + J
 
-             ! Spans outside of grid?
-             IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
+          ! Spans outside of grid?
+          IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
 
-             ! Interpolate:
-             XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
+          ! Interpolate:
+          XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
 
-             ! Keep track of how much of cell is (wet) covered:
-             COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
-          ENDDO
-       ENDDO
+          ! Keep track of how much of cell is (wet) covered:
+          COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
+        ENDDO
+      ENDDO
 
     ENDDO
 
     ! Create coastline by masking out areas with < 50% coverage:
     DO IX=1,NXO
-       DO IY=1,NYO
-          IF(MAPSMC(IX,IY) .EQ. 0) THEN
-             ! Make land point
-             XY(IX,IY) = UNDEF
-          ELSE IF(COV(IX,IY) .LT. 0.5) THEN
-             ! More than half of cell has UNDEF values - set to NOVAL:
-             XY(IX,IY) = NOVAL
-          ELSE IF(COV(IX,IY) .LT. 1.0) THEN
-             ! If coverage < 1.0, scale values back to full cell coverage.
-             ! Without this step, points around coast could end up with lower
-             ! waveheights due to weights not summing to 1.0:
-             XY(IX,IY) = XY(IX,IY) * ( 1.0 / COV(IX,IY) )
-          ENDIF
-       ENDDO
+      DO IY=1,NYO
+        IF(MAPSMC(IX,IY) .EQ. 0) THEN
+          ! Make land point
+          XY(IX,IY) = UNDEF
+        ELSE IF(COV(IX,IY) .LT. 0.5) THEN
+          ! More than half of cell has UNDEF values - set to NOVAL:
+          XY(IX,IY) = NOVAL
+        ELSE IF(COV(IX,IY) .LT. 1.0) THEN
+          ! If coverage < 1.0, scale values back to full cell coverage.
+          ! Without this step, points around coast could end up with lower
+          ! waveheights due to weights not summing to 1.0:
+          XY(IX,IY) = XY(IX,IY) * ( 1.0 / COV(IX,IY) )
+        ENDIF
+      ENDDO
     ENDDO
 
     RETURN
@@ -456,53 +456,53 @@ CONTAINS
     AUX2(:,:) = 0.0
 
     DO ISMC=1,NSMC
-       ISEA = SMCIDX(ISMC)
+      ISEA = SMCIDX(ISMC)
 
-       IF(S(ISEA) .EQ. UNDEF) CYCLE   ! MDI
-       COSS = COS(S(ISEA))
-       SINS = SIN(S(ISEA))
+      IF(S(ISEA) .EQ. UNDEF) CYCLE   ! MDI
+      COSS = COS(S(ISEA))
+      SINS = SIN(S(ISEA))
 
-       ! Loop over number of spanned cells:
-       DO I=0, XSPAN(ISEA) - 1
-          DO J=0, YSPAN(ISEA) - 1
-             IX = XIDX(ISEA) + I
-             IY = YIDX(ISEA) + J
+      ! Loop over number of spanned cells:
+      DO I=0, XSPAN(ISEA) - 1
+        DO J=0, YSPAN(ISEA) - 1
+          IX = XIDX(ISEA) + I
+          IY = YIDX(ISEA) + J
 
-             ! Spans outside of grid?
-             IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
+          ! Spans outside of grid?
+          IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
 
-             ! Interpolate:
-             !XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
-             AUX1(IX, IY) = AUX1(IX, IY) + COSS * WTS(ISEA)
-             AUX2(IX, IY) = AUX2(IX, IY) + SINS * WTS(ISEA)
+          ! Interpolate:
+          !XY(IX, IY) = XY(IX, IY) + S(ISEA) * WTS(ISEA)
+          AUX1(IX, IY) = AUX1(IX, IY) + COSS * WTS(ISEA)
+          AUX2(IX, IY) = AUX2(IX, IY) + SINS * WTS(ISEA)
 
-             ! Keep track of how much of cell is (wet) covered:
-             COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
-          ENDDO
-       ENDDO
+          ! Keep track of how much of cell is (wet) covered:
+          COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
+        ENDDO
+      ENDDO
 
     ENDDO
 
     ! Create coastline by masking out areas with < 50% coverage:
     DO IX=1,NXO
-       DO IY=1,NYO
-          IF(MAPSMC(IX,IY) .EQ. 0) THEN
-             ! Make land point
-             XY(IX,IY) = UNDEF
-          ELSE IF(COV(IX,IY) .LT. 0.5) THEN
-             ! More than half of cell has UNDEF values - set to NOVAL
-             XY(IX,IY) = NOVAL
-          ELSE IF(COV(IX,IY) .LT. 1.0) THEN
-             ! If coverage < 1.0, scale values back to full cell coverage.
-             ! Without this step, points around coast could end up with lower
-             ! waveheights due to weights not summing to 1.0:
-             XY(IX,IY) = ATAN2(AUX2(IX,IY), AUX1(IX,IY))
-             XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360. )
-          ELSE
-             XY(IX,IY) = ATAN2(AUX2(IX,IY), AUX1(IX,IY))
-             XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360. )
-          ENDIF
-       ENDDO
+      DO IY=1,NYO
+        IF(MAPSMC(IX,IY) .EQ. 0) THEN
+          ! Make land point
+          XY(IX,IY) = UNDEF
+        ELSE IF(COV(IX,IY) .LT. 0.5) THEN
+          ! More than half of cell has UNDEF values - set to NOVAL
+          XY(IX,IY) = NOVAL
+        ELSE IF(COV(IX,IY) .LT. 1.0) THEN
+          ! If coverage < 1.0, scale values back to full cell coverage.
+          ! Without this step, points around coast could end up with lower
+          ! waveheights due to weights not summing to 1.0:
+          XY(IX,IY) = ATAN2(AUX2(IX,IY), AUX1(IX,IY))
+          XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360. )
+        ELSE
+          XY(IX,IY) = ATAN2(AUX2(IX,IY), AUX1(IX,IY))
+          XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360. )
+        ENDIF
+      ENDDO
     ENDDO
 
     RETURN
@@ -527,40 +527,40 @@ CONTAINS
     MAPSMC(:,:) = 0
 
     DO ISEA=1,NSEA
-       IMX = MAPSF(ISEA,1)
-       IMY = MAPSF(ISEA,2)
+      IMX = MAPSF(ISEA,1)
+      IMY = MAPSF(ISEA,2)
 
-       IF(XIDX(ISEA) .EQ. -1) CYCLE   ! Out of grid
+      IF(XIDX(ISEA) .EQ. -1) CYCLE   ! Out of grid
 
-       ! Loop over number of spanned cells:
-       DO I=0, XSPAN(ISEA) - 1
-          DO J=0, YSPAN(ISEA) - 1
-             IX = XIDX(ISEA) + I
-             IY = YIDX(ISEA) + J
+      ! Loop over number of spanned cells:
+      DO I=0, XSPAN(ISEA) - 1
+        DO J=0, YSPAN(ISEA) - 1
+          IX = XIDX(ISEA) + I
+          IY = YIDX(ISEA) + J
 
-             ! Spans outside of grid?
-             IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
+          ! Spans outside of grid?
+          IF(IX .GT. NXO .OR. IY .GT. NYO) CYCLE
 
-             ! MAPSTA values: 0=Excluded, (+-)1=Sea, (+-2)=Input boundary
-             ! We will just keep track of sea and non-sea points:
-             IF(MAPSTA(IMY, IMX) .NE. 0) THEN
-                ! Keep track of how much of cell is (wet) covered:
-                COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
-             ENDIF
-          ENDDO
-       ENDDO
+          ! MAPSTA values: 0=Excluded, (+-)1=Sea, (+-2)=Input boundary
+          ! We will just keep track of sea and non-sea points:
+          IF(MAPSTA(IMY, IMX) .NE. 0) THEN
+            ! Keep track of how much of cell is (wet) covered:
+            COV(IX, IY) = COV(IX, IY) + WTS(ISEA)
+          ENDIF
+        ENDDO
+      ENDDO
 
     ENDDO
 
     ! Create coastline by masking out areas with < 50% coverage:
     DO IX=1,NXO
-       DO IY=1,NYO
-          IF(COV(IX,IY) .LT. 0.5) THEN
-             MAPSMC(IX, IY) = 0
-          ELSE
-             MAPSMC(IX, IY) = 1
-          ENDIF
-       ENDDO
+      DO IY=1,NYO
+        IF(COV(IX,IY) .LT. 0.5) THEN
+          MAPSMC(IX, IY) = 0
+        ELSE
+          MAPSMC(IX, IY) = 1
+        ENDIF
+      ENDDO
     ENDDO
 
     RETURN
@@ -589,8 +589,8 @@ CONTAINS
     NDSMC = 50
     OPEN(NDSMC, file='smcint.ww3', status='old', form='unformatted', convert=file_endian, iostat=ierr)
     IF(ierr .NE. 0) THEN
-       WRITE(*,*) "ERROR! Failed to open smcint.ww3 for reading"
-       CALL EXTCDE(1)
+      WRITE(*,*) "ERROR! Failed to open smcint.ww3 for reading"
+      CALL EXTCDE(1)
     ENDIF
 
     ! Header
@@ -647,16 +647,16 @@ CONTAINS
 
     ! Model lat/lons:
     DO ISEA = 1,NSEA
-       mlon(isea) = (X0-0.5*SX) + (IJKCel(1,ISEA) + 0.5 * IJKCel(3,ISEA)) * dlon
-       mlat(isea) = (Y0-0.5*SY) + (IJKCel(2,ISEA) + 0.5 * IJKCel(4,ISEA)) * dlat
+      mlon(isea) = (X0-0.5*SX) + (IJKCel(1,ISEA) + 0.5 * IJKCel(3,ISEA)) * dlon
+      mlat(isea) = (Y0-0.5*SY) + (IJKCel(2,ISEA) + 0.5 * IJKCel(4,ISEA)) * dlat
     ENDDO
 
     ! Generate output grid cell centres:
     DO I=1,NXO
-       DO J=1,NYO
-          olon(i,J) = SXO + (I-1) * DXO
-          olat(i,J) = SYO + (J-1) * DYO
-       ENDDO
+      DO J=1,NYO
+        olon(i,J) = SXO + (I-1) * DXO
+        olat(i,J) = SYO + (J-1) * DYO
+      ENDDO
     ENDDO
 
 #ifdef W3_RTD
@@ -672,25 +672,25 @@ CONTAINS
     ! NOTE : BRUTE FORCE!
     NNIDX(:,:) = -1
     DO I=1,NXO
-       PRINT*,I,' of ',NXO
-       DO J=1,NYO
-          lon = olon(i,j)
-          lat = olat(i,j)
-          IF(lon .LT. X0 - SX / 2) lon = lon + 360.0
-          IF(lon .GT. (X0 + (NX-1) * SX) + 0.5 * SX) lon = lon - 360.0
-          DO ISEA=1,NSEA
-             IF(mlon(ISEA) - 0.5 * IJKCel(3,ISEA) * dlon .LE. lon .AND.    &
-                  mlon(ISEA) + 0.5 * IJKCel(3,ISEA) * dlon .GE. lon .AND.    &
-                  mlat(ISEA) - 0.5 * IJKCel(4,ISEA) * dlat .LE. lat .AND.    &
-                  mlat(ISEA) + 0.5 * IJKCel(4,ISEA) * dlat .GE. lat ) THEN
-                ! Match!
-                NNIDX(I,J) = ISEA
-                xdist(I,J) = (lon - mlon(ISEA)) * DERA * RADIUS * CLats(ISEA)
-                ydist(I,J) = (lat - mlat(ISEA)) * DERA * RADIUS
-                EXIT
-             ENDIF
-          ENDDO
-       ENDDO
+      PRINT*,I,' of ',NXO
+      DO J=1,NYO
+        lon = olon(i,j)
+        lat = olat(i,j)
+        IF(lon .LT. X0 - SX / 2) lon = lon + 360.0
+        IF(lon .GT. (X0 + (NX-1) * SX) + 0.5 * SX) lon = lon - 360.0
+        DO ISEA=1,NSEA
+          IF(mlon(ISEA) - 0.5 * IJKCel(3,ISEA) * dlon .LE. lon .AND.    &
+               mlon(ISEA) + 0.5 * IJKCel(3,ISEA) * dlon .GE. lon .AND.    &
+               mlat(ISEA) - 0.5 * IJKCel(4,ISEA) * dlat .LE. lat .AND.    &
+               mlat(ISEA) + 0.5 * IJKCel(4,ISEA) * dlat .GE. lat ) THEN
+            ! Match!
+            NNIDX(I,J) = ISEA
+            xdist(I,J) = (lon - mlon(ISEA)) * DERA * RADIUS * CLats(ISEA)
+            ydist(I,J) = (lat - mlat(ISEA)) * DERA * RADIUS
+            EXIT
+          ENDIF
+        ENDDO
+      ENDDO
     ENDDO
 
   END SUBROUTINE CALC_INTERP
@@ -720,24 +720,24 @@ CONTAINS
     ! Local parameters
     INTEGER           :: I, J, IX, IY, ISEA, ISMC
     DO IX = 1,NXO
-       DO IY = 1,NYO
-          ISEA = NNIDX(IX,IY) ! Nearest neighbour SMC point
-          IF(ISEA .EQ. -1) THEN
-             ! Land
-             XY(IX,IY) = UNDEF
+      DO IY = 1,NYO
+        ISEA = NNIDX(IX,IY) ! Nearest neighbour SMC point
+        IF(ISEA .EQ. -1) THEN
+          ! Land
+          XY(IX,IY) = UNDEF
+        ELSE
+          IF(S(ISEA) .EQ. UNDEF) THEN
+            ! Set undefined sea points to NOVAL
+            XY(IX,IY) = NOVAL
           ELSE
-             IF(S(ISEA) .EQ. UNDEF) THEN
-                ! Set undefined sea points to NOVAL
-                XY(IX,IY) = NOVAL
-             ELSE
-                XY(IX,IY) = S(ISEA)
-                IF(DIRN) THEN
-                   ! Convert direction fields to degrees nautical
-                   XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360.0)
-                ENDIF
-             ENDIF
+            XY(IX,IY) = S(ISEA)
+            IF(DIRN) THEN
+              ! Convert direction fields to degrees nautical
+              XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360.0)
+            ENDIF
           ENDIF
-       ENDDO
+        ENDIF
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3S2XY_SMCNN
@@ -780,19 +780,19 @@ CONTAINS
 
     ! Interpolate:
     DO IX = 1,NXO
-       DO IY = 1,NYO
-          ISEA = NNIDX(IX,IY) ! Nearest neighbour SMC point
-          IF(ISEA .EQ. -1) THEN
-             XY(IX,IY) = UNDEF
-          ELSE
-             ! Interpolate using local gradient and distance from cell centre:
-             XY(IX,IY) = S(ISEA) + grdx(isea) * xdist(ix,iy) + grdy(isea) * ydist(ix,iy)
-             IF(DIRN) THEN
-                ! Convert direction fields to degrees nautical
-                XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360.0)
-             ENDIF
+      DO IY = 1,NYO
+        ISEA = NNIDX(IX,IY) ! Nearest neighbour SMC point
+        IF(ISEA .EQ. -1) THEN
+          XY(IX,IY) = UNDEF
+        ELSE
+          ! Interpolate using local gradient and distance from cell centre:
+          XY(IX,IY) = S(ISEA) + grdx(isea) * xdist(ix,iy) + grdy(isea) * ydist(ix,iy)
+          IF(DIRN) THEN
+            ! Convert direction fields to degrees nautical
+            XY(IX,IY) = MOD(630. - RADE * XY(IX,IY), 360.0)
           ENDIF
-       ENDDO
+        ENDIF
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3S2XY_SMCNN_INT
@@ -825,39 +825,39 @@ CONTAINS
     INTEGER           :: ISEA
 
     IF(PRESENT(DIR)) THEN
-       DIRN = DIR
+      DIRN = DIR
     ELSE
-       DIRN = .false.
+      DIRN = .false.
     ENDIF
 
     IF(SMCOTYPE .EQ. 1) THEN
-       ! Flat sea point array
-       XY(:,1) = PACK(S, SMCMASK)
-       IF(DIRN) THEN
-          ! Convert to nautical convention in degrees
-          DO ISEA=1,NXO
-             IF(XY(ISEA,1) .NE. UNDEF) THEN
-                XY(ISEA,1) = MOD(630. - RADE * XY(ISEA,1), 360.)
-             ENDIF
-          ENDDO
-       ENDIF
+      ! Flat sea point array
+      XY(:,1) = PACK(S, SMCMASK)
+      IF(DIRN) THEN
+        ! Convert to nautical convention in degrees
+        DO ISEA=1,NXO
+          IF(XY(ISEA,1) .NE. UNDEF) THEN
+            XY(ISEA,1) = MOD(630. - RADE * XY(ISEA,1), 360.)
+          ENDIF
+        ENDDO
+      ENDIF
     ELSEIF(SMCOTYPE .EQ. 2) THEN
-       ! Regular gridded SMC cells
-       IF(DIRN) THEN
-          CALL W3S2XY_SMCRG_DIR(S, XY)
-       ELSE
-          CALL W3S2XY_SMCRG(S, XY)
-       ENDIF
+      ! Regular gridded SMC cells
+      IF(DIRN) THEN
+        CALL W3S2XY_SMCRG_DIR(S, XY)
+      ELSE
+        CALL W3S2XY_SMCRG(S, XY)
+      ENDIF
     ELSEIF(SMCOTYPE .EQ. 3) THEN
-       ! Regridded to arbitrary regular grid with interpolation
-       CALL W3S2XY_SMCNN_INT(S, XY, DIRN)
+      ! Regridded to arbitrary regular grid with interpolation
+      CALL W3S2XY_SMCNN_INT(S, XY, DIRN)
     ELSEIF(SMCOTYPE .EQ. 4) THEN
-       ! Regridded to arbitrary regular grid - no interpolation
-       CALL W3S2XY_SMCNN(S, XY, DIRN)
+      ! Regridded to arbitrary regular grid - no interpolation
+      CALL W3S2XY_SMCNN(S, XY, DIRN)
     ELSE
-       WRITE(*,*) "Uknonwn SMC type!", SMCOTYPE
-       ! Unknown SMC type!
-       STOP
+      WRITE(*,*) "Uknonwn SMC type!", SMCOTYPE
+      ! Unknown SMC type!
+      STOP
     ENDIF
 
   END SUBROUTINE W3S2XY_SMC

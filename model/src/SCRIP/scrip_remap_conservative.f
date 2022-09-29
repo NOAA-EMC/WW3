@@ -61,99 +61,99 @@
 
 !-----------------------------------------------------------------------
 
-      use SCRIP_KindsMod        ! defines common data types
-      use SCRIP_constants       ! defines common constants
-      use scrip_timers          ! module for timing
-      use scrip_grids           ! module containing grid information
-      use scrip_remap_vars      ! module containing remap information
+      use SCRIP_KindsMod ! defines common data types
+      use SCRIP_constants    ! defines common constants
+      use scrip_timers       ! module for timing
+      use scrip_grids        ! module containing grid information
+      use scrip_remap_vars   ! module containing remap information
       use omp_lib
 
       implicit none
 
-      integer (SCRIP_i4) :: nthreads=2 ! Number of parallel threads
+      integer (SCRIP_i4) :: nthreads=2  ! Number of parallel threads
 
 !............variables that needed to be moved from "local level" to
-!............"module level" in order that we can clear them later.
+!............ "module level" in order that we can clear them later.
 !............These are all local variables that had the "save" attribute
 !............in the standard version of SCRIP
 
       integer (SCRIP_i4), save ::
-     &     avoid_pole_count = 0 ! count attempts to avoid pole
+     &     avoid_pole_count = 0  ! count attempts to avoid pole
 
       real (SCRIP_r8), save ::
-     &     avoid_pole_offset = tiny ! endpoint offset to avoid pole
+     &     avoid_pole_offset = tiny  ! endpoint offset to avoid pole
 
       integer (SCRIP_i4), dimension(:,:), allocatable, save ::
-     &     link_add1,           ! min,max link add to restrict search
-     &     link_add2            ! min,max link add to restrict search
+     &        link_add1,  ! min,max link add to restrict search
+     &        link_add2   ! min,max link add to restrict search
 
       logical (SCRIP_logical), save ::
-     &     first_call_store_link_cnsrv = .true.
+     &        first_call_store_link_cnsrv = .true.
 
       logical (SCRIP_logical), save ::
      &     first_call_locate_segstart= .true.
 
       integer (SCRIP_i4), save ::
-     &     last_cell_locate_segstart=0, ! save the search parameters
-     &     last_cell_grid_num_locate_segstart=0, ! if unchanged, reuse
-! search lists
+     &     last_cell_locate_segstart=0,     ! save the search parameters
+     &     last_cell_grid_num_locate_segstart=0,   ! if unchanged, reuse
+                                                   ! search lists
      &     last_srch_grid_num_locate_segstart=0
 
       integer (SCRIP_i4), save ::
      &     num_srch_cells_locate_segstart=0,
-     &     srch_corners_locate_segstart ! number of corners for
-! each cell
+     &     srch_corners_locate_segstart      ! number of corners for
+                                             ! each cell
 
       integer (SCRIP_i4), dimension(:), allocatable, save ::
-     &     srch_add_locate_segstart ! global address of cells
-! in srch arrays
+     &        srch_add_locate_segstart       ! global address of cells
+                                             ! in srch arrays
 
       real (SCRIP_r8), dimension(:,:), allocatable, save ::
-     &     srch_corner_lat_locate_segstart, ! lat of each corner of
-! srch cells
-     &     srch_corner_lon_locate_segstart ! lon of each corner of
-! srch cells
+     &     srch_corner_lat_locate_segstart,  ! lat of each corner of
+                                             ! srch cells
+     &     srch_corner_lon_locate_segstart   ! lon of each corner of
+                                             ! srch cells
 
       real(SCRIP_r8), dimension(:), allocatable, save ::
-     &     srch_center_lat_locate_segstart, ! lat of center of srch cells
+     &     srch_center_lat_locate_segstart,! lat of center of srch cells
      &     srch_center_lon_locate_segstart ! lon of center of srch cells
 
       logical (SCRIP_logical), save ::
      &     first_call_locate_point= .true.
 
       integer (SCRIP_i4), save ::
-     &     last_cell_locate_point=0, ! save the search parameters
-     &     last_cell_grid_num_locate_point=0, ! if unchanged, reuse
-! search lists
+     &     last_cell_locate_point=0,       ! save the search parameters
+     &     last_cell_grid_num_locate_point=0,     ! if unchanged, reuse
+                                                  ! search lists
      &     last_srch_grid_num_locate_point=0
 
       integer (SCRIP_i4), save ::
      &     num_srch_cell_locate_points=0,
-     &     srch_corners_locate_point ! number of corners for each cell
+     &     srch_corners_locate_point  ! number of corners for each cell
 
       integer (SCRIP_i4), dimension(:), allocatable, save ::
-     &     srch_add_locate_point ! global address of cells in
-! srch arrays
+     &        srch_add_locate_point       ! global address of cells in
+                                          ! srch arrays
 
       real (SCRIP_r8), dimension(:,:), allocatable, save ::
-     &     srch_corner_lat_locate_point, ! lat of each corner of srch
-! cells
-     &     srch_corner_lon_locate_point ! lon of each corner of srch
-! cells
+     &     srch_corner_lat_locate_point,  ! lat of each corner of srch
+                                          ! cells
+     &     srch_corner_lon_locate_point   ! lon of each corner of srch
+                                          ! cells
 
       real (SCRIP_r8), dimension(:), allocatable, save ::
-     &     srch_center_lat_locate_point, ! lat of center of srch cells
-     &     srch_center_lon_locate_point ! lon of center of srch cells
+     &     srch_center_lat_locate_point,  ! lat of center of srch cells
+     &     srch_center_lon_locate_point   ! lon of center of srch cells
 
       integer (SCRIP_i4), save ::
-     &     num_srch_cells_loc_get_srch_cells, ! Number of srch cells
-! found
-     &     srch_corners_loc_get_srch_cells ! Number of corners for
-! search cells
+     &     num_srch_cells_loc_get_srch_cells,  ! Number of srch cells
+                                               ! found
+     &     srch_corners_loc_get_srch_cells     ! Number of corners for
+                                               ! search cells
 
       integer (SCRIP_i4), dimension(:), allocatable, save ::
-     &     srch_add_loc_get_srch_cells ! Global addresses of
-! search cells
+     &     srch_add_loc_get_srch_cells         ! Global addresses of
+                                               ! search cells
 
       real (SCRIP_r8), dimension(:,:), allocatable, save ::
      &     srch_corner_lat_loc_get_srch_cells,
@@ -175,7 +175,7 @@
      &     first_call_find_adj_cell=.true.
 
       logical (SCRIP_logical), private :: is_master
-! module's equivalent of "l_master"
+           ! module's equivalent of "l_master"
 
       integer (SCRIP_i4), save ::
      &     last_cell_find_adj_cell,
@@ -191,50 +191,50 @@
       real (SCRIP_r8), dimension(:), allocatable, save ::
      &     srch_center_lat_find_adj_cell, srch_center_lon_find_adj_cell
 
-C     $OMP THREADPRIVATE(last_cell_grid_num_get_srch_cells,
-C     $OMP& last_srch_grid_num_get_srch_cells,
-C     $OMP& first_call_get_srch_cells,
-C     $OMP& last_cell_add_get_srch_cells,
-C     $OMP& num_srch_cells_loc_get_srch_cells,
-C     $OMP& srch_corners_loc_get_srch_cells,
-C     $OMP& srch_add_loc_get_srch_cells,
-C     $OMP& srch_corner_lat_loc_get_srch_cells,
-C     $OMP& srch_corner_lon_loc_get_srch_cells,
-C     $OMP& srch_center_lat_loc_get_srch_cells,
-C     $OMP& srch_center_lon_loc_get_srch_cells)
+C$OMP THREADPRIVATE(last_cell_grid_num_get_srch_cells,
+C$OMP& last_srch_grid_num_get_srch_cells,
+C$OMP& first_call_get_srch_cells,
+C$OMP& last_cell_add_get_srch_cells,
+C$OMP& num_srch_cells_loc_get_srch_cells,
+C$OMP& srch_corners_loc_get_srch_cells,
+C$OMP& srch_add_loc_get_srch_cells,
+C$OMP& srch_corner_lat_loc_get_srch_cells,
+C$OMP& srch_corner_lon_loc_get_srch_cells,
+C$OMP& srch_center_lat_loc_get_srch_cells,
+C$OMP& srch_center_lon_loc_get_srch_cells)
 
-C     $OMP THREADPRIVATE(first_call_locate_segstart,
-C     $OMP& last_cell_locate_segstart,
-C     $OMP& last_cell_grid_num_locate_segstart,
-C     $OMP& last_srch_grid_num_locate_segstart,
-C     $OMP& num_srch_cells_locate_segstart,
-C     $OMP& srch_corners_locate_segstart,
-C     $OMP& srch_add_locate_segstart,
-C     $OMP& srch_corner_lat_locate_segstart,
-C     $OMP& srch_corner_lon_locate_segstart,
-C     $OMP& srch_center_lat_locate_segstart,
-C     $OMP& srch_center_lon_locate_segstart)
+C$OMP THREADPRIVATE(first_call_locate_segstart,
+C$OMP& last_cell_locate_segstart,
+C$OMP& last_cell_grid_num_locate_segstart,
+C$OMP& last_srch_grid_num_locate_segstart,
+C$OMP& num_srch_cells_locate_segstart,
+C$OMP& srch_corners_locate_segstart,
+C$OMP& srch_add_locate_segstart,
+C$OMP& srch_corner_lat_locate_segstart,
+C$OMP& srch_corner_lon_locate_segstart,
+C$OMP& srch_center_lat_locate_segstart,
+C$OMP& srch_center_lon_locate_segstart)
 
-C     $OMP THREADPRIVATE(first_call_locate_point,
-C     $OMP& last_cell_locate_point,
-C     $OMP& last_cell_grid_num_locate_point,
-C     $OMP& last_srch_grid_num_locate_point,
-C     $OMP& num_srch_cell_locate_points,
-C     $OMP& srch_add_locate_point,srch_corner_lat_locate_point,
-C     $OMP& srch_corner_lon_locate_point,
-C     $OMP& srch_center_lat_locate_point,
-C     $OMP& srch_center_lon_locate_point)
+C$OMP THREADPRIVATE(first_call_locate_point,
+C$OMP& last_cell_locate_point,
+C$OMP& last_cell_grid_num_locate_point,
+C$OMP& last_srch_grid_num_locate_point,
+C$OMP& num_srch_cell_locate_points,
+C$OMP& srch_add_locate_point,srch_corner_lat_locate_point,
+C$OMP& srch_corner_lon_locate_point,
+C$OMP& srch_center_lat_locate_point,
+C$OMP& srch_center_lon_locate_point)
 
-C     $OMP THREADPRIVATE(first_call_find_adj_cell,
-C     $OMP& last_cell_find_adj_cell,
-C     $OMP& last_cell_grid_num_find_adj_cell,
-C     $OMP& num_srch_cells_find_adj_cell,
-C     $OMP& srch_corners_find_adj_cell,
-C     $OMP& srch_add_find_adj_cell,
-C     $OMP& srch_corner_lat_find_adj_cell,
-C     $OMP& srch_corner_lon_find_adj_cell,
-C     $OMP& srch_center_lat_find_adj_cell,
-C     $OMP& srch_center_lon_find_adj_cell)
+C$OMP THREADPRIVATE(first_call_find_adj_cell,
+C$OMP& last_cell_find_adj_cell,
+C$OMP& last_cell_grid_num_find_adj_cell,
+C$OMP& num_srch_cells_find_adj_cell,
+C$OMP& srch_corners_find_adj_cell,
+C$OMP& srch_add_find_adj_cell,
+C$OMP& srch_corner_lat_find_adj_cell,
+C$OMP& srch_corner_lon_find_adj_cell,
+C$OMP& srch_center_lat_find_adj_cell,
+C$OMP& srch_center_lon_find_adj_cell)
 
 !***********************************************************************
 
@@ -252,10 +252,10 @@ C     $OMP& srch_center_lon_find_adj_cell)
 !
 !-----------------------------------------------------------------------
 
-      logical(SCRIP_Logical), intent(in) :: l_master ! Am I the master
-! processor (do I/O)?
-      logical(SCRIP_Logical), intent(in) :: l_test ! Whether to
-!include test output
+      logical(SCRIP_Logical), intent(in) :: l_master   ! Am I the master
+                                                   ! processor (do I/O)?
+      logical(SCRIP_Logical), intent(in) :: l_test     ! Whether to
+                                                    !include test output
 
 !-----------------------------------------------------------------------
 !
@@ -264,7 +264,7 @@ C     $OMP& srch_center_lon_find_adj_cell)
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4), parameter ::
-     &     phi_or_theta = 2     ! integrate w.r.t. phi (1) or theta (2)
+     &     phi_or_theta = 2      ! integrate w.r.t. phi (1) or theta (2)
 
 
       integer (SCRIP_i4) ::
@@ -273,19 +273,19 @@ C     $OMP& srch_center_lon_find_adj_cell)
      &     grid1_add,           ! Current linear address for grid1 cell
      &     grid2_add,           ! Current linear address for grid2 cell
      &     grid_num,            ! Index (1,2) of grid that we are
-! processing
+                                ! processing
      &     opp_grid_num,        ! Index of opposite grid (2,1)
      &     maxrd_cell,          ! cell with the max. relative difference
-! in area
+                                ! in area
      &     progint,             ! Intervals at which progress is to be
-! printed
+                                ! printed
      &     icount               ! for counting
 
       real (SCRIP_r8) ::
      &     norm_factor          ! factor for normalizing wts
 
       real (SCRIP_r8), dimension(6) ::
-     &     weights              ! Weights array
+     &     weights             ! Weights array
 
       real (SCRIP_r8) ::
      &     beglat, beglon,
@@ -293,16 +293,16 @@ C     $OMP& srch_center_lon_find_adj_cell)
      &     ave_reldiff,         ! Average rel. diff. in areas
      &     max_reldiff,         ! Maximum rel. diff in areas
      &     maxrd_area,          ! Computed area for cell with max rel
-! diff
+                                ! diff
      &     maxrd_true           ! True area for cell with max rel diff
 
       real (SCRIP_r8), dimension(:), allocatable ::
      &     reldiff,             ! Relative difference in computed
-! and true area
+                                ! and true area
      &     ref_area             ! Area of cell as computed by direct
-! integration around its boundaries
+                                ! integration around its boundaries
 
-!     call OMP_SET_DYNAMIC(.FALSE.)
+!      call OMP_SET_DYNAMIC(.FALSE.)
 
 !-----------------------------------------------------------------------
 !
@@ -310,14 +310,14 @@ C     $OMP& srch_center_lon_find_adj_cell)
 !
 !-----------------------------------------------------------------------
 
-      is_master=l_master        ! set module variable using subroutine input
-! argument variable.
-! Use the former subsequently.
+      is_master=l_master ! set module variable using subroutine input
+                         ! argument variable.
+                         ! Use the former subsequently.
 
       if(is_master)print *,'grid1 sweep'
 
-!     NRL  Progress is slow when the other grid (grid 2) is large, so we use
-!     NRL    that. Really, it would be a better to do this with a timer...
+!NRL  Progress is slow when the other grid (grid 2) is large, so we use
+!NRL    that. Really, it would be a better to do this with a timer...
       if (grid2_size >     500000) then
          progint =         1000
       elseif (grid2_size > 250000) then
@@ -333,9 +333,9 @@ C     $OMP& srch_center_lon_find_adj_cell)
 
       call timer_start(1)
 
-C     $OMP PARALLEL DEFAULT(SHARED) PRIVATE(grid1_add) NUM_THREADS(nthreads)
+C$OMP PARALLEL DEFAULT(SHARED) PRIVATE(grid1_add) NUM_THREADS(nthreads)
 
-C     $OMP DO SCHEDULE(DYNAMIC)
+C$OMP DO SCHEDULE(DYNAMIC)
 
       do grid1_add = 1,grid1_size
 
@@ -347,9 +347,9 @@ C     $OMP DO SCHEDULE(DYNAMIC)
 
       end do                    ! do grid1_add=...
 
-C     $OMP END DO
+C$OMP END DO
 
-C     $OMP END PARALLEL
+C$OMP END PARALLEL
 
 !-----------------------------------------------------------------------
 !
@@ -359,8 +359,8 @@ C     $OMP END PARALLEL
 
       if(is_master)print *,'grid2 sweep '
 
-!     NRL  Progress is slow when the other grid (grid 1) is large, so we use
-!     NRL    that.
+!NRL  Progress is slow when the other grid (grid 1) is large, so we use
+!NRL    that.
       if (grid1_size >     500000) then
          progint =         1000
       elseif (grid1_size > 250000) then
@@ -376,9 +376,9 @@ C     $OMP END PARALLEL
 
       call timer_start(2)
 
-C     $OMP PARALLEL DEFAULT(SHARED) PRIVATE(grid2_add) NUM_THREADS(nthreads)
+C$OMP PARALLEL DEFAULT(SHARED) PRIVATE(grid2_add) NUM_THREADS(nthreads)
 
-C     $OMP DO SCHEDULE(DYNAMIC)
+C$OMP DO SCHEDULE(DYNAMIC)
 
       do grid2_add = 1,grid2_size
 
@@ -390,9 +390,9 @@ C     $OMP DO SCHEDULE(DYNAMIC)
 
       end do                    ! do grid2_add=...
 
-C     $OMP END DO
+C$OMP END DO
 
-C     $OMP END PARALLEL
+C$OMP END PARALLEL
 
       call timer_stop(2)
 
@@ -408,7 +408,7 @@ C     $OMP END PARALLEL
 
       if (phi_or_theta .eq. 1) then
 
-!*** North Pole
+         !*** North Pole
          weights(1) =  pi2
          weights(2) =  pi*pi
          weights(3) =  zero
@@ -447,7 +447,7 @@ C     $OMP END PARALLEL
          endif
 
 
-!*** South Pole
+         !*** South Pole
          weights(1) =  pi2
          weights(2) = -pi*pi
          weights(3) =  zero
@@ -499,21 +499,21 @@ C     $OMP END PARALLEL
 
       call timer_start(3)
 
-C     $OMP PARALLEL
-C     $OMP WORKSHARE
+C$OMP PARALLEL
+C$OMP WORKSHARE
       where (grid1_area /= zero)
-         grid1_centroid_lat = grid1_centroid_lat/grid1_area
-         grid1_centroid_lon = grid1_centroid_lon/grid1_area
+        grid1_centroid_lat = grid1_centroid_lat/grid1_area
+        grid1_centroid_lon = grid1_centroid_lon/grid1_area
       end where
-C     $OMP END WORKSHARE
+C$OMP END WORKSHARE
 
-C     $OMP WORKSHARE
+C$OMP WORKSHARE
       where (grid2_area /= zero)
-         grid2_centroid_lat = grid2_centroid_lat/grid2_area
-         grid2_centroid_lon = grid2_centroid_lon/grid2_area
+        grid2_centroid_lat = grid2_centroid_lat/grid2_area
+        grid2_centroid_lon = grid2_centroid_lon/grid2_area
       end where
-C     $OMP END WORKSHARE
-C     $OMP END PARALLEL
+C$OMP END WORKSHARE
+C$OMP END PARALLEL
 
 
 !-----------------------------------------------------------------------
@@ -523,109 +523,109 @@ C     $OMP END PARALLEL
 !
 !-----------------------------------------------------------------------
 
-C     $OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
-C     $OMP& PRIVATE(n,grid1_add,grid2_add,nwgt,weights,norm_factor)
+C$OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
+C$OMP& PRIVATE(n,grid1_add,grid2_add,nwgt,weights,norm_factor)
 
-C     $OMP DO SCHEDULE(DYNAMIC)
+C$OMP DO SCHEDULE(DYNAMIC)
 
       do n=1,num_links_map1
-         grid1_add = grid1_add_map1(n)
-         grid2_add = grid2_add_map1(n)
-         do nwgt=1,num_wts
-            weights(        nwgt) = wts_map1(nwgt,n)
-            if (num_maps > 1) then
-               weights(num_wts+nwgt) = wts_map2(nwgt,n)
-            endif
-         end do
+        grid1_add = grid1_add_map1(n)
+        grid2_add = grid2_add_map1(n)
+        do nwgt=1,num_wts
+          weights(        nwgt) = wts_map1(nwgt,n)
+          if (num_maps > 1) then
+            weights(num_wts+nwgt) = wts_map2(nwgt,n)
+          endif
+        end do
 
-         select case(norm_opt)
-      case (norm_opt_dstarea)
-         if (grid2_area(grid2_add) /= zero) then
+        select case(norm_opt)
+        case (norm_opt_dstarea)
+          if (grid2_area(grid2_add) /= zero) then
             if (luse_grid2_area) then
-               norm_factor = one/grid2_area_in(grid2_add)
+              norm_factor = one/grid2_area_in(grid2_add)
             else
-               norm_factor = one/grid2_area(grid2_add)
+              norm_factor = one/grid2_area(grid2_add)
             endif
-         else
+          else
             norm_factor = zero
-         endif
-      case (norm_opt_frcarea)
-         if (grid2_frac(grid2_add) /= zero) then
+          endif
+        case (norm_opt_frcarea)
+          if (grid2_frac(grid2_add) /= zero) then
             if (luse_grid2_area) then
-               norm_factor = grid2_area(grid2_add)/
-     &              (grid2_frac(grid2_add)*
-     &              grid2_area_in(grid2_add))
+              norm_factor = grid2_area(grid2_add)/
+     &                     (grid2_frac(grid2_add)*
+     &                      grid2_area_in(grid2_add))
             else
-               norm_factor = one/grid2_frac(grid2_add)
+              norm_factor = one/grid2_frac(grid2_add)
             endif
-         else
+          else
             norm_factor = zero
-         endif
-      case (norm_opt_none)
-         norm_factor = one
-      end select
+          endif
+        case (norm_opt_none)
+          norm_factor = one
+        end select
 
-      wts_map1(1,n) =  weights(1)*norm_factor
-      wts_map1(2,n) = (weights(2) - weights(1)*
-     &     grid1_centroid_lat(grid1_add))*
-     &     norm_factor
-      wts_map1(3,n) = (weights(3) - weights(1)*
-     &     grid1_centroid_lon(grid1_add))*
-     &     norm_factor
+        wts_map1(1,n) =  weights(1)*norm_factor
+        wts_map1(2,n) = (weights(2) - weights(1)*
+     &                              grid1_centroid_lat(grid1_add))*
+     &                              norm_factor
+        wts_map1(3,n) = (weights(3) - weights(1)*
+     &                              grid1_centroid_lon(grid1_add))*
+     &                              norm_factor
 
-      if (num_maps > 1) then
-         select case(norm_opt)
-      case (norm_opt_dstarea)
-         if (grid1_area(grid1_add) /= zero) then
-            if (luse_grid1_area) then
-               norm_factor = one/grid1_area_in(grid1_add)
+        if (num_maps > 1) then
+          select case(norm_opt)
+          case (norm_opt_dstarea)
+            if (grid1_area(grid1_add) /= zero) then
+              if (luse_grid1_area) then
+                norm_factor = one/grid1_area_in(grid1_add)
+              else
+                norm_factor = one/grid1_area(grid1_add)
+              endif
             else
-               norm_factor = one/grid1_area(grid1_add)
+              norm_factor = zero
             endif
-         else
-            norm_factor = zero
-         endif
-      case (norm_opt_frcarea)
-         if (grid1_frac(grid1_add) /= zero) then
-            if (luse_grid1_area) then
-               norm_factor = grid1_area(grid1_add)/
-     &              (grid1_frac(grid1_add)*
-     &              grid1_area_in(grid1_add))
+          case (norm_opt_frcarea)
+            if (grid1_frac(grid1_add) /= zero) then
+              if (luse_grid1_area) then
+                norm_factor = grid1_area(grid1_add)/
+     &                       (grid1_frac(grid1_add)*
+     &                        grid1_area_in(grid1_add))
+              else
+                norm_factor = one/grid1_frac(grid1_add)
+              endif
             else
-               norm_factor = one/grid1_frac(grid1_add)
+              norm_factor = zero
             endif
-         else
-            norm_factor = zero
-         endif
-      case (norm_opt_none)
-         norm_factor = one
-      end select
+          case (norm_opt_none)
+            norm_factor = one
+          end select
 
-      wts_map2(1,n) =  weights(num_wts+1)*norm_factor
-      wts_map2(2,n) = (weights(num_wts+2) - weights(num_wts+1)*
-     &     grid2_centroid_lat(grid2_add))*
-     &     norm_factor
-      wts_map2(3,n) = (weights(num_wts+3) - weights(num_wts+1)*
-     &     grid2_centroid_lon(grid2_add))*
-     &     norm_factor
-      endif
+          wts_map2(1,n) =  weights(num_wts+1)*norm_factor
+          wts_map2(2,n) = (weights(num_wts+2) - weights(num_wts+1)*
+     &                                grid2_centroid_lat(grid2_add))*
+     &                                norm_factor
+          wts_map2(3,n) = (weights(num_wts+3) - weights(num_wts+1)*
+     &                                grid2_centroid_lon(grid2_add))*
+     &                                norm_factor
+        endif
 
       end do
 
-C     $OMP END DO
+C$OMP END DO
 
-C     $OMP END PARALLEL
+C$OMP END PARALLEL
 
       if(is_master)print *, 'Total number of links = ',num_links_map1
 
-C     $OMP PARALLEL
-C     $OMP WORKSHARE
+C$OMP PARALLEL
+C$OMP WORKSHARE
       where (grid1_area /= zero) grid1_frac = grid1_frac/grid1_area
-C     $OMP END WORKSHARE
-C     $OMP WORKSHARE
+C$OMP END WORKSHARE
+C$OMP WORKSHARE
       where (grid2_area /= zero) grid2_frac = grid2_frac/grid2_area
-C     $OMP END WORKSHARE
-C     $OMP END PARALLEL
+C$OMP END WORKSHARE
+C$OMP END PARALLEL
 
       call timer_stop(3)
 
@@ -638,48 +638,48 @@ C     $OMP END PARALLEL
       allocate(ref_area(grid1_size))
       allocate(reldiff(grid1_size))
 
-C     $OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
-C     $OMP&  PRIVATE(n, i, inext, beglat, beglon, endlat, endlon, weights)
-C     $OMP DO SCHEDULE(DYNAMIC)
+C$OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
+C$OMP&  PRIVATE(n, i, inext, beglat, beglon, endlat, endlon, weights)
+C$OMP DO SCHEDULE(DYNAMIC)
 
       do n=1,grid1_size
-         if (grid1_area(n) < -.01 .and. is_master) then
-            print *,'Grid 1 area error: ',n,grid1_area(n)
-         endif
-         if ((grid1_centroid_lat(n) < -pih-.01 .or.
-     &        grid1_centroid_lat(n) >  pih+.01) .and. is_master) then
-            print *,'Grid 1 centroid lat error: ',n,grid1_centroid_lat(n)
-         endif
+        if (grid1_area(n) < -.01 .and. is_master) then
+          print *,'Grid 1 area error: ',n,grid1_area(n)
+        endif
+        if ((grid1_centroid_lat(n) < -pih-.01 .or.
+     &      grid1_centroid_lat(n) >  pih+.01) .and. is_master) then
+          print *,'Grid 1 centroid lat error: ',n,grid1_centroid_lat(n)
+        endif
 
-         ref_area(n) = 0.0
-         do i = 1, grid1_corners
-            inext = 1 + mod(i,grid1_corners)
+        ref_area(n) = 0.0
+        do i = 1, grid1_corners
+           inext = 1 + mod(i,grid1_corners)
 
-            beglat = grid1_corner_lat(i,n)
-            beglon = grid1_corner_lon(i,n)
-            endlat = grid1_corner_lat(inext,n)
-            endlon = grid1_corner_lon(inext,n)
+           beglat = grid1_corner_lat(i,n)
+           beglon = grid1_corner_lon(i,n)
+           endlat = grid1_corner_lat(inext,n)
+           endlon = grid1_corner_lon(inext,n)
 
-            if ((phi_or_theta .eq. 1 .and. beglon .eq. endlon) .or.
-     &           (phi_or_theta .eq. 2 .and. beglat .eq. endlat)) cycle
+           if ((phi_or_theta .eq. 1 .and. beglon .eq. endlon) .or.
+     &          (phi_or_theta .eq. 2 .and. beglat .eq. endlat)) cycle
 
-            call line_integral(phi_or_theta, weights, num_wts, beglon,
-     &           endlon, beglat, endlat, grid1_center_lat(n),
-     &           grid1_center_lon(n), grid1_center_lat(n),
-     &           grid1_center_lon(n))
+           call line_integral(phi_or_theta, weights, num_wts, beglon,
+     &          endlon, beglat, endlat, grid1_center_lat(n),
+     &          grid1_center_lon(n), grid1_center_lat(n),
+     &          grid1_center_lon(n))
 
-            ref_area(n) = ref_area(n) + weights(1)
-         enddo
+           ref_area(n) = ref_area(n) + weights(1)
+        enddo
       enddo
-C     $OMP END DO
-C     $OMP END PARALLEL
+C$OMP END DO
+C$OMP END PARALLEL
 
 
 !     Correct for polar cells
 
       if (phi_or_theta .eq. 1) then
 
-!*** North Pole
+         !*** North Pole
          weights(1) =  pi2
 
          if (grid1_npole_cell /=0) then
@@ -687,7 +687,7 @@ C     $OMP END PARALLEL
      &           + weights(1)
          endif
 
-!*** South Pole
+         !*** South Pole
          weights(1) =  pi2
 
          if (grid1_spole_cell /=0) then
@@ -738,48 +738,48 @@ C     $OMP END PARALLEL
       allocate(ref_area(grid2_size))
       allocate(reldiff(grid2_size))
 
-C     $OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
-C     $OMP&   PRIVATE(n, i, inext, beglat, beglon, endlat, endlon, weights)
-C     $OMP DO SCHEDULE(DYNAMIC)
+C$OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
+C$OMP&   PRIVATE(n, i, inext, beglat, beglon, endlat, endlon, weights)
+C$OMP DO SCHEDULE(DYNAMIC)
 
       do n=1,grid2_size
-         if (grid2_area(n) < -.01 .and. is_master) then
-            print *,'Grid 2 area error: ',n,grid2_area(n)
-         endif
-         if ((grid2_centroid_lat(n) < -pih-.01 .or.
-     &        grid2_centroid_lat(n) >  pih+.01) .and. is_master) then
-            print *,'Grid 2 centroid lat error: ',n,grid2_centroid_lat(n)
-         endif
+        if (grid2_area(n) < -.01 .and. is_master) then
+          print *,'Grid 2 area error: ',n,grid2_area(n)
+        endif
+        if ((grid2_centroid_lat(n) < -pih-.01 .or.
+     &      grid2_centroid_lat(n) >  pih+.01) .and. is_master) then
+          print *,'Grid 2 centroid lat error: ',n,grid2_centroid_lat(n)
+        endif
 
-         ref_area(n) = 0.0
-         do i = 1, grid2_corners
-            inext = 1 + mod(i,grid2_corners)
+        ref_area(n) = 0.0
+        do i = 1, grid2_corners
+           inext = 1 + mod(i,grid2_corners)
 
-            beglat = grid2_corner_lat(i,n)
-            beglon = grid2_corner_lon(i,n)
-            endlat = grid2_corner_lat(inext,n)
-            endlon = grid2_corner_lon(inext,n)
+           beglat = grid2_corner_lat(i,n)
+           beglon = grid2_corner_lon(i,n)
+           endlat = grid2_corner_lat(inext,n)
+           endlon = grid2_corner_lon(inext,n)
 
-            if ((phi_or_theta .eq. 1 .and. beglon .eq. endlon) .or.
-     &           (phi_or_theta .eq. 2 .and. beglat .eq. endlat)) cycle
+           if ((phi_or_theta .eq. 1 .and. beglon .eq. endlon) .or.
+     &          (phi_or_theta .eq. 2 .and. beglat .eq. endlat)) cycle
 
-            call line_integral(phi_or_theta, weights, num_wts, beglon,
-     &           endlon, beglat, endlat, grid2_center_lat(n),
-     &           grid2_center_lon(n), grid2_center_lat(n),
-     &           grid2_center_lon(n))
+           call line_integral(phi_or_theta, weights, num_wts, beglon,
+     &          endlon, beglat, endlat, grid2_center_lat(n),
+     &          grid2_center_lon(n), grid2_center_lat(n),
+     &          grid2_center_lon(n))
 
-            ref_area(n) = ref_area(n) + weights(1)
-         enddo
+           ref_area(n) = ref_area(n) + weights(1)
+        enddo
       enddo
-C     $OMP END DO
-C     $OMP END PARALLEL
+C$OMP END DO
+C$OMP END PARALLEL
 
 
 !     Correct for polar cells
 
       if (phi_or_theta .eq. 1) then
 
-!*** North Pole
+         !*** North Pole
          weights(1) =  pi2
 
          if (grid2_npole_cell /=0) then
@@ -787,7 +787,7 @@ C     $OMP END PARALLEL
      &           + weights(1)
          endif
 
-!*** South Pole
+         !*** South Pole
          weights(1) =  pi2
 
          if (grid2_spole_cell /=0) then
@@ -831,130 +831,130 @@ C     $OMP END PARALLEL
       deallocate(ref_area,reldiff)
 
       if(is_master.and.l_test)then
-         print *, 'Computed area = Area of cell computed by adding areas'
-         print *, '                of intersection with other cells'
-         print *, 'Reference area = Area of cell by direct integration'
-         print *
+        print *, 'Computed area = Area of cell computed by adding areas'
+        print *, '                of intersection with other cells'
+        print *, 'Reference area = Area of cell by direct integration'
+        print *
       endif
 
-!***
-!*** In the following code, gridN_centroid_lat is being used to
-!*** store running tallies of the cell areas - so it is a
-!*** misnomer used to avoid allocation of a new variable
-!***
+      !***
+      !*** In the following code, gridN_centroid_lat is being used to
+      !*** store running tallies of the cell areas - so it is a
+      !*** misnomer used to avoid allocation of a new variable
+      !***
 
       grid1_centroid_lat = zero
       grid2_centroid_lat = zero
       icount=0
 
-C     $OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
-C     $OMP&   PRIVATE(n,grid1_add,grid2_add,nwgt,weights)
-C     $OMP DO SCHEDULE(DYNAMIC)
+C$OMP PARALLEL DEFAULT(SHARED) NUM_THREADS(nthreads)
+C$OMP&   PRIVATE(n,grid1_add,grid2_add,nwgt,weights)
+C$OMP DO SCHEDULE(DYNAMIC)
 
       do n=1,num_links_map1
-         grid1_add = grid1_add_map1(n)
-         grid2_add = grid2_add_map1(n)
+        grid1_add = grid1_add_map1(n)
+        grid2_add = grid2_add_map1(n)
 
-         do nwgt=1,num_wts
-            weights(        nwgt) = wts_map1(nwgt,n)
-            if (num_maps > 1) then
-               weights(num_wts+nwgt) = wts_map2(nwgt,n)
-            endif
-         end do
+        do nwgt=1,num_wts
+          weights(        nwgt) = wts_map1(nwgt,n)
+          if (num_maps > 1) then
+            weights(num_wts+nwgt) = wts_map2(nwgt,n)
+          endif
+        end do
 
-!     count warnings about weights that will be excluded
-         if (grid2_frac(grid2_add).gt.frac_lowest .and.
-     &        grid2_frac(grid2_add).lt.frac_highest .and. is_master) then
-         if ( (wts_map1(1,n) < wt_lowest) )then
-            icount=icount+1
-!     print statements that were here have been moved to another routine...
-         endif
-         if (norm_opt /= norm_opt_none .and. wts_map1(1,n) >
-     &        wt_highest)then
-            icount=icount+1
-!     print statements that were here have been moved to another routine...
-         endif
-      endif
-C     $OMP   CRITICAL
-      grid2_centroid_lat(grid2_add) =
-     &     grid2_centroid_lat(grid2_add) + wts_map1(1,n)
-C     $OMP   END CRITICAL
+! count warnings about weights that will be excluded
+        if (grid2_frac(grid2_add).gt.frac_lowest .and.
+     &       grid2_frac(grid2_add).lt.frac_highest .and. is_master) then
+           if ( (wts_map1(1,n) < wt_lowest) )then
+              icount=icount+1
+! print statements that were here have been moved to another routine...
+           endif
+           if (norm_opt /= norm_opt_none .and. wts_map1(1,n) >
+     &          wt_highest)then
+              icount=icount+1
+! print statements that were here have been moved to another routine...
+           endif
+        endif
+C$OMP   CRITICAL
+        grid2_centroid_lat(grid2_add) =
+     &  grid2_centroid_lat(grid2_add) + wts_map1(1,n)
+C$OMP   END CRITICAL
 
-      if (num_maps > 1) then
-         if (wts_map2(1,n) < -.01 .and. is_master) then
+        if (num_maps > 1) then
+          if (wts_map2(1,n) < -.01 .and. is_master) then
             print *,'Map 2 weight < 0 ',grid1_add,grid2_add,
-     &           wts_map2(1,n)
-         endif
-         if (norm_opt /= norm_opt_none .and. wts_map2(1,n) > 1.01
-     &        .and. is_master) then
+     &                                  wts_map2(1,n)
+          endif
+          if (norm_opt /= norm_opt_none .and. wts_map2(1,n) > 1.01
+     &         .and. is_master) then
             print *,'Map 2 weight > 1 ',grid1_add,grid2_add,
-     &           wts_map2(1,n)
-         endif
-C     $OMP     CRITICAL
-         grid1_centroid_lat(grid1_add) =
-     &        grid1_centroid_lat(grid1_add) + wts_map2(1,n)
-C     $OMP     END CRITICAL
-      endif
+     &                                  wts_map2(1,n)
+          endif
+C$OMP     CRITICAL
+          grid1_centroid_lat(grid1_add) =
+     &    grid1_centroid_lat(grid1_add) + wts_map2(1,n)
+C$OMP     END CRITICAL
+        endif
       end do
 
-C     $OMP END DO
-C     $OMP END PARALLEL
+C$OMP END DO
+C$OMP END PARALLEL
 
       if(icount.gt.0.and.is_master)then
          print *,'We had problems in ',icount,' points.'
       endif
-!     stop condition was here...has been moved to another routine...
+! stop condition was here...has been moved to another routine...
 
-!***
-!*** If grid1 has masks, links between some cells of grid1 and
-!*** grid2 do not exist even though they overlap. In such a case,
-!*** the following code will generate errors even though nothing
-!*** is wrong (grid1_centroid_lat or grid2_centroid_lat are never
-!*** updated in the above loop)
-!***
+      !***
+      !*** If grid1 has masks, links between some cells of grid1 and
+      !*** grid2 do not exist even though they overlap. In such a case,
+      !*** the following code will generate errors even though nothing
+      !*** is wrong (grid1_centroid_lat or grid2_centroid_lat are never
+      !*** updated in the above loop)
+      !***
 
       do n=1,grid2_size
-         select case(norm_opt)
-      case (norm_opt_dstarea)
-         norm_factor = grid2_frac(n)
-      case (norm_opt_frcarea)
-         norm_factor = one
-      case (norm_opt_none)
-         if (luse_grid2_area) then
+        select case(norm_opt)
+        case (norm_opt_dstarea)
+          norm_factor = grid2_frac(n)
+        case (norm_opt_frcarea)
+          norm_factor = one
+        case (norm_opt_none)
+          if (luse_grid2_area) then
             norm_factor = grid2_area_in(n)
-         else
+          else
             norm_factor = grid2_area(n)
-         endif
-      end select
-!     if (abs(grid2_centroid_lat(n)-norm_factor) > .01
-!     &     .and. is_master) then
-!     print *,'Warning: sum of wts for map1 ',n,
-!     &            grid2_centroid_lat(n),norm_factor
-!     endif
-!     write(501,*)n,grid2_centroid_lat(n)
+          endif
+        end select
+!       if (abs(grid2_centroid_lat(n)-norm_factor) > .01
+!    &     .and. is_master) then
+!         print *,'Warning: sum of wts for map1 ',n,
+!    &            grid2_centroid_lat(n),norm_factor
+!       endif
+!       write(501,*)n,grid2_centroid_lat(n)
       end do
 
 
       if (num_maps > 1) then
-         do n=1,grid1_size
-            select case(norm_opt)
-         case (norm_opt_dstarea)
+        do n=1,grid1_size
+          select case(norm_opt)
+          case (norm_opt_dstarea)
             norm_factor = grid1_frac(n)
-         case (norm_opt_frcarea)
+          case (norm_opt_frcarea)
             norm_factor = one
-         case (norm_opt_none)
+          case (norm_opt_none)
             if (luse_grid1_area) then
-               norm_factor = grid1_area_in(n)
+              norm_factor = grid1_area_in(n)
             else
-               norm_factor = grid1_area(n)
+              norm_factor = grid1_area(n)
             endif
-         end select
-         if (abs(grid1_centroid_lat(n)-norm_factor) > .01
-     &        .and. is_master) then
+          end select
+          if (abs(grid1_centroid_lat(n)-norm_factor) > .01
+     &      .and. is_master) then
             print *,'Error: sum of wts for map2 ',n,
-     &           grid1_centroid_lat(n),norm_factor
-         endif
-      end do
+     &              grid1_centroid_lat(n),norm_factor
+          endif
+        end do
       endif
 !-----------------------------------------------------------------------
 
@@ -5384,7 +5384,7 @@ C$OMP END CRITICAL(block6)
 !     the resulting triangle
 !
 !     The cell can be non-convex as long as the 'center' is 'visible' to
-!     all the edges of the polygon, i.e., we can connect the 'center' to 
+!     all the edges of the polygon, i.e., we can connect the 'center' to
 !     each edge of the polygon and form a triangle with positive area
 !
 !----------------------------------------------------------------------

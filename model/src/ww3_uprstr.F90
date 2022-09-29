@@ -421,9 +421,9 @@ PROGRAM W3UPRSTR
   CALL ITRACE ( NDSTRC, NTRACE )
   !
   IF ( IAPROC .EQ. NAPERR ) THEN
-     NDSEN  = NDSE
+    NDSEN  = NDSE
   ELSE
-     NDSEN  = -1
+    NDSEN  = -1
   END IF
   !
   WRITE (NDSO,900)
@@ -441,47 +441,47 @@ PROGRAM W3UPRSTR
   !
   INQUIRE(FILE=TRIM(FNMPRE)//"ww3_uprstr.nml", EXIST=FLGNML)
   IF (FLGNML) THEN
-     ! Read namelist
-     CALL W3NMLUPRSTR (NDSI, TRIM(FNMPRE)//'ww3_uprstr.nml', NML_RESTART, &
-          NML_UPDATE, IERR)
-     READ(NML_RESTART%RESTARTTIME, *) TIME
-     UPDPROC = NML_UPDATE%UPDPROC
-     PRCNTG = NML_UPDATE%PRCNTG
-     PRCNTG_CAP = NML_UPDATE%PRCNTGCAP
-     THRWSEA = NML_UPDATE%THRWSEA
-     FLNMANL = NML_UPDATE%FILE
+    ! Read namelist
+    CALL W3NMLUPRSTR (NDSI, TRIM(FNMPRE)//'ww3_uprstr.nml', NML_RESTART, &
+         NML_UPDATE, IERR)
+    READ(NML_RESTART%RESTARTTIME, *) TIME
+    UPDPROC = NML_UPDATE%UPDPROC
+    PRCNTG = NML_UPDATE%PRCNTG
+    PRCNTG_CAP = NML_UPDATE%PRCNTGCAP
+    THRWSEA = NML_UPDATE%THRWSEA
+    FLNMANL = NML_UPDATE%FILE
   END IF
   !/
   ! otherwise read from the .inp file
   IF (.NOT. FLGNML) THEN
-     J      = LEN_TRIM(FNMPRE)
-     OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_uprstr.inp',STATUS='OLD',       &
-          ERR=800,IOSTAT=IERR)
-     READ (NDSI,'(A)',END=801,ERR=802) COMSTR
-     IF (COMSTR.EQ.' ') COMSTR = '$'
-     WRITE (NDSO,901) COMSTR
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-     READ (NDSI,*,END=2001,ERR=2002) TIME
-     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-     READ (NDSI,*,END=2001,ERR=2002) UPDPROC
-     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-     IF (UPDPROC .EQ. 'UPD0F') THEN
-        READ (NDSI,*,END=2001,ERR=2002) PRCNTG
-     ELSE
-        IF ((UPDPROC .EQ. 'UPD2') .OR. (UPDPROC .EQ. 'UPD3')) THEN
-           !         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-           READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP
+    J      = LEN_TRIM(FNMPRE)
+    OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_uprstr.inp',STATUS='OLD',       &
+         ERR=800,IOSTAT=IERR)
+    READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+    IF (COMSTR.EQ.' ') COMSTR = '$'
+    WRITE (NDSO,901) COMSTR
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,END=2001,ERR=2002) TIME
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,END=2001,ERR=2002) UPDPROC
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    IF (UPDPROC .EQ. 'UPD0F') THEN
+      READ (NDSI,*,END=2001,ERR=2002) PRCNTG
+    ELSE
+      IF ((UPDPROC .EQ. 'UPD2') .OR. (UPDPROC .EQ. 'UPD3')) THEN
+        !         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+        READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP
 #ifdef W3_F
-           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-           READ (NDSI,*,END=2001,ERR=2002) FLNMCOR
-#endif
-        ELSE
-           READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP, THRWSEA
-        END IF
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-        READ (NDSI,*,END=2001,ERR=2002) FLNMANL
-     END IF
+        READ (NDSI,*,END=2001,ERR=2002) FLNMCOR
+#endif
+      ELSE
+        READ (NDSI,*,END=2001,ERR=2002) PRCNTG_CAP, THRWSEA
+      END IF
+      CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+      READ (NDSI,*,END=2001,ERR=2002) FLNMANL
+    END IF
   ENDIF
 #ifdef W3_T
   WRITE (NDSO,*)' TIME: ',TIME
@@ -519,14 +519,14 @@ PROGRAM W3UPRSTR
 #endif
   CALL W3IORS ( 'READ', NDS(6), SIG(NK), IMOD )!
   IF ( IAPROC .EQ. NAPLOG ) THEN
-     IF (RSTYPE.EQ.0.OR.RSTYPE.EQ.1.OR.RSTYPE.EQ.4) THEN
-        WRITE (NDSO,1004) 'Terminating ww3_uprstr: The restart ' // &
-             'file is not read'
-        CALL EXTCDE ( 1 )
-     ELSE
-        WRITE (NDSO,1004) '  Updating Restart File'
-        WRITE (NDSO,*) ' TIME: ',TIME
-     END IF
+    IF (RSTYPE.EQ.0.OR.RSTYPE.EQ.1.OR.RSTYPE.EQ.4) THEN
+      WRITE (NDSO,1004) 'Terminating ww3_uprstr: The restart ' // &
+           'file is not read'
+      CALL EXTCDE ( 1 )
+    ELSE
+      WRITE (NDSO,1004) '  Updating Restart File'
+      WRITE (NDSO,*) ' TIME: ',TIME
+    END IF
   END IF
 #ifdef W3_T
   WRITE (NDST,*), MYNAME,' : Exporting VA as imported to VA01.txt'
@@ -537,574 +537,574 @@ PROGRAM W3UPRSTR
   ! 5. Update restart spectra array according to the selected option
   !/
   SELECT CASE (UPDPROC)
-     !/
-     !/ ------------------------------------------------------------------- /
-     ! UPD0F
-     !/
+    !/
+    !/ ------------------------------------------------------------------- /
+    ! UPD0F
+    !/
   CASE ('UPD0F')
-     WRITE (NDSO,902) 'UPD0F'
-     WRITE (NDSO,1005) ' PRCNTG = ',PRCNTG
+    WRITE (NDSO,902) 'UPD0F'
+    WRITE (NDSO,1005) ' PRCNTG = ',PRCNTG
 #ifdef W3_T
-     ALLOCATE( VATMP  (SIZE(VA    ,1)                ))
-     ALLOCATE( SWHANL (SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
-     ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
+    ALLOCATE( VATMP  (SIZE(VA    ,1)                ))
+    ALLOCATE( SWHANL (SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
+    ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)))
 #endif
-     DO ISEA=1, NSEA, 1
+    DO ISEA=1, NSEA, 1
 #ifdef W3_T
+      IX = MAPSF(ISEA,1)
+      IY = MAPSF(ISEA,2)
+      VATMP = VA(:,ISEA)
+      CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+      SWHBCKG(IY,IX)=SWHBCKG_1
+#endif
+      CALL UPDATE_VA(PRCNTG, VA(:,ISEA))
+#ifdef W3_T
+      VATMP = VA(:,ISEA)
+      CALL SWH_RSRT_1p (VATMP, ISEA, SWHANL_1)
+      SWHANL(IY,IX)=SWHANL_1
+      WRITE (NDSO,*) ' =========== UPD0F Output ==========='
+      WRITE (NDSO,*)'ISEA = ', ISEA,' PRCNTG = ',PRCNTG,    &
+           ' SWHBCKG = ',SWHBCKG(IY,IX),           &
+           ' SWHANL= ', SWHANL(IY,IX)
+#endif
+    END DO
+#ifdef W3_T
+    CALL writeMatrix('SWHBCKG_UPD0F.txt', REAL(SWHBCKG))
+    CALL writeMatrix('SWHANL_UPD0F.txt' , REAL(SWHANL ))
+    CALL writeMatrix('SWHRSTR_UPD0F.txt', REAL(SWHANL ))
+
+    DEALLOCATE ( VATMP, SWHBCKG, SWHANL )
+#endif
+    !/
+    !/ ------------------------------------------------------------------- /
+    ! UPD2
+    ! Apply a bulk correction to the wave spectrum at each grid cell based
+    ! on the ratio of HsBckg and HsAnl
+    !/
+  CASE ('UPD2')
+    WRITE (NDSO,902) 'UPD2'
+    WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+    WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
+    !
+    !        Array allocation
+    ALLOCATE ( VATMP(SIZE(VA,1)))
+    IF (.NOT. SMCGRD) THEN
+      ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+      ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+#ifdef W3_SMC
+    ELSE
+      ALLOCATE( SWHBCKG(NSEA,1) )
+      ALLOCATE( SWHANL(NSEA,1) )
+#endif
+    ENDIF
+#ifdef W3_T
+    IF (.NOT. SMCGRD) THEN
+      ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+    ELSE
+      ALLOCATE( SWHUPRSTR(NSEA,1) )
+    ENDIF
+#endif
+    !
+    !        Read additional Input: Analysis Field
+    INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
+    IF (anl_exists) THEN
+#ifdef W3_T
+      WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+#endif
+      CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+#ifdef W3_T
+      CALL writeMatrix('SWHANL_IN.txt',SWHANL)
+#endif
+    ELSE
+      WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
+      DEALLOCATE( SWHANL,VATMP,SWHBCKG )
+#ifdef W3_T
+      DEALLOCATE( SWHUPRSTR )
+#endif
+      STOP
+    END IF
+    !
+    !        Calculation
+    DO ISEA=1, NSEA, 1
+      IF (.NOT. SMCGRD) THEN
         IX = MAPSF(ISEA,1)
         IY = MAPSF(ISEA,2)
-        VATMP = VA(:,ISEA)
-        CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
-        SWHBCKG(IY,IX)=SWHBCKG_1
+#ifdef W3_SMC
+      ELSE
+        IX = 1
+        IY = ISEA
 #endif
+      ENDIF
+      VATMP = VA(:,ISEA)
+      CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+      SWHBCKG(IY,IX)=SWHBCKG_1
+      !
+      IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
+        PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
+#ifdef W3_T
+        WRITE (NDSO,*) 'ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
+             ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
+             ' SWHANL = ', SWHANL(IY,IX)
+#endif
+        CALL CHECK_PRCNTG (PRCNTG,PRCNTG_CAP)
         CALL UPDATE_VA(PRCNTG, VA(:,ISEA))
 #ifdef W3_T
-        VATMP = VA(:,ISEA)
-        CALL SWH_RSRT_1p (VATMP, ISEA, SWHANL_1)
-        SWHANL(IY,IX)=SWHANL_1
-        WRITE (NDSO,*) ' =========== UPD0F Output ==========='
-        WRITE (NDSO,*)'ISEA = ', ISEA,' PRCNTG = ',PRCNTG,    &
-             ' SWHBCKG = ',SWHBCKG(IY,IX),           &
-             ' SWHANL= ', SWHANL(IY,IX)
+        CALL SWH_RSRT_1p (VA(:,ISEA), ISEA, SWHUPRSTR(IY,IX))
+        WRITE (NDSO,*) ' =========== UPD2 Output ==========='
+        WRITE (NDSO,*)'ISEA = ',ISEA,                            &
+             'SWH_BCKG = ', SWHBCKG(IY,IX),             &
+             'SWH_ANL = ', SWHANL(IY,IX),               &
+             'PRCNTG = ', PRCNTG,                       &
+             'SWH_RSTR = ',SWHUPRSTR(IY,IX)
 #endif
-     END DO
+      END IF
+    END DO
 #ifdef W3_T
-     CALL writeMatrix('SWHBCKG_UPD0F.txt', REAL(SWHBCKG))
-     CALL writeMatrix('SWHANL_UPD0F.txt' , REAL(SWHANL ))
-     CALL writeMatrix('SWHRSTR_UPD0F.txt', REAL(SWHANL ))
-
-     DEALLOCATE ( VATMP, SWHBCKG, SWHANL )
+    CALL writeMatrix('SWHBCKG_UPD2.txt', REAL(SWHBCKG  ))
+    CALL writeMatrix('SWHANL_UPD2.txt' , REAL(SWHANL   ))
+    CALL writeMatrix('SWHRSTR_UPD2.txt', REAL(SWHUPRSTR))
 #endif
-     !/
-     !/ ------------------------------------------------------------------- /
-     ! UPD2
-     ! Apply a bulk correction to the wave spectrum at each grid cell based
-     ! on the ratio of HsBckg and HsAnl
-     !/
-  CASE ('UPD2')
-     WRITE (NDSO,902) 'UPD2'
-     WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
-     WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
-     !
-     !        Array allocation
-     ALLOCATE ( VATMP(SIZE(VA,1)))
-     IF (.NOT. SMCGRD) THEN
-        ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-        ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-#ifdef W3_SMC
-     ELSE
-        ALLOCATE( SWHBCKG(NSEA,1) )
-        ALLOCATE( SWHANL(NSEA,1) )
-#endif
-     ENDIF
+    !
+    DEALLOCATE( SWHANL,VATMP,SWHBCKG )
 #ifdef W3_T
-     IF (.NOT. SMCGRD) THEN
-        ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-     ELSE
-        ALLOCATE( SWHUPRSTR(NSEA,1) )
-     ENDIF
+    DEALLOCATE( SWHUPRSTR )
 #endif
-     !
-     !        Read additional Input: Analysis Field
-     INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
-     IF (anl_exists) THEN
-#ifdef W3_T
-        WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
-#endif
-        CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
-#ifdef W3_T
-        CALL writeMatrix('SWHANL_IN.txt',SWHANL)
-#endif
-     ELSE
-        WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
-        DEALLOCATE( SWHANL,VATMP,SWHBCKG )
-#ifdef W3_T
-        DEALLOCATE( SWHUPRSTR )
-#endif
-        STOP
-     END IF
-     !
-     !        Calculation
-     DO ISEA=1, NSEA, 1
-        IF (.NOT. SMCGRD) THEN
-           IX = MAPSF(ISEA,1)
-           IY = MAPSF(ISEA,2)
-#ifdef W3_SMC
-        ELSE
-           IX = 1
-           IY = ISEA
-#endif
-        ENDIF
-        VATMP = VA(:,ISEA)
-        CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
-        SWHBCKG(IY,IX)=SWHBCKG_1
-        !
-        IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
-           PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
-#ifdef W3_T
-           WRITE (NDSO,*) 'ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
-                ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
-                ' SWHANL = ', SWHANL(IY,IX)
-#endif
-           CALL CHECK_PRCNTG (PRCNTG,PRCNTG_CAP)
-           CALL UPDATE_VA(PRCNTG, VA(:,ISEA))
-#ifdef W3_T
-           CALL SWH_RSRT_1p (VA(:,ISEA), ISEA, SWHUPRSTR(IY,IX))
-           WRITE (NDSO,*) ' =========== UPD2 Output ==========='
-           WRITE (NDSO,*)'ISEA = ',ISEA,                            &
-                'SWH_BCKG = ', SWHBCKG(IY,IX),             &
-                'SWH_ANL = ', SWHANL(IY,IX),               &
-                'PRCNTG = ', PRCNTG,                       &
-                'SWH_RSTR = ',SWHUPRSTR(IY,IX)
-#endif
-        END IF
-     END DO
-#ifdef W3_T
-     CALL writeMatrix('SWHBCKG_UPD2.txt', REAL(SWHBCKG  ))
-     CALL writeMatrix('SWHANL_UPD2.txt' , REAL(SWHANL   ))
-     CALL writeMatrix('SWHRSTR_UPD2.txt', REAL(SWHUPRSTR))
-#endif
-     !
-     DEALLOCATE( SWHANL,VATMP,SWHBCKG )
-#ifdef W3_T
-     DEALLOCATE( SWHUPRSTR )
-#endif
-     !/
-     !/ ------------------------------------------------------------------- /
-     ! UPD3
-     ! As per UPD2, but the update factor is a surface with the shape of the
-     ! background spectrum
-     !/
+    !/
+    !/ ------------------------------------------------------------------- /
+    ! UPD3
+    ! As per UPD2, but the update factor is a surface with the shape of the
+    ! background spectrum
+    !/
   CASE ('UPD3')
-     WRITE (NDSO,902) 'UPD3'
-     WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
-     WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
-     !
-     !        Array allocation
-     ALLOCATE ( VATMP(SIZE(VA,1)))
-     ALLOCATE ( VATMP_NORM(SIZE(VA,1)))
-     ALLOCATE ( A(SIZE(VA,1)))
-     IF (.NOT. SMCGRD) THEN
-        ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-        ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+    WRITE (NDSO,902) 'UPD3'
+    WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+    WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
+    !
+    !        Array allocation
+    ALLOCATE ( VATMP(SIZE(VA,1)))
+    ALLOCATE ( VATMP_NORM(SIZE(VA,1)))
+    ALLOCATE ( A(SIZE(VA,1)))
+    IF (.NOT. SMCGRD) THEN
+      ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+      ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
 #ifdef W3_SMC
-     ELSE
-        ALLOCATE( SWHBCKG(NSEA,1) )
-        ALLOCATE( SWHANL(NSEA,1) )
+    ELSE
+      ALLOCATE( SWHBCKG(NSEA,1) )
+      ALLOCATE( SWHANL(NSEA,1) )
 #endif
-     ENDIF
+    ENDIF
 #ifdef W3_T
-     IF (.NOT. SMCGRD) THEN
-        ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-     ELSE
-        ALLOCATE( SWHUPRSTR(NSEA,1) )
-     ENDIF
+    IF (.NOT. SMCGRD) THEN
+      ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+    ELSE
+      ALLOCATE( SWHUPRSTR(NSEA,1) )
+    ENDIF
 #endif
-     !
-     !        Read additional Input: Analysis Field
-     INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
-     IF (anl_exists) THEN
+    !
+    !        Read additional Input: Analysis Field
+    INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
+    IF (anl_exists) THEN
 #ifdef W3_T
-        WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+      WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
 #endif
-        CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+      CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
 #ifdef W3_T
-        CALL writeMatrix('SWHANL_IN.txt',SWHANL)
+      CALL writeMatrix('SWHANL_IN.txt',SWHANL)
 #endif
-     ELSE
-        WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
-        DEALLOCATE( SWHANL,VATMP,SWHBCKG,VATMP_NORM,A )
+    ELSE
+      WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
+      DEALLOCATE( SWHANL,VATMP,SWHBCKG,VATMP_NORM,A )
 #ifdef W3_T
-        DEALLOCATE( SWHUPRSTR )
+      DEALLOCATE( SWHUPRSTR )
 #endif
-        STOP
-     END IF
-     !
-     !        Calculation
-     DO ISEA=1, NSEA, 1
-        IF (.NOT. SMCGRD) THEN
-           IX = MAPSF(ISEA,1)
-           IY = MAPSF(ISEA,2)
+      STOP
+    END IF
+    !
+    !        Calculation
+    DO ISEA=1, NSEA, 1
+      IF (.NOT. SMCGRD) THEN
+        IX = MAPSF(ISEA,1)
+        IY = MAPSF(ISEA,2)
 #ifdef W3_SMC
+      ELSE
+        IX = 1
+        IY = ISEA
+#endif
+      ENDIF
+      VATMP = VA(:,ISEA)
+      CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
+      SWHBCKG(IY,IX)=SWHBCKG_1
+      !
+      IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
+        !Step 1.
+        PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
+#ifdef W3_T
+        WRITE (NDSO,*) ' =========== Step 1. ==========='
+        WRITE (NDSO,*) ' ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
+             ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
+             ' SWHANL = ', SWHANL(IY,IX)
+#endif
+        CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
+        VATMP_NORM=VATMP/SUM(VATMP)
+#ifdef W3_T
+        WRITE (NDSO,*)' ISEA =', ISEA,' IX = ',IX,' IY = ', IY, &
+             ' PRCNTG = ',PRCNTG,   &
+             ' SWHBCKG = ',SWHBCKG(IY,IX), ' SWHANL = ', SWHANL(IY,IX)
+#endif
+        IF (PRCNTG > 1.) THEN
+          A=PRCNTG**2*(1 + VATMP_NORM)
         ELSE
-           IX = 1
-           IY = ISEA
-#endif
-        ENDIF
-        VATMP = VA(:,ISEA)
-        CALL SWH_RSRT_1p (VATMP, ISEA, SWHBCKG_1)
-        SWHBCKG(IY,IX)=SWHBCKG_1
-        !
-        IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
-           !Step 1.
-           PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
-#ifdef W3_T
-           WRITE (NDSO,*) ' =========== Step 1. ==========='
-           WRITE (NDSO,*) ' ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
-                ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
-                ' SWHANL = ', SWHANL(IY,IX)
-#endif
-           CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
-           VATMP_NORM=VATMP/SUM(VATMP)
-#ifdef W3_T
-           WRITE (NDSO,*)' ISEA =', ISEA,' IX = ',IX,' IY = ', IY, &
-                ' PRCNTG = ',PRCNTG,   &
-                ' SWHBCKG = ',SWHBCKG(IY,IX), ' SWHANL = ', SWHANL(IY,IX)
-#endif
-           IF (PRCNTG > 1.) THEN
-              A=PRCNTG**2*(1 + VATMP_NORM)
-           ELSE
-              A=PRCNTG**2*(1 - VATMP_NORM)
-           END IF
-           VATMP=A*VATMP
-           CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
-           PRCNTG=(SWHANL(IY,IX)/SWHTMP)
-#ifdef W3_T
-           SWHUPRSTR(IY,IX)=SWHTMP
-           WRITE (NDSO,*) ' =========== Step 2. ==========='
-           WRITE (NDSO,*)'ISEA = ', ISEA, ' PRCNTG = ',PRCNTG,        &
-                ' SWHANL= ', SWHANL(IY,IX),                  &
-                ' SWHUPRSTR(IY,IX) = ', SWHUPRSTR(IY,IX)
-#endif
-           CALL CHECK_PRCNTG (PRCNTG,PRCNTG_CAP)
-           CALL UPDATE_VA(PRCNTG, VATMP)
-           VA(:,ISEA)=VATMP
-#ifdef W3_T
-           CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
-           SWHUPRSTR(IY,IX)=SWHTMP
-           WRITE (NDSO,*) ' =========== UPD3 Output ==========='
-           WRITE (NDSO,*)'ISEA = ',ISEA,'SWH_BCKG = ', SWHBCKG(IY,IX), &
-                'SWH_ANL = ', SWHANL(IY,IX),                 &
-                'SWH_RSTR = ',SWHUPRSTR(IY,IX)
-#endif
+          A=PRCNTG**2*(1 - VATMP_NORM)
         END IF
-     END DO
+        VATMP=A*VATMP
+        CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+        PRCNTG=(SWHANL(IY,IX)/SWHTMP)
 #ifdef W3_T
-     CALL writeMatrix('SWHBCKG_UPD3.txt', REAL(SWHBCKG))
-     CALL writeMatrix('SWHANL_UPD3.txt' , REAL(SWHANL ))
-     CALL writeMatrix('SWHRSTR_UPD3.txt', REAL(SWHUPRSTR))
+        SWHUPRSTR(IY,IX)=SWHTMP
+        WRITE (NDSO,*) ' =========== Step 2. ==========='
+        WRITE (NDSO,*)'ISEA = ', ISEA, ' PRCNTG = ',PRCNTG,        &
+             ' SWHANL= ', SWHANL(IY,IX),                  &
+             ' SWHUPRSTR(IY,IX) = ', SWHUPRSTR(IY,IX)
 #endif
-     !
-     DEALLOCATE( SWHANL,VATMP,SWHBCKG,VATMP_NORM,A )
+        CALL CHECK_PRCNTG (PRCNTG,PRCNTG_CAP)
+        CALL UPDATE_VA(PRCNTG, VATMP)
+        VA(:,ISEA)=VATMP
 #ifdef W3_T
-     DEALLOCATE( SWHUPRSTR )
+        CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+        SWHUPRSTR(IY,IX)=SWHTMP
+        WRITE (NDSO,*) ' =========== UPD3 Output ==========='
+        WRITE (NDSO,*)'ISEA = ',ISEA,'SWH_BCKG = ', SWHBCKG(IY,IX), &
+             'SWH_ANL = ', SWHANL(IY,IX),                 &
+             'SWH_RSTR = ',SWHUPRSTR(IY,IX)
 #endif
-     !/
-     !/ ------------------------------------------------------------------- /
-     ! UPD5
-     ! Corrects wind-sea only in wind dominated conditions - bulk correction
-     ! The fac(x,y,frq,theta), is calculated at each grid point according to
-     ! HsBckg and HsAnl
-     !/
+      END IF
+    END DO
+#ifdef W3_T
+    CALL writeMatrix('SWHBCKG_UPD3.txt', REAL(SWHBCKG))
+    CALL writeMatrix('SWHANL_UPD3.txt' , REAL(SWHANL ))
+    CALL writeMatrix('SWHRSTR_UPD3.txt', REAL(SWHUPRSTR))
+#endif
+    !
+    DEALLOCATE( SWHANL,VATMP,SWHBCKG,VATMP_NORM,A )
+#ifdef W3_T
+    DEALLOCATE( SWHUPRSTR )
+#endif
+    !/
+    !/ ------------------------------------------------------------------- /
+    ! UPD5
+    ! Corrects wind-sea only in wind dominated conditions - bulk correction
+    ! The fac(x,y,frq,theta), is calculated at each grid point according to
+    ! HsBckg and HsAnl
+    !/
   CASE ('UPD5')
-     WRITE (NDSO,902) 'UPD5'
-     WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
-     WRITE (NDSO,1005) ' THRWSEA = ',THRWSEA
-     WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
-     ! Presently set hardwired THRWSEA energy threshold here
-     ! not user defined in input file
-     ! THRWSEA = 0.7
-     !
-     !        Array allocation
-     ALLOCATE ( VATMP(SIZE(VA,1)))
-     ALLOCATE ( VAMAPWS(SIZE(VA,1)))
-     IF (.NOT. SMCGRD) THEN
-        ! SWH arrays allocated using Y,X convention as per wgrib write
-        ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-        ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-        ! Wind arrays allocated using X,Y convention as in w3idatmd
-        ALLOCATE( WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
-        ALLOCATE( WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
+    WRITE (NDSO,902) 'UPD5'
+    WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+    WRITE (NDSO,1005) ' THRWSEA = ',THRWSEA
+    WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
+    ! Presently set hardwired THRWSEA energy threshold here
+    ! not user defined in input file
+    ! THRWSEA = 0.7
+    !
+    !        Array allocation
+    ALLOCATE ( VATMP(SIZE(VA,1)))
+    ALLOCATE ( VAMAPWS(SIZE(VA,1)))
+    IF (.NOT. SMCGRD) THEN
+      ! SWH arrays allocated using Y,X convention as per wgrib write
+      ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+      ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+      ! Wind arrays allocated using X,Y convention as in w3idatmd
+      ALLOCATE( WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
+      ALLOCATE( WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
 #ifdef W3_SMC
-     ELSE
-        ALLOCATE( SWHBCKG(NSEA,1) )
-        ALLOCATE( SWHANL(NSEA,1) )
-        ! Use SMCWND to determine if reading a seapoint aray for wind
+    ELSE
+      ALLOCATE( SWHBCKG(NSEA,1) )
+      ALLOCATE( SWHANL(NSEA,1) )
+      ! Use SMCWND to determine if reading a seapoint aray for wind
+      IF( SMCWND ) THEN
+        ALLOCATE( WSBCKG(NSEA,1) )
+        ALLOCATE( WDRBCKG(NSEA,1) )
+      ELSE
+        ALLOCATE(WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+        ALLOCATE(WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+      ENDIF
+#endif
+    ENDIF
+#ifdef W3_T
+    IF (.NOT. SMCGRD) THEN
+      ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+    ELSE
+      ALLOCATE( SWHUPRSTR(NSEA,1) )
+    ENDIF
+#endif
+    !
+    !        Read additional Input: Analysis Field
+    INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
+    IF (anl_exists) THEN
+#ifdef W3_T
+      WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+#endif
+#ifdef W3_WRST
+      ! For WRST switch read only corrected SWH
+      ! Wind will have been read from the restart
+      IF (WRSTON) THEN
+        CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+      ELSE
+#endif
+        CALL READ_GRBTXTWS(SWHANL,WSBCKG,WDRBCKG,FLNMANL,SMCGRD)
+#ifdef W3_WRST
+      ENDIF
+#endif
+#ifdef W3_T
+      CALL writeMatrix('SWHANL_IN.txt',SWHANL)
+#endif
+    ELSE
+      WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
+      DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
+#ifdef W3_T
+      DEALLOCATE( SWHUPRSTR )
+#endif
+      STOP
+    END IF
+    !
+#ifdef W3_WRST
+    !Calculate wind speed and direction values from u,v..
+    !..using cartesian direction convention
+    !At present assume only needed for data read from restart
+    CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCWND)
+#endif
+    !
+    !        Calculation
+    DO ISEA=1, NSEA, 1
+      IF (.NOT. SMCGRD) THEN
+        IX = MAPSF(ISEA,1)
+        IY = MAPSF(ISEA,2)
+        IXW = IX
+        IYW = IY
+#ifdef W3_SMC
+      ELSE
+        IX = 1
+        IY = ISEA
         IF( SMCWND ) THEN
-           ALLOCATE( WSBCKG(NSEA,1) )
-           ALLOCATE( WDRBCKG(NSEA,1) )
+          ! Wind arrays allocated using (X,Y) convention for regular grids
+          ! but overriding here for the SMC grid which are always defined
+          ! as (NSEA,1) by switching the IY and IX dimension values around
+          IXW = IY
+          IYW = IX
         ELSE
-           ALLOCATE(WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
-           ALLOCATE(WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+          IXW = MAPSF(ISEA,1)
+          IYW= MAPSF(ISEA,2)
         ENDIF
 #endif
-     ENDIF
-#ifdef W3_T
-     IF (.NOT. SMCGRD) THEN
-        ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-     ELSE
-        ALLOCATE( SWHUPRSTR(NSEA,1) )
-     ENDIF
-#endif
-     !
-     !        Read additional Input: Analysis Field
-     INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
-     IF (anl_exists) THEN
-#ifdef W3_T
-        WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
-#endif
-#ifdef W3_WRST
-        ! For WRST switch read only corrected SWH
-        ! Wind will have been read from the restart
-        IF (WRSTON) THEN
-           CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+      ENDIF
+      VATMP = VA(:,ISEA)
+      CALL SWH_RSRT_1pw (VATMP, WSBCKG(IXW,IYW), WDRBCKG(IXW,IYW), ISEA, &
+           SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
+      SWHBCKG(IY,IX)=SWHBCKG_1
+      !
+      IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
+        ! If wind-sea is dominant energy component apply correction to
+        ! wind-sea part only
+        IF ( (SWHBCKG_W / SWHBCKG_1)**2.0 > THRWSEA ) THEN
+          ! Apply spectrum updates to wind-sea bins only
+          PRCNTG=SQRT((SWHANL(IY,IX)**2.0-SWHBCKG_S**2.0)/SWHBCKG_W**2.0)
+          CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
+          CALL UPDTWSPEC(VATMP, PRCNTG, VAMAPWS)
+          ! else correct the whole spectrum as for UPD2
         ELSE
-#endif
-           CALL READ_GRBTXTWS(SWHANL,WSBCKG,WDRBCKG,FLNMANL,SMCGRD)
-#ifdef W3_WRST
-        ENDIF
-#endif
-#ifdef W3_T
-        CALL writeMatrix('SWHANL_IN.txt',SWHANL)
-#endif
-     ELSE
-        WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
-        DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
-#ifdef W3_T
-        DEALLOCATE( SWHUPRSTR )
-#endif
-        STOP
-     END IF
-     !
-#ifdef W3_WRST
-     !Calculate wind speed and direction values from u,v..
-     !..using cartesian direction convention
-     !At present assume only needed for data read from restart
-     CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCWND)
-#endif
-     !
-     !        Calculation
-     DO ISEA=1, NSEA, 1
-        IF (.NOT. SMCGRD) THEN
-           IX = MAPSF(ISEA,1)
-           IY = MAPSF(ISEA,2)
-           IXW = IX
-           IYW = IY
-#ifdef W3_SMC
-        ELSE
-           IX = 1
-           IY = ISEA
-           IF( SMCWND ) THEN
-              ! Wind arrays allocated using (X,Y) convention for regular grids
-              ! but overriding here for the SMC grid which are always defined
-              ! as (NSEA,1) by switching the IY and IX dimension values around
-              IXW = IY
-              IYW = IX
-           ELSE
-              IXW = MAPSF(ISEA,1)
-              IYW= MAPSF(ISEA,2)
-           ENDIF
-#endif
-        ENDIF
-        VATMP = VA(:,ISEA)
-        CALL SWH_RSRT_1pw (VATMP, WSBCKG(IXW,IYW), WDRBCKG(IXW,IYW), ISEA, &
-             SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
-        SWHBCKG(IY,IX)=SWHBCKG_1
-        !
-        IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
-           ! If wind-sea is dominant energy component apply correction to
-           ! wind-sea part only
-           IF ( (SWHBCKG_W / SWHBCKG_1)**2.0 > THRWSEA ) THEN
-              ! Apply spectrum updates to wind-sea bins only
-              PRCNTG=SQRT((SWHANL(IY,IX)**2.0-SWHBCKG_S**2.0)/SWHBCKG_W**2.0)
-              CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
-              CALL UPDTWSPEC(VATMP, PRCNTG, VAMAPWS)
-              ! else correct the whole spectrum as for UPD2
-           ELSE
-              PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
-              CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
-              CALL UPDATE_VA(PRCNTG,VATMP)
-           END IF
-#ifdef W3_T
-           WRITE (NDSO,*) 'ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
-                ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
-                ' SWHANL = ', SWHANL(IY,IX)
-#endif
-           VA(:,ISEA)=VATMP
-#ifdef W3_T
-           CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
-           SWHUPRSTR(IY,IX)=SWHTMP
-           WRITE (NDSO,*) ' =========== UPD5 Output ==========='
-           WRITE (NDSO,*)'ISEA = ',ISEA,'SWH_BCKG = ', SWHBCKG(IY,IX), &
-                'SWH_ANL = ', SWHANL(IY,IX),                 &
-                'SWH_RSTR = ',SWHUPRSTR(IY,IX)
-#endif
+          PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
+          CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
+          CALL UPDATE_VA(PRCNTG,VATMP)
         END IF
-     END DO
 #ifdef W3_T
-     CALL writeMatrix('SWHBCKG_UPD5.txt', REAL(SWHBCKG  ))
-     CALL writeMatrix('SWHANL_UPD5.txt' , REAL(SWHANL   ))
-     CALL writeMatrix('SWHRSTR_UPD5.txt', REAL(SWHUPRSTR))
+        WRITE (NDSO,*) 'ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
+             ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
+             ' SWHANL = ', SWHANL(IY,IX)
 #endif
-     !
-     DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
+        VA(:,ISEA)=VATMP
 #ifdef W3_T
-     DEALLOCATE( SWHUPRSTR )
+        CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+        SWHUPRSTR(IY,IX)=SWHTMP
+        WRITE (NDSO,*) ' =========== UPD5 Output ==========='
+        WRITE (NDSO,*)'ISEA = ',ISEA,'SWH_BCKG = ', SWHBCKG(IY,IX), &
+             'SWH_ANL = ', SWHANL(IY,IX),                 &
+             'SWH_RSTR = ',SWHUPRSTR(IY,IX)
 #endif
-     !/
-     !/ ------------------------------------------------------------------- /
-     ! UPD6
-     ! Hybrid of Lionello et al. and Kohno methods
-     ! Corrects wind-sea only in wind dominated conditions - including fp shift
-     ! The fac(x,y,frq,theta), is calculated at each grid point according to
-     ! HsBckg and HsAnl
-     !/
+      END IF
+    END DO
+#ifdef W3_T
+    CALL writeMatrix('SWHBCKG_UPD5.txt', REAL(SWHBCKG  ))
+    CALL writeMatrix('SWHANL_UPD5.txt' , REAL(SWHANL   ))
+    CALL writeMatrix('SWHRSTR_UPD5.txt', REAL(SWHUPRSTR))
+#endif
+    !
+    DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
+#ifdef W3_T
+    DEALLOCATE( SWHUPRSTR )
+#endif
+    !/
+    !/ ------------------------------------------------------------------- /
+    ! UPD6
+    ! Hybrid of Lionello et al. and Kohno methods
+    ! Corrects wind-sea only in wind dominated conditions - including fp shift
+    ! The fac(x,y,frq,theta), is calculated at each grid point according to
+    ! HsBckg and HsAnl
+    !/
   CASE ('UPD6')
-     WRITE (NDSO,902) 'UPD6'
-     WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
-     WRITE (NDSO,1005) ' THRWSEA = ',THRWSEA
-     WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
-     ! Presently set hardwired CORWSEA logical and THRWSEA energy
-     ! thresholds here, not user defined in input file
-     CORWSEA = .FALSE.
-     !THRWSEA = 0.7
-     !
-     !        Array allocation
-     ALLOCATE ( VATMP(SIZE(VA,1)))
-     ALLOCATE ( VAMAPWS(SIZE(VA,1)))
-     IF (.NOT. SMCGRD) THEN
-        ! SWH arrays allocated using Y,X convention as per wgrib write
-        ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-        ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-        ! Wind arrays allocated using X,Y convention as in w3idatmd
-        ALLOCATE( WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
-        ALLOCATE( WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
+    WRITE (NDSO,902) 'UPD6'
+    WRITE (NDSO,1005) ' PRCNTG_CAP = ',PRCNTG_CAP
+    WRITE (NDSO,1005) ' THRWSEA = ',THRWSEA
+    WRITE (NDSO,1006) ' Reading updated SWH from: ',trim(FLNMANL)
+    ! Presently set hardwired CORWSEA logical and THRWSEA energy
+    ! thresholds here, not user defined in input file
+    CORWSEA = .FALSE.
+    !THRWSEA = 0.7
+    !
+    !        Array allocation
+    ALLOCATE ( VATMP(SIZE(VA,1)))
+    ALLOCATE ( VAMAPWS(SIZE(VA,1)))
+    IF (.NOT. SMCGRD) THEN
+      ! SWH arrays allocated using Y,X convention as per wgrib write
+      ALLOCATE( SWHBCKG(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+      ALLOCATE( SWHANL(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+      ! Wind arrays allocated using X,Y convention as in w3idatmd
+      ALLOCATE( WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
+      ALLOCATE( WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)) )
 #ifdef W3_SMC
-     ELSE
-        ALLOCATE( SWHBCKG(NSEA,1) )
-        ALLOCATE( SWHANL(NSEA,1) )
-        ! Use SMCWND to determine if reading a seapoint aray for wind
+    ELSE
+      ALLOCATE( SWHBCKG(NSEA,1) )
+      ALLOCATE( SWHANL(NSEA,1) )
+      ! Use SMCWND to determine if reading a seapoint aray for wind
+      IF( SMCWND ) THEN
+        ALLOCATE( WSBCKG(NSEA,1) )
+        ALLOCATE( WDRBCKG(NSEA,1) )
+      ELSE
+        ALLOCATE(WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+        ALLOCATE(WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+      ENDIF
+#endif
+    ENDIF
+#ifdef W3_T
+    IF (.NOT. SMCGRD) THEN
+      ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
+    ELSE
+      ALLOCATE( SWHUPRSTR(NSEA,1) )
+    ENDIF
+#endif
+    !
+    !        Read additional Input: Analysis Field
+    INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
+    IF (anl_exists) THEN
+#ifdef W3_T
+      WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
+#endif
+#ifdef W3_WRST
+      ! For WRST switch read only corrected SWH
+      ! Wind will have been read from the restart
+      IF (WRSTON) THEN
+        CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+      ELSE
+#endif
+        CALL READ_GRBTXTWS(SWHANL,WSBCKG,WDRBCKG,FLNMANL,SMCGRD)
+#ifdef W3_WRST
+      ENDIF
+#endif
+#ifdef W3_T
+      CALL writeMatrix('SWHANL_IN.txt',SWHANL)
+#endif
+    ELSE
+      WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
+      DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
+#ifdef W3_T
+      DEALLOCATE( SWHUPRSTR )
+#endif
+      STOP
+    END IF
+    !
+#ifdef W3_WRST
+    !Calculate wind speed and direction values from u,v..
+    !..using cartesian direction convention
+    !At present assume only needed for data read from restart
+    CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCWND)
+#endif
+    !
+    !        Calculation
+    DO ISEA=1, NSEA, 1
+      IF (.NOT. SMCGRD) THEN
+        IX = MAPSF(ISEA,1)
+        IY = MAPSF(ISEA,2)
+        IXW = IX
+        IYW = IY
+#ifdef W3_SMC
+      ELSE
+        IX = 1
+        IY = ISEA
         IF( SMCWND ) THEN
-           ALLOCATE( WSBCKG(NSEA,1) )
-           ALLOCATE( WDRBCKG(NSEA,1) )
+          ! Wind arrays allocated using (X,Y) convention for regular grids
+          ! but overriding here for the SMC grid which are always defined
+          ! as (NSEA,1) by switching the IY and IX dimension values around
+          IXW = IY
+          IYW = IX
         ELSE
-           ALLOCATE(WSBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
-           ALLOCATE(WDRBCKG(SIZE(MAPSTA,2), SIZE(MAPSTA,1)))
+          IXW = MAPSF(ISEA,1)
+          IYW = MAPSF(ISEA,2)
         ENDIF
 #endif
-     ENDIF
-#ifdef W3_T
-     IF (.NOT. SMCGRD) THEN
-        ALLOCATE( SWHUPRSTR(SIZE(MAPSTA,1), SIZE(MAPSTA,2)) )
-     ELSE
-        ALLOCATE( SWHUPRSTR(NSEA,1) )
-     ENDIF
-#endif
-     !
-     !        Read additional Input: Analysis Field
-     INQUIRE(FILE=FLNMANL, EXIST=anl_exists)
-     IF (anl_exists) THEN
-#ifdef W3_T
-        WRITE (NDSO,*) 'shape(SWHANL)', shape(SWHANL)
-#endif
-#ifdef W3_WRST
-        ! For WRST switch read only corrected SWH
-        ! Wind will have been read from the restart
-        IF (WRSTON) THEN
-           CALL READ_GRBTXT(SWHANL, FLNMANL, SMCGRD)
+      ENDIF
+      VATMP = VA(:,ISEA)
+      CALL SWH_RSRT_1pw (VATMP, WSBCKG(IXW,IYW), WDRBCKG(IXW,IYW), ISEA, &
+           SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
+      SWHBCKG(IY,IX)=SWHBCKG_1
+      !/
+      IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
+        ! If wind-sea is dominant energy component apply correction to
+        ! wind-sea part only
+        IF ( (SWHBCKG_W / SWHBCKG_1)**2.0 > THRWSEA ) THEN
+          ! Apply spectrum updates to wind-sea bins only
+          PRCNTG=SQRT((SWHANL(IY,IX)**2.0-SWHBCKG_S**2.0)/SWHBCKG_W**2.0)
+          CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
+          CALL UPDTWSPECF(VATMP, PRCNTG, VAMAPWS, ISEA, .FALSE.)
+          ! else correct the whole spectrum
         ELSE
-#endif
-           CALL READ_GRBTXTWS(SWHANL,WSBCKG,WDRBCKG,FLNMANL,SMCGRD)
-#ifdef W3_WRST
-        ENDIF
-#endif
-#ifdef W3_T
-        CALL writeMatrix('SWHANL_IN.txt',SWHANL)
-#endif
-     ELSE
-        WRITE (NDSO,*) trim(FLNMANL), ' does not exist, stopping...'
-        DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
-#ifdef W3_T
-        DEALLOCATE( SWHUPRSTR )
-#endif
-        STOP
-     END IF
-     !
-#ifdef W3_WRST
-     !Calculate wind speed and direction values from u,v..
-     !..using cartesian direction convention
-     !At present assume only needed for data read from restart
-     CALL UVTOCART(WXNwrst,WYNwrst,WSBCKG,WDRBCKG,SMCWND)
-#endif
-     !
-     !        Calculation
-     DO ISEA=1, NSEA, 1
-        IF (.NOT. SMCGRD) THEN
-           IX = MAPSF(ISEA,1)
-           IY = MAPSF(ISEA,2)
-           IXW = IX
-           IYW = IY
-#ifdef W3_SMC
-        ELSE
-           IX = 1
-           IY = ISEA
-           IF( SMCWND ) THEN
-              ! Wind arrays allocated using (X,Y) convention for regular grids
-              ! but overriding here for the SMC grid which are always defined
-              ! as (NSEA,1) by switching the IY and IX dimension values around
-              IXW = IY
-              IYW = IX
-           ELSE
-              IXW = MAPSF(ISEA,1)
-              IYW = MAPSF(ISEA,2)
-           ENDIF
-#endif
-        ENDIF
-        VATMP = VA(:,ISEA)
-        CALL SWH_RSRT_1pw (VATMP, WSBCKG(IXW,IYW), WDRBCKG(IXW,IYW), ISEA, &
-             SWHBCKG_1, SWHBCKG_W, SWHBCKG_S, VAMAPWS)
-        SWHBCKG(IY,IX)=SWHBCKG_1
-        !/
-        IF ( SWHBCKG(IY,IX) > 0.01 .AND. SWHANL(IY,IX) > 0.01 ) THEN
-           ! If wind-sea is dominant energy component apply correction to
-           ! wind-sea part only
-           IF ( (SWHBCKG_W / SWHBCKG_1)**2.0 > THRWSEA ) THEN
-              ! Apply spectrum updates to wind-sea bins only
-              PRCNTG=SQRT((SWHANL(IY,IX)**2.0-SWHBCKG_S**2.0)/SWHBCKG_W**2.0)
-              CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
-              CALL UPDTWSPECF(VATMP, PRCNTG, VAMAPWS, ISEA, .FALSE.)
-              ! else correct the whole spectrum
-           ELSE
-              PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
-              CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
-              IF (CORWSEA) THEN
-                 ! Include frequency shifts in wind-sea update
-                 CALL UPDTWSPECF(VATMP, PRCNTG, VAMAPWS, ISEA, .TRUE.)
-              ELSE
-                 ! bulk correction only, as per UPD2
-                 CALL UPDATE_VA(PRCNTG,VATMP)
-              END IF
-           END IF
-#ifdef W3_T
-           WRITE (NDSO,*) 'ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
-                ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
-                ' SWHANL = ', SWHANL(IY,IX)
-#endif
-           VA(:,ISEA)=VATMP
-#ifdef W3_T
-           CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
-           SWHUPRSTR(IY,IX)=SWHTMP
-           WRITE (NDSO,*) ' =========== UPD6 Output ==========='
-           WRITE (NDSO,*)'ISEA = ',ISEA,'SWH_BCKG = ', SWHBCKG(IY,IX), &
-                'SWH_ANL = ', SWHANL(IY,IX),                 &
-                'SWH_RSTR = ',SWHUPRSTR(IY,IX)
-#endif
+          PRCNTG=(SWHANL(IY,IX)/SWHBCKG_1)
+          CALL CHECK_PRCNTG(PRCNTG,PRCNTG_CAP)
+          IF (CORWSEA) THEN
+            ! Include frequency shifts in wind-sea update
+            CALL UPDTWSPECF(VATMP, PRCNTG, VAMAPWS, ISEA, .TRUE.)
+          ELSE
+            ! bulk correction only, as per UPD2
+            CALL UPDATE_VA(PRCNTG,VATMP)
+          END IF
         END IF
-     END DO
 #ifdef W3_T
-     CALL writeMatrix('SWHBCKG_UPD6.txt', REAL(SWHBCKG  ))
-     CALL writeMatrix('SWHANL_UPD6.txt' , REAL(SWHANL   ))
-     CALL writeMatrix('SWHRSTR_UPD6.txt', REAL(SWHUPRSTR))
+        WRITE (NDSO,*) 'ISEA = ', ISEA,' IX = ',IX,' IY = ', IY,         &
+             ' PRCNTG = ',PRCNTG,' SWHBCKG = ',SWHBCKG(IY,IX), &
+             ' SWHANL = ', SWHANL(IY,IX)
 #endif
-     !
-     DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
+        VA(:,ISEA)=VATMP
 #ifdef W3_T
-     DEALLOCATE( SWHUPRSTR )
+        CALL SWH_RSRT_1p (VATMP, ISEA, SWHTMP)
+        SWHUPRSTR(IY,IX)=SWHTMP
+        WRITE (NDSO,*) ' =========== UPD6 Output ==========='
+        WRITE (NDSO,*)'ISEA = ',ISEA,'SWH_BCKG = ', SWHBCKG(IY,IX), &
+             'SWH_ANL = ', SWHANL(IY,IX),                 &
+             'SWH_RSTR = ',SWHUPRSTR(IY,IX)
 #endif
-     !/
-     !/ ------------------------------------------------------------------- /
-     !     End of update options
-     !/
+      END IF
+    END DO
+#ifdef W3_T
+    CALL writeMatrix('SWHBCKG_UPD6.txt', REAL(SWHBCKG  ))
+    CALL writeMatrix('SWHANL_UPD6.txt' , REAL(SWHANL   ))
+    CALL writeMatrix('SWHRSTR_UPD6.txt', REAL(SWHUPRSTR))
+#endif
+    !
+    DEALLOCATE( SWHANL,VATMP,SWHBCKG,VAMAPWS,WSBCKG,WDRBCKG )
+#ifdef W3_T
+    DEALLOCATE( SWHUPRSTR )
+#endif
+    !/
+    !/ ------------------------------------------------------------------- /
+    !     End of update options
+    !/
   END SELECT
   !/
   !/ ------------------------------------------------------------------- /
@@ -1330,22 +1330,22 @@ CONTAINS
     WRITE (NDSO,*) trim(MYNAME)," The cap is ",PRCNTG_CAP
 #endif
     IF ( PRCNTG_CAP < 1. ) THEN
-       WRITE (NDSO,*) trim(MYNAME)," WARNING: PRCNTG_CAP set < 1."
-       WRITE (NDSO,*) trim(MYNAME),"          This may introduce spurious corrections"
+      WRITE (NDSO,*) trim(MYNAME)," WARNING: PRCNTG_CAP set < 1."
+      WRITE (NDSO,*) trim(MYNAME),"          This may introduce spurious corrections"
     END IF
 #ifdef W3_T
     WRITE (NDSO,*) trim(MYNAME)," The cap is ",PRCNTG_CAP
 #endif
     IF ( PRCNTG > 1. ) THEN
 #ifdef W3_T
-       WRITE (NDSO,*) trim(MYNAME)," PRCNTG > 1."
+      WRITE (NDSO,*) trim(MYNAME)," PRCNTG > 1."
 #endif
-       PRCNTG = MIN(PRCNTG, 1. * PRCNTG_CAP)
+      PRCNTG = MIN(PRCNTG, 1. * PRCNTG_CAP)
     ELSE IF ( PRCNTG < 1. ) THEN
 #ifdef W3_T
-       WRITE (NDSO,*) trim(MYNAME)," PRCNTG < 1."
+      WRITE (NDSO,*) trim(MYNAME)," PRCNTG < 1."
 #endif
-       PRCNTG = MAX(PRCNTG, 1. / PRCNTG_CAP)
+      PRCNTG = MAX(PRCNTG, 1. / PRCNTG_CAP)
 #ifdef W3_T
 
 #endif
@@ -1431,40 +1431,40 @@ CONTAINS
     !
     ! Read text header and check dimensions match expected values
     IF (.NOT. SMCGRD) THEN
-       READ( IP_FID, *) M,N
-       IF (( SIZE(UPDPRCNT,1) /= N) .OR. ( SIZE(UPDPRCNT,2) /= M )) THEN
-          WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
-               'dimensions: M=',M,' N=',N
-          STOP
-       END IF
+      READ( IP_FID, *) M,N
+      IF (( SIZE(UPDPRCNT,1) /= N) .OR. ( SIZE(UPDPRCNT,2) /= M )) THEN
+        WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
+             'dimensions: M=',M,' N=',N
+        STOP
+      END IF
 #ifdef W3_SMC
     ELSE
-       READ( IP_FID, *) N
-       IF ( SIZE(UPDPRCNT,1) /= N ) THEN
-          WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
-               'dimensions: N=',N
-          STOP
-       END IF
+      READ( IP_FID, *) N
+      IF ( SIZE(UPDPRCNT,1) /= N ) THEN
+        WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
+             'dimensions: N=',N
+        STOP
+      END IF
 #endif
     END IF
     UPDPRCNT=0
     !
     ! Read the data into its allocated array
     IF (.NOT. SMCGRD) THEN
-       DO L=1,N
-          DO K=1,M
-             A=0.
-             READ(IP_FID,*)A
-             UPDPRCNT(N+1-L,K)=A
-          END DO
-       END DO
-#ifdef W3_SMC
-    ELSE
-       DO L=1,N
+      DO L=1,N
+        DO K=1,M
           A=0.
           READ(IP_FID,*)A
-          UPDPRCNT(L,1)=A
-       END DO
+          UPDPRCNT(N+1-L,K)=A
+        END DO
+      END DO
+#ifdef W3_SMC
+    ELSE
+      DO L=1,N
+        A=0.
+        READ(IP_FID,*)A
+        UPDPRCNT(L,1)=A
+      END DO
 #endif
     END IF
     !
@@ -1553,20 +1553,20 @@ CONTAINS
     !
     ! Read text header and check dimensions match expected values
     IF (.NOT. SMCGRD) THEN
-       READ( IP_FID, *) M,N
-       IF (( SIZE(UPDPRCNT,1) /= N) .OR. ( SIZE(UPDPRCNT,2) /= M )) THEN
-          WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
-               'dimensions: M=',M,' N=',N
-          STOP
-       END IF
+      READ( IP_FID, *) M,N
+      IF (( SIZE(UPDPRCNT,1) /= N) .OR. ( SIZE(UPDPRCNT,2) /= M )) THEN
+        WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
+             'dimensions: M=',M,' N=',N
+        STOP
+      END IF
 #ifdef W3_SMC
     ELSE
-       READ( IP_FID, *) N
-       IF ( SIZE(UPDPRCNT,1) /= N ) THEN
-          WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
-               'dimensions: N=',N
-          STOP
-       END IF
+      READ( IP_FID, *) N
+      IF ( SIZE(UPDPRCNT,1) /= N ) THEN
+        WRITE (NDSO,*) trim(myname),': These are not the grid ' // &
+             'dimensions: N=',N
+        STOP
+      END IF
 #endif
     END IF
     UPDPRCNT=0
@@ -1575,28 +1575,28 @@ CONTAINS
     !
     ! Read the data into allocated arrays
     IF (.NOT. SMCGRD) THEN
-       DO L=1,N
-          DO K=1,M
-             A=0.
-             WS=0.
-             WD=0.
-             READ(IP_FID,*)A, WS, WD
-             !SWH data read onto Y,X grid
-             UPDPRCNT(N+1-L,K)=A
-             !Wind data read onto X,Y grid
-             WSPD(K,N+1-L)=WS
-             WDIR(K,N+1-L)=WD
-          END DO
-       END DO
+      DO L=1,N
+        DO K=1,M
+          A=0.
+          WS=0.
+          WD=0.
+          READ(IP_FID,*)A, WS, WD
+          !SWH data read onto Y,X grid
+          UPDPRCNT(N+1-L,K)=A
+          !Wind data read onto X,Y grid
+          WSPD(K,N+1-L)=WS
+          WDIR(K,N+1-L)=WD
+        END DO
+      END DO
 #ifdef W3_SMC
     ELSE
-       DO L=1,N
-          A=0.
-          READ(IP_FID,*)A, WS, WD
-          UPDPRCNT(L,1)=A
-          WSPD(L,1)=WS
-          WDIR(L,1)=WD
-       END DO
+      DO L=1,N
+        A=0.
+        READ(IP_FID,*)A, WS, WD
+        UPDPRCNT(L,1)=A
+        WSPD(L,1)=WS
+        WDIR(L,1)=WD
+      END DO
 #endif
     ENDIF
     !
@@ -1676,12 +1676,12 @@ CONTAINS
     ETOT   = 0.
     !
     DO IK=1, NK
-       CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
-       E1I    = 0.
-       DO ITH=1, NTH
-          E1I    = E1I + VA1p(ITH+(IK-1)*NTH)  *  SIG(IK) / CG
-       END DO
-       ETOT   = ETOT + E1I*DSIP(IK)
+      CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
+      E1I    = 0.
+      DO ITH=1, NTH
+        E1I    = E1I + VA1p(ITH+(IK-1)*NTH)  *  SIG(IK) / CG
+      END DO
+      ETOT   = ETOT + E1I*DSIP(IK)
     END DO
     !
     HSIG1p = 4. * SQRT ( ETOT * DTH )
@@ -1780,26 +1780,26 @@ CONTAINS
     ETOTs  = 0.
     !
     DO IK=1, NK
-       CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
-       E1I    = 0.
-       EwI    = 0.
-       EsI    = 0.
-       DO ITH=1, NTH
-          ! Relative wind-sea calc assumes input with in direction toward
-          ! i.e. same as for the wave spectrum
-          RELWS = WSMULT * WS * MAX(0.0, COS(WD - TH(ITH)))
-          E1I    = E1I + VA1p(ITH+(IK-1)*NTH) * SIG(IK) / CG
-          IF ( RELWS > (SIG(IK)/WN) ) THEN
-             EwI = EwI + VA1p(ITH+(IK-1)*NTH) * SIG(IK) / CG
-             VAMAPWS(ITH+(IK-1)*NTH) = 1
-          ELSE
-             EsI = EsI + VA1p(ITH+(IK-1)*NTH) * SIG(IK) / CG
-             VAMAPWS(ITH+(IK-1)*NTH) = 0
-          END IF
-       END DO
-       ETOT   = ETOT + E1I*DSIP(IK)
-       ETOTw  = ETOTw + EwI*DSIP(IK)
-       ETOTs  = ETOTs + EsI*DSIP(IK)
+      CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
+      E1I    = 0.
+      EwI    = 0.
+      EsI    = 0.
+      DO ITH=1, NTH
+        ! Relative wind-sea calc assumes input with in direction toward
+        ! i.e. same as for the wave spectrum
+        RELWS = WSMULT * WS * MAX(0.0, COS(WD - TH(ITH)))
+        E1I    = E1I + VA1p(ITH+(IK-1)*NTH) * SIG(IK) / CG
+        IF ( RELWS > (SIG(IK)/WN) ) THEN
+          EwI = EwI + VA1p(ITH+(IK-1)*NTH) * SIG(IK) / CG
+          VAMAPWS(ITH+(IK-1)*NTH) = 1
+        ELSE
+          EsI = EsI + VA1p(ITH+(IK-1)*NTH) * SIG(IK) / CG
+          VAMAPWS(ITH+(IK-1)*NTH) = 0
+        END IF
+      END DO
+      ETOT   = ETOT + E1I*DSIP(IK)
+      ETOTw  = ETOTw + EwI*DSIP(IK)
+      ETOTs  = ETOTs + EsI*DSIP(IK)
     END DO
     !
     HSIG1p = 4. * SQRT ( ETOT * DTH )
@@ -1881,23 +1881,23 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA, 1
-       IF (.NOT. SMCGRD) THEN
-          IX = MAPSF(ISEA,1)
-          IY = MAPSF(ISEA,2)
+      IF (.NOT. SMCGRD) THEN
+        IX = MAPSF(ISEA,1)
+        IY = MAPSF(ISEA,2)
 #ifdef W3_SMC
-       ELSE
-          IX = 1
-          IY = ISEA
+      ELSE
+        IX = 1
+        IY = ISEA
 #endif
-       ENDIF
-       !
-       SPD(IY,IX) = SQRT( UVEC(IY,IX)**2 + VVEC(IY,IX)**2 )
-       IF( SPD(IY,IX) .GT. 1.E-7) THEN
-          DCART = MOD( TPI+ATAN2(UVEC(IY,IX),VVEC(IY,IX)) , TPI )
-       ELSE
-          DCART = 0
-       END IF
-       SPD(IY,IX) = MAX( SPD(IY,IX) , 0.001 )
+      ENDIF
+      !
+      SPD(IY,IX) = SQRT( UVEC(IY,IX)**2 + VVEC(IY,IX)**2 )
+      IF( SPD(IY,IX) .GT. 1.E-7) THEN
+        DCART = MOD( TPI+ATAN2(UVEC(IY,IX),VVEC(IY,IX)) , TPI )
+      ELSE
+        DCART = 0
+      END IF
+      SPD(IY,IX) = MAX( SPD(IY,IX) , 0.001 )
     END DO
     !
 #ifdef W3_T
@@ -1971,11 +1971,11 @@ CONTAINS
     WRITE (NDSO,*) trim(myname), ' starts'
 #endif
     DO IK=1, NK
-       DO ITH=1, NTH
-          IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
-             VATMP(ITH+(IK-1)*NTH) = VATMP(ITH+(IK-1)*NTH) * PRCNTG**2
-          END IF
-       END DO
+      DO ITH=1, NTH
+        IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
+          VATMP(ITH+(IK-1)*NTH) = VATMP(ITH+(IK-1)*NTH) * PRCNTG**2
+        END IF
+      END DO
     END DO
     !
 #ifdef W3_T
@@ -2063,78 +2063,78 @@ CONTAINS
     ! 1st iteration shifts wind-sea energy in freq space
     FFAC = (1. / PRCNTG**2)**(1.0/3.0) ! uses Toba's relationship
     DO IK=1, NK
-       CALL WAVNU1(SIG(IK), DEPTH, WN, CG)
-       SIGSHFT = FFAC * SIG(IK)
-       DO ITH=1, NTH
-          IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
-             ! Interpolate frequency bin according to f-shift
-             LPF = 1
-             DO WHILE (LPF < NK)
-                IF (SIG(LPF) >= SIGSHFT) THEN
-                   IF (LPF .EQ. 1) THEN
-                      CALL WAVNU1(SIG(LPF), DEPTH, WN1, CG1)
-                      VASHFT(ITH+(LPF-1)*NTH) = VASHFT(ITH+(LPF-1)*NTH) + &
-                           VATMP(ITH+(IK-1)*NTH) *  &
-                           (DSIP(IK)*SIG(IK)/CG) /  &
-                           (DSIP(LPF)*SIG(LPF)/CG1)
-                   ELSE
-                      M2 = LPF
-                      M1 = LPF - 1
-                      FDM1 = SIGSHFT - SIG(M1)
-                      FDM2 = SIG(M2) - SIG(M1)
-                      CALL WAVNU1(SIG(M1), DEPTH, WN1, CG1)
-                      CALL WAVNU1(SIG(M2), DEPTH, WN2, CG2)
-                      VASHFT(ITH+(M1-1)*NTH) = VASHFT(ITH+(M1-1)*NTH) + &
-                           (FDM1 / FDM2) *         &
-                           VATMP(ITH+(IK-1)*NTH) * &
-                           (DSIP(IK)*SIG(IK)/CG) / &
-                           (DSIP(M1)*SIG(M1)/CG1)
-                      VASHFT(ITH+(M2-1)*NTH) = VASHFT(ITH+(M2-1)*NTH) + &
-                           (1.0 - FDM1 / FDM2) *   &
-                           VATMP(ITH+(IK-1)*NTH) * &
-                           (DSIP(IK)*SIG(IK)/CG) / &
-                           (DSIP(M2)*SIG(M2)/CG2)
-                   END IF
-                   LPF = NK + 1
-                ENDIF
-                LPF = LPF + 1
-             END DO
-             IF (LPF .EQ. NK) THEN
+      CALL WAVNU1(SIG(IK), DEPTH, WN, CG)
+      SIGSHFT = FFAC * SIG(IK)
+      DO ITH=1, NTH
+        IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
+          ! Interpolate frequency bin according to f-shift
+          LPF = 1
+          DO WHILE (LPF < NK)
+            IF (SIG(LPF) >= SIGSHFT) THEN
+              IF (LPF .EQ. 1) THEN
                 CALL WAVNU1(SIG(LPF), DEPTH, WN1, CG1)
                 VASHFT(ITH+(LPF-1)*NTH) = VASHFT(ITH+(LPF-1)*NTH) + &
                      VATMP(ITH+(IK-1)*NTH) *  &
                      (DSIP(IK)*SIG(IK)/CG) /  &
                      (DSIP(LPF)*SIG(LPF)/CG1)
-             END IF
+              ELSE
+                M2 = LPF
+                M1 = LPF - 1
+                FDM1 = SIGSHFT - SIG(M1)
+                FDM2 = SIG(M2) - SIG(M1)
+                CALL WAVNU1(SIG(M1), DEPTH, WN1, CG1)
+                CALL WAVNU1(SIG(M2), DEPTH, WN2, CG2)
+                VASHFT(ITH+(M1-1)*NTH) = VASHFT(ITH+(M1-1)*NTH) + &
+                     (FDM1 / FDM2) *         &
+                     VATMP(ITH+(IK-1)*NTH) * &
+                     (DSIP(IK)*SIG(IK)/CG) / &
+                     (DSIP(M1)*SIG(M1)/CG1)
+                VASHFT(ITH+(M2-1)*NTH) = VASHFT(ITH+(M2-1)*NTH) + &
+                     (1.0 - FDM1 / FDM2) *   &
+                     VATMP(ITH+(IK-1)*NTH) * &
+                     (DSIP(IK)*SIG(IK)/CG) / &
+                     (DSIP(M2)*SIG(M2)/CG2)
+              END IF
+              LPF = NK + 1
+            ENDIF
+            LPF = LPF + 1
+          END DO
+          IF (LPF .EQ. NK) THEN
+            CALL WAVNU1(SIG(LPF), DEPTH, WN1, CG1)
+            VASHFT(ITH+(LPF-1)*NTH) = VASHFT(ITH+(LPF-1)*NTH) + &
+                 VATMP(ITH+(IK-1)*NTH) *  &
+                 (DSIP(IK)*SIG(IK)/CG) /  &
+                 (DSIP(LPF)*SIG(LPF)/CG1)
           END IF
-       END DO
+        END IF
+      END DO
     END DO
     ! 2nd iteration scales wind-sea energy
     DO IK=1, NK
-       DO ITH=1, NTH
-          IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
-             VASHFT(ITH+(IK-1)*NTH) = VASHFT(ITH+(IK-1)*NTH) * PRCNTG**2
-          END IF
-       END DO
+      DO ITH=1, NTH
+        IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
+          VASHFT(ITH+(IK-1)*NTH) = VASHFT(ITH+(IK-1)*NTH) * PRCNTG**2
+        END IF
+      END DO
     END DO
     ! 3rd iteration combines wind-sea and swell energy
     DO IK=1, NK
-       DO ITH=1, NTH
-          IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
-             VATMP(ITH+(IK-1)*NTH) = VASHFT(ITH+(IK-1)*NTH)
+      DO ITH=1, NTH
+        IF ( VAMAPWS(ITH+(IK-1)*NTH) .EQ. 1 ) THEN
+          VATMP(ITH+(IK-1)*NTH) = VASHFT(ITH+(IK-1)*NTH)
+        ELSE
+          IF ( ADJALL ) THEN
+            ! Swell components are also re-scaled
+            VATMP(ITH+(IK-1)*NTH) = VATMP(ITH+(IK-1)*NTH) * &
+                 PRCNTG**2            + &
+                 VASHFT(ITH+(IK-1)*NTH)
           ELSE
-             IF ( ADJALL ) THEN
-                ! Swell components are also re-scaled
-                VATMP(ITH+(IK-1)*NTH) = VATMP(ITH+(IK-1)*NTH) * &
-                     PRCNTG**2            + &
-                     VASHFT(ITH+(IK-1)*NTH)
-             ELSE
-                ! Re-scaling wind-sea only
-                VATMP(ITH+(IK-1)*NTH) = VATMP(ITH+(IK-1)*NTH) + &
-                     VASHFT(ITH+(IK-1)*NTH)
-             END IF
+            ! Re-scaling wind-sea only
+            VATMP(ITH+(IK-1)*NTH) = VATMP(ITH+(IK-1)*NTH) + &
+                 VASHFT(ITH+(IK-1)*NTH)
           END IF
-       END DO
+        END IF
+      END DO
     END DO
     !
     DEALLOCATE(VASHFT)
@@ -2210,11 +2210,11 @@ CONTAINS
          FORM = 'FORMATTED', IOSTAT = IL_IOS)
     IF (IL_IOS /= 0) PRINT*,'In writeMatrix : Error creating file'//FILENAME
     DO IB_J = 1, SIZE(RDA_A,2)
-       DO IB_I = 1, SIZE(RDA_A,1)
-          !               write(unit=ip_fid, fmt='(I, $)') rda_A(ib_i,ib_j)
-          WRITE(UNIT=IP_FID, FMT='(E18.8, $)') RDA_A(IB_I,IB_J)
-       END DO
-       WRITE(UNIT=IP_FID, FMT=*)''
+      DO IB_I = 1, SIZE(RDA_A,1)
+        !               write(unit=ip_fid, fmt='(I, $)') rda_A(ib_i,ib_j)
+        WRITE(UNIT=IP_FID, FMT='(E18.8, $)') RDA_A(IB_I,IB_J)
+      END DO
+      WRITE(UNIT=IP_FID, FMT=*)''
     END DO
     CLOSE(IP_FID)
     !

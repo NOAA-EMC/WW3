@@ -68,47 +68,47 @@ module MallocInfo_m
 
   !> This structure type is used to return information about the dynamic memory allocator.
   type, bind(c) :: MallInfo_t
-     !> This is the total size of memory allocated with sbrk by malloc, in bytes.
-     integer(c_int) :: arena
-     !> This is the number of chunks not in use. (The memory allocator internally gets chunks of memory from the operating system, and then carves them up to satisfy individual malloc requests; see Efficiency and Malloc.)
-     integer(c_int) :: ordblks
-     !> This field is unused.
-     integer(c_int) :: smblks
-     !> This is the total number of chunks allocated with mmap.
-     integer(c_int) :: hblks
-     !> This is the total size of memory allocated with mmap, in bytes.
-     integer(c_int) :: hblkhd
-     !> This field is unused.
-     integer(c_int) :: usmblks
-     !> This field is unused.
-     integer(c_int) :: fsmblks
-     !> This is the total size of memory occupied by chunks handed out by malloc.
-     integer(c_int) :: uordblks
-     !> This is the total size of memory occupied by free (not in use) chunks.
-     integer(c_int) :: fordblks
-     !> This is the size of the top-most releasable chunk that normally borders the end of the heap (i.e., the high end of the virtual address space’s data segment).
-     integer(c_int) :: keepcost
+    !> This is the total size of memory allocated with sbrk by malloc, in bytes.
+    integer(c_int) :: arena
+    !> This is the number of chunks not in use. (The memory allocator internally gets chunks of memory from the operating system, and then carves them up to satisfy individual malloc requests; see Efficiency and Malloc.)
+    integer(c_int) :: ordblks
+    !> This field is unused.
+    integer(c_int) :: smblks
+    !> This is the total number of chunks allocated with mmap.
+    integer(c_int) :: hblks
+    !> This is the total size of memory allocated with mmap, in bytes.
+    integer(c_int) :: hblkhd
+    !> This field is unused.
+    integer(c_int) :: usmblks
+    !> This field is unused.
+    integer(c_int) :: fsmblks
+    !> This is the total size of memory occupied by chunks handed out by malloc.
+    integer(c_int) :: uordblks
+    !> This is the total size of memory occupied by free (not in use) chunks.
+    integer(c_int) :: fordblks
+    !> This is the size of the top-most releasable chunk that normally borders the end of the heap (i.e., the high end of the virtual address space’s data segment).
+    integer(c_int) :: keepcost
   end type MallInfo_t
 
   interface
-     function mallinfo() bind(c, name="mallinfo") result(data)
-       use :: iso_c_binding
-       implicit none
+    function mallinfo() bind(c, name="mallinfo") result(data)
+      use :: iso_c_binding
+      implicit none
 
-       type, bind(c) :: MallInfo_t
-          integer(c_int) :: arena
-          integer(c_int) :: ordblks
-          integer(c_int) :: smblks
-          integer(c_int) :: hblks
-          integer(c_int) :: hblkhd
-          integer(c_int) :: usmblks
-          integer(c_int) :: fsmblks
-          integer(c_int) :: uordblks
-          integer(c_int) :: fordblks
-          integer(c_int) :: keepcost
-       end type MallInfo_t
-       type(MallInfo_t) :: data
-     end function mallinfo
+      type, bind(c) :: MallInfo_t
+        integer(c_int) :: arena
+        integer(c_int) :: ordblks
+        integer(c_int) :: smblks
+        integer(c_int) :: hblks
+        integer(c_int) :: hblkhd
+        integer(c_int) :: usmblks
+        integer(c_int) :: fsmblks
+        integer(c_int) :: uordblks
+        integer(c_int) :: fordblks
+        integer(c_int) :: keepcost
+      end type MallInfo_t
+      type(MallInfo_t) :: data
+    end function mallinfo
   end interface
 
 contains
@@ -355,11 +355,11 @@ contains
     vmsize = 0
     open(unit=1000, file="/proc/self/status", status='old', err=99)
     do while (.true.)
-       read(unit=1000, fmt=*, err=88) stat_key, stat_value
-       if (stat_key == 'VmSize:') then
-          read(stat_value, *) vmsize
-          exit
-       end if
+      read(unit=1000, fmt=*, err=88) stat_key, stat_value
+      if (stat_key == 'VmSize:') then
+        read(stat_value, *) vmsize
+        exit
+      end if
     end do
 88  close(unit=1000)
     if (vmsize == 0) goto 99
@@ -441,11 +441,11 @@ contains
     vmRSS = 0
     open(unit=1000, file="/proc/self/status", status='old', err=99)
     do while (.true.)
-       read(unit=1000, fmt=*, err=88) stat_key, stat_value
-       if (stat_key == 'VmRSS:') then
-          read(stat_value, *) vmRSS
-          exit
-       end if
+      read(unit=1000, fmt=*, err=88) stat_key, stat_value
+      if (stat_key == 'VmRSS:') then
+        read(stat_value, *) vmRSS
+        exit
+      end if
     end do
 88  close(unit=1000)
     if (vmRSS == 0) goto 99

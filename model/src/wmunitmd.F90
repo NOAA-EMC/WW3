@@ -210,27 +210,27 @@ CONTAINS
 #endif
     !
     IF ( UNITLW .GE. UNITHG ) THEN
-       WRITE (NDSE,1000) UNITLW, UNITHG
-       CALL EXTCDE ( 1000 )
+      WRITE (NDSE,1000) UNITLW, UNITHG
+      CALL EXTCDE ( 1000 )
     END IF
     !
     IF ( UNITLW .GT. INPLOW .OR.                                    &
          UNITLW .GT. OUTLOW .OR.                                    &
          UNITLW .GT. SCRLOW ) THEN
-       WRITE (NDSE,1001) UNITLW, INPLOW, OUTLOW, SCRLOW
-       CALL EXTCDE ( 1001 )
+      WRITE (NDSE,1001) UNITLW, INPLOW, OUTLOW, SCRLOW
+      CALL EXTCDE ( 1001 )
     END IF
     !
     IF ( UNITHG .LT. INPHGH .OR.                                    &
          UNITHG .LT. OUTHGH .OR.                                    &
          UNITHG .LT. SCRHGH ) THEN
-       WRITE (NDSE,1002) UNITHG, INPHGH, OUTHGH, SCRHGH
-       CALL EXTCDE ( 1002 )
+      WRITE (NDSE,1002) UNITHG, INPHGH, OUTHGH, SCRHGH
+      CALL EXTCDE ( 1002 )
     END IF
     !
     IF ( FLINIT ) THEN
-       WRITE (NDSE,1003)
-       CALL EXTCDE ( 1003 )
+      WRITE (NDSE,1003)
+      CALL EXTCDE ( 1003 )
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -256,28 +256,28 @@ CONTAINS
 #endif
     !
     DO J=1, 3
-       !
-       SELECT CASE(J)
-       CASE(1)
-          STRING = 'INP'
-          I1     = INPLOW
-          IN     = INPHGH
-       CASE(2)
-          STRING = 'OUT'
-          I1     = OUTLOW
-          IN     = OUTHGH
-       CASE DEFAULT
-          STRING = 'SCR'
-          I1     = SCRLOW
-          IN     = SCRHGH
-       END SELECT
-       !
-       DO I=I1, IN
-          IF ( U_TYPE(I) .NE. 'RES' ) THEN
-             WRITE (NDSE,1020) I, U_TYPE(I)
-          END IF
-          U_TYPE(I) = STRING
-       END DO
+      !
+      SELECT CASE(J)
+      CASE(1)
+        STRING = 'INP'
+        I1     = INPLOW
+        IN     = INPHGH
+      CASE(2)
+        STRING = 'OUT'
+        I1     = OUTLOW
+        IN     = OUTHGH
+      CASE DEFAULT
+        STRING = 'SCR'
+        I1     = SCRLOW
+        IN     = SCRHGH
+      END SELECT
+      !
+      DO I=I1, IN
+        IF ( U_TYPE(I) .NE. 'RES' ) THEN
+          WRITE (NDSE,1020) I, U_TYPE(I)
+        END IF
+        U_TYPE(I) = STRING
+      END DO
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -295,7 +295,7 @@ CONTAINS
 #ifdef W3_T
     WRITE (NDST,9040)
     DO I=UNITLW, UNITHG
-       WRITE (NDST,9041) I,U_USED(I),U_TYPE(I),U_NAME(I),U_DESC(I)
+      WRITE (NDST,9041) I,U_USED(I),U_TYPE(I),U_NAME(I),U_DESC(I)
     END DO
 #endif
     !
@@ -415,40 +415,40 @@ CONTAINS
     ! 1.  Test request and intialization
     !
     IF ( .NOT. FLINIT ) THEN
-       WRITE (NDS,1000)
-       CALL EXTCDE ( 1000 )
+      WRITE (NDS,1000)
+      CALL EXTCDE ( 1000 )
     END IF
     !
     IF ( IREQ.GT.0 .AND. ( IREQ.LT.UNITLW .OR. IREQ.GT.UNITHG) ) THEN
-       WRITE (NDS,1001) IREQ, UNITLW, UNITHG
-       CALL EXTCDE ( 1001 )
+      WRITE (NDS,1001) IREQ, UNITLW, UNITHG
+      CALL EXTCDE ( 1001 )
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Single unit request
     !
     IF ( IREQ .GT. 0 ) THEN
-       WRITE (NDS,920) IREQ, U_USED(IREQ), U_TYPE(IREQ),           &
-            U_NAME(IREQ), U_DESC(IREQ)
-       !
-       ! -------------------------------------------------------------------- /
-       ! 3.  Multiple unit request
-       !
+      WRITE (NDS,920) IREQ, U_USED(IREQ), U_TYPE(IREQ),           &
+           U_NAME(IREQ), U_DESC(IREQ)
+      !
+      ! -------------------------------------------------------------------- /
+      ! 3.  Multiple unit request
+      !
     ELSE
-       !
-       IF ( IREQ .LT. 0 ) THEN
-          WRITE (NDS,930)
-       ELSE
-          WRITE (NDS,931)
-       END IF
-       !
-       DO I=UNITLW, UNITHG
-          IF ( IREQ.LT.0 .OR. U_USED(I) )                           &
-               WRITE (NDS,932) I, U_USED(I), U_TYPE(I),         &
-               U_NAME(I), U_DESC(I)
-       END DO
-       WRITE (NDS,*)
-       !
+      !
+      IF ( IREQ .LT. 0 ) THEN
+        WRITE (NDS,930)
+      ELSE
+        WRITE (NDS,931)
+      END IF
+      !
+      DO I=UNITLW, UNITHG
+        IF ( IREQ.LT.0 .OR. U_USED(I) )                           &
+             WRITE (NDS,932) I, U_USED(I), U_TYPE(I),         &
+             U_NAME(I), U_DESC(I)
+      END DO
+      WRITE (NDS,*)
+      !
     END IF
     !
     RETURN
@@ -579,13 +579,13 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT. FLINIT ) THEN
-       WRITE (NDSE,1000)
-       CALL EXTCDE ( 1000 )
+      WRITE (NDSE,1000)
+      CALL EXTCDE ( 1000 )
     END IF
     !
     IF ( NDS.LT.UNITLW .OR. NDS.GT.UNITHG ) THEN
-       WRITE (NDSE,1001) NDS, UNITLW, UNITHG
-       CALL EXTCDE ( 1001 )
+      WRITE (NDSE,1001) NDS, UNITLW, UNITHG
+      CALL EXTCDE ( 1001 )
     END IF
     !
 #ifdef W3_T
@@ -606,17 +606,17 @@ CONTAINS
     ! 2.c Name
     !
     IF ( PRESENT(NAME) ) THEN
-       U_NAME(NDS) = NAME
+      U_NAME(NDS) = NAME
     ELSE IF ( .NOT. FLAG ) THEN
-       U_NAME(NDS) = 'unknown'
+      U_NAME(NDS) = 'unknown'
     END IF
     !
     ! 2.d Description
     !
     IF ( PRESENT(DESC) ) THEN
-       U_DESC(NDS) = DESC
+      U_DESC(NDS) = DESC
     ELSE IF ( .NOT. FLAG ) THEN
-       U_DESC(NDS) = 'unknown'
+      U_DESC(NDS) = 'unknown'
     END IF
     !
 #ifdef W3_T
@@ -753,14 +753,14 @@ CONTAINS
     ! 1.  Test input / output
     !
     IF ( .NOT. FLINIT ) THEN
-       WRITE (NDSE,1010)
-       CALL EXTCDE ( 1010 )
+      WRITE (NDSE,1010)
+      CALL EXTCDE ( 1010 )
     END IF
     !
     IF ( PRESENT(NR) ) THEN
-       NRC    = MAX ( 1 , NR )
+      NRC    = MAX ( 1 , NR )
     ELSE
-       NRC    = 1
+      NRC    = 1
     END IF
     !
 #ifdef W3_T
@@ -773,33 +773,33 @@ CONTAINS
     NDS    = -1
     !
     DO I=UNITLW, UNITHG - NRC + 1
-       ! new: We do not allow I=NDST (unit number for test output).
-       !      NDST (aka MDST or IDST) is set to 10 in call to WMINIT
-       !      (4th argument)
-       OK     = .NOT.U_USED(I) .AND. U_TYPE(I).EQ.TYPE  &
-            .AND. I.NE.NDST
-       INQUIRE ( I, OPENED=OPND )
-       OK     = OK .AND. .NOT.OPND
-       IF ( OK ) THEN
-          DO J=1, NRC-1
-             OK     = OK .AND. (.NOT.U_USED(I+J) .AND.               &
-                  U_TYPE(I+J).EQ.TYPE )
-             INQUIRE ( I+J, OPENED=OPND )
-             OK     = OK .AND. .NOT.OPND
-          END DO
-       END IF
-       IF ( OK ) THEN
-          NDS       = I
-          DO J=0, NRC-1
-             U_USED(I+J) = .TRUE.
-          END DO
-          EXIT
-       END IF
+      ! new: We do not allow I=NDST (unit number for test output).
+      !      NDST (aka MDST or IDST) is set to 10 in call to WMINIT
+      !      (4th argument)
+      OK     = .NOT.U_USED(I) .AND. U_TYPE(I).EQ.TYPE  &
+           .AND. I.NE.NDST
+      INQUIRE ( I, OPENED=OPND )
+      OK     = OK .AND. .NOT.OPND
+      IF ( OK ) THEN
+        DO J=1, NRC-1
+          OK     = OK .AND. (.NOT.U_USED(I+J) .AND.               &
+               U_TYPE(I+J).EQ.TYPE )
+          INQUIRE ( I+J, OPENED=OPND )
+          OK     = OK .AND. .NOT.OPND
+        END DO
+      END IF
+      IF ( OK ) THEN
+        NDS       = I
+        DO J=0, NRC-1
+          U_USED(I+J) = .TRUE.
+        END DO
+        EXIT
+      END IF
     END DO
     !
     IF ( NDS .EQ. -1 ) THEN
-       WRITE (NDSE,1020) TYPE
-       CALL EXTCDE ( 1020 )
+      WRITE (NDSE,1020) TYPE
+      CALL EXTCDE ( 1020 )
     END IF
     !
 #ifdef W3_T
@@ -915,13 +915,13 @@ CONTAINS
     ! 1.  Test input / output
     !
     IF ( .NOT. FLINIT ) THEN
-       WRITE (NDSE,1010)
-       CALL EXTCDE ( 1010 )
+      WRITE (NDSE,1010)
+      CALL EXTCDE ( 1010 )
     END IF
     !
     IF ( NDS.LT.UNITLW .OR. NDS.GT.UNITHG ) THEN
-       WRITE (NDSE,1011) NDS, UNITLW, UNITHG
-       CALL EXTCDE ( 1011 )
+      WRITE (NDSE,1011) NDS, UNITLW, UNITHG
+      CALL EXTCDE ( 1011 )
     END IF
     !
 #ifdef W3_T
@@ -941,17 +941,17 @@ CONTAINS
     ! 2.b File not opened, release to pool
     !
     IF ( .NOT. CHECK ) THEN
-       CALL WMUSET ( NDSE, NDST, NDS, .FALSE. )
+      CALL WMUSET ( NDSE, NDST, NDS, .FALSE. )
     ELSE
-       !
-       ! 2.c File is opened, get the name
-       !
-       INQUIRE (NDS,NAME=U_NAME(NDS))
-       !
+      !
+      ! 2.c File is opened, get the name
+      !
+      INQUIRE (NDS,NAME=U_NAME(NDS))
+      !
 #ifdef W3_T
-       WRITE (NDST,9021) U_NAME(NDS)
+      WRITE (NDST,9021) U_NAME(NDS)
 #endif
-       !
+      !
     END IF
     !
     RETURN

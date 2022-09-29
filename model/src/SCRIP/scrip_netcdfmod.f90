@@ -88,23 +88,23 @@ contains
     !-----------------------------------------------------------------------
 
     if (netcdfStat == NF90_NOERR) then
-       errorCode = SCRIP_Success
-       SCRIP_NetcdfErrorCheck = .false.
+      errorCode = SCRIP_Success
+      SCRIP_NetcdfErrorCheck = .false.
 
-       !-----------------------------------------------------------------------
-       !
-       ! if an error is detected, return a true value and call the SCRIP
-       ! error handlers to log the error. Log both the netCDF error msg
-       ! as well as the error passed by the calling routine.
-       !
-       !-----------------------------------------------------------------------
+      !-----------------------------------------------------------------------
+      !
+      ! if an error is detected, return a true value and call the SCRIP
+      ! error handlers to log the error. Log both the netCDF error msg
+      ! as well as the error passed by the calling routine.
+      !
+      !-----------------------------------------------------------------------
 
     else
 
-       SCRIP_NetcdfErrorCheck = .true.
-       ncErrMsg = nf90_strerror(netcdfStat)
-       call SCRIP_ErrorSet(errorCode, rtnName, ncErrMsg)
-       call SCRIP_ErrorSet(errorCode, rtnName, errorMsg)
+      SCRIP_NetcdfErrorCheck = .true.
+      ncErrMsg = nf90_strerror(netcdfStat)
+      call SCRIP_ErrorSet(errorCode, rtnName, ncErrMsg)
+      call SCRIP_ErrorSet(errorCode, rtnName, errorMsg)
 
     endif
 

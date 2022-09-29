@@ -394,55 +394,55 @@ PROGRAM W3PREP
   FLSTAB = IDFLD .EQ. 'WNS'
   FLBERG = IDFLD .EQ. 'ISI'
   IF        ( IDFLD.EQ.'IC1' ) THEN
-     IFLD    = -7
+    IFLD    = -7
   ELSE IF ( IDFLD.EQ.'IC2' ) THEN
-     IFLD    = -6
+    IFLD    = -6
   ELSE IF ( IDFLD.EQ.'IC3' ) THEN
-     IFLD    = -5
+    IFLD    = -5
   ELSE IF ( IDFLD.EQ.'IC4' ) THEN
-     IFLD    = -4
+    IFLD    = -4
   ELSE IF ( IDFLD.EQ.'IC5' ) THEN
-     IFLD    = -3
+    IFLD    = -3
   ELSE IF ( IDFLD.EQ.'MDN' ) THEN
-     IFLD    = -2
+    IFLD    = -2
   ELSE IF ( IDFLD.EQ.'MTH' ) THEN
-     IFLD    = -1
+    IFLD    = -1
   ELSE IF ( IDFLD.EQ.'MVS' ) THEN
-     IFLD    = 0
+    IFLD    = 0
   ELSE IF ( IDFLD.EQ.'ICE' .OR. FLBERG ) THEN
-     IFLD    = 1
+    IFLD    = 1
   ELSE IF ( IDFLD.EQ.'LEV' ) THEN
-     IFLD    = 2
+    IFLD    = 2
   ELSE IF ( IDFLD.EQ.'WND' .OR. FLSTAB ) THEN
-     IFLD    = 3
+    IFLD    = 3
   ELSE IF ( IDFLD.EQ.'CUR' ) THEN
-     IFLD    = 4
+    IFLD    = 4
   ELSE IF ( IDFLD.EQ.'DAT' ) THEN
-     IFLD    = 5
+    IFLD    = 5
   ELSE IF ( IDFLD.EQ.'TAU' ) THEN
-     IFLD    = 6
+    IFLD    = 6
   ELSE IF ( IDFLD.EQ.'RHO' ) THEN
-     IFLD    = 7
+    IFLD    = 7
   ELSE
-     WRITE (NDSE,1030) IDFLD
-     CALL EXTCDE ( 1 )
+    WRITE (NDSE,1030) IDFLD
+    CALL EXTCDE ( 1 )
   END IF
   !
   NFCOMP = 1
   IF (IDFLD.EQ.'DAT') THEN
-     ITYPE   = 5
+    ITYPE   = 5
   ELSE IF (IDTYPE.EQ.'AI') THEN
-     ITYPE   = 1
+    ITYPE   = 1
   ELSE IF (IDTYPE.EQ.'LL') THEN
-     ITYPE   = 2
+    ITYPE   = 2
   ELSE IF (IDTYPE.EQ.'F1') THEN
-     ITYPE   = 3
+    ITYPE   = 3
   ELSE IF (IDTYPE.EQ.'F2') THEN
-     ITYPE   = 4
-     NFCOMP = 2
+    ITYPE   = 4
+    NFCOMP = 2
   ELSE
-     WRITE (NDSE,1031) IDTYPE
-     CALL EXTCDE ( 2 )
+    WRITE (NDSE,1031) IDTYPE
+    CALL EXTCDE ( 2 )
   END IF
   !
 #ifdef W3_T
@@ -452,129 +452,129 @@ PROGRAM W3PREP
   WRITE (NDSO,930) IDSTR1(IFLD), IDSTR2(ITYPE)
   IF ( ITYPE.NE.1 ) THEN
 #ifdef W3_WNT0
-     IF (IFLD.EQ.3) WRITE (NDSO,1930)
+    IF (IFLD.EQ.3) WRITE (NDSO,1930)
 #endif
 #ifdef W3_WNT1
-     IF (IFLD.EQ.3) WRITE (NDSO,1930)
+    IF (IFLD.EQ.3) WRITE (NDSO,1930)
 #endif
 #ifdef W3_WNT2
-     IF (IFLD.EQ.3) WRITE (NDSO,2930)
+    IF (IFLD.EQ.3) WRITE (NDSO,2930)
 #endif
 #ifdef W3_CRT1
-     IF (IFLD.EQ.4) WRITE (NDSO,1930)
+    IF (IFLD.EQ.4) WRITE (NDSO,1930)
 #endif
 #ifdef W3_CRT2
-     IF (IFLD.EQ.4) WRITE (NDSO,2930)
+    IF (IFLD.EQ.4) WRITE (NDSO,2930)
 #endif
 #ifdef W3_WNT0
-     IF (IFLD.EQ.6) WRITE (NDSO,1930)
+    IF (IFLD.EQ.6) WRITE (NDSO,1930)
 #endif
 #ifdef W3_WNT1
-     IF (IFLD.EQ.6) WRITE (NDSO,1930)
+    IF (IFLD.EQ.6) WRITE (NDSO,1930)
 #endif
 #ifdef W3_WNT2
-     IF (IFLD.EQ.6) WRITE (NDSO,2930)
+    IF (IFLD.EQ.6) WRITE (NDSO,2930)
 #endif
   END IF
   IF ( FLBERG ) WRITE (NDSO,938)
   IF ( FLSTAB ) WRITE (NDSO,939)
   IF (ITYPE.EQ.4 .AND. IFLD.GT.2) THEN
-     WRITE (NDSE,1032)
-     CALL EXTCDE ( 3 )
+    WRITE (NDSE,1032)
+    CALL EXTCDE ( 3 )
   END IF
   !
   ! 3.c Additional input for format types and time
   ! ... time
   !
   IF (.NOT. FLTIME) THEN
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) TIME
-     IF (TIME(1).LT.10000000) THEN
-        WRITE (NDSE,1035) TIME
-        CALL EXTCDE ( 4 )
-     END IF
-     CALL STME21 ( TIME , IDTIME )
-     WRITE (NDSO,931) IDTIME
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) TIME
+    IF (TIME(1).LT.10000000) THEN
+      WRITE (NDSE,1035) TIME
+      CALL EXTCDE ( 4 )
+    END IF
+    CALL STME21 ( TIME , IDTIME )
+    WRITE (NDSO,931) IDTIME
   END IF
   !
   J      = 1
   IF ( FLAGLL ) THEN
-     FACTOR = 1.
+    FACTOR = 1.
   ELSE
-     FACTOR = 1.E-3
+    FACTOR = 1.E-3
   END IF
   !
   ! ... type 1
   !
   IF (ITYPE.EQ.1) THEN
-     !
-     NXI    = NX
-     NYI    = NY
-     ALLOCATE ( MASK(NXI,NYI) )
-     MASK   = 1
-     IF(GTYPE .EQ. UNGTYPE) THEN
-        !
-        !  X0, Y0 are the coordinates of the lower-left point in mesh
-        !
-        RW(1) = FACTOR*X0        ; RW(2) = FACTOR*MAXX
-        RW(3) = FACTOR*Y0        ; RW(4) = FACTOR*MAXY
-     ELSE
-        RW(1) = FACTOR*XGRD(1,1) ; RW(2) = FACTOR*XGRD(NY,NX)
-        RW(3) = FACTOR*YGRD(1,1) ; RW(4) = FACTOR*YGRD(NY,NX)
-     END IF
-     WRITE (NDSO,932) NXI, NYI
-     IF ( FLAGLL ) THEN
-        WRITE (NDSO,933) RW(1),RW(2),RW(3),RW(4)
-     ELSE
-        WRITE (NDSO,733) RW(1),RW(2),RW(3),RW(4)
-     END IF
-     !
-     ! ... type 2
-     !
+    !
+    NXI    = NX
+    NYI    = NY
+    ALLOCATE ( MASK(NXI,NYI) )
+    MASK   = 1
+    IF(GTYPE .EQ. UNGTYPE) THEN
+      !
+      !  X0, Y0 are the coordinates of the lower-left point in mesh
+      !
+      RW(1) = FACTOR*X0        ; RW(2) = FACTOR*MAXX
+      RW(3) = FACTOR*Y0        ; RW(4) = FACTOR*MAXY
+    ELSE
+      RW(1) = FACTOR*XGRD(1,1) ; RW(2) = FACTOR*XGRD(NY,NX)
+      RW(3) = FACTOR*YGRD(1,1) ; RW(4) = FACTOR*YGRD(NY,NX)
+    END IF
+    WRITE (NDSO,932) NXI, NYI
+    IF ( FLAGLL ) THEN
+      WRITE (NDSO,933) RW(1),RW(2),RW(3),RW(4)
+    ELSE
+      WRITE (NDSO,733) RW(1),RW(2),RW(3),RW(4)
+    END IF
+    !
+    ! ... type 2
+    !
   ELSE IF (ITYPE.EQ.2) THEN
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)                   &
-          X0I, XNI, NXI, Y0I, YNI, NYI
-     IF (NXI.LT.2 .OR. NYI.LT.2) THEN
-        WRITE (NDSE,1036) NXI, NYI
-        CALL EXTCDE ( 5 )
-     END IF
-     ALLOCATE ( MASK(NXI,NYI) )
-     MASK   = 1
-     WRITE (NDSO,932) NXI, NYI
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)                   &
+         X0I, XNI, NXI, Y0I, YNI, NYI
+    IF (NXI.LT.2 .OR. NYI.LT.2) THEN
+      WRITE (NDSE,1036) NXI, NYI
+      CALL EXTCDE ( 5 )
+    END IF
+    ALLOCATE ( MASK(NXI,NYI) )
+    MASK   = 1
+    WRITE (NDSO,932) NXI, NYI
 
-     IF ( FLAGLL ) THEN
-        WRITE (NDSO,933) FACTOR*X0I, FACTOR*XNI,                &
-             FACTOR*Y0I, FACTOR*YNI
-     ELSE
-        WRITE (NDSO,733) FACTOR*X0I, FACTOR*XNI,                &
-             FACTOR*Y0I, FACTOR*YNI
-     END IF
-     !
-     ! ... type 5
-     !
+    IF ( FLAGLL ) THEN
+      WRITE (NDSO,933) FACTOR*X0I, FACTOR*XNI,                &
+           FACTOR*Y0I, FACTOR*YNI
+    ELSE
+      WRITE (NDSO,733) FACTOR*X0I, FACTOR*XNI,                &
+           FACTOR*Y0I, FACTOR*YNI
+    END IF
+    !
+    ! ... type 5
+    !
   ELSE IF (ITYPE.EQ.5) THEN
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)                   &
-          DATTYP, RECLDT, NODATA
-     IF (DATTYP.LT.0 .OR. DATTYP.GT.2) THEN
-        WRITE (NDSE,1033) DATTYP
-        CALL EXTCDE ( 6 )
-     END IF
-     IF (RECLDT.LE.0) THEN
-        WRITE (NDSE,1034) RECLDT
-        CALL EXTCDE ( 7 )
-     END IF
-     WRITE (NDSO,934) IDSTR3(DATTYP+1), RECLDT, NODATA
-     WRITE (IDFLD,935) DATTYP
-     DEALLOCATE ( IX21, IX22, IY21, IY22, JX21, JX22, JY21, JY22, &
-          MAPOVR )
-     DEALLOCATE ( RD11, RD21, RD12, RD22, XD11, XD21, XD12, XD22, &
-          FX, FY, FA, A1, A2, A3 )
-     !
-     ! ... types 3 and 4 ... in preprocessing loop ....
-     !
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)                   &
+         DATTYP, RECLDT, NODATA
+    IF (DATTYP.LT.0 .OR. DATTYP.GT.2) THEN
+      WRITE (NDSE,1033) DATTYP
+      CALL EXTCDE ( 6 )
+    END IF
+    IF (RECLDT.LE.0) THEN
+      WRITE (NDSE,1034) RECLDT
+      CALL EXTCDE ( 7 )
+    END IF
+    WRITE (NDSO,934) IDSTR3(DATTYP+1), RECLDT, NODATA
+    WRITE (IDFLD,935) DATTYP
+    DEALLOCATE ( IX21, IX22, IY21, IY22, JX21, JX22, JY21, JY22, &
+         MAPOVR )
+    DEALLOCATE ( RD11, RD21, RD12, RD22, XD11, XD21, XD12, XD22, &
+         FX, FY, FA, A1, A2, A3 )
+    !
+    ! ... types 3 and 4 ... in preprocessing loop ....
+    !
   END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -583,442 +583,442 @@ PROGRAM W3PREP
   WRITE (NDSO,940)
   !
   IF (ITYPE.NE.1 .AND. ITYPE.NE.5) THEN
-     !
-     ! 4.a Longitude - latitude grid
-     !
-     IF (ITYPE.EQ.2) THEN
-        WRITE (NDSO,941)
-        !
-        ! ... setup coordinates
-        !
-        SXI    = (XNI-X0I)/REAL(NXI-1)
-        SYI    = (YNI-Y0I)/REAL(NYI-1)
-        ICLO   = ICLOSE_NONE
-        IF ( FLAGLL ) THEN
-           IF ( ABS(ABS(REAL(NXI)*SXI)-360.) .LT. 0.1*ABS(SXI) ) &
-                ICLO = ICLOSE_SMPL
-        END IF
-        IF ( ASSOCIATED(ALA) ) THEN
-           DEALLOCATE ( ALA, ALO )
-           NULLIFY ( ALA, ALO )
-        END IF
-        ALLOCATE ( ALA(NXI,NYI), ALO(NXI,NYI) )
-        DO IY=1, NYI
-           DO IX=1, NXI
-              ALO(IX,IY) = X0I + REAL(IX-1)*SXI
-              ALA(IX,IY) = Y0I + REAL(IY-1)*SYI
-           END DO
-        END DO
-        !
-        ! ... create grid search utility
-        !
-        GSI = W3GSUC( .TRUE., FLAGLL, ICLO, ALO, ALA )
-        !
-        ! ... construct interpolation data
-        !
-#ifdef W3_T1
-        WRITE (NDST,9045)
-#endif
-        IF (GTYPE .NE. UNGTYPE) THEN
-           DO IY=1,NY
-              DO IX=1,NX
-                 INGRID = W3GRMP( GSI, REAL(XGRD(IY,IX)), REAL(YGRD(IY,IX)),      &
-                      IS, JS, RW )
-
-                 IF ( .NOT.INGRID ) THEN
-
-                    ! Notes: It would make sense to give this warning for only cases where
-                    !          the grid point is *not* masked. Obviously we don't care if
-                    !          a masked grid point is not given winds, etc.
-
-                    WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
-
-                    ! Notes: We need to set these variables, even if we never intend to use them.
-                    !...........Especially in the case of IX?? IY??, we cannot leave them unset,
-                    !...........since they will be used as array indices later.
-
-                    IX21(IX,IY) = 1
-                    IX22(IX,IY) = 1
-                    IY21(IX,IY) = 1
-                    IY22(IX,IY) = 1
-                    RD11(IX,IY) = 0.0
-                    RD21(IX,IY) = 0.0
-                    RD12(IX,IY) = 0.0
-                    RD22(IX,IY) = 0.0
-
-                    CYCLE
-                 END IF
-
-                 IX21(IX,IY) = IS(1)
-                 IX22(IX,IY) = IS(2)
-                 IY21(IX,IY) = JS(1)
-                 IY22(IX,IY) = JS(4)
-                 RD11(IX,IY) = RW(1)
-                 RD21(IX,IY) = RW(2)
-                 RD12(IX,IY) = RW(4)
-                 RD22(IX,IY) = RW(3)
-#ifdef W3_T1
-                 WRITE (NDST,9046) IX, IY,                           &
-                      IX21(IX,IY),IX22(IX,IY),IY21(IX,IY),IY22(IX,IY),  &
-                      RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY)
-#endif
-              END DO
-           END DO
-        ELSE
-           DO IX=1, NX
-              X = XGRD(1,IX)
-              Y = YGRD(1,IX)
-
-              IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
-              !
-              ! Manages the simple closure of the grid
-              !
-              IF (ICLO.EQ.ICLOSE_NONE) THEN
-                 IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
-                 IX22(IX,1) =   IX21(IX,1) + 1
-              ELSE
-                 IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI) )
-                 IX22(IX,1) =   MOD(IX21(IX,1),NXI)+1
-              END IF
-              IY21(IX,1) =   1 + INT((Y-Y0I)/SYI)
-              IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
-              IY22(IX,1) =   IY21(IX,1) + 1
-              !
-              RW(1) =  MOD(360.+(X-X0I),360.)/SXI - REAL(IX21(IX,1)-1)
-              RW(2) =  (Y-Y0I)/SYI - REAL(IY21(IX,1)-1)
-              !
-              IF (IY21(IX,1).EQ.1 .AND. RW(2).LT.ACC) THEN
-                 IF (RW(2).LT.-ACC) THEN
-                    WRITE (NDSO,1044) Y
-                 ELSE IF (RW(2).LT.0.) THEN
-                    RW(2) = 0.
-#ifdef W3_T
-                    FLMOD  = .TRUE.
-#endif
-                 END IF
-              END IF
-              !
-              IF (IY21(IX,1).EQ.NYI .AND. RW(2).GT.1.-ACC) THEN
-                 IF (RW(2).GT.1.+ACC) THEN
-                    WRITE (NDSO,1044) Y
-                 ELSE IF (RW(2).GT.1.) THEN
-                    RW(2) = 1.
-#ifdef W3_T
-                    FLMOD  = .TRUE.
-#endif
-                 END IF
-              END IF
-              !
-              EFAC       = SQRT ( MAX(0.,ABS(RW(1)-0.5)-0.5)**2 +  &
-                   MAX(0.,ABS(RW(2)-0.5)-0.5)**2 )
-              EFAC        = 1. / ( 1. + 0.25*EFAC**2 )
-
-
-              RD11(IX,1) = EFAC * (1.-RW(1)) * (1.-RW(2))
-              RD21(IX,1) = EFAC *    RW(1)   * (1.-RW(2))
-              RD12(IX,1) = EFAC * (1.-RW(1)) *    RW(2)
-              RD22(IX,1) = EFAC *    RW(1)   *    RW(2)
-           END DO
-        END IF ! GTYPE .NE. UNGTYPE
-        !
-        CALL W3GSUD( GSI )
+    !
+    ! 4.a Longitude - latitude grid
+    !
+    IF (ITYPE.EQ.2) THEN
+      WRITE (NDSO,941)
+      !
+      ! ... setup coordinates
+      !
+      SXI    = (XNI-X0I)/REAL(NXI-1)
+      SYI    = (YNI-Y0I)/REAL(NYI-1)
+      ICLO   = ICLOSE_NONE
+      IF ( FLAGLL ) THEN
+        IF ( ABS(ABS(REAL(NXI)*SXI)-360.) .LT. 0.1*ABS(SXI) ) &
+             ICLO = ICLOSE_SMPL
+      END IF
+      IF ( ASSOCIATED(ALA) ) THEN
         DEALLOCATE ( ALA, ALO )
         NULLIFY ( ALA, ALO )
-        !
-        ! 4.b Grid(s) from file
-        !
-     ELSE
-        WRITE (NDSO,942)
-        !
-        ! ... prepare overlay map
-        !
-        DO IY=1, NY
-           DO IX=1, NX
-              IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
-                 MAPOVR(IX,IY) = ILAND
-              ELSE
-                 MAPOVR(IX,IY) = 0
-              END IF
-           END DO
+      END IF
+      ALLOCATE ( ALA(NXI,NYI), ALO(NXI,NYI) )
+      DO IY=1, NYI
+        DO IX=1, NXI
+          ALO(IX,IY) = X0I + REAL(IX-1)*SXI
+          ALA(IX,IY) = Y0I + REAL(IY-1)*SYI
         END DO
-        !
-        ! ... loop over fields
-        !
-        DO J=1, NFCOMP
-           !
-           WRITE (NDSO,943) J
-           !
-           ! ... file info lat-long file
-           !
-           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-           READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
-                NXJ(J), NYJ(J), CLO(J)
-           IF (NXJ(J).LT.2 .OR. NYJ(J).LT.2) THEN
-              WRITE (NDSE,1036) NXJ(J), NYJ(J)
-              CALL EXTCDE ( 10 )
-           END IF
-           IF ( ALLOCATED(MASK) ) DEALLOCATE (MASK)
-           ALLOCATE ( MASK(NXJ(J),NYJ(J)) )
-           MASK   = 1
-           WRITE (NDSO,944) NXJ(J), NYJ(J), CLO(J)
-           !
-           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-           READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
-                FROMLL, IDLALL, IDFMLL, FORMLL
-           IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
-           IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
-           WRITE (NDSO,945) IDLALL, IDFMLL
-           IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
-           !
-           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-           READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
-#ifdef W3_NCO
-           NDSLL  = 20 + NFCOMP
+      END DO
+      !
+      ! ... create grid search utility
+      !
+      GSI = W3GSUC( .TRUE., FLAGLL, ICLO, ALO, ALA )
+      !
+      ! ... construct interpolation data
+      !
+#ifdef W3_T1
+      WRITE (NDST,9045)
 #endif
-           WRITE (NDSO,947) NDSLL
-           IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
-           IF (NDSLL.EQ.NDSI) THEN
-              WRITE (NDSE,10381)
-              CALL NEXTLN ( COMSTR , NDSI , NDSE )
-           ELSE
-              !
-              ! ... open lat-long file
-              !
-              IF ( IDFMLL .EQ. 3 ) THEN
-                 IF (FROMLL.EQ.'NAME') THEN
-                    JJ     = LEN_TRIM(FNMPRE)
-                    OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                         form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
-                         ERR=845,IOSTAT=IERR)
-                 ELSE
-                    OPEN (NDSLL, form='UNFORMATTED', convert=file_endian,          &
-                         STATUS='OLD',ERR=845,IOSTAT=IERR)
-                 END IF
-              ELSE
-                 IF (FROMLL.EQ.'NAME') THEN
-                    JJ     = LEN_TRIM(FNMPRE)
-                    OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                         STATUS='OLD',ERR=845,IOSTAT=IERR)
-                 ELSE
-                    OPEN (NDSLL,                              &
-                         STATUS='OLD',ERR=845,IOSTAT=IERR)
-                 END IF
-              END IF
-              !
-           END IF
-           !
-           ! ... read lat-lon data
-           !
-           IF ( ASSOCIATED(ALA) ) THEN
-              DEALLOCATE ( ALA, ALO )
-              NULLIFY ( ALA, ALO )
-           END IF
-           ALLOCATE ( ALA(NXJ(J),NYJ(J)), ALO(NXJ(J),NYJ(J)) )
-           CALL INA2R (ALA, NXJ(J), NYJ(J), 1, NXJ(J), 1, NYJ(J),&
-                NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1., 0.)
-           CALL INA2R (ALO, NXJ(J), NYJ(J), 1, NXJ(J), 1, NYJ(J),&
-                NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1., 0.)
-           IF ( NDSLL .NE. NDSI ) CLOSE (NDSLL)
-           !
-           ! ... file info mask file
-           !
-           WRITE (NDSO,949)
-           !
-           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-           READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
-                FROMLL, IDLALL, IDFMLL, FORMLL
-           IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
-           IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
-           WRITE (NDSO,945) IDLALL, IDFMLL
-           IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
-           !
-           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-           READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
-#ifdef W3_NCO
-           NDSLL  = 22 + NFCOMP
+      IF (GTYPE .NE. UNGTYPE) THEN
+        DO IY=1,NY
+          DO IX=1,NX
+            INGRID = W3GRMP( GSI, REAL(XGRD(IY,IX)), REAL(YGRD(IY,IX)),      &
+                 IS, JS, RW )
+
+            IF ( .NOT.INGRID ) THEN
+
+              ! Notes: It would make sense to give this warning for only cases where
+              !          the grid point is *not* masked. Obviously we don't care if
+              !          a masked grid point is not given winds, etc.
+
+              WRITE(NDSO,1042) IX, IY, XGRD(IY,IX), YGRD(IY,IX)
+
+              ! Notes: We need to set these variables, even if we never intend to use them.
+              !...........Especially in the case of IX?? IY??, we cannot leave them unset,
+              !...........since they will be used as array indices later.
+
+              IX21(IX,IY) = 1
+              IX22(IX,IY) = 1
+              IY21(IX,IY) = 1
+              IY22(IX,IY) = 1
+              RD11(IX,IY) = 0.0
+              RD21(IX,IY) = 0.0
+              RD12(IX,IY) = 0.0
+              RD22(IX,IY) = 0.0
+
+              CYCLE
+            END IF
+
+            IX21(IX,IY) = IS(1)
+            IX22(IX,IY) = IS(2)
+            IY21(IX,IY) = JS(1)
+            IY22(IX,IY) = JS(4)
+            RD11(IX,IY) = RW(1)
+            RD21(IX,IY) = RW(2)
+            RD12(IX,IY) = RW(4)
+            RD22(IX,IY) = RW(3)
+#ifdef W3_T1
+            WRITE (NDST,9046) IX, IY,                           &
+                 IX21(IX,IY),IX22(IX,IY),IY21(IX,IY),IY22(IX,IY),  &
+                 RD11(IX,IY),RD12(IX,IY),RD21(IX,IY),RD22(IX,IY)
 #endif
-           WRITE (NDSO,947) NDSLL
-           IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
-           WRITE (NDSO,*) ' '
-           IF (NDSLL.EQ.NDSI) THEN
-              WRITE (NDSE,10382)
-              CALL NEXTLN ( COMSTR , NDSI , NDSE )
-           ELSE
-              !
-              ! ... open mask file
-              !
-              IF ( IDFMLL .EQ. 3 ) THEN
-                 IF (FROMLL.EQ.'NAME') THEN
-                    JJ     = LEN_TRIM(FNMPRE)
-                    OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                         form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
-                         ERR=846,IOSTAT=IERR)
-                 ELSE
-                    OPEN (NDSLL,form='UNFORMATTED', convert=file_endian,           &
-                         STATUS='OLD',ERR=846,IOSTAT=IERR)
-                 END IF
-              ELSE
-                 IF (FROMLL.EQ.'NAME') THEN
-                    JJ     = LEN_TRIM(FNMPRE)
-                    OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                         STATUS='OLD',ERR=846,IOSTAT=IERR)
-                 ELSE
-                    OPEN (NDSLL,                              &
-                         STATUS='OLD',ERR=846,IOSTAT=IERR)
-                 END IF
-              END IF
-              !
-           END IF
-           !
-           ! ... read mask data
-           !
-           CALL INA2I (MASK, NXJ(J), NYJ(J), 1,NXJ(J), 1,NYJ(J), &
-                NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1, 0)
-           IF ( NDSLL .NE. NDSI ) CLOSE (NDSLL)
-           !
-#ifdef W3_T1a
-           WRITE (NDST,9050)
-           DO IY=1, NYJ(J)
-              DO IX=1,NXJ(J)
-                 WRITE (NDST,9051) IX, IY, ALA(IX,IY),             &
-                      ALO(IX,IY), MASK(IX,IY)
-              END DO
-           END DO
-#endif
-           !
-           ! ... generate interpolation data
-           !
-           IF ( J .EQ. 1 ) THEN
-              CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
-                   NX, NY, NX, NY, REAL(YGRD), REAL(XGRD), MAPOVR, ILAND,        &
-                   NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
-                   MASK, RD11, RD21, RD12, RD22, IX21, IX22, IY21,   &
-                   IY22 )
-           ELSE
-              CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
-                   NX, NY, NX, NY, REAL(YGRD), REAL(XGRD), MAPOVR, ILAND,        &
-                   NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
-                   MASK, XD11, XD21, XD12, XD22, JX21, JX22, JY21,   &
-                   JY22 )
-           END IF
-           !
+          END DO
         END DO
+      ELSE
+        DO IX=1, NX
+          X = XGRD(1,IX)
+          Y = YGRD(1,IX)
+
+          IX21(IX,1) =   1 + INT(MOD(360.+(X-X0I),360.)/SXI)
+          !
+          ! Manages the simple closure of the grid
+          !
+          IF (ICLO.EQ.ICLOSE_NONE) THEN
+            IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI-1) )
+            IX22(IX,1) =   IX21(IX,1) + 1
+          ELSE
+            IX21(IX,1) =   MAX ( 1 , MIN(IX21(IX,1),NXI) )
+            IX22(IX,1) =   MOD(IX21(IX,1),NXI)+1
+          END IF
+          IY21(IX,1) =   1 + INT((Y-Y0I)/SYI)
+          IY21(IX,1) =   MAX ( 1 , MIN(IY21(IX,1),NYI-1) )
+          IY22(IX,1) =   IY21(IX,1) + 1
+          !
+          RW(1) =  MOD(360.+(X-X0I),360.)/SXI - REAL(IX21(IX,1)-1)
+          RW(2) =  (Y-Y0I)/SYI - REAL(IY21(IX,1)-1)
+          !
+          IF (IY21(IX,1).EQ.1 .AND. RW(2).LT.ACC) THEN
+            IF (RW(2).LT.-ACC) THEN
+              WRITE (NDSO,1044) Y
+            ELSE IF (RW(2).LT.0.) THEN
+              RW(2) = 0.
+#ifdef W3_T
+              FLMOD  = .TRUE.
+#endif
+            END IF
+          END IF
+          !
+          IF (IY21(IX,1).EQ.NYI .AND. RW(2).GT.1.-ACC) THEN
+            IF (RW(2).GT.1.+ACC) THEN
+              WRITE (NDSO,1044) Y
+            ELSE IF (RW(2).GT.1.) THEN
+              RW(2) = 1.
+#ifdef W3_T
+              FLMOD  = .TRUE.
+#endif
+            END IF
+          END IF
+          !
+          EFAC       = SQRT ( MAX(0.,ABS(RW(1)-0.5)-0.5)**2 +  &
+               MAX(0.,ABS(RW(2)-0.5)-0.5)**2 )
+          EFAC        = 1. / ( 1. + 0.25*EFAC**2 )
+
+
+          RD11(IX,1) = EFAC * (1.-RW(1)) * (1.-RW(2))
+          RD21(IX,1) = EFAC *    RW(1)   * (1.-RW(2))
+          RD12(IX,1) = EFAC * (1.-RW(1)) *    RW(2)
+          RD22(IX,1) = EFAC *    RW(1)   *    RW(2)
+        END DO
+      END IF ! GTYPE .NE. UNGTYPE
+      !
+      CALL W3GSUD( GSI )
+      DEALLOCATE ( ALA, ALO )
+      NULLIFY ( ALA, ALO )
+      !
+      ! 4.b Grid(s) from file
+      !
+    ELSE
+      WRITE (NDSO,942)
+      !
+      ! ... prepare overlay map
+      !
+      DO IY=1, NY
+        DO IX=1, NX
+          IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
+            MAPOVR(IX,IY) = ILAND
+          ELSE
+            MAPOVR(IX,IY) = 0
+          END IF
+        END DO
+      END DO
+      !
+      ! ... loop over fields
+      !
+      DO J=1, NFCOMP
         !
-        ! ... average two fields !
+        WRITE (NDSO,943) J
         !
-        IF ( NFCOMP .EQ. 2) THEN
-           DO IX=1, NX
-              DO IY=1, NY
-                 IF ( MAPOVR(IX,IY) .GE. 2) THEN
-                    FACTOR = 1. / REAL(MAPOVR(IX,IY))
-                    RD11(IX,IY) = FACTOR * RD11(IX,IY)
-                    RD12(IX,IY) = FACTOR * RD12(IX,IY)
-                    RD21(IX,IY) = FACTOR * RD21(IX,IY)
-                    RD22(IX,IY) = FACTOR * RD22(IX,IY)
-                    XD11(IX,IY) = FACTOR * XD11(IX,IY)
-                    XD12(IX,IY) = FACTOR * XD12(IX,IY)
-                    XD21(IX,IY) = FACTOR * XD21(IX,IY)
-                    XD22(IX,IY) = FACTOR * XD22(IX,IY)
-                 END IF
-              END DO
-           END DO
+        ! ... file info lat-long file
+        !
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
+             NXJ(J), NYJ(J), CLO(J)
+        IF (NXJ(J).LT.2 .OR. NYJ(J).LT.2) THEN
+          WRITE (NDSE,1036) NXJ(J), NYJ(J)
+          CALL EXTCDE ( 10 )
+        END IF
+        IF ( ALLOCATED(MASK) ) DEALLOCATE (MASK)
+        ALLOCATE ( MASK(NXJ(J),NYJ(J)) )
+        MASK   = 1
+        WRITE (NDSO,944) NXJ(J), NYJ(J), CLO(J)
+        !
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
+             FROMLL, IDLALL, IDFMLL, FORMLL
+        IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
+        IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
+        WRITE (NDSO,945) IDLALL, IDFMLL
+        IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
+        !
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
+#ifdef W3_NCO
+        NDSLL  = 20 + NFCOMP
+#endif
+        WRITE (NDSO,947) NDSLL
+        IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
+        IF (NDSLL.EQ.NDSI) THEN
+          WRITE (NDSE,10381)
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        ELSE
+          !
+          ! ... open lat-long file
+          !
+          IF ( IDFMLL .EQ. 3 ) THEN
+            IF (FROMLL.EQ.'NAME') THEN
+              JJ     = LEN_TRIM(FNMPRE)
+              OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
+                   form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
+                   ERR=845,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSLL, form='UNFORMATTED', convert=file_endian,          &
+                   STATUS='OLD',ERR=845,IOSTAT=IERR)
+            END IF
+          ELSE
+            IF (FROMLL.EQ.'NAME') THEN
+              JJ     = LEN_TRIM(FNMPRE)
+              OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
+                   STATUS='OLD',ERR=845,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSLL,                              &
+                   STATUS='OLD',ERR=845,IOSTAT=IERR)
+            END IF
+          END IF
+          !
         END IF
         !
-     END IF
+        ! ... read lat-lon data
+        !
+        IF ( ASSOCIATED(ALA) ) THEN
+          DEALLOCATE ( ALA, ALO )
+          NULLIFY ( ALA, ALO )
+        END IF
+        ALLOCATE ( ALA(NXJ(J),NYJ(J)), ALO(NXJ(J),NYJ(J)) )
+        CALL INA2R (ALA, NXJ(J), NYJ(J), 1, NXJ(J), 1, NYJ(J),&
+             NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1., 0.)
+        CALL INA2R (ALO, NXJ(J), NYJ(J), 1, NXJ(J), 1, NYJ(J),&
+             NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1., 0.)
+        IF ( NDSLL .NE. NDSI ) CLOSE (NDSLL)
+        !
+        ! ... file info mask file
+        !
+        WRITE (NDSO,949)
+        !
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
+             FROMLL, IDLALL, IDFMLL, FORMLL
+        IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
+        IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
+        WRITE (NDSO,945) IDLALL, IDFMLL
+        IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
+        !
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
+#ifdef W3_NCO
+        NDSLL  = 22 + NFCOMP
+#endif
+        WRITE (NDSO,947) NDSLL
+        IF (FROMLL.EQ.'NAME') WRITE (NDSO,948) NAMELL
+        WRITE (NDSO,*) ' '
+        IF (NDSLL.EQ.NDSI) THEN
+          WRITE (NDSE,10382)
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        ELSE
+          !
+          ! ... open mask file
+          !
+          IF ( IDFMLL .EQ. 3 ) THEN
+            IF (FROMLL.EQ.'NAME') THEN
+              JJ     = LEN_TRIM(FNMPRE)
+              OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
+                   form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
+                   ERR=846,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSLL,form='UNFORMATTED', convert=file_endian,           &
+                   STATUS='OLD',ERR=846,IOSTAT=IERR)
+            END IF
+          ELSE
+            IF (FROMLL.EQ.'NAME') THEN
+              JJ     = LEN_TRIM(FNMPRE)
+              OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
+                   STATUS='OLD',ERR=846,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSLL,                              &
+                   STATUS='OLD',ERR=846,IOSTAT=IERR)
+            END IF
+          END IF
+          !
+        END IF
+        !
+        ! ... read mask data
+        !
+        CALL INA2I (MASK, NXJ(J), NYJ(J), 1,NXJ(J), 1,NYJ(J), &
+             NDSLL, NDST, NDSE, IDFMLL, FORMLL, IDLALL, 1, 0)
+        IF ( NDSLL .NE. NDSI ) CLOSE (NDSLL)
+        !
+#ifdef W3_T1a
+        WRITE (NDST,9050)
+        DO IY=1, NYJ(J)
+          DO IX=1,NXJ(J)
+            WRITE (NDST,9051) IX, IY, ALA(IX,IY),             &
+                 ALO(IX,IY), MASK(IX,IY)
+          END DO
+        END DO
+#endif
+        !
+        ! ... generate interpolation data
+        !
+        IF ( J .EQ. 1 ) THEN
+          CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
+               NX, NY, NX, NY, REAL(YGRD), REAL(XGRD), MAPOVR, ILAND,        &
+               NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
+               MASK, RD11, RD21, RD12, RD22, IX21, IX22, IY21,   &
+               IY22 )
+        ELSE
+          CALL W3FLDP ( NDSO, NDST, NDSE, IERR, FLAGLL,       &
+               NX, NY, NX, NY, REAL(YGRD), REAL(XGRD), MAPOVR, ILAND,        &
+               NXJ(J), NYJ(J), NXJ(J), NYJ(J), CLO(J), ALA, ALO, &
+               MASK, XD11, XD21, XD12, XD22, JX21, JX22, JY21,   &
+               JY22 )
+        END IF
+        !
+      END DO
+      !
+      ! ... average two fields !
+      !
+      IF ( NFCOMP .EQ. 2) THEN
+        DO IX=1, NX
+          DO IY=1, NY
+            IF ( MAPOVR(IX,IY) .GE. 2) THEN
+              FACTOR = 1. / REAL(MAPOVR(IX,IY))
+              RD11(IX,IY) = FACTOR * RD11(IX,IY)
+              RD12(IX,IY) = FACTOR * RD12(IX,IY)
+              RD21(IX,IY) = FACTOR * RD21(IX,IY)
+              RD22(IX,IY) = FACTOR * RD22(IX,IY)
+              XD11(IX,IY) = FACTOR * XD11(IX,IY)
+              XD12(IX,IY) = FACTOR * XD12(IX,IY)
+              XD21(IX,IY) = FACTOR * XD21(IX,IY)
+              XD22(IX,IY) = FACTOR * XD22(IX,IY)
+            END IF
+          END DO
+        END DO
+      END IF
+      !
+    END IF
   END IF
   !
   ! 4.c Input location and format
   !
   DO J=1, NFCOMP
-     !
-     IF ( ITYPE .GE. 5 ) THEN
-        WRITE (NDSO,960)
-     ELSE
-        IF (ITYPE.LE.3) THEN
-           WRITE (NDSO,961) NXJ(J), NYJ(J)
-        ELSE
-           WRITE (NDSO,962) J, NXJ(J), NYJ(J)
-        END IF
-     END IF
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)                     &
-          FROMF, IDLAF(J), IDFMF(J), FORMT(J), FORMF(J)
-     IF (IDLAF(J).LT.1 .OR. IDLAF(J).GT.4) IDLAF(J) = 1
-     IF (IDFMF(J).LT.1 .OR. IDFMF(J).GT.3) IDFMF(J) = 1
-     IF ( ITYPE .NE. 5 ) WRITE (NDSO,963) IDLAF(J)
-     WRITE (NDSO,964) IDFMF(J)
-     IF (IDFMF(J).EQ.2) WRITE (NDSO,965) FORMT(J), FORMF(J)
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSF(J), NAMEF
+    !
+    IF ( ITYPE .GE. 5 ) THEN
+      WRITE (NDSO,960)
+    ELSE
+      IF (ITYPE.LE.3) THEN
+        WRITE (NDSO,961) NXJ(J), NYJ(J)
+      ELSE
+        WRITE (NDSO,962) J, NXJ(J), NYJ(J)
+      END IF
+    END IF
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)                     &
+         FROMF, IDLAF(J), IDFMF(J), FORMT(J), FORMF(J)
+    IF (IDLAF(J).LT.1 .OR. IDLAF(J).GT.4) IDLAF(J) = 1
+    IF (IDFMF(J).LT.1 .OR. IDFMF(J).GT.3) IDFMF(J) = 1
+    IF ( ITYPE .NE. 5 ) WRITE (NDSO,963) IDLAF(J)
+    WRITE (NDSO,964) IDFMF(J)
+    IF (IDFMF(J).EQ.2) WRITE (NDSO,965) FORMT(J), FORMF(J)
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSF(J), NAMEF
 #ifdef W3_NCO
-     NDSF(J)  = 24 + NFCOMP
+    NDSF(J)  = 24 + NFCOMP
 #endif
-     WRITE (NDSO,966) NDSF(J)
-     IF (FROMF.EQ.'NAME') WRITE (NDSO,967) NAMEF
-     !
-     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     ! 5   Prepare files
-     ! 5.a Open input file
-     !
-     WRITE (NDSO,970)
-     !
-     IF ( IDFMF(J) .EQ. 3 ) THEN
-        IF (NDSF(J).EQ.NDSI) THEN
-           WRITE (NDSE,1051) NDSI
-           CALL EXTCDE ( 20 )
+    WRITE (NDSO,966) NDSF(J)
+    IF (FROMF.EQ.'NAME') WRITE (NDSO,967) NAMEF
+    !
+    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! 5   Prepare files
+    ! 5.a Open input file
+    !
+    WRITE (NDSO,970)
+    !
+    IF ( IDFMF(J) .EQ. 3 ) THEN
+      IF (NDSF(J).EQ.NDSI) THEN
+        WRITE (NDSE,1051) NDSI
+        CALL EXTCDE ( 20 )
+      ELSE
+        IF (FROMF.EQ.'NAME') THEN
+          JJ     = LEN_TRIM(FNMPRE)
+          OPEN (NDSF(J),FILE=FNMPRE(:JJ)//NAMEF,            &
+               form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=850,    &
+               IOSTAT=IERR)
         ELSE
-           IF (FROMF.EQ.'NAME') THEN
-              JJ     = LEN_TRIM(FNMPRE)
-              OPEN (NDSF(J),FILE=FNMPRE(:JJ)//NAMEF,            &
-                   form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=850,    &
-                   IOSTAT=IERR)
-           ELSE
-              OPEN (NDSF(J),form='UNFORMATTED', convert=file_endian,                 &
-                   STATUS='OLD',ERR=850,IOSTAT=IERR)
-           END IF
-           !
-           ! Adding a check to see if input file is a WAVEWATCH III file
-           ! (This check has only been added for binary wind files)
-           !
-           READ (NDSF(J),END=888,IOSTAT=IERR) TSTR,            &
-                TSFLD, NXT, NYT
-           IF (IERR .EQ. 0 .AND. TSTR .EQ. IDSTR) THEN
-              IF (TSFLD .NE. IDFLD .OR. NXT .NE. NXI          &
-                   .OR. NYT .NE. NYI ) THEN
-                 WRITE (NDSE,1052) TSFLD, NXT, NYT, IDFLD,   &
-                      NXI, NYI
-                 CALL EXTCDE ( 21 )
-              END IF
-           ELSE
-              REWIND(NDSF(J))
-           END IF
+          OPEN (NDSF(J),form='UNFORMATTED', convert=file_endian,                 &
+               STATUS='OLD',ERR=850,IOSTAT=IERR)
         END IF
-     ELSE
-        IF (NDSF(J).EQ.NDSI) THEN
-           CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        !
+        ! Adding a check to see if input file is a WAVEWATCH III file
+        ! (This check has only been added for binary wind files)
+        !
+        READ (NDSF(J),END=888,IOSTAT=IERR) TSTR,            &
+             TSFLD, NXT, NYT
+        IF (IERR .EQ. 0 .AND. TSTR .EQ. IDSTR) THEN
+          IF (TSFLD .NE. IDFLD .OR. NXT .NE. NXI          &
+               .OR. NYT .NE. NYI ) THEN
+            WRITE (NDSE,1052) TSFLD, NXT, NYT, IDFLD,   &
+                 NXI, NYI
+            CALL EXTCDE ( 21 )
+          END IF
         ELSE
-           IF (FROMF.EQ.'NAME') THEN
-              JJ     = LEN_TRIM(FNMPRE)
-              OPEN (NDSF(J),FILE=FNMPRE(:JJ)//NAMEF,            &
-                   STATUS='OLD',ERR=850,IOSTAT=IERR)
-           ELSE
-              OPEN (NDSF(J),STATUS='OLD',ERR=850,IOSTAT=IERR)
-           END IF
+          REWIND(NDSF(J))
         END IF
-     END IF
-     !
+      END IF
+    ELSE
+      IF (NDSF(J).EQ.NDSI) THEN
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      ELSE
+        IF (FROMF.EQ.'NAME') THEN
+          JJ     = LEN_TRIM(FNMPRE)
+          OPEN (NDSF(J),FILE=FNMPRE(:JJ)//NAMEF,            &
+               STATUS='OLD',ERR=850,IOSTAT=IERR)
+        ELSE
+          OPEN (NDSF(J),STATUS='OLD',ERR=850,IOSTAT=IERR)
+        END IF
+      END IF
+    END IF
+    !
   END DO
   !
   IF ( NFCOMP .EQ. 1 ) THEN
-     NXJ  (2) = NXJ  (1)
-     NYJ  (2) = NYJ  (1)
-     NDSF (2) = NDSF (1)
-     IDLAF(2) = IDLAF(1)
-     IDFMF(2) = IDFMF(1)
-     FORMT(2) = FORMT(1)
-     FORMF(2) = FORMF(1)
+    NXJ  (2) = NXJ  (1)
+    NYJ  (2) = NYJ  (1)
+    NDSF (2) = NDSF (1)
+    IDLAF(2) = IDLAF(1)
+    IDFMF(2) = IDFMF(1)
+    FORMT(2) = FORMT(1)
+    FORMF(2) = FORMF(1)
   END IF
   !
   ! 5.b Open and prepare output file
@@ -1026,26 +1026,26 @@ PROGRAM W3PREP
   WRITE (NDSO,971)
   J      = LEN_TRIM(FNMPRE)
   IF ( ITYPE .LE. 4 ) THEN
-     CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
-          NX, NY, GTYPE, IERR, FPRE=FNMPRE(:J),                  &
-          FHDR=FLHDR )
+    CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
+         NX, NY, GTYPE, IERR, FPRE=FNMPRE(:J),                  &
+         FHDR=FLHDR )
   ELSE
-     CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
-          RECLDT, 0, GTYPEDUM, IERR, FPRE=FNMPRE(:J) )
+    CALL W3FLDO ( 'WRITE', IDFLD, NDSDAT, NDST, NDSE,           &
+         RECLDT, 0, GTYPEDUM, IERR, FPRE=FNMPRE(:J) )
   END IF
   !
   ! 5.c Initialize fields
   !
   IF ( ITYPE .NE. 5 ) THEN
-     FX = 0.
-     FY = 0.
-     FA = 0.
-     MXM = MAX ( NXJ(1), NXJ(2) )
-     MYM = MAX ( NYJ(1), NYJ(2) )
-     ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM) )
-     XC = 0.
-     YC = 0.
-     AC = 0.
+    FX = 0.
+    FY = 0.
+    FA = 0.
+    MXM = MAX ( NXJ(1), NXJ(2) )
+    MYM = MAX ( NYJ(1), NYJ(2) )
+    ALLOCATE ( XC(MXM,MYM), YC(MXM,MYM), AC(MXM,MYM) )
+    XC = 0.
+    YC = 0.
+    AC = 0.
   END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1059,431 +1059,431 @@ PROGRAM W3PREP
   !
   WRITE (NDSO,972)
   DO
-     !
-     ! 6.a Read new time and fields
-     !
-     IF ( FLTIME ) THEN
-        !
-        J      = 1
+    !
+    ! 6.a Read new time and fields
+    !
+    IF ( FLTIME ) THEN
+      !
+      J      = 1
+      IF (IDFMF(J).EQ.1) THEN
+        READ (NDSF(J),    *   ,END=888,ERR=860,IOSTAT=IERR) TIME
+      ELSE IF (IDFMF(J).EQ.2) THEN
+        READ (NDSF(J),FORMT(J),END=888,ERR=860,IOSTAT=IERR) TIME
+      ELSE
+        READ (NDSF(J),         END=888,ERR=860,IOSTAT=IERR) TIME
+      END IF
+      ! <---
+      IF (NFCOMP.EQ.2) THEN
+        J      = 2
         IF (IDFMF(J).EQ.1) THEN
-           READ (NDSF(J),    *   ,END=888,ERR=860,IOSTAT=IERR) TIME
+          READ (NDSF(J),    *   ,END=888,ERR=860,IOSTAT=IERR) TIME2
         ELSE IF (IDFMF(J).EQ.2) THEN
-           READ (NDSF(J),FORMT(J),END=888,ERR=860,IOSTAT=IERR) TIME
+          READ (NDSF(J),FORMT(J),END=888,ERR=860,IOSTAT=IERR) TIME2
         ELSE
-           READ (NDSF(J),         END=888,ERR=860,IOSTAT=IERR) TIME
+          READ (NDSF(J),         END=888,ERR=860,IOSTAT=IERR) TIME2
         END IF
-        ! <---
-        IF (NFCOMP.EQ.2) THEN
-           J      = 2
-           IF (IDFMF(J).EQ.1) THEN
-              READ (NDSF(J),    *   ,END=888,ERR=860,IOSTAT=IERR) TIME2
-           ELSE IF (IDFMF(J).EQ.2) THEN
-              READ (NDSF(J),FORMT(J),END=888,ERR=860,IOSTAT=IERR) TIME2
-           ELSE
-              READ (NDSF(J),         END=888,ERR=860,IOSTAT=IERR) TIME2
-           END IF
-           IF (TIME2(1).NE.TIME(1) .OR. TIME2(2).NE.TIME(2)) GOTO 861
-        END IF
-        ! <---
-     END IF
-     !
-     CALL STME21 ( TIME , IDTIME )
-     WRITE (NDSO,973) IDTIME
+        IF (TIME2(1).NE.TIME(1) .OR. TIME2(2).NE.TIME(2)) GOTO 861
+      END IF
+      ! <---
+    END IF
+    !
+    CALL STME21 ( TIME , IDTIME )
+    WRITE (NDSO,973) IDTIME
 #ifdef W3_O15
-     WRITE (NDSTIME, 979, ERR=871,IOSTAT=IERR) TIME
+    WRITE (NDSTIME, 979, ERR=871,IOSTAT=IERR) TIME
 #endif
 #ifdef W3_O3
-     WRITE (NDSO,974)
+    WRITE (NDSO,974)
 #endif
-     !
-     ! ... Input
-     !
-     !  read in array from ww3_prep.inp
-     IF ( ITYPE .LE. 4 ) THEN
-        CALL INA2R (XC, MXM, MYM, 1, NXJ(1), 1, NYJ(1),           &
-             NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1., 0.)
+    !
+    ! ... Input
+    !
+    !  read in array from ww3_prep.inp
+    IF ( ITYPE .LE. 4 ) THEN
+      CALL INA2R (XC, MXM, MYM, 1, NXJ(1), 1, NYJ(1),           &
+           NDSF(1), NDST, NDSE, IDFMF(1), FORMF(1), IDLAF(1), 1., 0.)
+      !
+#ifdef W3_T2
+      WRITE (NDST,9060) 1
+      IXP0   = 1
+      IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(1) )
+      DO
+        CALL PRTBLK ( NDST, NXJ(1), NYJ(1), MXM, XC, MASK, 0, 0.,&
+             IXP0, IXPN, 1, 1, NYJ(1), 1, 'Field 1', ' ')
+        IF (IXPN.NE.NXJ(1)) THEN
+          IXP0    = IXP0 + IXPWDT
+          IXPN    = MIN ( IXPN+IXPWDT , NXJ(1) )
+        ELSE
+          EXIT
+        END IF
+      END DO
+#endif
+      !
+      IF (NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG) THEN
+        CALL INA2R (YC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),       &
+             NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),  &
+             IDLAF(2), 1., 0.)
         !
 #ifdef W3_T2
-        WRITE (NDST,9060) 1
+        WRITE (NDST,9060) 2
         IXP0   = 1
-        IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(1) )
+        IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
         DO
-           CALL PRTBLK ( NDST, NXJ(1), NYJ(1), MXM, XC, MASK, 0, 0.,&
-                IXP0, IXPN, 1, 1, NYJ(1), 1, 'Field 1', ' ')
-           IF (IXPN.NE.NXJ(1)) THEN
+          CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, YC, MASK, 0, 0., &
+               IXP0, IXPN, 1, 1, NYJ(2), 1, 'Field 2', ' ')
+          IF (IXPN.NE.NXJ(2)) THEN
+            IXP0    = IXP0 + IXPWDT
+            IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
+          ELSE
+            EXIT
+          END IF
+        END DO
+#endif
+        !
+        IF ( FLSTAB ) THEN
+          CALL INA2R (AC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),   &
+               NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),       &
+               IDLAF(2), 1., 0. )
+          !
+#ifdef W3_T2
+          WRITE (NDST,9060) 3
+          IXP0   = 1
+          IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
+          DO
+            CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, AC, MASK, 0,&
+                 0., IXP0, IXPN, 1,1, NYJ(2), 1, 'Field 3', ' ')
+            IF (IXPN.NE.NXJ(2)) THEN
               IXP0    = IXP0 + IXPWDT
-              IXPN    = MIN ( IXPN+IXPWDT , NXJ(1) )
-           ELSE
+              IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
+            ELSE
               EXIT
-           END IF
-        END DO
+            END IF
+          END DO
 #endif
-        !
-        IF (NFCOMP.EQ.2 .OR. IFLD.GE.3 .OR. FLBERG) THEN
-           CALL INA2R (YC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),       &
-                NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),  &
-                IDLAF(2), 1., 0.)
-           !
-#ifdef W3_T2
-           WRITE (NDST,9060) 2
-           IXP0   = 1
-           IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
-           DO
-              CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, YC, MASK, 0, 0., &
-                   IXP0, IXPN, 1, 1, NYJ(2), 1, 'Field 2', ' ')
-              IF (IXPN.NE.NXJ(2)) THEN
-                 IXP0    = IXP0 + IXPWDT
-                 IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
-              ELSE
-                 EXIT
-              END IF
-           END DO
-#endif
-           !
-           IF ( FLSTAB ) THEN
-              CALL INA2R (AC, MXM, MYM, 1, NXJ(2), 1, NYJ(2),   &
-                   NDSF(2), NDST, NDSE, IDFMF(2), FORMF(2),       &
-                   IDLAF(2), 1., 0. )
-              !
-#ifdef W3_T2
-              WRITE (NDST,9060) 3
-              IXP0   = 1
-              IXPN   = MIN ( IXP0+IXPWDT-1 , NXJ(2) )
-              DO
-                 CALL PRTBLK ( NDST, NXJ(2), NYJ(2), MXM, AC, MASK, 0,&
-                      0., IXP0, IXPN, 1,1, NYJ(2), 1, 'Field 3', ' ')
-                 IF (IXPN.NE.NXJ(2)) THEN
-                    IXP0    = IXP0 + IXPWDT
-                    IXPN    = MIN ( IXPN+IXPWDT , NXJ(2) )
-                 ELSE
-                    EXIT
-                 END IF
-              END DO
-#endif
-              !
-           END IF
-           !
+          !
         END IF
         !
-     ELSE
-        !
-        IF (IDFMF(1).EQ.3) THEN
-           READ (NDSF(1),  END=862,ERR=862,IOSTAT=IERR) NDAT
-        ELSE
-           READ (NDSF(1),*,END=862,ERR=862,IOSTAT=IERR) NDAT
-        END IF
+      END IF
+      !
+    ELSE
+      !
+      IF (IDFMF(1).EQ.3) THEN
+        READ (NDSF(1),  END=862,ERR=862,IOSTAT=IERR) NDAT
+      ELSE
+        READ (NDSF(1),*,END=862,ERR=862,IOSTAT=IERR) NDAT
+      END IF
 #ifdef W3_O3
-        WRITE (NDSO,975) NDAT
+      WRITE (NDSO,975) NDAT
 #endif
-        IF ( NDAT.GT.0 ) THEN
-           ALLOCATE ( DATA(RECLDT,NDAT) )
-           DO IDAT=1, NDAT
-              IF (IDFMF(1).EQ.1) THEN
-                 READ (NDSF(1),    *   ,END=863,ERR=863,         &
-                      IOSTAT=IERR) DATA(:,IDAT)
-              ELSE IF (IDFMF(1).EQ.2) THEN
-                 READ (NDSF(1),FORMT(1),END=863,ERR=863,         &
-                      IOSTAT=IERR) DATA(:,IDAT)
-              ELSE
-                 READ (NDSF(1),         END=863,ERR=863,         &
-                      IOSTAT=IERR) DATA(:,IDAT)
-              END IF
-           END DO
-        END IF
-        !
-#ifdef W3_T2
-        WRITE (NDST,9061)
+      IF ( NDAT.GT.0 ) THEN
+        ALLOCATE ( DATA(RECLDT,NDAT) )
         DO IDAT=1, NDAT
-           IX     = MIN(6,RECLDT)
-           WRITE (NDST,9062) IDAT, DATA(1:IX,IDAT)
-           IF ( IX.LT.RECLDT ) WRITE (NDST,9063) DATA(IX+1:,:)
+          IF (IDFMF(1).EQ.1) THEN
+            READ (NDSF(1),    *   ,END=863,ERR=863,         &
+                 IOSTAT=IERR) DATA(:,IDAT)
+          ELSE IF (IDFMF(1).EQ.2) THEN
+            READ (NDSF(1),FORMT(1),END=863,ERR=863,         &
+                 IOSTAT=IERR) DATA(:,IDAT)
+          ELSE
+            READ (NDSF(1),         END=863,ERR=863,         &
+                 IOSTAT=IERR) DATA(:,IDAT)
+          END IF
         END DO
+      END IF
+      !
+#ifdef W3_T2
+      WRITE (NDST,9061)
+      DO IDAT=1, NDAT
+        IX     = MIN(6,RECLDT)
+        WRITE (NDST,9062) IDAT, DATA(1:IX,IDAT)
+        IF ( IX.LT.RECLDT ) WRITE (NDST,9063) DATA(IX+1:,:)
+      END DO
 #endif
-        !
-     END IF
-     !
-     ! 6.b Interpolate fields
-     ! ... No interpolation, type AI (should not use array syntax !!!)
-     !
-     IF (ITYPE.EQ.1) THEN
-        !
-        IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
-           DO IY=1, NY
-              DO IX=1, NX
-                 FA(IX,IY) = XC(IX,IY)
-              END DO
-           END DO
-        ELSE
-           DO IY=1, NY
-              DO IX=1, NX
-                 FX(IX,IY) = XC(IX,IY)
-                 FY(IX,IY) = YC(IX,IY)
-                 FA(IX,IY) = AC(IX,IY)
-              END DO
-           END DO
-        END IF
-        !
-     ELSE IF (ITYPE.NE.5) THEN
-        !
-        ! ... One-component fields
-        !
-#ifdef W3_O3
-        WRITE (NDSO,976) ' '
-#endif
-        IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
-           !
-           DO IY=1,NY
-              DO IX=1,NX
-                 FA(IX,IY)                                         &
-                      = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY)) &
-                      + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY)) &
-                      + RD12(IX,IY) * XC(IX21(IX,IY),IY22(IX,IY)) &
-                      + RD22(IX,IY) * XC(IX22(IX,IY),IY22(IX,IY))
-              END DO
-           END DO
-           !
-           IF (NFCOMP.EQ.2) THEN
-#ifdef W3_O3
-              WRITE (NDSO,976) ' (2) '
-#endif
-              DO IY=1,NY
-                 DO IX=1,NX
-                    FA(IX,IY) = FA(IX,IY)                         &
-                         + XD11(IX,IY) * YC(JX21(IX,IY),JY21(IX,IY)) &
-                         + XD21(IX,IY) * YC(JX22(IX,IY),JY21(IX,IY)) &
-                         + XD12(IX,IY) * YC(JX21(IX,IY),JY22(IX,IY)) &
-                         + XD22(IX,IY) * YC(JX22(IX,IY),JY22(IX,IY))
-                 END DO
-              END DO
-           END IF
-           !
-           ! ... Two-component fields
-           !
-        ELSE
-           !
-           DO IY=1,NY
-              DO IX=1,NX
-                 IF (IY21(IX,IY).LT.1) THEN
-                    IY21(IX,IY)=1
-                    IX21(IX,IY)=1
-                    IX22(IX,IY)=1
-                 ENDIF
-                 IF (IY22(IX,IY).LT.1) IY22(IX,IY)=1
-                 IF (IY21(IX,IY).GT.MYM) IY21(IX,IY)=MYM
-                 IF (IY22(IX,IY).GT.MYM) THEN
-                    IY22(IX,IY)=MYM
-                    IX21(IX,IY)=1
-                    IX22(IX,IY)=1
-                 END IF
-                 FX(IX,IY)                                         &
-                      = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY)) &
-                      + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY)) &
-                      + RD12(IX,IY) * XC(IX21(IX,IY),IY22(IX,IY)) &
-                      + RD22(IX,IY) * XC(IX22(IX,IY),IY22(IX,IY))
-                 FY(IX,IY)                                         &
-                      = RD11(IX,IY) * YC(IX21(IX,IY),IY21(IX,IY)) &
-                      + RD21(IX,IY) * YC(IX22(IX,IY),IY21(IX,IY)) &
-                      + RD12(IX,IY) * YC(IX21(IX,IY),IY22(IX,IY)) &
-                      + RD22(IX,IY) * YC(IX22(IX,IY),IY22(IX,IY))
-                 FA(IX,IY)                                         &
-                      = RD11(IX,IY) * AC(IX21(IX,IY),IY21(IX,IY)) &
-                      + RD21(IX,IY) * AC(IX22(IX,IY),IY21(IX,IY)) &
-                      + RD12(IX,IY) * AC(IX21(IX,IY),IY22(IX,IY)) &
-                      + RD22(IX,IY) * AC(IX22(IX,IY),IY22(IX,IY))
-                 A1(IX,IY) = MAX ( 1.E-10 ,                        &
-                      SQRT( FX(IX,IY)**2 + FY(IX,IY)**2 ) )
-                 A2(IX,IY)                                         &
-                      = RD11(IX,IY) * SQRT(XC(IX21(IX,IY),IY21(IX,IY))**2  &
-                      +YC(IX21(IX,IY),IY21(IX,IY))**2) &
-                      + RD21(IX,IY) * SQRT(XC(IX22(IX,IY),IY21(IX,IY))**2  &
-                      +YC(IX22(IX,IY),IY21(IX,IY))**2) &
-                      + RD12(IX,IY) * SQRT(XC(IX21(IX,IY),IY22(IX,IY))**2  &
-                      +YC(IX21(IX,IY),IY22(IX,IY))**2) &
-                      + RD22(IX,IY) * SQRT(XC(IX22(IX,IY),IY22(IX,IY))**2  &
-                      +YC(IX22(IX,IY),IY22(IX,IY))**2)
-                 A3(IX,IY) = SQRT (                                &
-                      RD11(IX,IY) * ( XC(IX21(IX,IY),IY21(IX,IY))**2   &
-                      + YC(IX21(IX,IY),IY21(IX,IY))**2 ) &
-                      + RD21(IX,IY) * ( XC(IX22(IX,IY),IY21(IX,IY))**2   &
-                      + YC(IX22(IX,IY),IY21(IX,IY))**2 ) &
-                      + RD12(IX,IY) * ( XC(IX21(IX,IY),IY22(IX,IY))**2   &
-                      + YC(IX21(IX,IY),IY22(IX,IY))**2 ) &
-                      + RD22(IX,IY) * ( XC(IX22(IX,IY),IY22(IX,IY))**2   &
-                      + YC(IX22(IX,IY),IY22(IX,IY))**2 ) )
-              END DO
-           END DO
-           !
-           ! ... Winds, correct for velocity or energy conservation
-           !
-#ifdef W3_WNT1
-           IF (IFLD.EQ.3) THEN
-              DO IY=1,NY
-                 DO IX=1,NX
-                    FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-                    FX(IX,IY) = FACTOR * FX(IX,IY)
-                    FY(IX,IY) = FACTOR * FY(IX,IY)
-                 END DO
-              END DO
-           END IF
-#endif
-           !
-#ifdef W3_WNT2
-           IF (IFLD.EQ.3) THEN
-              DO IY=1,NY
-                 DO IX=1,NX
-                    FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-                    FX(IX,IY) = FACTOR * FX(IX,IY)
-                    FY(IX,IY) = FACTOR * FY(IX,IY)
-                 END DO
-              END DO
-           END IF
-#endif
-           !
-           ! ... Currents, correct for velocity or energy conservation
-           !
-#ifdef W3_CRT1
-           IF (IFLD.EQ.4) THEN
-              DO IY=1,NY
-                 DO IX=1,NX
-                    FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-                    FX(IX,IY) = FACTOR * FX(IX,IY)
-                    FY(IX,IY) = FACTOR * FY(IX,IY)
-                 END DO
-              END DO
-           END IF
-#endif
-           !
-#ifdef W3_CRT2
-           IF (IFLD.EQ.4) THEN
-              DO IY=1,NY
-                 DO IX=1,NX
-                    FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-                    FX(IX,IY) = FACTOR * FX(IX,IY)
-                    FY(IX,IY) = FACTOR * FY(IX,IY)
-                 END DO
-              END DO
-           END IF
-#endif
-           !
-           ! ... Momentum, correct for velocity or energy conservation
-           !
-#ifdef W3_WNT1
-           IF (IFLD.EQ.6) THEN
-              DO IY=1,NY
-                 DO IX=1,NX
-                    FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
-                    FX(IX,IY) = FACTOR * FX(IX,IY)
-                    FY(IX,IY) = FACTOR * FY(IX,IY)
-                 END DO
-              END DO
-           END IF
-#endif
-           !
-#ifdef W3_WNT2
-           IF (IFLD.EQ.6) THEN
-              DO IY=1,NY
-                 DO IX=1,NX
-                    FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
-                    FX(IX,IY) = FACTOR * FX(IX,IY)
-                    FY(IX,IY) = FACTOR * FY(IX,IY)
-                 END DO
-              END DO
-           END IF
-#endif
-        END IF
-        !
-     END IF
-     !
-     ! ... Test output
-     !
-#ifdef W3_T3
-     IF ( .NOT. ALLOCATED(MAPOUT) ) ALLOCATE ( MAPOUT(NX,NY) )
-     WRITE (NDST,9065)
-     DO IX=1, NX
+      !
+    END IF
+    !
+    ! 6.b Interpolate fields
+    ! ... No interpolation, type AI (should not use array syntax !!!)
+    !
+    IF (ITYPE.EQ.1) THEN
+      !
+      IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
         DO IY=1, NY
-           MAPOUT(IX,IY) = MAPSTA(IY,IX)
+          DO IX=1, NX
+            FA(IX,IY) = XC(IX,IY)
+          END DO
         END DO
-     END DO
-     IX0    = 1
-     IXN    = MIN ( IX0+IXWDT-1 , NX )
-     DO
-        IF (IFLD.EQ.-7) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'ice param 1', '(-)')
-        ELSE IF (IFLD.EQ.-6) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'ice param 2', '(-)')
-        ELSE IF (IFLD.EQ.-5) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'ice param 3', '(-)')
-        ELSE IF (IFLD.EQ.-4) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'ice param 4', '(-)')
-        ELSE IF (IFLD.EQ.-3) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'ice param 5', '(-)')
-        ELSE IF (IFLD.EQ.-2) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Mud Density', 'kg/m3')
-        ELSE IF (IFLD.EQ.-1) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Mud Thkness', '(-)')
-        ELSE IF (IFLD.EQ.0) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Mud Kin.Visc', 'm2/s')
-        ELSE IF (IFLD.EQ.1) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Fraction ice', '(-)')
-           IF ( FLBERG )                                       &
-                CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Iceberg a', '0.1/km')
-        ELSE IF (IFLD.EQ.2) THEN
-           CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Water level', 'm')
-        ELSE
-           CALL PRTBLK (NDSO, NX, NY, NX, FX, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Cart. X-comp', 'm/s')
-           CALL PRTBLK (NDSO, NX, NY, NX, FY, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Cart. Y-comp', 'm/s')
-           IF ( FLSTAB )                                       &
-                CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
-                IX0, IXN, 1, 1, NY, 1, 'Tair-Tsea', 'degr')
-        END IF
-        IF (IXN.NE.NX) THEN
-           IX0    = IX0 + IXWDT
-           IXN    = MIN ( IXN+IXWDT , NX )
-        ELSE
-           EXIT
-        END IF
-     END DO
+      ELSE
+        DO IY=1, NY
+          DO IX=1, NX
+            FX(IX,IY) = XC(IX,IY)
+            FY(IX,IY) = YC(IX,IY)
+            FA(IX,IY) = AC(IX,IY)
+          END DO
+        END DO
+      END IF
+      !
+    ELSE IF (ITYPE.NE.5) THEN
+      !
+      ! ... One-component fields
+      !
+#ifdef W3_O3
+      WRITE (NDSO,976) ' '
 #endif
-     !
-     ! 6.c Write fields
-     !
-     IF ( ITYPE .LE. 4 ) THEN
+      IF (( IFLD.LE.2 ).AND.( .NOT. FLBERG )) THEN
+        !
+        DO IY=1,NY
+          DO IX=1,NX
+            FA(IX,IY)                                         &
+                 = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY)) &
+                 + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY)) &
+                 + RD12(IX,IY) * XC(IX21(IX,IY),IY22(IX,IY)) &
+                 + RD22(IX,IY) * XC(IX22(IX,IY),IY22(IX,IY))
+          END DO
+        END DO
+        !
+        IF (NFCOMP.EQ.2) THEN
+#ifdef W3_O3
+          WRITE (NDSO,976) ' (2) '
+#endif
+          DO IY=1,NY
+            DO IX=1,NX
+              FA(IX,IY) = FA(IX,IY)                         &
+                   + XD11(IX,IY) * YC(JX21(IX,IY),JY21(IX,IY)) &
+                   + XD21(IX,IY) * YC(JX22(IX,IY),JY21(IX,IY)) &
+                   + XD12(IX,IY) * YC(JX21(IX,IY),JY22(IX,IY)) &
+                   + XD22(IX,IY) * YC(JX22(IX,IY),JY22(IX,IY))
+            END DO
+          END DO
+        END IF
+        !
+        ! ... Two-component fields
+        !
+      ELSE
+        !
+        DO IY=1,NY
+          DO IX=1,NX
+            IF (IY21(IX,IY).LT.1) THEN
+              IY21(IX,IY)=1
+              IX21(IX,IY)=1
+              IX22(IX,IY)=1
+            ENDIF
+            IF (IY22(IX,IY).LT.1) IY22(IX,IY)=1
+            IF (IY21(IX,IY).GT.MYM) IY21(IX,IY)=MYM
+            IF (IY22(IX,IY).GT.MYM) THEN
+              IY22(IX,IY)=MYM
+              IX21(IX,IY)=1
+              IX22(IX,IY)=1
+            END IF
+            FX(IX,IY)                                         &
+                 = RD11(IX,IY) * XC(IX21(IX,IY),IY21(IX,IY)) &
+                 + RD21(IX,IY) * XC(IX22(IX,IY),IY21(IX,IY)) &
+                 + RD12(IX,IY) * XC(IX21(IX,IY),IY22(IX,IY)) &
+                 + RD22(IX,IY) * XC(IX22(IX,IY),IY22(IX,IY))
+            FY(IX,IY)                                         &
+                 = RD11(IX,IY) * YC(IX21(IX,IY),IY21(IX,IY)) &
+                 + RD21(IX,IY) * YC(IX22(IX,IY),IY21(IX,IY)) &
+                 + RD12(IX,IY) * YC(IX21(IX,IY),IY22(IX,IY)) &
+                 + RD22(IX,IY) * YC(IX22(IX,IY),IY22(IX,IY))
+            FA(IX,IY)                                         &
+                 = RD11(IX,IY) * AC(IX21(IX,IY),IY21(IX,IY)) &
+                 + RD21(IX,IY) * AC(IX22(IX,IY),IY21(IX,IY)) &
+                 + RD12(IX,IY) * AC(IX21(IX,IY),IY22(IX,IY)) &
+                 + RD22(IX,IY) * AC(IX22(IX,IY),IY22(IX,IY))
+            A1(IX,IY) = MAX ( 1.E-10 ,                        &
+                 SQRT( FX(IX,IY)**2 + FY(IX,IY)**2 ) )
+            A2(IX,IY)                                         &
+                 = RD11(IX,IY) * SQRT(XC(IX21(IX,IY),IY21(IX,IY))**2  &
+                 +YC(IX21(IX,IY),IY21(IX,IY))**2) &
+                 + RD21(IX,IY) * SQRT(XC(IX22(IX,IY),IY21(IX,IY))**2  &
+                 +YC(IX22(IX,IY),IY21(IX,IY))**2) &
+                 + RD12(IX,IY) * SQRT(XC(IX21(IX,IY),IY22(IX,IY))**2  &
+                 +YC(IX21(IX,IY),IY22(IX,IY))**2) &
+                 + RD22(IX,IY) * SQRT(XC(IX22(IX,IY),IY22(IX,IY))**2  &
+                 +YC(IX22(IX,IY),IY22(IX,IY))**2)
+            A3(IX,IY) = SQRT (                                &
+                 RD11(IX,IY) * ( XC(IX21(IX,IY),IY21(IX,IY))**2   &
+                 + YC(IX21(IX,IY),IY21(IX,IY))**2 ) &
+                 + RD21(IX,IY) * ( XC(IX22(IX,IY),IY21(IX,IY))**2   &
+                 + YC(IX22(IX,IY),IY21(IX,IY))**2 ) &
+                 + RD12(IX,IY) * ( XC(IX21(IX,IY),IY22(IX,IY))**2   &
+                 + YC(IX21(IX,IY),IY22(IX,IY))**2 ) &
+                 + RD22(IX,IY) * ( XC(IX22(IX,IY),IY22(IX,IY))**2   &
+                 + YC(IX22(IX,IY),IY22(IX,IY))**2 ) )
+          END DO
+        END DO
+        !
+        ! ... Winds, correct for velocity or energy conservation
+        !
+#ifdef W3_WNT1
+        IF (IFLD.EQ.3) THEN
+          DO IY=1,NY
+            DO IX=1,NX
+              FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+              FX(IX,IY) = FACTOR * FX(IX,IY)
+              FY(IX,IY) = FACTOR * FY(IX,IY)
+            END DO
+          END DO
+        END IF
+#endif
+        !
+#ifdef W3_WNT2
+        IF (IFLD.EQ.3) THEN
+          DO IY=1,NY
+            DO IX=1,NX
+              FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+              FX(IX,IY) = FACTOR * FX(IX,IY)
+              FY(IX,IY) = FACTOR * FY(IX,IY)
+            END DO
+          END DO
+        END IF
+#endif
+        !
+        ! ... Currents, correct for velocity or energy conservation
+        !
+#ifdef W3_CRT1
+        IF (IFLD.EQ.4) THEN
+          DO IY=1,NY
+            DO IX=1,NX
+              FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+              FX(IX,IY) = FACTOR * FX(IX,IY)
+              FY(IX,IY) = FACTOR * FY(IX,IY)
+            END DO
+          END DO
+        END IF
+#endif
+        !
+#ifdef W3_CRT2
+        IF (IFLD.EQ.4) THEN
+          DO IY=1,NY
+            DO IX=1,NX
+              FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+              FX(IX,IY) = FACTOR * FX(IX,IY)
+              FY(IX,IY) = FACTOR * FY(IX,IY)
+            END DO
+          END DO
+        END IF
+#endif
+        !
+        ! ... Momentum, correct for velocity or energy conservation
+        !
+#ifdef W3_WNT1
+        IF (IFLD.EQ.6) THEN
+          DO IY=1,NY
+            DO IX=1,NX
+              FACTOR = MIN ( 1.5 , A2(IX,IY)/A1(IX,IY) )
+              FX(IX,IY) = FACTOR * FX(IX,IY)
+              FY(IX,IY) = FACTOR * FY(IX,IY)
+            END DO
+          END DO
+        END IF
+#endif
+        !
+#ifdef W3_WNT2
+        IF (IFLD.EQ.6) THEN
+          DO IY=1,NY
+            DO IX=1,NX
+              FACTOR = MIN ( 1.5 , A3(IX,IY)/A1(IX,IY) )
+              FX(IX,IY) = FACTOR * FX(IX,IY)
+              FY(IX,IY) = FACTOR * FY(IX,IY)
+            END DO
+          END DO
+        END IF
+#endif
+      END IF
+      !
+    END IF
+    !
+    ! ... Test output
+    !
+#ifdef W3_T3
+    IF ( .NOT. ALLOCATED(MAPOUT) ) ALLOCATE ( MAPOUT(NX,NY) )
+    WRITE (NDST,9065)
+    DO IX=1, NX
+      DO IY=1, NY
+        MAPOUT(IX,IY) = MAPSTA(IY,IX)
+      END DO
+    END DO
+    IX0    = 1
+    IXN    = MIN ( IX0+IXWDT-1 , NX )
+    DO
+      IF (IFLD.EQ.-7) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'ice param 1', '(-)')
+      ELSE IF (IFLD.EQ.-6) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'ice param 2', '(-)')
+      ELSE IF (IFLD.EQ.-5) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'ice param 3', '(-)')
+      ELSE IF (IFLD.EQ.-4) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'ice param 4', '(-)')
+      ELSE IF (IFLD.EQ.-3) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'ice param 5', '(-)')
+      ELSE IF (IFLD.EQ.-2) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Mud Density', 'kg/m3')
+      ELSE IF (IFLD.EQ.-1) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Mud Thkness', '(-)')
+      ELSE IF (IFLD.EQ.0) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Mud Kin.Visc', 'm2/s')
+      ELSE IF (IFLD.EQ.1) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Fraction ice', '(-)')
+        IF ( FLBERG )                                       &
+             CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Iceberg a', '0.1/km')
+      ELSE IF (IFLD.EQ.2) THEN
+        CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Water level', 'm')
+      ELSE
+        CALL PRTBLK (NDSO, NX, NY, NX, FX, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Cart. X-comp', 'm/s')
+        CALL PRTBLK (NDSO, NX, NY, NX, FY, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Cart. Y-comp', 'm/s')
+        IF ( FLSTAB )                                       &
+             CALL PRTBLK (NDSO, NX, NY, NX, FA, MAPOUT, 0, 0.,   &
+             IX0, IXN, 1, 1, NY, 1, 'Tair-Tsea', 'degr')
+      END IF
+      IF (IXN.NE.NX) THEN
+        IX0    = IX0 + IXWDT
+        IXN    = MIN ( IXN+IXWDT , NX )
+      ELSE
+        EXIT
+      END IF
+    END DO
+#endif
+    !
+    ! 6.c Write fields
+    !
+    IF ( ITYPE .LE. 4 ) THEN
+#ifdef W3_O3
+      WRITE (NDSO,977)
+#endif
+      CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
+           NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
+           FX, FY, FA, IERR)
+    ELSE IF ( ITYPE .EQ. 5 ) THEN
+      IF ( NDAT .EQ. 0 ) THEN
+#ifdef W3_O3
+        WRITE (NDSO,978)
+#endif
+      ELSE
 #ifdef W3_O3
         WRITE (NDSO,977)
 #endif
-        CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
-             NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
-             FX, FY, FA, IERR)
-     ELSE IF ( ITYPE .EQ. 5 ) THEN
-        IF ( NDAT .EQ. 0 ) THEN
-#ifdef W3_O3
-           WRITE (NDSO,978)
-#endif
-        ELSE
-#ifdef W3_O3
-           WRITE (NDSO,977)
-#endif
-           CALL W3FLDD ('WRITE', IDFLD, NDSDAT, NDST, NDSE, TIME,&
-                TIME, RECLDT, NDAT, IDAT, DATA, IERR )
-           DEALLOCATE ( DATA )
-        END IF
-     END IF
-     IF (IERR.NE.0) CALL EXTCDE ( 30 )
-     !
-     IF ( .NOT. FLTIME ) EXIT
+        CALL W3FLDD ('WRITE', IDFLD, NDSDAT, NDST, NDSE, TIME,&
+             TIME, RECLDT, NDAT, IDAT, DATA, IERR )
+        DEALLOCATE ( DATA )
+      END IF
+    END IF
+    IF (IERR.NE.0) CALL EXTCDE ( 30 )
+    !
+    IF ( .NOT. FLTIME ) EXIT
   END DO
   !
   !     End loop over input fields

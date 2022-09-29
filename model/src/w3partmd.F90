@@ -272,7 +272,7 @@ CONTAINS
     ! 1.a 2-D to 1-D spectrum
     !
     DO ITH=1, NTH
-       ZP(1+(ITH-1)*NK:ITH*NK) = SPEC(:,ITH)
+      ZP(1+(ITH-1)*NK:ITH*NK) = SPEC(:,ITH)
     END DO
 
     !
@@ -280,62 +280,62 @@ CONTAINS
     ! wave age criterion (produces one swell and one wind sea only):
     !
     IF( PTMETH .EQ. 4 ) THEN
-       DO IK=1, NK
-          DO ITH=1, NTH
-             ISP = IK + (ITH-1) * NK ! index into partition array IMO
+      DO IK=1, NK
+        DO ITH=1, NTH
+          ISP = IK + (ITH-1) * NK ! index into partition array IMO
 
-             UPAR = WSMULT * UABS * MAX(0.0, COS(TH(ITH)-DERA*UDIR))
-             C = SIG(IK) / WN(IK)
+          UPAR = WSMULT * UABS * MAX(0.0, COS(TH(ITH)-DERA*UDIR))
+          C = SIG(IK) / WN(IK)
 
-             IF( UPAR .LE. C ) THEN
-                ! Is swell:
-                IMO(ISP) = 2
-             ELSE
-                ! Is wind sea:
-                IMO(ISP) = 1
-             ENDIF
-          ENDDO
-       ENDDO
+          IF( UPAR .LE. C ) THEN
+            ! Is swell:
+            IMO(ISP) = 2
+          ELSE
+            ! Is wind sea:
+            IMO(ISP) = 1
+          ENDIF
+        ENDDO
+      ENDDO
 
-       ! We have a max of up to two partitions:
-       NP_MAX=2
+      ! We have a max of up to two partitions:
+      NP_MAX=2
 
-       ! Calculate mean parameters:
-       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-            NP, XP, DIMXP, PMAP )
+      ! Calculate mean parameters:
+      CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
+           NP, XP, DIMXP, PMAP )
 
-       ! No more processing required, return:
-       RETURN
+      ! No more processing required, return:
+      RETURN
     ENDIF ! PTMETH == 4
     !
     ! PTMETH == 5 : produce "high" and "low" band partitions
     ! using a frequency cutoff:
     !
     IF( PTMETH .EQ. 5 ) THEN
-       SIGCUT = TPI * PTFCUT
-       DO IK = 1, NK
-          ! If bin center <= freq cutoff then mark as "low band".
-          IF(SIG(IK) .LE. SIGCUT) THEN
-             IP = 2
-          ELSE
-             IP = 1
-          ENDIF
+      SIGCUT = TPI * PTFCUT
+      DO IK = 1, NK
+        ! If bin center <= freq cutoff then mark as "low band".
+        IF(SIG(IK) .LE. SIGCUT) THEN
+          IP = 2
+        ELSE
+          IP = 1
+        ENDIF
 
-          DO ITH=1, NTH
-             ISP = IK + (ITH-1) * NK ! index into partition array IMO
-             IMO(ISP) = IP
-          ENDDO
-       ENDDO
+        DO ITH=1, NTH
+          ISP = IK + (ITH-1) * NK ! index into partition array IMO
+          IMO(ISP) = IP
+        ENDDO
+      ENDDO
 
-       ! We only ever have 2 partitions:
-       NP_MAX=2
+      ! We only ever have 2 partitions:
+      NP_MAX=2
 
-       ! Calculate mean parameters:
-       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-            NP, XP, DIMXP, PMAP )
+      ! Calculate mean parameters:
+      CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
+           NP, XP, DIMXP, PMAP )
 
-       ! No more processing required, return:
-       RETURN
+      ! No more processing required, return:
+      RETURN
     ENDIF ! PTMETH == 5
     !
     ! 1.b Invert spectrum and 'digitize'
@@ -373,31 +373,31 @@ CONTAINS
     !     seperate partition and recalculate the mean parameters.
     !
     IF ( NP .GT. 0 .AND. PTMETH .EQ. 2 ) THEN
-       WIND_PART = NP_MAX
+      WIND_PART = NP_MAX
 
-       DO IK=1, NK
-          DO ITH=1, NTH
-             ISP = IK + (ITH-1) * NK ! index into partition array IMO
-             UPAR = WSMULT * UABS * MAX(0.0, COS(TH(ITH)-DERA*UDIR))
-             C = SIG(IK) / WN(IK)
+      DO IK=1, NK
+        DO ITH=1, NTH
+          ISP = IK + (ITH-1) * NK ! index into partition array IMO
+          UPAR = WSMULT * UABS * MAX(0.0, COS(TH(ITH)-DERA*UDIR))
+          C = SIG(IK) / WN(IK)
 
-             IF( C .LT. UPAR ) THEN
-                ! Bin is wind forced - mark as new wind partition:
-                WIND_PART = NP_MAX + 1
+          IF( C .LT. UPAR ) THEN
+            ! Bin is wind forced - mark as new wind partition:
+            WIND_PART = NP_MAX + 1
 
-                ! Update status map to show new wind partition
-                IMO(ISP) = WIND_PART
-             ENDIF
-          ENDDO
-       ENDDO
+            ! Update status map to show new wind partition
+            IMO(ISP) = WIND_PART
+          ENDIF
+        ENDDO
+      ENDDO
 
-       IF( WIND_PART .NE. NP_MAX ) THEN
-          ! Some bins were marked as wind sea - recalculate
-          ! integrated parameters:
-          NP_MAX = WIND_PART
-          CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,     &
-               NP, XP, DIMXP, PMAP )
-       ENDIF
+      IF( WIND_PART .NE. NP_MAX ) THEN
+        ! Some bins were marked as wind sea - recalculate
+        ! integrated parameters:
+        NP_MAX = WIND_PART
+        CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,     &
+             NP, XP, DIMXP, PMAP )
+      ENDIF
     ENDIF
     !
     ! -------------------------------------------------------------------- /
@@ -411,16 +411,16 @@ CONTAINS
     ! Simply sort by HS and return.
     ! -----------------------------------------------------------------
     IF( PTMETH .EQ. 3 ) THEN
-       TP(:,1:NP)  = XP(:,1:NP)
-       XP(:,1:NP)  = 0.
+      TP(:,1:NP)  = XP(:,1:NP)
+      XP(:,1:NP)  = 0.
 
-       DO IP=1, NP
-          IT          = MAXLOC(TP(1,1:NP))
-          XP(:,IP)    = TP(:,IT(1))
-          TP(1,IT(1)) = -1.
-       END DO
+      DO IP=1, NP
+        IT          = MAXLOC(TP(1,1:NP))
+        XP(:,IP)    = TP(:,IT(1))
+        TP(1,IT(1)) = -1.
+      END DO
 
-       RETURN ! Don't process any further
+      RETURN ! Don't process any further
     ENDIF ! PTMETH == 3
 
     ! -----------------------------------------------------------------
@@ -432,41 +432,41 @@ CONTAINS
     NWS         = 0
     !
     DO IP=1, NP
-       IT          = MAXLOC(TP(6,1:NP))
-       INDEX(IP)   = IT(1)
-       XP(:,IP)    = TP(:,INDEX(IP))
-       IF ( TP(6,IT(1)) .GE. WSCUT ) NWS = NWS + 1
-       TP(6,IT(1)) = -1.
+      IT          = MAXLOC(TP(6,1:NP))
+      INDEX(IP)   = IT(1)
+      XP(:,IP)    = TP(:,INDEX(IP))
+      IF ( TP(6,IT(1)) .GE. WSCUT ) NWS = NWS + 1
+      TP(6,IT(1)) = -1.
     END DO
     !
     ! 3.b Combine wind seas as needed and resort
     !
     IF ( NWS.GT.1 .AND. FLCOMB ) THEN
-       IPW    = PMAP(INDEX(1))
-       DO IP=2, NWS
-          IPT    = PMAP(INDEX(IP))
-          DO ISP=1, NSPEC
-             IF ( IMO(ISP) .EQ. IPT ) IMO(ISP) = IPW
-          END DO
-       END DO
-       !
-       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,       &
-            NP, XP, DIMXP, PMAP )
-       IF ( NP .LE. 1 ) RETURN
-       !
-       TP(:,1:NP)  = XP(:,1:NP)
-       XP(:,1:NP)  = 0.
-       INDEX(1:NP) = 0
-       NWS         = 0
-       !
-       DO IP=1, NP
-          IT          = MAXLOC(TP(6,1:NP))
-          INDEX(IP)   = IT(1)
-          XP(:,IP)    = TP(:,INDEX(IP))
-          IF ( TP(6,IT(1)) .GE. WSCUT ) NWS = NWS + 1
-          TP(6,IT(1)) = -1.
-       END DO
-       !
+      IPW    = PMAP(INDEX(1))
+      DO IP=2, NWS
+        IPT    = PMAP(INDEX(IP))
+        DO ISP=1, NSPEC
+          IF ( IMO(ISP) .EQ. IPT ) IMO(ISP) = IPW
+        END DO
+      END DO
+      !
+      CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,       &
+           NP, XP, DIMXP, PMAP )
+      IF ( NP .LE. 1 ) RETURN
+      !
+      TP(:,1:NP)  = XP(:,1:NP)
+      XP(:,1:NP)  = 0.
+      INDEX(1:NP) = 0
+      NWS         = 0
+      !
+      DO IP=1, NP
+        IT          = MAXLOC(TP(6,1:NP))
+        INDEX(IP)   = IT(1)
+        XP(:,IP)    = TP(:,INDEX(IP))
+        IF ( TP(6,IT(1)) .GE. WSCUT ) NWS = NWS + 1
+        TP(6,IT(1)) = -1.
+      END DO
+      !
     END IF
     !
     ! 3.c Sort remaining fields by wave height
@@ -477,15 +477,15 @@ CONTAINS
     XP(:,1:NP)  = 0.
     !
     IF ( NWS .GT. 0 ) THEN
-       XP(:,1) = TP(:,1)
-       TP(1,1) = -1.
-       NWS     = 1
+      XP(:,1) = TP(:,1)
+      TP(1,1) = -1.
+      NWS     = 1
     END IF
     !
     DO IP=NWS+1, NP
-       IT          = MAXLOC(TP(1,1:NP))
-       XP(:,IP)    = TP(:,IT(1))
-       TP(1,IT(1)) = -1.
+      IT          = MAXLOC(TP(1,1:NP))
+      XP(:,IP)    = TP(:,IT(1))
+      TP(1,IT(1)) = -1.
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -579,7 +579,7 @@ CONTAINS
     !
     NUMV   = 0
     DO I=1, NSPEC
-       NUMV(IMI(I)) = NUMV(IMI(I)) + 1
+      NUMV(IMI(I)) = NUMV(IMI(I)) + 1
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -587,24 +587,24 @@ CONTAINS
     !
     IADDR(1) = 1
     DO I=1, IHMAX-1
-       IADDR(I+1) = IADDR(I) + NUMV(I)
+      IADDR(I+1) = IADDR(I) + NUMV(I)
     END DO
     !
     ! -------------------------------------------------------------------- /
     ! 3.  Order points
     !
     DO I=1, NSPEC
-       IV        = IMI(I)
-       IN        = IADDR(IV)
-       IORDER(I) = IN
-       IADDR(IV) = IN + 1
+      IV        = IMI(I)
+      IN        = IADDR(IV)
+      IORDER(I) = IN
+      IADDR(IV) = IN + 1
     END DO
     !
     ! -------------------------------------------------------------------- /
     ! 4.  Sort points
     !
     DO I=1, NSPEC
-       IND(IORDER(I)) = I
+      IND(IORDER(I)) = I
     END DO
     !
     RETURN
@@ -710,112 +710,112 @@ CONTAINS
     ! ... Base loop
     !
     DO N = 1, NSPEC
-       !
-       J      = (N-1) / NK + 1
-       I      = N - (J-1) * NK
-       K      = 0
-       !
-       ! ... Point at the left(1)
-       !
-       IF ( I .NE. 1 ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N - 1
-       END IF
-       !
-       ! ... Point at the right (2)
-       !
-       IF ( I .NE. NK ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N + 1
-       END IF
-       !
-       ! ... Point at the bottom(3)
-       !
-       IF ( J .NE. 1 ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N - NK
-       END IF
-       !
-       ! ... ADD Point at bottom_wrap to top
-       !
-       IF ( J .EQ. 1 ) THEN
-          K          = K + 1
-          NEIGH(K,N) = NSPEC - (NK-I)
-       END IF
-       !
-       ! ... Point at the top(4)
-       !
-       IF ( J .NE. NTH ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N + NK
-       END IF
-       !
-       ! ... ADD Point to top_wrap to bottom
-       !
-       IF ( J .EQ. NTH ) THEN
-          K          = K + 1
-          NEIGH(K,N) = N - (NTH-1) * NK
-       END IF
-       !
-       ! ... Point at the bottom, left(5)
-       !
-       IF ( (I.NE.1) .AND. (J.NE.1) ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N - NK - 1
-       END IF
-       !
-       ! ... Point at the bottom, left with wrap.
-       !
-       IF ( (I.NE.1) .AND. (J.EQ.1) ) THEN
-          K          = K + 1
-          NEIGH(K,N) = N - 1 + NK * (NTH-1)
-       END IF
-       !
-       ! ... Point at the bottom, right(6)
-       !
-       IF ( (I.NE.NK) .AND. (J.NE.1) ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N - NK + 1
-       END IF
-       !
-       ! ... Point at the bottom, right with wrap
-       !
-       IF ( (I.NE.NK) .AND. (J.EQ.1) ) THEN
-          K           = K + 1
-          NEIGH(K,N) = N + 1 + NK * (NTH - 1)
-       END  IF
-       !
-       ! ... Point at the top, left(7)
-       !
-       IF ( (I.NE.1) .AND. (J.NE.NTH) ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N + NK - 1
-       END IF
-       !
-       ! ... Point at the top, left with wrap
-       !
-       IF ( (I.NE.1) .AND. (J.EQ.NTH) ) THEN
-          K           = K + 1
-          NEIGH(K,N) = N - 1 - (NK) * (NTH-1)
-       END IF
-       !
-       ! ... Point at the top, right(8)
-       !
-       IF ( (I.NE.NK) .AND. (J.NE.NTH) ) THEN
-          K           = K + 1
-          NEIGH(K, N) = N + NK + 1
-       END IF
-       !
-       ! ... Point at top, right with wrap
-       !
-       !
-       IF ( (I.NE.NK) .AND. (J.EQ.NTH) ) THEN
-          K           = K + 1
-          NEIGH(K,N) = N + 1 - (NK) * (NTH-1)
-       END IF
-       !
-       NEIGH(9,N) = K
-       !
+      !
+      J      = (N-1) / NK + 1
+      I      = N - (J-1) * NK
+      K      = 0
+      !
+      ! ... Point at the left(1)
+      !
+      IF ( I .NE. 1 ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N - 1
+      END IF
+      !
+      ! ... Point at the right (2)
+      !
+      IF ( I .NE. NK ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N + 1
+      END IF
+      !
+      ! ... Point at the bottom(3)
+      !
+      IF ( J .NE. 1 ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N - NK
+      END IF
+      !
+      ! ... ADD Point at bottom_wrap to top
+      !
+      IF ( J .EQ. 1 ) THEN
+        K          = K + 1
+        NEIGH(K,N) = NSPEC - (NK-I)
+      END IF
+      !
+      ! ... Point at the top(4)
+      !
+      IF ( J .NE. NTH ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N + NK
+      END IF
+      !
+      ! ... ADD Point to top_wrap to bottom
+      !
+      IF ( J .EQ. NTH ) THEN
+        K          = K + 1
+        NEIGH(K,N) = N - (NTH-1) * NK
+      END IF
+      !
+      ! ... Point at the bottom, left(5)
+      !
+      IF ( (I.NE.1) .AND. (J.NE.1) ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N - NK - 1
+      END IF
+      !
+      ! ... Point at the bottom, left with wrap.
+      !
+      IF ( (I.NE.1) .AND. (J.EQ.1) ) THEN
+        K          = K + 1
+        NEIGH(K,N) = N - 1 + NK * (NTH-1)
+      END IF
+      !
+      ! ... Point at the bottom, right(6)
+      !
+      IF ( (I.NE.NK) .AND. (J.NE.1) ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N - NK + 1
+      END IF
+      !
+      ! ... Point at the bottom, right with wrap
+      !
+      IF ( (I.NE.NK) .AND. (J.EQ.1) ) THEN
+        K           = K + 1
+        NEIGH(K,N) = N + 1 + NK * (NTH - 1)
+      END  IF
+      !
+      ! ... Point at the top, left(7)
+      !
+      IF ( (I.NE.1) .AND. (J.NE.NTH) ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N + NK - 1
+      END IF
+      !
+      ! ... Point at the top, left with wrap
+      !
+      IF ( (I.NE.1) .AND. (J.EQ.NTH) ) THEN
+        K           = K + 1
+        NEIGH(K,N) = N - 1 - (NK) * (NTH-1)
+      END IF
+      !
+      ! ... Point at the top, right(8)
+      !
+      IF ( (I.NE.NK) .AND. (J.NE.NTH) ) THEN
+        K           = K + 1
+        NEIGH(K, N) = N + NK + 1
+      END IF
+      !
+      ! ... Point at top, right with wrap
+      !
+      !
+      IF ( (I.NE.NK) .AND. (J.EQ.NTH) ) THEN
+        K           = K + 1
+        NEIGH(K,N) = N + 1 - (NK) * (NTH-1)
+      END IF
+      !
+      NEIGH(9,N) = K
+      !
     END DO
     !
     RETURN
@@ -932,139 +932,139 @@ CONTAINS
     M      =  1
     !
     DO IH=1, IHMAX
-       MSAVE  = M
-       !
-       ! 1.a Pixels at level IH
-       !
-       DO
-          IP     = IND(M)
-          IF ( IMI(IP) .NE. IH ) EXIT
+      MSAVE  = M
+      !
+      ! 1.a Pixels at level IH
+      !
+      DO
+        IP     = IND(M)
+        IF ( IMI(IP) .NE. IH ) EXIT
+        !
+        !     Flag the point, if it stays flagge, it is a separate minimum.
+        !
+        IMO(IP) = MASK
+        !
+        !     Consider neighbors. If there is neighbor, set distance and add
+        !     to queue.
+        !
+        DO I=1, NEIGH(9,IP)
+          IPP    = NEIGH(I,IP)
+          IF ( (IMO(IPP).GT.0) .OR. (IMO(IPP).EQ.IWSHED) ) THEN
+            IMD(IP) = 1
+            CALL FIFO_ADD (IP)
+            EXIT
+          END IF
+        END DO
+        !
+        IF ( M+1 .GT. NSPEC ) THEN
+          EXIT
+        ELSE
+          M = M + 1
+        END IF
+        !
+      END DO
+      !
+      ! 1.b Process the queue
+      !
+      IC_DIST = 1
+      CALL FIFO_ADD (IFICT_PIXEL)
+      !
+      DO
+        CALL FIFO_FIRST (IP)
+        !
+        !     Check for end of processing
+        !
+        IF ( IP .EQ. IFICT_PIXEL ) THEN
+          CALL FIFO_EMPTY (IEMPTY)
+          IF ( IEMPTY .EQ. 1 ) THEN
+            EXIT
+          ELSE
+            CALL FIFO_ADD (IFICT_PIXEL)
+            IC_DIST = IC_DIST + 1
+            CALL FIFO_FIRST (IP)
+          END IF
+        END IF
+        !
+        !     Process queue
+        !
+        DO I=1, NEIGH(9,IP)
+          IPP = NEIGH(I,IP)
           !
-          !     Flag the point, if it stays flagge, it is a separate minimum.
+          !     Check for labeled watersheds or basins
           !
-          IMO(IP) = MASK
+          IF ( (IMD(IPP).LT.IC_DIST) .AND. ( (IMO(IPP).GT.0) .OR.  &
+               (IMO(IPP).EQ.IWSHED))) THEN
+            !
+            IF ( IMO(IPP) .GT. 0 ) THEN
+              !
+              IF ((IMO(IP) .EQ. MASK) .OR. (IMO(IP) .EQ. &
+                   IWSHED)) THEN
+                IMO(IP) = IMO(IPP)
+              ELSE IF (IMO(IP) .NE. IMO(IPP)) THEN
+                IMO(IP) = IWSHED
+              END IF
+              !
+            ELSE IF (IMO(IP) .EQ. MASK) THEN
+              !
+              IMO(IP) = IWSHED
+              !
+            END IF
+            !
+          ELSE IF ( (IMO(IPP).EQ.MASK) .AND. (IMD(IPP).EQ.0) ) THEN
+            !
+            IMD(IPP) = IC_DIST + 1
+            CALL FIFO_ADD (IPP)
+            !
+          END IF
           !
-          !     Consider neighbors. If there is neighbor, set distance and add
-          !     to queue.
+        END DO
+        !
+      END DO
+      !
+      ! 1.c Check for mask values in IMO to identify new basins
+      !
+      M = MSAVE
+      !
+      DO
+        IP     = IND(M)
+        IF ( IMI(IP) .NE. IH ) EXIT
+        IMD(IP) = 0
+        !
+        IF (IMO(IP) .EQ. MASK) THEN
           !
-          DO I=1, NEIGH(9,IP)
-             IPP    = NEIGH(I,IP)
-             IF ( (IMO(IPP).GT.0) .OR. (IMO(IPP).EQ.IWSHED) ) THEN
-                IMD(IP) = 1
-                CALL FIFO_ADD (IP)
-                EXIT
-             END IF
+          ! ... New label for pixel
+          !
+          IC_LABEL = IC_LABEL + 1
+          CALL FIFO_ADD (IP)
+          IMO(IP) = IC_LABEL
+          !
+          ! ... and all connected to it ...
+          !
+          DO
+            CALL FIFO_EMPTY (IEMPTY)
+            IF ( IEMPTY .EQ. 1 ) EXIT
+            CALL FIFO_FIRST (IPP)
+            !
+            DO I=1, NEIGH(9,IPP)
+              IPPP   = NEIGH(I,IPP)
+              IF ( IMO(IPPP) .EQ. MASK ) THEN
+                CALL FIFO_ADD (IPPP)
+                IMO(IPPP) = IC_LABEL
+              END IF
+            END DO
+            !
           END DO
           !
-          IF ( M+1 .GT. NSPEC ) THEN
-             EXIT
-          ELSE
-             M = M + 1
-          END IF
-          !
-       END DO
-       !
-       ! 1.b Process the queue
-       !
-       IC_DIST = 1
-       CALL FIFO_ADD (IFICT_PIXEL)
-       !
-       DO
-          CALL FIFO_FIRST (IP)
-          !
-          !     Check for end of processing
-          !
-          IF ( IP .EQ. IFICT_PIXEL ) THEN
-             CALL FIFO_EMPTY (IEMPTY)
-             IF ( IEMPTY .EQ. 1 ) THEN
-                EXIT
-             ELSE
-                CALL FIFO_ADD (IFICT_PIXEL)
-                IC_DIST = IC_DIST + 1
-                CALL FIFO_FIRST (IP)
-             END IF
-          END IF
-          !
-          !     Process queue
-          !
-          DO I=1, NEIGH(9,IP)
-             IPP = NEIGH(I,IP)
-             !
-             !     Check for labeled watersheds or basins
-             !
-             IF ( (IMD(IPP).LT.IC_DIST) .AND. ( (IMO(IPP).GT.0) .OR.  &
-                  (IMO(IPP).EQ.IWSHED))) THEN
-                !
-                IF ( IMO(IPP) .GT. 0 ) THEN
-                   !
-                   IF ((IMO(IP) .EQ. MASK) .OR. (IMO(IP) .EQ. &
-                        IWSHED)) THEN
-                      IMO(IP) = IMO(IPP)
-                   ELSE IF (IMO(IP) .NE. IMO(IPP)) THEN
-                      IMO(IP) = IWSHED
-                   END IF
-                   !
-                ELSE IF (IMO(IP) .EQ. MASK) THEN
-                   !
-                   IMO(IP) = IWSHED
-                   !
-                END IF
-                !
-             ELSE IF ( (IMO(IPP).EQ.MASK) .AND. (IMD(IPP).EQ.0) ) THEN
-                !
-                IMD(IPP) = IC_DIST + 1
-                CALL FIFO_ADD (IPP)
-                !
-             END IF
-             !
-          END DO
-          !
-       END DO
-       !
-       ! 1.c Check for mask values in IMO to identify new basins
-       !
-       M = MSAVE
-       !
-       DO
-          IP     = IND(M)
-          IF ( IMI(IP) .NE. IH ) EXIT
-          IMD(IP) = 0
-          !
-          IF (IMO(IP) .EQ. MASK) THEN
-             !
-             ! ... New label for pixel
-             !
-             IC_LABEL = IC_LABEL + 1
-             CALL FIFO_ADD (IP)
-             IMO(IP) = IC_LABEL
-             !
-             ! ... and all connected to it ...
-             !
-             DO
-                CALL FIFO_EMPTY (IEMPTY)
-                IF ( IEMPTY .EQ. 1 ) EXIT
-                CALL FIFO_FIRST (IPP)
-                !
-                DO I=1, NEIGH(9,IPP)
-                   IPPP   = NEIGH(I,IPP)
-                   IF ( IMO(IPPP) .EQ. MASK ) THEN
-                      CALL FIFO_ADD (IPPP)
-                      IMO(IPPP) = IC_LABEL
-                   END IF
-                END DO
-                !
-             END DO
-             !
-          END IF
-          !
-          IF ( M + 1 .GT. NSPEC ) THEN
-             EXIT
-          ELSE
-             M = M + 1
-          END IF
-          !
-       END DO
-       !
+        END IF
+        !
+        IF ( M + 1 .GT. NSPEC ) THEN
+          EXIT
+        ELSE
+          M = M + 1
+        END IF
+        !
+      END DO
+      !
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -1073,23 +1073,23 @@ CONTAINS
     !     Soring changes first in IMD to assure symetry in adjustment.
     !
     DO J=1, 5
-       IMD    = IMO
-       DO JL=1 , NSPEC
-          IPT    = -1
-          IF ( IMO(JL) .EQ. 0 ) THEN
-             EP1    = ZPMAX
-             DO JN=1, NEIGH (9,JL)
-                DIFF   = ABS ( ZP(JL) - ZP(NEIGH(JN,JL)))
-                IF ( (DIFF.LE.EP1) .AND. (IMO(NEIGH(JN,JL)).NE.0) ) THEN
-                   EP1    = DIFF
-                   IPT    = JN
-                END IF
-             END DO
-             IF ( IPT .GT. 0 ) IMD(JL) = IMO(NEIGH(IPT,JL))
-          END IF
-       END DO
-       IMO    = IMD
-       IF ( MINVAL(IMO) .GT. 0 ) EXIT
+      IMD    = IMO
+      DO JL=1 , NSPEC
+        IPT    = -1
+        IF ( IMO(JL) .EQ. 0 ) THEN
+          EP1    = ZPMAX
+          DO JN=1, NEIGH (9,JL)
+            DIFF   = ABS ( ZP(JL) - ZP(NEIGH(JN,JL)))
+            IF ( (DIFF.LE.EP1) .AND. (IMO(NEIGH(JN,JL)).NE.0) ) THEN
+              EP1    = DIFF
+              IPT    = JN
+            END IF
+          END DO
+          IF ( IPT .GT. 0 ) IMD(JL) = IMO(NEIGH(IPT,JL))
+        END IF
+      END DO
+      IMO    = IMD
+      IF ( MINVAL(IMO) .GT. 0 ) EXIT
     END DO
     !
     NPART = IC_LABEL
@@ -1128,9 +1128,9 @@ CONTAINS
       INTEGER, INTENT(OUT)     :: IEMPTY
       !
       IF ( IQ_START .NE. IQ_END ) THEN
-         IEMPTY = 0
+        IEMPTY = 0
       ELSE
-         IEMPTY = 1
+        IEMPTY = 1
       END IF
       !
       RETURN
@@ -1300,24 +1300,24 @@ CONTAINS
     EFPMAX = 0.
     !
     DO IK=1, NK
-       C(IK)  = SIG(IK) / WN(IK)
+      C(IK)  = SIG(IK) / WN(IK)
     END DO
     !
     DO ITH=1, NTH
-       UPAR   = WSMULT * UABS * MAX(0.,COS(TH(ITH)-DERA*UDIR))
-       IF ( UPAR .LT. C(NK) ) THEN
-          FCDIR(ITH) = SIG(NK+1)
-       ELSE
-          DO IK=NK-1, 2, -1
-             IF ( UPAR .LT. C(IK) ) EXIT
-          END DO
-          RD     = (C(IK)-UPAR) / (C(IK)-C(IK+1))
-          IF ( RD .LT. 0 ) THEN
-             IK     = 0
-             RD     = MAX ( 0., RD+1. )
-          END IF
-          FCDIR(ITH) = RD*SIG(IK+1) + (1.-RD)*SIG(IK)
-       END IF
+      UPAR   = WSMULT * UABS * MAX(0.,COS(TH(ITH)-DERA*UDIR))
+      IF ( UPAR .LT. C(NK) ) THEN
+        FCDIR(ITH) = SIG(NK+1)
+      ELSE
+        DO IK=NK-1, 2, -1
+          IF ( UPAR .LT. C(IK) ) EXIT
+        END DO
+        RD     = (C(IK)-UPAR) / (C(IK)-C(IK+1))
+        IF ( RD .LT. 0 ) THEN
+          IK     = 0
+          RD     = MAX ( 0., RD+1. )
+        END IF
+        FCDIR(ITH) = RD*SIG(IK+1) + (1.-RD)*SIG(IK)
+      END IF
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -1326,68 +1326,68 @@ CONTAINS
     !     NOTE: Factor DTH only used in Hs computation.
     !
     DO IK=1, NK
-       DO ITH=1, NTH
-          ISP    = IK + (ITH-1)*NK
-          IP     = IMO(ISP)
-          FACT   = MAX ( 0. , MIN ( 1. ,                              &
-               1. - ( FCDIR(ITH) - 0.5*(SIG(IK-1)+SIG(IK)) ) / DSIP(IK) ) )
-          SUMF (IK, 0) = SUMF (IK, 0) + ZP(ISP)
-          SUMFW(IK, 0) = SUMFW(IK, 0) + ZP(ISP) * FACT
-          SUMFX(IK, 0) = SUMFX(IK, 0) + ZP(ISP) * ECOS(ITH)
-          SUMFY(IK, 0) = SUMFY(IK, 0) + ZP(ISP) * ESIN(ITH)
-          IF ( IP .EQ. 0 ) CYCLE
-          SUMF (IK,IP) = SUMF (IK,IP) + ZP(ISP)
-          SUMFW(IK,IP) = SUMFW(IK,IP) + ZP(ISP) * FACT
-          SUMFX(IK,IP) = SUMFX(IK,IP) + ZP(ISP) * ECOS(ITH)
-          SUMFY(IK,IP) = SUMFY(IK,IP) + ZP(ISP) * ESIN(ITH)
-       END DO
+      DO ITH=1, NTH
+        ISP    = IK + (ITH-1)*NK
+        IP     = IMO(ISP)
+        FACT   = MAX ( 0. , MIN ( 1. ,                              &
+             1. - ( FCDIR(ITH) - 0.5*(SIG(IK-1)+SIG(IK)) ) / DSIP(IK) ) )
+        SUMF (IK, 0) = SUMF (IK, 0) + ZP(ISP)
+        SUMFW(IK, 0) = SUMFW(IK, 0) + ZP(ISP) * FACT
+        SUMFX(IK, 0) = SUMFX(IK, 0) + ZP(ISP) * ECOS(ITH)
+        SUMFY(IK, 0) = SUMFY(IK, 0) + ZP(ISP) * ESIN(ITH)
+        IF ( IP .EQ. 0 ) CYCLE
+        SUMF (IK,IP) = SUMF (IK,IP) + ZP(ISP)
+        SUMFW(IK,IP) = SUMFW(IK,IP) + ZP(ISP) * FACT
+        SUMFX(IK,IP) = SUMFX(IK,IP) + ZP(ISP) * ECOS(ITH)
+        SUMFY(IK,IP) = SUMFY(IK,IP) + ZP(ISP) * ESIN(ITH)
+      END DO
     END DO
     SUMF(NK+1,:) = SUMF(NK,:) * FACHFE
     !
     DO IP=0, NPI
-       DO IK=1, NK
-          SUME (IP) = SUME (IP) + SUMF (IK,IP) * DSII(IK)
-          SUMQP(IP) = SUMQP(IP) + SUMF (IK,IP)**2 * DSII(IK) * SIG(IK)
-          SUME1(IP) = SUME1(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)
-          SUME2(IP) = SUME2(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)**2
-          SUMEM1(IP) = SUMEM1(IP) + SUMF (IK,IP) * DSII(IK) / SIG(IK)
+      DO IK=1, NK
+        SUME (IP) = SUME (IP) + SUMF (IK,IP) * DSII(IK)
+        SUMQP(IP) = SUMQP(IP) + SUMF (IK,IP)**2 * DSII(IK) * SIG(IK)
+        SUME1(IP) = SUME1(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)
+        SUME2(IP) = SUME2(IP) + SUMF (IK,IP) * DSII(IK) * SIG(IK)**2
+        SUMEM1(IP) = SUMEM1(IP) + SUMF (IK,IP) * DSII(IK) / SIG(IK)
 
-          SUMEW(IP) = SUMEW(IP) + SUMFW(IK,IP) * DSII(IK)
-          SUMEX(IP) = SUMEX(IP) + SUMFX(IK,IP) * DSII(IK)
-          SUMEY(IP) = SUMEY(IP) + SUMFY(IK,IP) * DSII(IK)
-          IF ( SUMF(IK,IP) .GT. EFPMAX(IP) ) THEN
-             IFPMAX(IP) = IK
-             EFPMAX(IP) = SUMF(IK,IP)
-          END IF
-       END DO
+        SUMEW(IP) = SUMEW(IP) + SUMFW(IK,IP) * DSII(IK)
+        SUMEX(IP) = SUMEX(IP) + SUMFX(IK,IP) * DSII(IK)
+        SUMEY(IP) = SUMEY(IP) + SUMFY(IK,IP) * DSII(IK)
+        IF ( SUMF(IK,IP) .GT. EFPMAX(IP) ) THEN
+          IFPMAX(IP) = IK
+          EFPMAX(IP) = SUMF(IK,IP)
+        END IF
+      END DO
 
-       !SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTE
-       !SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * FTE
-       !SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * FTE
-       !SUMEM1(IP) = SUMEM1(IP) + SUMF (NK,IP) * FTE
-       !SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTE
-       !SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTE
-       !SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTE
-       !SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTE
-       ! Met Office: Proposed bugfix for tail calculations, previously
-       !  PT1 and PT2 values were found to be too low when using the
-       !  FTE scaling factor for the tail. I think there are two issues:
-       !  1. energy spectrum is scaled in radian frequency space above by DSII.
-       !     This needs to be consistent and FTE contains a DTH*SIG(NK)
-       !     factor that is not used in the DSII scaled calcs above
-       !  2. the tail fit calcs for period parameters needs to follow
-       !     the form used in w3iogomd and scaling should be
-       !     based on the relationship between FTE and FT1, FTTR etc.
-       !     as per w3iogomd and ww3_grid
-       FTEII = FTE / (DTH * SIG(NK))
-       SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTEII
-       SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * SIG(NK) * FTEII * (0.3333 / 0.25)
-       SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * SIG(NK)**2 * FTEII * (0.5 / 0.25)
-       SUMEM1(IP) = SUMEM1(IP) + SUMF (NK,IP) / SIG(NK) * FTEII * (0.2 / 0.25)
-       SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTEII
-       SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTEII
-       SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTEII
-       SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTEII
+      !SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTE
+      !SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * FTE
+      !SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * FTE
+      !SUMEM1(IP) = SUMEM1(IP) + SUMF (NK,IP) * FTE
+      !SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTE
+      !SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTE
+      !SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTE
+      !SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTE
+      ! Met Office: Proposed bugfix for tail calculations, previously
+      !  PT1 and PT2 values were found to be too low when using the
+      !  FTE scaling factor for the tail. I think there are two issues:
+      !  1. energy spectrum is scaled in radian frequency space above by DSII.
+      !     This needs to be consistent and FTE contains a DTH*SIG(NK)
+      !     factor that is not used in the DSII scaled calcs above
+      !  2. the tail fit calcs for period parameters needs to follow
+      !     the form used in w3iogomd and scaling should be
+      !     based on the relationship between FTE and FT1, FTTR etc.
+      !     as per w3iogomd and ww3_grid
+      FTEII = FTE / (DTH * SIG(NK))
+      SUME (IP) = SUME (IP) + SUMF (NK,IP) * FTEII
+      SUME1(IP) = SUME1(IP) + SUMF (NK,IP) * SIG(NK) * FTEII * (0.3333 / 0.25)
+      SUME2(IP) = SUME2(IP) + SUMF (NK,IP) * SIG(NK)**2 * FTEII * (0.5 / 0.25)
+      SUMEM1(IP) = SUMEM1(IP) + SUMF (NK,IP) / SIG(NK) * FTEII * (0.2 / 0.25)
+      SUMQP(IP) = SUMQP(IP) + SUMF (NK,IP) * FTEII
+      SUMEW(IP) = SUMEW(IP) + SUMFW(NK,IP) * FTEII
+      SUMEX(IP) = SUMEX(IP) + SUMFX(NK,IP) * FTEII
+      SUMEY(IP) = SUMEY(IP) + SUMFY(NK,IP) * FTEII
 
     END DO
     !
@@ -1397,133 +1397,133 @@ CONTAINS
     NPO    = -1
     !
     DO IP=0, NPI
-       !
-       SUMEXP = 0.
-       SUMEYP = 0.
-       !
-       M0 = SUME(IP)  * DTH * TPIINV
-       HS     = 4. * SQRT ( MAX( M0 , 0. ) )
-       IF ( HS .LT. HSPMIN ) THEN
-          ! For wind cutoff and 2-band partitioning methods, keep the
-          ! partition, but set the integrated parameters to UNDEF
-          ! for Hs values less that HSPMIN:
-          IF( PTMETH .EQ. 4 .OR. PTMETH .EQ. 5 ) THEN
-             NPO = NPO + 1
-             XP(:,NPO) = UNDEF
-             XP(6,NPO) = 0.0 ! Set wind sea frac to zero
-          ENDIF
-          CYCLE
-       ENDIF
-       !
-       IF ( NPO .GE. DIMXP ) GOTO 2000
-       NPO = NPO + 1
-       IF (IP.GT.0)THEN
-          IF(NPO.LT.1)CYCLE
-          PMAP(NPO) = IP
-       ENDIF
-       !
-       M1 = SUME1(IP) * DTH * TPIINV**2
-       M2 = SUME2(IP) * DTH * TPIINV**3
-       MM1 = SUMEM1(IP) * DTH
-       QP = SUMQP(IP) *(DTH * TPIINV)**2
-       !       M1 = MAX( M1, 1.E-7 )
-       !       M2 = MAX( M2, 1.E-7 )
-       !
-       XL     = 1. / XFR - 1.
-       XH     = XFR - 1.
-       XL2    = XL**2
-       XH2    = XH**2
-       EL     = SUMF(IFPMAX(IP)-1,IP) - SUMF(IFPMAX(IP),IP)
-       EH     = SUMF(IFPMAX(IP)+1,IP) - SUMF(IFPMAX(IP),IP)
-       DENOM  = XL*EH - XH*EL
-       SIGP   = SIG(IFPMAX(IP))
-       IF (DENOM.NE.0.) THEN
-          SIGP   = SIGP *( 1. + 0.5 * ( XL2*EH - XH2*EL ) &
-               / SIGN ( ABS(DENOM) , DENOM ) )
-       END IF
-       CALL WAVNU1 ( SIGP, DEPTH, WNP, CGP )
-       !
-       !/ --- Parabolic fit around the spectral peak ---
-       IK = IFPMAX(IP)
-       EFPMAX(IP) = SUMF(IK,IP) * DTH
-       IF (IK.GT.1 .AND. IK.LT.NK) THEN
-          EL    = SUMF(IK-1,IP) * DTH
-          EH    = SUMF(IK+1,IP) * DTH
-          NUMER = 0.125 * ( EL - EH )**2
-          DENOM = EL - 2. * EFPMAX(IP) + EH
-          IF (DENOM.NE.0.) EFPMAX(IP) = EFPMAX(IP)         &
-               - NUMER / SIGN( ABS(DENOM),DENOM )
-       END IF
-       !
-       !/ --- Weighted least-squares regression to estimate frequency
-       !/     spread (FSPRD) to an exponential function:
-       !/              E(f) = A * exp(-1/2*(f-fp)/B)**2             ,
-       !/     where B is frequency spread and  E(f) is used for
-       !/     weighting to avoid greater weights to smalll values
-       !/     in ordinary least-square fit. ---
-       FSPRD     = UNDEF
-       SUMY      = 0.
-       SUMXY     = 0.
-       SUMXXY    = 0.
-       SUMYLOGY  = 0.
-       SUMXYLOGY = 0.
-       !
-       DO IK=1, NK
-          Y = SUMF(IK,IP)*DTH
-          ! --- sums for weighted least-squares ---
-          IF (Y.GE.1.E-15) THEN
-             YHAT = LOG(Y)
-             XHAT = -0.5 * ( (SIG(IK)-SIGP)*TPIINV )**2
-             SUMY      = SUMY + Y
-             SUMXY     = SUMXY + XHAT * YHAT
-             SUMXXY    = SUMXXY + XHAT * XHAT * Y
-             SUMYLOGY  = SUMYLOGY + Y * YHAT
-             SUMXYLOGY = SUMXYLOGY + SUMXY * YHAT
-          END IF
-       END DO
-       !
-       NUMER = SUMY * SUMXXY - SUMXY**2
-       DENOM = SUMY * SUMXYLOGY - SUMXY * SUMYLOGY
-       IF (DENOM.NE.0.)  FSPRD = SQRT( NUMER / SIGN(ABS(DENOM),NUMER) )
-       !
-       SUMEXP = SUMFX(IFPMAX(IP),IP) * DSII(IFPMAX(IP))
-       SUMEYP = SUMFY(IFPMAX(IP),IP) * DSII(IFPMAX(IP))
-       !
-       !/ --- Significant wave height ---
-       XP(1,NPO) = HS
-       !/ --- Peak wave period ---
-       XP(2,NPO) = TPI / SIGP
-       !/ --- Peak wave length ---
-       XP(3,NPO) = TPI / WNP
-       !/ --- Mean wave direction ---
-       XP(4,NPO) = MOD( 630.-ATAN2(SUMEY(IP),SUMEX(IP))*RADE , 360. )
-       !/ --- Mean directional spread ---
-       XP(5,NPO) = RADE * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT ( &
-            MAX(0.,(SUMEX(IP)**2+SUMEY(IP)**2)/SUME(IP)**2) ) ) ) )
-       !/ --- Wind sea fraction ---
-       XP(6,NPO) = SUMEW(IP) / SUME(IP)
-       !/ --- Peak wave direction ---
-       XP(7,NPO) =  MOD(630.-ATAN2(SUMEYP,SUMEXP)*RADE , 360.)
-       !/ --- Spectral width (Longuet-Higgins 1975) ---
-       XP(8,NPO) = SQRT( MAX( 1. , M2*M0 / M1**2 ) - 1. )
-       !/ --- JONSWAP peak enhancement parameter (E(fp)/EPM(fp))---
-       !  EPM_FMX = ALPHA_PM_FMX * GRAV**2 * TPI * SIGP**-5 * EXP(-5/4)
-       ALP_PM = 0.3125 * HS**2 * (SIGP)**4
-       EPM_FP = ALP_PM * TPI * (SIGP**(-5)) * 2.865048E-1
-       XP(9,NPO) = MAX( EFPMAX(IP) / EPM_FP , 1.0 )
-       !/ --- peakedness parameter (Goda 1970) ---
-       XP(10,NPO) = 2. * QP / M0**2
-       !/ --- gaussian frequency width ---
-       XP(11,NPO) = FSPRD
-       !/ --- wave energy period (inverse moment) ---
-       XP(12,NPO) = MM1 / M0
-       !/ --- mean wave period (first moment) ---
-       XP(13,NPO) = M0 / M1
-       !/ --- zero-upcrossing period (second moment) ---
-       XP(14,NPO) = SQRT( M0 / M2 )
-       !/ --- peak spectral density (one-dimensional) ---
-       XP(15,NPO) = EFPMAX(IP)
-       !
+      !
+      SUMEXP = 0.
+      SUMEYP = 0.
+      !
+      M0 = SUME(IP)  * DTH * TPIINV
+      HS     = 4. * SQRT ( MAX( M0 , 0. ) )
+      IF ( HS .LT. HSPMIN ) THEN
+        ! For wind cutoff and 2-band partitioning methods, keep the
+        ! partition, but set the integrated parameters to UNDEF
+        ! for Hs values less that HSPMIN:
+        IF( PTMETH .EQ. 4 .OR. PTMETH .EQ. 5 ) THEN
+          NPO = NPO + 1
+          XP(:,NPO) = UNDEF
+          XP(6,NPO) = 0.0 ! Set wind sea frac to zero
+        ENDIF
+        CYCLE
+      ENDIF
+      !
+      IF ( NPO .GE. DIMXP ) GOTO 2000
+      NPO = NPO + 1
+      IF (IP.GT.0)THEN
+        IF(NPO.LT.1)CYCLE
+        PMAP(NPO) = IP
+      ENDIF
+      !
+      M1 = SUME1(IP) * DTH * TPIINV**2
+      M2 = SUME2(IP) * DTH * TPIINV**3
+      MM1 = SUMEM1(IP) * DTH
+      QP = SUMQP(IP) *(DTH * TPIINV)**2
+      !       M1 = MAX( M1, 1.E-7 )
+      !       M2 = MAX( M2, 1.E-7 )
+      !
+      XL     = 1. / XFR - 1.
+      XH     = XFR - 1.
+      XL2    = XL**2
+      XH2    = XH**2
+      EL     = SUMF(IFPMAX(IP)-1,IP) - SUMF(IFPMAX(IP),IP)
+      EH     = SUMF(IFPMAX(IP)+1,IP) - SUMF(IFPMAX(IP),IP)
+      DENOM  = XL*EH - XH*EL
+      SIGP   = SIG(IFPMAX(IP))
+      IF (DENOM.NE.0.) THEN
+        SIGP   = SIGP *( 1. + 0.5 * ( XL2*EH - XH2*EL ) &
+             / SIGN ( ABS(DENOM) , DENOM ) )
+      END IF
+      CALL WAVNU1 ( SIGP, DEPTH, WNP, CGP )
+      !
+      !/ --- Parabolic fit around the spectral peak ---
+      IK = IFPMAX(IP)
+      EFPMAX(IP) = SUMF(IK,IP) * DTH
+      IF (IK.GT.1 .AND. IK.LT.NK) THEN
+        EL    = SUMF(IK-1,IP) * DTH
+        EH    = SUMF(IK+1,IP) * DTH
+        NUMER = 0.125 * ( EL - EH )**2
+        DENOM = EL - 2. * EFPMAX(IP) + EH
+        IF (DENOM.NE.0.) EFPMAX(IP) = EFPMAX(IP)         &
+             - NUMER / SIGN( ABS(DENOM),DENOM )
+      END IF
+      !
+      !/ --- Weighted least-squares regression to estimate frequency
+      !/     spread (FSPRD) to an exponential function:
+      !/              E(f) = A * exp(-1/2*(f-fp)/B)**2             ,
+      !/     where B is frequency spread and  E(f) is used for
+      !/     weighting to avoid greater weights to smalll values
+      !/     in ordinary least-square fit. ---
+      FSPRD     = UNDEF
+      SUMY      = 0.
+      SUMXY     = 0.
+      SUMXXY    = 0.
+      SUMYLOGY  = 0.
+      SUMXYLOGY = 0.
+      !
+      DO IK=1, NK
+        Y = SUMF(IK,IP)*DTH
+        ! --- sums for weighted least-squares ---
+        IF (Y.GE.1.E-15) THEN
+          YHAT = LOG(Y)
+          XHAT = -0.5 * ( (SIG(IK)-SIGP)*TPIINV )**2
+          SUMY      = SUMY + Y
+          SUMXY     = SUMXY + XHAT * YHAT
+          SUMXXY    = SUMXXY + XHAT * XHAT * Y
+          SUMYLOGY  = SUMYLOGY + Y * YHAT
+          SUMXYLOGY = SUMXYLOGY + SUMXY * YHAT
+        END IF
+      END DO
+      !
+      NUMER = SUMY * SUMXXY - SUMXY**2
+      DENOM = SUMY * SUMXYLOGY - SUMXY * SUMYLOGY
+      IF (DENOM.NE.0.)  FSPRD = SQRT( NUMER / SIGN(ABS(DENOM),NUMER) )
+      !
+      SUMEXP = SUMFX(IFPMAX(IP),IP) * DSII(IFPMAX(IP))
+      SUMEYP = SUMFY(IFPMAX(IP),IP) * DSII(IFPMAX(IP))
+      !
+      !/ --- Significant wave height ---
+      XP(1,NPO) = HS
+      !/ --- Peak wave period ---
+      XP(2,NPO) = TPI / SIGP
+      !/ --- Peak wave length ---
+      XP(3,NPO) = TPI / WNP
+      !/ --- Mean wave direction ---
+      XP(4,NPO) = MOD( 630.-ATAN2(SUMEY(IP),SUMEX(IP))*RADE , 360. )
+      !/ --- Mean directional spread ---
+      XP(5,NPO) = RADE * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT ( &
+           MAX(0.,(SUMEX(IP)**2+SUMEY(IP)**2)/SUME(IP)**2) ) ) ) )
+      !/ --- Wind sea fraction ---
+      XP(6,NPO) = SUMEW(IP) / SUME(IP)
+      !/ --- Peak wave direction ---
+      XP(7,NPO) =  MOD(630.-ATAN2(SUMEYP,SUMEXP)*RADE , 360.)
+      !/ --- Spectral width (Longuet-Higgins 1975) ---
+      XP(8,NPO) = SQRT( MAX( 1. , M2*M0 / M1**2 ) - 1. )
+      !/ --- JONSWAP peak enhancement parameter (E(fp)/EPM(fp))---
+      !  EPM_FMX = ALPHA_PM_FMX * GRAV**2 * TPI * SIGP**-5 * EXP(-5/4)
+      ALP_PM = 0.3125 * HS**2 * (SIGP)**4
+      EPM_FP = ALP_PM * TPI * (SIGP**(-5)) * 2.865048E-1
+      XP(9,NPO) = MAX( EFPMAX(IP) / EPM_FP , 1.0 )
+      !/ --- peakedness parameter (Goda 1970) ---
+      XP(10,NPO) = 2. * QP / M0**2
+      !/ --- gaussian frequency width ---
+      XP(11,NPO) = FSPRD
+      !/ --- wave energy period (inverse moment) ---
+      XP(12,NPO) = MM1 / M0
+      !/ --- mean wave period (first moment) ---
+      XP(13,NPO) = M0 / M1
+      !/ --- zero-upcrossing period (second moment) ---
+      XP(14,NPO) = SQRT( M0 / M2 )
+      !/ --- peak spectral density (one-dimensional) ---
+      XP(15,NPO) = EFPMAX(IP)
+      !
     END DO
     !
     RETURN

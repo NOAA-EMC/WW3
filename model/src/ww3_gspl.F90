@@ -216,21 +216,21 @@ PROGRAM W3GSPL
   CHARACTER(LEN=20)       :: FNAME, INAME
   !
   TYPE STATS_GRID
-     LOGICAL               :: STRADLE, INSTAT
-     INTEGER               :: NPTS, NYL, NYH, NXL, NXH
+    LOGICAL               :: STRADLE, INSTAT
+    INTEGER               :: NPTS, NYL, NYH, NXL, NXH
   END TYPE STATS_GRID
   !
   TYPE STATS_MEAN
-     INTEGER               :: NMIN, NMAX
-     REAL                  :: RSTD
+    INTEGER               :: NMIN, NMAX
+    REAL                  :: RSTD
   END TYPE STATS_MEAN
   !
   TYPE PART_GRID
-     INTEGER               :: NX, NY, NSEA
-     INTEGER, POINTER      :: MASK(:,:)
-     REAL                  :: X0, Y0, SX, SY
-     REAL, POINTER         :: ZBIN(:,:), OBSX(:,:), OBSY(:,:)
-     LOGICAL               :: GLOBAL
+    INTEGER               :: NX, NY, NSEA
+    INTEGER, POINTER      :: MASK(:,:)
+    REAL                  :: X0, Y0, SX, SY
+    REAL, POINTER         :: ZBIN(:,:), OBSX(:,:), OBSY(:,:)
+    LOGICAL               :: GLOBAL
   END TYPE PART_GRID
   !
   TYPE(STATS_GRID), POINTER :: GSTATS(:), GSTOLD(:)
@@ -292,37 +292,37 @@ PROGRAM W3GSPL
   !
   SELECT CASE (GTYPE)
   CASE (RLGTYPE)
-     WRITE ( NDSO,903) 'rectilinear'
-     IDGRID = 'RECT'
+    WRITE ( NDSO,903) 'rectilinear'
+    IDGRID = 'RECT'
   CASE (CLGTYPE)
-     WRITE ( NDSO,903) 'curvictilinear'
-     IDGRID = 'CURV'
+    WRITE ( NDSO,903) 'curvictilinear'
+    IDGRID = 'CURV'
   CASE (UNGTYPE)
-     WRITE ( NDSO,903) 'unstructured'
-     IDGRID = 'UNST'
-     GOTO 820
+    WRITE ( NDSO,903) 'unstructured'
+    IDGRID = 'UNST'
+    GOTO 820
   CASE DEFAULT
-     WRITE ( NDSO,903) 'not recognized'
-     GOTO 821
+    WRITE ( NDSO,903) 'not recognized'
+    GOTO 821
   END SELECT
   !
   SELECT CASE (ICLOSE)
   CASE (ICLOSE_NONE)
-     WRITE ( NDSO,904) 'none'
-     IDCLSE = 'NONE'
-     GLOBAL = .FALSE.
+    WRITE ( NDSO,904) 'none'
+    IDCLSE = 'NONE'
+    GLOBAL = .FALSE.
   CASE (ICLOSE_SMPL)
-     WRITE ( NDSO,904) 'global (simple)'
-     IDCLSE = 'SMPL'
-     GLOBAL = .TRUE.
+    WRITE ( NDSO,904) 'global (simple)'
+    IDCLSE = 'SMPL'
+    GLOBAL = .TRUE.
   CASE (ICLOSE_TRPL)
-     WRITE ( NDSO,904) 'global (tripolar)'
-     IDCLSE = 'TRPL'
-     GLOBAL = .TRUE.
-     GOTO 822
+    WRITE ( NDSO,904) 'global (tripolar)'
+    IDCLSE = 'TRPL'
+    GLOBAL = .TRUE.
+    GOTO 822
   CASE DEFAULT
-     WRITE ( NDSO,904) 'not recognized'
-     GOTO 823
+    WRITE ( NDSO,904) 'not recognized'
+    GOTO 823
   END SELECT
   !
   WRITE (NDSO,905) NX, NY, NSEA
@@ -355,9 +355,9 @@ PROGRAM W3GSPL
   IF (IDFM2.LT.1 .OR. IDFM2.GT.3) IDFM2  = 1
   IF ( ABS(VSC2) .LT. 1.E-15 )    VSC2   = 1.
   IF ( TRFLAG .EQ. 0 ) THEN
-     WRITE (NDSO,932)
+    WRITE (NDSO,932)
   ELSE
-     WRITE (NDSO,933) IDLA2, IDFM2, VSC2, RFORM2
+    WRITE (NDSO,933) IDLA2, IDFM2, VSC2, RFORM2
   END IF
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -383,15 +383,15 @@ PROGRAM W3GSPL
   ALLOCATE ( MSPLIT(NY,NX) , MTEMP(NY,NX), SEA(NY,NX) )
   !
   DO IY=1, NY
-     DO IX=1, NX
-        IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
-           MSPLIT(IY,IX) = 0
-           SEA   (IY,IX) = .FALSE.
-        ELSE
-           MSPLIT(IY,IX) = -1
-           SEA   (IY,IX) = .TRUE.
-        END IF
-     END DO
+    DO IX=1, NX
+      IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
+        MSPLIT(IY,IX) = 0
+        SEA   (IY,IX) = .FALSE.
+      ELSE
+        MSPLIT(IY,IX) = -1
+        SEA   (IY,IX) = .TRUE.
+      END IF
+    END DO
   END DO
 
   !
@@ -404,20 +404,20 @@ PROGRAM W3GSPL
   NGY    = 1
   !
   DO
-     IF ( NGX*NGY .GE. NG ) EXIT
-     IF ( REAL(NGX)/REAL(NGY) .GT. RATIO1 ) THEN
-        NGY    = NGY + 1
-     ELSE
-        NGX    = NGX + 1
-     END IF
+    IF ( NGX*NGY .GE. NG ) EXIT
+    IF ( REAL(NGX)/REAL(NGY) .GT. RATIO1 ) THEN
+      NGY    = NGY + 1
+    ELSE
+      NGX    = NGX + 1
+    END IF
   END DO
   !
   IF ( NGX .GT. NGY ) THEN
-     IF ( (NGY-1)*NGX .GE. NG ) NGY = NGY - 1
-     IF ( (NGX-1)*NGY .GE. NG ) NGX = NGX - 1
+    IF ( (NGY-1)*NGX .GE. NG ) NGY = NGY - 1
+    IF ( (NGX-1)*NGY .GE. NG ) NGX = NGX - 1
   ELSE
-     IF ( (NGY-1)*NGX .GE. NG ) NGY = NGY - 1
-     IF ( (NGX-1)*NGY .GE. NG ) NGX = NGX - 1
+    IF ( (NGY-1)*NGX .GE. NG ) NGY = NGY - 1
+    IF ( (NGX-1)*NGY .GE. NG ) NGX = NGX - 1
   END IF
   !
 #ifdef W3_T
@@ -428,83 +428,83 @@ PROGRAM W3GSPL
   !
   J      = 0
   DO
-     !
-     MTEMP  = MSPLIT
-     IG     = 1
-     IGYN   = 0
-     J      = J + 1
-     ALLOCATE ( INGRD(NGX*NGY) )
-     INGRD  = 0
-     !
+    !
+    MTEMP  = MSPLIT
+    IG     = 1
+    IGYN   = 0
+    J      = J + 1
+    ALLOCATE ( INGRD(NGX*NGY) )
+    INGRD  = 0
+    !
 #ifdef W3_T
-     WRITE (NDST,9041) J
+    WRITE (NDST,9041) J
 #endif
-     !
-     DO IGY=1, NGY
+    !
+    DO IGY=1, NGY
+      !
+      IGY0   = IGYN + 1
+      IF ( IGY .EQ. NGY ) THEN
+        IGYN   = NY
+      ELSE
+        IGYN   = NINT ( REAL(NY*IGY) / REAL(NGY)  )
+      END IF
+      IGXN   = 0
+      !
+      DO IGX=1, NGX
         !
-        IGY0   = IGYN + 1
-        IF ( IGY .EQ. NGY ) THEN
-           IGYN   = NY
+        IGX0   = IGXN + 1
+        IF ( IGX .EQ. NGX ) THEN
+          IGXN   = NX
         ELSE
-           IGYN   = NINT ( REAL(NY*IGY) / REAL(NGY)  )
+          IGXN   = NINT ( REAL(NX*IGX) / REAL(NGX)  )
         END IF
-        IGXN   = 0
         !
-        DO IGX=1, NGX
-           !
-           IGX0   = IGXN + 1
-           IF ( IGX .EQ. NGX ) THEN
-              IGXN   = NX
-           ELSE
-              IGXN   = NINT ( REAL(NX*IGX) / REAL(NGX)  )
-           END IF
-           !
-           DO IX=IGX0, IGXN
-              DO IY=IGY0, IGYN
-                 IF ( MTEMP(IY,IX) .EQ. -1 ) THEN
-                    MTEMP(IY,IX) = IG
-                    INGRD(IG) = INGRD(IG) + 1
-                 END IF
-              END DO
-           END DO
-           !
-           IF ( INGRD(IG) .GT. 0 ) THEN
-#ifdef W3_T
-              WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
-                   INGRD(IG), 'OK'
-#endif
-              IG     = IG + 1
-#ifdef W3_T
-           ELSE
-              WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
-                   INGRD(IG), 'EMPTY (SKIPPED)'
-#endif
-           END IF
-           !
+        DO IX=IGX0, IGXN
+          DO IY=IGY0, IGYN
+            IF ( MTEMP(IY,IX) .EQ. -1 ) THEN
+              MTEMP(IY,IX) = IG
+              INGRD(IG) = INGRD(IG) + 1
+            END IF
+          END DO
         END DO
         !
-     END DO
-     !
-     IG     = IG - 1
-     IF ( IG .LT. NG ) THEN
-        IF ( NGX .LT. NGY ) THEN
-           NGY     = NGY + 1
-        ELSE
-           NGX     = NGX + 1
-        END IF
-        DEALLOCATE ( INGRD )
+        IF ( INGRD(IG) .GT. 0 ) THEN
 #ifdef W3_T
-        WRITE (NDST,9040) NGX, NGY
+          WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
+               INGRD(IG), 'OK'
 #endif
-     ELSE
-        EXIT
-     END IF
-     !
+          IG     = IG + 1
+#ifdef W3_T
+        ELSE
+          WRITE (NDST,9042) IG, IGX0, IGXN, IGY0, IGYN,        &
+               INGRD(IG), 'EMPTY (SKIPPED)'
+#endif
+        END IF
+        !
+      END DO
+      !
+    END DO
+    !
+    IG     = IG - 1
+    IF ( IG .LT. NG ) THEN
+      IF ( NGX .LT. NGY ) THEN
+        NGY     = NGY + 1
+      ELSE
+        NGX     = NGX + 1
+      END IF
+      DEALLOCATE ( INGRD )
+#ifdef W3_T
+      WRITE (NDST,9040) NGX, NGY
+#endif
+    ELSE
+      EXIT
+    END IF
+    !
   END DO
   !
   MINGRD = 0
   DO J=1, IG
-     MINGRD = MINGRD + INGRD(J)
+    MINGRD = MINGRD + INGRD(J)
   END DO
   IF ( MINGRD .NE. NSEA ) GOTO 825
   !
@@ -517,92 +517,92 @@ PROGRAM W3GSPL
   IGG    = IG
   !
   DO
-     !
-     IF ( IGG .EQ. NG ) EXIT
-     !
-     MINGRD = NSEA
-     MINNR  = 0
-     DO J=1, IG
-        IF ( INGRD(J) .LT. MINGRD ) THEN
-           MINGRD = INGRD(J)
-           MINNR  = J
+    !
+    IF ( IGG .EQ. NG ) EXIT
+    !
+    MINGRD = NSEA
+    MINNR  = 0
+    DO J=1, IG
+      IF ( INGRD(J) .LT. MINGRD ) THEN
+        MINGRD = INGRD(J)
+        MINNR  = J
+      END IF
+    END DO
+    INGRD(MINNR) = NSEA + 1
+    !
+#ifdef W3_T
+    WRITE (NDST,9044) MINGRD, MINNR
+#endif
+    !
+    ALLOCATE ( ISNEXT(0:IG) )
+    ISNEXT = .FALSE.
+    !
+    DO IY=1, NY-1
+      DO IX=1, NX-1
+        IF ( ( MTEMP(IY  ,IX  ) - MINNR ) *                       &
+             ( MTEMP(IY+1,IX  ) - MINNR ) *                       &
+             ( MTEMP(IY  ,IX+1) - MINNR ) *                       &
+             ( MTEMP(IY+1,IX+1) - MINNR ) .EQ. 0 ) THEN
+          ISNEXT(MTEMP(IY  ,IX  )) = .TRUE.
+          ISNEXT(MTEMP(IY+1,IX  )) = .TRUE.
+          ISNEXT(MTEMP(IY  ,IX+1)) = .TRUE.
+          ISNEXT(MTEMP(IY+1,IX+1)) = .TRUE.
         END IF
-     END DO
-     INGRD(MINNR) = NSEA + 1
-     !
-#ifdef W3_T
-     WRITE (NDST,9044) MINGRD, MINNR
-#endif
-     !
-     ALLOCATE ( ISNEXT(0:IG) )
-     ISNEXT = .FALSE.
-     !
-     DO IY=1, NY-1
-        DO IX=1, NX-1
-           IF ( ( MTEMP(IY  ,IX  ) - MINNR ) *                       &
-                ( MTEMP(IY+1,IX  ) - MINNR ) *                       &
-                ( MTEMP(IY  ,IX+1) - MINNR ) *                       &
-                ( MTEMP(IY+1,IX+1) - MINNR ) .EQ. 0 ) THEN
-              ISNEXT(MTEMP(IY  ,IX  )) = .TRUE.
-              ISNEXT(MTEMP(IY+1,IX  )) = .TRUE.
-              ISNEXT(MTEMP(IY  ,IX+1)) = .TRUE.
-              ISNEXT(MTEMP(IY+1,IX+1)) = .TRUE.
-           END IF
-        END DO
-     END DO
-     !
-     IF ( GLOBAL ) THEN
-        DO IY=1, NY-1
-           IF ( ( MTEMP(IY  ,NX) - MINNR ) *                       &
-                ( MTEMP(IY+1,NX) - MINNR ) *                       &
-                ( MTEMP(IY  , 1) - MINNR ) *                       &
-                ( MTEMP(IY+1, 1) - MINNR ) .EQ. 0 ) THEN
-              ISNEXT(MTEMP(IY  ,NX)) = .TRUE.
-              ISNEXT(MTEMP(IY+1,NX)) = .TRUE.
-              ISNEXT(MTEMP(IY  , 1)) = .TRUE.
-              ISNEXT(MTEMP(IY+1, 1)) = .TRUE.
-           END IF
-        END DO
-     END IF
-     !
-     MINNXT = NSEA
-     MINNNR = 0
-     DO J=1, IG
-        IF ( ISNEXT(J) .AND. ( INGRD(J) .LT. MINNXT ) ) THEN
-           MINNXT = INGRD(J)
-           MINNNR = J
+      END DO
+    END DO
+    !
+    IF ( GLOBAL ) THEN
+      DO IY=1, NY-1
+        IF ( ( MTEMP(IY  ,NX) - MINNR ) *                       &
+             ( MTEMP(IY+1,NX) - MINNR ) *                       &
+             ( MTEMP(IY  , 1) - MINNR ) *                       &
+             ( MTEMP(IY+1, 1) - MINNR ) .EQ. 0 ) THEN
+          ISNEXT(MTEMP(IY  ,NX)) = .TRUE.
+          ISNEXT(MTEMP(IY+1,NX)) = .TRUE.
+          ISNEXT(MTEMP(IY  , 1)) = .TRUE.
+          ISNEXT(MTEMP(IY+1, 1)) = .TRUE.
         END IF
-     END DO
-     !
+      END DO
+    END IF
+    !
+    MINNXT = NSEA
+    MINNNR = 0
+    DO J=1, IG
+      IF ( ISNEXT(J) .AND. ( INGRD(J) .LT. MINNXT ) ) THEN
+        MINNXT = INGRD(J)
+        MINNNR = J
+      END IF
+    END DO
+    !
 #ifdef W3_T
-     WRITE (NDST,9045) MINNXT, MINNNR
+    WRITE (NDST,9045) MINNXT, MINNNR
 #endif
-     !
-     IF ( MINNNR .GT. 0 ) THEN
-        DO IY=1, NY
-           DO IX=1, NX
-              IF ( MTEMP(IY,IX) .EQ. MINNR ) THEN
-                 MTEMP(IY,IX) = MINNNR
-                 INGRD(MINNNR) = INGRD(MINNNR) + 1
-              END IF
-           END DO
+    !
+    IF ( MINNNR .GT. 0 ) THEN
+      DO IY=1, NY
+        DO IX=1, NX
+          IF ( MTEMP(IY,IX) .EQ. MINNR ) THEN
+            MTEMP(IY,IX) = MINNNR
+            INGRD(MINNNR) = INGRD(MINNNR) + 1
+          END IF
         END DO
-        IGG    = IGG - 1
+      END DO
+      IGG    = IGG - 1
 #ifdef W3_T
-        WRITE (NDST,9046) MINNR, MINNNR
-        DO J=1, IG
-           WRITE (NDST,9047) J, INGRD(J)
-        END DO
-     ELSE
-        WRITE (NDST,9048) MINNR
+      WRITE (NDST,9046) MINNR, MINNNR
+      DO J=1, IG
+        WRITE (NDST,9047) J, INGRD(J)
+      END DO
+    ELSE
+      WRITE (NDST,9048) MINNR
 #endif
-     END IF
-     !
-     DEALLOCATE ( ISNEXT)
+    END IF
+    !
+    DEALLOCATE ( ISNEXT)
 #ifdef W3_T
-     WRITE (NDST,9043) IGG, NG
+    WRITE (NDST,9043) IGG, NG
 #endif
-     !
+    !
   END DO
   !
 #ifdef W3_T
@@ -610,9 +610,9 @@ PROGRAM W3GSPL
 #endif
   !
   DO J=1, IG
-     IF ( INGRD(J) .GT. NSEA ) INGRD(J) = 0
+    IF ( INGRD(J) .GT. NSEA ) INGRD(J) = 0
 #ifdef W3_T
-     WRITE (NDSO,9047) J, INGRD(J)
+    WRITE (NDSO,9047) J, INGRD(J)
 #endif
   END DO
   !
@@ -620,14 +620,14 @@ PROGRAM W3GSPL
   !
   IGG    = 0
   DO J=1, IG
-     IF ( INGRD(J) .NE. 0 ) THEN
-        IGG    = IGG + 1
-        DO IY=1, NY
-           DO IX=1, NX
-              IF ( MTEMP(IY,IX) .EQ. J ) MSPLIT(IY,IX) = IGG
-           END DO
+    IF ( INGRD(J) .NE. 0 ) THEN
+      IGG    = IGG + 1
+      DO IY=1, NY
+        DO IX=1, NX
+          IF ( MTEMP(IY,IX) .EQ. J ) MSPLIT(IY,IX) = IGG
         END DO
-     END IF
+      END DO
+    END IF
   END DO
   !
   ! 5.b.5 Optional GrADS output
@@ -660,195 +660,195 @@ PROGRAM W3GSPL
   NSTDLG = 0
   !
   DO IIT=1, NITMAX
-     !
-     IF ( NG .EQ. 1 ) EXIT
-     !
-     MSTOLD = MSTATS
-     GSTOLD = GSTATS
-     !
+    !
+    IF ( NG .EQ. 1 ) EXIT
+    !
+    MSTOLD = MSTATS
+    GSTOLD = GSTATS
+    !
 #ifdef W3_T
-     WRITE (NDST,9050) 'a', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+    WRITE (NDST,9050) 'a', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
 #endif
-     !
-     ! 5.b Small grid attempt to merge
-     !
-     IF ( MSTATS%NMIN .LT. NINT(0.45*XMEAN) ) THEN
-        !
-        CALL GRFSML
-        CALL GRINFO
-        !
-        G0ID   = '5.b'
-        IF ( MSTOLD%NMIN .NE. MSTATS%NMIN ) THEN
-           WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,       &
-                100.*MSTATS%RSTD/XMEAN
-           IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+    !
+    ! 5.b Small grid attempt to merge
+    !
+    IF ( MSTATS%NMIN .LT. NINT(0.45*XMEAN) ) THEN
+      !
+      CALL GRFSML
+      CALL GRINFO
+      !
+      G0ID   = '5.b'
+      IF ( MSTOLD%NMIN .NE. MSTATS%NMIN ) THEN
+        WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,       &
+             100.*MSTATS%RSTD/XMEAN
+        IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
 #ifdef W3_O16
-           WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
-           NTGRDS = NTGRDS + 1
+        WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
+        NTGRDS = NTGRDS + 1
 #endif
 
-           CYCLE
-        ELSE
-           WRITE (NDSO,952)      MSTATS%NMIN, MSTATS%NMAX,       &
-                100.*MSTATS%RSTD/XMEAN
-           IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
-        END IF
-        !
-     END IF
-     !
-     ! 5.c Trim edges of grids and reassign
-     !
-     CALL GRTRIM
-     CALL GRFILL ( 2 )
-     !
-     ! 5.d Attempt to quare-up grid
-     !
-     CALL GRINFO   ! call needed as GRSQRG uses grid ranges
+        CYCLE
+      ELSE
+        WRITE (NDSO,952)      MSTATS%NMIN, MSTATS%NMAX,       &
+             100.*MSTATS%RSTD/XMEAN
+        IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+      END IF
+      !
+    END IF
+    !
+    ! 5.c Trim edges of grids and reassign
+    !
+    CALL GRTRIM
+    CALL GRFILL ( 2 )
+    !
+    ! 5.d Attempt to quare-up grid
+    !
+    CALL GRINFO   ! call needed as GRSQRG uses grid ranges
 #ifdef W3_T
-     WRITE (NDST,9051) 'd', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+    WRITE (NDST,9051) 'd', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
 #endif
-     CALL GRSQRG
-     CALL GRFILL ( 1 )
-     !
-     ! 5.e Remove mid-sea points sticking out of grid
-     !     Call more than once to remove most .....
-     !
-     OK     = .TRUE.
-     !
-     DO JJ=1, 4
-        CALL GRSNGL ( OK )
-     END DO
-     !
-     ! 5.f Remove parts of grid separated from main body, and attachable to
-     !     other grids.
-     !
-     CALL GRSEPA ( OK , 0.10 )
-     IF ( .NOT. OK ) THEN
-        CALL GRFILL ( 1 )
-        OK     = .TRUE.
-     END IF
-     !
-     ! 5.g Re-compute grid stats
-     !
-     CALL GRINFO
-     WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,               &
-          100.*MSTATS%RSTD/XMEAN
+    CALL GRSQRG
+    CALL GRFILL ( 1 )
+    !
+    ! 5.e Remove mid-sea points sticking out of grid
+    !     Call more than once to remove most .....
+    !
+    OK     = .TRUE.
+    !
+    DO JJ=1, 4
+      CALL GRSNGL ( OK )
+    END DO
+    !
+    ! 5.f Remove parts of grid separated from main body, and attachable to
+    !     other grids.
+    !
+    CALL GRSEPA ( OK , 0.10 )
+    IF ( .NOT. OK ) THEN
+      CALL GRFILL ( 1 )
+      OK     = .TRUE.
+    END IF
+    !
+    ! 5.g Re-compute grid stats
+    !
+    CALL GRINFO
+    WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,               &
+         100.*MSTATS%RSTD/XMEAN
 #ifdef W3_T
-     WRITE (NDST,9051) 'g', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
+    WRITE (NDST,9051) 'g', MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
 #endif
-     !
-     G0ID   = '5.g'
-     IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
-     !
-     ! 5.h Optional GrADS output
-     !
+    !
+    G0ID   = '5.g'
+    IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+    !
+    ! 5.h Optional GrADS output
+    !
 #ifdef W3_O16
-     WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
-     NTGRDS = NTGRDS + 1
+    WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
+    NTGRDS = NTGRDS + 1
 #endif
-     !
-     ! 5.i Convergence tests
-     ! ... The quick one
-     !
-     IF ( 100.*MSTATS%RSTD/XMEAN .LE. STARG ) THEN
+    !
+    ! 5.i Convergence tests
+    ! ... The quick one
+    !
+    IF ( 100.*MSTATS%RSTD/XMEAN .LE. STARG ) THEN
+      WRITE (NDSO,959)
+      EXIT
+    END IF
+    !
+    ! ... Monitoring convergence ....
+    !
+    IF ( 100.*MSTATS%RSTD/XMEAN .LT. 1.0001*STDMIN ) THEN
+      IF ( NSTDLG .LT. MSTDLG ) THEN
+        NSTDLG = 0
+      ELSE
         WRITE (NDSO,959)
         EXIT
-     END IF
-     !
-     ! ... Monitoring convergence ....
-     !
-     IF ( 100.*MSTATS%RSTD/XMEAN .LT. 1.0001*STDMIN ) THEN
-        IF ( NSTDLG .LT. MSTDLG ) THEN
-           NSTDLG = 0
-        ELSE
-           WRITE (NDSO,959)
-           EXIT
-        END IF
-        STDMIN = 100.*MSTATS%RSTD/XMEAN
-     ELSE
-        NSTDLG = NSTDLG + 1
-        IF ( NSTDLG .GT. MSTDLG ) STDMIN = 1.01*STDMIN
-     END IF
-     !
-     ! ... Check if stuck on min or max
-     !
-     IF ( MSTATS%NMAX .LT. INGMAX ) THEN
-        INGMAX = MSTATS%NMAX
-        INGMXC = 0
-     ELSE
-        INGMXC = INGMXC + 1
-     END IF
-     !
-     IF ( MSTATS%NMIN .GT. INGMIN ) THEN
+      END IF
+      STDMIN = 100.*MSTATS%RSTD/XMEAN
+    ELSE
+      NSTDLG = NSTDLG + 1
+      IF ( NSTDLG .GT. MSTDLG ) STDMIN = 1.01*STDMIN
+    END IF
+    !
+    ! ... Check if stuck on min or max
+    !
+    IF ( MSTATS%NMAX .LT. INGMAX ) THEN
+      INGMAX = MSTATS%NMAX
+      INGMXC = 0
+    ELSE
+      INGMXC = INGMXC + 1
+    END IF
+    !
+    IF ( MSTATS%NMIN .GT. INGMIN ) THEN
+      INGMIN = MSTATS%NMIN
+      INGMNC = 0
+    ELSE
+      INGMNC = INGMNC + 1
+    END IF
+    !
+    ! ... Stuck in min ...
+    !
+    IF ( INGMNC .GE. INGLAG ) THEN
+      !
+#ifdef W3_T
+      WRITE (NDST,9052) 'MINIMUM'
+#endif
+      !
+      IF ( REAL(INGMIN) .LT. 0.85*XMEAN ) THEN
+        !
+#ifdef W3_T
+        WRITE (NDST,9053) 0.85*XMEAN / REAL(INGMIN)
+#endif
+        CALL GRFSML
+        CALL GRINFO
+        WRITE (NDSO,952) MSTATS%NMIN, MSTATS%NMAX,            &
+             100.*MSTATS%RSTD/XMEAN
         INGMIN = MSTATS%NMIN
+        INGMAX = MSTATS%NMAX
         INGMNC = 0
-     ELSE
-        INGMNC = INGMNC + 1
-     END IF
-     !
-     ! ... Stuck in min ...
-     !
-     IF ( INGMNC .GE. INGLAG ) THEN
+        INGMXC = 0
+        IF ( DONE ) EXIT
         !
 #ifdef W3_T
-        WRITE (NDST,9052) 'MINIMUM'
-#endif
-        !
-        IF ( REAL(INGMIN) .LT. 0.85*XMEAN ) THEN
-           !
-#ifdef W3_T
-           WRITE (NDST,9053) 0.85*XMEAN / REAL(INGMIN)
-#endif
-           CALL GRFSML
-           CALL GRINFO
-           WRITE (NDSO,952) MSTATS%NMIN, MSTATS%NMAX,            &
-                100.*MSTATS%RSTD/XMEAN
-           INGMIN = MSTATS%NMIN
-           INGMAX = MSTATS%NMAX
-           INGMNC = 0
-           INGMXC = 0
-           IF ( DONE ) EXIT
-           !
-#ifdef W3_T
-        ELSE
-           WRITE (NDST,9054)
+      ELSE
+        WRITE (NDST,9054)
 
 #endif
-        END IF
-        !
-     END IF
-     !
-     ! ... Stuck in max ...
-     !
-     IF ( INGMXC .GE. INGLAG ) THEN
-        !
+      END IF
+      !
+    END IF
+    !
+    ! ... Stuck in max ...
+    !
+    IF ( INGMXC .GE. INGLAG ) THEN
+      !
 #ifdef W3_T
-        WRITE (NDST,9052) 'MAXIMUM'
+      WRITE (NDST,9052) 'MAXIMUM'
 #endif
+      !
+      IF ( REAL(INGMAX) .GT. 1.075*XMEAN ) THEN
         !
-        IF ( REAL(INGMAX) .GT. 1.075*XMEAN ) THEN
-           !
 #ifdef W3_T
-           WRITE (NDST,9053) REAL(INGMAX) / ( 1.075*XMEAN )
+        WRITE (NDST,9053) REAL(INGMAX) / ( 1.075*XMEAN )
 #endif
-           CALL GRINFO
-           WRITE (NDSO,952) MSTATS%NMIN, MSTATS%NMAX,            &
-                100.*MSTATS%RSTD/XMEAN
-           INGMIN = MSTATS%NMIN
-           INGMAX = MSTATS%NMAX
-           INGMNC = 0
-           INGMXC = 0
-           IF ( DONE ) EXIT
-           !
+        CALL GRINFO
+        WRITE (NDSO,952) MSTATS%NMIN, MSTATS%NMAX,            &
+             100.*MSTATS%RSTD/XMEAN
+        INGMIN = MSTATS%NMIN
+        INGMAX = MSTATS%NMAX
+        INGMNC = 0
+        INGMXC = 0
+        IF ( DONE ) EXIT
+        !
 #ifdef W3_T
-        ELSE
-           WRITE (NDST,9054)
+      ELSE
+        WRITE (NDST,9054)
 
 #endif
-        END IF
-        !
-     END IF
-     !
+      END IF
+      !
+    END IF
+    !
   END DO
   !
   ! 5.j Test output
@@ -859,17 +859,17 @@ PROGRAM W3GSPL
   CALL GRINFO
   !
   DO JJ=1, NG
-     MINNR  = NSEA + 1
-     DO J=1, NG
-        IF ( ISNEXT(J) .AND. GSTATS(J)%NPTS.LT.MINNR ) THEN
-           MINNR  = GSTATS(J)%NPTS
-           IG     = J
-        END IF
-     END DO
-     ISNEXT(IG) = .FALSE.
-     WRITE (NDST,956) IG, GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS,     &
-          GSTATS(IG)%NXL, GSTATS(IG)%NXH,          &
-          GSTATS(IG)%NYL, GSTATS(IG)%NYH
+    MINNR  = NSEA + 1
+    DO J=1, NG
+      IF ( ISNEXT(J) .AND. GSTATS(J)%NPTS.LT.MINNR ) THEN
+        MINNR  = GSTATS(J)%NPTS
+        IG     = J
+      END IF
+    END DO
+    ISNEXT(IG) = .FALSE.
+    WRITE (NDST,956) IG, GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS,     &
+         GSTATS(IG)%NXL, GSTATS(IG)%NXH,          &
+         GSTATS(IG)%NYL, GSTATS(IG)%NYH
   END DO
   !
   DEALLOCATE ( ISNEXT )
@@ -882,10 +882,10 @@ PROGRAM W3GSPL
   !
   ZBDUM  = 999.
   IF ( MAXVAL(ZB) .LT. -0.11 ) THEN
-     ZBMIN  = -0.1
+    ZBMIN  = -0.1
   ELSE
-     ZBMIN  = MAXVAL(ZB) + 1.
-     ZBDUM  = MAX ( ZBDUM , ZBMIN+1 )
+    ZBMIN  = MAXVAL(ZB) + 1.
+    ZBDUM  = MAX ( ZBDUM , ZBMIN+1 )
   END IF
   !
   J1     = LEN_TRIM(FEXT)
@@ -893,127 +893,127 @@ PROGRAM W3GSPL
   WRITE (NRFMT,'(A2,I1,A1,I1,A1)') '(I', J2, '.', J2, ')'
   !
   IF ( J1 + J2 + 2 .LE. 10 ) THEN
-     FNAME = FEXT(:J1) // '_p'
-     J3     = J1 + 3
+    FNAME = FEXT(:J1) // '_p'
+    J3     = J1 + 3
   ELSE
-     FNAME = 'part_'
-     J3     = 6
+    FNAME = 'part_'
+    J3     = 6
   END IF
   J4     = J3 + J2 - 1
   !
   NSEAT  = 0
   !
   DO IG=1, NG
-     !
-     !
-     ! 6.b Extract grid including halo
-     !
-     WRITE (NDSO,961) IG
-     CALL GR1GRD
-     NSEAT  = NSEAT + PGRID(IG)%NSEA
-     !
-     WRITE (AEXT,NRFMT) IG
-     FNAME(J3:J4) = AEXT(:J2)
-     J      = LEN_TRIM(FNMPRE)
-     !
-     ! 6.c Writing bottom file
-     !
-     J5    = J4 + 4
-     FNAME(J4+1:J5) = '.bot'
-     WRITE (NDSO,962) FNAME(:J5)
-     !
-     IF ( IDFM1 .EQ. 3 ) THEN
-        OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
+    !
+    !
+    ! 6.b Extract grid including halo
+    !
+    WRITE (NDSO,961) IG
+    CALL GR1GRD
+    NSEAT  = NSEAT + PGRID(IG)%NSEA
+    !
+    WRITE (AEXT,NRFMT) IG
+    FNAME(J3:J4) = AEXT(:J2)
+    J      = LEN_TRIM(FNMPRE)
+    !
+    ! 6.c Writing bottom file
+    !
+    J5    = J4 + 4
+    FNAME(J4+1:J5) = '.bot'
+    WRITE (NDSO,962) FNAME(:J5)
+    !
+    IF ( IDFM1 .EQ. 3 ) THEN
+      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
+           form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
+    ELSE
+      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
+    END IF
+    REWIND (NDSM)
+    CALL OUTA2R ( PGRID(IG)%ZBIN, PGRID(IG)%NX, PGRID(IG)%NY,     &
+         1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM, NDST,   &
+         NDSE, IDFM1, RFORM1, IDLA1, VSC1, 0.0 )
+    CLOSE (NDSM)
+    !
+    ! 6.d Writing obstruction file
+    !
+    J5    = J4 + 5
+    FNAME(J4+1:J5) = '.obst'
+    !
+    IF ( TRFLAG .EQ. 0 ) THEN
+      WRITE (NDSO,963) FNAME(:J5)
+    ELSE
+      WRITE (NDSO,962) FNAME(:J5)
+      !
+      IF ( IDFM2 .EQ. 3 ) THEN
+        OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
              form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
-     ELSE
-        OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
-     END IF
-     REWIND (NDSM)
-     CALL OUTA2R ( PGRID(IG)%ZBIN, PGRID(IG)%NX, PGRID(IG)%NY,     &
-          1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM, NDST,   &
-          NDSE, IDFM1, RFORM1, IDLA1, VSC1, 0.0 )
-     CLOSE (NDSM)
-     !
-     ! 6.d Writing obstruction file
-     !
-     J5    = J4 + 5
-     FNAME(J4+1:J5) = '.obst'
-     !
-     IF ( TRFLAG .EQ. 0 ) THEN
-        WRITE (NDSO,963) FNAME(:J5)
-     ELSE
-        WRITE (NDSO,962) FNAME(:J5)
-        !
-        IF ( IDFM2 .EQ. 3 ) THEN
-           OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
-                form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
-        ELSE
-           OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
-                ERR=860,IOSTAT=IERR)
-        END IF
-        REWIND (NDSM)
-        CALL OUTA2R ( PGRID(IG)%OBSX, PGRID(IG)%NX, PGRID(IG)%NY, &
-             1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM,     &
-             NDST, NDSE, IDFM2, RFORM2, IDLA2, VSC2, 0.0 )
-        CALL OUTA2R ( PGRID(IG)%OBSY, PGRID(IG)%NX, PGRID(IG)%NY, &
-             1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM,     &
-             NDST, NDSE, IDFM2, RFORM2, IDLA2, VSC2, 0.0 )
-        CLOSE (NDSM)
-        !
-     END IF
-     !
-     ! 6.e Writing mask file
-     !
-     J5    = J4 + 5
-     FNAME(J4+1:J5) = '.mask'
-     WRITE (NDSO,962) FNAME(:J5)
-     !
-     IF ( IDFM3 .EQ. 3 ) THEN
-        OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
-             form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
-     ELSE
-        OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
-     END IF
-     REWIND (NDSM)
-     CALL OUTA2I ( PGRID(IG)%MASK, PGRID(IG)%NX, PGRID(IG)%NY,     &
-          1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM, NDST,   &
-          NDSE, IDFM3, RFORM3, IDLA3, VSC3, 0 )
-     CLOSE (NDSM)
-     !
-     ! 6.f Writing input file
-     !
-     J5    = J4 + 5
-     FNAME(J4+1:J5) = '.tmpl'
-     WRITE (NDSO,962) FNAME(:J5)
-     !
-     OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
-     !
-     GNAME(31-J2:30) = AEXT
-     GNAME(30-J2:30-J2) = 'p'
-     WRITE (NDSM,965) GNAME, SIG(2)/SIG(1), TPIINV*SIG(1), NK,     &
-          NTH, TH(1)/DTH, FLDRY, FLCX, FLCY, FLCTH,    &
-          FLCK, FLSOU, DTMAX, DTCFL, DTCFLI, DTMIN
-     J5     = LEN_TRIM(RFORM1)
-     IF ( REAL(PGRID(IG)%NX) * PGRID(IG)%SX .LT. 359.9 ) THEN
-        PTCLSE = 'NONE'
-     ELSE
-        PTCLSE = IDCLSE
-     END IF
-     WRITE (NDSM,966) IDGRID, FLAGLL, PTCLSE,                      &
-          PGRID(IG)%NX, PGRID(IG)%NY,                  &
-          PGRID(IG)%SX, PGRID(IG)%SY,                  &
-          PGRID(IG)%X0, PGRID(IG)%Y0,                  &
-          ZBMIN, DMIN, VSC1, IDLA1, IDFM1,             &
-          RFORM1(:J5), FNAME(:J4)//'.bot'
-     IF ( TRFLAG .NE. 0 ) THEN
-        J5     = LEN_TRIM(RFORM2)
-        WRITE (NDSM,967) VSC2,IDLA2, IDFM2, RFORM2(:J5),          &
-             FNAME(:J4)//'.obst'
-     END IF
-     J5     = LEN_TRIM(RFORM3)
-     WRITE (NDSM,968) IDLA3, IDFM3, RFORM3(:J5), FNAME(:J4)//'.mask'
-     CLOSE (NDSM)
-     !
+      ELSE
+        OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),               &
+             ERR=860,IOSTAT=IERR)
+      END IF
+      REWIND (NDSM)
+      CALL OUTA2R ( PGRID(IG)%OBSX, PGRID(IG)%NX, PGRID(IG)%NY, &
+           1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM,     &
+           NDST, NDSE, IDFM2, RFORM2, IDLA2, VSC2, 0.0 )
+      CALL OUTA2R ( PGRID(IG)%OBSY, PGRID(IG)%NX, PGRID(IG)%NY, &
+           1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM,     &
+           NDST, NDSE, IDFM2, RFORM2, IDLA2, VSC2, 0.0 )
+      CLOSE (NDSM)
+      !
+    END IF
+    !
+    ! 6.e Writing mask file
+    !
+    J5    = J4 + 5
+    FNAME(J4+1:J5) = '.mask'
+    WRITE (NDSO,962) FNAME(:J5)
+    !
+    IF ( IDFM3 .EQ. 3 ) THEN
+      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5),                   &
+           form='UNFORMATTED', convert=file_endian,ERR=860,IOSTAT=IERR)
+    ELSE
+      OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
+    END IF
+    REWIND (NDSM)
+    CALL OUTA2I ( PGRID(IG)%MASK, PGRID(IG)%NX, PGRID(IG)%NY,     &
+         1, PGRID(IG)%NX, 1, PGRID(IG)%NY, NDSM, NDST,   &
+         NDSE, IDFM3, RFORM3, IDLA3, VSC3, 0 )
+    CLOSE (NDSM)
+    !
+    ! 6.f Writing input file
+    !
+    J5    = J4 + 5
+    FNAME(J4+1:J5) = '.tmpl'
+    WRITE (NDSO,962) FNAME(:J5)
+    !
+    OPEN (NDSM,FILE=FNMPRE(:J)//FNAME(:J5), ERR=860,IOSTAT=IERR)
+    !
+    GNAME(31-J2:30) = AEXT
+    GNAME(30-J2:30-J2) = 'p'
+    WRITE (NDSM,965) GNAME, SIG(2)/SIG(1), TPIINV*SIG(1), NK,     &
+         NTH, TH(1)/DTH, FLDRY, FLCX, FLCY, FLCTH,    &
+         FLCK, FLSOU, DTMAX, DTCFL, DTCFLI, DTMIN
+    J5     = LEN_TRIM(RFORM1)
+    IF ( REAL(PGRID(IG)%NX) * PGRID(IG)%SX .LT. 359.9 ) THEN
+      PTCLSE = 'NONE'
+    ELSE
+      PTCLSE = IDCLSE
+    END IF
+    WRITE (NDSM,966) IDGRID, FLAGLL, PTCLSE,                      &
+         PGRID(IG)%NX, PGRID(IG)%NY,                  &
+         PGRID(IG)%SX, PGRID(IG)%SY,                  &
+         PGRID(IG)%X0, PGRID(IG)%Y0,                  &
+         ZBMIN, DMIN, VSC1, IDLA1, IDFM1,             &
+         RFORM1(:J5), FNAME(:J4)//'.bot'
+    IF ( TRFLAG .NE. 0 ) THEN
+      J5     = LEN_TRIM(RFORM2)
+      WRITE (NDSM,967) VSC2,IDLA2, IDFM2, RFORM2(:J5),          &
+           FNAME(:J4)//'.obst'
+    END IF
+    J5     = LEN_TRIM(RFORM3)
+    WRITE (NDSM,968) IDLA3, IDFM3, RFORM3(:J5), FNAME(:J4)//'.mask'
+    CLOSE (NDSM)
+    !
   END DO
   !
   WRITE (NDSO,969) 100. * (REAL(NSEAT)/REAL(NSEA)-1.)
@@ -1026,15 +1026,15 @@ PROGRAM W3GSPL
   OPEN (NDSM,FILE=FNMPRE(:J)//INAME(:J5), ERR=870,IOSTAT=IERR)
   !
   DO IG=1, NG
-     WRITE (AEXT,NRFMT) IG
-     FNAME(J3:J4) = AEXT(:J2)
-     IF ( FRFLAG ) THEN
-        WRITE (NDSM,970) FNAME(:J4),                              &
-             FRACL + REAL(IG-1)*(FRACH-FRACL)/REAL(NG),   &
-             FRACL + REAL( IG )*(FRACH-FRACL)/REAL(NG)
-     ELSE
-        WRITE (NDSM,970) FNAME(:J4), FRACL, FRACH
-     END IF
+    WRITE (AEXT,NRFMT) IG
+    FNAME(J3:J4) = AEXT(:J2)
+    IF ( FRFLAG ) THEN
+      WRITE (NDSM,970) FNAME(:J4),                              &
+           FRACL + REAL(IG-1)*(FRACH-FRACL)/REAL(NG),   &
+           FRACL + REAL( IG )*(FRACH-FRACL)/REAL(NG)
+    ELSE
+      WRITE (NDSM,970) FNAME(:J4), FRACL, FRACH
+    END IF
   END DO
   !
   CLOSE (NDSM)
@@ -1047,7 +1047,7 @@ PROGRAM W3GSPL
   OPEN (NDSM,FILE=FNMPRE(:J)//INAME(:J5), ERR=870,IOSTAT=IERR)
   !
   DO IY=1, NY
-     WRITE (NDSM,980) MSPLIT(IY,:)
+    WRITE (NDSM,980) MSPLIT(IY,:)
   END DO
   !
 #ifdef W3_O16
@@ -1343,69 +1343,69 @@ CONTAINS
     NGC    = 0
     !
     DO IG=1, NG
-       LEFT   = .FALSE.
-       RIGHT  = .FALSE.
-       IF ( GSTATS(IG)%INSTAT ) NGC = NGC + 1
-       DO IY=1, NY
-          IF ( MSPLIT(IY, 1) .EQ. IG ) LEFT   = .TRUE.
-          IF ( MSPLIT(IY,NX) .EQ. IG ) RIGHT  = .TRUE.
-       END DO
-       GSTATS(IG)%STRADLE = LEFT .AND. RIGHT
+      LEFT   = .FALSE.
+      RIGHT  = .FALSE.
+      IF ( GSTATS(IG)%INSTAT ) NGC = NGC + 1
+      DO IY=1, NY
+        IF ( MSPLIT(IY, 1) .EQ. IG ) LEFT   = .TRUE.
+        IF ( MSPLIT(IY,NX) .EQ. IG ) RIGHT  = .TRUE.
+      END DO
+      GSTATS(IG)%STRADLE = LEFT .AND. RIGHT
     END DO
     !
     IF ( NGC .EQ. 0 ) THEN
-       NGC    = 1
-       DONE   = .TRUE.
+      NGC    = 1
+      DONE   = .TRUE.
     END IF
     !
     ! 3.  Run grid stats ------------------------------------------------- *
     ! 3.a General
     !
     DO IY=1, NY
-       DO IX=1, NX
-          IG     = MSPLIT(IY,IX)
-          IF ( MSPLIT(IY,IX) .GT. 0 ) THEN
-             GSTATS(IG)%NPTS = GSTATS(IG)%NPTS + 1
-             GSTATS(IG)%NXL  = MIN ( GSTATS(IG)%NXL , IX )
-             GSTATS(IG)%NXH  = MAX ( GSTATS(IG)%NXH , IX )
-             GSTATS(IG)%NYL  = MIN ( GSTATS(IG)%NYL , IY )
-             GSTATS(IG)%NYH  = MAX ( GSTATS(IG)%NYH , IY )
-          END IF
-       END DO
+      DO IX=1, NX
+        IG     = MSPLIT(IY,IX)
+        IF ( MSPLIT(IY,IX) .GT. 0 ) THEN
+          GSTATS(IG)%NPTS = GSTATS(IG)%NPTS + 1
+          GSTATS(IG)%NXL  = MIN ( GSTATS(IG)%NXL , IX )
+          GSTATS(IG)%NXH  = MAX ( GSTATS(IG)%NXH , IX )
+          GSTATS(IG)%NYL  = MIN ( GSTATS(IG)%NYL , IY )
+          GSTATS(IG)%NYH  = MAX ( GSTATS(IG)%NYH , IY )
+        END IF
+      END DO
     END DO
     !
     ! 3.b Stradled grids
     !
     IF ( NG .GT. 1) THEN
-       DO IG=1, NG
-          IF ( GSTATS(IG)%STRADLE ) THEN
-             NOCNT  = 0
-             NOCNTM = 0
-             NOCNTL = 0
-             DO IX=1, NX
-                THERE  = .FALSE.
-                DO IY=1, NY
-                   IF ( MSPLIT(IY,IX) .EQ. IG ) THEN
-                      THERE  = .TRUE.
-                      EXIT
-                   END IF
-                END DO
-                IF ( THERE ) THEN
-                   NOCNT = 0
-                ELSE
-                   NOCNT = NOCNT + 1
-                   IF ( NOCNT .GT. NOCNTM ) THEN
-                      NOCNTM = NOCNT
-                      NOCNTL = IX
-                   END IF
-                END IF
-             END DO
-             GSTATS(IG)%NXL = NOCNTL + 1
-             GSTATS(IG)%NXH = NOCNTL - NOCNTM
-          END IF
-       END DO
+      DO IG=1, NG
+        IF ( GSTATS(IG)%STRADLE ) THEN
+          NOCNT  = 0
+          NOCNTM = 0
+          NOCNTL = 0
+          DO IX=1, NX
+            THERE  = .FALSE.
+            DO IY=1, NY
+              IF ( MSPLIT(IY,IX) .EQ. IG ) THEN
+                THERE  = .TRUE.
+                EXIT
+              END IF
+            END DO
+            IF ( THERE ) THEN
+              NOCNT = 0
+            ELSE
+              NOCNT = NOCNT + 1
+              IF ( NOCNT .GT. NOCNTM ) THEN
+                NOCNTM = NOCNT
+                NOCNTL = IX
+              END IF
+            END IF
+          END DO
+          GSTATS(IG)%NXL = NOCNTL + 1
+          GSTATS(IG)%NXH = NOCNTL - NOCNTM
+        END IF
+      END DO
     ELSE
-       GSTATS(1)%STRADLE = .FALSE.
+      GSTATS(1)%STRADLE = .FALSE.
     END IF
     !
     ! 3.c Corrected NSEA
@@ -1413,7 +1413,7 @@ CONTAINS
     NSEAC   = 0
     !
     DO IG=1, NG
-       IF ( GSTATS(IG)%INSTAT ) NSEAC = NSEAC + GSTATS(IG)%NPTS
+      IF ( GSTATS(IG)%INSTAT ) NSEAC = NSEAC + GSTATS(IG)%NPTS
     END DO
     !
     ! 4.  Run overall stats ---------------------------------------------- *
@@ -1424,10 +1424,10 @@ CONTAINS
     SUMSQR = 0.
     !
     DO IG=1, NG
-       IF ( .NOT. GSTATS(IG)%INSTAT ) CYCLE
-       MSTATS%NMIN = MIN ( MSTATS%NMIN , GSTATS(IG)%NPTS )
-       MSTATS%NMAX = MAX ( MSTATS%NMAX , GSTATS(IG)%NPTS )
-       SUMSQR      = SUMSQR + ( REAL(GSTATS(IG)%NPTS) - XMEAN )**2
+      IF ( .NOT. GSTATS(IG)%INSTAT ) CYCLE
+      MSTATS%NMIN = MIN ( MSTATS%NMIN , GSTATS(IG)%NPTS )
+      MSTATS%NMAX = MAX ( MSTATS%NMAX , GSTATS(IG)%NPTS )
+      SUMSQR      = SUMSQR + ( REAL(GSTATS(IG)%NPTS) - XMEAN )**2
     END DO
     !
     MSTATS%RSTD = SQRT ( SUMSQR / REAL(NGC) )
@@ -1437,9 +1437,9 @@ CONTAINS
 #ifdef W3_T1
     WRITE (NDST,9000)
     DO IG=1, NG
-       WRITE (NDST,9001) IG, GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS, &
-            GSTATS(IG)%NXL, GSTATS(IG)%NXH,      &
-            GSTATS(IG)%NYL, GSTATS(IG)%NYH
+      WRITE (NDST,9001) IG, GSTATS(IG)%STRADLE, GSTATS(IG)%NPTS, &
+           GSTATS(IG)%NXL, GSTATS(IG)%NXH,      &
+           GSTATS(IG)%NYL, GSTATS(IG)%NYH
     END DO
     WRITE (NDST,9010) MSTATS%NMIN, MSTATS%NMAX, MSTATS%RSTD
 #endif
@@ -1514,114 +1514,114 @@ CONTAINS
     ! 1.  Loop over grids ------------------------------------------------ *
     !
     DO IG=1, NG
-       !
-       IPTS   = GSTATS(IG)%NPTS
-       MY     = 1 + GSTATS(IG)%NYH - GSTATS(IG)%NYL
-       MX     = 1 + GSTATS(IG)%NXH - GSTATS(IG)%NXL
-       IF ( GSTATS(IG)%STRADLE ) MX     = MX + NX
-       ICIRC  = 2 * ( MX + MY )
-       !
-       NWDTH  = 1
-       !
-       ITL    = MIN ( ITARG , MAX ( ITARG-2*ICIRC , 3*ICIRC ) )
-       IF ( IPTS .LT. ITL ) NWDTH  = 0
-       !
-       IF ( IPTS.GT.ITARG ) THEN
-          NWDTH = 1 +                                              &
-               MAX(0,+NINT((REAL((IPTS-ITARG))/REAL(ICIRC)-1.)/3.))
-       ENDIF
-       !
-       DO J=1, NWDTH
-          !
-          MASK   = .FALSE.
-          !
-          ! 2.  Mark points to be removed -------------------------------------- *
-          !
-          DO IX=2, NX-1
-             IF ( MSPLIT( 1,IX) .EQ. IG ) MASK( 1,IX) =                &
-                  (SEA( 2,IX  ).AND.(MSPLIT( 2,IX  ).NE.IG))       &
-                  .OR. (SEA( 1,IX+1).AND.(MSPLIT( 1,IX+1).NE.IG))       &
-                  .OR. (SEA( 1,IX-1).AND.(MSPLIT( 1,IX-1).NE.IG))
-             DO IY=2, NY-1
-                IF ( MSPLIT(IY,IX) .EQ. IG ) MASK(IY,IX) =              &
-                     (SEA(IY+1,IX  ).AND.(MSPLIT(IY+1,IX  ).NE.IG)) &
-                     .OR. (SEA(IY-1,IX  ).AND.(MSPLIT(IY-1,IX  ).NE.IG)) &
-                     .OR. (SEA(IY  ,IX+1).AND.(MSPLIT(IY  ,IX+1).NE.IG)) &
-                     .OR. (SEA(IY  ,IX-1).AND.(MSPLIT(IY  ,IX-1).NE.IG))
-             END DO
-             IF ( MSPLIT(NY,IX) .EQ. IG ) MASK(NY,IX) =                &
-                  (SEA(NY-1,IX  ).AND.(MSPLIT(NY-1,IX  ).NE.IG))   &
-                  .OR. (SEA(NY  ,IX+1).AND.(MSPLIT(NY  ,IX+1).NE.IG))   &
-                  .OR. (SEA(NY  ,IX-1).AND.(MSPLIT(NY  ,IX-1).NE.IG))
+      !
+      IPTS   = GSTATS(IG)%NPTS
+      MY     = 1 + GSTATS(IG)%NYH - GSTATS(IG)%NYL
+      MX     = 1 + GSTATS(IG)%NXH - GSTATS(IG)%NXL
+      IF ( GSTATS(IG)%STRADLE ) MX     = MX + NX
+      ICIRC  = 2 * ( MX + MY )
+      !
+      NWDTH  = 1
+      !
+      ITL    = MIN ( ITARG , MAX ( ITARG-2*ICIRC , 3*ICIRC ) )
+      IF ( IPTS .LT. ITL ) NWDTH  = 0
+      !
+      IF ( IPTS.GT.ITARG ) THEN
+        NWDTH = 1 +                                              &
+             MAX(0,+NINT((REAL((IPTS-ITARG))/REAL(ICIRC)-1.)/3.))
+      ENDIF
+      !
+      DO J=1, NWDTH
+        !
+        MASK   = .FALSE.
+        !
+        ! 2.  Mark points to be removed -------------------------------------- *
+        !
+        DO IX=2, NX-1
+          IF ( MSPLIT( 1,IX) .EQ. IG ) MASK( 1,IX) =                &
+               (SEA( 2,IX  ).AND.(MSPLIT( 2,IX  ).NE.IG))       &
+               .OR. (SEA( 1,IX+1).AND.(MSPLIT( 1,IX+1).NE.IG))       &
+               .OR. (SEA( 1,IX-1).AND.(MSPLIT( 1,IX-1).NE.IG))
+          DO IY=2, NY-1
+            IF ( MSPLIT(IY,IX) .EQ. IG ) MASK(IY,IX) =              &
+                 (SEA(IY+1,IX  ).AND.(MSPLIT(IY+1,IX  ).NE.IG)) &
+                 .OR. (SEA(IY-1,IX  ).AND.(MSPLIT(IY-1,IX  ).NE.IG)) &
+                 .OR. (SEA(IY  ,IX+1).AND.(MSPLIT(IY  ,IX+1).NE.IG)) &
+                 .OR. (SEA(IY  ,IX-1).AND.(MSPLIT(IY  ,IX-1).NE.IG))
           END DO
-          !
-          IF ( GLOBAL ) THEN
-             IF ( MSPLIT( 1, 1) .EQ. IG ) MASK( 1, 1) =              &
-                  (SEA( 2, 1).AND.(MSPLIT( 2, 1).NE.IG))         &
-                  .OR. (SEA( 1, 2).AND.(MSPLIT( 1, 2).NE.IG))         &
-                  .OR. (SEA( 1,NX).AND.(MSPLIT( 1,NX).NE.IG))
-             IF ( MSPLIT( 1,NX) .EQ. IG ) MASK( 1,NX) =              &
-                  (SEA( 2,NX  ).AND.(MSPLIT( 2,NX  ).NE.IG))     &
-                  .OR. (SEA( 1, 1  ).AND.(MSPLIT( 1, 1  ).NE.IG))     &
-                  .OR. (SEA( 1,NX-1).AND.(MSPLIT( 1,NX-1).NE.IG))
-             DO IY=2, NY-1
-                IF ( MSPLIT(IY, 1) .EQ. IG ) MASK(IY, 1) =            &
-                     (SEA(IY+1, 1).AND.(MSPLIT(IY+1, 1).NE.IG))   &
-                     .OR. (SEA(IY-1, 1).AND.(MSPLIT(IY-1, 1).NE.IG))   &
-                     .OR. (SEA(IY  , 2).AND.(MSPLIT(IY  , 2).NE.IG))   &
-                     .OR. (SEA(IY  ,NX).AND.(MSPLIT(IY  ,NX).NE.IG))
-                IF ( MSPLIT(IY,NX) .EQ. IG ) MASK(IY,NX) =            &
-                     (SEA(IY+1,NX).AND.(MSPLIT(IY+1,NX).NE.IG))   &
-                     .OR. (SEA(IY-1,NX).AND.(MSPLIT(IY-1,NX).NE.IG))   &
-                     .OR. (SEA(IY  , 1).AND.(MSPLIT(IY  , 1).NE.IG))   &
-                     .OR. (SEA(IY,NX-1).AND.(MSPLIT(IY,NX-1).NE.IG))
-             END DO
-             IF ( MSPLIT(NY, 1) .EQ. IG ) MASK(NY, 1) =              &
-                  (SEA(NY-1, 1).AND.(MSPLIT(NY-1, 1).NE.IG))     &
-                  .OR. (SEA(NY  , 2).AND.(MSPLIT(NY  , 2).NE.IG))     &
-                  .OR. (SEA(NY  ,NX).AND.(MSPLIT(NY  ,NX).NE.IG))
-             IF ( MSPLIT(NY,NX) .EQ. IG ) MASK(NY,NX) =              &
-                  (SEA(NY-1,NX).AND.(MSPLIT(NY-1,NX).NE.IG))     &
-                  .OR. (SEA(NY  , 1).AND.(MSPLIT(NY  , 1).NE.IG))     &
-                  .OR. (SEA(NY,NX-1).AND.(MSPLIT(NY,NX-1).NE.IG))
-          ELSE
-             IF ( MSPLIT( 1, 1) .EQ. IG ) MASK( 1, 1) =              &
-                  (SEA( 2, 1).AND.(MSPLIT( 2, 1).NE.IG))         &
-                  .OR. (SEA( 1, 2).AND.(MSPLIT( 1, 2).NE.IG))
-             IF ( MSPLIT( 1,NX) .EQ. IG ) MASK( 1,NX) =              &
-                  (SEA( 2,NX  ).AND.(MSPLIT( 2,NX  ).NE.IG))     &
-                  .OR. (SEA( 1,NX-1).AND.(MSPLIT( 1,NX-1).NE.IG))
-             DO IY=2, NY-1
-                IF ( MSPLIT(IY, 1) .EQ. IG ) MASK(IY, 1) =            &
-                     (SEA(IY+1, 1).AND.(MSPLIT(IY+1, 1).NE.IG))   &
-                     .OR. (SEA(IY-1, 1).AND.(MSPLIT(IY-1, 1).NE.IG))   &
-                     .OR. (SEA(IY  , 2).AND.(MSPLIT(IY  , 2).NE.IG))
-                IF ( MSPLIT(IY,NX) .EQ. IG ) MASK(IY,NX) =            &
-                     (SEA(IY+1,NX).AND.(MSPLIT(IY+1,NX).NE.IG))   &
-                     .OR. (SEA(IY-1,NX).AND.(MSPLIT(IY-1,NX).NE.IG))   &
-                     .OR. (SEA(IY,NX-1).AND.(MSPLIT(IY,NX-1).NE.IG))
-             END DO
-             IF ( MSPLIT(NY, 1) .EQ. IG ) MASK(NY, 1) =              &
-                  (SEA(NY-1, 1).AND.(MSPLIT(NY-1, 1).NE.IG))     &
-                  .OR. (SEA(NY  , 2).AND.(MSPLIT(NY  , 2).NE.IG))
-             IF ( MSPLIT(NY,NX) .EQ. IG ) MASK(NY,NX) =              &
-                  (SEA(NY-1,NX).AND.(MSPLIT(NY-1,NX).NE.IG))     &
-                  .OR. (SEA(NY,NX-1).AND.(MSPLIT(NY,NX-1).NE.IG))
-          END IF
-          !
-          ! 3.  Remove marked points ------------------------------------------- *
-          !
-          DO IX=1, NX
-             DO IY=1, NY
-                IF ( MASK(IY,IX) ) THEN
-                   MSPLIT(IY,IX) = -1
-                END IF
-             END DO
+          IF ( MSPLIT(NY,IX) .EQ. IG ) MASK(NY,IX) =                &
+               (SEA(NY-1,IX  ).AND.(MSPLIT(NY-1,IX  ).NE.IG))   &
+               .OR. (SEA(NY  ,IX+1).AND.(MSPLIT(NY  ,IX+1).NE.IG))   &
+               .OR. (SEA(NY  ,IX-1).AND.(MSPLIT(NY  ,IX-1).NE.IG))
+        END DO
+        !
+        IF ( GLOBAL ) THEN
+          IF ( MSPLIT( 1, 1) .EQ. IG ) MASK( 1, 1) =              &
+               (SEA( 2, 1).AND.(MSPLIT( 2, 1).NE.IG))         &
+               .OR. (SEA( 1, 2).AND.(MSPLIT( 1, 2).NE.IG))         &
+               .OR. (SEA( 1,NX).AND.(MSPLIT( 1,NX).NE.IG))
+          IF ( MSPLIT( 1,NX) .EQ. IG ) MASK( 1,NX) =              &
+               (SEA( 2,NX  ).AND.(MSPLIT( 2,NX  ).NE.IG))     &
+               .OR. (SEA( 1, 1  ).AND.(MSPLIT( 1, 1  ).NE.IG))     &
+               .OR. (SEA( 1,NX-1).AND.(MSPLIT( 1,NX-1).NE.IG))
+          DO IY=2, NY-1
+            IF ( MSPLIT(IY, 1) .EQ. IG ) MASK(IY, 1) =            &
+                 (SEA(IY+1, 1).AND.(MSPLIT(IY+1, 1).NE.IG))   &
+                 .OR. (SEA(IY-1, 1).AND.(MSPLIT(IY-1, 1).NE.IG))   &
+                 .OR. (SEA(IY  , 2).AND.(MSPLIT(IY  , 2).NE.IG))   &
+                 .OR. (SEA(IY  ,NX).AND.(MSPLIT(IY  ,NX).NE.IG))
+            IF ( MSPLIT(IY,NX) .EQ. IG ) MASK(IY,NX) =            &
+                 (SEA(IY+1,NX).AND.(MSPLIT(IY+1,NX).NE.IG))   &
+                 .OR. (SEA(IY-1,NX).AND.(MSPLIT(IY-1,NX).NE.IG))   &
+                 .OR. (SEA(IY  , 1).AND.(MSPLIT(IY  , 1).NE.IG))   &
+                 .OR. (SEA(IY,NX-1).AND.(MSPLIT(IY,NX-1).NE.IG))
           END DO
-          !
-          ! ... End loops started in 1.
-          !
-       END DO
+          IF ( MSPLIT(NY, 1) .EQ. IG ) MASK(NY, 1) =              &
+               (SEA(NY-1, 1).AND.(MSPLIT(NY-1, 1).NE.IG))     &
+               .OR. (SEA(NY  , 2).AND.(MSPLIT(NY  , 2).NE.IG))     &
+               .OR. (SEA(NY  ,NX).AND.(MSPLIT(NY  ,NX).NE.IG))
+          IF ( MSPLIT(NY,NX) .EQ. IG ) MASK(NY,NX) =              &
+               (SEA(NY-1,NX).AND.(MSPLIT(NY-1,NX).NE.IG))     &
+               .OR. (SEA(NY  , 1).AND.(MSPLIT(NY  , 1).NE.IG))     &
+               .OR. (SEA(NY,NX-1).AND.(MSPLIT(NY,NX-1).NE.IG))
+        ELSE
+          IF ( MSPLIT( 1, 1) .EQ. IG ) MASK( 1, 1) =              &
+               (SEA( 2, 1).AND.(MSPLIT( 2, 1).NE.IG))         &
+               .OR. (SEA( 1, 2).AND.(MSPLIT( 1, 2).NE.IG))
+          IF ( MSPLIT( 1,NX) .EQ. IG ) MASK( 1,NX) =              &
+               (SEA( 2,NX  ).AND.(MSPLIT( 2,NX  ).NE.IG))     &
+               .OR. (SEA( 1,NX-1).AND.(MSPLIT( 1,NX-1).NE.IG))
+          DO IY=2, NY-1
+            IF ( MSPLIT(IY, 1) .EQ. IG ) MASK(IY, 1) =            &
+                 (SEA(IY+1, 1).AND.(MSPLIT(IY+1, 1).NE.IG))   &
+                 .OR. (SEA(IY-1, 1).AND.(MSPLIT(IY-1, 1).NE.IG))   &
+                 .OR. (SEA(IY  , 2).AND.(MSPLIT(IY  , 2).NE.IG))
+            IF ( MSPLIT(IY,NX) .EQ. IG ) MASK(IY,NX) =            &
+                 (SEA(IY+1,NX).AND.(MSPLIT(IY+1,NX).NE.IG))   &
+                 .OR. (SEA(IY-1,NX).AND.(MSPLIT(IY-1,NX).NE.IG))   &
+                 .OR. (SEA(IY,NX-1).AND.(MSPLIT(IY,NX-1).NE.IG))
+          END DO
+          IF ( MSPLIT(NY, 1) .EQ. IG ) MASK(NY, 1) =              &
+               (SEA(NY-1, 1).AND.(MSPLIT(NY-1, 1).NE.IG))     &
+               .OR. (SEA(NY  , 2).AND.(MSPLIT(NY  , 2).NE.IG))
+          IF ( MSPLIT(NY,NX) .EQ. IG ) MASK(NY,NX) =              &
+               (SEA(NY-1,NX).AND.(MSPLIT(NY-1,NX).NE.IG))     &
+               .OR. (SEA(NY,NX-1).AND.(MSPLIT(NY,NX-1).NE.IG))
+        END IF
+        !
+        ! 3.  Remove marked points ------------------------------------------- *
+        !
+        DO IX=1, NX
+          DO IY=1, NY
+            IF ( MASK(IY,IX) ) THEN
+              MSPLIT(IY,IX) = -1
+            END IF
+          END DO
+        END DO
+        !
+        ! ... End loops started in 1.
+        !
+      END DO
     END DO
     !
     RETURN
@@ -1705,173 +1705,173 @@ CONTAINS
     !
     NSEAL  = 0
     DO IX=1, NX
-       DO IY=1, NY
-          IF ( MSPLIT(IY,IX) .EQ. -1 ) THEN
-             NSEAL  = NSEAL + 1
-             IIX(NSEAL) = IX
-             IIY(NSEAL) = IY
-          END IF
-       END DO
+      DO IY=1, NY
+        IF ( MSPLIT(IY,IX) .EQ. -1 ) THEN
+          NSEAL  = NSEAL + 1
+          IIX(NSEAL) = IX
+          IIY(NSEAL) = IY
+        END IF
+      END DO
     END DO
     !
     DO
-       NITT   = NITT + 1
-       !
-       ! 2.  Loop over all grids -------------------------------------------- *
-       !
-       DONE   = .FALSE.
-       !
-       DO J=1, NG
+      NITT   = NITT + 1
+      !
+      ! 2.  Loop over all grids -------------------------------------------- *
+      !
+      DONE   = .FALSE.
+      !
+      DO J=1, NG
+        !
+        ! 3.  Find smallest unprocessed grid --------------------------------- *
+        !
+        NMIN   = NSEA + 1
+        IG     = 0
+        !
+        DO I=1, NG
+          IF ( .NOT.DONE(I) .AND. GSTATS(I)%NPTS.LT.NMIN ) THEN
+            IG     = I
+            NMIN   = GSTATS(I)%NPTS
+          END IF
+        END DO
+        !
+        DONE(IG) = .TRUE.
+        !
+#ifdef W3_T2
+        WRITE (NDST,9030) IG, J, NMIN
+#endif
+        !
+        ! 4.  Loop for halos per grid ---------------------------------------- *
+        !
+        DO, I=1, NDEPTH
           !
-          ! 3.  Find smallest unprocessed grid --------------------------------- *
+          MASK   = .FALSE.
           !
-          NMIN   = NSEA + 1
-          IG     = 0
+          ! 5.  Mark grid point for adding ------------------------------------- *
           !
-          DO I=1, NG
-             IF ( .NOT.DONE(I) .AND. GSTATS(I)%NPTS.LT.NMIN ) THEN
-                IG     = I
-                NMIN   = GSTATS(I)%NPTS
-             END IF
+          DO ISEA=1, NSEAL
+            IX     = IIX(ISEA)
+            IY     = IIY(ISEA)
+            IXL    = 1 + MOD(IX-2+NX,NX)
+            IXR    = 1 + MOD(IX,NX)
+            IF ( MSPLIT(IY,IX) .EQ. -1 ) MASK(IY,IX) =              &
+                 ( MSPLIT(IY+1,IX ) .EQ. IG )    &
+                 .OR.  ( MSPLIT(IY-1,IX ) .EQ. IG )    &
+                 .OR.  ( MSPLIT(IY  ,IXR) .EQ. IG )    &
+                 .OR.  ( MSPLIT(IY  ,IXL) .EQ. IG )
           END DO
           !
-          DONE(IG) = .TRUE.
+          ! 6.  Add marked grid point ------------------------------------------ *
           !
-#ifdef W3_T2
-          WRITE (NDST,9030) IG, J, NMIN
-#endif
+          NADD   = 0
           !
-          ! 4.  Loop for halos per grid ---------------------------------------- *
-          !
-          DO, I=1, NDEPTH
-             !
-             MASK   = .FALSE.
-             !
-             ! 5.  Mark grid point for adding ------------------------------------- *
-             !
-             DO ISEA=1, NSEAL
-                IX     = IIX(ISEA)
-                IY     = IIY(ISEA)
-                IXL    = 1 + MOD(IX-2+NX,NX)
-                IXR    = 1 + MOD(IX,NX)
-                IF ( MSPLIT(IY,IX) .EQ. -1 ) MASK(IY,IX) =              &
-                     ( MSPLIT(IY+1,IX ) .EQ. IG )    &
-                     .OR.  ( MSPLIT(IY-1,IX ) .EQ. IG )    &
-                     .OR.  ( MSPLIT(IY  ,IXR) .EQ. IG )    &
-                     .OR.  ( MSPLIT(IY  ,IXL) .EQ. IG )
-             END DO
-             !
-             ! 6.  Add marked grid point ------------------------------------------ *
-             !
-             NADD   = 0
-             !
-             DO ISEA=1, NSEAL
-                IX     = IIX(ISEA)
-                IY     = IIY(ISEA)
-                IF ( MASK(IY,IX) ) THEN
-                   MSPLIT(IY,IX) = IG
-                   NADD          = NADD + 1
-                END IF
-             END DO
-             !
-             IF ( NADD .EQ. 0 ) EXIT
-             !
-             ! ... End loop started in 4.
-             !
+          DO ISEA=1, NSEAL
+            IX     = IIX(ISEA)
+            IY     = IIY(ISEA)
+            IF ( MASK(IY,IX) ) THEN
+              MSPLIT(IY,IX) = IG
+              NADD          = NADD + 1
+            END IF
           END DO
           !
-          ! ... End loop started in 2.
+          IF ( NADD .EQ. 0 ) EXIT
           !
-       END DO
-       !
-       NDEPTH = 1
-       !
-       ! 7.  Check convergence ---------------------------------------------- *
-       ! 7.a Find number of points left
-       !
-       NRIGHT = NLEFT
-       NLEFT  = 0
-       !
-       DO ISEA=1, NSEAL
-          IX     = IIX(ISEA)
-          IY     = IIY(ISEA)
-          IF ( MSPLIT(IY,IX) .EQ. -1 ) NLEFT = NLEFT + 1
-       END DO
-       !
+          ! ... End loop started in 4.
+          !
+        END DO
+        !
+        ! ... End loop started in 2.
+        !
+      END DO
+      !
+      NDEPTH = 1
+      !
+      ! 7.  Check convergence ---------------------------------------------- *
+      ! 7.a Find number of points left
+      !
+      NRIGHT = NLEFT
+      NLEFT  = 0
+      !
+      DO ISEA=1, NSEAL
+        IX     = IIX(ISEA)
+        IY     = IIY(ISEA)
+        IF ( MSPLIT(IY,IX) .EQ. -1 ) NLEFT = NLEFT + 1
+      END DO
+      !
 #ifdef W3_T2
-       WRITE (NDST,9070) NITT, NLEFT
+      WRITE (NDST,9070) NITT, NLEFT
 #endif
-       !
-       ! 7.b No point left, exit loop
-       !
-       IF ( NLEFT .EQ. 0 ) EXIT
-       !
-       ! 7.c Stuck with points left
-       !
-       IF ( NRIGHT .GT. 0 ) THEN
-          IF ( NLEFT .EQ. NRIGHT ) THEN
-             !
-             ! 7.d Do lost point correction once
-             !
-             IF ( .NOT. FLOST(IG) ) THEN
-                CALL GRLOST
-                FLOST(IG) = .TRUE.
-             ELSE
-                !
-                ! 7.e Got stuck for good, error message and ouput
-                !
-                WRITE (NDSE,1000) IG, NITT, NLEFT
-                !
-                XFL    = .FALSE.
-                YFL    = .FALSE.
-                !
-                DO ISEA=1, NSEAL
-                   IX     = IIX(ISEA)
-                   IY     = IIY(ISEA)
-                   IF ( MSPLIT(IY,IX) .EQ. -1 ) THEN
-                      XFL(MAX(1,IX-NXYOFF):MIN(NX,IX+NXYOFF)) = .TRUE.
-                      YFL(MAX(1,IY-NXYOFF):MIN(NY,IY+NXYOFF)) = .TRUE.
-                   END IF
+      !
+      ! 7.b No point left, exit loop
+      !
+      IF ( NLEFT .EQ. 0 ) EXIT
+      !
+      ! 7.c Stuck with points left
+      !
+      IF ( NRIGHT .GT. 0 ) THEN
+        IF ( NLEFT .EQ. NRIGHT ) THEN
+          !
+          ! 7.d Do lost point correction once
+          !
+          IF ( .NOT. FLOST(IG) ) THEN
+            CALL GRLOST
+            FLOST(IG) = .TRUE.
+          ELSE
+            !
+            ! 7.e Got stuck for good, error message and ouput
+            !
+            WRITE (NDSE,1000) IG, NITT, NLEFT
+            !
+            XFL    = .FALSE.
+            YFL    = .FALSE.
+            !
+            DO ISEA=1, NSEAL
+              IX     = IIX(ISEA)
+              IY     = IIY(ISEA)
+              IF ( MSPLIT(IY,IX) .EQ. -1 ) THEN
+                XFL(MAX(1,IX-NXYOFF):MIN(NX,IX+NXYOFF)) = .TRUE.
+                YFL(MAX(1,IY-NXYOFF):MIN(NY,IY+NXYOFF)) = .TRUE.
+              END IF
+            END DO
+            !
+            NXL   = 0
+            NXH   = 0
+            DO IX=1, NX
+              IF ( XFL(IX) .AND. NXL.EQ. 0 ) NXL = IX
+              IF ( XFL(IX) .AND. IX.EQ. NX ) NXH = IX
+              IF ( .NOT. XFL(IX) .AND. NXL.NE. 0 ) NXH = IX-1
+              IF ( NXH .NE. 0 ) THEN
+                NYL   = 0
+                NYH   = 0
+                DO IY=1, NY
+                  IF ( YFL(IY) .AND. NYL.EQ. 0 ) NYL = IY
+                  IF ( YFL(IY) .AND. IY.EQ. NY ) NYH = IY
+                  IF ( .NOT. YFL(IY) .AND. NYL.NE. 0 )      &
+                       NYH = IY-1
+                  IF ( NYH .NE. 0 ) THEN
+                    WRITE (NDST,1001) NXL, NXH, NYH, NYL
+                    DO I=NYH, NYL, -1
+                      WRITE (NDST,1002) MSPLIT(I,NXL:NXH)
+                    END DO
+                    NYL    = 0
+                    NYH    = 0
+                  END IF
                 END DO
-                !
                 NXL   = 0
                 NXH   = 0
-                DO IX=1, NX
-                   IF ( XFL(IX) .AND. NXL.EQ. 0 ) NXL = IX
-                   IF ( XFL(IX) .AND. IX.EQ. NX ) NXH = IX
-                   IF ( .NOT. XFL(IX) .AND. NXL.NE. 0 ) NXH = IX-1
-                   IF ( NXH .NE. 0 ) THEN
-                      NYL   = 0
-                      NYH   = 0
-                      DO IY=1, NY
-                         IF ( YFL(IY) .AND. NYL.EQ. 0 ) NYL = IY
-                         IF ( YFL(IY) .AND. IY.EQ. NY ) NYH = IY
-                         IF ( .NOT. YFL(IY) .AND. NYL.NE. 0 )      &
-                              NYH = IY-1
-                         IF ( NYH .NE. 0 ) THEN
-                            WRITE (NDST,1001) NXL, NXH, NYH, NYL
-                            DO I=NYH, NYL, -1
-                               WRITE (NDST,1002) MSPLIT(I,NXL:NXH)
-                            END DO
-                            NYL    = 0
-                            NYH    = 0
-                         END IF
-                      END DO
-                      NXL   = 0
-                      NXH   = 0
-                   END IF
-                END DO
-                !
-                ! ... Stop program with error output ...
-                !
-                STOP 01
-             ENDIF
-             !
-          END IF
-       END IF
-       !
-       ! ... End loop started in 1.
-       !
+              END IF
+            END DO
+            !
+            ! ... Stop program with error output ...
+            !
+            STOP 01
+          ENDIF
+          !
+        END IF
+      END IF
+      !
+      ! ... End loop started in 1.
+      !
     END DO
     !
     RETURN
@@ -1939,52 +1939,52 @@ CONTAINS
     ! 1.  Loop over all grid points -------------------------------------- *
     !
     DO IX=1, NX
-       DO IY=1, NY
+      DO IY=1, NY
+        !
+        IF ( MSPLIT(IY,IX) .EQ. -1 ) THEN
           !
-          IF ( MSPLIT(IY,IX) .EQ. -1 ) THEN
-             !
-             ! 2.  Find nearest grid(s) ------------------------------------------- *
-             !
-             IOFF   = 1
-             !
-             DO
-                !
-                IFOUND = 0
-                DO JJX=IX-IOFF, IX+IOFF
-                   IF ( GLOBAL ) THEN
-                      JX     = 1 + MOD(JJX-1+2*NX,NX)
-                   ELSE
-                      JX     = JJX
-                   END IF
-                   IF ( JX.LT.1 .OR. JX.GT.NX ) CYCLE
-                   DO JY=IY-IOFF, IY+IOFF
-                      IF ( JY.LT.1 .OR. JY.GT.NY ) CYCLE
-                      IFOUND(MSPLIT(JY,JX)) = IFOUND(MSPLIT(JY,JX)) + 1
-                   END DO
-                END DO
-                !
-                IG     = 0
-                DO I=1, NG
-                   IF ( IFOUND(I) .GT. 0 ) THEN
-                      IG     = I
-                      EXIT
-                   END IF
-                END DO
-                !
-                IF ( IG .NE. 0 ) THEN
-                   MSPLIT(IY,IX) = IG
-                   EXIT
-                END IF
-                !
-                IOFF   = IOFF + 1
-                IF ( IOFF .GT. NX .AND. IOFF.GT.NY ) EXIT
-             END DO
-             !
-             ! ... End of loops and logic started in 1.
-             !
-          END IF
+          ! 2.  Find nearest grid(s) ------------------------------------------- *
           !
-       END DO
+          IOFF   = 1
+          !
+          DO
+            !
+            IFOUND = 0
+            DO JJX=IX-IOFF, IX+IOFF
+              IF ( GLOBAL ) THEN
+                JX     = 1 + MOD(JJX-1+2*NX,NX)
+              ELSE
+                JX     = JJX
+              END IF
+              IF ( JX.LT.1 .OR. JX.GT.NX ) CYCLE
+              DO JY=IY-IOFF, IY+IOFF
+                IF ( JY.LT.1 .OR. JY.GT.NY ) CYCLE
+                IFOUND(MSPLIT(JY,JX)) = IFOUND(MSPLIT(JY,JX)) + 1
+              END DO
+            END DO
+            !
+            IG     = 0
+            DO I=1, NG
+              IF ( IFOUND(I) .GT. 0 ) THEN
+                IG     = I
+                EXIT
+              END IF
+            END DO
+            !
+            IF ( IG .NE. 0 ) THEN
+              MSPLIT(IY,IX) = IG
+              EXIT
+            END IF
+            !
+            IOFF   = IOFF + 1
+            IF ( IOFF .GT. NX .AND. IOFF.GT.NY ) EXIT
+          END DO
+          !
+          ! ... End of loops and logic started in 1.
+          !
+        END IF
+        !
+      END DO
     END DO
     !
     RETURN
@@ -2046,49 +2046,49 @@ CONTAINS
     ! 1.  Loop over grids ------------------------------------------------ *
     !
     DO IG=1, NG
-       !
-       MY     = 1 + GSTATS(IG)%NYH - GSTATS(IG)%NYL
-       MX     = 1 + GSTATS(IG)%NXH - GSTATS(IG)%NXL
-       IF ( GSTATS(IG)%STRADLE ) MX     = MX + NX
-       !
-       ! 2.  Top ------------------------------------------------------------ *
-       !
-       IF ( MY .GE. 5 ) THEN
-          !
-          DO IX=1, NX
-             IF (MSPLIT(GSTATS(IG)%NYH,IX) .EQ. IG )                 &
-                  MSPLIT(GSTATS(IG)%NYH,IX) = -1
-          END DO
-          !
-          ! 3.  Bottom --------------------------------------------------------- *
-          !
-          DO IX=1, NX
-             IF (MSPLIT(GSTATS(IG)%NYL,IX) .EQ. IG )                 &
-                  MSPLIT(GSTATS(IG)%NYL,IX) = -1
-          END DO
-          !
-       END IF
-       !
-       ! 4.  Left ----------------------------------------------------------- *
-       !
-       IF ( MX .GE. 5 ) THEN
-          !
-          DO IY=GSTATS(IG)%NYL, GSTATS(IG)%NYH
-             IF (MSPLIT(IY,GSTATS(IG)%NXL) .EQ. IG )                 &
-                  MSPLIT(IY,GSTATS(IG)%NXL) = -1
-          END DO
-          !
-          ! 5.  Right ---------------------------------------------------------- *
-          !
-          DO IY=GSTATS(IG)%NYH, GSTATS(IG)%NYH
-             IF (MSPLIT(IY,GSTATS(IG)%NXH) .EQ. IG )                 &
-                  MSPLIT(IY,GSTATS(IG)%NXH) = -1
-          END DO
-          !
-       END IF
-       !
-       ! ... End loop started in 1.
-       !
+      !
+      MY     = 1 + GSTATS(IG)%NYH - GSTATS(IG)%NYL
+      MX     = 1 + GSTATS(IG)%NXH - GSTATS(IG)%NXL
+      IF ( GSTATS(IG)%STRADLE ) MX     = MX + NX
+      !
+      ! 2.  Top ------------------------------------------------------------ *
+      !
+      IF ( MY .GE. 5 ) THEN
+        !
+        DO IX=1, NX
+          IF (MSPLIT(GSTATS(IG)%NYH,IX) .EQ. IG )                 &
+               MSPLIT(GSTATS(IG)%NYH,IX) = -1
+        END DO
+        !
+        ! 3.  Bottom --------------------------------------------------------- *
+        !
+        DO IX=1, NX
+          IF (MSPLIT(GSTATS(IG)%NYL,IX) .EQ. IG )                 &
+               MSPLIT(GSTATS(IG)%NYL,IX) = -1
+        END DO
+        !
+      END IF
+      !
+      ! 4.  Left ----------------------------------------------------------- *
+      !
+      IF ( MX .GE. 5 ) THEN
+        !
+        DO IY=GSTATS(IG)%NYL, GSTATS(IG)%NYH
+          IF (MSPLIT(IY,GSTATS(IG)%NXL) .EQ. IG )                 &
+               MSPLIT(IY,GSTATS(IG)%NXL) = -1
+        END DO
+        !
+        ! 5.  Right ---------------------------------------------------------- *
+        !
+        DO IY=GSTATS(IG)%NYH, GSTATS(IG)%NYH
+          IF (MSPLIT(IY,GSTATS(IG)%NXH) .EQ. IG )                 &
+               MSPLIT(IY,GSTATS(IG)%NXH) = -1
+        END DO
+        !
+      END IF
+      !
+      ! ... End loop started in 1.
+      !
     END DO
     !
     RETURN
@@ -2164,96 +2164,96 @@ CONTAINS
     ! 1.  Set up looping ------------------------------------------------- *
     !
     IF ( GLOBAL ) THEN
-       NX0    =  1
-       NXN    = NX
+      NX0    =  1
+      NXN    = NX
     ELSE
-       NX0    =  2
-       NXN    = NX-1
+      NX0    =  2
+      NXN    = NX-1
     END IF
     !
     ! 2.  Loops over 2D grid --------------------------------------------- *
     !
     DO IX=NX0, NXN
-       !
-       IXL    = IX - 1
-       IXH    = IX + 1
-       IF ( IX .EQ.  1 ) IXL = NX
-       IF ( IX .EQ. NX ) IXH =  1
-       !
-       DO IY=2, NY-1
+      !
+      IXL    = IX - 1
+      IXH    = IX + 1
+      IF ( IX .EQ.  1 ) IXL = NX
+      IF ( IX .EQ. NX ) IXH =  1
+      !
+      DO IY=2, NY-1
+        !
+        ! 3.  Central sea points only ---------------------------------------- *
+        !
+        IF ( SEA(IY,IX) .AND. SEA(IY-1,IX ) .AND. SEA(IY+1,IX )      &
+             .AND. SEA(IY  ,IXL) .AND. SEA(IY  ,IXH) ) THEN
           !
-          ! 3.  Central sea points only ---------------------------------------- *
+          ! 4.  Check for 'lost points' ---------------------------------------- *
           !
-          IF ( SEA(IY,IX) .AND. SEA(IY-1,IX ) .AND. SEA(IY+1,IX )      &
-               .AND. SEA(IY  ,IXL) .AND. SEA(IY  ,IXH) ) THEN
-             !
-             ! 4.  Check for 'lost points' ---------------------------------------- *
-             !
-             COUNT  = 0
-             IG     = MSPLIT(IY,IX)
-             !
-             COUNT(IG) = 1
-             COUNT(MSPLIT(IY-1,IX )) = COUNT(MSPLIT(IY-1,IX )) + 1
-             COUNT(MSPLIT(IY+1,IX )) = COUNT(MSPLIT(IY+1,IX )) + 1
-             COUNT(MSPLIT(IY  ,IXL)) = COUNT(MSPLIT(IY  ,IXL)) + 1
-             COUNT(MSPLIT(IY  ,IXH)) = COUNT(MSPLIT(IY  ,IXH)) + 1
-             !
-             IF ( COUNT(IG) .LE. 2 ) THEN
-                !
+          COUNT  = 0
+          IG     = MSPLIT(IY,IX)
+          !
+          COUNT(IG) = 1
+          COUNT(MSPLIT(IY-1,IX )) = COUNT(MSPLIT(IY-1,IX )) + 1
+          COUNT(MSPLIT(IY+1,IX )) = COUNT(MSPLIT(IY+1,IX )) + 1
+          COUNT(MSPLIT(IY  ,IXL)) = COUNT(MSPLIT(IY  ,IXL)) + 1
+          COUNT(MSPLIT(IY  ,IXH)) = COUNT(MSPLIT(IY  ,IXH)) + 1
+          !
+          IF ( COUNT(IG) .LE. 2 ) THEN
+            !
 #ifdef W3_T3
-                WRITE (NDST,9040) IX, IY, IG
+            WRITE (NDST,9040) IX, IY, IG
 #endif
-                !
-                INEW1  = -1
-                INEW2  = -1
-                !
-                DO J=1, NG
-                   IF ( COUNT(J) .GE. 2 ) THEN
+            !
+            INEW1  = -1
+            INEW2  = -1
+            !
+            DO J=1, NG
+              IF ( COUNT(J) .GE. 2 ) THEN
 #ifdef W3_T3
-                      WRITE (NDST,9041) J
+                WRITE (NDST,9041) J
 #endif
-                      IF ( INEW1 .EQ. -1 ) THEN
-                         INEW1  = J
-                      ELSE
-                         INEW2  = J
-                         EXIT
-                      END IF
-                   END IF
-                END DO
-                !
                 IF ( INEW1 .EQ. -1 ) THEN
-                   INEW   = -1
-                   OK     = .FALSE.
-#ifdef W3_T3
-                   WRITE (NDST,9043)
-#endif
-                ELSE IF ( INEW2 .EQ. -1 ) THEN
-                   INEW   = INEW1
-#ifdef W3_T3
-                   WRITE (NDST,9042) INEW
-#endif
+                  INEW1  = J
                 ELSE
-                   IF ( GSTATS(INEW1)%NPTS .GT.                     &
-                        GSTATS(INEW2)%NPTS ) THEN
-                      INEW   = INEW2
-                   ELSE
-                      INEW   = INEW1
-                   END IF
-#ifdef W3_T3
-                   WRITE (NDST,9042) INEW
-#endif
+                  INEW2  = J
+                  EXIT
                 END IF
-                !
-                MSPLIT(IY,IX) = INEW
-                !
-             END IF
-             !
+              END IF
+            END DO
+            !
+            IF ( INEW1 .EQ. -1 ) THEN
+              INEW   = -1
+              OK     = .FALSE.
+#ifdef W3_T3
+              WRITE (NDST,9043)
+#endif
+            ELSE IF ( INEW2 .EQ. -1 ) THEN
+              INEW   = INEW1
+#ifdef W3_T3
+              WRITE (NDST,9042) INEW
+#endif
+            ELSE
+              IF ( GSTATS(INEW1)%NPTS .GT.                     &
+                   GSTATS(INEW2)%NPTS ) THEN
+                INEW   = INEW2
+              ELSE
+                INEW   = INEW1
+              END IF
+#ifdef W3_T3
+              WRITE (NDST,9042) INEW
+#endif
+            END IF
+            !
+            MSPLIT(IY,IX) = INEW
+            !
           END IF
           !
-          ! ... End loops started in 2.
-          !
-       END DO
-       !
+        END IF
+        !
+        ! ... End loops started in 2.
+        !
+      END DO
+      !
     END DO
     !
     RETURN
@@ -2350,251 +2350,251 @@ CONTAINS
     ! 1.  Loop over grids ------------------------------------------------ *
     !
     DO IG=1, NG
-       !
-       GMASK  = 0
-       ID     = 0
-       !
+      !
+      GMASK  = 0
+      ID     = 0
+      !
 #ifdef W3_T4
-       WRITE (NDST,9010) IG
+      WRITE (NDST,9010) IG
 #endif
-       !
-       ! 2.  Find all parts ------------------------------------------------- *
-       ! 2.a First loop, partial parts
-       !
-       IPTOT  = 0
-       !
-       DO IX=1, NX
-          !
-          IXL    = 1 + MOD(IX-2+NX,NX)
-          PREV   = .FALSE.
-          !
-          DO IY=1, NY
-             IF (MSPLIT(IY,IX) .EQ. IG ) THEN
-                IPTOT  = IPTOT + 1
-                IIX(IPTOT) = IX
-                IIY(IPTOT) = IY
-                IF ( .NOT. PREV) THEN
-                   ID     = ID + 1
-                   PREV   = .TRUE.
-                END IF
-                GMASK(IY,IX) = ID
-             ELSE IF ( PREV ) THEN
-                PREV   = .FALSE.
-                IDL    = 0
-                DO JY=IY-1, 1, -1
-                   IF ( GMASK(JY,IX) .EQ. 0 ) EXIT
-                   IF ( GMASK(JY,IXL).NE.0 .AND. IDL.EQ.0 )            &
-                        IDL = GMASK(JY,IXL)
-                END DO
-                IF ( IDL .NE. 0 ) THEN
-                   DO KY=JY+1, IY-1
-                      IF ( GMASK(KY,IX).EQ.ID ) GMASK(KY,IX) = IDL
-                   END DO
-                   ID     = ID - 1
-                END IF
-                !
-             END  IF
-          END DO
-       END DO
-       !
-       ! 2.b Grid too small, do not cut
-       !
-       IF ( IPTOT .LE. IPAVG ) THEN
+      !
+      ! 2.  Find all parts ------------------------------------------------- *
+      ! 2.a First loop, partial parts
+      !
+      IPTOT  = 0
+      !
+      DO IX=1, NX
+        !
+        IXL    = 1 + MOD(IX-2+NX,NX)
+        PREV   = .FALSE.
+        !
+        DO IY=1, NY
+          IF (MSPLIT(IY,IX) .EQ. IG ) THEN
+            IPTOT  = IPTOT + 1
+            IIX(IPTOT) = IX
+            IIY(IPTOT) = IY
+            IF ( .NOT. PREV) THEN
+              ID     = ID + 1
+              PREV   = .TRUE.
+            END IF
+            GMASK(IY,IX) = ID
+          ELSE IF ( PREV ) THEN
+            PREV   = .FALSE.
+            IDL    = 0
+            DO JY=IY-1, 1, -1
+              IF ( GMASK(JY,IX) .EQ. 0 ) EXIT
+              IF ( GMASK(JY,IXL).NE.0 .AND. IDL.EQ.0 )            &
+                   IDL = GMASK(JY,IXL)
+            END DO
+            IF ( IDL .NE. 0 ) THEN
+              DO KY=JY+1, IY-1
+                IF ( GMASK(KY,IX).EQ.ID ) GMASK(KY,IX) = IDL
+              END DO
+              ID     = ID - 1
+            END IF
+            !
+          END  IF
+        END DO
+      END DO
+      !
+      ! 2.b Grid too small, do not cut
+      !
+      IF ( IPTOT .LE. IPAVG ) THEN
 #ifdef W3_T4
-          WRITE (NDST,9020) IPTOT, IPAVG
+        WRITE (NDST,9020) IPTOT, IPAVG
 #endif
-          CYCLE
-       END IF
-       !
-       ! 2.c Neighbouring grid parts
-       !     Raw data
-       !
-       ALLOCATE ( NEXTTO(0:ID,0:ID), PMAP(0:ID) )
-       NEXTTO = .FALSE.
-       !
-       DO IPT=1, IPTOT
-          IX     = IIX(IPT)
-          IY     = IIY(IPT)
-          IXL    = 1 + MOD(IX-2+NX,NX)
-          IYL    = IY - 1
-          IXH    = 1 + MOD(IX,NX)
-          IYH    = IY + 1
-          NEXTTO( GMASK(IY,IX) , GMASK(IY ,IXL) ) = .TRUE.
-          NEXTTO( GMASK(IY,IX) , GMASK(IY ,IXH) ) = .TRUE.
-          NEXTTO( GMASK(IY,IX) , GMASK(IYL,IX ) ) = .TRUE.
-          NEXTTO( GMASK(IY,IX) , GMASK(IYH,IX ) ) = .TRUE.
-       END DO
-       !
-       !     Make symmetric
-       !
-       DO I=1, ID
-          DO J=1, ID
-             NEXTTO(I,J) = NEXTTO(I,J) .OR. NEXTTO(J,I)
-          END DO
-       END DO
-       !
-       !     Connect accross neighbours
-       !
-       DO I=1, ID
-          DO J=1, ID
-             IF ( NEXTTO(I,J) ) THEN
-                DO K=1, ID
-                   IF ( NEXTTO(K,J) ) THEN
-                      NEXTTO(K,I) = .TRUE.
-                      NEXTTO(I,K) = .TRUE.
-                   END IF
-                END DO
-             END IF
-          END DO
-       END DO
-       !
-       !     Map the parts
-       !
-       IDL    = ID
-       PMAP   = 0
-       ID     = 0
-       !
-       DO I=1, IDL
-          IF ( PMAP(I) .EQ. 0 ) THEN
-             ID     = ID + 1
-             DO J=1, IDL
-                IF ( NEXTTO(J,I) ) EXIT
-             END DO
-             IF ( J .GT. IDL ) THEN
-                PMAP(I) = ID
-             ELSE
-                DO K=I, IDL
-                   IF ( PMAP(K).EQ.0 .AND. NEXTTO(J,K) ) PMAP(K) = ID
-                END DO
-             END IF
+        CYCLE
+      END IF
+      !
+      ! 2.c Neighbouring grid parts
+      !     Raw data
+      !
+      ALLOCATE ( NEXTTO(0:ID,0:ID), PMAP(0:ID) )
+      NEXTTO = .FALSE.
+      !
+      DO IPT=1, IPTOT
+        IX     = IIX(IPT)
+        IY     = IIY(IPT)
+        IXL    = 1 + MOD(IX-2+NX,NX)
+        IYL    = IY - 1
+        IXH    = 1 + MOD(IX,NX)
+        IYH    = IY + 1
+        NEXTTO( GMASK(IY,IX) , GMASK(IY ,IXL) ) = .TRUE.
+        NEXTTO( GMASK(IY,IX) , GMASK(IY ,IXH) ) = .TRUE.
+        NEXTTO( GMASK(IY,IX) , GMASK(IYL,IX ) ) = .TRUE.
+        NEXTTO( GMASK(IY,IX) , GMASK(IYH,IX ) ) = .TRUE.
+      END DO
+      !
+      !     Make symmetric
+      !
+      DO I=1, ID
+        DO J=1, ID
+          NEXTTO(I,J) = NEXTTO(I,J) .OR. NEXTTO(J,I)
+        END DO
+      END DO
+      !
+      !     Connect accross neighbours
+      !
+      DO I=1, ID
+        DO J=1, ID
+          IF ( NEXTTO(I,J) ) THEN
+            DO K=1, ID
+              IF ( NEXTTO(K,J) ) THEN
+                NEXTTO(K,I) = .TRUE.
+                NEXTTO(I,K) = .TRUE.
+              END IF
+            END DO
           END IF
-       END DO
-       !
-       DEALLOCATE ( NEXTTO )
-       !
-       ! 3.  Grid is contiguous --------------------------------------------- *
-       !
-       IF ( ID .EQ. 1 ) THEN
-#ifdef W3_T4
-          WRITE (NDST,9030) IG
-#endif
-          DEALLOCATE ( PMAP )
-          CYCLE
-       END IF
-       !
-       ! 4.  Grid is split, get stats --------------------------------------- *
-       !
-#ifdef W3_T4
-       WRITE (NDST,9040) IG
-#endif
-       !
-       ! 4.a Construct final map for grid
-       !
-       DO IPT=1, IPTOT
-          IX     = IIX(IPT)
-          IY     = IIY(IPT)
-          GMASK(IY,IX) = PMAP(GMASK(IY,IX))
-       END DO
-       !
-       DEALLOCATE ( PMAP )
-       !
-       ! 4.b Run stats
-       !
-       ALLOCATE ( INGRD(ID), FLNEXT(ID) )
-       INGRD  = 0
-       FLNEXT = .FALSE.
-       IPTOT  = 0
-       !
-       DO JX=1, NX
-          DO JY=1, NY
-             IF ( GMASK(JY,JX) .GT. 0 ) THEN
-                INGRD(GMASK(JY,JX))  = INGRD(GMASK(JY,JX)) + 1
-                IPTOT                = IPTOT + 1
-             END IF
+        END DO
+      END DO
+      !
+      !     Map the parts
+      !
+      IDL    = ID
+      PMAP   = 0
+      ID     = 0
+      !
+      DO I=1, IDL
+        IF ( PMAP(I) .EQ. 0 ) THEN
+          ID     = ID + 1
+          DO J=1, IDL
+            IF ( NEXTTO(J,I) ) EXIT
           END DO
-       END DO
-       !
-       DO JX=1, NX
-          DO JY=1, NY-1
-             IF ( ( GMASK(JY  ,JX) .GT. 0 ) .AND.                      &
-                  ( SEA(JY+1,JX) .AND. MSPLIT(JY+1,JX).NE.IG ) )       &
-                  FLNEXT(GMASK(JY  ,JX)) = .TRUE.
-             IF ( ( GMASK(JY+1,JX) .GT. 0 ) .AND.                      &
-                  ( SEA(JY  ,JX) .AND. MSPLIT(JY  ,JX).NE.IG ) )       &
-                  FLNEXT(GMASK(JY+1,JX)) = .TRUE.
-          END DO
-       END DO
-       !
-       DO JY=1, NY
-          DO JX=1, NX-1
-             IF ( ( GMASK(JY,JX  ) .GT. 0 ) .AND.                      &
-                  ( SEA(JY,JX+1) .AND. MSPLIT(JY,JX+1).NE.IG ) )       &
-                  FLNEXT(GMASK(JY,JX  )) = .TRUE.
-             IF ( ( GMASK(JY,JX+1) .GT. 0 ) .AND.                      &
-                  ( SEA(JY,JX  ) .AND. MSPLIT(JY,JX  ).NE.IG ) )       &
-                  FLNEXT(GMASK(JY,JX+1)) = .TRUE.
-          END DO
-          IF ( GLOBAL ) THEN
-             IF ( ( GMASK(JY,NX) .GT. 0 ) .AND.                      &
-                  ( SEA(JY, 1) .AND. MSPLIT(JY, 1).NE.IG ) )         &
-                  FLNEXT(GMASK(JY,NX)) = .TRUE.
-             IF ( ( GMASK(JY, 1) .GT. 0 ) .AND.                      &
-                  ( SEA(JY,NX) .AND. MSPLIT(JY,NX).NE.IG ) )         &
-                  FLNEXT(GMASK(JY, 1)) = .TRUE.
+          IF ( J .GT. IDL ) THEN
+            PMAP(I) = ID
+          ELSE
+            DO K=I, IDL
+              IF ( PMAP(K).EQ.0 .AND. NEXTTO(J,K) ) PMAP(K) = ID
+            END DO
           END IF
-       END DO
-       !
+        END IF
+      END DO
+      !
+      DEALLOCATE ( NEXTTO )
+      !
+      ! 3.  Grid is contiguous --------------------------------------------- *
+      !
+      IF ( ID .EQ. 1 ) THEN
 #ifdef W3_T4
-       DO J=1, ID
-          WRITE (NDST,9041) J, INGRD(J), FLNEXT(J)
-       END DO
+        WRITE (NDST,9030) IG
 #endif
-       !
-       ! 5.  Grid large enough, find smallest part -------------------------- *
-       !
-       IMIN   = NSEA
-       LMIN   = 0
-       !
-       DO J=1, ID
-          IF ( FLNEXT(J) .AND. INGRD(J).LT.IMIN ) THEN
-             IMIN   = INGRD(J)
-             LMIN   = J
+        DEALLOCATE ( PMAP )
+        CYCLE
+      END IF
+      !
+      ! 4.  Grid is split, get stats --------------------------------------- *
+      !
+#ifdef W3_T4
+      WRITE (NDST,9040) IG
+#endif
+      !
+      ! 4.a Construct final map for grid
+      !
+      DO IPT=1, IPTOT
+        IX     = IIX(IPT)
+        IY     = IIY(IPT)
+        GMASK(IY,IX) = PMAP(GMASK(IY,IX))
+      END DO
+      !
+      DEALLOCATE ( PMAP )
+      !
+      ! 4.b Run stats
+      !
+      ALLOCATE ( INGRD(ID), FLNEXT(ID) )
+      INGRD  = 0
+      FLNEXT = .FALSE.
+      IPTOT  = 0
+      !
+      DO JX=1, NX
+        DO JY=1, NY
+          IF ( GMASK(JY,JX) .GT. 0 ) THEN
+            INGRD(GMASK(JY,JX))  = INGRD(GMASK(JY,JX)) + 1
+            IPTOT                = IPTOT + 1
           END IF
-       END DO
-       !
-       IF ( LMIN .EQ. 0 ) THEN
+        END DO
+      END DO
+      !
+      DO JX=1, NX
+        DO JY=1, NY-1
+          IF ( ( GMASK(JY  ,JX) .GT. 0 ) .AND.                      &
+               ( SEA(JY+1,JX) .AND. MSPLIT(JY+1,JX).NE.IG ) )       &
+               FLNEXT(GMASK(JY  ,JX)) = .TRUE.
+          IF ( ( GMASK(JY+1,JX) .GT. 0 ) .AND.                      &
+               ( SEA(JY  ,JX) .AND. MSPLIT(JY  ,JX).NE.IG ) )       &
+               FLNEXT(GMASK(JY+1,JX)) = .TRUE.
+        END DO
+      END DO
+      !
+      DO JY=1, NY
+        DO JX=1, NX-1
+          IF ( ( GMASK(JY,JX  ) .GT. 0 ) .AND.                      &
+               ( SEA(JY,JX+1) .AND. MSPLIT(JY,JX+1).NE.IG ) )       &
+               FLNEXT(GMASK(JY,JX  )) = .TRUE.
+          IF ( ( GMASK(JY,JX+1) .GT. 0 ) .AND.                      &
+               ( SEA(JY,JX  ) .AND. MSPLIT(JY,JX  ).NE.IG ) )       &
+               FLNEXT(GMASK(JY,JX+1)) = .TRUE.
+        END DO
+        IF ( GLOBAL ) THEN
+          IF ( ( GMASK(JY,NX) .GT. 0 ) .AND.                      &
+               ( SEA(JY, 1) .AND. MSPLIT(JY, 1).NE.IG ) )         &
+               FLNEXT(GMASK(JY,NX)) = .TRUE.
+          IF ( ( GMASK(JY, 1) .GT. 0 ) .AND.                      &
+               ( SEA(JY,NX) .AND. MSPLIT(JY,NX).NE.IG ) )         &
+               FLNEXT(GMASK(JY, 1)) = .TRUE.
+        END IF
+      END DO
+      !
 #ifdef W3_T4
-          WRITE (NDST,9050)
+      DO J=1, ID
+        WRITE (NDST,9041) J, INGRD(J), FLNEXT(J)
+      END DO
 #endif
-          DEALLOCATE ( INGRD, FLNEXT )
-          CYCLE
-       END IF
-       !
-       IF ( IMIN .GT. IPCHCK ) THEN
+      !
+      ! 5.  Grid large enough, find smallest part -------------------------- *
+      !
+      IMIN   = NSEA
+      LMIN   = 0
+      !
+      DO J=1, ID
+        IF ( FLNEXT(J) .AND. INGRD(J).LT.IMIN ) THEN
+          IMIN   = INGRD(J)
+          LMIN   = J
+        END IF
+      END DO
+      !
+      IF ( LMIN .EQ. 0 ) THEN
 #ifdef W3_T4
-          WRITE (NDST,9051)
+        WRITE (NDST,9050)
 #endif
-          DEALLOCATE ( INGRD, FLNEXT )
-          CYCLE
-       END IF
-       !
-       ! 6.  Part to cut has been identified -------------------------------- *
-       !
+        DEALLOCATE ( INGRD, FLNEXT )
+        CYCLE
+      END IF
+      !
+      IF ( IMIN .GT. IPCHCK ) THEN
 #ifdef W3_T4
-       WRITE (NDST,9060) LMIN
+        WRITE (NDST,9051)
 #endif
-       !
-       DO JX=1, NX
-          DO JY=1, NY
-             IF ( GMASK(JY,JX) .EQ. LMIN ) MSPLIT(JY,JX) = -1
-          END DO
-       END DO
-       !
-       DEALLOCATE ( INGRD, FLNEXT )
-       OK     = .FALSE.
-       !
-       ! ... End loops started in 1.
-       !
+        DEALLOCATE ( INGRD, FLNEXT )
+        CYCLE
+      END IF
+      !
+      ! 6.  Part to cut has been identified -------------------------------- *
+      !
+#ifdef W3_T4
+      WRITE (NDST,9060) LMIN
+#endif
+      !
+      DO JX=1, NX
+        DO JY=1, NY
+          IF ( GMASK(JY,JX) .EQ. LMIN ) MSPLIT(JY,JX) = -1
+        END DO
+      END DO
+      !
+      DEALLOCATE ( INGRD, FLNEXT )
+      OK     = .FALSE.
+      !
+      ! ... End loops started in 1.
+      !
     END DO
     !
     RETURN
@@ -2681,11 +2681,11 @@ CONTAINS
     IGMIN  = 0
     !
     DO IG=1,NG
-       IF ( GSTATS(IG)%INSTAT .AND.                                  &
-            GSTATS(IG)%NPTS .EQ. MSTATS%NMIN ) THEN
-          NSMALL = NSMALL + 1
-          IGMIN(NSMALL)  = IG
-       END IF
+      IF ( GSTATS(IG)%INSTAT .AND.                                  &
+           GSTATS(IG)%NPTS .EQ. MSTATS%NMIN ) THEN
+        NSMALL = NSMALL + 1
+        IGMIN(NSMALL)  = IG
+      END IF
     END DO
     !
 #ifdef W3_T5
@@ -2697,32 +2697,32 @@ CONTAINS
     NEXTTO = '.'
     !
     DO IX=1, NX-1
-       DO IY=1, NY-1
-          NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY+1,IX  )) = 'X'
-          NEXTTO(MSPLIT(IY+1,IX  ),MSPLIT(IY  ,IX  )) = 'X'
-          NEXTTO(MSPLIT(IY  ,IX+1),MSPLIT(IY  ,IX  )) = 'X'
-          NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY  ,IX+1)) = 'X'
-       END DO
+      DO IY=1, NY-1
+        NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY+1,IX  )) = 'X'
+        NEXTTO(MSPLIT(IY+1,IX  ),MSPLIT(IY  ,IX  )) = 'X'
+        NEXTTO(MSPLIT(IY  ,IX+1),MSPLIT(IY  ,IX  )) = 'X'
+        NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY  ,IX+1)) = 'X'
+      END DO
     END DO
     !
     IF ( GLOBAL ) THEN
-       DO IY=1, NY-1
-          NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY+1,NX)) = 'X'
-          NEXTTO(MSPLIT(IY+1,NX),MSPLIT(IY  ,NX)) = 'X'
-          NEXTTO(MSPLIT(IY  , 1),MSPLIT(IY  ,NX)) = 'X'
-          NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY  , 1)) = 'X'
-       END DO
+      DO IY=1, NY-1
+        NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY+1,NX)) = 'X'
+        NEXTTO(MSPLIT(IY+1,NX),MSPLIT(IY  ,NX)) = 'X'
+        NEXTTO(MSPLIT(IY  , 1),MSPLIT(IY  ,NX)) = 'X'
+        NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY  , 1)) = 'X'
+      END DO
     END IF
     !
     DO IG=0,NG
-       NEXTTO(IG,IG) = '-'
+      NEXTTO(IG,IG) = '-'
     END DO
     !
 #ifdef W3_T5
     WRITE (NDST,9020)
     DO IG=1, NG
-       TEMP   = NEXTTO(IG,1:)
-       WRITE (NDST,9021) IG, TEMP
+      TEMP   = NEXTTO(IG,1:)
+      WRITE (NDST,9021) IG, TEMP
     END DO
 #endif
     !
@@ -2732,86 +2732,86 @@ CONTAINS
     NFREE  = 0
     !
     DO J=1, NSMALL
-       !
+      !
 #ifdef W3_T5
-       WRITE (NDST,9030) IGMIN(J)
+      WRITE (NDST,9030) IGMIN(J)
 #endif
-       !
-       ! 3.a Find neighbours
-       !
-       IG     = IGMIN(J)
-       IGADD   = 0
-       IGTEST  = NSEA + 1
-       NNEXT  = 0
-       DO JG=1, NG
-          IF ( NEXTTO(IG,JG) .EQ. 'X' ) THEN
-             NNEXT  = NNEXT + 1
-             IF ( GSTATS(JG)%NPTS .LT. IGTEST ) THEN
-                IGTEST = GSTATS(JG)%NPTS
-                IGADD  = JG
-             END IF
+      !
+      ! 3.a Find neighbours
+      !
+      IG     = IGMIN(J)
+      IGADD   = 0
+      IGTEST  = NSEA + 1
+      NNEXT  = 0
+      DO JG=1, NG
+        IF ( NEXTTO(IG,JG) .EQ. 'X' ) THEN
+          NNEXT  = NNEXT + 1
+          IF ( GSTATS(JG)%NPTS .LT. IGTEST ) THEN
+            IGTEST = GSTATS(JG)%NPTS
+            IGADD  = JG
           END IF
-       END DO
-       !
+        END IF
+      END DO
+      !
 #ifdef W3_T5
-       WRITE (NDST,9031) NNEXT
+      WRITE (NDST,9031) NNEXT
 #endif
-       !
-       ! 3.b No neighbours found, mark as 'not to be processed further'
-       !
-       IF ( NNEXT .EQ. 0 ) THEN
+      !
+      ! 3.b No neighbours found, mark as 'not to be processed further'
+      !
+      IF ( NNEXT .EQ. 0 ) THEN
+        GSTATS(IG)%INSTAT = .FALSE.
+#ifdef W3_T5
+        WRITE (NDST,9032) IG
+#endif
+      ELSE
+        !
+        ! 3.c Check smallest neighbor
+        !
+#ifdef W3_T5
+        WRITE (NDST,9033) IGADD, IGTEST, IGTEST+INGMIN, NINT(XMEAN)
+#endif
+        !
+        IF ( IGTEST + INGMIN .LT. NINT(XMEAN) ) THEN
+          !
+          ! ... Merge grids
+          !
+          DO IX=1, NX
+            DO IY=1, NY
+              IF ( MSPLIT(IY,IX) .EQ. IG ) MSPLIT(IY,IX) = IGADD
+            END DO
+          END DO
+          !
+          NFREE  = NFREE + 1
+          FREE(NFREE) = IG
+          !
+        ELSE
+          !
+          ! ... Remove grid(s) from stats
+          !
+#ifdef W3_T5
+          WRITE (NDST,9034)
+#endif
+          !
           GSTATS(IG)%INSTAT = .FALSE.
 #ifdef W3_T5
           WRITE (NDST,9032) IG
 #endif
-       ELSE
-          !
-          ! 3.c Check smallest neighbor
-          !
+          NNEXT  = 0
+          DO JG=1, NG
+            IF ( NEXTTO(IGADD,JG) .EQ. 'X' ) NNEXT  = NNEXT + 1
+          END DO
+          IF ( NNEXT .EQ. 1 ) THEN
+            GSTATS(IGADD)%INSTAT = .FALSE.
 #ifdef W3_T5
-          WRITE (NDST,9033) IGADD, IGTEST, IGTEST+INGMIN, NINT(XMEAN)
+            WRITE (NDST,9032) IGADD
 #endif
-          !
-          IF ( IGTEST + INGMIN .LT. NINT(XMEAN) ) THEN
-             !
-             ! ... Merge grids
-             !
-             DO IX=1, NX
-                DO IY=1, NY
-                   IF ( MSPLIT(IY,IX) .EQ. IG ) MSPLIT(IY,IX) = IGADD
-                END DO
-             END DO
-             !
-             NFREE  = NFREE + 1
-             FREE(NFREE) = IG
-             !
-          ELSE
-             !
-             ! ... Remove grid(s) from stats
-             !
-#ifdef W3_T5
-             WRITE (NDST,9034)
-#endif
-             !
-             GSTATS(IG)%INSTAT = .FALSE.
-#ifdef W3_T5
-             WRITE (NDST,9032) IG
-#endif
-             NNEXT  = 0
-             DO JG=1, NG
-                IF ( NEXTTO(IGADD,JG) .EQ. 'X' ) NNEXT  = NNEXT + 1
-             END DO
-             IF ( NNEXT .EQ. 1 ) THEN
-                GSTATS(IGADD)%INSTAT = .FALSE.
-#ifdef W3_T5
-                WRITE (NDST,9032) IGADD
-#endif
-             END IF
-             !
           END IF
           !
-       END IF
-       !
+        END IF
+        !
+      END IF
+      !
     END DO
     !
     ! 4.  Make new grids as needed --------------------------------------- *
@@ -2821,64 +2821,64 @@ CONTAINS
 #endif
     !
     DO J=1, NFREE
-       !
+      !
 #ifdef W3_T5
-       WRITE (NDST,9041) FREE(J)
+      WRITE (NDST,9041) FREE(J)
 #endif
-       !
-       ! 4.a Find biggest grid
-       !
-       NBIG   = 0
-       IGB    = 0
-       !
-       DO IG=1, NG
-          IF ( GSTATS(IG)%NPTS .GT. NBIG ) THEN
-             NBIG   = GSTATS(IG)%NPTS
-             IGB    = IG
-          END IF
-       END DO
-       !
-       ! 4.a Split biggest grid
-       !
-       NX0    = GSTATS(IGB)%NXL
-       NXN    = GSTATS(IGB)%NXH
-       NY0    = GSTATS(IGB)%NYL
-       NYN    = GSTATS(IGB)%NYH
-       !
-       MY     = 1 + GSTATS(IGB)%NYH - GSTATS(IGB)%NYL
-       MX     = 1 + GSTATS(IGB)%NXH - GSTATS(IGB)%NXL
-       IF ( GSTATS(IGB)%STRADLE ) MX     = MX + NX
-       !
-       IF ( MY .GE. MX ) THEN
+      !
+      ! 4.a Find biggest grid
+      !
+      NBIG   = 0
+      IGB    = 0
+      !
+      DO IG=1, NG
+        IF ( GSTATS(IG)%NPTS .GT. NBIG ) THEN
+          NBIG   = GSTATS(IG)%NPTS
+          IGB    = IG
+        END IF
+      END DO
+      !
+      ! 4.a Split biggest grid
+      !
+      NX0    = GSTATS(IGB)%NXL
+      NXN    = GSTATS(IGB)%NXH
+      NY0    = GSTATS(IGB)%NYL
+      NYN    = GSTATS(IGB)%NYH
+      !
+      MY     = 1 + GSTATS(IGB)%NYH - GSTATS(IGB)%NYL
+      MX     = 1 + GSTATS(IGB)%NXH - GSTATS(IGB)%NXL
+      IF ( GSTATS(IGB)%STRADLE ) MX     = MX + NX
+      !
+      IF ( MY .GE. MX ) THEN
 #ifdef W3_T5
-          WRITE (NDST,9042) IGB, 'VERTICAL', MX, MY
+        WRITE (NDST,9042) IGB, 'VERTICAL', MX, MY
 #endif
-          NYN    = NY0 + MY/2
-       ELSE
+        NYN    = NY0 + MY/2
+      ELSE
 #ifdef W3_T5
-          WRITE (NDST,9042) IGB, 'HORIZONTAL', MX, MY
+        WRITE (NDST,9042) IGB, 'HORIZONTAL', MX, MY
 #endif
-          NXN    = NX0 + MX/2
+        NXN    = NX0 + MX/2
 #ifdef W3_T5
-          NXNT   = 1 + MOD(NXN-1,NX)
+        NXNT   = 1 + MOD(NXN-1,NX)
 #endif
-       END IF
+      END IF
 #ifdef W3_T5
-       WRITE (NDST,9043) GSTATS(IGB)%NXL, GSTATS(IGB)%NXH,       &
-            GSTATS(IGB)%NYL, GSTATS(IGB)%NYH,       &
-            GSTATS(IGB)%STRADLE, NX0, NXN, NY0, NYN
+      WRITE (NDST,9043) GSTATS(IGB)%NXL, GSTATS(IGB)%NXH,       &
+           GSTATS(IGB)%NYL, GSTATS(IGB)%NYH,       &
+           GSTATS(IGB)%STRADLE, NX0, NXN, NY0, NYN
 #endif
-       !
-       DO IX=NX0, NXN
-          JX     = 1 + MOD(IX-1,NX)
-          DO IY=NY0, NYN
-             IF ( MSPLIT(IY,JX) .EQ. IGB ) MSPLIT(IY,JX) = FREE(J)
-          END DO
-       END DO
-       !
-       GSTATS(IGB)%NPTS = 0
-       GSTATS(FREE(J))%NPTS = 0
-       !
+      !
+      DO IX=NX0, NXN
+        JX     = 1 + MOD(IX-1,NX)
+        DO IY=NY0, NYN
+          IF ( MSPLIT(IY,JX) .EQ. IGB ) MSPLIT(IY,JX) = FREE(J)
+        END DO
+      END DO
+      !
+      GSTATS(IGB)%NPTS = 0
+      GSTATS(FREE(J))%NPTS = 0
+      !
     END DO
     !
     RETURN
@@ -2958,11 +2958,11 @@ CONTAINS
     IGMAX  = 0
     !
     DO IG=1,NG
-       IF ( GSTATS(IG)%INSTAT .AND.                                  &
-            GSTATS(IG)%NPTS .EQ. MSTATS%NMAX ) THEN
-          NBIG   = NBIG + 1
-          IGMAX(NBIG)  = IG
-       END IF
+      IF ( GSTATS(IG)%INSTAT .AND.                                  &
+           GSTATS(IG)%NPTS .EQ. MSTATS%NMAX ) THEN
+        NBIG   = NBIG + 1
+        IGMAX(NBIG)  = IG
+      END IF
     END DO
     !
 #ifdef W3_T6
@@ -2974,71 +2974,71 @@ CONTAINS
     NEXTTO = '.'
     !
     DO IX=1, NX-1
-       DO IY=1, NY-1
-          NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY+1,IX  )) = 'X'
-          NEXTTO(MSPLIT(IY+1,IX  ),MSPLIT(IY  ,IX  )) = 'X'
-          NEXTTO(MSPLIT(IY  ,IX+1),MSPLIT(IY  ,IX  )) = 'X'
-          NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY  ,IX+1)) = 'X'
-       END DO
+      DO IY=1, NY-1
+        NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY+1,IX  )) = 'X'
+        NEXTTO(MSPLIT(IY+1,IX  ),MSPLIT(IY  ,IX  )) = 'X'
+        NEXTTO(MSPLIT(IY  ,IX+1),MSPLIT(IY  ,IX  )) = 'X'
+        NEXTTO(MSPLIT(IY  ,IX  ),MSPLIT(IY  ,IX+1)) = 'X'
+      END DO
     END DO
     !
     IF ( GLOBAL ) THEN
-       DO IY=1, NY-1
-          NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY+1,NX)) = 'X'
-          NEXTTO(MSPLIT(IY+1,NX),MSPLIT(IY  ,NX)) = 'X'
-          NEXTTO(MSPLIT(IY  , 1),MSPLIT(IY  ,NX)) = 'X'
-          NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY  , 1)) = 'X'
-       END DO
+      DO IY=1, NY-1
+        NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY+1,NX)) = 'X'
+        NEXTTO(MSPLIT(IY+1,NX),MSPLIT(IY  ,NX)) = 'X'
+        NEXTTO(MSPLIT(IY  , 1),MSPLIT(IY  ,NX)) = 'X'
+        NEXTTO(MSPLIT(IY  ,NX),MSPLIT(IY  , 1)) = 'X'
+      END DO
     END IF
     !
     DO IG=0,NG
-       NEXTTO(IG,IG) = '-'
+      NEXTTO(IG,IG) = '-'
     END DO
     !
 #ifdef W3_T6
     WRITE (NDST,9020)
     DO IG=1, NG
-       TEMP   = NEXTTO(IG,1:)
-       WRITE (NDST,9021) IG, TEMP
+      TEMP   = NEXTTO(IG,1:)
+      WRITE (NDST,9021) IG, TEMP
     END DO
 #endif
     !
     ! 3.  Loop over big grids -------------------------------------------- *
     !
     DO J=1, NBIG
-       !
+      !
 #ifdef W3_T6
-       WRITE (NDST,9030) IGMAX(J)
+      WRITE (NDST,9030) IGMAX(J)
 #endif
-       !
-       ! 3.a Find neighbours
-       !
-       IG     = IGMAX(J)
-       NNEXT  = 0
-       DO JG=1, NG
-          IF ( NEXTTO(IG,JG) .EQ. 'X' ) NNEXT  = NNEXT + 1
-       END DO
-       !
+      !
+      ! 3.a Find neighbours
+      !
+      IG     = IGMAX(J)
+      NNEXT  = 0
+      DO JG=1, NG
+        IF ( NEXTTO(IG,JG) .EQ. 'X' ) NNEXT  = NNEXT + 1
+      END DO
+      !
 #ifdef W3_T6
-       WRITE (NDST,9031) NNEXT
+      WRITE (NDST,9031) NNEXT
 #endif
-       !
-       ! 3.b Enough neighbours found, mark as 'not to be processed further'
-       !
-       IF ( NNEXT .GE. 1 ) THEN
-          GSTATS(IG)%INSTAT = .FALSE.
+      !
+      ! 3.b Enough neighbours found, mark as 'not to be processed further'
+      !
+      IF ( NNEXT .GE. 1 ) THEN
+        GSTATS(IG)%INSTAT = .FALSE.
 #ifdef W3_T6
-          WRITE (NDST,9032)
+        WRITE (NDST,9032)
 #endif
-       ELSE
-          !
-          ! 3.c Biggest grid is isolated, should split
-          !
-          WRITE (NDSE,930)
-          STOP 11
-          !
-       END IF
-       !
+      ELSE
+        !
+        ! 3.c Biggest grid is isolated, should split
+        !
+        WRITE (NDSE,930)
+        STOP 11
+        !
+      END IF
+      !
     END DO
     !
     RETURN
@@ -3121,25 +3121,25 @@ CONTAINS
     ! 1.  Set up MTEMP with MAPSTA 0,1,3 for grid ------------------------ *
     !
     DO IX=1, NX
-       DO IY=1, NY
-          IF ( MSPLIT(IY,IX) .EQ. IG ) THEN
-             MTEMP(IY,IX) = 1
-          ELSE IF ( MSPLIT(IY,IX) .GT. 0 ) THEN
-             MTEMP(IY,IX) = 3
-          ELSE
-             MTEMP(IY,IX) = 0
-          END IF
-       END DO
+      DO IY=1, NY
+        IF ( MSPLIT(IY,IX) .EQ. IG ) THEN
+          MTEMP(IY,IX) = 1
+        ELSE IF ( MSPLIT(IY,IX) .GT. 0 ) THEN
+          MTEMP(IY,IX) = 3
+        ELSE
+          MTEMP(IY,IX) = 0
+        END IF
+      END DO
     END DO
     !
     ! 2.  Add ALL MAPSTA = 2 points to grid ------------------------------ *
     !
     DO IX=1, NX
-       DO IY=1, NY
-          IF ( MAPSTA(IY,IX) .EQ. 2 ) THEN
-             MTEMP(IY,IX) = 2
-          END IF
-       END DO
+      DO IY=1, NY
+        IF ( MAPSTA(IY,IX) .EQ. 2 ) THEN
+          MTEMP(IY,IX) = 2
+        END IF
+      END DO
     END DO
     !
     ! 3.  Add halo ------------------------------------------------------- *
@@ -3163,39 +3163,39 @@ CONTAINS
     ! 3.b Exand halo
     !
     DO IIT=1, NIT
-       !
-       MASK   = .FALSE.
-       !
-       DO IX=1, NX
-          IXL    = 1 + MOD(IX-2+NX,NX)
-          IXH    = 1 + MOD(IX,NX)
-          DO IY=2, NY-1
-             IF ( MTEMP(IY,IX) .EQ. 3 ) MASK(IY,IX) =                  &
-                  ( ( MTEMP(IY+1,IX ) .EQ. 1 ) .OR.       &
-                  ( MTEMP(IY-1,IX ) .EQ. 1 ) .OR.       &
-                  ( MTEMP(IY  ,IXH) .EQ. 1 ) .OR.       &
-                  ( MTEMP(IY  ,IXL) .EQ. 1 ) )          &
-                  .OR.    (   ( MTEMP(IY+1,IXL) .EQ. 1 ) .AND.      &
-                  ( ( MTEMP(IY  ,IXL) .EQ. 1 ) .OR.       &
-                  ( MTEMP(IY+1,IX ) .EQ. 1 ) ) )        &
-                  .OR.    (   ( MTEMP(IY+1,IXH) .EQ. 1 ) .AND.      &
-                  ( ( MTEMP(IY  ,IXH) .EQ. 1 ) .OR.       &
-                  ( MTEMP(IY+1,IX ) .EQ. 1 ) ) )        &
-                  .OR.    (   ( MTEMP(IY-1,IXH) .EQ. 1 ) .AND.      &
-                  ( ( MTEMP(IY  ,IXH) .EQ. 1 ) .OR.       &
-                  ( MTEMP(IY-1,IX ) .EQ. 1 ) ) )        &
-                  .OR.    (   ( MTEMP(IY-1,IXL) .EQ. 1 ) .AND.      &
-                  ( ( MTEMP(IY  ,IXL) .EQ. 1 ) .OR.       &
-                  ( MTEMP(IY-1,IX ) .EQ. 1 ) ) )
-          END DO
-       END DO
-       !
-       DO IX=1, NX
-          DO IY=1, NY
-             IF ( MASK(IY,IX) ) MTEMP(IY,IX) = 1
-          END DO
-       END DO
-       !
+      !
+      MASK   = .FALSE.
+      !
+      DO IX=1, NX
+        IXL    = 1 + MOD(IX-2+NX,NX)
+        IXH    = 1 + MOD(IX,NX)
+        DO IY=2, NY-1
+          IF ( MTEMP(IY,IX) .EQ. 3 ) MASK(IY,IX) =                  &
+               ( ( MTEMP(IY+1,IX ) .EQ. 1 ) .OR.       &
+               ( MTEMP(IY-1,IX ) .EQ. 1 ) .OR.       &
+               ( MTEMP(IY  ,IXH) .EQ. 1 ) .OR.       &
+               ( MTEMP(IY  ,IXL) .EQ. 1 ) )          &
+               .OR.    (   ( MTEMP(IY+1,IXL) .EQ. 1 ) .AND.      &
+               ( ( MTEMP(IY  ,IXL) .EQ. 1 ) .OR.       &
+               ( MTEMP(IY+1,IX ) .EQ. 1 ) ) )        &
+               .OR.    (   ( MTEMP(IY+1,IXH) .EQ. 1 ) .AND.      &
+               ( ( MTEMP(IY  ,IXH) .EQ. 1 ) .OR.       &
+               ( MTEMP(IY+1,IX ) .EQ. 1 ) ) )        &
+               .OR.    (   ( MTEMP(IY-1,IXH) .EQ. 1 ) .AND.      &
+               ( ( MTEMP(IY  ,IXH) .EQ. 1 ) .OR.       &
+               ( MTEMP(IY-1,IX ) .EQ. 1 ) ) )        &
+               .OR.    (   ( MTEMP(IY-1,IXL) .EQ. 1 ) .AND.      &
+               ( ( MTEMP(IY  ,IXL) .EQ. 1 ) .OR.       &
+               ( MTEMP(IY-1,IX ) .EQ. 1 ) ) )
+        END DO
+      END DO
+      !
+      DO IX=1, NX
+        DO IY=1, NY
+          IF ( MASK(IY,IX) ) MTEMP(IY,IX) = 1
+        END DO
+      END DO
+      !
     END DO
     !
     ! 3.c Contract halo
@@ -3256,27 +3256,27 @@ CONTAINS
     ! 4.  Remove extraeneous MAPSTA = 2 ---------------------------------- *
     !
     DO IX=1, NX
-       !
-       IF ( GLOBAL ) THEN
-          IXL    = 1 + MOD(IX-2+NX,NX)
-          IXH    = 1 + MOD(IX,NX)
-       ELSE
-          IXL    = MAX ( 1 , IX-1 )
-          IXH    = MIN ( NX , IX+1 )
-       END IF
-       !
-       DO IY=1, NY
-          IF ( MTEMP(IY,IX) .EQ. 2 ) THEN
-             IYL    = MAX ( 1 , IY-1 )
-             IYH    = MIN ( NY , IY+1 )
-             IF ( .NOT. ( ( MTEMP(IYL,IX ) .EQ. 1 ) .OR.             &
-                  ( MTEMP(IYH,IX ) .EQ. 1 ) .OR.             &
-                  ( MTEMP(IY ,IXL) .EQ. 1 ) .OR.             &
-                  ( MTEMP(IY ,IXH) .EQ. 1 ) ) )              &
-                  MTEMP(IY,IX) = 3
-          END IF
-       END DO
-       !
+      !
+      IF ( GLOBAL ) THEN
+        IXL    = 1 + MOD(IX-2+NX,NX)
+        IXH    = 1 + MOD(IX,NX)
+      ELSE
+        IXL    = MAX ( 1 , IX-1 )
+        IXH    = MIN ( NX , IX+1 )
+      END IF
+      !
+      DO IY=1, NY
+        IF ( MTEMP(IY,IX) .EQ. 2 ) THEN
+          IYL    = MAX ( 1 , IY-1 )
+          IYH    = MIN ( NY , IY+1 )
+          IF ( .NOT. ( ( MTEMP(IYL,IX ) .EQ. 1 ) .OR.             &
+               ( MTEMP(IYH,IX ) .EQ. 1 ) .OR.             &
+               ( MTEMP(IY ,IXL) .EQ. 1 ) .OR.             &
+               ( MTEMP(IY ,IXH) .EQ. 1 ) ) )              &
+               MTEMP(IY,IX) = 3
+        END IF
+      END DO
+      !
     END DO
     !
 #ifdef W3_T7
@@ -3300,54 +3300,54 @@ CONTAINS
     GSTOLD(IG)%NYH     = 1
     !
     IF ( GLOBAL ) THEN
-       !
-       LEFT   = .FALSE.
-       RIGHT  = .FALSE.
-       !
-       DO IY=1, NY
-          IF ( MTEMP(IY, 1).EQ.1 .OR.  MTEMP(IY, 1).EQ.2 ) LEFT   = .TRUE.
-          IF ( MTEMP(IY,NX).EQ.1 .OR.  MTEMP(IY,NX).EQ.2 ) RIGHT  = .TRUE.
-       END DO
-       GSTOLD(IG)%STRADLE = LEFT .AND. RIGHT
-       !
+      !
+      LEFT   = .FALSE.
+      RIGHT  = .FALSE.
+      !
+      DO IY=1, NY
+        IF ( MTEMP(IY, 1).EQ.1 .OR.  MTEMP(IY, 1).EQ.2 ) LEFT   = .TRUE.
+        IF ( MTEMP(IY,NX).EQ.1 .OR.  MTEMP(IY,NX).EQ.2 ) RIGHT  = .TRUE.
+      END DO
+      GSTOLD(IG)%STRADLE = LEFT .AND. RIGHT
+      !
     END IF
     !
     DO IY=1, NY
-       DO IX=1, NX
-          IF ( MTEMP(IY,IX).EQ.1 .OR.  MTEMP(IY,IX).EQ.2 ) THEN
-             GSTOLD(IG)%NPTS = GSTOLD(IG)%NPTS + 1
-             GSTOLD(IG)%NXL  = MIN ( GSTOLD(IG)%NXL , IX )
-             GSTOLD(IG)%NXH  = MAX ( GSTOLD(IG)%NXH , IX )
-             GSTOLD(IG)%NYL  = MIN ( GSTOLD(IG)%NYL , IY )
-             GSTOLD(IG)%NYH  = MAX ( GSTOLD(IG)%NYH , IY )
-          END IF
-       END DO
+      DO IX=1, NX
+        IF ( MTEMP(IY,IX).EQ.1 .OR.  MTEMP(IY,IX).EQ.2 ) THEN
+          GSTOLD(IG)%NPTS = GSTOLD(IG)%NPTS + 1
+          GSTOLD(IG)%NXL  = MIN ( GSTOLD(IG)%NXL , IX )
+          GSTOLD(IG)%NXH  = MAX ( GSTOLD(IG)%NXH , IX )
+          GSTOLD(IG)%NYL  = MIN ( GSTOLD(IG)%NYL , IY )
+          GSTOLD(IG)%NYH  = MAX ( GSTOLD(IG)%NYH , IY )
+        END IF
+      END DO
     END DO
     !
     IF ( GSTOLD(IG)%STRADLE ) THEN
-       NOCNT  = 0
-       NOCNTM = 0
-       NOCNTL = 0
-       DO IX=1, NX
-          THERE  = .FALSE.
-          DO IY=1, NY
-             IF ( MTEMP(IY,IX).EQ.1 .OR.  MTEMP(IY,IX).EQ.2 ) THEN
-                THERE  = .TRUE.
-                EXIT
-             END IF
-          END DO
-          IF ( THERE ) THEN
-             NOCNT = 0
-          ELSE
-             NOCNT = NOCNT + 1
-             IF ( NOCNT .GT. NOCNTM ) THEN
-                NOCNTM = NOCNT
-                NOCNTL = IX
-             END IF
+      NOCNT  = 0
+      NOCNTM = 0
+      NOCNTL = 0
+      DO IX=1, NX
+        THERE  = .FALSE.
+        DO IY=1, NY
+          IF ( MTEMP(IY,IX).EQ.1 .OR.  MTEMP(IY,IX).EQ.2 ) THEN
+            THERE  = .TRUE.
+            EXIT
           END IF
-       END DO
-       GSTOLD(IG)%NXL = NOCNTL + 1
-       GSTOLD(IG)%NXH = NOCNTL - NOCNTM
+        END DO
+        IF ( THERE ) THEN
+          NOCNT = 0
+        ELSE
+          NOCNT = NOCNT + 1
+          IF ( NOCNT .GT. NOCNTM ) THEN
+            NOCNTM = NOCNT
+            NOCNTL = IX
+          END IF
+        END IF
+      END DO
+      GSTOLD(IG)%NXL = NOCNTL + 1
+      GSTOLD(IG)%NXH = NOCNTL - NOCNTM
     END IF
     !
     ! ... Make sure outside of grid is 2 or 3
@@ -3361,29 +3361,29 @@ CONTAINS
     RIGHT  = .FALSE.
     !
     DO IX=1, NX
-       LEFT   = LEFT  .OR. ( MTEMP(GSTOLD(IG)%NYL,IX) .EQ. 1 )
-       RIGHT  = RIGHT .OR. ( MTEMP(GSTOLD(IG)%NYH,IX) .EQ. 1 )
+      LEFT   = LEFT  .OR. ( MTEMP(GSTOLD(IG)%NYL,IX) .EQ. 1 )
+      RIGHT  = RIGHT .OR. ( MTEMP(GSTOLD(IG)%NYH,IX) .EQ. 1 )
     END DO
     !
     IF ( LEFT  ) GSTOLD(IG)%NYL = GSTOLD(IG)%NYL - 1
     IF ( RIGHT ) GSTOLD(IG)%NYH = GSTOLD(IG)%NYH + 1
     !
     DO IY=1, NY
-       LEFT   = LEFT  .OR. ( MTEMP(IY,GSTOLD(IG)%NXL) .EQ. 1 )
-       RIGHT  = RIGHT .OR. ( MTEMP(IY,GSTOLD(IG)%NXH) .EQ. 1 )
+      LEFT   = LEFT  .OR. ( MTEMP(IY,GSTOLD(IG)%NXL) .EQ. 1 )
+      RIGHT  = RIGHT .OR. ( MTEMP(IY,GSTOLD(IG)%NXH) .EQ. 1 )
     END DO
     !
     IF ( LEFT  ) GSTOLD(IG)%NXL = GSTOLD(IG)%NXL - 1
     IF ( RIGHT ) GSTOLD(IG)%NXH = GSTOLD(IG)%NXH + 1
     !
     IF ( GLOBAL .AND. GSTOLD(IG)%NXL.EQ.0 ) THEN
-       GSTOLD(IG)%NXL     = NX
-       GSTOLD(IG)%STRADLE = .TRUE.
+      GSTOLD(IG)%NXL     = NX
+      GSTOLD(IG)%STRADLE = .TRUE.
     END IF
     !
     IF ( GLOBAL .AND. GSTOLD(IG)%NXH.EQ.NX+1 ) THEN
-       GSTOLD(IG)%NXH     = 1
-       GSTOLD(IG)%STRADLE = .TRUE.
+      GSTOLD(IG)%NXH     = 1
+      GSTOLD(IG)%STRADLE = .TRUE.
     END IF
     !
 #ifdef W3_T7
@@ -3424,19 +3424,19 @@ CONTAINS
     PGRID(IG)%MASK   = 99
     !
     DO IX=1, PGRID(IG)%NX
-       JX     = 1 + MOD ( IX+GSTOLD(IG)%NXL-2 , NX )
-       DO IY=1, PGRID(IG)%NY
-          JY     = IY + GSTOLD(IG)%NYL - 1
-          ISEA   = MAPFS(JY,JX)
-          IF ( MTEMP(JY,JX) .NE. 0 ) THEN
-             PGRID(IG)%ZBIN(IX,IY) = ZB(ISEA)
-          END IF
-          IF ( TRFLAG .NE. 0 ) THEN
-             PGRID(IG)%OBSX(IX,IY) = 1. - TRNX(JY,JX)
-             PGRID(IG)%OBSY(IX,IY) = 1. - TRNY(JY,JX)
-          END IF
-          PGRID(IG)%MASK(IX,IY) = MTEMP(JY,JX)
-       END DO
+      JX     = 1 + MOD ( IX+GSTOLD(IG)%NXL-2 , NX )
+      DO IY=1, PGRID(IG)%NY
+        JY     = IY + GSTOLD(IG)%NYL - 1
+        ISEA   = MAPFS(JY,JX)
+        IF ( MTEMP(JY,JX) .NE. 0 ) THEN
+          PGRID(IG)%ZBIN(IX,IY) = ZB(ISEA)
+        END IF
+        IF ( TRFLAG .NE. 0 ) THEN
+          PGRID(IG)%OBSX(IX,IY) = 1. - TRNX(JY,JX)
+          PGRID(IG)%OBSY(IX,IY) = 1. - TRNY(JY,JX)
+        END IF
+        PGRID(IG)%MASK(IX,IY) = MTEMP(JY,JX)
+      END DO
     END DO
     !
     RETURN

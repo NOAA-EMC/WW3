@@ -172,8 +172,8 @@ CONTAINS
     ! 1.  Tests ---------------------------------------------------------- *
     !
     IF ( ABS(ZWND-10.) .GT. 0.01 ) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) ZWND
-       CALL EXTCDE (1)
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) ZWND
+      CALL EXTCDE (1)
     END IF
     !
     ! 2.  Computation ---------------------------------------------------- *
@@ -186,11 +186,11 @@ CONTAINS
     SQRTCDM1  = MIN(UNZ/UST,100.0)
     Z0        = ZWND*EXP(-KAPPA*SQRTCDM1)
     IF (UNZ.GT.2.5) THEN
-       CHARN = (Z0 - 0.11 * NU_AIR / UST) * GRAV / UST**2
-       CHARN = MAX( CHARN , 0.0095 )
-       CHARN = MIN( 0.035 , CHARN )
+      CHARN = (Z0 - 0.11 * NU_AIR / UST) * GRAV / UST**2
+      CHARN = MAX( CHARN , 0.0095 )
+      CHARN = MIN( 0.035 , CHARN )
     ELSE
-       CHARN = 0.0095
+      CHARN = 0.0095
     END IF
     !
     RETURN

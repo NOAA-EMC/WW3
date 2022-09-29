@@ -160,38 +160,38 @@ CONTAINS
 #endif
     !
     IF (ALPHA.GT.0. .AND. ICE.GT.0.) THEN
-       ! 1. Calculate the derivative ---------------------------------------- *
-       DO IK = 1,NK
-          DO ITH = 1,NTH
-             IS  = ITH+(IK-1)*NTH
-             IF (A(IS).GE.0.) THEN
-                S(IS)   = S(IS)  -  ALPHA * A(IS)
-                DO ITH2 = 1,NTH
-                   IS2 = ITH2+(IK-1)*NTH
-                   IF (IS2.NE.IS) THEN
-                      S(IS2) = S(IS2)  +  ALPHA * A(IS) / REAL(NTH-1)
-                   END IF
-                END DO
-             END IF
-          END DO
-       END DO
-       !
-       S = S / DTMIN
-       !
+      ! 1. Calculate the derivative ---------------------------------------- *
+      DO IK = 1,NK
+        DO ITH = 1,NTH
+          IS  = ITH+(IK-1)*NTH
+          IF (A(IS).GE.0.) THEN
+            S(IS)   = S(IS)  -  ALPHA * A(IS)
+            DO ITH2 = 1,NTH
+              IS2 = ITH2+(IK-1)*NTH
+              IF (IS2.NE.IS) THEN
+                S(IS2) = S(IS2)  +  ALPHA * A(IS) / REAL(NTH-1)
+              END IF
+            END DO
+          END IF
+        END DO
+      END DO
+      !
+      S = S / DTMIN
+      !
 #ifdef W3_T
-       DO IK = 1, NK
-          DO ITH = 1, NTH
-             IS  = ITH+(IK-1)*NTH
-             SOUT(IK,ITH) = S(IS)
-          END DO
-       END DO
+      DO IK = 1, NK
+        DO ITH = 1, NTH
+          IS  = ITH+(IK-1)*NTH
+          SOUT(IK,ITH) = S(IS)
+        END DO
+      END DO
 #endif
-       !
+      !
 #ifdef W3_T
-       CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,    &
-            0.0, 0.001, 'Diag Sir1', ' ', 'NONAME')
+      CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,    &
+           0.0, 0.001, 'Diag Sir1', ' ', 'NONAME')
 #endif
-       !
+      !
     END IF
     ! Formats
 8000 FORMAT (' TEST W3SIS1 : ALPHA :',E10.3)

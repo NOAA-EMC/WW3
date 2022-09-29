@@ -25,214 +25,214 @@ MODULE W3NMLGRIDMD
 
   ! coord file structure
   TYPE NML_COORD_FILE_T
-     REAL                        :: SF
-     REAL                        :: OFF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: FROM
+    REAL                        :: SF
+    REAL                        :: OFF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FROM
   END TYPE NML_COORD_FILE_T
 
   ! file structure
   TYPE NML_FILE_T
-     REAL                        :: SF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: FROM
+    REAL                        :: SF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FROM
   END TYPE NML_FILE_T
 
   ! smc file structure
   TYPE NML_SMC_FILE_T
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
   END TYPE NML_SMC_FILE_T
 
 
   ! spectrum structure
   TYPE NML_SPECTRUM_T
-     REAL                        :: XFR
-     REAL                        :: FREQ1
-     INTEGER                     :: NK
-     INTEGER                     :: NTH
-     REAL                        :: THOFF
+    REAL                        :: XFR
+    REAL                        :: FREQ1
+    INTEGER                     :: NK
+    INTEGER                     :: NTH
+    REAL                        :: THOFF
   END TYPE NML_SPECTRUM_T
 
   ! run structure
   TYPE NML_RUN_T
-     LOGICAL                     :: FLDRY
-     LOGICAL                     :: FLCX
-     LOGICAL                     :: FLCY
-     LOGICAL                     :: FLCTH
-     LOGICAL                     :: FLCK
-     LOGICAL                     :: FLSOU
+    LOGICAL                     :: FLDRY
+    LOGICAL                     :: FLCX
+    LOGICAL                     :: FLCY
+    LOGICAL                     :: FLCTH
+    LOGICAL                     :: FLCK
+    LOGICAL                     :: FLSOU
   END TYPE NML_RUN_T
 
   ! timesteps structure
   TYPE NML_TIMESTEPS_T
-     REAL                        :: DTMAX
-     REAL                        :: DTXY
-     REAL                        :: DTKTH
-     REAL                        :: DTMIN
+    REAL                        :: DTMAX
+    REAL                        :: DTXY
+    REAL                        :: DTKTH
+    REAL                        :: DTMIN
   END TYPE NML_TIMESTEPS_T
 
   ! grid structure
   TYPE NML_GRID_T
-     CHARACTER(256)              :: NAME
-     CHARACTER(256)              :: NML
-     CHARACTER(256)              :: TYPE
-     CHARACTER(256)              :: COORD
-     CHARACTER(256)              :: CLOS
-     REAL                        :: ZLIM
-     REAL                        :: DMIN
+    CHARACTER(256)              :: NAME
+    CHARACTER(256)              :: NML
+    CHARACTER(256)              :: TYPE
+    CHARACTER(256)              :: COORD
+    CHARACTER(256)              :: CLOS
+    REAL                        :: ZLIM
+    REAL                        :: DMIN
   END TYPE NML_GRID_T
 
   ! rect structure
   TYPE NML_RECT_T
-     INTEGER                     :: NX
-     INTEGER                     :: NY
-     REAL                        :: SX
-     REAL                        :: SY
-     REAL                        :: SF
-     REAL                        :: X0
-     REAL                        :: Y0
-     REAL                        :: SF0
+    INTEGER                     :: NX
+    INTEGER                     :: NY
+    REAL                        :: SX
+    REAL                        :: SY
+    REAL                        :: SF
+    REAL                        :: X0
+    REAL                        :: Y0
+    REAL                        :: SF0
   END TYPE NML_RECT_T
 
   ! curv structure
   TYPE NML_CURV_T
-     INTEGER                     :: NX
-     INTEGER                     :: NY
-     TYPE(NML_COORD_FILE_T)      :: XCOORD
-     TYPE(NML_COORD_FILE_T)      :: YCOORD
+    INTEGER                     :: NX
+    INTEGER                     :: NY
+    TYPE(NML_COORD_FILE_T)      :: XCOORD
+    TYPE(NML_COORD_FILE_T)      :: YCOORD
   END TYPE NML_CURV_T
 
   ! unst structure
   TYPE NML_UNST_T
-     REAL                        :: SF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: UGOBCFILE
+    REAL                        :: SF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: UGOBCFILE
   END TYPE NML_UNST_T
 
   ! smc structure
   TYPE NML_SMC_T
-     TYPE(NML_SMC_FILE_T)        :: MCELS
-     TYPE(NML_SMC_FILE_T)        :: ISIDE
-     TYPE(NML_SMC_FILE_T)        :: JSIDE
-     TYPE(NML_SMC_FILE_T)        :: SUBTR
-     TYPE(NML_SMC_FILE_T)        :: BUNDY
-     TYPE(NML_SMC_FILE_T)        :: MBARC
-     TYPE(NML_SMC_FILE_T)        :: AISID
-     TYPE(NML_SMC_FILE_T)        :: AJSID
+    TYPE(NML_SMC_FILE_T)        :: MCELS
+    TYPE(NML_SMC_FILE_T)        :: ISIDE
+    TYPE(NML_SMC_FILE_T)        :: JSIDE
+    TYPE(NML_SMC_FILE_T)        :: SUBTR
+    TYPE(NML_SMC_FILE_T)        :: BUNDY
+    TYPE(NML_SMC_FILE_T)        :: MBARC
+    TYPE(NML_SMC_FILE_T)        :: AISID
+    TYPE(NML_SMC_FILE_T)        :: AJSID
   END TYPE NML_SMC_T
 
   ! depth structure
   TYPE NML_DEPTH_T
-     REAL                        :: SF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: FROM
+    REAL                        :: SF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FROM
   END TYPE NML_DEPTH_T
 
   ! mask structure
   TYPE NML_MASK_T
-     REAL                        :: SF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: FROM
+    REAL                        :: SF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FROM
   END TYPE NML_MASK_T
 
   ! obst structure
   TYPE NML_OBST_T
-     REAL                        :: SF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: FROM
+    REAL                        :: SF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FROM
   END TYPE NML_OBST_T
 
   ! slope structure
   TYPE NML_SLOPE_T
-     REAL                        :: SF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: FROM
+    REAL                        :: SF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FROM
   END TYPE NML_SLOPE_T
 
   ! sed structure
   TYPE NML_SED_T
-     REAL                        :: SF
-     CHARACTER(256)              :: FILENAME
-     INTEGER                     :: IDF
-     INTEGER                     :: IDLA
-     INTEGER                     :: IDFM
-     CHARACTER(256)              :: FORMAT
-     CHARACTER(256)              :: FROM
+    REAL                        :: SF
+    CHARACTER(256)              :: FILENAME
+    INTEGER                     :: IDF
+    INTEGER                     :: IDLA
+    INTEGER                     :: IDFM
+    CHARACTER(256)              :: FORMAT
+    CHARACTER(256)              :: FROM
   END TYPE NML_SED_T
 
   ! inbound structure
   TYPE NML_INBND_COUNT_T
-     INTEGER                     :: N_POINT
+    INTEGER                     :: N_POINT
   END TYPE NML_INBND_COUNT_T
 
   TYPE NML_INBND_POINT_T
-     INTEGER                     :: X_INDEX
-     INTEGER                     :: Y_INDEX
-     LOGICAL                     :: CONNECT
+    INTEGER                     :: X_INDEX
+    INTEGER                     :: Y_INDEX
+    LOGICAL                     :: CONNECT
   END TYPE NML_INBND_POINT_T
 
 
   ! excluded structure
   TYPE NML_EXCL_COUNT_T
-     INTEGER                     :: N_POINT
-     INTEGER                     :: N_BODY
+    INTEGER                     :: N_POINT
+    INTEGER                     :: N_BODY
   END TYPE NML_EXCL_COUNT_T
 
   TYPE NML_EXCL_POINT_T
-     INTEGER                     :: X_INDEX
-     INTEGER                     :: Y_INDEX
-     LOGICAL                     :: CONNECT
+    INTEGER                     :: X_INDEX
+    INTEGER                     :: Y_INDEX
+    LOGICAL                     :: CONNECT
   END TYPE NML_EXCL_POINT_T
 
   TYPE NML_EXCL_BODY_T
-     INTEGER                     :: X_INDEX
-     INTEGER                     :: Y_INDEX
+    INTEGER                     :: X_INDEX
+    INTEGER                     :: Y_INDEX
   END TYPE NML_EXCL_BODY_T
 
 
   ! outbound structure
   TYPE NML_OUTBND_COUNT_T
-     INTEGER                     :: N_LINE
+    INTEGER                     :: N_LINE
   END TYPE NML_OUTBND_COUNT_T
 
   TYPE NML_OUTBND_LINE_T
-     REAL                        :: X0
-     REAL                        :: Y0
-     REAL                        :: DX
-     REAL                        :: DY
-     INTEGER                     :: NP
+    REAL                        :: X0
+    REAL                        :: Y0
+    REAL                        :: DX
+    REAL                        :: DY
+    INTEGER                     :: NP
   END TYPE NML_OUTBND_LINE_T
 
 
@@ -404,15 +404,15 @@ CONTAINS
     NDSN = 3
     OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+      RETURN
     END IF
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read spectrum namelist
@@ -585,10 +585,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=SPECTRUM_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_SPECTRUM_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_SPECTRUM_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! save namelist
@@ -693,10 +693,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=RUN_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_RUN_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (2)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_RUN_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (2)
     END IF
 
     ! save namelist
@@ -799,10 +799,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=TIMESTEPS_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_TIMESTEPS_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (3)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_TIMESTEPS_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (3)
     END IF
 
     ! save namelist
@@ -909,10 +909,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=GRID_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_GRID_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (4)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_GRID_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (4)
     END IF
 
     ! save namelist
@@ -1019,10 +1019,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=RECT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_RECT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (5)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_RECT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (5)
     END IF
 
     ! save namelist
@@ -1141,10 +1141,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=CURV_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_CURV_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (6)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_CURV_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (6)
     END IF
 
     ! save namelist
@@ -1250,10 +1250,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=UNST_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_UNST_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (7)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_UNST_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (7)
     END IF
 
     ! save namelist
@@ -1401,10 +1401,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=SMC_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_SMC_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (8)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_SMC_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (8)
     END IF
 
     ! save namelist
@@ -1510,10 +1510,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=DEPTH_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_DEPTH_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (9)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_DEPTH_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (9)
     END IF
 
     ! save namelist
@@ -1619,10 +1619,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=MASK_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_MASK_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (10)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_MASK_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (10)
     END IF
 
     ! save namelist
@@ -1729,10 +1729,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=OBST_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_OBST_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (11)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_OBST_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (11)
     END IF
 
     ! save namelist
@@ -1839,10 +1839,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=SLOPE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_SLOPE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (12)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_SLOPE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (12)
     END IF
 
     ! save namelist
@@ -1950,10 +1950,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=SED_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_SED_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (13)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_SED_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (13)
     END IF
 
     ! save namelist
@@ -2059,10 +2059,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=INBND_COUNT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_INBND_COUNT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (14)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_INBND_COUNT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (14)
     END IF
 
     ! allocate the total count of inbound points
@@ -2071,21 +2071,21 @@ CONTAINS
 
     ! set default values for inbnd point structure
     IF (INBND_COUNT%N_POINT .NE. 0 ) THEN
-       DO I=1,INBND_COUNT%N_POINT
-          INBND_POINT(I)%X_INDEX  = 0
-          INBND_POINT(I)%Y_INDEX  = 0
-          INBND_POINT(I)%CONNECT  = .FALSE.
-       END DO
+      DO I=1,INBND_COUNT%N_POINT
+        INBND_POINT(I)%X_INDEX  = 0
+        INBND_POINT(I)%Y_INDEX  = 0
+        INBND_POINT(I)%CONNECT  = .FALSE.
+      END DO
     END IF
 
     ! read inbnd point namelist
     REWIND (NDSI)
     READ (NDSI, nml=INBND_POINT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_INBND_POINT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (15)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_INBND_POINT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (15)
     END IF
 
     ! save namelist
@@ -2197,10 +2197,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=EXCL_COUNT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_EXCL_COUNT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (16)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_EXCL_COUNT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (16)
     END IF
 
     ! allocate the total count of excluded points
@@ -2209,21 +2209,21 @@ CONTAINS
 
     ! set default values for excl point structure
     IF (EXCL_COUNT%N_POINT .NE. 0 ) THEN
-       DO J=1,EXCL_COUNT%N_POINT
-          EXCL_POINT(J)%X_INDEX  = 0
-          EXCL_POINT(J)%Y_INDEX  = 0
-          EXCL_POINT(J)%CONNECT  = .FALSE.
-       END DO
+      DO J=1,EXCL_COUNT%N_POINT
+        EXCL_POINT(J)%X_INDEX  = 0
+        EXCL_POINT(J)%Y_INDEX  = 0
+        EXCL_POINT(J)%CONNECT  = .FALSE.
+      END DO
     END IF
 
     ! read excl point namelist
     REWIND (NDSI)
     READ (NDSI, nml=EXCL_POINT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_EXCL_POINT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (17)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_EXCL_POINT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (17)
     END IF
 
     ! allocate the total count of excluded bodies
@@ -2232,20 +2232,20 @@ CONTAINS
 
     ! set default values for excl body structure
     IF (EXCL_COUNT%N_BODY .NE. 0 ) THEN
-       DO K=1,EXCL_COUNT%N_BODY
-          EXCL_BODY(K)%X_INDEX  = 0
-          EXCL_BODY(K)%Y_INDEX  = 0
-       END DO
+      DO K=1,EXCL_COUNT%N_BODY
+        EXCL_BODY(K)%X_INDEX  = 0
+        EXCL_BODY(K)%Y_INDEX  = 0
+      END DO
     END IF
 
     ! read excl body namelist
     REWIND (NDSI)
     READ (NDSI, nml=EXCL_POINT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_EXCL_POINT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (18)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_EXCL_POINT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (18)
     END IF
 
     ! save namelist
@@ -2353,10 +2353,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=OUTBND_COUNT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_OUTBND_COUNT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (19)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_OUTBND_COUNT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (19)
     END IF
 
     ! allocate the total count of outbound lines
@@ -2365,23 +2365,23 @@ CONTAINS
 
     ! set default values for outbnd line structure
     IF (OUTBND_COUNT%N_LINE .NE. 0 ) THEN
-       DO I=1,OUTBND_COUNT%N_LINE
-          OUTBND_LINE(I)%X0   = 0.
-          OUTBND_LINE(I)%Y0   = 0.
-          OUTBND_LINE(I)%DX   = 0.
-          OUTBND_LINE(I)%DY   = 0.
-          OUTBND_LINE(I)%NP   = 0
-       END DO
+      DO I=1,OUTBND_COUNT%N_LINE
+        OUTBND_LINE(I)%X0   = 0.
+        OUTBND_LINE(I)%Y0   = 0.
+        OUTBND_LINE(I)%DX   = 0.
+        OUTBND_LINE(I)%DY   = 0.
+        OUTBND_LINE(I)%NP   = 0
+      END DO
     END IF
 
     ! read outbnd line namelist
     REWIND (NDSI)
     READ (NDSI, nml=OUTBND_LINE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_OUTBND_LINE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (20)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_OUTBND_LINE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (20)
     END IF
 
     ! save namelist
@@ -3748,14 +3748,14 @@ CONTAINS
     WRITE (NDSN,11) TRIM(MSG),'N_POINT       = ', NML_INBND_COUNT%N_POINT
 
     IF (NML_INBND_COUNT%N_POINT .NE. 0) THEN
-       DO I=1,NML_INBND_COUNT%N_POINT
-          WRITE (MSG,'(A,I8,A)') 'INBND_POINT(',I,') % '
-          WRITE (NDSN,'(A)')
-          WRITE (NDSN,11) TRIM(MSG),'X_INDEX   = ', NML_INBND_POINT(I)%X_INDEX
-          WRITE (NDSN,11) TRIM(MSG),'Y_INDEX   = ', NML_INBND_POINT(I)%Y_INDEX
-          WRITE (NDSN,13) TRIM(MSG),'CONNECT   = ', NML_INBND_POINT(I)%CONNECT
-          WRITE (NDSN,'(A)')
-       END DO
+      DO I=1,NML_INBND_COUNT%N_POINT
+        WRITE (MSG,'(A,I8,A)') 'INBND_POINT(',I,') % '
+        WRITE (NDSN,'(A)')
+        WRITE (NDSN,11) TRIM(MSG),'X_INDEX   = ', NML_INBND_POINT(I)%X_INDEX
+        WRITE (NDSN,11) TRIM(MSG),'Y_INDEX   = ', NML_INBND_POINT(I)%Y_INDEX
+        WRITE (NDSN,13) TRIM(MSG),'CONNECT   = ', NML_INBND_POINT(I)%CONNECT
+        WRITE (NDSN,'(A)')
+      END DO
     END IF
 
 10  FORMAT (A,2X,A,A)
@@ -3854,24 +3854,24 @@ CONTAINS
     WRITE (NDSN,11) TRIM(MSG),'N_BODY        = ', NML_EXCL_COUNT%N_BODY
 
     IF (NML_EXCL_COUNT%N_POINT .NE. 0) THEN
-       DO I=1,NML_EXCL_COUNT%N_POINT
-          WRITE (MSG,'(A,I8,A)') 'EXCL_POINT(',I,') % '
-          WRITE (NDSN,'(A)')
-          WRITE (NDSN,11) TRIM(MSG),'X_INDEX   = ', NML_EXCL_POINT(I)%X_INDEX
-          WRITE (NDSN,11) TRIM(MSG),'Y_INDEX   = ', NML_EXCL_POINT(I)%Y_INDEX
-          WRITE (NDSN,13) TRIM(MSG),'CONNECT   = ', NML_EXCL_POINT(I)%CONNECT
-          WRITE (NDSN,'(A)')
-       END DO
+      DO I=1,NML_EXCL_COUNT%N_POINT
+        WRITE (MSG,'(A,I8,A)') 'EXCL_POINT(',I,') % '
+        WRITE (NDSN,'(A)')
+        WRITE (NDSN,11) TRIM(MSG),'X_INDEX   = ', NML_EXCL_POINT(I)%X_INDEX
+        WRITE (NDSN,11) TRIM(MSG),'Y_INDEX   = ', NML_EXCL_POINT(I)%Y_INDEX
+        WRITE (NDSN,13) TRIM(MSG),'CONNECT   = ', NML_EXCL_POINT(I)%CONNECT
+        WRITE (NDSN,'(A)')
+      END DO
     END IF
 
     IF (NML_EXCL_COUNT%N_BODY .NE. 0) THEN
-       DO I=1,NML_EXCL_COUNT%N_BODY
-          WRITE (MSG,'(A,I8,A)') 'EXCL_BODY(',I,') % '
-          WRITE (NDSN,'(A)')
-          WRITE (NDSN,11) TRIM(MSG),'X_INDEX   = ', NML_EXCL_BODY(I)%X_INDEX
-          WRITE (NDSN,11) TRIM(MSG),'Y_INDEX   = ', NML_EXCL_BODY(I)%Y_INDEX
-          WRITE (NDSN,'(A)')
-       END DO
+      DO I=1,NML_EXCL_COUNT%N_BODY
+        WRITE (MSG,'(A,I8,A)') 'EXCL_BODY(',I,') % '
+        WRITE (NDSN,'(A)')
+        WRITE (NDSN,11) TRIM(MSG),'X_INDEX   = ', NML_EXCL_BODY(I)%X_INDEX
+        WRITE (NDSN,11) TRIM(MSG),'Y_INDEX   = ', NML_EXCL_BODY(I)%Y_INDEX
+        WRITE (NDSN,'(A)')
+      END DO
     END IF
 
 10  FORMAT (A,2X,A,A)
@@ -3967,16 +3967,16 @@ CONTAINS
     WRITE (NDSN,11) TRIM(MSG),'N_LINE        = ', NML_OUTBND_COUNT%N_LINE
 
     IF (NML_OUTBND_COUNT%N_LINE .NE. 0) THEN
-       DO I=1,NML_OUTBND_COUNT%N_LINE
-          WRITE (MSG,'(A,I8,A)') 'OUTBND_LINE(',I,') % '
-          WRITE (NDSN,'(A)')
-          WRITE (NDSN,14) TRIM(MSG),'X0        = ', NML_OUTBND_LINE(I)%X0
-          WRITE (NDSN,14) TRIM(MSG),'Y0        = ', NML_OUTBND_LINE(I)%Y0
-          WRITE (NDSN,14) TRIM(MSG),'DX        = ', NML_OUTBND_LINE(I)%DX
-          WRITE (NDSN,14) TRIM(MSG),'DY        = ', NML_OUTBND_LINE(I)%DY
-          WRITE (NDSN,11) TRIM(MSG),'NP        = ', NML_OUTBND_LINE(I)%NP
-          WRITE (NDSN,'(A)')
-       END DO
+      DO I=1,NML_OUTBND_COUNT%N_LINE
+        WRITE (MSG,'(A,I8,A)') 'OUTBND_LINE(',I,') % '
+        WRITE (NDSN,'(A)')
+        WRITE (NDSN,14) TRIM(MSG),'X0        = ', NML_OUTBND_LINE(I)%X0
+        WRITE (NDSN,14) TRIM(MSG),'Y0        = ', NML_OUTBND_LINE(I)%Y0
+        WRITE (NDSN,14) TRIM(MSG),'DX        = ', NML_OUTBND_LINE(I)%DX
+        WRITE (NDSN,14) TRIM(MSG),'DY        = ', NML_OUTBND_LINE(I)%DY
+        WRITE (NDSN,11) TRIM(MSG),'NP        = ', NML_OUTBND_LINE(I)%NP
+        WRITE (NDSN,'(A)')
+      END DO
     END IF
 
 10  FORMAT (A,2X,A,A)

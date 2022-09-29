@@ -122,11 +122,11 @@ PROGRAM W3MLTI
   FLHYBR = .TRUE.
   ! For hybrid MPI-OpenMP specify required thread level:
   IF( FLHYBR ) THEN
-     CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED, THRLEV, IERR_MPI)
+    CALL MPI_INIT_THREAD(MPI_THREAD_FUNNELED, THRLEV, IERR_MPI)
   ELSE
 #endif
 #ifdef W3_MPI
-     CALL MPI_INIT      ( IERR_MPI )
+    CALL MPI_INIT      ( IERR_MPI )
 #endif
 #ifdef W3_OMPH
   ENDIF
@@ -167,9 +167,9 @@ PROGRAM W3MLTI
   !
   INQUIRE(FILE="ww3_multi.nml", EXIST=FLGNML)
   IF (FLGNML) THEN
-     CALL WMINITNML ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.nml', MPI_COMM )
+    CALL WMINITNML ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.nml', MPI_COMM )
   ELSE
-     CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPI_COMM )
+    CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPI_COMM )
   END IF
   !
 
@@ -180,7 +180,7 @@ PROGRAM W3MLTI
   ALLOCATE ( TEND(2,NRGRD) )
   !
   DO I=1, NRGRD
-     TEND(:,I) = ETIME(:)
+    TEND(:,I) = ETIME(:)
   END DO
   !
   CALL WMWAVE ( TEND )

@@ -261,43 +261,43 @@ CONTAINS
     ! 1.  Prepare auxiliary arrays
     !
     IF ( FLFRST ) THEN
-       DO ISEA=1, NSEA
+      DO ISEA=1, NSEA
 #ifdef W3_SMC
-          !!Li  For sea-point SMC grid current, the 1-D current is stored on
-          !!Li  2-D CX0(NSEA, 1) variable.
-          IF( FSWND ) THEN
-             IX = ISEA
-             IY = 1
-          ELSE
+        !!Li  For sea-point SMC grid current, the 1-D current is stored on
+        !!Li  2-D CX0(NSEA, 1) variable.
+        IF( FSWND ) THEN
+          IX = ISEA
+          IY = 1
+        ELSE
 #endif
-             IX        = MAPSF(ISEA,1)
-             IY        = MAPSF(ISEA,2)
+          IX        = MAPSF(ISEA,1)
+          IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-          ENDIF
+        ENDIF
 #endif
 
-          CA0(ISEA) = SQRT ( CX0(IX,IY)**2 + CY0(IX,IY)**2 )
-          CAI(ISEA) = SQRT ( CXN(IX,IY)**2 + CYN(IX,IY)**2 )
-          IF ( CA0(ISEA) .GT. 1.E-7) THEN
-             D0     = MOD ( TPI+ATAN2(CY0(IX,IY),CX0(IX,IY)) , TPI )
-          ELSE
-             D0     = 0
-          END IF
-          IF ( CAI(ISEA) .GT. 1.E-7) THEN
-             DN     = MOD ( TPI+ATAN2(CYN(IX,IY),CXN(IX,IY)) , TPI )
-          ELSE
-             DN     = D0
-          END IF
-          IF ( CA0(ISEA) .GT. 1.E-7) THEN
-             CD0(ISEA) = D0
-          ELSE
-             CD0(ISEA) = DN
-          END IF
-          DD     = DN - CD0(ISEA)
-          IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
-          CDI(ISEA) = DD
-          CAI(ISEA) = CAI(ISEA) - CA0(ISEA)
-       END DO
+        CA0(ISEA) = SQRT ( CX0(IX,IY)**2 + CY0(IX,IY)**2 )
+        CAI(ISEA) = SQRT ( CXN(IX,IY)**2 + CYN(IX,IY)**2 )
+        IF ( CA0(ISEA) .GT. 1.E-7) THEN
+          D0     = MOD ( TPI+ATAN2(CY0(IX,IY),CX0(IX,IY)) , TPI )
+        ELSE
+          D0     = 0
+        END IF
+        IF ( CAI(ISEA) .GT. 1.E-7) THEN
+          DN     = MOD ( TPI+ATAN2(CYN(IX,IY),CXN(IX,IY)) , TPI )
+        ELSE
+          DN     = D0
+        END IF
+        IF ( CA0(ISEA) .GT. 1.E-7) THEN
+          CD0(ISEA) = D0
+        ELSE
+          CD0(ISEA) = DN
+        END IF
+        DD     = DN - CD0(ISEA)
+        IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
+        CDI(ISEA) = DD
+        CAI(ISEA) = CAI(ISEA) - CA0(ISEA)
+      END DO
     END IF
     !
     ! 2.  Calculate interpolation factor
@@ -325,19 +325,19 @@ CONTAINS
 
 #ifdef W3_TIDE
     IF (FLCURTIDE) THEN
-       !          WRITE(6,*) 'TIME CUR:',TIME, '##',TC0, '##',TCN
-       TIDE_HOUR = TIME2HOURS(TIME)
-       !
-       !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
-       !*  AT THE MID POINT OF THE ANALYSIS PERIOD.
-       d1=TIDE_HOUR/24.d0
-       TIDE_KD0= 2415020
-       d1=d1-dfloat(TIDE_kd0)-0.5d0
-       call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
-       INT24=24
-       INTDYS=int((TIDE_HOUR+0.00001)/INT24)
-       HH=TIDE_HOUR-dfloat(INTDYS*INT24)
-       TAU=HH/24.D0+H-S
+      !          WRITE(6,*) 'TIME CUR:',TIME, '##',TC0, '##',TCN
+      TIDE_HOUR = TIME2HOURS(TIME)
+      !
+      !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
+      !*  AT THE MID POINT OF THE ANALYSIS PERIOD.
+      d1=TIDE_HOUR/24.d0
+      TIDE_KD0= 2415020
+      d1=d1-dfloat(TIDE_kd0)-0.5d0
+      call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
+      INT24=24
+      INTDYS=int((TIDE_HOUR+0.00001)/INT24)
+      HH=TIDE_HOUR-dfloat(INTDYS*INT24)
+      TAU=HH/24.D0+H-S
     END IF
     !
     !  ONLY THE FRACTIONAL PART OF A SOLAR DAY NEED BE RETAINED FOR COMPU-
@@ -350,81 +350,81 @@ CONTAINS
     !
     DO ISEA=1, NSEA
 #ifdef W3_TIDE
-       IF (FLCURTIDE) THEN  ! could move IF test outside of ISEA loop ...
-          ! VUF should only be updated in latitude changes significantly ...
-          IX        = MAPSF(ISEA,1)
-          IY        = MAPSF(ISEA,2)
-          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
-          WCURTIDEX = CXTIDE(IX,IY,1,1)
-          WCURTIDEY = CYTIDE(IX,IY,1,1)
+      IF (FLCURTIDE) THEN  ! could move IF test outside of ISEA loop ...
+        ! VUF should only be updated in latitude changes significantly ...
+        IX        = MAPSF(ISEA,1)
+        IY        = MAPSF(ISEA,2)
+        CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
+        WCURTIDEX = CXTIDE(IX,IY,1,1)
+        WCURTIDEY = CYTIDE(IX,IY,1,1)
 
-          DO J=2,TIDE_MF
-             TIDE_ARGX=(VX(J)+UX(J))*twpi-CXTIDE(IX,IY,J,2)*DERA
-             TIDE_ARGY=(VX(J)+UX(J))*twpi-CYTIDE(IX,IY,J,2)*DERA
-             WCURTIDEX = WCURTIDEX+FX(J)*CXTIDE(IX,IY,J,1)*COS(TIDE_ARGX)
-             WCURTIDEY = WCURTIDEY+FX(J)*CYTIDE(IX,IY,J,1)*COS(TIDE_ARGY)
-          END DO
+        DO J=2,TIDE_MF
+          TIDE_ARGX=(VX(J)+UX(J))*twpi-CXTIDE(IX,IY,J,2)*DERA
+          TIDE_ARGY=(VX(J)+UX(J))*twpi-CYTIDE(IX,IY,J,2)*DERA
+          WCURTIDEX = WCURTIDEX+FX(J)*CXTIDE(IX,IY,J,1)*COS(TIDE_ARGX)
+          WCURTIDEY = WCURTIDEY+FX(J)*CYTIDE(IX,IY,J,1)*COS(TIDE_ARGY)
+        END DO
 
 #endif
 
 #ifdef W3_TIDET
-          !Verification
-          IF (ISEA.EQ.1) THEN
+        !Verification
+        IF (ISEA.EQ.1) THEN
 
-             TIDE_AMPC(1:NTIDE,1)=CXTIDE(IX,IY,1:NTIDE,1)
-             TIDE_PHG(1:NTIDE,1 )=CXTIDE(IX,IY,1:NTIDE,2)
-             TIDE_AMPC(1:NTIDE,2)=CYTIDE(IX,IY,1:NTIDE,1)
-             TIDE_PHG(1:NTIDE,2) =CYTIDE(IX,IY,1:NTIDE,2)
+          TIDE_AMPC(1:NTIDE,1)=CXTIDE(IX,IY,1:NTIDE,1)
+          TIDE_PHG(1:NTIDE,1 )=CXTIDE(IX,IY,1:NTIDE,2)
+          TIDE_AMPC(1:NTIDE,2)=CYTIDE(IX,IY,1:NTIDE,1)
+          TIDE_PHG(1:NTIDE,2) =CYTIDE(IX,IY,1:NTIDE,2)
 
-             WRITE(993,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
-                  d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,REAL(YGRD(IY,IX))
+          WRITE(993,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
+               d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,REAL(YGRD(IY,IX))
 
-             DO J=1,TIDE_MF
-                WRITE(993,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
-                     FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
-             END DO
-             DO K=1,2
-                DO J=1,TIDE_MF
-                   WRITE(993,'(A,5I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,K,J,TIME,TIDE_HOUR,    &
-                        FX(J),UX(J),VX(J),TIDE_AMPC(J,K),TIDE_PHG(J,K)
-                END DO
-             END DO
+          DO J=1,TIDE_MF
+            WRITE(993,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
+                 FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
+          END DO
+          DO K=1,2
+            DO J=1,TIDE_MF
+              WRITE(993,'(A,5I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,K,J,TIME,TIDE_HOUR,    &
+                   FX(J),UX(J),VX(J),TIDE_AMPC(J,K),TIDE_PHG(J,K)
+            END DO
+          END DO
 
-             WRITE(993,'(A,2F8.4,A,2F8.4)') '#:',CX0(IX,IY),CY0(IX,IY),'##',WCURTIDEX,WCURTIDEY
-             CLOSE(993)
-          END IF
-          ! End of verification
+          WRITE(993,'(A,2F8.4,A,2F8.4)') '#:',CX0(IX,IY),CY0(IX,IY),'##',WCURTIDEX,WCURTIDEY
+          CLOSE(993)
+        END IF
+        ! End of verification
 #endif
 #ifdef W3_TIDE
-          CX(ISEA) = WCURTIDEX
-          CY(ISEA) = WCURTIDEY
-       ELSE
+        CX(ISEA) = WCURTIDEX
+        CY(ISEA) = WCURTIDEY
+      ELSE
 #endif
 
-          CABS    = CA0(ISEA) + RD * CAI(ISEA)
+        CABS    = CA0(ISEA) + RD * CAI(ISEA)
 #ifdef W3_CRT2
-          CI2      = SQRT ( RD2 *      CA0(ISEA)**2 +             &
-               RD  *(CA0(ISEA)+CAI(ISEA))**2 )
-          CABS    = CABS * MIN( 1.25 , CI2/MAX(1.E-7,CABS) )
+        CI2      = SQRT ( RD2 *      CA0(ISEA)**2 +             &
+             RD  *(CA0(ISEA)+CAI(ISEA))**2 )
+        CABS    = CABS * MIN( 1.25 , CI2/MAX(1.E-7,CABS) )
 #endif
-          CDIR    = CD0(ISEA) + RD * CDI(ISEA)
+        CDIR    = CD0(ISEA) + RD * CDI(ISEA)
 
 #ifdef W3_SMC
-          !Li   Rotate curreent direction by ANGARC for Arctic part cells.  JGLi23Mar2016
-          IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
-             DN = CDIR + ANGARC( ISEA - NGLO )*DERA
-             CDIR = MOD ( TPI + DN, TPI )
-          ENDIF
+        !Li   Rotate curreent direction by ANGARC for Arctic part cells.  JGLi23Mar2016
+        IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+          DN = CDIR + ANGARC( ISEA - NGLO )*DERA
+          CDIR = MOD ( TPI + DN, TPI )
+        ENDIF
 #endif
 
-          CX(ISEA) = CABS * COS(CDIR)
-          CY(ISEA) = CABS * SIN(CDIR)
+        CX(ISEA) = CABS * COS(CDIR)
+        CY(ISEA) = CABS * SIN(CDIR)
 #ifdef W3_TIDE
-          !        IF (ISEA.EQ.1)  WRITE(6,'(A,4F8.4,A,4F8.4)') 'CUR#:',RD,CA0(ISEA),CAI(ISEA),CABS,'##', &
-          !                                      CX(ISEA), CY(ISEA),WCURTIDEX, WCURTIDEY
-       END IF
+        !        IF (ISEA.EQ.1)  WRITE(6,'(A,4F8.4,A,4F8.4)') 'CUR#:',RD,CA0(ISEA),CAI(ISEA),CABS,'##', &
+        !                                      CX(ISEA), CY(ISEA),WCURTIDEX, WCURTIDEY
+      END IF
 #endif
-       !
+      !
     END DO
     !
     RETURN
@@ -578,45 +578,45 @@ CONTAINS
     ! 1.  Prepare auxiliary arrays
     !
     IF ( FLFRST ) THEN
-       DO ISEA=1, NSEA
+      DO ISEA=1, NSEA
 #ifdef W3_SMC
-          !!Li  For sea-point only SMC grid wind 1-D wind is stored on
-          !!Li  2-D WX0(NSEA, 1) variable.
-          IF( FSWND ) THEN
-             IX = ISEA
-             IY = 1
-          ELSE
+        !!Li  For sea-point only SMC grid wind 1-D wind is stored on
+        !!Li  2-D WX0(NSEA, 1) variable.
+        IF( FSWND ) THEN
+          IX = ISEA
+          IY = 1
+        ELSE
 #endif
-             IX        = MAPSF(ISEA,1)
-             IY        = MAPSF(ISEA,2)
+          IX        = MAPSF(ISEA,1)
+          IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-          ENDIF
+        ENDIF
 #endif
 
-          UA0(ISEA) = SQRT ( WX0(IX,IY)**2 + WY0(IX,IY)**2 )
-          UAI(ISEA) = SQRT ( WXN(IX,IY)**2 + WYN(IX,IY)**2 )
-          IF ( UA0(ISEA) .GT. 1.E-7) THEN
-             D0     = MOD ( TPI+ATAN2(WY0(IX,IY),WX0(IX,IY)) , TPI )
-          ELSE
-             D0     = 0
-          END IF
-          IF ( UAI(ISEA) .GT. 1.E-7) THEN
-             DN     = MOD ( TPI+ATAN2(WYN(IX,IY),WXN(IX,IY)) , TPI )
-          ELSE
-             DN     = D0
-          END IF
-          IF ( UA0(ISEA) .GT. 1.E-7) THEN
-             UD0(ISEA) = D0
-          ELSE
-             UD0(ISEA) = DN
-          END IF
-          DD     = DN - UD0(ISEA)
-          IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
-          UDI(ISEA) = DD
-          UAI(ISEA) = UAI(ISEA) - UA0(ISEA)
-          AS0(ISEA) = DT0(IX,IY)
-          ASI(ISEA) = DTN(IX,IY) - DT0(IX,IY)
-       END DO
+        UA0(ISEA) = SQRT ( WX0(IX,IY)**2 + WY0(IX,IY)**2 )
+        UAI(ISEA) = SQRT ( WXN(IX,IY)**2 + WYN(IX,IY)**2 )
+        IF ( UA0(ISEA) .GT. 1.E-7) THEN
+          D0     = MOD ( TPI+ATAN2(WY0(IX,IY),WX0(IX,IY)) , TPI )
+        ELSE
+          D0     = 0
+        END IF
+        IF ( UAI(ISEA) .GT. 1.E-7) THEN
+          DN     = MOD ( TPI+ATAN2(WYN(IX,IY),WXN(IX,IY)) , TPI )
+        ELSE
+          DN     = D0
+        END IF
+        IF ( UA0(ISEA) .GT. 1.E-7) THEN
+          UD0(ISEA) = D0
+        ELSE
+          UD0(ISEA) = DN
+        END IF
+        DD     = DN - UD0(ISEA)
+        IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
+        UDI(ISEA) = DD
+        UAI(ISEA) = UAI(ISEA) - UA0(ISEA)
+        AS0(ISEA) = DT0(IX,IY)
+        ASI(ISEA) = DTN(IX,IY) - DT0(IX,IY)
+      END DO
     END IF
     !
     ! 2.  Calculate interpolation factor
@@ -649,32 +649,32 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       !
-       UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)
+      !
+      UA(ISEA) = UA0(ISEA) + RD * UAI(ISEA)
 #ifdef W3_WNT2
-       UI2      = SQRT ( RD2 *      UA0(ISEA)**2 +             &
-            RD  *(UA0(ISEA)+UAI(ISEA))**2 )
-       UA(ISEA) = UA(ISEA) * MIN(1.25,UI2/MAX(1.E-7,UA(ISEA)))
+      UI2      = SQRT ( RD2 *      UA0(ISEA)**2 +             &
+           RD  *(UA0(ISEA)+UAI(ISEA))**2 )
+      UA(ISEA) = UA(ISEA) * MIN(1.25,UI2/MAX(1.E-7,UA(ISEA)))
 #endif
-       UD(ISEA) = UD0(ISEA) + RD * UDI(ISEA)
+      UD(ISEA) = UD0(ISEA) + RD * UDI(ISEA)
 #ifdef W3_MGW
-       UXR        = UA(ISEA)*COS(UD(ISEA)) + VGX
-       UYR        = UA(ISEA)*SIN(UD(ISEA)) + VGY
-       UA(ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
-       UD(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
+      UXR        = UA(ISEA)*COS(UD(ISEA)) + VGX
+      UYR        = UA(ISEA)*SIN(UD(ISEA)) + VGY
+      UA(ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
+      UD(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
 #endif
 #ifdef W3_SMC
-       !Li   Rotate wind direction by ANGARC for Arctic part cells.
-       IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
-          UDARC = UD(ISEA) + ANGARC( ISEA - NGLO )*DERA
-          UD(ISEA) = MOD ( TPI + UDARC, TPI )
-       ENDIF
+      !Li   Rotate wind direction by ANGARC for Arctic part cells.
+      IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+        UDARC = UD(ISEA) + ANGARC( ISEA - NGLO )*DERA
+        UD(ISEA) = MOD ( TPI + UDARC, TPI )
+      ENDIF
 #endif
-       !
-       AS(ISEA) = AS0(ISEA) + RD * ASI(ISEA)
-       !        IF (UA(ISEA).NE.UA(ISEA)) WRITE(6,*) 'BUG WIND:',ISEA,UA(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2),UA0(ISEA),RD,UAI(ISEA)
-       !        IF (UD(ISEA).NE.UD(ISEA)) WRITE(6,*) 'BUG WIN2:',ISEA,UD(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2)
-       !
+      !
+      AS(ISEA) = AS0(ISEA) + RD * ASI(ISEA)
+      !        IF (UA(ISEA).NE.UA(ISEA)) WRITE(6,*) 'BUG WIND:',ISEA,UA(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2),UA0(ISEA),RD,UAI(ISEA)
+      !        IF (UD(ISEA).NE.UD(ISEA)) WRITE(6,*) 'BUG WIN2:',ISEA,UD(ISEA),MAPSF(ISEA,1), MAPSF(ISEA,2)
+      !
     END DO
     !
 #ifdef W3_OMPG
@@ -692,33 +692,33 @@ CONTAINS
 #ifdef W3_RWND
     IF ( FLCUR ) THEN
 #endif
-       !
+      !
 #ifdef W3_RWND
-       DO ISEA=1, NSEA
-          UXR        = UA(ISEA)*COS(UD(ISEA)) - RWINDC*CX(ISEA)
-          UYR        = UA(ISEA)*SIN(UD(ISEA)) - RWINDC*CY(ISEA)
-          U10 (ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
-          U10D(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
-       END DO
+      DO ISEA=1, NSEA
+        UXR        = UA(ISEA)*COS(UD(ISEA)) - RWINDC*CX(ISEA)
+        UYR        = UA(ISEA)*SIN(UD(ISEA)) - RWINDC*CY(ISEA)
+        U10 (ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
+        U10D(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
+      END DO
 #endif
-       !
+      !
 #ifdef W3_RWND
     ELSE
 #endif
-       !
+      !
 #ifdef W3_OMPG
-       !$OMP PARALLEL DO PRIVATE (ISEA)
+      !$OMP PARALLEL DO PRIVATE (ISEA)
 #endif
-       !
-       DO ISEA=1, NSEA
-          U10 (ISEA) = MAX ( UA(ISEA) , 0.001 )
-          U10D(ISEA) = UD(ISEA)
-       END DO
-       !
+      !
+      DO ISEA=1, NSEA
+        U10 (ISEA) = MAX ( UA(ISEA) , 0.001 )
+        U10D(ISEA) = UD(ISEA)
+      END DO
+      !
 #ifdef W3_OMPG
-       !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 #endif
-       !
+      !
 #ifdef W3_RWND
     END IF
 #endif
@@ -739,20 +739,20 @@ CONTAINS
     !
 #ifdef W3_STAB2
     DO ISEA=1, NSEA
-       STAB   = STAB0 * AS(ISEA) / MAX(5.,U10(ISEA))**2
-       STAB   = MAX ( -1. , MIN ( 1. , STAB ) )
+      STAB   = STAB0 * AS(ISEA) / MAX(5.,U10(ISEA))**2
+      STAB   = MAX ( -1. , MIN ( 1. , STAB ) )
 #endif
-       !
+      !
 #ifdef W3_STAB2
-       THARG1 = MAX ( 0. , FFNG*(STAB-OFSTAB))
-       THARG2 = MAX ( 0. , FFPS*(STAB-OFSTAB))
-       COR1   = CCNG * TANH(THARG1)
-       COR2   = CCPS * TANH(THARG2)
+      THARG1 = MAX ( 0. , FFNG*(STAB-OFSTAB))
+      THARG2 = MAX ( 0. , FFPS*(STAB-OFSTAB))
+      COR1   = CCNG * TANH(THARG1)
+      COR2   = CCPS * TANH(THARG2)
 #endif
-       !
+      !
 #ifdef W3_STAB2
-       ASF(ISEA) = SQRT ( (1.+COR1+COR2)/SHSTAB )
-       U10(ISEA) = U10(ISEA) / ASF(ISEA)
+      ASF(ISEA) = SQRT ( (1.+COR1+COR2)/SHSTAB )
+      U10(ISEA) = U10(ISEA) / ASF(ISEA)
     END DO
 #endif
     !
@@ -875,43 +875,43 @@ CONTAINS
     ! 1.  Prepare auxiliary arrays
     !
     IF ( FLFRST ) THEN
-       DO ISEA=1, NSEA
+      DO ISEA=1, NSEA
 #ifdef W3_SMC
-          !!Li  For sea-point only SMC grid momentum 1-D momentum is stored on
-          !!Li  2-D UX0(NSEA, 1) variable.
-          IF( FSWND ) THEN
-             IX = ISEA
-             IY = 1
-          ELSE
+        !!Li  For sea-point only SMC grid momentum 1-D momentum is stored on
+        !!Li  2-D UX0(NSEA, 1) variable.
+        IF( FSWND ) THEN
+          IX = ISEA
+          IY = 1
+        ELSE
 #endif
-             IX        = MAPSF(ISEA,1)
-             IY        = MAPSF(ISEA,2)
+          IX        = MAPSF(ISEA,1)
+          IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-          ENDIF
+        ENDIF
 #endif
 
-          MA0(ISEA) = SQRT ( UX0(IX,IY)**2 + UY0(IX,IY)**2 )
-          MAI(ISEA) = SQRT ( UXN(IX,IY)**2 + UYN(IX,IY)**2 )
-          IF ( MA0(ISEA) .GT. 1.E-7) THEN
-             D0     = MOD ( TPI+ATAN2(UY0(IX,IY),UX0(IX,IY)) , TPI )
-          ELSE
-             D0     = 0
-          END IF
-          IF ( MAI(ISEA) .GT. 1.E-7) THEN
-             DN     = MOD ( TPI+ATAN2(UYN(IX,IY),UXN(IX,IY)) , TPI )
-          ELSE
-             DN     = D0
-          END IF
-          IF ( MA0(ISEA) .GT. 1.E-7) THEN
-             MD0(ISEA) = D0
-          ELSE
-             MD0(ISEA) = DN
-          END IF
-          DD     = DN - MD0(ISEA)
-          IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
-          MDI(ISEA) = DD
-          MAI(ISEA) = MAI(ISEA) - MA0(ISEA)
-       END DO
+        MA0(ISEA) = SQRT ( UX0(IX,IY)**2 + UY0(IX,IY)**2 )
+        MAI(ISEA) = SQRT ( UXN(IX,IY)**2 + UYN(IX,IY)**2 )
+        IF ( MA0(ISEA) .GT. 1.E-7) THEN
+          D0     = MOD ( TPI+ATAN2(UY0(IX,IY),UX0(IX,IY)) , TPI )
+        ELSE
+          D0     = 0
+        END IF
+        IF ( MAI(ISEA) .GT. 1.E-7) THEN
+          DN     = MOD ( TPI+ATAN2(UYN(IX,IY),UXN(IX,IY)) , TPI )
+        ELSE
+          DN     = D0
+        END IF
+        IF ( MA0(ISEA) .GT. 1.E-7) THEN
+          MD0(ISEA) = D0
+        ELSE
+          MD0(ISEA) = DN
+        END IF
+        DD     = DN - MD0(ISEA)
+        IF (ABS(DD).GT.PI) DD = DD - TPI*SIGN(1.,DD)
+        MDI(ISEA) = DD
+        MAI(ISEA) = MAI(ISEA) - MA0(ISEA)
+      END DO
     END IF
     !
     ! 2.  Calculate interpolation factor
@@ -944,22 +944,22 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       !
-       TAUA(ISEA) = MA0(ISEA) + RD * MAI(ISEA)
+      !
+      TAUA(ISEA) = MA0(ISEA) + RD * MAI(ISEA)
 #ifdef W3_WNT2
-       MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
-            RD  *(MA0(ISEA)+MAI(ISEA))**2 )
-       TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
+      MI2      = SQRT ( RD2 *      MA0(ISEA)**2 +             &
+           RD  *(MA0(ISEA)+MAI(ISEA))**2 )
+      TAUA(ISEA) = TAUA(ISEA) * MIN(1.25,MI2/MAX(1.E-7,TAUA(ISEA)))
 #endif
-       TAUADIR(ISEA) = MD0(ISEA) + RD * MDI(ISEA)
+      TAUADIR(ISEA) = MD0(ISEA) + RD * MDI(ISEA)
 #ifdef W3_SMC
-       !Li   Rotate momentum direction by ANGARC for Arctic part cells.
-       IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
-          MDARC = TAUADIR(ISEA) + ANGARC( ISEA - NGLO )*DERA
-          TAUADIR(ISEA) = MOD ( TPI + MDARC, TPI )
-       ENDIF
+      !Li   Rotate momentum direction by ANGARC for Arctic part cells.
+      IF( ARCTC .AND. (ISEA .GT. NGLO) ) THEN
+        MDARC = TAUADIR(ISEA) + ANGARC( ISEA - NGLO )*DERA
+        TAUADIR(ISEA) = MOD ( TPI + MDARC, TPI )
+      ENDIF
 #endif
-       !
+      !
     END DO
     !
     RETURN
@@ -1104,76 +1104,76 @@ CONTAINS
     !  this is not clear what is going on betwen w3init and this ...
     A(:,:,:)=0
     DO JSEA=1, NSEAL
-       CALL INIT_GET_ISEA(ISEA, JSEA)
-       IF (GTYPE.EQ.UNGTYPE) THEN
-          XGR=1.  ! to be fixed later
-       ELSE
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
-          XGR    = 0.5 * SQRT(HPFAC(IY,IX)**2+HQFAC(IY,IX)**2)
-       END IF
-       IF ( FLAGLL ) THEN
-          XGR    = XGR * RADIUS * DERA
-       END IF
-       !
-       U10C   = MAX ( MIN(U10(ISEA),U10MAX) , U10MIN )
-       !
-       XSTAR  = GRAV * XGR / U10C**2
-       FSTAR  = 3.5 / XSTAR**(0.33)
-       GAMMA  = MAX ( 1. , 7.0 / XSTAR**(0.143) )
-       !
-       ALFA(JSEA) = 0.076 / XSTAR**(0.22)
-       FP  (JSEA) = FSTAR * GRAV / U10C
-       YLN (JSEA) = LOG ( GAMMA )
-       !
+      CALL INIT_GET_ISEA(ISEA, JSEA)
+      IF (GTYPE.EQ.UNGTYPE) THEN
+        XGR=1.  ! to be fixed later
+      ELSE
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        XGR    = 0.5 * SQRT(HPFAC(IY,IX)**2+HQFAC(IY,IX)**2)
+      END IF
+      IF ( FLAGLL ) THEN
+        XGR    = XGR * RADIUS * DERA
+      END IF
+      !
+      U10C   = MAX ( MIN(U10(ISEA),U10MAX) , U10MIN )
+      !
+      XSTAR  = GRAV * XGR / U10C**2
+      FSTAR  = 3.5 / XSTAR**(0.33)
+      GAMMA  = MAX ( 1. , 7.0 / XSTAR**(0.143) )
+      !
+      ALFA(JSEA) = 0.076 / XSTAR**(0.22)
+      FP  (JSEA) = FSTAR * GRAV / U10C
+      YLN (JSEA) = LOG ( GAMMA )
+      !
 #ifdef W3_T1
-       WRITE (NDST,9011) ISEA, U10C, XSTAR,                      &
-            ALFA(JSEA), FP(JSEA), GAMMA
+      WRITE (NDST,9011) ISEA, U10C, XSTAR,                      &
+           ALFA(JSEA), FP(JSEA), GAMMA
 #endif
-       !
+      !
     END DO
     !
     ! 1-D spectrum at location ITH = NTH --------------------------------- *
     !
     DO IK=1, NK
-       FR     = SIG(IK) * TPIINV
-       DO JSEA=1, NSEAL
-          !
-          !/ ----- INLINED EJ5P (REDUCED) -------------------------------------- /
-          !
-          AA     = ALFA(JSEA) * 0.06175/FR**5
-          BB     = MAX( -50. , -1.25*(FP(JSEA)/FR)**4 )
-          CC     = MAX( -50. , -0.5*((FR-FP(JSEA))/(0.07*FP(JSEA)))**2 )
-          A(NTH,IK,JSEA)                                              &
-               = AA * EXP(BB + EXP(CC) * YLN(JSEA))
-          !
-          !/ ----- INLINED EJ5P (END) ------------------------------------------ /
-          !
-       END DO
+      FR     = SIG(IK) * TPIINV
+      DO JSEA=1, NSEAL
+        !
+        !/ ----- INLINED EJ5P (REDUCED) -------------------------------------- /
+        !
+        AA     = ALFA(JSEA) * 0.06175/FR**5
+        BB     = MAX( -50. , -1.25*(FP(JSEA)/FR)**4 )
+        CC     = MAX( -50. , -0.5*((FR-FP(JSEA))/(0.07*FP(JSEA)))**2 )
+        A(NTH,IK,JSEA)                                              &
+             = AA * EXP(BB + EXP(CC) * YLN(JSEA))
+        !
+        !/ ----- INLINED EJ5P (END) ------------------------------------------ /
+        !
+      END DO
     END DO
     !
     ! Apply directional distribution ------------------------------------- *
     !
     DO JSEA=1, NSEAL
-       CALL INIT_GET_ISEA(ISEA, JSEA)
-       U10DIR = U10D(ISEA)
-       D1INT  = 0.
-       !
-       DO ITH=1, NTH
-          D1(ITH) = ( MAX ( 0. , COS(TH(ITH)-U10DIR) ) )**2
-          D1INT   = D1INT + D1(ITH)
-       END DO
-       !
-       D1INT  = D1INT * DTH
-       F1     = TPIINV / D1INT
-       !
-       DO IK=1, NK
-          F2     = F1 * A(NTH,IK,JSEA) * CG(IK,ISEA) / SIG(IK)
-          DO ITH=1, NTH
-             A(ITH,IK,JSEA) = F2 * D1(ITH)
-          END DO
-       END DO
-       !
+      CALL INIT_GET_ISEA(ISEA, JSEA)
+      U10DIR = U10D(ISEA)
+      D1INT  = 0.
+      !
+      DO ITH=1, NTH
+        D1(ITH) = ( MAX ( 0. , COS(TH(ITH)-U10DIR) ) )**2
+        D1INT   = D1INT + D1(ITH)
+      END DO
+      !
+      D1INT  = D1INT * DTH
+      F1     = TPIINV / D1INT
+      !
+      DO IK=1, NK
+        F2     = F1 * A(NTH,IK,JSEA) * CG(IK,ISEA) / SIG(IK)
+        DO ITH=1, NTH
+          A(ITH,IK,JSEA) = F2 * D1(ITH)
+        END DO
+      END DO
+      !
     END DO
     !
     ! Test output -------------------------------------------------------- *
@@ -1185,30 +1185,30 @@ CONTAINS
     !
 #ifdef W3_T
     DO ISEA=IAPROC, NSEA, NAPROC
-       JSEA   = 1 + (ISEA-1)/NAPROC
-       ETOT   = 0.
-       DO IK=1, NK
-          E1I    = 0.
-          DO ITH=1, NTH
-             E1I    = E1I + A(ITH,IK,JSEA)
-          END DO
-          ETOT   = ETOT + E1I * DSIP(IK) * SIG(IK) / CG(IK,ISEA)
-       END DO
-       IX            = MAPSF(ISEA,1)
-       IY            = MAPSF(ISEA,2)
-       HSIG  (IX,IY) = 4. * SQRT ( ETOT * DTH )
-       MAPOUT(IX,IY) = 1
+      JSEA   = 1 + (ISEA-1)/NAPROC
+      ETOT   = 0.
+      DO IK=1, NK
+        E1I    = 0.
+        DO ITH=1, NTH
+          E1I    = E1I + A(ITH,IK,JSEA)
+        END DO
+        ETOT   = ETOT + E1I * DSIP(IK) * SIG(IK) / CG(IK,ISEA)
+      END DO
+      IX            = MAPSF(ISEA,1)
+      IY            = MAPSF(ISEA,2)
+      HSIG  (IX,IY) = 4. * SQRT ( ETOT * DTH )
+      MAPOUT(IX,IY) = 1
     END DO
 #endif
     !
 #ifdef W3_T
     IX0    = 1
     DO
-       IXN    = MIN ( NX , IX0+NXP-1 )
-       CALL PRTBLK (NDST, NX, NY, NX, HSIG, MAPOUT, 0, 0.,        &
-            IX0, IXN, 1, 1, NY, 1, 'Hs', 'm')
-       IF ( IXN .EQ. NX ) EXIT
-       IX0    = IX0 + NXP
+      IXN    = MIN ( NX , IX0+NXP-1 )
+      CALL PRTBLK (NDST, NX, NY, NX, HSIG, MAPOUT, 0, 0.,        &
+           IX0, IXN, 1, 1, NY, 1, 'Hs', 'm')
+      IF ( IXN .EQ. NX ) EXIT
+      IX0    = IX0 + NXP
     END DO
 #endif
     !
@@ -1338,53 +1338,53 @@ CONTAINS
 
     !
     IF ( BBPI0(1,0) .EQ. -1. ) THEN
-       !
-       BBPI0(:,0) = 0.
-       BBPIN(:,0) = 0.
-       ABPI0(:,0) = 0.
-       ABPIN(:,0) = 0.
-       !
-       DO IBI=1, NBI
-          ISEA   = ISBPI(IBI)
-          DO ISP=1, NSPEC
-             BBPI0(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *      &
-                  ( RDBPI(IBI,1) * ABPI0(ISP,IPBPI(IBI,1))   &
-                  + RDBPI(IBI,2) * ABPI0(ISP,IPBPI(IBI,2))   &
-                  + RDBPI(IBI,3) * ABPI0(ISP,IPBPI(IBI,3))   &
-                  + RDBPI(IBI,4) * ABPI0(ISP,IPBPI(IBI,4)) )
-          END DO
-       END DO
-       !
-       ! 1.b Shift BBPIN
-       !
+      !
+      BBPI0(:,0) = 0.
+      BBPIN(:,0) = 0.
+      ABPI0(:,0) = 0.
+      ABPIN(:,0) = 0.
+      !
+      DO IBI=1, NBI
+        ISEA   = ISBPI(IBI)
+        DO ISP=1, NSPEC
+          BBPI0(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *      &
+               ( RDBPI(IBI,1) * ABPI0(ISP,IPBPI(IBI,1))   &
+               + RDBPI(IBI,2) * ABPI0(ISP,IPBPI(IBI,2))   &
+               + RDBPI(IBI,3) * ABPI0(ISP,IPBPI(IBI,3))   &
+               + RDBPI(IBI,4) * ABPI0(ISP,IPBPI(IBI,4)) )
+        END DO
+      END DO
+      !
+      ! 1.b Shift BBPIN
+      !
     ELSE
-       BBPI0 = BBPIN
+      BBPI0 = BBPIN
     END IF
     !
     ! 2.  Process BBPIN -------------------------------------------------- *
     !
     DO IBI=1, NBI
-       ISEA   = ISBPI(IBI)
-       DO ISP=1, NSPEC
-          BBPIN(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *          &
-               ( RDBPI(IBI,1) * ABPIN(ISP,IPBPI(IBI,1))       &
-               + RDBPI(IBI,2) * ABPIN(ISP,IPBPI(IBI,2))       &
-               + RDBPI(IBI,3) * ABPIN(ISP,IPBPI(IBI,3))       &
-               + RDBPI(IBI,4) * ABPIN(ISP,IPBPI(IBI,4)) )
-       END DO
-       !
+      ISEA   = ISBPI(IBI)
+      DO ISP=1, NSPEC
+        BBPIN(ISP,IBI) = CG(MAPWN(ISP),ISEA) / SIG2(ISP) *          &
+             ( RDBPI(IBI,1) * ABPIN(ISP,IPBPI(IBI,1))       &
+             + RDBPI(IBI,2) * ABPIN(ISP,IPBPI(IBI,2))       &
+             + RDBPI(IBI,3) * ABPIN(ISP,IPBPI(IBI,3))       &
+             + RDBPI(IBI,4) * ABPIN(ISP,IPBPI(IBI,4)) )
+      END DO
+      !
 #ifdef W3_RTD
-       !!  Rotate the spectra if model is on rotated grid.  JGLi12Jun2012
-       !!  PoLat == 90. if the grid is standard lat/lon (C. Hansen 20190613)
-       IF ( PoLat < 90. ) THEN
-          Spectr = BBPIN(:,IBI)
-          AnglBP = AnglD(ISEA)
-          CALL  W3ACTURN( NTH, NK, AnglBP, Spectr )
-          BBPIN(:,IBI) = Spectr
-       END IF
+      !!  Rotate the spectra if model is on rotated grid.  JGLi12Jun2012
+      !!  PoLat == 90. if the grid is standard lat/lon (C. Hansen 20190613)
+      IF ( PoLat < 90. ) THEN
+        Spectr = BBPIN(:,IBI)
+        AnglBP = AnglD(ISEA)
+        CALL  W3ACTURN( NTH, NK, AnglBP, Spectr )
+        BBPIN(:,IBI) = Spectr
+      END IF
 
 #endif
-       !
+      !
     END DO
 
     ! 3.  Wave height test output ---------------------------------------- *
@@ -1392,17 +1392,17 @@ CONTAINS
 #ifdef W3_T0
     WRITE (NDST,9000)
     DO IBI=1, NBI
-       HS1    = 0.
-       HS2    = 0.
-       DO ISP=1, NSPEC
-          HS1    = HS1 + BBPI0(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
-               CG(MAPWN(ISP),ISBPI(IBI))
-          HS2    = HS2 + BBPIN(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
-               CG(MAPWN(ISP),ISBPI(IBI))
-       END DO
-       HS1    = 4. * SQRT ( HS1 )
-       HS2    = 4. * SQRT ( HS2 )
-       WRITE (NDST,9001) IBI, ISBPI(IBI), HS1, HS2
+      HS1    = 0.
+      HS2    = 0.
+      DO ISP=1, NSPEC
+        HS1    = HS1 + BBPI0(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
+             CG(MAPWN(ISP),ISBPI(IBI))
+        HS2    = HS2 + BBPIN(ISP,IBI) * DDEN(MAPWN(ISP)) /       &
+             CG(MAPWN(ISP),ISBPI(IBI))
+      END DO
+      HS1    = 4. * SQRT ( HS1 )
+      HS2    = 4. * SQRT ( HS2 )
+      WRITE (NDST,9001) IBI, ISBPI(IBI), HS1, HS2
     END DO
 #endif
     !
@@ -1505,10 +1505,10 @@ CONTAINS
     ! 2.  Main loop over sea points -------------------------------------- *
 
     DO ISEA=1, NSEA
-       !
-       IX        = MAPSF(ISEA,1)
-       IY        = MAPSF(ISEA,2)
-       ICEH(ISEA) = MAX(IICEHMIN,IICEHFAC*ICEP1(IX,IY))
+      !
+      IX        = MAPSF(ISEA,1)
+      IY        = MAPSF(ISEA,2)
+      ICEH(ISEA) = MAX(IICEHMIN,IICEHFAC*ICEP1(IX,IY))
     END DO
     !
     RETURN
@@ -1610,17 +1610,17 @@ CONTAINS
     ! 2.  Main loop over sea points -------------------------------------- *
 
     DO ISEA=1, NSEA
-       !
-       IX        = MAPSF(ISEA,1)
-       IY        = MAPSF(ISEA,2)
-       FLFLOE = ICE(ISEA) .EQ. 0 .OR. ICEH(ISEA) .EQ. 0
-       IF ( FLFLOE) THEN
-          ICEF(ISEA) = 0.0
-          ICEDMAX(ISEA) = 1000.0
-       ELSE
-          ICEF(ISEA) = ICEP5(IX,IY)
-          ICEDMAX(ISEA) = ICEP5(IX,IY)
-       END IF
+      !
+      IX        = MAPSF(ISEA,1)
+      IY        = MAPSF(ISEA,2)
+      FLFLOE = ICE(ISEA) .EQ. 0 .OR. ICEH(ISEA) .EQ. 0
+      IF ( FLFLOE) THEN
+        ICEF(ISEA) = 0.0
+        ICEDMAX(ISEA) = 1000.0
+      ELSE
+        ICEF(ISEA) = ICEP5(IX,IY)
+        ICEDMAX(ISEA) = ICEP5(IX,IY)
+      END IF
     END DO
     !
     RETURN
@@ -1770,82 +1770,82 @@ CONTAINS
     ! 2.  Main loop over sea points -------------------------------------- *
     !
     DO ISEA=1, NSEA
-       !
-       ! 2.a Get grid counters
-       !
-       IX        = MAPSF(ISEA,1)
-       IY        = MAPSF(ISEA,2)
-       ICE(ISEA) = ICEI(IX,IY)
-       BERG(ISEA)= BERGI(IX,IY)
-       !
-       ! 2.b Sea point to be de-activated..
-       !
+      !
+      ! 2.a Get grid counters
+      !
+      IX        = MAPSF(ISEA,1)
+      IY        = MAPSF(ISEA,2)
+      ICE(ISEA) = ICEI(IX,IY)
+      BERG(ISEA)= BERGI(IX,IY)
+      !
+      ! 2.b Sea point to be de-activated..
+      !
 #ifdef W3_IC0
-       IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 ) THEN
-          MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
-          MAPICE(IY,IX) = 1
-          CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-          IF (LOCAL .AND. (IAPROC .eq. ISPROC)) THEN
+      IF ( ICEI(IX,IY).GE.FICEN .AND. MAPICE(IY,IX).EQ.0 ) THEN
+        MAPSTA(IY,IX) = - ABS(MAPSTA(IY,IX))
+        MAPICE(IY,IX) = 1
+        CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
+        IF (LOCAL .AND. (IAPROC .eq. ISPROC)) THEN
 #ifdef W3_T
-             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
-                  ICEI(IX,IY), 'ICE (NEW)'
-#endif
-             VA(:,JSEA) = 0.
-#ifdef W3_T
-          ELSE
-             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
-                  ICEI(IX,IY), 'ICE (NEW X)'
-#endif
-          END IF
-          !
-#ifdef W3_T
-       ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
-          WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
-               ICEI(IX,IY), 'ICE'
-#endif
-       END IF
-       !
-       ! 2.b Ice point to be re-activated.
-       !
-       IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
-          !
-          MAPICE(IY,IX) = 0
-          UST(ISEA)     = 0.05
-          !
-          IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-             MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
-             !
-             CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-             IF ( LOCAL .AND. (IAPROC .eq. ISPROC) ) THEN
-#ifdef W3_T
-                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
-                     ICEI(IX,IY), 'SEA (NEW)'
-#endif
-                VA(:,JSEA) = 0.
-                !
-#ifdef W3_T
-             ELSE
-                WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
-                     ICEI(IX,IY), 'SEA (NEW X)'
-#endif
-             END IF
-             !
-#ifdef W3_T
-          ELSE
-             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
-                  ICEI(IX,IY), 'DIS'
-#endif
-          END IF
-          !
-#ifdef W3_T
-       ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
           WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
-               ICEI(IX,IY), 'SEA'
+               ICEI(IX,IY), 'ICE (NEW)'
 #endif
+          VA(:,JSEA) = 0.
+#ifdef W3_T
+        ELSE
+          WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
+               ICEI(IX,IY), 'ICE (NEW X)'
+#endif
+        END IF
+        !
+#ifdef W3_T
+      ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
+        WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
+             ICEI(IX,IY), 'ICE'
+#endif
+      END IF
+      !
+      ! 2.b Ice point to be re-activated.
+      !
+      IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
+        !
+        MAPICE(IY,IX) = 0
+        UST(ISEA)     = 0.05
+        !
+        IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+          MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
           !
-       END IF
+          CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
+          IF ( LOCAL .AND. (IAPROC .eq. ISPROC) ) THEN
+#ifdef W3_T
+            WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
+                 ICEI(IX,IY), 'SEA (NEW)'
 #endif
-       !
+            VA(:,JSEA) = 0.
+            !
+#ifdef W3_T
+          ELSE
+            WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
+                 ICEI(IX,IY), 'SEA (NEW X)'
+#endif
+          END IF
+          !
+#ifdef W3_T
+        ELSE
+          WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
+               ICEI(IX,IY), 'DIS'
+#endif
+        END IF
+        !
+#ifdef W3_T
+      ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
+        WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
+             ICEI(IX,IY), 'SEA'
+#endif
+        !
+      END IF
+#endif
+      !
     END DO
     !
     ! 3.  Update MAPST2 -------------------------------------------------- *
@@ -2041,8 +2041,8 @@ CONTAINS
     ! 1.a Check NK
     !
     IF ( NK .LT. 2 ) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000)
-       CALL EXTCDE ( 1 )
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000)
+      CALL EXTCDE ( 1 )
     END IF
     !
     ! 1.b Update times
@@ -2064,19 +2064,19 @@ CONTAINS
     !
 #ifdef W3_TIDE
     IF (FLLEVTIDE) THEN
-       !          WRITE(6,*) 'TIME:',TIME
-       TIDE_HOUR = TIME2HOURS(TIME)
-       !
-       !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
-       !*  AT THE MID POINT OF THE ANALYSIS PERIOD.
-       d1=TIDE_HOUR/24.d0
-       TIDE_KD0= 2415020
-       d1=d1-dfloat(TIDE_kd0)-0.5d0
-       call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
-       INT24=24
-       INTDYS=int((TIDE_HOUR+0.00001)/INT24)
-       HH=TIDE_HOUR-dfloat(INTDYS*INT24)
-       TAU=HH/24.D0+H-S
+      !          WRITE(6,*) 'TIME:',TIME
+      TIDE_HOUR = TIME2HOURS(TIME)
+      !
+      !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED BY LINEAR APPROXIMATION
+      !*  AT THE MID POINT OF THE ANALYSIS PERIOD.
+      d1=TIDE_HOUR/24.d0
+      TIDE_KD0= 2415020
+      d1=d1-dfloat(TIDE_kd0)-0.5d0
+      call astr(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
+      INT24=24
+      INTDYS=int((TIDE_HOUR+0.00001)/INT24)
+      HH=TIDE_HOUR-dfloat(INTDYS*INT24)
+      TAU=HH/24.D0+H-S
     END IF
     !
     !  ONLY THE FRACTIONAL PART OF A SOLAR DAY NEED BE RETAINED FOR COMPU-
@@ -2084,59 +2084,59 @@ CONTAINS
     !
 #endif
     DO ISEA=1, NSEA
-       IX     = MAPSF(ISEA,1)
-       IY     = MAPSF(ISEA,2)
-       DWO(ISEA) = DW(ISEA)
-       !
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      DWO(ISEA) = DW(ISEA)
+      !
 #ifdef W3_TIDE
-       IF (FLLEVTIDE) THEN
-          ! VUF should be updated only if latitude changes significantly ...
-          CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
-          WLEVTIDE = WLTIDE(IX,IY,1,1)
-          !Verification
-          !          IF (ISEA.EQ.1) THEN
+      IF (FLLEVTIDE) THEN
+        ! VUF should be updated only if latitude changes significantly ...
+        CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),FX,UX,VX)
+        WLEVTIDE = WLTIDE(IX,IY,1,1)
+        !Verification
+        !          IF (ISEA.EQ.1) THEN
 
-          TIDE_AMPC(1:NTIDE,1)=WLTIDE(IX,IY,1:NTIDE,1)
-          TIDE_PHG(1:NTIDE,1)=WLTIDE(IX,IY,1:NTIDE,2)
-          !
-          !           WRITE(991,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
-          !                       d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,YGRD(IY,IX)
-          J=1
+        TIDE_AMPC(1:NTIDE,1)=WLTIDE(IX,IY,1:NTIDE,1)
+        TIDE_PHG(1:NTIDE,1)=WLTIDE(IX,IY,1:NTIDE,2)
+        !
+        !           WRITE(991,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
+        !                       d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,YGRD(IY,IX)
+        J=1
+        !           WRITE(991,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
+        !                       FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
+        DO J=2,TIDE_MF
+          TIDE_ARG=(VX(J)+UX(J))*twpi-WLTIDE(IX,IY,J,2)*DERA
+          WLEVTIDE =WLEVTIDE+FX(J)*WLTIDE(IX,IY,J,1)*COS(TIDE_ARG)
           !           WRITE(991,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
           !                       FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
-          DO J=2,TIDE_MF
-             TIDE_ARG=(VX(J)+UX(J))*twpi-WLTIDE(IX,IY,J,2)*DERA
-             WLEVTIDE =WLEVTIDE+FX(J)*WLTIDE(IX,IY,J,1)*COS(TIDE_ARG)
-             !           WRITE(991,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',IX,J,TIME,TIDE_HOUR,    &
-             !                       FX(J),UX(J),VX(J),TIDE_INDEX2(J),TIDECON_ALLNAMES(TIDE_INDEX2(J))
-          END DO
-          DO J=1,TIDE_MF
-             !           WRITE(991,'(A,4I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,J,TIME,TIDE_HOUR,    &
-             !                       FX(J),UX(J),VX(J),TIDE_AMPC(J,1),TIDE_PHG(J,1)
-          END DO
-          !         WRITE(991,'(A,3F7.3)') '#:',WLEV(IX,IY),WLEVTIDE,WLEV(IX,IY)-WLEVTIDE
+        END DO
+        DO J=1,TIDE_MF
+          !           WRITE(991,'(A,4I9,F12.0,5F8.3)') 'TEST ISEA 2:',IX,J,TIME,TIDE_HOUR,    &
+          !                       FX(J),UX(J),VX(J),TIDE_AMPC(J,1),TIDE_PHG(J,1)
+        END DO
+        !         WRITE(991,'(A,3F7.3)') '#:',WLEV(IX,IY),WLEVTIDE,WLEV(IX,IY)-WLEVTIDE
 #endif
 
 #ifdef W3_TIDE
-          !         CLOSE(991)
-          !         END IF
-          ! End of verification
-          WLV(ISEA) = WLEVTIDE
-       ELSE
+        !         CLOSE(991)
+        !         END IF
+        ! End of verification
+        WLV(ISEA) = WLEVTIDE
+      ELSE
 #endif
-          !
-          WLV(ISEA) = WLEV(IX,IY)
-          WLVeff    = WLV(ISEA)
+        !
+        WLV(ISEA) = WLEV(IX,IY)
+        WLVeff    = WLV(ISEA)
 
 #ifdef W3_SETUP
-          IF (DO_CHANGE_WLV) THEN
-             WLVeff=WLVeff + ZETA_SETUP(ISEA)
-          END IF
+        IF (DO_CHANGE_WLV) THEN
+          WLVeff=WLVeff + ZETA_SETUP(ISEA)
+        END IF
 #endif
 #ifdef W3_TIDE
-       ENDIF
+      ENDIF
 #endif
-       DW (ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
+      DW (ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
 
     END DO ! NSEA
 
@@ -2148,211 +2148,211 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       !
-       IX     = MAPSF(ISEA,1)
-       IY     = MAPSF(ISEA,2)
-       !
-       ! 2.a Check if deep water
-       !
-       KDCHCK = WN(1,ISEA) * MIN( DWO(ISEA) , DW(ISEA) )
-       IF ( KDCHCK .LT. KDMAX ) THEN
+      !
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      !
+      ! 2.a Check if deep water
+      !
+      KDCHCK = WN(1,ISEA) * MIN( DWO(ISEA) , DW(ISEA) )
+      IF ( KDCHCK .LT. KDMAX ) THEN
+        !
+        ! 2.b Update grid and save old grid
+        !
+        DEPTH  = MAX ( DMIN, DW(ISEA) )
+        !
+        DO IK=0, NK+1
+          WNO(IK) = WN(IK,ISEA)
+          CGO(IK) = CG(IK,ISEA)
           !
-          ! 2.b Update grid and save old grid
+          !             Calculate wavenumbers and group velocities.
+          CALL WAVNU1(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA))
           !
-          DEPTH  = MAX ( DMIN, DW(ISEA) )
-          !
-          DO IK=0, NK+1
-             WNO(IK) = WN(IK,ISEA)
-             CGO(IK) = CG(IK,ISEA)
-             !
-             !             Calculate wavenumbers and group velocities.
-             CALL WAVNU1(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA))
-             !
-          END DO
-          !
-          DO IK=1, NK
-             OWN(IK) = DSIP(IK) / CGO(IK)
-             DWN(IK) = DSIP(IK) / CG(IK,ISEA)
-          END DO
-          !
-          ! 2.c Process dry points
-          !
-          IF ( WLV(ISEA)-ZB(ISEA) .LE.0. ) THEN
-             IF ( MAPDRY(IY,IX) .EQ. 0 ) THEN
-                CALL GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
-                IF ( LOCAL .AND. (IBELONG .eq. 1) ) THEN
-                   VA(:,JSEA) = 0.
-                END IF
-                MAPDRY(IY,IX) = 1
-                MAPSTA(IY,IX) = -ABS(MAPSTA(IY,IX))
+        END DO
+        !
+        DO IK=1, NK
+          OWN(IK) = DSIP(IK) / CGO(IK)
+          DWN(IK) = DSIP(IK) / CG(IK,ISEA)
+        END DO
+        !
+        ! 2.c Process dry points
+        !
+        IF ( WLV(ISEA)-ZB(ISEA) .LE.0. ) THEN
+          IF ( MAPDRY(IY,IX) .EQ. 0 ) THEN
+            CALL GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
+            IF ( LOCAL .AND. (IBELONG .eq. 1) ) THEN
+              VA(:,JSEA) = 0.
+            END IF
+            MAPDRY(IY,IX) = 1
+            MAPSTA(IY,IX) = -ABS(MAPSTA(IY,IX))
 #ifdef W3_T2
-                WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
-                     0., 0., '  (NEW DRY)'
-             ELSE
-                WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
-                     0., 0., '  (DRY)'
-#endif
-             ENDIF
-             CYCLE
-          END IF
-          !
-          ! 2.d Process new wet point
-          !
-          IF (WLV(ISEA)-ZB(ISEA).GT.0. .AND. MAPDRY(IY,IX).EQ.1) THEN
-             MAPDRY(IY,IX) = 0
-             !
-             ! Resets the spectrum to zero
-             !
-             CALL GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
-             IF ( LOCAL .AND. (IBELONG .eq. 1) ) THEN
-                VA(:,JSEA) = 0.
-             END IF
-             !
-             UST(ISEA)     = 0.05
-             IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-                MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
-#ifdef W3_T2
-                WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
-                     0., 0., '  (NEW WET)'
-             ELSE
-                WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
-                     0., 0., '  (NEW WET INACTIVE)'
-#endif
-             END IF
-             CYCLE
-          END IF
-          !
-          ! 2.e Check if ice on grid point, or if grid changes negligible
-          !
-          RDK    = ABS(WNO(1)-WN(1,ISEA)) / DWN(1)
-          !
-#ifdef W3_T2
-          IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
-             WRITE (NDST,9021)                                 &
-                  ISEA, DW(ISEA), KDCHCK, RDK, '  (INACTIVE)'
-          ELSE IF ( RDK .LT. RDKMIN ) THEN
-             WRITE (NDST,9021)                                 &
-                  ISEA, DW(ISEA), KDCHCK, RDK, '  (NEGL)'
+            WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
+                 0., 0., '  (NEW DRY)'
           ELSE
-             WRITE (NDST,9021)                                 &
-                  ISEA, DW(ISEA), KDCHCK, RDK, ' '
-          END IF
+            WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
+                 0., 0., '  (DRY)'
 #endif
+          ENDIF
+          CYCLE
+        END IF
+        !
+        ! 2.d Process new wet point
+        !
+        IF (WLV(ISEA)-ZB(ISEA).GT.0. .AND. MAPDRY(IY,IX).EQ.1) THEN
+          MAPDRY(IY,IX) = 0
           !
-          IF ( RDK.LT.RDKMIN .OR. MAPSTA(IY,IX).LT.0 ) CYCLE
+          ! Resets the spectrum to zero
+          !
           CALL GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
-          IF ( IBELONG .eq. 0) CYCLE
-          !
-          IF ( .NOT. LOCAL ) CYCLE
-          !
-          ! 2.d Save discrete actions and clean spectrum
-          !
-          DO IK=1, NK
-             DO ITH=1, NTH
-#ifdef W3_T3
-                OUT(IK,ITH) = A(ITH,IK,JSEA) * SIG(IK) / CGO(IK)
-#endif
-                TA(ITH,IK) = A(ITH,IK,JSEA) * OWN(IK)
-             END DO
-          END DO
-          !
-          VA(:,JSEA) = 0.
-          !
-#ifdef W3_T3
-          CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG, ' ',    &
-               TPI, 0., 1.E-5, 'F(f,th)', 'm2s', 'Before' )
-#endif
-          !
-          ! 2.e Redistribute discrete action density
-          !
-          IF ( WNO(1) .LT. WN(1,ISEA) ) THEN
-             IK0    = 1
-             I1     = 0
-             I2     = 1
-220          CONTINUE
-             IK0    = IK0 + 1
-             IF ( IK0 .GT. NK+1 ) GOTO 251
-             IF ( WNO(IK0) .GE. WN(1,ISEA) ) THEN
-                IK0    = IK0 - 1
-             ELSE
-                GOTO 220
-             END IF
-          ELSE
-             IK0    = 1
-             I1     = 1
-             I2     = 2
+          IF ( LOCAL .AND. (IBELONG .eq. 1) ) THEN
+            VA(:,JSEA) = 0.
           END IF
           !
-          DO IK=IK0, NK
-             !
-230          CONTINUE
-             IF ( WNO(IK) .GT. WN(I2,ISEA) ) THEN
-                I1     = I1 + 1
-                IF ( I1 .GT. NK ) GOTO 250
-                I2     = I1 + 1
-                GOTO 230
-             END IF
-             !
-             IF ( I1 .EQ. 0 ) THEN
-                RD1    = ( WN(1,ISEA) - WNO(IK) ) / DWN(1)
-                RD2    = 1. - RD1
-             ELSE
-                RD1    = ( WN(I2,ISEA) - WNO(IK) ) /                &
-                     ( WN(I2,ISEA) - WN(I1,ISEA) )
-                RD2    = 1. - RD1
-             END IF
-             !
-             IF ( I1 .GE. 1 ) THEN
-                DO ITH=1, NTH
-                   A(ITH,I1,JSEA) = A(ITH,I1,JSEA) + RD1*TA(ITH,IK)
-                END DO
-             END IF
-             !
-             IF ( I2 .LE. NK ) THEN
-                DO ITH=1, NTH
-                   A(ITH,I2,JSEA) = A(ITH,I2,JSEA) + RD2*TA(ITH,IK)
-                END DO
-             END IF
-             !
-250          CONTINUE
-          END DO
-251       CONTINUE
-          !
-          ! 2.f Convert discrete action densities to spectrum
-          !
-          DO ISPEC=1, NSPEC
-             VA(ISPEC,JSEA) = VA(ISPEC,JSEA) / DWN(MAPWN(ISPEC))
-          END DO
-          !
-          ! 2.f Add tail if necessary
-          !
-          IF ( I2.LE.NK .AND. RD2.LE.0.95 ) THEN
-             DO IK=MAX(I2,2), NK
-                DO ITH=1, NTH
-                   A(ITH,IK,JSEA) = FACHFA * A(ITH,IK-1,JSEA)
-                END DO
-             END DO
-          END IF
-          !
-#ifdef W3_T3
-          DO ISPEC=1, NSPEC
-             IK          = MAPWN(ISPEC)
-             ITH         = MAPTH(ISPEC)
-             OUT(IK,ITH) = A(ITH,IK,JSEA) * SIG(IK) / CG(IK,ISEA)
-          END DO
-#endif
-          !
-#ifdef W3_T3
-          CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG, ' ',    &
-               TPI, 0., 1.E-5, 'F(f,th)', 'm2s', 'After' )
-#endif
-          !
+          UST(ISEA)     = 0.05
+          IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+            MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
 #ifdef W3_T2
-       ELSE
-          WRITE (NDST,9021) ISEA, KDCHCK, '  (DEEP)'
+            WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
+                 0., 0., '  (NEW WET)'
+          ELSE
+            WRITE (NDST,9021) ISEA, WLV(ISEA)-ZB(ISEA),   &
+                 0., 0., '  (NEW WET INACTIVE)'
 #endif
-       END IF
-       !
+          END IF
+          CYCLE
+        END IF
+        !
+        ! 2.e Check if ice on grid point, or if grid changes negligible
+        !
+        RDK    = ABS(WNO(1)-WN(1,ISEA)) / DWN(1)
+        !
+#ifdef W3_T2
+        IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
+          WRITE (NDST,9021)                                 &
+               ISEA, DW(ISEA), KDCHCK, RDK, '  (INACTIVE)'
+        ELSE IF ( RDK .LT. RDKMIN ) THEN
+          WRITE (NDST,9021)                                 &
+               ISEA, DW(ISEA), KDCHCK, RDK, '  (NEGL)'
+        ELSE
+          WRITE (NDST,9021)                                 &
+               ISEA, DW(ISEA), KDCHCK, RDK, ' '
+        END IF
+#endif
+        !
+        IF ( RDK.LT.RDKMIN .OR. MAPSTA(IY,IX).LT.0 ) CYCLE
+        CALL GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
+        IF ( IBELONG .eq. 0) CYCLE
+        !
+        IF ( .NOT. LOCAL ) CYCLE
+        !
+        ! 2.d Save discrete actions and clean spectrum
+        !
+        DO IK=1, NK
+          DO ITH=1, NTH
+#ifdef W3_T3
+            OUT(IK,ITH) = A(ITH,IK,JSEA) * SIG(IK) / CGO(IK)
+#endif
+            TA(ITH,IK) = A(ITH,IK,JSEA) * OWN(IK)
+          END DO
+        END DO
+        !
+        VA(:,JSEA) = 0.
+        !
+#ifdef W3_T3
+        CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG, ' ',    &
+             TPI, 0., 1.E-5, 'F(f,th)', 'm2s', 'Before' )
+#endif
+        !
+        ! 2.e Redistribute discrete action density
+        !
+        IF ( WNO(1) .LT. WN(1,ISEA) ) THEN
+          IK0    = 1
+          I1     = 0
+          I2     = 1
+220       CONTINUE
+          IK0    = IK0 + 1
+          IF ( IK0 .GT. NK+1 ) GOTO 251
+          IF ( WNO(IK0) .GE. WN(1,ISEA) ) THEN
+            IK0    = IK0 - 1
+          ELSE
+            GOTO 220
+          END IF
+        ELSE
+          IK0    = 1
+          I1     = 1
+          I2     = 2
+        END IF
+        !
+        DO IK=IK0, NK
+          !
+230       CONTINUE
+          IF ( WNO(IK) .GT. WN(I2,ISEA) ) THEN
+            I1     = I1 + 1
+            IF ( I1 .GT. NK ) GOTO 250
+            I2     = I1 + 1
+            GOTO 230
+          END IF
+          !
+          IF ( I1 .EQ. 0 ) THEN
+            RD1    = ( WN(1,ISEA) - WNO(IK) ) / DWN(1)
+            RD2    = 1. - RD1
+          ELSE
+            RD1    = ( WN(I2,ISEA) - WNO(IK) ) /                &
+                 ( WN(I2,ISEA) - WN(I1,ISEA) )
+            RD2    = 1. - RD1
+          END IF
+          !
+          IF ( I1 .GE. 1 ) THEN
+            DO ITH=1, NTH
+              A(ITH,I1,JSEA) = A(ITH,I1,JSEA) + RD1*TA(ITH,IK)
+            END DO
+          END IF
+          !
+          IF ( I2 .LE. NK ) THEN
+            DO ITH=1, NTH
+              A(ITH,I2,JSEA) = A(ITH,I2,JSEA) + RD2*TA(ITH,IK)
+            END DO
+          END IF
+          !
+250       CONTINUE
+        END DO
+251     CONTINUE
+        !
+        ! 2.f Convert discrete action densities to spectrum
+        !
+        DO ISPEC=1, NSPEC
+          VA(ISPEC,JSEA) = VA(ISPEC,JSEA) / DWN(MAPWN(ISPEC))
+        END DO
+        !
+        ! 2.f Add tail if necessary
+        !
+        IF ( I2.LE.NK .AND. RD2.LE.0.95 ) THEN
+          DO IK=MAX(I2,2), NK
+            DO ITH=1, NTH
+              A(ITH,IK,JSEA) = FACHFA * A(ITH,IK-1,JSEA)
+            END DO
+          END DO
+        END IF
+        !
+#ifdef W3_T3
+        DO ISPEC=1, NSPEC
+          IK          = MAPWN(ISPEC)
+          ITH         = MAPTH(ISPEC)
+          OUT(IK,ITH) = A(ITH,IK,JSEA) * SIG(IK) / CG(IK,ISEA)
+        END DO
+#endif
+        !
+#ifdef W3_T3
+        CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG, ' ',    &
+             TPI, 0., 1.E-5, 'F(f,th)', 'm2s', 'After' )
+#endif
+        !
+#ifdef W3_T2
+      ELSE
+        WRITE (NDST,9021) ISEA, KDCHCK, '  (DEEP)'
+#endif
+      END IF
+      !
     END DO ! NSEA
     !
     ! 3.  Reconstruct new MAPST2 ----------------------------------------- *
@@ -2362,13 +2362,13 @@ CONTAINS
     ! 4. Re-generates the boundary data ---------------------------------- *
     !
     IF (GTYPE.EQ.UNGTYPE) THEN
-       !CALL SET_UG_IOBP
+      !CALL SET_UG_IOBP
 #ifdef W3_PDLIB
-       CALL SET_IOBDP_PDLIB
+      CALL SET_IOBDP_PDLIB
 #endif
 #ifdef W3_REF1
     ELSE
-       CALL W3SETREF
+      CALL W3SETREF
 #endif
     ENDIF
     !
@@ -2502,24 +2502,24 @@ CONTAINS
     ! 1.  Prepare auxiliary arrays
     !
     IF ( FLFRST ) THEN
-       DO ISEA=1, NSEA
+      DO ISEA=1, NSEA
 #ifdef W3_SMC
-          !!Li  For sea-point only SMC grid air density is stored on
-          !!Li  2-D RH0(NSEA, 1) variable.
-          IF( FSWND ) THEN
-             IX = ISEA
-             IY = 1
-          ELSE
+        !!Li  For sea-point only SMC grid air density is stored on
+        !!Li  2-D RH0(NSEA, 1) variable.
+        IF( FSWND ) THEN
+          IX = ISEA
+          IY = 1
+        ELSE
 #endif
-             IX        = MAPSF(ISEA,1)
-             IY        = MAPSF(ISEA,2)
+          IX        = MAPSF(ISEA,1)
+          IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-          ENDIF
+        ENDIF
 #endif
 
-          RA0(ISEA) = RH0(IX,IY)
-          RAI(ISEA) = RHN(IX,IY) - RH0(IX,IY)
-       END DO
+        RA0(ISEA) = RH0(IX,IY)
+        RAI(ISEA) = RHN(IX,IY) - RH0(IX,IY)
+      END DO
     END IF
     !
     ! 2.  Calculate interpolation factor
@@ -2551,9 +2551,9 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       !
-       RHOAIR(ISEA) = RA0(ISEA) + RD * RAI(ISEA)
-       !
+      !
+      RHOAIR(ISEA) = RA0(ISEA) + RD * RAI(ISEA)
+      !
     END DO
     !
     RETURN
@@ -2687,123 +2687,123 @@ CONTAINS
     ! 2.a TRFLAG = 0, no action needed
     IF ( TRFLAG .EQ. 0 ) THEN
 #ifdef W3_T
-       WRITE (NDST,9001) 'NO FURTHER ACTION REQUIRED'
+      WRITE (NDST,9001) 'NO FURTHER ACTION REQUIRED'
 #endif
-       RETURN
-       !
-       ! 2.b TRFLAG = 1,3: TRNX/Y defined at boundaries
-       !
+      RETURN
+      !
+      ! 2.b TRFLAG = 1,3: TRNX/Y defined at boundaries
+      !
     ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 .OR. TRFLAG.EQ.5 ) THEN
 #ifdef W3_T
-       WRITE (NDST,9001) 'DATA APPLIED AT CELL BOUNDARIES'
-       LEVS   = 0.
+      WRITE (NDST,9001) 'DATA APPLIED AT CELL BOUNDARIES'
+      LEVS   = 0.
 #endif
-       !
-       DO ISEA=1, NSEA
-          !
-          IX            = MAPSF(ISEA,1)
-          IY            = MAPSF(ISEA,2)
-          IXY           = MAPSF(ISEA,3)
-          IF ( IX .EQ. 1 ) THEN
-             ATRNX(IXY,-1) = TRNX(IY+(NX-1)*NY)
-             ATRNX(IXY, 1) = TRNX(IXY)
-          ELSE IF ( IX .EQ. NX ) THEN
-             ATRNX(IXY,-1) = TRNX(IXY-NY)
-             ATRNX(IXY, 1) = TRNX(IY)
-          ELSE
-             ATRNX(IXY,-1) = TRNX(IXY-NY)
-             ATRNX(IXY, 1) = TRNX(IXY)
-          END IF
-          ATRNY(IXY,-1) = TRNY(IXY-1)
-          ATRNY(IXY, 1) = TRNY(IXY)
-          !
+      !
+      DO ISEA=1, NSEA
+        !
+        IX            = MAPSF(ISEA,1)
+        IY            = MAPSF(ISEA,2)
+        IXY           = MAPSF(ISEA,3)
+        IF ( IX .EQ. 1 ) THEN
+          ATRNX(IXY,-1) = TRNX(IY+(NX-1)*NY)
+          ATRNX(IXY, 1) = TRNX(IXY)
+        ELSE IF ( IX .EQ. NX ) THEN
+          ATRNX(IXY,-1) = TRNX(IXY-NY)
+          ATRNX(IXY, 1) = TRNX(IY)
+        ELSE
+          ATRNX(IXY,-1) = TRNX(IXY-NY)
+          ATRNX(IXY, 1) = TRNX(IXY)
+        END IF
+        ATRNY(IXY,-1) = TRNY(IXY-1)
+        ATRNY(IXY, 1) = TRNY(IXY)
+        !
 #ifdef W3_T
-          ILEV          = NINT(10.*MIN(TRNX(IXY),TRNY(IXY)))
-          LEVS(ILEV)    = LEVS(ILEV) + 1.
+        ILEV          = NINT(10.*MIN(TRNX(IXY),TRNY(IXY)))
+        LEVS(ILEV)    = LEVS(ILEV) + 1.
 #endif
-          !
-       END DO
-       !
-       ! 2.c TRFLAG = 2,4: TRNX/Y defined at cell centers
-       !
+        !
+      END DO
+      !
+      ! 2.c TRFLAG = 2,4: TRNX/Y defined at cell centers
+      !
     ELSE
 #ifdef W3_T
-       WRITE (NDST,9001) 'DATA APPLIED AT CELL CENTERS'
-       LEVS   = 0.
+      WRITE (NDST,9001) 'DATA APPLIED AT CELL CENTERS'
+      LEVS   = 0.
 #endif
-       !
-       DO ISEA=1, NSEA
-          !
-          IX            = MAPSF(ISEA,1)
-          IY            = MAPSF(ISEA,2)
-          IXY           = MAPSF(ISEA,3)
-          !
-          IF ( IX .EQ. 1 ) THEN
-             IXN    = IY + (NX-1)*NY
-             IXP    = IY +  IX   *NY
-          ELSE IF ( IX .EQ. NX ) THEN
-             IXN    = IY + (IX-2)*NY
-             IXP    = IY
-          ELSE
-             IXN    = IY + (IX-2)*NY
-             IXP    = IY +  IX   *NY
+      !
+      DO ISEA=1, NSEA
+        !
+        IX            = MAPSF(ISEA,1)
+        IY            = MAPSF(ISEA,2)
+        IXY           = MAPSF(ISEA,3)
+        !
+        IF ( IX .EQ. 1 ) THEN
+          IXN    = IY + (NX-1)*NY
+          IXP    = IY +  IX   *NY
+        ELSE IF ( IX .EQ. NX ) THEN
+          IXN    = IY + (IX-2)*NY
+          IXP    = IY
+        ELSE
+          IXN    = IY + (IX-2)*NY
+          IXP    = IY +  IX   *NY
+        END IF
+        !
+        IF ( IY .EQ. 1 ) THEN
+          IYN    = IXY
+          IYP    = IXY + 1
+        ELSE IF ( IY .EQ. NY ) THEN
+          IYN    = IXY - 1
+          IYP    = IXY
+        ELSE
+          IYN    = IXY - 1
+          IYP    = IXY + 1
+        END IF
+        !
+        ! factors 0.5 in first term and 2. in second term cancel
+        !
+        ATRNX(IXY,-1) = (1.+TRNX(IXY)) * TRNX(IXN)/(1.+TRNX(IXN))
+        ATRNX(IXY, 1) = (1.+TRNX(IXY)) * TRNX(IXP)/(1.+TRNX(IXP))
+        ATRNY(IXY,-1) = (1.+TRNY(IXY)) * TRNY(IYN)/(1.+TRNY(IYN))
+        ATRNY(IXY, 1) = (1.+TRNY(IXY)) * TRNY(IYP)/(1.+TRNY(IYP))
+        !
+        IF ( MAPSTA(IY,IX) .EQ. 2 ) THEN
+          IF ( IX .EQ. 1  ) THEN
+            ATRNX(IXY,-1) = 1.
+          ELSE IF ( MAPSTA( IY ,IX-1) .LE. 0 ) THEN
+            ATRNX(IXY,-1) = 1.
           END IF
-          !
-          IF ( IY .EQ. 1 ) THEN
-             IYN    = IXY
-             IYP    = IXY + 1
-          ELSE IF ( IY .EQ. NY ) THEN
-             IYN    = IXY - 1
-             IYP    = IXY
-          ELSE
-             IYN    = IXY - 1
-             IYP    = IXY + 1
+          IF ( IX .EQ. NX ) THEN
+            ATRNX(IXY, 1) = 1.
+          ELSE IF ( MAPSTA( IY ,IX+1) .LE. 0 ) THEN
+            ATRNX(IXY, 1) = 1.
           END IF
-          !
-          ! factors 0.5 in first term and 2. in second term cancel
-          !
-          ATRNX(IXY,-1) = (1.+TRNX(IXY)) * TRNX(IXN)/(1.+TRNX(IXN))
-          ATRNX(IXY, 1) = (1.+TRNX(IXY)) * TRNX(IXP)/(1.+TRNX(IXP))
-          ATRNY(IXY,-1) = (1.+TRNY(IXY)) * TRNY(IYN)/(1.+TRNY(IYN))
-          ATRNY(IXY, 1) = (1.+TRNY(IXY)) * TRNY(IYP)/(1.+TRNY(IYP))
-          !
-          IF ( MAPSTA(IY,IX) .EQ. 2 ) THEN
-             IF ( IX .EQ. 1  ) THEN
-                ATRNX(IXY,-1) = 1.
-             ELSE IF ( MAPSTA( IY ,IX-1) .LE. 0 ) THEN
-                ATRNX(IXY,-1) = 1.
-             END IF
-             IF ( IX .EQ. NX ) THEN
-                ATRNX(IXY, 1) = 1.
-             ELSE IF ( MAPSTA( IY ,IX+1) .LE. 0 ) THEN
-                ATRNX(IXY, 1) = 1.
-             END IF
-             IF ( IY .EQ. 1  ) THEN
-                ATRNY(IXY,-1) = 1.
-             ELSE IF ( MAPSTA(IY-1, IX ) .LE. 0 ) THEN
-                ATRNY(IXY,-1) = 1.
-             END IF
-             IF ( IY .EQ. NY ) THEN
-                ATRNY(IXY, 1) = 1.
-             ELSE IF ( MAPSTA(IY+1, IX ) .LE. 0 ) THEN
-                ATRNY(IXY, 1) = 1.
-             END IF
+          IF ( IY .EQ. 1  ) THEN
+            ATRNY(IXY,-1) = 1.
+          ELSE IF ( MAPSTA(IY-1, IX ) .LE. 0 ) THEN
+            ATRNY(IXY,-1) = 1.
           END IF
-          !
+          IF ( IY .EQ. NY ) THEN
+            ATRNY(IXY, 1) = 1.
+          ELSE IF ( MAPSTA(IY+1, IX ) .LE. 0 ) THEN
+            ATRNY(IXY, 1) = 1.
+          END IF
+        END IF
+        !
 #ifdef W3_T
-          ILEV          = NINT(10.*MIN(TRNX(IXY),TRNY(IXY)))
-          LEVS(ILEV)    = LEVS(ILEV) + 1.
+        ILEV          = NINT(10.*MIN(TRNX(IXY),TRNY(IXY)))
+        LEVS(ILEV)    = LEVS(ILEV) + 1.
 #endif
-          !
-       END DO
+        !
+      END DO
     END IF
     !
 #ifdef W3_T
     WRITE(NDST,9010) 'ISLANDS'
     NLEV   = 0
     DO ILEV=0, 10
-       WRITE (NDST,9011) ILEV, LEVS(ILEV)/REAL(NSEA)
-       NLEV = NLEV + NINT(LEVS(ILEV))
+      WRITE (NDST,9011) ILEV, LEVS(ILEV)/REAL(NSEA)
+      NLEV = NLEV + NINT(LEVS(ILEV))
     END DO
 #endif
     !
@@ -2812,133 +2812,133 @@ CONTAINS
     !
     IF ( TRFLAG.LT.3 .OR. FICEN-FICE0.LT.1.E-6 ) THEN
 #ifdef W3_T
-       WRITE (NDST,9001) 'NO ICE ACTION REQUIRED'
+      WRITE (NDST,9001) 'NO ICE ACTION REQUIRED'
 #endif
-       RETURN
-       !
-       ! 3.b TRFLAG = 3,4: Calculate ice transparencies
-       !
+      RETURN
+      !
+      ! 3.b TRFLAG = 3,4: Calculate ice transparencies
+      !
     ELSE
 #ifdef W3_T
-       WRITE (NDST,9001) 'CALCULATE ICE TRANSPARENCIES'
-       LEVS   = 0.
+      WRITE (NDST,9001) 'CALCULATE ICE TRANSPARENCIES'
+      LEVS   = 0.
 #endif
-       TRIX   = 1.
-       TRIY   = 1.
-       !
-       DO ISEA=1, NSEA
-          !
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
-          IXY    = MAPSF(ISEA,3)
-          !
-          DX     = HPFAC(IY,IX)
-          DY     = HQFAC(IY,IX)
-          IF ( FLAGLL ) THEN
-             DX     = DX * RADIUS * DERA
-             DY     = DY * RADIUS * DERA
-          END IF
+      TRIX   = 1.
+      TRIY   = 1.
+      !
+      DO ISEA=1, NSEA
+        !
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IXY    = MAPSF(ISEA,3)
+        !
+        DX     = HPFAC(IY,IX)
+        DY     = HQFAC(IY,IX)
+        IF ( FLAGLL ) THEN
+          DX     = DX * RADIUS * DERA
+          DY     = DY * RADIUS * DERA
+        END IF
 
-          !
+        !
 #ifdef W3_IC0
-          IF (ICE(ISEA).GT.0) THEN
-             IF (FICEL.GT.0.) THEN
-                TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
-                TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
-             ELSE
-#endif
-                ! Otherwise: original Tolman expression (Tolman 2003)
-#ifdef W3_IC0
-                LICE0  = FICE0*DX
-                LICEN  = FICEN*DX
-                TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
-#endif
-
-                ! begin temporary notes
-                !                TRIX = (   LICEN    - ICE(ISEA)*DX ) / (   LICEN -      LICE0 )
-                !    thus, it is TRIX=  ( (FICEN*DX) - ICE(ISEA)*DX ) / ( (FICEN*DX) - (FICE0*DX) )
-                !    thus, it is TRIX=  (   FICEN -    ICE(ISEA) )   /  (  FICEN     -   FICE0 )
-                !    in other words, the variables DX DY are not used
-                !                    and the variables LICE0 LICEN are not necessary.
-                ! end temporary notes
-
-#ifdef W3_IC0
-                LICE0  = FICE0*DY
-                LICEN  = FICEN*DY
-                TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
-             END IF
-#endif
-             !
-#ifdef W3_IC0
-             TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
-             TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) )
-          END IF
-#endif
-          !
-          !  Adding iceberg attenuation
-          !
-          IF (BERG(ISEA).GT.0) THEN
-             TRIX(IXY) = TRIX(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DX*0.0001)
-             TRIY(IXY) = TRIY(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DY*0.0001)
-          END IF
-          !
-#ifdef W3_T
-          ILEV          = NINT(10.*MIN(TRIX(IXY),TRIY(IXY)))
-          LEVS(ILEV)    = LEVS(ILEV) + 1.
-#endif
-          !
-       END DO
-       !
-#ifdef W3_T
-       WRITE(NDST,9010) 'ICE'
-       NLEV   = 0
-       DO ILEV=0, 10
-          WRITE (NDST,9011) ILEV, LEVS(ILEV)/REAL(NSEA)
-          NLEV = NLEV + NINT(LEVS(ILEV))
-       END DO
-#endif
-       !
-       ! 3.c Combine transparencies, ice always defined at cell center !
-       !
-       DO ISEA=1, NSEA
-          !
-          IX            = MAPSF(ISEA,1)
-          IY            = MAPSF(ISEA,2)
-          IXY           = MAPSF(ISEA,3)
-          !
-          IF ( IX .EQ. 1 ) THEN
-             IXN    = IY + (NX-1)*NY
-             IXP    = IY +  IX   *NY
-          ELSE IF ( IX .EQ. NX ) THEN
-             IXN    = IY + (IX-2)*NY
-             IXP    = IY
+        IF (ICE(ISEA).GT.0) THEN
+          IF (FICEL.GT.0.) THEN
+            TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
+            TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
           ELSE
-             IXN    = IY + (IX-2)*NY
-             IXP    = IY +  IX   *NY
+#endif
+            ! Otherwise: original Tolman expression (Tolman 2003)
+#ifdef W3_IC0
+            LICE0  = FICE0*DX
+            LICEN  = FICEN*DX
+            TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
+#endif
+
+            ! begin temporary notes
+            !                TRIX = (   LICEN    - ICE(ISEA)*DX ) / (   LICEN -      LICE0 )
+            !    thus, it is TRIX=  ( (FICEN*DX) - ICE(ISEA)*DX ) / ( (FICEN*DX) - (FICE0*DX) )
+            !    thus, it is TRIX=  (   FICEN -    ICE(ISEA) )   /  (  FICEN     -   FICE0 )
+            !    in other words, the variables DX DY are not used
+            !                    and the variables LICE0 LICEN are not necessary.
+            ! end temporary notes
+
+#ifdef W3_IC0
+            LICE0  = FICE0*DY
+            LICEN  = FICEN*DY
+            TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
           END IF
+#endif
           !
-          IF ( IY .EQ. 1 ) THEN
-             IYN    = IXY
-             IYP    = IXY + 1
-          ELSE IF ( IY .EQ. NY ) THEN
-             IYN    = IXY - 1
-             IYP    = IXY
-          ELSE
-             IYN    = IXY - 1
-             IYP    = IXY + 1
-          END IF
-          !
-          ATRNX(IXY,-1) = ATRNX(IXY,-1)                             &
-               * (1.+TRIX(IXY)) * TRIX(IXN)/(1.+TRIX(IXN))
-          ATRNX(IXY, 1) = ATRNX(IXY, 1)                             &
-               * (1.+TRIX(IXY)) * TRIX(IXP)/(1.+TRIX(IXP))
-          ATRNY(IXY,-1) = ATRNY(IXY,-1)                             &
-               * (1.+TRIY(IXY)) * TRIY(IYN)/(1.+TRIY(IYN))
-          ATRNY(IXY, 1) = ATRNY(IXY, 1)                             &
-               * (1.+TRIY(IXY)) * TRIY(IYP)/(1.+TRIY(IYP))
-          !
-       END DO
-       !
+#ifdef W3_IC0
+          TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
+          TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) )
+        END IF
+#endif
+        !
+        !  Adding iceberg attenuation
+        !
+        IF (BERG(ISEA).GT.0) THEN
+          TRIX(IXY) = TRIX(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DX*0.0001)
+          TRIY(IXY) = TRIY(IXY)*EXP(-BERG(ISEA)*FFACBERG  *DY*0.0001)
+        END IF
+        !
+#ifdef W3_T
+        ILEV          = NINT(10.*MIN(TRIX(IXY),TRIY(IXY)))
+        LEVS(ILEV)    = LEVS(ILEV) + 1.
+#endif
+        !
+      END DO
+      !
+#ifdef W3_T
+      WRITE(NDST,9010) 'ICE'
+      NLEV   = 0
+      DO ILEV=0, 10
+        WRITE (NDST,9011) ILEV, LEVS(ILEV)/REAL(NSEA)
+        NLEV = NLEV + NINT(LEVS(ILEV))
+      END DO
+#endif
+      !
+      ! 3.c Combine transparencies, ice always defined at cell center !
+      !
+      DO ISEA=1, NSEA
+        !
+        IX            = MAPSF(ISEA,1)
+        IY            = MAPSF(ISEA,2)
+        IXY           = MAPSF(ISEA,3)
+        !
+        IF ( IX .EQ. 1 ) THEN
+          IXN    = IY + (NX-1)*NY
+          IXP    = IY +  IX   *NY
+        ELSE IF ( IX .EQ. NX ) THEN
+          IXN    = IY + (IX-2)*NY
+          IXP    = IY
+        ELSE
+          IXN    = IY + (IX-2)*NY
+          IXP    = IY +  IX   *NY
+        END IF
+        !
+        IF ( IY .EQ. 1 ) THEN
+          IYN    = IXY
+          IYP    = IXY + 1
+        ELSE IF ( IY .EQ. NY ) THEN
+          IYN    = IXY - 1
+          IYP    = IXY
+        ELSE
+          IYN    = IXY - 1
+          IYP    = IXY + 1
+        END IF
+        !
+        ATRNX(IXY,-1) = ATRNX(IXY,-1)                             &
+             * (1.+TRIX(IXY)) * TRIX(IXN)/(1.+TRIX(IXN))
+        ATRNX(IXY, 1) = ATRNX(IXY, 1)                             &
+             * (1.+TRIX(IXY)) * TRIX(IXP)/(1.+TRIX(IXP))
+        ATRNY(IXY,-1) = ATRNY(IXY,-1)                             &
+             * (1.+TRIY(IXY)) * TRIY(IYN)/(1.+TRIY(IYN))
+        ATRNY(IXY, 1) = ATRNY(IXY, 1)                             &
+             * (1.+TRIY(IXY)) * TRIY(IYP)/(1.+TRIY(IYP))
+        !
+      END DO
+      !
     END IF
     !
     RETURN
@@ -3092,9 +3092,9 @@ CONTAINS
     !
 
     IF ( FLAGLL ) THEN
-       DFAC   = 1. / ( DERA * RADIUS )
+      DFAC   = 1. / ( DERA * RADIUS )
     ELSE
-       DFAC   = 1.
+      DFAC   = 1.
     END IF
 
     !
@@ -3103,65 +3103,65 @@ CONTAINS
 
     ! 2a. All points previously done in 2a,2b,2c of v4.18 done in 2a now:
     IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
-       IXSTART=2
-       IXEND=NX-1
+      IXSTART=2
+      IXEND=NX-1
     ELSE
-       IXSTART=1
-       IXEND=NX
+      IXSTART=1
+      IXEND=NX
     ENDIF
 
     DO IY=2, NY-1
-       DO IX=IXSTART,IXEND
-          IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
-             STX    = 0.5
-             IF (IX.EQ.NX)THEN
-                IXPS=1
-             ELSE
-                IXPS=IX+1
-             ENDIF
+      DO IX=IXSTART,IXEND
+        IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+          STX    = 0.5
+          IF (IX.EQ.NX)THEN
+            IXPS=1
+          ELSE
+            IXPS=IX+1
+          ENDIF
 
-             IF (MAPSTA(IY,IXPS).EQ.0) THEN
-                IXP    = IX
-                STX    = 1.0
-             ELSE
-                IXP    = IXPS
-             END IF
-
-             IF(IX.EQ.1)THEN
-                IXMS=NX
-             ELSE
-                IXMS=IX-1
-             ENDIF
-
-             IF (MAPSTA(IY,IXMS).EQ.0) THEN
-                IXM    = IX
-                STX    = 1.0
-             ELSE
-                IXM    = IXMS
-             END IF
-             STY    = 0.5
-             IYPS=IY+1
-             IF (MAPSTA(IYPS,IX).EQ.0) THEN
-                IYP    = IY
-                STY    = 1.0
-             ELSE
-                IYP    = IYPS
-             END IF
-             IYMS=IY-1
-             IF (MAPSTA(IYMS,IX).EQ.0) THEN
-                IYM    = IY
-                STY    = 1.0
-             ELSE
-                IYM    = IYMS
-             END IF
-             DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
-                  + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
-             DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
-                  + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
-             DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
-             DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
+          IF (MAPSTA(IY,IXPS).EQ.0) THEN
+            IXP    = IX
+            STX    = 1.0
+          ELSE
+            IXP    = IXPS
           END IF
-       END DO
+
+          IF(IX.EQ.1)THEN
+            IXMS=NX
+          ELSE
+            IXMS=IX-1
+          ENDIF
+
+          IF (MAPSTA(IY,IXMS).EQ.0) THEN
+            IXM    = IX
+            STX    = 1.0
+          ELSE
+            IXM    = IXMS
+          END IF
+          STY    = 0.5
+          IYPS=IY+1
+          IF (MAPSTA(IYPS,IX).EQ.0) THEN
+            IYP    = IY
+            STY    = 1.0
+          ELSE
+            IYP    = IYPS
+          END IF
+          IYMS=IY-1
+          IF (MAPSTA(IYMS,IX).EQ.0) THEN
+            IYM    = IY
+            STY    = 1.0
+          ELSE
+            IYM    = IYMS
+          END IF
+          DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
+               + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
+          DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
+               + (ZZ(MAPFS(IYP,IX ))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
+          DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
+          DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
+        END IF
+      END DO
     END DO
 
     ! 2b. column IY=NY for tripole case
@@ -3170,65 +3170,65 @@ CONTAINS
     !     second index is different (IX.NE.IX)!
     IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
 
-       IY=NY
-       DO IX=1, NX
-          IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+      IY=NY
+      DO IX=1, NX
+        IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
 
-             STX    = 0.5
+          STX    = 0.5
 
-             IF (IX.EQ.NX)THEN
-                IXPS=1
-             ELSE
-                IXPS=IX+1
-             ENDIF
-             IF (MAPSTA(IY,IXPS).EQ.0) THEN
-                IXP    = IX
-                STX    = 1.0
-             ELSE
-                IXP    = IXPS
-             END IF
-
-             IF(IX.EQ.1)THEN
-                IXMS=NX
-             ELSE
-                IXMS=IX-1
-             ENDIF
-             IF (MAPSTA(IY,IXMS).EQ.0) THEN
-                IXM    = IX
-                STX    = 1.0
-             ELSE
-                IXM    = IXMS
-             END IF
-
-             STY    = 0.5
-
-             !..............next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
-             !..............i.e. target point is MAPFS(IY,(NX-IX+1))
-             IXTRPLS=NX-IX+1
-             IF (MAPSTA(IY,IXTRPLS).EQ.0) THEN
-                IXTRPL = IX
-                STY    = 1.0
-             ELSE
-                IXTRPL=IXTRPLS
-             END IF
-
-             IYMS=IY-1
-             IF (MAPSTA(IYMS,IX).EQ.0) THEN
-                IYM    = IY
-                STY    = 1.0
-             ELSE
-                IYM    = IYMS
-             END IF
-
-             ! tripole grid: (IYP,IX) is replaced with (IY,IXTRPL)
-             DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
-                  + (ZZ(MAPFS(IY,IXTRPL))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
-             DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
-                  + (ZZ(MAPFS(IY,IXTRPL))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
-             DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
-             DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
+          IF (IX.EQ.NX)THEN
+            IXPS=1
+          ELSE
+            IXPS=IX+1
+          ENDIF
+          IF (MAPSTA(IY,IXPS).EQ.0) THEN
+            IXP    = IX
+            STX    = 1.0
+          ELSE
+            IXP    = IXPS
           END IF
-       END DO
+
+          IF(IX.EQ.1)THEN
+            IXMS=NX
+          ELSE
+            IXMS=IX-1
+          ENDIF
+          IF (MAPSTA(IY,IXMS).EQ.0) THEN
+            IXM    = IX
+            STX    = 1.0
+          ELSE
+            IXM    = IXMS
+          END IF
+
+          STY    = 0.5
+
+          !..............next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
+          !..............i.e. target point is MAPFS(IY,(NX-IX+1))
+          IXTRPLS=NX-IX+1
+          IF (MAPSTA(IY,IXTRPLS).EQ.0) THEN
+            IXTRPL = IX
+            STY    = 1.0
+          ELSE
+            IXTRPL=IXTRPLS
+          END IF
+
+          IYMS=IY-1
+          IF (MAPSTA(IYMS,IX).EQ.0) THEN
+            IYM    = IY
+            STY    = 1.0
+          ELSE
+            IYM    = IYMS
+          END IF
+
+          ! tripole grid: (IYP,IX) is replaced with (IY,IXTRPL)
+          DZZDX(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDX(IY,IX) &
+               + (ZZ(MAPFS(IY,IXTRPL))-ZZ(MAPFS(IYM,IX ))) * STY * DQDX(IY,IX)
+          DZZDY(IY,IX) = (ZZ(MAPFS(IY ,IXP))-ZZ(MAPFS(IY ,IXM))) * STX * DPDY(IY,IX) &
+               + (ZZ(MAPFS(IY,IXTRPL))-ZZ(MAPFS(IYM,IX ))) * STY * DQDY(IY,IX)
+          DZZDX(IY,IX) = DZZDX(IY,IX) * DFAC
+          DZZDY(IY,IX) = DZZDY(IY,IX) * DFAC
+        END IF
+      END DO
 
     END IF ! IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
 
@@ -3240,25 +3240,25 @@ CONTAINS
     ISX   = 1 + NX/NXS
     ISY   = 1 + NY/NXS
     DO IY=1, NY
-       DO IX=1, NX
-          MAPOUT(IX,IY) = MAPSTA(IY,IX)
-          IF ( MAPFS(IY,IX) .NE. 0 )                               &
-               XOUT(IX,IY) = ZZ(MAPFS(IY,IX))
-       END DO
+      DO IX=1, NX
+        MAPOUT(IX,IY) = MAPSTA(IY,IX)
+        IF ( MAPFS(IY,IX) .NE. 0 )                               &
+             XOUT(IX,IY) = ZZ(MAPFS(IY,IX))
+      END DO
     END DO
     CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
          1, NX, ISX, 1, NY, ISY, 'ZZ', ZUNIT)
     DO IY=1, NY
-       DO IX=1, NX
-          XOUT(IX,IY) = DZZDX(IY,IX)
-       END DO
+      DO IX=1, NX
+        XOUT(IX,IY) = DZZDX(IY,IX)
+      END DO
     END DO
     CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
          1, NX, ISX, 1, NY, ISY, 'DZZDX',TRIM(ZUNIT)//'/m')
     DO IY=1, NY
-       DO IX=1, NX
-          XOUT(IX,IY) = DZZDY(IY,IX)
-       END DO
+      DO IX=1, NX
+        XOUT(IX,IY) = DZZDY(IY,IX)
+      END DO
     END DO
     CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,          &
          1, NX, ISX, 1, NY, ISY, 'DZZDY',TRIM(ZUNIT)//'/m')

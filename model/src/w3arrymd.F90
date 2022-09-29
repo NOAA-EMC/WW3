@@ -180,86 +180,86 @@ CONTAINS
 #endif
     !
     IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
-       IIDFM = 1
+      IIDFM = 1
     ELSE
-       IIDFM = IDFM
+      IIDFM = IDFM
     END IF
     IF (IDLA.LT.1 .OR. IDLA.GT.4) THEN
-       IIDLA = 1
+      IIDLA = 1
     ELSE
-       IIDLA = IDLA
+      IIDLA = IDLA
     END IF
     !
     ! Free format read :
     !
     IF (IIDFM.EQ.1) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
           READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
           READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Fixed format read :
-       !
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE
+        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Fixed format read :
+      !
     ELSE IF (IIDFM.EQ.2) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
           READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
           READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Unformat read :
-       !
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE
+        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Unformat read :
+      !
     ELSE
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
           READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
           READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
-       END IF
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE
+        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+      END IF
     END IF
     !
     ! Scaling :
     !
     DO IX=LX, HX
-       DO IY=LY, HY
-          ARRAY(IX,IY) = VSC * ARRAY(IX,IY) + VOF
-       END DO
+      DO IY=LY, HY
+        ARRAY(IX,IY) = VSC * ARRAY(IX,IY) + VOF
+      END DO
     END DO
     !
     RETURN
@@ -350,86 +350,86 @@ CONTAINS
 #endif
     !
     IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
-       IIDFM = 1
+      IIDFM = 1
     ELSE
-       IIDFM = IDFM
+      IIDFM = IDFM
     END IF
     IF (IDLA.LT.1 .OR. IDLA.GT.4)THEN
-       IIDLA = 1
+      IIDLA = 1
     ELSE
-       IIDLA = IDLA
+      IIDLA = IDLA
     END IF
     !
     ! Free format read :
     !
     IF (IIDFM.EQ.1) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
           READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
           READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Fixed format read :
-       !
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE
+        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Fixed format read :
+      !
     ELSE IF (IIDFM.EQ.2) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
           READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
           READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Unformat read :
-       !
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE
+        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Unformat read :
+      !
     ELSE
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
           READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-                  (ARRAY(IX,IY),IX=LX,HX)
-          END DO
-       ELSE
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
           READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
-               ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
-       END IF
+               (ARRAY(IX,IY),IX=LX,HX)
+        END DO
+      ELSE
+        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+             ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+      END IF
     END IF
     !
     ! Scaling :
     !
     DO IX=LX, HX
-       DO IY=LY, HY
-          ARRAY(IX,IY) = VSC * ARRAY(IX,IY) + VOF
-       END DO
+      DO IY=LY, HY
+        ARRAY(IX,IY) = VSC * ARRAY(IX,IY) + VOF
+      END DO
     END DO
     !
     RETURN
@@ -526,78 +526,78 @@ CONTAINS
 #endif
     !
     IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
-       IIDFM = 1
+      IIDFM = 1
     ELSE
-       IIDFM = IDFM
+      IIDFM = IDFM
     END IF
     IF (IDLA.LT.1 .OR. IDLA.GT.4) THEN
-       IIDLA = 1
+      IIDLA = 1
     ELSE
-       IIDLA = IDLA
+      IIDLA = IDLA
     END IF
     !
     ! Free format write :
     !
     IF (IIDFM.EQ.1) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,INT(HX/VSC)),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Fixed format write :
-       !
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
+          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,INT(HX/VSC)),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
+          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE
+        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Fixed format write :
+      !
     ELSE IF (IIDFM.EQ.2) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Unformat write :
-       !
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
+          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
+          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE
+        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Unformat write :
+      !
     ELSE
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
-       END IF
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
+          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
+          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE
+        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+      END IF
     END IF
     !
     RETURN
@@ -681,78 +681,78 @@ CONTAINS
 #endif
     !
     IF (IDFM.LT.1 .OR. IDFM.GT.3) THEN
-       IIDFM = 1
+      IIDFM = 1
     ELSE
-       IIDFM = IDFM
+      IIDFM = IDFM
     END IF
     IF (IDLA.LT.1 .OR. IDLA.GT.4) THEN
-       IIDLA = 1
+      IIDLA = 1
     ELSE
-       IIDLA = IDLA
+      IIDLA = IDLA
     END IF
     !
     ! Free format write :
     !
     IF (IIDFM.EQ.1) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Fixed format write :
-       !
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
+          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
+          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE
+        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Fixed format write :
+      !
     ELSE IF (IIDFM.EQ.2) THEN
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
-       END IF
-       !
-       ! Unformat write :
-       !
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
+          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
+          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE
+        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+      END IF
+      !
+      ! Unformat write :
+      !
     ELSE
-       IF (IIDLA.EQ.1) THEN
-          DO IY=LY, HY
-             WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE IF (IIDLA.EQ.2) THEN
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
-       ELSE IF (IIDLA.EQ.3) THEN
-          DO IY=HY, LY, -1
-             WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-                  ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
-          END DO
-       ELSE
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-               (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
-       END IF
+      IF (IIDLA.EQ.1) THEN
+        DO IY=LY, HY
+          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE IF (IIDLA.EQ.2) THEN
+        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+      ELSE IF (IIDLA.EQ.3) THEN
+        DO IY=HY, LY, -1
+          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
+               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+        END DO
+      ELSE
+        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
+             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+      END IF
     END IF
     !
     RETURN
@@ -827,34 +827,34 @@ CONTAINS
     WRITE (NDS,8000) ANAME
     !
     IF (ICOL.EQ.80) THEN
-       !
-       WRITE (NDS,8005) (I, I=1, 5)
-       WRITE (NDS,8010)
-       DO K=0, DIM, 5
-          IF (DIM-K.GE.5) THEN
-             WRITE (NDS,'(1X,I4,A,5E12.4,A)')                  &
-                  K,'  |',(ARRAY(I),I= K+1, K+5),'  |'
-          ELSE
-             WRITE (NDS,'(1X,T71,''|'',T2,I4,A,5E12.4)')       &
-                  K,'  |',(ARRAY(I),I= K+1, DIM)
-          END IF
-       END DO
-       WRITE (NDS,8010)
-       !
+      !
+      WRITE (NDS,8005) (I, I=1, 5)
+      WRITE (NDS,8010)
+      DO K=0, DIM, 5
+        IF (DIM-K.GE.5) THEN
+          WRITE (NDS,'(1X,I4,A,5E12.4,A)')                  &
+               K,'  |',(ARRAY(I),I= K+1, K+5),'  |'
+        ELSE
+          WRITE (NDS,'(1X,T71,''|'',T2,I4,A,5E12.4)')       &
+               K,'  |',(ARRAY(I),I= K+1, DIM)
+        END IF
+      END DO
+      WRITE (NDS,8010)
+      !
     ELSE
-       !
-       WRITE (NDS,9005) (I, I=1, 10)
-       WRITE (NDS,9010)
-       DO K=0, DIM, 10
-          IF (DIM-K.GE.10) THEN
-             WRITE (NDS,'(1X,I4,A,10E12.4,A)')                 &
-                  K,'  |',(ARRAY(I),I= K+1, K+10),'  |'
-          ELSE
-             WRITE (NDS,'(1X,T131,''|'',T2,I4,A,10E12.4)')     &
-                  K,'  |',(ARRAY(I),I= K+1, DIM)
-          END IF
-       END DO
-       WRITE (NDS,9010)
+      !
+      WRITE (NDS,9005) (I, I=1, 10)
+      WRITE (NDS,9010)
+      DO K=0, DIM, 10
+        IF (DIM-K.GE.10) THEN
+          WRITE (NDS,'(1X,I4,A,10E12.4,A)')                 &
+               K,'  |',(ARRAY(I),I= K+1, K+10),'  |'
+        ELSE
+          WRITE (NDS,'(1X,T131,''|'',T2,I4,A,10E12.4)')     &
+               K,'  |',(ARRAY(I),I= K+1, DIM)
+        END IF
+      END DO
+      WRITE (NDS,9010)
     END IF
     !
     RETURN
@@ -942,34 +942,34 @@ CONTAINS
     !  ------- 80 COLUMNS -----
     !
     IF (ICOL.EQ.80) THEN
-       WRITE (NDS,8005) (I, I=1, 5)
-       WRITE (NDS,8010)
-       DO K=0, DIM, 5
-          IF (DIM-K.GE.5) THEN
-             WRITE (NDS,'(1X,I4,A,5I12,A)')                    &
-                  K,'  |',(IARRAY(I),I= K+1, K+5),'  |'
-          ELSE
-             WRITE (NDS,'(1X,T71,''|'',T2,I4,A,5I12)')         &
-                  K,'  |',(IARRAY(I),I= K+1, DIM)
-          END IF
-       END DO
-       WRITE (NDS,8010)
+      WRITE (NDS,8005) (I, I=1, 5)
+      WRITE (NDS,8010)
+      DO K=0, DIM, 5
+        IF (DIM-K.GE.5) THEN
+          WRITE (NDS,'(1X,I4,A,5I12,A)')                    &
+               K,'  |',(IARRAY(I),I= K+1, K+5),'  |'
+        ELSE
+          WRITE (NDS,'(1X,T71,''|'',T2,I4,A,5I12)')         &
+               K,'  |',(IARRAY(I),I= K+1, DIM)
+        END IF
+      END DO
+      WRITE (NDS,8010)
     ELSE
-       !
-       !    ---- 132 COLUMNS ----
-       !
-       WRITE (NDS,9005) (I, I=1, 10)
-       WRITE (NDS,9010)
-       DO K=0, DIM, 10
-          IF (DIM-K.GE.10) THEN
-             WRITE (NDS,'(1X,I4,A,10I12,A)')                   &
-                  K,'  |',(IARRAY(I),I= K+1, K+10),'  |'
-          ELSE
-             WRITE (NDS,'(1X,T131,''|'',T2,I4,A,10I12)')       &
-                  K,'  |',(IARRAY(I),I= K+1, DIM)
-          END IF
-       END DO
-       WRITE (NDS,9010)
+      !
+      !    ---- 132 COLUMNS ----
+      !
+      WRITE (NDS,9005) (I, I=1, 10)
+      WRITE (NDS,9010)
+      DO K=0, DIM, 10
+        IF (DIM-K.GE.10) THEN
+          WRITE (NDS,'(1X,I4,A,10I12,A)')                   &
+               K,'  |',(IARRAY(I),I= K+1, K+10),'  |'
+        ELSE
+          WRITE (NDS,'(1X,T131,''|'',T2,I4,A,10I12)')       &
+               K,'  |',(IARRAY(I),I= K+1, DIM)
+        END IF
+      END DO
+      WRITE (NDS,9010)
     END IF
     !
     RETURN
@@ -1059,36 +1059,36 @@ CONTAINS
     !  ------ 80 COLUMNS -----
     !
     IF(ICOL.EQ.80) THEN
-       LBLOK = 6
-       NBLOK = (NX-1)/LBLOK + 1
-       DO IBLOK = 1,NBLOK
-          IX1 = (IBLOK-1)*LBLOK + 1
-          IX2 = IX1 + LBLOK - 1
-          IF(IX2.GT.NX) IX2 = NX
-          WRITE(NDS,8001) (IX,IX = IX1,IX2)
-          WRITE(NDS,8002)
-          DO IY = 1,NY
-             WRITE(NDS,8003) IY,(A(IX,IY),IX = IX1,IX2)
-          END DO
-          WRITE(NDS,8002)
-       END DO
+      LBLOK = 6
+      NBLOK = (NX-1)/LBLOK + 1
+      DO IBLOK = 1,NBLOK
+        IX1 = (IBLOK-1)*LBLOK + 1
+        IX2 = IX1 + LBLOK - 1
+        IF(IX2.GT.NX) IX2 = NX
+        WRITE(NDS,8001) (IX,IX = IX1,IX2)
+        WRITE(NDS,8002)
+        DO IY = 1,NY
+          WRITE(NDS,8003) IY,(A(IX,IY),IX = IX1,IX2)
+        END DO
+        WRITE(NDS,8002)
+      END DO
     ELSE
-       !
-       !   ---- 132 COLUMNS ----
-       !
-       LBLOK = 12
-       NBLOK = (NX-1)/LBLOK + 1
-       DO IBLOK = 1,NBLOK
-          IX1 = (IBLOK-1)*LBLOK + 1
-          IX2 = IX1 + LBLOK - 1
-          IF(IX2.GT.NX) IX2 = NX
-          WRITE(NDS,9001) (IX,IX = IX1,IX2)
-          WRITE(NDS,9002)
-          DO IY = 1,NY
-             WRITE(NDS,9003) IY,(A(IX,IY),IX = IX1,IX2)
-          END DO
-          WRITE(NDS,9002)
-       END DO
+      !
+      !   ---- 132 COLUMNS ----
+      !
+      LBLOK = 12
+      NBLOK = (NX-1)/LBLOK + 1
+      DO IBLOK = 1,NBLOK
+        IX1 = (IBLOK-1)*LBLOK + 1
+        IX2 = IX1 + LBLOK - 1
+        IF(IX2.GT.NX) IX2 = NX
+        WRITE(NDS,9001) (IX,IX = IX1,IX2)
+        WRITE(NDS,9002)
+        DO IY = 1,NY
+          WRITE(NDS,9003) IY,(A(IX,IY),IX = IX1,IX2)
+        END DO
+        WRITE(NDS,9002)
+      END DO
     END IF
     !
     RETURN
@@ -1214,132 +1214,132 @@ CONTAINS
     ! Extremata
     !
     IF (FLSCLE) THEN
-       FMAX   = 1.E-15
-       DO IX=1, NX
-          DO IY=1, NY
-             IF ( MAP(IX,IY) .NE. MAP0 )                       &
-                  FMAX   = MAX ( FMAX , ABS(F(IX,IY)) )
-          END DO
-       END DO
+      FMAX   = 1.E-15
+      DO IX=1, NX
+        DO IY=1, NY
+          IF ( MAP(IX,IY) .NE. MAP0 )                       &
+               FMAX   = MAX ( FMAX , ABS(F(IX,IY)) )
+        END DO
+      END DO
     END IF
     !
     ! Normalized print plot -----------------------------------------------
     !
     IF (FLSCLE) THEN
-       !
-       ! Heading
-       !
-       WRITE (NDS,901) PRVAR, FMAX, PRUNIT
-       !
-       STRA   = '     '
-       JJ     = 0
-       DO IX = IX1, IX2, IX3
+      !
+      ! Heading
+      !
+      WRITE (NDS,901) PRVAR, FMAX, PRUNIT
+      !
+      STRA   = '     '
+      JJ     = 0
+      DO IX = IX1, IX2, IX3
+        JJ = JJ + 1
+      END DO
+      LX = JJ
+      WRITE (NDS,911)
+      WRITE (NDS,912) (IX,IX=IX1,IX2,2*IX3)
+      PNUM2(1) = '--'
+      WRITE (NDS,910) STRA, ' +', (PNUM2(1), I=1, LX), '-+'
+      !
+      ! Write table
+      !
+      JM = 0
+      DO IY = IY2, IY1, IY3*(-1)
+        !
+        JJ = 0
+        DO IX = IX1, IX2, IX3
           JJ = JJ + 1
-       END DO
-       LX = JJ
-       WRITE (NDS,911)
-       WRITE (NDS,912) (IX,IX=IX1,IX2,2*IX3)
-       PNUM2(1) = '--'
-       WRITE (NDS,910) STRA, ' +', (PNUM2(1), I=1, LX), '-+'
-       !
-       ! Write table
-       !
-       JM = 0
-       DO IY = IY2, IY1, IY3*(-1)
-          !
-          JJ = 0
-          DO IX = IX1, IX2, IX3
-             JJ = JJ + 1
-             IF (MAP(IX,IY).EQ.MAP0) THEN
-                PNUM2(JJ) = '  '
-             ELSE
-                RR = 10.*F(IX,IY)/FMAX
-                WRITE (STRA, FMT='(I2,3X)') INT(RR*1.000001)
-                PNUM2(JJ) = STRA(1:2)
-                IF (PNUM2(JJ).EQ.'10' .OR. PNUM2(JJ).EQ.'**' .OR. &
-                     F(IX,IY).EQ.FMAX) THEN
-                   IF ( RR .LT. 0. ) THEN
-                      PNUM2(JJ) = '-*'
-                   ELSE
-                      PNUM2(JJ) = ' *'
-                   END IF
-                END IF
-             END IF
-          END DO
-          !
-          IF (JM.EQ.0) THEN
-             WRITE (STRA, FMT='(I5)') IY
-             JM   = 2
+          IF (MAP(IX,IY).EQ.MAP0) THEN
+            PNUM2(JJ) = '  '
           ELSE
-             STRA = '     '
-             JM   = JM-1
+            RR = 10.*F(IX,IY)/FMAX
+            WRITE (STRA, FMT='(I2,3X)') INT(RR*1.000001)
+            PNUM2(JJ) = STRA(1:2)
+            IF (PNUM2(JJ).EQ.'10' .OR. PNUM2(JJ).EQ.'**' .OR. &
+                 F(IX,IY).EQ.FMAX) THEN
+              IF ( RR .LT. 0. ) THEN
+                PNUM2(JJ) = '-*'
+              ELSE
+                PNUM2(JJ) = ' *'
+              END IF
+            END IF
           END IF
-          !
-          LX = JJ
-          WRITE (NDS,910) STRA, ' |', (PNUM2(I), I=1, LX), ' |'
-       END DO
-       !
-       STRA     = '     '
-       PNUM2(1) = '--'
-       WRITE (NDS,910) STRA, ' +', (PNUM2(1), I=1, LX), '-+'
-       WRITE (NDS,912) (IX,IX=IX1,IX2,2*IX3)
-       WRITE (NDS,911)
-       !
-       ! Non-normalized print plot -------------------------------------------
-       !
+        END DO
+        !
+        IF (JM.EQ.0) THEN
+          WRITE (STRA, FMT='(I5)') IY
+          JM   = 2
+        ELSE
+          STRA = '     '
+          JM   = JM-1
+        END IF
+        !
+        LX = JJ
+        WRITE (NDS,910) STRA, ' |', (PNUM2(I), I=1, LX), ' |'
+      END DO
+      !
+      STRA     = '     '
+      PNUM2(1) = '--'
+      WRITE (NDS,910) STRA, ' +', (PNUM2(1), I=1, LX), '-+'
+      WRITE (NDS,912) (IX,IX=IX1,IX2,2*IX3)
+      WRITE (NDS,911)
+      !
+      ! Non-normalized print plot -------------------------------------------
+      !
     ELSE
-       !
-       ! Heading
-       !
-       WRITE (NDS,900) PRVAR, FSC, PRUNIT
-       !
-       JJ = 0
-       PNUM(1) = '     '
-       DO IX = IX1, IX2, IX3
+      !
+      ! Heading
+      !
+      WRITE (NDS,900) PRVAR, FSC, PRUNIT
+      !
+      JJ = 0
+      PNUM(1) = '     '
+      DO IX = IX1, IX2, IX3
+        JJ = JJ + 1
+      END DO
+      LX = JJ
+      WRITE (NDS,921)
+      WRITE (NDS,922) (IX,IX=IX1,IX2,IX3)
+      STRA3   = '   '
+      PNUM(1) = '-----'
+      WRITE (NDS,920) STRA3, ' +', (PNUM(1), I=1, LX), '-+   '
+      !
+      ! Write table
+      !
+      JM = 0
+      DO IY = IY2, IY1, IY3*(-1)
+        IF (JM.EQ.0) THEN
+          WRITE (STRA3, FMT='(I3)') IY
+          JM = 2
+        ELSE
+          STRA3  = '   '
+          JM = JM-1
+        END IF
+        !
+        JJ = 0
+        DO IX = IX1, IX2, IX3
           JJ = JJ + 1
-       END DO
-       LX = JJ
-       WRITE (NDS,921)
-       WRITE (NDS,922) (IX,IX=IX1,IX2,IX3)
-       STRA3   = '   '
-       PNUM(1) = '-----'
-       WRITE (NDS,920) STRA3, ' +', (PNUM(1), I=1, LX), '-+   '
-       !
-       ! Write table
-       !
-       JM = 0
-       DO IY = IY2, IY1, IY3*(-1)
-          IF (JM.EQ.0) THEN
-             WRITE (STRA3, FMT='(I3)') IY
-             JM = 2
+          IF (MAP(IX,IY).EQ.MAP0) THEN
+            PNUM(JJ) = '     '
           ELSE
-             STRA3  = '   '
-             JM = JM-1
+            RR     = F(IX,IY)
+            K1 = NINT (RR / FSC)
+            WRITE (STRA, FMT='(I5)') K1
+            PNUM(JJ) = STRA
           END IF
-          !
-          JJ = 0
-          DO IX = IX1, IX2, IX3
-             JJ = JJ + 1
-             IF (MAP(IX,IY).EQ.MAP0) THEN
-                PNUM(JJ) = '     '
-             ELSE
-                RR     = F(IX,IY)
-                K1 = NINT (RR / FSC)
-                WRITE (STRA, FMT='(I5)') K1
-                PNUM(JJ) = STRA
-             END IF
-          END DO
-          !
-          LX = JJ
-          WRITE (NDS,920) STRA3, ' |', (PNUM(I), I=1, LX), ' |   '
-       END DO
-       !
-       STRA3   = '   '
-       PNUM(1) = '-----'
-       WRITE (NDS,920) STRA3, ' +', (PNUM(1), I=1, LX), '-+   '
-       WRITE (NDS,922) (IX,IX=IX1,IX2,IX3)
-       WRITE (NDS,921)
-       !
+        END DO
+        !
+        LX = JJ
+        WRITE (NDS,920) STRA3, ' |', (PNUM(I), I=1, LX), ' |   '
+      END DO
+      !
+      STRA3   = '   '
+      PNUM(1) = '-----'
+      WRITE (NDS,920) STRA3, ' +', (PNUM(1), I=1, LX), '-+   '
+      WRITE (NDS,922) (IX,IX=IX1,IX2,IX3)
+      WRITE (NDS,921)
+      !
     END IF
     !
     RETURN
@@ -1475,9 +1475,9 @@ CONTAINS
     FLSCLE = FTOP.LE.0.
     !
     IF (UFR.EQ.'HZ') THEN
-       FACFR  = 1.
+      FACFR  = 1.
     ELSE
-       FACFR  = 0.159155
+      FACFR  = 0.159155
     END IF
     !
     ! Maximum of 1-D spectrum
@@ -1486,38 +1486,38 @@ CONTAINS
     EMIN   = 0.
     !
     DO IFR=1, NFR
-       EMAX = MAX ( EMAX , E(IFR) )
-       EMIN = MIN ( EMIN , E(IFR) )
+      EMAX = MAX ( EMAX , E(IFR) )
+      EMIN = MIN ( EMIN , E(IFR) )
     END DO
     !
     IF (EMAX.EQ.0. .AND. EMIN.EQ.0.) THEN
-       EMAX   =  1.E-20
-       EMIN   = -1.E-20
+      EMAX   =  1.E-20
+      EMIN   = -1.E-20
     END IF
     !
     IF (EMAX.GT.ABS(EMIN)) THEN
-       EXTR   = EMAX
+      EXTR   = EMAX
     ELSE
-       EXTR   = EMIN
+      EXTR   = EMIN
     END IF
     !
     ! Scaling / Normalization
     !
     IF (FLSCLE) THEN
-       IF (EMAX.GT.ABS(EMIN)) THEN
-          FLOC   = EMAX * TOPFAC
-          FSC    = FLOC / REAL(NINT(EMAX/(EMAX-EMIN)*RLINES))
-       ELSE
-          FLOC   = EMIN * TOPFAC
-          FSC    = FLOC / REAL(NINT(EMIN/(EMAX-EMIN)*RLINES))
-          FLOC   = FTOP + RLINES*FSC
-          IF (EMAX.LT.0.01*FSC) FTOP = 0.
-       END IF
+      IF (EMAX.GT.ABS(EMIN)) THEN
+        FLOC   = EMAX * TOPFAC
+        FSC    = FLOC / REAL(NINT(EMAX/(EMAX-EMIN)*RLINES))
+      ELSE
+        FLOC   = EMIN * TOPFAC
+        FSC    = FLOC / REAL(NINT(EMIN/(EMAX-EMIN)*RLINES))
+        FLOC   = FTOP + RLINES*FSC
+        IF (EMAX.LT.0.01*FSC) FTOP = 0.
+      END IF
     ELSE
-       FLOC   = FTOP
-       FSC    = FLOC  / RLINES
-       IF (EMAX*EMIN.LT.0) FSC = 2.*FSC
-       IF (EMAX.LT.0.01*FSC) FLOC = 0.
+      FLOC   = FTOP
+      FSC    = FLOC  / RLINES
+      IF (EMAX*EMIN.LT.0) FSC = 2.*FSC
+      IF (EMAX.LT.0.01*FSC) FLOC = 0.
     END IF
     !
     IL0   = MOD ( NINT(FLOC/FSC) , 2 ) + 1
@@ -1530,17 +1530,17 @@ CONTAINS
     !
     FLINE  = FLOC
     IF (MOD(NLINES+IL0,2).EQ.0) THEN
-       WRITE (STRA, FMT='(E10.3)') FLINE
+      WRITE (STRA, FMT='(E10.3)') FLINE
     ELSE
-       STRA=  '          '
+      STRA=  '          '
     END IF
     !
     DO IFR=1, NFRB
-       IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
-          PNUM2(IFR) = '-*'
-       ELSE
-          PNUM2(IFR) = '--'
-       END IF
+      IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
+        PNUM2(IFR) = '-*'
+      ELSE
+        PNUM2(IFR) = '--'
+      END IF
     END DO
     !
     PNUM2(NFRB+1) = '-+'
@@ -1550,33 +1550,33 @@ CONTAINS
     ! Print table
     !
     DO IL = 1, NLINES-1
-       FLINE  = FLOC - FSC * REAL(IL)
-       IF (ABS(FLINE).LT.0.01*FSC) FLINE = 0.
-       IF (MOD(NLINES+IL0-IL,2).EQ.0) THEN
-          WRITE (STRA, FMT='(E10.3)') FLINE
-          STRA2 =  ' +'
-       ELSE
-          STRA  =  '          '
-          STRA2 =  ' |'
-       END IF
-       DO IFR=1, NFRB
-          IF (ABS(FLINE).LT.0.1*FSC) THEN
-             PNUM2(NFRB+1) = '-|'
-             IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
-                PNUM2(IFR) = '-*'
-             ELSE
-                PNUM2(IFR) = '--'
-             END IF
+      FLINE  = FLOC - FSC * REAL(IL)
+      IF (ABS(FLINE).LT.0.01*FSC) FLINE = 0.
+      IF (MOD(NLINES+IL0-IL,2).EQ.0) THEN
+        WRITE (STRA, FMT='(E10.3)') FLINE
+        STRA2 =  ' +'
+      ELSE
+        STRA  =  '          '
+        STRA2 =  ' |'
+      END IF
+      DO IFR=1, NFRB
+        IF (ABS(FLINE).LT.0.1*FSC) THEN
+          PNUM2(NFRB+1) = '-|'
+          IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
+            PNUM2(IFR) = '-*'
           ELSE
-             PNUM2(NFRB+1) = ' |'
-             IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
-                PNUM2(IFR) = ' *'
-             ELSE
-                PNUM2(IFR) = '  '
-             END IF
+            PNUM2(IFR) = '--'
           END IF
-       END DO
-       WRITE (NDS,910) STRA, STRA2, (PNUM2(IFR),IFR=1, NFRB+1)
+        ELSE
+          PNUM2(NFRB+1) = ' |'
+          IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
+            PNUM2(IFR) = ' *'
+          ELSE
+            PNUM2(IFR) = '  '
+          END IF
+        END IF
+      END DO
+      WRITE (NDS,910) STRA, STRA2, (PNUM2(IFR),IFR=1, NFRB+1)
     END DO
     !
     ! write ending
@@ -1585,21 +1585,21 @@ CONTAINS
     IF (ABS(FLINE).LT.0.01*FSC) FLINE = 0.
     WRITE (STRA, FMT='(E10.3)') FLINE
     IF (MOD(IL0,2).EQ.0) THEN
-       WRITE (STRA, FMT='(E10.3)') FLINE
+      WRITE (STRA, FMT='(E10.3)') FLINE
     ELSE
-       STRA  =  '          '
+      STRA  =  '          '
     END IF
     STRA2         = ' +'
     PNUM2(NFRB+1) = '-+'
     !
     DO IFR=1, NFRB
-       IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
-          PNUM2(IFR) = '-*'
-       ELSE IF ( MOD (IFR-2,4) .EQ. 0 ) THEN
-          PNUM2(IFR) = '-|'
-       ELSE
-          PNUM2(IFR) = '--'
-       END IF
+      IF ( NINT( (E(IFR)-FLINE)/FSC ) .EQ.0) THEN
+        PNUM2(IFR) = '-*'
+      ELSE IF ( MOD (IFR-2,4) .EQ. 0 ) THEN
+        PNUM2(IFR) = '-|'
+      ELSE
+        PNUM2(IFR) = '--'
+      END IF
     END DO
     !
     WRITE (NDS,910) STRA, STRA2, (PNUM2(IFR),IFR=1, NFRB+1)
@@ -1744,8 +1744,8 @@ CONTAINS
     WRITE (*,*) 'Number of frequencies : ', NFR
     WRITE (*,*) 'Number of spectra     : ', NE
     DO IE=1, NE
-       WRITE (*,*) 'Spectral densities spectrum ', IE
-       WRITE (*,'(6X,8E9.2)') (E(IFR,IE),IFR=1,NFR)
+      WRITE (*,*) 'Spectral densities spectrum ', IE
+      WRITE (*,'(6X,8E9.2)') (E(IFR,IE),IFR=1,NFR)
     END DO
     WRITE (*,*) 'Frequencies'
     WRITE (*,'(6X,8E9.2)') (FR(IFR),IFR=1,NFR)
@@ -1754,7 +1754,7 @@ CONTAINS
     WRITE (*,*) 'FTOPI                 : ', FTOPI
     WRITE (*,*) 'Names of spectra      : ', PRVAR(1)
     DO IE=2, NE
-       WRITE (*,*) '                        ', PRVAR(IE)
+      WRITE (*,*) '                        ', PRVAR(IE)
     END DO
     WRITE (*,*) 'Units of spectra      : ', PRUNIT
     WRITE (*,*) 'Name of location      : ', PNTNME
@@ -1769,9 +1769,9 @@ CONTAINS
     FLSCLE = FTOP.LE.0.
     !
     IF (UFR.EQ.'HZ') THEN
-       FACFR  = 1.
+      FACFR  = 1.
     ELSE
-       FACFR  = 0.159155
+      FACFR  = 0.159155
     END IF
     !
     ! Maximum of 1-D spectrum
@@ -1780,39 +1780,39 @@ CONTAINS
     EMIN   = 0.
     !
     DO IE=1, NE
-       DO IFR=1, NFR
-          EMAX = MAX ( EMAX , E(IFR,IE) )
-          EMIN = MIN ( EMIN , E(IFR,IE) )
-       END DO
+      DO IFR=1, NFR
+        EMAX = MAX ( EMAX , E(IFR,IE) )
+        EMIN = MIN ( EMIN , E(IFR,IE) )
+      END DO
     END DO
     !
     IF (EMAX.EQ.0. .AND. EMIN.EQ.0.) THEN
-       EMAX   =  1.E-20
-       EMIN   = -1.E-20
+      EMAX   =  1.E-20
+      EMIN   = -1.E-20
     END IF
     !
     IF (EMAX.GT.ABS(EMIN)) THEN
-       EXTR   = EMAX
+      EXTR   = EMAX
     ELSE
-       EXTR   = EMIN
+      EXTR   = EMIN
     END IF
     !
     ! Scaling / Normalization
     !
     IF (FLSCLE) THEN
-       IF (EMAX.GT.ABS(EMIN)) THEN
-          FTOP   = EMAX * TOPFAC
-          FSC    = FTOP / REAL(NINT(EMAX/(EMAX-EMIN)*RLINES))
-       ELSE
-          FTOP   = EMIN * TOPFAC
-          FSC    = FTOP / REAL(NINT(EMIN/(EMAX-EMIN)*RLINES))
-          FTOP   = FTOP + RLINES*FSC
-          IF (ABS(FTOP).LT.0.01*FSC) FTOP = 0.
-       END IF
+      IF (EMAX.GT.ABS(EMIN)) THEN
+        FTOP   = EMAX * TOPFAC
+        FSC    = FTOP / REAL(NINT(EMAX/(EMAX-EMIN)*RLINES))
+      ELSE
+        FTOP   = EMIN * TOPFAC
+        FSC    = FTOP / REAL(NINT(EMIN/(EMAX-EMIN)*RLINES))
+        FTOP   = FTOP + RLINES*FSC
+        IF (ABS(FTOP).LT.0.01*FSC) FTOP = 0.
+      END IF
     ELSE
-       FSC    = FTOP  / RLINES
-       IF (EMAX*EMIN.LT.0) FSC = 2.*FSC
-       IF (EMAX.EQ.0.) FTOP = 0.
+      FSC    = FTOP  / RLINES
+      IF (EMAX*EMIN.LT.0) FSC = 2.*FSC
+      IF (EMAX.EQ.0.) FTOP = 0.
     END IF
     !
     ! Print ID
@@ -1823,23 +1823,23 @@ CONTAINS
     !
     FLINE  = FTOP
     IF (MOD(NLINES,2).EQ.0) THEN
-       WRITE (STRA, FMT='(E10.3)') FLINE
+      WRITE (STRA, FMT='(E10.3)') FLINE
     ELSE
-       STRA=  '          '
+      STRA=  '          '
     END IF
     !
     DO IFR=1, NFRB
-       PNUM2(IFR) = '--'
-       DO IE=1, NE
-          IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
-             IF (IE.LT.10) THEN
-                WRITE (STRAX,'(A1,I1)') '-', IE
-             ELSE
-                WRITE (STRAX,'(I2)') IE
-             END IF
-             PNUM2(IFR) = STRAX
+      PNUM2(IFR) = '--'
+      DO IE=1, NE
+        IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
+          IF (IE.LT.10) THEN
+            WRITE (STRAX,'(A1,I1)') '-', IE
+          ELSE
+            WRITE (STRAX,'(I2)') IE
           END IF
-       END DO
+          PNUM2(IFR) = STRAX
+        END IF
+      END DO
     END DO
     !
     PNUM2(NFRB+1) = '-+'
@@ -1851,41 +1851,41 @@ CONTAINS
     PNUM2(NFRB+1) = ' |'
     !
     DO IL = 1, NLINES-1
-       FLINE  = FTOP - FSC * REAL(IL)
-       IF (ABS(FLINE).LT.0.01*FSC) FLINE = 0.
-       IF (MOD(NLINES-IL,2).EQ.0) THEN
-          WRITE (STRA, FMT='(E10.3)') FLINE
-          STRA2 =  ' +'
-       ELSE
-          STRA  =  '          '
-          STRA2 =  ' |'
-       END IF
-       DO IFR=1, NFRB
-          PNUM2(NFRB+1) = ' |'
-          IF (ABS(FLINE).LT.0.1*FSC) THEN
-             PNUM2(IFR) = '--'
-             PNUM2(NFRB+1) = '-+'
-             DO IE=1, NE
-                IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
-                   IF (IE.LT.10) THEN
-                      WRITE (STRAX,'(A1,I1)') '-', IE
-                   ELSE
-                      WRITE (STRAX,'(I2)') IE
-                   END IF
-                   PNUM2(IFR) = STRAX
-                END IF
-             END DO
-          ELSE
-             PNUM2(IFR) = '  '
-             DO IE=1, NE
-                IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
-                   WRITE (STRAX,'(I2)') IE
-                   PNUM2(IFR) = STRAX
-                END IF
-             END DO
-          END IF
-       END DO
-       WRITE (NDS,910) STRA, STRA2, (PNUM2(IFR),IFR=1, NFRB+1)
+      FLINE  = FTOP - FSC * REAL(IL)
+      IF (ABS(FLINE).LT.0.01*FSC) FLINE = 0.
+      IF (MOD(NLINES-IL,2).EQ.0) THEN
+        WRITE (STRA, FMT='(E10.3)') FLINE
+        STRA2 =  ' +'
+      ELSE
+        STRA  =  '          '
+        STRA2 =  ' |'
+      END IF
+      DO IFR=1, NFRB
+        PNUM2(NFRB+1) = ' |'
+        IF (ABS(FLINE).LT.0.1*FSC) THEN
+          PNUM2(IFR) = '--'
+          PNUM2(NFRB+1) = '-+'
+          DO IE=1, NE
+            IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
+              IF (IE.LT.10) THEN
+                WRITE (STRAX,'(A1,I1)') '-', IE
+              ELSE
+                WRITE (STRAX,'(I2)') IE
+              END IF
+              PNUM2(IFR) = STRAX
+            END IF
+          END DO
+        ELSE
+          PNUM2(IFR) = '  '
+          DO IE=1, NE
+            IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
+              WRITE (STRAX,'(I2)') IE
+              PNUM2(IFR) = STRAX
+            END IF
+          END DO
+        END IF
+      END DO
+      WRITE (NDS,910) STRA, STRA2, (PNUM2(IFR),IFR=1, NFRB+1)
     END DO
     !
     ! write ending
@@ -1897,21 +1897,21 @@ CONTAINS
     PNUM2(NFRB+1) = '-+'
     !
     DO IFR=1, NFRB
-       IF ( MOD (IFR-2,4) .EQ. 0 ) THEN
-          PNUM2(IFR) = '-|'
-       ELSE
-          PNUM2(IFR) = '--'
-       END IF
-       DO IE=1, NE
-          IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
-             IF (IE.LT.10) THEN
-                WRITE (STRAX,'(A1,I1)') '-', IE
-             ELSE
-                WRITE (STRAX,'(I2)') IE
-             END IF
-             PNUM2(IFR) = STRAX
+      IF ( MOD (IFR-2,4) .EQ. 0 ) THEN
+        PNUM2(IFR) = '-|'
+      ELSE
+        PNUM2(IFR) = '--'
+      END IF
+      DO IE=1, NE
+        IF ( NINT( (E(IFR,IE)-FLINE)/FSC ) .EQ.0) THEN
+          IF (IE.LT.10) THEN
+            WRITE (STRAX,'(A1,I1)') '-', IE
+          ELSE
+            WRITE (STRAX,'(I2)') IE
           END IF
-       END DO
+          PNUM2(IFR) = STRAX
+        END IF
+      END DO
     END DO
     !
     WRITE (NDS,910) STRA, STRA2, (PNUM2(IFR),IFR=1, NFRB+1)
@@ -2061,14 +2061,14 @@ CONTAINS
     !
     FLSCLE = .FALSE.
     IF (FSC.EQ.0.) THEN
-       FLSCLE = .TRUE.
-       RRC    = RRCUT * 10.
+      FLSCLE = .TRUE.
+      RRC    = RRCUT * 10.
     END IF
     !
     IF (UFR.EQ.'HZ') THEN
-       FACFR  = 1.
+      FACFR  = 1.
     ELSE
-       FACFR  = 0.159155
+      FACFR  = 0.159155
     END IF
     !
     ! Maximum of spectrum
@@ -2077,10 +2077,10 @@ CONTAINS
     EMIN   = 0.
     !
     DO IFR=1, NFR
-       DO ITH=1, NTH
-          EMAX = MAX ( EMAX , E(IFR,ITH) )
-          EMIN = MIN ( EMIN , E(IFR,ITH) )
-       END DO
+      DO ITH=1, NTH
+        EMAX = MAX ( EMAX , E(IFR,ITH) )
+        EMIN = MIN ( EMIN , E(IFR,ITH) )
+      END DO
     END DO
     !
     EMAX = MAX (EMAX, ABS(EMIN) )
@@ -2090,158 +2090,158 @@ CONTAINS
     ! Normalized spectra :  = = = = = = = = = = = = = = = = = = = = = =
     !
     IF (FLSCLE) THEN
-       !
-       ! Write ID
-       !
-       WRITE (NDS,900) PNTNME, PRVAR, EMAX*FACSP, PRUNIT
-       !
-       ! Write Head
-       !
-       NFRB  = MIN (NFR,50)
-       WRITE (NDS,910) (FR(IFR)*FACFR,IFR=2,NFRB,4)
-       !
-       DO IFR=1, NFR
-          IF ( MOD((IFR-2),4) .EQ. 0) THEN
-             PNUM2(IFR) = '-|'
+      !
+      ! Write ID
+      !
+      WRITE (NDS,900) PNTNME, PRVAR, EMAX*FACSP, PRUNIT
+      !
+      ! Write Head
+      !
+      NFRB  = MIN (NFR,50)
+      WRITE (NDS,910) (FR(IFR)*FACFR,IFR=2,NFRB,4)
+      !
+      DO IFR=1, NFR
+        IF ( MOD((IFR-2),4) .EQ. 0) THEN
+          PNUM2(IFR) = '-|'
+        ELSE
+          PNUM2(IFR) = '--'
+        END IF
+      END DO
+      !
+      PNUM2(NFRB+1) = '-+'
+      WRITE (NDS,920) (PNUM2(IFR),IFR=1, NFRB+1)
+      !
+      ! Write table
+      !
+      ITHSEC = NTH + 1
+      !
+      DO ITH= NTH, 1, -1
+        INTANG = 270 - NINT (DTHDEG*REAL(ITH-1))
+        IF (INTANG.LT.0) THEN
+          ITHSEC = ITH
+          CYCLE
+        END IF
+        CALL ANGSTR (INTANG, STRANG, 4, 2)
+        DO IFR=1, NFRB
+          RR     = E(IFR,ITH)/EMAX
+          IF (E(IFR,ITH).EQ.EMAX .OR. RR.GE.1.) THEN
+            PNUM2(IFR) = ' *'
+          ELSE IF (-E(IFR,ITH).EQ.EMAX .OR. RR.LE.-1.) THEN
+            PNUM2(IFR) = ' #'
+          ELSE IF (ABS(RR).LT.RRC) THEN
+            PNUM2(IFR) = '  '
+          ELSE IF ((RR*10.).LT.0. .AND. (RR*10.).GT.-1.) THEN
+            PNUM2(IFR) = '-0'
           ELSE
-             PNUM2(IFR) = '--'
+            WRITE (STRA2, FMT='(I2)') INT (RR*10.)
+            PNUM2(IFR) = STRA2
           END IF
-       END DO
-       !
-       PNUM2(NFRB+1) = '-+'
-       WRITE (NDS,920) (PNUM2(IFR),IFR=1, NFRB+1)
-       !
-       ! Write table
-       !
-       ITHSEC = NTH + 1
-       !
-       DO ITH= NTH, 1, -1
-          INTANG = 270 - NINT (DTHDEG*REAL(ITH-1))
-          IF (INTANG.LT.0) THEN
-             ITHSEC = ITH
-             CYCLE
+        END DO
+        PNUM2(NFRB+1) = ' |'
+        WRITE (NDS,930) STRANG, (PNUM2(IFR),IFR=1, NFRB+1)
+      END DO
+      !
+      DO ITH= NTH, ITHSEC, -1
+        INTANG = 630 - NINT (DTHDEG*REAL(ITH-1))
+        CALL ANGSTR (INTANG, STRANG, 4, 2)
+        DO IFR=1, NFRB
+          RR     = E(IFR,ITH)/EMAX
+          IF (E(IFR,ITH).EQ.EMAX .OR. RR.GE.1.) THEN
+            PNUM2(IFR) = ' *'
+          ELSE IF (-E(IFR,ITH).EQ.EMAX .OR. RR.LE.-1.) THEN
+            PNUM2(IFR) = ' #'
+          ELSE IF (ABS(RR).LT.RRC) THEN
+            PNUM2(IFR) = '  '
+          ELSE IF ((RR*10.).LT.0. .AND. (RR*10.).GT.-1.) THEN
+            PNUM2(IFR) = '-0'
+          ELSE
+            WRITE (STRA2, FMT='(I2)') INT (RR*10.)
+            PNUM2(IFR) = STRA2
           END IF
-          CALL ANGSTR (INTANG, STRANG, 4, 2)
-          DO IFR=1, NFRB
-             RR     = E(IFR,ITH)/EMAX
-             IF (E(IFR,ITH).EQ.EMAX .OR. RR.GE.1.) THEN
-                PNUM2(IFR) = ' *'
-             ELSE IF (-E(IFR,ITH).EQ.EMAX .OR. RR.LE.-1.) THEN
-                PNUM2(IFR) = ' #'
-             ELSE IF (ABS(RR).LT.RRC) THEN
-                PNUM2(IFR) = '  '
-             ELSE IF ((RR*10.).LT.0. .AND. (RR*10.).GT.-1.) THEN
-                PNUM2(IFR) = '-0'
-             ELSE
-                WRITE (STRA2, FMT='(I2)') INT (RR*10.)
-                PNUM2(IFR) = STRA2
-             END IF
-          END DO
-          PNUM2(NFRB+1) = ' |'
-          WRITE (NDS,930) STRANG, (PNUM2(IFR),IFR=1, NFRB+1)
-       END DO
-       !
-       DO ITH= NTH, ITHSEC, -1
-          INTANG = 630 - NINT (DTHDEG*REAL(ITH-1))
-          CALL ANGSTR (INTANG, STRANG, 4, 2)
-          DO IFR=1, NFRB
-             RR     = E(IFR,ITH)/EMAX
-             IF (E(IFR,ITH).EQ.EMAX .OR. RR.GE.1.) THEN
-                PNUM2(IFR) = ' *'
-             ELSE IF (-E(IFR,ITH).EQ.EMAX .OR. RR.LE.-1.) THEN
-                PNUM2(IFR) = ' #'
-             ELSE IF (ABS(RR).LT.RRC) THEN
-                PNUM2(IFR) = '  '
-             ELSE IF ((RR*10.).LT.0. .AND. (RR*10.).GT.-1.) THEN
-                PNUM2(IFR) = '-0'
-             ELSE
-                WRITE (STRA2, FMT='(I2)') INT (RR*10.)
-                PNUM2(IFR) = STRA2
-             END IF
-          END DO
-          PNUM2(NFRB+1) = ' |'
-          WRITE (NDS,930) STRANG, (PNUM2(IFR),IFR=1, NFRB+1)
-       END DO
-       !
-       ! Write ending:
-       !
-       PNUM2(1) = '--'
-       PNUM2(2) = '-+'
-       WRITE (NDS,920) (PNUM2(1),IFR=1, NFRB), PNUM2(2)
-       WRITE (NDS,950)
-       !
-       ! Scaled spectra :  = = = = = = = = = = = = = = = = = = = = = = = =
-       !
+        END DO
+        PNUM2(NFRB+1) = ' |'
+        WRITE (NDS,930) STRANG, (PNUM2(IFR),IFR=1, NFRB+1)
+      END DO
+      !
+      ! Write ending:
+      !
+      PNUM2(1) = '--'
+      PNUM2(2) = '-+'
+      WRITE (NDS,920) (PNUM2(1),IFR=1, NFRB), PNUM2(2)
+      WRITE (NDS,950)
+      !
+      ! Scaled spectra :  = = = = = = = = = = = = = = = = = = = = = = = =
+      !
     ELSE
-       !
-       ! Write ID
-       !
-       WRITE (NDS,901) PNTNME, PRVAR, FSC, PRUNIT,           &
-            EMAX*FACSP, PRUNIT
-       !
-       ! Write heading
-       !
-       NFRB  = MIN (NFR,25)
-       !
-       WRITE (NDS,911) (FR(IFR)*FACFR,IFR=2,NFRB,2)
-       PNUM(1) = '-----'
-       PNUM(2) = '--   '
-       !
-       IF (NFRB.LT.25) THEN
-          WRITE (NDS,921) (PNUM(1),IFR=1, NFRB), PNUM(2)
-       ELSE
-          WRITE (NDS,921) (PNUM(1),IFR=1, NFRB)
-       END IF
-       !
-       !     write table :
-       !
-       ITHSEC = NTH + 1
-       !
-       DO ITH= NTH, 1, -1
-          INTANG = 270 - NINT (DTHDEG*REAL(ITH-1))
-          IF (INTANG.LT.0) THEN
-             ITHSEC = ITH
-             CYCLE
+      !
+      ! Write ID
+      !
+      WRITE (NDS,901) PNTNME, PRVAR, FSC, PRUNIT,           &
+           EMAX*FACSP, PRUNIT
+      !
+      ! Write heading
+      !
+      NFRB  = MIN (NFR,25)
+      !
+      WRITE (NDS,911) (FR(IFR)*FACFR,IFR=2,NFRB,2)
+      PNUM(1) = '-----'
+      PNUM(2) = '--   '
+      !
+      IF (NFRB.LT.25) THEN
+        WRITE (NDS,921) (PNUM(1),IFR=1, NFRB), PNUM(2)
+      ELSE
+        WRITE (NDS,921) (PNUM(1),IFR=1, NFRB)
+      END IF
+      !
+      !     write table :
+      !
+      ITHSEC = NTH + 1
+      !
+      DO ITH= NTH, 1, -1
+        INTANG = 270 - NINT (DTHDEG*REAL(ITH-1))
+        IF (INTANG.LT.0) THEN
+          ITHSEC = ITH
+          CYCLE
+        END IF
+        CALL ANGSTR (INTANG, STRANG, 4, 2)
+        DO IFR=1, NFRB
+          RR = E(IFR,ITH)
+          IF (ABS(RR/EMAX).LT.RRCUT) THEN
+            PNUM(IFR) = '     '
+          ELSE
+            WRITE (STRA, FMT='(I5)') NINT (RR*FACSP/FSC)
+            PNUM(IFR) = STRA
           END IF
-          CALL ANGSTR (INTANG, STRANG, 4, 2)
-          DO IFR=1, NFRB
-             RR = E(IFR,ITH)
-             IF (ABS(RR/EMAX).LT.RRCUT) THEN
-                PNUM(IFR) = '     '
-             ELSE
-                WRITE (STRA, FMT='(I5)') NINT (RR*FACSP/FSC)
-                PNUM(IFR) = STRA
-             END IF
-          END DO
-          WRITE (NDS,931) STRANG, (PNUM(IFR),IFR=1, NFRB)
-       END DO
-       !
-       DO ITH= NTH, ITHSEC, -1
-          INTANG = 630 - NINT (DTHDEG*REAL(ITH-1))
-          CALL ANGSTR (INTANG, STRANG, 4, 2)
-          DO IFR=1, NFRB
-             RR = E(IFR,ITH)
-             IF (ABS(RR/EMAX).LT.RRCUT) THEN
-                PNUM(IFR) = '     '
-             ELSE
-                WRITE (STRA, FMT='(I5)') NINT (RR*FACSP/FSC)
-                PNUM(IFR) = STRA
-             END IF
-          END DO
-          WRITE (NDS,931) STRANG, (PNUM(IFR),IFR=1, NFRB)
-       END DO
-       !
-       !     write ending :
-       !
-       PNUM(1) = '-----'
-       PNUM(2) = '--   '
-       IF (NFRB.LT.25) THEN
-          WRITE (NDS,921) (PNUM(1),IFR=1, NFRB), PNUM(2)
-       ELSE
-          WRITE (NDS,921) (PNUM(1),IFR=1, NFRB)
-       END IF
-       WRITE (NDS,950)
-       !
+        END DO
+        WRITE (NDS,931) STRANG, (PNUM(IFR),IFR=1, NFRB)
+      END DO
+      !
+      DO ITH= NTH, ITHSEC, -1
+        INTANG = 630 - NINT (DTHDEG*REAL(ITH-1))
+        CALL ANGSTR (INTANG, STRANG, 4, 2)
+        DO IFR=1, NFRB
+          RR = E(IFR,ITH)
+          IF (ABS(RR/EMAX).LT.RRCUT) THEN
+            PNUM(IFR) = '     '
+          ELSE
+            WRITE (STRA, FMT='(I5)') NINT (RR*FACSP/FSC)
+            PNUM(IFR) = STRA
+          END IF
+        END DO
+        WRITE (NDS,931) STRANG, (PNUM(IFR),IFR=1, NFRB)
+      END DO
+      !
+      !     write ending :
+      !
+      PNUM(1) = '-----'
+      PNUM(2) = '--   '
+      IF (NFRB.LT.25) THEN
+        WRITE (NDS,921) (PNUM(1),IFR=1, NFRB), PNUM(2)
+      ELSE
+        WRITE (NDS,921) (PNUM(1),IFR=1, NFRB)
+      END IF
+      WRITE (NDS,950)
+      !
     END IF
     !
     RETURN
@@ -2331,42 +2331,42 @@ CONTAINS
       !     numerical :
       !
       IF (INUM.EQ.1 .OR. INUM.GE.3) THEN
-         WRITE (SAUX, FMT='(I4)') IANG
+        WRITE (SAUX, FMT='(I4)') IANG
       ELSE
-         SAUX = '    '
+        SAUX = '    '
       END IF
       !
       !     string :
       !
       IF (IANG.EQ.0) THEN
-         SAUX = '   N'
+        SAUX = '   N'
       ELSE IF (IANG.EQ.90) THEN
-         SAUX = '   E'
+        SAUX = '   E'
       ELSE IF (IANG.EQ.180) THEN
-         SAUX = '   S'
+        SAUX = '   S'
       ELSE IF (IANG.EQ.270) THEN
-         SAUX = '   W'
+        SAUX = '   W'
       ELSE IF (INUM.GE.2) THEN
-         IF (IANG.EQ.45) THEN
-            SAUX = '  NE'
-         ELSE IF (IANG.EQ.135) THEN
-            SAUX = '  SE'
-         ELSE IF (IANG.EQ.225) THEN
-            SAUX = '  SW'
-         ELSE IF (IANG.EQ.315) THEN
-            SAUX = '  NW'
-         END IF
+        IF (IANG.EQ.45) THEN
+          SAUX = '  NE'
+        ELSE IF (IANG.EQ.135) THEN
+          SAUX = '  SE'
+        ELSE IF (IANG.EQ.225) THEN
+          SAUX = '  SW'
+        ELSE IF (IANG.EQ.315) THEN
+          SAUX = '  NW'
+        END IF
       END IF
       !
       !     Auxilary string to output :
       !
       DO I=1, ILEN-4
-         SANG = ' '
+        SANG = ' '
       END DO
       J = 0
       DO I=ILEN-3, ILEN
-         J = J + 1
-         SANG(I:I) = SAUX(J:J)
+        J = J + 1
+        SANG(I:I) = SAUX(J:J)
       END DO
       RETURN
       !/

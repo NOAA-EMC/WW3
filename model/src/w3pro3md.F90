@@ -224,180 +224,180 @@ CONTAINS
 #endif
     !
     IF (GTYPE .LT. 3) THEN
-       ! 1.  Map MAPX2 ------------------------------------------------------ *
-       ! 1.a Range 1 to NMX0
-       !
+      ! 1.  Map MAPX2 ------------------------------------------------------ *
+      ! 1.a Range 1 to NMX0
+      !
 #ifdef W3_T
-       MAPTXY = 0.
+      MAPTXY = 0.
 #endif
-       !
-       NMX0   = 0
-       DO IX=1, NX
-          IXY0   = (IX-1)*NY
-          IX2    = 1 + MOD(IX,NX)
-          DO IY=2, NY-1
-             IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY,IX2).EQ.1 ) THEN
-                NMX0   = NMX0 + 1
-                MAPX2(NMX0) = IXY0 + IY
+      !
+      NMX0   = 0
+      DO IX=1, NX
+        IXY0   = (IX-1)*NY
+        IX2    = 1 + MOD(IX,NX)
+        DO IY=2, NY-1
+          IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY,IX2).EQ.1 ) THEN
+            NMX0   = NMX0 + 1
+            MAPX2(NMX0) = IXY0 + IY
 #ifdef W3_T
-                MAPTXY(IY,IX) = MAPTXY(IY,IX) + 1
+            MAPTXY(IY,IX) = MAPTXY(IY,IX) + 1
 #endif
-             END IF
-          END DO
-       END DO
-       !
-       ! 1.b Range NMX0+1 to NMX1
-       !
-       NMX1   = NMX0
-       DO IX=1, NX
-          IXY0   = (IX-1)*NY
-          IX2    = 1 + MOD(IX,NX)
-          DO IY=2, NY-1
-             IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY,IX2).NE.1 ) THEN
-                NMX1   = NMX1 + 1
-                MAPX2(NMX1) = IXY0 + IY
-#ifdef W3_T
-                MAPTXY(IY,IX) = MAPTXY(IY,IX) + 2
-#endif
-             END IF
-          END DO
-       END DO
-       !
-       ! 1.c Range NMX1+1 to NMX2
-       !
-       NMX2   = NMX1
-       DO IX=1, NX
-          IXY0   = (IX-1)*NY
-          IX2    = 1 + MOD(IX,NX)
-          DO IY=2, NY-1
-             IF ( MAPSTA(IY,IX).NE.1 .AND. MAPSTA(IY,IX2).EQ.1 ) THEN
-                NMX2   = NMX2 + 1
-                MAPX2(NMX2) = IXY0 + IY
-#ifdef W3_T
-                MAPTXY(IY,IX) = MAPTXY(IY,IX) + 4
-#endif
-             END IF
-          END DO
-       END DO
-       !
-#ifdef W3_T
-       WRITE (NDST,9000) 'MAPX2', NMX0, NMX1-NMX0,                     &
-            NMX2-NMX1, NMX2
-       DO IY=NY, 1, -1
-          WRITE (NDST,9001) (MAPTXY(IY,IX),IX=1, NX)
-       END DO
-#endif
-       !
-       ! 2.  Map MAPY2 ------------------------------------------------------ *
-       ! 2.a Range 1 to NMY0
-       !
-#ifdef W3_T
-       MAPTXY = 0.
-#endif
-       !
-       NMY0   = 0
-       DO IX=1, NX
-          IXY0   = (IX-1)*NY
-          DO IY=1, NY-1
-             IY2    = IY + 1
-             IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY2,IX).EQ.1 ) THEN
-                NMY0   = NMY0 + 1
-                MAPY2(NMY0) = IXY0 + IY
-#ifdef W3_T
-                MAPTXY(IY,IX) = MAPTXY(IY,IX) + 1
-#endif
-             END IF
-          END DO
-       END DO
-       !
-       ! 2.b Range NMY0+1 to NMY1
-       !
-       NMY1   = NMY0
-       DO IX=1, NX
-          IXY0   = (IX-1)*NY
-          DO IY=1, NY-1
-             IY2    = IY + 1
-             IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY2,IX).NE.1 ) THEN
-                NMY1   = NMY1 + 1
-                MAPY2(NMY1) = IXY0 + IY
-#ifdef W3_T
-                MAPTXY(IY,IX) = MAPTXY(IY,IX) + 2
-#endif
-             END IF
-          END DO
-       END DO
-       !
-       ! 2.c Range NMY1+1 to NMY2
-       !
-       NMY2   = NMY1
-       DO IX=1, NX
-          IXY0   = (IX-1)*NY
-          DO IY=1, NY-1
-             IY2    = IY + 1
-             IF ( MAPSTA(IY,IX).NE.1 .AND. MAPSTA(IY2,IX).EQ.1 ) THEN
-                NMY2   = NMY2 + 1
-                MAPY2(NMY2) = IXY0 + IY
-#ifdef W3_T
-                MAPTXY(IY,IX) = MAPTXY(IY,IX) + 4
-#endif
-             END IF
-          END DO
-       END DO
-       !
-#ifdef W3_T
-       WRITE (NDST,9000) 'MAPY2', NMY0, NMY1-NMY0,                     &
-            NMY2-NMY1, NMY2
-       DO IY=NY, 1, -1
-          WRITE (NDST,9001) (MAPTXY(IY,IX),IX=1, NX)
-       END DO
-#endif
-       !
-       ! 3.  Map MAPAXY ----------------------------------------------------- *
-       !
-       NACT   = 0
-       DO IX=1, NX
-          IY0    = (IX-1)*NY
-          DO IY=2, NY-1
-             IF ( MAPSTA(IY,IX).EQ.1 ) THEN
-                NACT         = NACT + 1
-                MAPAXY(NACT) = IY0 + IY
-             END IF
-          END DO
-       END DO
-       !
-       ! 4.  Map MAPCXY ----------------------------------------------------- *
-       !
-       NCENT  = 0
-       NCENTC = NSEA
-       MAPCXY = 0
-       !
-       DO ISEA=1,  NSEA
-          IX      = MAPSF(ISEA,1)
-          IX0    = IX-1
-          IX2    = IX+1
-          IY      = MAPSF(ISEA,2)
-          IY0    = IY-1
-          IY2    = IY+1
-          IF ( IX .EQ. NX ) IX2 = 1
-          IF ( IX .EQ. 1 ) IX0 = NX
-          IF ( MAPSTA(IY,IX).EQ.2 .OR. MAPSTA(IY,IX).LT.0 ) THEN
-             MAPCXY(NCENTC) = ISEA
-             NCENTC = NCENTC - 1
-          ELSE IF ( MAPSTA(IY0,IX0).GE.1 .AND.                     &
-               MAPSTA(IY0,IX ).GE.1 .AND.                     &
-               MAPSTA(IY0,IX2).GE.1 .AND.                     &
-               MAPSTA(IY ,IX0).GE.1 .AND.                     &
-               MAPSTA(IY ,IX2).GE.1 .AND.                     &
-               MAPSTA(IY2,IX0).GE.1 .AND.                     &
-               MAPSTA(IY2,IX ).GE.1 .AND.                     &
-               MAPSTA(IY2,IX2).GE.1 ) THEN
-             NCENT  = NCENT + 1
-             MAPCXY(NCENT) = ISEA
-          ELSE
-             MAPCXY(NCENTC) = ISEA
-             NCENTC = NCENTC - 1
           END IF
-       END DO
+        END DO
+      END DO
+      !
+      ! 1.b Range NMX0+1 to NMX1
+      !
+      NMX1   = NMX0
+      DO IX=1, NX
+        IXY0   = (IX-1)*NY
+        IX2    = 1 + MOD(IX,NX)
+        DO IY=2, NY-1
+          IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY,IX2).NE.1 ) THEN
+            NMX1   = NMX1 + 1
+            MAPX2(NMX1) = IXY0 + IY
+#ifdef W3_T
+            MAPTXY(IY,IX) = MAPTXY(IY,IX) + 2
+#endif
+          END IF
+        END DO
+      END DO
+      !
+      ! 1.c Range NMX1+1 to NMX2
+      !
+      NMX2   = NMX1
+      DO IX=1, NX
+        IXY0   = (IX-1)*NY
+        IX2    = 1 + MOD(IX,NX)
+        DO IY=2, NY-1
+          IF ( MAPSTA(IY,IX).NE.1 .AND. MAPSTA(IY,IX2).EQ.1 ) THEN
+            NMX2   = NMX2 + 1
+            MAPX2(NMX2) = IXY0 + IY
+#ifdef W3_T
+            MAPTXY(IY,IX) = MAPTXY(IY,IX) + 4
+#endif
+          END IF
+        END DO
+      END DO
+      !
+#ifdef W3_T
+      WRITE (NDST,9000) 'MAPX2', NMX0, NMX1-NMX0,                     &
+           NMX2-NMX1, NMX2
+      DO IY=NY, 1, -1
+        WRITE (NDST,9001) (MAPTXY(IY,IX),IX=1, NX)
+      END DO
+#endif
+      !
+      ! 2.  Map MAPY2 ------------------------------------------------------ *
+      ! 2.a Range 1 to NMY0
+      !
+#ifdef W3_T
+      MAPTXY = 0.
+#endif
+      !
+      NMY0   = 0
+      DO IX=1, NX
+        IXY0   = (IX-1)*NY
+        DO IY=1, NY-1
+          IY2    = IY + 1
+          IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY2,IX).EQ.1 ) THEN
+            NMY0   = NMY0 + 1
+            MAPY2(NMY0) = IXY0 + IY
+#ifdef W3_T
+            MAPTXY(IY,IX) = MAPTXY(IY,IX) + 1
+#endif
+          END IF
+        END DO
+      END DO
+      !
+      ! 2.b Range NMY0+1 to NMY1
+      !
+      NMY1   = NMY0
+      DO IX=1, NX
+        IXY0   = (IX-1)*NY
+        DO IY=1, NY-1
+          IY2    = IY + 1
+          IF ( MAPSTA(IY,IX).EQ.1 .AND. MAPSTA(IY2,IX).NE.1 ) THEN
+            NMY1   = NMY1 + 1
+            MAPY2(NMY1) = IXY0 + IY
+#ifdef W3_T
+            MAPTXY(IY,IX) = MAPTXY(IY,IX) + 2
+#endif
+          END IF
+        END DO
+      END DO
+      !
+      ! 2.c Range NMY1+1 to NMY2
+      !
+      NMY2   = NMY1
+      DO IX=1, NX
+        IXY0   = (IX-1)*NY
+        DO IY=1, NY-1
+          IY2    = IY + 1
+          IF ( MAPSTA(IY,IX).NE.1 .AND. MAPSTA(IY2,IX).EQ.1 ) THEN
+            NMY2   = NMY2 + 1
+            MAPY2(NMY2) = IXY0 + IY
+#ifdef W3_T
+            MAPTXY(IY,IX) = MAPTXY(IY,IX) + 4
+#endif
+          END IF
+        END DO
+      END DO
+      !
+#ifdef W3_T
+      WRITE (NDST,9000) 'MAPY2', NMY0, NMY1-NMY0,                     &
+           NMY2-NMY1, NMY2
+      DO IY=NY, 1, -1
+        WRITE (NDST,9001) (MAPTXY(IY,IX),IX=1, NX)
+      END DO
+#endif
+      !
+      ! 3.  Map MAPAXY ----------------------------------------------------- *
+      !
+      NACT   = 0
+      DO IX=1, NX
+        IY0    = (IX-1)*NY
+        DO IY=2, NY-1
+          IF ( MAPSTA(IY,IX).EQ.1 ) THEN
+            NACT         = NACT + 1
+            MAPAXY(NACT) = IY0 + IY
+          END IF
+        END DO
+      END DO
+      !
+      ! 4.  Map MAPCXY ----------------------------------------------------- *
+      !
+      NCENT  = 0
+      NCENTC = NSEA
+      MAPCXY = 0
+      !
+      DO ISEA=1,  NSEA
+        IX      = MAPSF(ISEA,1)
+        IX0    = IX-1
+        IX2    = IX+1
+        IY      = MAPSF(ISEA,2)
+        IY0    = IY-1
+        IY2    = IY+1
+        IF ( IX .EQ. NX ) IX2 = 1
+        IF ( IX .EQ. 1 ) IX0 = NX
+        IF ( MAPSTA(IY,IX).EQ.2 .OR. MAPSTA(IY,IX).LT.0 ) THEN
+          MAPCXY(NCENTC) = ISEA
+          NCENTC = NCENTC - 1
+        ELSE IF ( MAPSTA(IY0,IX0).GE.1 .AND.                     &
+             MAPSTA(IY0,IX ).GE.1 .AND.                     &
+             MAPSTA(IY0,IX2).GE.1 .AND.                     &
+             MAPSTA(IY ,IX0).GE.1 .AND.                     &
+             MAPSTA(IY ,IX2).GE.1 .AND.                     &
+             MAPSTA(IY2,IX0).GE.1 .AND.                     &
+             MAPSTA(IY2,IX ).GE.1 .AND.                     &
+             MAPSTA(IY2,IX2).GE.1 ) THEN
+          NCENT  = NCENT + 1
+          MAPCXY(NCENT) = ISEA
+        ELSE
+          MAPCXY(NCENTC) = ISEA
+          NCENTC = NCENTC - 1
+        END IF
+      END DO
     END IF
     !
     ! 5.  Maps for intra-spectral propagation ---------------------------- *
@@ -411,20 +411,20 @@ CONTAINS
     ! 5.a MAPTH2 and MAPBTK
     !
     DO IK=1, NK
-       DO ITH=1, NTH
-          ISP    = ITH + (IK-1)*NTH
-          ISP2   = (IK+1) + (ITH-1)*(NK+2)
-          MAPTH2(ISP) = ISP2
+      DO ITH=1, NTH
+        ISP    = ITH + (IK-1)*NTH
+        ISP2   = (IK+1) + (ITH-1)*(NK+2)
+        MAPTH2(ISP) = ISP2
 #ifdef W3_T
-          MAPTST(IK+1,ITH) = MAPTST(IK+1,ITH) + 1
+        MAPTST(IK+1,ITH) = MAPTST(IK+1,ITH) + 1
 #endif
-       END DO
+      END DO
     END DO
     !
 #ifdef W3_T
     WRITE (NDST,9000) 'MAPTH2', ISP, 0, 0, ISP
     DO IK=NK+2, 1, -1
-       WRITE (NDST,9001) (MAPTST(IK,ITH),ITH=1, NTH)
+      WRITE (NDST,9001) (MAPTST(IK,ITH),ITH=1, NTH)
     END DO
 #endif
     !
@@ -436,38 +436,38 @@ CONTAINS
     !
     ISP0   = 0
     DO IK=1, NK-1
-       DO ITH=1, NTH
-          ISP0   = ISP0 + 1
-          ISP2   = (IK+1) + (ITH-1)*(NK+2)
-          MAPWN2(ISP0) = ISP2
+      DO ITH=1, NTH
+        ISP0   = ISP0 + 1
+        ISP2   = (IK+1) + (ITH-1)*(NK+2)
+        MAPWN2(ISP0) = ISP2
 #ifdef W3_T
-          MAPTST(IK+1,ITH) = MAPTST(IK+1,ITH) + 1
+        MAPTST(IK+1,ITH) = MAPTST(IK+1,ITH) + 1
 #endif
-       END DO
+      END DO
     END DO
     !
     DO ITH=1, NTH
-       ISP0   = ISP0 + 1
-       ISP2   = NK+1 + (ITH-1)*(NK+2)
-       MAPWN2(ISP0) = ISP2
+      ISP0   = ISP0 + 1
+      ISP2   = NK+1 + (ITH-1)*(NK+2)
+      MAPWN2(ISP0) = ISP2
 #ifdef W3_T
-       MAPTST(NK+1,ITH) = MAPTST(NK+1,ITH) + 2
+      MAPTST(NK+1,ITH) = MAPTST(NK+1,ITH) + 2
 #endif
     END DO
     !
     DO ITH=1, NTH
-       ISP0   = ISP0 + 1
-       ISP2   = 1 + (ITH-1)*(NK+2)
-       MAPWN2(ISP0) = ISP2
+      ISP0   = ISP0 + 1
+      ISP2   = 1 + (ITH-1)*(NK+2)
+      MAPWN2(ISP0) = ISP2
 #ifdef W3_T
-       MAPTST(1,ITH) = MAPTST(1,ITH) + 4
+      MAPTST(1,ITH) = MAPTST(1,ITH) + 4
 #endif
     END DO
     !
 #ifdef W3_T
     WRITE (NDST,9000) 'MAPWN2', NSPEC-NTH, NTH, NTH, NSPEC+NTH
     DO IK=NK+2, 1, -1
-       WRITE (NDST,9001) (MAPTST(IK,ITH),ITH=1, NTH)
+      WRITE (NDST,9001) (MAPTST(IK,ITH),ITH=1, NTH)
     END DO
 #endif
     !
@@ -572,18 +572,18 @@ CONTAINS
     ! 1.  Map MAPTRN ----------------------------------------------------- *
     !
     DO ISEA=1, NSEA
-       IXY         = MAPSF(ISEA,3)
+      IXY         = MAPSF(ISEA,3)
 
-       !notes: Oct 22 2012: I changed this because it *looks* like a bug.
-       !       I have not confirmed that it is a bug.
-       !       Old code is given (2 lines). Only the first line is
-       !       changed.
+      !notes: Oct 22 2012: I changed this because it *looks* like a bug.
+      !       I have not confirmed that it is a bug.
+      !       Old code is given (2 lines). Only the first line is
+      !       changed.
 
-       !old    MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNY(IXY,-1) ,              &
-       !old                       ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
+      !old    MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNY(IXY,-1) ,              &
+      !old                       ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
 
-       MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNX(IXY,-1) ,              &
-            ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
+      MAPTRN(IXY) = MIN( ATRNX(IXY,1) ,ATRNX(IXY,-1) ,              &
+           ATRNY(IXY,1), ATRNY(IXY,-1) ) .LT. TRNMIN
     END DO
     !
     RETURN
@@ -819,11 +819,11 @@ CONTAINS
     ! 1.  Preparations --------------------------------------------------- *
 
     IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
-       !/ ------------------------------------------------------------------- /
-       IF (IAPROC .EQ. NAPERR) &
-            WRITE(NDSE,*)'SUBROUTINE W3XYP3 IS NOT YET ADAPTED FOR '//    &
-            'TRIPOLE GRIDS. STOPPING NOW.'
-       CALL EXTCDE ( 1 )
+      !/ ------------------------------------------------------------------- /
+      IF (IAPROC .EQ. NAPERR) &
+           WRITE(NDSE,*)'SUBROUTINE W3XYP3 IS NOT YET ADAPTED FOR '//    &
+           'TRIPOLE GRIDS. STOPPING NOW.'
+      CALL EXTCDE ( 1 )
     END IF
 
     ! 1.a Set constants
@@ -846,29 +846,29 @@ CONTAINS
 #endif
     !
     IF ( FLCUR ) THEN
-       CXMIN  = MINVAL ( CX(1:NSEA) )
-       CXMAX  = MAXVAL ( CX(1:NSEA) )
-       CYMIN  = MINVAL ( CY(1:NSEA) )
-       CYMAX  = MAXVAL ( CY(1:NSEA) )
-       IF ( ABS(CGX+CXMIN) .GT. ABS(CGX+CXMAX) ) THEN
-          CGX    = CGX + CXMIN
-       ELSE
-          CGX    = CGX + CXMAX
-       END IF
-       IF ( ABS(CGY+CYMIN) .GT. ABS(CGY+CYMAX) ) THEN
-          CGY    = CGY + CYMIN
-       ELSE
-          CGY    = CGY + CYMAX
-       END IF
-       CXC    = MAX ( ABS(CXMIN) , ABS(CXMAX) )
-       CYC    = MAX ( ABS(CYMIN) , ABS(CYMAX) )
+      CXMIN  = MINVAL ( CX(1:NSEA) )
+      CXMAX  = MAXVAL ( CX(1:NSEA) )
+      CYMIN  = MINVAL ( CY(1:NSEA) )
+      CYMAX  = MAXVAL ( CY(1:NSEA) )
+      IF ( ABS(CGX+CXMIN) .GT. ABS(CGX+CXMAX) ) THEN
+        CGX    = CGX + CXMIN
+      ELSE
+        CGX    = CGX + CXMAX
+      END IF
+      IF ( ABS(CGY+CYMIN) .GT. ABS(CGY+CYMAX) ) THEN
+        CGY    = CGY + CYMIN
+      ELSE
+        CGY    = CGY + CYMAX
+      END IF
+      CXC    = MAX ( ABS(CXMIN) , ABS(CXMAX) )
+      CYC    = MAX ( ABS(CYMIN) , ABS(CYMAX) )
 #ifdef W3_MGP
-       CXC    = MAX ( ABS(CXMIN-VGX) , ABS(CXMAX-VGX) )
-       CYC    = MAX ( ABS(CYMIN-VGY) , ABS(CYMAX-VGY) )
+      CXC    = MAX ( ABS(CXMIN-VGX) , ABS(CXMAX-VGX) )
+      CYC    = MAX ( ABS(CYMIN-VGY) , ABS(CYMAX-VGY) )
 #endif
     ELSE
-       CXC    = 0.
-       CYC    = 0.
+      CXC    = 0.
+      CYC    = 0.
     END IF
     !
     CGN    = MAX ( ABS(CGX) , ABS(CGY) , CXC, CYC, 0.001*CG0 )
@@ -902,11 +902,11 @@ CONTAINS
     MAPSTX(1:NX*NY) = MAPSTA(1:NX*NY)
     !
     IF ( GLOBAL ) THEN
-       MAPSTX(1-2*NY:0)            = MAPSTA((NX-2)*NY+1:NX*NY)
-       MAPSTX(NX*NY+1:NX*NY+2*NY)  = MAPSTA(1:2*NY)
+      MAPSTX(1-2*NY:0)            = MAPSTA((NX-2)*NY+1:NX*NY)
+      MAPSTX(NX*NY+1:NX*NY+2*NY)  = MAPSTA(1:2*NY)
     ELSE
-       MAPSTX(1-2*NY:0)            = 0
-       MAPSTX(NX*NY+1:NX*NY+2*NY)  = 0
+      MAPSTX(1-2*NY:0)            = 0
+      MAPSTX(NX*NY+1:NX*NY+2*NY)  = 0
     END IF
     !
     ! 1.c Pre-calculate interpolation info
@@ -914,8 +914,8 @@ CONTAINS
     FTH = FGSE * WDTH * DTH * DTLOC
     FCG = FGSE * WDCG * 0.5 * (XFR-1./XFR) * DTLOC
     IF ( FLAGLL ) THEN
-       FTH = FTH / RADIUS / DERA
-       FCG = FCG / RADIUS / DERA
+      FTH = FTH / RADIUS / DERA
+      FCG = FCG / RADIUS / DERA
     END IF
     FCG = FCG / REAL(NTLOC) !TJC: required to match original (is this correct?)
     FTHX = - FTH * ESIN(ITH)
@@ -934,81 +934,81 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       !
-       IX  = MAPSF(ISEA,1)
-       IY  = MAPSF(ISEA,2)
-       !
-       ! 1.c.1 Normal and parallel width ...
-       !
-       TMPX   = FTHX / CLATS(ISEA)
-       TMPY   = FTHY
-       DXCGN  = DPDX(IY,IX)*TMPX + DPDY(IY,IX)*TMPY
-       DYCGN  = DQDX(IY,IX)*TMPX + DQDY(IY,IX)*TMPY
-       TMPX   = FCGX / CLATS(ISEA)
-       TMPY   = FCGY
-       DXCGS  = DPDX(IY,IX)*TMPX + DPDY(IY,IX)*TMPY
-       DYCGS  = DQDX(IY,IX)*TMPX + DQDY(IY,IX)*TMPY
-       !
-       ! 1.c.2 "Sum" corner (and mirror image) ...
-       !
-       DXCGC  = DXCGN + DXCGS
-       DYCGC  = DYCGN + DYCGS
-       !
-       IXC    = NY
-       IF ( DXCGC .LT. 0. ) IXC = - IXC
-       IYC    = 1
-       IF ( DYCGC .LT. 0. ) IYC = - IYC
-       !
-       IIXY1(ISEA) = IXC + IYC
-       IF ( ABS(DXCGC) .GT. ABS(DYCGC) ) THEN
-          IIXY2(ISEA) = IXC
-          RDI1 (ISEA) = ABS(DYCGC/DXCGC)
-          RDI2 (ISEA) = ABS(DXCGC)
-       ELSE
-          IIXY2(ISEA) = IYC
-          IF ( ABS(DYCGC) .GT. 1.E-5 ) THEN
-             RDI1(ISEA) = ABS(DXCGC/DYCGC)
-          ELSE
-             RDI1(ISEA) = 1.
-          END IF
-          RDI2(ISEA) = ABS(DYCGC)
-       END IF
-       !
+      !
+      IX  = MAPSF(ISEA,1)
+      IY  = MAPSF(ISEA,2)
+      !
+      ! 1.c.1 Normal and parallel width ...
+      !
+      TMPX   = FTHX / CLATS(ISEA)
+      TMPY   = FTHY
+      DXCGN  = DPDX(IY,IX)*TMPX + DPDY(IY,IX)*TMPY
+      DYCGN  = DQDX(IY,IX)*TMPX + DQDY(IY,IX)*TMPY
+      TMPX   = FCGX / CLATS(ISEA)
+      TMPY   = FCGY
+      DXCGS  = DPDX(IY,IX)*TMPX + DPDY(IY,IX)*TMPY
+      DYCGS  = DQDX(IY,IX)*TMPX + DQDY(IY,IX)*TMPY
+      !
+      ! 1.c.2 "Sum" corner (and mirror image) ...
+      !
+      DXCGC  = DXCGN + DXCGS
+      DYCGC  = DYCGN + DYCGS
+      !
+      IXC    = NY
+      IF ( DXCGC .LT. 0. ) IXC = - IXC
+      IYC    = 1
+      IF ( DYCGC .LT. 0. ) IYC = - IYC
+      !
+      IIXY1(ISEA) = IXC + IYC
+      IF ( ABS(DXCGC) .GT. ABS(DYCGC) ) THEN
+        IIXY2(ISEA) = IXC
+        RDI1 (ISEA) = ABS(DYCGC/DXCGC)
+        RDI2 (ISEA) = ABS(DXCGC)
+      ELSE
+        IIXY2(ISEA) = IYC
+        IF ( ABS(DYCGC) .GT. 1.E-5 ) THEN
+          RDI1(ISEA) = ABS(DXCGC/DYCGC)
+        ELSE
+          RDI1(ISEA) = 1.
+        END IF
+        RDI2(ISEA) = ABS(DYCGC)
+      END IF
+      !
 #ifdef W3_T0
-       WRITE (NDST,9012) ISEA, ITH, IIXY1(ISEA), IIXY2(ISEA), &
-            RDI1(ISEA), RDI2(ISEA)*CG(IK,1)
+      WRITE (NDST,9012) ISEA, ITH, IIXY1(ISEA), IIXY2(ISEA), &
+           RDI1(ISEA), RDI2(ISEA)*CG(IK,1)
 #endif
-       !
-       ! 1.c.2 "Difference" corner (and mirror image) ...
-       !
-       DXCGC  = DXCGN - DXCGS
-       DYCGC  = DYCGN - DYCGS
-       !
-       IXC    = NY
-       IF ( DXCGC .LT. 0. ) IXC = - IXC
-       IYC    = 1
-       IF ( DYCGC .LT. 0. ) IYC = - IYC
-       !
-       IIXY3(ISEA) = IXC + IYC
-       IF ( ABS(DXCGC) .GT. ABS(DYCGC) ) THEN
-          IIXY4(ISEA) = IXC
-          RDI3 (ISEA) = ABS(DYCGC/DXCGC)
-          RDI4 (ISEA) = ABS(DXCGC)
-       ELSE
-          IIXY4(ISEA) = IYC
-          IF ( ABS(DYCGC) .GT. 1.E-5 ) THEN
-             RDI3(ISEA) = ABS(DXCGC/DYCGC)
-          ELSE
-             RDI3(ISEA) = 1.
-          END IF
-          RDI4(ISEA) = ABS(DYCGC)
-       END IF
-       !
+      !
+      ! 1.c.2 "Difference" corner (and mirror image) ...
+      !
+      DXCGC  = DXCGN - DXCGS
+      DYCGC  = DYCGN - DYCGS
+      !
+      IXC    = NY
+      IF ( DXCGC .LT. 0. ) IXC = - IXC
+      IYC    = 1
+      IF ( DYCGC .LT. 0. ) IYC = - IYC
+      !
+      IIXY3(ISEA) = IXC + IYC
+      IF ( ABS(DXCGC) .GT. ABS(DYCGC) ) THEN
+        IIXY4(ISEA) = IXC
+        RDI3 (ISEA) = ABS(DYCGC/DXCGC)
+        RDI4 (ISEA) = ABS(DXCGC)
+      ELSE
+        IIXY4(ISEA) = IYC
+        IF ( ABS(DYCGC) .GT. 1.E-5 ) THEN
+          RDI3(ISEA) = ABS(DXCGC/DYCGC)
+        ELSE
+          RDI3(ISEA) = 1.
+        END IF
+        RDI4(ISEA) = ABS(DYCGC)
+      END IF
+      !
 #ifdef W3_T0
-       WRITE (NDST,9013) IIXY3(ISEA), IIXY4(ISEA), RDI3(ISEA), &
-            RDI4(ISEA)*CG(IK,1)
+      WRITE (NDST,9013) IIXY3(ISEA), IIXY4(ISEA), RDI3(ISEA), &
+           RDI4(ISEA)*CG(IK,1)
 #endif
-       !
+      !
     END DO
     !
 #ifdef W3_OMPH
@@ -1031,18 +1031,18 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       IXY         = MAPSF(ISEA,3)
-       VQ    (IXY) = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
-       CXTOT(IXY) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
-       CYTOT(IXY) = ESIN(ITH) * CG(IK,ISEA)
+      IXY         = MAPSF(ISEA,3)
+      VQ    (IXY) = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
+      CXTOT(IXY) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
+      CYTOT(IXY) = ESIN(ITH) * CG(IK,ISEA)
 #ifdef W3_MGP
-       CXTOT(IXY) = CXTOT(IXY) - VGX/CLATS(ISEA)
-       CYTOT(IXY) = CYTOT(IXY) - VGY
+      CXTOT(IXY) = CXTOT(IXY) - VGX/CLATS(ISEA)
+      CYTOT(IXY) = CYTOT(IXY) - VGY
 #endif
 #ifdef W3_T1
-       IF ( .NOT. FLCUR )                                        &
-            WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
-            VQ(IXY), CXTOT(IXY), CYTOT(IXY)
+      IF ( .NOT. FLCUR )                                        &
+           WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
+           VQ(IXY), CXTOT(IXY), CYTOT(IXY)
 #endif
     END DO
     !
@@ -1052,27 +1052,27 @@ CONTAINS
     !
     IF ( FLCUR ) THEN
 #ifdef W3_T
-       WRITE (NDST,9022)
+      WRITE (NDST,9022)
 #endif
-       !
+      !
 #ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE (ISEA,IXY)
+      !$OMP PARALLEL DO PRIVATE (ISEA,IXY)
 #endif
-       !
-       DO ISEA=1, NSEA
-          IXY         = MAPSF(ISEA,3)
-          CXTOT(IXY) = CXTOT(IXY) + CX(ISEA)/CLATS(ISEA)
-          CYTOT(IXY) = CYTOT(IXY) + CY(ISEA)
+      !
+      DO ISEA=1, NSEA
+        IXY         = MAPSF(ISEA,3)
+        CXTOT(IXY) = CXTOT(IXY) + CX(ISEA)/CLATS(ISEA)
+        CYTOT(IXY) = CYTOT(IXY) + CY(ISEA)
 #ifdef W3_T1
-          WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
-               VQ(IXY), CXTOT(IXY), CYTOT(IXY)
+        WRITE (NDST,9021) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), &
+             VQ(IXY), CXTOT(IXY), CYTOT(IXY)
 #endif
-       END DO
-       !
+      END DO
+      !
 #ifdef W3_OMPH
-       !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 #endif
-       !
+      !
     END IF
     !
 #ifdef W3_OMPH
@@ -1080,13 +1080,13 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       IX     = MAPSF(ISEA,1)
-       IY     = MAPSF(ISEA,2)
-       IXY    = MAPSF(ISEA,3)
-       CP = CXTOT(IXY)*DPDX(IY,IX) + CYTOT(IXY)*DPDY(IY,IX)
-       CQ = CXTOT(IXY)*DQDX(IY,IX) + CYTOT(IXY)*DQDY(IY,IX)
-       VLCFLX(IXY) = CP*DTRAD
-       VLCFLY(IXY) = CQ*DTRAD
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      IXY    = MAPSF(ISEA,3)
+      CP = CXTOT(IXY)*DPDX(IY,IX) + CYTOT(IXY)*DPDY(IY,IX)
+      CQ = CXTOT(IXY)*DQDX(IY,IX) + CYTOT(IXY)*DQDY(IY,IX)
+      VLCFLX(IXY) = CP*DTRAD
+      VLCFLY(IXY) = CQ*DTRAD
     END DO
     !
 #ifdef W3_OMPH
@@ -1096,274 +1096,274 @@ CONTAINS
     ! 3.  Loop over sub-steps -------------------------------------------- *
     !
     DO ITLOC=1, NTLOC
-       !
-       ! 3.a Average
-       !
-       AQ     = VQ
-       VQ     = 0.
-       !
-       ! 3.a.1 Central points
-       !
-       DO IP=1, NCENT
-          ISEA    = MAPCXY(IP)
-          IXY     = MAPSF(ISEA,3)
-          IF ( MAPTRN(IXY) ) THEN
-             VQ(IXY) = AQ(IXY)
+      !
+      ! 3.a Average
+      !
+      AQ     = VQ
+      VQ     = 0.
+      !
+      ! 3.a.1 Central points
+      !
+      DO IP=1, NCENT
+        ISEA    = MAPCXY(IP)
+        IXY     = MAPSF(ISEA,3)
+        IF ( MAPTRN(IXY) ) THEN
+          VQ(IXY) = AQ(IXY)
+        ELSE
+          RD1     = RDI1(ISEA)
+          RD2     = MIN ( 1. , RDI2(ISEA) * CG(IK,ISEA) )
+          RD3     = RDI3(ISEA)
+          RD4     = MIN ( 1. , RDI4(ISEA) * CG(IK,ISEA) )
+          VQ(IXY          ) = VQ(IXY          )                   &
+               + AQ(IXY) * (3.-RD2-RD4)/3.
+          VQ(IXY+IIXY1(ISEA)) = VQ(IXY+IIXY1(ISEA))               &
+               + AQ(IXY) * RD2*RD1/6.
+          VQ(IXY+IIXY2(ISEA)) = VQ(IXY+IIXY2(ISEA))               &
+               + AQ(IXY) * (1.-RD1)*RD2/6.
+          VQ(IXY+IIXY3(ISEA)) = VQ(IXY+IIXY3(ISEA))               &
+               + AQ(IXY) * RD4*RD3/6.
+          VQ(IXY+IIXY4(ISEA)) = VQ(IXY+IIXY4(ISEA))               &
+               + AQ(IXY) * (1.-RD3)*RD4/6.
+          VQ(IXY-IIXY1(ISEA)) = VQ(IXY-IIXY1(ISEA))               &
+               + AQ(IXY) * RD2*RD1/6.
+          VQ(IXY-IIXY2(ISEA)) = VQ(IXY-IIXY2(ISEA))               &
+               + AQ(IXY) * (1.-RD1)*RD2/6.
+          VQ(IXY-IIXY3(ISEA)) = VQ(IXY-IIXY3(ISEA))               &
+               + AQ(IXY) * RD4*RD3/6.
+          VQ(IXY-IIXY4(ISEA)) = VQ(IXY-IIXY4(ISEA))               &
+               + AQ(IXY) * (1.-RD3)*RD4/6.
+        END IF
+      END DO
+      !
+      ! 3.a.2 Near-coast points
+      !
+      DO IP=NCENT+1, NSEA
+        ISEA    = MAPCXY(IP)
+        IX      = MAPSF(ISEA,1)
+        IXY     = MAPSF(ISEA,3)
+        IF ( MAPSTA(IXY) .LE. 0 ) CYCLE
+        IF ( MAPTRN(IXY) ) THEN
+          VQ(IXY) = AQ(IXY)
+        ELSE
+          RD1     = RDI1(ISEA)
+          RD3     = RDI3(ISEA)
+          RD2     = MIN ( 1. , RDI2(ISEA) * CG(IK,ISEA) )
+          RD4     = MIN ( 1. , RDI4(ISEA) * CG(IK,ISEA) )
+          VQ(IXY          ) = VQ(IXY          )                   &
+               + AQ(IXY) * (3.-RD2-RD4)/3.
+          !
+          IXC    = SIGN(NY,IIXY1(ISEA))
+          IYC    = IIXY1(ISEA) - IXC
+          IF ( MAPSTX(IXY+IIXY1(ISEA)) .GE. 1 .AND.               &
+               .NOT. ( MAPSTX(IXY+IXC).LE.0 .AND.                 &
+               MAPSTX(IXY+IYC).LE.0 ) ) THEN
+            VQ(IXY+IIXY1(ISEA)) = VQ(IXY+IIXY1(ISEA))      &
+                 + AQ(IXY) * RD2*RD1/6.
           ELSE
-             RD1     = RDI1(ISEA)
-             RD2     = MIN ( 1. , RDI2(ISEA) * CG(IK,ISEA) )
-             RD3     = RDI3(ISEA)
-             RD4     = MIN ( 1. , RDI4(ISEA) * CG(IK,ISEA) )
-             VQ(IXY          ) = VQ(IXY          )                   &
-                  + AQ(IXY) * (3.-RD2-RD4)/3.
-             VQ(IXY+IIXY1(ISEA)) = VQ(IXY+IIXY1(ISEA))               &
-                  + AQ(IXY) * RD2*RD1/6.
-             VQ(IXY+IIXY2(ISEA)) = VQ(IXY+IIXY2(ISEA))               &
-                  + AQ(IXY) * (1.-RD1)*RD2/6.
-             VQ(IXY+IIXY3(ISEA)) = VQ(IXY+IIXY3(ISEA))               &
-                  + AQ(IXY) * RD4*RD3/6.
-             VQ(IXY+IIXY4(ISEA)) = VQ(IXY+IIXY4(ISEA))               &
-                  + AQ(IXY) * (1.-RD3)*RD4/6.
-             VQ(IXY-IIXY1(ISEA)) = VQ(IXY-IIXY1(ISEA))               &
-                  + AQ(IXY) * RD2*RD1/6.
-             VQ(IXY-IIXY2(ISEA)) = VQ(IXY-IIXY2(ISEA))               &
-                  + AQ(IXY) * (1.-RD1)*RD2/6.
-             VQ(IXY-IIXY3(ISEA)) = VQ(IXY-IIXY3(ISEA))               &
-                  + AQ(IXY) * RD4*RD3/6.
-             VQ(IXY-IIXY4(ISEA)) = VQ(IXY-IIXY4(ISEA))               &
-                  + AQ(IXY) * (1.-RD3)*RD4/6.
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * RD2*RD1/6.
           END IF
-       END DO
-       !
-       ! 3.a.2 Near-coast points
-       !
-       DO IP=NCENT+1, NSEA
-          ISEA    = MAPCXY(IP)
-          IX      = MAPSF(ISEA,1)
-          IXY     = MAPSF(ISEA,3)
-          IF ( MAPSTA(IXY) .LE. 0 ) CYCLE
-          IF ( MAPTRN(IXY) ) THEN
-             VQ(IXY) = AQ(IXY)
+          IF ( MAPSTX(IXY-IIXY1(ISEA)) .GE. 1 .AND.               &
+               .NOT. ( MAPSTX(IXY-IXC).LE.0 .AND.                 &
+               MAPSTX(IXY-IYC).LE.0 ) ) THEN
+            VQ(IXY-IIXY1(ISEA)) = VQ(IXY-IIXY1(ISEA))      &
+                 + AQ(IXY) * RD2*RD1/6.
           ELSE
-             RD1     = RDI1(ISEA)
-             RD3     = RDI3(ISEA)
-             RD2     = MIN ( 1. , RDI2(ISEA) * CG(IK,ISEA) )
-             RD4     = MIN ( 1. , RDI4(ISEA) * CG(IK,ISEA) )
-             VQ(IXY          ) = VQ(IXY          )                   &
-                  + AQ(IXY) * (3.-RD2-RD4)/3.
-             !
-             IXC    = SIGN(NY,IIXY1(ISEA))
-             IYC    = IIXY1(ISEA) - IXC
-             IF ( MAPSTX(IXY+IIXY1(ISEA)) .GE. 1 .AND.               &
-                  .NOT. ( MAPSTX(IXY+IXC).LE.0 .AND.                 &
-                  MAPSTX(IXY+IYC).LE.0 ) ) THEN
-                VQ(IXY+IIXY1(ISEA)) = VQ(IXY+IIXY1(ISEA))      &
-                     + AQ(IXY) * RD2*RD1/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * RD2*RD1/6.
-             END IF
-             IF ( MAPSTX(IXY-IIXY1(ISEA)) .GE. 1 .AND.               &
-                  .NOT. ( MAPSTX(IXY-IXC).LE.0 .AND.                 &
-                  MAPSTX(IXY-IYC).LE.0 ) ) THEN
-                VQ(IXY-IIXY1(ISEA)) = VQ(IXY-IIXY1(ISEA))      &
-                     + AQ(IXY) * RD2*RD1/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * RD2*RD1/6.
-             END IF
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * RD2*RD1/6.
+          END IF
 
-             IF ( MAPSTX(IXY+IIXY2(ISEA)) .GE. 1 ) THEN
-                VQ(IXY+IIXY2(ISEA)) = VQ(IXY+IIXY2(ISEA))      &
-                     + AQ(IXY) * (1.-RD1)*RD2/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * (1.-RD1)*RD2/6.
-             END IF
-             IF ( MAPSTX(IXY-IIXY2(ISEA)) .GE. 1 ) THEN
-                VQ(IXY-IIXY2(ISEA)) = VQ(IXY-IIXY2(ISEA))      &
-                     + AQ(IXY) * (1.-RD1)*RD2/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * (1.-RD1)*RD2/6.
-             END IF
-             !
-             IXC    = SIGN(NY,IIXY3(ISEA))
-             IYC    = IIXY3(ISEA) - IXC
-             IF ( MAPSTX(IXY+IIXY3(ISEA)) .GE. 1 .AND.               &
-                  .NOT. ( MAPSTX(IXY+IXC).LE.0 .AND.                 &
-                  MAPSTX(IXY+IYC).LE.0 ) ) THEN
-                VQ(IXY+IIXY3(ISEA)) = VQ(IXY+IIXY3(ISEA))      &
-                     + AQ(IXY) * RD4*RD3/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * RD4*RD3/6.
-             END IF
-             IF ( MAPSTX(IXY-IIXY3(ISEA)) .GE. 1 .AND.               &
-                  .NOT. ( MAPSTX(IXY-IXC).LE.0 .AND.                 &
-                  MAPSTX(IXY-IYC).LE.0 ) ) THEN
-                VQ(IXY-IIXY3(ISEA)) = VQ(IXY-IIXY3(ISEA))      &
-                     + AQ(IXY) * RD4*RD3/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * RD4*RD3/6.
-             END IF
-             !
-             IF ( MAPSTX(IXY+IIXY4(ISEA)) .GE. 1 ) THEN
-                VQ(IXY+IIXY4(ISEA)) = VQ(IXY+IIXY4(ISEA))      &
-                     + AQ(IXY) * (1.-RD3)*RD4/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * (1.-RD3)*RD4/6.
-             END IF
-             IF ( MAPSTX(IXY-IIXY4(ISEA)) .GE. 1 ) THEN
-                VQ(IXY-IIXY4(ISEA)) = VQ(IXY-IIXY4(ISEA))      &
-                     + AQ(IXY) * (1.-RD3)*RD4/6.
-             ELSE
-                VQ(IXY          ) = VQ(IXY          )          &
-                     + AQ(IXY) * (1.-RD3)*RD4/6.
-             END IF
-             !
-          END IF
-          !
-       END DO
-       !
-       ! 3.a.3 Restore boundary data
-       !
-       DO IXY=1, NX*NY
-          IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
-       END DO
-       !
-       ! 3.a.4 Global closure (averaging only, propagation is closed in W3QCK3).
-       !
-       IF ( GLOBAL ) THEN
-          DO IY=1, NY
-             VQ(IY          ) = VQ(IY          ) + VQ(NX*NY+IY)
-             VQ((NX-1)*NY+IY) = VQ((NX-1)*NY+IY) + VQ(IY-NY)
-          END DO
-       END IF
-       !
-       ! 3.b Propagate fields
-       !
-       !     Transform VQ to straightened space
-       !
-#ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
-#endif
-       !
-       DO ISEA=1, NSEA
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
-          IXY    = MAPSF(ISEA,3)
-          VQ(IXY)= VQ(IXY) * GSQRT(IY,IX)
-       END DO
-       !
-#ifdef W3_OMPH
-       !$OMP END PARALLEL DO
-#endif
-       !
-       IF ( YFIRST ) THEN
-          !
-#ifdef W3_UQ
-          IF ( FLCY ) CALL W3QCK3                               &
-               (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
-               .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
-               NMY1, NMY2, NDSE, NDST )
-          IF ( FLCX ) CALL W3QCK3                               &
-               (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
-               GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
-               NMX1, NMX2, NDSE, NDST )
-#endif
-          !
-#ifdef W3_UNO
-          IF ( FLCY ) CALL W3UNO2s                             &
-               (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
-               .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
-               NMY1, NMY2, NDSE, NDST )
-          IF ( FLCX ) CALL W3UNO2s                             &
-               (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
-               GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
-               NMX1, NMX2, NDSE, NDST )
-#endif
-          !
-       ELSE
-          !
-#ifdef W3_UQ
-          IF ( FLCX ) CALL W3QCK3                               &
-               (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
-               GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
-               NMX1, NMX2, NDSE, NDST )
-          IF ( FLCY ) CALL W3QCK3                               &
-               (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
-               .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
-               NMY1, NMY2, NDSE, NDST )
-#endif
-          !
-#ifdef W3_UNO
-          IF ( FLCX ) CALL W3UNO2s                             &
-               (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
-               GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
-               NMX1, NMX2, NDSE, NDST )
-          IF ( FLCY ) CALL W3UNO2s                             &
-               (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
-               .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
-               NMY1, NMY2, NDSE, NDST )
-#endif
-          !
-       END IF
-       !
-       !     Transform VQ back to normal space
-       !
-#ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
-#endif
-       !
-       DO ISEA=1, NSEA
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
-          IXY    = MAPSF(ISEA,3)
-          VQ(IXY)= VQ(IXY) / GSQRT(IY,IX)
-       END DO
-       !
-#ifdef W3_OMPH
-       !$OMP END PARALLEL DO
-#endif
-       !
-       ! 3.c Update boundaries
-       !
-#ifdef W3_T
-       WRITE (NDST,9030) NSEA
-#endif
-       !
-#ifdef W3_T2
-       DO ISEA=1, NSEA
-          IXY    = MAPSF(ISEA,3)
-          IF ( MAPSTA(IXY) .GT. 0 ) THEN
-             WRITE(NDST,9031)ISEA,MAPSF(ISEA,1),MAPSF(ISEA,2),VQ(IXY)
-             VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
-          END IF
-       END DO
-#endif
-       !
-       IF ( FLBPI ) THEN
-          RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
-               REAL(NTLOC-ITLOC)/REAL(NTLOC)
-          RD2    = DSEC21 ( TBPI0, TBPIN )
-          IF ( RD2 .GT. 0.001 ) THEN
-             RD2    = MIN(1.,MAX(0.,RD1/RD2))
-             RD1    = 1. - RD2
+          IF ( MAPSTX(IXY+IIXY2(ISEA)) .GE. 1 ) THEN
+            VQ(IXY+IIXY2(ISEA)) = VQ(IXY+IIXY2(ISEA))      &
+                 + AQ(IXY) * (1.-RD1)*RD2/6.
           ELSE
-             RD1    = 0.
-             RD2    = 1.
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * (1.-RD1)*RD2/6.
           END IF
-          DO IBI=1, NBI
-             IXY     = MAPSF(ISBPI(IBI),3)
-             VQ(IXY) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                  / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-          END DO
-       END IF
-       !
-       YFIRST = .NOT. YFIRST
+          IF ( MAPSTX(IXY-IIXY2(ISEA)) .GE. 1 ) THEN
+            VQ(IXY-IIXY2(ISEA)) = VQ(IXY-IIXY2(ISEA))      &
+                 + AQ(IXY) * (1.-RD1)*RD2/6.
+          ELSE
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * (1.-RD1)*RD2/6.
+          END IF
+          !
+          IXC    = SIGN(NY,IIXY3(ISEA))
+          IYC    = IIXY3(ISEA) - IXC
+          IF ( MAPSTX(IXY+IIXY3(ISEA)) .GE. 1 .AND.               &
+               .NOT. ( MAPSTX(IXY+IXC).LE.0 .AND.                 &
+               MAPSTX(IXY+IYC).LE.0 ) ) THEN
+            VQ(IXY+IIXY3(ISEA)) = VQ(IXY+IIXY3(ISEA))      &
+                 + AQ(IXY) * RD4*RD3/6.
+          ELSE
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * RD4*RD3/6.
+          END IF
+          IF ( MAPSTX(IXY-IIXY3(ISEA)) .GE. 1 .AND.               &
+               .NOT. ( MAPSTX(IXY-IXC).LE.0 .AND.                 &
+               MAPSTX(IXY-IYC).LE.0 ) ) THEN
+            VQ(IXY-IIXY3(ISEA)) = VQ(IXY-IIXY3(ISEA))      &
+                 + AQ(IXY) * RD4*RD3/6.
+          ELSE
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * RD4*RD3/6.
+          END IF
+          !
+          IF ( MAPSTX(IXY+IIXY4(ISEA)) .GE. 1 ) THEN
+            VQ(IXY+IIXY4(ISEA)) = VQ(IXY+IIXY4(ISEA))      &
+                 + AQ(IXY) * (1.-RD3)*RD4/6.
+          ELSE
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * (1.-RD3)*RD4/6.
+          END IF
+          IF ( MAPSTX(IXY-IIXY4(ISEA)) .GE. 1 ) THEN
+            VQ(IXY-IIXY4(ISEA)) = VQ(IXY-IIXY4(ISEA))      &
+                 + AQ(IXY) * (1.-RD3)*RD4/6.
+          ELSE
+            VQ(IXY          ) = VQ(IXY          )          &
+                 + AQ(IXY) * (1.-RD3)*RD4/6.
+          END IF
+          !
+        END IF
+        !
+      END DO
+      !
+      ! 3.a.3 Restore boundary data
+      !
+      DO IXY=1, NX*NY
+        IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
+      END DO
+      !
+      ! 3.a.4 Global closure (averaging only, propagation is closed in W3QCK3).
+      !
+      IF ( GLOBAL ) THEN
+        DO IY=1, NY
+          VQ(IY          ) = VQ(IY          ) + VQ(NX*NY+IY)
+          VQ((NX-1)*NY+IY) = VQ((NX-1)*NY+IY) + VQ(IY-NY)
+        END DO
+      END IF
+      !
+      ! 3.b Propagate fields
+      !
+      !     Transform VQ to straightened space
+      !
+#ifdef W3_OMPH
+      !$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
+#endif
+      !
+      DO ISEA=1, NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IXY    = MAPSF(ISEA,3)
+        VQ(IXY)= VQ(IXY) * GSQRT(IY,IX)
+      END DO
+      !
+#ifdef W3_OMPH
+      !$OMP END PARALLEL DO
+#endif
+      !
+      IF ( YFIRST ) THEN
+        !
+#ifdef W3_UQ
+        IF ( FLCY ) CALL W3QCK3                               &
+             (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
+             .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
+             NMY1, NMY2, NDSE, NDST )
+        IF ( FLCX ) CALL W3QCK3                               &
+             (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
+             GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
+             NMX1, NMX2, NDSE, NDST )
+#endif
+        !
+#ifdef W3_UNO
+        IF ( FLCY ) CALL W3UNO2s                             &
+             (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
+             .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
+             NMY1, NMY2, NDSE, NDST )
+        IF ( FLCX ) CALL W3UNO2s                             &
+             (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
+             GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
+             NMX1, NMX2, NDSE, NDST )
+#endif
+        !
+      ELSE
+        !
+#ifdef W3_UQ
+        IF ( FLCX ) CALL W3QCK3                               &
+             (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,       &
+             GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,   &
+             NMX1, NMX2, NDSE, NDST )
+        IF ( FLCY ) CALL W3QCK3                               &
+             (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,       &
+             .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,   &
+             NMY1, NMY2, NDSE, NDST )
+#endif
+        !
+#ifdef W3_UNO
+        IF ( FLCX ) CALL W3UNO2s                             &
+             (NX, NY, NX, NY, VLCFLX, ATRNX, VQ,      &
+             GLOBAL, NY, MAPAXY, NACT, MAPX2, NMX0,  &
+             NMX1, NMX2, NDSE, NDST )
+        IF ( FLCY ) CALL W3UNO2s                             &
+             (NX, NY, NX, NY, VLCFLY, ATRNY, VQ,      &
+             .FALSE., 1, MAPAXY, NACT, MAPY2, NMY0,  &
+             NMY1, NMY2, NDSE, NDST )
+#endif
+        !
+      END IF
+      !
+      !     Transform VQ back to normal space
+      !
+#ifdef W3_OMPH
+      !$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY)
+#endif
+      !
+      DO ISEA=1, NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IXY    = MAPSF(ISEA,3)
+        VQ(IXY)= VQ(IXY) / GSQRT(IY,IX)
+      END DO
+      !
+#ifdef W3_OMPH
+      !$OMP END PARALLEL DO
+#endif
+      !
+      ! 3.c Update boundaries
+      !
+#ifdef W3_T
+      WRITE (NDST,9030) NSEA
+#endif
+      !
+#ifdef W3_T2
+      DO ISEA=1, NSEA
+        IXY    = MAPSF(ISEA,3)
+        IF ( MAPSTA(IXY) .GT. 0 ) THEN
+          WRITE(NDST,9031)ISEA,MAPSF(ISEA,1),MAPSF(ISEA,2),VQ(IXY)
+          VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
+        END IF
+      END DO
+#endif
+      !
+      IF ( FLBPI ) THEN
+        RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
+             REAL(NTLOC-ITLOC)/REAL(NTLOC)
+        RD2    = DSEC21 ( TBPI0, TBPIN )
+        IF ( RD2 .GT. 0.001 ) THEN
+          RD2    = MIN(1.,MAX(0.,RD1/RD2))
+          RD1    = 1. - RD2
+        ELSE
+          RD1    = 0.
+          RD2    = 1.
+        END IF
+        DO IBI=1, NBI
+          IXY     = MAPSF(ISBPI(IBI),3)
+          VQ(IXY) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+        END DO
+      END IF
+      !
+      YFIRST = .NOT. YFIRST
     END DO
     !
     ! 4.  Store results in VQ in proper format --------------------------- *
@@ -1377,13 +1377,13 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       IXY    = MAPSF(ISEA,3)
-       IF ( MAPSTA(IXY) .GT. 0 ) THEN
+      IXY    = MAPSF(ISEA,3)
+      IF ( MAPSTA(IXY) .GT. 0 ) THEN
 #ifdef W3_T3
-          WRITE (NDST,9041) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), VQ(IXY)
+        WRITE (NDST,9041) ISEA, MAPSF(ISEA,1), MAPSF(ISEA,2), VQ(IXY)
 #endif
-          VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
-       END IF
+        VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
+      END IF
     END DO
     !
 #ifdef W3_OMPH
@@ -1622,108 +1622,108 @@ CONTAINS
     ! 2.a Array with partial derivative of sigma versus depth
     !
     DO IK=0, NK+1
-       IF ( DEPTH*WN(IK) .LT. 5. ) THEN
-          DSDD(IK) = MAX ( 0. ,                                     &
-               CG(IK)*WN(IK)-0.5*SIG(IK) ) / DEPTH
-       ELSE
-          DSDD(IK) = 0.
-       END IF
+      IF ( DEPTH*WN(IK) .LT. 5. ) THEN
+        DSDD(IK) = MAX ( 0. ,                                     &
+             CG(IK)*WN(IK)-0.5*SIG(IK) ) / DEPTH
+      ELSE
+        DSDD(IK) = 0.
+      END IF
     END DO
     !
 #ifdef W3_T
     WRITE (NDST,9020)
     DO IK=1, NK+1
-       WRITE (NDST,9021) IK, TPI/SIG(IK), TPI/WN(IK),             &
-            CG(IK), DSDD(IK)
+      WRITE (NDST,9021) IK, TPI/SIG(IK), TPI/WN(IK),             &
+           CG(IK), DSDD(IK)
     END DO
 #endif
     !
     ! 2.b Extract spectrum
     !
     DO ISP=1, NSPEC
-       VQ(MAPTH2(ISP)) = VA(ISP)
+      VQ(MAPTH2(ISP)) = VA(ISP)
     END DO
     !
     ! 3.  Refraction velocities ------------------------------------------ *
     !
     IF ( FLCTH ) THEN
-       !
-       ! 3.a Set slope filter for depth refraction
-       !
-       ! N.B.:  FACTH = DTG / DTH / REAL(NTLOC)  (value set in w3wavemd)
-       !        namely, FACTH*VC=1 corresponds to CFL=1
-       !
-       FDDMAX = 0.
-       FDG    = FACTH * CTHG0
-       !
-       DO ITH=1, NTH/2
-          FDDMAX = MAX(FDDMAX,ABS(ESIN(ITH)*DDDX-ECOS(ITH)*DDDY))
-       END DO
-       !
-       DO IK=1, NK
-          FRK(IK) = FACTH * DSDD(IK) / WN(IK)
-          !
-          ! Removes the filtering that was done at that stage (F. Ardhuin 2011/03/06)
-          !
-          !            FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
-          FRG(IK) = FDG * CG(IK)
-       END DO
-       !
-       ! 3.b Current refraction
-       !
-       IF ( FLCUR ) THEN
-          !
-          DCYX   = FACTH *   DCYDX
-          DCXXYY = FACTH * ( DCXDX - DCYDY )
-          DCXY   = FACTH *   DCXDY
-          !
-          DO ISP=1, NSPEC
-             VCFLT(MAPTH2(ISP)) = ES2(ISP)*DCYX  +     &
-                  ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
-          END DO
-          !
-       ELSE
-          VCFLT(:)=0.
-       END IF
-       !
-       ! 3.c Depth refraction and great-circle propagation
-       !
+      !
+      ! 3.a Set slope filter for depth refraction
+      !
+      ! N.B.:  FACTH = DTG / DTH / REAL(NTLOC)  (value set in w3wavemd)
+      !        namely, FACTH*VC=1 corresponds to CFL=1
+      !
+      FDDMAX = 0.
+      FDG    = FACTH * CTHG0
+      !
+      DO ITH=1, NTH/2
+        FDDMAX = MAX(FDDMAX,ABS(ESIN(ITH)*DDDX-ECOS(ITH)*DDDY))
+      END DO
+      !
+      DO IK=1, NK
+        FRK(IK) = FACTH * DSDD(IK) / WN(IK)
+        !
+        ! Removes the filtering that was done at that stage (F. Ardhuin 2011/03/06)
+        !
+        !            FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
+        FRG(IK) = FDG * CG(IK)
+      END DO
+      !
+      ! 3.b Current refraction
+      !
+      IF ( FLCUR ) THEN
+        !
+        DCYX   = FACTH *   DCYDX
+        DCXXYY = FACTH * ( DCXDX - DCYDY )
+        DCXY   = FACTH *   DCXDY
+        !
+        DO ISP=1, NSPEC
+          VCFLT(MAPTH2(ISP)) = ES2(ISP)*DCYX  +     &
+               ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
+        END DO
+        !
+      ELSE
+        VCFLT(:)=0.
+      END IF
+      !
+      ! 3.c Depth refraction and great-circle propagation
+      !
 #ifdef W3_REFRX
-       ! 3.d @C/@x refraction and great-circle propagation
-       FRK    = 0.
-       FDDMAX = 0.
+      ! 3.d @C/@x refraction and great-circle propagation
+      FRK    = 0.
+      FDDMAX = 0.
 #endif
-       !
+      !
 #ifdef W3_REFRX
-       DO ISP=1, NSPEC
-          FDDMAX = MAX ( FDDMAX , ABS (                      &
-               ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
-       END DO
-       DO IK=1, NK
-          FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
-       END DO
+      DO ISP=1, NSPEC
+        FDDMAX = MAX ( FDDMAX , ABS (                      &
+             ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
+      END DO
+      DO IK=1, NK
+        FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
+      END DO
 #endif
-       !
-       DO ISP=1, NSPEC
-          VELNOFILT = VCFLT(MAPTH2(ISP))       &
-               + FRG(MAPWN(ISP)) * ECOS(ISP)              &
-               + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
-          !
+      !
+      DO ISP=1, NSPEC
+        VELNOFILT = VCFLT(MAPTH2(ISP))       &
+             + FRG(MAPWN(ISP)) * ECOS(ISP)              &
+             + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
+        !
 #ifdef W3_REFRX
-          ! 3.d @C/@x refraction and great-circle propagation
-          VELNOFILT = VCFLT(MAPTH2(ISP))       &
-               + FRG(MAPWN(ISP)) * ECOS(ISP)            &
-               + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(MAPWN(ISP)) &
-               - ECOS(ISP)*DCDY(MAPWN(ISP)) )
+        ! 3.d @C/@x refraction and great-circle propagation
+        VELNOFILT = VCFLT(MAPTH2(ISP))       &
+             + FRG(MAPWN(ISP)) * ECOS(ISP)            &
+             + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(MAPWN(ISP)) &
+             - ECOS(ISP)*DCDY(MAPWN(ISP)) )
 #endif
-          CFLTHMAX = MAX(CFLTHMAX, ABS(VELNOFILT))
-          !
-          ! Puts filtering on total velocity (including currents and great circle effects)
-          ! the filtering limits VCFLT to be less than CTMAX
-          ! this modification was proposed by F. Ardhuin 2011/03/06
-          !
-          VCFLT(MAPTH2(ISP))=SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
-       END DO
+        CFLTHMAX = MAX(CFLTHMAX, ABS(VELNOFILT))
+        !
+        ! Puts filtering on total velocity (including currents and great circle effects)
+        ! the filtering limits VCFLT to be less than CTMAX
+        ! this modification was proposed by F. Ardhuin 2011/03/06
+        !
+        VCFLT(MAPTH2(ISP))=SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
+      END DO
     END IF
     !
     ! 4.  Wavenumber shift velocities ------------------------------------ *
@@ -1731,133 +1731,133 @@ CONTAINS
     !        namely, FACK*VC/DK=1 corresponds to CFL=1
     !
     IF ( FLCK ) THEN
-       !
-       ! 4.a Directionally dependent part
-       !
-       DCXX   =  -   DCXDX
-       DCXYYX =  - ( DCXDY + DCYDX )
-       DCYY   =  -   DCYDY
-       FKD    =    ( CX*DDDX + CY*DDDY )
-       !
-       DO ITH=1, NTH
-          FKC(ITH) = EC2(ITH)*DCXX +                                &
-               ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
-       END DO
-       !
-       ! 4.b Band widths
-       !
-       DO IK=0, NK
-          DB(IK+1,1) = DSIP(IK) / CG(IK)
-          DM(IK+1,1) = WN(IK+1) - WN(IK)
-       END DO
-       DB(NK+2,1) = DSIP(NK+1) / CG(NK+1)
-       DM(NK+2,1) = 0.
-       !
-       DO ITH=2, NTH
-          DO IK=1, NK+2
-             DB(IK,ITH) = DB(IK,1)
-             DM(IK,ITH) = DM(IK,1)
-          END DO
-       END DO
-       !
-       ! 4.c Velocities
-       !
-       DO IK=0, NK+1
-          FKD0   = FKD / CG(IK) * DSDD(IK)
-          VELFAC =  FACK/DB(IK+1,1)
-          DO ITH=1, NTH
-             !
-             ! Puts filtering on velocity (needs the band widths)
-             !
-             VELNOFILT = ( FKD0 + WN(IK)*FKC(ITH) ) * VELFAC   ! this is velocity * DT / DK
-             CFLKMAX = MAX(CFLKMAX, ABS(VELNOFILT))
-             CFLK(IK+1,ITH) = SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)/VELFAC
-             !CFLK(IK+1,ITH) = FKD0 + WN(IK)*FKC(ITH)          ! this was without the limiter ...
-          END DO
-       END DO
-       !
+      !
+      ! 4.a Directionally dependent part
+      !
+      DCXX   =  -   DCXDX
+      DCXYYX =  - ( DCXDY + DCYDX )
+      DCYY   =  -   DCYDY
+      FKD    =    ( CX*DDDX + CY*DDDY )
+      !
+      DO ITH=1, NTH
+        FKC(ITH) = EC2(ITH)*DCXX +                                &
+             ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
+      END DO
+      !
+      ! 4.b Band widths
+      !
+      DO IK=0, NK
+        DB(IK+1,1) = DSIP(IK) / CG(IK)
+        DM(IK+1,1) = WN(IK+1) - WN(IK)
+      END DO
+      DB(NK+2,1) = DSIP(NK+1) / CG(NK+1)
+      DM(NK+2,1) = 0.
+      !
+      DO ITH=2, NTH
+        DO IK=1, NK+2
+          DB(IK,ITH) = DB(IK,1)
+          DM(IK,ITH) = DM(IK,1)
+        END DO
+      END DO
+      !
+      ! 4.c Velocities
+      !
+      DO IK=0, NK+1
+        FKD0   = FKD / CG(IK) * DSDD(IK)
+        VELFAC =  FACK/DB(IK+1,1)
+        DO ITH=1, NTH
+          !
+          ! Puts filtering on velocity (needs the band widths)
+          !
+          VELNOFILT = ( FKD0 + WN(IK)*FKC(ITH) ) * VELFAC   ! this is velocity * DT / DK
+          CFLKMAX = MAX(CFLKMAX, ABS(VELNOFILT))
+          CFLK(IK+1,ITH) = SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)/VELFAC
+          !CFLK(IK+1,ITH) = FKD0 + WN(IK)*FKC(ITH)          ! this was without the limiter ...
+        END DO
+      END DO
+      !
     END IF
     !
     ! 5.  Propagate ------------------------------------------------------ *
     !
     IF ( MOD(ITIME,2) .EQ. 0 ) THEN
-       IF ( FLCK ) THEN
-          DO ITH=1, NTH
-             VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
-          END DO
-          !
+      IF ( FLCK ) THEN
+        DO ITH=1, NTH
+          VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
+        END DO
+        !
 #ifdef W3_UQ
-          CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
-               VQ, .FALSE., 1, MAPTH2, NSPEC,            &
-               MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
-               NDSE, NDST )
+        CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
+             VQ, .FALSE., 1, MAPTH2, NSPEC,            &
+             MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
+             NDSE, NDST )
 #endif
-          !
+        !
 #ifdef W3_UNO
-          CALL W3UNO2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,  &
-               VQ, .FALSE., 1, MAPTH2, NSPEC,           &
-               MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,     &
-               NDSE, NDST )
+        CALL W3UNO2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,  &
+             VQ, .FALSE., 1, MAPTH2, NSPEC,           &
+             MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,     &
+             NDSE, NDST )
 #endif
-          !
-       END IF
-       IF ( FLCTH ) THEN
-          !
+        !
+      END IF
+      IF ( FLCTH ) THEN
+        !
 #ifdef W3_UQ
-          CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
-               NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
-               NSPEC, NDSE, NDST )
+        CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
+             NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
+             NSPEC, NDSE, NDST )
 #endif
-          !
+        !
 #ifdef W3_UNO
-          CALL W3UNO2r( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,   &
-               NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC,&
-               NSPEC, NDSE, NDST )
+        CALL W3UNO2r( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,   &
+             NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC,&
+             NSPEC, NDSE, NDST )
 #endif
-          !
-       END IF
+        !
+      END IF
     ELSE
-       IF ( FLCTH ) THEN
-          !
+      IF ( FLCTH ) THEN
+        !
 #ifdef W3_UQ
-          CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
-               NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
-               NSPEC, NDSE, NDST )
+        CALL W3QCK1 ( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,    &
+             NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC, &
+             NSPEC, NDSE, NDST )
 #endif
-          !
+        !
 #ifdef W3_UNO
-          CALL W3UNO2r( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,   &
-               NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC,&
-               NSPEC, NDSE, NDST )
+        CALL W3UNO2r( NTH, NK2, NTH, NK2, VCFLT, VQ, .TRUE.,   &
+             NK2, MAPTH2, NSPEC, MAPTH2, NSPEC, NSPEC,&
+             NSPEC, NDSE, NDST )
 #endif
-          !
-       END IF
-       IF ( FLCK ) THEN
-          DO ITH=1, NTH
-             VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
-          END DO
-          !
+        !
+      END IF
+      IF ( FLCK ) THEN
+        DO ITH=1, NTH
+          VQ(NK+2+(ITH-1)*NK2) = FACHFA * VQ(NK+1+(ITH-1)*NK2)
+        END DO
+        !
 #ifdef W3_UQ
-          CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
-               VQ, .FALSE., 1, MAPTH2, NSPEC,            &
-               MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
-               NDSE, NDST )
+        CALL W3QCK2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,   &
+             VQ, .FALSE., 1, MAPTH2, NSPEC,            &
+             MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,      &
+             NDSE, NDST )
 #endif
-          !
+        !
 #ifdef W3_UNO
-          CALL W3UNO2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,  &
-               VQ, .FALSE., 1, MAPTH2, NSPEC,           &
-               MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,     &
-               NDSE, NDST )
+        CALL W3UNO2 ( NTH, NK2, NTH, NK2, CFLK, FACK, DB, DM,  &
+             VQ, .FALSE., 1, MAPTH2, NSPEC,           &
+             MAPWN2, NSPEC-NTH, NSPEC, NSPEC+NTH,     &
+             NDSE, NDST )
 #endif
-          !
-       END IF
+        !
+      END IF
     END IF
     !
     ! 6.  Store reults --------------------------------------------------- *
     !
     DO ISP=1, NSPEC
-       VA(ISP) = VQ(MAPTH2(ISP))
+      VA(ISP) = VQ(MAPTH2(ISP))
     END DO
     !
     RETURN
@@ -2023,26 +2023,26 @@ CONTAINS
     IY  = MAPSF(ISEA,2)
     IXY = MAPSF(ISEA,3)
     DO IK=1,NK
-       DO ITH=1,NTH
-          CXTOT = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
-          CYTOT = ESIN(ITH) * CG(IK,ISEA)
+      DO ITH=1,NTH
+        CXTOT = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
+        CYTOT = ESIN(ITH) * CG(IK,ISEA)
 #ifdef W3_MGP
-          CXTOT = CXTOT - VGX/CLATS(ISEA)
-          CYTOT = CYTOT - VGY
+        CXTOT = CXTOT - VGX/CLATS(ISEA)
+        CYTOT = CYTOT - VGY
 #endif
 
 
-          IF ( FLCUR ) THEN
-             CXTOT = CXTOT + CX(ISEA)/CLATS(ISEA)
-             CYTOT = CYTOT + CY(ISEA)
-          END IF
+        IF ( FLCUR ) THEN
+          CXTOT = CXTOT + CX(ISEA)/CLATS(ISEA)
+          CYTOT = CYTOT + CY(ISEA)
+        END IF
 
-          CP = CXTOT*DPDX(IY,IX) + CYTOT*DPDY(IY,IX)
-          CQ = CXTOT*DQDX(IY,IX) + CYTOT*DQDY(IY,IX)
-          VLCFLX = CP*DTG
-          VLCFLY = CQ*DTG
-          CFLXYMAX = MAX(VLCFLX,VLCFLY,CFLXYMAX)
-       END DO
+        CP = CXTOT*DPDX(IY,IX) + CYTOT*DPDY(IY,IX)
+        CQ = CXTOT*DQDX(IY,IX) + CYTOT*DQDY(IY,IX)
+        VLCFLX = CP*DTG
+        VLCFLY = CQ*DTG
+        CFLXYMAX = MAX(VLCFLX,VLCFLY,CFLXYMAX)
+      END DO
     END DO
 
     RETURN

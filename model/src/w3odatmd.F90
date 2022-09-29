@@ -337,114 +337,114 @@ MODULE W3ODATMD
   !/ Data structures
   !/
   TYPE OTYPE1
-     INTEGER               :: IPASS1
+    INTEGER               :: IPASS1
 #ifdef W3_MPI
-     INTEGER               :: NRQGO, NRQGO2
-     INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
+    INTEGER               :: NRQGO, NRQGO2
+    INTEGER, POINTER      :: IRQGO(:), IRQGO2(:)
 #endif
-     LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
-          FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
-          FLOGRR(NOGRP,NGRPP), FLOGR(NOGRP),   &
-          WRITE1
+    LOGICAL               :: FLOGRD(NOGRP,NGRPP), FLOGD(NOGRP),   &
+         FLOGR2(NOGRP,NGRPP), FLOG2(NOGRP),   &
+         FLOGRR(NOGRP,NGRPP), FLOGR(NOGRP),   &
+         WRITE1
   END TYPE OTYPE1
   !/
   TYPE OTYPE2
-     INTEGER               :: IPASS2, NOPTS
+    INTEGER               :: IPASS2, NOPTS
 #ifdef W3_MPI
-     INTEGER               :: NRQPO, NRQPO2
+    INTEGER               :: NRQPO, NRQPO2
 #endif
-     INTEGER, POINTER      :: IPTINT(:,:,:), IL(:), IW(:), II(:)
+    INTEGER, POINTER      :: IPTINT(:,:,:), IL(:), IW(:), II(:)
 #ifdef W3_MPI
-     INTEGER, POINTER      :: IRQPO1(:), IRQPO2(:)
+    INTEGER, POINTER      :: IRQPO1(:), IRQPO2(:)
 #endif
-     REAL, POINTER         :: PTLOC(:,:), PTIFAC(:,:),             &
-          DPO(:), WAO(:), WDO(:), ASO(:),      &
+    REAL, POINTER         :: PTLOC(:,:), PTIFAC(:,:),             &
+         DPO(:), WAO(:), WDO(:), ASO(:),      &
 #ifdef W3_FLX5
-          TAUAO(:), TAUDO(:), DAIRO(:),        &
+         TAUAO(:), TAUDO(:), DAIRO(:),        &
 #endif
-          CAO(:), CDO(:), ICEO(:), ICEHO(:),   &
-          ICEFO(:), SPCO(:,:)
-     REAL, POINTER         :: ZET_SETO(:)  ! For the wave setup.
+         CAO(:), CDO(:), ICEO(:), ICEHO(:),   &
+         ICEFO(:), SPCO(:,:)
+    REAL, POINTER         :: ZET_SETO(:)  ! For the wave setup.
 
-     CHARACTER(LEN=40), POINTER :: PTNME(:)
-     CHARACTER(LEN=13), POINTER :: GRDID(:)
-     LOGICAL               :: O2INIT
+    CHARACTER(LEN=40), POINTER :: PTNME(:)
+    CHARACTER(LEN=13), POINTER :: GRDID(:)
+    LOGICAL               :: O2INIT
 #ifdef W3_MPI
-     LOGICAL               :: O2IRQI
+    LOGICAL               :: O2IRQI
 #endif
   END TYPE OTYPE2
   !/
   TYPE OTYPE3
-     INTEGER               :: IPASS3
+    INTEGER               :: IPASS3
 #ifdef W3_MPI
-     INTEGER               :: IT0PNT, IT0TRK, IT0PRT, NRQTR
-     INTEGER, POINTER      :: IRQTR(:)
+    INTEGER               :: IT0PNT, IT0TRK, IT0PRT, NRQTR
+    INTEGER, POINTER      :: IRQTR(:)
 #endif
-     LOGICAL               :: O3INIT, STOP
-     LOGICAL, POINTER      :: MASK1(:,:), MASK2(:,:)
-     CHARACTER(LEN=32), POINTER  :: TRCKID(:,:)
+    LOGICAL               :: O3INIT, STOP
+    LOGICAL, POINTER      :: MASK1(:,:), MASK2(:,:)
+    CHARACTER(LEN=32), POINTER  :: TRCKID(:,:)
   END TYPE OTYPE3
   !/
   TYPE OTYPE4
-     INTEGER               :: IFILE4
+    INTEGER               :: IFILE4
 #ifdef W3_MPI
-     INTEGER               :: NRQRS, NBLKRS, RSBLKS
-     INTEGER, POINTER      :: IRQRS(:), IRQRSS(:)
-     REAL, POINTER         :: VAAUX(:,:,:)
+    INTEGER               :: NRQRS, NBLKRS, RSBLKS
+    INTEGER, POINTER      :: IRQRS(:), IRQRSS(:)
+    REAL, POINTER         :: VAAUX(:,:,:)
 #endif
   END TYPE OTYPE4
   !/
   TYPE OTYPE5
-     INTEGER               :: NBI, NBI2, NFBPO, NBO(0:9),          &
-          NBO2(0:9), NDSL(9), NKI, NTHI
+    INTEGER               :: NBI, NBI2, NFBPO, NBO(0:9),          &
+         NBO2(0:9), NDSL(9), NKI, NTHI
 #ifdef W3_MPI
-     INTEGER               :: NRQBP = 0, NRQBP2 = 0
+    INTEGER               :: NRQBP = 0, NRQBP2 = 0
 #endif
-     INTEGER, POINTER      :: IPBPI(:,:), ISBPI(:),                &
-          IPBPO(:,:), ISBPO(:)
+    INTEGER, POINTER      :: IPBPI(:,:), ISBPI(:),                &
+         IPBPO(:,:), ISBPO(:)
 #ifdef W3_MPI
-     INTEGER, POINTER      :: IRQBP1(:), IRQBP2(:)
+    INTEGER, POINTER      :: IRQBP1(:), IRQBP2(:)
 #endif
-     REAL                  :: XFRI, FR1I, TH1I
-     REAL, POINTER         :: XBPI(:), YBPI(:), RDBPI(:,:),        &
-          XBPO(:), YBPO(:), RDBPO(:,:),        &
-          ABPI0(:,:), ABPIN(:,:), ABPOS(:,:),  &
-          BBPI0(:,:), BBPIN(:,:)
-     LOGICAL               :: O5INI1, O5INI2, O5INI3, O5INI4
-     LOGICAL               :: FLBPI, FLBPO, FILER, FILEW, FILED,   &
-          SPCONV
+    REAL                  :: XFRI, FR1I, TH1I
+    REAL, POINTER         :: XBPI(:), YBPI(:), RDBPI(:,:),        &
+         XBPO(:), YBPO(:), RDBPO(:,:),        &
+         ABPI0(:,:), ABPIN(:,:), ABPOS(:,:),  &
+         BBPI0(:,:), BBPIN(:,:)
+    LOGICAL               :: O5INI1, O5INI2, O5INI3, O5INI4
+    LOGICAL               :: FLBPI, FLBPO, FILER, FILEW, FILED,   &
+         SPCONV
   END TYPE OTYPE5
   !/
   TYPE OTYPE6
-     INTEGER               :: IPASS6, IHMAX, IX0, IXN, IXS,        &
-          IY0, IYN, IYS
-     INTEGER, POINTER      :: ICPRT(:,:)
-     REAL                  :: HSPMIN, WSMULT, WSCUT
-     REAL, POINTER         :: DTPRT(:,:)
-     LOGICAL               :: FLFORM, FLCOMB, O6INIT
-     INTEGER               :: PTMETH   ! C. Bunney; Partitioning method
-     REAL                  :: PTFCUT   ! C. Bunney; Part. 5 freq cut
+    INTEGER               :: IPASS6, IHMAX, IX0, IXN, IXS,        &
+         IY0, IYN, IYS
+    INTEGER, POINTER      :: ICPRT(:,:)
+    REAL                  :: HSPMIN, WSMULT, WSCUT
+    REAL, POINTER         :: DTPRT(:,:)
+    LOGICAL               :: FLFORM, FLCOMB, O6INIT
+    INTEGER               :: PTMETH   ! C. Bunney; Partitioning method
+    REAL                  :: PTFCUT   ! C. Bunney; Part. 5 freq cut
   END TYPE OTYPE6
   !/
   TYPE OUTPUT
-     INTEGER               :: NDSO, NDSE, NDST, SCREEN
-     INTEGER               :: NTPROC, NAPROC, IAPROC, NAPLOG,      &
-          NAPOUT, NAPERR, NAPFLD, NAPPNT,      &
-          NAPTRK, NAPRST, NAPBPT, NAPPRT
-     INTEGER               :: NOSWLL
+    INTEGER               :: NDSO, NDSE, NDST, SCREEN
+    INTEGER               :: NTPROC, NAPROC, IAPROC, NAPLOG,      &
+         NAPOUT, NAPERR, NAPFLD, NAPPNT,      &
+         NAPTRK, NAPRST, NAPBPT, NAPPRT
+    INTEGER               :: NOSWLL
 #ifdef W3_NL5
-     INTEGER               :: TOSNL5(2)
+    INTEGER               :: TOSNL5(2)
 #endif
-     INTEGER               :: TOFRST(2), TONEXT(2,8), TOLAST(2,8), &
-          TBPI0(2), TBPIN(2), NDS(13), OFILES(7)
-     REAL                  :: DTOUT(8)
-     LOGICAL               :: FLOUT(8)
-     TYPE(OTYPE1)          :: OUT1
-     TYPE(OTYPE2)          :: OUT2
-     TYPE(OTYPE3)          :: OUT3
-     TYPE(OTYPE4)          :: OUT4
-     TYPE(OTYPE5)          :: OUT5
-     TYPE(OTYPE6)          :: OUT6
+    INTEGER               :: TOFRST(2), TONEXT(2,8), TOLAST(2,8), &
+         TBPI0(2), TBPIN(2), NDS(13), OFILES(7)
+    REAL                  :: DTOUT(8)
+    LOGICAL               :: FLOUT(8)
+    TYPE(OTYPE1)          :: OUT1
+    TYPE(OTYPE2)          :: OUT2
+    TYPE(OTYPE3)          :: OUT3
+    TYPE(OTYPE4)          :: OUT4
+    TYPE(OTYPE5)          :: OUT5
+    TYPE(OTYPE6)          :: OUT6
   END TYPE OUTPUT
   !/
   !/ Data storage
@@ -648,8 +648,8 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSERR,1001) NGRIDS
-       CALL EXTCDE (1)
+      WRITE (NDSERR,1001) NGRIDS
+      CALL EXTCDE (1)
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -664,75 +664,75 @@ CONTAINS
     ! 3.  Initialize parameters
     !
     DO I=NLOW, NGRIDS
-       !
-       OUTPTS(I)%NDSO   = 6
-       OUTPTS(I)%NDSE   = 6
-       OUTPTS(I)%NDST   = 6
-       OUTPTS(I)%SCREEN = 6
-       !
-       OUTPTS(I)%NTPROC = 1
-       OUTPTS(I)%NAPROC = 1
-       OUTPTS(I)%IAPROC = 1
-       OUTPTS(I)%NAPLOG = 1
-       OUTPTS(I)%NAPOUT = 1
-       OUTPTS(I)%NAPERR = 1
-       OUTPTS(I)%NAPFLD = 1
-       OUTPTS(I)%NAPPNT = 1
-       OUTPTS(I)%NAPTRK = 1
-       OUTPTS(I)%NAPRST = 1
-       OUTPTS(I)%NAPBPT = 1
-       OUTPTS(I)%NAPPRT = 1
-       !
-       OUTPTS(I)%NOSWLL = -1
-       !
-       OUTPTS(I)%TBPI0 = (-1,0)
-       OUTPTS(I)%TBPIN = (-1,0)
-       !
-       OUTPTS(I)%OUT1%IPASS1 = 0
+      !
+      OUTPTS(I)%NDSO   = 6
+      OUTPTS(I)%NDSE   = 6
+      OUTPTS(I)%NDST   = 6
+      OUTPTS(I)%SCREEN = 6
+      !
+      OUTPTS(I)%NTPROC = 1
+      OUTPTS(I)%NAPROC = 1
+      OUTPTS(I)%IAPROC = 1
+      OUTPTS(I)%NAPLOG = 1
+      OUTPTS(I)%NAPOUT = 1
+      OUTPTS(I)%NAPERR = 1
+      OUTPTS(I)%NAPFLD = 1
+      OUTPTS(I)%NAPPNT = 1
+      OUTPTS(I)%NAPTRK = 1
+      OUTPTS(I)%NAPRST = 1
+      OUTPTS(I)%NAPBPT = 1
+      OUTPTS(I)%NAPPRT = 1
+      !
+      OUTPTS(I)%NOSWLL = -1
+      !
+      OUTPTS(I)%TBPI0 = (-1,0)
+      OUTPTS(I)%TBPIN = (-1,0)
+      !
+      OUTPTS(I)%OUT1%IPASS1 = 0
 #ifdef W3_MPI
-       OUTPTS(I)%OUT1%NRQGO  = 0
-       OUTPTS(I)%OUT1%NRQGO2 = 0
+      OUTPTS(I)%OUT1%NRQGO  = 0
+      OUTPTS(I)%OUT1%NRQGO2 = 0
 #endif
-       !
-       OUTPTS(I)%OUT2%IPASS2 = 0
-       OUTPTS(I)%OUT2%NOPTS  = 0
-       OUTPTS(I)%OUT2%O2INIT = .FALSE.
+      !
+      OUTPTS(I)%OUT2%IPASS2 = 0
+      OUTPTS(I)%OUT2%NOPTS  = 0
+      OUTPTS(I)%OUT2%O2INIT = .FALSE.
 #ifdef W3_MPI
-       OUTPTS(I)%OUT2%O2IRQI = .FALSE.
+      OUTPTS(I)%OUT2%O2IRQI = .FALSE.
 #endif
-       !
-       OUTPTS(I)%OUT3%IPASS3 = 0
-       OUTPTS(I)%OUT3%O3INIT = .FALSE.
-       OUTPTS(I)%OUT3%STOP   = .FALSE.
+      !
+      OUTPTS(I)%OUT3%IPASS3 = 0
+      OUTPTS(I)%OUT3%O3INIT = .FALSE.
+      OUTPTS(I)%OUT3%STOP   = .FALSE.
 #ifdef W3_MPI
-       OUTPTS(I)%OUT3%NRQTR  = 0
+      OUTPTS(I)%OUT3%NRQTR  = 0
 #endif
-       !
-       OUTPTS(I)%OUT4%IFILE4 = 0
+      !
+      OUTPTS(I)%OUT4%IFILE4 = 0
 #ifdef W3_MPI
-       OUTPTS(I)%OUT4%NRQRS  = 0
+      OUTPTS(I)%OUT4%NRQRS  = 0
 #endif
-       !
-       OUTPTS(I)%OUT5%O5INI1 = .FALSE.
-       OUTPTS(I)%OUT5%O5INI2 = .FALSE.
-       OUTPTS(I)%OUT5%O5INI3 = .FALSE.
-       OUTPTS(I)%OUT5%O5INI4 = .FALSE.
-       OUTPTS(I)%OUT5%FILER  = .TRUE.
-       OUTPTS(I)%OUT5%FILEW  = .TRUE.
-       OUTPTS(I)%OUT5%FILED  = .TRUE.
-       !
-       OUTPTS(I)%OUT6%IPASS6 = 0
-       OUTPTS(I)%OUT6%O6INIT = .FALSE.
-       !
+      !
+      OUTPTS(I)%OUT5%O5INI1 = .FALSE.
+      OUTPTS(I)%OUT5%O5INI2 = .FALSE.
+      OUTPTS(I)%OUT5%O5INI3 = .FALSE.
+      OUTPTS(I)%OUT5%O5INI4 = .FALSE.
+      OUTPTS(I)%OUT5%FILER  = .TRUE.
+      OUTPTS(I)%OUT5%FILEW  = .TRUE.
+      OUTPTS(I)%OUT5%FILED  = .TRUE.
+      !
+      OUTPTS(I)%OUT6%IPASS6 = 0
+      OUTPTS(I)%OUT6%O6INIT = .FALSE.
+      !
     END DO
     !
     !     Set IDOUT
     !       Commented outlines represent reserved slots.
     !
     DO I=1, NOGRP
-       DO J=1, NGRPP
-          IDOUT(I,J) = 'Undefined / Not Used'
-       END DO
+      DO J=1, NGRPP
+        IDOUT(I,J) = 'Undefined / Not Used'
+      END DO
     END DO
     !
     ! 1) Forcing fields
@@ -920,8 +920,8 @@ CONTAINS
     NOGE(10) = NOEXTR
     !
     DO I=1, MIN ( 20 , NOEXTR )
-       WRITE (STRING,'(A14,I2.2,A4)') 'User defined #', I, '    '
-       IDOUT(10, I) = STRING
+      WRITE (STRING,'(A14,I2.2,A4)') 'User defined #', I, '    '
+      IDOUT(10, I) = STRING
     END DO
     !
 #ifdef W3_T
@@ -1043,19 +1043,19 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     NLOW   = MIN ( 0 , -NAUXGR )
     IF ( IMOD.LT.NLOW .OR. IMOD.GT.NOUTP ) THEN
-       WRITE (NDSE,1002) IMOD, NLOW, NOUTP
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NLOW, NOUTP
+      CALL EXTCDE (2)
     END IF
     !
     IF ( OUTPTS(IMOD)%OUT2%O2INIT ) THEN
-       WRITE (NDSE,1003)
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003)
+      CALL EXTCDE (3)
     END IF
     !
 #ifdef W3_T
@@ -1241,18 +1241,18 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.1 .OR. IMOD.GT.NOUTP ) THEN
-       WRITE (NDSE,1002) IMOD, NOUTP
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NOUTP
+      CALL EXTCDE (2)
     END IF
     !
     IF ( OUTPTS(IMOD)%OUT3%O3INIT ) THEN
-       WRITE (NDSE,1003)
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003)
+      CALL EXTCDE (3)
     END IF
     !
 #ifdef W3_T
@@ -1413,13 +1413,13 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.1 .OR. IMOD.GT.NOUTP ) THEN
-       WRITE (NDSE,1002) IMOD, NOUTP
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NOUTP
+      CALL EXTCDE (2)
     END IF
     !
 #ifdef W3_T
@@ -1430,71 +1430,71 @@ CONTAINS
     ! 2.  Allocate arrays and reset pointers
     !
     SELECT CASE (IBLOCK)
-       !
+      !
     CASE (1)
-       !
-       ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPI(NBI,4),                    &
-            OUTPTS(IMOD)%OUT5%ISBPI(NBI)  ,                    &
-            OUTPTS(IMOD)%OUT5%XBPI(NBI)   ,                    &
-            OUTPTS(IMOD)%OUT5%YBPI(NBI)   ,                    &
-            OUTPTS(IMOD)%OUT5%RDBPI(NBI,4), STAT=ISTAT         )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       !
-       IPBPI  => OUTPTS(IMOD)%OUT5%IPBPI
-       ISBPI  => OUTPTS(IMOD)%OUT5%ISBPI
-       XBPI   => OUTPTS(IMOD)%OUT5%XBPI
-       YBPI   => OUTPTS(IMOD)%OUT5%YBPI
-       RDBPI  => OUTPTS(IMOD)%OUT5%RDBPI
-       !
-       OUTPTS(IMOD)%OUT5%O5INI1 = .TRUE.
-       !
+      !
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPI(NBI,4),                    &
+           OUTPTS(IMOD)%OUT5%ISBPI(NBI)  ,                    &
+           OUTPTS(IMOD)%OUT5%XBPI(NBI)   ,                    &
+           OUTPTS(IMOD)%OUT5%YBPI(NBI)   ,                    &
+           OUTPTS(IMOD)%OUT5%RDBPI(NBI,4), STAT=ISTAT         )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      !
+      IPBPI  => OUTPTS(IMOD)%OUT5%IPBPI
+      ISBPI  => OUTPTS(IMOD)%OUT5%ISBPI
+      XBPI   => OUTPTS(IMOD)%OUT5%XBPI
+      YBPI   => OUTPTS(IMOD)%OUT5%YBPI
+      RDBPI  => OUTPTS(IMOD)%OUT5%RDBPI
+      !
+      OUTPTS(IMOD)%OUT5%O5INI1 = .TRUE.
+      !
     CASE (2)
-       !
-       ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPO(NBO(NFBPO),4),             &
-            OUTPTS(IMOD)%OUT5%ISBPO(4*NBO(NFBPO)),             &
-            OUTPTS(IMOD)%OUT5%XBPO(NBO(NFBPO))   ,             &
-            OUTPTS(IMOD)%OUT5%YBPO(NBO(NFBPO))   ,             &
-            OUTPTS(IMOD)%OUT5%RDBPO(NBO(NFBPO),4), STAT=ISTAT  )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       !
-       IPBPO  => OUTPTS(IMOD)%OUT5%IPBPO
-       ISBPO  => OUTPTS(IMOD)%OUT5%ISBPO
-       XBPO   => OUTPTS(IMOD)%OUT5%XBPO
-       YBPO   => OUTPTS(IMOD)%OUT5%YBPO
-       RDBPO  => OUTPTS(IMOD)%OUT5%RDBPO
-       !
-       OUTPTS(IMOD)%OUT5%O5INI2 = .TRUE.
-       OUTPTS(IMOD)%OUT5%ISBPO = 0
-       !
+      !
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPO(NBO(NFBPO),4),             &
+           OUTPTS(IMOD)%OUT5%ISBPO(4*NBO(NFBPO)),             &
+           OUTPTS(IMOD)%OUT5%XBPO(NBO(NFBPO))   ,             &
+           OUTPTS(IMOD)%OUT5%YBPO(NBO(NFBPO))   ,             &
+           OUTPTS(IMOD)%OUT5%RDBPO(NBO(NFBPO),4), STAT=ISTAT  )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      !
+      IPBPO  => OUTPTS(IMOD)%OUT5%IPBPO
+      ISBPO  => OUTPTS(IMOD)%OUT5%ISBPO
+      XBPO   => OUTPTS(IMOD)%OUT5%XBPO
+      YBPO   => OUTPTS(IMOD)%OUT5%YBPO
+      RDBPO  => OUTPTS(IMOD)%OUT5%RDBPO
+      !
+      OUTPTS(IMOD)%OUT5%O5INI2 = .TRUE.
+      OUTPTS(IMOD)%OUT5%ISBPO = 0
+      !
     CASE (3)
-       !
-       ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPI0(NSPEC,0:NBI2),             &
-            OUTPTS(IMOD)%OUT5%ABPIN(NSPEC,0:NBI2),             &
-            OUTPTS(IMOD)%OUT5%BBPI0(NSPEC,0:NBI),              &
-            OUTPTS(IMOD)%OUT5%BBPIN(NSPEC,0:NBI), STAT=ISTAT   )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       !
-       ABPI0  => OUTPTS(IMOD)%OUT5%ABPI0
-       ABPIN  => OUTPTS(IMOD)%OUT5%ABPIN
-       BBPI0  => OUTPTS(IMOD)%OUT5%BBPI0
-       BBPIN  => OUTPTS(IMOD)%OUT5%BBPIN
-       BBPI0 = -1.
-       !
-       OUTPTS(IMOD)%OUT5%O5INI3 = .TRUE.
-       !
+      !
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPI0(NSPEC,0:NBI2),             &
+           OUTPTS(IMOD)%OUT5%ABPIN(NSPEC,0:NBI2),             &
+           OUTPTS(IMOD)%OUT5%BBPI0(NSPEC,0:NBI),              &
+           OUTPTS(IMOD)%OUT5%BBPIN(NSPEC,0:NBI), STAT=ISTAT   )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      !
+      ABPI0  => OUTPTS(IMOD)%OUT5%ABPI0
+      ABPIN  => OUTPTS(IMOD)%OUT5%ABPIN
+      BBPI0  => OUTPTS(IMOD)%OUT5%BBPI0
+      BBPIN  => OUTPTS(IMOD)%OUT5%BBPIN
+      BBPI0 = -1.
+      !
+      OUTPTS(IMOD)%OUT5%O5INI3 = .TRUE.
+      !
     CASE (4)
-       !
-       ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPOS(NSPEC,0:NBO2(NFBPO)), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       !
-       ABPOS  => OUTPTS(IMOD)%OUT5%ABPOS
-       !
-       OUTPTS(IMOD)%OUT5%O5INI4 = .TRUE.
-       !
+      !
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPOS(NSPEC,0:NBO2(NFBPO)), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      !
+      ABPOS  => OUTPTS(IMOD)%OUT5%ABPOS
+      !
+      OUTPTS(IMOD)%OUT5%O5INI4 = .TRUE.
+      !
     CASE DEFAULT
-       WRITE (NDSE,1010)
-       CALL EXTCDE (10)
-       !
+      WRITE (NDSE,1010)
+      CALL EXTCDE (10)
+      !
     END SELECT
     !
 #ifdef W3_T
@@ -1620,14 +1620,14 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NOUTP .EQ. -1 ) THEN
-       WRITE (NDSERR,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSERR,1001)
+      CALL EXTCDE (1)
     END IF
     !
     NLOW   = MIN ( 0 , -NAUXGR )
     IF ( IMOD.LT.NLOW .OR. IMOD.GT.NOUTP ) THEN
-       WRITE (NDSERR,1002) IMOD, NLOW, NOUTP
-       CALL EXTCDE (2)
+      WRITE (NDSERR,1002) IMOD, NLOW, NOUTP
+      CALL EXTCDE (2)
     END IF
     !
 #ifdef W3_T
@@ -1703,36 +1703,36 @@ CONTAINS
 #endif
     !
     IF ( O2INIT ) THEN
-       IPTINT => OUTPTS(IMOD)%OUT2%IPTINT
-       IL     => OUTPTS(IMOD)%OUT2%IL
-       IW     => OUTPTS(IMOD)%OUT2%IW
-       II     => OUTPTS(IMOD)%OUT2%II
-       PTLOC  => OUTPTS(IMOD)%OUT2%PTLOC
-       PTIFAC => OUTPTS(IMOD)%OUT2%PTIFAC
-       DPO    => OUTPTS(IMOD)%OUT2%DPO
-       WAO    => OUTPTS(IMOD)%OUT2%WAO
-       ZET_SETO => OUTPTS(IMOD)%OUT2%ZET_SETO
-       WDO    => OUTPTS(IMOD)%OUT2%WDO
-       ASO    => OUTPTS(IMOD)%OUT2%ASO
+      IPTINT => OUTPTS(IMOD)%OUT2%IPTINT
+      IL     => OUTPTS(IMOD)%OUT2%IL
+      IW     => OUTPTS(IMOD)%OUT2%IW
+      II     => OUTPTS(IMOD)%OUT2%II
+      PTLOC  => OUTPTS(IMOD)%OUT2%PTLOC
+      PTIFAC => OUTPTS(IMOD)%OUT2%PTIFAC
+      DPO    => OUTPTS(IMOD)%OUT2%DPO
+      WAO    => OUTPTS(IMOD)%OUT2%WAO
+      ZET_SETO => OUTPTS(IMOD)%OUT2%ZET_SETO
+      WDO    => OUTPTS(IMOD)%OUT2%WDO
+      ASO    => OUTPTS(IMOD)%OUT2%ASO
 #ifdef W3_FLX5
-       TAUAO  => OUTPTS(IMOD)%OUT2%TAUAO
-       TAUDO  => OUTPTS(IMOD)%OUT2%TAUDO
-       DAIRO  => OUTPTS(IMOD)%OUT2%DAIRO
+      TAUAO  => OUTPTS(IMOD)%OUT2%TAUAO
+      TAUDO  => OUTPTS(IMOD)%OUT2%TAUDO
+      DAIRO  => OUTPTS(IMOD)%OUT2%DAIRO
 #endif
-       CAO    => OUTPTS(IMOD)%OUT2%CAO
-       CDO    => OUTPTS(IMOD)%OUT2%CDO
-       ICEO   => OUTPTS(IMOD)%OUT2%ICEO
-       ICEHO  => OUTPTS(IMOD)%OUT2%ICEHO
-       ICEFO  => OUTPTS(IMOD)%OUT2%ICEFO
-       SPCO   => OUTPTS(IMOD)%OUT2%SPCO
-       PTNME  => OUTPTS(IMOD)%OUT2%PTNME
-       GRDID  => OUTPTS(IMOD)%OUT2%GRDID
+      CAO    => OUTPTS(IMOD)%OUT2%CAO
+      CDO    => OUTPTS(IMOD)%OUT2%CDO
+      ICEO   => OUTPTS(IMOD)%OUT2%ICEO
+      ICEHO  => OUTPTS(IMOD)%OUT2%ICEHO
+      ICEFO  => OUTPTS(IMOD)%OUT2%ICEFO
+      SPCO   => OUTPTS(IMOD)%OUT2%SPCO
+      PTNME  => OUTPTS(IMOD)%OUT2%PTNME
+      GRDID  => OUTPTS(IMOD)%OUT2%GRDID
     END IF
     !
 #ifdef W3_MPI
     IF ( O2IRQI ) THEN
-       IRQPO1 => OUTPTS(IMOD)%OUT2%IRQPO1
-       IRQPO2 => OUTPTS(IMOD)%OUT2%IRQPO2
+      IRQPO1 => OUTPTS(IMOD)%OUT2%IRQPO1
+      IRQPO2 => OUTPTS(IMOD)%OUT2%IRQPO2
     END IF
 #endif
     !
@@ -1748,9 +1748,9 @@ CONTAINS
     STOP   => OUTPTS(IMOD)%OUT3%STOP
     !
     IF ( O3INIT ) THEN
-       MASK1  => OUTPTS(IMOD)%OUT3%MASK1
-       MASK2  => OUTPTS(IMOD)%OUT3%MASK2
-       TRCKID => OUTPTS(IMOD)%OUT3%TRCKID
+      MASK1  => OUTPTS(IMOD)%OUT3%MASK1
+      MASK2  => OUTPTS(IMOD)%OUT3%MASK2
+      TRCKID => OUTPTS(IMOD)%OUT3%TRCKID
     END IF
     !
     IFILE4 => OUTPTS(IMOD)%OUT4%IFILE4
@@ -1759,7 +1759,7 @@ CONTAINS
     NBLKRS => OUTPTS(IMOD)%OUT4%NBLKRS
     RSBLKS => OUTPTS(IMOD)%OUT4%RSBLKS
     IF ( NRQRS .NE. 0 ) THEN
-       IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
+      IRQRS  => OUTPTS(IMOD)%OUT4%IRQRS
     END IF
     IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
     VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
@@ -1792,30 +1792,30 @@ CONTAINS
     O5INI4 => OUTPTS(IMOD)%OUT5%O5INI4
     !
     IF ( O5INI1 ) THEN
-       IPBPI  => OUTPTS(IMOD)%OUT5%IPBPI
-       ISBPI  => OUTPTS(IMOD)%OUT5%ISBPI
-       XBPI   => OUTPTS(IMOD)%OUT5%XBPI
-       YBPI   => OUTPTS(IMOD)%OUT5%YBPI
-       RDBPI  => OUTPTS(IMOD)%OUT5%RDBPI
+      IPBPI  => OUTPTS(IMOD)%OUT5%IPBPI
+      ISBPI  => OUTPTS(IMOD)%OUT5%ISBPI
+      XBPI   => OUTPTS(IMOD)%OUT5%XBPI
+      YBPI   => OUTPTS(IMOD)%OUT5%YBPI
+      RDBPI  => OUTPTS(IMOD)%OUT5%RDBPI
     END IF
     !
     IF ( O5INI2 ) THEN
-       IPBPO  => OUTPTS(IMOD)%OUT5%IPBPO
-       ISBPO  => OUTPTS(IMOD)%OUT5%ISBPO
-       XBPO   => OUTPTS(IMOD)%OUT5%XBPO
-       YBPO   => OUTPTS(IMOD)%OUT5%YBPO
-       RDBPO  => OUTPTS(IMOD)%OUT5%RDBPO
+      IPBPO  => OUTPTS(IMOD)%OUT5%IPBPO
+      ISBPO  => OUTPTS(IMOD)%OUT5%ISBPO
+      XBPO   => OUTPTS(IMOD)%OUT5%XBPO
+      YBPO   => OUTPTS(IMOD)%OUT5%YBPO
+      RDBPO  => OUTPTS(IMOD)%OUT5%RDBPO
     END IF
     !
     IF ( O5INI3 ) THEN
-       ABPI0  => OUTPTS(IMOD)%OUT5%ABPI0
-       ABPIN  => OUTPTS(IMOD)%OUT5%ABPIN
-       BBPI0  => OUTPTS(IMOD)%OUT5%BBPI0
-       BBPIN  => OUTPTS(IMOD)%OUT5%BBPIN
+      ABPI0  => OUTPTS(IMOD)%OUT5%ABPI0
+      ABPIN  => OUTPTS(IMOD)%OUT5%ABPIN
+      BBPI0  => OUTPTS(IMOD)%OUT5%BBPI0
+      BBPIN  => OUTPTS(IMOD)%OUT5%BBPIN
     END IF
     !
     IF ( O5INI4 ) THEN
-       ABPOS  => OUTPTS(IMOD)%OUT5%ABPOS
+      ABPOS  => OUTPTS(IMOD)%OUT5%ABPOS
     END IF
     !
 #ifdef W3_MPI

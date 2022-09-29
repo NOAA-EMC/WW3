@@ -256,9 +256,9 @@ CONTAINS
 #endif
     FILLER(:)=0
     IF ( PRESENT(TIDEFLAGIN) ) THEN
-       TIDEFLAG = TIDEFLAGIN
+      TIDEFLAG = TIDEFLAGIN
     ELSE
-       TIDEFLAG = 0
+      TIDEFLAG = 0
     END IF
 
     IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE') GOTO 801
@@ -274,70 +274,70 @@ CONTAINS
          IDFLD.NE.'ISI' )    GOTO 802
     !
     IF ( PRESENT(FEXT) ) THEN
-       TEMPXT = FEXT
-       I      = LEN_TRIM(FEXT)
+      TEMPXT = FEXT
+      I      = LEN_TRIM(FEXT)
     ELSE
-       TEMPXT = 'ww3'
-       I      = 3
+      TEMPXT = 'ww3'
+      I      = 3
     END IF
     !
     IF ( PRESENT(FHDR) ) THEN
-       FDHDR = FHDR
+      FDHDR = FHDR
     END IF
     !
     ! Set internal variables --------------------------------------------- *
     !
     IF ( IDFLD.EQ.'LEV' ) THEN
-       FNAME = 'level.' // TEMPXT(:I)
-       I     = I + 6
+      FNAME = 'level.' // TEMPXT(:I)
+      I     = I + 6
     ELSE IF ( IDFLD.EQ.'CUR' ) THEN
-       FNAME = 'current.' // TEMPXT(:I)
-       I     = I + 8
+      FNAME = 'current.' // TEMPXT(:I)
+      I     = I + 8
     ELSE IF ( IDFLD.EQ.'WND' .OR. IDFLD.EQ.'WNS' ) THEN
-       FNAME = 'wind.' // TEMPXT(:I)
-       I     = I + 5
+      FNAME = 'wind.' // TEMPXT(:I)
+      I     = I + 5
     ELSE IF ( IDFLD.EQ.'ICE' .OR. IDFLD.EQ.'ISI' ) THEN
-       FNAME = 'ice.' // TEMPXT(:I)
-       I     = I + 4
+      FNAME = 'ice.' // TEMPXT(:I)
+      I     = I + 4
     ELSE IF ( IDFLD.EQ.'TAU' ) THEN
-       FNAME = 'momentum.' // TEMPXT(:I)
-       I     = I + 9
+      FNAME = 'momentum.' // TEMPXT(:I)
+      I     = I + 9
     ELSE IF ( IDFLD.EQ.'RHO' ) THEN
-       FNAME = 'density.' // TEMPXT(:I)
-       I     = I + 8
+      FNAME = 'density.' // TEMPXT(:I)
+      I     = I + 8
     ELSE IF ( IDFLD.EQ.'DT0' ) THEN
-       FNAME = 'data0.' // TEMPXT(:I)
-       I     = I + 6
+      FNAME = 'data0.' // TEMPXT(:I)
+      I     = I + 6
     ELSE IF ( IDFLD.EQ.'DT1' ) THEN
-       FNAME = 'data1.' // TEMPXT(:I)
-       I     = I + 6
+      FNAME = 'data1.' // TEMPXT(:I)
+      I     = I + 6
     ELSE IF ( IDFLD.EQ.'DT2' ) THEN
-       FNAME = 'data2.' // TEMPXT(:I)
-       I     = I + 6
+      FNAME = 'data2.' // TEMPXT(:I)
+      I     = I + 6
     ELSE IF ( IDFLD.EQ.'MDN' ) THEN
-       FNAME = 'muddens.' // TEMPXT(:I)
-       I     = I + 8
+      FNAME = 'muddens.' // TEMPXT(:I)
+      I     = I + 8
     ELSE IF ( IDFLD.EQ.'MTH' ) THEN
-       FNAME = 'mudthk.' // TEMPXT(:I)
-       I     = I + 7
+      FNAME = 'mudthk.' // TEMPXT(:I)
+      I     = I + 7
     ELSE IF ( IDFLD.EQ.'MVS' ) THEN
-       FNAME = 'mudvisc.' // TEMPXT(:I)
-       I     = I + 8
+      FNAME = 'mudvisc.' // TEMPXT(:I)
+      I     = I + 8
     ELSE IF ( IDFLD.EQ.'IC1' ) THEN
-       FNAME = 'ice1.' // TEMPXT(:I)
-       I     = I + 5
+      FNAME = 'ice1.' // TEMPXT(:I)
+      I     = I + 5
     ELSE IF ( IDFLD.EQ.'IC2' ) THEN
-       FNAME = 'ice2.' // TEMPXT(:I)
-       I     = I + 5
+      FNAME = 'ice2.' // TEMPXT(:I)
+      I     = I + 5
     ELSE IF ( IDFLD.EQ.'IC3' ) THEN
-       FNAME = 'ice3.' // TEMPXT(:I)
-       I     = I + 5
+      FNAME = 'ice3.' // TEMPXT(:I)
+      I     = I + 5
     ELSE IF ( IDFLD.EQ.'IC4' ) THEN
-       FNAME = 'ice4.' // TEMPXT(:I)
-       I     = I + 5
+      FNAME = 'ice4.' // TEMPXT(:I)
+      I     = I + 5
     ELSE IF ( IDFLD.EQ.'IC5' ) THEN
-       FNAME = 'ice5.' // TEMPXT(:I)
-       I     = I + 5
+      FNAME = 'ice5.' // TEMPXT(:I)
+      I     = I + 5
     END IF
     !
     WRITE  = INXOUT .EQ. 'WRITE'
@@ -349,76 +349,76 @@ CONTAINS
     ! Open file ---------------------------------------------------------- *
     !
     IF ( WRITE ) THEN
-       IF ( PRESENT(FPRE) ) THEN
-          OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM, convert=file_endian, &
-               ERR=803, IOSTAT=IERR)
-       ELSE
-          OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian, &
-               ERR=803,IOSTAT=IERR)
-       END IF
+      IF ( PRESENT(FPRE) ) THEN
+        OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM, convert=file_endian, &
+             ERR=803, IOSTAT=IERR)
+      ELSE
+        OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian, &
+             ERR=803,IOSTAT=IERR)
+      END IF
     ELSE
-       IF ( PRESENT(FPRE) ) THEN
-          OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,convert=file_endian, &
-               STATUS='OLD',ERR=803,IOSTAT=IERR)
-       ELSE
-          OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian,       &
-               STATUS='OLD',ERR=803,IOSTAT=IERR)
-       END IF
+      IF ( PRESENT(FPRE) ) THEN
+        OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,convert=file_endian, &
+             STATUS='OLD',ERR=803,IOSTAT=IERR)
+      ELSE
+        OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian,       &
+             STATUS='OLD',ERR=803,IOSTAT=IERR)
+      END IF
     END IF
     !
     ! Process test data -------------------------------------------------- *
     !
     IF ( WRITE ) THEN
-       IF ( FDHDR ) THEN
-          IF ( FORM .EQ. 'UNFORMATTED' ) THEN
-             !
-             ! The "filler" was added for compatibility with old binary forcing files
-             ! It is now also used for tidal info ...
-             !
-             WRITE (NDS,ERR=804,IOSTAT=IERR)                      &
-                  IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
-          ELSE
-             WRITE (NDS,900,ERR=804,IOSTAT=IERR)                  &
-                  IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
-          END IF
-       END IF
+      IF ( FDHDR ) THEN
+        IF ( FORM .EQ. 'UNFORMATTED' ) THEN
+          !
+          ! The "filler" was added for compatibility with old binary forcing files
+          ! It is now also used for tidal info ...
+          !
+          WRITE (NDS,ERR=804,IOSTAT=IERR)                      &
+               IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
+        ELSE
+          WRITE (NDS,900,ERR=804,IOSTAT=IERR)                  &
+               IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
+        END IF
+      END IF
     ELSE
-       IF ( FORM .EQ. 'UNFORMATTED' ) THEN
-          READ (NDS,END=806,ERR=805,IOSTAT=IERR)                  &
-               TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
-       ELSE
-          READ (NDS,900,END=806,ERR=805,IOSTAT=IERR)              &
-               TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
-       END IF
-       IF ((FILLER(1).NE.0.OR.FILLER(2).NE.0).AND.TIDEFLAG.GE.0) TIDEFLAG=0
-       IF (TIDEFLAG.NE.0.AND.(.NOT.TIDEOK)) THEN
-          GOTO 810
-       END IF
-       !
-       IF ( IDSTR .NE. TSSTR ) GOTO 807
-       IF (( IDFLD.EQ.'WND' .AND. TSFLD.EQ.'WNS') .OR.             &
-            ( IDFLD.EQ.'ICE' .AND. TSFLD.EQ.'ISI')  ) THEN
-          IDFLD  = TSFLD
+      IF ( FORM .EQ. 'UNFORMATTED' ) THEN
+        READ (NDS,END=806,ERR=805,IOSTAT=IERR)                  &
+             TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
+      ELSE
+        READ (NDS,900,END=806,ERR=805,IOSTAT=IERR)              &
+             TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
+      END IF
+      IF ((FILLER(1).NE.0.OR.FILLER(2).NE.0).AND.TIDEFLAG.GE.0) TIDEFLAG=0
+      IF (TIDEFLAG.NE.0.AND.(.NOT.TIDEOK)) THEN
+        GOTO 810
+      END IF
+      !
+      IF ( IDSTR .NE. TSSTR ) GOTO 807
+      IF (( IDFLD.EQ.'WND' .AND. TSFLD.EQ.'WNS') .OR.             &
+           ( IDFLD.EQ.'ICE' .AND. TSFLD.EQ.'ISI')  ) THEN
+        IDFLD  = TSFLD
 #ifdef W3_T
-          WRITE (NDST,9002) IDFLD
+        WRITE (NDST,9002) IDFLD
 #endif
-       END IF
-       IF ( IDFLD .NE. TSFLD ) GOTO 808
-       IF ( IDFLD(1:2) .NE. 'DT' ) THEN
-          IF ( NX.NE.NXT .OR. NY.NE.NYT ) THEN
-             GOTO 809
-          ELSE
-             NX     = NXT
-             IF (GTYPE.LE.4) GTYPE  = GTYPET
-          END IF
-       END IF
+      END IF
+      IF ( IDFLD .NE. TSFLD ) GOTO 808
+      IF ( IDFLD(1:2) .NE. 'DT' ) THEN
+        IF ( NX.NE.NXT .OR. NY.NE.NYT ) THEN
+          GOTO 809
+        ELSE
+          NX     = NXT
+          IF (GTYPE.LE.4) GTYPE  = GTYPET
+        END IF
+      END IF
     END IF
     !
     ! File OK ------------------------------------------------------------ *
     !
     IERR   = 0
     IF ( PRESENT(TIDEFLAGIN) ) THEN
-       TIDEFLAGIN = TIDEFLAG
+      TIDEFLAGIN = TIDEFLAG
     END IF
 
     RETURN
@@ -656,12 +656,12 @@ CONTAINS
 
 #ifdef W3_TIDE
     IF ( WRITE ) THEN
-       WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
-            TIDE_MF
+      WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+           TIDE_MF
     ELSE
-       READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
-            TIDE_MF
-       NTIDE = TIDE_MF
+      READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+           TIDE_MF
+      NTIDE = TIDE_MF
     END IF
 #endif
     !
@@ -848,42 +848,42 @@ CONTAINS
 
 #ifdef W3_TIDE
     IF ( WRITE ) THEN
-       WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
-            TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
+      WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+           TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
     ELSE
-       IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
-       IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
-       IF (.NOT. ALLOCATED(TIDECON_NAMEI)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
-       READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
-            TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
-       LIST(:)=''
-       TIDE_MF1=TIDE_MF
-       DO I=1,TIDE_MF
-          LIST(I)=TIDECON_NAMEI(I)
-       END DO
-       CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
-       IF (TIDE_MF1.NE.TIDE_MF) GOTO 807
-       CALL TIDE_SET_INDICES
-       IF(IDFLD.EQ.'LEV') THEN
-          IF (IDAT.EQ.1) WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
-       ELSE
-          IF (IDAT.EQ.1) CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
-          IF (IDAT.EQ.1) CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
-       END IF
+      IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
+      IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
+      IF (.NOT. ALLOCATED(TIDECON_NAMEI)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
+      READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+           TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
+      LIST(:)=''
+      TIDE_MF1=TIDE_MF
+      DO I=1,TIDE_MF
+        LIST(I)=TIDECON_NAMEI(I)
+      END DO
+      CALL TIDE_FIND_INDICES_ANALYSIS(LIST)
+      IF (TIDE_MF1.NE.TIDE_MF) GOTO 807
+      CALL TIDE_SET_INDICES
+      IF(IDFLD.EQ.'LEV') THEN
+        IF (IDAT.EQ.1) WLTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+      ELSE
+        IF (IDAT.EQ.1) CXTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,1,:)
+        IF (IDAT.EQ.1) CYTIDE(:,:,:,:)=TIDAL_CONST(:,:,:,2,:)
+      END IF
     END IF
 #endif
 #ifdef W3_TIDET
     DO I=1,NTIDE
-       WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
-            '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
+      WRITE(NDST,*) 'Tidal constituents for IX = 1:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(1,1,I,1,1),TIDAL_CONST(1,1,I,1,2), &
+           '##',TIDAL_CONST(1,1,I,2,1),TIDAL_CONST(1,1,I,2,2)
     END DO
     DO I=1,NTIDE
-       WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
-            '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
+      WRITE(NDST,*) 'Tidal constituents for IX = 2:', IDFLD,' ',TIDECON_NAME(I),TIDAL_CONST(2,1,I,1,1),TIDAL_CONST(2,1,I,1,2), &
+           '##',TIDAL_CONST(2,1,I,2,1),TIDAL_CONST(2,1,I,2,2)
     END DO
     DO IX=1,NX
-       IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)') IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
-            CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
+      IF (IDFLD.EQ.'CUR')  WRITE (989,'(I10,X,176F10.3)') IX,CXTIDE(IX,1,:,1),CYTIDE(IX,1,:,1), &
+           CXTIDE(IX,1,:,2),CYTIDE(IX,1,:,2)
     END DO
     IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,1)
     IF (IDFLD.EQ.'CUR') WRITE(988,'(F10.3,/)') CXTIDE(:,1,15,2)
@@ -1152,9 +1152,9 @@ CONTAINS
     FLST   = IDFLD.EQ.'WNS'
 
     IF ( .NOT. PRESENT(FLAGSC) ) THEN
-       FLCOUPL=FLAGSC_DEFAULT
+      FLCOUPL=FLAGSC_DEFAULT
     ELSE
-       FLCOUPL=FLAGSC
+      FLCOUPL=FLAGSC
     END IF
 
     ! this flag is necessary to define the field at the start and end time
@@ -1176,147 +1176,147 @@ CONTAINS
     ! Loop over times / fields ========================================== *
     !
     DO
-       !
-       ! Shift fields (interpolated fields only)
-       !
-       IF ( (.NOT.WRITE) .AND. FLINTERP ) THEN
-          !
-          TF0(1) = TFN(1)
-          TF0(2) = TFN(2)
+      !
+      ! Shift fields (interpolated fields only)
+      !
+      IF ( (.NOT.WRITE) .AND. FLINTERP ) THEN
+        !
+        TF0(1) = TFN(1)
+        TF0(2) = TFN(2)
 #ifdef W3_T
-          WRITE (NDST,9020)
+        WRITE (NDST,9020)
 #endif
-          ! unless TFN has been changed in the do loop, the following line is essentally
-          !       "if not.flfrst"
-          IF ( TFN(1) .NE. -1 ) THEN
-             DO IX=1, NX
-                DO IY=1, NY
-                   FX0(IX,IY) = FXN(IX,IY)
-                   IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
-                END DO
-                IF( FLST .OR. .NOT.FL2D ) THEN
-                   DO IY=1, NY
-                      FA0(IX,IY) = FAN(IX,IY)
-                   END DO
-                END IF
-             END DO
+        ! unless TFN has been changed in the do loop, the following line is essentally
+        !       "if not.flfrst"
+        IF ( TFN(1) .NE. -1 ) THEN
+          DO IX=1, NX
+            DO IY=1, NY
+              FX0(IX,IY) = FXN(IX,IY)
+              IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
+            END DO
+            IF( FLST .OR. .NOT.FL2D ) THEN
+              DO IY=1, NY
+                FA0(IX,IY) = FAN(IX,IY)
+              END DO
+            END IF
+          END DO
 #ifdef W3_T
-          ELSE
-             WRITE (NDST,9021)
+        ELSE
+          WRITE (NDST,9021)
 #endif
-          END IF
-          !
-       END IF
+        END IF
+        !
+      END IF
 
-       !
-       ! Process fields, write --------------------------------------------- *
-       !
-       IF ( WRITE ) THEN
-          !
+      !
+      ! Process fields, write --------------------------------------------- *
+      !
+      IF ( WRITE ) THEN
+        !
 #ifdef W3_T
-          WRITE (NDST,9030) TF0
+        WRITE (NDST,9030) TF0
 #endif
-          WRITE (NDS,ERR=803,IOSTAT=ISTAT) TF0
-          IF ( .NOT. FL2D ) THEN
-             J      = 1
-             WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
-                  ((FA0(IX,IY),IX=1,NX),IY=1,NY)
-          ELSE
-             J      = 1
-             WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
-                  ((FX0(IX,IY),IX=1,NX),IY=1,NY)
-             J      = 2
-             WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
-                  ((FY0(IX,IY),IX=1,NX),IY=1,NY)
-             J      = 3
-             IF ( FLST ) WRITE (NDS,ERR=804,IOSTAT=ISTAT)          &
-                  ((FA0(IX,IY),IX=1,NX),IY=1,NY)
-          END IF
-          !
-          EXIT
-          !
-          ! Process fields, read ---------------------------------------------- *
-          !
-       ELSE
-          !
+        WRITE (NDS,ERR=803,IOSTAT=ISTAT) TF0
+        IF ( .NOT. FL2D ) THEN
+          J      = 1
+          WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
+               ((FA0(IX,IY),IX=1,NX),IY=1,NY)
+        ELSE
+          J      = 1
+          WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
+               ((FX0(IX,IY),IX=1,NX),IY=1,NY)
+          J      = 2
+          WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
+               ((FY0(IX,IY),IX=1,NX),IY=1,NY)
+          J      = 3
+          IF ( FLST ) WRITE (NDS,ERR=804,IOSTAT=ISTAT)          &
+               ((FA0(IX,IY),IX=1,NX),IY=1,NY)
+        END IF
+        !
+        EXIT
+        !
+        ! Process fields, read ---------------------------------------------- *
+        !
+      ELSE
+        !
 #ifdef W3_OASIS
-          IF (FLCOUPL) THEN
-             ! Do not receive coupling fields at the end of the first integration time in case of
-             ! forcing with a non interpolated field (like lev, ice, ...)
-             IF ( (ID_OASIS_TIME.EQ.0 .AND. ( FLFRST .OR. CPLT0 )) .OR. &
-                  (ID_OASIS_TIME.GT.0)) THEN
+        IF (FLCOUPL) THEN
+          ! Do not receive coupling fields at the end of the first integration time in case of
+          ! forcing with a non interpolated field (like lev, ice, ...)
+          IF ( (ID_OASIS_TIME.EQ.0 .AND. ( FLFRST .OR. CPLT0 )) .OR. &
+               (ID_OASIS_TIME.GT.0)) THEN
 #endif
-                !
+            !
 #ifdef W3_OASACM
-                ! Getting U10 (FXN) and V10 (FYN) from atmospheric model
-                CALL RCV_FIELDS_FROM_ATMOS(COUPL_COMM,          &
-                     IDFLD, FXN, FYN, FAN)
+            ! Getting U10 (FXN) and V10 (FYN) from atmospheric model
+            CALL RCV_FIELDS_FROM_ATMOS(COUPL_COMM,          &
+                 IDFLD, FXN, FYN, FAN)
 #endif
 #ifdef W3_OASOCM
-                ! Getting UCUR (CX), VCUR (CY), WLV from ocean model
-                CALL RCV_FIELDS_FROM_OCEAN(COUPL_COMM,          &
-                     IDFLD, FXN, FYN, FAN)
+            ! Getting UCUR (CX), VCUR (CY), WLV from ocean model
+            CALL RCV_FIELDS_FROM_OCEAN(COUPL_COMM,          &
+                 IDFLD, FXN, FYN, FAN)
 #endif
 #ifdef W3_OASICM
-                ! Getting ICEF from ice model
-                CALL RCV_FIELDS_FROM_ICE(COUPL_COMM,            &
-                     IDFLD, FXN, FYN, FAN)
+            ! Getting ICEF from ice model
+            CALL RCV_FIELDS_FROM_ICE(COUPL_COMM,            &
+                 IDFLD, FXN, FYN, FAN)
 #endif
 
 #ifdef W3_OASIS
-                ! Increment the time field TFN to the next coupling time
-                TFN(1)=T0(1)
-                TFN(2)=T0(2)
-                CALL TICK21(TFN,DTOUT(7))
-             END IF
-          ELSE
-#endif
-             READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TFN
-#ifdef W3_T
-             WRITE (NDST,9031) TFN
-#endif
-             IF ( .NOT. FL2D ) THEN
-                ! note: "J" here does *not* refer to data type, wlev etc.
-                !       It refers to the dimension.
-                J      = 1
-                READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
-                     ((FAN(IX,IY),IX=1,NX),IY=1,NY)
-             ELSE
-                J      = 1
-                READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
-                     ((FXN(IX,IY),IX=1,NX),IY=1,NY)
-                J      = 2
-                READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
-                     ((FYN(IX,IY),IX=1,NX),IY=1,NY)
-
-                ! this was added for ISI files to store ICE in FAN and BERG in FYN
-
-                IF (FLBE) FAN(:,:) = FXN(:,:)
-
-                ! this was added for WNS files to store WND in FXN & FYN and AST in FAN
-
-                J      = 3
-                IF ( FLST ) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)   &
-                     ((FAN(IX,IY),IX=1,NX),IY=1,NY)
-             END IF
-#ifdef W3_OASIS
+            ! Increment the time field TFN to the next coupling time
+            TFN(1)=T0(1)
+            TFN(2)=T0(2)
+            CALL TICK21(TFN,DTOUT(7))
           END IF
+        ELSE
 #endif
-          !
-          ! Check time, branch back if necessary
-          !
-          DTTST  = DSEC21 ( T0 , TFN )
+          READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TFN
+#ifdef W3_T
+          WRITE (NDST,9031) TFN
+#endif
+          IF ( .NOT. FL2D ) THEN
+            ! note: "J" here does *not* refer to data type, wlev etc.
+            !       It refers to the dimension.
+            J      = 1
+            READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
+                 ((FAN(IX,IY),IX=1,NX),IY=1,NY)
+          ELSE
+            J      = 1
+            READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
+                 ((FXN(IX,IY),IX=1,NX),IY=1,NY)
+            J      = 2
+            READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
+                 ((FYN(IX,IY),IX=1,NX),IY=1,NY)
 
-          ! Exit if the time is the first time and the field is not interpolated in time
+            ! this was added for ISI files to store ICE in FAN and BERG in FYN
 
-          IF ( .NOT.FLINTERP .AND. FLFRST .AND. DTTST .EQ. 0. ) EXIT
+            IF (FLBE) FAN(:,:) = FXN(:,:)
 
-          ! Exit if the time of the input field is larger than the current time
+            ! this was added for WNS files to store WND in FXN & FYN and AST in FAN
 
-          IF ( DTTST .GT. 0. ) EXIT
-          !
-       END IF
-       !
+            J      = 3
+            IF ( FLST ) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)   &
+                 ((FAN(IX,IY),IX=1,NX),IY=1,NY)
+          END IF
+#ifdef W3_OASIS
+        END IF
+#endif
+        !
+        ! Check time, branch back if necessary
+        !
+        DTTST  = DSEC21 ( T0 , TFN )
+
+        ! Exit if the time is the first time and the field is not interpolated in time
+
+        IF ( .NOT.FLINTERP .AND. FLFRST .AND. DTTST .EQ. 0. ) EXIT
+
+        ! Exit if the time of the input field is larger than the current time
+
+        IF ( DTTST .GT. 0. ) EXIT
+        !
+      END IF
+      !
     END DO
     !
     ! Branch point for EOF and interpolated fields (forcing current, wind or winds)
@@ -1327,25 +1327,25 @@ CONTAINS
     ! save the time and field values at the start time and field of interpolation
 
     IF ( .NOT.WRITE .AND. FLINTERP .AND. TF0(1) .EQ. -1 ) THEN
-       !
+      !
 #ifdef W3_T
-       WRITE (NDST,9040)
+      WRITE (NDST,9040)
 #endif
-       TF0(1) = T0(1)
-       TF0(2) = T0(2)
-       !
-       DO IX=1, NX
+      TF0(1) = T0(1)
+      TF0(2) = T0(2)
+      !
+      DO IX=1, NX
+        DO IY=1, NY
+          FX0(IX,IY) = FXN(IX,IY)
+          IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
+        END DO
+        IF( FLST .OR. .NOT.FL2D ) THEN
           DO IY=1, NY
-             FX0(IX,IY) = FXN(IX,IY)
-             IF (FL2D) FY0(IX,IY) = FYN(IX,IY)
+            FA0(IX,IY) = FAN(IX,IY)
           END DO
-          IF( FLST .OR. .NOT.FL2D ) THEN
-             DO IY=1, NY
-                FA0(IX,IY) = FAN(IX,IY)
-             END DO
-          END IF
-       END DO
-       !
+        END IF
+      END DO
+      !
     END IF
     !
     ! Branch point for EOF and not interpolated fields (coupled fields, ice, lev, ...)
@@ -1354,9 +1354,9 @@ CONTAINS
     !
 #ifdef W3_T
     IF ( FLINTERP ) THEN
-       WRITE (NDST,9041) TF0, TFN
+      WRITE (NDST,9041) TF0, TFN
     ELSE
-       WRITE (NDST,9042) TFN
+      WRITE (NDST,9042) TFN
     END IF
 #endif
     !
@@ -1370,18 +1370,18 @@ CONTAINS
     IERR   = -1
     !
     IF ( FLINTERP ) THEN
-       TFN(1) = TN(1)
-       TFN(2) = TN(2)
-       CALL TICK21 ( TFN , 1. )
+      TFN(1) = TN(1)
+      TFN(2) = TN(2)
+      CALL TICK21 ( TFN , 1. )
     END IF
 #ifdef W3_T
     WRITE (NDST,9032) TFN, IERR
 #endif
     !
     IF ( FLINTERP ) THEN
-       GOTO 300
+      GOTO 300
     ELSE
-       GOTO 500
+      GOTO 500
     END IF
     !
     !
@@ -1631,38 +1631,38 @@ CONTAINS
     ! Process fields, write --------------------------------------------- *
     !
     IF ( WRITE ) THEN
-       !
+      !
 #ifdef W3_T
-       WRITE (NDST,9020) TD, ND
+      WRITE (NDST,9020) TD, ND
 #endif
-       WRITE (NDS,ERR=803,IOSTAT=ISTAT) TD, ND
-       WRITE (NDS,ERR=804,IOSTAT=ISTAT) DATA
-       !
-       ! Process fields, read size ----------------------------------------- *
-       !
+      WRITE (NDS,ERR=803,IOSTAT=ISTAT) TD, ND
+      WRITE (NDS,ERR=804,IOSTAT=ISTAT) DATA
+      !
+      ! Process fields, read size ----------------------------------------- *
+      !
     ELSE IF ( SIZE ) THEN
-       !
-100    CONTINUE
-       READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TD, NDOUT
+      !
+100   CONTINUE
+      READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TD, NDOUT
 #ifdef W3_T
-       WRITE (NDST,9021) TD, NDOUT
+      WRITE (NDST,9021) TD, NDOUT
 #endif
-       !
-       ! Check time, read and branch back if necessary
-       !
-       DTTST  = DSEC21 ( TIME , TD )
-       IF ( DTTST.LT.0. .OR. NDOUT.EQ.0 ) THEN
-          IF (NDOUT.GT.0) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)
-          GOTO 100
-       END IF
-       !
-       ! Process fields, read data ----------------------------------------- *
-       !
+      !
+      ! Check time, read and branch back if necessary
+      !
+      DTTST  = DSEC21 ( TIME , TD )
+      IF ( DTTST.LT.0. .OR. NDOUT.EQ.0 ) THEN
+        IF (NDOUT.GT.0) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)
+        GOTO 100
+      END IF
+      !
+      ! Process fields, read data ----------------------------------------- *
+      !
     ELSE
-       !
-       READ (NDS,END=806,ERR=807,IOSTAT=ISTAT) DATA
+      !
+      READ (NDS,END=806,ERR=807,IOSTAT=ISTAT) DATA
 #ifdef W3_T
-       WRITE (NDST,9030) TD
+      WRITE (NDST,9030) TD
 #endif
     END IF
     !
@@ -1962,16 +1962,16 @@ CONTAINS
     IF ( FLAGLL .AND. CLOSED ) ICLO = ICLO_SMPL
     !
     DO  IX=1, NX
-       DO  IY=1, NY
-          RD11(IX,IY) = 0.
-          RD12(IX,IY) = 0.
-          RD21(IX,IY) = 0.
-          RD22(IX,IY) = 0.
-          IX1(IX,IY)  = 1
-          IX2(IX,IY)  = 1
-          IY1(IX,IY)  = 1
-          IY2(IX,IY)  = 1
-       END DO
+      DO  IY=1, NY
+        RD11(IX,IY) = 0.
+        RD12(IX,IY) = 0.
+        RD21(IX,IY) = 0.
+        RD22(IX,IY) = 0.
+        IX1(IX,IY)  = 1
+        IX2(IX,IY)  = 1
+        IY1(IX,IY)  = 1
+        IY2(IX,IY)  = 1
+      END DO
     END DO
     !
     ! 1.b Setup logical mask
@@ -1992,103 +1992,103 @@ CONTAINS
     ! 2.  Loop over output grid ------------------------------------------ *
     !
     DO IY=1, NY
-       DO  IX=1, NX
-          !
-          X = TLON(IY,IX)
-          Y = TLAT(IY,IX)
+      DO  IX=1, NX
+        !
+        X = TLON(IY,IX)
+        Y = TLAT(IY,IX)
 #ifdef W3_T1
-          WRITE (NDST,9010) IX, IY, X, Y
+        WRITE (NDST,9010) IX, IY, X, Y
 #endif
+        !
+        ! 2.a Check if sea point
+        !
+        IF ( MAPOVR(IX,IY) .NE. ILAND ) THEN
           !
-          ! 2.a Check if sea point
+          ! 2.b Find enclosing cell and compute interpolation weights
           !
-          IF ( MAPOVR(IX,IY) .NE. ILAND ) THEN
-             !
-             ! 2.b Find enclosing cell and compute interpolation weights
-             !
-             NNBR = NNBR_MAX
-             INGRID = W3GRMP( GSU, X, Y, II, JJ, RR, &
-                  MASK=LMSK, MSKC=MSKC, NNBR=NNBR, DEBUG=LDBG )
-             !
-             IF ( INGRID ) THEN
-                !
-                ! 2.c Non-masked or partially masked cell: simply store the weights
-                !
-                IF ( MSKC.EQ.MSKC_NONE .OR. MSKC.EQ.MSKC_PART ) THEN
-                   !
-                   IF ( MSKC.EQ.MSKC_PART ) IMASK  = IMASK + 1
-                   !
-                   ! ..... Here we switch from counter-clockwise order to column-major
-                   IX1 (IX,IY) = II(1)
-                   IX2 (IX,IY) = II(2)
-                   IY1 (IX,IY) = JJ(1)
-                   IY2 (IX,IY) = JJ(4)
-                   RD11(IX,IY) = RR(1)
-                   RD21(IX,IY) = RR(2)
-                   RD12(IX,IY) = RR(4)
-                   RD22(IX,IY) = RR(3)
-                   !
-                   ! 2.d Fully masked cell
-                   !
-                ELSE !MSKC.EQ.MSKC_FULL
-                   !
-                   IMASK  = IMASK + 1
-                   !
-                   IF ( NNBR .GT. 0 ) THEN
-                      ICOR1  = ICOR1 + 1
-                      IX1 (IX,IY) = II(1)
-                      IY1 (IX,IY) = JJ(1)
-                      RD11(IX,IY) = RR(1)
-                      IF ( NNBR .GT. 1 ) THEN
-                         IX1 (IX,IY) = II(2)
-                         IY1 (IX,IY) = JJ(2)
-                         RD22(IX,IY) = RR(2)
-                      END IF
+          NNBR = NNBR_MAX
+          INGRID = W3GRMP( GSU, X, Y, II, JJ, RR, &
+               MASK=LMSK, MSKC=MSKC, NNBR=NNBR, DEBUG=LDBG )
+          !
+          IF ( INGRID ) THEN
+            !
+            ! 2.c Non-masked or partially masked cell: simply store the weights
+            !
+            IF ( MSKC.EQ.MSKC_NONE .OR. MSKC.EQ.MSKC_PART ) THEN
+              !
+              IF ( MSKC.EQ.MSKC_PART ) IMASK  = IMASK + 1
+              !
+              ! ..... Here we switch from counter-clockwise order to column-major
+              IX1 (IX,IY) = II(1)
+              IX2 (IX,IY) = II(2)
+              IY1 (IX,IY) = JJ(1)
+              IY2 (IX,IY) = JJ(4)
+              RD11(IX,IY) = RR(1)
+              RD21(IX,IY) = RR(2)
+              RD12(IX,IY) = RR(4)
+              RD22(IX,IY) = RR(3)
+              !
+              ! 2.d Fully masked cell
+              !
+            ELSE !MSKC.EQ.MSKC_FULL
+              !
+              IMASK  = IMASK + 1
+              !
+              IF ( NNBR .GT. 0 ) THEN
+                ICOR1  = ICOR1 + 1
+                IX1 (IX,IY) = II(1)
+                IY1 (IX,IY) = JJ(1)
+                RD11(IX,IY) = RR(1)
+                IF ( NNBR .GT. 1 ) THEN
+                  IX1 (IX,IY) = II(2)
+                  IY1 (IX,IY) = JJ(2)
+                  RD22(IX,IY) = RR(2)
+                END IF
 #ifdef W3_T
-                      IF ( NNBR .EQ. 1 ) THEN
-                         WRITE (NDST,9043) &
-                              IX1(IX,IY), IY1(IX,IY), RD11(IX,IY)
-                      ELSE
-                         WRITE (NDST,9044) &
-                              IX1(IX,IY), IY1(IX,IY), RD11(IX,IY), &
-                              IX2(IX,IY), IY2(IX,IY), RD22(IX,IY)
-                      END IF
+                IF ( NNBR .EQ. 1 ) THEN
+                  WRITE (NDST,9043) &
+                       IX1(IX,IY), IY1(IX,IY), RD11(IX,IY)
+                ELSE
+                  WRITE (NDST,9044) &
+                       IX1(IX,IY), IY1(IX,IY), RD11(IX,IY), &
+                       IX2(IX,IY), IY2(IX,IY), RD22(IX,IY)
+                END IF
 #endif
-                   ELSE
-                      IERR   = IERR + 1
-                      WRITE (NDSE,910) IX, IY, X, Y,    &
-                           II(1), II(2), JJ(1), JJ(2)
-                   END IF ! NNBR
-                   !
-                END IF ! MSKC
-                !
+              ELSE
+                IERR   = IERR + 1
+                WRITE (NDSE,910) IX, IY, X, Y,    &
+                     II(1), II(2), JJ(1), JJ(2)
+              END IF ! NNBR
+              !
+            END IF ! MSKC
+            !
 #ifdef W3_T
-                WRITE (NDST,9031)                             &
-                     IX1(IX,IY), IY1(IX,IY), RD11(IX,IY),   &
-                     IX2(IX,IY), IY1(IX,IY), RD21(IX,IY),   &
-                     IX1(IX,IY), IY2(IX,IY), RD12(IX,IY),   &
-                     IX2(IX,IY), IY2(IX,IY), RD22(IX,IY)
+            WRITE (NDST,9031)                             &
+                 IX1(IX,IY), IY1(IX,IY), RD11(IX,IY),   &
+                 IX2(IX,IY), IY1(IX,IY), RD21(IX,IY),   &
+                 IX1(IX,IY), IY2(IX,IY), RD12(IX,IY),   &
+                 IX2(IX,IY), IY2(IX,IY), RD22(IX,IY)
 #endif
-                !
-                ! 2.e Update overlay map
-                !
-                MAPOVR(IX,IY) = MAPOVR(IX,IY) + 1
-                IFOUND  = IFOUND + 1
-                !
+            !
+            ! 2.e Update overlay map
+            !
+            MAPOVR(IX,IY) = MAPOVR(IX,IY) + 1
+            IFOUND  = IFOUND + 1
+            !
 #ifdef W3_T1
-             ELSE ! .NOT.INGRID
-                WRITE (NDST,9021)
+          ELSE ! .NOT.INGRID
+            WRITE (NDST,9021)
 #endif
-             END IF ! INGRID
+          END IF ! INGRID
 #ifdef W3_T1
-          ELSE ! land-point
-             WRITE (NDST,9020) IX, IY, X, Y, 'LAND'
+        ELSE ! land-point
+          WRITE (NDST,9020) IX, IY, X, Y, 'LAND'
 #endif
-          ENDIF ! sea-point
-          !
-          ! ... End loop over output grid -------------------------------------- *
-          !
-       END DO
+        ENDIF ! sea-point
+        !
+        ! ... End loop over output grid -------------------------------------- *
+        !
+      END DO
     END DO
     !
     ! 3.  Finalizations -------------------------------------------------- *
@@ -2316,152 +2316,152 @@ CONTAINS
     ! Loop over times / fields ========================================== *
     !
     DO
-       !
-       ! Shift fields
-       !
-       TF0(1) = TFN(1)
-       TF0(2) = TFN(2)
-       IF ( TFN(1) .NE. -1 ) THEN
-          IF ( (J .EQ. 2) .OR. (J .EQ. 5) ) THEN
-             DO IX=1, NX
-                DO IY=1, NY
-                   FX0(IX,IY) = FXN(IX,IY)
-                   FY0(IX,IY) = FYN(IX,IY)
-                END DO
-             END DO
-#ifdef W3_T
-             WRITE (NDST,9020)
-#endif
-          ELSE IF ( J .EQ. 3 ) THEN
-             DO IX=1, NX
-                DO IY=1, NY
-                   FX0(IX,IY) = FXN(IX,IY)
-                   FY0(IX,IY) = FYN(IX,IY)
-                   FS0(IX,IY) = FSN(IX,IY)
-                END DO
-             END DO
-#ifdef W3_T
-             WRITE (NDST,9020)
-#endif
-          END IF
-#ifdef W3_T
-       ELSE
-          IF ( J .NE. 1 ) WRITE (NDST,9021)
-#endif
-       END IF
-       !
-       ! New field
-       !
-       IF ( NH .NE. 0. ) THEN
-          TFN(1) = THO(1,J,1)
-          TFN(2) = THO(2,J,1)
-          ! ic* md* lev ice
-          IF ( (J.LE.1) .OR. (J.EQ.4) .OR. (J.EQ.6) ) THEN
-             DO IX=1, NX
-                DO IY=1, NY
-                   FSN(IX,IY) = HA(1,J)
-                END DO
-             END DO
-#ifdef W3_T
-             WRITE (NDST,9050) HA(1,J)
-#endif
-          END IF
-          ! cur
-          IF ( (J .EQ. 2) .OR. (J .EQ. 5) ) THEN
-             DIR    = ( 270. - HD(1,J) ) * DERA
-             X      = HA(1,J) * COS(DIR)
-             Y      = HA(1,J) * SIN(DIR)
-             DO IX=1, NX
-                DO IY=1, NY
-                   FXN(IX,IY) = X
-                   FYN(IX,IY) = Y
-                END DO
-             END DO
-#ifdef W3_T
-             WRITE (NDST,9050) X, Y
-#endif
-          END IF
-          ! wnd
-          IF ( J .EQ. 3 ) THEN
-             DIR    = ( 270. - HD(1,J) ) * DERA
-             X      = HA(1,J) * COS(DIR)
-             Y      = HA(1,J) * SIN(DIR)
-             DO IX=1, NX
-                DO IY=1, NY
-                   FXN(IX,IY) = X
-                   FYN(IX,IY) = Y
-                   FSN(IX,IY) = HS(1,J)
-                END DO
-             END DO
-#ifdef W3_T
-             WRITE (NDST,9050) X, Y, HS(1,J)
-#endif
-          END IF
-          !
-          ! Shift data arrays
-          !
-          DO I=1, NH-1
-             THO(1,J,I) = THO(1,J,I+1)
-             THO(2,J,I) = THO(2,J,I+1)
-             HA(I,J)    = HA(I+1,J)
-             HD(I,J)    = HD(I+1,J)
-             HS(I,J)    = HS(I+1,J)
+      !
+      ! Shift fields
+      !
+      TF0(1) = TFN(1)
+      TF0(2) = TFN(2)
+      IF ( TFN(1) .NE. -1 ) THEN
+        IF ( (J .EQ. 2) .OR. (J .EQ. 5) ) THEN
+          DO IX=1, NX
+            DO IY=1, NY
+              FX0(IX,IY) = FXN(IX,IY)
+              FY0(IX,IY) = FYN(IX,IY)
+            END DO
           END DO
-          NH      = NH - 1
 #ifdef W3_T
-          WRITE (NDST,9051) TFN
+          WRITE (NDST,9020)
 #endif
-          !
-       ELSE
-          !
-          TFN(1) = TN(1)
-          TFN(2) = TN(2)
-          CALL TICK21 ( TFN , 1. )
-          IERR   = -1
+        ELSE IF ( J .EQ. 3 ) THEN
+          DO IX=1, NX
+            DO IY=1, NY
+              FX0(IX,IY) = FXN(IX,IY)
+              FY0(IX,IY) = FYN(IX,IY)
+              FS0(IX,IY) = FSN(IX,IY)
+            END DO
+          END DO
 #ifdef W3_T
-          WRITE (NDST,9052) TFN, IERR
+          WRITE (NDST,9020)
 #endif
-          !
-       END IF
-       !
-       ! Check time
-       !
+        END IF
+#ifdef W3_T
+      ELSE
+        IF ( J .NE. 1 ) WRITE (NDST,9021)
+#endif
+      END IF
+      !
+      ! New field
+      !
+      IF ( NH .NE. 0. ) THEN
+        TFN(1) = THO(1,J,1)
+        TFN(2) = THO(2,J,1)
+        ! ic* md* lev ice
+        IF ( (J.LE.1) .OR. (J.EQ.4) .OR. (J.EQ.6) ) THEN
+          DO IX=1, NX
+            DO IY=1, NY
+              FSN(IX,IY) = HA(1,J)
+            END DO
+          END DO
+#ifdef W3_T
+          WRITE (NDST,9050) HA(1,J)
+#endif
+        END IF
+        ! cur
+        IF ( (J .EQ. 2) .OR. (J .EQ. 5) ) THEN
+          DIR    = ( 270. - HD(1,J) ) * DERA
+          X      = HA(1,J) * COS(DIR)
+          Y      = HA(1,J) * SIN(DIR)
+          DO IX=1, NX
+            DO IY=1, NY
+              FXN(IX,IY) = X
+              FYN(IX,IY) = Y
+            END DO
+          END DO
+#ifdef W3_T
+          WRITE (NDST,9050) X, Y
+#endif
+        END IF
+        ! wnd
+        IF ( J .EQ. 3 ) THEN
+          DIR    = ( 270. - HD(1,J) ) * DERA
+          X      = HA(1,J) * COS(DIR)
+          Y      = HA(1,J) * SIN(DIR)
+          DO IX=1, NX
+            DO IY=1, NY
+              FXN(IX,IY) = X
+              FYN(IX,IY) = Y
+              FSN(IX,IY) = HS(1,J)
+            END DO
+          END DO
+#ifdef W3_T
+          WRITE (NDST,9050) X, Y, HS(1,J)
+#endif
+        END IF
+        !
+        ! Shift data arrays
+        !
+        DO I=1, NH-1
+          THO(1,J,I) = THO(1,J,I+1)
+          THO(2,J,I) = THO(2,J,I+1)
+          HA(I,J)    = HA(I+1,J)
+          HD(I,J)    = HD(I+1,J)
+          HS(I,J)    = HS(I+1,J)
+        END DO
+        NH      = NH - 1
+#ifdef W3_T
+        WRITE (NDST,9051) TFN
+#endif
+        !
+      ELSE
+        !
+        TFN(1) = TN(1)
+        TFN(2) = TN(2)
+        CALL TICK21 ( TFN , 1. )
+        IERR   = -1
+#ifdef W3_T
+        WRITE (NDST,9052) TFN, IERR
+#endif
+        !
+      END IF
+      !
+      ! Check time
+      !
 
-       DTTST  = DSEC21 ( T0 , TFN )
+      DTTST  = DSEC21 ( T0 , TFN )
 
-       ! exit if field time is later than run time
-       IF ( DTTST .GT. 0. ) EXIT
-       ! exit if field is ic* or md* or lev or ice
-       ! and first forcing field has been stored
-       ! at start run time
-       IF ( J.LE.(1).OR.(J.EQ.4).OR.(J.EQ.6) ) THEN
-          IF (FLFRST .AND. DTTST.EQ.0. ) EXIT
-       END IF
+      ! exit if field time is later than run time
+      IF ( DTTST .GT. 0. ) EXIT
+      ! exit if field is ic* or md* or lev or ice
+      ! and first forcing field has been stored
+      ! at start run time
+      IF ( J.LE.(1).OR.(J.EQ.4).OR.(J.EQ.6) ) THEN
+        IF (FLFRST .AND. DTTST.EQ.0. ) EXIT
+      END IF
     END DO
     !
     ! Check if first field
     !
     IF ( J.NE.1 .AND. TFN(1) .EQ. -1 ) THEN
 #ifdef W3_T
-       WRITE (NDST,9060)
+      WRITE (NDST,9060)
 #endif
-       TF0(1) = T0(1)
-       TF0(2) = T0(2)
-       !
-       DO IX=1, NX
-          DO IY=1, NY
-             FX0(IX,IY) = FXN(IX,IY)
-             FY0(IX,IY) = FYN(IX,IY)
-             FS0(IX,IY) = FSN(IX,IY)
-          END DO
-       END DO
+      TF0(1) = T0(1)
+      TF0(2) = T0(2)
+      !
+      DO IX=1, NX
+        DO IY=1, NY
+          FX0(IX,IY) = FXN(IX,IY)
+          FY0(IX,IY) = FYN(IX,IY)
+          FS0(IX,IY) = FSN(IX,IY)
+        END DO
+      END DO
     END IF
     !
 #ifdef W3_T
     IF ( J .GT. 1 ) THEN
-       WRITE (NDST,9061) TF0, TFN
+      WRITE (NDST,9061) TF0, TFN
     ELSE
-       WRITE (NDST,9062) TFN
+      WRITE (NDST,9062) TFN
     END IF
 #endif
     !
@@ -2646,49 +2646,49 @@ CONTAINS
     TF0(1) = TFN(1)
     TF0(2) = TFN(2)
     IF ( TFN(1) .NE. -1 ) THEN
-       A0     = AN
-       D0     = DN
+      A0     = AN
+      D0     = DN
 #ifdef W3_T
-       WRITE (NDST,9020)
+      WRITE (NDST,9020)
     ELSE
-       WRITE (NDST,9021)
+      WRITE (NDST,9021)
 #endif
     END IF
     !
     ! New field
     !
     IF ( NH .NE. 0. ) THEN
-       TFN(1) = THO(1,J,1)
-       TFN(2) = THO(2,J,1)
-       AN     = HA(1,J)
-       DN     = ( 90. - HD(1,J) ) * DERA
+      TFN(1) = THO(1,J,1)
+      TFN(2) = THO(2,J,1)
+      AN     = HA(1,J)
+      DN     = ( 90. - HD(1,J) ) * DERA
 #ifdef W3_T
-       WRITE (NDST,9050) AN, DN
+      WRITE (NDST,9050) AN, DN
 #endif
-       !
-       ! Shift data arrays
-       !
-       DO I=1, NH-1
-          THO(1,J,I) = THO(1,J,I+1)
-          THO(2,J,I) = THO(2,J,I+1)
-          HA(I,J)    = HA(I+1,J)
-          HD(I,J)    = HD(I+1,J)
-       END DO
-       NH      = NH - 1
+      !
+      ! Shift data arrays
+      !
+      DO I=1, NH-1
+        THO(1,J,I) = THO(1,J,I+1)
+        THO(2,J,I) = THO(2,J,I+1)
+        HA(I,J)    = HA(I+1,J)
+        HD(I,J)    = HD(I+1,J)
+      END DO
+      NH      = NH - 1
 #ifdef W3_T
-       WRITE (NDST,9051) TFN
+      WRITE (NDST,9051) TFN
 #endif
-       !
+      !
     ELSE
-       !
-       TFN(1) = TN(1)
-       TFN(2) = TN(2)
-       CALL TICK21 ( TFN , 1. )
-       IERR   = -1
+      !
+      TFN(1) = TN(1)
+      TFN(2) = TN(2)
+      CALL TICK21 ( TFN , 1. )
+      IERR   = -1
 #ifdef W3_T
-       WRITE (NDST,9052) TFN, IERR
+      WRITE (NDST,9052) TFN, IERR
 #endif
-       !
+      !
     END IF
     !
     ! Check time
@@ -2700,12 +2700,12 @@ CONTAINS
     !
     IF ( TF0(1).EQ.-1 ) THEN
 #ifdef W3_T
-       WRITE (NDST,9060)
+      WRITE (NDST,9060)
 #endif
-       TF0(1) = T0(1)
-       TF0(2) = T0(2)
-       A0     = AN
-       D0     = DN
+      TF0(1) = T0(1)
+      TF0(2) = T0(2)
+      A0     = AN
+      D0     = DN
     END IF
     !
 #ifdef W3_T

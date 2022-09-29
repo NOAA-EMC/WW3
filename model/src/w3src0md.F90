@@ -185,20 +185,20 @@ CONTAINS
     ! 1.  Integral over directions
     !
     DO IK=1, NK
-       EB(IK) = 0.
-       DO ITH=1, NTH
-          EB(IK) = EB(IK) + A(ITH,IK)
-          AMAX   = MAX ( AMAX , A(ITH,IK) )
-       END DO
+      EB(IK) = 0.
+      DO ITH=1, NTH
+        EB(IK) = EB(IK) + A(ITH,IK)
+        AMAX   = MAX ( AMAX , A(ITH,IK) )
+      END DO
     END DO
     !
     ! 2.  Integrate over directions
     !
     DO IK=1, NK
-       EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
-       EMEAN  = EMEAN  + EB(IK)
-       FMEAN  = FMEAN  + EB(IK) / SIG(IK)
-       WNMEAN = WNMEAN + EB(IK) / SQRT(WN(IK))
+      EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
+      EMEAN  = EMEAN  + EB(IK)
+      FMEAN  = FMEAN  + EB(IK) / SIG(IK)
+      WNMEAN = WNMEAN + EB(IK) / SQRT(WN(IK))
     END DO
     !
     ! 3.  Add tail beyond discrete spectrum

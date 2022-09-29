@@ -332,35 +332,35 @@ CONTAINS
     !
     ! Set the ice parameters from input
     IF (INFLAGS2(-7)) THEN
-       ICECOEF1 = ICEP1(IX, IY) ! ice thickness h_i
+      ICECOEF1 = ICEP1(IX, IY) ! ice thickness h_i
     ELSE
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 1 (HICE)'
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 1 (HICE)'
+      CALL EXTCDE(2)
     ENDIF
     !
     IF (INFLAGS2(-6)) THEN
-       ICECOEF2 = ICEP2(IX, IY) ! effective viscosity of ice η
+      ICECOEF2 = ICEP2(IX, IY) ! effective viscosity of ice η
     ELSE
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 2 (VISC)'
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 2 (VISC)'
+      CALL EXTCDE(2)
     ENDIF
     !
     IF (INFLAGS2(-5)) THEN
-       ICECOEF3 = ICEP3(IX, IY) ! density of ice ρ_i
+      ICECOEF3 = ICEP3(IX, IY) ! density of ice ρ_i
     ELSE
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 3 (DENS)'
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 3 (DENS)'
+      CALL EXTCDE(2)
     ENDIF
     !
     IF (INFLAGS2(-4)) THEN
-       ICECOEF4 = ICEP4(IX, IY) ! effective shear modulus of ice G
+      ICECOEF4 = ICEP4(IX, IY) ! effective shear modulus of ice G
     ELSE
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE (NDSE,1001) 'ICE PARAMETER 4 (ELAS)'
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE (NDSE,1001) 'ICE PARAMETER 4 (ELAS)'
+      CALL EXTCDE(2)
     ENDIF
     !
     IF (INFLAGS2(4)) ICECONC = ICEI(IX, IY) ! ice concentration
@@ -378,27 +378,27 @@ CONTAINS
     !
     ! Calculate the decay rate k_i
     IF ( NOICE ) THEN
-       D1D = 0.
-       !
-       ! 2. Ice ------------------------------------------------------------- /
+      D1D = 0.
+      !
+      ! 2. Ice ------------------------------------------------------------- /
     ELSE
-       !         W3IC5WNCG(WN_R, WN_I, CG, HICE, IVISC, RHOI, ISMODG, HWAT)
-       CALL W3IC5WNCG(WN_R, WN_I, CG, ICECOEF1, ICECOEF2, &
-            ICECOEF3, ICECOEF4, DEPTH)
-       ! recall that D=S/E=-2*Cg_{ice}*k_i
-       ! In some cases, the FS model yields very large Cg_{ice}, which
-       ! subquently may result in numerical failure due to the violation of CFL
-       ! conditions, therefore we still use ice-free group velocity to advect
-       ! wave packets.
-       !
-       DO IK = 1, NK
-          D1D(IK) = -2.0 * CG(IK) * WN_I(IK)
-       END DO
+      !         W3IC5WNCG(WN_R, WN_I, CG, HICE, IVISC, RHOI, ISMODG, HWAT)
+      CALL W3IC5WNCG(WN_R, WN_I, CG, ICECOEF1, ICECOEF2, &
+           ICECOEF3, ICECOEF4, DEPTH)
+      ! recall that D=S/E=-2*Cg_{ice}*k_i
+      ! In some cases, the FS model yields very large Cg_{ice}, which
+      ! subquently may result in numerical failure due to the violation of CFL
+      ! conditions, therefore we still use ice-free group velocity to advect
+      ! wave packets.
+      !
+      DO IK = 1, NK
+        D1D(IK) = -2.0 * CG(IK) * WN_I(IK)
+      END DO
     END IF
     !
     ! 2.1 Fill diagonal matrix
     DO IKTH = 1, NSPEC
-       D(IKTH) = D1D(MAPWN(IKTH))
+      D(IKTH) = D1D(MAPWN(IKTH))
     END DO
 
     S = D * A
@@ -407,9 +407,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !
@@ -544,25 +544,25 @@ CONTAINS
     SIGMA = 0.
 
     IF (SIZE(WN_R, 1) .EQ. NK) THEN
-       KL    = 1
-       KU    = NK
-       SIGMA = SIG(1:NK)
+      KL    = 1
+      KU    = NK
+      SIGMA = SIG(1:NK)
     ELSE IF (SIZE(WN_R,1) .EQ. NK+2) THEN
-       KL    = 1
-       KU    = NK+2
-       SIGMA = SIG(0:NK+1)
+      KL    = 1
+      KU    = NK+2
+      SIGMA = SIG(0:NK+1)
     ELSE
-       IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,900) 'W3IC5WNCG'
-       CALL EXTCDE(3)
+      IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE,900) 'W3IC5WNCG'
+      CALL EXTCDE(3)
     END IF
     !
     ! Fox-Squire dispersion
     DO IK = KL, KU
-       !         FSDISP(HICE, IVISC, RHOI, ISMODG, HWAT, WT, WNR, WNI)
-       CALL FSDISP(HICE, IVISC, RHOI, ISMODG, HWAT, TPI/SIGMA(IK), &
-            TWN_R, TWN_I)
-       WN_R(IK) = TWN_R
-       WN_I(IK) = TWN_I
+      !         FSDISP(HICE, IVISC, RHOI, ISMODG, HWAT, WT, WNR, WNI)
+      CALL FSDISP(HICE, IVISC, RHOI, ISMODG, HWAT, TPI/SIGMA(IK), &
+           TWN_R, TWN_I)
+      WN_R(IK) = TWN_R
+      WN_I(IK) = TWN_I
     END DO
     !
     DEALLOCATE(SIGMA)
@@ -727,45 +727,45 @@ CONTAINS
     !
     ! G <= 0. is not allowed
     IF (ABS(TISMODG) < ERRTOL) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1000) 'FSDISP'
-       CALL EXTCDE(1)
+      IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1000) 'FSDISP'
+      CALL EXTCDE(1)
     END IF
     !
     ! σ = 2π / T
     SIGMA = TPI / TWT
     !
     IF (ABS(IC5VEMOD - 1.) < ERRTOL) THEN
-       ! Complex shear modulus Gv = G - i σ ρ η (EFS model)
-       GV = CMPLX(TISMODG, -1. * SIGMA * RHOI * IVISC)
-       !
-       ! -------------------------------------------------------------------- *
-       ! Note that Eq. (24) in Mosig et al. (2015) can be written like below:
-       ! (c1 * k^5 + c2 * k) * tanh(HWAT*k) - 1 = 0
-       ! Most Important part of this module --------------------------------- *
-       C1 = GV * HICE**3. / (6. * RHOW * SIGMA**2.)
-       !
-       ! To be divided by (1-NU) or multiplied by (1+NU) ??
-       ! Beam model: then multiplied by (1+ν)
-       ! Plate model: then divided by (1-ν)
-       ! The beam version is more theoretically (J.E.M. Mosig, personal
-       ! communication, 2016), although there is only very marginal difference
-       ! between this two version as (1+NU = 1.3 and 1/(1-NU) ~ 1.4)
-       C1 = C1 * (1+NU)
-       !         C1 = C1 / (1-NU)
-       !
-       ! C2
-       !         C2 = GRAV / SIGMA**2. - RHOI * HICE / RHOW
-       C2 = CMPLX(GRAV / SIGMA**2. - RHOI * HICE / RHOW, 0.)
-       !
+      ! Complex shear modulus Gv = G - i σ ρ η (EFS model)
+      GV = CMPLX(TISMODG, -1. * SIGMA * RHOI * IVISC)
+      !
+      ! -------------------------------------------------------------------- *
+      ! Note that Eq. (24) in Mosig et al. (2015) can be written like below:
+      ! (c1 * k^5 + c2 * k) * tanh(HWAT*k) - 1 = 0
+      ! Most Important part of this module --------------------------------- *
+      C1 = GV * HICE**3. / (6. * RHOW * SIGMA**2.)
+      !
+      ! To be divided by (1-NU) or multiplied by (1+NU) ??
+      ! Beam model: then multiplied by (1+ν)
+      ! Plate model: then divided by (1-ν)
+      ! The beam version is more theoretically (J.E.M. Mosig, personal
+      ! communication, 2016), although there is only very marginal difference
+      ! between this two version as (1+NU = 1.3 and 1/(1-NU) ~ 1.4)
+      C1 = C1 * (1+NU)
+      !         C1 = C1 / (1-NU)
+      !
+      ! C2
+      !         C2 = GRAV / SIGMA**2. - RHOI * HICE / RHOW
+      C2 = CMPLX(GRAV / SIGMA**2. - RHOI * HICE / RHOW, 0.)
+      !
     ELSE IF (ABS(IC5VEMOD - 2.) < ERRTOL) THEN
-       ! See Appendix of Liu et al. (2020) - RP model
-       C1 = CMPLX(TISMODG * HICE**3. * (1+NU) / (6. * RHOW * SIGMA**2.), 0.)
-       C2 = CMPLX(GRAV/SIGMA**2. - RHOI * HICE / RHOW,              &
-            -1. * IVISC / (RHOW * SIGMA))
-       !
+      ! See Appendix of Liu et al. (2020) - RP model
+      C1 = CMPLX(TISMODG * HICE**3. * (1+NU) / (6. * RHOW * SIGMA**2.), 0.)
+      C2 = CMPLX(GRAV/SIGMA**2. - RHOI * HICE / RHOW,              &
+           -1. * IVISC / (RHOW * SIGMA))
+      !
     ELSE IF (ABS(IC5VEMOD - 3.) > ERRTOL) THEN
-       WRITE(NDSE, 1003) 'FSDISP', IC5VEMOD
-       CALL EXTCDE(4)
+      WRITE(NDSE, 1003) 'FSDISP', IC5VEMOD
+      CALL EXTCDE(4)
     END IF
     ! Use the dispersion in open water to get an approximation of
     ! tanh(HWAT * k). We can also roughly use the dispersion in deep
@@ -776,40 +776,40 @@ CONTAINS
     THKH = TANH(WNO * THW)
     !
     IF (ABS(IC5VEMOD - 1.) < ERRTOL .OR. ABS(IC5VEMOD - 2.) < ERRTOL) THEN
-       ! Get the first guess of the complex wavenumber
-       CALL POLYROOTS(6, &
-            (/REAL(REAL(C1))*THKH, 0., 0., 0., REAL(REAL(C2))*THKH, -1./),&
-            RTRL, RTIM)
-       RTANG = ATAN2(RTIM, RTRL)
-       !
-       ! There should only be one real root in RTRL + i * RTIM because in
-       ! this case (ivisc=0) the original viscoelastic-type model reduced to
-       ! the thin elastic plate model which has only one real solution.
-       ! Find its index ...
-       !
-       IREAL = MINLOC(ABS(RTANG), DIM=1)
-       IF (RTRL(IREAL) <= 0. .OR. ABS(RTIM(IREAL)) > ERRTOL) THEN
-          IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'FSDISP'
-          CALL EXTCDE(2)
-       END IF
-       !
-       ! Get the first guess for iteration
-       GUESS = RTRL(IREAL) * EXP(CMPLX(0., 1E-6))
-       !
-       ! Newton-Raphson method
-       ! Turn c1, c2, hwat to be double
-       C1D = C1; C2D = C2; HWATD = THW
-       CROOT = NR_ROOT(C1D, C2D, HWATD, GUESS)
-       WNR = REAL(REAL(CROOT))
-       WNI = REAL(AIMAG(CROOT))
-       !
+      ! Get the first guess of the complex wavenumber
+      CALL POLYROOTS(6, &
+           (/REAL(REAL(C1))*THKH, 0., 0., 0., REAL(REAL(C2))*THKH, -1./),&
+           RTRL, RTIM)
+      RTANG = ATAN2(RTIM, RTRL)
+      !
+      ! There should only be one real root in RTRL + i * RTIM because in
+      ! this case (ivisc=0) the original viscoelastic-type model reduced to
+      ! the thin elastic plate model which has only one real solution.
+      ! Find its index ...
+      !
+      IREAL = MINLOC(ABS(RTANG), DIM=1)
+      IF (RTRL(IREAL) <= 0. .OR. ABS(RTIM(IREAL)) > ERRTOL) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'FSDISP'
+        CALL EXTCDE(2)
+      END IF
+      !
+      ! Get the first guess for iteration
+      GUESS = RTRL(IREAL) * EXP(CMPLX(0., 1E-6))
+      !
+      ! Newton-Raphson method
+      ! Turn c1, c2, hwat to be double
+      C1D = C1; C2D = C2; HWATD = THW
+      CROOT = NR_ROOT(C1D, C2D, HWATD, GUESS)
+      WNR = REAL(REAL(CROOT))
+      WNI = REAL(AIMAG(CROOT))
+      !
     ELSE IF (ABS(IC5VEMOD - 3.) < ERRTOL) THEN ! M2
-       ! Model with Order 3 Power Law (section 6.2 in Meylan et al. (2018, JGR-Ocean))
-       ! Based on my understanding, the wavelength does not change because
-       ! the elasticity is not considered in this model
-       WNR = WNO ! Open-water wavenumber
-       ! Eq. (53) in Meylan et al. (2018)
-       WNI = HICE * IVISC * SIGMA**3. / (RHOW * GRAV**2.)
+      ! Model with Order 3 Power Law (section 6.2 in Meylan et al. (2018, JGR-Ocean))
+      ! Based on my understanding, the wavelength does not change because
+      ! the elasticity is not considered in this model
+      WNR = WNO ! Open-water wavenumber
+      ! Eq. (53) in Meylan et al. (2018)
+      WNI = HICE * IVISC * SIGMA**3. / (RHOW * GRAV**2.)
     END IF
     !
     ! RATIO Check
@@ -832,10 +832,10 @@ CONTAINS
     TRATIO = WNO / WNR
     IF (W3INAN(WNR) .OR. W3INAN(WNI) .OR. WNR <= 0 .OR. WNI <= 0. &
          .OR. TRATIO >= IC5MAXKRATIO) THEN
-       IF ( IAPROC .EQ. NAPERR )                       &
-            WRITE(NDSE, 1002) 'FSDISP', HICE, IVISC, TISMODG, HWAT, TWT, &
-            WNO, WNR, WNI
-       CALL EXTCDE(3)
+      IF ( IAPROC .EQ. NAPERR )                       &
+           WRITE(NDSE, 1002) 'FSDISP', HICE, IVISC, TISMODG, HWAT, TWT, &
+           WNO, WNR, WNI
+      CALL EXTCDE(3)
     END IF
     !
     ! Filter high ki
@@ -984,41 +984,41 @@ CONTAINS
 #endif
     !
     DO
-       LAST = 1
-       DO I = 1, NMAT
-          ! Calculate row and column norms
-          C = SUM( ABS(MATRIX(:, I)) ) - MATRIX(I, I)
-          R = SUM( ABS(MATRIX(I, :)) ) - MATRIX(I, I)
-          ! If both are non-zero
-          IF (C /= 0.0 .AND. R /= 0.0) THEN
-             ! Find the integer power of the machine radix that comes closest to
-             ! balancing the matrix (get G, F from C, R)
-             G = R / RADX
-             F = 1.0
-             S = C + R
-             DO
-                IF (C >= G) EXIT
-                F = F * RADX
-                C = C * SQRADX
-             END DO
-             !
-             G = R * RADX
-             DO
-                IF (C <= G) EXIT
-                F = F / RADX
-                C = C / SQRADX
-             END DO
-             !
-             IF ( (C+R)/F < 0.95*S) THEN
-                LAST = 0
-                G = 1.0 / F
-                ! Apply similarity tranformation
-                MATRIX(I, :) = MATRIX(I, :) * G
-                MATRIX(:, I) = MATRIX(:, I) * F
-             END IF
+      LAST = 1
+      DO I = 1, NMAT
+        ! Calculate row and column norms
+        C = SUM( ABS(MATRIX(:, I)) ) - MATRIX(I, I)
+        R = SUM( ABS(MATRIX(I, :)) ) - MATRIX(I, I)
+        ! If both are non-zero
+        IF (C /= 0.0 .AND. R /= 0.0) THEN
+          ! Find the integer power of the machine radix that comes closest to
+          ! balancing the matrix (get G, F from C, R)
+          G = R / RADX
+          F = 1.0
+          S = C + R
+          DO
+            IF (C >= G) EXIT
+            F = F * RADX
+            C = C * SQRADX
+          END DO
+          !
+          G = R * RADX
+          DO
+            IF (C <= G) EXIT
+            F = F / RADX
+            C = C / SQRADX
+          END DO
+          !
+          IF ( (C+R)/F < 0.95*S) THEN
+            LAST = 0
+            G = 1.0 / F
+            ! Apply similarity tranformation
+            MATRIX(I, :) = MATRIX(I, :) * G
+            MATRIX(:, I) = MATRIX(:, I) * F
           END IF
-       END DO
-       IF (LAST /= 0) EXIT
+        END IF
+      END DO
+      IF (LAST /= 0) EXIT
     END DO
     !/
     !/ End of subroutine BALANCING_MATRIX -------------------------------- /
@@ -1165,155 +1165,155 @@ CONTAINS
     T = 0.0
     ! Begin search for next eigenvalue: "do while nn >= 1"
     DO
-       IF (NN < 1) EXIT
-       ITS=0
-       ! Begin iteration
-       ITERATE:DO
-          ! Look for single small subdiagonal element.
-          SMALL: DO L=NN, 2, -1
-             S = ABS( HMAT(L-1, L-1) ) + ABS( HMAT(L, L) )
-             !                  IF (S == 0.0) S = ANORM
-             IF (ABS(S) < ERRTOL) S = ANORM
-             !                  IF ( ABS(HMAT(L, L-1)) + S == S ) THEN
-             IF ( ABS(HMAT(L, L-1)) < ERRTOL ) THEN
-                HMAT(L, L-1) = 0.0
-                EXIT SMALL
-             END IF
-          END DO SMALL
-          X = HMAT(NN, NN)
-          ! One root found
-          IF (L == NN) THEN
-             EIGR(NN) = X + T
-             EIGI(NN) = 0.0
-             NN=NN-1
-             ! Go back for next eigenvalue
-             EXIT ITERATE
+      IF (NN < 1) EXIT
+      ITS=0
+      ! Begin iteration
+      ITERATE:DO
+        ! Look for single small subdiagonal element.
+        SMALL: DO L=NN, 2, -1
+          S = ABS( HMAT(L-1, L-1) ) + ABS( HMAT(L, L) )
+          !                  IF (S == 0.0) S = ANORM
+          IF (ABS(S) < ERRTOL) S = ANORM
+          !                  IF ( ABS(HMAT(L, L-1)) + S == S ) THEN
+          IF ( ABS(HMAT(L, L-1)) < ERRTOL ) THEN
+            HMAT(L, L-1) = 0.0
+            EXIT SMALL
           END IF
-          Y = HMAT(NN-1, NN-1)
-          W = HMAT(NN, NN-1) * HMAT(NN-1, NN)
-          ! Two roots found . . .
-          IF (L == NN-1) THEN
-             P = 0.5 * (Y - X)
-             Q = P**2 + W
-             Z = SQRT( ABS(Q) )
-             X = X + T
-             ! . . . A real pair . . .
-             IF (Q >= 0.0) THEN
-                Z = P + SIGN(Z, P)
-                EIGR(NN) = X + Z
-                EIGR(NN-1) = EIGR(NN)
-                IF (Z /= 0.0) EIGR(NN) = X - W/Z
-                EIGI(NN) = 0.0
-                EIGI(NN-1) = 0.0
-                ! . . . A complex pair
-             ELSE
-                EIGR(NN) = X + P
-                EIGR(NN-1) = EIGR(NN)
-                EIGI(NN) = Z
-                EIGI(NN-1) = -Z
-             END IF
-             NN=NN-2
-             ! GO BACK FOR NEXT EIGENVALUE.
-             EXIT ITERATE
+        END DO SMALL
+        X = HMAT(NN, NN)
+        ! One root found
+        IF (L == NN) THEN
+          EIGR(NN) = X + T
+          EIGI(NN) = 0.0
+          NN=NN-1
+          ! Go back for next eigenvalue
+          EXIT ITERATE
+        END IF
+        Y = HMAT(NN-1, NN-1)
+        W = HMAT(NN, NN-1) * HMAT(NN-1, NN)
+        ! Two roots found . . .
+        IF (L == NN-1) THEN
+          P = 0.5 * (Y - X)
+          Q = P**2 + W
+          Z = SQRT( ABS(Q) )
+          X = X + T
+          ! . . . A real pair . . .
+          IF (Q >= 0.0) THEN
+            Z = P + SIGN(Z, P)
+            EIGR(NN) = X + Z
+            EIGR(NN-1) = EIGR(NN)
+            IF (Z /= 0.0) EIGR(NN) = X - W/Z
+            EIGI(NN) = 0.0
+            EIGI(NN-1) = 0.0
+            ! . . . A complex pair
+          ELSE
+            EIGR(NN) = X + P
+            EIGR(NN-1) = EIGR(NN)
+            EIGI(NN) = Z
+            EIGI(NN-1) = -Z
           END IF
-          ! NO ROOTS FOUND. CONTINUE ITERATION.
-          IF (ITS == 30) THEN
-             IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'EIG_HQR'
-             CALL EXTCDE(2)
-          END IF
-          ! FORM EXCEPTIONAL SHIFT.
-          IF (ITS == 10 .OR. ITS == 20) THEN
-             T = T + X
-             ! Add -X to the diagonal of HMAT
-             DO IDIAG = 1, NN
-                HMAT(IDIAG, IDIAG) = HMAT(IDIAG, IDIAG) + (-X)
-             END DO
-             S = ABS(HMAT(NN, NN-1)) + ABS(HMAT(NN-1, NN-2))
-             X = 0.75 * S
-             Y = X
-             W = -0.4375 * S**2
-          END IF
-          ITS = ITS + 1
-          ! Form shift and then look for 2 consecutive small subdiagonal elements.
-          DO M = NN-2, L, -1
-             Z = HMAT(M, M)
-             R = X - Z
-             S = Y - Z
-             ! Equation (11.6.23).
-             P = (R * S - W) / HMAT(M+1, M) + HMAT(M, M+1)
-             Q = HMAT(M+1, M+1) - Z - R - S
-             R = HMAT(M+2, M+1)
-             ! Scale to prevent overflow or underflow
-             S = ABS(P) + ABS(Q) + ABS(R)
-             P = P / S
-             Q = Q / S
-             R = R / S
-             IF (M == L) EXIT
-             U = ABS( HMAT(M, M-1) ) * ( ABS(Q) + ABS(R) )
-             V = ABS(P) * ( ABS(HMAT(M-1, M-1)) + ABS(Z) + &
-                  ABS( HMAT(M+1, M+1) ))
-             ! Equation (11.6.26)
-             IF (U+V == V) EXIT
+          NN=NN-2
+          ! GO BACK FOR NEXT EIGENVALUE.
+          EXIT ITERATE
+        END IF
+        ! NO ROOTS FOUND. CONTINUE ITERATION.
+        IF (ITS == 30) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'EIG_HQR'
+          CALL EXTCDE(2)
+        END IF
+        ! FORM EXCEPTIONAL SHIFT.
+        IF (ITS == 10 .OR. ITS == 20) THEN
+          T = T + X
+          ! Add -X to the diagonal of HMAT
+          DO IDIAG = 1, NN
+            HMAT(IDIAG, IDIAG) = HMAT(IDIAG, IDIAG) + (-X)
           END DO
-          DO I= M+2, NN
-             HMAT(I, I-2) = 0.0
-             IF (I /= M+2) HMAT(I, I-3)=0.0
-          END DO
-          ! Double QR step on rows L to NN and columns M to NN
-          DO K=M, NN-1
-             IF (K /= M) THEN
-                ! Begin setup of householder vector
-                P = HMAT(K, K-1)
-                Q = HMAT(K+1, K-1)
-                R = 0.0
-                IF (K /= NN-1) R = HMAT(K+2, K-1)
-                X = ABS(P) + ABS(Q) + ABS(R)
-                IF (X /= 0.0) THEN
-                   ! Scale to prevent overflow or underflow
-                   P = P / X
-                   Q = Q / X
-                   R = R / X
-                END IF
-             END IF
-             S = SIGN(SQRT(P**2 + Q**2 + R**2), P)
-             IF (S /= 0.0) THEN
-                IF (K == M) THEN
-                   IF (L /= M) HMAT(K, K-1) = -HMAT(K, K-1)
-                ELSE
-                   HMAT(K, K-1) = -S * X
-                END IF
-                ! Equations (11.6.24).
-                P = P + S
-                X = P / S
-                Y = Q / S
-                Z = R / S
-                Q = Q / P
-                ! READY FOR ROW MODIFICATION.
-                R = R / P
-                PP(K:NN) = HMAT(K, K:NN) + Q * HMAT(K+1, K:NN)
-                IF (K /= NN-1) THEN
-                   PP(K:NN) = PP(K:NN) + R * HMAT(K+2, K:NN)
-                   HMAT(K+2, K:NN) = HMAT(K+2, K:NN) - &
-                        PP(K:NN)*Z
-                END IF
-                HMAT(K+1, K:NN) = HMAT(K+1, K:NN) - PP(K:NN) * Y
-                HMAT(K, K:NN) = HMAT(K, K:NN) - PP(K:NN) * X
-                ! COLUMN MODIFICATION.
-                MNNK = MIN(NN, K+3)
-                PP(L:MNNK) = X * HMAT(L:MNNK, K) + Y * &
-                     HMAT(L:MNNK, K+1)
-                IF (K /= NN-1) THEN
-                   PP(L:MNNK) = PP(L:MNNK) + Z*HMAT(L:MNNK, K+2)
-                   HMAT(L:MNNK, K+2) = HMAT(L:MNNK, K+2) - &
-                        PP(L:MNNK) * R
-                END IF
-                HMAT(L:MNNK, K+1) = HMAT(L:MNNK, K+1) - &
-                     PP(L:MNNK) * Q
-                HMAT(L:MNNK, K) = HMAT(L:MNNK, K) - PP(L:MNNK)
-             END IF
-          END DO
-          ! GO BACK FOR NEXT ITERATION ON CURRENT EIGENEND DO VALUE.
-       END DO ITERATE
+          S = ABS(HMAT(NN, NN-1)) + ABS(HMAT(NN-1, NN-2))
+          X = 0.75 * S
+          Y = X
+          W = -0.4375 * S**2
+        END IF
+        ITS = ITS + 1
+        ! Form shift and then look for 2 consecutive small subdiagonal elements.
+        DO M = NN-2, L, -1
+          Z = HMAT(M, M)
+          R = X - Z
+          S = Y - Z
+          ! Equation (11.6.23).
+          P = (R * S - W) / HMAT(M+1, M) + HMAT(M, M+1)
+          Q = HMAT(M+1, M+1) - Z - R - S
+          R = HMAT(M+2, M+1)
+          ! Scale to prevent overflow or underflow
+          S = ABS(P) + ABS(Q) + ABS(R)
+          P = P / S
+          Q = Q / S
+          R = R / S
+          IF (M == L) EXIT
+          U = ABS( HMAT(M, M-1) ) * ( ABS(Q) + ABS(R) )
+          V = ABS(P) * ( ABS(HMAT(M-1, M-1)) + ABS(Z) + &
+               ABS( HMAT(M+1, M+1) ))
+          ! Equation (11.6.26)
+          IF (U+V == V) EXIT
+        END DO
+        DO I= M+2, NN
+          HMAT(I, I-2) = 0.0
+          IF (I /= M+2) HMAT(I, I-3)=0.0
+        END DO
+        ! Double QR step on rows L to NN and columns M to NN
+        DO K=M, NN-1
+          IF (K /= M) THEN
+            ! Begin setup of householder vector
+            P = HMAT(K, K-1)
+            Q = HMAT(K+1, K-1)
+            R = 0.0
+            IF (K /= NN-1) R = HMAT(K+2, K-1)
+            X = ABS(P) + ABS(Q) + ABS(R)
+            IF (X /= 0.0) THEN
+              ! Scale to prevent overflow or underflow
+              P = P / X
+              Q = Q / X
+              R = R / X
+            END IF
+          END IF
+          S = SIGN(SQRT(P**2 + Q**2 + R**2), P)
+          IF (S /= 0.0) THEN
+            IF (K == M) THEN
+              IF (L /= M) HMAT(K, K-1) = -HMAT(K, K-1)
+            ELSE
+              HMAT(K, K-1) = -S * X
+            END IF
+            ! Equations (11.6.24).
+            P = P + S
+            X = P / S
+            Y = Q / S
+            Z = R / S
+            Q = Q / P
+            ! READY FOR ROW MODIFICATION.
+            R = R / P
+            PP(K:NN) = HMAT(K, K:NN) + Q * HMAT(K+1, K:NN)
+            IF (K /= NN-1) THEN
+              PP(K:NN) = PP(K:NN) + R * HMAT(K+2, K:NN)
+              HMAT(K+2, K:NN) = HMAT(K+2, K:NN) - &
+                   PP(K:NN)*Z
+            END IF
+            HMAT(K+1, K:NN) = HMAT(K+1, K:NN) - PP(K:NN) * Y
+            HMAT(K, K:NN) = HMAT(K, K:NN) - PP(K:NN) * X
+            ! COLUMN MODIFICATION.
+            MNNK = MIN(NN, K+3)
+            PP(L:MNNK) = X * HMAT(L:MNNK, K) + Y * &
+                 HMAT(L:MNNK, K+1)
+            IF (K /= NN-1) THEN
+              PP(L:MNNK) = PP(L:MNNK) + Z*HMAT(L:MNNK, K+2)
+              HMAT(L:MNNK, K+2) = HMAT(L:MNNK, K+2) - &
+                   PP(L:MNNK) * R
+            END IF
+            HMAT(L:MNNK, K+1) = HMAT(L:MNNK, K+1) - &
+                 PP(L:MNNK) * Q
+            HMAT(L:MNNK, K) = HMAT(L:MNNK, K) - PP(L:MNNK)
+          END IF
+        END DO
+        ! GO BACK FOR NEXT ITERATION ON CURRENT EIGENEND DO VALUE.
+      END DO ITERATE
     END DO
     !
     ! Formats
@@ -1455,15 +1455,15 @@ CONTAINS
     !
     !
     IF (ABS(PCVEC(1)) < ERRTOL) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'POLYROOTS'
-       CALL EXTCDE(2)
+      IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'POLYROOTS'
+      CALL EXTCDE(2)
     END IF
     !
     ! Generate the Hessenberg matrix
     HESS = 0.
     HESS(1, :) = -1 * PCVEC(2:) / PCVEC(1)
     DO J = 1, NPC-2
-       HESS(J+1, J) = 1.
+      HESS(J+1, J) = 1.
     END DO
 
     ! Balancing the matrix HESS
@@ -1610,18 +1610,18 @@ CONTAINS
     LAMPR = 5 * C1 * K**4 + C2
     !
     IF (REAL(REAL(TKH)) <= KH_LIM) THEN
-       !         KH is small enough
-       !         FV = LAM * K * SINH(K*H) - COSH(K*H)
-       !         DF = LAM * (K*H) * COSH(K*H) + (LAMPR - H) * SINH(K*H)
-       FV = LAM * K * CMPLX_SINH(TKH) - CMPLX_COSH(TKH)
-       DF = LAM * TKH * CMPLX_COSH(TKH) + (LAMPR-H) * CMPLX_SINH(TKH)
+      !         KH is small enough
+      !         FV = LAM * K * SINH(K*H) - COSH(K*H)
+      !         DF = LAM * (K*H) * COSH(K*H) + (LAMPR - H) * SINH(K*H)
+      FV = LAM * K * CMPLX_SINH(TKH) - CMPLX_COSH(TKH)
+      DF = LAM * TKH * CMPLX_COSH(TKH) + (LAMPR-H) * CMPLX_SINH(TKH)
     ELSE
-       !         FV = LAM * K * TANH(K*H) - 1
-       !         DF = LAM * K * H + (LAMPR - H) * TANH(K*H)
-       !         DF = LAMPR * TANH(K*H) + LAM * K * H / (COSH(K*H) **2)
-       FV = LAM * K * CMPLX_TANH2(TKH) - 1
-       DF = LAMPR * CMPLX_TANH2(TKH) + LAM * TKH * &
-            (1 - CMPLX_TANH2(TKH) ** 2.)
+      !         FV = LAM * K * TANH(K*H) - 1
+      !         DF = LAM * K * H + (LAMPR - H) * TANH(K*H)
+      !         DF = LAMPR * TANH(K*H) + LAM * K * H / (COSH(K*H) **2)
+      FV = LAM * K * CMPLX_TANH2(TKH) - 1
+      DF = LAMPR * CMPLX_TANH2(TKH) + LAM * TKH * &
+           (1 - CMPLX_TANH2(TKH) ** 2.)
     END IF
     !
     NR_CORR = FV / DF
@@ -1753,32 +1753,32 @@ CONTAINS
     IF (IC5RKICK > 0.5) CALL INIT_RANDOM_SEED()
     !
     DO WHILE (ABS(DK) > ERRTOL)
-       K0 = K1
-       DK = NR_CORR(K0, C1, C2, H)
-       K1 = K0 - DK
-       ITER = ITER + 1
-       !
-       ! Random kick to avoid converging to evanescent modes
-       ! Note: do not use RAND(1) because it alway gives a same random no.
-       ! The built in function of RAND is not available in <ifort>, use
-       ! random_seed/number instead.
-       !
-       ! Based on many tests, I found the random kick & the corridor excluded
-       ! from imaginary axis are kind of helpful to avoid spurious solutions.
-       ! However, it may also lead to no solutions returned, especially for
-       ! high G and high T.
-       !
-       IF (IC5RKICK > 0.5 .AND. ABS(REAL(K1)) < IC5KFILTER) THEN
-          !             K1 = K1 + 2*RAND(0)
-          CALL RANDOM_NUMBER(TRANVAL)
-          K1 = K1 + 2 * TRANVAL
-       END IF
-       !
-       IF (ITER >= IC5MAXITER) THEN
-          IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'NR_ROOT'
-          CALL EXTCDE(1)
-       END IF
-       !
+      K0 = K1
+      DK = NR_CORR(K0, C1, C2, H)
+      K1 = K0 - DK
+      ITER = ITER + 1
+      !
+      ! Random kick to avoid converging to evanescent modes
+      ! Note: do not use RAND(1) because it alway gives a same random no.
+      ! The built in function of RAND is not available in <ifort>, use
+      ! random_seed/number instead.
+      !
+      ! Based on many tests, I found the random kick & the corridor excluded
+      ! from imaginary axis are kind of helpful to avoid spurious solutions.
+      ! However, it may also lead to no solutions returned, especially for
+      ! high G and high T.
+      !
+      IF (IC5RKICK > 0.5 .AND. ABS(REAL(K1)) < IC5KFILTER) THEN
+        !             K1 = K1 + 2*RAND(0)
+        CALL RANDOM_NUMBER(TRANVAL)
+        K1 = K1 + 2 * TRANVAL
+      END IF
+      !
+      IF (ITER >= IC5MAXITER) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE(NDSE, 1001) 'NR_ROOT'
+        CALL EXTCDE(1)
+      END IF
+      !
     END DO
     !
     NR_ROOT = K1

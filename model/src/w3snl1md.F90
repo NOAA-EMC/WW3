@@ -296,69 +296,69 @@ CONTAINS
     ! 2.  Prepare auxiliary spectrum and arrays -------------------------- *
     !
     DO IFR=1, NFR
-       CONX = TPIINV / SIG(IFR) * CG(IFR)
-       DO ITH=1, NTH
-          ISP       = ITH + (IFR-1)*NTH
-          UE (ISP) = A(ISP) / CONX
-          CON(ISP) = CONX
-       END DO
+      CONX = TPIINV / SIG(IFR) * CG(IFR)
+      DO ITH=1, NTH
+        ISP       = ITH + (IFR-1)*NTH
+        UE (ISP) = A(ISP) / CONX
+        CON(ISP) = CONX
+      END DO
     END DO
     !
     DO IFR=NFR+1, NFRHGH
-       DO ITH=1, NTH
-          ISP      = ITH + (IFR-1)*NTH
-          UE(ISP) = UE(ISP-NTH) * FACHFE
-       END DO
+      DO ITH=1, NTH
+        ISP      = ITH + (IFR-1)*NTH
+        UE(ISP) = UE(ISP-NTH) * FACHFE
+      END DO
     END DO
     !
     DO ISP=1-NTH, 0
-       UE  (ISP) = 0.
-       SA1 (ISP) = 0.
-       SA2 (ISP) = 0.
-       DA1C(ISP) = 0.
-       DA1P(ISP) = 0.
-       DA1M(ISP) = 0.
-       DA2C(ISP) = 0.
-       DA2P(ISP) = 0.
-       DA2M(ISP) = 0.
+      UE  (ISP) = 0.
+      SA1 (ISP) = 0.
+      SA2 (ISP) = 0.
+      DA1C(ISP) = 0.
+      DA1P(ISP) = 0.
+      DA1M(ISP) = 0.
+      DA2C(ISP) = 0.
+      DA2P(ISP) = 0.
+      DA2M(ISP) = 0.
     END DO
     !
     ! 3.  Calculate interactions for extended spectrum ------------------- *
     !
     DO ISP=1, NSPECX
-       !
-       ! 3.a Energy at interacting bins
-       !
-       E00    =        UE(ISP)
-       EP1    = AWG1 * UE(IP11(ISP)) + AWG2 * UE(IP12(ISP))        &
-            + AWG3 * UE(IP13(ISP)) + AWG4 * UE(IP14(ISP))
-       EM1    = AWG5 * UE(IM11(ISP)) + AWG6 * UE(IM12(ISP))        &
-            + AWG7 * UE(IM13(ISP)) + AWG8 * UE(IM14(ISP))
-       EP2    = AWG1 * UE(IP21(ISP)) + AWG2 * UE(IP22(ISP))        &
-            + AWG3 * UE(IP23(ISP)) + AWG4 * UE(IP24(ISP))
-       EM2    = AWG5 * UE(IM21(ISP)) + AWG6 * UE(IM22(ISP))        &
-            + AWG7 * UE(IM23(ISP)) + AWG8 * UE(IM24(ISP))
-       !
-       ! 3.b Contribution to interactions
-       !
-       FACTOR = CONS * AF11(ISP) * E00
-       !
-       SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 )
-       SA1B   = SA1A - EP1*EM1*DAL3
-       SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 )
-       SA2B   = SA2A - EP2*EM2*DAL3
-       !
-       SA1 (ISP) = FACTOR * SA1B
-       SA2 (ISP) = FACTOR * SA2B
-       !
-       DA1C(ISP) = CONS * AF11(ISP) * ( SA1A + SA1B )
-       DA1P(ISP) = FACTOR * ( DAL1*E00 - DAL3*EM1 )
-       DA1M(ISP) = FACTOR * ( DAL2*E00 - DAL3*EP1 )
-       !
-       DA2C(ISP) = CONS * AF11(ISP) * ( SA2A + SA2B )
-       DA2P(ISP) = FACTOR * ( DAL1*E00 - DAL3*EM2 )
-       DA2M(ISP) = FACTOR * ( DAL2*E00 - DAL3*EP2 )
-       !
+      !
+      ! 3.a Energy at interacting bins
+      !
+      E00    =        UE(ISP)
+      EP1    = AWG1 * UE(IP11(ISP)) + AWG2 * UE(IP12(ISP))        &
+           + AWG3 * UE(IP13(ISP)) + AWG4 * UE(IP14(ISP))
+      EM1    = AWG5 * UE(IM11(ISP)) + AWG6 * UE(IM12(ISP))        &
+           + AWG7 * UE(IM13(ISP)) + AWG8 * UE(IM14(ISP))
+      EP2    = AWG1 * UE(IP21(ISP)) + AWG2 * UE(IP22(ISP))        &
+           + AWG3 * UE(IP23(ISP)) + AWG4 * UE(IP24(ISP))
+      EM2    = AWG5 * UE(IM21(ISP)) + AWG6 * UE(IM22(ISP))        &
+           + AWG7 * UE(IM23(ISP)) + AWG8 * UE(IM24(ISP))
+      !
+      ! 3.b Contribution to interactions
+      !
+      FACTOR = CONS * AF11(ISP) * E00
+      !
+      SA1A   = E00 * ( EP1*DAL1 + EM1*DAL2 )
+      SA1B   = SA1A - EP1*EM1*DAL3
+      SA2A   = E00 * ( EP2*DAL1 + EM2*DAL2 )
+      SA2B   = SA2A - EP2*EM2*DAL3
+      !
+      SA1 (ISP) = FACTOR * SA1B
+      SA2 (ISP) = FACTOR * SA2B
+      !
+      DA1C(ISP) = CONS * AF11(ISP) * ( SA1A + SA1B )
+      DA1P(ISP) = FACTOR * ( DAL1*E00 - DAL3*EM1 )
+      DA1M(ISP) = FACTOR * ( DAL2*E00 - DAL3*EP1 )
+      !
+      DA2C(ISP) = CONS * AF11(ISP) * ( SA2A + SA2B )
+      DA2P(ISP) = FACTOR * ( DAL1*E00 - DAL3*EM2 )
+      DA2M(ISP) = FACTOR * ( DAL2*E00 - DAL3*EP2 )
+      !
     END DO
     !
     ! 4.  Put source and diagonal term together -------------------------- *
@@ -367,27 +367,27 @@ CONTAINS
     !!/DEBUGSRC     WRITE(740+IAPROC,*)  'W3SNL1 : sum(SA2)=', sum(SA2)
     !!/DEBUGSRC     FLUSH(740+IAPROC)
     DO ISP=1, NSPEC
-       !
-       S(ISP) = CON(ISP) * ( - 2. * ( SA1(ISP) + SA2(ISP) )       &
-            + AWG1 * ( SA1(IC11(ISP)) + SA2(IC12(ISP)) )    &
-            + AWG2 * ( SA1(IC21(ISP)) + SA2(IC22(ISP)) )    &
-            + AWG3 * ( SA1(IC31(ISP)) + SA2(IC32(ISP)) )    &
-            + AWG4 * ( SA1(IC41(ISP)) + SA2(IC42(ISP)) )    &
-            + AWG5 * ( SA1(IC51(ISP)) + SA2(IC52(ISP)) )    &
-            + AWG6 * ( SA1(IC61(ISP)) + SA2(IC62(ISP)) )    &
-            + AWG7 * ( SA1(IC71(ISP)) + SA2(IC72(ISP)) )    &
-            + AWG8 * ( SA1(IC81(ISP)) + SA2(IC82(ISP)) ) )
-       !
-       D(ISP) =  - 2. * ( DA1C(ISP) + DA2C(ISP) )                 &
-            + SWG1 * ( DA1P(IC11(ISP)) + DA2P(IC12(ISP)) )     &
-            + SWG2 * ( DA1P(IC21(ISP)) + DA2P(IC22(ISP)) )     &
-            + SWG3 * ( DA1P(IC31(ISP)) + DA2P(IC32(ISP)) )     &
-            + SWG4 * ( DA1P(IC41(ISP)) + DA2P(IC42(ISP)) )     &
-            + SWG5 * ( DA1M(IC51(ISP)) + DA2M(IC52(ISP)) )     &
-            + SWG6 * ( DA1M(IC61(ISP)) + DA2M(IC62(ISP)) )     &
-            + SWG7 * ( DA1M(IC71(ISP)) + DA2M(IC72(ISP)) )     &
-            + SWG8 * ( DA1M(IC81(ISP)) + DA2M(IC82(ISP)) )
-       !
+      !
+      S(ISP) = CON(ISP) * ( - 2. * ( SA1(ISP) + SA2(ISP) )       &
+           + AWG1 * ( SA1(IC11(ISP)) + SA2(IC12(ISP)) )    &
+           + AWG2 * ( SA1(IC21(ISP)) + SA2(IC22(ISP)) )    &
+           + AWG3 * ( SA1(IC31(ISP)) + SA2(IC32(ISP)) )    &
+           + AWG4 * ( SA1(IC41(ISP)) + SA2(IC42(ISP)) )    &
+           + AWG5 * ( SA1(IC51(ISP)) + SA2(IC52(ISP)) )    &
+           + AWG6 * ( SA1(IC61(ISP)) + SA2(IC62(ISP)) )    &
+           + AWG7 * ( SA1(IC71(ISP)) + SA2(IC72(ISP)) )    &
+           + AWG8 * ( SA1(IC81(ISP)) + SA2(IC82(ISP)) ) )
+      !
+      D(ISP) =  - 2. * ( DA1C(ISP) + DA2C(ISP) )                 &
+           + SWG1 * ( DA1P(IC11(ISP)) + DA2P(IC12(ISP)) )     &
+           + SWG2 * ( DA1P(IC21(ISP)) + DA2P(IC22(ISP)) )     &
+           + SWG3 * ( DA1P(IC31(ISP)) + DA2P(IC32(ISP)) )     &
+           + SWG4 * ( DA1P(IC41(ISP)) + DA2P(IC42(ISP)) )     &
+           + SWG5 * ( DA1M(IC51(ISP)) + DA2M(IC52(ISP)) )     &
+           + SWG6 * ( DA1M(IC61(ISP)) + DA2M(IC62(ISP)) )     &
+           + SWG7 * ( DA1M(IC71(ISP)) + DA2M(IC72(ISP)) )     &
+           + SWG8 * ( DA1M(IC81(ISP)) + DA2M(IC82(ISP)) )
+      !
     END DO
     !!/DEBUGSRC     WRITE(740+IAPROC,*)  'W3SNL1 : sum(S)=', sum(S)
     !!/DEBUGSRC     WRITE(740+IAPROC,*)  'W3SNL1 : sum(D)=', sum(D)
@@ -397,11 +397,11 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IFR=1, NFR
-       DO ITH=1, NTH
-          ISP          = ITH + (IFR-1)*NTH
-          SOUT(IFR,ITH) = S(ISP) * TPI * SIG(IFR) / CG(IFR)
-          DOUT(IFR,ITH) = D(ISP)
-       END DO
+      DO ITH=1, NTH
+        ISP          = ITH + (IFR-1)*NTH
+        SOUT(IFR,ITH) = S(ISP) * TPI * SIG(IFR) / CG(IFR)
+        DOUT(IFR,ITH) = D(ISP)
+      END DO
     END DO
 #endif
     !
@@ -610,75 +610,75 @@ CONTAINS
     ! 7.  Spectral addresses
     !
     DO IFR=1, NFRCHG
-       IF1(IFR) =           IFR+IFRP
-       IF2(IFR) =           IFR+IFRP1
-       IF3(IFR) = MAX ( 0 , IFR+IFRM  )
-       IF4(IFR) = MAX ( 0 , IFR+IFRM1 )
-       IF5(IFR) = MAX ( 0 , IFR-IFRP  )
-       IF6(IFR) = MAX ( 0 , IFR-IFRP1 )
-       IF7(IFR) =           IFR-IFRM
-       IF8(IFR) =           IFR-IFRM1
+      IF1(IFR) =           IFR+IFRP
+      IF2(IFR) =           IFR+IFRP1
+      IF3(IFR) = MAX ( 0 , IFR+IFRM  )
+      IF4(IFR) = MAX ( 0 , IFR+IFRM1 )
+      IF5(IFR) = MAX ( 0 , IFR-IFRP  )
+      IF6(IFR) = MAX ( 0 , IFR-IFRP1 )
+      IF7(IFR) =           IFR-IFRM
+      IF8(IFR) =           IFR-IFRM1
     END DO
     !
     DO ITH=1, NTH
-       IT1(ITH) = ITH + ITHP
-       IT2(ITH) = ITH + ITHP1
-       IT3(ITH) = ITH + ITHM
-       IT4(ITH) = ITH + ITHM1
-       IT5(ITH) = ITH - ITHP
-       IT6(ITH) = ITH - ITHP1
-       IT7(ITH) = ITH - ITHM
-       IT8(ITH) = ITH - ITHM1
-       IF ( IT1(ITH).GT.NTH) IT1(ITH) = IT1(ITH) - NTH
-       IF ( IT2(ITH).GT.NTH) IT2(ITH) = IT2(ITH) - NTH
-       IF ( IT3(ITH).GT.NTH) IT3(ITH) = IT3(ITH) - NTH
-       IF ( IT4(ITH).GT.NTH) IT4(ITH) = IT4(ITH) - NTH
-       IF ( IT5(ITH).LT. 1 ) IT5(ITH) = IT5(ITH) + NTH
-       IF ( IT6(ITH).LT. 1 ) IT6(ITH) = IT6(ITH) + NTH
-       IF ( IT7(ITH).LT. 1 ) IT7(ITH) = IT7(ITH) + NTH
-       IF ( IT8(ITH).LT. 1 ) IT8(ITH) = IT8(ITH) + NTH
+      IT1(ITH) = ITH + ITHP
+      IT2(ITH) = ITH + ITHP1
+      IT3(ITH) = ITH + ITHM
+      IT4(ITH) = ITH + ITHM1
+      IT5(ITH) = ITH - ITHP
+      IT6(ITH) = ITH - ITHP1
+      IT7(ITH) = ITH - ITHM
+      IT8(ITH) = ITH - ITHM1
+      IF ( IT1(ITH).GT.NTH) IT1(ITH) = IT1(ITH) - NTH
+      IF ( IT2(ITH).GT.NTH) IT2(ITH) = IT2(ITH) - NTH
+      IF ( IT3(ITH).GT.NTH) IT3(ITH) = IT3(ITH) - NTH
+      IF ( IT4(ITH).GT.NTH) IT4(ITH) = IT4(ITH) - NTH
+      IF ( IT5(ITH).LT. 1 ) IT5(ITH) = IT5(ITH) + NTH
+      IF ( IT6(ITH).LT. 1 ) IT6(ITH) = IT6(ITH) + NTH
+      IF ( IT7(ITH).LT. 1 ) IT7(ITH) = IT7(ITH) + NTH
+      IF ( IT8(ITH).LT. 1 ) IT8(ITH) = IT8(ITH) + NTH
     END DO
     !
     DO ISP=1, NSPECX
-       IFR       = 1 + (ISP-1)/NTH
-       ITH       = 1 + MOD(ISP-1,NTH)
-       IP11(ISP) = IT2(ITH) + (IF2(IFR)-1)*NTH
-       IP12(ISP) = IT1(ITH) + (IF2(IFR)-1)*NTH
-       IP13(ISP) = IT2(ITH) + (IF1(IFR)-1)*NTH
-       IP14(ISP) = IT1(ITH) + (IF1(IFR)-1)*NTH
-       IM11(ISP) = IT8(ITH) + (IF4(IFR)-1)*NTH
-       IM12(ISP) = IT7(ITH) + (IF4(IFR)-1)*NTH
-       IM13(ISP) = IT8(ITH) + (IF3(IFR)-1)*NTH
-       IM14(ISP) = IT7(ITH) + (IF3(IFR)-1)*NTH
-       IP21(ISP) = IT6(ITH) + (IF2(IFR)-1)*NTH
-       IP22(ISP) = IT5(ITH) + (IF2(IFR)-1)*NTH
-       IP23(ISP) = IT6(ITH) + (IF1(IFR)-1)*NTH
-       IP24(ISP) = IT5(ITH) + (IF1(IFR)-1)*NTH
-       IM21(ISP) = IT4(ITH) + (IF4(IFR)-1)*NTH
-       IM22(ISP) = IT3(ITH) + (IF4(IFR)-1)*NTH
-       IM23(ISP) = IT4(ITH) + (IF3(IFR)-1)*NTH
-       IM24(ISP) = IT3(ITH) + (IF3(IFR)-1)*NTH
+      IFR       = 1 + (ISP-1)/NTH
+      ITH       = 1 + MOD(ISP-1,NTH)
+      IP11(ISP) = IT2(ITH) + (IF2(IFR)-1)*NTH
+      IP12(ISP) = IT1(ITH) + (IF2(IFR)-1)*NTH
+      IP13(ISP) = IT2(ITH) + (IF1(IFR)-1)*NTH
+      IP14(ISP) = IT1(ITH) + (IF1(IFR)-1)*NTH
+      IM11(ISP) = IT8(ITH) + (IF4(IFR)-1)*NTH
+      IM12(ISP) = IT7(ITH) + (IF4(IFR)-1)*NTH
+      IM13(ISP) = IT8(ITH) + (IF3(IFR)-1)*NTH
+      IM14(ISP) = IT7(ITH) + (IF3(IFR)-1)*NTH
+      IP21(ISP) = IT6(ITH) + (IF2(IFR)-1)*NTH
+      IP22(ISP) = IT5(ITH) + (IF2(IFR)-1)*NTH
+      IP23(ISP) = IT6(ITH) + (IF1(IFR)-1)*NTH
+      IP24(ISP) = IT5(ITH) + (IF1(IFR)-1)*NTH
+      IM21(ISP) = IT4(ITH) + (IF4(IFR)-1)*NTH
+      IM22(ISP) = IT3(ITH) + (IF4(IFR)-1)*NTH
+      IM23(ISP) = IT4(ITH) + (IF3(IFR)-1)*NTH
+      IM24(ISP) = IT3(ITH) + (IF3(IFR)-1)*NTH
     END DO
     !
     DO ISP=1, NSPEC
-       IFR       = 1 + (ISP-1)/NTH
-       ITH       = 1 + MOD(ISP-1,NTH)
-       IC11(ISP) = IT6(ITH) + (IF6(IFR)-1)*NTH
-       IC21(ISP) = IT5(ITH) + (IF6(IFR)-1)*NTH
-       IC31(ISP) = IT6(ITH) + (IF5(IFR)-1)*NTH
-       IC41(ISP) = IT5(ITH) + (IF5(IFR)-1)*NTH
-       IC51(ISP) = IT4(ITH) + (IF8(IFR)-1)*NTH
-       IC61(ISP) = IT3(ITH) + (IF8(IFR)-1)*NTH
-       IC71(ISP) = IT4(ITH) + (IF7(IFR)-1)*NTH
-       IC81(ISP) = IT3(ITH) + (IF7(IFR)-1)*NTH
-       IC12(ISP) = IT2(ITH) + (IF6(IFR)-1)*NTH
-       IC22(ISP) = IT1(ITH) + (IF6(IFR)-1)*NTH
-       IC32(ISP) = IT2(ITH) + (IF5(IFR)-1)*NTH
-       IC42(ISP) = IT1(ITH) + (IF5(IFR)-1)*NTH
-       IC52(ISP) = IT8(ITH) + (IF8(IFR)-1)*NTH
-       IC62(ISP) = IT7(ITH) + (IF8(IFR)-1)*NTH
-       IC72(ISP) = IT8(ITH) + (IF7(IFR)-1)*NTH
-       IC82(ISP) = IT7(ITH) + (IF7(IFR)-1)*NTH
+      IFR       = 1 + (ISP-1)/NTH
+      ITH       = 1 + MOD(ISP-1,NTH)
+      IC11(ISP) = IT6(ITH) + (IF6(IFR)-1)*NTH
+      IC21(ISP) = IT5(ITH) + (IF6(IFR)-1)*NTH
+      IC31(ISP) = IT6(ITH) + (IF5(IFR)-1)*NTH
+      IC41(ISP) = IT5(ITH) + (IF5(IFR)-1)*NTH
+      IC51(ISP) = IT4(ITH) + (IF8(IFR)-1)*NTH
+      IC61(ISP) = IT3(ITH) + (IF8(IFR)-1)*NTH
+      IC71(ISP) = IT4(ITH) + (IF7(IFR)-1)*NTH
+      IC81(ISP) = IT3(ITH) + (IF7(IFR)-1)*NTH
+      IC12(ISP) = IT2(ITH) + (IF6(IFR)-1)*NTH
+      IC22(ISP) = IT1(ITH) + (IF6(IFR)-1)*NTH
+      IC32(ISP) = IT2(ITH) + (IF5(IFR)-1)*NTH
+      IC42(ISP) = IT1(ITH) + (IF5(IFR)-1)*NTH
+      IC52(ISP) = IT8(ITH) + (IF8(IFR)-1)*NTH
+      IC62(ISP) = IT7(ITH) + (IF8(IFR)-1)*NTH
+      IC72(ISP) = IT8(ITH) + (IF7(IFR)-1)*NTH
+      IC82(ISP) = IT7(ITH) + (IF7(IFR)-1)*NTH
     END DO
     !
     DEALLOCATE ( IF1, IF2, IF3, IF4, IF5, IF6, IF7, IF8,  &
@@ -687,19 +687,19 @@ CONTAINS
     ! 8.  Fill scaling array (f**11)
     !
     DO IFR=1, NFR
-       AF11A  = (SIG(IFR)*TPIINV)**11
-       DO ITH=1, NTH
-          AF11(ITH+(IFR-1)*NTH) = AF11A
-       END DO
+      AF11A  = (SIG(IFR)*TPIINV)**11
+      DO ITH=1, NTH
+        AF11(ITH+(IFR-1)*NTH) = AF11A
+      END DO
     END DO
     !
     FR     = SIG(NFR)*TPIINV
     DO IFR=NFR+1, NFRCHG
-       FR     = FR * XFR
-       AF11A  = FR**11
-       DO ITH=1, NTH
-          AF11(ITH+(IFR-1)*NTH) = AF11A
-       END DO
+      FR     = FR * XFR
+      AF11A  = FR**11
+      DO ITH=1, NTH
+        AF11(ITH+(IFR-1)*NTH) = AF11A
+      END DO
     END DO
     !
     ! 9.  Interpolation weights

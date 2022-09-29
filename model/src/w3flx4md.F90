@@ -154,8 +154,8 @@ CONTAINS
     ! 1.  Tests ---------------------------------------------------------- *
     !
     IF ( ABS(ZWND-10.) .GT. 0.01 ) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) ZWND
-       CALL EXTCDE (1)
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) ZWND
+      CALL EXTCDE (1)
     END IF
     !
     ! 2.  Computation ---------------------------------------------------- *
@@ -165,11 +165,11 @@ CONTAINS
     !     U10 greater than 50.33 m/s.
     !
     IF (U10 .GE. 50.33) THEN
-       UST = 2.026 * SQRT(FLX4A0)
-       CD  = (UST/U10)**2
+      UST = 2.026 * SQRT(FLX4A0)
+      CD  = (UST/U10)**2
     ELSE
-       CD  = FLX4A0 * ( 8.058 + 0.967*U10 - 0.016*U10**2 ) * 1E-4
-       UST = U10 * SQRT(CD)
+      CD  = FLX4A0 * ( 8.058 + 0.967*U10 - 0.016*U10**2 ) * 1E-4
+      UST = U10 * SQRT(CD)
     END IF
     !
     Z0     = ZWND * EXP ( -0.4 / SQRT(CD) )

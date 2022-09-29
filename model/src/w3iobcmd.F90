@@ -296,9 +296,9 @@ CONTAINS
     ! test parameter list input ------------------------------------------ *
     !
     IF ( PRESENT(IMOD) ) THEN
-       IGRD   = IMOD
+      IGRD   = IMOD
     ELSE
-       IGRD   = 1
+      IGRD   = 1
     END IF
     !
     CALL W3SETO ( IGRD, NDSE, NDST )
@@ -308,8 +308,8 @@ CONTAINS
     !
     IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE' .AND.              &
          INXOUT.NE.'DUMP' ) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,900) INXOUT
-       CALL EXTCDE ( 1 )
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,900) INXOUT
+      CALL EXTCDE ( 1 )
     END IF
     !
 #ifdef W3_T
@@ -322,34 +322,34 @@ CONTAINS
     J      = LEN_TRIM(FNMPRE)
     !
     IF ( INXOUT.EQ.'READ'  .AND. FILER ) THEN
-       WRITE (FILEN,'(A5,A)') 'nest.', FILEXT(:I)
+      WRITE (FILEN,'(A5,A)') 'nest.', FILEXT(:I)
 #ifdef W3_T
-       WRITE (NDST,9001) FILEN(:5+I), NDSB
+      WRITE (NDST,9001) FILEN(:5+I), NDSB
 #endif
-       OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
-            ERR=801,IOSTAT=IERR,STATUS='OLD')
+      OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
+           ERR=801,IOSTAT=IERR,STATUS='OLD')
     END IF
     !
     IF ( INXOUT.EQ.'WRITE' .AND. FILEW ) THEN
-       DO IFILE=1, NFBPO
-          NDSL(IFILE) = NDSB + IFILE - 1
-          WRITE (FILEN,'(A4,I1,A1,A)') 'nest', IFILE, '.',          &
-               FILEXT(:I)
+      DO IFILE=1, NFBPO
+        NDSL(IFILE) = NDSB + IFILE - 1
+        WRITE (FILEN,'(A4,I1,A1,A)') 'nest', IFILE, '.',          &
+             FILEXT(:I)
 #ifdef W3_T
-          WRITE (NDST,9001) FILEN(:6+I), NDSL(IFILE)
+        WRITE (NDST,9001) FILEN(:6+I), NDSL(IFILE)
 #endif
-          OPEN (NDSL(IFILE),FILE=FNMPRE(:J)//FILEN(:6+I),           &
-               form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
-       END DO
+        OPEN (NDSL(IFILE),FILE=FNMPRE(:J)//FILEN(:6+I),           &
+             form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+      END DO
     END IF
     !
     IF ( INXOUT.EQ.'DUMP'  .AND. FILED ) THEN
-       WRITE (FILEN,'(A5,A)') 'nest.', FILEXT(:I)
+      WRITE (FILEN,'(A5,A)') 'nest.', FILEXT(:I)
 #ifdef W3_T
-       WRITE (NDST,9001) FILEN(:5+I), NDSB
+      WRITE (NDST,9001) FILEN(:5+I), NDSB
 #endif
-       OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
-            ERR=800,IOSTAT=IERR)
+      OPEN (NDSB,FILE=FNMPRE(:J)//FILEN(:5+I),form='UNFORMATTED', convert=file_endian, &
+           ERR=800,IOSTAT=IERR)
     END IF
     !
     ! test info ---------------------------------------------------------- *
@@ -357,360 +357,360 @@ CONTAINS
     ! ... writing
     !
     IF ( INXOUT.EQ.'WRITE' .AND. FILEW ) THEN
-       IF ( IAPROC .EQ. NAPBPT ) THEN
-          DO IFILE=1, NFBPO
-             WRITE (NDSL(IFILE))                                   &
-                  IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1),    &
-                  NBO(IFILE)-NBO(IFILE-1)
-             !
+      IF ( IAPROC .EQ. NAPBPT ) THEN
+        DO IFILE=1, NFBPO
+          WRITE (NDSL(IFILE))                                   &
+               IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1),    &
+               NBO(IFILE)-NBO(IFILE-1)
+          !
 #ifdef W3_T
-             WRITE (NDST,9002) IFILE, NDSL(IFILE), IDSTRBC,       &
-                  VERBPTBC, NBO(IFILE)-NBO(IFILE-1)
+          WRITE (NDST,9002) IFILE, NDSL(IFILE), IDSTRBC,       &
+               VERBPTBC, NBO(IFILE)-NBO(IFILE-1)
 #endif
-             !
+          !
 #ifdef W3_RTD
-             ! By running the ww3_grid program the arrays XBPO, YBPO have been
-             ! remapped to standard lat-lon and stored in mod_def.*
-             !
+          ! By running the ww3_grid program the arrays XBPO, YBPO have been
+          ! remapped to standard lat-lon and stored in mod_def.*
+          !
 #endif
-             WRITE (NDSL(IFILE))                                   &
-                  (XBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),         &
-                  (YBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),         &
-                  ((IPBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4),&
-                  ((RDBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4)
-             !
+          WRITE (NDSL(IFILE))                                   &
+               (XBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),         &
+               (YBPO(I),I=NBO(IFILE-1)+1,NBO(IFILE)),         &
+               ((IPBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4),&
+               ((RDBPO(I,J),I=NBO(IFILE-1)+1,NBO(IFILE)),J=1,4)
+          !
 #ifdef W3_T0
-             WRITE (NDST,9003)
-             DO I=NBO(IFILE-1)+1, NBO(IFILE)
-                WRITE (NDST,9004) I-NBO(IFILE-1), XBPO(I),      &
-                     YBPO(I), (IPBPO(I,J),J=1,4),             &
-                     (RDBPO(I,J),J=1,4)
-             END DO
-#endif
-             !
+          WRITE (NDST,9003)
+          DO I=NBO(IFILE-1)+1, NBO(IFILE)
+            WRITE (NDST,9004) I-NBO(IFILE-1), XBPO(I),      &
+                 YBPO(I), (IPBPO(I,J),J=1,4),             &
+                 (RDBPO(I,J),J=1,4)
           END DO
-       END IF
+#endif
+          !
+        END DO
+      END IF
     END IF
     !
     ! ... dumping
     !
     IF ( INXOUT.EQ.'DUMP' .AND. FILED ) THEN
-       IF ( IAPROC .EQ. NAPBPT ) THEN
-          WRITE (NDSB) IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1), NBI
-          !
+      IF ( IAPROC .EQ. NAPBPT ) THEN
+        WRITE (NDSB) IDSTRBC, VERBPTBC, NK, NTH, XFR, FR1, TH(1), NBI
+        !
 #ifdef W3_T
-          WRITE (NDST,9002) 1, NDSB, IDSTRBC, VERBPTBC, NBI
+        WRITE (NDST,9002) 1, NDSB, IDSTRBC, VERBPTBC, NBI
 #endif
-          !
-          WRITE (NDSB) (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),      &
-               ((IPBPI(I,J),I=1,NBI),J=1,4),              &
-               ((RDBPI(I,J),I=1,NBI),J=1,4)
-          !
+        !
+        WRITE (NDSB) (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),      &
+             ((IPBPI(I,J),I=1,NBI),J=1,4),              &
+             ((RDBPI(I,J),I=1,NBI),J=1,4)
+        !
 #ifdef W3_T0
-          WRITE (NDST,9003)
-          DO I=1, NBI
-             WRITE (NDST,9004) I, XBPI(I), YBPI(I),                &
-                  (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
-          END DO
+        WRITE (NDST,9003)
+        DO I=1, NBI
+          WRITE (NDST,9004) I, XBPI(I), YBPI(I),                &
+               (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
+        END DO
 #endif
-          !
-       END IF
+        !
+      END IF
     END IF
     !
     ! ... reading
     !
     IF ( INXOUT.EQ.'READ' .AND. FILER ) THEN
-       !
-       READ (NDSB,ERR=803,IOSTAT=IERR)                             &
-            IDTST, VERTST, NKI, NTHI, XFRI, FR1I, TH1I, NBI
-       !
+      !
+      READ (NDSB,ERR=803,IOSTAT=IERR)                             &
+           IDTST, VERTST, NKI, NTHI, XFRI, FR1I, TH1I, NBI
+      !
 #ifdef W3_T
-       WRITE (NDST,9002) 1, NDSB, IDTST, VERTST, NBI
+      WRITE (NDST,9002) 1, NDSB, IDTST, VERTST, NBI
 #endif
-       !
-       IF ( IDTST .NE. IDSTRBC ) THEN
-          IF ( IAPROC .EQ. NAPERR )                               &
-               WRITE (NDSE,901) IDTST, IDSTRBC
-          CALL EXTCDE ( 10 )
-       END IF
-       IF ( VERTST .NE. VERBPTBC ) THEN
-          IF ( IAPROC .EQ. NAPERR )                               &
-               WRITE (NDSE,902) VERTST, VERBPTBC
-          CALL EXTCDE ( 11 )
-       END IF
-       !
-       ! Determines if the spectrum in nest file needs to be converted
-       !
-       SPCONV = NKI.NE.NK .OR. NTHI.NE.NTH .OR.                    &
-            ABS(XFRI/XFR-1.).GT.0.01 .OR.                      &
-            ABS(FR1I/FR1-1.).GT.0.01 .OR.                      &
-            ABS(TH1I-TH(1)).GT.0.01*DTH
-       !
-       CALL W3DMO5 ( IGRD, NDSE, NDST, 1 )
-       !
-       READ (NDSB,ERR=803,IOSTAT=IERR)                             &
-            (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),                   &
-            ((IPBPI(I,J),I=1,NBI),J=1,4),                           &
-            ((RDBPI(I,J),I=1,NBI),J=1,4)
-       !
+      !
+      IF ( IDTST .NE. IDSTRBC ) THEN
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,901) IDTST, IDSTRBC
+        CALL EXTCDE ( 10 )
+      END IF
+      IF ( VERTST .NE. VERBPTBC ) THEN
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,902) VERTST, VERBPTBC
+        CALL EXTCDE ( 11 )
+      END IF
+      !
+      ! Determines if the spectrum in nest file needs to be converted
+      !
+      SPCONV = NKI.NE.NK .OR. NTHI.NE.NTH .OR.                    &
+           ABS(XFRI/XFR-1.).GT.0.01 .OR.                      &
+           ABS(FR1I/FR1-1.).GT.0.01 .OR.                      &
+           ABS(TH1I-TH(1)).GT.0.01*DTH
+      !
+      CALL W3DMO5 ( IGRD, NDSE, NDST, 1 )
+      !
+      READ (NDSB,ERR=803,IOSTAT=IERR)                             &
+           (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),                   &
+           ((IPBPI(I,J),I=1,NBI),J=1,4),                           &
+           ((RDBPI(I,J),I=1,NBI),J=1,4)
+      !
 #ifdef W3_RTD
-       ! All boundary conditions position arrays XBPI, YBPI are defined
-       ! in standard lat/lon coordinates. If Polat = 90. (and Polon = -180.),
-       ! the b.c. positions don't need to be remapped
-       IF ( Polat < 90. ) THEN
-          !!   Convert standard into rotated lat/lon. JGLi12Jun2012
-          ALLOCATE ( Anglbdy(NBI),  ELatbdy(NBI), ELonbdy(NBI) )
+      ! All boundary conditions position arrays XBPI, YBPI are defined
+      ! in standard lat/lon coordinates. If Polat = 90. (and Polon = -180.),
+      ! the b.c. positions don't need to be remapped
+      IF ( Polat < 90. ) THEN
+        !!   Convert standard into rotated lat/lon. JGLi12Jun2012
+        ALLOCATE ( Anglbdy(NBI),  ELatbdy(NBI), ELonbdy(NBI) )
 
-          CALL W3LLTOEQ ( YBPI, XBPI, ELatbdy, ELonbdy,     &
-               &                 Anglbdy, PoLat, PoLon, NBI )
+        CALL W3LLTOEQ ( YBPI, XBPI, ELatbdy, ELonbdy,     &
+             &                 Anglbdy, PoLat, PoLon, NBI )
 
-          XBPI = ELonbdy
-          YBPI = ELatbdy
-          !!    W3LLTOEQ outputs longitudes on 0->360 degree grid
-          !!    Next section will revise to -180->180 convention if required
-          !!    by nested model rotated grid; determined by X0 lon value
-          IF ( X0 .LT. 0.0 ) THEN
-             DO I=1, NBI
-                IF ( XBPI(I) .GT. 180.0) XBPI(I) = XBPI(I) - 360.0
-             ENDDO
-          END IF
-          !!    The old (4.18) W3GFPT was very strict so this loop reassigns RTD
-          !!    values to within a tolerance of the boundary - possibly this is
-          !!    no longer required after the 20-Jan-2017 change?
-          XRLIM = X0 + (NX-1) * SX
-          YRLIM = Y0 + (NY-1) * SY
+        XBPI = ELonbdy
+        YBPI = ELatbdy
+        !!    W3LLTOEQ outputs longitudes on 0->360 degree grid
+        !!    Next section will revise to -180->180 convention if required
+        !!    by nested model rotated grid; determined by X0 lon value
+        IF ( X0 .LT. 0.0 ) THEN
           DO I=1, NBI
-             IF ( ABS(XBPI(I) - X0) .LT. SX/4.0 ) XBPI(I) = X0
-             IF ( ABS(YBPI(I) - Y0) .LT. SY/4.0 ) YBPI(I) = Y0
-             IF ( ABS(XBPI(I) - XRLIM) .LT. SX/4.0 ) XBPI(I) = XRLIM
-             IF ( ABS(YBPI(I) - YRLIM) .LT. SY/4.0 ) YBPI(I) = YRLIM
+            IF ( XBPI(I) .GT. 180.0) XBPI(I) = XBPI(I) - 360.0
           ENDDO
+        END IF
+        !!    The old (4.18) W3GFPT was very strict so this loop reassigns RTD
+        !!    values to within a tolerance of the boundary - possibly this is
+        !!    no longer required after the 20-Jan-2017 change?
+        XRLIM = X0 + (NX-1) * SX
+        YRLIM = Y0 + (NY-1) * SY
+        DO I=1, NBI
+          IF ( ABS(XBPI(I) - X0) .LT. SX/4.0 ) XBPI(I) = X0
+          IF ( ABS(YBPI(I) - Y0) .LT. SY/4.0 ) YBPI(I) = Y0
+          IF ( ABS(XBPI(I) - XRLIM) .LT. SX/4.0 ) XBPI(I) = XRLIM
+          IF ( ABS(YBPI(I) - YRLIM) .LT. SY/4.0 ) YBPI(I) = YRLIM
+        ENDDO
 
-          DEALLOCATE ( Anglbdy,  ELatbdy, ELonbdy )
+        DEALLOCATE ( Anglbdy,  ELatbdy, ELonbdy )
 
-       END IF ! ( Polat < 90. )
+      END IF ! ( Polat < 90. )
 
 #endif
-       FLOK   = .TRUE.
-       IF (GTYPE .EQ. UNGTYPE) THEN
-          CALL W3NESTUG(DXYMAX,FLOK)
+      FLOK   = .TRUE.
+      IF (GTYPE .EQ. UNGTYPE) THEN
+        CALL W3NESTUG(DXYMAX,FLOK)
 #ifdef W3_SMC
-          !Li   For SMC grid check whether boundary points are within cell area.
-       ELSE IF( GTYPE .EQ. SMCTYPE ) THEN
-          CALL W3SMCGMP( IGRD, NBI, XBPI, YBPI, ISBPI )
-          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,920)    &
-               ( ISBPI(I), XBPI(I), YBPI(I), I=1,NBI )
+        !Li   For SMC grid check whether boundary points are within cell area.
+      ELSE IF( GTYPE .EQ. SMCTYPE ) THEN
+        CALL W3SMCGMP( IGRD, NBI, XBPI, YBPI, ISBPI )
+        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,920)    &
+             ( ISBPI(I), XBPI(I), YBPI(I), I=1,NBI )
 #endif
-       ELSE
-          DO I=1, NBI
-             ! W3GFTP: find the nearest grid point to the input boundary point
-             ! DCIN=0.1 is the distance outside of source grid in units of
-             ! cell width to treat target point as inside the source grid.
-             IF ( W3GFPT( GSU, XBPI(I), YBPI(I), IX, IY, DCIN=0.1 ) ) THEN
-                IF ( ABS(MAPSTA(IY,IX)) .NE. 2 ) THEN
-                   IF ( IAPROC .EQ. NAPERR )                         &
-                        WRITE (NDSE,909) IX, IY, ABS(MAPSTA(IY,IX))
-                   FLOK   = .FALSE.
-                END IF
-             ELSE
-                IF ( IAPROC .EQ. NAPERR )                             &
-                     WRITE (NDSE,910) I, XBPI(I), YBPI(I)
-                CALL EXTCDE ( 12 )
-             END IF
-             ISBPI(I) = MAPFS(IY,IX)
-          END DO
-       END IF
-       !
-#ifdef W3_T0
-       WRITE (NDST,9003)
-       DO I=1, NBI
-          WRITE (NDST,9005) I, ISBPI(I), XBPI(I), YBPI(I),      &
-               (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
-       END DO
-#endif
-       !
-       IF ( .NOT.FLOK ) CALL EXTCDE ( 20 )
-       !
-       DO ISEA=1, NSEA
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
-          IF ( ABS(MAPSTA(IY,IX)) .EQ. 2 ) THEN
-             FLOK   = .FALSE.
-             DO I=1, NBI
-                IF ( ISEA .EQ. ISBPI(I) ) FLOK = .TRUE.
-             END DO
-             IF ( .NOT.FLOK .AND. IAPROC.EQ.NAPERR )               &
-                  WRITE (NDSE,911) IX, IY
+      ELSE
+        DO I=1, NBI
+          ! W3GFTP: find the nearest grid point to the input boundary point
+          ! DCIN=0.1 is the distance outside of source grid in units of
+          ! cell width to treat target point as inside the source grid.
+          IF ( W3GFPT( GSU, XBPI(I), YBPI(I), IX, IY, DCIN=0.1 ) ) THEN
+            IF ( ABS(MAPSTA(IY,IX)) .NE. 2 ) THEN
+              IF ( IAPROC .EQ. NAPERR )                         &
+                   WRITE (NDSE,909) IX, IY, ABS(MAPSTA(IY,IX))
+              FLOK   = .FALSE.
+            END IF
+          ELSE
+            IF ( IAPROC .EQ. NAPERR )                             &
+                 WRITE (NDSE,910) I, XBPI(I), YBPI(I)
+            CALL EXTCDE ( 12 )
           END IF
-       END DO
-       !
-       !     Read first time and allocate ABPI0/N
-       !
-       READ (NDSB,END=810,ERR=810) TIME2, NBI2
-       BACKSPACE (NDSB)
-#ifdef W3_T
-       WRITE (NDST,9012) NDSB, TIME2, NBI2
+          ISBPI(I) = MAPFS(IY,IX)
+        END DO
+      END IF
+      !
+#ifdef W3_T0
+      WRITE (NDST,9003)
+      DO I=1, NBI
+        WRITE (NDST,9005) I, ISBPI(I), XBPI(I), YBPI(I),      &
+             (IPBPI(I,J),J=1,4), (RDBPI(I,J),J=1,4)
+      END DO
 #endif
-       CALL W3DMO5 ( IGRD, NDSE, NDST, 3 )
-       !
+      !
+      IF ( .NOT.FLOK ) CALL EXTCDE ( 20 )
+      !
+      DO ISEA=1, NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IF ( ABS(MAPSTA(IY,IX)) .EQ. 2 ) THEN
+          FLOK   = .FALSE.
+          DO I=1, NBI
+            IF ( ISEA .EQ. ISBPI(I) ) FLOK = .TRUE.
+          END DO
+          IF ( .NOT.FLOK .AND. IAPROC.EQ.NAPERR )               &
+               WRITE (NDSE,911) IX, IY
+        END IF
+      END DO
+      !
+      !     Read first time and allocate ABPI0/N
+      !
+      READ (NDSB,END=810,ERR=810) TIME2, NBI2
+      BACKSPACE (NDSB)
+#ifdef W3_T
+      WRITE (NDST,9012) NDSB, TIME2, NBI2
+#endif
+      CALL W3DMO5 ( IGRD, NDSE, NDST, 3 )
+      !
     END IF
     !
     ! Save previous spectra on read -------------------------------------- *
     !
     IF ( INXOUT.EQ.'READ' .AND. .NOT.FILER ) THEN
 #ifdef W3_T
-       WRITE (NDST,9020)
+      WRITE (NDST,9020)
 #endif
-       TIME1  = TIME2
-       ABPI0(:,1:NBI2) = ABPIN(:,1:NBI2)
+      TIME1  = TIME2
+      ABPI0(:,1:NBI2) = ABPIN(:,1:NBI2)
     END IF
     !
     ! TIME --------------------------------------------------------------- *
     !
     IF ( INXOUT .EQ. 'WRITE'  ) THEN
-       DO IFILE=1, NFBPO
-          NPTS   = NBO2(IFILE) - NBO2(IFILE-1)
-          WRITE (NDSL(IFILE)) TIME1, NPTS
+      DO IFILE=1, NFBPO
+        NPTS   = NBO2(IFILE) - NBO2(IFILE-1)
+        WRITE (NDSL(IFILE)) TIME1, NPTS
 #ifdef W3_T
-          WRITE (NDST,9010) IFILE, NDSL(IFILE), TIME1, NPTS
+        WRITE (NDST,9010) IFILE, NDSL(IFILE), TIME1, NPTS
 #endif
-       END DO
+      END DO
     END IF
     !
     IF ( INXOUT .EQ. 'DUMP'  ) THEN
-       WRITE (NDSB) TIME1, NBI2
+      WRITE (NDSB) TIME1, NBI2
 #ifdef W3_T
-       WRITE (NDST,9011) NDSB, TIME1, NBI2
+      WRITE (NDST,9011) NDSB, TIME1, NBI2
 #endif
     END IF
     !
     IF ( INXOUT .EQ. 'READ'  ) THEN
-       READ (NDSB,ERR=810,END=810) TIME2, NBI2
+      READ (NDSB,ERR=810,END=810) TIME2, NBI2
 #ifdef W3_T
-       WRITE (NDST,9011) NDSB, TIME2, NBI2
+      WRITE (NDST,9011) NDSB, TIME2, NBI2
 #endif
     END IF
     !
     ! Spectra ------------------------------------------------------------ *
     !
     IF ( INXOUT .EQ. 'WRITE' ) THEN
-       !
+      !
 #ifdef W3_T1
-       WRITE (NDST,9040)
+      WRITE (NDST,9040)
 #endif
-       !
-       DO IFILE=1, NFBPO
-          DO ISOUT=NBO2(IFILE-1)+1, NBO2(IFILE)
-             !
-             ISEA   = ISBPO(ISOUT)
-             !
-             ! ... Shared memory version data gather
-             !
+      !
+      DO IFILE=1, NFBPO
+        DO ISOUT=NBO2(IFILE-1)+1, NBO2(IFILE)
+          !
+          ISEA   = ISBPO(ISOUT)
+          !
+          ! ... Shared memory version data gather
+          !
 #ifdef W3_SHRD
-             DO IS=1, NSPEC
-                ABPOS(IS,ISOUT) = VA(IS,ISEA) * SIG2(IS) /      &
-                     CG(1+(IS-1)/NTH,ISEA)
-             END DO
-#endif
-             !
-             ! ... Distributed memory version data gather
-             !   ( Array pre-filled in W3WAVE )
-             !
-#ifdef W3_DIST
-             DO IS=1, NSPEC
-                ABPOS(IS,ISOUT) = ABPOS(IS,ISOUT) * SIG2(IS) /  &
-                     CG(1+(IS-1)/NTH,ISEA)
-             END DO
-#endif
-             !
-#ifdef W3_RTD
-             ! Polat == 90. means the grid is standard lat-lon, and the spectra
-             ! need not be rotated back
-             IF ( Polat < 90. ) THEN
-                ! Added spectral turning for rotated grid
-                ! (rotate back to standard pole)
-                Spectr = ABPOS(:,ISOUT)
-                CALL W3ACTURN( NTH, NK, -AnglD(ISEA), Spectr )
-                ABPOS(:,ISOUT) = Spectr
-             END IF
-#endif
-             !
-             WRITE (NDSL(IFILE)) (ABPOS(IS,ISOUT),IS=1,NSPEC)
-             !
-#ifdef W3_T1
-             HS     = 0.
-             DO IK=1, NK
-                DO ITH=1, NTH
-                   IS = ITH + (IK-1)*NTH
-                   HS = HS + ABPOS(IS,ISOUT)*SIG(IK)
-                END DO
-             END DO
-             HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
-             WRITE (NDST,9041) NDSL(IFILE), ISOUT, ISEA, HS
-#endif
-             !
+          DO IS=1, NSPEC
+            ABPOS(IS,ISOUT) = VA(IS,ISEA) * SIG2(IS) /      &
+                 CG(1+(IS-1)/NTH,ISEA)
           END DO
-       END DO
-       !
+#endif
+          !
+          ! ... Distributed memory version data gather
+          !   ( Array pre-filled in W3WAVE )
+          !
+#ifdef W3_DIST
+          DO IS=1, NSPEC
+            ABPOS(IS,ISOUT) = ABPOS(IS,ISOUT) * SIG2(IS) /  &
+                 CG(1+(IS-1)/NTH,ISEA)
+          END DO
+#endif
+          !
+#ifdef W3_RTD
+          ! Polat == 90. means the grid is standard lat-lon, and the spectra
+          ! need not be rotated back
+          IF ( Polat < 90. ) THEN
+            ! Added spectral turning for rotated grid
+            ! (rotate back to standard pole)
+            Spectr = ABPOS(:,ISOUT)
+            CALL W3ACTURN( NTH, NK, -AnglD(ISEA), Spectr )
+            ABPOS(:,ISOUT) = Spectr
+          END IF
+#endif
+          !
+          WRITE (NDSL(IFILE)) (ABPOS(IS,ISOUT),IS=1,NSPEC)
+          !
+#ifdef W3_T1
+          HS     = 0.
+          DO IK=1, NK
+            DO ITH=1, NTH
+              IS = ITH + (IK-1)*NTH
+              HS = HS + ABPOS(IS,ISOUT)*SIG(IK)
+            END DO
+          END DO
+          HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
+          WRITE (NDST,9041) NDSL(IFILE), ISOUT, ISEA, HS
+#endif
+          !
+        END DO
+      END DO
+      !
     END IF
     !
     IF ( INXOUT .EQ. 'DUMP' ) THEN
-       DO I=1, NBI2
-          WRITE (NDSB) ABPIN(:,I)
-       END DO
+      DO I=1, NBI2
+        WRITE (NDSB) ABPIN(:,I)
+      END DO
     END IF
     !
     IF ( INXOUT .EQ. 'READ' ) THEN
-       !
-       IF ( .NOT. SPCONV ) THEN
-          DO IP=1, NBI2
-             READ (NDSB,ERR=803,IOSTAT=IERR) ABPIN(:,IP)
-          END DO
-       ELSE
-          !
-          ! In this case the spectral resolution is not compatible and
-          ! the spectrum TMPSPC in nest file must be re-gridded into ABPIN to fit the model run
-          ! spectral conversion is done by W3CSPC in w3cspcmd.ftn
-          !
-          ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )
-          DO IP=1, NBI2
-             READ (NDSB,ERR=803,IOSTAT=IERR) TMPSPC(:,IP)
-          END DO
-          CALL W3CSPC ( TMPSPC     ,    NKI, NTHI, XFRI, FR1I, TH1I, &
-               ABPIN(:,1:NBI2),NK,  NTH,  XFR,  FR1,  TH(1),&
-               NBI2, NDST, NDSE, FACHFE )
-          DEALLOCATE ( TMPSPC )
-       END IF
-       !
+      !
+      IF ( .NOT. SPCONV ) THEN
+        DO IP=1, NBI2
+          READ (NDSB,ERR=803,IOSTAT=IERR) ABPIN(:,IP)
+        END DO
+      ELSE
+        !
+        ! In this case the spectral resolution is not compatible and
+        ! the spectrum TMPSPC in nest file must be re-gridded into ABPIN to fit the model run
+        ! spectral conversion is done by W3CSPC in w3cspcmd.ftn
+        !
+        ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )
+        DO IP=1, NBI2
+          READ (NDSB,ERR=803,IOSTAT=IERR) TMPSPC(:,IP)
+        END DO
+        CALL W3CSPC ( TMPSPC     ,    NKI, NTHI, XFRI, FR1I, TH1I, &
+             ABPIN(:,1:NBI2),NK,  NTH,  XFR,  FR1,  TH(1),&
+             NBI2, NDST, NDSE, FACHFE )
+        DEALLOCATE ( TMPSPC )
+      END IF
+      !
 #ifdef W3_T1
-       WRITE (NDST,9042)
-       DO IP=1, NBI2
-          HS     = 0.
-          HS0    = 0.
-          DO ISP=1, NSPEC
-             HS     = HS + ABPIN(ISP,IP)*SIG2(ISP)
-             IF ( .NOT.FILER ) HS0 = HS0 + ABPI0(ISP,IP)*SIG2(ISP)
-          END DO
-          HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
-          HS0    = 4. * SQRT ( HS0 * DTH * 0.5 * (XFR-1./XFR) )
-          WRITE (NDST,9043) IP, HS0, HS
-       END DO
+      WRITE (NDST,9042)
+      DO IP=1, NBI2
+        HS     = 0.
+        HS0    = 0.
+        DO ISP=1, NSPEC
+          HS     = HS + ABPIN(ISP,IP)*SIG2(ISP)
+          IF ( .NOT.FILER ) HS0 = HS0 + ABPI0(ISP,IP)*SIG2(ISP)
+        END DO
+        HS     = 4. * SQRT ( HS * DTH * 0.5 * (XFR-1./XFR) )
+        HS0    = 4. * SQRT ( HS0 * DTH * 0.5 * (XFR-1./XFR) )
+        WRITE (NDST,9043) IP, HS0, HS
+      END DO
 #endif
-       !
+      !
     END IF
     !
     ! Set first spectra on first read ------------------------------------ *
     !
     IF ( INXOUT.EQ.'READ' .AND. FILER ) THEN
 #ifdef W3_T
-       WRITE (NDST,9021)
+      WRITE (NDST,9021)
 #endif
-       TIME1 = TIME2
-       DO IP=1, NBI2
-          ABPI0(:,IP) = ABPIN(:,IP)
-       END DO
-       ABPI0(:,0) = 0.
-       ABPIN(:,0) = 0.
+      TIME1 = TIME2
+      DO IP=1, NBI2
+        ABPI0(:,IP) = ABPIN(:,IP)
+      END DO
+      ABPI0(:,0) = 0.
+      ABPIN(:,0) = 0.
     END IF
     !
     ! Reset flags -------------------------------------------------------- *
@@ -743,8 +743,8 @@ CONTAINS
     !
 810 CONTINUE
     IF ( FILER ) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010)
-       CALL EXTCDE ( 43 )
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010)
+      CALL EXTCDE ( 43 )
     END IF
     !
 #ifdef W3_T
@@ -753,9 +753,9 @@ CONTAINS
     TIME1(1) = TIME2(1)
     TIME1(2) = TIME2(2)
     DO IP=0, NBI2
-       DO ISP=1, NSPEC
-          ABPI0(ISP,IP) = ABPIN(ISP,IP)
-       END DO
+      DO ISP=1, NSPEC
+        ABPI0(ISP,IP) = ABPIN(ISP,IP)
+      END DO
     END DO
     !
     IOTST  = -1

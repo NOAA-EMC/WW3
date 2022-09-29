@@ -330,9 +330,9 @@ PROGRAM W3STRT
 #endif
   !
   IF ( IAPROC .EQ. NAPERR ) THEN
-     NDSEN  = NDSE
+    NDSEN  = NDSE
   ELSE
-     NDSEN  = -1
+    NDSEN  = -1
   END IF
   !
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
@@ -374,8 +374,8 @@ PROGRAM W3STRT
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
   READ (NDSI,*,END=801,ERR=802) ITYPE
   IF ( ITYPE.LT.1 .OR. ITYPE.GT.5 ) THEN
-     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) ITYPE
-     CALL EXTCDE ( 1 )
+    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) ITYPE
+    CALL EXTCDE ( 1 )
   END IF
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930) ITYPE
   !
@@ -383,524 +383,524 @@ PROGRAM W3STRT
   ! 4.  ITYPE = 1, Gaussian, cosine.
   !
   IF ( ITYPE .EQ. 1 ) THEN
-     INXOUT = 'COLD'
-     !
-     ! 4.a Read parameters.
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-     READ (NDSI,*,END=801,ERR=802)                            &
-          FP, SIP, THM, NCOS, XM, SIX, YM, SIY, HMAX
-     FP     = MAX ( 0.5 * TPIINV * SIG(1) , FP )
-     SIP    = MAX ( 0. , SIP )
-     DO
-        IF ( THM .LT. 0. ) THEN
-           THM    = THM + 360.
-        ELSE
-           EXIT
-        END IF
-     END DO
-     THM    = MOD ( THM , 360. )
-     NCOS   = MAX ( 0 , 2*(NCOS/2) )
+    INXOUT = 'COLD'
+    !
+    ! 4.a Read parameters.
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,END=801,ERR=802)                            &
+         FP, SIP, THM, NCOS, XM, SIX, YM, SIY, HMAX
+    FP     = MAX ( 0.5 * TPIINV * SIG(1) , FP )
+    SIP    = MAX ( 0. , SIP )
+    DO
+      IF ( THM .LT. 0. ) THEN
+        THM    = THM + 360.
+      ELSE
+        EXIT
+      END IF
+    END DO
+    THM    = MOD ( THM , 360. )
+    NCOS   = MAX ( 0 , 2*(NCOS/2) )
 
-     NOSIX=.FALSE.
-     IF(SIX.LT.0.0)THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
-        NOSIX=.TRUE.
-     END IF
+    NOSIX=.FALSE.
+    IF(SIX.LT.0.0)THEN
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+      NOSIX=.TRUE.
+    END IF
 
-     HPQMAX=-999.0
-     DO JSEA=1, NSEAL
+    HPQMAX=-999.0
+    DO JSEA=1, NSEAL
 #ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
 #endif
 #ifdef W3_SHRD
-        ISEA   = JSEA
+      ISEA   = JSEA
 #endif
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        IF(HPFAC(IY,IX).GT.HPQMAX)THEN
-           HPQMAX=HPFAC(IY,IX)
-        ENDIF
-     END DO
-     SIX = MAX(0.01*HPQMAX,SIX)
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      IF(HPFAC(IY,IX).GT.HPQMAX)THEN
+        HPQMAX=HPFAC(IY,IX)
+      ENDIF
+    END DO
+    SIX = MAX(0.01*HPQMAX,SIX)
 
-     HPQMAX=-999.0
-     DO JSEA=1, NSEAL
+    HPQMAX=-999.0
+    DO JSEA=1, NSEAL
 #ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
 #endif
 #ifdef W3_SHRD
-        ISEA   = JSEA
+      ISEA   = JSEA
 #endif
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        IF(HQFAC(IY,IX).GT.HPQMAX)THEN
-           HPQMAX=HQFAC(IY,IX)
-        ENDIF
-     END DO
-     SIY = MAX(0.01*HPQMAX,SIY)
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      IF(HQFAC(IY,IX).GT.HPQMAX)THEN
+        HPQMAX=HQFAC(IY,IX)
+      ENDIF
+    END DO
+    SIY = MAX(0.01*HPQMAX,SIY)
 
-     HMAX   = MAX ( 0. , HMAX )
-     !
-     IF ( IAPROC .EQ. NAPOUT ) THEN
-        IF ( FLAGLL ) THEN
-           FACTOR = 1.
-           WRITE (NDSO,940) FP, SIP, THM, NCOS, &
-                FACTOR*XM, MIN(9999.99,FACTOR*SIX), FACTOR*YM,  &
-                MIN(9999.99,FACTOR*SIY), HMAX
-        ELSE
-           FACTOR = 1.E-3
-           WRITE (NDSO,941) FP, SIP, THM, NCOS, &
-                FACTOR*XM, MIN(9999.99,FACTOR*SIX), FACTOR*YM,  &
-                MIN(9999.99,FACTOR*SIY), HMAX
-        END IF
-     END IF
-     !
-     FP     = FP  * TPI
-     SIP    = SIP * TPI
-     THM    = MOD ( 630. - THM , 360. ) * DERA
-     !
-     ! 4.b Make 1-D spectrum.
-     !
-     CHSIP  = 0.1 * DSIP(1)
-     FLONE  = SIP .LT. CHSIP
-     IKM    = NINT ( 1. + (LOG(FP)-LOG(FR1*TPI))/LOG(XFR) )
-     IKM    = MAX ( 1 , MIN ( NK , IKM ) )
-     !
-     DO IK=1, NK
-        IF ( FLONE ) THEN
-           IF (IK.EQ.IKM) THEN
-              E1(IK) = 1.
-           ELSE
-              E1(IK) = 0.
-           END IF
-        ELSE
-           FRREL  = (SIG(IK)-FP)/SIP
-           IF (ABS(FRREL).LT.10) THEN
-              E1(IK) = EXP ( -0.125 * FRREL**2 )
-           ELSE
-              E1(IK) = 0.
-           END IF
-        END IF
-     END DO
-     !
-#ifdef W3_O4
-     IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                      &
-          (NDSO, NK, E1, SIG(1:), '  ', 10, 0.,                &
-          'Unscaled 1-D', ' ', 'TEST E(f)')
-#endif
-     !
-     ! 4.c Make directional distribution.
-     !
-     FLONE  = NCOS .GT. 20
-     ITHM   = 1 + NINT ( THM / DTH )
-     DO ITH=1, NTH
-        IF (FLONE) THEN
-           IF ( ITH .EQ. ITHM ) THEN
-              DD(ITH) = 1.
-           ELSE
-              DD(ITH) = 0.
-           END IF
-        ELSE
-           DD(ITH) = MAX ( COS(TH(ITH)-THM) , 0. )**NCOS
-        END IF
-     END DO
-     !
-     ! 4.d 2-D energy spectrum.
-     !
-     ETOT   = 0.
-     DO IK=1, NK
-        E1I    = 0.
-        DO ITH=1, NTH
-           E2(ITH,IK) = E1(IK) * DD(ITH)
-           E1I        = E1I + E2(ITH,IK)
-        END DO
-        ETOT   = ETOT + E1I * DSIP(IK)
-     END DO
-     ETOT   = ETOT * DTH
-     FACTOR = HMAX**2 / ( 16. * ETOT )
-     !
-     E2     = FACTOR * E2
-     !
-#ifdef W3_O5
-     ALLOCATE ( E2OUT(NK,NTH) )
-     DO ITH=1, NTH
-        DO IK=1, NK
-           E2OUT(IK,ITH) = TPI * E2(ITH,IK)
-        END DO
-     END DO
-#endif
-     !
-#ifdef W3_O5
-     IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                       &
-          ( NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', DERA*TPI, &
-          0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
-     DEALLOCATE ( E2OUT )
-#endif
-     !
-     ! 4.e Distribute over grid.
-     !
-
-     DO IK=1, NK
-        E21(1+(IK-1)*NTH:IK*NTH) = E2(:,IK)
-     END DO
-     !
-     DO JSEA=1, NSEAL
-        !
-#ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA   = JSEA
-#endif
-        IF (GTYPE .EQ. UNGTYPE) THEN
-           IX     = MAPSF(ISEA,1)
-           X      = XGRD(1,IX)
-           Y      = YGRD(1,IX)
-        ELSE
-           IX     = MAPSF(ISEA,1)
-           IY     = MAPSF(ISEA,2)
-           X      = XGRD(IY,IX)
-           Y      = YGRD(IY,IX)
-        ENDIF
-        IF(NOSIX)THEN
-           RDSQR  =(W3DIST(FLAGLL,X,Y,XM,YM)/SIY)**2
-        ELSE
-           RDSQR  =((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
-        ENDIF
-        IF ( RDSQR .GT. 40. ) THEN
-           FACTOR = 0.
-        ELSE
-           FACTOR = EXP ( -0.5 * RDSQR )
-        END IF
-        !
-#ifdef W3_EXPORTWWM
+    HMAX   = MAX ( 0. , HMAX )
+    !
+    IF ( IAPROC .EQ. NAPOUT ) THEN
+      IF ( FLAGLL ) THEN
         FACTOR = 1.
-#endif
-        VA(:,JSEA) = FACTOR * E21
-        !
-
-        !
-     END DO
-     !
-     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     ! 5.  ITYPE = 2, pre-defined JONSWAP.
-     !
-  ELSE IF ( ITYPE .EQ. 2 ) THEN
-     INXOUT = 'COLD'
-     !
-     ! 5.a Read parameters.
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-     READ (NDSI,*,END=801,ERR=802)                               &
-          ALFA, FP, THM, GAMMA, SIGA, SIGB, XM, SIX, YM, SIY
-     !
-     IF (ALFA.LE.0.) ALFA = 0.0081
-     IF (FP  .LE.0.) FP   = 0.10
-     IF (SIGA.LE.0.) SIGA = 0.07
-     IF (SIGB.LE.0.) SIGB = 0.09
-     FP     = MAX ( 0.5 * TPIINV * SIG(1) , FP )
-     FP     = MIN ( TPIINV * SIG(NK) , FP )
-
-     NOSIX=.FALSE.
-     IF(SIX.LT.0.0)THEN
-        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
-        NOSIX=.TRUE.
-     END IF
-
-     HPQMAX=-999.0
-     DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA   = JSEA
-#endif
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        IF(HPFAC(IY,IX).GT.HPQMAX)THEN
-           HPQMAX=HPFAC(IY,IX)
-        ENDIF
-     END DO
-     SIX = MAX(0.01*HPQMAX,SIX)
-
-     HPQMAX=-999.0
-     DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA   = JSEA
-#endif
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        IF(HQFAC(IY,IX).GT.HPQMAX)THEN
-           HPQMAX=HQFAC(IY,IX)
-        ENDIF
-     END DO
-     SIY = MAX(0.01*HPQMAX,SIY)
-
-     DO
-        IF ( THM .LT. 0. ) THEN
-           THM    = THM + 360.
+        WRITE (NDSO,940) FP, SIP, THM, NCOS, &
+             FACTOR*XM, MIN(9999.99,FACTOR*SIX), FACTOR*YM,  &
+             MIN(9999.99,FACTOR*SIY), HMAX
+      ELSE
+        FACTOR = 1.E-3
+        WRITE (NDSO,941) FP, SIP, THM, NCOS, &
+             FACTOR*XM, MIN(9999.99,FACTOR*SIX), FACTOR*YM,  &
+             MIN(9999.99,FACTOR*SIY), HMAX
+      END IF
+    END IF
+    !
+    FP     = FP  * TPI
+    SIP    = SIP * TPI
+    THM    = MOD ( 630. - THM , 360. ) * DERA
+    !
+    ! 4.b Make 1-D spectrum.
+    !
+    CHSIP  = 0.1 * DSIP(1)
+    FLONE  = SIP .LT. CHSIP
+    IKM    = NINT ( 1. + (LOG(FP)-LOG(FR1*TPI))/LOG(XFR) )
+    IKM    = MAX ( 1 , MIN ( NK , IKM ) )
+    !
+    DO IK=1, NK
+      IF ( FLONE ) THEN
+        IF (IK.EQ.IKM) THEN
+          E1(IK) = 1.
         ELSE
-           EXIT
+          E1(IK) = 0.
         END IF
-     END DO
-     THM    = MOD ( THM , 360. )
-     GAMMA  = MAX (GAMMA,1.)
-     YLN    = LOG(GAMMA)
-     !
-     IF ( IAPROC .EQ. NAPOUT ) THEN
-        IF ( FLAGLL ) THEN
-           FACTOR = 1.
-           WRITE (NDSO,950) ALFA, FP, THM, GAMMA, SIGA, SIGB,  &
-                FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY
+      ELSE
+        FRREL  = (SIG(IK)-FP)/SIP
+        IF (ABS(FRREL).LT.10) THEN
+          E1(IK) = EXP ( -0.125 * FRREL**2 )
         ELSE
-           FACTOR = 1.E-3
-           WRITE (NDSO,951) ALFA, FP, THM, GAMMA, SIGA, SIGB,  &
-                FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY
+          E1(IK) = 0.
         END IF
-     END IF
-     THM    = MOD ( 630. - THM , 360. ) * DERA
-     !
-     ! 5.b Make 1-D spectrum.
-     !
-     DO IK=1, NK
-        FR     = SIG(IK) * TPIINV
-        E1(IK) = EJ5P (FR, ALFA, FP, YLN, SIGA, SIGB )
-     END DO
-     !
+      END IF
+    END DO
+    !
 #ifdef W3_O4
-     IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                   &
-          (NDSO, NK, E1, SIG(1:), '  ', 18, 0.,      &
-          'E(f)', ' ', 'TEST 1-D')
+    IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                      &
+         (NDSO, NK, E1, SIG(1:), '  ', 10, 0.,                &
+         'Unscaled 1-D', ' ', 'TEST E(f)')
 #endif
-     !
-     ! 5.c 2-D energy spectrum.
-     !     Factor 2pi to go to E(sigma,theta)
-     !
-     DO IK = 1,NK
-        FR     = SIG(IK) * TPIINV
-        IF (FR.LT.FP) THEN
-           BETA =  4.06
+    !
+    ! 4.c Make directional distribution.
+    !
+    FLONE  = NCOS .GT. 20
+    ITHM   = 1 + NINT ( THM / DTH )
+    DO ITH=1, NTH
+      IF (FLONE) THEN
+        IF ( ITH .EQ. ITHM ) THEN
+          DD(ITH) = 1.
         ELSE
-           BETA = -2.34
+          DD(ITH) = 0.
         END IF
-        FRR    = MIN ( 2.5 , FR/FP )
-        S      = 9.77 * FRR**BETA
-        SUMD   = 0.
-        DO ITH = 1,NTH
-           ANG    = COS( 0.5 * ( THM - TH(ITH) ) )**2
-           DD(ITH) = 0.
-           IF(ANG.GT.1.E-20) THEN
-              ARG    = S * LOG(ANG)
-              IF(ARG.GT.-170) DD(ITH) = EXP(ARG)
-           END IF
-           SUMD    = SUMD + DD(ITH)
-        END DO
-        FACTOR = 1. / (TPI*SUMD*DTH)
-        DO ITH = 1,NTH
-           E2(ITH,IK) = FACTOR * E1(IK) * DD(ITH)
-        END DO
-     END DO
-     !
+      ELSE
+        DD(ITH) = MAX ( COS(TH(ITH)-THM) , 0. )**NCOS
+      END IF
+    END DO
+    !
+    ! 4.d 2-D energy spectrum.
+    !
+    ETOT   = 0.
+    DO IK=1, NK
+      E1I    = 0.
+      DO ITH=1, NTH
+        E2(ITH,IK) = E1(IK) * DD(ITH)
+        E1I        = E1I + E2(ITH,IK)
+      END DO
+      ETOT   = ETOT + E1I * DSIP(IK)
+    END DO
+    ETOT   = ETOT * DTH
+    FACTOR = HMAX**2 / ( 16. * ETOT )
+    !
+    E2     = FACTOR * E2
+    !
 #ifdef W3_O5
-     ALLOCATE ( E2OUT(NK,NTH) )
-     DO ITH=1, NTH
-        DO IK=1, NK
-           E2OUT(IK,ITH) = TPI * E2(ITH,IK)
-        END DO
-     END DO
+    ALLOCATE ( E2OUT(NK,NTH) )
+    DO ITH=1, NTH
+      DO IK=1, NK
+        E2OUT(IK,ITH) = TPI * E2(ITH,IK)
+      END DO
+    END DO
 #endif
-     !
+    !
 #ifdef W3_O5
-     IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
-          (NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', 1.,   &
-          0., 0.0001, 'E(f,theta)', 'm2s', 'TEST 2-D')
-     DEALLOCATE ( E2OUT )
+    IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                       &
+         ( NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', DERA*TPI, &
+         0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
+    DEALLOCATE ( E2OUT )
 #endif
-     !
-     ! 5.d Distribute over grid.
-     !
+    !
+    ! 4.e Distribute over grid.
+    !
 
-     DO IK=1, NK
-        E21(1+(IK-1)*NTH:IK*NTH) = E2(:,IK)
-     END DO
-     !
-     !
-     DO JSEA=1, NSEAL
-        !
+    DO IK=1, NK
+      E21(1+(IK-1)*NTH:IK*NTH) = E2(:,IK)
+    END DO
+    !
+    DO JSEA=1, NSEAL
+      !
 #ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
 #endif
 #ifdef W3_SHRD
-        ISEA   = JSEA
+      ISEA   = JSEA
 #endif
-        IF (GTYPE .EQ. UNGTYPE) THEN
-           IX     = MAPSF(ISEA,1)
-           X      = XGRD(1,IX)
-           Y      = YGRD(1,IX)
-        ELSE
-           IX     = MAPSF(ISEA,1)
-           IY     = MAPSF(ISEA,2)
-           X      = XGRD(IY,IX)
-           Y      = YGRD(IY,IX)
-        ENDIF
-        IF(NOSIX)THEN
-           RDSQR  =(W3DIST(FLAGLL,X,Y,XM,YM)/SIY)**2
-        ELSE
-           RDSQR  =((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
-        ENDIF
-        IF ( RDSQR .GT. 40. ) THEN
-           FACTOR = 0.
-        ELSE
-           FACTOR = EXP ( -0.5 * RDSQR )
+      IF (GTYPE .EQ. UNGTYPE) THEN
+        IX     = MAPSF(ISEA,1)
+        X      = XGRD(1,IX)
+        Y      = YGRD(1,IX)
+      ELSE
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        X      = XGRD(IY,IX)
+        Y      = YGRD(IY,IX)
+      ENDIF
+      IF(NOSIX)THEN
+        RDSQR  =(W3DIST(FLAGLL,X,Y,XM,YM)/SIY)**2
+      ELSE
+        RDSQR  =((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
+      ENDIF
+      IF ( RDSQR .GT. 40. ) THEN
+        FACTOR = 0.
+      ELSE
+        FACTOR = EXP ( -0.5 * RDSQR )
+      END IF
+      !
+#ifdef W3_EXPORTWWM
+      FACTOR = 1.
+#endif
+      VA(:,JSEA) = FACTOR * E21
+      !
+
+      !
+    END DO
+    !
+    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! 5.  ITYPE = 2, pre-defined JONSWAP.
+    !
+  ELSE IF ( ITYPE .EQ. 2 ) THEN
+    INXOUT = 'COLD'
+    !
+    ! 5.a Read parameters.
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,END=801,ERR=802)                               &
+         ALFA, FP, THM, GAMMA, SIGA, SIGB, XM, SIX, YM, SIY
+    !
+    IF (ALFA.LE.0.) ALFA = 0.0081
+    IF (FP  .LE.0.) FP   = 0.10
+    IF (SIGA.LE.0.) SIGA = 0.07
+    IF (SIGB.LE.0.) SIGB = 0.09
+    FP     = MAX ( 0.5 * TPIINV * SIG(1) , FP )
+    FP     = MIN ( TPIINV * SIG(NK) , FP )
+
+    NOSIX=.FALSE.
+    IF(SIX.LT.0.0)THEN
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,903)
+      NOSIX=.TRUE.
+    END IF
+
+    HPQMAX=-999.0
+    DO JSEA=1, NSEAL
+#ifdef W3_DIST
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif
+#ifdef W3_SHRD
+      ISEA   = JSEA
+#endif
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      IF(HPFAC(IY,IX).GT.HPQMAX)THEN
+        HPQMAX=HPFAC(IY,IX)
+      ENDIF
+    END DO
+    SIX = MAX(0.01*HPQMAX,SIX)
+
+    HPQMAX=-999.0
+    DO JSEA=1, NSEAL
+#ifdef W3_DIST
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif
+#ifdef W3_SHRD
+      ISEA   = JSEA
+#endif
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      IF(HQFAC(IY,IX).GT.HPQMAX)THEN
+        HPQMAX=HQFAC(IY,IX)
+      ENDIF
+    END DO
+    SIY = MAX(0.01*HPQMAX,SIY)
+
+    DO
+      IF ( THM .LT. 0. ) THEN
+        THM    = THM + 360.
+      ELSE
+        EXIT
+      END IF
+    END DO
+    THM    = MOD ( THM , 360. )
+    GAMMA  = MAX (GAMMA,1.)
+    YLN    = LOG(GAMMA)
+    !
+    IF ( IAPROC .EQ. NAPOUT ) THEN
+      IF ( FLAGLL ) THEN
+        FACTOR = 1.
+        WRITE (NDSO,950) ALFA, FP, THM, GAMMA, SIGA, SIGB,  &
+             FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY
+      ELSE
+        FACTOR = 1.E-3
+        WRITE (NDSO,951) ALFA, FP, THM, GAMMA, SIGA, SIGB,  &
+             FACTOR*XM, FACTOR*SIX, FACTOR*YM, FACTOR*SIY
+      END IF
+    END IF
+    THM    = MOD ( 630. - THM , 360. ) * DERA
+    !
+    ! 5.b Make 1-D spectrum.
+    !
+    DO IK=1, NK
+      FR     = SIG(IK) * TPIINV
+      E1(IK) = EJ5P (FR, ALFA, FP, YLN, SIGA, SIGB )
+    END DO
+    !
+#ifdef W3_O4
+    IF ( IAPROC .EQ. NAPOUT ) CALL PRT1DS                   &
+         (NDSO, NK, E1, SIG(1:), '  ', 18, 0.,      &
+         'E(f)', ' ', 'TEST 1-D')
+#endif
+    !
+    ! 5.c 2-D energy spectrum.
+    !     Factor 2pi to go to E(sigma,theta)
+    !
+    DO IK = 1,NK
+      FR     = SIG(IK) * TPIINV
+      IF (FR.LT.FP) THEN
+        BETA =  4.06
+      ELSE
+        BETA = -2.34
+      END IF
+      FRR    = MIN ( 2.5 , FR/FP )
+      S      = 9.77 * FRR**BETA
+      SUMD   = 0.
+      DO ITH = 1,NTH
+        ANG    = COS( 0.5 * ( THM - TH(ITH) ) )**2
+        DD(ITH) = 0.
+        IF(ANG.GT.1.E-20) THEN
+          ARG    = S * LOG(ANG)
+          IF(ARG.GT.-170) DD(ITH) = EXP(ARG)
         END IF
-        !
-        VA(:,JSEA) = FACTOR * E21
-        !
-     END DO
-     !
-     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     ! 6.  ITYPE = 3, fetch limited JONSWAP.
-     !
-  ELSE IF ( ITYPE .EQ. 3 ) THEN
-     INXOUT = 'WIND'
-     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
-     !
-     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     ! 7.  ITYPE = 4, User defined.
-     !
-  ELSE IF ( ITYPE .EQ. 4 ) THEN
-     INXOUT = 'COLD'
-     !
-     ! 7.a Read parameters.
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-     READ (NDSI,*,END=801,ERR=802) FACS
-     IF ( FACS .LE. 0. ) FACS = 1.
-     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970) FACS
-     !
-     ! 7.b Read and rescale spectrum.
-     !
-     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-     READ (NDSI,*,END=801,ERR=802)                               &
-          ((FINP(IK,ITH),IK=1,NK),ITH=1,NTH)
-     !
-     FINP = FINP * FACS / TPI
-     !
+        SUMD    = SUMD + DD(ITH)
+      END DO
+      FACTOR = 1. / (TPI*SUMD*DTH)
+      DO ITH = 1,NTH
+        E2(ITH,IK) = FACTOR * E1(IK) * DD(ITH)
+      END DO
+    END DO
+    !
 #ifdef W3_O5
-     IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
-          (NDSO, NK, NK, NTH, FINP, SIG(1:), ' ', TPI,    &
-          0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
+    ALLOCATE ( E2OUT(NK,NTH) )
+    DO ITH=1, NTH
+      DO IK=1, NK
+        E2OUT(IK,ITH) = TPI * E2(ITH,IK)
+      END DO
+    END DO
 #endif
-     !
-     ! 7.c Distribute over grid.
-     !
-     DO JSEA=1, NSEAL
-        !
+    !
+#ifdef W3_O5
+    IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
+         (NDSO, NK, NK, NTH, E2OUT, SIG(1:), ' ', 1.,   &
+         0., 0.0001, 'E(f,theta)', 'm2s', 'TEST 2-D')
+    DEALLOCATE ( E2OUT )
+#endif
+    !
+    ! 5.d Distribute over grid.
+    !
+
+    DO IK=1, NK
+      E21(1+(IK-1)*NTH:IK*NTH) = E2(:,IK)
+    END DO
+    !
+    !
+    DO JSEA=1, NSEAL
+      !
 #ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
 #endif
 #ifdef W3_SHRD
-        ISEA   = JSEA
+      ISEA   = JSEA
 #endif
-        DO IK=1, NK
-           DO ITH=1, NTH
-              VA(ITH+(IK-1)*NTH,JSEA) = FINP(IK,ITH)
-           END DO
+      IF (GTYPE .EQ. UNGTYPE) THEN
+        IX     = MAPSF(ISEA,1)
+        X      = XGRD(1,IX)
+        Y      = YGRD(1,IX)
+      ELSE
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        X      = XGRD(IY,IX)
+        Y      = YGRD(IY,IX)
+      ENDIF
+      IF(NOSIX)THEN
+        RDSQR  =(W3DIST(FLAGLL,X,Y,XM,YM)/SIY)**2
+      ELSE
+        RDSQR  =((X-XM)/SIX)**2 + ((Y-YM)/SIY)**2
+      ENDIF
+      IF ( RDSQR .GT. 40. ) THEN
+        FACTOR = 0.
+      ELSE
+        FACTOR = EXP ( -0.5 * RDSQR )
+      END IF
+      !
+      VA(:,JSEA) = FACTOR * E21
+      !
+    END DO
+    !
+    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! 6.  ITYPE = 3, fetch limited JONSWAP.
+    !
+  ELSE IF ( ITYPE .EQ. 3 ) THEN
+    INXOUT = 'WIND'
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
+    !
+    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! 7.  ITYPE = 4, User defined.
+    !
+  ELSE IF ( ITYPE .EQ. 4 ) THEN
+    INXOUT = 'COLD'
+    !
+    ! 7.a Read parameters.
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,END=801,ERR=802) FACS
+    IF ( FACS .LE. 0. ) FACS = 1.
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970) FACS
+    !
+    ! 7.b Read and rescale spectrum.
+    !
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,END=801,ERR=802)                               &
+         ((FINP(IK,ITH),IK=1,NK),ITH=1,NTH)
+    !
+    FINP = FINP * FACS / TPI
+    !
+#ifdef W3_O5
+    IF ( IAPROC .EQ. NAPOUT ) CALL PRT2DS                   &
+         (NDSO, NK, NK, NTH, FINP, SIG(1:), ' ', TPI,    &
+         0., 0.0001, 'Energy', 'm2s', 'TEST 2-D')
+#endif
+    !
+    ! 7.c Distribute over grid.
+    !
+    DO JSEA=1, NSEAL
+      !
+#ifdef W3_DIST
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
+#endif
+#ifdef W3_SHRD
+      ISEA   = JSEA
+#endif
+      DO IK=1, NK
+        DO ITH=1, NTH
+          VA(ITH+(IK-1)*NTH,JSEA) = FINP(IK,ITH)
         END DO
-     END DO
-     !
-     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     ! 8.  ITYPE = 5, fetch limited JONSWAP.
-     !
+      END DO
+    END DO
+    !
+    !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    ! 8.  ITYPE = 5, fetch limited JONSWAP.
+    !
   ELSE
-     INXOUT = 'CALM'
-     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,980)
-     !
+    INXOUT = 'CALM'
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,980)
+    !
   END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 9.  Convert E(sigma) to N(k)
   !
   IF ( ITYPE.NE.3 .AND. ITYPE.NE.5 ) THEN
-     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,990)
-     !
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,990)
+    !
 #ifdef W3_O6
-     ALLOCATE ( HSIG(NX,NY) )
-     HSIG   = 0.
+    ALLOCATE ( HSIG(NX,NY) )
+    HSIG   = 0.
 #endif
-     !
-     DO JSEA=1, NSEAL
+    !
+    DO JSEA=1, NSEAL
 #ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
+      ISEA   = IAPROC + (JSEA-1)*NAPROC
 #endif
 #ifdef W3_SHRD
-        ISEA   = JSEA
+      ISEA   = JSEA
 #endif
-        DEPTH  = MAX ( DMIN , -ZB(ISEA) )
+      DEPTH  = MAX ( DMIN , -ZB(ISEA) )
 #ifdef W3_O6
-        ETOT   = 0.
+      ETOT   = 0.
 #endif
-        DO IK=1, NK
-           CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
+      DO IK=1, NK
+        CALL WAVNU1 ( SIG(IK), DEPTH, WN, CG )
 #ifdef W3_O6
-           E1I    = 0.
+        E1I    = 0.
 #endif
-           DO ITH=1, NTH
+        DO ITH=1, NTH
 #ifdef W3_O6
-              E1I    = E1I + VA(ITH+(IK-1)*NTH,JSEA)
+          E1I    = E1I + VA(ITH+(IK-1)*NTH,JSEA)
 #endif
-              VA(ITH+(IK-1)*NTH,JSEA) = VA(ITH+(IK-1)*NTH,JSEA) *   &
-                   CG / SIG(IK)
-           END DO
-#ifdef W3_O6
-           ETOT   = ETOT + E1I*DSIP(IK)
-#endif
+          VA(ITH+(IK-1)*NTH,JSEA) = VA(ITH+(IK-1)*NTH,JSEA) *   &
+               CG / SIG(IK)
         END DO
 #ifdef W3_O6
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
-        HSIG(IX,IY) = 4. * SQRT ( ETOT * DTH )
+        ETOT   = ETOT + E1I*DSIP(IK)
+#endif
+      END DO
+#ifdef W3_O6
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      HSIG(IX,IY) = 4. * SQRT ( ETOT * DTH )
 #endif
 #ifdef W3_EXPORTWWM
-        IF (JSEA .eq. 1) THEN
-           DO ITH=1,NTH
-              DO IK=1,NK
-                 ISPEC = ITH + NTH * (IK-1)
-                 WRITE(10003) ITH, IK, VA(ISPEC,JSEA)
-              END DO
-           END DO
-           WRITE(740+IAPROC,*) 'FINAL : sum(VA)=', sum(VA(:,JSEA))
-        END IF
-#endif
-     END DO
-     !
-#ifdef W3_O6
-     ALLOCATE ( MAPO(NX,NY) )
-     DO IX=1, NX
-        DO IY=1, NY
-           MAPO(IX,IY) = MAPSTA(IY,IX)
+      IF (JSEA .eq. 1) THEN
+        DO ITH=1,NTH
+          DO IK=1,NK
+            ISPEC = ITH + NTH * (IK-1)
+            WRITE(10003) ITH, IK, VA(ISPEC,JSEA)
+          END DO
         END DO
-     END DO
+        WRITE(740+IAPROC,*) 'FINAL : sum(VA)=', sum(VA(:,JSEA))
+      END IF
 #endif
-     !
+    END DO
+    !
+#ifdef W3_O6
+    ALLOCATE ( MAPO(NX,NY) )
+    DO IX=1, NX
+      DO IY=1, NY
+        MAPO(IX,IY) = MAPSTA(IY,IX)
+      END DO
+    END DO
+#endif
+    !
 #ifdef W3_MPI
-     IF ( NAPROC .EQ. 1 ) THEN
+    IF ( NAPROC .EQ. 1 ) THEN
 #endif
 #ifdef W3_O6
-        NSX    = 1 + NX/35
-        NSY    = 1 + NY/35
-        IF ( IAPROC .EQ. NAPOUT ) CALL PRTBLK                   &
-             (NDSO, NX, NY, NX, HSIG, MAPO, 0, 0.,       &
-             1, NX, NSX, 1, NY, NSY, 'Hs', 'm')
+      NSX    = 1 + NX/35
+      NSY    = 1 + NY/35
+      IF ( IAPROC .EQ. NAPOUT ) CALL PRTBLK                   &
+           (NDSO, NX, NY, NX, HSIG, MAPO, 0, 0.,       &
+           1, NX, NSX, 1, NY, NSY, 'Hs', 'm')
 #endif
 #ifdef W3_MPI
-     END IF
+    END IF
 #endif
-     !
+    !
   END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

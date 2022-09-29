@@ -39,7 +39,7 @@
 
       module scrip_remap_vars
 
-      use SCRIP_KindsMod        ! defines common data types
+      use SCRIP_KindsMod ! defines common data types
       use SCRIP_constants
       use scrip_grids
 
@@ -52,37 +52,37 @@
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4), parameter ::
-     &     norm_opt_none    = 1
-     &     ,     norm_opt_dstarea = 2
-     &     ,     norm_opt_frcarea = 3
+     &      norm_opt_none    = 1
+     &,     norm_opt_dstarea = 2
+     &,     norm_opt_frcarea = 3
 
       integer (SCRIP_i4), parameter ::
-     &     map_type_conserv  = 1
-     &     ,     map_type_bilinear = 2
-     &     ,     map_type_bicubic  = 3
-     &     ,     map_type_distwgt  = 4
-     &     ,     map_type_particle = 5
+     &      map_type_conserv  = 1
+     &,     map_type_bilinear = 2
+     &,     map_type_bicubic  = 3
+     &,     map_type_distwgt  = 4
+     &,     map_type_particle = 5
 
       integer (SCRIP_i4), save ::
-     &     max_links_map1       ! current size of link arrays
-     &     ,     num_links_map1 ! actual number of links for remapping
-     &     ,     max_links_map2 ! current size of link arrays
-     &     ,     num_links_map2 ! actual number of links for remapping
-     &     ,     num_maps       ! num of remappings for this grid pair
-     &     ,     num_wts        ! num of weights used in remapping
-     &     ,     map_type       ! identifier for remapping method
-     &     ,     norm_opt       ! option for normalization (conserv only)
-     &     ,     resize_increment ! default amount to increase array size
+     &      max_links_map1  ! current size of link arrays
+     &,     num_links_map1  ! actual number of links for remapping
+     &,     max_links_map2  ! current size of link arrays
+     &,     num_links_map2  ! actual number of links for remapping
+     &,     num_maps        ! num of remappings for this grid pair
+     &,     num_wts         ! num of weights used in remapping
+     &,     map_type        ! identifier for remapping method
+     &,     norm_opt        ! option for normalization (conserv only)
+     &,     resize_increment ! default amount to increase array size
 
       integer (SCRIP_i4), dimension(:), allocatable, save ::
-     &     grid1_add_map1,      ! grid1 address for each link in mapping 1
-     &     grid2_add_map1,      ! grid2 address for each link in mapping 1
-     &     grid1_add_map2,      ! grid1 address for each link in mapping 2
-     &     grid2_add_map2       ! grid2 address for each link in mapping 2
+     &      grid1_add_map1, ! grid1 address for each link in mapping 1
+     &      grid2_add_map1, ! grid2 address for each link in mapping 1
+     &      grid1_add_map2, ! grid1 address for each link in mapping 2
+     &      grid2_add_map2  ! grid2 address for each link in mapping 2
 
       real (SCRIP_r8), dimension(:,:), allocatable, save ::
-     &     wts_map1,            ! map weights for each link (num_wts,max_links)
-     &     wts_map2             ! map weights for each link (num_wts,max_links)
+     &      wts_map1, ! map weights for each link (num_wts,max_links)
+     &      wts_map2  ! map weights for each link (num_wts,max_links)
 
       real (kind = SCRIP_r8) :: frac_lowest,frac_highest
       real (kind = SCRIP_r8) :: wt_lowest,wt_highest
@@ -111,15 +111,15 @@
 
       select case (map_type)
       case(map_type_conserv)
-         num_wts = 3
+        num_wts = 3
       case(map_type_bilinear)
-         num_wts = 1
+        num_wts = 1
       case(map_type_bicubic)
-         num_wts = 4
+        num_wts = 4
       case(map_type_distwgt)
-         num_wts = 1
+        num_wts = 1
       case(map_type_particle)
-         num_wts = 1
+        num_wts = 1
       end select
 
 !-----------------------------------------------------------------------
@@ -134,9 +134,9 @@
       num_links_map1 = 0
       max_links_map1 = 4*grid2_size
       if (num_maps > 1) then
-         num_links_map2 = 0
-         max_links_map1 = max(4*grid1_size,4*grid2_size)
-         max_links_map2 = max_links_map1
+        num_links_map2 = 0
+        max_links_map1 = max(4*grid1_size,4*grid2_size)
+        max_links_map2 = max_links_map1
       endif
 
       resize_increment = 0.1*max(grid1_size,grid2_size)
@@ -148,8 +148,8 @@
 !-----------------------------------------------------------------------
 
       allocate (grid1_add_map1(max_links_map1),
-     &     grid2_add_map1(max_links_map1),
-     &     wts_map1(num_wts, max_links_map1))
+     &          grid2_add_map1(max_links_map1),
+     &          wts_map1(num_wts, max_links_map1))
 
 !-----------------------------------------------------------------------
 !
@@ -158,9 +158,9 @@
 !-----------------------------------------------------------------------
 
       if (num_maps > 1) then
-         allocate (grid1_add_map2(max_links_map2),
-     &        grid2_add_map2(max_links_map2),
-     &        wts_map2(num_wts, max_links_map2))
+        allocate (grid1_add_map2(max_links_map2),
+     &            grid2_add_map2(max_links_map2),
+     &            wts_map2(num_wts, max_links_map2))
       endif
 
 !-----------------------------------------------------------------------

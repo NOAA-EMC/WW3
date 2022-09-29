@@ -211,21 +211,21 @@ CONTAINS
     ! 0.  Initializations
     !
     IF(PTMETH .EQ. 4 .OR. PTMETH .EQ. 5) THEN
-       ! Partitioning methods 4 and 5 only ever create 2 partitions
-       ! C. Bunney, 25-Jul-18
-       DIMXP = 2
+      ! Partitioning methods 4 and 5 only ever create 2 partitions
+      ! C. Bunney, 25-Jul-18
+      DIMXP = 2
     ELSE
-       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
+      DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
     ENDIF
 
     ALLOCATE ( XP(DIMP,0:DIMXP) )
     !
     IF ( O6INIT ) THEN
-       DEALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT )
+      DEALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT )
     ELSE
-       ALLOCATE ( OUTPTS(IMOD)%OUT6%ICPRT(NSEALM+1,2) )
-       ICPRT => OUTPTS(IMOD)%OUT6%ICPRT
-       O6INIT = .TRUE.
+      ALLOCATE ( OUTPTS(IMOD)%OUT6%ICPRT(NSEALM+1,2) )
+      ICPRT => OUTPTS(IMOD)%OUT6%ICPRT
+      O6INIT = .TRUE.
     END IF
     ICPRT  = 0
     ICPRT(1,2) = 1
@@ -241,72 +241,72 @@ CONTAINS
     ! 1.  Loop over sea points
     !
     DO JSEA=1, NSEAL
-       !
-       ! -------------------------------------------------------------------- /
-       ! 2.  Check need for processing
-       !
-       CALL INIT_GET_ISEA(ISEA, JSEA)
-       IX     = MAPSF(ISEA,1)
-       IY     = MAPSF(ISEA,2)
-       ICPRT(JSEA+1,2) = ICPRT(JSEA,2)
-       !
-       IF ( MAPSTA(IY,IX) .LT. 0 ) CYCLE
-       !
-       ! -------------------------------------------------------------------- /
-       ! 3.  Prepare for partitioning
-       !
-       UABS   = U10(ISEA)*ASF(ISEA)
-       UDIR   = U10D(ISEA)*RADE
-       DEPTH  = DW(ISEA)
-       !
-       DO IK=1, NK
-          FACT   = TPI * SIG(IK) / CG(IK,ISEA)
-          DO ITH=1, NTH
-             E2(IK,ITH) = VA(ITH+(IK-1)*NTH,JSEA) * FACT
-          END DO
-       END DO
-       !
-       ! -------------------------------------------------------------------- /
-       ! 4.  perform partitioning
-       !
-       !AR: NaN checks should results in immediate stop after trace ...
-       IF (DEPTH.NE.DEPTH) THEN
-          WRITE(6,*) 'IOSF:',ISEA,IX,IY,DW(ISEA),DEPTH
-          WRITE(*,*) 'FOUND NaN in depth'
-          STOP 'CRITICAL ERROR IN DEPTH ARRAY'
-       END IF
-       CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
-            NP, XP, DIMXP )
-       !
-       ! -------------------------------------------------------------------- /
-       ! 5.  Store results (temp)
-       !
-       IF ( NP .GE. 0 ) THEN
-          ICPRT( JSEA ,1) = NP + 1
-          ICPRT(JSEA+1,2) = ICPRT(JSEA,2) + NP + 1
-          !
-          IF ( ICPRT(JSEA,2)+NP .GT. TMPSIZ ) THEN
-             ALLOCATE ( TMP2(DIMP,TMPSIZ) )
-             TMP2   = TMP
-             DEALLOCATE ( TMP )
-             OLDSIZ = TMPSIZ
-             TMPSIZ = TMPSIZ + MAX ( TSFAC*NSEAL , DIMXP )
-             ALLOCATE ( TMP(DIMP,TMPSIZ) )
-             TMP(:,1:OLDSIZ) = TMP2(:,1:OLDSIZ)
-             TMP(:,OLDSIZ+1:) = 0.
-             DEALLOCATE ( TMP2 )
+      !
+      ! -------------------------------------------------------------------- /
+      ! 2.  Check need for processing
+      !
+      CALL INIT_GET_ISEA(ISEA, JSEA)
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      ICPRT(JSEA+1,2) = ICPRT(JSEA,2)
+      !
+      IF ( MAPSTA(IY,IX) .LT. 0 ) CYCLE
+      !
+      ! -------------------------------------------------------------------- /
+      ! 3.  Prepare for partitioning
+      !
+      UABS   = U10(ISEA)*ASF(ISEA)
+      UDIR   = U10D(ISEA)*RADE
+      DEPTH  = DW(ISEA)
+      !
+      DO IK=1, NK
+        FACT   = TPI * SIG(IK) / CG(IK,ISEA)
+        DO ITH=1, NTH
+          E2(IK,ITH) = VA(ITH+(IK-1)*NTH,JSEA) * FACT
+        END DO
+      END DO
+      !
+      ! -------------------------------------------------------------------- /
+      ! 4.  perform partitioning
+      !
+      !AR: NaN checks should results in immediate stop after trace ...
+      IF (DEPTH.NE.DEPTH) THEN
+        WRITE(6,*) 'IOSF:',ISEA,IX,IY,DW(ISEA),DEPTH
+        WRITE(*,*) 'FOUND NaN in depth'
+        STOP 'CRITICAL ERROR IN DEPTH ARRAY'
+      END IF
+      CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
+           NP, XP, DIMXP )
+      !
+      ! -------------------------------------------------------------------- /
+      ! 5.  Store results (temp)
+      !
+      IF ( NP .GE. 0 ) THEN
+        ICPRT( JSEA ,1) = NP + 1
+        ICPRT(JSEA+1,2) = ICPRT(JSEA,2) + NP + 1
+        !
+        IF ( ICPRT(JSEA,2)+NP .GT. TMPSIZ ) THEN
+          ALLOCATE ( TMP2(DIMP,TMPSIZ) )
+          TMP2   = TMP
+          DEALLOCATE ( TMP )
+          OLDSIZ = TMPSIZ
+          TMPSIZ = TMPSIZ + MAX ( TSFAC*NSEAL , DIMXP )
+          ALLOCATE ( TMP(DIMP,TMPSIZ) )
+          TMP(:,1:OLDSIZ) = TMP2(:,1:OLDSIZ)
+          TMP(:,OLDSIZ+1:) = 0.
+          DEALLOCATE ( TMP2 )
 #ifdef W3_T
-             WRITE (NDST,9050) JSEA, OLDSIZ, TMPSIZ
+          WRITE (NDST,9050) JSEA, OLDSIZ, TMPSIZ
 #endif
-          END IF
-          !
-          TMP(:,ICPRT(JSEA,2):ICPRT(JSEA,2)+NP) = XP(:,0:NP)
-          !
-       END IF
-       !
-       ! -------------------------------------------------------------------- /
-       ! 6.  End of loop and clean up
-       !
+        END IF
+        !
+        TMP(:,ICPRT(JSEA,2):ICPRT(JSEA,2)+NP) = XP(:,0:NP)
+        !
+      END IF
+      !
+      ! -------------------------------------------------------------------- /
+      ! 6.  End of loop and clean up
+      !
     END DO
     !
     FINSIZ = ICPRT(NSEAL+1,2) - 1
@@ -320,9 +320,9 @@ CONTAINS
     ALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT(DIMP,MAX(1,FINSIZ)) )
     DTPRT => OUTPTS(IMOD)%OUT6%DTPRT
     IF ( FINSIZ .GT. 0 ) THEN
-       DTPRT = TMP(:,1:FINSIZ)
+      DTPRT = TMP(:,1:FINSIZ)
     ELSE
-       DTPRT = 0.
+      DTPRT = 0.
     END IF
     !
     DEALLOCATE ( XP, TMP )
@@ -479,8 +479,8 @@ CONTAINS
     REAL, POINTER           :: DTP(:,:)
     !
     TYPE PROCS
-       INTEGER, POINTER      :: ICPRT(:,:)
-       REAL, POINTER         :: DTPRT(:,:)
+      INTEGER, POINTER      :: ICPRT(:,:)
+      REAL, POINTER         :: DTPRT(:,:)
     END TYPE PROCS
     !
     TYPE(PROCS), TARGET, ALLOCATABLE :: PROC(:)
@@ -505,56 +505,56 @@ CONTAINS
     ! 1.  Set up file ( IPASS = 1 and proper processor )
     !
     IF ( IPASS.EQ.1 .AND. IAPROC.EQ.NAPPRT ) THEN
-       !
-       ! 1.a Open file
-       !
-       I      = LEN_TRIM(FILEXT)
-       J      = LEN_TRIM(FNMPRE)
-       !
+      !
+      ! 1.a Open file
+      !
+      I      = LEN_TRIM(FILEXT)
+      J      = LEN_TRIM(FNMPRE)
+      !
 #ifdef W3_T
-       WRITE (NDST,9010) FNMPRE(:J)//'partition.'//FILEXT(:I)
+      WRITE (NDST,9010) FNMPRE(:J)//'partition.'//FILEXT(:I)
 #endif
-       !
-       IF ( FLFORM ) THEN
-          OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
-               ERR=800,IOSTAT=IERR)
-       ELSE
-          OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
-               form='UNFORMATTED',convert=file_endian,ERR=800,IOSTAT=IERR)
-       END IF
-       !
-       REWIND (NDSPT)
-       !
-       ! 1.b Header info
-       !
-       IF ( FLFORM ) THEN
-          WRITE (NDSPT,910) IDSTR, VERPRT
-          IF ( FLAGLL ) THEN
-             WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
-                  'lat     lon   name       nprt'// &
-                  ' depth ubas  udir cabs  cdir'
-          ELSE
-             WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
-                  'X       Y     name       nprt'// &
-                  ' depth ubas  udir cabs  cdir'
-          END IF
-          WRITE (NDSPT,911) '        hs     tp     lp  '//    &
-               '     theta     sp      wf'
-       ELSE
-          WRITE (  NDSPT  ) IDSTR, VERPRT
-          IF ( FLAGLL ) THEN
-             WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
-                  'lat     lon   name       nprt'// &
-                  ' depth ubas  udir cabs  cdir'
-          ELSE
-             WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
-                  'X       Y     name       nprt'// &
-                  ' depth ubas  udir cabs  cdir'
-          END IF
-          WRITE (  NDSPT  ) '        hs     tp     lp  '//    &
-               '     theta     sp      wf'
-       END IF
-       !
+      !
+      IF ( FLFORM ) THEN
+        OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
+             ERR=800,IOSTAT=IERR)
+      ELSE
+        OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
+             form='UNFORMATTED',convert=file_endian,ERR=800,IOSTAT=IERR)
+      END IF
+      !
+      REWIND (NDSPT)
+      !
+      ! 1.b Header info
+      !
+      IF ( FLFORM ) THEN
+        WRITE (NDSPT,910) IDSTR, VERPRT
+        IF ( FLAGLL ) THEN
+          WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
+               'lat     lon   name       nprt'// &
+               ' depth ubas  udir cabs  cdir'
+        ELSE
+          WRITE (NDSPT,911) ' yyyymmdd hhmmss     '//         &
+               'X       Y     name       nprt'// &
+               ' depth ubas  udir cabs  cdir'
+        END IF
+        WRITE (NDSPT,911) '        hs     tp     lp  '//    &
+             '     theta     sp      wf'
+      ELSE
+        WRITE (  NDSPT  ) IDSTR, VERPRT
+        IF ( FLAGLL ) THEN
+          WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
+               'lat     lon   name       nprt'// &
+               ' depth ubas  udir cabs  cdir'
+        ELSE
+          WRITE (  NDSPT  ) ' yyyymmdd hhmmss     '//         &
+               'X       Y     name       nprt'// &
+               ' depth ubas  udir cabs  cdir'
+        END IF
+        WRITE (  NDSPT  ) '        hs     tp     lp  '//    &
+             '     theta     sp      wf'
+      END IF
+      !
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -562,29 +562,29 @@ CONTAINS
     !     Leave routine after send
     !
     IF ( IAPROC.NE.NAPPRT .AND. IAPROC.LE.NAPROC ) THEN
-       !
+      !
 #ifdef W3_T
-       WRITE (NDST,9020)  IAPROC, NAPPRT, NSEALM+1
+      WRITE (NDST,9020)  IAPROC, NAPPRT, NSEALM+1
 #endif
-       !
+      !
 #ifdef W3_MPI
-       IT     = IT0PRT + IAPROC - 1
-       CALL MPI_SEND ( ICPRT, ICSIZ, MPI_REAL, NAPPRT-1, IT,  &
-            MPI_COMM_WAVE, IERR_MPI )
-       DTSIZ  = ICPRT(NSEAL+1,2) - 1
+      IT     = IT0PRT + IAPROC - 1
+      CALL MPI_SEND ( ICPRT, ICSIZ, MPI_REAL, NAPPRT-1, IT,  &
+           MPI_COMM_WAVE, IERR_MPI )
+      DTSIZ  = ICPRT(NSEAL+1,2) - 1
 #endif
-       !
+      !
 #ifdef W3_T
-       WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
+      WRITE (NDST,9021)  IAPROC, NAPPRT, DTSIZ
 #endif
-       !
+      !
 #ifdef W3_MPI
-       IT     = IT0PRT + NAPROC + IAPROC - 1
-       IF ( DTSIZ .GT. 0 ) CALL MPI_SEND                      &
-            ( DTPRT, 6*DTSIZ, MPI_REAL, NAPPRT-1,    &
-            IT, MPI_COMM_WAVE, IERR_MPI )
+      IT     = IT0PRT + NAPROC + IAPROC - 1
+      IF ( DTSIZ .GT. 0 ) CALL MPI_SEND                      &
+           ( DTPRT, 6*DTSIZ, MPI_REAL, NAPPRT-1,    &
+           IT, MPI_COMM_WAVE, IERR_MPI )
 #endif
-       !
+      !
     END IF
     !
     IF ( IAPROC .NE. NAPPRT ) RETURN
@@ -598,42 +598,42 @@ CONTAINS
     ! 3.b Point to local data
     !
     IF ( IAPROC .LE. NAPROC ) THEN
-       PROC(IAPROC)%ICPRT => OUTPTS(IMOD)%OUT6%ICPRT
-       PROC(IAPROC)%DTPRT => OUTPTS(IMOD)%OUT6%DTPRT
+      PROC(IAPROC)%ICPRT => OUTPTS(IMOD)%OUT6%ICPRT
+      PROC(IAPROC)%DTPRT => OUTPTS(IMOD)%OUT6%DTPRT
     END IF
     !
     ! 3.c Allocate and get counters and arrrays
     !
     DO JAPROC=1, NAPROC
-       IF ( IAPROC .EQ. JAPROC ) CYCLE
-       !
+      IF ( IAPROC .EQ. JAPROC ) CYCLE
+      !
 #ifdef W3_T
-       WRITE (NDST,9030)  JAPROC, NSEALM+1
+      WRITE (NDST,9030)  JAPROC, NSEALM+1
 #endif
-       !
+      !
 #ifdef W3_MPI
-       ALLOCATE ( PROC(JAPROC)%ICPRT(NSEALM+1,2) )
-       ICP   => PROC(JAPROC)%ICPRT
-       IT     = IT0PRT + JAPROC - 1
-       CALL MPI_RECV ( ICP, ICSIZ, MPI_REAL, JAPROC-1, IT,  &
-            MPI_COMM_WAVE, STATUS, IERR_MPI )
-       JSLM   = 1 + (NSEA-JAPROC)/NAPROC
-       DTSIZ  = ICP(JSLM+1,2) - 1
+      ALLOCATE ( PROC(JAPROC)%ICPRT(NSEALM+1,2) )
+      ICP   => PROC(JAPROC)%ICPRT
+      IT     = IT0PRT + JAPROC - 1
+      CALL MPI_RECV ( ICP, ICSIZ, MPI_REAL, JAPROC-1, IT,  &
+           MPI_COMM_WAVE, STATUS, IERR_MPI )
+      JSLM   = 1 + (NSEA-JAPROC)/NAPROC
+      DTSIZ  = ICP(JSLM+1,2) - 1
 #endif
-       !
+      !
 #ifdef W3_T
-       WRITE (NDST,9031)  JAPROC, DTSIZ
+      WRITE (NDST,9031)  JAPROC, DTSIZ
 #endif
-       !
+      !
 #ifdef W3_MPI
-       ALLOCATE ( PROC(JAPROC)%DTPRT(DIMP,MAX(1,DTSIZ)) )
-       DTP   => PROC(JAPROC)%DTPRT
-       IT     = IT0PRT + NAPROC + JAPROC - 1
-       IF ( DTSIZ .GT. 0 ) CALL MPI_RECV                    &
-            ( DTP, DIMP*DTSIZ, MPI_REAL, JAPROC-1, &
-            IT, MPI_COMM_WAVE, STATUS, IERR_MPI )
+      ALLOCATE ( PROC(JAPROC)%DTPRT(DIMP,MAX(1,DTSIZ)) )
+      DTP   => PROC(JAPROC)%DTPRT
+      IT     = IT0PRT + NAPROC + JAPROC - 1
+      IF ( DTSIZ .GT. 0 ) CALL MPI_RECV                    &
+           ( DTP, DIMP*DTSIZ, MPI_REAL, JAPROC-1, &
+           IT, MPI_COMM_WAVE, STATUS, IERR_MPI )
 #endif
-       !
+      !
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -641,71 +641,71 @@ CONTAINS
     ! 4.a General loop over all sea points
     !
     DO ISEA=1, NSEA
-       !
-       ! 4.b Check for partitioned data at sea point
-       !
-       CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, JAPROC)
-       !
-       ICP   => PROC(JAPROC)%ICPRT
-       DTP   => PROC(JAPROC)%DTPRT
-       !
-       IF ( ICP(JSEA,1) .EQ. 0 ) CYCLE
-       !
-       ! 4.c Process point ID line
-       !
-       IX     = MAPSF(ISEA,1)
-       IY     = MAPSF(ISEA,2)
-       IF ( IX.LT.IX0 .OR. IX.GT.IXN .OR. MOD(IX-IX0,IXS).NE.0 ) CYCLE
-       IF ( IY.LT.IY0 .OR. IY.GT.IYN .OR. MOD(IY-IY0,IYS).NE.0 ) CYCLE
-       X      = XGRD(IY,IX)
-       Y      = YGRD(IY,IX)
-       DEPTH   = DW(ISEA)
-       UABS   = U10(ISEA)*ASF(ISEA)
-       UDIR   = MOD ( 270. - U10D(ISEA)*RADE , 360. )
-       CABS   = SQRT ( CX(ISEA)**2 + CY(ISEA)**2 )
-       IF ( CABS .LT. 1.E-3 ) THEN
-          CDIR   = 0.
-       ELSE
-          CDIR   = ATAN2 ( CY(ISEA), CX(ISEA) ) * RADE
-          CDIR   = MOD ( 270. - CDIR , 360. )
-       END IF
-       !
-       IF ( FLFORM ) THEN
-          IF ( FLAGLL ) THEN
-             WRITE (NDSPT,940) TIME, Y, X,                        &
-                  'grid_point', ICP(JSEA,1) - 1,      &
-                  DEPTH, UABS, UDIR, CABS, CDIR
-          ELSE
-             WRITE (NDSPT,941) TIME, X*1.E-3, Y*1.E-3,            &
-                  'grid_point', ICP(JSEA,1) - 1,      &
-                  DEPTH, UABS, UDIR, CABS, CDIR
-          END IF
-       ELSE
-          IF ( FLAGLL ) THEN
-             WRITE (  NDSPT  ) TIME, Y, X,                        &
-                  'grid_point', ICP(JSEA,1) - 1,      &
-                  DEPTH, UABS, UDIR, CABS, CDIR
-          ELSE
-             WRITE (  NDSPT  ) TIME, X*1.E-3, Y*1.E-3,            &
-                  'grid_point', ICP(JSEA,1) - 1,      &
-                  DEPTH, UABS, UDIR, CABS, CDIR
-          END IF
-       END IF
-       !
-       ! 4.d Process partitions for this point
-       !
-       IOFF   = ICP(JSEA,2)
-       !
-       IF ( FLFORM ) THEN
-          DO IP=0, ICP(JSEA,1) - 1
-             WRITE (NDSPT,942) IP, DTP(:,IP+IOFF)
-          END DO
-       ELSE
-          DO IP=0, ICP(JSEA,1) - 1
-             WRITE (  NDSPT  ) IP, DTP(:,IP+IOFF)
-          END DO
-       END IF
-       !
+      !
+      ! 4.b Check for partitioned data at sea point
+      !
+      CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, JAPROC)
+      !
+      ICP   => PROC(JAPROC)%ICPRT
+      DTP   => PROC(JAPROC)%DTPRT
+      !
+      IF ( ICP(JSEA,1) .EQ. 0 ) CYCLE
+      !
+      ! 4.c Process point ID line
+      !
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      IF ( IX.LT.IX0 .OR. IX.GT.IXN .OR. MOD(IX-IX0,IXS).NE.0 ) CYCLE
+      IF ( IY.LT.IY0 .OR. IY.GT.IYN .OR. MOD(IY-IY0,IYS).NE.0 ) CYCLE
+      X      = XGRD(IY,IX)
+      Y      = YGRD(IY,IX)
+      DEPTH   = DW(ISEA)
+      UABS   = U10(ISEA)*ASF(ISEA)
+      UDIR   = MOD ( 270. - U10D(ISEA)*RADE , 360. )
+      CABS   = SQRT ( CX(ISEA)**2 + CY(ISEA)**2 )
+      IF ( CABS .LT. 1.E-3 ) THEN
+        CDIR   = 0.
+      ELSE
+        CDIR   = ATAN2 ( CY(ISEA), CX(ISEA) ) * RADE
+        CDIR   = MOD ( 270. - CDIR , 360. )
+      END IF
+      !
+      IF ( FLFORM ) THEN
+        IF ( FLAGLL ) THEN
+          WRITE (NDSPT,940) TIME, Y, X,                        &
+               'grid_point', ICP(JSEA,1) - 1,      &
+               DEPTH, UABS, UDIR, CABS, CDIR
+        ELSE
+          WRITE (NDSPT,941) TIME, X*1.E-3, Y*1.E-3,            &
+               'grid_point', ICP(JSEA,1) - 1,      &
+               DEPTH, UABS, UDIR, CABS, CDIR
+        END IF
+      ELSE
+        IF ( FLAGLL ) THEN
+          WRITE (  NDSPT  ) TIME, Y, X,                        &
+               'grid_point', ICP(JSEA,1) - 1,      &
+               DEPTH, UABS, UDIR, CABS, CDIR
+        ELSE
+          WRITE (  NDSPT  ) TIME, X*1.E-3, Y*1.E-3,            &
+               'grid_point', ICP(JSEA,1) - 1,      &
+               DEPTH, UABS, UDIR, CABS, CDIR
+        END IF
+      END IF
+      !
+      ! 4.d Process partitions for this point
+      !
+      IOFF   = ICP(JSEA,2)
+      !
+      IF ( FLFORM ) THEN
+        DO IP=0, ICP(JSEA,1) - 1
+          WRITE (NDSPT,942) IP, DTP(:,IP+IOFF)
+        END DO
+      ELSE
+        DO IP=0, ICP(JSEA,1) - 1
+          WRITE (  NDSPT  ) IP, DTP(:,IP+IOFF)
+        END DO
+      END IF
+      !
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -713,8 +713,8 @@ CONTAINS
     !
 #ifdef W3_MPI
     DO JAPROC=1, NAPROC
-       IF ( IAPROC .EQ. JAPROC ) CYCLE
-       DEALLOCATE ( PROC(JAPROC)%ICPRT, PROC(JAPROC)%DTPRT )
+      IF ( IAPROC .EQ. JAPROC ) CYCLE
+      DEALLOCATE ( PROC(JAPROC)%ICPRT, PROC(JAPROC)%DTPRT )
     END DO
 #endif
     !

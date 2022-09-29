@@ -323,53 +323,53 @@ MODULE W3GSRUMD
   !/ accessible to subroutines in this module where the type is declared.
   !/
   TYPE, PUBLIC :: T_GSU
-     PRIVATE
-     TYPE(CLASS_GSU), POINTER :: PTR => NULL()
+    PRIVATE
+    TYPE(CLASS_GSU), POINTER :: PTR => NULL()
   END TYPE T_GSU
   !/
   !/ Private grid-search-utility class
   !/
   TYPE :: CLASS_GSU
-     LOGICAL :: IJG  ! grid array ordering flag: T = (NX,NY), F = (NY,NX)
-     LOGICAL :: LLG  ! spherical coordinate flag of associated grid
-     INTEGER :: ICLO ! parameter indicating type of index space closure
-     ! this flag must be set by the user
-     LOGICAL :: LCLO ! flag indicating longitudinal periodicity
-     ! this flag is calculated internally
-     ! LLG & ICLO != ICLO_NONE => LCLO = T
-     LOGICAL :: L360 ! flag indicating longitude range:
-     !   T = [0:360],  F = [-180:180]
-     INTEGER :: GKIND  ! kind (precision: 4 or 8) of associated grid
-     INTEGER :: LBX, LBY ! lower-bounds of associated grid
-     INTEGER :: UBX, UBY ! upper-bounds of associated grid
-     INTEGER :: NX, NY   ! dimensions of associated grid
-     REAL(4), POINTER :: XG4(:,:), YG4(:,:) ! coordinates of associated grid (r4)
-     REAL(8), POINTER :: XG8(:,:), YG8(:,:) ! coordinates of associated grid (r8)
-     TYPE(T_NNS), POINTER :: NNP  ! nearest-neighbor point search indices object
-     INTEGER :: NBX, NBY  ! number of buckets in each spatial direction
-     REAL(8) :: DXB, DYB  ! spatial extent of each search bucket
-     REAL(8) :: XMIN, YMIN, XMAX, YMAX ! bounding box of search domain
-     TYPE(T_BKT), POINTER :: B(:,:) ! array of search buckets
-     TYPE(T_NNS), POINTER :: NNB  ! nearest-neighbor bucket search indices object
+    LOGICAL :: IJG  ! grid array ordering flag: T = (NX,NY), F = (NY,NX)
+    LOGICAL :: LLG  ! spherical coordinate flag of associated grid
+    INTEGER :: ICLO ! parameter indicating type of index space closure
+    ! this flag must be set by the user
+    LOGICAL :: LCLO ! flag indicating longitudinal periodicity
+    ! this flag is calculated internally
+    ! LLG & ICLO != ICLO_NONE => LCLO = T
+    LOGICAL :: L360 ! flag indicating longitude range:
+    !   T = [0:360],  F = [-180:180]
+    INTEGER :: GKIND  ! kind (precision: 4 or 8) of associated grid
+    INTEGER :: LBX, LBY ! lower-bounds of associated grid
+    INTEGER :: UBX, UBY ! upper-bounds of associated grid
+    INTEGER :: NX, NY   ! dimensions of associated grid
+    REAL(4), POINTER :: XG4(:,:), YG4(:,:) ! coordinates of associated grid (r4)
+    REAL(8), POINTER :: XG8(:,:), YG8(:,:) ! coordinates of associated grid (r8)
+    TYPE(T_NNS), POINTER :: NNP  ! nearest-neighbor point search indices object
+    INTEGER :: NBX, NBY  ! number of buckets in each spatial direction
+    REAL(8) :: DXB, DYB  ! spatial extent of each search bucket
+    REAL(8) :: XMIN, YMIN, XMAX, YMAX ! bounding box of search domain
+    TYPE(T_BKT), POINTER :: B(:,:) ! array of search buckets
+    TYPE(T_NNS), POINTER :: NNB  ! nearest-neighbor bucket search indices object
   END TYPE CLASS_GSU
   !/
   !/ Private search bucket type
   !/
   TYPE :: T_BKT
-     INTEGER :: N  ! number of cells in bucket
-     INTEGER, POINTER :: I(:)  ! i-index of cell c
-     INTEGER, POINTER :: J(:)  ! j-index of cell c
+    INTEGER :: N  ! number of cells in bucket
+    INTEGER, POINTER :: I(:)  ! i-index of cell c
+    INTEGER, POINTER :: J(:)  ! j-index of cell c
   END TYPE T_BKT
   !/
   !/ Public nearest-neighbor grid-point search type
   !/
   TYPE, PUBLIC :: T_NNS
-     INTEGER :: NLVL  ! number of nnbr levels
-     INTEGER :: NNBR  ! total number of nnbr's
-     INTEGER, POINTER :: N1(:)  ! starting nearest-nbr loop index for level l
-     INTEGER, POINTER :: N2(:)  ! ending nearest-nbr loop index for level l
-     INTEGER, POINTER :: DI(:)  ! i-index delta for nearest-nbr n
-     INTEGER, POINTER :: DJ(:)  ! j-index delta for nearest-nbr n
+    INTEGER :: NLVL  ! number of nnbr levels
+    INTEGER :: NNBR  ! total number of nnbr's
+    INTEGER, POINTER :: N1(:)  ! starting nearest-nbr loop index for level l
+    INTEGER, POINTER :: N2(:)  ! ending nearest-nbr loop index for level l
+    INTEGER, POINTER :: DI(:)  ! i-index delta for nearest-nbr n
+    INTEGER, POINTER :: DJ(:)  ! j-index delta for nearest-nbr n
   END TYPE T_NNS
   !/
   !/ Private module parameters
@@ -415,109 +415,109 @@ MODULE W3GSRUMD
   !/ Module Interfaces
   !/
   INTERFACE W3GSUC
-     MODULE PROCEDURE W3GSUC_PTR_R4
-     MODULE PROCEDURE W3GSUC_PTR_R8
-     MODULE PROCEDURE W3GSUC_TGT_R4
-     MODULE PROCEDURE W3GSUC_TGT_R8
+    MODULE PROCEDURE W3GSUC_PTR_R4
+    MODULE PROCEDURE W3GSUC_PTR_R8
+    MODULE PROCEDURE W3GSUC_TGT_R4
+    MODULE PROCEDURE W3GSUC_TGT_R8
   END INTERFACE W3GSUC
   INTERFACE W3BBOX
-     MODULE PROCEDURE W3BBOX_GSU
-     MODULE PROCEDURE W3BBOX_GRD_PTR_R4
-     MODULE PROCEDURE W3BBOX_GRD_PTR_R8
-     MODULE PROCEDURE W3BBOX_GRD_TGT_R4
-     MODULE PROCEDURE W3BBOX_GRD_TGT_R8
+    MODULE PROCEDURE W3BBOX_GSU
+    MODULE PROCEDURE W3BBOX_GRD_PTR_R4
+    MODULE PROCEDURE W3BBOX_GRD_PTR_R8
+    MODULE PROCEDURE W3BBOX_GRD_TGT_R4
+    MODULE PROCEDURE W3BBOX_GRD_TGT_R8
   END INTERFACE W3BBOX
   INTERFACE W3GFCL
-     MODULE PROCEDURE W3GFCL_R4
-     MODULE PROCEDURE W3GFCL_R8
+    MODULE PROCEDURE W3GFCL_R4
+    MODULE PROCEDURE W3GFCL_R8
   END INTERFACE W3GFCL
   INTERFACE W3GFCD
-     MODULE PROCEDURE W3GFCD_R4
-     MODULE PROCEDURE W3GFCD_R8
+    MODULE PROCEDURE W3GFCD_R4
+    MODULE PROCEDURE W3GFCD_R8
   END INTERFACE W3GFCD
   INTERFACE W3GFPT
-     MODULE PROCEDURE W3GFPT_R4
-     MODULE PROCEDURE W3GFPT_R8
+    MODULE PROCEDURE W3GFPT_R4
+    MODULE PROCEDURE W3GFPT_R8
   END INTERFACE W3GFPT
   INTERFACE W3GFIJ
-     MODULE PROCEDURE W3GFIJ_R4
-     MODULE PROCEDURE W3GFIJ_R8
+    MODULE PROCEDURE W3GFIJ_R4
+    MODULE PROCEDURE W3GFIJ_R8
   END INTERFACE W3GFIJ
   INTERFACE W3GRMP
-     MODULE PROCEDURE W3GRMP_R4
-     MODULE PROCEDURE W3GRMP_R8
+    MODULE PROCEDURE W3GRMP_R4
+    MODULE PROCEDURE W3GRMP_R8
   END INTERFACE W3GRMP
   INTERFACE W3GRMC
-     MODULE PROCEDURE W3GRMC_R4
-     MODULE PROCEDURE W3GRMC_R8
+    MODULE PROCEDURE W3GRMC_R4
+    MODULE PROCEDURE W3GRMC_R8
   END INTERFACE W3GRMC
   INTERFACE W3CGDM
-     MODULE PROCEDURE W3CGDM_R4
-     MODULE PROCEDURE W3CGDM_R8
+    MODULE PROCEDURE W3CGDM_R4
+    MODULE PROCEDURE W3CGDM_R8
   END INTERFACE W3CGDM
   INTERFACE W3GRD0
-     MODULE PROCEDURE W3GRD0_R4
-     MODULE PROCEDURE W3GRD0_R8
+    MODULE PROCEDURE W3GRD0_R4
+    MODULE PROCEDURE W3GRD0_R8
   END INTERFACE W3GRD0
   INTERFACE W3DIV1
-     MODULE PROCEDURE W3DIV1_R4
-     MODULE PROCEDURE W3DIV1_R8
+    MODULE PROCEDURE W3DIV1_R4
+    MODULE PROCEDURE W3DIV1_R8
   END INTERFACE W3DIV1
   INTERFACE W3DIV2
-     MODULE PROCEDURE W3DIV2_R4
-     MODULE PROCEDURE W3DIV2_R8
+    MODULE PROCEDURE W3DIV2_R4
+    MODULE PROCEDURE W3DIV2_R8
   END INTERFACE W3DIV2
   INTERFACE W3DIST
-     MODULE PROCEDURE W3DIST_R4
-     MODULE PROCEDURE W3DIST_R8
+    MODULE PROCEDURE W3DIST_R4
+    MODULE PROCEDURE W3DIST_R8
   END INTERFACE W3DIST
   INTERFACE W3SPLX
-     MODULE PROCEDURE W3SPLX_0D_R4
-     MODULE PROCEDURE W3SPLX_0D_R8
-     MODULE PROCEDURE W3SPLX_1D_R4
-     MODULE PROCEDURE W3SPLX_1D_R8
-     MODULE PROCEDURE W3SPLX_2D_R4
-     MODULE PROCEDURE W3SPLX_2D_R8
+    MODULE PROCEDURE W3SPLX_0D_R4
+    MODULE PROCEDURE W3SPLX_0D_R8
+    MODULE PROCEDURE W3SPLX_1D_R4
+    MODULE PROCEDURE W3SPLX_1D_R8
+    MODULE PROCEDURE W3SPLX_2D_R4
+    MODULE PROCEDURE W3SPLX_2D_R8
   END INTERFACE W3SPLX
   INTERFACE W3SPXL
-     MODULE PROCEDURE W3SPXL_0D_R4
-     MODULE PROCEDURE W3SPXL_0D_R8
-     MODULE PROCEDURE W3SPXL_1D_R4
-     MODULE PROCEDURE W3SPXL_1D_R8
-     MODULE PROCEDURE W3SPXL_2D_R4
-     MODULE PROCEDURE W3SPXL_2D_R8
+    MODULE PROCEDURE W3SPXL_0D_R4
+    MODULE PROCEDURE W3SPXL_0D_R8
+    MODULE PROCEDURE W3SPXL_1D_R4
+    MODULE PROCEDURE W3SPXL_1D_R8
+    MODULE PROCEDURE W3SPXL_2D_R4
+    MODULE PROCEDURE W3SPXL_2D_R8
   END INTERFACE W3SPXL
   INTERFACE W3TRLL
-     MODULE PROCEDURE W3TRLL_0D_R4
-     MODULE PROCEDURE W3TRLL_0D_R8
-     MODULE PROCEDURE W3TRLL_1D_R4
-     MODULE PROCEDURE W3TRLL_1D_R8
-     MODULE PROCEDURE W3TRLL_2D_R4
-     MODULE PROCEDURE W3TRLL_2D_R8
+    MODULE PROCEDURE W3TRLL_0D_R4
+    MODULE PROCEDURE W3TRLL_0D_R8
+    MODULE PROCEDURE W3TRLL_1D_R4
+    MODULE PROCEDURE W3TRLL_1D_R8
+    MODULE PROCEDURE W3TRLL_2D_R4
+    MODULE PROCEDURE W3TRLL_2D_R8
   END INTERFACE W3TRLL
   INTERFACE W3LLAZ
-     MODULE PROCEDURE W3LLAZ_R4
-     MODULE PROCEDURE W3LLAZ_R8
+    MODULE PROCEDURE W3LLAZ_R4
+    MODULE PROCEDURE W3LLAZ_R8
   END INTERFACE W3LLAZ
   INTERFACE W3FDWT
-     MODULE PROCEDURE W3FDWT_R4
-     MODULE PROCEDURE W3FDWT_R8
+    MODULE PROCEDURE W3FDWT_R4
+    MODULE PROCEDURE W3FDWT_R8
   END INTERFACE W3FDWT
   INTERFACE W3CKCL
-     MODULE PROCEDURE W3CKCL_R4
-     MODULE PROCEDURE W3CKCL_R8
+    MODULE PROCEDURE W3CKCL_R4
+    MODULE PROCEDURE W3CKCL_R8
   END INTERFACE W3CKCL
   INTERFACE W3SORT
-     MODULE PROCEDURE W3SORT_R4
-     MODULE PROCEDURE W3SORT_R8
+    MODULE PROCEDURE W3SORT_R4
+    MODULE PROCEDURE W3SORT_R8
   END INTERFACE W3SORT
   INTERFACE W3ISRT
-     MODULE PROCEDURE W3ISRT_R4
-     MODULE PROCEDURE W3ISRT_R8
+    MODULE PROCEDURE W3ISRT_R4
+    MODULE PROCEDURE W3ISRT_R8
   END INTERFACE W3ISRT
   INTERFACE W3INAN
-     MODULE PROCEDURE W3INAN_R4
-     MODULE PROCEDURE W3INAN_R8
+    MODULE PROCEDURE W3INAN_R4
+    MODULE PROCEDURE W3INAN_R8
   END INTERFACE W3INAN
 
   !/
@@ -797,29 +797,29 @@ CONTAINS
 #endif
     !
     IF ( ASSOCIATED(GSU%PTR) ) THEN
-       !
-       CALL W3NNSD(GSU%PTR%NNP)
-       !
-       IF ( ASSOCIATED(GSU%PTR%B) ) THEN
-          DO IB=1,GSU%PTR%NBX
-             DO JB=1,GSU%PTR%NBY
-                IF ( GSU%PTR%B(JB,IB)%N .GT. 0 ) THEN
-                   DEALLOCATE(GSU%PTR%B(JB,IB)%I)
-                   NULLIFY(GSU%PTR%B(JB,IB)%I)
-                   DEALLOCATE(GSU%PTR%B(JB,IB)%J)
-                   NULLIFY(GSU%PTR%B(JB,IB)%J)
-                END IF
-             END DO
+      !
+      CALL W3NNSD(GSU%PTR%NNP)
+      !
+      IF ( ASSOCIATED(GSU%PTR%B) ) THEN
+        DO IB=1,GSU%PTR%NBX
+          DO JB=1,GSU%PTR%NBY
+            IF ( GSU%PTR%B(JB,IB)%N .GT. 0 ) THEN
+              DEALLOCATE(GSU%PTR%B(JB,IB)%I)
+              NULLIFY(GSU%PTR%B(JB,IB)%I)
+              DEALLOCATE(GSU%PTR%B(JB,IB)%J)
+              NULLIFY(GSU%PTR%B(JB,IB)%J)
+            END IF
           END DO
-          DEALLOCATE(GSU%PTR%B)
-          NULLIFY(GSU%PTR%B)
-       END IF
-       !
-       CALL W3NNSD(GSU%PTR%NNB)
-       !
-       DEALLOCATE(GSU%PTR)
-       NULLIFY(GSU%PTR)
-       !
+        END DO
+        DEALLOCATE(GSU%PTR%B)
+        NULLIFY(GSU%PTR%B)
+      END IF
+      !
+      CALL W3NNSD(GSU%PTR%NNB)
+      !
+      DEALLOCATE(GSU%PTR)
+      NULLIFY(GSU%PTR)
+      !
     END IF
 
   END SUBROUTINE W3GSUD
@@ -900,15 +900,15 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GSUP ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/1A,1A/)') 'W3GSUP ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
 
     IF ( PRESENT(IUNIT) ) THEN
-       NDST = IUNIT
+      NDST = IUNIT
     ELSE
-       NDST = 6
+      NDST = 6
     END IF
 
     PTR => GSU%PTR
@@ -918,9 +918,9 @@ CONTAINS
     !
     NBYTE = (NBYTE_INT+NBYTE_PTR*2)*SIZE(PTR%B)
     DO IB=1,PTR%NBX
-       DO JB=1,PTR%NBY
-          NBYTE = NBYTE + NBYTE_INT*2*PTR%B(JB,IB)%N
-       END DO
+      DO JB=1,PTR%NBY
+        NBYTE = NBYTE + NBYTE_INT*2*PTR%B(JB,IB)%N
+      END DO
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -938,12 +938,12 @@ CONTAINS
     WRITE(NDST,'(A,2I6)') 'Grid ubx,uby:',PTR%UBX,PTR%UBY
     WRITE(NDST,'(A,2I6)') 'Grid  nx, ny:',PTR%NX,PTR%NY
     IF ( PRESENT(LFULL) ) THEN
-       IF ( LFULL ) THEN
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          WRITE(NDST,'(A)') 'Nearest-neighbor point search indices'
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          CALL W3NNSP(PTR%NNP,NDST)
-       END IF
+      IF ( LFULL ) THEN
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        WRITE(NDST,'(A)') 'Nearest-neighbor point search indices'
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        CALL W3NNSP(PTR%NNP,NDST)
+      END IF
     END IF
     WRITE(NDST,'( 80A)') ('-',K=1,80)
     WRITE(NDST,'(A)') 'Bucket-search object'
@@ -955,41 +955,41 @@ CONTAINS
     WRITE(NDST,'(A,1F10.1)') 'Approximate memory usage (MB):', &
          REAL(NBYTE)/2**20
     IF ( PRESENT(LFULL) ) THEN
-       IF ( LFULL ) THEN
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          WRITE(NDST,'(A)') 'Search bucket bounds:'
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          WRITE(NDST,'(2A4,4A24)') 'IB','JB','X1','Y1','X2','Y2'
-          DO IB=1,PTR%NBX
-             DO JB=1,PTR%NBY
-                WRITE(NDST,'(2I4,4E24.16)') IB,JB, &
-                     PTR%XMIN+(IB-1)*PTR%DXB,PTR%YMIN+(JB-1)*PTR%DYB, &
-                     PTR%XMIN+(IB  )*PTR%DXB,PTR%YMIN+(JB  )*PTR%DYB
-             END DO
-          END DO
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          WRITE(NDST,'(A)') 'Number of cells in each search bucket:'
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          DO JB=PTR%NBY,1,-1
-             WRITE(NDST,'(500I4)') (PTR%B(JB,IB)%N,IB=1,PTR%NBX)
-          END DO
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          WRITE(NDST,'(A)') 'Search bucket cell lists:'
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          WRITE(NDST,'(3A4,A)') 'IB','JB','NC',': ( IC, JC), ...'
+      IF ( LFULL ) THEN
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        WRITE(NDST,'(A)') 'Search bucket bounds:'
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        WRITE(NDST,'(2A4,4A24)') 'IB','JB','X1','Y1','X2','Y2'
+        DO IB=1,PTR%NBX
           DO JB=1,PTR%NBY
-             DO IB=1,PTR%NBX
-                WRITE(NDST,'(3I4,A,500(A,I3,A,I3,A))') IB,JB, &
-                     PTR%B(JB,IB)%N, ': ', &
-                     ( '(',PTR%B(JB,IB)%I(K),',',PTR%B(JB,IB)%J(K),') ', &
-                     K=1,PTR%B(JB,IB)%N )
-             END DO
+            WRITE(NDST,'(2I4,4E24.16)') IB,JB, &
+                 PTR%XMIN+(IB-1)*PTR%DXB,PTR%YMIN+(JB-1)*PTR%DYB, &
+                 PTR%XMIN+(IB  )*PTR%DXB,PTR%YMIN+(JB  )*PTR%DYB
           END DO
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          WRITE(NDST,'(A)') 'Nearest-neighbor bucket search indices'
-          WRITE(NDST,'( 80A)') ('-',K=1,80)
-          CALL W3NNSP(PTR%NNB,NDST)
-       END IF !LFULL
+        END DO
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        WRITE(NDST,'(A)') 'Number of cells in each search bucket:'
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        DO JB=PTR%NBY,1,-1
+          WRITE(NDST,'(500I4)') (PTR%B(JB,IB)%N,IB=1,PTR%NBX)
+        END DO
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        WRITE(NDST,'(A)') 'Search bucket cell lists:'
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        WRITE(NDST,'(3A4,A)') 'IB','JB','NC',': ( IC, JC), ...'
+        DO JB=1,PTR%NBY
+          DO IB=1,PTR%NBX
+            WRITE(NDST,'(3I4,A,500(A,I3,A,I3,A))') IB,JB, &
+                 PTR%B(JB,IB)%N, ': ', &
+                 ( '(',PTR%B(JB,IB)%I(K),',',PTR%B(JB,IB)%J(K),') ', &
+                 K=1,PTR%B(JB,IB)%N )
+          END DO
+        END DO
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        WRITE(NDST,'(A)') 'Nearest-neighbor bucket search indices'
+        WRITE(NDST,'( 80A)') ('-',K=1,80)
+        CALL W3NNSP(PTR%NNB,NDST)
+      END IF !LFULL
     END IF !PRESENT(LFULL)
     WRITE(NDST,'( 80A)') ('-',K=1,80)
     WRITE(NDST,'( 80A)') ('-',K=1,80)
@@ -1093,9 +1093,9 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3BBOX_GSU ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/1A,1A/)') 'W3BBOX_GSU ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -1349,9 +1349,9 @@ CONTAINS
     !-----set inputs
     XT8 = XT; YT8 = YT;
     IF ( PRESENT(EPS) ) THEN
-       EPS8 = EPS
+      EPS8 = EPS
     ELSE
-       EPS8 = EPS_DEFAULT
+      EPS8 = EPS_DEFAULT
     END IF
     !
     !-----call double precision method
@@ -1406,33 +1406,33 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'W3GFCL_R8 ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GFCL_R8 ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GFCL_R8 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GFCL_R8 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Initialize search
     !
     IF ( PRESENT(FNCL) ) THEN
-       LFNCL = FNCL
+      LFNCL = FNCL
     ELSE
-       LFNCL = .FALSE.
+      LFNCL = .FALSE.
     END IF
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     !  Local pointers to grid search utility object data
@@ -1446,9 +1446,9 @@ CONTAINS
     UBX = GSU%PTR%UBX;  UBY = GSU%PTR%UBY;
     NX = GSU%PTR%NX;  NY = GSU%PTR%NY;
     IF ( GKIND.EQ.4 ) THEN
-       XG4 => GSU%PTR%XG4;  YG4 => GSU%PTR%YG4;
+      XG4 => GSU%PTR%XG4;  YG4 => GSU%PTR%YG4;
     ELSE
-       XG8 => GSU%PTR%XG8;  YG8 => GSU%PTR%YG8;
+      XG8 => GSU%PTR%XG8;  YG8 => GSU%PTR%YG8;
     END IF
     NBX = GSU%PTR%NBX;  NBY = GSU%PTR%NBY;
     DXB = GSU%PTR%DXB;  DYB = GSU%PTR%DYB;
@@ -1461,23 +1461,23 @@ CONTAINS
     !
     !  Shift target to appropriate longitude range
     IF ( LLG ) THEN
-       XT = MOD(XT,REAL(D360,8))
-       IF ( LCLO .OR. L360 ) THEN
-          IF ( XT.LT.ZERO ) XT = XT + D360
-       ELSE
-          IF ( XT.GT.D180 ) XT = XT - D360
-       END IF
+      XT = MOD(XT,REAL(D360,8))
+      IF ( LCLO .OR. L360 ) THEN
+        IF ( XT.LT.ZERO ) XT = XT + D360
+      ELSE
+        IF ( XT.GT.D180 ) XT = XT - D360
+      END IF
     END IF
     IF ( LDBG ) WRITE(*,'(/A,2E24.16)') 'W3GFCL_R8 - TARGET POINT:',XT,YT
     !
     !  Target point must lie within search domain
     IF ( .NOT.LFNCL ) THEN
-       IF ( XT.LT.XMIN-LEPS .OR. XT.GT.XMAX+LEPS .OR. &
-            YT.LT.YMIN-LEPS .OR. YT.GT.YMAX+LEPS ) THEN
-          IF ( LDBG ) WRITE(*,'(A)') &
-               'W3GFCL_R8 - TARGET POINT OUTSIDE SEARCH DOMAIN'
-          RETURN
-       END IF
+      IF ( XT.LT.XMIN-LEPS .OR. XT.GT.XMAX+LEPS .OR. &
+           YT.LT.YMIN-LEPS .OR. YT.GT.YMAX+LEPS ) THEN
+        IF ( LDBG ) WRITE(*,'(A)') &
+             'W3GFCL_R8 - TARGET POINT OUTSIDE SEARCH DOMAIN'
+        RETURN
+      END IF
     END IF
     !
     !  Search bucket that contains the target point.
@@ -1492,62 +1492,62 @@ CONTAINS
          'W3GFCL_R8 - BUCKET SEARCH:',IB,JB,B(JB,IB)%N, &
          XMIN+(IB-1)*DXB,YMIN+(JB-1)*DYB,XMIN+IB*DXB,YMIN+JB*DYB
     CELL_LOOP: DO K=1,B(JB,IB)%N
-       !---------setup cell corner indices
-       IS(1) = B(JB,IB)%I(K)  ;  JS(1) = B(JB,IB)%J(K)  ;
-       IS(2) = B(JB,IB)%I(K)+1;  JS(2) = B(JB,IB)%J(K)  ;
-       IS(3) = B(JB,IB)%I(K)+1;  JS(3) = B(JB,IB)%J(K)+1;
-       IS(4) = B(JB,IB)%I(K)  ;  JS(4) = B(JB,IB)%J(K)+1;
-       !---------setup cell corner coordinates and adjust for periodicity
-       DO L=1,4
-          !-------------apply index closure
-          IF ( MOD(ICLO,2).EQ.0 ) &
-               IS(L) = LBX + MOD(NX - 1 + MOD(IS(L) - LBX + 1, NX), NX)
-          IF ( MOD(ICLO,3).EQ.0 ) &
-               JS(L) = LBY + MOD(NY - 1 + MOD(JS(L) - LBY + 1, NY), NY)
-          IF ( ICLO.EQ.ICLO_TRPL .AND. JS(L).GT.UBY ) THEN
-             IS(L) = UBX + LBX - IS(L)
-             JS(L) = 2*UBY - JS(L) + 1
-          END IF
-          !-------------copy cell vertex coordinates into local variables
-          IF ( IJG ) THEN
-             IF ( GKIND.EQ.4 ) THEN
-                XS(L) = XG4(IS(L),JS(L));  YS(L) = YG4(IS(L),JS(L));
-             ELSE
-                XS(L) = XG8(IS(L),JS(L));  YS(L) = YG8(IS(L),JS(L));
-             END IF
+      !---------setup cell corner indices
+      IS(1) = B(JB,IB)%I(K)  ;  JS(1) = B(JB,IB)%J(K)  ;
+      IS(2) = B(JB,IB)%I(K)+1;  JS(2) = B(JB,IB)%J(K)  ;
+      IS(3) = B(JB,IB)%I(K)+1;  JS(3) = B(JB,IB)%J(K)+1;
+      IS(4) = B(JB,IB)%I(K)  ;  JS(4) = B(JB,IB)%J(K)+1;
+      !---------setup cell corner coordinates and adjust for periodicity
+      DO L=1,4
+        !-------------apply index closure
+        IF ( MOD(ICLO,2).EQ.0 ) &
+             IS(L) = LBX + MOD(NX - 1 + MOD(IS(L) - LBX + 1, NX), NX)
+        IF ( MOD(ICLO,3).EQ.0 ) &
+             JS(L) = LBY + MOD(NY - 1 + MOD(JS(L) - LBY + 1, NY), NY)
+        IF ( ICLO.EQ.ICLO_TRPL .AND. JS(L).GT.UBY ) THEN
+          IS(L) = UBX + LBX - IS(L)
+          JS(L) = 2*UBY - JS(L) + 1
+        END IF
+        !-------------copy cell vertex coordinates into local variables
+        IF ( IJG ) THEN
+          IF ( GKIND.EQ.4 ) THEN
+            XS(L) = XG4(IS(L),JS(L));  YS(L) = YG4(IS(L),JS(L));
           ELSE
-             IF ( GKIND.EQ.4 ) THEN
-                XS(L) = XG4(JS(L),IS(L));  YS(L) = YG4(JS(L),IS(L));
-             ELSE
-                XS(L) = XG8(JS(L),IS(L));  YS(L) = YG8(JS(L),IS(L));
-             END IF
+            XS(L) = XG8(IS(L),JS(L));  YS(L) = YG8(IS(L),JS(L));
           END IF
-          !-------------shift longitudes to same range
-          IF ( LLG ) THEN
-             XS(L) = MOD(XS(L),REAL(D360,8))
-             IF ( LCLO .OR. L360 ) THEN
-                IF ( XS(L).LT.ZERO ) XS(L) = XS(L) + D360
-             ELSE
-                IF ( XS(L).GT.D180 ) XS(L) = XS(L) - D360
-             END IF
+        ELSE
+          IF ( GKIND.EQ.4 ) THEN
+            XS(L) = XG4(JS(L),IS(L));  YS(L) = YG4(JS(L),IS(L));
+          ELSE
+            XS(L) = XG8(JS(L),IS(L));  YS(L) = YG8(JS(L),IS(L));
           END IF
-       END DO !L
-       IF ( LDBG ) &
-            WRITE(*,'(A,3I6,4(/A,1I1,A,2I6,2E24.16))') &
-            'W3GFCL_R8 - CHECK CELL:',IB,JB,K, &
-            ('          CORNER(',L,'):',IS(L),JS(L),XS(L),YS(L),L=1,4)
-       !---------check if point is enclosed in cell defined by xs(1:4) & ys(1:4)
-       INCELL = W3CKCL(LLG,XT,YT,4,XS,YS,LPLC,LEPS,LDBG)
-       IF ( LDBG ) WRITE(*,'(A,1L2)')'W3GFCL_R8 - INCELL:',INCELL
-       IF ( INCELL ) THEN
-          !-------------exit search
-          IF ( LDBG ) &
-               WRITE(*,'(A,3I6,4(2I6))') &
-               'W3GFCL_R8 - ENCLOSING CELL:',IB,JB,K,(IS(L),JS(L),L=1,4)
-          IF ( PRESENT(POLE) ) POLE = LPLC
-          INGRID = .TRUE.
-          EXIT CELL_LOOP
-       END IF !point in cell
+        END IF
+        !-------------shift longitudes to same range
+        IF ( LLG ) THEN
+          XS(L) = MOD(XS(L),REAL(D360,8))
+          IF ( LCLO .OR. L360 ) THEN
+            IF ( XS(L).LT.ZERO ) XS(L) = XS(L) + D360
+          ELSE
+            IF ( XS(L).GT.D180 ) XS(L) = XS(L) - D360
+          END IF
+        END IF
+      END DO !L
+      IF ( LDBG ) &
+           WRITE(*,'(A,3I6,4(/A,1I1,A,2I6,2E24.16))') &
+           'W3GFCL_R8 - CHECK CELL:',IB,JB,K, &
+           ('          CORNER(',L,'):',IS(L),JS(L),XS(L),YS(L),L=1,4)
+      !---------check if point is enclosed in cell defined by xs(1:4) & ys(1:4)
+      INCELL = W3CKCL(LLG,XT,YT,4,XS,YS,LPLC,LEPS,LDBG)
+      IF ( LDBG ) WRITE(*,'(A,1L2)')'W3GFCL_R8 - INCELL:',INCELL
+      IF ( INCELL ) THEN
+        !-------------exit search
+        IF ( LDBG ) &
+             WRITE(*,'(A,3I6,4(2I6))') &
+             'W3GFCL_R8 - ENCLOSING CELL:',IB,JB,K,(IS(L),JS(L),L=1,4)
+        IF ( PRESENT(POLE) ) POLE = LPLC
+        INGRID = .TRUE.
+        EXIT CELL_LOOP
+      END IF !point in cell
     END DO CELL_LOOP
     IF ( INGRID ) RETURN
     IF ( .NOT.LFNCL ) RETURN
@@ -1564,78 +1564,78 @@ CONTAINS
     IF ( LDBG ) WRITE(*,'(A,3I6)') &
          'W3GFCL_R8 - CLOSEST CELL SEARCH:',IB0,JB0,NNB%NLVL
     LEVEL_LOOP: DO LVL=0,NNB%NLVL
-       FOUND = .FALSE.
-       NNBR_LOOP: DO N=NNB%N1(LVL),NNB%N2(LVL)
-          IB = IB0 + NNB%DI(N);  JB = JB0 + NNB%DJ(N);
-          IF ( IB.LT.1 .OR. IB.GT.NBX ) CYCLE NNBR_LOOP
-          IF ( JB.LT.1 .OR. JB.GT.NBY ) CYCLE NNBR_LOOP
-          IF ( LDBG ) WRITE(*,'(A,5I6)') &
-               'W3GFCL_R8 - CHECK BUCKET:',LVL,N,IB,JB,B(JB,IB)%N
-          CELL_LOOP2: DO K=1,B(JB,IB)%N
-             !-----------------setup cell corner indices
-             IS(1) = B(JB,IB)%I(K)  ;  JS(1) = B(JB,IB)%J(K)  ;
-             IS(2) = B(JB,IB)%I(K)+1;  JS(2) = B(JB,IB)%J(K)  ;
-             IS(3) = B(JB,IB)%I(K)+1;  JS(3) = B(JB,IB)%J(K)+1;
-             IS(4) = B(JB,IB)%I(K)  ;  JS(4) = B(JB,IB)%J(K)+1;
-             !-----------------setup cell corner coordinates and adjust for periodicity
-             DO L=1,4
-                !---------------------apply index closure
-                IF ( MOD(ICLO,2).EQ.0 ) &
-                     IS(L) = LBX + MOD(NX - 1 + MOD(IS(L) - LBX + 1, NX), NX)
-                IF ( MOD(ICLO,3).EQ.0 ) &
-                     JS(L) = LBY + MOD(NY - 1 + MOD(JS(L) - LBY + 1, NY), NY)
-                IF ( ICLO.EQ.ICLO_TRPL .AND. JS(L).GT.UBY ) THEN
-                   IS(L) = UBX + LBX - IS(L)
-                   JS(L) = 2*UBY - JS(L) + 1
-                END IF
-                !---------------------copy cell vertex coordinates into local variables
-                IF ( IJG ) THEN
-                   IF ( GKIND.EQ.4 ) THEN
-                      XS(L) = XG4(IS(L),JS(L));  YS(L) = YG4(IS(L),JS(L));
-                   ELSE
-                      XS(L) = XG8(IS(L),JS(L));  YS(L) = YG8(IS(L),JS(L));
-                   END IF
-                ELSE
-                   IF ( GKIND.EQ.4 ) THEN
-                      XS(L) = XG4(JS(L),IS(L));  YS(L) = YG4(JS(L),IS(L));
-                   ELSE
-                      XS(L) = XG8(JS(L),IS(L));  YS(L) = YG8(JS(L),IS(L));
-                   END IF
-                END IF
-                !---------------------shift longitudes to same range
-                IF ( LLG ) THEN
-                   XS(L) = MOD(XS(L),REAL(D360,8))
-                   IF ( LCLO .OR. L360 ) THEN
-                      IF ( XS(L).LT.ZERO ) XS(L) = XS(L) + D360
-                   ELSE
-                      IF ( XS(L).GT.D180 ) XS(L) = XS(L) - D360
-                   END IF
-                END IF
-             END DO !L
-             !-----------------check cell distance from target point
-             XSM = SUM(XS)/FOUR; YSM = SUM(YS)/FOUR;
-             DD = W3DIST(LLG,XT,YT,XSM,YSM)
-             IF ( LDBG ) &
-                  WRITE(*,'(A,5I6,3E24.16,4(/A,1I1,A,2I6,2E24.16))') &
-                  'W3GFCL_R8 - CHECK CELL:',LVL,N,IB,JB,K,XSM,YSM,DD, &
-                  ('          CORNER(',L,'):',IS(L),JS(L),XS(L),YS(L),L=1,4)
-             IF (DD.LT.DD1) THEN
-                LVL1   = LVL
-                N1     = N
-                IB1    = IB
-                JB1    = JB
-                K1     = K
-                DD1    = DD
-                IS1(:) = IS(:)
-                JS1(:) = JS(:)
-                XS1(:) = XS(:)
-                YS1(:) = YS(:)
-             ENDIF
-             FOUND = .TRUE.
-          END DO CELL_LOOP2
-       END DO NNBR_LOOP
-       IF ( FOUND ) NLEVEL = NLEVEL + 1
-       IF ( NLEVEL .GE. MAX_FNCL_LEVEL ) EXIT LEVEL_LOOP
+      FOUND = .FALSE.
+      NNBR_LOOP: DO N=NNB%N1(LVL),NNB%N2(LVL)
+        IB = IB0 + NNB%DI(N);  JB = JB0 + NNB%DJ(N);
+        IF ( IB.LT.1 .OR. IB.GT.NBX ) CYCLE NNBR_LOOP
+        IF ( JB.LT.1 .OR. JB.GT.NBY ) CYCLE NNBR_LOOP
+        IF ( LDBG ) WRITE(*,'(A,5I6)') &
+             'W3GFCL_R8 - CHECK BUCKET:',LVL,N,IB,JB,B(JB,IB)%N
+        CELL_LOOP2: DO K=1,B(JB,IB)%N
+          !-----------------setup cell corner indices
+          IS(1) = B(JB,IB)%I(K)  ;  JS(1) = B(JB,IB)%J(K)  ;
+          IS(2) = B(JB,IB)%I(K)+1;  JS(2) = B(JB,IB)%J(K)  ;
+          IS(3) = B(JB,IB)%I(K)+1;  JS(3) = B(JB,IB)%J(K)+1;
+          IS(4) = B(JB,IB)%I(K)  ;  JS(4) = B(JB,IB)%J(K)+1;
+          !-----------------setup cell corner coordinates and adjust for periodicity
+          DO L=1,4
+            !---------------------apply index closure
+            IF ( MOD(ICLO,2).EQ.0 ) &
+                 IS(L) = LBX + MOD(NX - 1 + MOD(IS(L) - LBX + 1, NX), NX)
+            IF ( MOD(ICLO,3).EQ.0 ) &
+                 JS(L) = LBY + MOD(NY - 1 + MOD(JS(L) - LBY + 1, NY), NY)
+            IF ( ICLO.EQ.ICLO_TRPL .AND. JS(L).GT.UBY ) THEN
+              IS(L) = UBX + LBX - IS(L)
+              JS(L) = 2*UBY - JS(L) + 1
+            END IF
+            !---------------------copy cell vertex coordinates into local variables
+            IF ( IJG ) THEN
+              IF ( GKIND.EQ.4 ) THEN
+                XS(L) = XG4(IS(L),JS(L));  YS(L) = YG4(IS(L),JS(L));
+              ELSE
+                XS(L) = XG8(IS(L),JS(L));  YS(L) = YG8(IS(L),JS(L));
+              END IF
+            ELSE
+              IF ( GKIND.EQ.4 ) THEN
+                XS(L) = XG4(JS(L),IS(L));  YS(L) = YG4(JS(L),IS(L));
+              ELSE
+                XS(L) = XG8(JS(L),IS(L));  YS(L) = YG8(JS(L),IS(L));
+              END IF
+            END IF
+            !---------------------shift longitudes to same range
+            IF ( LLG ) THEN
+              XS(L) = MOD(XS(L),REAL(D360,8))
+              IF ( LCLO .OR. L360 ) THEN
+                IF ( XS(L).LT.ZERO ) XS(L) = XS(L) + D360
+              ELSE
+                IF ( XS(L).GT.D180 ) XS(L) = XS(L) - D360
+              END IF
+            END IF
+          END DO !L
+          !-----------------check cell distance from target point
+          XSM = SUM(XS)/FOUR; YSM = SUM(YS)/FOUR;
+          DD = W3DIST(LLG,XT,YT,XSM,YSM)
+          IF ( LDBG ) &
+               WRITE(*,'(A,5I6,3E24.16,4(/A,1I1,A,2I6,2E24.16))') &
+               'W3GFCL_R8 - CHECK CELL:',LVL,N,IB,JB,K,XSM,YSM,DD, &
+               ('          CORNER(',L,'):',IS(L),JS(L),XS(L),YS(L),L=1,4)
+          IF (DD.LT.DD1) THEN
+            LVL1   = LVL
+            N1     = N
+            IB1    = IB
+            JB1    = JB
+            K1     = K
+            DD1    = DD
+            IS1(:) = IS(:)
+            JS1(:) = JS(:)
+            XS1(:) = XS(:)
+            YS1(:) = YS(:)
+          ENDIF
+          FOUND = .TRUE.
+        END DO CELL_LOOP2
+      END DO NNBR_LOOP
+      IF ( FOUND ) NLEVEL = NLEVEL + 1
+      IF ( NLEVEL .GE. MAX_FNCL_LEVEL ) EXIT LEVEL_LOOP
     END DO LEVEL_LOOP
     !
     !-----return cell that is shortest distance from target point
@@ -1650,19 +1650,19 @@ CONTAINS
     !
     !-----check if cell includes a pole or branch cut
     IF ( LLG ) THEN
-       N = 0
-       !---------count longitudinal branch cut crossings
-       DO I=1,4
-          J = MOD(I,4) + 1
-          IF ( ABS(XS(J)-XS(I)) .GT. D180 ) N = N + 1
-       END DO
-       !---------single longitudinal branch cut crossing
-       !         or single vertex at 90 degrees => cell includes pole
-       LPLC = N.EQ.1 .OR. COUNT(ABS(YS).EQ.D90).EQ.1
-       IF ( LPLC .AND. LDBG ) &
-            WRITE(*,'(A)') 'W3GFCL_R8 - CELL INCLUDES A POLE'
+      N = 0
+      !---------count longitudinal branch cut crossings
+      DO I=1,4
+        J = MOD(I,4) + 1
+        IF ( ABS(XS(J)-XS(I)) .GT. D180 ) N = N + 1
+      END DO
+      !---------single longitudinal branch cut crossing
+      !         or single vertex at 90 degrees => cell includes pole
+      LPLC = N.EQ.1 .OR. COUNT(ABS(YS).EQ.D90).EQ.1
+      IF ( LPLC .AND. LDBG ) &
+           WRITE(*,'(A)') 'W3GFCL_R8 - CELL INCLUDES A POLE'
     ELSE
-       LPLC = .FALSE.
+      LPLC = .FALSE.
     END IF
     IF ( PRESENT(POLE) ) POLE = LPLC
 
@@ -1775,9 +1775,9 @@ CONTAINS
     !-----set inputs
     XT8 = XT; YT8 = YT;
     IF ( PRESENT(EPS) ) THEN
-       EPS8 = EPS
+      EPS8 = EPS
     ELSE
-       EPS8 = EPS_DEFAULT
+      EPS8 = EPS_DEFAULT
     END IF
     !
     !-----call double precision method
@@ -1824,28 +1824,28 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'W3GFCD_R8 ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GFCD_R8 ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GFCD_R8 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GFCD_R8 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Initialize search
     !
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     !  Local pointers to grid search utility object data
@@ -1859,21 +1859,21 @@ CONTAINS
     UBX = GSU%PTR%UBX;  UBY = GSU%PTR%UBY;
     NX = GSU%PTR%NX;  NY = GSU%PTR%NY;
     IF ( GKIND.EQ.4 ) THEN
-       XG4 => GSU%PTR%XG4;  YG4 => GSU%PTR%YG4;
+      XG4 => GSU%PTR%XG4;  YG4 => GSU%PTR%YG4;
     ELSE
-       XG8 => GSU%PTR%XG8;  YG8 => GSU%PTR%YG8;
+      XG8 => GSU%PTR%XG8;  YG8 => GSU%PTR%YG8;
     END IF
     !
     INGRID = .FALSE.
     !
     !  Shift target to appropriate longitude range
     IF ( LLG ) THEN
-       XT = MOD(XT,REAL(D360,8))
-       IF ( LCLO .OR. L360 ) THEN
-          IF ( XT.LT.ZERO ) XT = XT + D360
-       ELSE
-          IF ( XT.GT.D180 ) XT = XT - D360
-       END IF
+      XT = MOD(XT,REAL(D360,8))
+      IF ( LCLO .OR. L360 ) THEN
+        IF ( XT.LT.ZERO ) XT = XT + D360
+      ELSE
+        IF ( XT.GT.D180 ) XT = XT - D360
+      END IF
     END IF
     IF ( LDBG ) &
          WRITE(*,'(/A,2E24.16)') 'W3GFCD_R8 - TARGET POINT:',XT,YT
@@ -1882,78 +1882,78 @@ CONTAINS
     LXC = LBX;  LYC = LBY;
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE )
-       UXC = UBX-1;  UYC = UBY-1;
+      UXC = UBX-1;  UYC = UBY-1;
     CASE ( ICLO_GRDI )
-       UXC = UBX;    UYC = UBY-1;
+      UXC = UBX;    UYC = UBY-1;
     CASE ( ICLO_GRDJ )
-       UXC = UBX-1;  UYC = UBY;
+      UXC = UBX-1;  UYC = UBY;
     CASE ( ICLO_TRDL )
-       UXC = UBX;    UYC = UBY;
+      UXC = UBX;    UYC = UBY;
     CASE ( ICLO_TRPL )
-       UXC = UBX;    UYC = UBY;
+      UXC = UBX;    UYC = UBY;
     END SELECT
     !
     ! -------------------------------------------------------------------- /
     ! 3.  Search for enclosing cell
     !
     CELL_LOOP: DO I=LXC,UXC
-       DO J=LYC,UYC
-          !-------------create list of cell vertices
-          IS(1) = I  ;  JS(1) = J  ;
-          IS(2) = I+1;  JS(2) = J  ;
-          IS(3) = I+1;  JS(3) = J+1;
-          IS(4) = I  ;  JS(4) = J+1;
-          !-------------setup cell corner coordinates and adjust for periodicity
-          DO L=1,4
-             !-----------------apply index closure
-             IF ( MOD(ICLO,2).EQ.0 ) &
-                  IS(L) = LBX + MOD(NX - 1 + MOD(IS(L) - LBX + 1, NX), NX)
-             IF ( MOD(ICLO,3).EQ.0 ) &
-                  JS(L) = LBY + MOD(NY - 1 + MOD(JS(L) - LBY + 1, NY), NY)
-             IF ( ICLO.EQ.ICLO_TRPL .AND. JS(L).GT.UBY ) THEN
-                IS(L) = UBX + LBX - IS(L)
-                JS(L) = 2*UBY - JS(L) + 1
-             END IF
-             !-----------------copy cell vertex coordinates into local variables
-             IF ( IJG ) THEN
-                IF ( GKIND.EQ.4 ) THEN
-                   XS(L) = XG4(IS(L),JS(L));  YS(L) = YG4(IS(L),JS(L));
-                ELSE
-                   XS(L) = XG8(IS(L),JS(L));  YS(L) = YG8(IS(L),JS(L));
-                END IF
-             ELSE
-                IF ( GKIND.EQ.4 ) THEN
-                   XS(L) = XG4(JS(L),IS(L));  YS(L) = YG4(JS(L),IS(L));
-                ELSE
-                   XS(L) = XG8(JS(L),IS(L));  YS(L) = YG8(JS(L),IS(L));
-                END IF
-             END IF
-             !-----------------shift longitudes to same range
-             IF ( LLG ) THEN
-                XS(L) = MOD(XS(L),REAL(D360,8))
-                IF ( LCLO .OR. L360 ) THEN
-                   IF ( XS(L).LT.ZERO ) XS(L) = XS(L) + D360
-                ELSE
-                   IF ( XS(L).GT.D180 ) XS(L) = XS(L) - D360
-                END IF
-             END IF
-          END DO !L
+      DO J=LYC,UYC
+        !-------------create list of cell vertices
+        IS(1) = I  ;  JS(1) = J  ;
+        IS(2) = I+1;  JS(2) = J  ;
+        IS(3) = I+1;  JS(3) = J+1;
+        IS(4) = I  ;  JS(4) = J+1;
+        !-------------setup cell corner coordinates and adjust for periodicity
+        DO L=1,4
+          !-----------------apply index closure
+          IF ( MOD(ICLO,2).EQ.0 ) &
+               IS(L) = LBX + MOD(NX - 1 + MOD(IS(L) - LBX + 1, NX), NX)
+          IF ( MOD(ICLO,3).EQ.0 ) &
+               JS(L) = LBY + MOD(NY - 1 + MOD(JS(L) - LBY + 1, NY), NY)
+          IF ( ICLO.EQ.ICLO_TRPL .AND. JS(L).GT.UBY ) THEN
+            IS(L) = UBX + LBX - IS(L)
+            JS(L) = 2*UBY - JS(L) + 1
+          END IF
+          !-----------------copy cell vertex coordinates into local variables
+          IF ( IJG ) THEN
+            IF ( GKIND.EQ.4 ) THEN
+              XS(L) = XG4(IS(L),JS(L));  YS(L) = YG4(IS(L),JS(L));
+            ELSE
+              XS(L) = XG8(IS(L),JS(L));  YS(L) = YG8(IS(L),JS(L));
+            END IF
+          ELSE
+            IF ( GKIND.EQ.4 ) THEN
+              XS(L) = XG4(JS(L),IS(L));  YS(L) = YG4(JS(L),IS(L));
+            ELSE
+              XS(L) = XG8(JS(L),IS(L));  YS(L) = YG8(JS(L),IS(L));
+            END IF
+          END IF
+          !-----------------shift longitudes to same range
+          IF ( LLG ) THEN
+            XS(L) = MOD(XS(L),REAL(D360,8))
+            IF ( LCLO .OR. L360 ) THEN
+              IF ( XS(L).LT.ZERO ) XS(L) = XS(L) + D360
+            ELSE
+              IF ( XS(L).GT.D180 ) XS(L) = XS(L) - D360
+            END IF
+          END IF
+        END DO !L
+        IF ( LDBG ) &
+             WRITE(*,'(A,4(/A,1I1,A,2I6,2E24.16))') &
+             'W3GFCD_R8 - CHECK CELL:', &
+             ('          CORNER(',L,'):',IS(L),JS(L),XS(L),YS(L),L=1,4)
+        !-------------check if point is enclosed in cell defined by xs(1:4) & ys(1:4)
+        INGRID = W3CKCL(LLG,XT,YT,4,XS,YS,LPLC,LEPS,LDBG)
+        IF ( LDBG ) WRITE(*,'(A,1L2)')'W3GFCD_R8 - INGRID:',INGRID
+        IF ( INGRID ) THEN
+          !-----------------exit search
           IF ( LDBG ) &
-               WRITE(*,'(A,4(/A,1I1,A,2I6,2E24.16))') &
-               'W3GFCD_R8 - CHECK CELL:', &
-               ('          CORNER(',L,'):',IS(L),JS(L),XS(L),YS(L),L=1,4)
-          !-------------check if point is enclosed in cell defined by xs(1:4) & ys(1:4)
-          INGRID = W3CKCL(LLG,XT,YT,4,XS,YS,LPLC,LEPS,LDBG)
-          IF ( LDBG ) WRITE(*,'(A,1L2)')'W3GFCD_R8 - INGRID:',INGRID
-          IF ( INGRID ) THEN
-             !-----------------exit search
-             IF ( LDBG ) &
-                  WRITE(*,'(A,4(2I6))') &
-                  'W3GFCD_R8 - ENCLOSING CELL:',(IS(L),JS(L),L=1,4)
-             IF ( PRESENT(POLE) ) POLE = LPLC
-             EXIT CELL_LOOP
-          END IF !point in cell
-       END DO !J
+               WRITE(*,'(A,4(2I6))') &
+               'W3GFCD_R8 - ENCLOSING CELL:',(IS(L),JS(L),L=1,4)
+          IF ( PRESENT(POLE) ) POLE = LPLC
+          EXIT CELL_LOOP
+        END IF !point in cell
+      END DO !J
     END DO CELL_LOOP
 
   END FUNCTION W3GFCD_R8
@@ -2057,14 +2057,14 @@ CONTAINS
     !-----set inputs
     XT8 = XTIN; YT8 = YTIN;
     IF ( PRESENT(EPS) ) THEN
-       EPS8 = EPS
+      EPS8 = EPS
     ELSE
-       EPS8 = EPS_DEFAULT
+      EPS8 = EPS_DEFAULT
     END IF
     IF ( PRESENT(DCIN) ) THEN
-       DCIN8 = DCIN
+      DCIN8 = DCIN
     ELSE
-       DCIN8 = ZERO
+      DCIN8 = ZERO
     END IF
     !
     !-----call double precision method
@@ -2106,38 +2106,38 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     IF ( PRESENT(DCIN) ) THEN
-       IF ( DCIN .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
-               'DCIN parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LDCIN = DCIN
+      IF ( DCIN .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GFPT_R8 ERROR -- ', &
+             'DCIN parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LDCIN = DCIN
     ELSE
-       LDCIN = ZERO
+      LDCIN = ZERO
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Initialize search
     !
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     !  Local pointers to grid search utility object data
@@ -2161,32 +2161,32 @@ CONTAINS
     !
     !-----Set in grid if point is within DCIN cell width distance of closest cell
     IF ( .NOT.INGRID .AND. FNCL ) THEN
-       !-------Compute cell relative index space location
-       LON0 = SUM(XS)/FOUR; LAT0 = SUM(YS)/FOUR;
-       IF ( D90-ABS(LAT0).GT.NEAR_POLE ) THEN
-          !-----------non-pole cell: compute relative location using (lon,lat)
-          CALL GETPQR(XT,YT,XS,YS,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
-       ELSE
-          !-----------pole cell: compute relative location using stereographic projection
-          CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
-          DO I=1,4
-             CALL W3SPLX(LON0,LAT0,ZERO,XS(I),YS(I),XSC(I),YSC(I))
-          END DO
-          CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
-       ENDIF
-       DD = HALF + LDCIN
-       INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
+      !-------Compute cell relative index space location
+      LON0 = SUM(XS)/FOUR; LAT0 = SUM(YS)/FOUR;
+      IF ( D90-ABS(LAT0).GT.NEAR_POLE ) THEN
+        !-----------non-pole cell: compute relative location using (lon,lat)
+        CALL GETPQR(XT,YT,XS,YS,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      ELSE
+        !-----------pole cell: compute relative location using stereographic projection
+        CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
+        DO I=1,4
+          CALL W3SPLX(LON0,LAT0,ZERO,XS(I),YS(I),XSC(I),YSC(I))
+        END DO
+        CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      ENDIF
+      DD = HALF + LDCIN
+      INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
     END IF
     !
     !-----Compute indices of closest point in cell
     IF ( INGRID ) THEN
-       DMIN = BIG
-       DO L=1,4
-          DD = W3DIST( LLG, XT, YT, XS(L), YS(L) )
-          IF ( DD .LT. DMIN ) THEN
-             DMIN = DD;  IX = IS(L);  IY = JS(L);
-          END IF
-       END DO !L
+      DMIN = BIG
+      DO L=1,4
+        DD = W3DIST( LLG, XT, YT, XS(L), YS(L) )
+        IF ( DD .LT. DMIN ) THEN
+          DMIN = DD;  IX = IS(L);  IY = JS(L);
+        END IF
+      END DO !L
     END IF
 
   END FUNCTION W3GFPT_R8
@@ -2296,14 +2296,14 @@ CONTAINS
     !-----set inputs
     XT8 = XTIN; YT8 = YTIN;
     IF ( PRESENT(EPS) ) THEN
-       EPS8 = EPS
+      EPS8 = EPS
     ELSE
-       EPS8 = EPS_DEFAULT
+      EPS8 = EPS_DEFAULT
     END IF
     IF ( PRESENT(DCIN) ) THEN
-       DCIN8 = DCIN
+      DCIN8 = DCIN
     ELSE
-       DCIN8 = ZERO
+      DCIN8 = ZERO
     END IF
     !
     !-----call double precision method
@@ -2347,38 +2347,38 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'W3GFIJ_R8 ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GFIJ_R8 ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GFIJ_R8 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GFIJ_R8 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     IF ( PRESENT(DCIN) ) THEN
-       IF ( DCIN .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GFIJ_R8 ERROR -- ', &
-               'DCIN parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LDCIN = DCIN
+      IF ( DCIN .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GFIJ_R8 ERROR -- ', &
+             'DCIN parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LDCIN = DCIN
     ELSE
-       LDCIN = ZERO
+      LDCIN = ZERO
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Initialize search
     !
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     XT = XTIN;  YT = YTIN;
@@ -2394,23 +2394,23 @@ CONTAINS
     !-----Compute cell relative index space location
     LON0 = SUM(XS)/FOUR; LAT0 = SUM(YS)/FOUR;
     IF ( D90-ABS(LAT0).GT.NEAR_POLE ) THEN
-       !---------non-pole cell: compute relative location using (lon,lat)
-       CALL GETPQR(XT,YT,XS,YS,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      !---------non-pole cell: compute relative location using (lon,lat)
+      CALL GETPQR(XT,YT,XS,YS,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
     ELSE
-       !---------pole cell: compute relative location using stereographic projection
-       CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
-       DO I=1,4
-          CALL W3SPLX(LON0,LAT0,ZERO,XS(I),YS(I),XSC(I),YSC(I))
-       END DO
-       CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      !---------pole cell: compute relative location using stereographic projection
+      CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
+      DO I=1,4
+        CALL W3SPLX(LON0,LAT0,ZERO,XS(I),YS(I),XSC(I),YSC(I))
+      END DO
+      CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
     ENDIF
     IF ( LDBG ) &
          WRITE(*,'(A,2L2,2E24.16)') 'W3GFIJ_R8 - RELATIVE:',INGRID,FNCL,IXR,JXR
     !
     !-----Set in grid if point is within DCIN cell width distance of closest cell
     IF ( .NOT.INGRID .AND. FNCL ) THEN
-       DD = HALF + LDCIN
-       INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
+      DD = HALF + LDCIN
+      INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
     END IF
     !
     !-----Compute absolute index space location
@@ -2545,14 +2545,14 @@ CONTAINS
     !-----set inputs
     XT8 = XTIN; YT8 = YTIN;
     IF ( PRESENT(EPS) ) THEN
-       EPS8 = EPS
+      EPS8 = EPS
     ELSE
-       EPS8 = EPS_DEFAULT
+      EPS8 = EPS_DEFAULT
     END IF
     IF ( PRESENT(DCIN) ) THEN
-       DCIN8 = DCIN
+      DCIN8 = DCIN
     ELSE
-       DCIN8 = ZERO
+      DCIN8 = ZERO
     END IF
     !
     !-----call double precision method
@@ -2610,61 +2610,61 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     !
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     !
     IF ( PRESENT(DCIN) ) THEN
-       IF ( DCIN .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMP_R4 ERROR -- ', &
-               'DCIN parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LDCIN = DCIN
+      IF ( DCIN .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMP_R4 ERROR -- ', &
+             'DCIN parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LDCIN = DCIN
     ELSE
-       LDCIN = ZERO
+      LDCIN = ZERO
     END IF
     !
     IF ( PRESENT(MASK) ) THEN
-       IF ( .NOT.PRESENT(MSKC) ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
-               'MSKC must be specified with MASK'
+      IF ( .NOT.PRESENT(MSKC) ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+             'MSKC must be specified with MASK'
+        CALL EXTCDE (1)
+      END IF
+      IF ( PRESENT(NNBR) ) THEN
+        IF ( .NOT.ASSOCIATED(GSU%PTR%NNP) ) THEN
+          WRITE(0,'(/3A/)') 'W3GRMP_R8 ERROR -- ', &
+               'MASK and NNBR input specified, ', &
+               'but grid point-search object not created'
           CALL EXTCDE (1)
-       END IF
-       IF ( PRESENT(NNBR) ) THEN
-          IF ( .NOT.ASSOCIATED(GSU%PTR%NNP) ) THEN
-             WRITE(0,'(/3A/)') 'W3GRMP_R8 ERROR -- ', &
-                  'MASK and NNBR input specified, ', &
-                  'but grid point-search object not created'
-             CALL EXTCDE (1)
-          END IF
-          IF ( NNBR .LE. 0 .OR. NNBR .GT. 4 ) THEN
-             WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
-                  'NNBR must be >= 1 AND <= 4'
-             CALL EXTCDE (1)
-          END IF
-       END IF
+        END IF
+        IF ( NNBR .LE. 0 .OR. NNBR .GT. 4 ) THEN
+          WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+               'NNBR must be >= 1 AND <= 4'
+          CALL EXTCDE (1)
+        END IF
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Initialize search
     !
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     !  Local pointers to grid search utility object data
@@ -2677,28 +2677,28 @@ CONTAINS
     UBX = GSU%PTR%UBX;  UBY = GSU%PTR%UBY;
     NX = GSU%PTR%NX;  NY = GSU%PTR%NY;
     IF ( GKIND.EQ.4 ) THEN
-       XG4 => GSU%PTR%XG4;  YG4 => GSU%PTR%YG4;
+      XG4 => GSU%PTR%XG4;  YG4 => GSU%PTR%YG4;
     ELSE
-       XG8 => GSU%PTR%XG8;  YG8 => GSU%PTR%YG8;
+      XG8 => GSU%PTR%XG8;  YG8 => GSU%PTR%YG8;
     END IF
     NNP => GSU%PTR%NNP
     !
     IF ( PRESENT(MASK) ) THEN
-       IF ( IJG ) THEN
-          IF ( .NOT.(UBOUND(MASK,1).EQ.NX.AND. &
-               UBOUND(MASK,2).EQ.NY) ) THEN
-             WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
-                  'MASK array size does not agree with GSU index bounds'
-             CALL EXTCDE (1)
-          END IF
-       ELSE
-          IF ( .NOT.(UBOUND(MASK,2).EQ.NX.AND. &
-               UBOUND(MASK,1).EQ.NY) ) THEN
-             WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
-                  'MASK array size does not agree with GSU index bounds'
-             CALL EXTCDE (1)
-          END IF
-       END IF
+      IF ( IJG ) THEN
+        IF ( .NOT.(UBOUND(MASK,1).EQ.NX.AND. &
+             UBOUND(MASK,2).EQ.NY) ) THEN
+          WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+               'MASK array size does not agree with GSU index bounds'
+          CALL EXTCDE (1)
+        END IF
+      ELSE
+        IF ( .NOT.(UBOUND(MASK,2).EQ.NX.AND. &
+             UBOUND(MASK,1).EQ.NY) ) THEN
+          WRITE(0,'(/2A/)') 'W3GRMP_R8 ERROR -- ', &
+               'MASK array size does not agree with GSU index bounds'
+          CALL EXTCDE (1)
+        END IF
+      END IF
     END IF
     !
     RW = ZERO;
@@ -2716,15 +2716,15 @@ CONTAINS
     !-----Compute remapping
     LON0 = SUM(XS)/FOUR; LAT0 = SUM(YS)/FOUR;
     IF ( D90-ABS(LAT0).GT.NEAR_POLE ) THEN
-       !---------non-pole cell: compute remapping using (lon,lat)
-       CALL GETPQR(XT,YT,XS,YS,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      !---------non-pole cell: compute remapping using (lon,lat)
+      CALL GETPQR(XT,YT,XS,YS,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
     ELSE
-       !---------pole cell: compute remapping using stereographic projection
-       CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
-       DO I=1,4
-          CALL W3SPLX(LON0,LAT0,ZERO,XS(I),YS(I),XSC(I),YSC(I))
-       END DO
-       CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      !---------pole cell: compute remapping using stereographic projection
+      CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
+      DO I=1,4
+        CALL W3SPLX(LON0,LAT0,ZERO,XS(I),YS(I),XSC(I),YSC(I))
+      END DO
+      CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
     ENDIF
     DW(1) = (ONE-IXR)*(ONE-JXR)
     DW(2) = IXR*(ONE-JXR)
@@ -2732,17 +2732,17 @@ CONTAINS
     DW(4) = (ONE-IXR)*JXR
     RW = DW
     IF ( LDBG ) THEN
-       WRITE(*,'(A,2E24.16)') 'W3GRMP_R8 - REMAP (TGT):',XT,YT
-       DO L=1,4
-          WRITE(*,'(A,3I6,E24.16)') 'W3GRMP_R8 - REMAP (SRC):', &
-               L,IS(L),JS(L),DW(L)
-       END DO
+      WRITE(*,'(A,2E24.16)') 'W3GRMP_R8 - REMAP (TGT):',XT,YT
+      DO L=1,4
+        WRITE(*,'(A,3I6,E24.16)') 'W3GRMP_R8 - REMAP (SRC):', &
+             L,IS(L),JS(L),DW(L)
+      END DO
     END IF !LDBG
     !
     !-----Set in grid if point is within DCIN cell width distance of closest cell
     IF ( .NOT.INGRID .AND. FNCL ) THEN
-       DD = HALF + LDCIN
-       INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
+      DD = HALF + LDCIN
+      INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
     END IF
     IF ( .NOT.INGRID ) RETURN
     !
@@ -2753,41 +2753,41 @@ CONTAINS
     !
     !-----copy cell mask values according to array ordering
     IF ( IJG ) THEN
-       DO L=1,4
-          MSK(L) = MASK(IS(L)-LBX+1,JS(L)-LBY+1)
-       END DO
+      DO L=1,4
+        MSK(L) = MASK(IS(L)-LBX+1,JS(L)-LBY+1)
+      END DO
     ELSE
-       DO L=1,4
-          MSK(L) = MASK(JS(L)-LBY+1,IS(L)-LBX+1)
-       END DO
+      DO L=1,4
+        MSK(L) = MASK(JS(L)-LBY+1,IS(L)-LBX+1)
+      END DO
     END IF
     !
     !-----adjust weights for a partially masked cell
     DSUM = ZERO
     NS = 4
     DO L=1,4
-       IF ( MSK(L) ) THEN
-          NS = NS - 1
-          DW(L) = ZERO
-       END IF
-       DSUM = DSUM + DW(L)
+      IF ( MSK(L) ) THEN
+        NS = NS - 1
+        DW(L) = ZERO
+      END IF
+      DSUM = DSUM + DW(L)
     END DO
     IF ( NS .EQ. 4 ) THEN
-       MSKC = MSKC_NONE
-       RETURN
+      MSKC = MSKC_NONE
+      RETURN
     END IF
     IF ( NS .GT. 0 .AND. DSUM .GT. SMALL ) THEN
-       DW = DW / DSUM
-       RW = DW
-       IF ( LDBG ) &
-            WRITE(*,'(A,2E24.16,4(2I6,E24.16))') &
-            'W3GRMP_R8 - PARTIAL MASKED CELL:', &
-            XT,YT,(IS(L),JS(L),DW(L),L=1,4)
-       MSKC = MSKC_PART
-       RETURN
+      DW = DW / DSUM
+      RW = DW
+      IF ( LDBG ) &
+           WRITE(*,'(A,2E24.16,4(2I6,E24.16))') &
+           'W3GRMP_R8 - PARTIAL MASKED CELL:', &
+           XT,YT,(IS(L),JS(L),DW(L),L=1,4)
+      MSKC = MSKC_PART
+      RETURN
     ELSE
-       MSKC = MSKC_FULL
-       IF ( .NOT.PRESENT(NNBR) ) RETURN
+      MSKC = MSKC_FULL
+      IF ( .NOT.PRESENT(NNBR) ) RETURN
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -2796,10 +2796,10 @@ CONTAINS
     !  Choose closest point in enclosing land cell to be the central point
     DMIN = BIG
     DO L=1,4
-       DD = W3DIST(LLG,XT,YT,XS(L),YS(L))
-       IF ( DD .LT. DMIN ) THEN
-          DMIN = DD;  ICC = IS(L);  JCC = JS(L);
-       END IF
+      DD = W3DIST(LLG,XT,YT,XS(L),YS(L))
+      IF ( DD .LT. DMIN ) THEN
+        DMIN = DD;  ICC = IS(L);  JCC = JS(L);
+      END IF
     END DO !L
     !
     !  Search nearest-neighbor source points for closest nnbr un-masked
@@ -2809,66 +2809,66 @@ CONTAINS
          'W3GRMP_R8 - BEGIN POINT NNBR SEARCH:',ICC,JCC
     NS = 0;  D(:) = BIG;
     LEVEL_LOOP: DO LVL=0,NNP%NLVL
-       NNBR_LOOP: DO N=NNP%N1(LVL),NNP%N2(LVL)
-          I = ICC + NNP%DI(N);  J = JCC + NNP%DJ(N);
-          IF ( ICLO.EQ.ICLO_NONE ) THEN
-             IF ( I.LT.LBX .OR. I.GT.UBX ) CYCLE NNBR_LOOP
-             IF ( J.LT.LBY .OR. J.GT.UBY ) CYCLE NNBR_LOOP
-          END IF
-          !-------------apply index closure
-          IF ( MOD(ICLO,2).EQ.0 ) &
-               I = LBX + MOD(NX - 1 + MOD(I - LBX + 1, NX), NX)
-          IF ( MOD(ICLO,3).EQ.0 ) &
-               J = LBY + MOD(NY - 1 + MOD(J - LBY + 1, NY), NY)
-          IF ( ICLO.EQ.ICLO_TRPL .AND. J.GT.UBY ) THEN
-             I = UBX + LBX - I
-             J = 2*UBY - J + 1
-          END IF
-          !-------------set mask
-          IF ( IJG ) THEN
-             M = MASK(I-LBX+1,J-LBY+1)
+      NNBR_LOOP: DO N=NNP%N1(LVL),NNP%N2(LVL)
+        I = ICC + NNP%DI(N);  J = JCC + NNP%DJ(N);
+        IF ( ICLO.EQ.ICLO_NONE ) THEN
+          IF ( I.LT.LBX .OR. I.GT.UBX ) CYCLE NNBR_LOOP
+          IF ( J.LT.LBY .OR. J.GT.UBY ) CYCLE NNBR_LOOP
+        END IF
+        !-------------apply index closure
+        IF ( MOD(ICLO,2).EQ.0 ) &
+             I = LBX + MOD(NX - 1 + MOD(I - LBX + 1, NX), NX)
+        IF ( MOD(ICLO,3).EQ.0 ) &
+             J = LBY + MOD(NY - 1 + MOD(J - LBY + 1, NY), NY)
+        IF ( ICLO.EQ.ICLO_TRPL .AND. J.GT.UBY ) THEN
+          I = UBX + LBX - I
+          J = 2*UBY - J + 1
+        END IF
+        !-------------set mask
+        IF ( IJG ) THEN
+          M = MASK(I-LBX+1,J-LBY+1)
+        ELSE
+          M = MASK(J-LBY+1,I-LBX+1)
+        END IF
+        IF ( LDBG ) &
+             WRITE(*,'(A,4I6,1L6)') &
+             'W3GRMP_R8 - POINT NNBR SEARCH:',LVL,N,I,J,M
+        !-------------if masked point, then skip
+        IF ( M ) CYCLE NNBR_LOOP
+        !-------------compute distance
+        IF ( IJG ) THEN
+          IF ( GKIND.EQ.4 ) THEN
+            X = XG4(I,J);  Y = YG4(I,J);
           ELSE
-             M = MASK(J-LBY+1,I-LBX+1)
+            X = XG8(I,J);  Y = YG8(I,J);
           END IF
-          IF ( LDBG ) &
-               WRITE(*,'(A,4I6,1L6)') &
-               'W3GRMP_R8 - POINT NNBR SEARCH:',LVL,N,I,J,M
-          !-------------if masked point, then skip
-          IF ( M ) CYCLE NNBR_LOOP
-          !-------------compute distance
-          IF ( IJG ) THEN
-             IF ( GKIND.EQ.4 ) THEN
-                X = XG4(I,J);  Y = YG4(I,J);
-             ELSE
-                X = XG8(I,J);  Y = YG8(I,J);
-             END IF
+        ELSE
+          IF ( GKIND.EQ.4 ) THEN
+            X = XG4(J,I);  Y = YG4(J,I);
           ELSE
-             IF ( GKIND.EQ.4 ) THEN
-                X = XG4(J,I);  Y = YG4(J,I);
-             ELSE
-                X = XG8(J,I);  Y = YG8(J,I);
-             END IF
+            X = XG8(J,I);  Y = YG8(J,I);
           END IF
-          DD = W3DIST(LLG,XT,YT,X,Y)
-          !-------------still need nnbr points
-          IF ( NS .LT. NNBR ) THEN
-             !-----------------add to list
-             NS = NS + 1
-             IS(NS) = I;  JS(NS) = J;  D(NS) = DD;
-             !-----------------once list is full sort according to increasing distance
-             IF ( NS .EQ. NNBR ) CALL W3SORT(NS,IS,JS,D)
-             !---------------we have found nnbr points
-          ELSE !list is full
-             !-----------------insert into list if the newest point is closer
-             CALL W3ISRT(I,J,DD,NS,IS,JS,D)
-          END IF !list is full
-          IF ( LDBG ) &
-               WRITE(*,'(A,I2,I3,I6,4(2I6,E24.16))') &
-               'W3GRMP_R8 - POINT NNBR LIST:', &
-               LVL,N,NS,(IS(L),JS(L),D(L),L=1,NS)
-       END DO NNBR_LOOP
-       !---------if we have found nnbr_rqd points, then exit the search
-       IF ( NS .EQ. NNBR ) EXIT LEVEL_LOOP
+        END IF
+        DD = W3DIST(LLG,XT,YT,X,Y)
+        !-------------still need nnbr points
+        IF ( NS .LT. NNBR ) THEN
+          !-----------------add to list
+          NS = NS + 1
+          IS(NS) = I;  JS(NS) = J;  D(NS) = DD;
+          !-----------------once list is full sort according to increasing distance
+          IF ( NS .EQ. NNBR ) CALL W3SORT(NS,IS,JS,D)
+          !---------------we have found nnbr points
+        ELSE !list is full
+          !-----------------insert into list if the newest point is closer
+          CALL W3ISRT(I,J,DD,NS,IS,JS,D)
+        END IF !list is full
+        IF ( LDBG ) &
+             WRITE(*,'(A,I2,I3,I6,4(2I6,E24.16))') &
+             'W3GRMP_R8 - POINT NNBR LIST:', &
+             LVL,N,NS,(IS(L),JS(L),D(L),L=1,NS)
+      END DO NNBR_LOOP
+      !---------if we have found nnbr_rqd points, then exit the search
+      IF ( NS .EQ. NNBR ) EXIT LEVEL_LOOP
     END DO LEVEL_LOOP
     NNBR = NS
     !
@@ -2878,18 +2878,18 @@ CONTAINS
     !  Compute distance-weighted remapping for nnbr points
     DSUM = ZERO
     DO L=1,NNBR
-       DSUM = DSUM + ONE/(D(L)+SMALL)
+      DSUM = DSUM + ONE/(D(L)+SMALL)
     END DO
     DW(1:NNBR) = ONE/(D(1:NNBR)+SMALL)/DSUM
     RW = DW
     IF ( LDBG ) THEN
-       WRITE(*,'(A,2E24.16,I6)') &
-            'W3GRMP_R8 - FULLY MASKED CELL (TGT):',XT,YT,NNBR
-       DO L=1,NNBR
-          WRITE(*,'(A,3I6,E24.16)') &
-               'W3GRMP_R8 - FULLY MASKED CELL (SRC):', &
-               L,IS(L),JS(L),DW(L)
-       END DO
+      WRITE(*,'(A,2E24.16,I6)') &
+           'W3GRMP_R8 - FULLY MASKED CELL (TGT):',XT,YT,NNBR
+      DO L=1,NNBR
+        WRITE(*,'(A,3I6,E24.16)') &
+             'W3GRMP_R8 - FULLY MASKED CELL (SRC):', &
+             L,IS(L),JS(L),DW(L)
+      END DO
     END IF !LDBG
 
   END FUNCTION W3GRMP_R8
@@ -3022,9 +3022,9 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     !
     SELECT CASE (RTYP)
@@ -3032,39 +3032,39 @@ CONTAINS
     CASE ('bilinr')
     CASE ('bicubc')
     CASE ('filter')
-       IF ( .NOT.PRESENT(WDTH) ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
-               'WDTH parameter is required with RTYP = filter'
-          CALL EXTCDE (1)
-       ELSE
-          LWDTH = WDTH
-       END IF
+      IF ( .NOT.PRESENT(WDTH) ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
+             'WDTH parameter is required with RTYP = filter'
+        CALL EXTCDE (1)
+      ELSE
+        LWDTH = WDTH
+      END IF
     CASE DEFAULT
-       WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
-            'RTYP = '//RTYP//' not supported'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
+           'RTYP = '//RTYP//' not supported'
+      CALL EXTCDE (1)
     END SELECT
     !
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     !
     IF ( PRESENT(DCIN) ) THEN
-       IF ( DCIN .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
-               'DCIN parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LDCIN = DCIN
+      IF ( DCIN .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMC_R4 ERROR -- ', &
+             'DCIN parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LDCIN = DCIN
     ELSE
-       LDCIN = ZERO
+      LDCIN = ZERO
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -3075,9 +3075,9 @@ CONTAINS
          EPS=LEPS, DCIN=LDCIN, WDTH=LWDTH, &
          MASK=MASK, NMSK=NMSK, DEBUG=DEBUG )
     IF ( NS.GT.0 ) THEN
-       ALLOCATE( CS(NS) )
-       CS(:) = CS8(:)
-       DEALLOCATE( CS8 )
+      ALLOCATE( CS(NS) )
+      CS(:) = CS8(:)
+      DEALLOCATE( CS8 )
     END IF
 
   END FUNCTION W3GRMC_R4
@@ -3131,9 +3131,9 @@ CONTAINS
     ! 1.  Test input
     !
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     !
     SELECT CASE (RTYP)
@@ -3141,59 +3141,59 @@ CONTAINS
     CASE ('bilinr')
     CASE ('bicubc')
     CASE ('filter')
-       IF ( .NOT.PRESENT(WDTH) ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-               'WDTH parameter is required with RTYP = filter'
-          CALL EXTCDE (1)
-       ELSE
-          LWDTH = WDTH
-       END IF
+      IF ( .NOT.PRESENT(WDTH) ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+             'WDTH parameter is required with RTYP = filter'
+        CALL EXTCDE (1)
+      ELSE
+        LWDTH = WDTH
+      END IF
     CASE DEFAULT
-       WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-            'RTYP = '//RTYP//' not supported'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+           'RTYP = '//RTYP//' not supported'
+      CALL EXTCDE (1)
     END SELECT
     !
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     !
     IF ( PRESENT(DCIN) ) THEN
-       IF ( DCIN .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-               'DCIN parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LDCIN = DCIN
+      IF ( DCIN .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+             'DCIN parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LDCIN = DCIN
     ELSE
-       LDCIN = ZERO
+      LDCIN = ZERO
     END IF
     !
     IF ( PRESENT(NMSK) ) THEN
-       IF ( NMSK .LT. ZERO .OR. NMSK .GE. 4 ) THEN
-          WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-               'NMSK parameter must be >= 0 and < 4'
-          CALL EXTCDE (1)
-       END IF
-       MCSMAX = NMSK
+      IF ( NMSK .LT. ZERO .OR. NMSK .GE. 4 ) THEN
+        WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+             'NMSK parameter must be >= 0 and < 4'
+        CALL EXTCDE (1)
+      END IF
+      MCSMAX = NMSK
     ELSE
-       MCSMAX = NMSK_DEFAULT
+      MCSMAX = NMSK_DEFAULT
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Initialize search
     !
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     !  Local pointers to grid search utility object data
@@ -3207,35 +3207,35 @@ CONTAINS
     NX = GSU%PTR%NX;  NY = GSU%PTR%NY;
     !
     IF ( PRESENT(MASK) ) THEN
-       IF ( IJG ) THEN
-          IF ( .NOT.(UBOUND(MASK,1).EQ.NX.AND. &
-               UBOUND(MASK,2).EQ.NY) ) THEN
-             WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-                  'MASK array size does not agree with GSU index bounds'
-             CALL EXTCDE (1)
-          END IF
-       ELSE
-          IF ( .NOT.(UBOUND(MASK,2).EQ.NX.AND. &
-               UBOUND(MASK,1).EQ.NY) ) THEN
-             WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
-                  'MASK array size does not agree with GSU index bounds'
-             CALL EXTCDE (1)
-          END IF
-       END IF
+      IF ( IJG ) THEN
+        IF ( .NOT.(UBOUND(MASK,1).EQ.NX.AND. &
+             UBOUND(MASK,2).EQ.NY) ) THEN
+          WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+               'MASK array size does not agree with GSU index bounds'
+          CALL EXTCDE (1)
+        END IF
+      ELSE
+        IF ( .NOT.(UBOUND(MASK,2).EQ.NX.AND. &
+             UBOUND(MASK,1).EQ.NY) ) THEN
+          WRITE(0,'(/2A/)') 'W3GRMC_R8 ERROR -- ', &
+               'MASK array size does not agree with GSU index bounds'
+          CALL EXTCDE (1)
+        END IF
+      END IF
     END IF
     !
     NS = 0
     IF ( ASSOCIATED(IS) ) THEN
-       DEALLOCATE( IS )
-       NULLIFY( IS )
+      DEALLOCATE( IS )
+      NULLIFY( IS )
     END IF
     IF ( ASSOCIATED(JS) ) THEN
-       DEALLOCATE( JS )
-       NULLIFY( JS )
+      DEALLOCATE( JS )
+      NULLIFY( JS )
     END IF
     IF ( ASSOCIATED(CS) ) THEN
-       DEALLOCATE( CS )
-       NULLIFY( CS )
+      DEALLOCATE( CS )
+      NULLIFY( CS )
     END IF
     !
     XT = XTIN;  YT = YTIN;
@@ -3251,23 +3251,23 @@ CONTAINS
     !-----Compute cell relative index space location
     LON0 = SUM(XC)/FOUR; LAT0 = SUM(YC)/FOUR;
     IF ( D90-ABS(LAT0).GT.NEAR_POLE ) THEN
-       !---------non-pole cell: compute relative location using (lon,lat)
-       CALL GETPQR(XT,YT,XC,YC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      !---------non-pole cell: compute relative location using (lon,lat)
+      CALL GETPQR(XT,YT,XC,YC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
     ELSE
-       !---------pole cell: compute relative location using stereographic projection
-       CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
-       DO I=1,4
-          CALL W3SPLX(LON0,LAT0,ZERO,XC(I),YC(I),XSC(I),YSC(I))
-       END DO
-       CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
+      !---------pole cell: compute relative location using stereographic projection
+      CALL W3SPLX(LON0,LAT0,ZERO,XT,YT,XTC,YTC)
+      DO I=1,4
+        CALL W3SPLX(LON0,LAT0,ZERO,XC(I),YC(I),XSC(I),YSC(I))
+      END DO
+      CALL GETPQR(XTC,YTC,XSC,YSC,IXR,JXR,EPS=LEPS,DEBUG=LDBG)
     ENDIF
     IF ( LDBG ) &
          WRITE(*,'(A,2L2,2E24.16)') 'W3GRMC_R8 - RELATIVE:',INGRID,FNCL,IXR,JXR
     !
     !-----Set in grid if point is within DCIN cell width distance of closest cell
     IF ( .NOT.INGRID .AND. FNCL ) THEN
-       DD = HALF + LDCIN
-       INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
+      DD = HALF + LDCIN
+      INGRID = ABS(IXR-HALF).LE.DD .AND. ABS(JXR-HALF).LE.DD
     END IF
     IF ( .NOT.INGRID ) RETURN
     !
@@ -3277,30 +3277,30 @@ CONTAINS
     !-----Determine if target point is coincident with an
     !     unmasked source grid cell point (KK)
     KK_LOOP: DO KK=1,4
-       IF ( ABS(IC(KK)-IX).LE.LEPS .AND. &
-            ABS(JC(KK)-JX).LE.LEPS ) THEN
-          IF ( PRESENT(MASK) ) THEN
-             IF ( IJG ) THEN
-                IF ( .NOT.MASK(IC(KK)-LBX+1,JC(KK)-LBY+1) ) EXIT KK_LOOP
-             ELSE
-                IF ( .NOT.MASK(JC(KK)-LBY+1,IC(KK)-LBX+1) ) EXIT KK_LOOP
-             END IF
+      IF ( ABS(IC(KK)-IX).LE.LEPS .AND. &
+           ABS(JC(KK)-JX).LE.LEPS ) THEN
+        IF ( PRESENT(MASK) ) THEN
+          IF ( IJG ) THEN
+            IF ( .NOT.MASK(IC(KK)-LBX+1,JC(KK)-LBY+1) ) EXIT KK_LOOP
           ELSE
-             EXIT KK_LOOP
+            IF ( .NOT.MASK(JC(KK)-LBY+1,IC(KK)-LBX+1) ) EXIT KK_LOOP
           END IF
-       END IF
+        ELSE
+          EXIT KK_LOOP
+        END IF
+      END IF
     END DO KK_LOOP
     !
     !-----Count number of masked points in source cell
     MCS = 0
     IF ( PRESENT(MASK) ) THEN
-       DO K=1,4
-          IF ( IJG ) THEN
-             IF ( MASK(IC(K)-LBX+1,JC(K)-LBY+1) ) MCS = MCS+1
-          ELSE
-             IF ( MASK(JC(K)-LBY+1,IC(K)-LBX+1) ) MCS = MCS+1
-          END IF
-       END DO
+      DO K=1,4
+        IF ( IJG ) THEN
+          IF ( MASK(IC(K)-LBX+1,JC(K)-LBY+1) ) MCS = MCS+1
+        ELSE
+          IF ( MASK(JC(K)-LBY+1,IC(K)-LBX+1) ) MCS = MCS+1
+        END IF
+      END DO
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -3308,158 +3308,158 @@ CONTAINS
     !
     SELECT CASE (RTYP)
     CASE ('nearpt')
-       ! *** nearest point ***
-       DMIN = BIG
-       DO K=1,4
-          DD = (IX - IC(K))**2 + (JX - JC(K))**2
-          IF ( DD .LT. DMIN ) THEN
-             DMIN = DD;  II = IC(K);  JJ = JC(K);
-          END IF
-       END DO
-       NZ = 1
-       IF ( PRESENT(MASK) ) THEN
-          IF ( IJG ) THEN
-             IF ( MASK(II-LBX+1,JJ-LBY+1) ) NZ = 0
-          ELSE
-             IF ( MASK(JJ-LBY+1,II-LBX+1) ) NZ = 0
-          END IF
-       END IF
-       IF ( NZ.EQ.1 ) THEN
-          ! nearest point is unmasked
-          ! set number of points to one and coefficient to one
-          ALLOCATE( LZ(NZ), IZ(NZ), JZ(NZ), CZ(NZ) )
-          LZ(NZ) = .TRUE.
-          IZ(NZ) = II
-          JZ(NZ) = JJ
-          CZ(NZ) = ONE
-       ELSE
-          ! nearest point is masked
-          ! set number of points to zero and return
-          NS = 0
-          RETURN
-       END IF
+      ! *** nearest point ***
+      DMIN = BIG
+      DO K=1,4
+        DD = (IX - IC(K))**2 + (JX - JC(K))**2
+        IF ( DD .LT. DMIN ) THEN
+          DMIN = DD;  II = IC(K);  JJ = JC(K);
+        END IF
+      END DO
+      NZ = 1
+      IF ( PRESENT(MASK) ) THEN
+        IF ( IJG ) THEN
+          IF ( MASK(II-LBX+1,JJ-LBY+1) ) NZ = 0
+        ELSE
+          IF ( MASK(JJ-LBY+1,II-LBX+1) ) NZ = 0
+        END IF
+      END IF
+      IF ( NZ.EQ.1 ) THEN
+        ! nearest point is unmasked
+        ! set number of points to one and coefficient to one
+        ALLOCATE( LZ(NZ), IZ(NZ), JZ(NZ), CZ(NZ) )
+        LZ(NZ) = .TRUE.
+        IZ(NZ) = II
+        JZ(NZ) = JJ
+        CZ(NZ) = ONE
+      ELSE
+        ! nearest point is masked
+        ! set number of points to zero and return
+        NS = 0
+        RETURN
+      END IF
     CASE ('bilinr')
-       ! *** bilinear interpolation ***
-       IF ( KK.LE.4 ) THEN
-          ! coincident with unmasked point kk
-          ! set number of points to one and coefficient to one
-          NZ = 1
-          ALLOCATE( LZ(NZ), IZ(NZ), JZ(NZ), CZ(NZ) )
-          LZ(NZ) = .TRUE.
-          IZ(NZ) = IC(KK)
-          JZ(NZ) = JC(KK)
-          CZ(NZ) = ONE
-       ELSE
-          ! no coincident points
-          IF ( MCS.LE.MCSMAX ) THEN
-             ! unmasked or partially masked cell
-             ! set bilinear interpolation
-             CALL GETBLC( GSU, IC(1), JC(1), IXR, JXR, &
-                  LCMP, NZ, LZ, IZ, JZ, CZ )
-          ELSE
-             ! fully masked cell
-             ! set number of points to zero and return
-             NS = 0
-             RETURN
-          END IF
-       END IF
-    CASE ('bicubc')
-       ! *** bicubic interpolation ***
-       IF ( KK.LE.4 ) THEN
-          ! coincident with unmasked point kk
-          ! set number of points to one and coefficient to one
-          NZ = 1
-          ALLOCATE( LZ(NZ), IZ(NZ), JZ(NZ), CZ(NZ) )
-          LZ(NZ) = .TRUE.
-          IZ(NZ) = IC(KK)
-          JZ(NZ) = JC(KK)
-          CZ(NZ) = ONE
-       ELSE
-          ! no coincident points
-          IF ( MCS.EQ.0 ) THEN
-             ! unmasked cell
-             ! get bicubic interpolation
-             CALL GETBCC( GSU, IC(1), JC(1), IXR, JXR, &
-                  LCMP, NZ, LZ, IZ, JZ, CZ )
-             ! check for masked points in bicubic stencil
-             DOBLC = .FALSE.
-             IF ( PRESENT(MASK) ) THEN
-                CHECK: DO K=1,NZ
-                   IF ( LZ(K) ) THEN
-                      IF ( IJG ) THEN
-                         LMSK = MASK(IZ(K)-LBX+1,JZ(K)-LBY+1)
-                      ELSE
-                         LMSK = MASK(JZ(K)-LBY+1,IZ(K)-LBX+1)
-                      END IF
-                      IF ( LMSK ) THEN
-                         DOBLC = .TRUE.
-                         EXIT CHECK
-                      END IF
-                   END IF
-                END DO CHECK
-             END IF
-             IF ( DOBLC ) THEN
-                ! masked points in bicubic stencil
-                ! set bilinear interpolation
-                CALL GETBLC( GSU, IC(1), JC(1), IXR, JXR, &
-                     LCMP, NZ, LZ, IZ, JZ, CZ )
-             END IF
-          ELSE IF ( MCS.LE.MCSMAX ) THEN
-             ! partially masked cell
-             ! set bilinear interpolation
-             CALL GETBLC( GSU, IC(1), JC(1), IXR, JXR, &
-                  LCMP, NZ, LZ, IZ, JZ, CZ )
-          ELSE
-             ! fully masked cell
-             ! set number of points to zero and return
-             NS = 0
-             RETURN
-          END IF
-       END IF
-    case ('filter')
-       ! *** gaussian filter ***
-       IF ( MCS.LE.MCSMAX ) THEN
+      ! *** bilinear interpolation ***
+      IF ( KK.LE.4 ) THEN
+        ! coincident with unmasked point kk
+        ! set number of points to one and coefficient to one
+        NZ = 1
+        ALLOCATE( LZ(NZ), IZ(NZ), JZ(NZ), CZ(NZ) )
+        LZ(NZ) = .TRUE.
+        IZ(NZ) = IC(KK)
+        JZ(NZ) = JC(KK)
+        CZ(NZ) = ONE
+      ELSE
+        ! no coincident points
+        IF ( MCS.LE.MCSMAX ) THEN
           ! unmasked or partially masked cell
-          ! get gaussian filter
-          CALL GETGFC( GSU, IC(1), JC(1), IXR, JXR, &
-               LWDTH, LCMP, NZ, LZ, IZ, JZ, CZ )
-       ELSE
+          ! set bilinear interpolation
+          CALL GETBLC( GSU, IC(1), JC(1), IXR, JXR, &
+               LCMP, NZ, LZ, IZ, JZ, CZ )
+        ELSE
           ! fully masked cell
           ! set number of points to zero and return
           NS = 0
           RETURN
-       END IF
+        END IF
+      END IF
+    CASE ('bicubc')
+      ! *** bicubic interpolation ***
+      IF ( KK.LE.4 ) THEN
+        ! coincident with unmasked point kk
+        ! set number of points to one and coefficient to one
+        NZ = 1
+        ALLOCATE( LZ(NZ), IZ(NZ), JZ(NZ), CZ(NZ) )
+        LZ(NZ) = .TRUE.
+        IZ(NZ) = IC(KK)
+        JZ(NZ) = JC(KK)
+        CZ(NZ) = ONE
+      ELSE
+        ! no coincident points
+        IF ( MCS.EQ.0 ) THEN
+          ! unmasked cell
+          ! get bicubic interpolation
+          CALL GETBCC( GSU, IC(1), JC(1), IXR, JXR, &
+               LCMP, NZ, LZ, IZ, JZ, CZ )
+          ! check for masked points in bicubic stencil
+          DOBLC = .FALSE.
+          IF ( PRESENT(MASK) ) THEN
+            CHECK: DO K=1,NZ
+              IF ( LZ(K) ) THEN
+                IF ( IJG ) THEN
+                  LMSK = MASK(IZ(K)-LBX+1,JZ(K)-LBY+1)
+                ELSE
+                  LMSK = MASK(JZ(K)-LBY+1,IZ(K)-LBX+1)
+                END IF
+                IF ( LMSK ) THEN
+                  DOBLC = .TRUE.
+                  EXIT CHECK
+                END IF
+              END IF
+            END DO CHECK
+          END IF
+          IF ( DOBLC ) THEN
+            ! masked points in bicubic stencil
+            ! set bilinear interpolation
+            CALL GETBLC( GSU, IC(1), JC(1), IXR, JXR, &
+                 LCMP, NZ, LZ, IZ, JZ, CZ )
+          END IF
+        ELSE IF ( MCS.LE.MCSMAX ) THEN
+          ! partially masked cell
+          ! set bilinear interpolation
+          CALL GETBLC( GSU, IC(1), JC(1), IXR, JXR, &
+               LCMP, NZ, LZ, IZ, JZ, CZ )
+        ELSE
+          ! fully masked cell
+          ! set number of points to zero and return
+          NS = 0
+          RETURN
+        END IF
+      END IF
+    case ('filter')
+      ! *** gaussian filter ***
+      IF ( MCS.LE.MCSMAX ) THEN
+        ! unmasked or partially masked cell
+        ! get gaussian filter
+        CALL GETGFC( GSU, IC(1), JC(1), IXR, JXR, &
+             LWDTH, LCMP, NZ, LZ, IZ, JZ, CZ )
+      ELSE
+        ! fully masked cell
+        ! set number of points to zero and return
+        NS = 0
+        RETURN
+      END IF
     END SELECT
     !
     ! -------------------------------------------------------------------- /
     ! 5.  Adjust for partially masked cell and enforce normalization
     !
     IF ( NZ .GT. 1 ) THEN
-       CZS = ZERO
-       DO K=1,NZ
-          IF ( LZ(K) ) THEN
-             IF ( PRESENT(MASK) ) THEN
-                IF ( IJG ) THEN
-                   LMSK = MASK(IZ(K)-LBX+1,JZ(K)-LBY+1)
-                ELSE
-                   LMSK = MASK(JZ(K)-LBY+1,IZ(K)-LBX+1)
-                END IF
-                IF ( LMSK ) THEN
-                   LZ(K) = .FALSE.
-                   CZ(K) = ZERO
-                ELSE
-                   CZS = CZS + CZ(K)
-                END IF
-             ELSE
-                CZS = CZS + CZ(K)
-             END IF
+      CZS = ZERO
+      DO K=1,NZ
+        IF ( LZ(K) ) THEN
+          IF ( PRESENT(MASK) ) THEN
+            IF ( IJG ) THEN
+              LMSK = MASK(IZ(K)-LBX+1,JZ(K)-LBY+1)
+            ELSE
+              LMSK = MASK(JZ(K)-LBY+1,IZ(K)-LBX+1)
+            END IF
+            IF ( LMSK ) THEN
+              LZ(K) = .FALSE.
+              CZ(K) = ZERO
+            ELSE
+              CZS = CZS + CZ(K)
+            END IF
+          ELSE
+            CZS = CZS + CZ(K)
           END IF
-       END DO
-       IF ( CZS .GT. ZERO ) THEN
-          DO K=1,NZ
-             IF ( LZ(K) ) CZ(K) = CZ(K)/CZS
-          ENDDO
-       END IF
+        END IF
+      END DO
+      IF ( CZS .GT. ZERO ) THEN
+        DO K=1,NZ
+          IF ( LZ(K) ) CZ(K) = CZ(K)/CZS
+        ENDDO
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -3467,19 +3467,19 @@ CONTAINS
     !
     NS = 0
     DO K=1,NZ
-       IF ( LZ(K) ) NS = NS + 1
+      IF ( LZ(K) ) NS = NS + 1
     END DO
     IF ( NS.GT.0 ) THEN
-       ALLOCATE( IS(NS), JS(NS), CS(NS) )
-       NS = 0
-       DO K=1,NZ
-          IF ( LZ(K) ) THEN
-             NS = NS + 1
-             IS(NS) = IZ(K)
-             JS(NS) = JZ(K)
-             CS(NS) = CZ(K)
-          END IF
-       END DO
+      ALLOCATE( IS(NS), JS(NS), CS(NS) )
+      NS = 0
+      DO K=1,NZ
+        IF ( LZ(K) ) THEN
+          NS = NS + 1
+          IS(NS) = IZ(K)
+          JS(NS) = JZ(K)
+          CS(NS) = CZ(K)
+        END IF
+      END DO
     END IF
 
     DEALLOCATE( LZ, IZ, JZ, CZ )
@@ -3596,9 +3596,9 @@ CONTAINS
     XT8 = XT;  XS8 = XS;
     YT8 = YT;  YS8 = YS;
     IF ( PRESENT(EPS) ) THEN
-       EPS8 = EPS
+      EPS8 = EPS
     ELSE
-       EPS8 = EPS_DEFAULT
+      EPS8 = EPS_DEFAULT
     END IF
     !
     !-----call double precision method
@@ -3642,24 +3642,24 @@ CONTAINS
     !
     !-----must have >= 3 points to be a cell
     IF ( NS .LT. 3 ) THEN
-       INCELL = .FALSE.
-       RETURN
+      INCELL = .FALSE.
+      RETURN
     END IF
     !
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'W3CKCL_R8 ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'W3CKCL_R8 ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     !-----set local copies
@@ -3668,173 +3668,173 @@ CONTAINS
     !
     !-----check if cell includes a pole or branch cut
     IF ( LLG ) THEN
-       N = 0
-       !---------count longitudinal branch cut crossings
-       DO I=1,NS
-          J = MOD(I,NS) + 1
-          IF ( ABS(XXS(J)-XXS(I)) .GT. D180 ) N = N + 1
-       END DO
-       !---------multiple longitudinal branch cut crossing => cell includes branch cut
-       BCUT = N.GT.1
-       !---------single longitudinal branch cut crossing
-       !         or single vertex at 90 degrees => cell includes pole
-       POLE = N.EQ.1 .OR. COUNT(ABS(D90-ABS(YYS)).LE.LEPS).EQ.1
+      N = 0
+      !---------count longitudinal branch cut crossings
+      DO I=1,NS
+        J = MOD(I,NS) + 1
+        IF ( ABS(XXS(J)-XXS(I)) .GT. D180 ) N = N + 1
+      END DO
+      !---------multiple longitudinal branch cut crossing => cell includes branch cut
+      BCUT = N.GT.1
+      !---------single longitudinal branch cut crossing
+      !         or single vertex at 90 degrees => cell includes pole
+      POLE = N.EQ.1 .OR. COUNT(ABS(D90-ABS(YYS)).LE.LEPS).EQ.1
     ELSE
-       POLE = .FALSE.
-       BCUT = .FALSE.
+      POLE = .FALSE.
+      BCUT = .FALSE.
     END IF
     !
     !-----shift branch cut if necessary
     IF ( BCUT ) THEN
-       IF ( MINVAL(XXS) .GE. ZERO ) THEN
-          WHERE ( XXS .GT. D180 ) XXS = XXS - D360
-          IF ( XXT .GT. D180 ) XXT = XXT - D360
-       ELSE
-          WHERE ( XXS .LT. ZERO ) XXS = XXS + D360
-          IF ( XXT .LT. ZERO ) XXT = XXT + D360
-       END IF
-       IF ( LDBG ) THEN
-          WRITE(*,'(A)') 'W3CKCL_R8 - CELL INCLUDES A BRANCH CUT'
-          WRITE(*,'(A,2E24.16,4(/A,1I1,A,2E24.16))') &
-               'W3CKCL_R8 - SHIFT BRANCH CUT:',XXT,YYT, &
-               ('          CORNER(',K,'):',XXS(K),YYS(K),K=1,4)
-       END IF
+      IF ( MINVAL(XXS) .GE. ZERO ) THEN
+        WHERE ( XXS .GT. D180 ) XXS = XXS - D360
+        IF ( XXT .GT. D180 ) XXT = XXT - D360
+      ELSE
+        WHERE ( XXS .LT. ZERO ) XXS = XXS + D360
+        IF ( XXT .LT. ZERO ) XXT = XXT + D360
+      END IF
+      IF ( LDBG ) THEN
+        WRITE(*,'(A)') 'W3CKCL_R8 - CELL INCLUDES A BRANCH CUT'
+        WRITE(*,'(A,2E24.16,4(/A,1I1,A,2E24.16))') &
+             'W3CKCL_R8 - SHIFT BRANCH CUT:',XXT,YYT, &
+             ('          CORNER(',K,'):',XXS(K),YYS(K),K=1,4)
+      END IF
     END IF
     !
     !-----check for coincidence with a cell vertex
     DO I=1,NS
-       !---------if target point is coincident a cell vertex, then
-       !         flag as in cell and return
-       IF ( ABS(XXT-XXS(I)).LE.LEPS .AND. ABS(YYT-YYS(I)).LE.LEPS ) THEN
-          IF ( LDBG ) &
-               WRITE(*,'(A,I1,A,2E24.16)') &
-               'W3CKCL_R8 - COINCIDENT WITH CORNER(',I,'): ', &
-               ABS(XXT-XXS(I)),ABS(YYT-YYS(I))
-          !-------------return branch cut shifted coordinates
-          IF ( BCUT ) THEN
-             XT = XXT;  XS = XXS;
-          END IF
-          INCELL = .TRUE.
-          RETURN
-       END IF
+      !---------if target point is coincident a cell vertex, then
+      !         flag as in cell and return
+      IF ( ABS(XXT-XXS(I)).LE.LEPS .AND. ABS(YYT-YYS(I)).LE.LEPS ) THEN
+        IF ( LDBG ) &
+             WRITE(*,'(A,I1,A,2E24.16)') &
+             'W3CKCL_R8 - COINCIDENT WITH CORNER(',I,'): ', &
+             ABS(XXT-XXS(I)),ABS(YYT-YYS(I))
+        !-------------return branch cut shifted coordinates
+        IF ( BCUT ) THEN
+          XT = XXT;  XS = XXS;
+        END IF
+        INCELL = .TRUE.
+        RETURN
+      END IF
     END DO
     !
     !-----handle cell that includes a pole
     IF ( POLE ) THEN
-       !---------perform cross-product check for each subcell
-       IF ( LDBG ) &
-            WRITE(*,'(A)') 'W3CKCL_R8 - CELL INCLUDES A POLE'
-       S90 = D90; IF ( MAXVAL(YS).LT.ZERO ) S90 = -D90;
-       SUBCELL_LOOP: DO I=1,NS
-          LSBC = .TRUE.
-          J = MOD(I,NS) + 1
-          SIGN1 = 0.0
-          DO K=1,4
-             SELECT CASE (K)
-             CASE (1)
-                !---------------------vector from (xi,yi) to (xj,yj)
-                V1X = XXS(J) - XXS(I)
-                V1Y = YYS(J) - YYS(I)
-                !---------------------vector from (xi,yi) to (xt,yt)
-                V2X = XXT    - XXS(I)
-                V2Y = YYT    - YYS(I)
-             CASE (2)
-                !---------------------vector from (xj,yj) to (xj,90)
-                V1X = XXS(J) - XXS(J)
-                V1Y = S90    - YYS(J)
-                !---------------------vector from (xj,yj) to (xt,yt)
-                V2X = XXT    - XXS(J)
-                V2Y = YYT    - YYS(J)
-             CASE (3)
-                !---------------------vector from (xj,90) to (xi,90)
-                V1X = XXS(I) - XXS(J)
-                V1Y = S90    - S90
-                !---------------------vector from (xj,90) to (xt,yt)
-                V2X = XXT    - XXS(J)
-                V2Y = YYT    - S90
-             CASE (4)
-                !---------------------vector from (xi,90) to (xi,yi)
-                V1X = XXS(I) - XXS(I)
-                V1Y = YYS(I) - S90
-                !---------------------vector from (xi,90) to (xt,yt)
-                V2X = XXT    - XXS(I)
-                V2Y = YYT    - S90
-             END SELECT
-             !-----------------check for longitudinal branch cut crossing
-             IF ( ABS(V1X) .GT. D180 ) THEN
-                V1X = V1X - SIGN(D360,V1X)
-             END IF
-             IF ( ABS(V2X) .GT. D180 ) THEN
-                V2X = V2X - SIGN(D360,V2X)
-             END IF
-             !-----------------cross product
-             CROSS = V1X*V2Y - V1Y*V2X
-             !-----------------handle point that lies exacly on side or zero length side
-             IF ( ABS(CROSS) .LT. LEPS ) CROSS = ZERO
-             IF ( LDBG ) &
-                  WRITE(*,'(A,3(I1,A),5E24.16)') 'W3CKCL_R8 - CROSS(', &
-                  I,',',J,',',K,'):',V1X,V1Y,V2X,V2Y,CROSS
-             !-----------------if sign of cross product is not "unanimous" among the
-             !                 subcell sides, then target is outside the subcell
-             IF ( ABS(SIGN1) .LE. LEPS ) THEN
-                IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
-             ELSE
-                ! If point lies along a border, the cross product
-                ! is zero and its sign is not well defined
-                IF ( ABS(CROSS) .GT. LEPS ) THEN
-                   IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
-                      LSBC = .FALSE.
-                      CYCLE SUBCELL_LOOP
-                   END IF
-                END IF
-             END IF
-          END DO !K
-          IF ( LSBC ) RETURN
-       END DO SUBCELL_LOOP
-       INCELL = .FALSE.
-       RETURN
+      !---------perform cross-product check for each subcell
+      IF ( LDBG ) &
+           WRITE(*,'(A)') 'W3CKCL_R8 - CELL INCLUDES A POLE'
+      S90 = D90; IF ( MAXVAL(YS).LT.ZERO ) S90 = -D90;
+      SUBCELL_LOOP: DO I=1,NS
+        LSBC = .TRUE.
+        J = MOD(I,NS) + 1
+        SIGN1 = 0.0
+        DO K=1,4
+          SELECT CASE (K)
+          CASE (1)
+            !---------------------vector from (xi,yi) to (xj,yj)
+            V1X = XXS(J) - XXS(I)
+            V1Y = YYS(J) - YYS(I)
+            !---------------------vector from (xi,yi) to (xt,yt)
+            V2X = XXT    - XXS(I)
+            V2Y = YYT    - YYS(I)
+          CASE (2)
+            !---------------------vector from (xj,yj) to (xj,90)
+            V1X = XXS(J) - XXS(J)
+            V1Y = S90    - YYS(J)
+            !---------------------vector from (xj,yj) to (xt,yt)
+            V2X = XXT    - XXS(J)
+            V2Y = YYT    - YYS(J)
+          CASE (3)
+            !---------------------vector from (xj,90) to (xi,90)
+            V1X = XXS(I) - XXS(J)
+            V1Y = S90    - S90
+            !---------------------vector from (xj,90) to (xt,yt)
+            V2X = XXT    - XXS(J)
+            V2Y = YYT    - S90
+          CASE (4)
+            !---------------------vector from (xi,90) to (xi,yi)
+            V1X = XXS(I) - XXS(I)
+            V1Y = YYS(I) - S90
+            !---------------------vector from (xi,90) to (xt,yt)
+            V2X = XXT    - XXS(I)
+            V2Y = YYT    - S90
+          END SELECT
+          !-----------------check for longitudinal branch cut crossing
+          IF ( ABS(V1X) .GT. D180 ) THEN
+            V1X = V1X - SIGN(D360,V1X)
+          END IF
+          IF ( ABS(V2X) .GT. D180 ) THEN
+            V2X = V2X - SIGN(D360,V2X)
+          END IF
+          !-----------------cross product
+          CROSS = V1X*V2Y - V1Y*V2X
+          !-----------------handle point that lies exacly on side or zero length side
+          IF ( ABS(CROSS) .LT. LEPS ) CROSS = ZERO
+          IF ( LDBG ) &
+               WRITE(*,'(A,3(I1,A),5E24.16)') 'W3CKCL_R8 - CROSS(', &
+               I,',',J,',',K,'):',V1X,V1Y,V2X,V2Y,CROSS
+          !-----------------if sign of cross product is not "unanimous" among the
+          !                 subcell sides, then target is outside the subcell
+          IF ( ABS(SIGN1) .LE. LEPS ) THEN
+            IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
+          ELSE
+            ! If point lies along a border, the cross product
+            ! is zero and its sign is not well defined
+            IF ( ABS(CROSS) .GT. LEPS ) THEN
+              IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
+                LSBC = .FALSE.
+                CYCLE SUBCELL_LOOP
+              END IF
+            END IF
+          END IF
+        END DO !K
+        IF ( LSBC ) RETURN
+      END DO SUBCELL_LOOP
+      INCELL = .FALSE.
+      RETURN
     ELSE
-       !---------use input coordinates
-       XCT = XXT;  YCT = YYT;
-       XCS = XXS;  YCS = YYS;
+      !---------use input coordinates
+      XCT = XXT;  YCT = YYT;
+      XCS = XXS;  YCS = YYS;
     END IF !POLE
     !
     !-----perform cross-product cell check
     SIGN1 = 0.0
     DO I=1,NS
-       J = MOD(I,NS) + 1
-       !---------vector from (xi,yi) to (xj,yj)
-       V1X = XCS(J) - XCS(I)
-       V1Y = YCS(J) - YCS(I)
-       !---------vector from (xi,yi) to (xt,yt)
-       V2X = XCT    - XCS(I)
-       V2Y = YCT    - YCS(I)
-       !---------cross product
-       CROSS = V1X*V2Y - V1Y*V2X
-       !---------handle point that lies exacly on side or zero length side
-       IF ( ABS(CROSS) .LT. LEPS ) CROSS = ZERO
-       IF ( LDBG ) &
-            WRITE(*,'(A,2(I1,A),5E24.16)') 'W3CKCL_R8 - CROSS(', &
-            I,',',J,'):',V1X,V1Y,V2X,V2Y,CROSS
-       !---------if sign of cross product is not "unanimous" among the cell sides,
-       !         then target is outside the cell
-       IF ( ABS(SIGN1) .LE. LEPS ) THEN
-          IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
-       ELSE
-          ! If point lies along a border, the cross product
-          ! is zero and its sign is not well defined
-          IF ( ABS(CROSS) .GT. LEPS ) THEN
-             IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
-                INCELL = .FALSE.
-                RETURN
-             END IF
+      J = MOD(I,NS) + 1
+      !---------vector from (xi,yi) to (xj,yj)
+      V1X = XCS(J) - XCS(I)
+      V1Y = YCS(J) - YCS(I)
+      !---------vector from (xi,yi) to (xt,yt)
+      V2X = XCT    - XCS(I)
+      V2Y = YCT    - YCS(I)
+      !---------cross product
+      CROSS = V1X*V2Y - V1Y*V2X
+      !---------handle point that lies exacly on side or zero length side
+      IF ( ABS(CROSS) .LT. LEPS ) CROSS = ZERO
+      IF ( LDBG ) &
+           WRITE(*,'(A,2(I1,A),5E24.16)') 'W3CKCL_R8 - CROSS(', &
+           I,',',J,'):',V1X,V1Y,V2X,V2Y,CROSS
+      !---------if sign of cross product is not "unanimous" among the cell sides,
+      !         then target is outside the cell
+      IF ( ABS(SIGN1) .LE. LEPS ) THEN
+        IF (ABS(CROSS) .GT. LEPS) SIGN1 = SIGN(ONE,CROSS)
+      ELSE
+        ! If point lies along a border, the cross product
+        ! is zero and its sign is not well defined
+        IF ( ABS(CROSS) .GT. LEPS ) THEN
+          IF ( SIGN(ONE,CROSS) .NE. SIGN1 ) THEN
+            INCELL = .FALSE.
+            RETURN
           END IF
-       END IF
+        END IF
+      END IF
     END DO
     !
     !-----return branch cut shifted coordinates
     IF ( BCUT ) THEN
-       XT = XXT;  XS = XXS;
+      XT = XXT;  XS = XXS;
     END IF
 
   END FUNCTION W3CKCL_R8
@@ -4081,20 +4081,20 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( PRESENT(NFD) ) THEN
-       N = NFD
+      N = NFD
     ELSE
-       N = NFD_DEFAULT
+      N = NFD_DEFAULT
     END IF
     IF ( N.LE.0 .OR. MOD(N,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -4102,68 +4102,68 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3CGDM ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3CGDM ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     IF ( PRESENT(SPHERE) ) THEN
-       SPHR = SPHERE
+      SPHR = SPHERE
     ELSE
-       SPHR = .TRUE.
+      SPHR = .TRUE.
     END IF
 
     IF ( PRESENT(RADIUS) ) THEN
-       R = RADIUS
+      R = RADIUS
     ELSE
-       R = REARTH
+      R = REARTH
     END IF
     FACY = R*D2R
 
     IF ( PRESENT(DX) ) THEN
-       IF ( DX.LE.ZERO ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DX must be > 0'
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
-          ELSE
-             CALL EXTCDE (ISTAT)
-          END IF
-       END IF
+      IF ( DX.LE.ZERO ) THEN
+        WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DX must be > 0'
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
     END IF
 
     IF ( PRESENT(DY) ) THEN
-       IF ( DY.LE.ZERO ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DY must be > 0'
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
-          ELSE
-             CALL EXTCDE (ISTAT)
-          END IF
-       END IF
+      IF ( DY.LE.ZERO ) THEN
+        WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DY must be > 0'
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -4171,27 +4171,27 @@ CONTAINS
     !
     ALLOCATE ( K(0:N,0:N,1:N), C(0:N,0:N,1:N), STAT=ISTAT )
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'finite difference coeff allocation failed'
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'finite difference coeff allocation failed'
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     CALL GET_FDW3 ( N, M, K, C )
 
     ALLOCATE ( K2(0:2,0:2,1:2), C2(0:2,0:2,1:2), STAT=ISTAT )
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'finite difference coeff allocation for N=2 failed'
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'finite difference coeff allocation for N=2 failed'
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     CALL GET_FDW3 ( 2, M, K2, C2 )
     !
@@ -4199,160 +4199,160 @@ CONTAINS
     ! 3.  Compute optional return quantities
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
-          ELSE
-             P = I2
-             Q = I1
+      DO I1 = LBO(1), UBO(1)
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        IF ( PRESENT(DX) ) THEN
+          DXDPL = DX
+          DYDPL = ZERO
+        ELSE
+          CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
+               PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
+               MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
+          IF ( ISTAT .NE. 0 ) THEN
+            IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
           END IF
+        END IF
+        IF ( PRESENT(DY) ) THEN
+          DXDQL = ZERO
+          DYDQL = DY
+        ELSE
+          CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
+               PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
+               MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
+          IF ( ISTAT .NE. 0 ) THEN
+            IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
+          END IF
+        END IF
+        IF ( LLG .AND. SPHR ) THEN
+          FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
+          DXDPL = DXDPL*FACX
+          DYDPL = DYDPL*FACY
+          DXDQL = DXDQL*FACX
+          DYDQL = DYDQL*FACY
+        END IF
+        GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+        IF ( GSQRL .LT. ZERO .AND. N .GT. 2 ) THEN
+          !                 WRITE(0,'(1A,1I0,1A,1I0,1A,1I0,2A)') &
+          !                 'W3CGDM WARNING -- NFD = ',N, &
+          !                 ' yields GSQRL < 0 at (',P,',',Q,'):', &
+          !                 ' computing metrics using NFD = 2'
           IF ( PRESENT(DX) ) THEN
-             DXDPL = DX
-             DYDPL = ZERO
+            DXDPL = DX
+            DYDPL = ZERO
           ELSE
-             CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
-                  MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
-             IF ( ISTAT .NE. 0 ) THEN
-                IF ( PRESENT(RC) ) THEN
-                   RC = ISTAT
-                   RETURN
-                ELSE
-                   CALL EXTCDE (ISTAT)
-                END IF
-             END IF
-          END IF
-          IF ( PRESENT(DY) ) THEN
-             DXDQL = ZERO
-             DYDQL = DY
-          ELSE
-             CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
-                  MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
-             IF ( ISTAT .NE. 0 ) THEN
-                IF ( PRESENT(RC) ) THEN
-                   RC = ISTAT
-                   RETURN
-                ELSE
-                   CALL EXTCDE (ISTAT)
-                END IF
-             END IF
-          END IF
-          IF ( LLG .AND. SPHR ) THEN
-             FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
-             DXDPL = DXDPL*FACX
-             DYDPL = DYDPL*FACY
-             DXDQL = DXDQL*FACX
-             DYDQL = DYDQL*FACY
-          END IF
-          GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
-          IF ( GSQRL .LT. ZERO .AND. N .GT. 2 ) THEN
-             !                 WRITE(0,'(1A,1I0,1A,1I0,1A,1I0,2A)') &
-             !                 'W3CGDM WARNING -- NFD = ',N, &
-             !                 ' yields GSQRL < 0 at (',P,',',Q,'):', &
-             !                 ' computing metrics using NFD = 2'
-             IF ( PRESENT(DX) ) THEN
-                DXDPL = DX
-                DYDPL = ZERO
-             ELSE
-                CALL DXYDP( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
-                     PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
-                     MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
-                IF ( ISTAT .NE. 0 ) THEN
-                   IF ( PRESENT(RC) ) THEN
-                      RC = ISTAT
-                      RETURN
-                   ELSE
-                      CALL EXTCDE (ISTAT)
-                   END IF
-                END IF
-             END IF
-             IF ( PRESENT(DY) ) THEN
-                DXDQL = ZERO
-                DYDQL = DY
-             ELSE
-                CALL DXYDQ( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
-                     PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
-                     MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
-                IF ( ISTAT .NE. 0 ) THEN
-                   IF ( PRESENT(RC) ) THEN
-                      RC = ISTAT
-                      RETURN
-                   ELSE
-                      CALL EXTCDE (ISTAT)
-                   END IF
-                END IF
-             END IF
-             IF ( LLG .AND. SPHR ) THEN
-                FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
-                DXDPL = DXDPL*FACX
-                DYDPL = DYDPL*FACY
-                DXDQL = DXDQL*FACX
-                DYDQL = DYDQL*FACY
-             END IF
-             GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
-          END IF
-          IF ( GSQRL .LT. ZERO ) THEN
-             ISTAT = 1
-             WRITE(0,'(/1A,1A)') 'W3CGDM ERROR -- ', &
-                  'input coordinates do not define a '// &
-                  'right-handed coordinate system'
-             WRITE(0,'(1A,2A6,5A16)') 'W3CGDM ERROR --', &
-                  'P','Q','GSQRL','DXDPL','DYDQL','DXDQL','DYDPL'
-             WRITE(0,'(1A,2I6,5E16.8/)') 'W3CGDM ERROR --', &
-                  P,Q,GSQRL,DXDPL,DYDQL,DXDQL,DYDPL
-             IF ( PRESENT(RC) ) THEN
+            CALL DXYDP( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                 PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
+                 MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
+            IF ( ISTAT .NE. 0 ) THEN
+              IF ( PRESENT(RC) ) THEN
                 RC = ISTAT
                 RETURN
-             ELSE
+              ELSE
                 CALL EXTCDE (ISTAT)
-             END IF
+              END IF
+            END IF
           END IF
-          GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
-          GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
-          GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
-          GSQRL = MAX(GSQRL,SMALL)
-          GPPCL = MAX(GPPCL,SMALL)
-          GQQCL = MAX(GQQCL,SMALL)
-          DPDXL = DYDQL/GSQRL
-          DPDYL =-DXDQL/GSQRL
-          DQDXL =-DYDPL/GSQRL
-          DQDYL = DXDPL/GSQRL
-          APPCL = DPDXL*DPDXL + DPDYL*DPDYL
-          AQQCL = DQDXL*DQDXL + DQDYL*DQDYL
-          APQCL = DPDXL*DQDXL + DPDYL*DQDYL
-          HPFCL = SQRT(GPPCL)
-          HQFCL = SQRT(GQQCL)
-          COSAL = GPQCL/(HPFCL*HQFCL)
-          SINAL = GSQRL**2/(GPPCL*GQQCL)
-          COSTP = DXDPL/HPFCL
-          SINTP = DYDPL/HQFCL
-          COSCL = SINAL*COSTP + COSAL*SINTP
-          SINCL = SINAL*SINTP - COSAL*COSTP
-          ANGLL = ATAN2(SINCL,COSCL)*R2D
-          IF (PRESENT(GPPC)) GPPC(I1,I2) = GPPCL
-          IF (PRESENT(GQQC)) GQQC(I1,I2) = GQQCL
-          IF (PRESENT(GPQC)) GPQC(I1,I2) = GPQCL
-          IF (PRESENT(APPC)) APPC(I1,I2) = APPCL
-          IF (PRESENT(AQQC)) AQQC(I1,I2) = AQQCL
-          IF (PRESENT(APQC)) APQC(I1,I2) = APQCL
-          IF (PRESENT(GSQR)) GSQR(I1,I2) = GSQRL
-          IF (PRESENT(HPFC)) HPFC(I1,I2) = HPFCL
-          IF (PRESENT(HQFC)) HQFC(I1,I2) = HQFCL
-          IF (PRESENT(DXDP)) DXDP(I1,I2) = DXDPL
-          IF (PRESENT(DYDP)) DYDP(I1,I2) = DYDPL
-          IF (PRESENT(DXDQ)) DXDQ(I1,I2) = DXDQL
-          IF (PRESENT(DYDQ)) DYDQ(I1,I2) = DYDQL
-          IF (PRESENT(DPDX)) DPDX(I1,I2) = DPDXL
-          IF (PRESENT(DPDY)) DPDY(I1,I2) = DPDYL
-          IF (PRESENT(DQDX)) DQDX(I1,I2) = DQDXL
-          IF (PRESENT(DQDY)) DQDY(I1,I2) = DQDYL
-          IF (PRESENT(COSA)) COSA(I1,I2) = COSAL
-          IF (PRESENT(COSC)) COSC(I1,I2) = COSCL
-          IF (PRESENT(SINC)) SINC(I1,I2) = SINCL
-          IF (PRESENT(ANGL)) ANGL(I1,I2) = ANGLL
-       END DO !I1
+          IF ( PRESENT(DY) ) THEN
+            DXDQL = ZERO
+            DYDQL = DY
+          ELSE
+            CALL DXYDQ( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                 PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
+                 MASK=MASK, X4=X, Y4=Y, RC=ISTAT )
+            IF ( ISTAT .NE. 0 ) THEN
+              IF ( PRESENT(RC) ) THEN
+                RC = ISTAT
+                RETURN
+              ELSE
+                CALL EXTCDE (ISTAT)
+              END IF
+            END IF
+          END IF
+          IF ( LLG .AND. SPHR ) THEN
+            FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
+            DXDPL = DXDPL*FACX
+            DYDPL = DYDPL*FACY
+            DXDQL = DXDQL*FACX
+            DYDQL = DYDQL*FACY
+          END IF
+          GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+        END IF
+        IF ( GSQRL .LT. ZERO ) THEN
+          ISTAT = 1
+          WRITE(0,'(/1A,1A)') 'W3CGDM ERROR -- ', &
+               'input coordinates do not define a '// &
+               'right-handed coordinate system'
+          WRITE(0,'(1A,2A6,5A16)') 'W3CGDM ERROR --', &
+               'P','Q','GSQRL','DXDPL','DYDQL','DXDQL','DYDPL'
+          WRITE(0,'(1A,2I6,5E16.8/)') 'W3CGDM ERROR --', &
+               P,Q,GSQRL,DXDPL,DYDQL,DXDQL,DYDPL
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
+          ELSE
+            CALL EXTCDE (ISTAT)
+          END IF
+        END IF
+        GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
+        GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
+        GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
+        GSQRL = MAX(GSQRL,SMALL)
+        GPPCL = MAX(GPPCL,SMALL)
+        GQQCL = MAX(GQQCL,SMALL)
+        DPDXL = DYDQL/GSQRL
+        DPDYL =-DXDQL/GSQRL
+        DQDXL =-DYDPL/GSQRL
+        DQDYL = DXDPL/GSQRL
+        APPCL = DPDXL*DPDXL + DPDYL*DPDYL
+        AQQCL = DQDXL*DQDXL + DQDYL*DQDYL
+        APQCL = DPDXL*DQDXL + DPDYL*DQDYL
+        HPFCL = SQRT(GPPCL)
+        HQFCL = SQRT(GQQCL)
+        COSAL = GPQCL/(HPFCL*HQFCL)
+        SINAL = GSQRL**2/(GPPCL*GQQCL)
+        COSTP = DXDPL/HPFCL
+        SINTP = DYDPL/HQFCL
+        COSCL = SINAL*COSTP + COSAL*SINTP
+        SINCL = SINAL*SINTP - COSAL*COSTP
+        ANGLL = ATAN2(SINCL,COSCL)*R2D
+        IF (PRESENT(GPPC)) GPPC(I1,I2) = GPPCL
+        IF (PRESENT(GQQC)) GQQC(I1,I2) = GQQCL
+        IF (PRESENT(GPQC)) GPQC(I1,I2) = GPQCL
+        IF (PRESENT(APPC)) APPC(I1,I2) = APPCL
+        IF (PRESENT(AQQC)) AQQC(I1,I2) = AQQCL
+        IF (PRESENT(APQC)) APQC(I1,I2) = APQCL
+        IF (PRESENT(GSQR)) GSQR(I1,I2) = GSQRL
+        IF (PRESENT(HPFC)) HPFC(I1,I2) = HPFCL
+        IF (PRESENT(HQFC)) HQFC(I1,I2) = HQFCL
+        IF (PRESENT(DXDP)) DXDP(I1,I2) = DXDPL
+        IF (PRESENT(DYDP)) DYDP(I1,I2) = DYDPL
+        IF (PRESENT(DXDQ)) DXDQ(I1,I2) = DXDQL
+        IF (PRESENT(DYDQ)) DYDQ(I1,I2) = DYDQL
+        IF (PRESENT(DPDX)) DPDX(I1,I2) = DPDXL
+        IF (PRESENT(DPDY)) DPDY(I1,I2) = DPDYL
+        IF (PRESENT(DQDX)) DQDX(I1,I2) = DQDXL
+        IF (PRESENT(DQDY)) DQDY(I1,I2) = DQDYL
+        IF (PRESENT(COSA)) COSA(I1,I2) = COSAL
+        IF (PRESENT(COSC)) COSC(I1,I2) = COSCL
+        IF (PRESENT(SINC)) SINC(I1,I2) = SINCL
+        IF (PRESENT(ANGL)) ANGL(I1,I2) = ANGLL
+      END DO !I1
     END DO !I2
     !
     ! -------------------------------------------------------------------- /
@@ -4434,20 +4434,20 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( PRESENT(NFD) ) THEN
-       N = NFD
+      N = NFD
     ELSE
-       N = NFD_DEFAULT
+      N = NFD_DEFAULT
     END IF
     IF ( N.LE.0 .OR. MOD(N,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -4455,68 +4455,68 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3CGDM ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3CGDM ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     IF ( PRESENT(SPHERE) ) THEN
-       SPHR = SPHERE
+      SPHR = SPHERE
     ELSE
-       SPHR = .TRUE.
+      SPHR = .TRUE.
     END IF
 
     IF ( PRESENT(RADIUS) ) THEN
-       R = RADIUS
+      R = RADIUS
     ELSE
-       R = REARTH
+      R = REARTH
     END IF
     FACY = R*D2R
 
     IF ( PRESENT(DX) ) THEN
-       IF ( DX.LE.ZERO ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DX must be > 0'
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
-          ELSE
-             CALL EXTCDE (ISTAT)
-          END IF
-       END IF
+      IF ( DX.LE.ZERO ) THEN
+        WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DX must be > 0'
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
     END IF
 
     IF ( PRESENT(DY) ) THEN
-       IF ( DY.LE.ZERO ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DY must be > 0'
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
-          ELSE
-             CALL EXTCDE (ISTAT)
-          END IF
-       END IF
+      IF ( DY.LE.ZERO ) THEN
+        WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ','DY must be > 0'
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -4524,27 +4524,27 @@ CONTAINS
     !
     ALLOCATE ( K(0:N,0:N,1:N), C(0:N,0:N,1:N), STAT=ISTAT )
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'finite difference coeff allocation failed'
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'finite difference coeff allocation failed'
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     CALL GET_FDW3 ( N, M, K, C )
 
     ALLOCATE ( K2(0:2,0:2,1:2), C2(0:2,0:2,1:2), STAT=ISTAT )
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
-            'finite difference coeff allocation for N=2 failed'
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3CGDM ERROR -- ', &
+           'finite difference coeff allocation for N=2 failed'
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     CALL GET_FDW3 ( 2, M, K2, C2 )
     !
@@ -4552,161 +4552,161 @@ CONTAINS
     ! 3.  Compute optional return quantities
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
-          ELSE
-             P = I2
-             Q = I1
+      DO I1 = LBO(1), UBO(1)
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        IF ( PRESENT(DX) ) THEN
+          DXDPL = DX
+          DYDPL = ZERO
+        ELSE
+          CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
+               PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
+               MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
+          IF ( ISTAT .NE. 0 ) THEN
+            IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
           END IF
+        END IF
+        IF ( PRESENT(DY) ) THEN
+          DXDQL = ZERO
+          DYDQL = DY
+        ELSE
+          CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
+               PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
+               MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
+          IF ( ISTAT .NE. 0 ) THEN
+            IF ( PRESENT(RC) ) THEN
+              RC = ISTAT
+              RETURN
+            ELSE
+              CALL EXTCDE (ISTAT)
+            END IF
+          END IF
+        END IF
+        IF ( LLG .AND. SPHR ) THEN
+          FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
+          DXDPL = DXDPL*FACX
+          DYDPL = DYDPL*FACY
+          DXDQL = DXDQL*FACX
+          DYDQL = DYDQL*FACY
+        END IF
+        GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+        IF ( GSQRL .LT. ZERO .AND. N .GT. 2 ) THEN
+          !                 WRITE(0,'(1A,1I0,1A,1I0,1A,1I0,2A)') &
+          !                 'W3CGDM WARNING -- NFD = ',N, &
+          !                 ' yields GSQRL < 0 at (',P,',',Q,'):', &
+          !                 ' computing metrics using NFD = 2'
           IF ( PRESENT(DX) ) THEN
-             DXDPL = DX
-             DYDPL = ZERO
+            DXDPL = DX
+            DYDPL = ZERO
           ELSE
-             CALL DXYDP( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
-                  MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
-             IF ( ISTAT .NE. 0 ) THEN
-                IF ( PRESENT(RC) ) THEN
-                   RC = ISTAT
-                   RETURN
-                ELSE
-                   CALL EXTCDE (ISTAT)
-                END IF
-             END IF
-          END IF
-          IF ( PRESENT(DY) ) THEN
-             DXDQL = ZERO
-             DYDQL = DY
-          ELSE
-             CALL DXYDQ( N, K, C, IJG, LLG, ICLO, PTILED, QTILED, &
-                  PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
-                  MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
-             IF ( ISTAT .NE. 0 ) THEN
-                IF ( PRESENT(RC) ) THEN
-                   RC = ISTAT
-                   RETURN
-                ELSE
-                   CALL EXTCDE (ISTAT)
-                END IF
-             END IF
-          END IF
-          IF ( LLG .AND. SPHR ) THEN
-             FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
-             DXDPL = DXDPL*FACX
-             DYDPL = DYDPL*FACY
-             DXDQL = DXDQL*FACX
-             DYDQL = DYDQL*FACY
-          END IF
-          GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
-          IF ( GSQRL .LT. ZERO .AND. N .GT. 2 ) THEN
-             !                 WRITE(0,'(1A,1I0,1A,1I0,1A,1I0,2A)') &
-             !                 'W3CGDM WARNING -- NFD = ',N, &
-             !                 ' yields GSQRL < 0 at (',P,',',Q,'):', &
-             !                 ' computing metrics using NFD = 2'
-             IF ( PRESENT(DX) ) THEN
-                DXDPL = DX
-                DYDPL = ZERO
-             ELSE
-                CALL DXYDP( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
-                     PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
-                     MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
-                IF ( ISTAT .NE. 0 ) THEN
-                   IF ( PRESENT(RC) ) THEN
-                      RC = ISTAT
-                      RETURN
-                   ELSE
-                      CALL EXTCDE (ISTAT)
-                   END IF
-                END IF
-             END IF
-             IF ( PRESENT(DY) ) THEN
-                DXDQL = ZERO
-                DYDQL = DY
-             ELSE
-                CALL DXYDQ( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
-                     PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
-                     MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
-                IF ( ISTAT .NE. 0 ) THEN
-                   IF ( PRESENT(RC) ) THEN
-                      RC = ISTAT
-                      RETURN
-                   ELSE
-                      CALL EXTCDE (ISTAT)
-                   END IF
-                END IF
-             END IF
-             IF ( LLG .AND. SPHR ) THEN
-                FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
-                DXDPL = DXDPL*FACX
-                DYDPL = DYDPL*FACY
-                DXDQL = DXDQL*FACX
-                DYDQL = DYDQL*FACY
-             END IF
-             GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
-          END IF
-          IF ( GSQRL .LT. ZERO ) THEN
-             ISTAT = 1
-             WRITE(0,'(/1A,1A)') 'W3CGDM ERROR -- ', &
-                  'input coordinates do not define a '// &
-                  'right-handed coordinate system'
-             WRITE(0,'(1A,2A6,5A16)') 'W3CGDM ERROR --', &
-                  'P','Q','GSQRL','DXDPL','DYDQL','DXDQL','DYDPL'
-             WRITE(0,'(1A,2I6,5E16.8/)') 'W3CGDM ERROR --', &
-                  P,Q,GSQRL,DXDPL,DYDQL,DXDQL,DYDPL
-             IF ( PRESENT(RC) ) THEN
+            CALL DXYDP( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                 PRANGE, QRANGE, LBI, UBI, P, Q, DXDPL, DYDPL, &
+                 MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
+            IF ( ISTAT .NE. 0 ) THEN
+              IF ( PRESENT(RC) ) THEN
                 RC = ISTAT
                 RETURN
-             ELSE
+              ELSE
                 CALL EXTCDE (ISTAT)
-             END IF
+              END IF
+            END IF
           END IF
-          GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
-          GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
-          GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
-          GSQRL = MAX(GSQRL,SMALL)
-          GPPCL = MAX(GPPCL,SMALL)
-          GQQCL = MAX(GQQCL,SMALL)
-          DPDXL = DYDQL/GSQRL
-          DPDYL =-DXDQL/GSQRL
-          DQDXL =-DYDPL/GSQRL
-          DQDYL = DXDPL/GSQRL
-          APPCL = DPDXL*DPDXL + DPDYL*DPDYL
-          AQQCL = DQDXL*DQDXL + DQDYL*DQDYL
-          APQCL = DPDXL*DQDXL + DPDYL*DQDYL
-          HPFCL = SQRT(GPPCL)
-          HQFCL = SQRT(GQQCL)
-          COSAL = GPQCL/(HPFCL*HQFCL)
-          SINAL = GSQRL**2/(GPPCL*GQQCL)
-          COSTP = DXDPL/HPFCL
-          SINTP = DYDPL/HQFCL
-          COSCL = SINAL*COSTP + COSAL*SINTP
-          SINCL = SINAL*SINTP - COSAL*COSTP
-          ANGLL = ATAN2(SINCL,COSCL)*R2D
-          IF (PRESENT(GPPC)) GPPC(I1,I2) = GPPCL
-          IF (PRESENT(GQQC)) GQQC(I1,I2) = GQQCL
-          IF (PRESENT(GPQC)) GPQC(I1,I2) = GPQCL
-          IF (PRESENT(APPC)) APPC(I1,I2) = APPCL
-          IF (PRESENT(AQQC)) AQQC(I1,I2) = AQQCL
-          IF (PRESENT(APQC)) APQC(I1,I2) = APQCL
-          IF (PRESENT(GSQR)) GSQR(I1,I2) = GSQRL
-          IF (PRESENT(HPFC)) HPFC(I1,I2) = HPFCL
-          IF (PRESENT(HQFC)) HQFC(I1,I2) = HQFCL
-          IF (PRESENT(DXDP)) DXDP(I1,I2) = DXDPL
-          IF (PRESENT(DYDP)) DYDP(I1,I2) = DYDPL
-          IF (PRESENT(DXDQ)) DXDQ(I1,I2) = DXDQL
-          IF (PRESENT(DYDQ)) DYDQ(I1,I2) = DYDQL
-          IF (PRESENT(DPDX)) DPDX(I1,I2) = DPDXL
-          IF (PRESENT(DPDY)) DPDY(I1,I2) = DPDYL
-          IF (PRESENT(DQDX)) DQDX(I1,I2) = DQDXL
-          IF (PRESENT(DQDY)) DQDY(I1,I2) = DQDYL
-          IF (PRESENT(COSA)) COSA(I1,I2) = COSAL
-          IF (PRESENT(COSC)) COSC(I1,I2) = COSCL
-          IF (PRESENT(SINC)) SINC(I1,I2) = SINCL
-          IF (PRESENT(ANGL)) ANGL(I1,I2) = ATAN2(SINCL,COSCL)*R2D
-          IF (PRESENT(ANGL)) ANGL(I1,I2) = ANGLL
-       END DO !I1
+          IF ( PRESENT(DY) ) THEN
+            DXDQL = ZERO
+            DYDQL = DY
+          ELSE
+            CALL DXYDQ( 2, K2, C2, IJG, LLG, ICLO, PTILED, QTILED, &
+                 PRANGE, QRANGE, LBI, UBI, P, Q, DXDQL, DYDQL, &
+                 MASK=MASK, X8=X, Y8=Y, RC=ISTAT )
+            IF ( ISTAT .NE. 0 ) THEN
+              IF ( PRESENT(RC) ) THEN
+                RC = ISTAT
+                RETURN
+              ELSE
+                CALL EXTCDE (ISTAT)
+              END IF
+            END IF
+          END IF
+          IF ( LLG .AND. SPHR ) THEN
+            FACX = FACY*COS(REAL(Y(I1,I2),8)*D2R)
+            DXDPL = DXDPL*FACX
+            DYDPL = DYDPL*FACY
+            DXDQL = DXDQL*FACX
+            DYDQL = DYDQL*FACY
+          END IF
+          GSQRL = DXDPL*DYDQL - DXDQL*DYDPL
+        END IF
+        IF ( GSQRL .LT. ZERO ) THEN
+          ISTAT = 1
+          WRITE(0,'(/1A,1A)') 'W3CGDM ERROR -- ', &
+               'input coordinates do not define a '// &
+               'right-handed coordinate system'
+          WRITE(0,'(1A,2A6,5A16)') 'W3CGDM ERROR --', &
+               'P','Q','GSQRL','DXDPL','DYDQL','DXDQL','DYDPL'
+          WRITE(0,'(1A,2I6,5E16.8/)') 'W3CGDM ERROR --', &
+               P,Q,GSQRL,DXDPL,DYDQL,DXDQL,DYDPL
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
+          ELSE
+            CALL EXTCDE (ISTAT)
+          END IF
+        END IF
+        GPPCL = DXDPL*DXDPL + DYDPL*DYDPL
+        GQQCL = DXDQL*DXDQL + DYDQL*DYDQL
+        GPQCL = DXDPL*DXDQL + DYDPL*DYDQL
+        GSQRL = MAX(GSQRL,SMALL)
+        GPPCL = MAX(GPPCL,SMALL)
+        GQQCL = MAX(GQQCL,SMALL)
+        DPDXL = DYDQL/GSQRL
+        DPDYL =-DXDQL/GSQRL
+        DQDXL =-DYDPL/GSQRL
+        DQDYL = DXDPL/GSQRL
+        APPCL = DPDXL*DPDXL + DPDYL*DPDYL
+        AQQCL = DQDXL*DQDXL + DQDYL*DQDYL
+        APQCL = DPDXL*DQDXL + DPDYL*DQDYL
+        HPFCL = SQRT(GPPCL)
+        HQFCL = SQRT(GQQCL)
+        COSAL = GPQCL/(HPFCL*HQFCL)
+        SINAL = GSQRL**2/(GPPCL*GQQCL)
+        COSTP = DXDPL/HPFCL
+        SINTP = DYDPL/HQFCL
+        COSCL = SINAL*COSTP + COSAL*SINTP
+        SINCL = SINAL*SINTP - COSAL*COSTP
+        ANGLL = ATAN2(SINCL,COSCL)*R2D
+        IF (PRESENT(GPPC)) GPPC(I1,I2) = GPPCL
+        IF (PRESENT(GQQC)) GQQC(I1,I2) = GQQCL
+        IF (PRESENT(GPQC)) GPQC(I1,I2) = GPQCL
+        IF (PRESENT(APPC)) APPC(I1,I2) = APPCL
+        IF (PRESENT(AQQC)) AQQC(I1,I2) = AQQCL
+        IF (PRESENT(APQC)) APQC(I1,I2) = APQCL
+        IF (PRESENT(GSQR)) GSQR(I1,I2) = GSQRL
+        IF (PRESENT(HPFC)) HPFC(I1,I2) = HPFCL
+        IF (PRESENT(HQFC)) HQFC(I1,I2) = HQFCL
+        IF (PRESENT(DXDP)) DXDP(I1,I2) = DXDPL
+        IF (PRESENT(DYDP)) DYDP(I1,I2) = DYDPL
+        IF (PRESENT(DXDQ)) DXDQ(I1,I2) = DXDQL
+        IF (PRESENT(DYDQ)) DYDQ(I1,I2) = DYDQL
+        IF (PRESENT(DPDX)) DPDX(I1,I2) = DPDXL
+        IF (PRESENT(DPDY)) DPDY(I1,I2) = DPDYL
+        IF (PRESENT(DQDX)) DQDX(I1,I2) = DQDXL
+        IF (PRESENT(DQDY)) DQDY(I1,I2) = DQDYL
+        IF (PRESENT(COSA)) COSA(I1,I2) = COSAL
+        IF (PRESENT(COSC)) COSC(I1,I2) = COSCL
+        IF (PRESENT(SINC)) SINC(I1,I2) = SINCL
+        IF (PRESENT(ANGL)) ANGL(I1,I2) = ATAN2(SINCL,COSCL)*R2D
+        IF (PRESENT(ANGL)) ANGL(I1,I2) = ANGLL
+      END DO !I1
     END DO !I2
     !
     ! -------------------------------------------------------------------- /
@@ -4844,15 +4844,15 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( NFD.LE.0 .OR. MOD(NFD,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -4860,29 +4860,29 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3GRD0 ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3GRD0 ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -4894,32 +4894,32 @@ CONTAINS
     ! 3.  Compute dF/dx & dF/dy
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( PRESENT(MASK) ) THEN
-             IF ( MASK(I1,I2) ) CYCLE
-          END IF
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
+      DO I1 = LBO(1), UBO(1)
+        IF ( PRESENT(MASK) ) THEN
+          IF ( MASK(I1,I2) ) CYCLE
+        END IF
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
+             PRANGE, QRANGE, LBI, UBI, P, Q, &
+             F4=F, DFDP=DFDP, DFDQ=DFDQ, &
+             MASK=MASK, RC=ISTAT )
+        IF ( ISTAT .NE. 0 ) THEN
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
           ELSE
-             P = I2
-             Q = I1
+            CALL EXTCDE (ISTAT)
           END IF
-          CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-               PRANGE, QRANGE, LBI, UBI, P, Q, &
-               F4=F, DFDP=DFDP, DFDQ=DFDQ, &
-               MASK=MASK, RC=ISTAT )
-          IF ( ISTAT .NE. 0 ) THEN
-             IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-             ELSE
-                CALL EXTCDE (ISTAT)
-             END IF
-          END IF
-          DFDX(I1,I2) = DFDP*DPDX(I1,I2) + DFDQ*DQDX(I1,I2)
-          DFDY(I1,I2) = DFDP*DPDY(I1,I2) + DFDQ*DQDY(I1,I2)
-       END DO !I1
+        END IF
+        DFDX(I1,I2) = DFDP*DPDX(I1,I2) + DFDQ*DQDX(I1,I2)
+        DFDY(I1,I2) = DFDP*DPDY(I1,I2) + DFDQ*DQDY(I1,I2)
+      END DO !I1
     END DO !I2
 
   END SUBROUTINE W3GRD0_R4
@@ -4965,15 +4965,15 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( NFD.LE.0 .OR. MOD(NFD,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -4981,29 +4981,29 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3GRD0 ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3GRD0 ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -5015,32 +5015,32 @@ CONTAINS
     ! 3.  Compute dF/dx & dF/dy
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( PRESENT(MASK) ) THEN
-             IF ( MASK(I1,I2) ) CYCLE
-          END IF
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
+      DO I1 = LBO(1), UBO(1)
+        IF ( PRESENT(MASK) ) THEN
+          IF ( MASK(I1,I2) ) CYCLE
+        END IF
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
+             PRANGE, QRANGE, LBI, UBI, P, Q, &
+             F8=F, DFDP=DFDP, DFDQ=DFDQ, &
+             MASK=MASK, RC=ISTAT )
+        IF ( ISTAT .NE. 0 ) THEN
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
           ELSE
-             P = I2
-             Q = I1
+            CALL EXTCDE (ISTAT)
           END IF
-          CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-               PRANGE, QRANGE, LBI, UBI, P, Q, &
-               F8=F, DFDP=DFDP, DFDQ=DFDQ, &
-               MASK=MASK, RC=ISTAT )
-          IF ( ISTAT .NE. 0 ) THEN
-             IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-             ELSE
-                CALL EXTCDE (ISTAT)
-             END IF
-          END IF
-          DFDX(I1,I2) = DFDP*DPDX(I1,I2) + DFDQ*DQDX(I1,I2)
-          DFDY(I1,I2) = DFDP*DPDY(I1,I2) + DFDQ*DQDY(I1,I2)
-       END DO !I1
+        END IF
+        DFDX(I1,I2) = DFDP*DPDX(I1,I2) + DFDQ*DQDX(I1,I2)
+        DFDY(I1,I2) = DFDP*DPDY(I1,I2) + DFDQ*DQDY(I1,I2)
+      END DO !I1
     END DO !I2
 
   END SUBROUTINE W3GRD0_R8
@@ -5176,15 +5176,15 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( NFD.LE.0 .OR. MOD(NFD,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3DIV1 ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3DIV1 ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -5192,29 +5192,29 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3DIV1 ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3DIV1 ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3DIV1 ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3DIV1 ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -5226,34 +5226,34 @@ CONTAINS
     ! 3.  Compute div(V) = dV_x/dx + dV_y/dy
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( PRESENT(MASK) ) THEN
-             IF ( MASK(I1,I2) ) CYCLE
-          END IF
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
+      DO I1 = LBO(1), UBO(1)
+        IF ( PRESENT(MASK) ) THEN
+          IF ( MASK(I1,I2) ) CYCLE
+        END IF
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
+             PRANGE, QRANGE, LBI, UBI, P, Q, &
+             F4=VX, DFDP=DVXDP, DFDQ=DVXDQ, &
+             G4=VY, DGDP=DVYDP, DGDQ=DVYDQ, &
+             MASK=MASK, RC=ISTAT )
+        IF ( ISTAT .NE. 0 ) THEN
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
           ELSE
-             P = I2
-             Q = I1
+            CALL EXTCDE (ISTAT)
           END IF
-          CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-               PRANGE, QRANGE, LBI, UBI, P, Q, &
-               F4=VX, DFDP=DVXDP, DFDQ=DVXDQ, &
-               G4=VY, DGDP=DVYDP, DGDQ=DVYDQ, &
-               MASK=MASK, RC=ISTAT )
-          IF ( ISTAT .NE. 0 ) THEN
-             IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-             ELSE
-                CALL EXTCDE (ISTAT)
-             END IF
-          END IF
-          DVXDX = DVXDP*DPDX(I1,I2) + DVXDQ*DQDX(I1,I2)
-          DVYDY = DVYDP*DPDY(I1,I2) + DVYDQ*DQDY(I1,I2)
-          DIVV(I1,I2) = DVXDX + DVYDY
-       END DO !I1
+        END IF
+        DVXDX = DVXDP*DPDX(I1,I2) + DVXDQ*DQDX(I1,I2)
+        DVYDY = DVYDP*DPDY(I1,I2) + DVYDQ*DQDY(I1,I2)
+        DIVV(I1,I2) = DVXDX + DVYDY
+      END DO !I1
     END DO !I2
 
   END SUBROUTINE W3DIV1_R4
@@ -5300,15 +5300,15 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( NFD.LE.0 .OR. MOD(NFD,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -5316,29 +5316,29 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3GRD0 ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3GRD0 ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3GRD0 ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -5350,34 +5350,34 @@ CONTAINS
     ! 3.  Compute div(V) = dV_x/dx + dV_y/dy
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( PRESENT(MASK) ) THEN
-             IF ( MASK(I1,I2) ) CYCLE
-          END IF
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
+      DO I1 = LBO(1), UBO(1)
+        IF ( PRESENT(MASK) ) THEN
+          IF ( MASK(I1,I2) ) CYCLE
+        END IF
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
+             PRANGE, QRANGE, LBI, UBI, P, Q, &
+             F8=VX, DFDP=DVXDP, DFDQ=DVXDQ, &
+             G8=VY, DGDP=DVYDP, DGDQ=DVYDQ, &
+             MASK=MASK, RC=ISTAT )
+        IF ( ISTAT .NE. 0 ) THEN
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
           ELSE
-             P = I2
-             Q = I1
+            CALL EXTCDE (ISTAT)
           END IF
-          CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-               PRANGE, QRANGE, LBI, UBI, P, Q, &
-               F8=VX, DFDP=DVXDP, DFDQ=DVXDQ, &
-               G8=VY, DGDP=DVYDP, DGDQ=DVYDQ, &
-               MASK=MASK, RC=ISTAT )
-          IF ( ISTAT .NE. 0 ) THEN
-             IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-             ELSE
-                CALL EXTCDE (ISTAT)
-             END IF
-          END IF
-          DVXDX = DVXDP*DPDX(I1,I2) + DVXDQ*DQDX(I1,I2)
-          DVYDY = DVYDP*DPDY(I1,I2) + DVYDQ*DQDY(I1,I2)
-          DIVV(I1,I2) = DVXDX + DVYDY
-       END DO !I1
+        END IF
+        DVXDX = DVXDP*DPDX(I1,I2) + DVXDQ*DQDX(I1,I2)
+        DVYDY = DVYDP*DPDY(I1,I2) + DVYDQ*DQDY(I1,I2)
+        DIVV(I1,I2) = DVXDX + DVYDY
+      END DO !I1
     END DO !I2
 
   END SUBROUTINE W3DIV1_R8
@@ -5518,15 +5518,15 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( NFD.LE.0 .OR. MOD(NFD,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -5534,29 +5534,29 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3DIV2 ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3DIV2 ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -5568,38 +5568,38 @@ CONTAINS
     ! 3.  Compute div(S) = (dS_xx/dx + dS_xy/dy, dS_xy/dx + dS_yy/dy)
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( PRESENT(MASK) ) THEN
-             IF ( MASK(I1,I2) ) CYCLE
-          END IF
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
+      DO I1 = LBO(1), UBO(1)
+        IF ( PRESENT(MASK) ) THEN
+          IF ( MASK(I1,I2) ) CYCLE
+        END IF
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
+             PRANGE, QRANGE, LBI, UBI, P, Q, &
+             F4=SXX, DFDP=DXXDP, DFDQ=DXXDQ, &
+             G4=SYY, DGDP=DYYDP, DGDQ=DYYDQ, &
+             H4=SXY, DHDP=DXYDP, DHDQ=DXYDQ, &
+             MASK=MASK, RC=ISTAT )
+        IF ( ISTAT .NE. 0 ) THEN
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
           ELSE
-             P = I2
-             Q = I1
+            CALL EXTCDE (ISTAT)
           END IF
-          CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-               PRANGE, QRANGE, LBI, UBI, P, Q, &
-               F4=SXX, DFDP=DXXDP, DFDQ=DXXDQ, &
-               G4=SYY, DGDP=DYYDP, DGDQ=DYYDQ, &
-               H4=SXY, DHDP=DXYDP, DHDQ=DXYDQ, &
-               MASK=MASK, RC=ISTAT )
-          IF ( ISTAT .NE. 0 ) THEN
-             IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-             ELSE
-                CALL EXTCDE (ISTAT)
-             END IF
-          END IF
-          DXXDX = DXXDP*DPDX(I1,I2) + DXXDQ*DQDX(I1,I2)
-          DYYDY = DYYDP*DPDY(I1,I2) + DYYDQ*DQDY(I1,I2)
-          DXYDX = DXYDP*DPDX(I1,I2) + DXYDQ*DQDX(I1,I2)
-          DXYDY = DXYDP*DPDY(I1,I2) + DXYDQ*DQDY(I1,I2)
-          DSX(I1,I2) = DXXDX + DXYDY
-          DSY(I1,I2) = DXYDX + DYYDY
-       END DO !I1
+        END IF
+        DXXDX = DXXDP*DPDX(I1,I2) + DXXDQ*DQDX(I1,I2)
+        DYYDY = DYYDP*DPDY(I1,I2) + DYYDQ*DQDY(I1,I2)
+        DXYDX = DXYDP*DPDX(I1,I2) + DXYDQ*DQDX(I1,I2)
+        DXYDY = DXYDP*DPDY(I1,I2) + DXYDQ*DQDY(I1,I2)
+        DSX(I1,I2) = DXXDX + DXYDY
+        DSY(I1,I2) = DXYDX + DYYDY
+      END DO !I1
     END DO !I2
 
   END SUBROUTINE W3DIV2_R4
@@ -5648,15 +5648,15 @@ CONTAINS
     IF ( PRESENT(RC) ) RC = 0
 
     IF ( NFD.LE.0 .OR. MOD(NFD,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
-            'NFD must be even and greater than zero'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
+           'NFD must be even and greater than zero'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
@@ -5664,29 +5664,29 @@ CONTAINS
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3DIV2 ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,1I2/)') 'W3DIV2 ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NP,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
-            'tripole grid closure requires NP even'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'W3DIV2 ERROR -- ', &
+           'tripole grid closure requires NP even'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -5698,38 +5698,38 @@ CONTAINS
     ! 3.  Compute div(S) = (dS_xx/dx + dS_xy/dy, dS_xy/dx + dS_yy/dy)
     !
     DO I2 = LBO(2), UBO(2)
-       DO I1 = LBO(1), UBO(1)
-          IF ( PRESENT(MASK) ) THEN
-             IF ( MASK(I1,I2) ) CYCLE
-          END IF
-          IF ( IJG ) THEN
-             P = I1
-             Q = I2
+      DO I1 = LBO(1), UBO(1)
+        IF ( PRESENT(MASK) ) THEN
+          IF ( MASK(I1,I2) ) CYCLE
+        END IF
+        IF ( IJG ) THEN
+          P = I1
+          Q = I2
+        ELSE
+          P = I2
+          Q = I1
+        END IF
+        CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
+             PRANGE, QRANGE, LBI, UBI, P, Q, &
+             F8=SXX, DFDP=DXXDP, DFDQ=DXXDQ, &
+             G8=SYY, DGDP=DYYDP, DGDQ=DYYDQ, &
+             H8=SXY, DHDP=DXYDP, DHDQ=DXYDQ, &
+             MASK=MASK, RC=ISTAT )
+        IF ( ISTAT .NE. 0 ) THEN
+          IF ( PRESENT(RC) ) THEN
+            RC = ISTAT
+            RETURN
           ELSE
-             P = I2
-             Q = I1
+            CALL EXTCDE (ISTAT)
           END IF
-          CALL DFDPQ ( NFD, K, C, IJG, ICLO, PTILED, QTILED, &
-               PRANGE, QRANGE, LBI, UBI, P, Q, &
-               F8=SXX, DFDP=DXXDP, DFDQ=DXXDQ, &
-               G8=SYY, DGDP=DYYDP, DGDQ=DYYDQ, &
-               H8=SXY, DHDP=DXYDP, DHDQ=DXYDQ, &
-               MASK=MASK, RC=ISTAT )
-          IF ( ISTAT .NE. 0 ) THEN
-             IF ( PRESENT(RC) ) THEN
-                RC = ISTAT
-                RETURN
-             ELSE
-                CALL EXTCDE (ISTAT)
-             END IF
-          END IF
-          DXXDX = DXXDP*DPDX(I1,I2) + DXXDQ*DQDX(I1,I2)
-          DYYDY = DYYDP*DPDY(I1,I2) + DYYDQ*DQDY(I1,I2)
-          DXYDX = DXYDP*DPDX(I1,I2) + DXYDQ*DQDX(I1,I2)
-          DXYDY = DXYDP*DPDY(I1,I2) + DXYDQ*DQDY(I1,I2)
-          DSX(I1,I2) = DXXDX + DXYDY
-          DSY(I1,I2) = DXYDX + DYYDY
-       END DO !I1
+        END IF
+        DXXDX = DXXDP*DPDX(I1,I2) + DXXDQ*DQDX(I1,I2)
+        DYYDY = DYYDP*DPDY(I1,I2) + DYYDQ*DQDY(I1,I2)
+        DXYDX = DXYDP*DPDX(I1,I2) + DXYDQ*DQDX(I1,I2)
+        DXYDY = DXYDP*DPDY(I1,I2) + DXYDQ*DQDY(I1,I2)
+        DSX(I1,I2) = DXXDX + DXYDY
+        DSY(I1,I2) = DXYDX + DYYDY
+      END DO !I1
     END DO !I2
 
   END SUBROUTINE W3DIV2_R8
@@ -5845,32 +5845,32 @@ CONTAINS
     DY = YT - YS
 
     IF ( LLG ) THEN !spherical coordinates
-       !---------check for longitudinal branch cut crossing
-       IF ( ABS(DX) .GT. D270 ) THEN
-          DX = DX - SIGN(D360,DX)
-       END IF
+      !---------check for longitudinal branch cut crossing
+      IF ( ABS(DX) .GT. D270 ) THEN
+        DX = DX - SIGN(D360,DX)
+      END IF
 #ifdef DIST_WITH_SINE
-       !---------compute angular distance using sin(d/2)
-       !         (this equation is more accurate than cos(d))
-       SLAM = SIN(HALF*DX*D2R)
-       SPHI = SIN(HALF*DY*D2R)
-       ARGD = SQRT( COS(YT*D2R)*COS(YS*D2R)*SLAM*SLAM + SPHI*SPHI )
-       DIST = R2D*TWO*ASIN( ARGD )
+      !---------compute angular distance using sin(d/2)
+      !         (this equation is more accurate than cos(d))
+      SLAM = SIN(HALF*DX*D2R)
+      SPHI = SIN(HALF*DY*D2R)
+      ARGD = SQRT( COS(YT*D2R)*COS(YS*D2R)*SLAM*SLAM + SPHI*SPHI )
+      DIST = R2D*TWO*ASIN( ARGD )
 #else
-       !---------compute angular distance using cos(c) (min required
-       !         for rare situation of acos(1+small) generating NaN)
-       ARGD = MIN( ONE, COS(YT*D2R)*COS(YS*D2R)*COS(DX*D2R) &
-            + SIN(YT*D2R)*SIN(YS*D2R) )
-       DIST = R2D*ACOS( ARGD )
+      !---------compute angular distance using cos(c) (min required
+      !         for rare situation of acos(1+small) generating NaN)
+      ARGD = MIN( ONE, COS(YT*D2R)*COS(YS*D2R)*COS(DX*D2R) &
+           + SIN(YT*D2R)*SIN(YS*D2R) )
+      DIST = R2D*ACOS( ARGD )
 #endif
     ELSE !cartesian coordinates
-       !---------compute cartesian distance
-       DIST = SQRT( DX**2 + DY**2 )
+      !---------compute cartesian distance
+      DIST = SQRT( DX**2 + DY**2 )
     END IF !cartesian coordinates
 #ifdef DIST_CHECK_NAN
     IF ( W3INAN(DIST) ) THEN
-       WRITE(0,'(/1A/)') 'W3DIST_R8 ERROR -- result is NaN'
-       CALL EXTCDE (1)
+      WRITE(0,'(/1A/)') 'W3DIST_R8 ERROR -- result is NaN'
+      CALL EXTCDE (1)
     END IF
 #endif
 
@@ -6010,7 +6010,7 @@ CONTAINS
 #endif
 
     DO I = LBOUND(LAM,1),UBOUND(LAM,1)
-       CALL W3SPLX( LAM0, PHI0, C0, LAM(I), PHI(I), X(I), Y(I) )
+      CALL W3SPLX( LAM0, PHI0, C0, LAM(I), PHI(I), X(I), Y(I) )
     ENDDO
 
   END SUBROUTINE W3SPLX_1D_R4
@@ -6031,7 +6031,7 @@ CONTAINS
 #endif
 
     DO I = LBOUND(LAM,1),UBOUND(LAM,1)
-       CALL W3SPLX( LAM0, PHI0, C0, LAM(I), PHI(I), X(I), Y(I) )
+      CALL W3SPLX( LAM0, PHI0, C0, LAM(I), PHI(I), X(I), Y(I) )
     ENDDO
 
   END SUBROUTINE W3SPLX_1D_R8
@@ -6052,9 +6052,9 @@ CONTAINS
 #endif
 
     DO J = LBOUND(LAM,2),UBOUND(LAM,2)
-       DO I = LBOUND(LAM,1),UBOUND(LAM,1)
-          CALL W3SPLX( LAM0, PHI0, C0, LAM(I,J), PHI(I,J), X(I,J), Y(I,J) )
-       ENDDO
+      DO I = LBOUND(LAM,1),UBOUND(LAM,1)
+        CALL W3SPLX( LAM0, PHI0, C0, LAM(I,J), PHI(I,J), X(I,J), Y(I,J) )
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3SPLX_2D_R4
@@ -6075,9 +6075,9 @@ CONTAINS
 #endif
 
     DO J = LBOUND(LAM,2),UBOUND(LAM,2)
-       DO I = LBOUND(LAM,1),UBOUND(LAM,1)
-          CALL W3SPLX( LAM0, PHI0, C0, LAM(I,J), PHI(I,J), X(I,J), Y(I,J) )
-       ENDDO
+      DO I = LBOUND(LAM,1),UBOUND(LAM,1)
+        CALL W3SPLX( LAM0, PHI0, C0, LAM(I,J), PHI(I,J), X(I,J), Y(I,J) )
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3SPLX_2D_R8
@@ -6214,7 +6214,7 @@ CONTAINS
 #endif
 
     DO I = LBOUND(X,1),UBOUND(X,1)
-       CALL W3SPXL( LAM0, PHI0, C0, X(I), Y(I), LAM(I), PHI(I) )
+      CALL W3SPXL( LAM0, PHI0, C0, X(I), Y(I), LAM(I), PHI(I) )
     ENDDO
 
   END SUBROUTINE W3SPXL_1D_R4
@@ -6235,7 +6235,7 @@ CONTAINS
 #endif
 
     DO I = LBOUND(X,1),UBOUND(X,1)
-       CALL W3SPXL( LAM0, PHI0, C0, X(I), Y(I), LAM(I), PHI(I) )
+      CALL W3SPXL( LAM0, PHI0, C0, X(I), Y(I), LAM(I), PHI(I) )
     ENDDO
 
   END SUBROUTINE W3SPXL_1D_R8
@@ -6256,9 +6256,9 @@ CONTAINS
 #endif
 
     DO J = LBOUND(X,2),UBOUND(X,2)
-       DO I = LBOUND(X,1),UBOUND(X,1)
-          CALL W3SPXL( LAM0, PHI0, C0, X(I,J), Y(I,J), LAM(I,J), PHI(I,J) )
-       ENDDO
+      DO I = LBOUND(X,1),UBOUND(X,1)
+        CALL W3SPXL( LAM0, PHI0, C0, X(I,J), Y(I,J), LAM(I,J), PHI(I,J) )
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3SPXL_2D_R4
@@ -6279,9 +6279,9 @@ CONTAINS
 #endif
 
     DO J = LBOUND(X,2),UBOUND(X,2)
-       DO I = LBOUND(X,1),UBOUND(X,1)
-          CALL W3SPXL( LAM0, PHI0, C0, X(I,J), Y(I,J), LAM(I,J), PHI(I,J) )
-       ENDDO
+      DO I = LBOUND(X,1),UBOUND(X,1)
+        CALL W3SPXL( LAM0, PHI0, C0, X(I,J), Y(I,J), LAM(I,J), PHI(I,J) )
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3SPXL_2D_R8
@@ -6413,7 +6413,7 @@ CONTAINS
 #endif
 
     DO I = LBOUND(LAM1,1),UBOUND(LAM1,1)
-       CALL W3TRLL( LAM0, PHI0, LAM1(I), PHI1(I), LAM(I), PHI(I) )
+      CALL W3TRLL( LAM0, PHI0, LAM1(I), PHI1(I), LAM(I), PHI(I) )
     ENDDO
 
   END SUBROUTINE W3TRLL_1D_R4
@@ -6434,7 +6434,7 @@ CONTAINS
 #endif
 
     DO I = LBOUND(LAM1,1),UBOUND(LAM1,1)
-       CALL W3TRLL( LAM0, PHI0, LAM1(I), PHI1(I), LAM(I), PHI(I) )
+      CALL W3TRLL( LAM0, PHI0, LAM1(I), PHI1(I), LAM(I), PHI(I) )
     ENDDO
 
   END SUBROUTINE W3TRLL_1D_R8
@@ -6455,9 +6455,9 @@ CONTAINS
 #endif
 
     DO J = LBOUND(LAM1,2),UBOUND(LAM1,2)
-       DO I = LBOUND(LAM1,1),UBOUND(LAM1,1)
-          CALL W3TRLL( LAM0, PHI0, LAM1(I,J), PHI1(I,J), LAM(I,J), PHI(I,J) )
-       ENDDO
+      DO I = LBOUND(LAM1,1),UBOUND(LAM1,1)
+        CALL W3TRLL( LAM0, PHI0, LAM1(I,J), PHI1(I,J), LAM(I,J), PHI(I,J) )
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3TRLL_2D_R4
@@ -6478,9 +6478,9 @@ CONTAINS
 #endif
 
     DO J = LBOUND(LAM1,2),UBOUND(LAM1,2)
-       DO I = LBOUND(LAM1,1),UBOUND(LAM1,1)
-          CALL W3TRLL( LAM0, PHI0, LAM1(I,J), PHI1(I,J), LAM(I,J), PHI(I,J) )
-       ENDDO
+      DO I = LBOUND(LAM1,1),UBOUND(LAM1,1)
+        CALL W3TRLL( LAM0, PHI0, LAM1(I,J), PHI1(I,J), LAM(I,J), PHI(I,J) )
+      ENDDO
     ENDDO
 
   END SUBROUTINE W3TRLL_2D_R8
@@ -6678,25 +6678,25 @@ CONTAINS
     C(:,:) = ZERO
     C(0,0) = ONE
     ILOOP: DO I = 1,N
-       MN = MIN(I,M)
-       C2 = ONE
-       C5 = C4
-       C4 = X(I)-Z
-       JLOOP: DO J = 0,I-1
-          C3 = X(I)-X(J)
-          C2 = C2*C3
-          IF ( J.EQ.I-1 ) THEN
-             DO K = MN,1,-1
-                C(I,K) = C1*(K*C(I-1,K-1)-C5*C(I-1,K))/C2
-             END DO
-             C(I,0) = -C1*C5*C(I-1,0)/C2
-          END IF
+      MN = MIN(I,M)
+      C2 = ONE
+      C5 = C4
+      C4 = X(I)-Z
+      JLOOP: DO J = 0,I-1
+        C3 = X(I)-X(J)
+        C2 = C2*C3
+        IF ( J.EQ.I-1 ) THEN
           DO K = MN,1,-1
-             C(J,K) = (C4*C(J,K)-K*C(J,K-1))/C3
+            C(I,K) = C1*(K*C(I-1,K-1)-C5*C(I-1,K))/C2
           END DO
-          C(J,0) = C4*C(J,0)/C3
-       END DO JLOOP
-       C1 = C2
+          C(I,0) = -C1*C5*C(I-1,0)/C2
+        END IF
+        DO K = MN,1,-1
+          C(J,K) = (C4*C(J,K)-K*C(J,K-1))/C3
+        END DO
+        C(J,0) = C4*C(J,0)/C3
+      END DO JLOOP
+      C1 = C2
     END DO ILOOP
 
   END SUBROUTINE W3FDWT_R4
@@ -6723,25 +6723,25 @@ CONTAINS
     C(:,:) = ZERO
     C(0,0) = ONE
     ILOOP: DO I = 1,N
-       MN = MIN(I,M)
-       C2 = ONE
-       C5 = C4
-       C4 = X(I)-Z
-       JLOOP: DO J = 0,I-1
-          C3 = X(I)-X(J)
-          C2 = C2*C3
-          IF ( J.EQ.I-1 ) THEN
-             DO K = MN,1,-1
-                C(I,K) = C1*(K*C(I-1,K-1)-C5*C(I-1,K))/C2
-             END DO
-             C(I,0) = -C1*C5*C(I-1,0)/C2
-          END IF
+      MN = MIN(I,M)
+      C2 = ONE
+      C5 = C4
+      C4 = X(I)-Z
+      JLOOP: DO J = 0,I-1
+        C3 = X(I)-X(J)
+        C2 = C2*C3
+        IF ( J.EQ.I-1 ) THEN
           DO K = MN,1,-1
-             C(J,K) = (C4*C(J,K)-K*C(J,K-1))/C3
+            C(I,K) = C1*(K*C(I-1,K-1)-C5*C(I-1,K))/C2
           END DO
-          C(J,0) = C4*C(J,0)/C3
-       END DO JLOOP
-       C1 = C2
+          C(I,0) = -C1*C5*C(I-1,0)/C2
+        END IF
+        DO K = MN,1,-1
+          C(J,K) = (C4*C(J,K)-K*C(J,K-1))/C3
+        END DO
+        C(J,0) = C4*C(J,0)/C3
+      END DO JLOOP
+      C1 = C2
     END DO ILOOP
 
   END SUBROUTINE W3FDWT_R8
@@ -6848,32 +6848,32 @@ CONTAINS
     NNS%DI(N) = 0;  NNS%DJ(N) = 0;
     !-----loop over levels
     DO L=1,NNS%NLVL
-       !---------nnbr loop bounds
-       NNS%N1(L) = (2*L-1)**2;  NNS%N2(L) = (2*L+1)**2-1;
-       !---------bottom-layer
-       J = -L
-       DO I=-L,L-1
-          N = N + 1
-          NNS%DI(N) = I;  NNS%DJ(N) = J;
-       END DO
-       !---------right-layer
-       I =  L
-       DO J=-L,L-1
-          N = N + 1
-          NNS%DI(N) = I;  NNS%DJ(N) = J;
-       END DO
-       !---------top-layer
-       J =  L
-       DO I=L,-L+1,-1
-          N = N + 1
-          NNS%DI(N) = I;  NNS%DJ(N) = J;
-       END DO
-       !---------left-layer
-       I = -L
-       DO J=L,-L+1,-1
-          N = N + 1
-          NNS%DI(N) = I;  NNS%DJ(N) = J;
-       END DO
+      !---------nnbr loop bounds
+      NNS%N1(L) = (2*L-1)**2;  NNS%N2(L) = (2*L+1)**2-1;
+      !---------bottom-layer
+      J = -L
+      DO I=-L,L-1
+        N = N + 1
+        NNS%DI(N) = I;  NNS%DJ(N) = J;
+      END DO
+      !---------right-layer
+      I =  L
+      DO J=-L,L-1
+        N = N + 1
+        NNS%DI(N) = I;  NNS%DJ(N) = J;
+      END DO
+      !---------top-layer
+      J =  L
+      DO I=L,-L+1,-1
+        N = N + 1
+        NNS%DI(N) = I;  NNS%DJ(N) = J;
+      END DO
+      !---------left-layer
+      I = -L
+      DO J=L,-L+1,-1
+        N = N + 1
+        NNS%DI(N) = I;  NNS%DJ(N) = J;
+      END DO
     END DO !loop over levels
 
   END FUNCTION W3NNSC
@@ -6937,22 +6937,22 @@ CONTAINS
 #endif
     !
     IF ( ASSOCIATED(NNS) ) THEN
-       NNS%NLVL = 0
-       NNS%NNBR = 0
-       IF ( ASSOCIATED(NNS%N1) ) THEN
-          DEALLOCATE(NNS%N1);  NULLIFY(NNS%N1);
-       END IF
-       IF ( ASSOCIATED(NNS%N2) ) THEN
-          DEALLOCATE(NNS%N2);  NULLIFY(NNS%N2);
-       END IF
-       IF ( ASSOCIATED(NNS%DI) ) THEN
-          DEALLOCATE(NNS%DI);  NULLIFY(NNS%DI);
-       END IF
-       IF ( ASSOCIATED(NNS%DJ) ) THEN
-          DEALLOCATE(NNS%DJ);  NULLIFY(NNS%DJ);
-       END IF
-       DEALLOCATE(NNS)
-       NULLIFY(NNS)
+      NNS%NLVL = 0
+      NNS%NNBR = 0
+      IF ( ASSOCIATED(NNS%N1) ) THEN
+        DEALLOCATE(NNS%N1);  NULLIFY(NNS%N1);
+      END IF
+      IF ( ASSOCIATED(NNS%N2) ) THEN
+        DEALLOCATE(NNS%N2);  NULLIFY(NNS%N2);
+      END IF
+      IF ( ASSOCIATED(NNS%DI) ) THEN
+        DEALLOCATE(NNS%DI);  NULLIFY(NNS%DI);
+      END IF
+      IF ( ASSOCIATED(NNS%DJ) ) THEN
+        DEALLOCATE(NNS%DJ);  NULLIFY(NNS%DJ);
+      END IF
+      DEALLOCATE(NNS)
+      NULLIFY(NNS)
     END IF
 
   END SUBROUTINE W3NNSD
@@ -7020,16 +7020,16 @@ CONTAINS
 #endif
     !
     IF ( PRESENT(IUNIT) ) THEN
-       NDST = IUNIT
+      NDST = IUNIT
     ELSE
-       NDST = 6
+      NDST = 6
     END IF
     !
     WRITE(NDST,'(A,2I6)') 'nlvl,nnbr:',NNS%NLVL,NNS%NNBR
     DO L=0,NNS%NLVL
-       DO N=NNS%N1(L),NNS%N2(L)
-          WRITE(NDST,'(A,4I6)') 'l,n,di,dj:',L,N,NNS%DI(N),NNS%DJ(N)
-       END DO
+      DO N=NNS%N1(L),NNS%N2(L)
+        WRITE(NDST,'(A,4I6)') 'l,n,di,dj:',L,N,NNS%DI(N),NNS%DJ(N)
+      END DO
     END DO
 
   END SUBROUTINE W3NNSP
@@ -7099,13 +7099,13 @@ CONTAINS
 #endif
 
     DO K=1, N-1
-       DO L=K+1, N
-          IF ( D(L) .LT. D(K) ) THEN
-             IM = I(K);  JM = J(K);  DM = D(K);
-             I(K) = I(L);  J(K) = J(L);  D(K) = D(L);
-             I(L) = IM;  J(L) = JM;  D(L) = DM;
-          END IF
-       END DO !L
+      DO L=K+1, N
+        IF ( D(L) .LT. D(K) ) THEN
+          IM = I(K);  JM = J(K);  DM = D(K);
+          I(K) = I(L);  J(K) = J(L);  D(K) = D(L);
+          I(L) = IM;  J(L) = JM;  D(L) = DM;
+        END IF
+      END DO !L
     END DO !K
 
   END SUBROUTINE W3SORT_R4
@@ -7128,13 +7128,13 @@ CONTAINS
 #endif
 
     DO K=1, N-1
-       DO L=K+1, N
-          IF ( D(L) .LT. D(K) ) THEN
-             IM = I(K);  JM = J(K);  DM = D(K);
-             I(K) = I(L);  J(K) = J(L);  D(K) = D(L);
-             I(L) = IM;  J(L) = JM;  D(L) = DM;
-          END IF
-       END DO !L
+      DO L=K+1, N
+        IF ( D(L) .LT. D(K) ) THEN
+          IM = I(K);  JM = J(K);  DM = D(K);
+          I(K) = I(L);  J(K) = J(L);  D(K) = D(L);
+          I(L) = IM;  J(L) = JM;  D(L) = DM;
+        END IF
+      END DO !L
     END DO !K
 
   END SUBROUTINE W3SORT_R8
@@ -7206,15 +7206,15 @@ CONTAINS
 #endif
 
     K_LOOP: DO K=1,N
-       IF ( DD .LT. D(K) ) THEN
-          !-------------right-shift list (>= k)
-          DO L=N,K+1,-1
-             I(L) = I(L-1);  J(L) = J(L-1);  D(L) = D(L-1);
-          END DO !L
-          !-------------insert point into list at k
-          I(K) = II;  J(K) = JJ;  D(K) = DD;
-          EXIT K_LOOP
-       END IF !dd.lt.d(k)
+      IF ( DD .LT. D(K) ) THEN
+        !-------------right-shift list (>= k)
+        DO L=N,K+1,-1
+          I(L) = I(L-1);  J(L) = J(L-1);  D(L) = D(L-1);
+        END DO !L
+        !-------------insert point into list at k
+        I(K) = II;  J(K) = JJ;  D(K) = DD;
+        EXIT K_LOOP
+      END IF !dd.lt.d(k)
     END DO K_LOOP
 
   END SUBROUTINE W3ISRT_R4
@@ -7239,15 +7239,15 @@ CONTAINS
 #endif
 
     K_LOOP: DO K=1,N
-       IF ( DD .LT. D(K) ) THEN
-          !-------------right-shift list (>= k)
-          DO L=N,K+1,-1
-             I(L) = I(L-1);  J(L) = J(L-1);  D(L) = D(L-1);
-          END DO !L
-          !-------------insert point into list at k
-          I(K) = II;  J(K) = JJ;  D(K) = DD;
-          EXIT K_LOOP
-       END IF !dd.lt.d(k)
+      IF ( DD .LT. D(K) ) THEN
+        !-------------right-shift list (>= k)
+        DO L=N,K+1,-1
+          I(L) = I(L-1);  J(L) = J(L-1);  D(L) = D(L-1);
+        END DO !L
+        !-------------insert point into list at k
+        I(K) = II;  J(K) = JJ;  D(K) = DD;
+        EXIT K_LOOP
+      END IF !dd.lt.d(k)
     END DO K_LOOP
 
   END SUBROUTINE W3ISRT_R8
@@ -7389,58 +7389,58 @@ CONTAINS
     TYPE_R4 = PRESENT(XG4).AND.PRESENT(YG4)
     TYPE_R8 = PRESENT(XG8).AND.PRESENT(YG8)
     IF ( .NOT.TYPE_R4.AND..NOT.TYPE_R8 ) THEN
-       WRITE(0,'(/1A,1A,1I2/)') 'W3GSUC ERROR -- ', &
-            'no input grid coordinates specified'
-       CALL EXTCDE (1)
+      WRITE(0,'(/1A,1A,1I2/)') 'W3GSUC ERROR -- ', &
+           'no input grid coordinates specified'
+      CALL EXTCDE (1)
     END IF
 
     IF (IJG) THEN
-       LBX = LB(1)
-       LBY = LB(2)
-       UBX = UB(1)
-       UBY = UB(2)
+      LBX = LB(1)
+      LBY = LB(2)
+      UBX = UB(1)
+      UBY = UB(2)
     ELSE
-       LBX = LB(2)
-       LBY = LB(1)
-       UBX = UB(2)
-       UBY = UB(1)
+      LBX = LB(2)
+      LBY = LB(1)
+      UBX = UB(2)
+      UBY = UB(1)
     END IF
     NX = UBX - LBX + 1
     NY = UBY - LBY + 1
 
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE, ICLO_GRDI, ICLO_GRDJ, ICLO_TRDL, ICLO_TRPL )
-       CONTINUE
+      CONTINUE
     CASE DEFAULT
-       WRITE(0,'(/1A,1A,1I2/)') 'W3GSUC ERROR -- ', &
-            'unsupported ICLO: ',ICLO
-       CALL EXTCDE (1)
+      WRITE(0,'(/1A,1A,1I2/)') 'W3GSUC ERROR -- ', &
+           'unsupported ICLO: ',ICLO
+      CALL EXTCDE (1)
     END SELECT
 
     IF ( ICLO.EQ.ICLO_TRPL .AND. MOD(NX,2).NE.0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
-            'tripole grid closure requires NX=UBX-LBX+1 be even'
-       CALL EXTCDE (1)
+      WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+           'tripole grid closure requires NX=UBX-LBX+1 be even'
+      CALL EXTCDE (1)
     END IF
 
     IF ( PRESENT(BBOX_ONLY) ) THEN
-       LBBOX = BBOX_ONLY
+      LBBOX = BBOX_ONLY
     ELSE
-       LBBOX = .FALSE.
+      LBBOX = .FALSE.
     END IF
 
     IF ( PRESENT(NCB) ) THEN
-       IF ( NCB .LE. 0 ) THEN
-          WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
-               'NCB must be greater than zero'
-          CALL EXTCDE (1)
-       END IF
+      IF ( NCB .LE. 0 ) THEN
+        WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+             'NCB must be greater than zero'
+        CALL EXTCDE (1)
+      END IF
     END IF
     !
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -7448,9 +7448,9 @@ CONTAINS
     !
     ALLOCATE(PTR, STAT=ISTAT)
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
-            'gsu object allocation failed'
-       CALL EXTCDE (ISTAT)
+      WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+           'gsu object allocation failed'
+      CALL EXTCDE (ISTAT)
     END IF
     PTR%IJG = IJG
     PTR%LLG = LLG
@@ -7462,13 +7462,13 @@ CONTAINS
     PTR%NX = NX
     PTR%NY = NY
     IF (TYPE_R4) THEN
-       PTR%XG4 => XG4
-       PTR%YG4 => YG4
-       PTR%GKIND = 4
+      PTR%XG4 => XG4
+      PTR%YG4 => YG4
+      PTR%GKIND = 4
     ELSE
-       PTR%XG8 => XG8
-       PTR%YG8 => YG8
-       PTR%GKIND = 8
+      PTR%XG8 => XG8
+      PTR%YG8 => YG8
+      PTR%GKIND = 8
     END IF
     NULLIFY( PTR%NNP )
     NULLIFY( PTR%B )
@@ -7478,11 +7478,11 @@ CONTAINS
     ! 3.  Create nearest-neighbor point search object
     !
     IF ( .NOT.LBBOX ) THEN
-       IF ( PRESENT(NNP) ) THEN
-          PTR%NNP => W3NNSC(NNP)
-       ELSE
-          PTR%NNP => W3NNSC(NNP_DEFAULT)
-       END IF
+      IF ( PRESENT(NNP) ) THEN
+        PTR%NNP => W3NNSC(NNP)
+      ELSE
+        PTR%NNP => W3NNSC(NNP_DEFAULT)
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -7492,101 +7492,101 @@ CONTAINS
     LXC = LBX;  LYC = LBY;
     SELECT CASE ( ICLO )
     CASE ( ICLO_NONE )
-       UXC = UBX-1;  UYC = UBY-1;
+      UXC = UBX-1;  UYC = UBY-1;
     CASE ( ICLO_GRDI )
-       UXC = UBX;    UYC = UBY-1;
+      UXC = UBX;    UYC = UBY-1;
     CASE ( ICLO_GRDJ )
-       UXC = UBX-1;  UYC = UBY;
+      UXC = UBX-1;  UYC = UBY;
     CASE ( ICLO_TRDL )
-       UXC = UBX;    UYC = UBY;
+      UXC = UBX;    UYC = UBY;
     CASE ( ICLO_TRPL )
-       UXC = UBX;    UYC = UBY;
+      UXC = UBX;    UYC = UBY;
     END SELECT
     !
     !-----initialize longitudinal periodicity flag (LCLO)
     IF ( LLG .AND. ICLO.NE.ICLO_NONE ) THEN
-       PTR%LCLO = .TRUE.
+      PTR%LCLO = .TRUE.
     ELSE
-       PTR%LCLO = .FALSE.
+      PTR%LCLO = .FALSE.
     END IF
     !
     !-----check existence of longitudinal branch cut
     !-----check if source grid includes poles
     IF ( LDBG ) THEN
-       WRITE(*,'(/A)') 'W3GSUC - check source grid'
+      WRITE(*,'(/A)') 'W3GSUC - check source grid'
     END IF
     LNPL = .FALSE.
     LSPL = .FALSE.
     DO I=LXC,UXC
-       DO J=LYC,UYC
-          !-------------create list of cell vertices
-          IC(1) = I  ;  JC(1) = J  ;
-          IC(2) = I+1;  JC(2) = J  ;
-          IC(3) = I+1;  JC(3) = J+1;
-          IC(4) = I  ;  JC(4) = J+1;
+      DO J=LYC,UYC
+        !-------------create list of cell vertices
+        IC(1) = I  ;  JC(1) = J  ;
+        IC(2) = I+1;  JC(2) = J  ;
+        IC(3) = I+1;  JC(3) = J+1;
+        IC(4) = I  ;  JC(4) = J+1;
+        DO L=1,4
+          !-----------------apply index closure
+          IF ( MOD(ICLO,2).EQ.0 ) &
+               IC(L) = LBX + MOD(NX - 1 + MOD(IC(L) - LBX + 1, NX), NX)
+          IF ( MOD(ICLO,3).EQ.0 ) &
+               JC(L) = LBY + MOD(NY - 1 + MOD(JC(L) - LBY + 1, NY), NY)
+          IF ( ICLO.EQ.ICLO_TRPL .AND. JC(L).GT.UBY ) THEN
+            IC(L) = UBX + LBX - IC(L)
+            JC(L) = 2*UBY - JC(L) + 1
+          END IF
+          !-----------------copy cell vertex coordinates into local variables
+          IF ( IJG ) THEN
+            IF (TYPE_R4) THEN
+              XC(L) = XG4(IC(L),JC(L))
+              YC(L) = YG4(IC(L),JC(L))
+            ELSE
+              XC(L) = XG8(IC(L),JC(L))
+              YC(L) = YG8(IC(L),JC(L))
+            END IF
+          ELSE
+            IF (TYPE_R4) THEN
+              XC(L) = XG4(JC(L),IC(L))
+              YC(L) = YG4(JC(L),IC(L))
+            ELSE
+              XC(L) = XG8(JC(L),IC(L))
+              YC(L) = YG8(JC(L),IC(L))
+            END IF
+          END IF
+        END DO !L
+        !-------------check if cell includes a pole or branch cut
+        LPL = .FALSE.
+        LBC = .FALSE.
+        IF ( LLG ) THEN
+          !-----------------count longitudinal branch cut crossings
+          N = 0
           DO L=1,4
-             !-----------------apply index closure
-             IF ( MOD(ICLO,2).EQ.0 ) &
-                  IC(L) = LBX + MOD(NX - 1 + MOD(IC(L) - LBX + 1, NX), NX)
-             IF ( MOD(ICLO,3).EQ.0 ) &
-                  JC(L) = LBY + MOD(NY - 1 + MOD(JC(L) - LBY + 1, NY), NY)
-             IF ( ICLO.EQ.ICLO_TRPL .AND. JC(L).GT.UBY ) THEN
-                IC(L) = UBX + LBX - IC(L)
-                JC(L) = 2*UBY - JC(L) + 1
-             END IF
-             !-----------------copy cell vertex coordinates into local variables
-             IF ( IJG ) THEN
-                IF (TYPE_R4) THEN
-                   XC(L) = XG4(IC(L),JC(L))
-                   YC(L) = YG4(IC(L),JC(L))
-                ELSE
-                   XC(L) = XG8(IC(L),JC(L))
-                   YC(L) = YG8(IC(L),JC(L))
-                END IF
-             ELSE
-                IF (TYPE_R4) THEN
-                   XC(L) = XG4(JC(L),IC(L))
-                   YC(L) = YG4(JC(L),IC(L))
-                ELSE
-                   XC(L) = XG8(JC(L),IC(L))
-                   YC(L) = YG8(JC(L),IC(L))
-                END IF
-             END IF
-          END DO !L
-          !-------------check if cell includes a pole or branch cut
-          LPL = .FALSE.
-          LBC = .FALSE.
-          IF ( LLG ) THEN
-             !-----------------count longitudinal branch cut crossings
-             N = 0
-             DO L=1,4
-                K = MOD(L,4)+1
-                IF ( ABS(XC(K)-XC(L)) .GT. D180 ) N = N + 1
-             END DO
-             !-----------------multiple longitudinal branch cut crossing => cell includes branch cut
-             LBC = N.GT.1
-             IF ( LBC .AND. LDBG ) &
-                  WRITE(*,'(A,8I6)') &
-                  'W3GSUC -- cell includes branch cut:',IC(:),JC(:)
-             !-----------------single longitudinal branch cut crossing
-             !                 or single vertex at 90 degrees => cell includes pole
-             LPL = N.EQ.1 .OR. COUNT(ABS(YC).EQ.D90).EQ.1
-             IF ( LPL.AND.MINVAL(YC).GT.ZERO ) THEN
-                IF ( LDBG ) &
-                     WRITE(*,'(A,8I6)') &
-                     'W3GSUC -- cell includes N-pole:',IC(:),JC(:)
-                LNPL = .TRUE.
-             END IF
-             IF ( LPL.AND.MAXVAL(YC).LT.ZERO ) THEN
-                IF ( LDBG ) &
-                     WRITE(*,'(A,8I6)') &
-                     'W3GSUC -- cell includes S-pole:',IC(:),JC(:)
-                LSPL = .TRUE.
-             END IF
-             !-----------------longitudinal branch cut crossing => longitudinal closure
-             IF ( N.GT.0 ) PTR%LCLO = .TRUE.
-          END IF !LLG
-       END DO !J
+            K = MOD(L,4)+1
+            IF ( ABS(XC(K)-XC(L)) .GT. D180 ) N = N + 1
+          END DO
+          !-----------------multiple longitudinal branch cut crossing => cell includes branch cut
+          LBC = N.GT.1
+          IF ( LBC .AND. LDBG ) &
+               WRITE(*,'(A,8I6)') &
+               'W3GSUC -- cell includes branch cut:',IC(:),JC(:)
+          !-----------------single longitudinal branch cut crossing
+          !                 or single vertex at 90 degrees => cell includes pole
+          LPL = N.EQ.1 .OR. COUNT(ABS(YC).EQ.D90).EQ.1
+          IF ( LPL.AND.MINVAL(YC).GT.ZERO ) THEN
+            IF ( LDBG ) &
+                 WRITE(*,'(A,8I6)') &
+                 'W3GSUC -- cell includes N-pole:',IC(:),JC(:)
+            LNPL = .TRUE.
+          END IF
+          IF ( LPL.AND.MAXVAL(YC).LT.ZERO ) THEN
+            IF ( LDBG ) &
+                 WRITE(*,'(A,8I6)') &
+                 'W3GSUC -- cell includes S-pole:',IC(:),JC(:)
+            LSPL = .TRUE.
+          END IF
+          !-----------------longitudinal branch cut crossing => longitudinal closure
+          IF ( N.GT.0 ) PTR%LCLO = .TRUE.
+        END IF !LLG
+      END DO !J
     END DO !I
     !
     !-----compute domain for search buckets
@@ -7594,14 +7594,14 @@ CONTAINS
     !     if grid includes north pole, then set ymax =  90 degrees
     !     if grid includes south pole, then set ymin = -90 degrees
     IF (TYPE_R4) THEN
-       PTR%XMIN = MINVAL(XG4);  PTR%XMAX = MAXVAL(XG4);
-       PTR%YMIN = MINVAL(YG4);  PTR%YMAX = MAXVAL(YG4);
+      PTR%XMIN = MINVAL(XG4);  PTR%XMAX = MAXVAL(XG4);
+      PTR%YMIN = MINVAL(YG4);  PTR%YMAX = MAXVAL(YG4);
     ELSE
-       PTR%XMIN = MINVAL(XG8);  PTR%XMAX = MAXVAL(XG8);
-       PTR%YMIN = MINVAL(YG8);  PTR%YMAX = MAXVAL(YG8);
+      PTR%XMIN = MINVAL(XG8);  PTR%XMAX = MAXVAL(XG8);
+      PTR%YMIN = MINVAL(YG8);  PTR%YMAX = MAXVAL(YG8);
     END IF
     IF ( PTR%LCLO ) THEN
-       PTR%XMIN =  ZERO;  PTR%XMAX = D360;
+      PTR%XMIN =  ZERO;  PTR%XMAX = D360;
     END IF
     IF ( LSPL ) PTR%YMIN = -D90
     IF ( LNPL ) PTR%YMAX =  D90
@@ -7609,220 +7609,220 @@ CONTAINS
     !
     !-----if bbox only, then set pointer and return
     IF ( LBBOX ) THEN
-       GSU%PTR => PTR
-       RETURN
+      GSU%PTR => PTR
+      RETURN
     END IF
     !
     !-----compute number of search buckets and bucket size
     IF ( PRESENT(NCB) ) THEN
-       PTR%NBX = MAX(1,NX/NCB)
-       PTR%NBY = MAX(1,NY/NCB)
+      PTR%NBX = MAX(1,NX/NCB)
+      PTR%NBY = MAX(1,NY/NCB)
     ELSE
-       PTR%NBX = MAX(1,NX/NCB_DEFAULT)
-       PTR%NBY = MAX(1,NY/NCB_DEFAULT)
+      PTR%NBX = MAX(1,NX/NCB_DEFAULT)
+      PTR%NBY = MAX(1,NY/NCB_DEFAULT)
     END IF
     PTR%DXB = (PTR%XMAX-PTR%XMIN)/REAL(PTR%NBX)
     PTR%DYB = (PTR%YMAX-PTR%YMIN)/REAL(PTR%NBY)
     !
     !-----print debug info
     IF ( LDBG ) THEN
-       WRITE(*,'(/A,1I2,1L2,1I2)') 'W3GSUC - ICLO,LCLO,GKIND: ', &
-            PTR%ICLO,PTR%LCLO,PTR%GKIND
-       WRITE(*,'(A,4E24.16)') 'W3GSUC - grid search domain:', &
-            PTR%XMIN,PTR%YMIN,PTR%XMAX,PTR%YMAX
-       WRITE(*,'(A,2I6)') 'W3GSUC - number of search buckets:', &
-            PTR%NBX,PTR%NBY
-       WRITE(*,'(A,2E24.16)') 'W3GSUC - search bucket size:', &
-            PTR%DXB,PTR%DYB
+      WRITE(*,'(/A,1I2,1L2,1I2)') 'W3GSUC - ICLO,LCLO,GKIND: ', &
+           PTR%ICLO,PTR%LCLO,PTR%GKIND
+      WRITE(*,'(A,4E24.16)') 'W3GSUC - grid search domain:', &
+           PTR%XMIN,PTR%YMIN,PTR%XMAX,PTR%YMAX
+      WRITE(*,'(A,2I6)') 'W3GSUC - number of search buckets:', &
+           PTR%NBX,PTR%NBY
+      WRITE(*,'(A,2E24.16)') 'W3GSUC - search bucket size:', &
+           PTR%DXB,PTR%DYB
     END IF
     !
     !-----allocate array of search buckets
     ALLOCATE(PTR%B(PTR%NBY,PTR%NBX),STAT=ISTAT)
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
-            'search bucket array allocation failed'
-       CALL EXTCDE (ISTAT)
+      WRITE(0,'(/1A,1A/)') 'W3GSUC ERROR -- ', &
+           'search bucket array allocation failed'
+      CALL EXTCDE (ISTAT)
     END IF
     !
     !-----BEGIN ISTEP_LOOP
     !     first step: compute number of cells in each bucket
     !     second step: allocate buckets and assign cells to buckets
     ISTEP_LOOP: DO ISTEP=1,2
-       !
-       !-----allocate search bucket cell lists
-       IF ( ISTEP .EQ. 2 ) THEN
-          DO IB=1,PTR%NBX
-             DO JB=1,PTR%NBY
-                NULLIFY(PTR%B(JB,IB)%I)
-                NULLIFY(PTR%B(JB,IB)%J)
-                IF ( PTR%B(JB,IB)%N .GT. 0 ) THEN
-                   ALLOCATE(PTR%B(JB,IB)%I(PTR%B(JB,IB)%N),STAT=ISTAT)
-                   IF ( ISTAT .NE. 0 ) THEN
-                      WRITE(0,'(/1A,2A,3I6/)') 'W3GSUC ERROR -- ', &
-                           'search bucket cell-i list allocation failed -- ', &
-                           'bucket: ',IB,JB,N
-                      CALL EXTCDE (ISTAT)
-                   END IF
-                   ALLOCATE(PTR%B(JB,IB)%J(PTR%B(JB,IB)%N),STAT=ISTAT)
-                   IF ( ISTAT .NE. 0 ) THEN
-                      WRITE(0,'(/1A,2A,3I6/)') 'W3GSUC ERROR -- ', &
-                           'search bucket cell-j list allocation failed -- ', &
-                           'bucket: ',IB,JB,N
-                      CALL EXTCDE (ISTAT)
-                   END IF
-                END IF
-             END DO
+      !
+      !-----allocate search bucket cell lists
+      IF ( ISTEP .EQ. 2 ) THEN
+        DO IB=1,PTR%NBX
+          DO JB=1,PTR%NBY
+            NULLIFY(PTR%B(JB,IB)%I)
+            NULLIFY(PTR%B(JB,IB)%J)
+            IF ( PTR%B(JB,IB)%N .GT. 0 ) THEN
+              ALLOCATE(PTR%B(JB,IB)%I(PTR%B(JB,IB)%N),STAT=ISTAT)
+              IF ( ISTAT .NE. 0 ) THEN
+                WRITE(0,'(/1A,2A,3I6/)') 'W3GSUC ERROR -- ', &
+                     'search bucket cell-i list allocation failed -- ', &
+                     'bucket: ',IB,JB,N
+                CALL EXTCDE (ISTAT)
+              END IF
+              ALLOCATE(PTR%B(JB,IB)%J(PTR%B(JB,IB)%N),STAT=ISTAT)
+              IF ( ISTAT .NE. 0 ) THEN
+                WRITE(0,'(/1A,2A,3I6/)') 'W3GSUC ERROR -- ', &
+                     'search bucket cell-j list allocation failed -- ', &
+                     'bucket: ',IB,JB,N
+                CALL EXTCDE (ISTAT)
+              END IF
+            END IF
           END DO
-       END IF !ISTEP.EQ.2
-       !
-       !-----build search bucket cell lists
-       PTR%B(:,:)%N = 0
-       DO I=LXC,UXC
-          DO J=LYC,UYC
-             IF ( ICLO.EQ.ICLO_TRPL ) THEN
-                IF ( J.EQ.UYC .AND. I.GT.LBX+NX/2 ) CYCLE
-             ENDIF
-             !-------------create list of cell vertices
-             IC(1) = I  ;  JC(1) = J  ;
-             IC(2) = I+1;  JC(2) = J  ;
-             IC(3) = I+1;  JC(3) = J+1;
-             IC(4) = I  ;  JC(4) = J+1;
-             DO L=1,4
-                !-----------------apply index closure
-                IF ( MOD(ICLO,2).EQ.0 ) &
-                     IC(L) = LBX + MOD(NX - 1 + MOD(IC(L) - LBX + 1, NX), NX)
-                IF ( MOD(ICLO,3).EQ.0 ) &
-                     JC(L) = LBY + MOD(NY - 1 + MOD(JC(L) - LBY + 1, NY), NY)
-                IF ( ICLO.EQ.ICLO_TRPL .AND. JC(L).GT.UBY ) THEN
-                   IC(L) = UBX + LBX - IC(L)
-                   JC(L) = 2*UBY - JC(L) + 1
+        END DO
+      END IF !ISTEP.EQ.2
+      !
+      !-----build search bucket cell lists
+      PTR%B(:,:)%N = 0
+      DO I=LXC,UXC
+        DO J=LYC,UYC
+          IF ( ICLO.EQ.ICLO_TRPL ) THEN
+            IF ( J.EQ.UYC .AND. I.GT.LBX+NX/2 ) CYCLE
+          ENDIF
+          !-------------create list of cell vertices
+          IC(1) = I  ;  JC(1) = J  ;
+          IC(2) = I+1;  JC(2) = J  ;
+          IC(3) = I+1;  JC(3) = J+1;
+          IC(4) = I  ;  JC(4) = J+1;
+          DO L=1,4
+            !-----------------apply index closure
+            IF ( MOD(ICLO,2).EQ.0 ) &
+                 IC(L) = LBX + MOD(NX - 1 + MOD(IC(L) - LBX + 1, NX), NX)
+            IF ( MOD(ICLO,3).EQ.0 ) &
+                 JC(L) = LBY + MOD(NY - 1 + MOD(JC(L) - LBY + 1, NY), NY)
+            IF ( ICLO.EQ.ICLO_TRPL .AND. JC(L).GT.UBY ) THEN
+              IC(L) = UBX + LBX - IC(L)
+              JC(L) = 2*UBY - JC(L) + 1
+            END IF
+            !-----------------copy cell vertex coordinates into local variables
+            IF ( IJG ) THEN
+              IF (TYPE_R4) THEN
+                XC(L) = XG4(IC(L),JC(L))
+                YC(L) = YG4(IC(L),JC(L))
+              ELSE
+                XC(L) = XG8(IC(L),JC(L))
+                YC(L) = YG8(IC(L),JC(L))
+              END IF
+            ELSE
+              IF (TYPE_R4) THEN
+                XC(L) = XG4(JC(L),IC(L))
+                YC(L) = YG4(JC(L),IC(L))
+              ELSE
+                XC(L) = XG8(JC(L),IC(L))
+                YC(L) = YG8(JC(L),IC(L))
+              END IF
+            END IF
+          END DO !L
+          !-------------check if cell includes a pole or branch cut
+          LPL = .FALSE.
+          LBC = .FALSE.
+          IF ( LLG ) THEN
+            !-----------------shift longitudes to appropriate range
+            XC = MOD(XC,D360)
+            IF ( PTR%LCLO .OR. PTR%L360 ) THEN
+              WHERE ( XC.LT.ZERO ) XC = XC + D360
+            ELSE
+              WHERE ( XC.GT.D180 ) XC = XC - D360
+            END IF
+            !-----------------count longitudinal branch cut crossings
+            N = 0
+            DO L=1,4
+              K = MOD(L,4)+1
+              IF ( ABS(XC(K)-XC(L)) .GT. D180 ) N = N + 1
+            END DO
+            !-----------------multiple longitudinal branch cut crossing => cell includes branch cut
+            LBC = N.GT.1
+            !-----------------single longitudinal branch cut crossing
+            !                 or single vertex at 90 degrees => cell includes pole
+            LPL = N.EQ.1 .OR. COUNT(ABS(YC).EQ.D90).EQ.1
+          END IF !LLG
+          !-------------set bucket id for each cell vertex
+          DO L=1,4
+            IBC(L) = INT((XC(L)-PTR%XMIN)/PTR%DXB)+1
+            IF ( .NOT.PTR%LCLO ) IBC(L) = MIN(IBC(L),PTR%NBX)
+            JBC(L) = MIN(INT((YC(L)-PTR%YMIN)/PTR%DYB)+1,PTR%NBY)
+          END DO !L
+          !-------------set bucket overlap bounds
+          IF ( LPL ) THEN
+            !---------------cell includes pole: overlap includes full longitudinal range
+            NS = 1
+            IB1(1) = 1
+            IB2(1) = PTR%NBX
+            IF ( MINVAL(YC).GT.ZERO ) THEN
+              JB1(1) = MAX(1,MINVAL(JBC))
+              JB2(1) = PTR%NBY
+            END IF
+            IF ( MAXVAL(YC).LT.ZERO ) THEN
+              JB1(1) = 1
+              JB2(1) = MIN(PTR%NBY,MAXVAL(JBC))
+            END IF
+            IB1(2) = 0
+            IB2(2) = 0
+            JB1(2) = 0
+            JB2(2) = 0
+          ELSE IF ( LBC ) THEN
+            !---------------cell includes branch cut: split overlap into two sets
+            NS = 2
+            IB1(1) = PTR%NBX
+            IB2(1) = PTR%NBX
+            IB1(2) = 1
+            IB2(2) = 1
+            DO L=1,4
+              IF ( IBC(L) .GT. PTR%NBX/2 ) THEN
+                IB1(1) = MIN(IB1(1),IBC(L))
+              ELSE
+                IB2(2) = MAX(IB2(2),IBC(L))
+              END IF
+            END DO !L
+            JB1(:) = MAX(1,MINVAL(JBC))
+            JB2(:) = MIN(PTR%NBY,MAXVAL(JBC))
+          ELSE
+            !---------------default: overlap computed from min/max
+            NS = 1
+            IB1(1) = MAX(1,MINVAL(IBC))
+            IB2(1) = MIN(PTR%NBX,MAXVAL(IBC))
+            JB1(1) = MAX(1,MINVAL(JBC))
+            JB2(1) = MIN(PTR%NBY,MAXVAL(JBC))
+            IB1(2) = 0
+            IB2(2) = 0
+            JB1(2) = 0
+            JB2(2) = 0
+          END IF
+          !-------------debug output
+          IF ( LDBG .AND. ISTEP.EQ.1 ) THEN
+            WRITE(*,'(/A,2I6)')    'W3GSUC -- BUCKET SORT:',I,J
+            WRITE(*,'(A,2L6,1I6)') 'W3GSUC -- LBC,LPL:',LBC,LPL
+            WRITE(*,'(A,4I6)')     'W3GSUC -- IC:',IC(:)
+            WRITE(*,'(A,4I6)')     'W3GSUC -- JC:',JC(:)
+            WRITE(*,'(A,4E24.16)') 'W3GSUC -- XC:',XC(:)
+            WRITE(*,'(A,4E24.16)') 'W3GSUC -- YC:',YC(:)
+            WRITE(*,'(A,4I6)')     'W3GSUC -- IBC:',IBC(:)
+            WRITE(*,'(A,4I6)')     'W3GSUC -- JBC:',JBC(:)
+            WRITE(*,'(A,1I6)')     'W3GSUC -- NS:',NS
+            WRITE(*,'(A,4I6)')     'W3GSUC -- IB1:',IB1(:)
+            WRITE(*,'(A,4I6)')     'W3GSUC -- JB1:',JB1(:)
+            WRITE(*,'(A,4I6)')     'W3GSUC -- IB2:',IB2(:)
+            WRITE(*,'(A,4I6)')     'W3GSUC -- JB2:',JB2(:)
+          END IF
+          !-------------assign cell to buckets based on overlap
+          DO K=1,NS
+            DO IB=IB1(K),IB2(K)
+              DO JB=JB1(K),JB2(K)
+                PTR%B(JB,IB)%N = PTR%B(JB,IB)%N + 1
+                IF ( ISTEP .EQ. 2 ) THEN
+                  PTR%B(JB,IB)%I(PTR%B(JB,IB)%N) = IC(1)
+                  PTR%B(JB,IB)%J(PTR%B(JB,IB)%N) = JC(1)
                 END IF
-                !-----------------copy cell vertex coordinates into local variables
-                IF ( IJG ) THEN
-                   IF (TYPE_R4) THEN
-                      XC(L) = XG4(IC(L),JC(L))
-                      YC(L) = YG4(IC(L),JC(L))
-                   ELSE
-                      XC(L) = XG8(IC(L),JC(L))
-                      YC(L) = YG8(IC(L),JC(L))
-                   END IF
-                ELSE
-                   IF (TYPE_R4) THEN
-                      XC(L) = XG4(JC(L),IC(L))
-                      YC(L) = YG4(JC(L),IC(L))
-                   ELSE
-                      XC(L) = XG8(JC(L),IC(L))
-                      YC(L) = YG8(JC(L),IC(L))
-                   END IF
-                END IF
-             END DO !L
-             !-------------check if cell includes a pole or branch cut
-             LPL = .FALSE.
-             LBC = .FALSE.
-             IF ( LLG ) THEN
-                !-----------------shift longitudes to appropriate range
-                XC = MOD(XC,D360)
-                IF ( PTR%LCLO .OR. PTR%L360 ) THEN
-                   WHERE ( XC.LT.ZERO ) XC = XC + D360
-                ELSE
-                   WHERE ( XC.GT.D180 ) XC = XC - D360
-                END IF
-                !-----------------count longitudinal branch cut crossings
-                N = 0
-                DO L=1,4
-                   K = MOD(L,4)+1
-                   IF ( ABS(XC(K)-XC(L)) .GT. D180 ) N = N + 1
-                END DO
-                !-----------------multiple longitudinal branch cut crossing => cell includes branch cut
-                LBC = N.GT.1
-                !-----------------single longitudinal branch cut crossing
-                !                 or single vertex at 90 degrees => cell includes pole
-                LPL = N.EQ.1 .OR. COUNT(ABS(YC).EQ.D90).EQ.1
-             END IF !LLG
-             !-------------set bucket id for each cell vertex
-             DO L=1,4
-                IBC(L) = INT((XC(L)-PTR%XMIN)/PTR%DXB)+1
-                IF ( .NOT.PTR%LCLO ) IBC(L) = MIN(IBC(L),PTR%NBX)
-                JBC(L) = MIN(INT((YC(L)-PTR%YMIN)/PTR%DYB)+1,PTR%NBY)
-             END DO !L
-             !-------------set bucket overlap bounds
-             IF ( LPL ) THEN
-                !---------------cell includes pole: overlap includes full longitudinal range
-                NS = 1
-                IB1(1) = 1
-                IB2(1) = PTR%NBX
-                IF ( MINVAL(YC).GT.ZERO ) THEN
-                   JB1(1) = MAX(1,MINVAL(JBC))
-                   JB2(1) = PTR%NBY
-                END IF
-                IF ( MAXVAL(YC).LT.ZERO ) THEN
-                   JB1(1) = 1
-                   JB2(1) = MIN(PTR%NBY,MAXVAL(JBC))
-                END IF
-                IB1(2) = 0
-                IB2(2) = 0
-                JB1(2) = 0
-                JB2(2) = 0
-             ELSE IF ( LBC ) THEN
-                !---------------cell includes branch cut: split overlap into two sets
-                NS = 2
-                IB1(1) = PTR%NBX
-                IB2(1) = PTR%NBX
-                IB1(2) = 1
-                IB2(2) = 1
-                DO L=1,4
-                   IF ( IBC(L) .GT. PTR%NBX/2 ) THEN
-                      IB1(1) = MIN(IB1(1),IBC(L))
-                   ELSE
-                      IB2(2) = MAX(IB2(2),IBC(L))
-                   END IF
-                END DO !L
-                JB1(:) = MAX(1,MINVAL(JBC))
-                JB2(:) = MIN(PTR%NBY,MAXVAL(JBC))
-             ELSE
-                !---------------default: overlap computed from min/max
-                NS = 1
-                IB1(1) = MAX(1,MINVAL(IBC))
-                IB2(1) = MIN(PTR%NBX,MAXVAL(IBC))
-                JB1(1) = MAX(1,MINVAL(JBC))
-                JB2(1) = MIN(PTR%NBY,MAXVAL(JBC))
-                IB1(2) = 0
-                IB2(2) = 0
-                JB1(2) = 0
-                JB2(2) = 0
-             END IF
-             !-------------debug output
-             IF ( LDBG .AND. ISTEP.EQ.1 ) THEN
-                WRITE(*,'(/A,2I6)')    'W3GSUC -- BUCKET SORT:',I,J
-                WRITE(*,'(A,2L6,1I6)') 'W3GSUC -- LBC,LPL:',LBC,LPL
-                WRITE(*,'(A,4I6)')     'W3GSUC -- IC:',IC(:)
-                WRITE(*,'(A,4I6)')     'W3GSUC -- JC:',JC(:)
-                WRITE(*,'(A,4E24.16)') 'W3GSUC -- XC:',XC(:)
-                WRITE(*,'(A,4E24.16)') 'W3GSUC -- YC:',YC(:)
-                WRITE(*,'(A,4I6)')     'W3GSUC -- IBC:',IBC(:)
-                WRITE(*,'(A,4I6)')     'W3GSUC -- JBC:',JBC(:)
-                WRITE(*,'(A,1I6)')     'W3GSUC -- NS:',NS
-                WRITE(*,'(A,4I6)')     'W3GSUC -- IB1:',IB1(:)
-                WRITE(*,'(A,4I6)')     'W3GSUC -- JB1:',JB1(:)
-                WRITE(*,'(A,4I6)')     'W3GSUC -- IB2:',IB2(:)
-                WRITE(*,'(A,4I6)')     'W3GSUC -- JB2:',JB2(:)
-             END IF
-             !-------------assign cell to buckets based on overlap
-             DO K=1,NS
-                DO IB=IB1(K),IB2(K)
-                   DO JB=JB1(K),JB2(K)
-                      PTR%B(JB,IB)%N = PTR%B(JB,IB)%N + 1
-                      IF ( ISTEP .EQ. 2 ) THEN
-                         PTR%B(JB,IB)%I(PTR%B(JB,IB)%N) = IC(1)
-                         PTR%B(JB,IB)%J(PTR%B(JB,IB)%N) = JC(1)
-                      END IF
-                   END DO !JB
-                END DO !IB
-             END DO !K
-          END DO !J
-       END DO !I
-       !
-       !-----END ISTEP_LOOP
+              END DO !JB
+            END DO !IB
+          END DO !K
+        END DO !J
+      END DO !I
+      !
+      !-----END ISTEP_LOOP
     END DO ISTEP_LOOP
     !
     !-----create nearest-neighbor bucket search object
@@ -7830,15 +7830,15 @@ CONTAINS
     !
     !-----print debug info
     IF ( LDBG ) THEN
-       WRITE(*,'(/A,3I6,4E24.16)') 'W3GSUC - search bucket list:'
-       WRITE(*,'(3A6,4A14)') 'I','J','N','X1','Y1','X2','Y2'
-       DO IB=1,PTR%NBX
-          DO JB=1,PTR%NBY
-             WRITE(*,'(3I6,4E24.16)') IB,JB,PTR%B(JB,IB)%N, &
-                  PTR%XMIN+(IB-1)*PTR%DXB,PTR%YMIN+(JB-1)*PTR%DYB, &
-                  PTR%XMIN+(IB-0)*PTR%DXB,PTR%YMIN+(JB-0)*PTR%DYB
-          END DO
-       END DO
+      WRITE(*,'(/A,3I6,4E24.16)') 'W3GSUC - search bucket list:'
+      WRITE(*,'(3A6,4A14)') 'I','J','N','X1','Y1','X2','Y2'
+      DO IB=1,PTR%NBX
+        DO JB=1,PTR%NBY
+          WRITE(*,'(3I6,4E24.16)') IB,JB,PTR%B(JB,IB)%N, &
+               PTR%XMIN+(IB-1)*PTR%DXB,PTR%YMIN+(JB-1)*PTR%DYB, &
+               PTR%XMIN+(IB-0)*PTR%DXB,PTR%YMIN+(JB-0)*PTR%DYB
+        END DO
+      END DO
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -7876,39 +7876,39 @@ CONTAINS
 #endif
 
     IF ( PRESENT(EPS) ) THEN
-       IF ( EPS .LT. ZERO ) THEN
-          WRITE(0,'(/2A/)') 'GETPQR ERROR -- ', &
-               'EPS parameter must be >= 0'
-          CALL EXTCDE (1)
-       END IF
-       LEPS = EPS
+      IF ( EPS .LT. ZERO ) THEN
+        WRITE(0,'(/2A/)') 'GETPQR ERROR -- ', &
+             'EPS parameter must be >= 0'
+        CALL EXTCDE (1)
+      END IF
+      LEPS = EPS
     ELSE
-       LEPS = EPS_DEFAULT
+      LEPS = EPS_DEFAULT
     END IF
     IF ( PRESENT(DEBUG) ) THEN
-       LDBG = DEBUG
+      LDBG = DEBUG
     ELSE
-       LDBG = .FALSE.
+      LDBG = .FALSE.
     END IF
     !
     !-----handle point coincident with a cell vertex
     DO K=1,4
-       IF ( ABS(XT-XS(K)).LE.LEPS .AND. ABS(YT-YS(K)).LE.LEPS ) THEN
-          SELECT CASE ( K )
-          CASE ( 1 )
-             PR = ZERO;  QR = ZERO;
-          CASE ( 2 )
-             PR =  ONE;  QR = ZERO;
-          CASE ( 3 )
-             PR =  ONE;  QR =  ONE;
-          CASE ( 4 )
-             PR = ZERO;  QR =  ONE;
-          END SELECT
-          IF ( LDBG ) &
-               WRITE(*,'(A,I3,4E24.16)') 'GETPQR - COINCIDENT:', &
-               K,ABS(XT-XS(K)),ABS(YT-YS(K)),PR,QR
-          RETURN
-       END IF
+      IF ( ABS(XT-XS(K)).LE.LEPS .AND. ABS(YT-YS(K)).LE.LEPS ) THEN
+        SELECT CASE ( K )
+        CASE ( 1 )
+          PR = ZERO;  QR = ZERO;
+        CASE ( 2 )
+          PR =  ONE;  QR = ZERO;
+        CASE ( 3 )
+          PR =  ONE;  QR =  ONE;
+        CASE ( 4 )
+          PR = ZERO;  QR =  ONE;
+        END SELECT
+        IF ( LDBG ) &
+             WRITE(*,'(A,I3,4E24.16)') 'GETPQR - COINCIDENT:', &
+             K,ABS(XT-XS(K)),ABS(YT-YS(K)),PR,QR
+        RETURN
+      END IF
     END DO
     !
     !-----set iteration parameters and initial guess
@@ -7925,36 +7925,36 @@ CONTAINS
 
     !-----iterate to find (PR,QR)
     ITER_LOOP: DO ITER=1,MAX_ITER
-       DYP  = DYT - DY1*PR - DY2*QR - DY3*PR*QR
-       DXP  = DXT - DX1*PR - DX2*QR - DX3*PR*QR
-       MAT1 = DY1 + DY3*QR
-       MAT2 = DY2 + DY3*PR
-       MAT3 = DX1 + DX3*QR
-       MAT4 = DX2 + DX3*PR
-       DET  = MAT1*MAT4 - MAT2*MAT3
-       DELP = (DYP*MAT4 - MAT2*DXP)/DET
-       DELQ = (MAT1*DXP - DYP*MAT3)/DET
-       IF ( LDBG ) &
-            WRITE(*,'(A,I3,4E24.16)') 'GETPQR - ITER:', &
-            ITER,PR,QR,DELP,DELQ
-       PR = PR + DELP
-       QR = QR + DELQ
-       IF ( ABS(DELP) < CONVERGE .AND. &
-            ABS(DELQ) < CONVERGE ) EXIT ITER_LOOP
+      DYP  = DYT - DY1*PR - DY2*QR - DY3*PR*QR
+      DXP  = DXT - DX1*PR - DX2*QR - DX3*PR*QR
+      MAT1 = DY1 + DY3*QR
+      MAT2 = DY2 + DY3*PR
+      MAT3 = DX1 + DX3*QR
+      MAT4 = DX2 + DX3*PR
+      DET  = MAT1*MAT4 - MAT2*MAT3
+      DELP = (DYP*MAT4 - MAT2*DXP)/DET
+      DELQ = (MAT1*DXP - DYP*MAT3)/DET
+      IF ( LDBG ) &
+           WRITE(*,'(A,I3,4E24.16)') 'GETPQR - ITER:', &
+           ITER,PR,QR,DELP,DELQ
+      PR = PR + DELP
+      QR = QR + DELQ
+      IF ( ABS(DELP) < CONVERGE .AND. &
+           ABS(DELQ) < CONVERGE ) EXIT ITER_LOOP
     END DO ITER_LOOP
 
     !-----if max iteration count exceeded, then exit with error
     IF ( ITER .GT. MAX_ITER ) THEN
-       WRITE(0,'(/A)') &
-            'GETPQR -- ERROR: exceeded max iteration count'
-       WRITE(0,'(A,2E24.16)') 'GETPQR - DEST POINT COORDS: ',XT,YT
-       DO K=1,4
-          WRITE(0,'(A,I1,A,2E24.16)') &
-               'GETPQR - SRC POINT ',K,': ',XS(K),YS(K)
-       END DO
-       WRITE(0,'(A,4E24.16)') &
-            'GETPQR - CURRENT PR,QR,DELP,DELQ: ',PR,QR,DELP,DELQ
-       CALL EXTCDE (1)
+      WRITE(0,'(/A)') &
+           'GETPQR -- ERROR: exceeded max iteration count'
+      WRITE(0,'(A,2E24.16)') 'GETPQR - DEST POINT COORDS: ',XT,YT
+      DO K=1,4
+        WRITE(0,'(A,I1,A,2E24.16)') &
+             'GETPQR - SRC POINT ',K,': ',XS(K),YS(K)
+      END DO
+      WRITE(0,'(A,4E24.16)') &
+           'GETPQR - CURRENT PR,QR,DELP,DELQ: ',PR,QR,DELP,DELQ
+      CALL EXTCDE (1)
     END IF !(ITER.LE.MAX_ITER)
 
   END SUBROUTINE GETPQR
@@ -7984,9 +7984,9 @@ CONTAINS
     !
     !---- initialize
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'GETBLC ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'GETBLC ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     IJG = GSU%PTR%IJG
     LLG = GSU%PTR%LLG
@@ -7999,25 +7999,25 @@ CONTAINS
     !
     !---- check & deallocate
     IF ( ASSOCIATED(LS) ) THEN
-       DEALLOCATE(LS);  NULLIFY(LS);
+      DEALLOCATE(LS);  NULLIFY(LS);
     END IF
     IF ( ASSOCIATED(IS) ) THEN
-       DEALLOCATE(IS);  NULLIFY(IS);
+      DEALLOCATE(IS);  NULLIFY(IS);
     END IF
     IF ( ASSOCIATED(JS) ) THEN
-       DEALLOCATE(JS);  NULLIFY(JS);
+      DEALLOCATE(JS);  NULLIFY(JS);
     END IF
     IF ( ASSOCIATED(CS) ) THEN
-       DEALLOCATE(CS);  NULLIFY(CS);
+      DEALLOCATE(CS);  NULLIFY(CS);
     END IF
     !
     !---- set number of interpolation points and allocate arrays
     NS = 4
     ALLOCATE( LS(NS), IS(NS), JS(NS), CS(NS), STAT=ISTAT )
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'GETBLC ERROR -- ', &
-            'array allocation failed'
-       CALL EXTCDE (ISTAT)
+      WRITE(0,'(/1A,1A/)') 'GETBLC ERROR -- ', &
+           'array allocation failed'
+      CALL EXTCDE (ISTAT)
     END IF
     LS(:) = .TRUE.
     CS(:) = ZERO
@@ -8038,22 +8038,22 @@ CONTAINS
     !
     !---- apply index closure
     DO K=1,NS
-       IF ( MOD(ICLO,2).EQ.0 ) &
-            IS(K) = LBX + MOD(NX - 1 + MOD(IS(K) - LBX + 1, NX), NX)
-       IF ( MOD(ICLO,3).EQ.0 ) &
-            JS(K) = LBY + MOD(NY - 1 + MOD(JS(K) - LBY + 1, NY), NY)
-       IF ( ICLO.EQ.ICLO_TRPL .AND. JS(K).GT.UBY ) THEN
-          IS(K) = UBX + LBX - IS(K)
-          JS(K) = 2*UBY - JS(K) + 1
-       END IF
+      IF ( MOD(ICLO,2).EQ.0 ) &
+           IS(K) = LBX + MOD(NX - 1 + MOD(IS(K) - LBX + 1, NX), NX)
+      IF ( MOD(ICLO,3).EQ.0 ) &
+           JS(K) = LBY + MOD(NY - 1 + MOD(JS(K) - LBY + 1, NY), NY)
+      IF ( ICLO.EQ.ICLO_TRPL .AND. JS(K).GT.UBY ) THEN
+        IS(K) = UBX + LBX - IS(K)
+        JS(K) = 2*UBY - JS(K) + 1
+      END IF
     END DO
     !
     !---- calculate bilinear interpolation coefficients
     IF ( LCMP ) THEN
-       CS(1) = (ONE-PR)*(ONE-QR)
-       CS(2) = PR*(ONE-QR)
-       CS(3) = PR*QR
-       CS(4) = (ONE-PR)*QR
+      CS(1) = (ONE-PR)*(ONE-QR)
+      CS(2) = PR*(ONE-QR)
+      CS(3) = PR*QR
+      CS(4) = (ONE-PR)*QR
     END IF
 
   END SUBROUTINE GETBLC
@@ -8100,9 +8100,9 @@ CONTAINS
     !
     !---- initialize
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'GETBCC ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'GETBCC ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     IJG = GSU%PTR%IJG
     LLG = GSU%PTR%LLG
@@ -8115,16 +8115,16 @@ CONTAINS
     !
     !---- check & deallocate
     IF ( ASSOCIATED(LS) ) THEN
-       DEALLOCATE(LS);  NULLIFY(LS);
+      DEALLOCATE(LS);  NULLIFY(LS);
     END IF
     IF ( ASSOCIATED(IS) ) THEN
-       DEALLOCATE(IS);  NULLIFY(IS);
+      DEALLOCATE(IS);  NULLIFY(IS);
     END IF
     IF ( ASSOCIATED(JS) ) THEN
-       DEALLOCATE(JS);  NULLIFY(JS);
+      DEALLOCATE(JS);  NULLIFY(JS);
     END IF
     IF ( ASSOCIATED(CS) ) THEN
-       DEALLOCATE(CS);  NULLIFY(CS);
+      DEALLOCATE(CS);  NULLIFY(CS);
     END IF
     !
     !---- setup table of bicubic coefficients
@@ -8156,18 +8156,18 @@ CONTAINS
     !                    A(i,j,3) * Fpq(i,j) } }
     !
     DO K=0,3
-       PV(K) = PR**K
-       QV(K) = QR**K
+      PV(K) = PR**K
+      QV(K) = QR**K
     END DO
     PW = MATMUL(PV,W)
     QW = MATMUL(QV,W)
     DO JJ=0,1
-       DO II=0,1
-          A(II,JJ,0) = PW(II)  *QW(JJ)
-          A(II,JJ,1) = PW(II+2)*QW(JJ)
-          A(II,JJ,2) = PW(II)  *QW(JJ+2)
-          A(II,JJ,3) = PW(II+2)*QW(JJ+2)
-       END DO
+      DO II=0,1
+        A(II,JJ,0) = PW(II)  *QW(JJ)
+        A(II,JJ,1) = PW(II+2)*QW(JJ)
+        A(II,JJ,2) = PW(II)  *QW(JJ+2)
+        A(II,JJ,3) = PW(II+2)*QW(JJ+2)
+      END DO
     END DO
     !
     !---- source points for the bicubic interpolation
@@ -8206,59 +8206,59 @@ CONTAINS
     !
     CS2D = ZERO
     DO JJ=0,1
-       DO II=0,1
-          P = I + II
-          Q = J + JJ
-          IF ( MOD(ICLO,2).EQ.0 ) THEN
-             K = NFD/2
+      DO II=0,1
+        P = I + II
+        Q = J + JJ
+        IF ( MOD(ICLO,2).EQ.0 ) THEN
+          K = NFD/2
+        ELSE
+          IF (P-LBX.LT.NFD/2) THEN
+            K = P - LBX
+          ELSE IF (UBX-P.LT.NFD/2) THEN
+            K = NFD + P - UBX
           ELSE
-             IF (P-LBX.LT.NFD/2) THEN
-                K = P - LBX
-             ELSE IF (UBX-P.LT.NFD/2) THEN
-                K = NFD + P - UBX
-             ELSE
-                K = NFD/2
-             END IF
+            K = NFD/2
           END IF
-          IF ( MOD(ICLO,3).EQ.0 ) THEN
-             L = NFD/2
-          ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
-             IF (Q-LBY.LT.NFD/2) THEN
-                L = Q - LBY
-             ELSE
-                L = NFD/2
-             END IF
+        END IF
+        IF ( MOD(ICLO,3).EQ.0 ) THEN
+          L = NFD/2
+        ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
+          IF (Q-LBY.LT.NFD/2) THEN
+            L = Q - LBY
           ELSE
-             IF (Q-LBY.LT.NFD/2) THEN
-                L = Q - LBY
-             ELSE IF (UBY-Q.LT.NFD/2) THEN
-                L = NFD + Q - UBY
-             ELSE
-                L = NFD/2
-             END IF
+            L = NFD/2
           END IF
-          CS2D(II,JJ) = CS2D(II,JJ) + A(II,JJ,0)
-          DO N=0,NFD
-             CS2D(II+KFD(N,K),JJ) = CS2D(II+KFD(N,K),JJ) &
-                  + A(II,JJ,1)*CFD(N,K)
-             CS2D(II,JJ+KFD(N,L)) = CS2D(II,JJ+KFD(N,L)) &
-                  + A(II,JJ,2)*CFD(N,L)
-             DO M=0,NFD
-                CS2D(II+KFD(N,K),JJ+KFD(M,L)) = &
-                     CS2D(II+KFD(N,K),JJ+KFD(M,L)) &
-                     + A(II,JJ,3)*CFD(N,K)*CFD(M,L)
-             END DO
+        ELSE
+          IF (Q-LBY.LT.NFD/2) THEN
+            L = Q - LBY
+          ELSE IF (UBY-Q.LT.NFD/2) THEN
+            L = NFD + Q - UBY
+          ELSE
+            L = NFD/2
+          END IF
+        END IF
+        CS2D(II,JJ) = CS2D(II,JJ) + A(II,JJ,0)
+        DO N=0,NFD
+          CS2D(II+KFD(N,K),JJ) = CS2D(II+KFD(N,K),JJ) &
+               + A(II,JJ,1)*CFD(N,K)
+          CS2D(II,JJ+KFD(N,L)) = CS2D(II,JJ+KFD(N,L)) &
+               + A(II,JJ,2)*CFD(N,L)
+          DO M=0,NFD
+            CS2D(II+KFD(N,K),JJ+KFD(M,L)) = &
+                 CS2D(II+KFD(N,K),JJ+KFD(M,L)) &
+                 + A(II,JJ,3)*CFD(N,K)*CFD(M,L)
           END DO
-       END DO
+        END DO
+      END DO
     END DO
     !
     !---- set number of interpolation points and allocate arrays
     NS = COUNT( ABS(CS2D) .GT. SMALL )
     ALLOCATE( LS(NS), IS(NS), JS(NS), CS(NS), STAT=ISTAT )
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'GETBCC ERROR -- ', &
-            'array allocation failed'
-       CALL EXTCDE (ISTAT)
+      WRITE(0,'(/1A,1A/)') 'GETBCC ERROR -- ', &
+           'array allocation failed'
+      CALL EXTCDE (ISTAT)
     END IF
     LS(:) = .TRUE.
     CS(:) = ZERO
@@ -8266,22 +8266,22 @@ CONTAINS
     !---- load arrays and apply index closure
     NS = 0
     DO JJ=-NFD/2,NFD
-       DO II=-NFD/2,NFD
-          IF ( ABS(CS2D(II,JJ)) .GT. SMALL ) THEN
-             NS = NS + 1
-             IS(NS) = I + II
-             JS(NS) = J + JJ
-             CS(NS) = CS2D(II,JJ)
-             IF ( MOD(ICLO,2).EQ.0 ) &
-                  IS(NS) = LBX + MOD(NX - 1 + MOD(IS(NS) - LBX + 1, NX), NX)
-             IF ( MOD(ICLO,3).EQ.0 ) &
-                  JS(NS) = LBY + MOD(NY - 1 + MOD(JS(NS) - LBY + 1, NY), NY)
-             IF ( ICLO.EQ.ICLO_TRPL .AND. JS(NS).GT.UBY ) THEN
-                IS(NS) = UBX + LBX - IS(NS)
-                JS(NS) = 2*UBY - JS(NS) + 1
-             END IF
+      DO II=-NFD/2,NFD
+        IF ( ABS(CS2D(II,JJ)) .GT. SMALL ) THEN
+          NS = NS + 1
+          IS(NS) = I + II
+          JS(NS) = J + JJ
+          CS(NS) = CS2D(II,JJ)
+          IF ( MOD(ICLO,2).EQ.0 ) &
+               IS(NS) = LBX + MOD(NX - 1 + MOD(IS(NS) - LBX + 1, NX), NX)
+          IF ( MOD(ICLO,3).EQ.0 ) &
+               JS(NS) = LBY + MOD(NY - 1 + MOD(JS(NS) - LBY + 1, NY), NY)
+          IF ( ICLO.EQ.ICLO_TRPL .AND. JS(NS).GT.UBY ) THEN
+            IS(NS) = UBX + LBX - IS(NS)
+            JS(NS) = 2*UBY - JS(NS) + 1
           END IF
-       END DO
+        END IF
+      END DO
     END DO
 
   END SUBROUTINE GETBCC
@@ -8318,9 +8318,9 @@ CONTAINS
     !
     !---- initialize
     IF ( .NOT.ASSOCIATED(GSU%PTR) ) THEN
-       WRITE(0,'(/2A/)') 'GETBLC ERROR -- ', &
-            'grid search utility object not created'
-       CALL EXTCDE (1)
+      WRITE(0,'(/2A/)') 'GETBLC ERROR -- ', &
+           'grid search utility object not created'
+      CALL EXTCDE (1)
     END IF
     IJG = GSU%PTR%IJG
     LLG = GSU%PTR%LLG
@@ -8342,25 +8342,25 @@ CONTAINS
     !
     !---- check & deallocate
     IF ( ASSOCIATED(LS) ) THEN
-       DEALLOCATE(LS);  NULLIFY(LS);
+      DEALLOCATE(LS);  NULLIFY(LS);
     END IF
     IF ( ASSOCIATED(IS) ) THEN
-       DEALLOCATE(IS);  NULLIFY(IS);
+      DEALLOCATE(IS);  NULLIFY(IS);
     END IF
     IF ( ASSOCIATED(JS) ) THEN
-       DEALLOCATE(JS);  NULLIFY(JS);
+      DEALLOCATE(JS);  NULLIFY(JS);
     END IF
     IF ( ASSOCIATED(CS) ) THEN
-       DEALLOCATE(CS);  NULLIFY(CS);
+      DEALLOCATE(CS);  NULLIFY(CS);
     END IF
     !
     !---- set number of interpolation points and allocate arrays
     NS = (IMAX-IMIN+1)*(JMAX-JMIN+1)
     ALLOCATE( LS(NS), IS(NS), JS(NS), CS(NS), STAT=ISTAT )
     IF ( ISTAT .NE. 0 ) THEN
-       WRITE(0,'(/1A,1A/)') 'GETGFC ERROR -- ', &
-            'array allocation failed'
-       CALL EXTCDE (ISTAT)
+      WRITE(0,'(/1A,1A/)') 'GETGFC ERROR -- ', &
+           'array allocation failed'
+      CALL EXTCDE (ISTAT)
     END IF
     LS(:) = .FALSE.
     CS(:) = ZERO
@@ -8368,37 +8368,37 @@ CONTAINS
     !---- calculate filter coefficients
     GSUM = ZERO
     DO JJ=JMIN,JMAX
-       DO II=IMIN,IMAX
-          K = (IMAX-IMIN+1)*(JJ-JMIN) + II - IMIN + 1
-          !-------- source points for the filter
-          IS(K) = I + II
-          JS(K) = J + JJ
-          !-------- apply index closure
-          IF ( MOD(ICLO,2).EQ.0 ) &
-               IS(K) = LBX + MOD(NX - 1 + MOD(IS(K) - LBX + 1, NX), NX)
-          IF ( MOD(ICLO,3).EQ.0 ) &
-               JS(K) = LBY + MOD(NY - 1 + MOD(JS(K) - LBY + 1, NY), NY)
-          IF ( ICLO.EQ.ICLO_TRPL .AND. JS(K).GT.UBY ) THEN
-             IS(K) = UBX + LBX - IS(K)
-             JS(K) = 2*UBY - JS(K) + 1
-          END IF
-          !-------- skip if source point is outside domain
-          IF ( IS(K).LT.LBX .OR. IS(K).GT.UBX ) CYCLE
-          IF ( JS(K).LT.LBY .OR. JS(K).GT.UBY ) CYCLE
-          !-------- compute distance
-          R2 = (PR - II)**2 + (QR - JJ)**2
-          !         IF ( R2.GT.R2MX ) CYCLE
-          !-------- compute coefficient
-          LS(K) = .TRUE.
-          IF ( LCMP ) THEN
-             GIJ = EXP( SFAC*R2 )
-             GSUM = GSUM + GIJ
-             CS(K) = GIJ
-          END IF
-       END DO
+      DO II=IMIN,IMAX
+        K = (IMAX-IMIN+1)*(JJ-JMIN) + II - IMIN + 1
+        !-------- source points for the filter
+        IS(K) = I + II
+        JS(K) = J + JJ
+        !-------- apply index closure
+        IF ( MOD(ICLO,2).EQ.0 ) &
+             IS(K) = LBX + MOD(NX - 1 + MOD(IS(K) - LBX + 1, NX), NX)
+        IF ( MOD(ICLO,3).EQ.0 ) &
+             JS(K) = LBY + MOD(NY - 1 + MOD(JS(K) - LBY + 1, NY), NY)
+        IF ( ICLO.EQ.ICLO_TRPL .AND. JS(K).GT.UBY ) THEN
+          IS(K) = UBX + LBX - IS(K)
+          JS(K) = 2*UBY - JS(K) + 1
+        END IF
+        !-------- skip if source point is outside domain
+        IF ( IS(K).LT.LBX .OR. IS(K).GT.UBX ) CYCLE
+        IF ( JS(K).LT.LBY .OR. JS(K).GT.UBY ) CYCLE
+        !-------- compute distance
+        R2 = (PR - II)**2 + (QR - JJ)**2
+        !         IF ( R2.GT.R2MX ) CYCLE
+        !-------- compute coefficient
+        LS(K) = .TRUE.
+        IF ( LCMP ) THEN
+          GIJ = EXP( SFAC*R2 )
+          GSUM = GSUM + GIJ
+          CS(K) = GIJ
+        END IF
+      END DO
     END DO
     IF ( LCMP ) THEN
-       WHERE ( LS ) CS = CS/GSUM
+      WHERE ( LS ) CS = CS/GSUM
     END IF
 
   END SUBROUTINE GETGFC
@@ -8455,40 +8455,40 @@ CONTAINS
     TYPE_R4 = PRESENT(X4).AND.PRESENT(Y4)
     TYPE_R8 = PRESENT(X8).AND.PRESENT(Y8)
     IF ( .NOT.TYPE_R4.AND..NOT.TYPE_R8 ) THEN
-       WRITE(0,'(/1A,1A/)') 'DXYDP ERROR -- ', &
-            'no input grid coordinates specified'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'DXYDP ERROR -- ', &
+           'no input grid coordinates specified'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
     NQ = QRANGE(2) - QRANGE(1) + 1
 
     IF ( IJG ) THEN
-       LBP = LB(1); LBQ = LB(2)
-       UBP = UB(1); UBQ = UB(2)
+      LBP = LB(1); LBQ = LB(2)
+      UBP = UB(1); UBQ = UB(2)
     ELSE
-       LBP = LB(2); LBQ = LB(1)
-       UBP = UB(2); UBQ = UB(1)
+      LBP = LB(2); LBQ = LB(1)
+      UBP = UB(2); UBQ = UB(1)
     END IF
 
     IF ( P.LT.LBP .OR. P.GT.UBP .OR. Q.LT.LBQ .OR. Q.GT.UBQ ) THEN
-       WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DXYDP ERROR -- '// &
-            'input index coordinates outside input array bounds', &
-            'DXYDP ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
-            'DXYDP ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DXYDP ERROR -- '// &
+           'input index coordinates outside input array bounds', &
+           'DXYDP ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
+           'DXYDP ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     P0 = P
@@ -8498,95 +8498,95 @@ CONTAINS
     IF ( MOD(ICLO,3).EQ.0 ) &
          Q0 = QRANGE(1) + MOD(NQ - 1 + MOD(Q0 - QRANGE(1) + 1, NQ), NQ)
     IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.QRANGE(2) ) THEN
-       P0 = PRANGE(2) + PRANGE(1) - P0
-       Q0 = 2*QRANGE(2) - Q0 + 1
+      P0 = PRANGE(2) + PRANGE(1) - P0
+      Q0 = 2*QRANGE(2) - Q0 + 1
     END IF
     IF ( P0.LT.PRANGE(1) .OR. P0.GT.PRANGE(2) .OR. &
          Q0.LT.QRANGE(1) .OR. Q0.GT.QRANGE(2) ) THEN
-       WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DXYDP ERROR -- '// &
-            'shifted input index coordinates outside allowed range', &
-            'DXYDP ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
-            'DXYDP ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DXYDP ERROR -- '// &
+           'shifted input index coordinates outside allowed range', &
+           'DXYDP ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
+           'DXYDP ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     DXDP = ZERO
     DYDP = ZERO
     COMP_M = PRESENT(MASK)
     IF ( COMP_M ) THEN
-       IF ( IJG ) THEN
-          IF ( MASK(P0,Q0) ) RETURN
-       ELSE
-          IF ( MASK(Q0,P0) ) RETURN
-       END IF
+      IF ( IJG ) THEN
+        IF ( MASK(P0,Q0) ) RETURN
+      ELSE
+        IF ( MASK(Q0,P0) ) RETURN
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Compute DX/DP & DY/DP
     !
     IF ( MOD(ICLO,2).EQ.0 ) THEN
-       I = N/2
+      I = N/2
     ELSE
-       IF (P0-PRANGE(1).LT.N/2) THEN
-          I = P0 - PRANGE(1)
-       ELSE IF (PRANGE(2)-P0.LT.N/2) THEN
-          I = N + P0 - PRANGE(2)
-       ELSE
-          I = N/2
-       END IF
+      IF (P0-PRANGE(1).LT.N/2) THEN
+        I = P0 - PRANGE(1)
+      ELSE IF (PRANGE(2)-P0.LT.N/2) THEN
+        I = N + P0 - PRANGE(2)
+      ELSE
+        I = N/2
+      END IF
     END IF
 
     KP(:) = P + K(:,I,N)
     KQ(:) = Q
     IF ( .NOT.PTILED ) THEN
-       IF ( MOD(ICLO,2).EQ.0 ) THEN
-          KP = PRANGE(1) + MOD(NP - 1 + MOD(KP - PRANGE(1) + 1, NP), NP)
-       END IF
+      IF ( MOD(ICLO,2).EQ.0 ) THEN
+        KP = PRANGE(1) + MOD(NP - 1 + MOD(KP - PRANGE(1) + 1, NP), NP)
+      END IF
     END IF
 
     IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
          MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-       WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DXYDP ERROR -- '// &
-            'stencil index coordinates outside array bounds', &
-            'DXYDP ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
-            PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-            'DXYDP ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-            QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DXYDP ERROR -- '// &
+           'stencil index coordinates outside array bounds', &
+           'DXYDP ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+           PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+           'DXYDP ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+           QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     DO L = 0, N
-       IF ( IJG ) THEN
-          IF ( COMP_M ) MP(L) = MASK(KP(L),KQ(L))
-          IF ( TYPE_R4 ) THEN
-             XP(L) = X4(KP(L),KQ(L))
-             YP(L) = Y4(KP(L),KQ(L))
-          ELSE
-             XP(L) = X8(KP(L),KQ(L))
-             YP(L) = Y8(KP(L),KQ(L))
-          END IF
-       ELSE
-          IF ( COMP_M ) MP(L) = MASK(KQ(L),KP(L))
-          IF ( TYPE_R4 ) THEN
-             XP(L) = X4(KQ(L),KP(L))
-             YP(L) = Y4(KQ(L),KP(L))
-          ELSE
-             XP(L) = X8(KQ(L),KP(L))
-             YP(L) = Y8(KQ(L),KP(L))
-          END IF
-       END IF
+      IF ( IJG ) THEN
+        IF ( COMP_M ) MP(L) = MASK(KP(L),KQ(L))
+        IF ( TYPE_R4 ) THEN
+          XP(L) = X4(KP(L),KQ(L))
+          YP(L) = Y4(KP(L),KQ(L))
+        ELSE
+          XP(L) = X8(KP(L),KQ(L))
+          YP(L) = Y8(KP(L),KQ(L))
+        END IF
+      ELSE
+        IF ( COMP_M ) MP(L) = MASK(KQ(L),KP(L))
+        IF ( TYPE_R4 ) THEN
+          XP(L) = X4(KQ(L),KP(L))
+          YP(L) = Y4(KQ(L),KP(L))
+        ELSE
+          XP(L) = X8(KQ(L),KP(L))
+          YP(L) = Y8(KQ(L),KP(L))
+        END IF
+      END IF
     END DO
 
     II = I
@@ -8594,94 +8594,94 @@ CONTAINS
     II0 = 0
     IIN = N
     IF ( COMP_M ) THEN
-       DO L = I-1, 0, -1
-          IF ( MP(L) ) THEN
-             MP(0:L) = .TRUE.
-             EXIT
-          END IF
-       END DO
-       DO L = I+1, N
-          IF ( MP(L) ) THEN
-             MP(L:N) = .TRUE.
-             EXIT
-          END IF
-       END DO
-       II = COUNT(.NOT.MP(0:I)) - 1
-       NI = COUNT(.NOT.MP(0:N)) - 1
-       II0 = I - II
-       IIN = II0 + NI
+      DO L = I-1, 0, -1
+        IF ( MP(L) ) THEN
+          MP(0:L) = .TRUE.
+          EXIT
+        END IF
+      END DO
+      DO L = I+1, N
+        IF ( MP(L) ) THEN
+          MP(L:N) = .TRUE.
+          EXIT
+        END IF
+      END DO
+      II = COUNT(.NOT.MP(0:I)) - 1
+      NI = COUNT(.NOT.MP(0:N)) - 1
+      II0 = I - II
+      IIN = II0 + NI
     END IF
 #ifdef DXYDP_SINGLE_POINT_WIDE_CHANNEL_ERROR
     IF ( NI.LE.0 ) THEN
-       WRITE(0,'(/1A,1A,4I6/)') 'DXYDP ERROR -- ', &
-            'single point wide channel not allowed',P,Q,P0,Q0
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,4I6/)') 'DXYDP ERROR -- ', &
+           'single point wide channel not allowed',P,Q,P0,Q0
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 #endif
 
     IF ( NI.GT.0 ) THEN
-       IF ( LLG ) THEN
+      IF ( LLG ) THEN
 #define DXYDP_USE_SPLX
 #ifdef DXYDP_USE_SPLX
-          IF ( IJG ) THEN
-             IF ( TYPE_R4 ) THEN
-                X0 = X4(P,Q); Y0 = Y4(P,Q);
-             ELSE
-                X0 = X8(P,Q); Y0 = Y8(P,Q);
-             END IF
+        IF ( IJG ) THEN
+          IF ( TYPE_R4 ) THEN
+            X0 = X4(P,Q); Y0 = Y4(P,Q);
           ELSE
-             IF ( TYPE_R4 ) THEN
-                X0 = X4(Q,P); Y0 = Y4(Q,P);
-             ELSE
-                X0 = X8(Q,P); Y0 = Y8(Q,P);
-             END IF
+            X0 = X8(P,Q); Y0 = Y8(P,Q);
           END IF
-          IHEM = 1; IF (MAXVAL(YP(II0:IIN)).LT.ZERO) IHEM = -1;
-          LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
-          C0 = D90 - ABS(Y0)
-          CALL W3SPLX(LON0,LAT0,C0,XP(II0:IIN),YP(II0:IIN), &
-               UP(II0:IIN),VP(II0:IIN))
-          D1DP = DOT_PRODUCT(C(0:NI,II,NI),UP(II0:IIN))
-          D2DP = DOT_PRODUCT(C(0:NI,II,NI),VP(II0:IIN))
-          CALL SPDDP(LON0,C0,IHEM,X0,Y0,D1DP,D2DP,DXDP,DYDP)
+        ELSE
+          IF ( TYPE_R4 ) THEN
+            X0 = X4(Q,P); Y0 = Y4(Q,P);
+          ELSE
+            X0 = X8(Q,P); Y0 = Y8(Q,P);
+          END IF
+        END IF
+        IHEM = 1; IF (MAXVAL(YP(II0:IIN)).LT.ZERO) IHEM = -1;
+        LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
+        C0 = D90 - ABS(Y0)
+        CALL W3SPLX(LON0,LAT0,C0,XP(II0:IIN),YP(II0:IIN), &
+             UP(II0:IIN),VP(II0:IIN))
+        D1DP = DOT_PRODUCT(C(0:NI,II,NI),UP(II0:IIN))
+        D2DP = DOT_PRODUCT(C(0:NI,II,NI),VP(II0:IIN))
+        CALL SPDDP(LON0,C0,IHEM,X0,Y0,D1DP,D2DP,DXDP,DYDP)
 #else
-          DXDP = DOT_PRODUCT(C(0:NI,II,NI),XP(II0:IIN))
-          DYDP = DOT_PRODUCT(C(0:NI,II,NI),YP(II0:IIN))
+        DXDP = DOT_PRODUCT(C(0:NI,II,NI),XP(II0:IIN))
+        DYDP = DOT_PRODUCT(C(0:NI,II,NI),YP(II0:IIN))
 #endif
-       ELSE !.NOT.LLG
-          DXDP = DOT_PRODUCT(C(0:NI,II,NI),XP(II0:IIN))
-          DYDP = DOT_PRODUCT(C(0:NI,II,NI),YP(II0:IIN))
-       END IF !.NOT.LLG
-       IF ( DEBUG ) THEN
-          WRITE(FSTR,'(A,I0,A,I0,A)') &
-               '(/1A,12I8,5(/1A,2E16.8),/1A,', &
-               NI+1,'I16,3(/1A,',NI+1,'E16.8))'
-          WRITE(*,TRIM(FSTR)) &
-               'DXYDP -- PRANGE,QRANGE,P,Q,P0,Q0,NI,II,II0,IIN:',&
-               PRANGE,QRANGE,P,Q,P0,Q0,NI,II,II0,IIN,  &
-               'DXYDP --   X0,  Y0:',X0,Y0, &
-               'DXYDP -- LON0,LAT0:',LON0,LAT0, &
-               'DXYDP --   C0,IHEM:',C0,REAL(IHEM), &
-               'DXYDP -- D1DP,D2DP:',D1DP,D2DP, &
-               'DXYDP -- DXDP,DYDP:',DXDP,DYDP, &
-               'DXYDP --  K:', K(0:NI,II,NI), &
-               'DXYDP --  C:', C(0:NI,II,NI), &
-               'DXYDP -- XP:',XP(II0:IIN), &
-               'DXYDP -- YP:',YP(II0:IIN)
-       END IF
+      ELSE !.NOT.LLG
+        DXDP = DOT_PRODUCT(C(0:NI,II,NI),XP(II0:IIN))
+        DYDP = DOT_PRODUCT(C(0:NI,II,NI),YP(II0:IIN))
+      END IF !.NOT.LLG
+      IF ( DEBUG ) THEN
+        WRITE(FSTR,'(A,I0,A,I0,A)') &
+             '(/1A,12I8,5(/1A,2E16.8),/1A,', &
+             NI+1,'I16,3(/1A,',NI+1,'E16.8))'
+        WRITE(*,TRIM(FSTR)) &
+             'DXYDP -- PRANGE,QRANGE,P,Q,P0,Q0,NI,II,II0,IIN:',&
+             PRANGE,QRANGE,P,Q,P0,Q0,NI,II,II0,IIN,  &
+             'DXYDP --   X0,  Y0:',X0,Y0, &
+             'DXYDP -- LON0,LAT0:',LON0,LAT0, &
+             'DXYDP --   C0,IHEM:',C0,REAL(IHEM), &
+             'DXYDP -- D1DP,D2DP:',D1DP,D2DP, &
+             'DXYDP -- DXDP,DYDP:',DXDP,DYDP, &
+             'DXYDP --  K:', K(0:NI,II,NI), &
+             'DXYDP --  C:', C(0:NI,II,NI), &
+             'DXYDP -- XP:',XP(II0:IIN), &
+             'DXYDP -- YP:',YP(II0:IIN)
+      END IF
     ELSE
 #ifdef DXYDP_SINGLE_POINT_WIDE_CHANNEL_WARNING
-       WRITE(0,'(/1A,1A,4I6/)') 'DXYDP WARNING -- ', &
-            'single point wide channel, DXDP & DYDP set to zero:',P,Q,P0,Q0
+      WRITE(0,'(/1A,1A,4I6/)') 'DXYDP WARNING -- ', &
+           'single point wide channel, DXDP & DYDP set to zero:',P,Q,P0,Q0
 #endif
-       DXDP = ZERO
-       DYDP = ZERO
+      DXDP = ZERO
+      DYDP = ZERO
     END IF
 
   END SUBROUTINE DXYDP
@@ -8738,40 +8738,40 @@ CONTAINS
     TYPE_R4 = PRESENT(X4).AND.PRESENT(Y4)
     TYPE_R8 = PRESENT(X8).AND.PRESENT(Y8)
     IF ( .NOT.TYPE_R4.AND..NOT.TYPE_R8 ) THEN
-       WRITE(0,'(/1A,1A/)') 'DXYDQ ERROR -- ', &
-            'no input grid coordinates specified'
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A/)') 'DXYDQ ERROR -- ', &
+           'no input grid coordinates specified'
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
     NQ = QRANGE(2) - QRANGE(1) + 1
 
     IF ( IJG ) THEN
-       LBP = LB(1); LBQ = LB(2)
-       UBP = UB(1); UBQ = UB(2)
+      LBP = LB(1); LBQ = LB(2)
+      UBP = UB(1); UBQ = UB(2)
     ELSE
-       LBP = LB(2); LBQ = LB(1)
-       UBP = UB(2); UBQ = UB(1)
+      LBP = LB(2); LBQ = LB(1)
+      UBP = UB(2); UBQ = UB(1)
     END IF
 
     IF ( P.LT.LBP .OR. P.GT.UBP .OR. Q.LT.LBQ .OR. Q.GT.UBQ ) THEN
-       WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DXYDQ ERROR -- '// &
-            'input index coordinates outside input array bounds', &
-            'DXYDQ ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
-            'DXYDQ ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DXYDQ ERROR -- '// &
+           'input index coordinates outside input array bounds', &
+           'DXYDQ ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
+           'DXYDQ ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     P0 = P
@@ -8781,107 +8781,107 @@ CONTAINS
     IF ( MOD(ICLO,3).EQ.0 ) &
          Q0 = QRANGE(1) + MOD(NQ - 1 + MOD(Q0 - QRANGE(1) + 1, NQ), NQ)
     IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.QRANGE(2) ) THEN
-       P0 = PRANGE(2) + PRANGE(1) - P0
-       Q0 = 2*QRANGE(2) - Q0 + 1
+      P0 = PRANGE(2) + PRANGE(1) - P0
+      Q0 = 2*QRANGE(2) - Q0 + 1
     END IF
     IF ( P0.LT.PRANGE(1) .OR. P0.GT.PRANGE(2) .OR. &
          Q0.LT.QRANGE(1) .OR. Q0.GT.QRANGE(2) ) THEN
-       WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DXYDQ ERROR -- '// &
-            'shifted input index coordinates outside allowed range', &
-            'DXYDQ ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
-            'DXYDQ ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DXYDQ ERROR -- '// &
+           'shifted input index coordinates outside allowed range', &
+           'DXYDQ ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
+           'DXYDQ ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     DXDQ = ZERO
     DYDQ = ZERO
     COMP_M = PRESENT(MASK)
     IF ( COMP_M ) THEN
-       IF ( IJG ) THEN
-          IF ( MASK(P0,Q0) ) RETURN
-       ELSE
-          IF ( MASK(Q0,P0) ) RETURN
-       END IF
+      IF ( IJG ) THEN
+        IF ( MASK(P0,Q0) ) RETURN
+      ELSE
+        IF ( MASK(Q0,P0) ) RETURN
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Compute DX/DQ & DY/DQ
     !
     IF ( MOD(ICLO,3).EQ.0 ) THEN
-       J = N/2
+      J = N/2
     ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
-       IF (Q0-QRANGE(1).LT.N/2) THEN
-          J = Q0 - QRANGE(1)
-       ELSE
-          J = N/2
-       END IF
+      IF (Q0-QRANGE(1).LT.N/2) THEN
+        J = Q0 - QRANGE(1)
+      ELSE
+        J = N/2
+      END IF
     ELSE
-       IF (Q0-QRANGE(1).LT.N/2) THEN
-          J = Q0 - QRANGE(1)
-       ELSE IF (QRANGE(2)-Q0.LT.N/2) THEN
-          J = N + Q0 - QRANGE(2)
-       ELSE
-          J = N/2
-       END IF
+      IF (Q0-QRANGE(1).LT.N/2) THEN
+        J = Q0 - QRANGE(1)
+      ELSE IF (QRANGE(2)-Q0.LT.N/2) THEN
+        J = N + Q0 - QRANGE(2)
+      ELSE
+        J = N/2
+      END IF
     END IF
 
     KP(:) = P
     KQ(:) = Q + K(:,J,N)
     IF ( .NOT.QTILED ) THEN
-       IF ( MOD(ICLO,3).EQ.0 ) THEN
-          KQ = QRANGE(1) + MOD(NQ - 1 + MOD(KQ - QRANGE(1) + 1, NQ), NQ)
-       END IF
-       IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.PTILED ) THEN
-          WHERE ( KQ.GT.QRANGE(2) )
-             KP = PRANGE(2) + PRANGE(1) - KP
-             KQ = 2*QRANGE(2) - KQ + 1
-          END WHERE
-       END IF
+      IF ( MOD(ICLO,3).EQ.0 ) THEN
+        KQ = QRANGE(1) + MOD(NQ - 1 + MOD(KQ - QRANGE(1) + 1, NQ), NQ)
+      END IF
+      IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.PTILED ) THEN
+        WHERE ( KQ.GT.QRANGE(2) )
+          KP = PRANGE(2) + PRANGE(1) - KP
+          KQ = 2*QRANGE(2) - KQ + 1
+        END WHERE
+      END IF
     END IF
 
     IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
          MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-       WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DXYDQ ERROR -- '// &
-            'stencil index coordinates outside array bounds', &
-            'DXYDQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
-            PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-            'DXYDQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-            QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DXYDQ ERROR -- '// &
+           'stencil index coordinates outside array bounds', &
+           'DXYDQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+           PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+           'DXYDQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+           QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     DO L = 0, N
-       IF ( IJG ) THEN
-          IF ( COMP_M ) MQ(L) = MASK(KP(L),KQ(L))
-          IF ( TYPE_R4 ) THEN
-             XQ(L) = X4(KP(L),KQ(L))
-             YQ(L) = Y4(KP(L),KQ(L))
-          ELSE
-             XQ(L) = X8(KP(L),KQ(L))
-             YQ(L) = Y8(KP(L),KQ(L))
-          END IF
-       ELSE
-          IF ( COMP_M ) MQ(L) = MASK(KQ(L),KP(L))
-          IF ( TYPE_R4 ) THEN
-             XQ(L) = X4(KQ(L),KP(L))
-             YQ(L) = Y4(KQ(L),KP(L))
-          ELSE
-             XQ(L) = X8(KQ(L),KP(L))
-             YQ(L) = Y8(KQ(L),KP(L))
-          END IF
-       END IF
+      IF ( IJG ) THEN
+        IF ( COMP_M ) MQ(L) = MASK(KP(L),KQ(L))
+        IF ( TYPE_R4 ) THEN
+          XQ(L) = X4(KP(L),KQ(L))
+          YQ(L) = Y4(KP(L),KQ(L))
+        ELSE
+          XQ(L) = X8(KP(L),KQ(L))
+          YQ(L) = Y8(KP(L),KQ(L))
+        END IF
+      ELSE
+        IF ( COMP_M ) MQ(L) = MASK(KQ(L),KP(L))
+        IF ( TYPE_R4 ) THEN
+          XQ(L) = X4(KQ(L),KP(L))
+          YQ(L) = Y4(KQ(L),KP(L))
+        ELSE
+          XQ(L) = X8(KQ(L),KP(L))
+          YQ(L) = Y8(KQ(L),KP(L))
+        END IF
+      END IF
     END DO
 
     JJ = J
@@ -8889,94 +8889,94 @@ CONTAINS
     JJ0 = 0
     JJN = N
     IF ( COMP_M ) THEN
-       DO L = J-1, 0, -1
-          IF ( MQ(L) ) THEN
-             MQ(0:L) = .TRUE.
-             EXIT
-          END IF
-       END DO
-       DO L = J+1, N
-          IF ( MQ(L) ) THEN
-             MQ(L:N) = .TRUE.
-             EXIT
-          END IF
-       END DO
-       JJ = COUNT(.NOT.MQ(0:J)) - 1
-       NJ = COUNT(.NOT.MQ(0:N)) - 1
-       JJ0 = J - JJ
-       JJN = JJ0 + NJ
+      DO L = J-1, 0, -1
+        IF ( MQ(L) ) THEN
+          MQ(0:L) = .TRUE.
+          EXIT
+        END IF
+      END DO
+      DO L = J+1, N
+        IF ( MQ(L) ) THEN
+          MQ(L:N) = .TRUE.
+          EXIT
+        END IF
+      END DO
+      JJ = COUNT(.NOT.MQ(0:J)) - 1
+      NJ = COUNT(.NOT.MQ(0:N)) - 1
+      JJ0 = J - JJ
+      JJN = JJ0 + NJ
     END IF
 #ifdef DXYDQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
     IF ( NJ.LE.0 ) THEN
-       WRITE(0,'(/1A,1A,4I6/)') 'DXYDQ ERROR -- ', &
-            'single point wide channel not allowed',P,Q,P0,Q0
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,1A,4I6/)') 'DXYDQ ERROR -- ', &
+           'single point wide channel not allowed',P,Q,P0,Q0
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 #endif
 
     IF ( NJ.GT.0 ) THEN
-       IF ( LLG ) THEN
+      IF ( LLG ) THEN
 #define DXYDQ_USE_SPLX
 #ifdef DXYDQ_USE_SPLX
-          IF ( IJG ) THEN
-             IF ( TYPE_R4 ) THEN
-                X0 = X4(P,Q); Y0 = Y4(P,Q);
-             ELSE
-                X0 = X8(P,Q); Y0 = Y8(P,Q);
-             END IF
+        IF ( IJG ) THEN
+          IF ( TYPE_R4 ) THEN
+            X0 = X4(P,Q); Y0 = Y4(P,Q);
           ELSE
-             IF ( TYPE_R4 ) THEN
-                X0 = X4(Q,P); Y0 = Y4(Q,P);
-             ELSE
-                X0 = X8(Q,P); Y0 = Y8(Q,P);
-             END IF
+            X0 = X8(P,Q); Y0 = Y8(P,Q);
           END IF
-          IHEM = 1; IF (MAXVAL(YQ(JJ0:JJN)).LT.ZERO) IHEM = -1;
-          LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
-          C0 = D90 - ABS(Y0)
-          CALL W3SPLX(LON0,LAT0,C0,XQ(JJ0:JJN),YQ(JJ0:JJN), &
-               UQ(JJ0:JJN),VQ(JJ0:JJN))
-          D1DQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),UQ(JJ0:JJN))
-          D2DQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),VQ(JJ0:JJN))
-          CALL SPDDQ(LON0,C0,IHEM,X0,Y0,D1DQ,D2DQ,DXDQ,DYDQ)
+        ELSE
+          IF ( TYPE_R4 ) THEN
+            X0 = X4(Q,P); Y0 = Y4(Q,P);
+          ELSE
+            X0 = X8(Q,P); Y0 = Y8(Q,P);
+          END IF
+        END IF
+        IHEM = 1; IF (MAXVAL(YQ(JJ0:JJN)).LT.ZERO) IHEM = -1;
+        LON0 = ZERO; LAT0 = SIGN(D90,REAL(IHEM,8));
+        C0 = D90 - ABS(Y0)
+        CALL W3SPLX(LON0,LAT0,C0,XQ(JJ0:JJN),YQ(JJ0:JJN), &
+             UQ(JJ0:JJN),VQ(JJ0:JJN))
+        D1DQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),UQ(JJ0:JJN))
+        D2DQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),VQ(JJ0:JJN))
+        CALL SPDDQ(LON0,C0,IHEM,X0,Y0,D1DQ,D2DQ,DXDQ,DYDQ)
 #else
-          DXDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),XQ(JJ0:JJN))
-          DYDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),YQ(JJ0:JJN))
+        DXDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),XQ(JJ0:JJN))
+        DYDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),YQ(JJ0:JJN))
 #endif
-       ELSE !.NOT.LLG
-          DXDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),XQ(JJ0:JJN))
-          DYDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),YQ(JJ0:JJN))
-       END IF !.NOT.LLG
-       IF ( DEBUG ) THEN
-          WRITE(FSTR,'(A,I0,A,I0,A)') &
-               '(/1A,12I8,5(/1A,2E16.8),/1A,', &
-               NJ+1,'I16,3(/1A,',NJ+1,'E16.8))'
-          WRITE(*,TRIM(FSTR)) &
-               'DXYDQ -- PRANGE,QRANGE,P,Q,P0,Q0,NJ,JJ,JJ0,JJN:',&
-               PRANGE,QRANGE,P,Q,P0,Q0,NJ,JJ,JJ0,JJN,  &
-               'DXYDQ --   X0,  Y0:',X0,Y0, &
-               'DXYDQ -- LON0,LAT0:',LON0,LAT0, &
-               'DXYDQ --   C0,IHEM:',C0,REAL(IHEM), &
-               'DXYDQ -- D1DQ,D1DQ:',D1DQ,D1DQ, &
-               'DXYDQ -- DXDQ,DYDQ:',DXDQ,DYDQ, &
-               'DXYDQ --  K:', K(0:NJ,JJ,NJ), &
-               'DXYDQ --  C:', C(0:NJ,JJ,NJ), &
-               'DXYDQ -- XQ:',XQ(JJ0:JJN), &
-               'DXYDQ -- YQ:',YQ(JJ0:JJN)
-       END IF
+      ELSE !.NOT.LLG
+        DXDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),XQ(JJ0:JJN))
+        DYDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),YQ(JJ0:JJN))
+      END IF !.NOT.LLG
+      IF ( DEBUG ) THEN
+        WRITE(FSTR,'(A,I0,A,I0,A)') &
+             '(/1A,12I8,5(/1A,2E16.8),/1A,', &
+             NJ+1,'I16,3(/1A,',NJ+1,'E16.8))'
+        WRITE(*,TRIM(FSTR)) &
+             'DXYDQ -- PRANGE,QRANGE,P,Q,P0,Q0,NJ,JJ,JJ0,JJN:',&
+             PRANGE,QRANGE,P,Q,P0,Q0,NJ,JJ,JJ0,JJN,  &
+             'DXYDQ --   X0,  Y0:',X0,Y0, &
+             'DXYDQ -- LON0,LAT0:',LON0,LAT0, &
+             'DXYDQ --   C0,IHEM:',C0,REAL(IHEM), &
+             'DXYDQ -- D1DQ,D1DQ:',D1DQ,D1DQ, &
+             'DXYDQ -- DXDQ,DYDQ:',DXDQ,DYDQ, &
+             'DXYDQ --  K:', K(0:NJ,JJ,NJ), &
+             'DXYDQ --  C:', C(0:NJ,JJ,NJ), &
+             'DXYDQ -- XQ:',XQ(JJ0:JJN), &
+             'DXYDQ -- YQ:',YQ(JJ0:JJN)
+      END IF
     ELSE
 #ifdef DXYDQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
-       WRITE(0,'(/1A,1A,4I6/)') 'DXYDQ WARNING -- ', &
-            'single point wide channel, DXDQ & DYDQ set to zero:',P,Q,P0,Q0
+      WRITE(0,'(/1A,1A,4I6/)') 'DXYDQ WARNING -- ', &
+           'single point wide channel, DXDQ & DYDQ set to zero:',P,Q,P0,Q0
 #endif
-       DXDQ = ZERO
-       DYDQ = ZERO
+      DXDQ = ZERO
+      DYDQ = ZERO
     END IF
 
   END SUBROUTINE DXYDQ
@@ -9170,36 +9170,36 @@ CONTAINS
          .NOT.COMP_CP.AND..NOT.COMP_CQ ) RETURN
 
     IF ( COMP_F ) THEN
-       TYPE_R4 = PRESENT(F4)
+      TYPE_R4 = PRESENT(F4)
     ELSE IF ( COMP_G ) THEN
-       TYPE_R4 = PRESENT(G4)
+      TYPE_R4 = PRESENT(G4)
     ELSE IF ( COMP_H ) THEN
-       TYPE_R4 = PRESENT(H4)
+      TYPE_R4 = PRESENT(H4)
     END IF
 
     NP = PRANGE(2) - PRANGE(1) + 1
     NQ = QRANGE(2) - QRANGE(1) + 1
 
     IF ( IJG ) THEN
-       LBP = LB(1); LBQ = LB(2)
-       UBP = UB(1); UBQ = UB(2)
+      LBP = LB(1); LBQ = LB(2)
+      UBP = UB(1); UBQ = UB(2)
     ELSE
-       LBP = LB(2); LBQ = LB(1)
-       UBP = UB(2); UBQ = UB(1)
+      LBP = LB(2); LBQ = LB(1)
+      UBP = UB(2); UBQ = UB(1)
     END IF
 
     IF ( P.LT.LBP .OR. P.GT.UBP .OR. Q.LT.LBQ .OR. Q.GT.UBQ ) THEN
-       WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DFDPQ ERROR -- '// &
-            'input index coordinates outside input array bounds', &
-            'DFDPQ ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
-            'DFDPQ ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,1L2,5I6,/1A,1L2,5I6/)') 'DFDPQ ERROR -- '// &
+           'input index coordinates outside input array bounds', &
+           'DFDPQ ERROR -- PTILED,PRANGE,P,LBP,UBP:',PTILED,PRANGE,P,LBP,UBP, &
+           'DFDPQ ERROR -- QTILED,QRANGE,Q,LBQ,UBQ:',QTILED,QRANGE,Q,LBQ,UBQ
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     P0 = P
@@ -9209,31 +9209,31 @@ CONTAINS
     IF ( MOD(ICLO,3).EQ.0 ) &
          Q0 = QRANGE(1) + MOD(NQ - 1 + MOD(Q0 - QRANGE(1) + 1, NQ), NQ)
     IF ( ICLO.EQ.ICLO_TRPL .AND. Q0.GT.QRANGE(2) ) THEN
-       P0 = PRANGE(2) + PRANGE(1) - P0
-       Q0 = 2*QRANGE(2) - Q0 + 1
+      P0 = PRANGE(2) + PRANGE(1) - P0
+      Q0 = 2*QRANGE(2) - Q0 + 1
     END IF
     IF ( P0.LT.PRANGE(1) .OR. P0.GT.PRANGE(2) .OR. &
          Q0.LT.QRANGE(1) .OR. Q0.GT.QRANGE(2) ) THEN
-       WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DFDPQ ERROR -- '// &
-            'shifted input index coordinates outside allowed range', &
-            'DFDPQ ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
-            'DFDPQ ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
-       ISTAT = 1
-       IF ( PRESENT(RC) ) THEN
-          RC = ISTAT
-          RETURN
-       ELSE
-          CALL EXTCDE (ISTAT)
-       END IF
+      WRITE(0,'(/1A,/1A,4I6,/1A,4I6/)') 'DFDPQ ERROR -- '// &
+           'shifted input index coordinates outside allowed range', &
+           'DFDPQ ERROR -- PRANGE,P,P0:',PRANGE,P,P0, &
+           'DFDPQ ERROR -- QRANGE,Q,Q0:',QRANGE,Q,Q0
+      ISTAT = 1
+      IF ( PRESENT(RC) ) THEN
+        RC = ISTAT
+        RETURN
+      ELSE
+        CALL EXTCDE (ISTAT)
+      END IF
     END IF
 
     COMP_M = PRESENT(MASK)
     IF ( COMP_M ) THEN
-       IF ( IJG ) THEN
-          IF ( MASK(P0,Q0) ) RETURN
-       ELSE
-          IF ( MASK(Q0,P0) ) RETURN
-       END IF
+      IF ( IJG ) THEN
+        IF ( MASK(P0,Q0) ) RETURN
+      ELSE
+        IF ( MASK(Q0,P0) ) RETURN
+      END IF
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -9241,147 +9241,147 @@ CONTAINS
     !
     IF ( COMP_F.OR.COMP_G.OR.COMP_H.OR.COMP_CP ) THEN
 
-       IF ( MOD(ICLO,2).EQ.0 ) THEN
+      IF ( MOD(ICLO,2).EQ.0 ) THEN
+        I = N/2
+      ELSE
+        IF (P0-PRANGE(1).LT.N/2) THEN
+          I = P0 - PRANGE(1)
+        ELSE IF (PRANGE(2)-P0.LT.N/2) THEN
+          I = N + P0 - PRANGE(2)
+        ELSE
           I = N/2
-       ELSE
-          IF (P0-PRANGE(1).LT.N/2) THEN
-             I = P0 - PRANGE(1)
-          ELSE IF (PRANGE(2)-P0.LT.N/2) THEN
-             I = N + P0 - PRANGE(2)
+        END IF
+      END IF
+
+      KP(:) = P + K(:,I,N)
+      KQ(:) = Q
+      IF ( .NOT.PTILED ) THEN
+        IF ( MOD(ICLO,2).EQ.0 ) THEN
+          KP = PRANGE(1) + MOD(NP - 1 + MOD(KP - PRANGE(1) + 1, NP), NP)
+        END IF
+      END IF
+
+      IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
+           MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
+        WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DFDPQ ERROR -- '// &
+             'stencil index coordinates outside array bounds', &
+             'DFDPQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+             PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+             'DFDPQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+             QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
+
+      IF ( COMP_CP ) THEN
+        IP(:) = P0 + K(:,I,N)
+        JP(:) = Q0
+        IF ( MOD(ICLO,2).EQ.0 ) THEN
+          IP = PRANGE(1) + MOD(NP - 1 + MOD(IP - PRANGE(1) + 1, NP), NP)
+        END IF
+      END IF
+
+      DO L = 0, N
+        IF ( IJG ) THEN
+          IF ( COMP_M ) MP(L) = MASK(KP(L),KQ(L))
+          IF ( TYPE_R4 ) THEN
+            IF ( COMP_F ) FP(L) = F4(KP(L),KQ(L))
+            IF ( COMP_G ) GP(L) = G4(KP(L),KQ(L))
+            IF ( COMP_H ) HP(L) = H4(KP(L),KQ(L))
           ELSE
-             I = N/2
+            IF ( COMP_F ) FP(L) = F8(KP(L),KQ(L))
+            IF ( COMP_G ) GP(L) = G8(KP(L),KQ(L))
+            IF ( COMP_H ) HP(L) = H8(KP(L),KQ(L))
           END IF
-       END IF
-
-       KP(:) = P + K(:,I,N)
-       KQ(:) = Q
-       IF ( .NOT.PTILED ) THEN
-          IF ( MOD(ICLO,2).EQ.0 ) THEN
-             KP = PRANGE(1) + MOD(NP - 1 + MOD(KP - PRANGE(1) + 1, NP), NP)
-          END IF
-       END IF
-
-       IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
-            MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DFDPQ ERROR -- '// &
-               'stencil index coordinates outside array bounds', &
-               'DFDPQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
-               PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-               'DFDPQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-               QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
+        ELSE
+          IF ( COMP_M ) MP(L) = MASK(KQ(L),KP(L))
+          IF ( TYPE_R4 ) THEN
+            IF ( COMP_F ) FP(L) = F4(KQ(L),KP(L))
+            IF ( COMP_G ) GP(L) = G4(KQ(L),KP(L))
+            IF ( COMP_H ) HP(L) = H4(KQ(L),KP(L))
           ELSE
-             CALL EXTCDE (ISTAT)
+            IF ( COMP_F ) FP(L) = F8(KQ(L),KP(L))
+            IF ( COMP_G ) GP(L) = G8(KQ(L),KP(L))
+            IF ( COMP_H ) HP(L) = H8(KQ(L),KP(L))
           END IF
-       END IF
+        END IF
+      END DO
 
-       IF ( COMP_CP ) THEN
-          IP(:) = P0 + K(:,I,N)
-          JP(:) = Q0
-          IF ( MOD(ICLO,2).EQ.0 ) THEN
-             IP = PRANGE(1) + MOD(NP - 1 + MOD(IP - PRANGE(1) + 1, NP), NP)
+      II = I
+      NI = N
+      II0 = 0
+      IIN = N
+      IF ( COMP_M ) THEN
+        DO L = I-1, 0, -1
+          IF ( MP(L) ) THEN
+            MP(0:L) = .TRUE.
+            EXIT
           END IF
-       END IF
-
-       DO L = 0, N
-          IF ( IJG ) THEN
-             IF ( COMP_M ) MP(L) = MASK(KP(L),KQ(L))
-             IF ( TYPE_R4 ) THEN
-                IF ( COMP_F ) FP(L) = F4(KP(L),KQ(L))
-                IF ( COMP_G ) GP(L) = G4(KP(L),KQ(L))
-                IF ( COMP_H ) HP(L) = H4(KP(L),KQ(L))
-             ELSE
-                IF ( COMP_F ) FP(L) = F8(KP(L),KQ(L))
-                IF ( COMP_G ) GP(L) = G8(KP(L),KQ(L))
-                IF ( COMP_H ) HP(L) = H8(KP(L),KQ(L))
-             END IF
-          ELSE
-             IF ( COMP_M ) MP(L) = MASK(KQ(L),KP(L))
-             IF ( TYPE_R4 ) THEN
-                IF ( COMP_F ) FP(L) = F4(KQ(L),KP(L))
-                IF ( COMP_G ) GP(L) = G4(KQ(L),KP(L))
-                IF ( COMP_H ) HP(L) = H4(KQ(L),KP(L))
-             ELSE
-                IF ( COMP_F ) FP(L) = F8(KQ(L),KP(L))
-                IF ( COMP_G ) GP(L) = G8(KQ(L),KP(L))
-                IF ( COMP_H ) HP(L) = H8(KQ(L),KP(L))
-             END IF
+        END DO
+        DO L = I+1, N
+          IF ( MP(L) ) THEN
+            MP(L:N) = .TRUE.
+            EXIT
           END IF
-       END DO
-
-       II = I
-       NI = N
-       II0 = 0
-       IIN = N
-       IF ( COMP_M ) THEN
-          DO L = I-1, 0, -1
-             IF ( MP(L) ) THEN
-                MP(0:L) = .TRUE.
-                EXIT
-             END IF
-          END DO
-          DO L = I+1, N
-             IF ( MP(L) ) THEN
-                MP(L:N) = .TRUE.
-                EXIT
-             END IF
-          END DO
-          II = COUNT(.NOT.MP(0:I)) - 1
-          NI = COUNT(.NOT.MP(0:N)) - 1
-          II0 = I - II
-          IIN = II0 + NI
-       END IF
+        END DO
+        II = COUNT(.NOT.MP(0:I)) - 1
+        NI = COUNT(.NOT.MP(0:N)) - 1
+        II0 = I - II
+        IIN = II0 + NI
+      END IF
 #ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
-       IF ( NI.LE.0 ) THEN
-          WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ ERROR -- ', &
-               'DFDP -- single point wide channel not allowed',P,Q,P0,Q0
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
-          ELSE
-             CALL EXTCDE (ISTAT)
-          END IF
-       END IF
+      IF ( NI.LE.0 ) THEN
+        WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ ERROR -- ', &
+             'DFDP -- single point wide channel not allowed',P,Q,P0,Q0
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
 #endif
 
-       IF ( NI.GT.0 ) THEN
-          IF ( COMP_F ) DFDP = DOT_PRODUCT(C(0:NI,II,NI),FP(II0:IIN))
-          IF ( COMP_G ) DGDP = DOT_PRODUCT(C(0:NI,II,NI),GP(II0:IIN))
-          IF ( COMP_H ) DHDP = DOT_PRODUCT(C(0:NI,II,NI),HP(II0:IIN))
-          IF ( COMP_CP ) THEN
-             IF ( ASSOCIATED(ISDP) ) DEALLOCATE(ISDP)
-             IF ( ASSOCIATED(JSDP) ) DEALLOCATE(JSDP)
-             IF ( ASSOCIATED(CSDP) ) DEALLOCATE(CSDP)
-             NSDP = NI+1
-             ALLOCATE(ISDP(NSDP),JSDP(NSDP),CSDP(NSDP))
-             ISDP(1:NSDP) = IP(II0:IIN)
-             JSDP(1:NSDP) = JP(II0:IIN)
-             CSDP(1:NSDP) = C(0:NI,II,NI)
-          END IF
-          IF ( DEBUG .AND. COMP_F ) THEN
-             WRITE(FSTR,'(A,I0,A,I0,A,I0,A)') '(/1A,8I6,E16.8,/1A,',&
-                  NI+1,'I16,/1A,',NI+1,'E16.8,/1A,',NI+1,'E16.8)'
-             WRITE(*,TRIM(FSTR)) &
-                  'DFDPQ -- DFDP -- P,Q,P0,Q0,NI,II,II0,IIN,DFDP:',&
-                  P,Q,P0,Q0,NI,II,II0,IIN,DFDP, &
-                  'DFDPQ -- DFDP --  K:', K(0:NI,II,NI), &
-                  'DFDPQ -- DFDP --  C:', C(0:NI,II,NI), &
-                  'DFDPQ -- DFDP -- FP:', FP(II0:IIN)
-          END IF
-       ELSE
+      IF ( NI.GT.0 ) THEN
+        IF ( COMP_F ) DFDP = DOT_PRODUCT(C(0:NI,II,NI),FP(II0:IIN))
+        IF ( COMP_G ) DGDP = DOT_PRODUCT(C(0:NI,II,NI),GP(II0:IIN))
+        IF ( COMP_H ) DHDP = DOT_PRODUCT(C(0:NI,II,NI),HP(II0:IIN))
+        IF ( COMP_CP ) THEN
+          IF ( ASSOCIATED(ISDP) ) DEALLOCATE(ISDP)
+          IF ( ASSOCIATED(JSDP) ) DEALLOCATE(JSDP)
+          IF ( ASSOCIATED(CSDP) ) DEALLOCATE(CSDP)
+          NSDP = NI+1
+          ALLOCATE(ISDP(NSDP),JSDP(NSDP),CSDP(NSDP))
+          ISDP(1:NSDP) = IP(II0:IIN)
+          JSDP(1:NSDP) = JP(II0:IIN)
+          CSDP(1:NSDP) = C(0:NI,II,NI)
+        END IF
+        IF ( DEBUG .AND. COMP_F ) THEN
+          WRITE(FSTR,'(A,I0,A,I0,A,I0,A)') '(/1A,8I6,E16.8,/1A,',&
+               NI+1,'I16,/1A,',NI+1,'E16.8,/1A,',NI+1,'E16.8)'
+          WRITE(*,TRIM(FSTR)) &
+               'DFDPQ -- DFDP -- P,Q,P0,Q0,NI,II,II0,IIN,DFDP:',&
+               P,Q,P0,Q0,NI,II,II0,IIN,DFDP, &
+               'DFDPQ -- DFDP --  K:', K(0:NI,II,NI), &
+               'DFDPQ -- DFDP --  C:', C(0:NI,II,NI), &
+               'DFDPQ -- DFDP -- FP:', FP(II0:IIN)
+        END IF
+      ELSE
 #ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
-          WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ WARNING -- ', &
-               'single point wide channel, DFDP set to zero:',P,Q,P0,Q0
+        WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ WARNING -- ', &
+             'single point wide channel, DFDP set to zero:',P,Q,P0,Q0
 #endif
-          IF ( COMP_F ) DFDP = ZERO
-          IF ( COMP_G ) DGDP = ZERO
-          IF ( COMP_H ) DHDP = ZERO
-          IF ( COMP_CP ) NSDP = 0
-       END IF
+        IF ( COMP_F ) DFDP = ZERO
+        IF ( COMP_G ) DGDP = ZERO
+        IF ( COMP_H ) DHDP = ZERO
+        IF ( COMP_CP ) NSDP = 0
+      END IF
 
     END IF
     !
@@ -9390,165 +9390,165 @@ CONTAINS
     !
     IF ( COMP_F.OR.COMP_G.OR.COMP_H.OR.COMP_CQ ) THEN
 
-       IF ( MOD(ICLO,3).EQ.0 ) THEN
+      IF ( MOD(ICLO,3).EQ.0 ) THEN
+        J = N/2
+      ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
+        IF (Q0-QRANGE(1).LT.N/2) THEN
+          J = Q0 - QRANGE(1)
+        ELSE
           J = N/2
-       ELSE IF ( ICLO.EQ.ICLO_TRPL ) THEN
-          IF (Q0-QRANGE(1).LT.N/2) THEN
-             J = Q0 - QRANGE(1)
+        END IF
+      ELSE
+        IF (Q0-QRANGE(1).LT.N/2) THEN
+          J = Q0 - QRANGE(1)
+        ELSE IF (QRANGE(2)-Q0.LT.N/2) THEN
+          J = N + Q0 - QRANGE(2)
+        ELSE
+          J = N/2
+        END IF
+      END IF
+
+      KP(:) = P
+      KQ(:) = Q + K(:,J,N)
+      IF ( .NOT.QTILED ) THEN
+        IF ( MOD(ICLO,3).EQ.0 ) THEN
+          KQ = QRANGE(1) + MOD(NQ - 1 + MOD(KQ - QRANGE(1) + 1, NQ), NQ)
+        END IF
+        IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.PTILED ) THEN
+          WHERE ( KQ.GT.QRANGE(2) )
+            KP = PRANGE(2) + PRANGE(1) - KP
+            KQ = 2*QRANGE(2) - KQ + 1
+          END WHERE
+        END IF
+      END IF
+
+      IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
+           MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
+        WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DFDPQ ERROR -- '// &
+             'stencil index coordinates outside array bounds', &
+             'DFDPQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
+             PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
+             'DFDPQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
+             QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
+
+      IF ( COMP_CQ ) THEN
+        IQ(:) = P0
+        JQ(:) = Q0 + K(:,J,N)
+        IF ( MOD(ICLO,3).EQ.0 ) THEN
+          JQ = QRANGE(1) + MOD(NQ - 1 + MOD(JQ - QRANGE(1) + 1, NQ), NQ)
+        END IF
+        IF ( ICLO.EQ.ICLO_TRPL ) THEN
+          WHERE ( JQ.GT.QRANGE(2) )
+            IQ = PRANGE(2) + PRANGE(1) - IQ
+            JQ = 2*QRANGE(2) - JQ + 1
+          END WHERE
+        END IF
+      END IF
+
+      DO L = 0, N
+        IF ( IJG ) THEN
+          IF ( COMP_M ) MQ(L) = MASK(KP(L),KQ(L))
+          IF ( TYPE_R4 ) THEN
+            IF ( COMP_F ) FQ(L) = F4(KP(L),KQ(L))
+            IF ( COMP_G ) GQ(L) = G4(KP(L),KQ(L))
+            IF ( COMP_H ) HQ(L) = H4(KP(L),KQ(L))
           ELSE
-             J = N/2
+            IF ( COMP_F ) FQ(L) = F8(KP(L),KQ(L))
+            IF ( COMP_G ) GQ(L) = G8(KP(L),KQ(L))
+            IF ( COMP_H ) HQ(L) = H8(KP(L),KQ(L))
           END IF
-       ELSE
-          IF (Q0-QRANGE(1).LT.N/2) THEN
-             J = Q0 - QRANGE(1)
-          ELSE IF (QRANGE(2)-Q0.LT.N/2) THEN
-             J = N + Q0 - QRANGE(2)
+        ELSE
+          IF ( COMP_M ) MQ(L) = MASK(KQ(L),KP(L))
+          IF ( TYPE_R4 ) THEN
+            IF ( COMP_F ) FQ(L) = F4(KQ(L),KP(L))
+            IF ( COMP_G ) GQ(L) = G4(KQ(L),KP(L))
+            IF ( COMP_H ) HQ(L) = H4(KQ(L),KP(L))
           ELSE
-             J = N/2
+            IF ( COMP_F ) FQ(L) = F8(KQ(L),KP(L))
+            IF ( COMP_G ) GQ(L) = G8(KQ(L),KP(L))
+            IF ( COMP_H ) HQ(L) = H8(KQ(L),KP(L))
           END IF
-       END IF
+        END IF
+      END DO
 
-       KP(:) = P
-       KQ(:) = Q + K(:,J,N)
-       IF ( .NOT.QTILED ) THEN
-          IF ( MOD(ICLO,3).EQ.0 ) THEN
-             KQ = QRANGE(1) + MOD(NQ - 1 + MOD(KQ - QRANGE(1) + 1, NQ), NQ)
+      JJ = J
+      NJ = N
+      JJ0 = 0
+      JJN = N
+      IF ( COMP_M ) THEN
+        DO L = J-1, 0, -1
+          IF ( MQ(L) ) THEN
+            MQ(0:L) = .TRUE.
+            EXIT
           END IF
-          IF ( ICLO.EQ.ICLO_TRPL .AND. .NOT.PTILED ) THEN
-             WHERE ( KQ.GT.QRANGE(2) )
-                KP = PRANGE(2) + PRANGE(1) - KP
-                KQ = 2*QRANGE(2) - KQ + 1
-             END WHERE
+        END DO
+        DO L = J+1, N
+          IF ( MQ(L) ) THEN
+            MQ(L:N) = .TRUE.
+            EXIT
           END IF
-       END IF
-
-       IF ( MINVAL(KP).LT.LBP .OR. MAXVAL(KP).GT.UBP .OR. &
-            MINVAL(KQ).LT.LBQ .OR. MAXVAL(KQ).GT.UBQ ) THEN
-          WRITE(0,'(/1A,/1A,1L2,8I6,/1A,1L2,8I6/)') 'DFDPQ ERROR -- '// &
-               'stencil index coordinates outside array bounds', &
-               'DFDPQ ERROR -- PTILED,PRANGE,P,P0,LBP,UBP,PMIN,PMAX:', &
-               PTILED,PRANGE,P,P0,LBP,UBP,MINVAL(KP),MAXVAL(KP), &
-               'DFDPQ ERROR -- QTILED,QRANGE,Q,Q0,LBQ,UBQ,QMIN,QMAX:', &
-               QTILED,QRANGE,Q,Q0,LBQ,UBQ,MINVAL(KQ),MAXVAL(KQ)
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
-          ELSE
-             CALL EXTCDE (ISTAT)
-          END IF
-       END IF
-
-       IF ( COMP_CQ ) THEN
-          IQ(:) = P0
-          JQ(:) = Q0 + K(:,J,N)
-          IF ( MOD(ICLO,3).EQ.0 ) THEN
-             JQ = QRANGE(1) + MOD(NQ - 1 + MOD(JQ - QRANGE(1) + 1, NQ), NQ)
-          END IF
-          IF ( ICLO.EQ.ICLO_TRPL ) THEN
-             WHERE ( JQ.GT.QRANGE(2) )
-                IQ = PRANGE(2) + PRANGE(1) - IQ
-                JQ = 2*QRANGE(2) - JQ + 1
-             END WHERE
-          END IF
-       END IF
-
-       DO L = 0, N
-          IF ( IJG ) THEN
-             IF ( COMP_M ) MQ(L) = MASK(KP(L),KQ(L))
-             IF ( TYPE_R4 ) THEN
-                IF ( COMP_F ) FQ(L) = F4(KP(L),KQ(L))
-                IF ( COMP_G ) GQ(L) = G4(KP(L),KQ(L))
-                IF ( COMP_H ) HQ(L) = H4(KP(L),KQ(L))
-             ELSE
-                IF ( COMP_F ) FQ(L) = F8(KP(L),KQ(L))
-                IF ( COMP_G ) GQ(L) = G8(KP(L),KQ(L))
-                IF ( COMP_H ) HQ(L) = H8(KP(L),KQ(L))
-             END IF
-          ELSE
-             IF ( COMP_M ) MQ(L) = MASK(KQ(L),KP(L))
-             IF ( TYPE_R4 ) THEN
-                IF ( COMP_F ) FQ(L) = F4(KQ(L),KP(L))
-                IF ( COMP_G ) GQ(L) = G4(KQ(L),KP(L))
-                IF ( COMP_H ) HQ(L) = H4(KQ(L),KP(L))
-             ELSE
-                IF ( COMP_F ) FQ(L) = F8(KQ(L),KP(L))
-                IF ( COMP_G ) GQ(L) = G8(KQ(L),KP(L))
-                IF ( COMP_H ) HQ(L) = H8(KQ(L),KP(L))
-             END IF
-          END IF
-       END DO
-
-       JJ = J
-       NJ = N
-       JJ0 = 0
-       JJN = N
-       IF ( COMP_M ) THEN
-          DO L = J-1, 0, -1
-             IF ( MQ(L) ) THEN
-                MQ(0:L) = .TRUE.
-                EXIT
-             END IF
-          END DO
-          DO L = J+1, N
-             IF ( MQ(L) ) THEN
-                MQ(L:N) = .TRUE.
-                EXIT
-             END IF
-          END DO
-          JJ = COUNT(.NOT.MQ(0:J)) - 1
-          NJ = COUNT(.NOT.MQ(0:N)) - 1
-          JJ0 = J - JJ
-          JJN = JJ0 + NJ
-       END IF
+        END DO
+        JJ = COUNT(.NOT.MQ(0:J)) - 1
+        NJ = COUNT(.NOT.MQ(0:N)) - 1
+        JJ0 = J - JJ
+        JJN = JJ0 + NJ
+      END IF
 #ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_ERROR
-       IF ( NJ.LE.0 ) THEN
-          WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ ERROR -- ', &
-               'DFDQ -- single point wide channel not allowed',P,Q,P0,Q0
-          ISTAT = 1
-          IF ( PRESENT(RC) ) THEN
-             RC = ISTAT
-             RETURN
-          ELSE
-             CALL EXTCDE (ISTAT)
-          END IF
-       END IF
+      IF ( NJ.LE.0 ) THEN
+        WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ ERROR -- ', &
+             'DFDQ -- single point wide channel not allowed',P,Q,P0,Q0
+        ISTAT = 1
+        IF ( PRESENT(RC) ) THEN
+          RC = ISTAT
+          RETURN
+        ELSE
+          CALL EXTCDE (ISTAT)
+        END IF
+      END IF
 #endif
 
-       IF ( NJ.GT.0 ) THEN
-          IF ( COMP_F ) DFDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),FQ(JJ0:JJN))
-          IF ( COMP_G ) DGDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),GQ(JJ0:JJN))
-          IF ( COMP_H ) DHDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),HQ(JJ0:JJN))
-          IF ( COMP_CQ ) THEN
-             IF ( ASSOCIATED(ISDQ) ) DEALLOCATE(ISDQ)
-             IF ( ASSOCIATED(JSDQ) ) DEALLOCATE(JSDQ)
-             IF ( ASSOCIATED(CSDQ) ) DEALLOCATE(CSDQ)
-             NSDQ = NJ+1
-             ALLOCATE(ISDQ(NSDQ),JSDQ(NSDQ),CSDQ(NSDQ))
-             ISDQ(1:NSDQ) = IQ(JJ0:JJN)
-             JSDQ(1:NSDQ) = JQ(JJ0:JJN)
-             CSDQ(1:NSDQ) = C(0:NJ,JJ,NJ)
-          END IF
-          IF ( DEBUG .AND. COMP_F ) THEN
-             WRITE(FSTR,'(A,I0,A,I0,A,I0,A)') '(/1A,8I6,E16.8,/1A,',&
-                  NJ+1,'I16,/1A,',NJ+1,'E16.8,/1A,',NJ+1,'E16.8)'
-             WRITE(*,TRIM(FSTR)) &
-                  'DFDPQ -- DFDQ -- P,Q,P0,Q0,NJ,JJ,JJ0,JJN,DFDQ:',&
-                  P,Q,P0,Q0,NJ,JJ,JJ0,JJN,DFDQ, &
-                  'DFDPQ -- DFDQ --  K:', K(0:NJ,JJ,NJ), &
-                  'DFDPQ -- DFDQ --  C:', C(0:NJ,JJ,NJ), &
-                  'DFDPQ -- DFDQ -- FQ:', FQ(JJ0:JJN)
-          END IF
-       ELSE
+      IF ( NJ.GT.0 ) THEN
+        IF ( COMP_F ) DFDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),FQ(JJ0:JJN))
+        IF ( COMP_G ) DGDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),GQ(JJ0:JJN))
+        IF ( COMP_H ) DHDQ = DOT_PRODUCT(C(0:NJ,JJ,NJ),HQ(JJ0:JJN))
+        IF ( COMP_CQ ) THEN
+          IF ( ASSOCIATED(ISDQ) ) DEALLOCATE(ISDQ)
+          IF ( ASSOCIATED(JSDQ) ) DEALLOCATE(JSDQ)
+          IF ( ASSOCIATED(CSDQ) ) DEALLOCATE(CSDQ)
+          NSDQ = NJ+1
+          ALLOCATE(ISDQ(NSDQ),JSDQ(NSDQ),CSDQ(NSDQ))
+          ISDQ(1:NSDQ) = IQ(JJ0:JJN)
+          JSDQ(1:NSDQ) = JQ(JJ0:JJN)
+          CSDQ(1:NSDQ) = C(0:NJ,JJ,NJ)
+        END IF
+        IF ( DEBUG .AND. COMP_F ) THEN
+          WRITE(FSTR,'(A,I0,A,I0,A,I0,A)') '(/1A,8I6,E16.8,/1A,',&
+               NJ+1,'I16,/1A,',NJ+1,'E16.8,/1A,',NJ+1,'E16.8)'
+          WRITE(*,TRIM(FSTR)) &
+               'DFDPQ -- DFDQ -- P,Q,P0,Q0,NJ,JJ,JJ0,JJN,DFDQ:',&
+               P,Q,P0,Q0,NJ,JJ,JJ0,JJN,DFDQ, &
+               'DFDPQ -- DFDQ --  K:', K(0:NJ,JJ,NJ), &
+               'DFDPQ -- DFDQ --  C:', C(0:NJ,JJ,NJ), &
+               'DFDPQ -- DFDQ -- FQ:', FQ(JJ0:JJN)
+        END IF
+      ELSE
 #ifdef DFDPQ_SINGLE_POINT_WIDE_CHANNEL_WARNING
-          WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ WARNING -- ', &
-               'single point wide channel, DFDQ set to zero:',P,Q,P0,Q0
+        WRITE(0,'(/1A,1A,4I6/)') 'DFDPQ WARNING -- ', &
+             'single point wide channel, DFDQ set to zero:',P,Q,P0,Q0
 #endif
-          IF ( COMP_F ) DFDQ = ZERO
-          IF ( COMP_G ) DGDQ = ZERO
-          IF ( COMP_H ) DHDQ = ZERO
-          IF ( COMP_CQ ) NSDQ = 0
-       END IF
+        IF ( COMP_F ) DFDQ = ZERO
+        IF ( COMP_G ) DGDQ = ZERO
+        IF ( COMP_H ) DHDQ = ZERO
+        IF ( COMP_CQ ) NSDQ = 0
+      END IF
 
     END IF
 
@@ -9565,14 +9565,14 @@ CONTAINS
     REAL(8) :: A(0:N), B(0:N,0:M)
 
     DO I = 0, N
-       DO J = 0, N
-          K(J,I) = J-I
-          A(J) = K(J,I)
-       END DO
-       CALL W3FDWT( N, N, M, ZERO, A, B )
-       C(0:N,I) = B(0:N,M)
-       !WRITE(0,'(A,I1,2X,11I16)') 'I=',I,K(0:N,I)
-       !WRITE(0,'(5X,11E16.8)') C(0:N,I)
+      DO J = 0, N
+        K(J,I) = J-I
+        A(J) = K(J,I)
+      END DO
+      CALL W3FDWT( N, N, M, ZERO, A, B )
+      C(0:N,I) = B(0:N,M)
+      !WRITE(0,'(A,I1,2X,11I16)') 'I=',I,K(0:N,I)
+      !WRITE(0,'(5X,11E16.8)') C(0:N,I)
     END DO
 
   END SUBROUTINE GET_FDW2
@@ -9588,17 +9588,17 @@ CONTAINS
     REAL(8) :: A(0:N), B(0:N,0:M)
 
     DO L = 1, N
-       !WRITE(0,'(A,I1,2X,11A)') 'L=',L,('----------------',I=0,L)
-       DO I = 0, L
-          DO J = 0, L
-             K(J,I,L) = J-I
-             A(J) = K(J,I,L)
-          END DO
-          CALL W3FDWT( L, N, M, ZERO, A, B )
-          C(0:L,I,L) = B(0:L,M)
-          !WRITE(0,'(A,I1,2X,11I16)') 'I=',I,K(0:L,I,L)
-          !WRITE(0,'(5X,11E16.8)') C(0:L,I,L)
-       END DO
+      !WRITE(0,'(A,I1,2X,11A)') 'L=',L,('----------------',I=0,L)
+      DO I = 0, L
+        DO J = 0, L
+          K(J,I,L) = J-I
+          A(J) = K(J,I,L)
+        END DO
+        CALL W3FDWT( L, N, M, ZERO, A, B )
+        C(0:L,I,L) = B(0:L,M)
+        !WRITE(0,'(A,I1,2X,11I16)') 'I=',I,K(0:L,I,L)
+        !WRITE(0,'(5X,11E16.8)') C(0:L,I,L)
+      END DO
     END DO
 
   END SUBROUTINE GET_FDW3
@@ -9631,7 +9631,7 @@ CONTAINS
     LOGICAL             :: RUN
     CALL MPI_INITIALIZED ( RUN, IERR_MPI )
     IF ( RUN ) THEN
-       CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
+      CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
     END IF
 #endif
     CALL EXIT(IEXIT)

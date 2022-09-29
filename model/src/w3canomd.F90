@@ -241,43 +241,43 @@ CONTAINS
     ! 0.  Initializations ------------------------------------------------ *
     !
     IF (FIRST) THEN
-       FIRST=.FALSE.
-       NFRE=NK
-       NANG=NTH
-       NFREH=NK
-       NANGH=NTH
-       G=GRAV
-       PI = 4.*ATAN(1.)
-       ZPI=2*PI
-       RAD = PI/180.
-       DEG = 180./PI
-       ALLOCATE(FR(NFRE), DFIM(NFRE))
-       FR(1:NFRE)=SIG(1:NK)/ZPI
-       ! The following can be replaced using DSIP from WWATCH
-       CO1 = 0.5*DTH
-       DFIM(1)= CO1*(FR(2)-FR(1))
-       DO M=2,NFRE-1
-          DFIM(M)=CO1*(FR(M+1)-FR(M-1))
-       ENDDO
-       DFIM(NFRE)=CO1*(FR(NFRE)-FR(NFRE-1))
-       !
-       ALLOCATE(F1(NANG,NFRE), F3(NANG,NFRE))
-       NDEPTH=IGPARS(6)
-       DEPTHA=IGPARS(7)
+      FIRST=.FALSE.
+      NFRE=NK
+      NANG=NTH
+      NFREH=NK
+      NANGH=NTH
+      G=GRAV
+      PI = 4.*ATAN(1.)
+      ZPI=2*PI
+      RAD = PI/180.
+      DEG = 180./PI
+      ALLOCATE(FR(NFRE), DFIM(NFRE))
+      FR(1:NFRE)=SIG(1:NK)/ZPI
+      ! The following can be replaced using DSIP from WWATCH
+      CO1 = 0.5*DTH
+      DFIM(1)= CO1*(FR(2)-FR(1))
+      DO M=2,NFRE-1
+        DFIM(M)=CO1*(FR(M+1)-FR(M-1))
+      ENDDO
+      DFIM(NFRE)=CO1*(FR(NFRE)-FR(NFRE-1))
+      !
+      ALLOCATE(F1(NANG,NFRE), F3(NANG,NFRE))
+      NDEPTH=IGPARS(6)
+      DEPTHA=IGPARS(7)
     END IF
     DPTH = DEPTH
 
     DO IK=1,NK
-       IF (IACTION.EQ.0) THEN
-          ATOE=1
-       ELSE
-          ATOE=SIG(IK)*ZPI / CG(IK)
-       END IF
-       DO ITH=1,NTH
-          ISPEC=ITH+(IK-1)*NTH
-          F1(ITH,IK)=E(ISPEC)*ATOE
-       END DO
-       !WRITE(100,'(100G16.8)') SIG(IK)*ZPI,(F1(ITH,IK),ITH=1,NTH)
+      IF (IACTION.EQ.0) THEN
+        ATOE=1
+      ELSE
+        ATOE=SIG(IK)*ZPI / CG(IK)
+      END IF
+      DO ITH=1,NTH
+        ISPEC=ITH+(IK-1)*NTH
+        F1(ITH,IK)=E(ISPEC)*ATOE
+      END DO
+      !WRITE(100,'(100G16.8)') SIG(IK)*ZPI,(F1(ITH,IK),ITH=1,NTH)
 
     END DO
     !
@@ -291,16 +291,16 @@ CONTAINS
     ! 2. Adds 2nd order spectrum to 1st order
     !
     DO IK=1,NK
-       IF (IACTION.EQ.0) THEN
-          ATOE=1
-       ELSE
-          ATOE=SIG(IK)*ZPI / CG(IK)
-       END IF
-       DO ITH=1,NTH
-          ISPEC=ITH+(IK-1)*NTH
-          E(ISPEC)=F3(ITH,IK)/ATOE
-       END DO
-       !WRITE(101,'(I3,100G16.8)') SIG(IK)*ZPI,(F3(ITH,IK),ITH=1,NTH)
+      IF (IACTION.EQ.0) THEN
+        ATOE=1
+      ELSE
+        ATOE=SIG(IK)*ZPI / CG(IK)
+      END IF
+      DO ITH=1,NTH
+        ISPEC=ITH+(IK-1)*NTH
+        E(ISPEC)=F3(ITH,IK)/ATOE
+      END DO
+      !WRITE(101,'(I3,100G16.8)') SIG(IK)*ZPI,(F3(ITH,IK),ITH=1,NTH)
     END DO
 
 #ifdef W3_T
@@ -427,67 +427,67 @@ CONTAINS
     DELTHH = FLOAT(MA)*DELTH
 
     IF (FRSTIME) THEN
-       ! IF (COUNTER.GT.0) THEN
-       !  DEALLOCATE(OMEGA,TFAK,TA,TB,TC_QL,TT_4M,TT_4P,IM_P,IM_M,TFAKH)
-       ! ENDIF
-       ALLOCATE(OMEGA(NFREH))
-       ALLOCATE(TFAK(NFRE,NDEPTH))
-       ALLOCATE(TA(NANGH,NFREH,NFREH,NDEPTH))
-       ALLOCATE(TB(NANGH,NFREH,NFREH,NDEPTH))
-       ALLOCATE(TC_QL(NANGH,NFREH,NFREH,NDEPTH))
-       ALLOCATE(TT_4M(NANGH,NFREH,NFREH,NDEPTH))
-       ALLOCATE(TT_4P(NANGH,NFREH,NFREH,NDEPTH))
-       ALLOCATE(IM_P(NFREH,NFREH))
-       ALLOCATE(IM_M(NFREH,NFREH))
-       ALLOCATE(TFAKH(NFREH,NDEPTH))
+      ! IF (COUNTER.GT.0) THEN
+      !  DEALLOCATE(OMEGA,TFAK,TA,TB,TC_QL,TT_4M,TT_4P,IM_P,IM_M,TFAKH)
+      ! ENDIF
+      ALLOCATE(OMEGA(NFREH))
+      ALLOCATE(TFAK(NFRE,NDEPTH))
+      ALLOCATE(TA(NANGH,NFREH,NFREH,NDEPTH))
+      ALLOCATE(TB(NANGH,NFREH,NFREH,NDEPTH))
+      ALLOCATE(TC_QL(NANGH,NFREH,NFREH,NDEPTH))
+      ALLOCATE(TT_4M(NANGH,NFREH,NFREH,NDEPTH))
+      ALLOCATE(TT_4P(NANGH,NFREH,NFREH,NDEPTH))
+      ALLOCATE(IM_P(NFREH,NFREH))
+      ALLOCATE(IM_M(NFREH,NFREH))
+      ALLOCATE(TFAKH(NFREH,NDEPTH))
 
-       DO M=1,NFREH
-          OMEGA(M) = ZPI*FR(MR*M)
-       ENDDO
+      DO M=1,NFREH
+        OMEGA(M) = ZPI*FR(MR*M)
+      ENDDO
 
-       DO K=1,NANGH
-          K0 = MA*K+1
-          IF (K0.GT.NANG) K0 = K0-NANG
-          THH(K) = TH(K0)
-       ENDDO
+      DO K=1,NANGH
+        K0 = MA*K+1
+        IF (K0.GT.NANG) K0 = K0-NANG
+        THH(K) = TH(K0)
+      ENDDO
 
-       CO1   = 1./2.*DELTHH
-       DELOM(1) = CO1*(OMEGA(2)-OMEGA(1))
-       DO M=2,NFREH-1
-          DELOM(M)=CO1*(OMEGA(M+1)-OMEGA(M-1))
-       ENDDO
-       DELOM(NFREH)=CO1*(OMEGA(NFREH)-OMEGA(NFREH-1))
-       !
-       DFDTH = DELOM/ZPI
-       !
-       !***  2.2 INITIALISE TABLES
-       !     ---------------------
-       !
-       NMAX = XMR*(1+NINT(LOG(2.*OMEGA(NFREH)/OMSTART)/LOG(1.+FRAC)))
-       NMAX = NMAX+1
+      CO1   = 1./2.*DELTHH
+      DELOM(1) = CO1*(OMEGA(2)-OMEGA(1))
+      DO M=2,NFREH-1
+        DELOM(M)=CO1*(OMEGA(M+1)-OMEGA(M-1))
+      ENDDO
+      DELOM(NFREH)=CO1*(OMEGA(NFREH)-OMEGA(NFREH-1))
+      !
+      DFDTH = DELOM/ZPI
+      !
+      !***  2.2 INITIALISE TABLES
+      !     ---------------------
+      !
+      NMAX = XMR*(1+NINT(LOG(2.*OMEGA(NFREH)/OMSTART)/LOG(1.+FRAC)))
+      NMAX = NMAX+1
 #ifdef W3_T
-       PRINT*,' NMAX = ',NMAX
+      PRINT*,' NMAX = ',NMAX
 #endif
 
-       DEPTHD = 1.1
+      DEPTHD = 1.1
 
-       DO JD=1,NDEPTH
-          DEPTH = DEPTHA*DEPTHD**(JD-1)
-          DO M=1,NFRE
-             OM0 = ZPI*FR(M)
-             TFAK(M,JD) = AKI(OM0,DEPTH)
-          ENDDO
-       ENDDO
+      DO JD=1,NDEPTH
+        DEPTH = DEPTHA*DEPTHD**(JD-1)
+        DO M=1,NFRE
+          OM0 = ZPI*FR(M)
+          TFAK(M,JD) = AKI(OM0,DEPTH)
+        ENDDO
+      ENDDO
 
-       INDEP = 1+NINT(LOG(DPTH/DEPTHA)/LOG(DEPTHD))
-       INDEP = MIN(NDEPTH,INDEP)
-       INDEP = MAX(1,INDEP)
+      INDEP = 1+NINT(LOG(DPTH/DEPTHA)/LOG(DEPTHD))
+      INDEP = MIN(NDEPTH,INDEP)
+      INDEP = MAX(1,INDEP)
 
-       CALL TABLES_2ND(NFREH,NANGH,NDEPTH,DEPTHA,OMSTART,FRAC,XMR,&
-            DFDTH,OMEGA,THH)
-       PRINT*, '2ND ORDER TABLES GENERATED:',NDEPTH,DEPTHA, DELTHH
+      CALL TABLES_2ND(NFREH,NANGH,NDEPTH,DEPTHA,OMSTART,FRAC,XMR,&
+           DFDTH,OMEGA,THH)
+      PRINT*, '2ND ORDER TABLES GENERATED:',NDEPTH,DEPTHA, DELTHH
 
-       FRSTIME = .FALSE.
+      FRSTIME = .FALSE.
     ENDIF ! end of test on FRSTIME
     !
     COUNTER=COUNTER+1
@@ -498,11 +498,11 @@ CONTAINS
     SUM0 = 0.
     AKMEAN = 0.
     DO M=1,NFRE
-       DO K=1,NANG
-          SQRTK=SQRT(TFAK(M,INDEP))
-          SUM0 = SUM0+F1(K,M)*DFIM(M)
-          AKMEAN = AKMEAN+F1(K,M)*DFIM(M)/SQRTK
-       ENDDO
+      DO K=1,NANG
+        SQRTK=SQRT(TFAK(M,INDEP))
+        SUM0 = SUM0+F1(K,M)*DFIM(M)
+        AKMEAN = AKMEAN+F1(K,M)*DFIM(M)/SQRTK
+      ENDDO
     ENDDO
     !
     ! NB: AKMEAN is the mean wavenumber corresponding to Tm0,-1 in deep water
@@ -514,129 +514,129 @@ CONTAINS
     !     ------------------------
     !
     IF (MR.EQ.1 .AND. MA.EQ.1) THEN
-       !
-       !***     2.21 NO INTERPOLATION.
-       !        ----------------------
-       !
+      !
+      !***     2.21 NO INTERPOLATION.
+      !        ----------------------
+      !
 #ifdef W3_T
-       PRINT*,' NO THINNING AND INTERPOLATION'
-       PRINT*,'nanG:',NANG,NMAX,NFRE,NDEPTH,DEPTHA,DEPTHD,DPTH,'##',DELTH,DELTHH
+      PRINT*,' NO THINNING AND INTERPOLATION'
+      PRINT*,'nanG:',NANG,NMAX,NFRE,NDEPTH,DEPTHA,DEPTHD,DPTH,'##',DELTH,DELTHH
 #endif
 
-       CALL SECSPOM(F1,F3,NFRE,NANG,NMAX,NDEPTH,&
-            DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,&
-            DPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,&
-            IM_P,IM_M,COUNTER)
-       DO M=1,NFRE
-          DO K=1,NANG
-             DELF = F3(K,M)
-             F3(K,M)=MAX(0.00000001,F1(K,M)+SIGM*DELF)
-          ENDDO
-       ENDDO
+      CALL SECSPOM(F1,F3,NFRE,NANG,NMAX,NDEPTH,&
+           DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,&
+           DPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,&
+           IM_P,IM_M,COUNTER)
+      DO M=1,NFRE
+        DO K=1,NANG
+          DELF = F3(K,M)
+          F3(K,M)=MAX(0.00000001,F1(K,M)+SIGM*DELF)
+        ENDDO
+      ENDDO
 
     ELSE
 
-       !
-       !***     2.22 ENERGY CONSERVING INTERPOLATION SCHEME
-       !        -------------------------------------------
-       !
-       PRINT*,' !THINNING AND INTERPOLATION!'
-       ALLOCATE(PF1(NANGH,NFREH))
-       ALLOCATE(PF3(NANGH,NFREH))
+      !
+      !***     2.22 ENERGY CONSERVING INTERPOLATION SCHEME
+      !        -------------------------------------------
+      !
+      PRINT*,' !THINNING AND INTERPOLATION!'
+      ALLOCATE(PF1(NANGH,NFREH))
+      ALLOCATE(PF3(NANGH,NFREH))
 
-       PF1 = 0.
-       DO M=1,NFREH
-          DO K=1,NANGH
-             M0 = MR*M
-             MP = M0+1
-             MP = MIN(NFRE,MP)
-             MM = M0-1
+      PF1 = 0.
+      DO M=1,NFREH
+        DO K=1,NANGH
+          M0 = MR*M
+          MP = M0+1
+          MP = MIN(NFRE,MP)
+          MM = M0-1
 
-             K0 = MA*K+1
-             KP = K0+1
-             KM = K0-1
-             DELFF = 0.
-             DO KL = KM,KP
-                KLL = KL
-                IF (KLL.GT.NANG) KLL = KLL-NANG
-                IF (KLL.LT.1) KLL = KLL+NANG
-                DO ML = MM,MP
-                   DEL = DFIM(ML)
-                   DELFF = DELFF+DEL
-                   SPEC1 = F1(KLL,ML)
-                   PF1(K,M)=PF1(K,M)+SPEC1*DEL
-                ENDDO
-             ENDDO
-             PF1(K,M) =PF1(K,M)/DELFF
+          K0 = MA*K+1
+          KP = K0+1
+          KM = K0-1
+          DELFF = 0.
+          DO KL = KM,KP
+            KLL = KL
+            IF (KLL.GT.NANG) KLL = KLL-NANG
+            IF (KLL.LT.1) KLL = KLL+NANG
+            DO ML = MM,MP
+              DEL = DFIM(ML)
+              DELFF = DELFF+DEL
+              SPEC1 = F1(KLL,ML)
+              PF1(K,M)=PF1(K,M)+SPEC1*DEL
+            ENDDO
           ENDDO
-       ENDDO
-       !
-       !***     2.23 DETERMINE SECOND-ORDER SPEC
-       !        --------------------------------
-       !
-       CALL SECSPOM(PF1,PF3,NFREH,NANGH,NMAX,NDEPTH,&
-            DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,&
-            DPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,&
-            IM_P,IM_M,COUNTER)
-       !
-       !***     2.24 INTERPOLATE TOWARDS HIGH-RES GRID
-       !        --------------------------------------
-       !
-       DO M=1,NFRE
-          DO K=1,NANG
-             XM = REAL(M/MR)
-             XK = REAL((K-1)/MA)
+          PF1(K,M) =PF1(K,M)/DELFF
+        ENDDO
+      ENDDO
+      !
+      !***     2.23 DETERMINE SECOND-ORDER SPEC
+      !        --------------------------------
+      !
+      CALL SECSPOM(PF1,PF3,NFREH,NANGH,NMAX,NDEPTH,&
+           DEPTHA,DEPTHD,OMSTART,FRAC,MR,DFDTH,OMEGA,&
+           DPTH,AKMEAN,TA,TB,TC_QL,TT_4M,TT_4P,&
+           IM_P,IM_M,COUNTER)
+      !
+      !***     2.24 INTERPOLATE TOWARDS HIGH-RES GRID
+      !        --------------------------------------
+      !
+      DO M=1,NFRE
+        DO K=1,NANG
+          XM = REAL(M/MR)
+          XK = REAL((K-1)/MA)
 
-             M0 = MAX(1,INT(XM))
-             K0 = INT(XK)
+          M0 = MAX(1,INT(XM))
+          K0 = INT(XK)
 
-             D1 = REAL(M)/REAL(MR)-XM
-             D2 = 1.-D1
-             D3 = REAL(K-1)/REAL(MA)-XK
-             D4 = 1.-D3
+          D1 = REAL(M)/REAL(MR)-XM
+          D2 = 1.-D1
+          D3 = REAL(K-1)/REAL(MA)-XK
+          D4 = 1.-D3
 
-             IF (K0.LT.1) K0 = K0+NANGH
-             MP = MIN(NFREH,M0+1)
-             KP = K0+1
-             IF (KP.GT.NANGH) KP = KP-NANGH
+          IF (K0.LT.1) K0 = K0+NANGH
+          MP = MIN(NFREH,M0+1)
+          KP = K0+1
+          IF (KP.GT.NANGH) KP = KP-NANGH
 
-             C1 = PF3(K0,M0)*D4+PF3(KP,M0)*D3
-             C2 = PF3(KP,MP)*D3+PF3(K0,MP)*D4
+          C1 = PF3(K0,M0)*D4+PF3(KP,M0)*D3
+          C2 = PF3(KP,MP)*D3+PF3(K0,MP)*D4
 
-             DELF = C1*D2+C2*D1
-             F3(K,M)=MAX(0.00000001,F1(K,M)+SIGM*DELF)
-          ENDDO
-       ENDDO
+          DELF = C1*D2+C2*D1
+          F3(K,M)=MAX(0.00000001,F1(K,M)+SIGM*DELF)
+        ENDDO
+      ENDDO
 
     ENDIF
 
 
     IF (MR.GT.1 .OR. MA.GT.1 ) THEN
-       DO M=1,NFREH
-          AA1 = 0.
-          DO K=1,NANGH
-             AA1 = AA1+PF1(K,M)*DELTHH
-          ENDDO
-          AA1 = MAX(AA1,EPSMIN)
+      DO M=1,NFREH
+        AA1 = 0.
+        DO K=1,NANGH
+          AA1 = AA1+PF1(K,M)*DELTHH
+        ENDDO
+        AA1 = MAX(AA1,EPSMIN)
 
-          BB1 = 0.
-          DO K=1,NANGH
-             BB1 = BB1+(PF1(K,M)+PF3(K,M))*DELTHH
-          ENDDO
-          BB1 = MAX(BB1,EPSMIN)
-          F   = OMEGA(M)/ZPI
+        BB1 = 0.
+        DO K=1,NANGH
+          BB1 = BB1+(PF1(K,M)+PF3(K,M))*DELTHH
+        ENDDO
+        BB1 = MAX(BB1,EPSMIN)
+        F   = OMEGA(M)/ZPI
 
 #ifdef W3_T
-          WRITE(6,62) M,F,AA1,BB1,DELTHH
-          WRITE(80,62) M,F,AA1,BB1,DELTHH
+        WRITE(6,62) M,F,AA1,BB1,DELTHH
+        WRITE(80,62) M,F,AA1,BB1,DELTHH
 #endif
-       ENDDO
+      ENDDO
 
-       DO M=1,NFREH
-          DO K=1,NANGH
-             F13(M,K)=PF1(K,M)+PF3(K,M)
-          ENDDO
-       ENDDO
+      DO M=1,NFREH
+        DO K=1,NANGH
+          F13(M,K)=PF1(K,M)+PF3(K,M)
+        ENDDO
+      ENDDO
     ENDIF
 
     !
@@ -730,87 +730,87 @@ CONTAINS
     !
     !
     DO JD=1,NDEPTH
-       DEPTH = DEPTHA*DEPTHD**(JD-1)
-       DO M=1,NFRE
-          OM0 = OMEGA(M)
-          TFAK(M,JD) = AKI(OM0,DEPTH)
-       ENDDO
-       WRITE(6,*) 'GENERATING TABLES FOR DEPTH:',JD,DEPTH,DEPTHA,NDEPTH
-       !
-       !     2. COMPUTATION OF THE 2nd ORDER COEFFICIENTS.
-       !     ---------------------------------------------
-       !
-       !
-       K1 = 0
-       TH1 = TH(NANG)
-       DO M=1,NFRE
-          OM0 = OMEGA(M)
-          XK0 = TFAK(M,JD)
+      DEPTH = DEPTHA*DEPTHD**(JD-1)
+      DO M=1,NFRE
+        OM0 = OMEGA(M)
+        TFAK(M,JD) = AKI(OM0,DEPTH)
+      ENDDO
+      WRITE(6,*) 'GENERATING TABLES FOR DEPTH:',JD,DEPTH,DEPTHA,NDEPTH
+      !
+      !     2. COMPUTATION OF THE 2nd ORDER COEFFICIENTS.
+      !     ---------------------------------------------
+      !
+      !
+      K1 = 0
+      TH1 = TH(NANG)
+      DO M=1,NFRE
+        OM0 = OMEGA(M)
+        XK0 = TFAK(M,JD)
 
-          MP   = MIN(M+1,NFRE)
-          OM0P = OMEGA(MP)
-          XK0P = TFAK(MP,JD)
+        MP   = MIN(M+1,NFRE)
+        OM0P = OMEGA(MP)
+        XK0P = TFAK(MP,JD)
 
-          MM   = MAX(M-1,1)
-          OM0M = OMEGA(MM)
-          XK0M = TFAK(MM,JD)
+        MM   = MAX(M-1,1)
+        OM0M = OMEGA(MM)
+        XK0M = TFAK(MM,JD)
 
-          DO M1=1,NFRE
+        DO M1=1,NFRE
 
-             OM1 = OMEGA(M1)
+          OM1 = OMEGA(M1)
 
-             DO L=1,NANG
-                !
-                !              XK0-XK1 CASE
-                !
-                K = K1+L
-                TH0 = TH(K)
-                OM2 = OM0-OM1
+          DO L=1,NANG
+            !
+            !              XK0-XK1 CASE
+            !
+            K = K1+L
+            TH0 = TH(K)
+            OM2 = OM0-OM1
 
 
-                IF (ABS(OM1).LT.OM0/2.) THEN
-                   XM2  = LOG(OM2/OMSTART)/LOG(1.+FRAC)
-                   IM_M(M1,M) = NINT(XMR*(XM2+1.))
-                   XK1 = TFAK(M1,JD)
-                   XK2 = AKI(OM2,DEPTH)
+            IF (ABS(OM1).LT.OM0/2.) THEN
+              XM2  = LOG(OM2/OMSTART)/LOG(1.+FRAC)
+              IM_M(M1,M) = NINT(XMR*(XM2+1.))
+              XK1 = TFAK(M1,JD)
+              XK2 = AKI(OM2,DEPTH)
 
-                   TA(L,M1,M,JD) = DFDTH(M1)*A(XK1,XK2,TH1,TH0)**2
-                ELSE
-                   TA(L,M1,M,JD) = 0.
-                   IM_M(M1,M) = 1
-                ENDIF
-                !
-                !              XK1+XK0 CASE
-                !
-                OM2 = OM1+OM0
-                XM2  = LOG(OM2/OMSTART)/LOG(1.+FRAC)
-                IM_P(M1,M) = NINT(XMR*(XM2+1.))
-                XK1 = TFAK(M1,JD)
-                XK2 = AKI(OM2,DEPTH)
+              TA(L,M1,M,JD) = DFDTH(M1)*A(XK1,XK2,TH1,TH0)**2
+            ELSE
+              TA(L,M1,M,JD) = 0.
+              IM_M(M1,M) = 1
+            ENDIF
+            !
+            !              XK1+XK0 CASE
+            !
+            OM2 = OM1+OM0
+            XM2  = LOG(OM2/OMSTART)/LOG(1.+FRAC)
+            IM_P(M1,M) = NINT(XMR*(XM2+1.))
+            XK1 = TFAK(M1,JD)
+            XK2 = AKI(OM2,DEPTH)
 
-                TB(L,M1,M,JD) = DFDTH(M1)*B(XK1,XK2,TH1,TH0)**2
-                !
-                !              QUASI-LINEAR EFFECT
-                !
-                !
-                TC_QL(L,M1,M,JD) = DFDTH(M1)*C_QL(XK0,XK1,TH0,TH1)
-                !
-                !              STOKES-FREQUENCY CORRECTION
-                !
-                !
-                FAC = 2.*G/OM1*DFDTH(M1)
-                TT_4M(L,M1,M,JD) = &
-                     FAC*(W2(XK0M,XK1,XK1,XK0M,TH0,TH1,TH1,TH0)+&
-                     V2(XK0M,XK1,XK1,XK0M,TH0,TH1,TH1,TH0))
-                TT_4P(L,M1,M,JD) = &
-                     FAC*(W2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0)+&
-                     V2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0))
-                ! Table identical to Janssen: verified.
-                !              IF (JD.EQ.1) WRITE(998,'(F4.1,3I3,5G11.3)') DEPTH,M,M1,L, TB(L,M1,M,JD),  &
-                !                           TC_QL(L,M1,M,JD) , FAC, TT_4M(L,M1,M,JD), TT_4P(L,M1,M,JD)
-             ENDDO
+            TB(L,M1,M,JD) = DFDTH(M1)*B(XK1,XK2,TH1,TH0)**2
+            !
+            !              QUASI-LINEAR EFFECT
+            !
+            !
+            TC_QL(L,M1,M,JD) = DFDTH(M1)*C_QL(XK0,XK1,TH0,TH1)
+            !
+            !              STOKES-FREQUENCY CORRECTION
+            !
+            !
+            FAC = 2.*G/OM1*DFDTH(M1)
+            TT_4M(L,M1,M,JD) = &
+                 FAC*(W2(XK0M,XK1,XK1,XK0M,TH0,TH1,TH1,TH0)+&
+                 V2(XK0M,XK1,XK1,XK0M,TH0,TH1,TH1,TH0))
+            TT_4P(L,M1,M,JD) = &
+                 FAC*(W2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0)+&
+                 V2(XK0P,XK1,XK1,XK0P,TH0,TH1,TH1,TH0))
+            ! Table identical to Janssen: verified.
+            !              IF (JD.EQ.1) WRITE(998,'(F4.1,3I3,5G11.3)') DEPTH,M,M1,L, TB(L,M1,M,JD),  &
+            !                           TC_QL(L,M1,M,JD) , FAC, TT_4M(L,M1,M,JD), TT_4P(L,M1,M,JD)
           ENDDO
-       ENDDO
+        ENDDO
+      ENDDO
     ENDDO
     !
     !
@@ -926,16 +926,16 @@ CONTAINS
     X_MIN = IGPARS(9)   ! this was 1.1 in Janssen's original code
 
     DO M=NFRE+1,NMAX
-       OMEGAHF(M) = OMSTART*(1.+FRAC)**(MR*M-1)
+      OMEGAHF(M) = OMSTART*(1.+FRAC)**(MR*M-1)
     ENDDO
 
     DO K=1,NANG
-       DO K1=1,NANG
-          L = K-K1
-          IF (L.GT.NANG) L=L-NANG
-          IF (L.LT.1) L=L+NANG
-          IL(K,K1) = L
-       ENDDO
+      DO K1=1,NANG
+        L = K-K1
+        IF (L.GT.NANG) L=L-NANG
+        IF (L.LT.1) L=L+NANG
+        IL(K,K1) = L
+      ENDDO
     ENDDO
 
 
@@ -948,16 +948,16 @@ CONTAINS
     JD = MIN(JD,NDEPTH)
 
     DO M=1,NFRE
-       DO K=1,NANG
-          G1(K,M) = F1(K,M)
-          G3(K,M) = 0.
-       ENDDO
+      DO K=1,NANG
+        G1(K,M) = F1(K,M)
+        G3(K,M) = 0.
+      ENDDO
     ENDDO
 
     DO M=NFRE+1,NMAX
-       DO K=1,NANG
-          G1(K,M) = OMEGA(NFRE)**5*G1(K,NFRE)/OMEGAHF(M)**5
-       ENDDO
+      DO K=1,NANG
+        G1(K,M) = OMEGA(NFRE)**5*G1(K,NFRE)/OMEGAHF(M)**5
+      ENDDO
     ENDDO
     !
     !
@@ -968,67 +968,67 @@ CONTAINS
     !
     !
     DO M=1,NFRE
-       OM0 = OMEGA(M)
-       OM0H = OM0/2.
-       MP   = MIN(M+1,NFRE)
-       OM0P = OMEGA(MP)
-       MM   = MAX(M-1,1)
-       OM0M = OMEGA(MM)
-       DELM1 = 1./(OM0P-OM0M)
-       DO K=1,NANG
-          K2 = K
-          F2K = G1(K,M)
-          F2KP = G1(K,MP)
-          F2KM = G1(K,MM)
-          DO M1=1,NFRE
-             OM1 = OMEGA(M1)
-             LL2H = (ABS(OM1).LT.OM0H)
-             M2_M = IM_M(M1,M)
-             M2_P = IM_P(M1,M)
-             DO K1=1,NANG
-                F2K1 = G1(K1,M1)
-                L = IL(K,K1)
-                !
-                !                   2.1 OM0-OM1 CASE: SECOND HARMONICS
-                !                   OM2 = OM0-OM1
-                !
-                IF (LL2H) THEN
-                   F2K2 = G1(K2,M2_M)
-                   FAC1 = TA(L,M1,M,JD)
-                   FAC2 = F2K1*F2K2+G1(K2,M1)*G1(K1,M2_M)
+      OM0 = OMEGA(M)
+      OM0H = OM0/2.
+      MP   = MIN(M+1,NFRE)
+      OM0P = OMEGA(MP)
+      MM   = MAX(M-1,1)
+      OM0M = OMEGA(MM)
+      DELM1 = 1./(OM0P-OM0M)
+      DO K=1,NANG
+        K2 = K
+        F2K = G1(K,M)
+        F2KP = G1(K,MP)
+        F2KM = G1(K,MM)
+        DO M1=1,NFRE
+          OM1 = OMEGA(M1)
+          LL2H = (ABS(OM1).LT.OM0H)
+          M2_M = IM_M(M1,M)
+          M2_P = IM_P(M1,M)
+          DO K1=1,NANG
+            F2K1 = G1(K1,M1)
+            L = IL(K,K1)
+            !
+            !                   2.1 OM0-OM1 CASE: SECOND HARMONICS
+            !                   OM2 = OM0-OM1
+            !
+            IF (LL2H) THEN
+              F2K2 = G1(K2,M2_M)
+              FAC1 = TA(L,M1,M,JD)
+              FAC2 = F2K1*F2K2+G1(K2,M1)*G1(K1,M2_M)
 
-                   XINCR1 = FAC1*FAC2
-                   G3(K,M) = G3(K,M)+XINCR1
-                ENDIF
-                !
-                !                   2.2 OM1+OM0 CASE: INFRA-GRAVITY WAVES
-                !                    OM2 = OM1+OM0
-                !
-                F2K2 = G1(K2,M2_P)
-                FAC3 = 2.*TB(L,M1,M,JD)
-                XINCR2 = FAC3*F2K2
-                !
-                !                   2.3 QUASI-LINEAR EFFECT
-                !
-                XINCR3 = TC_QL(L,M1,M,JD)*F2K
-                !
-                !                   2.4 STOKES-FREQUENCY CORRECTION
-                !
-                T_4M = TT_4M(L,M1,M,JD)
-                T_4P = TT_4P(L,M1,M,JD)
-                XINCR4 = -(F2KP*T_4P-F2KM*T_4M)*DELM1
+              XINCR1 = FAC1*FAC2
+              G3(K,M) = G3(K,M)+XINCR1
+            ENDIF
+            !
+            !                   2.2 OM1+OM0 CASE: INFRA-GRAVITY WAVES
+            !                    OM2 = OM1+OM0
+            !
+            F2K2 = G1(K2,M2_P)
+            FAC3 = 2.*TB(L,M1,M,JD)
+            XINCR2 = FAC3*F2K2
+            !
+            !                   2.3 QUASI-LINEAR EFFECT
+            !
+            XINCR3 = TC_QL(L,M1,M,JD)*F2K
+            !
+            !                   2.4 STOKES-FREQUENCY CORRECTION
+            !
+            T_4M = TT_4M(L,M1,M,JD)
+            T_4P = TT_4P(L,M1,M,JD)
+            XINCR4 = -(F2KP*T_4P-F2KM*T_4M)*DELM1
 
-                G3(K,M) = G3(K,M)+F2K1*(XINCR2+XINCR3+XINCR4)
+            G3(K,M) = G3(K,M)+F2K1*(XINCR2+XINCR3+XINCR4)
 
-             ENDDO
           ENDDO
-       ENDDO
+        ENDDO
+      ENDDO
     ENDDO
     !
     DO M=1,NFRE
-       DO K=1,NANG
-          F3(K,M) = G3(K,M)
-       ENDDO
+      DO K=1,NANG
+        F3(K,M) = G3(K,M)
+      ENDDO
     ENDDO
     !
     !--------------------------------------------------------------------
@@ -1543,9 +1543,9 @@ CONTAINS
     !     --------------------------------
     !
     IF (DOUBLEP) THEN
-       DEL1=10.**(-5)
+      DEL1=10.**(-5)
     ELSE
-       DEL1=10.**(-2)
+      DEL1=10.**(-2)
     ENDIF
 
 
@@ -1793,9 +1793,9 @@ CONTAINS
     !     --------------------------------
     !
     IF (DOUBLEP) THEN
-       DEL1=10.**(-5)
+      DEL1=10.**(-5)
     ELSE
-       DEL1=0.01
+      DEL1=0.01
     ENDIF
 
     RI=XI
@@ -2201,9 +2201,9 @@ CONTAINS
     !     --------------------------------
     !
     IF (DOUBLEP) THEN
-       DEL1 = 10.**(-8)
+      DEL1 = 10.**(-8)
     ELSE
-       DEL1 = 10.**(-4)
+      DEL1 = 10.**(-4)
     ENDIF
 
     OI=OMEG(XI)+DEL1
@@ -2302,9 +2302,9 @@ CONTAINS
     !     --------------------------------
     !
     IF (DOUBLEP) THEN
-       DEL1 = 10.**(-8)
+      DEL1 = 10.**(-8)
     ELSE
-       DEL1 = 10.**(-4)
+      DEL1 = 10.**(-4)
     ENDIF
 
 
@@ -2454,9 +2454,9 @@ CONTAINS
     ARG = XI**2+XJ**2+2.*XI*XJ*COS(THI-THJ)
 
     IF (ARG.LE.0.) THEN
-       VABS = 0.
+      VABS = 0.
     ELSE
-       VABS = SQRT(ARG)
+      VABS = SQRT(ARG)
     ENDIF
 
     RETURN

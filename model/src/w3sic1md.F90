@@ -262,8 +262,8 @@ CONTAINS
     ICECOEF5 = 0.0
     !
     IF (.NOT.INFLAGS2(-7))THEN
-       WRITE (NDSE,1001) 'ICE PARAMETER 1'
-       CALL EXTCDE(2)
+      WRITE (NDSE,1001) 'ICE PARAMETER 1'
+      CALL EXTCDE(2)
     ENDIF
     !
     ICECOEF1 = ICEP1(IX,IY)
@@ -272,34 +272,34 @@ CONTAINS
     ! 1.  No ice --------------------------------------------------------- /
     !
     IF ( ICECOEF1==0. ) THEN
-       D = 0.
-       !
-       ! 2.  Ice ------------------------------------------------------------ /
+      D = 0.
+      !
+      ! 2.  Ice ------------------------------------------------------------ /
     ELSE
-       !
-       ! 2.a Set constant(s) and write test output -------------------------- /
-       !
-       !         (none)
-       !
+      !
+      ! 2.a Set constant(s) and write test output -------------------------- /
+      !
+      !         (none)
+      !
 #ifdef W3_T38
-       WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
+      WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
 #endif
-       !
-       ! 2.b Make calculations ---------------------------------------------- /
-       WN_I = ICECOEF1 ! uniform in k
+      !
+      ! 2.b Make calculations ---------------------------------------------- /
+      WN_I = ICECOEF1 ! uniform in k
 
-       DO IK=1, NK
-          !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
-          !             recall that D=S/E=-2*Cg*k_i
-          D1D(IK) = -2. * CG(IK) * WN_I(IK)
-       END DO
-       !
-       ! 2.c Fill diagional matrix
-       !
-       DO IKTH=1, NSPEC
-          D(IKTH) = D1D(MAPWN(IKTH))
-       END DO
-       !
+      DO IK=1, NK
+        !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
+        !             recall that D=S/E=-2*Cg*k_i
+        D1D(IK) = -2. * CG(IK) * WN_I(IK)
+      END DO
+      !
+      ! 2.c Fill diagional matrix
+      !
+      DO IKTH=1, NSPEC
+        D(IKTH) = D1D(MAPWN(IKTH))
+      END DO
+      !
     END IF
     !
     S = D * A
@@ -308,9 +308,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !

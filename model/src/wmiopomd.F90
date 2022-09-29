@@ -286,25 +286,25 @@ CONTAINS
     ! 1.  Initialize if necessary and possible
     !
     IF ( .NOT. O2INIT ) THEN
-       !
+      !
 #ifdef W3_T
-       WRITE (MDST,9010)
+      WRITE (MDST,9010)
 #endif
-       !
-       IF ( .NOT.PRESENT(XPT) .OR. .NOT.PRESENT(YPT) .OR.          &
-            .NOT.PRESENT(PNAMES) ) THEN
-          WRITE (MDSE,1000)
-          CALL EXTCDE (1)
-       END IF
-       !
-       CALL W3DMO2 ( 0, MDSE, MDST, NPT )
-       !
-       NOPTS      = NPT
-       PTLOC(1,:) = XPT
-       PTLOC(2,:) = YPT
-       PTNME      = PNAMES
-       GRDID      = 'none'
-       !
+      !
+      IF ( .NOT.PRESENT(XPT) .OR. .NOT.PRESENT(YPT) .OR.          &
+           .NOT.PRESENT(PNAMES) ) THEN
+        WRITE (MDSE,1000)
+        CALL EXTCDE (1)
+      END IF
+      !
+      CALL W3DMO2 ( 0, MDSE, MDST, NPT )
+      !
+      NOPTS      = NPT
+      PTLOC(1,:) = XPT
+      PTLOC(2,:) = YPT
+      PTNME      = PNAMES
+      GRDID      = 'none'
+      !
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -316,9 +316,9 @@ CONTAINS
 #endif
     !
     IF ( FLAGLL ) THEN
-       FACTOR = 1.
+      FACTOR = 1.
     ELSE
-       FACTOR = 1.E-3
+      FACTOR = 1.E-3
     END IF
     !
     ALLOCATE ( INGRID(NRGRD,NOPTS), XP(NOPTS), YP(NOPTS) )
@@ -328,44 +328,44 @@ CONTAINS
     YP     = PTLOC(2,:)
     !
     DO J=1, NRGRD
-       !
-       CALL W3SETG ( J, MDSE, MDST )
-       !
-       ! Loop over output points
-       !
-       ! notes.....Here, we have pulled coding for UNGTYPE and CLGTYPE from w3iopomd.ftn
-       ! ..........in w3iopomd.ftn, it is "DO IPT=1, NPT" but otherwise very similar
-       DO IPT=1, NOPTS
-          !
-          !     Check if point within grid
-          !
-          IF (GTYPE .NE. UNGTYPE) THEN
-             INGRID(J,IPT) = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
-             IF ( .NOT.INGRID(J,IPT) ) THEN
-                CYCLE
-             END IF
-          ELSE
-             CALL IS_IN_UNGRID(J, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD )
-             IF (itout.eq.0) THEN
-                INGRID(J,IPT)=.FALSE.
-             END IF
+      !
+      CALL W3SETG ( J, MDSE, MDST )
+      !
+      ! Loop over output points
+      !
+      ! notes.....Here, we have pulled coding for UNGTYPE and CLGTYPE from w3iopomd.ftn
+      ! ..........in w3iopomd.ftn, it is "DO IPT=1, NPT" but otherwise very similar
+      DO IPT=1, NOPTS
+        !
+        !     Check if point within grid
+        !
+        IF (GTYPE .NE. UNGTYPE) THEN
+          INGRID(J,IPT) = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
+          IF ( .NOT.INGRID(J,IPT) ) THEN
+            CYCLE
           END IF
-          !
-          !     Check if point not on land
-          !
-          IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
-               MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
-               MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
-               MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
-             INGRID(J,IPT) = .FALSE.
-             CYCLE
+        ELSE
+          CALL IS_IN_UNGRID(J, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD )
+          IF (itout.eq.0) THEN
+            INGRID(J,IPT)=.FALSE.
           END IF
+        END IF
+        !
+        !     Check if point not on land
+        !
+        IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
+             MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
+             MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
+             MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
+          INGRID(J,IPT) = .FALSE.
+          CYCLE
+        END IF
 
-          !.........If we've gotten to this point, then we are satisfied that
-          !................the point is in this grid.
+        !.........If we've gotten to this point, then we are satisfied that
+        !................the point is in this grid.
 
-       END DO !        DO IPT=1, NOPTS
-       !
+      END DO !        DO IPT=1, NOPTS
+      !
     END DO !      DO J=1, NRGRD
     !
     DEALLOCATE ( XP, YP )
@@ -376,33 +376,33 @@ CONTAINS
     MDATAS(:)%NRUPTS = 0
     !
     DO IPT=1, NOPTS
-       GRDID(IPT) = '...none...'
-       DO J= NRGRD, 1, -1
-          IF ( INGRID(J,IPT) ) THEN
-             GRDID(IPT) = GRIDS(J)%FILEXT
-             MDATAS(J)%NRUPTS = MDATAS(J)%NRUPTS + 1
-             EXIT
-          END IF
-       END DO
+      GRDID(IPT) = '...none...'
+      DO J= NRGRD, 1, -1
+        IF ( INGRID(J,IPT) ) THEN
+          GRDID(IPT) = GRIDS(J)%FILEXT
+          MDATAS(J)%NRUPTS = MDATAS(J)%NRUPTS + 1
+          EXIT
+        END IF
+      END DO
     END DO
     !
     ! 2.c Diagnostic output
     !
 #ifdef W3_O7b
     IF ( IMPROC .EQ. NMPSCR ) THEN
-       WRITE (MDSS,920)
-       DO IPT=1, NOPTS
-          DO J=1, NRGRD
-             IF ( GRIDS(J)%FILEXT .EQ. GRDID(IPT) ) EXIT
-          END DO
-          IF ( J .GT. NRGRD ) THEN
-             WRITE (MDSS,921) PTNME(IPT), PTLOC(:,IPT)*FACTOR
-          ELSE
-             WRITE (MDSS,922) PTNME(IPT), PTLOC(:,IPT)*FACTOR, &
-                  GRIDS(J)%FILEXT
-          END IF
-       END DO
-       WRITE (MDSS,929)
+      WRITE (MDSS,920)
+      DO IPT=1, NOPTS
+        DO J=1, NRGRD
+          IF ( GRIDS(J)%FILEXT .EQ. GRDID(IPT) ) EXIT
+        END DO
+        IF ( J .GT. NRGRD ) THEN
+          WRITE (MDSS,921) PTNME(IPT), PTLOC(:,IPT)*FACTOR
+        ELSE
+          WRITE (MDSS,922) PTNME(IPT), PTLOC(:,IPT)*FACTOR, &
+               GRIDS(J)%FILEXT
+        END IF
+      END DO
+      WRITE (MDSS,929)
     END IF
 #endif
     !
@@ -410,7 +410,7 @@ CONTAINS
     !
 #ifdef W3_T
     DO IPT=1, NOPTS
-       WRITE (MDST,9021) IPT, PTNME(IPT), GRDID(IPT)
+      WRITE (MDST,9021) IPT, PTNME(IPT), GRDID(IPT)
     END DO
 #endif
     !
@@ -418,8 +418,8 @@ CONTAINS
     IPT      = NOPTS
     WRITE (MDST,9022)
     DO J=1, NRGRD
-       WRITE (MDST,9023) J, MDATAS(J)%NRUPTS, GRIDS(J)%FILEXT
-       IPT      = IPT - MDATAS(J)%NRUPTS
+      WRITE (MDST,9023) J, MDATAS(J)%NRUPTS, GRIDS(J)%FILEXT
+      IPT      = IPT - MDATAS(J)%NRUPTS
     END DO
     WRITE (MDST,9024) IPT
 #endif
@@ -431,62 +431,97 @@ CONTAINS
     ! 3.a Loop over grids
     !
     DO J=1, NRGRD
-       !
+      !
 #ifdef W3_T
-       WRITE (MDST,9030) J
+      WRITE (MDST,9030) J
 #endif
-       !
-       ! 3.b (De)allocate map arrays
-       !
-       IPT      = MAX ( 1 , MDATAS(J)%NRUPTS )
-       IF ( SETUP ) DEALLOCATE ( MDATAS(J)%UPTMAP )
-       ALLOCATE ( MDATAS(J)%UPTMAP(IPT) )
-       !
-       IF ( MDATAS(J)%NRUPTS .EQ. 0 ) CYCLE
-       !
-       ALLOCATE ( XP(IPT), YP(IPT), PN(IPT) )
-       !
-       ! 3.c Set up mapping and point arrays
-       !
-       IPT      = 0
-       DO II=1, NOPTS
-          IF ( GRDID(II) .NE. GRIDS(J)%FILEXT ) CYCLE
-          IPT      = IPT + 1
-          MDATAS(J)%UPTMAP(IPT) = II
-          XP(IPT)  = PTLOC(1,II)
-          YP(IPT)  = PTLOC(2,II)
-          PN(IPT)  = PTNME(II)
-       END DO
-       !
+      !
+      ! 3.b (De)allocate map arrays
+      !
+      IPT      = MAX ( 1 , MDATAS(J)%NRUPTS )
+      IF ( SETUP ) DEALLOCATE ( MDATAS(J)%UPTMAP )
+      ALLOCATE ( MDATAS(J)%UPTMAP(IPT) )
+      !
+      IF ( MDATAS(J)%NRUPTS .EQ. 0 ) CYCLE
+      !
+      ALLOCATE ( XP(IPT), YP(IPT), PN(IPT) )
+      !
+      ! 3.c Set up mapping and point arrays
+      !
+      IPT      = 0
+      DO II=1, NOPTS
+        IF ( GRDID(II) .NE. GRIDS(J)%FILEXT ) CYCLE
+        IPT      = IPT + 1
+        MDATAS(J)%UPTMAP(IPT) = II
+        XP(IPT)  = PTLOC(1,II)
+        YP(IPT)  = PTLOC(2,II)
+        PN(IPT)  = PTNME(II)
+      END DO
+      !
 #ifdef W3_T
-       DO IPT=1, MDATAS(J)%NRUPTS
-          WRITE (MDST,9031) IPT, MDATAS(J)%UPTMAP(IPT),XP(IPT),YP(IPT),PN(IPT)
-       END DO
+      DO IPT=1, MDATAS(J)%NRUPTS
+        WRITE (MDST,9031) IPT, MDATAS(J)%UPTMAP(IPT),XP(IPT),YP(IPT),PN(IPT)
+      END DO
 #endif
-       !
+      !
 #ifdef W3_MPI
-       IF ( FLGO7a ) CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
+      IF ( FLGO7a ) CALL MPI_BARRIER ( MPI_COMM_MWAVE, IERR_MPI )
 #endif
 #ifdef W3_O7a
-       IF ( IMPROC.EQ.NMPSCR ) WRITE (MDSS,930)               &
-            J, GRIDS(J)%FILEXT, IPT
+      IF ( IMPROC.EQ.NMPSCR ) WRITE (MDSS,930)               &
+           J, GRIDS(J)%FILEXT, IPT
 #endif
-       !
-       ! 3.d Preprocessing for output
-       !
+      !
+      ! 3.d Preprocessing for output
+      !
 #ifdef W3_T
-       WRITE (MDST,9032)
+      WRITE (MDST,9032)
 #endif
-       !
-       ! 3.d.1 Shared memory version
-       !
+      !
+      ! 3.d.1 Shared memory version
+      !
 #ifdef W3_SHRD
-       CALL W3SETO ( J, MDSE, MDST )
-       CALL W3SETG ( J, MDSE, MDST )
+      CALL W3SETO ( J, MDSE, MDST )
+      CALL W3SETG ( J, MDSE, MDST )
 #endif
-       !
+      !
 #ifdef W3_SHRD
-       IF ( O2INIT ) THEN
+      IF ( O2INIT ) THEN
+        DEALLOCATE ( OUTPTS(J)%OUT2%IPTINT,               &
+             OUTPTS(J)%OUT2%IL   , OUTPTS(J)%OUT2%IW    ,  &
+             OUTPTS(J)%OUT2%II   , OUTPTS(J)%OUT2%PTIFAC,  &
+             OUTPTS(J)%OUT2%PTNME, OUTPTS(J)%OUT2%GRDID ,  &
+             OUTPTS(J)%OUT2%DPO  , OUTPTS(J)%OUT2%WAO   ,  &
+             OUTPTS(J)%OUT2%WDO  , OUTPTS(J)%OUT2%ASO   ,  &
+             OUTPTS(J)%OUT2%CAO  , OUTPTS(J)%OUT2%CDO   ,  &
+             OUTPTS(J)%OUT2%SPCO , OUTPTS(J)%OUT2%PTLOC )
+        O2INIT = .FALSE.
+      END IF
+#endif
+      !
+#ifdef W3_SHRD
+      CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
+#endif
+      !
+      ! 3.d.2 Distributed memory version
+      !
+#ifdef W3_MPI
+      CALL WMSETM ( J, MDSE, MDST )
+#endif
+      !
+#ifdef W3_MPI
+      IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+#endif
+        !
+#ifdef W3_MPI
+        CALL W3SETO ( J, MDSE, MDST )
+        CALL W3SETG ( J, MDSE, MDST )
+        CALL W3SETA ( J, MDSE, MDST )
+        CALL W3SETW ( J, MDSE, MDST )
+#endif
+        !
+#ifdef W3_MPI
+        IF ( O2INIT ) THEN
           DEALLOCATE ( OUTPTS(J)%OUT2%IPTINT,               &
                OUTPTS(J)%OUT2%IL   , OUTPTS(J)%OUT2%IW    ,  &
                OUTPTS(J)%OUT2%II   , OUTPTS(J)%OUT2%PTIFAC,  &
@@ -496,75 +531,40 @@ CONTAINS
                OUTPTS(J)%OUT2%CAO  , OUTPTS(J)%OUT2%CDO   ,  &
                OUTPTS(J)%OUT2%SPCO , OUTPTS(J)%OUT2%PTLOC )
           O2INIT = .FALSE.
-       END IF
+        END IF
 #endif
-       !
-#ifdef W3_SHRD
-       CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
-#endif
-       !
-       ! 3.d.2 Distributed memory version
-       !
+        !
 #ifdef W3_MPI
-       CALL WMSETM ( J, MDSE, MDST )
+        CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
 #endif
-       !
+        !
 #ifdef W3_MPI
-       IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+        IF ( O2IRQI ) THEN
+          DEALLOCATE (OUTPTS(J)%OUT2%IRQPO1,                &
+               OUTPTS(J)%OUT2%IRQPO2 )
+          O2IRQI = .FALSE.
+        END IF
 #endif
-          !
+        !
 #ifdef W3_MPI
-          CALL W3SETO ( J, MDSE, MDST )
-          CALL W3SETG ( J, MDSE, MDST )
-          CALL W3SETA ( J, MDSE, MDST )
-          CALL W3SETW ( J, MDSE, MDST )
+        CALL W3MPIP ( J )
 #endif
-          !
+        !
 #ifdef W3_MPI
-          IF ( O2INIT ) THEN
-             DEALLOCATE ( OUTPTS(J)%OUT2%IPTINT,               &
-                  OUTPTS(J)%OUT2%IL   , OUTPTS(J)%OUT2%IW    ,  &
-                  OUTPTS(J)%OUT2%II   , OUTPTS(J)%OUT2%PTIFAC,  &
-                  OUTPTS(J)%OUT2%PTNME, OUTPTS(J)%OUT2%GRDID ,  &
-                  OUTPTS(J)%OUT2%DPO  , OUTPTS(J)%OUT2%WAO   ,  &
-                  OUTPTS(J)%OUT2%WDO  , OUTPTS(J)%OUT2%ASO   ,  &
-                  OUTPTS(J)%OUT2%CAO  , OUTPTS(J)%OUT2%CDO   ,  &
-                  OUTPTS(J)%OUT2%SPCO , OUTPTS(J)%OUT2%PTLOC )
-             O2INIT = .FALSE.
-          END IF
+      END IF
 #endif
-          !
-#ifdef W3_MPI
-          CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
-#endif
-          !
-#ifdef W3_MPI
-          IF ( O2IRQI ) THEN
-             DEALLOCATE (OUTPTS(J)%OUT2%IRQPO1,                &
-                  OUTPTS(J)%OUT2%IRQPO2 )
-             O2IRQI = .FALSE.
-          END IF
-#endif
-          !
-#ifdef W3_MPI
-          CALL W3MPIP ( J )
-#endif
-          !
-#ifdef W3_MPI
-       END IF
-#endif
-       !
-       ! This barrier is needed to straighten out output.
-       !
+      !
+      ! This barrier is needed to straighten out output.
+      !
 #ifdef W3_O7a
-       IF ( IMPROC.EQ.NMPSCR ) WRITE (MDSS,939)
+      IF ( IMPROC.EQ.NMPSCR ) WRITE (MDSS,939)
 #endif
-       !
-       ! 3.e Reset pointers and clean up
-       !
-       CALL W3SETO ( 0, MDSE, MDST )
-       DEALLOCATE ( XP, YP, PN )
-       !
+      !
+      ! 3.e Reset pointers and clean up
+      !
+      CALL W3SETO ( 0, MDSE, MDST )
+      DEALLOCATE ( XP, YP, PN )
+      !
     END DO
     !
 #ifdef W3_MPI
@@ -776,197 +776,197 @@ CONTAINS
 #endif
     !
     IF ( IMPROC .EQ. NMPUPT ) THEN
-       OUTPTS(0)%OUT2%SPCO  = 0.
-       OUTPTS(0)%OUT2%DPO   = 1.
-       OUTPTS(0)%OUT2%WAO   = 0.
-       OUTPTS(0)%OUT2%WDO   = 0.
-       OUTPTS(0)%OUT2%ASO   = 0.
-       OUTPTS(0)%OUT2%CAO   = 0.
-       OUTPTS(0)%OUT2%CDO   = 0.
-       OUTPTS(0)%OUT2%ICEO  = 0.
-       OUTPTS(0)%OUT2%ICEFO = 0.
-       OUTPTS(0)%OUT2%ICEHO = 0.
+      OUTPTS(0)%OUT2%SPCO  = 0.
+      OUTPTS(0)%OUT2%DPO   = 1.
+      OUTPTS(0)%OUT2%WAO   = 0.
+      OUTPTS(0)%OUT2%WDO   = 0.
+      OUTPTS(0)%OUT2%ASO   = 0.
+      OUTPTS(0)%OUT2%CAO   = 0.
+      OUTPTS(0)%OUT2%CDO   = 0.
+      OUTPTS(0)%OUT2%ICEO  = 0.
+      OUTPTS(0)%OUT2%ICEFO = 0.
+      OUTPTS(0)%OUT2%ICEHO = 0.
     END IF
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Loop over grids for processing local data
     !
     DO J=1, NRGRD
-       !
-       ! 1.a Set up loop
-       !
-       CALL W3SETO ( J, MDSE, MDST )
-       CALL W3SETG ( J, MDSE, MDST )
-       CALL WMSETM ( J, MDSE, MDST )
-       !
+      !
+      ! 1.a Set up loop
+      !
+      CALL W3SETO ( J, MDSE, MDST )
+      CALL W3SETG ( J, MDSE, MDST )
+      CALL WMSETM ( J, MDSE, MDST )
+      !
 #ifdef W3_T
-       WRITE (MDST,9010) J, NOPTS, IAPROC, NAPPNT
+      WRITE (MDST,9010) J, NOPTS, IAPROC, NAPPNT
 #endif
-       !
-       ! 1.b Determine if action
-       !
-       IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) THEN
+      !
+      ! 1.b Determine if action
+      !
+      IF ( MPI_COMM_GRD .EQ. MPI_COMM_NULL ) THEN
 #ifdef W3_T
-          WRITE (MDST,9011)
+        WRITE (MDST,9011)
 #endif
-          CYCLE
-       END IF
-       !
-       IF ( NOPTS .EQ. 0 ) THEN
+        CYCLE
+      END IF
+      !
+      IF ( NOPTS .EQ. 0 ) THEN
 #ifdef W3_T
-          WRITE (MDST,9012)
+        WRITE (MDST,9012)
 #endif
-          CYCLE
-       END IF
-       !
-       IF ( IAPROC .NE. NAPPNT ) THEN
+        CYCLE
+      END IF
+      !
+      IF ( IAPROC .NE. NAPPNT ) THEN
 #ifdef W3_T
-          WRITE (MDST,9014)
+        WRITE (MDST,9014)
 #endif
-          CYCLE
-       END IF
-       !
-       ! 1.c Data here, and to remain on present processor.
-       !
-       IF ( IMPROC .EQ. NMPUPT ) THEN
+        CYCLE
+      END IF
+      !
+      ! 1.c Data here, and to remain on present processor.
+      !
+      IF ( IMPROC .EQ. NMPUPT ) THEN
 #ifdef W3_T
-          WRITE (MDST,9015)
+        WRITE (MDST,9015)
 #endif
-          !
-          ! 1.c.1 Spectral conversion if needed
-          !
-          IF ( RESPEC(0,J) ) THEN
+        !
+        ! 1.c.1 Spectral conversion if needed
+        !
+        IF ( RESPEC(0,J) ) THEN
 #ifdef W3_T
-             WRITE (MDST,9016) 'YES'
+          WRITE (MDST,9016) 'YES'
 #endif
-             ALLOCATE ( SPEC(SGRDS(0)%NSPEC,NOPTS) )
-             CALL W3CSPC ( SPCO, NK, NTH, XFR, FR1, TH(1), SPEC,   &
-                  SGRDS(0)%NK, SGRDS(0)%NTH, SGRDS(0)%XFR,         &
-                  SGRDS(0)%FR1, SGRDS(0)%TH(1), NOPTS, MDST, MDSE, &
-                  SGRDS(0)%FACHFE )
-             !
-             ! 1.c.2 Spectral conversion not needed
-             !
-          ELSE
+          ALLOCATE ( SPEC(SGRDS(0)%NSPEC,NOPTS) )
+          CALL W3CSPC ( SPCO, NK, NTH, XFR, FR1, TH(1), SPEC,   &
+               SGRDS(0)%NK, SGRDS(0)%NTH, SGRDS(0)%XFR,         &
+               SGRDS(0)%FR1, SGRDS(0)%TH(1), NOPTS, MDST, MDSE, &
+               SGRDS(0)%FACHFE )
+          !
+          ! 1.c.2 Spectral conversion not needed
+          !
+        ELSE
 #ifdef W3_T
-             WRITE (MDST,9016) 'NO'
+          WRITE (MDST,9016) 'NO'
 #endif
-             SPEC   => SPCO
-          END IF
-          !
-          ! 1.d Store data at grid 0
-          !
+          SPEC   => SPCO
+        END IF
+        !
+        ! 1.d Store data at grid 0
+        !
 #ifdef W3_T
-          WRITE (MDST,9017) J
+        WRITE (MDST,9017) J
 #endif
-          !
-          DO I=1, NOPTS
-             II     = UPTMAP(I)
-             OUTPTS(0)%OUT2%SPCO(:,II)  = SPEC(:,I)
-             OUTPTS(0)%OUT2%DPO(II)     = DPO(I)
-             OUTPTS(0)%OUT2%WAO(II)     = WAO(I)
-             OUTPTS(0)%OUT2%WDO(II)     = WDO(I)
-             OUTPTS(0)%OUT2%ASO(II)     = ASO(I)
-             OUTPTS(0)%OUT2%CAO(II)     = CAO(I)
-             OUTPTS(0)%OUT2%CDO(II)     = CDO(I)
-             OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)
-             OUTPTS(0)%OUT2%ICEFO(II)   = ICEFO(I)
-             OUTPTS(0)%OUT2%ICEHO(II)   = ICEHO(I)
-          END DO
-          !
-          IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
-          !
-          ! 1.e Data here, and to be sent to other processor.
-          !
+        !
+        DO I=1, NOPTS
+          II     = UPTMAP(I)
+          OUTPTS(0)%OUT2%SPCO(:,II)  = SPEC(:,I)
+          OUTPTS(0)%OUT2%DPO(II)     = DPO(I)
+          OUTPTS(0)%OUT2%WAO(II)     = WAO(I)
+          OUTPTS(0)%OUT2%WDO(II)     = WDO(I)
+          OUTPTS(0)%OUT2%ASO(II)     = ASO(I)
+          OUTPTS(0)%OUT2%CAO(II)     = CAO(I)
+          OUTPTS(0)%OUT2%CDO(II)     = CDO(I)
+          OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)
+          OUTPTS(0)%OUT2%ICEFO(II)   = ICEFO(I)
+          OUTPTS(0)%OUT2%ICEHO(II)   = ICEHO(I)
+        END DO
+        !
+        IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
+        !
+        ! 1.e Data here, and to be sent to other processor.
+        !
 #ifdef W3_MPI
-       ELSE
+      ELSE
 #endif
-          !
+        !
 #ifdef W3_MPIT
-          WRITE (MDST,9018) J, IMPROC, NMPUPT
+        WRITE (MDST,9018) J, IMPROC, NMPUPT
 #endif
-          !
+        !
 #ifdef W3_MPI
-          IT0    = MTAG0 - 7*NRGRD - 1
-          IT     = IT0 + (J-1)*7
-          ITARG  = NMPUPT - 1
+        IT0    = MTAG0 - 7*NRGRD - 1
+        IT     = IT0 + (J-1)*7
+        ITARG  = NMPUPT - 1
 #endif
-          !
+        !
 #ifdef W3_MPI
-          IT     = IT + 1
-          CALL MPI_SEND ( SPCO(1,1), NSPEC*NOPTS, MPI_REAL,    &
-               ITARG, IT, MPI_COMM_MWAVE, IERR_MPI )
-#endif
-#ifdef W3_MPIT
-          WRITE (MDST,9019) IT-IT0, 'SPECTRA'
-#endif
-#ifdef W3_MPI
-          IT     = IT + 1
-          CALL MPI_SEND ( DPO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-               MPI_COMM_MWAVE, IERR_MPI )
+        IT     = IT + 1
+        CALL MPI_SEND ( SPCO(1,1), NSPEC*NOPTS, MPI_REAL,    &
+             ITARG, IT, MPI_COMM_MWAVE, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9019) IT-IT0, 'WATER DEPTHS'
+        WRITE (MDST,9019) IT-IT0, 'SPECTRA'
 #endif
 #ifdef W3_MPI
-          IT     = IT + 1
-          CALL MPI_SEND ( WAO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-               MPI_COMM_MWAVE, IERR_MPI )
+        IT     = IT + 1
+        CALL MPI_SEND ( DPO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+             MPI_COMM_MWAVE, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9019) IT-IT0, 'WIND SPEED'
+        WRITE (MDST,9019) IT-IT0, 'WATER DEPTHS'
 #endif
 #ifdef W3_MPI
-          IT     = IT + 1
-          CALL MPI_SEND ( WDO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-               MPI_COMM_MWAVE, IERR_MPI )
+        IT     = IT + 1
+        CALL MPI_SEND ( WAO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+             MPI_COMM_MWAVE, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9019) IT-IT0, 'WIND DIRECTION'
+        WRITE (MDST,9019) IT-IT0, 'WIND SPEED'
 #endif
 #ifdef W3_MPI
-          IT     = IT + 1
-          CALL MPI_SEND ( ASO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-               MPI_COMM_MWAVE, IERR_MPI )
+        IT     = IT + 1
+        CALL MPI_SEND ( WDO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+             MPI_COMM_MWAVE, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9019) IT-IT0, 'AIR_SEA TEMP DIFF'
+        WRITE (MDST,9019) IT-IT0, 'WIND DIRECTION'
 #endif
 #ifdef W3_MPI
-          IT     = IT + 1
-          CALL MPI_SEND ( CAO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-               MPI_COMM_MWAVE, IERR_MPI )
+        IT     = IT + 1
+        CALL MPI_SEND ( ASO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+             MPI_COMM_MWAVE, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9019) IT-IT0, 'CURRENT VELOCITY'
+        WRITE (MDST,9019) IT-IT0, 'AIR_SEA TEMP DIFF'
 #endif
 #ifdef W3_MPI
-          IT     = IT + 1
-          CALL MPI_SEND ( CDO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-               MPI_COMM_MWAVE, IERR_MPI )
+        IT     = IT + 1
+        CALL MPI_SEND ( CAO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+             MPI_COMM_MWAVE, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
+        WRITE (MDST,9019) IT-IT0, 'CURRENT VELOCITY'
 #endif
-          !JDM: The below should be added for points using partitioned processors
-          ! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so
-          ! this is being left here commented out for now.
-          ! There is a corresponding section to this below
-          !!/MPI            IT     = IT + 1
-          !!/MPI            CALL MPI_SEND ( ICEO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-          !!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
-          !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEO'
-          !!/MPI            IT     = IT + 1
-          !!/MPI            CALL MPI_SEND ( ICEFO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-          !!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
-          !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEFO'
-          !!/MPI            IT     = IT + 1
-          !!/MPI            CALL MPI_SEND ( ICEHO(1), NOPTS, MPI_REAL, ITARG, IT,  &
-          !!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
-          !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEHO'
-          !
-       END IF
-       !
+#ifdef W3_MPI
+        IT     = IT + 1
+        CALL MPI_SEND ( CDO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+             MPI_COMM_MWAVE, IERR_MPI )
+#endif
+#ifdef W3_MPIT
+        WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
+#endif
+        !JDM: The below should be added for points using partitioned processors
+        ! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so
+        ! this is being left here commented out for now.
+        ! There is a corresponding section to this below
+        !!/MPI            IT     = IT + 1
+        !!/MPI            CALL MPI_SEND ( ICEO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+        !!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
+        !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEO'
+        !!/MPI            IT     = IT + 1
+        !!/MPI            CALL MPI_SEND ( ICEFO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+        !!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
+        !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEFO'
+        !!/MPI            IT     = IT + 1
+        !!/MPI            CALL MPI_SEND ( ICEHO(1), NOPTS, MPI_REAL, ITARG, IT,  &
+        !!/MPI                            MPI_COMM_MWAVE, IERR_MPI )
+        !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEHO'
+        !
+      END IF
+      !
     END DO
     !
     ! -------------------------------------------------------------------- /
@@ -974,9 +974,9 @@ CONTAINS
     !
     IF ( IMPROC .NE. NMPUPT ) THEN
 #ifdef W3_T
-       WRITE (MDST,9020)
+      WRITE (MDST,9020)
 #endif
-       RETURN
+      RETURN
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -991,172 +991,172 @@ CONTAINS
 #ifdef W3_MPI
     DO J=1, NRGRD
 #endif
-       !
+      !
 #ifdef W3_MPI
-       CALL W3SETO ( J, MDSE, MDST )
-       CALL W3SETG ( J, MDSE, MDST )
-       CALL WMSETM ( J, MDSE, MDST )
+      CALL W3SETO ( J, MDSE, MDST )
+      CALL W3SETG ( J, MDSE, MDST )
+      CALL WMSETM ( J, MDSE, MDST )
 #endif
-       !
+      !
 #ifdef W3_MPI
-       DO NMPPNT= NMPROC, 1, -1
-          IF ( ALLPRC(NMPPNT,J) .EQ. NAPPNT ) EXIT
-       END DO
+      DO NMPPNT= NMPROC, 1, -1
+        IF ( ALLPRC(NMPPNT,J) .EQ. NAPPNT ) EXIT
+      END DO
 #endif
-       !
+      !
 #ifdef W3_MPIT
-       WRITE (MDST,9031) J, NOPTS, NMPPNT
+      WRITE (MDST,9031) J, NOPTS, NMPPNT
 #endif
 #ifdef W3_MPI
-       IF ( NMPPNT.EQ.NMPUPT .OR. NOPTS.EQ.0 ) THEN
-#endif
-#ifdef W3_MPIT
-          WRITE (MDST,9032)
-#endif
-#ifdef W3_MPI
-          CYCLE
-       END IF
-#endif
-       !
-       ! 3.b Receive data
-       !
-#ifdef W3_MPI
-       IT0    = MTAG0 - 7*NRGRD - 1
-       IT     = IT0 + (J-1)*7
-       IFROM  = NMPPNT - 1
-       ALLOCATE ( SPCR(NSPEC,NOPTS), STATUS(MPI_STATUS_SIZE,1),  &
-            DPR(NOPTS), WAR(NOPTS), WDR(NOPTS), ASR(NOPTS),&
-            CAR(NOPTS), CDR(NOPTS), ICRO(NOPTS),           &
-            ICRFO(NOPTS), ICRHO(NOPTS) )
-#endif
-       !
-#ifdef W3_MPI
-       IT     = IT + 1
-       CALL MPI_RECV ( SPCR(1,1), NSPEC*NOPTS, MPI_REAL, IFROM,  &
-            IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      IF ( NMPPNT.EQ.NMPUPT .OR. NOPTS.EQ.0 ) THEN
 #endif
 #ifdef W3_MPIT
-       WRITE (MDST,9019) IT-IT0, 'SPECTRA'
+        WRITE (MDST,9032)
 #endif
 #ifdef W3_MPI
-       IT     = IT + 1
-       CALL MPI_RECV ( DPR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
-            IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+        CYCLE
+      END IF
+#endif
+      !
+      ! 3.b Receive data
+      !
+#ifdef W3_MPI
+      IT0    = MTAG0 - 7*NRGRD - 1
+      IT     = IT0 + (J-1)*7
+      IFROM  = NMPPNT - 1
+      ALLOCATE ( SPCR(NSPEC,NOPTS), STATUS(MPI_STATUS_SIZE,1),  &
+           DPR(NOPTS), WAR(NOPTS), WDR(NOPTS), ASR(NOPTS),&
+           CAR(NOPTS), CDR(NOPTS), ICRO(NOPTS),           &
+           ICRFO(NOPTS), ICRHO(NOPTS) )
+#endif
+      !
+#ifdef W3_MPI
+      IT     = IT + 1
+      CALL MPI_RECV ( SPCR(1,1), NSPEC*NOPTS, MPI_REAL, IFROM,  &
+           IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-       WRITE (MDST,9019) IT-IT0, 'WATER DEPTHS'
+      WRITE (MDST,9019) IT-IT0, 'SPECTRA'
 #endif
 #ifdef W3_MPI
-       IT     = IT + 1
-       CALL MPI_RECV ( WAR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
-            IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      IT     = IT + 1
+      CALL MPI_RECV ( DPR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
+           IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-       WRITE (MDST,9019) IT-IT0, 'WIND SPEED'
+      WRITE (MDST,9019) IT-IT0, 'WATER DEPTHS'
 #endif
 #ifdef W3_MPI
-       IT     = IT + 1
-       CALL MPI_RECV ( WDR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
-            IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      IT     = IT + 1
+      CALL MPI_RECV ( WAR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
+           IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-       WRITE (MDST,9019) IT-IT0, 'WIND DIRECTION'
+      WRITE (MDST,9019) IT-IT0, 'WIND SPEED'
 #endif
 #ifdef W3_MPI
-       IT     = IT + 1
-       CALL MPI_RECV ( ASR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
-            IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      IT     = IT + 1
+      CALL MPI_RECV ( WDR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
+           IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-       WRITE (MDST,9019) IT-IT0, 'AIR_SEA TEMP DIFF'
+      WRITE (MDST,9019) IT-IT0, 'WIND DIRECTION'
 #endif
 #ifdef W3_MPI
-       IT     = IT + 1
-       CALL MPI_RECV ( CAR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
-            IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      IT     = IT + 1
+      CALL MPI_RECV ( ASR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
+           IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-       WRITE (MDST,9019) IT-IT0, 'CURRENT VELOCITY'
+      WRITE (MDST,9019) IT-IT0, 'AIR_SEA TEMP DIFF'
 #endif
 #ifdef W3_MPI
-       IT     = IT + 1
-       CALL MPI_RECV ( CDR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
-            IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      IT     = IT + 1
+      CALL MPI_RECV ( CAR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
+           IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-       WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
+      WRITE (MDST,9019) IT-IT0, 'CURRENT VELOCITY'
 #endif
-       !JDM: The below should be added for points using partitioned processors
-       ! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so
-       ! this is being left here commented out for now.
-       ! There is a corresponding section to this above
-       !!/MPI         IT     = IT + 1
-       !!/MPI         CALL MPI_RECV ( ICRO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
-       !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
-       !!/MPIT         WRITE (MDST,9019) IT-IT0, 'ICEO'
-       !!/MPI         IT     = IT + 1
-       !!/MPI         CALL MPI_RECV (ICRFO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
-       !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
-       !!/MPIT         WRITE (MDST,9019) IT-IT0, 'ICEFO'
-       !!/MPI         IT     = IT + 1
-       !!/MPI         CALL MPI_SEND (ICRHO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
-       !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
-       !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEHO'
-       !
-       ! 3.c Convert if necessary
-       !
 #ifdef W3_MPI
-       IF ( RESPEC(0,J) ) THEN
+      IT     = IT + 1
+      CALL MPI_RECV ( CDR(1), NSPEC*NOPTS, MPI_REAL, IFROM,     &
+           IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9016) 'YES'
+      WRITE (MDST,9019) IT-IT0, 'CURRENT DIRECTION'
 #endif
+      !JDM: The below should be added for points using partitioned processors
+      ! for multigrid, however I am unsure if the IT0 (7 to 10?) should be changed so
+      ! this is being left here commented out for now.
+      ! There is a corresponding section to this above
+      !!/MPI         IT     = IT + 1
+      !!/MPI         CALL MPI_RECV ( ICRO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
+      !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      !!/MPIT         WRITE (MDST,9019) IT-IT0, 'ICEO'
+      !!/MPI         IT     = IT + 1
+      !!/MPI         CALL MPI_RECV (ICRFO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
+      !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      !!/MPIT         WRITE (MDST,9019) IT-IT0, 'ICEFO'
+      !!/MPI         IT     = IT + 1
+      !!/MPI         CALL MPI_SEND (ICRHO(1), NSPEC*NOPTS, MPI_REAL, IFROM,   &
+      !!/MPI                        IT, MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      !!/MPIT            WRITE (MDST,9019) IT-IT0, 'ICEHO'
+      !
+      ! 3.c Convert if necessary
+      !
 #ifdef W3_MPI
-          ALLOCATE ( SPEC(SGRDS(0)%NSPEC,NOPTS) )
-          CALL W3CSPC ( SPCR, NK, NTH, XFR, FR1, TH(1), SPEC,   &
-               SGRDS(0)%NK, SGRDS(0)%NTH, SGRDS(0)%XFR,         &
-               SGRDS(0)%FR1, SGRDS(0)%TH(1), NOPTS, MDST, MDSE, &
-               SGRDS(0)%FACHFE )
-       ELSE
+      IF ( RESPEC(0,J) ) THEN
 #endif
 #ifdef W3_MPIT
-          WRITE (MDST,9016) 'NO'
+        WRITE (MDST,9016) 'YES'
 #endif
 #ifdef W3_MPI
-          SPEC   => SPCR
-       END IF
+        ALLOCATE ( SPEC(SGRDS(0)%NSPEC,NOPTS) )
+        CALL W3CSPC ( SPCR, NK, NTH, XFR, FR1, TH(1), SPEC,   &
+             SGRDS(0)%NK, SGRDS(0)%NTH, SGRDS(0)%XFR,         &
+             SGRDS(0)%FR1, SGRDS(0)%TH(1), NOPTS, MDST, MDSE, &
+             SGRDS(0)%FACHFE )
+      ELSE
 #endif
-       !
-       ! 3.d Store data at grid 0
-       !
 #ifdef W3_MPIT
-       WRITE (MDST,9117) J
+        WRITE (MDST,9016) 'NO'
 #endif
-       !
 #ifdef W3_MPI
-       DO I=1, NOPTS
-          II     = UPTMAP(I)
-          OUTPTS(0)%OUT2%SPCO(:,II)  = SPEC(:,I)
-          OUTPTS(0)%OUT2%DPO(II)     = DPR(I)
-          OUTPTS(0)%OUT2%WAO(II)     = WAR(I)
-          OUTPTS(0)%OUT2%WDO(II)     = WDR(I)
-          OUTPTS(0)%OUT2%ASO(II)     = ASR(I)
-          OUTPTS(0)%OUT2%CAO(II)     = CAR(I)
-          OUTPTS(0)%OUT2%CDO(II)     = CDR(I)
-          OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)
-          OUTPTS(0)%OUT2%ICEFO(II)    = ICEFO(I)
-          OUTPTS(0)%OUT2%ICEHO(II)    = ICEHO(I)
-       END DO
+        SPEC   => SPCR
+      END IF
 #endif
-       !
-#ifdef W3_MPI
-       IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
-       DEALLOCATE ( SPCR, DPR, WAR, WDR, ASR, CAR, CDR, STATUS )
+      !
+      ! 3.d Store data at grid 0
+      !
+#ifdef W3_MPIT
+      WRITE (MDST,9117) J
 #endif
-       !        !JDM add deallocates here and check the itag stuff.. really not
-       !        sure aabout that
+      !
 #ifdef W3_MPI
-       DEALLOCATE (ICRO, ICRFO, ICRHO)
+      DO I=1, NOPTS
+        II     = UPTMAP(I)
+        OUTPTS(0)%OUT2%SPCO(:,II)  = SPEC(:,I)
+        OUTPTS(0)%OUT2%DPO(II)     = DPR(I)
+        OUTPTS(0)%OUT2%WAO(II)     = WAR(I)
+        OUTPTS(0)%OUT2%WDO(II)     = WDR(I)
+        OUTPTS(0)%OUT2%ASO(II)     = ASR(I)
+        OUTPTS(0)%OUT2%CAO(II)     = CAR(I)
+        OUTPTS(0)%OUT2%CDO(II)     = CDR(I)
+        OUTPTS(0)%OUT2%ICEO(II)    = ICEO(I)
+        OUTPTS(0)%OUT2%ICEFO(II)    = ICEFO(I)
+        OUTPTS(0)%OUT2%ICEHO(II)    = ICEHO(I)
+      END DO
+#endif
+      !
+#ifdef W3_MPI
+      IF ( RESPEC(0,J) ) DEALLOCATE ( SPEC )
+      DEALLOCATE ( SPCR, DPR, WAR, WDR, ASR, CAR, CDR, STATUS )
+#endif
+      !        !JDM add deallocates here and check the itag stuff.. really not
+      !        sure aabout that
+#ifdef W3_MPI
+      DEALLOCATE (ICRO, ICRFO, ICRHO)
     END DO
 #endif
     !

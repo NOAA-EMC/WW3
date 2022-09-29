@@ -175,66 +175,66 @@ CONTAINS
 
     DO IDEF=1,NDEF
 
-       WRITE(LP,52) RES(IDEF),SSQ(IDEF)
-52     FORMAT('LARGEST RESIDUAL MAGNITUDE & RESIDUAL SUM OF SQUARES:'     &
-            ,2E12.5)
-       WRITE(LP,66) SDEV0(IDEF),RMSR0(IDEF)
-66     FORMAT(     &
-            'ST. DEV. OF RIGHT HAND SIDES OF ORIGINAL OVERDETERMINED SYSTEM:' &
-            ,E12.5/ &
-            '                       AND THE ROOT MEAN SQUARE RESIDUAL ERROR:' &
-            ,E12.5)
+      WRITE(LP,52) RES(IDEF),SSQ(IDEF)
+52    FORMAT('LARGEST RESIDUAL MAGNITUDE & RESIDUAL SUM OF SQUARES:'     &
+           ,2E12.5)
+      WRITE(LP,66) SDEV0(IDEF),RMSR0(IDEF)
+66    FORMAT(     &
+           'ST. DEV. OF RIGHT HAND SIDES OF ORIGINAL OVERDETERMINED SYSTEM:' &
+           ,E12.5/ &
+           '                       AND THE ROOT MEAN SQUARE RESIDUAL ERROR:' &
+           ,E12.5)
 
 
-       write(lp,*) ' rms residual: brute force =',rmsr(IDEF)
-       write(lp,*) ' max residual: ',resmax(IDEF),imax(IDEF)
+      write(lp,*) ' rms residual: brute force =',rmsr(IDEF)
+      write(lp,*) ' max residual: ',resmax(IDEF),imax(IDEF)
 
-       WRITE(LP,41)
-41     FORMAT('HARMONIC ANALYSIS RESULTS: AMPLITUDES, PHASE LAGS, C, S,      &
-            & amp SD estimates, t-test value')
-       !      write out results for constant term & linear trend
+      WRITE(LP,41)
+41    FORMAT('HARMONIC ANALYSIS RESULTS: AMPLITUDES, PHASE LAGS, C, S,      &
+           & amp SD estimates, t-test value')
+      !      write out results for constant term & linear trend
 
-       DO I=1,TIDE_MF
-          WRITE(LP,43) TIDECON_NAME(I),TIDE_FREQC(I),TIDE_AMPC(I,idef),TIDE_PHG(I,idef),     &
-               TIDE_sig1(I,idef),TIDE_sig2(I,idef),TIDE_sig3(I,idef),TIDE_ttest(I,idef)
-       END DO
+      DO I=1,TIDE_MF
+        WRITE(LP,43) TIDECON_NAME(I),TIDE_FREQC(I),TIDE_AMPC(I,idef),TIDE_PHG(I,idef),     &
+             TIDE_sig1(I,idef),TIDE_sig2(I,idef),TIDE_sig3(I,idef),TIDE_ttest(I,idef)
+      END DO
 
-43     FORMAT(5X,A5,4X,F12.9,2X,F10.5,2X,F10.3,5x,4f8.3)
+43    FORMAT(5X,A5,4X,F12.9,2X,F10.5,2X,F10.3,5x,4f8.3)
 
-       !
-       !*  INFERENCE results are given now
-       !
-       IF (TIDE_NIN.GE.0) THEN
-          write(lp,*) ' INFERENCE RESULTS'
-          l=0
-          do k=1,TIDE_NIN
-             do i=2,TIDE_MF
-                IF (TIDECON_NAME(i).eq.TIDE_KONAN(k)) EXIT
-             END DO
-             i1=i
-             do k2=1,TIDE_NINF(k)
-                l=l+1
-                write(lp,79) TIDE_KONIN(k,k2),TIDE_SIGIN(k,k2),TIDE_ampci(k,k2,idef), &
-                     TIDE_phgi(k,k2,idef)
-79              format(5x,a5,4x,f12.9,15x,f10.4,5x,f10.4)
-             END DO
+      !
+      !*  INFERENCE results are given now
+      !
+      IF (TIDE_NIN.GE.0) THEN
+        write(lp,*) ' INFERENCE RESULTS'
+        l=0
+        do k=1,TIDE_NIN
+          do i=2,TIDE_MF
+            IF (TIDECON_NAME(i).eq.TIDE_KONAN(k)) EXIT
           END DO
-          inftot=l
-       END IF
+          i1=i
+          do k2=1,TIDE_NINF(k)
+            l=l+1
+            write(lp,79) TIDE_KONIN(k,k2),TIDE_SIGIN(k,k2),TIDE_ampci(k,k2,idef), &
+                 TIDE_phgi(k,k2,idef)
+79          format(5x,a5,4x,f12.9,15x,f10.4,5x,f10.4)
+          END DO
+        END DO
+        inftot=l
+      END IF
 
 
-       WRITE(LP,70)TIDE_NTI,TIDE_MF*2,'    ',xlat,xlon,sngl(SDEV0),sngl(SDEV)
-70     format('N,m,LAT,LON,SDEV0,SDEV:  ',2i10,a4,f9.4,f10.4,2f10.2)
-       !
-       IF (TIDE_NIN.GT.0) THEN
-          WRITE(LP,71) RMSRP(IDEF)
-71        FORMAT('ROOT MEAN SQUARE RESIDUAL ERROR AFTER INFERENCE IS',     &
-               E15.6, //)
-       ELSE
-          WRITE(LP,72) RMSRP(IDEF)
-72        FORMAT('RECALCULATED ROOT MEAN SQUARE RESIDUAL ERROR IS   ',     &
-               E15.6, //)
-       ENDIF
+      WRITE(LP,70)TIDE_NTI,TIDE_MF*2,'    ',xlat,xlon,sngl(SDEV0),sngl(SDEV)
+70    format('N,m,LAT,LON,SDEV0,SDEV:  ',2i10,a4,f9.4,f10.4,2f10.2)
+      !
+      IF (TIDE_NIN.GT.0) THEN
+        WRITE(LP,71) RMSRP(IDEF)
+71      FORMAT('ROOT MEAN SQUARE RESIDUAL ERROR AFTER INFERENCE IS',     &
+             E15.6, //)
+      ELSE
+        WRITE(LP,72) RMSRP(IDEF)
+72      FORMAT('RECALCULATED ROOT MEAN SQUARE RESIDUAL ERROR IS   ',     &
+             E15.6, //)
+      ENDIF
     END DO
 
   END SUBROUTINE TIDE_WRITE_RESULTS
@@ -313,26 +313,26 @@ CONTAINS
     !
     TIDE_PRMF=0
     IF (TRIM(LIST(1)).EQ.'VFAST' .OR. TRIM(LIST(1)).EQ.'FAST') THEN
-       DO J=1,TIDE_MF
-          INDS(J)=J
-       END DO
-       TIDE_PRMF = TIDE_MF
-       RETURN
+      DO J=1,TIDE_MF
+        INDS(J)=J
+      END DO
+      TIDE_PRMF = TIDE_MF
+      RETURN
     END IF
     !
     DO WHILE (len_trim(LIST(TIDE_PRMF+1)).NE.0)
-       TIDE_PRMF=TIDE_PRMF+1
-       FOUND = 0
-       DO J=1,TIDE_MF
-          IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN
-             INDS(TIDE_PRMF)=J
-             FOUND=1
-             IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,A,E12.2)') 'Tidal constituent to be used in pre:', &
-                  TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
-          END IF
-       END DO
-       IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(3A)') 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)), &
-            ' not available.'
+      TIDE_PRMF=TIDE_PRMF+1
+      FOUND = 0
+      DO J=1,TIDE_MF
+        IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(LIST(TIDE_PRMF))) THEN
+          INDS(TIDE_PRMF)=J
+          FOUND=1
+          IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,A,E12.2)') 'Tidal constituent to be used in pre:', &
+               TRIM(LIST(TIDE_PRMF)),TIDE_FREQC(J)
+        END IF
+      END DO
+      IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(3A)') 'Tidal constituent ',TRIM(LIST(TIDE_PRMF)), &
+           ' not available.'
     END DO
     !
   END SUBROUTINE TIDE_FIND_INDICES_PREDICTION
@@ -438,39 +438,39 @@ CONTAINS
     INDS(:) = 0
     !
     IF (TRIM(LIST(1)).EQ.'FAST') THEN
-       TIDE_MF = 44
-       INDS(1:44)= (/ 1, 2, 3, 4, 5, 6, 12, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,  &
-            37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,&
-            55, 56, 57, 58, 59, 60 /)
-       !
+      TIDE_MF = 44
+      INDS(1:44)= (/ 1, 2, 3, 4, 5, 6, 12, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,  &
+           37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,&
+           55, 56, 57, 58, 59, 60 /)
+      !
     ELSE IF (TRIM(LIST(1)).EQ.'VFAST') THEN
-       TIDE_MF = 20
-       INDS(1:20)= (/ 1, 2, 3, 5, 6, 27, 28, 29, 30, 31, 35, 36, 37, 44, 45, 47, 49, 54, 55, 60 /)
-       !
+      TIDE_MF = 20
+      INDS(1:20)= (/ 1, 2, 3, 5, 6, 27, 28, 29, 30, 31, 35, 36, 37, 44, 45, 47, 49, 54, 55, 60 /)
+      !
     ELSE
-       TIDE_MF=0
-       NTIDES=0
-       !
-       DO WHILE (len_trim(LIST(TIDE_MF+1)).NE.0)
-          !
-          TIDE_MF=TIDE_MF+1
-          FOUND = 0
-          DO J=1,65
-             IF (TRIM(TIDECON_NAME_ALL(J)).EQ.TRIM(LIST(TIDE_MF))) THEN
-                NTIDES=NTIDES+1
-                INDS(NTIDES)=J
-                FOUND = 1
-                IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,2A,E12.2)')  &
-                     'Tidal constituent in analysis:', J, ' ', &
-                     TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
-             END IF
-          END DO
-          IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,A,A)') &
-               'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
-          !
-       END DO
-       !
-       TIDE_MF=NTIDES
+      TIDE_MF=0
+      NTIDES=0
+      !
+      DO WHILE (len_trim(LIST(TIDE_MF+1)).NE.0)
+        !
+        TIDE_MF=TIDE_MF+1
+        FOUND = 0
+        DO J=1,65
+          IF (TRIM(TIDECON_NAME_ALL(J)).EQ.TRIM(LIST(TIDE_MF))) THEN
+            NTIDES=NTIDES+1
+            INDS(NTIDES)=J
+            FOUND = 1
+            IF (IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,2A,E12.2)')  &
+                 'Tidal constituent in analysis:', J, ' ', &
+                 TRIM(TIDECON_NAME_ALL(J)),TIDE_FREQC_ALL(J)
+          END IF
+        END DO
+        IF (FOUND.EQ.0 .AND. IAPROC.EQ.NAPOUT) WRITE(NDSO,'(A,I4,A,A)') &
+             'Tidal constituent ',TIDE_MF,TRIM(LIST(TIDE_MF)),' not available.'
+        !
+      END DO
+      !
+      TIDE_MF=NTIDES
     END IF
     !
     ! Defines names and frequencies
@@ -479,8 +479,8 @@ CONTAINS
     ALLOCATE(TIDE_FREQC(TIDE_MF),TIDECON_NAME(TIDE_MF))
 
     DO J=1,TIDE_MF
-       TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
-       TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
+      TIDECON_NAME(J) = TIDECON_NAME_ALL(INDS(J))
+      TIDE_FREQC(J) = TIDE_FREQC_ALL(INDS(J))
     END DO
     CALL TIDE_SET_INDICES
 
@@ -498,9 +498,9 @@ CONTAINS
     INTEGER J, K, K1, L, J1, JL, L2, KM1, JBASE
     !
     DO L=1,TIDE_MF
-       DO K=1,NTOTAL_CON
-          IF (TIDECON_ALLNAMES(k).EQ.TIDECON_NAME(L)) TIDE_INDEX2(L)=K
-       END DO
+      DO K=1,NTOTAL_CON
+        IF (TIDECON_ALLNAMES(k).EQ.TIDECON_NAME(L)) TIDE_INDEX2(L)=K
+      END DO
     END DO
     !
     TIDE_INDEXJ(:)=0
@@ -509,19 +509,19 @@ CONTAINS
     K1=NTIDAL_CON+1
     !
     DO K=K1,NTOTAL_CON
-       J1=JBASE+1
-       TIDE_INDEXJ(K)=J1
-       JL=JBASE+NJ(K)
-       DO J=J1,JL
-          KM1=K-1
-          L2=0
-          DO L2=1,KM1
-             IF (TIDECON_ALLNAMES(L2).EQ.KONCO_CON(J)) THEN
-                TIDE_INDEXJK(J)=L2
-             END IF
-          END DO ! L2
-       END DO   ! J
-       JBASE=JL
+      J1=JBASE+1
+      TIDE_INDEXJ(K)=J1
+      JL=JBASE+NJ(K)
+      DO J=J1,JL
+        KM1=K-1
+        L2=0
+        DO L2=1,KM1
+          IF (TIDECON_ALLNAMES(L2).EQ.KONCO_CON(J)) THEN
+            TIDE_INDEXJK(J)=L2
+          END IF
+        END DO ! L2
+      END DO   ! J
+      JBASE=JL
     END DO     ! K
     !
   END SUBROUTINE TIDE_SET_INDICES
@@ -602,40 +602,40 @@ CONTAINS
     VA(:)=0
 
     DO K=1,NTIDAL_CON
-       J1=JBASE+1
-       JL=JBASE+NJ(K)
-       DO L=1,TIDE_MF
-          IF (TIDE_INDEX2(L).EQ.K) THEN
-             VDBL=II(K)*TAU+JJ(K)*S+KK(K)*H+LL(K)*P+MM(K)*ENP+NN(K)*PP+SEMI(K)
-             IV=VDBL
-             IV=(IV/2)*2
-             SUMC=1.
-             SUMS=0.
-             DO J=J1,JL
-                ! ITIME ???
-                !***********************************************************************
-                !*  HERE THE SATELLITE AMPLITUDE RATIO ADJUSTMENT FOR LATITUDE IS MADE
-                !
-                RR=EE(J)
-                L2=IR(J)+1
-                IF (L2.EQ.2) THEN
-                   RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
-                ELSE IF (L2.EQ.3) THEN
-                   RR=EE(J)*2.59808*SLAT
-                END IF
-                UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
-                IUU=UUDBL
-                UU=UUDBL-IUU
-                SUMC=SUMC+RR*COS(UU*TWOPI)
-                SUMS=SUMS+RR*SIN(UU*TWOPI)
-             END DO
-             !
-             FA(K)=SQRT(SUMC*SUMC+SUMS*SUMS)
-             VA(K)=VDBL-IV
-             UA(K)=ATAN2(SUMS,SUMC)/TWOPI
-          END IF
-          JBASE=JL ! (indx(L).EQ.K)
-       END DO   ! L
+      J1=JBASE+1
+      JL=JBASE+NJ(K)
+      DO L=1,TIDE_MF
+        IF (TIDE_INDEX2(L).EQ.K) THEN
+          VDBL=II(K)*TAU+JJ(K)*S+KK(K)*H+LL(K)*P+MM(K)*ENP+NN(K)*PP+SEMI(K)
+          IV=VDBL
+          IV=(IV/2)*2
+          SUMC=1.
+          SUMS=0.
+          DO J=J1,JL
+            ! ITIME ???
+            !***********************************************************************
+            !*  HERE THE SATELLITE AMPLITUDE RATIO ADJUSTMENT FOR LATITUDE IS MADE
+            !
+            RR=EE(J)
+            L2=IR(J)+1
+            IF (L2.EQ.2) THEN
+              RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
+            ELSE IF (L2.EQ.3) THEN
+              RR=EE(J)*2.59808*SLAT
+            END IF
+            UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
+            IUU=UUDBL
+            UU=UUDBL-IUU
+            SUMC=SUMC+RR*COS(UU*TWOPI)
+            SUMS=SUMS+RR*SIN(UU*TWOPI)
+          END DO
+          !
+          FA(K)=SQRT(SUMC*SUMC+SUMS*SUMS)
+          VA(K)=VDBL-IV
+          UA(K)=ATAN2(SUMS,SUMC)/TWOPI
+        END IF
+        JBASE=JL ! (indx(L).EQ.K)
+      END DO   ! L
     END DO     ! K
     !
     !  HERE F AND V+U OF THE SHALLOW WATER CONSTITUENTS ARE COMPUTED FROM
@@ -645,21 +645,21 @@ CONTAINS
     IF (K1.GT.NTOTAL_CON) RETURN
     !
     DO K=K1,NTOTAL_CON
-       FA(K)=1.0
-       VA(K)=0.0
-       UA(K)=0.
-       DO J=TIDE_INDEXJ(K),TIDE_INDEXJ(K)+NJ(K)-1
-          L2=TIDE_INDEXJK(J)
-          FA(K)=FA(K)*FA(L2)**ABS(COEF_CON(J))
-          vA(k)=vA(K)+COEF_CON(J)*vA(L2)
-          UA(K)=UA(k)+COEF_CON(J)*UA(L2)
-       END DO   ! J
+      FA(K)=1.0
+      VA(K)=0.0
+      UA(K)=0.
+      DO J=TIDE_INDEXJ(K),TIDE_INDEXJ(K)+NJ(K)-1
+        L2=TIDE_INDEXJK(J)
+        FA(K)=FA(K)*FA(L2)**ABS(COEF_CON(J))
+        vA(k)=vA(K)+COEF_CON(J)*vA(L2)
+        UA(K)=UA(k)+COEF_CON(J)*UA(L2)
+      END DO   ! J
     END DO     ! K
     !
     DO L=1,TIDE_MF
-       F(L)=FA(TIDE_INDEX2(L))
-       U(L)=UA(TIDE_INDEX2(L))
-       V(L)=VA(TIDE_INDEX2(L))
+      F(L)=FA(TIDE_INDEX2(L))
+      U(L)=UA(TIDE_INDEX2(L))
+      V(L)=VA(TIDE_INDEX2(L))
     END DO   ! L
 
     RETURN
@@ -785,11 +785,11 @@ CONTAINS
 #endif
     IF (itrend.eq.1) then
 #ifdef W3_T
-       WRITE(6,*) ' a linear trend is included in the analysis'
+      WRITE(6,*) ' a linear trend is included in the analysis'
 #endif
     else
 #ifdef W3_T
-       WRITE(6,*) ' no linear trend is included'
+      WRITE(6,*) ' no linear trend is included'
 #endif
     END IF
     !      TIDE_MF= number of consituents, excluding linear trend. The constant
@@ -823,12 +823,12 @@ CONTAINS
     !      read in inference information now as it will be used in the lsq matrix
     !
     DO K=1,10
-       READ(KR1,'(4X,A5,E16.10,i5)')TIDE_KONAN(K),TIDE_SIGAN(K),TIDE_NINF(k)
-       !      write(6,1010)TIDE_KONAN(K),TIDE_SIGAN(K),TIDE_NINF(k)
-       IF (TIDE_KONAN(K).EQ.KBLANK) EXIT
-       do k2=1,TIDE_NINF(k)
-          read(kr1,'(4X,A5,E16.10,2F10.3)') TIDE_KONIN(K,k2),TIDE_SIGIN(K,k2),TIDE_R(K,k2),TIDE_ZETA(K,k2)
-       END DO
+      READ(KR1,'(4X,A5,E16.10,i5)')TIDE_KONAN(K),TIDE_SIGAN(K),TIDE_NINF(k)
+      !      write(6,1010)TIDE_KONAN(K),TIDE_SIGAN(K),TIDE_NINF(k)
+      IF (TIDE_KONAN(K).EQ.KBLANK) EXIT
+      do k2=1,TIDE_NINF(k)
+        read(kr1,'(4X,A5,E16.10,2F10.3)') TIDE_KONIN(K,k2),TIDE_SIGIN(K,k2),TIDE_R(K,k2),TIDE_ZETA(K,k2)
+      END DO
     END DO
     TIDE_NIN=K-1
     CLOSE(kr1)
@@ -868,31 +868,31 @@ CONTAINS
     KDD = KD1
     I=0
     DO WHILE(ICODE.EQ.0.AND.KDD.LE.KD2)
-       !
-       ! reads with the original Foreman's format
-       !
-       READ(kr2,145,IOSTAT=ICODE) idd,imm,icc,iyy,ihh,imin,htt(1:NDEF)
-145    format(6i2,4f10.4)
-       isec=0
-       iy=icc*100+iyy
+      !
+      ! reads with the original Foreman's format
+      !
+      READ(kr2,145,IOSTAT=ICODE) idd,imm,icc,iyy,ihh,imin,htt(1:NDEF)
+145   format(6i2,4f10.4)
+      isec=0
+      iy=icc*100+iyy
 
-       kdd=JULDAYT(idd,imm,iy)
+      kdd=JULDAYT(idd,imm,iy)
 
-       IF (kdD.lt.kd1) then
-          WRITE(*,*) icc,iyy,imm,idd,ihh,imin
-          WRITE(*,*)'kd, kd1, kd2 =',kdd,kd1,kd2
-          write(*,*) ' observation before analysis period'
-       ELSE
-          !
-          !  Fills in data array
-          !
-          IF (ICODE.EQ.0.AND.KDD.LE.KD2) THEN
-             i=i+1
-             TIDE_DATATMP(I,:)=htt(:)
-             TIDE_DAYSTMP(I)=kdd
-             TIDE_SECSTMP(I)=ihh*3600+imin*60+isec
-          END IF
-       END IF
+      IF (kdD.lt.kd1) then
+        WRITE(*,*) icc,iyy,imm,idd,ihh,imin
+        WRITE(*,*)'kd, kd1, kd2 =',kdd,kd1,kd2
+        write(*,*) ' observation before analysis period'
+      ELSE
+        !
+        !  Fills in data array
+        !
+        IF (ICODE.EQ.0.AND.KDD.LE.KD2) THEN
+          i=i+1
+          TIDE_DATATMP(I,:)=htt(:)
+          TIDE_DAYSTMP(I)=kdd
+          TIDE_SECSTMP(I)=ihh*3600+imin*60+isec
+        END IF
+      END IF
     END DO
 
     TIDE_NTI=i
@@ -979,13 +979,13 @@ CONTAINS
     absa=abs(a)
     absb=abs(b)
     IF (absa.gt.absb)then
-       dpythag=absa*sqrt(1.0d0+(absb/absa)**2)
+      dpythag=absa*sqrt(1.0d0+(absb/absa)**2)
     else
-       IF (absb.eq.0.0d0)then
-          dpythag=0.0d0
-       else
-          dpythag=absb*sqrt(1.0d0+(absa/absb)**2)
-       endif
+      IF (absb.eq.0.0d0)then
+        dpythag=0.0d0
+      else
+        dpythag=absb*sqrt(1.0d0+(absa/absb)**2)
+      endif
     endif
     return
   END FUNCTION dpythag
@@ -999,21 +999,21 @@ CONTAINS
     INTEGER i,j,jj
     DOUBLE PRECISION s,tmp(NMAX)
     do j=1,n
-       s=0.0d0
-       IF (w(j).ne.0.0d0)then
-          do i=1,m
-             s=s+u(i,j)*b(i)
-          end do
-          s=s/w(j)
-       endif
-       tmp(j)=s
+      s=0.0d0
+      IF (w(j).ne.0.0d0)then
+        do i=1,m
+          s=s+u(i,j)*b(i)
+        end do
+        s=s/w(j)
+      endif
+      tmp(j)=s
     end do
     do  j=1,n
-       s=0.0d0
-       do  jj=1,n
-          s=s+v(j,jj)*tmp(jj)
-       end do
-       x(j)=s
+      s=0.0d0
+      do  jj=1,n
+        s=s+v(j,jj)*tmp(jj)
+      end do
+      x(j)=s
     end do
     return
   END SUBROUTINE dsvbksb
@@ -1032,222 +1032,222 @@ CONTAINS
     scale=0.0d0
     anorm=0.0d0
     do i=1,n
-       l=i+1
-       rv1(i)=scale*g
-       g=0.0d0
-       s=0.0d0
-       scale=0.0d0
-       IF (i.le.m)then
-          DO k=i,m
-             scale=scale+abs(a(k,i))
+      l=i+1
+      rv1(i)=scale*g
+      g=0.0d0
+      s=0.0d0
+      scale=0.0d0
+      IF (i.le.m)then
+        DO k=i,m
+          scale=scale+abs(a(k,i))
+        END DO
+        IF (scale.ne.0.0d0) THEN
+          DO  k=i,m
+            a(k,i)=a(k,i)/scale
+            s=s+a(k,i)*a(k,i)
           END DO
-          IF (scale.ne.0.0d0) THEN
-             DO  k=i,m
-                a(k,i)=a(k,i)/scale
-                s=s+a(k,i)*a(k,i)
-             END DO
-             f=a(i,i)
-             g=-sign(sqrt(s),f)
-             h=f*g-s
-             a(i,i)=f-g
-             DO j=l,n
-                s=0.0d0
-                DO k=i,m
-                   s=s+a(k,i)*a(k,j)
-                END DO
-                f=s/h
-                DO k=i,m
-                   a(k,j)=a(k,j)+f*a(k,i)
-                END DO
-             END DO
-             DO k=i,m
-                a(k,i)=scale*a(k,i)
-             END DO
-             !
-          END IF
+          f=a(i,i)
+          g=-sign(sqrt(s),f)
+          h=f*g-s
+          a(i,i)=f-g
+          DO j=l,n
+            s=0.0d0
+            DO k=i,m
+              s=s+a(k,i)*a(k,j)
+            END DO
+            f=s/h
+            DO k=i,m
+              a(k,j)=a(k,j)+f*a(k,i)
+            END DO
+          END DO
+          DO k=i,m
+            a(k,i)=scale*a(k,i)
+          END DO
           !
-       END IF
-       !
-       w(i)=scale *g
-       g=0.0d0
-       s=0.0d0
-       scale=0.0d0
-       IF ((i.le.m).and.(i.ne.n))then
+        END IF
+        !
+      END IF
+      !
+      w(i)=scale *g
+      g=0.0d0
+      s=0.0d0
+      scale=0.0d0
+      IF ((i.le.m).and.(i.ne.n))then
+        do k=l,n
+          scale=scale+abs(a(i,k))
+        end do
+        IF (scale.ne.0.0d0)then
           do k=l,n
-             scale=scale+abs(a(i,k))
+            a(i,k)=a(i,k)/scale
+            s=s+a(i,k)*a(i,k)
           end do
-          IF (scale.ne.0.0d0)then
-             do k=l,n
-                a(i,k)=a(i,k)/scale
-                s=s+a(i,k)*a(i,k)
-             end do
-             f=a(i,l)
-             g=-sign(sqrt(s),f)
-             h=f*g-s
-             a(i,l)=f-g
-             do k=l,n
-                rv1(k)=a(i,k)/h
-             end do
-             do j=l,m
-                s=0.0d0
-                do k=l,n
-                   s=s+a(j,k)*a(i,k)
-                end do
-                do k=l,n
-                   a(j,k)=a(j,k)+s*rv1(k)
-                end do
-             end do
-             do k=l,n
-                a(i,k)=scale*a(i,k)
-             end do
-          endif
-       endif
-       anorm=max(anorm,(abs(w(i))+abs(rv1(i))))
+          f=a(i,l)
+          g=-sign(sqrt(s),f)
+          h=f*g-s
+          a(i,l)=f-g
+          do k=l,n
+            rv1(k)=a(i,k)/h
+          end do
+          do j=l,m
+            s=0.0d0
+            do k=l,n
+              s=s+a(j,k)*a(i,k)
+            end do
+            do k=l,n
+              a(j,k)=a(j,k)+s*rv1(k)
+            end do
+          end do
+          do k=l,n
+            a(i,k)=scale*a(i,k)
+          end do
+        endif
+      endif
+      anorm=max(anorm,(abs(w(i))+abs(rv1(i))))
     end do
     do i=n,1,-1
-       IF (i.lt.n)then
-          IF (g.ne.0.0d0)then
-             do j=l,n
-                v(j,i)=(a(i,j)/a(i,l))/g
-             end do
-             do j=l,n
-                s=0.0d0
-                do k=l,n
-                   s=s+a(i,k)*v(k,j)
-                end do
-                do k=l,n
-                   v(k,j)=v(k,j)+s*v(k,i)
-                end do
-             end do
-          endif
+      IF (i.lt.n)then
+        IF (g.ne.0.0d0)then
           do j=l,n
-             v(i,j)=0.0d0
-             v(j,i)=0.0d0
+            v(j,i)=(a(i,j)/a(i,l))/g
           end do
-       endif
-       v(i,i)=1.0d0
-       g=rv1(i)
-       l=i
+          do j=l,n
+            s=0.0d0
+            do k=l,n
+              s=s+a(i,k)*v(k,j)
+            end do
+            do k=l,n
+              v(k,j)=v(k,j)+s*v(k,i)
+            end do
+          end do
+        endif
+        do j=l,n
+          v(i,j)=0.0d0
+          v(j,i)=0.0d0
+        end do
+      endif
+      v(i,i)=1.0d0
+      g=rv1(i)
+      l=i
     end do
     do i=min(m,n),1,-1
-       l=i+1
-       g=w(i)
-       do  j=l,n
-          a(i,j)=0.0d0
-       end do
-       IF (g.ne.0.0d0)then
-          g=1.0d0/g
-          do j=l,n
-             s=0.0d0
-             do k=l,m
-                s=s+a(k,i)*a(k,j)
-             end do
-             f=(s/a(i,i))*g
-             do k=i,m
-                a(k,j)=a(k,j)+f*a(k,i)
-             end do
+      l=i+1
+      g=w(i)
+      do  j=l,n
+        a(i,j)=0.0d0
+      end do
+      IF (g.ne.0.0d0)then
+        g=1.0d0/g
+        do j=l,n
+          s=0.0d0
+          do k=l,m
+            s=s+a(k,i)*a(k,j)
           end do
-          do j=i,m
-             a(j,i)=a(j,i)*g
+          f=(s/a(i,i))*g
+          do k=i,m
+            a(k,j)=a(k,j)+f*a(k,i)
           end do
-       else
-          do  j= i,m
-             a(j,i)=0.0d0
-          end do
-       endif
-       a(i,i)=a(i,i)+1.0d0
+        end do
+        do j=i,m
+          a(j,i)=a(j,i)*g
+        end do
+      else
+        do  j= i,m
+          a(j,i)=0.0d0
+        end do
+      endif
+      a(i,i)=a(i,i)+1.0d0
     end do
     do k=n,1,-1
-       do  its=1,30
-          do  l=k,1,-1
-             nm=l-1
-             IF ((abs(rv1(l))+anorm).eq.anorm)  goto 2
-             IF ((abs(w(nm))+anorm).eq.anorm)  goto 1
+      do  its=1,30
+        do  l=k,1,-1
+          nm=l-1
+          IF ((abs(rv1(l))+anorm).eq.anorm)  goto 2
+          IF ((abs(w(nm))+anorm).eq.anorm)  goto 1
+        end do
+1       c=0.0d0
+        s=1.0d0
+        do  i=l,k
+          f=s*rv1(i)
+          rv1(i)=c*rv1(i)
+          IF ((abs(f)+anorm).eq.anorm) goto 2
+          g=w(i)
+          h=dpythag(f,g)
+          w(i)=h
+          h=1.0d0/h
+          c= (g*h)
+          s=-(f*h)
+          do j=1,m
+            y=a(j,nm)
+            z=a(j,i)
+            a(j,nm)=(y*c)+(z*s)
+            a(j,i)=-(y*s)+(z*c)
           end do
-1         c=0.0d0
-          s=1.0d0
-          do  i=l,k
-             f=s*rv1(i)
-             rv1(i)=c*rv1(i)
-             IF ((abs(f)+anorm).eq.anorm) goto 2
-             g=w(i)
-             h=dpythag(f,g)
-             w(i)=h
-             h=1.0d0/h
-             c= (g*h)
-             s=-(f*h)
-             do j=1,m
-                y=a(j,nm)
-                z=a(j,i)
-                a(j,nm)=(y*c)+(z*s)
-                a(j,i)=-(y*s)+(z*c)
-             end do
-          end do
-2         z=w(k)
-          IF (l.eq.k)then
-             IF (z.lt.0.0d0)then
-                w(k)=-z
-                do j=1,n
-                   v(j,k)=-v(j,k)
-                end do
-             endif
-             goto 3
+        end do
+2       z=w(k)
+        IF (l.eq.k)then
+          IF (z.lt.0.0d0)then
+            w(k)=-z
+            do j=1,n
+              v(j,k)=-v(j,k)
+            end do
           endif
-          IF (ITS.eq.30) THEN
-             WRITE(6,*) 'no convergence in svdcmp'
-             STOP
-          END IF
-          x=w(l)
-          nm=k-1
-          y=w(nm)
-          g=rv1(nm)
-          h=rv1(k)
-          f=((y-z)*(y+z)+(g-h)*(g+h))/(2.0d0*h*y)
-          g=dpythag(f,1.0d0)
-          f=((x-z)*(x+z)+h*((y/(f+sign(g,f)))-h))/x
-          c=1.0d0
-          s=1.0d0
-          do  j=l,nm
-             i=j+1
-             g=rv1(i)
-             y=w(i)
-             h=s*g
-             g=c*g
-             z=dpythag(f,h)
-             rv1(j)=z
-             c=f/z
-             s=h/z
-             f= (x*c)+(g*s)
-             g=-(x*s)+(g*c)
-             h=y*s
-             y=y*c
-             do  jj=1,n
-                x=v(jj,j)
-                z=v(jj,i)
-                v(jj,j)= (x*c)+(z*s)
-                v(jj,i)=-(x*s)+(z*c)
-             end do
-             z=dpythag(f,h)
-             w(j)=z
-             IF (z.ne.0.0d0)then
-                z=1.0d0/z
-                c=f*z
-                s=h*z
-             endif
-             f= (c*g)+(s*y)
-             x=-(s*g)+(c*y)
-             do jj=1,m
-                y=a(jj,j)
-                z=a(jj,i)
-                a(jj,j)= (y*c)+(z*s)
-                a(jj,i)=-(y*s)+(z*c)
-             end do
+          goto 3
+        endif
+        IF (ITS.eq.30) THEN
+          WRITE(6,*) 'no convergence in svdcmp'
+          STOP
+        END IF
+        x=w(l)
+        nm=k-1
+        y=w(nm)
+        g=rv1(nm)
+        h=rv1(k)
+        f=((y-z)*(y+z)+(g-h)*(g+h))/(2.0d0*h*y)
+        g=dpythag(f,1.0d0)
+        f=((x-z)*(x+z)+h*((y/(f+sign(g,f)))-h))/x
+        c=1.0d0
+        s=1.0d0
+        do  j=l,nm
+          i=j+1
+          g=rv1(i)
+          y=w(i)
+          h=s*g
+          g=c*g
+          z=dpythag(f,h)
+          rv1(j)=z
+          c=f/z
+          s=h/z
+          f= (x*c)+(g*s)
+          g=-(x*s)+(g*c)
+          h=y*s
+          y=y*c
+          do  jj=1,n
+            x=v(jj,j)
+            z=v(jj,i)
+            v(jj,j)= (x*c)+(z*s)
+            v(jj,i)=-(x*s)+(z*c)
           end do
-          rv1(l)=0.0d0
-          rv1(k)=f
-          w(k)=x
-       end do
-3      continue
+          z=dpythag(f,h)
+          w(j)=z
+          IF (z.ne.0.0d0)then
+            z=1.0d0/z
+            c=f*z
+            s=h*z
+          endif
+          f= (c*g)+(s*y)
+          x=-(s*g)+(c*y)
+          do jj=1,m
+            y=a(jj,j)
+            z=a(jj,i)
+            a(jj,j)= (y*c)+(z*s)
+            a(jj,i)=-(y*s)+(z*c)
+          end do
+        end do
+        rv1(l)=0.0d0
+        rv1(k)=f
+        w(k)=x
+      end do
+3     continue
     end do
     return
   END SUBROUTINE dsvdcmp
@@ -1266,15 +1266,15 @@ CONTAINS
     IF (jy.EQ.0) WRITE(6,*) 'There is no zero year !!'
     IF (jy.LT.0) jy=jy+1
     IF (mm.GT.2) THEN
-       jm=mm+1
+      jm=mm+1
     ELSE
-       jy=jy-1
-       jm=mm+13
+      jy=jy-1
+      jm=mm+13
     ENDIF
     JULDAYT=INT(365.25*jy)+int(30.6001*jm)+id+1720995
     IF (id+31*(mm+12*iyyy).GE.IGREG) THEN
-       ja=INT(0.01*jy)
-       JULDAYT=JULDAYT+2-ja+INT(0.25*ja)
+      ja=INT(0.01*jy)
+      JULDAYT=JULDAYT+2-ja+INT(0.25*ja)
     ENDIF
     RETURN
   END FUNCTION JULDAYT
@@ -1290,10 +1290,10 @@ CONTAINS
     INTEGER(KIND=4), PARAMETER :: IGREG=2299161
     INTEGER(KIND=4) ja,jalpha,jb,jc,jd,je
     if (julian.GE.IGREG) THEN
-       jalpha=INT(((julian-1867216)-0.25)/36524.25)
-       ja=julian+1+jalpha-INT(0.25*jalpha)
+      jalpha=INT(((julian-1867216)-0.25)/36524.25)
+      ja=julian+1+jalpha-INT(0.25*jalpha)
     ELSE
-       ja=julian
+      ja=julian
     ENDIF
     jb=ja+1524
     jc=INT(6680.+((jb-2439870)-122.1)/365.25)
@@ -1374,15 +1374,15 @@ CONTAINS
 
     jc=0
     do i=1,mm
-       b(i)=q(i,N2)
+      b(i)=q(i,N2)
     enddo
     ! no need to solve if only rhs has changed
     IF (ic.eq.2) go to 10
     ! define a "design matrix" u(=a) and set-up working arrays
     do j=1,N2
-       do i=1,mm
-          u(i,j)=q(i,j)
-       enddo
+      do i=1,mm
+        u(i,j)=q(i,j)
+      enddo
     enddo
     ! compute svd decomposition of u(=a), with a being replaced by its upper
     ! matrix u, viz a=u*w*transpose(v), and vector w is output of a diagonal
@@ -1391,23 +1391,23 @@ CONTAINS
     ! check for small singular values
     wmax=0.
     do j=1,n
-       IF (w(j).gt.wmax) wmax=w(j)
+      IF (w(j).gt.wmax) wmax=w(j)
     enddo
     thresh=toler*wmax
     do j=1,n
-       IF (w(j).lt.thresh) then
-          w(j)=0.d0
-          IF (jc.lt.1) jc=j
-       endif
+      IF (w(j).lt.thresh) then
+        w(j)=0.d0
+        IF (jc.lt.1) jc=j
+      endif
     enddo
 10  eps=1.d-10
     ! compute summation weights (wti, used below)
     do j=1,n
-       wti(j)=0.d0
-       IF (w(j).gt.eps) then
-          !         wti(j)=sig(j)*sig(j)/(w(j)*w(j))
-          wti(j)=1.d0/(w(j)*w(j))
-       endif
+      wti(j)=0.d0
+      IF (w(j).gt.eps) then
+        !         wti(j)=sig(j)*sig(j)/(w(j)*w(j))
+        wti(j)=1.d0/(w(j)*w(j))
+      endif
     enddo
     ! use back-substitution to compute the solution p(i), i=1,n
     call dsvbksb(u,w,v,m,n,mm,N2,b,p)
@@ -1415,27 +1415,27 @@ CONTAINS
     ssq=0.
     res=0.
     do i=1,m
-       sum=0.d0
-       do j=1,n
-          sum=sum+p(j)*q(i,j)
-       enddo
-       resi=abs(b(i)-sum)
-       !      TIDE_MF addition
-       q(i,N2)=b(i)-sum
-       res=max(res,resi)
-       ssq=ssq+resi**2
+      sum=0.d0
+      do j=1,n
+        sum=sum+p(j)*q(i,j)
+      enddo
+      resi=abs(b(i)-sum)
+      !      TIDE_MF addition
+      q(i,N2)=b(i)-sum
+      res=max(res,resi)
+      ssq=ssq+resi**2
     enddo
     ! compute variances, covariances, these may need to be given dimension
     ! of b(i), e.g., using sig(i), but this is better done after return to main
     do i=1,n
-       do j=1,i
-          sum=0.d0
-          do k=1,n
-             sum=sum+v(i,k)*v(j,k)*wti(k)
-          enddo
-          cov(i,j)=sum
-          cov(j,i)=sum
-       enddo
+      do j=1,i
+        sum=0.d0
+        do k=1,n
+          sum=sum+v(i,k)*v(j,k)*wti(k)
+        enddo
+        cov(i,j)=sum
+        cov(j,i)=sum
+      enddo
     enddo
     return
   end subroutine svd
@@ -1717,7 +1717,7 @@ CONTAINS
     INTEGER          :: K
 
     DO  K=1,NTOTAL_CON
-       IF (TIDECON_ALLNAMES(K).eq.KONX) go to 40
+      IF (TIDECON_ALLNAMES(K).eq.KONX) go to 40
     END DO
     WRITE(NDSET,30) KONX
 30  FORMAT('ERROR IN VUF: STOP.',A5)
@@ -1775,46 +1775,46 @@ CONTAINS
 
     JBASE=0
     DO K=1,1000
-       READ(KR,60)TIDECON_ALLNAMES(K),II(K),JJ(K),KK(K),LL(K),MM(K),NN(K),SEMI(K), &
-            NJ(K)
-60     FORMAT(6X,A5,1X,6I3,F5.2,I4)
-       !WRITE(995,'(I4,A5,1X,6I3,F5.2,I4)') K,TIDECON_ALLNAMES(K),II(K),JJ(K),KK(K),LL(K),MM(K),NN(K),SEMI(K), &
-       !           NJ(K)
-       IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 100
-70     J1=JBASE+1
-       IF (NJ(K).LT.1) THEN
-          NJ(K)=1
-          JL=J1
-          PH(J1)=0.
-          EE(J1)=0.
-          LDEL(J1)=0
-          MDEL(J1)=0
-          NDEL(J1)=0
-          IR(J1)=0
-       ELSE
-          JL=JBASE+NJ(K)
-          !
-          !***********************************************************************
-          !*  IF NJ>0, INFORMATION ON THE SATELLITE CONSTITUENTS IS READ , THREE
-          !*  SATELLITES PER CARD, IN THE FORMAT (11X,3(3I3,F4.2,F7.4,1X,I1,1X)).
-          !*  FOR EACH SATELLITE THE VALUES READ ARE
-          !*     LDEL,MDEL,NDEL = THE CHANGES IN THE LAST THREE DOODSON NUMBERS
-          !*                  FROM THOSE OF THE MAIN CONSTITUENT.
-          !*     PH     = THE PHASE CORRECTION
-          !*     EE     = THE AMPLITUDE RATIO OF THE SATELLITE TIDAL POTENTIAL TO
-          !*            THAT OF THE MAIN CONSTITUENT.
-          !*     IR     = 1 IF THE AMPLITUDE RATIO HAS TO BE MULTIPLIED BY THE
-          !*            LATITUDE CORRECTION FACTOR FOR DIURNAL CONSTITUENTS
-          !*            2 IF THE AMPLITUDE RATIO HAS TO BE MULTIPLIED BY THE
-          !*            LATITUDE CORRECTION FACTOR FOR SEMI-DIURNAL CONSTI-
-          !*            TUENTS.
-          !*            OTHERWISE IF NO CORRECTION IS REQUIRED TO THE AMPLITUDE
-          !*            RATIO.
-          !
-          READ(KR,80)(LDEL(J),MDEL(J),NDEL(J),PH(J),EE(J),IR(J),J=J1,JL)
-80        FORMAT((11X,3(3I3,F4.2,F7.4,1X,I1,1X)))
-       END IF
-       JBASE=JL
+      READ(KR,60)TIDECON_ALLNAMES(K),II(K),JJ(K),KK(K),LL(K),MM(K),NN(K),SEMI(K), &
+           NJ(K)
+60    FORMAT(6X,A5,1X,6I3,F5.2,I4)
+      !WRITE(995,'(I4,A5,1X,6I3,F5.2,I4)') K,TIDECON_ALLNAMES(K),II(K),JJ(K),KK(K),LL(K),MM(K),NN(K),SEMI(K), &
+      !           NJ(K)
+      IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 100
+70    J1=JBASE+1
+      IF (NJ(K).LT.1) THEN
+        NJ(K)=1
+        JL=J1
+        PH(J1)=0.
+        EE(J1)=0.
+        LDEL(J1)=0
+        MDEL(J1)=0
+        NDEL(J1)=0
+        IR(J1)=0
+      ELSE
+        JL=JBASE+NJ(K)
+        !
+        !***********************************************************************
+        !*  IF NJ>0, INFORMATION ON THE SATELLITE CONSTITUENTS IS READ , THREE
+        !*  SATELLITES PER CARD, IN THE FORMAT (11X,3(3I3,F4.2,F7.4,1X,I1,1X)).
+        !*  FOR EACH SATELLITE THE VALUES READ ARE
+        !*     LDEL,MDEL,NDEL = THE CHANGES IN THE LAST THREE DOODSON NUMBERS
+        !*                  FROM THOSE OF THE MAIN CONSTITUENT.
+        !*     PH     = THE PHASE CORRECTION
+        !*     EE     = THE AMPLITUDE RATIO OF THE SATELLITE TIDAL POTENTIAL TO
+        !*            THAT OF THE MAIN CONSTITUENT.
+        !*     IR     = 1 IF THE AMPLITUDE RATIO HAS TO BE MULTIPLIED BY THE
+        !*            LATITUDE CORRECTION FACTOR FOR DIURNAL CONSTITUENTS
+        !*            2 IF THE AMPLITUDE RATIO HAS TO BE MULTIPLIED BY THE
+        !*            LATITUDE CORRECTION FACTOR FOR SEMI-DIURNAL CONSTI-
+        !*            TUENTS.
+        !*            OTHERWISE IF NO CORRECTION IS REQUIRED TO THE AMPLITUDE
+        !*            RATIO.
+        !
+        READ(KR,80)(LDEL(J),MDEL(J),NDEL(J),PH(J),EE(J),IR(J),J=J1,JL)
+80      FORMAT((11X,3(3I3,F4.2,F7.4,1X,I1,1X)))
+      END IF
+      JBASE=JL
     end do
 100 NTIDAL_CON=K-1
     JLM=JL
@@ -1833,13 +1833,13 @@ CONTAINS
     JBASE=0
     K1=NTIDAL_CON+1
     DO  K=K1,1000
-       J1=JBASE+1
-       J4=J1+3
-       READ(KR,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
-130    FORMAT(6X,A5,I1,2X,4(F5.2,A5,5X))
-       !WRITE(995,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
-       IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 170
-       JBASE=JBASE+NJ(K)
+      J1=JBASE+1
+      J4=J1+3
+      READ(KR,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
+130   FORMAT(6X,A5,I1,2X,4(F5.2,A5,5X))
+      !WRITE(995,130)TIDECON_ALLNAMES(K),NJ(K),(COEF_CON(J),KONCO_CON(J),J=J1,J4)
+      IF (TIDECON_ALLNAMES(K).eq.KBLANK) go to 170
+      JBASE=JBASE+NJ(K)
     end do
 
 170 NTOTAL_CON=K-1
@@ -1942,41 +1942,41 @@ CONTAINS
     !
     JBASE=0
     DO  K=1,NTIDAL_CON
-       do l=1,TIDE_MF
-          IF (TIDECON_ALLNAMES(k).eq.TIDECON_NAME(l)) then
-             indx(k)=l
-          END IF
-       end do
-       VDBL=II(K)*TAU+JJ(K)*S+KK(K)*H+LL(K)*P+MM(K)*ENP+NN(K)*PP+SEMI(K)
-       IV=VDBL
-       IV=(IV/2)*2
-       Vv=VDBL-IV
-       J1=JBASE+1
-       JL=JBASE+NJ(K)
-       SUMC=1.
-       SUMS=0.
-       DO J=J1,JL
-          !
-          !***********************************************************************
-          !*  HERE THE SATELLITE AMPLITUDE RATIO ADJUSTMENT FOR LATITUDE IS MADE
-          !
-          RR=EE(J)
-          L=IR(J)+1
-          IF (L.EQ.2) THEN
-             RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
-          ELSE IF (L.EQ.3) THEN
-             RR=EE(J)*2.59808*SLAT
-          END IF
-          UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
-          IUU=UUDBL
-          UU=UUDBL-IUU
-          SUMC=SUMC+RR*COS(UU*TWOPI)
-          SUMS=SUMS+RR*SIN(UU*TWOPI)
-       end do
-       F_ARG(K,ITIME)=SQRT(SUMC*SUMC+SUMS*SUMS)
-       v_ARG(k,ITIME)=vv
-       U_ARG(K,ITIME)=ATAN2(SUMS,SUMC)/TWOPI
-       JBASE=JL
+      do l=1,TIDE_MF
+        IF (TIDECON_ALLNAMES(k).eq.TIDECON_NAME(l)) then
+          indx(k)=l
+        END IF
+      end do
+      VDBL=II(K)*TAU+JJ(K)*S+KK(K)*H+LL(K)*P+MM(K)*ENP+NN(K)*PP+SEMI(K)
+      IV=VDBL
+      IV=(IV/2)*2
+      Vv=VDBL-IV
+      J1=JBASE+1
+      JL=JBASE+NJ(K)
+      SUMC=1.
+      SUMS=0.
+      DO J=J1,JL
+        !
+        !***********************************************************************
+        !*  HERE THE SATELLITE AMPLITUDE RATIO ADJUSTMENT FOR LATITUDE IS MADE
+        !
+        RR=EE(J)
+        L=IR(J)+1
+        IF (L.EQ.2) THEN
+          RR=EE(J)*0.36309*(1.-5.*SLAT*SLAT)/SLAT
+        ELSE IF (L.EQ.3) THEN
+          RR=EE(J)*2.59808*SLAT
+        END IF
+        UUDBL=LDEL(J)*P+MDEL(J)*ENP+NDEL(J)*PP+PH(J)
+        IUU=UUDBL
+        UU=UUDBL-IUU
+        SUMC=SUMC+RR*COS(UU*TWOPI)
+        SUMS=SUMS+RR*SIN(UU*TWOPI)
+      end do
+      F_ARG(K,ITIME)=SQRT(SUMC*SUMC+SUMS*SUMS)
+      v_ARG(k,ITIME)=vv
+      U_ARG(K,ITIME)=ATAN2(SUMS,SUMC)/TWOPI
+      JBASE=JL
     end do
     !
     !***********************************************************************
@@ -1988,38 +1988,38 @@ CONTAINS
     IF (K1.GT.NTOTAL_CON) RETURN
     !
     DO K=K1,NTOTAL_CON
-       F_ARG(K,ITIME)=1.0
-       V_ARG(K,ITIME)=0.0
-       u_ARG(k,ITIME)=0.
-       iflag=0
-       DO lk=1,TIDE_MF
-          IF (TIDECON_ALLNAMES(K).eq.TIDECON_NAME(lk)) then
-             iflag=1
-             EXIT
-          END IF
-       END DO   ! lk
+      F_ARG(K,ITIME)=1.0
+      V_ARG(K,ITIME)=0.0
+      u_ARG(k,ITIME)=0.
+      iflag=0
+      DO lk=1,TIDE_MF
+        IF (TIDECON_ALLNAMES(K).eq.TIDECON_NAME(lk)) then
+          iflag=1
+          EXIT
+        END IF
+      END DO   ! lk
 
-       DO J=TIDE_INDEXJ(K),TIDE_INDEXJ(K)+NJ(K)-1
-          L=TIDE_INDEXJK(J)
-          F_ARG(K,ITIME)=F_ARG(K,ITIME)*F_ARG(L,ITIME)**ABS(COEF_CON(J))
-          V_ARG(K,ITIME)=V_ARG(K,ITIME)+COEF_CON(J)*V_ARG(L,ITIME)
-          U_ARG(K,ITIME)=U_ARG(K,ITIME)+COEF_CON(J)*U_ARG(L,ITIME)
-       END DO   ! J
+      DO J=TIDE_INDEXJ(K),TIDE_INDEXJ(K)+NJ(K)-1
+        L=TIDE_INDEXJK(J)
+        F_ARG(K,ITIME)=F_ARG(K,ITIME)*F_ARG(L,ITIME)**ABS(COEF_CON(J))
+        V_ARG(K,ITIME)=V_ARG(K,ITIME)+COEF_CON(J)*V_ARG(L,ITIME)
+        U_ARG(K,ITIME)=U_ARG(K,ITIME)+COEF_CON(J)*U_ARG(L,ITIME)
+      END DO   ! J
     END DO     ! K
 
     !  Test output for verification purposes
     IF (ITIME.EQ.-1) THEN
-       WRITE(992,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
-            d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,XLAT
-       do l=1,TIDE_MF
-          do k=1,NTOTAL_CON
-             IF (TIDECON_ALLNAMES(k).eq.TIDECON_NAME(l)) then
-                TIDE_INDEX(L)=K
-                WRITE(992,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',1,L,20071201,0,hR,    &
-                     F_ARG(K,ITIME),U_ARG(K,ITIME),V_ARG(K,ITIME),TIDE_INDEX(L),TIDECON_NAME(l)
-             END IF
-          END DO
-       ENDDO
+      WRITE(992,'(A,F20.2,13F8.3)') 'TEST ISEA 0:',    &
+           d1,H,S,TAU,pp,s,p,enp,dh,dpp,ds,dp,dnp,XLAT
+      do l=1,TIDE_MF
+        do k=1,NTOTAL_CON
+          IF (TIDECON_ALLNAMES(k).eq.TIDECON_NAME(l)) then
+            TIDE_INDEX(L)=K
+            WRITE(992,'(A,4I9,F12.0,3F8.3,I4,X,A)') 'TEST ISEA 1:',1,L,20071201,0,hR,    &
+                 F_ARG(K,ITIME),U_ARG(K,ITIME),V_ARG(K,ITIME),TIDE_INDEX(L),TIDECON_NAME(l)
+          END IF
+        END DO
+      ENDDO
     ENDIF
 
     RETURN
@@ -2153,15 +2153,15 @@ CONTAINS
     CENHR=DFLOAT((KH2-KH1)/2)
 
     IF (itrend.eq.1) then
-       M=2*TIDE_MF
+      M=2*TIDE_MF
     else
-       M=2*TIDE_MF-1
+      M=2*TIDE_MF-1
     END IF
 
 
     I=0
     DO I=1,TIDE_MF
-       FREQ(I)=TIDE_FREQC(I)*TWPI
+      FREQ(I)=TIDE_FREQC(I)*TWPI
     END DO
     !
     !***********************************************************************
@@ -2171,11 +2171,11 @@ CONTAINS
     !
     k=1
     DO i=1,TIDE_NTI
-       CUMHR=-CENHR+24.D0*(TIDE_DAYS(i)-kd1)
-       time(i)=CUMHR+DFLOAT(TIDE_SECS(i))/3600.d0
-       X(K)=time(i)-time(1)
-       N=K
-       K=K+1
+      CUMHR=-CENHR+24.D0*(TIDE_DAYS(i)-kd1)
+      time(i)=CUMHR+DFLOAT(TIDE_SECS(i))/3600.d0
+      X(K)=time(i)-time(1)
+      N=K
+      K=K+1
     END DO
 
     !
@@ -2186,317 +2186,317 @@ CONTAINS
 
     DO idef=1,ndef   ! loop thru once or twice
 
-       ! Modifies the time reference xmid and puts it at 0 : modification by FA, 2012/09/26
-       ! the impact of that change has not been verified ...
-       xmid=0. !0.5*(TIDE_HOURS(1)+TIDE_HOURS(TIDE_NTI))
-       Q(1:NMAXPM,1:NMAXP1)=0.0
-       DO I=1,N
-          !      if itrend=1, then
-          !      first 2 parameters are constant and linear trend (per 365 days)
-          !      fitted as const+trend(t-tmid) where tmid (=xmid) is the middle time
-          !      of the analysis period (This makes the constant consistent with z0
-          !      in the old analysis program)
-          !      If itrend=0 then the second parameter is is associated with the next
-          !      constituent
-          Q(I,1)=1.
-          IF (itrend.eq.1) then
-             !            Q(I,2)=(x(i)-xmid)/(24.*365.)
-             Q(I,2)=x(i)/(24.*365.)
+      ! Modifies the time reference xmid and puts it at 0 : modification by FA, 2012/09/26
+      ! the impact of that change has not been verified ...
+      xmid=0. !0.5*(TIDE_HOURS(1)+TIDE_HOURS(TIDE_NTI))
+      Q(1:NMAXPM,1:NMAXP1)=0.0
+      DO I=1,N
+        !      if itrend=1, then
+        !      first 2 parameters are constant and linear trend (per 365 days)
+        !      fitted as const+trend(t-tmid) where tmid (=xmid) is the middle time
+        !      of the analysis period (This makes the constant consistent with z0
+        !      in the old analysis program)
+        !      If itrend=0 then the second parameter is is associated with the next
+        !      constituent
+        Q(I,1)=1.
+        IF (itrend.eq.1) then
+          !            Q(I,2)=(x(i)-xmid)/(24.*365.)
+          Q(I,2)=x(i)/(24.*365.)
+        END IF
+        Q(I,NMAXP1)=TIDE_DATA(I,IDEF)
+        icode=1
+        !      should only have to assemble lhs of matrix when idef=1
+        !      but something is not right if don't do it 2nd time too
+        ! CALL SETVUF(TIDE_HOURS(I),xlat,I)
+        DO J=2,TIDE_MF
+          CALL VUF(TIDECON_NAME(j),VX,ux,FX,I)
+          !      check to see if this constituent is to be used for inference
+          inflag=0
+          kinf=0
+          IF (TIDE_NIN.GE.0) THEN
+            do k=1,TIDE_NIN
+              IF (TIDECON_NAME(j).eq.TIDE_KONAN(k)) then
+                inflag=1
+                kinf=k
+                EXIT
+              END IF
+            END DO
           END IF
-          Q(I,NMAXP1)=TIDE_DATA(I,IDEF)
-          icode=1
-          !      should only have to assemble lhs of matrix when idef=1
-          !      but something is not right if don't do it 2nd time too
-          ! CALL SETVUF(TIDE_HOURS(I),xlat,I)
-          DO J=2,TIDE_MF
-             CALL VUF(TIDECON_NAME(j),VX,ux,FX,I)
-             !      check to see if this constituent is to be used for inference
-             inflag=0
-             kinf=0
-             IF (TIDE_NIN.GE.0) THEN
-                do k=1,TIDE_NIN
-                   IF (TIDECON_NAME(j).eq.TIDE_KONAN(k)) then
-                      inflag=1
-                      kinf=k
-                      EXIT
-                   END IF
-                END DO
-             END IF
-             !
-             IF (inflag.eq.0) then
-                ARG=(vx+ux)*twpi
-                IF (itrend.eq.1) then
-                   J2=2*(J-1)+1
-                else
-                   J2=2*(J-1)
-                END IF
-                JJ1=J2+1
-                Q(I,J2)=COS(ARG)*fx
-                Q(I,JJ1)=SIN(ARG)*fx
-             else
-                IF (itrend.eq.1) then
-                   J2=2*(J-1)+1
-                else
-                   J2=2*(J-1)
-                END IF
-                JJ1=J2+1
-                ARG1=(vx+ux)*twpi
-                Q(I,J2)=COS(ARG1)*fx
-                Q(I,JJ1)=SIN(ARG1)*fx
-                do k2=1,TIDE_NINF(kinf)
-                   CALL VUF(TIDE_KONIN(kinf,k2),VXi,uxi,FXi,I)
-                   !      freq is radians/hr but sigin is cycles/hr
-                   ARG2=(vxi+uxi)*twpi
-                   c2=cos(arg2)
-                   s2=sin(arg2)
-                   arg3=TIDE_ZETA(kinf,k2)*fac
-                   c3=cos(arg3)
-                   s3=sin(arg3)
-                   Q(I,J2)=q(i,J2)+fxi*TIDE_R(kinf,k2)*(c2*c3-s2*s3)
-                   Q(I,JJ1)=q(i,jj1)+fxi*TIDE_R(kinf,k2)*(c2*s3+s2*c3)
-                END DO
-             END IF
-          END DO ! j
-       END DO  !i
+          !
+          IF (inflag.eq.0) then
+            ARG=(vx+ux)*twpi
+            IF (itrend.eq.1) then
+              J2=2*(J-1)+1
+            else
+              J2=2*(J-1)
+            END IF
+            JJ1=J2+1
+            Q(I,J2)=COS(ARG)*fx
+            Q(I,JJ1)=SIN(ARG)*fx
+          else
+            IF (itrend.eq.1) then
+              J2=2*(J-1)+1
+            else
+              J2=2*(J-1)
+            END IF
+            JJ1=J2+1
+            ARG1=(vx+ux)*twpi
+            Q(I,J2)=COS(ARG1)*fx
+            Q(I,JJ1)=SIN(ARG1)*fx
+            do k2=1,TIDE_NINF(kinf)
+              CALL VUF(TIDE_KONIN(kinf,k2),VXi,uxi,FXi,I)
+              !      freq is radians/hr but sigin is cycles/hr
+              ARG2=(vxi+uxi)*twpi
+              c2=cos(arg2)
+              s2=sin(arg2)
+              arg3=TIDE_ZETA(kinf,k2)*fac
+              c3=cos(arg3)
+              s3=sin(arg3)
+              Q(I,J2)=q(i,J2)+fxi*TIDE_R(kinf,k2)*(c2*c3-s2*s3)
+              Q(I,JJ1)=q(i,jj1)+fxi*TIDE_R(kinf,k2)*(c2*s3+s2*c3)
+            END DO
+          END IF
+        END DO ! j
+      END DO  !i
 
 #ifdef W3_T
-       WRITE(6,*) 'assembled overdetermined matrix and/or rhs'
+      WRITE(6,*) 'assembled overdetermined matrix and/or rhs'
 #endif
-       NMAX=M
-       MEQ=N
-       SSQ(IDEF)=1.0
-       RES(IDEF)=1.0
-       NCOL=NMAX
-       NEW=NMAX
-       !
-       !***********************************************************************
-       !*  CALCULATION OF THE STANDARD DEVIATION OF THE RIGHT HAND SIDES OF
-       !*  THE OVERDETERMINED SYSTEM
-       !
-       AV=0.D0
-       DO I=1,MEQ
-          AV=AV+Q(I,NMAXP1)
-       END DO
-       AV=AV/MEQ
-       SDEV=0.D0
-       DO I=1,MEQ
-          SDEV=SDEV+(Q(I,NMAXP1)-AV)**2
-       END DO
-       SDEV=SDEV/(MEQ-1)
-       SDEV=SQRT(SDEV)
-       SDEV0(IDEF)=SDEV
-109    CONTINUE
-       !
-       !   USE SINGULAR-VALUE-DECOMPOSITION TO SOLVE THE OVERDETERMINED SYSTEM
-       !
-       TOLER=1.E-5
-       DO I=1,NMAXPM
-          SIG(I)=1.D0
-       END DO
-       !
-       !      no solution if meq lt m. ie underdetermined system
-       !      go to next time series
-       IF (meq.le.m) then
-          write(NDSET,*) ' underdetermined system: no svd solution',IX,IY,meq,m
-          stop
-       END IF
+      NMAX=M
+      MEQ=N
+      SSQ(IDEF)=1.0
+      RES(IDEF)=1.0
+      NCOL=NMAX
+      NEW=NMAX
+      !
+      !***********************************************************************
+      !*  CALCULATION OF THE STANDARD DEVIATION OF THE RIGHT HAND SIDES OF
+      !*  THE OVERDETERMINED SYSTEM
+      !
+      AV=0.D0
+      DO I=1,MEQ
+        AV=AV+Q(I,NMAXP1)
+      END DO
+      AV=AV/MEQ
+      SDEV=0.D0
+      DO I=1,MEQ
+        SDEV=SDEV+(Q(I,NMAXP1)-AV)**2
+      END DO
+      SDEV=SDEV/(MEQ-1)
+      SDEV=SQRT(SDEV)
+      SDEV0(IDEF)=SDEV
+109   CONTINUE
+      !
+      !   USE SINGULAR-VALUE-DECOMPOSITION TO SOLVE THE OVERDETERMINED SYSTEM
+      !
+      TOLER=1.E-5
+      DO I=1,NMAXPM
+        SIG(I)=1.D0
+      END DO
+      !
+      !      no solution if meq lt m. ie underdetermined system
+      !      go to next time series
+      IF (meq.le.m) then
+        write(NDSET,*) ' underdetermined system: no svd solution',IX,IY,meq,m
+        stop
+      END IF
 #ifdef W3_T
-       WRITE(6,*) ' applying svd'
+      WRITE(6,*) ' applying svd'
 #endif
-       CALL SVD(Q,U,V,COV,W,P,B,SIG,ICODE,MEQ,NMAX,NMAXPM,NMAXP1,TOLER     &
-            ,JCODE,SSQ(IDEF),RES(IDEF))
-       !        IF (JCODE.GT.0) WRITE(LP,55)JCODE
-       !   55 FORMAT('COLUMN',I5,' IS THE 1ST DEPENDENT COLUMNS IN SVD')
-       !      write out eigenvalues
-       wmax=-1000.
-       wmin=1000.
-       do i=1,nmax
-          IF (w(i).gt.wmax) wmax=w(i)
-          IF (w(i).lt.wmin) wmin=w(i)
-       end do
-       !        write(6,*) ' max, min eigenvalues =',wmax,wmin
-       !      write(6,*) ' all eigenvalues'
-       !      write(6,56) (w(i),i=1,nmax)
-56     format(10e12.5)
-       !***********************************************************************
-       IF (ssq(IDEF).gt.1.e-10) then
-          RMSR0(IDEF)=SQRT(SSQ(IDEF)/(MEQ-M))
-       else
-          rmsr0(IDEF)=0.
-       END IF
+      CALL SVD(Q,U,V,COV,W,P,B,SIG,ICODE,MEQ,NMAX,NMAXPM,NMAXP1,TOLER     &
+           ,JCODE,SSQ(IDEF),RES(IDEF))
+      !        IF (JCODE.GT.0) WRITE(LP,55)JCODE
+      !   55 FORMAT('COLUMN',I5,' IS THE 1ST DEPENDENT COLUMNS IN SVD')
+      !      write out eigenvalues
+      wmax=-1000.
+      wmin=1000.
+      do i=1,nmax
+        IF (w(i).gt.wmax) wmax=w(i)
+        IF (w(i).lt.wmin) wmin=w(i)
+      end do
+      !        write(6,*) ' max, min eigenvalues =',wmax,wmin
+      !      write(6,*) ' all eigenvalues'
+      !      write(6,56) (w(i),i=1,nmax)
+56    format(10e12.5)
+      !***********************************************************************
+      IF (ssq(IDEF).gt.1.e-10) then
+        RMSR0(IDEF)=SQRT(SSQ(IDEF)/(MEQ-M))
+      else
+        rmsr0(IDEF)=0.
+      END IF
 
 
-       rmsr(IDEF)=0.d0
-       resmax(IDEF)=0.
-       do  i=1,n
-          yy=q(i,nmaxp1)
-          rmsr(IDEF)=rmsr(IDEF)+yy*yy
-          IF (abs(yy).gt.resmax(IDEF)) then
-             resmax(IDEF)=abs(yy)
-             imax(IDEF)=i
-          END IF
-       end do
-160    format(' ',7i2,f15.5,f10.5,i6)
-       IF (rmsr(IDEF).gt.1.e-10) then
-          rmsr(IDEF)=dsqrt(rmsr(IDEF)/(n-m))
-       else
-          rmsr(IDEF)=0.
-       END IF
-       !      close(unit=25)
-       !
-       !***********************************************************************
-       !*  CALCULATE AMPLITUDES AND PHASES
-       !
-       !      if itrend=1 then the linear trend is shown as the phase of the constant
-       !      Z0 term (& the true phase of Z0 is zero)
-       !      otherwise, the phase of Z0 is shown as zero
-       AMP(1)=P(1)
-       IF (itrend.eq.1) then
-          PH(1)=P(2)
-       else
-          PH(1)=0.
-       END IF
-       DO I=2,TIDE_MF
-          !
+      rmsr(IDEF)=0.d0
+      resmax(IDEF)=0.
+      do  i=1,n
+        yy=q(i,nmaxp1)
+        rmsr(IDEF)=rmsr(IDEF)+yy*yy
+        IF (abs(yy).gt.resmax(IDEF)) then
+          resmax(IDEF)=abs(yy)
+          imax(IDEF)=i
+        END IF
+      end do
+160   format(' ',7i2,f15.5,f10.5,i6)
+      IF (rmsr(IDEF).gt.1.e-10) then
+        rmsr(IDEF)=dsqrt(rmsr(IDEF)/(n-m))
+      else
+        rmsr(IDEF)=0.
+      END IF
+      !      close(unit=25)
+      !
+      !***********************************************************************
+      !*  CALCULATE AMPLITUDES AND PHASES
+      !
+      !      if itrend=1 then the linear trend is shown as the phase of the constant
+      !      Z0 term (& the true phase of Z0 is zero)
+      !      otherwise, the phase of Z0 is shown as zero
+      AMP(1)=P(1)
+      IF (itrend.eq.1) then
+        PH(1)=P(2)
+      else
+        PH(1)=0.
+      END IF
+      DO I=2,TIDE_MF
+        !
+        IF (itrend.eq.1) then
+          I2=2*(I-1)+1
+        else
+          I2=2*(I-1)
+        END IF
+        I21=I2+1
+        C=P(I2)
+        S=P(I21)
+        AAMP=SQRT(C*C+S*S)
+        IF (AAMP.LT.1.E-5) THEN
+          PH(I)=0.
+        ELSE
+          PH(I)=ATAN2(S,C)/FAC
+          IF (PH(I).LT.0.) PH(I)=PH(I)+360.
+        END IF
+        AMP(I)=AAMP
+      END DO  ! end of loop on TIDE_MF
+      !***********************************************************************
+      !      Note that with f & u included in the lsq fit, we only need V from routine VUF
+      !      but we don't want to correct with V for a central hour. Better to include
+      !      the right V in the lsq fit. This has been done.
+
+      TIDE_AMPC(1,idef)=AMP(1)
+      TIDE_PHG(1,idef)=PH(1)
+      DO I=2,TIDE_MF
+        TIDE_AMPC(I,idef)=AMP(I)
+        TIDE_phg(i,idef)=ph(i)
+      END DO
+      !
+      TIDE_sig3(:,idef)=0.
+      TIDE_ttest(:,idef)=0.
+      !
+      IF (ITEST.GE.1) THEN
+        !---------------------------------------------------
+        !
+        i=1
+        IF (cov(1,1).gt.1.e-8) then
+          TIDE_sig1(I,idef)=sqrt(cov(1,1))*rmsr0(IDEF)
+        else
+          TIDE_sig1(I,idef)=0.
+        END IF
+        IF (itrend.eq.1.and.cov(2,2).gt.1.e-8) then
+          TIDE_sig2(I,idef)=sqrt(cov(2,2))*rmsr0(IDEF)
+        else
+          TIDE_sig2(I,idef)=0.
+        END IF
+        TIDE_sig3(I,idef)=0.
+        TIDE_ttest(I,idef)=0.
+        !
+        !    results for the other constituents
+        !
+        DO I=2,TIDE_MF
           IF (itrend.eq.1) then
-             I2=2*(I-1)+1
+            I2=2*(I-1)+1
           else
-             I2=2*(I-1)
+            I2=2*(I-1)
           END IF
-          I21=I2+1
-          C=P(I2)
-          S=P(I21)
-          AAMP=SQRT(C*C+S*S)
-          IF (AAMP.LT.1.E-5) THEN
-             PH(I)=0.
-          ELSE
-             PH(I)=ATAN2(S,C)/FAC
-             IF (PH(I).LT.0.) PH(I)=PH(I)+360.
-          END IF
-          AMP(I)=AAMP
-       END DO  ! end of loop on TIDE_MF
-       !***********************************************************************
-       !      Note that with f & u included in the lsq fit, we only need V from routine VUF
-       !      but we don't want to correct with V for a central hour. Better to include
-       !      the right V in the lsq fit. This has been done.
-
-       TIDE_AMPC(1,idef)=AMP(1)
-       TIDE_PHG(1,idef)=PH(1)
-       DO I=2,TIDE_MF
-          TIDE_AMPC(I,idef)=AMP(I)
-          TIDE_phg(i,idef)=ph(i)
-       END DO
-       !
-       TIDE_sig3(:,idef)=0.
-       TIDE_ttest(:,idef)=0.
-       !
-       IF (ITEST.GE.1) THEN
-          !---------------------------------------------------
+          II1=I2+1
           !
-          i=1
-          IF (cov(1,1).gt.1.e-8) then
-             TIDE_sig1(I,idef)=sqrt(cov(1,1))*rmsr0(IDEF)
+          !      multiply cov values with residual standard deviation, as described in equation
+          !      (6) of Cherniasky et al. (2001)
+          !
+          IF (cov(I2,I2).gt.1.e-8) then
+            TIDE_sig1(I,idef)=sqrt(cov(I2,I2))*rmsr0(IDEF)
           else
-             TIDE_sig1(I,idef)=0.
+            TIDE_sig1(I,idef)=0.
           END IF
-          IF (itrend.eq.1.and.cov(2,2).gt.1.e-8) then
-             TIDE_sig2(I,idef)=sqrt(cov(2,2))*rmsr0(IDEF)
+          IF (cov(ii1,ii1).gt.1.e-8) then
+            TIDE_sig2(I,idef)=sqrt(cov(ii1,ii1))*rmsr0(IDEF)
           else
-             TIDE_sig2(I,idef)=0.
+            TIDE_sig2(I,idef)=0.
           END IF
-          TIDE_sig3(I,idef)=0.
-          TIDE_ttest(I,idef)=0.
-          !
-          !    results for the other constituents
-          !
-          DO I=2,TIDE_MF
-             IF (itrend.eq.1) then
-                I2=2*(I-1)+1
-             else
-                I2=2*(I-1)
-             END IF
-             II1=I2+1
-             !
-             !      multiply cov values with residual standard deviation, as described in equation
-             !      (6) of Cherniasky et al. (2001)
-             !
-             IF (cov(I2,I2).gt.1.e-8) then
-                TIDE_sig1(I,idef)=sqrt(cov(I2,I2))*rmsr0(IDEF)
-             else
-                TIDE_sig1(I,idef)=0.
-             END IF
-             IF (cov(ii1,ii1).gt.1.e-8) then
-                TIDE_sig2(I,idef)=sqrt(cov(ii1,ii1))*rmsr0(IDEF)
-             else
-                TIDE_sig2(I,idef)=0.
-             END IF
-             !      from equation 11 in Pawlowicz et al (2002)
-             c=TIDE_ampc(i,idef)*cos(TIDE_phg(i,idef)*fac)
-             s=TIDE_ampc(i,idef)*sin(TIDE_phg(i,idef)*fac)
-             TIDE_sig3(I,idef)=sqrt(((c*TIDE_sig1(I,idef))**2+(s*TIDE_sig2(I,idef))**2)/(c**2+s**2))
-             TIDE_ttest(I,idef)=TIDE_ampc(i,idef)/TIDE_sig3(I,idef)
+          !      from equation 11 in Pawlowicz et al (2002)
+          c=TIDE_ampc(i,idef)*cos(TIDE_phg(i,idef)*fac)
+          s=TIDE_ampc(i,idef)*sin(TIDE_phg(i,idef)*fac)
+          TIDE_sig3(I,idef)=sqrt(((c*TIDE_sig1(I,idef))**2+(s*TIDE_sig2(I,idef))**2)/(c**2+s**2))
+          TIDE_ttest(I,idef)=TIDE_ampc(i,idef)/TIDE_sig3(I,idef)
+        END DO
+        !---------------------------------------------------
+      END IF ! (ITEST.GE.1)
+      !
+      !  now inferred constituents
+      !
+      IF (TIDE_NIN.GE.0) THEN
+        l=0
+        do k=1,TIDE_NIN
+          do i=2,TIDE_MF
+            IF (TIDECON_NAME(i).eq.TIDE_KONAN(k)) EXIT
           END DO
-          !---------------------------------------------------
-       END IF ! (ITEST.GE.1)
-       !
-       !  now inferred constituents
-       !
-       IF (TIDE_NIN.GE.0) THEN
-          l=0
-          do k=1,TIDE_NIN
-             do i=2,TIDE_MF
-                IF (TIDECON_NAME(i).eq.TIDE_KONAN(k)) EXIT
-             END DO
-             i1=i
-             do k2=1,TIDE_NINF(k)
-                l=l+1
-                TIDE_ampci(k,k2,idef)=TIDE_ampc(i1,idef)*TIDE_R(k,k2)
-                TIDE_phgi(k,k2,idef)=TIDE_phg(i1,idef)-TIDE_ZETA(k,k2)
-             END DO
+          i1=i
+          do k2=1,TIDE_NINF(k)
+            l=l+1
+            TIDE_ampci(k,k2,idef)=TIDE_ampc(i1,idef)*TIDE_R(k,k2)
+            TIDE_phgi(k,k2,idef)=TIDE_phg(i1,idef)-TIDE_ZETA(k,k2)
           END DO
-          inftot=l
-       END IF
+        END DO
+        inftot=l
+      END IF
 
 
-       !
-       !***********************************************************************
-       !      compute (Cherniawsky et al (2001), page 653) and rank correlation coefficients
-       !      largest niter value are computed and shown
-       !      if itrend=1, then the second part of Z0 is the linear trend coefficient
-       !
-       !      do i=1,m
-       !        do j=1,i
-       !          cor(i,j)=cov(i,j)/sqrt(cov(i,i)*cov(j,j))
-       !          END DO
-       !        END DO
-       !
-       !      niter=20
-       !      do 81 iter=1,niter
-       !        cormax=0.
-       !        do i=2,m
-       !          im1=i-1
-       !          do j=1,im1
-       !            ac=abs(cor(i,j))
-       !            if (ac.gt.cormax) then
-       !              cormax=ac
-       !              imax=i
-       !              jmax=j
-       !             END IF
-       !            END DO
-       !          END DO
-       !        if (itrend.eq.1) then
-       !          iconst=(imax+1)/2
-       !          jconst=(jmax+1)/2
-       !        else
-       !          iconst=(imax+2)/2
-       !          jconst=(jmax+2)/2
-       !          END IF
-       !        write(lp,83) iter,cormax,imax,jmax,TIDECON_NAME(iconst),TIDECON_NAME(jconst)
-       !83      format(i5,' largest correlation coefficient is ',f8.3,' at (i,j)='     &
-       !           ,2i5,' for constituents ',a5,' and ',a5)
-       !        cor(imax,jmax)=0.
-       !        END DO
-       !
+      !
+      !***********************************************************************
+      !      compute (Cherniawsky et al (2001), page 653) and rank correlation coefficients
+      !      largest niter value are computed and shown
+      !      if itrend=1, then the second part of Z0 is the linear trend coefficient
+      !
+      !      do i=1,m
+      !        do j=1,i
+      !          cor(i,j)=cov(i,j)/sqrt(cov(i,i)*cov(j,j))
+      !          END DO
+      !        END DO
+      !
+      !      niter=20
+      !      do 81 iter=1,niter
+      !        cormax=0.
+      !        do i=2,m
+      !          im1=i-1
+      !          do j=1,im1
+      !            ac=abs(cor(i,j))
+      !            if (ac.gt.cormax) then
+      !              cormax=ac
+      !              imax=i
+      !              jmax=j
+      !             END IF
+      !            END DO
+      !          END DO
+      !        if (itrend.eq.1) then
+      !          iconst=(imax+1)/2
+      !          jconst=(jmax+1)/2
+      !        else
+      !          iconst=(imax+2)/2
+      !          jconst=(jmax+2)/2
+      !          END IF
+      !        write(lp,83) iter,cormax,imax,jmax,TIDECON_NAME(iconst),TIDECON_NAME(jconst)
+      !83      format(i5,' largest correlation coefficient is ',f8.3,' at (i,j)='     &
+      !           ,2i5,' for constituents ',a5,' and ',a5)
+      !        cor(imax,jmax)=0.
+      !        END DO
+      !
     END DO  ! end of loop on IDEF
     RETURN
 
@@ -2526,41 +2526,41 @@ CONTAINS
     M = 2*TIDE_MF
 
     DO IDEF=1,NDEF
-       SDEV=0.D0
-       DO I=1,N
-          IF (itrend.eq.1) THEN
-             SUM1=TIDE_AMPC(1,idef)+TIDE_PHG(1,idef)*HOURS(i)/(365.*24.)
-          ELSE
-             SUM1=TIDE_AMPC(1,idef)
-          END IF
-          !
-          DO J=2,TIDE_MF
-             CALL VUF(TIDECON_NAME(j),VX,ux,FX,I)
-             ARG=(vx+ux)*twpi-TIDE_phg(j,idef)*fac
-             ADD=fx*TIDE_AMPc(J,idef)*COS(ARG)
-             SUM1=SUM1+ADD
+      SDEV=0.D0
+      DO I=1,N
+        IF (itrend.eq.1) THEN
+          SUM1=TIDE_AMPC(1,idef)+TIDE_PHG(1,idef)*HOURS(i)/(365.*24.)
+        ELSE
+          SUM1=TIDE_AMPC(1,idef)
+        END IF
+        !
+        DO J=2,TIDE_MF
+          CALL VUF(TIDECON_NAME(j),VX,ux,FX,I)
+          ARG=(vx+ux)*twpi-TIDE_phg(j,idef)*fac
+          ADD=fx*TIDE_AMPc(J,idef)*COS(ARG)
+          SUM1=SUM1+ADD
+        END DO
+        !
+        IF (TIDE_NIN.NE.0) THEN
+          DO k=1,TIDE_NIN
+            DO k2=1,TIDE_NINF(k)
+              CALL VUF(TIDE_KONIN(k,k2),VX,ux,FX,I)
+              ARG=(vx+ux)*twpi-TIDE_phgi(k,k2,idef)*fac
+              ADD=fx*TIDE_AMPci(k,k2,idef)*COS(ARG)
+              SUM1=SUM1+ADD
+            END DO
           END DO
-          !
-          IF (TIDE_NIN.NE.0) THEN
-             DO k=1,TIDE_NIN
-                DO k2=1,TIDE_NINF(k)
-                   CALL VUF(TIDE_KONIN(k,k2),VX,ux,FX,I)
-                   ARG=(vx+ux)*twpi-TIDE_phgi(k,k2,idef)*fac
-                   ADD=fx*TIDE_AMPci(k,k2,idef)*COS(ARG)
-                   SUM1=SUM1+ADD
-                END DO
-             END DO
-          END IF
-          !
-          PREDICTED(I,IDEF)=SUM1
-          !
-          RESID(I,IDEF)=DATAIN(I,IDEF)-SUM1
-          SDEV(IDEF)=SDEV(IDEF)+RESID(I,IDEF)**2
-       END DO
-       !
-       SSQ=SDEV(IDEF)
-       RMSR(IDEF)=SQRT(SSQ/(N-M))
-       SDEV(IDEF)=sqrt(ssq/N)
+        END IF
+        !
+        PREDICTED(I,IDEF)=SUM1
+        !
+        RESID(I,IDEF)=DATAIN(I,IDEF)-SUM1
+        SDEV(IDEF)=SDEV(IDEF)+RESID(I,IDEF)**2
+      END DO
+      !
+      SSQ=SDEV(IDEF)
+      RMSR(IDEF)=SQRT(SSQ/(N-M))
+      SDEV(IDEF)=sqrt(ssq/N)
     ENDDO
     !
   END SUBROUTINE TIDE_PREDICT
@@ -2581,35 +2581,35 @@ CONTAINS
     REAL(KIND=8)                   :: VX, UX, FX
 
     DO IDEF=1,NDEF
-       DO I=1,N
-          IF (itrend.eq.1) THEN
-             SUM1=TIDE_AMPC(1,idef)+TIDE_PHG(1,idef)*TIDE_HOURS(i)/(365.*24.)
-          ELSE
-             SUM1=TIDE_AMPC(1,idef)
-          END IF
-          !
-          DO J=2,TIDE_MF
-             CALL VUF(TIDECON_NAME(j),VX,UX,FX,I)
-             ARG=(VX+UX)*twpi-TIDE_phg(J,IDEF)*fac
-             ADD=FX*TIDE_AMPc(J,IDEF)*COS(ARG)
-             SUM1=SUM1+ADD
+      DO I=1,N
+        IF (itrend.eq.1) THEN
+          SUM1=TIDE_AMPC(1,idef)+TIDE_PHG(1,idef)*TIDE_HOURS(i)/(365.*24.)
+        ELSE
+          SUM1=TIDE_AMPC(1,idef)
+        END IF
+        !
+        DO J=2,TIDE_MF
+          CALL VUF(TIDECON_NAME(j),VX,UX,FX,I)
+          ARG=(VX+UX)*twpi-TIDE_phg(J,IDEF)*fac
+          ADD=FX*TIDE_AMPc(J,IDEF)*COS(ARG)
+          SUM1=SUM1+ADD
+        END DO
+        !
+        IF (TIDE_NIN.NE.0) THEN
+          DO k=1,TIDE_NIN
+            DO k2=1,TIDE_NINF(k)
+              CALL VUF(TIDE_KONIN(k,k2),VX,ux,FX,I)
+              ARG=(vx+ux)*twpi-TIDE_phgi(k,k2,idef)*fac
+              ADD=fx*TIDE_AMPci(k,k2,idef)*COS(ARG)
+              SUM1=SUM1+ADD
+            END DO
           END DO
-          !
-          IF (TIDE_NIN.NE.0) THEN
-             DO k=1,TIDE_NIN
-                DO k2=1,TIDE_NINF(k)
-                   CALL VUF(TIDE_KONIN(k,k2),VX,ux,FX,I)
-                   ARG=(vx+ux)*twpi-TIDE_phgi(k,k2,idef)*fac
-                   ADD=fx*TIDE_AMPci(k,k2,idef)*COS(ARG)
-                   SUM1=SUM1+ADD
-                END DO
-             END DO
-          END IF
-          !
-          PREDICTED(I,IDEF)=SUM1
-          !
-       END DO
-       !
+        END IF
+        !
+        PREDICTED(I,IDEF)=SUM1
+        !
+      END DO
+      !
     ENDDO
     !
   END SUBROUTINE TIDE_PREDICT_ONLY

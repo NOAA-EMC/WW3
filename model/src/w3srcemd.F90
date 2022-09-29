@@ -824,16 +824,16 @@ CONTAINS
     !FACP   = XP / PI * 0.62E-3 * TPI**4 / GRAV**2
     !
     DO IK=1, NK
-       DAM(1+(IK-1)*NTH) = FACP / ( SIG(IK) * WN1(IK)**3 )
-       WN2(1+(IK-1)*NTH) = WN1(IK)
+      DAM(1+(IK-1)*NTH) = FACP / ( SIG(IK) * WN1(IK)**3 )
+      WN2(1+(IK-1)*NTH) = WN1(IK)
     END DO
     !
     DO IK=1, NK
-       IS0    = (IK-1)*NTH
-       DO ITH=2, NTH
-          DAM(ITH+IS0) = DAM(1+IS0)
-          WN2(ITH+IS0) = WN2(1+IS0)
-       END DO
+      IS0    = (IK-1)*NTH
+      DO ITH=2, NTH
+        DAM(ITH+IS0) = DAM(1+IS0)
+        WN2(ITH+IS0) = WN2(1+IS0)
+      END DO
     END DO
     !
     ! 1.b Prepare dynamic time stepping
@@ -871,12 +871,12 @@ CONTAINS
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
-       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECOLD)=', sum(SPECOLD)
-       WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECINIT)=', sum(SPECINIT)
-       WRITE(740+IAPROC,*) 'W3SRCE start sum(VSIO)=', sum(VSIO)
-       WRITE(740+IAPROC,*) 'W3SRCE start sum(VDIO)=', sum(VDIO)
-       WRITE(740+IAPROC,*) 'W3SRCE start USTAR=', USTAR
+      WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
+      WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECOLD)=', sum(SPECOLD)
+      WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECINIT)=', sum(SPECINIT)
+      WRITE(740+IAPROC,*) 'W3SRCE start sum(VSIO)=', sum(VSIO)
+      WRITE(740+IAPROC,*) 'W3SRCE start sum(VDIO)=', sum(VDIO)
+      WRITE(740+IAPROC,*) 'W3SRCE start USTAR=', USTAR
     END IF
 #endif
 
@@ -904,19 +904,19 @@ CONTAINS
     TAUWX=0.
     TAUWY=0.
     IF ( IT .eq. 0 ) THEN
-       LLWS(:) = .TRUE.
-       USTAR=0.
-       USTDIR=0.
-       CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS, WNMEAN, &
-            AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
-            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+      LLWS(:) = .TRUE.
+      USTAR=0.
+      USTDIR=0.
+      CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS, WNMEAN, &
+           AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
+           TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
     ELSE
-       CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS, WNMEAN, &
-            AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
-            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-       CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,   &
-            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,   &
-            ICE, VSIN, VDIN, LLWS, IX, IY )
+      CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS, WNMEAN, &
+           AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
+           TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+      CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,   &
+           U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,   &
+           ICE, VSIN, VDIN, LLWS, IX, IY )
     END IF
     CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS, WNMEAN, &
          AMAX, U10ABS, U10DIR, USTAR, USTDIR,          &
@@ -927,48 +927,48 @@ CONTAINS
     TAUWX=0.
     TAUWY=0.
     IF ( IT .eq. 0 ) THEN
-       LLWS(:) = .TRUE.
-       USTAR=0.
-       USTDIR=0.
+      LLWS(:) = .TRUE.
+      USTAR=0.
+      USTDIR=0.
     ELSE
-       CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
-            AMAX, U10ABS, U10DIR,                           &
+      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
+           AMAX, U10ABS, U10DIR,                           &
 #ifdef W3_FLX5
-            TAUA, TAUADIR, DAIR,                             &
+           TAUA, TAUADIR, DAIR,                             &
 #endif
-            USTAR, USTDIR,                                  &
-            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+           USTAR, USTDIR,                                  &
+           TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 
 #ifdef W3_DEBUGSRC
 #ifdef W3_ST4
-       IF (IX == DEBUG_NODE) THEN
-          WRITE(740+IAPROC,*) '1: out value USTAR=', USTAR, ' USTDIR=', USTDIR
-          WRITE(740+IAPROC,*) '1: out value EMEAN=', EMEAN, ' FMEAN=', FMEAN
-          WRITE(740+IAPROC,*) '1: out value FMEAN1=', FMEAN1, ' WNMEAN=', WNMEAN
-          WRITE(740+IAPROC,*) '1: out value CD=', CD, ' Z0=', Z0
-          WRITE(740+IAPROC,*) '1: out value ALPHA=', CHARN, ' FMEANWS=', FMEANWS
-       END IF
+      IF (IX == DEBUG_NODE) THEN
+        WRITE(740+IAPROC,*) '1: out value USTAR=', USTAR, ' USTDIR=', USTDIR
+        WRITE(740+IAPROC,*) '1: out value EMEAN=', EMEAN, ' FMEAN=', FMEAN
+        WRITE(740+IAPROC,*) '1: out value FMEAN1=', FMEAN1, ' WNMEAN=', WNMEAN
+        WRITE(740+IAPROC,*) '1: out value CD=', CD, ' Z0=', Z0
+        WRITE(740+IAPROC,*) '1: out value ALPHA=', CHARN, ' FMEANWS=', FMEANWS
+      END IF
 #endif
 #endif
 
 #ifdef W3_ST4
-       CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
-            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
-            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
+      CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
+           U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
+           VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
     END IF
 #endif
 #ifdef W3_DEBUGSRC
 #ifdef W3_ST4
     IF (IX == DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) '1: U10DIR=', U10DIR, ' Z0=', Z0, ' CHARN=', CHARN
-       WRITE(740+IAPROC,*) '1: USTAR=', USTAR, ' U10ABS=', U10ABS, ' AS=', AS
-       WRITE(740+IAPROC,*) '1: DRAT=', DRAT
-       WRITE(740+IAPROC,*) '1: TAUWX=', TAUWX, ' TAUWY=', TAUWY
-       WRITE(740+IAPROC,*) '1: TAUWAX=', TAUWAX, ' TAUWAY=', TAUWAY
-       WRITE(740+IAPROC,*) '1: min(CG1)=', minval(CG1), ' max(CG1)=', maxval(CG1)
-       WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
-       WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
+      WRITE(740+IAPROC,*) '1: U10DIR=', U10DIR, ' Z0=', Z0, ' CHARN=', CHARN
+      WRITE(740+IAPROC,*) '1: USTAR=', USTAR, ' U10ABS=', U10ABS, ' AS=', AS
+      WRITE(740+IAPROC,*) '1: DRAT=', DRAT
+      WRITE(740+IAPROC,*) '1: TAUWX=', TAUWX, ' TAUWY=', TAUWY
+      WRITE(740+IAPROC,*) '1: TAUWAX=', TAUWAX, ' TAUWAY=', TAUWAY
+      WRITE(740+IAPROC,*) '1: min(CG1)=', minval(CG1), ' max(CG1)=', maxval(CG1)
+      WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
+      WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
     END IF
 #endif
 #endif
@@ -1040,9 +1040,9 @@ CONTAINS
 #endif
 #ifdef W3_ST6
     IF (FXFM .LE. 0) THEN
-       FHIGH = SIG(NK)
+      FHIGH = SIG(NK)
     ELSE
-       FHIGH  = MAX (FXFM * FMEAN, FXPM / USTAR)
+      FHIGH  = MAX (FXFM * FMEAN, FXPM / USTAR)
     ENDIF
 #endif
     !
@@ -1050,764 +1050,764 @@ CONTAINS
     !
 #ifdef W3_NNT
     IF ( IT .EQ. 0 ) THEN
-       J      = LEN_TRIM(FNMPRE)
-       WRITE (FNAME(11:13),'(I3.3)') IAPROC
-       OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,   &
-            ERR=800,IOSTAT=IERR)
-       WRITE (NDSD,ERR=801,IOSTAT=IERR) NK, NTH
-       WRITE (NDSD,ERR=801,IOSTAT=IERR) SIG(1:NK) * TPIINV
-       OPEN (NDSD2,FILE=FNMPRE(:J)//'time.ww3',                &
-            FORM='FORMATTED',ERR=800,IOSTAT=IERR)
+      J      = LEN_TRIM(FNMPRE)
+      WRITE (FNAME(11:13),'(I3.3)') IAPROC
+      OPEN (NDSD,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,   &
+           ERR=800,IOSTAT=IERR)
+      WRITE (NDSD,ERR=801,IOSTAT=IERR) NK, NTH
+      WRITE (NDSD,ERR=801,IOSTAT=IERR) SIG(1:NK) * TPIINV
+      OPEN (NDSD2,FILE=FNMPRE(:J)//'time.ww3',                &
+           FORM='FORMATTED',ERR=800,IOSTAT=IERR)
     END IF
 #endif
     !
     ! ... Branch point dynamic integration - - - - - - - - - - - - - - - -
     !
     DO
-       !
-       NSTEPS = NSTEPS + 1
-       !
+      !
+      NSTEPS = NSTEPS + 1
+      !
 #ifdef W3_T
-       WRITE (NDST,9020) NSTEPS, DTTOT
+      WRITE (NDST,9020) NSTEPS, DTTOT
 #endif
-       !
-       ! 2.  Calculate source terms ----------------------------------------- *
-       !
-       ! 2.a Input.
-       !
+      !
+      ! 2.  Calculate source terms ----------------------------------------- *
+      !
+      ! 2.a Input.
+      !
 #ifdef W3_LN1
-       CALL W3SLN1 (       WN1, FHIGH, USTAR, U10DIR , VSLN       )
+      CALL W3SLN1 (       WN1, FHIGH, USTAR, U10DIR , VSLN       )
 #endif
-       !
+      !
 #ifdef W3_ST1
-       CALL W3SIN1 ( SPEC, WN2, USTAR, U10DIR ,        VSIN, VDIN )
+      CALL W3SIN1 ( SPEC, WN2, USTAR, U10DIR ,        VSIN, VDIN )
 #endif
 #ifdef W3_ST2
-       CALL W3SIN2 ( SPEC, CG1, WN2, U10ABS, U10DIR, CD, Z0,        &
-            FPI, VSIN, VDIN )
+      CALL W3SIN2 ( SPEC, CG1, WN2, U10ABS, U10DIR, CD, Z0,        &
+           FPI, VSIN, VDIN )
 #endif
 #ifdef W3_ST3
-       CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
-            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
-            ICE, VSIN, VDIN, LLWS, IX, IY )
+      CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
+           U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
+           ICE, VSIN, VDIN, LLWS, IX, IY )
 #endif
 #ifdef W3_ST4
-       CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
-            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
-            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
+      CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
+           U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
+           VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 #endif
 
 #ifdef W3_DEBUGSRC
 #ifdef W3_ST4
-       IF (IX == DEBUG_NODE) THEN
-          WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
-          WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
-       END IF
+      IF (IX == DEBUG_NODE) THEN
+        WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
+        WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
+      END IF
 #endif
 #endif
 
 #ifdef W3_ST6
-       CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD, DAIR, &
-            TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
+      CALL W3SIN6 ( SPEC, CG1, WN2, U10ABS, USTAR, USTDIR, CD, DAIR, &
+           TAUWX, TAUWY, TAUWAX, TAUWAY, VSIN, VDIN )
 #endif
-       !
-       ! 2.b Nonlinear interactions.
-       !
+      !
+      ! 2.b Nonlinear interactions.
+      !
 #ifdef W3_NL1
-       CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH,        VSNL, VDNL )
+      CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH,        VSNL, VDNL )
 #endif
 #ifdef W3_NL2
-       CALL W3SNL2 ( SPEC, CG1, DEPTH,               VSNL, VDNL )
+      CALL W3SNL2 ( SPEC, CG1, DEPTH,               VSNL, VDNL )
 #endif
 #ifdef W3_NL3
-       CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
+      CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
 #endif
 #ifdef W3_NL4
-       CALL W3SNL4 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
+      CALL W3SNL4 ( SPEC, CG1, WN1, DEPTH,          VSNL, VDNL )
 #endif
 #ifdef W3_NL5
-       CALL W3SNL5 ( SPEC, CG1, WN1, FMEAN, QI5TSTART,          &
-            U10ABS, U10DIR, JSEA, VSNL, VDNL, QR5KURT)
+      CALL W3SNL5 ( SPEC, CG1, WN1, FMEAN, QI5TSTART,          &
+           U10ABS, U10DIR, JSEA, VSNL, VDNL, QR5KURT)
 #endif
-       !
+      !
 #ifdef W3_PDLIB
-       IF (.NOT. FSSOURCE .or. LSLOC) THEN
+      IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
-          CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
+        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
 #endif
 #ifdef W3_PDLIB
-       ENDIF
+      ENDIF
 #endif
-       !
-       ! 2.c Dissipation... except for ST4
-       ! 2.c1   as in source term package
-       !
+      !
+      ! 2.c Dissipation... except for ST4
+      ! 2.c1   as in source term package
+      !
 #ifdef W3_ST1
-       CALL W3SDS1 ( SPEC, WN2, EMEAN, FMEAN, WNMEAN,  VSDS, VDDS )
+      CALL W3SDS1 ( SPEC, WN2, EMEAN, FMEAN, WNMEAN,  VSDS, VDDS )
 #endif
 #ifdef W3_ST2
-       CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
+      CALL W3SDS2 ( SPEC, CG1, WN1, FPI, USTAR, ALPHA,VSDS, VDDS )
 #endif
 #ifdef W3_ST3
-       CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
-            USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
+      CALL W3SDS3 ( SPEC, WN1, CG1, EMEAN, FMEANS, WNMEAN,              &
+           USTAR, USTDIR, DEPTH, VSDS, VDDS, IX, IY )
 #endif
 #ifdef W3_ST4
-       CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, DAIR, VSDS,   &
-            VDDS, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
+      CALL W3SDS4 ( SPEC, WN1, CG1, USTAR, USTDIR, DEPTH, DAIR, VSDS,   &
+           VDDS, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
 #endif
 
 #ifdef W3_DEBUGSRC
 #ifdef W3_ST4
-       IF (IX == DEBUG_NODE) THEN
-          WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VSDS=', minval(VSDS), maxval(VSDS), sum(VSDS)
-          WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VDDS=', minval(VDDS), maxval(VDDS), sum(VDDS)
-       END IF
+      IF (IX == DEBUG_NODE) THEN
+        WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VSDS=', minval(VSDS), maxval(VSDS), sum(VSDS)
+        WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VDDS=', minval(VDDS), maxval(VDDS), sum(VDDS)
+      END IF
 #endif
 #endif
 
 #ifdef W3_ST6
-       CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
+      CALL W3SDS6 ( SPEC, CG1, WN1,                   VSDS, VDDS )
 #endif
-       !
+      !
 #ifdef W3_PDLIB
-       IF (.NOT. FSSOURCE .or. LSLOC) THEN
+      IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_DB1
-          CALL W3SDB1 ( IX, SPEC, DEPTH, EMEAN, FMEAN, WNMEAN, CG1,       &
-               LBREAK, VSDB, VDDB )
+        CALL W3SDB1 ( IX, SPEC, DEPTH, EMEAN, FMEAN, WNMEAN, CG1,       &
+             LBREAK, VSDB, VDDB )
 #endif
 #ifdef W3_PDLIB
-       ENDIF
+      ENDIF
 #endif
-       !
-       ! 2.c2   optional dissipation parameterisations
-       !
+      !
+      ! 2.c2   optional dissipation parameterisations
+      !
 #ifdef W3_ST6
-       IF (SWL6S6) THEN
-          CALL W3SWL6 ( SPEC, CG1, WN1, VSWL, VDWL )
-       END IF
+      IF (SWL6S6) THEN
+        CALL W3SWL6 ( SPEC, CG1, WN1, VSWL, VDWL )
+      END IF
 #endif
-       !
-       ! 2.d Bottom interactions.
-       !
+      !
+      ! 2.d Bottom interactions.
+      !
 #ifdef W3_BT1
-       CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
+      CALL W3SBT1 ( SPEC, CG1, WN1, DEPTH,            VSBT, VDBT )
 #endif
 #ifdef W3_BT4
-       CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL,    &
-            BEDFORM, VSBT, VDBT, IX, IY )
+      CALL W3SBT4 ( SPEC, CG1, WN1, DEPTH, D50, PSIC, TAUBBL,    &
+           BEDFORM, VSBT, VDBT, IX, IY )
 #endif
 #ifdef W3_BT8
-       CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
+      CALL W3SBT8 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 #endif
 #ifdef W3_BT9
-       CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
+      CALL W3SBT9 ( SPEC, DEPTH, VSBT, VDBT, IX, IY )
 #endif
-       !
+      !
 #ifdef W3_BS1
-       CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
-            TAUSCX, TAUSCY, VSBS, VDBS )
+      CALL W3SBS1 ( SPEC, CG1, WN1, DEPTH, CX, CY,                &
+           TAUSCX, TAUSCY, VSBS, VDBS )
 #endif
-       !
-       ! 2.e Unresolved Obstacles Source Term
-       !
+      !
+      ! 2.e Unresolved Obstacles Source Term
+      !
 #ifdef W3_UOST
-       ! UNRESOLVED OBSTACLES
-       CALL UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG1, DT,            &
-            U10ABS, U10DIR, VSUO, VDUO)
+      ! UNRESOLVED OBSTACLES
+      CALL UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG1, DT,            &
+           U10ABS, U10DIR, VSUO, VDUO)
 #endif
-       !
-       ! 2.g Dump training data if necessary
-       !
+      !
+      ! 2.g Dump training data if necessary
+      !
 #ifdef W3_NNT
-       WRITE (SCREEN,8888) TIME, DTTOT, FLAGNN, QCERR
-       WRITE (NDSD2,8888) TIME, DTTOT, FLAGNN, QCERR
-8888   FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
-       WRITE (NDSD,ERR=801,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
-            DTTOT, FLAGNN, DEPTH, U10ABS, U10DIR
+      WRITE (SCREEN,8888) TIME, DTTOT, FLAGNN, QCERR
+      WRITE (NDSD2,8888) TIME, DTTOT, FLAGNN, QCERR
+8888  FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
+      WRITE (NDSD,ERR=801,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
+           DTTOT, FLAGNN, DEPTH, U10ABS, U10DIR
 #endif
-       !
+      !
 #ifdef W3_NNT
-       IF ( FLAGNN ) THEN
-          DO IK=1, NK
-             FACNN  = TPI * SIG(IK) / CG1(IK)
-             DO ITH=1, NTH
-                IS     = ITH + (IK-1)*NTH
-                FOUT(IK,ITH) = SPEC(IS) * FACNN
-                SOUT(IK,ITH) = VSNL(IS) * FACNN
-                DOUT(IK,ITH) = VDNL(IS)
-             END DO
+      IF ( FLAGNN ) THEN
+        DO IK=1, NK
+          FACNN  = TPI * SIG(IK) / CG1(IK)
+          DO ITH=1, NTH
+            IS     = ITH + (IK-1)*NTH
+            FOUT(IK,ITH) = SPEC(IS) * FACNN
+            SOUT(IK,ITH) = VSNL(IS) * FACNN
+            DOUT(IK,ITH) = VDNL(IS)
           END DO
-          WRITE (NDSD,ERR=801,IOSTAT=IERR) FOUT
-          WRITE (NDSD,ERR=801,IOSTAT=IERR) SOUT
-          WRITE (NDSD,ERR=801,IOSTAT=IERR) DOUT
-       END IF
+        END DO
+        WRITE (NDSD,ERR=801,IOSTAT=IERR) FOUT
+        WRITE (NDSD,ERR=801,IOSTAT=IERR) SOUT
+        WRITE (NDSD,ERR=801,IOSTAT=IERR) DOUT
+      END IF
 #endif
-       !
-       ! 3.  Set frequency cut-off ------------------------------------------ *
-       !
+      !
+      ! 3.  Set frequency cut-off ------------------------------------------ *
+      !
 #ifdef W3_ST2
-       FHIGH  = XFC * FPI
-       IF ( FLTEST ) WRITE (NDST,9005) FHIGH*TPIINV
+      FHIGH  = XFC * FPI
+      IF ( FLTEST ) WRITE (NDST,9005) FHIGH*TPIINV
 #endif
-       NKH    = MIN ( NK , INT(FACTI2+FACTI1*LOG(MAX(1.E-7,FHIGH))) )
-       NKH1   = MIN ( NK , NKH+1 )
-       NSPECH = NKH1*NTH
+      NKH    = MIN ( NK , INT(FACTI2+FACTI1*LOG(MAX(1.E-7,FHIGH))) )
+      NKH1   = MIN ( NK , NKH+1 )
+      NSPECH = NKH1*NTH
 #ifdef W3_T
-       WRITE (NDST,9021) NKH, NKH1, NSPECH
+      WRITE (NDST,9021) NKH, NKH1, NSPECH
 #endif
-       !
-       ! 4.  Summation of source terms and diagonal term and time step ------ *
-       !
-       DT     = MIN ( DTG-DTTOT , DTMAX )
-       AFILT  = MAX ( DAM(NSPEC) , XFLT*AMAX )
-       !
-       !     For input and dissipation calculate the fraction of the ice-free
-       !     surface. In the presence of ice, the effective water surface
-       !     is reduce to a fraction of the cell size free from ice, and so is
-       !     input :
-       !             SIN = (1-ICE)**ISCALEIN*SIN and SDS=(1-ICE)**ISCALEDS*SDS ------------------ *
-       !     INFLAGS2(4) is true if ice concentration was ever read during
-       !             this simulation
-       IF ( INFLAGS2(4) ) THEN
-          VSNL(1:NSPECH) = ICESCALENL * VSNL(1:NSPECH)
-          VDNL(1:NSPECH) = ICESCALENL * VDNL(1:NSPECH)
-          VSLN(1:NSPECH) = ICESCALELN * VSLN(1:NSPECH)
-          VSIN(1:NSPECH) = ICESCALEIN * VSIN(1:NSPECH)
-          VDIN(1:NSPECH) = ICESCALEIN * VDIN(1:NSPECH)
-          VSDS(1:NSPECH) = ICESCALEDS * VSDS(1:NSPECH)
-          VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
-       END IF
-       !
-       VS = 0
-       VD = 0
-       DO IS=IS1, NSPECH
-          VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
-               + VSDS(IS) + VSBT(IS)
+      !
+      ! 4.  Summation of source terms and diagonal term and time step ------ *
+      !
+      DT     = MIN ( DTG-DTTOT , DTMAX )
+      AFILT  = MAX ( DAM(NSPEC) , XFLT*AMAX )
+      !
+      !     For input and dissipation calculate the fraction of the ice-free
+      !     surface. In the presence of ice, the effective water surface
+      !     is reduce to a fraction of the cell size free from ice, and so is
+      !     input :
+      !             SIN = (1-ICE)**ISCALEIN*SIN and SDS=(1-ICE)**ISCALEDS*SDS ------------------ *
+      !     INFLAGS2(4) is true if ice concentration was ever read during
+      !             this simulation
+      IF ( INFLAGS2(4) ) THEN
+        VSNL(1:NSPECH) = ICESCALENL * VSNL(1:NSPECH)
+        VDNL(1:NSPECH) = ICESCALENL * VDNL(1:NSPECH)
+        VSLN(1:NSPECH) = ICESCALELN * VSLN(1:NSPECH)
+        VSIN(1:NSPECH) = ICESCALEIN * VSIN(1:NSPECH)
+        VDIN(1:NSPECH) = ICESCALEIN * VDIN(1:NSPECH)
+        VSDS(1:NSPECH) = ICESCALEDS * VSDS(1:NSPECH)
+        VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
+      END IF
+      !
+      VS = 0
+      VD = 0
+      DO IS=IS1, NSPECH
+        VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
+             + VSDS(IS) + VSBT(IS)
 #ifdef W3_ST6
-          VS(IS) = VS(IS) + VSWL(IS)
+        VS(IS) = VS(IS) + VSWL(IS)
 #endif
 #ifdef W3_TR1
-          VS(IS) = VS(IS) + VSTR(IS)
+        VS(IS) = VS(IS) + VSTR(IS)
 #endif
 #ifdef W3_BS1
-          VS(IS) = VS(IS) + VSBS(IS)
+        VS(IS) = VS(IS) + VSBS(IS)
 #endif
 #ifdef W3_UOST
-          VS(IS) = VS(IS) + VSUO(IS)
+        VS(IS) = VS(IS) + VSUO(IS)
 #endif
-          VD(IS) =  VDIN(IS) + VDNL(IS)  &
-               + VDDS(IS) + VDBT(IS)
+        VD(IS) =  VDIN(IS) + VDNL(IS)  &
+             + VDDS(IS) + VDBT(IS)
 #ifdef W3_ST6
-          VD(IS) = VD(IS) + VDWL(IS)
+        VD(IS) = VD(IS) + VDWL(IS)
 #endif
 #ifdef W3_TR1
-          VD(IS) = VD(IS) + VDTR(IS)
+        VD(IS) = VD(IS) + VDTR(IS)
 #endif
 #ifdef W3_BS1
-          VD(IS) = VD(IS) + VDBS(IS)
+        VD(IS) = VD(IS) + VDBS(IS)
 #endif
 #ifdef W3_UOST
-          VD(IS) = VD(IS) + VDUO(IS)
+        VD(IS) = VD(IS) + VDUO(IS)
 #endif
-          DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
-          AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
+        DAMAX  = MIN ( DAM(IS) , MAX ( XREL*SPECINIT(IS) , AFILT ) )
+        AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
 #ifdef W3_NL5
-          IF (NL5_SELECT .EQ. 1)  THEN
-             DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,             &
-                  1. + NL5_OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
-          ELSE
+        IF (NL5_SELECT .EQ. 1)  THEN
+          DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,             &
+               1. + NL5_OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
+        ELSE
 #endif
-             DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,                  &
-                  1. + OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
+          DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,                  &
+               1. + OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
 #ifdef W3_NL5
-          ENDIF
+        ENDIF
 #endif
-       END DO  ! end of loop on IS
-       !
-       DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
-       !
-       DTDYN  = DTDYN + DT
+      END DO  ! end of loop on IS
+      !
+      DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
+      !
+      DTDYN  = DTDYN + DT
 #ifdef W3_T
-       DTRAW  = DT
+      DTRAW  = DT
 #endif
-       IDT     = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations
-       DT      = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
-       SHAVE   = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ...
-       SHAVEIO = SHAVE
-       DT      = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
-       !
+      IDT     = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations
+      DT      = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
+      SHAVE   = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ...
+      SHAVEIO = SHAVE
+      DT      = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
+      !
 #ifdef W3_NL5
-       DT     = INT(DT) * 1.0
+      DT     = INT(DT) * 1.0
 #endif
-       IF (srce_call .eq. srce_imp_post) DT = DTG  ! for implicit part
+      IF (srce_call .eq. srce_imp_post) DT = DTG  ! for implicit part
 #ifdef W3_NL5
-       IF (NL5_SELECT .EQ. 1) THEN
-          HDT    = NL5_OFFSET * DT
-       ELSE
+      IF (NL5_SELECT .EQ. 1) THEN
+        HDT    = NL5_OFFSET * DT
+      ELSE
 #endif
-          HDT    = OFFSET * DT
+        HDT    = OFFSET * DT
 #ifdef W3_NL5
-       ENDIF
+      ENDIF
 #endif
-       DTTOT  = DTTOT + DT
+      DTTOT  = DTTOT + DT
 
 #ifdef W3_DEBUGSRC
-       IF (IX == DEBUG_NODE) WRITE(*,'(A20,2I10,5F20.10,L20)') 'TIMINGS 2', IDT, NSTEPS, DT, DTMIN, DTDYN, HDT, DTTOT, SHAVE
-       IF (IX == DEBUG_NODE) THEN
-          WRITE(740+IAPROC,*) '1: min/max/sum(VS)=', minval(VS), maxval(VS), sum(VS)
-          WRITE(740+IAPROC,*) '1: min/max/sum(VD)=', minval(VD), maxval(VD), sum(VD)
-          WRITE(740+IAPROC,*) 'min/max/sum(VSIN)=', minval(VSIN), maxval(VSIN), sum(VSIN)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDIN)=', minval(VDIN), maxval(VDIN), sum(VDIN)
-          WRITE(740+IAPROC,*) 'min/max/sum(VSLN)=', minval(VSLN), maxval(VSLN), sum(VSLN)
-          WRITE(740+IAPROC,*) 'min/max/sum(VSNL)=', minval(VSNL), maxval(VSNL), sum(VSNL)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDNL)=', minval(VDNL), maxval(VDNL), sum(VDNL)
-          WRITE(740+IAPROC,*) 'min/max/sum(VSDS)=', minval(VSDS), maxval(VSDS), sum(VSDS)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDDS)=', minval(VDDS), maxval(VDDS), sum(VDDS)
+      IF (IX == DEBUG_NODE) WRITE(*,'(A20,2I10,5F20.10,L20)') 'TIMINGS 2', IDT, NSTEPS, DT, DTMIN, DTDYN, HDT, DTTOT, SHAVE
+      IF (IX == DEBUG_NODE) THEN
+        WRITE(740+IAPROC,*) '1: min/max/sum(VS)=', minval(VS), maxval(VS), sum(VS)
+        WRITE(740+IAPROC,*) '1: min/max/sum(VD)=', minval(VD), maxval(VD), sum(VD)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSIN)=', minval(VSIN), maxval(VSIN), sum(VSIN)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDIN)=', minval(VDIN), maxval(VDIN), sum(VDIN)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSLN)=', minval(VSLN), maxval(VSLN), sum(VSLN)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSNL)=', minval(VSNL), maxval(VSNL), sum(VSNL)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDNL)=', minval(VDNL), maxval(VDNL), sum(VDNL)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSDS)=', minval(VSDS), maxval(VSDS), sum(VSDS)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDDS)=', minval(VDDS), maxval(VDDS), sum(VDDS)
 #ifdef W3_ST6
-          WRITE(740+IAPROC,*) 'min/max/sum(VSWL)=', minval(VSWL), maxval(VSWL), sum(VSWL)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDWL)=', minval(VDWL), maxval(VDWL), sum(VDWL)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSWL)=', minval(VSWL), maxval(VSWL), sum(VSWL)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDWL)=', minval(VDWL), maxval(VDWL), sum(VDWL)
 #endif
 #ifdef W3_DB1
-          WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
 #endif
 #ifdef W3_TR1
-          WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
 #endif
 #ifdef W3_BS1
-          WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
+        WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
 #endif
-          WRITE(740+IAPROC,*) 'min/max/sum(VSBT)=', minval(VSBT), maxval(VSBT), sum(VSBT)
-          WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
-       END IF
+        WRITE(740+IAPROC,*) 'min/max/sum(VSBT)=', minval(VSBT), maxval(VSBT), sum(VSBT)
+        WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
+      END IF
 #endif
 
 #ifdef W3_PDLIB
-       IF (srce_call .eq. srce_imp_pre) THEN
-          IF (LSLOC) THEN
-             IF (IMEM == 1) THEN
-                SIDT  = PDLIB_SI(JSEA) * DTG
-                DO IK = 1, NK
-                   JAC = CLATSL/CG1(IK)
-                   DO ITH = 1, NTH
-                      ISP = ITH + (IK-1)*NTH
-                      VD(ISP) = MIN(0., VD(ISP))
-                      IF (LNEWLIMITER) THEN
-                         MAXDAC = MAX(DAM(ISP),DAM2(ISP))
-                      ELSE
-                         MAXDAC = DAM(ISP)
-                      ENDIF
-                      FAKS   = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
-                      DVS    = VS(ISP) * FAKS
-                      DVS    = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
-                      PreVS  = DVS / FAKS
-                      eVS    = PreVS / CG1(IK) * CLATSL
-                      eVD    = MIN(0.,VD(ISP))
-                      B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
-                      ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+      IF (srce_call .eq. srce_imp_pre) THEN
+        IF (LSLOC) THEN
+          IF (IMEM == 1) THEN
+            SIDT  = PDLIB_SI(JSEA) * DTG
+            DO IK = 1, NK
+              JAC = CLATSL/CG1(IK)
+              DO ITH = 1, NTH
+                ISP = ITH + (IK-1)*NTH
+                VD(ISP) = MIN(0., VD(ISP))
+                IF (LNEWLIMITER) THEN
+                  MAXDAC = MAX(DAM(ISP),DAM2(ISP))
+                ELSE
+                  MAXDAC = DAM(ISP)
+                ENDIF
+                FAKS   = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
+                DVS    = VS(ISP) * FAKS
+                DVS    = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                PreVS  = DVS / FAKS
+                eVS    = PreVS / CG1(IK) * CLATSL
+                eVD    = MIN(0.,VD(ISP))
+                B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
+                ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
-                      eVS = VSDB(ISP) * JAC
-                      eVD = MIN(0.,VDDB(ISP))
-                      IF (eVS .gt. 0.) THEN
-                         evS = 2*evS
-                         evD = -evD
-                      ELSE
-                         evS = -evS
-                         evD = 2*evD
-                      ENDIF
+                eVS = VSDB(ISP) * JAC
+                eVD = MIN(0.,VDDB(ISP))
+                IF (eVS .gt. 0.) THEN
+                  evS = 2*evS
+                  evD = -evD
+                ELSE
+                  evS = -evS
+                  evD = 2*evD
+                ENDIF
 #endif
-                      B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
-                      ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+                B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
+                ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 
 #ifdef W3_TR1
-                      eVS = VSTR(ISP) * JAC
-                      eVD = VDTR(ISP)
-                      IF (eVS .gt. 0.) THEN
-                         evS = 2*evS
-                         evD = -evD
-                      ELSE
-                         evS = -evS
-                         evD = 2*evD
-                      ENDIF
+                eVS = VSTR(ISP) * JAC
+                eVD = VDTR(ISP)
+                IF (eVS .gt. 0.) THEN
+                  evS = 2*evS
+                  evD = -evD
+                ELSE
+                  evS = -evS
+                  evD = 2*evD
+                ENDIF
 #endif
-                      B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
-                      ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
-                   END DO
-                END DO
+                B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
+                ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+              END DO
+            END DO
 
-             ELSEIF (IMEM == 2) THEN
+          ELSEIF (IMEM == 2) THEN
 
-                SIDT   = PDLIB_SI(JSEA) * DTG
-                DO IK=1,NK
-                   JAC = CLATSL/CG1(IK)
-                   DO ITH=1,NTH
-                      ISP=ITH + (IK-1)*NTH
-                      VD(ISP) = MIN(0., VD(ISP))
-                      IF (LNEWLIMITER) THEN
-                         MAXDAC    = MAX(DAM(ISP),DAM2(ISP))
-                      ELSE
-                         MAXDAC    = DAM(ISP)
-                      ENDIF
-                      FAKS      = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
-                      DVS       = VS(ISP) * FAKS
-                      DVS       = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
-                      PreVS     = DVS / FAKS
-                      eVS = PreVS / CG1(IK) * CLATSL
-                      eVD = VD(ISP)
+            SIDT   = PDLIB_SI(JSEA) * DTG
+            DO IK=1,NK
+              JAC = CLATSL/CG1(IK)
+              DO ITH=1,NTH
+                ISP=ITH + (IK-1)*NTH
+                VD(ISP) = MIN(0., VD(ISP))
+                IF (LNEWLIMITER) THEN
+                  MAXDAC    = MAX(DAM(ISP),DAM2(ISP))
+                ELSE
+                  MAXDAC    = DAM(ISP)
+                ENDIF
+                FAKS      = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
+                DVS       = VS(ISP) * FAKS
+                DVS       = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                PreVS     = DVS / FAKS
+                eVS = PreVS / CG1(IK) * CLATSL
+                eVD = VD(ISP)
 #ifdef W3_DB1
-                      eVS = eVS + DBLE(VSDB(ISP)) * JAC
-                      eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
+                eVS = eVS + DBLE(VSDB(ISP)) * JAC
+                eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
 #endif
-                      B_JAC(ISP,JSEA)          = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA))
-                      ASPAR_DIAG_ALL(ISP,JSEA) = ASPAR_DIAG_ALL(ISP,JSEA) - SIDT * eVD
-                   END DO
-                END DO
-             ENDIF
+                B_JAC(ISP,JSEA)          = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA))
+                ASPAR_DIAG_ALL(ISP,JSEA) = ASPAR_DIAG_ALL(ISP,JSEA) - SIDT * eVD
+              END DO
+            END DO
           ENDIF
+        ENDIF
 
-          PrintDeltaSmDA=.FALSE.
-          IF (PrintDeltaSmDA .eqv. .TRUE.) THEN
-             DO IS=1,NSPEC
-                DeltaSRC(IS) = VSIN(IS) - SPEC(IS)*VDIN(IS)
-             END DO
-             WRITE(740+IAPROC,*) 'min/max/sum(VSIN)=', minval(VSIN), maxval(VSIN), sum(VSIN)
-             WRITE(740+IAPROC,*) 'min/max/sum(DeltaIN)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
-             !
-             DO IS=1,NSPEC
-                DeltaSRC(IS) = VSNL(IS) - SPEC(IS)*VDNL(IS)
-             END DO
-             WRITE(740+IAPROC,*) 'min/max/sum(VSNL)=', minval(VSNL), maxval(VSNL), sum(VSNL)
-             WRITE(740+IAPROC,*) 'min/max/sum(DeltaNL)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
-             !
-             DO IS=1,NSPEC
-                DeltaSRC(IS) = VSDS(IS) - SPEC(IS)*VDDS(IS)
-             END DO
-             WRITE(740+IAPROC,*) 'min/max/sum(VSDS)=', minval(VSDS), maxval(VSDS), sum(VSDS)
-             WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
-             !
-             !            DO IS=1,NSPEC
-             !              DeltaSRC(IS) = VSIC(IS) - SPEC(IS)*VDIC(IS)
-             !            END DO
-             WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
-          END IF
-
-          IF (.not. LSLOC) THEN
-             IF (optionCall .eq. 1) THEN
-                CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
-             ELSE IF (optionCall .eq. 2) THEN
-                CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
-             ELSE IF (optionCall .eq. 3) THEN
-                CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
-             ENDIF
-             VSIO = VS
-             VDIO = VD
-          ENDIF
-
-#ifdef W3_DEBUGSRC
-          IF (IX == DEBUG_NODE) THEN
-             WRITE(740+IAPROC,*) '     srce_imp_pre : SHAVE = ', SHAVE
-             WRITE(740+IAPROC,*) '     srce_imp_pre : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
-             WRITE(740+IAPROC,*) '     srce_imp_pre : sum(SPEC)=', sum(SPEC)
-             WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VSTOT)=', sum(VS)
-             WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VDTOT)=', sum(MIN(0. , VD))
-          END IF
-
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDDS)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSNL)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDNL)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSLN)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
-#endif
-          RETURN ! return everything is done for the implicit ...
-
-       END IF ! srce_imp_pre
-#endif W3_PDLIB
-       !
-#ifdef W3_T
-       WRITE (NDST,9040) DTRAW, DT, SHAVE
-#endif
-       !
-       ! 5.  Increment spectrum --------------------------------------------- *
-       !
-       IF (srce_call .eq. srce_direct) THEN
-          IF ( SHAVE ) THEN
-             DO IS=IS1, NSPECH
-                eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
-                eInc2 = SIGN ( MIN (DAM(IS),ABS(eInc1)) , eInc1 )
-                SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc2 )
-             END DO
-          ELSE
-             !
-             DO IS=IS1, NSPECH
-                eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
-                SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
-             END DO
-          END IF
+        PrintDeltaSmDA=.FALSE.
+        IF (PrintDeltaSmDA .eqv. .TRUE.) THEN
+          DO IS=1,NSPEC
+            DeltaSRC(IS) = VSIN(IS) - SPEC(IS)*VDIN(IS)
+          END DO
+          WRITE(740+IAPROC,*) 'min/max/sum(VSIN)=', minval(VSIN), maxval(VSIN), sum(VSIN)
+          WRITE(740+IAPROC,*) 'min/max/sum(DeltaIN)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
           !
-#ifdef W3_DB1
-          DO IS=IS1, NSPECH
-             eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
-             SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+          DO IS=1,NSPEC
+            DeltaSRC(IS) = VSNL(IS) - SPEC(IS)*VDNL(IS)
           END DO
+          WRITE(740+IAPROC,*) 'min/max/sum(VSNL)=', minval(VSNL), maxval(VSNL), sum(VSNL)
+          WRITE(740+IAPROC,*) 'min/max/sum(DeltaNL)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
+          !
+          DO IS=1,NSPEC
+            DeltaSRC(IS) = VSDS(IS) - SPEC(IS)*VDDS(IS)
+          END DO
+          WRITE(740+IAPROC,*) 'min/max/sum(VSDS)=', minval(VSDS), maxval(VSDS), sum(VSDS)
+          WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
+          !
+          !            DO IS=1,NSPEC
+          !              DeltaSRC(IS) = VSIC(IS) - SPEC(IS)*VDIC(IS)
+          !            END DO
+          WRITE(740+IAPROC,*) 'min/max/sum(DeltaDS)=', minval(DeltaSRC), maxval(DeltaSRC), sum(DeltaSRC)
+        END IF
+
+        IF (.not. LSLOC) THEN
+          IF (optionCall .eq. 1) THEN
+            CALL SIGN_VSD_PATANKAR_WW3(SPEC,VS,VD)
+          ELSE IF (optionCall .eq. 2) THEN
+            CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+          ELSE IF (optionCall .eq. 3) THEN
+            CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC,VS,VD)
+          ENDIF
+          VSIO = VS
+          VDIO = VD
+        ENDIF
+
+#ifdef W3_DEBUGSRC
+        IF (IX == DEBUG_NODE) THEN
+          WRITE(740+IAPROC,*) '     srce_imp_pre : SHAVE = ', SHAVE
+          WRITE(740+IAPROC,*) '     srce_imp_pre : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
+          WRITE(740+IAPROC,*) '     srce_imp_pre : sum(SPEC)=', sum(SPEC)
+          WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VSTOT)=', sum(VS)
+          WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VDTOT)=', sum(MIN(0. , VD))
+        END IF
+
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDDS)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSNL)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDNL)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSLN)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
+#endif
+        RETURN ! return everything is done for the implicit ...
+
+      END IF ! srce_imp_pre
+#endif W3_PDLIB
+      !
+#ifdef W3_T
+      WRITE (NDST,9040) DTRAW, DT, SHAVE
+#endif
+      !
+      ! 5.  Increment spectrum --------------------------------------------- *
+      !
+      IF (srce_call .eq. srce_direct) THEN
+        IF ( SHAVE ) THEN
+          DO IS=IS1, NSPECH
+            eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
+            eInc2 = SIGN ( MIN (DAM(IS),ABS(eInc1)) , eInc1 )
+            SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc2 )
+          END DO
+        ELSE
+          !
+          DO IS=IS1, NSPECH
+            eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
+            SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+          END DO
+        END IF
+        !
+#ifdef W3_DB1
+        DO IS=IS1, NSPECH
+          eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
+          SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+        END DO
 #endif
 
 #ifdef W3_DEBUGSRC
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDDS)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSNL)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDNL)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSLN)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
-          IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
-          IF (IX == DEBUG_NODE) THEN
-             WRITE(740+IAPROC,*) '     srce_direct : SHAVE = ', SHAVE
-             WRITE(740+IAPROC,*) '     srce_direct : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
-             WRITE(740+IAPROC,*) '     srce_direct : sum(SPEC)=', sum(SPEC)
-             WRITE(740+IAPROC,*) '     srce_direct : sum(VSTOT)=', sum(VS)
-             WRITE(740+IAPROC,*) '     srce_direct : sum(VDTOT)=', sum(MIN(0. , VD))
-          END IF
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDIN)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSDS)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDDS)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSNL)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VDNL)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSLN)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
+        IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
+        IF (IX == DEBUG_NODE) THEN
+          WRITE(740+IAPROC,*) '     srce_direct : SHAVE = ', SHAVE
+          WRITE(740+IAPROC,*) '     srce_direct : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
+          WRITE(740+IAPROC,*) '     srce_direct : sum(SPEC)=', sum(SPEC)
+          WRITE(740+IAPROC,*) '     srce_direct : sum(VSTOT)=', sum(VS)
+          WRITE(740+IAPROC,*) '     srce_direct : sum(VDTOT)=', sum(MIN(0. , VD))
+        END IF
 #endif
-       END IF
+      END IF
 
 
-       !
-       ! 5.b  Computes
-       !              atmos->wave flux PHIAW-------------------------------- *
-       !              wave ->BBL  flux PHIBBL------------------------------- *
-       !              wave ->ice  flux PHICE ------------------------------- *
-       !
-       WHITECAP(3)=0.
-       HSTOT=0.
-       DO IK=IKS1, NK
-          FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
-          FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
+      !
+      ! 5.b  Computes
+      !              atmos->wave flux PHIAW-------------------------------- *
+      !              wave ->BBL  flux PHIBBL------------------------------- *
+      !              wave ->ice  flux PHICE ------------------------------- *
+      !
+      WHITECAP(3)=0.
+      HSTOT=0.
+      DO IK=IKS1, NK
+        FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
+        FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
 
-          ! Wave direction is "direction to"
-          ! therefore there is a PLUS sign for the stress
-          DO ITH=1, NTH
-             IS   = (IK-1)*NTH + ITH
-             COSI(1)=ECOS(IS)
-             COSI(2)=ESIN(IS)
-             PHIAW = PHIAW + (VSIN(IS))* DT * FACTOR                    &
-                  / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
+        ! Wave direction is "direction to"
+        ! therefore there is a PLUS sign for the stress
+        DO ITH=1, NTH
+          IS   = (IK-1)*NTH + ITH
+          COSI(1)=ECOS(IS)
+          COSI(2)=ESIN(IS)
+          PHIAW = PHIAW + (VSIN(IS))* DT * FACTOR                    &
+               / MAX ( 1. , (1.-HDT*VDIN(IS))) ! semi-implict integration scheme
 
-             PHIBBL= PHIBBL- (VSBT(IS))* DT * FACTOR                    &
-                  / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
-             PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
-                  / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
-             IF (VSIN(IS).GT.0.) WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
-             HSTOT = HSTOT + SPEC(IS) * FACTOR
-          END DO
-       END DO
-       WHITECAP(3)=4.*SQRT(WHITECAP(3))
-       HSTOT=4.*SQRT(HSTOT)
-       TAUWIX= TAUWIX+ TAUWX * DRAT *DT
-       TAUWIY= TAUWIY+ TAUWY * DRAT *DT
-       TAUWNX= TAUWNX+ TAUWAX * DRAT *DT
-       TAUWNY= TAUWNY+ TAUWAY * DRAT *DT
-       ! MISSING: TAIL TO BE ADDED ?
-       !
+          PHIBBL= PHIBBL- (VSBT(IS))* DT * FACTOR                    &
+               / MAX ( 1. , (1.-HDT*VDBT(IS))) ! semi-implict integration scheme
+          PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
+               / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
+          IF (VSIN(IS).GT.0.) WHITECAP(3) = WHITECAP(3) + SPEC(IS)  * FACTOR
+          HSTOT = HSTOT + SPEC(IS) * FACTOR
+        END DO
+      END DO
+      WHITECAP(3)=4.*SQRT(WHITECAP(3))
+      HSTOT=4.*SQRT(HSTOT)
+      TAUWIX= TAUWIX+ TAUWX * DRAT *DT
+      TAUWIY= TAUWIY+ TAUWY * DRAT *DT
+      TAUWNX= TAUWNX+ TAUWAX * DRAT *DT
+      TAUWNY= TAUWNY+ TAUWAY * DRAT *DT
+      ! MISSING: TAIL TO BE ADDED ?
+      !
 #ifdef W3_NLS
-       CALL W3SNLS ( SPEC, CG1, WN1, DEPTH, U10ABS, DT, AA=SPEC )
+      CALL W3SNLS ( SPEC, CG1, WN1, DEPTH, U10ABS, DT, AA=SPEC )
 #endif
-       !
-       ! 6.  Add tail ------------------------------------------------------- *
-       !   a Mean parameters
-       !
-       !
+      !
+      ! 6.  Add tail ------------------------------------------------------- *
+      !   a Mean parameters
+      !
+      !
 #ifdef W3_ST0
-       CALL W3SPR0 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX)
+      CALL W3SPR0 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX)
 #endif
 #ifdef W3_ST1
-       CALL W3SPR1 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX)
+      CALL W3SPR1 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX)
 #endif
 #ifdef W3_ST2
-       CALL W3SPR2 (SPEC, CG1, WN1, DEPTH, FPI, U10ABS, USTAR,   &
-            EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
+      CALL W3SPR2 (SPEC, CG1, WN1, DEPTH, FPI, U10ABS, USTAR,   &
+           EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 #endif
 #ifdef W3_ST3
-       CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS,        &
-            WNMEAN, AMAX, U10ABS, U10DIR, USTAR, USTDIR, &
-            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+      CALL W3SPR3 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEANS,        &
+           WNMEAN, AMAX, U10ABS, U10DIR, USTAR, USTDIR, &
+           TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 #endif
 #ifdef W3_ST4
-       CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
-            AMAX, U10ABS, U10DIR,                          &
+      CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
+           AMAX, U10ABS, U10DIR,                          &
 #ifdef W3_FLX5
-            TAUA, TAUADIR, DAIR,                     &
+           TAUA, TAUADIR, DAIR,                     &
 #endif
-            USTAR, USTDIR,                                 &
-            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+           USTAR, USTDIR,                                 &
+           TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 #ifdef W3_ST6
-       CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
+      CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 #endif
-       !
+      !
 #ifdef W3_FLX2
-       CALL W3FLX2 ( ZWND, DEPTH, FP, U10ABS, U10DIR,           &
-            USTAR, USTDIR, Z0, CD )
+      CALL W3FLX2 ( ZWND, DEPTH, FP, U10ABS, U10DIR,           &
+           USTAR, USTDIR, Z0, CD )
 #endif
 #ifdef W3_FLX3
-       CALL W3FLX3 ( ZWND, DEPTH, FP, U10ABS, U10DIR,           &
-            USTAR, USTDIR, Z0, CD )
+      CALL W3FLX3 ( ZWND, DEPTH, FP, U10ABS, U10DIR,           &
+           USTAR, USTDIR, Z0, CD )
 #endif
-       !
+      !
 #ifdef W3_ST1
-       FH1    = FXFM * FMEAN
-       FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
-       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
-            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
+      FH1    = FXFM * FMEAN
+      FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
+      NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
+           INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
 #endif
-       !
+      !
 #ifdef W3_ST1
-       IF ( FLTEST ) WRITE (NDST,9060)                           &
-            FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
+      IF ( FLTEST ) WRITE (NDST,9060)                           &
+           FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 #endif
-       !
+      !
 #ifdef W3_ST2
-       FHTRAN = XFT*FPI
-       FHIGH  = XFC*FPI
-       DFH    = FHIGH - FHTRAN
-       NKH    = MAX ( 1 ,                                        &
-            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHTRAN)) ) )
+      FHTRAN = XFT*FPI
+      FHIGH  = XFC*FPI
+      DFH    = FHIGH - FHTRAN
+      NKH    = MAX ( 1 ,                                        &
+           INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHTRAN)) ) )
 #endif
-       !
+      !
 #ifdef W3_ST2
-       IF ( FLTEST ) WRITE (NDST,9061) FHTRAN, FHIGH, NKH
+      IF ( FLTEST ) WRITE (NDST,9061) FHTRAN, FHIGH, NKH
 #endif
-       !
+      !
 #ifdef W3_ST3
-       FH1    = FFXFM * FMEAN
-       FH2    = FFXPM / USTAR
-       FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
-       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
-            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
+      FH1    = FFXFM * FMEAN
+      FH2    = FFXPM / USTAR
+      FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
+      NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
+           INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
 #endif
-       !
+      !
 #ifdef W3_ST3
-       IF ( FLTEST ) WRITE (NDST,9062)                           &
-            FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
+      IF ( FLTEST ) WRITE (NDST,9062)                           &
+           FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 #endif
-       !
+      !
 #ifdef W3_ST4
-       ! Introduces a Long & Resio (JGR2007) type dependance on wave age
-       FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
-       FH1    = (FFXFM+FAGE) * FMEAN1
+      ! Introduces a Long & Resio (JGR2007) type dependance on wave age
+      FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
+      FH1    = (FFXFM+FAGE) * FMEAN1
 #endif
 
 #ifdef W3_ST4
-       FH2    = FFXPM / USTAR
-       FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
-       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
-            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
+      FH2    = FFXPM / USTAR
+      FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
+      NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
+           INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
 #endif
-       !
+      !
 #ifdef W3_ST6
-       IF (FXFM .LE. 0) THEN
-          FHIGH = SIG(NK)
-       ELSE
-          FHIGH = MIN ( SIG(NK), MAX(FXFM * FMEAN, FXPM / USTAR) )
-       ENDIF
-       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
-            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
+      IF (FXFM .LE. 0) THEN
+        FHIGH = SIG(NK)
+      ELSE
+        FHIGH = MIN ( SIG(NK), MAX(FXFM * FMEAN, FXPM / USTAR) )
+      ENDIF
+      NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
+           INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
 #endif
-       !
+      !
 #ifdef W3_ST6
-       IF ( FLTEST ) WRITE (NDST,9063) FHIGH*TPIINV, NKH
+      IF ( FLTEST ) WRITE (NDST,9063) FHIGH*TPIINV, NKH
 #endif
-       !
-       ! 6.b Limiter for shallow water or Miche style criterion
-       !     Last time step ONLY !
-       !     uses true depth (D_INP) instead of limited depth
-       !
+      !
+      ! 6.b Limiter for shallow water or Miche style criterion
+      !     Last time step ONLY !
+      !     uses true depth (D_INP) instead of limited depth
+      !
 #ifdef W3_MLIM
-       IF ( DTTOT .GE. 0.9999*DTG ) THEN
-          HM     = FHMAX *TANH(WNMEAN*MAX(0.,D_INP)) / MAX(1.E-4,WNMEAN )
-          EM     = HM * HM / 16.
-          IF ( EMEAN.GT.EM .AND. EMEAN.GT.1.E-30 ) THEN
-             SPEC   = SPEC / EMEAN * EM
-             EMEAN  = EM
-          END IF
-       END IF
+      IF ( DTTOT .GE. 0.9999*DTG ) THEN
+        HM     = FHMAX *TANH(WNMEAN*MAX(0.,D_INP)) / MAX(1.E-4,WNMEAN )
+        EM     = HM * HM / 16.
+        IF ( EMEAN.GT.EM .AND. EMEAN.GT.1.E-30 ) THEN
+          SPEC   = SPEC / EMEAN * EM
+          EMEAN  = EM
+        END IF
+      END IF
 #endif
-       !
-       ! 6.c Seeding of spectrum
-       !     alpha = 0.005 , 0.5 in eq., 0.25 for directional distribution
-       !
+      !
+      ! 6.c Seeding of spectrum
+      !     alpha = 0.005 , 0.5 in eq., 0.25 for directional distribution
+      !
 #ifdef W3_SEED
-       DO IK=MIN(NK,NKH), NK
-          UC     = FACSD * GRAV / SIG(IK)
-          SLEV   = MIN ( 1. , MAX ( 0. , U10ABS/UC-1. ) ) *      &
-               6.25E-4 / WN1(IK)**3 / SIG(IK)
-          IF (INFLAGS2(4)) SLEV=SLEV*(1-ICE)
-          DO ITH=1, NTH
-             SPEC(ITH+(IK-1)*NTH) = MAX ( SPEC(ITH+(IK-1)*NTH) ,  &
-                  SLEV * MAX ( 0. , COS(U10DIR-TH(ITH)) )**2 )
-          END DO
-       END DO
+      DO IK=MIN(NK,NKH), NK
+        UC     = FACSD * GRAV / SIG(IK)
+        SLEV   = MIN ( 1. , MAX ( 0. , U10ABS/UC-1. ) ) *      &
+             6.25E-4 / WN1(IK)**3 / SIG(IK)
+        IF (INFLAGS2(4)) SLEV=SLEV*(1-ICE)
+        DO ITH=1, NTH
+          SPEC(ITH+(IK-1)*NTH) = MAX ( SPEC(ITH+(IK-1)*NTH) ,  &
+               SLEV * MAX ( 0. , COS(U10DIR-TH(ITH)) )**2 )
+        END DO
+      END DO
 #endif
-       !
-       ! 6.d Add tail
-       !
-       DO IK=NKH+1, NK
+      !
+      ! 6.d Add tail
+      !
+      DO IK=NKH+1, NK
 #ifdef W3_ST2
-          FACDIA = MAX ( 0. , MIN ( 1., (SIG(IK)-FHTRAN)/DFH) )
-          FACPAR = MAX ( 0. , 1.-FACDIA )
+        FACDIA = MAX ( 0. , MIN ( 1., (SIG(IK)-FHTRAN)/DFH) )
+        FACPAR = MAX ( 0. , 1.-FACDIA )
 #endif
-          DO ITH=1, NTH
-             SPEC(ITH+(IK-1)*NTH) = SPEC(ITH+(IK-2)*NTH) * FACHFA         &
+        DO ITH=1, NTH
+          SPEC(ITH+(IK-1)*NTH) = SPEC(ITH+(IK-2)*NTH) * FACHFA         &
 #ifdef W3_ST2
-                  * FACDIA + FACPAR * SPEC(ITH+(IK-1)*NTH)            &
+               * FACDIA + FACPAR * SPEC(ITH+(IK-1)*NTH)            &
 #endif
-                  + 0.
-          END DO
-       END DO
-       !
-       ! 6.e  Update wave-supported stress----------------------------------- *
-       !
+               + 0.
+        END DO
+      END DO
+      !
+      ! 6.e  Update wave-supported stress----------------------------------- *
+      !
 #ifdef W3_ST3
-       CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
-            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
-            ICE, VSIN, VDIN, LLWS, IX, IY )
+      CALL W3SIN3 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
+           U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
+           ICE, VSIN, VDIN, LLWS, IX, IY )
 #endif
 #ifdef W3_ST4
-       CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
-            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
-            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
+      CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
+           U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
+           VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 #endif
 
-       !
-       ! 7.  Check if integration complete ---------------------------------- *
-       !
-       ! Update QI5TSTART (Q. Liu)
+      !
+      ! 7.  Check if integration complete ---------------------------------- *
+      !
+      ! Update QI5TSTART (Q. Liu)
 #ifdef W3_NL5
-       CALL TICK21(QI5TSTART, DT)
+      CALL TICK21(QI5TSTART, DT)
 #endif
-       IF (srce_call .eq. srce_imp_post) THEN
-          EXIT
-       ENDIF
-       IF ( DTTOT .GE. 0.9999*DTG ) THEN
-          !            IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
-          EXIT
-       ENDIF
+      IF (srce_call .eq. srce_imp_post) THEN
+        EXIT
+      ENDIF
+      IF ( DTTOT .GE. 0.9999*DTG ) THEN
+        !            IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
+        EXIT
+      ENDIF
     END DO ! INTEGRATIN LOOP
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS
-       WRITE(740+IAPROC,*) '1 : sum(SPEC)=', sum(SPEC)
+      WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS
+      WRITE(740+IAPROC,*) '1 : sum(SPEC)=', sum(SPEC)
     END IF
     WRITE(740+IAPROC,*) 'DT=', DT, 'DTG=', DTG
 #endif
@@ -1844,27 +1844,27 @@ CONTAINS
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) '2 : sum(SPEC)=', sum(SPEC)
+      WRITE(740+IAPROC,*) '2 : sum(SPEC)=', sum(SPEC)
     END IF
 #endif
     EFINISH  = 0.
     MWXFINISH  = 0.
     MWYFINISH  = 0.
     DO IK=1, NK
-       EBAND = 0.
-       A1BAND = 0.
-       B1BAND = 0.
-       DO ITH=1, NTH
-          DIFF = SPECINIT(ITH+(IK-1)*NTH)-SPEC(ITH+(IK-1)*NTH)
-          EBAND = EBAND + DIFF
-          A1BAND = A1BAND + DIFF*ECOS(ITH)
-          B1BAND = B1BAND + DIFF*ESIN(ITH)
-       END DO
-       EFINISH  = EFINISH  + EBAND * DDEN(IK) / CG1(IK)
-       MWXFINISH  = MWXFINISH  + A1BAND * DDEN(IK) / CG1(IK)        &
-            * WN1(IK)/SIG(IK)
-       MWYFINISH  = MWYFINISH  + B1BAND * DDEN(IK) / CG1(IK)        &
-            * WN1(IK)/SIG(IK)
+      EBAND = 0.
+      A1BAND = 0.
+      B1BAND = 0.
+      DO ITH=1, NTH
+        DIFF = SPECINIT(ITH+(IK-1)*NTH)-SPEC(ITH+(IK-1)*NTH)
+        EBAND = EBAND + DIFF
+        A1BAND = A1BAND + DIFF*ECOS(ITH)
+        B1BAND = B1BAND + DIFF*ESIN(ITH)
+      END DO
+      EFINISH  = EFINISH  + EBAND * DDEN(IK) / CG1(IK)
+      MWXFINISH  = MWXFINISH  + A1BAND * DDEN(IK) / CG1(IK)        &
+           * WN1(IK)/SIG(IK)
+      MWYFINISH  = MWYFINISH  + B1BAND * DDEN(IK) / CG1(IK)        &
+           * WN1(IK)/SIG(IK)
     END DO
     !
     ! Transformation in momentum flux in m^2 / s^2
@@ -1892,144 +1892,144 @@ CONTAINS
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) '3 : sum(SPEC)=', sum(SPEC)
+      WRITE(740+IAPROC,*) '3 : sum(SPEC)=', sum(SPEC)
     END IF
 #endif
 
     IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN
 
-       IF (IICEDISP) THEN
-          ICECOEF2 = 1E-6
-          CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
-               SIG,WN_R,CG_ICE,ALPHA_LIU)
-          !
-          IF (IICESMOOTH) THEN
+      IF (IICEDISP) THEN
+        ICECOEF2 = 1E-6
+        CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH, &
+             SIG,WN_R,CG_ICE,ALPHA_LIU)
+        !
+        IF (IICESMOOTH) THEN
 #ifdef W3_IS2
-             DO IK=1,NK
-                SMOOTH_ICEDISP=0.
-                IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
-                   SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13)))
-                END IF
-                WN_R(IK)=WN1(IK)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
-             END DO
+          DO IK=1,NK
+            SMOOTH_ICEDISP=0.
+            IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
+              SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13)))
+            END IF
+            WN_R(IK)=WN1(IK)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
+          END DO
 #endif
-          END IF
-       ELSE
-          WN_R=WN1
-          CG_ICE=CG1
-       END IF
-       !
-       R(:)=1 ! In case IC2 is defined but not IS2
-       !
+        END IF
+      ELSE
+        WN_R=WN1
+        CG_ICE=CG1
+      END IF
+      !
+      R(:)=1 ! In case IC2 is defined but not IS2
+      !
 #ifdef W3_IC1
-       CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
+      CALL W3SIC1 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IS2
-       CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
-            VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
+      CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
+           VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
 #endif
 
 #ifdef W3_IC2
-       CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1, WN1,&
-            IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
+      CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1, WN1,&
+           IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
 #endif
 #ifdef W3_IC3
-       CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+      CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IC4
-       CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
+      CALL W3SIC4 ( SPEC,DEPTH, CG1,       IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IC5
-       CALL W3SIC5 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+      CALL W3SIC5 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
 #endif
-       !
+      !
 #ifdef W3_IS1
-       CALL W3SIS1 ( SPEC, ICE, VSIR )
+      CALL W3SIS1 ( SPEC, ICE, VSIR )
 #endif
-       SPEC2 = SPEC
-       !
-       TAUICE(:) = 0.
-       PHICE = 0.
-       DO IK=1,NK
-          IS = 1+(IK-1)*NTH
-          !
-          ! First part of ice term integration: dissipation part
-          !
-          ATT=1.
+      SPEC2 = SPEC
+      !
+      TAUICE(:) = 0.
+      PHICE = 0.
+      DO IK=1,NK
+        IS = 1+(IK-1)*NTH
+        !
+        ! First part of ice term integration: dissipation part
+        !
+        ATT=1.
 #ifdef W3_IC1
-          ATT=EXP(ICE*VDIC(IS)*DTG)
+        ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC2
-          ATT=EXP(ICE*VDIC(IS)*DTG)
+        ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC3
-          ATT=EXP(ICE*VDIC(IS)*DTG)
+        ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC4
-          ATT=EXP(ICE*VDIC(IS)*DTG)
+        ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC5
-          ATT=EXP(ICE*VDIC(IS)*DTG)
+        ATT=EXP(ICE*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IS1
-          ATT=ATT*EXP(ICE*VDIR(IS)*DTG)
+        ATT=ATT*EXP(ICE*VDIR(IS)*DTG)
 #endif
 #ifdef W3_IS2
-          ATT=ATT*EXP(ICE*VDIR2(IS)*DTG)
-          IF (IS2PARS(2).EQ.0) THEN ! Reminder : IS2PARS(2) = IS2BACKSCAT
-             !
-             ! If there is not re-distribution in directions the scattering is just an attenuation
-             !
-             ATT=ATT*EXP((ICE*VDIR(IS))*DTG)
-          END IF
+        ATT=ATT*EXP(ICE*VDIR2(IS)*DTG)
+        IF (IS2PARS(2).EQ.0) THEN ! Reminder : IS2PARS(2) = IS2BACKSCAT
+          !
+          ! If there is not re-distribution in directions the scattering is just an attenuation
+          !
+          ATT=ATT*EXP((ICE*VDIR(IS))*DTG)
+        END IF
 #endif
-          SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
-          !
-          ! Second part of ice term integration: scattering including re-distribution in directions
-          !
+        SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ATT*SPEC2(1+(IK-1)*NTH:NTH+(IK-1)*NTH)
+        !
+        ! Second part of ice term integration: scattering including re-distribution in directions
+        !
 #ifdef W3_IS2
-          IF (IS2PARS(2).GE.0) THEN
-             IF (IS2PARS(20).GT.0.5) THEN
-                !
-                ! Case of isotropic back-scatter: the directional spectrum is decomposed into
-                !               - an isotropic part (ISO): eigenvalue of scattering is 0
-                !               - the rest     (SPEC-ISO): eigenvalue of scattering is VDIR(IS)
-                !
-                SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
-                ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
-                SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ISO &
-                     +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ISO)*SCAT
-             ELSE
-                !
-                ! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002)
-                !
-                SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
-                SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
-                     REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
-                     *MATMUL(TRANSPOSE(IS2EIGVEC(:,:)),SCATSPEC)))
-             END IF
+        IF (IS2PARS(2).GE.0) THEN
+          IF (IS2PARS(20).GT.0.5) THEN
+            !
+            ! Case of isotropic back-scatter: the directional spectrum is decomposed into
+            !               - an isotropic part (ISO): eigenvalue of scattering is 0
+            !               - the rest     (SPEC-ISO): eigenvalue of scattering is VDIR(IS)
+            !
+            SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
+            ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
+            SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ISO &
+                 +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ISO)*SCAT
+          ELSE
+            !
+            ! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002)
+            !
+            SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
+            SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
+                 REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
+                 *MATMUL(TRANSPOSE(IS2EIGVEC(:,:)),SCATSPEC)))
           END IF
+        END IF
 #endif
-          !
-          ! 10.2  Fluxes of energy and momentum due to ice effects
-          !
-          FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
-          FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
-          DO ITH = 1,NTH
-             IS = ITH+(IK-1)*NTH
-             PHICE = PHICE + (SPEC(IS)-SPEC2(IS)) * FACTOR
-             COSI(1)=ECOS(IS)
-             COSI(2)=ESIN(IS)
-             TAUICE(:) = TAUICE(:) - (SPEC(IS)-SPEC2(IS))*FACTOR2*COSI(:)
-          END DO
-       END DO
-       PHICE =-1.*DWAT*GRAV*PHICE /DTG
-       TAUICE(:)=TAUICE(:)/DTG
+        !
+        ! 10.2  Fluxes of energy and momentum due to ice effects
+        !
+        FACTOR = DDEN(IK)/CG1(IK)                    !Jacobian to get energy in band
+        FACTOR2= FACTOR*GRAV*WN1(IK)/SIG(IK)         ! coefficient to get momentum
+        DO ITH = 1,NTH
+          IS = ITH+(IK-1)*NTH
+          PHICE = PHICE + (SPEC(IS)-SPEC2(IS)) * FACTOR
+          COSI(1)=ECOS(IS)
+          COSI(2)=ESIN(IS)
+          TAUICE(:) = TAUICE(:) - (SPEC(IS)-SPEC2(IS))*FACTOR2*COSI(:)
+        END DO
+      END DO
+      PHICE =-1.*DWAT*GRAV*PHICE /DTG
+      TAUICE(:)=TAUICE(:)/DTG
     ELSE
 #ifdef W3_IS2
-       IF (IS2PARS(10).LT.0.5) THEN
-          ICEF = 0.
-       ENDIF
+      IF (IS2PARS(10).LT.0.5) THEN
+        ICEF = 0.
+      ENDIF
 #endif
     END IF
     !
@@ -2043,7 +2043,7 @@ CONTAINS
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) '4 : sum(SPEC)=', sum(SPEC)
+      WRITE(740+IAPROC,*) '4 : sum(SPEC)=', sum(SPEC)
     END IF
 #endif
 
@@ -2057,20 +2057,20 @@ CONTAINS
     !
 #ifdef W3_FLD1
     IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
-       CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
-            COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-            DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+      CALL W3FLD1 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
+           COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
+           DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
     ELSE
-       CHARN = AALPHA
+      CHARN = AALPHA
     ENDIF
 #endif
 #ifdef W3_FLD2
     IF (U10ABS.GT.10. .and. HSTOT.gt.0.5) then
-       CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
-            COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
-            DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
+      CALL W3FLD2 ( SPEC,min(FPI/TPI,2.0),COEF*U10ABS*COS(U10DIR),        &
+           COEF*U10ABS*Sin(U10DIR), ZWND, DEPTH, 0.0, &
+           DAIR, USTAR, USTDIR, Z0,TAUNUX,TAUNUY,CHARN)
     ELSE
-       CHARN = AALPHA
+      CHARN = AALPHA
     ENDIF
 #endif
     !
@@ -2078,38 +2078,38 @@ CONTAINS
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
+      WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
     END IF
 #endif
 #ifdef W3_REF1
     IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
-       CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
-            REFLEC, REFLED, TRNX, TRNY,  &
-            BERG, DTG, IX, IY,  VREF )
-       IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
+      CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
+           REFLEC, REFLED, TRNX, TRNY,  &
+           BERG, DTG, IX, IY,  VREF )
+      IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
 #endif
-          !AR: this can be further simplified let's do some simple tests 1st ...
+        !AR: this can be further simplified let's do some simple tests 1st ...
 #ifdef W3_REF1
-          IF (IOBP(IX).EQ.0) THEN
-             DO IK=1, NK
-                DO ITH=1, NTH
-                   IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH) = DTG*VREF(ITH+(IK-1)*NTH)
-                END DO
-             END DO
-          ELSE
-             IF (IOBDP(IX) .EQ. -1) THEN
-                SPEC(:) = SPEC(:) + DTG * VREF(:)
-             ENDIF
+        IF (IOBP(IX).EQ.0) THEN
+          DO IK=1, NK
+            DO ITH=1, NTH
+              IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH) = DTG*VREF(ITH+(IK-1)*NTH)
+            END DO
+          END DO
+        ELSE
+          IF (IOBDP(IX) .EQ. -1) THEN
+            SPEC(:) = SPEC(:) + DTG * VREF(:)
           ENDIF
-       ELSE
-          SPEC(:) = SPEC(:) + DTG * VREF(:)
-       END IF
+        ENDIF
+      ELSE
+        SPEC(:) = SPEC(:) + DTG * VREF(:)
+      END IF
     END IF
 #endif
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
-       WRITE(740+IAPROC,*) '6 : sum(SPEC)=', sum(SPEC)
+      WRITE(740+IAPROC,*) '6 : sum(SPEC)=', sum(SPEC)
     END IF
 #endif
 
@@ -2285,27 +2285,27 @@ CONTAINS
     !     input
     !
     DO IK=1, NK
-       SIN1A(IK) = 0.
-       DO IS=(IK-1)*NTH+1, IK*NTH
-          SIN1A(IK) = SIN1A(IK) + MAX ( 0. , S(IS) )
-       END DO
+      SIN1A(IK) = 0.
+      DO IS=(IK-1)*NTH+1, IK*NTH
+        SIN1A(IK) = SIN1A(IK) + MAX ( 0. , S(IS) )
+      END DO
     END DO
     !
     M0     = 0.
     M1     = 0.
     DO IK=1, NK
-       SIN1A(IK) = SIN1A(IK) * DDEN(IK) / ( CG(IK) * SIG(IK)**3 )
-       M0        = M0 + SIN1A(IK)
-       M1        = M1 + SIN1A(IK)/SIG(IK)
+      SIN1A(IK) = SIN1A(IK) * DDEN(IK) / ( CG(IK) * SIG(IK)**3 )
+      M0        = M0 + SIN1A(IK)
+      M1        = M1 + SIN1A(IK)/SIG(IK)
     END DO
     !
     SIN1A(NK) = SIN1A(NK) / DDEN(NK)
     M0        = M0 + SIN1A(NK) * FTE
     M1        = M1 + SIN1A(NK) * FTTR
     IF ( M1 .LT. 1E-20 ) THEN
-       FPI    = XFR * SIG(NK)
+      FPI    = XFR * SIG(NK)
     ELSE
-       FPI    = M0 / M1
+      FPI    = M0 / M1
     END IF
 
   END SUBROUTINE CALC_FPI
@@ -2382,7 +2382,7 @@ CONTAINS
     CALL STRACE (IENT, 'SIGN_VSD_SEMI_IMPLICIT_WW3')
 #endif
     DO IS=1,NSPEC
-       VD(IS) = MIN(0., VD(IS))
+      VD(IS) = MIN(0., VD(IS))
     END DO
   END SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3
   !/ ------------------------------------------------------------------- /
@@ -2458,8 +2458,8 @@ CONTAINS
     CALL STRACE (IENT, 'SIGN_VSD_PATANKAR_WW3')
 #endif
     DO IS=1,NSPEC
-       VD(IS) = MIN(0., VD(IS))
-       VS(IS) = MAX(0., VS(IS))
+      VD(IS) = MIN(0., VD(IS))
+      VS(IS) = MAX(0., VS(IS))
     END DO
   END SUBROUTINE SIGN_VSD_PATANKAR_WW3
   !/

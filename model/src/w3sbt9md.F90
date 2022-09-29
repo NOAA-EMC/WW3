@@ -225,141 +225,141 @@ CONTAINS
 
     ! Initialize properties from mud fields if available
     IF (INFLAGS1(-2))THEN
-       RHOM = MUDD(IX,IY)
+      RHOM = MUDD(IX,IY)
     ELSE
-       WRITE(NDSE,*)'RHOM NOT SET'
-       CALL EXTCDE ( 1 )
+      WRITE(NDSE,*)'RHOM NOT SET'
+      CALL EXTCDE ( 1 )
     ENDIF
     IF (INFLAGS1(-1)) THEN
-       DM = MUDT(IX,IY)
+      DM = MUDT(IX,IY)
     ELSE
-       WRITE(NDSE,*)'DM NOT SET'
-       CALL EXTCDE ( 2 )
+      WRITE(NDSE,*)'DM NOT SET'
+      CALL EXTCDE ( 2 )
     ENDIF
     IF (INFLAGS1(0)) THEN
-       KINVISM = MUDV(IX,IY)
+      KINVISM = MUDV(IX,IY)
     ELSE
-       WRITE(NDSE,*)'KINVISM NOT SET'
-       CALL EXTCDE ( 3 )
+      WRITE(NDSE,*)'KINVISM NOT SET'
+      CALL EXTCDE ( 3 )
     ENDIF
 
     ROOTDG = SQRT(H_WDEPTH/GRAV)
     WGD    = ROOTDG*GRAV
     DO IS = 1, NK
-       !       SND is dimensionless frequency
-       SND = SIG(IS) * ROOTDG
-       IF (SND .GE. 2.5) THEN
-          !       ******* DEEP WATER *******
-          K_ROCK  = SIG(IS) * SIG(IS) / GRAV
-          CG_ROCK = 0.5 * GRAV / SIG(IS)
-          NWAVE_ROCK  = 0.5
-          ND_ROCK = 0.
-       ELSE IF (SND.LT.1.E-6) THEN
-          !       *** VERY SHALLOW WATER ***
-          K_ROCK  = SND/H_WDEPTH
-          CG_ROCK = WGD
-          NWAVE_ROCK  = 1.
-          ND_ROCK = 0.
-       ELSE
+      !       SND is dimensionless frequency
+      SND = SIG(IS) * ROOTDG
+      IF (SND .GE. 2.5) THEN
+        !       ******* DEEP WATER *******
+        K_ROCK  = SIG(IS) * SIG(IS) / GRAV
+        CG_ROCK = 0.5 * GRAV / SIG(IS)
+        NWAVE_ROCK  = 0.5
+        ND_ROCK = 0.
+      ELSE IF (SND.LT.1.E-6) THEN
+        !       *** VERY SHALLOW WATER ***
+        K_ROCK  = SND/H_WDEPTH
+        CG_ROCK = WGD
+        NWAVE_ROCK  = 1.
+        ND_ROCK = 0.
+      ELSE
 
-          SND2  = SND*SND
-          CWAVE     = SQRT(GRAV*H_WDEPTH/(SND2+1./(1.+0.666*SND2 &
-               +0.445*SND2**2 -0.105*SND2**3+0.272*SND2**4)))
-          K_ROCK = SIG(IS)/CWAVE
+        SND2  = SND*SND
+        CWAVE     = SQRT(GRAV*H_WDEPTH/(SND2+1./(1.+0.666*SND2 &
+             +0.445*SND2**2 -0.105*SND2**3+0.272*SND2**4)))
+        K_ROCK = SIG(IS)/CWAVE
 
-          CALL CALC_ND(K_ROCK,H_WDEPTH,SND2,ND_ROCK)
+        CALL CALC_ND(K_ROCK,H_WDEPTH,SND2,ND_ROCK)
 
-          NWAVE_ROCK = 0.5*(1.0+2.0*K_ROCK*H_WDEPTH/SINH(2.0*K_ROCK*H_WDEPTH))
-          CG_ROCK= NWAVE_ROCK*CWAVE
+        NWAVE_ROCK = 0.5*(1.0+2.0*K_ROCK*H_WDEPTH/SINH(2.0*K_ROCK*H_WDEPTH))
+        CG_ROCK= NWAVE_ROCK*CWAVE
 
-          SND2=0
-          CWAVE=0
+        SND2=0
+        CWAVE=0
 
-       ENDIF
+      ENDIF
 
-       KDCUTOFF = 10.0  ! hardwired (same as w3sbt8md)
+      KDCUTOFF = 10.0  ! hardwired (same as w3sbt8md)
 
-       ! now that kh is known, we can use a definition of "deep" that is
-       ! consistent with the definition used in sbot
-       K_MUD=0.0
-       DMW(IS)=0.0
-       KD_ROCK = K_ROCK * H_WDEPTH
-       ! KD_ROCK is used to determine whether we make the mud calculation
-       IF((KD_ROCK.LT.KDCUTOFF).AND.(DM.GT.1.0E-5))THEN
-          KINVISW=NU_WATER
-          RHOW=DWAT
-          ZETA=SQRT(KINVISM/KINVISW)
-          GAMMA=RHOW/RHOM
-          SBLTW=SQRT(2.0*KINVISW/SIG(IS))
-          SBLTM=SQRT(2.0*KINVISM/SIG(IS))
+      ! now that kh is known, we can use a definition of "deep" that is
+      ! consistent with the definition used in sbot
+      K_MUD=0.0
+      DMW(IS)=0.0
+      KD_ROCK = K_ROCK * H_WDEPTH
+      ! KD_ROCK is used to determine whether we make the mud calculation
+      IF((KD_ROCK.LT.KDCUTOFF).AND.(DM.GT.1.0E-5))THEN
+        KINVISW=NU_WATER
+        RHOW=DWAT
+        ZETA=SQRT(KINVISM/KINVISW)
+        GAMMA=RHOW/RHOM
+        SBLTW=SQRT(2.0*KINVISW/SIG(IS))
+        SBLTM=SQRT(2.0*KINVISM/SIG(IS))
 
-          DTILDE=DM/SBLTM
-          CALL NG(SIG(IS),H_WDEPTH,DTILDE,ZETA,SBLTM,GAMMA,K_ROCK,K_MUD, &
-               DMW(IS))
+        DTILDE=DM/SBLTM
+        CALL NG(SIG(IS),H_WDEPTH,DTILDE,ZETA,SBLTM,GAMMA,K_ROCK,K_MUD, &
+             DMW(IS))
 
-       ELSE  !     IF ( KD_ROCK .LT. KDCUTOFF ) THEN
-          K_MUD=K_ROCK
-       END IF !     IF ( KD_ROCK .LT. KDCUTOFF ) THEN
+      ELSE  !     IF ( KD_ROCK .LT. KDCUTOFF ) THEN
+        K_MUD=K_ROCK
+      END IF !     IF ( KD_ROCK .LT. KDCUTOFF ) THEN
 
-       !    calculate  cg_mud, nwave_mud here
-       CWAVE=SIG(IS)/K_MUD
+      !    calculate  cg_mud, nwave_mud here
+      CWAVE=SIG(IS)/K_MUD
 
-       ZTMP=2.0*K_MUD*H_WDEPTH
-       IF(ZTMP.LT.70)THEN
-          ZTMP=SINH(ZTMP)
-       ELSE
-          ZTMP=1.0E+30
-       ENDIF
-       NWAVE_MUD=0.5*(1.0+2.0*K_MUD*H_WDEPTH/ZTMP)
+      ZTMP=2.0*K_MUD*H_WDEPTH
+      IF(ZTMP.LT.70)THEN
+        ZTMP=SINH(ZTMP)
+      ELSE
+        ZTMP=1.0E+30
+      ENDIF
+      NWAVE_MUD=0.5*(1.0+2.0*K_MUD*H_WDEPTH/ZTMP)
 
-       CG_MUD=NWAVE_MUD*CWAVE
-       SND2  = SND*SND
+      CG_MUD=NWAVE_MUD*CWAVE
+      SND2  = SND*SND
 
-       CALL CALC_ND(K_MUD,H_WDEPTH,SND2,ND_MUD)
+      CALL CALC_ND(K_MUD,H_WDEPTH,SND2,ND_MUD)
 
-       SND2=0
-       CWAVE=0
+      SND2=0
+      CWAVE=0
 
-       ! If we wanted to include the effects of mud on the real part of the
-       ! wavnumber (as we do in SWAN), this is where we would do it.
-       ! Set output variables k_out, cg_out, nwave_out, nd_out, dmw.
-       !kinematics       IF(MUD)THEN !
-       !kinematics          K_OUT(IS)    =K_MUD
-       !kinematics          CG_OUT(IS)   =CG_MUD
-       !kinematics          NWAVE_OUT(IS)=NWAVE_MUD
-       !kinematics          ND_OUT(IS)   =ND_MUD
-       !kinematics       ELSE ! USE ROCKY WAVENUMBER,ETC.
-       !kinematics          K_OUT(IS)    =K_ROCK
-       !kinematics          CG_OUT(IS)   =CG_ROCK
-       !kinematics          NWAVE_OUT(IS)=NWAVE_ROCK
-       !kinematics          ND_OUT(IS)   =ND_ROCK
-       !kinematics          DMW(IS)=0.0
-       !kinematics       ENDIF
+      ! If we wanted to include the effects of mud on the real part of the
+      ! wavnumber (as we do in SWAN), this is where we would do it.
+      ! Set output variables k_out, cg_out, nwave_out, nd_out, dmw.
+      !kinematics       IF(MUD)THEN !
+      !kinematics          K_OUT(IS)    =K_MUD
+      !kinematics          CG_OUT(IS)   =CG_MUD
+      !kinematics          NWAVE_OUT(IS)=NWAVE_MUD
+      !kinematics          ND_OUT(IS)   =ND_MUD
+      !kinematics       ELSE ! USE ROCKY WAVENUMBER,ETC.
+      !kinematics          K_OUT(IS)    =K_ROCK
+      !kinematics          CG_OUT(IS)   =CG_ROCK
+      !kinematics          NWAVE_OUT(IS)=NWAVE_ROCK
+      !kinematics          ND_OUT(IS)   =ND_ROCK
+      !kinematics          DMW(IS)=0.0
+      !kinematics       ENDIF
 
-       KD = K_MUD * H_WDEPTH
-       IF ( KD .LT. KDCUTOFF ) THEN
-          ! note that "IS" here is for the 1d spectrum
-          SMUDWD(IS)=2.0*DMW(IS)*CG_MUD
-       END IF
+      KD = K_MUD * H_WDEPTH
+      IF ( KD .LT. KDCUTOFF ) THEN
+        ! note that "IS" here is for the 1d spectrum
+        SMUDWD(IS)=2.0*DMW(IS)*CG_MUD
+      END IF
 
-       ! NaN check:
-       INAN = .NOT. ( DMW(IS) .GE. -HUGE(DMW(IS)) .AND. DMW(IS) &
-            .LE. HUGE(DMW(IS)) )
-       IF (INAN) THEN
-          WRITE(*,'(/1A/)') 'W3SBT9 ERROR -- DMW(IS) IS NAN'
-          WRITE(*,*)'W3SBT9: RHOM, DM, KINVISM = ',RHOM, DM, KINVISM
-          WRITE(*,*)'W3SBT9: IS,NK = ',IS,NK
-          WRITE(*,*)'W3SBT9: H_WDEPTH,KD,KDCUTOFF = ',H_WDEPTH,KD, KDCUTOFF
-          WRITE(*,*)'W3SBT9: K_MUD,CG_MUD,NWAVE_MUD = ',K_MUD,CG_MUD,NWAVE_MUD
-          CALL EXTCDE (1)
-       END IF
+      ! NaN check:
+      INAN = .NOT. ( DMW(IS) .GE. -HUGE(DMW(IS)) .AND. DMW(IS) &
+           .LE. HUGE(DMW(IS)) )
+      IF (INAN) THEN
+        WRITE(*,'(/1A/)') 'W3SBT9 ERROR -- DMW(IS) IS NAN'
+        WRITE(*,*)'W3SBT9: RHOM, DM, KINVISM = ',RHOM, DM, KINVISM
+        WRITE(*,*)'W3SBT9: IS,NK = ',IS,NK
+        WRITE(*,*)'W3SBT9: H_WDEPTH,KD,KDCUTOFF = ',H_WDEPTH,KD, KDCUTOFF
+        WRITE(*,*)'W3SBT9: K_MUD,CG_MUD,NWAVE_MUD = ',K_MUD,CG_MUD,NWAVE_MUD
+        CALL EXTCDE (1)
+      END IF
 
     END DO !  DO IS = 1, NK
 
     !    *** store the results in the DIAGONAL arrays D and S ***
     DO IS = 1,NSPEC
-       ! note that "IS" here is for the directional spectrum (2d)
-       D(IS) = -SMUDWD(MAPWN(IS))
+      ! note that "IS" here is for the directional spectrum (2d)
+      D(IS) = -SMUDWD(MAPWN(IS))
     END DO
 
     S = D * AC

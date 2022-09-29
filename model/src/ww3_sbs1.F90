@@ -251,15 +251,15 @@ PROGRAM W3SBS1
 #endif
   !
   DO I=-1, -NAUXGR, -1
-     CALL W3SETG ( I, MDSE, MDST )
-     CALL W3SETI ( I, MDSE, MDST )
-     IF ( FLWIND ) THEN
-        IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,920) FILEXT
-        NXW    = NX
-        NYW    = NY
-        NDST2  = MDSF(I,3)
-        EXIT
-     END IF
+    CALL W3SETG ( I, MDSE, MDST )
+    CALL W3SETI ( I, MDSE, MDST )
+    IF ( FLWIND ) THEN
+      IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,920) FILEXT
+      NXW    = NX
+      NYW    = NY
+      NDST2  = MDSF(I,3)
+      EXIT
+    END IF
   END DO
   !
   IF ( NXW .EQ. -1 ) GOTO 825
@@ -282,19 +282,19 @@ PROGRAM W3SBS1
   ! 3.b Catch up with starting time as needed
   !
   DO
-     TOLD   = TNEXT
-     CALL RDTIME ( NDST1, TNEXT )
-     DTTST  = DSEC21 ( TNEXT , STIME )
-     IF ( DTTST .GT. 0. ) THEN
-        IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,930) TNEXT
-     ELSE IF ( DTTST .EQ. 0. ) THEN
-        IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,930) TNEXT
-        EXIT
-     ELSE
-        BACKSPACE NDST1
-        TNEXT  = TOLD
-        EXIT
-     END IF
+    TOLD   = TNEXT
+    CALL RDTIME ( NDST1, TNEXT )
+    DTTST  = DSEC21 ( TNEXT , STIME )
+    IF ( DTTST .GT. 0. ) THEN
+      IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,930) TNEXT
+    ELSE IF ( DTTST .EQ. 0. ) THEN
+      IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,930) TNEXT
+      EXIT
+    ELSE
+      BACKSPACE NDST1
+      TNEXT  = TOLD
+      EXIT
+    END IF
   END DO
   !
   ! 3.c Test readig of initial fields
@@ -304,30 +304,30 @@ PROGRAM W3SBS1
   ! 3.d Loop to run the model
   !
   DO
-     !
-     CALL RDTIME ( NDST1, TNEXT )
-     IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,930) TNEXT
-     CALL RDWIND ( NDST2, TNEXT, NXW, NYW, .TRUE. )
-     IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,931)
-     !
-     DTTST  = DSEC21 ( TNEXT , ETIME )
-     IF ( DTTST .LT. 0. ) THEN
-        TNEXT  = ETIME
-        DTTST  = 0.
-     END IF
-     !
-     DO I=1, NRGRD
-        TEND(:,I) = TNEXT(:)
-     END DO
-     !
+    !
+    CALL RDTIME ( NDST1, TNEXT )
+    IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,930) TNEXT
+    CALL RDWIND ( NDST2, TNEXT, NXW, NYW, .TRUE. )
+    IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,931)
+    !
+    DTTST  = DSEC21 ( TNEXT , ETIME )
+    IF ( DTTST .LT. 0. ) THEN
+      TNEXT  = ETIME
+      DTTST  = 0.
+    END IF
+    !
+    DO I=1, NRGRD
+      TEND(:,I) = TNEXT(:)
+    END DO
+    !
 #ifdef W3_MPI
-     CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+    CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
 #endif
-     CALL WMWAVE ( TEND )
-     !
-     DTTST  = DSEC21 ( TNEXT , ETIME )
-     IF ( DTTST .LE. 0 ) EXIT
-     !
+    CALL WMWAVE ( TEND )
+    !
+    DTTST  = DSEC21 ( TNEXT , ETIME )
+    IF ( DTTST .LE. 0 ) EXIT
+    !
   END DO
   !
   DEALLOCATE ( TEND )
@@ -444,19 +444,19 @@ CONTAINS
     ! 1.  Reading loop
     !
     DO
-       !
-       READ (NDS,910,END=110,ERR=810,IOSTAT=IERR) TIME
-       EXIT
-       !
-110    CONTINUE
-       IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS, 911 )
-       BACKSPACE NDS
-       !
+      !
+      READ (NDS,910,END=110,ERR=810,IOSTAT=IERR) TIME
+      EXIT
+      !
+110   CONTINUE
+      IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS, 911 )
+      BACKSPACE NDS
+      !
 #ifdef W3_SBS
-       WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP1
-       CALL SYSTEM ( COMMAND )
+      WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP1
+      CALL SYSTEM ( COMMAND )
 #endif
-       !
+      !
     END DO
     !
     RETURN
@@ -545,87 +545,87 @@ CONTAINS
     ! 1.  Loops
     !
     DO
-       !
-       ! ... Inner loop reading
-       !
-       DO
-          !
+      !
+      ! ... Inner loop reading
+      !
+      DO
+        !
+        NREW   = NREW + 1
+        READ (NDS,END=140,ERR=140) TTIME
+#ifdef W3_T
+        WRITE (MDST,9000) TTIME
+#endif
+        !
+        NREW   = NREW + 1
+        READ (NDS,END=130,ERR=130) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
+#ifdef W3_T
+        WRITE (MDST,9001) 'U'
+#endif
+        !
+        NREW   = NREW + 1
+        READ (NDS,END=120,ERR=120) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
+#ifdef W3_T
+        WRITE (MDST,9001) 'V'
+#endif
+        !
+        IF ( TYPE .EQ. 'WNS' ) THEN
           NREW   = NREW + 1
-          READ (NDS,END=140,ERR=140) TTIME
+          READ (NDS,END=110,ERR=110) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
 #ifdef W3_T
-          WRITE (MDST,9000) TTIME
+          WRITE (MDST,9001) 'DT'
 #endif
-          !
-          NREW   = NREW + 1
-          READ (NDS,END=130,ERR=130) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
-#ifdef W3_T
-          WRITE (MDST,9001) 'U'
-#endif
-          !
-          NREW   = NREW + 1
-          READ (NDS,END=120,ERR=120) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
-#ifdef W3_T
-          WRITE (MDST,9001) 'V'
-#endif
-          !
-          IF ( TYPE .EQ. 'WNS' ) THEN
-             NREW   = NREW + 1
-             READ (NDS,END=110,ERR=110) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
-#ifdef W3_T
-             WRITE (MDST,9001) 'DT'
-#endif
-          END IF
-          !
-          EXIT
-          !
-110       CONTINUE
-          BACKSPACE NDS
-          NREW   = NREW - 1
-120       CONTINUE
-          BACKSPACE NDS
-          NREW   = NREW - 1
-130       CONTINUE
-          BACKSPACE NDS
-          NREW   = NREW - 1
-140       CONTINUE
-          BACKSPACE NDS
-          NREW   = NREW - 1
-          !
-          IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
-          !
+        END IF
+        !
+        EXIT
+        !
+110     CONTINUE
+        BACKSPACE NDS
+        NREW   = NREW - 1
+120     CONTINUE
+        BACKSPACE NDS
+        NREW   = NREW - 1
+130     CONTINUE
+        BACKSPACE NDS
+        NREW   = NREW - 1
+140     CONTINUE
+        BACKSPACE NDS
+        NREW   = NREW - 1
+        !
+        IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
+        !
 #ifdef W3_SBS
-          WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
-          CALL SYSTEM ( COMMAND )
+        WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
+        CALL SYSTEM ( COMMAND )
 #endif
-          !
-       END DO
-       !
-       ! ... Outer loop catching up
-       !
-       DTTST  = DSEC21 ( TIME , TTIME )
-       !
-       IF ( DTTST .LT. 0. ) THEN
-          IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,901) TTIME
-       ELSE IF ( DTTST .EQ. 0. ) THEN
-          EXIT
-       ELSE
-          GOTO 800
-       END IF
-       !
+        !
+      END DO
+      !
+      ! ... Outer loop catching up
+      !
+      DTTST  = DSEC21 ( TIME , TTIME )
+      !
+      IF ( DTTST .LT. 0. ) THEN
+        IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,901) TTIME
+      ELSE IF ( DTTST .EQ. 0. ) THEN
+        EXIT
+      ELSE
+        GOTO 800
+      END IF
+      !
     END DO
     !
     ! ... Rewind all
     !
     IF ( REWIND ) THEN
-       !
-       IF ( IMPROC.EQ.NMPSCR .AND. NREW.GT.4 ) WRITE (MDSS,902) NREW
-       !
-       DO I=1, NREW
-          BACKSPACE NDS
-       END DO
-       !
-       NREW   = 0
-       !
+      !
+      IF ( IMPROC.EQ.NMPSCR .AND. NREW.GT.4 ) WRITE (MDSS,902) NREW
+      !
+      DO I=1, NREW
+        BACKSPACE NDS
+      END DO
+      !
+      NREW   = 0
+      !
     END IF
     !
     RETURN

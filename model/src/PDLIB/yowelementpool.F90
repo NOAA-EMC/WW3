@@ -83,17 +83,17 @@ contains
     integer J
 
     if(present(rank) .eqv. .true.) then
-       myDomainID = rank +1
+      myDomainID = rank +1
     else
-       myDomainID = myrank + 1
+      myDomainID = myrank + 1
     endif
 
     ! check if this element adjoint to three different domains.
     belongTo = .false.
     DO J=1,3
-       IF (nodes_global(ele_in(J)) % domainID == myDomainID) THEN
-          belongTo = .true.
-       END IF
+      IF (nodes_global(ele_in(J)) % domainID == myDomainID) THEN
+        belongTo = .true.
+      END IF
     END DO
   end function belongTo
 

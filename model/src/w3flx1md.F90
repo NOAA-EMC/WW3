@@ -144,8 +144,8 @@ CONTAINS
     ! 1.  Tests ---------------------------------------------------------- *
     !
     IF ( ABS(ZWND-10.) .GT. 0.01 ) THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) ZWND
-       CALL EXTCDE (1)
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) ZWND
+      CALL EXTCDE (1)
     END IF
     !
     ! 2.  Computation ---------------------------------------------------- *

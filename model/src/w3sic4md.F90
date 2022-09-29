@@ -415,107 +415,107 @@ CONTAINS
     SELECT CASE (IC4METHOD)
 
     CASE (1) ! IC4M1 : Exponential fit to Wadhams et al. 1988
-       ALPHA = EXP(-ICECOEF1 * TPI / SIG - ICECOEF2)
-       WN_I = 0.5 * ALPHA
+      ALPHA = EXP(-ICECOEF1 * TPI / SIG - ICECOEF2)
+      WN_I = 0.5 * ALPHA
 
     CASE (2) ! IC4M2 : Polynomial fit, Eq. 3 from Meylan et al. 2014
-       !NB: Eq. 3 only includes T^2 and T^4 terms,
-       !  which correspond to ICECOEF3, ICECOEF5, so in
-       !  regtest: ICECOEF1=ICECOEF2=ICECOEF4=0
-       MARG1 = ICECOEF1 + ICECOEF2*(SIG/TPI) + ICECOEF3*(SIG/TPI)**2
-       MARG2 = ICECOEF4*(SIG/TPI)**3 + ICECOEF5*(SIG/TPI)**4
-       ALPHA = MARG1 + MARG2
-       WN_I = 0.5 * ALPHA
+      !NB: Eq. 3 only includes T^2 and T^4 terms,
+      !  which correspond to ICECOEF3, ICECOEF5, so in
+      !  regtest: ICECOEF1=ICECOEF2=ICECOEF4=0
+      MARG1 = ICECOEF1 + ICECOEF2*(SIG/TPI) + ICECOEF3*(SIG/TPI)**2
+      MARG2 = ICECOEF4*(SIG/TPI)**3 + ICECOEF5*(SIG/TPI)**4
+      ALPHA = MARG1 + MARG2
+      WN_I = 0.5 * ALPHA
 
     CASE (3) ! IC4M3 : Quadratic fit to Kohout & Meylan'08 in Horvat & Tziperman'15
-       HICE=ICECOEF1 ! For this method, ICECOEF1=ice thickness
-       KARG1 = -0.3203 + 2.058*HICE - 0.9375*(TPI/SIG)
-       KARG2 = -0.4269*HICE**2 + 0.1566*HICE*(TPI/SIG)
-       KARG3 =  0.0006 * (TPI/SIG)**2
-       ALPHA  = EXP(KARG1 + KARG2 + KARG3)
-       WN_I = 0.5 * ALPHA
+      HICE=ICECOEF1 ! For this method, ICECOEF1=ice thickness
+      KARG1 = -0.3203 + 2.058*HICE - 0.9375*(TPI/SIG)
+      KARG2 = -0.4269*HICE**2 + 0.1566*HICE*(TPI/SIG)
+      KARG3 =  0.0006 * (TPI/SIG)**2
+      ALPHA  = EXP(KARG1 + KARG2 + KARG3)
+      WN_I = 0.5 * ALPHA
 
     CASE (4) !Eq. 1 from Kohout et al. 2014
-       !Calculate HS
-       DO IK=1, NK
-          EB(IK) = 0.
-          DO ITH=1, NTH
-             EB(IK) = EB(IK) + A(ITH+(IK-1)*NTH)
-          END DO
-       END DO
-       DO IK=1, NK
-          EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
-          EMEAN  = EMEAN + EB(IK)
-       END DO
-       HS = 4.*SQRT( MAX(0.,EMEAN) )
-       ! If Hs < 3 m then do Hs dependent calc, otherwise dH/dx is a constant
-       IF (HS <= 3) THEN
-          WN_I=ICECOEF1 ! from: DHDX=ICECOEF1*HS and WN_I=DHDX/HS
-       ELSE IF (HS > 3) THEN
-          WN_I=ICECOEF2/HS ! from: DHDX=ICECOEF2 and WN_I=DHDX/HS
-       END IF
+      !Calculate HS
+      DO IK=1, NK
+        EB(IK) = 0.
+        DO ITH=1, NTH
+          EB(IK) = EB(IK) + A(ITH+(IK-1)*NTH)
+        END DO
+      END DO
+      DO IK=1, NK
+        EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
+        EMEAN  = EMEAN + EB(IK)
+      END DO
+      HS = 4.*SQRT( MAX(0.,EMEAN) )
+      ! If Hs < 3 m then do Hs dependent calc, otherwise dH/dx is a constant
+      IF (HS <= 3) THEN
+        WN_I=ICECOEF1 ! from: DHDX=ICECOEF1*HS and WN_I=DHDX/HS
+      ELSE IF (HS > 3) THEN
+        WN_I=ICECOEF2/HS ! from: DHDX=ICECOEF2 and WN_I=DHDX/HS
+      END IF
 
     CASE (5) ! Simple step function (time- and/or space-varying)
-       ! rename variables for clarity
-       KI1=ICECOEF1
-       KI2=ICECOEF2
-       KI3=ICECOEF3
-       KI4=ICECOEF4
-       FC5=ICECOEF5
-       FC6=ICECOEF6
-       FC7=ICECOEF7
-       IF((KI1.EQ.0.0).OR.(KI2.EQ.0.0).OR.(KI3.EQ.0.0).OR. &
-            (KI4.EQ.0.0).OR.(FC5.EQ.0.0).OR.(FC6.EQ.0.0).OR. &
-            (FC7.EQ.0.0))THEN
-          WRITE (NDSE,1001)'ICE PARAMETERS'
-          CALL EXTCDE(201)
-       END IF
-       DO IK=1, NK
-          FREQ=SIG(IK)/TPI
-          ! select ki
-          IF(FREQ.LT.FC5)THEN
-             WN_I(IK)=KI1
-          ELSEIF(FREQ.LT.FC6)THEN
-             WN_I(IK)=KI2
-          ELSEIF(FREQ.LT.FC7)THEN
-             WN_I(IK)=KI3
-          ELSE
-             WN_I(IK)=KI4
-          ENDIF
-       END DO
+      ! rename variables for clarity
+      KI1=ICECOEF1
+      KI2=ICECOEF2
+      KI3=ICECOEF3
+      KI4=ICECOEF4
+      FC5=ICECOEF5
+      FC6=ICECOEF6
+      FC7=ICECOEF7
+      IF((KI1.EQ.0.0).OR.(KI2.EQ.0.0).OR.(KI3.EQ.0.0).OR. &
+           (KI4.EQ.0.0).OR.(FC5.EQ.0.0).OR.(FC6.EQ.0.0).OR. &
+           (FC7.EQ.0.0))THEN
+        WRITE (NDSE,1001)'ICE PARAMETERS'
+        CALL EXTCDE(201)
+      END IF
+      DO IK=1, NK
+        FREQ=SIG(IK)/TPI
+        ! select ki
+        IF(FREQ.LT.FC5)THEN
+          WN_I(IK)=KI1
+        ELSEIF(FREQ.LT.FC6)THEN
+          WN_I(IK)=KI2
+        ELSEIF(FREQ.LT.FC7)THEN
+          WN_I(IK)=KI3
+        ELSE
+          WN_I(IK)=KI4
+        ENDIF
+      END DO
 
     CASE (6) ! Simple step function (from namelist)
 
-       ! error checking: require at least 3 steps
-       IF((IC4_KI(1).EQ.0.0).OR.(IC4_KI(2).EQ.0.0).OR. &
-            (IC4_KI(3).EQ.0.0).OR.(IC4_FC(1).EQ.0.0).OR. &
-            (IC4_FC(2).EQ.0.0) )THEN
-          WRITE (NDSE,1001)'ICE PARAMETERS'
-          CALL EXTCDE(201)
-       END IF
+      ! error checking: require at least 3 steps
+      IF((IC4_KI(1).EQ.0.0).OR.(IC4_KI(2).EQ.0.0).OR. &
+           (IC4_KI(3).EQ.0.0).OR.(IC4_FC(1).EQ.0.0).OR. &
+           (IC4_FC(2).EQ.0.0) )THEN
+        WRITE (NDSE,1001)'ICE PARAMETERS'
+        CALL EXTCDE(201)
+      END IF
 
-       DO IK=1, NK
-          FREQ=SIG(IK)/TPI
-          ! select ki
-          DO IFC=1,NIC4
-             IF(FREQ.LT.IC4_FC(IFC))THEN
-                WN_I(IK)=IC4_KI(IFC)
-                EXIT
-             END IF
-          END DO
-       END DO
+      DO IK=1, NK
+        FREQ=SIG(IK)/TPI
+        ! select ki
+        DO IFC=1,NIC4
+          IF(FREQ.LT.IC4_FC(IFC))THEN
+            WN_I(IK)=IC4_KI(IFC)
+            EXIT
+          END IF
+        END DO
+      END DO
 
     CASE (7) ! Doble et al. (GRL 2015)
 
-       HICE=ICECOEF1 ! For this method, ICECOEF1=ice thickness
-       DO IK=1,NK
-          FREQ=SIG(IK)/TPI
-          ALPHA(IK)  = 0.2*(FREQ**2.13)*HICE
-       END DO
-       WN_I= 0.5 * ALPHA
+      HICE=ICECOEF1 ! For this method, ICECOEF1=ice thickness
+      DO IK=1,NK
+        FREQ=SIG(IK)/TPI
+        ALPHA(IK)  = 0.2*(FREQ**2.13)*HICE
+      END DO
+      WN_I= 0.5 * ALPHA
 
     CASE DEFAULT
-       WN_I = ICECOEF1 !Default to IC1: Uniform in k
+      WN_I = ICECOEF1 !Default to IC1: Uniform in k
 
     END SELECT
 
@@ -523,9 +523,9 @@ CONTAINS
     ! 1.b Calculate DID
     !
     DO IK=1, NK
-       !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
-       !             recall that D=S/E=-2*Cg*k_i
-       D1D(IK) = -2. * CG(IK) * WN_I(IK)
+      !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
+      !             recall that D=S/E=-2*Cg*k_i
+      D1D(IK) = -2. * CG(IK) * WN_I(IK)
 
     END DO
 
@@ -533,7 +533,7 @@ CONTAINS
     ! 1.c Fill diagional matrix
     !
     DO IKTH=1, NSPEC
-       D(IKTH) = D1D(MAPWN(IKTH))
+      D(IKTH) = D1D(MAPWN(IKTH))
     END DO
     !
     !      END IF
@@ -544,9 +544,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !

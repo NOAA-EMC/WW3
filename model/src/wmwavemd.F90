@@ -315,54 +315,54 @@ CONTAINS
     !     Test GRSTAT
     !
     DO I=1, NRGRD
-       IF ( ( GRSTAT(I).LT.0 .OR. GRSTAT(I).GT.7 ) .AND.             &
-            GRSTAT(I).NE.99 ) GOTO 2000
-       !
-       !     Consistency of times for grids
-       !
-       IF ( TSYNC(1,I) .NE. -1 ) THEN
-          DTTST  = DSEC21 ( TSYNC(:,I), TEND(:,I) )
-          IF ( DTTST .LT. 0. ) GOTO 2001
-       END IF
+      IF ( ( GRSTAT(I).LT.0 .OR. GRSTAT(I).GT.7 ) .AND.             &
+           GRSTAT(I).NE.99 ) GOTO 2000
+      !
+      !     Consistency of times for grids
+      !
+      IF ( TSYNC(1,I) .NE. -1 ) THEN
+        DTTST  = DSEC21 ( TSYNC(:,I), TEND(:,I) )
+        IF ( DTTST .LT. 0. ) GOTO 2001
+      END IF
     END DO
     !
     !     Consistency of times within groups, set global TSYNC(:,0)
     !
     DO J=1, NRGRP
-       DO JJ=2, INGRP(J,0)
-          IF ( DSEC21(TSYNC(:,INGRP(J,1)),TSYNC(:,INGRP(J,JJ))).NE.0. &
-               .OR. DSEC21(TEND(:,INGRP(J,1)),TEND(:,INGRP(J,JJ))).NE.0. ) &
-               GOTO 2002
-       END DO
-       IF ( GRANK(INGRP(J,1)).EQ.1 .AND. TSYNC(1,0).EQ.-1 )          &
-            TSYNC(:,0) = TSYNC(:,INGRP(J,1))
+      DO JJ=2, INGRP(J,0)
+        IF ( DSEC21(TSYNC(:,INGRP(J,1)),TSYNC(:,INGRP(J,JJ))).NE.0. &
+             .OR. DSEC21(TEND(:,INGRP(J,1)),TEND(:,INGRP(J,JJ))).NE.0. ) &
+             GOTO 2002
+      END DO
+      IF ( GRANK(INGRP(J,1)).EQ.1 .AND. TSYNC(1,0).EQ.-1 )          &
+           TSYNC(:,0) = TSYNC(:,INGRP(J,1))
     END DO
     !
     !     Check if FLSYNC initialized
     !
     IF ( .NOT. ALLOCATED(FLSYNC) ) THEN
-       ALLOCATE ( FLSYNC(NRGRD), GRSYNC(NRGRP), TMSYNC(NRGRD),     &
-            FLEQOK(NRGRD) )
+      ALLOCATE ( FLSYNC(NRGRD), GRSYNC(NRGRP), TMSYNC(NRGRD),     &
+           FLEQOK(NRGRD) )
 #ifdef W3_MPI
-       ALLOCATE ( PREGTB(NRGRD), PREGTH(NRGRD), PREGTE(NRGRD) )
+      ALLOCATE ( PREGTB(NRGRD), PREGTH(NRGRD), PREGTE(NRGRD) )
 #endif
-       FLSYNC = .FALSE.
-       GRSYNC = .FALSE.
-       TMSYNC = .TRUE.
-       FLEQOK = .FALSE.
+      FLSYNC = .FALSE.
+      GRSYNC = .FALSE.
+      TMSYNC = .TRUE.
+      FLEQOK = .FALSE.
 #ifdef W3_MPI
-       PREGTB = .FALSE.
-       PREGTH = .FALSE.
-       PREGTE = .FALSE.
+      PREGTB = .FALSE.
+      PREGTH = .FALSE.
+      PREGTE = .FALSE.
 #endif
     END IF
     !
     ! 0.b Reset GRSTAT as needed
     !
     DO I=1, NRGRD
-       CALL W3SETW ( I, MDSE, MDST )
-       DTTST  = DSEC21 ( TIME, TEND(:,I) )
-       IF ( GRSTAT(I).EQ.99 .AND. DTTST.GT.0. ) GRSTAT(I) = 0
+      CALL W3SETW ( I, MDSE, MDST )
+      DTTST  = DSEC21 ( TIME, TEND(:,I) )
+      IF ( GRSTAT(I).EQ.99 .AND. DTTST.GT.0. ) GRSTAT(I) = 0
     END DO
     !
     ! 0.c Other initializations
@@ -373,25 +373,25 @@ CONTAINS
 #endif
     !
     IF ( UNIPTS ) THEN
-       CALL W3SETO ( 0, MDSE, MDST )
-       UPNEXT = TONEXT(:,2)
-       UPLAST = TOLAST(:,2)
-       DO_UPT = .TRUE.
+      CALL W3SETO ( 0, MDSE, MDST )
+      UPNEXT = TONEXT(:,2)
+      UPLAST = TOLAST(:,2)
+      DO_UPT = .TRUE.
     ELSE
-       UPNEXT(1) = -1
-       UPNEXT(2) =  0
-       DO_UPT = .FALSE.
+      UPNEXT(1) = -1
+      UPNEXT(2) =  0
+      DO_UPT = .FALSE.
     END IF
     !
     ! 0.d Output
     !
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-       CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
-       CALL STME21 ( TSYNC(:,0), MTIME )
-       CALL WWTIME ( WTIME )
-       WRITE (MDSS,901) MTIME, WTIME, MINVAL(GRSTAT), MAXVAL(GRSTAT)
-       TPRNT  = TSYNC(:,0)
-       TSTAMP = .TRUE.
+      CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
+      CALL STME21 ( TSYNC(:,0), MTIME )
+      CALL WWTIME ( WTIME )
+      WRITE (MDSS,901) MTIME, WTIME, MINVAL(GRSTAT), MAXVAL(GRSTAT)
+      TPRNT  = TSYNC(:,0)
+      TSTAMP = .TRUE.
     ENDIF
     !
 #ifdef W3_MPI
@@ -410,1219 +410,1219 @@ CONTAINS
 #endif
     !
     LOOP_OUTER: DO
-       !
-       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC .AND.                &
-            DSEC21(TPRNT,TSYNC(:,0)).NE.0. ) THEN
-          IF ( .NOT. TSTAMP ) WRITE (MDSS,*)
-          CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
-          CALL STME21 ( TSYNC(:,0), MTIME )
-          CALL WWTIME ( WTIME )
-          WRITE (MDSS,901) MTIME, WTIME, MINVAL(GRSTAT), MAXVAL(GRSTAT)
+      !
+      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC .AND.                &
+           DSEC21(TPRNT,TSYNC(:,0)).NE.0. ) THEN
+        IF ( .NOT. TSTAMP ) WRITE (MDSS,*)
+        CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
+        CALL STME21 ( TSYNC(:,0), MTIME )
+        CALL WWTIME ( WTIME )
+        WRITE (MDSS,901) MTIME, WTIME, MINVAL(GRSTAT), MAXVAL(GRSTAT)
 
+        !
+        TPRNT  = TSYNC(:,0)
+        TSTAMP = .TRUE.
+      ENDIF
+      !
+#ifdef W3_T
+      ILOOP  = ILOOP + 1
+      WRITE (MDST,9000) ILOOP, TSYNC(:,0)
+      DO I=1, NRGRD
+        CALL W3SETW ( I, MDSE, MDST )
+        WRITE (MDST,9001) I, GRSTAT(I), TIME, TSYNC(:,I), TEND(:,I)
+      END DO
+      IF ( ILOOP .EQ. -1 ) CALL EXTCDE ( 508 )
+#endif
+      !
+      DONE   = .FALSE.
+      TPRNT  = TSYNC(:,0)
+      !
+      LOOP_J: DO J=1, NRGRP
+        !
+#ifdef W3_MPI
+        GRSYNC(J) = .FALSE.
+        DO JJ=1, INGRP(J,0)
+          I      = INGRP(J,JJ)
+          CALL WMSETM ( I, MDSE, MDST )
+          GRSYNC(J) = GRSYNC(J) .OR. FBCAST
+        END DO
+#endif
+        !
+        LOOP_JJ: DO JJ=1, INGRP(J,0)
+          I      = INGRP(J,JJ)
+          CALL WMSETM ( I, MDSE, MDST )
           !
-          TPRNT  = TSYNC(:,0)
-          TSTAMP = .TRUE.
-       ENDIF
-       !
-#ifdef W3_T
-       ILOOP  = ILOOP + 1
-       WRITE (MDST,9000) ILOOP, TSYNC(:,0)
-       DO I=1, NRGRD
-          CALL W3SETW ( I, MDSE, MDST )
-          WRITE (MDST,9001) I, GRSTAT(I), TIME, TSYNC(:,I), TEND(:,I)
-       END DO
-       IF ( ILOOP .EQ. -1 ) CALL EXTCDE ( 508 )
-#endif
-       !
-       DONE   = .FALSE.
-       TPRNT  = TSYNC(:,0)
-       !
-       LOOP_J: DO J=1, NRGRP
-          !
 #ifdef W3_MPI
-          GRSYNC(J) = .FALSE.
-          DO JJ=1, INGRP(J,0)
-             I      = INGRP(J,JJ)
-             CALL WMSETM ( I, MDSE, MDST )
-             GRSYNC(J) = GRSYNC(J) .OR. FBCAST
-          END DO
+          IF ( GRSTAT(I).EQ.0 ) TMSYNC(I) = .NOT. FBCAST
+          IF ( FBCAST ) THEN
+            NMPSCR = CROOT
+          ELSE
+            NMPSCR = NMPSCS
+          END IF
 #endif
           !
-          LOOP_JJ: DO JJ=1, INGRP(J,0)
-             I      = INGRP(J,JJ)
-             CALL WMSETM ( I, MDSE, MDST )
-             !
-#ifdef W3_MPI
-             IF ( GRSTAT(I).EQ.0 ) TMSYNC(I) = .NOT. FBCAST
-             IF ( FBCAST ) THEN
-                NMPSCR = CROOT
-             ELSE
-                NMPSCR = NMPSCS
-             END IF
-#endif
-             !
-             ! 2.  Update input fields -------------------------------------------- /
-             !     ( GRSTAT = 0 )
-             !
-             ! 2.a Check TDATA and finish step if data is still OK
-             !
+          ! 2.  Update input fields -------------------------------------------- /
+          !     ( GRSTAT = 0 )
+          !
+          ! 2.a Check TDATA and finish step if data is still OK
+          !
 #ifdef W3_SHRD
-             IF ( GRSTAT(I) .EQ. 0 ) THEN
+          IF ( GRSTAT(I) .EQ. 0 ) THEN
 #endif
 #ifdef W3_MPI
-                IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I) ) THEN
+            IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I) ) THEN
 #endif
-                   !
+              !
 #ifdef W3_T
-                   WRITE (MDST,9002) I, GRSTAT(I), ' '
+              WRITE (MDST,9002) I, GRSTAT(I), ' '
 #endif
-                   !
-                   IF ( TDATA(1,I) .EQ. -1 ) THEN
-                      DTTST  = 0.
-                   ELSE
-                      CALL W3SETW ( I, MDSE, MDST )
-                      DTTST  = DSEC21 ( TIME , TDATA(:,I) )
-                   END IF
-#ifdef W3_T
-                   WRITE (MDST,9020) DTTST
-#endif
-                   !
-                   IF ( DTTST .GT. 0. ) THEN
-                      GRSTAT(I) = 1
-#ifdef W3_T
-                      WRITE (MDST,9003) I, GRSTAT(I)
-#endif
-                      DONE      = .TRUE.
-                   END IF
-                   !
-#ifdef W3_MPI
-                END IF ! IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I)
-#endif
-#ifdef W3_SHRD
-             END IF ! IF ( GRSTAT(I) .EQ. 0 )
-#endif
-             !
-             ! 2.b Update input and TDATA
-             !
-#ifdef W3_SHRD
-             IF ( GRSTAT(I) .EQ. 0 ) THEN
-#endif
-#ifdef W3_MPI
-                IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I) .AND.       &
-                     MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
-#endif
-                   !
-#ifdef W3_MPRF
-                   CALL PRTIME ( PRFT0 )
-#endif
-                   IF ( DTTST .LE. 0 ) THEN
-                      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )        &
-                           WRITE (MDSS,*)
-                      TSTAMP = .FALSE.
-                      CALL WMUPDT ( I, TDATA(:,I) )
-#ifdef W3_T
-                      WRITE (MDST,9021) TIME, TDATA(:,I), TEND(:,I)
-#endif
-                   END IF
-                   !
-                   ! 2.c Finish up if possible ( !/SHRD or .NOT. FBCAST or no update )
-                   !
-#ifdef W3_SHRD
-                   GRSTAT(I) = 1
-                   DONE      = .TRUE.
-#endif
-                   !
-#ifdef W3_MPI
-                   IF ( .NOT. GRSYNC(J) ) THEN
-#endif
-#ifdef W3_MPIT
-                      WRITE (MDST,9902) I, GRSTAT(I),             &
-                           'NO SYNC FOR TDATA NEEDED'
-#endif
-#ifdef W3_MPI
-                      GRSTAT(I) = 1
-                      DONE      = .TRUE.
-                   END IF ! IF ( .NOT. GRSYNC(J) )
-#endif
-                   !
-#ifdef W3_MPRF
-                   CALL PRTIME ( PRFTN )
-                   WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
-                        'ST00', I
-#endif
-                   !
-#ifdef W3_MPI
-                END IF ! IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I) .AND. MPI_COMM_GRD .NE. MPI_COMM_NULL )
-#endif
-#ifdef W3_SHRD
-             END IF ! IF ( GRSTAT(I) .EQ. 0 )
-#endif
-             !
-             ! 2.d Synchronize in parts ( !/MPI )
-             !
-#ifdef W3_MPI
-             IF ( GRSTAT(I).EQ.0 .AND. GRSYNC(J) ) THEN
-                DONE   = .TRUE.
-#endif
-                !
-#ifdef W3_MPI
-                IF ( FLSYNC(I) ) THEN
-#endif
-#ifdef W3_MPIT
-                   WRITE (MDST,9902) I, GRSTAT(I),             &
-                        'SYNCING TDATA'
-#endif
-#ifdef W3_MPRF
-                   IF (FLSYNC(I)) CALL PRTIME ( PRFT0 )
-#endif
-#ifdef W3_MPI
-                   IF ( FBCAST ) CALL WMBCST                    &
-                        ( TDATA(1,I), 2, I, NRGRD, 1 )
-#endif
-#ifdef W3_MPRF
-                   IF (FLSYNC(I)) CALL PRTIME ( PRFTN )
-                   IF (FLSYNC(I)) WRITE (MDSP,991)             &
-                        PRFT0, PRFTN, get_memory(), 'BCST',I
-#endif
-#ifdef W3_MPIT
-                   WRITE (MDST,9902) I, GRSTAT(I), 'SYNCING DONE'
-#endif
-#ifdef W3_MPI
-                   GRSTAT(I) = 1
-                   FLSYNC(I) = .FALSE.
-                   IF ( GRSYNC(J) ) CYCLE LOOP_JJ
-                ELSE
-#endif
-#ifdef W3_MPIT
-                   WRITE (MDST,9902) I, GRSTAT(I),             &
-                        'CYCLE BEFORE SYNCING TDATA'
-#endif
-#ifdef W3_MPI
-                   FLSYNC(I) = .TRUE.
-                   CYCLE LOOP_JJ
-                END IF ! IF ( FLSYNC(I) )
-#endif
-                !
-#ifdef W3_MPI
-             END IF ! IF ( GRSTAT(I).EQ.0 .AND. GRSYNC(J)
-#endif
-             !
-             ! 3.  Update data from lower ranked grids ---------------------------- /
-             !     ( GRSTAT = 1 )
-             !
-             ! 3.a Skip for initial output only
-             !
-             IF ( GRSTAT(I) .EQ. 1 .AND. TSYNC(1,I) .NE. -1 ) THEN
-#ifdef W3_T
-                WRITE (MDST,9002) I, GRSTAT(I), 'FIRST PART'
-#endif
+              !
+              IF ( TDATA(1,I) .EQ. -1 ) THEN
+                DTTST  = 0.
+              ELSE
                 CALL W3SETW ( I, MDSE, MDST )
-                DTTST  = DSEC21 ( TIME, TSYNC(:,I) )
-                IF ( DTTST .EQ. 0. ) THEN
-                   GRSTAT(I) = 7
+                DTTST  = DSEC21 ( TIME , TDATA(:,I) )
+              END IF
 #ifdef W3_T
-                   WRITE (MDST,9003) I, GRSTAT(I)
+              WRITE (MDST,9020) DTTST
 #endif
-                   DONE      = .TRUE.
+              !
+              IF ( DTTST .GT. 0. ) THEN
+                GRSTAT(I) = 1
+#ifdef W3_T
+                WRITE (MDST,9003) I, GRSTAT(I)
+#endif
+                DONE      = .TRUE.
+              END IF
+              !
+#ifdef W3_MPI
+            END IF ! IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I)
+#endif
+#ifdef W3_SHRD
+          END IF ! IF ( GRSTAT(I) .EQ. 0 )
+#endif
+          !
+          ! 2.b Update input and TDATA
+          !
+#ifdef W3_SHRD
+          IF ( GRSTAT(I) .EQ. 0 ) THEN
+#endif
+#ifdef W3_MPI
+            IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I) .AND.       &
+                 MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+#endif
+              !
+#ifdef W3_MPRF
+              CALL PRTIME ( PRFT0 )
+#endif
+              IF ( DTTST .LE. 0 ) THEN
+                IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )        &
+                     WRITE (MDSS,*)
+                TSTAMP = .FALSE.
+                CALL WMUPDT ( I, TDATA(:,I) )
+#ifdef W3_T
+                WRITE (MDST,9021) TIME, TDATA(:,I), TEND(:,I)
+#endif
+              END IF
+              !
+              ! 2.c Finish up if possible ( !/SHRD or .NOT. FBCAST or no update )
+              !
+#ifdef W3_SHRD
+              GRSTAT(I) = 1
+              DONE      = .TRUE.
+#endif
+              !
+#ifdef W3_MPI
+              IF ( .NOT. GRSYNC(J) ) THEN
+#endif
+#ifdef W3_MPIT
+                WRITE (MDST,9902) I, GRSTAT(I),             &
+                     'NO SYNC FOR TDATA NEEDED'
+#endif
+#ifdef W3_MPI
+                GRSTAT(I) = 1
+                DONE      = .TRUE.
+              END IF ! IF ( .NOT. GRSYNC(J) )
+#endif
+              !
+#ifdef W3_MPRF
+              CALL PRTIME ( PRFTN )
+              WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
+                   'ST00', I
+#endif
+              !
+#ifdef W3_MPI
+            END IF ! IF ( GRSTAT(I).EQ.0 .AND. .NOT.FLSYNC(I) .AND. MPI_COMM_GRD .NE. MPI_COMM_NULL )
+#endif
+#ifdef W3_SHRD
+          END IF ! IF ( GRSTAT(I) .EQ. 0 )
+#endif
+          !
+          ! 2.d Synchronize in parts ( !/MPI )
+          !
+#ifdef W3_MPI
+          IF ( GRSTAT(I).EQ.0 .AND. GRSYNC(J) ) THEN
+            DONE   = .TRUE.
+#endif
+            !
+#ifdef W3_MPI
+            IF ( FLSYNC(I) ) THEN
+#endif
+#ifdef W3_MPIT
+              WRITE (MDST,9902) I, GRSTAT(I),             &
+                   'SYNCING TDATA'
+#endif
+#ifdef W3_MPRF
+              IF (FLSYNC(I)) CALL PRTIME ( PRFT0 )
+#endif
+#ifdef W3_MPI
+              IF ( FBCAST ) CALL WMBCST                    &
+                   ( TDATA(1,I), 2, I, NRGRD, 1 )
+#endif
+#ifdef W3_MPRF
+              IF (FLSYNC(I)) CALL PRTIME ( PRFTN )
+              IF (FLSYNC(I)) WRITE (MDSP,991)             &
+                   PRFT0, PRFTN, get_memory(), 'BCST',I
+#endif
+#ifdef W3_MPIT
+              WRITE (MDST,9902) I, GRSTAT(I), 'SYNCING DONE'
+#endif
+#ifdef W3_MPI
+              GRSTAT(I) = 1
+              FLSYNC(I) = .FALSE.
+              IF ( GRSYNC(J) ) CYCLE LOOP_JJ
+            ELSE
+#endif
+#ifdef W3_MPIT
+              WRITE (MDST,9902) I, GRSTAT(I),             &
+                   'CYCLE BEFORE SYNCING TDATA'
+#endif
+#ifdef W3_MPI
+              FLSYNC(I) = .TRUE.
+              CYCLE LOOP_JJ
+            END IF ! IF ( FLSYNC(I) )
+#endif
+            !
+#ifdef W3_MPI
+          END IF ! IF ( GRSTAT(I).EQ.0 .AND. GRSYNC(J)
+#endif
+          !
+          ! 3.  Update data from lower ranked grids ---------------------------- /
+          !     ( GRSTAT = 1 )
+          !
+          ! 3.a Skip for initial output only
+          !
+          IF ( GRSTAT(I) .EQ. 1 .AND. TSYNC(1,I) .NE. -1 ) THEN
+#ifdef W3_T
+            WRITE (MDST,9002) I, GRSTAT(I), 'FIRST PART'
+#endif
+            CALL W3SETW ( I, MDSE, MDST )
+            DTTST  = DSEC21 ( TIME, TSYNC(:,I) )
+            IF ( DTTST .EQ. 0. ) THEN
+              GRSTAT(I) = 7
+#ifdef W3_T
+              WRITE (MDST,9003) I, GRSTAT(I)
+#endif
+              DONE      = .TRUE.
+            END IF
+          END IF ! IF ( GRSTAT(I) .EQ. 1 .AND. TSYNC(1,I) .NE. -1 )
+          !
+          ! 3.b Normal processing
+          !
+
+          IF ( GRSTAT(I) .EQ. 1 ) THEN
+#ifdef W3_T
+            WRITE (MDST,9002) I, GRSTAT(I), 'SECOND PART'
+#endif
+#ifdef W3_MPRF
+            CALL PRTIME ( PRFT0 )
+#endif
+            !
+            ! 3.b.1 Test if data is there
+            !
+            FLAGOK = .TRUE.
+            CALL W3SETW ( I, MDSE, MDST )
+            TAUX   = TIME
+            DO JJJ=1, GRDLOW(I,0)
+              CALL W3SETW ( GRDLOW(I,JJJ), MDSE, MDST )
+              FLAGOK = FLAGOK .AND. DSEC21(TAUX,TIME).GT.0.       &
+                   .AND. GRSTAT(GRDLOW(I,JJJ)).EQ.5
+            END DO
+            CALL W3SETW ( I, MDSE, MDST )
+            !
+#ifdef W3_T
+            WRITE (MDST,9004) FLAGOK
+#endif
+            !
+            ! 3.b.1 Get the data
+            !
+#ifdef W3_MPI
+            IF ( .NOT.FLAGOK .AND. .NOT.PREGTB(I) ) THEN
+              IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )         &
+                   CALL WMIOBG (I,FLAG)
+              PREGTB(I) = .TRUE.
+            END IF
+#endif
+            !
+            IF ( FLAGOK ) THEN
+#ifdef W3_SHRD
+              CALL WMIOBG ( I, FLAGOK )
+#endif
+#ifdef W3_MPI
+              IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )         &
+                   CALL WMIOBG ( I )
+              PREGTB(I) = .FALSE.
+#endif
+              GRSTAT(I) = 2
+              DONE      = .TRUE.
+            END IF ! IF ( FLAGOK )
+            !
+#ifdef W3_MPRF
+            CALL PRTIME ( PRFTN )
+            WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
+                 'ST01', I
+#endif
+          END IF ! IF ( GRSTAT(I) .EQ. 1 )
+          !
+          ! 4.  Update model time step ----------------------------------------- /
+          !     ( GRSTAT = 2 )
+          !
+          IF ( GRSTAT(I) .EQ. 2 ) THEN
+#ifdef W3_T
+            WRITE (MDST,9002) I, GRSTAT(I), ' '
+#endif
+#ifdef W3_MPRF
+            CALL PRTIME ( PRFT0 )
+#endif
+            !
+            ! 4.a Check TMAX and update as necessary ( needs !/MPI synchronizaion )
+            !
+            CALL W3SETW ( I, MDSE, MDST )
+            IF ( TMAX(1,I) .EQ. -1 ) THEN
+              TMAX(:,I) = TIME
+              DTTST  = 0.
+            ELSE
+              DTTST  = DSEC21(TIME,TMAX(:,I))
+            END IF
+            !
+            IF ( DTTST .LE. 0 ) THEN
+              CALL W3SETG ( I, MDSE, MDST )
+              DTMAXI = REAL(NINT(DTMAX+DTRES(I)+0.0001))
+              DTRES(I)= DTRES(I)+ DTMAX - DTMAXI
+              IF ( ABS(DTRES(I)) .LT. 0.001 ) DTRES(I) = 0.
+              TMAX(:,I) = TIME
+              CALL TICK21 ( TMAX(:,I), DTMAXI )
+              TAUX   = TMAX(:,I)
+              IF ( TDATA(1,I) .NE. -1 ) THEN
+                IF ( DSEC21(TDATA(:,I),TMAX(:,I)) .GT. 0 )    &
+                     TMAX(:,I) = TDATA(:,I)
+              END IF
+              IF ( TOUTP(1,I) .NE. -1 ) THEN
+                IF ( DSEC21(TOUTP(:,I),TMAX(:,I)) .GT. 0 )    &
+                     TMAX(:,I) = TOUTP(:,I)
+              END IF
+              IF ( UNIPTS ) THEN
+                IF ( DSEC21(UPNEXT,TMAX(:,I)) .GT. 0 )        &
+                     TMAX(:,I) = UPNEXT(:)
+              END IF
+#ifdef W3_T
+              WRITE (MDST,9040) TMAX(:,I), DTRES(I), TAUX,   &
+                   TDATA(:,I), TOUTP(:,I), UPNEXT
+#endif
+              DONE   = .TRUE.
+              CYCLE LOOP_JJ
+#ifdef W3_T
+            ELSE
+              WRITE (MDST,9041) TMAX(:,I)
+#endif
+            END IF ! IF ( DTTST .LE. 0 )
+            !
+            ! 4.b Lowest ranked grids, minimum of all TMAXes
+            !
+#ifdef W3_T
+            WRITE (MDST,9042) GRANK(I)
+#endif
+            !
+            IF ( GRANK(I) .EQ. 1 ) THEN
+              !
+              TAUX   = TMAX(:,I)
+              FLAGOK = .TRUE.
+              !
+              ! 4.b.1 Check if all grids have reached previous sync point
+              !
+              DO II=1, NRGRD
+                CALL W3SETW ( II, MDSE, MDST )
+#ifdef W3_SHRD
+                IF ( TIME(1) .NE. -1 ) THEN
+#endif
+#ifdef W3_MPI
+                  IF ( TIME(1).NE.-1 .AND.                   &
+                       MPI_COMM_GRD.NE.MPI_COMM_NULL ) THEN
+#endif
+                    IF ( DSEC21(TIME,TSYNC(:,0)) .NE. 0 ) THEN
+                      FLAGOK = .FALSE.
+                      EXIT
+                    END IF
+#ifdef W3_MPI
+                  END IF ! IF ( TIME(1).NE.-1 .AND. MPI_COMM_GRD.NE.MPI_COMM_NULL )
+#endif
+#ifdef W3_SHRD
+                END IF ! IF ( TIME(1) .NE. -1 ) THEN
+#endif
+              END DO
+              !
+              ! 4.b.2 Check availability of data
+              !
+              DO II=1, NRGRD
+                IF ( GRANK(II) .EQ. 1 ) THEN
+                  IF ( TMAX(1,II) .EQ. -1 ) THEN
+                    FLAGOK = .FALSE.
+                    EXIT
+                  ELSE
+                    IF ( DSEC21 (TAUX,TMAX(:,II)) .LT. 0. ) &
+                         TAUX   = TMAX(:,II)
+                  END IF
                 END IF
-             END IF ! IF ( GRSTAT(I) .EQ. 1 .AND. TSYNC(1,I) .NE. -1 )
-             !
-             ! 3.b Normal processing
-             !
-
-             IF ( GRSTAT(I) .EQ. 1 ) THEN
+              END DO
+              !
+              CALL W3SETW ( I, MDSE, MDST )
+              FLAGOK = FLAGOK .AND. DSEC21(TIME,TAUX).GT.0.
+              !
+              ! 4.b.3 Update TSYNC for all grids
+              !
+              IF ( FLAGOK ) THEN
+                !
+                TSYNC(:,0) = TAUX
+                DO_UPT = .TRUE.
+                DO II=1, NRGRD
+                  IF ( GRANK(II) .EQ. 1 ) THEN
+                    TSYNC(:,II) = TAUX
+                    IF ( GRSTAT(II) .EQ. 2 ) GRSTAT(II) = 3
 #ifdef W3_T
-                WRITE (MDST,9002) I, GRSTAT(I), 'SECOND PART'
+                    IF ( GRSTAT(II) .EQ. 3 )             &
+                         WRITE (MDST,9003) II, GRSTAT(II)
 #endif
-#ifdef W3_MPRF
-                CALL PRTIME ( PRFT0 )
-#endif
-                !
-                ! 3.b.1 Test if data is there
-                !
-                FLAGOK = .TRUE.
-                CALL W3SETW ( I, MDSE, MDST )
-                TAUX   = TIME
-                DO JJJ=1, GRDLOW(I,0)
-                   CALL W3SETW ( GRDLOW(I,JJJ), MDSE, MDST )
-                   FLAGOK = FLAGOK .AND. DSEC21(TAUX,TIME).GT.0.       &
-                        .AND. GRSTAT(GRDLOW(I,JJJ)).EQ.5
+                  END IF
                 END DO
-                CALL W3SETW ( I, MDSE, MDST )
+                DONE   = .TRUE.
+#ifdef W3_MPRF
+                CALL PRTIME ( PRFTS )
+                WRITE (MDSP,992) PRFTS, PRFTS,          &
+                     get_memory(), 'TIME', TSYNC(:,0)
+#endif
+                !
+                ! 4.b.4 Output
                 !
 #ifdef W3_T
-                WRITE (MDST,9004) FLAGOK
+                WRITE (MDST,9043) TSYNC(:,0)
+                WRITE (MDST,9045)
+                WRITE (MDST,9046) (II,TSYNC(:,II),II=0,NRGRD)
 #endif
                 !
-                ! 3.b.1 Get the data
-                !
-#ifdef W3_MPI
-                IF ( .NOT.FLAGOK .AND. .NOT.PREGTB(I) ) THEN
-                   IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )         &
-                        CALL WMIOBG (I,FLAG)
-                   PREGTB(I) = .TRUE.
-                END IF
-#endif
-                !
-                IF ( FLAGOK ) THEN
-#ifdef W3_SHRD
-                   CALL WMIOBG ( I, FLAGOK )
-#endif
-#ifdef W3_MPI
-                   IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )         &
-                        CALL WMIOBG ( I )
-                   PREGTB(I) = .FALSE.
-#endif
-                   GRSTAT(I) = 2
-                   DONE      = .TRUE.
-                END IF ! IF ( FLAGOK )
+                ! 4.b.5 Skip computations so that all grids start processing
+                !       simultaneously.
                 !
 #ifdef W3_MPRF
                 CALL PRTIME ( PRFTN )
-                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
-                     'ST01', I
+                WRITE (MDSP,991) PRFT0, PRFTN,          &
+                     get_memory(), 'ST02', I
 #endif
-             END IF ! IF ( GRSTAT(I) .EQ. 1 )
-             !
-             ! 4.  Update model time step ----------------------------------------- /
-             !     ( GRSTAT = 2 )
-             !
-             IF ( GRSTAT(I) .EQ. 2 ) THEN
 #ifdef W3_T
-                WRITE (MDST,9002) I, GRSTAT(I), ' '
+                IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
 #endif
-#ifdef W3_MPRF
-                CALL PRTIME ( PRFT0 )
-#endif
+                IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
                 !
-                ! 4.a Check TMAX and update as necessary ( needs !/MPI synchronizaion )
-                !
-                CALL W3SETW ( I, MDSE, MDST )
-                IF ( TMAX(1,I) .EQ. -1 ) THEN
-                   TMAX(:,I) = TIME
-                   DTTST  = 0.
+              END IF ! IF ( FLAGOK )
+              !
+              ! 4.c Other grids, logical from relations and TMAXes
+              !
+            ELSE IF ( TSYNC(1,0) .NE. -1 ) THEN
+              !
+              TAUX   = TSYNC(:,0)
+              FLAGOK = .TRUE.
+              !
+              ! 4.c.1 Check availability of data within group
+              !       Time within group needs to be the same for load balancing.
+              !
+              DO JJJ=1, INGRP(J,0)
+                II     = INGRP(J,JJJ)
+                IF ( TMAX(1,II) .EQ. -1 ) THEN
+                  FLAGOK = .FALSE.
+                  EXIT
                 ELSE
-                   DTTST  = DSEC21(TIME,TMAX(:,I))
+                  IF ( DSEC21 (TAUX,TMAX(:,II)) .LT. 0. )     &
+                       TAUX   = TMAX(:,II)
                 END IF
-                !
-                IF ( DTTST .LE. 0 ) THEN
-                   CALL W3SETG ( I, MDSE, MDST )
-                   DTMAXI = REAL(NINT(DTMAX+DTRES(I)+0.0001))
-                   DTRES(I)= DTRES(I)+ DTMAX - DTMAXI
-                   IF ( ABS(DTRES(I)) .LT. 0.001 ) DTRES(I) = 0.
-                   TMAX(:,I) = TIME
-                   CALL TICK21 ( TMAX(:,I), DTMAXI )
-                   TAUX   = TMAX(:,I)
-                   IF ( TDATA(1,I) .NE. -1 ) THEN
-                      IF ( DSEC21(TDATA(:,I),TMAX(:,I)) .GT. 0 )    &
-                           TMAX(:,I) = TDATA(:,I)
-                   END IF
-                   IF ( TOUTP(1,I) .NE. -1 ) THEN
-                      IF ( DSEC21(TOUTP(:,I),TMAX(:,I)) .GT. 0 )    &
-                           TMAX(:,I) = TOUTP(:,I)
-                   END IF
-                   IF ( UNIPTS ) THEN
-                      IF ( DSEC21(UPNEXT,TMAX(:,I)) .GT. 0 )        &
-                           TMAX(:,I) = UPNEXT(:)
-                   END IF
-#ifdef W3_T
-                   WRITE (MDST,9040) TMAX(:,I), DTRES(I), TAUX,   &
-                        TDATA(:,I), TOUTP(:,I), UPNEXT
-#endif
-                   DONE   = .TRUE.
-                   CYCLE LOOP_JJ
-#ifdef W3_T
+              END DO
+              !
+              ! 4.c.2 Check with dependent lower rank grids ( TSYNC )
+              !
+              DO JJJ=1, GRDLOW(I,0)
+                II     = GRDLOW(I,JJJ)
+                IF ( TSYNC(1,II) .EQ. -1 ) THEN
+                  FLAGOK = .FALSE.
+                  EXIT
                 ELSE
-                   WRITE (MDST,9041) TMAX(:,I)
-#endif
-                END IF ! IF ( DTTST .LE. 0 )
+                  IF ( DSEC21 (TAUX,TSYNC(:,II)) .LT. 0. )     &
+                       TAUX   = TSYNC(:,II)
+                END IF
+              END DO
+              !
+              ! 4.c.3 Check with dependent higher rank grids ( TSYNC )
+              !       No check needed
+              !
+              ! 4.c.4 Final check against grid time
+              !
+              CALL W3SETW ( I, MDSE, MDST )
+              FLAGOK = FLAGOK .AND. DSEC21(TIME,TAUX).GT.0.
+              !
+              ! 4.c.5 Update TSYNC throughout group
+              !
+              IF ( FLAGOK ) THEN
                 !
-                ! 4.b Lowest ranked grids, minimum of all TMAXes
-                !
+                DO JJJ=1, INGRP(J,0)
+                  II     = INGRP(J,JJJ)
+                  TSYNC(:,II) = TAUX
+                  IF ( GRSTAT(II) .EQ. 2 ) GRSTAT(II) = 3
 #ifdef W3_T
-                WRITE (MDST,9042) GRANK(I)
-#endif
-                !
-                IF ( GRANK(I) .EQ. 1 ) THEN
-                   !
-                   TAUX   = TMAX(:,I)
-                   FLAGOK = .TRUE.
-                   !
-                   ! 4.b.1 Check if all grids have reached previous sync point
-                   !
-                   DO II=1, NRGRD
-                      CALL W3SETW ( II, MDSE, MDST )
-#ifdef W3_SHRD
-                      IF ( TIME(1) .NE. -1 ) THEN
-#endif
-#ifdef W3_MPI
-                         IF ( TIME(1).NE.-1 .AND.                   &
-                              MPI_COMM_GRD.NE.MPI_COMM_NULL ) THEN
-#endif
-                            IF ( DSEC21(TIME,TSYNC(:,0)) .NE. 0 ) THEN
-                               FLAGOK = .FALSE.
-                               EXIT
-                            END IF
-#ifdef W3_MPI
-                         END IF ! IF ( TIME(1).NE.-1 .AND. MPI_COMM_GRD.NE.MPI_COMM_NULL )
-#endif
-#ifdef W3_SHRD
-                      END IF ! IF ( TIME(1) .NE. -1 ) THEN
-#endif
-                   END DO
-                   !
-                   ! 4.b.2 Check availability of data
-                   !
-                   DO II=1, NRGRD
-                      IF ( GRANK(II) .EQ. 1 ) THEN
-                         IF ( TMAX(1,II) .EQ. -1 ) THEN
-                            FLAGOK = .FALSE.
-                            EXIT
-                         ELSE
-                            IF ( DSEC21 (TAUX,TMAX(:,II)) .LT. 0. ) &
-                                 TAUX   = TMAX(:,II)
-                         END IF
-                      END IF
-                   END DO
-                   !
-                   CALL W3SETW ( I, MDSE, MDST )
-                   FLAGOK = FLAGOK .AND. DSEC21(TIME,TAUX).GT.0.
-                   !
-                   ! 4.b.3 Update TSYNC for all grids
-                   !
-                   IF ( FLAGOK ) THEN
-                      !
-                      TSYNC(:,0) = TAUX
-                      DO_UPT = .TRUE.
-                      DO II=1, NRGRD
-                         IF ( GRANK(II) .EQ. 1 ) THEN
-                            TSYNC(:,II) = TAUX
-                            IF ( GRSTAT(II) .EQ. 2 ) GRSTAT(II) = 3
-#ifdef W3_T
-                            IF ( GRSTAT(II) .EQ. 3 )             &
-                                 WRITE (MDST,9003) II, GRSTAT(II)
-#endif
-                         END IF
-                      END DO
-                      DONE   = .TRUE.
-#ifdef W3_MPRF
-                      CALL PRTIME ( PRFTS )
-                      WRITE (MDSP,992) PRFTS, PRFTS,          &
-                           get_memory(), 'TIME', TSYNC(:,0)
-#endif
-                      !
-                      ! 4.b.4 Output
-                      !
-#ifdef W3_T
-                      WRITE (MDST,9043) TSYNC(:,0)
-                      WRITE (MDST,9045)
-                      WRITE (MDST,9046) (II,TSYNC(:,II),II=0,NRGRD)
-#endif
-                      !
-                      ! 4.b.5 Skip computations so that all grids start processing
-                      !       simultaneously.
-                      !
-#ifdef W3_MPRF
-                      CALL PRTIME ( PRFTN )
-                      WRITE (MDSP,991) PRFT0, PRFTN,          &
-                           get_memory(), 'ST02', I
-#endif
-#ifdef W3_T
-                      IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
-#endif
-                      IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
-                      !
-                   END IF ! IF ( FLAGOK )
-                   !
-                   ! 4.c Other grids, logical from relations and TMAXes
-                   !
-                ELSE IF ( TSYNC(1,0) .NE. -1 ) THEN
-                   !
-                   TAUX   = TSYNC(:,0)
-                   FLAGOK = .TRUE.
-                   !
-                   ! 4.c.1 Check availability of data within group
-                   !       Time within group needs to be the same for load balancing.
-                   !
-                   DO JJJ=1, INGRP(J,0)
-                      II     = INGRP(J,JJJ)
-                      IF ( TMAX(1,II) .EQ. -1 ) THEN
-                         FLAGOK = .FALSE.
-                         EXIT
-                      ELSE
-                         IF ( DSEC21 (TAUX,TMAX(:,II)) .LT. 0. )     &
-                              TAUX   = TMAX(:,II)
-                      END IF
-                   END DO
-                   !
-                   ! 4.c.2 Check with dependent lower rank grids ( TSYNC )
-                   !
-                   DO JJJ=1, GRDLOW(I,0)
-                      II     = GRDLOW(I,JJJ)
-                      IF ( TSYNC(1,II) .EQ. -1 ) THEN
-                         FLAGOK = .FALSE.
-                         EXIT
-                      ELSE
-                         IF ( DSEC21 (TAUX,TSYNC(:,II)) .LT. 0. )     &
-                              TAUX   = TSYNC(:,II)
-                      END IF
-                   END DO
-                   !
-                   ! 4.c.3 Check with dependent higher rank grids ( TSYNC )
-                   !       No check needed
-                   !
-                   ! 4.c.4 Final check against grid time
-                   !
-                   CALL W3SETW ( I, MDSE, MDST )
-                   FLAGOK = FLAGOK .AND. DSEC21(TIME,TAUX).GT.0.
-                   !
-                   ! 4.c.5 Update TSYNC throughout group
-                   !
-                   IF ( FLAGOK ) THEN
-                      !
-                      DO JJJ=1, INGRP(J,0)
-                         II     = INGRP(J,JJJ)
-                         TSYNC(:,II) = TAUX
-                         IF ( GRSTAT(II) .EQ. 2 ) GRSTAT(II) = 3
-#ifdef W3_T
-                         IF ( GRSTAT(II) .EQ. 3 )                 &
-                              WRITE (MDST,9003) II, GRSTAT(II)
+                  IF ( GRSTAT(II) .EQ. 3 )                 &
+                       WRITE (MDST,9003) II, GRSTAT(II)
 #endif
 
-                      END DO
-                      DONE   = .TRUE.
-                      !
+                END DO
+                DONE   = .TRUE.
+                !
 #ifdef W3_T
-                      WRITE (MDST,9044) TSYNC(:,I), TAUX
-                      WRITE (MDST,9045)
-                      WRITE (MDST,9046) (II,TSYNC(:,II),II=0,NRGRD)
+                WRITE (MDST,9044) TSYNC(:,I), TAUX
+                WRITE (MDST,9045)
+                WRITE (MDST,9046) (II,TSYNC(:,II),II=0,NRGRD)
 #endif
-                      !
-                      ! 4.c.6 Skip computations so that all grids in group are advanced
-                      !       simultaneously.
+                !
+                ! 4.c.6 Skip computations so that all grids in group are advanced
+                !       simultaneously.
 
 #ifdef W3_MPRF
-                      CALL PRTIME ( PRFTN )
-                      WRITE (MDSP,991) PRFT0, PRFTN,          &
-                           get_memory(),  'ST02', I
+                CALL PRTIME ( PRFTN )
+                WRITE (MDSP,991) PRFT0, PRFTN,          &
+                     get_memory(),  'ST02', I
 #endif
 #ifdef W3_T
-                      IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
+                IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
 #endif
-                      IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
-                      !
-                   END IF ! IF ( FLAGOK )
-                   !
-                END IF ! 4.b IF ( GRANK(I) .EQ. 1 )
+                IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
                 !
-             END IF ! 4. IF ( GRSTAT(I) .EQ. 2 )
-             !
-             ! 5.  Run the wave model --------------------------------------------- /
-             !     ( GRSTAT = 3 ) w3xdatmd data structures set in W3WAVE
-             !
-             ! 5.a Run model
-             !
+              END IF ! IF ( FLAGOK )
+              !
+            END IF ! 4.b IF ( GRANK(I) .EQ. 1 )
+            !
+          END IF ! 4. IF ( GRSTAT(I) .EQ. 2 )
+          !
+          ! 5.  Run the wave model --------------------------------------------- /
+          !     ( GRSTAT = 3 ) w3xdatmd data structures set in W3WAVE
+          !
+          ! 5.a Run model
+          !
 #ifdef W3_SHRD
-             IF ( GRSTAT(I) .EQ. 3 ) THEN
+          IF ( GRSTAT(I) .EQ. 3 ) THEN
 #endif
-                !
+            !
 #ifdef W3_MPI
-                IF ( GRSTAT(I).EQ.3 .AND.                            &
-                     MPI_COMM_GRD .EQ. MPI_COMM_NULL ) THEN
-                   CALL W3SETW ( I, MDSE, MDST )
-                   TIME      = TSYNC(:,I)
-                   GRSTAT(I) = 4
-                   DONE      = .TRUE.
-                ELSE IF ( GRSTAT(I).EQ.3 .AND.                     &
-                     MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+            IF ( GRSTAT(I).EQ.3 .AND.                            &
+                 MPI_COMM_GRD .EQ. MPI_COMM_NULL ) THEN
+              CALL W3SETW ( I, MDSE, MDST )
+              TIME      = TSYNC(:,I)
+              GRSTAT(I) = 4
+              DONE      = .TRUE.
+            ELSE IF ( GRSTAT(I).EQ.3 .AND.                     &
+                 MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 #endif
-                   !
+              !
 #ifdef W3_T
-                   WRITE (MDST,9002) I, GRSTAT(I), 'RUNNING MODEL'
+              WRITE (MDST,9002) I, GRSTAT(I), 'RUNNING MODEL'
 #endif
 #ifdef W3_MPRF
-                   CALL PRTIME ( PRFT0 )
+              CALL PRTIME ( PRFT0 )
 #endif
-                   !
-                   CALL WMSETM ( I, MDSE, MDST )
-                   CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE., .TRUE. )
-                   IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
-                   IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
-                   IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
-                   !
-                   ! 5.b Stage data for grids with equal rank
-                   !
+              !
+              CALL WMSETM ( I, MDSE, MDST )
+              CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE., .TRUE. )
+              IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
+              IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
+              IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
+              !
+              ! 5.b Stage data for grids with equal rank
+              !
 #ifdef W3_MPI
-                   CALL WMIOEF ( I )
+              CALL WMIOEF ( I )
 #endif
-                   CALL WMIOES ( I )
-                   !
-                   ! 5.c Finish up
-                   !
-                   GRSTAT(I) = 4
-                   DONE      = .TRUE.
-                   !
+              CALL WMIOES ( I )
+              !
+              ! 5.c Finish up
+              !
+              GRSTAT(I) = 4
+              DONE      = .TRUE.
+              !
 #ifdef W3_MPRF
-                   CALL PRTIME ( PRFTN )
-                   WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
-                        'ST03', I
+              CALL PRTIME ( PRFTN )
+              WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),    &
+                   'ST03', I
 #endif
-                   !
+              !
 #ifdef W3_MPI
-                END IF ! IF ( GRSTAT(I).EQ.3 .AND. MPI_COMM_GRD .EQ. MPI_COMM_NULL )
+            END IF ! IF ( GRSTAT(I).EQ.3 .AND. MPI_COMM_GRD .EQ. MPI_COMM_NULL )
 #endif
 #ifdef W3_SHRD
-             END IF ! IF ( GRSTAT(I) .EQ. 3 )
+          END IF ! IF ( GRSTAT(I) .EQ. 3 )
 #endif
-             !
-             ! 6.  Reconcile grids with same rank --------------------------------- /
-             !     and stage data transfer to higher and lower ranked grids.
-             !     ( GRSTAT = 4 )
-             !
-             IF ( GRSTAT(I) .EQ. 4 ) THEN
+          !
+          ! 6.  Reconcile grids with same rank --------------------------------- /
+          !     and stage data transfer to higher and lower ranked grids.
+          !     ( GRSTAT = 4 )
+          !
+          IF ( GRSTAT(I) .EQ. 4 ) THEN
 #ifdef W3_MPRF
-                CALL PRTIME ( PRFT0 )
+            CALL PRTIME ( PRFT0 )
 #endif
-                !
-                ! 6.a Test against times and statuses of dependent grids
-                !     Note: This is done per GROUP, not per local equal grid dependence
-                !           Therefore, it is essential that sync times per group are
-                !           equal (4.c.1) and that all equal grid dependences are a
-                !           subset of groups (WMGEQL 5.d)
-                !
+            !
+            ! 6.a Test against times and statuses of dependent grids
+            !     Note: This is done per GROUP, not per local equal grid dependence
+            !           Therefore, it is essential that sync times per group are
+            !           equal (4.c.1) and that all equal grid dependences are a
+            !           subset of groups (WMGEQL 5.d)
+            !
 #ifdef W3_T
-                WRITE (MDST,9002) I, GRSTAT(I), 'FIRST PART'
-                WRITE (MDST,9005) FLEQOK(I)
+            WRITE (MDST,9002) I, GRSTAT(I), 'FIRST PART'
+            WRITE (MDST,9005) FLEQOK(I)
 #endif
-                !
-                ! 6.a.1 Check if sync point is reached
-                !
-                IF ( .NOT. FLEQOK(I) ) THEN
-                   !
-                   FLAGOK = .TRUE.
-                   CALL W3SETW ( I, MDSE, MDST )
-                   TAUX   = TIME
-                   DO JJJ=1, INGRP(J,0)
-                      CALL W3SETW ( INGRP(J,JJJ), MDSE, MDST )
-                      FLAGOK = FLAGOK .AND. DSEC21(TAUX,TIME).EQ.0.   &
-                           .AND. GRSTAT(INGRP(J,JJJ)).EQ.4
-                   END DO
-                   CALL W3SETW ( I, MDSE, MDST )
+            !
+            ! 6.a.1 Check if sync point is reached
+            !
+            IF ( .NOT. FLEQOK(I) ) THEN
+              !
+              FLAGOK = .TRUE.
+              CALL W3SETW ( I, MDSE, MDST )
+              TAUX   = TIME
+              DO JJJ=1, INGRP(J,0)
+                CALL W3SETW ( INGRP(J,JJJ), MDSE, MDST )
+                FLAGOK = FLAGOK .AND. DSEC21(TAUX,TIME).EQ.0.   &
+                     .AND. GRSTAT(INGRP(J,JJJ)).EQ.4
+              END DO
+              CALL W3SETW ( I, MDSE, MDST )
 #ifdef W3_T
-                   WRITE (MDST,9004) FLAGOK
+              WRITE (MDST,9004) FLAGOK
 #endif
-                   !
-                   ! 6.a.2 Point reached, set flag for all in group and cycle
-                   !
-                   IF ( FLAGOK ) THEN
-                      DO JJJ=1, INGRP(J,0)
-                         FLEQOK(INGRP(J,JJJ)) = .TRUE.
+              !
+              ! 6.a.2 Point reached, set flag for all in group and cycle
+              !
+              IF ( FLAGOK ) THEN
+                DO JJJ=1, INGRP(J,0)
+                  FLEQOK(INGRP(J,JJJ)) = .TRUE.
 #ifdef W3_T
-                         WRITE (MDST,9061) INGRP(J,JJJ),      &
-                              FLEQOK(INGRP(J,JJJ))
+                  WRITE (MDST,9061) INGRP(J,JJJ),      &
+                       FLEQOK(INGRP(J,JJJ))
 #endif
-                      END DO
-                      DONE      = .TRUE.
+                END DO
+                DONE      = .TRUE.
 #ifdef W3_MPRF
-                      CALL PRTIME ( PRFTN )
-                      WRITE (MDSP,991) PRFT0, PRFTN,      &
-                           get_memory(), 'ST04', I
+                CALL PRTIME ( PRFTN )
+                WRITE (MDSP,991) PRFT0, PRFTN,      &
+                     get_memory(), 'ST04', I
 #endif
-                      !
+                !
 #ifdef W3_T
-                      IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
+                IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
 #endif
-                      IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
-                   END IF ! IF ( FLAGOK )
-                   !
-                END IF !  IF ( .NOT. FLEQOK(I) )
-                !
-                ! 6.b Call gathering routine, reset FLEQOK and cycle
-                !
+                IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
+              END IF ! IF ( FLAGOK )
+              !
+            END IF !  IF ( .NOT. FLEQOK(I) )
+            !
+            ! 6.b Call gathering routine, reset FLEQOK and cycle
+            !
 #ifdef W3_MPI
-                IF ( .NOT.FLEQOK(I) .AND. .NOT.PREGTE(I) ) THEN
-                   IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )    &
-                        CALL WMIOEG (I,FLAG)
-                   PREGTE(I) = .TRUE.
-                END IF
+            IF ( .NOT.FLEQOK(I) .AND. .NOT.PREGTE(I) ) THEN
+              IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )    &
+                   CALL WMIOEG (I,FLAG)
+              PREGTE(I) = .TRUE.
+            END IF
 #endif
-                !
-                IF ( FLEQOK(I) ) THEN
+            !
+            IF ( FLEQOK(I) ) THEN
 #ifdef W3_SHRD
+              CALL WMIOEG ( I )
+#endif
+#ifdef W3_MPI
+              IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )    &
                    CALL WMIOEG ( I )
+              PREGTE(I) = .FALSE.
 #endif
-#ifdef W3_MPI
-                   IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )    &
-                        CALL WMIOEG ( I )
-                   PREGTE(I) = .FALSE.
-#endif
-                   GRSTAT(I) = 5
-                   FLEQOK(I) = .FALSE.
-                   DONE      = .TRUE.
-                END IF
-                !
-                ! 6.c Stage data
-                !
-                IF ( GRSTAT(I) .EQ. 5 ) THEN
-                   !
+              GRSTAT(I) = 5
+              FLEQOK(I) = .FALSE.
+              DONE      = .TRUE.
+            END IF
+            !
+            ! 6.c Stage data
+            !
+            IF ( GRSTAT(I) .EQ. 5 ) THEN
+              !
 #ifdef W3_T
-                   WRITE (MDST,9002) I, GRSTAT(I)-1, 'SECOND PART'
+              WRITE (MDST,9002) I, GRSTAT(I)-1, 'SECOND PART'
 #endif
-                   !
+              !
 #ifdef W3_SHRD
-                   CALL WMIOBS ( I )
+              CALL WMIOBS ( I )
 #endif
-                   !
+              !
 #ifdef W3_MPI
-                   IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
-                      CALL WMIOBF ( I )
-                      CALL WMIOBS ( I )
-                   END IF
+              IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+                CALL WMIOBF ( I )
+                CALL WMIOBS ( I )
+              END IF
 #endif
-                   !
+              !
 #ifdef W3_MPRF
-                   CALL PRTIME ( PRFTN )
-                   WRITE (MDSP,991) PRFT0, PRFTN,          &
-                        get_memory(), 'ST04', I
+              CALL PRTIME ( PRFTN )
+              WRITE (MDSP,991) PRFT0, PRFTN,          &
+                   get_memory(), 'ST04', I
 #endif
-                   CYCLE LOOP_JJ
-                   !
-                END IF ! IF ( GRSTAT(I) .EQ. 5 )
-                !
+              CYCLE LOOP_JJ
+              !
+            END IF ! IF ( GRSTAT(I) .EQ. 5 )
+            !
 #ifdef W3_MPRF
-                CALL PRTIME ( PRFTN )
-                WRITE (MDSP,991) PRFT0, PRFTN,              &
-                     get_memory(),  'ST04', I
+            CALL PRTIME ( PRFTN )
+            WRITE (MDSP,991) PRFT0, PRFTN,              &
+                 get_memory(),  'ST04', I
 #endif
-                !
-             END IF ! 6. IF ( GRSTAT(I) .EQ. 4 )
-             !
-             ! 7.  Reconcile with higher ranked grids ----------------------------- /
-             !     ( GRSTAT = 5 )
-             !
-             !     This needs to be a little more complicated than with boundary
-             !     data to assure proper logic in cases where data providing
-             !     data does not get data back (e.g., as for the boundary grid
-             !     in mww3_test_04)
-             !
-             IF ( GRSTAT(I) .EQ. 5 ) THEN
+            !
+          END IF ! 6. IF ( GRSTAT(I) .EQ. 4 )
+          !
+          ! 7.  Reconcile with higher ranked grids ----------------------------- /
+          !     ( GRSTAT = 5 )
+          !
+          !     This needs to be a little more complicated than with boundary
+          !     data to assure proper logic in cases where data providing
+          !     data does not get data back (e.g., as for the boundary grid
+          !     in mww3_test_04)
+          !
+          IF ( GRSTAT(I) .EQ. 5 ) THEN
 #ifdef W3_MPRF
-                CALL PRTIME ( PRFT0 )
+            CALL PRTIME ( PRFT0 )
 #endif
 #ifdef W3_T
-                WRITE (MDST,9002) I, GRSTAT(I), ' '
+            WRITE (MDST,9002) I, GRSTAT(I), ' '
 #endif
-                !
-                ! 7.a Test against times and statuses of dependent grids
-                !
-                IF ( GRDHGH(I,0) .EQ. 0 ) THEN
-                   GRSTAT(I) = 6
-                   DONE      = .TRUE.
-                ELSE
-                   !
-                   FLAGOK = .TRUE.
-                   CALL W3SETW ( I, MDSE, MDST )
-                   TAUX   = TIME
-                   DO JJJ=1, GRDHGH(I,0)
-                      CALL W3SETW ( GRDHGH(I,JJJ), MDSE, MDST )
-                      IF ( .NOT. ( DSEC21(TAUX,TIME).EQ.0. .AND.      &
-                           ( GRSTAT(GRDHGH(I,JJJ)).GE.7  .OR. &
-                           GRSTAT(GRDHGH(I,JJJ)).LE.2 ) ) ) &
-                           FLAGOK = .FALSE.
-                   END DO
-                   CALL W3SETW ( I, MDSE, MDST )
-                   !
+            !
+            ! 7.a Test against times and statuses of dependent grids
+            !
+            IF ( GRDHGH(I,0) .EQ. 0 ) THEN
+              GRSTAT(I) = 6
+              DONE      = .TRUE.
+            ELSE
+              !
+              FLAGOK = .TRUE.
+              CALL W3SETW ( I, MDSE, MDST )
+              TAUX   = TIME
+              DO JJJ=1, GRDHGH(I,0)
+                CALL W3SETW ( GRDHGH(I,JJJ), MDSE, MDST )
+                IF ( .NOT. ( DSEC21(TAUX,TIME).EQ.0. .AND.      &
+                     ( GRSTAT(GRDHGH(I,JJJ)).GE.7  .OR. &
+                     GRSTAT(GRDHGH(I,JJJ)).LE.2 ) ) ) &
+                     FLAGOK = .FALSE.
+              END DO
+              CALL W3SETW ( I, MDSE, MDST )
+              !
 #ifdef W3_T
-                   WRITE (MDST,9004) FLAGOK
+              WRITE (MDST,9004) FLAGOK
 #endif
-                   !
-                   ! 7.b Call gathering routine
-                   !
+              !
+              ! 7.b Call gathering routine
+              !
 #ifdef W3_MPI
-                   IF ( .NOT.FLAGOK .AND. .NOT.PREGTH(I) ) THEN
-                      IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )     &
-                           CALL WMIOHG ( I, FLAG )
-                      PREGTH(I) = .TRUE.
-                   END IF
+              IF ( .NOT.FLAGOK .AND. .NOT.PREGTH(I) ) THEN
+                IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )     &
+                     CALL WMIOHG ( I, FLAG )
+                PREGTH(I) = .TRUE.
+              END IF
 #endif
-                   !
-                   IF ( FLAGOK ) THEN
+              !
+              IF ( FLAGOK ) THEN
 #ifdef W3_SHRD
-                      CALL WMIOHG ( I, FLAGOK )
+                CALL WMIOHG ( I, FLAGOK )
 #endif
 #ifdef W3_MPI
-                      IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )     &
-                           CALL WMIOHG ( I )
-                      PREGTH(I) = .FALSE.
+                IF ( MPI_COMM_GRD.NE.MPI_COMM_NULL )     &
+                     CALL WMIOHG ( I )
+                PREGTH(I) = .FALSE.
 #endif
-                      GRSTAT(I) = 6
-                      DONE      = .TRUE.
-                   END IF ! IF ( FLAGOK )
-                   !
-                END IF ! IF ( GRDHGH(I,0) .EQ. 0 )
-
-                !
-                ! 7.c Stage data
-                !
-#ifdef W3_SHRD
-                IF ( GRSTAT(I) .EQ. 6 ) CALL WMIOHS ( I )
-#endif
-                !
-#ifdef W3_MPI
-                IF ( GRSTAT(I) .EQ. 6 .AND.                  &
-                     MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
-                   CALL WMIOHF ( I )
-                   CALL WMIOHS ( I )
-                END IF
-#endif
-                !
-#ifdef W3_T
-                IF (GRSTAT(I).EQ.6) WRITE(MDST,9003) I, GRSTAT(I)
-#endif
-#ifdef W3_MPRF
-                CALL PRTIME ( PRFTN )
-                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),     &
-                     'ST05', I
-#endif
-             END IF ! 7. IF ( GRSTAT(I) .EQ. 5 )
-             !
-             ! 8.  Perform data assimmilation ------------------------------------- /
-             !     ( GRSTAT = 6 ) Placeholder only .....
-             !
-             IF ( GRSTAT(I) .EQ. 6 ) THEN
-#ifdef W3_MPRF
-                CALL PRTIME ( PRFT0 )
-#endif
-#ifdef W3_T
-                WRITE (MDST,9002) I, GRSTAT(I), ' '
-#endif
-                GRSTAT(I) = 7
-#ifdef W3_MPRF
-                CALL PRTIME ( PRFTN )
-                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),     &
-                     'ST06', I
-#endif
+                GRSTAT(I) = 6
                 DONE      = .TRUE.
-             END IF ! IF ( GRSTAT(I) .EQ. 6 )
-             !
-             ! 9.  Perform output ------------------------------------------------- /
-             !     ( GRSTAT = 7 ) w3xdatmd data structures set in W3WAVE
-             !
-             !
-             ! 9.a Check times and finish step if no output to be made
-             !
-#ifdef W3_SHRD
-             IF ( GRSTAT(I) .EQ. 7 ) THEN
-#endif
-#ifdef W3_MPI
-                IF ( GRSTAT(I).EQ.7 .AND. .NOT.FLSYNC(I) ) THEN
-#endif
-                   !
-#ifdef W3_T
-                   WRITE (MDST,9002) I, GRSTAT(I), ' '
-#endif
-                   !
-                   IF ( TOUTP(1,I) .EQ. -1 ) THEN
-                      DTTST  = 1.
-                   ELSE
-                      CALL W3SETW ( I, MDSE, MDST )
-                      DTTST  = DSEC21 ( TIME , TOUTP(:,I) )
-                   END IF
-#ifdef W3_T
-                   WRITE (MDST,9090) DTTST
-#endif
-                   FLG_O1 = DTTST .EQ. 0.
-                   !
-                   IF ( UNIPTS ) THEN
-                      CALL W3SETW ( I, MDSE, MDST )
-                      DTTST  = DSEC21 ( TIME , UPNEXT )
-                      FLG_O2 = DTTST .EQ. 0.
-                   ELSE
-                      FLG_O2 = .FALSE.
-                   END IF
-                   !
-                   IF ( .NOT.FLG_O1 .AND. .NOT.FLG_O2 ) THEN
-                      GRSTAT(I) = 8
-#ifdef W3_T
-                      WRITE (MDST,9003) I, GRSTAT(I)
-#endif
-                      DONE      = .TRUE.
-                   END IF
-                   !
-#ifdef W3_MPI
-                END IF ! IF ( GRSTAT(I).EQ.7 .AND. .NOT.FLSYNC(I) )
-#endif
-#ifdef W3_SHRD
-             END IF ! IF ( GRSTAT(I) .EQ. 7 )
-#endif
-             !
-             ! 9.b Perform output
-             !
-             IF ( GRSTAT(I) .EQ. 7 ) THEN
-#ifdef W3_MPI
-                IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
-#endif
-                   !
-                   !!/MPRF                CALL PRTIME ( PRFT0 )
-                   !!/MPRF                CALL WMWOUT ( I, NRGRD, 3 )
-                   !!/MPRF                CALL PRTIME ( PRFTN )
-                   !!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),  &
-                   !!/MPRF                                'BCST',I
-                   !
-#ifdef W3_MPRF
-                   CALL PRTIME ( PRFT0 )
-#endif
-                   !
-                   IF ( FLG_O1 ) THEN
-                      CALL W3SETG ( I, MDSE, MDST )
-                      CALL WMSETM ( I, MDSE, MDST )
-                      !
-                      IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
-                           GRDHGH(I,0).GT.0 ) THEN
-                         MAPST2 = MAPST2 - 8*MAPMSK
-                         MAPSTA = ABS(MAPSTA)
-                         DO IX=1, NX
-                            DO IY=1, NY
-                               IF ( MAPST2(IY,IX) .GT. 0 )               &
-                                    MAPSTA(IY,IX) = - MAPSTA(IY,IX)
-                            END DO
-                         END DO
-                         !
-                      END IF
-                      !
-                      CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE. )
-                      !
-                      IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
-                           GRDHGH(I,0).GT.0 ) THEN
-                         MAPST2 = MAPST2 + 8*MAPMSK
-                         MAPSTA = ABS(MAPSTA)
-                         DO IX=1, NX
-                            DO IY=1, NY
-                               IF ( MAPST2(IY,IX) .GT. 0 )               &
-                                    MAPSTA(IY,IX) = - MAPSTA(IY,IX)
-                            END DO
-                         END DO
-                      END IF
-                      !
-                      IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
-                      IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
-                      IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
-                      !
-                      ! 9.c Update TOUPT
-                      !
-                      TOUTP(1,I) = -1
-                      TOUTP(2,I) =  0
-                      !
-                      DO JO=1, NOTYPE
-                         IF ( .NOT.FLOUT(JO) ) CYCLE
-                         IF ( TOUTP(1,I) .EQ. -1 ) THEN
-                            TOUTP(:,I) = TONEXT(:,JO)
-                         ELSE
-                            DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
-                            IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
-                         ENDIF
-                      END DO
-                      ! CHECKPOINT
-                      JO=8
-                      IF ( .NOT.FLOUT(JO) ) CYCLE
-                      IF ( TOUTP(1,I) .EQ. -1 ) THEN
-                         TOUTP(:,I) = TONEXT(:,JO)
-                      ELSE
-                         DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
-                         IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
-                      ENDIF
-                      ! END CHECKPOINT
-                      !
-#ifdef W3_T
-                      WRITE (MDST,9091) TOUTP(:,I)
-#endif
-                      !
-                   END IF ! IF ( FLG_O1 )
+              END IF ! IF ( FLAGOK )
+              !
+            END IF ! IF ( GRDHGH(I,0) .EQ. 0 )
 
-                   !
-                   ! 9.d Process unified point output for selected grid
-                   !
-                   IF ( UNIPTS ) THEN
-                      IF ( FLG_O2 ) THEN
-                         CALL W3SETO ( I, MDSE, MDST )
-                         !
-#ifdef W3_MPI
-                         IF ( NRQPO.NE.0 ) CALL MPI_STARTALL      &
-                              ( NRQPO, IRQPO1, IERR_MPI )
+            !
+            ! 7.c Stage data
+            !
+#ifdef W3_SHRD
+            IF ( GRSTAT(I) .EQ. 6 ) CALL WMIOHS ( I )
 #endif
-                         !
-                         IF ( NOPTS.NE.0 .AND. IAPROC.EQ.NAPPNT ) THEN
-                            CALL W3SETG ( I, MDSE, MDST )
-                            CALL W3SETA ( I, MDSE, MDST )
-                            CALL W3IOPE ( VA )
-                         END IF
-                         !
+            !
 #ifdef W3_MPI
-                         IF ( NRQPO .NE. 0 ) THEN
-                            ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQPO) )
-                            CALL MPI_WAITALL                      &
-                                 ( NRQPO, IRQPO1, STATUS, IERR_MPI )
-                            DEALLOCATE ( STATUS )
-                         END IF
+            IF ( GRSTAT(I) .EQ. 6 .AND.                  &
+                 MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+              CALL WMIOHF ( I )
+              CALL WMIOHS ( I )
+            END IF
 #endif
-                         !
+            !
 #ifdef W3_T
-                         WRITE (MDST,9092) NOPTS
+            IF (GRSTAT(I).EQ.6) WRITE(MDST,9003) I, GRSTAT(I)
 #endif
-                         !
-                      END IF ! IF ( FLG_O2 )
-                      !
-                   END IF ! IF ( UNIPTS )
-                   !
 #ifdef W3_MPRF
-                   CALL PRTIME ( PRFTN )
-                   WRITE (MDSP,991) PRFT0, PRFTN,get_memory(),      &
-                        'ST07', I
+            CALL PRTIME ( PRFTN )
+            WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),     &
+                 'ST05', I
 #endif
-                   !
-                   ! 9.e Update TOUPT outside communicator
-                   !
-#ifdef W3_MPI
-                ELSE IF ( FLG_O1 ) THEN
+          END IF ! 7. IF ( GRSTAT(I) .EQ. 5 )
+          !
+          ! 8.  Perform data assimmilation ------------------------------------- /
+          !     ( GRSTAT = 6 ) Placeholder only .....
+          !
+          IF ( GRSTAT(I) .EQ. 6 ) THEN
+#ifdef W3_MPRF
+            CALL PRTIME ( PRFT0 )
 #endif
-                   !
-#ifdef W3_MPI
-                   CALL W3SETO ( I, MDSE, MDST )
-                   CALL W3SETW ( I, MDSE, MDST )
+#ifdef W3_T
+            WRITE (MDST,9002) I, GRSTAT(I), ' '
 #endif
-                   !
-#ifdef W3_MPI
-                   TIME       = TOUTP(:,I)
-                   TOUTP(1,I) = -1
-                   TOUTP(2,I) =  0
+            GRSTAT(I) = 7
+#ifdef W3_MPRF
+            CALL PRTIME ( PRFTN )
+            WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),     &
+                 'ST06', I
 #endif
-                   !
-#ifdef W3_MPI
-                   DO JO=1, NOTYPE
-#endif
-                      !
-#ifdef W3_MPI
-                      IF ( FLOUT(JO) ) THEN
-                         DO
-                            DTTST = DSEC21 ( TIME, TONEXT(:,JO) )
-                            IF ( DTTST .LE. 0. ) THEN
-                               CALL TICK21 ( TONEXT(:,JO), DTOUT(JO) )
-                               DTTST = DSEC21 ( TONEXT(:,JO), TOLAST(:,JO) )
-                               IF ( DTTST .LT. 0. ) THEN
-                                  FLOUT(JO) = .FALSE.
-                                  EXIT
-                               END IF
-                            ELSE
-                               EXIT
-                            END IF
-                         END DO
-                      END IF ! IF ( FLOUT(JO) )
-#endif
-                      !
-#ifdef W3_MPI
-                      IF ( .NOT.FLOUT(JO) ) CYCLE
-                      IF ( TOUTP(1,I) .EQ. -1 ) THEN
-                         TOUTP(:,I) = TONEXT(:,JO)
-                      ELSE
-                         DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
-                         IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
-                      ENDIF
-#endif
-                      !
-#ifdef W3_MPI
-                   END DO ! DO JO=1, NOTYPE
-#endif
-                   !
-                   ! Checkpoint
-                   !
-#ifdef W3_MPI
-                   JO=8
-#endif
-                   !
-#ifdef W3_MPI
-                   IF ( FLOUT(JO) ) THEN
-                      DO
-                         DTTST = DSEC21 ( TIME, TONEXT(:,JO) )
-                         IF ( DTTST .LE. 0. ) THEN
-                            CALL TICK21 ( TONEXT(:,JO), DTOUT(JO) )
-                            DTTST = DSEC21 ( TONEXT(:,JO), TOLAST(:,JO) )
-                            IF ( DTTST .LT. 0. ) THEN
-                               FLOUT(JO) = .FALSE.
-                               EXIT
-                            END IF
-                         ELSE
-                            EXIT
-                         END IF
-                      END DO
-                   END IF ! IF ( FLOUT(JO) )
-#endif
-                   !
-#ifdef W3_MPI
-                   IF ( .NOT.FLOUT(JO) ) CYCLE
-                   IF ( TOUTP(1,I) .EQ. -1 ) THEN
-                      TOUTP(:,I) = TONEXT(:,JO)
-                   ELSE
-                      DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
-                      IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
-                   ENDIF
-#endif
-                   !
-
-                   ! End Checkpoint
-#ifdef W3_MPIT
-                   WRITE (MDST,9991) TOUTP(:,I)
+            DONE      = .TRUE.
+          END IF ! IF ( GRSTAT(I) .EQ. 6 )
+          !
+          ! 9.  Perform output ------------------------------------------------- /
+          !     ( GRSTAT = 7 ) w3xdatmd data structures set in W3WAVE
+          !
+          !
+          ! 9.a Check times and finish step if no output to be made
+          !
+#ifdef W3_SHRD
+          IF ( GRSTAT(I) .EQ. 7 ) THEN
 #endif
 #ifdef W3_MPI
-                END IF ! 9.b IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL )
+            IF ( GRSTAT(I).EQ.7 .AND. .NOT.FLSYNC(I) ) THEN
 #endif
-                !
-                ! 9.f Finish up
-                !
+              !
+#ifdef W3_T
+              WRITE (MDST,9002) I, GRSTAT(I), ' '
+#endif
+              !
+              IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                DTTST  = 1.
+              ELSE
+                CALL W3SETW ( I, MDSE, MDST )
+                DTTST  = DSEC21 ( TIME , TOUTP(:,I) )
+              END IF
+#ifdef W3_T
+              WRITE (MDST,9090) DTTST
+#endif
+              FLG_O1 = DTTST .EQ. 0.
+              !
+              IF ( UNIPTS ) THEN
+                CALL W3SETW ( I, MDSE, MDST )
+                DTTST  = DSEC21 ( TIME , UPNEXT )
+                FLG_O2 = DTTST .EQ. 0.
+              ELSE
+                FLG_O2 = .FALSE.
+              END IF
+              !
+              IF ( .NOT.FLG_O1 .AND. .NOT.FLG_O2 ) THEN
                 GRSTAT(I) = 8
+#ifdef W3_T
+                WRITE (MDST,9003) I, GRSTAT(I)
+#endif
                 DONE      = .TRUE.
-                !
-             END IF ! 9.b IF ( GRSTAT(I) .EQ. 7 )
-             !
-             ! 10. Go to next time step ------------------------------------------- /
-             !     ( GRSTAT = 8 ) ( 9 added for diagnostic output only ... )
-             !                    ( Unified point output and synchronization added )
-             !
-             IF ( GRSTAT(I) .EQ. 8 ) THEN
-                !
-#ifdef W3_T
-                WRITE (MDST,9002) I, GRSTAT(I), ' '
-#endif
-                !
-                ! 10.a Processing unified point output
-                !
-                IF ( UNIPTS .AND. DO_UPT ) THEN
-                   CALL W3SETW ( I, MDSE, MDST )
-                   FLAGOK = DSEC21 ( TIME, UPNEXT ) .EQ. 0.
-#ifdef W3_T
-                   WRITE (MDST,9095) FLAGOK
-#endif
-                ELSE
-                   FLAGOK = .FALSE.
-                END IF
-                !
-                IF ( FLAGOK ) THEN
-                   !
-                   DO II=1, NRGRD
-                      CALL W3SETW ( II, MDSE, MDST )
-                      FLAGOK = FLAGOK .AND. GRSTAT(II).EQ.8 .AND.     &
-                           DSEC21(TIME,UPNEXT).EQ.0.
-                   END DO
-#ifdef W3_T
-                   WRITE (MDST,9096) FLAGOK
-#endif
-                   !
-                   IF ( FLAGOK ) THEN
-                      !
-#ifdef W3_MPRF
-                      CALL PRTIME ( PRFT0 )
-#endif
-                      CALL WMIOPO ( UPNEXT )
-                      DO_UPT = .FALSE.
-                      !
-                      CALL W3SETO ( 0, MDSE, MDST )
-                      CALL TICK21 ( UPNEXT, DTOUT(2) )
-                      IF ( DSEC21(UPNEXT,UPLAST) .GE. 0. ) THEN
-                         TONEXT(:,2) = UPNEXT
-                      ELSE
-                         UNIPTS = .FALSE.
-                         UPNEXT(1) = -1
-                         UPNEXT(2) =  0
-                      END IF
-                      !
-                      DO II=1, NRGRD
-                         CALL W3SETW ( II, MDSE, MDST )
-                         DTTST  = DSEC21 ( TIME, TEND(:,II) )
-                         IF ( DTTST .GT. 0. ) THEN
-                            GRSTAT(II) = 9
-                         ELSE IF ( DTTST .EQ. 0 ) THEN
-                            GRSTAT(II) = 99
-                         END IF
-                         TSYNC(1,II) = -1
-                         TSYNC(2,II) =  0
-#ifdef W3_T
-                         IF ( I .NE. II )                         &
-                              WRITE (MDST,9003) II, GRSTAT(II)
-#endif
-                      END DO
-                      !
-                      DONE      = .TRUE.
-#ifdef W3_MPRF
-                      CALL PRTIME ( PRFTN )
-                      WRITE (MDSP,991) PRFT0, PRFTN,          &
-                           get_memory(), 'UPTS',I
-#endif
-                   END IF ! IF ( FLAGOK )
-                   !
-                ELSE
-                   FLAGOK = .TRUE.
-                END IF ! IF ( FLAGOK )
-                !
-                ! 10.b Regular processing
-                !
-                IF ( FLAGOK ) THEN
-                   CALL W3SETW ( I, MDSE, MDST )
-                   DTTST  = DSEC21 ( TIME, TEND(:,I) )
-                   IF ( DTTST .GT. 0. ) THEN
-                      GRSTAT(I) = 9
-                      DONE      = .TRUE.
-                   ELSE IF ( DTTST .EQ. 0 ) THEN
-                      GRSTAT(I) = 99
-                      DONE      = .TRUE.
-                   END IF
-#ifdef W3_T
-                   WRITE (MDST,9003) I, GRSTAT(I)
-#endif
-                END IF ! IF ( FLAGOK )
-                !
-                IF ( GRSTAT(I).EQ.9 .OR. GRSTAT(I).EQ.99 ) THEN
-                   TSYNC(1,I) = -1
-                   TSYNC(2,I) =  0
-                END IF
-                !
-             END IF ! 10. IF ( GRSTAT(I) .EQ. 8 )
-             !
-             ! ... End of loops started in 1. ------------------------------------- /
-             !
-          END DO LOOP_JJ
-          !
-1111      CONTINUE
-          !
-       END DO LOOP_J
-       !
+              END IF
+              !
 #ifdef W3_MPI
-       NMPSCR = NMPSCS
+            END IF ! IF ( GRSTAT(I).EQ.7 .AND. .NOT.FLSYNC(I) )
 #endif
-       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
-            CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
-       !
-       DO I=1, NRGRD
-          IF ( GRSTAT(I) .EQ. 9 ) GRSTAT(I) = 0
-       END DO
-       !
-       IF ( .NOT. DONE ) GOTO 2099
-       IF ( MINVAL(GRSTAT) .EQ. 99 ) EXIT LOOP_OUTER
+#ifdef W3_SHRD
+          END IF ! IF ( GRSTAT(I) .EQ. 7 )
+#endif
+          !
+          ! 9.b Perform output
+          !
+          IF ( GRSTAT(I) .EQ. 7 ) THEN
+#ifdef W3_MPI
+            IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+#endif
+              !
+              !!/MPRF                CALL PRTIME ( PRFT0 )
+              !!/MPRF                CALL WMWOUT ( I, NRGRD, 3 )
+              !!/MPRF                CALL PRTIME ( PRFTN )
+              !!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),  &
+              !!/MPRF                                'BCST',I
+              !
+#ifdef W3_MPRF
+              CALL PRTIME ( PRFT0 )
+#endif
+              !
+              IF ( FLG_O1 ) THEN
+                CALL W3SETG ( I, MDSE, MDST )
+                CALL WMSETM ( I, MDSE, MDST )
+                !
+                IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
+                     GRDHGH(I,0).GT.0 ) THEN
+                  MAPST2 = MAPST2 - 8*MAPMSK
+                  MAPSTA = ABS(MAPSTA)
+                  DO IX=1, NX
+                    DO IY=1, NY
+                      IF ( MAPST2(IY,IX) .GT. 0 )               &
+                           MAPSTA(IY,IX) = - MAPSTA(IY,IX)
+                    END DO
+                  END DO
+                  !
+                END IF
+                !
+                CALL W3WAVE ( I, DUMMY2, TSYNC(:,I), .FALSE. )
+                !
+                IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
+                     GRDHGH(I,0).GT.0 ) THEN
+                  MAPST2 = MAPST2 + 8*MAPMSK
+                  MAPSTA = ABS(MAPSTA)
+                  DO IX=1, NX
+                    DO IY=1, NY
+                      IF ( MAPST2(IY,IX) .GT. 0 )               &
+                           MAPSTA(IY,IX) = - MAPSTA(IY,IX)
+                    END DO
+                  END DO
+                END IF
+                !
+                IF ( FLLSTL ) INFLAGS1(1) = .FALSE.
+                IF ( FLLSTI ) INFLAGS1(4) = .FALSE.
+                IF ( FLLSTR ) INFLAGS1(6) = .FALSE.
+                !
+                ! 9.c Update TOUPT
+                !
+                TOUTP(1,I) = -1
+                TOUTP(2,I) =  0
+                !
+                DO JO=1, NOTYPE
+                  IF ( .NOT.FLOUT(JO) ) CYCLE
+                  IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                    TOUTP(:,I) = TONEXT(:,JO)
+                  ELSE
+                    DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
+                    IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
+                  ENDIF
+                END DO
+                ! CHECKPOINT
+                JO=8
+                IF ( .NOT.FLOUT(JO) ) CYCLE
+                IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                  TOUTP(:,I) = TONEXT(:,JO)
+                ELSE
+                  DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
+                  IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
+                ENDIF
+                ! END CHECKPOINT
+                !
+#ifdef W3_T
+                WRITE (MDST,9091) TOUTP(:,I)
+#endif
+                !
+              END IF ! IF ( FLG_O1 )
+
+              !
+              ! 9.d Process unified point output for selected grid
+              !
+              IF ( UNIPTS ) THEN
+                IF ( FLG_O2 ) THEN
+                  CALL W3SETO ( I, MDSE, MDST )
+                  !
+#ifdef W3_MPI
+                  IF ( NRQPO.NE.0 ) CALL MPI_STARTALL      &
+                       ( NRQPO, IRQPO1, IERR_MPI )
+#endif
+                  !
+                  IF ( NOPTS.NE.0 .AND. IAPROC.EQ.NAPPNT ) THEN
+                    CALL W3SETG ( I, MDSE, MDST )
+                    CALL W3SETA ( I, MDSE, MDST )
+                    CALL W3IOPE ( VA )
+                  END IF
+                  !
+#ifdef W3_MPI
+                  IF ( NRQPO .NE. 0 ) THEN
+                    ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQPO) )
+                    CALL MPI_WAITALL                      &
+                         ( NRQPO, IRQPO1, STATUS, IERR_MPI )
+                    DEALLOCATE ( STATUS )
+                  END IF
+#endif
+                  !
+#ifdef W3_T
+                  WRITE (MDST,9092) NOPTS
+#endif
+                  !
+                END IF ! IF ( FLG_O2 )
+                !
+              END IF ! IF ( UNIPTS )
+              !
+#ifdef W3_MPRF
+              CALL PRTIME ( PRFTN )
+              WRITE (MDSP,991) PRFT0, PRFTN,get_memory(),      &
+                   'ST07', I
+#endif
+              !
+              ! 9.e Update TOUPT outside communicator
+              !
+#ifdef W3_MPI
+            ELSE IF ( FLG_O1 ) THEN
+#endif
+              !
+#ifdef W3_MPI
+              CALL W3SETO ( I, MDSE, MDST )
+              CALL W3SETW ( I, MDSE, MDST )
+#endif
+              !
+#ifdef W3_MPI
+              TIME       = TOUTP(:,I)
+              TOUTP(1,I) = -1
+              TOUTP(2,I) =  0
+#endif
+              !
+#ifdef W3_MPI
+              DO JO=1, NOTYPE
+#endif
+                !
+#ifdef W3_MPI
+                IF ( FLOUT(JO) ) THEN
+                  DO
+                    DTTST = DSEC21 ( TIME, TONEXT(:,JO) )
+                    IF ( DTTST .LE. 0. ) THEN
+                      CALL TICK21 ( TONEXT(:,JO), DTOUT(JO) )
+                      DTTST = DSEC21 ( TONEXT(:,JO), TOLAST(:,JO) )
+                      IF ( DTTST .LT. 0. ) THEN
+                        FLOUT(JO) = .FALSE.
+                        EXIT
+                      END IF
+                    ELSE
+                      EXIT
+                    END IF
+                  END DO
+                END IF ! IF ( FLOUT(JO) )
+#endif
+                !
+#ifdef W3_MPI
+                IF ( .NOT.FLOUT(JO) ) CYCLE
+                IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                  TOUTP(:,I) = TONEXT(:,JO)
+                ELSE
+                  DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
+                  IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
+                ENDIF
+#endif
+                !
+#ifdef W3_MPI
+              END DO ! DO JO=1, NOTYPE
+#endif
+              !
+              ! Checkpoint
+              !
+#ifdef W3_MPI
+              JO=8
+#endif
+              !
+#ifdef W3_MPI
+              IF ( FLOUT(JO) ) THEN
+                DO
+                  DTTST = DSEC21 ( TIME, TONEXT(:,JO) )
+                  IF ( DTTST .LE. 0. ) THEN
+                    CALL TICK21 ( TONEXT(:,JO), DTOUT(JO) )
+                    DTTST = DSEC21 ( TONEXT(:,JO), TOLAST(:,JO) )
+                    IF ( DTTST .LT. 0. ) THEN
+                      FLOUT(JO) = .FALSE.
+                      EXIT
+                    END IF
+                  ELSE
+                    EXIT
+                  END IF
+                END DO
+              END IF ! IF ( FLOUT(JO) )
+#endif
+              !
+#ifdef W3_MPI
+              IF ( .NOT.FLOUT(JO) ) CYCLE
+              IF ( TOUTP(1,I) .EQ. -1 ) THEN
+                TOUTP(:,I) = TONEXT(:,JO)
+              ELSE
+                DTTST = DSEC21 ( TOUTP(:,I) , TONEXT(:,JO) )
+                IF (DTTST.LT.0.) TOUTP(:,I) = TONEXT(:,JO)
+              ENDIF
+#endif
+              !
+
+              ! End Checkpoint
+#ifdef W3_MPIT
+              WRITE (MDST,9991) TOUTP(:,I)
+#endif
+#ifdef W3_MPI
+            END IF ! 9.b IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL )
+#endif
+            !
+            ! 9.f Finish up
+            !
+            GRSTAT(I) = 8
+            DONE      = .TRUE.
+            !
+          END IF ! 9.b IF ( GRSTAT(I) .EQ. 7 )
+          !
+          ! 10. Go to next time step ------------------------------------------- /
+          !     ( GRSTAT = 8 ) ( 9 added for diagnostic output only ... )
+          !                    ( Unified point output and synchronization added )
+          !
+          IF ( GRSTAT(I) .EQ. 8 ) THEN
+            !
+#ifdef W3_T
+            WRITE (MDST,9002) I, GRSTAT(I), ' '
+#endif
+            !
+            ! 10.a Processing unified point output
+            !
+            IF ( UNIPTS .AND. DO_UPT ) THEN
+              CALL W3SETW ( I, MDSE, MDST )
+              FLAGOK = DSEC21 ( TIME, UPNEXT ) .EQ. 0.
+#ifdef W3_T
+              WRITE (MDST,9095) FLAGOK
+#endif
+            ELSE
+              FLAGOK = .FALSE.
+            END IF
+            !
+            IF ( FLAGOK ) THEN
+              !
+              DO II=1, NRGRD
+                CALL W3SETW ( II, MDSE, MDST )
+                FLAGOK = FLAGOK .AND. GRSTAT(II).EQ.8 .AND.     &
+                     DSEC21(TIME,UPNEXT).EQ.0.
+              END DO
+#ifdef W3_T
+              WRITE (MDST,9096) FLAGOK
+#endif
+              !
+              IF ( FLAGOK ) THEN
+                !
+#ifdef W3_MPRF
+                CALL PRTIME ( PRFT0 )
+#endif
+                CALL WMIOPO ( UPNEXT )
+                DO_UPT = .FALSE.
+                !
+                CALL W3SETO ( 0, MDSE, MDST )
+                CALL TICK21 ( UPNEXT, DTOUT(2) )
+                IF ( DSEC21(UPNEXT,UPLAST) .GE. 0. ) THEN
+                  TONEXT(:,2) = UPNEXT
+                ELSE
+                  UNIPTS = .FALSE.
+                  UPNEXT(1) = -1
+                  UPNEXT(2) =  0
+                END IF
+                !
+                DO II=1, NRGRD
+                  CALL W3SETW ( II, MDSE, MDST )
+                  DTTST  = DSEC21 ( TIME, TEND(:,II) )
+                  IF ( DTTST .GT. 0. ) THEN
+                    GRSTAT(II) = 9
+                  ELSE IF ( DTTST .EQ. 0 ) THEN
+                    GRSTAT(II) = 99
+                  END IF
+                  TSYNC(1,II) = -1
+                  TSYNC(2,II) =  0
+#ifdef W3_T
+                  IF ( I .NE. II )                         &
+                       WRITE (MDST,9003) II, GRSTAT(II)
+#endif
+                END DO
+                !
+                DONE      = .TRUE.
+#ifdef W3_MPRF
+                CALL PRTIME ( PRFTN )
+                WRITE (MDSP,991) PRFT0, PRFTN,          &
+                     get_memory(), 'UPTS',I
+#endif
+              END IF ! IF ( FLAGOK )
+              !
+            ELSE
+              FLAGOK = .TRUE.
+            END IF ! IF ( FLAGOK )
+            !
+            ! 10.b Regular processing
+            !
+            IF ( FLAGOK ) THEN
+              CALL W3SETW ( I, MDSE, MDST )
+              DTTST  = DSEC21 ( TIME, TEND(:,I) )
+              IF ( DTTST .GT. 0. ) THEN
+                GRSTAT(I) = 9
+                DONE      = .TRUE.
+              ELSE IF ( DTTST .EQ. 0 ) THEN
+                GRSTAT(I) = 99
+                DONE      = .TRUE.
+              END IF
+#ifdef W3_T
+              WRITE (MDST,9003) I, GRSTAT(I)
+#endif
+            END IF ! IF ( FLAGOK )
+            !
+            IF ( GRSTAT(I).EQ.9 .OR. GRSTAT(I).EQ.99 ) THEN
+              TSYNC(1,I) = -1
+              TSYNC(2,I) =  0
+            END IF
+            !
+          END IF ! 10. IF ( GRSTAT(I) .EQ. 8 )
+          !
+          ! ... End of loops started in 1. ------------------------------------- /
+          !
+        END DO LOOP_JJ
+        !
+1111    CONTINUE
+        !
+      END DO LOOP_J
+      !
+#ifdef W3_MPI
+      NMPSCR = NMPSCS
+#endif
+      IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
+           CALL WMPRNT ( MDSO, NRGRD, TSYNC(:,0), GRSTAT )
+      !
+      DO I=1, NRGRD
+        IF ( GRSTAT(I) .EQ. 9 ) GRSTAT(I) = 0
+      END DO
+      !
+      IF ( .NOT. DONE ) GOTO 2099
+      IF ( MINVAL(GRSTAT) .EQ. 99 ) EXIT LOOP_OUTER
     END DO LOOP_OUTER
     !
     !    End of routine -------------------------------------------------- /
 
     IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) THEN
-       CALL WWTIME ( WTIME )
-       WRITE (MDSS,902) WTIME
+      CALL WWTIME ( WTIME )
+      WRITE (MDSS,902) WTIME
     ENDIF
     !
 #ifdef W3_MPI
     DO I=1, NRGRD
-       CALL WMSETM ( I, MDSE, MDST )
-       IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
-          CALL WMIOBF ( I )
-          CALL WMIOHF ( I )
-          CALL WMIOEF ( I )
-       END IF
+      CALL WMSETM ( I, MDSE, MDST )
+      IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
+        CALL WMIOBF ( I )
+        CALL WMIOHF ( I )
+        CALL WMIOEF ( I )
+      END IF
     END DO
 #endif
     !
@@ -1871,53 +1871,53 @@ CONTAINS
 #endif
     !
     DO I=1, IW
-       LNE(I) = '---'
+      LNE(I) = '---'
     END DO
     !
     IF ( FIRST ) THEN
-       WRITE (MDSO,900) NRGRD, LNE, '-+'
-       FIRST  = .FALSE.
-       IDLAST(1) = -1
-       IDLAST(2) =  0
+      WRITE (MDSO,900) NRGRD, LNE, '-+'
+      FIRST  = .FALSE.
+      IDLAST(1) = -1
+      IDLAST(2) =  0
     ELSE
-       BACKSPACE (MDSO)
+      BACKSPACE (MDSO)
     END IF
     !
     CALL STME21 ( TSYNC, IDTIME )
     !
     DO I=1, MIN(IW,NRGRD)
-       WRITE (STR(I),'(I3)') GRSTAT(I)
+      WRITE (STR(I),'(I3)') GRSTAT(I)
     END DO
     DO I=1+MIN(IW,NRGRD), IW
-       STR(I) = '   '
+      STR(I) = '   '
     END DO
     !
     IF ( IDLAST(1).EQ.TSYNC(1) .AND. IDLAST(2).EQ.TSYNC(2) ) THEN
 #ifdef W3_O11
-       WRITE (MDSO,903) STR, ' |'
+      WRITE (MDSO,903) STR, ' |'
 #endif
     ELSE IF ( IDLAST(1) .EQ. TSYNC(1) ) THEN
-       WRITE (MDSO,902) IDTIME(12:19), STR, ' |'
+      WRITE (MDSO,902) IDTIME(12:19), STR, ' |'
     ELSE
-       WRITE (MDSO,901) IDTIME(01:19), STR, ' |'
+      WRITE (MDSO,901) IDTIME(01:19), STR, ' |'
     END IF
     IDLAST = TSYNC
     !
     IF ( NRGRD .GT. IW ) THEN
-       I0     = 1
-       IN     = IW
-       DO
-          I0     = I0 + IW
-          IN     = IN + IW
-          DO I=I0, MIN(IN,NRGRD)
-             WRITE (STR(I-I0+1),'(I3)') GRSTAT(I)
-          END DO
-          DO I=1+MIN(IN,NRGRD), IN
-             STR(I-I0+1) = '   '
-          END DO
-          WRITE (MDSO,903) STR, ' |'
-          IF ( IN .GE. NRGRD ) EXIT
-       END DO
+      I0     = 1
+      IN     = IW
+      DO
+        I0     = I0 + IW
+        IN     = IN + IW
+        DO I=I0, MIN(IN,NRGRD)
+          WRITE (STR(I-I0+1),'(I3)') GRSTAT(I)
+        END DO
+        DO I=1+MIN(IN,NRGRD), IN
+          STR(I-I0+1) = '   '
+        END DO
+        WRITE (MDSO,903) STR, ' |'
+        IF ( IN .GE. NRGRD ) EXIT
+      END DO
     END IF
     !
     WRITE (MDSO,904) LNE, '-+'
@@ -2070,35 +2070,35 @@ CONTAINS
     !
 #ifdef W3_MPI
     IF ( ALLPRC(IMPROC,IMOD) .EQ. 1 ) THEN
-       DO IP=1, NMPROC
-          IF ( ALLPRC(IP,IMOD) .EQ. 0 ) THEN
+      DO IP=1, NMPROC
+        IF ( ALLPRC(IP,IMOD) .EQ. 0 ) THEN
 #endif
-             !!/MPIT                WRITE (MDST,9010) ALLPRC(IMPROC,IMOD), IP
+          !!/MPIT                WRITE (MDST,9010) ALLPRC(IMPROC,IMOD), IP
 #ifdef W3_MPI
-             CALL MPI_SEND ( DATA, NR, MPI_INTEGER, IP-1,     &
-                  ITAG, MPI_COMM_MWAVE, IERR_MPI )
-          END IF
-       END DO
+          CALL MPI_SEND ( DATA, NR, MPI_INTEGER, IP-1,     &
+               ITAG, MPI_COMM_MWAVE, IERR_MPI )
+        END IF
+      END DO
 #endif
-       !
-       ! -------------------------------------------------------------------- /
-       ! 2.  Processor to receive data at
-       !
+      !
+      ! -------------------------------------------------------------------- /
+      ! 2.  Processor to receive data at
+      !
 #ifdef W3_MPI
     ELSE IF ( ALLPRC(IMPROC,IMOD) .EQ. 0 ) THEN
 #endif
-       !!/MPIT          WRITE (MDST,9020) ALLPRC(IMPROC,IMOD), CROOT
+      !!/MPIT          WRITE (MDST,9020) ALLPRC(IMPROC,IMOD), CROOT
 #ifdef W3_MPI
-       CALL MPI_RECV ( DATA, NR, MPI_INTEGER, CROOT-1, ITAG,  &
-            MPI_COMM_MWAVE, STATUS, IERR_MPI )
+      CALL MPI_RECV ( DATA, NR, MPI_INTEGER, CROOT-1, ITAG,  &
+           MPI_COMM_MWAVE, STATUS, IERR_MPI )
 #endif
 
-       !
-       ! -------------------------------------------------------------------- /
-       ! 3.  Processor with no action
-       !
-       !!/MPIT        ELSE
-       !!/MPIT          WRITE (MDST,9030) ALLPRC(IMPROC,IMOD)
+      !
+      ! -------------------------------------------------------------------- /
+      ! 3.  Processor with no action
+      !
+      !!/MPIT        ELSE
+      !!/MPIT          WRITE (MDST,9030) ALLPRC(IMPROC,IMOD)
 #ifdef W3_MPI
     END IF
 #endif
@@ -2265,9 +2265,9 @@ CONTAINS
 #ifdef W3_MPI
     IF ( IAPROC .LT. 1 ) THEN
 #endif
-       !!/MPIT          WRITE (MDST,9002)
+      !!/MPIT          WRITE (MDST,9002)
 #ifdef W3_MPI
-       RETURN
+      RETURN
     END IF
 #endif
     !
@@ -2276,32 +2276,32 @@ CONTAINS
     !
 #ifdef W3_MPI
     IF ( IAPROC .EQ. 1 ) THEN
-       DO IP=NAPROC+1, NTPROC
+      DO IP=NAPROC+1, NTPROC
 #endif
-          !!/MPIT            WRITE (MDST,9010) IAPROC, IP
+        !!/MPIT            WRITE (MDST,9010) IAPROC, IP
 #ifdef W3_MPI
-          CALL MPI_SEND ( DUMMY, 1, MPI_INTEGER, IP-1,         &
-               ITAG, MPI_COMM_WAVE, IERR_MPI )
-       END DO
+        CALL MPI_SEND ( DUMMY, 1, MPI_INTEGER, IP-1,         &
+             ITAG, MPI_COMM_WAVE, IERR_MPI )
+      END DO
 #endif
-       !
-       ! -------------------------------------------------------------------- /
-       ! 2.  Processor to receive data at
-       !
+      !
+      ! -------------------------------------------------------------------- /
+      ! 2.  Processor to receive data at
+      !
 #ifdef W3_MPI
     ELSE IF ( IAPROC .GT. NAPROC ) THEN
 #endif
-       !!/MPIT          WRITE (MDST,9020) IAPROC, 1
+      !!/MPIT          WRITE (MDST,9020) IAPROC, 1
 #ifdef W3_MPI
-       CALL MPI_RECV ( DUMMY, 1, MPI_INTEGER, 0, ITAG,        &
-            MPI_COMM_WAVE, STATUS, IERR_MPI )
+      CALL MPI_RECV ( DUMMY, 1, MPI_INTEGER, 0, ITAG,        &
+           MPI_COMM_WAVE, STATUS, IERR_MPI )
 #endif
-       !
-       ! -------------------------------------------------------------------- /
-       ! 3.  Processor with no action
-       !
-       !!/MPIT        ELSE
-       !!/MPIT          WRITE (MDST,9030) IAPROC
+      !
+      ! -------------------------------------------------------------------- /
+      ! 3.  Processor with no action
+      !
+      !!/MPIT        ELSE
+      !!/MPIT          WRITE (MDST,9030) IAPROC
 #ifdef W3_MPI
     END IF
 #endif

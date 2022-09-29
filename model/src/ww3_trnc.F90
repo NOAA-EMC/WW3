@@ -160,19 +160,19 @@ PROGRAM W3TRNC
   !
   INQUIRE(FILE=TRIM(FNMPRE)//"ww3_trnc.nml", EXIST=FLGNML)
   IF (FLGNML) THEN
-     ! Read namelist
-     CALL W3NMLTRNC (NDSI, TRIM(FNMPRE)//'ww3_trnc.nml', NML_TRACK, NML_FILE, IERR)
+    ! Read namelist
+    CALL W3NMLTRNC (NDSI, TRIM(FNMPRE)//'ww3_trnc.nml', NML_TRACK, NML_FILE, IERR)
 
-     ! 2.1 Time setup IDTIME, DTREQ, NOUT
-     READ(NML_TRACK%TIMESTRIDE, *)  DTREQ
-     READ(NML_TRACK%TIMECOUNT, *)   NOUT
-     READ(NML_TRACK%TIMESTART, *)   TOUT(1), TOUT(2)
+    ! 2.1 Time setup IDTIME, DTREQ, NOUT
+    READ(NML_TRACK%TIMESTRIDE, *)  DTREQ
+    READ(NML_TRACK%TIMECOUNT, *)   NOUT
+    READ(NML_TRACK%TIMESTART, *)   TOUT(1), TOUT(2)
 
 
-     ! 2.2 Output type
-     NCTYPE = NML_FILE%NETCDF
-     FILEPREFIX = NML_FILE%PREFIX
-     S3 = NML_TRACK%TIMESPLIT
+    ! 2.2 Output type
+    NCTYPE = NML_FILE%NETCDF
+    FILEPREFIX = NML_FILE%PREFIX
+    S3 = NML_TRACK%TIMESPLIT
 
 
   END IF ! FLGNML
@@ -181,27 +181,27 @@ PROGRAM W3TRNC
   ! process old ww3_trnc.inp format
   !
   IF (.NOT. FLGNML) THEN
-     OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_trnc.inp',STATUS='OLD',ERR=805,IOSTAT=IERR)
-     REWIND (NDSI)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_trnc.inp',STATUS='OLD',ERR=805,IOSTAT=IERR)
+    REWIND (NDSI)
 
-     READ (NDSI,'(A)',END=806,ERR=807,IOSTAT=IERR) COMSTR
-     IF (COMSTR.EQ.' ') COMSTR = '$'
-     WRITE (NDSO,901) COMSTR
-
-
-     ! 2.1 Time setup IDTIME, DTREQ, NOUT
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=806,ERR=807) TOUT, DTREQ, NOUT
+    READ (NDSI,'(A)',END=806,ERR=807,IOSTAT=IERR) COMSTR
+    IF (COMSTR.EQ.' ') COMSTR = '$'
+    WRITE (NDSO,901) COMSTR
 
 
-     ! 2.2 Output type
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=806,ERR=807) NCTYPE
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     FILEPREFIX= 'ww3.'
-     READ (NDSI,*,END=806,ERR=807) FILEPREFIX
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=806,ERR=807) S3
+    ! 2.1 Time setup IDTIME, DTREQ, NOUT
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=806,ERR=807) TOUT, DTREQ, NOUT
+
+
+    ! 2.2 Output type
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=806,ERR=807) NCTYPE
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    FILEPREFIX= 'ww3.'
+    READ (NDSI,*,END=806,ERR=807) FILEPREFIX
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=806,ERR=807) S3
 
   END IF ! .NOT. FLGNML
 
@@ -218,9 +218,9 @@ PROGRAM W3TRNC
   CALL TICK21 ( TDUM , DTREQ )
   CALL STME21 ( TDUM , IDTIME )
   IF ( DTREQ .GE. 86400. ) THEN
-     WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
+    WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
   ELSE
-     IDDDAY = '           '
+    IDDDAY = '           '
   END IF
   IDTIME(1:11) = IDDDAY
   IDTIME(21:23) = '   '
@@ -229,8 +229,8 @@ PROGRAM W3TRNC
 
   ! 2.2 Output type
   IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
-     WRITE (NDSE,1010) NCTYPE
-     CALL EXTCDE ( 1 )
+    WRITE (NDSE,1010) NCTYPE
+    CALL EXTCDE ( 1 )
   END IF
   ! S3 defines the number of characters in the date for the filename
   ! S3=4-> YYYY, S3=6 -> YYYYMM, S3=10 -> YYYYMMDDTHHZ ...
@@ -246,9 +246,9 @@ PROGRAM W3TRNC
   READ (NDSINP,ERR=801,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
   !
   IF ( FLAGLL ) THEN
-     M2KM  = 1.
+    M2KM  = 1.
   ELSE
-     M2KM  = 1.E-3
+    M2KM  = 1.E-3
   END IF
   !
   IF ( IDSTR .NE. IDTST ) GOTO 810
@@ -273,59 +273,59 @@ PROGRAM W3TRNC
 
   ! 4.1 Loops on track_o.ww3 to read the time and data
   DO
-     DTEST  = DSEC21 ( TIME , TOUT )
+    DTEST  = DSEC21 ( TIME , TOUT )
 
-     ! cycle to reach the start time of input file
-     IF ( DTEST .LT. 0. ) THEN
-        CALL TICK21 ( TOUT , DTREQ )
-        CYCLE
-     END IF
+    ! cycle to reach the start time of input file
+    IF ( DTEST .LT. 0. ) THEN
+      CALL TICK21 ( TOUT , DTREQ )
+      CYCLE
+    END IF
 
-     IF ( DTEST .GE. 0. ) THEN
-        TRCKID=''
-        READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR, TRCKID
-        IF ( TSTSTR .EQ. 'SEA' ) THEN
-           READ (NDSINP,ERR=801,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, &
-                AS, SPEC
-        END IF
-        IF ( IERR .EQ. -1 ) THEN
-           WRITE (NDSO,944)
-           EXIT
-        END IF
-
-
-        IF ( TIME(1).EQ.TOUT(1) .AND. TIME(2).EQ.TOUT(2) ) THEN
-           ILOC = ILOC + 1
-           IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
-        ENDIF
-        IF ( TIME(1).GT.TOUT(1) .OR. TIME(2).GT.TOUT(2) ) THEN
-           CALL STME21 ( TIME , STIME )
-           WRITE (NDSO,945) STIME, ILOC, ISPEC
-           ILOC    = 1
-           ISPEC   = 0
-           IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
-           TOUT(1) = TIME(1)
-           TOUT(2) = TIME(2)
-        ENDIF
-     END IF
+    IF ( DTEST .GE. 0. ) THEN
+      TRCKID=''
+      READ (NDSINP,END=444, ERR=801,IOSTAT=IERR) TIME, X, Y, TSTSTR, TRCKID
+      IF ( TSTSTR .EQ. 'SEA' ) THEN
+        READ (NDSINP,ERR=801,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, &
+             AS, SPEC
+      END IF
+      IF ( IERR .EQ. -1 ) THEN
+        WRITE (NDSO,944)
+        EXIT
+      END IF
 
 
-     ! 4.1.1 Increments the global time counter IOUT
-     IOUT = IOUT + 1
-     CALL STME21 ( TOUT , IDTIME )
-     WRITE (NDSO,971) IDTIME
+      IF ( TIME(1).EQ.TOUT(1) .AND. TIME(2).EQ.TOUT(2) ) THEN
+        ILOC = ILOC + 1
+        IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+      ENDIF
+      IF ( TIME(1).GT.TOUT(1) .OR. TIME(2).GT.TOUT(2) ) THEN
+        CALL STME21 ( TIME , STIME )
+        WRITE (NDSO,945) STIME, ILOC, ISPEC
+        ILOC    = 1
+        ISPEC   = 0
+        IF ( TSTSTR .EQ. 'SEA' ) ISPEC = ISPEC + 1
+        TOUT(1) = TIME(1)
+        TOUT(2) = TIME(2)
+      ENDIF
+    END IF
 
 
-     ! 4.1.2  Processes the variable value for the time step IOUT
-     CALL W3EXNC ( FILEPREFIX, NCTYPE, NCID, S3, STRSTOPDATE, MK, MTH )
+    ! 4.1.1 Increments the global time counter IOUT
+    IOUT = IOUT + 1
+    CALL STME21 ( TOUT , IDTIME )
+    WRITE (NDSO,971) IDTIME
 
 
-     ! 4.1.3 Defines the stop date
-     CALL T2D(TOUT,STOPDATE,IERR)
-     WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
-          '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
+    ! 4.1.2  Processes the variable value for the time step IOUT
+    CALL W3EXNC ( FILEPREFIX, NCTYPE, NCID, S3, STRSTOPDATE, MK, MTH )
 
-     IF ( IOUT .GE. NOUT ) EXIT
+
+    ! 4.1.3 Defines the stop date
+    CALL T2D(TOUT,STOPDATE,IERR)
+    WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
+         '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
+
+    IF ( IOUT .GE. NOUT ) EXIT
   END DO
 
 
@@ -333,12 +333,12 @@ PROGRAM W3TRNC
 
   ! 4.2 Closes the netCDF file
   IF (NCID.NE.0) THEN
-     IRET = NF90_REDEF(NCID)
-     CALL CHECK_ERR(IRET)
-     IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'stop_date',STRSTOPDATE)
-     CALL CHECK_ERR(IRET)
-     IRET=NF90_CLOSE(NCID)
-     CALL CHECK_ERR(IRET)
+    IRET = NF90_REDEF(NCID)
+    CALL CHECK_ERR(IRET)
+    IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'stop_date',STRSTOPDATE)
+    CALL CHECK_ERR(IRET)
+    IRET=NF90_CLOSE(NCID)
+    CALL CHECK_ERR(IRET)
   END IF
 
   !
@@ -548,19 +548,19 @@ CONTAINS
     OLDTIMEID=TIMEID
     ! if S3=>YYYYMMDDHH then filetime='YYYYMMDDTHHMMSSZ'
     IF (S3.EQ.10) THEN
-       S4=S4+2 ! add chars for ISO8601 : day T hours Z
-       WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
-       WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
-            FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
-       ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
+      S4=S4+2 ! add chars for ISO8601 : day T hours Z
+      WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I8.8,A1,I',S5,'.',S5,',A1)'
+      WRITE (TIMEID,FORMAT1) TIME(1), 'T', &
+           FLOOR(REAL(TIME(2))/NINT(10.**(6-S5))), 'Z'
+      ! if S3=>YYYYMMDD then filetime='YYYYMMDD'
     ELSE IF (S3.EQ.8) THEN
-       WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-       WRITE (TIMEID,FORMAT1) TIME(1)
-       ! if S3=>YYYYMM then filetime='YYYYMM'
-       ! or S3=>YYYY then filetime='YYYY'
+      WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
+      WRITE (TIMEID,FORMAT1) TIME(1)
+      ! if S3=>YYYYMM then filetime='YYYYMM'
+      ! or S3=>YYYY then filetime='YYYY'
     ELSE
-       WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
-       WRITE (TIMEID,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
+      WRITE(FORMAT1,'(A,I1,A,I1,A)') '(I',S3,'.',S3,')'
+      WRITE (TIMEID,FORMAT1) FLOOR(REAL(TIME(1))/NINT(10.**(8-S3)))
     END IF
     ! redefines filename with updated date format
     S1=LEN_TRIM(FILEPREFIX)
@@ -596,18 +596,18 @@ CONTAINS
     NDSDAT=30
     OPEN (NDSDAT,FILE=FNAMENC,status='new',IOSTAT=IRET)
     IF (IRET.EQ.0) THEN
-       ! CLOSE old file
-       IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
-          IRET = NF90_REDEF(NCID)
-          CALL CHECK_ERR(IRET)
-          IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'stop_date',STRSTOPDATE)
-          CALL CHECK_ERR(IRET)
-          IRET=NF90_CLOSE(NCID)
-          CALL CHECK_ERR(IRET)
-       END IF
-       NCID=0
+      ! CLOSE old file
+      IF (INDEX('0000000000000000',OLDTIMEID).EQ.0 .AND. INDEX(TIMEID,OLDTIMEID).EQ.0) THEN
+        IRET = NF90_REDEF(NCID)
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'stop_date',STRSTOPDATE)
+        CALL CHECK_ERR(IRET)
+        IRET=NF90_CLOSE(NCID)
+        CALL CHECK_ERR(IRET)
+      END IF
+      NCID=0
     ELSE
-       NCID=NCID
+      NCID=NCID
     END IF
 
 
@@ -615,59 +615,59 @@ CONTAINS
 
     IF (NCID.EQ.0) THEN
 
-       ! Initializes the time iteration counter n
-       IT      = 0
-       ILOC    = 0
-       ISPEC   = 0
+      ! Initializes the time iteration counter n
+      IT      = 0
+      ILOC    = 0
+      ISPEC   = 0
 
-       ! 1.4.1 Creates the NetCDF file
+      ! 1.4.1 Creates the NetCDF file
 
-       CALL W3CRNC(NCTYPE,FNAMENC,NCID,DIMID,DIMLN,VARID)
+      CALL W3CRNC(NCTYPE,FNAMENC,NCID,DIMID,DIMLN,VARID)
 
-       ! put start date in global attribute
-       CALL T2D(TIME,STARTDATE,IERR)
-       WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2),'-', &
-            STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
-       !
-       IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'start_date',STRSTARTDATE)
-       CALL CHECK_ERR(IRET)
+      ! put start date in global attribute
+      CALL T2D(TIME,STARTDATE,IERR)
+      WRITE(STRSTARTDATE,'(I4.4,A,4(I2.2,A),I2.2)') STARTDATE(1),'-',STARTDATE(2),'-', &
+           STARTDATE(3),' ',STARTDATE(5),':',STARTDATE(6),':',STARTDATE(7)
+      !
+      IRET=NF90_PUT_ATT(NCID,NF90_GLOBAL,'start_date',STRSTARTDATE)
+      CALL CHECK_ERR(IRET)
 
-       ! End of define mode of NetCDF file
-       IRET = NF90_ENDDEF(NCID)
-       CALL CHECK_ERR(IRET)
+      ! End of define mode of NetCDF file
+      IRET = NF90_ENDDEF(NCID)
+      CALL CHECK_ERR(IRET)
 
-       ! Process lower band and higher band frequencies
-       FREQ1(1:MK)=FREQ(1:MK)-0.5*(FREQ(1:MK)-(FREQ(1:MK)/XFR))
-       FREQ2(1:MK)=FREQ(1:MK)+0.5*(-FREQ(1:MK)+(FREQ(1:MK)*XFR))
-       FREQ1(1)=FREQ(1)
-       FREQ2(MK)=FREQ(MK)
+      ! Process lower band and higher band frequencies
+      FREQ1(1:MK)=FREQ(1:MK)-0.5*(FREQ(1:MK)-(FREQ(1:MK)/XFR))
+      FREQ2(1:MK)=FREQ(1:MK)+0.5*(-FREQ(1:MK)+(FREQ(1:MK)*XFR))
+      FREQ1(1)=FREQ(1)
+      FREQ2(MK)=FREQ(MK)
 
-       ! Converts direction unit in degree
-       DTHD=360./MTH
-       RTH0=TH1/DTH
-       DO ITH=1, MTH
-          THD(ITH)=DTHD*(RTH0+REAL(ITH-1))
-       END DO
-       DIR(1:MTH)=MOD(360-THD(1:MTH),360.)
+      ! Converts direction unit in degree
+      DTHD=360./MTH
+      RTH0=TH1/DTH
+      DO ITH=1, MTH
+        THD(ITH)=DTHD*(RTH0+REAL(ITH-1))
+      END DO
+      DIR(1:MTH)=MOD(360-THD(1:MTH),360.)
 
 
-       ! 1.4.2 Adds general variables to NetCDF file
-       IRET=NF90_PUT_VAR(NCID,VARID(2),FREQ)
-       CALL CHECK_ERR(IRET)
+      ! 1.4.2 Adds general variables to NetCDF file
+      IRET=NF90_PUT_VAR(NCID,VARID(2),FREQ)
+      CALL CHECK_ERR(IRET)
 
-       IRET=NF90_PUT_VAR(NCID,VARID(3),FREQ1)
-       CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_VAR(NCID,VARID(3),FREQ1)
+      CALL CHECK_ERR(IRET)
 
-       IRET=NF90_PUT_VAR(NCID,VARID(4),FREQ2)
-       CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_VAR(NCID,VARID(4),FREQ2)
+      CALL CHECK_ERR(IRET)
 
-       IRET=NF90_PUT_VAR(NCID,VARID(5),DSIP)
-       CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_VAR(NCID,VARID(5),DSIP)
+      CALL CHECK_ERR(IRET)
 
-       IRET=NF90_PUT_VAR(NCID,VARID(6),DIR)
-       CALL CHECK_ERR(IRET)
+      IRET=NF90_PUT_VAR(NCID,VARID(6),DIR)
+      CALL CHECK_ERR(IRET)
 
-       WRITE (NDSO,973) FNAMENC
+      WRITE (NDSO,973) FNAMENC
 
     END IF  ! IERR.EQ.0
 
@@ -693,16 +693,16 @@ CONTAINS
     !
     WAO = SQRT ( WX**2 + WY**2 )
     IF ( WAO.GT.1.E-7 ) THEN
-       WDO = MOD(270.-ATAN2(WY,WX)*RADE,360.)
+      WDO = MOD(270.-ATAN2(WY,WX)*RADE,360.)
     ELSE
-       WDO = 0.
+      WDO = 0.
     END IF
 
     CAO = SQRT ( CX**2 + CY**2 )
     IF ( CAO.GT.1.E-7 ) THEN
-       CDO = MOD(270.-ATAN2(CY,CX)*RADE,360.)
+      CDO = MOD(270.-ATAN2(CY,CX)*RADE,360.)
     ELSE
-       CDO = 0.
+      CDO = 0.
     END IF
 
     !
@@ -831,11 +831,11 @@ CONTAINS
     IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(1), 1, 1, DEFLATE)
     SELECT CASE (TRIM(CALTYPE))
     CASE ('360_day')
-       IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','time in 360 day calendar')
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','time in 360 day calendar')
     CASE ('365_day')
-       IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','time in 365 day calendar')
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','time in 365 day calendar')
     CASE ('standard')
-       IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
+      IRET=NF90_PUT_ATT(NCID,VARID(1),'long_name','julian day (UT)')
     END SELECT
     IRET=NF90_PUT_ATT(NCID,VARID(1),'standard_name','time')
     IRET=NF90_PUT_ATT(NCID,VARID(1),'units','days since 1990-01-01 00:00:00')
@@ -917,50 +917,50 @@ CONTAINS
     IRET=NF90_PUT_ATT(NCID,VARID(6),'axis','Z')
 
     IF (FLAGLL) THEN
-       !  longitude
-       IRET=NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, (/DIMID(1)/),VARID(7))
-       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(7), 1, 1, DEFLATE)
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'long_name','longitude')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'standard_name','longitude')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'units','degree_east')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'valid_min',-180.0)
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'valid_max',360.)
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'_FillValue',NF90_FILL_FLOAT)
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'content','T')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'associates','time')
+      !  longitude
+      IRET=NF90_DEF_VAR(NCID, 'longitude', NF90_FLOAT, (/DIMID(1)/),VARID(7))
+      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(7), 1, 1, DEFLATE)
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'long_name','longitude')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'standard_name','longitude')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'units','degree_east')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'valid_min',-180.0)
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'valid_max',360.)
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'_FillValue',NF90_FILL_FLOAT)
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'content','T')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'associates','time')
 
 
-       !  latitude
-       IRET=NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, (/DIMID(1)/),VARID(8))
-       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(8), 1, 1, DEFLATE)
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','latitude')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','latitude')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'units','degree_north')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_min',-90.0)
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_max',180.)
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'_FillValue',NF90_FILL_FLOAT)
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'content','T')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'associates','time')
+      !  latitude
+      IRET=NF90_DEF_VAR(NCID, 'latitude', NF90_FLOAT, (/DIMID(1)/),VARID(8))
+      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(8), 1, 1, DEFLATE)
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','latitude')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','latitude')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'units','degree_north')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_min',-90.0)
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'valid_max',180.)
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'_FillValue',NF90_FILL_FLOAT)
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'content','T')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'associates','time')
     ELSE
-       !  longitude
-       IRET=NF90_DEF_VAR(NCID, 'x', NF90_FLOAT, (/DIMID(1)/),VARID(7))
-       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(7), 1, 1, DEFLATE)
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'long_name','x')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'standard_name','x')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'units','m')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'_FillValue',NF90_FILL_FLOAT)
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'content','T')
-       IRET=NF90_PUT_ATT(NCID,VARID(7),'associates','time')
+      !  longitude
+      IRET=NF90_DEF_VAR(NCID, 'x', NF90_FLOAT, (/DIMID(1)/),VARID(7))
+      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(7), 1, 1, DEFLATE)
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'long_name','x')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'standard_name','x')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'units','m')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'_FillValue',NF90_FILL_FLOAT)
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'content','T')
+      IRET=NF90_PUT_ATT(NCID,VARID(7),'associates','time')
 
-       !  latitude
-       IRET=NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, (/DIMID(1)/),VARID(8))
-       IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(8), 1, 1, DEFLATE)
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','y')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','y')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'units','m')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'_FillValue',NF90_FILL_FLOAT)
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'content','T')
-       IRET=NF90_PUT_ATT(NCID,VARID(8),'associates','time')
+      !  latitude
+      IRET=NF90_DEF_VAR(NCID, 'y', NF90_FLOAT, (/DIMID(1)/),VARID(8))
+      IF (NCTYPE.EQ.4) IRET=NF90_DEF_VAR_DEFLATE(NCID, VARID(8), 1, 1, DEFLATE)
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'long_name','y')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'standard_name','y')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'units','m')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'_FillValue',NF90_FILL_FLOAT)
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'content','T')
+      IRET=NF90_PUT_ATT(NCID,VARID(8),'associates','time')
 
     END IF
 
@@ -1112,10 +1112,10 @@ CONTAINS
     INTEGER IRET
 
     IF (IRET .NE. NF90_NOERR) THEN
-       WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN TRNC :'
-       WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
-       WRITE(NDSE,*) NF90_STRERROR(IRET)
-       CALL EXTCDE ( 59 )
+      WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN TRNC :'
+      WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+      WRITE(NDSE,*) NF90_STRERROR(IRET)
+      CALL EXTCDE ( 59 )
     END IF
     RETURN
 

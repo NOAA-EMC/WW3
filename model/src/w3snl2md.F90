@@ -188,9 +188,9 @@ CONTAINS
     !     (Action sigma spectrum, reversed indices)
     !
     DO IK=1, NK
-       DO ITH=1, NTH
-          A2(IK,ITH) = A(ITH,IK) / CG(IK)
-       END DO
+      DO ITH=1, NTH
+        A2(IK,ITH) = A(ITH,IK) / CG(IK)
+      END DO
     END DO
     !
     ! 2.  Call exact interaction routines -------------------------------- *
@@ -203,20 +203,20 @@ CONTAINS
     ! 3.  Pack results in proper format ---------------------------------- *
     !
     DO IK=1, NK
-       DO ITH=1, NTH
-          S(ITH,IK) = S2(IK,ITH) * CG(IK)
-          D(ITH,IK) = D2(IK,ITH)
-       END DO
+      DO ITH=1, NTH
+        S(ITH,IK) = S2(IK,ITH) * CG(IK)
+        D(ITH,IK) = D2(IK,ITH)
+      END DO
     END DO
     !
     ! ... Test output :
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          SOUT(IK,ITH) = S(IK,ITH) * TPI * SIG(IK) / CG(IK)
-          DOUT(IK,ITH) = D(IK,ITH)
-       END DO
+      DO ITH=1, NTH
+        SOUT(IK,ITH) = S(IK,ITH) * TPI * SIG(IK) / CG(IK)
+        DOUT(IK,ITH) = D(IK,ITH)
+      END DO
     END DO
 #endif
     !

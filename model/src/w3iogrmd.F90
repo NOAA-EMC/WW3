@@ -529,21 +529,21 @@ CONTAINS
     ! test input parameters ---------------------------------------------- *
     !
     IF ( PRESENT(IMOD) ) THEN
-       IGRD   = IMOD
+      IGRD   = IMOD
     ELSE
-       IGRD   = 1
+      IGRD   = 1
     END IF
     !
     IF ( PRESENT(FEXT) ) THEN
-       TEMPXT = FEXT
+      TEMPXT = FEXT
     ELSE
-       TEMPXT = 'ww3'
+      TEMPXT = 'ww3'
     END IF
     !
     IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'WRITE'                    &
          .AND. INXOUT.NE.'GRID') THEN
-       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,900) INXOUT
-       CALL EXTCDE ( 1 )
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,900) INXOUT
+      CALL EXTCDE ( 1 )
     END IF
     !
     WRITE  = INXOUT .EQ. 'WRITE'
@@ -568,11 +568,11 @@ CONTAINS
     !
     !AR: ADD DEBUGFLAG      WRITE(*,*) 'FILE=', FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT)
     IF ( WRITE ) THEN
-       OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
-            form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+      OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
+           form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
     ELSE
-       OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
-            form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=800,IOSTAT=IERR)
+      OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
+           form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=800,IOSTAT=IERR)
     ENDIF
     !
     REWIND ( NDSM )
@@ -580,138 +580,138 @@ CONTAINS
     ! Dimensions and test information --------------------------------------
     !
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                                &
-            IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,                 &
-            NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
-            FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
-            FNAMEF, FNAMEI
-       !
+      WRITE (NDSM)                                                &
+           IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,                 &
+           NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
+           FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
+           FNAMEF, FNAMEI
+      !
 #ifdef W3_SMC
-       WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
-       WRITE (NDSM) NGLO, NARC, NBGL, NBAC, NBSMC
+      WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
+      WRITE (NDSM) NGLO, NARC, NBGL, NBAC, NBSMC
 #endif
-       !
-       WRITE (NDSM)                                                &
-            (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
+      !
+      WRITE (NDSM)                                                &
+           (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
 #ifdef W3_T
-       WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
-            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-            FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,                &
-            FNAMEF, FNAMEI
-       WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
-       WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
+      WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
+           NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
+           FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,                &
+           FNAMEF, FNAMEI
+      WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
+      WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
 #endif
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
-            NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
-            FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
-            FNAMEF, FNAMEI
-       !
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           IDTST, VERTST, NX, NY, NSEA, MTH, MK,                 &
+           NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
+           FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
+           FNAMEF, FNAMEI
+      !
 #ifdef W3_SMC
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            NCel, NUFc, NVFc, NRLv, MRFct
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            NGLO, NARC, NBGL, NBAC, NBSMC
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           NCel, NUFc, NVFc, NRLv, MRFct
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           NGLO, NARC, NBGL, NBAC, NBSMC
 #endif
-       !
-       NK     = MK
-       NTH    = MTH
-       NK2    = NK + 2
-       NSPEC  = NK * NTH
+      !
+      NK     = MK
+      NTH    = MTH
+      NK2    = NK + 2
+      NSPEC  = NK * NTH
 #ifdef W3_T
-       WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
-            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
-            FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,                &
-            FNAMEF, FNAMEI
+      WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,  &
+           NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,  &
+           FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,                &
+           FNAMEF, FNAMEI
 #endif
-       !
-       IF ( IDTST .NE. IDSTR ) THEN
-          IF ( IAPROC .EQ. NAPERR )                               &
-               WRITE (NDSE,901) IDTST, IDSTR
-          CALL EXTCDE ( 10 )
-       END IF
-       IF ( VERTST .NE. VERGRD ) THEN
-          IF ( IAPROC .EQ. NAPERR )                               &
-               WRITE (NDSE,902) VERTST, VERGRD
-          CALL EXTCDE ( 11 )
-       END IF
-       IF ( NFBPO .GT. 9 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                               &
-               WRITE (NDSE,904) NFBPO, 9
-          CALL EXTCDE ( 13 )
-       END IF
-       IF ( FNAME0 .NE. TNAME0 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 0, FILEXT(:IEXT), FNAME0, TNAME0,  &
-               MESSAGE
-          CALL EXTCDE ( 14 )
-       END IF
-       IF ( FNAME1 .NE. TNAME1 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 1, FILEXT(:IEXT), FNAME1, TNAME1,  &
-               MESSAGE
-          CALL EXTCDE ( 15 )
-       END IF
-       IF ( FNAME2 .NE. TNAME2 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 2, FILEXT(:IEXT), FNAME2, TNAME2,  &
-               MESSAGE
-          CALL EXTCDE ( 16 )
-       END IF
-       IF ( FNAME3 .NE. TNAME3 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 3, FILEXT(:IEXT), FNAME3, TNAME3,  &
-               MESSAGE
-          CALL EXTCDE ( 17 )
-       END IF
-       IF ( FNAMEI .NE. TNAMEI ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 3, FILEXT(:IEXT), FNAMEI, TNAMEI,  &
-               MESSAGE
-          CALL EXTCDE ( 17 )
-       END IF
-       IF ( FNAME4 .NE. TNAME4 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 4, FILEXT(:IEXT), FNAME4, TNAME4,  &
-               MESSAGE
-          CALL EXTCDE ( 18 )
-       END IF
-       IF ( FNAME5 .NE. TNAME5 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 5, FILEXT(:IEXT), FNAME5, TNAME5,  &
-               MESSAGE
-          CALL EXTCDE ( 19 )
-       END IF
-       IF ( FNAME6 .NE. TNAME6 ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,905) 6, FILEXT(:IEXT), FNAME6, TNAME6,  &
-               MESSAGE
-          CALL EXTCDE ( 20 )
-       END IF
-       IF ( FNAMEP .NE. TNAMEP ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,906) FNAMEP, TNAMEP
-          CALL EXTCDE ( 22 )
-       END IF
-       IF ( FNAMEG .NE. TNAMEG ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,907) FNAMEG, TNAMEG, MESSAGE
-          CALL EXTCDE ( 22 )
-       END IF
-       IF ( FNAMEF .NE. TNAMEF ) THEN
-          IF ( IAPROC .EQ. NAPERR )                              &
-               WRITE (NDSE,908) FILEXT(:IEXT), FNAMEF, TNAMEF, MESSAGE
-          CALL EXTCDE ( 24 )
-       END IF
-       !
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
+      !
+      IF ( IDTST .NE. IDSTR ) THEN
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,901) IDTST, IDSTR
+        CALL EXTCDE ( 10 )
+      END IF
+      IF ( VERTST .NE. VERGRD ) THEN
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,902) VERTST, VERGRD
+        CALL EXTCDE ( 11 )
+      END IF
+      IF ( NFBPO .GT. 9 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                               &
+             WRITE (NDSE,904) NFBPO, 9
+        CALL EXTCDE ( 13 )
+      END IF
+      IF ( FNAME0 .NE. TNAME0 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 0, FILEXT(:IEXT), FNAME0, TNAME0,  &
+             MESSAGE
+        CALL EXTCDE ( 14 )
+      END IF
+      IF ( FNAME1 .NE. TNAME1 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 1, FILEXT(:IEXT), FNAME1, TNAME1,  &
+             MESSAGE
+        CALL EXTCDE ( 15 )
+      END IF
+      IF ( FNAME2 .NE. TNAME2 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 2, FILEXT(:IEXT), FNAME2, TNAME2,  &
+             MESSAGE
+        CALL EXTCDE ( 16 )
+      END IF
+      IF ( FNAME3 .NE. TNAME3 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 3, FILEXT(:IEXT), FNAME3, TNAME3,  &
+             MESSAGE
+        CALL EXTCDE ( 17 )
+      END IF
+      IF ( FNAMEI .NE. TNAMEI ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 3, FILEXT(:IEXT), FNAMEI, TNAMEI,  &
+             MESSAGE
+        CALL EXTCDE ( 17 )
+      END IF
+      IF ( FNAME4 .NE. TNAME4 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 4, FILEXT(:IEXT), FNAME4, TNAME4,  &
+             MESSAGE
+        CALL EXTCDE ( 18 )
+      END IF
+      IF ( FNAME5 .NE. TNAME5 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 5, FILEXT(:IEXT), FNAME5, TNAME5,  &
+             MESSAGE
+        CALL EXTCDE ( 19 )
+      END IF
+      IF ( FNAME6 .NE. TNAME6 ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,905) 6, FILEXT(:IEXT), FNAME6, TNAME6,  &
+             MESSAGE
+        CALL EXTCDE ( 20 )
+      END IF
+      IF ( FNAMEP .NE. TNAMEP ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,906) FNAMEP, TNAMEP
+        CALL EXTCDE ( 22 )
+      END IF
+      IF ( FNAMEG .NE. TNAMEG ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,907) FNAMEG, TNAMEG, MESSAGE
+        CALL EXTCDE ( 22 )
+      END IF
+      IF ( FNAMEF .NE. TNAMEF ) THEN
+        IF ( IAPROC .EQ. NAPERR )                              &
+             WRITE (NDSE,908) FILEXT(:IEXT), FNAMEF, TNAMEF, MESSAGE
+        CALL EXTCDE ( 24 )
+      END IF
+      !
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
 #ifdef W3_T
-       WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
-       WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
+      WRITE (NDST,9002) (NBO(I),I=0,NFBPO)
+      WRITE (NDST,9003) (NBO2(I),I=0,NFBPO)
 #endif
-       !
+      !
     ENDIF
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
@@ -726,232 +726,232 @@ CONTAINS
     ALLOCATE ( MAPTMP(NY,NX) )
     !
     IF ( WRITE ) THEN
-       MAPTMP = MAPSTA + 8*MAPST2
-       WRITE (NDSM)                                                &
-            GTYPE, FLAGLL, ICLOSE
-       !
-       ! Writes different kind of information depending on grid type
-       !
-       SELECT CASE ( GTYPE )
-          !!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020
-       CASE ( RLGTYPE, SMCTYPE )
-          WRITE (NDSM)                                            &
-               SX, SY, X0, Y0
-       CASE ( CLGTYPE )
-          WRITE (NDSM)                                            &
-               REAL(XGRD), REAL(YGRD)
-       CASE (UNGTYPE)
-          WRITE (NDSM)                                            &
-               FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-               FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
-               DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
-               NTRI,COUNTOT, COUNTRI, NNZ,                           &
-               B_JGS_TERMINATE_MAXITER,                              &
-               B_JGS_TERMINATE_DIFFERENCE,                           &
-               B_JGS_TERMINATE_NORM,                                 &
-               B_JGS_LIMITER,                                        &
-               B_JGS_BLOCK_GAUSS_SEIDEL,                             &
-               B_JGS_USE_JACOBI,                                     &
-               B_JGS_MAXITER,                                        &
-               B_JGS_PMIN,                                           &
-               B_JGS_DIFF_THR,                                       &
-               B_JGS_NORM_THR,                                       &
-               B_JGS_NLEVEL,                                         &
-               B_JGS_SOURCE_NONLINEAR
-          !Init COUNTCON to zero, it needs to be set somewhere or
-          !removed
-          COUNTCON=0
-          WRITE (NDSM)                                            &
-               X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
-               LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
-               DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
-               POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
-       END SELECT !GTYPE
-       !
-       WRITE (NDSM)                                                &
-            ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
-       !
+      MAPTMP = MAPSTA + 8*MAPST2
+      WRITE (NDSM)                                                &
+           GTYPE, FLAGLL, ICLOSE
+      !
+      ! Writes different kind of information depending on grid type
+      !
+      SELECT CASE ( GTYPE )
+        !!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020
+      CASE ( RLGTYPE, SMCTYPE )
+        WRITE (NDSM)                                            &
+             SX, SY, X0, Y0
+      CASE ( CLGTYPE )
+        WRITE (NDSM)                                            &
+             REAL(XGRD), REAL(YGRD)
+      CASE (UNGTYPE)
+        WRITE (NDSM)                                            &
+             FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
+             FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
+             DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
+             NTRI,COUNTOT, COUNTRI, NNZ,                           &
+             B_JGS_TERMINATE_MAXITER,                              &
+             B_JGS_TERMINATE_DIFFERENCE,                           &
+             B_JGS_TERMINATE_NORM,                                 &
+             B_JGS_LIMITER,                                        &
+             B_JGS_BLOCK_GAUSS_SEIDEL,                             &
+             B_JGS_USE_JACOBI,                                     &
+             B_JGS_MAXITER,                                        &
+             B_JGS_PMIN,                                           &
+             B_JGS_DIFF_THR,                                       &
+             B_JGS_NORM_THR,                                       &
+             B_JGS_NLEVEL,                                         &
+             B_JGS_SOURCE_NONLINEAR
+        !Init COUNTCON to zero, it needs to be set somewhere or
+        !removed
+        COUNTCON=0
+        WRITE (NDSM)                                            &
+             X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
+             LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
+             DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
+             POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+      END SELECT !GTYPE
+      !
+      WRITE (NDSM)                                                &
+           ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
+      !
 #ifdef W3_SMC
-       IF( GTYPE .EQ. SMCTYPE ) THEN
-          WRITE (NDSM)  NLvCel, NLvUFc, NLvVFc
-          WRITE (NDSM)  IJKCel, IJKUFc, IJKVFc, ISMCBP
-          WRITE (NDSM)  ICLBAC
-          WRITE (NDSM)  ANGARC
-          WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
-          IF ( FLTEST ) THEN
-             WRITE (NDSE,"('  NRLv, MRFct and NBSMC values are',3I9)") NRLv, MRFct, NBSMC
-             WRITE (NDSE,"('  IJKCel, IJKUFc, IJKVFc Write for',3I9)") NCel, NUFc, NVFc
-             WRITE (NDSE,"('  CTRNXY transparency write for 2x', I9)") NCel
-          ENDIF
-       ENDIF
+      IF( GTYPE .EQ. SMCTYPE ) THEN
+        WRITE (NDSM)  NLvCel, NLvUFc, NLvVFc
+        WRITE (NDSM)  IJKCel, IJKUFc, IJKVFc, ISMCBP
+        WRITE (NDSM)  ICLBAC
+        WRITE (NDSM)  ANGARC
+        WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
+        IF ( FLTEST ) THEN
+          WRITE (NDSE,"('  NRLv, MRFct and NBSMC values are',3I9)") NRLv, MRFct, NBSMC
+          WRITE (NDSE,"('  IJKCel, IJKUFc, IJKVFc Write for',3I9)") NCel, NUFc, NVFc
+          WRITE (NDSE,"('  CTRNXY transparency write for 2x', I9)") NCel
+        ENDIF
+      ENDIF
 #endif
-       !
-       IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
-       WRITE (NDSM)                     &
-            DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-            FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
-            FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
-            STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
-            ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
-            IICEDDISP, IICEFDISP, BTBETA,                          &
-            AAIRCMIN, AAIRGB
+      !
+      IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
+      WRITE (NDSM)                     &
+           DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
+           FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
+           FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
+           STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
+           ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
+           IICEDDISP, IICEFDISP, BTBETA,                          &
+           AAIRCMIN, AAIRGB
 
-       WRITE(NDSM)GRIDSHIFT
+      WRITE(NDSM)GRIDSHIFT
 #ifdef W3_SEC1
-       WRITE (NDSM) NITERSEC1
+      WRITE (NDSM) NITERSEC1
 #endif
 #ifdef W3_RTD
-       !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
-       WRITE (NDSM) PoLat, PoLon, AnglD, FLAGUNR
+      !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
+      WRITE (NDSM) PoLat, PoLon, AnglD, FLAGUNR
 
 #endif
-       !!        WRITE(NDSM)                                                 &
-       !!             COUG_2D, COUG_RAD3D, COUG_US3D
+      !!        WRITE(NDSM)                                                 &
+      !!             COUG_2D, COUG_RAD3D, COUG_US3D
     ELSE
 #ifdef W3_MEMCHECK
-       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(IAPROC,mallInfos)
+      write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
+      call getMallocInfo(mallinfos)
+      call printMallInfo(IAPROC,mallInfos)
 #endif
 
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            GTYPE, FLAGLL, ICLOSE
-       !!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
-       IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           GTYPE, FLAGLL, ICLOSE
+      !!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
+      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
 #ifdef W3_SMC
-            , NCel, NUFc, NVFc, NRLv, NBSMC  &
-            , NARC, NBAC, NSPEC              &
+           , NCel, NUFc, NVFc, NRLv, NBSMC  &
+           , NARC, NBAC, NSPEC              &
 #endif
-            )
-       !
-       ! Reads different kind of information depending on grid type
-       !
-       SELECT CASE ( GTYPE )
-          !!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020
-       CASE ( RLGTYPE, SMCTYPE )
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-               SX, SY, X0, Y0
-          DO IX=1,NX
-             XGRD(:,IX) = REAL(X0 + REAL(IX-1)*SX)
-          END DO
-          DO IY=1,NY
-             YGRD(IY,:) = REAL(Y0 + REAL(IY-1)*SY)
-          END DO
-       CASE ( CLGTYPE )
-          ALLOCATE(XGRD4(NY,NX),YGRD4(NY,NX)); XGRD4 = 0.; YGRD4 = 0.
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-               XGRD4, YGRD4
-          XGRD = XGRD4
-          YGRD = YGRD4
-          DEALLOCATE(XGRD4, YGRD4)
-          !Set SX, SY, X0, Y0 to large values if curvilinear grid
-          X0 = HUGE(X0); Y0 = HUGE(Y0)
-          SX = HUGE(SX); SY = HUGE(SY)
-       CASE (UNGTYPE)
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-               FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
-               FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
-               DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
-               NTRI,COUNTOT, COUNTRI, NNZ,                           &
-               B_JGS_TERMINATE_MAXITER,                              &
-               B_JGS_TERMINATE_DIFFERENCE,                           &
-               B_JGS_TERMINATE_NORM,                                 &
-               B_JGS_LIMITER,                                        &
-               B_JGS_BLOCK_GAUSS_SEIDEL,                             &
-               B_JGS_USE_JACOBI,                                     &
-               B_JGS_MAXITER,                                        &
-               B_JGS_PMIN,                                           &
-               B_JGS_DIFF_THR,                                       &
-               B_JGS_NORM_THR,                                       &
-               B_JGS_NLEVEL,                                         &
-               B_JGS_SOURCE_NONLINEAR
-          IF (.NOT. GUGINIT) THEN
-             CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
-          END IF
+           )
+      !
+      ! Reads different kind of information depending on grid type
+      !
+      SELECT CASE ( GTYPE )
+        !!Li  SMCTYPE shares info with RLGTYPE.   JGLi12Oct2020
+      CASE ( RLGTYPE, SMCTYPE )
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
+             SX, SY, X0, Y0
+        DO IX=1,NX
+          XGRD(:,IX) = REAL(X0 + REAL(IX-1)*SX)
+        END DO
+        DO IY=1,NY
+          YGRD(IY,:) = REAL(Y0 + REAL(IY-1)*SY)
+        END DO
+      CASE ( CLGTYPE )
+        ALLOCATE(XGRD4(NY,NX),YGRD4(NY,NX)); XGRD4 = 0.; YGRD4 = 0.
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
+             XGRD4, YGRD4
+        XGRD = XGRD4
+        YGRD = YGRD4
+        DEALLOCATE(XGRD4, YGRD4)
+        !Set SX, SY, X0, Y0 to large values if curvilinear grid
+        X0 = HUGE(X0); Y0 = HUGE(Y0)
+        SX = HUGE(SX); SY = HUGE(SY)
+      CASE (UNGTYPE)
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
+             FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,        &
+             FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,         &
+             DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,           &
+             NTRI,COUNTOT, COUNTRI, NNZ,                           &
+             B_JGS_TERMINATE_MAXITER,                              &
+             B_JGS_TERMINATE_DIFFERENCE,                           &
+             B_JGS_TERMINATE_NORM,                                 &
+             B_JGS_LIMITER,                                        &
+             B_JGS_BLOCK_GAUSS_SEIDEL,                             &
+             B_JGS_USE_JACOBI,                                     &
+             B_JGS_MAXITER,                                        &
+             B_JGS_PMIN,                                           &
+             B_JGS_DIFF_THR,                                       &
+             B_JGS_NORM_THR,                                       &
+             B_JGS_NLEVEL,                                         &
+             B_JGS_SOURCE_NONLINEAR
+        IF (.NOT. GUGINIT) THEN
+          CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
+        END IF
 #ifdef W3_MEMCHECK
-          write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
-          call getMallocInfo(mallinfos)
-          call printMallInfo(IAPROC,mallInfos)
+        write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
+        call getMallocInfo(mallinfos)
+        call printMallInfo(IAPROC,mallInfos)
 #endif
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-               X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
-               LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
-               DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
-               POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
+             X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
+             LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,   &
+             DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,  &
+             POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
 
 #ifdef W3_MEMCHECK
-          write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
-          call getMallocInfo(mallinfos)
-          call printMallInfo(IAPROC,mallInfos)
+        write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
+        call getMallocInfo(mallinfos)
+        call printMallInfo(IAPROC,mallInfos)
 #endif
 
 
-       END SELECT !GTYPE
-       !
-       IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST )
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
-       !
+      END SELECT !GTYPE
+      !
+      IF (GTYPE.NE.UNGTYPE) CALL W3GNTX ( IGRD, NDSE, NDST )
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
+      !
 #ifdef W3_SMC
-       IF( GTYPE .EQ. SMCTYPE ) THEN
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-               NLvCel, NLvUFc, NLvVFc
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-               IJKCel, IJKUFc, IJKVFc, ISMCBP
-          DO J=lbound(IJKCel,2), ubound(IJKCel,2)
-             IJKCel3(J) = IJKCel(3,J)
-             IJKCel4(J) = IJKCel(4,J)
-          END DO
-          DO J=lbound(IJKVFc,2), ubound(IJKVFc,2)
-             IJKVFc5(J) = IJKVFc(5,J)
-             IJKVFc6(J) = IJKVFc(6,J)
-          END DO
-          DO J=lbound(IJKUFc,2), ubound(IJKUFc,2)
-             IJKUFc5(J) = IJKUFc(5,J)
-             IJKUFc6(J) = IJKUFc(6,J)
-          END DO
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-               ICLBAC
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-               ANGARC
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-               CTRNX,  CTRNY,  CLATF
-       ENDIF
+      IF( GTYPE .EQ. SMCTYPE ) THEN
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+             NLvCel, NLvUFc, NLvVFc
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+             IJKCel, IJKUFc, IJKVFc, ISMCBP
+        DO J=lbound(IJKCel,2), ubound(IJKCel,2)
+          IJKCel3(J) = IJKCel(3,J)
+          IJKCel4(J) = IJKCel(4,J)
+        END DO
+        DO J=lbound(IJKVFc,2), ubound(IJKVFc,2)
+          IJKVFc5(J) = IJKVFc(5,J)
+          IJKVFc6(J) = IJKVFc(6,J)
+        END DO
+        DO J=lbound(IJKUFc,2), ubound(IJKUFc,2)
+          IJKUFc5(J) = IJKUFc(5,J)
+          IJKUFc6(J) = IJKUFc(6,J)
+        END DO
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+             ICLBAC
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+             ANGARC
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+             CTRNX,  CTRNY,  CLATF
+      ENDIF
 #endif
-       !
-       MAPSTA = MOD(MAPTMP+2,8) - 2
-       MAPST2 = (MAPTMP-MAPSTA) / 8
-       MAPSF(:,3) = MAPSF(:,2) + (MAPSF(:,1)-1)*NY
-       IF ( TRFLAG .NE. 0 ) THEN
-          READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TRNX, TRNY
-       END IF
+      !
+      MAPSTA = MOD(MAPTMP+2,8) - 2
+      MAPST2 = (MAPTMP-MAPSTA) / 8
+      MAPSF(:,3) = MAPSF(:,2) + (MAPSF(:,1)-1)*NY
+      IF ( TRFLAG .NE. 0 ) THEN
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR) TRNX, TRNY
+      END IF
 #ifdef W3_UOST
-       ! UOST (Unresolved Obstacles Source Term) is enabled.
-       ! setting TRNX, TRNY to null values
-       TRNX = 1
-       TRNY = 1
+      ! UOST (Unresolved Obstacles Source Term) is enabled.
+      ! setting TRNX, TRNY to null values
+      TRNX = 1
+      TRNY = 1
 #endif
 
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
-            FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
-            FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
-            CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
-            IICEDISP, ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, &
-            IICEDDISP, IICEHDISP, IICEFDISP, BTBETA,               &
-            AAIRCMIN, AAIRGB
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
+           FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY,        &
+           FLCTH, FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS,       &
+           CTHG0S, STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT,      &
+           IICEDISP, ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, &
+           IICEDDISP, IICEHDISP, IICEFDISP, BTBETA,               &
+           AAIRCMIN, AAIRGB
 
-       READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
+      READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 #ifdef W3_SEC1
-       READ (NDSM) NITERSEC1
+      READ (NDSM) NITERSEC1
 #endif
-       !
+      !
 #ifdef W3_RTD
-       !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
-       READ (NDSM) PoLat, PoLon, AnglD, FLAGUNR
+      !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
+      READ (NDSM) PoLat, PoLon, AnglD, FLAGUNR
 
 #endif
-       !
+      !
     END IF
 
 #ifdef W3_MEMCHECK
@@ -966,25 +966,25 @@ CONTAINS
     WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
     WRITE (NDST,9011) 'MAPSTA'
     DO IY=MIN(NY,20), 1, -1
-       WRITE (NDST,9012) (MAPSTA(IY,IX),IX=1,MIN(NX,30))
+      WRITE (NDST,9012) (MAPSTA(IY,IX),IX=1,MIN(NX,30))
     END DO
     WRITE (NDST,9011) 'MAPST2'
     DO IY=MIN(NY,20), 1, -1
-       WRITE (NDST,9012) (MAPST2(IY,IX),IX=1,MIN(NX,30))
+      WRITE (NDST,9012) (MAPST2(IY,IX),IX=1,MIN(NX,30))
     END DO
     WRITE (NDST,9011) 'MAPFS'
     DO IY=MIN(NY,20), 1, -1
-       WRITE (NDST,9013) (MAPFS(IY,IX),IX=1,MIN(NX,12))
+      WRITE (NDST,9013) (MAPFS(IY,IX),IX=1,MIN(NX,12))
     END DO
     IF ( TRFLAG .NE. 0 ) THEN
-       WRITE (NDST,9011) 'TRNX'
-       DO IY=MIN(NY,20), 1, -1
-          WRITE (NDST,9014) (TRNX(IY,IX),IX=1,MIN(NX,12))
-       END DO
-       WRITE (NDST,9011) 'TRNY'
-       DO IY=MIN(NY,20), 1, -1
-          WRITE (NDST,9014) (TRNY(IY,IX),IX=1,MIN(NX,12))
-       END DO
+      WRITE (NDST,9011) 'TRNX'
+      DO IY=MIN(NY,20), 1, -1
+        WRITE (NDST,9014) (TRNX(IY,IX),IX=1,MIN(NX,12))
+      END DO
+      WRITE (NDST,9011) 'TRNY'
+      DO IY=MIN(NY,20), 1, -1
+        WRITE (NDST,9014) (TRNY(IY,IX),IX=1,MIN(NX,12))
+      END DO
     END IF
 #endif
     !
@@ -1004,16 +1004,16 @@ CONTAINS
     !                                                 Module W3GDATMD SGRD
     !
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                                &
-            MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,      &
-            XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,     &
-            FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+      WRITE (NDSM)                                                &
+           MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,      &
+           XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,     &
+           FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
     ELSE
-       IF (.NOT.SINIT) CALL W3DIMS ( IGRD, NK, NTH, NDSE, NDST )
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,      &
-            XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,     &
-            FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+      IF (.NOT.SINIT) CALL W3DIMS ( IGRD, NK, NTH, NDSE, NDST )
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,      &
+           XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,     &
+           FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
     END IF
 
     !
@@ -1028,39 +1028,39 @@ CONTAINS
     ! Output flags for 3D parameters ------------------------------------- *
     !                                                 Module W3GDATMD
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                                &
-            E3DF, P2MSF, US3DF,USSPF, USSP_WN
+      WRITE (NDSM)                                                &
+           E3DF, P2MSF, US3DF,USSPF, USSP_WN
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            E3DF, P2MSF, US3DF,USSPF, USSP_WN
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           E3DF, P2MSF, US3DF,USSPF, USSP_WN
     END IF
 
     IF ( INXOUT .EQ. 'GRID' ) THEN
-       CLOSE (NDSM)
-       RETURN
+      CLOSE (NDSM)
+      RETURN
     END IF
     !
     ! Parameters for output boundary points ------------------------------ *
     !                                                 Module W3ODATMD OUT5
     !
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                                &
-            XBPO, YBPO, RDBPO, IPBPO, ISBPO
+      WRITE (NDSM)                                                &
+           XBPO, YBPO, RDBPO, IPBPO, ISBPO
     ELSE
-       CALL W3DMO5 ( IGRD, NDSE, NDST, 2 )
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            XBPO, YBPO, RDBPO, IPBPO, ISBPO
+      CALL W3DMO5 ( IGRD, NDSE, NDST, 2 )
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           XBPO, YBPO, RDBPO, IPBPO, ISBPO
     END IF
     !
 #ifdef W3_T
     WRITE (NDST,9020)
     DO I=1, NFBPO
-       WRITE (NDST,9021) I
-       DO J=NBO(I-1)+1,NBO(I)
-          WRITE (NDST,9022) J-NBO(I-1), (IPBPO(J,K),K=1,4),        &
-               (RDBPO(J,K),K=1,4)
-       END DO
-       WRITE (NDST,9023) (ISBPO(J),J=NBO2(I-1)+1,NBO2(I))
+      WRITE (NDST,9021) I
+      DO J=NBO(I-1)+1,NBO(I)
+        WRITE (NDST,9022) J-NBO(I-1), (IPBPO(J,K),K=1,4),        &
+             (RDBPO(J,K),K=1,4)
+      END DO
+      WRITE (NDST,9023) (ISBPO(J),J=NBO2(I-1)+1,NBO2(I))
     END DO
 #endif
     !
@@ -1068,13 +1068,13 @@ CONTAINS
     !                                                 Module W3ODATMD OUT6
     !
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                                &
-            IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
-            PTMETH, PTFCUT
+      WRITE (NDSM)                                                &
+           IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
+           PTMETH, PTFCUT
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
-            PTMETH, PTFCUT
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
+           PTMETH, PTFCUT
     END IF
     !
 #ifdef W3_T
@@ -1085,76 +1085,76 @@ CONTAINS
     !                                                 Module W3GDATMD NPAR
     !
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                                &
-            FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-            FFACBERG, DELAB, FWTABLE
+      WRITE (NDSM)                                                &
+           FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
+           FFACBERG, DELAB, FWTABLE
 #ifdef W3_RWND
-       WRITE (NDSM)                                                &
-            RWINDC
+      WRITE (NDSM)                                                &
+           RWINDC
 #endif
 #ifdef W3_WCOR
-       WRITE (NDSM)                                                &
-            WWCOR
+      WRITE (NDSM)                                                &
+           WWCOR
 #endif
 #ifdef W3_REF1
-       WRITE (NDSM)                                                &
-            RREF, REFPARS, REFLC, REFLD
+      WRITE (NDSM)                                                &
+           RREF, REFPARS, REFLC, REFLD
 #endif
 #ifdef W3_IG1
-       WRITE   (NDSM)                                              &
-            IGPARS(1:12)
+      WRITE   (NDSM)                                              &
+           IGPARS(1:12)
 #endif
 #ifdef W3_IC2
-       WRITE   (NDSM)                                              &
-            IC2PARS(1:8)
+      WRITE   (NDSM)                                              &
+           IC2PARS(1:8)
 #endif
 #ifdef W3_IC3
-       WRITE   (NDSM)                                              &
-            IC3PARS
+      WRITE   (NDSM)                                              &
+           IC3PARS
 #endif
 #ifdef W3_IC4
-       WRITE   (NDSM)                                              &
-            IC4PARS,IC4_KI,IC4_FC
+      WRITE   (NDSM)                                              &
+           IC4PARS,IC4_KI,IC4_FC
 #endif
 #ifdef W3_IC5
-       WRITE   (NDSM)                                              &
-            IC5PARS
+      WRITE   (NDSM)                                              &
+           IC5PARS
 #endif
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
-            FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
-            FFACBERG, DELAB, FWTABLE
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+           FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
+           FFACBERG, DELAB, FWTABLE
 #ifdef W3_RWND
-       READ  (NDSM)                                                &
-            RWINDC
+      READ  (NDSM)                                                &
+           RWINDC
 #endif
 #ifdef W3_WCOR
-       READ  (NDSM)                                                &
-            WWCOR
+      READ  (NDSM)                                                &
+           WWCOR
 #endif
 #ifdef W3_REF1
-       READ  (NDSM)                                                &
-            RREF, REFPARS, REFLC, REFLD
+      READ  (NDSM)                                                &
+           RREF, REFPARS, REFLC, REFLD
 #endif
 #ifdef W3_IG1
-       READ   (NDSM)                                                &
-            IGPARS(1:12)
+      READ   (NDSM)                                                &
+           IGPARS(1:12)
 #endif
 #ifdef W3_IC2
-       READ   (NDSM)                                                &
-            IC2PARS(1:8)
+      READ   (NDSM)                                                &
+           IC2PARS(1:8)
 #endif
 #ifdef W3_IC3
-       READ   (NDSM)                                                &
-            IC3PARS
+      READ   (NDSM)                                                &
+           IC3PARS
 #endif
 #ifdef W3_IC4
-       READ   (NDSM)                                                &
-            IC4PARS,IC4_KI,IC4_FC
+      READ   (NDSM)                                                &
+           IC4PARS,IC4_KI,IC4_FC
 #endif
 #ifdef W3_IC5
-       READ   (NDSM)                                                &
-            IC5PARS
+      READ   (NDSM)                                                &
+           IC5PARS
 #endif
     END IF
     !
@@ -1172,9 +1172,9 @@ CONTAINS
     !
 #ifdef W3_FLX2
     IF ( WRITE ) THEN
-       WRITE (NDSM)                            NITTIN, CINXSI
+      WRITE (NDSM)                            NITTIN, CINXSI
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITTIN, CINXSI
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITTIN, CINXSI
     END IF
 #endif
     !
@@ -1184,11 +1184,11 @@ CONTAINS
     !
 #ifdef W3_FLX3
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                          &
-            NITTIN, CINXSI, CD_MAX, CAP_ID
+      WRITE (NDSM)                                          &
+           NITTIN, CINXSI, CD_MAX, CAP_ID
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-            NITTIN, CINXSI, CD_MAX, CAP_ID
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+           NITTIN, CINXSI, CD_MAX, CAP_ID
     END IF
 #endif
     !
@@ -1198,18 +1198,18 @@ CONTAINS
     !
 #ifdef W3_FLX4
     IF ( WRITE ) THEN
-       WRITE (NDSM)                            FLX4A0
+      WRITE (NDSM)                            FLX4A0
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
     END IF
 #endif
     !
     !
 #ifdef W3_LN1
     IF ( WRITE ) THEN
-       WRITE (NDSM)                            SLNC1, FSPM, FSHF
+      WRITE (NDSM)                            SLNC1, FSPM, FSHF
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SLNC1, FSPM, FSHF
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SLNC1, FSPM, FSHF
     END IF
 #endif
     !
@@ -1219,9 +1219,9 @@ CONTAINS
     !
 #ifdef W3_ST1
     IF ( WRITE ) THEN
-       WRITE (NDSM)                            SINC1, SDSC1
+      WRITE (NDSM)                            SINC1, SDSC1
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SINC1, SDSC1
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SINC1, SDSC1
     END IF
 #endif
     !
@@ -1231,19 +1231,19 @@ CONTAINS
     !
 #ifdef W3_ST2
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                           &
-            ZWIND, FSWELL,                                   &
-            SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
-            CDSA0, CDSA1, CDSA2, SDSALN,                     &
-            CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
+      WRITE (NDSM)                                           &
+           ZWIND, FSWELL,                                   &
+           SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
+           CDSA0, CDSA1, CDSA2, SDSALN,                     &
+           CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            ZWIND, FSWELL,                                   &
-            SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
-            CDSA0, CDSA1, CDSA2, SDSALN,                     &
-            CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
-       IF ( .NOT. FLINP ) CALL INPTAB
-       FLINP  = .TRUE.
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           ZWIND, FSWELL,                                   &
+           SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,          &
+           CDSA0, CDSA1, CDSA2, SDSALN,                     &
+           CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
+      IF ( .NOT. FLINP ) CALL INPTAB
+      FLINP  = .TRUE.
     END IF
 #endif
     !
@@ -1256,69 +1256,69 @@ CONTAINS
     !
 #ifdef W3_ST3
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                           &
-            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-            SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
-            SSTXFTFTAIL, SSTXFTWN,                           &
-            DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
-            FFXPM, FFXFM
+      WRITE (NDSM)                                           &
+           ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+           SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
+           SSTXFTFTAIL, SSTXFTWN,                           &
+           DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
+           FFXPM, FFXFM
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-            SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
-            SSTXFTFTAIL, SSTXFTWN,                           &
-            DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
-            FFXPM, FFXFM
-       IF ( .NOT. FLINP ) THEN
-          CALL INSIN3
-          FLINP  = .TRUE.
-       END IF
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+           SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,&
+           SSTXFTFTAIL, SSTXFTWN,                           &
+           DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,             &
+           FFXPM, FFXFM
+      IF ( .NOT. FLINP ) THEN
+        CALL INSIN3
+        FLINP  = .TRUE.
+      END IF
     END IF
 #endif
     !
 #ifdef W3_ST4
     IF ( WRITE ) THEN
-       CALL INSIN4(.TRUE.)
-       WRITE (NDSM)                                           &
-            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-            TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
-            ZZ0RAT, SSDSC,                                   &
-            SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
-            SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
-            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
-            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
-            SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
-            DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
-            DIKCUMUL, CUMULW
+      CALL INSIN4(.TRUE.)
+      WRITE (NDSM)                                           &
+           ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+           TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+           ZZ0RAT, SSDSC,                                   &
+           SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
+           SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
+           SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
+           SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
+           SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+           SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
+           IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
+           DIKCUMUL, CUMULW
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
-            TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
-            ZZ0RAT, SSDSC,                                   &
-            SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
-            SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
-            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
-            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
-            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
-            SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
-            DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
-            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
-            DIKCUMUL, CUMULW
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+           TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,       &
+           ZZ0RAT, SSDSC,                                   &
+           SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,         &
+           SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF,&
+           SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,        &
+           SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,  &
+           SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,   &
+           SSDSHCK, DELUST, DELTAIL, DELTAUW,        &
+           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,             &
+           IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,        &
+           DIKCUMUL, CUMULW
     END IF
 #endif
     !
 #ifdef W3_ST6
     IF ( WRITE ) THEN
-       WRITE (NDSM) SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
-            SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
-            SIN6WS, SIN6FC
+      WRITE (NDSM) SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
+           SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
+           SIN6WS, SIN6FC
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
-            SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
-            SIN6WS, SIN6FC
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
+           SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,&
+           SIN6WS, SIN6FC
     END IF
 #endif
     !
@@ -1326,11 +1326,11 @@ CONTAINS
     !
 #ifdef W3_NL1
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                           &
-            SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+      WRITE (NDSM)                                           &
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
     END IF
 #endif
     !
@@ -1341,15 +1341,15 @@ CONTAINS
     !
 #ifdef W3_NL2
     IF ( WRITE ) THEN
-       WRITE (NDSM) IQTPE, NLTAIL, NDPTHS
-       WRITE (NDSM) DPTHNL
+      WRITE (NDSM) IQTPE, NLTAIL, NDPTHS
+      WRITE (NDSM) DPTHNL
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            IQTPE, NLTAIL, NDPTHS
-       ALLOCATE ( MPARS(IGRD)%SNLPS%DPTHNL(NDPTHS) )
-       DPTHNL => MPARS(IGRD)%SNLPS%DPTHNL
-       PINIT  = .TRUE.
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           IQTPE, NLTAIL, NDPTHS
+      ALLOCATE ( MPARS(IGRD)%SNLPS%DPTHNL(NDPTHS) )
+      DPTHNL => MPARS(IGRD)%SNLPS%DPTHNL
+      PINIT  = .TRUE.
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
     END IF
 #endif
     !
@@ -1360,26 +1360,26 @@ CONTAINS
     !
 #ifdef W3_NL3
     IF ( WRITE ) THEN
-       WRITE (NDSM) SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
-       WRITE (NDSM) SNLL(1:SNLNQ), SNLM(1:SNLNQ),             &
-            SNLT(1:SNLNQ), SNLCD(1:SNLNQ),            &
-            SNLCS(1:SNLNQ)
+      WRITE (NDSM) SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+      WRITE (NDSM) SNLL(1:SNLNQ), SNLM(1:SNLNQ),             &
+           SNLT(1:SNLNQ), SNLCD(1:SNLNQ),            &
+           SNLCS(1:SNLNQ)
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
-       ALLOCATE ( MPARS(IGRD)%SNLPS%SNLL(SNLNQ),              &
-            MPARS(IGRD)%SNLPS%SNLM(SNLNQ),              &
-            MPARS(IGRD)%SNLPS%SNLT(SNLNQ),              &
-            MPARS(IGRD)%SNLPS%SNLCD(SNLNQ),             &
-            MPARS(IGRD)%SNLPS%SNLCS(SNLNQ) )
-       SNLL   => MPARS(IGRD)%SNLPS%SNLL
-       SNLM   => MPARS(IGRD)%SNLPS%SNLM
-       SNLT   => MPARS(IGRD)%SNLPS%SNLT
-       SNLCD  => MPARS(IGRD)%SNLPS%SNLCD
-       SNLCS  => MPARS(IGRD)%SNLPS%SNLCS
-       PINIT  = .TRUE.
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            SNLL, SNLM, SNLT, SNLCD, SNLCS
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+      ALLOCATE ( MPARS(IGRD)%SNLPS%SNLL(SNLNQ),              &
+           MPARS(IGRD)%SNLPS%SNLM(SNLNQ),              &
+           MPARS(IGRD)%SNLPS%SNLT(SNLNQ),              &
+           MPARS(IGRD)%SNLPS%SNLCD(SNLNQ),             &
+           MPARS(IGRD)%SNLPS%SNLCS(SNLNQ) )
+      SNLL   => MPARS(IGRD)%SNLPS%SNLL
+      SNLM   => MPARS(IGRD)%SNLPS%SNLM
+      SNLT   => MPARS(IGRD)%SNLPS%SNLT
+      SNLCD  => MPARS(IGRD)%SNLPS%SNLCD
+      SNLCS  => MPARS(IGRD)%SNLPS%SNLCS
+      PINIT  = .TRUE.
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           SNLL, SNLM, SNLT, SNLCD, SNLCS
     END IF
 #endif
     !
@@ -1387,19 +1387,19 @@ CONTAINS
     IF ( FLTEST ) WRITE (NDST,9051) SNLNQ, SNLMSC, SNLNSC,     &
          SNLSFD, SNLSFS
     IF ( FLTEST ) THEN
-       DO I=1, SNLNQ
-          WRITE (NDST,9151) SNLL(I), SNLM(I), SNLT(I),       &
-               SNLCD(I), SNLCS(I)
-       END DO
+      DO I=1, SNLNQ
+        WRITE (NDST,9151) SNLL(I), SNLM(I), SNLT(I),       &
+             SNLCD(I), SNLCS(I)
+      END DO
     END IF
 #endif
     !
 #ifdef W3_NL4
     IF ( WRITE ) THEN
-       WRITE (NDSM) ITSA, IALT
+      WRITE (NDSM) ITSA, IALT
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            ITSA, IALT
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           ITSA, IALT
     END IF
 #endif
     !
@@ -1410,13 +1410,13 @@ CONTAINS
     ! (QL: INXOUT = Grid option ?)
 #ifdef W3_NL5
     IF (WRITE) THEN
-       CALL INSNL5
-       WRITE (NDSM) QR5DPT, QR5OML, QI5DIS, QI5KEV,           &
-            QI5NNZ, QI5IPL, QI5PMX
+      CALL INSNL5
+      WRITE (NDSM) QR5DPT, QR5OML, QI5DIS, QI5KEV,           &
+           QI5NNZ, QI5IPL, QI5PMX
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            QR5DPT, QR5OML, QI5DIS, QI5KEV,           &
-            QI5NNZ, QI5IPL, QI5PMX
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           QR5DPT, QR5OML, QI5DIS, QI5KEV,           &
+           QI5NNZ, QI5IPL, QI5PMX
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) QR5DPT, QR5OML, QI5DIS,    &
          QI5KEV, QI5NNZ, QI5IPL,    &
@@ -1425,11 +1425,11 @@ CONTAINS
     !
 #ifdef W3_NLS
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                           &
-            CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+      WRITE (NDSM)                                           &
+           CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
     END IF
 #endif
     !
@@ -1452,9 +1452,9 @@ CONTAINS
     !
 #ifdef W3_MPI
     IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
-       DO IP=1, IAPROC-1
-          CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
-       END DO
+      DO IP=1, IAPROC-1
+        CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
+      END DO
     END IF
 #endif
 #ifdef W3_NL2
@@ -1462,9 +1462,9 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
-       DO IP=IAPROC, NAPROC-1
-          CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
-       END DO
+      DO IP=IAPROC, NAPROC-1
+        CALL MPI_BARRIER (  MPI_COMM_WAVE, IERR_MPI )
+      END DO
     END IF
 #endif
     !
@@ -1472,9 +1472,9 @@ CONTAINS
     !
 #ifdef W3_BT1
     IF ( WRITE ) THEN
-       WRITE (NDSM)                            SBTC1
+      WRITE (NDSM)                            SBTC1
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
     END IF
 #endif
     !
@@ -1485,11 +1485,11 @@ CONTAINS
     !
 #ifdef W3_BT4
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                          &
-            SBTCX, SED_D50, SED_PSIC
+      WRITE (NDSM)                                          &
+           SBTCX, SED_D50, SED_PSIC
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
-            SBTCX, SED_D50, SED_PSIC
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+           SBTCX, SED_D50, SED_PSIC
     END IF
 #endif
     !
@@ -1503,11 +1503,11 @@ CONTAINS
 
 #ifdef W3_DB1
     IF ( WRITE ) THEN
-       WRITE (NDSM)                                           &
-            SDBC1, SDBC2, FDONLY
+      WRITE (NDSM)                                           &
+           SDBC1, SDBC2, FDONLY
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            SDBC1, SDBC2, FDONLY
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           SDBC1, SDBC2, FDONLY
     END IF
 #endif
     !
@@ -1517,14 +1517,14 @@ CONTAINS
 
 #ifdef W3_UOST
     IF ( WRITE ) THEN
-       WRITE (NDSM) UOSTFILELOCAL, UOSTFILESHADOW,            &
-            UOSTFACTORLOCAL, UOSTFACTORSHADOW
+      WRITE (NDSM) UOSTFILELOCAL, UOSTFILESHADOW,            &
+           UOSTFACTORLOCAL, UOSTFACTORSHADOW
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            UOSTFILELOCAL, UOSTFILESHADOW,                  &
-            UOSTFACTORLOCAL, UOSTFACTORSHADOW
-       CALL UOST_INITGRID(IGRD, UOSTFILELOCAL, UOSTFILESHADOW, &
-            UOSTFACTORLOCAL, UOSTFACTORSHADOW)
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           UOSTFILELOCAL, UOSTFILESHADOW,                  &
+           UOSTFACTORLOCAL, UOSTFACTORSHADOW
+      CALL UOST_INITGRID(IGRD, UOSTFILELOCAL, UOSTFILESHADOW, &
+           UOSTFACTORLOCAL, UOSTFACTORSHADOW)
 #endif
 
 #ifdef W3_UOST
@@ -1534,21 +1534,21 @@ CONTAINS
     !
 #ifdef W3_IS1
     IF ( WRITE ) THEN
-       WRITE (NDSM)                            IS1C1, IS1C2
+      WRITE (NDSM)                            IS1C1, IS1C2
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
     END IF
 #endif
     !
 #ifdef W3_IS2
     IF ( WRITE ) THEN
-       WRITE (NDSM)                            IS2PARS
+      WRITE (NDSM)                            IS2PARS
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS
-       IF ( .NOT. FLIS ) THEN
-          CALL INSIS2
-          FLIS  = .TRUE.
-       END IF
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS
+      IF ( .NOT. FLIS ) THEN
+        CALL INSIS2
+        FLIS  = .TRUE.
+      END IF
     END IF
 #endif
     !
@@ -1557,10 +1557,10 @@ CONTAINS
     !
 #ifdef W3_PR2
     IF ( WRITE ) THEN
-       WRITE (NDSM) DTME, CLATMN
+      WRITE (NDSM) DTME, CLATMN
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            DTME, CLATMN
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           DTME, CLATMN
     END IF
 #endif
     !
@@ -1570,10 +1570,10 @@ CONTAINS
     !
 #ifdef W3_PR3
     IF ( WRITE ) THEN
-       WRITE (NDSM) WDCG, WDTH
+      WRITE (NDSM) WDCG, WDTH
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            WDCG, WDTH
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           WDCG, WDTH
     END IF
 #endif
     !
@@ -1583,10 +1583,10 @@ CONTAINS
     !
 #ifdef W3_SMC
     IF ( WRITE ) THEN
-       WRITE(NDSM) DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
+      WRITE(NDSM) DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
-            DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
+           DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
     END IF
 #endif
     !
@@ -1596,18 +1596,18 @@ CONTAINS
     !
 #ifdef W3_FLD1
     IF ( WRITE ) THEN
-       WRITE (NDSM)  TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      WRITE (NDSM)  TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-            TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+           TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
     END IF
 #endif
 #ifdef W3_FLD2
     IF ( WRITE ) THEN
-       WRITE (NDSM) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      WRITE (NDSM) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
     ELSE
-       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
-            TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
+           TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
     END IF
 #endif
     !
@@ -1616,10 +1616,10 @@ CONTAINS
     !
     IF ( .NOT.WRITE .AND. .NOT.FLDISP ) THEN
 #ifdef W3_T
-       WRITE (NDST,9070)
+      WRITE (NDST,9070)
 #endif
-       CALL DISTAB
-       FLDISP = .TRUE.
+      CALL DISTAB
+      FLDISP = .TRUE.
     END IF
     !
     CLOSE ( NDSM )

@@ -179,7 +179,7 @@ PROGRAM WW3_SYSTRK
 #ifdef W3_MPI
   IF (rank.EQ.0) THEN
 #endif
-     WRITE(6,900)
+    WRITE(6,900)
 #ifdef W3_MPI
   END IF
 #endif
@@ -200,136 +200,136 @@ PROGRAM WW3_SYSTRK
 #ifdef W3_MPI
   IF (rank.EQ.0) THEN
 #endif
-     INQUIRE(FILE='ww3_systrk.inp', EXIST=file_exists)
-     IF (.NOT.file_exists) THEN
-        WRITE(20,2000)
-        WRITE(6,2000)
-        CALL ABORT
-     END IF
-     OPEN(unit=10,file='ww3_systrk.inp',status='old')
+    INQUIRE(FILE='ww3_systrk.inp', EXIST=file_exists)
+    IF (.NOT.file_exists) THEN
+      WRITE(20,2000)
+      WRITE(6,2000)
+      CALL ABORT
+    END IF
+    OPEN(unit=10,file='ww3_systrk.inp',status='old')
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     READ(10,*) filename
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    READ(10,*) filename
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     READ(10,*) date1, date2, dt, ntint
-     tstart = date1 + date2/1000000
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    READ(10,*) date1, date2, dt, ntint
+    tstart = date1 + date2/1000000
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     READ(10,*) outputType
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    READ(10,*) outputType
 
-     !Check for correct outputType option:
-     IF (outputType.EQ.1) THEN
-        !ASCII output
-     ELSEIF (outputType.EQ.3) THEN
-        !NetCDF 3 - requrires !/TRKNC switch
-        outputCheck1 = .TRUE.
+    !Check for correct outputType option:
+    IF (outputType.EQ.1) THEN
+      !ASCII output
+    ELSEIF (outputType.EQ.3) THEN
+      !NetCDF 3 - requrires !/TRKNC switch
+      outputCheck1 = .TRUE.
 #ifdef W3_TRKNC
-        outputCheck1 = .FALSE.
+      outputCheck1 = .FALSE.
 #endif
-        IF(outputCheck1)  THEN
-           WRITE(6,993)
-           STOP
-        END IF
-     ELSEIF (outputType.EQ.4) THEN
-        !NetCDF 4 - requrires !/TRKNC switch
-        outputCheck1 = .TRUE.
-#ifdef W3_TRKNC
-        outputCheck1 = .FALSE.
-#endif
-        IF(outputCheck1) THEN
-           WRITE(6,994)
-           STOP
-        END IF
-     ELSE
-        !Not a valid outputType
-        WRITE(6,995) outputType
+      IF(outputCheck1)  THEN
+        WRITE(6,993)
         STOP
-     ENDIF
+      END IF
+    ELSEIF (outputType.EQ.4) THEN
+      !NetCDF 4 - requrires !/TRKNC switch
+      outputCheck1 = .TRUE.
+#ifdef W3_TRKNC
+      outputCheck1 = .FALSE.
+#endif
+      IF(outputCheck1) THEN
+        WRITE(6,994)
+        STOP
+      END IF
+    ELSE
+      !Not a valid outputType
+      WRITE(6,995) outputType
+      STOP
+    ENDIF
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     READ(10,*) minlon, maxlon, mxcwt
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    READ(10,*) minlon, maxlon, mxcwt
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     READ(10,*) minlat, maxlat, mycwt
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    READ(10,*) minlat, maxlat, mycwt
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     READ(10,*) dirKnob, perKnob, hsKnob, wetPts, &
-          dirTimeKnob, tpTimeKnob
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    READ(10,*) dirKnob, perKnob, hsKnob, wetPts, &
+         dirTimeKnob, tpTimeKnob
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     READ(10,*) seedLat, seedLon
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    READ(10,*) seedLat, seedLon
 
-     READ(10,'(A72)') inpstr
-     DO WHILE (inpstr(1:1).EQ.'$')
-        READ(10,'(A72)') inpstr
-     END DO
-     BACKSPACE(10)
-     noutp = 1
-     lonout(:) = 9999.
-     latout(:) = 9999.
-     DO WHILE (.TRUE.)
-        READ(10,*) lonout(noutp),latout(noutp)
-        IF ((lonout(noutp).EQ.0.).AND.(latout(noutp).EQ.0.)) EXIT
-        noutp = noutp + 1
-     END DO
-     noutp = noutp - 1
+    READ(10,'(A72)') inpstr
+    DO WHILE (inpstr(1:1).EQ.'$')
+      READ(10,'(A72)') inpstr
+    END DO
+    BACKSPACE(10)
+    noutp = 1
+    lonout(:) = 9999.
+    latout(:) = 9999.
+    DO WHILE (.TRUE.)
+      READ(10,*) lonout(noutp),latout(noutp)
+      IF ((lonout(noutp).EQ.0.).AND.(latout(noutp).EQ.0.)) EXIT
+      noutp = noutp + 1
+    END DO
+    noutp = noutp - 1
 
-     CLOSE(10)
+    CLOSE(10)
 
-     WRITE(20,*) 'Raw partition file = ',filename
-     WRITE(20,'(A,F15.6)') 'Start time = ',tstart
-     WRITE(20,*) 'dt = ',dt
-     WRITE(20,*) 'No. time levels = ',ntint
-     WRITE(20,'(A,2F7.2)') 'Domain limits: Longitude =',minlon, maxlon
-     WRITE(20,'(A,2F7.2)') '               Latitude  =',minlat, maxlat
-     WRITE(20,*) 'No. increments: Long, Lat  =',mxcwt, mycwt
-     WRITE(20,*) 'dirKnob, perKnob, hsKnob, wetPts, &
-          dirTimeKnob, tpTimeKnob, seedLat, seedLon ='
-     WRITE(20,'(8F6.2)') dirKnob, perKnob, hsKnob, wetPts, &
-          dirTimeKnob, tpTimeKnob, seedLat, seedLon
-     WRITE(20,*) 'No. output points =',noutp
-     DO i = 1,noutp
-        WRITE(20,*) lonout(i), latout(i)
-     END DO
+    WRITE(20,*) 'Raw partition file = ',filename
+    WRITE(20,'(A,F15.6)') 'Start time = ',tstart
+    WRITE(20,*) 'dt = ',dt
+    WRITE(20,*) 'No. time levels = ',ntint
+    WRITE(20,'(A,2F7.2)') 'Domain limits: Longitude =',minlon, maxlon
+    WRITE(20,'(A,2F7.2)') '               Latitude  =',minlat, maxlat
+    WRITE(20,*) 'No. increments: Long, Lat  =',mxcwt, mycwt
+    WRITE(20,*) 'dirKnob, perKnob, hsKnob, wetPts, &
+         dirTimeKnob, tpTimeKnob, seedLat, seedLon ='
+    WRITE(20,'(8F6.2)') dirKnob, perKnob, hsKnob, wetPts, &
+         dirTimeKnob, tpTimeKnob, seedLat, seedLon
+    WRITE(20,*) 'No. output points =',noutp
+    DO i = 1,noutp
+      WRITE(20,*) lonout(i), latout(i)
+    END DO
 
-     INQUIRE(FILE=filename, EXIST=file_exists)
-     IF (.NOT.file_exists) THEN
-        WRITE(20,2200) filename
-        WRITE(6,2200) filename
-        CALL EXIT(1)
-     END IF
+    INQUIRE(FILE=filename, EXIST=file_exists)
+    IF (.NOT.file_exists) THEN
+      WRITE(20,2200) filename
+      WRITE(6,2200) filename
+      CALL EXIT(1)
+    END IF
 
 
-     CALL DATE_AND_TIME ( VALUES=CLKDT0 )
+    CALL DATE_AND_TIME ( VALUES=CLKDT0 )
 
 #ifdef W3_MPI
   END IF
@@ -386,689 +386,689 @@ PROGRAM WW3_SYSTRK
   IF (rank.EQ.0) THEN
 #endif
 
-     CALL DATE_AND_TIME ( VALUES=CLKDT1 )
-     CLKFEL = TDIFF ( CLKDT0,CLKDT1 )
-     WRITE (6,998) CLKFEL
-     WRITE (6,*) 'Final system output...'
+    CALL DATE_AND_TIME ( VALUES=CLKDT1 )
+    CLKFEL = TDIFF ( CLKDT0,CLKDT1 )
+    WRITE (6,998) CLKFEL
+    WRITE (6,*) 'Final system output...'
 
-     !     Set upper limit for wave systems to output (limited by AWIPS display)
-     ulimGroup = 9
+    !     Set upper limit for wave systems to output (limited by AWIPS display)
+    ulimGroup = 9
 
-     !-----Output systems as plain text----------------------------------------
+    !-----Output systems as plain text----------------------------------------
 
-     maxI = SIZE(wsdat(1)%lon,1)
-     maxJ = SIZE(wsdat(1)%lon,2)
-     dlon = wsdat(1)%lon(2,2)-wsdat(1)%lon(1,1)
-     dlat = wsdat(1)%lat(2,2)-wsdat(1)%lat(1,1)
-     WRITE(20,*) 'dlon, dlat =',dlon,dlat
+    maxI = SIZE(wsdat(1)%lon,1)
+    maxJ = SIZE(wsdat(1)%lon,2)
+    dlon = wsdat(1)%lon(2,2)-wsdat(1)%lon(1,1)
+    dlat = wsdat(1)%lat(2,2)-wsdat(1)%lat(1,1)
+    WRITE(20,*) 'dlon, dlat =',dlon,dlat
 
-     !-----Final SYSTEM output: Coordinates
-     OPEN(unit=21,file='sys_coord.ww3', status='unknown')
+    !-----Final SYSTEM output: Coordinates
+    OPEN(unit=21,file='sys_coord.ww3', status='unknown')
 
-     WRITE(21,'(I6,69X,A)') maxJ,'Number of rows'
-     WRITE(21,'(I6,69X,A)') maxI,'Number of cols'
+    WRITE(21,'(I6,69X,A)') maxJ,'Number of rows'
+    WRITE(21,'(I6,69X,A)') maxI,'Number of cols'
 #ifdef W3_TRKNC
-     ALLOCATE( longitude_nc(maxI) )
-     ALLOCATE( latitude_nc(maxJ) )
+    ALLOCATE( longitude_nc(maxI) )
+    ALLOCATE( latitude_nc(maxJ) )
 #endif
 
-     WRITE(21,*) 'Longitude ='
-     DO j = maxJ,1,-1
-        DO i = 1,maxI
-           WRITE(21,'(F7.2)',ADVANCE='NO') wsdat(1)%lon(i,j)
+    WRITE(21,*) 'Longitude ='
+    DO j = maxJ,1,-1
+      DO i = 1,maxI
+        WRITE(21,'(F7.2)',ADVANCE='NO') wsdat(1)%lon(i,j)
 #ifdef W3_TRKNC
-           longitude_nc(i)=wsdat(1)%lon(i,1)
+        longitude_nc(i)=wsdat(1)%lon(i,1)
 #endif
+      END DO
+      WRITE(21,'(A)',ADVANCE='YES') ''
+    END DO
+
+    WRITE(21,*) 'Latitude = '
+    DO j = maxJ,1,-1
+      DO i = 1,maxI
+        WRITE(21,'(F7.2)',ADVANCE='NO') wsdat(1)%lat(i,j)
+#ifdef W3_TRKNC
+        latitude_nc(j)=wsdat(1)%lat(1,j)
+#endif
+      END DO
+      WRITE(21,'(A)',ADVANCE='YES') ''
+    END DO
+
+    CLOSE(21)
+
+    !-----Final SYSTEM output: hs
+    IF(outputType == 1) THEN
+      OPEN(unit=22,file='sys_hs.ww3', status='unknown')
+
+      WRITE(22,'(I6,69X,A)') maxJ,'Number of rows'
+      WRITE(22,'(I6,69X,A)') maxI,'Number of cols'
+    ENDIF
+
+    NTIME_NC=SIZE(sysA)
+    ALLOCATE( dum(maxI,maxJ) )
+#ifdef W3_TRKNC
+    IF(outputType == 3 .OR. outputType == 4) THEN
+      ALLOCATE( dum2nc(maxI,maxJ,maxGroup,NTIME_NC) )
+    ENDIF
+#endif
+
+    DO it = 1,SIZE(sysA)
+      !        Loop through identified groups, limiting the output in file to ulimGroup
+      IF(outputType == 1) THEN
+        WRITE(22,'(F15.6,60x,A)') wsdat(it)%date,'Time'
+        WRITE(22,'(I6,69x,A)') MIN(ulimGroup,maxGroup), &
+             'Tot number of systems'
+      ENDIF
+      DO igrp = 1,MIN(ulimGroup,maxGroup)
+        dum(1:maxI,1:maxJ) = 9999.00
+        !           Find system with this group tag
+        sysmatch = 1
+        DO WHILE (sysmatch.LE.maxSys(it))
+          IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
+          sysmatch = sysmatch+1
         END DO
-        WRITE(21,'(A)',ADVANCE='YES') ''
-     END DO
+        IF (sysmatch.LE.maxSys(it)) THEN
+          !              Match found: fill the output matrix with this data
+          leng = sysA(it)%sys(sysmatch)%nPoints
+          DO ind = 1, leng
+            dum(sysA(it)%sys(sysmatch)%i(ind), &
+                 sysA(it)%sys(sysmatch)%j(ind)) = &
+                 sysA(it)%sys(sysmatch)%hs(ind)
+          END DO
+        ELSE
+          leng = 0
+        END IF
 
-     WRITE(21,*) 'Latitude = '
-     DO j = maxJ,1,-1
-        DO i = 1,maxI
-           WRITE(21,'(F7.2)',ADVANCE='NO') wsdat(1)%lat(i,j)
-#ifdef W3_TRKNC
-           latitude_nc(j)=wsdat(1)%lat(1,j)
-#endif
-        END DO
-        WRITE(21,'(A)',ADVANCE='YES') ''
-     END DO
-
-     CLOSE(21)
-
-     !-----Final SYSTEM output: hs
-     IF(outputType == 1) THEN
-        OPEN(unit=22,file='sys_hs.ww3', status='unknown')
-
-        WRITE(22,'(I6,69X,A)') maxJ,'Number of rows'
-        WRITE(22,'(I6,69X,A)') maxI,'Number of cols'
-     ENDIF
-
-     NTIME_NC=SIZE(sysA)
-     ALLOCATE( dum(maxI,maxJ) )
-#ifdef W3_TRKNC
-     IF(outputType == 3 .OR. outputType == 4) THEN
-        ALLOCATE( dum2nc(maxI,maxJ,maxGroup,NTIME_NC) )
-     ENDIF
-#endif
-
-     DO it = 1,SIZE(sysA)
-        !        Loop through identified groups, limiting the output in file to ulimGroup
         IF(outputType == 1) THEN
-           WRITE(22,'(F15.6,60x,A)') wsdat(it)%date,'Time'
-           WRITE(22,'(I6,69x,A)') MIN(ulimGroup,maxGroup), &
-                'Tot number of systems'
-        ENDIF
-        DO igrp = 1,MIN(ulimGroup,maxGroup)
-           dum(1:maxI,1:maxJ) = 9999.00
-           !           Find system with this group tag
-           sysmatch = 1
-           DO WHILE (sysmatch.LE.maxSys(it))
-              IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
-              sysmatch = sysmatch+1
-           END DO
-           IF (sysmatch.LE.maxSys(it)) THEN
-              !              Match found: fill the output matrix with this data
-              leng = sysA(it)%sys(sysmatch)%nPoints
-              DO ind = 1, leng
-                 dum(sysA(it)%sys(sysmatch)%i(ind), &
-                      sysA(it)%sys(sysmatch)%j(ind)) = &
-                      sysA(it)%sys(sysmatch)%hs(ind)
-              END DO
-           ELSE
-              leng = 0
-           END IF
+          WRITE(22,'(I6,69x,A)') igrp,'System number'
+          WRITE(22,'(I6,69x,A)') leng,'Number of points in system'
 
-           IF(outputType == 1) THEN
-              WRITE(22,'(I6,69x,A)') igrp,'System number'
-              WRITE(22,'(I6,69x,A)') leng,'Number of points in system'
-
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    WRITE(22,'(F8.2)',ADVANCE='NO') dum(i,j)
-                 END DO
-                 WRITE(22,'(A)',ADVANCE='YES') ''
-              END DO
-           ELSE
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              WRITE(22,'(F8.2)',ADVANCE='NO') dum(i,j)
+            END DO
+            WRITE(22,'(A)',ADVANCE='YES') ''
+          END DO
+        ELSE
 #ifdef W3_TRKNC
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    dum2nc(i,j,igrp,it)=dum(i,j)
-                 END DO
-              END DO
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              dum2nc(i,j,igrp,it)=dum(i,j)
+            END DO
+          END DO
 #endif
-           ENDIF
+        ENDIF
 
+      END DO
+    END DO
+
+#ifdef W3_TRKNC
+    IF(outputType == 3 .OR. outputType == 4 ) THEN
+      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+           maxGroup,date1,date2,dt,NTIME_NC,1,outputType)
+    ENDIF
+#endif
+
+    IF(outputType.EQ.1) CLOSE(22)
+
+    !-----Final SYSTEM output: tp
+    IF(outputType == 1) THEN
+      OPEN(unit=23,file='sys_tp.ww3',status='unknown')
+
+      WRITE(23,'(I6,69X,A)') maxJ,'Number of rows'
+      WRITE(23,'(I6,69X,A)') maxI,'Number of cols'
+    ENDIF
+
+    DO it = 1,SIZE(sysA)
+      !        Loop through identified groups, limiting the output in file to ulimGroup
+      IF(outputType == 1) THEN
+        WRITE(23,'(F15.6,60x,A)') wsdat(it)%date,'Time'
+        WRITE(23,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
+             'Tot number of systems'
+      ENDIF
+      DO igrp = 1,MIN(ulimGroup,maxGroup)
+        dum(1:maxI,1:maxJ) = 9999.00
+        !           Find system with this group tag
+        sysmatch = 1
+        DO WHILE (sysmatch.LE.maxSys(it))
+          IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
+          sysmatch = sysmatch+1
         END DO
-     END DO
+        IF (sysmatch.LE.maxSys(it)) THEN
+          !              Match found: fill the output matrix with this data
+          leng = sysA(it)%sys(sysmatch)%nPoints
+          DO ind = 1, leng
+            dum(sysA(it)%sys(sysmatch)%i(ind), &
+                 sysA(it)%sys(sysmatch)%j(ind)) = &
+                 sysA(it)%sys(sysmatch)%tp(ind)
+          END DO
+        ELSE
+          leng = 0
+        END IF
 
-#ifdef W3_TRKNC
-     IF(outputType == 3 .OR. outputType == 4 ) THEN
-        call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
-             maxGroup,date1,date2,dt,NTIME_NC,1,outputType)
-     ENDIF
-#endif
-
-     IF(outputType.EQ.1) CLOSE(22)
-
-     !-----Final SYSTEM output: tp
-     IF(outputType == 1) THEN
-        OPEN(unit=23,file='sys_tp.ww3',status='unknown')
-
-        WRITE(23,'(I6,69X,A)') maxJ,'Number of rows'
-        WRITE(23,'(I6,69X,A)') maxI,'Number of cols'
-     ENDIF
-
-     DO it = 1,SIZE(sysA)
-        !        Loop through identified groups, limiting the output in file to ulimGroup
         IF(outputType == 1) THEN
-           WRITE(23,'(F15.6,60x,A)') wsdat(it)%date,'Time'
-           WRITE(23,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
-                'Tot number of systems'
-        ENDIF
-        DO igrp = 1,MIN(ulimGroup,maxGroup)
-           dum(1:maxI,1:maxJ) = 9999.00
-           !           Find system with this group tag
-           sysmatch = 1
-           DO WHILE (sysmatch.LE.maxSys(it))
-              IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
-              sysmatch = sysmatch+1
-           END DO
-           IF (sysmatch.LE.maxSys(it)) THEN
-              !              Match found: fill the output matrix with this data
-              leng = sysA(it)%sys(sysmatch)%nPoints
-              DO ind = 1, leng
-                 dum(sysA(it)%sys(sysmatch)%i(ind), &
-                      sysA(it)%sys(sysmatch)%j(ind)) = &
-                      sysA(it)%sys(sysmatch)%tp(ind)
-              END DO
-           ELSE
-              leng = 0
-           END IF
-
-           IF(outputType == 1) THEN
-              WRITE(23,'(I6,69X,A)') igrp,'System number'
-              WRITE(23,'(I6,69X,A)') leng,'Number of points in system'
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    WRITE(23,'(F8.2)',ADVANCE='NO') dum(i,j)
-                 END DO
-                 WRITE(23,'(A)',ADVANCE='YES') ''
-              END DO
-           ELSE
+          WRITE(23,'(I6,69X,A)') igrp,'System number'
+          WRITE(23,'(I6,69X,A)') leng,'Number of points in system'
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              WRITE(23,'(F8.2)',ADVANCE='NO') dum(i,j)
+            END DO
+            WRITE(23,'(A)',ADVANCE='YES') ''
+          END DO
+        ELSE
 
 #ifdef W3_TRKNC
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    dum2nc(i,j,igrp,it)=dum(i,j)
-                 END DO
-              END DO
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              dum2nc(i,j,igrp,it)=dum(i,j)
+            END DO
+          END DO
 #endif
-           ENDIF
+        ENDIF
 
+      END DO
+    END DO
+
+#ifdef W3_TRKNC
+    IF(outputType.EQ.3 .OR. outputType.EQ. 4 ) THEN
+      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+           maxGroup,date1,date2,dt,NTIME_NC,2,outputType)
+    ENDIF
+#endif
+
+    IF(outputType.EQ.1) CLOSE(23)
+
+    !-----Final SYSTEM output: dir
+    IF(outputType == 1) THEN
+      OPEN(unit=24,file='sys_dir.ww3',status='unknown')
+
+      WRITE(24,'(I6,69X,A)') maxJ,'Number of rows'
+      WRITE(24,'(I6,69X,A)') maxI,'Number of cols'
+    ENDIF
+
+    DO it = 1,SIZE(sysA)
+      !        Loop through identified groups, limiting the output in file to
+      !        ulimGroup
+      IF(outputType == 1) THEN
+        WRITE(24,'(F15.6,60x,A)') wsdat(it)%date,'Time'
+        WRITE(24,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
+             'Tot number of systems'
+      ENDIF
+      DO igrp = 1,MIN(ulimGroup,maxGroup)
+        dum(1:maxI,1:maxJ) = 9999.00
+        !           Find system with this group tag
+        sysmatch = 1
+        DO WHILE (sysmatch.LE.maxSys(it))
+          IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
+          sysmatch = sysmatch+1
         END DO
-     END DO
+        IF (sysmatch.LE.maxSys(it)) THEN
+          !              Match found: fill the output matrix with this data
+          leng = sysA(it)%sys(sysmatch)%nPoints
+          DO ind = 1, leng
+            dum(sysA(it)%sys(sysmatch)%i(ind), &
+                 sysA(it)%sys(sysmatch)%j(ind)) = &
+                 sysA(it)%sys(sysmatch)%dir(ind)
+          END DO
+        ELSE
+          leng = 0
+        END IF
 
-#ifdef W3_TRKNC
-     IF(outputType.EQ.3 .OR. outputType.EQ. 4 ) THEN
-        call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
-             maxGroup,date1,date2,dt,NTIME_NC,2,outputType)
-     ENDIF
-#endif
-
-     IF(outputType.EQ.1) CLOSE(23)
-
-     !-----Final SYSTEM output: dir
-     IF(outputType == 1) THEN
-        OPEN(unit=24,file='sys_dir.ww3',status='unknown')
-
-        WRITE(24,'(I6,69X,A)') maxJ,'Number of rows'
-        WRITE(24,'(I6,69X,A)') maxI,'Number of cols'
-     ENDIF
-
-     DO it = 1,SIZE(sysA)
-        !        Loop through identified groups, limiting the output in file to
-        !        ulimGroup
         IF(outputType == 1) THEN
-           WRITE(24,'(F15.6,60x,A)') wsdat(it)%date,'Time'
-           WRITE(24,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
-                'Tot number of systems'
-        ENDIF
-        DO igrp = 1,MIN(ulimGroup,maxGroup)
-           dum(1:maxI,1:maxJ) = 9999.00
-           !           Find system with this group tag
-           sysmatch = 1
-           DO WHILE (sysmatch.LE.maxSys(it))
-              IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
-              sysmatch = sysmatch+1
-           END DO
-           IF (sysmatch.LE.maxSys(it)) THEN
-              !              Match found: fill the output matrix with this data
-              leng = sysA(it)%sys(sysmatch)%nPoints
-              DO ind = 1, leng
-                 dum(sysA(it)%sys(sysmatch)%i(ind), &
-                      sysA(it)%sys(sysmatch)%j(ind)) = &
-                      sysA(it)%sys(sysmatch)%dir(ind)
-              END DO
-           ELSE
-              leng = 0
-           END IF
-
-           IF(outputType == 1) THEN
-              WRITE(24,'(I6,69X,A)') igrp,'System number'
-              WRITE(24,'(I6,69X,A)') leng,'Number of points in system'
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    WRITE(24,'(F8.2)',ADVANCE='NO') dum(i,j)
-                 END DO
-                 WRITE(24,'(A)',ADVANCE='YES') ''
-              END DO
-           ELSE
+          WRITE(24,'(I6,69X,A)') igrp,'System number'
+          WRITE(24,'(I6,69X,A)') leng,'Number of points in system'
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              WRITE(24,'(F8.2)',ADVANCE='NO') dum(i,j)
+            END DO
+            WRITE(24,'(A)',ADVANCE='YES') ''
+          END DO
+        ELSE
 #ifdef W3_TRKNC
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    dum2nc(i,j,igrp,it)=dum(i,j)
-                 END DO
-              END DO
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              dum2nc(i,j,igrp,it)=dum(i,j)
+            END DO
+          END DO
 #endif
-           END IF
+        END IF
 
+      END DO
+    END DO
+
+#ifdef W3_TRKNC
+    IF(outputType.EQ.3 .OR. outputType.EQ.4 ) THEN
+      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+           maxGroup,date1,date2,dt,NTIME_NC,3,outputType)
+    ENDIF
+#endif
+    IF(outputType.EQ.1) CLOSE(24)
+
+    !-----Final SYSTEM output: dspr
+    IF(outputType == 1) THEN
+      OPEN(unit=25,file='sys_dspr.ww3',status='unknown')
+
+      WRITE(25,'(I6,69X,A)') maxJ,'Number of rows'
+      WRITE(25,'(I6,69X,A)') maxI,'Number of cols'
+    ENDIF
+
+    DO it = 1,SIZE(sysA)
+      !        Loop through identified groups, limiting the output in file to ulimGroup
+      IF(outputType == 1) THEN
+        WRITE(25,'(F15.6,60x,A)') wsdat(it)%date,'Time'
+        WRITE(25,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
+             'Tot number of systems'
+      ENDIF
+      DO igrp = 1,MIN(ulimGroup,maxGroup)
+        dum(1:maxI,1:maxJ) = 9999.00
+        !           Find system with this group tag
+        sysmatch = 1
+        DO WHILE (sysmatch.LE.maxSys(it))
+          IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
+          sysmatch = sysmatch+1
         END DO
-     END DO
+        IF (sysmatch.LE.maxSys(it)) THEN
+          !              Match found: fill the output matrix with this data
+          leng = sysA(it)%sys(sysmatch)%nPoints
+          DO ind = 1, leng
+            dum(sysA(it)%sys(sysmatch)%i(ind), &
+                 sysA(it)%sys(sysmatch)%j(ind)) = &
+                 sysA(it)%sys(sysmatch)%dspr(ind)
+          END DO
+        ELSE
+          leng = 0
+        END IF
 
-#ifdef W3_TRKNC
-     IF(outputType.EQ.3 .OR. outputType.EQ.4 ) THEN
-        call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
-             maxGroup,date1,date2,dt,NTIME_NC,3,outputType)
-     ENDIF
-#endif
-     IF(outputType.EQ.1) CLOSE(24)
-
-     !-----Final SYSTEM output: dspr
-     IF(outputType == 1) THEN
-        OPEN(unit=25,file='sys_dspr.ww3',status='unknown')
-
-        WRITE(25,'(I6,69X,A)') maxJ,'Number of rows'
-        WRITE(25,'(I6,69X,A)') maxI,'Number of cols'
-     ENDIF
-
-     DO it = 1,SIZE(sysA)
-        !        Loop through identified groups, limiting the output in file to ulimGroup
         IF(outputType == 1) THEN
-           WRITE(25,'(F15.6,60x,A)') wsdat(it)%date,'Time'
-           WRITE(25,'(I6,69X,A)') MIN(ulimGroup,maxGroup), &
-                'Tot number of systems'
-        ENDIF
-        DO igrp = 1,MIN(ulimGroup,maxGroup)
-           dum(1:maxI,1:maxJ) = 9999.00
-           !           Find system with this group tag
-           sysmatch = 1
-           DO WHILE (sysmatch.LE.maxSys(it))
-              IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
-              sysmatch = sysmatch+1
-           END DO
-           IF (sysmatch.LE.maxSys(it)) THEN
-              !              Match found: fill the output matrix with this data
-              leng = sysA(it)%sys(sysmatch)%nPoints
-              DO ind = 1, leng
-                 dum(sysA(it)%sys(sysmatch)%i(ind), &
-                      sysA(it)%sys(sysmatch)%j(ind)) = &
-                      sysA(it)%sys(sysmatch)%dspr(ind)
-              END DO
-           ELSE
-              leng = 0
-           END IF
-
-           IF(outputType == 1) THEN
-              WRITE(25,'(I6,69X,A)') igrp,'System number'
-              WRITE(25,'(I6,69X,A)') leng,'Number of points in system'
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    WRITE(25,'(F8.2)',ADVANCE='NO') dum(i,j)
-                 END DO
-                 WRITE(25,'(A)',ADVANCE='YES') ''
-              END DO
-           ELSE
+          WRITE(25,'(I6,69X,A)') igrp,'System number'
+          WRITE(25,'(I6,69X,A)') leng,'Number of points in system'
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              WRITE(25,'(F8.2)',ADVANCE='NO') dum(i,j)
+            END DO
+            WRITE(25,'(A)',ADVANCE='YES') ''
+          END DO
+        ELSE
 #ifdef W3_TRKNC
-              DO J = maxJ,1,-1
-                 DO i = 1,maxI
-                    dum2nc(i,j,igrp,it)=dum(i,j)
-                 END DO
-              END DO
+          DO J = maxJ,1,-1
+            DO i = 1,maxI
+              dum2nc(i,j,igrp,it)=dum(i,j)
+            END DO
+          END DO
 #endif
-           ENDIF
+        ENDIF
 
+      END DO
+    END DO
+
+#ifdef W3_TRKNC
+    IF(outputType.EQ.3 .OR. outputType.EQ.4 ) THEN
+      call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
+           maxGroup,date1,date2,dt,NTIME_NC,4,outputType)
+    ENDIF
+#endif
+    IF(outputType.EQ.1) CLOSE(25)
+
+    IF (ALLOCATED(DUM)) DEALLOCATE(dum)
+#ifdef W3_TRKNC
+    IF (ALLOCATED(dum2nc)) DEALLOCATE(dum2nc)
+#endif
+
+#ifdef W3_TRKNC
+    IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
+      ALLOCATE( hsprt_nc(10,noutp,NTIME_NC) )
+      ALLOCATE( tpprt_nc(10,noutp,NTIME_NC) )
+      ALLOCATE( dirprt_nc(10,noutp,NTIME_NC) )
+      ALLOCATE( lonprt_nc(noutp) )
+      ALLOCATE( latprt_nc(noutp) )
+    ENDIF
+#endif
+
+    !-----Final SYSTEM output: point output
+    IF(outputType == 1) THEN
+      OPEN(unit=26,file='sys_pnt.ww3',status='unknown')
+      WRITE(26,'(A)') '%'
+      WRITE(26,'(A)') '%'
+      WRITE(26,'(A)') '% WW3 Wave tracking point output'
+      WRITE(26,'(A)') '%'
+      WRITE(26,'(10A)') '%       Xp            Yp            ', &
+           'HsSY01        HsSY02        HsSY03        HsSY04        ', &
+           'HsSY05        HsSY06        HsSY07        HsSY08        ', &
+           'HsSY09        HsSY10        ', &
+           'TpSY01        TpSY02        TpSY03        TpSY04        ', &
+           'TpSY05        TpSY06        TpSY07        TpSY08        ', &
+           'TpSY09        TpSY10        ', &
+           'DrSY01        DrSY02        DrSY03        DrSY04        ', &
+           'DrSY05        DrSY06        DrSY07        DrSY08        ', &
+           'DrSY09        DrSY10'
+      WRITE(26,'(10A)') '%       [degr]        [degr]        ', &
+           '[m]           [m]           [m]           [m]           ', &
+           '[m]           [m]           [m]           [m]           ', &
+           '[m]           [m]           ', &
+           '[sec]         [sec]         [sec]         [sec]         ', &
+           '[sec]         [sec]         [sec]         [sec]         ', &
+           '[sec]         [sec]         ', &
+           '[degr]        [degr]        [degr]        [degr]        ', &
+           '[degr]        [degr]        [degr]        [degr]        ', &
+           '[degr]        [degr]'
+      WRITE(26,'(A)') '%'
+    ENDIF
+
+    DO it = 1,SIZE(sysA)
+      IF(outputType == 1) THEN
+        WRITE(26,'(A,F15.6)') 'Time : ',wsdat(it)%date
+      ENDIF
+
+      DO ip = 1,noutp
+        hsprt(1:10) = 999.9999
+        tpprt(1:10) = 999.9999
+        dirprt(1:10) = 999.9999
+        lonprt = 999.9999
+        latprt = 999.9999
+        BL_hsprt(1:10) = 999.9999
+        BL_tpprt(1:10) = 999.9999
+        BL_dirprt(1:10) = 999.9999
+        BR_hsprt(1:10) = 999.9999
+        BR_tpprt(1:10) = 999.9999
+        BR_dirprt(1:10) = 999.9999
+        TL_hsprt(1:10) = 999.9999
+        TL_tpprt(1:10) = 999.9999
+        TL_dirprt(1:10) = 999.9999
+        TR_hsprt(1:10) = 999.9999
+        TR_tpprt(1:10) = 999.9999
+        TR_dirprt(1:10) = 999.9999
+        BL_lonprt = 999.9999
+        BL_latprt = 999.9999
+        BR_lonprt = 999.9999
+        BR_latprt = 999.9999
+        TL_lonprt = 999.9999
+        TL_latprt = 999.9999
+        TR_lonprt = 999.9999
+        TR_latprt = 999.9999
+        BL_W = 999
+        BR_W = 999
+        TR_W = 999
+        TL_W = 999
+
+        DO j = 1, (maxJ-1)
+          DO i = 1, (maxI-1)
+            IF ( ( ((lonout(ip).GE. &
+                 wsdat(1)%lon(i,j)).AND. &
+                 (lonout(ip).LT. &
+                 wsdat(1)%lon(i+1,j))).OR. &
+                 ((lonout(ip).GT. &
+                 wsdat(1)%lon(i,j)).AND. &
+                 (lonout(ip).LE. &
+                 wsdat(1)%lon(i+1,j))) ).AND. &
+                 ( ((latout(ip).GE. &
+                 wsdat(1)%lat(i,j)).AND. &
+                 (latout(ip).LT. &
+                 wsdat(1)%lat(i,j+1))).OR. &
+                 ((latout(ip).GT. &
+                 wsdat(1)%lat(i,j)).AND. &
+                 (latout(ip).LE. &
+                 wsdat(1)%lat(i,j+1))) ) ) &
+                 THEN
+              BL_lonprt = wsdat(1)%lon(i,j)
+              BL_latprt = wsdat(1)%lat(i,j)
+              BR_lonprt = wsdat(1)%lon(i+1,j)
+              BR_latprt = wsdat(1)%lat(i+1,j)
+              TL_lonprt = wsdat(1)%lon(i,j+1)
+              TL_latprt = wsdat(1)%lat(i,j+1)
+              TR_lonprt = wsdat(1)%lon(i+1,j+1)
+              TR_latprt = wsdat(1)%lat(i+1,j+1)
+              !                    Compute weights for this point
+              t = (lonout(ip)-BL_lonprt)/(BR_lonprt-BL_lonprt)
+              u = (latout(ip)-BL_latprt)/(TL_latprt-BL_latprt)
+              BL_W = (1-t)*(1-u)
+              BR_W = t*(1-u)
+              TR_W = t*u
+              TL_W = (1-t)*u
+              !                    Compute output values using weights
+              lonprt = BL_W*BL_lonprt + BR_W*BR_lonprt + &
+                   TL_W*TL_lonprt + TR_W*TR_lonprt
+              latprt = BL_W*BL_latprt + BR_W*BR_latprt + &
+                   TL_W*TL_latprt + TR_W*TR_latprt
+            END IF
+          END DO
         END DO
-     END DO
-
-#ifdef W3_TRKNC
-     IF(outputType.EQ.3 .OR. outputType.EQ.4 ) THEN
-        call t2netcdf(longitude_nc,latitude_nc,dum2nc,maxI,maxJ,&
-             maxGroup,date1,date2,dt,NTIME_NC,4,outputType)
-     ENDIF
-#endif
-     IF(outputType.EQ.1) CLOSE(25)
-
-     IF (ALLOCATED(DUM)) DEALLOCATE(dum)
-#ifdef W3_TRKNC
-     IF (ALLOCATED(dum2nc)) DEALLOCATE(dum2nc)
-#endif
-
-#ifdef W3_TRKNC
-     IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
-        ALLOCATE( hsprt_nc(10,noutp,NTIME_NC) )
-        ALLOCATE( tpprt_nc(10,noutp,NTIME_NC) )
-        ALLOCATE( dirprt_nc(10,noutp,NTIME_NC) )
-        ALLOCATE( lonprt_nc(noutp) )
-        ALLOCATE( latprt_nc(noutp) )
-     ENDIF
-#endif
-
-     !-----Final SYSTEM output: point output
-     IF(outputType == 1) THEN
-        OPEN(unit=26,file='sys_pnt.ww3',status='unknown')
-        WRITE(26,'(A)') '%'
-        WRITE(26,'(A)') '%'
-        WRITE(26,'(A)') '% WW3 Wave tracking point output'
-        WRITE(26,'(A)') '%'
-        WRITE(26,'(10A)') '%       Xp            Yp            ', &
-             'HsSY01        HsSY02        HsSY03        HsSY04        ', &
-             'HsSY05        HsSY06        HsSY07        HsSY08        ', &
-             'HsSY09        HsSY10        ', &
-             'TpSY01        TpSY02        TpSY03        TpSY04        ', &
-             'TpSY05        TpSY06        TpSY07        TpSY08        ', &
-             'TpSY09        TpSY10        ', &
-             'DrSY01        DrSY02        DrSY03        DrSY04        ', &
-             'DrSY05        DrSY06        DrSY07        DrSY08        ', &
-             'DrSY09        DrSY10'
-        WRITE(26,'(10A)') '%       [degr]        [degr]        ', &
-             '[m]           [m]           [m]           [m]           ', &
-             '[m]           [m]           [m]           [m]           ', &
-             '[m]           [m]           ', &
-             '[sec]         [sec]         [sec]         [sec]         ', &
-             '[sec]         [sec]         [sec]         [sec]         ', &
-             '[sec]         [sec]         ', &
-             '[degr]        [degr]        [degr]        [degr]        ', &
-             '[degr]        [degr]        [degr]        [degr]        ', &
-             '[degr]        [degr]'
-        WRITE(26,'(A)') '%'
-     ENDIF
-
-     DO it = 1,SIZE(sysA)
+        !           Loop through identified groups, limiting the output in file to 10
+        DO igrp = 1,MIN(10,maxGroup)
+          !              Find system with this group tag
+          sysmatch = 1
+          DO WHILE (sysmatch.LE.maxSys(it))
+            IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
+            sysmatch = sysmatch+1
+          END DO
+          IF (sysmatch.LE.maxSys(it)) THEN
+            !                Match found: fill the output matrix with this data
+            leng = sysA(it)%sys(sysmatch)%nPoints
+            DO ind = 1, leng
+              !                  Write output point data with bilinear interpolation
+              IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
+                   BL_lonprt).AND.&
+                   (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
+                   BL_latprt) ) THEN
+                BL_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
+                BL_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
+                BL_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
+              ELSE IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
+                   BR_lonprt).AND.&
+                   (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
+                   BR_latprt)) THEN
+                BR_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
+                BR_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
+                BR_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
+              ELSE IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
+                   TL_lonprt).AND.&
+                   (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
+                   TL_latprt)) THEN
+                TL_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
+                TL_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
+                TL_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
+              ELSE IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
+                   TR_lonprt).AND.&
+                   (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
+                   TR_latprt)) THEN
+                TR_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
+                TR_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
+                TR_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
+              END IF
+            END DO
+            !                  Compute output value using weights
+            !                  (only if output point is surrounded by valid points)
+            IF ( (BL_hsprt(igrp).NE.999.9999).AND. &
+                 (BR_hsprt(igrp).NE.999.9999).AND. &
+                 (TL_hsprt(igrp).NE.999.9999).AND. &
+                 (TR_hsprt(igrp).NE.999.9999) ) THEN
+              hsprt(igrp) = BL_W * BL_hsprt(igrp) + &
+                   BR_W * BR_hsprt(igrp) + &
+                   TL_W * TL_hsprt(igrp) + &
+                   TR_W * TR_hsprt(igrp)
+              tpprt(igrp) = BL_W * BL_tpprt(igrp) + &
+                   BR_W * BR_tpprt(igrp) + &
+                   TL_W * TL_tpprt(igrp) + &
+                   TR_W * TR_tpprt(igrp)
+              BL_dirx = COS((270-BL_dirprt(igrp))*PI/180.)
+              BR_dirx = COS((270-BR_dirprt(igrp))*PI/180.)
+              TR_dirx = COS((270-TR_dirprt(igrp))*PI/180.)
+              TL_dirx = COS((270-TL_dirprt(igrp))*PI/180.)
+              BL_diry = SIN((270-BL_dirprt(igrp))*PI/180.)
+              BR_diry = SIN((270-BR_dirprt(igrp))*PI/180.)
+              TR_diry = SIN((270-TR_dirprt(igrp))*PI/180.)
+              TL_diry = SIN((270-TL_dirprt(igrp))*PI/180.)
+              dirprt(igrp)=270 - 180./PI* &
+                   ATAN2(BL_W*BL_diry+BR_W*BR_diry+ &
+                   TL_W*TL_diry+TR_W*TR_diry, &
+                   BL_W*BL_dirx+BR_W*BR_dirx+ &
+                   TL_W*TL_dirx+TR_W*TR_dirx)
+              IF (dirprt(igrp).GT.360.) THEN
+                dirprt(igrp) = dirprt(igrp) - 360.
+              END IF
+            ELSE
+              hsprt(igrp) = 999.9999
+              tpprt(igrp) = 999.9999
+              dirprt(igrp) = 999.9999
+            END IF
+          END IF
+        END DO
         IF(outputType == 1) THEN
-           WRITE(26,'(A,F15.6)') 'Time : ',wsdat(it)%date
+          WRITE(26,'(32F14.4)') lonprt,latprt, &
+               hsprt(1:10),tpprt(1:10),dirprt(1:10)
         ENDIF
+#ifdef W3_TRKNC
+        IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
+          lonprt_nc(ip)=lonprt
+          latprt_nc(ip)=latprt
+          do igrp=1,10
+            hsprt_nc(igrp,ip,it)=hsprt(igrp)
+            tpprt_nc(igrp,ip,it)=tpprt(igrp)
+            dirprt_nc(igrp,ip,it)=dirprt(igrp)
+          enddo
+        ENDIF
+#endif
+
+      END DO
+    END DO
+#ifdef W3_TRKNC
+    IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
+      call pt2netcdf(lonprt_nc,latprt_nc,hsprt_nc,tpprt_nc, &
+           dirprt_nc,noutp,date1,date2,dt,NTIME_NC,outputType)
+    ENDIF
+#endif
+
+    IF(outputType.EQ.1) CLOSE(26)
+
+    !-----Final SYSTEM output: point output (Nearest neighbor, as a double check)
+    IF (testout) THEN
+      OPEN(unit=28,file='sys_pnt_nn.ww3',status='unknown')
+      WRITE(28,'(A)') '%'
+      WRITE(28,'(A)') '%'
+      WRITE(28,'(A)') '% WW3 Wave tracking point output'
+      WRITE(28,'(A)') '%'
+      WRITE(28,'(10A)') '%       Xp            Yp            ', &
+           'HsSY01        HsSY02        HsSY03        HsSY04        ', &
+           'HsSY05        HsSY06        HsSY07        HsSY08        ', &
+           'HsSY09        HsSY10        ', &
+           'TpSY01        TpSY02        TpSY03        TpSY04        ', &
+           'TpSY05        TpSY06        TpSY07        TpSY08        ', &
+           'TpSY09        TpSY10        ', &
+           'DrSY01        DrSY02        DrSY03        DrSY04        ', &
+           'DrSY05        DrSY06        DrSY07        DrSY08        ', &
+           'DrSY09        DrSY10'
+      WRITE(28,'(10A)') '%       [degr]        [degr]        ', &
+           '[m]           [m]           [m]           [m]           ', &
+           '[m]           [m]           [m]           [m]           ', &
+           '[m]           [m]           ', &
+           '[sec]         [sec]         [sec]         [sec]         ', &
+           '[sec]         [sec]         [sec]         [sec]         ', &
+           '[sec]         [sec]         ', &
+           '[degr]        [degr]        [degr]        [degr]        ', &
+           '[degr]        [degr]        [degr]        [degr]        ', &
+           '[degr]        [degr]'
+      WRITE(28,'(A)') '%'
+
+      DO it = 1,SIZE(sysA)
+        WRITE(28,'(A,F15.6)') 'Time : ',wsdat(it)%date
 
         DO ip = 1,noutp
-           hsprt(1:10) = 999.9999
-           tpprt(1:10) = 999.9999
-           dirprt(1:10) = 999.9999
-           lonprt = 999.9999
-           latprt = 999.9999
-           BL_hsprt(1:10) = 999.9999
-           BL_tpprt(1:10) = 999.9999
-           BL_dirprt(1:10) = 999.9999
-           BR_hsprt(1:10) = 999.9999
-           BR_tpprt(1:10) = 999.9999
-           BR_dirprt(1:10) = 999.9999
-           TL_hsprt(1:10) = 999.9999
-           TL_tpprt(1:10) = 999.9999
-           TL_dirprt(1:10) = 999.9999
-           TR_hsprt(1:10) = 999.9999
-           TR_tpprt(1:10) = 999.9999
-           TR_dirprt(1:10) = 999.9999
-           BL_lonprt = 999.9999
-           BL_latprt = 999.9999
-           BR_lonprt = 999.9999
-           BR_latprt = 999.9999
-           TL_lonprt = 999.9999
-           TL_latprt = 999.9999
-           TR_lonprt = 999.9999
-           TR_latprt = 999.9999
-           BL_W = 999
-           BR_W = 999
-           TR_W = 999
-           TL_W = 999
+          hsprt(1:10) = 999.9999
+          tpprt(1:10) = 999.9999
+          dirprt(1:10) = 999.9999
+          lonprt = 999.9999
+          latprt = 999.9999
 
-           DO j = 1, (maxJ-1)
-              DO i = 1, (maxI-1)
-                 IF ( ( ((lonout(ip).GE. &
-                      wsdat(1)%lon(i,j)).AND. &
-                      (lonout(ip).LT. &
-                      wsdat(1)%lon(i+1,j))).OR. &
-                      ((lonout(ip).GT. &
-                      wsdat(1)%lon(i,j)).AND. &
-                      (lonout(ip).LE. &
-                      wsdat(1)%lon(i+1,j))) ).AND. &
-                      ( ((latout(ip).GE. &
-                      wsdat(1)%lat(i,j)).AND. &
-                      (latout(ip).LT. &
-                      wsdat(1)%lat(i,j+1))).OR. &
-                      ((latout(ip).GT. &
-                      wsdat(1)%lat(i,j)).AND. &
-                      (latout(ip).LE. &
-                      wsdat(1)%lat(i,j+1))) ) ) &
-                      THEN
-                    BL_lonprt = wsdat(1)%lon(i,j)
-                    BL_latprt = wsdat(1)%lat(i,j)
-                    BR_lonprt = wsdat(1)%lon(i+1,j)
-                    BR_latprt = wsdat(1)%lat(i+1,j)
-                    TL_lonprt = wsdat(1)%lon(i,j+1)
-                    TL_latprt = wsdat(1)%lat(i,j+1)
-                    TR_lonprt = wsdat(1)%lon(i+1,j+1)
-                    TR_latprt = wsdat(1)%lat(i+1,j+1)
-                    !                    Compute weights for this point
-                    t = (lonout(ip)-BL_lonprt)/(BR_lonprt-BL_lonprt)
-                    u = (latout(ip)-BL_latprt)/(TL_latprt-BL_latprt)
-                    BL_W = (1-t)*(1-u)
-                    BR_W = t*(1-u)
-                    TR_W = t*u
-                    TL_W = (1-t)*u
-                    !                    Compute output values using weights
-                    lonprt = BL_W*BL_lonprt + BR_W*BR_lonprt + &
-                         TL_W*TL_lonprt + TR_W*TR_lonprt
-                    latprt = BL_W*BL_latprt + BR_W*BR_latprt + &
-                         TL_W*TL_latprt + TR_W*TR_latprt
-                 END IF
-              END DO
-           END DO
-           !           Loop through identified groups, limiting the output in file to 10
-           DO igrp = 1,MIN(10,maxGroup)
-              !              Find system with this group tag
-              sysmatch = 1
-              DO WHILE (sysmatch.LE.maxSys(it))
-                 IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
-                 sysmatch = sysmatch+1
-              END DO
-              IF (sysmatch.LE.maxSys(it)) THEN
-                 !                Match found: fill the output matrix with this data
-                 leng = sysA(it)%sys(sysmatch)%nPoints
-                 DO ind = 1, leng
-                    !                  Write output point data with bilinear interpolation
-                    IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
-                         BL_lonprt).AND.&
-                         (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
-                         BL_latprt) ) THEN
-                       BL_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
-                       BL_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
-                       BL_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
-                    ELSE IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
-                         BR_lonprt).AND.&
-                         (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
-                         BR_latprt)) THEN
-                       BR_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
-                       BR_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
-                       BR_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
-                    ELSE IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
-                         TL_lonprt).AND.&
-                         (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
-                         TL_latprt)) THEN
-                       TL_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
-                       TL_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
-                       TL_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
-                    ELSE IF ( (sysA(it)%sys(sysmatch)%lon(ind).EQ.&
-                         TR_lonprt).AND.&
-                         (sysA(it)%sys(sysmatch)%lat(ind).EQ.&
-                         TR_latprt)) THEN
-                       TR_hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
-                       TR_tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
-                       TR_dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
-                    END IF
-                 END DO
-                 !                  Compute output value using weights
-                 !                  (only if output point is surrounded by valid points)
-                 IF ( (BL_hsprt(igrp).NE.999.9999).AND. &
-                      (BR_hsprt(igrp).NE.999.9999).AND. &
-                      (TL_hsprt(igrp).NE.999.9999).AND. &
-                      (TR_hsprt(igrp).NE.999.9999) ) THEN
-                    hsprt(igrp) = BL_W * BL_hsprt(igrp) + &
-                         BR_W * BR_hsprt(igrp) + &
-                         TL_W * TL_hsprt(igrp) + &
-                         TR_W * TR_hsprt(igrp)
-                    tpprt(igrp) = BL_W * BL_tpprt(igrp) + &
-                         BR_W * BR_tpprt(igrp) + &
-                         TL_W * TL_tpprt(igrp) + &
-                         TR_W * TR_tpprt(igrp)
-                    BL_dirx = COS((270-BL_dirprt(igrp))*PI/180.)
-                    BR_dirx = COS((270-BR_dirprt(igrp))*PI/180.)
-                    TR_dirx = COS((270-TR_dirprt(igrp))*PI/180.)
-                    TL_dirx = COS((270-TL_dirprt(igrp))*PI/180.)
-                    BL_diry = SIN((270-BL_dirprt(igrp))*PI/180.)
-                    BR_diry = SIN((270-BR_dirprt(igrp))*PI/180.)
-                    TR_diry = SIN((270-TR_dirprt(igrp))*PI/180.)
-                    TL_diry = SIN((270-TL_dirprt(igrp))*PI/180.)
-                    dirprt(igrp)=270 - 180./PI* &
-                         ATAN2(BL_W*BL_diry+BR_W*BR_diry+ &
-                         TL_W*TL_diry+TR_W*TR_diry, &
-                         BL_W*BL_dirx+BR_W*BR_dirx+ &
-                         TL_W*TL_dirx+TR_W*TR_dirx)
-                    IF (dirprt(igrp).GT.360.) THEN
-                       dirprt(igrp) = dirprt(igrp) - 360.
-                    END IF
-                 ELSE
-                    hsprt(igrp) = 999.9999
-                    tpprt(igrp) = 999.9999
-                    dirprt(igrp) = 999.9999
-                 END IF
+          DO j = 1, maxJ
+            DO i = 1, maxI
+              !                 Write nearest nearbor output (no bilinear interpolation)
+              IF ( (lonout(ip).GE. &
+                   (wsdat(1)%lon(i,j)-dlon/2)).AND. &
+                   (lonout(ip).LT. &
+                   (wsdat(1)%lon(i,j)+dlon/2)).AND. &
+                   (latout(ip).GE. &
+                   (wsdat(1)%lat(i,j)-dlat/2)).AND. &
+                   (latout(ip).LT. &
+                   (wsdat(1)%lat(i,j)+dlat/2)) ) &
+                   THEN
+                lonprt = wsdat(1)%lon(i,j)
+                latprt = wsdat(1)%lat(i,j)
               END IF
-           END DO
-           IF(outputType == 1) THEN
-              WRITE(26,'(32F14.4)') lonprt,latprt, &
-                   hsprt(1:10),tpprt(1:10),dirprt(1:10)
-           ENDIF
-#ifdef W3_TRKNC
-           IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
-              lonprt_nc(ip)=lonprt
-              latprt_nc(ip)=latprt
-              do igrp=1,10
-                 hsprt_nc(igrp,ip,it)=hsprt(igrp)
-                 tpprt_nc(igrp,ip,it)=tpprt(igrp)
-                 dirprt_nc(igrp,ip,it)=dirprt(igrp)
-              enddo
-           ENDIF
-#endif
-
-        END DO
-     END DO
-#ifdef W3_TRKNC
-     IF(outputType.EQ.3.OR.outputType.EQ.4) THEN
-        call pt2netcdf(lonprt_nc,latprt_nc,hsprt_nc,tpprt_nc, &
-             dirprt_nc,noutp,date1,date2,dt,NTIME_NC,outputType)
-     ENDIF
-#endif
-
-     IF(outputType.EQ.1) CLOSE(26)
-
-     !-----Final SYSTEM output: point output (Nearest neighbor, as a double check)
-     IF (testout) THEN
-        OPEN(unit=28,file='sys_pnt_nn.ww3',status='unknown')
-        WRITE(28,'(A)') '%'
-        WRITE(28,'(A)') '%'
-        WRITE(28,'(A)') '% WW3 Wave tracking point output'
-        WRITE(28,'(A)') '%'
-        WRITE(28,'(10A)') '%       Xp            Yp            ', &
-             'HsSY01        HsSY02        HsSY03        HsSY04        ', &
-             'HsSY05        HsSY06        HsSY07        HsSY08        ', &
-             'HsSY09        HsSY10        ', &
-             'TpSY01        TpSY02        TpSY03        TpSY04        ', &
-             'TpSY05        TpSY06        TpSY07        TpSY08        ', &
-             'TpSY09        TpSY10        ', &
-             'DrSY01        DrSY02        DrSY03        DrSY04        ', &
-             'DrSY05        DrSY06        DrSY07        DrSY08        ', &
-             'DrSY09        DrSY10'
-        WRITE(28,'(10A)') '%       [degr]        [degr]        ', &
-             '[m]           [m]           [m]           [m]           ', &
-             '[m]           [m]           [m]           [m]           ', &
-             '[m]           [m]           ', &
-             '[sec]         [sec]         [sec]         [sec]         ', &
-             '[sec]         [sec]         [sec]         [sec]         ', &
-             '[sec]         [sec]         ', &
-             '[degr]        [degr]        [degr]        [degr]        ', &
-             '[degr]        [degr]        [degr]        [degr]        ', &
-             '[degr]        [degr]'
-        WRITE(28,'(A)') '%'
-
-        DO it = 1,SIZE(sysA)
-           WRITE(28,'(A,F15.6)') 'Time : ',wsdat(it)%date
-
-           DO ip = 1,noutp
-              hsprt(1:10) = 999.9999
-              tpprt(1:10) = 999.9999
-              dirprt(1:10) = 999.9999
-              lonprt = 999.9999
-              latprt = 999.9999
-
-              DO j = 1, maxJ
-                 DO i = 1, maxI
-                    !                 Write nearest nearbor output (no bilinear interpolation)
-                    IF ( (lonout(ip).GE. &
-                         (wsdat(1)%lon(i,j)-dlon/2)).AND. &
-                         (lonout(ip).LT. &
-                         (wsdat(1)%lon(i,j)+dlon/2)).AND. &
-                         (latout(ip).GE. &
-                         (wsdat(1)%lat(i,j)-dlat/2)).AND. &
-                         (latout(ip).LT. &
-                         (wsdat(1)%lat(i,j)+dlat/2)) ) &
-                         THEN
-                       lonprt = wsdat(1)%lon(i,j)
-                       latprt = wsdat(1)%lat(i,j)
-                    END IF
-                 END DO
+            END DO
+          END DO
+          !           Loop through identified groups, limiting the output in file to 10
+          DO igrp = 1,MIN(10,maxGroup)
+            !              Find system with this group tag
+            sysmatch = 1
+            DO WHILE (sysmatch.LE.maxSys(it))
+              IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
+              sysmatch = sysmatch+1
+            END DO
+            IF (sysmatch.LE.maxSys(it)) THEN
+              !                Match found: fill the output matrix with this data
+              leng = sysA(it)%sys(sysmatch)%nPoints
+              DO ind = 1, leng
+                !                  Write nearest nearbor output (no bilinear interpolation)
+                IF ( (lonout(ip).GE. &
+                     (sysA(it)%sys(sysmatch)%lon(ind)-dlon/2)).AND. &
+                     (lonout(ip).LT. &
+                     (sysA(it)%sys(sysmatch)%lon(ind)+dlon/2)).AND. &
+                     (latout(ip).GE. &
+                     (sysA(it)%sys(sysmatch)%lat(ind)-dlat/2)).AND. &
+                     (latout(ip).LT. &
+                     (sysA(it)%sys(sysmatch)%lat(ind)+dlat/2)) ) &
+                     THEN
+                  hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
+                  tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
+                  dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
+                END IF
               END DO
-              !           Loop through identified groups, limiting the output in file to 10
-              DO igrp = 1,MIN(10,maxGroup)
-                 !              Find system with this group tag
-                 sysmatch = 1
-                 DO WHILE (sysmatch.LE.maxSys(it))
-                    IF (sysA(it)%sys(sysmatch)%grp.EQ.igrp) EXIT
-                    sysmatch = sysmatch+1
-                 END DO
-                 IF (sysmatch.LE.maxSys(it)) THEN
-                    !                Match found: fill the output matrix with this data
-                    leng = sysA(it)%sys(sysmatch)%nPoints
-                    DO ind = 1, leng
-                       !                  Write nearest nearbor output (no bilinear interpolation)
-                       IF ( (lonout(ip).GE. &
-                            (sysA(it)%sys(sysmatch)%lon(ind)-dlon/2)).AND. &
-                            (lonout(ip).LT. &
-                            (sysA(it)%sys(sysmatch)%lon(ind)+dlon/2)).AND. &
-                            (latout(ip).GE. &
-                            (sysA(it)%sys(sysmatch)%lat(ind)-dlat/2)).AND. &
-                            (latout(ip).LT. &
-                            (sysA(it)%sys(sysmatch)%lat(ind)+dlat/2)) ) &
-                            THEN
-                          hsprt(igrp) = sysA(it)%sys(sysmatch)%hs(ind)
-                          tpprt(igrp) = sysA(it)%sys(sysmatch)%tp(ind)
-                          dirprt(igrp) = sysA(it)%sys(sysmatch)%dir(ind)
-                       END IF
-                    END DO
-                 END IF
-              END DO
-              WRITE(28,'(32F14.4)') lonprt,latprt, &
-                   hsprt(1:10),tpprt(1:10),dirprt(1:10)
-           END DO
+            END IF
+          END DO
+          WRITE(28,'(32F14.4)') lonprt,latprt, &
+               hsprt(1:10),tpprt(1:10),dirprt(1:10)
         END DO
+      END DO
 
-        CLOSE(28)
-     END IF
+      CLOSE(28)
+    END IF
 
-     !-------------------------------------------------------------------------
+    !-------------------------------------------------------------------------
 
-     WRITE(20,*) 'In ww3_systrk: Deallocating wsdat ...'
-     DO it=1,size(wsdat)
-        IF (ASSOCIATED(wsdat(it)%lat)) DEALLOCATE(wsdat(it)%lat)
-        IF (ASSOCIATED(wsdat(it)%lon)) DEALLOCATE(wsdat(it)%lon)
-        IF (ASSOCIATED(wsdat(it)%par)) DEALLOCATE(wsdat(it)%par)
-        IF (ASSOCIATED(wsdat(it)%wnd)) DEALLOCATE(wsdat(it)%wnd)
-     END DO
-     IF (ASSOCIATED(wsdat)) DEALLOCATE(wsdat)
-     WRITE(20,*) '               Deallocating sysA ...'
-     DO i=1,size(sysA)
-        DO j=1,size(sysA(i)%sys)
-           IF (ASSOCIATED(sysA(i)%sys(j)%i)) DEALLOCATE(sysA(i)%sys(j)%i)
-           IF (ASSOCIATED(sysA(i)%sys(j)%j)) DEALLOCATE(sysA(i)%sys(j)%j)
-           IF (ASSOCIATED(sysA(i)%sys(j)%lon)) &
-                DEALLOCATE(sysA(i)%sys(j)%lon)
-           IF (ASSOCIATED(sysA(i)%sys(j)%lat)) &
-                DEALLOCATE(sysA(i)%sys(j)%lat)
-           IF (ASSOCIATED(sysA(i)%sys(j)%hs))  &
-                DEALLOCATE(sysA(i)%sys(j)%hs)
-           IF (ASSOCIATED(sysA(i)%sys(j)%tp))  &
-                DEALLOCATE(sysA(i)%sys(j)%tp)
-           IF (ASSOCIATED(sysA(i)%sys(j)%dir)) &
-                DEALLOCATE(sysA(i)%sys(j)%dir)
-           IF (ASSOCIATED(sysA(i)%sys(j)%dspr)) &
-                DEALLOCATE(sysA(i)%sys(j)%dspr)
-        END DO
-     END DO
-     IF (ASSOCIATED(sysA)) DEALLOCATE(sysA)
-     WRITE(20,*) '               Deallocating maxSys ...'
-     IF (ASSOCIATED(maxSys)) DEALLOCATE(maxSys)
-     CLOSE(20)
+    WRITE(20,*) 'In ww3_systrk: Deallocating wsdat ...'
+    DO it=1,size(wsdat)
+      IF (ASSOCIATED(wsdat(it)%lat)) DEALLOCATE(wsdat(it)%lat)
+      IF (ASSOCIATED(wsdat(it)%lon)) DEALLOCATE(wsdat(it)%lon)
+      IF (ASSOCIATED(wsdat(it)%par)) DEALLOCATE(wsdat(it)%par)
+      IF (ASSOCIATED(wsdat(it)%wnd)) DEALLOCATE(wsdat(it)%wnd)
+    END DO
+    IF (ASSOCIATED(wsdat)) DEALLOCATE(wsdat)
+    WRITE(20,*) '               Deallocating sysA ...'
+    DO i=1,size(sysA)
+      DO j=1,size(sysA(i)%sys)
+        IF (ASSOCIATED(sysA(i)%sys(j)%i)) DEALLOCATE(sysA(i)%sys(j)%i)
+        IF (ASSOCIATED(sysA(i)%sys(j)%j)) DEALLOCATE(sysA(i)%sys(j)%j)
+        IF (ASSOCIATED(sysA(i)%sys(j)%lon)) &
+             DEALLOCATE(sysA(i)%sys(j)%lon)
+        IF (ASSOCIATED(sysA(i)%sys(j)%lat)) &
+             DEALLOCATE(sysA(i)%sys(j)%lat)
+        IF (ASSOCIATED(sysA(i)%sys(j)%hs))  &
+             DEALLOCATE(sysA(i)%sys(j)%hs)
+        IF (ASSOCIATED(sysA(i)%sys(j)%tp))  &
+             DEALLOCATE(sysA(i)%sys(j)%tp)
+        IF (ASSOCIATED(sysA(i)%sys(j)%dir)) &
+             DEALLOCATE(sysA(i)%sys(j)%dir)
+        IF (ASSOCIATED(sysA(i)%sys(j)%dspr)) &
+             DEALLOCATE(sysA(i)%sys(j)%dspr)
+      END DO
+    END DO
+    IF (ASSOCIATED(sysA)) DEALLOCATE(sysA)
+    WRITE(20,*) '               Deallocating maxSys ...'
+    IF (ASSOCIATED(maxSys)) DEALLOCATE(maxSys)
+    CLOSE(20)
 
-     WRITE(6,*) '... ww3_systrk completed successfully.'
+    WRITE(6,*) '... ww3_systrk completed successfully.'
 
-     WRITE(6,999)
+    WRITE(6,999)
 
 #ifdef W3_MPI
   END IF   !/IF (rank.EQ.0)
@@ -1155,23 +1155,23 @@ subroutine t2netcdf(lons,lats,data_in,nlons,nlats,nsys,date1,date2,&
   Jday0=julday(1,1,1990)
   timenc=timenc-Jday0
   do rec=1,ntime
-     times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0
+    times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0
   enddo
   if( ivar == 1) then
-     file_name = "sys_hs.ww3.nc"
+    file_name = "sys_hs.ww3.nc"
   else if( ivar == 2) then
-     file_name = "sys_tp.ww3.nc"
+    file_name = "sys_tp.ww3.nc"
   else if( ivar == 3) then
-     file_name = "sys_dir.ww3.nc"
+    file_name = "sys_dir.ww3.nc"
   else
-     file_name = "sys_dspr.ww3.nc"
+    file_name = "sys_dspr.ww3.nc"
   endif
 #endif
   !
 #ifdef W3_TRKNC
   ! create the netcdf file.
   if (outputType.EQ.3) then
-     call check( nf90_create(file_name, NF90_CLOBBER, ncid) )
+    call check( nf90_create(file_name, NF90_CLOBBER, ncid) )
   endif
   if(outputType.EQ.4) call check( nf90_create(file_name,NF90_NETCDF4,ncid))
   call check ( nf90_set_fill(ncid,nf90_nofill,oldMode) )
@@ -1208,29 +1208,29 @@ subroutine t2netcdf(lons,lats,data_in,nlons,nlats,nsys,date1,date2,&
 #ifdef W3_TRKNC
   dimids = (/ lon_dimid, lat_dimid, sys_dimid, rec_dimid /)
   if( ivar == 1) then
-     call check( nf90_def_var(ncid, var1_name, NF90_REAL, dimids,var1_varid) )
-     if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var1_varid,1,1,deflate) )
-     call check( nf90_put_att(ncid, var1_varid, units, var1_units) )
-     call check( nf90_put_att(ncid, var1_varid,'long_name','significant_wave_height') )
-     call check( nf90_put_att(ncid, var1_varid,'missing_value','9999.00'))
+    call check( nf90_def_var(ncid, var1_name, NF90_REAL, dimids,var1_varid) )
+    if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var1_varid,1,1,deflate) )
+    call check( nf90_put_att(ncid, var1_varid, units, var1_units) )
+    call check( nf90_put_att(ncid, var1_varid,'long_name','significant_wave_height') )
+    call check( nf90_put_att(ncid, var1_varid,'missing_value','9999.00'))
   else if( ivar == 2) then
-     call check( nf90_def_var(ncid, var2_name, NF90_REAL, dimids, var2_varid) )
-     if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var2_varid,1,1,deflate) )
-     call check( nf90_put_att(ncid, var2_varid, units, var2_units) )
-     call check( nf90_put_att(ncid, var2_varid,'long_name','peak_period') )
-     call check( nf90_put_att(ncid, var2_varid,'missing_value','9999.00') )
+    call check( nf90_def_var(ncid, var2_name, NF90_REAL, dimids, var2_varid) )
+    if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var2_varid,1,1,deflate) )
+    call check( nf90_put_att(ncid, var2_varid, units, var2_units) )
+    call check( nf90_put_att(ncid, var2_varid,'long_name','peak_period') )
+    call check( nf90_put_att(ncid, var2_varid,'missing_value','9999.00') )
   else if ( ivar ==3 ) then
-     call check( nf90_def_var(ncid, var3_name, NF90_REAL, dimids, var3_varid) )
-     if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var3_varid,1,1,deflate) )
-     call check( nf90_put_att(ncid, var3_varid, units, var3_units) )
-     call check( nf90_put_att(ncid, var3_varid,'long_name','peak_direction') )
-     call check( nf90_put_att(ncid, var3_varid,'missing_value','9999.00') )
+    call check( nf90_def_var(ncid, var3_name, NF90_REAL, dimids, var3_varid) )
+    if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var3_varid,1,1,deflate) )
+    call check( nf90_put_att(ncid, var3_varid, units, var3_units) )
+    call check( nf90_put_att(ncid, var3_varid,'long_name','peak_direction') )
+    call check( nf90_put_att(ncid, var3_varid,'missing_value','9999.00') )
   else
-     call check( nf90_def_var(ncid, var4_name, NF90_REAL, dimids, var4_varid) )
-     if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var4_varid,1,1,deflate) )
-     call check( nf90_put_att(ncid, var4_varid, units, var4_units) )
-     call check( nf90_put_att(ncid,var4_varid,'long_name','directional_spread') )
-     call check( nf90_put_att(ncid, var4_varid,'missing_value','9999.00') )
+    call check( nf90_def_var(ncid, var4_name, NF90_REAL, dimids, var4_varid) )
+    if(outputType.EQ.4) call check( nf90_def_var_deflate(ncid,var4_varid,1,1,deflate) )
+    call check( nf90_put_att(ncid, var4_varid, units, var4_units) )
+    call check( nf90_put_att(ncid,var4_varid,'long_name','directional_spread') )
+    call check( nf90_put_att(ncid, var4_varid,'missing_value','9999.00') )
   endif
   call check( nf90_enddef(ncid) )
 #endif
@@ -1245,17 +1245,17 @@ subroutine t2netcdf(lons,lats,data_in,nlons,nlats,nsys,date1,date2,&
   count = (/ nlons, nlats, nsys, ntime /)
   start = (/ 1, 1, 1, 1 /)
   if( ivar == 1) then
-     call check( nf90_put_var(ncid, var1_varid, data_in, start = start, &
-          count = count) )
+    call check( nf90_put_var(ncid, var1_varid, data_in, start = start, &
+         count = count) )
   else if( ivar == 2) then
-     call check( nf90_put_var(ncid, var2_varid, data_in, start = start, &
-          count = count) )
+    call check( nf90_put_var(ncid, var2_varid, data_in, start = start, &
+         count = count) )
   else if( ivar == 3) then
-     call check( nf90_put_var(ncid, var3_varid, data_in, start = start, &
-          count = count) )
+    call check( nf90_put_var(ncid, var3_varid, data_in, start = start, &
+         count = count) )
   else
-     call check( nf90_put_var(ncid, var4_varid, data_in, start = start, &
-          count = count) )
+    call check( nf90_put_var(ncid, var4_varid, data_in, start = start, &
+         count = count) )
   endif
   call check( nf90_close(ncid) )
 end subroutine t2netcdf
@@ -1266,11 +1266,11 @@ subroutine check(status)
   use netcdf
   integer, intent ( in) :: status
   if(status /= nf90_noerr) then
-     write(6,996)
-996  FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK:'/           &
-          'netCDF error:')
-     print *, trim(nf90_strerror(status))
-     stop "Stopped in netcdf output part"
+    write(6,996)
+996 FORMAT (/' *** WAVEWATCH III ERROR IN WW3_SYSTRK:'/           &
+         'netCDF error:')
+    print *, trim(nf90_strerror(status))
+    stop "Stopped in netcdf output part"
   endif
 end subroutine check
 #endif
@@ -1332,13 +1332,13 @@ subroutine pt2netcdf(longitude,latitude,hs,tp,&
   Jday0=julday(1,1,1990)
   timenc=timenc-Jday0
   do rec=1,ntime
-     times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0
+    times(rec)=timenc+DBLE( (rec-1)*dt)/3600.0D0/24.0D0
   enddo
 #endif
   !
 #ifdef W3_TRKNC
   if(outputType.EQ.3) then
-     iret = nf90_create('sys_pnt.ww3.nc', NF90_CLOBBER, ncid)
+    iret = nf90_create('sys_pnt.ww3.nc', NF90_CLOBBER, ncid)
   endif
   if (outputType.EQ.4) iret = nf90_create('sys_pnt.ww3.nc',NF90_NETCDF4, ncid)
   call check(iret)

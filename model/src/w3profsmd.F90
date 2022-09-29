@@ -201,27 +201,27 @@ CONTAINS
     ! 2.  Calculate velocities ---------------- *
     !
     DO ISEA = 1, NSEA
-       IXY         = MAPSF(ISEA,3)
-       VQ(IXY)     = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
-       VLCFLX(IXY) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
-       VLCFLY(IXY) = CSIN * CG(IK,ISEA)
+      IXY         = MAPSF(ISEA,3)
+      VQ(IXY)     = VQ(IXY) / CG(IK,ISEA) * CLATS(ISEA)
+      VLCFLX(IXY) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
+      VLCFLY(IXY) = CSIN * CG(IK,ISEA)
 #ifdef W3_MGP
-       VLCFLX(IXY) = VLCFLX(IXY) - CCURX*VGX/CLATS(ISEA)
-       VLCFLY(IXY) = VLCFLY(IXY) - CCURY*VGY
+      VLCFLX(IXY) = VLCFLX(IXY) - CCURX*VGX/CLATS(ISEA)
+      VLCFLY(IXY) = VLCFLY(IXY) - CCURY*VGY
 #endif
     END DO
 
     IF ( FLCUR ) THEN
-       DO ISEA=1, NSEA
-          IXY =  MAPSF(ISEA,3)
-          !
-          ! Currents are not included on coastal boundaries (IOBP(IXY).EQ.0)
-          !
-          IF (IOBP(IXY) .EQ. 1) THEN
-             VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
-             VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
-          END IF
-       END DO
+      DO ISEA=1, NSEA
+        IXY =  MAPSF(ISEA,3)
+        !
+        ! Currents are not included on coastal boundaries (IOBP(IXY).EQ.0)
+        !
+        IF (IOBP(IXY) .EQ. 1) THEN
+          VLCFLX(IXY) = VLCFLX(IXY) + CCURX*CX(ISEA)/CLATS(ISEA)
+          VLCFLY(IXY) = VLCFLY(IXY) + CCURY*CY(ISEA)
+        END IF
+      END DO
     END IF
 
     !
@@ -235,35 +235,35 @@ CONTAINS
     ! 4. Prepares boundary update
     !
     IF ( FLBPI ) THEN
-       RD1    = DSEC21 ( TBPI0, TIME )
-       RD2    = DSEC21 ( TBPI0, TBPIN )
+      RD1    = DSEC21 ( TBPI0, TIME )
+      RD2    = DSEC21 ( TBPI0, TBPIN )
     ELSE
-       RD1=1.
-       RD2=0.
+      RD1=1.
+      RD2=0.
     END IF
     !
     ! 4. propagate using the selected scheme
     !
     IF (FSN) THEN
-       CALL W3XYPFSN2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
+      CALL W3XYPFSN2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
     ELSE IF (FSPSI) THEN
-       CALL W3XYPFSPSI2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
+      CALL W3XYPFSPSI2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
     ELSE IF (FSFCT) THEN
-       CALL W3XYPFSFCT2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
+      CALL W3XYPFSFCT2 (ISP, C, LCALC, RD1, RD2, DTG, AC)
     ELSE IF (FSNIMP) THEN
-       CALL W3XYPFSNIMP(ISP, C, LCALC, RD1, RD2, DTG, AC)
+      CALL W3XYPFSNIMP(ISP, C, LCALC, RD1, RD2, DTG, AC)
     ENDIF
     !
     DO IX=1,NX
-       ISEA=MAPFS(1,IX)
-       VQ(IX)=REAL(AC(IX))
+      ISEA=MAPFS(1,IX)
+      VQ(IX)=REAL(AC(IX))
     ENDDO
 
     ! 6.  Store results in VQ in proper format --------------------------- *
     !
     DO ISEA=1, NSEA
-       IXY   = MAPSF(ISEA,3)
-       VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
+      IXY   = MAPSF(ISEA,3)
+      VQ(IXY) =  MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*VQ(IXY) )
     END DO
   END SUBROUTINE W3XYPUG
   !/ ------------------------------------------------------------------- /
@@ -398,68 +398,68 @@ CONTAINS
     ! CFL no important on boundary
     !
     IF (IOBP(IP).EQ.1) THEN
-       CCURX  = FACX
-       CCURY  = FACY
-       !
-       ! Loop over spectral components
-       !
-       DO IK=1,NKCFL
-          DO ITH=1,NTH
-             CCOS   = FACX * ECOS(ITH)
-             CSIN   = FACY * ESIN(ITH)
-             C(:,:)=0.
+      CCURX  = FACX
+      CCURY  = FACY
+      !
+      ! Loop over spectral components
+      !
+      DO IK=1,NKCFL
+        DO ITH=1,NTH
+          CCOS   = FACX * ECOS(ITH)
+          CSIN   = FACY * ESIN(ITH)
+          C(:,:)=0.
 
-             !
-             ! 2.  Calculate advection velocities: group speed ---------------- *
-             !
-             !AR: needs to be rewritten for speed ... single node computation is costly ...
-             !MA: you are right but now it is only called if CFX and UNST for CFL profiling
+          !
+          ! 2.  Calculate advection velocities: group speed ---------------- *
+          !
+          !AR: needs to be rewritten for speed ... single node computation is costly ...
+          !MA: you are right but now it is only called if CFX and UNST for CFL profiling
 
-             DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-                IE=IE_CELL(I)       ! TRIGP(IV,IE)=IP  with IV=POS_CELL(I)
-                DO J=1,3
-                   IP2=TRIGP(J,IE)
-                   ISEA2=MAPFS(IP2)
-                   C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
-                   C(IP2,2) = CSIN * CG(IK,ISEA2)
+          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+            IE=IE_CELL(I)       ! TRIGP(IV,IE)=IP  with IV=POS_CELL(I)
+            DO J=1,3
+              IP2=TRIGP(J,IE)
+              ISEA2=MAPFS(IP2)
+              C(IP2,1) = CCOS * CG(IK,ISEA2) / CLATS(ISEA2)
+              C(IP2,2) = CSIN * CG(IK,ISEA2)
 #ifdef W3_MGP
-                   C(IP2,1) = C(IP2,1) - CCURX*VGX/CLATS(ISEA2)
-                   C(IP2,2) = C(IP2,2) - CCURY*VGY
+              C(IP2,1) = C(IP2,1) - CCURX*VGX/CLATS(ISEA2)
+              C(IP2,2) = C(IP2,2) - CCURY*VGY
 #endif
-                   IF ( FLCUR ) THEN
-                      IF (IOBP(IP2) .EQ. 1) THEN
-                         C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
-                         C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
-                      END IF
-                   END IF  ! end of ( FLCUR )
-                END DO
-             END DO
-             !
-             !3.     Calculate K-Values and contour based quantities ...
-             !
-             KKSUM = 0.d0
-             DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
-                IE=IE_CELL(I)       ! TRIGP(IV,IE)=IP
-                IV=POS_CELL(I)
-                I1 = TRIGP(1,IE)
-                I2 = TRIGP(2,IE)
-                I3 = TRIGP(3,IE)
-                LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Advection speed in X direction
-                LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2)) ! Advection speed in Y direction
-                KELEM(1) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
-                KELEM(2) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4) ! K-Values - so called Flux Jacobians
-                KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians
-
-                KTMP        = KELEM ! Copy
-                KELEM       = MAX(0.d0,KTMP)
-
-                KKSUM = KKSUM  +  KELEM(IV)
-             END DO ! COUNTRI
-             !
-             DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM)
-             CFLXYMAX = MAX(DBLE(DT)/DTMAXEXP,DBLE(CFLXYMAX))
+              IF ( FLCUR ) THEN
+                IF (IOBP(IP2) .EQ. 1) THEN
+                  C(IP2,1) = C(IP2,1) + CCURX*CX(ISEA2)/CLATS(ISEA2)
+                  C(IP2,2) = C(IP2,2) + CCURY*CY(ISEA2)
+                END IF
+              END IF  ! end of ( FLCUR )
+            END DO
           END DO
-       END DO
+          !
+          !3.     Calculate K-Values and contour based quantities ...
+          !
+          KKSUM = 0.d0
+          DO I = INDEX_CELL(IP), INDEX_CELL(IP+1)-1
+            IE=IE_CELL(I)       ! TRIGP(IV,IE)=IP
+            IV=POS_CELL(I)
+            I1 = TRIGP(1,IE)
+            I2 = TRIGP(2,IE)
+            I3 = TRIGP(3,IE)
+            LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Advection speed in X direction
+            LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2)) ! Advection speed in Y direction
+            KELEM(1) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
+            KELEM(2) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4) ! K-Values - so called Flux Jacobians
+            KELEM(3) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6) ! K-Values - so called Flux Jacobians
+
+            KTMP        = KELEM ! Copy
+            KELEM       = MAX(0.d0,KTMP)
+
+            KKSUM = KKSUM  +  KELEM(IV)
+          END DO ! COUNTRI
+          !
+          DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM)
+          CFLXYMAX = MAX(DBLE(DT)/DTMAXEXP,DBLE(CFLXYMAX))
+        END DO
+      END DO
     END IF
     !
     RETURN
@@ -601,114 +601,114 @@ CONTAINS
     !
     DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
 
-       I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
-       I2 = TRIGP(2,IE)
-       I3 = TRIGP(3,IE)
-       NI = TRIGP(:,IE)
-       LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
-       LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
-       KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
-       KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
-       KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
-       !
-       KTMP        = KELEM(:,IE) ! Copy
-       NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
-       KELEM(:,IE) = MAX(0.d0,KTMP)
-       FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
-       FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
-       FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
-       FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
-       FL31  = C(I1,1) * IEN(IE,5) + C(I1,2) * IEN(IE,6)
-       FL32  = C(I2,1) * IEN(IE,5) + C(I2,2) * IEN(IE,6)
-       FL111 = 2.d0*FL11+FL12
-       FL112 = 2.d0*FL12+FL11
-       FL211 = 2.d0*FL21+FL22
-       FL212 = 2.d0*FL22+FL21
-       FL311 = 2.d0*FL31+FL32
-       FL312 = 2.d0*FL32+FL31
-       FLALL(1,IE) = (FL311 + FL212) * ONESIXTH + KELEM(1,IE)
-       FLALL(2,IE) = (FL111 + FL312) * ONESIXTH + KELEM(2,IE)
-       FLALL(3,IE) = (FL211 + FL112) * ONESIXTH + KELEM(3,IE)
-       ! IF (I1.EQ.1.OR.I2.EQ.1.OR.I3.EQ.1) WRITE(6,*) 'TEST N1 :',IK,ITH,IP,IE,KELEM(:,IE),'##',LAMBDA
+      I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+      I2 = TRIGP(2,IE)
+      I3 = TRIGP(3,IE)
+      NI = TRIGP(:,IE)
+      LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
+      LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
+      KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
+      KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
+      KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
+      !
+      KTMP        = KELEM(:,IE) ! Copy
+      NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
+      KELEM(:,IE) = MAX(0.d0,KTMP)
+      FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
+      FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
+      FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
+      FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
+      FL31  = C(I1,1) * IEN(IE,5) + C(I1,2) * IEN(IE,6)
+      FL32  = C(I2,1) * IEN(IE,5) + C(I2,2) * IEN(IE,6)
+      FL111 = 2.d0*FL11+FL12
+      FL112 = 2.d0*FL12+FL11
+      FL211 = 2.d0*FL21+FL22
+      FL212 = 2.d0*FL22+FL21
+      FL311 = 2.d0*FL31+FL32
+      FL312 = 2.d0*FL32+FL31
+      FLALL(1,IE) = (FL311 + FL212) * ONESIXTH + KELEM(1,IE)
+      FLALL(2,IE) = (FL111 + FL312) * ONESIXTH + KELEM(2,IE)
+      FLALL(3,IE) = (FL211 + FL112) * ONESIXTH + KELEM(3,IE)
+      ! IF (I1.EQ.1.OR.I2.EQ.1.OR.I3.EQ.1) WRITE(6,*) 'TEST N1 :',IK,ITH,IP,IE,KELEM(:,IE),'##',LAMBDA
     END DO ! NTRI
 
     IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
-       KKSUM = 0.d0
-       DO IE = 1, NTRI
-          NI = TRIGP(:,IE)
-          KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
-       END DO ! IE
-       DTMAXEXP = 1E10 ! initialize to large number
-       DO IP = 1, NX
-          IF (IOBP(IP) .EQ. 1 .OR. FSBCCFL) THEN
-             DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
-             DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
-          END IF
-       END DO ! IP
-       CFLXY = DBLE(DT)/DTMAXGL
-       REST  = ABS(MOD(CFLXY,1.0d0))
-       IF (REST .LT. THR8) THEN
-          ITER(IK,ITH) = ABS(NINT(CFLXY))
-       ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
-          ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
-       ELSE
-          ITER(IK,ITH) = ABS(NINT(CFLXY))
-       END IF
+      KKSUM = 0.d0
+      DO IE = 1, NTRI
+        NI = TRIGP(:,IE)
+        KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
+      END DO ! IE
+      DTMAXEXP = 1E10 ! initialize to large number
+      DO IP = 1, NX
+        IF (IOBP(IP) .EQ. 1 .OR. FSBCCFL) THEN
+          DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
+          DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+        END IF
+      END DO ! IP
+      CFLXY = DBLE(DT)/DTMAXGL
+      REST  = ABS(MOD(CFLXY,1.0d0))
+      IF (REST .LT. THR8) THEN
+        ITER(IK,ITH) = ABS(NINT(CFLXY))
+      ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
+        ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
+      ELSE
+        ITER(IK,ITH) = ABS(NINT(CFLXY))
+      END IF
     END IF ! LCALC
 
     DO IP = 1, NX
-       DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
+      DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
     END DO
 
     DO IT = 1, ITER(IK,ITH)
-       U = AC
-       ST = 0.d0
-       DO IE = 1, NTRI
-          NI     = TRIGP(:,IE)
-          UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-          ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
-       END DO ! IE
+      U = AC
+      ST = 0.d0
+      DO IE = 1, NTRI
+        NI     = TRIGP(:,IE)
+        UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
+        ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
+      END DO ! IE
 
-       DO IP = 1, NX
-          !
-          ! IOBPD=0  : waves coming from land (or outside grid)
-          ! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
-          !
-          U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
+      DO IP = 1, NX
+        !
+        ! IOBPD=0  : waves coming from land (or outside grid)
+        ! Possibly set flux to zero by multiplying ST by IOBPD but also in UTILDE multiply U(NI) by IOBPD ...
+        !
+        U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
 
 #ifdef W3_REF1
-          IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
+        IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
 #endif
-       END DO
-       ! update spectrum
-       AC = U
-       !
-       ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
-       !
-       IF ( FLBPI ) THEN
-          !
-          ! 4.1 In this case the boundary is read from the nest.ww3 file
-          !
-          RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
-          RD2=RD20
-          IF ( RD2 .GT. 0.001 ) THEN
-             RD2    = MIN(1.,MAX(0.,RD1/RD2))
-             RD1    = 1. - RD2
-          ELSE
-             RD1    = 0.
-             RD2    = 1.
-          END IF
-          !
-          ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
-          !
-          DO IBI=1, NBI
-             IP = MAPSF(ISBPI(IBI),1)
-             AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                  / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-          END DO
+      END DO
+      ! update spectrum
+      AC = U
+      !
+      ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
+      !
+      IF ( FLBPI ) THEN
+        !
+        ! 4.1 In this case the boundary is read from the nest.ww3 file
+        !
+        RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
+        RD2=RD20
+        IF ( RD2 .GT. 0.001 ) THEN
+          RD2    = MIN(1.,MAX(0.,RD1/RD2))
+          RD1    = 1. - RD2
+        ELSE
+          RD1    = 0.
+          RD2    = 1.
+        END IF
+        !
+        ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
+        !
+        DO IBI=1, NBI
+          IP = MAPSF(ISBPI(IBI),1)
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+        END DO
 
-       ENDIF
-       !
+      ENDIF
+      !
     END DO ! End of loop on time steps
     !        CALL EXTCDE ( 99 )
     !/
@@ -844,123 +844,123 @@ CONTAINS
     !2.a     Calculate K-Values and contour based quantities ...
     !
     DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
-       I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
-       I2 = TRIGP(2,IE)
-       I3 = TRIGP(3,IE)
-       LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
-       LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
-       KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
-       KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
-       KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
-       KTMP        = KELEM(:,IE) ! Copy
-       NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
-       KELEM(:,IE) = MAX(0.d0,KTMP)
-       FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
-       FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
-       FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
-       FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
-       FL31  = C(I1,1) * IEN(IE,5) + C(I1,2) * IEN(IE,6)
-       FL32  = C(I2,1) * IEN(IE,5) + C(I2,2) * IEN(IE,6)
-       FL111 = 2.d0*FL11+FL12
-       FL112 = 2.d0*FL12+FL11
-       FL211 = 2.d0*FL21+FL22
-       FL212 = 2.d0*FL22+FL21
-       FL311 = 2.d0*FL31+FL32
-       FL312 = 2.d0*FL32+FL31
-       FLALL(1,IE) = (FL311 + FL212)! * ONESIXTH + KELEM(1,IE)
-       FLALL(2,IE) = (FL111 + FL312)! * ONESIXTH + KELEM(2,IE)
-       FLALL(3,IE) = (FL211 + FL112)! * ONESIXTH + KELEM(3,IE)
+      I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+      I2 = TRIGP(2,IE)
+      I3 = TRIGP(3,IE)
+      LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
+      LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
+      KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
+      KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
+      KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
+      KTMP        = KELEM(:,IE) ! Copy
+      NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
+      KELEM(:,IE) = MAX(0.d0,KTMP)
+      FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
+      FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
+      FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
+      FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
+      FL31  = C(I1,1) * IEN(IE,5) + C(I1,2) * IEN(IE,6)
+      FL32  = C(I2,1) * IEN(IE,5) + C(I2,2) * IEN(IE,6)
+      FL111 = 2.d0*FL11+FL12
+      FL112 = 2.d0*FL12+FL11
+      FL211 = 2.d0*FL21+FL22
+      FL212 = 2.d0*FL22+FL21
+      FL311 = 2.d0*FL31+FL32
+      FL312 = 2.d0*FL32+FL31
+      FLALL(1,IE) = (FL311 + FL212)! * ONESIXTH + KELEM(1,IE)
+      FLALL(2,IE) = (FL111 + FL312)! * ONESIXTH + KELEM(2,IE)
+      FLALL(3,IE) = (FL211 + FL112)! * ONESIXTH + KELEM(3,IE)
     END DO ! NTRI
 
     IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
-       KKSUM = 0.d0
-       DO IE = 1, NTRI
-          NI = TRIGP(:,IE)
-          KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
-       END DO ! IE
-       DTMAXEXP = 1E10 ! initialize to large number
-       DO IP = 1, NX
-          DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
-          DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
-       END DO ! IP
-       CFLXY = DBLE(DT)/DTMAXGL
-       REST  = ABS(MOD(CFLXY,1.0d0))
-       IF (REST .LT. THR8) THEN
-          ITER(IK,ITH) = ABS(NINT(CFLXY))
-       ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
-          ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
-       ELSE
-          ITER(IK,ITH) = ABS(NINT(CFLXY))
-       END IF
+      KKSUM = 0.d0
+      DO IE = 1, NTRI
+        NI = TRIGP(:,IE)
+        KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
+      END DO ! IE
+      DTMAXEXP = 1E10 ! initialize to large number
+      DO IP = 1, NX
+        DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
+        DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+      END DO ! IP
+      CFLXY = DBLE(DT)/DTMAXGL
+      REST  = ABS(MOD(CFLXY,1.0d0))
+      IF (REST .LT. THR8) THEN
+        ITER(IK,ITH) = ABS(NINT(CFLXY))
+      ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
+        ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
+      ELSE
+        ITER(IK,ITH) = ABS(NINT(CFLXY))
+      END IF
     END IF ! LCALC
 
     DO IP = 1, NX
-       DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
+      DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/SI(IP) ! Some precalculations for the time integration.
     END DO
 
     DO IT = 1, ITER(IK,ITH)
-       U = AC
+      U = AC
 
-       ST = 0.d0
+      ST = 0.d0
 
-       DO IE = 1, NTRI
-          NI   = TRIGP(:,IE)
-          FT     =-ONESIXTH*DOT_PRODUCT(U(NI),FLALL(:,IE))
-          UTILDE = NM(IE) * ( DOT_PRODUCT(KELEM(:,IE),U(NI)) - FT )
-          THETA_L(:) = KELEM(:,IE) * (U(NI) - UTILDE)
-          IF (ABS(FT) .GT. 0.0d0) THEN
-             BET1(:) = THETA_L(:)/FT
-             IF (ANY( BET1 .LT. 0.0d0) ) THEN
-                BETAHAT(1)    = BET1(1) + 0.5d0 * BET1(2)
-                BETAHAT(2)    = BET1(2) + 0.5d0 * BET1(3)
-                BETAHAT(3)    = BET1(3) + 0.5d0 * BET1(1)
-                BET1(1)       = MAX(0.d0,MIN(BETAHAT(1),1.d0-BETAHAT(2),1.d0))
-                BET1(2)       = MAX(0.d0,MIN(BETAHAT(2),1.d0-BETAHAT(3),1.d0))
-                BET1(3)       = MAX(0.d0,MIN(BETAHAT(3),1.d0-BETAHAT(1),1.d0))
-                THETA_L(:) = FT * BET1
-             END IF
-          ELSE
-             THETA_L(:) = 0.d0
+      DO IE = 1, NTRI
+        NI   = TRIGP(:,IE)
+        FT     =-ONESIXTH*DOT_PRODUCT(U(NI),FLALL(:,IE))
+        UTILDE = NM(IE) * ( DOT_PRODUCT(KELEM(:,IE),U(NI)) - FT )
+        THETA_L(:) = KELEM(:,IE) * (U(NI) - UTILDE)
+        IF (ABS(FT) .GT. 0.0d0) THEN
+          BET1(:) = THETA_L(:)/FT
+          IF (ANY( BET1 .LT. 0.0d0) ) THEN
+            BETAHAT(1)    = BET1(1) + 0.5d0 * BET1(2)
+            BETAHAT(2)    = BET1(2) + 0.5d0 * BET1(3)
+            BETAHAT(3)    = BET1(3) + 0.5d0 * BET1(1)
+            BET1(1)       = MAX(0.d0,MIN(BETAHAT(1),1.d0-BETAHAT(2),1.d0))
+            BET1(2)       = MAX(0.d0,MIN(BETAHAT(2),1.d0-BETAHAT(3),1.d0))
+            BET1(3)       = MAX(0.d0,MIN(BETAHAT(3),1.d0-BETAHAT(1),1.d0))
+            THETA_L(:) = FT * BET1
           END IF
-          ST(NI) = ST(NI) + THETA_L ! the 2nd term are the theta values of each node ...
-       END DO
+        ELSE
+          THETA_L(:) = 0.d0
+        END IF
+        ST(NI) = ST(NI) + THETA_L ! the 2nd term are the theta values of each node ...
+      END DO
 
-       DO IP = 1, NX
-          U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
+      DO IP = 1, NX
+        U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
 #ifdef W3_REF1
-          IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
+        IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
 #endif
-       END DO
+      END DO
 
-       ! update spectrum
-       AC = U
-       !
-       ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
-       !
-       IF ( FLBPI ) THEN
-          !
-          ! 4.1 In this case the boundary is read from the nest.ww3 file
-          !
-          RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
-          RD2=RD20
-          IF ( RD2 .GT. 0.001 ) THEN
-             RD2    = MIN(1.,MAX(0.,RD1/RD2))
-             RD1    = 1. - RD2
-          ELSE
-             RD1    = 0.
-             RD2    = 1.
-          END IF
-          !
-          ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
-          !
-          DO IBI=1, NBI
-             IP = MAPSF(ISBPI(IBI),1)
-             AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                  / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-          END DO
+      ! update spectrum
+      AC = U
+      !
+      ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
+      !
+      IF ( FLBPI ) THEN
+        !
+        ! 4.1 In this case the boundary is read from the nest.ww3 file
+        !
+        RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
+        RD2=RD20
+        IF ( RD2 .GT. 0.001 ) THEN
+          RD2    = MIN(1.,MAX(0.,RD1/RD2))
+          RD1    = 1. - RD2
+        ELSE
+          RD1    = 0.
+          RD2    = 1.
+        END IF
+        !
+        ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
+        !
+        DO IBI=1, NBI
+          IP = MAPSF(ISBPI(IBI),1)
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+        END DO
 
-       ENDIF
-       !
+      ENDIF
+      !
     END DO ! End of loop on time steps
     !      CALL EXTCDE ( 99 )
     !/
@@ -1121,42 +1121,42 @@ CONTAINS
     DTMAXGL = DBLE(10.E10)
 
     IF (.FALSE.) THEN
-       WRITE(*,*) 'NNZ', NNZ
-       WRITE(*,*) 'MINVAL IAA,JAA', MINVAL(IAA), MINVAL(JAA)
-       WRITE(*,*) 'MINVAL IAA,JAA', MAXVAL(IAA), MAXVAL(JAA)
-       WRITE(*,*) 'MAX/MIN POSI',   MAXVAL(POSI), MINVAL(POSI)
-       WRITE(*,*) 'AC, AQ', SUM(AC)
+      WRITE(*,*) 'NNZ', NNZ
+      WRITE(*,*) 'MINVAL IAA,JAA', MINVAL(IAA), MINVAL(JAA)
+      WRITE(*,*) 'MINVAL IAA,JAA', MAXVAL(IAA), MAXVAL(JAA)
+      WRITE(*,*) 'MAX/MIN POSI',   MAXVAL(POSI), MINVAL(POSI)
+      WRITE(*,*) 'AC, AQ', SUM(AC)
     END IF
     !
     !2       Propagation
     !2.a     Calculate K-Values and contour based quantities ...
     !
     DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
-       I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
-       I2 = TRIGP(2,IE)
-       I3 = TRIGP(3,IE)
-       LAMBDA(1) = ONESIXTH * (C(I1,1)+C(I2,1)+C(I3,1))
-       LAMBDA(2) = ONESIXTH * (C(I1,2)+C(I2,2)+C(I3,2))
-       K(1)  = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2)
-       K(2)  = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
-       K(3)  = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
-       KP(1,IE) = MAX(0.d0,K(1))
-       KP(2,IE) = MAX(0.d0,K(2))
-       KP(3,IE) = MAX(0.d0,K(3))
-       KM(1) = MIN(0.d0,K(1))
-       KM(2) = MIN(0.d0,K(2))
-       KM(3) = MIN(0.d0,K(3))
-       FL11 = C(I2,1)*IEN(IE,1)+C(I2,2)*IEN(IE,2)
-       FL12 = C(I3,1)*IEN(IE,1)+C(I3,2)*IEN(IE,2)
-       FL21 = C(I3,1)*IEN(IE,3)+C(I3,2)*IEN(IE,4)
-       FL22 = C(I1,1)*IEN(IE,3)+C(I1,2)*IEN(IE,4)
-       FL31 = C(I1,1)*IEN(IE,5)+C(I1,2)*IEN(IE,6)
-       FL32 = C(I2,1)*IEN(IE,5)+C(I2,2)*IEN(IE,6)
-       CRFS(1) =  - ONESIXTH *  (2.0d0 *FL31 + FL32 + FL21 + 2.0d0 * FL22 )
-       CRFS(2) =  - ONESIXTH *  (2.0d0 *FL32 + 2.0d0 * FL11 + FL12 + FL31 )
-       CRFS(3) =  - ONESIXTH *  (2.0d0 *FL12 + 2.0d0 * FL21 + FL22 + FL11 )
-       DELTAL(:,IE) = CRFS(:)- KP(:,IE)
-       NM(IE)       = 1.d0/MIN(DBLE(THR),SUM(KM(:)))
+      I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+      I2 = TRIGP(2,IE)
+      I3 = TRIGP(3,IE)
+      LAMBDA(1) = ONESIXTH * (C(I1,1)+C(I2,1)+C(I3,1))
+      LAMBDA(2) = ONESIXTH * (C(I1,2)+C(I2,2)+C(I3,2))
+      K(1)  = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2)
+      K(2)  = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
+      K(3)  = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
+      KP(1,IE) = MAX(0.d0,K(1))
+      KP(2,IE) = MAX(0.d0,K(2))
+      KP(3,IE) = MAX(0.d0,K(3))
+      KM(1) = MIN(0.d0,K(1))
+      KM(2) = MIN(0.d0,K(2))
+      KM(3) = MIN(0.d0,K(3))
+      FL11 = C(I2,1)*IEN(IE,1)+C(I2,2)*IEN(IE,2)
+      FL12 = C(I3,1)*IEN(IE,1)+C(I3,2)*IEN(IE,2)
+      FL21 = C(I3,1)*IEN(IE,3)+C(I3,2)*IEN(IE,4)
+      FL22 = C(I1,1)*IEN(IE,3)+C(I1,2)*IEN(IE,4)
+      FL31 = C(I1,1)*IEN(IE,5)+C(I1,2)*IEN(IE,6)
+      FL32 = C(I2,1)*IEN(IE,5)+C(I2,2)*IEN(IE,6)
+      CRFS(1) =  - ONESIXTH *  (2.0d0 *FL31 + FL32 + FL21 + 2.0d0 * FL22 )
+      CRFS(2) =  - ONESIXTH *  (2.0d0 *FL32 + 2.0d0 * FL11 + FL12 + FL31 )
+      CRFS(3) =  - ONESIXTH *  (2.0d0 *FL12 + 2.0d0 * FL21 + FL22 + FL11 )
+      DELTAL(:,IE) = CRFS(:)- KP(:,IE)
+      NM(IE)       = 1.d0/MIN(DBLE(THR),SUM(KM(:)))
     END DO ! NTRI
 
     U = DBLE(AC)
@@ -1164,27 +1164,27 @@ CONTAINS
     ASPAR = 0.d0
     B     = 0.d0
     DO IP = 1, NX
-       DO I = 1, CCON(IP)
-          J = J + 1
-          IE    =  IE_CELL(J)
-          POS   =  POS_CELL(J)
-          K1    =  KP(POS,IE) * IOBPD(ITH,IP)
-          IF (K1 > 0.) THEN
-             DTK   =  K1 * DT
-             TMP3  =  DTK * NM(IE)
-             I1    =  POSI(1,J)
-             I2    =  POSI(2,J)
-             I3    =  POSI(3,J)
-             ASPAR(I1) =  ONETHIRD * TRIA(IE) + DTK - TMP3 * DELTAL(POS,IE)              + ASPAR(I1)
-             ASPAR(I2) =                         - TMP3 * DELTAL(POS_TRICK(POS,1),IE) + ASPAR(I2)
-             ASPAR(I3) =                         - TMP3 * DELTAL(POS_TRICK(POS,2),IE) + ASPAR(I3)
-             B(IP)     =  B(IP) + ONETHIRD * TRIA(IE) * U(IP)
-          ELSE
-             I1    =  POSI(1,J)
-             ASPAR(I1) =  ONETHIRD * TRIA(IE) + ASPAR(I1)
-             B(IP)     =  B(IP) + ONETHIRD * TRIA(IE) * U(IP)
-          END IF
-       END DO ! End loop over connected elements ...
+      DO I = 1, CCON(IP)
+        J = J + 1
+        IE    =  IE_CELL(J)
+        POS   =  POS_CELL(J)
+        K1    =  KP(POS,IE) * IOBPD(ITH,IP)
+        IF (K1 > 0.) THEN
+          DTK   =  K1 * DT
+          TMP3  =  DTK * NM(IE)
+          I1    =  POSI(1,J)
+          I2    =  POSI(2,J)
+          I3    =  POSI(3,J)
+          ASPAR(I1) =  ONETHIRD * TRIA(IE) + DTK - TMP3 * DELTAL(POS,IE)              + ASPAR(I1)
+          ASPAR(I2) =                         - TMP3 * DELTAL(POS_TRICK(POS,1),IE) + ASPAR(I2)
+          ASPAR(I3) =                         - TMP3 * DELTAL(POS_TRICK(POS,2),IE) + ASPAR(I3)
+          B(IP)     =  B(IP) + ONETHIRD * TRIA(IE) * U(IP)
+        ELSE
+          I1    =  POSI(1,J)
+          ASPAR(I1) =  ONETHIRD * TRIA(IE) + ASPAR(I1)
+          B(IP)     =  B(IP) + ONETHIRD * TRIA(IE) * U(IP)
+        END IF
+      END DO ! End loop over connected elements ...
     END DO
     !
     !2DO setup a semi-implicit integration scheme for source terms only ...
@@ -1211,14 +1211,14 @@ CONTAINS
 
     !         IF (SUM(AC) .GT. 0.) THEN
     IF (.FALSE.) THEN
-       WRITE(*,*) SUM(AC)
-       WRITE(*,*) 'CALL SOLVER'
-       WRITE(*,*) 'WRITE CG', SUM(CG)
-       WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
-       WRITE(*,*) 'IPAR, FPAR', SUM(IPAR), SUM(FPAR)
-       WRITE(*,*) 'WKSP, INIU', SUM(WKSP), SUM(INIU)
-       WRITE(*,*) 'ASPAR, JAA, IAA',SUM(ASPAR), SUM(IAA), SUM(JAA)
-       WRITE(*,*) 'AU, FLJAU, FLJU',SUM(AU), SUM(FLJAU), SUM(FLJU)
+      WRITE(*,*) SUM(AC)
+      WRITE(*,*) 'CALL SOLVER'
+      WRITE(*,*) 'WRITE CG', SUM(CG)
+      WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
+      WRITE(*,*) 'IPAR, FPAR', SUM(IPAR), SUM(FPAR)
+      WRITE(*,*) 'WKSP, INIU', SUM(WKSP), SUM(INIU)
+      WRITE(*,*) 'ASPAR, JAA, IAA',SUM(ASPAR), SUM(IAA), SUM(JAA)
+      WRITE(*,*) 'AU, FLJAU, FLJU',SUM(AU), SUM(FLJAU), SUM(FLJU)
     END IF
 
     INIU = U
@@ -1227,18 +1227,18 @@ CONTAINS
     CALL RUNRC (NX, B, X, IPAR, FPAR, WKSP, INIU, ASPAR, JAA, IAA, AU, FLJAU, FLJU, BCGSTAB)
 
     IF (.FALSE.) THEN
-       WRITE(*,*) 'SOLUTION'
-       WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
-       WRITE(*,*) 'IPAR, FPAR', SUM(IPAR), SUM(FPAR)
-       WRITE(*,*) 'WKSP, INIU', SUM(WKSP), SUM(INIU)
-       WRITE(*,*) 'ASPAR, JAA, IAA', SUM(ASPAR), SUM(JAA), SUM(IAA)
-       WRITE(*,*) 'AU, FLJAU, FLJU', SUM(AU), SUM(FLJAU), SUM(FLJU)
+      WRITE(*,*) 'SOLUTION'
+      WRITE(*,*) 'B, X, AC, U', SUM(B), SUM(X), SUM(AC), SUM(U)
+      WRITE(*,*) 'IPAR, FPAR', SUM(IPAR), SUM(FPAR)
+      WRITE(*,*) 'WKSP, INIU', SUM(WKSP), SUM(INIU)
+      WRITE(*,*) 'ASPAR, JAA, IAA', SUM(ASPAR), SUM(JAA), SUM(IAA)
+      WRITE(*,*) 'AU, FLJAU, FLJU', SUM(AU), SUM(FLJAU), SUM(FLJU)
     END IF
 
     DO IP = 1,NX
-       U(IP) = MAX(0.d0,X(IP)*DBLE(IOBPD(ITH,IP)))
+      U(IP) = MAX(0.d0,X(IP)*DBLE(IOBPD(ITH,IP)))
 #ifdef W3_REF1
-       IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
+      IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
 #endif
     END DO
     !
@@ -1248,23 +1248,23 @@ CONTAINS
     ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
     !
     IF ( FLBPI ) THEN
-       RD1=RD10
-       RD2=RD20
-       IF ( RD2 .GT. 0.001 ) THEN
-          RD2    = MIN(1.,MAX(0.,RD1/RD2))
-          RD1    = 1. - RD2
-       ELSE
-          RD1    = 0.
-          RD2    = 1.
-       END IF
-       !
-       ! Time interpolation as done in rect grids
-       !
-       DO IBI=1, NBI
-          IP    = MAPSF(ISBPI(IBI),1)
-          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-               *IOBPA(IP)*(1-IOBPD(ITH,IP)) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-       END DO
+      RD1=RD10
+      RD2=RD20
+      IF ( RD2 .GT. 0.001 ) THEN
+        RD2    = MIN(1.,MAX(0.,RD1/RD2))
+        RD1    = 1. - RD2
+      ELSE
+        RD1    = 0.
+        RD2    = 1.
+      END IF
+      !
+      ! Time interpolation as done in rect grids
+      !
+      DO IBI=1, NBI
+        IP    = MAPSF(ISBPI(IBI),1)
+        AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+             *IOBPA(IP)*(1-IOBPD(ITH,IP)) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+      END DO
     END IF
 
     !      CALL EXTCDE ( 99 )
@@ -1406,53 +1406,53 @@ CONTAINS
     !2.a     Calculate K-Values and contour based quantities ...
     !
     DO IE = 1, NTRI ! I precacalculate this arrays below as I assume that current velocity  changes continusly ...
-       I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
-       I2 = TRIGP(2,IE)
-       I3 = TRIGP(3,IE)
-       LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
-       LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
-       KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
-       KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
-       KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
-       KTMP        = KELEM(:,IE) ! Copy
-       NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
-       FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
-       FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
-       FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
-       FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
-       FL31  = C(I1,1) * IEN(IE,5) + C(I1,2) * IEN(IE,6)
-       FL32  = C(I2,1) * IEN(IE,5) + C(I2,2) * IEN(IE,6)
-       FL111 = 2.d0*FL11+FL12
-       FL112 = 2.d0*FL12+FL11
-       FL211 = 2.d0*FL21+FL22
-       FL212 = 2.d0*FL22+FL21
-       FL311 = 2.d0*FL31+FL32
-       FL312 = 2.d0*FL32+FL31
-       FLALL(1,IE) = (FL311 + FL212)! * ONESIXTH + KELEM(1,IE)
-       FLALL(2,IE) = (FL111 + FL312)! * ONESIXTH + KELEM(2,IE)
-       FLALL(3,IE) = (FL211 + FL112)! * ONESIXTH + KELEM(3,IE)
+      I1 = TRIGP(1,IE) ! Index of the Element Nodes (TRIGP)
+      I2 = TRIGP(2,IE)
+      I3 = TRIGP(3,IE)
+      LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
+      LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
+      KELEM(1,IE) = LAMBDA(1) * IEN(IE,1) + LAMBDA(2) * IEN(IE,2) ! K-Values - so called Flux Jacobians
+      KELEM(2,IE) = LAMBDA(1) * IEN(IE,3) + LAMBDA(2) * IEN(IE,4)
+      KELEM(3,IE) = LAMBDA(1) * IEN(IE,5) + LAMBDA(2) * IEN(IE,6)
+      KTMP        = KELEM(:,IE) ! Copy
+      NM(IE)      = - 1.D0/MIN(-THR8,SUM(MIN(0.d0,KTMP))) ! N-Values
+      FL11  = C(I2,1) * IEN(IE,1) + C(I2,2) * IEN(IE,2) ! Weights for Simpson Integration
+      FL12  = C(I3,1) * IEN(IE,1) + C(I3,2) * IEN(IE,2)
+      FL21  = C(I3,1) * IEN(IE,3) + C(I3,2) * IEN(IE,4)
+      FL22  = C(I1,1) * IEN(IE,3) + C(I1,2) * IEN(IE,4)
+      FL31  = C(I1,1) * IEN(IE,5) + C(I1,2) * IEN(IE,6)
+      FL32  = C(I2,1) * IEN(IE,5) + C(I2,2) * IEN(IE,6)
+      FL111 = 2.d0*FL11+FL12
+      FL112 = 2.d0*FL12+FL11
+      FL211 = 2.d0*FL21+FL22
+      FL212 = 2.d0*FL22+FL21
+      FL311 = 2.d0*FL31+FL32
+      FL312 = 2.d0*FL32+FL31
+      FLALL(1,IE) = (FL311 + FL212)! * ONESIXTH + KELEM(1,IE)
+      FLALL(2,IE) = (FL111 + FL312)! * ONESIXTH + KELEM(2,IE)
+      FLALL(3,IE) = (FL211 + FL112)! * ONESIXTH + KELEM(3,IE)
     END DO ! NTRI
 
     IF (LCALC) THEN ! If the current field or water level changes estimate the iteration number based on the new flow field and the CFL number of the scheme
-       KKSUM = 0.d0
-       DO IE = 1, NTRI
-          NI = TRIGP(:,IE)
-          KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
-       END DO ! IE
-       DTMAXEXP = 1E10 ! initialize to large number
-       DO IP = 1, NX
-          DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
-          DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
-       END DO ! IP
-       CFLXY = DBLE(DT)/DTMAXGL
-       REST  = ABS(MOD(CFLXY,1.0d0))
-       IF (REST .LT. THR8) THEN
-          ITER(IK,ITH) = ABS(NINT(CFLXY))
-       ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
-          ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
-       ELSE
-          ITER(IK,ITH) = ABS(NINT(CFLXY))
-       END IF
+      KKSUM = 0.d0
+      DO IE = 1, NTRI
+        NI = TRIGP(:,IE)
+        KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
+      END DO ! IE
+      DTMAXEXP = 1E10 ! initialize to large number
+      DO IP = 1, NX
+        DTMAXEXP = SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP(IP))
+        DTMAXGL  = MIN( DTMAXGL, DTMAXEXP)
+      END DO ! IP
+      CFLXY = DBLE(DT)/DTMAXGL
+      REST  = ABS(MOD(CFLXY,1.0d0))
+      IF (REST .LT. THR8) THEN
+        ITER(IK,ITH) = ABS(NINT(CFLXY))
+      ELSE IF (REST .GT. THR8 .AND. REST .LT. 0.5d0) THEN
+        ITER(IK,ITH) = ABS(NINT(CFLXY)) + 1
+      ELSE
+        ITER(IK,ITH) = ABS(NINT(CFLXY))
+      END IF
     END IF ! LCALC
 
     DT4AI = DBLE(DT)/DBLE(ITER(IK,ITH))
@@ -1465,114 +1465,114 @@ CONTAINS
     !
     DO IT = 1, ITER(IK,ITH)
 
-       ST = 0.d0
+      ST = 0.d0
 
-       DO IE = 1, NTRI
-          NI      = TRIGP(:,IE)
-          UTMP    = U(NI)
-          FT      =  - ONESIXTH*DOT_PRODUCT(UTMP,FLALL(:,IE))
-          TMP     =  MAX(0.d0,KELEM(:,IE))
-          UTILDE  =  NM(IE) * ( DOT_PRODUCT(TMP,UTMP) - FT )
-          THETA_L(:,IE) =  TMP * ( UTMP - UTILDE )
-          IF (ABS(FT) .GT. DBLE(THR)) THEN
-             BET1(:) = THETA_L(:,IE)/FT
-             IF (ANY( BET1 .LT. 0.0d0) ) THEN
-                BETAHAT(1)    = BET1(1) + 0.5d0 * BET1(2)
-                BETAHAT(2)    = BET1(2) + 0.5d0 * BET1(3)
-                BETAHAT(3)    = BET1(3) + 0.5d0 * BET1(1)
-                BET1(1)       = MAX(0.d0,MIN(BETAHAT(1),1.d0-BETAHAT(2),1.d0))
-                BET1(2)       = MAX(0.d0,MIN(BETAHAT(2),1.d0-BETAHAT(3),1.d0))
-                BET1(3)       = MAX(0.d0,MIN(BETAHAT(3),1.d0-BETAHAT(1),1.d0))
-                THETA_L(:,IE) = FT * BET1
-             END IF
-          ELSE
-             THETA_L(:,IE) = 0.d0
+      DO IE = 1, NTRI
+        NI      = TRIGP(:,IE)
+        UTMP    = U(NI)
+        FT      =  - ONESIXTH*DOT_PRODUCT(UTMP,FLALL(:,IE))
+        TMP     =  MAX(0.d0,KELEM(:,IE))
+        UTILDE  =  NM(IE) * ( DOT_PRODUCT(TMP,UTMP) - FT )
+        THETA_L(:,IE) =  TMP * ( UTMP - UTILDE )
+        IF (ABS(FT) .GT. DBLE(THR)) THEN
+          BET1(:) = THETA_L(:,IE)/FT
+          IF (ANY( BET1 .LT. 0.0d0) ) THEN
+            BETAHAT(1)    = BET1(1) + 0.5d0 * BET1(2)
+            BETAHAT(2)    = BET1(2) + 0.5d0 * BET1(3)
+            BETAHAT(3)    = BET1(3) + 0.5d0 * BET1(1)
+            BET1(1)       = MAX(0.d0,MIN(BETAHAT(1),1.d0-BETAHAT(2),1.d0))
+            BET1(2)       = MAX(0.d0,MIN(BETAHAT(2),1.d0-BETAHAT(3),1.d0))
+            BET1(3)       = MAX(0.d0,MIN(BETAHAT(3),1.d0-BETAHAT(1),1.d0))
+            THETA_L(:,IE) = FT * BET1
           END IF
-          !              THETA_H(:,IE) = (ONETHIRD+DT4AI/(2.d0*TRIA(IE)) * KELEM(:,IE))*FT ! LAX-WENDROFF
-          THETA_H(:,IE) = (1./3.+2./3.* KELEM(:,IE)/SUM(ABS(KELEM(:,IE))) )*FT ! CENTRAL SCHEME
-          ! Antidiffusive residual according to the higher order nonmonotone scheme
-          THETA_ACE(:,IE) = ((THETA_H(:,IE) - THETA_L(:,IE))) * DT4AI/SI(NI)
-          ST(NI)          = ST(NI) + THETA_L(:,IE)*DT4AI/SI(NI)
-       END DO
+        ELSE
+          THETA_L(:,IE) = 0.d0
+        END IF
+        !              THETA_H(:,IE) = (ONETHIRD+DT4AI/(2.d0*TRIA(IE)) * KELEM(:,IE))*FT ! LAX-WENDROFF
+        THETA_H(:,IE) = (1./3.+2./3.* KELEM(:,IE)/SUM(ABS(KELEM(:,IE))) )*FT ! CENTRAL SCHEME
+        ! Antidiffusive residual according to the higher order nonmonotone scheme
+        THETA_ACE(:,IE) = ((THETA_H(:,IE) - THETA_L(:,IE))) * DT4AI/SI(NI)
+        ST(NI)          = ST(NI) + THETA_L(:,IE)*DT4AI/SI(NI)
+      END DO
 
-       !            UL          = MAX(0.d0,U-ST)*DBLE(IOBPD(ITH,:))!*DBLE(IOBDP(:)) ... add for IOBDP dry/wet flag.
+      !            UL          = MAX(0.d0,U-ST)*DBLE(IOBPD(ITH,:))!*DBLE(IOBDP(:)) ... add for IOBDP dry/wet flag.
 
-       DO IP = 1,NX
-          UL(IP) = MAX(0.d0,U(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
-       END DO
+      DO IP = 1,NX
+        UL(IP) = MAX(0.d0,U(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
+      END DO
 
-       USTARI(1,:) = MAX(UL,U)
-       USTARI(2,:) = MIN(UL,U)
+      USTARI(1,:) = MAX(UL,U)
+      USTARI(2,:) = MIN(UL,U)
 
-       UIP = -THR8
-       UIM =  THR8
-       PP  = 0.d0
-       PM  = 0.d0
-       DO IE = 1, NTRI
-          NI = TRIGP(:,IE)
-          PP(NI)  = PP(NI) + MAX(  THR8, -THETA_ACE(:,IE))
-          PM(NI)  = PM(NI) + MIN( -THR8, -THETA_ACE(:,IE))
-          UIP(NI) = MAX (UIP(NI), MAXVAL( USTARI(1,NI) ))
-          UIM(NI) = MIN (UIM(NI), MINVAL( USTARI(2,NI) ))
-       END DO
+      UIP = -THR8
+      UIM =  THR8
+      PP  = 0.d0
+      PM  = 0.d0
+      DO IE = 1, NTRI
+        NI = TRIGP(:,IE)
+        PP(NI)  = PP(NI) + MAX(  THR8, -THETA_ACE(:,IE))
+        PM(NI)  = PM(NI) + MIN( -THR8, -THETA_ACE(:,IE))
+        UIP(NI) = MAX (UIP(NI), MAXVAL( USTARI(1,NI) ))
+        UIM(NI) = MIN (UIM(NI), MINVAL( USTARI(2,NI) ))
+      END DO
 
-       WII(1,:) = MIN(1.0d0,(UIP-UL)/MAX( THR8,PP))
-       WII(2,:) = MIN(1.0d0,(UIM-UL)/MIN(-THR8,PM))
+      WII(1,:) = MIN(1.0d0,(UIP-UL)/MAX( THR8,PP))
+      WII(2,:) = MIN(1.0d0,(UIM-UL)/MIN(-THR8,PM))
 
-       ST = 0.d0
-       DO IE = 1, NTRI
-          DO I = 1, 3
-             IP = TRIGP(I,IE)
-             IF (-THETA_ACE(I,IE) .GE. 0.) THEN
-                TMP(I) = WII(1,IP)
-             ELSE
-                TMP(I) = WII(2,IP)
-             END IF
-          END DO
-          BETA = MINVAL(TMP)
-          NI = TRIGP(:,IE)
-          ST(NI) = ST(NI) + BETA * THETA_ACE(:,IE)
-       END DO
+      ST = 0.d0
+      DO IE = 1, NTRI
+        DO I = 1, 3
+          IP = TRIGP(I,IE)
+          IF (-THETA_ACE(I,IE) .GE. 0.) THEN
+            TMP(I) = WII(1,IP)
+          ELSE
+            TMP(I) = WII(2,IP)
+          END IF
+        END DO
+        BETA = MINVAL(TMP)
+        NI = TRIGP(:,IE)
+        ST(NI) = ST(NI) + BETA * THETA_ACE(:,IE)
+      END DO
 
-       DO IP = 1,NX
-          !
-          ! IOBPD is the switch for removing energy coming from the shoreline
-          !
-          U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
+      DO IP = 1,NX
+        !
+        ! IOBPD is the switch for removing energy coming from the shoreline
+        !
+        U(IP) = MAX(0.d0,UL(IP)-ST(IP))*DBLE(IOBPD(ITH,IP))
 #ifdef W3_REF1
-          IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
+        IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) U(IP)= AC(IP) ! restores reflected boundary values
 #endif
-       END DO
-       !
-       ! update spectrum
-       AC = U
-       !
-       ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
-       !
-       IF ( FLBPI ) THEN
-          !
-          ! 4.1 In this case the boundary is read from the nest.ww3 file
-          !
-          RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
-          RD2=RD20
-          IF ( RD2 .GT. 0.001 ) THEN
-             RD2    = MIN(1.,MAX(0.,RD1/RD2))
-             RD1    = 1. - RD2
-          ELSE
-             RD1    = 0.
-             RD2    = 1.
-          END IF
-          !
-          ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
-          !
-          DO IBI=1, NBI
-             IP = MAPSF(ISBPI(IBI),1)
-             AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-                  / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
-          END DO
+      END DO
+      !
+      ! update spectrum
+      AC = U
+      !
+      ! 4 Update boundaries: performs interpolation in time as done in rect grids (e.g. w3pro1md.ftn)
+      !
+      IF ( FLBPI ) THEN
+        !
+        ! 4.1 In this case the boundary is read from the nest.ww3 file
+        !
+        RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
+        RD2=RD20
+        IF ( RD2 .GT. 0.001 ) THEN
+          RD2    = MIN(1.,MAX(0.,RD1/RD2))
+          RD1    = 1. - RD2
+        ELSE
+          RD1    = 0.
+          RD2    = 1.
+        END IF
+        !
+        ! Overwrites only the incoming energy ( IOBPD(ITH,IP) = 0)
+        !
+        DO IBI=1, NBI
+          IP = MAPSF(ISBPI(IBI),1)
+          AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
+               / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+        END DO
 
-       ENDIF
-       !
+      ENDIF
+      !
     END DO ! End of loop on time steps
     !      CALL EXTCDE ( 99 )
     !/
@@ -1654,8 +1654,8 @@ CONTAINS
 #endif
     IOBDP = 1
     DO IP=1,NX
-       IF (DW(IP) .LT. DMIN + DTHR) IOBDP(IP) = 0
-       !WRITE(*,*) ip, ip_glob, MAPSTA(1,IP_glob), IOBP(IP_glob), DW(ISEA), DMIN
+      IF (DW(IP) .LT. DMIN + DTHR) IOBDP(IP) = 0
+      !WRITE(*,*) ip, ip_glob, MAPSTA(1,IP_glob), IOBP(IP_glob), DW(ISEA), DMIN
     END DO
 
   END SUBROUTINE SETDEPTH
@@ -2101,31 +2101,31 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   !     where to go
   !
   if (ipar(1).gt.0) then
-     !!goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
-     SELECT CASE (ipar(10))
-     CASE (1)
-        GOTO 10
-     CASE (2)
-        GOTO 20
-     CASE (3)
-        GOTO 40
-     CASE (4)
-        GOTO 50
-     CASE (5)
-        GOTO 60
-     CASE (6)
-        GOTO 70
-     CASE (7)
-        GOTO 80
-     CASE (8)
-        GOTO 90
-     CASE (9)
-        GOTO 100
-     CASE (10)
-        GOTO 110
-     END SELECT
+    !!goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
+    SELECT CASE (ipar(10))
+    CASE (1)
+      GOTO 10
+    CASE (2)
+      GOTO 20
+    CASE (3)
+      GOTO 40
+    CASE (4)
+      GOTO 50
+    CASE (5)
+      GOTO 60
+    CASE (6)
+      GOTO 70
+    CASE (7)
+      GOTO 80
+    CASE (8)
+      GOTO 90
+    CASE (9)
+      GOTO 100
+    CASE (10)
+      GOTO 110
+    END SELECT
   else if (ipar(1).lt.0) then
-     goto 900
+    goto 900
   endif
   !
   !     call the initialization routine
@@ -2139,32 +2139,32 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   ipar(8) = 1
   ipar(9) = 1 + n
   do i = 1, n
-     w(i,1) = sol(i)
+    w(i,1) = sol(i)
   enddo
   ipar(10) = 1
   return
 10 ipar(7) = ipar(7) + 1
   ipar(13) = ipar(13) + 1
   do i = 1, n
-     w(i,1) = rhs(i) - w(i,2)
+    w(i,1) = rhs(i) - w(i,2)
   enddo
   fpar(11) = fpar(11) + n
   if (lp) then
-     ipar(1) = 3
-     ipar(10) = 2
-     return
+    ipar(1) = 3
+    ipar(10) = 2
+    return
   endif
   !
 20 if (lp) then
-     do i = 1, n
-        w(i,1) = w(i,2)
-        w(i,6) = w(i,2)
-     enddo
+    do i = 1, n
+      w(i,1) = w(i,2)
+      w(i,6) = w(i,2)
+    enddo
   else
-     do i = 1, n
-        w(i,2) = w(i,1)
-        w(i,6) = w(i,1)
-     enddo
+    do i = 1, n
+      w(i,2) = w(i,1)
+      w(i,6) = w(i,1)
+    enddo
   endif
   !
   fpar(7) = ddot(n,w,w)
@@ -2172,50 +2172,50 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   fpar(5) = sqrt(fpar(7))
   fpar(3) = fpar(5)
   if (abs(ipar(3)).eq.2) then
-     fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
-     fpar(11) = fpar(11) + 2 * n
+    fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
+    fpar(11) = fpar(11) + 2 * n
   else if (ipar(3).ne.999) then
-     fpar(4) = fpar(1) * fpar(3) + fpar(2)
+    fpar(4) = fpar(1) * fpar(3) + fpar(2)
   endif
   if (ipar(3).ge.0) fpar(6) = fpar(5)
   if (ipar(3).ge.0 .and. fpar(5).le.fpar(4) .and. ipar(3).ne.999) then
-     goto 900
+    goto 900
   endif
   !
   !     beginning of the iterations
   !
   !     Step (1), v = A p
 30 if (rp) then
-     ipar(1) = 5
-     ipar(8) = 5*n+1
-     if (lp) then
-        ipar(9) = 4*n + 1
-     else
-        ipar(9) = 6*n + 1
-     endif
-     ipar(10) = 3
-     return
+    ipar(1) = 5
+    ipar(8) = 5*n+1
+    if (lp) then
+      ipar(9) = 4*n + 1
+    else
+      ipar(9) = 6*n + 1
+    endif
+    ipar(10) = 3
+    return
   endif
   !
 40 ipar(1) = 1
   if (rp) then
-     ipar(8) = ipar(9)
+    ipar(8) = ipar(9)
   else
-     ipar(8) = 5*n+1
+    ipar(8) = 5*n+1
   endif
   if (lp) then
-     ipar(9) = 6*n + 1
+    ipar(9) = 6*n + 1
   else
-     ipar(9) = 4*n + 1
+    ipar(9) = 4*n + 1
   endif
   ipar(10) = 4
   return
 50 if (lp) then
-     ipar(1) = 3
-     ipar(8) = ipar(9)
-     ipar(9) = 4*n + 1
-     ipar(10) = 5
-     return
+    ipar(1) = 3
+    ipar(8) = ipar(9)
+    ipar(9) = 4*n + 1
+    ipar(10) = 5
+    return
   endif
   !
 60 ipar(7) = ipar(7) + 1
@@ -2229,43 +2229,43 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   !
   !     step (3)
   do i = 1, n
-     w(i,3) = w(i,2) - alpha * w(i,5)
+    w(i,3) = w(i,2) - alpha * w(i,5)
   enddo
   fpar(11) = fpar(11) + 2 * n
   !
   !     Step (4): the second matvec -- t = A s
   !
   if (rp) then
-     ipar(1) = 5
-     ipar(8) = n+n+1
-     if (lp) then
-        ipar(9) = ipar(8)+n
-     else
-        ipar(9) = 6*n + 1
-     endif
-     ipar(10) = 6
-     return
+    ipar(1) = 5
+    ipar(8) = n+n+1
+    if (lp) then
+      ipar(9) = ipar(8)+n
+    else
+      ipar(9) = 6*n + 1
+    endif
+    ipar(10) = 6
+    return
   endif
   !
 70 ipar(1) = 1
   if (rp) then
-     ipar(8) = ipar(9)
+    ipar(8) = ipar(9)
   else
-     ipar(8) = n+n+1
+    ipar(8) = n+n+1
   endif
   if (lp) then
-     ipar(9) = 6*n + 1
+    ipar(9) = 6*n + 1
   else
-     ipar(9) = 3*n + 1
+    ipar(9) = 3*n + 1
   endif
   ipar(10) = 7
   return
 80 if (lp) then
-     ipar(1) = 3
-     ipar(8) = ipar(9)
-     ipar(9) = 3*n + 1
-     ipar(10) = 8
-     return
+    ipar(1) = 3
+    ipar(8) = ipar(9)
+    ipar(9) = 3*n + 1
+    ipar(10) = 8
+    return
   endif
 90 ipar(7) = ipar(7) + 1
   !
@@ -2281,19 +2281,19 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   !
   !     step (6) and (7)
   do i = 1, n
-     w(i,7) = alpha * w(i,6) + omega * w(i,3)
-     w(i,8) = w(i,8) + w(i,7)
-     w(i,2) = w(i,3) - omega * w(i,4)
+    w(i,7) = alpha * w(i,6) + omega * w(i,3)
+    w(i,8) = w(i,8) + w(i,7)
+    w(i,2) = w(i,3) - omega * w(i,4)
   enddo
   fpar(11) = fpar(11) + 6 * n + 1
   !
   !     convergence test
   if (ipar(3).eq.999) then
-     ipar(1) = 10
-     ipar(8) = 7*n + 1
-     ipar(9) = 6*n + 1
-     ipar(10) = 9
-     return
+    ipar(1) = 10
+    ipar(8) = 7*n + 1
+    ipar(9) = 6*n + 1
+    ipar(10) = 9
+    return
   endif
   if (stopbis(n,ipar,2,fpar,w(1,2),w(1,7),one))  goto 900
 100 if (ipar(3).eq.999.and.ipar(11).eq.1) goto 900
@@ -2305,7 +2305,7 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   omega = fpar(9)
   beta = fpar(7) * fpar(8) / (fpar(9) * rho)
   do i = 1, n
-     w(i,6) = w(i,2) + beta * (w(i,6) - omega * w(i,5))
+    w(i,6) = w(i,2) + beta * (w(i,6) - omega * w(i,5))
   enddo
   fpar(11) = fpar(11) + 6 * n + 3
   if (brkdn(fpar(7),ipar)) goto 900
@@ -2317,18 +2317,18 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   !     some clean up job to do
   !
 900 if (rp) then
-     if (ipar(1).lt.0) ipar(12) = ipar(1)
-     ipar(1) = 5
-     ipar(8) = 7*n + 1
-     ipar(9) = ipar(8) - n
-     ipar(10) = 10
-     return
+    if (ipar(1).lt.0) ipar(12) = ipar(1)
+    ipar(1) = 5
+    ipar(8) = 7*n + 1
+    ipar(9) = ipar(8) - n
+    ipar(10) = 10
+    return
   endif
 
 110 if (rp) then
-     call tidycg(n,ipar,fpar,sol,w(1,7))
+    call tidycg(n,ipar,fpar,sol,w(1,7))
   else
-     call tidycg(n,ipar,fpar,sol,w(1,8))
+    call tidycg(n,ipar,fpar,sol,w(1,8))
   endif
   !
   return
@@ -2349,11 +2349,11 @@ subroutine implu(np,umm,beta,ypiv,u,permut,full)
   !     -- perform  previous step of the factorization-
   !
   do k=1,npm1
-     if (.not. permut(k)) goto 5
-     x=u(k)
-     u(k) = u(k+1)
-     u(k+1) = x
-5    u(k+1) = u(k+1) - ypiv(k)*u(k)
+    if (.not. permut(k)) goto 5
+    x=u(k)
+    u(k) = u(k+1)
+    u(k+1) = x
+5   u(k+1) = u(k+1) - ypiv(k)*u(k)
   end do
   !-----------------------------------------------------------------------
   !     now determine pivotal information to be used in the next call
@@ -2370,8 +2370,8 @@ subroutine implu(np,umm,beta,ypiv,u,permut,full)
   if (.not. full) return
   !     shift everything up if full...
   do k=1,npm1
-     ypiv(k) = ypiv(k+1)
-     permut(k) = permut(k+1)
+    ypiv(k) = ypiv(k+1)
+    permut(k) = permut(k+1)
   end do
   return
   !-----end-of-implu
@@ -2399,7 +2399,7 @@ subroutine uppdir(n,p,np,lbp,indp,y,u,usav,flops)
   x = u(ju) /usav(j)
   if (x .eq. zero) goto 115
   do k=1,n
-     y(k) = y(k) - x*p(k,j)
+    y(k) = y(k) - x*p(k,j)
   end do
   flops = flops + 2*n
 115 j = j-1
@@ -2409,7 +2409,7 @@ subroutine uppdir(n,p,np,lbp,indp,y,u,usav,flops)
   if (indp .gt. lbp) indp = 1
   usav(indp) = u(np)
   do  k=1,n
-     p(k,indp) = y(k)
+    p(k,indp) = y(k)
   end do
   return
   !-----------------------------------------------------------------------
@@ -2429,26 +2429,26 @@ subroutine givens(x,y,c,s)
   parameter (zero=0.0D0,one=1.0D0)
   !
   if (x.eq.zero .and. y.eq.zero) then
-     c = one
-     s = zero
+    c = one
+    s = zero
   else if (abs(y).gt.abs(x)) then
-     t = x / y
-     x = sqrt(one+t*t)
-     s = sign(one / x, y)
-     c = t*s
+    t = x / y
+    x = sqrt(one+t*t)
+    s = sign(one / x, y)
+    c = t*s
   else if (abs(y).le.abs(x)) then
-     t = y / x
-     y = sqrt(one+t*t)
-     c = sign(one / y, x)
-     s = t*c
+    t = y / x
+    y = sqrt(one+t*t)
+    c = sign(one / y, x)
+    s = t*c
   else
-     !
-     !     X or Y must be an invalid floating-point number, set both to zero
-     !
-     x = zero
-     y = zero
-     c = one
-     s = zero
+    !
+    !     X or Y must be an invalid floating-point number, set both to zero
+    !
+    x = zero
+    y = zero
+    c = one
+    s = zero
   endif
   x = abs(x*y)
   !
@@ -2468,13 +2468,13 @@ logical function stopbis(n,ipar,mvpi,fpar,r,delx,sx)
   !     true if the stopbis criteria is satisfied.
   !-----------------------------------------------------------------------
   if (ipar(11) .eq. 1) then
-     stopbis = .true.
+    stopbis = .true.
   else
-     stopbis = .false.
+    stopbis = .false.
   endif
   if (ipar(6).gt.0 .and. ipar(7).ge.ipar(6)) then
-     ipar(1) = -1
-     stopbis = .true.
+    ipar(1) = -1
+    stopbis = .true.
   endif
   if (stopbis) return
   !
@@ -2483,33 +2483,33 @@ logical function stopbis(n,ipar,mvpi,fpar,r,delx,sx)
   fpar(5) = sqrt(ddot(n,r,r))
   fpar(11) = fpar(11) + 2 * n
   if (ipar(3).lt.0) then
-     !
-     !     compute the change in the solution vector
-     !
-     fpar(6) = sx * sqrt(ddot(n,delx,delx))
-     fpar(11) = fpar(11) + 2 * n
-     if (ipar(7).lt.mvpi+mvpi+1) then
-        !
-        !     if this is the end of the first iteration, set fpar(3:4)
-        !
-        fpar(3) = fpar(6)
-        if (ipar(3).eq.-1) then
-           fpar(4) = fpar(1) * fpar(3) + fpar(2)
-        endif
-     endif
+    !
+    !     compute the change in the solution vector
+    !
+    fpar(6) = sx * sqrt(ddot(n,delx,delx))
+    fpar(11) = fpar(11) + 2 * n
+    if (ipar(7).lt.mvpi+mvpi+1) then
+      !
+      !     if this is the end of the first iteration, set fpar(3:4)
+      !
+      fpar(3) = fpar(6)
+      if (ipar(3).eq.-1) then
+        fpar(4) = fpar(1) * fpar(3) + fpar(2)
+      endif
+    endif
   else
-     fpar(6) = fpar(5)
+    fpar(6) = fpar(5)
   endif
   !
   !     .. the test is struct this way so that when the value in fpar(6)
   !       is not a valid number, STOPBIS is set to .true.
   !
   if (fpar(6).gt.fpar(4)) then
-     stopbis = .false.
-     ipar(11) = 0
+    stopbis = .false.
+    ipar(11) = 0
   else
-     stopbis = .true.
-     ipar(11) = 1
+    stopbis = .true.
+    ipar(11) = 1
   endif
   !
   return
@@ -2527,24 +2527,24 @@ subroutine tidycg(n,ipar,fpar,sol,delx)
   parameter(zero=0.0D0)
   !
   if (ipar(12).ne.0) then
-     ipar(1) = ipar(12)
+    ipar(1) = ipar(12)
   else if (ipar(1).gt.0) then
-     if ((ipar(3).eq.999 .and. ipar(11).eq.1) .or. &
-          &        fpar(6).le.fpar(4)) then
-        ipar(1) = 0
-     else if (ipar(7).ge.ipar(6) .and. ipar(6).gt.0) then
-        ipar(1) = -1
-     else
-        ipar(1) = -10
-     endif
+    if ((ipar(3).eq.999 .and. ipar(11).eq.1) .or. &
+         &        fpar(6).le.fpar(4)) then
+      ipar(1) = 0
+    else if (ipar(7).ge.ipar(6) .and. ipar(6).gt.0) then
+      ipar(1) = -1
+    else
+      ipar(1) = -10
+    endif
   endif
   if (fpar(3).gt.zero .and. fpar(6).gt.zero .and. ipar(7).gt.ipar(13)) then
-     fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
+    fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
   else
-     fpar(7) = zero
+    fpar(7) = zero
   endif
   do i = 1, n
-     sol(i) = sol(i) + delx(i)
+    sol(i) = sol(i) + delx(i)
   enddo
   return
 end subroutine tidycg
@@ -2564,23 +2564,23 @@ logical function brkdn(alpha, ipar)
   !-----------------------------------------------------------------------
   brkdn = .false.
   if (alpha.gt.zero) then
-     beta = one / alpha
-     if (.not. beta.gt.zero) then
-        brkdn = .true.
-        ipar(1) = -9
-     endif
+    beta = one / alpha
+    if (.not. beta.gt.zero) then
+      brkdn = .true.
+      ipar(1) = -9
+    endif
   else if (alpha.lt.zero) then
-     beta = one / alpha
-     if (.not. beta.lt.zero) then
-        brkdn = .true.
-        ipar(1) = -9
-     endif
+    beta = one / alpha
+    if (.not. beta.lt.zero) then
+      brkdn = .true.
+      ipar(1) = -9
+    endif
   else if (alpha.eq.zero) then
-     brkdn = .true.
-     ipar(1) = -3
+    brkdn = .true.
+    ipar(1) = -3
   else
-     brkdn = .true.
-     ipar(1) = -9
+    brkdn = .true.
+    ipar(1) = -9
   endif
   return
 end function brkdn
@@ -2601,23 +2601,23 @@ subroutine bisinit(ipar,fpar,wksize,dsc,lp,rp,wk)
   !     array
   !
   if (ipar(4).lt.wksize) then
-     ipar(1) = -2
-     ipar(4) = wksize
-     return
+    ipar(1) = -2
+    ipar(4) = wksize
+    return
   endif
   !
   if (ipar(2).gt.2) then
-     lp = .true.
-     rp = .true.
+    lp = .true.
+    rp = .true.
   else if (ipar(2).eq.2) then
-     lp = .false.
-     rp = .true.
+    lp = .false.
+    rp = .true.
   else if (ipar(2).eq.1) then
-     lp = .true.
-     rp = .false.
+    lp = .true.
+    rp = .false.
   else
-     lp = .false.
-     rp = .false.
+    lp = .false.
+    rp = .false.
   endif
   if (ipar(3).eq.0) ipar(3) = dsc
   !     .. clear the ipar elements used
@@ -2635,22 +2635,22 @@ subroutine bisinit(ipar,fpar,wksize,dsc,lp,rp,wk)
   !
   if (fpar(1).lt.zero .or. fpar(1).ge.one .or. fpar(2).lt.zero .or. &
        &     (fpar(1).eq.zero .and. fpar(2).eq.zero)) then
-     if (ipar(1).eq.0) then
-        ipar(1) = -4
-        return
-     else
-        fpar(1) = 1.0D-6
-        fpar(2) = 1.0D-16
-     endif
+    if (ipar(1).eq.0) then
+      ipar(1) = -4
+      return
+    else
+      fpar(1) = 1.0D-6
+      fpar(2) = 1.0D-16
+    endif
   endif
   !     .. clear the fpar elements
   do i = 3, 10
-     fpar(i) = zero
+    fpar(i) = zero
   enddo
   if (fpar(11).lt.zero) fpar(11) = zero
   !     .. clear the used portion of the work array to zero
   do i = 1, wksize
-     wk(i) = zero
+    wk(i) = zero
   enddo
   !
   return
@@ -2703,57 +2703,57 @@ subroutine mgsro(full,lda,n,m,ind,ops,vec,hh,ierr)
   ops = ops + n + n
   thr = nrm0 * reorth
   if (nrm0.le.zero) then
-     ierr = - 1
-     return
+    ierr = - 1
+    return
   else if (nrm0.gt.zero .and. one/nrm0.gt.zero) then
-     ierr = 0
+    ierr = 0
   else
-     ierr = -2
-     return
+    ierr = -2
+    return
   endif
   !
   !     Modified Gram-Schmidt loop
   !
   if (full) then
-     do i = ind+1, m
-        fct = ddot(n,vec(1,ind),vec(1,i))
-        hh(i) = fct
-        do k = 1, n
-           vec(k,ind) = vec(k,ind) - fct * vec(k,i)
-        end do
-        ops = ops + 4 * n + 2
-        if (fct*fct.gt.thr) then
-           fct = ddot(n,vec(1,ind),vec(1,i))
-           hh(i) = hh(i) + fct
-           do k = 1, n
-              vec(k,ind) = vec(k,ind) - fct * vec(k,i)
-           end do
-           ops = ops + 4*n + 1
-        endif
-        nrm0 = nrm0 - hh(i) * hh(i)
-        if (nrm0.lt.zero) nrm0 = zero
-        thr = nrm0 * reorth
-     end do
-  endif
-  !
-  do i = 1, ind-1
-     fct = ddot(n,vec(1,ind),vec(1,i))
-     hh(i) = fct
-     do k = 1, n
+    do i = ind+1, m
+      fct = ddot(n,vec(1,ind),vec(1,i))
+      hh(i) = fct
+      do k = 1, n
         vec(k,ind) = vec(k,ind) - fct * vec(k,i)
-     end do
-     ops = ops + 4 * n + 2
-     if (fct*fct.gt.thr) then
+      end do
+      ops = ops + 4 * n + 2
+      if (fct*fct.gt.thr) then
         fct = ddot(n,vec(1,ind),vec(1,i))
         hh(i) = hh(i) + fct
         do k = 1, n
-           vec(k,ind) = vec(k,ind) - fct * vec(k,i)
+          vec(k,ind) = vec(k,ind) - fct * vec(k,i)
         end do
         ops = ops + 4*n + 1
-     endif
-     nrm0 = nrm0 - hh(i) * hh(i)
-     if (nrm0.lt.zero) nrm0 = zero
-     thr = nrm0 * reorth
+      endif
+      nrm0 = nrm0 - hh(i) * hh(i)
+      if (nrm0.lt.zero) nrm0 = zero
+      thr = nrm0 * reorth
+    end do
+  endif
+  !
+  do i = 1, ind-1
+    fct = ddot(n,vec(1,ind),vec(1,i))
+    hh(i) = fct
+    do k = 1, n
+      vec(k,ind) = vec(k,ind) - fct * vec(k,i)
+    end do
+    ops = ops + 4 * n + 2
+    if (fct*fct.gt.thr) then
+      fct = ddot(n,vec(1,ind),vec(1,i))
+      hh(i) = hh(i) + fct
+      do k = 1, n
+        vec(k,ind) = vec(k,ind) - fct * vec(k,i)
+      end do
+      ops = ops + 4*n + 1
+    endif
+    nrm0 = nrm0 - hh(i) * hh(i)
+    if (nrm0.lt.zero) nrm0 = zero
+    thr = nrm0 * reorth
   end do
   !
   !     test the resulting vector
@@ -2762,15 +2762,15 @@ subroutine mgsro(full,lda,n,m,ind,ops,vec,hh,ierr)
   ops = ops + n + n
   hh(ind) = nrm1    ! statement label 75
   if (nrm1.le.zero) then
-     ierr = -3
-     return
+    ierr = -3
+    return
   endif
   !
   !     scale the resulting vector
   !
   fct = one / nrm1
   do k = 1, n
-     vec(k,ind) = vec(k,ind) * fct
+    vec(k,ind) = vec(k,ind) * fct
   end do
   ops = ops + n + 1
   !
@@ -2841,17 +2841,17 @@ subroutine amux (n, x, y, a,ja,ia)
   integer i, k
   !-----------------------------------------------------------------------
   do i = 1,n
-     !
-     !     compute the inner product of row i with vector x
-     !
-     t = 0.0d0
-     do k=ia(i), ia(i+1)-1
-        t = t + a(k)*x(ja(k))
-     end do
-     !
-     !     store result in y(i)
-     !
-     y(i) = t
+    !
+    !     compute the inner product of row i with vector x
+    !
+    t = 0.0d0
+    do k=ia(i), ia(i+1)-1
+      t = t + a(k)*x(ja(k))
+    end do
+    !
+    !     store result in y(i)
+    !
+    y(i) = t
   end do
   !
   return
@@ -2885,15 +2885,15 @@ subroutine amuxms (n, x, y, a,ja)
   integer i, k
   !-----------------------------------------------------------------------
   do i=1, n
-     y(i) = a(i)*x(i)
+    y(i) = a(i)*x(i)
   end do
   do i = 1,n
-     !
-     !     compute the inner product of row i with vector x
-     !
-     do k=ja(i), ja(i+1)-1
-        y(i) = y(i) + a(k) *x(ja(k))
-     end do
+    !
+    !     compute the inner product of row i with vector x
+    !
+    do k=ja(i), ja(i+1)-1
+      y(i) = y(i) + a(k) *x(ja(k))
+    end do
   end do
   !
   return
@@ -2934,15 +2934,15 @@ subroutine atmux (n, x, y, a, ja, ia)
   !     zero out output vector
   !
   do i=1,n
-     y(i) = 0.0
+    y(i) = 0.0
   end do
   !
   ! loop over the rows
   !
   do i = 1,n
-     do  k=ia(i), ia(i+1)-1
-        y(ja(k)) = y(ja(k)) + x(i)*a(k)
-     end do
+    do  k=ia(i), ia(i+1)-1
+      y(ja(k)) = y(ja(k)) + x(i)*a(k)
+    end do
   end do
   !
   return
@@ -2983,15 +2983,15 @@ subroutine atmuxr (m, n, x, y, a, ja, ia)
   !     zero out output vector
   !
   do i=1,m
-     y(i) = 0.0
+    y(i) = 0.0
   end do
   !
   ! loop over the rows
   !
   do i = 1,n
-     do k=ia(i), ia(i+1)-1
-        y(ja(k)) = y(ja(k)) + x(i)*a(k)
-     end do
+    do k=ia(i), ia(i+1)-1
+      y(ja(k)) = y(ja(k)) + x(i)*a(k)
+    end do
   end do
   !
   return
@@ -3035,12 +3035,12 @@ subroutine amuxe (n,x,y,na,ncol,a,ja)
   integer i, j
   !-----------------------------------------------------------------------
   do i=1, n
-     y(i) = 0.0
+    y(i) = 0.0
   end do
   do j=1,ncol
-     do i = 1,n
-        y(i) = y(i)+a(i,j)*x(ja(i,j))
-     end do
+    do i = 1,n
+      y(i) = y(i)+a(i,j)*x(ja(i,j))
+    end do
   end do
   !
   return
@@ -3084,15 +3084,15 @@ subroutine amuxd (n,x,y,diag,ndiag,idiag,ioff)
   integer j, k, io, i1, i2
   !-----------------------------------------------------------------------
   do j=1, n
-     y(j) = 0.0d0
+    y(j) = 0.0d0
   end do
   do j=1, idiag
-     io = ioff(j)
-     i1 = max0(1,1-io)
-     i2 = min0(n,n-io)
-     do k=i1, i2
-        y(k) = y(k)+diag(k,j)*x(k+io)
-     end do
+    io = ioff(j)
+    i1 = max0(1,1-io)
+    i2 = min0(n,n-io)
+    do k=i1, i2
+      y(k) = y(k)+diag(k,j)*x(k+io)
+    end do
   end do
   !
   return
@@ -3139,14 +3139,14 @@ subroutine amuxj (n, x, y, jdiag, a, ja, ia)
   integer i, ii, k1, ilen, j
   !-----------------------------------------------------------------------
   do i=1, n
-     y(i) = 0.0d0
+    y(i) = 0.0d0
   end do
   do  ii=1, jdiag
-     k1 = ia(ii)-1
-     ilen = ia(ii+1)-k1-1
-     do  j=1,ilen
-        y(j)= y(j)+a(k1+j)*x(ja(k1+j))
-     end do
+    k1 = ia(ii)-1
+    ilen = ia(ii+1)-k1-1
+    do  j=1,ilen
+      y(j)= y(j)+a(k1+j)*x(ja(k1+j))
+    end do
   end do
   !
   return
@@ -3182,22 +3182,22 @@ subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
   !---------------------------------
   n = kvstc(nc+1)-1
   do i = 1, n
-     b(i) = 0.d0
+    b(i) = 0.d0
   enddo
   !---------------------------------
   k = 1
   do i = 1, nr
-     istart = kvstr(i)
-     istop  = kvstr(i+1)-1
-     do j = ia(i), ia(i+1)-1
-        do jj = kvstc(ja(j)), kvstc(ja(j)+1)-1
-           xjj = x(jj)
-           do ii = istart, istop
-              b(ii) = b(ii) + xjj*a(k)
-              k = k + 1
-           enddo
+    istart = kvstr(i)
+    istop  = kvstr(i+1)-1
+    do j = ia(i), ia(i+1)-1
+      do jj = kvstc(ja(j)), kvstc(ja(j)+1)-1
+        xjj = x(jj)
+        do ii = istart, istop
+          b(ii) = b(ii) + xjj*a(k)
+          k = k + 1
         enddo
-     enddo
+      enddo
+    enddo
   enddo
   !---------------------------------
   return
@@ -3239,11 +3239,11 @@ subroutine lsol (n,x,y,al,jal,ial)
   !-----------------------------------------------------------------------
   x(1) = y(1)
   do  k = 2, n
-     t = y(k)
-     do j = ial(k), ial(k+1)-1
-        t = t-al(j)*x(jal(j))
-     end do
-     x(k) = t
+    t = y(k)
+    do j = ial(k), ial(k+1)-1
+      t = t-al(j)*x(jal(j))
+    end do
+    x(k) = t
   end do
   !
   return
@@ -3283,11 +3283,11 @@ subroutine ldsol (n,x,y,al,jal)
   !-----------------------------------------------------------------------
   x(1) = y(1)*al(1)
   do  k = 2, n
-     t = y(k)
-     do  j = jal(k), jal(k+1)-1
-        t = t - al(j)*x(jal(j))
-     end do
-     x(k) = al(k)*t
+    t = y(k)
+    do  j = jal(k), jal(k+1)-1
+      t = t - al(j)*x(jal(j))
+    end do
+    x(k) = al(k)*t
   end do
   return
   !----------end-of-ldsol-------------------------------------------------
@@ -3324,13 +3324,13 @@ subroutine lsolc (n,x,y,al,jal,ial)
   real*8 t
   !-----------------------------------------------------------------------
   do k=1,n
-     x(k) = y(k)
+    x(k) = y(k)
   end do
   do k = 1, n-1
-     t = x(k)
-     do j = ial(k), ial(k+1)-1
-        x(jal(j)) = x(jal(j)) - t*al(j)
-     end do
+    t = x(k)
+    do j = ial(k), ial(k+1)-1
+      x(jal(j)) = x(jal(j)) - t*al(j)
+    end do
   end do
   !
   return
@@ -3370,14 +3370,14 @@ subroutine ldsolc (n,x,y,al,jal)
   real*8 t
   !-----------------------------------------------------------------------
   do k=1,n
-     x(k) = y(k)
+    x(k) = y(k)
   end do
   do k = 1, n
-     x(k) = x(k)*al(k)
-     t = x(k)
-     do j = jal(k), jal(k+1)-1
-        x(jal(j)) = x(jal(j)) - t*al(j)
-     end do
+    x(k) = x(k)*al(k)
+    t = x(k)
+    do j = jal(k), jal(k+1)-1
+      x(jal(j)) = x(jal(j)) - t*al(j)
+    end do
   end do
   !
   return
@@ -3418,20 +3418,20 @@ subroutine ldsoll (n,x,y,al,jal,nlev,lev,ilev)
   !     outer loop goes through the levels. (SEQUENTIAL loop)
   !
   do ii=1, nlev
-     !
-     !     next loop executes within the same level. PARALLEL loop
-     !
-     do i=ilev(ii), ilev(ii+1)-1
-        jrow = lev(i)
-        !
-        ! compute inner product of row jrow with x
-        !
-        t = y(jrow)
-        do k=jal(jrow), jal(jrow+1)-1
-           t = t - al(k)*x(jal(k))
-        end do
-        x(jrow) = t*al(jrow)
-     end do
+    !
+    !     next loop executes within the same level. PARALLEL loop
+    !
+    do i=ilev(ii), ilev(ii+1)-1
+      jrow = lev(i)
+      !
+      ! compute inner product of row jrow with x
+      !
+      t = y(jrow)
+      do k=jal(jrow), jal(jrow+1)-1
+        t = t - al(k)*x(jal(k))
+      end do
+      x(jrow) = t*al(jrow)
+    end do
   end do
   return
   !-----------------------------------------------------------------------
@@ -3468,11 +3468,11 @@ subroutine usol (n,x,y,au,jau,iau)
   !-----------------------------------------------------------------------
   x(n) = y(n)
   do  k = n-1,1,-1
-     t = y(k)
-     do j = iau(k), iau(k+1)-1
-        t = t - au(j)*x(jau(j))
-     end do
-     x(k) = t
+    t = y(k)
+    do j = iau(k), iau(k+1)-1
+      t = t - au(j)*x(jau(j))
+    end do
+    x(k) = t
   end do
   !
   return
@@ -3512,11 +3512,11 @@ subroutine udsol (n,x,y,au,jau)
   !-----------------------------------------------------------------------
   x(n) = y(n)*au(n)
   do k = n-1,1,-1
-     t = y(k)
-     do j = jau(k), jau(k+1)-1
-        t = t - au(j)*x(jau(j))
-     end do
-     x(k) = au(k)*t
+    t = y(k)
+    do j = jau(k), jau(k+1)-1
+      t = t - au(j)*x(jau(j))
+    end do
+    x(k) = au(k)*t
   end do
   !
   return
@@ -3554,13 +3554,13 @@ subroutine usolc (n,x,y,au,jau,iau)
   real*8 t
   !-----------------------------------------------------------------------
   do k=1,n
-     x(k) = y(k)
+    x(k) = y(k)
   end do
   do  k = n,1,-1
-     t = x(k)
-     do j = iau(k), iau(k+1)-1
-        x(jau(j)) = x(jau(j)) - t*au(j)
-     end do
+    t = x(k)
+    do j = iau(k), iau(k+1)-1
+      x(jau(j)) = x(jau(j)) - t*au(j)
+    end do
   end do
   !
   return
@@ -3599,14 +3599,14 @@ subroutine udsolc (n,x,y,au,jau)
   real*8 t
   !-----------------------------------------------------------------------
   do k=1,n
-     x(k) = y(k)
+    x(k) = y(k)
   end do
   do  k = n,1,-1
-     x(k) = x(k)*au(k)
-     t = x(k)
-     do j = jau(k), jau(k+1)-1
-        x(jau(j)) = x(jau(j)) - t*au(j)
-     end do
+    x(k) = x(k)*au(k)
+    t = x(k)
+    do j = jau(k), jau(k+1)-1
+      x(jau(j)) = x(jau(j)) - t*au(j)
+    end do
   end do
   !
   return
@@ -3626,16 +3626,16 @@ subroutine lusol(n, y, x, alu, jlu, ju)
   ! forward solve
   !
   do i = 1, n
-     x(i) = y(i)
-     do k=jlu(i),ju(i)-1
-        x(i) = x(i) - alu(k)* x(jlu(k))
-     end do
+    x(i) = y(i)
+    do k=jlu(i),ju(i)-1
+      x(i) = x(i) - alu(k)* x(jlu(k))
+    end do
   end do
   do i = n, 1, -1
-     do k=ju(i),jlu(i+1)-1
-        x(i) = x(i) - alu(k)*x(jlu(k))
-     end do
-     x(i) = alu(i)*x(i)
+    do k=ju(i),jlu(i+1)-1
+      x(i) = x(i) - alu(k)*x(jlu(k))
+    end do
+    x(i) = alu(i)*x(i)
   end do
   !
   return
@@ -3654,24 +3654,24 @@ subroutine lutsol(n, y, x, alu, jlu, ju)
   integer      :: i,k
   !
   do i = 1, n
-     x(i) = y(i)
+    x(i) = y(i)
   end do
   !
   ! forward solve (with U^T)
   !
   do i = 1, n
-     x(i) = x(i) * alu(i)
-     do k=ju(i),jlu(i+1)-1
-        x(jlu(k)) = x(jlu(k)) - alu(k)* x(i)
-     end do
+    x(i) = x(i) * alu(i)
+    do k=ju(i),jlu(i+1)-1
+      x(jlu(k)) = x(jlu(k)) - alu(k)* x(i)
+    end do
   end do
   !
   !     backward solve (with L^T)
   !
   do i = n, 1, -1
-     do k=jlu(i),ju(i)-1
-        x(jlu(k)) = x(jlu(k)) - alu(k)*x(i)
-     end do
+    do k=jlu(i),ju(i)-1
+      x(jlu(k)) = x(jlu(k)) - alu(k)*x(i)
+    end do
   end do
   !
   return
@@ -3707,16 +3707,16 @@ subroutine qsplit(a,ind,n,ncut)
 1 mid = first
   abskey = abs(a(mid))
   do j=first+1, last
-     if (abs(a(j)) .gt. abskey) then
-        mid = mid+1
-        !     interchange
-        tmp = a(mid)
-        itmp = ind(mid)
-        a(mid) = a(j)
-        ind(mid) = ind(j)
-        a(j)  = tmp
-        ind(j) = itmp
-     endif
+    if (abs(a(j)) .gt. abskey) then
+      mid = mid+1
+      !     interchange
+      tmp = a(mid)
+      itmp = ind(mid)
+      a(mid) = a(j)
+      ind(mid) = ind(j)
+      a(j)  = tmp
+      ind(j) = itmp
+    endif
   end do
   !
   !     interchange
@@ -3733,9 +3733,9 @@ subroutine qsplit(a,ind,n,ncut)
   !
   if (mid .eq. ncut) return
   if (mid .gt. ncut) then
-     last = mid-1
+    last = mid-1
   else
-     first = mid+1
+    first = mid+1
   endif
   goto 1
   !----------------end-of-qsplit------------------------------------------
@@ -3764,14 +3764,14 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
   !     ipar(2) can be 0, 1, 2, please don't use 3
   !
   if (ipar(2).gt.2) then
-     WRITE(*,*) 'I can not do both left and right preconditioning.'
-     return
+    WRITE(*,*) 'I can not do both left and right preconditioning.'
+    return
   endif
 
   its = 0
   !
   do i = 1, n
-     sol(i) = guess(i)
+    sol(i) = guess(i)
   enddo
   !
   ipar(1) = 0
@@ -3780,34 +3780,34 @@ subroutine runrc(n,rhs,sol,ipar,fpar,wk,guess,a,ja,ia,au,jau,ju,solver)
 10 call solver(n,rhs,sol,ipar,fpar,wk)
 
   if (ipar(7).ne.its) then
-     its = ipar(7)
+    its = ipar(7)
   endif
   if (ipar(1).eq.1) then
-     call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-     goto 10
+    call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+    goto 10
   else if (ipar(1).eq.2) then
-     call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-     goto 10
+    call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+    goto 10
   else if (ipar(1).eq.3 .or. ipar(1).eq.5) then
-     call lusol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
-     goto 10
+    call lusol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
+    goto 10
   else if (ipar(1).eq.4 .or. ipar(1).eq.6) then
-     call lutsol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
-     goto 10
+    call lutsol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
+    goto 10
   else if (ipar(1).le.0) then
-     if (ipar(1).eq.0) then
-        !            WRITE(*,*) 'Iterative sovler has satisfied convergence test.'
-     else if (ipar(1).eq.-1) then
-        WRITE(*,*) 'Iterative solver has iterated too many times.'
-     else if (ipar(1).eq.-2) then
-        WRITE(*,*) 'Iterative solver was not given enough work space.'
-        WRITE(*,*) 'The work space should at least have ', ipar(4), &
-             &           ' elements.'
-     else if (ipar(1).eq.-3) then
-        WRITE(*,*) 'Iterative sovler is facing a break-down.'
-     else
-        WRITE(*,*) 'Iterative solver terminated. code =', ipar(1)
-     endif
+    if (ipar(1).eq.0) then
+      !            WRITE(*,*) 'Iterative sovler has satisfied convergence test.'
+    else if (ipar(1).eq.-1) then
+      WRITE(*,*) 'Iterative solver has iterated too many times.'
+    else if (ipar(1).eq.-2) then
+      WRITE(*,*) 'Iterative solver was not given enough work space.'
+      WRITE(*,*) 'The work space should at least have ', ipar(4), &
+           &           ' elements.'
+    else if (ipar(1).eq.-3) then
+      WRITE(*,*) 'Iterative sovler is facing a break-down.'
+    else
+      WRITE(*,*) 'Iterative solver terminated. code =', ipar(1)
+    endif
   endif
 end subroutine runrc
 !-----end-of-runrc
@@ -3922,221 +3922,221 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
   !     initialize nonzero indicator array.
   !
   do  j=1,n
-     jw(n+j)  = 0
+    jw(n+j)  = 0
   end do
   !-----------------------------------------------------------------------
   !     beginning of main loop.
   !-----------------------------------------------------------------------
   do ii = 1, n
 
-     j1 = ia(ii)
-     j2 = ia(ii+1) - 1
+    j1 = ia(ii)
+    j2 = ia(ii+1) - 1
 
-     tnorm = 0.0d0
-     do k=j1,j2
-        tnorm = tnorm+abs(a(k))
-     end do
-     if (abs(tnorm) .lt. tiny(1.)) goto 999
+    tnorm = 0.0d0
+    do k=j1,j2
+      tnorm = tnorm+abs(a(k))
+    end do
+    if (abs(tnorm) .lt. tiny(1.)) goto 999
 
-     tnorm = tnorm/real(j2-j1+1)
-     !
-     !     unpack L-part and U-part of row of A in arrays w
-     !
-     lenu = 1
-     lenl = 0
-     jw(ii) = ii
-     w(ii) = 0.0
-     jw(n+ii) = ii
-     !
-     do j = j1, j2
-        k = ja(j)
-        t = a(j)
-        if (k .lt. ii) then
-           lenl = lenl+1
-           jw(lenl) = k
-           w(lenl) = t
-           jw(n+k) = lenl
-        else if (k .eq. ii) then
-           w(ii) = t
+    tnorm = tnorm/real(j2-j1+1)
+    !
+    !     unpack L-part and U-part of row of A in arrays w
+    !
+    lenu = 1
+    lenl = 0
+    jw(ii) = ii
+    w(ii) = 0.0
+    jw(n+ii) = ii
+    !
+    do j = j1, j2
+      k = ja(j)
+      t = a(j)
+      if (k .lt. ii) then
+        lenl = lenl+1
+        jw(lenl) = k
+        w(lenl) = t
+        jw(n+k) = lenl
+      else if (k .eq. ii) then
+        w(ii) = t
+      else
+        lenu = lenu+1
+        jpos = ii+lenu-1
+        jw(jpos) = k
+        w(jpos) = t
+        jw(n+k) = jpos
+      endif
+    end do
+    jj = 0
+    lenn = 0
+    !
+    !     eliminate previous rows
+    !
+150 jj = jj+1
+    if (jj .gt. lenl) goto 160
+    !-----------------------------------------------------------------------
+    !     in order to do the elimination in the correct order we must select
+    !     the smallest column index among jw(k), k=jj+1, ..., lenl.
+    !-----------------------------------------------------------------------
+    jrow = jw(jj)
+    k = jj
+    !
+    !     determine smallest column index
+    !
+    do j=jj+1,lenl
+      if (jw(j) .lt. jrow) then
+        jrow = jw(j)
+        k = j
+      endif
+    end do
+    !
+    if (k .ne. jj) then
+      !     exchange in jw
+      j = jw(jj)
+      jw(jj) = jw(k)
+      jw(k) = j
+      !     exchange in jr
+      jw(n+jrow) = jj
+      jw(n+j) = k
+      !     exchange in w
+      s = w(jj)
+      w(jj) = w(k)
+      w(k) = s
+    endif
+    !
+    !     zero out element in row by setting jw(n+jrow) to zero.
+    !
+    jw(n+jrow) = 0
+    !
+    !     get the multiplier for row to be eliminated (jrow).
+    !
+    fact = w(jj)*alu(jrow)
+    if (abs(fact) .le. droptol) goto 150
+    !
+    !     combine current row and row jrow
+    !
+    do  k = ju(jrow), jlu(jrow+1)-1
+      s = fact*alu(k)
+      j = jlu(k)
+      jpos = jw(n+j)
+      if (j .ge. ii) then
+        !
+        !     dealing with upper part.
+        !
+        if (jpos .eq. 0) then
+          !
+          !     this is a fill-in element
+          !
+          lenu = lenu+1
+          if (lenu .gt. n) goto 995
+          i = ii+lenu-1
+          jw(i) = j
+          jw(n+j) = i
+          w(i) = - s
         else
-           lenu = lenu+1
-           jpos = ii+lenu-1
-           jw(jpos) = k
-           w(jpos) = t
-           jw(n+k) = jpos
-        endif
-     end do
-     jj = 0
-     lenn = 0
-     !
-     !     eliminate previous rows
-     !
-150  jj = jj+1
-     if (jj .gt. lenl) goto 160
-     !-----------------------------------------------------------------------
-     !     in order to do the elimination in the correct order we must select
-     !     the smallest column index among jw(k), k=jj+1, ..., lenl.
-     !-----------------------------------------------------------------------
-     jrow = jw(jj)
-     k = jj
-     !
-     !     determine smallest column index
-     !
-     do j=jj+1,lenl
-        if (jw(j) .lt. jrow) then
-           jrow = jw(j)
-           k = j
-        endif
-     end do
-     !
-     if (k .ne. jj) then
-        !     exchange in jw
-        j = jw(jj)
-        jw(jj) = jw(k)
-        jw(k) = j
-        !     exchange in jr
-        jw(n+jrow) = jj
-        jw(n+j) = k
-        !     exchange in w
-        s = w(jj)
-        w(jj) = w(k)
-        w(k) = s
-     endif
-     !
-     !     zero out element in row by setting jw(n+jrow) to zero.
-     !
-     jw(n+jrow) = 0
-     !
-     !     get the multiplier for row to be eliminated (jrow).
-     !
-     fact = w(jj)*alu(jrow)
-     if (abs(fact) .le. droptol) goto 150
-     !
-     !     combine current row and row jrow
-     !
-     do  k = ju(jrow), jlu(jrow+1)-1
-        s = fact*alu(k)
-        j = jlu(k)
-        jpos = jw(n+j)
-        if (j .ge. ii) then
-           !
-           !     dealing with upper part.
-           !
-           if (jpos .eq. 0) then
-              !
-              !     this is a fill-in element
-              !
-              lenu = lenu+1
-              if (lenu .gt. n) goto 995
-              i = ii+lenu-1
-              jw(i) = j
-              jw(n+j) = i
-              w(i) = - s
-           else
-              !
-              !     this is not a fill-in element
-              !
-              w(jpos) = w(jpos) - s
+          !
+          !     this is not a fill-in element
+          !
+          w(jpos) = w(jpos) - s
 
-           endif
+        endif
+      else
+        !
+        !     dealing  with lower part.
+        !
+        if (jpos .eq. 0) then
+          !
+          !     this is a fill-in element
+          !
+          lenl = lenl+1
+          if (lenl .gt. n) goto 995
+          jw(lenl) = j
+          jw(n+j) = lenl
+          w(lenl) = - s
         else
-           !
-           !     dealing  with lower part.
-           !
-           if (jpos .eq. 0) then
-              !
-              !     this is a fill-in element
-              !
-              lenl = lenl+1
-              if (lenl .gt. n) goto 995
-              jw(lenl) = j
-              jw(n+j) = lenl
-              w(lenl) = - s
-           else
-              !
-              !     this is not a fill-in element
-              !
-              w(jpos) = w(jpos) - s
-           endif
+          !
+          !     this is not a fill-in element
+          !
+          w(jpos) = w(jpos) - s
         endif
-     end do
-     !
-     !     store this pivot element -- (from left to right -- no danger of
-     !     overlap with the working elements in L (pivots).
-     !
-     lenn = lenn+1
-     w(lenn) = fact
-     jw(lenn)  = jrow
-     goto 150
-160  continue
-     !
-     !     reset double-pointer to zero (U-part)
-     !
-     do k=1, lenu
-        jw(n+jw(ii+k-1)) = 0
-     end do
-     !
-     !     update L-matrix
-     !
-     lenl = lenn
-     lenn = min0(lenl,lfil)
-     !
-     !     sort by quick-split
-     !
-     call qsplit (w,jw,lenl,lenn)
-     !
-     !     store L-part
-     !
-     do k=1, lenn
-        if (ju0 .gt. iwk) goto 996
-        alu(ju0) =  w(k)
-        jlu(ju0) =  jw(k)
-        ju0 = ju0+1
-     end do
-     !
-     !     save pointer to beginning of row ii of U
-     !
-     ju(ii) = ju0
-     !
-     !     update U-matrix -- first apply dropping strategy
-     !
-     lenn = 0
-     do k=1, lenu-1
-        if (abs(w(ii+k)) .gt. droptol*tnorm) then
-           lenn = lenn+1
-           w(ii+lenn) = w(ii+k)
-           jw(ii+lenn) = jw(ii+k)
-        endif
-     enddo
-     lenu = lenn+1
-     lenn = min0(lenu,lfil)
-     !
-     call qsplit (w(ii+1), jw(ii+1), lenu-1,lenn)
-     !
-     !     copy
-     !
-     t = abs(w(ii))
-     if (lenn + ju0 .gt. iwk) goto 997
-     do k=ii+1,ii+lenn-1
-        jlu(ju0) = jw(k)
-        alu(ju0) = w(k)
-        t = t + abs(w(k) )
-        ju0 = ju0+1
-     end do
-     !
-     !     store inverse of diagonal element of u
-     !
-     !2do check if it works ... after correction ...
-     if (abs(w(ii)) .lt.  tiny(1.d0)) w(ii) = (0.0001d0 + droptol)*tnorm
-     !
-     alu(ii) = 1.0d0/ w(ii)
-     !
-     !     update pointer to beginning of next row of U.
-     !
-     jlu(ii+1) = ju0
-     !-----------------------------------------------------------------------
-     !     end main loop
-     !-----------------------------------------------------------------------
+      endif
+    end do
+    !
+    !     store this pivot element -- (from left to right -- no danger of
+    !     overlap with the working elements in L (pivots).
+    !
+    lenn = lenn+1
+    w(lenn) = fact
+    jw(lenn)  = jrow
+    goto 150
+160 continue
+    !
+    !     reset double-pointer to zero (U-part)
+    !
+    do k=1, lenu
+      jw(n+jw(ii+k-1)) = 0
+    end do
+    !
+    !     update L-matrix
+    !
+    lenl = lenn
+    lenn = min0(lenl,lfil)
+    !
+    !     sort by quick-split
+    !
+    call qsplit (w,jw,lenl,lenn)
+    !
+    !     store L-part
+    !
+    do k=1, lenn
+      if (ju0 .gt. iwk) goto 996
+      alu(ju0) =  w(k)
+      jlu(ju0) =  jw(k)
+      ju0 = ju0+1
+    end do
+    !
+    !     save pointer to beginning of row ii of U
+    !
+    ju(ii) = ju0
+    !
+    !     update U-matrix -- first apply dropping strategy
+    !
+    lenn = 0
+    do k=1, lenu-1
+      if (abs(w(ii+k)) .gt. droptol*tnorm) then
+        lenn = lenn+1
+        w(ii+lenn) = w(ii+k)
+        jw(ii+lenn) = jw(ii+k)
+      endif
+    enddo
+    lenu = lenn+1
+    lenn = min0(lenu,lfil)
+    !
+    call qsplit (w(ii+1), jw(ii+1), lenu-1,lenn)
+    !
+    !     copy
+    !
+    t = abs(w(ii))
+    if (lenn + ju0 .gt. iwk) goto 997
+    do k=ii+1,ii+lenn-1
+      jlu(ju0) = jw(k)
+      alu(ju0) = w(k)
+      t = t + abs(w(k) )
+      ju0 = ju0+1
+    end do
+    !
+    !     store inverse of diagonal element of u
+    !
+    !2do check if it works ... after correction ...
+    if (abs(w(ii)) .lt.  tiny(1.d0)) w(ii) = (0.0001d0 + droptol)*tnorm
+    !
+    alu(ii) = 1.0d0/ w(ii)
+    !
+    !     update pointer to beginning of next row of U.
+    !
+    jlu(ii+1) = ju0
+    !-----------------------------------------------------------------------
+    !     end main loop
+    !-----------------------------------------------------------------------
   end do
   ierr = 0
   return
@@ -4182,45 +4182,45 @@ subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
   jlu(1) = ju0 !!!
   iw = 0
   do ii = 1, n
-     js = ju0
-     do j=ia(ii),ia(ii+1)-1
-        jcol = ja(j)
-        if (jcol .eq. ii) then
-           alu(ii) = a(j)
-           iw(jcol) = ii
-           ju(ii)  = ju0 !!!
-        else
-           alu(ju0) = a(j)
-           jlu(ju0) = ja(j)
-           iw(jcol) = ju0
-           ju0 = ju0+1
-        endif
-     end do
-     jlu(ii+1) = ju0 !!!
-     jf = ju0-1
-     jm = ju(ii)-1
-     !     exit if diagonal element is reached.
-     do j=js, jm
-        jrow = jlu(j)
-        tl = alu(j)*alu(jrow)
-        alu(j) = tl
-        !     perform  linear combination
-        do jj = ju(jrow), jlu(jrow+1)-1
-           jw = iw(jlu(jj))
-           if (jw .ne. 0) then
-              alu(jw) = alu(jw) - tl*alu(jj)
-              !                   write(*,*) ii, jw, jj
-           end if
-        end do
-     end do
-     !     invert  and store diagonal element.
-     if (abs(alu(ii)) .lt. tiny(1.)) goto 600
-     alu(ii) = 1.0d0/alu(ii)
-     !     reset pointer iw to zero
-     iw(ii) = 0
-     do i = js, jf
-        iw(jlu(i)) = 0
-     end do
+    js = ju0
+    do j=ia(ii),ia(ii+1)-1
+      jcol = ja(j)
+      if (jcol .eq. ii) then
+        alu(ii) = a(j)
+        iw(jcol) = ii
+        ju(ii)  = ju0 !!!
+      else
+        alu(ju0) = a(j)
+        jlu(ju0) = ja(j)
+        iw(jcol) = ju0
+        ju0 = ju0+1
+      endif
+    end do
+    jlu(ii+1) = ju0 !!!
+    jf = ju0-1
+    jm = ju(ii)-1
+    !     exit if diagonal element is reached.
+    do j=js, jm
+      jrow = jlu(j)
+      tl = alu(j)*alu(jrow)
+      alu(j) = tl
+      !     perform  linear combination
+      do jj = ju(jrow), jlu(jrow+1)-1
+        jw = iw(jlu(jj))
+        if (jw .ne. 0) then
+          alu(jw) = alu(jw) - tl*alu(jj)
+          !                   write(*,*) ii, jw, jj
+        end if
+      end do
+    end do
+    !     invert  and store diagonal element.
+    if (abs(alu(ii)) .lt. tiny(1.)) goto 600
+    alu(ii) = 1.0d0/alu(ii)
+    !     reset pointer iw to zero
+    iw(ii) = 0
+    do i = js, jf
+      iw(jlu(i)) = 0
+    end do
   end do
 
   ierr = 0
@@ -4264,81 +4264,81 @@ subroutine pgmres(n, im, rhs, sol, eps, maxits, aspar, nnz, ia, ja, alu, jlu, ju
   ! ilu0 preconditioner
 
   if (lilu) then
-     ju0 = n+2
-     jlu(1) = ju0 !!!
-     iw = 0
-     do ii = 1, n
-        js = ju0
-        do j=ia(ii),ia(ii+1)-1
-           jcol = ja(j)
-           if (jcol .eq. ii) then
-              alu(ii) = aspar(j)
-              iw(jcol) = ii
-              ju(ii)  = ju0 !!!
-           else
-              alu(ju0) = aspar(j)
-              jlu(ju0) = ja(j)
-              iw(jcol) = ju0
-              ju0 = ju0+1
-           endif
+    ju0 = n+2
+    jlu(1) = ju0 !!!
+    iw = 0
+    do ii = 1, n
+      js = ju0
+      do j=ia(ii),ia(ii+1)-1
+        jcol = ja(j)
+        if (jcol .eq. ii) then
+          alu(ii) = aspar(j)
+          iw(jcol) = ii
+          ju(ii)  = ju0 !!!
+        else
+          alu(ju0) = aspar(j)
+          jlu(ju0) = ja(j)
+          iw(jcol) = ju0
+          ju0 = ju0+1
+        endif
+      end do
+      jlu(ii+1) = ju0 !!!
+      jf = ju0-1
+      jm = ju(ii)-1
+      ! exit if diagonal element is reached.
+      do j=js, jm
+        jrow = jlu(j)
+        tl = alu(j)*alu(jrow)
+        alu(j) = tl
+        ! perform  linear combination
+        do jj = ju(jrow), jlu(jrow+1)-1
+          jw = int(iw(jlu(jj)))
+          if (jw .ne. 0) then
+            alu(jw) = alu(jw) - tl*alu(jj)
+            !                    write(*,*) ii, jw, jj
+          end if
         end do
-        jlu(ii+1) = ju0 !!!
-        jf = ju0-1
-        jm = ju(ii)-1
-        ! exit if diagonal element is reached.
-        do j=js, jm
-           jrow = jlu(j)
-           tl = alu(j)*alu(jrow)
-           alu(j) = tl
-           ! perform  linear combination
-           do jj = ju(jrow), jlu(jrow+1)-1
-              jw = int(iw(jlu(jj)))
-              if (jw .ne. 0) then
-                 alu(jw) = alu(jw) - tl*alu(jj)
-                 !                    write(*,*) ii, jw, jj
-              end if
-           end do
-        end do
-        !     invert  and store diagonal element.
-        if (abs(alu(ii)) .lt. epsmac) then
-           write (*,*) 'zero pivot'
-           stop
-        end if
-        alu(ii) = 1.0d0/alu(ii)
-        !     reset pointer iw to zero
-        iw(ii) = 0
-        do i = js, jf
-           iw(jlu(i)) = 0
-        end do
-     end do
-     ! end preconditioner
+      end do
+      !     invert  and store diagonal element.
+      if (abs(alu(ii)) .lt. epsmac) then
+        write (*,*) 'zero pivot'
+        stop
+      end if
+      alu(ii) = 1.0d0/alu(ii)
+      !     reset pointer iw to zero
+      iw(ii) = 0
+      do i = js, jf
+        iw(jlu(i)) = 0
+      end do
+    end do
+    ! end preconditioner
   end if
   !-------------------------------------------------------------
   its = 0
   ! outer loop starts here..
   if (lblas) then
-     call amux (n, sol, vv, aspar, ja, ia)
+    call amux (n, sol, vv, aspar, ja, ia)
   else
-     do iii = 1, n
-        t = 0.0d0
-        do k = ia(iii), ia(iii+1)-1
-           t = t + aspar(k) * sol(ja(k))
-        end do
-        vv(iii,1) = t
-     end do
+    do iii = 1, n
+      t = 0.0d0
+      do k = ia(iii), ia(iii+1)-1
+        t = t + aspar(k) * sol(ja(k))
+      end do
+      vv(iii,1) = t
+    end do
   end if
   do j=1,n
-     vv(j,1) = rhs(j) - vv(j,1)
+    vv(j,1) = rhs(j) - vv(j,1)
   end do
 20 if (lblas) then
-     ro = dnrm2(n, vv)
+    ro = dnrm2(n, vv)
   else
-     ro = sqrt(sum(vv(:,1)*vv(:,1)))
+    ro = sqrt(sum(vv(:,1)*vv(:,1)))
   end if
   if (abs(ro) .lt. epsmac) goto 999
   t = 1.0d0 / ro
   do j=1, n
-     vv(j,1) = vv(j,1)*t
+    vv(j,1) = vv(j,1)*t
   end do
   if (its .eq. 0) eps1=eps*ro
   !      initialize 1-st term  of rhs of hessenberg system..
@@ -4348,61 +4348,61 @@ subroutine pgmres(n, im, rhs, sol, eps, maxits, aspar, nnz, ia, ja, alu, jlu, ju
   its = its + 1
   i1 = i + 1
   if (lblas) then
-     call lusol (n, vv(1,i), rhs, alu, jlu, ju)
-     call amux (n, rhs, vv(1,i1), aspar, ja, ia)
+    call lusol (n, vv(1,i), rhs, alu, jlu, ju)
+    call amux (n, rhs, vv(1,i1), aspar, ja, ia)
   else
-     do iii = 1, n !- lusol
-        rhs(iii) = vv(iii,i)
-        do k=jlu(iii),ju(iii)-1
-           rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
-        end do
-     end do
-     do iii = n, 1, -1
-        do k=ju(iii),jlu(iii+1)-1
-           rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
-        end do
-        rhs(iii) = alu(iii)*rhs(iii)
-     end do
-     do iii = 1, n !- amux
-        t = 0.0d0
-        do k = ia(iii), ia(iii+1)-1
-           t = t + aspar(k) * rhs(ja(k))
-        end do
-        vv(iii,i1) = t
-     end do
+    do iii = 1, n !- lusol
+      rhs(iii) = vv(iii,i)
+      do k=jlu(iii),ju(iii)-1
+        rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
+      end do
+    end do
+    do iii = n, 1, -1
+      do k=ju(iii),jlu(iii+1)-1
+        rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
+      end do
+      rhs(iii) = alu(iii)*rhs(iii)
+    end do
+    do iii = 1, n !- amux
+      t = 0.0d0
+      do k = ia(iii), ia(iii+1)-1
+        t = t + aspar(k) * rhs(ja(k))
+      end do
+      vv(iii,i1) = t
+    end do
   end if
   !      modified gram - schmidt...
   if (lblas) then
-     do j=1, i
-        t = ddot(n, vv(1,j),vv(1,i1))
-        hh(j,i) = t
-        call daxpy(n, -t, vv(1,j), 1, vv(1,i1), 1)
-        t = dnrm2(n, vv(1,i1))
-     end do
+    do j=1, i
+      t = ddot(n, vv(1,j),vv(1,i1))
+      hh(j,i) = t
+      call daxpy(n, -t, vv(1,j), 1, vv(1,i1), 1)
+      t = dnrm2(n, vv(1,i1))
+    end do
   else
-     do j=1, i
-        t = 0.d0
-        do iii = 1,n
-           t = t + vv(iii,j)*vv(iii,i1)
-        end do
-        hh(j,i) = t
-        vv(:,i1) = vv(:,i1) - t * vv(:,j)
-        t = sqrt(sum(vv(:,i1)*vv(:,i1)))
-     end do
+    do j=1, i
+      t = 0.d0
+      do iii = 1,n
+        t = t + vv(iii,j)*vv(iii,i1)
+      end do
+      hh(j,i) = t
+      vv(:,i1) = vv(:,i1) - t * vv(:,j)
+      t = sqrt(sum(vv(:,i1)*vv(:,i1)))
+    end do
   end if
   hh(i1,i) = t
   if ( abs(t) .lt. epsmac) goto 58
   t = 1.0d0/t
   do k=1,n
-     vv(k,i1) = vv(k,i1)*t
+    vv(k,i1) = vv(k,i1)*t
   end do
   !     done with modified gram schimd and arnoldi step.. now  update factorization of hh
 58 if (i .eq. 1) goto 121
   do k=2,i
-     k1 = k-1
-     t = hh(k1,i)
-     hh(k1,i) = c(k1)*t + s(k1)*hh(k,i)
-     hh(k,i) = -s(k1)*t + c(k1)*hh(k,i)
+    k1 = k-1
+    t = hh(k1,i)
+    hh(k1,i) = c(k1)*t + s(k1)*hh(k,i)
+    hh(k,i) = -s(k1)*t + c(k1)*hh(k,i)
   end do
 121 gam = sqrt(hh(i,i)**2 + hh(i1,i)**2)
   if (abs(gam) .lt. epsmac) gam = epsmac
@@ -4418,61 +4418,61 @@ subroutine pgmres(n, im, rhs, sol, eps, maxits, aspar, nnz, ia, ja, alu, jlu, ju
   !      now compute solution. first solve upper triangular system.
   rs(i) = rs(i)/hh(i,i)
   do ii=2,i
-     k=i-ii+1
-     k1 = k+1
-     t=rs(k)
-     do j=k1,i
-        t = t-hh(k,j)*rs(j)
-     end do
-     rs(k) = t/hh(k,k)
+    k=i-ii+1
+    k1 = k+1
+    t=rs(k)
+    do j=k1,i
+      t = t-hh(k,j)*rs(j)
+    end do
+    rs(k) = t/hh(k,k)
   end do
   !      form linear combination of v(*,i)'s to get solution
   t = rs(1)
   do k=1, n
-     rhs(k) = vv(k,1)*t
+    rhs(k) = vv(k,1)*t
   end do
   do j = 2, i
-     t = rs(j)
-     do k=1, n
-        rhs(k) = rhs(k)+t*vv(k,j)
-     end do
+    t = rs(j)
+    do k=1, n
+      rhs(k) = rhs(k)+t*vv(k,j)
+    end do
   end do
   !      call preconditioner.
   if (lblas) then
-     call lusol (n, rhs, rhs, alu, jlu, ju)
+    call lusol (n, rhs, rhs, alu, jlu, ju)
   else
-     do iii = 1, n
-        do k=jlu(iii),ju(iii)-1
-           rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
-        end do
-     end do
-     do iii = n, 1, -1
-        do k=ju(iii),jlu(iii+1)-1
-           rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
-        end do
-        rhs(iii) = alu(iii)*rhs(iii)
-     end do
+    do iii = 1, n
+      do k=jlu(iii),ju(iii)-1
+        rhs(iii) = rhs(iii) - alu(k)* rhs(jlu(k))
+      end do
+    end do
+    do iii = n, 1, -1
+      do k=ju(iii),jlu(iii+1)-1
+        rhs(iii) = rhs(iii) - alu(k)*rhs(jlu(k))
+      end do
+      rhs(iii) = alu(iii)*rhs(iii)
+    end do
   end if
   do k=1, n
-     sol(k) = sol(k) + rhs(k)
+    sol(k) = sol(k) + rhs(k)
   end do
   !      restart outer loop  when necessary
   if (ro .le. eps1) goto 990
   if (its .ge. maxits) goto 991
   !      else compute residual vector and continue..
   do j=1,i
-     jj = i1-j+1
-     rs(jj-1) = -s(jj-1)*rs(jj)
-     rs(jj) = c(jj-1)*rs(jj)
+    jj = i1-j+1
+    rs(jj-1) = -s(jj-1)*rs(jj)
+    rs(jj) = c(jj-1)*rs(jj)
   end do
   do j=1,i1
-     t = rs(j)
-     if (j .eq. 1)  t = t-1.0d0
-     if (lblas) then
-        call daxpy (n, t, vv(1,j), 1,  vv, 1)
-     else
-        vv(:,j) = vv(:,j) + t * vv(:,1)
-     end if
+    t = rs(j)
+    if (j .eq. 1)  t = t-1.0d0
+    if (lblas) then
+      call daxpy (n, t, vv(1,j), 1,  vv, 1)
+    else
+      vv(:,j) = vv(:,j) + t * vv(:,1)
+    end if
   end do
   ! 199   format('   its =', i4, ' res. norm =', d20.6)
   !      restart outer loop.
@@ -4529,28 +4529,28 @@ DOUBLE PRECISION FUNCTION DNRM2(N,X)
   INTRINSIC ABS,SQRT
   !     ..
   IF (N.LT.1 ) THEN
-     NORM = ZERO
+    NORM = ZERO
   ELSE IF (N.EQ.1) THEN
-     NORM = ABS(X(1))
+    NORM = ABS(X(1))
   ELSE
-     SCALE = ZERO
-     SSQ = ONE
-     !        The following loop is equivalent to this call to the LAPACK
-     !        auxiliary routine:
-     !        CALL DLASSQ( N, X, SCALE, SSQ )
-     !
-     DO IX = 1,1 + (N-1)
-        IF (X(IX).NE.ZERO) THEN
-           ABSXI = ABS(X(IX))
-           IF (SCALE.LT.ABSXI) THEN
-              SSQ = ONE + SSQ* (SCALE/ABSXI)**2
-              SCALE = ABSXI
-           ELSE
-              SSQ = SSQ + (ABSXI/SCALE)**2
-           END IF
+    SCALE = ZERO
+    SSQ = ONE
+    !        The following loop is equivalent to this call to the LAPACK
+    !        auxiliary routine:
+    !        CALL DLASSQ( N, X, SCALE, SSQ )
+    !
+    DO IX = 1,1 + (N-1)
+      IF (X(IX).NE.ZERO) THEN
+        ABSXI = ABS(X(IX))
+        IF (SCALE.LT.ABSXI) THEN
+          SSQ = ONE + SSQ* (SCALE/ABSXI)**2
+          SCALE = ABSXI
+        ELSE
+          SSQ = SSQ + (ABSXI/SCALE)**2
         END IF
-     end do
-     NORM = SCALE*SQRT(SSQ)
+      END IF
+    end do
+    NORM = SCALE*SQRT(SSQ)
   END IF
   !
   DNRM2 = NORM
@@ -4590,17 +4590,17 @@ SUBROUTINE DLASSQ( N, X, SCALE, SUMSQ )
   INTRINSIC ABS
   !
   IF( N.GT.0 ) THEN
-     DO IX = 1, 1 + ( N-1 )
-        IF( X( IX ).NE.ZERO ) THEN
-           ABSXI = ABS( X( IX ) )
-           IF( SCALE.LT.ABSXI ) THEN
-              SUMSQ = 1 + SUMSQ*( SCALE / ABSXI )**2
-              SCALE = ABSXI
-           ELSE
-              SUMSQ = SUMSQ + ( ABSXI / SCALE )**2
-           END IF
+    DO IX = 1, 1 + ( N-1 )
+      IF( X( IX ).NE.ZERO ) THEN
+        ABSXI = ABS( X( IX ) )
+        IF( SCALE.LT.ABSXI ) THEN
+          SUMSQ = 1 + SUMSQ*( SCALE / ABSXI )**2
+          SCALE = ABSXI
+        ELSE
+          SUMSQ = SUMSQ + ( ABSXI / SCALE )**2
         END IF
-     END DO
+      END IF
+    END DO
   END IF
   RETURN
 END SUBROUTINE DLASSQ
@@ -4622,13 +4622,13 @@ double precision function ddot(n,dx,dy)
 20 m = mod(n,5)
   if( m .eq. 0 ) go to 40
   do i = 1,m
-     dtemp = dtemp + dx(i)*dy(i)
+    dtemp = dtemp + dx(i)*dy(i)
   end do
   if( n .lt. 5 ) go to 60
 40 mp1 = m + 1
   do i = mp1,n,5
-     dtemp = dtemp + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) + &
-          &   dx(i + 2)*dy(i + 2) + dx(i + 3)*dy(i + 3) + dx(i + 4)*dy(i + 4)
+    dtemp = dtemp + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) + &
+         &   dx(i + 2)*dy(i + 2) + dx(i + 3)*dy(i + 3) + dx(i + 4)*dy(i + 4)
   end do
 60 ddot = dtemp
   return
@@ -4655,9 +4655,9 @@ subroutine daxpy(n,da,dx,incx,dy,incy)
   if(incx.lt.0)ix = (-n+1)*incx + 1
   if(incy.lt.0)iy = (-n+1)*incy + 1
   do  i = 1,n
-     dy(iy) = dy(iy) + da*dx(ix)
-     ix = ix + incx
-     iy = iy + incy
+    dy(iy) = dy(iy) + da*dx(ix)
+    ix = ix + incx
+    iy = iy + incy
   end do
   return
   !
@@ -4669,15 +4669,15 @@ subroutine daxpy(n,da,dx,incx,dy,incy)
 20 m = mod(n,4)
   if( m .eq. 0 ) go to 40
   do i = 1,m
-     dy(i) = dy(i) + da*dx(i)
+    dy(i) = dy(i) + da*dx(i)
   end do
   if( n .lt. 4 ) return
 40 mp1 = m + 1
   do i = mp1,n,4
-     dy(i) = dy(i) + da*dx(i)
-     dy(i + 1) = dy(i + 1) + da*dx(i + 1)
-     dy(i + 2) = dy(i + 2) + da*dx(i + 2)
-     dy(i + 3) = dy(i + 3) + da*dx(i + 3)
+    dy(i) = dy(i) + da*dx(i)
+    dy(i + 1) = dy(i + 1) + da*dx(i + 1)
+    dy(i + 2) = dy(i + 2) + da*dx(i + 2)
+    dy(i + 3) = dy(i + 3) + da*dx(i + 3)
   end do
   return
 end subroutine daxpy

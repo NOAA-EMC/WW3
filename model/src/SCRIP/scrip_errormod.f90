@@ -1,4 +1,4 @@
-!|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+!||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 module SCRIP_ErrorMod
 
@@ -125,8 +125,8 @@ contains
     SCRIP_errorMsgCount = SCRIP_errorMsgCount + 1
 
     if (SCRIP_errorMsgCount <= SCRIP_errorLogDepth) then
-       write(logErrorMsg,'(a,a2,a)') rtnName,': ',errorMsg
-       SCRIP_errorLog(SCRIP_errorMsgCount) = logErrorMsg
+      write(logErrorMsg,'(a,a2,a)') rtnName,': ',errorMsg
+      SCRIP_errorLog(SCRIP_errorMsgCount) = logErrorMsg
     endif
 
     !-----------------------------------------------------------------------
@@ -187,24 +187,24 @@ contains
     !-----------------------------------------------------------------------
 
     if (errorCode == SCRIP_Success) then
-       SCRIP_ErrorCheck = .false.
+      SCRIP_ErrorCheck = .false.
 
-       !-----------------------------------------------------------------------
-       !
-       ! If the error code is a fail, set the return value to true and
-       ! add the error message to the log.
-       !
-       !-----------------------------------------------------------------------
+      !-----------------------------------------------------------------------
+      !
+      ! If the error code is a fail, set the return value to true and
+      ! add the error message to the log.
+      !
+      !-----------------------------------------------------------------------
 
     else
-       SCRIP_ErrorCheck = .true.
+      SCRIP_ErrorCheck = .true.
 
-       SCRIP_errorMsgCount = SCRIP_errorMsgCount + 1
+      SCRIP_errorMsgCount = SCRIP_errorMsgCount + 1
 
-       if (SCRIP_errorMsgCount <= SCRIP_errorLogDepth) then
-          write(logErrorMsg,'(a,a2,a)') rtnName,': ',errorMsg
-          SCRIP_errorLog(SCRIP_errorMsgCount) = logErrorMsg
-       endif
+      if (SCRIP_errorMsgCount <= SCRIP_errorLogDepth) then
+        write(logErrorMsg,'(a,a2,a)') rtnName,': ',errorMsg
+        SCRIP_errorLog(SCRIP_errorMsgCount) = logErrorMsg
+      endif
     endif
 
     !-----------------------------------------------------------------------
@@ -254,77 +254,77 @@ contains
 
     if (present(printTask)) then
 
-       !*** parallel SCRIP not yet supported
-       !if (SCRIP_myTask == printTask) then
+      !*** parallel SCRIP not yet supported
+      !if (SCRIP_myTask == printTask) then
 
-       write(SCRIP_stdout,SCRIP_blankFormat)
-       write(SCRIP_stdout,SCRIP_delimFormat)
-       write(SCRIP_stdout,SCRIP_blankFormat)
+      write(SCRIP_stdout,SCRIP_blankFormat)
+      write(SCRIP_stdout,SCRIP_delimFormat)
+      write(SCRIP_stdout,SCRIP_blankFormat)
 
-       if (SCRIP_errorMsgCount == 0) then ! no errors
+      if (SCRIP_errorMsgCount == 0) then ! no errors
 
-          write(SCRIP_stdout,'(a34)') &
-               'Successful completion of SCRIP model'
+        write(SCRIP_stdout,'(a34)') &
+             'Successful completion of SCRIP model'
 
-       else
+      else
 
-          write(SCRIP_stdout,'(a14)') 'SCRIP Exiting...'
+        write(SCRIP_stdout,'(a14)') 'SCRIP Exiting...'
 
-          do n=1,min(SCRIP_errorMsgCount,SCRIP_errorLogDepth)
-             write(SCRIP_stderr,'(a)') trim(SCRIP_errorLog(n))
-             if (SCRIP_stdout /= SCRIP_stderr) then
-                write(SCRIP_stdout,'(a)') trim(SCRIP_errorLog(n))
-             endif
-          end do
-
-          if (SCRIP_errorMsgCount > SCRIP_errorLogDepth) then
-             write(SCRIP_stderr,'(a23)') 'Too many error messages'
-             if (SCRIP_stdout /= SCRIP_stderr) then
-                write(SCRIP_stdout,'(a23)') 'Too many error messages'
-             endif
+        do n=1,min(SCRIP_errorMsgCount,SCRIP_errorLogDepth)
+          write(SCRIP_stderr,'(a)') trim(SCRIP_errorLog(n))
+          if (SCRIP_stdout /= SCRIP_stderr) then
+            write(SCRIP_stdout,'(a)') trim(SCRIP_errorLog(n))
           endif
+        end do
 
-       endif
+        if (SCRIP_errorMsgCount > SCRIP_errorLogDepth) then
+          write(SCRIP_stderr,'(a23)') 'Too many error messages'
+          if (SCRIP_stdout /= SCRIP_stderr) then
+            write(SCRIP_stdout,'(a23)') 'Too many error messages'
+          endif
+        endif
 
-       write(SCRIP_stdout,SCRIP_blankFormat)
-       write(SCRIP_stdout,SCRIP_delimFormat)
-       write(SCRIP_stdout,SCRIP_blankFormat)
+      endif
 
-       !endif
+      write(SCRIP_stdout,SCRIP_blankFormat)
+      write(SCRIP_stdout,SCRIP_delimFormat)
+      write(SCRIP_stdout,SCRIP_blankFormat)
+
+      !endif
 
     else
 
-       write(SCRIP_stdout,SCRIP_blankFormat)
-       write(SCRIP_stdout,SCRIP_delimFormat)
-       write(SCRIP_stdout,SCRIP_blankFormat)
+      write(SCRIP_stdout,SCRIP_blankFormat)
+      write(SCRIP_stdout,SCRIP_delimFormat)
+      write(SCRIP_stdout,SCRIP_blankFormat)
 
-       if (SCRIP_errorMsgCount == 0) then ! no errors
+      if (SCRIP_errorMsgCount == 0) then ! no errors
 
-          write(SCRIP_stdout,'(a34)') 'Successful completion of SCRIP'
+        write(SCRIP_stdout,'(a34)') 'Successful completion of SCRIP'
 
-       else
+      else
 
-          write(SCRIP_stdout,'(a14)') 'SCRIP Exiting...'
+        write(SCRIP_stdout,'(a14)') 'SCRIP Exiting...'
 
-          do n=1,min(SCRIP_errorMsgCount,SCRIP_errorLogDepth)
-             write(SCRIP_stderr,'(a)') trim(SCRIP_errorLog(n))
-             if (SCRIP_stdout /= SCRIP_stderr) then
-                write(SCRIP_stdout,'(a)') trim(SCRIP_errorLog(n))
-             endif
-          end do
-
-          if (SCRIP_errorMsgCount > SCRIP_errorLogDepth) then
-             write(SCRIP_stderr,'(a23)') 'Too many error messages'
-             if (SCRIP_stdout /= SCRIP_stderr) then
-                write(SCRIP_stdout,'(a23)') 'Too many error messages'
-             endif
+        do n=1,min(SCRIP_errorMsgCount,SCRIP_errorLogDepth)
+          write(SCRIP_stderr,'(a)') trim(SCRIP_errorLog(n))
+          if (SCRIP_stdout /= SCRIP_stderr) then
+            write(SCRIP_stdout,'(a)') trim(SCRIP_errorLog(n))
           endif
+        end do
 
-       endif
+        if (SCRIP_errorMsgCount > SCRIP_errorLogDepth) then
+          write(SCRIP_stderr,'(a23)') 'Too many error messages'
+          if (SCRIP_stdout /= SCRIP_stderr) then
+            write(SCRIP_stdout,'(a23)') 'Too many error messages'
+          endif
+        endif
 
-       write(SCRIP_stdout,SCRIP_blankFormat)
-       write(SCRIP_stdout,SCRIP_delimFormat)
-       write(SCRIP_stdout,SCRIP_blankFormat)
+      endif
+
+      write(SCRIP_stdout,SCRIP_blankFormat)
+      write(SCRIP_stdout,SCRIP_delimFormat)
+      write(SCRIP_stdout,SCRIP_blankFormat)
 
     endif
 

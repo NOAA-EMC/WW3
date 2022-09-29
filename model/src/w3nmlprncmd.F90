@@ -25,47 +25,47 @@ MODULE W3NMLPRNCMD
 
   ! field structure
   TYPE NML_FIELD_T
-     LOGICAL                     :: ICE_PARAM1
-     LOGICAL                     :: ICE_PARAM2
-     LOGICAL                     :: ICE_PARAM3
-     LOGICAL                     :: ICE_PARAM4
-     LOGICAL                     :: ICE_PARAM5
-     LOGICAL                     :: MUD_DENSITY
-     LOGICAL                     :: MUD_THICKNESS
-     LOGICAL                     :: MUD_VISCOSITY
-     LOGICAL                     :: WATER_LEVELS
-     LOGICAL                     :: CURRENTS
-     LOGICAL                     :: WINDS
-     LOGICAL                     :: WINDS_AST
-     LOGICAL                     :: ATM_MOMENTUM
-     LOGICAL                     :: AIR_DENSITY
-     LOGICAL                     :: ICE_CONC
-     LOGICAL                     :: ICE_BERG
-     LOGICAL                     :: DATA_ASSIM
+    LOGICAL                     :: ICE_PARAM1
+    LOGICAL                     :: ICE_PARAM2
+    LOGICAL                     :: ICE_PARAM3
+    LOGICAL                     :: ICE_PARAM4
+    LOGICAL                     :: ICE_PARAM5
+    LOGICAL                     :: MUD_DENSITY
+    LOGICAL                     :: MUD_THICKNESS
+    LOGICAL                     :: MUD_VISCOSITY
+    LOGICAL                     :: WATER_LEVELS
+    LOGICAL                     :: CURRENTS
+    LOGICAL                     :: WINDS
+    LOGICAL                     :: WINDS_AST
+    LOGICAL                     :: ATM_MOMENTUM
+    LOGICAL                     :: AIR_DENSITY
+    LOGICAL                     :: ICE_CONC
+    LOGICAL                     :: ICE_BERG
+    LOGICAL                     :: DATA_ASSIM
   END TYPE NML_FIELD_T
 
   ! grid structure
   TYPE NML_GRID_T
-     LOGICAL                     :: ASIS
-     LOGICAL                     :: LATLON
+    LOGICAL                     :: ASIS
+    LOGICAL                     :: LATLON
   END TYPE NML_GRID_T
 
   ! forcing structure
   TYPE NML_FORCING_T
-     CHARACTER(15)               :: TIMESTART
-     CHARACTER(15)               :: TIMESTOP
-     TYPE(NML_FIELD_T)           :: FIELD
-     TYPE(NML_GRID_T)            :: GRID
-     CHARACTER(256)              :: TIDAL
+    CHARACTER(15)               :: TIMESTART
+    CHARACTER(15)               :: TIMESTOP
+    TYPE(NML_FIELD_T)           :: FIELD
+    TYPE(NML_GRID_T)            :: GRID
+    CHARACTER(256)              :: TIDAL
   END TYPE NML_FORCING_T
 
   ! file structure
   TYPE NML_FILE_T
-     CHARACTER(256)              :: FILENAME
-     CHARACTER(100)              :: LONGITUDE
-     CHARACTER(100)              :: LATITUDE
-     CHARACTER(100)              :: VAR(3)
-     CHARACTER(15)               :: TIMESHIFT
+    CHARACTER(256)              :: FILENAME
+    CHARACTER(100)              :: LONGITUDE
+    CHARACTER(100)              :: LATITUDE
+    CHARACTER(100)              :: VAR(3)
+    CHARACTER(15)               :: TIMESHIFT
   END TYPE NML_FILE_T
 
 
@@ -164,15 +164,15 @@ CONTAINS
     NDSN = 3
     OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+      RETURN
     END IF
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read forcing namelist
@@ -310,21 +310,21 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=FORCING_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_FORCING_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_FORCING_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! set/check RETURN values
     IF (FORCING%TIDAL.NE.'unset') THEN
-       IF (.NOT. FORCING%FIELD%WATER_LEVELS .AND. .NOT. FORCING%FIELD%CURRENTS) THEN
-          WRITE (NDSE,'(A,I3)') 'ERROR: TIDAL must only be used on FIELD%WATER_LEVELS or FIELD%CURRENTS'
-          CALL EXTCDE (2)
-       ELSE IF (.NOT. FORCING%GRID%ASIS) THEN
-          WRITE (NDSE,'(A,I3)') 'ERROR: TIDAL must only be used on GRID%ASIS'
-          CALL EXTCDE (3)
-       END IF
+      IF (.NOT. FORCING%FIELD%WATER_LEVELS .AND. .NOT. FORCING%FIELD%CURRENTS) THEN
+        WRITE (NDSE,'(A,I3)') 'ERROR: TIDAL must only be used on FIELD%WATER_LEVELS or FIELD%CURRENTS'
+        CALL EXTCDE (2)
+      ELSE IF (.NOT. FORCING%GRID%ASIS) THEN
+        WRITE (NDSE,'(A,I3)') 'ERROR: TIDAL must only be used on GRID%ASIS'
+        CALL EXTCDE (3)
+      END IF
     END IF
 
     ! save namelist
@@ -430,10 +430,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=FILE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_FILE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (4)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_FILE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (4)
     END IF
 
     ! save namelist

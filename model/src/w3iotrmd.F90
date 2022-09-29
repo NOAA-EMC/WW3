@@ -321,17 +321,17 @@ CONTAINS
     NDSTO  = ABS(NDSOUT)
 
     IF (GTYPE .EQ. UNGTYPE) THEN
-       XN     = MAXX
-       YN     = MAXY
+      XN     = MAXX
+      YN     = MAXY
     ENDIF
     !
     ISPROC = IAPROC
     IPASS  = IPASS + 1
     !
     IF ( FLAGLL ) THEN
-       FACTOR = 1.
+      FACTOR = 1.
     ELSE
-       FACTOR = 1.E-3
+      FACTOR = 1.E-3
     END IF
     !
     ASPTRK = 0.
@@ -342,72 +342,72 @@ CONTAINS
     !
 #ifdef W3_MPI
     IF ( NRQTR .NE. 0 ) THEN
-       CALL MPI_STARTALL ( NRQTR, IRQTR, IERR_MPI )
-       ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQTR) )
-       CALL MPI_WAITALL ( NRQTR, IRQTR , STATUS, IERR_MPI )
-       DEALLOCATE ( STATUS )
+      CALL MPI_STARTALL ( NRQTR, IRQTR, IERR_MPI )
+      ALLOCATE ( STATUS(MPI_STATUS_SIZE,NRQTR) )
+      CALL MPI_WAITALL ( NRQTR, IRQTR , STATUS, IERR_MPI )
+      DEALLOCATE ( STATUS )
     END IF
 #endif
     !
     ! 1.  First pass through routine ------------------------------------- *
     !
     IF ( IPASS .EQ. 1 ) THEN
-       !
+      !
 #ifdef W3_T
-       WRITE (NDST,9010) TOLAST, DTOUT, NDSTI, NDSTO, FORMI
+      WRITE (NDST,9010) TOLAST, DTOUT, NDSTI, NDSTO, FORMI
 #endif
-       !   Removed by F.A. 2010/12/24  /T          CALL W3GSUP ( GSU, NDST )
-       !
-       I      = LEN_TRIM(FILEXT)
-       J      = LEN_TRIM(FNMPRE)
-       !
-       ! 1.a Open input file
-       !
-       IF ( FORMI ) THEN
+      !   Removed by F.A. 2010/12/24  /T          CALL W3GSUP ( GSU, NDST )
+      !
+      I      = LEN_TRIM(FILEXT)
+      J      = LEN_TRIM(FNMPRE)
+      !
+      ! 1.a Open input file
+      !
+      IF ( FORMI ) THEN
 #ifdef W3_T
-          WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
-               'FORMATTED'
+        WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
+             'FORMATTED'
 #endif
-          OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-               STATUS='OLD',ERR=800,FORM='FORMATTED',IOSTAT=IERR)
-          READ (NDSTI,'(A)',ERR=801,END=802,IOSTAT=IERR) IDTST
-       ELSE
+        OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
+             STATUS='OLD',ERR=800,FORM='FORMATTED',IOSTAT=IERR)
+        READ (NDSTI,'(A)',ERR=801,END=802,IOSTAT=IERR) IDTST
+      ELSE
 #ifdef W3_T
-          WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
-               'UNFORMATTED'
+        WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
+             'UNFORMATTED'
 #endif
-          OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-               STATUS='OLD',ERR=800,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
-          READ (NDSTI,ERR=801,END=802,IOSTAT=IERR) IDTST
-       END IF
-       !
-       IF ( IDTST .NE. IDSTRI ) GOTO 803
-       !
-       ! 1.b Open output file
-       !
-       IF ( IAPROC .EQ. NAPTRK ) THEN
+        OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
+             STATUS='OLD',ERR=800,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        READ (NDSTI,ERR=801,END=802,IOSTAT=IERR) IDTST
+      END IF
+      !
+      IF ( IDTST .NE. IDSTRI ) GOTO 803
+      !
+      ! 1.b Open output file
+      !
+      IF ( IAPROC .EQ. NAPTRK ) THEN
 #ifdef W3_T
-          WRITE (NDST,9012) FNMPRE(:J)//'track_o.'//FILEXT(:I), &
-               'UNFORMATTED'
+        WRITE (NDST,9012) FNMPRE(:J)//'track_o.'//FILEXT(:I), &
+             'UNFORMATTED'
 #endif
-          OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
-               form='UNFORMATTED', convert=file_endian,ERR=810,IOSTAT=IERR)
-          WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
-               NTH, XFR
-          WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
-               (SIG(IK)*TPIINV,IK=1,NK),                          &
-               (DSIP(IK)*TPIINV,IK=1,NK)
-       END IF
-       !
-       ! 1.c Initialize maps
-       !
+        OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
+             form='UNFORMATTED', convert=file_endian,ERR=810,IOSTAT=IERR)
+        WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
+             NTH, XFR
+        WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
+             (SIG(IK)*TPIINV,IK=1,NK),                          &
+             (DSIP(IK)*TPIINV,IK=1,NK)
+      END IF
+      !
+      ! 1.c Initialize maps
+      !
 #ifdef W3_T
-       WRITE (NDST,9015)
+      WRITE (NDST,9015)
 #endif
-       !
-       MASK2  = .FALSE.
-       TRCKID = ''
-       !
+      !
+      MASK2  = .FALSE.
+      TRCKID = ''
+      !
     END IF
     !
     ! 2.  Preparations --------------------------------------------------- *
@@ -427,9 +427,9 @@ CONTAINS
     CALL TICK21 ( TIMEE ,  DTOUT )
     !
     IF ( DSEC21(TIMEE,TOLAST) .LT. 0. ) THEN
-       TIMEE  = TOLAST
+      TIMEE  = TOLAST
 #ifdef W3_T
-       WRITE (NDST,9022)
+      WRITE (NDST,9022)
 #endif
     END IF
     !
@@ -447,11 +447,11 @@ CONTAINS
     ! 3.a Read new track point (infinite loop)
     !
     IF ( STOP ) THEN
-       TOLAST = TIME
+      TOLAST = TIME
 #ifdef W3_T
-       WRITE (NDST,9034)
+      WRITE (NDST,9034)
 #endif
-       GOTO 399
+      GOTO 399
     END IF
     !
 #ifdef W3_T1
@@ -459,150 +459,150 @@ CONTAINS
 #endif
     !
     DO
-       !
-       IF ( FORMI ) THEN
-          READ (NDSTI,'(A)',ERR=801,END=390,IOSTAT=IERR) LINE
-          LIST(:)=''
-          CALL STRSPLIT(LINE,LIST)
-          READ(LIST(1),'(I8)') TTIME(1)
-          READ(LIST(2),'(I6)') TTIME(2)
-          READ(LIST(3),*) XT
-          READ(LIST(4),*) YT
-          IF(SIZE(LIST).GE.5) TRCKT=LIST(5)
-       ELSE
-          READ (NDSTI, ERR=801,END=390,IOSTAT=IERR) TTIME, XT, YT, TRCKT
-       END IF
+      !
+      IF ( FORMI ) THEN
+        READ (NDSTI,'(A)',ERR=801,END=390,IOSTAT=IERR) LINE
+        LIST(:)=''
+        CALL STRSPLIT(LINE,LIST)
+        READ(LIST(1),'(I8)') TTIME(1)
+        READ(LIST(2),'(I6)') TTIME(2)
+        READ(LIST(3),*) XT
+        READ(LIST(4),*) YT
+        IF(SIZE(LIST).GE.5) TRCKT=LIST(5)
+      ELSE
+        READ (NDSTI, ERR=801,END=390,IOSTAT=IERR) TTIME, XT, YT, TRCKT
+      END IF
 #ifdef W3_T
-       NREAD  = NREAD + 1
+      NREAD  = NREAD + 1
 #endif
-       !
-       ! 3.b Point before time interval
-       !
-       IF ( DSEC21(TIMEB,TTIME) .LT. 0. ) THEN
+      !
+      ! 3.b Point before time interval
+      !
+      IF ( DSEC21(TIMEB,TTIME) .LT. 0. ) THEN
 #ifdef W3_T1
-          WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO EARLY'
+        WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO EARLY'
 #endif
-          CYCLE
-       END IF
-       !
-       ! 3.c Point after time interval
-       !
-       IF ( DSEC21(TIMEE,TTIME) .GT. 0. ) THEN
-          BACKSPACE (NDSTI)
+        CYCLE
+      END IF
+      !
+      ! 3.c Point after time interval
+      !
+      IF ( DSEC21(TIMEE,TTIME) .GT. 0. ) THEN
+        BACKSPACE (NDSTI)
 #ifdef W3_T
-          NREAD  = NREAD - 1
+        NREAD  = NREAD - 1
 #endif
 #ifdef W3_T1
-          WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO LATE'
+        WRITE (NDST,9031) TTIME,FACTOR*XT,FACTOR*YT,'TOO LATE'
 #endif
-          GOTO 399
-       END IF
-       !
-       ! 3.d Check time in interval
-       !
-       FLAG1  = DSEC21(TTIME,TIMEE) .GT. RTCHCK*DTOUT
-       FLAG2  = DSEC21(TIMEB,TTIME) .GT. RTCHCK*DTOUT
-       !
-       ! 3.e Check point coordinates
-       !
+        GOTO 399
+      END IF
+      !
+      ! 3.d Check time in interval
+      !
+      FLAG1  = DSEC21(TTIME,TIMEE) .GT. RTCHCK*DTOUT
+      FLAG2  = DSEC21(TIMEB,TTIME) .GT. RTCHCK*DTOUT
+      !
+      ! 3.e Check point coordinates
+      !
 
-       ! 3.e.1 Initial identification of computational grid points to include.
-       !
-       !       Find cell that encloses target point (note that the returned
-       !       cell corner indices are adjusted for global wrapping and the
-       !       coordinates are adjusted to avoid branch cut crossings)
-       INGRID = W3GFCL( GSU, XT, YT, IXX, IYY, XX, YY )
-       IF ( .NOT. INGRID ) THEN
+      ! 3.e.1 Initial identification of computational grid points to include.
+      !
+      !       Find cell that encloses target point (note that the returned
+      !       cell corner indices are adjusted for global wrapping and the
+      !       coordinates are adjusted to avoid branch cut crossings)
+      INGRID = W3GFCL( GSU, XT, YT, IXX, IYY, XX, YY )
+      IF ( .NOT. INGRID ) THEN
 #ifdef W3_T1
-          WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, &
-               'OUT OF GRID'
+        WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, &
+             'OUT OF GRID'
 #endif
-          CYCLE
-       END IF
-       !
-       !       Change cell-corners from counter-clockwise to column-major order
-       IX     = IXX(4);  IY     = IYY(4);
-       IXX(4) = IXX(3);  IYY(4) = IYY(3);
-       IXX(3) = IX;      IYY(3) = IY;
-       !
-       ! 3.e.2 Optimize: omit points that are not strictly required.
-       !       See "Remarks"
+        CYCLE
+      END IF
+      !
+      !       Change cell-corners from counter-clockwise to column-major order
+      IX     = IXX(4);  IY     = IYY(4);
+      IXX(4) = IXX(3);  IYY(4) = IYY(3);
+      IXX(3) = IX;      IYY(3) = IY;
+      !
+      ! 3.e.2 Optimize: omit points that are not strictly required.
+      !       See "Remarks"
 
-       IF(CMPRTRCK)THEN ! perform track compression
+      IF(CMPRTRCK)THEN ! perform track compression
 
-          !         Project onto I-axis
-          RD = DPDX(IYY(1),IXX(1))*(XT-XX(1)) &
-               + DPDY(IYY(1),IXX(1))*(YT-YY(1))
-          !
-          !         Collapse to left or right if within tolerance
-          IF ( RD .LT. RDCHCK ) THEN
-             IXX(2) = IXX(1)
-             IXX(4) = IXX(3)
-          ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-             IXX(1) = IXX(2)
-             IXX(3) = IXX(4)
+        !         Project onto I-axis
+        RD = DPDX(IYY(1),IXX(1))*(XT-XX(1)) &
+             + DPDY(IYY(1),IXX(1))*(YT-YY(1))
+        !
+        !         Collapse to left or right if within tolerance
+        IF ( RD .LT. RDCHCK ) THEN
+          IXX(2) = IXX(1)
+          IXX(4) = IXX(3)
+        ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
+          IXX(1) = IXX(2)
+          IXX(3) = IXX(4)
+        END IF
+        !
+        !         Project onto J-axis
+        RD = DQDX(IYY(1),IXX(1))*(XT-XX(1)) &
+             + DQDY(IYY(1),IXX(1))*(YT-YY(1))
+        !
+        !         Collapse to top or bottom if within tolerance
+        IF ( RD .LT. RDCHCK ) THEN
+          IYY(3) = IYY(1)
+          IYY(4) = IYY(2)
+        ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
+          IYY(1) = IYY(3)
+          IYY(2) = IYY(4)
+        END IF
+
+      END IF ! IF(CMPRTRCK)THEN
+      !
+      ! 3.f Mark the four corner points
+      !
+      DO J=1, 4
+        !
+        IX     = IXX(J)
+        IY     = IYY(J)
+        IF(GTYPE .EQ. UNGTYPE) THEN
+          X = XGRD(1,IX)
+          Y = YGRD(1,IX)
+        ENDIF
+        MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
+        MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
+        TRCKID(IY,IX) = TRCKT
+        !
+#ifdef W3_T1
+        IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
+          IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+            TSTLOC(4*J-3:4*J-1) = 'LND'
+          ELSE
+            TSTLOC(4*J-3:4*J-1) = 'XCL'
           END IF
-          !
-          !         Project onto J-axis
-          RD = DQDX(IYY(1),IXX(1))*(XT-XX(1)) &
-               + DQDY(IYY(1),IXX(1))*(YT-YY(1))
-          !
-          !         Collapse to top or bottom if within tolerance
-          IF ( RD .LT. RDCHCK ) THEN
-             IYY(3) = IYY(1)
-             IYY(4) = IYY(2)
-          ELSE IF ( RD .GT. 1.-RDCHCK ) THEN
-             IYY(1) = IYY(3)
-             IYY(2) = IYY(4)
+        ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
+          IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
+            TSTLOC(4*J-3:4*J-1) = 'ICE'
+          ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
+            TSTLOC(4*J-3:4*J-1) = 'DRY'
+          ELSE
+            TSTLOC(4*J-3:4*J-1) = 'DIS'
           END IF
-
-       END IF ! IF(CMPRTRCK)THEN
-       !
-       ! 3.f Mark the four corner points
-       !
-       DO J=1, 4
-          !
-          IX     = IXX(J)
-          IY     = IYY(J)
-          IF(GTYPE .EQ. UNGTYPE) THEN
-             X = XGRD(1,IX)
-             Y = YGRD(1,IX)
-          ENDIF
-          MASK1(IY,IX) = MASK1(IY,IX) .OR. FLAG1
-          MASK2(IY,IX) = MASK2(IY,IX) .OR. FLAG2
-          TRCKID(IY,IX) = TRCKT
-          !
-#ifdef W3_T1
-          IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
-             IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-                TSTLOC(4*J-3:4*J-1) = 'LND'
-             ELSE
-                TSTLOC(4*J-3:4*J-1) = 'XCL'
-             END IF
-          ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
-             IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
-                TSTLOC(4*J-3:4*J-1) = 'ICE'
-             ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
-                TSTLOC(4*J-3:4*J-1) = 'DRY'
-             ELSE
-                TSTLOC(4*J-3:4*J-1) = 'DIS'
-             END IF
-          ELSE IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
-             TSTLOC(4*J-3:4*J-1) = 'SEA'
-          END IF
+        ELSE IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
+          TSTLOC(4*J-3:4*J-1) = 'SEA'
+        END IF
 #endif
-          !
-       END DO
-       !
+        !
+      END DO
+      !
 #ifdef W3_T1
-       WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, TSTLOC,    &
-            IXX(1), IXX(2), IYY(1), IYY(3), FLAG1, FLAG2
+      WRITE (NDST,9031) TTIME, FACTOR*XT, FACTOR*YT, TSTLOC,    &
+           IXX(1), IXX(2), IYY(1), IYY(3), FLAG1, FLAG2
 #endif
-       !
+      !
 #ifdef W3_T
-       NTRACK = NTRACK + 1
+      NTRACK = NTRACK + 1
 #endif
-       !
+      !
     END DO
     !
     ! 3.g End of input file escape location
@@ -622,16 +622,16 @@ CONTAINS
 #ifdef W3_T2
     WRITE (NDST,9035)
     DO IY=NY,1,-1
-       DO IX=1, NX
-          IF ( MASK1(IY,IX) ) THEN
-             MAPSTR(IX) = 'X'
-          ELSE IF ( MASK2(IY,IX) ) THEN
-             MAPSTR(IX) = 'x'
-          ELSE
-             MAPSTR(IX) = '.'
-          END IF
-       END DO
-       WRITE (NDST,9036) MAPSTR
+      DO IX=1, NX
+        IF ( MASK1(IY,IX) ) THEN
+          MAPSTR(IX) = 'X'
+        ELSE IF ( MASK2(IY,IX) ) THEN
+          MAPSTR(IX) = 'x'
+        ELSE
+          MAPSTR(IX) = '.'
+        END IF
+      END DO
+      WRITE (NDST,9036) MAPSTR
     END DO
 #endif
     !
@@ -648,153 +648,153 @@ CONTAINS
 #endif
     !
     DO IY=1, NY
-       DO IX=1, NX
-          IF ( MASK1(IY,IX) ) THEN
-             !
-             IF(GTYPE .EQ. UNGTYPE) THEN
-                X = XGRD(1,IX)
-                Y = YGRD(1,IX)
-             ELSE
-                X = XGRD(IY,IX)
-                Y = YGRD(IY,IX)
-             ENDIF
+      DO IX=1, NX
+        IF ( MASK1(IY,IX) ) THEN
+          !
+          IF(GTYPE .EQ. UNGTYPE) THEN
+            X = XGRD(1,IX)
+            Y = YGRD(1,IX)
+          ELSE
+            X = XGRD(IY,IX)
+            Y = YGRD(IY,IX)
+          ENDIF
 #ifdef W3_MPI
-             IT     = IT + 1
+          IT     = IT + 1
 #endif
 #ifdef W3_T
-             NLOCO  = NLOCO + 1
+          NLOCO  = NLOCO + 1
 #endif
-             !
-             ! 4.a Status of point
-             !
-             IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
-                IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
-                   TSTSTR = 'LND'
-                ELSE
-                   TSTSTR = 'XCL'
-                END IF
-             ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
-                IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
-                   TSTSTR = 'ICE'
-                ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
-                   TSTSTR = 'DRY'
-                ELSE
-                   TSTSTR = 'DIS'
-                END IF
-             ELSE
-                TSTSTR = 'SEA'
-             END IF
-             !
-#ifdef W3_T
-             IF ( TSTSTR .EQ. 'SEA' ) NSPECO = NSPECO + 1
-#endif
-             !
-             ! 4.b Determine where point is stored
-             !     ( land point assumed stored on IAPROC = NAPTRK
-             !       set to -99 in test output )
-             !
-             ISEA   = MAPFS(IY,IX)
-             IF ( ISEA .EQ. 0 ) THEN
-                ISPROC = NAPTRK
-#ifdef W3_T3
-                ISPT    = -99
-#endif
-             ELSE
-                CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-#ifdef W3_T3
-                ISPT    = ISPROC
-#endif
-             END IF
-#ifdef W3_MPI
-             IFROM  = ISPROC - 1
-#endif
-             ! 4.c Spectrum is at local processor, but this is not the NAPTRK
-             !     Send the spectrum to NAPTRK
-
-             IF ( ISPROC.EQ.IAPROC .AND. IAPROC.NE.NAPTRK ) THEN
-#ifdef W3_T3
-                WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'SENDING'
-#endif
-#ifdef W3_MPI
-                CALL MPI_SEND ( A(1,1,JSEA), NSPEC, MPI_REAL,  &
-                     IROOT, IT, MPI_COMM_WAVE, IERR_MPI )
-#endif
-             END IF
-             !
-             ! 4.d This is NAPTRK, perform all output
-             !
-             IF ( IAPROC .EQ. NAPTRK ) THEN
-                !
-                ! 4.e Sea point, prepare data
-                !
-                IF ( TSTSTR .EQ. 'SEA' ) THEN
-                   !
-                   WX     = UA(ISEA) * COS(UD(ISEA))
-                   WY     = UA(ISEA) * SIN(UD(ISEA))
-                   !
-                   ! ..... Local spectra
-                   !
-                   IF ( IAPROC .EQ. ISPROC ) THEN
-                      DO IK=1, NK
-                         DO ITH=1, NTH
-                            SPEC(IK,ITH) =                          &
-                                 TPI*A(ITH,IK,JSEA)*SIG(IK)/CG(IK,ISEA)
-                         END DO
-                      END DO
-                      !
-                      ! ..... Non-local spectra
-                      !
-                   ELSE
-#ifdef W3_T3
-                      WRITE (NDST,9040) IX, IY, ISEA, ISPT,   &
-                           'RECEIVING'
-#endif
-#ifdef W3_MPI
-                      CALL MPI_RECV (ASPTRK, NSPEC, MPI_REAL,&
-                           IFROM, IT, MPI_COMM_WAVE,   &
-                           STATUS, IERR_MPI )
-#endif
-                      !
-                      DO IK=1, NK
-                         DO ITH=1, NTH
-                            SPEC(IK,ITH) =                          &
-                                 TPI*ASPTRK(ITH,IK)*SIG(IK)/CG(IK,ISEA)
-                         END DO
-                      END DO
-                   END IF
-                   !
-                   ! 4.e Sea point, write general data + spectrum
-                   !
-                   WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
-                        TIME, X, Y, TSTSTR, TRCKID(IY,IX)
-                   WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
-                        DW(ISEA), CX(ISEA), CY(ISEA), WX, WY,        &
-                        UST(ISEA), AS(ISEA), SPEC
-                   !
-                   ! 4.f Non-sea point, write
-                   !
-                ELSE
-                   WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
-                        TIME, X, Y, TSTSTR, TRCKID(IY,IX)
-                   !
-                   ! ..... Sea and non-sea points processed
-                   !
-                END IF
-                !
-                ! ..... End of action at NAPTRK
-                !
-#ifdef W3_T3
-                WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'WRITTEN', time
-#endif
-             END IF
-             !
-             ! ..... Close IF for mask flag (top section 4)
-             !
+          !
+          ! 4.a Status of point
+          !
+          IF ( MAPSTA(IY,IX) .EQ. 0 ) THEN
+            IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
+              TSTSTR = 'LND'
+            ELSE
+              TSTSTR = 'XCL'
+            END IF
+          ELSE IF ( MAPSTA(IY,IX) .LT. 0 ) THEN
+            IF ( MAPST2(IY,IX) .EQ. 1 ) THEN
+              TSTSTR = 'ICE'
+            ELSE IF ( MAPST2(IY,IX) .EQ. 2 ) THEN
+              TSTSTR = 'DRY'
+            ELSE
+              TSTSTR = 'DIS'
+            END IF
+          ELSE
+            TSTSTR = 'SEA'
           END IF
           !
-          ! ..... End of loop over map
+#ifdef W3_T
+          IF ( TSTSTR .EQ. 'SEA' ) NSPECO = NSPECO + 1
+#endif
           !
-       END DO
+          ! 4.b Determine where point is stored
+          !     ( land point assumed stored on IAPROC = NAPTRK
+          !       set to -99 in test output )
+          !
+          ISEA   = MAPFS(IY,IX)
+          IF ( ISEA .EQ. 0 ) THEN
+            ISPROC = NAPTRK
+#ifdef W3_T3
+            ISPT    = -99
+#endif
+          ELSE
+            CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
+#ifdef W3_T3
+            ISPT    = ISPROC
+#endif
+          END IF
+#ifdef W3_MPI
+          IFROM  = ISPROC - 1
+#endif
+          ! 4.c Spectrum is at local processor, but this is not the NAPTRK
+          !     Send the spectrum to NAPTRK
+
+          IF ( ISPROC.EQ.IAPROC .AND. IAPROC.NE.NAPTRK ) THEN
+#ifdef W3_T3
+            WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'SENDING'
+#endif
+#ifdef W3_MPI
+            CALL MPI_SEND ( A(1,1,JSEA), NSPEC, MPI_REAL,  &
+                 IROOT, IT, MPI_COMM_WAVE, IERR_MPI )
+#endif
+          END IF
+          !
+          ! 4.d This is NAPTRK, perform all output
+          !
+          IF ( IAPROC .EQ. NAPTRK ) THEN
+            !
+            ! 4.e Sea point, prepare data
+            !
+            IF ( TSTSTR .EQ. 'SEA' ) THEN
+              !
+              WX     = UA(ISEA) * COS(UD(ISEA))
+              WY     = UA(ISEA) * SIN(UD(ISEA))
+              !
+              ! ..... Local spectra
+              !
+              IF ( IAPROC .EQ. ISPROC ) THEN
+                DO IK=1, NK
+                  DO ITH=1, NTH
+                    SPEC(IK,ITH) =                          &
+                         TPI*A(ITH,IK,JSEA)*SIG(IK)/CG(IK,ISEA)
+                  END DO
+                END DO
+                !
+                ! ..... Non-local spectra
+                !
+              ELSE
+#ifdef W3_T3
+                WRITE (NDST,9040) IX, IY, ISEA, ISPT,   &
+                     'RECEIVING'
+#endif
+#ifdef W3_MPI
+                CALL MPI_RECV (ASPTRK, NSPEC, MPI_REAL,&
+                     IFROM, IT, MPI_COMM_WAVE,   &
+                     STATUS, IERR_MPI )
+#endif
+                !
+                DO IK=1, NK
+                  DO ITH=1, NTH
+                    SPEC(IK,ITH) =                          &
+                         TPI*ASPTRK(ITH,IK)*SIG(IK)/CG(IK,ISEA)
+                  END DO
+                END DO
+              END IF
+              !
+              ! 4.e Sea point, write general data + spectrum
+              !
+              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+                   TIME, X, Y, TSTSTR, TRCKID(IY,IX)
+              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+                   DW(ISEA), CX(ISEA), CY(ISEA), WX, WY,        &
+                   UST(ISEA), AS(ISEA), SPEC
+              !
+              ! 4.f Non-sea point, write
+              !
+            ELSE
+              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+                   TIME, X, Y, TSTSTR, TRCKID(IY,IX)
+              !
+              ! ..... Sea and non-sea points processed
+              !
+            END IF
+            !
+            ! ..... End of action at NAPTRK
+            !
+#ifdef W3_T3
+            WRITE (NDST,9040) IX, IY, ISEA, ISPT, 'WRITTEN', time
+#endif
+          END IF
+          !
+          ! ..... Close IF for mask flag (top section 4)
+          !
+        END IF
+        !
+        ! ..... End of loop over map
+        !
+      END DO
     END DO
     !
 #ifdef W3_MPI

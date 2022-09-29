@@ -158,8 +158,8 @@ CONTAINS
     NYMD   = TIME(1)
     NHMS   = TIME(2)
     IF (DTIME.EQ.0.) THEN
-       NYMD = IYMD21 (NYMD,-1)
-       NYMD = IYMD21 (NYMD, 1)
+      NYMD = IYMD21 (NYMD,-1)
+      NYMD = IYMD21 (NYMD, 1)
     END IF
     !
     ! Convert and increment time :
@@ -171,16 +171,16 @@ CONTAINS
     !
 100 CONTINUE
     IF (NSEC.GE.86400)  THEN
-       NSEC = NSEC - 86400
-       NYMD = IYMD21 (NYMD,1)
-       GOTO 100
+      NSEC = NSEC - 86400
+      NYMD = IYMD21 (NYMD,1)
+      GOTO 100
     END IF
     !
 200 CONTINUE
     IF (NSEC.LT.00000)  THEN
-       NSEC = 86400 + NSEC
-       NYMD = IYMD21 (NYMD,-1)
-       GOTO 200
+      NSEC = 86400 + NSEC
+      NYMD = IYMD21 (NYMD,-1)
+      GOTO 200
     END IF
     !
     NHMS = NSEC/3600*10000 + MOD(NSEC,3600)/60*100 + MOD(NSEC,60)
@@ -270,9 +270,9 @@ CONTAINS
       ! Declare the number of days in month depending on calendar
       !
       IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-         NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
+        NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
       ELSE
-         NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+        NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
       END IF
       !
       ! "Unpack" and increment date :
@@ -283,22 +283,22 @@ CONTAINS
       ND   = MOD(NYMD,100) + M
       ! Add override for simulations with no leap years
       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
-         LEAP = MOD(NY,400).EQ.0 .OR.                           &
-              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
+        LEAP = MOD(NY,400).EQ.0 .OR.                           &
+             ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       ELSE
-         LEAP = .false.
+        LEAP = .false.
       END IF
       !
       ! M = -1, change month if necessary :
       !
       IF (ND.EQ.0) THEN
-         NM   = NM - 1
-         IF (NM.EQ.0) THEN
-            NM   = 12
-            NY   = NY - 1
-         ENDIF
-         ND   = NDPM(NM)
-         IF (NM.EQ.2 .AND. LEAP)  ND = 29
+        NM   = NM - 1
+        IF (NM.EQ.0) THEN
+          NM   = 12
+          NY   = NY - 1
+        ENDIF
+        ND   = NDPM(NM)
+        IF (NM.EQ.2 .AND. LEAP)  ND = 29
       END IF
       !
       ! M = 1, leap year
@@ -308,12 +308,12 @@ CONTAINS
       !        next month
       !
       IF (ND.GT.NDPM(NM)) THEN
-         ND = 1
-         NM = NM + 1
-         IF (NM.GT.12) THEN
-            NM = 1
-            NY = NY + 1
-         ENDIF
+        ND = 1
+        NM = NM + 1
+        IF (NM.GT.12) THEN
+          NM = 1
+          NY = NY + 1
+        ENDIF
       END IF
       !
 20    CONTINUE
@@ -422,26 +422,26 @@ CONTAINS
     ND     = ND2 - ND1
     !
     IF ( NY1 .NE. NY2 ) THEN
-       NST    = SIGN ( 1 , NY2-NY1 )
-100    CONTINUE
-       IF (NY1.EQ.NY2) GOTO 200
-       IF (NST.GT.0) THEN
-          NY2    = NY2 - 1
-          IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-             ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
-          ELSE
-             ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
-          END IF
-       ELSE
-          IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-             ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
-          ELSE
-             ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
-          END IF
-          NY2    = NY2 + 1
-       ENDIF
-       GOTO 100
-200    CONTINUE
+      NST    = SIGN ( 1 , NY2-NY1 )
+100   CONTINUE
+      IF (NY1.EQ.NY2) GOTO 200
+      IF (NST.GT.0) THEN
+        NY2    = NY2 - 1
+        IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+          ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
+        ELSE
+          ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
+        END IF
+      ELSE
+        IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+          ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
+        ELSE
+          ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
+        END IF
+        NY2    = NY2 + 1
+      ENDIF
+      GOTO 100
+200   CONTINUE
     END IF
     !
     NS     = NS2 - NS1
@@ -531,9 +531,9 @@ CONTAINS
       ! Declare the number of days in month depending on calendar
       !
       IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-         NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
+        NDPM=(/ 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30 /)
       ELSE
-         NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
+        NDPM=(/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
       END IF
       !
       ! "Unpack" and increment date :
@@ -543,10 +543,10 @@ CONTAINS
       ND   = MOD(NYMD,100)
       !Allow override for NoLeap simulations
       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
-         LEAP = MOD(NY,400).EQ.0 .OR.                           &
-              ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
+        LEAP = MOD(NY,400).EQ.0 .OR.                           &
+             ( MOD(NY,4).EQ.0 .AND. MOD(NY,100).NE.0 )
       ELSE
-         LEAP=.false.
+        LEAP=.false.
       ENDIF
       !
       ! Loop over months :
@@ -730,15 +730,15 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     IF ( TIME(1) .LT. 0 ) THEN
-       DTME21 = ' date and time not set.'
+      DTME21 = ' date and time not set.'
     ELSE
-       IY     = TIME(1) / 10000
-       IMO    = MOD(TIME(1),10000) / 100
-       ID     = MOD(TIME(1),100)
-       IH     = TIME(2) / 10000
-       IMI    = MOD(TIME(2),10000) / 100
-       IS     = MOD(TIME(2),100)
-       WRITE (DTME21,900) IY, IMO, ID, IH, IMI, IS
+      IY     = TIME(1) / 10000
+      IMO    = MOD(TIME(1),10000) / 100
+      ID     = MOD(TIME(1),100)
+      IH     = TIME(2) / 10000
+      IMI    = MOD(TIME(2),10000) / 100
+      IS     = MOD(TIME(2),100)
+      WRITE (DTME21,900) IY, IMO, ID, IH, IMI, IS
     ENDIF
     !
     RETURN
@@ -779,15 +779,15 @@ CONTAINS
     IF (jy.EQ.0) WRITE(6,*) 'There is no zero year !!'
     IF (jy.LT.0) jy=jy+1
     IF (mm.GT.2) THEN
-       jm=mm+1
+      jm=mm+1
     ELSE
-       jy=jy-1
-       jm=mm+13
+      jy=jy-1
+      jm=mm+13
     ENDIF
     julday=INT(365.25*jy)+int(30.6001*jm)+id+1720995
     IF (id+31*(mm+12*iyyy).GE.IGREG) THEN
-       ja=INT(0.01*jy)
-       julday=julday+2-ja+INT(0.25*ja)
+      ja=INT(0.01*jy)
+      julday=julday+2-ja+INT(0.25*ja)
     END IF
     RETURN
     !/
@@ -819,10 +819,10 @@ CONTAINS
     INTEGER(KIND=4), PARAMETER :: IGREG=2299161
     INTEGER(KIND=4) ja,jalpha,jb,jc,jd,je
     if (julian.GE.IGREG) THEN
-       jalpha=INT(((julian-1867216)-0.25)/36524.25)
-       ja=julian+1+jalpha-INT(0.25*jalpha)
+      jalpha=INT(((julian-1867216)-0.25)/36524.25)
+      ja=julian+1+jalpha-INT(0.25*jalpha)
     ELSE
-       ja=julian
+      ja=julian
     END IF
     jb=ja+1524
     jc=INT(6680.+((jb-2439870)-122.1)/365.25)
@@ -1314,8 +1314,8 @@ CONTAINS
     JULIAN = -HUGE(99999)                  ! this is the date if an error occurs and IERR is < 0
 
     IF(YEAR==0 .or. YEAR .lt. -4713) THEN
-       IERR=-1
-       RETURN
+      IERR=-1
+      RETURN
     END IF
 
     !  You must compute first the number of years (Y) and months (M) since March 1st -4800 (March 1, 4801 BC)
@@ -1333,9 +1333,9 @@ CONTAINS
 
     ! Check if Julian Day is non-negative
     IF(JULIAN.lt.0.d0) THEN
-       IERR=1
+      IERR=1
     ELSE
-       IERR=0
+      IERR=0
     END IF
     !
     RETURN
@@ -1419,10 +1419,10 @@ CONTAINS
 #endif
     !
     IF(JULIAN.LT.0.d0) THEN                      ! Negative Julian Day not allowed
-       IERR=1
-       RETURN
+      IERR=1
+      RETURN
     ELSE
-       IERR=0
+      IERR=0
     END IF
 
     !CALL DATE_AND_TIME(values=TIMEZONE)         ! Get the timezone
@@ -1434,15 +1434,15 @@ CONTAINS
     SECOND=SECOND+(tz*60)
 
     IF(SECOND.GE.(SECDAY/2.0d0)) THEN            ! In next calendar day
-       IJUL=IJUL+1
-       SECOND=SECOND-(SECDAY/2.0d0)              ! Adjust from noon to midnight
+      IJUL=IJUL+1
+      SECOND=SECOND-(SECDAY/2.0d0)              ! Adjust from noon to midnight
     ELSE                                         ! In same calendar day
-       SECOND=SECOND+(SECDAY/2.0d0)              ! Adjust from noon to midnight
+      SECOND=SECOND+(SECDAY/2.0d0)              ! Adjust from noon to midnight
     END IF
 
     IF(SECOND.GE.SECDAY) THEN                    ! Final check to prevent time 24:00:00
-       IJUL=IJUL+1
-       SECOND=SECOND-SECDAY
+      IJUL=IJUL+1
+      SECOND=SECOND-SECDAY
     END IF
 
     MINUTE=INT(SECOND/60.0)                      ! Integral minutes from beginning of day
@@ -1463,16 +1463,16 @@ CONTAINS
     MONTH=JE-1
 
     IF(MONTH.GT.12) THEN
-       MONTH=MONTH-12
+      MONTH=MONTH-12
     END IF
 
     YEAR=jc-4715
     IF(MONTH.GT.2) THEN
-       YEAR=YEAR-1
+      YEAR=YEAR-1
     END IF
 
     IF(YEAR.LE.0) THEN
-       YEAR=YEAR-1
+      YEAR=YEAR-1
     END IF
 
     DAT(1)=YEAR
@@ -1557,32 +1557,32 @@ CONTAINS
     ! Convert dates and times :
     !
     IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-       A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
+      A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
 
-       E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
-       E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
-       !
-       TSUB = DBLE(A1) + (E2-E1)/86400.0d0
+      E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
+      E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
+      !
+      TSUB = DBLE(A1) + (E2-E1)/86400.0d0
     ELSE
-       A1 = (14-T1(2))/12
-       B1 = T1(1) + 4800 - A1
-       C1 = T1(2) + 12*A1 - 3
-       D1 = T1(3) + (153*C1 + 2)/5 + 365*B1
-       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
-          D1 = D1 + B1/4 -B1/100 + B1/400
-       ENDIF
-       E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
-       !
-       A2 = (14-T2(2))/12
-       B2 = T2(1) + 4800 - A2
-       C2 = T2(2) + 12*A2 - 3
-       D2 = T2(3) + (153*C2 + 2)/5 + 365*B2
-       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
-          D2 = D2 + B2/4 -B2/100 + B2/400
-       ENDIF
-       E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
-       !
-       TSUB = DBLE(D2-D1) + (E2-E1)/86400.0d0
+      A1 = (14-T1(2))/12
+      B1 = T1(1) + 4800 - A1
+      C1 = T1(2) + 12*A1 - 3
+      D1 = T1(3) + (153*C1 + 2)/5 + 365*B1
+      IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+        D1 = D1 + B1/4 -B1/100 + B1/400
+      ENDIF
+      E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + T1(8)/1000.0
+      !
+      A2 = (14-T2(2))/12
+      B2 = T2(1) + 4800 - A2
+      C2 = T2(2) + 12*A2 - 3
+      D2 = T2(3) + (153*C2 + 2)/5 + 365*B2
+      IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+        D2 = D2 + B2/4 -B2/100 + B2/400
+      ENDIF
+      E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + T2(8)/1000.0
+      !
+      TSUB = DBLE(D2-D1) + (E2-E1)/86400.0d0
     ENDIF
     !
     RETURN
@@ -1656,32 +1656,32 @@ CONTAINS
 #endif
     !
     IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-       A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
+      A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
 
-       E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + NINT(T1(8) / 1000.0)
-       E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + NINT(T2(8) / 1000.0)
-       !
-       TSUBSEC = A1 * 86400 + (E2-E1)
+      E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + NINT(T1(8) / 1000.0)
+      E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + NINT(T2(8) / 1000.0)
+      !
+      TSUBSEC = A1 * 86400 + (E2-E1)
     ELSE
-       A1 = (14-T1(2))/12
-       B1 = T1(1) + 4800 - A1
-       C1 = T1(2) + 12*A1 - 3
-       D1 = T1(3) + (153*C1 + 2)/5 + 365*B1
-       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
-          D1 = D1 + B1/4 -B1/100 + B1/400
-       ENDIF
-       E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + NINT(T1(8) / 1000.0)
-       !
-       A2 = (14-T2(2))/12
-       B2 = T2(1) + 4800 - A2
-       C2 = T2(2) + 12*A2 - 3
-       D2 = T2(3) + (153*C2 + 2)/5 + 365*B2
-       IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
-          D2 = D2 + B2/4 -B2/100 + B2/400
-       ENDIF
-       E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + NINT(T1(8) / 1000.0)
-       !
-       TSUBSEC = (D2-D1)*86400 + (E2-E1)
+      A1 = (14-T1(2))/12
+      B1 = T1(1) + 4800 - A1
+      C1 = T1(2) + 12*A1 - 3
+      D1 = T1(3) + (153*C1 + 2)/5 + 365*B1
+      IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+        D1 = D1 + B1/4 -B1/100 + B1/400
+      ENDIF
+      E1 = 3600.0*T1(5) + 60.0*(T1(6)-T1(4)) + T1(7) + NINT(T1(8) / 1000.0)
+      !
+      A2 = (14-T2(2))/12
+      B2 = T2(1) + 4800 - A2
+      C2 = T2(2) + 12*A2 - 3
+      D2 = T2(3) + (153*C2 + 2)/5 + 365*B2
+      IF (TRIM(CALTYPE) .EQ. 'standard' ) THEN
+        D2 = D2 + B2/4 -B2/100 + B2/400
+      ENDIF
+      E2 = 3600.0*T2(5) + 60.0*(T2(6)-T2(4)) + T2(7) + NINT(T1(8) / 1000.0)
+      !
+      TSUBSEC = (D2-D1)*86400 + (E2-E1)
     ENDIF
     !
     RETURN
@@ -1767,135 +1767,135 @@ CONTAINS
 
     ! seconds
     IF (INDEX(UNITS, "seconds").NE.0) THEN
-       ! seconds since YYYY-MM-DD hh:mm:ss
-       IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
-          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-          READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ! seconds since YYYY-M-D ...
-       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
-          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-          ! seconds since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
-             READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-             ! seconds since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
-             READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ELSE
-             GOTO 804
-          END IF
-       ELSE
-          GOTO 804
-       END IF
-
-       ! days
-    ELSE IF (INDEX(UNITS, "days").NE.0) THEN
-       ! days since YYYY-MM-DD hh:mm:ss
-       IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
-          READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(17:18),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-          READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ! days since YYYY-M-D ...
-       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.18) THEN
-          READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(17:17),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(19:19),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-          ! days since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .FALSE.).EQ.22) THEN
-             READ(UNITS(21:21),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(23:23),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(25:25),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-             ! days since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
-             READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ELSE
-             GOTO 804
-          END IF
-       ELSE
-          GOTO 804
-       END IF
-
-       ! hours
-    ELSE IF (INDEX(UNITS, "hours").NE.0) THEN
-       ! hours since YYYY-MM-DD hh:mm:ss
-       IF (INDEX(UNITS, "-", .TRUE.).EQ.20) THEN
-          READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(18:19),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+      ! seconds since YYYY-MM-DD hh:mm:ss
+      IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
+        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+        READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+        READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! seconds since YYYY-M-D ...
+      ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
+        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        ! seconds since YYYY-M-D h:m:s
+        IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
+          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          ! seconds since YYYY-M-D hh:mm:ss
+        ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
           READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
           READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
           READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ! hours since YYYY-M-D ...
-       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
-          READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(18:18),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-          ! hours since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
-             READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-             ! hours since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.24) THEN
-             READ(UNITS(22:23),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(25:26),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(28:29),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ELSE
-             GOTO 804
-          END IF
-       ELSE
+        ELSE
           GOTO 804
-       END IF
+        END IF
+      ELSE
+        GOTO 804
+      END IF
 
-       ! minutes
+      ! days
+    ELSE IF (INDEX(UNITS, "days").NE.0) THEN
+      ! days since YYYY-MM-DD hh:mm:ss
+      IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
+        READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(17:18),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+        READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+        READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! days since YYYY-M-D ...
+      ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.18) THEN
+        READ(UNITS(12:15),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(17:17),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(19:19),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        ! days since YYYY-M-D h:m:s
+        IF (INDEX(UNITS, ":", .FALSE.).EQ.22) THEN
+          READ(UNITS(21:21),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(23:23),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(25:25),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          ! days since YYYY-M-D hh:mm:ss
+        ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
+          READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ELSE
+          GOTO 804
+        END IF
+      ELSE
+        GOTO 804
+      END IF
+
+      ! hours
+    ELSE IF (INDEX(UNITS, "hours").NE.0) THEN
+      ! hours since YYYY-MM-DD hh:mm:ss
+      IF (INDEX(UNITS, "-", .TRUE.).EQ.20) THEN
+        READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(18:19),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(21:22),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+        READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+        READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! hours since YYYY-M-D ...
+      ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.19) THEN
+        READ(UNITS(13:16),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(18:18),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        ! hours since YYYY-M-D h:m:s
+        IF (INDEX(UNITS, ":", .FALSE.).EQ.23) THEN
+          READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          ! hours since YYYY-M-D hh:mm:ss
+        ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.24) THEN
+          READ(UNITS(22:23),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(25:26),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(28:29),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ELSE
+          GOTO 804
+        END IF
+      ELSE
+        GOTO 804
+      END IF
+
+      ! minutes
     ELSE IF (INDEX(UNITS, "minutes").NE.0) THEN
-       ! minutes since YYYY-MM-DD hh:mm:ss
-       IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
-          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-          READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-          READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-          READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ! minutes since YYYY-M-D ...
-       ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
-          READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
-          READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
-          READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
-          ! minutes since YYYY-M-D h:m:s
-          IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
-             READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-             ! minutes since YYYY-M-D hh:mm:ss
-          ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
-             READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
-             READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
-             READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
-          ELSE
-             GOTO 804
-          END IF
-       ELSE
+      ! minutes since YYYY-MM-DD hh:mm:ss
+      IF (INDEX(UNITS, "-", .TRUE.).EQ.22) THEN
+        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(20:21),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(23:24),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        READ(UNITS(26:27),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+        READ(UNITS(29:30),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+        READ(UNITS(32:33),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ! minutes since YYYY-M-D ...
+      ELSE IF (INDEX(UNITS, "-", .TRUE.).EQ.21) THEN
+        READ(UNITS(15:18),'(I4.4)',END=804,ERR=805,IOSTAT=IERR) DAT(1)
+        READ(UNITS(20:20),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(2)
+        READ(UNITS(22:22),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(3)
+        ! minutes since YYYY-M-D h:m:s
+        IF (INDEX(UNITS, ":", .FALSE.).EQ.25) THEN
+          READ(UNITS(24:24),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(26:26),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(28:28),'(I1.1)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+          ! minutes since YYYY-M-D hh:mm:ss
+        ELSE IF (INDEX(UNITS, ":", .FALSE.).EQ.26) THEN
+          READ(UNITS(24:25),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(5)
+          READ(UNITS(27:28),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(6)
+          READ(UNITS(30:31),'(I2.2)',END=804,ERR=805,IOSTAT=IERR) DAT(7)
+        ELSE
           GOTO 804
-       END IF
+        END IF
+      ELSE
+        GOTO 804
+      END IF
 
-       ! nothing
+      ! nothing
     ELSE
-       GOTO 804
+      GOTO 804
     END IF
     !
     GOTO 888

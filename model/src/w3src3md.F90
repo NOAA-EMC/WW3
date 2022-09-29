@@ -201,28 +201,28 @@ CONTAINS
     ! 1.  Integral over directions and maximum --------------------------- *
     !
     DO IK=1, NK
-       EB(IK)  = 0.
-       EB2(IK) = 0.
-       DO ITH=1, NTH
-          IS=ITH+(IK-1)*NTH
-          EB(IK) = EB(IK) + A(ITH,IK)
-          IF (LLWS(IS)) EB2(IK) = EB2(IK) + A(ITH,IK)
-          AMAX   = MAX ( AMAX , A(ITH,IK) )
-       END DO
+      EB(IK)  = 0.
+      EB2(IK) = 0.
+      DO ITH=1, NTH
+        IS=ITH+(IK-1)*NTH
+        EB(IK) = EB(IK) + A(ITH,IK)
+        IF (LLWS(IS)) EB2(IK) = EB2(IK) + A(ITH,IK)
+        AMAX   = MAX ( AMAX , A(ITH,IK) )
+      END DO
     END DO
     !
     ! 2.  Integrate over directions -------------------------------------- *
     !
     DO IK=1, NK
-       ALFA(IK) = 2. * DTH * SIG(IK) * EB(IK) * WN(IK)**3
-       EB(IK)   = EB(IK) * DDEN(IK) / CG(IK)
-       EB2(IK)   = EB2(IK) * DDEN(IK) / CG(IK)
-       EMEAN    = EMEAN  + EB(IK)
-       FMEAN    = FMEAN  + EB(IK) *(SIG(IK)**(2.*WWNMEANPTAIL))
-       FMEANS   = FMEANS + EB(IK) *(SIG(IK)**(2.*WWNMEANP))
-       WNMEAN   = WNMEAN + EB(IK) *(WN(IK)**WWNMEANP)
-       EMEANWS  = EMEANWS+ EB2(IK)
-       FMEANWS  = FMEANWS+ EB2(IK)*(SIG(IK)**(2.*WWNMEANPTAIL))
+      ALFA(IK) = 2. * DTH * SIG(IK) * EB(IK) * WN(IK)**3
+      EB(IK)   = EB(IK) * DDEN(IK) / CG(IK)
+      EB2(IK)   = EB2(IK) * DDEN(IK) / CG(IK)
+      EMEAN    = EMEAN  + EB(IK)
+      FMEAN    = FMEAN  + EB(IK) *(SIG(IK)**(2.*WWNMEANPTAIL))
+      FMEANS   = FMEANS + EB(IK) *(SIG(IK)**(2.*WWNMEANP))
+      WNMEAN   = WNMEAN + EB(IK) *(WN(IK)**WWNMEANP)
+      EMEANWS  = EMEANWS+ EB2(IK)
+      FMEANWS  = FMEANWS+ EB2(IK)*(SIG(IK)**(2.*WWNMEANPTAIL))
     END DO
     !
     ! 3.  Add tail beyond discrete spectrum and get mean pars ------------ *
@@ -241,24 +241,24 @@ CONTAINS
     !
 
     IF (FMEAN.LT.1.E-7) THEN
-       FMEAN=TPIINV * SIG(NK)
+      FMEAN=TPIINV * SIG(NK)
     ELSE
-       FMEAN  = TPIINV *( MAX ( 1.E-7 , FMEAN )                       &
-            / MAX ( 1.E-7 , EMEAN ))**(1/(2.*WWNMEANPTAIL))
+      FMEAN  = TPIINV *( MAX ( 1.E-7 , FMEAN )                       &
+           / MAX ( 1.E-7 , EMEAN ))**(1/(2.*WWNMEANPTAIL))
     END IF
     IF (FMEANS.LT.1.E-7) THEN
-       FMEANS=TPIINV * SIG(NK)
+      FMEANS=TPIINV * SIG(NK)
     ELSE
-       FMEANS = TPIINV *( MAX ( 1.E-7 , FMEANS )                      &
-            / MAX ( 1.E-7 , EMEAN ))**(1/(2.*WWNMEANP))
+      FMEANS = TPIINV *( MAX ( 1.E-7 , FMEANS )                      &
+           / MAX ( 1.E-7 , EMEAN ))**(1/(2.*WWNMEANP))
     END IF
     WNMEAN = ( MAX ( 1.E-7 , WNMEAN )                              &
          / MAX ( 1.E-7 , EMEAN ) )**(1/WWNMEANP)
     IF (FMEANWS.LT.1.E-7.OR.EMEANWS.LT.1.E-7) THEN
-       FMEANWS=TPIINV * SIG(NK)
+      FMEANWS=TPIINV * SIG(NK)
     ELSE
-       FMEANWS  = TPIINV *( MAX ( 1.E-7 , FMEANWS )                       &
-            / MAX ( 1.E-7 , EMEANWS ))**(1/(2.*WWNMEANPTAIL))
+      FMEANWS  = TPIINV *( MAX ( 1.E-7 , FMEANWS )                       &
+           / MAX ( 1.E-7 , EMEANWS ))**(1/(2.*WWNMEANPTAIL))
     END IF
     !
     ! 5.  Cd and z0 ----------------------------------------------- *
@@ -471,83 +471,83 @@ CONTAINS
     ISTAB=3
 #ifdef W3_STAB3
     DO ISTAB=1,2
-       IF (ISTAB.EQ.1) UST=USTAR*(1.-USTARsigma)
-       IF (ISTAB.EQ.2) UST=USTAR*(1.+USTARsigma)
+      IF (ISTAB.EQ.1) UST=USTAR*(1.-USTARsigma)
+      IF (ISTAB.EQ.2) UST=USTAR*(1.+USTARsigma)
 #endif
-       TAUX = UST**2* COS(USDIR)
-       TAUY = UST**2* SIN(USDIR)
-       !
-       ! Loop over the resolved part of the spectrum
-       !
-       STRESSSTAB(ISTAB,:)=0.
-       STRESSSTABN(ISTAB,:)=0.
-       CONST0=BBETA*DRAT/(kappa**2)
-       ! SSWELLF(1) is IDAMPING in ECMWAM
-       CONST3 = SSWELLF(1)*2.*KAPPA*DRAT
-       !
-       COSU   = COS(USDIR)
-       SINU   = SIN(USDIR)
-       DO IK=1, NK
-          IS=1+(IK-1)*NTH
-          CM=K(IS)/SIG2(IS) !inverse of phase speed
-          UCN=UST*CM+ZZALP  !this is the inverse wave age
+      TAUX = UST**2* COS(USDIR)
+      TAUY = UST**2* SIN(USDIR)
+      !
+      ! Loop over the resolved part of the spectrum
+      !
+      STRESSSTAB(ISTAB,:)=0.
+      STRESSSTABN(ISTAB,:)=0.
+      CONST0=BBETA*DRAT/(kappa**2)
+      ! SSWELLF(1) is IDAMPING in ECMWAM
+      CONST3 = SSWELLF(1)*2.*KAPPA*DRAT
+      !
+      COSU   = COS(USDIR)
+      SINU   = SIN(USDIR)
+      DO IK=1, NK
+        IS=1+(IK-1)*NTH
+        CM=K(IS)/SIG2(IS) !inverse of phase speed
+        UCN=UST*CM+ZZALP  !this is the inverse wave age
+        !
+        ! the stress is the real stress (N/m^2) divided by
+        ! rho_a, and thus comparable to USTAR**2
+        ! it is the integral of rho_w g Sin/C /rho_a
+        ! (air-> waves momentum flux)
+        !
+        CONST2=DDEN2(IS)/CG(IK) &        !Jacobian to get energy in band
+             *GRAV/(SIG(IK)/K(IS)*DRAT) ! coefficient to get momentum
+        CONST=SIG2(IS)*CONST0
+        ! this CM parameter is 1 / C_phi
+        ! this is the "correct" shallow-water expression
+        ! here Z0 corresponds to Z0+Z1 of the Janssen eq. 14
+        ZCN=ALOG(K(IS)*Z0)
+        ! commented below is the original WAM version (OK for deep water)
+        !       ZCN=ALOG(G*Z0b(I)*CM(I)**2)
+        DO ITH=1,NTH
+          IS=ITH+(IK-1)*NTH
+          COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
+          IF (COSWIND.GT.0.01) THEN
+            X=COSWIND*UCN
+            ! this ZARG term is the argument of the exponential
+            ! in Janssen 1991 eq. 16.
+            ZARG=KAPPA/X
+            ! ZLOG is ALOG(MU) where MU is defined by Janssen 1991 eq. 15
+            ZLOG=ZCN+ZARG
+            ZBETA = CONST3*(COSWIND+KAPPA/(ZCN*UST*CM))*UCN**2
+            IF (ZLOG.LT.0.) THEN
+              ! The source term Sp is beta * omega * X**2
+              ! as given by Janssen 1991 eq. 19
+              DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN**2*COSWIND**SSINTHP
+              LLWS(IS)=.TRUE.
+            ELSE
+              DSTAB(ISTAB,IS) = ZBETA
+              LLWS(IS)=.TRUE.
+            END IF
+          ELSE
+            ZBETA = CONST3*(COSWIND+KAPPA/(ZCN*UST*CM))*UCN**2
+            DSTAB(ISTAB,IS) = ZBETA
+            LLWS(IS)=.FALSE.
+          END IF
           !
-          ! the stress is the real stress (N/m^2) divided by
-          ! rho_a, and thus comparable to USTAR**2
-          ! it is the integral of rho_w g Sin/C /rho_a
-          ! (air-> waves momentum flux)
-          !
-          CONST2=DDEN2(IS)/CG(IK) &        !Jacobian to get energy in band
-               *GRAV/(SIG(IK)/K(IS)*DRAT) ! coefficient to get momentum
-          CONST=SIG2(IS)*CONST0
-          ! this CM parameter is 1 / C_phi
-          ! this is the "correct" shallow-water expression
-          ! here Z0 corresponds to Z0+Z1 of the Janssen eq. 14
-          ZCN=ALOG(K(IS)*Z0)
-          ! commented below is the original WAM version (OK for deep water)
-          !       ZCN=ALOG(G*Z0b(I)*CM(I)**2)
-          DO ITH=1,NTH
-             IS=ITH+(IK-1)*NTH
-             COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
-             IF (COSWIND.GT.0.01) THEN
-                X=COSWIND*UCN
-                ! this ZARG term is the argument of the exponential
-                ! in Janssen 1991 eq. 16.
-                ZARG=KAPPA/X
-                ! ZLOG is ALOG(MU) where MU is defined by Janssen 1991 eq. 15
-                ZLOG=ZCN+ZARG
-                ZBETA = CONST3*(COSWIND+KAPPA/(ZCN*UST*CM))*UCN**2
-                IF (ZLOG.LT.0.) THEN
-                   ! The source term Sp is beta * omega * X**2
-                   ! as given by Janssen 1991 eq. 19
-                   DSTAB(ISTAB,IS) = CONST*EXP(ZLOG)*ZLOG**4*UCN**2*COSWIND**SSINTHP
-                   LLWS(IS)=.TRUE.
-                ELSE
-                   DSTAB(ISTAB,IS) = ZBETA
-                   LLWS(IS)=.TRUE.
-                END IF
-             ELSE
-                ZBETA = CONST3*(COSWIND+KAPPA/(ZCN*UST*CM))*UCN**2
-                DSTAB(ISTAB,IS) = ZBETA
-                LLWS(IS)=.FALSE.
-             END IF
-             !
-             TEMP2=CONST2*DSTAB(ISTAB,IS)*A(IS)
-             IF (DSTAB(ISTAB,IS).LT.0) THEN
-                STRESSSTABN(ISTAB,1)=STRESSSTABN(ISTAB,1)+TEMP2*ECOS(IS)
-                STRESSSTABN(ISTAB,2)=STRESSSTABN(ISTAB,2)+TEMP2*ESIN(IS)
-             END IF
-             STRESSSTAB(ISTAB,1)=STRESSSTAB(ISTAB,1)+TEMP2*ECOS(IS)
-             STRESSSTAB(ISTAB,2)=STRESSSTAB(ISTAB,2)+TEMP2*ESIN(IS)
-          END DO
-       END DO
-       !
-       D(:)=DSTAB(3,:)
-       XSTRESS=STRESSSTAB (3,1)
-       YSTRESS=STRESSSTAB (3,2)
-       TAUWNX =STRESSSTABN(3,1)
-       TAUWNY =STRESSSTABN(3,2)
-       !             WRITE(995,'(A,11G14.5)') 'NEGSTRESS:    ',TAUWNX,TAUWNY,FW*UORB**3
+          TEMP2=CONST2*DSTAB(ISTAB,IS)*A(IS)
+          IF (DSTAB(ISTAB,IS).LT.0) THEN
+            STRESSSTABN(ISTAB,1)=STRESSSTABN(ISTAB,1)+TEMP2*ECOS(IS)
+            STRESSSTABN(ISTAB,2)=STRESSSTABN(ISTAB,2)+TEMP2*ESIN(IS)
+          END IF
+          STRESSSTAB(ISTAB,1)=STRESSSTAB(ISTAB,1)+TEMP2*ECOS(IS)
+          STRESSSTAB(ISTAB,2)=STRESSSTAB(ISTAB,2)+TEMP2*ESIN(IS)
+        END DO
+      END DO
+      !
+      D(:)=DSTAB(3,:)
+      XSTRESS=STRESSSTAB (3,1)
+      YSTRESS=STRESSSTAB (3,2)
+      TAUWNX =STRESSSTABN(3,1)
+      TAUWNY =STRESSSTABN(3,2)
+      !             WRITE(995,'(A,11G14.5)') 'NEGSTRESS:    ',TAUWNX,TAUWNY,FW*UORB**3
 #ifdef W3_STAB3
     END DO
     D(:)=0.5*(DSTAB(1,:)+DSTAB(2,:))
@@ -562,9 +562,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !
@@ -584,9 +584,9 @@ CONTAINS
          *TPI*SIG(NK) / CG(NK)  !conversion WAM (E(f,theta) to WW3 A(k,theta)
     TEMP=0.
     DO ITH=1,NTH
-       IS=ITH+(NK-1)*NTH
-       COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
-       TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
+      IS=ITH+(NK-1)*NTH
+      COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
+      TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
     END DO
     !
     ! finds the values in the tabulated stress TAUHFT
@@ -612,8 +612,8 @@ CONTAINS
     UST2   = MAX(USTAR,EPS2)**2
     TAUWB = MIN(TAUW,MAX(UST2-EPS1,EPS2**2))
     IF (TAUWB.LT.TAUW) THEN
-       TAUWX=TAUWX*TAUWB/TAUW
-       TAUWY=TAUWY*TAUWB/TAUW
+      TAUWX=TAUWX*TAUWB/TAUW
+      TAUWY=TAUWY*TAUWB/TAUW
     END IF
 
     RETURN
@@ -804,30 +804,30 @@ CONTAINS
     DELU    = UMAX/FLOAT(JUMAX)
     DELTAUW = TAUWMAX/FLOAT(ITAUMAX)
     DO I=0,ITAUMAX
-       ZTAUW   = (REAL(I)*DELTAUW)**2
-       DO J=0,JUMAX
-          UTOP    = FLOAT(J)*DELU
-          CDRAG   = 0.0012875
-          WCD     = SQRT(CDRAG)
-          USTOLD  = UTOP*WCD
-          TAUOLD  = MAX(USTOLD**2, ZTAUW+EPS1)
-          DO ITER=1,NITER
-             X   = ZTAUW/TAUOLD
-             UST = SQRT(TAUOLD)
-             ZZ00=AALPHA*TAUOLD/GRAV
-             IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
-             ! Corrects roughness ZZ00 for quasi-linear effect
-             ZZ0 = ZZ00/(1.-X)**XM
-             !ZNU = 0.1*nu_air/UST  ! This was removed by Bidlot in 1996
-             !ZZ0 = MAX(ZNU,ZZ0)
-             F   = UST-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))
-             DELF= 1.-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))**2*2./UST &
-                  *(1.-(XM+1)*X)/(1.-X)
-             UST = UST-F/DELF
-             TAUOLD= MAX(UST**2., ZTAUW+EPS1)
-          END DO
-          TAUT(I,J)  = SQRT(TAUOLD)
-       END DO
+      ZTAUW   = (REAL(I)*DELTAUW)**2
+      DO J=0,JUMAX
+        UTOP    = FLOAT(J)*DELU
+        CDRAG   = 0.0012875
+        WCD     = SQRT(CDRAG)
+        USTOLD  = UTOP*WCD
+        TAUOLD  = MAX(USTOLD**2, ZTAUW+EPS1)
+        DO ITER=1,NITER
+          X   = ZTAUW/TAUOLD
+          UST = SQRT(TAUOLD)
+          ZZ00=AALPHA*TAUOLD/GRAV
+          IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
+          ! Corrects roughness ZZ00 for quasi-linear effect
+          ZZ0 = ZZ00/(1.-X)**XM
+          !ZNU = 0.1*nu_air/UST  ! This was removed by Bidlot in 1996
+          !ZZ0 = MAX(ZNU,ZZ0)
+          F   = UST-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))
+          DELF= 1.-KAPPA*UTOP/(ALOG(ZZWND/ZZ0))**2*2./UST &
+               *(1.-(XM+1)*X)/(1.-X)
+          UST = UST-F/DELF
+          TAUOLD= MAX(UST**2., ZTAUW+EPS1)
+        END DO
+        TAUT(I,J)  = SQRT(TAUOLD)
+      END DO
     END DO
     I=ITAUMAX
     J=JUMAX
@@ -835,7 +835,7 @@ CONTAINS
     !  Force zero wind to have zero stress (Bidlot 1996)
     !
     DO I=0,ITAUMAX
-       TAUT(I,0)=0.0
+      TAUT(I,0)=0.0
     END DO
     RETURN
   END SUBROUTINE TABU_STRESS
@@ -957,37 +957,37 @@ CONTAINS
     X0 = 0.05
     !
     DO L=0,IALPHA
-       DO K=0,IUSTAR
-          UST      = MAX(REAL(K)*DELUST,0.000001)
-          ZZ00       = UST**2*AALPHA/GRAV
-          IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
-          ZZ0       = ZZ00*(1+FLOAT(L)*DELALP/AALPHA)
-          OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
-          YC       = OMEGACC*SQRT(ZZ0/GRAV)
-          DELY     = MAX((1.-YC)/REAL(JTOT),0.)
-          ! For a given value of UST and ALPHA,
-          ! the wave-supported stress is integrated all the way
-          ! to 0.05*g/UST
-          DO J=1,JTOT
-             Y        = YC+REAL(J-1)*DELY
-             OMEGA    = Y*SQRT(GRAV/ZZ0)
-             ! This is the deep water phase speed
-             CM       = GRAV/OMEGA
-             !this is the inverse wave age, shifted by ZZALP (tuning)
-             ZX       = UST/CM +ZZALP
-             ZARG     = MIN(KAPPA/ZX,20.)
-             ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
-             ZLOG     = MIN(ALOG(ZMU),0.)
-             ZBETA        = CONST1*ZMU*ZLOG**4
-             ! Power of Y in denominator should be FACHFE-4
-             TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
-          END DO
-          !IF (MOD(K,5).EQ.0.AND.MOD(L,5).EQ.0) &
-          !WRITE(102,'(2I4,3G16.8)') L,K,UST,AALPHA+FLOAT(L)*DELALP,TAUHFT(K,L)
+      DO K=0,IUSTAR
+        UST      = MAX(REAL(K)*DELUST,0.000001)
+        ZZ00       = UST**2*AALPHA/GRAV
+        IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
+        ZZ0       = ZZ00*(1+FLOAT(L)*DELALP/AALPHA)
+        OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
+        YC       = OMEGACC*SQRT(ZZ0/GRAV)
+        DELY     = MAX((1.-YC)/REAL(JTOT),0.)
+        ! For a given value of UST and ALPHA,
+        ! the wave-supported stress is integrated all the way
+        ! to 0.05*g/UST
+        DO J=1,JTOT
+          Y        = YC+REAL(J-1)*DELY
+          OMEGA    = Y*SQRT(GRAV/ZZ0)
+          ! This is the deep water phase speed
+          CM       = GRAV/OMEGA
+          !this is the inverse wave age, shifted by ZZALP (tuning)
+          ZX       = UST/CM +ZZALP
+          ZARG     = MIN(KAPPA/ZX,20.)
+          ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+          ZLOG     = MIN(ALOG(ZMU),0.)
+          ZBETA        = CONST1*ZMU*ZLOG**4
+          ! Power of Y in denominator should be FACHFE-4
+          TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
+        END DO
+        !IF (MOD(K,5).EQ.0.AND.MOD(L,5).EQ.0) &
+        !WRITE(102,'(2I4,3G16.8)') L,K,UST,AALPHA+FLOAT(L)*DELALP,TAUHFT(K,L)
 #ifdef W3_T
-          WRITE (NDST,9000) L,K,AALPHA+FLOAT(L)*DELALP,UST,TAUHFT(K,L)
+        WRITE (NDST,9000) L,K,AALPHA+FLOAT(L)*DELALP,UST,TAUHFT(K,L)
 #endif
-       END DO
+      END DO
     END DO
     DEALLOCATE(W)
     !      DO L=0,IALPHA
@@ -1091,9 +1091,9 @@ CONTAINS
     SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
     Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
     IF (USTAR.GT.0.001) THEN
-       CHARN = GRAV*Z0/USTAR**2
+      CHARN = GRAV*Z0/USTAR**2
     ELSE
-       CHARN = AALPHA
+      CHARN = AALPHA
     END IF
     !
     RETURN
@@ -1241,14 +1241,14 @@ CONTAINS
     ! 2.  Source term
     !
     DO  IK=1, NK
-       !
-       !    Original WAM4/WAM4+ dissipation term
-       !
-       FACTOR2=FACTOR*(DDELTA1*K(IK)/WNMEAN2 + DDELTA2*(K(IK)/WNMEAN2)**2)
-       DO ITH=1,NTH
-          IS=ITH+(IK-1)*NTH
-          D(IS)=  FACTOR2
-       END DO
+      !
+      !    Original WAM4/WAM4+ dissipation term
+      !
+      FACTOR2=FACTOR*(DDELTA1*K(IK)/WNMEAN2 + DDELTA2*(K(IK)/WNMEAN2)**2)
+      DO ITH=1,NTH
+        IS=ITH+(IK-1)*NTH
+        D(IS)=  FACTOR2
+      END DO
     END DO
     !
     S = D * A
@@ -1257,9 +1257,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !

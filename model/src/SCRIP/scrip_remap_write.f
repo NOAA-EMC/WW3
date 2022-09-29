@@ -41,14 +41,14 @@
 
 !-----------------------------------------------------------------------
 
-      use SCRIP_KindsMod        ! defines common data types
-      use SCRIP_ErrorMod        ! SCRIP  error handler
-      use SCRIP_NetcdfMod       ! netCDF error handler
-      use netcdf                ! netCDF library
+      use SCRIP_KindsMod  ! defines common data types
+      use SCRIP_ErrorMod  ! SCRIP  error handler
+      use SCRIP_NetcdfMod ! netCDF error handler
+      use netcdf          ! netCDF library
 
-      use SCRIP_constants       ! defines common scalar constants
-      use scrip_grids           ! module containing grid information
-      use scrip_remap_vars      ! module containing remap information
+      use SCRIP_constants     ! defines common scalar constants
+      use scrip_grids         ! module containing grid information
+      use scrip_remap_vars    ! module containing remap information
 
       implicit none
 
@@ -59,17 +59,17 @@
 !-----------------------------------------------------------------------
 
       character(SCRIP_charLength), private ::
-     &     map_method           ! character string for map_type
-     &     ,  normalize_opt     ! character string for normalization option
-     &     ,  history           ! character string for history information
-     &     ,  convention        ! character string for output convention
+     &   map_method       ! character string for map_type
+     &,  normalize_opt    ! character string for normalization option
+     &,  history          ! character string for history information
+     &,  convention       ! character string for output convention
 
       character(8), private ::
-     &     cdate                ! character date string
+     &   cdate            ! character date string
 
       integer (SCRIP_i4), dimension(:), allocatable, private ::
-     &     src_mask_int         ! integer masks to determine
-     &     ,  dst_mask_int      ! cells that participate in map
+     &   src_mask_int     ! integer masks to determine
+     &,  dst_mask_int     ! cells that participate in map
 
 !-----------------------------------------------------------------------
 !
@@ -78,38 +78,38 @@
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4), private ::
-     &     ncstat               ! error flag for netCDF calls
-     &     ,  nc_file_id        ! id for netCDF file
-     &     ,  nc_srcgrdsize_id  ! id for source grid size
-     &     ,  nc_dstgrdsize_id  ! id for destination grid size
-     &     ,  nc_srcgrdcorn_id  ! id for number of source grid corners
-     &     ,  nc_dstgrdcorn_id  ! id for number of dest grid corners
-     &     ,  nc_srcgrdrank_id  ! id for source grid rank
-     &     ,  nc_dstgrdrank_id  ! id for dest grid rank
-     &     ,  nc_numlinks_id    ! id for number of links in mapping
-     &     ,  nc_numwgts_id     ! id for number of weights for mapping
-     &     ,  nc_srcgrddims_id  ! id for source grid dimensions
-     &     ,  nc_dstgrddims_id  ! id for dest grid dimensions
-     &     ,  nc_srcgrdcntrlat_id ! id for source grid center latitude
-     &     ,  nc_dstgrdcntrlat_id ! id for dest grid center latitude
-     &     ,  nc_srcgrdcntrlon_id ! id for source grid center longitude
-     &     ,  nc_dstgrdcntrlon_id ! id for dest grid center longitude
-     &     ,  nc_srcgrdimask_id ! id for source grid mask
-     &     ,  nc_dstgrdimask_id ! id for dest grid mask
-     &     ,  nc_srcgrdcrnrlat_id ! id for latitude of source grid corners
-     &     ,  nc_srcgrdcrnrlon_id ! id for longitude of source grid corners
-     &     ,  nc_dstgrdcrnrlat_id ! id for latitude of dest grid corners
-     &     ,  nc_dstgrdcrnrlon_id ! id for longitude of dest grid corners
-     &     ,  nc_srcgrdarea_id  ! id for area of source grid cells
-     &     ,  nc_dstgrdarea_id  ! id for area of dest grid cells
-     &     ,  nc_srcgrdfrac_id  ! id for area fraction on source grid
-     &     ,  nc_dstgrdfrac_id  ! id for area fraction on dest grid
-     &     ,  nc_srcadd_id      ! id for map source address
-     &     ,  nc_dstadd_id      ! id for map destination address
-     &     ,  nc_rmpmatrix_id   ! id for remapping matrix
+     &   ncstat               ! error flag for netCDF calls
+     &,  nc_file_id           ! id for netCDF file
+     &,  nc_srcgrdsize_id     ! id for source grid size
+     &,  nc_dstgrdsize_id     ! id for destination grid size
+     &,  nc_srcgrdcorn_id     ! id for number of source grid corners
+     &,  nc_dstgrdcorn_id     ! id for number of dest grid corners
+     &,  nc_srcgrdrank_id     ! id for source grid rank
+     &,  nc_dstgrdrank_id     ! id for dest grid rank
+     &,  nc_numlinks_id       ! id for number of links in mapping
+     &,  nc_numwgts_id        ! id for number of weights for mapping
+     &,  nc_srcgrddims_id     ! id for source grid dimensions
+     &,  nc_dstgrddims_id     ! id for dest grid dimensions
+     &,  nc_srcgrdcntrlat_id  ! id for source grid center latitude
+     &,  nc_dstgrdcntrlat_id  ! id for dest grid center latitude
+     &,  nc_srcgrdcntrlon_id  ! id for source grid center longitude
+     &,  nc_dstgrdcntrlon_id  ! id for dest grid center longitude
+     &,  nc_srcgrdimask_id    ! id for source grid mask
+     &,  nc_dstgrdimask_id    ! id for dest grid mask
+     &,  nc_srcgrdcrnrlat_id  ! id for latitude of source grid corners
+     &,  nc_srcgrdcrnrlon_id  ! id for longitude of source grid corners
+     &,  nc_dstgrdcrnrlat_id  ! id for latitude of dest grid corners
+     &,  nc_dstgrdcrnrlon_id  ! id for longitude of dest grid corners
+     &,  nc_srcgrdarea_id     ! id for area of source grid cells
+     &,  nc_dstgrdarea_id     ! id for area of dest grid cells
+     &,  nc_srcgrdfrac_id     ! id for area fraction on source grid
+     &,  nc_dstgrdfrac_id     ! id for area fraction on dest grid
+     &,  nc_srcadd_id         ! id for map source address
+     &,  nc_dstadd_id         ! id for map destination address
+     &,  nc_rmpmatrix_id      ! id for remapping matrix
 
       integer (SCRIP_i4), dimension(2), private ::
-     &     nc_dims2_id          ! netCDF ids for 2d array dims
+     &   nc_dims2_id  ! netCDF ids for 2d array dims
 
 !***********************************************************************
 
@@ -118,7 +118,7 @@
 !***********************************************************************
 
       subroutine write_remap(map1_name, map2_name, interp_file1,
-     &     interp_file2, output_opt, l_master, errorCode)
+     &                    interp_file2, output_opt, l_master, errorCode)
 
 !-----------------------------------------------------------------------
 !
@@ -133,14 +133,14 @@
 !-----------------------------------------------------------------------
 
       character(SCRIP_charLength), intent(in) ::
-     &     map1_name,           ! name for mapping grid1 to grid2
-     &     map2_name,           ! name for mapping grid2 to grid1
-     &     interp_file1,        ! filename for map1 remap data
-     &     interp_file2,        ! filename for map2 remap data
-     &     output_opt           ! option for output conventions
+     &            map1_name,    ! name for mapping grid1 to grid2
+     &            map2_name,    ! name for mapping grid2 to grid1
+     &            interp_file1, ! filename for map1 remap data
+     &            interp_file2, ! filename for map2 remap data
+     &            output_opt    ! option for output conventions
 
       logical, intent(in) ::
-     &     l_master             ! Am I the master processor?
+     &            l_master      ! Am I the master processor?
 
 !-----------------------------------------------------------------------
 !
@@ -149,7 +149,7 @@
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4), intent(out) ::
-     &     errorCode            ! returned error code
+     &   errorCode              ! returned error code
 
 !-----------------------------------------------------------------------
 !
@@ -169,32 +169,32 @@
 
       select case(norm_opt)
       case (norm_opt_none)
-         normalize_opt = 'none'
+        normalize_opt = 'none'
       case (norm_opt_frcarea)
-         normalize_opt = 'fracarea'
+        normalize_opt = 'fracarea'
       case (norm_opt_dstarea)
-         normalize_opt = 'destarea'
+        normalize_opt = 'destarea'
       end select
 
       select case(map_type)
       case(map_type_conserv)
-         map_method = 'Conservative remapping'
-         case(map_type_bilinear)
-            map_method = 'Bilinear remapping'
-            case(map_type_distwgt)
-               map_method = 'Distance weighted avg of nearest neighbors'
-               case(map_type_bicubic)
-                  map_method = 'Bicubic remapping'
-                  case(map_type_particle)
-                     map_method = 'Particle remapping'
-                     case default
-                        call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
-                        return
-                     end select
+        map_method = 'Conservative remapping'
+      case(map_type_bilinear)
+        map_method = 'Bilinear remapping'
+      case(map_type_distwgt)
+        map_method = 'Distance weighted avg of nearest neighbors'
+      case(map_type_bicubic)
+        map_method = 'Bicubic remapping'
+      case(map_type_particle)
+        map_method = 'Particle remapping'
+      case default
+        call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
+        return
+      end select
 
-                     call date_and_time(date=cdate)
-                     write (history,1000) cdate(5:6),cdate(7:8),cdate(1:4)
- 1000                format('Created: ',a2,'-',a2,'-',a4)
+      call date_and_time(date=cdate)
+      write (history,1000) cdate(5:6),cdate(7:8),cdate(1:4)
+ 1000 format('Created: ',a2,'-',a2,'-',a4)
 
 !-----------------------------------------------------------------------
 !
@@ -202,13 +202,13 @@
 !
 !-----------------------------------------------------------------------
 
-!     New Apr4 2013: sort_add is instead called from scrip_interface.ftn
+! New Apr4 2013: sort_add is instead called from scrip_interface.ftn
 !     prior to entering this routine...no need to call it again here.
 
 !     call sort_add(grid2_add_map1, grid1_add_map1, wts_map1)
-                     if (num_maps > 1) then
-                        call sort_add(grid1_add_map2, grid2_add_map2, wts_map2)
-                     endif
+      if (num_maps > 1) then
+        call sort_add(grid1_add_map2, grid2_add_map2, wts_map2)
+      endif
 
 !-----------------------------------------------------------------------
 !
@@ -216,21 +216,21 @@
 !
 !-----------------------------------------------------------------------
 
-                     select case(output_opt)
-                  case ('scrip')
-                     if (l_master)
-     &                    call write_remap_scrip(map1_name, interp_file1, 1, errorCode)
-                     if (SCRIP_ErrorCheck(errorCode, rtnName,
-     &                    'error in write_remap_scrip')) return
-                  case ('ncar-csm')
-                     call write_remap_csm  (map1_name, interp_file1, 1, errorCode)
-                     if (SCRIP_ErrorCheck(errorCode, rtnName,
-     &                    'error in write_remap_csm')) return
-                  case default
-                     call SCRIP_ErrorSet(errorCode, rtnName,
-     &                    'unknown output file convention')
-                     return
-                  end select
+      select case(output_opt)
+      case ('scrip')
+        if (l_master)
+     &  call write_remap_scrip(map1_name, interp_file1, 1, errorCode)
+        if (SCRIP_ErrorCheck(errorCode, rtnName,
+     &      'error in write_remap_scrip')) return
+      case ('ncar-csm')
+        call write_remap_csm  (map1_name, interp_file1, 1, errorCode)
+        if (SCRIP_ErrorCheck(errorCode, rtnName,
+     &      'error in write_remap_csm')) return
+      case default
+        call SCRIP_ErrorSet(errorCode, rtnName,
+     &                      'unknown output file convention')
+        return
+      end select
 
 !-----------------------------------------------------------------------
 !
@@ -238,27 +238,27 @@
 !
 !-----------------------------------------------------------------------
 
-                  if (num_maps > 1) then
-                     select case(output_opt)
-                  case ('scrip')
-                     if (l_master)
-     &                    call write_remap_scrip(map2_name, interp_file2, 2, errorCode)
-                     if (SCRIP_ErrorCheck(errorCode, rtnName,
-     &                    'error in write_remap_scrip')) return
-                  case ('ncar-csm')
-                     call write_remap_csm  (map2_name, interp_file2, 2, errorCode)
-                     if (SCRIP_ErrorCheck(errorCode, rtnName,
-     &                    'error in write_remap_csm')) return
-                  case default
-                     call SCRIP_ErrorSet(errorCode, rtnName,
-     &                    'unknown output file convention')
-                     return
-                  end select
-               endif
+      if (num_maps > 1) then
+        select case(output_opt)
+        case ('scrip')
+          if (l_master)
+     &    call write_remap_scrip(map2_name, interp_file2, 2, errorCode)
+          if (SCRIP_ErrorCheck(errorCode, rtnName,
+     &        'error in write_remap_scrip')) return
+        case ('ncar-csm')
+          call write_remap_csm  (map2_name, interp_file2, 2, errorCode)
+          if (SCRIP_ErrorCheck(errorCode, rtnName,
+     &        'error in write_remap_csm')) return
+        case default
+          call SCRIP_ErrorSet(errorCode, rtnName,
+     &                        'unknown output file convention')
+          return
+        end select
+      endif
 
 !-----------------------------------------------------------------------
 
-               end subroutine write_remap
+      end subroutine write_remap
 
 !***********************************************************************
 

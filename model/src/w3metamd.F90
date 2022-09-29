@@ -41,24 +41,24 @@ MODULE W3METAMD
 
   !> Type for storing a user defined metadata pair as linked list element
   TYPE META_PAIR_T
-     CHARACTER(LEN=64)  :: ATTNAME = UNSETC  !< Attribute name
-     CHARACTER(LEN=120) :: ATTVAL = UNSETC   !< Attribute value
-     CHARACTER          :: TYPE = 'c'        !< Attribute type (c,i,f/r)
-     TYPE(META_PAIR_T), POINTER  :: NEXT     !< Pointer to next node
+    CHARACTER(LEN=64)  :: ATTNAME = UNSETC  !< Attribute name
+    CHARACTER(LEN=120) :: ATTVAL = UNSETC   !< Attribute value
+    CHARACTER          :: TYPE = 'c'        !< Attribute type (c,i,f/r)
+    TYPE(META_PAIR_T), POINTER  :: NEXT     !< Pointer to next node
   END TYPE META_PAIR_T
 
   !> Linked list of meta data pairs
   TYPE META_LIST_T
-     TYPE (META_PAIR_T), POINTER :: HEAD => NULL(), TAIL => NULL()
-     INTEGER                     :: N = 0    !< Num elements in list
+    TYPE (META_PAIR_T), POINTER :: HEAD => NULL(), TAIL => NULL()
+    INTEGER                     :: N = 0    !< Num elements in list
   END TYPE META_LIST_T
 
   !> Interface to facilitate adding real/int/character values to list
   INTERFACE META_LIST_APPEND
-     MODULE PROCEDURE META_LIST_APPEND_M !< Append a META_PAIR_T
-     MODULE PROCEDURE META_LIST_APPEND_R !< Append a REAL value
-     MODULE PROCEDURE META_LIST_APPEND_I !< Append an INTEGER value
-     MODULE PROCEDURE META_LIST_APPEND_C !< Append a CHARACTER value
+    MODULE PROCEDURE META_LIST_APPEND_M !< Append a META_PAIR_T
+    MODULE PROCEDURE META_LIST_APPEND_R !< Append a REAL value
+    MODULE PROCEDURE META_LIST_APPEND_I !< Append an INTEGER value
+    MODULE PROCEDURE META_LIST_APPEND_C !< Append a CHARACTER value
   END INTERFACE META_LIST_APPEND
 
 CONTAINS
@@ -84,11 +84,11 @@ CONTAINS
     IF(.NOT. ASSOCIATED(LIST%HEAD)) RETURN
 
     DO
-       NULLIFY(P)
-       IF(ASSOCIATED(LIST%HEAD%NEXT)) P => LIST%HEAD%NEXT
-       DEALLOCATE(LIST%HEAD)
-       IF(.NOT. ASSOCIATED(P)) EXIT
-       LIST%HEAD => P
+      NULLIFY(P)
+      IF(ASSOCIATED(LIST%HEAD%NEXT)) P => LIST%HEAD%NEXT
+      DEALLOCATE(LIST%HEAD)
+      IF(.NOT. ASSOCIATED(P)) EXIT
+      LIST%HEAD => P
     ENDDO
 
     NULLIFY(LIST%HEAD)
@@ -131,9 +131,9 @@ CONTAINS
     ! Deep copy list
     P => LIST%HEAD
     DO
-       CALL META_LIST_APPEND_M(COPY, P)
-       IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-       P => P%NEXT
+      CALL META_LIST_APPEND_M(COPY, P)
+      IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+      P => P%NEXT
     ENDDO
 
   END FUNCTION COPY_META_LIST
@@ -157,16 +157,16 @@ CONTAINS
     TYPE(META_PAIR_T), POINTER :: P
 
     IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
-       WRITE(*,*) 'List empty.'
-       RETURN
+      WRITE(*,*) 'List empty.'
+      RETURN
     ENDIF
 
     P => LIST%HEAD
     DO
-       WRITE(*, '(A," [",A1,"] : ", A)') TRIM(P%ATTNAME), P%TYPE,      &
-            TRIM(P%ATTVAL)
-       IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-       P => P%NEXT
+      WRITE(*, '(A," [",A1,"] : ", A)') TRIM(P%ATTNAME), P%TYPE,      &
+           TRIM(P%ATTVAL)
+      IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+      P => P%NEXT
     ENDDO
 
   END SUBROUTINE PRINT_META_LIST
@@ -195,10 +195,10 @@ CONTAINS
 
     ! Empty list?
     IF(LIST%N .EQ. 0) THEN
-       !IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
-       LIST%HEAD => P
+      !IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
+      LIST%HEAD => P
     ELSE
-       LIST%TAIL%NEXT => P
+      LIST%TAIL%NEXT => P
     ENDIF
     LIST%TAIL => P
 
@@ -321,16 +321,16 @@ CONTAINS
 
     ! Empty list?
     IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
-       ERR = 1
-       RETURN
+      ERR = 1
+      RETURN
     ENDIF
 
     META => LIST%HEAD
 
     DO
-       IF(TRIM(META%ATTNAME) == TRIM(ATTN)) RETURN
-       IF(.NOT. ASSOCIATED(META%NEXT)) EXIT
-       META => META%NEXT
+      IF(TRIM(META%ATTNAME) == TRIM(ATTN)) RETURN
+      IF(.NOT. ASSOCIATED(META%NEXT)) EXIT
+      META => META%NEXT
     ENDDO
 
     ! Not found
@@ -366,19 +366,19 @@ CONTAINS
 
     ! Empty list?
     IF(.NOT. ASSOCIATED(LIST%HEAD)) THEN
-       RETURN
+      RETURN
     ENDIF
 
     P => LIST%HEAD
 
     DO
-       IF(TRIM(P%ATTNAME) == TRIM(ATTN)) THEN
-          FOUND = .TRUE.
-          RETURN
-       ENDIF
+      IF(TRIM(P%ATTNAME) == TRIM(ATTN)) THEN
+        FOUND = .TRUE.
+        RETURN
+      ENDIF
 
-       IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
-       P => P%NEXT
+      IF(.NOT. ASSOCIATED(P%NEXT)) EXIT
+      P => P%NEXT
     ENDDO
 
   END FUNCTION META_LIST_HAS_ATTR

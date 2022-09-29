@@ -169,63 +169,63 @@ MODULE W3IDATMD
   !/ Data structure INPUT
   !/
   TYPE, PUBLIC :: INPUT
-     INTEGER               :: TFN(2,-7:10)
-     INTEGER               :: TC0(2)
-     INTEGER               :: TW0(2)
-     INTEGER               :: TU0(2)
-     INTEGER               :: TR0(2)
-     INTEGER               :: TDN(2)
-     INTEGER               :: TG0(2)
-     REAL                  :: GA0
-     REAL                  :: GD0
-     REAL                  :: GAN
-     REAL                  :: GDN
+    INTEGER               :: TFN(2,-7:10)
+    INTEGER               :: TC0(2)
+    INTEGER               :: TW0(2)
+    INTEGER               :: TU0(2)
+    INTEGER               :: TR0(2)
+    INTEGER               :: TDN(2)
+    INTEGER               :: TG0(2)
+    REAL                  :: GA0
+    REAL                  :: GD0
+    REAL                  :: GAN
+    REAL                  :: GDN
 #ifdef W3_WRST
-     REAL, POINTER         :: WXNwrst(:,:)
-     REAL, POINTER         :: WYNwrst(:,:)
+    REAL, POINTER         :: WXNwrst(:,:)
+    REAL, POINTER         :: WYNwrst(:,:)
 #endif
-     REAL, POINTER         :: WX0(:,:)
-     REAL, POINTER         :: WY0(:,:)
-     REAL, POINTER         :: DT0(:,:)
-     REAL, POINTER         :: WXN(:,:)
-     REAL, POINTER         :: WYN(:,:)
-     REAL, POINTER         :: DTN(:,:)
-     REAL, POINTER         :: CX0(:,:)
-     REAL, POINTER         :: CY0(:,:)
-     REAL, POINTER         :: CXN(:,:)
-     REAL, POINTER         :: CYN(:,:)
-     REAL, POINTER         :: WLEV(:,:)
-     REAL, POINTER         :: ICEI(:,:)
-     REAL, POINTER         :: UX0(:,:)
-     REAL, POINTER         :: UY0(:,:)
-     REAL, POINTER         :: UXN(:,:)
-     REAL, POINTER         :: UYN(:,:)
-     REAL, POINTER         :: RH0(:,:)
-     REAL, POINTER         :: RHN(:,:)
-     REAL, POINTER         :: BERGI(:,:)
-     REAL, POINTER         :: MUDT(:,:)
-     REAL, POINTER         :: MUDV(:,:)
-     REAL, POINTER         :: MUDD(:,:)
-     REAL, POINTER         :: ICEP1(:,:)
-     REAL, POINTER         :: ICEP2(:,:)
-     REAL, POINTER         :: ICEP3(:,:)
-     REAL, POINTER         :: ICEP4(:,:)
-     REAL, POINTER         :: ICEP5(:,:)
+    REAL, POINTER         :: WX0(:,:)
+    REAL, POINTER         :: WY0(:,:)
+    REAL, POINTER         :: DT0(:,:)
+    REAL, POINTER         :: WXN(:,:)
+    REAL, POINTER         :: WYN(:,:)
+    REAL, POINTER         :: DTN(:,:)
+    REAL, POINTER         :: CX0(:,:)
+    REAL, POINTER         :: CY0(:,:)
+    REAL, POINTER         :: CXN(:,:)
+    REAL, POINTER         :: CYN(:,:)
+    REAL, POINTER         :: WLEV(:,:)
+    REAL, POINTER         :: ICEI(:,:)
+    REAL, POINTER         :: UX0(:,:)
+    REAL, POINTER         :: UY0(:,:)
+    REAL, POINTER         :: UXN(:,:)
+    REAL, POINTER         :: UYN(:,:)
+    REAL, POINTER         :: RH0(:,:)
+    REAL, POINTER         :: RHN(:,:)
+    REAL, POINTER         :: BERGI(:,:)
+    REAL, POINTER         :: MUDT(:,:)
+    REAL, POINTER         :: MUDV(:,:)
+    REAL, POINTER         :: MUDD(:,:)
+    REAL, POINTER         :: ICEP1(:,:)
+    REAL, POINTER         :: ICEP2(:,:)
+    REAL, POINTER         :: ICEP3(:,:)
+    REAL, POINTER         :: ICEP4(:,:)
+    REAL, POINTER         :: ICEP5(:,:)
 
 #ifdef W3_TIDE
-     REAL, POINTER         :: CXTIDE(:,:,:,:)
-     REAL, POINTER         :: CYTIDE(:,:,:,:)
-     REAL, POINTER         :: WLTIDE(:,:,:,:)
+    REAL, POINTER         :: CXTIDE(:,:,:,:)
+    REAL, POINTER         :: CYTIDE(:,:,:,:)
+    REAL, POINTER         :: WLTIDE(:,:,:,:)
 #endif
-     LOGICAL               :: IINIT
+    LOGICAL               :: IINIT
 #ifdef W3_WRST
-     LOGICAL               :: WRSTIINIT=.FALSE.
+    LOGICAL               :: WRSTIINIT=.FALSE.
 #endif
-     ! note that if size of INFLAGS1 is changed, then TFLAGS in wminitmd.ftn
-     !    also must be resized.
-     LOGICAL               :: INFLAGS1(-7:14)
-     LOGICAL               :: FLAGSC(-7:14)
-     LOGICAL               :: INFLAGS2(-7:14)
+    ! note that if size of INFLAGS1 is changed, then TFLAGS in wminitmd.ftn
+    !    also must be resized.
+    LOGICAL               :: INFLAGS1(-7:14)
+    LOGICAL               :: FLAGSC(-7:14)
+    LOGICAL               :: INFLAGS2(-7:14)
   END TYPE INPUT
   !/
   !/ Data storage
@@ -363,8 +363,8 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001) NGRIDS
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001) NGRIDS
+      CALL EXTCDE (1)
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -378,28 +378,28 @@ CONTAINS
     ! 3.  Initialize parameters
     !
     DO I=-NAUXGR, NGRIDS
-       INPUTS(I)%TFN(1,:) = -1
-       INPUTS(I)%TFN(2,:) =  0
-       INPUTS(I)%TC0(1)   = -1
-       INPUTS(I)%TC0(2)   =  0
-       INPUTS(I)%TW0(1)   = -1
-       INPUTS(I)%TW0(2)   =  0
-       INPUTS(I)%TU0(1)   = -1
-       INPUTS(I)%TU0(2)   =  0
-       INPUTS(I)%TR0(1)   = -1
-       INPUTS(I)%TR0(2)   =  0
-       INPUTS(I)%TDN(1)   = -1
-       INPUTS(I)%TDN(2)   =  0
-       INPUTS(I)%TG0(1)   = -1
-       INPUTS(I)%TG0(2)   =  0
-       INPUTS(I)%GA0      = 0.
-       INPUTS(I)%GD0      = 0.
-       INPUTS(I)%GAN      = 0.
-       INPUTS(I)%GDN      = 0.
-       INPUTS(I)%IINIT    = .FALSE.
-       INPUTS(I)%INFLAGS1 = .FALSE.
-       INPUTS(I)%INFLAGS2 = .FALSE.
-       INPUTS(I)%FLAGSC   = .FALSE.
+      INPUTS(I)%TFN(1,:) = -1
+      INPUTS(I)%TFN(2,:) =  0
+      INPUTS(I)%TC0(1)   = -1
+      INPUTS(I)%TC0(2)   =  0
+      INPUTS(I)%TW0(1)   = -1
+      INPUTS(I)%TW0(2)   =  0
+      INPUTS(I)%TU0(1)   = -1
+      INPUTS(I)%TU0(2)   =  0
+      INPUTS(I)%TR0(1)   = -1
+      INPUTS(I)%TR0(2)   =  0
+      INPUTS(I)%TDN(1)   = -1
+      INPUTS(I)%TDN(2)   =  0
+      INPUTS(I)%TG0(1)   = -1
+      INPUTS(I)%TG0(2)   =  0
+      INPUTS(I)%GA0      = 0.
+      INPUTS(I)%GD0      = 0.
+      INPUTS(I)%GAN      = 0.
+      INPUTS(I)%GDN      = 0.
+      INPUTS(I)%IINIT    = .FALSE.
+      INPUTS(I)%INFLAGS1 = .FALSE.
+      INPUTS(I)%INFLAGS2 = .FALSE.
+      INPUTS(I)%FLAGSC   = .FALSE.
     END DO
     !
 #ifdef W3_T
@@ -533,18 +533,18 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NIDATA ) THEN
-       WRITE (NDSE,1002) IMOD, -NAUXGR, NIDATA
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, -NAUXGR, NIDATA
+      CALL EXTCDE (2)
     END IF
     !
     IF ( INPUTS(IMOD)%IINIT ) THEN
-       WRITE (NDSE,1003)
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003)
+      CALL EXTCDE (3)
     END IF
     !
 #ifdef W3_T
@@ -559,7 +559,7 @@ CONTAINS
     !
 #ifdef W3_TIDE
     IF ( PRESENT(FLAGSTIDEIN) ) THEN
-       FLAGSTIDE(:) = FLAGSTIDEIN(:)
+      FLAGSTIDE(:) = FLAGSTIDEIN(:)
     END IF
 #endif
 
@@ -596,149 +596,149 @@ CONTAINS
     !     "all or nothing" rather than 5 individual flags
 
     IF ( FLIC1  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%ICEP1(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%ICEP1(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF ( FLIC2  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%ICEP2(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%ICEP2(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF ( FLIC3  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%ICEP3(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%ICEP3(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF ( FLIC4  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%ICEP4(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%ICEP4(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF ( FLIC5  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%ICEP5(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%ICEP5(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
     IF ( FLMDN  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%MUDD(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%MUDD(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF ( FLMTH  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%MUDT(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%MUDT(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF ( FLMVS  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%MUDV(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%MUDV(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
     IF ( FLLEV  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%WLEV(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%WLEV(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
     IF ( FLCUR  ) THEN
 #ifdef W3_SMC
-       IF( FSWND ) THEN
-          ALLOCATE ( INPUTS(IMOD)%CX0(NSEA,1) ,              &
-               INPUTS(IMOD)%CY0(NSEA,1) ,              &
-               INPUTS(IMOD)%CXN(NSEA,1) ,              &
-               INPUTS(IMOD)%CYN(NSEA,1) , STAT=ISTAT )
-       ELSE
+      IF( FSWND ) THEN
+        ALLOCATE ( INPUTS(IMOD)%CX0(NSEA,1) ,              &
+             INPUTS(IMOD)%CY0(NSEA,1) ,              &
+             INPUTS(IMOD)%CXN(NSEA,1) ,              &
+             INPUTS(IMOD)%CYN(NSEA,1) , STAT=ISTAT )
+      ELSE
 #endif
-          ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
-               INPUTS(IMOD)%CY0(NX,NY) ,              &
-               INPUTS(IMOD)%CXN(NX,NY) ,              &
-               INPUTS(IMOD)%CYN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
+             INPUTS(IMOD)%CY0(NX,NY) ,              &
+             INPUTS(IMOD)%CXN(NX,NY) ,              &
+             INPUTS(IMOD)%CYN(NX,NY) , STAT=ISTAT )
 #ifdef W3_SMC
-       ENDIF
+      ENDIF
 #endif
-       CHECK_ALLOC_STATUS ( ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
 #ifdef W3_TIDE
     IF ( FLLEVTIDE  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%WLTIDE(NX,NY,NTIDE,2), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%WLTIDE(NX,NY,NTIDE,2), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
     IF ( FLCURTIDE  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%CXTIDE(NX,NY,NTIDE,2),  &
-            INPUTS(IMOD)%CYTIDE(NX,NY,NTIDE,2), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( INPUTS(IMOD)%CXTIDE(NX,NY,NTIDE,2),  &
+           INPUTS(IMOD)%CYTIDE(NX,NY,NTIDE,2), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
 #endif
     !
 
 #ifdef W3_WRST
     IF(.NOT.(INPUTS(IMOD)%WRSTIINIT)) THEN
-       ALLOCATE (   INPUTS(IMOD)%WXNwrst(NX,NY) ,              &
-            INPUTS(IMOD)%WYNwrst(NX,NY) , STAT=ISTAT )
-       INPUTS(IMOD)%WRSTIINIT=.TRUE.
+      ALLOCATE (   INPUTS(IMOD)%WXNwrst(NX,NY) ,              &
+           INPUTS(IMOD)%WYNwrst(NX,NY) , STAT=ISTAT )
+      INPUTS(IMOD)%WRSTIINIT=.TRUE.
     ENDIF
 #endif
 
     IF ( FLWIND ) THEN
 #ifdef W3_SMC
-       IF( FSWND ) THEN
-          ALLOCATE ( INPUTS(IMOD)%WX0(NSEA,1) ,              &
-               INPUTS(IMOD)%WY0(NSEA,1) ,              &
-               INPUTS(IMOD)%DT0(NSEA,1) ,              &
-               INPUTS(IMOD)%WXN(NSEA,1) ,              &
-               INPUTS(IMOD)%WYN(NSEA,1) ,              &
-               INPUTS(IMOD)%DTN(NSEA,1) , STAT=ISTAT )
-       ELSE
+      IF( FSWND ) THEN
+        ALLOCATE ( INPUTS(IMOD)%WX0(NSEA,1) ,              &
+             INPUTS(IMOD)%WY0(NSEA,1) ,              &
+             INPUTS(IMOD)%DT0(NSEA,1) ,              &
+             INPUTS(IMOD)%WXN(NSEA,1) ,              &
+             INPUTS(IMOD)%WYN(NSEA,1) ,              &
+             INPUTS(IMOD)%DTN(NSEA,1) , STAT=ISTAT )
+      ELSE
 #endif
-          ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
-               INPUTS(IMOD)%WY0(NX,NY) ,              &
-               INPUTS(IMOD)%DT0(NX,NY) ,              &
-               INPUTS(IMOD)%WXN(NX,NY) ,              &
-               INPUTS(IMOD)%WYN(NX,NY) ,              &
-               INPUTS(IMOD)%DTN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
+             INPUTS(IMOD)%WY0(NX,NY) ,              &
+             INPUTS(IMOD)%DT0(NX,NY) ,              &
+             INPUTS(IMOD)%WXN(NX,NY) ,              &
+             INPUTS(IMOD)%WYN(NX,NY) ,              &
+             INPUTS(IMOD)%DTN(NX,NY) , STAT=ISTAT )
 #ifdef W3_SMC
-       ENDIF
+      ENDIF
 #endif
-       CHECK_ALLOC_STATUS ( ISTAT )
-       INPUTS(IMOD)%DT0 = 0.
-       INPUTS(IMOD)%DTN = 0.
+      CHECK_ALLOC_STATUS ( ISTAT )
+      INPUTS(IMOD)%DT0 = 0.
+      INPUTS(IMOD)%DTN = 0.
     END IF
     !
     IF ( FLICE  ) THEN
-       ALLOCATE ( INPUTS(IMOD)%ICEI(NX,NY),              &
-            INPUTS(IMOD)%BERGI(NX,NY), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       INPUTS(IMOD)%BERGI = 0.
+      ALLOCATE ( INPUTS(IMOD)%ICEI(NX,NY),              &
+           INPUTS(IMOD)%BERGI(NX,NY), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      INPUTS(IMOD)%BERGI = 0.
     END IF
     !
     IF ( FLTAUA  ) THEN
 #ifdef W3_SMC
-       IF( FSWND ) THEN
-          ALLOCATE ( INPUTS(IMOD)%UX0(NSEA,1) ,              &
-               INPUTS(IMOD)%UY0(NSEA,1) ,              &
-               INPUTS(IMOD)%UXN(NSEA,1) ,              &
-               INPUTS(IMOD)%UYN(NSEA,1) , STAT=ISTAT )
-       ELSE
+      IF( FSWND ) THEN
+        ALLOCATE ( INPUTS(IMOD)%UX0(NSEA,1) ,              &
+             INPUTS(IMOD)%UY0(NSEA,1) ,              &
+             INPUTS(IMOD)%UXN(NSEA,1) ,              &
+             INPUTS(IMOD)%UYN(NSEA,1) , STAT=ISTAT )
+      ELSE
 #endif
-          ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,              &
-               INPUTS(IMOD)%UY0(NX,NY) ,              &
-               INPUTS(IMOD)%UXN(NX,NY) ,              &
-               INPUTS(IMOD)%UYN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,              &
+             INPUTS(IMOD)%UY0(NX,NY) ,              &
+             INPUTS(IMOD)%UXN(NX,NY) ,              &
+             INPUTS(IMOD)%UYN(NX,NY) , STAT=ISTAT )
 #ifdef W3_SMC
-       ENDIF
+      ENDIF
 #endif
-       CHECK_ALLOC_STATUS ( ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
     IF ( FLRHOA  ) THEN
 #ifdef W3_SMC
-       IF( FSWND ) THEN
-          ALLOCATE ( INPUTS(IMOD)%RH0(NSEA,1) ,             &
-               INPUTS(IMOD)%RHN(NSEA,1) , STAT=ISTAT )
-       ELSE
+      IF( FSWND ) THEN
+        ALLOCATE ( INPUTS(IMOD)%RH0(NSEA,1) ,             &
+             INPUTS(IMOD)%RHN(NSEA,1) , STAT=ISTAT )
+      ELSE
 #endif
-          ALLOCATE ( INPUTS(IMOD)%RH0(NX,NY) ,              &
-               INPUTS(IMOD)%RHN(NX,NY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%RH0(NX,NY) ,              &
+             INPUTS(IMOD)%RHN(NX,NY) , STAT=ISTAT )
 #ifdef W3_SMC
-       ENDIF
+      ENDIF
 #endif
-       CHECK_ALLOC_STATUS ( ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
     INPUTS(IMOD)%IINIT  = .TRUE.
@@ -773,19 +773,19 @@ CONTAINS
     ! Check inputs for stresses
     IF(FLTAUA) THEN
 #ifdef W3_FLX0
-       WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+      WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
 #endif
 #ifdef W3_FLX1
-       WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+      WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
 #endif
 #ifdef W3_FLX2
-       WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+      WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
 #endif
 #ifdef W3_FLX3
-       WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+      WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
 #endif
 #ifdef W3_FLX4
-       WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
+      WRITE (NDSE,*) " *** WARNING W3DIMI : TAUA NOT USED *** "
 #endif
     END IF
     !
@@ -907,13 +907,13 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NIDATA .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NIDATA ) THEN
-       WRITE (NDSE,1002) IMOD, -NAUXGR, NIDATA
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, -NAUXGR, NIDATA
+      CALL EXTCDE (2)
     END IF
     !
 #ifdef W3_T
@@ -992,84 +992,84 @@ CONTAINS
     FLRHOA => INPUTS(IMOD)%INFLAGS1(6)
     !
     IF ( IINIT ) THEN
-       !
-       IF ( FLIC1  ) THEN
-          ICEP1  => INPUTS(IMOD)%ICEP1
-       END IF
-       IF ( FLIC2  ) THEN
-          ICEP2  => INPUTS(IMOD)%ICEP2
-       END IF
-       IF ( FLIC3  ) THEN
-          ICEP3  => INPUTS(IMOD)%ICEP3
-       END IF
-       IF ( FLIC4  ) THEN
-          ICEP4  => INPUTS(IMOD)%ICEP4
-       END IF
-       IF ( FLIC5  ) THEN
-          ICEP5  => INPUTS(IMOD)%ICEP5
-       END IF
-       !
-       IF ( FLMDN  ) THEN
-          MUDD   => INPUTS(IMOD)%MUDD
-       END IF
-       IF ( FLMTH  ) THEN
-          MUDT   => INPUTS(IMOD)%MUDT
-       END IF
-       IF ( FLMVS  ) THEN
-          MUDV   => INPUTS(IMOD)%MUDV
-       END IF
-       !
-       IF ( FLLEV  ) THEN
-          WLEV   => INPUTS(IMOD)%WLEV
-       END IF
-       !
-       IF ( FLCUR  ) THEN
-          CX0    => INPUTS(IMOD)%CX0
-          CY0    => INPUTS(IMOD)%CY0
-          CXN    => INPUTS(IMOD)%CXN
-          CYN    => INPUTS(IMOD)%CYN
-       END IF
+      !
+      IF ( FLIC1  ) THEN
+        ICEP1  => INPUTS(IMOD)%ICEP1
+      END IF
+      IF ( FLIC2  ) THEN
+        ICEP2  => INPUTS(IMOD)%ICEP2
+      END IF
+      IF ( FLIC3  ) THEN
+        ICEP3  => INPUTS(IMOD)%ICEP3
+      END IF
+      IF ( FLIC4  ) THEN
+        ICEP4  => INPUTS(IMOD)%ICEP4
+      END IF
+      IF ( FLIC5  ) THEN
+        ICEP5  => INPUTS(IMOD)%ICEP5
+      END IF
+      !
+      IF ( FLMDN  ) THEN
+        MUDD   => INPUTS(IMOD)%MUDD
+      END IF
+      IF ( FLMTH  ) THEN
+        MUDT   => INPUTS(IMOD)%MUDT
+      END IF
+      IF ( FLMVS  ) THEN
+        MUDV   => INPUTS(IMOD)%MUDV
+      END IF
+      !
+      IF ( FLLEV  ) THEN
+        WLEV   => INPUTS(IMOD)%WLEV
+      END IF
+      !
+      IF ( FLCUR  ) THEN
+        CX0    => INPUTS(IMOD)%CX0
+        CY0    => INPUTS(IMOD)%CY0
+        CXN    => INPUTS(IMOD)%CXN
+        CYN    => INPUTS(IMOD)%CYN
+      END IF
 #ifdef W3_TIDE
-       IF ( FLLEVTIDE ) THEN
-          WLTIDE => INPUTS(IMOD)%WLTIDE
-       END IF
-       IF ( FLCURTIDE ) THEN
-          CXTIDE => INPUTS(IMOD)%CXTIDE
-          CYTIDE => INPUTS(IMOD)%CYTIDE
-       END IF
+      IF ( FLLEVTIDE ) THEN
+        WLTIDE => INPUTS(IMOD)%WLTIDE
+      END IF
+      IF ( FLCURTIDE ) THEN
+        CXTIDE => INPUTS(IMOD)%CXTIDE
+        CYTIDE => INPUTS(IMOD)%CYTIDE
+      END IF
 #endif
-       !
+      !
 #ifdef W3_WRST
-       WXNwrst    => INPUTS(IMOD)%WXNwrst
-       WYNwrst    => INPUTS(IMOD)%WYNwrst
+      WXNwrst    => INPUTS(IMOD)%WXNwrst
+      WYNwrst    => INPUTS(IMOD)%WYNwrst
 #endif
 
-       IF ( FLWIND  ) THEN
-          WX0    => INPUTS(IMOD)%WX0
-          WY0    => INPUTS(IMOD)%WY0
-          DT0    => INPUTS(IMOD)%DT0
-          WXN    => INPUTS(IMOD)%WXN
-          WYN    => INPUTS(IMOD)%WYN
-          DTN    => INPUTS(IMOD)%DTN
-       END IF
-       !
-       IF ( FLICE  ) THEN
-          ICEI   => INPUTS(IMOD)%ICEI
-          BERGI  => INPUTS(IMOD)%BERGI
-       END IF
-       !
-       IF ( FLTAUA  ) THEN
-          UX0    => INPUTS(IMOD)%UX0
-          UY0    => INPUTS(IMOD)%UY0
-          UXN    => INPUTS(IMOD)%UXN
-          UYN    => INPUTS(IMOD)%UYN
-       END IF
-       !
-       IF ( FLRHOA  ) THEN
-          RH0    => INPUTS(IMOD)%RH0
-          RHN    => INPUTS(IMOD)%RHN
-       END IF
-       !
+      IF ( FLWIND  ) THEN
+        WX0    => INPUTS(IMOD)%WX0
+        WY0    => INPUTS(IMOD)%WY0
+        DT0    => INPUTS(IMOD)%DT0
+        WXN    => INPUTS(IMOD)%WXN
+        WYN    => INPUTS(IMOD)%WYN
+        DTN    => INPUTS(IMOD)%DTN
+      END IF
+      !
+      IF ( FLICE  ) THEN
+        ICEI   => INPUTS(IMOD)%ICEI
+        BERGI  => INPUTS(IMOD)%BERGI
+      END IF
+      !
+      IF ( FLTAUA  ) THEN
+        UX0    => INPUTS(IMOD)%UX0
+        UY0    => INPUTS(IMOD)%UY0
+        UXN    => INPUTS(IMOD)%UXN
+        UYN    => INPUTS(IMOD)%UYN
+      END IF
+      !
+      IF ( FLRHOA  ) THEN
+        RH0    => INPUTS(IMOD)%RH0
+        RHN    => INPUTS(IMOD)%RHN
+      END IF
+      !
     END IF
     !
     RETURN

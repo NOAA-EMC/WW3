@@ -65,15 +65,15 @@ MODULE W3STRKMD
   !                        -2 = geo land point, second passing.
   !
   TYPE param
-     REAL    :: hs(10)
-     REAL    :: tp(10)
-     REAL    :: dir(10)
-     REAL    :: dspr(10)
-     !         REAL    :: wf(10)
-     INTEGER :: ipart(10)
-     INTEGER :: sys(10)
-     INTEGER :: ngbrSys(50)
-     INTEGER :: checked
+    REAL    :: hs(10)
+    REAL    :: tp(10)
+    REAL    :: dir(10)
+    REAL    :: dspr(10)
+    !         REAL    :: wf(10)
+    INTEGER :: ipart(10)
+    INTEGER :: sys(10)
+    INTEGER :: ngbrSys(50)
+    INTEGER :: checked
   END TYPE param
   !
   !     wind    Der. type     structure containing wind-related parameters
@@ -81,8 +81,8 @@ MODULE W3STRKMD
   !     wspd       Real       wind speed at grid point
   !
   TYPE wind
-     REAL    :: wdir
-     REAL    :: wspd
+    REAL    :: wdir
+    REAL    :: wspd
   END TYPE wind
   !
   !     dat2d   Der. type     2d data structure for storing raw partitioned data
@@ -94,13 +94,13 @@ MODULE W3STRKMD
   !     maxj    Int           size of 2d array of raw partitioned data in j dimension
   !
   TYPE dat2d
-     REAL*8               :: date
-     REAL, POINTER        :: lat(:,:)
-     REAL, POINTER        :: lon(:,:)
-     TYPE(param), POINTER :: par(:,:)
-     TYPE(wind), POINTER  :: wnd(:,:)
-     INTEGER              :: maxi
-     INTEGER              :: maxj
+    REAL*8               :: date
+    REAL, POINTER        :: lat(:,:)
+    REAL, POINTER        :: lon(:,:)
+    TYPE(param), POINTER :: par(:,:)
+    TYPE(wind), POINTER  :: wnd(:,:)
+    INTEGER              :: maxi
+    INTEGER              :: maxj
   END TYPE dat2d
   !
   !     neighbr  Der. type    structure for storing data of neighboring grid point
@@ -109,9 +109,9 @@ MODULE W3STRKMD
   !     j          Int        j index of neighboring grid point
   !
   TYPE neighbr
-     TYPE(param) :: par
-     INTEGER     :: i
-     INTEGER     :: j
+    TYPE(param) :: par
+    INTEGER     :: i
+    INTEGER     :: j
   END TYPE neighbr
   !
   !     mtchsys  Der. type    structure for storing data of matched systems
@@ -120,11 +120,11 @@ MODULE W3STRKMD
   !     wfVal    Real arr     array of wind fraction values of matched systems
   !
   TYPE mtchsys
-     INTEGER     :: sysVal(50)
-     REAL        :: tpVal(50)
-     REAL        :: dirVal(50)
-     REAL        :: hsVal(50)
-     !         REAL        :: wfVal(50)
+    INTEGER     :: sysVal(50)
+    REAL        :: tpVal(50)
+    REAL        :: dirVal(50)
+    REAL        :: hsVal(50)
+    !         REAL        :: wfVal(50)
   END TYPE mtchsys
   !
   !     system   Der. type    structure for storing spatially tracked systems (one time level)
@@ -147,24 +147,24 @@ MODULE W3STRKMD
   !     grp      Int          time-tracked group that system is assigned to
   !
   TYPE system
-     REAL, POINTER    :: hs(:)
-     REAL, POINTER    :: tp(:)
-     REAL, POINTER    :: dir(:)
-     REAL, POINTER    :: dspr(:)
-     !         REAL, POINTER    :: wf(:)
-     INTEGER, POINTER :: i(:)
-     INTEGER, POINTER :: j(:)
-     INTEGER, POINTER :: indx(:)
-     REAL, POINTER    :: lat(:)
-     REAL, POINTER    :: lon(:)
-     INTEGER          :: sysInd
-     REAL             :: hsMean
-     REAL             :: tpMean
-     REAL             :: dirMean
-     !         REAL             :: wfMean
-     INTEGER          :: nPoints
-     INTEGER          :: ngbr(1000)
-     INTEGER          :: grp
+    REAL, POINTER    :: hs(:)
+    REAL, POINTER    :: tp(:)
+    REAL, POINTER    :: dir(:)
+    REAL, POINTER    :: dspr(:)
+    !         REAL, POINTER    :: wf(:)
+    INTEGER, POINTER :: i(:)
+    INTEGER, POINTER :: j(:)
+    INTEGER, POINTER :: indx(:)
+    REAL, POINTER    :: lat(:)
+    REAL, POINTER    :: lon(:)
+    INTEGER          :: sysInd
+    REAL             :: hsMean
+    REAL             :: tpMean
+    REAL             :: dirMean
+    !         REAL             :: wfMean
+    INTEGER          :: nPoints
+    INTEGER          :: ngbr(1000)
+    INTEGER          :: grp
   END TYPE system
   !
   !     timsys   Der. type     structure for storing time-tracked systems (all time levels)
@@ -172,22 +172,22 @@ MODULE W3STRKMD
   !                            time level
   !
   TYPE timsys
-     TYPE(system), POINTER :: sys(:)
+    TYPE(system), POINTER :: sys(:)
   END TYPE timsys
   !
   !     sysmemory  Der. type   Structure to store key characteristics of systems over multiple
   !                            time levels. Used during the time tracking routine.
   !
   TYPE sysmemory
-     INTEGER :: grp
-     INTEGER :: nPoints
-     INTEGER, POINTER :: indx(:)
-     INTEGER :: updated
-     INTEGER :: length
-     REAL    :: lonMean
-     REAL    :: latMean
-     REAL    :: tpMean
-     REAL    :: dirMean
+    INTEGER :: grp
+    INTEGER :: nPoints
+    INTEGER, POINTER :: indx(:)
+    INTEGER :: updated
+    INTEGER :: length
+    REAL    :: lonMean
+    REAL    :: latMean
+    REAL    :: tpMean
+    REAL    :: dirMean
   END TYPE sysmemory
   !
   !  4. Subroutines and functions used :
@@ -478,938 +478,938 @@ CONTAINS
 
     !     Select input type for raw partitioning data
     IF ((intype.EQ.1).OR.(intype.EQ.2)) THEN
-       !        Raw partitioning data is coming from an input file.
-       !        Read file here, and set up 2d array wsdat with the data.
-       t0 = 1
-       IF (intype.EQ.1) THEN
+      !        Raw partitioning data is coming from an input file.
+      !        Read file here, and set up 2d array wsdat with the data.
+      t0 = 1
+      IF (intype.EQ.1) THEN
 #ifdef W3_MPI
-          IF (rank.EQ.0) THEN
+        IF (rank.EQ.0) THEN
 #endif
-             !           Read partRes format file
-             WRITE(20,*) 'Reading partRes partitioning file...'
-             filesize = 7500000
-             ALLOCATE(ts(filesize))
-             ALLOCATE(llat(filesize))
-             ALLOCATE(llon(filesize))
-             ALLOCATE(hs0(filesize))
-             ALLOCATE(tp0(filesize))
-             ALLOCATE(dir0(filesize))
-             ALLOCATE(dspr0(filesize))
-             !            ALLOCATE(wf0(filesize))
-             ALLOCATE(wndSpd0(filesize))
-             ALLOCATE(wndDir0(filesize))
-             ALLOCATE(date0(filesize))
-             WRITE(20,*) '*** Max number of lines read from "partRes" ', &
-                  'input file is = ',filesize,'!'
-             WRITE(6,*) 'Reading partRes file...'
-             INQUIRE(FILE=filename, EXIST=file_exists)
-             IF (.NOT.file_exists) THEN
-                WRITE(20,2001)
-                WRITE(6,2001)
-                STOP 1
-             END IF
-             OPEN(unit=11,file=filename,status='old')
-             line = 1
-             DO WHILE (.TRUE.)
-                READ (11, *, END=113) dummyc,llat(line),llon(line),   &
-                     ts(line),hs0(line),tp0(line),dir0(line), &
-                     wndSpd0(line),wndDir0(line),invar7
-                !partRes file does not contain the dspr variable
-                dspr0(line) = 9999.
-                !               wf0(line) = 9999.
-                line = line+1
-             ENDDO
-113          IERR = -1
-             CLOSE(11)
-             line = line-1
-             WRITE(6,*) '... finished'
-             !            DEALLOCATE(date0)
-#ifdef W3_MPI
+          !           Read partRes format file
+          WRITE(20,*) 'Reading partRes partitioning file...'
+          filesize = 7500000
+          ALLOCATE(ts(filesize))
+          ALLOCATE(llat(filesize))
+          ALLOCATE(llon(filesize))
+          ALLOCATE(hs0(filesize))
+          ALLOCATE(tp0(filesize))
+          ALLOCATE(dir0(filesize))
+          ALLOCATE(dspr0(filesize))
+          !            ALLOCATE(wf0(filesize))
+          ALLOCATE(wndSpd0(filesize))
+          ALLOCATE(wndDir0(filesize))
+          ALLOCATE(date0(filesize))
+          WRITE(20,*) '*** Max number of lines read from "partRes" ', &
+               'input file is = ',filesize,'!'
+          WRITE(6,*) 'Reading partRes file...'
+          INQUIRE(FILE=filename, EXIST=file_exists)
+          IF (.NOT.file_exists) THEN
+            WRITE(20,2001)
+            WRITE(6,2001)
+            STOP 1
           END IF
-#endif
-       ELSE IF (intype.EQ.2) THEN
+          OPEN(unit=11,file=filename,status='old')
+          line = 1
+          DO WHILE (.TRUE.)
+            READ (11, *, END=113) dummyc,llat(line),llon(line),   &
+                 ts(line),hs0(line),tp0(line),dir0(line), &
+                 wndSpd0(line),wndDir0(line),invar7
+            !partRes file does not contain the dspr variable
+            dspr0(line) = 9999.
+            !               wf0(line) = 9999.
+            line = line+1
+          ENDDO
+113       IERR = -1
+          CLOSE(11)
+          line = line-1
+          WRITE(6,*) '... finished'
+          !            DEALLOCATE(date0)
 #ifdef W3_MPI
-          IF (rank.EQ.0) THEN
+        END IF
 #endif
-             !           Read WW3 Spectral Partition format file
-             !           Query input file to determine required array sizes
-             INQUIRE(FILE=filename, EXIST=file_exists)
-             IF (.NOT.file_exists) THEN
-                WRITE(20,2001)
-                WRITE(6,2001)
-                STOP 1
-             END IF
-             !/       -------------------------------------------------
-             !/          Test unformatted read
-             !/       -------------------------------------------------
-             OPEN(UNIT=11,FILE=FILENAME,form='UNFORMATTED', convert=file_endian,STATUS='OLD',ACCESS='STREAM')
-             READ(11,ERR=802,IOSTAT=IOERR) I
-             CLOSE(11)
-             !/          --- First four-byte integer could possibly be byte-swapped,
-             !               if ww3_shel was compiled on a different architecture. ---
-             K = SWAPI4(I)
-             FLFORM = .NOT.(I.EQ.(LEN(IDSTR)+LEN(VERPRT)).OR.&
-                  K.EQ.(LEN(IDSTR)+LEN(VERPRT))    )
-             !        ======== COUNT LOOP ===========
-             IF (FLFORM) THEN
-                !              Input file in formatted ASCII
-                WRITE(6,*) 'Reading formatted ASCII file...'
-                OPEN(unit=11,file=filename,status='old')
-                READ(11,'(78A)') headln1
-                IDSTR = headln1(1:LEN(IDSTR))
-                READ(11,'(78A)') headln1
-                READ(11,'(51A)') headln2
-             ELSE
-                IF (K.EQ.(LEN(IDSTR)+LEN(VERPRT))) THEN
-                   !/           --- Stop here. The file appears to be endian encoded
-                   !                different from the native machine format. And, the
-                   !                compiler option will override support for FORTRAN
-                   !                convert statements convert=file_endian or
-                   !                convert='little_endian'. ---
-                   WRITE(20,1200)
-                   WRITE(6,1200)
-                   STOP 1
-                ELSE
-                   !                Input file in unformatted binary
-                   WRITE(6,*) 'Reading binary formatted file...'
-                   OPEN(unit=11,file=filename,form='UNFORMATTED', convert=file_endian, &
-                        status='OLD')
-                ENDIF
-                REWIND(11)
-                READ(11,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
-                READ(11,ERR=802,IOSTAT=IOERR) headln1
-                READ(11,ERR=802,IOSTAT=IOERR) headln2
-             END IF
-             !/
-             IF (IDSTR(1:9).ne.'WAVEWATCH') THEN
-                CLOSE(11)
-                WRITE(20,1300)
-                WRITE(6,1300)
-                STOP 1
-             ENDIF
-             !/       -------------------------------------------------
-             !/          Skip to start time
-             !/       -------------------------------------------------
-             skipln = 3
-             ttest = 0
-             DO WHILE (ttest.LT.tstart)
-                IF (FLFORM) THEN
-                   READ (11,1000,ERR=802,END=112) date1,date2,x,y, &
-                        numpart,wnd,wnddir,invar6,invar7
+      ELSE IF (intype.EQ.2) THEN
+#ifdef W3_MPI
+        IF (rank.EQ.0) THEN
+#endif
+          !           Read WW3 Spectral Partition format file
+          !           Query input file to determine required array sizes
+          INQUIRE(FILE=filename, EXIST=file_exists)
+          IF (.NOT.file_exists) THEN
+            WRITE(20,2001)
+            WRITE(6,2001)
+            STOP 1
+          END IF
+          !/       -------------------------------------------------
+          !/          Test unformatted read
+          !/       -------------------------------------------------
+          OPEN(UNIT=11,FILE=FILENAME,form='UNFORMATTED', convert=file_endian,STATUS='OLD',ACCESS='STREAM')
+          READ(11,ERR=802,IOSTAT=IOERR) I
+          CLOSE(11)
+          !/          --- First four-byte integer could possibly be byte-swapped,
+          !               if ww3_shel was compiled on a different architecture. ---
+          K = SWAPI4(I)
+          FLFORM = .NOT.(I.EQ.(LEN(IDSTR)+LEN(VERPRT)).OR.&
+               K.EQ.(LEN(IDSTR)+LEN(VERPRT))    )
+          !        ======== COUNT LOOP ===========
+          IF (FLFORM) THEN
+            !              Input file in formatted ASCII
+            WRITE(6,*) 'Reading formatted ASCII file...'
+            OPEN(unit=11,file=filename,status='old')
+            READ(11,'(78A)') headln1
+            IDSTR = headln1(1:LEN(IDSTR))
+            READ(11,'(78A)') headln1
+            READ(11,'(51A)') headln2
+          ELSE
+            IF (K.EQ.(LEN(IDSTR)+LEN(VERPRT))) THEN
+              !/           --- Stop here. The file appears to be endian encoded
+              !                different from the native machine format. And, the
+              !                compiler option will override support for FORTRAN
+              !                convert statements convert=file_endian or
+              !                convert='little_endian'. ---
+              WRITE(20,1200)
+              WRITE(6,1200)
+              STOP 1
+            ELSE
+              !                Input file in unformatted binary
+              WRITE(6,*) 'Reading binary formatted file...'
+              OPEN(unit=11,file=filename,form='UNFORMATTED', convert=file_endian, &
+                   status='OLD')
+            ENDIF
+            REWIND(11)
+            READ(11,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
+            READ(11,ERR=802,IOSTAT=IOERR) headln1
+            READ(11,ERR=802,IOSTAT=IOERR) headln2
+          END IF
+          !/
+          IF (IDSTR(1:9).ne.'WAVEWATCH') THEN
+            CLOSE(11)
+            WRITE(20,1300)
+            WRITE(6,1300)
+            STOP 1
+          ENDIF
+          !/       -------------------------------------------------
+          !/          Skip to start time
+          !/       -------------------------------------------------
+          skipln = 3
+          ttest = 0
+          DO WHILE (ttest.LT.tstart)
+            IF (FLFORM) THEN
+              READ (11,1000,ERR=802,END=112) date1,date2,x,y, &
+                   numpart,wnd,wnddir,invar6,invar7
 #ifdef W3_del
-                   write(*,*) '0:',x,y,numpart
+              write(*,*) '0:',x,y,numpart
 #endif
-                   skipln = skipln+1
-                ELSE
-                   READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y, &
-                        dummy,numpart,invar1,wnd,wnddir, &
-                        invar5,invar6
-                   ! write(*,*) '0:',DATETIME,numpart
-                   date1=dble(DATETIME(1))
-                   date2=dble(DATETIME(2))
-                END IF
-                ttest = date1 + date2*1.0E-6
-                IF (FLFORM) THEN
-                   DO line = 1,numpart+1
-                      READ(11,1010,END=111,ERR=802,IOSTAT=IOERR) &
-                           invar1,invar2,invar3,invar4
-                      ! write(*,*) '0+:',line,numpart+1,invar1,invar2,invar3,invar4
-                      skipln = skipln+1
-                   END DO
-                ELSE
-                   DO line = 1,numpart+1
-                      READ (11,ERR=802,IOSTAT=IOERR) iline,invar1, &
-                           invar2,invar3,invar4,invar5,invar6
-                      ! write(*,*) '0+:',line,iline,invar1,invar2,invar3,invar4,invar5,invar6
-                   END DO
-                END IF
-             END DO
-             skipln = skipln-numpart-1-1
-             !/       -------------------------------------------------
-             !           Read file for ntint time levels
-             !/       -------------------------------------------------
-             readln = numpart
-             tstep = 1
-             ttemp = tstart
-             maxPart = numpart
-             DO WHILE (tstep.LE.ntint)
-                IF (readln.GT.0) THEN
-                   IF (FLFORM) THEN
-                      READ (11,1000,ERR=802,END=111) date1,date2,x,y, &
-                           numpart,wnd,wnddir,invar6,invar7
-                   ELSE
-                      READ (11,END=111,ERR=802,IOSTAT=IOERR) DATETIME,  &
-                           x,y,dummy,numpart,wnd,wnddir,invar5,invar6,invar7
-                      ! write(*,*) '1:',numpart,x,y
-                      date1=dble(DATETIME(1))
-                      date2=dble(DATETIME(2))
-                   END IF
-                   maxPart = MAX(maxPart,numpart)
-                END IF
+              skipln = skipln+1
+            ELSE
+              READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y, &
+                   dummy,numpart,invar1,wnd,wnddir, &
+                   invar5,invar6
+              ! write(*,*) '0:',DATETIME,numpart
+              date1=dble(DATETIME(1))
+              date2=dble(DATETIME(2))
+            END IF
+            ttest = date1 + date2*1.0E-6
+            IF (FLFORM) THEN
+              DO line = 1,numpart+1
+                READ(11,1010,END=111,ERR=802,IOSTAT=IOERR) &
+                     invar1,invar2,invar3,invar4
+                ! write(*,*) '0+:',line,numpart+1,invar1,invar2,invar3,invar4
+                skipln = skipln+1
+              END DO
+            ELSE
+              DO line = 1,numpart+1
+                READ (11,ERR=802,IOSTAT=IOERR) iline,invar1, &
+                     invar2,invar3,invar4,invar5,invar6
+                ! write(*,*) '0+:',line,iline,invar1,invar2,invar3,invar4,invar5,invar6
+              END DO
+            END IF
+          END DO
+          skipln = skipln-numpart-1-1
+          !/       -------------------------------------------------
+          !           Read file for ntint time levels
+          !/       -------------------------------------------------
+          readln = numpart
+          tstep = 1
+          ttemp = tstart
+          maxPart = numpart
+          DO WHILE (tstep.LE.ntint)
+            IF (readln.GT.0) THEN
+              IF (FLFORM) THEN
+                READ (11,1000,ERR=802,END=111) date1,date2,x,y, &
+                     numpart,wnd,wnddir,invar6,invar7
+              ELSE
+                READ (11,END=111,ERR=802,IOSTAT=IOERR) DATETIME,  &
+                     x,y,dummy,numpart,wnd,wnddir,invar5,invar6,invar7
+                ! write(*,*) '1:',numpart,x,y
+                date1=dble(DATETIME(1))
+                date2=dble(DATETIME(2))
+              END IF
+              maxPart = MAX(maxPart,numpart)
+            END IF
 
-                ttest = date1 + date2*1.E-6
-                IF (ttest.GT.ttemp) THEN
-                   tstep = tstep+1
-                   ttemp = ttest
-                   IF (tstep.GT.ntint) EXIT
-                END IF
-                IF (FLFORM) THEN
-                   DO line = 1,numpart+1
-                      READ (11,1010,END=111,ERR=802,IOSTAT=IOERR)      &
-                           invar1,invar2,invar3,invar4
+            ttest = date1 + date2*1.E-6
+            IF (ttest.GT.ttemp) THEN
+              tstep = tstep+1
+              ttemp = ttest
+              IF (tstep.GT.ntint) EXIT
+            END IF
+            IF (FLFORM) THEN
+              DO line = 1,numpart+1
+                READ (11,1010,END=111,ERR=802,IOSTAT=IOERR)      &
+                     invar1,invar2,invar3,invar4
 #ifdef W3_del
-                      write(*,'(A,2I6,4F7.2)') '1+:',line,numpart+1,invar1,invar2,invar3,invar4
+                write(*,'(A,2I6,4F7.2)') '1+:',line,numpart+1,invar1,invar2,invar3,invar4
 #endif
-                      readln = readln+1
-                   END DO
-                ELSE
-                   DO line = 1,numpart+1
-                      READ (11,END=111,ERR=802,IOSTAT=IOERR) iline,invar1,&
-                           invar2,invar3,invar4,invar5,invar6
-                      readln = readln+1
-                   END DO
-                END IF
-             ENDDO
-111          CONTINUE
-             CLOSE(11)
-             !        ===== END COUNT LOOP =====
-             !        ===== START READ LOOP =====
-             ALLOCATE(ts(readln))
-             ALLOCATE(llat(readln))
-             ALLOCATE(llon(readln))
-             ALLOCATE(hs0(readln))
-             ALLOCATE(tp0(readln))
-             ALLOCATE(dir0(readln))
-             ALLOCATE(dspr0(readln))
-             !            ALLOCATE(wf0(readln))
-             ALLOCATE(wndSpd0(readln))
-             ALLOCATE(wndDir0(readln))
-             ALLOCATE(date0(readln))
-             ts(1:readln)   = -1
-             llat(1:readln) = 9999.
-             llon(1:readln) = 9999.
-             hs0(1:readln)  = 9999.
-             tp0(1:readln)  = 9999.
-             dir0(1:readln)  = 9999.
-             dspr0(1:readln)  = 9999.
+                readln = readln+1
+              END DO
+            ELSE
+              DO line = 1,numpart+1
+                READ (11,END=111,ERR=802,IOSTAT=IOERR) iline,invar1,&
+                     invar2,invar3,invar4,invar5,invar6
+                readln = readln+1
+              END DO
+            END IF
+          ENDDO
+111       CONTINUE
+          CLOSE(11)
+          !        ===== END COUNT LOOP =====
+          !        ===== START READ LOOP =====
+          ALLOCATE(ts(readln))
+          ALLOCATE(llat(readln))
+          ALLOCATE(llon(readln))
+          ALLOCATE(hs0(readln))
+          ALLOCATE(tp0(readln))
+          ALLOCATE(dir0(readln))
+          ALLOCATE(dspr0(readln))
+          !            ALLOCATE(wf0(readln))
+          ALLOCATE(wndSpd0(readln))
+          ALLOCATE(wndDir0(readln))
+          ALLOCATE(date0(readln))
+          ts(1:readln)   = -1
+          llat(1:readln) = 9999.
+          llon(1:readln) = 9999.
+          hs0(1:readln)  = 9999.
+          tp0(1:readln)  = 9999.
+          dir0(1:readln)  = 9999.
+          dspr0(1:readln)  = 9999.
 
 
-             IF (FLFORM) THEN
-                OPEN(unit=11,file=filename,status='old')
-             ELSE
-                OPEN(unit=11,file=filename,status='old', &
-                     form='unformatted', convert=file_endian)
-             END IF
-             line = 1
-             tstep = 1
-             !/       -------------------------------------------------
-             !/          Skip to start time
-             !/       -------------------------------------------------
-             IF (FLFORM) THEN
-                DO i = 1,skipln
-                   READ (11, *)
-                END DO
-             ELSE
-                ! --- Repeat from above since access='DIRECT'
-                !     does not support fseek and ftell. ---
-                READ(11,END=112,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
-                READ(11,END=112,ERR=802,IOSTAT=IOERR) headln1
-                READ(11,END=112,ERR=802,IOSTAT=IOERR) headln2
-                !/ --- allocate buffer for all partition parameters
-                !/     for a single grid point  ---
-                IF (.NOT.ALLOCATED(PHS)) ALLOCATE(PHS(maxPart))
-                IF (.NOT.ALLOCATED(PTP)) ALLOCATE(PTP(maxPart))
-                IF (.NOT.ALLOCATED(PDIR)) ALLOCATE(PDIR(maxPart))
-                IF (.NOT.ALLOCATED(PSPR)) ALLOCATE(PSPR(maxPart))
-                IF (.NOT.ALLOCATED(PWF)) ALLOCATE(PWF(maxPart))
-
-                ttest = 0
-
-                DO WHILE (ttest.LT.tstart)
-                   READ (11,END=112,ERR=802,IOSTAT=IOERR) DATETIME, &
-                        invar1,invar2,dummy,numpart,invar3,   &
-                        invar4,invar5,invar6,invar7
-                   date1=dble(DATETIME(1))
-                   date2=dble(DATETIME(2))
-                   ttest = date1 + date2*1.0E-6
-                   !/ --- reset buffer ---
-                   PHS(:) = 0.
-                   PTP(:) = 0.
-                   PDIR(:) = 0.
-                   PSPR(:) = 0.
-                   PWF(:) = 0.
-
-                   !/ --- fill buffer with partition data ---
-                   READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,invar1, &
-                        invar2,invar3,invar4,invar5,invar6
-                   DO i = 1,numpart
-                      READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,      &
-                           phs(i),ptp(i),invar3,pdir(i),pspr(i),pwf(i)
-                   END DO
-                END DO
-                !/ --- move buffer content to data array ---
-                DO i=1,numpart
-                   hs0(line)   = phs(i)
-                   tp0(line)   = ptp(i)
-                   dir0(line)  = pdir(i)
-                   dspr0(line) = pspr(i)
-                   date0(line) = date1 + date2*1.0E-6
-                   ts(line) = tstep
-                   llat(line) = x
-                   llon(line) = y
-                   wndSpd0(line) = wnd
-                   wndDir0(line) = wnddir
-
-                   line = line + 1
-                END DO
-
-             END IF
-             !/       -------------------------------------------------
-             !           Read file for ntint time levels
-             !/       -------------------------------------------------
-             ttemp = tstart
-             DO WHILE (line.LE.readln)
-                IF (FLFORM) THEN
-                   READ (11,1000,END=112) date1,date2,x,y,numpart, &
-                        wnd,wnddir,invar6,invar7
-                ELSE
-                   READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y,    &
-                        dummy,numpart,wnd,wnddir,invar5,invar6,invar7
-                   date1=dble(DATETIME(1))
-                   date2=dble(DATETIME(2))
-                END IF
-
-                ttest = date1 + date2*1.0E-6
-                IF (ttest.GT.ttemp) THEN
-                   tstep = tstep+1
-                   ttemp = ttest
-                   IF (tstep.GT.ntint) EXIT
-                END IF
-
-                IF (FLFORM) THEN
-                   READ (11,1010,END=112) invar1,invar2,invar3,invar4 ! Skip total integral parameters
-                   DO i = 1,numpart
-                      IF (line.LE.readln) THEN
-                         READ (11,1010,END=112) hs0(line),tp0(line), &
-                              dir0(line),dspr0(line)
-                         date0(line) = ttest
-
-                         ts(line) = tstep
-                         llat(line) = x
-                         llon(line) = y
-                         wndSpd0(line) = wnd
-                         wndDir0(line) = wnddir
-
-                         line = line+1
-                      END IF
-                   END DO
-                ELSE
-                   READ (11,ERR=802,IOSTAT=IOERR) k,invar1,invar2,  &
-                        invar3,invar4,invar5
-                   DO i = 1,numpart
-                      IF (line.LE.readln) THEN
-                         READ (11,END=112,ERR=802,IOSTAT=IOERR) k,         &
-                              hs0(line),tp0(line),invar3,dir0(line),       &
-                              dspr0(line)
-                         date0(line) = ttest
-
-                         ts(line) = tstep
-                         llat(line) = x
-                         llon(line) = y
-                         wndSpd0(line) = wnd
-                         wndDir0(line) = wnddir
-
-                         line = line+1
-                      END IF
-                   END DO
-                END IF
-             END DO
-110          IERR = -1
-             CLOSE(11)
-
-112          CONTINUE
-             IF (line.EQ.1) THEN
-                WRITE(20,2002)
-                WRITE(6,2002)
-                STOP 1
-             END IF
-             CLOSE(11)
-             ! ===== READ LOOP FINISHED =====
-             LINE=LINE-1
-
-             WRITE(6,*) '... finished'
-
-             IF (ttest.LT.tstart) THEN
-                WRITE(20,2003) TSTART
-                WRITE(6,2003) TSTART
-                STOP 1
-             END IF
-
-             IF (ALLOCATED(PHS)) DEALLOCATE(PHS)
-             IF (ALLOCATED(PTP)) DEALLOCATE(PTP)
-             IF (ALLOCATED(PDIR)) DEALLOCATE(PDIR)
-             IF (ALLOCATED(PSPR)) DEALLOCATE(PSPR)
-             IF (ALLOCATED(PWF)) DEALLOCATE(PWF)
-
-#ifdef W3_MPI
+          IF (FLFORM) THEN
+            OPEN(unit=11,file=filename,status='old')
+          ELSE
+            OPEN(unit=11,file=filename,status='old', &
+                 form='unformatted', convert=file_endian)
           END IF
-#endif
-       END IF
+          line = 1
+          tstep = 1
+          !/       -------------------------------------------------
+          !/          Skip to start time
+          !/       -------------------------------------------------
+          IF (FLFORM) THEN
+            DO i = 1,skipln
+              READ (11, *)
+            END DO
+          ELSE
+            ! --- Repeat from above since access='DIRECT'
+            !     does not support fseek and ftell. ---
+            READ(11,END=112,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
+            READ(11,END=112,ERR=802,IOSTAT=IOERR) headln1
+            READ(11,END=112,ERR=802,IOSTAT=IOERR) headln2
+            !/ --- allocate buffer for all partition parameters
+            !/     for a single grid point  ---
+            IF (.NOT.ALLOCATED(PHS)) ALLOCATE(PHS(maxPart))
+            IF (.NOT.ALLOCATED(PTP)) ALLOCATE(PTP(maxPart))
+            IF (.NOT.ALLOCATED(PDIR)) ALLOCATE(PDIR(maxPart))
+            IF (.NOT.ALLOCATED(PSPR)) ALLOCATE(PSPR(maxPart))
+            IF (.NOT.ALLOCATED(PWF)) ALLOCATE(PWF(maxPart))
 
-#ifdef W3_MPI
-       IF (rank.EQ.0) THEN
-#endif
+            ttest = 0
 
-          !        Find unique time steps (and sort in ascending order)
-          CALL UNIQUE(REAL(ts(1:line)),line,uniqueTim,maxTs)
+            DO WHILE (ttest.LT.tstart)
+              READ (11,END=112,ERR=802,IOSTAT=IOERR) DATETIME, &
+                   invar1,invar2,dummy,numpart,invar3,   &
+                   invar4,invar5,invar6,invar7
+              date1=dble(DATETIME(1))
+              date2=dble(DATETIME(2))
+              ttest = date1 + date2*1.0E-6
+              !/ --- reset buffer ---
+              PHS(:) = 0.
+              PTP(:) = 0.
+              PDIR(:) = 0.
+              PSPR(:) = 0.
+              PWF(:) = 0.
 
-          !        Find unique lat and lon values (and sort in ascending order)
-          CALL UNIQUE(llat(1:line),SIZE(llat(1:line)),uniqueLatraw,nout1)
-          CALL UNIQUE(llon(1:line),SIZE(llon(1:line)),uniqueLonraw,nout2)
+              !/ --- fill buffer with partition data ---
+              READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,invar1, &
+                   invar2,invar3,invar4,invar5,invar6
+              DO i = 1,numpart
+                READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,      &
+                     phs(i),ptp(i),invar3,pdir(i),pspr(i),pwf(i)
+              END DO
+            END DO
+            !/ --- move buffer content to data array ---
+            DO i=1,numpart
+              hs0(line)   = phs(i)
+              tp0(line)   = ptp(i)
+              dir0(line)  = pdir(i)
+              dspr0(line) = pspr(i)
+              date0(line) = date1 + date2*1.0E-6
+              ts(line) = tstep
+              llat(line) = x
+              llon(line) = y
+              wndSpd0(line) = wnd
+              wndDir0(line) = wnddir
 
-          !--042916-----------------------
-          !
-          !        Redefine uniqueLatraw and uniqueLonrawto based on domain extent
-          WRITE(20,*) 'uniqueLatraw(:) =', uniqueLatraw(:)
-          WRITE(20,*) 'uniqueLonraw(:) =', uniqueLonraw(:)
+              line = line + 1
+            END DO
 
-          WRITE(20,*) 'No. increments: Longitude, Latitue =', mxcwt, mycwt
-          DEALLOCATE(uniqueLatraw)
-          DEALLOCATE(uniqueLonraw)
-          ALLOCATE(uniqueLatraw(mycwt+1))
-          ALLOCATE(uniqueLonraw(mxcwt+1))
-          DO i = 1,(mycwt+1)
-             uniqueLatraw(i) =  minlat + &
-                  (REAL(i)-1)/REAL(mycwt)*(maxlat-minlat)
-          END DO
-          DO i = 1,(mxcwt+1)
-             uniqueLonraw(i) =  minlon + &
-                  (REAL(i)-1)/REAL(mxcwt)*(maxlon-minlon)
-          END DO
-          WRITE(20,*) 'uniqueLatraw(:) =', uniqueLatraw(:)
-          WRITE(20,*) 'uniqueLonraw(:) =', uniqueLonraw(:)
-          !
-          !--042916-----------------------
-
-          !        Filter out lats and lons outside of domain of interest
-          DO latind1 = 1,SIZE(uniqueLatraw)
-             IF (uniqueLatraw(latind1).GE.minlat) EXIT
-          END DO
-          DO latind2 = SIZE(uniqueLatraw),1,-1
-             IF (uniqueLatraw(latind2).LE.maxlat) EXIT
-          END DO
-          DO lonind1 = 1,SIZE(uniqueLonraw)
-             IF (uniqueLonraw(lonind1).GE.minlon) EXIT
-          END DO
-          DO lonind2 = SIZE(uniqueLonraw),1,-1
-             IF (uniqueLonraw(lonind2).LE.maxlon) EXIT
-          END DO
-          WRITE(20,*) 'latind1, latind2, lonind1, lonind2 =', &
-               latind1, latind2, lonind1, lonind2
-          IF ((latind1.GE.latind2).OR.(lonind1.GE.lonind2)) THEN
-             WRITE(20,1400)
-             WRITE(6,1400)
-             STOP 1
           END IF
-          NULLIFY(uniqueLat)
-          NULLIFY(uniqueLon)
-          ALLOCATE(uniqueLat(latind2-latind1+1))
-          ALLOCATE(uniqueLon(lonind2-lonind1+1))
-          uniqueLat = uniqueLatraw(latind1:latind2)
-          uniqueLon = uniqueLonraw(lonind1:lonind2)
-          WRITE(20,*) 'In waveTracking_NWS_V2: Longitude range =', &
-               uniqueLon(1), uniqueLon(SIZE(uniqueLon))
-          WRITE(20,*) '                        Latitude range  =', &
-               uniqueLat(1), uniqueLat(SIZE(uniqueLat))
+          !/       -------------------------------------------------
+          !           Read file for ntint time levels
+          !/       -------------------------------------------------
+          ttemp = tstart
+          DO WHILE (line.LE.readln)
+            IF (FLFORM) THEN
+              READ (11,1000,END=112) date1,date2,x,y,numpart, &
+                   wnd,wnddir,invar6,invar7
+            ELSE
+              READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y,    &
+                   dummy,numpart,wnd,wnddir,invar5,invar6,invar7
+              date1=dble(DATETIME(1))
+              date2=dble(DATETIME(2))
+            END IF
 
-          !        Map is transposed (rotated by 90 deg), so that:
-          !          I (matrix row) represents Longitute
-          !          J (matrix column) represents Latitude
-          !          i.e. from this point onwards the indices (i,j) represents Cart. coordinates
-          ALLOCATE( mlon(SIZE(uniqueLon),SIZE(uniqueLat)) )
-          ALLOCATE( mlat(SIZE(uniqueLon),SIZE(uniqueLat)) )
-          !
-          maxI = SIZE(uniqueLon)
-          maxJ = SIZE(uniqueLat)
-          DO I = 1,maxI
-             DO J = 1,maxJ
-                mlon(I,J) = uniqueLon(I)
-                mlat(I,J) = uniqueLat(J)
-             END DO
-          END DO
-#ifdef W3_MPI
-       END IF
-#endif
+            ttest = date1 + date2*1.0E-6
+            IF (ttest.GT.ttemp) THEN
+              tstep = tstep+1
+              ttemp = ttest
+              IF (tstep.GT.ntint) EXIT
+            END IF
 
-#ifdef W3_MPI
-       CALL MPI_BCAST(maxI,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-       CALL MPI_BCAST(maxJ,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-       CALL MPI_BCAST(maxTs,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-#endif
+            IF (FLFORM) THEN
+              READ (11,1010,END=112) invar1,invar2,invar3,invar4 ! Skip total integral parameters
+              DO i = 1,numpart
+                IF (line.LE.readln) THEN
+                  READ (11,1010,END=112) hs0(line),tp0(line), &
+                       dir0(line),dspr0(line)
+                  date0(line) = ttest
 
-       !        Allocate the wsdat structure
-#ifdef W3_MPI
-       IF (rank.EQ.0) THEN
-#endif
-          WRITE(20,*) 'Allocating wsdat...'
-#ifdef W3_MPI
-       END IF
-#endif
-       NULLIFY(wsdat)
-       ALLOCATE(wsdat(maxTs))
-#ifdef W3_MPI
-       IF (rank.EQ.0) THEN
-#endif
-          WRITE(20,*) 'SIZE(wsdat) = ',SIZE(wsdat)
-#ifdef W3_MPI
-       END IF
-#endif
+                  ts(line) = tstep
+                  llat(line) = x
+                  llon(line) = y
+                  wndSpd0(line) = wnd
+                  wndDir0(line) = wnddir
 
-       !        Allocate and initialize the wsdat array
-#ifdef W3_MPI
-       IF (rank.EQ.0) THEN
-#endif
-          DO tsA = 1,maxTs
-             ALLOCATE(wsdat(tsA)%lat(maxI,maxJ))
-             ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
-             ALLOCATE(wsdat(tsA)%par(maxI,maxJ))
-             ALLOCATE(wsdat(tsA)%wnd(maxI,maxJ))
-
-             DO j = 1,maxJ
-                DO i = 1,maxI
-                   wsdat(tsA)%lat(i,j)=mlat(i,j)
-                   wsdat(tsA)%lon(i,j)=mlon(i,j)
-                   wsdat(tsA)%maxi=maxI
-                   wsdat(tsA)%maxj=maxJ
-                   wsdat(tsA)%par(i,j)%hs(1:10)=9999.
-                   wsdat(tsA)%par(i,j)%tp(1:10)=9999.
-                   wsdat(tsA)%par(i,j)%dir(1:10)=9999.
-                   wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
-                   !                  wsdat(tsA)%par(i,j)%wf(1:10)=9999.
-                   wsdat(tsA)%par(i,j)%ipart(1:10)=0
-                   wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable
-                   wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
-                   wsdat(tsA)%wnd(i,j)%wdir=9999.
-                   wsdat(tsA)%wnd(i,j)%wspd=9999.
-                   wsdat(tsA)%par(i,j)%checked=-1
-                END DO
-             END DO
-          END DO
-
-          !        Assign to each line in partition file an entry in wsdat
-          !        At each time step each point contains all numpart partitions.
-          !        Only store the first 10 partitions.
-          l = 1
-
-          DO WHILE (l.LE.line)
-             DO j = 1,maxJ
-                DO i = 1,maxI
-                   !>042916                  IF ( (llat(l).EQ.mlat(i,j)).AND. &
-                   !>042916                       (llon(l).EQ.mlon(i,j)) ) THEN
-                   IF ( (ABS(llat(l)-mlat(i,j)).LT.1.E-2).AND. &
-                        (ABS(llon(l)-mlon(i,j)).LT.1.E-2) ) THEN
-                      !                    WRITE(20,*) 'MATCHED! ',l,&
-                      !                       llat(l),mlat(i,j),ABS(llat(l)-mlat(i,j)),&
-                      !                       llon(l),mlon(i,j),ABS(llon(l)-mlon(i,j))
-                      wsdat(ts(l))%lat(i,j) = llat(l)
-                      wsdat(ts(l))%lon(i,j) = llon(l)
-                      !                   --- Find ALL partition values associated with
-                      !                       lat(i,j) and lon(i,j). Keep list index l
-                      !                       fixed and recycle iline as variable index. ---
-                      iline = l
-                      k = 1
-                      DO WHILE (                                         &
-                           ABS(wsdat(ts(l))%lat(i,j)-llat(iline)).LT.1.E-3 &
-                           .AND.ABS(wsdat(ts(l))%lon(i,j)-llon(iline)).LT.1.E-3 )
-                         IF (k.LE.10) THEN
-                            wsdat(ts(iline))%par(i,j)%ipart(k) = k
-                            wsdat(ts(iline))%par(i,j)%hs(k)    = hs0(iline)
-                            wsdat(ts(iline))%par(i,j)%tp(k)    = tp0(iline)
-                            wsdat(ts(iline))%par(i,j)%dir(k)   = dir0(iline)
-                            wsdat(ts(iline))%par(i,j)%dspr(k)  = dspr0(iline)
-                            !                       wsdat(ts(k))%par(i,j)%wf(k) = wf0(l)
-                            IF (k.EQ.1) THEN
-                               wsdat(ts(iline))%date = date0(iline)
-                               wsdat(ts(iline))%wnd(i,j)%wdir = wndDir0(iline)
-                               wsdat(ts(iline))%wnd(i,j)%wspd = wndSpd0(iline)
-                               wsdat(ts(iline))%par(i,j)%checked = 0
-                            END IF
-                         END IF
-                         k = k + 1
-                         iline = iline + 1
-                         if (iline.GT.line) EXIT
-                      END DO
-                      !                   --- Account for increment at the end of loop (400 CONTINUE)
-                      !                       and go one element back in list because of increment. ---
-                      l = iline-1
-                      GOTO 400
-                   END IF
-                END DO
-             END DO
-400          CONTINUE
-             IF (l+1.le.line) THEN
-                IF (ts(l).LT.ts(l+1)) THEN
-                   K = line-l
-                   !             --- With each time step completed, deallocate processed 1:l
-                   !                 elements from 1d array. Create a temporary array size of
-                   !                 (l+1:line) with k elements and reallocate original array. ---
-                   IF (ALLOCATED(tmp_i4)) DEALLOCATE(tmp_i4)
-                   !             --- REALLOCATE(integer arrays) ---
-                   ALLOCATE(tmp_i4(k))
-                   tmp_i4(1:k) = ts((l+1):line)
-                   DEALLOCATE(ts)
-                   ALLOCATE(ts(k))
-                   ts(1:k) = tmp_i4(1:k)
-                   DEALLOCATE(tmp_i4)
-                   !             --- REALLOCATE(double precision arrays) ---
-                   IF (ALLOCATED(tmp_r8)) DEALLOCATE(tmp_r8)
-                   ALLOCATE(tmp_r8(k))
-                   tmp_r8(1:k) = date0((l+1):line)
-                   DEALLOCATE(date0)
-                   ALLOCATE(date0(k))
-                   date0(1:k) = tmp_r8(1:k)
-                   DEALLOCATE(tmp_r8)
-                   !             --- REALLOCATE(single precision arrays) ---
-                   IF (ALLOCATED(tmp_r4)) DEALLOCATE(tmp_r4)
-                   ALLOCATE(tmp_r4(k))
-                   tmp_r4(1:k) = llat((l+1):line)
-                   DEALLOCATE(llat)
-                   ALLOCATE(llat(k))
-                   llat(1:k) = tmp_r4(1:k)
-                   tmp_r4(1:k) = llon((l+1):line)
-                   DEALLOCATE(llon)
-                   ALLOCATE(llon(k))
-                   llon(1:k) = tmp_r4(1:k)
-                   tmp_r4(1:k) = hs0((l+1):line)
-                   DEALLOCATE(hs0)
-                   ALLOCATE(hs0(k))
-                   hs0(1:k) = tmp_r4(1:k)
-                   tmp_r4(1:k) = tp0((l+1):line)
-                   DEALLOCATE(tp0)
-                   ALLOCATE(tp0(k))
-                   tp0(1:k) = tmp_r4(1:k)
-                   tmp_r4(1:k) = dir0((l+1):line)
-                   DEALLOCATE(dir0)
-                   ALLOCATE(dir0(k))
-                   dir0(1:k) = tmp_r4(1:k)
-                   tmp_r4(1:k) = dspr0((l+1):line)
-                   DEALLOCATE(dspr0)
-                   ALLOCATE(dspr0(k))
-                   dspr0(1:k) = tmp_r4(1:k)
-                   tmp_r4(1:k) = wndSpd0((l+1):line)
-                   DEALLOCATE(wndSpd0)
-                   ALLOCATE(wndSpd0(k))
-                   wndSpd0(1:k) = tmp_r4(1:k)
-                   tmp_r4(1:k) = wndDir0((l+1):line)
-                   DEALLOCATE(wndDir0)
-                   ALLOCATE(wndDir0(k))
-                   wndDir0(1:k) = tmp_r4(1:k)
-                   DEALLOCATE(tmp_r4)
-                   line = k
-                   l = 0
+                  line = line+1
                 END IF
-             END IF
-             l = l + 1
+              END DO
+            ELSE
+              READ (11,ERR=802,IOSTAT=IOERR) k,invar1,invar2,  &
+                   invar3,invar4,invar5
+              DO i = 1,numpart
+                IF (line.LE.readln) THEN
+                  READ (11,END=112,ERR=802,IOSTAT=IOERR) k,         &
+                       hs0(line),tp0(line),invar3,dir0(line),       &
+                       dspr0(line)
+                  date0(line) = ttest
+
+                  ts(line) = tstep
+                  llat(line) = x
+                  llon(line) = y
+                  wndSpd0(line) = wnd
+                  wndDir0(line) = wnddir
+
+                  line = line+1
+                END IF
+              END DO
+            END IF
           END DO
-          !
-          IF (ALLOCATED(ts)) DEALLOCATE(ts)
-          IF (ALLOCATED(llat)) DEALLOCATE(llat)
-          IF (ALLOCATED(llon)) DEALLOCATE(llon)
-          IF (ALLOCATED(mlat)) DEALLOCATE(mlat)
-          IF (ALLOCATED(mlon)) DEALLOCATE(mlon)
-          IF (ALLOCATED(date0)) DEALLOCATE(date0)
-          IF (ALLOCATED(hs0)) DEALLOCATE(hs0)
-          IF (ALLOCATED(tp0)) DEALLOCATE(tp0)
-          IF (ALLOCATED(dir0)) DEALLOCATE(dir0)
-          IF (ALLOCATED(dspr0)) DEALLOCATE(dspr0)
-          !         IF (ALLOCATED(wf0)) DEALLOCATE(wf0)
-          IF (ALLOCATED(wndSpd0)) DEALLOCATE(wndSpd0)
-          IF (ALLOCATED(wndDir0)) DEALLOCATE(wndDir0)
-#ifdef W3_MPI
-       END IF
-#endif
+110       IERR = -1
+          CLOSE(11)
 
-#ifdef W3_MPI
-       !         Communicate the wsdat entries from rank=0 to other ranks
-       DO tsA = t0,maxTs
-          irank = MOD((tsA-t0),MIN(nproc,maxTS))
-          !             WRITE(20,*) 'Rank,irank=',rank,irank
-          IF (irank.NE.0) THEN
-             !               WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
-
-             IF (rank.EQ.irank) THEN
-                ALLOCATE(wsdat(tsA)%lat(maxI,maxJ))
-                ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
-                ALLOCATE(wsdat(tsA)%par(maxI,maxJ))
-                ALLOCATE(wsdat(tsA)%wnd(maxI,maxJ))
-
-                DO j = 1,maxJ
-                   DO i = 1,maxI
-                      wsdat(tsA)%maxi=maxI
-                      wsdat(tsA)%maxj=maxJ
-                      wsdat(tsA)%par(i,j)%hs(1:10)=9999.
-                      wsdat(tsA)%par(i,j)%tp(1:10)=9999.
-                      wsdat(tsA)%par(i,j)%dir(1:10)=9999.
-                      wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
-                      wsdat(tsA)%par(i,j)%ipart(1:10)=0
-                      wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable
-                      wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
-                      wsdat(tsA)%wnd(i,j)%wdir=9999.
-                      wsdat(tsA)%wnd(i,j)%wspd=9999.
-                      wsdat(tsA)%par(i,j)%checked=-1
-                   END DO
-                END DO
-             END IF
-
-             DO j = 1,maxJ
-                DO i = 1,maxI
-                   tag1 = ((j-1)*maxI+i)*10
-
-                   IF (rank.EQ.0) THEN
-                      !                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
-                      !                                rank,irank,(tag1+1)
-                      COMMARR1 = (/wsdat(tsA)%par(i,j)%hs(:), &
-                           wsdat(tsA)%par(i,j)%tp(:), &
-                           wsdat(tsA)%par(i,j)%dir(:), &
-                           wsdat(tsA)%par(i,j)%dspr(:), &
-                           wsdat(tsA)%wnd(i,j)%wdir, &
-                           wsdat(tsA)%wnd(i,j)%wspd, &
-                           wsdat(tsA)%lat(i,j), &
-                           wsdat(tsA)%lon(i,j)/)
-                      CALL MPI_SEND(COMMARR1,44,MPI_REAL,irank, &
-                           (tag1+1),MPI_COMM_WORLD,IERR)
-                   END IF
-                   IF (rank.EQ.irank) THEN
-                      !                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
-                      !                                rank,irank,(tag1+1)
-                      CALL MPI_RECV(COMMARR1,44,MPI_REAL,0,(tag1+1), &
-                           MPI_COMM_WORLD,MPI_STATUS,IERR)
-                      wsdat(tsA)%par(i,j)%hs = COMMARR1(1:10)
-                      wsdat(tsA)%par(i,j)%tp = COMMARR1(11:20)
-                      wsdat(tsA)%par(i,j)%dir = COMMARR1(21:30)
-                      wsdat(tsA)%par(i,j)%dspr = COMMARR1(31:40)
-                      wsdat(tsA)%wnd(i,j)%wdir = COMMARR1(41)
-                      wsdat(tsA)%wnd(i,j)%wspd = COMMARR1(42)
-                      wsdat(tsA)%lat(i,j) = COMMARR1(43)
-                      wsdat(tsA)%lon(i,j) = COMMARR1(44)
-                   END IF
-
-                   IF (rank.EQ.0) THEN
-                      CALL MPI_SEND(wsdat(tsA)%date,1, &
-                           MPI_DOUBLE_PRECISION,irank, &
-                           (tag1+2),MPI_COMM_WORLD,IERR)
-                   END IF
-                   IF (rank.EQ.irank) THEN
-                      CALL MPI_RECV(wsdat(tsA)%date,1, &
-                           MPI_DOUBLE_PRECISION,0,(tag1+2), &
-                           MPI_COMM_WORLD,MPI_STATUS,IERR)
-                   END IF
-
-                   IF (rank.EQ.0) THEN
-                      !                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
-                      !                                rank,irank,(tag1+3)
-                      COMMARR2 = (/wsdat(tsA)%par(i,j)%ipart(:), &
-                           wsdat(tsA)%par(i,j)%checked/)
-                      CALL MPI_SEND(COMMARR2,11, &
-                           MPI_INTEGER,irank,(tag1+3),MPI_COMM_WORLD,IERR)
-                   END IF
-                   IF (rank.EQ.irank) THEN
-                      !                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
-                      !                                rank,irank,(tag1+3)
-                      CALL MPI_RECV(COMMARR2,11, &
-                           MPI_INTEGER,0,(tag1+3), &
-                           MPI_COMM_WORLD,MPI_STATUS,IERR)
-                      wsdat(tsA)%par(i,j)%ipart(:) = COMMARR2(1:10)
-                      wsdat(tsA)%par(i,j)%checked = COMMARR2(11)
-                   END IF
-
-                END DO
-             END DO
+112       CONTINUE
+          IF (line.EQ.1) THEN
+            WRITE(20,2002)
+            WRITE(6,2002)
+            STOP 1
           END IF
-       END DO
+          CLOSE(11)
+          ! ===== READ LOOP FINISHED =====
+          LINE=LINE-1
 
-       CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
-#endif
+          WRITE(6,*) '... finished'
 
-
-#ifdef W3_MPI
-       IF (rank.EQ.0) THEN
-#endif
-          ! ----*** Test Output *** --------------------------------------------------
-          IF (testout) THEN
-             !-----RAW PARTITION output: Coordinates
-             OPEN(unit=31,file='PART_COORD.OUT',status='unknown')
-
-             WRITE(31,*) 'Longitude ='
-             DO j = maxJ,1,-1
-                DO i = 1,maxI
-                   WRITE(31,'(F7.2)',ADVANCE='NO') wsdat(1)%lon(i,j)
-                END DO
-                WRITE(31,'(A)',ADVANCE='YES') ''
-             END DO
-
-             WRITE(31,*) 'Latitude = '
-             DO j = maxJ,1,-1
-                DO i = 1,maxI
-                   WRITE(31,'(F7.2)',ADVANCE='NO') wsdat(1)%lat(i,j)
-                END DO
-                WRITE(31,'(A)',ADVANCE='YES') ''
-             END DO
-
-             CLOSE(31)
-
-             !-----RAW PARTITION output: hs
-             OPEN(unit=32, file='PART_HSIGN.OUT', &
-                  status='unknown')
-
-             maxpartout = 5
-             DO tsA = 1,SIZE(wsdat)
-                WRITE(32,'(I4,71x,A)') tsA,'Time step'
-                WRITE(32,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
-                DO k = 1,maxpartout
-                   WRITE(32,'(I4,71x,A)') k,'System number'
-                   WRITE(32,'(I4,71x,A)') 9999,'Number of points in system'
-                   DO j = maxJ,1,-1
-                      DO i = 1,maxI
-                         WRITE(32,'(F8.2)',ADVANCE='NO') wsdat(tsA)%par(i,j)%hs(k)
-                      END DO
-                      WRITE(32,'(A)',ADVANCE='YES') ''
-                   END DO
-                END DO
-             END DO
-
-             CLOSE(32)
-
-             !-----RAW PARTITION output: tp
-             !      OPEN(unit=33,recl=2147483646, file='PART_TP.OUT', &
-             !           status='unknown')
-             OPEN(unit=33, file='PART_TP.OUT', &
-                  status='unknown')
-
-             DO tsA = 1,SIZE(wsdat)
-                WRITE(33,'(I4,71x,A)') tsA,'Time step'
-                WRITE(33,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
-                DO k = 1,maxpartout
-                   WRITE(33,'(I4,71x,A)') k,'System number'
-                   WRITE(33,'(I4,71x,A)') 9999,'Number of points in system'
-                   DO j = maxJ,1,-1
-                      DO i = 1,maxI
-                         WRITE(33,'(F8.2)',ADVANCE='NO') wsdat(tsA)%par(i,j)%tp(k)
-                      END DO
-                      WRITE(33,'(A)',ADVANCE='YES') ''
-                   END DO
-                END DO
-             END DO
-
-             CLOSE(33)
-
-             !-----RAW PARTITION output: dir
-             OPEN(unit=34, file='PART_DIR.OUT', &
-                  status='unknown')
-
-             DO tsA = 1,SIZE(wsdat)
-                WRITE(34,'(I4,71x,A)') tsA,'Time step'
-                WRITE(34,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
-                DO k = 1,maxpartout
-                   WRITE(34,'(I4,71x,A)') k,'System number'
-                   WRITE(34,'(I4,71x,A)') 9999,'Number of points in system'
-                   DO j = maxJ,1,-1
-                      DO i = 1,maxI
-                         WRITE(34,'(F8.2)',ADVANCE='NO') wsdat(tsA)%par(i,j)%dir(k)
-                      END DO
-                      WRITE(34,'(A)',ADVANCE='YES') ''
-                   END DO
-                END DO
-             END DO
-
-             CLOSE(34)
-
-             !-----RAW PARTITION output: dspr
-             OPEN(unit=35, file='PART_DSPR.OUT', &
-                  status='unknown')
-
-             DO tsA = 1,SIZE(wsdat)
-                WRITE(35,'(I4,71x,A)') tsA,'Time step'
-                WRITE(35,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
-                DO k = 1,maxpartout
-                   WRITE(35,'(I4,71x,A)') k,'System number'
-                   WRITE(35,'(I4,71x,A)') 9999,'Number of points in system'
-                   DO j = maxJ,1,-1
-                      DO i = 1,maxI
-                         WRITE(35,'(F8.2)',ADVANCE='NO') &
-                              wsdat(tsA)%par(i,j)%dspr(k)
-                      END DO
-                      WRITE(35,'(A)',ADVANCE='YES') ''
-                   END DO
-                END DO
-             END DO
-
-             CLOSE(35)
+          IF (ttest.LT.tstart) THEN
+            WRITE(20,2003) TSTART
+            WRITE(6,2003) TSTART
+            STOP 1
           END IF
+
+          IF (ALLOCATED(PHS)) DEALLOCATE(PHS)
+          IF (ALLOCATED(PTP)) DEALLOCATE(PTP)
+          IF (ALLOCATED(PDIR)) DEALLOCATE(PDIR)
+          IF (ALLOCATED(PSPR)) DEALLOCATE(PSPR)
+          IF (ALLOCATED(PWF)) DEALLOCATE(PWF)
+
 #ifdef W3_MPI
-       END IF
+        END IF
+#endif
+      END IF
+
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
 #endif
 
-       ! ------------------------------------------------------------------------
+        !        Find unique time steps (and sort in ascending order)
+        CALL UNIQUE(REAL(ts(1:line)),line,uniqueTim,maxTs)
 
-       !        Allocate the sysA structure
+        !        Find unique lat and lon values (and sort in ascending order)
+        CALL UNIQUE(llat(1:line),SIZE(llat(1:line)),uniqueLatraw,nout1)
+        CALL UNIQUE(llon(1:line),SIZE(llon(1:line)),uniqueLonraw,nout2)
+
+        !--042916-----------------------
+        !
+        !        Redefine uniqueLatraw and uniqueLonrawto based on domain extent
+        WRITE(20,*) 'uniqueLatraw(:) =', uniqueLatraw(:)
+        WRITE(20,*) 'uniqueLonraw(:) =', uniqueLonraw(:)
+
+        WRITE(20,*) 'No. increments: Longitude, Latitue =', mxcwt, mycwt
+        DEALLOCATE(uniqueLatraw)
+        DEALLOCATE(uniqueLonraw)
+        ALLOCATE(uniqueLatraw(mycwt+1))
+        ALLOCATE(uniqueLonraw(mxcwt+1))
+        DO i = 1,(mycwt+1)
+          uniqueLatraw(i) =  minlat + &
+               (REAL(i)-1)/REAL(mycwt)*(maxlat-minlat)
+        END DO
+        DO i = 1,(mxcwt+1)
+          uniqueLonraw(i) =  minlon + &
+               (REAL(i)-1)/REAL(mxcwt)*(maxlon-minlon)
+        END DO
+        WRITE(20,*) 'uniqueLatraw(:) =', uniqueLatraw(:)
+        WRITE(20,*) 'uniqueLonraw(:) =', uniqueLonraw(:)
+        !
+        !--042916-----------------------
+
+        !        Filter out lats and lons outside of domain of interest
+        DO latind1 = 1,SIZE(uniqueLatraw)
+          IF (uniqueLatraw(latind1).GE.minlat) EXIT
+        END DO
+        DO latind2 = SIZE(uniqueLatraw),1,-1
+          IF (uniqueLatraw(latind2).LE.maxlat) EXIT
+        END DO
+        DO lonind1 = 1,SIZE(uniqueLonraw)
+          IF (uniqueLonraw(lonind1).GE.minlon) EXIT
+        END DO
+        DO lonind2 = SIZE(uniqueLonraw),1,-1
+          IF (uniqueLonraw(lonind2).LE.maxlon) EXIT
+        END DO
+        WRITE(20,*) 'latind1, latind2, lonind1, lonind2 =', &
+             latind1, latind2, lonind1, lonind2
+        IF ((latind1.GE.latind2).OR.(lonind1.GE.lonind2)) THEN
+          WRITE(20,1400)
+          WRITE(6,1400)
+          STOP 1
+        END IF
+        NULLIFY(uniqueLat)
+        NULLIFY(uniqueLon)
+        ALLOCATE(uniqueLat(latind2-latind1+1))
+        ALLOCATE(uniqueLon(lonind2-lonind1+1))
+        uniqueLat = uniqueLatraw(latind1:latind2)
+        uniqueLon = uniqueLonraw(lonind1:lonind2)
+        WRITE(20,*) 'In waveTracking_NWS_V2: Longitude range =', &
+             uniqueLon(1), uniqueLon(SIZE(uniqueLon))
+        WRITE(20,*) '                        Latitude range  =', &
+             uniqueLat(1), uniqueLat(SIZE(uniqueLat))
+
+        !        Map is transposed (rotated by 90 deg), so that:
+        !          I (matrix row) represents Longitute
+        !          J (matrix column) represents Latitude
+        !          i.e. from this point onwards the indices (i,j) represents Cart. coordinates
+        ALLOCATE( mlon(SIZE(uniqueLon),SIZE(uniqueLat)) )
+        ALLOCATE( mlat(SIZE(uniqueLon),SIZE(uniqueLat)) )
+        !
+        maxI = SIZE(uniqueLon)
+        maxJ = SIZE(uniqueLat)
+        DO I = 1,maxI
+          DO J = 1,maxJ
+            mlon(I,J) = uniqueLon(I)
+            mlat(I,J) = uniqueLat(J)
+          END DO
+        END DO
 #ifdef W3_MPI
-       IF (rank.EQ.0) THEN
-#endif
-          WRITE(20,*) 'Allocating sysA...'
-#ifdef W3_MPI
-       END IF
-#endif
-       ALLOCATE( sysA(maxTs) )
-#ifdef W3_MPI
-       IF (rank.EQ.0) THEN
-#endif
-          WRITE(20,*) 'SIZE(sysA) = ',SIZE(sysA)
-          WRITE(6,1020) ' Number of time levels being processed:',SIZE(sysA)
-1020      FORMAT(A,I4)
-#ifdef W3_MPI
-       END IF
+      END IF
 #endif
 
-       !        Allocate maxSys
-       ALLOCATE( maxSys(maxTs) )
+#ifdef W3_MPI
+      CALL MPI_BCAST(maxI,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(maxJ,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+      CALL MPI_BCAST(maxTs,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
+#endif
+
+      !        Allocate the wsdat structure
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif
+        WRITE(20,*) 'Allocating wsdat...'
+#ifdef W3_MPI
+      END IF
+#endif
+      NULLIFY(wsdat)
+      ALLOCATE(wsdat(maxTs))
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif
+        WRITE(20,*) 'SIZE(wsdat) = ',SIZE(wsdat)
+#ifdef W3_MPI
+      END IF
+#endif
+
+      !        Allocate and initialize the wsdat array
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif
+        DO tsA = 1,maxTs
+          ALLOCATE(wsdat(tsA)%lat(maxI,maxJ))
+          ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
+          ALLOCATE(wsdat(tsA)%par(maxI,maxJ))
+          ALLOCATE(wsdat(tsA)%wnd(maxI,maxJ))
+
+          DO j = 1,maxJ
+            DO i = 1,maxI
+              wsdat(tsA)%lat(i,j)=mlat(i,j)
+              wsdat(tsA)%lon(i,j)=mlon(i,j)
+              wsdat(tsA)%maxi=maxI
+              wsdat(tsA)%maxj=maxJ
+              wsdat(tsA)%par(i,j)%hs(1:10)=9999.
+              wsdat(tsA)%par(i,j)%tp(1:10)=9999.
+              wsdat(tsA)%par(i,j)%dir(1:10)=9999.
+              wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
+              !                  wsdat(tsA)%par(i,j)%wf(1:10)=9999.
+              wsdat(tsA)%par(i,j)%ipart(1:10)=0
+              wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable
+              wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
+              wsdat(tsA)%wnd(i,j)%wdir=9999.
+              wsdat(tsA)%wnd(i,j)%wspd=9999.
+              wsdat(tsA)%par(i,j)%checked=-1
+            END DO
+          END DO
+        END DO
+
+        !        Assign to each line in partition file an entry in wsdat
+        !        At each time step each point contains all numpart partitions.
+        !        Only store the first 10 partitions.
+        l = 1
+
+        DO WHILE (l.LE.line)
+          DO j = 1,maxJ
+            DO i = 1,maxI
+              !>042916                  IF ( (llat(l).EQ.mlat(i,j)).AND. &
+              !>042916                       (llon(l).EQ.mlon(i,j)) ) THEN
+              IF ( (ABS(llat(l)-mlat(i,j)).LT.1.E-2).AND. &
+                   (ABS(llon(l)-mlon(i,j)).LT.1.E-2) ) THEN
+                !                    WRITE(20,*) 'MATCHED! ',l,&
+                !                       llat(l),mlat(i,j),ABS(llat(l)-mlat(i,j)),&
+                !                       llon(l),mlon(i,j),ABS(llon(l)-mlon(i,j))
+                wsdat(ts(l))%lat(i,j) = llat(l)
+                wsdat(ts(l))%lon(i,j) = llon(l)
+                !                   --- Find ALL partition values associated with
+                !                       lat(i,j) and lon(i,j). Keep list index l
+                !                       fixed and recycle iline as variable index. ---
+                iline = l
+                k = 1
+                DO WHILE (                                         &
+                     ABS(wsdat(ts(l))%lat(i,j)-llat(iline)).LT.1.E-3 &
+                     .AND.ABS(wsdat(ts(l))%lon(i,j)-llon(iline)).LT.1.E-3 )
+                  IF (k.LE.10) THEN
+                    wsdat(ts(iline))%par(i,j)%ipart(k) = k
+                    wsdat(ts(iline))%par(i,j)%hs(k)    = hs0(iline)
+                    wsdat(ts(iline))%par(i,j)%tp(k)    = tp0(iline)
+                    wsdat(ts(iline))%par(i,j)%dir(k)   = dir0(iline)
+                    wsdat(ts(iline))%par(i,j)%dspr(k)  = dspr0(iline)
+                    !                       wsdat(ts(k))%par(i,j)%wf(k) = wf0(l)
+                    IF (k.EQ.1) THEN
+                      wsdat(ts(iline))%date = date0(iline)
+                      wsdat(ts(iline))%wnd(i,j)%wdir = wndDir0(iline)
+                      wsdat(ts(iline))%wnd(i,j)%wspd = wndSpd0(iline)
+                      wsdat(ts(iline))%par(i,j)%checked = 0
+                    END IF
+                  END IF
+                  k = k + 1
+                  iline = iline + 1
+                  if (iline.GT.line) EXIT
+                END DO
+                !                   --- Account for increment at the end of loop (400 CONTINUE)
+                !                       and go one element back in list because of increment. ---
+                l = iline-1
+                GOTO 400
+              END IF
+            END DO
+          END DO
+400       CONTINUE
+          IF (l+1.le.line) THEN
+            IF (ts(l).LT.ts(l+1)) THEN
+              K = line-l
+              !             --- With each time step completed, deallocate processed 1:l
+              !                 elements from 1d array. Create a temporary array size of
+              !                 (l+1:line) with k elements and reallocate original array. ---
+              IF (ALLOCATED(tmp_i4)) DEALLOCATE(tmp_i4)
+              !             --- REALLOCATE(integer arrays) ---
+              ALLOCATE(tmp_i4(k))
+              tmp_i4(1:k) = ts((l+1):line)
+              DEALLOCATE(ts)
+              ALLOCATE(ts(k))
+              ts(1:k) = tmp_i4(1:k)
+              DEALLOCATE(tmp_i4)
+              !             --- REALLOCATE(double precision arrays) ---
+              IF (ALLOCATED(tmp_r8)) DEALLOCATE(tmp_r8)
+              ALLOCATE(tmp_r8(k))
+              tmp_r8(1:k) = date0((l+1):line)
+              DEALLOCATE(date0)
+              ALLOCATE(date0(k))
+              date0(1:k) = tmp_r8(1:k)
+              DEALLOCATE(tmp_r8)
+              !             --- REALLOCATE(single precision arrays) ---
+              IF (ALLOCATED(tmp_r4)) DEALLOCATE(tmp_r4)
+              ALLOCATE(tmp_r4(k))
+              tmp_r4(1:k) = llat((l+1):line)
+              DEALLOCATE(llat)
+              ALLOCATE(llat(k))
+              llat(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = llon((l+1):line)
+              DEALLOCATE(llon)
+              ALLOCATE(llon(k))
+              llon(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = hs0((l+1):line)
+              DEALLOCATE(hs0)
+              ALLOCATE(hs0(k))
+              hs0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = tp0((l+1):line)
+              DEALLOCATE(tp0)
+              ALLOCATE(tp0(k))
+              tp0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = dir0((l+1):line)
+              DEALLOCATE(dir0)
+              ALLOCATE(dir0(k))
+              dir0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = dspr0((l+1):line)
+              DEALLOCATE(dspr0)
+              ALLOCATE(dspr0(k))
+              dspr0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = wndSpd0((l+1):line)
+              DEALLOCATE(wndSpd0)
+              ALLOCATE(wndSpd0(k))
+              wndSpd0(1:k) = tmp_r4(1:k)
+              tmp_r4(1:k) = wndDir0((l+1):line)
+              DEALLOCATE(wndDir0)
+              ALLOCATE(wndDir0(k))
+              wndDir0(1:k) = tmp_r4(1:k)
+              DEALLOCATE(tmp_r4)
+              line = k
+              l = 0
+            END IF
+          END IF
+          l = l + 1
+        END DO
+        !
+        IF (ALLOCATED(ts)) DEALLOCATE(ts)
+        IF (ALLOCATED(llat)) DEALLOCATE(llat)
+        IF (ALLOCATED(llon)) DEALLOCATE(llon)
+        IF (ALLOCATED(mlat)) DEALLOCATE(mlat)
+        IF (ALLOCATED(mlon)) DEALLOCATE(mlon)
+        IF (ALLOCATED(date0)) DEALLOCATE(date0)
+        IF (ALLOCATED(hs0)) DEALLOCATE(hs0)
+        IF (ALLOCATED(tp0)) DEALLOCATE(tp0)
+        IF (ALLOCATED(dir0)) DEALLOCATE(dir0)
+        IF (ALLOCATED(dspr0)) DEALLOCATE(dspr0)
+        !         IF (ALLOCATED(wf0)) DEALLOCATE(wf0)
+        IF (ALLOCATED(wndSpd0)) DEALLOCATE(wndSpd0)
+        IF (ALLOCATED(wndDir0)) DEALLOCATE(wndDir0)
+#ifdef W3_MPI
+      END IF
+#endif
+
+#ifdef W3_MPI
+      !         Communicate the wsdat entries from rank=0 to other ranks
+      DO tsA = t0,maxTs
+        irank = MOD((tsA-t0),MIN(nproc,maxTS))
+        !             WRITE(20,*) 'Rank,irank=',rank,irank
+        IF (irank.NE.0) THEN
+          !               WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
+
+          IF (rank.EQ.irank) THEN
+            ALLOCATE(wsdat(tsA)%lat(maxI,maxJ))
+            ALLOCATE(wsdat(tsA)%lon(maxI,maxJ))
+            ALLOCATE(wsdat(tsA)%par(maxI,maxJ))
+            ALLOCATE(wsdat(tsA)%wnd(maxI,maxJ))
+
+            DO j = 1,maxJ
+              DO i = 1,maxI
+                wsdat(tsA)%maxi=maxI
+                wsdat(tsA)%maxj=maxJ
+                wsdat(tsA)%par(i,j)%hs(1:10)=9999.
+                wsdat(tsA)%par(i,j)%tp(1:10)=9999.
+                wsdat(tsA)%par(i,j)%dir(1:10)=9999.
+                wsdat(tsA)%par(i,j)%dspr(1:10)=9999.
+                wsdat(tsA)%par(i,j)%ipart(1:10)=0
+                wsdat(tsA)%par(i,j)%sys(1:10)=9999                      ! 40.PAR Increase this array, or make allocatable
+                wsdat(tsA)%par(i,j)%ngbrSys(1:50)=9999
+                wsdat(tsA)%wnd(i,j)%wdir=9999.
+                wsdat(tsA)%wnd(i,j)%wspd=9999.
+                wsdat(tsA)%par(i,j)%checked=-1
+              END DO
+            END DO
+          END IF
+
+          DO j = 1,maxJ
+            DO i = 1,maxI
+              tag1 = ((j-1)*maxI+i)*10
+
+              IF (rank.EQ.0) THEN
+                !                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
+                !                                rank,irank,(tag1+1)
+                COMMARR1 = (/wsdat(tsA)%par(i,j)%hs(:), &
+                     wsdat(tsA)%par(i,j)%tp(:), &
+                     wsdat(tsA)%par(i,j)%dir(:), &
+                     wsdat(tsA)%par(i,j)%dspr(:), &
+                     wsdat(tsA)%wnd(i,j)%wdir, &
+                     wsdat(tsA)%wnd(i,j)%wspd, &
+                     wsdat(tsA)%lat(i,j), &
+                     wsdat(tsA)%lon(i,j)/)
+                CALL MPI_SEND(COMMARR1,44,MPI_REAL,irank, &
+                     (tag1+1),MPI_COMM_WORLD,IERR)
+              END IF
+              IF (rank.EQ.irank) THEN
+                !                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
+                !                                rank,irank,(tag1+1)
+                CALL MPI_RECV(COMMARR1,44,MPI_REAL,0,(tag1+1), &
+                     MPI_COMM_WORLD,MPI_STATUS,IERR)
+                wsdat(tsA)%par(i,j)%hs = COMMARR1(1:10)
+                wsdat(tsA)%par(i,j)%tp = COMMARR1(11:20)
+                wsdat(tsA)%par(i,j)%dir = COMMARR1(21:30)
+                wsdat(tsA)%par(i,j)%dspr = COMMARR1(31:40)
+                wsdat(tsA)%wnd(i,j)%wdir = COMMARR1(41)
+                wsdat(tsA)%wnd(i,j)%wspd = COMMARR1(42)
+                wsdat(tsA)%lat(i,j) = COMMARR1(43)
+                wsdat(tsA)%lon(i,j) = COMMARR1(44)
+              END IF
+
+              IF (rank.EQ.0) THEN
+                CALL MPI_SEND(wsdat(tsA)%date,1, &
+                     MPI_DOUBLE_PRECISION,irank, &
+                     (tag1+2),MPI_COMM_WORLD,IERR)
+              END IF
+              IF (rank.EQ.irank) THEN
+                CALL MPI_RECV(wsdat(tsA)%date,1, &
+                     MPI_DOUBLE_PRECISION,0,(tag1+2), &
+                     MPI_COMM_WORLD,MPI_STATUS,IERR)
+              END IF
+
+              IF (rank.EQ.0) THEN
+                !                        WRITE(6,*) '>> Sending: rank,irank,tag1=', &
+                !                                rank,irank,(tag1+3)
+                COMMARR2 = (/wsdat(tsA)%par(i,j)%ipart(:), &
+                     wsdat(tsA)%par(i,j)%checked/)
+                CALL MPI_SEND(COMMARR2,11, &
+                     MPI_INTEGER,irank,(tag1+3),MPI_COMM_WORLD,IERR)
+              END IF
+              IF (rank.EQ.irank) THEN
+                !                         WRITE(6,*) '<< Receiving: rank,irank,tag1=', &
+                !                                rank,irank,(tag1+3)
+                CALL MPI_RECV(COMMARR2,11, &
+                     MPI_INTEGER,0,(tag1+3), &
+                     MPI_COMM_WORLD,MPI_STATUS,IERR)
+                wsdat(tsA)%par(i,j)%ipart(:) = COMMARR2(1:10)
+                wsdat(tsA)%par(i,j)%checked = COMMARR2(11)
+              END IF
+
+            END DO
+          END DO
+        END IF
+      END DO
+
+      CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
+#endif
+
+
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif
+        ! ----*** Test Output *** --------------------------------------------------
+        IF (testout) THEN
+          !-----RAW PARTITION output: Coordinates
+          OPEN(unit=31,file='PART_COORD.OUT',status='unknown')
+
+          WRITE(31,*) 'Longitude ='
+          DO j = maxJ,1,-1
+            DO i = 1,maxI
+              WRITE(31,'(F7.2)',ADVANCE='NO') wsdat(1)%lon(i,j)
+            END DO
+            WRITE(31,'(A)',ADVANCE='YES') ''
+          END DO
+
+          WRITE(31,*) 'Latitude = '
+          DO j = maxJ,1,-1
+            DO i = 1,maxI
+              WRITE(31,'(F7.2)',ADVANCE='NO') wsdat(1)%lat(i,j)
+            END DO
+            WRITE(31,'(A)',ADVANCE='YES') ''
+          END DO
+
+          CLOSE(31)
+
+          !-----RAW PARTITION output: hs
+          OPEN(unit=32, file='PART_HSIGN.OUT', &
+               status='unknown')
+
+          maxpartout = 5
+          DO tsA = 1,SIZE(wsdat)
+            WRITE(32,'(I4,71x,A)') tsA,'Time step'
+            WRITE(32,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
+            DO k = 1,maxpartout
+              WRITE(32,'(I4,71x,A)') k,'System number'
+              WRITE(32,'(I4,71x,A)') 9999,'Number of points in system'
+              DO j = maxJ,1,-1
+                DO i = 1,maxI
+                  WRITE(32,'(F8.2)',ADVANCE='NO') wsdat(tsA)%par(i,j)%hs(k)
+                END DO
+                WRITE(32,'(A)',ADVANCE='YES') ''
+              END DO
+            END DO
+          END DO
+
+          CLOSE(32)
+
+          !-----RAW PARTITION output: tp
+          !      OPEN(unit=33,recl=2147483646, file='PART_TP.OUT', &
+          !           status='unknown')
+          OPEN(unit=33, file='PART_TP.OUT', &
+               status='unknown')
+
+          DO tsA = 1,SIZE(wsdat)
+            WRITE(33,'(I4,71x,A)') tsA,'Time step'
+            WRITE(33,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
+            DO k = 1,maxpartout
+              WRITE(33,'(I4,71x,A)') k,'System number'
+              WRITE(33,'(I4,71x,A)') 9999,'Number of points in system'
+              DO j = maxJ,1,-1
+                DO i = 1,maxI
+                  WRITE(33,'(F8.2)',ADVANCE='NO') wsdat(tsA)%par(i,j)%tp(k)
+                END DO
+                WRITE(33,'(A)',ADVANCE='YES') ''
+              END DO
+            END DO
+          END DO
+
+          CLOSE(33)
+
+          !-----RAW PARTITION output: dir
+          OPEN(unit=34, file='PART_DIR.OUT', &
+               status='unknown')
+
+          DO tsA = 1,SIZE(wsdat)
+            WRITE(34,'(I4,71x,A)') tsA,'Time step'
+            WRITE(34,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
+            DO k = 1,maxpartout
+              WRITE(34,'(I4,71x,A)') k,'System number'
+              WRITE(34,'(I4,71x,A)') 9999,'Number of points in system'
+              DO j = maxJ,1,-1
+                DO i = 1,maxI
+                  WRITE(34,'(F8.2)',ADVANCE='NO') wsdat(tsA)%par(i,j)%dir(k)
+                END DO
+                WRITE(34,'(A)',ADVANCE='YES') ''
+              END DO
+            END DO
+          END DO
+
+          CLOSE(34)
+
+          !-----RAW PARTITION output: dspr
+          OPEN(unit=35, file='PART_DSPR.OUT', &
+               status='unknown')
+
+          DO tsA = 1,SIZE(wsdat)
+            WRITE(35,'(I4,71x,A)') tsA,'Time step'
+            WRITE(35,'(I4,71x,A)') maxpartout,'Tot number of raw partitions'
+            DO k = 1,maxpartout
+              WRITE(35,'(I4,71x,A)') k,'System number'
+              WRITE(35,'(I4,71x,A)') 9999,'Number of points in system'
+              DO j = maxJ,1,-1
+                DO i = 1,maxI
+                  WRITE(35,'(F8.2)',ADVANCE='NO') &
+                       wsdat(tsA)%par(i,j)%dspr(k)
+                END DO
+                WRITE(35,'(A)',ADVANCE='YES') ''
+              END DO
+            END DO
+          END DO
+
+          CLOSE(35)
+        END IF
+#ifdef W3_MPI
+      END IF
+#endif
+
+      ! ------------------------------------------------------------------------
+
+      !        Allocate the sysA structure
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif
+        WRITE(20,*) 'Allocating sysA...'
+#ifdef W3_MPI
+      END IF
+#endif
+      ALLOCATE( sysA(maxTs) )
+#ifdef W3_MPI
+      IF (rank.EQ.0) THEN
+#endif
+        WRITE(20,*) 'SIZE(sysA) = ',SIZE(sysA)
+        WRITE(6,1020) ' Number of time levels being processed:',SIZE(sysA)
+1020    FORMAT(A,I4)
+#ifdef W3_MPI
+      END IF
+#endif
+
+      !        Allocate maxSys
+      ALLOCATE( maxSys(maxTs) )
     ELSE
-       !        Raw partitioning data from wave model memory, via the array wsdat.
-       !        Set maxTs to the time step to compute: 1=first time step, 2=otherwise
-       maxTs = tmax
-       t0 = tcur
+      !        Raw partitioning data from wave model memory, via the array wsdat.
+      !        Set maxTs to the time step to compute: 1=first time step, 2=otherwise
+      maxTs = tmax
+      t0 = tcur
 
-       !        Allocate the sysA structure
-       ALLOCATE( sysA(1) )                                              !Change to sysA(2)?
-       !        Allocate maxSys
-       ALLOCATE( maxSys(1) )                                            !Change to maxSys(2)?
+      !        Allocate the sysA structure
+      ALLOCATE( sysA(1) )                                              !Change to sysA(2)?
+      !        Allocate maxSys
+      ALLOCATE( maxSys(1) )                                            !Change to maxSys(2)?
     END IF
 
     !     Big loop over all time levels
 #ifdef W3_MPI
     IF (rank.EQ.0) THEN
 #endif
-       WRITE(6,*) 'Performing spatial tracking...'
+      WRITE(6,*) 'Performing spatial tracking...'
 #ifdef W3_MPI
     END IF
     !      WRITE(20,*) 'rank,t0,maxTs,nproc =',rank,t0,maxTs,nproc
     DO tsA = (t0+rank),maxTs,MIN(nproc,maxTS)
-       !         WRITE(20,*) 'Computing: Rank, tsA =',rank,tsA
+      !         WRITE(20,*) 'Computing: Rank, tsA =',rank,tsA
 #endif
 #ifdef W3_SHRD
-       DO tsA = t0,maxTs
+      DO tsA = t0,maxTs
 #endif
 
-          WRITE(20,*) 'Call spiralTrackV3, tsA=',tsA,'...'
-          CALL spiralTrackV3 ( wsdat(tsA), dirKnob, perKnob, wetPts, &
-               hsKnob, seedLat, seedLon, &
-               maxSys(tsA), sysA(tsA)%sys )
+        WRITE(20,*) 'Call spiralTrackV3, tsA=',tsA,'...'
+        CALL spiralTrackV3 ( wsdat(tsA), dirKnob, perKnob, wetPts, &
+             hsKnob, seedLat, seedLon, &
+             maxSys(tsA), sysA(tsA)%sys )
 
-          WRITE(20,*) '*** SIZE(sysA(1:tsA)%sys) at end of time step', &
-               tsA,':'
-          WRITE(20,*) SIZE(sysA(tsA)%sys)
+        WRITE(20,*) '*** SIZE(sysA(1:tsA)%sys) at end of time step', &
+             tsA,':'
+        WRITE(20,*) SIZE(sysA(tsA)%sys)
 #ifdef W3_SHRD
-       END DO
+      END DO
 #endif
 #ifdef W3_MPI
     END DO
@@ -1436,255 +1436,255 @@ CONTAINS
 
     !     Communicate results back to rank 0
     DO tsA = t0,maxTs
-       irank = MOD((tsA-t0),MIN(nproc,maxTS))
-       !         WRITE(20,*) 'Rank,irank=',rank,irank
-       IF (irank.NE.0) THEN
-          !            WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
+      irank = MOD((tsA-t0),MIN(nproc,maxTS))
+      !         WRITE(20,*) 'Rank,irank=',rank,irank
+      IF (irank.NE.0) THEN
+        !            WRITE(20,*) 'Communicating for Rank,irank=',rank,irank
 
-          !           Send maxSys(tsA) at each time level to rank 0
-          tag1 = tsA
-          IF (rank.EQ.irank) THEN
-             !              Send results from current rank to rank 0 (blocking)
-             !               WRITE(20,*) '>> Sending: rank,tsA,tag1=',rank,tsA,tag1
-             CALL MPI_SEND(maxSys(tsA),1,MPI_INTEGER,0,tag1, &
-                  MPI_COMM_WORLD,IERR)
-             !               WRITE(20,*) 'Rank, IERR=',rank,IERR
-          END IF
-          IF (rank.EQ.0) THEN
-             !               WRITE(20,*) '<< Receiving: rank,tsA,tag1=',rank,tsA,tag1
-             CALL MPI_RECV(maxSys(tsA),1,MPI_INTEGER, &
-                  irank,tag1,MPI_COMM_WORLD,MPI_STATUS,IERR)
-             !              Allocate structure at this time level
-             ALLOCATE( sysA(tsA)%sys(maxSys(tsA)) )
-             DO ic = 1,maxSys(tsA)
-                NULLIFY( sysA(tsA)%sys(ic)%i )
-                NULLIFY( sysA(tsA)%sys(ic)%j )
-                NULLIFY( sysA(tsA)%sys(ic)%lon )
-                NULLIFY( sysA(tsA)%sys(ic)%lat )
-                NULLIFY( sysA(tsA)%sys(ic)%hs )
-                NULLIFY( sysA(tsA)%sys(ic)%tp )
-                NULLIFY( sysA(tsA)%sys(ic)%dir)
-                NULLIFY( sysA(tsA)%sys(ic)%dspr)
-                ALLOCATE( sysA(tsA)%sys(ic)%i(maxI*maxJ) )
-                ALLOCATE( sysA(tsA)%sys(ic)%j(maxI*maxJ) )
-                ALLOCATE( sysA(tsA)%sys(ic)%lon(maxI*maxJ) )
-                ALLOCATE( sysA(tsA)%sys(ic)%lat(maxI*maxJ) )
-                ALLOCATE( sysA(tsA)%sys(ic)%hs(maxI*maxJ) )
-                ALLOCATE( sysA(tsA)%sys(ic)%tp(maxI*maxJ) )
-                ALLOCATE( sysA(tsA)%sys(ic)%dir(maxI*maxJ) )
-                ALLOCATE( sysA(tsA)%sys(ic)%dspr(maxI*maxJ) )
-                sysA(tsA)%sys(ic)%i(:) = 9999
-                sysA(tsA)%sys(ic)%j(:) = 9999
-                sysA(tsA)%sys(ic)%lon(:) = 9999.
-                sysA(tsA)%sys(ic)%lat(:) = 9999.
-                sysA(tsA)%sys(ic)%hs(:) = 9999.
-                sysA(tsA)%sys(ic)%tp(:) = 9999.
-                sysA(tsA)%sys(ic)%dir(:) = 9999.
-                sysA(tsA)%sys(ic)%dspr(:) = 9999.
-                sysA(tsA)%sys(ic)%hsMean = 9999.
-                sysA(tsA)%sys(ic)%tpMean = 9999.
-                sysA(tsA)%sys(ic)%dirMean = 9999.
-                sysA(tsA)%sys(ic)%sysInd = 9999
-                sysA(tsA)%sys(ic)%nPoints = 9999
-                sysA(tsA)%sys(ic)%grp = 9999
-             END DO
-          END IF
+        !           Send maxSys(tsA) at each time level to rank 0
+        tag1 = tsA
+        IF (rank.EQ.irank) THEN
+          !              Send results from current rank to rank 0 (blocking)
+          !               WRITE(20,*) '>> Sending: rank,tsA,tag1=',rank,tsA,tag1
+          CALL MPI_SEND(maxSys(tsA),1,MPI_INTEGER,0,tag1, &
+               MPI_COMM_WORLD,IERR)
+          !               WRITE(20,*) 'Rank, IERR=',rank,IERR
+        END IF
+        IF (rank.EQ.0) THEN
+          !               WRITE(20,*) '<< Receiving: rank,tsA,tag1=',rank,tsA,tag1
+          CALL MPI_RECV(maxSys(tsA),1,MPI_INTEGER, &
+               irank,tag1,MPI_COMM_WORLD,MPI_STATUS,IERR)
+          !              Allocate structure at this time level
+          ALLOCATE( sysA(tsA)%sys(maxSys(tsA)) )
+          DO ic = 1,maxSys(tsA)
+            NULLIFY( sysA(tsA)%sys(ic)%i )
+            NULLIFY( sysA(tsA)%sys(ic)%j )
+            NULLIFY( sysA(tsA)%sys(ic)%lon )
+            NULLIFY( sysA(tsA)%sys(ic)%lat )
+            NULLIFY( sysA(tsA)%sys(ic)%hs )
+            NULLIFY( sysA(tsA)%sys(ic)%tp )
+            NULLIFY( sysA(tsA)%sys(ic)%dir)
+            NULLIFY( sysA(tsA)%sys(ic)%dspr)
+            ALLOCATE( sysA(tsA)%sys(ic)%i(maxI*maxJ) )
+            ALLOCATE( sysA(tsA)%sys(ic)%j(maxI*maxJ) )
+            ALLOCATE( sysA(tsA)%sys(ic)%lon(maxI*maxJ) )
+            ALLOCATE( sysA(tsA)%sys(ic)%lat(maxI*maxJ) )
+            ALLOCATE( sysA(tsA)%sys(ic)%hs(maxI*maxJ) )
+            ALLOCATE( sysA(tsA)%sys(ic)%tp(maxI*maxJ) )
+            ALLOCATE( sysA(tsA)%sys(ic)%dir(maxI*maxJ) )
+            ALLOCATE( sysA(tsA)%sys(ic)%dspr(maxI*maxJ) )
+            sysA(tsA)%sys(ic)%i(:) = 9999
+            sysA(tsA)%sys(ic)%j(:) = 9999
+            sysA(tsA)%sys(ic)%lon(:) = 9999.
+            sysA(tsA)%sys(ic)%lat(:) = 9999.
+            sysA(tsA)%sys(ic)%hs(:) = 9999.
+            sysA(tsA)%sys(ic)%tp(:) = 9999.
+            sysA(tsA)%sys(ic)%dir(:) = 9999.
+            sysA(tsA)%sys(ic)%dspr(:) = 9999.
+            sysA(tsA)%sys(ic)%hsMean = 9999.
+            sysA(tsA)%sys(ic)%tpMean = 9999.
+            sysA(tsA)%sys(ic)%dirMean = 9999.
+            sysA(tsA)%sys(ic)%sysInd = 9999
+            sysA(tsA)%sys(ic)%nPoints = 9999
+            sysA(tsA)%sys(ic)%grp = 9999
+          END DO
+        END IF
 
-          !           Send data fields at each (tsA,ic) combination
-          IF ((rank.EQ.0).OR.(rank.EQ.irank)) THEN
-             DO ic = 1, maxSys(tsA)
-                !              Construct a unique tag for each message
-                tag2 = tsA*10000 + ic*100
-                DOMSIZE = maxI*maxJ
+        !           Send data fields at each (tsA,ic) combination
+        IF ((rank.EQ.0).OR.(rank.EQ.irank)) THEN
+          DO ic = 1, maxSys(tsA)
+            !              Construct a unique tag for each message
+            tag2 = tsA*10000 + ic*100
+            DOMSIZE = maxI*maxJ
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+1)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
-                        MPI_INTEGER,0,(tag2+1),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+1)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
-                        MPI_INTEGER,irank,(tag2+1), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+1)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
+                   MPI_INTEGER,0,(tag2+1),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+1)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%i(:),DOMSIZE, &
+                   MPI_INTEGER,irank,(tag2+1), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+2)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
-                        MPI_INTEGER,0,(tag2+2),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+2)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
-                        MPI_INTEGER,irank,(tag2+2), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+2)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
+                   MPI_INTEGER,0,(tag2+2),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+2)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%j(:),DOMSIZE, &
+                   MPI_INTEGER,irank,(tag2+2), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+3)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
-                        MPI_REAL,0,(tag2+3),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+3)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
-                        MPI_REAL,irank,(tag2+3), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+3)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
+                   MPI_REAL,0,(tag2+3),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+3)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%lon(:),DOMSIZE, &
+                   MPI_REAL,irank,(tag2+3), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+4)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
-                        MPI_REAL,0,(tag2+4),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+4)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
-                        MPI_REAL,irank,(tag2+4), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+4)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
+                   MPI_REAL,0,(tag2+4),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+4)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%lat(:),DOMSIZE, &
+                   MPI_REAL,irank,(tag2+4), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+5)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
-                        MPI_REAL,0,(tag2+5),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+5)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
-                        MPI_REAL,irank,(tag2+5), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+5)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
+                   MPI_REAL,0,(tag2+5),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+5)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%hs(:),DOMSIZE, &
+                   MPI_REAL,irank,(tag2+5), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+6)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
-                        MPI_REAL,0,(tag2+6),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+6)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
-                        MPI_REAL,irank,(tag2+6), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+6)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
+                   MPI_REAL,0,(tag2+6),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+6)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%tp(:),DOMSIZE, &
+                   MPI_REAL,irank,(tag2+6), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+7)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
-                        MPI_REAL,0,(tag2+7),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+7)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
-                        MPI_REAL,irank,(tag2+7), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+7)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
+                   MPI_REAL,0,(tag2+7),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+7)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%dir(:),DOMSIZE, &
+                   MPI_REAL,irank,(tag2+7), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+8)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
-                        MPI_REAL,0,(tag2+8),MPI_COMM_WORLD,REQ(1),IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+8)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
-                        MPI_REAL,irank,(tag2+8), &
-                        MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
-                END IF
-                !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,tag2=',rank,(tag2+8)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
+                   MPI_REAL,0,(tag2+8),MPI_COMM_WORLD,REQ(1),IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,tag2=',rank,(tag2+8)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%dspr(:),DOMSIZE, &
+                   MPI_REAL,irank,(tag2+8), &
+                   MPI_COMM_WORLD,MPI_STATUS,REQ(2),IERR)
+            END IF
+            !               CALL MPI_WAITALL(2,REQ,ISTAT,IERR)
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+9)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
-                        0,(tag2+9),MPI_COMM_WORLD,IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+9)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
-                        irank,(tag2+9),MPI_COMM_WORLD,MPI_STATUS,IERR)
-                END IF
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+9)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
+                   0,(tag2+9),MPI_COMM_WORLD,IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+9)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%hsMean,1,MPI_REAL, &
+                   irank,(tag2+9),MPI_COMM_WORLD,MPI_STATUS,IERR)
+            END IF
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+10)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
-                        0,(tag2+10),MPI_COMM_WORLD,IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+10)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
-                        irank,(tag2+10),MPI_COMM_WORLD,MPI_STATUS,IERR)
-                END IF
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+10)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
+                   0,(tag2+10),MPI_COMM_WORLD,IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+10)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%tpMean,1,MPI_REAL, &
+                   irank,(tag2+10),MPI_COMM_WORLD,MPI_STATUS,IERR)
+            END IF
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+11)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
-                        0,(tag2+11),MPI_COMM_WORLD,IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+11)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
-                        irank,(tag2+11),MPI_COMM_WORLD,MPI_STATUS,IERR)
-                END IF
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+11)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
+                   0,(tag2+11),MPI_COMM_WORLD,IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+11)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%dirMean,1,MPI_REAL, &
+                   irank,(tag2+11),MPI_COMM_WORLD,MPI_STATUS,IERR)
+            END IF
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+12)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
-                        0,(tag2+12),MPI_COMM_WORLD,IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+12)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
-                        irank,(tag2+12),MPI_COMM_WORLD,MPI_STATUS,IERR)
-                END IF
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+12)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
+                   0,(tag2+12),MPI_COMM_WORLD,IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+12)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%sysInd,1,MPI_INTEGER,&
+                   irank,(tag2+12),MPI_COMM_WORLD,MPI_STATUS,IERR)
+            END IF
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+13)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
-                        0,(tag2+13),MPI_COMM_WORLD,IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+13)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
-                        irank,(tag2+13),MPI_COMM_WORLD,MPI_STATUS,IERR)
-                END IF
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+13)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
+                   0,(tag2+13),MPI_COMM_WORLD,IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+13)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%nPoints,1,MPI_INTEGER,&
+                   irank,(tag2+13),MPI_COMM_WORLD,MPI_STATUS,IERR)
+            END IF
 
-                IF (rank.EQ.irank) THEN
-                   !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+14)
-                   CALL MPI_SEND(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
-                        0,(tag2+14),MPI_COMM_WORLD,IERR)
-                END IF
-                IF (rank.EQ.0) THEN
-                   !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
-                   !                             rank,irank,(tag2+14)
-                   CALL MPI_RECV(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
-                        irank,(tag2+14),MPI_COMM_WORLD,MPI_STATUS,IERR)
-                END IF
-             END DO
-          END IF
-       END IF
+            IF (rank.EQ.irank) THEN
+              !                 WRITE(20,*) '>> Sending: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+14)
+              CALL MPI_SEND(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
+                   0,(tag2+14),MPI_COMM_WORLD,IERR)
+            END IF
+            IF (rank.EQ.0) THEN
+              !                 WRITE(20,*) '<< Receiving: rank,irank,tag2=', &
+              !                             rank,irank,(tag2+14)
+              CALL MPI_RECV(sysA(tsA)%sys(ic)%grp,1,MPI_INTEGER,&
+                   irank,(tag2+14),MPI_COMM_WORLD,MPI_STATUS,IERR)
+            END IF
+          END DO
+        END IF
+      END IF
     END DO
 
     CALL MPI_Barrier(MPI_COMM_WORLD,IERR)
@@ -1697,14 +1697,14 @@ CONTAINS
 #ifdef W3_MPI
     IF (rank.EQ.0) THEN
 #endif
-       WRITE(6,*) 'Performing temporal tracking...'
-       WRITE(20,*) 'Calling timeTrackingV2...'
-       lonext = wsdat(1)%lon(maxI,1)-wsdat(1)%lon(1,1)
-       latext = wsdat(1)%lat(1,maxJ)-wsdat(1)%lat(1,1)
+      WRITE(6,*) 'Performing temporal tracking...'
+      WRITE(20,*) 'Calling timeTrackingV2...'
+      lonext = wsdat(1)%lon(maxI,1)-wsdat(1)%lon(1,1)
+      latext = wsdat(1)%lat(1,maxJ)-wsdat(1)%lat(1,1)
 
-       CALL timeTrackingV2 (sysA, maxSys, tpTimeKnob, dirTimeKnob, 1, &
-            maxGroup, dt, lonext, latext, maxI, maxJ)
-       !
+      CALL timeTrackingV2 (sysA, maxSys, tpTimeKnob, dirTimeKnob, 1, &
+           maxGroup, dt, lonext, latext, maxI, maxJ)
+      !
 #ifdef W3_MPI
     END IF
 #endif
@@ -1865,31 +1865,31 @@ CONTAINS
     maxI = wsdat%maxi
     maxJ = wsdat%maxj
     IF ( (seedLat.EQ.0).OR.(seedLon.EQ.0) ) THEN
-       i=NINT(REAL(maxI)/2.)
-       j=NINT(REAL(maxJ)/2.)
-       WRITE(20,*) 'In spiralTrackV3, i=NINT(maxI/2.) =',i
-       WRITE(20,*) 'In spiralTrackV3, j=NINT(maxJ/2.) =',j
+      i=NINT(REAL(maxI)/2.)
+      j=NINT(REAL(maxJ)/2.)
+      WRITE(20,*) 'In spiralTrackV3, i=NINT(maxI/2.) =',i
+      WRITE(20,*) 'In spiralTrackV3, j=NINT(maxJ/2.) =',j
     ELSE
-       i=1
-       j=1
-       DO WHILE ( (wsdat%lat(1,j).LT.seedLat).AND.(j.LT.wsdat%maxj) )     !40.PAR !Improve with SWAN's indice identification
-          j=j+1
-       END DO
-       DO WHILE ( (wsdat%lon(i,1).LT.seedLon).AND.(i.LT.wsdat%maxi) )
-          i=i+1
-       END DO
+      i=1
+      j=1
+      DO WHILE ( (wsdat%lat(1,j).LT.seedLat).AND.(j.LT.wsdat%maxj) )     !40.PAR !Improve with SWAN's indice identification
+        j=j+1
+      END DO
+      DO WHILE ( (wsdat%lon(i,1).LT.seedLon).AND.(i.LT.wsdat%maxi) )
+        i=i+1
+      END DO
     END IF
     !     In case center point is land point...
     IF (wsdat%par(i,j)%checked.EQ.-1) THEN
-       oldJ=j
-       DO WHILE (wsdat%par(i,j)%checked.EQ.-1)
-          j=j+1
-          IF (j.EQ.maxJ) THEN
-             j=oldJ
-             i=i+1
-             oldJ=oldJ+1
-          END IF
-       END DO
+      oldJ=j
+      DO WHILE (wsdat%par(i,j)%checked.EQ.-1)
+        j=j+1
+        IF (j.EQ.maxJ) THEN
+          j=oldJ
+          i=i+1
+          oldJ=oldJ+1
+        END IF
+      END DO
     END IF
     !     Compute distance in km between 2 grid points (at equator)
     deltaLat=(wsdat%lat(i,j)-wsdat%lat(i,j-1))*111.18
@@ -1912,42 +1912,42 @@ CONTAINS
     horizBorder=0
     vertBorder=0
     DO WHILE (checkCount.LE.(maxI*maxJ-3) )
-       !        From the direction (way) we were going before, find which direction we
-       !        are going now and how many 'step' we need to take
-       CALL findWay(way, horizStepCount, vertStepCount, &
-            vertBorder, horizBorder, stepCount)
-       IF (first) THEN
-          m=0
-          DO k=1,LENGTH(wsdat%par(i,j)%hs, &
-               SIZE(wsdat%par(i,j)%hs),9999.)
-             IF ( (wsdat%par(i,j)%hs(k).EQ.0.).AND. &
-                  (wsdat%par(i,j)%tp(k).EQ.0.) ) THEN
-                wsdat%par(i,j)%sys(k)=-1
-             ELSE
-                m=m+1
-                wsdat%par(i,j)%sys(k)=m
-             END IF
-          END DO
-
-          wsdat%par(i,j)%checked=1
-          checkCount=checkCount+1
-          first=.FALSE.
-       END IF
-       DO sc = 1, stepCount
-          CALL findNext (i,j,maxI,maxJ,way,vertBorder,horizBorder)
-          IF ( wsdat%par(i,j)%checked.EQ.-1 ) THEN
-             !            Land point is one of our grid points, so we need to update counter
-             checkCount=checkCount+1
-             landPts=landPts+1
-             !                So that we don't count the land points twice....
-             wsdat%par(i,j)%checked=-2
-          ELSE IF ( wsdat%par(i,j)%checked.EQ.0 ) THEN
-             !            Hasn't been checked yet and is not land point
-             checkCount=checkCount+1
-             CALL findSys(i, j, wsdat, maxSys, ngbrExt, maxI, maxJ, &
-                  perKnob, dirKnob, hsKnob)
+      !        From the direction (way) we were going before, find which direction we
+      !        are going now and how many 'step' we need to take
+      CALL findWay(way, horizStepCount, vertStepCount, &
+           vertBorder, horizBorder, stepCount)
+      IF (first) THEN
+        m=0
+        DO k=1,LENGTH(wsdat%par(i,j)%hs, &
+             SIZE(wsdat%par(i,j)%hs),9999.)
+          IF ( (wsdat%par(i,j)%hs(k).EQ.0.).AND. &
+               (wsdat%par(i,j)%tp(k).EQ.0.) ) THEN
+            wsdat%par(i,j)%sys(k)=-1
+          ELSE
+            m=m+1
+            wsdat%par(i,j)%sys(k)=m
           END IF
-       END DO
+        END DO
+
+        wsdat%par(i,j)%checked=1
+        checkCount=checkCount+1
+        first=.FALSE.
+      END IF
+      DO sc = 1, stepCount
+        CALL findNext (i,j,maxI,maxJ,way,vertBorder,horizBorder)
+        IF ( wsdat%par(i,j)%checked.EQ.-1 ) THEN
+          !            Land point is one of our grid points, so we need to update counter
+          checkCount=checkCount+1
+          landPts=landPts+1
+          !                So that we don't count the land points twice....
+          wsdat%par(i,j)%checked=-2
+        ELSE IF ( wsdat%par(i,j)%checked.EQ.0 ) THEN
+          !            Hasn't been checked yet and is not land point
+          checkCount=checkCount+1
+          CALL findSys(i, j, wsdat, maxSys, ngbrExt, maxI, maxJ, &
+               perKnob, dirKnob, hsKnob)
+        END IF
+      END DO
     END DO
     !     wetPts% of wet points
     maxPts=NINT(wetPts*(maxI*maxJ-1))
@@ -2091,579 +2091,579 @@ CONTAINS
 
     !     Skip initial time steps with empty systems (e.g. when starting from rest)
     DO i = ts1, SIZE(sysA)
-       IF (SIZE(sysA(ts1)%sys).EQ.0) ts1 = ts1+1
-       !        No non-empty systems found
-       IF (ts1.GT.SIZE(sysA)) THEN
-          maxGroup = 0
-          GOTO 2000
-       END IF
+      IF (SIZE(sysA(ts1)%sys).EQ.0) ts1 = ts1+1
+      !        No non-empty systems found
+      IF (ts1.GT.SIZE(sysA)) THEN
+        maxGroup = 0
+        GOTO 2000
+      END IF
     END DO
     WRITE(20,*) 'TS = ',ts1
 
     IF (SIZE(sysA(ts1)%sys).GT.0) THEN
-       !        Initialize system memory groups
-       sysA(ts1)%sys(:)%grp = 9999
-       sysMem(:)%grp = 9999
-       sysMem(:)%nPoints = 0
-       sysMem(:)%lonMean = 9999.
-       sysMem(:)%latMean = 9999.
-       sysMem(:)%tpMean = 9999.
-       sysMem(:)%dirMean = 9999.
-       sysMem(:)%updated = -9999
-       sysMem(:)%length = 0
-       DO iii = 1,50
-          ALLOCATE(sysMem(iii)%indx(maxI*maxJ))
-          sysMem(iii)%indx = 9999
-       END DO
+      !        Initialize system memory groups
+      sysA(ts1)%sys(:)%grp = 9999
+      sysMem(:)%grp = 9999
+      sysMem(:)%nPoints = 0
+      sysMem(:)%lonMean = 9999.
+      sysMem(:)%latMean = 9999.
+      sysMem(:)%tpMean = 9999.
+      sysMem(:)%dirMean = 9999.
+      sysMem(:)%updated = -9999
+      sysMem(:)%length = 0
+      DO iii = 1,50
+        ALLOCATE(sysMem(iii)%indx(maxI*maxJ))
+        sysMem(iii)%indx = 9999
+      END DO
 
-       INQUIRE(FILE="sys_restart.ww3", EXIST=file_exists)
-       IF (file_exists) THEN
-          !           Use groups from wave tracking hotfile
-          WRITE(20,*) '*** Using group memory hotfile'
-          OPEN(unit=12,file='sys_restart.ww3',status='old')
-          READ(12,'(A23,I10)') dummy,maxGroup
-          WRITE(20,*) 'Reading ',maxGroup,' systems'
-          DO k = 1,maxGroup
-             READ(12,'(A23,I10)') dummy,sysMem(k)%grp
-             READ(12,'(A23,I10)') dummy,sysMem(k)%nPoints
-             READ(12,'(A23,F10.4)') dummy,sysMem(k)%lonMean
-             READ(12,'(A23,F10.4)') dummy,sysMem(k)%latMean
-             READ(12,'(A23,F10.3)') dummy,sysMem(k)%tpMean
-             READ(12,'(A23,F10.3)') dummy,sysMem(k)%dirMean
-             READ(12,'(A23,I10)') dummy,sysMem(k)%updated
-             READ(12,'(A23,I10)') dummy,sysMem(k)%length
-             DO j = maxJ,1,-1
-                READ(12,*) (sysMem(k)%indx((j-1)*maxI+i), i = 1,maxI)
-             END DO
-             !Reset update counter
-             sysMem(k)%updated = 0
+      INQUIRE(FILE="sys_restart.ww3", EXIST=file_exists)
+      IF (file_exists) THEN
+        !           Use groups from wave tracking hotfile
+        WRITE(20,*) '*** Using group memory hotfile'
+        OPEN(unit=12,file='sys_restart.ww3',status='old')
+        READ(12,'(A23,I10)') dummy,maxGroup
+        WRITE(20,*) 'Reading ',maxGroup,' systems'
+        DO k = 1,maxGroup
+          READ(12,'(A23,I10)') dummy,sysMem(k)%grp
+          READ(12,'(A23,I10)') dummy,sysMem(k)%nPoints
+          READ(12,'(A23,F10.4)') dummy,sysMem(k)%lonMean
+          READ(12,'(A23,F10.4)') dummy,sysMem(k)%latMean
+          READ(12,'(A23,F10.3)') dummy,sysMem(k)%tpMean
+          READ(12,'(A23,F10.3)') dummy,sysMem(k)%dirMean
+          READ(12,'(A23,I10)') dummy,sysMem(k)%updated
+          READ(12,'(A23,I10)') dummy,sysMem(k)%length
+          DO j = maxJ,1,-1
+            READ(12,*) (sysMem(k)%indx((j-1)*maxI+i), i = 1,maxI)
           END DO
-          CLOSE(12)
-          ts1 = ts1-1
-       ELSE
-          !        Set up the group number array for the first time level to be tracked
-          ALLOCATE( sysOrdered(maxSys(ts1)) )
-          ALLOCATE( indSorted(maxSys(ts1)) )
-          CALL SORT (REAL(sysA(ts1)%sys(1:maxSys(ts1))%nPoints), &
-               maxSys(ts1),sysOrdered,indSorted,'D')
-          sysA(ts1)%sys(1:maxSys(ts1)) = sysA(ts1)%sys(indSorted)
-          IF (ALLOCATED(sysOrdered)) DEALLOCATE(sysOrdered)
-          IF (ALLOCATED(indSorted)) DEALLOCATE(indSorted)
+          !Reset update counter
+          sysMem(k)%updated = 0
+        END DO
+        CLOSE(12)
+        ts1 = ts1-1
+      ELSE
+        !        Set up the group number array for the first time level to be tracked
+        ALLOCATE( sysOrdered(maxSys(ts1)) )
+        ALLOCATE( indSorted(maxSys(ts1)) )
+        CALL SORT (REAL(sysA(ts1)%sys(1:maxSys(ts1))%nPoints), &
+             maxSys(ts1),sysOrdered,indSorted,'D')
+        sysA(ts1)%sys(1:maxSys(ts1)) = sysA(ts1)%sys(indSorted)
+        IF (ALLOCATED(sysOrdered)) DEALLOCATE(sysOrdered)
+        IF (ALLOCATED(indSorted)) DEALLOCATE(indSorted)
 
-          !        Set the initial long-term system memory
-          DO i = 1, maxSys(ts1)
-             sysA(ts1)%sys(i)%grp = i
-             !           Set initial values of long-term system memory
-             sysMem(i)%grp = i
-             sysMem(i)%nPoints = sysA(ts1)%sys(i)%nPoints
-             sysMem(i)%lonMean = &
-                  SUM(sysA(ts1)%sys(i)%lon(1:sysMem(i)%nPoints))/&
-                  sysMem(i)%nPoints
-             sysMem(i)%latMean = &
-                  SUM(sysA(ts1)%sys(i)%lat(1:sysMem(i)%nPoints))/&
-                  sysMem(i)%nPoints
-             !070512----------- Weight averages with Hm0 ---------------------
-             TEMP1 = 0.
-             TEMP2 = 0.
-             DO iii = 1,sysMem(i)%nPoints
-                TEMP1 = TEMP1 + &
-                     (sysA(ts1)%sys(i)%hs(iii)**2)*sysA(ts1)%sys(i)%lon(iii)
-                TEMP2 = TEMP2 + &
-                     (sysA(ts1)%sys(i)%hs(iii)**2)*sysA(ts1)%sys(i)%lat(iii)
-             END DO
-             sysMem(i)%lonMean = TEMP1/&
-                  MAX(SUM(sysA(ts1)%sys(i)%hs(1:sysMem(i)%nPoints)**2),&
-                  0.001)
-             sysMem(i)%latMean = TEMP2/&
-                  MAX(SUM(sysA(ts1)%sys(i)%hs(1:sysMem(i)%nPoints)**2),&
-                  0.001)
-             !070512----------- Weight averages with Hm0 ---------------------
-             sysMem(i)%tpMean = sysA(ts1)%sys(i)%tpMean
-             sysMem(i)%dirMean = sysA(ts1)%sys(i)%dirMean
-             sysMem(i)%updated = ts1
-             sysMem(i)%length = 1
-             !071012----------- Grid point indexing --------------------------
-             DO iii = 1,sysMem(i)%nPoints
-                sysMem(i)%indx(iii) = (sysA(ts1)%sys(i)%j(iii)-1)*maxI +&
-                     sysA(ts1)%sys(i)%i(iii)
-             END DO
-             !071012----------- Grid point indexing --------------------------
+        !        Set the initial long-term system memory
+        DO i = 1, maxSys(ts1)
+          sysA(ts1)%sys(i)%grp = i
+          !           Set initial values of long-term system memory
+          sysMem(i)%grp = i
+          sysMem(i)%nPoints = sysA(ts1)%sys(i)%nPoints
+          sysMem(i)%lonMean = &
+               SUM(sysA(ts1)%sys(i)%lon(1:sysMem(i)%nPoints))/&
+               sysMem(i)%nPoints
+          sysMem(i)%latMean = &
+               SUM(sysA(ts1)%sys(i)%lat(1:sysMem(i)%nPoints))/&
+               sysMem(i)%nPoints
+          !070512----------- Weight averages with Hm0 ---------------------
+          TEMP1 = 0.
+          TEMP2 = 0.
+          DO iii = 1,sysMem(i)%nPoints
+            TEMP1 = TEMP1 + &
+                 (sysA(ts1)%sys(i)%hs(iii)**2)*sysA(ts1)%sys(i)%lon(iii)
+            TEMP2 = TEMP2 + &
+                 (sysA(ts1)%sys(i)%hs(iii)**2)*sysA(ts1)%sys(i)%lat(iii)
           END DO
-          maxGroup = maxSys(ts1)
-          !         i = ts1
-       END IF
+          sysMem(i)%lonMean = TEMP1/&
+               MAX(SUM(sysA(ts1)%sys(i)%hs(1:sysMem(i)%nPoints)**2),&
+               0.001)
+          sysMem(i)%latMean = TEMP2/&
+               MAX(SUM(sysA(ts1)%sys(i)%hs(1:sysMem(i)%nPoints)**2),&
+               0.001)
+          !070512----------- Weight averages with Hm0 ---------------------
+          sysMem(i)%tpMean = sysA(ts1)%sys(i)%tpMean
+          sysMem(i)%dirMean = sysA(ts1)%sys(i)%dirMean
+          sysMem(i)%updated = ts1
+          sysMem(i)%length = 1
+          !071012----------- Grid point indexing --------------------------
+          DO iii = 1,sysMem(i)%nPoints
+            sysMem(i)%indx(iii) = (sysA(ts1)%sys(i)%j(iii)-1)*maxI +&
+                 sysA(ts1)%sys(i)%i(iii)
+          END DO
+          !071012----------- Grid point indexing --------------------------
+        END DO
+        maxGroup = maxSys(ts1)
+        !         i = ts1
+      END IF
 
-       !******** Test output ***********************
-       DO i = 1, maxGroup
-          WRITE(20,*) 'sysMem(',i,')%grp =',sysMem(i)%grp
-          WRITE(20,*) 'sysMem(',i,')%nPoints =',sysMem(i)%nPoints
-          WRITE(20,*) 'sysMem(',i,')%lonMean =',sysMem(i)%lonMean
-          WRITE(20,*) 'sysMem(',i,')%latMean =',sysMem(i)%latMean
-          WRITE(20,*) 'sysMem(',i,')%tpMean =',sysMem(i)%tpMean
-          WRITE(20,*) 'sysMem(',i,')%dirMean =',sysMem(i)%dirMean
-          WRITE(20,*) 'sysMem(',i,')%updated =',sysMem(i)%updated
-          WRITE(20,*) 'sysMem(',i,')%length =',sysMem(i)%length
-       END DO
-       !********************************************
+      !******** Test output ***********************
+      DO i = 1, maxGroup
+        WRITE(20,*) 'sysMem(',i,')%grp =',sysMem(i)%grp
+        WRITE(20,*) 'sysMem(',i,')%nPoints =',sysMem(i)%nPoints
+        WRITE(20,*) 'sysMem(',i,')%lonMean =',sysMem(i)%lonMean
+        WRITE(20,*) 'sysMem(',i,')%latMean =',sysMem(i)%latMean
+        WRITE(20,*) 'sysMem(',i,')%tpMean =',sysMem(i)%tpMean
+        WRITE(20,*) 'sysMem(',i,')%dirMean =',sysMem(i)%dirMean
+        WRITE(20,*) 'sysMem(',i,')%updated =',sysMem(i)%updated
+        WRITE(20,*) 'sysMem(',i,')%length =',sysMem(i)%length
+      END DO
+      !********************************************
     END IF
 
     !     Loop over all time levels to track systems in time
     WRITE(20,*) 'Number of time levels = ',SIZE(sysA)
     DO i = (ts1+1), SIZE(sysA)
-       WRITE(20,*) 'TS = ',i
+      WRITE(20,*) 'TS = ',i
 
-       IF (SIZE(sysA(i)%sys).GT.0) THEN
-          !           *** Added: 02/29/12 *************************************
-          !           Sort groups, so that larger systems get associated first
-          ALLOCATE( sysOrdered(maxSys(i)) )
-          ALLOCATE( indSorted(maxSys(i)) )
-          CALL SORT (REAL(sysA(i)%sys(1:maxSys(i))%nPoints), &
-               maxSys(i),sysOrdered,indSorted,'D')
-          sysA(i)%sys(1:maxSys(i)) = sysA(i)%sys(indSorted)
-          IF (ALLOCATED(sysOrdered)) DEALLOCATE(sysOrdered)
-          IF (ALLOCATED(indSorted)) DEALLOCATE(indSorted)
-          !           *** Added: 02/29/12 *************************************
+      IF (SIZE(sysA(i)%sys).GT.0) THEN
+        !           *** Added: 02/29/12 *************************************
+        !           Sort groups, so that larger systems get associated first
+        ALLOCATE( sysOrdered(maxSys(i)) )
+        ALLOCATE( indSorted(maxSys(i)) )
+        CALL SORT (REAL(sysA(i)%sys(1:maxSys(i))%nPoints), &
+             maxSys(i),sysOrdered,indSorted,'D')
+        sysA(i)%sys(1:maxSys(i)) = sysA(i)%sys(indSorted)
+        IF (ALLOCATED(sysOrdered)) DEALLOCATE(sysOrdered)
+        IF (ALLOCATED(indSorted)) DEALLOCATE(indSorted)
+        !           *** Added: 02/29/12 *************************************
 
-          !           Initialize groups                                             ! Optimize?
-          sysA(i)%sys(:)%grp = 9999                                     ! Optimize?
-          counter = 0
-          leng = LENGTH(REAL(sysMem(:)%grp), &
-               SIZE(sysMem(:)%grp),REAL(9999))
-          ALLOCATE( alreadyUsed(leng+10) )                              !Make space for 10 new potential entries. Improve!!!
-          WRITE(20,*) 'sysMem(1:leng)%grp =', &
-               sysMem(1:leng)%grp
-          ALLOCATE( allInd(leng) )
-          alreadyUsed(:) = 0
-          allInd(:) = sysMem(1:leng)%grp
+        !           Initialize groups                                             ! Optimize?
+        sysA(i)%sys(:)%grp = 9999                                     ! Optimize?
+        counter = 0
+        leng = LENGTH(REAL(sysMem(:)%grp), &
+             SIZE(sysMem(:)%grp),REAL(9999))
+        ALLOCATE( alreadyUsed(leng+10) )                              !Make space for 10 new potential entries. Improve!!!
+        WRITE(20,*) 'sysMem(1:leng)%grp =', &
+             sysMem(1:leng)%grp
+        ALLOCATE( allInd(leng) )
+        alreadyUsed(:) = 0
+        allInd(:) = sysMem(1:leng)%grp
 
-          !071212-----GoF 2D-------------------------------
-          ALLOCATE( ind(SIZE(allInd)) )
-          ind(:) = allInd
-          ALLOCATE( ind2(SIZE(ind)) )
-          DO ii = 1, SIZE(ind)
-             ind2(ii) = FINDFIRST(REAL(allInd),SIZE(allInd), &
-                  REAL(ind(ii)))
+        !071212-----GoF 2D-------------------------------
+        ALLOCATE( ind(SIZE(allInd)) )
+        ind(:) = allInd
+        ALLOCATE( ind2(SIZE(ind)) )
+        DO ii = 1, SIZE(ind)
+          ind2(ii) = FINDFIRST(REAL(allInd),SIZE(allInd), &
+               REAL(ind(ii)))
+        END DO
+        !        Define 2D array for evaluating best fit for systems
+        ALLOCATE( GOF(maxSys(i),maxGroup) )
+        ALLOCATE( GOFMinVal(maxGroup) )
+        ALLOCATE( GOFMinInd(maxGroup) )
+        ALLOCATE( Tbsysmem(maxGroup) )
+        ALLOCATE( deltaDirsysmem(maxGroup) )
+        ALLOCATE( deltaPersysmem(maxGroup) )
+        ALLOCATE( m1sysmem(maxGroup) )
+        ALLOCATE( m2sysmem(maxGroup) )
+        !071212-----GoF 2D-------------------------------
+        DO j = 1, maxSys(i)
+          npnts = sysA(i)%sys(j)%nPoints
+          lonmean = SUM(sysA(i)%sys(j)%lon(1:npnts))/npnts
+          latmean = SUM(sysA(i)%sys(j)%lat(1:npnts))/npnts
+          !070512----------- Weight averages with Hm0 ---------------------
+          TEMP1 = 0.
+          TEMP2 = 0.
+          DO iii = 1,npnts
+            TEMP1 = TEMP1 + &
+                 (sysA(i)%sys(j)%hs(iii)**2)*sysA(i)%sys(j)%lon(iii)
+            TEMP2 = TEMP2 + &
+                 (sysA(i)%sys(j)%hs(iii)**2)*sysA(i)%sys(j)%lat(iii)
           END DO
-          !        Define 2D array for evaluating best fit for systems
-          ALLOCATE( GOF(maxSys(i),maxGroup) )
-          ALLOCATE( GOFMinVal(maxGroup) )
-          ALLOCATE( GOFMinInd(maxGroup) )
-          ALLOCATE( Tbsysmem(maxGroup) )
-          ALLOCATE( deltaDirsysmem(maxGroup) )
-          ALLOCATE( deltaPersysmem(maxGroup) )
-          ALLOCATE( m1sysmem(maxGroup) )
-          ALLOCATE( m2sysmem(maxGroup) )
-          !071212-----GoF 2D-------------------------------
-          DO j = 1, maxSys(i)
-             npnts = sysA(i)%sys(j)%nPoints
-             lonmean = SUM(sysA(i)%sys(j)%lon(1:npnts))/npnts
-             latmean = SUM(sysA(i)%sys(j)%lat(1:npnts))/npnts
-             !070512----------- Weight averages with Hm0 ---------------------
-             TEMP1 = 0.
-             TEMP2 = 0.
-             DO iii = 1,npnts
-                TEMP1 = TEMP1 + &
-                     (sysA(i)%sys(j)%hs(iii)**2)*sysA(i)%sys(j)%lon(iii)
-                TEMP2 = TEMP2 + &
-                     (sysA(i)%sys(j)%hs(iii)**2)*sysA(i)%sys(j)%lat(iii)
-             END DO
-             lonmean=TEMP1/MAX(SUM(sysA(i)%sys(j)%hs(1:npnts)**2),0.001)
-             latmean=TEMP2/MAX(SUM(sysA(i)%sys(j)%hs(1:npnts)**2),0.001)
-             !070512----------- Weight averages with Hm0 ---------------------
-             !071012----------- Grid point indexing --------------------------
-             ALLOCATE(sysA(i)%sys(j)%indx(maxI*maxJ))
-             sysA(i)%sys(j)%indx = 9999
-             DO iii = 1,sysA(i)%sys(j)%nPoints
-                sysA(i)%sys(j)%indx(iii) = &
-                     (sysA(i)%sys(j)%j(iii)-1)*maxI + &
-                     sysA(i)%sys(j)%i(iii)
-             END DO
-             !071012----------- Grid point indexing --------------------------
-             WRITE(20,*) 'System no. ',j,' of ',maxSys(i)
-             WRITE(20,*) 'Size =', npnts
-             WRITE(20,*) 'lonMean =', lonmean
-             WRITE(20,*) 'latMean =', latmean
-             WRITE(20,*) 'tpMean =', sysA(i)%sys(j)%tpMean
-             WRITE(20,*) 'dirMean =', sysA(i)%sys(j)%dirMean
-             sysA(i)%sys(j)%grp = 9999                                     !Now redundant?
-
-             !           Compute deltas
-             Tbsysmem = sysMem(1:maxGroup)%tpMean
-             WRITE(20,*) 'Tbsysmem(:) =       ', Tbsysmem(:)
-             !           Compute deltas the same way as for field combining - they should
-             !           be of the same degree of strictness as the latter, otherwise
-             !           the time combining will lose track!
-             !3stddev            m1 = -3.645*Tb + 63.211
-             !3stddev            m1 = MAX(m1,10.)
-             !3stddev            m2 = -0.346*Tb + 3.686
-             !3stddev            m2 = MAX(m2,0.6)
-             !1stddev            m1 = -2.219*Tb + 35.734
-             !1stddev            m1 = MAX(m1,5.)
-             !1stddev            m2 = -0.226*Tb + 2.213
-             !1stddev            m2 = MAX(m2,0.35)
-             !071412            m1 = -5.071*Tb + 90.688
-             !071412            m1 = MAX(m1,16.)
-             !071412            m2 = -0.467*Tb + 5.161
-             !071412            m2 = MAX(m2,1.0)
-             !071412            deltaDir = (m1*1. + dirTimeKnob)*1.
-             !071412            deltaPer = (m2*1. + tpTimeKnob)*1.
-             DO ii = 1,SIZE(ind2)
-                m1sysmem(ii) = MAX((-3.645*Tbsysmem(ii)+63.211),10.)
-                m2sysmem(ii) = MAX((-0.346*Tbsysmem(ii)+3.686),0.6)
-             END DO
-             deltaDirsysmem = m1sysmem(:)*1. + dirTimeKnob
-             deltaPersysmem = m2sysmem(:)*1. + tpTimeKnob
-             WRITE(20,*) 'deltaDirsysmem(:) = ',deltaDirsysmem
-             WRITE(20,*) 'deltaPersysmem(:) = ',deltaPersysmem
-
-             !                 Criterion 1: Mean period
-             ALLOCATE( TEMP(SIZE(ind2)) )
-             TEMP = ABS( sysA(i)%sys(j)%tpMean - &
-                  sysMem(ind2(:))%tpMean )
-             WRITE(20,*) 'tpMean list =', &
-                  sysMem(ind2(:))%tpMean
-             WRITE(20,*) 'tpMinVal list =', TEMP
-             tpMinVal = MINVAL(TEMP)
-             tpMinInd = FINDFIRST(TEMP,SIZE(TEMP),tpMinVal)
-
-             !                 Criterion 2: Mean direction
-             ALLOCATE( dirs(SIZE(ind2)) )
-             dirs(:)=ABS( sysA(i)%sys(j)%dirMean - &
-                  sysMem(ind2(:))%dirMean )
-             !                 Deal with wrap around
-             DO idir = 1, SIZE(dirs)
-                IF (dirs(idir).GE.180.) dirs(idir)=360-dirs(idir)
-             END DO
-             WRITE(20,*) 'dirMean list =', &
-                  sysMem(ind2(:))%dirMean
-             WRITE(20,*) 'dirMinVal list =', dirs
-
-             !                 Criterion 3: Size
-             WRITE(20,*) 'Size list =', &
-                  sysMem(ind2(:))%nPoints
-
-             !                 Criterion 4: Distance between systems
-             ALLOCATE (mnlonlist(SIZE(ind2)))
-             ALLOCATE (mnlatlist(SIZE(ind2)))
-             ALLOCATE (mndist(SIZE(ind2)))
-             DO ii = 1,SIZE(ind2)
-                mnlonlist(ii) = sysMem(ind2(ii))%lonMean
-                mnlatlist(ii) = sysMem(ind2(ii))%latMean
-                mndist(ii) = SQRT((lonmean-mnlonlist(ii))**2 + &
-                     (latmean-mnlatlist(ii))**2)
-             END DO
-             dmndiag = SQRT(lonext**2+latext**2)
-             WRITE(20,*) 'Distance list =',mndist(:)
-             WRITE(20,*) 'Domain diagonal =',dmndiag
-
-             !                 Criterion 5: Overlap of systems
-             ALLOCATE (olsize(SIZE(ind2)))
-             DO ii = 1,SIZE(ind2)
-
-                IF (sysMem(ind2(ii))%nPoints.GT.0) THEN
-                   CALL INTERSECT(REAL(sysA(i)%sys(j)%indx(1:npnts)),npnts, &
-                        REAL(sysMem(ind2(ii))%indx(1:sysMem(ind2(ii))%nPoints)),&
-                        sysMem(ind2(ii))%nPoints,dummy1,olsize(ii),dummy2,dummy3)
-                ELSE
-                   olsize(ii) = 0
-                END IF
-             END DO
-
-             GOF(j,1:SIZE(ind2)) = (TEMP/deltaPersysmem(:))**2 + &
-                  (dirs/deltaDirsysmem(:))**2 + &
-                  !                    (4*mndist(:)/dmndiag)**2
-                  ( (REAL(olsize(:)) - &
-                  REAL(sysMem(ind2(:))%nPoints) )/&
-                  (0.50*MAX(REAL(sysMem(ind2(:))%nPoints),0.001)) )**2
-             !                 Remove GoF entries which exceed predifined tolerances
-             DO ii = 1,SIZE(ind2)
-                WRITE(20,*) 'Testing: ii,olsize(ii),size,frac =',&
-                     ii,olsize(ii),sysMem(ind2(ii))%nPoints,&
-                     REAL(olsize(ii))/&
-                     MAX(REAL(sysMem(ind2(ii))%nPoints),0.001)
-                IF ( REAL(olsize(ii)).LT.&
-                     0.50*REAL(sysMem(ind2(ii))%nPoints) ) THEN
-                   GOF(j,ii) = 9999.
-                END IF
-                IF ( (TEMP(ii).GT.deltaPersysmem(ii)).OR.&
-                     (dirs(ii).GT.deltaDirsysmem(ii)) ) THEN
-                   GOF(j,ii) = 9999.
-                END IF
-             END DO
-             WRITE(20,*) 'GOF(j,:) =',GOF(j,:)
-
-             IF (ALLOCATED(TEMP)) DEALLOCATE(TEMP)
-             IF (ALLOCATED(dirs)) DEALLOCATE(dirs)
-             IF (ALLOCATED(mnlonlist)) DEALLOCATE(mnlonlist)
-             IF (ALLOCATED(mnlatlist)) DEALLOCATE(mnlatlist)
-             IF (ALLOCATED(mndist)) DEALLOCATE(mndist)
-             IF (ALLOCATED(olsize)) DEALLOCATE(olsize)
-
-             !071212-----------GoF 2D-------------
+          lonmean=TEMP1/MAX(SUM(sysA(i)%sys(j)%hs(1:npnts)**2),0.001)
+          latmean=TEMP2/MAX(SUM(sysA(i)%sys(j)%hs(1:npnts)**2),0.001)
+          !070512----------- Weight averages with Hm0 ---------------------
+          !071012----------- Grid point indexing --------------------------
+          ALLOCATE(sysA(i)%sys(j)%indx(maxI*maxJ))
+          sysA(i)%sys(j)%indx = 9999
+          DO iii = 1,sysA(i)%sys(j)%nPoints
+            sysA(i)%sys(j)%indx(iii) = &
+                 (sysA(i)%sys(j)%j(iii)-1)*maxI + &
+                 sysA(i)%sys(j)%i(iii)
           END DO
-          IF (ALLOCATED(Tbsysmem)) DEALLOCATE(Tbsysmem)
-          IF (ALLOCATED(deltaDirsysmem)) DEALLOCATE(deltaDirsysmem)
-          IF (ALLOCATED(deltaPersysmem)) DEALLOCATE(deltaPersysmem)
-          IF (ALLOCATED(m1sysmem)) DEALLOCATE(m1sysmem)
-          IF (ALLOCATED(m2sysmem)) DEALLOCATE(m2sysmem)
+          !071012----------- Grid point indexing --------------------------
+          WRITE(20,*) 'System no. ',j,' of ',maxSys(i)
+          WRITE(20,*) 'Size =', npnts
+          WRITE(20,*) 'lonMean =', lonmean
+          WRITE(20,*) 'latMean =', latmean
+          WRITE(20,*) 'tpMean =', sysA(i)%sys(j)%tpMean
+          WRITE(20,*) 'dirMean =', sysA(i)%sys(j)%dirMean
+          sysA(i)%sys(j)%grp = 9999                                     !Now redundant?
 
-          WRITE(20,*) 'GoF3:'
-          DO jj = 1,maxSys(i)
-             WRITE(20,*) GOF(jj,:)
+          !           Compute deltas
+          Tbsysmem = sysMem(1:maxGroup)%tpMean
+          WRITE(20,*) 'Tbsysmem(:) =       ', Tbsysmem(:)
+          !           Compute deltas the same way as for field combining - they should
+          !           be of the same degree of strictness as the latter, otherwise
+          !           the time combining will lose track!
+          !3stddev            m1 = -3.645*Tb + 63.211
+          !3stddev            m1 = MAX(m1,10.)
+          !3stddev            m2 = -0.346*Tb + 3.686
+          !3stddev            m2 = MAX(m2,0.6)
+          !1stddev            m1 = -2.219*Tb + 35.734
+          !1stddev            m1 = MAX(m1,5.)
+          !1stddev            m2 = -0.226*Tb + 2.213
+          !1stddev            m2 = MAX(m2,0.35)
+          !071412            m1 = -5.071*Tb + 90.688
+          !071412            m1 = MAX(m1,16.)
+          !071412            m2 = -0.467*Tb + 5.161
+          !071412            m2 = MAX(m2,1.0)
+          !071412            deltaDir = (m1*1. + dirTimeKnob)*1.
+          !071412            deltaPer = (m2*1. + tpTimeKnob)*1.
+          DO ii = 1,SIZE(ind2)
+            m1sysmem(ii) = MAX((-3.645*Tbsysmem(ii)+63.211),10.)
+            m2sysmem(ii) = MAX((-0.346*Tbsysmem(ii)+3.686),0.6)
+          END DO
+          deltaDirsysmem = m1sysmem(:)*1. + dirTimeKnob
+          deltaPersysmem = m2sysmem(:)*1. + tpTimeKnob
+          WRITE(20,*) 'deltaDirsysmem(:) = ',deltaDirsysmem
+          WRITE(20,*) 'deltaPersysmem(:) = ',deltaPersysmem
+
+          !                 Criterion 1: Mean period
+          ALLOCATE( TEMP(SIZE(ind2)) )
+          TEMP = ABS( sysA(i)%sys(j)%tpMean - &
+               sysMem(ind2(:))%tpMean )
+          WRITE(20,*) 'tpMean list =', &
+               sysMem(ind2(:))%tpMean
+          WRITE(20,*) 'tpMinVal list =', TEMP
+          tpMinVal = MINVAL(TEMP)
+          tpMinInd = FINDFIRST(TEMP,SIZE(TEMP),tpMinVal)
+
+          !                 Criterion 2: Mean direction
+          ALLOCATE( dirs(SIZE(ind2)) )
+          dirs(:)=ABS( sysA(i)%sys(j)%dirMean - &
+               sysMem(ind2(:))%dirMean )
+          !                 Deal with wrap around
+          DO idir = 1, SIZE(dirs)
+            IF (dirs(idir).GE.180.) dirs(idir)=360-dirs(idir)
+          END DO
+          WRITE(20,*) 'dirMean list =', &
+               sysMem(ind2(:))%dirMean
+          WRITE(20,*) 'dirMinVal list =', dirs
+
+          !                 Criterion 3: Size
+          WRITE(20,*) 'Size list =', &
+               sysMem(ind2(:))%nPoints
+
+          !                 Criterion 4: Distance between systems
+          ALLOCATE (mnlonlist(SIZE(ind2)))
+          ALLOCATE (mnlatlist(SIZE(ind2)))
+          ALLOCATE (mndist(SIZE(ind2)))
+          DO ii = 1,SIZE(ind2)
+            mnlonlist(ii) = sysMem(ind2(ii))%lonMean
+            mnlatlist(ii) = sysMem(ind2(ii))%latMean
+            mndist(ii) = SQRT((lonmean-mnlonlist(ii))**2 + &
+                 (latmean-mnlatlist(ii))**2)
+          END DO
+          dmndiag = SQRT(lonext**2+latext**2)
+          WRITE(20,*) 'Distance list =',mndist(:)
+          WRITE(20,*) 'Domain diagonal =',dmndiag
+
+          !                 Criterion 5: Overlap of systems
+          ALLOCATE (olsize(SIZE(ind2)))
+          DO ii = 1,SIZE(ind2)
+
+            IF (sysMem(ind2(ii))%nPoints.GT.0) THEN
+              CALL INTERSECT(REAL(sysA(i)%sys(j)%indx(1:npnts)),npnts, &
+                   REAL(sysMem(ind2(ii))%indx(1:sysMem(ind2(ii))%nPoints)),&
+                   sysMem(ind2(ii))%nPoints,dummy1,olsize(ii),dummy2,dummy3)
+            ELSE
+              olsize(ii) = 0
+            END IF
           END DO
 
-          !        Find minima in GoF
-          DO k = 1,maxGroup
-             GOFMinVal(k) = MINVAL(GOF(:,k))
-             GOFMinInd(k) = FINDFIRST(GOF(:,k),SIZE(GOF,1),GOFMinVal(k))
-             IF (GOFMinVal(k).EQ.9999) THEN
-                GOFMinInd(k) = 0
-             END IF
+          GOF(j,1:SIZE(ind2)) = (TEMP/deltaPersysmem(:))**2 + &
+               (dirs/deltaDirsysmem(:))**2 + &
+                                !                    (4*mndist(:)/dmndiag)**2
+               ( (REAL(olsize(:)) - &
+               REAL(sysMem(ind2(:))%nPoints) )/&
+               (0.50*MAX(REAL(sysMem(ind2(:))%nPoints),0.001)) )**2
+          !                 Remove GoF entries which exceed predifined tolerances
+          DO ii = 1,SIZE(ind2)
+            WRITE(20,*) 'Testing: ii,olsize(ii),size,frac =',&
+                 ii,olsize(ii),sysMem(ind2(ii))%nPoints,&
+                 REAL(olsize(ii))/&
+                 MAX(REAL(sysMem(ind2(ii))%nPoints),0.001)
+            IF ( REAL(olsize(ii)).LT.&
+                 0.50*REAL(sysMem(ind2(ii))%nPoints) ) THEN
+              GOF(j,ii) = 9999.
+            END IF
+            IF ( (TEMP(ii).GT.deltaPersysmem(ii)).OR.&
+                 (dirs(ii).GT.deltaDirsysmem(ii)) ) THEN
+              GOF(j,ii) = 9999.
+            END IF
           END DO
+          WRITE(20,*) 'GOF(j,:) =',GOF(j,:)
 
-          IF (ALLOCATED(GOF)) DEALLOCATE(GOF)
+          IF (ALLOCATED(TEMP)) DEALLOCATE(TEMP)
+          IF (ALLOCATED(dirs)) DEALLOCATE(dirs)
+          IF (ALLOCATED(mnlonlist)) DEALLOCATE(mnlonlist)
+          IF (ALLOCATED(mnlatlist)) DEALLOCATE(mnlatlist)
+          IF (ALLOCATED(mndist)) DEALLOCATE(mndist)
+          IF (ALLOCATED(olsize)) DEALLOCATE(olsize)
 
-          DO j = 1, maxSys(i)
-             new = 0
-             !                 Look up sysMem match for this current system. If no match
-             !                 is found, the index value 0 is returned.
-             tpMinInd = 0
-             TEMP1 = 9999.
-             DO jj = 1, SIZE(GOFMinInd)
-                IF (GOFMinInd(jj).EQ.j) THEN
-                   IF (GOFMinVal(jj).LT.TEMP1) THEN
-                      tpMinInd = jj
-                      TEMP1 = GOFMinVal(jj)
-                   END IF
-                END IF
-             END DO
-             dirMinInd = tpMinInd
-             WRITE(20,*) 'System, GOFMinInd: ',j,tpMinInd
+          !071212-----------GoF 2D-------------
+        END DO
+        IF (ALLOCATED(Tbsysmem)) DEALLOCATE(Tbsysmem)
+        IF (ALLOCATED(deltaDirsysmem)) DEALLOCATE(deltaDirsysmem)
+        IF (ALLOCATED(deltaPersysmem)) DEALLOCATE(deltaPersysmem)
+        IF (ALLOCATED(m1sysmem)) DEALLOCATE(m1sysmem)
+        IF (ALLOCATED(m2sysmem)) DEALLOCATE(m2sysmem)
 
-             IF (tpMinInd.NE.0) THEN
-                !                    Success
-                !071212-----------GoF 2D-------------
+        WRITE(20,*) 'GoF3:'
+        DO jj = 1,maxSys(i)
+          WRITE(20,*) GOF(jj,:)
+        END DO
 
-                counter = counter+1
-                sysA(i)%sys(j)%grp = &
-                     sysMem(ind2(dirMinInd))%grp
-                alreadyUsed(counter) = sysA(i)%sys(j)%grp
+        !        Find minima in GoF
+        DO k = 1,maxGroup
+          GOFMinVal(k) = MINVAL(GOF(:,k))
+          GOFMinInd(k) = FINDFIRST(GOF(:,k),SIZE(GOF,1),GOFMinVal(k))
+          IF (GOFMinVal(k).EQ.9999) THEN
+            GOFMinInd(k) = 0
+          END IF
+        END DO
 
-                WRITE(20,*) 'Case 1: matched this ts (',i, &
-                     ') sys ',sysA(i)%sys(j)%sysInd,' (tp=', &
-                     sysA(i)%sys(j)%tpMean,' dir=', &
-                     sysA(i)%sys(j)%dirMean,') with grp ', &
-                     sysMem(ind2(dirMinInd))%grp
-                WRITE(20,*) 'Added ',alreadyUsed(counter), &
-                     ' in array *alreadyUsed*'
-             ELSE
-                new = 1
-             END IF
+        IF (ALLOCATED(GOF)) DEALLOCATE(GOF)
 
-             IF (new.EQ.1) THEN
-                used = 0
-                DO k = 1, maxGroup
-                   ok = 1
-                   WRITE(20,*) 'maxGroup,k,ok,used =', &
-                        maxGroup,k,ok,used
-                   !                       Make sure it hasn't been used yet (at current time level)
-                   IF ((i.GT.2).AND. &
-                        (.NOT.ANY(alreadyUsed(:).EQ.k))) THEN
-                      !                           Make sure it hasn't been used yet (at previous time level)
-                      DO l = 1, maxGroup
-                         !                              If last update of system was more that *6* time steps
-                         !                              ago, system can be released (TO CALIBRATE)
-                         IF ( (sysMem(l)%grp.EQ.k).AND. &
-                              ((i-sysMem(l)%updated).LT.6) ) ok = 0
-                         WRITE(20,*) 'l, ok = ',l,ok
-                      END DO
-                      IF (ok.EQ.1) THEN
-                         sysA(i)%sys(j)%grp = k
-                         counter = counter+1;
-                         alreadyUsed(counter) = k
-                         used = 1
-                         WRITE(20,*) 'k,used,counter =', &
-                              k,used,counter
-                         EXIT
-                      END IF
-                   END IF
+        DO j = 1, maxSys(i)
+          new = 0
+          !                 Look up sysMem match for this current system. If no match
+          !                 is found, the index value 0 is returned.
+          tpMinInd = 0
+          TEMP1 = 9999.
+          DO jj = 1, SIZE(GOFMinInd)
+            IF (GOFMinInd(jj).EQ.j) THEN
+              IF (GOFMinVal(jj).LT.TEMP1) THEN
+                tpMinInd = jj
+                TEMP1 = GOFMinVal(jj)
+              END IF
+            END IF
+          END DO
+          dirMinInd = tpMinInd
+          WRITE(20,*) 'System, GOFMinInd: ',j,tpMinInd
+
+          IF (tpMinInd.NE.0) THEN
+            !                    Success
+            !071212-----------GoF 2D-------------
+
+            counter = counter+1
+            sysA(i)%sys(j)%grp = &
+                 sysMem(ind2(dirMinInd))%grp
+            alreadyUsed(counter) = sysA(i)%sys(j)%grp
+
+            WRITE(20,*) 'Case 1: matched this ts (',i, &
+                 ') sys ',sysA(i)%sys(j)%sysInd,' (tp=', &
+                 sysA(i)%sys(j)%tpMean,' dir=', &
+                 sysA(i)%sys(j)%dirMean,') with grp ', &
+                 sysMem(ind2(dirMinInd))%grp
+            WRITE(20,*) 'Added ',alreadyUsed(counter), &
+                 ' in array *alreadyUsed*'
+          ELSE
+            new = 1
+          END IF
+
+          IF (new.EQ.1) THEN
+            used = 0
+            DO k = 1, maxGroup
+              ok = 1
+              WRITE(20,*) 'maxGroup,k,ok,used =', &
+                   maxGroup,k,ok,used
+              !                       Make sure it hasn't been used yet (at current time level)
+              IF ((i.GT.2).AND. &
+                   (.NOT.ANY(alreadyUsed(:).EQ.k))) THEN
+                !                           Make sure it hasn't been used yet (at previous time level)
+                DO l = 1, maxGroup
+                  !                              If last update of system was more that *6* time steps
+                  !                              ago, system can be released (TO CALIBRATE)
+                  IF ( (sysMem(l)%grp.EQ.k).AND. &
+                       ((i-sysMem(l)%updated).LT.6) ) ok = 0
+                  WRITE(20,*) 'l, ok = ',l,ok
                 END DO
-                IF (used.EQ.0) THEN
-                   maxGroup = maxGroup+1
-                   sysA(i)%sys(j)%grp = maxGroup
-                   !                       Increase sysMem by one slot
-                   sysMem(maxGroup)%grp = maxGroup
-                   counter = counter+1
-                   alreadyUsed(counter) = maxGroup
+                IF (ok.EQ.1) THEN
+                  sysA(i)%sys(j)%grp = k
+                  counter = counter+1;
+                  alreadyUsed(counter) = k
+                  used = 1
+                  WRITE(20,*) 'k,used,counter =', &
+                       k,used,counter
+                  EXIT
                 END IF
-                WRITE(20,*) 'counter,maxGroup,sysA(i)%sys(j)%grp =',&
-                     counter,maxGroup,sysA(i)%sys(j)%grp
-                WRITE(20,*) 'NO GRP MATCH case 2'
-             END IF
+              END IF
+            END DO
+            IF (used.EQ.0) THEN
+              maxGroup = maxGroup+1
+              sysA(i)%sys(j)%grp = maxGroup
+              !                       Increase sysMem by one slot
+              sysMem(maxGroup)%grp = maxGroup
+              counter = counter+1
+              alreadyUsed(counter) = maxGroup
+            END IF
+            WRITE(20,*) 'counter,maxGroup,sysA(i)%sys(j)%grp =',&
+                 counter,maxGroup,sysA(i)%sys(j)%grp
+            WRITE(20,*) 'NO GRP MATCH case 2'
+          END IF
 
+        END DO
+        IF (ALLOCATED(ind)) DEALLOCATE(ind)                  !071212 Shifted
+        IF (ALLOCATED(ind2)) DEALLOCATE(ind2)                !071212 Shifted
+        IF (ALLOCATED(GOFMinVal)) DEALLOCATE(GOFMinVal)
+        IF (ALLOCATED(GOFMinInd)) DEALLOCATE(GOFMinInd)
+
+        IF (ALLOCATED(alreadyUsed)) DEALLOCATE(alreadyUsed)
+        IF (ALLOCATED(allInd)) DEALLOCATE(allInd)
+
+        !        Update sysMem
+        DO k = 1, maxGroup
+          DO kk = 1, maxSys(i)
+            IF (sysA(i)%sys(kk)%grp.EQ.sysMem(k)%grp) THEN
+              sysMem(k)%nPoints = sysA(i)%sys(kk)%nPoints
+              sysMem(k)%lonMean = &
+                   SUM(sysA(i)%sys(kk)%lon(1:sysMem(k)%nPoints))/&
+                   sysMem(k)%nPoints
+              sysMem(k)%latMean = &
+                   SUM(sysA(i)%sys(kk)%lat(1:sysMem(k)%nPoints))/&
+                   sysMem(k)%nPoints
+              !070512----------- Weight averages with Hm0 ---------------------
+              TEMP1 = 0.
+              TEMP2 = 0.
+              DO iii = 1,sysMem(k)%nPoints
+                TEMP1 = TEMP1 + &
+                     (sysA(i)%sys(kk)%hs(iii)**2)*sysA(i)%sys(kk)%lon(iii)
+                TEMP2 = TEMP2 + &
+                     (sysA(i)%sys(kk)%hs(iii)**2)*sysA(i)%sys(kk)%lat(iii)
+              END DO
+              sysMem(k)%lonMean = TEMP1/&
+                   MAX(SUM(sysA(i)%sys(kk)%hs(1:sysMem(k)%nPoints)**2),&
+                   0.001)
+              sysMem(k)%latMean = TEMP2/&
+                   MAX(SUM(sysA(i)%sys(kk)%hs(1:sysMem(k)%nPoints)**2),&
+                   0.001)
+              !070512----------- Weight averages with Hm0 ---------------------
+              sysMem(k)%tpMean = sysA(i)%sys(kk)%tpMean
+              sysMem(k)%dirMean = sysA(i)%sys(kk)%dirMean
+              !071012----------- Grid point indexing --------------------------
+              sysMem(k)%indx(:) = 9999
+              DO iii = 1,sysMem(k)%nPoints
+                sysMem(k)%indx(iii) = &
+                     (sysA(i)%sys(kk)%j(iii)-1)*maxI + &
+                     sysA(i)%sys(kk)%i(iii)
+              END DO
+              !071012----------- Grid point indexing --------------------------
+              sysMem(k)%updated = i
+              sysMem(k)%length = sysMem(k)%length + 1
+            END IF
           END DO
-          IF (ALLOCATED(ind)) DEALLOCATE(ind)                  !071212 Shifted
-          IF (ALLOCATED(ind2)) DEALLOCATE(ind2)                !071212 Shifted
-          IF (ALLOCATED(GOFMinVal)) DEALLOCATE(GOFMinVal)
-          IF (ALLOCATED(GOFMinInd)) DEALLOCATE(GOFMinInd)
-
-          IF (ALLOCATED(alreadyUsed)) DEALLOCATE(alreadyUsed)
-          IF (ALLOCATED(allInd)) DEALLOCATE(allInd)
-
-          !        Update sysMem
-          DO k = 1, maxGroup
-             DO kk = 1, maxSys(i)
-                IF (sysA(i)%sys(kk)%grp.EQ.sysMem(k)%grp) THEN
-                   sysMem(k)%nPoints = sysA(i)%sys(kk)%nPoints
-                   sysMem(k)%lonMean = &
-                        SUM(sysA(i)%sys(kk)%lon(1:sysMem(k)%nPoints))/&
-                        sysMem(k)%nPoints
-                   sysMem(k)%latMean = &
-                        SUM(sysA(i)%sys(kk)%lat(1:sysMem(k)%nPoints))/&
-                        sysMem(k)%nPoints
-                   !070512----------- Weight averages with Hm0 ---------------------
-                   TEMP1 = 0.
-                   TEMP2 = 0.
-                   DO iii = 1,sysMem(k)%nPoints
-                      TEMP1 = TEMP1 + &
-                           (sysA(i)%sys(kk)%hs(iii)**2)*sysA(i)%sys(kk)%lon(iii)
-                      TEMP2 = TEMP2 + &
-                           (sysA(i)%sys(kk)%hs(iii)**2)*sysA(i)%sys(kk)%lat(iii)
-                   END DO
-                   sysMem(k)%lonMean = TEMP1/&
-                        MAX(SUM(sysA(i)%sys(kk)%hs(1:sysMem(k)%nPoints)**2),&
-                        0.001)
-                   sysMem(k)%latMean = TEMP2/&
-                        MAX(SUM(sysA(i)%sys(kk)%hs(1:sysMem(k)%nPoints)**2),&
-                        0.001)
-                   !070512----------- Weight averages with Hm0 ---------------------
-                   sysMem(k)%tpMean = sysA(i)%sys(kk)%tpMean
-                   sysMem(k)%dirMean = sysA(i)%sys(kk)%dirMean
-                   !071012----------- Grid point indexing --------------------------
-                   sysMem(k)%indx(:) = 9999
-                   DO iii = 1,sysMem(k)%nPoints
-                      sysMem(k)%indx(iii) = &
-                           (sysA(i)%sys(kk)%j(iii)-1)*maxI + &
-                           sysA(i)%sys(kk)%i(iii)
-                   END DO
-                   !071012----------- Grid point indexing --------------------------
-                   sysMem(k)%updated = i
-                   sysMem(k)%length = sysMem(k)%length + 1
-                END IF
-             END DO
-             !Test for expired groups
-             IF ((i-sysMem(k)%updated).GE.6) THEN
-                sysMem(k)%nPoints = 0
-                sysMem(k)%lonMean = 9999.
-                sysMem(k)%latMean = 9999.
-                sysMem(k)%tpMean = 9999.
-                sysMem(k)%dirMean = 9999.
-                sysMem(k)%indx(:) = 9999
-                sysMem(k)%updated = -9999
-                sysMem(k)%length = 0
-             END IF
-          END DO
-          !083012  !Filter out duplicates groups that can develop
-          DO l = 1, maxGroup
-             DO ll = (l+1), maxGroup
-
-                deltaDir = MAX((-3.645*sysMem(l)%tpMean+63.211),10.)*1.
-                deltaPer = MAX((-0.346*sysMem(l)%tpMean+3.686),0.6)*1.
-
-                IF ( (ABS(sysMem(l)%tpMean-sysMem(ll)%tpMean).LT.&
-                     deltaPer).AND. &
-                     (ABS(sysMem(l)%dirMean-sysMem(ll)%dirMean).LT.&
-                     deltaDir).AND. &
-                     (sysMem(l)%updated.NE.sysMem(ll)%updated).AND. &
-                     (sysMem(ll)%nPoints.NE.0) ) THEN
-                   !Find the more recent entry, and delete from group
-                   IF (sysMem(ll)%length.LT.sysMem(l)%length) THEN
-                      idup = ll
-                      WRITE(20,*) 'Deleting memgroup ',ll, &
-                           '(updated',sysMem(ll)%updated,', length', &
-                           sysMem(ll)%length,'), duplicate of memgroup', &
-                           l,'(updated',sysMem(l)%updated,', length', &
-                           sysMem(l)%length,'):'
-                   ELSE
-                      idup = l
-                      WRITE(20,*) 'Deleting memgroup ',l, &
-                           '(updated',sysMem(l)%updated,', length', &
-                           sysMem(l)%length,'), duplicate of memgroup', &
-                           ll,'(updated',sysMem(ll)%updated,', length', &
-                           sysMem(ll)%length,'):'
-                   END IF
-                   WRITE(20,*) 'deltaPer, diff Per:',deltaPer,&
-                        ABS(sysMem(l)%tpMean-sysMem(ll)%tpMean)
-                   WRITE(20,*) 'deltaDir, diff Dir:',deltaDir,&
-                        ABS(sysMem(l)%dirMean-sysMem(ll)%dirMean)
-                   sysMem(idup)%nPoints = 0
-                   sysMem(idup)%lonMean = 9999.
-                   sysMem(idup)%latMean = 9999.
-                   sysMem(idup)%tpMean = 9999.
-                   sysMem(idup)%dirMean = 9999.
-                   sysMem(idup)%indx(:) = 9999
-                   sysMem(idup)%updated = -9999
-                   sysMem(idup)%length = 0
-                END IF
-             END DO
-          END DO
-       ELSE
-          WRITE(20,*) '*** No systems at this time level. ', &
-               'No. systems =',SIZE(sysA(i)%sys)
           !Test for expired groups
-          DO k = 1, maxGroup
-             IF ((i-sysMem(k)%updated).GE.6) THEN
-                sysMem(k)%nPoints = 0
-                sysMem(k)%lonMean = 9999.
-                sysMem(k)%latMean = 9999.
-                sysMem(k)%tpMean = 9999.
-                sysMem(k)%dirMean = 9999.
-                sysMem(k)%indx(:) = 9999
-                sysMem(k)%updated = -9999
-                sysMem(k)%length = 0
-             END IF
+          IF ((i-sysMem(k)%updated).GE.6) THEN
+            sysMem(k)%nPoints = 0
+            sysMem(k)%lonMean = 9999.
+            sysMem(k)%latMean = 9999.
+            sysMem(k)%tpMean = 9999.
+            sysMem(k)%dirMean = 9999.
+            sysMem(k)%indx(:) = 9999
+            sysMem(k)%updated = -9999
+            sysMem(k)%length = 0
+          END IF
+        END DO
+        !083012  !Filter out duplicates groups that can develop
+        DO l = 1, maxGroup
+          DO ll = (l+1), maxGroup
+
+            deltaDir = MAX((-3.645*sysMem(l)%tpMean+63.211),10.)*1.
+            deltaPer = MAX((-0.346*sysMem(l)%tpMean+3.686),0.6)*1.
+
+            IF ( (ABS(sysMem(l)%tpMean-sysMem(ll)%tpMean).LT.&
+                 deltaPer).AND. &
+                 (ABS(sysMem(l)%dirMean-sysMem(ll)%dirMean).LT.&
+                 deltaDir).AND. &
+                 (sysMem(l)%updated.NE.sysMem(ll)%updated).AND. &
+                 (sysMem(ll)%nPoints.NE.0) ) THEN
+              !Find the more recent entry, and delete from group
+              IF (sysMem(ll)%length.LT.sysMem(l)%length) THEN
+                idup = ll
+                WRITE(20,*) 'Deleting memgroup ',ll, &
+                     '(updated',sysMem(ll)%updated,', length', &
+                     sysMem(ll)%length,'), duplicate of memgroup', &
+                     l,'(updated',sysMem(l)%updated,', length', &
+                     sysMem(l)%length,'):'
+              ELSE
+                idup = l
+                WRITE(20,*) 'Deleting memgroup ',l, &
+                     '(updated',sysMem(l)%updated,', length', &
+                     sysMem(l)%length,'), duplicate of memgroup', &
+                     ll,'(updated',sysMem(ll)%updated,', length', &
+                     sysMem(ll)%length,'):'
+              END IF
+              WRITE(20,*) 'deltaPer, diff Per:',deltaPer,&
+                   ABS(sysMem(l)%tpMean-sysMem(ll)%tpMean)
+              WRITE(20,*) 'deltaDir, diff Dir:',deltaDir,&
+                   ABS(sysMem(l)%dirMean-sysMem(ll)%dirMean)
+              sysMem(idup)%nPoints = 0
+              sysMem(idup)%lonMean = 9999.
+              sysMem(idup)%latMean = 9999.
+              sysMem(idup)%tpMean = 9999.
+              sysMem(idup)%dirMean = 9999.
+              sysMem(idup)%indx(:) = 9999
+              sysMem(idup)%updated = -9999
+              sysMem(idup)%length = 0
+            END IF
           END DO
-       END IF
-       !        ******** Test output ***********************
-       DO k = 1, maxGroup
-          WRITE(20,*) 'sysMem(',k,')%grp =',sysMem(k)%grp
-          WRITE(20,*) 'sysMem(',k,')%nPoints =',sysMem(k)%nPoints
-          WRITE(20,*) 'sysMem(',k,')%lonMean =',sysMem(k)%lonMean
-          WRITE(20,*) 'sysMem(',k,')%latMean =',sysMem(k)%latMean
-          WRITE(20,*) 'sysMem(',k,')%tpMean =',sysMem(k)%tpMean
-          WRITE(20,*) 'sysMem(',k,')%dirMean =',sysMem(k)%dirMean
-          WRITE(20,*) 'sysMem(',k,')%updated =',sysMem(k)%updated
-          WRITE(20,*) 'sysMem(',k,')%length =',sysMem(k)%length
-       END DO
-       !        ********************************************
+        END DO
+      ELSE
+        WRITE(20,*) '*** No systems at this time level. ', &
+             'No. systems =',SIZE(sysA(i)%sys)
+        !Test for expired groups
+        DO k = 1, maxGroup
+          IF ((i-sysMem(k)%updated).GE.6) THEN
+            sysMem(k)%nPoints = 0
+            sysMem(k)%lonMean = 9999.
+            sysMem(k)%latMean = 9999.
+            sysMem(k)%tpMean = 9999.
+            sysMem(k)%dirMean = 9999.
+            sysMem(k)%indx(:) = 9999
+            sysMem(k)%updated = -9999
+            sysMem(k)%length = 0
+          END IF
+        END DO
+      END IF
+      !        ******** Test output ***********************
+      DO k = 1, maxGroup
+        WRITE(20,*) 'sysMem(',k,')%grp =',sysMem(k)%grp
+        WRITE(20,*) 'sysMem(',k,')%nPoints =',sysMem(k)%nPoints
+        WRITE(20,*) 'sysMem(',k,')%lonMean =',sysMem(k)%lonMean
+        WRITE(20,*) 'sysMem(',k,')%latMean =',sysMem(k)%latMean
+        WRITE(20,*) 'sysMem(',k,')%tpMean =',sysMem(k)%tpMean
+        WRITE(20,*) 'sysMem(',k,')%dirMean =',sysMem(k)%dirMean
+        WRITE(20,*) 'sysMem(',k,')%updated =',sysMem(k)%updated
+        WRITE(20,*) 'sysMem(',k,')%length =',sysMem(k)%length
+      END DO
+      !        ********************************************
     END DO
 
     !     Write hotfile of wave groups
     OPEN(unit=27,file='sys_restart1.ww3',status='unknown')
     WRITE(27,'(A23,I10)') 'maxGroup             =',maxGroup
     DO k = 1, maxGroup
-       WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
-            ' )%grp     =',sysMem(k)%grp
-       WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
-            ' )%nPoints =',sysMem(k)%nPoints
-       WRITE(27,'(A8,I3,A12,F10.4)') 'sysMem( ',k, &
-            ' )%lonMean =',sysMem(k)%lonMean
-       WRITE(27,'(A8,I3,A12,F10.4)') 'sysMem( ',k, &
-            ' )%latMean =',sysMem(k)%latMean
-       WRITE(27,'(A8,I3,A12,F10.3)') 'sysMem( ',k, &
-            ' )%tpMean  =',sysMem(k)%tpMean
-       WRITE(27,'(A8,I3,A12,F10.3)') 'sysMem( ',k, &
-            ' )%dirMean =',sysMem(k)%dirMean
-       WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
-            ' )%updated =',sysMem(k)%updated
-       WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
-            ' )%length  =',sysMem(k)%length
-       DO j = maxJ,1,-1
-          DO i = 1,maxI
-             WRITE(27,'(I8)',ADVANCE='NO') sysMem(k)%indx((j-1)*maxI+i)
-          END DO
-          WRITE(27,'(A)',ADVANCE='YES') ''
-       END DO
+      WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
+           ' )%grp     =',sysMem(k)%grp
+      WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
+           ' )%nPoints =',sysMem(k)%nPoints
+      WRITE(27,'(A8,I3,A12,F10.4)') 'sysMem( ',k, &
+           ' )%lonMean =',sysMem(k)%lonMean
+      WRITE(27,'(A8,I3,A12,F10.4)') 'sysMem( ',k, &
+           ' )%latMean =',sysMem(k)%latMean
+      WRITE(27,'(A8,I3,A12,F10.3)') 'sysMem( ',k, &
+           ' )%tpMean  =',sysMem(k)%tpMean
+      WRITE(27,'(A8,I3,A12,F10.3)') 'sysMem( ',k, &
+           ' )%dirMean =',sysMem(k)%dirMean
+      WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
+           ' )%updated =',sysMem(k)%updated
+      WRITE(27,'(A8,I3,A12,I10)') 'sysMem( ',k, &
+           ' )%length  =',sysMem(k)%length
+      DO j = maxJ,1,-1
+        DO i = 1,maxI
+          WRITE(27,'(I8)',ADVANCE='NO') sysMem(k)%indx((j-1)*maxI+i)
+        END DO
+        WRITE(27,'(A)',ADVANCE='YES') ''
+      END DO
     END DO
     CLOSE(27)
 
@@ -2753,35 +2753,35 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     SELECT CASE (way)
     CASE ('R')
-       way='D'
-       vertStepCount=vertStepCount+1
-       IF (horizBorder.EQ.1) THEN
-          horizStepCount=horizStepCount-1
-       END IF
-       stepCount=vertStepCount
+      way='D'
+      vertStepCount=vertStepCount+1
+      IF (horizBorder.EQ.1) THEN
+        horizStepCount=horizStepCount-1
+      END IF
+      stepCount=vertStepCount
     CASE ('D')
-       way='L'
-       horizStepCount=horizStepCount+1
-       IF (vertBorder.EQ.1) THEN
-          vertStepCount=vertStepCount-1
-       END IF
-       stepCount=horizStepCount
+      way='L'
+      horizStepCount=horizStepCount+1
+      IF (vertBorder.EQ.1) THEN
+        vertStepCount=vertStepCount-1
+      END IF
+      stepCount=horizStepCount
     CASE ('L')
-       way='U'
-       vertStepCount=vertStepCount+1
-       IF (horizBorder.EQ.1) THEN
-          horizStepCount=horizStepCount-1
-       END IF
-       stepCount=vertStepCount
+      way='U'
+      vertStepCount=vertStepCount+1
+      IF (horizBorder.EQ.1) THEN
+        horizStepCount=horizStepCount-1
+      END IF
+      stepCount=vertStepCount
     CASE ('U')
-       way='R'
-       horizStepCount=horizStepCount+1
-       IF (vertBorder.EQ.1) THEN
-          vertStepCount=vertStepCount-1
-       END IF
-       stepCount=horizStepCount
+      way='R'
+      horizStepCount=horizStepCount+1
+      IF (vertBorder.EQ.1) THEN
+        vertStepCount=vertStepCount-1
+      END IF
+      stepCount=horizStepCount
     CASE DEFAULT
-       WRITE(20,*) 'In spaTack:findWay should NOT go here!'
+      WRITE(20,*) 'In spaTack:findWay should NOT go here!'
     END SELECT
 
     RETURN
@@ -2870,31 +2870,31 @@ CONTAINS
     horizBorder=0
     SELECT CASE (way)
     CASE ('R')
-       IF (i.LT.maxI) THEN
-          i=i+1
-       ELSE
-          !                 Need to tell findWay that if we hit the border we don't
-          !                 increment stepCount...
-          horizBorder=1
-       END IF
+      IF (i.LT.maxI) THEN
+        i=i+1
+      ELSE
+        !                 Need to tell findWay that if we hit the border we don't
+        !                 increment stepCount...
+        horizBorder=1
+      END IF
     CASE ('D')
-       IF (j.GT.1) THEN
-          j=j-1
-       ELSE
-          vertBorder=1
-       END IF
+      IF (j.GT.1) THEN
+        j=j-1
+      ELSE
+        vertBorder=1
+      END IF
     CASE ('L')
-       IF (i.GT.1) THEN
-          i=i-1
-       ELSE
-          horizBorder=1
-       END IF
+      IF (i.GT.1) THEN
+        i=i-1
+      ELSE
+        horizBorder=1
+      END IF
     CASE ('U')
-       IF (j.LT.maxJ) THEN
-          j=j+1
-       ELSE
-          vertBorder=1
-       END IF
+      IF (j.LT.maxJ) THEN
+        j=j+1
+      ELSE
+        vertBorder=1
+      END IF
     END SELECT
 
     RETURN
@@ -3006,166 +3006,166 @@ CONTAINS
     !     First find the checked neighbor
     counter=1
     DO ii=(i-ngbrExt), (i+ngbrExt)
-       DO jj=(j-ngbrExt), (j+ngbrExt)
-          IF ( (ii.GT.0).AND.(jj.GT.0).AND. &
-               (jj.LE.maxJ).AND.(ii.LE.maxI) ) THEN
-             IF ( wsdat%par(ii,jj)%checked.EQ.1 ) THEN
-                ngbr(counter)%par = wsdat%par(ii,jj)                !Added the par field to maintain the data structure
-                ngbr(counter)%i = ii
-                ngbr(counter)%j = jj
-                counter=counter+1
-             END IF
+      DO jj=(j-ngbrExt), (j+ngbrExt)
+        IF ( (ii.GT.0).AND.(jj.GT.0).AND. &
+             (jj.LE.maxJ).AND.(ii.LE.maxI) ) THEN
+          IF ( wsdat%par(ii,jj)%checked.EQ.1 ) THEN
+            ngbr(counter)%par = wsdat%par(ii,jj)                !Added the par field to maintain the data structure
+            ngbr(counter)%i = ii
+            ngbr(counter)%j = jj
+            counter=counter+1
           END IF
-       END DO
+        END IF
+      END DO
     END DO
     !     New variable nngbr
     nngbr=counter-1
 
     IF (nngbr.GT.0) THEN
-       allFullSys(:) = 0
-       startCount=1
-       l=1
-       DO WHILE (l.LE.nngbr)
-          leng = LENGTH(REAL(ngbr(l)%par%sys), &
-               SIZE(ngbr(l)%par%sys),REAL(9999))
-          endCount = startCount+leng-1
-          allFullSys(startCount:endCount) = ngbr(l)%par%sys(1:leng)
-          startCount=endCount+1
-          l=l+1
-       END DO
+      allFullSys(:) = 0
+      startCount=1
+      l=1
+      DO WHILE (l.LE.nngbr)
+        leng = LENGTH(REAL(ngbr(l)%par%sys), &
+             SIZE(ngbr(l)%par%sys),REAL(9999))
+        endCount = startCount+leng-1
+        allFullSys(startCount:endCount) = ngbr(l)%par%sys(1:leng)
+        startCount=endCount+1
+        l=l+1
+      END DO
 
-       IF (endCount.EQ.0) WRITE(20,*) '***1.Calling UNIQUE w. len=0!'
-       CALL UNIQUE (REAL(allFullSys),endCount,realarr,nout)            !Can one do this?
-       ALLOCATE(allSys(nout))
-       allSys = INT(realarr)                                           !Can one do this?
-       IF (ASSOCIATED(realarr)) DEALLOCATE(realarr)
-       maxS = MAXVAL(allSys)
+      IF (endCount.EQ.0) WRITE(20,*) '***1.Calling UNIQUE w. len=0!'
+      CALL UNIQUE (REAL(allFullSys),endCount,realarr,nout)            !Can one do this?
+      ALLOCATE(allSys(nout))
+      allSys = INT(realarr)                                           !Can one do this?
+      IF (ASSOCIATED(realarr)) DEALLOCATE(realarr)
+      maxS = MAXVAL(allSys)
 
-       IF (maxSys.LT.maxS) THEN
-          maxSys=maxS
-       END IF
-       !         Initiate sys num
-       ALLOCATE( tmpsys(SIZE(allSys)) )
-       !         Clear the wsdat%par(i,j)%sys field, new values assigned below.
-       !         System info temporarily stored in allSys
-       wsdat%par(i,j)%sys(1:10) = 9999
+      IF (maxSys.LT.maxS) THEN
+        maxSys=maxS
+      END IF
+      !         Initiate sys num
+      ALLOCATE( tmpsys(SIZE(allSys)) )
+      !         Clear the wsdat%par(i,j)%sys field, new values assigned below.
+      !         System info temporarily stored in allSys
+      wsdat%par(i,j)%sys(1:10) = 9999
 
-       DO s=1, SIZE(allSys)
-          hsAll(:) = 0.
-          tpAll(:) = 0.
-          dirAll(:) = 0.
-          !              wfAll(:) = 0.
-          n=1
-          countAll=0
-          DO WHILE (n.LE.nngbr)
-             !                Calculate mean of common neighbor wave system
-             !                for every neigbor wave system
-             found = .FALSE.
-             DO ind = 1, SIZE(ngbr(n)%par%sys)                       !Optimize this?
-                IF ( ngbr(n)%par%sys(ind).EQ.allSys(s) ) THEN        !Put sys under par to maintain structure
-                   found = .TRUE.
-                   EXIT
-                END IF
-             END DO
-
-             IF (found) THEN
-                countAll=countAll+1
-                hsAll(countAll)=ngbr(n)%par%hs(ind)
-                tpAll(countAll)=ngbr(n)%par%tp(ind)
-                dirAll(countAll)=ngbr(n)%par%dir(ind)
-                !                     wfAll(countAll)=ngbr(n)%par%wf(ind)
-             ELSE
-                n=n+1
-                CYCLE
-             END IF
-             n=n+1
-          END DO
-          tmpsys(s)%hsMean = SUM(hsAll(1:countAll))/countAll
-          tmpsys(s)%tpMean = SUM(tpAll(1:countAll))/countAll
-          tmpsys(s)%dirMean = &
-               mean_angleV2(dirAll(1:countAll),countAll)
-          !              tmpsys(s)%wfMean = SUM(wfAll(1:countAll))/countAll
-       END DO
-
-       !         Find the partition at current (i,j) point that matches previously
-       !         identified wave systems if any...
-       wsdat%par(i,j)%ngbrSys(1:SIZE(allSys)) = allSys
-
-       npart = LENGTH(REAL(wsdat%par(i,j)%ipart), &
-            SIZE(wsdat%par(i,j)%ipart),REAL(0))
-       DO p = 1, npart
-          IF ( (wsdat%par(i,j)%hs(p).LT.hsKnob).OR. &
-               (wsdat%par(i,j)%tp(p).EQ.0.) ) THEN
-             wsdat%par(i,j)%sys(p)=-1
-             CYCLE
-          END IF
-
-          ind=0                                                       !Replaced 'index' by 'ind'
-          match%sysVal(:) = 9999
-          match%tpVal(:) = 9999.
-          match%dirVal(:) = 9999.
-          !              match%wfVal(:) = 9999.
-          !             Cycle through the neighbouring systems identified above
-          DO s=1,SIZE(allSys)
-             absHs = ABS(wsdat%par(i,j)%hs(p)-tmpsys(s)%hsMean)
-             absPer = ABS(wsdat%par(i,j)%tp(p)-tmpsys(s)%tpMean)
-             absDir = ABS(wsdat%par(i,j)%dir(p)-tmpsys(s)%dirMean)
-             !                  absWf = ABS(wsdat%par(i,j)%wf(p)-tmpsys(s)%wfMean)
-             IF (absDir.GT.180) THEN
-                absDir = 360 - absDir
-                IF (absDir.LT.0) THEN
-                   WRITE(20,*) '*** WARNING: absDir negative!'
-                   WRITE(20,*) 'wsdat%par(i,j)%dir(p) =', &
-                        wsdat%par(i,j)%dir(p)
-                   WRITE(20,*) 'tmpsys(s)%dirMean) =', &
-                        tmpsys(s)%dirMean
-                END IF
-             END IF
-             !                 Calculate delta dir and freq as a function of the partition
-             !                 dir and freq
-             T = tmpsys(s)%tpMean
-             dx = 0.5*( (wsdat%lon(2,1)-wsdat%lon(1,1)) + &
-                  (wsdat%lat(1,2)-wsdat%lat(1,1)) )
-             m1 = -3.645*T + 63.211
-             m1 = MAX(m1,10.)
-             m2 = -0.346*T + 3.686
-             m2 = MAX(m2,0.6)
-             !1stddev                  m1 = -2.219*T + 35.734
-             !1stddev                  m1 = MAX(m1,5.)
-             !1stddev                  m2 = -0.226*T + 2.213
-             !1stddev                  m2 = MAX(m2,0.35)
-             !5stddev                  m1 = -5.071*T + 90.688
-             !5stddev                  m1 = MAX(m1,16.)
-             !5stddev                  m2 = -0.467*T + 5.161
-             !5stddev                  m2 = MAX(m2,1.0)
-             deltaDir = m1*dx + dirKnob
-             deltaPer = m2*dx + perKnob
-             deltaHs = 0.25*tmpsys(s)%hsMean
-             IF ((absPer.LT.deltaPer).AND.(absDir.LT.deltaDir)) THEN
-                ind=ind+1
-                match%sysVal(ind) = allSys(s)
-                match%tpVal(ind) = absPer
-                match%dirVal(ind) = absDir
-                match%hsVal(ind) = absHs
-                !                      match%wfVal(ind) = absWf
-             END IF
+      DO s=1, SIZE(allSys)
+        hsAll(:) = 0.
+        tpAll(:) = 0.
+        dirAll(:) = 0.
+        !              wfAll(:) = 0.
+        n=1
+        countAll=0
+        DO WHILE (n.LE.nngbr)
+          !                Calculate mean of common neighbor wave system
+          !                for every neigbor wave system
+          found = .FALSE.
+          DO ind = 1, SIZE(ngbr(n)%par%sys)                       !Optimize this?
+            IF ( ngbr(n)%par%sys(ind).EQ.allSys(s) ) THEN        !Put sys under par to maintain structure
+              found = .TRUE.
+              EXIT
+            END IF
           END DO
 
-          IF (ind.GT.0) THEN
-             IF (ind.EQ.1) THEN
-                wsdat%par(i,j)%sys(p) = match%sysVal(1)
-             ELSE
-                !                    Take the closest match, using GoF function
-                GOF(:) = 9999.
-                GOF(1:ind) = (match%tpVal(1:ind)/deltaPer)**2 + &
-                     (match%dirVal(1:ind)/deltaDir)**2 + &
-                     (match%hsVal(1:ind)/deltaHs)**2
-                GOFMinVal = MINVAL(GOF(1:ind))
-                GOFMinInd = FINDFIRST(GOF(1:ind),ind,GOFMinVal)
-                wsdat%par(i,j)%sys(p) = match%sysVal(GOFMinInd)         !The index of the system is swapped - the remaining info stays the same!
-             END IF
+          IF (found) THEN
+            countAll=countAll+1
+            hsAll(countAll)=ngbr(n)%par%hs(ind)
+            tpAll(countAll)=ngbr(n)%par%tp(ind)
+            dirAll(countAll)=ngbr(n)%par%dir(ind)
+            !                     wfAll(countAll)=ngbr(n)%par%wf(ind)
+          ELSE
+            n=n+1
+            CYCLE
           END IF
-       END DO
+          n=n+1
+        END DO
+        tmpsys(s)%hsMean = SUM(hsAll(1:countAll))/countAll
+        tmpsys(s)%tpMean = SUM(tpAll(1:countAll))/countAll
+        tmpsys(s)%dirMean = &
+             mean_angleV2(dirAll(1:countAll),countAll)
+        !              tmpsys(s)%wfMean = SUM(wfAll(1:countAll))/countAll
+      END DO
+
+      !         Find the partition at current (i,j) point that matches previously
+      !         identified wave systems if any...
+      wsdat%par(i,j)%ngbrSys(1:SIZE(allSys)) = allSys
+
+      npart = LENGTH(REAL(wsdat%par(i,j)%ipart), &
+           SIZE(wsdat%par(i,j)%ipart),REAL(0))
+      DO p = 1, npart
+        IF ( (wsdat%par(i,j)%hs(p).LT.hsKnob).OR. &
+             (wsdat%par(i,j)%tp(p).EQ.0.) ) THEN
+          wsdat%par(i,j)%sys(p)=-1
+          CYCLE
+        END IF
+
+        ind=0                                                       !Replaced 'index' by 'ind'
+        match%sysVal(:) = 9999
+        match%tpVal(:) = 9999.
+        match%dirVal(:) = 9999.
+        !              match%wfVal(:) = 9999.
+        !             Cycle through the neighbouring systems identified above
+        DO s=1,SIZE(allSys)
+          absHs = ABS(wsdat%par(i,j)%hs(p)-tmpsys(s)%hsMean)
+          absPer = ABS(wsdat%par(i,j)%tp(p)-tmpsys(s)%tpMean)
+          absDir = ABS(wsdat%par(i,j)%dir(p)-tmpsys(s)%dirMean)
+          !                  absWf = ABS(wsdat%par(i,j)%wf(p)-tmpsys(s)%wfMean)
+          IF (absDir.GT.180) THEN
+            absDir = 360 - absDir
+            IF (absDir.LT.0) THEN
+              WRITE(20,*) '*** WARNING: absDir negative!'
+              WRITE(20,*) 'wsdat%par(i,j)%dir(p) =', &
+                   wsdat%par(i,j)%dir(p)
+              WRITE(20,*) 'tmpsys(s)%dirMean) =', &
+                   tmpsys(s)%dirMean
+            END IF
+          END IF
+          !                 Calculate delta dir and freq as a function of the partition
+          !                 dir and freq
+          T = tmpsys(s)%tpMean
+          dx = 0.5*( (wsdat%lon(2,1)-wsdat%lon(1,1)) + &
+               (wsdat%lat(1,2)-wsdat%lat(1,1)) )
+          m1 = -3.645*T + 63.211
+          m1 = MAX(m1,10.)
+          m2 = -0.346*T + 3.686
+          m2 = MAX(m2,0.6)
+          !1stddev                  m1 = -2.219*T + 35.734
+          !1stddev                  m1 = MAX(m1,5.)
+          !1stddev                  m2 = -0.226*T + 2.213
+          !1stddev                  m2 = MAX(m2,0.35)
+          !5stddev                  m1 = -5.071*T + 90.688
+          !5stddev                  m1 = MAX(m1,16.)
+          !5stddev                  m2 = -0.467*T + 5.161
+          !5stddev                  m2 = MAX(m2,1.0)
+          deltaDir = m1*dx + dirKnob
+          deltaPer = m2*dx + perKnob
+          deltaHs = 0.25*tmpsys(s)%hsMean
+          IF ((absPer.LT.deltaPer).AND.(absDir.LT.deltaDir)) THEN
+            ind=ind+1
+            match%sysVal(ind) = allSys(s)
+            match%tpVal(ind) = absPer
+            match%dirVal(ind) = absDir
+            match%hsVal(ind) = absHs
+            !                      match%wfVal(ind) = absWf
+          END IF
+        END DO
+
+        IF (ind.GT.0) THEN
+          IF (ind.EQ.1) THEN
+            wsdat%par(i,j)%sys(p) = match%sysVal(1)
+          ELSE
+            !                    Take the closest match, using GoF function
+            GOF(:) = 9999.
+            GOF(1:ind) = (match%tpVal(1:ind)/deltaPer)**2 + &
+                 (match%dirVal(1:ind)/deltaDir)**2 + &
+                 (match%hsVal(1:ind)/deltaHs)**2
+            GOFMinVal = MINVAL(GOF(1:ind))
+            GOFMinInd = FINDFIRST(GOF(1:ind),ind,GOFMinVal)
+            wsdat%par(i,j)%sys(p) = match%sysVal(GOFMinInd)         !The index of the system is swapped - the remaining info stays the same!
+          END IF
+        END IF
+      END DO
     END IF
 
     !     Now check if 2 partitions have been associated to the same wave system, if
@@ -3173,12 +3173,12 @@ CONTAINS
     npart = LENGTH(REAL(wsdat%par(i,j)%ipart), &
          SIZE(wsdat%par(i,j)%ipart),REAL(0))
     DO p = 1, (npart-1)                                                 !Could probably be optimized!
-       DO pp = (p+1), npart
-          IF (wsdat%par(i,j)%sys(p).EQ.wsdat%par(i,j)%sys(pp)) THEN
-             !              There is at least one duplicate, so combine systems
-             CALL combinePartitionsV2(wsdat%par(i,j))
-          END IF
-       END DO
+      DO pp = (p+1), npart
+        IF (wsdat%par(i,j)%sys(p).EQ.wsdat%par(i,j)%sys(pp)) THEN
+          !              There is at least one duplicate, so combine systems
+          CALL combinePartitionsV2(wsdat%par(i,j))
+        END IF
+      END DO
     END DO
     !     Now that we have associated any possible partition to an existing
     !     wave system, we check if any wave system is free. If so give it a
@@ -3187,10 +3187,10 @@ CONTAINS
          SIZE(wsdat%par(i,j)%ipart),REAL(0))
 
     DO p = 1, npart
-       IF (wsdat%par(i,j)%sys(p).EQ.9999) THEN
-          maxSys = maxSys + 1
-          wsdat%par(i,j)%sys(p) = maxSys
-       END IF
+      IF (wsdat%par(i,j)%sys(p).EQ.9999) THEN
+        maxSys = maxSys + 1
+        wsdat%par(i,j)%sys(p) = maxSys
+      END IF
     END DO
     wsdat%par(i,j)%checked=1
 
@@ -3305,36 +3305,36 @@ CONTAINS
     !opt      WRITE(20,*) 'actSysInd =',actSysInd
 
     IF (combine.EQ.1) THEN
-       !         Combine wave systems
-       WRITE(20,*) 'Calling printFinalSys...'
-       CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,1,sys)
-       iter=0
-       ok=0
-       !         Keep on combining wave systems until all possible combining
-       !         has been carried out (based on the combining criteria)
-       DO WHILE (ok.EQ.0)
-          iter = iter+1
-          !             No of systems before combining
-          IF (ALLOCATED(actSysInd)) THEN
-             nSys = SIZE(actSysInd)
-          ELSE
-             nSys = maxSys
-          END IF
-          WRITE(20,'(A,A,I3,A,I5,A)') 'Calling combineSys for ', &
-               'iteration',iter,' (maxSys =',nSys,').'
+      !         Combine wave systems
+      WRITE(20,*) 'Calling printFinalSys...'
+      CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,1,sys)
+      iter=0
+      ok=0
+      !         Keep on combining wave systems until all possible combining
+      !         has been carried out (based on the combining criteria)
+      DO WHILE (ok.EQ.0)
+        iter = iter+1
+        !             No of systems before combining
+        IF (ALLOCATED(actSysInd)) THEN
+          nSys = SIZE(actSysInd)
+        ELSE
+          nSys = maxSys
+        END IF
+        WRITE(20,'(A,A,I3,A,I5,A)') 'Calling combineSys for ', &
+             'iteration',iter,' (maxSys =',nSys,').'
 
-          !opt              WRITE(20,*) 'SIZE(sys)=',SIZE(sys)
-          CALL combineSys (wsdat,sys,maxSys,maxI,maxJ, &
-               actSysInd,perKnob,dirKnob)
-          !             No of systems after combining
-          !opt              WRITE(20,*) 'maxSys,nSys,SIZE(actSysInd) =', &
-          !opt                           maxSys,nSys,SIZE(actSysInd)
-          !              IF (maxSys.EQ.nSys) ok = 1
-          IF (SIZE(actSysInd).EQ.nSys) ok = 1
-       END DO
+        !opt              WRITE(20,*) 'SIZE(sys)=',SIZE(sys)
+        CALL combineSys (wsdat,sys,maxSys,maxI,maxJ, &
+             actSysInd,perKnob,dirKnob)
+        !             No of systems after combining
+        !opt              WRITE(20,*) 'maxSys,nSys,SIZE(actSysInd) =', &
+        !opt                           maxSys,nSys,SIZE(actSysInd)
+        !              IF (maxSys.EQ.nSys) ok = 1
+        IF (SIZE(actSysInd).EQ.nSys) ok = 1
+      END DO
     ELSE
-       !         Do not combine wave systems
-       CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,3,sys)
+      !         Do not combine wave systems
+      CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,3,sys)
     END IF
 
     !     Remove small and low-energy systems from set, based on
@@ -3347,95 +3347,95 @@ CONTAINS
     WRITE(20,*) 'Filtering the set of',mS,'systems on size and mag.'
 
     DO so = 1, mS
-       s = actSysInd(so)
-       !opt      NOTE: if we deallocate the individual records without
-       !opt      compressing sys, then s and sysInd will remain the same
-       ss = s
+      s = actSysInd(so)
+      !opt      NOTE: if we deallocate the individual records without
+      !opt      compressing sys, then s and sysInd will remain the same
+      ss = s
 
-       leng = LENGTH(sys(ss)%hs,SIZE(sys(ss)%hs),9999.)
-       dev  = STD(sys(ss)%hs(1:leng),leng)
-       hsCmp = sys(ss)%hsMean + 2.*dev
-       maxHgt = hsKnob
+      leng = LENGTH(sys(ss)%hs,SIZE(sys(ss)%hs),9999.)
+      dev  = STD(sys(ss)%hs(1:leng),leng)
+      hsCmp = sys(ss)%hsMean + 2.*dev
+      maxHgt = hsKnob
 
-       IF ( (hsCmp.LT.maxHgt).OR.(sys(ss)%nPoints.LT.maxPts) ) THEN
-          !             Remove system, and shift up indices to fill the gap
-          DO ind = 1, maxSys
-             !                Find index to remove
-             IF (ind.EQ.ss) THEN
-                !                   Shift up entries, deleting the duplicate partition
-                !                   REPLACE WITH CSHIFT(ARRAY, SHIFT, dim)?
-                !                    IF (ind.LT.maxSys) &
-                !                       sys( ind:(maxSys-1) ) = sys( (ind+1):maxSys )
-                IF (ind.LE.maxSys) THEN
-                   !                      Since we use pointers, we have to copy each index and
-                   !                      field individually. Otherwise memory corruption occurs.
-                   DO iloop = ind,ind
-                      sys(iloop)%sysInd = 9999
-                      sys(iloop)%nPoints = 0
-                      sys(iloop)%grp = 9999
-                      DEALLOCATE( sys(iloop)%hs )
-                      DEALLOCATE( sys(iloop)%tp )
-                      DEALLOCATE( sys(iloop)%dir )
-                      DEALLOCATE( sys(iloop)%dspr )
-                      !                          DEALLOCATE( sys(iloop)%wf )
-                      DEALLOCATE( sys(iloop)%i )
-                      DEALLOCATE( sys(iloop)%j )
-                      DEALLOCATE( sys(iloop)%lat )
-                      DEALLOCATE( sys(iloop)%lon )
-                      !                          DEALLOCATE( sys(iloop)%hsMean )
-                      !                          DEALLOCATE( sys(iloop)%tpMean )
-                      !                          DEALLOCATE( sys(iloop)%dirMean )
-                      !                          DEALLOCATE( sys(iloop)%ngbr )
-                   END DO
-                END IF
-             END IF
+      IF ( (hsCmp.LT.maxHgt).OR.(sys(ss)%nPoints.LT.maxPts) ) THEN
+        !             Remove system, and shift up indices to fill the gap
+        DO ind = 1, maxSys
+          !                Find index to remove
+          IF (ind.EQ.ss) THEN
+            !                   Shift up entries, deleting the duplicate partition
+            !                   REPLACE WITH CSHIFT(ARRAY, SHIFT, dim)?
+            !                    IF (ind.LT.maxSys) &
+            !                       sys( ind:(maxSys-1) ) = sys( (ind+1):maxSys )
+            IF (ind.LE.maxSys) THEN
+              !                      Since we use pointers, we have to copy each index and
+              !                      field individually. Otherwise memory corruption occurs.
+              DO iloop = ind,ind
+                sys(iloop)%sysInd = 9999
+                sys(iloop)%nPoints = 0
+                sys(iloop)%grp = 9999
+                DEALLOCATE( sys(iloop)%hs )
+                DEALLOCATE( sys(iloop)%tp )
+                DEALLOCATE( sys(iloop)%dir )
+                DEALLOCATE( sys(iloop)%dspr )
+                !                          DEALLOCATE( sys(iloop)%wf )
+                DEALLOCATE( sys(iloop)%i )
+                DEALLOCATE( sys(iloop)%j )
+                DEALLOCATE( sys(iloop)%lat )
+                DEALLOCATE( sys(iloop)%lon )
+                !                          DEALLOCATE( sys(iloop)%hsMean )
+                !                          DEALLOCATE( sys(iloop)%tpMean )
+                !                          DEALLOCATE( sys(iloop)%dirMean )
+                !                          DEALLOCATE( sys(iloop)%ngbr )
+              END DO
+            END IF
+          END IF
+        END DO
+
+        !             Update wsdat as well
+        DO iw = 1, maxI
+          DO jw = 1, maxJ
+            leng = LENGTH(REAL(wsdat%par(iw,jw)%sys), &
+                 SIZE(wsdat%par(iw,jw)%sys),REAL(9999))
+            ind = 1
+            found = .FALSE.
+            !                    Identify system index (there are no duplicate
+            !                    systems at this point.
+            DO WHILE (ind.LE.leng)
+              IF ( wsdat%par(iw,jw)%sys(ind).EQ.s ) THEN
+                found = .TRUE.
+                EXIT
+              END IF
+              ind = ind + 1
+            END DO
+            IF (found) THEN
+              !                       Blank out used record
+              wsdat%par(iw,jw)%sys(ind) = 9999
+              wsdat%par(iw,jw)%ipart(ind) = 9999
+            END IF
           END DO
-
-          !             Update wsdat as well
-          DO iw = 1, maxI
-             DO jw = 1, maxJ
-                leng = LENGTH(REAL(wsdat%par(iw,jw)%sys), &
-                     SIZE(wsdat%par(iw,jw)%sys),REAL(9999))
-                ind = 1
-                found = .FALSE.
-                !                    Identify system index (there are no duplicate
-                !                    systems at this point.
-                DO WHILE (ind.LE.leng)
-                   IF ( wsdat%par(iw,jw)%sys(ind).EQ.s ) THEN
-                      found = .TRUE.
-                      EXIT
-                   END IF
-                   ind = ind + 1
-                END DO
-                IF (found) THEN
-                   !                       Blank out used record
-                   wsdat%par(iw,jw)%sys(ind) = 9999
-                   wsdat%par(iw,jw)%ipart(ind) = 9999
-                END IF
-             END DO
-          END DO
-       END IF
+        END DO
+      END IF
     END DO
 
     !     Compile array index of active systems in sys
     actSys = 0
     DO so = 1,maxSys
-       IF (sys(so)%nPoints>0) actSys = actSys + 1
+      IF (sys(so)%nPoints>0) actSys = actSys + 1
     END DO
     IF (ALLOCATED(actSysInd)) DEALLOCATE(actSysInd)
     ALLOCATE( actSysInd(actSys) )
     actSys = 0
     DO so = 1,maxSys
-       IF (sys(so)%nPoints>0) THEN
-          actSys = actSys + 1
-          actSysInd(actSys) = sys(so)%sysInd
-       END IF
+      IF (sys(so)%nPoints>0) THEN
+        actSys = actSys + 1
+        actSysInd(actSys) = sys(so)%sysInd
+      END IF
     END DO
 
     !opt      WRITE(20,*) 'actSysInd =',actSysInd
     DO so = 1,SIZE(actSysInd)
-       s = actSysInd(so)
-       !opt         WRITE(20,*) 'sys(',s,')%sysInd =',sys(s)%sysInd
+      s = actSysInd(so)
+      !opt         WRITE(20,*) 'sys(',s,')%sysInd =',sys(s)%sysInd
     END DO
 
     CALL printFinalSys (wsdat,maxSys,actSysInd,maxI,maxJ,1,sys)
@@ -3541,119 +3541,119 @@ CONTAINS
 
     !     Initialize sys structure
     IF (flag.NE.2) THEN
-       !         Allocate data structure with the final wave systems
-       WRITE(20,*) 'In printFinalSys...'
-       maxSys = SIZE(actSysInd)
-       NULLIFY(sys)
-       ALLOCATE( sys(maxSys) )
-       WRITE(20,*) 'Allocated sys okay, SIZE(sys) =',SIZE(sys)
+      !         Allocate data structure with the final wave systems
+      WRITE(20,*) 'In printFinalSys...'
+      maxSys = SIZE(actSysInd)
+      NULLIFY(sys)
+      ALLOCATE( sys(maxSys) )
+      WRITE(20,*) 'Allocated sys okay, SIZE(sys) =',SIZE(sys)
 
-       ALLOCATE( ngbrSysAll(50*maxI*maxJ) )                            !Large enough?
-       DO ic = 1, maxSys
-          NULLIFY( sys(ic)%hs )
-          NULLIFY( sys(ic)%tp )
-          NULLIFY( sys(ic)%dir )
-          NULLIFY( sys(ic)%dspr )
-          !              NULLIFY( sys(ic)%wf )
-          NULLIFY( sys(ic)%i )
-          NULLIFY( sys(ic)%j )
-          NULLIFY( sys(ic)%lat )
-          NULLIFY( sys(ic)%lon )
-          ALLOCATE( sys(ic)%hs(maxI*maxJ) )
-          ALLOCATE( sys(ic)%tp(maxI*maxJ) )
-          ALLOCATE( sys(ic)%dir(maxI*maxJ) )
-          ALLOCATE( sys(ic)%dspr(maxI*maxJ) )
-          !              ALLOCATE( sys(ic)%wf(maxI*maxJ) )
-          ALLOCATE( sys(ic)%i(maxI*maxJ) )
-          ALLOCATE( sys(ic)%j(maxI*maxJ) )
-          ALLOCATE( sys(ic)%lat(maxI*maxJ) )
-          ALLOCATE( sys(ic)%lon(maxI*maxJ) )
-          sys(ic)%hs(:) = 9999.                                       !Optimize this further?
-          sys(ic)%tp(:) = 9999.
-          sys(ic)%dir(:) = 9999.
-          sys(ic)%dspr(:) = 9999.
-          !              sys(ic)%wf(:) = 9999.
-          sys(ic)%i(:) = 9999
-          sys(ic)%j(:) = 9999
-          sys(ic)%lat(:) = 9999.
-          sys(ic)%lon(:) = 9999.
-          sys(ic)%sysInd = 9999
-          sys(ic)%hsMean = 9999.
-          sys(ic)%tpMean = 9999.
-          sys(ic)%dirMean = 9999.
-          sys(ic)%nPoints = 0
-          sys(ic)%ngbr(:) = 9999
-          sys(ic)%grp = 9999
-          ngbrSysAll(:) = 0
-          startInd=1
-          nGuys=0
+      ALLOCATE( ngbrSysAll(50*maxI*maxJ) )                            !Large enough?
+      DO ic = 1, maxSys
+        NULLIFY( sys(ic)%hs )
+        NULLIFY( sys(ic)%tp )
+        NULLIFY( sys(ic)%dir )
+        NULLIFY( sys(ic)%dspr )
+        !              NULLIFY( sys(ic)%wf )
+        NULLIFY( sys(ic)%i )
+        NULLIFY( sys(ic)%j )
+        NULLIFY( sys(ic)%lat )
+        NULLIFY( sys(ic)%lon )
+        ALLOCATE( sys(ic)%hs(maxI*maxJ) )
+        ALLOCATE( sys(ic)%tp(maxI*maxJ) )
+        ALLOCATE( sys(ic)%dir(maxI*maxJ) )
+        ALLOCATE( sys(ic)%dspr(maxI*maxJ) )
+        !              ALLOCATE( sys(ic)%wf(maxI*maxJ) )
+        ALLOCATE( sys(ic)%i(maxI*maxJ) )
+        ALLOCATE( sys(ic)%j(maxI*maxJ) )
+        ALLOCATE( sys(ic)%lat(maxI*maxJ) )
+        ALLOCATE( sys(ic)%lon(maxI*maxJ) )
+        sys(ic)%hs(:) = 9999.                                       !Optimize this further?
+        sys(ic)%tp(:) = 9999.
+        sys(ic)%dir(:) = 9999.
+        sys(ic)%dspr(:) = 9999.
+        !              sys(ic)%wf(:) = 9999.
+        sys(ic)%i(:) = 9999
+        sys(ic)%j(:) = 9999
+        sys(ic)%lat(:) = 9999.
+        sys(ic)%lon(:) = 9999.
+        sys(ic)%sysInd = 9999
+        sys(ic)%hsMean = 9999.
+        sys(ic)%tpMean = 9999.
+        sys(ic)%dirMean = 9999.
+        sys(ic)%nPoints = 0
+        sys(ic)%ngbr(:) = 9999
+        sys(ic)%grp = 9999
+        ngbrSysAll(:) = 0
+        startInd=1
+        nGuys=0
 
-          DO i = 1, maxI
-             DO j = 1, maxJ
-                !                     ind=wsdat.par(i,j).sys==ic;
-                DO ind = 1, SIZE(wsdat%par(i,j)%sys)                !40.81 !Optimize this?
-                   IF (wsdat%par(i,j)%sys(ind).EQ.actSysInd(ic)) &
-                        THEN
-                      nGuys=nGuys+1
-                      sys(ic)%hs(nGuys)=wsdat%par(i,j)%hs(ind)
-                      sys(ic)%tp(nGuys)=wsdat%par(i,j)%tp(ind)
-                      sys(ic)%dir(nGuys)=wsdat%par(i,j)%dir(ind)
-                      sys(ic)%dspr(nGuys)=wsdat%par(i,j)%dspr(ind)
-                      !                           sys(ic)%wf(nGuys)=wsdat%par(i,j)%wf(ind)
-                      sys(ic)%i(nGuys)=i
-                      sys(ic)%j(nGuys)=j
-                      sys(ic)%lat(nGuys)=wsdat%lat(i,j)
-                      sys(ic)%lon(nGuys)=wsdat%lon(i,j)
-                      leng = LENGTH(REAL(wsdat%par(i,j)%ngbrSys), &
-                           SIZE(wsdat%par(i,j)%ngbrSys),REAL(9999))
-                      endInd = startInd + leng-1
-                      ngbrSysAll(startInd:endInd) = &
-                           wsdat%par(i,j)%ngbrSys(1:leng)
-                      startInd=endInd+1
-                   END IF
-                END DO
-             END DO
+        DO i = 1, maxI
+          DO j = 1, maxJ
+            !                     ind=wsdat.par(i,j).sys==ic;
+            DO ind = 1, SIZE(wsdat%par(i,j)%sys)                !40.81 !Optimize this?
+              IF (wsdat%par(i,j)%sys(ind).EQ.actSysInd(ic)) &
+                   THEN
+                nGuys=nGuys+1
+                sys(ic)%hs(nGuys)=wsdat%par(i,j)%hs(ind)
+                sys(ic)%tp(nGuys)=wsdat%par(i,j)%tp(ind)
+                sys(ic)%dir(nGuys)=wsdat%par(i,j)%dir(ind)
+                sys(ic)%dspr(nGuys)=wsdat%par(i,j)%dspr(ind)
+                !                           sys(ic)%wf(nGuys)=wsdat%par(i,j)%wf(ind)
+                sys(ic)%i(nGuys)=i
+                sys(ic)%j(nGuys)=j
+                sys(ic)%lat(nGuys)=wsdat%lat(i,j)
+                sys(ic)%lon(nGuys)=wsdat%lon(i,j)
+                leng = LENGTH(REAL(wsdat%par(i,j)%ngbrSys), &
+                     SIZE(wsdat%par(i,j)%ngbrSys),REAL(9999))
+                endInd = startInd + leng-1
+                ngbrSysAll(startInd:endInd) = &
+                     wsdat%par(i,j)%ngbrSys(1:leng)
+                startInd=endInd+1
+              END IF
+            END DO
           END DO
+        END DO
 
-          !              if ~isempty(sys)
-          IF (nGuys.GT.0) THEN
-             sys(ic)%sysInd=ic
-             sys(ic)%hsMean = SUM(sys(ic)%hs(1:nGuys))/nGuys
-             sys(ic)%tpMean = SUM(sys(ic)%tp(1:nGuys))/nGuys
-             !                 sys(ic)%dirMean=mean_angle_single(sys(ic).dir)          40.81 Replaced with two-argument mean_angleV2
-             sys(ic)%dirMean = &
-                  mean_angleV2(sys(ic)%dir(1:nGuys),nGuys)
-             !070512----------- Weight averages with Hm0 ---------------------
-             TEMP1 = 0.
-             TEMP2 = 0.
-             DO i = 1,nGuys
-                TEMP1 = TEMP1 + (sys(ic)%hs(i)**2)*sys(ic)%hs(i)
-                TEMP2 = TEMP2 + (sys(ic)%hs(i)**2)*sys(ic)%tp(i)
-             END DO
-             sys(ic)%hsMean = &
-                  TEMP1/MAX(SUM(sys(ic)%hs(1:nGuys)**2),0.001)
-             sys(ic)%tpMean = &
-                  TEMP2/MAX(SUM(sys(ic)%hs(1:nGuys)**2),0.001)
-             sys(ic)%dirMean = mean_angleV3(sys(ic)%dir(1:nGuys), &
-                  sys(ic)%hs(1:nGuys),nGuys)
-             !070512----------- Weight averages with Hm0 ---------------------
-             sys(ic)%nPoints = nGuys
-             IF (endInd.GT.0) THEN
-                CALL UNIQUE(REAL(ngbrSysAll(1:endInd)),endInd, &
-                     UNIARR,UNISIZE)
-                TEMP = (/REAL(sys(ic)%sysInd),REAL(sys(ic)%sysInd)/)
-                CALL SETDIFF(REAL(UNIARR),UNISIZE, &
-                     TEMP,2,DIFARR,DIFSIZE)
-                DIFSIZE = MIN(DIFSIZE,SIZE(sys(ic)%ngbr))
-                sys(ic)%ngbr(1:DIFSIZE) = NINT(DIFARR(1:DIFSIZE))
-                IF (ASSOCIATED(UNIARR)) DEALLOCATE(UNIARR)
-                IF (ASSOCIATED(DIFARR)) DEALLOCATE(DIFARR)
-             END IF
-          ELSE
-             CYCLE
+        !              if ~isempty(sys)
+        IF (nGuys.GT.0) THEN
+          sys(ic)%sysInd=ic
+          sys(ic)%hsMean = SUM(sys(ic)%hs(1:nGuys))/nGuys
+          sys(ic)%tpMean = SUM(sys(ic)%tp(1:nGuys))/nGuys
+          !                 sys(ic)%dirMean=mean_angle_single(sys(ic).dir)          40.81 Replaced with two-argument mean_angleV2
+          sys(ic)%dirMean = &
+               mean_angleV2(sys(ic)%dir(1:nGuys),nGuys)
+          !070512----------- Weight averages with Hm0 ---------------------
+          TEMP1 = 0.
+          TEMP2 = 0.
+          DO i = 1,nGuys
+            TEMP1 = TEMP1 + (sys(ic)%hs(i)**2)*sys(ic)%hs(i)
+            TEMP2 = TEMP2 + (sys(ic)%hs(i)**2)*sys(ic)%tp(i)
+          END DO
+          sys(ic)%hsMean = &
+               TEMP1/MAX(SUM(sys(ic)%hs(1:nGuys)**2),0.001)
+          sys(ic)%tpMean = &
+               TEMP2/MAX(SUM(sys(ic)%hs(1:nGuys)**2),0.001)
+          sys(ic)%dirMean = mean_angleV3(sys(ic)%dir(1:nGuys), &
+               sys(ic)%hs(1:nGuys),nGuys)
+          !070512----------- Weight averages with Hm0 ---------------------
+          sys(ic)%nPoints = nGuys
+          IF (endInd.GT.0) THEN
+            CALL UNIQUE(REAL(ngbrSysAll(1:endInd)),endInd, &
+                 UNIARR,UNISIZE)
+            TEMP = (/REAL(sys(ic)%sysInd),REAL(sys(ic)%sysInd)/)
+            CALL SETDIFF(REAL(UNIARR),UNISIZE, &
+                 TEMP,2,DIFARR,DIFSIZE)
+            DIFSIZE = MIN(DIFSIZE,SIZE(sys(ic)%ngbr))
+            sys(ic)%ngbr(1:DIFSIZE) = NINT(DIFARR(1:DIFSIZE))
+            IF (ASSOCIATED(UNIARR)) DEALLOCATE(UNIARR)
+            IF (ASSOCIATED(DIFARR)) DEALLOCATE(DIFARR)
           END IF
-       END DO
-       IF (ALLOCATED(ngbrSysAll)) DEALLOCATE(ngbrSysAll)
+        ELSE
+          CYCLE
+        END IF
+      END DO
+      IF (ALLOCATED(ngbrSysAll)) DEALLOCATE(ngbrSysAll)
     END IF
 
     !     Print the sorted field to the screen
@@ -3667,8 +3667,8 @@ CONTAINS
          SIZE(sysOrdered),REAL(0))
 
     DO ic = 1, leng
-       leng2 = LENGTH(REAL(sys(sysSortedInd(ic))%ngbr), &
-            SIZE(sys(sysSortedInd(ic))%ngbr),REAL(9999))
+      leng2 = LENGTH(REAL(sys(sysSortedInd(ic))%ngbr), &
+           SIZE(sys(sysSortedInd(ic))%ngbr),REAL(9999))
     END DO
     IF (ALLOCATED(sysOrdered)) DEALLOCATE(sysOrdered)
     IF (ALLOCATED(sysSortedInd)) DEALLOCATE(sysSortedInd)
@@ -3813,437 +3813,437 @@ CONTAINS
     MASK(:,:) = 0
     INQUIRE(FILE="sys_mask.ww3", EXIST=file_exists)
     IF (file_exists) THEN
-       WRITE(20,*) '*** Using land mask'
-       OPEN(unit=13,file='sys_mask.ww3',status='old')
-       DO j = maxJ,1,-1
-          READ(13,*) (MASK(i,j), i=1,maxI)
-       END DO
-       CLOSE(13)
+      WRITE(20,*) '*** Using land mask'
+      OPEN(unit=13,file='sys_mask.ww3',status='old')
+      DO j = maxJ,1,-1
+        READ(13,*) (MASK(i,j), i=1,maxI)
+      END DO
+      CLOSE(13)
     END IF
     !051612 --- Land mask addition
 
     !opt      WRITE(20,*) 'SIZE(sysOut)=',SIZE(sysOut)
     DO so = 1, SIZE(sysOut)
-       !          WRITE(20,*) 'so =',so
-       s = sysOut(so)
-       ss = FINDFIRST(REAL(sys(:)%sysInd),SIZE(sys(:)%sysInd), &
-            REAL(s))
-       !opt          WRITE(20,*) 's,ss=',s,ss
-       ngbIndex(:) = 0
-       ii = 1
-       leng = LENGTH(REAL(sys(ss)%ngbr),SIZE(sys(ss)%ngbr), &
-            REAL(9999))
-       !         Identify the indices of all the systems that neighbour the current system s,
-       !         store in ngbIndex(:)
-       DO ngb = 1, leng
-          IF ( sys(ss)%ngbr(ngb).NE.s ) THEN
-             myngbr = 1
-             DO WHILE (myngbr.LE.SIZE(sysOut))
-                IF (sys(myngbr)%sysInd.EQ.sys(ss)%ngbr(ngb)) THEN
-                   ngbIndex(ii) = myngbr
-                   ii = ii+1
-                   IF (ii.GT.1000) &
-                        WRITE(20,*) '*** WARNING: ngbIndex(:) exceeded!'
-                END IF
-                myngbr = myngbr+1
-             END DO
-          END IF
-       END DO
-       ii = ii-1
-       !opt          WRITE(20,*) so,'.   sys =',s,', Tp =',sys(s)%tpMean, &
-       !opt                      ', size=',sys(s)%nPoints,', #neighbours=',ii
-
-       IF ( ii.GT.0 ) THEN
-          DO ngb = 1, ii
-             !                 We first need to find the (i,j) points that are either common
-             !                 to both these systems, or at the boundary of the two systems. Here
-             !                 sys 1 will carry the 'ss' index and sys 2 the ngbIndex(ngb) index.
-             CALL findIJV4 (sys(ss),sys(ngbIndex(ngb)), &
-                  maxI,maxJ,indSys1,indSys2)
-             IF ((SIZE(indSys1)>10).AND.(SIZE(indSys2)>10).AND. &
-                  (sys(ss)%nPoints.GT.sys(ngbIndex(ngb))%nPoints)) &
-                  THEN
-                lsys = SIZE(indSys1)
-                lsys2 = SIZE(indSys2)
-
-                !061512---------------Add zipper compare
-                IF (ZIPMATCH) THEN
-                   !                       Omit small systems to save time
-                   IF ((sys(ss)%nPoints.LT.5).OR. &
-                        (sys(ngbIndex(ngb))%nPoints.LT.5)) THEN
-                      CYCLE
-                   END IF
-                   dx=0.5*((wsdat%lon(2,1)-wsdat%lon(1,1)) + &
-                        (wsdat%lat(1,2)-wsdat%lat(1,1)))
-                   ngbmatch(:)=0.
-                   DO izp = 1,lsys
-                      !                          Find neighbors of this point
-                      counter=0
-                      DO in=(sys(ss)%i(indSys1(izp))-ngbrExt), &
-                           (sys(ss)%i(indSys1(izp))+ngbrExt)
-                         DO jn=(sys(ss)%j(indSys1(izp))-ngbrExt), &
-                              (sys(ss)%j(indSys1(izp))+ngbrExt)
-                            counter=counter+1
-                            ngbr(counter)%i = in
-                            ngbr(counter)%j = jn
-                         END DO
-                      END DO
-                      !                          Find these points in neighboring system
-                      ngb_tp = 0.
-                      ngb_dir = 0.
-                      count2 = 0
-                      DO izp2 = 1,lsys2
-                         DO icnt = 1,counter
-                            IF ((sys(ngbIndex(ngb))%i(indSys2(izp2)) &
-                                 .EQ.ngbr(icnt)%i).AND. &
-                                 (sys(ngbIndex(ngb))%j(indSys2(izp2)) &
-                                 .EQ.ngbr(icnt)%j)) THEN
-                               count2 = count2+1
-                               ngb_tp = ngb_tp + &
-                                    sys(ngbIndex(ngb))%tp(indSys2(izp2))
-                               ngb_dir = ngb_dir + &
-                                    sys(ngbIndex(ngb))%dir(indSys2(izp2))
-                            END IF
-                         END DO
-                      END DO
-                      IF (count2.GT.0) THEN
-                         absPer = ABS(sys(ss)%tp(indSys1(izp))-ngb_tp/count2)
-                         absDir = ABS(sys(ss)%dir(indSys1(izp))-ngb_dir/count2)
-                         T = sys(ss)%tp(indSys1(izp))
-                         m1 = -3.645*T + 63.211
-                         m1 = MAX(m1,10.)
-                         m2 = -0.346*T + 3.686
-                         m2 = MAX(m2,0.6)
-                         deltaDirB = (m1*dx + dirKnob)*1.
-                         deltaPerB = (m2*dx + perKnob)*1.
-                         IF ( (absPer.LT.deltaPerB).AND. &
-                              (absDir.LT.deltaDirB) ) THEN
-                            ngbmatch(izp)=1.
-                         END IF
-                      END IF
-                   END DO
-                   !                       If >80% of neighbors fall within criteria, system is matched
-                   IF ((SUM(ngbmatch(1:lsys))/lsys).GT.0.50) THEN
-                      indMatch = ngbIndex(ngb)
-                      matchSys = sys(indMatch)%sysInd
-                   ELSE
-                      CYCLE
-                   END IF
-                ELSE
-                   !061512---------------------------------
-
-                   Tb = MAX(SUM(sys(ss)%tp(indSys1))/lsys, &
-                        SUM(sys(ngbIndex(ngb))%tp(indSys2))/lsys2)
-                   !                      deltaPerB = (-0.06*Tb+2+perKnob)*1.5
-                   !                      deltaDirB = (-Tb+(25+10*dirKnob))*1.5
-                   !                      deltaPerB = (-0.06*Tb+2+2)*1.5
-                   !                      deltaDirB = (-Tb+(25+10*2))*1.5
-                   dx=0.5*((wsdat%lon(2,1)-wsdat%lon(1,1)) + &
-                        (wsdat%lat(1,2)-wsdat%lat(1,1)))
-                   m1 = -3.523*Tb + 64.081
-                   m1 = MAX(m1,10.)
-                   m2 = -0.337*Tb + 3.732
-                   m2 = MAX(m2,0.6)
-                   !1stddev                      m1 = -2.219*Tb + 35.734
-                   !1stddev                      m1 = MAX(m1,5.)
-                   !1stddev                      m2 = -0.226*Tb + 2.213
-                   !1stddev                      m2 = MAX(m2,0.35)
-                   !5stddev                      m1 = -5.071*Tb + 90.688
-                   !5stddev                      m1 = MAX(m1,16.)
-                   !5stddev                      m2 = -0.467*Tb + 5.161
-                   !5stddev                      m2 = MAX(m2,1.0)
-                   deltaDirB = (m1*1. + dirKnob)*1.
-                   deltaPerB = (m2*1. + perKnob)*1.
-                   deltaHsB = 0.50*SUM(sys(ss)%hs(indSys1))/lsys
-                   !                      deltaHsB = 0.25*SUM(sys(ss)%hs(indSys1))/lsys
-
-                   !051612               --- Land mask addition
-                   !                     Option 1: If system centroid is near a land mask (e.g. 3 arc-deg),
-                   !                               increase the tolerances
-                   IF (ANY(MASK.EQ.1)) THEN
-                      lonmean = SUM(sys(ss)%lon(indSys1))/lsys
-                      latmean = SUM(sys(ss)%lat(indSys1))/lsys
-                      DO j = 1,maxJ
-                         DO i = 1,maxI
-                            IF (MASK(i,j).EQ.1) THEN
-                               !                             Land point found. Compute distance to system centroid
-                               DIST = SQRT((lonmean-wsdat%lon(i,j))**2 +&
-                                    (latmean-wsdat%lat(i,j))**2)
-                               IF (DIST.LT.3.) THEN
-                                  !                               System assumed to be influenced by land,
-                                  !                               increase tolerances to deltaDirB=30,deltaPerB=3
-                                  !                                deltaDirB = (m1*1. + 30)*1.
-                                  !                                deltaPerB = (m2*1. + 3)*1.
-                                  deltaDirB = (m1*1. + 30)*1.
-                                  deltaPerB = (m2*1. + 3)*1.
-                                  !Remove dHs limitation from criteria
-                                  deltaHsB = 9999.
-                                  GOTO 500
-                               END IF
-                            END IF
-                         END DO
-                      END DO
-                   END IF
-500                CONTINUE
-                   !051612               --- Land mask addition
-
-                   absHs = ABS( SUM(sys(ss)%hs(indSys1))/lsys - &
-                        SUM(sys(ngbIndex(ngb))%hs(indSys2))/lsys2 )
-                   absPer = ABS( SUM(sys(ss)%tp(indSys1))/lsys - &
-                        SUM(sys(ngbIndex(ngb))%tp(indSys2))/lsys2 )
-                   absDir = ABS( &
-                        mean_angleV2(sys(ss)%dir(indSys1),lsys) - &
-                        mean_angleV2(sys(ngbIndex(ngb))%dir(indSys2), &
-                        lsys2) )
-                   IF (absDir.GT.180) absDir = 360.-absDir
-                   !                      absWf = ABS( SUM(sys(ss)%wf(indSys1))/lsys - &
-                   !                        SUM(sys(ngbIndex(ngb))%wf(indSys2))/lsys2 )
-
-                   IF ( (absPer.LT.deltaPerB).AND. &
-                        (absDir.LT.deltaDirB).AND. &
-                        (absHs.LT.deltaHsB) ) THEN
-                      indMatch = ngbIndex(ngb)
-                      matchSys = sys(indMatch)%sysInd
-                      !opt                         WRITE(20,*) '-> Matched sys',s, &
-                      !opt                                     'with neighbor sys',matchSys
-                   ELSE
-                      CYCLE
-                   END IF
-                   !061512---------------------------------
-                END IF
-                !061512---------------------------------
-
-                keep = 0
-                keepInd(:) = 0
-
-                DO hh = 1, sys(ss)%nPoints
-                   ii = sys(ss)%i(hh)
-                   jj = sys(ss)%j(hh)
-                   ind = 0
-                   ind = FINDFIRST(REAL(wsdat%par(ii,jj)%sys), &
-                        SIZE(wsdat%par(ii,jj)%sys),REAL(s))        !Shouldn't REAL(s) be matchSys...
-                   IF (ind.NE.0) THEN
-                      wsdat%par(ii,jj)%sys(ind)=matchSys            !...and matchSys be s, (i.e. add the matching neigbour to the base?)
-                   END IF
-                   !                        Remove the "-1" system from the set
-                   ind2 = 1
-                   oneLess(:) = 9999                                !Streamline this?
-                   leng = LENGTH(REAL(wsdat%par(ii,jj)%sys), &
-                        SIZE(wsdat%par(ii,jj)%sys),REAL(9999))
-                   DO ind = 1, leng
-                      IF ( wsdat%par(ii,jj)%sys(ind).NE.-1 ) THEN
-                         oneLess(ind2) = wsdat%par(ii,jj)%sys(ind)
-                         ind2 = ind2+1
-                      END IF
-                   END DO
-                   ind2 = ind2-1
-                   !                        Combine any partitions assigned to the same systems
-                   !                        Check for duplicates
-                   IF (ind2.EQ.0) &
-                        WRITE(20,*) '***2.Calling UNIQUE w. len=0!'
-                   CALL UNIQUE(REAL(oneLess(1:ind2)),ind2, &
-                        uniarr,outsize)
-                   IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
-                   IF (ind2.GT.outsize) THEN
-                      !                          There is at least one duplicate, so combine systems
-                      CALL combinePartitionsV2(wsdat%par(ii,jj))
-                      !                          Update the combined partitions values into the system we are keeping.
-                      !                          Since partitions have been combined we don't know if the index is the same
-                      replacedInd = &
-                           FINDFIRST(REAL(wsdat%par(ii,jj)%sys(:)), &
-                           SIZE(wsdat%par(ii,jj)%sys(:)), &
-                           REAL(matchSys))
-                      hhForIndMatch = 1
-                      DO WHILE (hhForIndMatch.LE. &
-                           sys(indMatch)%nPoints)
-                         IF ( (sys(indMatch)%i(hhForIndMatch) &
-                              .EQ.ii).AND. &
-                              (sys(indMatch)%j(hhForIndMatch) &
-                              .EQ.jj) ) EXIT
-                         hhForIndMatch = hhForIndMatch + 1
-                      END DO
-                      sys(indMatch)%hs(hhForIndMatch) = &
-                           wsdat%par(ii,jj)%hs(replacedInd)
-                      sys(indMatch)%tp(hhForIndMatch) = &
-                           wsdat%par(ii,jj)%tp(replacedInd)
-                      sys(indMatch)%dir(hhForIndMatch) = &
-                           wsdat%par(ii,jj)%dir(replacedInd)
-                      sys(indMatch)%dspr(hhForIndMatch) = &
-                           wsdat%par(ii,jj)%dspr(replacedInd)
-                      !                           sys(indMatch)%wf(hhForIndMatch) = &
-                      !                                  wsdat%par(ii,jj)%wf(replacedInd)
-                   ELSE
-                      keep = keep+1
-                      keepInd(keep) = hh
-                   END IF
-                END DO
-                leng = LENGTH(REAL(sys(indMatch)%hs), &
-                     SIZE(sys(indMatch)%hs),REAL(9999.))
-
-                !                     Update system info
-                !                     ------------------
-                !                     First need to find which points were common to both systems =>
-                !                     keepInd since that means partitions have not been combined for those
-                !                     points as a result of the combination of those 2 systems =>
-                !                     distinct points
-                !                      keepInd = keepInd(1:keep)
-                lMatch = LENGTH(REAL(sys(indMatch)%hs), &
-                     SIZE(sys(indMatch)%hs),REAL(9999.))
-                tot = lMatch + keep
-                CALL UNION (REAL(sys(indMatch)%ngbr), &
-                     SIZE(sys(indMatch)%ngbr), &
-                     REAL(sys(ss)%ngbr), &
-                     SIZE(sys(ss)%ngbr), &
-                     allngbr,outsize)
-                CALL SETDIFF(allngbr,SIZE(allngbr), &
-                     REAL((/sys(indMatch)%sysInd, &
-                     sys(ss)%sysInd/)), &
-                     SIZE((/sys(indMatch)%sysInd, &
-                     sys(ss)%sysInd/)),difarr,outsize)
-                sys(indMatch)%ngbr(:) = 9999
-                outsize = MIN(outsize,size(sys(indMatch)%ngbr))
-                sys(indMatch)%ngbr(1:outsize) = NINT(difarr(1:outsize))
-                IF (ASSOCIATED(allngbr)) DEALLOCATE(allngbr)
-                IF (ASSOCIATED(difarr)) DEALLOCATE(difarr)
-
-                leng = LENGTH(REAL(sys(indMatch)%i), &
-                     SIZE(sys(indMatch)%i),REAL(9999))
-                sys(indMatch)%hsMean = SUM((/ &
-                     sys(ss)%hs(keepInd(1:keep)), &
-                     sys(indMatch)%hs(1:leng) /))/tot
-                sys(indMatch)%tpMean = SUM((/ &
-                     sys(ss)%tp(keepInd(1:keep)), &
-                     sys(indMatch)%tp(1:leng) /))/tot
-                sys(indMatch)%dirMean = &
-                     mean_angleV2((/ sys(ss)%dir(keepInd(1:keep)), &
-                     sys(indMatch)%dir(1:leng) /),tot)
-                !070512----------- Weight averages with Hm0 ---------------------
-                TEMP1 = 0.
-                TEMP2 = 0.
-                DO iii = 1,keep
-                   TEMP1 = TEMP1 + (sys(ss)%hs(keepInd(iii))**2)*&
-                        sys(ss)%hs(keepInd(iii))
-                   TEMP2 = TEMP2 + (sys(ss)%hs(keepInd(iii))**2)*&
-                        sys(ss)%tp(keepInd(iii))
-                END DO
-                DO iii = 1,leng
-                   TEMP1 = TEMP1 + (sys(indMatch)%hs(iii)**2)*&
-                        sys(indMatch)%hs(iii)
-                   TEMP2 = TEMP2 + (sys(indMatch)%hs(iii)**2)*&
-                        sys(indMatch)%tp(iii)
-                END DO
-                sys(indMatch)%hsMean = TEMP1/MAX(SUM((/ &
-                     sys(ss)%hs(keepInd(1:keep))**2, &
-                     sys(indMatch)%hs(1:leng)**2 /)),0.001)
-                sys(indMatch)%tpMean = TEMP2/MAX(SUM((/ &
-                     sys(ss)%hs(keepInd(1:keep))**2, &
-                     sys(indMatch)%hs(1:leng)**2 /)),0.001)
-                sys(indMatch)%dirMean = &
-                     mean_angleV3((/ sys(ss)%dir(keepInd(1:keep)), &
-                     sys(indMatch)%dir(1:leng) /), &
-                     (/ sys(ss)%hs(keepInd(1:keep)), &
-                     sys(indMatch)%hs(1:leng) /),tot)
-                !070512----------- Weight averages with Hm0 ---------------------
-
-                sys(indMatch)%i(1:(keep+leng))= &
-                     (/sys(ss)%i(keepInd(1:keep)), &
-                     sys(indMatch)%i(1:leng)/)
-                sys(indMatch)%j(1:(keep+leng))= &
-                     (/sys(ss)%j(keepInd(1:keep)), &
-                     sys(indMatch)%j(1:leng)/)
-                sys(indMatch)%lat(1:(keep+leng)) = &
-                     (/sys(ss)%lat(keepInd(1:keep)), &
-                     sys(indMatch)%lat(1:leng)/)
-                sys(indMatch)%lon(1:(keep+leng)) = &
-                     (/sys(ss)%lon(keepInd(1:keep)), &
-                     sys(indMatch)%lon(1:leng)/)
-                sys(indMatch)%dir(1:(keep+leng)) = &
-                     (/sys(ss)%dir(keepInd(1:keep)), &
-                     sys(indMatch)%dir(1:leng)/)
-                sys(indMatch)%dspr(1:(keep+leng)) = &
-                     (/sys(ss)%dspr(keepInd(1:keep)), &
-                     sys(indMatch)%dspr(1:leng)/)
-                !                      sys(indMatch)%wf(1:(keep+leng)) = &
-                !                          (/sys(ss)%wf(keepInd(1:keep)), &
-                !                            sys(indMatch)%wf(1:leng)/)
-                sys(indMatch)%hs(1:(keep+leng)) = &
-                     (/sys(ss)%hs(keepInd(1:keep)), &
-                     sys(indMatch)%hs(1:leng)/)
-                sys(indMatch)%tp(1:(keep+leng)) = &
-                     (/sys(ss)%tp(keepInd(1:keep)), &
-                     sys(indMatch)%tp(1:leng)/)
-                sys(indMatch)%nPoints = &
-                     LENGTH(REAL(sys(indMatch)%i), &
-                     SIZE(sys(indMatch)%i),REAL(9999))
-                !                     Clear array of system that has just been combined with another
-                sys(ss)%nPoints = 0
-                sys(ss)%ngbr(:) = 9999
-                WRITE(20,*) 'Deallocating sys',s
-                DEALLOCATE( sys(ss)%hs )                            !opt
-                DEALLOCATE( sys(ss)%tp )                            !opt
-                DEALLOCATE( sys(ss)%dir )                           !opt
-                DEALLOCATE( sys(ss)%dspr )                          !opt
-                !                      DEALLOCATE( sys(ss)%wf )                           !opt
-                DEALLOCATE( sys(ss)%i )                             !opt
-                DEALLOCATE( sys(ss)%j )                             !opt
-                DEALLOCATE( sys(ss)%lat )                           !opt
-                DEALLOCATE( sys(ss)%lon )                           !opt
-                !                      DEALLOCATE( sys(ss)%hsMean )                        !opt
-                !                      DEALLOCATE( sys(ss)%tpMean )                        !opt
-                !                      DEALLOCATE( sys(ss)%dirMean )                       !opt
-
-                !                     Loop through wsdat to update neighbouring system values
-                DO i = 1, maxI
-                   DO j = 1, maxJ
-                      ind = FINDFIRST(REAL(wsdat%par(i,j)%ngbrSys), &
-                           SIZE(wsdat%par(i,j)%ngbrSys),REAL(s))
-                      IF (ind.NE.0) THEN
-                         wsdat%par(i,j)%ngbrSys(ind)=matchSys
-                      END IF
-                      leng = LENGTH(REAL(wsdat%par(i,j)%ngbrSys), &
-                           SIZE(wsdat%par(i,j)%ngbrSys),REAL(9999))
-                      IF (leng.GT.0) THEN
-                         CALL UNIQUE( &
-                              REAL(wsdat%par(i,j)%ngbrSys(1:leng)), &
-                              leng,uniarr,outsize)
-                         wsdat%par(i,j)%ngbrSys(:) = 9999
-                         wsdat%par(i,j)%ngbrSys(1:outsize) = &
-                              NINT(uniarr)
-                         IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
-                      ELSE
-                         wsdat%par(i,j)%ngbrSys(:) = 9999
-                      END IF
-                   END DO
-                END DO
-
-                !                     Update neigbors in sys structure
-                DO nn = 1, maxSys
-                   nbr = FINDFIRST(REAL(sys(nn)%ngbr), &
-                        SIZE(sys(nn)%ngbr),REAL(s))
-                   IF (nbr.NE.0) THEN
-                      !                             WRITE(20,*) 'update'
-                      sys(nn)%ngbr(nbr)=matchSys
-                   END IF
-                   leng2 = LENGTH(REAL(sys(nn)%ngbr), &
-                        SIZE(sys(nn)%ngbr),REAL(9999))
-                   IF (leng2.GT.0) THEN
-                      CALL UNIQUE(REAL(sys(nn)%ngbr(1:leng2)), &
-                           leng2,uniarr,outsize)
-                      sys(nn)%ngbr(:) = 9999
-                      sys(nn)%ngbr(1:outsize) = NINT(uniarr)
-                      IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
-                      !                             WRITE(20,*) 'has now ngbr: ', &
-                      !                                sys(nn)%ngbr(1:outsize)
-                   END IF
-                END DO
-                EXIT
-             END IF
-
-
-             IF (ASSOCIATED(indSys1)) DEALLOCATE(indSys1)
-             IF (ASSOCIATED(indSys2)) DEALLOCATE(indSys2)
+      !          WRITE(20,*) 'so =',so
+      s = sysOut(so)
+      ss = FINDFIRST(REAL(sys(:)%sysInd),SIZE(sys(:)%sysInd), &
+           REAL(s))
+      !opt          WRITE(20,*) 's,ss=',s,ss
+      ngbIndex(:) = 0
+      ii = 1
+      leng = LENGTH(REAL(sys(ss)%ngbr),SIZE(sys(ss)%ngbr), &
+           REAL(9999))
+      !         Identify the indices of all the systems that neighbour the current system s,
+      !         store in ngbIndex(:)
+      DO ngb = 1, leng
+        IF ( sys(ss)%ngbr(ngb).NE.s ) THEN
+          myngbr = 1
+          DO WHILE (myngbr.LE.SIZE(sysOut))
+            IF (sys(myngbr)%sysInd.EQ.sys(ss)%ngbr(ngb)) THEN
+              ngbIndex(ii) = myngbr
+              ii = ii+1
+              IF (ii.GT.1000) &
+                   WRITE(20,*) '*** WARNING: ngbIndex(:) exceeded!'
+            END IF
+            myngbr = myngbr+1
           END DO
-       END IF
+        END IF
+      END DO
+      ii = ii-1
+      !opt          WRITE(20,*) so,'.   sys =',s,', Tp =',sys(s)%tpMean, &
+      !opt                      ', size=',sys(s)%nPoints,', #neighbours=',ii
+
+      IF ( ii.GT.0 ) THEN
+        DO ngb = 1, ii
+          !                 We first need to find the (i,j) points that are either common
+          !                 to both these systems, or at the boundary of the two systems. Here
+          !                 sys 1 will carry the 'ss' index and sys 2 the ngbIndex(ngb) index.
+          CALL findIJV4 (sys(ss),sys(ngbIndex(ngb)), &
+               maxI,maxJ,indSys1,indSys2)
+          IF ((SIZE(indSys1)>10).AND.(SIZE(indSys2)>10).AND. &
+               (sys(ss)%nPoints.GT.sys(ngbIndex(ngb))%nPoints)) &
+               THEN
+            lsys = SIZE(indSys1)
+            lsys2 = SIZE(indSys2)
+
+            !061512---------------Add zipper compare
+            IF (ZIPMATCH) THEN
+              !                       Omit small systems to save time
+              IF ((sys(ss)%nPoints.LT.5).OR. &
+                   (sys(ngbIndex(ngb))%nPoints.LT.5)) THEN
+                CYCLE
+              END IF
+              dx=0.5*((wsdat%lon(2,1)-wsdat%lon(1,1)) + &
+                   (wsdat%lat(1,2)-wsdat%lat(1,1)))
+              ngbmatch(:)=0.
+              DO izp = 1,lsys
+                !                          Find neighbors of this point
+                counter=0
+                DO in=(sys(ss)%i(indSys1(izp))-ngbrExt), &
+                     (sys(ss)%i(indSys1(izp))+ngbrExt)
+                  DO jn=(sys(ss)%j(indSys1(izp))-ngbrExt), &
+                       (sys(ss)%j(indSys1(izp))+ngbrExt)
+                    counter=counter+1
+                    ngbr(counter)%i = in
+                    ngbr(counter)%j = jn
+                  END DO
+                END DO
+                !                          Find these points in neighboring system
+                ngb_tp = 0.
+                ngb_dir = 0.
+                count2 = 0
+                DO izp2 = 1,lsys2
+                  DO icnt = 1,counter
+                    IF ((sys(ngbIndex(ngb))%i(indSys2(izp2)) &
+                         .EQ.ngbr(icnt)%i).AND. &
+                         (sys(ngbIndex(ngb))%j(indSys2(izp2)) &
+                         .EQ.ngbr(icnt)%j)) THEN
+                      count2 = count2+1
+                      ngb_tp = ngb_tp + &
+                           sys(ngbIndex(ngb))%tp(indSys2(izp2))
+                      ngb_dir = ngb_dir + &
+                           sys(ngbIndex(ngb))%dir(indSys2(izp2))
+                    END IF
+                  END DO
+                END DO
+                IF (count2.GT.0) THEN
+                  absPer = ABS(sys(ss)%tp(indSys1(izp))-ngb_tp/count2)
+                  absDir = ABS(sys(ss)%dir(indSys1(izp))-ngb_dir/count2)
+                  T = sys(ss)%tp(indSys1(izp))
+                  m1 = -3.645*T + 63.211
+                  m1 = MAX(m1,10.)
+                  m2 = -0.346*T + 3.686
+                  m2 = MAX(m2,0.6)
+                  deltaDirB = (m1*dx + dirKnob)*1.
+                  deltaPerB = (m2*dx + perKnob)*1.
+                  IF ( (absPer.LT.deltaPerB).AND. &
+                       (absDir.LT.deltaDirB) ) THEN
+                    ngbmatch(izp)=1.
+                  END IF
+                END IF
+              END DO
+              !                       If >80% of neighbors fall within criteria, system is matched
+              IF ((SUM(ngbmatch(1:lsys))/lsys).GT.0.50) THEN
+                indMatch = ngbIndex(ngb)
+                matchSys = sys(indMatch)%sysInd
+              ELSE
+                CYCLE
+              END IF
+            ELSE
+              !061512---------------------------------
+
+              Tb = MAX(SUM(sys(ss)%tp(indSys1))/lsys, &
+                   SUM(sys(ngbIndex(ngb))%tp(indSys2))/lsys2)
+              !                      deltaPerB = (-0.06*Tb+2+perKnob)*1.5
+              !                      deltaDirB = (-Tb+(25+10*dirKnob))*1.5
+              !                      deltaPerB = (-0.06*Tb+2+2)*1.5
+              !                      deltaDirB = (-Tb+(25+10*2))*1.5
+              dx=0.5*((wsdat%lon(2,1)-wsdat%lon(1,1)) + &
+                   (wsdat%lat(1,2)-wsdat%lat(1,1)))
+              m1 = -3.523*Tb + 64.081
+              m1 = MAX(m1,10.)
+              m2 = -0.337*Tb + 3.732
+              m2 = MAX(m2,0.6)
+              !1stddev                      m1 = -2.219*Tb + 35.734
+              !1stddev                      m1 = MAX(m1,5.)
+              !1stddev                      m2 = -0.226*Tb + 2.213
+              !1stddev                      m2 = MAX(m2,0.35)
+              !5stddev                      m1 = -5.071*Tb + 90.688
+              !5stddev                      m1 = MAX(m1,16.)
+              !5stddev                      m2 = -0.467*Tb + 5.161
+              !5stddev                      m2 = MAX(m2,1.0)
+              deltaDirB = (m1*1. + dirKnob)*1.
+              deltaPerB = (m2*1. + perKnob)*1.
+              deltaHsB = 0.50*SUM(sys(ss)%hs(indSys1))/lsys
+              !                      deltaHsB = 0.25*SUM(sys(ss)%hs(indSys1))/lsys
+
+              !051612               --- Land mask addition
+              !                     Option 1: If system centroid is near a land mask (e.g. 3 arc-deg),
+              !                               increase the tolerances
+              IF (ANY(MASK.EQ.1)) THEN
+                lonmean = SUM(sys(ss)%lon(indSys1))/lsys
+                latmean = SUM(sys(ss)%lat(indSys1))/lsys
+                DO j = 1,maxJ
+                  DO i = 1,maxI
+                    IF (MASK(i,j).EQ.1) THEN
+                      !                             Land point found. Compute distance to system centroid
+                      DIST = SQRT((lonmean-wsdat%lon(i,j))**2 +&
+                           (latmean-wsdat%lat(i,j))**2)
+                      IF (DIST.LT.3.) THEN
+                        !                               System assumed to be influenced by land,
+                        !                               increase tolerances to deltaDirB=30,deltaPerB=3
+                        !                                deltaDirB = (m1*1. + 30)*1.
+                        !                                deltaPerB = (m2*1. + 3)*1.
+                        deltaDirB = (m1*1. + 30)*1.
+                        deltaPerB = (m2*1. + 3)*1.
+                        !Remove dHs limitation from criteria
+                        deltaHsB = 9999.
+                        GOTO 500
+                      END IF
+                    END IF
+                  END DO
+                END DO
+              END IF
+500           CONTINUE
+              !051612               --- Land mask addition
+
+              absHs = ABS( SUM(sys(ss)%hs(indSys1))/lsys - &
+                   SUM(sys(ngbIndex(ngb))%hs(indSys2))/lsys2 )
+              absPer = ABS( SUM(sys(ss)%tp(indSys1))/lsys - &
+                   SUM(sys(ngbIndex(ngb))%tp(indSys2))/lsys2 )
+              absDir = ABS( &
+                   mean_angleV2(sys(ss)%dir(indSys1),lsys) - &
+                   mean_angleV2(sys(ngbIndex(ngb))%dir(indSys2), &
+                   lsys2) )
+              IF (absDir.GT.180) absDir = 360.-absDir
+              !                      absWf = ABS( SUM(sys(ss)%wf(indSys1))/lsys - &
+              !                        SUM(sys(ngbIndex(ngb))%wf(indSys2))/lsys2 )
+
+              IF ( (absPer.LT.deltaPerB).AND. &
+                   (absDir.LT.deltaDirB).AND. &
+                   (absHs.LT.deltaHsB) ) THEN
+                indMatch = ngbIndex(ngb)
+                matchSys = sys(indMatch)%sysInd
+                !opt                         WRITE(20,*) '-> Matched sys',s, &
+                !opt                                     'with neighbor sys',matchSys
+              ELSE
+                CYCLE
+              END IF
+              !061512---------------------------------
+            END IF
+            !061512---------------------------------
+
+            keep = 0
+            keepInd(:) = 0
+
+            DO hh = 1, sys(ss)%nPoints
+              ii = sys(ss)%i(hh)
+              jj = sys(ss)%j(hh)
+              ind = 0
+              ind = FINDFIRST(REAL(wsdat%par(ii,jj)%sys), &
+                   SIZE(wsdat%par(ii,jj)%sys),REAL(s))        !Shouldn't REAL(s) be matchSys...
+              IF (ind.NE.0) THEN
+                wsdat%par(ii,jj)%sys(ind)=matchSys            !...and matchSys be s, (i.e. add the matching neigbour to the base?)
+              END IF
+              !                        Remove the "-1" system from the set
+              ind2 = 1
+              oneLess(:) = 9999                                !Streamline this?
+              leng = LENGTH(REAL(wsdat%par(ii,jj)%sys), &
+                   SIZE(wsdat%par(ii,jj)%sys),REAL(9999))
+              DO ind = 1, leng
+                IF ( wsdat%par(ii,jj)%sys(ind).NE.-1 ) THEN
+                  oneLess(ind2) = wsdat%par(ii,jj)%sys(ind)
+                  ind2 = ind2+1
+                END IF
+              END DO
+              ind2 = ind2-1
+              !                        Combine any partitions assigned to the same systems
+              !                        Check for duplicates
+              IF (ind2.EQ.0) &
+                   WRITE(20,*) '***2.Calling UNIQUE w. len=0!'
+              CALL UNIQUE(REAL(oneLess(1:ind2)),ind2, &
+                   uniarr,outsize)
+              IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
+              IF (ind2.GT.outsize) THEN
+                !                          There is at least one duplicate, so combine systems
+                CALL combinePartitionsV2(wsdat%par(ii,jj))
+                !                          Update the combined partitions values into the system we are keeping.
+                !                          Since partitions have been combined we don't know if the index is the same
+                replacedInd = &
+                     FINDFIRST(REAL(wsdat%par(ii,jj)%sys(:)), &
+                     SIZE(wsdat%par(ii,jj)%sys(:)), &
+                     REAL(matchSys))
+                hhForIndMatch = 1
+                DO WHILE (hhForIndMatch.LE. &
+                     sys(indMatch)%nPoints)
+                  IF ( (sys(indMatch)%i(hhForIndMatch) &
+                       .EQ.ii).AND. &
+                       (sys(indMatch)%j(hhForIndMatch) &
+                       .EQ.jj) ) EXIT
+                  hhForIndMatch = hhForIndMatch + 1
+                END DO
+                sys(indMatch)%hs(hhForIndMatch) = &
+                     wsdat%par(ii,jj)%hs(replacedInd)
+                sys(indMatch)%tp(hhForIndMatch) = &
+                     wsdat%par(ii,jj)%tp(replacedInd)
+                sys(indMatch)%dir(hhForIndMatch) = &
+                     wsdat%par(ii,jj)%dir(replacedInd)
+                sys(indMatch)%dspr(hhForIndMatch) = &
+                     wsdat%par(ii,jj)%dspr(replacedInd)
+                !                           sys(indMatch)%wf(hhForIndMatch) = &
+                !                                  wsdat%par(ii,jj)%wf(replacedInd)
+              ELSE
+                keep = keep+1
+                keepInd(keep) = hh
+              END IF
+            END DO
+            leng = LENGTH(REAL(sys(indMatch)%hs), &
+                 SIZE(sys(indMatch)%hs),REAL(9999.))
+
+            !                     Update system info
+            !                     ------------------
+            !                     First need to find which points were common to both systems =>
+            !                     keepInd since that means partitions have not been combined for those
+            !                     points as a result of the combination of those 2 systems =>
+            !                     distinct points
+            !                      keepInd = keepInd(1:keep)
+            lMatch = LENGTH(REAL(sys(indMatch)%hs), &
+                 SIZE(sys(indMatch)%hs),REAL(9999.))
+            tot = lMatch + keep
+            CALL UNION (REAL(sys(indMatch)%ngbr), &
+                 SIZE(sys(indMatch)%ngbr), &
+                 REAL(sys(ss)%ngbr), &
+                 SIZE(sys(ss)%ngbr), &
+                 allngbr,outsize)
+            CALL SETDIFF(allngbr,SIZE(allngbr), &
+                 REAL((/sys(indMatch)%sysInd, &
+                 sys(ss)%sysInd/)), &
+                 SIZE((/sys(indMatch)%sysInd, &
+                 sys(ss)%sysInd/)),difarr,outsize)
+            sys(indMatch)%ngbr(:) = 9999
+            outsize = MIN(outsize,size(sys(indMatch)%ngbr))
+            sys(indMatch)%ngbr(1:outsize) = NINT(difarr(1:outsize))
+            IF (ASSOCIATED(allngbr)) DEALLOCATE(allngbr)
+            IF (ASSOCIATED(difarr)) DEALLOCATE(difarr)
+
+            leng = LENGTH(REAL(sys(indMatch)%i), &
+                 SIZE(sys(indMatch)%i),REAL(9999))
+            sys(indMatch)%hsMean = SUM((/ &
+                 sys(ss)%hs(keepInd(1:keep)), &
+                 sys(indMatch)%hs(1:leng) /))/tot
+            sys(indMatch)%tpMean = SUM((/ &
+                 sys(ss)%tp(keepInd(1:keep)), &
+                 sys(indMatch)%tp(1:leng) /))/tot
+            sys(indMatch)%dirMean = &
+                 mean_angleV2((/ sys(ss)%dir(keepInd(1:keep)), &
+                 sys(indMatch)%dir(1:leng) /),tot)
+            !070512----------- Weight averages with Hm0 ---------------------
+            TEMP1 = 0.
+            TEMP2 = 0.
+            DO iii = 1,keep
+              TEMP1 = TEMP1 + (sys(ss)%hs(keepInd(iii))**2)*&
+                   sys(ss)%hs(keepInd(iii))
+              TEMP2 = TEMP2 + (sys(ss)%hs(keepInd(iii))**2)*&
+                   sys(ss)%tp(keepInd(iii))
+            END DO
+            DO iii = 1,leng
+              TEMP1 = TEMP1 + (sys(indMatch)%hs(iii)**2)*&
+                   sys(indMatch)%hs(iii)
+              TEMP2 = TEMP2 + (sys(indMatch)%hs(iii)**2)*&
+                   sys(indMatch)%tp(iii)
+            END DO
+            sys(indMatch)%hsMean = TEMP1/MAX(SUM((/ &
+                 sys(ss)%hs(keepInd(1:keep))**2, &
+                 sys(indMatch)%hs(1:leng)**2 /)),0.001)
+            sys(indMatch)%tpMean = TEMP2/MAX(SUM((/ &
+                 sys(ss)%hs(keepInd(1:keep))**2, &
+                 sys(indMatch)%hs(1:leng)**2 /)),0.001)
+            sys(indMatch)%dirMean = &
+                 mean_angleV3((/ sys(ss)%dir(keepInd(1:keep)), &
+                 sys(indMatch)%dir(1:leng) /), &
+                 (/ sys(ss)%hs(keepInd(1:keep)), &
+                 sys(indMatch)%hs(1:leng) /),tot)
+            !070512----------- Weight averages with Hm0 ---------------------
+
+            sys(indMatch)%i(1:(keep+leng))= &
+                 (/sys(ss)%i(keepInd(1:keep)), &
+                 sys(indMatch)%i(1:leng)/)
+            sys(indMatch)%j(1:(keep+leng))= &
+                 (/sys(ss)%j(keepInd(1:keep)), &
+                 sys(indMatch)%j(1:leng)/)
+            sys(indMatch)%lat(1:(keep+leng)) = &
+                 (/sys(ss)%lat(keepInd(1:keep)), &
+                 sys(indMatch)%lat(1:leng)/)
+            sys(indMatch)%lon(1:(keep+leng)) = &
+                 (/sys(ss)%lon(keepInd(1:keep)), &
+                 sys(indMatch)%lon(1:leng)/)
+            sys(indMatch)%dir(1:(keep+leng)) = &
+                 (/sys(ss)%dir(keepInd(1:keep)), &
+                 sys(indMatch)%dir(1:leng)/)
+            sys(indMatch)%dspr(1:(keep+leng)) = &
+                 (/sys(ss)%dspr(keepInd(1:keep)), &
+                 sys(indMatch)%dspr(1:leng)/)
+            !                      sys(indMatch)%wf(1:(keep+leng)) = &
+            !                          (/sys(ss)%wf(keepInd(1:keep)), &
+            !                            sys(indMatch)%wf(1:leng)/)
+            sys(indMatch)%hs(1:(keep+leng)) = &
+                 (/sys(ss)%hs(keepInd(1:keep)), &
+                 sys(indMatch)%hs(1:leng)/)
+            sys(indMatch)%tp(1:(keep+leng)) = &
+                 (/sys(ss)%tp(keepInd(1:keep)), &
+                 sys(indMatch)%tp(1:leng)/)
+            sys(indMatch)%nPoints = &
+                 LENGTH(REAL(sys(indMatch)%i), &
+                 SIZE(sys(indMatch)%i),REAL(9999))
+            !                     Clear array of system that has just been combined with another
+            sys(ss)%nPoints = 0
+            sys(ss)%ngbr(:) = 9999
+            WRITE(20,*) 'Deallocating sys',s
+            DEALLOCATE( sys(ss)%hs )                            !opt
+            DEALLOCATE( sys(ss)%tp )                            !opt
+            DEALLOCATE( sys(ss)%dir )                           !opt
+            DEALLOCATE( sys(ss)%dspr )                          !opt
+            !                      DEALLOCATE( sys(ss)%wf )                           !opt
+            DEALLOCATE( sys(ss)%i )                             !opt
+            DEALLOCATE( sys(ss)%j )                             !opt
+            DEALLOCATE( sys(ss)%lat )                           !opt
+            DEALLOCATE( sys(ss)%lon )                           !opt
+            !                      DEALLOCATE( sys(ss)%hsMean )                        !opt
+            !                      DEALLOCATE( sys(ss)%tpMean )                        !opt
+            !                      DEALLOCATE( sys(ss)%dirMean )                       !opt
+
+            !                     Loop through wsdat to update neighbouring system values
+            DO i = 1, maxI
+              DO j = 1, maxJ
+                ind = FINDFIRST(REAL(wsdat%par(i,j)%ngbrSys), &
+                     SIZE(wsdat%par(i,j)%ngbrSys),REAL(s))
+                IF (ind.NE.0) THEN
+                  wsdat%par(i,j)%ngbrSys(ind)=matchSys
+                END IF
+                leng = LENGTH(REAL(wsdat%par(i,j)%ngbrSys), &
+                     SIZE(wsdat%par(i,j)%ngbrSys),REAL(9999))
+                IF (leng.GT.0) THEN
+                  CALL UNIQUE( &
+                       REAL(wsdat%par(i,j)%ngbrSys(1:leng)), &
+                       leng,uniarr,outsize)
+                  wsdat%par(i,j)%ngbrSys(:) = 9999
+                  wsdat%par(i,j)%ngbrSys(1:outsize) = &
+                       NINT(uniarr)
+                  IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
+                ELSE
+                  wsdat%par(i,j)%ngbrSys(:) = 9999
+                END IF
+              END DO
+            END DO
+
+            !                     Update neigbors in sys structure
+            DO nn = 1, maxSys
+              nbr = FINDFIRST(REAL(sys(nn)%ngbr), &
+                   SIZE(sys(nn)%ngbr),REAL(s))
+              IF (nbr.NE.0) THEN
+                !                             WRITE(20,*) 'update'
+                sys(nn)%ngbr(nbr)=matchSys
+              END IF
+              leng2 = LENGTH(REAL(sys(nn)%ngbr), &
+                   SIZE(sys(nn)%ngbr),REAL(9999))
+              IF (leng2.GT.0) THEN
+                CALL UNIQUE(REAL(sys(nn)%ngbr(1:leng2)), &
+                     leng2,uniarr,outsize)
+                sys(nn)%ngbr(:) = 9999
+                sys(nn)%ngbr(1:outsize) = NINT(uniarr)
+                IF (ASSOCIATED(uniarr)) DEALLOCATE(uniarr)
+                !                             WRITE(20,*) 'has now ngbr: ', &
+                !                                sys(nn)%ngbr(1:outsize)
+              END IF
+            END DO
+            EXIT
+          END IF
+
+
+          IF (ASSOCIATED(indSys1)) DEALLOCATE(indSys1)
+          IF (ASSOCIATED(indSys2)) DEALLOCATE(indSys2)
+        END DO
+      END IF
     END DO
 
     IF (ALLOCATED(sysOrdered)) DEALLOCATE(sysOrdered)
@@ -4253,16 +4253,16 @@ CONTAINS
     !     Compile array index of active systems in sys
     actSys = 0
     DO ic = 1,maxSys
-       IF (sys(ic)%nPoints>0) actSys = actSys + 1
+      IF (sys(ic)%nPoints>0) actSys = actSys + 1
     END DO
     IF (ALLOCATED(actSysInd)) DEALLOCATE(actSysInd)
     ALLOCATE( actSysInd(actSys) )
     actSys = 0
     DO ic = 1,maxSys
-       IF (sys(ic)%nPoints>0) THEN
-          actSys = actSys + 1
-          actSysInd(actSys) = sys(ic)%sysInd
-       END IF
+      IF (sys(ic)%nPoints>0) THEN
+        actSys = actSys + 1
+        actSysInd(actSys) = sys(ic)%sysInd
+      END IF
     END DO
 
     !opt      WRITE(20,*) 'actSys =',actSys
@@ -4325,9 +4325,9 @@ CONTAINS
     !     Local variables
     !     ----------------------------------------------------------------
     TYPE duplicate
-       INTEGER :: val
-       INTEGER :: ndup
-       INTEGER :: ind(50)
+      INTEGER :: val
+      INTEGER :: ndup
+      INTEGER :: ind(50)
     END TYPE duplicate
 
     TYPE(duplicate) :: dup(100)                                         !40.PAR
@@ -4370,30 +4370,30 @@ CONTAINS
     dup(:)%ndup = 0
     dup(:)%val = 9999
     DO s = 1,100
-       dup(s)%ind(:) = 0
+      dup(s)%ind(:) = 0
     END DO
 
     npart = LENGTH(REAL(dat%ipart),SIZE(dat%ipart),REAL(0))
     DO p = 1, npart-1
-       found = .FALSE.
-       IF (ANY(dat%sys(p).EQ.dup(:)%val)) CYCLE                         !found = .TRUE.
-       DO pp = (p+1), npart
-          IF (dat%sys(p).EQ.dat%sys(pp)) THEN
-             !              First value
-             IF (.NOT.found) THEN
-                nsys=nsys+1
-                dup(nsys)%val = dat%sys(p)
-                dup(nsys)%ndup = 1
-                dup(nsys)%ind(dup(nsys)%ndup) = p
-                found = .TRUE.
-             END IF
-             !              Subsequent duplicates
-             IF (.NOT.ANY(pp.EQ.dup(nsys)%ind(:))) THEN
-                dup(nsys)%ndup = dup(nsys)%ndup+1
-                dup(nsys)%ind(dup(nsys)%ndup) = pp
-             END IF
+      found = .FALSE.
+      IF (ANY(dat%sys(p).EQ.dup(:)%val)) CYCLE                         !found = .TRUE.
+      DO pp = (p+1), npart
+        IF (dat%sys(p).EQ.dat%sys(pp)) THEN
+          !              First value
+          IF (.NOT.found) THEN
+            nsys=nsys+1
+            dup(nsys)%val = dat%sys(p)
+            dup(nsys)%ndup = 1
+            dup(nsys)%ind(dup(nsys)%ndup) = p
+            found = .TRUE.
           END IF
-       END DO
+          !              Subsequent duplicates
+          IF (.NOT.ANY(pp.EQ.dup(nsys)%ind(:))) THEN
+            dup(nsys)%ndup = dup(nsys)%ndup+1
+            dup(nsys)%ind(dup(nsys)%ndup) = pp
+          END IF
+        END IF
+      END DO
     END DO
 
     !     Now go through array of duplicates for each of n systems
@@ -4402,56 +4402,56 @@ CONTAINS
     maxInd = 0
     temp = -9999.
     DO s = 1, nsys
-       !        Find duplicate partition with the largest Hs (most energy)
-       DO p = 1, dup(s)%ndup
-          IF ( temp.LT.dat%hs(dup(s)%ind(p)) ) THEN
-             temp = dat%hs(dup(s)%ind(p))
-             maxInd = p
-          END IF
-       END DO
+      !        Find duplicate partition with the largest Hs (most energy)
+      DO p = 1, dup(s)%ndup
+        IF ( temp.LT.dat%hs(dup(s)%ind(p)) ) THEN
+          temp = dat%hs(dup(s)%ind(p))
+          maxInd = p
+        END IF
+      END DO
 
-       !        Add all energy (Hs) to this partition
-       dat%hs(dup(s)%ind(maxInd)) = &
-            SQRT( SUM(dat%hs(dup(s)%ind(1:dup(s)%ndup))**2) )
+      !        Add all energy (Hs) to this partition
+      dat%hs(dup(s)%ind(maxInd)) = &
+           SQRT( SUM(dat%hs(dup(s)%ind(1:dup(s)%ndup))**2) )
 
-       !        Remove duplicate partitions which did not have the maximum Hs,
-       !        and shift up indices to fill the gap
-       DO p = 1, dup(s)%ndup
-          !           Find index to remove
-          IF (p.NE.maxInd) THEN
-             !              Shift up entries, deleting the duplicate partition
-             !              REPLACE WITH CSHIFT(ARRAY, SHIFT, dim) ?
-             dat%hs( dup(s)%ind(p):(npart-1) ) = &
-                  dat%hs( (dup(s)%ind(p)+1):npart)
-             dat%tp( dup(s)%ind(p):(npart-1) ) = &
-                  dat%tp( (dup(s)%ind(p)+1):npart)
-             dat%dir( dup(s)%ind(p):(npart-1) ) = &
-                  dat%dir( (dup(s)%ind(p)+1):npart)
-             dat%dspr( dup(s)%ind(p):(npart-1) ) = &
-                  dat%dspr( (dup(s)%ind(p)+1):npart)
-             !               dat%wf( dup(s)%ind(p):(npart-1) ) = &
-             !                       dat%wf( (dup(s)%ind(p)+1):npart)
-             dat%sys( dup(s)%ind(p):(npart-1) ) = &
-                  dat%sys( (dup(s)%ind(p)+1):npart)
-             dat%ipart( dup(s)%ind(p):(npart-1) ) = &
-                  dat%ipart( (dup(s)%ind(p)+1):npart)
-             !              Shift up indices
-             DO ss = 1, nsys
-                DO ppp = 1, dup(ss)%ndup
-                   IF (dup(ss)%ind(ppp).GT.dup(s)%ind(p)) &
-                        dup(ss)%ind(ppp) = dup(ss)%ind(ppp)-1
-                END DO
-             END DO
-             !              Add blank to end
-             dat%hs(npart) = 9999.
-             dat%tp(npart) = 9999.
-             dat%dir(npart) = 9999.
-             dat%dspr(npart) = 9999.
-             !               dat%wf(npart) = 9999.
-             dat%sys(npart) = 9999
-             dat%ipart(npart) = 0
-          END IF
-       END DO
+      !        Remove duplicate partitions which did not have the maximum Hs,
+      !        and shift up indices to fill the gap
+      DO p = 1, dup(s)%ndup
+        !           Find index to remove
+        IF (p.NE.maxInd) THEN
+          !              Shift up entries, deleting the duplicate partition
+          !              REPLACE WITH CSHIFT(ARRAY, SHIFT, dim) ?
+          dat%hs( dup(s)%ind(p):(npart-1) ) = &
+               dat%hs( (dup(s)%ind(p)+1):npart)
+          dat%tp( dup(s)%ind(p):(npart-1) ) = &
+               dat%tp( (dup(s)%ind(p)+1):npart)
+          dat%dir( dup(s)%ind(p):(npart-1) ) = &
+               dat%dir( (dup(s)%ind(p)+1):npart)
+          dat%dspr( dup(s)%ind(p):(npart-1) ) = &
+               dat%dspr( (dup(s)%ind(p)+1):npart)
+          !               dat%wf( dup(s)%ind(p):(npart-1) ) = &
+          !                       dat%wf( (dup(s)%ind(p)+1):npart)
+          dat%sys( dup(s)%ind(p):(npart-1) ) = &
+               dat%sys( (dup(s)%ind(p)+1):npart)
+          dat%ipart( dup(s)%ind(p):(npart-1) ) = &
+               dat%ipart( (dup(s)%ind(p)+1):npart)
+          !              Shift up indices
+          DO ss = 1, nsys
+            DO ppp = 1, dup(ss)%ndup
+              IF (dup(ss)%ind(ppp).GT.dup(s)%ind(p)) &
+                   dup(ss)%ind(ppp) = dup(ss)%ind(ppp)-1
+            END DO
+          END DO
+          !              Add blank to end
+          dat%hs(npart) = 9999.
+          dat%tp(npart) = 9999.
+          dat%dir(npart) = 9999.
+          dat%dspr(npart) = 9999.
+          !               dat%wf(npart) = 9999.
+          dat%sys(npart) = 9999
+          dat%ipart(npart) = 0
+        END IF
+      END DO
     END DO
 
     RETURN
@@ -4653,8 +4653,8 @@ CONTAINS
     TEMP1 = 0.
     TEMP2 = 0.
     DO i = 1,ll
-       TEMP1 = TEMP1 + (hsign(i)**2)*v(i)
-       TEMP2 = TEMP2 + (hsign(i)**2)*u(i)
+      TEMP1 = TEMP1 + (hsign(i)**2)*v(i)
+      TEMP2 = TEMP2 + (hsign(i)**2)*u(i)
     END DO
     vm = TEMP1/MAX(SUM(hsign**2),0.001)
     um = TEMP2/MAX(SUM(hsign**2),0.001)
@@ -4767,44 +4767,44 @@ CONTAINS
     K = 1
 
     IF ( INSIZE.EQ.0 ) THEN
-       WRITE(20,*) '*** In Subr. UNIQUE: Input array has length=0!'
+      WRITE(20,*) '*** In Subr. UNIQUE: Input array has length=0!'
     ELSE
-       !/    --- Setup input arrays and temporary arrays. ---
-       DO I=1,INSIZE
-          ARRAY(I) = INARRAY(I)
-          TEMP(I)  = REAL(I)
-       END DO
-       !/
-       !/      --- Sort input arrays (use temporary array to store indices). ---
-       CALL QSORT(ARRAY,TEMP,1,INSIZE)
-       !/
-       !/      --- Reset temporary array. ---
-       TEMP(:) = 9999.
-       !/
-       !/      --- Initialise first values and array index. ---
-       K = 1
-       TEMP(K) = ARRAY(K)
-       K = K + 1
-       !/      --- Iterate over elements in array. ---
-       DO I=2,INSIZE
-          !/        --- Compare sequential array values ('previous' less than 'next')
-          !/            and test against the last list element check in. ---
-          IF ( ARRAY(I).GT.ARRAY(I-1) .AND. &
-               ARRAY(I).GT.TEMP(K-1)        ) THEN
-             TEMP(K) = ARRAY(I)
-             K = K + 1
-          END IF
-       END DO
+      !/    --- Setup input arrays and temporary arrays. ---
+      DO I=1,INSIZE
+        ARRAY(I) = INARRAY(I)
+        TEMP(I)  = REAL(I)
+      END DO
+      !/
+      !/      --- Sort input arrays (use temporary array to store indices). ---
+      CALL QSORT(ARRAY,TEMP,1,INSIZE)
+      !/
+      !/      --- Reset temporary array. ---
+      TEMP(:) = 9999.
+      !/
+      !/      --- Initialise first values and array index. ---
+      K = 1
+      TEMP(K) = ARRAY(K)
+      K = K + 1
+      !/      --- Iterate over elements in array. ---
+      DO I=2,INSIZE
+        !/        --- Compare sequential array values ('previous' less than 'next')
+        !/            and test against the last list element check in. ---
+        IF ( ARRAY(I).GT.ARRAY(I-1) .AND. &
+             ARRAY(I).GT.TEMP(K-1)        ) THEN
+          TEMP(K) = ARRAY(I)
+          K = K + 1
+        END IF
+      END DO
 
-       !/      --- Allocate output array ---
-       OUTSIZE = K - 1
-       ALLOCATE(OUTARRAY(OUTSIZE))
-       !/      --- Transfer output from temporary array to output array. ---
-       IF ( OUTSIZE.GE.1 ) THEN
-          DO I=1,OUTSIZE
-             OUTARRAY(I) = TEMP(I)
-          END DO
-       END IF
+      !/      --- Allocate output array ---
+      OUTSIZE = K - 1
+      ALLOCATE(OUTARRAY(OUTSIZE))
+      !/      --- Transfer output from temporary array to output array. ---
+      IF ( OUTSIZE.GE.1 ) THEN
+        DO I=1,OUTSIZE
+          OUTARRAY(I) = TEMP(I)
+        END DO
+      END IF
     END IF
     !/
     RETURN
@@ -4905,25 +4905,25 @@ CONTAINS
     !     Sort OUTARRAY in as/decending order
 
     IF (INSIZE.EQ.0) THEN
-       WRITE(20,*) '*** In Subr. SORT: Input array has length=0 !!!'
+      WRITE(20,*) '*** In Subr. SORT: Input array has length=0 !!!'
     ELSE
 
-       DO I = 1, INSIZE
-          OUTARRAY(I) = INARRAY(I)
-          IND(I) = REAL(I)
-       END DO
+      DO I = 1, INSIZE
+        OUTARRAY(I) = INARRAY(I)
+        IND(I) = REAL(I)
+      END DO
 
-       IF (DIRECTION .EQ. 'A') THEN
-          CALL QSORT(OUTARRAY,IND,1,INSIZE)
-       ELSE IF (DIRECTION .EQ. 'D') THEN
-          CALL QSORT_DESC(OUTARRAY,IND,1,INSIZE)
-       END IF
+      IF (DIRECTION .EQ. 'A') THEN
+        CALL QSORT(OUTARRAY,IND,1,INSIZE)
+      ELSE IF (DIRECTION .EQ. 'D') THEN
+        CALL QSORT_DESC(OUTARRAY,IND,1,INSIZE)
+      END IF
 
     END IF
     !
     !/    --- Cast index array to integer. ---
     DO I = 1, INSIZE
-       IY(I) = INT(IND(I))
+      IY(I) = INT(IND(I))
     END DO
     !
     RETURN
@@ -5017,72 +5017,72 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     IF ( (INSIZE1).EQ.0 ) THEN
-       OUTSIZE = 0
-       ALLOCATE(OUTARRAY(OUTSIZE))
+      OUTSIZE = 0
+      ALLOCATE(OUTARRAY(OUTSIZE))
     ELSE IF ( INSIZE2.EQ.0 ) THEN
-       CALL UNIQUE(INARRAY1,INSIZE1,OUTARRAY,OUTSIZE)
+      CALL UNIQUE(INARRAY1,INSIZE1,OUTARRAY,OUTSIZE)
     ELSE
-       !/      --- Setup input arrays. ---
-       DO I=1,INSIZE1
-          ARRAY1(I) = INARRAY1(I)
-          ID1(I)    = REAL(I)
-       END DO
-       DO I=1,INSIZE2
-          ARRAY2(I) = INARRAY2(I)
-          ID2(I)    = REAL(I)
-       END DO
-       !/
-       !/      --- Sort input arrays. ---
-       CALL QSORT(ARRAY1,ID1,1,INSIZE1)
-       CALL QSORT(ARRAY2,ID2,1,INSIZE2)
-       !/
-       !/      --- Initialise indices. ---
-       I = 1
-       J = 1
-       K = 1
-       !/
-       !/      --- Allocate and initialize temporary output ---
-       TEMP(:) = 9999.
-       !/
-       !/      --- Loop though both arrays by incrementing I,J. ---
-       LOOP = .TRUE.
-       DO WHILE ( LOOP )
-          !/
-          IF ( ARRAY1(I).LT.ARRAY2(J) .OR.   &
-               ARRAY1(I).GT.ARRAY2(INSIZE2)  ) THEN
-             !/            --- Populate output array. Check for dumplicates
-             !/                in output array. ---
-             IF ( K.EQ.1 ) THEN
-                TEMP(K) = ARRAY1(I)
-                K = K + 1
-             ELSE IF ( TEMP(K-1).LT.ARRAY1(I) ) THEN
-                TEMP(K) = ARRAY1(I)
-                K = K + 1
-             END IF
-             I = I + 1
-          ELSE IF ( ARRAY2(J).LT.ARRAY1(I) ) THEN
-             J = J + 1
-          ELSE
-             I = I + 1
-             J = J + 1
+      !/      --- Setup input arrays. ---
+      DO I=1,INSIZE1
+        ARRAY1(I) = INARRAY1(I)
+        ID1(I)    = REAL(I)
+      END DO
+      DO I=1,INSIZE2
+        ARRAY2(I) = INARRAY2(I)
+        ID2(I)    = REAL(I)
+      END DO
+      !/
+      !/      --- Sort input arrays. ---
+      CALL QSORT(ARRAY1,ID1,1,INSIZE1)
+      CALL QSORT(ARRAY2,ID2,1,INSIZE2)
+      !/
+      !/      --- Initialise indices. ---
+      I = 1
+      J = 1
+      K = 1
+      !/
+      !/      --- Allocate and initialize temporary output ---
+      TEMP(:) = 9999.
+      !/
+      !/      --- Loop though both arrays by incrementing I,J. ---
+      LOOP = .TRUE.
+      DO WHILE ( LOOP )
+        !/
+        IF ( ARRAY1(I).LT.ARRAY2(J) .OR.   &
+             ARRAY1(I).GT.ARRAY2(INSIZE2)  ) THEN
+          !/            --- Populate output array. Check for dumplicates
+          !/                in output array. ---
+          IF ( K.EQ.1 ) THEN
+            TEMP(K) = ARRAY1(I)
+            K = K + 1
+          ELSE IF ( TEMP(K-1).LT.ARRAY1(I) ) THEN
+            TEMP(K) = ARRAY1(I)
+            K = K + 1
           END IF
-          !/          --- Check for exit the loop. ---
-          IF ( I.GT.INSIZE1 ) THEN
-             LOOP = .FALSE.
-          END IF
-          !/          --- Make sure array pointer I,J are within array bounds. ---
-          I = MIN(I,INSIZE1)
-          J = MIN(J,INSIZE2)
-          !/
-       END DO
-       !/
-       !/      --- Allocate output array ---
-       OUTSIZE = K-1
-       ALLOCATE(OUTARRAY(OUTSIZE))
-       !/        --- Transfer output from temporary array to output array. ---
-       DO I=1,OUTSIZE
-          OUTARRAY(I) = TEMP(I)
-       END DO
+          I = I + 1
+        ELSE IF ( ARRAY2(J).LT.ARRAY1(I) ) THEN
+          J = J + 1
+        ELSE
+          I = I + 1
+          J = J + 1
+        END IF
+        !/          --- Check for exit the loop. ---
+        IF ( I.GT.INSIZE1 ) THEN
+          LOOP = .FALSE.
+        END IF
+        !/          --- Make sure array pointer I,J are within array bounds. ---
+        I = MIN(I,INSIZE1)
+        J = MIN(J,INSIZE2)
+        !/
+      END DO
+      !/
+      !/      --- Allocate output array ---
+      OUTSIZE = K-1
+      ALLOCATE(OUTARRAY(OUTSIZE))
+      !/        --- Transfer output from temporary array to output array. ---
+      DO I=1,OUTSIZE
+        OUTARRAY(I) = TEMP(I)
+      END DO
     END IF
     !/
     RETURN
@@ -5193,56 +5193,56 @@ CONTAINS
 
     !/    --- Check if ranges overlap. ---
     IF ( MAXV1.LT.MINV2.OR.INSIZE1.EQ.0.OR.INSIZE2.EQ.0 ) THEN
-       ALLOCATE(OUTARRAY(OUTSIZE))
-       ALLOCATE(IND1(OUTSIZE))
-       ALLOCATE(IND2(OUTSIZE))
+      ALLOCATE(OUTARRAY(OUTSIZE))
+      ALLOCATE(IND1(OUTSIZE))
+      ALLOCATE(IND2(OUTSIZE))
     ELSE
-       !/      --- Calculate size of temporary output arrays. Allow
-       !/          extra elements: ZERO, and make sure index is 1:N. ---
-       IMIN = MIN(MINV1,MINV2)-1
-       IMAX = MAX(MAXV1,MAXV2)+1
+      !/      --- Calculate size of temporary output arrays. Allow
+      !/          extra elements: ZERO, and make sure index is 1:N. ---
+      IMIN = MIN(MINV1,MINV2)-1
+      IMAX = MAX(MAXV1,MAXV2)+1
 
-       N = IMAX-IMIN
+      N = IMAX-IMIN
 
-       ALLOCATE(VIDX1(N),VIDX2(N))
-       ALLOCATE(IPOS1(N),IPOS2(N))
+      ALLOCATE(VIDX1(N),VIDX2(N))
+      ALLOCATE(IPOS1(N),IPOS2(N))
 
-       VIDX1(1:N) = .FALSE.
-       VIDX2(1:N) = .FALSE.
+      VIDX1(1:N) = .FALSE.
+      VIDX2(1:N) = .FALSE.
 
-       DO I=1,INSIZE1
-          J = INT(INARRAY1(I)-IMIN)
-          VIDX1(J) = .TRUE.
-          IPOS1(J) = I
-       END DO
+      DO I=1,INSIZE1
+        J = INT(INARRAY1(I)-IMIN)
+        VIDX1(J) = .TRUE.
+        IPOS1(J) = I
+      END DO
 
-       DO I=1,INSIZE2
-          J = INT(INARRAY2(I)-IMIN)
-          !/        --- Intersect arrays and check for
-          !/            duplicate elements in array2. ---
-          IF  ( VIDX1(J).AND..NOT.VIDX2(J) ) THEN
-             OUTSIZE = OUTSIZE + 1
-             VIDX2(J) = .TRUE.
-             IPOS2(J) = I
-          END IF
-       END DO
-       !/      --- Allocate output arrays. ---
-       ALLOCATE(OUTARRAY(OUTSIZE))
-       ALLOCATE(IND1(OUTSIZE))
-       ALLOCATE(IND2(OUTSIZE))
-       !/      --- Transfer contents. ---
-       I = 1
-       DO J=1,N
-          IF ( VIDX1(J).AND.VIDX2(J).AND.I.LE.OUTSIZE ) THEN
-             OUTARRAY(I) = INARRAY1(IPOS1(J))
-             IND1(I)     = IPOS1(J)
-             IND2(I)     = IPOS2(J)
-             I = I + 1
-          END IF
-       END DO
-       !/      --- Free memory. ---
-       DEALLOCATE(VIDX1,VIDX2)
-       DEALLOCATE(IPOS1,IPOS2)
+      DO I=1,INSIZE2
+        J = INT(INARRAY2(I)-IMIN)
+        !/        --- Intersect arrays and check for
+        !/            duplicate elements in array2. ---
+        IF  ( VIDX1(J).AND..NOT.VIDX2(J) ) THEN
+          OUTSIZE = OUTSIZE + 1
+          VIDX2(J) = .TRUE.
+          IPOS2(J) = I
+        END IF
+      END DO
+      !/      --- Allocate output arrays. ---
+      ALLOCATE(OUTARRAY(OUTSIZE))
+      ALLOCATE(IND1(OUTSIZE))
+      ALLOCATE(IND2(OUTSIZE))
+      !/      --- Transfer contents. ---
+      I = 1
+      DO J=1,N
+        IF ( VIDX1(J).AND.VIDX2(J).AND.I.LE.OUTSIZE ) THEN
+          OUTARRAY(I) = INARRAY1(IPOS1(J))
+          IND1(I)     = IPOS1(J)
+          IND2(I)     = IPOS2(J)
+          I = I + 1
+        END IF
+      END DO
+      !/      --- Free memory. ---
+      DEALLOCATE(VIDX1,VIDX2)
+      DEALLOCATE(IPOS1,IPOS2)
     END IF
     !/
     RETURN
@@ -5340,85 +5340,85 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/    --- Setup input arrays. ---
     IF ( (INSIZE1+INSIZE2).EQ.0 ) THEN
-       OUTSIZE = 0
-       ALLOCATE(OUTARRAY(OUTSIZE))
+      OUTSIZE = 0
+      ALLOCATE(OUTARRAY(OUTSIZE))
 
     ELSEIF ( INSIZE1.EQ.0 ) THEN
-       OUTSIZE = INSIZE2
-       ALLOCATE(OUTARRAY(OUTSIZE))
-       ALLOCATE(TEMP(OUTSIZE))
+      OUTSIZE = INSIZE2
+      ALLOCATE(OUTARRAY(OUTSIZE))
+      ALLOCATE(TEMP(OUTSIZE))
 
-       DO I=1,OUTSIZE
-          OUTARRAY(I) = INARRAY2(I)
-          TEMP(I)     = REAL(I)
-       END DO
-       CALL QSORT(OUTARRAY,TEMP,1,OUTSIZE)
+      DO I=1,OUTSIZE
+        OUTARRAY(I) = INARRAY2(I)
+        TEMP(I)     = REAL(I)
+      END DO
+      CALL QSORT(OUTARRAY,TEMP,1,OUTSIZE)
 
     ELSEIF ( INSIZE2.EQ.0 ) THEN
-       OUTSIZE = INSIZE1
-       ALLOCATE(OUTARRAY(OUTSIZE),TEMP(OUTSIZE))
+      OUTSIZE = INSIZE1
+      ALLOCATE(OUTARRAY(OUTSIZE),TEMP(OUTSIZE))
 
-       DO I=1,OUTSIZE
-          OUTARRAY(I) = INARRAY1(I)
-          TEMP(I)     = REAL(I)
-       END DO
-       CALL QSORT(OUTARRAY,TEMP,1,OUTSIZE)
+      DO I=1,OUTSIZE
+        OUTARRAY(I) = INARRAY1(I)
+        TEMP(I)     = REAL(I)
+      END DO
+      CALL QSORT(OUTARRAY,TEMP,1,OUTSIZE)
 
     ELSE
-       OUTSIZE = 0
-       !/      --- Calculate the range of the two sets. ---
-       MINV1  = INT(MINVAL(INARRAY1))
-       MAXV1  = INT(MAXVAL(INARRAY1))
-       MINV2  = INT(MINVAL(INARRAY2))
-       MAXV2  = INT(MAXVAL(INARRAY2))
-       !
-       !/  --- Allow extra elementes: ZERO, and make sure index is 1:N. ---
-       IMIN = MIN(MINV1,MINV2)-1
-       IMAX = MAX(MAXV1,MAXV2)+1
+      OUTSIZE = 0
+      !/      --- Calculate the range of the two sets. ---
+      MINV1  = INT(MINVAL(INARRAY1))
+      MAXV1  = INT(MAXVAL(INARRAY1))
+      MINV2  = INT(MINVAL(INARRAY2))
+      MAXV2  = INT(MAXVAL(INARRAY2))
+      !
+      !/  --- Allow extra elementes: ZERO, and make sure index is 1:N. ---
+      IMIN = MIN(MINV1,MINV2)-1
+      IMAX = MAX(MAXV1,MAXV2)+1
 
-       N = IMAX-IMIN
+      N = IMAX-IMIN
 
-       ALLOCATE(VIDX1(N),VIDX2(N))
-       ALLOCATE(IPOS1(N),IPOS2(N))
+      ALLOCATE(VIDX1(N),VIDX2(N))
+      ALLOCATE(IPOS1(N),IPOS2(N))
 
-       VIDX1(1:N) = .FALSE.
-       VIDX2(1:N) = .FALSE.
-       IPOS1(1:N) = -9999
-       IPOS2(1:N) = -9999
-       !/
-       DO I=1,INSIZE1
-          J = INT(INARRAY1(I)-IMIN)
-          IF  ( .NOT.VIDX1(J) ) THEN
-             OUTSIZE = OUTSIZE + 1
-             VIDX1(J) = .TRUE.
-             IPOS1(J) = I
-          END IF
-       END DO
+      VIDX1(1:N) = .FALSE.
+      VIDX2(1:N) = .FALSE.
+      IPOS1(1:N) = -9999
+      IPOS2(1:N) = -9999
+      !/
+      DO I=1,INSIZE1
+        J = INT(INARRAY1(I)-IMIN)
+        IF  ( .NOT.VIDX1(J) ) THEN
+          OUTSIZE = OUTSIZE + 1
+          VIDX1(J) = .TRUE.
+          IPOS1(J) = I
+        END IF
+      END DO
 
-       DO I=1,INSIZE2
-          J = INT(INARRAY2(I)-IMIN)
-          IF  ( .NOT.VIDX1(J).AND..NOT.VIDX2(J) ) THEN
-             OUTSIZE = OUTSIZE + 1
-             VIDX2(J) = .TRUE.
-             IPOS2(J) = I
-          END IF
-       END DO
+      DO I=1,INSIZE2
+        J = INT(INARRAY2(I)-IMIN)
+        IF  ( .NOT.VIDX1(J).AND..NOT.VIDX2(J) ) THEN
+          OUTSIZE = OUTSIZE + 1
+          VIDX2(J) = .TRUE.
+          IPOS2(J) = I
+        END IF
+      END DO
 
-       ALLOCATE(OUTARRAY(OUTSIZE))
+      ALLOCATE(OUTARRAY(OUTSIZE))
 
-       I = 1
-       DO J=1,N
-          IF ( VIDX1(J).AND.I.LE.OUTSIZE ) THEN
-             OUTARRAY(I) = INARRAY1(IPOS1(J))
-             I = I + 1
-          ELSEIF ( VIDX2(J).AND.I.LE.OUTSIZE ) THEN
-             OUTARRAY(I) = INARRAY2(IPOS2(J))
-             I = I + 1
-          END IF
-       END DO
+      I = 1
+      DO J=1,N
+        IF ( VIDX1(J).AND.I.LE.OUTSIZE ) THEN
+          OUTARRAY(I) = INARRAY1(IPOS1(J))
+          I = I + 1
+        ELSEIF ( VIDX2(J).AND.I.LE.OUTSIZE ) THEN
+          OUTARRAY(I) = INARRAY2(IPOS2(J))
+          I = I + 1
+        END IF
+      END DO
 
-       DEALLOCATE(VIDX1,VIDX2)
-       DEALLOCATE(IPOS1,IPOS2)
+      DEALLOCATE(VIDX1,VIDX2)
+      DEALLOCATE(IPOS1,IPOS2)
 
     END IF
     !/
@@ -5474,16 +5474,16 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     IF (ARRSIZE.GT.0) THEN
-       I = 1
-       FIELD = ARRAY(I)
-       DO WHILE (FIELD.NE.VAL)
-          I = I+1
-          IF (I.GT.SIZE(ARRAY)) EXIT
-          FIELD = ARRAY(I)
-       END DO
-       LENGTH = I-1
+      I = 1
+      FIELD = ARRAY(I)
+      DO WHILE (FIELD.NE.VAL)
+        I = I+1
+        IF (I.GT.SIZE(ARRAY)) EXIT
+        FIELD = ARRAY(I)
+      END DO
+      LENGTH = I-1
     ELSE
-       LENGTH = 0
+      LENGTH = 0
     END IF
 
     RETURN
@@ -5536,13 +5536,13 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     IND = 1
     DO WHILE (IND.LE.ARRSIZE)
-       IF ( ARRAY(IND).EQ.VAL ) EXIT
-       IND = IND + 1
+      IF ( ARRAY(IND).EQ.VAL ) EXIT
+      IND = IND + 1
     END DO
     IF (IND.GT.ARRSIZE) THEN
-       FINDFIRST = 0
+      FINDFIRST = 0
     ELSE
-       FINDFIRST = IND
+      FINDFIRST = IND
     ENDIF
 
     RETURN
@@ -5594,10 +5594,10 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     IF (N.GT.1) THEN
-       MN = SUM(ARRAY)/N
-       STD = SQRT( 1/(REAL(N)-1)*SUM( (ARRAY(:)-MN)**2 ) )
+      MN = SUM(ARRAY)/N
+      STD = SQRT( 1/(REAL(N)-1)*SUM( (ARRAY(:)-MN)**2 ) )
     ELSE
-       STD = 0.
+      STD = 0.
     END IF
 
     RETURN
@@ -5669,17 +5669,17 @@ CONTAINS
     !
     !/    --- Check array size and bounds. ---
     IF ( SIZE(ARRAY).EQ. 0 ) THEN
-       WRITE(6,199)
-       CALL ABORT
+      WRITE(6,199)
+      CALL ABORT
     ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
-       WRITE(6,201)
-       CALL ABORT
+      WRITE(6,201)
+      CALL ABORT
     ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
-       WRITE(6,203)
-       CALL ABORT
+      WRITE(6,203)
+      CALL ABORT
     ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
-       WRITE(6,205)
-       CALL ABORT
+      WRITE(6,205)
+      CALL ABORT
     END IF
     !
     TOP = LO
@@ -5688,27 +5688,27 @@ CONTAINS
     !
     LOOP = .TRUE.
     DO WHILE ( LOOP )
-       DO WHILE ( ARRAY(TOP).LT.VAL )
-          TOP = TOP + 1
-       END DO
-       DO WHILE ( VAL.LT.ARRAY(BOT) )
-          BOT = BOT - 1
-       END DO
-       IF ( TOP.LT.BOT ) THEN
-          !/        --- Swap values at indices TOP and BOT ---
-          TMP = ARRAY(TOP)
-          ARRAY(TOP) = ARRAY(BOT)
-          ARRAY(BOT) = TMP
-          !/        --- Swap index values at indices TOP and BOT ---
-          TMP = IDX(TOP)
-          IDX(TOP) = IDX(BOT)
-          IDX(BOT) = TMP
-          !
-          TOP = TOP + 1
-          BOT = BOT - 1
-       ELSE
-          LOOP = .FALSE.
-       END IF
+      DO WHILE ( ARRAY(TOP).LT.VAL )
+        TOP = TOP + 1
+      END DO
+      DO WHILE ( VAL.LT.ARRAY(BOT) )
+        BOT = BOT - 1
+      END DO
+      IF ( TOP.LT.BOT ) THEN
+        !/        --- Swap values at indices TOP and BOT ---
+        TMP = ARRAY(TOP)
+        ARRAY(TOP) = ARRAY(BOT)
+        ARRAY(BOT) = TMP
+        !/        --- Swap index values at indices TOP and BOT ---
+        TMP = IDX(TOP)
+        IDX(TOP) = IDX(BOT)
+        IDX(BOT) = TMP
+        !
+        TOP = TOP + 1
+        BOT = BOT - 1
+      ELSE
+        LOOP = .FALSE.
+      END IF
 
     END DO
 
@@ -5794,17 +5794,17 @@ CONTAINS
     !
     !/    --- Check array size and bounds. ---
     IF ( SIZE(ARRAY).EQ. 0 ) THEN
-       WRITE(6,199)
-       CALL ABORT
+      WRITE(6,199)
+      CALL ABORT
     ELSE IF ( SIZE(ARRAY).NE.SIZE(IDX) ) THEN
-       WRITE(6,201)
-       CALL ABORT
+      WRITE(6,201)
+      CALL ABORT
     ELSE IF ( LBOUND(ARRAY,1).GT.LO ) THEN
-       WRITE(6,203)
-       CALL ABORT
+      WRITE(6,203)
+      CALL ABORT
     ELSE IF ( UBOUND(ARRAY,1).LT.HI ) THEN
-       WRITE(6,205)
-       CALL ABORT
+      WRITE(6,205)
+      CALL ABORT
     END IF
     !
     TOP = LO
@@ -5813,27 +5813,27 @@ CONTAINS
     !
     LOOP = .TRUE.
     DO WHILE ( LOOP )
-       DO WHILE ( ARRAY(TOP).GT.VAL )
-          TOP = TOP + 1
-       END DO
-       DO WHILE ( VAL.GT.ARRAY(BOT) )
-          BOT = BOT - 1
-       END DO
-       IF ( TOP.LT.BOT ) THEN
-          !/        --- Swap values at indices TOP and BOT ---
-          TMP = ARRAY(TOP)
-          ARRAY(TOP) = ARRAY(BOT)
-          ARRAY(BOT) = TMP
-          !/        --- Swap index values at indices TOP and BOT ---
-          TMP = IDX(TOP)
-          IDX(TOP) = IDX(BOT)
-          IDX(BOT) = TMP
-          !
-          TOP = TOP + 1
-          BOT = BOT - 1
-       ELSE
-          LOOP = .FALSE.
-       END IF
+      DO WHILE ( ARRAY(TOP).GT.VAL )
+        TOP = TOP + 1
+      END DO
+      DO WHILE ( VAL.GT.ARRAY(BOT) )
+        BOT = BOT - 1
+      END DO
+      IF ( TOP.LT.BOT ) THEN
+        !/        --- Swap values at indices TOP and BOT ---
+        TMP = ARRAY(TOP)
+        ARRAY(TOP) = ARRAY(BOT)
+        ARRAY(BOT) = TMP
+        !/        --- Swap index values at indices TOP and BOT ---
+        TMP = IDX(TOP)
+        IDX(TOP) = IDX(BOT)
+        IDX(BOT) = TMP
+        !
+        TOP = TOP + 1
+        BOT = BOT - 1
+      ELSE
+        LOOP = .FALSE.
+      END IF
 
     END DO
     !/    --- Recursive call quicksort ---
@@ -5996,78 +5996,78 @@ CONTAINS
     IND_B2(:,:) = 0
     !
     DO IND=1,LENG_BI
-       I = B%I(IND)
-       J = B%J(IND)
-       IF (IND_B2(I,J).EQ.0) IND_B2(I,J) = IND
+      I = B%I(IND)
+      J = B%J(IND)
+      IF (IND_B2(I,J).EQ.0) IND_B2(I,J) = IND
     END DO
     !
     DO IND=1,LENG_AI
-       I = A%I(IND)
-       J = A%J(IND)
-       POSB = IND_B2(I,J)
-       POSB_MM = 0
-       POSB_PP = 0
-       POSB_MP = 0
-       POSB_PM = 0
-       IF (I.GT.1.AND.J.GT.1)       POSB_MM = IND_B2(i-1,j-1)
-       IF (I.GT.1.AND.J.LT.MAXJ)    POSB_MP = IND_B2(i-1,j+1)
-       IF (I.LT.MAXI.AND.J.LT.MAXJ) POSB_PP = IND_B2(i+1,j+1)
-       IF (I.LT.MAXI.AND.J.GT.1)    POSB_PM = IND_B2(i+1,j-1)
+      I = A%I(IND)
+      J = A%J(IND)
+      POSB = IND_B2(I,J)
+      POSB_MM = 0
+      POSB_PP = 0
+      POSB_MP = 0
+      POSB_PM = 0
+      IF (I.GT.1.AND.J.GT.1)       POSB_MM = IND_B2(i-1,j-1)
+      IF (I.GT.1.AND.J.LT.MAXJ)    POSB_MP = IND_B2(i-1,j+1)
+      IF (I.LT.MAXI.AND.J.LT.MAXJ) POSB_PP = IND_B2(i+1,j+1)
+      IF (I.LT.MAXI.AND.J.GT.1)    POSB_PM = IND_B2(i+1,j-1)
 
-       FOUND = .FALSE.
-       IF (POSB.NE.0) THEN
-          OUTB = OUTB + 1
-          TMPB(OUTB) = REAL(POSB)
-          IF (.NOT.FOUND) THEN
-             OUTA = OUTA + 1
-             TMPA(OUTA) = REAL(IND)
-             FOUND = .TRUE.
-          END IF
-       END IF
-       IF (POSB_MM.NE.0) THEN
-          OUTB = OUTB + 1
-          TMPB(OUTB) = REAL(POSB_MM)
-          IF (.NOT.FOUND) THEN
-             OUTA = OUTA + 1
-             TMPA(OUTA) = REAL(IND)
-             FOUND = .TRUE.
-          END IF
-       END IF
-       IF (POSB_MP.NE.0) THEN
-          OUTB = OUTB + 1
-          TMPB(OUTB) = REAL(POSB_MP)
-          IF (.NOT.FOUND) THEN
-             OUTA = OUTA + 1
-             TMPA(OUTA) = REAL(IND)
-             FOUND = .TRUE.
-          END IF
-       END IF
-       IF (POSB_PM.NE.0) THEN
-          OUTB = OUTB + 1
-          TMPB(OUTB) = REAL(POSB_PM)
-          IF (.NOT.FOUND) THEN
-             OUTA = OUTA + 1
-             TMPA(OUTA) = REAL(IND)
-             FOUND = .TRUE.
-          END IF
-       END IF
-       IF (POSB_PP.NE.0) THEN
-          OUTB = OUTB + 1
-          TMPB(OUTB) = REAL(POSB_PP)
-          IF (.NOT.FOUND) THEN
-             OUTA = OUTA + 1
-             TMPA(OUTA) = REAL(IND)
-             FOUND = .TRUE.
-          END IF
-       END IF
+      FOUND = .FALSE.
+      IF (POSB.NE.0) THEN
+        OUTB = OUTB + 1
+        TMPB(OUTB) = REAL(POSB)
+        IF (.NOT.FOUND) THEN
+          OUTA = OUTA + 1
+          TMPA(OUTA) = REAL(IND)
+          FOUND = .TRUE.
+        END IF
+      END IF
+      IF (POSB_MM.NE.0) THEN
+        OUTB = OUTB + 1
+        TMPB(OUTB) = REAL(POSB_MM)
+        IF (.NOT.FOUND) THEN
+          OUTA = OUTA + 1
+          TMPA(OUTA) = REAL(IND)
+          FOUND = .TRUE.
+        END IF
+      END IF
+      IF (POSB_MP.NE.0) THEN
+        OUTB = OUTB + 1
+        TMPB(OUTB) = REAL(POSB_MP)
+        IF (.NOT.FOUND) THEN
+          OUTA = OUTA + 1
+          TMPA(OUTA) = REAL(IND)
+          FOUND = .TRUE.
+        END IF
+      END IF
+      IF (POSB_PM.NE.0) THEN
+        OUTB = OUTB + 1
+        TMPB(OUTB) = REAL(POSB_PM)
+        IF (.NOT.FOUND) THEN
+          OUTA = OUTA + 1
+          TMPA(OUTA) = REAL(IND)
+          FOUND = .TRUE.
+        END IF
+      END IF
+      IF (POSB_PP.NE.0) THEN
+        OUTB = OUTB + 1
+        TMPB(OUTB) = REAL(POSB_PP)
+        IF (.NOT.FOUND) THEN
+          OUTA = OUTA + 1
+          TMPA(OUTA) = REAL(IND)
+          FOUND = .TRUE.
+        END IF
+      END IF
 
     END DO
     !
     !/    Compact indices for wave systems in B.
     !/    Check for empty arrays first.
     IF (OUTB.GT.0) THEN
-       CALL UNIQUE(TMPB,OUTB,DUMB,OUTDUMB)
-       OUTB = OUTDUMB
+      CALL UNIQUE(TMPB,OUTB,DUMB,OUTDUMB)
+      OUTB = OUTDUMB
     END IF
     ALLOCATE(INDB(OUTB))
     IF (OUTB.GT.0) INDB(1:OUTB) = INT(DUMB(1:OUTB))
@@ -6077,11 +6077,11 @@ CONTAINS
     !/    for wave systems in A.
     ALLOCATE(INDA(OUTA))
     IF (OUTA.GT.0) THEN
-       ALLOCATE(DUMA(OUTA))
-       DUMA(:) = 0
-       CALL QSORT(TMPA(1:OUTA),DUMA(1:OUTA),1,OUTA)
-       IF (ALLOCATED(DUMA)) DEALLOCATE(DUMA)
-       INDA(1:OUTA) = INT(TMPA(1:OUTA))
+      ALLOCATE(DUMA(OUTA))
+      DUMA(:) = 0
+      CALL QSORT(TMPA(1:OUTA),DUMA(1:OUTA),1,OUTA)
+      IF (ALLOCATED(DUMA)) DEALLOCATE(DUMA)
+      INDA(1:OUTA) = INT(TMPA(1:OUTA))
     END IF
     !/
     IF (ALLOCATED(TMPA)) DEALLOCATE(TMPA)

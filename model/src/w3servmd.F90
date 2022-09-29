@@ -200,9 +200,9 @@ CONTAINS
     !
     IENT = IENT + 1
     IF (IENT.EQ.1) THEN
-       WRITE (NDSTRC,10) SNAME
+      WRITE (NDSTRC,10) SNAME
     ELSE
-       WRITE (NDSTRC,11) SNAME, IENT
+      WRITE (NDSTRC,11) SNAME, IENT
     END IF
     !
     RETURN
@@ -294,11 +294,11 @@ CONTAINS
     ! leading blanks removed and placed on the right
     TEST = ADJUSTL ( LINE )
     IF ( TEST(1:1).EQ.CHCKC .OR. LEN_TRIM(TEST).EQ.0 ) THEN
-       ! if comment or blank line, then skip
-       GOTO 100
+      ! if comment or blank line, then skip
+      GOTO 100
     ELSE
-       ! otherwise, backup to beginning of line
-       BACKSPACE ( NDSI, ERR=802, IOSTAT=IERR, IOMSG=MSG )
+      ! otherwise, backup to beginning of line
+      BACKSPACE ( NDSI, ERR=802, IOSTAT=IERR, IOMSG=MSG )
     ENDIF
     RETURN
     !
@@ -394,9 +394,9 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     DO ISEA=1, NSEA
-       IX     = MAPSF(ISEA,1)
-       IY     = MAPSF(ISEA,2)
-       XY(IX,IY) = S(ISEA)
+      IX     = MAPSF(ISEA,1)
+      IY     = MAPSF(ISEA,2)
+      XY(IX,IY) = S(ISEA)
     end do
     !/
     !/ End of W3S2XY ----------------------------------------------------- /
@@ -486,8 +486,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     IF(F.LT.EPS) THEN
-       EJ5P = 0.0
-       RETURN
+      EJ5P = 0.0
+      RETURN
     END IF
     !
     A = ALFA * 0.06175 / F**5
@@ -495,16 +495,16 @@ CONTAINS
     B = MAX(B,EXPMIN)
     !
     IF (YLN.LT.EPS) THEN
-       EJ5P = A * EXP(B)
+      EJ5P = A * EXP(B)
     ELSE
-       IF( F.LE.FP) THEN
-          SIG = SIGA
-       ELSE
-          SIG = SIGB
-       END IF
-       C = -0.5 * ((F - FP)/(SIG * FP))**2
-       C = MAX(C,EXPMIN)
-       EJ5P = A * EXP(B + EXP(C) * YLN)
+      IF( F.LE.FP) THEN
+        SIG = SIGA
+      ELSE
+        SIG = SIGB
+      END IF
+      C = -0.5 * ((F - FP)/(SIG * FP))**2
+      C = MAX(C,EXPMIN)
+      EJ5P = A * EXP(B + EXP(C) * YLN)
     END IF
     !
     RETURN
@@ -828,20 +828,20 @@ CONTAINS
     !/ Report error message
     !/
     IF (PRESENT(MSG)) THEN
-       WRITE (IUN,"(A)") PREFIX//" "//TRIM(MSG)
+      WRITE (IUN,"(A)") PREFIX//" "//TRIM(MSG)
     END IF
     !/
     !/ Report context
     !/
     IF ( PRESENT(FILE) ) THEN
-       LMSG = TRIM(LMSG)//" FILE="//TRIM(FILE)
+      LMSG = TRIM(LMSG)//" FILE="//TRIM(FILE)
     END IF
     IF ( PRESENT(LINE) ) THEN
-       WRITE (LSTR,'(I0)') LINE
-       LMSG = TRIM(LMSG)//" LINE="//TRIM(LSTR)
+      WRITE (LSTR,'(I0)') LINE
+      LMSG = TRIM(LMSG)//" LINE="//TRIM(LSTR)
     END IF
     IF ( LEN_TRIM(LMSG).GT.0 ) THEN
-       WRITE (IUN,"(A)") PREFIX//TRIM(LMSG)
+      WRITE (IUN,"(A)") PREFIX//TRIM(LMSG)
     END IF
     !/
     !/ Handle MPI exit
@@ -849,48 +849,48 @@ CONTAINS
 #ifdef W3_MPI
     CALL MPI_INITIALIZED ( RUN, IERR_MPI )
     IF ( RUN ) THEN
-       IF ( IEXIT.EQ.0 ) THEN ! non-error state
-          IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
-          CALL MPI_FINALIZE (IERR_MPI )
-       ELSE ! error state
-          WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
-          IF (PRESENT(UNIT)) THEN
-             WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
+      IF ( IEXIT.EQ.0 ) THEN ! non-error state
+        IF ( PRESENT(COMM) ) CALL MPI_BARRIER ( COMM, IERR_MPI )
+        CALL MPI_FINALIZE (IERR_MPI )
+      ELSE ! error state
+        WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
+        IF (PRESENT(UNIT)) THEN
+          WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
 #endif
-             !!/MPI          ELSE
-             !!/MPI            WRITE(*,'(A)') 'EXTCDE UNIT missing'
+          !!/MPI          ELSE
+          !!/MPI            WRITE(*,'(A)') 'EXTCDE UNIT missing'
 #ifdef W3_MPI
-          END IF
-          IF (PRESENT(MSG)) THEN
-             WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
+        END IF
+        IF (PRESENT(MSG)) THEN
+          WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
 #endif
-             !!/MPI          ELSE
-             !!/MPI            WRITE(*,'(A)') 'EXTCDE MSG missing'
+          !!/MPI          ELSE
+          !!/MPI            WRITE(*,'(A)') 'EXTCDE MSG missing'
 #ifdef W3_MPI
-          END IF
-          IF (PRESENT(FILE)) THEN
-             WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
+        END IF
+        IF (PRESENT(FILE)) THEN
+          WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
 #endif
-             !!/MPI          ELSE
-             !!/MPI            WRITE(*,'(A)') 'EXTCDE FILE missing'
+          !!/MPI          ELSE
+          !!/MPI            WRITE(*,'(A)') 'EXTCDE FILE missing'
 #ifdef W3_MPI
-          END IF
-          IF (PRESENT(LINE)) THEN
-             WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
+        END IF
+        IF (PRESENT(LINE)) THEN
+          WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
 #endif
-             !!/MPI          ELSE
-             !!/MPI            WRITE(*,'(A)') 'EXTCDE LINE missing'
+          !!/MPI          ELSE
+          !!/MPI            WRITE(*,'(A)') 'EXTCDE LINE missing'
 #ifdef W3_MPI
-          END IF
-          IF (PRESENT(COMM)) THEN
-             WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
+        END IF
+        IF (PRESENT(COMM)) THEN
+          WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
 #endif
-             !!/MPI          ELSE
-             !!/MPI            WRITE(*,'(A)') 'EXTCDE COMM missing'
+          !!/MPI          ELSE
+          !!/MPI            WRITE(*,'(A)') 'EXTCDE COMM missing'
 #ifdef W3_MPI
-          END IF
-          CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
-       END IF
+        END IF
+        CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
+      END IF
     END IF
 #endif
     !/
@@ -930,10 +930,10 @@ CONTAINS
 
     ! Check input bin numbers
     IF( (NFreq .LT. 0) .OR. (NDirc .LT. 0) )  THEN
-       PRINT*, " Invalid bin number NF or ND", NFreq, NDirc
-       RETURN
+      PRINT*, " Invalid bin number NF or ND", NFreq, NDirc
+      RETURN
     ELSE
-       Ddirc=360.0/FLOAT(NDirc)
+      Ddirc=360.0/FLOAT(NDirc)
     ENDIF
 
     ! Work out shift bin number and fraction
@@ -945,45 +945,45 @@ CONTAINS
 
     ! Shift nsft bins if >=1
     IF( ABS(nsft) .GE. 1 )  THEN
-       DO ii=1, NDirc
+      DO ii=1, NDirc
 
-          ! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
-          ! So shift nsft bins anticlockwise results in local bin number decreasing by nsft
-          jj=ii - nsft
+        ! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
+        ! So shift nsft bins anticlockwise results in local bin number decreasing by nsft
+        jj=ii - nsft
 
-          ! As nsft may be either positive or negative depends on alpha, wrapping may
-          ! happen in either ends of the bin number train
-          IF( jj > NDirc )  jj=jj - NDirc
-          IF( jj < 1     )  jj=jj + NDirc
+        ! As nsft may be either positive or negative depends on alpha, wrapping may
+        ! happen in either ends of the bin number train
+        IF( jj > NDirc )  jj=jj - NDirc
+        IF( jj < 1     )  jj=jj + NDirc
 
-          ! Copy the selected bin to the loop bin number
-          Wrkspc(:,ii)=Spectr(:,jj)
+        ! Copy the selected bin to the loop bin number
+        Wrkspc(:,ii)=Spectr(:,jj)
 
-       ENDDO
+      ENDDO
 
-       ! If nsft=0, no need to shift, simply copy
+      ! If nsft=0, no need to shift, simply copy
     ELSE
-       Wrkspc = Spectr
+      Wrkspc = Spectr
     ENDIF
 
     ! Pass fraction of wave energy in frac direction
     ! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
     ! So Positive frac or anticlock case, smaller bin upstream
     IF( frac > 0.0 ) THEN
-       Tmpfrq=Wrkspc(:,NDirc)*frac
-       DO kk=1, NDirc
-          Wrkfrq=Wrkspc(:,kk)*frac
-          Spectr(:,kk)=Wrkspc(:,kk) - Wrkfrq + Tmpfrq
-          Tmpfrq=Wrkfrq
-       ENDDO
+      Tmpfrq=Wrkspc(:,NDirc)*frac
+      DO kk=1, NDirc
+        Wrkfrq=Wrkspc(:,kk)*frac
+        Spectr(:,kk)=Wrkspc(:,kk) - Wrkfrq + Tmpfrq
+        Tmpfrq=Wrkfrq
+      ENDDO
     ELSE
-       ! Negative or clockwise case, larger bin upstream
-       Tmpfrq=Wrkspc(:,1)*frac
-       DO kk=NDirc, 1, -1
-          Wrkfrq=Wrkspc(:,kk)*frac
-          Spectr(:,kk)=Wrkspc(:,kk) + Wrkfrq - Tmpfrq
-          Tmpfrq=Wrkfrq
-       ENDDO
+      ! Negative or clockwise case, larger bin upstream
+      Tmpfrq=Wrkspc(:,1)*frac
+      DO kk=NDirc, 1, -1
+        Wrkfrq=Wrkspc(:,kk)*frac
+        Spectr(:,kk)=Wrkspc(:,kk) + Wrkfrq - Tmpfrq
+        Tmpfrq=Wrkfrq
+      ENDDO
     ENDIF
 
     ! Spectral turning completed
@@ -1019,10 +1019,10 @@ CONTAINS
 
     ! Check input bin numbers
     IF( (NFreq .LT. 0) .OR. (NDirc .LT. 0) )  THEN
-       PRINT*, " Invalid bin number NF or ND", NFreq, NDirc
-       RETURN
+      PRINT*, " Invalid bin number NF or ND", NFreq, NDirc
+      RETURN
     ELSE
-       Ddirc=360.0/FLOAT(NDirc)
+      Ddirc=360.0/FLOAT(NDirc)
     ENDIF
 
     ! Work out shift bin number and fraction
@@ -1034,45 +1034,45 @@ CONTAINS
 
     ! Shift nsft bins if >=1
     IF( ABS(nsft) .GE. 1 )  THEN
-       DO ii=1, NDirc
+      DO ii=1, NDirc
 
-          ! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
-          ! So shift nsft bins anticlockwise results in local bin number decreasing by nsft
-          jj=ii - nsft
+        ! Wave spectral direction bin number is assumed to increase Anti-clockwise from EAST
+        ! So shift nsft bins anticlockwise results in local bin number decreasing by nsft
+        jj=ii - nsft
 
-          ! As nsft may be either positive or negative depends on alpha, wrapping may
-          ! happen in either ends of the bin number train
-          IF( jj > NDirc )  jj=jj - NDirc
-          IF( jj < 1     )  jj=jj + NDirc
+        ! As nsft may be either positive or negative depends on alpha, wrapping may
+        ! happen in either ends of the bin number train
+        IF( jj > NDirc )  jj=jj - NDirc
+        IF( jj < 1     )  jj=jj + NDirc
 
-          ! Copy the selected bin to the loop bin number
-          Wrkspc(ii,:)=Spectr(jj,:)
+        ! Copy the selected bin to the loop bin number
+        Wrkspc(ii,:)=Spectr(jj,:)
 
-       ENDDO
+      ENDDO
 
-       ! If nsft=0, no need to shift, simply copy
+      ! If nsft=0, no need to shift, simply copy
     ELSE
-       Wrkspc = Spectr
+      Wrkspc = Spectr
     ENDIF
 
     ! Pass fraction of wave energy in frac direction
     ! Wave spectral direction bin number is assumed to increase anti-clockwise from EAST
     ! So positive frac or anticlock case, smaller bin upstream
     IF( frac > 0.0 ) THEN
-       Tmpfrq=Wrkspc(NDirc,:)*frac
-       DO kk=1, NDirc
-          Wrkfrq=Wrkspc(kk,:)*frac
-          Spectr(kk,:)=Wrkspc(kk,:) - Wrkfrq + Tmpfrq
-          Tmpfrq=Wrkfrq
-       ENDDO
+      Tmpfrq=Wrkspc(NDirc,:)*frac
+      DO kk=1, NDirc
+        Wrkfrq=Wrkspc(kk,:)*frac
+        Spectr(kk,:)=Wrkspc(kk,:) - Wrkfrq + Tmpfrq
+        Tmpfrq=Wrkfrq
+      ENDDO
     ELSE
-       ! Negative or clockwise case, larger bin upstream
-       Tmpfrq=Wrkspc(1,:)*frac
-       DO kk=NDirc, 1, -1
-          Wrkfrq=Wrkspc(kk,:)*frac
-          Spectr(kk,:)=Wrkspc(kk,:) + Wrkfrq - Tmpfrq
-          Tmpfrq=Wrkfrq
-       ENDDO
+      ! Negative or clockwise case, larger bin upstream
+      Tmpfrq=Wrkspc(1,:)*frac
+      DO kk=NDirc, 1, -1
+        Wrkfrq=Wrkspc(kk,:)*frac
+        Spectr(kk,:)=Wrkspc(kk,:) + Wrkfrq - Tmpfrq
+        Tmpfrq=Wrkfrq
+      ENDDO
     ENDIF
 
     ! Spectral turning completed
@@ -1148,72 +1148,72 @@ CONTAINS
     LAMBDA_ZERO=LAMBDA_POLE+180.D0
     ! Sine and cosine of latitude of eq pole
     IF (PHI_POLE >= 0.0) THEN
-       SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
-       COS_PHI_POLE =  COS(PI_OVER_180*PHI_POLE)
+      SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
+      COS_PHI_POLE =  COS(PI_OVER_180*PHI_POLE)
     ELSE
-       SIN_PHI_POLE = -SIN(PI_OVER_180*PHI_POLE)
-       COS_PHI_POLE = -COS(PI_OVER_180*PHI_POLE)
+      SIN_PHI_POLE = -SIN(PI_OVER_180*PHI_POLE)
+      COS_PHI_POLE = -COS(PI_OVER_180*PHI_POLE)
     ENDIF
 
     ! 2. Transform from standard to equatorial latitude-longitude
 
     DO I= 1, POINTS
 
-       ! Scale longitude to range -180 to +180 degs
+      ! Scale longitude to range -180 to +180 degs
 
-       A_LAMBDA=LAMBDA(I)-LAMBDA_ZERO
-       IF(A_LAMBDA.GT. 180.0) A_LAMBDA=A_LAMBDA-360.D0
-       IF(A_LAMBDA.LE.-180.0) A_LAMBDA=A_LAMBDA+360.D0
+      A_LAMBDA=LAMBDA(I)-LAMBDA_ZERO
+      IF(A_LAMBDA.GT. 180.0) A_LAMBDA=A_LAMBDA-360.D0
+      IF(A_LAMBDA.LE.-180.0) A_LAMBDA=A_LAMBDA+360.D0
 
-       ! Convert latitude & longitude to radians
+      ! Convert latitude & longitude to radians
 
-       A_LAMBDA=PI_OVER_180*A_LAMBDA
-       A_PHI=PI_OVER_180*PHI(I)
+      A_LAMBDA=PI_OVER_180*A_LAMBDA
+      A_PHI=PI_OVER_180*PHI(I)
 
-       ! Compute eq latitude using equation (4.4)
+      ! Compute eq latitude using equation (4.4)
 
-       ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
-            &    +SIN_PHI_POLE*SIN(A_PHI)
-       ARG=MIN(ARG, 1.D0)
-       ARG=MAX(ARG,-1.D0)
-       E_PHI=ASIN(ARG)
-       PHI_EQ(I)=RECIP_PI_OVER_180*E_PHI
+      ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
+           &    +SIN_PHI_POLE*SIN(A_PHI)
+      ARG=MIN(ARG, 1.D0)
+      ARG=MAX(ARG,-1.D0)
+      E_PHI=ASIN(ARG)
+      PHI_EQ(I)=RECIP_PI_OVER_180*E_PHI
 
-       ! Compute eq longitude using equation (4.6)
+      ! Compute eq longitude using equation (4.6)
 
-       TERM1 = SIN_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
-            &       +COS_PHI_POLE*SIN(A_PHI)
-       TERM2 = COS(E_PHI)
-       IF(TERM2 .LT. SMALL) THEN
-          E_LAMBDA=0.D0
-       ELSE
-          ARG=TERM1/TERM2
-          ARG=MIN(ARG, 1.D0)
-          ARG=MAX(ARG,-1.D0)
-          E_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
-          E_LAMBDA=SIGN(E_LAMBDA,A_LAMBDA)
-       ENDIF
+      TERM1 = SIN_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
+           &       +COS_PHI_POLE*SIN(A_PHI)
+      TERM2 = COS(E_PHI)
+      IF(TERM2 .LT. SMALL) THEN
+        E_LAMBDA=0.D0
+      ELSE
+        ARG=TERM1/TERM2
+        ARG=MIN(ARG, 1.D0)
+        ARG=MAX(ARG,-1.D0)
+        E_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
+        E_LAMBDA=SIGN(E_LAMBDA,A_LAMBDA)
+      ENDIF
 
-       ! Scale longitude to range 0 to 360 degs
+      ! Scale longitude to range 0 to 360 degs
 
-       IF(E_LAMBDA.GE.360.0) E_LAMBDA=E_LAMBDA-360.D0
-       IF(E_LAMBDA.LT.  0.0) E_LAMBDA=E_LAMBDA+360.D0
-       LAMBDA_EQ(I)=E_LAMBDA
+      IF(E_LAMBDA.GE.360.0) E_LAMBDA=E_LAMBDA-360.D0
+      IF(E_LAMBDA.LT.  0.0) E_LAMBDA=E_LAMBDA+360.D0
+      LAMBDA_EQ(I)=E_LAMBDA
 
-       !Li  Calculate turning angle for standard wind velocity
+      !Li  Calculate turning angle for standard wind velocity
 
-       E_LAMBDA=PI_OVER_180*LAMBDA_EQ(I)
+      E_LAMBDA=PI_OVER_180*LAMBDA_EQ(I)
 
-       ! Formulae used are from eqs (4.19) and (4.21)
+      ! Formulae used are from eqs (4.19) and (4.21)
 
-       TERM2=SIN(E_LAMBDA)
-       ARG= SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE      &
-            &    +COS(A_LAMBDA)*COS(E_LAMBDA)
-       ARG=MIN(ARG, 1.D0)
-       ARG=MAX(ARG,-1.D0)
-       TERM1=RECIP_PI_OVER_180*ACOS(ARG)
-       ANGLED(I)=SIGN(TERM1,TERM2)
-       !Li
+      TERM2=SIN(E_LAMBDA)
+      ARG= SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE      &
+           &    +COS(A_LAMBDA)*COS(E_LAMBDA)
+      ARG=MIN(ARG, 1.D0)
+      ARG=MAX(ARG,-1.D0)
+      TERM1=RECIP_PI_OVER_180*ACOS(ARG)
+      ANGLED(I)=SIGN(TERM1,TERM2)
+      !Li
 
     ENDDO
 
@@ -1289,73 +1289,73 @@ CONTAINS
     LAMBDA_ZERO=LAMBDA_POLE+180.D0
     ! Sine and cosine of latitude of eq pole
     IF (PHI_POLE >= 0.0) THEN
-       SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
-       COS_PHI_POLE =  COS(PI_OVER_180*PHI_POLE)
+      SIN_PHI_POLE =  SIN(PI_OVER_180*PHI_POLE)
+      COS_PHI_POLE =  COS(PI_OVER_180*PHI_POLE)
     ELSE
-       SIN_PHI_POLE = -SIN(PI_OVER_180*PHI_POLE)
-       COS_PHI_POLE = -COS(PI_OVER_180*PHI_POLE)
+      SIN_PHI_POLE = -SIN(PI_OVER_180*PHI_POLE)
+      COS_PHI_POLE = -COS(PI_OVER_180*PHI_POLE)
     ENDIF
 
     ! 2. Transform from equatorial to standard latitude-longitude
 
     DO I= 1, POINTS
 
-       ! Scale eq longitude to range -180 to +180 degs
+      ! Scale eq longitude to range -180 to +180 degs
 
-       E_LAMBDA=LAMBDA_EQ(I)
-       IF(E_LAMBDA.GT. 180.0) E_LAMBDA=E_LAMBDA-360.D0
-       IF(E_LAMBDA.LT.-180.0) E_LAMBDA=E_LAMBDA+360.D0
+      E_LAMBDA=LAMBDA_EQ(I)
+      IF(E_LAMBDA.GT. 180.0) E_LAMBDA=E_LAMBDA-360.D0
+      IF(E_LAMBDA.LT.-180.0) E_LAMBDA=E_LAMBDA+360.D0
 
-       ! Convert eq latitude & longitude to radians
+      ! Convert eq latitude & longitude to radians
 
-       E_LAMBDA=PI_OVER_180*E_LAMBDA
-       E_PHI=PI_OVER_180*PHI_EQ(I)
+      E_LAMBDA=PI_OVER_180*E_LAMBDA
+      E_PHI=PI_OVER_180*PHI_EQ(I)
 
-       ! Compute latitude using equation (4.7)
+      ! Compute latitude using equation (4.7)
 
-       ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA)    &
-            &   +SIN_PHI_POLE*SIN(E_PHI)
-       ARG=MIN(ARG, 1.D0)
-       ARG=MAX(ARG,-1.D0)
-       A_PHI=ASIN(ARG)
-       PHI(I)=RECIP_PI_OVER_180*A_PHI
+      ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA)    &
+           &   +SIN_PHI_POLE*SIN(E_PHI)
+      ARG=MIN(ARG, 1.D0)
+      ARG=MAX(ARG,-1.D0)
+      A_PHI=ASIN(ARG)
+      PHI(I)=RECIP_PI_OVER_180*A_PHI
 
-       ! Compute longitude using equation (4.8)
+      ! Compute longitude using equation (4.8)
 
-       TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA)   &
-            &       -SIN(E_PHI)*COS_PHI_POLE
-       TERM2 = COS(A_PHI)
-       IF(TERM2.LT.SMALL) THEN
-          A_LAMBDA=0.D0
-       ELSE
-          ARG=TERM1/TERM2
-          ARG=MIN(ARG, 1.D0)
-          ARG=MAX(ARG,-1.D0)
-          A_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
-          A_LAMBDA=SIGN(A_LAMBDA,E_LAMBDA)
-          A_LAMBDA=A_LAMBDA+LAMBDA_ZERO
-       END IF
+      TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA)   &
+           &       -SIN(E_PHI)*COS_PHI_POLE
+      TERM2 = COS(A_PHI)
+      IF(TERM2.LT.SMALL) THEN
+        A_LAMBDA=0.D0
+      ELSE
+        ARG=TERM1/TERM2
+        ARG=MIN(ARG, 1.D0)
+        ARG=MAX(ARG,-1.D0)
+        A_LAMBDA=RECIP_PI_OVER_180*ACOS(ARG)
+        A_LAMBDA=SIGN(A_LAMBDA,E_LAMBDA)
+        A_LAMBDA=A_LAMBDA+LAMBDA_ZERO
+      END IF
 
-       ! Scale longitude to range 0 to 360 degs
+      ! Scale longitude to range 0 to 360 degs
 
-       IF(A_LAMBDA.GE.360.0) A_LAMBDA=A_LAMBDA-360.D0
-       IF(A_LAMBDA.LT.  0.0) A_LAMBDA=A_LAMBDA+360.D0
-       LAMBDA(I)=A_LAMBDA
+      IF(A_LAMBDA.GE.360.0) A_LAMBDA=A_LAMBDA-360.D0
+      IF(A_LAMBDA.LT.  0.0) A_LAMBDA=A_LAMBDA+360.D0
+      LAMBDA(I)=A_LAMBDA
 
-       !Li  Calculate turning angle for standard wind velocity
+      !Li  Calculate turning angle for standard wind velocity
 
-       A_LAMBDA=PI_OVER_180*(LAMBDA(I)-LAMBDA_ZERO)
+      A_LAMBDA=PI_OVER_180*(LAMBDA(I)-LAMBDA_ZERO)
 
-       ! Formulae used are from eqs (4.19) and (4.21)
+      ! Formulae used are from eqs (4.19) and (4.21)
 
-       TERM2=SIN(E_LAMBDA)
-       ARG=SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE     &
-            &           +COS(A_LAMBDA)*COS(E_LAMBDA)
-       ARG=MIN(ARG, 1.D0)
-       ARG=MAX(ARG,-1.D0)
-       TERM1=RECIP_PI_OVER_180*ACOS(ARG)
-       ANGLED(I)=SIGN(TERM1,TERM2)
-       !Li
+      TERM2=SIN(E_LAMBDA)
+      ARG=SIN(A_LAMBDA)*TERM2*SIN_PHI_POLE     &
+           &           +COS(A_LAMBDA)*COS(E_LAMBDA)
+      ARG=MIN(ARG, 1.D0)
+      ARG=MAX(ARG,-1.D0)
+      TERM1=RECIP_PI_OVER_180*ACOS(ARG)
+      ANGLED(I)=SIGN(TERM1,TERM2)
+      !Li
 
     ENDDO
 
@@ -1404,15 +1404,15 @@ CONTAINS
     ! Apply the rotation
     !
     DO ISEA=1, NSEA
-       IF ( THETA(ISEA) .NE. UNDEF ) THEN
-          IF ( Degrees ) THEN
-             THETA(ISEA) = THETA(ISEA) - AnglD(ISEA)
-             IF ( THETA(ISEA) .LT. 0 ) THETA(ISEA) = THETA(ISEA) + 360.0
-          ELSE
-             THETA(ISEA) = THETA(ISEA) - AnglD(ISEA)*DERA
-             IF ( THETA(ISEA) .LT. 0 ) THETA(ISEA) = THETA(ISEA) + TPI
-          END IF
-       ENDIF
+      IF ( THETA(ISEA) .NE. UNDEF ) THEN
+        IF ( Degrees ) THEN
+          THETA(ISEA) = THETA(ISEA) - AnglD(ISEA)
+          IF ( THETA(ISEA) .LT. 0 ) THETA(ISEA) = THETA(ISEA) + 360.0
+        ELSE
+          THETA(ISEA) = THETA(ISEA) - AnglD(ISEA)*DERA
+          IF ( THETA(ISEA) .LT. 0 ) THETA(ISEA) = THETA(ISEA) + TPI
+        END IF
+      ENDIF
     END DO
 
     RETURN
@@ -1459,15 +1459,15 @@ CONTAINS
     ! Apply the rotation
     !
     DO ISEA=1, NSEA
-       IF (( XVEC(ISEA) .NE. UNDEF ) .AND. &
-            ( YVEC(ISEA) .NE. UNDEF )) THEN
-          XVTMP = XVEC(ISEA)*COS(AnglD(ISEA)*DERA) + &
-               YVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
-          YVTMP = YVEC(ISEA)*COS(AnglD(ISEA)*DERA) - &
-               XVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
-          XVEC(ISEA) = XVTMP
-          YVEC(ISEA) = YVTMP
-       END IF
+      IF (( XVEC(ISEA) .NE. UNDEF ) .AND. &
+           ( YVEC(ISEA) .NE. UNDEF )) THEN
+        XVTMP = XVEC(ISEA)*COS(AnglD(ISEA)*DERA) + &
+             YVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
+        YVTMP = YVEC(ISEA)*COS(AnglD(ISEA)*DERA) - &
+             XVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
+        XVEC(ISEA) = XVTMP
+        YVEC(ISEA) = YVTMP
+      END IF
     END DO
 
     RETURN
@@ -1520,8 +1520,8 @@ CONTAINS
 
     ! counts the number of substrings
     DO WHILE ((INDEX(tmp_str,' ').NE.0) .AND. (len_trim(tmp_str).NE.0))
-       tmp_str=ADJUSTL(tmp_str(INDEX(tmp_str,' ')+1:))
-       cnt=cnt+1
+      tmp_str=ADJUSTL(tmp_str(INDEX(tmp_str,' ')+1:))
+      cnt=cnt+1
     ENDDO
     !
     ! reinitializes arrays
@@ -1529,8 +1529,8 @@ CONTAINS
     tmp_str=ori_str
     ! loops on each substring
     DO I=1,cnt
-       TAB(I)=tmp_str(:INDEX(tmp_str,' '))
-       tmp_str=ADJUSTL(tmp_str(INDEX(tmp_str,' ')+1:))
+      TAB(I)=tmp_str(:INDEX(tmp_str,' '))
+      tmp_str=ADJUSTL(tmp_str(INDEX(tmp_str,' ')+1:))
     END DO
 
     RETURN
@@ -1546,10 +1546,10 @@ CONTAINS
     integer :: i
 
     DO i = 1, len(str)
-       select case(str(i:i))
-       case("a":"z")
-          str(i:i) = achar(iachar(str(i:i))-32)
-       end select
+      select case(str(i:i))
+      case("a":"z")
+        str(i:i) = achar(iachar(str(i:i))-32)
+      end select
     END DO
     !/ End of STR_TO_UPPER
     !/ ------------------------------------------------------------------- /
@@ -1622,22 +1622,22 @@ CONTAINS
     !***FIRST EXECUTABLE STATEMENT  SSORT
     NN = N
     IF (NN .LT. 1) THEN
-       WRITE (*,*) 'The number of values to be sorted is not positive.'
-       RETURN
+      WRITE (*,*) 'The number of values to be sorted is not positive.'
+      RETURN
     ENDIF
     !
     KK = ABS(KFLAG)
     IF (KK.NE.1 .AND. KK.NE.2) THEN
-       WRITE (*,*) 'The sort control parameter, K, is not 2, 1, -1, or -2.'
-       RETURN
+      WRITE (*,*) 'The sort control parameter, K, is not 2, 1, -1, or -2.'
+      RETURN
     ENDIF
     !
     !     Alter array X to get decreasing order if needed
     !
     IF (KFLAG .LE. -1) THEN
-       DO  I=1,NN
-          X(I) = -X(I)
-       end do
+      DO  I=1,NN
+        X(I) = -X(I)
+      end do
     ENDIF
     !
     IF (KK .EQ. 2) GO TO 100
@@ -1651,9 +1651,9 @@ CONTAINS
     !
 20  IF (I .EQ. J) GO TO 60
     IF (R .LE. 0.5898437E0) THEN
-       R = R+3.90625E-2
+      R = R+3.90625E-2
     ELSE
-       R = R-0.21875E0
+      R = R-0.21875E0
     ENDIF
     !
 30  K = I
@@ -1666,26 +1666,26 @@ CONTAINS
     !     If first element of array is greater than T, interchange with T
     !
     IF (X(I) .GT. T) THEN
-       X(IJ) = X(I)
-       X(I) = T
-       T = X(IJ)
+      X(IJ) = X(I)
+      X(I) = T
+      T = X(IJ)
     ENDIF
     L = J
     !
     !     If last element of array is less than than T, interchange with T
     !
     IF (X(J) .LT. T) THEN
-       X(IJ) = X(J)
-       X(J) = T
-       T = X(IJ)
-       !
-       !        If first element of array is greater than T, interchange with T
-       !
-       IF (X(I) .GT. T) THEN
-          X(IJ) = X(I)
-          X(I) = T
-          T = X(IJ)
-       ENDIF
+      X(IJ) = X(J)
+      X(J) = T
+      T = X(IJ)
+      !
+      !        If first element of array is greater than T, interchange with T
+      !
+      IF (X(I) .GT. T) THEN
+        X(IJ) = X(I)
+        X(I) = T
+        T = X(IJ)
+      ENDIF
     ENDIF
     !
     !     Find an element in the second half of the array which is smaller
@@ -1703,24 +1703,24 @@ CONTAINS
     !     Interchange these elements
     !
     IF (K .LE. L) THEN
-       TT = X(L)
-       X(L) = X(K)
-       X(K) = TT
-       GO TO 40
+      TT = X(L)
+      X(L) = X(K)
+      X(K) = TT
+      GO TO 40
     ENDIF
     !
     !     Save upper and lower subscripts of the array yet to be sorted
     !
     IF (L-I .GT. J-K) THEN
-       IL(M) = I
-       IU(M) = L
-       I = K
-       M = M+1
+      IL(M) = I
+      IU(M) = L
+      I = K
+      M = M+1
     ELSE
-       IL(M) = K
-       IU(M) = J
-       J = L
-       M = M+1
+      IL(M) = K
+      IU(M) = J
+      J = L
+      M = M+1
     ENDIF
     GO TO 70
     !
@@ -1756,9 +1756,9 @@ CONTAINS
     !
 110 IF (I .EQ. J) GO TO 150
     IF (R .LE. 0.5898437E0) THEN
-       R = R+3.90625E-2
+      R = R+3.90625E-2
     ELSE
-       R = R-0.21875E0
+      R = R-0.21875E0
     ENDIF
     !
 120 K = I
@@ -1772,35 +1772,35 @@ CONTAINS
     !     If first element of array is greater than T, interchange with T
     !
     IF (X(I) .GT. T) THEN
-       X(IJ) = X(I)
-       X(I) = T
-       T = X(IJ)
-       Y(IJ) = Y(I)
-       Y(I) = TY
-       TY = Y(IJ)
+      X(IJ) = X(I)
+      X(I) = T
+      T = X(IJ)
+      Y(IJ) = Y(I)
+      Y(I) = TY
+      TY = Y(IJ)
     ENDIF
     L = J
     !
     !     If last element of array is less than T, interchange with T
     !
     IF (X(J) .LT. T) THEN
-       X(IJ) = X(J)
-       X(J) = T
-       T = X(IJ)
-       Y(IJ) = Y(J)
-       Y(J) = TY
-       TY = Y(IJ)
-       !
-       !        If first element of array is greater than T, interchange with T
-       !
-       IF (X(I) .GT. T) THEN
-          X(IJ) = X(I)
-          X(I) = T
-          T = X(IJ)
-          Y(IJ) = Y(I)
-          Y(I) = TY
-          TY = Y(IJ)
-       ENDIF
+      X(IJ) = X(J)
+      X(J) = T
+      T = X(IJ)
+      Y(IJ) = Y(J)
+      Y(J) = TY
+      TY = Y(IJ)
+      !
+      !        If first element of array is greater than T, interchange with T
+      !
+      IF (X(I) .GT. T) THEN
+        X(IJ) = X(I)
+        X(I) = T
+        T = X(IJ)
+        Y(IJ) = Y(I)
+        Y(I) = TY
+        TY = Y(IJ)
+      ENDIF
     ENDIF
     !
     !     Find an element in the second half of the array which is smaller
@@ -1818,27 +1818,27 @@ CONTAINS
     !     Interchange these elements
     !
     IF (K .LE. L) THEN
-       TT = X(L)
-       X(L) = X(K)
-       X(K) = TT
-       TTY = Y(L)
-       Y(L) = Y(K)
-       Y(K) = TTY
-       GO TO 130
+      TT = X(L)
+      X(L) = X(K)
+      X(K) = TT
+      TTY = Y(L)
+      Y(L) = Y(K)
+      Y(K) = TTY
+      GO TO 130
     ENDIF
     !
     !     Save upper and lower subscripts of the array yet to be sorted
     !
     IF (L-I .GT. J-K) THEN
-       IL(M) = I
-       IU(M) = L
-       I = K
-       M = M+1
+      IL(M) = I
+      IU(M) = L
+      I = K
+      M = M+1
     ELSE
-       IL(M) = K
-       IU(M) = J
-       J = L
-       M = M+1
+      IL(M) = K
+      IU(M) = J
+      J = L
+      M = M+1
     ENDIF
     GO TO 160
     !
@@ -1871,9 +1871,9 @@ CONTAINS
     !     Clean up
     !
 190 IF (KFLAG .LE. -1) THEN
-       DO  I=1,NN
-          X(I) = -X(I)
-       end do
+      DO  I=1,NN
+        X(I) = -X(I)
+      end do
     ENDIF
     RETURN
   END SUBROUTINE SSORT1
@@ -1900,57 +1900,57 @@ CONTAINS
     v(:,:)=0.
     upper_triangle(:,:)=.FALSE.
     DO I=1,n
-       v(I,I)=1.
-       b(I)=a(I,I)
-       DO J=I+1,n
-          upper_triangle(I,J)=.TRUE.
-       ENDDO
+      v(I,I)=1.
+      b(I)=a(I,I)
+      DO J=I+1,n
+        upper_triangle(I,J)=.TRUE.
+      ENDDO
     ENDDO
     d(:)=b(:)
     z(:)=0.0
     nrot=0
     DO I=1,50
-       sm=SUM(ABS(a),mask=upper_triangle)
-       IF (sm.EQ.0.0) RETURN
-       tresh=merge(0.2*sm/n**2,0.0D0,i<4)
-       DO ip=1,n-1
-          do iq=ip+1,n
-             g=100.0*abs(a(ip,iq))
-             IF((i > 4).AND.(ABS(d(ip))+g.EQ.abs(d(ip))) &
-                  .AND.(ABS(d(iq))+g.EQ.abs(d(iq)))) THEN
-                a(ip,iq)=0.0
-             ELSE IF (abs(a(ip,iq)) > tresh) THEN
-                h=d(iq)-d(ip)
-                if (abs(h)+g == abs(h)) THEN
-                   t=a(ip,iq)/h
-                ELSE
-                   theta=0.5*h/a(ip,iq)
-                   t=1.0/(abs(theta)+sqrt(1.0+theta**2))
-                   IF ( theta < 0.0) t=-t
-                ENDIF
-                c=1.0/sqrt(1+t**2)
-                s=t*c
-                tau=s/(1.0+c)
-                h=t*a(ip,iq)
-                z(ip)=z(ip)-h
-                z(iq)=z(iq)+h
-                d(ip)=d(ip)-h
-                d(iq)=d(iq)+h
-                a(ip,iq)=0.0
-                IF (ip.GE.1) CALL ROTATE(a(1:ip-1,ip),a(1:ip-1,iq))
-                !The IF test was added by F.A. (2005/04/04) because of the following error:
-                !Subscript out of range. Location: line 593 column 36 of 'cb_botsc.f90'
-                !Subscript number 1 has value 0 in array 'A'
-                CALL ROTATE(a(ip,ip+1:iq-1),a(ip+1:iq-1,iq))
-                CALL ROTATE(a(ip,iq+1:n),a(iq,iq+1:n))
-                CALL ROTATE(v(:,ip),v(:,iq))
-                nrot=nrot+1
-             ENDIF
-          ENDDO
-       ENDDO
-       b(:)=b(:)+z(:)
-       d(:)=b(:)
-       z(:)=0.0
+      sm=SUM(ABS(a),mask=upper_triangle)
+      IF (sm.EQ.0.0) RETURN
+      tresh=merge(0.2*sm/n**2,0.0D0,i<4)
+      DO ip=1,n-1
+        do iq=ip+1,n
+          g=100.0*abs(a(ip,iq))
+          IF((i > 4).AND.(ABS(d(ip))+g.EQ.abs(d(ip))) &
+               .AND.(ABS(d(iq))+g.EQ.abs(d(iq)))) THEN
+            a(ip,iq)=0.0
+          ELSE IF (abs(a(ip,iq)) > tresh) THEN
+            h=d(iq)-d(ip)
+            if (abs(h)+g == abs(h)) THEN
+              t=a(ip,iq)/h
+            ELSE
+              theta=0.5*h/a(ip,iq)
+              t=1.0/(abs(theta)+sqrt(1.0+theta**2))
+              IF ( theta < 0.0) t=-t
+            ENDIF
+            c=1.0/sqrt(1+t**2)
+            s=t*c
+            tau=s/(1.0+c)
+            h=t*a(ip,iq)
+            z(ip)=z(ip)-h
+            z(iq)=z(iq)+h
+            d(ip)=d(ip)-h
+            d(iq)=d(iq)+h
+            a(ip,iq)=0.0
+            IF (ip.GE.1) CALL ROTATE(a(1:ip-1,ip),a(1:ip-1,iq))
+            !The IF test was added by F.A. (2005/04/04) because of the following error:
+            !Subscript out of range. Location: line 593 column 36 of 'cb_botsc.f90'
+            !Subscript number 1 has value 0 in array 'A'
+            CALL ROTATE(a(ip,ip+1:iq-1),a(ip+1:iq-1,iq))
+            CALL ROTATE(a(ip,iq+1:n),a(iq,iq+1:n))
+            CALL ROTATE(v(:,ip),v(:,iq))
+            nrot=nrot+1
+          ENDIF
+        ENDDO
+      ENDDO
+      b(:)=b(:)+z(:)
+      d(:)=b(:)
+      z(:)=0.0
     ENDDO
     WRITE(6,*) 'Too many iterations in DIAGONALIZE'
   CONTAINS
@@ -2028,40 +2028,40 @@ CONTAINS
 
     SELECT CASE (CONV)
     CASE('N')
-       OFFSET = 630.
-       SGN = -1.
+      OFFSET = 630.
+      SGN = -1.
     CASE('O')
-       OFFSET = 450.
-       SGN = -1.
+      OFFSET = 450.
+      SGN = -1.
     CASE('C')
-       OFFSET = 360.
-       SGN = 1.
+      OFFSET = 360.
+      SGN = 1.
     CASE DEFAULT
-       WRITE(*,*) "UV_TO_MAG_DIR: UNKNOWN DIR CONVENTION: ", DIRCONV
-       CALL EXTCDE(1)
+      WRITE(*,*) "UV_TO_MAG_DIR: UNKNOWN DIR CONVENTION: ", DIRCONV
+      CALL EXTCDE(1)
     END SELECT
 
     IF(INPLACE) THEN
-       DO ISEA=1, NSEA
-          TMP = SQRT(U(ISEA)**2 + V(ISEA)**2)
-          IF(TMP .GE. TOL) THEN
-             V(ISEA) = MOD(OFFSET + (SGN * RADE * ATAN2(V(ISEA), U(ISEA))), 360.)
-             U(ISEA) = TMP
-          ELSE
-             U(ISEA) = UNDEF
-             V(ISEA) = UNDEF
-          END IF
-       END DO
+      DO ISEA=1, NSEA
+        TMP = SQRT(U(ISEA)**2 + V(ISEA)**2)
+        IF(TMP .GE. TOL) THEN
+          V(ISEA) = MOD(OFFSET + (SGN * RADE * ATAN2(V(ISEA), U(ISEA))), 360.)
+          U(ISEA) = TMP
+        ELSE
+          U(ISEA) = UNDEF
+          V(ISEA) = UNDEF
+        END IF
+      END DO
     ELSE
-       DO ISEA=1, NSEA
-          MAG(ISEA) = SQRT(U(ISEA)**2 + V(ISEA)**2)
-          IF(MAG(ISEA) .GE. TOL) THEN
-             DIR(ISEA) = MOD(OFFSET + (SGN * RADE * ATAN2(V(ISEA), U(ISEA))), 360.)
-          ELSE
-             MAG(ISEA) = UNDEF
-             DIR(ISEA) = UNDEF
-          END IF
-       END DO
+      DO ISEA=1, NSEA
+        MAG(ISEA) = SQRT(U(ISEA)**2 + V(ISEA)**2)
+        IF(MAG(ISEA) .GE. TOL) THEN
+          DIR(ISEA) = MOD(OFFSET + (SGN * RADE * ATAN2(V(ISEA), U(ISEA))), 360.)
+        ELSE
+          MAG(ISEA) = UNDEF
+          DIR(ISEA) = UNDEF
+        END IF
+      END DO
     ENDIF
 
   END SUBROUTINE UV_TO_MAG_DIR

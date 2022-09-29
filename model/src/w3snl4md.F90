@@ -374,8 +374,8 @@ CONTAINS
     !!    Note; It's important to look for an available unused number
     io_unit   = 60
     do while (unavail)
-       io_unit = io_unit + 1
-       INQUIRE ( io_unit, opened=unavail )
+      io_unit = io_unit + 1
+      INQUIRE ( io_unit, opened=unavail )
     enddo
     !prt  print *, 'io_unit = ', io_unit
     !!    ==================================================================
@@ -384,156 +384,156 @@ CONTAINS
     !!
     !!
     IF ( file_exists ) THEN
-       !!
-       !!-3    File exists open it and read it
-       !!
+      !!
+      !!-3    File exists open it and read it
+      !!
 #ifdef W3_MPI
-       if ( improc .eq. nmpscr ) then
+      if ( improc .eq. nmpscr ) then
 #endif
-          write ( ndso, 900 ) grdfname
+        write ( ndso, 900 ) grdfname
 #ifdef W3_MPI
-       end if
+      end if
 #endif
-       !!
-       open (UNIT=io_unit, FILE=grdfname, STATUS='old',              &
-            ACCESS='sequential', ACTION='read', form='unformatted', convert=file_endian)
-       read (io_unit)  kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
-            wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
-            tfac2_tbl, tfac4_tbl, grad_tbl,               &
-            pha_tbl,   dep_tbl
-       close (io_unit)
-       !!      ----------------------------------------------------------------
-       !!
+      !!
+      open (UNIT=io_unit, FILE=grdfname, STATUS='old',              &
+           ACCESS='sequential', ACTION='read', form='unformatted', convert=file_endian)
+      read (io_unit)  kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
+           wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
+           tfac2_tbl, tfac4_tbl, grad_tbl,               &
+           pha_tbl,   dep_tbl
+      close (io_unit)
+      !!      ----------------------------------------------------------------
+      !!
     ELSE      !* ELSE IF ( file_exists )
-       !!
-       !!
-       !!-4    File does not exist, create it here
-       !!
+      !!
+      !!
+      !!-4    File does not exist, create it here
+      !!
 #ifdef W3_MPI
-       if ( improc .eq. nmpscr ) then
+      if ( improc .eq. nmpscr ) then
 #endif
-          write ( ndso, 901 ) grdfname
+        write ( ndso, 901 ) grdfname
 #ifdef W3_MPI
-       end if
+      end if
 #endif
-       !!      ----------------------------------------------------------------
-       !!
-       !!-4a   Define Look-up tables depth array 'dep_tbl(ndep)' for ndep=37
-       !!      with depths are +ve values
-       !!      ----------------------------------------------------------------
-       dep_tbl(1:ndep) =                                             &
-            (/  2.,  4.,  6.,  8., 10., 12., 14., 16., 18., 20.,   &
-            25., 30., 35., 40., 45., 50., 55., 60., 65., 70.,   &
-            80., 90.,100.,110.,120.,130.,140.,150.,160.,170.,   &
-            220.,270.,320.,370.,420.,470.,520.  /)
-       !prt    print *, ' ndep = ', ndep
-       !prt    print *, ' dep_tbl(1:ndep) = ', dep_tbl
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       do nd = 1,ndep
-          !!
-          !!
-          !!-4b     For given new depth dep2 = dep_tbl(nd) calculate
-          !!        a new array wka2(:) & new cgnrng corresp. to this depth
-          dep2 = dep_tbl(nd)
-          do irng=1,nrng
-             wka2(irng) = wkfnc(frqa(irng),dep2)
-          end do
-          cvel    = oma(nrng)/wka2(nrng)         !* Phase Vel. at (nrng,nd)
-          cgnrng  = cgfnc(frqa(nrng),dep2,cvel)  !* Group Vel. at (nrng,nd)
-          !!        --------------------------------------------------------------
-          !!        ==============================================================
-          !!
-          !!
-          !!-4c     Call gridsetr for this depth at nd
-          !!        --------------------------------------------------------------
-          !!        -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-          call gridsetr ( dep2, wka2, cgnrng )
-          !!        -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-          !!        it returns: 11 gridsetr arrays which are declared PUBLIC
-          !!                    kref2,kref4, jref2,jref4, wtk2,wtk4, wta2,wta4,
-          !!                    tfac2,tfac4  and   grad   all dim=(npts,nang,nzz)
-          !!        -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-          !!        --------------------------------------------------------------
-          !!        ==============================================================
-          !!
-          !!-4d     Store in Look-up tables arrays at depth bin # 'nd'
-          kref2_tbl(:,:,:,nd) = kref2(:,:,:)
-          kref4_tbl(:,:,:,nd) = kref4(:,:,:)
-          jref2_tbl(:,:,:,nd) = jref2(:,:,:)
-          jref4_tbl(:,:,:,nd) = jref4(:,:,:)
-          wtk2_tbl(:,:,:,nd)  = wtk2(:,:,:)
-          wtk4_tbl(:,:,:,nd)  = wtk4(:,:,:)
-          wta2_tbl(:,:,:,nd)  = wta2(:,:,:)
-          wta4_tbl(:,:,:,nd)  = wta4(:,:,:)
-          tfac2_tbl(:,:,:,nd) = tfac2(:,:,:)
-          tfac4_tbl(:,:,:,nd) = tfac4(:,:,:)
-          grad_tbl(:,:,:,nd)  = grad(:,:,:)
-          !!        --------------------------------------------------------------
-          !!        ==============================================================
-          !!
-          !!
-          !!-4e     Calculate pha2(:) at nd depth and store it in pha_tbl(:,:)
-          !!        pha2()=k*dk*dtheta, the base area at a grid intersection
-          !!        for use in integration of 2-D Density functions.
-          !!        --------------------------------------------------------------
-          !!        Below: variable dwka = dk centered at ring 1 (between 0 & 2)
-          !!        and computed    pha2(1) = k*dk*dtheta at ring 1
-          !!        with wkfnc(frqa(1)/dfrq,dep2) is like wka2(0)
-          !!        --assuming frqa(1)/dfrq is like frqa(0)
-          dwka    = ( wka2(2) - wkfnc(frqa(1)/dfrq,dep2) ) / 2.
-          pha2(1) = wka2(1)*dwka*ainc
-          !!
-          do irng=2,nrng-1
-             !!          Below: variable dwka = dk centered at irng (between irng-1 & irng+1)
-             !!          and computed    pha2(irng) = k*dk*dtheta at irng
-             dwka       = ( wka2(irng+1) - wka2(irng-1) ) / 2.
-             pha2(irng) = wka2(irng)*dwka*ainc
-          end do
-          !!
-          !!        Below: variable dwka = dk centered at nrng (between nrng-1 & nrng+1)
-          !!        and computed    pha2(nrng) = k*dk*dtheta at nrng
-          !!        with wkfnc(dfrq*frqa(nrng),dep2) is like wka2(nrng+1)
-          !!        --assuming dfrq*frqa(nrng) is like frqa(nrng+1)
-          dwka       = ( wkfnc(dfrq*frqa(nrng),dep2) - wka2(nrng-1) ) / 2.
-          pha2(nrng) = wka2(nrng)*dwka*ainc
-          !!        --------------------------------------------------------------
-          !!        ==============================================================
-          !!
-          !!
-          !!-4f     Store pha2(:) at nd in  pha_tbl(:,nd) to be added to Look-up tables
-          pha_tbl(1:nrng, nd) = pha2(1:nrng)
-          !!        --------------------------------------------------------------
-          !!        ==============================================================
-          !!
-          !!
-       end do ! nd = 1,ndep
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-5    Ounce the Look-up tables arrays are full write it out to 'io_unit'
-       !!
+      !!      ----------------------------------------------------------------
+      !!
+      !!-4a   Define Look-up tables depth array 'dep_tbl(ndep)' for ndep=37
+      !!      with depths are +ve values
+      !!      ----------------------------------------------------------------
+      dep_tbl(1:ndep) =                                             &
+           (/  2.,  4.,  6.,  8., 10., 12., 14., 16., 18., 20.,   &
+           25., 30., 35., 40., 45., 50., 55., 60., 65., 70.,   &
+           80., 90.,100.,110.,120.,130.,140.,150.,160.,170.,   &
+           220.,270.,320.,370.,420.,470.,520.  /)
+      !prt    print *, ' ndep = ', ndep
+      !prt    print *, ' dep_tbl(1:ndep) = ', dep_tbl
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      do nd = 1,ndep
+        !!
+        !!
+        !!-4b     For given new depth dep2 = dep_tbl(nd) calculate
+        !!        a new array wka2(:) & new cgnrng corresp. to this depth
+        dep2 = dep_tbl(nd)
+        do irng=1,nrng
+          wka2(irng) = wkfnc(frqa(irng),dep2)
+        end do
+        cvel    = oma(nrng)/wka2(nrng)         !* Phase Vel. at (nrng,nd)
+        cgnrng  = cgfnc(frqa(nrng),dep2,cvel)  !* Group Vel. at (nrng,nd)
+        !!        --------------------------------------------------------------
+        !!        ==============================================================
+        !!
+        !!
+        !!-4c     Call gridsetr for this depth at nd
+        !!        --------------------------------------------------------------
+        !!        -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        call gridsetr ( dep2, wka2, cgnrng )
+        !!        -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        !!        it returns: 11 gridsetr arrays which are declared PUBLIC
+        !!                    kref2,kref4, jref2,jref4, wtk2,wtk4, wta2,wta4,
+        !!                    tfac2,tfac4  and   grad   all dim=(npts,nang,nzz)
+        !!        -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        !!        --------------------------------------------------------------
+        !!        ==============================================================
+        !!
+        !!-4d     Store in Look-up tables arrays at depth bin # 'nd'
+        kref2_tbl(:,:,:,nd) = kref2(:,:,:)
+        kref4_tbl(:,:,:,nd) = kref4(:,:,:)
+        jref2_tbl(:,:,:,nd) = jref2(:,:,:)
+        jref4_tbl(:,:,:,nd) = jref4(:,:,:)
+        wtk2_tbl(:,:,:,nd)  = wtk2(:,:,:)
+        wtk4_tbl(:,:,:,nd)  = wtk4(:,:,:)
+        wta2_tbl(:,:,:,nd)  = wta2(:,:,:)
+        wta4_tbl(:,:,:,nd)  = wta4(:,:,:)
+        tfac2_tbl(:,:,:,nd) = tfac2(:,:,:)
+        tfac4_tbl(:,:,:,nd) = tfac4(:,:,:)
+        grad_tbl(:,:,:,nd)  = grad(:,:,:)
+        !!        --------------------------------------------------------------
+        !!        ==============================================================
+        !!
+        !!
+        !!-4e     Calculate pha2(:) at nd depth and store it in pha_tbl(:,:)
+        !!        pha2()=k*dk*dtheta, the base area at a grid intersection
+        !!        for use in integration of 2-D Density functions.
+        !!        --------------------------------------------------------------
+        !!        Below: variable dwka = dk centered at ring 1 (between 0 & 2)
+        !!        and computed    pha2(1) = k*dk*dtheta at ring 1
+        !!        with wkfnc(frqa(1)/dfrq,dep2) is like wka2(0)
+        !!        --assuming frqa(1)/dfrq is like frqa(0)
+        dwka    = ( wka2(2) - wkfnc(frqa(1)/dfrq,dep2) ) / 2.
+        pha2(1) = wka2(1)*dwka*ainc
+        !!
+        do irng=2,nrng-1
+          !!          Below: variable dwka = dk centered at irng (between irng-1 & irng+1)
+          !!          and computed    pha2(irng) = k*dk*dtheta at irng
+          dwka       = ( wka2(irng+1) - wka2(irng-1) ) / 2.
+          pha2(irng) = wka2(irng)*dwka*ainc
+        end do
+        !!
+        !!        Below: variable dwka = dk centered at nrng (between nrng-1 & nrng+1)
+        !!        and computed    pha2(nrng) = k*dk*dtheta at nrng
+        !!        with wkfnc(dfrq*frqa(nrng),dep2) is like wka2(nrng+1)
+        !!        --assuming dfrq*frqa(nrng) is like frqa(nrng+1)
+        dwka       = ( wkfnc(dfrq*frqa(nrng),dep2) - wka2(nrng-1) ) / 2.
+        pha2(nrng) = wka2(nrng)*dwka*ainc
+        !!        --------------------------------------------------------------
+        !!        ==============================================================
+        !!
+        !!
+        !!-4f     Store pha2(:) at nd in  pha_tbl(:,nd) to be added to Look-up tables
+        pha_tbl(1:nrng, nd) = pha2(1:nrng)
+        !!        --------------------------------------------------------------
+        !!        ==============================================================
+        !!
+        !!
+      end do ! nd = 1,ndep
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-5    Ounce the Look-up tables arrays are full write it out to 'io_unit'
+      !!
 #ifdef W3_MPI
-       if ( improc .eq. nmpscr ) then
+      if ( improc .eq. nmpscr ) then
 #endif
-          write( ndso,902 )
-          open (UNIT=io_unit, FILE=grdfname, STATUS='new',              &
-               ACCESS='sequential', ACTION='write', form='unformatted', convert=file_endian)
-          write (io_unit) kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
-               wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
-               tfac2_tbl, tfac4_tbl, grad_tbl,               &
-               pha_tbl,   dep_tbl
-          close (io_unit)
-          write( ndso,903 ) grdfname
+        write( ndso,902 )
+        open (UNIT=io_unit, FILE=grdfname, STATUS='new',              &
+             ACCESS='sequential', ACTION='write', form='unformatted', convert=file_endian)
+        write (io_unit) kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,   &
+             wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,    &
+             tfac2_tbl, tfac4_tbl, grad_tbl,               &
+             pha_tbl,   dep_tbl
+        close (io_unit)
+        write( ndso,903 ) grdfname
 #ifdef W3_MPI
-       end if
+      end if
 #endif
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
     ENDIF     !* End  IF ( file_exists )
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -809,229 +809,229 @@ CONTAINS
     !!
     !!
     IF ( FIRST_TSA ) THEN
-       !!
-       !!
-       !!-0    Set parameters & constants
-       !!      ---------------------------
-       nrng  = NK                     !* nrng = NK  must be odd   <---
-       nzz   = (NK * (NK+1)) / 2      !* linear irng, krng
-       nang  = NTH                    !* nang = NTH must be even  <---
-       na2p1 = nang/2 + 1             !* mid-angle or angle opposite to 1
-       np2p1 = npts/2 + 1             !* mid-index of locus array
-       twopi = TPI                    !* twopi = 8.*atan(1.)
-       !* get it from WW3 TPI
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-1    Allocate freq & angle related array declared as PUBLIC
-       if ( allocated (frqa) )    deallocate (frqa)
-       if ( allocated (oma) )     deallocate (oma)
-       if ( allocated (angl) )    deallocate (angl)
-       if ( allocated (sinan) )   deallocate (sinan)
-       if ( allocated (cosan) )   deallocate (cosan)
-       if ( allocated (dep_tbl) ) deallocate (dep_tbl)
-       allocate(frqa(nrng))
-       allocate(oma(nrng))
-       allocate(angl(nang))
-       allocate(sinan(nang))
-       allocate(cosan(nang))
-       allocate(dep_tbl(ndep))
-       !!      ----------------------------------------------------------------
-       !!
-       !!-1a   Initialize frequency arrays and related parameters
-       !!      --------------------------------------------------
-       oma(:)   = SIG(1:NK)           !* get it from WW3 SIG(1:NK)
-       frqa(:)  = oma(:) / twopi
-       f0       = frqa(1)
-       dfrq     = XFR                 !* WW3 freq mult. for log freq
-       !* get it from WW3 XFR
-       !!      ----------------------------------------------------------------
-       !!
-       !!-1b   Initialize direction arrays and related parameters
-       !!      --------------------------------------------------
-       angl(:)  = TH(1:NTH)           !* get it from WW3 TH(1:NTH)
-       cosan(:) = ECOS(1:NTH)         !* get it from WW3 ECOS(1:NTH)
-       sinan(:) = ESIN(1:NTH)         !* get it from WW3 ESIN(1:NTH)
-       ainc     = DTH                 !* WW3 angle increment (radians)
-       !* get it from WW3 DTH
-       !!      ----------------------------------------------------------------
-       !!
-       !!-1c   Define kzone & nb2fp
-       !!kz
-       !!      kzone = zone of freq influence, function of dfrq
-       !!      for different values of x = 2,3,4 & 5
-       !!      So,    kzone(x) = INT( alog(x)/alog(dfrq) )
-       !!      +--------+----------+----------+----------+----------+
-       !!      | dfrq   | kzone(2) | kzone(3) | kzone(4) | kzone(5) |
-       !!      +--------+----------+----------+----------+----------+
-       !!      | 1.05   |    14    |    22    |    28    |    33    |
-       !!      +--------+----------+----------+----------+----------+
-       !!      | 1.07   |    10    |    16    |    20    |    24    |
-       !!      +--------+----------+----------+----------+----------+
-       !!      | 1.10   |     7    |    11    |    14    |    17    |
-       !!      +--------+----------+----------+----------+----------+
-       kzone = INT( alog(2.0)/alog(dfrq) )  !* Bash; faster without loss of accuracy
-       !kz     kzone = INT( alog(3.0)/alog(dfrq) )  !* as in gridsetr & snlr_'s
-       !kz     kzone = INT( alog(4.0)/alog(dfrq) )  !* as in gridsetr & snlr_'s
-       !kz     kzone = INT( alog(5.0)/alog(dfrq) )  !* as in gridsetr & snlr_'s
-       !!kz---
-       !!
-       !!op2
-       !!      nb2fp = # of bins over fp (not incl. fp) - this depends on dfrq
-       !!              so that (dfrq**nb2fp)*fp ~ 2.*fp  (like kzone(2))
-       !!              used in 1 bin equi. range
-       nb2fp = INT( alog(2.0)/alog(dfrq) )  !* for equi. range near 2*fp
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - !!op2
-       !!      ================================================================
-       !!
-       !!
-       !!-2    Allocate gridsetr 11 look-up tables arrays
-       !!      plus     pha_tbl array dim=(nrng,ndep) declared as PUBLIC
-       if ( allocated (kref2_tbl) ) deallocate (kref2_tbl)
-       if ( allocated (kref4_tbl) ) deallocate (kref4_tbl)
-       allocate(kref2_tbl(npts,nang,nzz,ndep))
-       allocate(kref4_tbl(npts,nang,nzz,ndep))
-       !!
-       if ( allocated (jref2_tbl) ) deallocate (jref2_tbl)
-       if ( allocated (jref4_tbl) ) deallocate (jref4_tbl)
-       allocate(jref2_tbl(npts,nang,nzz,ndep))
-       allocate(jref4_tbl(npts,nang,nzz,ndep))
-       !!
-       if ( allocated (wtk2_tbl) ) deallocate (wtk2_tbl)
-       if ( allocated (wtk4_tbl) ) deallocate (wtk4_tbl)
-       allocate(wtk2_tbl(npts,nang,nzz,ndep))
-       allocate(wtk4_tbl(npts,nang,nzz,ndep))
-       !!
-       if ( allocated (wta2_tbl) ) deallocate (wta2_tbl)
-       if ( allocated (wta4_tbl) ) deallocate (wta4_tbl)
-       allocate(wta2_tbl(npts,nang,nzz,ndep))
-       allocate(wta4_tbl(npts,nang,nzz,ndep))
-       !!
-       if ( allocated (tfac2_tbl) ) deallocate (tfac2_tbl)
-       if ( allocated (tfac4_tbl) ) deallocate (tfac4_tbl)
-       allocate(tfac2_tbl(npts,nang,nzz,ndep))
-       allocate(tfac4_tbl(npts,nang,nzz,ndep))
-       !!
-       if ( allocated (grad_tbl) ) deallocate (grad_tbl)
-       allocate(grad_tbl(npts,nang,nzz,ndep))
-       !!
-       if ( allocated (pha_tbl) ) deallocate (pha_tbl)
-       allocate(pha_tbl(nrng,ndep))
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-3    Allocate gridsetr 11 returned arrays declared as PUBLIC
-       if ( allocated (kref2) ) deallocate (kref2)
-       if ( allocated (kref4) ) deallocate (kref4)
-       allocate(kref2(npts,nang,nzz))
-       allocate(kref4(npts,nang,nzz))
-       !!
-       if ( allocated (jref2) ) deallocate (jref2)
-       if ( allocated (jref4) ) deallocate (jref4)
-       allocate(jref2(npts,nang,nzz))
-       allocate(jref4(npts,nang,nzz))
-       !!
-       if ( allocated (wtk2) ) deallocate (wtk2)
-       if ( allocated (wtk4) ) deallocate (wtk4)
-       allocate(wtk2(npts,nang,nzz))
-       allocate(wtk4(npts,nang,nzz))
-       !!
-       if ( allocated (wta2) ) deallocate (wta2)
-       if ( allocated (wta4) ) deallocate (wta4)
-       allocate(wta2(npts,nang,nzz))
-       allocate(wta4(npts,nang,nzz))
-       !!
-       if ( allocated (tfac2) ) deallocate (tfac2)
-       if ( allocated (tfac4) ) deallocate (tfac4)
-       allocate(tfac2(npts,nang,nzz))
-       allocate(tfac4(npts,nang,nzz))
-       !!
-       if ( allocated (grad) ) deallocate (grad)
-       allocate(grad(npts,nang,nzz))
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-4    Allocate shloxr/shlocr 5 returned arrays declared as PUBLIC
-       if ( allocated (wk2x) ) deallocate (wk2x)
-       if ( allocated (wk2y) ) deallocate (wk2y)
-       allocate(wk2x(npts))
-       allocate(wk2y(npts))
-       !!
-       if ( allocated (wk4x) ) deallocate (wk4x)
-       if ( allocated (wk4y) ) deallocate (wk4y)
-       allocate(wk4x(npts))
-       allocate(wk4y(npts))
-       !!
-       if ( allocated (ds) ) deallocate (ds)
-       allocate(ds(npts))
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-5    Allocate w3snlx/optsa2 2 shared arrays declared as PUBLIC
-       if ( allocated (ef2) ) deallocate (ef2)
-       if ( allocated (ef1) ) deallocate (ef1)
-       allocate(ef2(nrng,nang))
-       allocate(ef1(nrng))
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-6    Allocate optsa2 2 returned arrays declared as PUBLIC
-       if ( allocated (dens1) ) deallocate (dens1)
-       if ( allocated (dens2) ) deallocate (dens2)
-       allocate(dens1(nrng,nang))
-       allocate(dens2(nrng,nang))
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-7    Allocate snlr_??? 2 returned arrays declared as PUBLIC
-       if ( itsa .eq. 1) then
-          !!        allocate tsa, diag  used for -tsa
-          if ( allocated (tsa) ) deallocate (tsa)
-          if ( allocated (diag) ) deallocate (diag)
-          allocate(tsa(nrng,nang))
-          allocate(diag(nrng,nang))
-       elseif ( itsa .eq. 0) then
-          !!        allocate fbi, diag2 used for -fbi
-          if ( allocated (fbi) ) deallocate (fbi)
-          if ( allocated (diag2) ) deallocate (diag2)
-          allocate(fbi(nrng,nang))
-          allocate(diag2(nrng,nang))
-       else
-          write ( ndse,1000 ) itsa
-          CALL EXTCDE ( 115 )
-       endif
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       !!-8    Get the 11 look-up table arrays by calling INSNL4
-       !!      ----------------------------------------------------------------
-       !!
-       !!      ----------------------------------------------------------------
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       call INSNL4
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!
-       !!      it returns: 11 look-up tables arrays dim=(npts,nang,nzz,ndep)
-       !!                  kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,
-       !!                  wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,
-       !!                  tfac2_tbl, tfac4_tbl & grad_tbl
-       !!                  plus       pha_tbl  dim=(nrng,ndep)
-       !!                  and        dep_tbl  dim=(ndep)
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       FIRST_TSA  = .FALSE.
-       !!
-       !!
+      !!
+      !!
+      !!-0    Set parameters & constants
+      !!      ---------------------------
+      nrng  = NK                     !* nrng = NK  must be odd   <---
+      nzz   = (NK * (NK+1)) / 2      !* linear irng, krng
+      nang  = NTH                    !* nang = NTH must be even  <---
+      na2p1 = nang/2 + 1             !* mid-angle or angle opposite to 1
+      np2p1 = npts/2 + 1             !* mid-index of locus array
+      twopi = TPI                    !* twopi = 8.*atan(1.)
+      !* get it from WW3 TPI
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-1    Allocate freq & angle related array declared as PUBLIC
+      if ( allocated (frqa) )    deallocate (frqa)
+      if ( allocated (oma) )     deallocate (oma)
+      if ( allocated (angl) )    deallocate (angl)
+      if ( allocated (sinan) )   deallocate (sinan)
+      if ( allocated (cosan) )   deallocate (cosan)
+      if ( allocated (dep_tbl) ) deallocate (dep_tbl)
+      allocate(frqa(nrng))
+      allocate(oma(nrng))
+      allocate(angl(nang))
+      allocate(sinan(nang))
+      allocate(cosan(nang))
+      allocate(dep_tbl(ndep))
+      !!      ----------------------------------------------------------------
+      !!
+      !!-1a   Initialize frequency arrays and related parameters
+      !!      --------------------------------------------------
+      oma(:)   = SIG(1:NK)           !* get it from WW3 SIG(1:NK)
+      frqa(:)  = oma(:) / twopi
+      f0       = frqa(1)
+      dfrq     = XFR                 !* WW3 freq mult. for log freq
+      !* get it from WW3 XFR
+      !!      ----------------------------------------------------------------
+      !!
+      !!-1b   Initialize direction arrays and related parameters
+      !!      --------------------------------------------------
+      angl(:)  = TH(1:NTH)           !* get it from WW3 TH(1:NTH)
+      cosan(:) = ECOS(1:NTH)         !* get it from WW3 ECOS(1:NTH)
+      sinan(:) = ESIN(1:NTH)         !* get it from WW3 ESIN(1:NTH)
+      ainc     = DTH                 !* WW3 angle increment (radians)
+      !* get it from WW3 DTH
+      !!      ----------------------------------------------------------------
+      !!
+      !!-1c   Define kzone & nb2fp
+      !!kz
+      !!      kzone = zone of freq influence, function of dfrq
+      !!      for different values of x = 2,3,4 & 5
+      !!      So,    kzone(x) = INT( alog(x)/alog(dfrq) )
+      !!      +--------+----------+----------+----------+----------+
+      !!      | dfrq   | kzone(2) | kzone(3) | kzone(4) | kzone(5) |
+      !!      +--------+----------+----------+----------+----------+
+      !!      | 1.05   |    14    |    22    |    28    |    33    |
+      !!      +--------+----------+----------+----------+----------+
+      !!      | 1.07   |    10    |    16    |    20    |    24    |
+      !!      +--------+----------+----------+----------+----------+
+      !!      | 1.10   |     7    |    11    |    14    |    17    |
+      !!      +--------+----------+----------+----------+----------+
+      kzone = INT( alog(2.0)/alog(dfrq) )  !* Bash; faster without loss of accuracy
+      !kz     kzone = INT( alog(3.0)/alog(dfrq) )  !* as in gridsetr & snlr_'s
+      !kz     kzone = INT( alog(4.0)/alog(dfrq) )  !* as in gridsetr & snlr_'s
+      !kz     kzone = INT( alog(5.0)/alog(dfrq) )  !* as in gridsetr & snlr_'s
+      !!kz---
+      !!
+      !!op2
+      !!      nb2fp = # of bins over fp (not incl. fp) - this depends on dfrq
+      !!              so that (dfrq**nb2fp)*fp ~ 2.*fp  (like kzone(2))
+      !!              used in 1 bin equi. range
+      nb2fp = INT( alog(2.0)/alog(dfrq) )  !* for equi. range near 2*fp
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - !!op2
+      !!      ================================================================
+      !!
+      !!
+      !!-2    Allocate gridsetr 11 look-up tables arrays
+      !!      plus     pha_tbl array dim=(nrng,ndep) declared as PUBLIC
+      if ( allocated (kref2_tbl) ) deallocate (kref2_tbl)
+      if ( allocated (kref4_tbl) ) deallocate (kref4_tbl)
+      allocate(kref2_tbl(npts,nang,nzz,ndep))
+      allocate(kref4_tbl(npts,nang,nzz,ndep))
+      !!
+      if ( allocated (jref2_tbl) ) deallocate (jref2_tbl)
+      if ( allocated (jref4_tbl) ) deallocate (jref4_tbl)
+      allocate(jref2_tbl(npts,nang,nzz,ndep))
+      allocate(jref4_tbl(npts,nang,nzz,ndep))
+      !!
+      if ( allocated (wtk2_tbl) ) deallocate (wtk2_tbl)
+      if ( allocated (wtk4_tbl) ) deallocate (wtk4_tbl)
+      allocate(wtk2_tbl(npts,nang,nzz,ndep))
+      allocate(wtk4_tbl(npts,nang,nzz,ndep))
+      !!
+      if ( allocated (wta2_tbl) ) deallocate (wta2_tbl)
+      if ( allocated (wta4_tbl) ) deallocate (wta4_tbl)
+      allocate(wta2_tbl(npts,nang,nzz,ndep))
+      allocate(wta4_tbl(npts,nang,nzz,ndep))
+      !!
+      if ( allocated (tfac2_tbl) ) deallocate (tfac2_tbl)
+      if ( allocated (tfac4_tbl) ) deallocate (tfac4_tbl)
+      allocate(tfac2_tbl(npts,nang,nzz,ndep))
+      allocate(tfac4_tbl(npts,nang,nzz,ndep))
+      !!
+      if ( allocated (grad_tbl) ) deallocate (grad_tbl)
+      allocate(grad_tbl(npts,nang,nzz,ndep))
+      !!
+      if ( allocated (pha_tbl) ) deallocate (pha_tbl)
+      allocate(pha_tbl(nrng,ndep))
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-3    Allocate gridsetr 11 returned arrays declared as PUBLIC
+      if ( allocated (kref2) ) deallocate (kref2)
+      if ( allocated (kref4) ) deallocate (kref4)
+      allocate(kref2(npts,nang,nzz))
+      allocate(kref4(npts,nang,nzz))
+      !!
+      if ( allocated (jref2) ) deallocate (jref2)
+      if ( allocated (jref4) ) deallocate (jref4)
+      allocate(jref2(npts,nang,nzz))
+      allocate(jref4(npts,nang,nzz))
+      !!
+      if ( allocated (wtk2) ) deallocate (wtk2)
+      if ( allocated (wtk4) ) deallocate (wtk4)
+      allocate(wtk2(npts,nang,nzz))
+      allocate(wtk4(npts,nang,nzz))
+      !!
+      if ( allocated (wta2) ) deallocate (wta2)
+      if ( allocated (wta4) ) deallocate (wta4)
+      allocate(wta2(npts,nang,nzz))
+      allocate(wta4(npts,nang,nzz))
+      !!
+      if ( allocated (tfac2) ) deallocate (tfac2)
+      if ( allocated (tfac4) ) deallocate (tfac4)
+      allocate(tfac2(npts,nang,nzz))
+      allocate(tfac4(npts,nang,nzz))
+      !!
+      if ( allocated (grad) ) deallocate (grad)
+      allocate(grad(npts,nang,nzz))
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-4    Allocate shloxr/shlocr 5 returned arrays declared as PUBLIC
+      if ( allocated (wk2x) ) deallocate (wk2x)
+      if ( allocated (wk2y) ) deallocate (wk2y)
+      allocate(wk2x(npts))
+      allocate(wk2y(npts))
+      !!
+      if ( allocated (wk4x) ) deallocate (wk4x)
+      if ( allocated (wk4y) ) deallocate (wk4y)
+      allocate(wk4x(npts))
+      allocate(wk4y(npts))
+      !!
+      if ( allocated (ds) ) deallocate (ds)
+      allocate(ds(npts))
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-5    Allocate w3snlx/optsa2 2 shared arrays declared as PUBLIC
+      if ( allocated (ef2) ) deallocate (ef2)
+      if ( allocated (ef1) ) deallocate (ef1)
+      allocate(ef2(nrng,nang))
+      allocate(ef1(nrng))
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-6    Allocate optsa2 2 returned arrays declared as PUBLIC
+      if ( allocated (dens1) ) deallocate (dens1)
+      if ( allocated (dens2) ) deallocate (dens2)
+      allocate(dens1(nrng,nang))
+      allocate(dens2(nrng,nang))
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-7    Allocate snlr_??? 2 returned arrays declared as PUBLIC
+      if ( itsa .eq. 1) then
+        !!        allocate tsa, diag  used for -tsa
+        if ( allocated (tsa) ) deallocate (tsa)
+        if ( allocated (diag) ) deallocate (diag)
+        allocate(tsa(nrng,nang))
+        allocate(diag(nrng,nang))
+      elseif ( itsa .eq. 0) then
+        !!        allocate fbi, diag2 used for -fbi
+        if ( allocated (fbi) ) deallocate (fbi)
+        if ( allocated (diag2) ) deallocate (diag2)
+        allocate(fbi(nrng,nang))
+        allocate(diag2(nrng,nang))
+      else
+        write ( ndse,1000 ) itsa
+        CALL EXTCDE ( 115 )
+      endif
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      !!-8    Get the 11 look-up table arrays by calling INSNL4
+      !!      ----------------------------------------------------------------
+      !!
+      !!      ----------------------------------------------------------------
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      call INSNL4
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!
+      !!      it returns: 11 look-up tables arrays dim=(npts,nang,nzz,ndep)
+      !!                  kref2_tbl, kref4_tbl, jref2_tbl, jref4_tbl,
+      !!                  wtk2_tbl,  wtk4_tbl,  wta2_tbl,  wta4_tbl,
+      !!                  tfac2_tbl, tfac4_tbl & grad_tbl
+      !!                  plus       pha_tbl  dim=(nrng,ndep)
+      !!                  and        dep_tbl  dim=(ndep)
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      FIRST_TSA  = .FALSE.
+      !!
+      !!
     ENDIF    !! IF ( FIRST_TSA ) THEN
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -1078,10 +1078,10 @@ CONTAINS
     !!    ==>  ef2(f,theta) = A(theta,k) * 2*pi*oma(f)/cga(f)
     !!    ------------------------------------------------------------------
     do irng=1,nrng
-       fac = twopi*oma(irng)/cga(irng)
-       do  iang=1,nang
-          ef2(irng,iang) = A(iang,irng) * fac
-       end do
+      fac = twopi*oma(irng)/cga(irng)
+      do  iang=1,nang
+        ef2(irng,iang) = A(iang,irng) * fac
+      end do
     end do
     !!    ------------------------------------------------------------------
     !!
@@ -1089,11 +1089,11 @@ CONTAINS
     !!*i5 Calculte the 1D Energy Density "ef1(f)"
     !!    ------------------------------------------------------------------
     do irng=1,nrng
-       sum1 = 0.0
-       do iang=1,nang
-          sum1 = sum1 + ef2(irng,iang)
-       end do
-       ef1(irng) = sum1 * ainc
+      sum1 = 0.0
+      do iang=1,nang
+        sum1 = sum1 + ef2(irng,iang)
+      end do
+      ef1(irng) = sum1 * ainc
     end do
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -1146,18 +1146,18 @@ CONTAINS
     npeaks = 0
     !!    Look in the freq range that works for TSA call (see condition below)
     do irng=2,nrng-1             !* last peak loc. is at nrng-1      <<<<<
-       !!      Pick the 1st local abs. max in [2,nrng-1] using (ef1(irng).gt.e1max)
-       !!      so that if 2 equal adj. peaks are found it will pick the 1st e1max
-       !!      encountered (i.e. the lower freq. one)
-       !!      --------------------------------------------------------------!*  <<<<<
-       if ( ef1(irng).gt.ef1(irng-1) .and. ef1(irng).gt.ef1(irng+1)  &
-            .and. ef1(irng).gt.e1max ) then
-          !!      --------------------------------------------------------------!*  <<<<<
-          npk    = irng               !* update npk
-          fpk    = frqa(npk)          !* update fpk
-          e1max  = ef1(npk)           !* update e1max
-          npeaks = 1
-       endif
+      !!      Pick the 1st local abs. max in [2,nrng-1] using (ef1(irng).gt.e1max)
+      !!      so that if 2 equal adj. peaks are found it will pick the 1st e1max
+      !!      encountered (i.e. the lower freq. one)
+      !!      --------------------------------------------------------------!*  <<<<<
+      if ( ef1(irng).gt.ef1(irng-1) .and. ef1(irng).gt.ef1(irng+1)  &
+           .and. ef1(irng).gt.e1max ) then
+        !!      --------------------------------------------------------------!*  <<<<<
+        npk    = irng               !* update npk
+        fpk    = frqa(npk)          !* update fpk
+        e1max  = ef1(npk)           !* update e1max
+        npeaks = 1
+      endif
     end do
     !!    ------------------------------------------------------------------
     !!
@@ -1187,19 +1187,19 @@ CONTAINS
     !!    Again look in the freq range that is in line with TSA min condition
     !!    and find the 2nd highest peak with  eps < e1max2 < e1max
     do irng=2,nrng-1           !* last peak loc. is at nrng-1      <<<<<
-       !!      Pick the 2nd local abs. max in [2,nrng-1] that is at least 'nsep'
-       !!      bins away from the 1st peak using (ef1(irng).ge.e1max2) so that
-       !!      if 2 equal adj. peaks are found it will pick the 2nd e1max2
-       !!      encountered (i.e. the higher freq. one)
-       !!      --------------------------------------------------------------!*  <<<<<
-       if ( ef1(irng).gt.ef1(irng-1) .and. ef1(irng).gt.ef1(irng+1)  &
-            .and. ef1(irng).ge.e1max2 .and. iabs(irng-npk).gt.nsep )  then
-          !!      --------------------------------------------------------------!*  <<<<<
-          npk2   = irng             !* update npk2
-          fpk2   = frqa(npk2)       !* update fpk2
-          e1max2 = ef1(npk2)        !* update e1max2
-          npeaks = 2
-       endif
+      !!      Pick the 2nd local abs. max in [2,nrng-1] that is at least 'nsep'
+      !!      bins away from the 1st peak using (ef1(irng).ge.e1max2) so that
+      !!      if 2 equal adj. peaks are found it will pick the 2nd e1max2
+      !!      encountered (i.e. the higher freq. one)
+      !!      --------------------------------------------------------------!*  <<<<<
+      if ( ef1(irng).gt.ef1(irng-1) .and. ef1(irng).gt.ef1(irng+1)  &
+           .and. ef1(irng).ge.e1max2 .and. iabs(irng-npk).gt.nsep )  then
+        !!      --------------------------------------------------------------!*  <<<<<
+        npk2   = irng             !* update npk2
+        fpk2   = frqa(npk2)       !* update fpk2
+        e1max2 = ef1(npk2)        !* update e1max2
+        npeaks = 2
+      endif
     end do
     !!    ------------------------------------------------------------------
     !!
@@ -1208,8 +1208,8 @@ CONTAINS
     !!B   if TSA min condition is not met rel. to nrng (npk2.gt.nrng-1)   <<<<<
     !!B   This 2nd peak is not suitable for tsa, drop it and stay with just 1st peak.
     if ( e1max2.lt.0.000001 ) then
-       npeaks = 1
-       goto 200           !* skip the remaings tests goto 200
+      npeaks = 1
+      goto 200           !* skip the remaings tests goto 200
     endif
     !!    ------------------------------------------------------------ !!op2
     !!    ==================================================================
@@ -1219,24 +1219,24 @@ CONTAINS
     !!
     !!op2 ctd
     if ( npeaks.eq.2 ) then
-       !!-1    Shuffle the 2 peaks (if necessary) to keep npk to be always < npk2
-       !!      This says nothing about which peak is the dominant peak
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       if ( npk2.lt.npk ) then
-          npk0   = npk2
-          npk2   = npk
-          npk    = npk0                 !*  this way  npk < npk2  always
-          fpk    = frqa(npk)
-          fpk2   = frqa(npk2)
-       endif
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!
-       !!-2    here we have 2 peaks (npeaks=2) with  npk < npk2
-       !!      find the freq. separation "nfs" (that divide the freq. regime into 2)
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       nfs = INT ( (npk+npk2)   / 2.0 )  !* take the lower  bin # to be nfs
-       !b      nfs = INT ( (npk+npk2+1) / 2.0 )  !* take the higher bin # to be nfs
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!-1    Shuffle the 2 peaks (if necessary) to keep npk to be always < npk2
+      !!      This says nothing about which peak is the dominant peak
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      if ( npk2.lt.npk ) then
+        npk0   = npk2
+        npk2   = npk
+        npk    = npk0                 !*  this way  npk < npk2  always
+        fpk    = frqa(npk)
+        fpk2   = frqa(npk2)
+      endif
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!
+      !!-2    here we have 2 peaks (npeaks=2) with  npk < npk2
+      !!      find the freq. separation "nfs" (that divide the freq. regime into 2)
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      nfs = INT ( (npk+npk2)   / 2.0 )  !* take the lower  bin # to be nfs
+      !b      nfs = INT ( (npk+npk2+1) / 2.0 )  !* take the higher bin # to be nfs
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     endif   !! if ( npeaks.eq.2 )
     !!
 200 continue
@@ -1250,67 +1250,67 @@ CONTAINS
     !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !!
     if ( npeaks.eq.1 ) then
-       !!-1    one call to optsa2 for the whole freq. regime ( 1 --> nrng )
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       nbins = nrng - npk    !* # of bins in (npk, nrng] not incl. npk
-       if ( nbins.gt.nb2fp ) nbins=nb2fp !* limit equi. range to ~2.0*fp
-       !!      ----------------------------------------------------------------
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       call optsa2 ( 1,nrng,       npk, fpk,  nbins, wka, cga )
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      It returns variables dens1(nrng,nang) and dens2(nrng,nang)
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      ----------------------------------------------------------------
+      !!-1    one call to optsa2 for the whole freq. regime ( 1 --> nrng )
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      nbins = nrng - npk    !* # of bins in (npk, nrng] not incl. npk
+      if ( nbins.gt.nb2fp ) nbins=nb2fp !* limit equi. range to ~2.0*fp
+      !!      ----------------------------------------------------------------
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      call optsa2 ( 1,nrng,       npk, fpk,  nbins, wka, cga )
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      It returns variables dens1(nrng,nang) and dens2(nrng,nang)
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      ----------------------------------------------------------------
     endif   !! if ( npeaks.eq.1 )
     !!    ==================================================================
     !!
     !!
     if ( npeaks.eq.2 ) then
-       !!
-       !!-2    Now make two calls to new "optsa2" one for each freq regime.
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       nbins = nfs - npk     !* # of bins in (npk, nfs] not incl. npk
-       if ( nbins.gt.nb2fp ) nbins=nb2fp  !* limit equi. range to ~2.0*fp
-       !!      ---------------------------------------------------------------
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       call optsa2 ( 1,nfs,        npk, fpk,  nbins, wka, cga )
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      It returns variables dens1(nrng,nang) and dens2(nrng,nang)
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      ----------------------------------------------------------------
-       !!
-       nbins = nrng - npk2   !* # of bins in (npk2, nrng] not incl. npk2
-       if ( nbins.gt.nb2fp ) nbins=nb2fp  !* limit equi. range to ~2.0*fp
-       !!      ----------------------------------------------------------------
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       call optsa2 ( nfs+1,nrng,   npk2,fpk2, nbins, wka, cga )
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      It returns variables dens1(nrng,nang) and dens2(nrng,nang)
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!-3    Remove the step like jump (if exists) in dens1() between nfs & nfs+1
-       do iang=1,nang
-          sumd1 = dens1(nfs,iang)   + dens2(nfs,iang)   !* sum at nfs
-          sumd2 = dens1(nfs+1,iang) + dens2(nfs+1,iang) !* sum at nfs+1
-          !!
-          !!        do 3 bin average for dens1() at nfs   and store in densat1
-          densat1 = ( dens1(nfs-1,iang) + dens1(nfs,iang) +           &
-               dens1(nfs+1,iang) ) / 3.
-          !!        do 3 bin average for dens1() at nfs+1 and store in densat2
-          densat2 = ( dens1(nfs,iang)   + dens1(nfs+1,iang) +         &
-               dens1(nfs+2,iang) ) / 3.
-          !!
-          !!        subtitute back into dens1(nfs,iang) & dens1(nfs+1,iang)
-          dens1(nfs,iang)   = densat1             ! dens1 at nfs
-          dens1(nfs+1,iang) = densat2             ! dens1 at nfs+1
-          !!
-          !!        recalculate dens2(nfs,iang) & dens2(nfs+1,iang)
-          dens2(nfs,iang)   = sumd1 - densat1     ! dens2 at nfs
-          dens2(nfs+1,iang) = sumd2 - densat2     ! dens2 at nfs+1
-       end do
-       !!
+      !!
+      !!-2    Now make two calls to new "optsa2" one for each freq regime.
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      nbins = nfs - npk     !* # of bins in (npk, nfs] not incl. npk
+      if ( nbins.gt.nb2fp ) nbins=nb2fp  !* limit equi. range to ~2.0*fp
+      !!      ---------------------------------------------------------------
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      call optsa2 ( 1,nfs,        npk, fpk,  nbins, wka, cga )
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      It returns variables dens1(nrng,nang) and dens2(nrng,nang)
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      ----------------------------------------------------------------
+      !!
+      nbins = nrng - npk2   !* # of bins in (npk2, nrng] not incl. npk2
+      if ( nbins.gt.nb2fp ) nbins=nb2fp  !* limit equi. range to ~2.0*fp
+      !!      ----------------------------------------------------------------
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      call optsa2 ( nfs+1,nrng,   npk2,fpk2, nbins, wka, cga )
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      It returns variables dens1(nrng,nang) and dens2(nrng,nang)
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!-3    Remove the step like jump (if exists) in dens1() between nfs & nfs+1
+      do iang=1,nang
+        sumd1 = dens1(nfs,iang)   + dens2(nfs,iang)   !* sum at nfs
+        sumd2 = dens1(nfs+1,iang) + dens2(nfs+1,iang) !* sum at nfs+1
+        !!
+        !!        do 3 bin average for dens1() at nfs   and store in densat1
+        densat1 = ( dens1(nfs-1,iang) + dens1(nfs,iang) +           &
+             dens1(nfs+1,iang) ) / 3.
+        !!        do 3 bin average for dens1() at nfs+1 and store in densat2
+        densat2 = ( dens1(nfs,iang)   + dens1(nfs+1,iang) +         &
+             dens1(nfs+2,iang) ) / 3.
+        !!
+        !!        subtitute back into dens1(nfs,iang) & dens1(nfs+1,iang)
+        dens1(nfs,iang)   = densat1             ! dens1 at nfs
+        dens1(nfs+1,iang) = densat2             ! dens1 at nfs+1
+        !!
+        !!        recalculate dens2(nfs,iang) & dens2(nfs+1,iang)
+        dens2(nfs,iang)   = sumd1 - densat1     ! dens2 at nfs
+        dens2(nfs+1,iang) = sumd2 - densat2     ! dens2 at nfs+1
+      end do
+      !!
     endif   !! if ( npeaks.eq.2 )
     !!    ==================================================================
     !!
@@ -1326,59 +1326,59 @@ CONTAINS
     !!
     !!
     if ( itsa .eq. 1) then
-       !!
-       !!      ----------------------------------------------------------------
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       call snlr_tsa ( pha, ialt )
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      It returns tsa(nrng,nang) & diag(nrng,nang)
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      ----------------------------------------------------------------
-       !!
-       !!      Pack results in proper format ---------------------------------- *
-       !!      S() & D() arrays are to be returned to WW3 in (k,theta) space
-       do irng=1,nrng
-          do iang=1,nang
-             !!        Convert the Norm. (in k) Polar tsa(k,theta) to Polar S(theta,k)
-             !!        and  reverse indices back to (iang,irng) as in WW3
-             S(iang,irng) = tsa(irng,iang) * wka(irng)   !* <=============
-             D(iang,irng) = diag(irng,iang)
-             !!        ---------------------------
-          end do
-       end do
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!
-       !!
+      !!
+      !!      ----------------------------------------------------------------
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      call snlr_tsa ( pha, ialt )
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      It returns tsa(nrng,nang) & diag(nrng,nang)
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      ----------------------------------------------------------------
+      !!
+      !!      Pack results in proper format ---------------------------------- *
+      !!      S() & D() arrays are to be returned to WW3 in (k,theta) space
+      do irng=1,nrng
+        do iang=1,nang
+          !!        Convert the Norm. (in k) Polar tsa(k,theta) to Polar S(theta,k)
+          !!        and  reverse indices back to (iang,irng) as in WW3
+          S(iang,irng) = tsa(irng,iang) * wka(irng)   !* <=============
+          D(iang,irng) = diag(irng,iang)
+          !!        ---------------------------
+        end do
+      end do
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!
+      !!
     elseif ( itsa .eq. 0) then
-       !!
-       !!
-       !!      ----------------------------------------------------------------
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       call snlr_fbi ( pha, ialt )
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      It returns fbi(nrng,nang) & diag2(nrng,nang)
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!      ----------------------------------------------------------------
-       !!
-       !!      Pack results in proper format ---------------------------------- *
-       !!      S() & D() arrays are to be returned to WW3 in (k,theta) space
-       do irng=1,nrng
-          do iang=1,nang
-             !!        Convert the Norm. (in k) Polar fbi(k,theta) to Polar S(theta,k)
-             !!        and  reverse indices back to (iang,irng) as in WW3
-             S(iang,irng) = fbi(irng,iang) * wka(irng)   !* <=============
-             D(iang,irng) = diag2(irng,iang)
-             !!        --------------------------------
-          end do
-       end do
-       !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!
+      !!
+      !!
+      !!      ----------------------------------------------------------------
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      call snlr_fbi ( pha, ialt )
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      It returns fbi(nrng,nang) & diag2(nrng,nang)
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!      ----------------------------------------------------------------
+      !!
+      !!      Pack results in proper format ---------------------------------- *
+      !!      S() & D() arrays are to be returned to WW3 in (k,theta) space
+      do irng=1,nrng
+        do iang=1,nang
+          !!        Convert the Norm. (in k) Polar fbi(k,theta) to Polar S(theta,k)
+          !!        and  reverse indices back to (iang,irng) as in WW3
+          S(iang,irng) = fbi(irng,iang) * wka(irng)   !* <=============
+          D(iang,irng) = diag2(irng,iang)
+          !!        --------------------------------
+        end do
+      end do
+      !!      -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!
     else
-       !!
-       write( ndse,1000 ) itsa
-       CALL EXTCDE ( 130 )
-       !!       --- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       !!
+      !!
+      write( ndse,1000 ) itsa
+      CALL EXTCDE ( 130 )
+      !!       --- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !!
     endif
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -1597,259 +1597,259 @@ CONTAINS
     !!
     !!20
     do 20 irng=1,nrng
-       !!kz
-       kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
-       !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
-       !!kz---
-       !!kz---
-       !!
-       wk1x   = wka1(irng)
-       wk1y   = 0.0                         !* set = 0.0 and will remain = 0.0
-       iizz = (nrng-1)*(irng-1)-((irng-2)*(irng-1))/2
-       !!30
-       !!kz
-       do 30 krng=irng,kmax
-          !!kz---
-          !kz     do 30 krng=irng,nrng
+      !!kz
+      kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
+      !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
+      !!kz---
+      !!kz---
+      !!
+      wk1x   = wka1(irng)
+      wk1y   = 0.0                         !* set = 0.0 and will remain = 0.0
+      iizz = (nrng-1)*(irng-1)-((irng-2)*(irng-1))/2
+      !!30
+      !!kz
+      do 30 krng=irng,kmax
+        !!kz---
+        !kz     do 30 krng=irng,nrng
+        !!
+        !!        Bash; check1 - change this ratio from > 4 to > 3   and
+        !!              make it consistent with similar test done in subr. snlr_'s
+        !kz       if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 30  !* Bash; use .gt. 2 for speed
+        !kz       if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 30  !* original snlr_'s
+        !kz       if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 30  !* original gridsetr
+        !!kz---
+        izz = krng+iizz
+        !!40
+        do 40 kang=1,nang
           !!
-          !!        Bash; check1 - change this ratio from > 4 to > 3   and
-          !!              make it consistent with similar test done in subr. snlr_'s
-          !kz       if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 30  !* Bash; use .gt. 2 for speed
-          !kz       if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 30  !* original snlr_'s
-          !kz       if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 30  !* original gridsetr
-          !!kz---
-          izz = krng+iizz
-          !!40
-          do 40 kang=1,nang
-             !!
-             wk3x = wka1(krng)*cosan(kang)
-             wk3y = wka1(krng)*sinan(kang)
-             !!
-             if ( krng.eq.irng ) then              !* wn3 = wn1
-                !!
-                !!ba1         Bash; skip k1 but keep the opposite angle to k1 - orig setting
-                !!ba1               remember here iang = 1
-                if ( kang .eq. 1 ) go to 40         !* th3 = th1
-                !!ba1---
-                !!            ----------------------------------------------------------
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                call shloxr ( dep,       wk1x,wk1y,wk3x,wk3y )
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                !!            it returns: wk2x, wk2y, wk4x, wk4y & ds all dim=(npts)
-                !!                        and all are PUBLIC
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                !!            ----------------------------------------------------------
-                !!
-             else                                  !* wn3 > wn1
-                !!
-                !!            ----------------------------------------------------------
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                call shlocr ( dep,       wk1x,wk1y,wk3x,wk3y )
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                !!            it returns: wk2x, wk2y, wk4x, wk4y & ds all dim=(npts)
-                !!                        and all are PUBLIC
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                !!            ----------------------------------------------------------
-                !!
-             end if   !!  if ( krng.eq.irng )
-             !!
-             !!          set the Heaviside coefficient
-             !b          dif13 = (wk1x-wk3x)**2   +  (wk1y-wk3y)**2        !* wk1y = 0.0
-             !b          dif13 = (wk1x-wk3x)**2   +       (wk3y)**2
-             dif13 = (wk1x-wk3x)*(wk1x-wk3x) + wk3y*wk3y
-             !!50
-             do 50 ipt=1,npts
-                !!
-                !!xlc1        Bash; skip k1 but keep the opposite angle to k1 - original setting
-                if ( kang.eq.1 ) then                        !* th3=+th1, iang=1
-                   if (ipt.eq.1 .or. ipt.eq.np2p1) go to 50   !* skip x-axis loci
-                end if
-                !!xlc1---
-                !!            ----------------------------------------------------------
-                !!
-                !!hv          Bash; with !hv ON, move Heaviside section from below to here
-                !!            Bash moved this section here. *** Check first compute after ***
-                !!            Skip first then compute only if Heaviside=1, without using it
-                !!            i.e. compute only if dif13.le.dif14 with Heaviside=1 omitted.
-                !!            Note; with !hv option is ON, you don't need to turn options
-                !!            ----  !k19p1 nor !cp4 ON.aYou only need one of the three.
-                !!            ----------------------------------------------------------
-                !!            set the Heaviside coefficient
-                !b            dif14 = (wk1x-wk4x(ipt))**2 + (wk1y-wk4y(ipt))**2 !* wk1y=0.0
-                !b            dif14 = (wk1x-wk4x(ipt))**2 +      (wk4y(ipt))**2
-                dif14 = (wk1x-wk4x(ipt))*(wk1x-wk4x(ipt)) +             &
-                     wk4y(ipt)*wk4y(ipt)
-                !!
-                if ( dif13 .gt. dif14 ) go to 50    !* skip, don't compute
-                !!
-                !b            if ( dif13 .gt. dif14 ) then
-                !b               Heaviside = 0.                   !* Eq(12) of RPTV
-                !b               go to 50
-                !b            else
-                !b               Heaviside = 1.                   !* Eq(11) of RPTV
-                !b            end if
-                !!hv---
-                !!            ----------------------------------------------------------
-                !!
-                !!            Set the coupling coefficient for ipt'th locus position
-                !!            ----------------------------------------------------------
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                call cplshr ( wk4x(ipt),wk4y(ipt), wk3x,wk3y,           &
-                     wk2x(ipt),wk2y(ipt), dep, csq,            &
-                     irng,krng,kang,ipt )
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                !!            it returns: the coupling coefficient  csq
-                !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-                !!            ----------------------------------------------------------
-                !!
-                !!wn2         Set parameters related to ipt'th locus wavenumber vector k2
-                !!            ----------------------------------------------------------
-                !b            wn2  = sqrt(wk2x(ipt)**2 + wk2y(ipt)**2)               !* k2
-                wn2  = sqrt(wk2x(ipt)*wk2x(ipt) + wk2y(ipt)*wk2y(ipt)) !* k2
-                th2  = atan2(wk2y(ipt),wk2x(ipt))                !* k2 direction
-                if ( th2 .lt. 0. ) th2 = th2 + twopi             !* +ve in radians
-                wn2d = wn2*dep                                   !* k2*depth
-                tnh2 = tanh(wn2d)                                !* tanh(k2*depth)
-                om2  = sqrt(g*wn2*tnh2)                          !* omega2 (rad)
-                !b            cg2  = 0.5*(om2/wn2)*(1.+wn2d*(1.-tnh2**2)/tnh2) !* group velocity
-                cg2  = 0.5*(om2/wn2)*(1.+wn2d*((1./tnh2)-tnh2))  !* group velocity
-                f2   = om2/twopi                                 !* f2 (Hz)
-                !!            ----------------------------------------------------------
-                !!
-                !!wn4         Set parameters related to ipt'th locus wavenumber vector k4
-                !!            ----------------------------------------------------------
-                !b            wn4  = sqrt(wk4x(ipt)**2 + wk4y(ipt)**2)
-                wn4  = sqrt(wk4x(ipt)*wk4x(ipt) + wk4y(ipt)*wk4y(ipt))
-                th4  = atan2(wk4y(ipt),wk4x(ipt))
-                if ( th4 .lt. 0. ) th4 = th4 + twopi
-                wn4d = wn4*dep
-                tnh4 = tanh(wn4d)
-                om4  = sqrt(g*wn4*tnh4)
-                !b            cg4  = 0.5*(om4/wn4)*(1.+wn4d*(1.-tnh4**2)/tnh4)
-                cg4  = 0.5*(om4/wn4)*(1.+wn4d*((1./tnh4)-tnh4))
-                f4   = om4/twopi
-                !!            ----------------------------------------------------------
-                !!
-                !!
-                !!hv          Bash; with !hv ON, move Heaviside section up
-                !!            Bash moved this section up. Check first compute after.
-                !!            ----------------------------------------------------------
-                !!            set the Heaviside coefficient
-                !b            dif14 = (wk1x-wk4x(ipt))**2 + (wk1y-wk4y(ipt))**2 !* wk1y=0.0
-                !b            dif14 = (wk1x-wk4x(ipt))**2 +      (wk4y(ipt))**2
-                !hv           dif14 = (wk1x-wk4x(ipt))*(wk1x-wk4x(ipt)) +             &
-                !hv                                          wk4y(ipt)*wk4y(ipt)
-                !hv           if ( dif13 .gt. dif14 ) then
-                !hv              Heaviside = 0.                   !* Eq(12) of RPTV
-                !hv           else
-                !hv              Heaviside = 1.                   !* Eq(11) of RPTV
-                !hv           end if
-                !!hv---
-                !!            ----------------------------------------------------------
-                !!
-                !!
-                !!            dWdn is the same as sqrt(zzsum) in Don's code, here reduced to a
-                !!            simpler but mathematically equivalent form that should vary
-                !!            smoothly between deep and intermediate water owing to identities
-                !!            using the computer's tanh() function
-                !!            ----------------------------------------------------------
-                !!
-                !!            set grad(,,);
-                !!            looks like the g^2 goes with csq (Webb'1978, eq. A2)
-                !!            ----------------------------------------------------------
-                !!
-                !b            dWdnsq = cg2**2  - 2.*cg2*cg4 * cos(th2-th4) + cg4**2
-                dWdnsq = cg2*cg2 - 2.*cg2*cg4 * cos(th2-th4) + cg4*cg4
-                !!            ----------------------------------------------------------
-                !!
-                dWdn               = sqrt(dWdnsq)
-                !!            ----------------------------------------------------------
-                !!
-                !!hv          Bash; with !hv ON, don't use var Heaviside (by here it's = 1.0)
-                grad(ipt,kang,izz) =           ds(ipt)*csq*gsq/dWdn
-                !!hv---
-                !hv           grad(ipt,kang,izz) = Heaviside*ds(ipt)*csq*gsq/dWdn
-                !!hv---
-                !!            ----------------------------------------------------------
-                !!            ==========================================================
-                !!
-                !!
-                !!            Set interpolation, indexing and weight parameters for
-                !!            computations along wavenumber radials
-                !!            ----------------------------------------------------------
-                !!
-                !!f2          --------------------
-                if ( f2 .lt. f0 ) then
-                   wtk2(ipt,kang,izz)  = 1.
-                   tfac2(ipt,kang,izz) = 0.
-                   kref2(ipt,kang,izz) = 1
-                else
-                   ir = 1+int((alog(f2)-alf0)/aldfrq)
-                   if ( ir+1 .gt. nrng ) then
-                      wtk2(ipt,kang,izz)  = 0.
-                      er = (wka1(nrng)/wn2)**(2.5)
-                      tt2= er*(cg2/cgnrng1)*(frqa(nrng)/f2)*(wka1(nrng)/wn2)
-                      tfac2(ipt,kang,izz) = tt2
-                      kref2(ipt,kang,izz) = nrng - 1
-                   else
-                      w2 = (f2-frqa(ir))/(frqa(ir+1)-frqa(ir))
-                      wtk2(ipt,kang,izz)  = 1. - w2
-                      tfac2(ipt,kang,izz) = 1.
-                      kref2(ipt,kang,izz) = ir
-                   end if
-                end if
-                !!            ----------------------------------------------------------
-                !!
-                !!f4          --------------------
-                if ( f4 .lt. f0 ) then
-                   wtk4(ipt,kang,izz)  = 1.
-                   tfac4(ipt,kang,izz) = 0.
-                   kref4(ipt,kang,izz) = 1
-                else
-                   ir = 1+int((alog(f4)-alf0)/aldfrq)
-                   if ( ir+1 .gt. nrng ) then
-                      wtk4(ipt,kang,izz)  = 0.
-                      er = (wka1(nrng)/wn4)**2.5
-                      tt4= er*(cg4/cgnrng1)*(frqa(nrng)/f4)*(wka1(nrng)/wn4)
-                      tfac4(ipt,kang,izz) = tt4
-                      kref4(ipt,kang,izz) = nrng - 1
-                   else
-                      w2 = (f4-frqa(ir))/(frqa(ir+1)-frqa(ir))
-                      wtk4(ipt,kang,izz)  = 1. - w2
-                      tfac4(ipt,kang,izz) = 1.
-                      kref4(ipt,kang,izz) = ir
-                   end if
-                end if
-                !!            ----------------------------------------------------------
-                !!
-                !!
-                !!            Set indexing and weight parameters for computations around
-                !!            azimuths; it appears that jref2 and jref4 should be bounded
-                !!            between 0 and nang-1 so that when iang (=1,nang) is added in
-                !!            the integration section, the proper bin index will arise;
-                !!            the weights wta2 and wta4 seem to be the fractional bin
-                !!            widths between th2 or th4 and the next increasing
-                !!            directional bin boundary
-                !!            ----------------------------------------------------------
-                !!
-                i = int(th2/ainc)
-                wta2(ipt,kang,izz)  = 1. - abs(th2-i*ainc)/ainc
-                if ( i .ge. nang )  i = i - nang
-                jref2(ipt,kang,izz) = i
-                !mpc          jref2(ipt,kang,izz) = MOD(i,nang) !* is this better that the above two lines?
-                !!
-                i = int(th4/ainc)
-                wta4(ipt,kang,izz)  = 1. - abs(th4-i*ainc)/ainc
-                if ( i .ge. nang )  i = i - nang
-                jref4(ipt,kang,izz) = i
-                !mpc          jref4(ipt,kang,izz) = MOD(i,nang) !* is this better that the above two lines?
-                !!
-50           end do                              !* end of ipt loop
-             !!
-40        end do                                !* end of kang loop
+          wk3x = wka1(krng)*cosan(kang)
+          wk3y = wka1(krng)*sinan(kang)
           !!
-30     end do                                  !* end of krng loop
-       !!
+          if ( krng.eq.irng ) then              !* wn3 = wn1
+            !!
+            !!ba1         Bash; skip k1 but keep the opposite angle to k1 - orig setting
+            !!ba1               remember here iang = 1
+            if ( kang .eq. 1 ) go to 40         !* th3 = th1
+            !!ba1---
+            !!            ----------------------------------------------------------
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            call shloxr ( dep,       wk1x,wk1y,wk3x,wk3y )
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            !!            it returns: wk2x, wk2y, wk4x, wk4y & ds all dim=(npts)
+            !!                        and all are PUBLIC
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            !!            ----------------------------------------------------------
+            !!
+          else                                  !* wn3 > wn1
+            !!
+            !!            ----------------------------------------------------------
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            call shlocr ( dep,       wk1x,wk1y,wk3x,wk3y )
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            !!            it returns: wk2x, wk2y, wk4x, wk4y & ds all dim=(npts)
+            !!                        and all are PUBLIC
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            !!            ----------------------------------------------------------
+            !!
+          end if   !!  if ( krng.eq.irng )
+          !!
+          !!          set the Heaviside coefficient
+          !b          dif13 = (wk1x-wk3x)**2   +  (wk1y-wk3y)**2        !* wk1y = 0.0
+          !b          dif13 = (wk1x-wk3x)**2   +       (wk3y)**2
+          dif13 = (wk1x-wk3x)*(wk1x-wk3x) + wk3y*wk3y
+          !!50
+          do 50 ipt=1,npts
+            !!
+            !!xlc1        Bash; skip k1 but keep the opposite angle to k1 - original setting
+            if ( kang.eq.1 ) then                        !* th3=+th1, iang=1
+              if (ipt.eq.1 .or. ipt.eq.np2p1) go to 50   !* skip x-axis loci
+            end if
+            !!xlc1---
+            !!            ----------------------------------------------------------
+            !!
+            !!hv          Bash; with !hv ON, move Heaviside section from below to here
+            !!            Bash moved this section here. *** Check first compute after ***
+            !!            Skip first then compute only if Heaviside=1, without using it
+            !!            i.e. compute only if dif13.le.dif14 with Heaviside=1 omitted.
+            !!            Note; with !hv option is ON, you don't need to turn options
+            !!            ----  !k19p1 nor !cp4 ON.aYou only need one of the three.
+            !!            ----------------------------------------------------------
+            !!            set the Heaviside coefficient
+            !b            dif14 = (wk1x-wk4x(ipt))**2 + (wk1y-wk4y(ipt))**2 !* wk1y=0.0
+            !b            dif14 = (wk1x-wk4x(ipt))**2 +      (wk4y(ipt))**2
+            dif14 = (wk1x-wk4x(ipt))*(wk1x-wk4x(ipt)) +             &
+                 wk4y(ipt)*wk4y(ipt)
+            !!
+            if ( dif13 .gt. dif14 ) go to 50    !* skip, don't compute
+            !!
+            !b            if ( dif13 .gt. dif14 ) then
+            !b               Heaviside = 0.                   !* Eq(12) of RPTV
+            !b               go to 50
+            !b            else
+            !b               Heaviside = 1.                   !* Eq(11) of RPTV
+            !b            end if
+            !!hv---
+            !!            ----------------------------------------------------------
+            !!
+            !!            Set the coupling coefficient for ipt'th locus position
+            !!            ----------------------------------------------------------
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            call cplshr ( wk4x(ipt),wk4y(ipt), wk3x,wk3y,           &
+                 wk2x(ipt),wk2y(ipt), dep, csq,            &
+                 irng,krng,kang,ipt )
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            !!            it returns: the coupling coefficient  csq
+            !!            -- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            !!            ----------------------------------------------------------
+            !!
+            !!wn2         Set parameters related to ipt'th locus wavenumber vector k2
+            !!            ----------------------------------------------------------
+            !b            wn2  = sqrt(wk2x(ipt)**2 + wk2y(ipt)**2)               !* k2
+            wn2  = sqrt(wk2x(ipt)*wk2x(ipt) + wk2y(ipt)*wk2y(ipt)) !* k2
+            th2  = atan2(wk2y(ipt),wk2x(ipt))                !* k2 direction
+            if ( th2 .lt. 0. ) th2 = th2 + twopi             !* +ve in radians
+            wn2d = wn2*dep                                   !* k2*depth
+            tnh2 = tanh(wn2d)                                !* tanh(k2*depth)
+            om2  = sqrt(g*wn2*tnh2)                          !* omega2 (rad)
+            !b            cg2  = 0.5*(om2/wn2)*(1.+wn2d*(1.-tnh2**2)/tnh2) !* group velocity
+            cg2  = 0.5*(om2/wn2)*(1.+wn2d*((1./tnh2)-tnh2))  !* group velocity
+            f2   = om2/twopi                                 !* f2 (Hz)
+            !!            ----------------------------------------------------------
+            !!
+            !!wn4         Set parameters related to ipt'th locus wavenumber vector k4
+            !!            ----------------------------------------------------------
+            !b            wn4  = sqrt(wk4x(ipt)**2 + wk4y(ipt)**2)
+            wn4  = sqrt(wk4x(ipt)*wk4x(ipt) + wk4y(ipt)*wk4y(ipt))
+            th4  = atan2(wk4y(ipt),wk4x(ipt))
+            if ( th4 .lt. 0. ) th4 = th4 + twopi
+            wn4d = wn4*dep
+            tnh4 = tanh(wn4d)
+            om4  = sqrt(g*wn4*tnh4)
+            !b            cg4  = 0.5*(om4/wn4)*(1.+wn4d*(1.-tnh4**2)/tnh4)
+            cg4  = 0.5*(om4/wn4)*(1.+wn4d*((1./tnh4)-tnh4))
+            f4   = om4/twopi
+            !!            ----------------------------------------------------------
+            !!
+            !!
+            !!hv          Bash; with !hv ON, move Heaviside section up
+            !!            Bash moved this section up. Check first compute after.
+            !!            ----------------------------------------------------------
+            !!            set the Heaviside coefficient
+            !b            dif14 = (wk1x-wk4x(ipt))**2 + (wk1y-wk4y(ipt))**2 !* wk1y=0.0
+            !b            dif14 = (wk1x-wk4x(ipt))**2 +      (wk4y(ipt))**2
+            !hv           dif14 = (wk1x-wk4x(ipt))*(wk1x-wk4x(ipt)) +             &
+            !hv                                          wk4y(ipt)*wk4y(ipt)
+            !hv           if ( dif13 .gt. dif14 ) then
+            !hv              Heaviside = 0.                   !* Eq(12) of RPTV
+            !hv           else
+            !hv              Heaviside = 1.                   !* Eq(11) of RPTV
+            !hv           end if
+            !!hv---
+            !!            ----------------------------------------------------------
+            !!
+            !!
+            !!            dWdn is the same as sqrt(zzsum) in Don's code, here reduced to a
+            !!            simpler but mathematically equivalent form that should vary
+            !!            smoothly between deep and intermediate water owing to identities
+            !!            using the computer's tanh() function
+            !!            ----------------------------------------------------------
+            !!
+            !!            set grad(,,);
+            !!            looks like the g^2 goes with csq (Webb'1978, eq. A2)
+            !!            ----------------------------------------------------------
+            !!
+            !b            dWdnsq = cg2**2  - 2.*cg2*cg4 * cos(th2-th4) + cg4**2
+            dWdnsq = cg2*cg2 - 2.*cg2*cg4 * cos(th2-th4) + cg4*cg4
+            !!            ----------------------------------------------------------
+            !!
+            dWdn               = sqrt(dWdnsq)
+            !!            ----------------------------------------------------------
+            !!
+            !!hv          Bash; with !hv ON, don't use var Heaviside (by here it's = 1.0)
+            grad(ipt,kang,izz) =           ds(ipt)*csq*gsq/dWdn
+            !!hv---
+            !hv           grad(ipt,kang,izz) = Heaviside*ds(ipt)*csq*gsq/dWdn
+            !!hv---
+            !!            ----------------------------------------------------------
+            !!            ==========================================================
+            !!
+            !!
+            !!            Set interpolation, indexing and weight parameters for
+            !!            computations along wavenumber radials
+            !!            ----------------------------------------------------------
+            !!
+            !!f2          --------------------
+            if ( f2 .lt. f0 ) then
+              wtk2(ipt,kang,izz)  = 1.
+              tfac2(ipt,kang,izz) = 0.
+              kref2(ipt,kang,izz) = 1
+            else
+              ir = 1+int((alog(f2)-alf0)/aldfrq)
+              if ( ir+1 .gt. nrng ) then
+                wtk2(ipt,kang,izz)  = 0.
+                er = (wka1(nrng)/wn2)**(2.5)
+                tt2= er*(cg2/cgnrng1)*(frqa(nrng)/f2)*(wka1(nrng)/wn2)
+                tfac2(ipt,kang,izz) = tt2
+                kref2(ipt,kang,izz) = nrng - 1
+              else
+                w2 = (f2-frqa(ir))/(frqa(ir+1)-frqa(ir))
+                wtk2(ipt,kang,izz)  = 1. - w2
+                tfac2(ipt,kang,izz) = 1.
+                kref2(ipt,kang,izz) = ir
+              end if
+            end if
+            !!            ----------------------------------------------------------
+            !!
+            !!f4          --------------------
+            if ( f4 .lt. f0 ) then
+              wtk4(ipt,kang,izz)  = 1.
+              tfac4(ipt,kang,izz) = 0.
+              kref4(ipt,kang,izz) = 1
+            else
+              ir = 1+int((alog(f4)-alf0)/aldfrq)
+              if ( ir+1 .gt. nrng ) then
+                wtk4(ipt,kang,izz)  = 0.
+                er = (wka1(nrng)/wn4)**2.5
+                tt4= er*(cg4/cgnrng1)*(frqa(nrng)/f4)*(wka1(nrng)/wn4)
+                tfac4(ipt,kang,izz) = tt4
+                kref4(ipt,kang,izz) = nrng - 1
+              else
+                w2 = (f4-frqa(ir))/(frqa(ir+1)-frqa(ir))
+                wtk4(ipt,kang,izz)  = 1. - w2
+                tfac4(ipt,kang,izz) = 1.
+                kref4(ipt,kang,izz) = ir
+              end if
+            end if
+            !!            ----------------------------------------------------------
+            !!
+            !!
+            !!            Set indexing and weight parameters for computations around
+            !!            azimuths; it appears that jref2 and jref4 should be bounded
+            !!            between 0 and nang-1 so that when iang (=1,nang) is added in
+            !!            the integration section, the proper bin index will arise;
+            !!            the weights wta2 and wta4 seem to be the fractional bin
+            !!            widths between th2 or th4 and the next increasing
+            !!            directional bin boundary
+            !!            ----------------------------------------------------------
+            !!
+            i = int(th2/ainc)
+            wta2(ipt,kang,izz)  = 1. - abs(th2-i*ainc)/ainc
+            if ( i .ge. nang )  i = i - nang
+            jref2(ipt,kang,izz) = i
+            !mpc          jref2(ipt,kang,izz) = MOD(i,nang) !* is this better that the above two lines?
+            !!
+            i = int(th4/ainc)
+            wta4(ipt,kang,izz)  = 1. - abs(th4-i*ainc)/ainc
+            if ( i .ge. nang )  i = i - nang
+            jref4(ipt,kang,izz) = i
+            !mpc          jref4(ipt,kang,izz) = MOD(i,nang) !* is this better that the above two lines?
+            !!
+50        end do                              !* end of ipt loop
+          !!
+40      end do                                !* end of kang loop
+        !!
+30    end do                                  !* end of krng loop
+      !!
 20  end do                                    !* end of irng loop
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -2058,32 +2058,32 @@ CONTAINS
     !!
     !!
     do n=np2p1,npts                      !* for npts = 30
-       !!                                            !* n = 16 --> 30
-       !!
-       !b       b   = 0.5 * db  + float(n-np2p1) * db
-       b   = db * (0.5 + float(n-np2p1))
-       !b       a   = sqrt(1. + (2.*b/p)**2)
-       a   = sqrt(1. + (2.*b/p)*(2.*b/p))
-       dth = acos(1./a)
-       a_halfp = a*halfp
-       !!
-       !b       wk2x(n) = a*halfp * cos(thp+dth)
-       !b       wk2y(n) = a*halfp * sin(thp+dth)
-       wk2x(n) = a_halfp * cos(thp+dth)
-       wk2y(n) = a_halfp * sin(thp+dth)
-       wk4x(n) = wk2x(n) - px
-       wk4y(n) = wk2y(n) - py
-       ds(n)   = db
-       !!
-       m       = npts - n + 1                !* m = 15 --> 1
-       !b       wk2x(m) = a*halfp * cos(thp-dth)
-       !b       wk2y(m) = a*halfp * sin(thp-dth)
-       wk2x(m) = a_halfp * cos(thp-dth)
-       wk2y(m) = a_halfp * sin(thp-dth)
-       wk4x(m) = wk2x(m) - px
-       wk4y(m) = wk2y(m) - py
-       ds(m)   = db
-       !!
+      !!                                            !* n = 16 --> 30
+      !!
+      !b       b   = 0.5 * db  + float(n-np2p1) * db
+      b   = db * (0.5 + float(n-np2p1))
+      !b       a   = sqrt(1. + (2.*b/p)**2)
+      a   = sqrt(1. + (2.*b/p)*(2.*b/p))
+      dth = acos(1./a)
+      a_halfp = a*halfp
+      !!
+      !b       wk2x(n) = a*halfp * cos(thp+dth)
+      !b       wk2y(n) = a*halfp * sin(thp+dth)
+      wk2x(n) = a_halfp * cos(thp+dth)
+      wk2y(n) = a_halfp * sin(thp+dth)
+      wk4x(n) = wk2x(n) - px
+      wk4y(n) = wk2y(n) - py
+      ds(n)   = db
+      !!
+      m       = npts - n + 1                !* m = 15 --> 1
+      !b       wk2x(m) = a*halfp * cos(thp-dth)
+      !b       wk2y(m) = a*halfp * sin(thp-dth)
+      wk2x(m) = a_halfp * cos(thp-dth)
+      wk2y(m) = a_halfp * sin(thp-dth)
+      wk4x(m) = wk2x(m) - px
+      wk4y(m) = wk2y(m) - py
+      ds(m)   = db
+      !!
     end do !  do n=np2p1,npts
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -2359,20 +2359,20 @@ CONTAINS
     !!
     !!
     do n=1,4
-       rold2 = rold1 + 0.1
-       tp    = tanh(rold2 * p)
-       tm    = tanh((1.-rold2) * p)
-       t     = tp + tm
-       t1    = qsqp * (tp-tm)
-       t2    = t  * tm
-       t3    = 2. * qrtp * sqrt(tp*tm) * sqrt(t-qsqp)
-       rnew2 = (t1 + t2 + t3) / (t*t)
-       if ( rnew2 .lt. rold2 ) then
-          rold = (rold2*rnew1-rold1*rnew2)/(rold2-rold1-rnew2+rnew1)
-          go to 11
-       end if
-       rold1 = rold2
-       rnew1 = rnew2
+      rold2 = rold1 + 0.1
+      tp    = tanh(rold2 * p)
+      tm    = tanh((1.-rold2) * p)
+      t     = tp + tm
+      t1    = qsqp * (tp-tm)
+      t2    = t  * tm
+      t3    = 2. * qrtp * sqrt(tp*tm) * sqrt(t-qsqp)
+      rnew2 = (t1 + t2 + t3) / (t*t)
+      if ( rnew2 .lt. rold2 ) then
+        rold = (rold2*rnew1-rold1*rnew2)/(rold2-rold1-rnew2+rnew1)
+        go to 11
+      end if
+      rold1 = rold2
+      rnew1 = rnew2
     end do  ! do n=1,4
     rold = 0.9                       !* default if not otherwise found
 11  continue
@@ -2381,18 +2381,18 @@ CONTAINS
     !!
     !!    iterative replacement search for rmin
     do n=1,50
-       tp   = tanh(rold * p)
-       tm   = tanh((1.-rold) * p)
-       t    = tp + tm
-       t1   = qsqp * (tp-tm)
-       t2   = t  * tm
-       t3   = 2. * qrtp*sqrt(tp*tm)*sqrt(t-qsqp)
-       rnew = (t1 + t2 + t3) / (t*t)
-       if ( abs(rnew-rold) .lt. 0.00001 ) then
-          rmin = rnew
-          go to 21
-       end if
-       rold = 0.5 * (rold + rnew)
+      tp   = tanh(rold * p)
+      tm   = tanh((1.-rold) * p)
+      t    = tp + tm
+      t1   = qsqp * (tp-tm)
+      t2   = t  * tm
+      t3   = 2. * qrtp*sqrt(tp*tm)*sqrt(t-qsqp)
+      rnew = (t1 + t2 + t3) / (t*t)
+      if ( abs(rnew-rold) .lt. 0.00001 ) then
+        rmin = rnew
+        go to 21
+      end if
+      rold = 0.5 * (rold + rnew)
     end do
     ierr_gr = ierr_gr + 1  !* set 1's flag in ierr_gr if no convergence
     rmin = rnew
@@ -2450,17 +2450,17 @@ CONTAINS
     !!
     rold = 1.0
     do n=1,200
-       rold = rold + 10.
-       tp   = tanh(rold * p)
-       tm   = tanh((rold-1.) * p)
-       t    = tp - tm
-       t1   = tm + qsqp
-       t2   = 4. * tp * qsqp
-       rnew = ((t1+rold*t)**2) / t2
-       if ( rnew .lt. rold ) then
-          rold = rold - 10.
-          go to 31
-       end if
+      rold = rold + 10.
+      tp   = tanh(rold * p)
+      tm   = tanh((rold-1.) * p)
+      t    = tp - tm
+      t1   = tm + qsqp
+      t2   = 4. * tp * qsqp
+      rnew = ((t1+rold*t)**2) / t2
+      if ( rnew .lt. rold ) then
+        rold = rold - 10.
+        go to 31
+      end if
     end do
     ierr_gr = ierr_gr + 10    !* set 10's place in ierr_gr if no sol'n
 31  continue
@@ -2470,21 +2470,21 @@ CONTAINS
     !!    successive decimation search to refine rmax
     dr = 10.
     do nplace=1,6
-       dr = dr/10.
-       do n=1,10
-          rold = rold + dr
-          tp   = tanh(rold * p)
-          tm   = tanh((rold-1.) * p)
-          t    = tp - tm
-          t1   = tm + qsqp
-          t2   = 4. * tp * qsqp
-          rnew = ((t1+rold*t)**2) / t2
-          if ( rnew .lt. rold ) then
-             rold = rold - dr
-             go to 51
-          end if
-       end do
-51     continue
+      dr = dr/10.
+      do n=1,10
+        rold = rold + dr
+        tp   = tanh(rold * p)
+        tm   = tanh((rold-1.) * p)
+        t    = tp - tm
+        t1   = tm + qsqp
+        t2   = 4. * tp * qsqp
+        rnew = ((t1+rold*t)**2) / t2
+        if ( rnew .lt. rold ) then
+          rold = rold - dr
+          go to 51
+        end if
+      end do
+51    continue
     end do
     !!
     rmax = rold
@@ -2548,55 +2548,55 @@ CONTAINS
     !!
     !!
     do np=2,npts/2                        !* np = 2 --> 15
-       !!
-       cphi    = cos(float(np-1)*dphi)
-       dbz     = dsqrt(dble(t1-t2*cphi))
-       cdthold = dble(rcenter-rradius*cphi) / dbz
-       dbt3    = (dbz*dbz) + 1.d0
-       dbt4    = dbt3 / (2.d0*dbz)
-       dbt5    = ((dsqrt(dbz*dtanh(dbz*dbp))-dbqrtp)**4)/(2.d0*dbz)
-       dbt6    = dbp * dsqrt(dbt3-2.d0*dbz*cdthold)
-       !!
-       if ( dbt6 .gt. 0.55d0 ) then
-          wate1 = dtanh(dbt6)
-          wate2 = 1.d0 - wate1
-       else
-          wate1 = 0.5d0
-          wate2 = 0.5d0
-       end if
-       !!
-       do  n=1,25
-          cdthnew = dbt4 - dbt5 / ((dtanh(dbt6))**2)
-          if ( dabs(cdthnew-cdthold) .lt. 0.0000001d0 ) go to 71
-          cdthold = wate1 * cdthnew + wate2 * cdthold
-          dbt6    = dbp * dsqrt(dbt3-2.d0*dbz*cdthold)
-       end do
-       ierr_gr = ierr_gr + 100   !* add to 100's place for every failure
-71     continue
-       !!
-       dth  = sngl(dacos(cdthnew))
-       zpod = sngl(dbz) * p / dep
-       !!
-       wk2x(np) = zpod * cos(thp+dth)
-       wk2y(np) = zpod * sin(thp+dth)
-       wk4x(np) = wk2x(np) - pxod
-       wk4y(np) = wk2y(np) - pyod
-       !!
-       nnp = npts-np+2                        !* for npts = 30
-       !!                                             !* nnp = 30 --> 17
-       !!
-       wk2x(nnp) = zpod * cos(thp-dth)
-       wk2y(nnp) = zpod * sin(thp-dth)
-       wk4x(nnp) = wk2x(nnp) - pxod
-       wk4y(nnp) = wk2y(nnp) - pyod
-       !!
+      !!
+      cphi    = cos(float(np-1)*dphi)
+      dbz     = dsqrt(dble(t1-t2*cphi))
+      cdthold = dble(rcenter-rradius*cphi) / dbz
+      dbt3    = (dbz*dbz) + 1.d0
+      dbt4    = dbt3 / (2.d0*dbz)
+      dbt5    = ((dsqrt(dbz*dtanh(dbz*dbp))-dbqrtp)**4)/(2.d0*dbz)
+      dbt6    = dbp * dsqrt(dbt3-2.d0*dbz*cdthold)
+      !!
+      if ( dbt6 .gt. 0.55d0 ) then
+        wate1 = dtanh(dbt6)
+        wate2 = 1.d0 - wate1
+      else
+        wate1 = 0.5d0
+        wate2 = 0.5d0
+      end if
+      !!
+      do  n=1,25
+        cdthnew = dbt4 - dbt5 / ((dtanh(dbt6))**2)
+        if ( dabs(cdthnew-cdthold) .lt. 0.0000001d0 ) go to 71
+        cdthold = wate1 * cdthnew + wate2 * cdthold
+        dbt6    = dbp * dsqrt(dbt3-2.d0*dbz*cdthold)
+      end do
+      ierr_gr = ierr_gr + 100   !* add to 100's place for every failure
+71    continue
+      !!
+      dth  = sngl(dacos(cdthnew))
+      zpod = sngl(dbz) * p / dep
+      !!
+      wk2x(np) = zpod * cos(thp+dth)
+      wk2y(np) = zpod * sin(thp+dth)
+      wk4x(np) = wk2x(np) - pxod
+      wk4y(np) = wk2y(np) - pyod
+      !!
+      nnp = npts-np+2                        !* for npts = 30
+      !!                                             !* nnp = 30 --> 17
+      !!
+      wk2x(nnp) = zpod * cos(thp-dth)
+      wk2y(nnp) = zpod * sin(thp-dth)
+      wk4x(nnp) = wk2x(nnp) - pxod
+      wk4y(nnp) = wk2y(nnp) - pyod
+      !!
     end do ! do np=2,npts/2
     !!    ------------------------------------------------------------------
     !!
     !!
     if ( ierr_gr .ne. 0 ) then
-       write ( ndse,1000 ) ierr_gr
-       CALL EXTCDE ( 60 )
+      write ( ndse,1000 ) ierr_gr
+      CALL EXTCDE ( 60 )
     endif
     !!    ------------------------------------------------------------------
     !!
@@ -2607,10 +2607,10 @@ CONTAINS
     ds1   = sqrt((wk2x(2)-wk2x(1))**2+(wk2y(2)-wk2y(1))**2)
     ds(1) = ds1
     do np=3,npts/2+1
-       ds2   = sqrt((wk2x(np)-wk2x(np-1))**2+(wk2y(np)-wk2y(np-1))**2)
-       ds(np-1)      = 0.5*(ds1+ds2)
-       ds(npts-np+3) = ds(np-1)
-       ds1           = ds2
+      ds2   = sqrt((wk2x(np)-wk2x(np-1))**2+(wk2y(np)-wk2y(np-1))**2)
+      ds(np-1)      = 0.5*(ds1+ds2)
+      ds(npts-np+3) = ds(np-1)
+      ds1           = ds2
     end do
     ds(npts/2+1)    = ds2
     !!    ------------------------------------------------------------------
@@ -2782,184 +2782,184 @@ CONTAINS
     !!    ------------------------------------------------------------------
     !!
     do ipass=1,3
-       !p1
-       if (ipass .eq. 1) then            !* initial pass (+1,+1,-1)
-          s1   =  1.d0
-          s2   =  1.d0
-          s3   = -1.d0
-          k1x0 = dble(w1x0) * hh          !* norm. k elements with h
-          k1y0 = dble(w1y0) * hh
-          k2x0 = dble(w2x0) * hh
-          k2y0 = dble(w2y0) * hh
-          k3x0 = dble(w3x0) * hh
-          k3y0 = dble(w3y0) * hh
-          !p1
-          !p2
-       else if (ipass .eq. 2) then       !* 1st permutation (+1,-1,+1)
-          s1   =  1.d0
-          s2   = -1.d0
-          s3   =  1.d0
-          k1zx = k1x0
-          k1zy = k1y0
-          k1x0 = k2x0
-          k1y0 = k2y0
-          k2x0 = k3x0
-          k2y0 = k3y0
-          k3x0 = k1zx
-          k3y0 = k1zy
-          !p2
-          !p3
-       else                              !* 2nd permutation (-1,+1,+1)
-          s1   = -1.d0
-          s2   =  1.d0
-          s3   =  1.d0
-          k1zx = k1x0
-          k1zy = k1y0
-          k1x0 = k2x0
-          k1y0 = k2y0
-          k2x0 = k3x0
-          k2y0 = k3y0
-          k3x0 = k1zx
-          k3y0 = k1zy
-          !p3
-       end if
-       !!k19p1
-       !!k19p1 Note: na2p1=nang/2+1   !* this is the angle index opposite to iang=1
-       !k19p1  if (krng.ne.irng .and. kang.eq.na2p1 .and. ipt.eq.1 .and.     &
-       !k19p1                                        ipass.eq.1) go to 10
-       !!k19p1---
-       !!
-       k1x = s1 * k1x0                    !* sign the norm'ed k parts
-       k1y = s1 * k1y0
-       k2x = s2 * k2x0
-       k2y = s2 * k2y0
-       k3x = s3 * k3x0
-       k3y = s3 * k3y0
-       !!mpc
-       !mpc    k1    = dsqrt(k1x**2 + k1y**2)     !* normalized |k|
-       !mpc    k2    = dsqrt(k2x**2 + k2y**2)
-       !mpc    k3    = dsqrt(k3x**2 + k3y**2)
-       !!mpc---
-       k1sq  = (k1x*k1x + k1y*k1y)        !* normalized |k| **2
-       k2sq  = (k2x*k2x + k2y*k2y)
-       k3sq  = (k3x*k3x + k3y*k3y)
-       k1    = dsqrt(k1sq)                !* normalized |k|
-       k2    = dsqrt(k2sq)
-       k3    = dsqrt(k3sq)
-       !!mpc---
-       !!
-       !!mpc
-       !mpc    om1   = dsqrt(k1*dtanh(k1))        !* norm. omega (by sqrt(h/g))
-       !mpc    om2   = dsqrt(k2*dtanh(k2))
-       !mpc    om3   = dsqrt(k3*dtanh(k3))
-       !mpc    om1sq = om1**2
-       !mpc    om2sq = om2**2
-       !mpc    om3sq = om3**2
-       !!mpc---
-       tanh_k1 = dtanh(k1)
-       tanh_k2 = dtanh(k2)
-       tanh_k3 = dtanh(k3)
-       om1sq   = k1*tanh_k1
-       om2sq   = k2*tanh_k2
-       om3sq   = k3*tanh_k3
-       om1     = dsqrt(om1sq)             !* norm. omega (by sqrt(h/g))
-       om2     = dsqrt(om2sq)
-       om3     = dsqrt(om3sq)
-       !!mpc---
-       !!
-       som1 = s1 * om1                    !* sign the norm'ed omega's
-       som2 = s2 * om2
-       som3 = s3 * om3
-       !!      ----------------------------------------------------------------
-       !!      ================================================================
-       !!
-       !!
-       dot23  = k2x*k3x + k2y*k3y        !*  vector k2 dot vector k3
-       !!
-       k23x   = k2x + k3x                !* (vector k2  +  vector k3)_x
-       k23y   = k2y + k3y                !* (vector k2  +  vector k3)_y
-       !!
-       !!mpc
-       !mpc    k23    = dsqrt(k23x**2+k23y**2)   !* |vector k2  +  vector k3|
-       !!mpc---
-       k23sq  = (k23x*k23x + k23y*k23y)
-       k23    = dsqrt(k23sq)             !* |vector k2  +  vector k3|
-       !!mpc---
-       !!
-       !!mpc
-       !mpc    omsq23 = k23 * dtanh(k23)         !* norm sq frq of v.k2+v.k3
-       !!mpc---
-       tanh_k23 = dtanh(k23)
-       omsq23   = k23 * tanh_k23         !* norm sq frq of v.k2+v.k3
-       !!mpc---
-       !!
-       dot123 = k1x*k23x + k1y*k23y      !* v.k1 dot (v.k2 + v.k3)
-       !!      ----------------------------------------------------------------
-       !!
-       !!      note: the "i**2" factor from some reference is included in this term
-       !!
-       !!mpc
-       !mpc    di = -(som2+som3)*(om2sq*om3sq-dot23)+0.5d0 *                 &
-       !mpc          (som2*(k3**2-om3sq**2)+som3*(k2**2-om2sq**2))
-       !!mpc---
-       di = -(som2+som3)*(om2sq*om3sq-dot23)+0.5d0 *                 &
-            (som2*(k3sq-om3sq*om3sq)+som3*(k2sq-om2sq*om2sq))
-       !!mpc---
-       !!
-       e  = 0.5d0*(dot23-som2*som3*(om2sq+om3sq+som2*som3))
-       !!
-       p1 = 2.d0 * (som1+som2+som3) * (om1sq*omsq23 - dot123)
-       !!
-       !!mpc
-       !mpc    p2 = -som1 * (k23**2 - omsq23**2)
-       !mpc    p3 = -(som2+som3) * (k1**2 - om1sq**2)
-       !mpc    p4 = k1**2 - om1sq**2
-       !!mpc---
-       !!      equation  p2 rewritten to preserve numerical precision
-       !!      equations p3, p4 rearranged to avoid recomputations.
-       p2 = -som1 * (k23sq*(1 - tanh_k23*tanh_k23))
-       p4 = (k1sq*(1-tanh_k1*tanh_k1))
-       p3 = -(som2+som3) * p4
-       !!mpc---
-       !!      ----------------------------------------------------------------
-       !!
-       !!      Bash; added & used  variable domsq23 = denominator of t1
-       domsq23 = omsq23 - ((som2+som3)**2)  !* Bash; needed for test below
-       !!      ----------------------------------------------------------------
-       !!
-       !!cp4   Bash; with !cp4 ON, test if ( domsq23 .eq. 0.d0 )
-       !cp4    if ( domsq23 .eq. 0.d0 ) then     !* Bash; this test was needed
-       !!                                        !* when !k19p1 & !hv were OFF
-       !!        domsq23=0.0 Dividing by 0.0 causes NaN; here we avoid it
-       !cp4      t1 = 0.d0
-       !eps      t1 = di * (p1+p2+p3) / (domsq23+eps)    !* Add eps to denominator
-       !!                                                !* and may be to numerator
-       !cp4    endif
-       !!cp4---
-       !!      Bash; with !cp4 OFF, don't test if ( domsq23 .eq. 0.d0 )
-       !!      domsq23 is not = 0.0 (when !k19p1 & !hv were OFF)
-       !b      t1 = di * (p1+p2+p3) / (omsq23 - ((som2+som3)**2))
-       t1 = di * (p1+p2+p3) / (domsq23)
-       !!cp4---
-       !!      ----------------------------------------------------------------
-       !!
-       t2 = -di * som1 * (om1sq+omsq23)
-       t3 = e * ((som1**3) * (som2+som3) - dot123 - p4)
-       t4 = 0.5d0 * som1 * dot23 *                                   &
-            ((som1+som2+som3) * (om2sq+om3sq) + som2*som3*(som2+som3))
-       !!
-       !!mpc
-       !mpc    t5 = -0.5d0 * som1 *                                          &
-       !mpc        (om2sq * (k3**2) * (som1+som2 + 2.d0 * som3)  +           &
-       !mpc         om3sq * (k2**2) * (som1+som3 + 2.d0 * som2))
-       !!mpc---
-       t5 = -0.5d0 * som1 *                                          &
-            (om2sq * (k3sq) * (som1+som2 + 2.d0 * som3)  +            &
-            om3sq * (k2sq) * (som1+som3 + 2.d0 * som2))
-       !!mpc---
-       !!
-       scple = scple + t1 + t2 + t3 + t4 + t5
-       !!
+      !p1
+      if (ipass .eq. 1) then            !* initial pass (+1,+1,-1)
+        s1   =  1.d0
+        s2   =  1.d0
+        s3   = -1.d0
+        k1x0 = dble(w1x0) * hh          !* norm. k elements with h
+        k1y0 = dble(w1y0) * hh
+        k2x0 = dble(w2x0) * hh
+        k2y0 = dble(w2y0) * hh
+        k3x0 = dble(w3x0) * hh
+        k3y0 = dble(w3y0) * hh
+        !p1
+        !p2
+      else if (ipass .eq. 2) then       !* 1st permutation (+1,-1,+1)
+        s1   =  1.d0
+        s2   = -1.d0
+        s3   =  1.d0
+        k1zx = k1x0
+        k1zy = k1y0
+        k1x0 = k2x0
+        k1y0 = k2y0
+        k2x0 = k3x0
+        k2y0 = k3y0
+        k3x0 = k1zx
+        k3y0 = k1zy
+        !p2
+        !p3
+      else                              !* 2nd permutation (-1,+1,+1)
+        s1   = -1.d0
+        s2   =  1.d0
+        s3   =  1.d0
+        k1zx = k1x0
+        k1zy = k1y0
+        k1x0 = k2x0
+        k1y0 = k2y0
+        k2x0 = k3x0
+        k2y0 = k3y0
+        k3x0 = k1zx
+        k3y0 = k1zy
+        !p3
+      end if
+      !!k19p1
+      !!k19p1 Note: na2p1=nang/2+1   !* this is the angle index opposite to iang=1
+      !k19p1  if (krng.ne.irng .and. kang.eq.na2p1 .and. ipt.eq.1 .and.     &
+      !k19p1                                        ipass.eq.1) go to 10
+      !!k19p1---
+      !!
+      k1x = s1 * k1x0                    !* sign the norm'ed k parts
+      k1y = s1 * k1y0
+      k2x = s2 * k2x0
+      k2y = s2 * k2y0
+      k3x = s3 * k3x0
+      k3y = s3 * k3y0
+      !!mpc
+      !mpc    k1    = dsqrt(k1x**2 + k1y**2)     !* normalized |k|
+      !mpc    k2    = dsqrt(k2x**2 + k2y**2)
+      !mpc    k3    = dsqrt(k3x**2 + k3y**2)
+      !!mpc---
+      k1sq  = (k1x*k1x + k1y*k1y)        !* normalized |k| **2
+      k2sq  = (k2x*k2x + k2y*k2y)
+      k3sq  = (k3x*k3x + k3y*k3y)
+      k1    = dsqrt(k1sq)                !* normalized |k|
+      k2    = dsqrt(k2sq)
+      k3    = dsqrt(k3sq)
+      !!mpc---
+      !!
+      !!mpc
+      !mpc    om1   = dsqrt(k1*dtanh(k1))        !* norm. omega (by sqrt(h/g))
+      !mpc    om2   = dsqrt(k2*dtanh(k2))
+      !mpc    om3   = dsqrt(k3*dtanh(k3))
+      !mpc    om1sq = om1**2
+      !mpc    om2sq = om2**2
+      !mpc    om3sq = om3**2
+      !!mpc---
+      tanh_k1 = dtanh(k1)
+      tanh_k2 = dtanh(k2)
+      tanh_k3 = dtanh(k3)
+      om1sq   = k1*tanh_k1
+      om2sq   = k2*tanh_k2
+      om3sq   = k3*tanh_k3
+      om1     = dsqrt(om1sq)             !* norm. omega (by sqrt(h/g))
+      om2     = dsqrt(om2sq)
+      om3     = dsqrt(om3sq)
+      !!mpc---
+      !!
+      som1 = s1 * om1                    !* sign the norm'ed omega's
+      som2 = s2 * om2
+      som3 = s3 * om3
+      !!      ----------------------------------------------------------------
+      !!      ================================================================
+      !!
+      !!
+      dot23  = k2x*k3x + k2y*k3y        !*  vector k2 dot vector k3
+      !!
+      k23x   = k2x + k3x                !* (vector k2  +  vector k3)_x
+      k23y   = k2y + k3y                !* (vector k2  +  vector k3)_y
+      !!
+      !!mpc
+      !mpc    k23    = dsqrt(k23x**2+k23y**2)   !* |vector k2  +  vector k3|
+      !!mpc---
+      k23sq  = (k23x*k23x + k23y*k23y)
+      k23    = dsqrt(k23sq)             !* |vector k2  +  vector k3|
+      !!mpc---
+      !!
+      !!mpc
+      !mpc    omsq23 = k23 * dtanh(k23)         !* norm sq frq of v.k2+v.k3
+      !!mpc---
+      tanh_k23 = dtanh(k23)
+      omsq23   = k23 * tanh_k23         !* norm sq frq of v.k2+v.k3
+      !!mpc---
+      !!
+      dot123 = k1x*k23x + k1y*k23y      !* v.k1 dot (v.k2 + v.k3)
+      !!      ----------------------------------------------------------------
+      !!
+      !!      note: the "i**2" factor from some reference is included in this term
+      !!
+      !!mpc
+      !mpc    di = -(som2+som3)*(om2sq*om3sq-dot23)+0.5d0 *                 &
+      !mpc          (som2*(k3**2-om3sq**2)+som3*(k2**2-om2sq**2))
+      !!mpc---
+      di = -(som2+som3)*(om2sq*om3sq-dot23)+0.5d0 *                 &
+           (som2*(k3sq-om3sq*om3sq)+som3*(k2sq-om2sq*om2sq))
+      !!mpc---
+      !!
+      e  = 0.5d0*(dot23-som2*som3*(om2sq+om3sq+som2*som3))
+      !!
+      p1 = 2.d0 * (som1+som2+som3) * (om1sq*omsq23 - dot123)
+      !!
+      !!mpc
+      !mpc    p2 = -som1 * (k23**2 - omsq23**2)
+      !mpc    p3 = -(som2+som3) * (k1**2 - om1sq**2)
+      !mpc    p4 = k1**2 - om1sq**2
+      !!mpc---
+      !!      equation  p2 rewritten to preserve numerical precision
+      !!      equations p3, p4 rearranged to avoid recomputations.
+      p2 = -som1 * (k23sq*(1 - tanh_k23*tanh_k23))
+      p4 = (k1sq*(1-tanh_k1*tanh_k1))
+      p3 = -(som2+som3) * p4
+      !!mpc---
+      !!      ----------------------------------------------------------------
+      !!
+      !!      Bash; added & used  variable domsq23 = denominator of t1
+      domsq23 = omsq23 - ((som2+som3)**2)  !* Bash; needed for test below
+      !!      ----------------------------------------------------------------
+      !!
+      !!cp4   Bash; with !cp4 ON, test if ( domsq23 .eq. 0.d0 )
+      !cp4    if ( domsq23 .eq. 0.d0 ) then     !* Bash; this test was needed
+      !!                                        !* when !k19p1 & !hv were OFF
+      !!        domsq23=0.0 Dividing by 0.0 causes NaN; here we avoid it
+      !cp4      t1 = 0.d0
+      !eps      t1 = di * (p1+p2+p3) / (domsq23+eps)    !* Add eps to denominator
+      !!                                                !* and may be to numerator
+      !cp4    endif
+      !!cp4---
+      !!      Bash; with !cp4 OFF, don't test if ( domsq23 .eq. 0.d0 )
+      !!      domsq23 is not = 0.0 (when !k19p1 & !hv were OFF)
+      !b      t1 = di * (p1+p2+p3) / (omsq23 - ((som2+som3)**2))
+      t1 = di * (p1+p2+p3) / (domsq23)
+      !!cp4---
+      !!      ----------------------------------------------------------------
+      !!
+      t2 = -di * som1 * (om1sq+omsq23)
+      t3 = e * ((som1**3) * (som2+som3) - dot123 - p4)
+      t4 = 0.5d0 * som1 * dot23 *                                   &
+           ((som1+som2+som3) * (om2sq+om3sq) + som2*som3*(som2+som3))
+      !!
+      !!mpc
+      !mpc    t5 = -0.5d0 * som1 *                                          &
+      !mpc        (om2sq * (k3**2) * (som1+som2 + 2.d0 * som3)  +           &
+      !mpc         om3sq * (k2**2) * (som1+som3 + 2.d0 * som2))
+      !!mpc---
+      t5 = -0.5d0 * som1 *                                          &
+           (om2sq * (k3sq) * (som1+som2 + 2.d0 * som3)  +            &
+           om3sq * (k2sq) * (som1+som3 + 2.d0 * som2))
+      !!mpc---
+      !!
+      scple = scple + t1 + t2 + t3 + t4 + t5
+      !!
     end do  ! do ipass=1,3
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -3198,16 +3198,16 @@ CONTAINS
     !!*   Convert 2D Energy Density ef2(f,theta)
     !!         to 2D Polar Action Density act2d(k,theta) Norm. (in k)
     do irng=nrmn,nrmx
-       fac   = cga(irng)/(twopi*oma(irng)*wka(irng))
-       do iang=1,nang
-          act2d(irng,iang) = ef2(irng,iang) * fac
-       end do
-       !!
-       !!*     Convert ef1(f) to fk(k); both are 1d Energy Density
-       fk(irng)    = cga(irng)*ef1(irng)/twopi  !* fk(k) energy
-       !!
-       !!*     Normalize the 1d wavenumber Energy Density fk(k) to give fknrm(k)
-       fknrm(irng) = fk(irng)*wka(irng)**2.5    !* fknrm(k) = Norm. fk(k)
+      fac   = cga(irng)/(twopi*oma(irng)*wka(irng))
+      do iang=1,nang
+        act2d(irng,iang) = ef2(irng,iang) * fac
+      end do
+      !!
+      !!*     Convert ef1(f) to fk(k); both are 1d Energy Density
+      fk(irng)    = cga(irng)*ef1(irng)/twopi  !* fk(k) energy
+      !!
+      !!*     Normalize the 1d wavenumber Energy Density fk(k) to give fknrm(k)
+      fknrm(irng) = fk(irng)*wka(irng)**2.5    !* fknrm(k) = Norm. fk(k)
     end do
     !!    ------------------------------------------------------------------
     !!
@@ -3243,7 +3243,7 @@ CONTAINS
     !!    ------------------------------------------------------------------
     !!
     do irng=nrmn,nrmx
-       fknrm(irng) = fknrm(irng) / beta
+      fknrm(irng) = fknrm(irng) / beta
     end do
     !!    ==================================================================
     !!
@@ -3343,10 +3343,10 @@ CONTAINS
     !!
     halfmax = 0.5 * ef2(npk,maxang)
     do while((ef2shift(halfangu).gt.halfmax).and.(halfangu.lt.nang/2))
-       halfangu = halfangu + 1
+      halfangu = halfangu + 1
     enddo
     do while((ef2shift(halfangl).gt.halfmax).and.(halfangl.gt.1))
-       halfangl = halfangl - 1
+      halfangl = halfangl - 1
     enddo
     !!    -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !!
@@ -3434,28 +3434,28 @@ CONTAINS
     !!
     !!
     do irng=nrmn,nrmx
-       fr = frqa(irng) / fpk
-       if ( fr.le.1.0001 ) then
-          if ( fr.ge.0.85 ) then
-             ratio = 1.-(1.-fr)*0.7/0.15
-          else
-             ratio = 0.3*exp(-17.3*(0.85-fr))
-          endif
-          fkscl1(irng) = fdenp*ratio
-          bscl1(irng)  = fkscl1(irng)/oma(irng)
-       else
-          z = 0.5*((fr-1.)/sigz)**1.2
-          if ( z.gt.6. ) z = 6.
-          ratio = 1.+exp(-z)*(gam-1.)
-          fkscl1(irng) = beta*ratio/wka(irng)**2.5
-          bscl1(irng)  = fkscl1(irng)/oma(irng)
-       endif
-       !!
-       do iang=1,nang
-          ddd = bscl1(irng) * psi2(iang) / wka(irng)  !* large-scale
-          dens1(irng,iang) = ddd                      !* large-scale
-          dens2(irng,iang) = act2d(irng,iang) - ddd   !* small-scale
-       end do
+      fr = frqa(irng) / fpk
+      if ( fr.le.1.0001 ) then
+        if ( fr.ge.0.85 ) then
+          ratio = 1.-(1.-fr)*0.7/0.15
+        else
+          ratio = 0.3*exp(-17.3*(0.85-fr))
+        endif
+        fkscl1(irng) = fdenp*ratio
+        bscl1(irng)  = fkscl1(irng)/oma(irng)
+      else
+        z = 0.5*((fr-1.)/sigz)**1.2
+        if ( z.gt.6. ) z = 6.
+        ratio = 1.+exp(-z)*(gam-1.)
+        fkscl1(irng) = beta*ratio/wka(irng)**2.5
+        bscl1(irng)  = fkscl1(irng)/oma(irng)
+      endif
+      !!
+      do iang=1,nang
+        ddd = bscl1(irng) * psi2(iang) / wka(irng)  !* large-scale
+        dens1(irng,iang) = ddd                      !* large-scale
+        dens2(irng,iang) = act2d(irng,iang) - ddd   !* small-scale
+      end do
     end do ! do irng=nrmn,nrmx
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -3727,318 +3727,318 @@ CONTAINS
     !!
     !!50
     do 50 irng=1,nrng,ialt
-       !!kz
-       kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
-       !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
-       !!kz---
-       !!
-       iizz = (nrng-1)*(irng-1) - ((irng-2)*(irng-1))/2
-       !!      ----------------------------------------------------------------
-       !!
-       !!
-       !!60
-       do 60 iang=1,nang,ialt
+      !!kz
+      kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
+      !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
+      !!kz---
+      !!
+      iizz = (nrng-1)*(irng-1) - ((irng-2)*(irng-1))/2
+      !!      ----------------------------------------------------------------
+      !!
+      !!
+      !!60
+      do 60 iang=1,nang,ialt
+        !!
+        !!        for both -tsa and -fbi
+        d1   = dens1(irng,iang)
+        dp1  = dens2(irng,iang)
+        !!
+        !!        for -fbi
+        ddp1 = d1+dp1             !! for full expression of diag2 term
+        !!
+        !!70
+        !!kz
+        !kz       do 70 krng=irng,nrng
+        do 70 krng=irng,kmax,ialt
           !!
-          !!        for both -tsa and -fbi
-          d1   = dens1(irng,iang)
-          dp1  = dens2(irng,iang)
+          !!          for both -tsa and -fbi
+          !!          Bash; check5  be consistent with gridsetr
+          !!          moved here from below (was after do 80 kang=1,nang)
+          !!          and changed go to 80 into go to 70 (i.e. go to next krng)
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 70  !* original gridsetr
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 70  !* original snlr_'s
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 70  !* Bash; use .gt. 2
+          !!kz---
           !!
-          !!        for -fbi
-          ddp1 = d1+dp1             !! for full expression of diag2 term
+          izz = krng + iizz
+          !!          ------------------------------------------------------------
           !!
-          !!70
-          !!kz
-          !kz       do 70 krng=irng,nrng
-          do 70 krng=irng,kmax,ialt
-             !!
-             !!          for both -tsa and -fbi
-             !!          Bash; check5  be consistent with gridsetr
-             !!          moved here from below (was after do 80 kang=1,nang)
-             !!          and changed go to 80 into go to 70 (i.e. go to next krng)
-             !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 70  !* original gridsetr
-             !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 70  !* original snlr_'s
-             !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 70  !* Bash; use .gt. 2
-             !!kz---
-             !!
-             izz = krng + iizz
-             !!          ------------------------------------------------------------
-             !!
-             !!80
-             do 80 kang=1,nang,ialt
-                !!
-                !!            for both -tsa and -fbi
-                !!ba1         Bash; Remove self interaction
-                !!                  skip k1 but keep the opposite angle to k1 - original setting
-                if ( krng.eq.irng ) then              !* wn3 = wn1
-                   if ( kang.eq.iang ) go to 80        !* th3 = th1
-                endif
-                !!ba1---
-                !!            ----------------------------------------------------------
-                !!
-                !!            for both -tsa and -fbi
-                d3   = dens1(krng,kang)
-                dp3  = dens2(krng,kang)
-                !!
-                !!            for -fbi
-                ddp3 = d3+dp3         !! for full expression of diag2 term
-                !!
-                !!
-                !!            for both -tsa and -fbi
-                nref = kang - iang + 1
-                if ( nref .lt. 1 ) nref = nref + nang
-                !!
-                !!
-                !!            for both -tsa and -fbi
-                !!            Bash; check5  be consistent with gridsetr
-                !!                  and move this test above right after do 70 krng=irng,nrng
-                !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 80  !* gridsetr
-                !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 80  !* original
-                !!
-                !!
-                !!            for both -tsa and -fbi
-                t31     = 0.0             !* must be reset to 0.0
-                !!
-                !!            for -tsa
-                !tsa          ttsa    = 0.0             !* must be reset to 0.0
-                !tsa          diagk1  = 0.0             !* must be reset to 0.0
-                !tsa          diagk3  = 0.0             !* must be reset to 0.0
-                !!
-                !!            for -fbi
-                tp31    = 0.0             !* must be reset to 0.0
-                txp31   = 0.0             !* must be reset to 0.0
-                diag2k1 = 0.0             !* must be reset to 0.0
-                diag2k3 = 0.0             !* must be reset to 0.0
-                !!
-                !!            for both -tsa and -fbi
-                dx13  = d1*d3
-                ds13  = d3-d1
-                dxp13 = dp1*dp3
-                dsp13 = dp3-dp1
-                !!            ----------------------------------------------------------
-                !!
-                !!90
-                do 90 ipt=1,npts
-                   !!
-                   !!              for both -tsa and -fbi
-                   !!              save time by skipping insignificant contributions
-                   !!e-30
-                   !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) go to 90
-                   !!e-30---
-                   if ( grad(ipt,nref,izz) .lt. 1.e-15 ) go to 90
-                   !!e-30---
-                   !!              --------------------------------------------------------
-                   !!
-                   !!xlc1          Bash; skip k1 but keep the opposite angle to k1 - original setting
-                   !xlc1           if ( kang.eq.iang ) then                     !* th3=+th1
-                   !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) go to 90   !* skip x-axis loci
-                   !xlc1           end if
-                   !!xlc1---
-                   !!              --------------------------------------------------------
-                   !!
-                   !!
-                   !!2             Estimation of Density for wave #2
-                   !!
-                   !!              for both -tsa and -fbi
-                   k2  = kref2(ipt,nref,izz)
-                   k2p = k2 + 1
-                   w2  = wtk2(ipt,nref,izz)
-                   w2p = 1. - w2
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia2 = iang + jref2(ipt,nref,izz)
-                   if ( ia2 .gt. nang )  ia2  = ia2  - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia2p = ia2 + 1
-                   if ( ia2p .gt. nang ) ia2p = ia2p - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   wa2  = wta2(ipt,nref,izz)
-                   wa2p = 1. - wa2
-                   d2a  = w2 * dens1(k2,ia2)  + w2p * dens1(k2p,ia2)
-                   d2b  = w2 * dens1(k2,ia2p) + w2p * dens1(k2p,ia2p)
-                   tt2  = tfac2(ipt,nref,izz)
-                   d2   = (wa2*d2a  + wa2p*d2b)  * tt2
-                   !!
-                   !!              for -fbi
-                   d2pa = w2 * dens2(k2,ia2)  + w2p * dens2(k2p,ia2)
-                   d2pb = w2 * dens2(k2,ia2p) + w2p * dens2(k2p,ia2p)
-                   !!
-                   !!              for -fbi
-                   dp2  = (wa2*d2pa + wa2p*d2pb) * tt2   !* for -fbi
-                   ddp2 = d2+dp2       !! for full expression of diag2 term
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!4             Estimation of Density for wave #4
-                   !!
-                   !!              for both -tsa and -fbi
-                   k4  = kref4(ipt,nref,izz)
-                   k4p = k4 + 1
-                   w4  = wtk4(ipt,nref,izz)
-                   w4p = 1. - w4
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia4 = iang + jref4(ipt,nref,izz)
-                   if ( ia4 .gt. nang )  ia4  = ia4  - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia4p= ia4 + 1
-                   if ( ia4p .gt. nang ) ia4p = ia4p - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   wa4  = wta4(ipt,nref,izz)
-                   wa4p = 1. - wa4
-                   d4a  = w4*dens1(k4,ia4)  + w4p*dens1(k4p,ia4)
-                   d4b  = w4*dens1(k4,ia4p) + w4p*dens1(k4p,ia4p)
-                   tt4  = tfac4(ipt,nref,izz)
-                   d4   = (wa4*d4a  + wa4p*d4b)  * tt4
-                   !!
-                   !!              for -fbi
-                   d4pa = w4*dens2(k4,ia4)  + w4p*dens2(k4p,ia4)
-                   d4pb = w4*dens2(k4,ia4p) + w4p*dens2(k4p,ia4p)
-                   !!
-                   !!              for -fbi
-                   dp4  = (wa4*d4pa + wa4p*d4pb) * tt4   !* for -fbi
-                   ddp4 = d4+dp4       !! for full expression of diag2 term
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!              for both -tsa and -fbi
-                   dgm  = dx13*(d4-d2) + ds13*d4*d2        !* dgm=B of R&P'08 eqn(8)
-                   !!                                         !* represents Broad Scale interactions
-                   t31  = t31  + dgm  * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!
-                   !!              for -fbi
-                   dgmp = dxp13*(dp4-dp2) + dsp13*dp4*dp2  !* dgmp=L of R&P'08 eqn(8)
-                   !!                                          !* represents Local Scale interactions
-                   tp31 = tp31 + dgmp * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!              for -tsa : -diag
-                   !!              use this expression for the diagonal term
-                   !!              whose derivation neglect "dp2" & "dp4"
-                   !tsa            ddn1   = (d3+dp3)*(d4-d2) - d4*d2              !* dN/dn1
-                   !tsa            ddn3   = (d1+dp1)*(d4-d2) + d4*d2              !* dN/dn3
-                   !tsa            diagk1 = diagk1 + ddn1 * grad(ipt,nref,izz)
-                   !tsa            diagk3 = diagk3 + ddn3 * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!
-                   !!              for -fbi : -diag2
-                   !!              use the full expression for the diagonal terms
-                   !!              whose derivation keeps all large + small scale
-                   dd2n1   = ddp3*(ddp4-ddp2) - ddp4*ddp2         !* dN/dn1
-                   dd2n3   = ddp1*(ddp4-ddp2) + ddp4*ddp2         !* dN/dn3
-                   diag2k1 = diag2k1 + dd2n1 * grad(ipt,nref,izz)
-                   diag2k3 = diag2k3 + dd2n3 * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!              for -fbi
-                   dz1  = dx13    * (dp4-dp2)
-                   dz2  = d1*dp3  * ((d4-d2)+(dp4-dp2))
-                   dz3  = d3*dp1  * ((d4-d2)+(dp4-dp2))
-                   !!
-                   !!              for -fbi (calc. dz4 & dz5 here)
-                   dz4  = dxp13   * (d4-d2)
-                   dz5  = d2*d4   *  dsp13
-                   !!
-                   !!              for -tsa
-                   !!              Cross-interactions between parametric and perturbation
-                   !!              that occur only when k3 is close enough to k1
-                   !!              Bash; added an extra check on (nang-nalimit)
-                   !b              if ( iabs(irng-krng).lt.nklimit .and.                 &
-                   !b                   iabs(iang-kang).lt.nalimit )    then        !* original
-                   !!
-                   !tsa            if (     (krng-irng).lt.nklimit .and.                 &
-                   !tsa               ( iabs(kang-iang).lt.nalimit .or.                  &
-                   !tsa                 iabs(kang-iang).gt.(nang-nalimit) ) )  then !* Bash
-                   !!
-                   !!                for -tsa (calc. dz4 & dz5 here)
-                   !tsa              dz4  = dxp13   * (d4-d2)
-                   !tsa              dz5  = d2*d4   *  dsp13
-                   !tsa              dz2a = d1*dp3 * (d4-d2)
-                   !tsa              dz3a = d3*dp1 * (d4-d2)
-                   !!
-                   !tsa              ttsa = ttsa + (dz4+dz5+dz2a+dz3a)*grad(ipt,nref,izz)
-                   !!
-                   !tsa            endif
-                   !!              --------------------------------------------------------
-                   !!
-                   !!              for -fbi
-                   dz6   = d2*dp4  * (ds13+dsp13)
-                   dz7   = d4*dp2  * (ds13+dsp13)
-                   dz8   = dp2*dp4 *  ds13
-                   dzsum = dz1 + dz2 + dz3 + dz4 + dz5 + dz6 + dz7 + dz8
-                   txp31 = txp31 + dzsum * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!              ========================================================
-                   !!
-                   !!
-90              end do                        !* end of ipt (locus) loop
-                !!            ----------------------------------------------------------
-                !!
-                !!
-                !!            multiply the following components by factor 2. in here
-                !!
-                !!            for both -tsa and -fbi
-                tr31  = 2. * t31
-                !!
-                !!            for -tsa
-                !tsa          trtsa = 2. * ttsa
-                !!
-                !!            for -fbi
-                trp31 = 2. * tp31
-                trx31 = 2. * txp31
-                !!
-                !!            for -tsa : -diag
-                !tsa          diagk1  = 2. * diagk1
-                !tsa          diagk3  = 2. * diagk3
-                !!
-                !!            for -fbi : -diag2
-                diag2k1 = 2. * diag2k1
-                diag2k3 = 2. * diag2k3
-                !!            ----------------------------------------------------------
-                !!
-                !!            for both -tsa and -fbi
-                sumint(irng,iang)  = sumint(irng,iang)  + tr31*pha(krng)
-                sumint(krng,kang)  = sumint(krng,kang)  - tr31*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -tsa
-                !tsa          sumintsa(irng,iang)= sumintsa(irng,iang)+ trtsa*pha(krng)
-                !tsa          sumintsa(krng,kang)= sumintsa(krng,kang)- trtsa*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -fbi
-                sumintp(irng,iang) = sumintp(irng,iang) + trp31*pha(krng)
-                sumintp(krng,kang) = sumintp(krng,kang) - trp31*pha(irng)
-                !!
-                !!            for -fbi
-                sumintx(irng,iang) = sumintx(irng,iang) + trx31*pha(krng)
-                sumintx(krng,kang) = sumintx(krng,kang) - trx31*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -tsa : -diag
-                !tsa          diag(irng,iang) = diag(irng,iang)  + diagk1*pha(krng)
-                !tsa          diag(krng,kang) = diag(krng,kang)  - diagk3*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -fbi : -diag2
-                diag2(irng,iang) = diag2(irng,iang) + diag2k1*pha(krng)
-                diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-80           end do                              !* end of kang loop
-             !!
-70        end do                                !* end of krng loop
+          !!80
+          do 80 kang=1,nang,ialt
+            !!
+            !!            for both -tsa and -fbi
+            !!ba1         Bash; Remove self interaction
+            !!                  skip k1 but keep the opposite angle to k1 - original setting
+            if ( krng.eq.irng ) then              !* wn3 = wn1
+              if ( kang.eq.iang ) go to 80        !* th3 = th1
+            endif
+            !!ba1---
+            !!            ----------------------------------------------------------
+            !!
+            !!            for both -tsa and -fbi
+            d3   = dens1(krng,kang)
+            dp3  = dens2(krng,kang)
+            !!
+            !!            for -fbi
+            ddp3 = d3+dp3         !! for full expression of diag2 term
+            !!
+            !!
+            !!            for both -tsa and -fbi
+            nref = kang - iang + 1
+            if ( nref .lt. 1 ) nref = nref + nang
+            !!
+            !!
+            !!            for both -tsa and -fbi
+            !!            Bash; check5  be consistent with gridsetr
+            !!                  and move this test above right after do 70 krng=irng,nrng
+            !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 80  !* gridsetr
+            !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 80  !* original
+            !!
+            !!
+            !!            for both -tsa and -fbi
+            t31     = 0.0             !* must be reset to 0.0
+            !!
+            !!            for -tsa
+            !tsa          ttsa    = 0.0             !* must be reset to 0.0
+            !tsa          diagk1  = 0.0             !* must be reset to 0.0
+            !tsa          diagk3  = 0.0             !* must be reset to 0.0
+            !!
+            !!            for -fbi
+            tp31    = 0.0             !* must be reset to 0.0
+            txp31   = 0.0             !* must be reset to 0.0
+            diag2k1 = 0.0             !* must be reset to 0.0
+            diag2k3 = 0.0             !* must be reset to 0.0
+            !!
+            !!            for both -tsa and -fbi
+            dx13  = d1*d3
+            ds13  = d3-d1
+            dxp13 = dp1*dp3
+            dsp13 = dp3-dp1
+            !!            ----------------------------------------------------------
+            !!
+            !!90
+            do 90 ipt=1,npts
+              !!
+              !!              for both -tsa and -fbi
+              !!              save time by skipping insignificant contributions
+              !!e-30
+              !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) go to 90
+              !!e-30---
+              if ( grad(ipt,nref,izz) .lt. 1.e-15 ) go to 90
+              !!e-30---
+              !!              --------------------------------------------------------
+              !!
+              !!xlc1          Bash; skip k1 but keep the opposite angle to k1 - original setting
+              !xlc1           if ( kang.eq.iang ) then                     !* th3=+th1
+              !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) go to 90   !* skip x-axis loci
+              !xlc1           end if
+              !!xlc1---
+              !!              --------------------------------------------------------
+              !!
+              !!
+              !!2             Estimation of Density for wave #2
+              !!
+              !!              for both -tsa and -fbi
+              k2  = kref2(ipt,nref,izz)
+              k2p = k2 + 1
+              w2  = wtk2(ipt,nref,izz)
+              w2p = 1. - w2
+              !!
+              !!              for both -tsa and -fbi
+              ia2 = iang + jref2(ipt,nref,izz)
+              if ( ia2 .gt. nang )  ia2  = ia2  - nang
+              !!
+              !!              for both -tsa and -fbi
+              ia2p = ia2 + 1
+              if ( ia2p .gt. nang ) ia2p = ia2p - nang
+              !!
+              !!              for both -tsa and -fbi
+              wa2  = wta2(ipt,nref,izz)
+              wa2p = 1. - wa2
+              d2a  = w2 * dens1(k2,ia2)  + w2p * dens1(k2p,ia2)
+              d2b  = w2 * dens1(k2,ia2p) + w2p * dens1(k2p,ia2p)
+              tt2  = tfac2(ipt,nref,izz)
+              d2   = (wa2*d2a  + wa2p*d2b)  * tt2
+              !!
+              !!              for -fbi
+              d2pa = w2 * dens2(k2,ia2)  + w2p * dens2(k2p,ia2)
+              d2pb = w2 * dens2(k2,ia2p) + w2p * dens2(k2p,ia2p)
+              !!
+              !!              for -fbi
+              dp2  = (wa2*d2pa + wa2p*d2pb) * tt2   !* for -fbi
+              ddp2 = d2+dp2       !! for full expression of diag2 term
+              !!              ========================================================
+              !!
+              !!
+              !!4             Estimation of Density for wave #4
+              !!
+              !!              for both -tsa and -fbi
+              k4  = kref4(ipt,nref,izz)
+              k4p = k4 + 1
+              w4  = wtk4(ipt,nref,izz)
+              w4p = 1. - w4
+              !!
+              !!              for both -tsa and -fbi
+              ia4 = iang + jref4(ipt,nref,izz)
+              if ( ia4 .gt. nang )  ia4  = ia4  - nang
+              !!
+              !!              for both -tsa and -fbi
+              ia4p= ia4 + 1
+              if ( ia4p .gt. nang ) ia4p = ia4p - nang
+              !!
+              !!              for both -tsa and -fbi
+              wa4  = wta4(ipt,nref,izz)
+              wa4p = 1. - wa4
+              d4a  = w4*dens1(k4,ia4)  + w4p*dens1(k4p,ia4)
+              d4b  = w4*dens1(k4,ia4p) + w4p*dens1(k4p,ia4p)
+              tt4  = tfac4(ipt,nref,izz)
+              d4   = (wa4*d4a  + wa4p*d4b)  * tt4
+              !!
+              !!              for -fbi
+              d4pa = w4*dens2(k4,ia4)  + w4p*dens2(k4p,ia4)
+              d4pb = w4*dens2(k4,ia4p) + w4p*dens2(k4p,ia4p)
+              !!
+              !!              for -fbi
+              dp4  = (wa4*d4pa + wa4p*d4pb) * tt4   !* for -fbi
+              ddp4 = d4+dp4       !! for full expression of diag2 term
+              !!              ========================================================
+              !!
+              !!
+              !!              for both -tsa and -fbi
+              dgm  = dx13*(d4-d2) + ds13*d4*d2        !* dgm=B of R&P'08 eqn(8)
+              !!                                         !* represents Broad Scale interactions
+              t31  = t31  + dgm  * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!
+              !!              for -fbi
+              dgmp = dxp13*(dp4-dp2) + dsp13*dp4*dp2  !* dgmp=L of R&P'08 eqn(8)
+              !!                                          !* represents Local Scale interactions
+              tp31 = tp31 + dgmp * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!              ========================================================
+              !!
+              !!
+              !!              for -tsa : -diag
+              !!              use this expression for the diagonal term
+              !!              whose derivation neglect "dp2" & "dp4"
+              !tsa            ddn1   = (d3+dp3)*(d4-d2) - d4*d2              !* dN/dn1
+              !tsa            ddn3   = (d1+dp1)*(d4-d2) + d4*d2              !* dN/dn3
+              !tsa            diagk1 = diagk1 + ddn1 * grad(ipt,nref,izz)
+              !tsa            diagk3 = diagk3 + ddn3 * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!
+              !!              for -fbi : -diag2
+              !!              use the full expression for the diagonal terms
+              !!              whose derivation keeps all large + small scale
+              dd2n1   = ddp3*(ddp4-ddp2) - ddp4*ddp2         !* dN/dn1
+              dd2n3   = ddp1*(ddp4-ddp2) + ddp4*ddp2         !* dN/dn3
+              diag2k1 = diag2k1 + dd2n1 * grad(ipt,nref,izz)
+              diag2k3 = diag2k3 + dd2n3 * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!              ========================================================
+              !!
+              !!
+              !!              for -fbi
+              dz1  = dx13    * (dp4-dp2)
+              dz2  = d1*dp3  * ((d4-d2)+(dp4-dp2))
+              dz3  = d3*dp1  * ((d4-d2)+(dp4-dp2))
+              !!
+              !!              for -fbi (calc. dz4 & dz5 here)
+              dz4  = dxp13   * (d4-d2)
+              dz5  = d2*d4   *  dsp13
+              !!
+              !!              for -tsa
+              !!              Cross-interactions between parametric and perturbation
+              !!              that occur only when k3 is close enough to k1
+              !!              Bash; added an extra check on (nang-nalimit)
+              !b              if ( iabs(irng-krng).lt.nklimit .and.                 &
+              !b                   iabs(iang-kang).lt.nalimit )    then        !* original
+              !!
+              !tsa            if (     (krng-irng).lt.nklimit .and.                 &
+              !tsa               ( iabs(kang-iang).lt.nalimit .or.                  &
+              !tsa                 iabs(kang-iang).gt.(nang-nalimit) ) )  then !* Bash
+              !!
+              !!                for -tsa (calc. dz4 & dz5 here)
+              !tsa              dz4  = dxp13   * (d4-d2)
+              !tsa              dz5  = d2*d4   *  dsp13
+              !tsa              dz2a = d1*dp3 * (d4-d2)
+              !tsa              dz3a = d3*dp1 * (d4-d2)
+              !!
+              !tsa              ttsa = ttsa + (dz4+dz5+dz2a+dz3a)*grad(ipt,nref,izz)
+              !!
+              !tsa            endif
+              !!              --------------------------------------------------------
+              !!
+              !!              for -fbi
+              dz6   = d2*dp4  * (ds13+dsp13)
+              dz7   = d4*dp2  * (ds13+dsp13)
+              dz8   = dp2*dp4 *  ds13
+              dzsum = dz1 + dz2 + dz3 + dz4 + dz5 + dz6 + dz7 + dz8
+              txp31 = txp31 + dzsum * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!              ========================================================
+              !!
+              !!
+90          end do                        !* end of ipt (locus) loop
+            !!            ----------------------------------------------------------
+            !!
+            !!
+            !!            multiply the following components by factor 2. in here
+            !!
+            !!            for both -tsa and -fbi
+            tr31  = 2. * t31
+            !!
+            !!            for -tsa
+            !tsa          trtsa = 2. * ttsa
+            !!
+            !!            for -fbi
+            trp31 = 2. * tp31
+            trx31 = 2. * txp31
+            !!
+            !!            for -tsa : -diag
+            !tsa          diagk1  = 2. * diagk1
+            !tsa          diagk3  = 2. * diagk3
+            !!
+            !!            for -fbi : -diag2
+            diag2k1 = 2. * diag2k1
+            diag2k3 = 2. * diag2k3
+            !!            ----------------------------------------------------------
+            !!
+            !!            for both -tsa and -fbi
+            sumint(irng,iang)  = sumint(irng,iang)  + tr31*pha(krng)
+            sumint(krng,kang)  = sumint(krng,kang)  - tr31*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -tsa
+            !tsa          sumintsa(irng,iang)= sumintsa(irng,iang)+ trtsa*pha(krng)
+            !tsa          sumintsa(krng,kang)= sumintsa(krng,kang)- trtsa*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -fbi
+            sumintp(irng,iang) = sumintp(irng,iang) + trp31*pha(krng)
+            sumintp(krng,kang) = sumintp(krng,kang) - trp31*pha(irng)
+            !!
+            !!            for -fbi
+            sumintx(irng,iang) = sumintx(irng,iang) + trx31*pha(krng)
+            sumintx(krng,kang) = sumintx(krng,kang) - trx31*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -tsa : -diag
+            !tsa          diag(irng,iang) = diag(irng,iang)  + diagk1*pha(krng)
+            !tsa          diag(krng,kang) = diag(krng,kang)  - diagk3*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -fbi : -diag2
+            diag2(irng,iang) = diag2(irng,iang) + diag2k1*pha(krng)
+            diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+80        end do                              !* end of kang loop
           !!
-60     end do                                  !* end of iang loop
-       !!
+70      end do                                !* end of krng loop
+        !!
+60    end do                                  !* end of iang loop
+      !!
 50  end do                                    !* end of irng loop
     !!------------------------------------------------------------------------------
     !!==============================================================================
@@ -4062,13 +4062,13 @@ CONTAINS
     !!    after alternating the irng, iang, krng & kang loops above
     !!    ------------------------------------------------------------------
     if ( ialt.eq.2 ) then
-       !!      for -tsa
-       !tsa    call interp2 ( tsa )
-       !tsa    call interp2 ( diag )
-       !!
-       !!      for -fbi
-       call interp2 ( fbi )
-       call interp2 ( diag2 )
+      !!      for -tsa
+      !tsa    call interp2 ( tsa )
+      !tsa    call interp2 ( diag )
+      !!
+      !!      for -fbi
+      call interp2 ( fbi )
+      call interp2 ( diag2 )
     endif
     !!alt---
     !!    --------------------------------------------------------------------------
@@ -4341,318 +4341,318 @@ CONTAINS
     !!
     !!50
     do 50 irng=1,nrng,ialt
-       !!kz
-       kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
-       !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
-       !!kz---
-       !!
-       iizz = (nrng-1)*(irng-1) - ((irng-2)*(irng-1))/2
-       !!      ----------------------------------------------------------------
-       !!
-       !!
-       !!60
-       do 60 iang=1,nang,ialt
+      !!kz
+      kmax = min(irng+kzone, nrng)   !* Bash; Sometimes a locus pt is outside nrng
+      !kz     kmax = min(irng+kzone, nrng-1) !* Bash; Taking 1 out will not affect kzone, try it
+      !!kz---
+      !!
+      iizz = (nrng-1)*(irng-1) - ((irng-2)*(irng-1))/2
+      !!      ----------------------------------------------------------------
+      !!
+      !!
+      !!60
+      do 60 iang=1,nang,ialt
+        !!
+        !!        for both -tsa and -fbi
+        d1   = dens1(irng,iang)
+        dp1  = dens2(irng,iang)
+        !!
+        !!        for -fbi
+        !fbi      ddp1 = d1+dp1             !! for full expression of diag2 term
+        !!
+        !!70
+        !!kz
+        !kz       do 70 krng=irng,nrng
+        do 70 krng=irng,kmax,ialt
           !!
-          !!        for both -tsa and -fbi
-          d1   = dens1(irng,iang)
-          dp1  = dens2(irng,iang)
+          !!          for both -tsa and -fbi
+          !!          Bash; check5  be consistent with gridsetr
+          !!          moved here from below (was after do 80 kang=1,nang)
+          !!          and changed go to 80 into go to 70 (i.e. go to next krng)
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 70  !* original gridsetr
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 70  !* original snlr_'s
+          !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 70  !* Bash; use .gt. 2
+          !!kz---
           !!
-          !!        for -fbi
-          !fbi      ddp1 = d1+dp1             !! for full expression of diag2 term
+          izz = krng + iizz
+          !!          ------------------------------------------------------------
           !!
-          !!70
-          !!kz
-          !kz       do 70 krng=irng,nrng
-          do 70 krng=irng,kmax,ialt
-             !!
-             !!          for both -tsa and -fbi
-             !!          Bash; check5  be consistent with gridsetr
-             !!          moved here from below (was after do 80 kang=1,nang)
-             !!          and changed go to 80 into go to 70 (i.e. go to next krng)
-             !kz         if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 70  !* original gridsetr
-             !kz         if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 70  !* original snlr_'s
-             !kz         if ( frqa(krng)/frqa(irng) .gt. 2. ) go to 70  !* Bash; use .gt. 2
-             !!kz---
-             !!
-             izz = krng + iizz
-             !!          ------------------------------------------------------------
-             !!
-             !!80
-             do 80 kang=1,nang,ialt
+          !!80
+          do 80 kang=1,nang,ialt
+            !!
+            !!            for both -tsa and -fbi
+            !!ba1         Bash; Remove self interaction
+            !!                  skip k1 but keep the opposite angle to k1 - original setting
+            if ( krng.eq.irng ) then              !* wn3 = wn1
+              if ( kang.eq.iang ) go to 80        !* th3 = th1
+            endif
+            !!ba1---
+            !!            ----------------------------------------------------------
+            !!
+            !!            for both -tsa and -fbi
+            d3   = dens1(krng,kang)
+            dp3  = dens2(krng,kang)
+            !!
+            !!            for -fbi
+            !fbi          ddp3 = d3+dp3         !! for full expression of diag2 term
+            !!
+            !!
+            !!            for both -tsa and -fbi
+            nref = kang - iang + 1
+            if ( nref .lt. 1 ) nref = nref + nang
+            !!
+            !!
+            !!            for both -tsa and -fbi
+            !!            Bash; check5  be consistent with gridsetr
+            !!                  and move this test above right after do 70 krng=irng,nrng
+            !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 80  !* gridsetr
+            !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 80  !* original
+            !!
+            !!
+            !!            for both -tsa and -fbi
+            t31     = 0.0             !* must be reset to 0.0
+            !!
+            !!            for -tsa
+            ttsa    = 0.0             !* must be reset to 0.0
+            diagk1  = 0.0             !* must be reset to 0.0
+            diagk3  = 0.0             !* must be reset to 0.0
+            !!
+            !!            for -fbi
+            !fbi          tp31    = 0.0             !* must be reset to 0.0
+            !fbi          txp31   = 0.0             !* must be reset to 0.0
+            !fbi          diag2k1 = 0.0             !* must be reset to 0.0
+            !fbi          diag2k3 = 0.0             !* must be reset to 0.0
+            !!
+            !!            for both -tsa and -fbi
+            dx13  = d1*d3
+            ds13  = d3-d1
+            dxp13 = dp1*dp3
+            dsp13 = dp3-dp1
+            !!            ----------------------------------------------------------
+            !!
+            !!90
+            do 90 ipt=1,npts
+              !!
+              !!              for both -tsa and -fbi
+              !!              save time by skipping insignificant contributions
+              !!e-30
+              !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) go to 90
+              !!e-30---
+              if ( grad(ipt,nref,izz) .lt. 1.e-15 ) go to 90
+              !!e-30---
+              !!              --------------------------------------------------------
+              !!
+              !!xlc1          Bash; skip k1 but keep the opposite angle to k1 - original setting
+              !xlc1           if ( kang.eq.iang ) then                     !* th3=+th1
+              !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) go to 90   !* skip x-axis loci
+              !xlc1           end if
+              !!xlc1---
+              !!              --------------------------------------------------------
+              !!
+              !!
+              !!2             Estimation of Density for wave #2
+              !!
+              !!              for both -tsa and -fbi
+              k2  = kref2(ipt,nref,izz)
+              k2p = k2 + 1
+              w2  = wtk2(ipt,nref,izz)
+              w2p = 1. - w2
+              !!
+              !!              for both -tsa and -fbi
+              ia2 = iang + jref2(ipt,nref,izz)
+              if ( ia2 .gt. nang )  ia2  = ia2  - nang
+              !!
+              !!              for both -tsa and -fbi
+              ia2p = ia2 + 1
+              if ( ia2p .gt. nang ) ia2p = ia2p - nang
+              !!
+              !!              for both -tsa and -fbi
+              wa2  = wta2(ipt,nref,izz)
+              wa2p = 1. - wa2
+              d2a  = w2 * dens1(k2,ia2)  + w2p * dens1(k2p,ia2)
+              d2b  = w2 * dens1(k2,ia2p) + w2p * dens1(k2p,ia2p)
+              tt2  = tfac2(ipt,nref,izz)
+              d2   = (wa2*d2a  + wa2p*d2b)  * tt2
+              !!
+              !!              for -fbi
+              !fbi            d2pa = w2 * dens2(k2,ia2)  + w2p * dens2(k2p,ia2)
+              !fbi            d2pb = w2 * dens2(k2,ia2p) + w2p * dens2(k2p,ia2p)
+              !!
+              !!              for -fbi
+              !fbi            dp2  = (wa2*d2pa + wa2p*d2pb) * tt2   !* for -fbi
+              !fbi            ddp2 = d2+dp2       !! for full expression of diag2 term
+              !!              ========================================================
+              !!
+              !!
+              !!4             Estimation of Density for wave #4
+              !!
+              !!              for both -tsa and -fbi
+              k4  = kref4(ipt,nref,izz)
+              k4p = k4 + 1
+              w4  = wtk4(ipt,nref,izz)
+              w4p = 1. - w4
+              !!
+              !!              for both -tsa and -fbi
+              ia4 = iang + jref4(ipt,nref,izz)
+              if ( ia4 .gt. nang )  ia4  = ia4  - nang
+              !!
+              !!              for both -tsa and -fbi
+              ia4p= ia4 + 1
+              if ( ia4p .gt. nang ) ia4p = ia4p - nang
+              !!
+              !!              for both -tsa and -fbi
+              wa4  = wta4(ipt,nref,izz)
+              wa4p = 1. - wa4
+              d4a  = w4*dens1(k4,ia4)  + w4p*dens1(k4p,ia4)
+              d4b  = w4*dens1(k4,ia4p) + w4p*dens1(k4p,ia4p)
+              tt4  = tfac4(ipt,nref,izz)
+              d4   = (wa4*d4a  + wa4p*d4b)  * tt4
+              !!
+              !!              for -fbi
+              !fbi            d4pa = w4*dens2(k4,ia4)  + w4p*dens2(k4p,ia4)
+              !fbi            d4pb = w4*dens2(k4,ia4p) + w4p*dens2(k4p,ia4p)
+              !!
+              !!              for -fbi
+              !fbi            dp4  = (wa4*d4pa + wa4p*d4pb) * tt4   !* for -fbi
+              !fbi            ddp4 = d4+dp4       !! for full expression of diag2 term
+              !!              ========================================================
+              !!
+              !!
+              !!              for both -tsa and -fbi
+              dgm  = dx13*(d4-d2) + ds13*d4*d2        !* dgm=B of R&P'08 eqn(8)
+              !!                                         !* represents Broad Scale interactions
+              t31  = t31  + dgm  * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!
+              !!              for -fbi
+              !fbi            dgmp = dxp13*(dp4-dp2) + dsp13*dp4*dp2  !* dgmp=L of R&P'08 eqn(8)
+              !!                                          !* represents Local Scale interactions
+              !fbi            tp31 = tp31 + dgmp * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!              ========================================================
+              !!
+              !!
+              !!              for -tsa : -diag
+              !!              use this expression for the diagonal term
+              !!              whose derivation neglect "dp2" & "dp4"
+              ddn1   = (d3+dp3)*(d4-d2) - d4*d2              !* dN/dn1
+              ddn3   = (d1+dp1)*(d4-d2) + d4*d2              !* dN/dn3
+              diagk1 = diagk1 + ddn1 * grad(ipt,nref,izz)
+              diagk3 = diagk3 + ddn3 * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!
+              !!              for -fbi : -diag2
+              !!              use the full expression for the diagonal terms
+              !!              whose derivation keeps all large + small scale
+              !fbi            dd2n1   = ddp3*(ddp4-ddp2) - ddp4*ddp2         !* dN/dn1
+              !fbi            dd2n3   = ddp1*(ddp4-ddp2) + ddp4*ddp2         !* dN/dn3
+              !fbi            diag2k1 = diag2k1 + dd2n1 * grad(ipt,nref,izz)
+              !fbi            diag2k3 = diag2k3 + dd2n3 * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!              ========================================================
+              !!
+              !!
+              !!              for -fbi
+              !fbi            dz1  = dx13    * (dp4-dp2)
+              !fbi            dz2  = d1*dp3  * ((d4-d2)+(dp4-dp2))
+              !fbi            dz3  = d3*dp1  * ((d4-d2)+(dp4-dp2))
+              !!
+              !!              for -fbi (calc. dz4 & dz5 here)
+              !fbi            dz4  = dxp13   * (d4-d2)
+              !fbi            dz5  = d2*d4   *  dsp13
+              !!
+              !!              for -tsa
+              !!              Cross-interactions between parametric and perturbation
+              !!              that occur only when k3 is close enough to k1
+              !!              Bash; added an extra check on (nang-nalimit)
+              !b              if ( iabs(irng-krng).lt.nklimit .and.                 &
+              !b                   iabs(iang-kang).lt.nalimit )    then        !* original
+              !!
+              if (     (krng-irng).lt.nklimit .and.                 &
+                   ( iabs(kang-iang).lt.nalimit .or.                  &
+                   iabs(kang-iang).gt.(nang-nalimit) ) )  then !* Bash
                 !!
-                !!            for both -tsa and -fbi
-                !!ba1         Bash; Remove self interaction
-                !!                  skip k1 but keep the opposite angle to k1 - original setting
-                if ( krng.eq.irng ) then              !* wn3 = wn1
-                   if ( kang.eq.iang ) go to 80        !* th3 = th1
-                endif
-                !!ba1---
-                !!            ----------------------------------------------------------
+                !!                for -tsa (calc. dz4 & dz5 here)
+                dz4  = dxp13   * (d4-d2)
+                dz5  = d2*d4   *  dsp13
+                dz2a = d1*dp3 * (d4-d2)
+                dz3a = d3*dp1 * (d4-d2)
                 !!
-                !!            for both -tsa and -fbi
-                d3   = dens1(krng,kang)
-                dp3  = dens2(krng,kang)
+                ttsa = ttsa + (dz4+dz5+dz2a+dz3a)*grad(ipt,nref,izz)
                 !!
-                !!            for -fbi
-                !fbi          ddp3 = d3+dp3         !! for full expression of diag2 term
-                !!
-                !!
-                !!            for both -tsa and -fbi
-                nref = kang - iang + 1
-                if ( nref .lt. 1 ) nref = nref + nang
-                !!
-                !!
-                !!            for both -tsa and -fbi
-                !!            Bash; check5  be consistent with gridsetr
-                !!                  and move this test above right after do 70 krng=irng,nrng
-                !x            if ( frqa(krng)/frqa(irng) .gt. 4. ) go to 80  !* gridsetr
-                !b            if ( frqa(krng)/frqa(irng) .gt. 3. ) go to 80  !* original
-                !!
-                !!
-                !!            for both -tsa and -fbi
-                t31     = 0.0             !* must be reset to 0.0
-                !!
-                !!            for -tsa
-                ttsa    = 0.0             !* must be reset to 0.0
-                diagk1  = 0.0             !* must be reset to 0.0
-                diagk3  = 0.0             !* must be reset to 0.0
-                !!
-                !!            for -fbi
-                !fbi          tp31    = 0.0             !* must be reset to 0.0
-                !fbi          txp31   = 0.0             !* must be reset to 0.0
-                !fbi          diag2k1 = 0.0             !* must be reset to 0.0
-                !fbi          diag2k3 = 0.0             !* must be reset to 0.0
-                !!
-                !!            for both -tsa and -fbi
-                dx13  = d1*d3
-                ds13  = d3-d1
-                dxp13 = dp1*dp3
-                dsp13 = dp3-dp1
-                !!            ----------------------------------------------------------
-                !!
-                !!90
-                do 90 ipt=1,npts
-                   !!
-                   !!              for both -tsa and -fbi
-                   !!              save time by skipping insignificant contributions
-                   !!e-30
-                   !e-30           if ( grad(ipt,nref,izz) .lt. 1.e-30 ) go to 90
-                   !!e-30---
-                   if ( grad(ipt,nref,izz) .lt. 1.e-15 ) go to 90
-                   !!e-30---
-                   !!              --------------------------------------------------------
-                   !!
-                   !!xlc1          Bash; skip k1 but keep the opposite angle to k1 - original setting
-                   !xlc1           if ( kang.eq.iang ) then                     !* th3=+th1
-                   !xlc1             if (ipt.eq.1 .or. ipt.eq.np2p1) go to 90   !* skip x-axis loci
-                   !xlc1           end if
-                   !!xlc1---
-                   !!              --------------------------------------------------------
-                   !!
-                   !!
-                   !!2             Estimation of Density for wave #2
-                   !!
-                   !!              for both -tsa and -fbi
-                   k2  = kref2(ipt,nref,izz)
-                   k2p = k2 + 1
-                   w2  = wtk2(ipt,nref,izz)
-                   w2p = 1. - w2
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia2 = iang + jref2(ipt,nref,izz)
-                   if ( ia2 .gt. nang )  ia2  = ia2  - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia2p = ia2 + 1
-                   if ( ia2p .gt. nang ) ia2p = ia2p - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   wa2  = wta2(ipt,nref,izz)
-                   wa2p = 1. - wa2
-                   d2a  = w2 * dens1(k2,ia2)  + w2p * dens1(k2p,ia2)
-                   d2b  = w2 * dens1(k2,ia2p) + w2p * dens1(k2p,ia2p)
-                   tt2  = tfac2(ipt,nref,izz)
-                   d2   = (wa2*d2a  + wa2p*d2b)  * tt2
-                   !!
-                   !!              for -fbi
-                   !fbi            d2pa = w2 * dens2(k2,ia2)  + w2p * dens2(k2p,ia2)
-                   !fbi            d2pb = w2 * dens2(k2,ia2p) + w2p * dens2(k2p,ia2p)
-                   !!
-                   !!              for -fbi
-                   !fbi            dp2  = (wa2*d2pa + wa2p*d2pb) * tt2   !* for -fbi
-                   !fbi            ddp2 = d2+dp2       !! for full expression of diag2 term
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!4             Estimation of Density for wave #4
-                   !!
-                   !!              for both -tsa and -fbi
-                   k4  = kref4(ipt,nref,izz)
-                   k4p = k4 + 1
-                   w4  = wtk4(ipt,nref,izz)
-                   w4p = 1. - w4
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia4 = iang + jref4(ipt,nref,izz)
-                   if ( ia4 .gt. nang )  ia4  = ia4  - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   ia4p= ia4 + 1
-                   if ( ia4p .gt. nang ) ia4p = ia4p - nang
-                   !!
-                   !!              for both -tsa and -fbi
-                   wa4  = wta4(ipt,nref,izz)
-                   wa4p = 1. - wa4
-                   d4a  = w4*dens1(k4,ia4)  + w4p*dens1(k4p,ia4)
-                   d4b  = w4*dens1(k4,ia4p) + w4p*dens1(k4p,ia4p)
-                   tt4  = tfac4(ipt,nref,izz)
-                   d4   = (wa4*d4a  + wa4p*d4b)  * tt4
-                   !!
-                   !!              for -fbi
-                   !fbi            d4pa = w4*dens2(k4,ia4)  + w4p*dens2(k4p,ia4)
-                   !fbi            d4pb = w4*dens2(k4,ia4p) + w4p*dens2(k4p,ia4p)
-                   !!
-                   !!              for -fbi
-                   !fbi            dp4  = (wa4*d4pa + wa4p*d4pb) * tt4   !* for -fbi
-                   !fbi            ddp4 = d4+dp4       !! for full expression of diag2 term
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!              for both -tsa and -fbi
-                   dgm  = dx13*(d4-d2) + ds13*d4*d2        !* dgm=B of R&P'08 eqn(8)
-                   !!                                         !* represents Broad Scale interactions
-                   t31  = t31  + dgm  * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!
-                   !!              for -fbi
-                   !fbi            dgmp = dxp13*(dp4-dp2) + dsp13*dp4*dp2  !* dgmp=L of R&P'08 eqn(8)
-                   !!                                          !* represents Local Scale interactions
-                   !fbi            tp31 = tp31 + dgmp * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!              for -tsa : -diag
-                   !!              use this expression for the diagonal term
-                   !!              whose derivation neglect "dp2" & "dp4"
-                   ddn1   = (d3+dp3)*(d4-d2) - d4*d2              !* dN/dn1
-                   ddn3   = (d1+dp1)*(d4-d2) + d4*d2              !* dN/dn3
-                   diagk1 = diagk1 + ddn1 * grad(ipt,nref,izz)
-                   diagk3 = diagk3 + ddn3 * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!
-                   !!              for -fbi : -diag2
-                   !!              use the full expression for the diagonal terms
-                   !!              whose derivation keeps all large + small scale
-                   !fbi            dd2n1   = ddp3*(ddp4-ddp2) - ddp4*ddp2         !* dN/dn1
-                   !fbi            dd2n3   = ddp1*(ddp4-ddp2) + ddp4*ddp2         !* dN/dn3
-                   !fbi            diag2k1 = diag2k1 + dd2n1 * grad(ipt,nref,izz)
-                   !fbi            diag2k3 = diag2k3 + dd2n3 * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!              ========================================================
-                   !!
-                   !!
-                   !!              for -fbi
-                   !fbi            dz1  = dx13    * (dp4-dp2)
-                   !fbi            dz2  = d1*dp3  * ((d4-d2)+(dp4-dp2))
-                   !fbi            dz3  = d3*dp1  * ((d4-d2)+(dp4-dp2))
-                   !!
-                   !!              for -fbi (calc. dz4 & dz5 here)
-                   !fbi            dz4  = dxp13   * (d4-d2)
-                   !fbi            dz5  = d2*d4   *  dsp13
-                   !!
-                   !!              for -tsa
-                   !!              Cross-interactions between parametric and perturbation
-                   !!              that occur only when k3 is close enough to k1
-                   !!              Bash; added an extra check on (nang-nalimit)
-                   !b              if ( iabs(irng-krng).lt.nklimit .and.                 &
-                   !b                   iabs(iang-kang).lt.nalimit )    then        !* original
-                   !!
-                   if (     (krng-irng).lt.nklimit .and.                 &
-                        ( iabs(kang-iang).lt.nalimit .or.                  &
-                        iabs(kang-iang).gt.(nang-nalimit) ) )  then !* Bash
-                      !!
-                      !!                for -tsa (calc. dz4 & dz5 here)
-                      dz4  = dxp13   * (d4-d2)
-                      dz5  = d2*d4   *  dsp13
-                      dz2a = d1*dp3 * (d4-d2)
-                      dz3a = d3*dp1 * (d4-d2)
-                      !!
-                      ttsa = ttsa + (dz4+dz5+dz2a+dz3a)*grad(ipt,nref,izz)
-                      !!
-                   endif
-                   !!              --------------------------------------------------------
-                   !!
-                   !!              for -fbi
-                   !fbi            dz6   = d2*dp4  * (ds13+dsp13)
-                   !fbi            dz7   = d4*dp2  * (ds13+dsp13)
-                   !fbi            dz8   = dp2*dp4 *  ds13
-                   !fbi            dzsum = dz1 + dz2 + dz3 + dz4 + dz5 + dz6 + dz7 + dz8
-                   !fbi            txp31 = txp31 + dzsum * grad(ipt,nref,izz)
-                   !!              --------------------------------------------------------
-                   !!              ========================================================
-                   !!
-                   !!
-90              end do                        !* end of ipt (locus) loop
-                !!            ----------------------------------------------------------
-                !!
-                !!
-                !!            multiply the following components by factor 2. in here
-                !!
-                !!            for both -tsa and -fbi
-                tr31  = 2. * t31
-                !!
-                !!            for -tsa
-                trtsa = 2. * ttsa
-                !!
-                !!            for -fbi
-                !fbi          trp31 = 2. * tp31
-                !fbi          trx31 = 2. * txp31
-                !!
-                !!            for -tsa : -diag
-                diagk1  = 2. * diagk1
-                diagk3  = 2. * diagk3
-                !!
-                !!            for -fbi : -diag2
-                !fbi          diag2k1 = 2. * diag2k1
-                !fbi          diag2k3 = 2. * diag2k3
-                !!            ----------------------------------------------------------
-                !!
-                !!            for both -tsa and -fbi
-                sumint(irng,iang)  = sumint(irng,iang)  + tr31*pha(krng)
-                sumint(krng,kang)  = sumint(krng,kang)  - tr31*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -tsa
-                sumintsa(irng,iang)= sumintsa(irng,iang)+ trtsa*pha(krng)
-                sumintsa(krng,kang)= sumintsa(krng,kang)- trtsa*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -fbi
-                !fbi          sumintp(irng,iang) = sumintp(irng,iang) + trp31*pha(krng)
-                !fbi          sumintp(krng,kang) = sumintp(krng,kang) - trp31*pha(irng)
-                !!
-                !!            for -fbi
-                !fbi          sumintx(irng,iang) = sumintx(irng,iang) + trx31*pha(krng)
-                !fbi          sumintx(krng,kang) = sumintx(krng,kang) - trx31*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -tsa : -diag
-                diag(irng,iang) = diag(irng,iang)  + diagk1*pha(krng)
-                diag(krng,kang) = diag(krng,kang)  - diagk3*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-                !!            for -fbi : -diag2
-                !fbi          diag2(irng,iang) = diag2(irng,iang) + diag2k1*pha(krng)
-                !fbi          diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
-                !!            ----------------------------------------------------------
-                !!
-80           end do                              !* end of kang loop
-             !!
-70        end do                                !* end of krng loop
+              endif
+              !!              --------------------------------------------------------
+              !!
+              !!              for -fbi
+              !fbi            dz6   = d2*dp4  * (ds13+dsp13)
+              !fbi            dz7   = d4*dp2  * (ds13+dsp13)
+              !fbi            dz8   = dp2*dp4 *  ds13
+              !fbi            dzsum = dz1 + dz2 + dz3 + dz4 + dz5 + dz6 + dz7 + dz8
+              !fbi            txp31 = txp31 + dzsum * grad(ipt,nref,izz)
+              !!              --------------------------------------------------------
+              !!              ========================================================
+              !!
+              !!
+90          end do                        !* end of ipt (locus) loop
+            !!            ----------------------------------------------------------
+            !!
+            !!
+            !!            multiply the following components by factor 2. in here
+            !!
+            !!            for both -tsa and -fbi
+            tr31  = 2. * t31
+            !!
+            !!            for -tsa
+            trtsa = 2. * ttsa
+            !!
+            !!            for -fbi
+            !fbi          trp31 = 2. * tp31
+            !fbi          trx31 = 2. * txp31
+            !!
+            !!            for -tsa : -diag
+            diagk1  = 2. * diagk1
+            diagk3  = 2. * diagk3
+            !!
+            !!            for -fbi : -diag2
+            !fbi          diag2k1 = 2. * diag2k1
+            !fbi          diag2k3 = 2. * diag2k3
+            !!            ----------------------------------------------------------
+            !!
+            !!            for both -tsa and -fbi
+            sumint(irng,iang)  = sumint(irng,iang)  + tr31*pha(krng)
+            sumint(krng,kang)  = sumint(krng,kang)  - tr31*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -tsa
+            sumintsa(irng,iang)= sumintsa(irng,iang)+ trtsa*pha(krng)
+            sumintsa(krng,kang)= sumintsa(krng,kang)- trtsa*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -fbi
+            !fbi          sumintp(irng,iang) = sumintp(irng,iang) + trp31*pha(krng)
+            !fbi          sumintp(krng,kang) = sumintp(krng,kang) - trp31*pha(irng)
+            !!
+            !!            for -fbi
+            !fbi          sumintx(irng,iang) = sumintx(irng,iang) + trx31*pha(krng)
+            !fbi          sumintx(krng,kang) = sumintx(krng,kang) - trx31*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -tsa : -diag
+            diag(irng,iang) = diag(irng,iang)  + diagk1*pha(krng)
+            diag(krng,kang) = diag(krng,kang)  - diagk3*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+            !!            for -fbi : -diag2
+            !fbi          diag2(irng,iang) = diag2(irng,iang) + diag2k1*pha(krng)
+            !fbi          diag2(krng,kang) = diag2(krng,kang) - diag2k3*pha(irng)
+            !!            ----------------------------------------------------------
+            !!
+80        end do                              !* end of kang loop
           !!
-60     end do                                  !* end of iang loop
-       !!
+70      end do                                !* end of krng loop
+        !!
+60    end do                                  !* end of iang loop
+      !!
 50  end do                                    !* end of irng loop
     !!------------------------------------------------------------------------------
     !!==============================================================================
@@ -4676,13 +4676,13 @@ CONTAINS
     !!    after alternating the irng, iang, krng & kang loops above
     !!    ------------------------------------------------------------------
     if ( ialt.eq.2 ) then
-       !!      for -tsa
-       call interp2 ( tsa )
-       call interp2 ( diag )
-       !!
-       !!      for -fbi
-       !fbi    call interp2 ( fbi )
-       !fbi    call interp2 ( diag2 )
+      !!      for -tsa
+      call interp2 ( tsa )
+      call interp2 ( diag )
+      !!
+      !!      for -fbi
+      !fbi    call interp2 ( fbi )
+      !fbi    call interp2 ( diag2 )
     endif
     !!alt---
     !!    --------------------------------------------------------------------------
@@ -4810,24 +4810,24 @@ CONTAINS
     !!-1a For every calculated iang (1,3,5,..,nang-1=35)
     !!    fill in missing irng's    (2,4,6,..,nrng-1=34)
     do iang=1,nang-1,2      !* = 1,3,5,...,nang-1=35
-       do  irng=2,nrng-1,2      !* = 2,4,6,...,nrng-1=34
-          X(irng,iang) = 0.5 * ( X(irng-1,iang) + X(irng+1,iang) )
-       end do
+      do  irng=2,nrng-1,2      !* = 2,4,6,...,nrng-1=34
+        X(irng,iang) = 0.5 * ( X(irng-1,iang) + X(irng+1,iang) )
+      end do
     end do
     !!    ------------------------------------------------------------------
     !!
     !!-1b Now, for every irng (1,2,3,..,nrng  =35)
     !!    fill missing iang's (2,4,6,..,nang-2=34)
     do irng=1,nrng          !* 1,2,3,..,nrng  =35
-       do iang=2,nang-2,2      !* 2,4,6,..,nang-2=34
-          X(irng,iang) = 0.5 * ( X(irng,iang-1) + X(irng,iang+1) )
-       end do
+      do iang=2,nang-2,2      !* 2,4,6,..,nang-2=34
+        X(irng,iang) = 0.5 * ( X(irng,iang-1) + X(irng,iang+1) )
+      end do
     end do
     !!    ------------------------------------------------------------------
     !!
     !!-1c for iang = nang (special case since nang is an even number)
     do irng=1,nrng
-       X(irng,nang) = 0.5 * ( X(irng,nang-1) + X(irng,1) )
+      X(irng,nang) = 0.5 * ( X(irng,nang-1) + X(irng,1) )
     end do
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -4847,11 +4847,11 @@ CONTAINS
     !!-   Using 9 points averaged with equal weights.
     !!-   Here use the dummy array so we don't spoil the original array.
     do irng=2,nrng-1
-       do iang=2,nang-1
-          Y(irng,iang)=(X(irng-1,iang-1)+X(irng-1,iang)+X(irng-1,iang+1) + &
-               X(irng,  iang-1)+X(irng,  iang)+X(irng,  iang+1) + &
-               X(irng+1,iang-1)+X(irng+1,iang)+X(irng+1,iang+1))/9.
-       end do
+      do iang=2,nang-1
+        Y(irng,iang)=(X(irng-1,iang-1)+X(irng-1,iang)+X(irng-1,iang+1) + &
+             X(irng,  iang-1)+X(irng,  iang)+X(irng,  iang+1) + &
+             X(irng+1,iang-1)+X(irng+1,iang)+X(irng+1,iang+1))/9.
+      end do
     end do
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -4862,18 +4862,18 @@ CONTAINS
     !!-3a Smooth line at iang = 1     (special case)
     !!-   Using 9 points averaged with equal weights.
     do irng=2,nrng-1
-       Y(irng, 1) = (X(irng-1,nang) + X(irng-1, 1) + X(irng-1, 2) +  &
-            X(irng,  nang) + X(irng,   1) + X(irng,   2) +  &
-            X(irng+1,nang) + X(irng+1, 1) + X(irng+1, 2) )/9.
+      Y(irng, 1) = (X(irng-1,nang) + X(irng-1, 1) + X(irng-1, 2) +  &
+           X(irng,  nang) + X(irng,   1) + X(irng,   2) +  &
+           X(irng+1,nang) + X(irng+1, 1) + X(irng+1, 2) )/9.
     end do
     !!    ------------------------------------------------------------------
     !!
     !!-3b Smooth line at iang = nang  (special case)
     !!-   Using 9 points averaged with equal weights.
     do irng=2,nrng-1
-       Y(irng,nang)=(X(irng-1,nang-1) +X(irng-1,nang) +X(irng-1,1) + &
-            X(irng,  nang-1) +X(irng,  nang) +X(irng,  1) + &
-            X(irng+1,nang-1) +X(irng+1,nang) +X(irng+1,1))/9.
+      Y(irng,nang)=(X(irng-1,nang-1) +X(irng-1,nang) +X(irng-1,1) + &
+           X(irng,  nang-1) +X(irng,  nang) +X(irng,  1) + &
+           X(irng+1,nang-1) +X(irng+1,nang) +X(irng+1,1))/9.
     end do
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -4884,16 +4884,16 @@ CONTAINS
     !!-4a Smooth col. at irng = 1     (low frq. can be skipped)
     !!-   Using 6 points averaged with equal weights.
     do iang=2,nang-1
-       Y(1,iang)   = (X(1,iang-1) + X(1,iang) + X(1,iang+1) +        &
-            X(2,iang-1) + X(2,iang) + X(2,iang+1) )/6.
+      Y(1,iang)   = (X(1,iang-1) + X(1,iang) + X(1,iang+1) +        &
+           X(2,iang-1) + X(2,iang) + X(2,iang+1) )/6.
     end do
     !!    ------------------------------------------------------------------
     !!
     !!-4b Smooth col. at irng = nrng  (high frq. can be skipped)
     !!-   Using 6 points averaged with equal weights.
     do iang=2,nang-1
-       Y(nrng,iang)=(X(nrng-1,iang-1)+X(nrng-1,iang)+X(nrng-1,iang+1)+ &
-            X(nrng, iang-1)+X(nrng, iang)+X(nrng, iang+1) )/6.
+      Y(nrng,iang)=(X(nrng-1,iang-1)+X(nrng-1,iang)+X(nrng-1,iang+1)+ &
+           X(nrng, iang-1)+X(nrng, iang)+X(nrng, iang+1) )/6.
     end do
     !!    ------------------------------------------------------------------
     !!    ==================================================================
@@ -4933,9 +4933,9 @@ CONTAINS
     !!
     !!-6b Dump smoothed array Y(:,:) into X(:,:) to be returned
     do iang=1,nang
-       do irng=1,nrng
-          X(irng,iang) = Y(irng,iang)
-       end do
+      do irng=1,nrng
+        X(irng,iang) = Y(irng,iang)
+      end do
     end do
     !!    Bash; can simplify in one line
     !b    X(1:nrng, 1:nang) = Y(1:nrng, 1:nang)

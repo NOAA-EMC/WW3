@@ -135,270 +135,270 @@ CONTAINS
     ! * Executable part
     !
     DO I = 1, NSEAL
-       ISEA = IAPROC + (I-1)*NAPROC
-       IX = MAPSF(ISEA,1)
-       IY = MAPSF(ISEA,2)
-       ! Get the mask : 1 - sea 0 - open boundary cells dried cells
-       MASK(I) = MOD(MAPSTA(IY,IX),2)
+      ISEA = IAPROC + (I-1)*NAPROC
+      IX = MAPSF(ISEA,1)
+      IY = MAPSF(ISEA,2)
+      ! Get the mask : 1 - sea 0 - open boundary cells dried cells
+      MASK(I) = MOD(MAPSTA(IY,IX),2)
     END DO
     !
     DO IB_DO = 1, IL_NB_SND
-       !
-       ! Mask - wet-drying
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ODRY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(MASK(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=MASK(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Mean wave period (tmn in s) (m0,-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_T0M1') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(T0M1(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=T0M1(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Mean wave period (tmn in s) (m0,1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__T01') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(T01(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=T01(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Mean wave number (wnm in m-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__WNM') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(WNMEAN(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=WNMEAN(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Charnock coefficient  (-)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OCHA') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(CHARN(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=CHARN(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wave height (hs in m)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__OHS') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(HS(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=HS(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Cosinus of Mean wave direction (cos(theta) in radians)
-       ! ---------------------------------------------------------------------
-       ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_CDIR') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=COS(THM(1:NSEAL))
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Sinus of Mean wave direction (sin(theta) in radians)
-       ! ---------------------------------------------------------------------
-       ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_SDIR') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=SIN(THM(1:NSEAL))
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Mean wave direction theta in radians
-       ! ---------------------------------------------------------------------
-       ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__DIR') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(THM /= UNDEF) TMP(1:NSEAL)=THM(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wave-induced Bernoulli head pressure (bhd in N.m-1) (J term, Smith JPO 2006)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__BHD') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(BHD(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=BHD(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wave-ocean momentum flux (tauox in m2.s-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TWOX') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUOX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOX(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wave-ocean momentum flux (tauoy in m2.s-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TWOY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUOY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOY(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wave-ocean total momentum flux (tauocx in Pa)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCX') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUOCX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOCX(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wave-ocean total momentum flux (tauocy in Pa)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUOCY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOCY(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Wave-to-ocean TKE flux (phioc in W.m-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FOC') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(PHIOC(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=PHIOC(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Momentum flux due to bottom friction (taubblx in m2.s-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBX') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUBBL(1:NSEAL,1) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,1)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Momentum flux due to bottom friction (taubbly in m2.s-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUBBL(1:NSEAL,2) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,2)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Energy flux due to bottom friction (phibbl in W.m-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FBB') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(PHIBBL(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=PHIBBL(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! rms amplitude of orbital velocity of the waves (ubr in m.s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__UBR') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! x component of the near-bottom rms wave velocity (in m.s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRX') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)*COS(UBD(1:NSEAL))
-          RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! y component of the near-bottom rms wave velocity (in m.s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)*SIN(UBD(1:NSEAL))
-          RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Net wave-supported stress, u component (tauwix in m2.s-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TAWX') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUWIX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUWIX(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Net wave-supported stress, v component (tauwix in m2.s-2)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TAWY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUWIY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUWIY(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Volume transport associated to Stokes drift, u component (tusx in m2.s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TUSX') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TUSX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TUSX(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Volume transport associated to Stokes drift, v component (tusy in m2.s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TUSY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(TUSY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TUSY(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Surface Stokes drift, u component (ussx in m.s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_USSX') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(USSX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=USSX(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Surface Stokes drift, v component (ussy in m.s-1)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_USSY') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(USSY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=USSY(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
-       ! Mean wave length (wlm in m)
-       ! ---------------------------------------------------------------------
-       IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___LM') THEN
-          TMP(1:NSEAL) = 0.0
-          WHERE(WLM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=WLM(1:NSEAL)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
-       ENDIF
-       !
+      !
+      ! Mask - wet-drying
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_ODRY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(MASK(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=MASK(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Mean wave period (tmn in s) (m0,-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_T0M1') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(T0M1(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=T0M1(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Mean wave period (tmn in s) (m0,1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__T01') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(T01(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=T01(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Mean wave number (wnm in m-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__WNM') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(WNMEAN(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=WNMEAN(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Charnock coefficient  (-)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OCHA') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(CHARN(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=CHARN(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wave height (hs in m)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__OHS') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(HS(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=HS(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Cosinus of Mean wave direction (cos(theta) in radians)
+      ! ---------------------------------------------------------------------
+      ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_CDIR') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=COS(THM(1:NSEAL))
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Sinus of Mean wave direction (sin(theta) in radians)
+      ! ---------------------------------------------------------------------
+      ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_SDIR') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(THM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=SIN(THM(1:NSEAL))
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Mean wave direction theta in radians
+      ! ---------------------------------------------------------------------
+      ! dir : nautical convention (GRIDDED files) - 0 degree from north, 90 from east
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__DIR') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(THM /= UNDEF) TMP(1:NSEAL)=THM(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wave-induced Bernoulli head pressure (bhd in N.m-1) (J term, Smith JPO 2006)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__BHD') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(BHD(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=BHD(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wave-ocean momentum flux (tauox in m2.s-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TWOX') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUOX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOX(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wave-ocean momentum flux (tauoy in m2.s-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TWOY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUOY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOY(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wave-ocean total momentum flux (tauocx in Pa)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCX') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUOCX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOCX(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wave-ocean total momentum flux (tauocy in Pa)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TOCY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUOCY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUOCY(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Wave-to-ocean TKE flux (phioc in W.m-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FOC') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(PHIOC(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=PHIOC(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Momentum flux due to bottom friction (taubblx in m2.s-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBX') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUBBL(1:NSEAL,1) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,1)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Momentum flux due to bottom friction (taubbly in m2.s-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TBBY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUBBL(1:NSEAL,2) /= UNDEF) TMP(1:NSEAL)=TAUBBL(1:NSEAL,2)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Energy flux due to bottom friction (phibbl in W.m-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__FBB') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(PHIBBL(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=PHIBBL(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! rms amplitude of orbital velocity of the waves (ubr in m.s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__UBR') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! x component of the near-bottom rms wave velocity (in m.s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRX') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)*COS(UBD(1:NSEAL))
+        RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! y component of the near-bottom rms wave velocity (in m.s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_UBRY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(UBA(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=UBA(1:NSEAL)*SIN(UBD(1:NSEAL))
+        RLA_OASIS_SND(:,1) = TMP(1:NSEAL)
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Net wave-supported stress, u component (tauwix in m2.s-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TAWX') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUWIX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUWIX(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Net wave-supported stress, v component (tauwix in m2.s-2)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TAWY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUWIY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TAUWIY(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Volume transport associated to Stokes drift, u component (tusx in m2.s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TUSX') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TUSX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TUSX(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Volume transport associated to Stokes drift, v component (tusy in m2.s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_TUSY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(TUSY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=TUSY(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Surface Stokes drift, u component (ussx in m.s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_USSX') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(USSX(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=USSX(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Surface Stokes drift, v component (ussy in m.s-1)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_USSY') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(USSY(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=USSY(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
+      ! Mean wave length (wlm in m)
+      ! ---------------------------------------------------------------------
+      IF (SND_FLD(IB_DO)%CL_FIELD_NAME == 'WW3___LM') THEN
+        TMP(1:NSEAL) = 0.0
+        WHERE(WLM(1:NSEAL) /= UNDEF) TMP(1:NSEAL)=WLM(1:NSEAL)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      ENDIF
+      !
     ENDDO
     !/ ------------------------------------------------------------------- /
   END SUBROUTINE SND_FIELDS_TO_OCEAN
@@ -500,131 +500,131 @@ CONTAINS
     !cval Anyway we will give up the exchange of mask, it is not a good idea at all
 
     IF (ID_OASIS_TIME > ID_OASIS_TIME_WETDRYONLYONCE) THEN
-       !
-       DO IB_DO = 1, IL_NB_RCV
-          !
-          ! Land mask - u
-          ! ---------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDH') THEN
+      !
+      DO IB_DO = 1, IL_NB_RCV
+        !
+        ! Land mask - u
+        ! ---------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDH') THEN
 
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                MASKT(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
-             ENDIF
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            MASKT(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
           ENDIF
-          !
-          ! Land mask - h
-          ! ---------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDU') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                MASKU(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
-             ENDIF
+        ENDIF
+        !
+        ! Land mask - h
+        ! ---------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDU') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            MASKU(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
           ENDIF
-          !
-          ! Land mask - v
-          ! ---------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDV') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                MASKV(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
-             ENDIF
+        ENDIF
+        !
+        ! Land mask - v
+        ! ---------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDV') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            MASKV(1:NSEAL)  = RLA_OASIS_RCV(1:NSEAL,1)
           ENDIF
-          !
-       ENDDO
-       !
+        ENDIF
+        !
+      ENDDO
+      !
     ENDIF
     !
     ! ---------------------------------------------------------------------
     ! Treatment of the dynamical variables
     ! ---------------------------------------------------------------------
     DO IB_DO = 1, IL_NB_RCV
-       !
-       ! Sea surface Height (m)
-       ! ---------------------------------------------------------------------
-       IF (IDFLD == 'LEV') THEN
-          !
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__SSH') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKT(1:NSEAL)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                ENDDO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
-                     RCV_BUFF(1:NSEA), &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
-                !
-             ENDIF
+      !
+      ! Sea surface Height (m)
+      ! ---------------------------------------------------------------------
+      IF (IDFLD == 'LEV') THEN
+        !
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__SSH') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKT(1:NSEAL)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            ENDDO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                 RCV_BUFF(1:NSEA), &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+            !
           ENDIF
-       ENDIF
-       !
-       ! Ocean sea surface current (m.s-1)
-       ! ---------------------------------------------------------------------
-       IF (IDFLD == 'CUR') THEN
-          !
-          ! u-component
-          ! ---------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSU') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKU(1:NSEAL)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                ENDDO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
-                     RCV_BUFF(1:NSEA),       &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
-                !
-             ENDIF
+        ENDIF
+      ENDIF
+      !
+      ! Ocean sea surface current (m.s-1)
+      ! ---------------------------------------------------------------------
+      IF (IDFLD == 'CUR') THEN
+        !
+        ! u-component
+        ! ---------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSU') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKU(1:NSEAL)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            ENDDO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
+                 RCV_BUFF(1:NSEA),       &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FXN)
+            !
           ENDIF
-          !
-          ! v-component
-          ! ---------------------------------------------------------------------
-          IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSV') THEN
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKV(1:NSEAL)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                ENDDO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
-                     RCV_BUFF(1:NSEA),       &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
-                !
-             ENDIF
+        ENDIF
+        !
+        ! v-component
+        ! ---------------------------------------------------------------------
+        IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSV') THEN
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKV(1:NSEAL)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            ENDDO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA),       &
+                 RCV_BUFF(1:NSEA),       &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FYN)
+            !
           ENDIF
-       ENDIF
+        ENDIF
+      ENDIF
     ENDDO
     !
     ID_OASIS_TIME_WETDRYONLYONCE = ID_OASIS_TIME

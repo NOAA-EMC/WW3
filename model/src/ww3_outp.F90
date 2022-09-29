@@ -312,9 +312,9 @@ PROGRAM W3OUTP
   WRITE (NDSO,920) GNAME
   !
   IF ( FLAGLL ) THEN
-     M2KM = 1.
+    M2KM = 1.
   ELSE
-     M2KM = 1.E-3
+    M2KM = 1.E-3
   END IF
   !
   DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
@@ -328,11 +328,11 @@ PROGRAM W3OUTP
   !
   WRITE (NDSO,930)
   DO I=1, NOPTS
-     IF ( FLAGLL ) THEN
-        WRITE (NDSO,931) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
-     ELSE
-        WRITE (NDSO,932) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
-     END IF
+    IF ( FLAGLL ) THEN
+      WRITE (NDSO,931) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+    ELSE
+      WRITE (NDSO,932) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
+    END IF
   END DO
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -352,9 +352,9 @@ PROGRAM W3OUTP
   CALL TICK21 ( TDUM , DTREQ )
   CALL STME21 ( TDUM , IDTIME )
   IF ( DTREQ .GE. 86400. ) THEN
-     WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
+    WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
   ELSE
-     IDDDAY = '           '
+    IDDDAY = '           '
   END IF
   IDTIME(1:11) = IDDDAY
   IDTIME(21:23) = '   '
@@ -367,34 +367,34 @@ PROGRAM W3OUTP
   NREQ   = 0
   !
   DO I=1, NOPTS
-     ! reads point index
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802) IPOINT
-     ! last index
-     IF (IPOINT .LT. 0) THEN
-        IF (I.EQ.1) THEN
-           FLREQ = .TRUE.
-           NREQ = NOPTS
-        END IF
-        EXIT
-     END IF
-     ! existing index in out_pnt.ww3
-     IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
-        IF ( .NOT. FLREQ(IPOINT) ) THEN
-           NREQ = NREQ + 1
-        END IF
-        FLREQ(IPOINT) = .TRUE.
-     END IF
-     ! read the 'end of list' if nopts reached before it
-     IF ( (IPOINT .GT. 0) .AND. (NREQ .EQ. NOPTS) ) THEN
-        CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) IPOINT
-     END IF
+    ! reads point index
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802) IPOINT
+    ! last index
+    IF (IPOINT .LT. 0) THEN
+      IF (I.EQ.1) THEN
+        FLREQ = .TRUE.
+        NREQ = NOPTS
+      END IF
+      EXIT
+    END IF
+    ! existing index in out_pnt.ww3
+    IF ( (IPOINT .GT. 0) .AND. (IPOINT .LE. NOPTS) ) THEN
+      IF ( .NOT. FLREQ(IPOINT) ) THEN
+        NREQ = NREQ + 1
+      END IF
+      FLREQ(IPOINT) = .TRUE.
+    END IF
+    ! read the 'end of list' if nopts reached before it
+    IF ( (IPOINT .GT. 0) .AND. (NREQ .EQ. NOPTS) ) THEN
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=801,ERR=802) IPOINT
+    END IF
   END DO
   ! check if last point index is -1
   IF (IPOINT .NE. -1) THEN
-     WRITE (NDSE,1007)
-     CALL EXTCDE ( 47 )
+    WRITE (NDSE,1007)
+    CALL EXTCDE ( 47 )
   END IF
 
   !
@@ -406,309 +406,309 @@ PROGRAM W3OUTP
   ! ... ITYPE = 0
   !
   IF ( ITYPE .EQ. 0 ) THEN
-     !
+    !
 #ifdef W3_O14
-     WRITE (NDSO,942) ITYPE, 'Generating buoy log file'
-     OPEN (NDBO,FILE=FNMPRE(:J)//'buoy_log.ww3',            &
-          STATUS='NEW',ERR=805,IOSTAT=IERR)
-     DO I = 1,NOPTS
-        WRITE(NDBO,945) I, PTNME(I), PTLOC(1,I),             &
-             PTLOC(2,I), GRDID(I)
-     END DO
-     CLOSE(NDBO)
+    WRITE (NDSO,942) ITYPE, 'Generating buoy log file'
+    OPEN (NDBO,FILE=FNMPRE(:J)//'buoy_log.ww3',            &
+         STATUS='NEW',ERR=805,IOSTAT=IERR)
+    DO I = 1,NOPTS
+      WRITE(NDBO,945) I, PTNME(I), PTLOC(1,I),             &
+           PTLOC(2,I), GRDID(I)
+    END DO
+    CLOSE(NDBO)
 #endif
-     !
-     WRITE (NDSO,942) ITYPE, 'Checking contents of file'
-     DO
-        CALL STME21 ( TIME , IDTIME )
-        WRITE (NDSO,948) IDTIME
-        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
-        IF ( IOTEST .EQ. -1 ) THEN
-           WRITE (NDSO,949)
-           GOTO 888
-        END IF
-     END DO
-     !
-     ! ... ITYPE = 1
-     !
+    !
+    WRITE (NDSO,942) ITYPE, 'Checking contents of file'
+    DO
+      CALL STME21 ( TIME , IDTIME )
+      WRITE (NDSO,948) IDTIME
+      CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+      IF ( IOTEST .EQ. -1 ) THEN
+        WRITE (NDSO,949)
+        GOTO 888
+      END IF
+    END DO
+    !
+    ! ... ITYPE = 1
+    !
   ELSE IF (ITYPE .EQ. 1) THEN
-     WRITE (NDSO,942) ITYPE, '1-D and/or 2-D spectra'
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2,        &
-          NDSTAB, FLFORM
+    WRITE (NDSO,942) ITYPE, '1-D and/or 2-D spectra'
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2,        &
+         NDSTAB, FLFORM
 #ifdef W3_NCO
-     NDSTAB = 51
+    NDSTAB = 51
 #endif
-     IF (OTYPE .EQ. 1) THEN
-        WRITE (NDSO,943) 'print plots'
-        IF ( SCALE1 .LT. 0.  ) THEN
-           WRITE (NDSO,1940) '1-D'
-        ELSE IF ( SCALE1 .EQ. 0.  ) THEN
-           WRITE (NDSO,1941) '1-D'
-        ELSE
-           WRITE (NDSO,1942) '1-D', SCALE1
-        END IF
-        IF ( SCALE2 .LT. 0.  ) THEN
-           WRITE (NDSO,1940) '2-D'
-        ELSE IF ( SCALE2 .EQ. 0.  ) THEN
-           WRITE (NDSO,1941) '2-D'
-        ELSE
-           WRITE (NDSO,1942) '2-D', SCALE2
-        END IF
-     ELSE IF ( OTYPE .EQ. 2 ) THEN
-        WRITE (NDSO,943) 'Table of 1-D spectral data'
-        TABNME = 'tab--.ww3'
-        IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
-        WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
+    IF (OTYPE .EQ. 1) THEN
+      WRITE (NDSO,943) 'print plots'
+      IF ( SCALE1 .LT. 0.  ) THEN
+        WRITE (NDSO,1940) '1-D'
+      ELSE IF ( SCALE1 .EQ. 0.  ) THEN
+        WRITE (NDSO,1941) '1-D'
+      ELSE
+        WRITE (NDSO,1942) '1-D', SCALE1
+      END IF
+      IF ( SCALE2 .LT. 0.  ) THEN
+        WRITE (NDSO,1940) '2-D'
+      ELSE IF ( SCALE2 .EQ. 0.  ) THEN
+        WRITE (NDSO,1941) '2-D'
+      ELSE
+        WRITE (NDSO,1942) '2-D', SCALE2
+      END IF
+    ELSE IF ( OTYPE .EQ. 2 ) THEN
+      WRITE (NDSO,943) 'Table of 1-D spectral data'
+      TABNME = 'tab--.ww3'
+      IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
+      WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
+      J      = LEN_TRIM(FNMPRE)
+      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+      WRITE (NDSO,1947) TABNME
+    ELSE IF ( OTYPE .EQ. 3 ) THEN
+      TFNAME = 'ww3.--------.spc'
+      WRITE (TFNAME(5:12),'(I6.6,I2.2)')                      &
+           MOD(TOUT(1),1000000), TOUT(2)/10000
+      WRITE (NDSO,943) 'Transfer file'
+      IF ( FLFORM ) THEN
+        WRITE (NDSO,1943) TFNAME, 'UNFORMATTED'
         J      = LEN_TRIM(FNMPRE)
-        OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
-        WRITE (NDSO,1947) TABNME
-     ELSE IF ( OTYPE .EQ. 3 ) THEN
-        TFNAME = 'ww3.--------.spc'
-        WRITE (TFNAME(5:12),'(I6.6,I2.2)')                      &
-             MOD(TOUT(1),1000000), TOUT(2)/10000
-        WRITE (NDSO,943) 'Transfer file'
-        IF ( FLFORM ) THEN
-           WRITE (NDSO,1943) TFNAME, 'UNFORMATTED'
-           J      = LEN_TRIM(FNMPRE)
-           OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
-           WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',             &
-                NK, NTH, NREQ, GNAME
-           WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
-           !
-           ! conversion of directions from trignonmetric to nautical (still uses directions TO )
-           !
-           WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
+             IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
+        WRITE (NDSTAB) 'WAVEWATCH III SPECTRA',             &
+             NK, NTH, NREQ, GNAME
+        WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
+        !
+        ! conversion of directions from trignonmetric to nautical (still uses directions TO )
+        !
+        WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
 
-        ELSE
-           WRITE (NDSO,1943) TFNAME, 'FORMATTED'
-           J      = LEN_TRIM(FNMPRE)
-           OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                IOSTAT=IERR,FORM='FORMATTED')
-           WRITE (NDSTAB,1944) 'WAVEWATCH III SPECTRA',        &
-                NK, NTH, NREQ, GNAME
-           WRITE (NDSTAB,1945) (SIG(IK)*TPIINV,IK=1,NK)
-           WRITE (NDSTAB,1946)                                 &
-                (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
-        END IF
-     ELSE
-        WRITE (NDSE,1011) OTYPE
-        CALL EXTCDE ( 10 )
-     END IF
-     !
-     ! ... ITYPE = 2
-     !
+      ELSE
+        WRITE (NDSO,1943) TFNAME, 'FORMATTED'
+        J      = LEN_TRIM(FNMPRE)
+        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
+             IOSTAT=IERR,FORM='FORMATTED')
+        WRITE (NDSTAB,1944) 'WAVEWATCH III SPECTRA',        &
+             NK, NTH, NREQ, GNAME
+        WRITE (NDSTAB,1945) (SIG(IK)*TPIINV,IK=1,NK)
+        WRITE (NDSTAB,1946)                                 &
+             (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+      END IF
+    ELSE
+      WRITE (NDSE,1011) OTYPE
+      CALL EXTCDE ( 10 )
+    END IF
+    !
+    ! ... ITYPE = 2
+    !
   ELSE IF (ITYPE .EQ. 2) THEN
-     WRITE (NDSO,942) ITYPE, 'Table of mean wave parameters'
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802) OTYPE, NDSTAB
+    WRITE (NDSO,942) ITYPE, 'Table of mean wave parameters'
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802) OTYPE, NDSTAB
 #ifdef W3_NCO
-     NDSTAB = 51
+    NDSTAB = 51
 #endif
-     TABNME = 'tab--.ww3'
-     IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
-     WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
-     J      = LEN_TRIM(FNMPRE)
-     OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
-     IF ( OTYPE .EQ. 1 ) THEN
-        WRITE (NDSO,2940) 'Depth, current and wind', TABNME
-     ELSE IF ( OTYPE .EQ. 2 ) THEN
-        WRITE (NDSO,2940) 'Mean wave parameters', TABNME
-     ELSE IF ( OTYPE .EQ. 3 ) THEN
-        WRITE (NDSO,2940) 'Nondimensional parameters (U*)',     &
-             TABNME
-     ELSE IF ( OTYPE .EQ. 4 ) THEN
-        WRITE (NDSO,2940) 'Nondimensional parameters (U10)',    &
-             TABNME
-     ELSE IF ( OTYPE .EQ. 5 ) THEN
-        WRITE (NDSO,2940) 'Validation parameters', TABNME
-     ELSE IF ( OTYPE .EQ. 6 ) THEN
-        WRITE (NDSO,2940) 'WMO standard mean parameters', TABNME
-     ELSE
-        WRITE (NDSE,1011) OTYPE
-        CALL EXTCDE ( 20 )
-     END IF
-     !
-     ! ... ITYPE = 3
-     !
+    TABNME = 'tab--.ww3'
+    IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
+    WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
+    J      = LEN_TRIM(FNMPRE)
+    OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+    IF ( OTYPE .EQ. 1 ) THEN
+      WRITE (NDSO,2940) 'Depth, current and wind', TABNME
+    ELSE IF ( OTYPE .EQ. 2 ) THEN
+      WRITE (NDSO,2940) 'Mean wave parameters', TABNME
+    ELSE IF ( OTYPE .EQ. 3 ) THEN
+      WRITE (NDSO,2940) 'Nondimensional parameters (U*)',     &
+           TABNME
+    ELSE IF ( OTYPE .EQ. 4 ) THEN
+      WRITE (NDSO,2940) 'Nondimensional parameters (U10)',    &
+           TABNME
+    ELSE IF ( OTYPE .EQ. 5 ) THEN
+      WRITE (NDSO,2940) 'Validation parameters', TABNME
+    ELSE IF ( OTYPE .EQ. 6 ) THEN
+      WRITE (NDSO,2940) 'WMO standard mean parameters', TABNME
+    ELSE
+      WRITE (NDSE,1011) OTYPE
+      CALL EXTCDE ( 20 )
+    END IF
+    !
+    ! ... ITYPE = 3
+    !
   ELSE IF (ITYPE .EQ. 3) THEN
-     WRITE (NDSO,942) ITYPE, 'Source terms'
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2,        &
-          NDSTAB, FLSRCE, ISCALE, FLFORM
+    WRITE (NDSO,942) ITYPE, 'Source terms'
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2,        &
+         NDSTAB, FLSRCE, ISCALE, FLFORM
 #ifdef W3_NCO
-     NDSTAB = 51
+    NDSTAB = 51
 #endif
-     ISCALE = MAX ( 0 , MIN ( 5 , ISCALE ) )
-     IF ( OTYPE .EQ. 1 ) THEN
-        WRITE (NDSO,943) 'Print plots'
-     ELSE IF ( OTYPE .EQ. 2 ) THEN
-        IF ( ISCALE .LE. 2) THEN
-           WRITE (NDSO,943) 'Tables as a function of freq.'
-        ELSE
-           WRITE (NDSO,943) 'Tables as a function of f/fp.'
-        END IF
-        IF ( MOD(ISCALE,3) .EQ. 1 ) THEN
-           WRITE (NDSO,944) '(nondimensional based on U10)'
-        ELSE IF ( MOD(ISCALE,3) .EQ. 2) THEN
-           WRITE (NDSO,944) '(nondimensional based on U*)'
-        END IF
-     ELSE IF ( OTYPE .EQ. 3 ) THEN
-        IF ( ISCALE .LE. 2) THEN
-           WRITE (NDSO,943) 'Time scales as a function of freq.'
-        ELSE
-           WRITE (NDSO,943) 'Time scales as a function of f/fp.'
-        END IF
-        IF ( ISCALE .EQ. 1 ) THEN
-           WRITE (NDSO,944) '(nondimensional based on U10)'
-        ELSE IF ( ISCALE .EQ. 2) THEN
-           WRITE (NDSO,944) '(nondimensional based on U*)'
-        END IF
-     ELSE IF ( OTYPE .EQ. 4 ) THEN
-        TFNAME = 'ww3.--------.src'
-        WRITE (TFNAME(5:12),'(I6.6,I2.2)')                      &
-             MOD(TOUT(1),1000000), TOUT(2)/10000
-        WRITE (NDSO,943) 'Transfer file'
-        IF ( FLFORM ) THEN
-           WRITE (NDSO,3943) TFNAME, 'UNFORMATTED'
-           J      = LEN_TRIM(FNMPRE)
-           OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
-           WRITE (NDSTAB) 'WAVEWATCH III SOURCES',             &
-                NK, NTH, NREQ, FLSRCE
-           WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
-           WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
-
-        ELSE
-           WRITE (NDSO,3943) TFNAME, 'FORMATTED'
-           J      = LEN_TRIM(FNMPRE)
-           OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
-                IOSTAT=IERR,FORM='FORMATTED')
-           WRITE (NDSTAB,3944) 'WAVEWATCH III SOURCES',        &
-                NK, NTH, NREQ, FLSRCE
-           WRITE (NDSTAB,3945) (SIG(IK)*TPIINV,IK=1,NK)
-           WRITE (NDSTAB,3946)                                 &
-                (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
-        END IF
-     ELSE
-        WRITE (NDSE,1011) OTYPE
-        CALL EXTCDE ( 30 )
-     END IF
-     !
-     DO I=1, 7
-        IF ( FLSRCE(I) ) WRITE (NDSO,3940) IDSRCE(I)
-     END DO
-     WRITE (NDSO,*) ' '
-     !
-     IF ( OTYPE .EQ. 1 ) THEN
-        IF ( SCALE1 .LT. 0.  ) THEN
-           WRITE (NDSO,1940) '1-D'
-        ELSE IF ( SCALE1 .EQ. 0.  ) THEN
-           WRITE (NDSO,1941) '1-D'
-        ELSE
-           WRITE (NDSO,1942) '1-D', SCALE1
-        END IF
-        IF ( SCALE2 .LT. 0.  ) THEN
-           WRITE (NDSO,1940) '2-D'
-        ELSE IF ( SCALE2 .EQ. 0.  ) THEN
-           WRITE (NDSO,1941) '2-D'
-        ELSE
-           WRITE (NDSO,1942) '2-D', SCALE2
-        END IF
-     END IF
-     !
-     IF ( OTYPE.EQ.2 .OR. OTYPE.EQ.3 ) THEN
-        TABNME = 'tab--.ww3'
-        IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
-        WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
+    ISCALE = MAX ( 0 , MIN ( 5 , ISCALE ) )
+    IF ( OTYPE .EQ. 1 ) THEN
+      WRITE (NDSO,943) 'Print plots'
+    ELSE IF ( OTYPE .EQ. 2 ) THEN
+      IF ( ISCALE .LE. 2) THEN
+        WRITE (NDSO,943) 'Tables as a function of freq.'
+      ELSE
+        WRITE (NDSO,943) 'Tables as a function of f/fp.'
+      END IF
+      IF ( MOD(ISCALE,3) .EQ. 1 ) THEN
+        WRITE (NDSO,944) '(nondimensional based on U10)'
+      ELSE IF ( MOD(ISCALE,3) .EQ. 2) THEN
+        WRITE (NDSO,944) '(nondimensional based on U*)'
+      END IF
+    ELSE IF ( OTYPE .EQ. 3 ) THEN
+      IF ( ISCALE .LE. 2) THEN
+        WRITE (NDSO,943) 'Time scales as a function of freq.'
+      ELSE
+        WRITE (NDSO,943) 'Time scales as a function of f/fp.'
+      END IF
+      IF ( ISCALE .EQ. 1 ) THEN
+        WRITE (NDSO,944) '(nondimensional based on U10)'
+      ELSE IF ( ISCALE .EQ. 2) THEN
+        WRITE (NDSO,944) '(nondimensional based on U*)'
+      END IF
+    ELSE IF ( OTYPE .EQ. 4 ) THEN
+      TFNAME = 'ww3.--------.src'
+      WRITE (TFNAME(5:12),'(I6.6,I2.2)')                      &
+           MOD(TOUT(1),1000000), TOUT(2)/10000
+      WRITE (NDSO,943) 'Transfer file'
+      IF ( FLFORM ) THEN
+        WRITE (NDSO,3943) TFNAME, 'UNFORMATTED'
         J      = LEN_TRIM(FNMPRE)
-        OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
-        WRITE (NDSO,3941) TABNME
-     END IF
-     !
-     ! ... ITYPE = 4
-     !
+        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
+             IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
+        WRITE (NDSTAB) 'WAVEWATCH III SOURCES',             &
+             NK, NTH, NREQ, FLSRCE
+        WRITE (NDSTAB) (SIG(IK)*TPIINV,IK=1,NK)
+        WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+
+      ELSE
+        WRITE (NDSO,3943) TFNAME, 'FORMATTED'
+        J      = LEN_TRIM(FNMPRE)
+        OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
+             IOSTAT=IERR,FORM='FORMATTED')
+        WRITE (NDSTAB,3944) 'WAVEWATCH III SOURCES',        &
+             NK, NTH, NREQ, FLSRCE
+        WRITE (NDSTAB,3945) (SIG(IK)*TPIINV,IK=1,NK)
+        WRITE (NDSTAB,3946)                                 &
+             (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
+      END IF
+    ELSE
+      WRITE (NDSE,1011) OTYPE
+      CALL EXTCDE ( 30 )
+    END IF
+    !
+    DO I=1, 7
+      IF ( FLSRCE(I) ) WRITE (NDSO,3940) IDSRCE(I)
+    END DO
+    WRITE (NDSO,*) ' '
+    !
+    IF ( OTYPE .EQ. 1 ) THEN
+      IF ( SCALE1 .LT. 0.  ) THEN
+        WRITE (NDSO,1940) '1-D'
+      ELSE IF ( SCALE1 .EQ. 0.  ) THEN
+        WRITE (NDSO,1941) '1-D'
+      ELSE
+        WRITE (NDSO,1942) '1-D', SCALE1
+      END IF
+      IF ( SCALE2 .LT. 0.  ) THEN
+        WRITE (NDSO,1940) '2-D'
+      ELSE IF ( SCALE2 .EQ. 0.  ) THEN
+        WRITE (NDSO,1941) '2-D'
+      ELSE
+        WRITE (NDSO,1942) '2-D', SCALE2
+      END IF
+    END IF
+    !
+    IF ( OTYPE.EQ.2 .OR. OTYPE.EQ.3 ) THEN
+      TABNME = 'tab--.ww3'
+      IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
+      WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
+      J      = LEN_TRIM(FNMPRE)
+      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+      WRITE (NDSO,3941) TABNME
+    END IF
+    !
+    ! ... ITYPE = 4
+    !
   ELSE IF (ITYPE .EQ. 4) THEN
-     WRITE (NDSO,942) ITYPE, 'Spectral partitions or bulletins'
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802) OTYPE, NDSTAB, TIMEV, HTYPE
+    WRITE (NDSO,942) ITYPE, 'Spectral partitions or bulletins'
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802) OTYPE, NDSTAB, TIMEV, HTYPE
 #ifdef W3_NCO
-     NDSTAB = 51
+    NDSTAB = 51
 #endif
-     IF ( OTYPE .EQ. 1 ) THEN
-        WRITE (NDSO,943) 'Partitioning of spectra'
-        TABNME = 'tab--.ww3'
-        IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
-        WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
-        J      = LEN_TRIM(FNMPRE)
-        OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
-        WRITE (NDSO,1947) TABNME
+    IF ( OTYPE .EQ. 1 ) THEN
+      WRITE (NDSO,943) 'Partitioning of spectra'
+      TABNME = 'tab--.ww3'
+      IF ( NDSTAB.LE.0 .OR. NDSTAB.GT.99 ) NDSTAB = 51
+      WRITE ( TABNME(4:5) , '(I2.2)' ) NDSTAB
+      J      = LEN_TRIM(FNMPRE)
+      OPEN (NDSTAB,FILE=FNMPRE(:J)//TABNME,ERR=803,IOSTAT=IERR)
+      WRITE (NDSO,1947) TABNME
 
-     ELSEIF ( OTYPE .GE. 2 ) THEN
-        IF (OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
-           WRITE (NDSO,943) 'Bulletins, ASCII format'
-           J      = LEN_TRIM(FNMPRE)
-           DO IJ = 1,NOPTS
-              IF ( COUNT(FLREQ)  .GT. 1 ) THEN
-                 ! ... This version only allows single point output for bulletins
-                 WRITE (NDSE,1012) OTYPE
-                 CALL EXTCDE ( 45 )
-              ENDIF
-              IF (FLREQ(IJ)) THEN
-                 NDSBUL = NDSTAB + (IJ - 1)
-                 OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
-                 WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
+    ELSEIF ( OTYPE .GE. 2 ) THEN
+      IF (OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
+        WRITE (NDSO,943) 'Bulletins, ASCII format'
+        J      = LEN_TRIM(FNMPRE)
+        DO IJ = 1,NOPTS
+          IF ( COUNT(FLREQ)  .GT. 1 ) THEN
+            ! ... This version only allows single point output for bulletins
+            WRITE (NDSE,1012) OTYPE
+            CALL EXTCDE ( 45 )
+          ENDIF
+          IF (FLREQ(IJ)) THEN
+            NDSBUL = NDSTAB + (IJ - 1)
+            OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
+            WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
 #ifdef W3_NCO
-                 NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
-                 OPEN(NDSCBUL,FILE=TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
-                 WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
+            NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
+            OPEN(NDSCBUL,FILE=TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
+            WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
 #endif
-              ENDIF
-           ENDDO
-        ENDIF
-        IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
-           WRITE (NDSO,943) 'Bulletins, CSV format'
-           J      = LEN_TRIM(FNMPRE)
-           DO IJ = 1,NOPTS
-              IF (FLREQ(IJ)) THEN
-                 ICSV = 0
-                 IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
+          ENDIF
+        ENDDO
+      ENDIF
+      IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
+        WRITE (NDSO,943) 'Bulletins, CSV format'
+        J      = LEN_TRIM(FNMPRE)
+        DO IJ = 1,NOPTS
+          IF (FLREQ(IJ)) THEN
+            ICSV = 0
+            IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
 #ifdef W3_NCO
-                 IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+            IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
 #endif
-                 NDSCSV = NDSTAB + (IJ - 1) + ICSV
-                 OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//'.csv',ERR=803,IOSTAT=IERR)
-                 WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
-              ENDIF
-           ENDDO
-        ENDIF
-     ELSE
-        WRITE (NDSE,1011) OTYPE
-        CALL EXTCDE ( 50 )
-     END IF
-     !
-     ! ... ITYPE = ILLEGAL
-     !
+            NDSCSV = NDSTAB + (IJ - 1) + ICSV
+            OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//'.csv',ERR=803,IOSTAT=IERR)
+            WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
+          ENDIF
+        ENDDO
+      ENDIF
+    ELSE
+      WRITE (NDSE,1011) OTYPE
+      CALL EXTCDE ( 50 )
+    END IF
+    !
+    ! ... ITYPE = ILLEGAL
+    !
   ELSE
-     WRITE (NDSE,1010) ITYPE
-     CALL EXTCDE ( 1 )
-     !
+    WRITE (NDSE,1010) ITYPE
+    CALL EXTCDE ( 1 )
+    !
   END IF
   !
   ! ... Output of output points
   !
   WRITE (NDSO,950) NREQ
   DO I=1, NOPTS
-     IF (FLREQ(I)) THEN
-        IF ( FLAGLL ) THEN
-           WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
-                M2KM*PTLOC(2,I)
-        ELSE
-           WRITE (NDSO,953) PTNME(I), M2KM*PTLOC(1,I),   &
-                M2KM*PTLOC(2,I)
-        END IF
-     END IF
+    IF (FLREQ(I)) THEN
+      IF ( FLAGLL ) THEN
+        WRITE (NDSO,951) PTNME(I), M2KM*PTLOC(1,I),   &
+             M2KM*PTLOC(2,I)
+      ELSE
+        WRITE (NDSO,953) PTNME(I), M2KM*PTLOC(1,I),   &
+             M2KM*PTLOC(2,I)
+      END IF
+    END IF
   END DO
   !
   IF ( ITYPE.EQ.3 .AND. OTYPE.EQ.4 ) WRITE (NDSO,952)
@@ -740,46 +740,46 @@ PROGRAM W3OUTP
 #endif
 
   DO
-     DTEST  = DSEC21 ( TIME , TOUT )
-     IF ( DTEST .GT. 0. ) THEN
-        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
-        IF ( IOTEST .EQ. -1 ) THEN
-           WRITE (NDSO,949)
-           EXIT
-        END IF
-        CYCLE
-     END IF
-     IF ( DTEST .LT. 0. ) THEN
-        CALL TICK21 ( TOUT , DTREQ )
-        CYCLE
-     END IF
-     !
-     IOUT   = IOUT + 1
-     CALL STME21 ( TOUT , IDTIME )
-     IF ( ( ITYPE.EQ.1 .AND. OTYPE.EQ.1 ) .OR.                     &
-          ( ITYPE.EQ.3 .AND. OTYPE.EQ.1 )                          &
-          ) WRITE (NDSO,960) IDTIME
-     CALL W3EXPO
-     CALL TICK21 ( TOUT , DTREQ )
-     IF ( IOUT .GE. NOUT ) EXIT
+    DTEST  = DSEC21 ( TIME , TOUT )
+    IF ( DTEST .GT. 0. ) THEN
+      CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+      IF ( IOTEST .EQ. -1 ) THEN
+        WRITE (NDSO,949)
+        EXIT
+      END IF
+      CYCLE
+    END IF
+    IF ( DTEST .LT. 0. ) THEN
+      CALL TICK21 ( TOUT , DTREQ )
+      CYCLE
+    END IF
+    !
+    IOUT   = IOUT + 1
+    CALL STME21 ( TOUT , IDTIME )
+    IF ( ( ITYPE.EQ.1 .AND. OTYPE.EQ.1 ) .OR.                     &
+         ( ITYPE.EQ.3 .AND. OTYPE.EQ.1 )                          &
+         ) WRITE (NDSO,960) IDTIME
+    CALL W3EXPO
+    CALL TICK21 ( TOUT , DTREQ )
+    IF ( IOUT .GE. NOUT ) EXIT
   END DO
   !
   ! ... ITYPE=4 & OTYPES=[2,4] requires adding lines at bottom of
   !     bulletin output for compatibility with version 2.22
   !
   IF (ITYPE .EQ. 4 .AND. ( OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) ) THEN
-     DO IJ = 1,NOPTS
-        IF (FLREQ(IJ)) THEN
-           NDSBUL = NDSTAB + (IJ - 1)
-           WRITE(NDSBUL,971)
-           WRITE(NDSBUL,974) BHSDROP, BHSMIN
+    DO IJ = 1,NOPTS
+      IF (FLREQ(IJ)) THEN
+        NDSBUL = NDSTAB + (IJ - 1)
+        WRITE(NDSBUL,971)
+        WRITE(NDSBUL,974) BHSDROP, BHSMIN
 #ifdef W3_NCO
-           NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
-           WRITE(NDSCBUL,961)
-           WRITE(NDSCBUL,962)
+        NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
+        WRITE(NDSCBUL,961)
+        WRITE(NDSCBUL,962)
 #endif
-        ENDIF
-     ENDDO
+      ENDIF
+    ENDDO
   ENDIF
   !
   GOTO 888
@@ -1316,9 +1316,9 @@ CONTAINS
 #endif
     !
     IF ( FLAGLL ) THEN
-       M2KM   = 1.
+      M2KM   = 1.
     ELSE
-       M2KM   = 1.E-3
+      M2KM   = 1.E-3
     END IF
     !
     XL     = 1./XFR - 1.
@@ -1328,17 +1328,17 @@ CONTAINS
     IPASS  = IPASS + 1
     !
     IF ( ITYPE .EQ. 3 ) THEN
-       XLN = 0.
-       XIN = 0.
-       XNL = 0.
-       XTR = 0.
-       XDS = 0.
-       XDB = 0.
-       XBT = 0.
-       XBS = 0.
-       XWL = 0.
-       XXX = 0.
-       XIS = 0.
+      XLN = 0.
+      XIN = 0.
+      XNL = 0.
+      XTR = 0.
+      XDS = 0.
+      XDB = 0.
+      XBT = 0.
+      XBS = 0.
+      XWL = 0.
+      XXX = 0.
+      XIS = 0.
     END IF
     !
 #ifdef W3_T
@@ -1350,1183 +1350,1183 @@ CONTAINS
     !
     IF (  ( ITYPE.EQ.1 .AND. OTYPE.EQ.3 ) .OR.                      &
          ( ITYPE.EQ.3 .AND. OTYPE.EQ.4 ) ) THEN
-       IF ( FLFORM ) THEN
-          WRITE (NDSTAB) TIME
-       ELSE
-          WRITE (NDSTAB,900) TIME
-       END IF
+      IF ( FLFORM ) THEN
+        WRITE (NDSTAB) TIME
+      ELSE
+        WRITE (NDSTAB,900) TIME
+      END IF
     END IF
     !
     IF (ITYPE.EQ.2) THEN
-       IF ( NREQ.EQ.1 .AND. IPASS.EQ.1 ) THEN
-          IF ( OTYPE.EQ.1 ) THEN
-             WRITE (NDSTAB,1901)
-          ELSE IF ( OTYPE.EQ.2 ) THEN
-             WRITE (NDSTAB,1902)
-          ELSE IF ( OTYPE.EQ.3 ) THEN
-             WRITE (NDSTAB,1903)
-          ELSE IF ( OTYPE.EQ.4 ) THEN
-             WRITE (NDSTAB,1904)
-          ELSE IF ( OTYPE.EQ.5 ) THEN
-             WRITE (NDSTAB,1905)
-          ELSE IF ( OTYPE.EQ.6 ) THEN
-             WRITE (NDSTAB,1906)
+      IF ( NREQ.EQ.1 .AND. IPASS.EQ.1 ) THEN
+        IF ( OTYPE.EQ.1 ) THEN
+          WRITE (NDSTAB,1901)
+        ELSE IF ( OTYPE.EQ.2 ) THEN
+          WRITE (NDSTAB,1902)
+        ELSE IF ( OTYPE.EQ.3 ) THEN
+          WRITE (NDSTAB,1903)
+        ELSE IF ( OTYPE.EQ.4 ) THEN
+          WRITE (NDSTAB,1904)
+        ELSE IF ( OTYPE.EQ.5 ) THEN
+          WRITE (NDSTAB,1905)
+        ELSE IF ( OTYPE.EQ.6 ) THEN
+          WRITE (NDSTAB,1906)
+        END IF
+      END IF
+      IF ( NREQ.NE.1 ) THEN
+        CALL STME21 ( TIME , DTME21 )
+        IF ( IPASS .NE. 1 ) WRITE (NDSTAB,1910)
+        IF ( OTYPE.EQ.1 ) THEN
+          IF ( FLAGLL ) THEN
+            WRITE (NDSTAB,1911) DTME21
+          ELSE
+            WRITE (NDSTAB,1711) DTME21
           END IF
-       END IF
-       IF ( NREQ.NE.1 ) THEN
-          CALL STME21 ( TIME , DTME21 )
-          IF ( IPASS .NE. 1 ) WRITE (NDSTAB,1910)
-          IF ( OTYPE.EQ.1 ) THEN
-             IF ( FLAGLL ) THEN
-                WRITE (NDSTAB,1911) DTME21
-             ELSE
-                WRITE (NDSTAB,1711) DTME21
-             END IF
-          ELSE IF ( OTYPE.EQ.2 ) THEN
-             IF ( FLAGLL ) THEN
-                WRITE (NDSTAB,1912) DTME21
-             ELSE
-                WRITE (NDSTAB,1712) DTME21
-             END IF
-          ELSE IF ( OTYPE.EQ.3 ) THEN
-             WRITE (NDSTAB,1913) DTME21
-          ELSE IF ( OTYPE.EQ.4 ) THEN
-             WRITE (NDSTAB,1914) DTME21
-          ELSE IF ( OTYPE.EQ.5 ) THEN
-             IF ( FLAGLL ) THEN
-                WRITE (NDSTAB,1915) DTME21
-             ELSE
-                WRITE (NDSTAB,1715) DTME21
-             END IF
-          ELSE IF ( OTYPE.EQ.6 ) THEN
-             IF ( FLAGLL ) THEN
-                WRITE (NDSTAB,1916) DTME21
-             ELSE
-                WRITE (NDSTAB,1716) DTME21
-             END IF
+        ELSE IF ( OTYPE.EQ.2 ) THEN
+          IF ( FLAGLL ) THEN
+            WRITE (NDSTAB,1912) DTME21
+          ELSE
+            WRITE (NDSTAB,1712) DTME21
           END IF
-       END IF
+        ELSE IF ( OTYPE.EQ.3 ) THEN
+          WRITE (NDSTAB,1913) DTME21
+        ELSE IF ( OTYPE.EQ.4 ) THEN
+          WRITE (NDSTAB,1914) DTME21
+        ELSE IF ( OTYPE.EQ.5 ) THEN
+          IF ( FLAGLL ) THEN
+            WRITE (NDSTAB,1915) DTME21
+          ELSE
+            WRITE (NDSTAB,1715) DTME21
+          END IF
+        ELSE IF ( OTYPE.EQ.6 ) THEN
+          IF ( FLAGLL ) THEN
+            WRITE (NDSTAB,1916) DTME21
+          ELSE
+            WRITE (NDSTAB,1716) DTME21
+          END IF
+        END IF
+      END IF
     END IF
     !
     IF (ITYPE.EQ.3) THEN
-       IF ( OTYPE .EQ. 4 ) THEN
-          CALL STME21 ( TIME , DTME21 )
-          WRITE (NDSO,905) DTME21
-       END IF
+      IF ( OTYPE .EQ. 4 ) THEN
+        CALL STME21 ( TIME , DTME21 )
+        WRITE (NDSO,905) DTME21
+      END IF
     END IF
     !
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     !     Loop over output points.
     !
     DO J=1, NOPTS
-       IF ( FLREQ(J) ) THEN
-          !
+      IF ( FLREQ(J) ) THEN
+        !
 #ifdef W3_T
-          WRITE (NDST,9002) PTNME(J)
+        WRITE (NDST,9002) PTNME(J)
 #endif
-          !
-          ! 2. Calculate grid parameters using and inlined version of WAVNU1.
-          !
-          DEPTH    = MAX ( DMIN, DPO(J) )
-          SQRTH    = SQRT ( DEPTH )
-          UDIR     = MOD ( 270. - WDO(J)*RADE , 360. )
-          UDIRCA   = WDO(J)*RADE
-          UDIRR    = WDO(J)
-          UABS     = MAX ( 0.001 , WAO(J) )
+        !
+        ! 2. Calculate grid parameters using and inlined version of WAVNU1.
+        !
+        DEPTH    = MAX ( DMIN, DPO(J) )
+        SQRTH    = SQRT ( DEPTH )
+        UDIR     = MOD ( 270. - WDO(J)*RADE , 360. )
+        UDIRCA   = WDO(J)*RADE
+        UDIRR    = WDO(J)
+        UABS     = MAX ( 0.001 , WAO(J) )
 #ifdef W3_FLX5
-          TAUA     = MAX ( 0.001 , TAUAO(J))
-          TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
-          RHOAIR   = MAX ( 0. , DAIRO(J))
+        TAUA     = MAX ( 0.001 , TAUAO(J))
+        TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
+        RHOAIR   = MAX ( 0. , DAIRO(J))
 #endif
-          CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
-          ICEDMAX  = MAX ( 0., ICEFO(J))
-          ICEF     = ICEDMAX
-          ICETHICK = MAX (0., ICEHO(J))
-          ICECON   = MAX (0., ICEO(J))
-          !
+        CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
+        ICEDMAX  = MAX ( 0., ICEFO(J))
+        ICEF     = ICEDMAX
+        ICETHICK = MAX (0., ICEHO(J))
+        ICECON   = MAX (0., ICEO(J))
+        !
 #ifdef W3_STAB2
-          STAB0  = ZWIND * GRAV / 273.
-          STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
-          STAB   = MAX ( -1. , MIN ( 1. , STAB ) )
-          THARG1 = MAX ( 0. , FFNG*(STAB-OFSTAB))
-          THARG2 = MAX ( 0. , FFPS*(STAB-OFSTAB))
-          COR1   = CCNG * TANH(THARG1)
-          COR2   = CCPS * TANH(THARG2)
-          ASFAC  = SQRT ( (1.+COR1+COR2)/SHSTAB )
+        STAB0  = ZWIND * GRAV / 273.
+        STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
+        STAB   = MAX ( -1. , MIN ( 1. , STAB ) )
+        THARG1 = MAX ( 0. , FFNG*(STAB-OFSTAB))
+        THARG2 = MAX ( 0. , FFPS*(STAB-OFSTAB))
+        COR1   = CCNG * TANH(THARG1)
+        COR2   = CCPS * TANH(THARG2)
+        ASFAC  = SQRT ( (1.+COR1+COR2)/SHSTAB )
+#endif
+        !
+#ifdef W3_T
+        WRITE (NDST,9010) DEPTH
+#endif
+        DO IK=1, NK
+          SIX    = SIG(IK) * SQRTH
+          I1     = INT(SIX/DSIE)
+          IF (I1.LE.N1MAX) THEN
+            I2 = I1 + 1
+            R1 = SIX/DSIE - REAL(I1)
+            R2 = 1. - R1
+            WN(IK) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / DEPTH
+            CG(IK) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
+          ELSE
+            WN(IK) = SIG(IK)*SIG(IK)/GRAV
+            CG(IK) = 0.5 * GRAV / SIG(IK)
+          END IF
+#ifdef W3_T
+          WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
 #endif
           !
-#ifdef W3_T
-          WRITE (NDST,9010) DEPTH
-#endif
-          DO IK=1, NK
-             SIX    = SIG(IK) * SQRTH
-             I1     = INT(SIX/DSIE)
-             IF (I1.LE.N1MAX) THEN
-                I2 = I1 + 1
-                R1 = SIX/DSIE - REAL(I1)
-                R2 = 1. - R1
-                WN(IK) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / DEPTH
-                CG(IK) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
-             ELSE
-                WN(IK) = SIG(IK)*SIG(IK)/GRAV
-                CG(IK) = 0.5 * GRAV / SIG(IK)
-             END IF
-#ifdef W3_T
-             WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
-#endif
-             !
-          END DO
+        END DO
 
-          !
-          ! Computes 2nd order spectrum
-          !
+        !
+        ! Computes 2nd order spectrum
+        !
 #ifdef W3_IG1
-          IF (IGPARS(2).EQ.1) THEN
-             IF(IGPARS(1).EQ.1) THEN
-                CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
-             ELSE
-                CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
-             END IF
+        IF (IGPARS(2).EQ.1) THEN
+          IF(IGPARS(1).EQ.1) THEN
+            CALL W3ADDIG(SPCO(:,J),DPO(J),WN,CG,0)
+          ELSE
+            CALL W3ADD2NDORDER(SPCO(:,J),DPO(J),WN,CG,0)
           END IF
+        END IF
 #endif
-          !
-          ! 3.  Prepare spectra etc.
-          ! 3.a Mean wave parameters.
-          !
-          ET     = 0.
-          EWN    = 0.
-          ETR    = 0.
-          ETX    = 0.
-          ETY    = 0.
+        !
+        ! 3.  Prepare spectra etc.
+        ! 3.a Mean wave parameters.
+        !
+        ET     = 0.
+        EWN    = 0.
+        ETR    = 0.
+        ETX    = 0.
+        ETY    = 0.
+        DO IK=1, NK
+          EBND   = 0.
+          EBX    = 0.
+          EBY    = 0.
+          DO ITH=1, NTH
+            ISP    = ITH + (IK-1)*NTH
+            E(IK,ITH) = SPCO(ISP,J)
+            EBND   = EBND + SPCO(ISP,J)
+            EBX    = EBX  + SPCO(ISP,J)*ECOS(ITH)
+            EBY    = EBY  + SPCO(ISP,J)*ESIN(ITH)
+          END DO
+          E1(IK) = EBND * DTH
+          APM(IK)= E1(IK) / ( TPI * GRAV**2 / SIG(IK)**5  )
+          IF ( E1(IK) .GT. 1.E-5) THEN
+            THBND(IK) = MOD(630.- RADE*ATAN2(EBY,EBX),360.)
+            SPBND(IK) = RADE * SQRT ( MAX ( 0. , 2.*( 1. -      &
+                 SQRT( MAX(0.,(EBX**2+EBY**2)/EBND**2) ) ) ) )
+          ELSE
+            THBND(IK) = -999.9
+            SPBND(IK) = -999.9
+          END IF
+          EBND   = E1(IK) * DSII(IK) * TPIINV
+          ET     = ET  + EBND
+          EWN    = EWN + EBND / WN(IK)
+          ETR    = ETR + EBND / SIG(IK)
+          ETX    = ETX + EBX * DSII(IK)
+          ETY    = ETY + EBY * DSII(IK)
+        END DO
+        !
+        ! tail factors for radian action etc ...!
+        !
+        EBND   = E1(NK) * TPIINV / ( SIG(NK) * DTH )
+        ET     = ET  + FTE *EBND
+        EWN    = EWN + FTWL*EBND
+        ETR    = ETR + FTTR*EBND
+        ETX    = DTH*ETX*TPIINV + FTE*EBX*TPIINV/SIG(NK)
+        ETY    = DTH*ETY*TPIINV + FTE*EBY*TPIINV/SIG(NK)
+        !
+        HSIG   = 4. * SQRT ( MAX(0.,ET) )
+        IF ( HSIG .GT. HSMIN ) THEN
+          WLEN   = EWN / ET * TPI
+          TMEAN  = ETR / ET * TPI
+          THMEAN = MOD ( 630. - RADE*ATAN2(ETY,ETX) , 360. )
+          THSPRD = RADE * SQRT ( MAX ( 0. , 2.*( 1. - SQRT(     &
+               MAX(0.,(ETX**2+ETY**2)/ET**2) ) ) ) )
+          IF ( THSPRD .LT. 0.01*RADE*DTH ) THSPRD = 0.
+        ELSE
+          WLEN   = 0.
+          TMEAN  = 0.
+          THMEAN = 0.
+          THSPRD = 0.
           DO IK=1, NK
-             EBND   = 0.
-             EBX    = 0.
-             EBY    = 0.
-             DO ITH=1, NTH
-                ISP    = ITH + (IK-1)*NTH
-                E(IK,ITH) = SPCO(ISP,J)
-                EBND   = EBND + SPCO(ISP,J)
-                EBX    = EBX  + SPCO(ISP,J)*ECOS(ITH)
-                EBY    = EBY  + SPCO(ISP,J)*ESIN(ITH)
-             END DO
-             E1(IK) = EBND * DTH
-             APM(IK)= E1(IK) / ( TPI * GRAV**2 / SIG(IK)**5  )
-             IF ( E1(IK) .GT. 1.E-5) THEN
-                THBND(IK) = MOD(630.- RADE*ATAN2(EBY,EBX),360.)
-                SPBND(IK) = RADE * SQRT ( MAX ( 0. , 2.*( 1. -      &
-                     SQRT( MAX(0.,(EBX**2+EBY**2)/EBND**2) ) ) ) )
-             ELSE
-                THBND(IK) = -999.9
-                SPBND(IK) = -999.9
-             END IF
-             EBND   = E1(IK) * DSII(IK) * TPIINV
-             ET     = ET  + EBND
-             EWN    = EWN + EBND / WN(IK)
-             ETR    = ETR + EBND / SIG(IK)
-             ETX    = ETX + EBX * DSII(IK)
-             ETY    = ETY + EBY * DSII(IK)
+            E1(IK) = 0.
+            DO ITH=1, NTH
+              E(IK,ITH) = 0.
+            END DO
+          END DO
+        END IF
+        !
+        ! peak frequency
+        !
+        EMAX   = E1(NK)
+        IKM    = NK
+        !
+        DO IK=NK-1, 1, -1
+          IF ( E1(IK) .GT. EMAX ) THEN
+            EMAX   = E1(IK)
+            IKM    = IK
+          END IF
+        END DO
+        !
+        IKL    = MAX (  1 , IKM-1 )
+        IKH    = MIN ( NK , IKM+1 )
+        EL     = E1(IKL) - E1(IKM)
+        EH     = E1(IKH) - E1(IKM)
+        DENOM  = XL*EH - XH*EL
+        !
+        IF ( HSIG .GE. HSMIN ) THEN
+          FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
+               / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
+          THP    = THBND(IKM)
+          SPP    = SPBND(IKM)
+          IF ( SPP .LT. 0.01*RADE*DTH ) SPP = 0.
+        ELSE
+          FP     = 0.
+          THP    = 0.
+          SPP    = 0.
+        END IF
+        !
+        ! spectral partitioning
+        !
+        IF ( ITYPE.EQ.4 ) CALL W3PART                              &
+             ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMXP )
+        !
+        ! nondimensional parameters
+        !
+        IF ( ( ITYPE.EQ.2 .AND. (OTYPE.EQ.3.OR.OTYPE.EQ.4) ) .OR. &
+             ( ITYPE.EQ.1 .AND. (OTYPE.EQ.2) ) ) THEN
+          !
+          DO IK=1, NK
+            FACTOR = TPIINV * CG(IK) / SIG(IK)
+            DO ITH=1, NTH
+              ISP    = ITH + (IK-1)*NTH
+              A(ITH,IK)   = FACTOR * SPCO(ISP,J)
+              WN2(ITH,IK) = WN(IK)
+            END DO
           END DO
           !
-          ! tail factors for radian action etc ...!
+#ifdef W3_STAB2
+          UABS   = UABS / ASFAC
+#endif
           !
-          EBND   = E1(NK) * TPIINV / ( SIG(NK) * DTH )
-          ET     = ET  + FTE *EBND
-          EWN    = EWN + FTWL*EBND
-          ETR    = ETR + FTTR*EBND
-          ETX    = DTH*ETX*TPIINV + FTE*EBX*TPIINV/SIG(NK)
-          ETY    = DTH*ETY*TPIINV + FTE*EBY*TPIINV/SIG(NK)
+#ifdef W3_ST0
+          ZWND   = 10.
+#endif
+#ifdef W3_ST1
+          ZWND   = 10.
+#endif
+#ifdef W3_ST2
+          ZWND   = ZWIND
+#endif
+#ifdef W3_ST3
+          ZWND   = ZZWND
+          TAUWX  = 0.
+          TAUWY  = 0.
+          LLWS(:)  = .TRUE.
+#endif
+#ifdef W3_ST4
+          LLWS(:)  = .TRUE.
+          ZWND   = ZZWND
+          TAUWX  = 0.
+          TAUWY  = 0.
+#endif
+#ifdef W3_ST6
+          ZWND   = 10.
+#endif
+          USTAR  = 1.
           !
-          HSIG   = 4. * SQRT ( MAX(0.,ET) )
-          IF ( HSIG .GT. HSMIN ) THEN
-             WLEN   = EWN / ET * TPI
-             TMEAN  = ETR / ET * TPI
-             THMEAN = MOD ( 630. - RADE*ATAN2(ETY,ETX) , 360. )
-             THSPRD = RADE * SQRT ( MAX ( 0. , 2.*( 1. - SQRT(     &
-                  MAX(0.,(ETX**2+ETY**2)/ET**2) ) ) ) )
-             IF ( THSPRD .LT. 0.01*RADE*DTH ) THSPRD = 0.
-          ELSE
-             WLEN   = 0.
-             TMEAN  = 0.
-             THMEAN = 0.
-             THSPRD = 0.
-             DO IK=1, NK
-                E1(IK) = 0.
-                DO ITH=1, NTH
-                   E(IK,ITH) = 0.
-                END DO
-             END DO
-          END IF
+#ifdef W3_ST1
+          CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
+          FP     = 0.85 * FMEAN
+#endif
+#ifdef W3_ST2
+          CALL W3SPR2 (A, CG, WN, DEPTH, FP , UABS, USTAR, &
+               EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
+#endif
+#ifdef W3_ST3
+          CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
+               WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
+               TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
+#endif
+#ifdef W3_ST4
+          CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
+               WNMEAN, AMAX, UABS, UDIRR,             &
+#ifdef W3_FLX5
+               TAUA, TAUADIR, RHOAIR,           &
+#endif
+               USTAR, USTD, TAUWX, TAUWY, CD, Z0,     &
+               CHARN, LLWS, FMEANWS, DLWMEAN )
+#endif
+#ifdef W3_ST6
+          CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
+#endif
           !
-          ! peak frequency
+#ifdef W3_FLX1
+          CALL W3FLX1 ( ZWND, UABS, UDIRR,                   &
+               USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX2
+          CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
+               USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX3
+          CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
+               USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX4
+          CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX5
+          CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
+               RHOAIR, USTAR, USTD, Z0, CD, CHARN )
+#endif
           !
-          EMAX   = E1(NK)
-          IKM    = NK
-          !
-          DO IK=NK-1, 1, -1
-             IF ( E1(IK) .GT. EMAX ) THEN
-                EMAX   = E1(IK)
-                IKM    = IK
-             END IF
+          DO ITT=1, 3
+#ifdef W3_ST2
+            CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
+                 FPI, XIN, DIA )
+            CALL W3SPR2 (A, CG, WN, DEPTH, FPI, UABS, USTAR, &
+                 EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
+#endif
+#ifdef W3_ST3
+            IX=1
+            IY=1
+            CALL W3SIN3 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
+                 ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
+                 TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
+            CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
+                 WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
+                 TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
+#endif
+#ifdef W3_ST4
+            IX=1
+            IY=1
+            CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
+                 ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
+                 TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
+            CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
+                 WNMEAN, AMAX, UABS, UDIRR,               &
+#ifdef W3_FLX5
+                 TAUA, TAUADIR, RHOAIR,             &
+#endif
+                 USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
+                 CHARN, LLWS, FMEANWS, DLWMEAN )
+#endif
+#ifdef W3_FLX2
+            CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
+                 USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX3
+            CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
+                 USTAR, USTD, Z0, CD )
+#endif
           END DO
           !
-          IKL    = MAX (  1 , IKM-1 )
-          IKH    = MIN ( NK , IKM+1 )
-          EL     = E1(IKL) - E1(IKM)
-          EH     = E1(IKH) - E1(IKM)
-          DENOM  = XL*EH - XH*EL
+          ! Add alternative flux calculations here as part of !/ST2 option ....
+          ! Also add before actual source term calculation !!!
           !
-          IF ( HSIG .GE. HSMIN ) THEN
-             FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
-                  / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
-             THP    = THBND(IKM)
-             SPP    = SPBND(IKM)
-             IF ( SPP .LT. 0.01*RADE*DTH ) SPP = 0.
+#ifdef W3_STAB2
+          UABS   = UABS * ASFAC
+#endif
+          !
+          IF ( WAO(J) .LT. 0.01 ) THEN
+            UNORM  = 0.
+            ESTAR  = 0.
+            FPSTAR = 0.
           ELSE
-             FP     = 0.
-             THP    = 0.
-             SPP    = 0.
+            IF ( OTYPE.EQ.3 ) THEN
+              UNORM  = USTAR
+            ELSE
+              UNORM  = WAO(J)
+            END IF
+            ESTAR  = ET * GRAV**2 / UNORM**4
+            FPSTAR = FP * TPIINV * UNORM / GRAV
+            XSTAR  = PTLOC(1,J) * GRAV / UNORM**2
+            YSTAR  = PTLOC(2,J) * GRAV / UNORM**2
+            IF ( FLAGLL ) THEN
+              XSTAR  = XSTAR * DERA * RADIUS &
+                   * COS(PTLOC(2,J)*DERA)
+              YSTAR  = YSTAR * DERA * RADIUS
+            END IF
           END IF
           !
-          ! spectral partitioning
+        END IF
+        !
+        ! 3.4 source terms
+        !
+        IF ( ITYPE.EQ.3 ) THEN
           !
-          IF ( ITYPE.EQ.4 ) CALL W3PART                              &
-               ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMXP )
+          DO IK=1, NK
+            FACTOR = TPIINV * CG(IK) / SIG(IK)
+            DO ITH=1, NTH
+              A(ITH,IK)   = FACTOR * SPCO(ITH+(IK-1)*NTH,J)
+              WN2(ITH,IK) = WN(IK)
+            END DO
+          END DO
           !
-          ! nondimensional parameters
-          !
-          IF ( ( ITYPE.EQ.2 .AND. (OTYPE.EQ.3.OR.OTYPE.EQ.4) ) .OR. &
-               ( ITYPE.EQ.1 .AND. (OTYPE.EQ.2) ) ) THEN
-             !
-             DO IK=1, NK
-                FACTOR = TPIINV * CG(IK) / SIG(IK)
-                DO ITH=1, NTH
-                   ISP    = ITH + (IK-1)*NTH
-                   A(ITH,IK)   = FACTOR * SPCO(ISP,J)
-                   WN2(ITH,IK) = WN(IK)
-                END DO
-             END DO
-             !
 #ifdef W3_STAB2
-             UABS   = UABS / ASFAC
+          UABS   = UABS / ASFAC
 #endif
-             !
+          !
 #ifdef W3_ST0
-             ZWND   = 10.
+          ZWND   = 10.
 #endif
 #ifdef W3_ST1
-             ZWND   = 10.
+          ZWND   = 10.
 #endif
 #ifdef W3_ST2
-             ZWND   = ZWIND
+          ZWND   = ZWIND
 #endif
 #ifdef W3_ST3
-             ZWND   = ZZWND
-             TAUWX  = 0.
-             TAUWY  = 0.
-             LLWS(:)  = .TRUE.
+          ZWND   = ZZWND
+#endif
+#ifdef W3_ST0
+          USTAR  = 1.
+#endif
+#ifdef W3_ST1
+          USTAR  = 1.
+#endif
+#ifdef W3_ST2
+          USTAR  = 1.
+#endif
+#ifdef W3_ST3
+          USTAR  = 0.
+          USTD   = 0.
+          TAUWX  = 0.
+          TAUWY  = 0.
 #endif
 #ifdef W3_ST4
-             LLWS(:)  = .TRUE.
-             ZWND   = ZZWND
-             TAUWX  = 0.
-             TAUWY  = 0.
+          ZWND   = ZZWND
+          USTAR  = 0.
+          USTD   = 0.
+          TAUWX  = 0.
+          TAUWY  = 0.
 #endif
 #ifdef W3_ST6
-             ZWND   = 10.
+          ZWND   = 10.
 #endif
-             USTAR  = 1.
-             !
+          !
+#ifdef W3_ST0
+          FHIGH  = SIG(NK)
+#endif
 #ifdef W3_ST1
-             CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
-             FP     = 0.85 * FMEAN
+          CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
+          FP     = 0.85 * FMEAN
+          FH1    = FXFM * FMEAN
+          FH2    = FXPM / USTAR
+          FHIGH  = MAX ( FH1 , FH2 )
 #endif
 #ifdef W3_ST2
-             CALL W3SPR2 (A, CG, WN, DEPTH, FP , UABS, USTAR, &
-                  EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
+          CALL W3SPR2 (A, CG, WN, DEPTH, FP , UABS, USTAR, &
+               EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 #endif
 #ifdef W3_ST3
-             CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
-                  WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                  TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
+          CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
+               WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
+               TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
 #endif
 #ifdef W3_ST4
-             CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
-                  WNMEAN, AMAX, UABS, UDIRR,             &
+          CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,        &
+               WNMEAN, AMAX, UABS, UDIRR,               &
 #ifdef W3_FLX5
-                  TAUA, TAUADIR, RHOAIR,           &
+               TAUA, TAUADIR, RHOAIR,             &
 #endif
-                  USTAR, USTD, TAUWX, TAUWY, CD, Z0,     &
-                  CHARN, LLWS, FMEANWS, DLWMEAN )
+               USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
+               CHARN, LLWS, FMEANWS, DLWMEAN )
 #endif
 #ifdef W3_ST6
-             CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
+          CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
+          FHIGH  = SIG(NK)
 #endif
-             !
+          !
 #ifdef W3_FLX1
-             CALL W3FLX1 ( ZWND, UABS, UDIRR,                   &
-                  USTAR, USTD, Z0, CD )
+          CALL W3FLX1 ( ZWND, UABS, UDIRR,                   &
+               USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX2
-             CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
-                  USTAR, USTD, Z0, CD )
+          CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
+               USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX3
-             CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
-                  USTAR, USTD, Z0, CD )
+          CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
+               USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX4
-             CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
+          CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX5
-             CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
-                  RHOAIR, USTAR, USTD, Z0, CD, CHARN )
+          CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
+               RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
-             !
-             DO ITT=1, 3
-#ifdef W3_ST2
-                CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
-                     FPI, XIN, DIA )
-                CALL W3SPR2 (A, CG, WN, DEPTH, FPI, UABS, USTAR, &
-                     EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
-#endif
-#ifdef W3_ST3
-                IX=1
-                IY=1
-                CALL W3SIN3 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
-                     ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
-                     TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
-                CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
-                     WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                     TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
-#endif
-#ifdef W3_ST4
-                IX=1
-                IY=1
-                CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
-                     ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,&
-                     TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
-                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
-                     WNMEAN, AMAX, UABS, UDIRR,               &
-#ifdef W3_FLX5
-                     TAUA, TAUADIR, RHOAIR,             &
-#endif
-                     USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
-                     CHARN, LLWS, FMEANWS, DLWMEAN )
-#endif
-#ifdef W3_FLX2
-                CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
-                     USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX3
-                CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
-                     USTAR, USTD, Z0, CD )
-#endif
-             END DO
-             !
-             ! Add alternative flux calculations here as part of !/ST2 option ....
-             ! Also add before actual source term calculation !!!
-             !
-#ifdef W3_STAB2
-             UABS   = UABS * ASFAC
-#endif
-             !
-             IF ( WAO(J) .LT. 0.01 ) THEN
-                UNORM  = 0.
-                ESTAR  = 0.
-                FPSTAR = 0.
-             ELSE
-                IF ( OTYPE.EQ.3 ) THEN
-                   UNORM  = USTAR
-                ELSE
-                   UNORM  = WAO(J)
-                END IF
-                ESTAR  = ET * GRAV**2 / UNORM**4
-                FPSTAR = FP * TPIINV * UNORM / GRAV
-                XSTAR  = PTLOC(1,J) * GRAV / UNORM**2
-                YSTAR  = PTLOC(2,J) * GRAV / UNORM**2
-                IF ( FLAGLL ) THEN
-                   XSTAR  = XSTAR * DERA * RADIUS &
-                        * COS(PTLOC(2,J)*DERA)
-                   YSTAR  = YSTAR * DERA * RADIUS
-                END IF
-             END IF
-             !
-          END IF
           !
-          ! 3.4 source terms
+          DO ITT=1, 3
+#ifdef W3_ST2
+            CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
+                 FPI, XIN, DIA )
+            CALL W3SPR2 (A, CG, WN, DEPTH, FPI, UABS, USTAR, &
+                 EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
+#endif
+#ifdef W3_ST3
+            CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
+                 WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
+                 TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
+            CALL W3SIN3 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
+                 ASO(J), UDIRR, Z0, CD,TAUWX, TAUWY, &
+                 TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
+#endif
+#ifdef W3_ST4
+            CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,        &
+                 WNMEAN, AMAX, UABS, UDIRR,              &
+#ifdef W3_FLX5
+                 TAUA, TAUADIR, RHOAIR,            &
+#endif
+                 USTAR, USTD, TAUWX, TAUWY, CD, Z0,      &
+                 CHARN, LLWS, FMEANWS, DLWMEAN )
+            CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
+                 ASO(J), UDIRR, Z0, CD,TAUWX, TAUWY, &
+                 TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
+#endif
+#ifdef W3_FLX2
+            CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
+                 USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX3
+            CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
+                 USTAR, USTD, Z0, CD )
+#endif
+          END DO
           !
-          IF ( ITYPE.EQ.3 ) THEN
-             !
-             DO IK=1, NK
-                FACTOR = TPIINV * CG(IK) / SIG(IK)
-                DO ITH=1, NTH
-                   A(ITH,IK)   = FACTOR * SPCO(ITH+(IK-1)*NTH,J)
-                   WN2(ITH,IK) = WN(IK)
-                END DO
-             END DO
-             !
-#ifdef W3_STAB2
-             UABS   = UABS / ASFAC
-#endif
-             !
-#ifdef W3_ST0
-             ZWND   = 10.
-#endif
-#ifdef W3_ST1
-             ZWND   = 10.
-#endif
 #ifdef W3_ST2
-             ZWND   = ZWIND
+          FHIGH  = XFC * FPI
 #endif
-#ifdef W3_ST3
-             ZWND   = ZZWND
-#endif
-#ifdef W3_ST0
-             USTAR  = 1.
-#endif
-#ifdef W3_ST1
-             USTAR  = 1.
-#endif
-#ifdef W3_ST2
-             USTAR  = 1.
-#endif
-#ifdef W3_ST3
-             USTAR  = 0.
-             USTD   = 0.
-             TAUWX  = 0.
-             TAUWY  = 0.
-#endif
-#ifdef W3_ST4
-             ZWND   = ZZWND
-             USTAR  = 0.
-             USTD   = 0.
-             TAUWX  = 0.
-             TAUWY  = 0.
-#endif
-#ifdef W3_ST6
-             ZWND   = 10.
-#endif
-             !
-#ifdef W3_ST0
-             FHIGH  = SIG(NK)
-#endif
-#ifdef W3_ST1
-             CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
-             FP     = 0.85 * FMEAN
-             FH1    = FXFM * FMEAN
-             FH2    = FXPM / USTAR
-             FHIGH  = MAX ( FH1 , FH2 )
-#endif
-#ifdef W3_ST2
-             CALL W3SPR2 (A, CG, WN, DEPTH, FP , UABS, USTAR, &
-                  EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
-#endif
-#ifdef W3_ST3
-             CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
-                  WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                  TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
-#endif
-#ifdef W3_ST4
-             CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,        &
-                  WNMEAN, AMAX, UABS, UDIRR,               &
-#ifdef W3_FLX5
-                  TAUA, TAUADIR, RHOAIR,             &
-#endif
-                  USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
-                  CHARN, LLWS, FMEANWS, DLWMEAN )
-#endif
-#ifdef W3_ST6
-             CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
-             FHIGH  = SIG(NK)
-#endif
-             !
-#ifdef W3_FLX1
-             CALL W3FLX1 ( ZWND, UABS, UDIRR,                   &
-                  USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX2
-             CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
-                  USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX3
-             CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
-                  USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX4
-             CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX5
-             CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,    &
-                  RHOAIR, USTAR, USTD, Z0, CD, CHARN )
-#endif
-             !
-             DO ITT=1, 3
-#ifdef W3_ST2
-                CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
-                     FPI, XIN, DIA )
-                CALL W3SPR2 (A, CG, WN, DEPTH, FPI, UABS, USTAR, &
-                     EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
-#endif
-#ifdef W3_ST3
-                CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,       &
-                     WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD,&
-                     TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS )
-                CALL W3SIN3 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
-                     ASO(J), UDIRR, Z0, CD,TAUWX, TAUWY, &
-                     TAUWNX, TAUWNY, ICE, XIN, DIA, LLWS, IX, IY )
-#endif
-#ifdef W3_ST4
-                CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN, FMEAN1,        &
-                     WNMEAN, AMAX, UABS, UDIRR,              &
-#ifdef W3_FLX5
-                     TAUA, TAUADIR, RHOAIR,            &
-#endif
-                     USTAR, USTD, TAUWX, TAUWY, CD, Z0,      &
-                     CHARN, LLWS, FMEANWS, DLWMEAN )
-                CALL W3SIN4 ( A, CG, WN2, UABS, USTAR, DAIR/DWAT,&
-                     ASO(J), UDIRR, Z0, CD,TAUWX, TAUWY, &
-                     TAUWNX, TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
-#endif
-#ifdef W3_FLX2
-                CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
-                     USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX3
-                CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,      &
-                     USTAR, USTD, Z0, CD )
-#endif
-             END DO
-             !
-#ifdef W3_ST2
-             FHIGH  = XFC * FPI
-#endif
-             !
-             IF ( FLSRCE(2) ) THEN
+          !
+          IF ( FLSRCE(2) ) THEN
 #ifdef W3_LN1
-                CALL W3SLN1 (WN, FHIGH, USTAR, UDIRR, XLN )
+            CALL W3SLN1 (WN, FHIGH, USTAR, UDIRR, XLN )
 #endif
-                !
+            !
 #ifdef W3_ST1
-                CALL W3SIN1 (A, WN2, USTAR, UDIRR,  XIN, DIA )
+            CALL W3SIN1 (A, WN2, USTAR, UDIRR,  XIN, DIA )
 #endif
 #ifdef W3_ST2
-                CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,&
-                     FPI, XIN, DIA )
+            CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,&
+                 FPI, XIN, DIA )
 #endif
 #ifdef W3_ST3
-                CALL W3SIN3 ( A, CG, WN2, UABS, USTAR,       &
-                     DAIR/DWAT, ASO(J), UDIRR,      &
-                     Z0, CD, TAUWX, TAUWY,TAUWNX, TAUWNY, &
-                     ICE, XIN, DIA, LLWS, IX, IY )
+            CALL W3SIN3 ( A, CG, WN2, UABS, USTAR,       &
+                 DAIR/DWAT, ASO(J), UDIRR,      &
+                 Z0, CD, TAUWX, TAUWY,TAUWNX, TAUWNY, &
+                 ICE, XIN, DIA, LLWS, IX, IY )
 #endif
 #ifdef W3_ST4
-                CALL W3SIN4 ( A, CG, WN2, UABS, USTAR,       &
-                     DAIR/DWAT, ASO(J), UDIRR,      &
-                     Z0, CD, TAUWX, TAUWY,TAUWNX, TAUWNY, &
-                     XIN, DIA, LLWS, IX, IY, LAMBDA )
+            CALL W3SIN4 ( A, CG, WN2, UABS, USTAR,       &
+                 DAIR/DWAT, ASO(J), UDIRR,      &
+                 Z0, CD, TAUWX, TAUWY,TAUWNX, TAUWNY, &
+                 XIN, DIA, LLWS, IX, IY, LAMBDA )
 #endif
 #ifdef W3_ST6
-                CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, DAIR, &
-                     TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
+            CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, DAIR, &
+                 TAUWX, TAUWY, TAUWNX, TAUWNY, XIN, DIA )
 #endif
-             END IF
-             IF ( FLSRCE(3) ) THEN
+          END IF
+          IF ( FLSRCE(3) ) THEN
 #ifdef W3_NL1
-                CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
+            CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
 #endif
 #ifdef W3_NL2
-                CALL W3SNL2 ( A, CG, DEPTH,         XNL, DIA )
+            CALL W3SNL2 ( A, CG, DEPTH,         XNL, DIA )
 #endif
 #ifdef W3_NL3
-                CALL W3SNL3 ( A, CG, WN, DEPTH,     XNL, DIA )
+            CALL W3SNL3 ( A, CG, WN, DEPTH,     XNL, DIA )
 #endif
 #ifdef W3_NL4
-                CALL W3SNL4 ( A, CG, WN, DEPTH,     XNL, DIA )
+            CALL W3SNL4 ( A, CG, WN, DEPTH,     XNL, DIA )
 #endif
-             END IF
-             IF ( FLSRCE(4) ) THEN
+          END IF
+          IF ( FLSRCE(4) ) THEN
 #ifdef W3_ST1
-                CALL W3SDS1 ( A, WN2, EMEAN, FMEAN, WNMEAN,  &
-                     XDS, DIA )
+            CALL W3SDS1 ( A, WN2, EMEAN, FMEAN, WNMEAN,  &
+                 XDS, DIA )
 #endif
 #ifdef W3_ST2
-                CALL W3SDS2 ( A, CG, WN, FPI, USTAR,         &
-                     ALPHA,                XDS, DIA )
+            CALL W3SDS2 ( A, CG, WN, FPI, USTAR,         &
+                 ALPHA,                XDS, DIA )
 #endif
 #ifdef W3_ST3
-                CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,  &
-                     USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
+            CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,  &
+                 USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
 #endif
 #ifdef W3_ST4
-                CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, DAIR, XDS, &
-                     DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
+            CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, DAIR, XDS, &
+                 DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
 #endif
 #ifdef W3_ST6
-                CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
-                IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
+            CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
+            IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
 #endif
-                !
+            !
 #ifdef W3_DB1
-                CALL W3SDB1 ( I, A, DEPTH, EMEAN, FMEAN,    &
-                     WNMEAN, CG, LBREAK, XDB, DIA )
+            CALL W3SDB1 ( I, A, DEPTH, EMEAN, FMEAN,    &
+                 WNMEAN, CG, LBREAK, XDB, DIA )
 #endif
-             END IF
-             IF ( FLSRCE(5) ) THEN
+          END IF
+          IF ( FLSRCE(5) ) THEN
 #ifdef W3_BT1
-                CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
+            CALL W3SBT1 ( A, CG, WN, DEPTH,     XBT, DIA )
 #endif
 #ifdef W3_BT4
-                IX=1    ! to be fixed later
-                IY=1    ! to be fixed later
-                ISEA=1  ! to be fixed later
-                D50 = SED_D50(ISEA)
-                PSIC= SED_PSIC(ISEA)
+            IX=1    ! to be fixed later
+            IY=1    ! to be fixed later
+            ISEA=1  ! to be fixed later
+            D50 = SED_D50(ISEA)
+            PSIC= SED_PSIC(ISEA)
 #endif
 
 #ifdef W3_BT4
-                CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
-                     BEDFORM, XBT, DIA, IX, IY )
+            CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
+                 BEDFORM, XBT, DIA, IX, IY )
 #endif
 
-                BT8MSG='ww3_outp: ITYPE=3 with BT8 or BT9: Sbot out'//&
-                     'put is not yet supported. Use "F" for the 5'//&
-                     'th T/F flag.'
+            BT8MSG='ww3_outp: ITYPE=3 with BT8 or BT9: Sbot out'//&
+                 'put is not yet supported. Use "F" for the 5'//&
+                 'th T/F flag.'
 #ifdef W3_BT8
-                CALL EXTCDE( 516,MSG=BT8MSG)
+            CALL EXTCDE( 516,MSG=BT8MSG)
 #endif
 #ifdef W3_BT9
-                CALL EXTCDE( 516,MSG=BT8MSG)
+            CALL EXTCDE( 516,MSG=BT8MSG)
 #endif
 
-                ! For info on this issue, see : "BT8&9 issues" in "Remarks" section above.
+            ! For info on this issue, see : "BT8&9 issues" in "Remarks" section above.
 
-                !...broken....!/BT8                    CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
-                !...broken....!/BT9                    CALL W3SBT9 ( A, DEPTH, XBT, DIA, IX, IY )
+            !...broken....!/BT8                    CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
+            !...broken....!/BT9                    CALL W3SBT9 ( A, DEPTH, XBT, DIA, IX, IY )
 
 
-                !
+            !
 #ifdef W3_BS1
-                CALL W3SBS1 ( A, CG, WN, DEPTH,              &
-                     CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)), &
-                     TAUSCX, TAUSCY,   XBS, DIA )
+            CALL W3SBS1 ( A, CG, WN, DEPTH,              &
+                 CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)), &
+                 TAUSCX, TAUSCY,   XBS, DIA )
 #endif
-             END IF
-             !
-             IF ( FLSRCE(6) ) THEN
+          END IF
+          !
+          IF ( FLSRCE(6) ) THEN
 #ifdef W3_IS2
-                IF (IICEDISP) THEN
-                   CALL LIU_FORWARD_DISPERSION  (ICETHICK,0.,DEPTH, &
-                        SIG,WN_R,CG_ICE,ALPHA_LIU)
-                ELSE
-                   WN_R=WN
-                   CG_ICE=CG
-                END IF
+            IF (IICEDISP) THEN
+              CALL LIU_FORWARD_DISPERSION  (ICETHICK,0.,DEPTH, &
+                   SIG,WN_R,CG_ICE,ALPHA_LIU)
+            ELSE
+              WN_R=WN
+              CG_ICE=CG
+            END IF
 #endif
-                !
+            !
 #ifdef W3_IS2
-                CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, &
-                     IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
+            CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, &
+                 IX, IY, XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
 #endif
-             END IF
-             !
+          END IF
+          !
 #ifdef W3_STAB2
-             UABS   = UABS * ASFAC
+          UABS   = UABS * ASFAC
 #endif
-             !
-             IF ( ISCALE.EQ.0 .OR. ISCALE.EQ.3 ) THEN
-                FACF   = TPIINV
-                FACE   = 1.
-                FACS   = 1.
-             ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.4 ) THEN
-                FACF   = TPIINV * UABS / GRAV
-                FACE   = GRAV**3 / UABS**5
-                FACS   = GRAV**2 / UABS**4
-             ELSE IF ( ISCALE.EQ.2 .OR. ISCALE.EQ.5 ) THEN
-                FACF   = TPIINV * USTAR / GRAV
-                FACE   = GRAV**3 / USTAR**5
-                FACS   = GRAV**2 / USTAR**4
-             END IF
-             !
-             DO IK=1, NK
-                FACTOR = TPI / CG(IK) * SIG(IK)
-                E1  (IK) = 0.
-                SIN1(IK) = 0.
-                SNL1(IK) = 0.
-                SDS1(IK) = 0.
-                SBT1(IK) = 0.
-                STT1(IK) = 0.
-                SIS1(IK) = 0.
-                DO ITH=1, NTH
-                   ISP         = ITH + (IK-1)*NTH
-                   E  (IK,ITH) = SPCO(ISP,J)
-                   SWN(IK,ITH) = ( XLN(ITH,IK) + XIN(ITH,IK) ) * FACTOR
-                   SNL(IK,ITH) = ( XNL(ITH,IK) + XTR(ITH,IK) ) * FACTOR
-                   SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
+          !
+          IF ( ISCALE.EQ.0 .OR. ISCALE.EQ.3 ) THEN
+            FACF   = TPIINV
+            FACE   = 1.
+            FACS   = 1.
+          ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.4 ) THEN
+            FACF   = TPIINV * UABS / GRAV
+            FACE   = GRAV**3 / UABS**5
+            FACS   = GRAV**2 / UABS**4
+          ELSE IF ( ISCALE.EQ.2 .OR. ISCALE.EQ.5 ) THEN
+            FACF   = TPIINV * USTAR / GRAV
+            FACE   = GRAV**3 / USTAR**5
+            FACS   = GRAV**2 / USTAR**4
+          END IF
+          !
+          DO IK=1, NK
+            FACTOR = TPI / CG(IK) * SIG(IK)
+            E1  (IK) = 0.
+            SIN1(IK) = 0.
+            SNL1(IK) = 0.
+            SDS1(IK) = 0.
+            SBT1(IK) = 0.
+            STT1(IK) = 0.
+            SIS1(IK) = 0.
+            DO ITH=1, NTH
+              ISP         = ITH + (IK-1)*NTH
+              E  (IK,ITH) = SPCO(ISP,J)
+              SWN(IK,ITH) = ( XLN(ITH,IK) + XIN(ITH,IK) ) * FACTOR
+              SNL(IK,ITH) = ( XNL(ITH,IK) + XTR(ITH,IK) ) * FACTOR
+              SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 #ifdef W3_ST6
-                   SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
+              SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
 #endif
-                   SBT(IK,ITH) = ( XBT(ITH,IK) * XBS(ITH,IK) ) * FACTOR
-                   SIS(IK,ITH) = XIS(ITH,IK) * FACTOR
-                   STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH)+SDS(IK,ITH)&
-                        + SBT(IK,ITH) + SIS(IK,ITH) &
-                        + XXX(ITH,IK) * FACTOR
-                   E1  (IK) = E1  (IK) + E(IK,ITH)
-                   SIN1(IK) = SIN1(IK) + SWN(IK,ITH)
-                   SNL1(IK) = SNL1(IK) + SNL(IK,ITH)
-                   SDS1(IK) = SDS1(IK) + SDS(IK,ITH)
-                   SBT1(IK) = SBT1(IK) + SBT(IK,ITH)
-                   SIS1(IK) = SIS1(IK) + SIS(IK,ITH)
-                END DO
-                E1  (IK) = E1(IK)   * DTH * FACE
-                SIN1(IK) = SIN1(IK) * DTH * FACS
-                SNL1(IK) = SNL1(IK) * DTH * FACS
-                SDS1(IK) = SDS1(IK) * DTH * FACS
-                SBT1(IK) = SBT1(IK) * DTH * FACS
-                SIS1(IK) = SIS1(IK) * DTH * FACS
-             END DO
-             !
-             STT1       = SIN1 + SNL1 + SDS1 + SBT1 + SIS1
-             E1ALL(:,1) = SIN1
-             E1ALL(:,2) = SNL1
-             E1ALL(:,3) = SDS1
-             E1ALL(:,4) = SBT1
-             E1ALL(:,5) = SIS1
-             E1ALL(:,6) = STT1
-             !
+              SBT(IK,ITH) = ( XBT(ITH,IK) * XBS(ITH,IK) ) * FACTOR
+              SIS(IK,ITH) = XIS(ITH,IK) * FACTOR
+              STT(IK,ITH) = SWN(IK,ITH) + SNL(IK,ITH)+SDS(IK,ITH)&
+                   + SBT(IK,ITH) + SIS(IK,ITH) &
+                   + XXX(ITH,IK) * FACTOR
+              E1  (IK) = E1  (IK) + E(IK,ITH)
+              SIN1(IK) = SIN1(IK) + SWN(IK,ITH)
+              SNL1(IK) = SNL1(IK) + SNL(IK,ITH)
+              SDS1(IK) = SDS1(IK) + SDS(IK,ITH)
+              SBT1(IK) = SBT1(IK) + SBT(IK,ITH)
+              SIS1(IK) = SIS1(IK) + SIS(IK,ITH)
+            END DO
+            E1  (IK) = E1(IK)   * DTH * FACE
+            SIN1(IK) = SIN1(IK) * DTH * FACS
+            SNL1(IK) = SNL1(IK) * DTH * FACS
+            SDS1(IK) = SDS1(IK) * DTH * FACS
+            SBT1(IK) = SBT1(IK) * DTH * FACS
+            SIS1(IK) = SIS1(IK) * DTH * FACS
+          END DO
+          !
+          STT1       = SIN1 + SNL1 + SDS1 + SBT1 + SIS1
+          E1ALL(:,1) = SIN1
+          E1ALL(:,2) = SNL1
+          E1ALL(:,3) = SDS1
+          E1ALL(:,4) = SBT1
+          E1ALL(:,5) = SIS1
+          E1ALL(:,6) = STT1
+          !
+        END IF
+        !
+        ! 4.a Perform output type 1 ( print plots / tables / file )
+        !
+        IF ( ITYPE .EQ. 1 ) THEN
+          !
+          IF ( OTYPE .EQ. 1 ) THEN
+            !
+            IF ( SCALE1 .GE. 0. )                             &
+                 CALL PRT1DS (NDSO, NK, E1, SIG(1:NK), 'RAD/S',&
+                 17, SCALE1, 'E(f)', 'm^2s', PTNME(J) )
+            IF ( SCALE2 .GE. 0. )                             &
+                 CALL PRT2DS (NDSO, NK, NK, NTH, E, SIG(1:NK), &
+                 'RAD/S', 1., SCALE2, 0.0001, 'E(f,th)',  &
+                 'm^2s', PTNME(J) )
+            WRITE (NDSO,910) DPO(J), UABS
+            IF ( WAO(J) .GT. 0. ) WRITE (NDSO,911) UDIR
+            WRITE (NDSO,912) ASO(J), CAO(J)
+            IF ( CAO(J) .GT. 0. ) WRITE (NDSO,913) CDIR
+            WRITE (NDSO,914) HSIG, WLEN, TMEAN, THMEAN, THSPRD
+            !
+          ELSE IF ( OTYPE .EQ. 2 ) THEN
+            !
+            CALL STME21 ( TIME , DTME21 )
+            IF ( FLAGLL ) THEN
+              WRITE (NDSTAB,920) DTME21, PTNME(J),          &
+                   M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                   DPO(J), USTAR, WAO(J), UDIR
+            ELSE
+              WRITE (NDSTAB,720) DTME21, PTNME(J),          &
+                   M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                   DPO(J), USTAR, WAO(J), UDIR
+            END IF
+            IF ( FP .EQ. 0. ) FP = SIG(NK)
+            DO IK=1, NK
+              WRITE (NDSTAB,921) TPIINV*SIG(IK), SIG(IK)/FP,  &
+                   E1(IK), THBND(IK), SPBND(IK), APM(IK)
+            END DO
+            IF ( FP .EQ. SIG(NK) ) FP = 0.
+            WRITE (NDSTAB,922)
+            !
+          ELSE IF ( OTYPE .EQ. 3 ) THEN
+            !
+            IF ( FLFORM ) THEN
+              WRITE (NDSTAB) PTNME(J), PTLOC(2,J),          &
+                   PTLOC(1,J), DPO(J), WAO(J),    &
+                   UDIR, CAO(J), CDIR
+              WRITE (NDSTAB) ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
+            ELSE
+              WRITE (NDSTAB,901) PTNME(J), M2KM*PTLOC(2,J), &
+                   M2KM*PTLOC(1,J), DPO(J),   &
+                   WAO(J), UDIR, CAO(J), CDIR
+              WRITE (NDSTAB,902)                            &
+                   ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
+            END IF
+            !
           END IF
           !
-          ! 4.a Perform output type 1 ( print plots / tables / file )
+          ! 4.b Perform output type 2 ( tables )
           !
-          IF ( ITYPE .EQ. 1 ) THEN
-             !
-             IF ( OTYPE .EQ. 1 ) THEN
-                !
-                IF ( SCALE1 .GE. 0. )                             &
-                     CALL PRT1DS (NDSO, NK, E1, SIG(1:NK), 'RAD/S',&
-                     17, SCALE1, 'E(f)', 'm^2s', PTNME(J) )
-                IF ( SCALE2 .GE. 0. )                             &
-                     CALL PRT2DS (NDSO, NK, NK, NTH, E, SIG(1:NK), &
-                     'RAD/S', 1., SCALE2, 0.0001, 'E(f,th)',  &
-                     'm^2s', PTNME(J) )
-                WRITE (NDSO,910) DPO(J), UABS
-                IF ( WAO(J) .GT. 0. ) WRITE (NDSO,911) UDIR
-                WRITE (NDSO,912) ASO(J), CAO(J)
-                IF ( CAO(J) .GT. 0. ) WRITE (NDSO,913) CDIR
-                WRITE (NDSO,914) HSIG, WLEN, TMEAN, THMEAN, THSPRD
-                !
-             ELSE IF ( OTYPE .EQ. 2 ) THEN
-                !
-                CALL STME21 ( TIME , DTME21 )
+        ELSE IF ( ITYPE .EQ. 2 ) THEN
+          !
+          IF ( NREQ .EQ. 1 ) THEN
+            !
+            IYR    = TIME(1) / 10000
+            IMTH   = MOD ( TIME(1) , 10000 ) / 100
+            IDY    = MOD ( TIME(1) , 100 )
+            IH     = TIME(2) / 10000
+            IM     = MOD ( TIME(2) , 10000 ) / 100
+            IS     = MOD ( TIME(2) , 100 )
+            IF ( OTYPE .EQ. 1 ) THEN
+              WRITE (NDSTAB,1921) TIME(1), IH, IM, IS,      &
+                   DPO(J), CAO(J), CDIR, WAO(J), UDIR
+            ELSE IF ( OTYPE .EQ. 2 ) THEN
+              WRITE (NDSTAB,1922) TIME(1), IH, IM, IS,      &
+                   HSIG, WLEN, TMEAN, THMEAN, THSPRD,     &
+                   FP*TPIINV, THP, SPP
+            ELSE IF ( OTYPE.EQ.3 ) THEN
+              WRITE (NDSTAB,1923) TIME(1), IH, IM, IS,      &
+                   UNORM, ESTAR, FPSTAR, CD*1000., APM(NK)*100.
+            ELSE IF ( OTYPE.EQ.4 ) THEN
+              WRITE (NDSTAB,1924) TIME(1), IH, IM, IS,      &
+                   UNORM, ESTAR, FPSTAR, CD*1000., APM(NK)*100.
+            ELSE IF ( OTYPE.EQ.5 ) THEN
+              HMAT   = MIN ( 100. , 3.33*GRAV*HSIG/UABS**2 )
+              IF ( HSIG .GE. HSMIN ) THEN
+                CALL WAVNU1 ( FP, DPO(J), WNA, XYZ )
+                AGE1   = MIN ( 100. , FP / WNA / UABS )
+                AFR    = TPI / TMEAN
+                CALL WAVNU1 ( AFR, DPO(J), WNA, XYZ )
+                AGE2   = MIN ( 100. , AFR / WNA / UABS )
+              ELSE
+                AGE1   = -9.99
+                AGE2   = -9.99
+              END IF
+              WRITE (NDSTAB,1925) TIME(1), IH, IM, IS,      &
+                   WAO(J), UDIR, HSIG, HMAT, AGE1, AGE2,  &
+                   ASO(J)
+            ELSE IF ( OTYPE.EQ.6 ) THEN
+              IF ( HSIG .GE. HSMIN ) THEN
+                WRITE (NDSTAB,1926) IYR, IMTH, IDY, IH,    &
+                     WAO(J), NINT(UDIR), HSIG, TPI / FP
+              ELSE
+                WRITE (NDSTAB,1926) IYR, IMTH, IDY, IH,    &
+                     WAO(J), NINT(UDIR), HSIG, 0.0
+              END IF
+            END IF
+            !
+          ELSE
+            !
+            IF ( OTYPE .EQ. 1 ) THEN
+              IF ( FLAGLL ) THEN
+                WRITE (NDSTAB,1931) M2KM*PTLOC(1,J),      &
+                     M2KM*PTLOC(2,J), DPO(J), CAO(J),   &
+                     CDIR, WAO(J), UDIR
+              ELSE
+                WRITE (NDSTAB,1731) M2KM*PTLOC(1,J),      &
+                     M2KM*PTLOC(2,J), DPO(J), CAO(J),   &
+                     CDIR, WAO(J), UDIR
+              END IF
+            ELSE IF ( OTYPE .EQ. 2 ) THEN
+              IF ( FLAGLL ) THEN
+                WRITE (NDSTAB,1932) M2KM*PTLOC(1,J),      &
+                     M2KM*PTLOC(2,J), HSIG, WLEN,       &
+                     TMEAN, THMEAN, THSPRD, FP*TPIINV,  &
+                     THP, SPP
+              ELSE
+                WRITE (NDSTAB,1732) M2KM*PTLOC(1,J),      &
+                     M2KM*PTLOC(2,J), HSIG, WLEN,       &
+                     TMEAN, THMEAN, THSPRD, FP*TPIINV,  &
+                     THP, SPP
+              END IF
+            ELSE IF ( OTYPE .EQ. 3 ) THEN
+              WRITE (NDSTAB,1933) 1.E-4*XSTAR,              &
+                   1.E-4*YSTAR, UNORM, ESTAR, FPSTAR,     &
+                   CD*1000., APM(NK)*100.
+            ELSE IF ( OTYPE .EQ. 4 ) THEN
+              WRITE (NDSTAB,1934) XSTAR, YSTAR, UNORM,      &
+                   ESTAR, FPSTAR, CD*1000., APM(NK)*100.
+            ELSE IF ( OTYPE .EQ. 5 ) THEN
+              HMAT   = MIN ( 100. , 3.33*GRAV*HSIG/UABS**2 )
+              CALL WAVNU1 ( FP, DPO(J), WNA, XYZ )
+              AGE1   = MIN ( 100. , FP / WNA / UABS )
+              AFR    = TPI / TMEAN
+              CALL WAVNU1 ( AFR, DPO(J), WNA, XYZ )
+              AGE2   = MIN ( 100. , AFR / WNA / UABS )
+              IF ( FLAGLL ) THEN
+                WRITE (NDSTAB,1935) M2KM*PTLOC(1,J),      &
+                     M2KM*PTLOC(2,J), WAO(J), UDIR,     &
+                     HSIG, HMAT, AGE1, AGE2, ASO(J)
+              ELSE
+                WRITE (NDSTAB,1735) M2KM*PTLOC(1,J),      &
+                     M2KM*PTLOC(2,J), WAO(J), UDIR,     &
+                     HSIG, HMAT, AGE1, AGE2, ASO(J)
+              END IF
+            ELSE IF ( OTYPE .EQ. 6 ) THEN
+              IF ( HSIG .GE. HSMIN ) THEN
                 IF ( FLAGLL ) THEN
-                   WRITE (NDSTAB,920) DTME21, PTNME(J),          &
-                        M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
-                        DPO(J), USTAR, WAO(J), UDIR
+                  WRITE (NDSTAB,1936) M2KM*PTLOC(1,J),       &
+                       M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                       HSIG, TPI / FP
                 ELSE
-                   WRITE (NDSTAB,720) DTME21, PTNME(J),          &
-                        M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
-                        DPO(J), USTAR, WAO(J), UDIR
+                  WRITE (NDSTAB,1736) M2KM*PTLOC(1,J),       &
+                       M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                       HSIG, TPI / FP
                 END IF
-                IF ( FP .EQ. 0. ) FP = SIG(NK)
-                DO IK=1, NK
-                   WRITE (NDSTAB,921) TPIINV*SIG(IK), SIG(IK)/FP,  &
-                        E1(IK), THBND(IK), SPBND(IK), APM(IK)
-                END DO
-                IF ( FP .EQ. SIG(NK) ) FP = 0.
-                WRITE (NDSTAB,922)
-                !
-             ELSE IF ( OTYPE .EQ. 3 ) THEN
-                !
-                IF ( FLFORM ) THEN
-                   WRITE (NDSTAB) PTNME(J), PTLOC(2,J),          &
-                        PTLOC(1,J), DPO(J), WAO(J),    &
-                        UDIR, CAO(J), CDIR
-                   WRITE (NDSTAB) ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
-                ELSE
-                   WRITE (NDSTAB,901) PTNME(J), M2KM*PTLOC(2,J), &
-                        M2KM*PTLOC(1,J), DPO(J),   &
-                        WAO(J), UDIR, CAO(J), CDIR
-                   WRITE (NDSTAB,902)                            &
-                        ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
-                END IF
-                !
-             END IF
-             !
-             ! 4.b Perform output type 2 ( tables )
-             !
-          ELSE IF ( ITYPE .EQ. 2 ) THEN
-             !
-             IF ( NREQ .EQ. 1 ) THEN
-                !
-                IYR    = TIME(1) / 10000
-                IMTH   = MOD ( TIME(1) , 10000 ) / 100
-                IDY    = MOD ( TIME(1) , 100 )
-                IH     = TIME(2) / 10000
-                IM     = MOD ( TIME(2) , 10000 ) / 100
-                IS     = MOD ( TIME(2) , 100 )
-                IF ( OTYPE .EQ. 1 ) THEN
-                   WRITE (NDSTAB,1921) TIME(1), IH, IM, IS,      &
-                        DPO(J), CAO(J), CDIR, WAO(J), UDIR
-                ELSE IF ( OTYPE .EQ. 2 ) THEN
-                   WRITE (NDSTAB,1922) TIME(1), IH, IM, IS,      &
-                        HSIG, WLEN, TMEAN, THMEAN, THSPRD,     &
-                        FP*TPIINV, THP, SPP
-                ELSE IF ( OTYPE.EQ.3 ) THEN
-                   WRITE (NDSTAB,1923) TIME(1), IH, IM, IS,      &
-                        UNORM, ESTAR, FPSTAR, CD*1000., APM(NK)*100.
-                ELSE IF ( OTYPE.EQ.4 ) THEN
-                   WRITE (NDSTAB,1924) TIME(1), IH, IM, IS,      &
-                        UNORM, ESTAR, FPSTAR, CD*1000., APM(NK)*100.
-                ELSE IF ( OTYPE.EQ.5 ) THEN
-                   HMAT   = MIN ( 100. , 3.33*GRAV*HSIG/UABS**2 )
-                   IF ( HSIG .GE. HSMIN ) THEN
-                      CALL WAVNU1 ( FP, DPO(J), WNA, XYZ )
-                      AGE1   = MIN ( 100. , FP / WNA / UABS )
-                      AFR    = TPI / TMEAN
-                      CALL WAVNU1 ( AFR, DPO(J), WNA, XYZ )
-                      AGE2   = MIN ( 100. , AFR / WNA / UABS )
-                   ELSE
-                      AGE1   = -9.99
-                      AGE2   = -9.99
-                   END IF
-                   WRITE (NDSTAB,1925) TIME(1), IH, IM, IS,      &
-                        WAO(J), UDIR, HSIG, HMAT, AGE1, AGE2,  &
-                        ASO(J)
-                ELSE IF ( OTYPE.EQ.6 ) THEN
-                   IF ( HSIG .GE. HSMIN ) THEN
-                      WRITE (NDSTAB,1926) IYR, IMTH, IDY, IH,    &
-                           WAO(J), NINT(UDIR), HSIG, TPI / FP
-                   ELSE
-                      WRITE (NDSTAB,1926) IYR, IMTH, IDY, IH,    &
-                           WAO(J), NINT(UDIR), HSIG, 0.0
-                   END IF
-                END IF
-                !
-             ELSE
-                !
-                IF ( OTYPE .EQ. 1 ) THEN
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSTAB,1931) M2KM*PTLOC(1,J),      &
-                           M2KM*PTLOC(2,J), DPO(J), CAO(J),   &
-                           CDIR, WAO(J), UDIR
-                   ELSE
-                      WRITE (NDSTAB,1731) M2KM*PTLOC(1,J),      &
-                           M2KM*PTLOC(2,J), DPO(J), CAO(J),   &
-                           CDIR, WAO(J), UDIR
-                   END IF
-                ELSE IF ( OTYPE .EQ. 2 ) THEN
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSTAB,1932) M2KM*PTLOC(1,J),      &
-                           M2KM*PTLOC(2,J), HSIG, WLEN,       &
-                           TMEAN, THMEAN, THSPRD, FP*TPIINV,  &
-                           THP, SPP
-                   ELSE
-                      WRITE (NDSTAB,1732) M2KM*PTLOC(1,J),      &
-                           M2KM*PTLOC(2,J), HSIG, WLEN,       &
-                           TMEAN, THMEAN, THSPRD, FP*TPIINV,  &
-                           THP, SPP
-                   END IF
-                ELSE IF ( OTYPE .EQ. 3 ) THEN
-                   WRITE (NDSTAB,1933) 1.E-4*XSTAR,              &
-                        1.E-4*YSTAR, UNORM, ESTAR, FPSTAR,     &
-                        CD*1000., APM(NK)*100.
-                ELSE IF ( OTYPE .EQ. 4 ) THEN
-                   WRITE (NDSTAB,1934) XSTAR, YSTAR, UNORM,      &
-                        ESTAR, FPSTAR, CD*1000., APM(NK)*100.
-                ELSE IF ( OTYPE .EQ. 5 ) THEN
-                   HMAT   = MIN ( 100. , 3.33*GRAV*HSIG/UABS**2 )
-                   CALL WAVNU1 ( FP, DPO(J), WNA, XYZ )
-                   AGE1   = MIN ( 100. , FP / WNA / UABS )
-                   AFR    = TPI / TMEAN
-                   CALL WAVNU1 ( AFR, DPO(J), WNA, XYZ )
-                   AGE2   = MIN ( 100. , AFR / WNA / UABS )
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSTAB,1935) M2KM*PTLOC(1,J),      &
-                           M2KM*PTLOC(2,J), WAO(J), UDIR,     &
-                           HSIG, HMAT, AGE1, AGE2, ASO(J)
-                   ELSE
-                      WRITE (NDSTAB,1735) M2KM*PTLOC(1,J),      &
-                           M2KM*PTLOC(2,J), WAO(J), UDIR,     &
-                           HSIG, HMAT, AGE1, AGE2, ASO(J)
-                   END IF
-                ELSE IF ( OTYPE .EQ. 6 ) THEN
-                   IF ( HSIG .GE. HSMIN ) THEN
-                      IF ( FLAGLL ) THEN
-                         WRITE (NDSTAB,1936) M2KM*PTLOC(1,J),       &
-                              M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
-                              HSIG, TPI / FP
-                      ELSE
-                         WRITE (NDSTAB,1736) M2KM*PTLOC(1,J),       &
-                              M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
-                              HSIG, TPI / FP
-                      END IF
-                   ELSE
-                      IF ( FLAGLL ) THEN
-                         WRITE (NDSTAB,1936) M2KM*PTLOC(1,J),       &
-                              M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
-                              HSIG, 0.0
-                      ELSE
-                         WRITE (NDSTAB,1736) M2KM*PTLOC(1,J),       &
-                              M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
-                              HSIG, 0.0
-                      END IF
-                   END IF
-                END IF
-                !
-             END IF
-             !
-             ! 4.c Perform output type 3 ( source terms )
-             !
-          ELSE IF ( ITYPE .EQ. 3 ) THEN
-             !
-             IF ( OTYPE .EQ. 1 ) THEN
-                !
-                IF ( SCALE1 .GE. 0. ) THEN
-                   IF ( FLSRCE(1) )                              &
-                        CALL PRT1DS (NDSO, NK, E1, SIG(1:NK),     &
-                        'RAD/S', 17,  0., 'E(f)', 'm^2s',    &
-                        PTNME(J) )
-                   IF (FLSRCE(2) .OR. FLSRCE(3) .OR.             &
-                        FLSRCE(4) .OR. FLSRCE(5) .OR.             &
-                        FLSRCE(6) .OR. FLSRCE(7) )                &
-                        CALL PRT1DM (NDSO, NK, 6, E1ALL, SIG(1:NK),&
-                        'RAD/S', 17, SCALE1, VAR1, 'M2',     &
-                        PTNME(J) )
-                END IF
-                IF ( SCALE2 .GE. 0. ) THEN
-                   IF ( FLSRCE(1) )                              &
-                        CALL PRT2DS (NDSO, NK, NK, NTH, E,        &
-                        SIG(1:NK), 'RAD/S', 1., 0., 0.0001,  &
-                        'E(f,th)', 'm^2s', PTNME(J) )
-                   IF ( FLSRCE(2) )                              &
-                        CALL PRT2DS (NDSO, NK, NK, NTH, SWN,      &
-                        SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
-                        'Sin(f,th)', 'm^2', PTNME(J) )
-                   IF ( FLSRCE(3) )                              &
-                        CALL PRT2DS (NDSO, NK, NK, NTH, SNL,      &
-                        SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
-                        'Snl(f,th)', 'm^2', PTNME(J) )
-                   IF ( FLSRCE(4) )                              &
-                        CALL PRT2DS (NDSO, NK, NK, NTH, SDS,      &
-                        SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
-                        'Sds(f,th)', 'm^2', PTNME(J) )
-                   IF ( FLSRCE(5) )                              &
-                        CALL PRT2DS (NDSO, NK, NK, NTH, SBT,      &
-                        SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
-                        'Sbt(f,th)', 'm^2', PTNME(J) )
-                   IF ( FLSRCE(6) )                              &
-                        CALL PRT2DS (NDSO, NK, NK, NTH, SIS,      &
-                        SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
-                        'Sice(f,th)', 'm^2', PTNME(J) )
-                   IF ( FLSRCE(7) )                              &
-                        CALL PRT2DS (NDSO, NK, NK, NTH, STT,      &
-                        SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
-                        'Stot(f,th)', 'm^2', PTNME(J) )
-                END IF
-                !
-             ELSE IF ( OTYPE .EQ. 2 ) THEN
-                !
-                CALL STME21 ( TIME , DTME21 )
+              ELSE
                 IF ( FLAGLL ) THEN
-                   WRITE (NDSTAB,2920) DTME21, PTNME(J),         &
-                        M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
-                        DPO(J), USTAR, WAO(J)
+                  WRITE (NDSTAB,1936) M2KM*PTLOC(1,J),       &
+                       M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                       HSIG, 0.0
                 ELSE
-                   WRITE (NDSTAB,2720) DTME21, PTNME(J),         &
-                        M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
-                        DPO(J), USTAR, WAO(J)
+                  WRITE (NDSTAB,1736) M2KM*PTLOC(1,J),       &
+                       M2KM*PTLOC(2,J), WAO(J), NINT(UDIR),&
+                       HSIG, 0.0
                 END IF
-                IF ( ISCALE.EQ.0 ) THEN
-                   WRITE (NDSTAB,2921)
-                ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.2 ) THEN
-                   WRITE (NDSTAB,2922)
-                ELSE IF ( ISCALE.EQ.3 ) THEN
-                   WRITE (NDSTAB,2923)
-                ELSE IF ( ISCALE.EQ.4 .OR. ISCALE.EQ.5 ) THEN
-                   WRITE (NDSTAB,2924)
-                END IF
-                IF ( ISCALE.GE.3 ) FACF = 1. / FP
-                DO IK=1, NK
-                   WRITE (NDSTAB,2930) FACF*SIG(IK), E1(IK),       &
-                        SIN1(IK), SNL1(IK), SDS1(IK), SBT1(IK),       &
-                        SIS1(IK), STT1(IK)
-
-                END DO
-                WRITE (NDSTAB,2940)
-                !
-             ELSE IF ( OTYPE .EQ. 3 ) THEN
-                !
-                CALL STME21 ( TIME , DTME21 )
-                IF ( FLAGLL ) THEN
-                   WRITE (NDSTAB,2920) DTME21, PTNME(J),         &
-                        M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
-                        DPO(J), USTAR, WAO(J)
-                ELSE
-                   WRITE (NDSTAB,2720) DTME21, PTNME(J),         &
-                        M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
-                        DPO(J), USTAR, WAO(J)
-                END IF
-                IF ( ISCALE.EQ.0 ) THEN
-                   WRITE (NDSTAB,2925)
-                ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.2 ) THEN
-                   WRITE (NDSTAB,2926)
-                ELSE IF ( ISCALE.EQ.3 ) THEN
-                   WRITE (NDSTAB,2927)
-                ELSE IF ( ISCALE.EQ.4 .OR. ISCALE.EQ.5 ) THEN
-                   WRITE (NDSTAB,2928)
-                END IF
-                !
-                IF ( ISCALE.GE.3 ) FACF = 1. / FP
-                DO IK=1, NK
-                   FACT   = 1. / MAX ( 1.E-10 , E1(IK) )
-                   IF ( E1(IK) .GT. 1.E-10 ) THEN
-                      WRITE (NDSTAB,2931) FACF*SIG(IK), E1(IK),   &
-                           FACT*SIN1(IK), FACT*SNL1(IK),             &
-                           FACT*SDS1(IK), FACT*SBT1(IK),             &
-                           FACT*SIS1(IK),FACT*STT1(IK)
-                   ELSE
-                      WRITE (NDSTAB,2931) FACF*SIG(IK), E1(IK)
-                   END IF
-                END DO
-                WRITE (NDSTAB,2940)
-                !
-             ELSE IF ( OTYPE .EQ. 4 ) THEN
-                !
-                IF ( FLFORM ) THEN
-                   WRITE (NDSTAB) PTNME(J), PTLOC(2,J),          &
-                        PTLOC(1,J), DPO(J), WAO(J),    &
-                        UDIR, CAO(J), CDIR
-                   IF ( FLSRCE(1) ) WRITE (NDSTAB)               &
-                        ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(2) ) WRITE (NDSTAB)               &
-                        ((SWN(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(3) ) WRITE (NDSTAB)               &
-                        ((SNL(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(4) ) WRITE (NDSTAB)               &
-                        ((SDS(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(5) ) WRITE (NDSTAB)               &
-                        ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(6) ) WRITE (NDSTAB)               &
-                        ((SIS(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(7) ) WRITE (NDSTAB)               &
-                        ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
-                ELSE
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSTAB,901) PTNME(J),              &
-                           M2KM*PTLOC(2,J), M2KM*PTLOC(1,J),     &
-                           DPO(J), WAO(J), UDIR, CAO(J), CDIR
-                   ELSE
-                      WRITE (NDSTAB,701) PTNME(J),              &
-                           M2KM*PTLOC(2,J), M2KM*PTLOC(1,J),     &
-                           DPO(J), WAO(J), UDIR, CAO(J), CDIR
-                   END IF
-                   IF ( FLSRCE(1) ) WRITE (NDSTAB,902)           &
-                        ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(2) ) WRITE (NDSTAB,902)           &
-                        ((SWN(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(3) ) WRITE (NDSTAB,902)           &
-                        ((SNL(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(4) ) WRITE (NDSTAB,902)           &
-                        ((SDS(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(5) ) WRITE (NDSTAB,902)           &
-                        ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
-                   IF ( FLSRCE(6) ) WRITE (NDSTAB,902)           &
-                        ((SIS(IK,ITH),IK=1,NK),ITH=1, NTH)
-                   IF ( FLSRCE(7) ) WRITE (NDSTAB,902)           &
-                        ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
-                END IF
-                !
-             END IF
-             !
-             ! 4.d Perform output type 4 ( Spectral partitions and bulletins )
-             !
-          ELSE IF ( ITYPE .EQ. 4 ) THEN
-             !
-             IF ( OTYPE .EQ. 1 ) THEN
-                !
-                IF ( FLAGLL ) THEN
-                   IF ( PTLOC(1,J) .LT. 0. )                     &
-                        PTLOC(1,J) = PTLOC(1,J) + 360.
-                   WRITE (NDSTAB,940) TIME, M2KM*PTLOC(2,J),     &
-                        M2KM*PTLOC(1,J), PTNME(J), NPART, DEPTH,  &
-                        WAO(J), UDIR, CAO(J), CDIR
-                ELSE
-                   WRITE (NDSTAB,943) TIME, M2KM*PTLOC(1,J),     &
-                        M2KM*PTLOC(2,J), PTNME(J), NPART, DEPTH,  &
-                        WAO(J), UDIR, CAO(J), CDIR
-                END IF
-                !                   WRITE (NDSTAB,941)
-                DO I=0, NPART
-                   WRITE (NDSTAB,942) I, XPART(:,I)
-                END DO
-                !
-             ELSEIF ( OTYPE .GE. 2 ) THEN
-                CALL W3BULL (NPART, XPART, DIMXP, UABS,         &
-                     UDIR, J, IOUT, TIMEV )
-                !
-                IF ( FLAGLL ) THEN
-                   X = M2KM * PTLOC(1,J)
-                   Y = M2KM * PTLOC(2,J)
-
-                   X      = MOD ( X+720. , 360. )
-                   IF ( X .LE. 180. ) THEN
-                      IDLON  = 'E'
-                   ELSE
-                      X      = 360. - X
-                      IDLON  = 'W'
-                   ENDIF
-                   !IF ( ABS(Y) .LE. 0.0049 ) THEN
-                   !IDLAT  = '-'
-                   IF ( Y .GE. 0. ) THEN
-                      IDLAT  = 'N'
-                   ELSE
-                      IDLAT  = 'S'
-                      Y      = -Y
-                   ENDIF
-                ELSE
-                   IDLAT = ' '
-                   IDLON = ' '
-                ENDIF
-                IF ( OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
-                   NDSBUL=NDSTAB + (J - 1)
-#ifdef W3_NCO
-                   NDSCBUL=NDSTAB + (J - 1) + NOPTS
-#endif
-                   IF (IOUT .EQ. 1) THEN
-                      WRITE(HSTR,'(I2,1X,A)') TIMEV(2)/10000,   &
-                           HTYPE
-                      WRITE (NDSBUL,970) PTNME(J), Y, IDLAT, X, &
-                           IDLON, GNAME, TIMEV(1),  &
-                           HSTR
-                      WRITE (NDSBUL,971)
-                      WRITE (NDSBUL,972)
-                      WRITE (NDSBUL,971)
-#ifdef W3_NCO
-                      WRITE (NDSCBUL,960) PTNME(J), Y, IDLAT,   &
-                           X, IDLON, GNAME, TIMEV(1), HSTR
-                      WRITE (NDSCBUL,961)
-#endif
-                   ENDIF
-
-                   WRITE (NDSBUL,973) ASCBLINE
-#ifdef W3_NCO
-                   WRITE (NDSCBUL,963) CASCBLINE
-#endif
-                ENDIF
-                IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
-                   ICSV = 0
-                   IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
-#ifdef W3_NCO
-                   IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
-#endif
-                   NDSCSV = NDSTAB + (J - 1) + ICSV
-                   WRITE (NDSCSV,'(A664)') CSVBLINE
-                ENDIF
-             END IF
-             !
+              END IF
+            END IF
+            !
           END IF
-          ! ... End of fields loop
           !
-       END IF
+          ! 4.c Perform output type 3 ( source terms )
+          !
+        ELSE IF ( ITYPE .EQ. 3 ) THEN
+          !
+          IF ( OTYPE .EQ. 1 ) THEN
+            !
+            IF ( SCALE1 .GE. 0. ) THEN
+              IF ( FLSRCE(1) )                              &
+                   CALL PRT1DS (NDSO, NK, E1, SIG(1:NK),     &
+                   'RAD/S', 17,  0., 'E(f)', 'm^2s',    &
+                   PTNME(J) )
+              IF (FLSRCE(2) .OR. FLSRCE(3) .OR.             &
+                   FLSRCE(4) .OR. FLSRCE(5) .OR.             &
+                   FLSRCE(6) .OR. FLSRCE(7) )                &
+                   CALL PRT1DM (NDSO, NK, 6, E1ALL, SIG(1:NK),&
+                   'RAD/S', 17, SCALE1, VAR1, 'M2',     &
+                   PTNME(J) )
+            END IF
+            IF ( SCALE2 .GE. 0. ) THEN
+              IF ( FLSRCE(1) )                              &
+                   CALL PRT2DS (NDSO, NK, NK, NTH, E,        &
+                   SIG(1:NK), 'RAD/S', 1., 0., 0.0001,  &
+                   'E(f,th)', 'm^2s', PTNME(J) )
+              IF ( FLSRCE(2) )                              &
+                   CALL PRT2DS (NDSO, NK, NK, NTH, SWN,      &
+                   SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                   'Sin(f,th)', 'm^2', PTNME(J) )
+              IF ( FLSRCE(3) )                              &
+                   CALL PRT2DS (NDSO, NK, NK, NTH, SNL,      &
+                   SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                   'Snl(f,th)', 'm^2', PTNME(J) )
+              IF ( FLSRCE(4) )                              &
+                   CALL PRT2DS (NDSO, NK, NK, NTH, SDS,      &
+                   SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                   'Sds(f,th)', 'm^2', PTNME(J) )
+              IF ( FLSRCE(5) )                              &
+                   CALL PRT2DS (NDSO, NK, NK, NTH, SBT,      &
+                   SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                   'Sbt(f,th)', 'm^2', PTNME(J) )
+              IF ( FLSRCE(6) )                              &
+                   CALL PRT2DS (NDSO, NK, NK, NTH, SIS,      &
+                   SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                   'Sice(f,th)', 'm^2', PTNME(J) )
+              IF ( FLSRCE(7) )                              &
+                   CALL PRT2DS (NDSO, NK, NK, NTH, STT,      &
+                   SIG(1:NK), 'RAD/S', 1., SCALE2, 0.0001,&
+                   'Stot(f,th)', 'm^2', PTNME(J) )
+            END IF
+            !
+          ELSE IF ( OTYPE .EQ. 2 ) THEN
+            !
+            CALL STME21 ( TIME , DTME21 )
+            IF ( FLAGLL ) THEN
+              WRITE (NDSTAB,2920) DTME21, PTNME(J),         &
+                   M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                   DPO(J), USTAR, WAO(J)
+            ELSE
+              WRITE (NDSTAB,2720) DTME21, PTNME(J),         &
+                   M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                   DPO(J), USTAR, WAO(J)
+            END IF
+            IF ( ISCALE.EQ.0 ) THEN
+              WRITE (NDSTAB,2921)
+            ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.2 ) THEN
+              WRITE (NDSTAB,2922)
+            ELSE IF ( ISCALE.EQ.3 ) THEN
+              WRITE (NDSTAB,2923)
+            ELSE IF ( ISCALE.EQ.4 .OR. ISCALE.EQ.5 ) THEN
+              WRITE (NDSTAB,2924)
+            END IF
+            IF ( ISCALE.GE.3 ) FACF = 1. / FP
+            DO IK=1, NK
+              WRITE (NDSTAB,2930) FACF*SIG(IK), E1(IK),       &
+                   SIN1(IK), SNL1(IK), SDS1(IK), SBT1(IK),       &
+                   SIS1(IK), STT1(IK)
+
+            END DO
+            WRITE (NDSTAB,2940)
+            !
+          ELSE IF ( OTYPE .EQ. 3 ) THEN
+            !
+            CALL STME21 ( TIME , DTME21 )
+            IF ( FLAGLL ) THEN
+              WRITE (NDSTAB,2920) DTME21, PTNME(J),         &
+                   M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                   DPO(J), USTAR, WAO(J)
+            ELSE
+              WRITE (NDSTAB,2720) DTME21, PTNME(J),         &
+                   M2KM*PTLOC(1,J), M2KM*PTLOC(2,J),         &
+                   DPO(J), USTAR, WAO(J)
+            END IF
+            IF ( ISCALE.EQ.0 ) THEN
+              WRITE (NDSTAB,2925)
+            ELSE IF ( ISCALE.EQ.1 .OR. ISCALE.EQ.2 ) THEN
+              WRITE (NDSTAB,2926)
+            ELSE IF ( ISCALE.EQ.3 ) THEN
+              WRITE (NDSTAB,2927)
+            ELSE IF ( ISCALE.EQ.4 .OR. ISCALE.EQ.5 ) THEN
+              WRITE (NDSTAB,2928)
+            END IF
+            !
+            IF ( ISCALE.GE.3 ) FACF = 1. / FP
+            DO IK=1, NK
+              FACT   = 1. / MAX ( 1.E-10 , E1(IK) )
+              IF ( E1(IK) .GT. 1.E-10 ) THEN
+                WRITE (NDSTAB,2931) FACF*SIG(IK), E1(IK),   &
+                     FACT*SIN1(IK), FACT*SNL1(IK),             &
+                     FACT*SDS1(IK), FACT*SBT1(IK),             &
+                     FACT*SIS1(IK),FACT*STT1(IK)
+              ELSE
+                WRITE (NDSTAB,2931) FACF*SIG(IK), E1(IK)
+              END IF
+            END DO
+            WRITE (NDSTAB,2940)
+            !
+          ELSE IF ( OTYPE .EQ. 4 ) THEN
+            !
+            IF ( FLFORM ) THEN
+              WRITE (NDSTAB) PTNME(J), PTLOC(2,J),          &
+                   PTLOC(1,J), DPO(J), WAO(J),    &
+                   UDIR, CAO(J), CDIR
+              IF ( FLSRCE(1) ) WRITE (NDSTAB)               &
+                   ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(2) ) WRITE (NDSTAB)               &
+                   ((SWN(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(3) ) WRITE (NDSTAB)               &
+                   ((SNL(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(4) ) WRITE (NDSTAB)               &
+                   ((SDS(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(5) ) WRITE (NDSTAB)               &
+                   ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(6) ) WRITE (NDSTAB)               &
+                   ((SIS(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(7) ) WRITE (NDSTAB)               &
+                   ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
+            ELSE
+              IF ( FLAGLL ) THEN
+                WRITE (NDSTAB,901) PTNME(J),              &
+                     M2KM*PTLOC(2,J), M2KM*PTLOC(1,J),     &
+                     DPO(J), WAO(J), UDIR, CAO(J), CDIR
+              ELSE
+                WRITE (NDSTAB,701) PTNME(J),              &
+                     M2KM*PTLOC(2,J), M2KM*PTLOC(1,J),     &
+                     DPO(J), WAO(J), UDIR, CAO(J), CDIR
+              END IF
+              IF ( FLSRCE(1) ) WRITE (NDSTAB,902)           &
+                   ((E(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(2) ) WRITE (NDSTAB,902)           &
+                   ((SWN(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(3) ) WRITE (NDSTAB,902)           &
+                   ((SNL(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(4) ) WRITE (NDSTAB,902)           &
+                   ((SDS(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(5) ) WRITE (NDSTAB,902)           &
+                   ((SBT(IK,ITH),IK=1,NK),ITH=1,NTH)
+              IF ( FLSRCE(6) ) WRITE (NDSTAB,902)           &
+                   ((SIS(IK,ITH),IK=1,NK),ITH=1, NTH)
+              IF ( FLSRCE(7) ) WRITE (NDSTAB,902)           &
+                   ((STT(IK,ITH),IK=1,NK),ITH=1,NTH)
+            END IF
+            !
+          END IF
+          !
+          ! 4.d Perform output type 4 ( Spectral partitions and bulletins )
+          !
+        ELSE IF ( ITYPE .EQ. 4 ) THEN
+          !
+          IF ( OTYPE .EQ. 1 ) THEN
+            !
+            IF ( FLAGLL ) THEN
+              IF ( PTLOC(1,J) .LT. 0. )                     &
+                   PTLOC(1,J) = PTLOC(1,J) + 360.
+              WRITE (NDSTAB,940) TIME, M2KM*PTLOC(2,J),     &
+                   M2KM*PTLOC(1,J), PTNME(J), NPART, DEPTH,  &
+                   WAO(J), UDIR, CAO(J), CDIR
+            ELSE
+              WRITE (NDSTAB,943) TIME, M2KM*PTLOC(1,J),     &
+                   M2KM*PTLOC(2,J), PTNME(J), NPART, DEPTH,  &
+                   WAO(J), UDIR, CAO(J), CDIR
+            END IF
+            !                   WRITE (NDSTAB,941)
+            DO I=0, NPART
+              WRITE (NDSTAB,942) I, XPART(:,I)
+            END DO
+            !
+          ELSEIF ( OTYPE .GE. 2 ) THEN
+            CALL W3BULL (NPART, XPART, DIMXP, UABS,         &
+                 UDIR, J, IOUT, TIMEV )
+            !
+            IF ( FLAGLL ) THEN
+              X = M2KM * PTLOC(1,J)
+              Y = M2KM * PTLOC(2,J)
+
+              X      = MOD ( X+720. , 360. )
+              IF ( X .LE. 180. ) THEN
+                IDLON  = 'E'
+              ELSE
+                X      = 360. - X
+                IDLON  = 'W'
+              ENDIF
+              !IF ( ABS(Y) .LE. 0.0049 ) THEN
+              !IDLAT  = '-'
+              IF ( Y .GE. 0. ) THEN
+                IDLAT  = 'N'
+              ELSE
+                IDLAT  = 'S'
+                Y      = -Y
+              ENDIF
+            ELSE
+              IDLAT = ' '
+              IDLON = ' '
+            ENDIF
+            IF ( OTYPE .EQ. 2 .OR. OTYPE .EQ. 4 ) THEN
+              NDSBUL=NDSTAB + (J - 1)
+#ifdef W3_NCO
+              NDSCBUL=NDSTAB + (J - 1) + NOPTS
+#endif
+              IF (IOUT .EQ. 1) THEN
+                WRITE(HSTR,'(I2,1X,A)') TIMEV(2)/10000,   &
+                     HTYPE
+                WRITE (NDSBUL,970) PTNME(J), Y, IDLAT, X, &
+                     IDLON, GNAME, TIMEV(1),  &
+                     HSTR
+                WRITE (NDSBUL,971)
+                WRITE (NDSBUL,972)
+                WRITE (NDSBUL,971)
+#ifdef W3_NCO
+                WRITE (NDSCBUL,960) PTNME(J), Y, IDLAT,   &
+                     X, IDLON, GNAME, TIMEV(1), HSTR
+                WRITE (NDSCBUL,961)
+#endif
+              ENDIF
+
+              WRITE (NDSBUL,973) ASCBLINE
+#ifdef W3_NCO
+              WRITE (NDSCBUL,963) CASCBLINE
+#endif
+            ENDIF
+            IF ( OTYPE .EQ. 3 .OR. OTYPE .EQ. 4 ) THEN
+              ICSV = 0
+              IF ( NDSBUL .GT. 0 ) ICSV = NDSBUL
+#ifdef W3_NCO
+              IF ( NDSCBUL .GT. 0 ) ICSV = NDSCBUL
+#endif
+              NDSCSV = NDSTAB + (J - 1) + ICSV
+              WRITE (NDSCSV,'(A664)') CSVBLINE
+            ENDIF
+          END IF
+          !
+        END IF
+        ! ... End of fields loop
+        !
+      END IF
     END DO
     !
     RETURN

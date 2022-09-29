@@ -190,7 +190,7 @@ CONTAINS
     WN2 = 0.
     !
     DO ITH = 1, NTH
-       WN2(IKN+(ITH-1)) = WN        ! Wavenumbers to all directions.
+      WN2(IKN+(ITH-1)) = WN        ! Wavenumbers to all directions.
     END DO
     !
     EB     = SUM(RESHAPE(A,(/ NTH,NK /)),1) * DDEN(1:NK) / CG
@@ -210,9 +210,9 @@ CONTAINS
     RE     = 4.0 * UOSIG * AORB / VA
     !
     IF (RE .GT. RECRIT) THEN
-       D = -(16.0/GRAV) * (DAIR/DWAT) * FE * (SIG2**2) *UOSIG
+      D = -(16.0/GRAV) * (DAIR/DWAT) * FE * (SIG2**2) *UOSIG
     ELSE
-       D = -2.0 * (DAIR/DWAT) * CDSV * WN2 * SQRT(2.0 * VA * SIG2)
+      D = -2.0 * (DAIR/DWAT) * CDSV * WN2 * SQRT(2.0 * VA * SIG2)
     END IF
     !
     S = D * A
@@ -364,38 +364,38 @@ CONTAINS
     K     = RESHAPE(A,(/ NTH,NK /))
     KMAX  = MAXVAL(K,1)
     DO IK = 1,NK
-       IF (KMAX(IK).LT.1.0E-34) THEN
-          K(1:NTH,IK) = 1.
-       ELSE
-          K(1:NTH,IK) = K(1:NTH,IK)/KMAX(IK)
-       END IF
+      IF (KMAX(IK).LT.1.0E-34) THEN
+        K(1:NTH,IK) = 1.
+      ELSE
+        K(1:NTH,IK) = K(1:NTH,IK)/KMAX(IK)
+      END IF
     END DO
     ANAR  = 1.0/( SUM(K,1) * DTH )
     BN    = ANAR * ( ABAND * SIG(1:NK) * DTH ) * WN**3
     !
     IF (.NOT.SWL6CSTB1) THEN
-       !
-       !/    --- A constant value for B1 attenuates swell too strong in the
-       !/        western central Pacific (i.e. cross swell less than 1.0m).
-       !/        Workaround is to scale B1 with steepness a*kp, where kp is
-       !/        the peak wavenumber. SWL6B1 remains a scaling constant, but
-       !/        with different magnitude.  --------------------------------- /
-       IK    = MAXLOC(ABAND,1)         ! Index for peak
-       !         EMEAN = SUM(ABAND * DDEN / CG)  ! Total sea surface variance
-       B1    = SWL6B1 * ( 2. * SQRT(SUM(ABAND*DDEN/CG)) * WN(IK) )
-       !
+      !
+      !/    --- A constant value for B1 attenuates swell too strong in the
+      !/        western central Pacific (i.e. cross swell less than 1.0m).
+      !/        Workaround is to scale B1 with steepness a*kp, where kp is
+      !/        the peak wavenumber. SWL6B1 remains a scaling constant, but
+      !/        with different magnitude.  --------------------------------- /
+      IK    = MAXLOC(ABAND,1)         ! Index for peak
+      !         EMEAN = SUM(ABAND * DDEN / CG)  ! Total sea surface variance
+      B1    = SWL6B1 * ( 2. * SQRT(SUM(ABAND*DDEN/CG)) * WN(IK) )
+      !
     END IF
     !
     !/ 2) --- Calculate the derivative term only (in units of 1/s) ------- /
     DO IK = 1,NK
-       IF (ABAND(IK) .GT. 1.E-30) THEN
-          DDIS(IK) = -(2./3.) * B1 * SIG(IK) * SQRT(BN(IK))
-       END IF
+      IF (ABAND(IK) .GT. 1.E-30) THEN
+        DDIS(IK) = -(2./3.) * B1 * SIG(IK) * SQRT(BN(IK))
+      END IF
     END DO
     !
     !/ 3) --- Apply dissipation term of derivative to all directions ----- /
     DO ITH = 1, NTH
-       D(IKN+(ITH-1)) = DDIS
+      D(IKN+(ITH-1)) = DDIS
     END DO
     !
     S = D * A
@@ -454,7 +454,7 @@ CONTAINS
     N = INT(REAL(X1-X0)/REAL(DX))+1
     ALLOCATE(IX(N))
     DO I = 1, N
-       IX(I) = X0+ (I-1)*DX
+      IX(I) = X0+ (I-1)*DX
     END DO
     !/
   END FUNCTION IRANGE

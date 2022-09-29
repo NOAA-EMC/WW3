@@ -243,23 +243,23 @@ CONTAINS
     WRITE (NDST,9000) NDSO, NDSE, NDST, SCREEN, NAPROC, IAPROC,  &
          NAPOUT, NAPERR, TIME
     DO J=1, 3
-       IF ( DASFLAG(J) ) THEN
-          WRITE (NDST,9001) J, DASFLAG(J), RECL(J), NDAT(J)
-          MREC    = MIN(RECL(J),6)
-          MDAT    = MIN(NDAT(J),10)
-          IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
-          ALLOCATE ( TDATA(RECL(J),MDAT) )
-          IF ( J .EQ. 1 ) TDATA = DATA0(:,1:MDAT)
-          IF ( J .EQ. 2 ) TDATA = DATA1(:,1:MDAT)
-          IF ( J .EQ. 3 ) TDATA = DATA2(:,1:MDAT)
-          DO IDAT=1, MDAT
-             WRITE (NDST,9002) IDAT, TDATA(1:MREC,IDAT)
-             IF ( MREC .LT. RECL(J) ) WRITE (NDST,9003)         &
-                  TDATA(MREC+1:RECL(J),IDAT)
-          END DO
-       ELSE
-          WRITE (NDST,9001) J, DASFLAG(J)
-       END IF
+      IF ( DASFLAG(J) ) THEN
+        WRITE (NDST,9001) J, DASFLAG(J), RECL(J), NDAT(J)
+        MREC    = MIN(RECL(J),6)
+        MDAT    = MIN(NDAT(J),10)
+        IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
+        ALLOCATE ( TDATA(RECL(J),MDAT) )
+        IF ( J .EQ. 1 ) TDATA = DATA0(:,1:MDAT)
+        IF ( J .EQ. 2 ) TDATA = DATA1(:,1:MDAT)
+        IF ( J .EQ. 3 ) TDATA = DATA2(:,1:MDAT)
+        DO IDAT=1, MDAT
+          WRITE (NDST,9002) IDAT, TDATA(1:MREC,IDAT)
+          IF ( MREC .LT. RECL(J) ) WRITE (NDST,9003)         &
+               TDATA(MREC+1:RECL(J),IDAT)
+        END DO
+      ELSE
+        WRITE (NDST,9001) J, DASFLAG(J)
+      END IF
     END DO
     IF ( ALLOCATED(TDATA) ) DEALLOCATE (TDATA)
 #endif

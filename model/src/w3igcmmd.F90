@@ -132,33 +132,33 @@ CONTAINS
     !
     DO IB_DO = 1, IL_NB_SND
 
-       SELECT CASE(SND_FLD(IB_DO)%CL_FIELD_NAME)
+      SELECT CASE(SND_FLD(IB_DO)%CL_FIELD_NAME)
 
-          !
-          ! Ice floe diameters (m)
-          ! ---------------------------------------------------------------------
-       CASE ('WW3_ICEF')
-          TMP(1:NSEAL) = 0.0
-          DO JSEA=1, NSEAL
-             ISEA=IAPROC+(JSEA-1)*NAPROC
-             IF(ICEF(ISEA) /= UNDEF) TMP(JSEA)=ICEF(ISEA)
-          END DO
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+        !
+        ! Ice floe diameters (m)
+        ! ---------------------------------------------------------------------
+      CASE ('WW3_ICEF')
+        TMP(1:NSEAL) = 0.0
+        DO JSEA=1, NSEAL
+          ISEA=IAPROC+(JSEA-1)*NAPROC
+          IF(ICEF(ISEA) /= UNDEF) TMP(JSEA)=ICEF(ISEA)
+        END DO
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
 
-       CASE ('WW3_TWIX')
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUICE(1:NSEAL,1) /= UNDEF) TMP(1:NSEAL)=TAUICE(1:NSEAL,1)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      CASE ('WW3_TWIX')
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUICE(1:NSEAL,1) /= UNDEF) TMP(1:NSEAL)=TAUICE(1:NSEAL,1)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
 
-       CASE ('WW3_TWIY')
-          TMP(1:NSEAL) = 0.0
-          WHERE(TAUICE(1:NSEAL,2) /= UNDEF) TMP(1:NSEAL)=TAUICE(1:NSEAL,2)
-          RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
-          CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
+      CASE ('WW3_TWIY')
+        TMP(1:NSEAL) = 0.0
+        WHERE(TAUICE(1:NSEAL,2) /= UNDEF) TMP(1:NSEAL)=TAUICE(1:NSEAL,2)
+        RLA_OASIS_SND(:,1) = DBLE(TMP(1:NSEAL))
+        CALL CPL_OASIS_SND(IB_DO, ID_OASIS_TIME, RLA_OASIS_SND, LL_ACTION)
 
-       END SELECT
+      END SELECT
 
 
     ENDDO
@@ -255,93 +255,93 @@ CONTAINS
     RLA_OASIS_RCV(:,:) = 0.0
     !
     DO IB_DO = 1, IL_NB_RCV
-       IF (IDFLD == 'IC5') THEN
-          SELECT CASE (RCV_FLD(IB_DO)%CL_FIELD_NAME)
-             !
-             ! Ice floe diameters (m)
-             ! ----------------------------------------------------------------------
-          CASE ('WW3__IC5')
-
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                END DO
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
-                     RCV_BUFF(1:NSEA), &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
-                !
-             END IF
-          END SELECT
+      IF (IDFLD == 'IC5') THEN
+        SELECT CASE (RCV_FLD(IB_DO)%CL_FIELD_NAME)
           !
-          ! Ice Concentration
+          ! Ice floe diameters (m)
           ! ----------------------------------------------------------------------
-       ELSE IF (IDFLD == 'ICE') THEN
-          SELECT CASE (RCV_FLD(IB_DO)%CL_FIELD_NAME)
-          CASE ('WW3__ICE')
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                END DO
-                !
-                !
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
-                     RCV_BUFF(1:NSEA), &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
-                !
-             END IF
-          END SELECT
-          ! Ice Thickness
-          ! ----------------------------------------------------------------------
-       ELSE IF (IDFLD == 'IC1') THEN
-          SELECT CASE (RCV_FLD(IB_DO)%CL_FIELD_NAME)
-          CASE ('WW3__IC1')
-             CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-             IF (LL_ACTION) THEN
-                TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
-                SND_BUFF(1:NSEA) = 0.0
-                DO IB_I = 1, NSEAL
-                   IB_J = IAPROC + (IB_I-1)*NAPROC
-                   SND_BUFF(IB_J) = TMP(IB_I)
-                END DO
+        CASE ('WW3__IC5')
 
-                CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
-                     RCV_BUFF(1:NSEA), &
-                     NSEA,     &
-                     MPI_REAL, &
-                     MPI_SUM,  &
-                     ID_LCOMM, &
-                     IL_ERR)
-                !
-                ! Convert from storage (NSEA) to spatial grid (NX, NY)
-                CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
-             ENDIF
-             !
-          END SELECT
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            END DO
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                 RCV_BUFF(1:NSEA), &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+            !
+          END IF
+        END SELECT
+        !
+        ! Ice Concentration
+        ! ----------------------------------------------------------------------
+      ELSE IF (IDFLD == 'ICE') THEN
+        SELECT CASE (RCV_FLD(IB_DO)%CL_FIELD_NAME)
+        CASE ('WW3__ICE')
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            END DO
+            !
+            !
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                 RCV_BUFF(1:NSEA), &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+            !
+          END IF
+        END SELECT
+        ! Ice Thickness
+        ! ----------------------------------------------------------------------
+      ELSE IF (IDFLD == 'IC1') THEN
+        SELECT CASE (RCV_FLD(IB_DO)%CL_FIELD_NAME)
+        CASE ('WW3__IC1')
+          CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
+          IF (LL_ACTION) THEN
+            TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1)
+            SND_BUFF(1:NSEA) = 0.0
+            DO IB_I = 1, NSEAL
+              IB_J = IAPROC + (IB_I-1)*NAPROC
+              SND_BUFF(IB_J) = TMP(IB_I)
+            END DO
 
-       END IF
+            CALL MPI_ALLREDUCE(SND_BUFF(1:NSEA), &
+                 RCV_BUFF(1:NSEA), &
+                 NSEA,     &
+                 MPI_REAL, &
+                 MPI_SUM,  &
+                 ID_LCOMM, &
+                 IL_ERR)
+            !
+            ! Convert from storage (NSEA) to spatial grid (NX, NY)
+            CALL W3S2XY(NSEA,NSEA,NX,NY,RCV_BUFF(1:NSEA),MAPSF,FAN)
+          ENDIF
+          !
+        END SELECT
+
+      END IF
     END DO
     !
 

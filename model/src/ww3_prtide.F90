@@ -260,9 +260,9 @@ PROGRAM W3PRTIDE
 #endif
   !
   IF ( IAPROC .EQ. NAPERR ) THEN
-     NDSEN  = NDSE
+    NDSEN  = NDSE
   ELSE
-     NDSEN  = -1
+    NDSEN  = -1
   END IF
   !
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
@@ -294,12 +294,12 @@ PROGRAM W3PRTIDE
   READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) IDFLD
   !
   IF ( IDFLD.EQ.'LEV' ) THEN
-     IFLD    = 2
+    IFLD    = 2
   ELSE IF ( IDFLD.EQ.'CUR' ) THEN
-     IFLD    = 4
+    IFLD    = 4
   ELSE
-     WRITE (NDSE,1030) IDFLD
-     CALL EXTCDE ( 1 )
+    WRITE (NDSE,1030) IDFLD
+    CALL EXTCDE ( 1 )
   END IF
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -345,70 +345,70 @@ PROGRAM W3PRTIDE
 
   IF (GTYPE.EQ.UNGTYPE) THEN
 
-     COUNTRI = MAXVAL(CCON)
-     ALLOCATE(VNEIGH(NX,2*COUNTRI))
-     ALLOCATE(CONN(NX))
-     VNEIGH(:,:) = 0
-     CONN(:) = 0
-     !
-     J = 0
-     DO IP = 1, NX
-        IFOUND = 0
-        DO II = 1, CCON(IP)
-           J = J + 1
-           IE = IE_CELL(J)
-           IF (IP == TRIGP(1,IE)) THEN
-              DO IP2=2,3
-                 ALREADYFOUND = 0
-                 DO I=1,IFOUND
-                    IF (VNEIGH(IP,I).EQ.TRIGP(IP2,IE)) ALREADYFOUND=ALREADYFOUND+1
-                 END DO
-                 IF (ALREADYFOUND.EQ.0) THEN
-                    IFOUND=IFOUND+1
-                    VNEIGH(IP,IFOUND)=TRIGP(IP2,IE)
-                 END IF
-              END DO
-           END IF
+    COUNTRI = MAXVAL(CCON)
+    ALLOCATE(VNEIGH(NX,2*COUNTRI))
+    ALLOCATE(CONN(NX))
+    VNEIGH(:,:) = 0
+    CONN(:) = 0
+    !
+    J = 0
+    DO IP = 1, NX
+      IFOUND = 0
+      DO II = 1, CCON(IP)
+        J = J + 1
+        IE = IE_CELL(J)
+        IF (IP == TRIGP(1,IE)) THEN
+          DO IP2=2,3
+            ALREADYFOUND = 0
+            DO I=1,IFOUND
+              IF (VNEIGH(IP,I).EQ.TRIGP(IP2,IE)) ALREADYFOUND=ALREADYFOUND+1
+            END DO
+            IF (ALREADYFOUND.EQ.0) THEN
+              IFOUND=IFOUND+1
+              VNEIGH(IP,IFOUND)=TRIGP(IP2,IE)
+            END IF
+          END DO
+        END IF
 
-           IF (IP == TRIGP(2,IE)) THEN
-              DO IP2=3,4
-                 ALREADYFOUND = 0
-                 DO I=1,IFOUND
-                    IF (VNEIGH(IP,I).EQ.TRIGP(MOD(IP2-1,3)+1,IE)) ALREADYFOUND=ALREADYFOUND+1
-                 END DO
-                 IF (ALREADYFOUND.EQ.0) THEN
-                    IFOUND=IFOUND+1
-                    VNEIGH(IP,IFOUND)=TRIGP(MOD(IP2-1,3)+1,IE)
-                 END IF
-              END DO
-           END IF
+        IF (IP == TRIGP(2,IE)) THEN
+          DO IP2=3,4
+            ALREADYFOUND = 0
+            DO I=1,IFOUND
+              IF (VNEIGH(IP,I).EQ.TRIGP(MOD(IP2-1,3)+1,IE)) ALREADYFOUND=ALREADYFOUND+1
+            END DO
+            IF (ALREADYFOUND.EQ.0) THEN
+              IFOUND=IFOUND+1
+              VNEIGH(IP,IFOUND)=TRIGP(MOD(IP2-1,3)+1,IE)
+            END IF
+          END DO
+        END IF
 
-           IF (IP == TRIGP(3,IE)) THEN
-              DO IP2=1,2
-                 ALREADYFOUND = 0
-                 DO I=1,IFOUND
-                    IF (VNEIGH(IP,I).EQ.TRIGP(IP2,IE)) ALREADYFOUND=ALREADYFOUND+1
-                 END DO
-                 IF (ALREADYFOUND.EQ.0) THEN
-                    IFOUND=IFOUND+1
-                    VNEIGH(IP,IFOUND)=TRIGP(IP2,IE)
-                 END IF
-              END DO
-           END IF
-        END DO ! CCON
-        ! CONN is a counter on connected points. In comparison with the number of connected triangle
-        ! CCON, it will enable to spot whether a point belong to the contour
-        !
-        CONN(IP)=IFOUND
-        DO I=2,IFOUND
-           DO JJ=1,i-1
-              IF (VNEIGH(IP,JJ).EQ. VNEIGH(IP,I)) THEN
-                 COUNTCON(IP)=COUNTCON(IP)-1
-                 VNEIGH(IP,I:IFOUND)=VNEIGH(IP,I+1:IFOUND+1)  ! removes the double point
-              END IF
-           END DO
+        IF (IP == TRIGP(3,IE)) THEN
+          DO IP2=1,2
+            ALREADYFOUND = 0
+            DO I=1,IFOUND
+              IF (VNEIGH(IP,I).EQ.TRIGP(IP2,IE)) ALREADYFOUND=ALREADYFOUND+1
+            END DO
+            IF (ALREADYFOUND.EQ.0) THEN
+              IFOUND=IFOUND+1
+              VNEIGH(IP,IFOUND)=TRIGP(IP2,IE)
+            END IF
+          END DO
+        END IF
+      END DO ! CCON
+      ! CONN is a counter on connected points. In comparison with the number of connected triangle
+      ! CCON, it will enable to spot whether a point belong to the contour
+      !
+      CONN(IP)=IFOUND
+      DO I=2,IFOUND
+        DO JJ=1,i-1
+          IF (VNEIGH(IP,JJ).EQ. VNEIGH(IP,I)) THEN
+            COUNTCON(IP)=COUNTCON(IP)-1
+            VNEIGH(IP,I:IFOUND)=VNEIGH(IP,I+1:IFOUND+1)  ! removes the double point
+          END IF
         END DO
-     END DO !NX
+      END DO
+    END DO !NX
 
   END IF ! UNGTYPE
 
@@ -422,19 +422,19 @@ PROGRAM W3PRTIDE
   TIDE_MAX=0
   TIDE_MAXI=0
   DO WHILE (len_trim(TIDECON_MAXNAMES(TIDE_MAXI+1)).NE.0)
-     TIDE_MAXI=TIDE_MAXI+1
-     DO J=1,TIDE_MF
-        IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(TIDECON_MAXNAMES(TIDE_MAXI))) THEN
-           TIDE_MAX=TIDE_MAX+1
-           INDMAX(TIDE_MAX)=J
-           READ(TIDECON_MAXVALS(TIDE_MAXI),*) MAXVALCON(TIDE_MAX)
-           IF (IAPROC.EQ.NAPOUT) THEN
-              WRITE(NDSO,'(A,I8,A,F10.2)') &
-                   'Maximum allowed value for amplitude:',&
-                   J,TRIM(TIDECON_NAME(J)),MAXVALCON(TIDE_MAX)
-           END IF
+    TIDE_MAXI=TIDE_MAXI+1
+    DO J=1,TIDE_MF
+      IF (TRIM(TIDECON_NAME(J)).EQ.TRIM(TIDECON_MAXNAMES(TIDE_MAXI))) THEN
+        TIDE_MAX=TIDE_MAX+1
+        INDMAX(TIDE_MAX)=J
+        READ(TIDECON_MAXVALS(TIDE_MAXI),*) MAXVALCON(TIDE_MAX)
+        IF (IAPROC.EQ.NAPOUT) THEN
+          WRITE(NDSO,'(A,I8,A,F10.2)') &
+               'Maximum allowed value for amplitude:',&
+               J,TRIM(TIDECON_NAME(J)),MAXVALCON(TIDE_MAX)
         END IF
-     END DO
+      END IF
+    END DO
   END DO
 
   !==========================================================
@@ -445,8 +445,8 @@ PROGRAM W3PRTIDE
 
   FLAGTIDE = 0
   IF (IAPROC .EQ. NAPOUT) THEN
-     CALL W3FLDO ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,      &
-          GTYPE, IERR, 'ww3', TIDEFLAGIN=FLAGTIDE)
+    CALL W3FLDO ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,      &
+         GTYPE, IERR, 'ww3', TIDEFLAGIN=FLAGTIDE)
   END IF
 
   !==========================================================
@@ -488,9 +488,9 @@ PROGRAM W3PRTIDE
   IF (REST .GT. 0) NELEM(1) = NELEM(1) + 1
   CUMUL(1) = 0
   DO I=2,NAPROC
-     CUMUL(I)=CUMUL(I-1)+NELEM(I-1)
-     NELEM(I) = NX / NAPROC
-     IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
+    CUMUL(I)=CUMUL(I-1)+NELEM(I-1)
+    NELEM(I) = NX / NAPROC
+    IF (REST .GT. I-1) NELEM(I) = NELEM(I) + 1
   END DO
 #endif
 
@@ -513,317 +513,317 @@ PROGRAM W3PRTIDE
   TINDEX = 1
   !
   DO
-     DTTST  = DSEC21 ( TIME, TIDE_END )
-     IF ( DTTST .LT. 0. ) GOTO 888
-     !
-     CALL STME21 ( TIME , IDTIME )
-     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,973) IDTIME
+    DTTST  = DSEC21 ( TIME, TIDE_END )
+    IF ( DTTST .LT. 0. ) GOTO 888
+    !
+    CALL STME21 ( TIME , IDTIME )
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,973) IDTIME
 
-     TIDE_HOUR = TIME2HOURS(TIME)
-     !
-     !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED
-     !
-     d1=TIDE_HOUR/24.d0
-     d1=d1-dfloat(TIDE_kd0)-0.5d0
-     CALL ASTR(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
-     INT24=24
-     INTDYS=int((TIDE_HOUR+0.00001)/INT24)
-     HH=TIDE_HOUR-dfloat(INTDYS*INT24)
-     TAU=HH/24.D0+H-S
+    TIDE_HOUR = TIME2HOURS(TIME)
+    !
+    !*  THE ASTRONOMICAL ARGUMENTS ARE CALCULATED
+    !
+    d1=TIDE_HOUR/24.d0
+    d1=d1-dfloat(TIDE_kd0)-0.5d0
+    CALL ASTR(d1,h,pp,s,p,enp,dh,dpp,ds,dp,dnp)
+    INT24=24
+    INTDYS=int((TIDE_HOUR+0.00001)/INT24)
+    HH=TIDE_HOUR-dfloat(INTDYS*INT24)
+    TAU=HH/24.D0+H-S
 
-     !==========================================================
-     !
-     ! Treatment of 'bad points' at first time step
-     !
-     !==========================================================
+    !==========================================================
+    !
+    ! Treatment of 'bad points' at first time step
+    !
+    !==========================================================
 
-     BADPOINTS(:,:)=0
-     NBAD =0
+    BADPOINTS(:,:)=0
+    NBAD =0
 
-     IF (TINDEX.EQ.1) THEN
+    IF (TINDEX.EQ.1) THEN
+      DO IY = 1, NY
+        DO IX=1, NX
+          TIDEOK=1
+          DO I=1,TIDE_MAX
+            IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) .OR. &
+                 ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) THEN
+              TIDEOK = 0
+              WRITE(NDSO,'(A,I8,F10.2,A,2F10.2)') &
+                   '[BAD POINT] GREATER THAN THRESHOLD ', MAXVALCON(I), &
+                   ' AT INDEX ', INDMAX(I),                             &
+                   ' WITH X-Y COMPONENTS : ', ABS(TIDAL_CONST(IX,IY,INDMAX(I),1:2,1))
+            END IF
+            BADPOINTS(IX,IY) = BADPOINTS(IX,IY) + (1-TIDEOK)
+          END DO
+
+          IF (BADPOINTS(IX,IY).GT.0) THEN
+            NBAD = NBAD +1
+            WRITE(NDSE,*) 'BAD POINT:',IX,IY,NBAD, &
+                 TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
+          END IF
+        END DO
+      END DO
+      !
+      DO ITER=1,2
         DO IY = 1, NY
-           DO IX=1, NX
+          DO IX= 1, NX
+            IF (BADPOINTS(IX,IY).GT.0) THEN
+              TIDAL_CONST(IX,IY,:,1,1)=0
+              TIDAL_CONST(IX,IY,:,2,1)=0
+
+
+              IF (TIDEFILL.AND.(GTYPE.EQ.UNGTYPE)) THEN
+
+                !
+                ! Performs a vector sum of tidal constituents over neighbor nodes
+                !
+                DO J=1, TIDE_MF
+                  DO K=1, 2
+                    AMPCOS = 0
+                    AMPSIN = 0
+                    SUMOK = 0
+                    DO ICON=1,COUNTCON(IX)
+                      IX2=VNEIGH(IX,ICON)
+                      IF (BADPOINTS(IX2,IY).EQ.0) THEN
+                        SUMOK = SUMOK + 1
+                        AMPCOS = AMPCOS+TIDAL_CONST(IX2,IY,J,K,1)*COS(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
+                        AMPSIN = AMPSIN+TIDAL_CONST(IX2,IY,J,K,1)*SIN(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
+                      END IF
+                    END DO
+                    IF (SUMOK.GT.1) THEN
+                      !
+                      ! Finalizes the amplitude and phase calculation from COS and SIN. Special case for mean value Z0.
+                      !
+                      IF (TIDECON_NAME(J).NE.'Z0   ') THEN
+                        TIDAL_CONST(IX,IY,J,K,1) = SQRT(AMPCOS**2+AMPSIN**2)/SUMOK
+                        TIDAL_CONST(IX,IY,J,K,2) = ATAN2(AMPSIN,AMPCOS)/DERA
+                      ELSE
+                        TIDAL_CONST(IX,IY,J,K,1) = AMPCOS/SUMOK
+                        TIDAL_CONST(IX,IY,J,K,2) = 0.
+                      END IF
+                      IF(K.EQ.2.AND.J.EQ.TIDE_MF) THEN
+                        NBAD=NBAD-1
+                        BADPOINTS(IX,IY) = 0
+                      END IF
+                    ENDIF
+                  END DO
+                END DO
+              END IF
+            END IF
+          END DO
+        END DO
+      END DO
+      IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSE,*) 'Number of remaining bad points:',NBAD
+    END IF
+
+    !==========================================================
+    !
+    ! For currents: 2 components
+    !
+    !==========================================================
+
+    IF (IFLD.EQ.4) THEN
+      DO IY = 1, NY
+#ifdef W3_MPI
+        IND=0
+        DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
+#endif
+#ifdef W3_SHRD
+          DO IX=1,NX
+#endif
+            CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),TIDE_FX,UX,VX)
+            WCURTIDEX = 0.
+            WCURTIDEY = 0.
+            DO I=1,TIDE_PRMF
+              J=PR_INDS(I)
+              IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN
+                WCURTIDEX = WCURTIDEX+TIDAL_CONST(IX,IY,J,1,1)
+                WCURTIDEY = WCURTIDEY+TIDAL_CONST(IX,IY,J,2,1)
+              ELSE
+                TIDE_ARGX=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,1,2)*DERA
+                TIDE_ARGY=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,2,2)*DERA
+                WCURTIDEX = WCURTIDEX+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,1,1)*COS(TIDE_ARGX)
+                WCURTIDEY = WCURTIDEY+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,2,1)*COS(TIDE_ARGY)
+              END IF
+            END DO
+            IF (ABS(WCURTIDEX).GT.10..OR.ABS(WCURTIDEY).GT.10.)  THEN
+              WRITE(NDSE,*) &
+                   'WARNING: VERY STRONG CURRENT... BAD CONSTITUENTS?', &
+                   IX, WCURTIDEX, WCURTIDEY ,  TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
+              STOP
+            END IF
+#ifdef W3_MPI
+            IND=IND+1
+            FX1DL(IND) = WCURTIDEX
+            FY1DL(IND) = WCURTIDEY
+            FA1DL(IND) = 0.
+          END DO ! NX
+#endif
+#ifdef W3_SHRD
+          FX(IX,IY) = WCURTIDEX
+          FY(IX,IY) = WCURTIDEY
+          FA(IX,IY) = 0.
+        END DO ! NX
+#endif
+
+        !
+        ! Gather from other MPI tasks
+        !
+
+#ifdef W3_MPI
+        IF (NAPROC.GT.1) THEN
+          CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, &
+               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+          CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, &
+               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+          CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, &
+               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+        ELSE
+          FX1D = FX1DL
+          FY1D = FY1DL
+          FA1D = FA1DL
+        END IF
+#endif
+
+        !
+        ! Convert from 1D to 2D array
+        !
+#ifdef W3_MPI
+        IF (IAPROC .EQ. NAPOUT) THEN
+          IND=0
+          DO IX=1,NX
+            IND=IND+1
+            FX(IX,IY)=FX1D(IND)
+            FY(IX,IY)=FY1D(IND)
+            FA(IX,IY)=FA1D(IND)
+          END DO
+        END IF
+#endif
+
+      END DO ! NY
+    END IF ! IFLD.EQ.4
+
+
+    !==========================================================
+    !
+    ! For water levels: only 1 component
+    !
+    !==========================================================
+
+    IF (IFLD.EQ.2) THEN
+      DO IY = 1, NY
+#ifdef W3_MPI
+        IND=0
+        DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
+#endif
+#ifdef W3_SHRD
+          DO IX=1,NX
+#endif
+            CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),TIDE_FX,UX,VX)
+            !
+            ! Removes unlikely values ...
+            !
+            IF (TINDEX.EQ.1) THEN
               TIDEOK=1
               DO I=1,TIDE_MAX
-                 IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I) .OR. &
-                      ABS(TIDAL_CONST(IX,IY,INDMAX(I),2,1)) .GT.MAXVALCON(I)) THEN
-                    TIDEOK = 0
-                    WRITE(NDSO,'(A,I8,F10.2,A,2F10.2)') &
-                         '[BAD POINT] GREATER THAN THRESHOLD ', MAXVALCON(I), &
-                         ' AT INDEX ', INDMAX(I),                             &
-                         ' WITH X-Y COMPONENTS : ', ABS(TIDAL_CONST(IX,IY,INDMAX(I),1:2,1))
-                 END IF
-                 BADPOINTS(IX,IY) = BADPOINTS(IX,IY) + (1-TIDEOK)
+                IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I)) &
+                     TIDEOK = 0
               END DO
-
-              IF (BADPOINTS(IX,IY).GT.0) THEN
-                 NBAD = NBAD +1
-                 WRITE(NDSE,*) 'BAD POINT:',IX,IY,NBAD, &
-                      TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
+              IF (TIDEOK.EQ.0) THEN
+                WRITE(NDSE,*) 'BAD POINT:',IX,IY, TIDAL_CONST(IX,IY,:,1,1)
+                TIDAL_CONST(IX,IY,:,1,1)=0
               END IF
-           END DO
-        END DO
+            END IF
+
+            WCURTIDEX = 0.
+            DO I=1,TIDE_PRMF
+              J=PR_INDS(I)
+              IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN
+                WCURTIDEX = WCURTIDEX+TIDAL_CONST(IX,IY,J,1,1)
+              ELSE
+                TIDE_ARGX=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,1,2)*DERA
+                WCURTIDEX = WCURTIDEX+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,1,1)*COS(TIDE_ARGX)
+              END IF
+            END DO
+#ifdef W3_MPI
+            IND=IND+1
+            FX1DL(IND) = 0.
+            FY1DL(IND) = 0.
+            FA1DL(IND) = WCURTIDEX
+          END DO ! NX
+#endif
+#ifdef W3_SHRD
+          FX(IX,IY) = 0.
+          FY(IX,IY) = 0.
+          FA(IX,IY) = WCURTIDEX
+        END DO ! NX
+#endif
+
+
+
         !
-        DO ITER=1,2
-           DO IY = 1, NY
-              DO IX= 1, NX
-                 IF (BADPOINTS(IX,IY).GT.0) THEN
-                    TIDAL_CONST(IX,IY,:,1,1)=0
-                    TIDAL_CONST(IX,IY,:,2,1)=0
-
-
-                    IF (TIDEFILL.AND.(GTYPE.EQ.UNGTYPE)) THEN
-
-                       !
-                       ! Performs a vector sum of tidal constituents over neighbor nodes
-                       !
-                       DO J=1, TIDE_MF
-                          DO K=1, 2
-                             AMPCOS = 0
-                             AMPSIN = 0
-                             SUMOK = 0
-                             DO ICON=1,COUNTCON(IX)
-                                IX2=VNEIGH(IX,ICON)
-                                IF (BADPOINTS(IX2,IY).EQ.0) THEN
-                                   SUMOK = SUMOK + 1
-                                   AMPCOS = AMPCOS+TIDAL_CONST(IX2,IY,J,K,1)*COS(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
-                                   AMPSIN = AMPSIN+TIDAL_CONST(IX2,IY,J,K,1)*SIN(TIDAL_CONST(IX2,IY,J,K,2)*DERA)
-                                END IF
-                             END DO
-                             IF (SUMOK.GT.1) THEN
-                                !
-                                ! Finalizes the amplitude and phase calculation from COS and SIN. Special case for mean value Z0.
-                                !
-                                IF (TIDECON_NAME(J).NE.'Z0   ') THEN
-                                   TIDAL_CONST(IX,IY,J,K,1) = SQRT(AMPCOS**2+AMPSIN**2)/SUMOK
-                                   TIDAL_CONST(IX,IY,J,K,2) = ATAN2(AMPSIN,AMPCOS)/DERA
-                                ELSE
-                                   TIDAL_CONST(IX,IY,J,K,1) = AMPCOS/SUMOK
-                                   TIDAL_CONST(IX,IY,J,K,2) = 0.
-                                END IF
-                                IF(K.EQ.2.AND.J.EQ.TIDE_MF) THEN
-                                   NBAD=NBAD-1
-                                   BADPOINTS(IX,IY) = 0
-                                END IF
-                             ENDIF
-                          END DO
-                       END DO
-                    END IF
-                 END IF
-              END DO
-           END DO
-        END DO
-        IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSE,*) 'Number of remaining bad points:',NBAD
-     END IF
-
-     !==========================================================
-     !
-     ! For currents: 2 components
-     !
-     !==========================================================
-
-     IF (IFLD.EQ.4) THEN
-        DO IY = 1, NY
-#ifdef W3_MPI
-           IND=0
-           DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
-#endif
-#ifdef W3_SHRD
-              DO IX=1,NX
-#endif
-                 CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),TIDE_FX,UX,VX)
-                 WCURTIDEX = 0.
-                 WCURTIDEY = 0.
-                 DO I=1,TIDE_PRMF
-                    J=PR_INDS(I)
-                    IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN
-                       WCURTIDEX = WCURTIDEX+TIDAL_CONST(IX,IY,J,1,1)
-                       WCURTIDEY = WCURTIDEY+TIDAL_CONST(IX,IY,J,2,1)
-                    ELSE
-                       TIDE_ARGX=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,1,2)*DERA
-                       TIDE_ARGY=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,2,2)*DERA
-                       WCURTIDEX = WCURTIDEX+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,1,1)*COS(TIDE_ARGX)
-                       WCURTIDEY = WCURTIDEY+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,2,1)*COS(TIDE_ARGY)
-                    END IF
-                 END DO
-                 IF (ABS(WCURTIDEX).GT.10..OR.ABS(WCURTIDEY).GT.10.)  THEN
-                    WRITE(NDSE,*) &
-                         'WARNING: VERY STRONG CURRENT... BAD CONSTITUENTS?', &
-                         IX, WCURTIDEX, WCURTIDEY ,  TIDAL_CONST(IX,IY,:,1,1),'##',TIDAL_CONST(IX,IY,:,2,1)
-                    STOP
-                 END IF
-#ifdef W3_MPI
-                 IND=IND+1
-                 FX1DL(IND) = WCURTIDEX
-                 FY1DL(IND) = WCURTIDEY
-                 FA1DL(IND) = 0.
-              END DO ! NX
-#endif
-#ifdef W3_SHRD
-              FX(IX,IY) = WCURTIDEX
-              FY(IX,IY) = WCURTIDEY
-              FA(IX,IY) = 0.
-           END DO ! NX
-#endif
-
-           !
-           ! Gather from other MPI tasks
-           !
+        ! Gather from other MPI tasks
+        !
 
 #ifdef W3_MPI
-           IF (NAPROC.GT.1) THEN
-              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM, &
-                   CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM, &
-                   CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM, &
-                   CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-           ELSE
-              FX1D = FX1DL
-              FY1D = FY1DL
-              FA1D = FA1DL
-           END IF
+        IF (NAPROC.GT.1) THEN
+          CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM,&
+               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+          CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM,&
+               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+          CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM,&
+               CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
+        ELSE
+          FX1D = FX1DL
+          FY1D = FY1DL
+          FA1D = FA1DL
+        END IF
 #endif
 
-           !
-           ! Convert from 1D to 2D array
-           !
+        !
+        ! Convert from 1D to 2D array
+        !
 #ifdef W3_MPI
-           IF (IAPROC .EQ. NAPOUT) THEN
-              IND=0
-              DO IX=1,NX
-                 IND=IND+1
-                 FX(IX,IY)=FX1D(IND)
-                 FY(IX,IY)=FY1D(IND)
-                 FA(IX,IY)=FA1D(IND)
-              END DO
-           END IF
+        IF (IAPROC .EQ. NAPOUT) THEN
+          IND=0
+          DO IX=1,NX
+            IND=IND+1
+            FX(IX,IY)=FX1D(IND)
+            FY(IX,IY)=FY1D(IND)
+            FA(IX,IY)=FA1D(IND)
+          END DO
+        END IF
 #endif
 
-        END DO ! NY
-     END IF ! IFLD.EQ.4
+      END DO ! NY
+    END IF ! IFLD.EQ.2
 
 
-     !==========================================================
-     !
-     ! For water levels: only 1 component
-     !
-     !==========================================================
+    !==========================================================
+    !
+    ! Write into binary output file
+    !
+    !==========================================================
 
-     IF (IFLD.EQ.2) THEN
-        DO IY = 1, NY
-#ifdef W3_MPI
-           IND=0
-           DO IX=CUMUL(IAPROC)+1,CUMUL(IAPROC)+NELEM(IAPROC)
-#endif
-#ifdef W3_SHRD
-              DO IX=1,NX
-#endif
-                 CALL SETVUF_FAST(h,pp,s,p,enp,dh,dpp,ds,dp,dnp,tau,REAL(YGRD(IY,IX)),TIDE_FX,UX,VX)
-                 !
-                 ! Removes unlikely values ...
-                 !
-                 IF (TINDEX.EQ.1) THEN
-                    TIDEOK=1
-                    DO I=1,TIDE_MAX
-                       IF (ABS(TIDAL_CONST(IX,IY,INDMAX(I),1,1)) .GT.MAXVALCON(I)) &
-                            TIDEOK = 0
-                    END DO
-                    IF (TIDEOK.EQ.0) THEN
-                       WRITE(NDSE,*) 'BAD POINT:',IX,IY, TIDAL_CONST(IX,IY,:,1,1)
-                       TIDAL_CONST(IX,IY,:,1,1)=0
-                    END IF
-                 END IF
+    IF (IAPROC .EQ. NAPOUT) THEN
 
-                 WCURTIDEX = 0.
-                 DO I=1,TIDE_PRMF
-                    J=PR_INDS(I)
-                    IF (TRIM(TIDECON_NAME(J)).EQ.'Z0') THEN
-                       WCURTIDEX = WCURTIDEX+TIDAL_CONST(IX,IY,J,1,1)
-                    ELSE
-                       TIDE_ARGX=(VX(J)+UX(J))*twpi-TIDAL_CONST(IX,IY,J,1,2)*DERA
-                       WCURTIDEX = WCURTIDEX+TIDE_FX(J)*TIDAL_CONST(IX,IY,J,1,1)*COS(TIDE_ARGX)
-                    END IF
-                 END DO
-#ifdef W3_MPI
-                 IND=IND+1
-                 FX1DL(IND) = 0.
-                 FY1DL(IND) = 0.
-                 FA1DL(IND) = WCURTIDEX
-              END DO ! NX
-#endif
-#ifdef W3_SHRD
-              FX(IX,IY) = 0.
-              FY(IX,IY) = 0.
-              FA(IX,IY) = WCURTIDEX
-           END DO ! NX
-#endif
+      !        WHERE(FX.NE.FX) FX = 0.
+      !        WHERE(FY.NE.FY) FY = 0.
+      !        WHERE(FA.NE.FA) FA = 0.
 
+      CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
+           NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
+           FX, FY, FA, IERR)
+    END IF
 
+    !==========================================================
+    !
+    ! Increment the clock
+    !
+    !==========================================================
 
-           !
-           ! Gather from other MPI tasks
-           !
-
-#ifdef W3_MPI
-           IF (NAPROC.GT.1) THEN
-              CALL MPI_GATHERV(FX1DL, SLICE, MPI_REAL, FX1D, NELEM,&
-                   CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-              CALL MPI_GATHERV(FY1DL, SLICE, MPI_REAL, FY1D, NELEM,&
-                   CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-              CALL MPI_GATHERV(FA1DL, SLICE, MPI_REAL, FA1D, NELEM,&
-                   CUMUL, MPI_REAL, NAPOUT-1, MPI_COMM_WORLD, IERR_MPI)
-           ELSE
-              FX1D = FX1DL
-              FY1D = FY1DL
-              FA1D = FA1DL
-           END IF
-#endif
-
-           !
-           ! Convert from 1D to 2D array
-           !
-#ifdef W3_MPI
-           IF (IAPROC .EQ. NAPOUT) THEN
-              IND=0
-              DO IX=1,NX
-                 IND=IND+1
-                 FX(IX,IY)=FX1D(IND)
-                 FY(IX,IY)=FY1D(IND)
-                 FA(IX,IY)=FA1D(IND)
-              END DO
-           END IF
-#endif
-
-        END DO ! NY
-     END IF ! IFLD.EQ.2
-
-
-     !==========================================================
-     !
-     ! Write into binary output file
-     !
-     !==========================================================
-
-     IF (IAPROC .EQ. NAPOUT) THEN
-
-        !        WHERE(FX.NE.FX) FX = 0.
-        !        WHERE(FY.NE.FY) FY = 0.
-        !        WHERE(FA.NE.FA) FA = 0.
-
-        CALL W3FLDG ('WRITE', IDFLD, NDSDAT, NDST, NDSE, NX, NY,  &
-             NX, NY, TIME, TIME, TIME, FX, FY, FA, TIME,  &
-             FX, FY, FA, IERR)
-     END IF
-
-     !==========================================================
-     !
-     ! Increment the clock
-     !
-     !==========================================================
-
-     CALL TICK21 ( TIME, FLOAT(PRTIDE_DT) )
-     TINDEX = TINDEX +1
+    CALL TICK21 ( TIME, FLOAT(PRTIDE_DT) )
+    TINDEX = TINDEX +1
 
   END DO
   !

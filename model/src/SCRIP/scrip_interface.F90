@@ -60,14 +60,14 @@ module scrip_interface
   implicit none
 
   type weight_data
-     integer (SCRIP_i4)              :: n    ! number of weights for dst cell
-     ! n is equivalent to NR1 and NLOC in original WMGHGH
-     ! NR1 is the counter of |MAPSTA|=1 (indicates sea point)
-     integer (SCRIP_i4)              :: NR0  ! counter of MAPSTA=0 (indicates excluded point)
-     integer (SCRIP_i4)              :: NR2  ! counter of |MAPSTA|=2 (indicates boundary point)
-     integer (SCRIP_i4)              :: NRL  ! counter of MAPSTA=0 (indicates excluded point) and MAPST2=0 (indicates land)
-     real    (SCRIP_r8), allocatable :: w(:) ! weights, sized by n, formerly wxwy(:,:)
-     integer (SCRIP_i4), allocatable :: k(:) ! source grid cells, sized by n, formerly ksrc(:,:)
+    integer (SCRIP_i4)              :: n    ! number of weights for dst cell
+    ! n is equivalent to NR1 and NLOC in original WMGHGH
+    ! NR1 is the counter of |MAPSTA|=1 (indicates sea point)
+    integer (SCRIP_i4)              :: NR0  ! counter of MAPSTA=0 (indicates excluded point)
+    integer (SCRIP_i4)              :: NR2  ! counter of |MAPSTA|=2 (indicates boundary point)
+    integer (SCRIP_i4)              :: NRL  ! counter of MAPSTA=0 (indicates excluded point) and MAPST2=0 (indicates land)
+    real    (SCRIP_r8), allocatable :: w(:) ! weights, sized by n, formerly wxwy(:,:)
+    integer (SCRIP_i4), allocatable :: k(:) ! source grid cells, sized by n, formerly ksrc(:,:)
   end type weight_data
 
   type(weight_data), allocatable :: wgtdata(:)
@@ -415,7 +415,7 @@ contains
 
     call timers_init
     do n=1,max_timers
-       call timer_clear(n)
+      call timer_clear(n)
     end do
 
     errorCode = SCRIP_Success
@@ -454,35 +454,35 @@ contains
 
     select case(map_method)
     case ('conservative')
-       map_type = map_type_conserv
-       luse_grid_centers = .false.
+      map_type = map_type_conserv
+      luse_grid_centers = .false.
     case ('bilinear')
-       map_type = map_type_bilinear
-       luse_grid_centers = .true.
+      map_type = map_type_bilinear
+      luse_grid_centers = .true.
     case ('bicubic')
-       map_type = map_type_bicubic
-       luse_grid_centers = .true.
+      map_type = map_type_bicubic
+      luse_grid_centers = .true.
     case ('distwgt')
-       map_type = map_type_distwgt
-       luse_grid_centers = .true.
+      map_type = map_type_distwgt
+      luse_grid_centers = .true.
     case ('particle')
-       map_type = map_type_particle
-       luse_grid_centers = .false.
+      map_type = map_type_particle
+      luse_grid_centers = .false.
     case default
-       call SCRIP_ErrorSet(errorCode, rtnName, 'unknown mapping method')
-       call SCRIP_driverExit(errorCode, 'unknown mapping method')
+      call SCRIP_ErrorSet(errorCode, rtnName, 'unknown mapping method')
+      call SCRIP_driverExit(errorCode, 'unknown mapping method')
     end select
 
     select case(normalize_opt(1:4))
     case ('none')
-       norm_opt = norm_opt_none
+      norm_opt = norm_opt_none
     case ('frac')
-       norm_opt = norm_opt_frcarea
+      norm_opt = norm_opt_frcarea
     case ('dest')
-       norm_opt = norm_opt_dstarea
+      norm_opt = norm_opt_dstarea
     case default
-       call SCRIP_ErrorSet(errorCode, rtnName, 'unknown normalization option')
-       call SCRIP_driverExit(errorCode, 'unknown normalization option')
+      call SCRIP_ErrorSet(errorCode, rtnName, 'unknown normalization option')
+      call SCRIP_driverExit(errorCode, 'unknown normalization option')
     end select
 
     !-----------------------------------------------------------------------
@@ -527,90 +527,90 @@ contains
 
 #ifdef W3_SCRIPNC
     if (l_read) then
-       if(l_master)write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
-       call read_remap_ww3(map1_name, interp_file1, errorCode)
+      if(l_master)write(SCRIP_stdout, *) 'Reading remapping data from ', interp_file1
+      call read_remap_ww3(map1_name, interp_file1, errorCode)
 #endif
 #ifdef W3_T38
-       call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-       end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-       elapsed_time = end_time - beg_time
-       write(0,*) "SCRIP: READING ", elapsed_time, " MSEC"
+      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+      elapsed_time = end_time - beg_time
+      write(0,*) "SCRIP: READING ", elapsed_time, " MSEC"
 #endif
 #ifdef W3_SCRIPNC
     else
 #endif
-       select case(map_type)
-       case(map_type_conserv)
+      select case(map_type)
+      case(map_type_conserv)
 #ifdef W3_T38
-          if(l_master)write(SCRIP_stdout,*)'calling remap_conserv'
+        if(l_master)write(SCRIP_stdout,*)'calling remap_conserv'
 #endif
-          call remap_conserv(l_master,l_test)
+        call remap_conserv(l_master,l_test)
 #ifdef W3_T38
-          if(l_master)write(SCRIP_stdout,*)'back from remap_conserv'
-          call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-          end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-          elapsed_time = end_time - beg_time
-          write(0,*) "SCRIP: CALCULATING ", elapsed_time, " MSEC"
+        if(l_master)write(SCRIP_stdout,*)'back from remap_conserv'
+        call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+        end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+        elapsed_time = end_time - beg_time
+        write(0,*) "SCRIP: CALCULATING ", elapsed_time, " MSEC"
 #endif
-       case default
-          call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
-          call SCRIP_driverExit(errorCode, 'Invalid Map Type')
-       end select
+      case default
+        call SCRIP_ErrorSet(errorCode, rtnName, 'Invalid Map Type')
+        call SCRIP_driverExit(errorCode, 'Invalid Map Type')
+      end select
 
-       !-----------------------------------------------------------------------
-       !
-       !     reduce size of remapping arrays
-       !
-       !-----------------------------------------------------------------------
+      !-----------------------------------------------------------------------
+      !
+      !     reduce size of remapping arrays
+      !
+      !-----------------------------------------------------------------------
 
 #ifdef W3_T38
-       call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-       beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
 #endif
 
-       if (num_links_map1 /= max_links_map1) then
-          call resize_remap_vars(1, num_links_map1-max_links_map1)
-       endif
-       if ((num_maps > 1) .and. (num_links_map2 /= max_links_map2)) then
-          call resize_remap_vars(2, num_links_map2-max_links_map2)
-       endif
+      if (num_links_map1 /= max_links_map1) then
+        call resize_remap_vars(1, num_links_map1-max_links_map1)
+      endif
+      if ((num_maps > 1) .and. (num_links_map2 /= max_links_map2)) then
+        call resize_remap_vars(2, num_links_map2-max_links_map2)
+      endif
 
-       call sort_add_v2(grid2_add_map1, grid1_add_map1, wts_map1)
+      call sort_add_v2(grid2_add_map1, grid1_add_map1, wts_map1)
 
-       !-----------------------------------------------------------------------
-       !
+      !-----------------------------------------------------------------------
+      !
 #ifdef W3_SCRIPNC
-       !     write remapping info to a file.
+      !     write remapping info to a file.
 #endif
-       !
-       !-----------------------------------------------------------------------
-
-#ifdef W3_SCRIPNC
-       if (l_master) then
-          write(SCRIP_stdout, *) 'Writing remapping data to ', interp_file1
-       endif
-#endif
-
-#ifdef W3_T38
-       call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-       end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-       elapsed_time = end_time - beg_time
-       write(0,*) "SCRIP: RESIZING ", elapsed_time, " MSEC"
-       call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
-       beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
-#endif
-
-       ! Use  write_remap if you want the extra variables in the .nc files for diagnostics
-       ! Use  write_remap_ww3 if you don't want any extra variables in the .nc files
+      !
+      !-----------------------------------------------------------------------
 
 #ifdef W3_SCRIPNC
-       if(l_test)then
-          call write_remap(map1_name, map2_name, interp_file1, interp_file2, &
-               output_opt, l_master, errorCode)
-       else
-          call write_remap_ww3(map1_name, interp_file1, output_opt, &
-               l_master, errorCode)
-       endif
+      if (l_master) then
+        write(SCRIP_stdout, *) 'Writing remapping data to ', interp_file1
+      endif
+#endif
+
+#ifdef W3_T38
+      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      end_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+      elapsed_time = end_time - beg_time
+      write(0,*) "SCRIP: RESIZING ", elapsed_time, " MSEC"
+      call date_and_time (CDATE_TIME(1), CDATE_TIME(2), CDATE_TIME(3), DATE_TIME)
+      beg_time = ((date_time(5)*60 + date_time(6))*60 +date_time(7))*1000 + date_time(8)
+#endif
+
+      ! Use  write_remap if you want the extra variables in the .nc files for diagnostics
+      ! Use  write_remap_ww3 if you don't want any extra variables in the .nc files
+
+#ifdef W3_SCRIPNC
+      if(l_test)then
+        call write_remap(map1_name, map2_name, interp_file1, interp_file2, &
+             output_opt, l_master, errorCode)
+      else
+        call write_remap_ww3(map1_name, interp_file1, output_opt, &
+             l_master, errorCode)
+      endif
 #endif
 
 #ifdef W3_SCRIPNC
@@ -719,68 +719,68 @@ contains
 
     do lvl=num_links/2,1,-1
 
-       final_lvl = lvl
-       add1_tmp = add1(lvl)
-       add2_tmp = add2(lvl)
-       wgttmp(:) = weights(:,lvl)
+      final_lvl = lvl
+      add1_tmp = add1(lvl)
+      add2_tmp = add2(lvl)
+      wgttmp(:) = weights(:,lvl)
 
-       !***
-       !*** loop until proper level is found for this link, or reach
-       !*** bottom
-       !***
+      !***
+      !*** loop until proper level is found for this link, or reach
+      !*** bottom
+      !***
 
-       sift_loop1: do
+      sift_loop1: do
+
+        !***
+        !*** find the largest of the two daughters
+        !***
+
+        chk_lvl1 = 2*final_lvl
+        chk_lvl2 = 2*final_lvl+1
+        if (chk_lvl1 .EQ. num_links) chk_lvl2 = chk_lvl1
+
+        if ((add1(chk_lvl1) >  add1(chk_lvl2)) .OR.    &
+             ((add1(chk_lvl1) == add1(chk_lvl2)) .AND. &
+             (add2(chk_lvl1) >  add2(chk_lvl2)))) then
+          max_lvl = chk_lvl1
+        else
+          max_lvl = chk_lvl2
+        endif
+
+        !***
+        !*** if the parent is greater than both daughters,
+        !*** the correct level has been found
+        !***
+
+        if ((add1_tmp .GT. add1(max_lvl)) .OR.    &
+             ((add1_tmp .EQ. add1(max_lvl)) .AND. &
+             (add2_tmp .GT. add2(max_lvl)))) then
+          add1(final_lvl) = add1_tmp
+          add2(final_lvl) = add2_tmp
+          weights(:,final_lvl) = wgttmp(:)
+          exit sift_loop1
 
           !***
-          !*** find the largest of the two daughters
+          !*** otherwise, promote the largest daughter and push
+          !*** down one level in the tree.  if haven't reached
+          !*** the end of the tree, repeat the process.  otherwise
+          !*** store last values and exit the loop
           !***
 
-          chk_lvl1 = 2*final_lvl
-          chk_lvl2 = 2*final_lvl+1
-          if (chk_lvl1 .EQ. num_links) chk_lvl2 = chk_lvl1
+        else
+          add1(final_lvl) = add1(max_lvl)
+          add2(final_lvl) = add2(max_lvl)
+          weights(:,final_lvl) = weights(:,max_lvl)
 
-          if ((add1(chk_lvl1) >  add1(chk_lvl2)) .OR.    &
-               ((add1(chk_lvl1) == add1(chk_lvl2)) .AND. &
-               (add2(chk_lvl1) >  add2(chk_lvl2)))) then
-             max_lvl = chk_lvl1
-          else
-             max_lvl = chk_lvl2
+          final_lvl = max_lvl
+          if (2*final_lvl > num_links) then
+            add1(final_lvl) = add1_tmp
+            add2(final_lvl) = add2_tmp
+            weights(:,final_lvl) = wgttmp(:)
+            exit sift_loop1
           endif
-
-          !***
-          !*** if the parent is greater than both daughters,
-          !*** the correct level has been found
-          !***
-
-          if ((add1_tmp .GT. add1(max_lvl)) .OR.    &
-               ((add1_tmp .EQ. add1(max_lvl)) .AND. &
-               (add2_tmp .GT. add2(max_lvl)))) then
-             add1(final_lvl) = add1_tmp
-             add2(final_lvl) = add2_tmp
-             weights(:,final_lvl) = wgttmp(:)
-             exit sift_loop1
-
-             !***
-             !*** otherwise, promote the largest daughter and push
-             !*** down one level in the tree.  if haven't reached
-             !*** the end of the tree, repeat the process.  otherwise
-             !*** store last values and exit the loop
-             !***
-
-          else
-             add1(final_lvl) = add1(max_lvl)
-             add2(final_lvl) = add2(max_lvl)
-             weights(:,final_lvl) = weights(:,max_lvl)
-
-             final_lvl = max_lvl
-             if (2*final_lvl > num_links) then
-                add1(final_lvl) = add1_tmp
-                add2(final_lvl) = add2_tmp
-                weights(:,final_lvl) = wgttmp(:)
-                exit sift_loop1
-             endif
-          endif
-       end do sift_loop1
+        endif
+      end do sift_loop1
     end do
 
     !-----------------------------------------------------------------------
@@ -792,78 +792,78 @@ contains
 
     do lvl=num_links,3,-1
 
-       !***
-       !*** move the top value and insert it into the correct place
-       !***
+      !***
+      !*** move the top value and insert it into the correct place
+      !***
 
-       add1_tmp = add1(lvl)
-       add1(lvl) = add1(1)
+      add1_tmp = add1(lvl)
+      add1(lvl) = add1(1)
 
-       add2_tmp = add2(lvl)
-       add2(lvl) = add2(1)
+      add2_tmp = add2(lvl)
+      add2(lvl) = add2(1)
 
-       wgttmp(:) = weights(:,lvl)
-       weights(:,lvl) = weights(:,1)
+      wgttmp(:) = weights(:,lvl)
+      weights(:,lvl) = weights(:,1)
 
-       !***
-       !*** as above this loop sifts the tmp values down until proper
-       !*** level is reached
-       !***
+      !***
+      !*** as above this loop sifts the tmp values down until proper
+      !*** level is reached
+      !***
 
-       final_lvl = 1
+      final_lvl = 1
 
-       sift_loop2: do
+      sift_loop2: do
+
+        !***
+        !*** find the largest of the two daughters
+        !***
+
+        chk_lvl1 = 2*final_lvl
+        chk_lvl2 = 2*final_lvl+1
+        if (chk_lvl2 >= lvl) chk_lvl2 = chk_lvl1
+
+        if ((add1(chk_lvl1) >  add1(chk_lvl2)) .OR.    &
+             ((add1(chk_lvl1) == add1(chk_lvl2)) .AND. &
+             (add2(chk_lvl1) >  add2(chk_lvl2)))) then
+          max_lvl = chk_lvl1
+        else
+          max_lvl = chk_lvl2
+        endif
+
+        !***
+        !*** if the parent is greater than both daughters,
+        !*** the correct level has been found
+        !***
+
+        if ((add1_tmp >  add1(max_lvl)) .OR.    &
+             ((add1_tmp == add1(max_lvl)) .AND. &
+             (add2_tmp >  add2(max_lvl)))) then
+          add1(final_lvl) = add1_tmp
+          add2(final_lvl) = add2_tmp
+          weights(:,final_lvl) = wgttmp(:)
+          exit sift_loop2
 
           !***
-          !*** find the largest of the two daughters
+          !*** otherwise, promote the largest daughter and push
+          !*** down one level in the tree.  if haven't reached
+          !*** the end of the tree, repeat the process.  otherwise
+          !*** store last values and exit the loop
           !***
 
-          chk_lvl1 = 2*final_lvl
-          chk_lvl2 = 2*final_lvl+1
-          if (chk_lvl2 >= lvl) chk_lvl2 = chk_lvl1
+        else
+          add1(final_lvl) = add1(max_lvl)
+          add2(final_lvl) = add2(max_lvl)
+          weights(:,final_lvl) = weights(:,max_lvl)
 
-          if ((add1(chk_lvl1) >  add1(chk_lvl2)) .OR.    &
-               ((add1(chk_lvl1) == add1(chk_lvl2)) .AND. &
-               (add2(chk_lvl1) >  add2(chk_lvl2)))) then
-             max_lvl = chk_lvl1
-          else
-             max_lvl = chk_lvl2
+          final_lvl = max_lvl
+          if (2*final_lvl >= lvl) then
+            add1(final_lvl) = add1_tmp
+            add2(final_lvl) = add2_tmp
+            weights(:,final_lvl) = wgttmp(:)
+            exit sift_loop2
           endif
-
-          !***
-          !*** if the parent is greater than both daughters,
-          !*** the correct level has been found
-          !***
-
-          if ((add1_tmp >  add1(max_lvl)) .OR.    &
-               ((add1_tmp == add1(max_lvl)) .AND. &
-               (add2_tmp >  add2(max_lvl)))) then
-             add1(final_lvl) = add1_tmp
-             add2(final_lvl) = add2_tmp
-             weights(:,final_lvl) = wgttmp(:)
-             exit sift_loop2
-
-             !***
-             !*** otherwise, promote the largest daughter and push
-             !*** down one level in the tree.  if haven't reached
-             !*** the end of the tree, repeat the process.  otherwise
-             !*** store last values and exit the loop
-             !***
-
-          else
-             add1(final_lvl) = add1(max_lvl)
-             add2(final_lvl) = add2(max_lvl)
-             weights(:,final_lvl) = weights(:,max_lvl)
-
-             final_lvl = max_lvl
-             if (2*final_lvl >= lvl) then
-                add1(final_lvl) = add1_tmp
-                add2(final_lvl) = add2_tmp
-                weights(:,final_lvl) = wgttmp(:)
-                exit sift_loop2
-             endif
-          endif
-       end do sift_loop2
+        endif
+      end do sift_loop2
     end do
 
     !***

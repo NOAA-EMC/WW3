@@ -151,7 +151,7 @@ CONTAINS
     CALL STRACE (IENT, 'WAV_MY_WTIME')
 #endif
     IF (mpimode .eq. 0) THEN
-       CALL CPU_TIME(eTime)
+      CALL CPU_TIME(eTime)
     END IF
     !/
     !/ End of JACOBI_INIT ------------------------------------------------ /
@@ -328,24 +328,24 @@ CONTAINS
     FDG    = FACTH * eCTHG0
     DEPTH  = MAX ( DMIN , DW(ISEA) )
     DO IK=0, NK+1
-       IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
-          DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
-       ELSE
-          DSDD(IK) = 0.
-       END IF
+      IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
+        DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
+      ELSE
+        DSDD(IK) = 0.
+      END IF
     END DO
     FDDMAX=0
     DO ITH=1, NTH
-       FDDMAX = MAX ( FDDMAX , ABS(ESIN(ITH)*eDDDX - ECOS(ITH)*eDDDY ) )
+      FDDMAX = MAX ( FDDMAX , ABS(ESIN(ITH)*eDDDX - ECOS(ITH)*eDDDY ) )
     END DO
     DO IK=1, NK
-       FRK(IK) = FACTH * DSDD(IK) / WN(IK,ISEA)
-       !FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
-       FRG(IK) = FDG * CG(IK,ISEA)
+      FRK(IK) = FACTH * DSDD(IK) / WN(IK,ISEA)
+      !FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
+      FRG(IK) = FDG * CG(IK,ISEA)
     END DO
     DO ISP=1, NSPEC
-       VCFLT(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP) +                     &
-            FRK(MAPWN(ISP)) * ( ESIN(ISP)*eDDDX - ECOS(ISP)*eDDDY )
+      VCFLT(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP) +                     &
+           FRK(MAPWN(ISP)) * ( ESIN(ISP)*eDDDX - ECOS(ISP)*eDDDY )
     END DO
     !
 #ifdef W3_REFRX
@@ -353,29 +353,29 @@ CONTAINS
     VCFLT  = 0.
     FRK    = 0.
     DO IK=1, NK
-       FRK(IK) = FACTH * CG(IK,ISEA) * WN(IK,ISEA) / SIG(IK)
+      FRK(IK) = FACTH * CG(IK,ISEA) * WN(IK,ISEA) / SIG(IK)
     END DO
     DO ISP=1, NSPEC
-       VCFLT(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)           &
-            + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(ISP,1,MAPWN(ISP)) &
-            - ECOS(ISP)*DCDY(ISP,1,MAPWN(ISP)) )
+      VCFLT(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)           &
+           + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(ISP,1,MAPWN(ISP)) &
+           - ECOS(ISP)*DCDY(ISP,1,MAPWN(ISP)) )
     END DO
 #endif
     !
     IF ( FLCUR ) THEN
-       eDCXDX=DCXDX(IY,IX)
-       eDCXDY=DCXDY(IY,IX)
-       eDCYDX=DCYDX(IY,IX)
-       eDCYDY=DCYDY(IY,IX)
-       DCYX   = FACTH *   eDCYDX
-       DCXXYY = FACTH * ( eDCXDX - eDCYDY )
-       DCXY   = FACTH *   eDCXDY
-       DO ISP=1, NSPEC
-          VCFLT(ISP) = VCFLT(ISP) + ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
-       END DO
+      eDCXDX=DCXDX(IY,IX)
+      eDCXDY=DCXDY(IY,IX)
+      eDCYDX=DCYDX(IY,IX)
+      eDCYDY=DCYDY(IY,IX)
+      DCYX   = FACTH *   eDCYDX
+      DCXXYY = FACTH * ( eDCXDX - eDCYDY )
+      DCXY   = FACTH *   eDCXDY
+      DO ISP=1, NSPEC
+        VCFLT(ISP) = VCFLT(ISP) + ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
+      END DO
     END IF
     DO ISP=1,NSPEC
-       CAD(ISP)=DBLE(VCFLT(ISP))
+      CAD(ISP)=DBLE(VCFLT(ISP))
     END DO
     !/
     !/ End of JACOBI_INIT ------------------------------------------------ /
@@ -474,56 +474,56 @@ CONTAINS
     FDG    = FACTH * eCTHG0
     DEPTH  = MAX ( DMIN , DW(ISEA) )
     DO IK=0, NK+1
-       IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
-          DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
-       ELSE
-          DSDD(IK) = 0.
-       END IF
+      IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
+        DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
+      ELSE
+        DSDD(IK) = 0.
+      END IF
     END DO
     DO IK=1, NK
-       FRK(IK) = FACTH * DSDD(IK) / WN(IK,ISEA)
-       FRG(IK) = FDG * CG(IK,ISEA)
+      FRK(IK) = FACTH * DSDD(IK) / WN(IK,ISEA)
+      FRG(IK) = FDG * CG(IK,ISEA)
     END DO
     IF (FLCUR) THEN
-       eDCXDX = DCXDX(1,IP)
-       eDCXDY = DCXDY(1,IP)
-       eDCYDX = DCYDX(1,IP)
-       eDCYDY = DCYDY(1,IP)
-       DCYX   = FACTH *   eDCYDX
-       DCXXYY = FACTH * ( eDCXDX - eDCYDY )
-       DCXY   = FACTH *   eDCXDY
-       DO ISP=1, NSPEC
-          VCFLT(ISP) = ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
-       END DO
+      eDCXDX = DCXDX(1,IP)
+      eDCXDY = DCXDY(1,IP)
+      eDCYDX = DCYDX(1,IP)
+      eDCYDY = DCYDY(1,IP)
+      DCYX   = FACTH *   eDCYDX
+      DCXXYY = FACTH * ( eDCXDX - eDCYDY )
+      DCXY   = FACTH *   eDCXDY
+      DO ISP=1, NSPEC
+        VCFLT(ISP) = ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
+      END DO
     ELSE
-       VCFLT=0
+      VCFLT=0
     END IF
     !
 #ifdef W3_REFRX
     ! 3.c @C/@x refraction and great-circle propagation
     DO IK=1, NK
-       FRK(IK) = FACTH * CG(IK,ISEA) * WN(IK,ISEA) / SIG(IK)
+      FRK(IK) = FACTH * CG(IK,ISEA) * WN(IK,ISEA) / SIG(IK)
     END DO
 #endif
     !
     CTMAX_eff=CTMAX/DTG
     DO ISP=1, NSPEC
-       VELNOFILT = VCFLT(ISP)                                       &
-            + FRG(MAPWN(ISP)) * ECOS(ISP)                             &
-            + FRK(MAPWN(ISP)) * (ESIN(ISP)*eDDDX - ECOS(ISP)*eDDDY)
-       !
-       ! Puts filtering on total velocity (including currents and great circle effects)
-       ! the filtering limits VCFLT to be less than CTMAX
-       ! this modification was proposed by F. Ardhuin 2011/03/06
-       !
-       IF (DoLimiter) THEN
-          VCFLT(ISP)=SIGN(MIN(ABS(VELNOFILT),CTMAX_eff),VELNOFILT)
-       ELSE
-          VCFLT(ISP)=VELNOFILT
-       END IF
+      VELNOFILT = VCFLT(ISP)                                       &
+           + FRG(MAPWN(ISP)) * ECOS(ISP)                             &
+           + FRK(MAPWN(ISP)) * (ESIN(ISP)*eDDDX - ECOS(ISP)*eDDDY)
+      !
+      ! Puts filtering on total velocity (including currents and great circle effects)
+      ! the filtering limits VCFLT to be less than CTMAX
+      ! this modification was proposed by F. Ardhuin 2011/03/06
+      !
+      IF (DoLimiter) THEN
+        VCFLT(ISP)=SIGN(MIN(ABS(VELNOFILT),CTMAX_eff),VELNOFILT)
+      ELSE
+        VCFLT(ISP)=VELNOFILT
+      END IF
     END DO
     DO ISP=1,NSPEC
-       CAD(ISP)=DBLE(VCFLT(ISP))
+      CAD(ISP)=DBLE(VCFLT(ISP))
     END DO
     !/
     !/ End of JACOBI_INIT ------------------------------------------------ /
@@ -608,21 +608,21 @@ CONTAINS
 #endif
     !
     IF (LPDLIB) THEN
-       eDCXDX = DCXDX(1,IP)
-       eDCXDY = DCXDY(1,IP)
-       eDCYDX = DCYDX(1,IP)
-       eDCYDY = DCYDY(1,IP)
-       eDDDX  = DDDX(1,IP)
-       eDDDY  = DDDY(1,IP)
+      eDCXDX = DCXDX(1,IP)
+      eDCXDY = DCXDY(1,IP)
+      eDCYDX = DCYDX(1,IP)
+      eDCYDY = DCYDY(1,IP)
+      eDDDX  = DDDX(1,IP)
+      eDDDY  = DDDY(1,IP)
     ELSE
-       IX=MAPSF(ISEA,1)
-       IY=MAPSF(ISEA,2)
-       eDCXDX=DCXDX(IY,IX)
-       eDCXDY=DCXDY(IY,IX)
-       eDCYDX=DCYDX(IY,IX)
-       eDCYDY=DCYDY(IY,IX)
-       eDDDX=DDDX(IY,IX)
-       eDDDY=DDDY(IY,IX)
+      IX=MAPSF(ISEA,1)
+      IY=MAPSF(ISEA,2)
+      eDCXDX=DCXDX(IY,IX)
+      eDCXDY=DCXDY(IY,IX)
+      eDCYDX=DCYDX(IY,IX)
+      eDCYDY=DCYDY(IY,IX)
+      eDDDX=DDDX(IY,IX)
+      eDDDY=DDDY(IY,IX)
     ENDIF
     eCX=CX(ISEA)
     eCY=CY(ISEA)
@@ -632,11 +632,11 @@ CONTAINS
     FKD    =    ( eCX*eDDDX + eCY*eDDDY )
     FACK = DTG
     DO ITH=1, NTH
-       FKC(ITH) = EC2(ITH)*DCXX + ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
+      FKC(ITH) = EC2(ITH)*DCXX + ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
     END DO
     DO IK=0, NK
-       DB(IK+1) = DSIP(IK) / CG(IK,ISEA)
-       DMM(IK+1) = DBLE(WN(IK+1,ISEA) - WN(IK,ISEA))
+      DB(IK+1) = DSIP(IK) / CG(IK,ISEA)
+      DMM(IK+1) = DBLE(WN(IK+1,ISEA) - WN(IK,ISEA))
     END DO
     DB(NK+2) = DSIP(NK+1) / CG(NK+1,ISEA)
     DMM(NK+2) = ZERO
@@ -644,25 +644,25 @@ CONTAINS
     !
     DEPTH  = MAX ( DMIN , DW(ISEA) )
     DO IK=0, NK+1
-       IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
-          DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
-       ELSE
-          DSDD(IK) = 0.
-       END IF
+      IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
+        DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
+      ELSE
+        DSDD(IK) = 0.
+      END IF
     END DO
     DO IK=0, NK+1
-       FKD0   = FKD / CG(IK,ISEA) * DSDD(IK)
-       VELFAC =  FACK/DB(IK+1)
-       DO ITH=1, NTH
-          VELNOFILT = ( FKD0 + WN(IK,ISEA)*FKC(ITH) ) * VELFAC
-          CFLK(IK+1,ITH) = VELNOFILT/VELFAC
-       END DO
+      FKD0   = FKD / CG(IK,ISEA) * DSDD(IK)
+      VELFAC =  FACK/DB(IK+1)
+      DO ITH=1, NTH
+        VELNOFILT = ( FKD0 + WN(IK,ISEA)*FKC(ITH) ) * VELFAC
+        CFLK(IK+1,ITH) = VELNOFILT/VELFAC
+      END DO
     END DO
     DO IK=1,NK
-       DO ITH=1,NTH
-          ISP=ITH + (IK-1)*NTH
-          CAS(ISP)=DBLE(CFLK(IK,ITH))
-       END DO
+      DO ITH=1,NTH
+        ISP=ITH + (IK-1)*NTH
+        CAS(ISP)=DBLE(CFLK(IK,ITH))
+      END DO
     END DO
     !/
     !/ End of JACOBI_INIT ------------------------------------------------ /
@@ -755,21 +755,21 @@ CONTAINS
 #endif
 
     IF (LPDLIB) THEN
-       eDCXDX = DCXDX(1,IP)
-       eDCXDY = DCXDY(1,IP)
-       eDCYDX = DCYDX(1,IP)
-       eDCYDY = DCYDY(1,IP)
-       eDDDX  = DDDX(1,IP)
-       eDDDY  = DDDY(1,IP)
+      eDCXDX = DCXDX(1,IP)
+      eDCXDY = DCXDY(1,IP)
+      eDCYDX = DCYDX(1,IP)
+      eDCYDY = DCYDY(1,IP)
+      eDDDX  = DDDX(1,IP)
+      eDDDY  = DDDY(1,IP)
     ELSE
-       IX=MAPSF(ISEA,1)
-       IY=MAPSF(ISEA,2)
-       eDCXDX=DCXDX(IY,IX)
-       eDCXDY=DCXDY(IY,IX)
-       eDCYDX=DCYDX(IY,IX)
-       eDCYDY=DCYDY(IY,IX)
-       eDDDX=DDDX(IY,IX)
-       eDDDY=DDDY(IY,IX)
+      IX=MAPSF(ISEA,1)
+      IY=MAPSF(ISEA,2)
+      eDCXDX=DCXDX(IY,IX)
+      eDCXDY=DCXDY(IY,IX)
+      eDCYDX=DCYDX(IY,IX)
+      eDCYDY=DCYDY(IY,IX)
+      eDDDX=DDDX(IY,IX)
+      eDDDY=DDDY(IY,IX)
     ENDIF
 
     eCX = CX(ISEA)
@@ -781,33 +781,33 @@ CONTAINS
     FKD    =    FACK * ( eCX*eDDDX + eCY*eDDDY )
 
     DO ITH=1, NTH
-       FKC(ITH) = EC2(ITH)*DCXX + ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
+      FKC(ITH) = EC2(ITH)*DCXX + ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
     END DO
     !
     DEPTH  = MAX ( DMIN , DW(ISEA) )
     DO IK=0, NK+1
-       IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
-          DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
-       ELSE
-          DSDD(IK) = 0.
-       END IF
+      IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
+        DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
+      ELSE
+        DSDD(IK) = 0.
+      END IF
     END DO
     ISP = -NTH
     DO IK=0, NK+1
-       FKD0   = FKD / CG(IK,ISEA) * DSDD(IK)
-       DO ITH=1, NTH
-          ISP = ISP + 1
-          VCWN(ISP) = FKD0 + WN(IK,ISEA)*FKC(ITH)
-       END DO
+      FKD0   = FKD / CG(IK,ISEA) * DSDD(IK)
+      DO ITH=1, NTH
+        ISP = ISP + 1
+        VCWN(ISP) = FKD0 + WN(IK,ISEA)*FKC(ITH)
+      END DO
     END DO
 
     sumDiff=0
     DO ISP=1-NTH,NSPEC
-       CWNB_M2(ISP) = DBLE(0.5 * ( VCWN(ISP) + VCWN(ISP+NTH) ))
-       sumDiff = sumDiff + MAX(CWNB_M2(ISP), ZERO)
+      CWNB_M2(ISP) = DBLE(0.5 * ( VCWN(ISP) + VCWN(ISP+NTH) ))
+      sumDiff = sumDiff + MAX(CWNB_M2(ISP), ZERO)
     END DO
     DO IK=1,NK
-       DWNI_M2(IK) = DBLE( CG(IK,ISEA) / DSIP(IK) )
+      DWNI_M2(IK) = DBLE( CG(IK,ISEA) / DSIP(IK) )
     END DO
     !/
     !/ End of JACOBI_INIT ------------------------------------------------ /
@@ -895,32 +895,32 @@ CONTAINS
 
 #ifdef W3_PDLIB
     IF (IAPROC .le. NAPROC) THEN
-       IF (IAPROC .eq. 1) THEN
-          Iarr(1)=np_global
-          DO IPROC=NAPROC+1,NTPROC
-             CALL MPI_SEND(Iarr,1,MPI_INT, IPROC-1, 37, MPI_COMM_WAVE, IERR_MPI)
-          END DO
-          DO IPROC=NAPROC+1,NTPROC
-             CALL MPI_SEND(ipgl_tot,np_global,MPI_INT, IPROC-1, 43, MPI_COMM_WAVE, IERR_MPI)
-             CALL MPI_SEND(ipgl_to_proc,np_global,MPI_INT, IPROC-1, 91, MPI_COMM_WAVE, IERR_MPI)
-          END DO
-       END IF
+      IF (IAPROC .eq. 1) THEN
+        Iarr(1)=np_global
+        DO IPROC=NAPROC+1,NTPROC
+          CALL MPI_SEND(Iarr,1,MPI_INT, IPROC-1, 37, MPI_COMM_WAVE, IERR_MPI)
+        END DO
+        DO IPROC=NAPROC+1,NTPROC
+          CALL MPI_SEND(ipgl_tot,np_global,MPI_INT, IPROC-1, 43, MPI_COMM_WAVE, IERR_MPI)
+          CALL MPI_SEND(ipgl_to_proc,np_global,MPI_INT, IPROC-1, 91, MPI_COMM_WAVE, IERR_MPI)
+        END DO
+      END IF
     ELSE
-       CALL MPI_RECV(Iarr,1,MPI_INT, 0, 37, MPI_COMM_WAVE, istatus, IERR_MPI)
-       np_global=Iarr(1)
-       allocate(IPGL_tot(np_global), IPGL_TO_PROC(np_global), stat=istat)
-       CALL MPI_RECV(ipgl_tot,np_global,MPI_INT, 0, 43, MPI_COMM_WAVE, istatus, IERR_MPI)
-       CALL MPI_RECV(ipgl_to_proc,np_global,MPI_INT, 0, 91, MPI_COMM_WAVE, istatus, IERR_MPI)
+      CALL MPI_RECV(Iarr,1,MPI_INT, 0, 37, MPI_COMM_WAVE, istatus, IERR_MPI)
+      np_global=Iarr(1)
+      allocate(IPGL_tot(np_global), IPGL_TO_PROC(np_global), stat=istat)
+      CALL MPI_RECV(ipgl_tot,np_global,MPI_INT, 0, 43, MPI_COMM_WAVE, istatus, IERR_MPI)
+      CALL MPI_RECV(ipgl_to_proc,np_global,MPI_INT, 0, 91, MPI_COMM_WAVE, istatus, IERR_MPI)
     END IF
     IF (IsMulti) THEN
-       WRITE(*,*) ' Before allocation of MDATAS % SEA_IPGL, SEA_IPGL_TO_PROC : IMOD=', IMOD, ' NSEA=', NSEA
-       ALLOCATE(MDATAS(IMOD)%SEA_IPGL(NSEA), MDATAS(IMOD)%SEA_IPGL_TO_PROC(NSEA), STAT=ISTAT)
-       !CHECK_ALLOC_STATUS ( ISTAT )
-       DO ISEA=1,NSEA
-          IP_glob = MAPSF(ISEA, 1)
-          MDATAS(IMOD)%SEA_IPGL(ISEA) = IPGL_tot(IP_glob)
-          MDATAS(IMOD)%SEA_IPGL_TO_PROC(ISEA) = IPGL_TO_PROC(IP_glob)
-       END DO
+      WRITE(*,*) ' Before allocation of MDATAS % SEA_IPGL, SEA_IPGL_TO_PROC : IMOD=', IMOD, ' NSEA=', NSEA
+      ALLOCATE(MDATAS(IMOD)%SEA_IPGL(NSEA), MDATAS(IMOD)%SEA_IPGL_TO_PROC(NSEA), STAT=ISTAT)
+      !CHECK_ALLOC_STATUS ( ISTAT )
+      DO ISEA=1,NSEA
+        IP_glob = MAPSF(ISEA, 1)
+        MDATAS(IMOD)%SEA_IPGL(ISEA) = IPGL_tot(IP_glob)
+        MDATAS(IMOD)%SEA_IPGL_TO_PROC(ISEA) = IPGL_TO_PROC(IP_glob)
+      END DO
     END IF
 #endif
     !/
@@ -1011,26 +1011,26 @@ CONTAINS
     !
 #ifdef W3_DIST
     IF (.NOT. LPDLIB ) THEN
-       IF ( IAPROC .LE. NAPROC ) THEN
-          NSEALout  = 1 + (NSEA-IAPROC)/NAPROC
-       ELSE
-          NSEALout  = 0
-       END IF
-       NSEALMout = 1 + (NSEA-1)/NAPROC
+      IF ( IAPROC .LE. NAPROC ) THEN
+        NSEALout  = 1 + (NSEA-IAPROC)/NAPROC
+      ELSE
+        NSEALout  = 0
+      END IF
+      NSEALMout = 1 + (NSEA-1)/NAPROC
     ELSE
 #endif
 #ifdef W3_PDLIB
-       IF (GTYPE .eq. UNGTYPE) THEN
-          NSEALout  = PDLIB_NSEAL
-          NSEALMout = PDLIB_NSEALM
-       ELSE
-          IF ( IAPROC .LE. NAPROC ) THEN
-             NSEALout  = 1 + (NSEA-IAPROC)/NAPROC
-          ELSE
-             NSEALout  = 0
-          END IF
-          NSEALMout = 1 + (NSEA-1)/NAPROC
-       ENDIF
+      IF (GTYPE .eq. UNGTYPE) THEN
+        NSEALout  = PDLIB_NSEAL
+        NSEALMout = PDLIB_NSEALM
+      ELSE
+        IF ( IAPROC .LE. NAPROC ) THEN
+          NSEALout  = 1 + (NSEA-IAPROC)/NAPROC
+        ELSE
+          NSEALout  = 0
+        END IF
+        NSEALMout = 1 + (NSEA-1)/NAPROC
+      ENDIF
 #endif
 #ifdef W3_DIST
     ENDIF
@@ -1119,17 +1119,17 @@ CONTAINS
 #ifdef W3_PDLIB
     IF ((.NOT. LPDLIB ).or.(GTYPE .ne. UNGTYPE)) THEN
 #endif
-       JSEA   = 1 + (ISEA-1)/NAPROC
-       ISPROC = ISEA - (JSEA-1)*NAPROC
+      JSEA   = 1 + (ISEA-1)/NAPROC
+      ISPROC = ISEA - (JSEA-1)*NAPROC
 #ifdef W3_PDLIB
     ELSE
-       IP_glob = MAPSF(ISEA,1)
-       IF (IAPROC .le. NAPROC) THEN
-          JSEA   = ISEA_TO_JSEA(ISEA)
-       ELSE
-          JSEA   = -1
-       END IF
-       ISPROC = IPGL_TO_PROC(IP_glob)
+      IP_glob = MAPSF(ISEA,1)
+      IF (IAPROC .le. NAPROC) THEN
+        JSEA   = ISEA_TO_JSEA(ISEA)
+      ELSE
+        JSEA   = -1
+      END IF
+      ISPROC = IPGL_TO_PROC(IP_glob)
     ENDIF
 #endif
     !/
@@ -1214,39 +1214,39 @@ CONTAINS
     CALL STRACE (IENT, 'GET_JSEA_IBELONG')
 #endif
     IF (.NOT. LPDLIB) THEN
-       JSEA   = 1 + (ISEA-1)/NAPROC
-       ISPROC = ISEA - (JSEA-1)*NAPROC
-       IF (ISPROC .eq. IAPROC) THEN
-          IBELONG=1
-       ELSE
-          IBELONG=0
-       END IF
+      JSEA   = 1 + (ISEA-1)/NAPROC
+      ISPROC = ISEA - (JSEA-1)*NAPROC
+      IF (ISPROC .eq. IAPROC) THEN
+        IBELONG=1
+      ELSE
+        IBELONG=0
+      END IF
     ELSE
 #ifdef W3_PDLIB
-       IF (GTYPE .ne. UNGTYPE) THEN
-          JSEA   = 1 + (ISEA-1)/NAPROC
-          ISPROC = ISEA - (JSEA-1)*NAPROC
-          IF (ISPROC .eq. IAPROC) THEN
-             IBELONG=1
+      IF (GTYPE .ne. UNGTYPE) THEN
+        JSEA   = 1 + (ISEA-1)/NAPROC
+        ISPROC = ISEA - (JSEA-1)*NAPROC
+        IF (ISPROC .eq. IAPROC) THEN
+          IBELONG=1
+        ELSE
+          IBELONG=0
+        END IF
+      ELSE
+        IF (IAPROC .le. NAPROC) THEN
+          IX     = MAPSF(ISEA,1)
+          JX     = IPGL_npa(IX)
+          IF (JX .eq. 0) THEN
+            IBELONG=0
+            JSEA=-1
           ELSE
-             IBELONG=0
+            IBELONG=1
+            JSEA = JX_TO_JSEA(JX)
           END IF
-       ELSE
-          IF (IAPROC .le. NAPROC) THEN
-             IX     = MAPSF(ISEA,1)
-             JX     = IPGL_npa(IX)
-             IF (JX .eq. 0) THEN
-                IBELONG=0
-                JSEA=-1
-             ELSE
-                IBELONG=1
-                JSEA = JX_TO_JSEA(JX)
-             END IF
-          ELSE
-             IBELONG=0
-             JSEA=-1
-          END IF
-       ENDIF
+        ELSE
+          IBELONG=0
+          JSEA=-1
+        END IF
+      ENDIF
 #endif
     ENDIF
     !/
@@ -1343,15 +1343,15 @@ CONTAINS
 #endif
 #ifdef W3_DIST
     IF (.NOT. LPDLIB) THEN
-       ISEA         = IAPROC + (JSEA-1)*NAPROC
+      ISEA         = IAPROC + (JSEA-1)*NAPROC
     ELSE
 #endif
 #ifdef W3_PDLIB
-       IF (GTYPE .eq. UNGTYPE) THEN
-          ISEA         = iplg(JSEA)
-       ELSE
-          ISEA         = IAPROC + (JSEA-1)*NAPROC
-       ENDIF
+      IF (GTYPE .eq. UNGTYPE) THEN
+        ISEA         = iplg(JSEA)
+      ELSE
+        ISEA         = IAPROC + (JSEA-1)*NAPROC
+      ENDIF
 #endif
 #ifdef W3_DIST
     ENDIF
@@ -1450,27 +1450,27 @@ CONTAINS
 #endif
 #ifdef W3_PDLIB
     DO IP=1,npa
-       IP_glob=iplg(IP)
-       Status(IP_glob)=1
+      IP_glob=iplg(IP)
+      Status(IP_glob)=1
     END DO
     IF (IAPROC .eq. 1) THEN
-       DO iProc=2,NAPROC
-          CALL MPI_RECV(rVect,NX,rtype, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
-          CALL MPI_RECV(rStatus,NX,MPI_INTEGER, iProc-1, 23, MPI_COMM_WCMP, istatus, ierr)
-          DO I=1,NX
-             IF (rStatus(I) .eq. 1) THEN
-                TheVar(I)=rVect(I)
-                Status(I)=1
-             END IF
-          END DO
-       END DO
-       DO IPROC=2,NAPROC
-          CALL MPI_SEND(TheVar,NX,rtype, iProc-1, 29, MPI_COMM_WCMP, ierr)
-       END DO
+      DO iProc=2,NAPROC
+        CALL MPI_RECV(rVect,NX,rtype, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
+        CALL MPI_RECV(rStatus,NX,MPI_INTEGER, iProc-1, 23, MPI_COMM_WCMP, istatus, ierr)
+        DO I=1,NX
+          IF (rStatus(I) .eq. 1) THEN
+            TheVar(I)=rVect(I)
+            Status(I)=1
+          END IF
+        END DO
+      END DO
+      DO IPROC=2,NAPROC
+        CALL MPI_SEND(TheVar,NX,rtype, iProc-1, 29, MPI_COMM_WCMP, ierr)
+      END DO
     ELSE
-       CALL MPI_SEND(TheVar,NX,rtype, 0, 19, MPI_COMM_WCMP, ierr)
-       CALL MPI_SEND(Status,NX,MPI_INTEGER, 0, 23, MPI_COMM_WCMP, ierr)
-       CALL MPI_RECV(TheVar,NX,rtype, 0, 29, MPI_COMM_WCMP, istatus, ierr)
+      CALL MPI_SEND(TheVar,NX,rtype, 0, 19, MPI_COMM_WCMP, ierr)
+      CALL MPI_SEND(Status,NX,MPI_INTEGER, 0, 23, MPI_COMM_WCMP, ierr)
+      CALL MPI_RECV(TheVar,NX,rtype, 0, 29, MPI_COMM_WCMP, istatus, ierr)
     END IF
 #endif
     !/

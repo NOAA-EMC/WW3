@@ -173,53 +173,53 @@ CONTAINS
     ! 1.  Deep water ===================================================== *
     !
     IF ( DEPTH*WN(1) .GT. 6 ) THEN
-       !
-       D = 0.
-       S = 0.
-       !
-       ! 2.  Shallow water ================================================== *
-       !
+      !
+      D = 0.
+      S = 0.
+      !
+      ! 2.  Shallow water ================================================== *
+      !
     ELSE
-       !
-       ! 2.a Set constant
-       !
-       FACTOR = SBTC1 / DEPTH
-       !
+      !
+      ! 2.a Set constant
+      !
+      FACTOR = SBTC1 / DEPTH
+      !
 #ifdef W3_T
-       WRITE (NDST,9000) FACTOR, DEPTH
+      WRITE (NDST,9000) FACTOR, DEPTH
 #endif
-       !
-       ! 2.b Wavenumber dependent part.
-       !
-       DO IK=1, NK
-          IF ( WN(IK)*DEPTH .GT. 6. ) EXIT
-          CBETA(IK) = FACTOR *                                      &
-               MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
-       END DO
-       !
-       ! 2.c Fill diagional matrix
-       !
-       NSCUT  = (IK-1)*NTH
-       !
-       DO IS=1, NSCUT
-          D(IS) = CBETA(MAPWN(IS))
-       END DO
-       !
-       DO IS=NSCUT+1, NSPEC
-          D(IS) = 0.
-       END DO
-       !
-       S = D * A
-       !
+      !
+      ! 2.b Wavenumber dependent part.
+      !
+      DO IK=1, NK
+        IF ( WN(IK)*DEPTH .GT. 6. ) EXIT
+        CBETA(IK) = FACTOR *                                      &
+             MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
+      END DO
+      !
+      ! 2.c Fill diagional matrix
+      !
+      NSCUT  = (IK-1)*NTH
+      !
+      DO IS=1, NSCUT
+        D(IS) = CBETA(MAPWN(IS))
+      END DO
+      !
+      DO IS=NSCUT+1, NSPEC
+        D(IS) = 0.
+      END DO
+      !
+      S = D * A
+      !
     END IF
     !
     ! ... Test output of arrays
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !

@@ -182,9 +182,9 @@ CONTAINS
     !
     ! Set FACT to proper scaling according to spherical or cartesian
     IF ( FLAGLL ) THEN
-       FACT = 1.
+      FACT = 1.
     ELSE
-       FACT = 1.E-3
+      FACT = 1.E-3
     ENDIF
     !
     ! Convert wind direction to azimuthal reference
@@ -225,17 +225,17 @@ CONTAINS
     CSVBLINE      = BLANK2
     !
     IF (IOUT .EQ. 1) THEN
-       IPG1 = 0
-       DO IP=1, NPTAB
-          HST(IP,1) = -99.9
-          TPT(IP,1) = -99.9
-          DMT(IP,1) = -99.9
-       ENDDO
-       DO IP=1, NPMAX
-          IYY(IP) = .FALSE.
-          IPI(IP)=1
-          ILEN(IP)=0
-       ENDDO
+      IPG1 = 0
+      DO IP=1, NPTAB
+        HST(IP,1) = -99.9
+        TPT(IP,1) = -99.9
+        DMT(IP,1) = -99.9
+      ENDDO
+      DO IP=1, NPMAX
+        IYY(IP) = .FALSE.
+        IPI(IP)=1
+        ILEN(IP)=0
+      ENDDO
     ENDIF
     !
     ! 3.  Get overall wave height ---------------------------------------- *
@@ -253,18 +253,18 @@ CONTAINS
     ! 4.  Process all partial fields ------------------------------------- *
     !
     DO IP=NPART+1, NPMAX
-       HSP(IP) =    0.00
-       TPP(IP) = -999.99
-       DMP(IP) = -999.99
+      HSP(IP) =    0.00
+      TPP(IP) = -999.99
+      DMP(IP) = -999.99
     ENDDO
 
     DO IP=1, NPTAB
-       HST(IP,2) = HST(IP,1)
-       TPT(IP,2) = TPT(IP,1)
-       DMT(IP,2) = DMT(IP,1)
-       HST(IP,1) = -1.
-       TPT(IP,1) = -1.
-       DMT(IP,1) = -1.
+      HST(IP,2) = HST(IP,1)
+      TPT(IP,2) = TPT(IP,1)
+      DMT(IP,2) = DMT(IP,1)
+      HST(IP,1) = -1.
+      TPT(IP,1) = -1.
+      DMT(IP,1) = -1.
     ENDDO
     !
     ! 5.  Generate output table ------------------------------------------ *
@@ -282,7 +282,7 @@ CONTAINS
     WRITE(CSVBLINE(1:4),'(I4)')FCSTI
     !
     DO IFLD=1,NPTAB
-       IYY(IFLD)=.FALSE.
+      IYY(IFLD)=.FALSE.
     ENDDO
     !
     ! ... write the time labels for current table line
@@ -313,7 +313,7 @@ CONTAINS
     ! 5.b Switch off peak with too low wave height
     !
     DO IP=1, NPART
-       FLAG(IP) = HSP(IP) .GT. BHSMIN
+      FLAG(IP) = HSP(IP) .GT. BHSMIN
     ENDDO
     !
     ! 5.c Find next highest wave height
@@ -325,10 +325,10 @@ CONTAINS
     HMAX   = 0.
     IPNOW  = 0
     DO IP=1, NPART
-       IF ( HSP(IP).GT.HMAX .AND. FLAG(IP) ) THEN
-          IPNOW  = IP
-          HMAX   = HSP(IP)
-       ENDIF
+      IF ( HSP(IP).GT.HMAX .AND. FLAG(IP) ) THEN
+        IPNOW  = IP
+        HMAX   = HSP(IP)
+      ENDIF
     ENDDO
     !
     ! 5.d No more peaks, skip to output
@@ -340,26 +340,26 @@ CONTAINS
     ITAB   = 0
     !
     DO IP=1, NPTAB
-       IF ( TPT(IP,2) .GT. 0. ) THEN
-          !
-          DELHS  = ABS ( HST(IP,2) - HSP(IPNOW) )
-          DELTP  = ABS ( TPT(IP,2) - TPP(IPNOW) )
-          DELDM  = ABS ( DMT(IP,2) - DMP(IPNOW) )
-          IF ( DELDM .GT. 180. ) DELDM = 360. - DELDM
-          IF ( DELHS.LT.DHSMAX .AND. &
-               DELTP.LT.DTPMAX .AND. &
-               DELDM.LT.DDMMAX ) ITAB = IP
-          !
-       ENDIF
+      IF ( TPT(IP,2) .GT. 0. ) THEN
+        !
+        DELHS  = ABS ( HST(IP,2) - HSP(IPNOW) )
+        DELTP  = ABS ( TPT(IP,2) - TPP(IPNOW) )
+        DELDM  = ABS ( DMT(IP,2) - DMP(IPNOW) )
+        IF ( DELDM .GT. 180. ) DELDM = 360. - DELDM
+        IF ( DELHS.LT.DHSMAX .AND. &
+             DELTP.LT.DTPMAX .AND. &
+             DELDM.LT.DDMMAX ) ITAB = IP
+        !
+      ENDIF
     ENDDO
     !
     ! 5.f No matching field, find empty fields
     !
     IF ( ITAB .EQ. 0 ) THEN
-       DO IP=NPTAB, 1, -1
-          IF ( TPT(IP,1).LT.0. .AND. TPT(IP,2).LT.0. )    &
-               ITAB = IP
-       ENDDO
+      DO IP=NPTAB, 1, -1
+        IF ( TPT(IP,1).LT.0. .AND. TPT(IP,2).LT.0. )    &
+             ITAB = IP
+      ENDDO
     ENDIF
     !
     ! 5.g Slot in table found, write
@@ -367,47 +367,47 @@ CONTAINS
     ! Remove clear windseas
     !
     IF ( ITAB .NE. 0 ) THEN
-       !
-       WRITE (PART,'(1X,F5.2,F5.1,I4)')                             &
-            HSP(IPNOW), TPP(IPNOW), NINT(DMP(IPNOW))
+      !
+      WRITE (PART,'(1X,F5.2,F5.1,I4)')                             &
+           HSP(IPNOW), TPP(IPNOW), NINT(DMP(IPNOW))
 #ifdef W3_NCO
-       WRITE (CPART,'(I2,1X,I2.2,1X,I3.3)')                         &
-            NINT(HSP(IPNOW)/0.3048),                              &
-            NINT(TPP(IPNOW)),                                     &
-            NINT(MOD(DMP(IPNOW)+180.,360.))
+      WRITE (CPART,'(I2,1X,I2.2,1X,I3.3)')                         &
+           NINT(HSP(IPNOW)/0.3048),                              &
+           NINT(TPP(IPNOW)),                                     &
+           NINT(MOD(DMP(IPNOW)+180.,360.))
 #endif
-       DELDW  = MOD ( ABS ( UDIR - DMP(IPNOW) ) , 360. )
-       IF ( DELDW .GT. 180. ) DELDW = 360. - DELDW
-       AFR    = 2.*PI/TPP(IPNOW)
-       AGE    = UABS * WNP(IPNOW) / AFR
-       IF ( DELDW.LT.DDWMAX .AND. AGE.GT.AGEMIN ) PART(1:1) = '*'
-       !
-       ASCBLINE(5+ITAB*18:19+ITAB*18) = PART
+      DELDW  = MOD ( ABS ( UDIR - DMP(IPNOW) ) , 360. )
+      IF ( DELDW .GT. 180. ) DELDW = 360. - DELDW
+      AFR    = 2.*PI/TPP(IPNOW)
+      AGE    = UABS * WNP(IPNOW) / AFR
+      IF ( DELDW.LT.DDWMAX .AND. AGE.GT.AGEMIN ) PART(1:1) = '*'
+      !
+      ASCBLINE(5+ITAB*18:19+ITAB*18) = PART
 #ifdef W3_NCO
-       CASCBLINE(ITAB*10-1:ITAB*10+7) = CPART
+      CASCBLINE(ITAB*10-1:ITAB*10+7) = CPART
 #endif
-       !
-       DO IFLD=1,NPTAB
-          IF(ITAB.EQ.IFLD)THEN
-             IYY(IFLD)=.TRUE.
-             HSD(IFLD)=HSP(IPNOW)
-             TPD(IFLD)=TPP(IPNOW)
-             WDD(IFLD)=NINT(DMP(IPNOW))
-          ENDIF
-       ENDDO
-       !
-       HST(ITAB,1) = HSP(IPNOW)
-       TPT(ITAB,1) = TPP(IPNOW)
-       DMT(ITAB,1) = DMP(IPNOW)
+      !
+      DO IFLD=1,NPTAB
+        IF(ITAB.EQ.IFLD)THEN
+          IYY(IFLD)=.TRUE.
+          HSD(IFLD)=HSP(IPNOW)
+          TPD(IFLD)=TPP(IPNOW)
+          WDD(IFLD)=NINT(DMP(IPNOW))
+        ENDIF
+      ENDDO
+      !
+      HST(ITAB,1) = HSP(IPNOW)
+      TPT(ITAB,1) = TPP(IPNOW)
+      DMT(ITAB,1) = DMP(IPNOW)
 
-       !
-       ! 5.h No slot in table found, write
-       !
+      !
+      ! 5.h No slot in table found, write
+      !
     ELSE
-       !
-       INOTAB   = INOTAB + 1
-       WRITE (ASCBLINE(19:19),'(I1)') INOTAB
-       !
+      !
+      INOTAB   = INOTAB + 1
+      WRITE (ASCBLINE(19:19),'(I1)') INOTAB
+      !
     ENDIF
     !
     FLAG(IPNOW) = .FALSE.
@@ -418,18 +418,18 @@ CONTAINS
 699 CONTINUE
     !
     DO IFLD=1,NPTAB
-       IF(IYY(IFLD))THEN
-          ILEN(IFLD)=ILEN(IFLD)+1
-          IF (ILEN(IFLD).EQ.1)THEN
-             IPI(IFLD)=IPG1+1
-             IPG1=IPG1+1
-          ENDIF
-          WRITE (PART2,'(",",F5.2,",",F5.2,",",I3)')                   &
-               HSD(IFLD), TPD(IFLD), NINT(WDD(IFLD))
-          CSVBLINE(25+IPI(IFLD)*16:40+IPI(IFLD)*16) = PART2
-       ELSE
-          ILEN(IFLD)=0
-       ENDIF
+      IF(IYY(IFLD))THEN
+        ILEN(IFLD)=ILEN(IFLD)+1
+        IF (ILEN(IFLD).EQ.1)THEN
+          IPI(IFLD)=IPG1+1
+          IPG1=IPG1+1
+        ENDIF
+        WRITE (PART2,'(",",F5.2,",",F5.2,",",I3)')                   &
+             HSD(IFLD), TPD(IFLD), NINT(WDD(IFLD))
+        CSVBLINE(25+IPI(IFLD)*16:40+IPI(IFLD)*16) = PART2
+      ELSE
+        ILEN(IFLD)=0
+      ENDIF
     ENDDO
     !
     RETURN

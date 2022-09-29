@@ -184,14 +184,14 @@ CONTAINS
     I1     = INT(SIX/DSIE)
     !
     IF (I1.LE.N1MAX.AND.I1.GE.1) THEN
-       I2 = I1 + 1
-       R1 = SIX/DSIE - REAL(I1)
-       R2 = 1. - R1
-       K  = ( R2*EWN1(I1) + R1*EWN1(I2) ) / H
-       CG = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
+      I2 = I1 + 1
+      R1 = SIX/DSIE - REAL(I1)
+      R2 = 1. - R1
+      K  = ( R2*EWN1(I1) + R1*EWN1(I2) ) / H
+      CG = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
     ELSE
-       K  = SI*SI/GRAV
-       CG = 0.5 * GRAV / SI
+      K  = SI*SI/GRAV
+      CG = 0.5 * GRAV / SI
     END IF
     !
     RETURN
@@ -292,33 +292,33 @@ CONTAINS
     !     1st approach :
     !
     IF (W0.LT.SQRT(GRAV/H)) THEN
-       K = W0/SQRT(GRAV*H)
+      K = W0/SQRT(GRAV*H)
     ELSE
-       K = W0*W0/GRAV
+      K = W0*W0/GRAV
     END IF
     !
     !     Refinement :
     !
     DO I=1, NMAX
-       DIF = ABS(K-KOLD)
-       IF (K.NE.0) THEN
-          RDIF = DIF/K
-       ELSE
-          RDIF = 0
-       END IF
-       IF (DIF .LT. EPS .AND. RDIF .LT. EPS) THEN
-          ICON = 1
-          GOTO 100
-       ELSE
-          KOLD = K
-          F    = GRAV*KOLD*TANH(KOLD*H)-W0**2
-          IF (KOLD*H.GT.25) THEN
-             FD = GRAV*TANH(KOLD*H)
-          ELSE
-             FD = GRAV*TANH(KOLD*H) + GRAV*KOLD*H/((COSH(KOLD*H))**2)
-          END IF
-          K    = KOLD - F/FD
-       END IF
+      DIF = ABS(K-KOLD)
+      IF (K.NE.0) THEN
+        RDIF = DIF/K
+      ELSE
+        RDIF = 0
+      END IF
+      IF (DIF .LT. EPS .AND. RDIF .LT. EPS) THEN
+        ICON = 1
+        GOTO 100
+      ELSE
+        KOLD = K
+        F    = GRAV*KOLD*TANH(KOLD*H)-W0**2
+        IF (KOLD*H.GT.25) THEN
+          FD = GRAV*TANH(KOLD*H)
+        ELSE
+          FD = GRAV*TANH(KOLD*H) + GRAV*KOLD*H/((COSH(KOLD*H))**2)
+        END IF
+        K    = KOLD - F/FD
+      END IF
     END DO
     !
     DIF   = ABS(K-KOLD)
@@ -326,13 +326,13 @@ CONTAINS
     IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1
 100 CONTINUE
     IF (2*K*H.GT.25) THEN
-       CG = W0/K * 0.5
+      CG = W0/K * 0.5
     ELSE
-       CG = W0/K * 0.5*(1+(2*K*H/SINH(2*K*H)))
+      CG = W0/K * 0.5*(1+(2*K*H/SINH(2*K*H)))
     END IF
     IF (W.LT.0.0) THEN
-       K  = (-1)*K
-       CG = CG*(-1)
+      K  = (-1)*K
+      CG = CG*(-1)
     END IF
 
     !WRITE(*,'(20F20.10)') W, H, (K-KTEST2)/K*100., (CG-CGTEST2)/CG*100.
@@ -667,10 +667,10 @@ CONTAINS
     ! Fill middle positions of arrays ------------------------------------ *
     !
     DO I=1, N1MAX
-       SI = REAL(I)*DSIE
-       CALL WAVNU2 (SI,DEPTH,K,CG,1E-7,15,ICON)
-       EWN1(I) = K
-       ECG1(I) = CG
+      SI = REAL(I)*DSIE
+      CALL WAVNU2 (SI,DEPTH,K,CG,1E-7,15,ICON)
+      EWN1(I) = K
+      ECG1(I) = CG
     END DO
     !
     ! Fill last positions of arrays -------------------------------------- *
@@ -843,74 +843,74 @@ CONTAINS
 
     DO IK = 1, NK
 
-       GET_CG  = .FALSE.
-       !/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
-       !/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
-       FWANTED=SIGMA(IK)/TPI
-       ! First guess for k :
+      GET_CG  = .FALSE.
+      !/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
+      !/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
+      FWANTED=SIGMA(IK)/TPI
+      ! First guess for k :
 
-       CALL WAVNU1(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
-       !     KWN(1)  = 0.2 ! (old method)
-       KWN(1)  =K_OPEN ! new method, Mar 10 2014
-       !
-       !/ 1) ----- Iteration loop to find k --------------------------------- /
-       ITER = 0
-       DF   = 999.
+      CALL WAVNU1(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
+      !     KWN(1)  = 0.2 ! (old method)
+      KWN(1)  =K_OPEN ! new method, Mar 10 2014
+      !
+      !/ 1) ----- Iteration loop to find k --------------------------------- /
+      ITER = 0
+      DF   = 999.
 
-       IF ( (H_ICE.LT.IICEHDISP).OR.(H_WDEPTH.LT.IICEDDISP) ) THEN
-          FERROR=IICEFDISP*FERRORMAX
-       ELSE
-          FERROR=FERRORMAX
-       ENDIF
+      IF ( (H_ICE.LT.IICEHDISP).OR.(H_WDEPTH.LT.IICEDDISP) ) THEN
+        FERROR=IICEFDISP*FERRORMAX
+      ELSE
+        FERROR=FERRORMAX
+      ENDIF
 
-       DO WHILE ( ABS(DF).GE.FERROR .AND. ITER.LE.N_ITER )
-          ITER = ITER + 1
-          ! compute freq for this iteration
-          CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,KWN(ITER), &
-               GET_CG,FREQ(ITER),CG(IK),ALPHA(IK))
+      DO WHILE ( ABS(DF).GE.FERROR .AND. ITER.LE.N_ITER )
+        ITER = ITER + 1
+        ! compute freq for this iteration
+        CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,KWN(ITER), &
+             GET_CG,FREQ(ITER),CG(IK),ALPHA(IK))
 
-          ! calculate dk
-          IF (ITER == 1)THEN
-             ! We do not have slope yet, so pick a number...
-             DK = 0.01
-          ELSEIF (ITER.EQ.N_ITER+1) THEN
-             WRITE(NDSE,800) N_ITER
-             CALL EXTCDE(2)
-          ELSE
-             ! use slope
-             DFDK = (FREQ(ITER)-FREQ(ITER-1)) / (KWN(ITER)-KWN(ITER-1))
-             DF   = FWANTED - FREQ(ITER)
-             !/T38       WRITE(*,*)'ITER = ',ITER,' ;  K = ',KWN(ITER),' ; F = ', &
-             !/T38                  FREQ(ITER),' ; DF = ',DF
-             DK   = DF / DFDK
-          ENDIF
+        ! calculate dk
+        IF (ITER == 1)THEN
+          ! We do not have slope yet, so pick a number...
+          DK = 0.01
+        ELSEIF (ITER.EQ.N_ITER+1) THEN
+          WRITE(NDSE,800) N_ITER
+          CALL EXTCDE(2)
+        ELSE
+          ! use slope
+          DFDK = (FREQ(ITER)-FREQ(ITER-1)) / (KWN(ITER)-KWN(ITER-1))
+          DF   = FWANTED - FREQ(ITER)
+          !/T38       WRITE(*,*)'ITER = ',ITER,' ;  K = ',KWN(ITER),' ; F = ', &
+          !/T38                  FREQ(ITER),' ; DF = ',DF
+          DK   = DF / DFDK
+        ENDIF
 
-          ! Decide on next k to try
-          KWN(ITER+1) = KWN(ITER) + DK
-          ! If we end up with a negative k for the next iteration, don't
-          !   allow this.
-          IF(KWN(ITER+1) < 0.0)THEN
-             KWN(ITER+1) = TPI / 1000.0
-          ENDIF
+        ! Decide on next k to try
+        KWN(ITER+1) = KWN(ITER) + DK
+        ! If we end up with a negative k for the next iteration, don't
+        !   allow this.
+        IF(KWN(ITER+1) < 0.0)THEN
+          KWN(ITER+1) = TPI / 1000.0
+        ENDIF
 
-       END DO
+      END DO
 
-       !/ 2) -------- Finish up. -------------------------------------------- /
-       !     Success, so return K_SOLUTION, and call LIU_REVERSE_DISPERSION one
-       !     last time, to get CG and ALPHA
+      !/ 2) -------- Finish up. -------------------------------------------- /
+      !     Success, so return K_SOLUTION, and call LIU_REVERSE_DISPERSION one
+      !     last time, to get CG and ALPHA
 
-       K_SOLUTION(IK) = KWN(ITER)
+      K_SOLUTION(IK) = KWN(ITER)
 
-       GET_CG     = .TRUE.
-       CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,K_SOLUTION(IK), &
-            GET_CG,FDUMMY,CG(IK),ALPHA(IK))
+      GET_CG     = .TRUE.
+      CALL LIU_REVERSE_DISPERSION(H_ICE,VISC,H_WDEPTH,K_SOLUTION(IK), &
+           GET_CG,FDUMMY,CG(IK),ALPHA(IK))
     END DO
     !
 #ifdef W3_T38
     WRITE(*,*)'FORWARD OUT: K_SOLUTION,CG,ALPHA = ', &
          K_SOLUTION,CG,ALPHA
     IF (H_ICE==1.0)THEN
-       WRITE(*,*)FWANTED,ALPHA
+      WRITE(*,*)FWANTED,ALPHA
     ENDIF
 #endif
     !
@@ -1110,11 +1110,11 @@ CONTAINS
     M  = DICE * H_ICE / DWAT
     KH = KWN * H_WDEPTH
     IF ( KH>5.0 ) THEN
-       COTHTERM = 1.0
+      COTHTERM = 1.0
     ELSEIF ( KH<1.0E-4 ) THEN
-       COTHTERM = 1.0 / KH
+      COTHTERM = 1.0 / KH
     ELSE
-       COTHTERM = COSH(KH) / SINH(KH)
+      COTHTERM = COSH(KH) / SINH(KH)
     ENDIF
     SIGMA = SQRT((GRAV * KWN + B * KWN**5) / (COTHTERM + KWN * M))
     FREQ  = SIGMA/(TPI)
@@ -1122,10 +1122,10 @@ CONTAINS
     !/ 2) --- Calculate Cg and alpha if requested ------------------------ /
     !     Note: Cg is correct only for deep water
     IF (GET_CG) THEN
-       CG    = (GRAV + (5.0+4.0 * KWN * M) * (B * KWN**4)) &
-            / (2.0 * SIGMA * ((1.0 + KWN * M)**2))
-       ALPHA = (SQRT(VISC) * KWN * SQRT(SIGMA)) &
-            / (CG * SQRT(2.0) * (1 + KWN * M))
+      CG    = (GRAV + (5.0+4.0 * KWN * M) * (B * KWN**4)) &
+           / (2.0 * SIGMA * ((1.0 + KWN * M)**2))
+      ALPHA = (SQRT(VISC) * KWN * SQRT(SIGMA)) &
+           / (CG * SQRT(2.0) * (1 + KWN * M))
     ENDIF
 
 #ifdef W3_T38

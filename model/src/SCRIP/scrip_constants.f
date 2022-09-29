@@ -35,19 +35,19 @@
 !
 !***********************************************************************
 
-      module SCRIP_constants
+       module SCRIP_constants
 
 !-----------------------------------------------------------------------
 
-      use SCRIP_KindsMod        ! defines common data types
+       use SCRIP_KindsMod        ! defines common data types
 
-      implicit none
+       implicit none
 
-      save
+       save
 
 !-----------------------------------------------------------------------
 
-      real (kind = SCRIP_r8), parameter ::
+       real (kind = SCRIP_r8), parameter ::
      &     zero   = 0.0_SCRIP_r8,
      &     one    = 1.0_SCRIP_r8,
      &     two    = 2.0_SCRIP_r8,
@@ -64,6 +64,6 @@
 
 !-----------------------------------------------------------------------
 
-      end module SCRIP_constants
+       end module SCRIP_constants
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

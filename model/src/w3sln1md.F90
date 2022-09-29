@@ -177,7 +177,7 @@ CONTAINS
     SINU   = SIN(USDIR)
     !
     DO ITH=1, NTH
-       DIRF(ITH) = MAX ( 0. , (ECOS(ITH)*COSU+ESIN(ITH)*SINU) )**4
+      DIRF(ITH) = MAX ( 0. , (ECOS(ITH)*COSU+ESIN(ITH)*SINU) )**4
     END DO
     !
     FAC    = SLNC1 * USTAR**4
@@ -185,18 +185,18 @@ CONTAINS
     FF2    = FSHF * MIN(SIG(NK),FHIGH)
     FFILT  = MIN ( MAX(FF1,FF2) , 2.*SIG(NK) )
     DO IK=1, NK
-       RFR    = SIG(IK) / FFILT
-       IF ( RFR .LT. 0.5 ) THEN
-          WNF(IK) = 0.
-       ELSE
-          WNF(IK) = FAC / K(IK) * EXP(-RFR**(-4))
-       END IF
+      RFR    = SIG(IK) / FFILT
+      IF ( RFR .LT. 0.5 ) THEN
+        WNF(IK) = 0.
+      ELSE
+        WNF(IK) = FAC / K(IK) * EXP(-RFR**(-4))
+      END IF
     END DO
     !
     ! 2.  Compose source term -------------------------------------------- *
     !
     DO IK=1, NK
-       S(:,IK) = WNF(IK) * DIRF(:)
+      S(:,IK) = WNF(IK) * DIRF(:)
     END DO
     !
     RETURN

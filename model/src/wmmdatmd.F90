@@ -383,52 +383,52 @@ MODULE WMMDATMD
   !/ Data structures
   !/
   TYPE MDATA
-     INTEGER               :: RCLD(3)   !< RCLD
-     INTEGER               :: NDT(3)   !< NDT
-     INTEGER               :: NMV   !< NMV
-     INTEGER               :: NRUPTS   !< NRUPTS
+    INTEGER               :: RCLD(3)   !< RCLD
+    INTEGER               :: NDT(3)   !< NDT
+    INTEGER               :: NMV   !< NMV
+    INTEGER               :: NRUPTS   !< NRUPTS
 
 #ifdef W3_MPI
-     INTEGER               :: MPI_COMM_GRD   !< MPI_COMM_GRD
-     INTEGER               :: MPI_COMM_BCT   !< MPI_COMM_BCT
-     INTEGER               :: CROOT   !< CROOT
-     INTEGER               :: NRQBPG   !< NRQBPG
-     INTEGER               :: NRQHGG   !< NRQHGG
-     INTEGER               :: NRQEQG   !< NRQEQG
+    INTEGER               :: MPI_COMM_GRD   !< MPI_COMM_GRD
+    INTEGER               :: MPI_COMM_BCT   !< MPI_COMM_BCT
+    INTEGER               :: CROOT   !< CROOT
+    INTEGER               :: NRQBPG   !< NRQBPG
+    INTEGER               :: NRQHGG   !< NRQHGG
+    INTEGER               :: NRQEQG   !< NRQEQG
 #endif
-     INTEGER, POINTER      :: TMV(:,:,:)   !< TMV
-     INTEGER, POINTER      :: NBI2S(:,:)   !< NBI2S
-     INTEGER, POINTER      :: MAPMSK(:,:)   !< MAPMSK
-     INTEGER, POINTER      :: UPTMAP(:)   !< UPTMAP
+    INTEGER, POINTER      :: TMV(:,:,:)   !< TMV
+    INTEGER, POINTER      :: NBI2S(:,:)   !< NBI2S
+    INTEGER, POINTER      :: MAPMSK(:,:)   !< MAPMSK
+    INTEGER, POINTER      :: UPTMAP(:)   !< UPTMAP
 
 #ifdef W3_MPI
-     INTEGER, POINTER      :: IRQBPG(:)   !< IRQBPG
-     INTEGER, POINTER      :: IRQHGG(:)   !< IRQHGG
-     INTEGER, POINTER      :: IRQEQG(:)   !< IRQEQG
+    INTEGER, POINTER      :: IRQBPG(:)   !< IRQBPG
+    INTEGER, POINTER      :: IRQHGG(:)   !< IRQHGG
+    INTEGER, POINTER      :: IRQEQG(:)   !< IRQEQG
 #endif
-     REAL, POINTER         :: DATA0(:,:)   !< DATA0
-     REAL, POINTER         :: DATA1(:,:)   !< DATA1
-     REAL, POINTER         :: DATA2(:,:)   !< DATA2
-     REAL, POINTER         :: AMV(:,:)   !< AMV
-     REAL, POINTER         :: DMV(:,:)   !< DMV
+    REAL, POINTER         :: DATA0(:,:)   !< DATA0
+    REAL, POINTER         :: DATA1(:,:)   !< DATA1
+    REAL, POINTER         :: DATA2(:,:)   !< DATA2
+    REAL, POINTER         :: AMV(:,:)   !< AMV
+    REAL, POINTER         :: DMV(:,:)   !< DMV
 
-     REAL, POINTER         :: MAPBDI(:,:)   !< MAPBDI
-     REAL, POINTER         :: MAPODI(:,:)   !< MAPODI
+    REAL, POINTER         :: MAPBDI(:,:)   !< MAPBDI
+    REAL, POINTER         :: MAPODI(:,:)   !< MAPODI
 #ifdef W3_PDLIB
-     INTEGER, POINTER      :: SEA_IPGL(:)   !< SEA_IPGL
-     INTEGER, POINTER      :: SEA_IPGL_TO_PROC(:)   !< SEA_IPGL_TO_PROC
+    INTEGER, POINTER      :: SEA_IPGL(:)   !< SEA_IPGL
+    INTEGER, POINTER      :: SEA_IPGL_TO_PROC(:)   !< SEA_IPGL_TO_PROC
 #endif
-     LOGICAL               :: MINIT   !< MINIT
-     LOGICAL               :: MSKINI   !< MSKINI
-     LOGICAL               :: FLLSTL   !< FLLSTL
-     LOGICAL               :: FLLSTR   !< FLLSTR
-     LOGICAL               :: FLLSTI   !< FLLSTI
-     LOGICAL               :: FLDAT0   !< FLDAT0
-     LOGICAL               :: FLDAT1   !< FLDAT1
-     LOGICAL               :: FLDAT2   !< FLDAT2
+    LOGICAL               :: MINIT   !< MINIT
+    LOGICAL               :: MSKINI   !< MSKINI
+    LOGICAL               :: FLLSTL   !< FLLSTL
+    LOGICAL               :: FLLSTR   !< FLLSTR
+    LOGICAL               :: FLLSTI   !< FLLSTI
+    LOGICAL               :: FLDAT0   !< FLDAT0
+    LOGICAL               :: FLDAT1   !< FLDAT1
+    LOGICAL               :: FLDAT2   !< FLDAT2
 
 #ifdef W3_MPI
-     LOGICAL                :: FBCAST   !< FBCAST
+    LOGICAL                :: FBCAST   !< FBCAST
 #endif
   END TYPE MDATA
 
@@ -436,86 +436,86 @@ MODULE WMMDATMD
 
   TYPE BPST
 #ifdef W3_MPI
-     INTEGER                :: NRQBPS   !< NRQBPS
-     INTEGER                :: STIME(2)   !< STIME
+    INTEGER                :: NRQBPS   !< NRQBPS
+    INTEGER                :: STIME(2)   !< STIME
 #endif
-     INTEGER                 :: VTIME(2)   !< VTIME
+    INTEGER                 :: VTIME(2)   !< VTIME
 #ifdef W3_MPI
-     INTEGER, POINTER        :: IRQBPS(:)   !< IRQBPS
+    INTEGER, POINTER        :: IRQBPS(:)   !< IRQBPS
 #endif
-     REAL, POINTER           :: SBPI(:,:)   !< SBPI
+    REAL, POINTER           :: SBPI(:,:)   !< SBPI
 #ifdef W3_MPI
-     REAL, POINTER           :: TSTORE(:,:)   !< TSTORE
+    REAL, POINTER           :: TSTORE(:,:)   !< TSTORE
 #endif
-     LOGICAL                 :: INIT   !< INIT
+    LOGICAL                 :: INIT   !< INIT
   END TYPE BPST
   !
   TYPE HGST
-     INTEGER                 :: VTIME(2)   !< VTIME
-     INTEGER                 :: NTOT   !< NTOT
-     INTEGER                 :: NREC   !< NREC
-     INTEGER                 :: NRC1   !< NRC1
-     INTEGER                 :: NSND   !< NSND
-     INTEGER                 :: NSN1   !< NSN1
-     INTEGER                 :: NSMX   !< NSMX
-     INTEGER                 :: XTIME(2)   !< XTIME
+    INTEGER                 :: VTIME(2)   !< VTIME
+    INTEGER                 :: NTOT   !< NTOT
+    INTEGER                 :: NREC   !< NREC
+    INTEGER                 :: NRC1   !< NRC1
+    INTEGER                 :: NSND   !< NSND
+    INTEGER                 :: NSN1   !< NSN1
+    INTEGER                 :: NSMX   !< NSMX
+    INTEGER                 :: XTIME(2)   !< XTIME
 
 #ifdef W3_MPI
-     INTEGER                 :: NRQHGS   !< NRQHGS
-     INTEGER                 :: NRQOUT   !< NRQOUT
+    INTEGER                 :: NRQHGS   !< NRQHGS
+    INTEGER                 :: NRQOUT   !< NRQOUT
 #endif
-     INTEGER, POINTER        :: LJSEA(:)   !< LJSEA
-     INTEGER, POINTER        :: NRAVG(:)   !< NRAVG
-     INTEGER, POINTER        :: IMPSRC(:,:)   !< IMPSRC
-     INTEGER, POINTER        :: ITAG(:,:)   !< ITAG
-     INTEGER, POINTER        :: ISEND(:,:)   !< ISEND
+    INTEGER, POINTER        :: LJSEA(:)   !< LJSEA
+    INTEGER, POINTER        :: NRAVG(:)   !< NRAVG
+    INTEGER, POINTER        :: IMPSRC(:,:)   !< IMPSRC
+    INTEGER, POINTER        :: ITAG(:,:)   !< ITAG
+    INTEGER, POINTER        :: ISEND(:,:)   !< ISEND
 #ifdef W3_MPI
-     INTEGER, POINTER        :: IRQHGS(:)   !< IRQHGS
-     INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
+    INTEGER, POINTER        :: IRQHGS(:)   !< IRQHGS
+    INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
 #endif
-     REAL, POINTER           :: WGTH(:,:)   !< WGTH
-     REAL, POINTER           :: SHGH(:,:,:)   !< SHGH
+    REAL, POINTER           :: WGTH(:,:)   !< WGTH
+    REAL, POINTER           :: SHGH(:,:,:)   !< SHGH
 #ifdef W3_MPI
-     REAL, POINTER            :: TSTORE(:,:)   !< TSTORE
+    REAL, POINTER            :: TSTORE(:,:)   !< TSTORE
 #endif
-     LOGICAL                  :: INIT   !< INIT
+    LOGICAL                  :: INIT   !< INIT
   END TYPE HGST
 
   !
 
   TYPE EQST
-     INTEGER                 :: VTIME(2)   !< VTIME
-     INTEGER                 :: NTOT   !< NTOT
-     INTEGER                 :: NREC   !< NREC
-     INTEGER                 :: NSND   !< NSND
-     INTEGER                 :: NAVMAX   !< NAVMAX
+    INTEGER                 :: VTIME(2)   !< VTIME
+    INTEGER                 :: NTOT   !< NTOT
+    INTEGER                 :: NREC   !< NREC
+    INTEGER                 :: NSND   !< NSND
+    INTEGER                 :: NAVMAX   !< NAVMAX
 #ifdef W3_MPI
-     INTEGER                 :: NRQEQS   !< NRQEQS
-     INTEGER                 :: NRQOUT   !< NRQOUT
+    INTEGER                 :: NRQEQS   !< NRQEQS
+    INTEGER                 :: NRQOUT   !< NRQOUT
 #endif
-     INTEGER, POINTER        :: ISEA(:)   !< ISEA
-     INTEGER, POINTER        :: JSEA(:)   !< JSEA
-     INTEGER, POINTER        :: NAVG(:)   !< NAVG
-     INTEGER, POINTER        :: RIP(:,:)   !< RIP
-     INTEGER, POINTER        :: RTG(:,:)   !< RTG
-     INTEGER, POINTER        :: SIS(:)   !< SIS
-     INTEGER, POINTER        :: SJS(:)   !< SJS
-     INTEGER, POINTER        :: SI1(:)   !< SI1
-     INTEGER, POINTER        :: SI2(:)   !< SI2
-     INTEGER, POINTER        :: SIP(:)   !< SIP
-     INTEGER, POINTER        :: STG(:)   !< STG
+    INTEGER, POINTER        :: ISEA(:)   !< ISEA
+    INTEGER, POINTER        :: JSEA(:)   !< JSEA
+    INTEGER, POINTER        :: NAVG(:)   !< NAVG
+    INTEGER, POINTER        :: RIP(:,:)   !< RIP
+    INTEGER, POINTER        :: RTG(:,:)   !< RTG
+    INTEGER, POINTER        :: SIS(:)   !< SIS
+    INTEGER, POINTER        :: SJS(:)   !< SJS
+    INTEGER, POINTER        :: SI1(:)   !< SI1
+    INTEGER, POINTER        :: SI2(:)   !< SI2
+    INTEGER, POINTER        :: SIP(:)   !< SIP
+    INTEGER, POINTER        :: STG(:)   !< STG
 
 #ifdef W3_MPI
-     INTEGER, POINTER        :: IRQEQS(:)   !< IRQEQS
-     INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
+    INTEGER, POINTER        :: IRQEQS(:)   !< IRQEQS
+    INTEGER, POINTER        :: OUTDAT(:,:)   !< OUTDAT
 #endif
-     REAL, POINTER           :: SEQL(:,:,:)   !< SEQL
-     REAL, POINTER           :: WGHT(:)   !< WGHT
-     REAL, POINTER           :: WAVG(:,:)   !< WAVG
+    REAL, POINTER           :: SEQL(:,:,:)   !< SEQL
+    REAL, POINTER           :: WGHT(:)   !< WGHT
+    REAL, POINTER           :: WAVG(:,:)   !< WAVG
 #ifdef W3_MPI
-     REAL, POINTER            :: TSTORE(:,:)   !< TSTORE
+    REAL, POINTER            :: TSTORE(:,:)   !< TSTORE
 #endif
-     LOGICAL                  :: INIT   !< INIT
+    LOGICAL                  :: INIT   !< INIT
   END TYPE EQST
   !/
   !/ Data storage
@@ -663,8 +663,8 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001) NGRIDS
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001) NGRIDS
+      CALL EXTCDE (1)
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -696,53 +696,53 @@ CONTAINS
     IFLSTR = .FALSE.
     !
     DO I=1, NGRIDS
-       MDATAS(I)%MINIT  = .FALSE.
-       MDATAS(I)%MSKINI = .FALSE.
-       MDATAS(I)%FLDAT0 = .FALSE.
-       MDATAS(I)%FLDAT1 = .FALSE.
-       MDATAS(I)%FLDAT2 = .FALSE.
+      MDATAS(I)%MINIT  = .FALSE.
+      MDATAS(I)%MSKINI = .FALSE.
+      MDATAS(I)%FLDAT0 = .FALSE.
+      MDATAS(I)%FLDAT1 = .FALSE.
+      MDATAS(I)%FLDAT2 = .FALSE.
 #ifdef W3_MPI
-       MDATAS(I)%MPI_COMM_GRD = -99
-       MDATAS(I)%MPI_COMM_BCT = -99
+      MDATAS(I)%MPI_COMM_GRD = -99
+      MDATAS(I)%MPI_COMM_BCT = -99
 #endif
-       DO J=1, NGRIDS
-          BPSTGE(I,J)%VTIME(1) = -1
-          BPSTGE(I,J)%VTIME(2) =  0
+      DO J=1, NGRIDS
+        BPSTGE(I,J)%VTIME(1) = -1
+        BPSTGE(I,J)%VTIME(2) =  0
 #ifdef W3_MPI
-          BPSTGE(I,J)%STIME(1) = -1
-          BPSTGE(I,J)%STIME(2) =  0
+        BPSTGE(I,J)%STIME(1) = -1
+        BPSTGE(I,J)%STIME(2) =  0
 #endif
-          BPSTGE(I,J)%INIT     = .FALSE.
+        BPSTGE(I,J)%INIT     = .FALSE.
 #ifdef W3_MPI
-          BPSTGE(I,J)%NRQBPS   = 0
+        BPSTGE(I,J)%NRQBPS   = 0
 #endif
-          HGSTGE(I,J)%VTIME(1) = -1
-          HGSTGE(I,J)%VTIME(2) =  0
-          HGSTGE(I,J)%XTIME(1) = -1
-          HGSTGE(I,J)%XTIME(2) =  0
-          HGSTGE(I,J)%NTOT     =  0
-          HGSTGE(I,J)%NREC     =  0
-          HGSTGE(I,J)%NRC1     =  0
-          HGSTGE(I,J)%NSND     =  0
-          HGSTGE(I,J)%NSN1     =  0
-          HGSTGE(I,J)%NSMX     =  0
+        HGSTGE(I,J)%VTIME(1) = -1
+        HGSTGE(I,J)%VTIME(2) =  0
+        HGSTGE(I,J)%XTIME(1) = -1
+        HGSTGE(I,J)%XTIME(2) =  0
+        HGSTGE(I,J)%NTOT     =  0
+        HGSTGE(I,J)%NREC     =  0
+        HGSTGE(I,J)%NRC1     =  0
+        HGSTGE(I,J)%NSND     =  0
+        HGSTGE(I,J)%NSN1     =  0
+        HGSTGE(I,J)%NSMX     =  0
 #ifdef W3_MPI
-          HGSTGE(I,J)%NRQHGS   =  0
-          HGSTGE(I,J)%NRQOUT   =  0
+        HGSTGE(I,J)%NRQHGS   =  0
+        HGSTGE(I,J)%NRQOUT   =  0
 #endif
-          HGSTGE(I,J)%INIT     = .FALSE.
-          EQSTGE(I,J)%VTIME(1) = -1
-          EQSTGE(I,J)%VTIME(2) =  0
-          EQSTGE(I,J)%NTOT     =  0
-          EQSTGE(I,J)%NREC     =  0
-          EQSTGE(I,J)%NSND     =  0
-          EQSTGE(I,J)%NAVMAX   =  1
+        HGSTGE(I,J)%INIT     = .FALSE.
+        EQSTGE(I,J)%VTIME(1) = -1
+        EQSTGE(I,J)%VTIME(2) =  0
+        EQSTGE(I,J)%NTOT     =  0
+        EQSTGE(I,J)%NREC     =  0
+        EQSTGE(I,J)%NSND     =  0
+        EQSTGE(I,J)%NAVMAX   =  1
 #ifdef W3_MPI
-          EQSTGE(I,J)%NRQEQS   =  0
-          EQSTGE(I,J)%NRQOUT   =  0
+        EQSTGE(I,J)%NRQEQS   =  0
+        EQSTGE(I,J)%NRQOUT   =  0
 #endif
-          EQSTGE(I,J)%INIT     = .FALSE.
-       END DO
+        EQSTGE(I,J)%INIT     = .FALSE.
+      END DO
     END DO
     !
 #ifdef W3_T
@@ -872,18 +872,18 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.1 .OR. IMOD.GT.NMDATA ) THEN
-       WRITE (NDSE,1002) IMOD, NMDATA
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NMDATA
+      CALL EXTCDE (2)
     END IF
     !
     IF ( MDATAS(IMOD)%MINIT ) THEN
-       WRITE (NDSE,1003)
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003)
+      CALL EXTCDE (3)
     END IF
     !
 #ifdef W3_T
@@ -897,31 +897,31 @@ CONTAINS
     ! 2.  Allocate arrays
     !
     IF ( J .EQ. 0 ) THEN
-       ALLOCATE ( MDATAS(IMOD)%TMV(2,-7:4,NMV) ,            &
-            MDATAS(IMOD)%AMV(NMV,-7:4)   ,            &
-            MDATAS(IMOD)%DMV(NMV,-7:4)   , STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( MDATAS(IMOD)%TMV(2,-7:4,NMV) ,            &
+           MDATAS(IMOD)%AMV(NMV,-7:4)   ,            &
+           MDATAS(IMOD)%DMV(NMV,-7:4)   , STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
     IF ( J .EQ. 1 ) THEN
-       IF ( FLDAT0 ) DEALLOCATE ( MDATAS(IMOD)%DATA0 )
-       ALLOCATE ( MDATAS(IMOD)%DATA0(RCLD(J),NDT(J)), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       FLDAT0 = .TRUE.
+      IF ( FLDAT0 ) DEALLOCATE ( MDATAS(IMOD)%DATA0 )
+      ALLOCATE ( MDATAS(IMOD)%DATA0(RCLD(J),NDT(J)), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      FLDAT0 = .TRUE.
     END IF
     !
     IF ( J .EQ. 2 ) THEN
-       IF ( FLDAT1 ) DEALLOCATE ( MDATAS(IMOD)%DATA1 )
-       ALLOCATE ( MDATAS(IMOD)%DATA1(RCLD(J),NDT(J)), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       FLDAT1 = .TRUE.
+      IF ( FLDAT1 ) DEALLOCATE ( MDATAS(IMOD)%DATA1 )
+      ALLOCATE ( MDATAS(IMOD)%DATA1(RCLD(J),NDT(J)), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      FLDAT1 = .TRUE.
     END IF
     !
     IF ( J .EQ. 3 ) THEN
-       IF ( FLDAT2 ) DEALLOCATE ( MDATAS(IMOD)%DATA2 )
-       ALLOCATE ( MDATAS(IMOD)%DATA2(RCLD(J),NDT(J)), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       FLDAT2 = .TRUE.
+      IF ( FLDAT2 ) DEALLOCATE ( MDATAS(IMOD)%DATA2 )
+      ALLOCATE ( MDATAS(IMOD)%DATA2(RCLD(J),NDT(J)), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      FLDAT2 = .TRUE.
     END IF
     !
 #ifdef W3_T
@@ -934,9 +934,9 @@ CONTAINS
     CALL WMSETM ( IMOD, NDSE, NDST )
     !
     IF ( J .EQ. 0 ) THEN
-       TMV    = 0
-       AMV    = 0.
-       DMV    = 0.
+      TMV    = 0
+      AMV    = 0.
+      DMV    = 0.
     END IF
     !
 #ifdef W3_T
@@ -1073,18 +1073,18 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.1 .OR. IMOD.GT.NMDATA ) THEN
-       WRITE (NDSE,1002) IMOD, NMDATA
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NMDATA
+      CALL EXTCDE (2)
     END IF
     !
     IF ( MDATAS(IMOD)%MINIT ) THEN
-       WRITE (NDSE,1003)
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003)
+      CALL EXTCDE (3)
     END IF
     !
 #ifdef W3_T
@@ -1241,13 +1241,13 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NMDATA .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.1 .OR. IMOD.GT.NMDATA ) THEN
-       WRITE (NDSE,1002) IMOD, NMDATA
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NMDATA
+      CALL EXTCDE (2)
     END IF
     !
 #ifdef W3_T
@@ -1395,22 +1395,22 @@ CONTAINS
     CALL STRACE (IENT, 'INIT_GET_JSEA_ISPROC_GLOB')
 #endif
     IF (.NOT. LPDLIB) THEN
-       nb=OUTPTS(J)%NAPROC
-       JSEA   = 1 + (ISEA-1)/nb
-       ISPROC=1
+      nb=OUTPTS(J)%NAPROC
+      JSEA   = 1 + (ISEA-1)/nb
+      ISPROC=1
 #ifdef W3_DIST
-       ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb
+      ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb
 #endif
     ELSE
 #ifdef W3_PDLIB
-       IF (GRIDS(J)%GTYPE .ne. UNGTYPE) THEN
-          nb=OUTPTS(J)%NAPROC
-          JSEA   = 1 + (ISEA-1)/nb
-          ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb
-       ELSE
-          JSEA   = MDATAS(J)%SEA_IPGL(ISEA)
-          ISPROC = MDATAS(J)%SEA_IPGL_TO_PROC(ISEA)
-       ENDIF
+      IF (GRIDS(J)%GTYPE .ne. UNGTYPE) THEN
+        nb=OUTPTS(J)%NAPROC
+        JSEA   = 1 + (ISEA-1)/nb
+        ISPROC = MDATAS(J)%CROOT - 1 + ISEA - (JSEA-1)*nb
+      ELSE
+        JSEA   = MDATAS(J)%SEA_IPGL(ISEA)
+        ISPROC = MDATAS(J)%SEA_IPGL_TO_PROC(ISEA)
+      ENDIF
 #endif
     ENDIF
     !/

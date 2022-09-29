@@ -178,78 +178,78 @@ CONTAINS
     !
     !.....FACVY
     DO IX=1, NX
-       DO IY=1, NY-1
-          IXY    = IY +(IX-1)*NY
-          IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
-          !.........next point : j+1 : increment IXY by 1
-          IF ( MAPSTA(IXY+1) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
-       END DO
+      DO IY=1, NY-1
+        IXY    = IY +(IX-1)*NY
+        IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+        !.........next point : j+1 : increment IXY by 1
+        IF ( MAPSTA(IXY+1) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+      END DO
     END DO
     !
     !.....FACVY for IY=NY
     IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
-       IY=NY
-       DO IX=1, NX
-          IXY    = IY +(IX-1)*NY
-          IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
-          !...........next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
-          IXNEXT=NX-IX+1
-          IXY    = IY +(IXNEXT-1)*NY
-          IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
-       END DO
-       !BGR: Adding the following lines to compute FACVX over all
-       !      IX for IY=NY (this allows along-seam propagation).
-       !      Located here since already inside "TRPL" if-block.
-       !{
-       DO IX=1, NX-1
-          IXY    = IY +(IX-1)*NY
-          IF ( MAPSTA( IXY ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
-          IF ( MAPSTA(IXY+NY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
-       END DO
-       !}
+      IY=NY
+      DO IX=1, NX
+        IXY    = IY +(IX-1)*NY
+        IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+        !...........next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
+        IXNEXT=NX-IX+1
+        IXY    = IY +(IXNEXT-1)*NY
+        IF ( MAPSTA( IXY ) .NE. 0 ) FACVY(IXY) = FACVY(IXY) + 1.
+      END DO
+      !BGR: Adding the following lines to compute FACVX over all
+      !      IX for IY=NY (this allows along-seam propagation).
+      !      Located here since already inside "TRPL" if-block.
+      !{
+      DO IX=1, NX-1
+        IXY    = IY +(IX-1)*NY
+        IF ( MAPSTA( IXY ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+        IF ( MAPSTA(IXY+NY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+      END DO
+      !}
     END IF
     !
     !.....FACVX
     DO IX=1, NX-1
-       DO IY=2, NY-1
-          IXY    = IY +(IX-1)*NY
-          IF ( MAPSTA( IXY  ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
-          !.........next point : i+1 : increment IXY by NY
-          IF ( MAPSTA(IXY+NY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
-       END DO
+      DO IY=2, NY-1
+        IXY    = IY +(IX-1)*NY
+        IF ( MAPSTA( IXY  ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+        !.........next point : i+1 : increment IXY by NY
+        IF ( MAPSTA(IXY+NY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+      END DO
     END DO
     !
     !.....FACVX for IX=NX
     IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
-       DO IY=2, NY-1
-          IXY    = IY +(NX-1)*NY
-          IF ( MAPSTA(IXY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
-          !...........next point : i+1 : increment IXY by NY
-          !...........IXY+NY=IY+(IX-1)*NY+NY = IY+IX*NY = IY+NX*NY ==> wrap to IY
-          IF ( MAPSTA(IY ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
-       END DO
+      DO IY=2, NY-1
+        IXY    = IY +(NX-1)*NY
+        IF ( MAPSTA(IXY) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+        !...........next point : i+1 : increment IXY by NY
+        !...........IXY+NY=IY+(IX-1)*NY+NY = IY+IX*NY = IY+NX*NY ==> wrap to IY
+        IF ( MAPSTA(IY ) .NE. 0 ) FACVX(IXY) = FACVX(IXY) + 1.
+      END DO
     END IF
     !
     ! 3.  Invert x-y arrays ---------------------------------------------- *
     !
     DO IXY=1, NX*NY
-       IF ( FACVX(IXY) .NE. 0. ) FACVX(IXY) = 1. / FACVX(IXY)
-       IF ( FACVY(IXY) .NE. 0. ) FACVY(IXY) = 1. / FACVY(IXY)
+      IF ( FACVX(IXY) .NE. 0. ) FACVX(IXY) = 1. / FACVX(IXY)
+      IF ( FACVY(IXY) .NE. 0. ) FACVY(IXY) = 1. / FACVY(IXY)
     END DO
     !
     ! 4.  Fill theta arrays ---------------------------------------------- *
     !
     DO ISP=1, NSPEC
-       IS2  (ISP) = ISP + 1
-       IS0  (ISP) = ISP - 1
+      IS2  (ISP) = ISP + 1
+      IS0  (ISP) = ISP - 1
     END DO
     !
     DO ISP=NTH, NSPEC, NTH
-       IS2(ISP) = IS2(ISP) - NTH
+      IS2(ISP) = IS2(ISP) - NTH
     END DO
     !
     DO ISP=1, NSPEC, NTH
-       IS0(ISP) = IS0(ISP) + NTH
+      IS0(ISP) = IS0(ISP) + NTH
     END DO
     !
     RETURN
@@ -458,20 +458,20 @@ CONTAINS
     CGL    = 0.575 * GRAV / SIG(IK)
     !
     IF ( FLCUR ) THEN
-       CGA    = SQRT(MAXVAL((CGL*ECOS(ITH)+CX(1:NSEA))**2          &
-            +(CGL*ESIN(ITH)+CY(1:NSEA))**2))
-       CC     = SQRT(MAXVAL(CX(1:NSEA)**2+CY(1:NSEA)**2))
+      CGA    = SQRT(MAXVAL((CGL*ECOS(ITH)+CX(1:NSEA))**2          &
+           +(CGL*ESIN(ITH)+CY(1:NSEA))**2))
+      CC     = SQRT(MAXVAL(CX(1:NSEA)**2+CY(1:NSEA)**2))
 #ifdef W3_MGP
-       CGA    = SQRT(MAXVAL((CGL*ECOS(ITH)+CX(1:NSEA)-VGX)**2      &
-            +(CGL*ESIN(ITH)+CY(1:NSEA)-VGY)**2))
-       CC     = SQRT(MAXVAL((CX(1:NSEA)-VGX)**2+(CY(1:NSEA)-VGY)**2))
+      CGA    = SQRT(MAXVAL((CGL*ECOS(ITH)+CX(1:NSEA)-VGX)**2      &
+           +(CGL*ESIN(ITH)+CY(1:NSEA)-VGY)**2))
+      CC     = SQRT(MAXVAL((CX(1:NSEA)-VGX)**2+(CY(1:NSEA)-VGY)**2))
 #endif
     ELSE
-       CGA    = CGL
+      CGA    = CGL
 #ifdef W3_MGP
-       CGA    = SQRT((CGL*ECOS(ITH)-VGX)**2+(CGL*ESIN(ITH)-VGY)**2)
+      CGA    = SQRT((CGL*ECOS(ITH)-VGX)**2+(CGL*ESIN(ITH)-VGY)**2)
 #endif
-       CC     = 0.
+      CC     = 0.
     END IF
     !
     CGN    = 0.9999 * MAX ( CGA, CC, 0.001*CG0 )
@@ -490,309 +490,309 @@ CONTAINS
     ! ====================== Loop partial ================================ *
     !
     DO ITLOC=1, NTLOC
-       !
-       ! 1.b Initialize arrays
-       !
+      !
+      ! 1.b Initialize arrays
+      !
 #ifdef W3_T1
-       WRITE (NDST,9010) ITLOC
+      WRITE (NDST,9010) ITLOC
 #endif
-       !
-       VCX2D = 0.
-       VCY2D = 0.
-       CXTOT2D  = 0.
-       CYTOT2D  = 0.
-       FLD2D  = 0.
-       VFLX2D  = 0.
-       VFLY2D  = 0.
-       !
-       ! 2.  Calculate field and velocities --------------------------------- *
-       !
-       !     FIELD = A / CG * CLATS
-       !     VCX   = COS*CG / CLATS
-       !     VCY   = SIN*CG
-       !
+      !
+      VCX2D = 0.
+      VCY2D = 0.
+      CXTOT2D  = 0.
+      CYTOT2D  = 0.
+      FLD2D  = 0.
+      VFLX2D  = 0.
+      VFLY2D  = 0.
+      !
+      ! 2.  Calculate field and velocities --------------------------------- *
+      !
+      !     FIELD = A / CG * CLATS
+      !     VCX   = COS*CG / CLATS
+      !     VCY   = SIN*CG
+      !
 #ifdef W3_T1
-       WRITE (NDST,9020)
+      WRITE (NDST,9020)
 #endif
-       !
+      !
 #ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE (ISEA, IXY, IX, IY)
+      !$OMP PARALLEL DO PRIVATE (ISEA, IXY, IX, IY)
 #endif
-       !
-       DO ISEA=1, NSEA
-          IX     = MAPSF(ISEA,1)
-          IY     = MAPSF(ISEA,2)
-          IXY    = MAPSF(ISEA,3)
+      !
+      DO ISEA=1, NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IXY    = MAPSF(ISEA,3)
 
-          FLD2D(IY,IX) = FIELD(IXY) / CG(IK,ISEA) * CLATS(ISEA)
+        FLD2D(IY,IX) = FIELD(IXY) / CG(IK,ISEA) * CLATS(ISEA)
 
-          CXTOT2D(IY,IX) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
-          CYTOT2D(IY,IX) = ESIN(ITH) * CG(IK,ISEA)
+        CXTOT2D(IY,IX) = ECOS(ITH) * CG(IK,ISEA) / CLATS(ISEA)
+        CYTOT2D(IY,IX) = ESIN(ITH) * CG(IK,ISEA)
 #ifdef W3_MGP
-          CXTOT2D(IY,IX) = CXTOT2D(IY,IX) - VGX/CLATS(ISEA)
-          CYTOT2D(IY,IX) = CYTOT2D(IY,IX) - VGY
+        CXTOT2D(IY,IX) = CXTOT2D(IY,IX) - VGX/CLATS(ISEA)
+        CYTOT2D(IY,IX) = CYTOT2D(IY,IX) - VGY
 #endif
 
 #ifdef W3_T1
-          WRITE (NDST,9021) ISEA, IXY, FLD2D(IY,IX), &
-               CXTOT2D(IY,IX), CYTOT2D(IY,IX)
+        WRITE (NDST,9021) ISEA, IXY, FLD2D(IY,IX), &
+             CXTOT2D(IY,IX), CYTOT2D(IY,IX)
 #endif
-       END DO
-       !
+      END DO
+      !
 #ifdef W3_OMPH
-       !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 #endif
-       !
-       IF ( FLCUR ) THEN
-          DO ISEA=1, NSEA
-             IX     = MAPSF(ISEA,1)
-             IY     = MAPSF(ISEA,2)
-
-             CXTOT2D(IY,IX) = CXTOT2D(IY,IX) + CX(ISEA)/CLATS(ISEA)
-             CYTOT2D(IY,IX) = CYTOT2D(IY,IX) + CY(ISEA)
-
-          END DO
-       END IF
-
-       IF ( FLCX ) THEN
-          DO ISEA=1, NSEA
-             IX     = MAPSF(ISEA,1)
-             IY     = MAPSF(ISEA,2)
-             CP=CXTOT2D(IY,IX)*DPDX(IY,IX)+CYTOT2D(IY,IX)*DPDY(IY,IX)
-             VCX2D(IY,IX) = CP*DTRAD
-          END DO
-       ELSE
-          VCX2D=0.0
-       ENDIF
-
-       IF ( FLCY ) THEN
-          DO ISEA=1, NSEA
-             IX     = MAPSF(ISEA,1)
-             IY     = MAPSF(ISEA,2)
-             CQ=CXTOT2D(IY,IX)*DQDX(IY,IX)+CYTOT2D(IY,IX)*DQDY(IY,IX)
-             VCY2D(IY,IX) = CQ*DTRAD
-          END DO
-       ELSE
-          VCY2D=0.0
-       ENDIF
-
-       ! Transform FIELD to index space, i.e. straightened space
-       ! Bugfix: This is now done *before* adding the ghost row, so that ghost
-       !   row will be in index space (bug applied only to global, irregular
-       !   grids, so it did not apply to any test case that existed w/v4.18)
-       FLD2D(1:NY,1:NX)=FLD2D(1:NY,1:NX)*GSQRT(1:NY,1:NX)
-
-       !
-       ! Deal with longitude closure by duplicating one row *to the right*
-       !   in FIELD/FLD2D, VCX
-       IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
-#ifdef W3_T1
-          WRITE (NDST,9024)
-#endif
-          DO IY=1, NY
-             FLD2D(IY,NX+1)=FLD2D(IY,1)
-             VCX2D(IY,NX+1)=VCX2D(IY,1)
-#ifdef W3_T1
-             WRITE (NDST,9025) IY, FLD2D(IY,NX+1), VCX2D(IY,NX+1)
-#endif
-          END DO
-       END IF
-
-       ! Deal with tripole closure by duplicating one row *at the top*
-       !   in FIELD/FLD2D, VCY
-       IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
-          DO IX=1,NX
-             !...........next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
-             FLD2D(NY+1,IX)=FLD2D(NY,NX-IX+1)
-             VCY2D(NY+1,IX)=VCY2D(NY,NX-IX+1)
-          END DO
-       END IF
-
-       !
-       ! 3.  Calculate propagation fluxes ----------------------------------- *
-       !
-       NYMAX=NY-1
-       IF ( ICLOSE.EQ.ICLOSE_TRPL ) NYMAX=NY
-       !
-#ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE (IX, IY, IXY, VCB)
-#endif
-       !
-       DO IX=1, NX
-          DO IY=1, NYMAX
-             IXY    = IY +(IX-1)*NY
-             VCB       = FACVX(IXY) * ( VCX2D(IY,IX) + VCX2D(IY,IX+1) )
-             VFLX2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
-                  + MIN ( VCB , 0. ) * FLD2D(IY,IX+1)
-          END DO
-       END DO
-       !
-#ifdef W3_OMPH
-       !$OMP END PARALLEL DO
-#endif
-       !
-       ! Deal with longitude closure by duplicating one row *to the left*
-       !    in VFLX. Note that a similar action is not take for tripole grid,
-       !    since tripole seam is only: IY=NY communicating with other points
-       !    at IY=NY, not a case of IY=NY communicating with IY=1
-       IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
-#ifdef W3_T2
-          WRITE (NDST,9032)
-#endif
-          DO IY=1, NY
-             VFLX2D(IY,0) = VFLX2D(IY,NX)
-#ifdef W3_T2
-             WRITE (NDST,9033) IY, VFLX2D(IY,0)
-#endif
-          END DO
-       END IF
-       !
-#ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE (IX, IY, IXY, VCB)
-#endif
-       !
-       DO IX=1, NX
-          DO IY=1, NY-1
-             IXY    = IY +(IX-1)*NY
-             VCB       = FACVY(IXY) * ( VCY2D(IY,IX) + VCY2D(IY+1,IX) )
-             VFLY2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
-                  + MIN ( VCB , 0. ) * FLD2D(IY+1,IX)
-          END DO
-       END DO
-       !
-#ifdef W3_OMPH
-       !$OMP END PARALLEL DO
-#endif
-       !
-
-       ! For tripole grid, include IY=NY in calculation. VCB is handled
-       !    differently. See notes in Section "7. Remarks" above.
-       IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
-          IY=NY
-          !
-#ifdef W3_OMPH
-          !$OMP PARALLEL DO PRIVATE (IXY, VCB, IX)
-#endif
-          !
-          DO IX=1, NX
-             IXY    = IY +(IX-1)*NY
-             VCB       = FACVY(IXY) * ( VCY2D(IY,IX) - VCY2D(IY+1,IX) )
-             VFLY2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
-                  + MIN ( VCB , 0. ) * FLD2D(IY+1,IX)
-          END DO
-          !
-#ifdef W3_OMPH
-          !$OMP END PARALLEL DO
-#endif
-          !
-       END IF
-
-       ! 4.  Propagate ------------------------------------------------------ *
-       !
-#ifdef W3_T3
-       WRITE (NDST,9040)
-#endif
-       !
-#ifdef W3_OMPH
-       !$OMP PARALLEL DO PRIVATE (ISEA, IXY, JXN, JXP, JYN, JYP, IX, IY)
-#endif
-       !
-       DO ISEA=1, NSEA
-          !
-          IX    = MAPSF(ISEA,1)
-          IY    = MAPSF(ISEA,2)
-          IXY   = MAPSF(ISEA,3)
-
-#ifdef W3_T3
-          AOLD   = FLD2D(IY,IX) * CG(IK,ISEA) / CLATS(ISEA)
-#endif
-          !
-          IF (MAPSTA(IXY).EQ.1) THEN
-             !
-             IF ( VFLX2D(IY,IX-1) .GT. 0. ) THEN
-                JXN   = -1
-             ELSE
-                JXN   =  0
-             END IF
-             IF ( VFLX2D(IY,IX) .LT. 0. ) THEN
-                JXP   =  1
-             ELSE
-                JXP   =  0
-             END IF
-             IF ( VFLY2D(IY-1,IX) .GT. 0. ) THEN
-                JYN   = -1
-             ELSE
-                JYN   =  0
-             END IF
-             IF ( VFLY2D(IY,IX) .LT. 0. ) THEN
-                JYP   =  1
-             ELSE
-                JYP   =  0
-             END IF
-             !
-             FLD2D(IY,IX) =   FLD2D(IY,IX)                            &
-                  + ATRNX(IXY,JXN) * VFLX2D(IY,IX-1)   &
-                  - ATRNX(IXY,JXP) * VFLX2D(IY,IX)     &
-                  + ATRNY(IXY,JYN) * VFLY2D(IY-1,IX)   &
-                  - ATRNY(IXY,JYP) * VFLY2D(IY,IX)
-
-#ifdef W3_T3
-             WRITE (NDST,9041) ISEA, IXY, IXY-NY, IXY-1,         &
-                  VFLX2D(IY,IX-1), VFLX2D(IY,IX), VFLY2D(IY-1,IX), &
-                  VFLY2D(IY,IX) , CG(IK,ISEA)/CLATS(ISEA),AOLD,    &
-                  FLD2D(IY,IX)
-#endif
-             !
-             !
-#ifdef W3_T3
-             WRITE (NDST,9042) ISEA, MAPSTA(IXY), AOLD,FLD2D(IY,IX)
-#endif
-             !
-          END IF !  IF (MAPSTA(IXY).EQ.1) THEN
-
-          FLD2D(IY,IX) = CG(IK,ISEA) / CLATS(ISEA) * FLD2D(IY,IX)
-
-       END DO !  DO ISEA=1, NSEA
-       !
-#ifdef W3_OMPH
-       !$OMP END PARALLEL DO
-#endif
-       !
-
-       ! Transform FIELD back to physical space, i.e. may be curvilinear
-       FLD2D(1:NY,1:NX)=FLD2D(1:NY,1:NX)/GSQRT(1:NY,1:NX)
-       !
-       ! 5.  Update boundary conditions ------------------------------------- *
-       !
-       IF ( FLBPI ) THEN
-          RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
-               REAL(NTLOC-ITLOC)/REAL(NTLOC)
-          RD2    = DSEC21 ( TBPI0, TBPIN )
-          IF ( RD2 .GT. 0.001 ) THEN
-             RD2    = MIN(1.,MAX(0.,RD1/RD2))
-             RD1    = 1. - RD2
-          ELSE
-             RD1    = 0.
-             RD2    = 1.
-          END IF
-          DO IBI=1, NBI
-             IX    = MAPSF(ISBPI(IBI),1)
-             IY    = MAPSF(ISBPI(IBI),2)
-             FLD2D(IY,IX) = RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI)
-          END DO
-       END IF
-       !
-       ! 6.  Put back in 1d shape ------------------------------------------- *
-       !
-       DO ISEA=1, NSEA
+      !
+      IF ( FLCUR ) THEN
+        DO ISEA=1, NSEA
           IX     = MAPSF(ISEA,1)
           IY     = MAPSF(ISEA,2)
-          IXY    = MAPSF(ISEA,3)
-          FIELD(IXY) = FLD2D(IY,IX)
-       END DO
-       !
-       ! ... End of partial time step loop
-       !
+
+          CXTOT2D(IY,IX) = CXTOT2D(IY,IX) + CX(ISEA)/CLATS(ISEA)
+          CYTOT2D(IY,IX) = CYTOT2D(IY,IX) + CY(ISEA)
+
+        END DO
+      END IF
+
+      IF ( FLCX ) THEN
+        DO ISEA=1, NSEA
+          IX     = MAPSF(ISEA,1)
+          IY     = MAPSF(ISEA,2)
+          CP=CXTOT2D(IY,IX)*DPDX(IY,IX)+CYTOT2D(IY,IX)*DPDY(IY,IX)
+          VCX2D(IY,IX) = CP*DTRAD
+        END DO
+      ELSE
+        VCX2D=0.0
+      ENDIF
+
+      IF ( FLCY ) THEN
+        DO ISEA=1, NSEA
+          IX     = MAPSF(ISEA,1)
+          IY     = MAPSF(ISEA,2)
+          CQ=CXTOT2D(IY,IX)*DQDX(IY,IX)+CYTOT2D(IY,IX)*DQDY(IY,IX)
+          VCY2D(IY,IX) = CQ*DTRAD
+        END DO
+      ELSE
+        VCY2D=0.0
+      ENDIF
+
+      ! Transform FIELD to index space, i.e. straightened space
+      ! Bugfix: This is now done *before* adding the ghost row, so that ghost
+      !   row will be in index space (bug applied only to global, irregular
+      !   grids, so it did not apply to any test case that existed w/v4.18)
+      FLD2D(1:NY,1:NX)=FLD2D(1:NY,1:NX)*GSQRT(1:NY,1:NX)
+
+      !
+      ! Deal with longitude closure by duplicating one row *to the right*
+      !   in FIELD/FLD2D, VCX
+      IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
+#ifdef W3_T1
+        WRITE (NDST,9024)
+#endif
+        DO IY=1, NY
+          FLD2D(IY,NX+1)=FLD2D(IY,1)
+          VCX2D(IY,NX+1)=VCX2D(IY,1)
+#ifdef W3_T1
+          WRITE (NDST,9025) IY, FLD2D(IY,NX+1), VCX2D(IY,NX+1)
+#endif
+        END DO
+      END IF
+
+      ! Deal with tripole closure by duplicating one row *at the top*
+      !   in FIELD/FLD2D, VCY
+      IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
+        DO IX=1,NX
+          !...........next point: j+1: tripole: j==>j+1==>j and i==>ni-i+1
+          FLD2D(NY+1,IX)=FLD2D(NY,NX-IX+1)
+          VCY2D(NY+1,IX)=VCY2D(NY,NX-IX+1)
+        END DO
+      END IF
+
+      !
+      ! 3.  Calculate propagation fluxes ----------------------------------- *
+      !
+      NYMAX=NY-1
+      IF ( ICLOSE.EQ.ICLOSE_TRPL ) NYMAX=NY
+      !
+#ifdef W3_OMPH
+      !$OMP PARALLEL DO PRIVATE (IX, IY, IXY, VCB)
+#endif
+      !
+      DO IX=1, NX
+        DO IY=1, NYMAX
+          IXY    = IY +(IX-1)*NY
+          VCB       = FACVX(IXY) * ( VCX2D(IY,IX) + VCX2D(IY,IX+1) )
+          VFLX2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
+               + MIN ( VCB , 0. ) * FLD2D(IY,IX+1)
+        END DO
+      END DO
+      !
+#ifdef W3_OMPH
+      !$OMP END PARALLEL DO
+#endif
+      !
+      ! Deal with longitude closure by duplicating one row *to the left*
+      !    in VFLX. Note that a similar action is not take for tripole grid,
+      !    since tripole seam is only: IY=NY communicating with other points
+      !    at IY=NY, not a case of IY=NY communicating with IY=1
+      IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
+#ifdef W3_T2
+        WRITE (NDST,9032)
+#endif
+        DO IY=1, NY
+          VFLX2D(IY,0) = VFLX2D(IY,NX)
+#ifdef W3_T2
+          WRITE (NDST,9033) IY, VFLX2D(IY,0)
+#endif
+        END DO
+      END IF
+      !
+#ifdef W3_OMPH
+      !$OMP PARALLEL DO PRIVATE (IX, IY, IXY, VCB)
+#endif
+      !
+      DO IX=1, NX
+        DO IY=1, NY-1
+          IXY    = IY +(IX-1)*NY
+          VCB       = FACVY(IXY) * ( VCY2D(IY,IX) + VCY2D(IY+1,IX) )
+          VFLY2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
+               + MIN ( VCB , 0. ) * FLD2D(IY+1,IX)
+        END DO
+      END DO
+      !
+#ifdef W3_OMPH
+      !$OMP END PARALLEL DO
+#endif
+      !
+
+      ! For tripole grid, include IY=NY in calculation. VCB is handled
+      !    differently. See notes in Section "7. Remarks" above.
+      IF ( ICLOSE.EQ.ICLOSE_TRPL ) THEN
+        IY=NY
+        !
+#ifdef W3_OMPH
+        !$OMP PARALLEL DO PRIVATE (IXY, VCB, IX)
+#endif
+        !
+        DO IX=1, NX
+          IXY    = IY +(IX-1)*NY
+          VCB       = FACVY(IXY) * ( VCY2D(IY,IX) - VCY2D(IY+1,IX) )
+          VFLY2D(IY,IX) = MAX ( VCB , 0. ) * FLD2D(IY,IX)          &
+               + MIN ( VCB , 0. ) * FLD2D(IY+1,IX)
+        END DO
+        !
+#ifdef W3_OMPH
+        !$OMP END PARALLEL DO
+#endif
+        !
+      END IF
+
+      ! 4.  Propagate ------------------------------------------------------ *
+      !
+#ifdef W3_T3
+      WRITE (NDST,9040)
+#endif
+      !
+#ifdef W3_OMPH
+      !$OMP PARALLEL DO PRIVATE (ISEA, IXY, JXN, JXP, JYN, JYP, IX, IY)
+#endif
+      !
+      DO ISEA=1, NSEA
+        !
+        IX    = MAPSF(ISEA,1)
+        IY    = MAPSF(ISEA,2)
+        IXY   = MAPSF(ISEA,3)
+
+#ifdef W3_T3
+        AOLD   = FLD2D(IY,IX) * CG(IK,ISEA) / CLATS(ISEA)
+#endif
+        !
+        IF (MAPSTA(IXY).EQ.1) THEN
+          !
+          IF ( VFLX2D(IY,IX-1) .GT. 0. ) THEN
+            JXN   = -1
+          ELSE
+            JXN   =  0
+          END IF
+          IF ( VFLX2D(IY,IX) .LT. 0. ) THEN
+            JXP   =  1
+          ELSE
+            JXP   =  0
+          END IF
+          IF ( VFLY2D(IY-1,IX) .GT. 0. ) THEN
+            JYN   = -1
+          ELSE
+            JYN   =  0
+          END IF
+          IF ( VFLY2D(IY,IX) .LT. 0. ) THEN
+            JYP   =  1
+          ELSE
+            JYP   =  0
+          END IF
+          !
+          FLD2D(IY,IX) =   FLD2D(IY,IX)                            &
+               + ATRNX(IXY,JXN) * VFLX2D(IY,IX-1)   &
+               - ATRNX(IXY,JXP) * VFLX2D(IY,IX)     &
+               + ATRNY(IXY,JYN) * VFLY2D(IY-1,IX)   &
+               - ATRNY(IXY,JYP) * VFLY2D(IY,IX)
+
+#ifdef W3_T3
+          WRITE (NDST,9041) ISEA, IXY, IXY-NY, IXY-1,         &
+               VFLX2D(IY,IX-1), VFLX2D(IY,IX), VFLY2D(IY-1,IX), &
+               VFLY2D(IY,IX) , CG(IK,ISEA)/CLATS(ISEA),AOLD,    &
+               FLD2D(IY,IX)
+#endif
+          !
+          !
+#ifdef W3_T3
+          WRITE (NDST,9042) ISEA, MAPSTA(IXY), AOLD,FLD2D(IY,IX)
+#endif
+          !
+        END IF !  IF (MAPSTA(IXY).EQ.1) THEN
+
+        FLD2D(IY,IX) = CG(IK,ISEA) / CLATS(ISEA) * FLD2D(IY,IX)
+
+      END DO !  DO ISEA=1, NSEA
+      !
+#ifdef W3_OMPH
+      !$OMP END PARALLEL DO
+#endif
+      !
+
+      ! Transform FIELD back to physical space, i.e. may be curvilinear
+      FLD2D(1:NY,1:NX)=FLD2D(1:NY,1:NX)/GSQRT(1:NY,1:NX)
+      !
+      ! 5.  Update boundary conditions ------------------------------------- *
+      !
+      IF ( FLBPI ) THEN
+        RD1    = DSEC21 ( TBPI0, TIME ) - DTG *                   &
+             REAL(NTLOC-ITLOC)/REAL(NTLOC)
+        RD2    = DSEC21 ( TBPI0, TBPIN )
+        IF ( RD2 .GT. 0.001 ) THEN
+          RD2    = MIN(1.,MAX(0.,RD1/RD2))
+          RD1    = 1. - RD2
+        ELSE
+          RD1    = 0.
+          RD2    = 1.
+        END IF
+        DO IBI=1, NBI
+          IX    = MAPSF(ISBPI(IBI),1)
+          IY    = MAPSF(ISBPI(IBI),2)
+          FLD2D(IY,IX) = RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI)
+        END DO
+      END IF
+      !
+      ! 6.  Put back in 1d shape ------------------------------------------- *
+      !
+      DO ISEA=1, NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IXY    = MAPSF(ISEA,3)
+        FIELD(IXY) = FLD2D(IY,IX)
+      END DO
+      !
+      ! ... End of partial time step loop
+      !
     END DO !   DO ITLOC=1, NTLOC
     !
     RETURN
@@ -984,185 +984,185 @@ CONTAINS
     ! 1.a Array with partial derivative of sigma versus depth
     !
     DO IK=0, NK+1
-       IF ( DEPTH*WN(IK) .LT. 5. ) THEN
-          DSDD(IK) = MAX ( 0. ,                                     &
-               CG(IK)*WN(IK)-0.5*SIG(IK) ) / DEPTH
-       ELSE
-          DSDD(IK) = 0.
-       END IF
+      IF ( DEPTH*WN(IK) .LT. 5. ) THEN
+        DSDD(IK) = MAX ( 0. ,                                     &
+             CG(IK)*WN(IK)-0.5*SIG(IK) ) / DEPTH
+      ELSE
+        DSDD(IK) = 0.
+      END IF
     END DO
     !
 #ifdef W3_T
     WRITE (NDST,9010)
     DO IK=1, NK+1
-       WRITE (NDST,9011) IK, TPI/SIG(IK), TPI/WN(IK),             &
-            CG(IK), DSDD(IK)
+      WRITE (NDST,9011) IK, TPI/SIG(IK), TPI/WN(IK),             &
+           CG(IK), DSDD(IK)
     END DO
 #endif
     !
     ! 1.b Extract spectrum
     !
     DO ISP=1, NSPEC
-       VAA(ISP) = VA(ISP)
+      VAA(ISP) = VA(ISP)
     END DO
     !
     ! 2.  Refraction velocities ------------------------------------------ *
     !
     IF ( FLCTH ) THEN
-       !
-       ! 2.a Set slope filter for depth refraction
-       !
-       FDDMAX = 0.
-       FDG    = FACTH * CTHG0
-       !
-       DO ITH=1, NTH
-          FDDMAX = MAX ( FDDMAX , ABS (                             &
-               ESIN(ITH)*DDDX - ECOS(ITH)*DDDY ) )
-       END DO
-       !
-       DO IK=1, NK
-          FRK(IK) = FACTH * DSDD(IK) / WN(IK)
-          FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
-          FRG(IK) = FDG * CG(IK)
-       END DO
-       !
-       ! 2.b Depth refraction and great-circle propagation
-       !
-       DO ISP=1, NSPEC
-          VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)                   &
-               + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
-       END DO
+      !
+      ! 2.a Set slope filter for depth refraction
+      !
+      FDDMAX = 0.
+      FDG    = FACTH * CTHG0
+      !
+      DO ITH=1, NTH
+        FDDMAX = MAX ( FDDMAX , ABS (                             &
+             ESIN(ITH)*DDDX - ECOS(ITH)*DDDY ) )
+      END DO
+      !
+      DO IK=1, NK
+        FRK(IK) = FACTH * DSDD(IK) / WN(IK)
+        FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
+        FRG(IK) = FDG * CG(IK)
+      END DO
+      !
+      ! 2.b Depth refraction and great-circle propagation
+      !
+      DO ISP=1, NSPEC
+        VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)                   &
+             + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
+      END DO
 #ifdef W3_DEBUG
-       WRITE(740+IAPROC,*) 'pro1 FACTH=', FACTH
-       WRITE(740+IAPROC,*) 'pro1 CTHG0=', CTHG0
-       WRITE(740+IAPROC,*) 'pro1 FDG=', FDG
-       WRITE(740+IAPROC,*) 'pro1 FDDMAX=', FDDMAX
-       WRITE(740+IAPROC,*) 'pro1 sum(FRK)=', sum(FRK)
-       WRITE(740+IAPROC,*) 'pro1 sum(FRG)=', sum(FRG)
-       WRITE(740+IAPROC,*) 'pro1 sum(DSDD)=', sum(DSDD)
-       WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VCTH)=', sum(VCTH)
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'pro1 FACTH=', FACTH
+      WRITE(740+IAPROC,*) 'pro1 CTHG0=', CTHG0
+      WRITE(740+IAPROC,*) 'pro1 FDG=', FDG
+      WRITE(740+IAPROC,*) 'pro1 FDDMAX=', FDDMAX
+      WRITE(740+IAPROC,*) 'pro1 sum(FRK)=', sum(FRK)
+      WRITE(740+IAPROC,*) 'pro1 sum(FRG)=', sum(FRG)
+      WRITE(740+IAPROC,*) 'pro1 sum(DSDD)=', sum(DSDD)
+      WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VCTH)=', sum(VCTH)
+      FLUSH(740+IAPROC)
 #endif
 
-       !
+      !
 #ifdef W3_REFRX
-       ! 2.c @C/@x refraction and great-circle propagation
-       VCTH = 0.
-       FRK  = 0.
-       FDDMAX = 0.
+      ! 2.c @C/@x refraction and great-circle propagation
+      VCTH = 0.
+      FRK  = 0.
+      FDDMAX = 0.
 #endif
-       !
+      !
 #ifdef W3_REFRX
-       DO ISP=1, NSPEC
-          FDDMAX = MAX ( FDDMAX , ABS (                      &
-               ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
-       END DO
+      DO ISP=1, NSPEC
+        FDDMAX = MAX ( FDDMAX , ABS (                      &
+             ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
+      END DO
 #endif
-       !
+      !
 #ifdef W3_REFRX
-       DO IK=1, NK
-          FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
-          FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
-          FRG(IK) = FDG * CG(IK)
-       END DO
-       DO ISP=1, NSPEC
-          VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)            &
-               + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(MAPWN(ISP)) &
-               - ECOS(ISP)*DCDY(MAPWN(ISP)) )
-       END DO
+      DO IK=1, NK
+        FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
+        FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
+        FRG(IK) = FDG * CG(IK)
+      END DO
+      DO ISP=1, NSPEC
+        VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)            &
+             + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DCDX(MAPWN(ISP)) &
+             - ECOS(ISP)*DCDY(MAPWN(ISP)) )
+      END DO
 #endif
-       !
-       ! 2.d Current refraction
-       !
-       IF ( FLCUR ) THEN
-          !
-          DCYX   = FACTH *   DCYDX
-          DCXXYY = FACTH * ( DCXDX - DCYDY )
-          DCXY   = FACTH *   DCXDY
-          !
-          DO ISP=1, NSPEC
-             VCTH(ISP) = VCTH(ISP) + ES2(ISP)*DCYX                 &
-                  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
-          END DO
-          !
-       END IF
-       !
+      !
+      ! 2.d Current refraction
+      !
+      IF ( FLCUR ) THEN
+        !
+        DCYX   = FACTH *   DCYDX
+        DCXXYY = FACTH * ( DCXDX - DCYDY )
+        DCXY   = FACTH *   DCXDY
+        !
+        DO ISP=1, NSPEC
+          VCTH(ISP) = VCTH(ISP) + ES2(ISP)*DCYX                 &
+               + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
+        END DO
+        !
+      END IF
+      !
     END IF
     !
     ! 3.  Wavenumber shift velocities ------------------------------------ *
     !
     IF ( FLCK ) THEN
-       !
-       DCXX   =  - FACK *   DCXDX
-       DCXYYX =  - FACK * ( DCXDY + DCYDX )
-       DCYY   =  - FACK *   DCYDY
-       FKD    =    FACK * ( CX*DDDX + CY*DDDY )
-       !
-       DO ITH=1, NTH
-          FKC(ITH) = EC2(ITH)*DCXX +                                &
-               ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
-       END DO
-       !
-       ISP    = -NTH
-       DO IK=0, NK+1
-          FKD0   = FKD / CG(IK) * DSDD(IK)
-          DO ITH=1, NTH
-             ISP    = ISP + 1
-             VCWN(ISP) = FKD0 + WN(IK)*FKC(ITH)
-          END DO
-       END DO
-       !
-       ITH0   = NSPEC - NTH
-       DO ITH=1, NTH
-          VAA(ITH+NSPEC) = FACHFA * VAA(ITH+ITH0)
-          VAA(ITH- NTH ) = 0.
-       END DO
-       !
-       DO IK=1, NK
-          DWNI(IK) = CG(IK) / DSIP(IK)
-       END DO
-       !
+      !
+      DCXX   =  - FACK *   DCXDX
+      DCXYYX =  - FACK * ( DCXDY + DCYDX )
+      DCYY   =  - FACK *   DCYDY
+      FKD    =    FACK * ( CX*DDDX + CY*DDDY )
+      !
+      DO ITH=1, NTH
+        FKC(ITH) = EC2(ITH)*DCXX +                                &
+             ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
+      END DO
+      !
+      ISP    = -NTH
+      DO IK=0, NK+1
+        FKD0   = FKD / CG(IK) * DSDD(IK)
+        DO ITH=1, NTH
+          ISP    = ISP + 1
+          VCWN(ISP) = FKD0 + WN(IK)*FKC(ITH)
+        END DO
+      END DO
+      !
+      ITH0   = NSPEC - NTH
+      DO ITH=1, NTH
+        VAA(ITH+NSPEC) = FACHFA * VAA(ITH+ITH0)
+        VAA(ITH- NTH ) = 0.
+      END DO
+      !
+      DO IK=1, NK
+        DWNI(IK) = CG(IK) / DSIP(IK)
+      END DO
+      !
     END IF
     !
     ! 4.  Refraction ----------------------------------------------------- *
     !
     IF ( FLCTH ) THEN
-       !
-       ! 4.a Boundary velocity and fluxes
-       !
-       DO ISP=1, NSPEC
-          CTHB       = 0.5 * ( VCTH(ISP) + VCTH(IS2(ISP)) )
-          VFLTH(ISP) = MAX ( CTHB , 0. ) * VAA(ISP)                 &
-               + MIN ( CTHB , 0. ) * VAA(IS2(ISP))
-       END DO
-       !
-       ! 4.b Propagation
-       !
-       DO ISP=1, NSPEC
-          VA(ISP) = VA(ISP) + VFLTH(IS0(ISP)) - VFLTH(ISP )
-       END DO
-       !
+      !
+      ! 4.a Boundary velocity and fluxes
+      !
+      DO ISP=1, NSPEC
+        CTHB       = 0.5 * ( VCTH(ISP) + VCTH(IS2(ISP)) )
+        VFLTH(ISP) = MAX ( CTHB , 0. ) * VAA(ISP)                 &
+             + MIN ( CTHB , 0. ) * VAA(IS2(ISP))
+      END DO
+      !
+      ! 4.b Propagation
+      !
+      DO ISP=1, NSPEC
+        VA(ISP) = VA(ISP) + VFLTH(IS0(ISP)) - VFLTH(ISP )
+      END DO
+      !
     END IF
     !
     ! 5.  Wavenumber shifts ---------------------------------------------- *
     !
     IF ( FLCK ) THEN
-       !
-       ! 5.a Boundary velocity and fluxes
-       !
-       DO ISP=1-NTH, NSPEC
-          CWNB       = 0.5 * ( VCWN(ISP) + VCWN(ISP+NTH) )
-          VFLWN(ISP) = MAX ( CWNB , 0. ) * VAA(  ISP  )             &
-               + MIN ( CWNB , 0. ) * VAA(ISP+NTH)
-       END DO
-       !
-       ! 5.c Propagation
-       !
-       DO ISP=1, NSPEC
-          VA(ISP) = VA(ISP) + DWNI(MAPWN(ISP)) *                    &
-               ( VFLWN(ISP-NTH) - VFLWN(ISP) )
-       END DO
-       !
+      !
+      ! 5.a Boundary velocity and fluxes
+      !
+      DO ISP=1-NTH, NSPEC
+        CWNB       = 0.5 * ( VCWN(ISP) + VCWN(ISP+NTH) )
+        VFLWN(ISP) = MAX ( CWNB , 0. ) * VAA(  ISP  )             &
+             + MIN ( CWNB , 0. ) * VAA(ISP+NTH)
+      END DO
+      !
+      ! 5.c Propagation
+      !
+      DO ISP=1, NSPEC
+        VA(ISP) = VA(ISP) + DWNI(MAPWN(ISP)) *                    &
+             ( VFLWN(ISP-NTH) - VFLWN(ISP) )
+      END DO
+      !
     END IF
     !
     RETURN

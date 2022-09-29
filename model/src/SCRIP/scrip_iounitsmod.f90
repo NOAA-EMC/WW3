@@ -121,12 +121,12 @@ contains
     !-----------------------------------------------------------------------
 
     if (.not. SCRIP_IOUnitsInitialized) then
-       SCRIP_IOUnitsInUse = .false.
-       SCRIP_IOUnitsInUse(SCRIP_stdin) = .true.
-       SCRIP_IOUnitsInUse(SCRIP_stdout) = .true.
-       SCRIP_IOUnitsInUse(SCRIP_stderr) = .true.
+      SCRIP_IOUnitsInUse = .false.
+      SCRIP_IOUnitsInUse(SCRIP_stdin) = .true.
+      SCRIP_IOUnitsInUse(SCRIP_stdout) = .true.
+      SCRIP_IOUnitsInUse(SCRIP_stderr) = .true.
 
-       SCRIP_IOUnitsInitialized = .true.
+      SCRIP_IOUnitsInitialized = .true.
     endif
 
     !-----------------------------------------------------------------------
@@ -136,21 +136,21 @@ contains
     !-----------------------------------------------------------------------
 
     srch_units: do n=SCRIP_IOUnitsMinUnits, SCRIP_IOUnitsMaxUnits
-       if (.not. SCRIP_IOUnitsInUse(n)) then ! I found one, I found one
+      if (.not. SCRIP_IOUnitsInUse(n)) then ! I found one, I found one
 
-          !*** make sure not in use by library or calling routines
-          INQUIRE (unit=n,OPENED=alreadyInUse)
+        !*** make sure not in use by library or calling routines
+        INQUIRE (unit=n,OPENED=alreadyInUse)
 
-          if (.not. alreadyInUse) then
-             iunit = n ! return the free unit number
-             SCRIP_IOUnitsInUse(iunit) = .true. ! mark iunit as being in use
-             exit srch_units
-          else
-             !*** if inquire shows this unit in use, mark it as
-             !*** in use to prevent further queries
-             SCRIP_IOUnitsInUse(n) = .true.
-          endif
-       endif
+        if (.not. alreadyInUse) then
+          iunit = n ! return the free unit number
+          SCRIP_IOUnitsInUse(iunit) = .true. ! mark iunit as being in use
+          exit srch_units
+        else
+          !*** if inquire shows this unit in use, mark it as
+          !*** in use to prevent further queries
+          SCRIP_IOUnitsInUse(n) = .true.
+        endif
+      endif
     end do srch_units
 
     if (iunit > SCRIP_IOUnitsMaxUnits) &
@@ -191,7 +191,7 @@ contains
     !-----------------------------------------------------------------------
 
     if (iunit < 1 .or. iunit > SCRIP_IOUnitsMaxUnits) then
-       stop 'SCRIP_IOUnitsRelease: bad unit'
+      stop 'SCRIP_IOUnitsRelease: bad unit'
     endif
 
     !-----------------------------------------------------------------------
@@ -249,7 +249,7 @@ contains
 
     if (iunit < SCRIP_IOUnitsMinUnits .or. &
          iunit > SCRIP_IOUnitsMaxUnits) then
-       stop 'SCRIP_IOUnitsReserve: invalid unit'
+      stop 'SCRIP_IOUnitsReserve: invalid unit'
     endif
 
     !-----------------------------------------------------------------------
@@ -259,7 +259,7 @@ contains
     !-----------------------------------------------------------------------
 
     if (SCRIP_IOUnitsInUse(iunit)) then
-       stop 'SCRIP_IOUnitsReserve: unit already in use by SCRIP'
+      stop 'SCRIP_IOUnitsReserve: unit already in use by SCRIP'
     endif
 
     !-----------------------------------------------------------------------
@@ -270,7 +270,7 @@ contains
 
     INQUIRE (unit=iunit, OPENED=alreadyInUse)
     if (alreadyInUse) then
-       stop 'SCRIP_IOUnitsReserve: unit already in use by others'
+      stop 'SCRIP_IOUnitsReserve: unit already in use by others'
     endif
 
     !-----------------------------------------------------------------------
@@ -323,17 +323,17 @@ contains
     !-----------------------------------------------------------------------
 
     if (iunit == SCRIP_stdin) then ! open input file for stdin
-       open(unit=iunit, file=filename, status='old', form='formatted')
+      open(unit=iunit, file=filename, status='old', form='formatted')
 
     else if (iunit == SCRIP_stdout) then ! open output file for stdout
-       open(unit=iunit, file=filename, status='unknown', form='formatted')
+      open(unit=iunit, file=filename, status='unknown', form='formatted')
 
     else if (iunit == SCRIP_stderr .and. SCRIP_stderr /= SCRIP_stdout) then
-       ! open output file for stderr
-       open(unit=iunit, file=filename, status='unknown', form='formatted')
+      ! open output file for stderr
+      open(unit=iunit, file=filename, status='unknown', form='formatted')
 
     else
-       stop 'SCRIP_IOUnitsRedirect: invalid unit'
+      stop 'SCRIP_IOUnitsRedirect: invalid unit'
 
     endif
 

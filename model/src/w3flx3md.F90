@@ -166,10 +166,10 @@ CONTAINS
     SIX    = AFP * SQRTH
     I1     = INT ( SIX / DSIE )
     IF (I1.LE.N1MAX) THEN
-       R1 = SIX/DSIE - REAL(I1)
-       WNP    = ( (1.-R1)*EWN1(I1) + R1*EWN1(I1+1) ) / DEPTH
+      R1 = SIX/DSIE - REAL(I1)
+      WNP    = ( (1.-R1)*EWN1(I1) + R1*EWN1(I1+1) ) / DEPTH
     ELSE
-       WNP    = AFP * AFP / GRAV
+      WNP    = AFP * AFP / GRAV
     END IF
     !
     ! -----  end of inlined and reduced WAVNU1  -----
@@ -182,20 +182,20 @@ CONTAINS
     USTD   = UDIR
     !
     DO ITT=1, NITTIN
-       ALPHA  = 0.57 / ( CP / MAX (UST,0.0001) )**(1.5)
-       RDCH   = MAX ( 0. ,                                           &
-            LOG ( ( ZWIND * GRAV) / ( CINXSI * SQRT(ALPHA) * UNZ**2) ) )
-       CD     = 0.001 * ( 0.021 + 10.4 / (RDCH**1.23+1.85) )
-       UST    = SQRT(CD) * UNZ
-       Z0    = ZWIND * EXP ( -0.4 / SQRT(CD) )
+      ALPHA  = 0.57 / ( CP / MAX (UST,0.0001) )**(1.5)
+      RDCH   = MAX ( 0. ,                                           &
+           LOG ( ( ZWIND * GRAV) / ( CINXSI * SQRT(ALPHA) * UNZ**2) ) )
+      CD     = 0.001 * ( 0.021 + 10.4 / (RDCH**1.23+1.85) )
+      UST    = SQRT(CD) * UNZ
+      Z0    = ZWIND * EXP ( -0.4 / SQRT(CD) )
     END DO
     !
     ! 3.  Apply limit to drag coefficient -------------------------------- *
     !
     IF ( CAP_ID .EQ. 0 ) THEN
-       CD     = MIN ( CD_MAX, CD )
+      CD     = MIN ( CD_MAX, CD )
     ELSE
-       CD     = CD_MAX * TANH ( CD / CD_MAX )
+      CD     = CD_MAX * TANH ( CD / CD_MAX )
     END IF
     !
     UST    = SQRT(CD) * UNZ

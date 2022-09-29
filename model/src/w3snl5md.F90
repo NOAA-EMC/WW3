@@ -213,69 +213,69 @@ CONTAINS
     !
     ! Three options for phase mixing
     IF (QI5PMX .EQ. 0) THEN
-       ! 1) 0: no phase mixing
+      ! 1) 0: no phase mixing
 #ifdef W3_TS
-       IF (IAPROC .EQ. NAPOUT)                                    &
-            WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)')                &
-            " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL:",              &
-            QI5TBEG, T1ABS, T1REL
+      IF (IAPROC .EQ. NAPOUT)                                    &
+           WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)')                &
+           " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL:",              &
+           QI5TBEG, T1ABS, T1REL
 #endif
     ELSE
 #ifdef W3_TS
-       IF (IAPROC .EQ. NAPOUT)                                    &
-            WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)', ADVANCE='no')  &
-            " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL, T1REL[P]:",    &
-            QI5TBEG, T1ABS, T1REL
+      IF (IAPROC .EQ. NAPOUT)                                    &
+           WRITE(SCREEN, '(A, 2(I10.8, I7.6), E12.3)', ADVANCE='no')  &
+           " ⊚ → [WW3 SNL₅] QI5TBEG, T1ABS, T1REL, T1REL[P]:",    &
+           QI5TBEG, T1ABS, T1REL
 #endif
-       !
-       ! Calc. Phase mixing interval
-       IF (QI5PMX .GT. 0) THEN
-          ! 2) N: mix phase by every N characteristic wave periods
-          IF (ABS(FMEAN) < 1E-7) THEN      ! FMEAN may be 0.
-             PM_IVAL = REAL(QI5PMX) * 1.  ! then, assume FMEAN = 1.
-          ELSE
-             PM_IVAL = REAL(QI5PMX) * (1. / FMEAN)
-          END IF
-          !
-       ELSE IF (QI5PMX .LT. 0) THEN
-          ! 3) < 0: mix phase based on dominant wave breaking probability bT
-          ! Calc bT
-          WBT   = CALC_WBTv2(A, CG, WN, QR5DPT, U10, UDIR) ! [0, 1.]
-          ! Mix phase by every 1/bT periods
-          ! Odin used bT < 1/15. (0.066) → BTLOW = 15 and PM_IVAL > 150 s
-          BTINV = MAX(BTLOW, MIN(1./MAX(1E-6, WBT), BTHGH))
-          IF (ABS(FMEAN) < 1E-7) THEN      ! FMEAN may be 0.
-             PM_IVAL = BTINV * 1.  ! then, assume FMEAN = 1.
-          ELSE
-             PM_IVAL = BTINV * (1. / FMEAN)
-          END IF
-       END IF
-       !
-       ! Previous phase mixing time (relat. to TBEG)
-       ! QR5TMIX has already been initialized in w3wdatmd as zero.
-       PM_PREV = QR5TMIX(JSEA)
-       ! Update t1 if necessary
-       PM_DELT = T1REL - PM_PREV
-       IF (PM_DELT .GE. PM_IVAL) THEN
-          QR5TMIX(JSEA) = T1REL        ! relat. to TBEG → PM_PREV
-          T1REL         = 0.
-       ELSE
-          T1REL         = PM_DELT
-       END IF
+      !
+      ! Calc. Phase mixing interval
+      IF (QI5PMX .GT. 0) THEN
+        ! 2) N: mix phase by every N characteristic wave periods
+        IF (ABS(FMEAN) < 1E-7) THEN      ! FMEAN may be 0.
+          PM_IVAL = REAL(QI5PMX) * 1.  ! then, assume FMEAN = 1.
+        ELSE
+          PM_IVAL = REAL(QI5PMX) * (1. / FMEAN)
+        END IF
+        !
+      ELSE IF (QI5PMX .LT. 0) THEN
+        ! 3) < 0: mix phase based on dominant wave breaking probability bT
+        ! Calc bT
+        WBT   = CALC_WBTv2(A, CG, WN, QR5DPT, U10, UDIR) ! [0, 1.]
+        ! Mix phase by every 1/bT periods
+        ! Odin used bT < 1/15. (0.066) → BTLOW = 15 and PM_IVAL > 150 s
+        BTINV = MAX(BTLOW, MIN(1./MAX(1E-6, WBT), BTHGH))
+        IF (ABS(FMEAN) < 1E-7) THEN      ! FMEAN may be 0.
+          PM_IVAL = BTINV * 1.  ! then, assume FMEAN = 1.
+        ELSE
+          PM_IVAL = BTINV * (1. / FMEAN)
+        END IF
+      END IF
+      !
+      ! Previous phase mixing time (relat. to TBEG)
+      ! QR5TMIX has already been initialized in w3wdatmd as zero.
+      PM_PREV = QR5TMIX(JSEA)
+      ! Update t1 if necessary
+      PM_DELT = T1REL - PM_PREV
+      IF (PM_DELT .GE. PM_IVAL) THEN
+        QR5TMIX(JSEA) = T1REL        ! relat. to TBEG → PM_PREV
+        T1REL         = 0.
+      ELSE
+        T1REL         = PM_DELT
+      END IF
 #ifdef W3_TS
-       IF (IAPROC .EQ. NAPOUT) THEN
-          WRITE(SCREEN, '(F9.1)') T1REL
-          IF (QI5PMX .LT. 0 ) WRITE(SCREEN, '(A, F6.3)') '↔ bT: ', WBT
-       ENDIF
+      IF (IAPROC .EQ. NAPOUT) THEN
+        WRITE(SCREEN, '(F9.1)') T1REL
+        IF (QI5PMX .LT. 0 ) WRITE(SCREEN, '(A, F6.3)') '↔ bT: ', WBT
+      ENDIF
 #endif
     END IF
     !
     ! Calc. Cvk1 from A (C(\bm{k}) = g N(k, θ) / k)
     DO IK = 1, NK
-       DO ITH = 1, NTH
-          ISPEC = ITH + (IK-1) * NTH
-          Cvk1(ISPEC) = A(ITH, IK) / WN(IK) * GRAV
-       END DO
+      DO ITH = 1, NTH
+        ISPEC = ITH + (IK-1) * NTH
+        Cvk1(ISPEC) = A(ITH, IK) / WN(IK) * GRAV
+      END DO
     END DO
     !
     ! CalcQRSNL(nk, nth, sig, th, t0, t1, Cvk0, Cvk1, Inpqr0, Snl, Dnl, Kurt)
@@ -289,10 +289,10 @@ CONTAINS
     ! TODO D(ITH, IK) (See NL2 for reference)
     D = 0.0
     DO IK = 1, NK
-       DO ITH = 1, NTH
-          ISPEC = ITH + (IK-1) * NTH
-          S(ITH, IK) = SNL(ISPEC) * WN(IK) / GRAV
-       END DO
+      DO ITH = 1, NTH
+        ISPEC = ITH + (IK-1) * NTH
+        S(ITH, IK) = SNL(ISPEC) * WN(IK) / GRAV
+      END DO
     END DO
     !
     ! Store wave info. @ t1 → t0
@@ -303,16 +303,16 @@ CONTAINS
     ! Point output (Snl term)
     ! First ouput action (Find nearest grid points & generate binary files)
     IF (FSTOUT) THEN
-       CALL INPOUT
-       FSTOUT = .FALSE.
-       IF (IAPROC .EQ. NAPOUT) THEN
-          WRITE(SCREEN, *)
-          WRITE(SCREEN, '(A)')                          &
-               ' ⊚ → [WW3 SNL₅] Point ouptut initialization'
-          WRITE(SCREEN, '(A, I4)')                      &
-               ' ⊚ → [WW3 SNL₅] # of valid points: ', NSEL
-          WRITE(SCREEN, *)
-       END IF
+      CALL INPOUT
+      FSTOUT = .FALSE.
+      IF (IAPROC .EQ. NAPOUT) THEN
+        WRITE(SCREEN, *)
+        WRITE(SCREEN, '(A)')                          &
+             ' ⊚ → [WW3 SNL₅] Point ouptut initialization'
+        WRITE(SCREEN, '(A, I4)')                      &
+             ' ⊚ → [WW3 SNL₅] # of valid points: ', NSEL
+        WRITE(SCREEN, *)
+      END IF
     END IF
     !
     ! Calc FACTOR used for Jacobian tranformation from N(k, θ) to E(f, θ)
@@ -321,59 +321,59 @@ CONTAINS
     ! Regular grid & curvilinear grid
     IF ( ((GTYPE .EQ. RLGTYPE) .OR. (GTYPE .EQ. CLGTYPE)) &
          .AND. FLOUT(2) .AND. NSEL .GT. 0) THEN
-       TDEL1 = DSEC21(T1ABS, TOSNL5)
-       TDEL2 = DSEC21(T1ABS, TOLAST(:, 2)) ! not really useful since
-       ! TOSNL5 can never catch
-       ! TOLAST
-       ! Output time
-       IF (ABS(TDEL1) < 1E-6 .OR. ABS(TDEL2) < 1E-6) THEN
-          ! JSEA→ ISEA
-          CALL INIT_GET_ISEA(ISEA, JSEA)
-          ! Find the loc of ISEA at PSEA (nearest sea grid point)
-          IF (ALLOCATED(PDIFF)) DEALLOCATE(PDIFF); ALLOCATE(PDIFF(NSEL))
-          PDIFF = ABS(PSEA(1:NSEL) - ISEA)
-          IF (ANY(PDIFF .EQ. 0)) THEN
-             JLOC = MINLOC(PDIFF, 1)
+      TDEL1 = DSEC21(T1ABS, TOSNL5)
+      TDEL2 = DSEC21(T1ABS, TOLAST(:, 2)) ! not really useful since
+      ! TOSNL5 can never catch
+      ! TOLAST
+      ! Output time
+      IF (ABS(TDEL1) < 1E-6 .OR. ABS(TDEL2) < 1E-6) THEN
+        ! JSEA→ ISEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
+        ! Find the loc of ISEA at PSEA (nearest sea grid point)
+        IF (ALLOCATED(PDIFF)) DEALLOCATE(PDIFF); ALLOCATE(PDIFF(NSEL))
+        PDIFF = ABS(PSEA(1:NSEL) - ISEA)
+        IF (ANY(PDIFF .EQ. 0)) THEN
+          JLOC = MINLOC(PDIFF, 1)
 #ifdef W3_TS
-             IF (IAPROC .EQ. NAPOUT)                               &
-                  WRITE(SCREEN, '(3A, I10.8, I7.6)')                    &
-                  '✓ Point output for |', PNMS(JLOC), '| @', T1ABS
+          IF (IAPROC .EQ. NAPOUT)                               &
+               WRITE(SCREEN, '(3A, I10.8, I7.6)')                    &
+               '✓ Point output for |', PNMS(JLOC), '| @', T1ABS
 #endif
 
-             ! N(θ, k) →  F(f, θ) & S(θ, k) →  S(f, θ)
-             DO ITH = 1, NTH
-                A2(:, ITH) = A(ITH, :) * FACTOR
-                S2(:, ITH) = S(ITH, :) * FACTOR
-             END DO
-             ! NaN Check
-             IF (HasNaN(NK, NTH, A2) .OR. HasNaN(NK, NTH, S2)) THEN
-                IF (IAPROC .EQ. NAPOUT)                            &
-                     WRITE(SCREEN, *) '★★★ Warning: find NaN in E(f, θ) &
-                     & or Snl(f, θ) !'
-             END IF
-             ! unit no.
-             IUNT = 500 + JLOC
-             ! Store data (binary)
-             !                 OPEN(IUNT, FILE='NL5_'//trim(PNMS(JLOC))//'_src.bin',  &
-             !                      form='unformatted', convert=file_endian, ACCESS='stream',             &
-             !                      STATUS='old', POSITION='append', ACTION='write')
-             !                 WRITE(IUNT) T1ABS
-             !                 WRITE(IUNT) KURT
-             !                 WRITE(IUNT) A2
-             !                 WRITE(IUNT) S2
-             !                 CLOSE(IUNT)
-             ! Store data (ascii)
-             OPEN(IUNT, FILE='NL5_'//trim(PNMS(JLOC))//'_src.dat', &
-                  FORM='formatted', STATUS='old',                  &
-                  POSITION='append', ACTION='write')
-             WRITE(IUNT, '(I10.8, I7.6)') T1ABS
-             WRITE(IUNT, '(ES11.3)')      KURT
-             WRITE(IUNT, 113) A2
-             WRITE(IUNT, 113) S2
-             CLOSE(IUNT)
-             !
+          ! N(θ, k) →  F(f, θ) & S(θ, k) →  S(f, θ)
+          DO ITH = 1, NTH
+            A2(:, ITH) = A(ITH, :) * FACTOR
+            S2(:, ITH) = S(ITH, :) * FACTOR
+          END DO
+          ! NaN Check
+          IF (HasNaN(NK, NTH, A2) .OR. HasNaN(NK, NTH, S2)) THEN
+            IF (IAPROC .EQ. NAPOUT)                            &
+                 WRITE(SCREEN, *) '★★★ Warning: find NaN in E(f, θ) &
+                 & or Snl(f, θ) !'
           END IF
-       END IF
+          ! unit no.
+          IUNT = 500 + JLOC
+          ! Store data (binary)
+          !                 OPEN(IUNT, FILE='NL5_'//trim(PNMS(JLOC))//'_src.bin',  &
+          !                      form='unformatted', convert=file_endian, ACCESS='stream',             &
+          !                      STATUS='old', POSITION='append', ACTION='write')
+          !                 WRITE(IUNT) T1ABS
+          !                 WRITE(IUNT) KURT
+          !                 WRITE(IUNT) A2
+          !                 WRITE(IUNT) S2
+          !                 CLOSE(IUNT)
+          ! Store data (ascii)
+          OPEN(IUNT, FILE='NL5_'//trim(PNMS(JLOC))//'_src.dat', &
+               FORM='formatted', STATUS='old',                  &
+               POSITION='append', ACTION='write')
+          WRITE(IUNT, '(I10.8, I7.6)') T1ABS
+          WRITE(IUNT, '(ES11.3)')      KURT
+          WRITE(IUNT, 113) A2
+          WRITE(IUNT, 113) S2
+          CLOSE(IUNT)
+          !
+        END IF
+      END IF
     END IF
     ! Format
 113 FORMAT ((10ES11.3))
@@ -480,13 +480,13 @@ CONTAINS
     !
     ! Q. Liu (TODO)
     IF (IAPROC .EQ. NAPOUT) THEN
-       WRITE(SCREEN, '(A, F6.1)') " ⊚ → [WW3 SNL₅]: water depth   : ", qr_depth
-       WRITE(SCREEN, '(A, F7.2)') " ⊚ → [WW3 SNL₅]: ω λc cut off  : ", qr_oml
-       WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: Discretiza.   : ", qi_disc
-       WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: GKE version   : ", qi_kev
-       WRITE(SCREEN, '(A, I12)' ) " ⊚ → [WW3 SNL₅]: # of quartets : ", qi_nnz
-       WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: interpol.     : ", qi_interp
-       WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: phase mixing  : ", QI5PMX
+      WRITE(SCREEN, '(A, F6.1)') " ⊚ → [WW3 SNL₅]: water depth   : ", qr_depth
+      WRITE(SCREEN, '(A, F7.2)') " ⊚ → [WW3 SNL₅]: ω λc cut off  : ", qr_oml
+      WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: Discretiza.   : ", qi_disc
+      WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: GKE version   : ", qi_kev
+      WRITE(SCREEN, '(A, I12)' ) " ⊚ → [WW3 SNL₅]: # of quartets : ", qi_nnz
+      WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: interpol.     : ", qi_interp
+      WRITE(SCREEN, '(A, I4)'  ) " ⊚ → [WW3 SNL₅]: phase mixing  : ", QI5PMX
     END IF
     !/
     !/ End of INSNL5 ----------------------------------------------------- /
@@ -587,19 +587,19 @@ CONTAINS
     ETP   = 0.                           ! ΣE(σ)δσ at peak only
     !
     DO IK = 1, NK
-       TC     = SIG(IK) / WN(IK)        ! phase velocity c=σ/k
-       FACTOR = SIG(IK) / CG(IK)        ! σ / cg
-       FACTOR = FACTOR * DTH            ! σ / cg * δθ
-       !
-       DO ITH = 1, NTH
-          TFORCE = TC - U10 * (COSU*ECOS(ITH)+SINU*ESIN(ITH)) &
-               * BETA
+      TC     = SIG(IK) / WN(IK)        ! phase velocity c=σ/k
+      FACTOR = SIG(IK) / CG(IK)        ! σ / cg
+      FACTOR = FACTOR * DTH            ! σ / cg * δθ
+      !
+      DO ITH = 1, NTH
+        TFORCE = TC - U10 * (COSU*ECOS(ITH)+SINU*ESIN(ITH)) &
+             * BETA
 
-          IF (TFORCE .LT. 0.) THEN ! wind sea component
-             ESIG(IK) = ESIG(IK) + A(ITH, IK) * FACTOR
-          ENDIF
-       ENDDO ! ITH
-       !
+        IF (TFORCE .LT. 0.) THEN ! wind sea component
+          ESIG(IK) = ESIG(IK) + A(ITH, IK) * FACTOR
+        ENDIF
+      ENDDO ! ITH
+      !
     ENDDO ! IK
     !
     ! ESIG is E(σ) of the wind sea after filtration of any background swell.
@@ -622,10 +622,10 @@ CONTAINS
     !                         { /0.7σp         }
     !
     DO IK = 1, NK
-       IF ( (SIG(IK) >= 0.7 * SIGP) .AND. &
-            (SIG(IK) <= 1.3 * SIGP) ) THEN
-          ETP = ETP + ESIG(IK) * DSII(IK)
-       ENDIF
+      IF ( (SIG(IK) >= 0.7 * SIGP) .AND. &
+           (SIG(IK) <= 1.3 * SIGP) ) THEN
+        ETP = ETP + ESIG(IK) * DSII(IK)
+      ENDIF
     ENDDO ! IK
     HSP  = 4. * SQRT(MAX(0., ETP))
     !
@@ -721,78 +721,78 @@ CONTAINS
     DIST(:) = -999.
     !
     DO IPT = 1, NOPTS
-       ! Get lon & lat of this output point
-       PLON   = PTLOC(1, IPT)
-       PLAT   = PTLOC(2, IPT)
-       ! Get four indices surrounding the output point
-       IXS(:) = IPTINT(1, :, IPT)
-       IYS(:) = IPTINT(2, :, IPT)
-       DO IS = 1, 4
-          ! Get lon & lat of four corner points
-          IX   = IXS(IS)
-          IY   = IYS(IS)
-          XLON = XGRD(IY, IX)
-          YLAT = YGRD(IY, IX)
-          ! Grid point status
-          IF (MAPSTA(IY, IX) .EQ. 0) CYCLE
-          ! Calc dist.
-          IF (FLAGLL) THEN
-             DIST(IS) = DIST_SPHERE(PLON, PLAT, XLON, YLAT)
-          ELSE
-             DIST(IS) = SQRT((PLON - XLON)**2. + (PLAT - YLAT)**2.)
-          END IF
-       END DO
-       ! A sea point filter: there must be at least one sea grid point around
-       ! the selected output location. [maybe not necessary since IOPP already
-       ! checked this criterion]
-       !
-       IF (ALL(DIST < 0.)) CYCLE
-       ! Find the nearest sea grid point
-       JLOC = MINLOC(DIST, 1, DIST >= 0.)
-       JX   = IXS(JLOC)
-       JY   = IYS(JLOC)
-       ISEA = MAPFS(JY, JX)
-       ! Basic check
+      ! Get lon & lat of this output point
+      PLON   = PTLOC(1, IPT)
+      PLAT   = PTLOC(2, IPT)
+      ! Get four indices surrounding the output point
+      IXS(:) = IPTINT(1, :, IPT)
+      IYS(:) = IPTINT(2, :, IPT)
+      DO IS = 1, 4
+        ! Get lon & lat of four corner points
+        IX   = IXS(IS)
+        IY   = IYS(IS)
+        XLON = XGRD(IY, IX)
+        YLAT = YGRD(IY, IX)
+        ! Grid point status
+        IF (MAPSTA(IY, IX) .EQ. 0) CYCLE
+        ! Calc dist.
+        IF (FLAGLL) THEN
+          DIST(IS) = DIST_SPHERE(PLON, PLAT, XLON, YLAT)
+        ELSE
+          DIST(IS) = SQRT((PLON - XLON)**2. + (PLAT - YLAT)**2.)
+        END IF
+      END DO
+      ! A sea point filter: there must be at least one sea grid point around
+      ! the selected output location. [maybe not necessary since IOPP already
+      ! checked this criterion]
+      !
+      IF (ALL(DIST < 0.)) CYCLE
+      ! Find the nearest sea grid point
+      JLOC = MINLOC(DIST, 1, DIST >= 0.)
+      JX   = IXS(JLOC)
+      JY   = IYS(JLOC)
+      ISEA = MAPFS(JY, JX)
+      ! Basic check
 #ifdef W3_TS
-       IF (FLAGLL) THEN
-          IF (IAPROC .EQ. NAPOUT)                                    &
-               WRITE(SCREEN, "(A, 2F10.3, A, 2F10.3, A)")                 &
-               '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
-               XGRD(JY, JX), YGRD(JY, JX), ')'
-       ELSE
-          IF (IAPROC .EQ. NAPOUT)                                    &
-               WRITE(SCREEN, "(A, 2E10.3, A, 2E10.3, A)")                 &
-               '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
-               XGRD(JY, JX), YGRD(JY, JX), ')'
-       END IF
+      IF (FLAGLL) THEN
+        IF (IAPROC .EQ. NAPOUT)                                    &
+             WRITE(SCREEN, "(A, 2F10.3, A, 2F10.3, A)")                 &
+             '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
+             XGRD(JY, JX), YGRD(JY, JX), ')'
+      ELSE
+        IF (IAPROC .EQ. NAPOUT)                                    &
+             WRITE(SCREEN, "(A, 2E10.3, A, 2E10.3, A)")                 &
+             '✗ (PLON, PLAT): (', PLON, PLAT, ') | (XGRD, YGRD): (',&
+             XGRD(JY, JX), YGRD(JY, JX), ')'
+      END IF
 #endif
-       ! Store ISEA
-       NSEL = NSEL + 1
-       PSEA(NSEL) = ISEA
-       PNMS(NSEL) = PTNME(IPT)
-       ! Store Unit (Open & Write Binary files)
-       IUNT = 500 + NSEL
-       ! Binary
-       !         OPEN(IUNT, FILE='NL5_'//trim(PNMS(NSEL))//'_src.bin',       &
-       !              form='unformatted', convert=file_endian, ACCESS='stream', STATUS='replace', &
-       !              ACTION='write')
-       !         WRITE(IUNT) PLON, PLAT
-       !         WRITE(IUNT) XGRD(JY, JX), YGRD(JY, JX)
-       !         WRITE(IUNT) QR5DPT
-       !         WRITE(IUNT) NK, NTH
-       !         WRITE(IUNT) SIG(1:NK)/TPI  ! f, θ
-       !         WRITE(IUNT) TH
-       !         CLOSE(IUNT)
-       ! Ascii
-       OPEN(IUNT, FILE='NL5_'//trim(PNMS(NSEL))//'_src.dat',       &
-            FORM='formatted', STATUS='replace', ACTION='write')
-       WRITE(IUNT, '(2ES11.3)') PLON, PLAT
-       WRITE(IUNT, '(ES11.3)' ) QR5DPT
-       WRITE(IUNT, '(2I5)')     NK, NTH
-       WRITE(IUNT, 113) SIG(1:NK)/TPI  ! f, θ
-       WRITE(IUNT, 113) TH
-       CLOSE(IUNT)
-       !
+      ! Store ISEA
+      NSEL = NSEL + 1
+      PSEA(NSEL) = ISEA
+      PNMS(NSEL) = PTNME(IPT)
+      ! Store Unit (Open & Write Binary files)
+      IUNT = 500 + NSEL
+      ! Binary
+      !         OPEN(IUNT, FILE='NL5_'//trim(PNMS(NSEL))//'_src.bin',       &
+      !              form='unformatted', convert=file_endian, ACCESS='stream', STATUS='replace', &
+      !              ACTION='write')
+      !         WRITE(IUNT) PLON, PLAT
+      !         WRITE(IUNT) XGRD(JY, JX), YGRD(JY, JX)
+      !         WRITE(IUNT) QR5DPT
+      !         WRITE(IUNT) NK, NTH
+      !         WRITE(IUNT) SIG(1:NK)/TPI  ! f, θ
+      !         WRITE(IUNT) TH
+      !         CLOSE(IUNT)
+      ! Ascii
+      OPEN(IUNT, FILE='NL5_'//trim(PNMS(NSEL))//'_src.dat',       &
+           FORM='formatted', STATUS='replace', ACTION='write')
+      WRITE(IUNT, '(2ES11.3)') PLON, PLAT
+      WRITE(IUNT, '(ES11.3)' ) QR5DPT
+      WRITE(IUNT, '(2I5)')     NK, NTH
+      WRITE(IUNT, 113) SIG(1:NK)/TPI  ! f, θ
+      WRITE(IUNT, 113) TH
+      CLOSE(IUNT)
+      !
     END DO
     ! Format
 113 FORMAT ((10ES11.3))
@@ -824,7 +824,7 @@ CONTAINS
     !
     IF ( ALL(ARR2D .GE. -HUGE(ARR2D(1, 1))) .AND.  &
          ALL(ARR2D .LE.  HUGE(ARR2D(1, 1))) ) THEN
-       HasNaN = .FALSE.
+      HasNaN = .FALSE.
     END IF
     !
     RETURN

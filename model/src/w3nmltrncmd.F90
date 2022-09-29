@@ -25,16 +25,16 @@ MODULE W3NMLTRNCMD
 
   ! track structure
   TYPE NML_TRACK_T
-     CHARACTER(15)               :: TIMESTART
-     CHARACTER(15)               :: TIMESTRIDE
-     CHARACTER(15)               :: TIMECOUNT
-     INTEGER                     :: TIMESPLIT
+    CHARACTER(15)               :: TIMESTART
+    CHARACTER(15)               :: TIMESTRIDE
+    CHARACTER(15)               :: TIMECOUNT
+    INTEGER                     :: TIMESPLIT
   END TYPE NML_TRACK_T
 
   ! file structure
   TYPE NML_FILE_T
-     CHARACTER(30)               :: PREFIX
-     INTEGER                     :: NETCDF
+    CHARACTER(30)               :: PREFIX
+    INTEGER                     :: NETCDF
   END TYPE NML_FILE_T
 
   ! miscellaneous
@@ -132,15 +132,15 @@ CONTAINS
     NDSN = 3
     OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+      RETURN
     END IF
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read track namelist
@@ -256,10 +256,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=TRACK_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_TRACK_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_TRACK_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! save namelist
@@ -360,10 +360,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=FILE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_FILE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (2)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_FILE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (2)
     END IF
 
     ! save namelist

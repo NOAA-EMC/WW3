@@ -315,123 +315,123 @@ CONTAINS
     IF (INFLAGS2(4).AND.(ICECONC==0.0)) NOICE=.TRUE.
 
     IF ( NOICE ) THEN
-       D = 0.0
-       !
-       ! 2.  Ice ------------------------------------------------------------ /
+      D = 0.0
+      !
+      ! 2.  Ice ------------------------------------------------------------ /
     ELSE
-       !
-       ! 2.a Set constant(s) and write test output -------------------------- /
-       !
-       !         (none)
-       !
+      !
+      ! 2.a Set constant(s) and write test output -------------------------- /
+      !
+      !         (none)
+      !
 #ifdef W3_T38
-       WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2
+      WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2
 #endif
-       !
-       ! 2.b Make calculations ---------------------------------------------- /
+      !
+      ! 2.b Make calculations ---------------------------------------------- /
 
-       !  ICECOEF1 = H_ICE
-       !  ICECOEF2 = VISC
-       !
-       ! Branches out depending on choice of dispersion relation...
-       ! by default IC2PARS(1)=0, and attenuation computed as described in Stopa et al. 2016
-       !
-       IF (IC2PARS(1).GT.0.5) THEN
-          IF (.NOT.INFLAGS2(-7))THEN
-             WRITE (NDSE,1001) 'ICE PARAMETER 1'
-             CALL EXTCDE(2)
-          ENDIF
-          IF (.NOT.INFLAGS2(-6))THEN
-             WRITE (NDSE,1001) 'ICE PARAMETER 2'
-             CALL EXTCDE(2)
-          ENDIF
-          !
-          WN_I(:) = 0.5 * ALPHA(:) !  ALPHA=2*WN_I
+      !  ICECOEF1 = H_ICE
+      !  ICECOEF2 = VISC
+      !
+      ! Branches out depending on choice of dispersion relation...
+      ! by default IC2PARS(1)=0, and attenuation computed as described in Stopa et al. 2016
+      !
+      IF (IC2PARS(1).GT.0.5) THEN
+        IF (.NOT.INFLAGS2(-7))THEN
+          WRITE (NDSE,1001) 'ICE PARAMETER 1'
+          CALL EXTCDE(2)
+        ENDIF
+        IF (.NOT.INFLAGS2(-6))THEN
+          WRITE (NDSE,1001) 'ICE PARAMETER 2'
+          CALL EXTCDE(2)
+        ENDIF
+        !
+        WN_I(:) = 0.5 * ALPHA(:) !  ALPHA=2*WN_I
+        DO IK=1, NK
+          !            recall that D=S/E=-2*Cg*k_i
+          !            Note: We should not use CG_ICE here unless CG_ICE is also
+          !            used for advection in w3wavemd.ftn (see lines for IC3
+          !            there).
+          D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
+        END DO
+        !
+        ! Alternative by F.A.: generalization to a turbulent boundary layer
+        !                      uses the ice-free dispersion, to be updated later
+        !
+      ELSE ! goes here if IC2PARS(1).LE.0.5 (this is the default behavior)
+        IF (IC2PARS(2).GT.0.) THEN
+          UORB=0.
+          AORB=0.
+          FTURB = IC2PARS(2)
+          ! Special treatment in the southern ocean ...
+          IF (IC2PARS(7).GT.0) THEN
+            IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) FTURB = IC2PARS(7)
+          END IF
           DO IK=1, NK
-             !            recall that D=S/E=-2*Cg*k_i
-             !            Note: We should not use CG_ICE here unless CG_ICE is also
-             !            used for advection in w3wavemd.ftn (see lines for IC3
-             !            there).
-             D1D(IK)= -2.0 * CG(IK) * WN_I(IK)
-          END DO
-          !
-          ! Alternative by F.A.: generalization to a turbulent boundary layer
-          !                      uses the ice-free dispersion, to be updated later
-          !
-       ELSE ! goes here if IC2PARS(1).LE.0.5 (this is the default behavior)
-          IF (IC2PARS(2).GT.0.) THEN
-             UORB=0.
-             AORB=0.
-             FTURB = IC2PARS(2)
-             ! Special treatment in the southern ocean ...
-             IF (IC2PARS(7).GT.0) THEN
-                IF (YGRD(IY,IX).LT.0.AND.GTYPE.EQ.RLGTYPE.AND.FLAGLL) FTURB = IC2PARS(7)
-             END IF
-             DO IK=1, NK
-                EB  = 0.
-                DO ITH=1, NTH
-                   IS=ITH+(IK-1)*NTH
-                   EB  = EB  + A(IS)
-                END DO
-                !
-                !  UORB and AORB are the variances of the orbital velocity and surface elevation
-                ! of the water relative to the ice ... this is only correct if the ice layer
-                ! does not move. This should is changed by taking into account DMAX when IC2DMAX > 0:
-                !
+            EB  = 0.
+            DO ITH=1, NTH
+              IS=ITH+(IK-1)*NTH
+              EB  = EB  + A(IS)
+            END DO
+            !
+            !  UORB and AORB are the variances of the orbital velocity and surface elevation
+            ! of the water relative to the ice ... this is only correct if the ice layer
+            ! does not move. This should is changed by taking into account DMAX when IC2DMAX > 0:
+            !
 #ifdef W3_IS2
-                IF (IC2PARS(8).GT.0) THEN
-                   WLG_R(IK)=TPI/WN_R(IK)
-                   SMOOTH_DMAX(IK)= (0.5*(1+TANH((ICEF-IC2PARS(8)*WLG_R(IK))/(ICEF*0.5))))**2
-                END IF
+            IF (IC2PARS(8).GT.0) THEN
+              WLG_R(IK)=TPI/WN_R(IK)
+              SMOOTH_DMAX(IK)= (0.5*(1+TANH((ICEF-IC2PARS(8)*WLG_R(IK))/(ICEF*0.5))))**2
+            END IF
 #endif
-                !
-                IF (R(IK).GT.1.) THEN
-                   UORB = UORB + EB * SMOOTH_DMAX(IK)* SIG(IK)**2 * DDEN(IK) / CG(IK) &
-                        / (R(IK)*CG_ICE(IK)/CG(IK))
-                   AORB = AORB + EB * SMOOTH_DMAX(IK)             * DDEN(IK) / CG(IK) &
-                        / (R(IK)*CG_ICE(IK)/CG(IK)) !deep water only
-                ELSE
-                   UORB = UORB + EB * SMOOTH_DMAX(IK) *SIG(IK)**2 * DDEN(IK) / CG(IK)
-                   AORB = AORB + EB * SMOOTH_DMAX(IK)             * DDEN(IK) / CG(IK) !deep water only
-                END IF
+            !
+            IF (R(IK).GT.1.) THEN
+              UORB = UORB + EB * SMOOTH_DMAX(IK)* SIG(IK)**2 * DDEN(IK) / CG(IK) &
+                   / (R(IK)*CG_ICE(IK)/CG(IK))
+              AORB = AORB + EB * SMOOTH_DMAX(IK)             * DDEN(IK) / CG(IK) &
+                   / (R(IK)*CG_ICE(IK)/CG(IK)) !deep water only
+            ELSE
+              UORB = UORB + EB * SMOOTH_DMAX(IK) *SIG(IK)**2 * DDEN(IK) / CG(IK)
+              AORB = AORB + EB * SMOOTH_DMAX(IK)             * DDEN(IK) / CG(IK) !deep water only
+            END IF
 
-             END DO
-             !
-             AORB = 2*SQRT(AORB)  ! significant amplitude
-             UORB = 2*SQRT(UORB)  ! significant amplitude
-
-             RE = UORB*AORB / VISCM
-             SMOOTH = 0.5*TANH((RE-IC2PARS(4))/IC2PARS(5))
-             PTURB=(0.5+SMOOTH)
-             PVISC=(0.5-SMOOTH)
-
-             XI=(ALOG10(MAX(AORB/IC2PARS(3),3.))-ABMIN)/DELAB
-             IND  = MIN (SIZEFWTABLE-1, INT(XI))
-             DELI1= MIN (1. ,XI-FLOAT(IND))
-             DELI2= 1. - DELI1
-             FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
-             DTURB= FTURB*FW*UORB/GRAV
-          ELSE ! so case of IC2PARS(2).LE.0.
-             DTURB = 0.
-             PTURB = 0.
-             PVISC = 1.
-          END IF ! IF (IC2PARS(2).GT.0.)
-          !
-          DO IK=1, NK
-             ! WN_R is used here but warning, this is only OK for unbroken ice
-             DVISC = IC2PARS(6) * WN_R(IK) * SQRT(VISCM* SIG(IK) / 2.)
-             D1D(IK) = -1.*(PTURB*MAX(DTURB*SIG(IK)**2,DVISC) + PVISC*DVISC) &
-                  *SMOOTH_DMAX(IK)
           END DO
-       END IF !  IF (IC2PARS(1).GT.0.5)
+          !
+          AORB = 2*SQRT(AORB)  ! significant amplitude
+          UORB = 2*SQRT(UORB)  ! significant amplitude
 
-       !
-       ! 2.c Fill diagional matrix
-       !
-       DO IKTH=1, NSPEC
-          D(IKTH) = D1D(MAPWN(IKTH))
-       END DO
-       !
+          RE = UORB*AORB / VISCM
+          SMOOTH = 0.5*TANH((RE-IC2PARS(4))/IC2PARS(5))
+          PTURB=(0.5+SMOOTH)
+          PVISC=(0.5-SMOOTH)
+
+          XI=(ALOG10(MAX(AORB/IC2PARS(3),3.))-ABMIN)/DELAB
+          IND  = MIN (SIZEFWTABLE-1, INT(XI))
+          DELI1= MIN (1. ,XI-FLOAT(IND))
+          DELI2= 1. - DELI1
+          FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
+          DTURB= FTURB*FW*UORB/GRAV
+        ELSE ! so case of IC2PARS(2).LE.0.
+          DTURB = 0.
+          PTURB = 0.
+          PVISC = 1.
+        END IF ! IF (IC2PARS(2).GT.0.)
+        !
+        DO IK=1, NK
+          ! WN_R is used here but warning, this is only OK for unbroken ice
+          DVISC = IC2PARS(6) * WN_R(IK) * SQRT(VISCM* SIG(IK) / 2.)
+          D1D(IK) = -1.*(PTURB*MAX(DTURB*SIG(IK)**2,DVISC) + PVISC*DVISC) &
+               *SMOOTH_DMAX(IK)
+        END DO
+      END IF !  IF (IC2PARS(1).GT.0.5)
+
+      !
+      ! 2.c Fill diagional matrix
+      !
+      DO IKTH=1, NSPEC
+        D(IKTH) = D1D(MAPWN(IKTH))
+      END DO
+      !
     END IF !    IF ( NOICE ) THEN
     !
     S = D * A
@@ -440,9 +440,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !

@@ -47,32 +47,32 @@ module yowNodepool
   !> Such as x, y, z data or the number of connected nodes
   type, public :: t_Node
 
-     !> the local node number
-     integer :: id = 0
+    !> the local node number
+    integer :: id = 0
 
-     !> the global node number
-     integer :: id_global = 0
+    !> the global node number
+    integer :: id_global = 0
 
-     !> number of connected nodes.
-     !> holds the number of neighbors conntected to this node.
-     !> to get the connected nodes, iterate over the connNodes() Array
-     integer :: nConnNodes = 0
+    !> number of connected nodes.
+    !> holds the number of neighbors conntected to this node.
+    !> to get the connected nodes, iterate over the connNodes() Array
+    integer :: nConnNodes = 0
 
-     !> The domain ID to which this node belongs.
-     !> The first domain starts by 1. Fortran Stye
-     integer :: domainID = 0
+    !> The domain ID to which this node belongs.
+    !> The first domain starts by 1. Fortran Stye
+    integer :: domainID = 0
 
-   contains
-     !> Insert a node to the connected Nodes array. See Node_insertConnNode()
-     !> Just a helper subroutine to make nicer code
-     procedure :: insertConnNode
+  contains
+    !> Insert a node to the connected Nodes array. See Node_insertConnNode()
+    !> Just a helper subroutine to make nicer code
+    procedure :: insertConnNode
 
-     !> return a pointer to the i-th node number conntected to this node
-     !> Just a helper function to make nicer code
-     procedure :: connNodes
+    !> return a pointer to the i-th node number conntected to this node
+    !> Just a helper function to make nicer code
+    procedure :: connNodes
 
-     !> returns true if this node is a ghost node
-     procedure :: isGhost
+    !> returns true if this node is a ghost node
+    procedure :: isGhost
   end type t_Node
 
   !> coordinates of the local +  ghost nodes. range [1:npa]
@@ -187,19 +187,19 @@ contains
     ! if index is present, Check if the node has allreay be insert. Then insert it
     ! if index is not present, just increas temporarily array lenght for later allocation
     if(present(ind)) then
-       do i = 1, this%nConnNodes
-          node => this%connNodes(i)
-          if(node%id_global == ind) then
-             return
-          end if
-       end do
+      do i = 1, this%nConnNodes
+        node => this%connNodes(i)
+        if(node%id_global == ind) then
+          return
+        end if
+      end do
 
-       this%nConnNodes = this%nConnNodes +1
-       !       connNode => this%connNodes(this%nConnNodes)
-       connNodes_data(this%id_global, this%nConnNodes) = ind
-       !       connNode = index
+      this%nConnNodes = this%nConnNodes +1
+      !       connNode => this%connNodes(this%nConnNodes)
+      connNodes_data(this%id_global, this%nConnNodes) = ind
+      !       connNode = index
     else
-       this%nConnNodes = this%nConnNodes +1
+      this%nConnNodes = this%nConnNodes +1
     end if
   end subroutine insertConnNode
 
@@ -210,9 +210,9 @@ contains
     logical :: isGhost
 
     if(this%id <= np) then
-       isGhost = .false.
+      isGhost = .false.
     else
-       isGhost = .true.
+      isGhost = .true.
     endif
   end function isGhost
 

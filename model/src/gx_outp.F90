@@ -247,9 +247,9 @@ PROGRAM GXOUTP
   CALL W3IOGR ( 'READ', NDSM )
   WRITE (NDSO,920) GNAME
   IF ( FLAGLL ) THEN
-     FACT   = 1.
+    FACT   = 1.
   ELSE
-     FACT   = 1.E-3
+    FACT   = 1.E-3
   END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -260,11 +260,11 @@ PROGRAM GXOUTP
   !
   WRITE (NDSO,930)
   DO I=1, NOPTS
-     IF ( FLAGLL ) THEN
-        WRITE (NDSO,931) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
-     ELSE
-        WRITE (NDSO,932) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
-     END IF
+    IF ( FLAGLL ) THEN
+      WRITE (NDSO,931) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
+    ELSE
+      WRITE (NDSO,932) PTNME(I), FACT*PTLOC(1,I), FACT*PTLOC(2,I)
+    END IF
   END DO
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -284,9 +284,9 @@ PROGRAM GXOUTP
   CALL TICK21 ( TDUM , DTREQ )
   CALL STME21 ( TDUM , IDTIME )
   IF ( DTREQ .GE. 86400. ) THEN
-     WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
+    WRITE (IDDDAY,'(I10,1X)') INT(DTREQ/86400.)
   ELSE
-     IDDDAY = '           '
+    IDDDAY = '           '
   END IF
   IDTIME(1:11) = IDDDAY
   IDTIME(21:23) = '   '
@@ -298,31 +298,31 @@ PROGRAM GXOUTP
   NREQ   = 0
   !
   DO
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*,END=801,ERR=802) IPOINT
-     IF ( IPOINT .GT. 0 ) THEN
-        IF ( IPOINT .LE. NOPTS ) THEN
-           IF ( .NOT. FLREQ(IPOINT) ) NREQ   = NREQ + 1
-           FLREQ(IPOINT) = .TRUE.
-        END IF
-     ELSE
-        EXIT
-     END IF
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*,END=801,ERR=802) IPOINT
+    IF ( IPOINT .GT. 0 ) THEN
+      IF ( IPOINT .LE. NOPTS ) THEN
+        IF ( .NOT. FLREQ(IPOINT) ) NREQ   = NREQ + 1
+        FLREQ(IPOINT) = .TRUE.
+      END IF
+    ELSE
+      EXIT
+    END IF
   END DO
   !
   ! ... Output of output points
   !
   WRITE (NDSO,950) NREQ
   DO I=1, NOPTS
-     IF (FLREQ(I)) THEN
-        IF ( FLAGLL ) THEN
-           WRITE (NDSO,951) PTNME(I), FACT*PTLOC(1,I), &
-                FACT*PTLOC(2,I)
-        ELSE
-           WRITE (NDSO,956) PTNME(I), FACT*PTLOC(1,I), &
-                FACT*PTLOC(2,I)
-        END IF
-     END IF
+    IF (FLREQ(I)) THEN
+      IF ( FLAGLL ) THEN
+        WRITE (NDSO,951) PTNME(I), FACT*PTLOC(1,I), &
+             FACT*PTLOC(2,I)
+      ELSE
+        WRITE (NDSO,956) PTNME(I), FACT*PTLOC(1,I), &
+             FACT*PTLOC(2,I)
+      END IF
+    END IF
   END DO
   !
   ! ... Output of output points
@@ -332,10 +332,10 @@ PROGRAM GXOUTP
   WRITE (NDSO,952)
   NLEV   = 0
   DO I=1, 7
-     IF ( FLSRCE(I) ) THEN
-        WRITE (NDST,953) IDSRCE(I)
-        NLEV   = NLEV + 1
-     END IF
+    IF ( FLSRCE(I) ) THEN
+      WRITE (NDST,953) IDSRCE(I)
+      NLEV   = NLEV + 1
+    END IF
   END DO
   !
   WRITE (NDSO,955)
@@ -345,30 +345,30 @@ PROGRAM GXOUTP
   IOUT   = 0
   !
   DO
-     DTEST  = DSEC21 ( TIME , TOUT )
-     IF ( DTEST .GT. 0. ) THEN
-        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
-        IF ( IOTEST .EQ. -1 ) THEN
-           WRITE (NDSO,998)
-           EXIT
-        END IF
-        CYCLE
-     END IF
-     IF ( DTEST .LT. 0. ) THEN
-        CALL TICK21 ( TOUT , DTREQ )
-        CYCLE
-     END IF
-     !
-     IOUT   = IOUT + 1
-     CALL STME21 ( TOUT , IDTIME )
-     !
-     CALL GXEXPO
-     TIMEN  = TOUT
-     !
-     IF ( TIME0(1) .EQ. -1 ) TIME0 = TIME
-     !
-     CALL TICK21 ( TOUT , DTREQ )
-     IF ( IOUT .GE. NOUT ) EXIT
+    DTEST  = DSEC21 ( TIME , TOUT )
+    IF ( DTEST .GT. 0. ) THEN
+      CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+      IF ( IOTEST .EQ. -1 ) THEN
+        WRITE (NDSO,998)
+        EXIT
+      END IF
+      CYCLE
+    END IF
+    IF ( DTEST .LT. 0. ) THEN
+      CALL TICK21 ( TOUT , DTREQ )
+      CYCLE
+    END IF
+    !
+    IOUT   = IOUT + 1
+    CALL STME21 ( TOUT , IDTIME )
+    !
+    CALL GXEXPO
+    TIMEN  = TOUT
+    !
+    IF ( TIME0(1) .EQ. -1 ) TIME0 = TIME
+    !
+    CALL TICK21 ( TOUT , DTREQ )
+    IF ( IOUT .GE. NOUT ) EXIT
   END DO
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -394,12 +394,12 @@ PROGRAM GXOUTP
   IF ( IOUT .GT. 1 ) DTREQ  = DSEC21 ( TIME0, TIMEN ) / REAL(IOUT-1)
   IF ( IOUT .EQ. 1 ) DTREQ  = 3600.
   IF ( DTREQ .GT. 3599. ) THEN
-     CINC   = 'HR'
-     IINC   = NINT(DTREQ/3600.)
-     IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) GOTO 820
+    CINC   = 'HR'
+    IINC   = NINT(DTREQ/3600.)
+    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) GOTO 820
   ELSE
-     CINC   = 'MN'
-     IINC   = NINT(DTREQ/60.)
+    CINC   = 'MN'
+    IINC   = NINT(DTREQ/60.)
   END IF
   !
   WRITE (NDSO,963) IOUT, IH0, IM0, ID0, MNTH(IID), IJ0, IINC, CINC
@@ -417,10 +417,10 @@ PROGRAM GXOUTP
   !
   IREQ    = 0
   DO I=1, NOPTS
-     IF ( FLREQ(I) ) THEN
-        IREQ   = IREQ + 1
-        WRITE (NDSCGR,973) IREQ, NLEV, 99, PTNME(I)
-     END IF
+    IF ( FLREQ(I) ) THEN
+      IREQ   = IREQ + 1
+      WRITE (NDSCGR,973) IREQ, NLEV, 99, PTNME(I)
+    END IF
   END DO
   !
   WRITE (NDSCGR,974)
@@ -832,494 +832,494 @@ CONTAINS
     !     Loop over output points.
     !
     DO J=1, NOPTS
-       IF ( FLREQ(J) ) THEN
-          !
+      IF ( FLREQ(J) ) THEN
+        !
 #ifdef W3_T
-          WRITE (NDST,9002) PTNME(J)
+        WRITE (NDST,9002) PTNME(J)
 #endif
-          !
-          ! 2. Calculate grid parameters using and inlined version of WAVNU1.
-          !
-          DEPTH  = MAX ( DMIN, DPO(J) )
-          SQRTH  = SQRT ( DEPTH )
-          UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
-          UDIRR  = WDO(J)
-          UABS   = MAX ( 0.001 , WAO(J) )
+        !
+        ! 2. Calculate grid parameters using and inlined version of WAVNU1.
+        !
+        DEPTH  = MAX ( DMIN, DPO(J) )
+        SQRTH  = SQRT ( DEPTH )
+        UDIR   = MOD ( 270. - WDO(J)*RADE , 360. )
+        UDIRR  = WDO(J)
+        UABS   = MAX ( 0.001 , WAO(J) )
 #ifdef W3_FLX5
-          TAUA     = MAX ( 0.001 , TAUAO(J))
-          TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
-          RHOAIR   = MAX ( 0. , DAIRO(J))
+        TAUA     = MAX ( 0.001 , TAUAO(J))
+        TAUADIR  = MOD ( 270. - TAUDO(J)*RADE , 360. )
+        RHOAIR   = MAX ( 0. , DAIRO(J))
 #endif
-          CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
+        CDIR   = MOD ( 270. - CDO(J)*RADE , 360. )
 #ifdef W3_IS2
-          ICEDMAX = MAX ( 0., ICEFO(J))
+        ICEDMAX = MAX ( 0., ICEFO(J))
 #endif
 #ifdef W3_IC2
-          ICEF     = 0.
+        ICEF     = 0.
 #endif
 #ifdef W3_IS2
-          ICEF     = ICEDMAX
+        ICEF     = ICEDMAX
 #endif
-          ICETHICK = MAX (0., ICEHO(J))
-          ICECON = MAX (0., ICEO(J))
-          !
+        ICETHICK = MAX (0., ICEHO(J))
+        ICECON = MAX (0., ICEO(J))
+        !
 #ifdef W3_STAB2
-          STAB0  = ZWIND * GRAV / 273.
-          STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
-          STAB   = MAX ( -1. , MIN ( 1. , STAB ) )
-          THARG1 = MAX ( 0. , FFNG*(STAB-OFSTAB))
-          THARG2 = MAX ( 0. , FFPS*(STAB-OFSTAB))
-          COR1   = CCNG * TANH(THARG1)
-          COR2   = CCPS * TANH(THARG2)
-          ASFAC  = SQRT ( (1.+COR1+COR2)/SHSTAB )
+        STAB0  = ZWIND * GRAV / 273.
+        STAB   = STAB0 * ASO(J) / MAX(5.,WAO(J))**2
+        STAB   = MAX ( -1. , MIN ( 1. , STAB ) )
+        THARG1 = MAX ( 0. , FFNG*(STAB-OFSTAB))
+        THARG2 = MAX ( 0. , FFPS*(STAB-OFSTAB))
+        COR1   = CCNG * TANH(THARG1)
+        COR2   = CCPS * TANH(THARG2)
+        ASFAC  = SQRT ( (1.+COR1+COR2)/SHSTAB )
 #endif
-          !
+        !
 #ifdef W3_T
-          WRITE (NDST,9010) DEPTH
+        WRITE (NDST,9010) DEPTH
 #endif
-          DO IK=1, NK
-             SIX    = SIG(IK) * SQRTH
-             I1     = INT(SIX/DSIE)
-             IF (I1.LE.N1MAX) THEN
-                I2 = I1 + 1
-                R1 = SIX/DSIE - REAL(I1)
-                R2 = 1. - R1
-                WN(IK) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / DEPTH
-                CG(IK) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
-             ELSE
-                WN(IK) = SIG(IK)*SIG(IK)/GRAV
-                CG(IK) = 0.5 * GRAV / SIG(IK)
-             END IF
+        DO IK=1, NK
+          SIX    = SIG(IK) * SQRTH
+          I1     = INT(SIX/DSIE)
+          IF (I1.LE.N1MAX) THEN
+            I2 = I1 + 1
+            R1 = SIX/DSIE - REAL(I1)
+            R2 = 1. - R1
+            WN(IK) = ( R2*EWN1(I1) + R1*EWN1(I2) ) / DEPTH
+            CG(IK) = ( R2*ECG1(I1) + R1*ECG1(I2) ) * SQRTH
+          ELSE
+            WN(IK) = SIG(IK)*SIG(IK)/GRAV
+            CG(IK) = 0.5 * GRAV / SIG(IK)
+          END IF
 #ifdef W3_T
-             WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
+          WRITE (NDST,9011) IK, TPI/SIG(IK), WN(IK), CG(IK)
 #endif
-             !
-          END DO
+          !
+        END DO
 
-          IF (IICEDISP) THEN
-             CALL LIU_FORWARD_DISPERSION  (ICETHICK,0.,DEPTH, &
-                  SIG,WN_R,CG_ICE,ALPHA_LIU)
-          ELSE
-             WN_R=WN
-             CG_ICE=CG
-          END IF
-          R(:)=1 ! In case IC2 is defined but not IS2
+        IF (IICEDISP) THEN
+          CALL LIU_FORWARD_DISPERSION  (ICETHICK,0.,DEPTH, &
+               SIG,WN_R,CG_ICE,ALPHA_LIU)
+        ELSE
+          WN_R=WN
+          CG_ICE=CG
+        END IF
+        R(:)=1 ! In case IC2 is defined but not IS2
 
-          !
-          ! 3.  Prepare spectra etc.
-          ! 3.a Mean wave parameters.
-          !
-          ET     = 0.
-          EWN    = 0.
-          ETR    = 0.
-          ETX    = 0.
-          ETY    = 0.
-          DO IK=1, NK
-             EBND   = 0.
-             EBX    = 0.
-             EBY    = 0.
-             DO ITH=1, NTH
-                ISPEC  = ITH + (IK-1)*NTH
-                E(IK,ITH) = SPCO(ISPEC,J)
-                EBND   = EBND + SPCO(ISPEC,J)
-                EBX    = EBX  + SPCO(ISPEC,J)*ECOS(ITH)
-                EBY    = EBY  + SPCO(ISPEC,J)*ESIN(ITH)
-             END DO
-             E1(IK) = EBND * DTH
-             APM(IK)= E1(IK) / ( TPI * GRAV**2 / SIG(IK)**5  )
-             IF ( E1(IK) .GT. 1.E-5) THEN
-                THBND(IK) = MOD(630.- RADE*ATAN2(EBY,EBX),360.)
-                SPBND(IK) = RADE * SQRT ( MAX ( 0. , 2.*( 1. -      &
-                     SQRT( MAX(0.,(EBX**2+EBY**2)/EBND**2) ) ) ) )
-             ELSE
-                THBND(IK) = -999.9
-                SPBND(IK) = -999.9
-             END IF
-             EBND   = E1(IK) * DSII(IK) * TPIINV
-             ET     = ET  + EBND
-             EWN    = EWN + EBND / WN(IK)
-             ETR    = ETR + EBND / SIG(IK)
-             ETX    = ETX + EBX * DSII(IK)
-             ETY    = ETY + EBY * DSII(IK)
+        !
+        ! 3.  Prepare spectra etc.
+        ! 3.a Mean wave parameters.
+        !
+        ET     = 0.
+        EWN    = 0.
+        ETR    = 0.
+        ETX    = 0.
+        ETY    = 0.
+        DO IK=1, NK
+          EBND   = 0.
+          EBX    = 0.
+          EBY    = 0.
+          DO ITH=1, NTH
+            ISPEC  = ITH + (IK-1)*NTH
+            E(IK,ITH) = SPCO(ISPEC,J)
+            EBND   = EBND + SPCO(ISPEC,J)
+            EBX    = EBX  + SPCO(ISPEC,J)*ECOS(ITH)
+            EBY    = EBY  + SPCO(ISPEC,J)*ESIN(ITH)
           END DO
-          !
-          ! tail factors for radian action etc ...!
-          !
-          EBND   = E1(NK) * TPIINV / ( SIG(NK) * DTH )
-          ET     = ET  + FTE *EBND
-          EWN    = EWN + FTWL*EBND
-          ETR    = ETR + FTTR*EBND
-          ETX    = DTH*ETX*TPIINV + FTE*EBX*TPIINV/SIG(NK)
-          ETY    = DTH*ETY*TPIINV + FTE*EBY*TPIINV/SIG(NK)
-          !
-          HSIG   = 4. * SQRT ( ET )
-          IF ( HSIG .GT. HSMIN ) THEN
-             WLEN   = EWN / ET * TPI
-             TMEAN  = ETR / ET * TPI
-             THMEAN = MOD ( 630. - RADE*ATAN2(ETY,ETX) , 360. )
-             THSPRD = RADE * SQRT ( MAX ( 0. , 2.*( 1. - SQRT(     &
-                  MAX(0.,(ETX**2+ETY**2)/ET**2) ) ) ) )
+          E1(IK) = EBND * DTH
+          APM(IK)= E1(IK) / ( TPI * GRAV**2 / SIG(IK)**5  )
+          IF ( E1(IK) .GT. 1.E-5) THEN
+            THBND(IK) = MOD(630.- RADE*ATAN2(EBY,EBX),360.)
+            SPBND(IK) = RADE * SQRT ( MAX ( 0. , 2.*( 1. -      &
+                 SQRT( MAX(0.,(EBX**2+EBY**2)/EBND**2) ) ) ) )
           ELSE
-             WLEN   = 0.
-             TMEAN  = 0.
-             THMEAN = 0.
-             THSPRD = 0.
-             DO IK=1, NK
-                E1(IK) = 0.
-                DO ITH=1, NTH
-                   E(IK,ITH) = 0.
-                END DO
-             END DO
+            THBND(IK) = -999.9
+            SPBND(IK) = -999.9
           END IF
-          !
-          ! peak frequency
-          !
-          EMAX   = E1(NK)
-          IKM    = NK
-          !
-          DO IK=NK-1, 1, -1
-             IF ( E1(IK) .GT. EMAX ) THEN
-                EMAX   = E1(IK)
-                IKM    = IK
-             END IF
-          END DO
-          !
-          IKL    = MAX (  1 , IKM-1 )
-          IKH    = MIN ( NK , IKM+1 )
-          EL     = E1(IKL) - E1(IKM)
-          EH     = E1(IKH) - E1(IKM)
-          DENOM  = XL*EH - XH*EL
-          !
-          IF ( HSIG .GE. HSMIN ) THEN
-             FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
-                  / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
-             THP    = THBND(IKM)
-             SPP    = SPBND(IKM)
-          ELSE
-             FP     = 0.
-             THP    = 0.
-             SPP    = 0.
-          END IF
-          !
-          ! 3.4 source terms
-          !
+          EBND   = E1(IK) * DSII(IK) * TPIINV
+          ET     = ET  + EBND
+          EWN    = EWN + EBND / WN(IK)
+          ETR    = ETR + EBND / SIG(IK)
+          ETX    = ETX + EBX * DSII(IK)
+          ETY    = ETY + EBY * DSII(IK)
+        END DO
+        !
+        ! tail factors for radian action etc ...!
+        !
+        EBND   = E1(NK) * TPIINV / ( SIG(NK) * DTH )
+        ET     = ET  + FTE *EBND
+        EWN    = EWN + FTWL*EBND
+        ETR    = ETR + FTTR*EBND
+        ETX    = DTH*ETX*TPIINV + FTE*EBX*TPIINV/SIG(NK)
+        ETY    = DTH*ETY*TPIINV + FTE*EBY*TPIINV/SIG(NK)
+        !
+        HSIG   = 4. * SQRT ( ET )
+        IF ( HSIG .GT. HSMIN ) THEN
+          WLEN   = EWN / ET * TPI
+          TMEAN  = ETR / ET * TPI
+          THMEAN = MOD ( 630. - RADE*ATAN2(ETY,ETX) , 360. )
+          THSPRD = RADE * SQRT ( MAX ( 0. , 2.*( 1. - SQRT(     &
+               MAX(0.,(ETX**2+ETY**2)/ET**2) ) ) ) )
+        ELSE
+          WLEN   = 0.
+          TMEAN  = 0.
+          THMEAN = 0.
+          THSPRD = 0.
           DO IK=1, NK
-             FACTOR = TPIINV * CG(IK) / SIG(IK)
-             DO ITH=1, NTH
-                ISPEC  = ITH + (IK-1)*NTH
-                A(ITH,IK)   = FACTOR * SPCO(ISPEC,J)
-                WN2(ITH,IK) = WN(IK)
-             END DO
+            E1(IK) = 0.
+            DO ITH=1, NTH
+              E(IK,ITH) = 0.
+            END DO
           END DO
-          !
+        END IF
+        !
+        ! peak frequency
+        !
+        EMAX   = E1(NK)
+        IKM    = NK
+        !
+        DO IK=NK-1, 1, -1
+          IF ( E1(IK) .GT. EMAX ) THEN
+            EMAX   = E1(IK)
+            IKM    = IK
+          END IF
+        END DO
+        !
+        IKL    = MAX (  1 , IKM-1 )
+        IKH    = MIN ( NK , IKM+1 )
+        EL     = E1(IKL) - E1(IKM)
+        EH     = E1(IKH) - E1(IKM)
+        DENOM  = XL*EH - XH*EL
+        !
+        IF ( HSIG .GE. HSMIN ) THEN
+          FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
+               / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
+          THP    = THBND(IKM)
+          SPP    = SPBND(IKM)
+        ELSE
+          FP     = 0.
+          THP    = 0.
+          SPP    = 0.
+        END IF
+        !
+        ! 3.4 source terms
+        !
+        DO IK=1, NK
+          FACTOR = TPIINV * CG(IK) / SIG(IK)
+          DO ITH=1, NTH
+            ISPEC  = ITH + (IK-1)*NTH
+            A(ITH,IK)   = FACTOR * SPCO(ISPEC,J)
+            WN2(ITH,IK) = WN(IK)
+          END DO
+        END DO
+        !
 #ifdef W3_STAB2
-          UABS   = UABS / ASFAC
+        UABS   = UABS / ASFAC
 #endif
-          !
+        !
 #ifdef W3_ST0
-          ZWND   = 10.
+        ZWND   = 10.
 #endif
 #ifdef W3_ST1
-          ZWND   = 10.
+        ZWND   = 10.
 #endif
 #ifdef W3_ST2
-          ZWND   = ZWIND
+        ZWND   = ZWIND
 #endif
 #ifdef W3_ST3
-          ZWND   = ZZWND
-          TAUWX  = 0.
-          TAUWY  = 0.
-          LLWS(:,:)  = .TRUE.
+        ZWND   = ZZWND
+        TAUWX  = 0.
+        TAUWY  = 0.
+        LLWS(:,:)  = .TRUE.
 #endif
-          USTAR  = 1.
+        USTAR  = 1.
 #ifdef W3_ST4
-          ZWND   = ZZWND
-          TAUWX  = 0.
-          TAUWY  = 0.
+        ZWND   = ZZWND
+        TAUWX  = 0.
+        TAUWY  = 0.
 #endif
 #ifdef W3_ST6
-          ZWND   = 10.
+        ZWND   = 10.
 #endif
-          !
+        !
 #ifdef W3_ST0
-          FHIGH  = SIG(NK)
+        FHIGH  = SIG(NK)
 #endif
 #ifdef W3_ST1
-          CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
-          FP     = 0.85 * FMEAN
-          FH1    = FXFM * FMEAN
-          FH2    = FXPM / USTAR
-          FHIGH  = MAX ( FH1 , FH2 )
+        CALL W3SPR1 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX)
+        FP     = 0.85 * FMEAN
+        FH1    = FXFM * FMEAN
+        FH2    = FXPM / USTAR
+        FHIGH  = MAX ( FH1 , FH2 )
 #endif
 #ifdef W3_ST2
-          CALL W3SPR2 (A, CG, WN, DEPTH, FP , UABS, USTAR,     &
+        CALL W3SPR2 (A, CG, WN, DEPTH, FP , UABS, USTAR,     &
+             EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
+#endif
+#ifdef W3_ST3
+        CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,        &
+             WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
+             TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
+#endif
+#ifdef W3_ST4
+        CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
+             WNMEAN, AMAX, UABS, UDIRR,             &
+#ifdef W3_FLX5
+             TAUA, TAUADIR, RHOAIR,           &
+#endif
+             USTAR, USTD, TAUWX, TAUWY, CD, Z0,     &
+             CHARN, LLWS, FMEANWS, DLWMEAN )
+#endif
+#ifdef W3_ST6
+        CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
+#endif
+        !
+#ifdef W3_FLX1
+        CALL W3FLX1 ( ZWND, UABS, UDIRR,                     &
+             USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX2
+        CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,          &
+             USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX3
+        CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,          &
+             USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX4
+        CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
+#endif
+#ifdef W3_FLX5
+        CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,  &
+             RHOAIR, USTAR, USTD, Z0, CD, CHARN )
+#endif
+        !
+        DO ITT=1, 3
+#ifdef W3_ST2
+          CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,      &
+               FPI, XWI, DIA )
+          CALL W3SPR2 (A, CG, WN, DEPTH, FPI, UABS, USTAR,   &
                EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
 #endif
 #ifdef W3_ST3
+          CALL W3SIN3 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,   &
+               ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,  &
+               TAUWNX, TAUWNY,                       &
+               ICE, XWI, DIA, LLWS, IX, IY )
           CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,        &
                WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
                TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
 #endif
 #ifdef W3_ST4
+          CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,   &
+               ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,  &
+               TAUWNX, TAUWNY, XWI, DIA, LLWS, IX, IY, LAMBDA )
           CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
-               WNMEAN, AMAX, UABS, UDIRR,             &
+               WNMEAN, AMAX, UABS, UDIRR,               &
 #ifdef W3_FLX5
-               TAUA, TAUADIR, RHOAIR,           &
+               TAUA, TAUADIR, RHOAIR,             &
 #endif
-               USTAR, USTD, TAUWX, TAUWY, CD, Z0,     &
+               USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
                CHARN, LLWS, FMEANWS, DLWMEAN )
 #endif
-#ifdef W3_ST6
-          CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
-#endif
-          !
-#ifdef W3_FLX1
-          CALL W3FLX1 ( ZWND, UABS, UDIRR,                     &
-               USTAR, USTD, Z0, CD )
-#endif
 #ifdef W3_FLX2
-          CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,          &
+          CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
                USTAR, USTD, Z0, CD )
 #endif
 #ifdef W3_FLX3
-          CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,          &
+          CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
                USTAR, USTD, Z0, CD )
 #endif
-#ifdef W3_FLX4
-          CALL W3FLX4 ( ZWND, UABS, UDIRR, USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX5
-          CALL W3FLX5 ( ZWND, UABS, UDIRR, TAUA, TAUADIR,  &
-               RHOAIR, USTAR, USTD, Z0, CD, CHARN )
-#endif
-          !
-          DO ITT=1, 3
+        END DO
+        !
 #ifdef W3_ST2
-             CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,      &
-                  FPI, XWI, DIA )
-             CALL W3SPR2 (A, CG, WN, DEPTH, FPI, UABS, USTAR,   &
-                  EMEAN, FMEAN, WNMEAN, AMAX, ALPHA, FP )
+        FHIGH  = XFC * FPI
 #endif
-#ifdef W3_ST3
-             CALL W3SIN3 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,   &
-                  ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,  &
-                  TAUWNX, TAUWNY,                       &
-                  ICE, XWI, DIA, LLWS, IX, IY )
-             CALL W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS,        &
-                  WNMEAN, AMAX, UABS, UDIRR, USTAR, USTD, &
-                  TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS)
-#endif
-#ifdef W3_ST4
-             CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,   &
-                  ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY,  &
-                  TAUWNX, TAUWNY, XWI, DIA, LLWS, IX, IY, LAMBDA )
-             CALL W3SPR4 (A, CG, WN, EMEAN, FMEAN,  FMEAN1,      &
-                  WNMEAN, AMAX, UABS, UDIRR,               &
-#ifdef W3_FLX5
-                  TAUA, TAUADIR, RHOAIR,             &
-#endif
-                  USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
-                  CHARN, LLWS, FMEANWS, DLWMEAN )
-#endif
-#ifdef W3_FLX2
-             CALL W3FLX2 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
-                  USTAR, USTD, Z0, CD )
-#endif
-#ifdef W3_FLX3
-             CALL W3FLX3 ( ZWND, DEPTH, FP, UABS, UDIRR,        &
-                  USTAR, USTD, Z0, CD )
-#endif
-          END DO
-          !
-#ifdef W3_ST2
-          FHIGH  = XFC * FPI
-#endif
-          !
-          IF ( FLSRCE(2) ) THEN
+        !
+        IF ( FLSRCE(2) ) THEN
 #ifdef W3_LN1
-             CALL W3SLN1 ( WN, FHIGH, USTAR, UDIRR, XLN )
+          CALL W3SLN1 ( WN, FHIGH, USTAR, UDIRR, XLN )
 #endif
-             !
+          !
 #ifdef W3_ST1
-             CALL W3SIN1 (A, WN2, USTAR, UDIRR,      XWI, DIA )
+          CALL W3SIN1 (A, WN2, USTAR, UDIRR,      XWI, DIA )
 #endif
 #ifdef W3_ST2
-             CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
-                  FPI, XWI, DIA )
+          CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
+               FPI, XWI, DIA )
 #endif
 #ifdef W3_ST3
-             CALL W3SIN3 (A, CG, WN2, UABS, USTAR, DAIR/DWAT, &
-                  ASO(J), UDIRR, Z0, CD,              &
-                  TAUWX, TAUWY, TAUWNX, TAUWNY,       &
-                  ICE, XWI, DIA, LLWS, IX, IY )
+          CALL W3SIN3 (A, CG, WN2, UABS, USTAR, DAIR/DWAT, &
+               ASO(J), UDIRR, Z0, CD,              &
+               TAUWX, TAUWY, TAUWNX, TAUWNY,       &
+               ICE, XWI, DIA, LLWS, IX, IY )
 #endif
 #ifdef W3_ST4
-             CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT, &
-                  ASO(J), UDIRR, Z0, CD,              &
-                  TAUWX, TAUWY, TAUWNX, TAUWNY,       &
-                  XWI, DIA,  LLWS, IX, IY, LAMBDA )
+          CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT, &
+               ASO(J), UDIRR, Z0, CD,              &
+               TAUWX, TAUWY, TAUWNX, TAUWNY,       &
+               XWI, DIA,  LLWS, IX, IY, LAMBDA )
 #endif
 #ifdef W3_ST6
-             CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, &
-                  DAIR, TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
+          CALL W3SIN6 (A, CG, WN2, UABS, USTAR, UDIRR, CD, &
+               DAIR, TAUWX, TAUWY, TAUWNX, TAUWNY, XWI, DIA )
 #endif
-          END IF
-          IF ( FLSRCE(3) ) THEN
+        END IF
+        IF ( FLSRCE(3) ) THEN
 #ifdef W3_NL1
-             CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,      XNL, DIA )
+          CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,      XNL, DIA )
 #endif
 #ifdef W3_NL2
-             CALL W3SNL2 ( A, CG, DEPTH,             XNL, DIA )
+          CALL W3SNL2 ( A, CG, DEPTH,             XNL, DIA )
 #endif
 #ifdef W3_NL3
-             CALL W3SNL3 ( A, CG, WN, DEPTH,         XNL, DIA )
+          CALL W3SNL3 ( A, CG, WN, DEPTH,         XNL, DIA )
 #endif
 #ifdef W3_NL4
-             CALL W3SNL4 ( A, CG, WN, DEPTH,         XNL, DIA )
+          CALL W3SNL4 ( A, CG, WN, DEPTH,         XNL, DIA )
 #endif
-             !!/NLS                CALL W3SNLS ( A, CG, WN, DEPTH, UABS, 900.,      &
-             !!/NLS                                                 SNL=XNL, AA=DIA )
-             !
-          END IF
-          IF ( FLSRCE(4) ) THEN
+          !!/NLS                CALL W3SNLS ( A, CG, WN, DEPTH, UABS, 900.,      &
+          !!/NLS                                                 SNL=XNL, AA=DIA )
+          !
+        END IF
+        IF ( FLSRCE(4) ) THEN
 #ifdef W3_ST1
-             CALL W3SDS1 ( A, WN2, EMEAN, FMEAN, WNMEAN, XDS, DIA )
+          CALL W3SDS1 ( A, WN2, EMEAN, FMEAN, WNMEAN, XDS, DIA )
 #endif
 #ifdef W3_ST2
-             CALL W3SDS2 ( A, CG, WN, FPI, USTAR, ALPHA, XDS, DIA )
+          CALL W3SDS2 ( A, CG, WN, FPI, USTAR, ALPHA, XDS, DIA )
 #endif
 #ifdef W3_ST3
-             CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,         &
-                  USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
+          CALL W3SDS3 ( A, WN, CG, EMEAN, FMEANS, WNMEAN,         &
+               USTAR, USTD, DEPTH, XDS, DIA, IX, IY )
 #endif
 #ifdef W3_ST4
-             CALL W3SDS4 ( A, WN, CG,          &
-                  USTAR, USTD, DEPTH, DAIR, XDS, DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
+          CALL W3SDS4 ( A, WN, CG,          &
+               USTAR, USTD, DEPTH, DAIR, XDS, DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
 #endif
 #ifdef W3_ST6
-             CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
-             IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
+          CALL W3SDS6 ( A, CG, WN,            XDS, DIA )
+          IF (SWL6S6) CALL W3SWL6 ( A, CG, WN,  XWL, DIA )
 #endif
-             !
+          !
 #ifdef W3_DB1
-             CALL W3SDB1 ( J, A, DEPTH, EMEAN, FMEAN, WNMEAN, CG, &
-                  LBREAK, XDB, DIA )
+          CALL W3SDB1 ( J, A, DEPTH, EMEAN, FMEAN, WNMEAN, CG, &
+               LBREAK, XDB, DIA )
 #endif
-             !
-          END IF
-          IF ( FLSRCE(5) ) THEN
+          !
+        END IF
+        IF ( FLSRCE(5) ) THEN
 
 #ifdef W3_BT1
-             CALL W3SBT1 ( A, CG, WN, DEPTH,   XBT, DIA )
+          CALL W3SBT1 ( A, CG, WN, DEPTH,   XBT, DIA )
 #endif
 
 #ifdef W3_IC1
-             CALL W3SIC1 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
+          CALL W3SIC1 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
 #endif
 #ifdef W3_IC2
-             CALL W3SIC2 ( A, DEPTH, ICETHICK, ICEF ,CG,  WN, IX, IY, XBT, DIA, WN_R, &
-                  CG_ICE, ALPHA_LIU, R )
+          CALL W3SIC2 ( A, DEPTH, ICETHICK, ICEF ,CG,  WN, IX, IY, XBT, DIA, WN_R, &
+               CG_ICE, ALPHA_LIU, R )
 #endif
 #ifdef W3_IC3
-             CALL W3SIC3 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
+          CALL W3SIC3 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 #endif
 #ifdef W3_IC4
-             CALL W3SIC4 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
+          CALL W3SIC4 ( A, DEPTH, CG,      IX, IY, XBT, DIA )
 #endif
 #ifdef W3_IC5
-             CALL W3SIC5 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
+          CALL W3SIC5 ( A, DEPTH, CG,  WN, IX, IY, XBT, DIA )
 #endif
 
 #ifdef W3_BT4
-             IX=1    ! to be fixed later
-             IY=1    ! to be fixed later
-             ISEA=1  ! to be fixed later
-             D50 = SED_D50(ISEA)
-             PSIC= SED_PSIC(ISEA)
+          IX=1    ! to be fixed later
+          IY=1    ! to be fixed later
+          ISEA=1  ! to be fixed later
+          D50 = SED_D50(ISEA)
+          PSIC= SED_PSIC(ISEA)
 #endif
 
 #ifdef W3_BT4
-             CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
-                  BEDFORM, XBT, DIA, IX, IY )
+          CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
+               BEDFORM, XBT, DIA, IX, IY )
 #endif
-             !
+          !
 
 #ifdef W3_BT8
-             CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
+          CALL W3SBT8 ( A, DEPTH, XBT, DIA, IX, IY )
 #endif
 
 #ifdef W3_BS1
-             CALL W3SBS1 ( A, CG, WN, DEPTH, CAO(J)*COS(CDO(J)), &
-                  CAO(J)*SIN(CDO(J)),     &
-                  TAUSCX, TAUSCY, XBS, DIA )
+          CALL W3SBS1 ( A, CG, WN, DEPTH, CAO(J)*COS(CDO(J)), &
+               CAO(J)*SIN(CDO(J)),     &
+               TAUSCX, TAUSCY, XBS, DIA )
 #endif
-          END IF
+        END IF
 
-          IF ( FLSRCE(6) ) THEN
+        IF ( FLSRCE(6) ) THEN
 
 #ifdef W3_IS2
-             CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, IX, IY, &
-                  XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
+          CALL W3SIS2(A, DEPTH, ICECON, ICETHICK, ICEF, ICEDMAX, IX, IY, &
+               XIS, DIA, DIA2, WN, CG, WN_R, CG_ICE, R)
 #endif
-          END IF
-          !
+        END IF
+        !
 #ifdef W3_STAB2
-          UABS   = UABS * ASFAC
+        UABS   = UABS * ASFAC
 #endif
-          !
-          DO IK=1, NK
-             FACTOR = TPI / CG(IK) * SIG(IK)
-             DO ITH=1, NTH
-                ISPEC       = ITH + (IK-1)*NTH
-                E  (IK,ITH) = SPCO(ISPEC,J)
-                SWI(IK,ITH) = ( XWI(ITH,IK) + XLN(ITH,IK) ) * FACTOR
-                SNL(IK,ITH) = ( XNL(ITH,IK) + XTR(ITH,IK) ) * FACTOR
-                SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
+        !
+        DO IK=1, NK
+          FACTOR = TPI / CG(IK) * SIG(IK)
+          DO ITH=1, NTH
+            ISPEC       = ITH + (IK-1)*NTH
+            E  (IK,ITH) = SPCO(ISPEC,J)
+            SWI(IK,ITH) = ( XWI(ITH,IK) + XLN(ITH,IK) ) * FACTOR
+            SNL(IK,ITH) = ( XNL(ITH,IK) + XTR(ITH,IK) ) * FACTOR
+            SDS(IK,ITH) = ( XDS(ITH,IK) + XDB(ITH,IK) ) * FACTOR
 #ifdef W3_ST6
-                SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
+            SDS(IK,ITH) =   SDS(IK,ITH) +(XWL(ITH,IK)   * FACTOR)
 #endif
-                SBT(IK,ITH) = ( XBT(ITH,IK) + XBS(ITH,IK) ) * FACTOR
-                SIS(IK,ITH) = XIS(ITH,IK) * FACTOR
-                STT(IK,ITH) = XXX(ITH,IK) * FACTOR
-             END DO
+            SBT(IK,ITH) = ( XBT(ITH,IK) + XBS(ITH,IK) ) * FACTOR
+            SIS(IK,ITH) = XIS(ITH,IK) * FACTOR
+            STT(IK,ITH) = XXX(ITH,IK) * FACTOR
           END DO
-          STT    = STT + SWI + SNL + SDS + SBT + SIS
+        END DO
+        STT    = STT + SWI + SNL + SDS + SBT + SIS
 
-          !
-          ! 4.a Perform output
-          !
-          IF ( FLSRCE(1) ) WRITE (NDSGRD)                           &
-               ((E  (IK,ITH),ITH=1,NTH),IK=NK,1,-1)
-          IF ( FLSRCE(2) ) WRITE (NDSGRD)                           &
-               ((SWI(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
-          IF ( FLSRCE(3) ) WRITE (NDSGRD)                           &
-               ((SNL(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
-          IF ( FLSRCE(4) ) WRITE (NDSGRD)                           &
-               ((SDS(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
-          IF ( FLSRCE(5) ) WRITE (NDSGRD)                           &
-               ((SBT(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
-          IF ( FLSRCE(6) ) WRITE (NDSGRD)                           &
-               ((SIS(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
-          IF ( FLSRCE(7) ) WRITE (NDSGRD)                           &
-               ((STT(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
-          !
-          IF ( FLAGLL ) THEN
-             WRITE (NDSPNT,940) PTNME(J),                          &
-                  FACT*PTLOC(1,J), FACT*PTLOC(2,J), DPO(J), WAO(J),  &
-                  WAO(J)*COS(WDO(J)), WAO(J)*SIN(WDO(J)), ASO(J),    &
-                  CAO(J), CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)),    &
-                  HSIG, GRDID(J)
-          ELSE
-             WRITE (NDSPNT,941) PTNME(J),                          &
-                  FACT*PTLOC(1,J), FACT*PTLOC(2,J), DPO(J), WAO(J),  &
-                  WAO(J)*COS(WDO(J)), WAO(J)*SIN(WDO(J)), ASO(J),    &
-                  CAO(J), CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)),    &
-                  HSIG, GRDID(J)
-          END IF
-          !
-          ! ... End of points loop
-          !
-       END IF
+        !
+        ! 4.a Perform output
+        !
+        IF ( FLSRCE(1) ) WRITE (NDSGRD)                           &
+             ((E  (IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+        IF ( FLSRCE(2) ) WRITE (NDSGRD)                           &
+             ((SWI(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+        IF ( FLSRCE(3) ) WRITE (NDSGRD)                           &
+             ((SNL(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+        IF ( FLSRCE(4) ) WRITE (NDSGRD)                           &
+             ((SDS(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+        IF ( FLSRCE(5) ) WRITE (NDSGRD)                           &
+             ((SBT(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+        IF ( FLSRCE(6) ) WRITE (NDSGRD)                           &
+             ((SIS(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+        IF ( FLSRCE(7) ) WRITE (NDSGRD)                           &
+             ((STT(IK,ITH),ITH=1,NTH),IK=NK,1,-1)
+        !
+        IF ( FLAGLL ) THEN
+          WRITE (NDSPNT,940) PTNME(J),                          &
+               FACT*PTLOC(1,J), FACT*PTLOC(2,J), DPO(J), WAO(J),  &
+               WAO(J)*COS(WDO(J)), WAO(J)*SIN(WDO(J)), ASO(J),    &
+               CAO(J), CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)),    &
+               HSIG, GRDID(J)
+        ELSE
+          WRITE (NDSPNT,941) PTNME(J),                          &
+               FACT*PTLOC(1,J), FACT*PTLOC(2,J), DPO(J), WAO(J),  &
+               WAO(J)*COS(WDO(J)), WAO(J)*SIN(WDO(J)), ASO(J),    &
+               CAO(J), CAO(J)*COS(CDO(J)), CAO(J)*SIN(CDO(J)),    &
+               HSIG, GRDID(J)
+        END IF
+        !
+        ! ... End of points loop
+        !
+      END IF
     END DO
     !
     RETURN

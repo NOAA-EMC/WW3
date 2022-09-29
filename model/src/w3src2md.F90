@@ -247,21 +247,21 @@ CONTAINS
     ! 1.  Integral over directions and maximum --------------------------- *
     !
     DO IK=1, NK
-       EB(IK) = 0.
-       DO ITH=1, NTH
-          EB(IK) = EB(IK) + A(ITH,IK)
-          AMAX   = MAX ( AMAX , A(ITH,IK) )
-       END DO
+      EB(IK) = 0.
+      DO ITH=1, NTH
+        EB(IK) = EB(IK) + A(ITH,IK)
+        AMAX   = MAX ( AMAX , A(ITH,IK) )
+      END DO
     END DO
     !
     ! 2.  Integrate over directions -------------------------------------- *
     !
     DO IK=1, NK
-       ALFA(IK) = 2. * DTH * SIG(IK) * EB(IK) * WN(IK)**3
-       EB(IK)   = EB(IK) * DDEN(IK) / CG(IK)
-       EMEAN    = EMEAN  + EB(IK)
-       FMEAN    = FMEAN  + EB(IK) / SIG(IK)
-       WNMEAN   = WNMEAN + EB(IK) / SQRT(WN(IK))
+      ALFA(IK) = 2. * DTH * SIG(IK) * EB(IK) * WN(IK)**3
+      EB(IK)   = EB(IK) * DDEN(IK) / CG(IK)
+      EMEAN    = EMEAN  + EB(IK)
+      FMEAN    = FMEAN  + EB(IK) / SIG(IK)
+      WNMEAN   = WNMEAN + EB(IK) / SQRT(WN(IK))
     END DO
     !
     ! 3.  Add tail beyond discrete spectrum and get mean pars ------------ *
@@ -455,55 +455,55 @@ CONTAINS
     FACLN2 = LOG(Z0)
     !
     DO IS=1, NSPEC
-       COSFAC = ECOS(IS)*COSU + ESIN(IS)*SINU
-       COSFAC = SIGN ( MAX ( 0.0087 , ABS(COSFAC) ) , COSFAC )
-       LAMBDA = TPI / ( K(IS) * ABS(COSFAC) )
-       ULAM   = FACLN1 * ( LOG(LAMBDA) - FACLN2 )
-       CLAM   = CD * ( U / ULAM )**2
-       OMA    = K(IS) * ULAM * COSFAC / SIG2(IS)
-       IOMA   = INT ( OMA/DSIGA ) +                                  &
-            MIN ( 0 , INT ( SIGN ( -1.1 , OMA ) ) )
-       ICL    = INT ( CLAM/DDRAG )
-       RD1    = OMA/DSIGA - REAL(IOMA)
-       RD2    = CLAM/DDRAG - REAL(ICL)
-       IOMA   = MAX ( -NRSIGA , MIN ( NRSIGA , IOMA ) )
-       ICL    = MAX ( 1 , MIN ( NRDRAG , ICL ) )
-       BETA   = (1.-RD1) * (1.-RD2) * BETATB( IOMA , ICL )           &
-            +    RD1   * (1.-RD2) * BETATB(IOMA+1, ICL )           &
-            + (1.-RD1) *    RD2   * BETATB( IOMA ,ICL+1)           &
-            +    RD1   *    RD2   * BETATB(IOMA+1,ICL+1)
-       D(IS)  = BETA * SIG2(IS)
-       S(IS)  = A(IS) * D(IS)
+      COSFAC = ECOS(IS)*COSU + ESIN(IS)*SINU
+      COSFAC = SIGN ( MAX ( 0.0087 , ABS(COSFAC) ) , COSFAC )
+      LAMBDA = TPI / ( K(IS) * ABS(COSFAC) )
+      ULAM   = FACLN1 * ( LOG(LAMBDA) - FACLN2 )
+      CLAM   = CD * ( U / ULAM )**2
+      OMA    = K(IS) * ULAM * COSFAC / SIG2(IS)
+      IOMA   = INT ( OMA/DSIGA ) +                                  &
+           MIN ( 0 , INT ( SIGN ( -1.1 , OMA ) ) )
+      ICL    = INT ( CLAM/DDRAG )
+      RD1    = OMA/DSIGA - REAL(IOMA)
+      RD2    = CLAM/DDRAG - REAL(ICL)
+      IOMA   = MAX ( -NRSIGA , MIN ( NRSIGA , IOMA ) )
+      ICL    = MAX ( 1 , MIN ( NRDRAG , ICL ) )
+      BETA   = (1.-RD1) * (1.-RD2) * BETATB( IOMA , ICL )           &
+           +    RD1   * (1.-RD2) * BETATB(IOMA+1, ICL )           &
+           + (1.-RD1) *    RD2   * BETATB( IOMA ,ICL+1)           &
+           +    RD1   *    RD2   * BETATB(IOMA+1,ICL+1)
+      D(IS)  = BETA * SIG2(IS)
+      S(IS)  = A(IS) * D(IS)
 #ifdef W3_T2
-       WRITE (NDST,9021) IS, COSFAC, LAMBDA, ULAM, CLAM*1.E3,    &
-            OMA, BETA*1.E4
+      WRITE (NDST,9021) IS, COSFAC, LAMBDA, ULAM, CLAM*1.E3,    &
+           OMA, BETA*1.E4
 #endif
     END DO
     !
     ! 3.  Calculate FPI
     !
     DO IK=1, NK
-       SIN1A(IK) = 0.
-       DO IS=(IK-1)*NTH+1, IK*NTH
-          SIN1A(IK) = SIN1A(IK) + MAX ( 0. , S(IS) )
-       END DO
+      SIN1A(IK) = 0.
+      DO IS=(IK-1)*NTH+1, IK*NTH
+        SIN1A(IK) = SIN1A(IK) + MAX ( 0. , S(IS) )
+      END DO
     END DO
     !
     M0     = 0.
     M1     = 0.
     DO IK=1, NK
-       SIN1A(IK) = SIN1A(IK) * DDEN(IK) / ( CG(IK) * SIG(IK)**3 )
-       M0        = M0 + SIN1A(IK)
-       M1        = M1 + SIN1A(IK)/SIG(IK)
+      SIN1A(IK) = SIN1A(IK) * DDEN(IK) / ( CG(IK) * SIG(IK)**3 )
+      M0        = M0 + SIN1A(IK)
+      M1        = M1 + SIN1A(IK)/SIG(IK)
     END DO
     !
     SIN1A(NK) = SIN1A(NK) / DDEN(NK)
     M0        = M0 + SIN1A(NK) * FTE
     M1        = M1 + SIN1A(NK) * FTTR
     IF ( M1 .LT. 1E-20 ) THEN
-       FPI    = XFR * SIG(NK)
+      FPI    = XFR * SIG(NK)
     ELSE
-       FPI    = M0 / M1
+      FPI    = M0 / M1
     END IF
     !
     ! 4.  Filter for swell
@@ -518,25 +518,25 @@ CONTAINS
     NKFIL2 = MAX ( 0 , NKFIL2 )
     !
     DO IS=1, NKFIL2*NTH
-       D(IS)  = MAX ( D(IS) , FSWELL*D(IS) )
-       S(IS)  = A(IS) * D(IS)
+      D(IS)  = MAX ( D(IS) , FSWELL*D(IS) )
+      S(IS)  = A(IS) * D(IS)
     END DO
     !
     DO IK=NKFIL2+1, NKFILT
-       TRANS  = ( SIG(IK)/FP1 - TRANSF ) / (1.-TRANSF)
-       DO IS=(IK-1)*NTH+1, IK*NTH
-          D(IS)  = (1.-TRANS)*MAX(D(IS),FSWELL*D(IS)) + TRANS*D(IS)
-          S(IS)  = A(IS) * D(IS)
-       END DO
+      TRANS  = ( SIG(IK)/FP1 - TRANSF ) / (1.-TRANSF)
+      DO IS=(IK-1)*NTH+1, IK*NTH
+        D(IS)  = (1.-TRANS)*MAX(D(IS),FSWELL*D(IS)) + TRANS*D(IS)
+        S(IS)  = A(IS) * D(IS)
+      END DO
     END DO
     !
     ! ... Test output of arrays
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !
@@ -715,23 +715,23 @@ CONTAINS
     XHW    = FACTI2 + FACTI1*LOG(FHW)
     IKHW   = MIN ( NK , INT ( XHW + 0.5 ) )
     DO IK=IKHW, NK
-       EBD(IK) = 0.
-       DO ITH=1, NTH
-          EBD(IK) = EBD(IK) + A(ITH,IK)
-       END DO
+      EBD(IK) = 0.
+      DO ITH=1, NTH
+        EBD(IK) = EBD(IK) + A(ITH,IK)
+      END DO
     END DO
     !
     IF ( FHW .LT. SIG(NK+1) ) THEN
-       XHW    = 1. - MOD ( XHW + 0.5 , 1. )
-       IF ( IKHW .EQ. NK ) XHW = MAX ( 0. , XHW - 0.5 )
-       HW     = XHW * EBD(IKHW)*DDEN(IKHW)/CG(IKHW)
-       DO IK=IKHW+1, NK
-          HW     = HW + EBD(IK)*DDEN(IK)/CG(IK)
-       END DO
-       HW     = 4. * SQRT ( HW + EBD(NK)/CG(NK)*FTE )
+      XHW    = 1. - MOD ( XHW + 0.5 , 1. )
+      IF ( IKHW .EQ. NK ) XHW = MAX ( 0. , XHW - 0.5 )
+      HW     = XHW * EBD(IKHW)*DDEN(IKHW)/CG(IKHW)
+      DO IK=IKHW+1, NK
+        HW     = HW + EBD(IK)*DDEN(IK)/CG(IK)
+      END DO
+      HW     = 4. * SQRT ( HW + EBD(NK)/CG(NK)*FTE )
     ELSE
-       EHIGH  = EBD(NK)/CG(NK) * SIG(NK)*DTH * (SIG(NK)/FHW)**5
-       HW     = 4. * SQRT ( 0.25 * FHW * EHIGH )
+      EHIGH  = EBD(NK)/CG(NK) * SIG(NK)*DTH * (SIG(NK)/FHW)**5
+      HW     = 4. * SQRT ( 0.25 * FHW * EHIGH )
     END IF
     !
     ! 1.b PHI
@@ -761,22 +761,22 @@ CONTAINS
     POWMAX = 0.
 #endif
     DO IK=1, NK
-       FILT    = MIN ( 1., MAX ( 0. , AFILT + BFILT*SIG(IK) ))
-       POW     = MIN ( 25. , CDSA1 / ( CDISP*SIG(IK) )**CDSA2 )
-       IF ( FILT .GT. 0. ) THEN
-          D(1,IK) = (1.-FILT)  * CDIST * K(IK)**2                   &
-               - FILT * CDSA0 * CDISH * SIG(IK)**3             &
-               * (ALFA(IK)/SDSALN)**POW
-       ELSE
-          D(1,IK) = (1.-FILT)  * CDIST * K(IK)**2
-       END IF
+      FILT    = MIN ( 1., MAX ( 0. , AFILT + BFILT*SIG(IK) ))
+      POW     = MIN ( 25. , CDSA1 / ( CDISP*SIG(IK) )**CDSA2 )
+      IF ( FILT .GT. 0. ) THEN
+        D(1,IK) = (1.-FILT)  * CDIST * K(IK)**2                   &
+             - FILT * CDSA0 * CDISH * SIG(IK)**3             &
+             * (ALFA(IK)/SDSALN)**POW
+      ELSE
+        D(1,IK) = (1.-FILT)  * CDIST * K(IK)**2
+      END IF
 #ifdef W3_T
-       POWMAX = MAX(POW*FILT,POWMAX)
+      POWMAX = MAX(POW*FILT,POWMAX)
 #endif
 #ifdef W3_T2
-       WRITE (NDST,9021) IK, FILT, ALFA(IK)/SDSALN,              &
-            CDIST*PHI*K(IK)**2, CDSA0*CDISH*SIG(IK)**3         &
-            * (ALFA(IK)/SDSALN)**POW, D(1,IK)
+      WRITE (NDST,9021) IK, FILT, ALFA(IK)/SDSALN,              &
+           CDIST*PHI*K(IK)**2, CDSA0*CDISH*SIG(IK)**3         &
+           * (ALFA(IK)/SDSALN)**POW, D(1,IK)
 #endif
     END DO
     !
@@ -787,9 +787,9 @@ CONTAINS
     ! 3.  2-D diagonal array
     !
     DO IK=1, NK
-       DO ITH=2, NTH
-          D(ITH,IK) = D(1,IK)
-       END DO
+      DO ITH=2, NTH
+        D(ITH,IK) = D(1,IK)
+      END DO
     END DO
     !
     S = D * A
@@ -798,9 +798,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH,IK)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH,IK)
+      END DO
     END DO
 #endif
     !
@@ -971,11 +971,11 @@ CONTAINS
     ! 2.  Fill table ----------------------------------------------------- *
     !
     DO ISIGA=-NRSIGA,NRSIGA+1
-       SIGA   = REAL(ISIGA) * DSIGA
-       DO IDRAG=1, NRDRAG+1
-          DRAG   = REAL(IDRAG) * DDRAG
-          BETATB(ISIGA,IDRAG) = W3BETA ( SIGA, DRAG , NDST )
-       END DO
+      SIGA   = REAL(ISIGA) * DSIGA
+      DO IDRAG=1, NRDRAG+1
+        DRAG   = REAL(IDRAG) * DDRAG
+        BETATB(ISIGA,IDRAG) = W3BETA ( SIGA, DRAG , NDST )
+      END DO
     END DO
     !
     ! 3.  Test output ---------------------------------------------------- *
@@ -984,18 +984,18 @@ CONTAINS
     WRITE (NDST,9010)
     I1     = MIN (35,NRDRAG)
     DO ISIGA=-NRSIGA,NRSIGA
-       SIGA   = REAL(ISIGA) * DSIGA
-       BMIN   = 0.
-       BMAX   = 0.
-       DO IDRAG=1, NRDRAG
-          BMIN   = MIN ( BMIN , BETATB(ISIGA,IDRAG) )
-          BMAX   = MAX ( BMAX , BETATB(ISIGA,IDRAG) )
-       END DO
-       BMAX   = MAX ( BMAX , -BMIN )
-       WRITE (NDST,9011) ISIGA, SIGA, BMAX,                      &
-            (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=1,I1)
-       IF (I1.LT.NRDRAG) WRITE (NDST,9012)                       &
-            (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=I1+1,NRDRAG)
+      SIGA   = REAL(ISIGA) * DSIGA
+      BMIN   = 0.
+      BMAX   = 0.
+      DO IDRAG=1, NRDRAG
+        BMIN   = MIN ( BMIN , BETATB(ISIGA,IDRAG) )
+        BMAX   = MAX ( BMAX , BETATB(ISIGA,IDRAG) )
+      END DO
+      BMAX   = MAX ( BMAX , -BMIN )
+      WRITE (NDST,9011) ISIGA, SIGA, BMAX,                      &
+           (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=1,I1)
+      IF (I1.LT.NRDRAG) WRITE (NDST,9012)                       &
+           (NINT(BETATB(ISIGA,IDRAG)/BMAX*100.),IDRAG=I1+1,NRDRAG)
     END DO
 #endif
     !
@@ -1004,18 +1004,18 @@ CONTAINS
     IE1    = MIN (30,NRDRAG-1)
     ENORM  = 1000. / ABS(BETATB(0,NRDRAG))
     DO ISIGA=-NRSIGA,NRSIGA
-       SIGA   = REAL(ISIGA) * DSIGA
-       IF ( ABS(SIGA) .LT. 5.01 ) THEN
-          DO IDRAG=1, NRDRAG-1
-             DRAG   = ( REAL(IDRAG) + 0.5 ) * DDRAG
-             ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
-                  ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA,IDRAG+1) )
-          END DO
-          WRITE (NDST,9021) ISIGA, SIGA,                        &
-               (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
-          IF (IE1.LT.NRDRAG-1) WRITE (NDST,9022)                &
-               (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG-1)
-       ENDIF
+      SIGA   = REAL(ISIGA) * DSIGA
+      IF ( ABS(SIGA) .LT. 5.01 ) THEN
+        DO IDRAG=1, NRDRAG-1
+          DRAG   = ( REAL(IDRAG) + 0.5 ) * DDRAG
+          ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
+               ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA,IDRAG+1) )
+        END DO
+        WRITE (NDST,9021) ISIGA, SIGA,                        &
+             (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
+        IF (IE1.LT.NRDRAG-1) WRITE (NDST,9022)                &
+             (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG-1)
+      ENDIF
     END DO
 #endif
     !
@@ -1024,18 +1024,18 @@ CONTAINS
     IE1    = MIN (30,NRDRAG)
     ENORM  = 1000. / ABS(BETATB(0,NRDRAG))
     DO ISIGA=-NRSIGA,NRSIGA-1
-       SIGA   = ( REAL(ISIGA) + 0.5 ) * DSIGA
-       IF ( ABS(SIGA) .LT. 5.01 ) THEN
-          DO IDRAG=1, NRDRAG
-             DRAG   = REAL(IDRAG) * DDRAG
-             ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
-                  ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA+1,IDRAG) )
-          END DO
-          WRITE (NDST,9031) ISIGA, SIGA,                        &
-               (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
-          IF (IE1.LT.NRDRAG) WRITE (NDST,9032)                  &
-               (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG)
-       ENDIF
+      SIGA   = ( REAL(ISIGA) + 0.5 ) * DSIGA
+      IF ( ABS(SIGA) .LT. 5.01 ) THEN
+        DO IDRAG=1, NRDRAG
+          DRAG   = REAL(IDRAG) * DDRAG
+          ERR(IDRAG) =  - W3BETA (SIGA,DRAG,NDST) + 0.5 *     &
+               ( BETATB(ISIGA,IDRAG) + BETATB(ISIGA+1,IDRAG) )
+        END DO
+        WRITE (NDST,9031) ISIGA, SIGA,                        &
+             (NINT(ENORM*ERR(IDRAG)),IDRAG=1,IE1)
+        IF (IE1.LT.NRDRAG) WRITE (NDST,9032)                  &
+             (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG)
+      ENDIF
     END DO
 #endif
     !
@@ -1200,15 +1200,15 @@ CONTAINS
       ! calculate beta * 1.e4
       !
       IF  ( OMA .LT. -1. ) THEN
-         W3BETA = -A1 * OMA**2 - A2
+        W3BETA = -A1 * OMA**2 - A2
       ELSE IF (OMA .LT. OM1/2.) THEN
-         W3BETA =  A3 * OMA * ( A4 * OMA - A5 ) - A6
+        W3BETA =  A3 * OMA * ( A4 * OMA - A5 ) - A6
       ELSE IF (OMA .LT. OM1) THEN
-         W3BETA =       OMA * ( A4 * OMA - A5 )
+        W3BETA =       OMA * ( A4 * OMA - A5 )
       ELSE IF (OMA .LT. OM2) THEN
-         W3BETA = A7 * OMA - A8
+        W3BETA = A7 * OMA - A8
       ELSE
-         W3BETA = A9 * (OMA-1.)**2 + A10
+        W3BETA = A9 * (OMA-1.)**2 + A10
       END IF
       !
       ! beta * dwat / dair

@@ -284,18 +284,18 @@ CONTAINS
     !      FMEAN  = 0.
 
     DO IK=1, NK
-       EB(IK) = 0.
-       DO ITH=1, NTH
-          EB(IK) = EB(IK) + A(ITH+(IK-1)*NTH)
-       END DO
+      EB(IK) = 0.
+      DO ITH=1, NTH
+        EB(IK) = EB(IK) + A(ITH+(IK-1)*NTH)
+      END DO
     END DO
     !
     ! 2.  Integrate over wave numbers
     !
     DO IK=1, NK
-       EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
-       EMEAN  = EMEAN  + EB(IK)
-       SIGM01  = SIGM01  + EB(IK)*SIG(IK)
+      EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
+      EMEAN  = EMEAN  + EB(IK)
+      SIGM01  = SIGM01  + EB(IK)*SIG(IK)
     END DO
     !
     ! 3.  Add tail beyond discrete spectrum
@@ -310,9 +310,9 @@ CONTAINS
     SIGM01 = MAX ( 1.E-7 , SIGM01 ) / EMEAN
 
     IF (ABS(FACSCL-2.).GT.0.05) THEN
-       FACRES = 10.**( LOG10(2.) / FLOAT(IRES) )
-       SIGLOW   = SIG(NK) / ( FACRES**(FLOAT(NK-1) ) )
-       !        WRITE (*,*) 'CHECK RESOLUTION', IRES, FACSCL, FACRES, SIGLOW
+      FACRES = 10.**( LOG10(2.) / FLOAT(IRES) )
+      SIGLOW   = SIG(NK) / ( FACRES**(FLOAT(NK-1) ) )
+      !        WRITE (*,*) 'CHECK RESOLUTION', IRES, FACSCL, FACRES, SIGLOW
     END IF
 
     HS = 4.*SQRT( MAX(0.,EMEAN) )
@@ -350,91 +350,91 @@ CONTAINS
     !
     ISMAX = 1
     DO IK = 1, NK
-       IF ( SIG(IK) .LT. ( PPTRIAD(2) * SIGM01) ) THEN
-          ISMAX = IK
-       ENDIF
+      IF ( SIG(IK) .LT. ( PPTRIAD(2) * SIGM01) ) THEN
+        ISMAX = IK
+      ENDIF
     ENDDO
     ISMAX = MAX ( ISMAX , ISP1 )
     !
     !     --- compute 3-wave interactions
     !
     IF ( URSELL.GE.PPTRIAD(5) ) THEN
-       !
-       !       --- calculate biphase
-       !
-       BIPH   = (0.5*PI)*(TANH(PPTRIAD(4)/URSELL)-1.)
-       SINBPH = ABS( SIN(BIPH) )
-       !
-       ALLOCATE (EF (1:NK))
-       EF = 0.
-       DO ITH = 1, NTH
-          !
-          !          --- initialize array with E(f) for the direction considered
-          !          --- (convert from N(k) to E(f) using proper Jacobian)
-          !
-          DO IK = 1, NK
-             E(IK) = A(ITH+(IK-1)*NTH) * TPI * SIG(IK) / CG(IK)
-             EF(IK) = EF(IK) + E(IK)
-          END DO
-          !
-          DO IK = 1, ISMAX
+      !
+      !       --- calculate biphase
+      !
+      BIPH   = (0.5*PI)*(TANH(PPTRIAD(4)/URSELL)-1.)
+      SINBPH = ABS( SIN(BIPH) )
+      !
+      ALLOCATE (EF (1:NK))
+      EF = 0.
+      DO ITH = 1, NTH
+        !
+        !          --- initialize array with E(f) for the direction considered
+        !          --- (convert from N(k) to E(f) using proper Jacobian)
+        !
+        DO IK = 1, NK
+          E(IK) = A(ITH+(IK-1)*NTH) * TPI * SIG(IK) / CG(IK)
+          EF(IK) = EF(IK) + E(IK)
+        END DO
+        !
+        DO IK = 1, ISMAX
 
-             E0  = E(IK)
-             W0  = SIG(IK)
-             WN0 = WN(IK)
-             C0  = W0 / WN0
+          E0  = E(IK)
+          W0  = SIG(IK)
+          WN0 = WN(IK)
+          C0  = W0 / WN0
 
-             IF ( IK.GT.-ISM1 ) THEN
-                EM  = WISM * E(IK+ISM1)   + WISM1 * E(IK+ISM)
-                WM  = WISM * SIG(IK+ISM1) + WISM1 * SIG(IK+ISM)
-                WNM = WISM * WN(IK+ISM1)  + WISM1 * WN(IK+ISM)
-                CM  = WM / WNM
-             ELSE
-                EM  = 0.
-                WM  = 0.
-                WNM = 0.
-                CM  = 0.
-             END IF
+          IF ( IK.GT.-ISM1 ) THEN
+            EM  = WISM * E(IK+ISM1)   + WISM1 * E(IK+ISM)
+            WM  = WISM * SIG(IK+ISM1) + WISM1 * SIG(IK+ISM)
+            WNM = WISM * WN(IK+ISM1)  + WISM1 * WN(IK+ISM)
+            CM  = WM / WNM
+          ELSE
+            EM  = 0.
+            WM  = 0.
+            WNM = 0.
+            CM  = 0.
+          END IF
 
-             AUX1 = WNM**2 * ( GRAV * DEP + 2.*CM**2 )
-             AUX2 = WN0 * DEP * ( GRAV * DEP + &
-                  (2./15.) * GRAV * DEP_3 * WN0**2 - &
-                  (2./ 5.) * W0**2 * DEP_2 )
-             RINT = AUX1 / AUX2
-             FT = PPTRIAD(1) * C0 * CG(IK) * RINT**2 * SINBPH
+          AUX1 = WNM**2 * ( GRAV * DEP + 2.*CM**2 )
+          AUX2 = WN0 * DEP * ( GRAV * DEP + &
+               (2./15.) * GRAV * DEP_3 * WN0**2 - &
+               (2./ 5.) * W0**2 * DEP_2 )
+          RINT = AUX1 / AUX2
+          FT = PPTRIAD(1) * C0 * CG(IK) * RINT**2 * SINBPH
 
-             SA(ITH,IK) = MAX(0., FT * ( EM * EM - 2. * EM * E0 ))
+          SA(ITH,IK) = MAX(0., FT * ( EM * EM - 2. * EM * E0 ))
 
-          END DO
-       END DO
+        END DO
+      END DO
 
-       DEALLOCATE(EF)
-       !
-       !        ---  put source and diagonal terms together
-       !             (using Jacobian for S(f) -> S(k))
-       !
-       ALLOCATE (SF (1:NK))
-       SF = 0.
-       DO IK = 1, NK
-          SIGPICG = SIG(IK) * 2. * PI / CG(IK)
-          DO ITH = 1, NTH
-             !             --- Source term
-             S(ITH+(IK-1)*NTH) = 2.*( SA(ITH,IK) - &
-                  2.*(WISP  * SA(ITH,IK+ISP1) + &
-                  WISP1 * SA(ITH,IK+ISP )) ) / &
-                  SIGPICG
-             !             --- Functional derivative
-             SF(IK) = 2.*( SA(ITH,IK) - &
-                  2.*(WISP  * SA(ITH,IK+ISP1) + &
-                  WISP1 * SA(ITH,IK+ISP )) ) + SF(IK)
-             D = 0.
-          END DO
-       END DO
-       DEALLOCATE(SF)
+      DEALLOCATE(EF)
+      !
+      !        ---  put source and diagonal terms together
+      !             (using Jacobian for S(f) -> S(k))
+      !
+      ALLOCATE (SF (1:NK))
+      SF = 0.
+      DO IK = 1, NK
+        SIGPICG = SIG(IK) * 2. * PI / CG(IK)
+        DO ITH = 1, NTH
+          !             --- Source term
+          S(ITH+(IK-1)*NTH) = 2.*( SA(ITH,IK) - &
+               2.*(WISP  * SA(ITH,IK+ISP1) + &
+               WISP1 * SA(ITH,IK+ISP )) ) / &
+               SIGPICG
+          !             --- Functional derivative
+          SF(IK) = 2.*( SA(ITH,IK) - &
+               2.*(WISP  * SA(ITH,IK+ISP1) + &
+               WISP1 * SA(ITH,IK+ISP )) ) + SF(IK)
+          D = 0.
+        END DO
+      END DO
+      DEALLOCATE(SF)
 
     ELSE
-       D = 0.
-       S = 0.
+      D = 0.
+      S = 0.
     END IF
 
     DEALLOCATE(E,SA)

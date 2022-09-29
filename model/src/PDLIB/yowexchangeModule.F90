@@ -48,52 +48,52 @@ module yowExchangeModule
   !> Holds some data belong to a neighbor Domain
   type, public :: t_neighborDomain
 
-     !> the domain ID
-     !> The domain ID of the neighbor domain. Starts by 1
-     integer :: domainID = 0
+    !> the domain ID
+    !> The domain ID of the neighbor domain. Starts by 1
+    integer :: domainID = 0
 
-     !> number of ghosts nodes.
-     !> holds the number of ghosts nodes the two domains share together
-     !> (the neighbor domain has a copy of the ghosts. when you change some
-     !> value in a ghost node, it dosen't change in the node on the other domain)
-     integer :: numNodesToReceive = 0
+    !> number of ghosts nodes.
+    !> holds the number of ghosts nodes the two domains share together
+    !> (the neighbor domain has a copy of the ghosts. when you change some
+    !> value in a ghost node, it dosen't change in the node on the other domain)
+    integer :: numNodesToReceive = 0
 
-     !> this are the ghosts that we.
-     !> has in this neighbor domain. global node IDs
-     integer, allocatable :: nodesToReceive(:)
+    !> this are the ghosts that we.
+    !> has in this neighbor domain. global node IDs
+    integer, allocatable :: nodesToReceive(:)
 
-     !> number of nodes we have to send to this neighbor
-     integer :: numNodesToSend = 0
+    !> number of nodes we have to send to this neighbor
+    integer :: numNodesToSend = 0
 
-     !> this are the ghosts from this neighbor.
-     !> global node IDs to send
-     integer, allocatable :: nodesToSend(:)
+    !> this are the ghosts from this neighbor.
+    !> global node IDs to send
+    integer, allocatable :: nodesToSend(:)
 
-     ! MPI datatypes for size(U) == npa+1  U(0:npa)
+    ! MPI datatypes for size(U) == npa+1  U(0:npa)
 
-     !> MPI datatypes for 1D exchange
-     integer :: p1DRsendType_zero = MPI_DATATYPE_NULL
-     integer :: p1DRrecvType_zero = MPI_DATATYPE_NULL
+    !> MPI datatypes for 1D exchange
+    integer :: p1DRsendType_zero = MPI_DATATYPE_NULL
+    integer :: p1DRrecvType_zero = MPI_DATATYPE_NULL
 
-     !> MPI datatypes for 2D exchange
-     integer :: p2DRsendType_zero = MPI_DATATYPE_NULL
-     integer :: p2DRrecvType_zero = MPI_DATATYPE_NULL
+    !> MPI datatypes for 2D exchange
+    integer :: p2DRsendType_zero = MPI_DATATYPE_NULL
+    integer :: p2DRrecvType_zero = MPI_DATATYPE_NULL
 
-     ! MPI datatypes for size(U) == npa  U(1:npa)
-     !> MPI datatypes for 1D exchange
-     integer :: p1DRsendType = MPI_DATATYPE_NULL
-     integer :: p1DRrecvType = MPI_DATATYPE_NULL
-     !> MPI datatypes for 2D exchange
-     integer :: p2DRsendType1 = MPI_DATATYPE_NULL
-     integer :: p2DRrecvType1 = MPI_DATATYPE_NULL
-     integer :: p2DRsendType2 = MPI_DATATYPE_NULL
-     integer :: p2DRrecvType2 = MPI_DATATYPE_NULL
+    ! MPI datatypes for size(U) == npa  U(1:npa)
+    !> MPI datatypes for 1D exchange
+    integer :: p1DRsendType = MPI_DATATYPE_NULL
+    integer :: p1DRrecvType = MPI_DATATYPE_NULL
+    !> MPI datatypes for 2D exchange
+    integer :: p2DRsendType1 = MPI_DATATYPE_NULL
+    integer :: p2DRrecvType1 = MPI_DATATYPE_NULL
+    integer :: p2DRsendType2 = MPI_DATATYPE_NULL
+    integer :: p2DRrecvType2 = MPI_DATATYPE_NULL
 
-   contains
-     !     procedure :: exchangeGhostIds
-     !     final :: finalizeNeighborDomain
-     procedure :: finalize
-     procedure :: createMPIType
+  contains
+    !     procedure :: exchangeGhostIds
+    !     final :: finalizeNeighborDomain
+    procedure :: finalize
+    procedure :: createMPIType
 
   end type t_neighborDomain
 
@@ -234,7 +234,7 @@ contains
     integer :: i
 
     do i=1, nConnDomains
-       call neighborDomains(i)%createMPIType()
+      call neighborDomains(i)%createMPIType()
     end do
   end subroutine createMPITypes
 
@@ -258,30 +258,30 @@ contains
     character(len=140) :: errmsg
 
     if(size(U) /= npa) then
-       WRITE(errmsg, *) 'size(U)=', size(U), ' but npa=', npa
-       CALL ABORT(errmsg)
+      WRITE(errmsg, *) 'size(U)=', size(U), ' but npa=', npa
+      CALL ABORT(errmsg)
     endif
 
     ! post receives
     do i=1, nConnDomains
-       tag = 10000 + myrank
-       call MPI_IRecv(U, 1, neighborDomains(i)%p1DRrecvType, &
-            neighborDomains(i)%domainID-1, tag, comm, &
-            recvRqst(i), ierr)
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-       endif
+      tag = 10000 + myrank
+      call MPI_IRecv(U, 1, neighborDomains(i)%p1DRrecvType, &
+           neighborDomains(i)%domainID-1, tag, comm, &
+           recvRqst(i), ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
+      endif
     enddo
 
     ! post sends
     do i=1, nConnDomains
-       tag = 10000 + (neighborDomains(i)%domainID-1)
-       call MPI_ISend(U, 1, neighborDomains(i)%p1DRsendType, &
-            neighborDomains(i)%domainID-1, tag, comm, &
-            sendRqst(i), ierr);
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_ISend", ierr)
-       endif
+      tag = 10000 + (neighborDomains(i)%domainID-1)
+      call MPI_ISend(U, 1, neighborDomains(i)%p1DRsendType, &
+           neighborDomains(i)%domainID-1, tag, comm, &
+           sendRqst(i), ierr);
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_ISend", ierr)
+      endif
     end do
 
     ! Wait for completion
@@ -321,13 +321,13 @@ contains
     FLUSH(740+IAPROC)
 #endif
     do i=1, nConnDomains
-       tag = 30000 + myrank
-       call MPI_IRecv(U, 1, neighborDomains(i)%p2DRrecvType1, &
-            neighborDomains(i)%domainID-1, tag, comm, &
-            recvRqst(i), ierr)
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-       endif
+      tag = 30000 + myrank
+      call MPI_IRecv(U, 1, neighborDomains(i)%p2DRrecvType1, &
+           neighborDomains(i)%domainID-1, tag, comm, &
+           recvRqst(i), ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
+      endif
     enddo
 #ifdef W3_DEBUGEXCH
     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 5'
@@ -336,13 +336,13 @@ contains
 
     ! post sends
     do i=1, nConnDomains
-       tag = 30000 + (neighborDomains(i)%domainID-1)
-       call MPI_ISend(U, 1, neighborDomains(i)%p2DRsendType1, &
-            neighborDomains(i)%domainID-1, tag, comm, &
-            sendRqst(i), ierr)
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_ISend", ierr)
-       endif
+      tag = 30000 + (neighborDomains(i)%domainID-1)
+      call MPI_ISend(U, 1, neighborDomains(i)%p2DRsendType1, &
+           neighborDomains(i)%domainID-1, tag, comm, &
+           sendRqst(i), ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_ISend", ierr)
+      endif
     end do
 #ifdef W3_DEBUGEXCH
     WRITE(740+IAPROC,*) 'PDLIB_exchange2Dreal, step 6'
@@ -379,10 +379,10 @@ contains
     integer :: i
 
     if(allocated(neighborDomains)) then
-       do i=1, size(neighborDomains)
-          call neighborDomains(i)%finalize()
-       end do
-       deallocate(neighborDomains)
+      do i=1, size(neighborDomains)
+        call neighborDomains(i)%finalize()
+      end do
+      deallocate(neighborDomains)
     endif
   end subroutine finalizeExchangeModule
   !> exchange values in U.
@@ -423,34 +423,34 @@ contains
 
     ! post receives
     do i=1, nConnDomains
-       tag = 10001 + myrank
-       call MPI_IRecv(U, &
-            1, &
-            neighborDomains(i)%p1DRrecvType_zero, &
-            neighborDomains(i)%domainID-1, &
-            tag, &
-            comm, &
-            recvRqst(i), &
-            ierr)
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-       endif
+      tag = 10001 + myrank
+      call MPI_IRecv(U, &
+           1, &
+           neighborDomains(i)%p1DRrecvType_zero, &
+           neighborDomains(i)%domainID-1, &
+           tag, &
+           comm, &
+           recvRqst(i), &
+           ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
+      endif
     enddo
 
     ! post sends
     do i=1, nConnDomains
-       tag = 10001 + (neighborDomains(i)%domainID-1)
-       call MPI_ISend(U, &
-            1, &
-            neighborDomains(i)%p1DRsendType_zero, &
-            neighborDomains(i)%domainID-1, &
-            tag, &
-            comm, &
-            sendRqst(i), &
-            ierr);
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_ISend", ierr)
-       endif
+      tag = 10001 + (neighborDomains(i)%domainID-1)
+      call MPI_ISend(U, &
+           1, &
+           neighborDomains(i)%p1DRsendType_zero, &
+           neighborDomains(i)%domainID-1, &
+           tag, &
+           comm, &
+           sendRqst(i), &
+           ierr);
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_ISend", ierr)
+      endif
     end do
 
     ! Wait for completion
@@ -497,34 +497,34 @@ contains
 
     ! post receives
     do i=1, nConnDomains
-       tag = 30001 + myrank
-       call MPI_IRecv(U, &
-            1, &
-            neighborDomains(i)%p2DRrecvType_zero, &
-            neighborDomains(i)%domainID-1, &
-            tag, &
-            comm, &
-            recvRqst(i), &
-            ierr)
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_IRecv", ierr)
-       endif
+      tag = 30001 + myrank
+      call MPI_IRecv(U, &
+           1, &
+           neighborDomains(i)%p2DRrecvType_zero, &
+           neighborDomains(i)%domainID-1, &
+           tag, &
+           comm, &
+           recvRqst(i), &
+           ierr)
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_IRecv", ierr)
+      endif
     enddo
 
     ! post sends
     do i=1, nConnDomains
-       tag = 30001 + (neighborDomains(i)%domainID-1)
-       call MPI_ISend(U, &
-            1, &
-            neighborDomains(i)%p2DRsendType_zero, &
-            neighborDomains(i)%domainID-1, &
-            tag, &
-            comm, &
-            sendRqst(i), &
-            ierr);
-       if(ierr/=MPI_SUCCESS) then
-          CALL PARALLEL_ABORT("MPI_ISend", ierr)
-       endif
+      tag = 30001 + (neighborDomains(i)%domainID-1)
+      call MPI_ISend(U, &
+           1, &
+           neighborDomains(i)%p2DRsendType_zero, &
+           neighborDomains(i)%domainID-1, &
+           tag, &
+           comm, &
+           sendRqst(i), &
+           ierr);
+      if(ierr/=MPI_SUCCESS) then
+        CALL PARALLEL_ABORT("MPI_ISend", ierr)
+      endif
     end do
 
 

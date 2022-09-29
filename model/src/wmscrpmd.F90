@@ -251,41 +251,41 @@ CONTAINS
          &   GRID2_DIMS, GRID2_SIZE, GRID2_CORNERS, GRID2_RANK)
 
     IF(FLAGLL)THEN
-       CONV_DX=ONE
-       CONV_DY=ONE
-       OFFSET=ZERO
+      CONV_DX=ONE
+      CONV_DY=ONE
+      OFFSET=ZERO
     ELSE
-       LAT_CONVERSION=ZERO ! lat_conversion
-       ! notes:    this is the latitude used for conversion everywhere
-       !           in the grid (approximation)
-       !           (in radians)
-       !           conv_dy=92.6*1200.0 ! physical, =92.6/(3/3600)=111000 m = 111 km
-       CONV_DY=1.0E+6_SCRIP_R8 ! non-physical, 1e+6=1 deg
-       CONV_DX=COS(LAT_CONVERSION)*CONV_DY
-       ! notes:    offset (in meters), is necessary so that our grid does
-       !           not lie on the branch cut
-       OFFSET=75000.0_SCRIP_R8-MIN(MINVAL(GRID1_CENTER_LON),          &
-            &                               MINVAL(GRID2_CENTER_LON))
+      LAT_CONVERSION=ZERO ! lat_conversion
+      ! notes:    this is the latitude used for conversion everywhere
+      !           in the grid (approximation)
+      !           (in radians)
+      !           conv_dy=92.6*1200.0 ! physical, =92.6/(3/3600)=111000 m = 111 km
+      CONV_DY=1.0E+6_SCRIP_R8 ! non-physical, 1e+6=1 deg
+      CONV_DX=COS(LAT_CONVERSION)*CONV_DY
+      ! notes:    offset (in meters), is necessary so that our grid does
+      !           not lie on the branch cut
+      OFFSET=75000.0_SCRIP_R8-MIN(MINVAL(GRID1_CENTER_LON),          &
+           &                               MINVAL(GRID2_CENTER_LON))
     ENDIF
 
     !.....test output
 #ifdef W3_T38
     write(*,*)'l_master = ',l_master
     if(l_master)then
-       write(*,*)'conv_dx=', conv_dx
-       write(*,*)'conv_dy=', conv_dy
-       write(*,*)'offset = ',offset
-       write(*,*)'grid1_size=', grid1_size
-       write(*,*)'grid2_size=', grid2_size
-       write(*,*)'l_read = ',l_read
-       write(*,*)'minval(grid1_center_lon) = ',minval(grid1_center_lon)
-       write(*,*)'maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
-       write(*,*)'minval(grid1_center_lat) = ',minval(grid1_center_lat)
-       write(*,*)'maxval(grid1_center_lat) = ',maxval(grid1_center_lat)
-       write(*,*)'minval(grid2_center_lon) = ',minval(grid2_center_lon)
-       write(*,*)'maxval(grid2_center_lon) = ',maxval(grid2_center_lon)
-       write(*,*)'minval(grid2_center_lat) = ',minval(grid2_center_lat)
-       write(*,*)'maxval(grid2_center_lat) = ',maxval(grid2_center_lat)
+      write(*,*)'conv_dx=', conv_dx
+      write(*,*)'conv_dy=', conv_dy
+      write(*,*)'offset = ',offset
+      write(*,*)'grid1_size=', grid1_size
+      write(*,*)'grid2_size=', grid2_size
+      write(*,*)'l_read = ',l_read
+      write(*,*)'minval(grid1_center_lon) = ',minval(grid1_center_lon)
+      write(*,*)'maxval(grid1_center_lon) = ',maxval(grid1_center_lon)
+      write(*,*)'minval(grid1_center_lat) = ',minval(grid1_center_lat)
+      write(*,*)'maxval(grid1_center_lat) = ',maxval(grid1_center_lat)
+      write(*,*)'minval(grid2_center_lon) = ',minval(grid2_center_lon)
+      write(*,*)'maxval(grid2_center_lon) = ',maxval(grid2_center_lon)
+      write(*,*)'minval(grid2_center_lat) = ',minval(grid2_center_lat)
+      write(*,*)'maxval(grid2_center_lat) = ',maxval(grid2_center_lat)
     endif
 #endif
 
@@ -342,18 +342,18 @@ CONTAINS
     !            be land etc.
 #ifdef W3_T38
     if(l_master)then
-       do k=1,grid2_size
-          write(403,*)grid2_frac(k)
-       end do
-       do ilink=1,max_links_map1
-          write(405,'(999(1x,f20.7))')(wts_map1(iw,ilink),iw=1,num_wts)
-       end do
-       do ilink=1,max_links_map1
-          write(406,'(i20)')grid1_add_map1(ilink) ! equivalent to
-          ! my "src_address"
-          write(407,'(i20)')grid2_add_map1(ilink) ! equivalent to
-          ! my "dst_address"
-       end do
+      do k=1,grid2_size
+        write(403,*)grid2_frac(k)
+      end do
+      do ilink=1,max_links_map1
+        write(405,'(999(1x,f20.7))')(wts_map1(iw,ilink),iw=1,num_wts)
+      end do
+      do ilink=1,max_links_map1
+        write(406,'(i20)')grid1_add_map1(ilink) ! equivalent to
+        ! my "src_address"
+        write(407,'(i20)')grid2_add_map1(ilink) ! equivalent to
+        ! my "dst_address"
+      end do
     endif
 #endif
 
@@ -382,128 +382,128 @@ CONTAINS
 
     DO ILINK=1,MAX_LINKS_MAP1
 
-       !........note that this pair of if-thens *must* be consistent with the
-       !........single if-then below
-       IF ((GRID2_FRAC(GRID2_ADD_MAP1(ILINK))>FRAC_LOWEST) .AND.     &
-            (GRID2_FRAC(GRID2_ADD_MAP1(ILINK))<FRAC_HIGHEST)) THEN
-          !     then consider this link either to include, or to print a warning
-          IF( (WTS_MAP1(1,ILINK)>=WT_LOWEST) .AND.                   &
-               (WTS_MAP1(1,ILINK)<=WT_HIGHEST) )    THEN
-             KSRC=GRID1_ADD_MAP1(ILINK)
-             JSRC=INT((KSRC-1)/NI_SRC)+1
-             ISRC=KSRC-(JSRC-1)*NI_SRC
+      !........note that this pair of if-thens *must* be consistent with the
+      !........single if-then below
+      IF ((GRID2_FRAC(GRID2_ADD_MAP1(ILINK))>FRAC_LOWEST) .AND.     &
+           (GRID2_FRAC(GRID2_ADD_MAP1(ILINK))<FRAC_HIGHEST)) THEN
+        !     then consider this link either to include, or to print a warning
+        IF( (WTS_MAP1(1,ILINK)>=WT_LOWEST) .AND.                   &
+             (WTS_MAP1(1,ILINK)<=WT_HIGHEST) )    THEN
+          KSRC=GRID1_ADD_MAP1(ILINK)
+          JSRC=INT((KSRC-1)/NI_SRC)+1
+          ISRC=KSRC-(JSRC-1)*NI_SRC
 
-             IF (MAPSTA_SRC(JSRC,ISRC).EQ.0) THEN ! excluded point
-                WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0    =              &
-                     WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0 + 1
-                IF (MAPST2_SRC(JSRC,ISRC).EQ.0)THEN
-                   WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL =              &
-                        WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL + 1
-                ENDIF
-             ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.1) THEN
-                ! sea point
-                WGTDATA(GRID2_ADD_MAP1(ILINK))%N=                    &
-                     WGTDATA(GRID2_ADD_MAP1(ILINK))%N+1
-             ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.2) THEN
-                ! bnd point
-                WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2    =              &
-                     WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2 + 1
-             END IF
-             NGOODPNTS=NGOODPNTS+1
-          ELSEIF ( (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))>FRAC_LOWEST)   &
-               .AND. (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))<FRAC_HIGHEST)&
-               ) THEN
-             ! note that we don't bother giving a warning for the
-             ! cases where grid1_frac is strange.
-             NBADPNTS=NBADPNTS+1
-             ! we also don't bother giving a warning if we've already
-             ! given a lot of warnings (we keep counting, though)
-             IF((NBADPNTS.LT.5).AND.L_MASTER)THEN ! print warnings
-                WRITE(*,'(A)')'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-                WRITE(*,'(A)')'WARNING: SCRIP weight problem '
-                WRITE(*,'(4x,A,I7,A,I7)')'ilink = ',ilink,' out of ',&
-                     max_links_map1
-                WRITE(*,'(4x,A,I7)')'grid1_add_map1(ilink) = ',      &
-                     grid1_add_map1(ilink)
-                WRITE(*,'(4x,A,I7)')'grid2_add_map1(ilink) = ',      &
-                     grid2_add_map1(ilink)
-                WRITE(*,'(4x,A,E12.4)')'wts_map1(1,ilink) = ',       &
-                     wts_map1(1,ilink)
-                WRITE(*,'(4x,A,F10.5)')                              &
-                     'grid1_frac(grid1_add_map1(ilink)) = ',              &
-                     grid1_frac(grid1_add_map1(ilink))
-                WRITE(*,'(4x,A,F10.5)')                              &
-                     'grid2_frac(grid2_add_map1(ilink)) = ',              &
-                     grid2_frac(grid2_add_map1(ilink))
-                WRITE(*,'(4x,A,F10.5)')'grid1_center_lat = ',        &
-                     grid1_center_lat(grid1_add_map1(ilink))
-                WRITE(*,'(4x,A,F10.5)')'grid1_center_lon = ',        &
-                     grid1_center_lon(grid1_add_map1(ilink))
-                WRITE(*,'(4x,A,F10.5)')'grid2_center_lat = ',        &
-                     grid2_center_lat(grid2_add_map1(ilink))
-                WRITE(*,'(4x,A,F10.5)')'grid2_center_lon = ',        &
-                     grid2_center_lon(grid2_add_map1(ilink))
-                WRITE(*,'(A)')'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-             ENDIF
+          IF (MAPSTA_SRC(JSRC,ISRC).EQ.0) THEN ! excluded point
+            WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0    =              &
+                 WGTDATA(GRID2_ADD_MAP1(ILINK))%NR0 + 1
+            IF (MAPST2_SRC(JSRC,ISRC).EQ.0)THEN
+              WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL =              &
+                   WGTDATA(GRID2_ADD_MAP1(ILINK))%NRL + 1
+            ENDIF
+          ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.1) THEN
+            ! sea point
+            WGTDATA(GRID2_ADD_MAP1(ILINK))%N=                    &
+                 WGTDATA(GRID2_ADD_MAP1(ILINK))%N+1
+          ELSE IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.2) THEN
+            ! bnd point
+            WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2    =              &
+                 WGTDATA(GRID2_ADD_MAP1(ILINK))%NR2 + 1
+          END IF
+          NGOODPNTS=NGOODPNTS+1
+        ELSEIF ( (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))>FRAC_LOWEST)   &
+             .AND. (GRID1_FRAC(GRID1_ADD_MAP1(ILINK))<FRAC_HIGHEST)&
+             ) THEN
+          ! note that we don't bother giving a warning for the
+          ! cases where grid1_frac is strange.
+          NBADPNTS=NBADPNTS+1
+          ! we also don't bother giving a warning if we've already
+          ! given a lot of warnings (we keep counting, though)
+          IF((NBADPNTS.LT.5).AND.L_MASTER)THEN ! print warnings
+            WRITE(*,'(A)')'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+            WRITE(*,'(A)')'WARNING: SCRIP weight problem '
+            WRITE(*,'(4x,A,I7,A,I7)')'ilink = ',ilink,' out of ',&
+                 max_links_map1
+            WRITE(*,'(4x,A,I7)')'grid1_add_map1(ilink) = ',      &
+                 grid1_add_map1(ilink)
+            WRITE(*,'(4x,A,I7)')'grid2_add_map1(ilink) = ',      &
+                 grid2_add_map1(ilink)
+            WRITE(*,'(4x,A,E12.4)')'wts_map1(1,ilink) = ',       &
+                 wts_map1(1,ilink)
+            WRITE(*,'(4x,A,F10.5)')                              &
+                 'grid1_frac(grid1_add_map1(ilink)) = ',              &
+                 grid1_frac(grid1_add_map1(ilink))
+            WRITE(*,'(4x,A,F10.5)')                              &
+                 'grid2_frac(grid2_add_map1(ilink)) = ',              &
+                 grid2_frac(grid2_add_map1(ilink))
+            WRITE(*,'(4x,A,F10.5)')'grid1_center_lat = ',        &
+                 grid1_center_lat(grid1_add_map1(ilink))
+            WRITE(*,'(4x,A,F10.5)')'grid1_center_lon = ',        &
+                 grid1_center_lon(grid1_add_map1(ilink))
+            WRITE(*,'(4x,A,F10.5)')'grid2_center_lat = ',        &
+                 grid2_center_lat(grid2_add_map1(ilink))
+            WRITE(*,'(4x,A,F10.5)')'grid2_center_lon = ',        &
+                 grid2_center_lon(grid2_add_map1(ilink))
+            WRITE(*,'(A)')'%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
           ENDIF
-       ENDIF
+        ENDIF
+      ENDIF
     END DO
     IF((NBADPNTS.GT.0).AND.L_MASTER)THEN
-       WRITE(*,'(4x,A,I5,A)')'We had problems in ',NBADPNTS, &
-            ' points.'
-       WRITE(*,'(4x,I8,A)')NGOODPNTS,' points appear to be OK.'
+      WRITE(*,'(4x,A,I5,A)')'We had problems in ',NBADPNTS, &
+           ' points.'
+      WRITE(*,'(4x,I8,A)')NGOODPNTS,' points appear to be OK.'
     ENDIF
     IF( (NBADPNTS.GT.(NGOODPNTS/30)) .AND.L_MASTER )THEN
-       WRITE(*,'(4x,A)')'Error: excessive SCRIP failure. Stopping.'
-       STOP 'wmscrpmd, case 1'
+      WRITE(*,'(4x,A)')'Error: excessive SCRIP failure. Stopping.'
+      STOP 'wmscrpmd, case 1'
     ENDIF
 
     !.....step 2: allocate according to the size "n" determined above
     DO KDST=1,GRID2_SIZE
-       ALLOCATE ( WGTDATA(KDST)%W(WGTDATA(KDST)%N), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE ( WGTDATA(KDST)%K(WGTDATA(KDST)%N), STAT=ISTAT )
-       CHECK_ALLOC_STATUS ( ISTAT )
-       WGTDATA(KDST)%N=0
+      ALLOCATE ( WGTDATA(KDST)%W(WGTDATA(KDST)%N), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WGTDATA(KDST)%K(WGTDATA(KDST)%N), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      WGTDATA(KDST)%N=0
     END DO
 
     !.....step 3: save weights
     DO ILINK=1,MAX_LINKS_MAP1
 
-       KSRC=GRID1_ADD_MAP1(ILINK)
-       JSRC=INT((KSRC-1)/NI_SRC)+1
-       ISRC=KSRC-(JSRC-1)*NI_SRC
+      KSRC=GRID1_ADD_MAP1(ILINK)
+      JSRC=INT((KSRC-1)/NI_SRC)+1
+      ISRC=KSRC-(JSRC-1)*NI_SRC
 
-       !........note that this single if-then *must* be consistent with the
-       !........pair of if-thens above
-       IF ((GRID2_FRAC(GRID2_ADD_MAP1(ILINK))>FRAC_LOWEST) .AND.      &
-            &       (GRID2_FRAC(GRID2_ADD_MAP1(ILINK))<FRAC_HIGHEST) .AND.     &
-            &       (WTS_MAP1(1,ILINK)>=WT_LOWEST) .AND.                       &
-            &       (WTS_MAP1(1,ILINK)<=WT_HIGHEST))THEN
-          IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.1) THEN ! sea point
-             WGTDATA(GRID2_ADD_MAP1(ILINK))%N=                        &
-                  &             WGTDATA(GRID2_ADD_MAP1(ILINK))%N+1
-             WGTDATA(GRID2_ADD_MAP1(ILINK))%W(WGTDATA(                &
-                  &             GRID2_ADD_MAP1(ILINK))%N)=WTS_MAP1(1,ILINK)
-             WGTDATA(GRID2_ADD_MAP1(ILINK))%K(WGTDATA(                &
-                  &             GRID2_ADD_MAP1(ILINK))%N)=GRID1_ADD_MAP1(ILINK)
-          ENDIF
-       ENDIF
+      !........note that this single if-then *must* be consistent with the
+      !........pair of if-thens above
+      IF ((GRID2_FRAC(GRID2_ADD_MAP1(ILINK))>FRAC_LOWEST) .AND.      &
+           &       (GRID2_FRAC(GRID2_ADD_MAP1(ILINK))<FRAC_HIGHEST) .AND.     &
+           &       (WTS_MAP1(1,ILINK)>=WT_LOWEST) .AND.                       &
+           &       (WTS_MAP1(1,ILINK)<=WT_HIGHEST))THEN
+        IF (ABS(MAPSTA_SRC(JSRC,ISRC)).EQ.1) THEN ! sea point
+          WGTDATA(GRID2_ADD_MAP1(ILINK))%N=                        &
+               &             WGTDATA(GRID2_ADD_MAP1(ILINK))%N+1
+          WGTDATA(GRID2_ADD_MAP1(ILINK))%W(WGTDATA(                &
+               &             GRID2_ADD_MAP1(ILINK))%N)=WTS_MAP1(1,ILINK)
+          WGTDATA(GRID2_ADD_MAP1(ILINK))%K(WGTDATA(                &
+               &             GRID2_ADD_MAP1(ILINK))%N)=GRID1_ADD_MAP1(ILINK)
+        ENDIF
+      ENDIF
     END DO
 
     !.....step 4: re-normalize weights. This is necessary because we called
     !.....scrip without the mask. Now that we have the mask in place, we need
     !.....to re-normalize the weights.
     DO KDST=1,GRID2_SIZE
-       IF (WGTDATA(KDST)%N > 0) THEN
-          WTSUM=ZERO
-          DO IPNT=1,WGTDATA(KDST)%N
-             WTSUM=WTSUM+WGTDATA(KDST)%W(IPNT)
-          END DO
-          DO IPNT=1,WGTDATA(KDST)%N
-             WGTDATA(KDST)%W(IPNT)=WGTDATA(KDST)%W(IPNT)/WTSUM
-          END DO
-       END IF
+      IF (WGTDATA(KDST)%N > 0) THEN
+        WTSUM=ZERO
+        DO IPNT=1,WGTDATA(KDST)%N
+          WTSUM=WTSUM+WGTDATA(KDST)%W(IPNT)
+        END DO
+        DO IPNT=1,WGTDATA(KDST)%N
+          WGTDATA(KDST)%W(IPNT)=WGTDATA(KDST)%W(IPNT)/WTSUM
+        END DO
+      END IF
     END DO
 
     CALL SCRIP_CLEAR
@@ -645,302 +645,302 @@ CONTAINS
     MNE=GRIDS(ID_GRD)%NTRI
     MNP=GRIDS(ID_GRD)%NX
     IF (THEAPPROACH .EQ. DIRAPPROACH) THEN
-       ALLOCATE(GRID_CENTER_LON(MNE), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_CENTER_LAT(MNE), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_CORNER_LON(3,MNE), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_CORNER_LAT(3,MNE), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_MASK(MNE), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       DO IE=1,MNE
-          I1=GRIDS(ID_GRD)%TRIGP(1,IE)
-          I2=GRIDS(ID_GRD)%TRIGP(2,IE)
-          I3=GRIDS(ID_GRD)%TRIGP(3,IE)
-          ELON1=GRIDS(ID_GRD)%XGRD(1,I1)
-          ELON2=GRIDS(ID_GRD)%XGRD(1,I2)
-          ELON3=GRIDS(ID_GRD)%XGRD(1,I3)
-          ELAT1=GRIDS(ID_GRD)%YGRD(1,I1)
-          ELAT2=GRIDS(ID_GRD)%YGRD(1,I2)
-          ELAT3=GRIDS(ID_GRD)%YGRD(1,I3)
-          ELON=(ELON1 + ELON2 + ELON3)/3
-          ELAT=(ELAT1 + ELAT2 + ELAT3)/3
-          GRID_CENTER_LON(IE)=ELON
-          GRID_CENTER_LAT(IE)=ELAT
-          GRID_CORNER_LON(1,IE)=ELON1
-          GRID_CORNER_LON(2,IE)=ELON2
-          GRID_CORNER_LON(3,IE)=ELON3
-          GRID_CORNER_LAT(1,IE)=ELAT1
-          GRID_CORNER_LAT(2,IE)=ELAT2
-          GRID_CORNER_LAT(3,IE)=ELAT3
-          GRID_MASK(IE)=.TRUE.
-       END DO
-       GRID_CORNERS=3
+      ALLOCATE(GRID_CENTER_LON(MNE), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CENTER_LAT(MNE), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CORNER_LON(3,MNE), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CORNER_LAT(3,MNE), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_MASK(MNE), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      DO IE=1,MNE
+        I1=GRIDS(ID_GRD)%TRIGP(1,IE)
+        I2=GRIDS(ID_GRD)%TRIGP(2,IE)
+        I3=GRIDS(ID_GRD)%TRIGP(3,IE)
+        ELON1=GRIDS(ID_GRD)%XGRD(1,I1)
+        ELON2=GRIDS(ID_GRD)%XGRD(1,I2)
+        ELON3=GRIDS(ID_GRD)%XGRD(1,I3)
+        ELAT1=GRIDS(ID_GRD)%YGRD(1,I1)
+        ELAT2=GRIDS(ID_GRD)%YGRD(1,I2)
+        ELAT3=GRIDS(ID_GRD)%YGRD(1,I3)
+        ELON=(ELON1 + ELON2 + ELON3)/3
+        ELAT=(ELAT1 + ELAT2 + ELAT3)/3
+        GRID_CENTER_LON(IE)=ELON
+        GRID_CENTER_LAT(IE)=ELAT
+        GRID_CORNER_LON(1,IE)=ELON1
+        GRID_CORNER_LON(2,IE)=ELON2
+        GRID_CORNER_LON(3,IE)=ELON3
+        GRID_CORNER_LAT(1,IE)=ELAT1
+        GRID_CORNER_LAT(2,IE)=ELAT2
+        GRID_CORNER_LAT(3,IE)=ELAT3
+        GRID_MASK(IE)=.TRUE.
+      END DO
+      GRID_CORNERS=3
     END IF
     IF (THEAPPROACH .EQ. DUALAPPROACH) THEN
-       ALLOCATE(TRIGINCD(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(IOBP(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(NEIGHBOR_NEXT(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(NEIGHBOR_PREV(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(NBASSIGNEDCORNER(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(LISTNBCORNER(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(TRIGINCD(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(IOBP(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(NEIGHBOR_NEXT(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(NEIGHBOR_PREV(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(NBASSIGNEDCORNER(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(LISTNBCORNER(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
 
-       ALLOCATE(STATUS(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(NEXTVERT(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(PREVVERT(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(FINALVERT(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(LON_CENT_TRIG(MNE), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(LAT_CENT_TRIG(MNE), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(STATUS(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(NEXTVERT(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(PREVVERT(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(FINALVERT(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(LON_CENT_TRIG(MNE), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(LAT_CENT_TRIG(MNE), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
 
-       CALL GET_UNSTRUCTURED_VERTEX_DEGREE (MNP, MNE,             &
-            GRIDS(ID_GRD)%TRIGP, TRIGINCD)
-       CALL GET_BOUNDARY(MNP, MNE, GRIDS(id_grd)%TRIGP, IOBP,     &
-            NEIGHBOR_PREV, NEIGHBOR_NEXT)
+      CALL GET_UNSTRUCTURED_VERTEX_DEGREE (MNP, MNE,             &
+           GRIDS(ID_GRD)%TRIGP, TRIGINCD)
+      CALL GET_BOUNDARY(MNP, MNE, GRIDS(id_grd)%TRIGP, IOBP,     &
+           NEIGHBOR_PREV, NEIGHBOR_NEXT)
 
-       ! Find max number of corners
-       MAXCORNER=0
-       DO IP=1,MNP
-          IF (NEIGHBOR_NEXT(IP) .EQ. 0) THEN
-             NBCORNER=TRIGINCD(IP)
-          ELSE
-             NBCORNER=TRIGINCD(IP) + 3
+      ! Find max number of corners
+      MAXCORNER=0
+      DO IP=1,MNP
+        IF (NEIGHBOR_NEXT(IP) .EQ. 0) THEN
+          NBCORNER=TRIGINCD(IP)
+        ELSE
+          NBCORNER=TRIGINCD(IP) + 3
+        END IF
+        LISTNBCORNER(IP)=NBCORNER
+        IF (NBCORNER .GT. MAXCORNER) THEN
+          MAXCORNER=NBCORNER
+        END IF
+      END DO
+      GRID_CORNERS=MAXCORNER
+
+      ALLOCATE(GRID_CENTER_LON(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CENTER_LAT(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CORNER_LON(MAXCORNER,MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_CORNER_LAT(MAXCORNER,MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE(GRID_MASK(MNP), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+
+      ! Add first three corners for boundaries
+      NBASSIGNEDCORNER(:)=0
+      DO IP=1,MNP
+        GRID_MASK(IP)=.TRUE.
+        IF (NEIGHBOR_NEXT(IP) .GT. 0) THEN
+          IPNEXT=NEIGHBOR_NEXT(IP)
+          IPPREV=NEIGHBOR_PREV(IP)
+          ELONIP=DBLE(GRIDS(ID_GRD)%XGRD(1,IP))
+          ELATIP=DBLE(GRIDS(ID_GRD)%YGRD(1,IP))
+          ELONNEXT=DBLE(GRIDS(ID_GRD)%XGRD(1,IPNEXT))
+          ELATNEXT=DBLE(GRIDS(ID_GRD)%YGRD(1,IPNEXT))
+          ELONPREV=DBLE(GRIDS(ID_GRD)%XGRD(1,IPPREV))
+          ELATPREV=DBLE(GRIDS(ID_GRD)%YGRD(1,IPPREV))
+
+          ! Periodicity fix for corner node
+          IF ( ABS(ELONIP - ELONNEXT) .GT. 180.0 ) THEN
+            ELONNEXT = ELONNEXT -SIGN(360.0d0,(ELONIP - ELONNEXT))
+          ENDIF
+          IF ( ABS(ELONIP - ELONPREV) .GT. 180.0 ) THEN
+            ELONPREV = ELONPREV -SIGN(360.0d0,(ELONIP - ELONPREV))
+          ENDIF
+
+          ELONN=(ELONIP+ELONNEXT)/2.0
+          ELATN=(ELATIP+ELATNEXT)/2.0
+          ELONP=(ELONIP+ELONPREV)/2.0
+          ELATP=(ELATIP+ELATPREV)/2.0
+
+
+          GRID_CORNER_LON(1,IP)=ELONN
+          GRID_CORNER_LAT(1,IP)=ELATN
+          GRID_CORNER_LON(2,IP)=ELONIP
+          GRID_CORNER_LAT(2,IP)=ELATIP
+          GRID_CORNER_LON(3,IP)=ELONP
+          GRID_CORNER_LAT(3,IP)=ELATP
+          NBASSIGNEDCORNER(IP)=3
+        END IF
+      END DO
+
+      ! Compute centers
+      DO IP=1,MNP
+        GRID_CENTER_LON(IP)=DBLE(GRIDS(ID_GRD)%XGRD(1,IP))
+        GRID_CENTER_LAT(IP)=DBLE(GRIDS(ID_GRD)%YGRD(1,IP))
+      END DO
+
+      ! Check triangle node orientation
+      ! Compute triangle centers
+      NBPLUS=0
+      NBMINUS=0
+      DO IE=1,MNE
+        I1=GRIDS(ID_GRD)%TRIGP(1,IE)
+        I2=GRIDS(ID_GRD)%TRIGP(2,IE)
+        I3=GRIDS(ID_GRD)%TRIGP(3,IE)
+        PT(1,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I1))
+        PT(2,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I2))
+        PT(3,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I3))
+        PT(1,2)=DBLE(GRIDS(ID_GRD)%YGRD(1,I1))
+        PT(2,2)=DBLE(GRIDS(ID_GRD)%YGRD(1,I2))
+        PT(3,2)=DBLE(GRIDS(ID_GRD)%YGRD(1,I3))
+
+        CALL FIX_PERIODCITY(PT)
+
+        ELON1 = PT(1,1)
+        ELON2 = PT(2,1)
+        ELON3 = PT(3,1)
+        ELAT1 = PT(1,2)
+        ELAT2 = PT(2,2)
+        ELAT3 = PT(3,2)
+
+        DELTALON12=ELON2 - ELON1
+        DELTALON13=ELON3 - ELON1
+        DELTALAT12=ELAT2 - ELAT1
+        DELTALAT13=ELAT3 - ELAT1
+        THEDET=DELTALON12*DELTALAT13 - DELTALON13*DELTALAT12
+        IF (THEDET.GT.0) THEN
+          NBPLUS=NBPLUS+1
+        END IF
+        IF (THEDET.LT.0) THEN
+          NBMINUS=NBMINUS+1
+        END IF
+        ELON=(ELON1 + ELON2 + ELON3)/3.0
+        ELAT=(ELAT1 + ELAT2 + ELAT3)/3.0
+
+
+        LON_CENT_TRIG(IE)=ELON
+        LAT_CENT_TRIG(IE)=ELAT
+
+      END DO
+      DODEBUG=0
+      IF (DODEBUG.EQ.1) THEN
+        print *, 'nbplus=', nbplus, ' nbminus=', nbminus
+      END IF
+
+      STATUS(:) = 0
+      NEXTVERT(:) = 0
+      PREVVERT(:) = 0
+      DO IE=1,MNE
+        DO I=1,3
+          CALL TRIANG_INDEXES(I, INEXT, IPREV)
+          IP=GRIDS(ID_GRD)%TRIGP(I,IE)
+          IPNEXT=GRIDS(ID_GRD)%TRIGP(INEXT,IE)
+          IPPREV=GRIDS(ID_GRD)%TRIGP(IPREV,IE)
+          IF (STATUS(IP).EQ.0) THEN
+            IF (NEIGHBOR_NEXT(IP).EQ.0) THEN
+              STATUS(IP)=1
+              FINALVERT(IP)=IPPREV
+              PREVVERT(IP)=IPPREV
+              NEXTVERT(IP)=IPNEXT
+            ELSE
+              IF (NEIGHBOR_PREV(IP).EQ.IPPREV) THEN
+                STATUS(IP)=1
+                PREVVERT(IP)=IPPREV
+                NEXTVERT(IP)=IPNEXT
+                FINALVERT(IP)=NEIGHBOR_NEXT(IP)
+              END IF
+            END IF
           END IF
-          LISTNBCORNER(IP)=NBCORNER
-          IF (NBCORNER .GT. MAXCORNER) THEN
-             MAXCORNER=NBCORNER
-          END IF
-       END DO
-       GRID_CORNERS=MAXCORNER
-
-       ALLOCATE(GRID_CENTER_LON(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_CENTER_LAT(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_CORNER_LON(MAXCORNER,MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_CORNER_LAT(MAXCORNER,MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       ALLOCATE(GRID_MASK(MNP), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-
-       ! Add first three corners for boundaries
-       NBASSIGNEDCORNER(:)=0
-       DO IP=1,MNP
-          GRID_MASK(IP)=.TRUE.
-          IF (NEIGHBOR_NEXT(IP) .GT. 0) THEN
-             IPNEXT=NEIGHBOR_NEXT(IP)
-             IPPREV=NEIGHBOR_PREV(IP)
-             ELONIP=DBLE(GRIDS(ID_GRD)%XGRD(1,IP))
-             ELATIP=DBLE(GRIDS(ID_GRD)%YGRD(1,IP))
-             ELONNEXT=DBLE(GRIDS(ID_GRD)%XGRD(1,IPNEXT))
-             ELATNEXT=DBLE(GRIDS(ID_GRD)%YGRD(1,IPNEXT))
-             ELONPREV=DBLE(GRIDS(ID_GRD)%XGRD(1,IPPREV))
-             ELATPREV=DBLE(GRIDS(ID_GRD)%YGRD(1,IPPREV))
-
-             ! Periodicity fix for corner node
-             IF ( ABS(ELONIP - ELONNEXT) .GT. 180.0 ) THEN
-                ELONNEXT = ELONNEXT -SIGN(360.0d0,(ELONIP - ELONNEXT))
-             ENDIF
-             IF ( ABS(ELONIP - ELONPREV) .GT. 180.0 ) THEN
-                ELONPREV = ELONPREV -SIGN(360.0d0,(ELONIP - ELONPREV))
-             ENDIF
-
-             ELONN=(ELONIP+ELONNEXT)/2.0
-             ELATN=(ELATIP+ELATNEXT)/2.0
-             ELONP=(ELONIP+ELONPREV)/2.0
-             ELATP=(ELATIP+ELATPREV)/2.0
-
-
-             GRID_CORNER_LON(1,IP)=ELONN
-             GRID_CORNER_LAT(1,IP)=ELATN
-             GRID_CORNER_LON(2,IP)=ELONIP
-             GRID_CORNER_LAT(2,IP)=ELATIP
-             GRID_CORNER_LON(3,IP)=ELONP
-             GRID_CORNER_LAT(3,IP)=ELATP
-             NBASSIGNEDCORNER(IP)=3
-          END IF
-       END DO
-
-       ! Compute centers
-       DO IP=1,MNP
-          GRID_CENTER_LON(IP)=DBLE(GRIDS(ID_GRD)%XGRD(1,IP))
-          GRID_CENTER_LAT(IP)=DBLE(GRIDS(ID_GRD)%YGRD(1,IP))
-       END DO
-
-       ! Check triangle node orientation
-       ! Compute triangle centers
-       NBPLUS=0
-       NBMINUS=0
-       DO IE=1,MNE
-          I1=GRIDS(ID_GRD)%TRIGP(1,IE)
-          I2=GRIDS(ID_GRD)%TRIGP(2,IE)
-          I3=GRIDS(ID_GRD)%TRIGP(3,IE)
-          PT(1,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I1))
-          PT(2,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I2))
-          PT(3,1)=DBLE(GRIDS(ID_GRD)%XGRD(1,I3))
-          PT(1,2)=DBLE(GRIDS(ID_GRD)%YGRD(1,I1))
-          PT(2,2)=DBLE(GRIDS(ID_GRD)%YGRD(1,I2))
-          PT(3,2)=DBLE(GRIDS(ID_GRD)%YGRD(1,I3))
-
-          CALL FIX_PERIODCITY(PT)
-
-          ELON1 = PT(1,1)
-          ELON2 = PT(2,1)
-          ELON3 = PT(3,1)
-          ELAT1 = PT(1,2)
-          ELAT2 = PT(2,2)
-          ELAT3 = PT(3,2)
-
-          DELTALON12=ELON2 - ELON1
-          DELTALON13=ELON3 - ELON1
-          DELTALAT12=ELAT2 - ELAT1
-          DELTALAT13=ELAT3 - ELAT1
-          THEDET=DELTALON12*DELTALAT13 - DELTALON13*DELTALAT12
-          IF (THEDET.GT.0) THEN
-             NBPLUS=NBPLUS+1
-          END IF
-          IF (THEDET.LT.0) THEN
-             NBMINUS=NBMINUS+1
-          END IF
-          ELON=(ELON1 + ELON2 + ELON3)/3.0
-          ELAT=(ELAT1 + ELAT2 + ELAT3)/3.0
-
-
-          LON_CENT_TRIG(IE)=ELON
-          LAT_CENT_TRIG(IE)=ELAT
-
-       END DO
-       DODEBUG=0
-       IF (DODEBUG.EQ.1) THEN
-          print *, 'nbplus=', nbplus, ' nbminus=', nbminus
-       END IF
-
-       STATUS(:) = 0
-       NEXTVERT(:) = 0
-       PREVVERT(:) = 0
-       DO IE=1,MNE
+        END DO
+      END DO
+      STATUS(:)=0
+      DO
+        ISFINISHED=1
+        DO IE=1,MNE
+          ELON=LON_CENT_TRIG(IE)
+          ELAT=LAT_CENT_TRIG(IE)
           DO I=1,3
-             CALL TRIANG_INDEXES(I, INEXT, IPREV)
-             IP=GRIDS(ID_GRD)%TRIGP(I,IE)
-             IPNEXT=GRIDS(ID_GRD)%TRIGP(INEXT,IE)
-             IPPREV=GRIDS(ID_GRD)%TRIGP(IPREV,IE)
-             IF (STATUS(IP).EQ.0) THEN
-                IF (NEIGHBOR_NEXT(IP).EQ.0) THEN
-                   STATUS(IP)=1
-                   FINALVERT(IP)=IPPREV
-                   PREVVERT(IP)=IPPREV
-                   NEXTVERT(IP)=IPNEXT
-                ELSE
-                   IF (NEIGHBOR_PREV(IP).EQ.IPPREV) THEN
-                      STATUS(IP)=1
-                      PREVVERT(IP)=IPPREV
-                      NEXTVERT(IP)=IPNEXT
-                      FINALVERT(IP)=NEIGHBOR_NEXT(IP)
-                   END IF
-                END IF
-             END IF
-          END DO
-       END DO
-       STATUS(:)=0
-       DO
-          ISFINISHED=1
-          DO IE=1,MNE
-             ELON=LON_CENT_TRIG(IE)
-             ELAT=LAT_CENT_TRIG(IE)
-             DO I=1,3
-                CALL TRIANG_INDEXES(I, INEXT, IPREV)
-                IP=GRIDS(ID_GRD)%TRIGP(I,IE)
-                IPNEXT=GRIDS(ID_GRD)%TRIGP(INEXT,IE)
-                IPPREV=GRIDS(ID_GRD)%TRIGP(IPREV,IE)
-                IF (STATUS(IP).EQ.0) THEN
-                   ISFINISHED=0
-                   ZPREV=PREVVERT(IP)
-                   IF (ZPREV.EQ.IPPREV) THEN
-                      IDX=NBASSIGNEDCORNER(IP)
-                      IDX=IDX+1
-                      GRID_CORNER_LON(IDX,IP)=ELON
-                      GRID_CORNER_LAT(IDX,IP)=ELAT
-                      NBASSIGNEDCORNER(IP)=IDX
-                      PREVVERT(IP)=IPNEXT
-                      IF (IPNEXT.EQ.FINALVERT(IP)) THEN
-                         STATUS(IP)=1
-                      END IF
-                   END IF
-                END IF
-             END DO
-          END DO
-          IF (ISFINISHED.EQ.1) THEN
-             EXIT
-          END IF
-       END DO
-       DO IP=1,MNP
-          IF (NBASSIGNEDCORNER(IP).NE.LISTNBCORNER(IP)) THEN
-             WRITE(*,*) 'Incoherent number at IP=', IP
-             WRITE(*,*) '  NbAssignedCorner(IP)=', NbAssignedCorner(IP)
-             WRITE(*,*) '  ListNbCorner(IP)=', ListNbCorner(IP)
-             WRITE(*,*) '  N_N=', NEIGHBOR_NEXT(IP), 'N_P=', NEIGHBOR_PREV(IP)
-             WRITE(*,*) '  TrigIncd=', TrigIncd(IP)
-             STOP 'wmscrpmd, case 2'
-          END IF
-       END DO
-
-       ! if the number of corner is below threshold, we have to
-       ! add some more.
-       DO IP=1,MNP
-          NB=NBASSIGNEDCORNER(IP)
-          IF (NB .LT. MAXCORNER) THEN
-             ELON=GRID_CORNER_LON(NB,IP)
-             ELAT=GRID_CORNER_LAT(NB,IP)
-             DO IDX=NB+1,MAXCORNER
+            CALL TRIANG_INDEXES(I, INEXT, IPREV)
+            IP=GRIDS(ID_GRD)%TRIGP(I,IE)
+            IPNEXT=GRIDS(ID_GRD)%TRIGP(INEXT,IE)
+            IPPREV=GRIDS(ID_GRD)%TRIGP(IPREV,IE)
+            IF (STATUS(IP).EQ.0) THEN
+              ISFINISHED=0
+              ZPREV=PREVVERT(IP)
+              IF (ZPREV.EQ.IPPREV) THEN
+                IDX=NBASSIGNEDCORNER(IP)
+                IDX=IDX+1
                 GRID_CORNER_LON(IDX,IP)=ELON
                 GRID_CORNER_LAT(IDX,IP)=ELAT
-             END DO
-          END IF
-       END DO
-       DEALLOCATE(NBASSIGNEDCORNER, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(LISTNBCORNER, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(TRIGINCD, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(IOBP, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(NEIGHBOR_PREV, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(NEIGHBOR_NEXT, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(STATUS, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(NEXTVERT, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(PREVVERT, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(FINALVERT, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(LON_CENT_TRIG, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
-       DEALLOCATE(LAT_CENT_TRIG, STAT=ISTAT)
-       CHECK_DEALLOC_STATUS ( ISTAT )
+                NBASSIGNEDCORNER(IP)=IDX
+                PREVVERT(IP)=IPNEXT
+                IF (IPNEXT.EQ.FINALVERT(IP)) THEN
+                  STATUS(IP)=1
+                END IF
+              END IF
+            END IF
+          END DO
+        END DO
+        IF (ISFINISHED.EQ.1) THEN
+          EXIT
+        END IF
+      END DO
+      DO IP=1,MNP
+        IF (NBASSIGNEDCORNER(IP).NE.LISTNBCORNER(IP)) THEN
+          WRITE(*,*) 'Incoherent number at IP=', IP
+          WRITE(*,*) '  NbAssignedCorner(IP)=', NbAssignedCorner(IP)
+          WRITE(*,*) '  ListNbCorner(IP)=', ListNbCorner(IP)
+          WRITE(*,*) '  N_N=', NEIGHBOR_NEXT(IP), 'N_P=', NEIGHBOR_PREV(IP)
+          WRITE(*,*) '  TrigIncd=', TrigIncd(IP)
+          STOP 'wmscrpmd, case 2'
+        END IF
+      END DO
 
-       ALLOCATE(GRID_DIMS(2), STAT=ISTAT)
-       CHECK_ALLOC_STATUS ( ISTAT )
-       GRID_DIMS(1)=MNP
-       GRID_DIMS(2)=1
-       GRID_SIZE=MNP
+      ! if the number of corner is below threshold, we have to
+      ! add some more.
+      DO IP=1,MNP
+        NB=NBASSIGNEDCORNER(IP)
+        IF (NB .LT. MAXCORNER) THEN
+          ELON=GRID_CORNER_LON(NB,IP)
+          ELAT=GRID_CORNER_LAT(NB,IP)
+          DO IDX=NB+1,MAXCORNER
+            GRID_CORNER_LON(IDX,IP)=ELON
+            GRID_CORNER_LAT(IDX,IP)=ELAT
+          END DO
+        END IF
+      END DO
+      DEALLOCATE(NBASSIGNEDCORNER, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(LISTNBCORNER, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(TRIGINCD, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(IOBP, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(NEIGHBOR_PREV, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(NEIGHBOR_NEXT, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(STATUS, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(NEXTVERT, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(PREVVERT, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(FINALVERT, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(LON_CENT_TRIG, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+      DEALLOCATE(LAT_CENT_TRIG, STAT=ISTAT)
+      CHECK_DEALLOC_STATUS ( ISTAT )
+
+      ALLOCATE(GRID_DIMS(2), STAT=ISTAT)
+      CHECK_ALLOC_STATUS ( ISTAT )
+      GRID_DIMS(1)=MNP
+      GRID_DIMS(2)=1
+      GRID_SIZE=MNP
     END IF
   END SUBROUTINE GET_SCRIP_INFO_UNSTRUCTURED
 
@@ -1094,46 +1094,46 @@ CONTAINS
     !            Since it is called twice, this would save a little space.
     IREC=0
     DO J=1,NJ
-       DO I=1,NI
-          IREC=IREC+1
-          GRID_CENTER_LON(IREC)=XIN_GRD(J,I)
-          GRID_CENTER_LAT(IREC)=YIN_GRD(J,I)
-          GRID_MASK(IREC)=.TRUE.
+      DO I=1,NI
+        IREC=IREC+1
+        GRID_CENTER_LON(IREC)=XIN_GRD(J,I)
+        GRID_CENTER_LAT(IREC)=YIN_GRD(J,I)
+        GRID_MASK(IREC)=.TRUE.
 
-          !..notes: normally, we'd apply the mask like this:
-          !           if(abs(mapsta_src(j,i)).eq.1)then
-          !              grid1_mask(irec)=.true.
-          !           else
-          !              grid1_mask(irec)=.false.
-          !           endif
-          !..but unfortunately, WMGHGH needs information about the overlaying high-res
-          !           cells, even those that are masked, for calculating
-          !           NRL, NR0, NR1, NR2.
+        !..notes: normally, we'd apply the mask like this:
+        !           if(abs(mapsta_src(j,i)).eq.1)then
+        !              grid1_mask(irec)=.true.
+        !           else
+        !              grid1_mask(irec)=.false.
+        !           endif
+        !..but unfortunately, WMGHGH needs information about the overlaying high-res
+        !           cells, even those that are masked, for calculating
+        !           NRL, NR0, NR1, NR2.
 
-          !...........corner 1 : halfway to i-1,j-1
-          GRID_CORNER_LON(1,IREC)=GRID_CENTER_LON(IREC)-              &
-               &        HALF*DXDP_GRD(J,I)-HALF*DXDQ_GRD(J,I)
-          GRID_CORNER_LAT(1,IREC)=GRID_CENTER_LAT(IREC)-              &
-               &        HALF*DYDP_GRD(J,I)-HALF*DYDQ_GRD(J,I)
+        !...........corner 1 : halfway to i-1,j-1
+        GRID_CORNER_LON(1,IREC)=GRID_CENTER_LON(IREC)-              &
+             &        HALF*DXDP_GRD(J,I)-HALF*DXDQ_GRD(J,I)
+        GRID_CORNER_LAT(1,IREC)=GRID_CENTER_LAT(IREC)-              &
+             &        HALF*DYDP_GRD(J,I)-HALF*DYDQ_GRD(J,I)
 
-          !...........corner 2: halfway to i+1,j-1
-          GRID_CORNER_LON(2,IREC)=GRID_CENTER_LON(IREC)+              &
-               &        HALF*DXDP_GRD(J,I)-HALF*DXDQ_GRD(J,I)
-          GRID_CORNER_LAT(2,IREC)=GRID_CENTER_LAT(IREC)+              &
-               &        HALF*DYDP_GRD(J,I)-HALF*DYDQ_GRD(J,I)
+        !...........corner 2: halfway to i+1,j-1
+        GRID_CORNER_LON(2,IREC)=GRID_CENTER_LON(IREC)+              &
+             &        HALF*DXDP_GRD(J,I)-HALF*DXDQ_GRD(J,I)
+        GRID_CORNER_LAT(2,IREC)=GRID_CENTER_LAT(IREC)+              &
+             &        HALF*DYDP_GRD(J,I)-HALF*DYDQ_GRD(J,I)
 
-          !...........corner 3: halfway to i+1,j+1
-          GRID_CORNER_LON(3,IREC)=GRID_CENTER_LON(IREC)+              &
-               &        HALF*DXDP_GRD(J,I)+HALF*DXDQ_GRD(J,I)
-          GRID_CORNER_LAT(3,IREC)=GRID_CENTER_LAT(IREC)+              &
-               &        HALF*DYDP_GRD(J,I)+HALF*DYDQ_GRD(J,I)
+        !...........corner 3: halfway to i+1,j+1
+        GRID_CORNER_LON(3,IREC)=GRID_CENTER_LON(IREC)+              &
+             &        HALF*DXDP_GRD(J,I)+HALF*DXDQ_GRD(J,I)
+        GRID_CORNER_LAT(3,IREC)=GRID_CENTER_LAT(IREC)+              &
+             &        HALF*DYDP_GRD(J,I)+HALF*DYDQ_GRD(J,I)
 
-          !...........corner 4: halfway to i-1,j+1
-          GRID_CORNER_LON(4,IREC)=GRID_CENTER_LON(IREC)-              &
-               &        HALF*DXDP_GRD(J,I)+HALF*DXDQ_GRD(J,I)
-          GRID_CORNER_LAT(4,IREC)=GRID_CENTER_LAT(IREC)-              &
-               &        HALF*DYDP_GRD(J,I)+HALF*DYDQ_GRD(J,I)
-       END DO
+        !...........corner 4: halfway to i-1,j+1
+        GRID_CORNER_LON(4,IREC)=GRID_CENTER_LON(IREC)-              &
+             &        HALF*DXDP_GRD(J,I)+HALF*DXDQ_GRD(J,I)
+        GRID_CORNER_LAT(4,IREC)=GRID_CENTER_LAT(IREC)-              &
+             &        HALF*DYDP_GRD(J,I)+HALF*DYDQ_GRD(J,I)
+      END DO
     END DO
   END SUBROUTINE GET_SCRIP_INFO_STRUCTURED
 
@@ -1220,55 +1220,55 @@ CONTAINS
     REAL*8 :: MINLONCORNER, MAXLONCORNER, MINLATCORNER, MAXLATCORNER
     REAL*8 :: PT(3,2)
     IF (GRIDS(ID_GRD)%GTYPE .EQ. UNGTYPE) THEN
-       CALL GET_SCRIP_INFO_UNSTRUCTURED (ID_GRD,                       &
-            &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
-            &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
-            &   GRID_DIMS, GRID_SIZE, GRID_CORNERS, GRID_RANK)
+      CALL GET_SCRIP_INFO_UNSTRUCTURED (ID_GRD,                       &
+           &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
+           &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
+           &   GRID_DIMS, GRID_SIZE, GRID_CORNERS, GRID_RANK)
     ELSE
-       CALL GET_SCRIP_INFO_STRUCTURED (ID_GRD,                         &
-            &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
-            &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
-            &   GRID_DIMS, GRID_SIZE, GRID_CORNERS, GRID_RANK)
+      CALL GET_SCRIP_INFO_STRUCTURED (ID_GRD,                         &
+           &   GRID_CENTER_LON, GRID_CENTER_LAT,                              &
+           &   GRID_CORNER_LON, GRID_CORNER_LAT, GRID_MASK,                   &
+           &   GRID_DIMS, GRID_SIZE, GRID_CORNERS, GRID_RANK)
     END IF
     CHECKSIGNS=1
     IF (CHECKSIGNS.EQ.1) THEN
-       NBPLUS=0
-       NBMINUS=0
-       NBZERO=0
-       DO IP=1,GRID_SIZE
-          DO IC=1,GRID_CORNERS
-             IF (IC.EQ.GRID_CORNERS) THEN
-                JC=1
-             ELSE
-                JC=IC+1
-             END IF
+      NBPLUS=0
+      NBMINUS=0
+      NBZERO=0
+      DO IP=1,GRID_SIZE
+        DO IC=1,GRID_CORNERS
+          IF (IC.EQ.GRID_CORNERS) THEN
+            JC=1
+          ELSE
+            JC=IC+1
+          END IF
 
-             PT(1,1) = GRID_CENTER_LON(IP)
-             PT(1,2) = GRID_CENTER_LAT(IP)
-             PT(2,1) = GRID_CORNER_LON(IC,IP)
-             PT(2,2) = GRID_CORNER_LAT(IC,IP)
-             PT(3,1) = GRID_CORNER_LON(JC,IP)
-             PT(3,2) = GRID_CORNER_LAT(JC,IP)
+          PT(1,1) = GRID_CENTER_LON(IP)
+          PT(1,2) = GRID_CENTER_LAT(IP)
+          PT(2,1) = GRID_CORNER_LON(IC,IP)
+          PT(2,2) = GRID_CORNER_LAT(IC,IP)
+          PT(3,1) = GRID_CORNER_LON(JC,IP)
+          PT(3,2) = GRID_CORNER_LAT(JC,IP)
 
-             CALL FIX_PERIODCITY(PT)
+          CALL FIX_PERIODCITY(PT)
 
-             DLON1=PT(2,1)-PT(1,1)
-             DLON2=PT(3,1)-PT(1,1)
-             DLAT1=PT(2,2)-PT(1,2)
-             DLAT2=PT(3,2)-PT(1,2)
+          DLON1=PT(2,1)-PT(1,1)
+          DLON2=PT(3,1)-PT(1,1)
+          DLAT1=PT(2,2)-PT(1,2)
+          DLAT2=PT(3,2)-PT(1,2)
 
-             THEDET=DLON1*DLAT2 - DLON2*DLAT1
-             IF (THEDET.GT.1d-8) THEN
-                NBPLUS=NBPLUS+1
-             ELSE IF (THEDET.LT.-1d-8) THEN
-                NBMINUS=NBMINUS+1
-             ELSE
-                NBZERO=NBZERO+1
-             END IF
-          END DO
-       END DO
+          THEDET=DLON1*DLAT2 - DLON2*DLAT1
+          IF (THEDET.GT.1d-8) THEN
+            NBPLUS=NBPLUS+1
+          ELSE IF (THEDET.LT.-1d-8) THEN
+            NBMINUS=NBMINUS+1
+          ELSE
+            NBZERO=NBZERO+1
+          END IF
+        END DO
+      END DO
 
-       WRITE(*,*) 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus, ' nbZero=', nbZero
+      WRITE(*,*) 'SI nbPlus=', nbPlus, ' nbMinus=', nbMinus, ' nbZero=', nbZero
 
     END IF
   END SUBROUTINE GET_SCRIP_INFO
@@ -1371,28 +1371,28 @@ CONTAINS
     REAL*8 :: MINLONCORNER, MAXLONCORNER, MINLATCORNER, MAXLATCORNER
 
     DO I=1,GRID_SIZE
-       GRID_CENTER_LON(I)=(GRID_CENTER_LON(I)+OFFSET)/CONV_DX +        &
-            &       GRIDSHIFT
-       GRID_CENTER_LAT(I)=GRID_CENTER_LAT(I)/CONV_DY +                 &
-            &       GRIDSHIFT
-       IF(GRID_CENTER_LON(I)>360.0) THEN
-          GRID_CENTER_LON(I)=GRID_CENTER_LON(I)-360.0
-       END IF
-       IF(GRID_CENTER_LON(I)<000.0) THEN
-          GRID_CENTER_LON(I)=GRID_CENTER_LON(I)+360.0
-       END IF
-       DO J=1,GRID_CORNERS
-          GRID_CORNER_LON(J, I)=(GRID_CORNER_LON(J, I)+OFFSET)/CONV_DX+ &
-               &       GRIDSHIFT
-          GRID_CORNER_LAT(J, I)=GRID_CORNER_LAT(J, I)/CONV_DY +         &
-               &       GRIDSHIFT
-          IF(GRID_CORNER_LON(J,I)>360.0) THEN
-             GRID_CORNER_LON(J,I)=GRID_CORNER_LON(J,I)-360.0
-          END IF
-          IF(GRID_CORNER_LON(J,I)<000.0) THEN
-             GRID_CORNER_LON(J,I)=GRID_CORNER_LON(J,I)+360.0
-          END IF
-       END DO
+      GRID_CENTER_LON(I)=(GRID_CENTER_LON(I)+OFFSET)/CONV_DX +        &
+           &       GRIDSHIFT
+      GRID_CENTER_LAT(I)=GRID_CENTER_LAT(I)/CONV_DY +                 &
+           &       GRIDSHIFT
+      IF(GRID_CENTER_LON(I)>360.0) THEN
+        GRID_CENTER_LON(I)=GRID_CENTER_LON(I)-360.0
+      END IF
+      IF(GRID_CENTER_LON(I)<000.0) THEN
+        GRID_CENTER_LON(I)=GRID_CENTER_LON(I)+360.0
+      END IF
+      DO J=1,GRID_CORNERS
+        GRID_CORNER_LON(J, I)=(GRID_CORNER_LON(J, I)+OFFSET)/CONV_DX+ &
+             &       GRIDSHIFT
+        GRID_CORNER_LAT(J, I)=GRID_CORNER_LAT(J, I)/CONV_DY +         &
+             &       GRIDSHIFT
+        IF(GRID_CORNER_LON(J,I)>360.0) THEN
+          GRID_CORNER_LON(J,I)=GRID_CORNER_LON(J,I)-360.0
+        END IF
+        IF(GRID_CORNER_LON(J,I)<000.0) THEN
+          GRID_CORNER_LON(J,I)=GRID_CORNER_LON(J,I)+360.0
+        END IF
+      END DO
     END DO
 
   END SUBROUTINE SCRIP_INFO_RENORMALIZATION
@@ -1417,14 +1417,14 @@ CONTAINS
     INTEGER, INTENT(IN)  :: I
     INTEGER, INTENT(OUT) :: INEXT, IPREV
     IF (I.EQ.1) THEN
-       INEXT=3
+      INEXT=3
     ELSE
-       INEXT=I-1
+      INEXT=I-1
     END IF
     IF (I.EQ.3) THEN
-       IPREV=1
+      IPREV=1
     ELSE
-       IPREV=I+1
+      IPREV=I+1
     END IF
   END SUBROUTINE TRIANG_INDEXES
 
@@ -1471,10 +1471,10 @@ CONTAINS
     INTEGER :: IP, IE, I
     TRIGINCD=0
     DO IE=1,MNE
-       DO I=1,3
-          IP=TRIGP(I,IE)
-          TRIGINCD(IP)=TRIGINCD(IP) + 1
-       END DO
+      DO I=1,3
+        IP=TRIGP(I,IE)
+        TRIGINCD(IP)=TRIGINCD(IP) + 1
+      END DO
     END DO
   END SUBROUTINE GET_UNSTRUCTURED_VERTEX_DEGREE
 
@@ -1562,53 +1562,53 @@ CONTAINS
     NEXTVERT = 0
     PREVVERT = 0
     DO IE=1,MNE
-       DO I=1,3
+      DO I=1,3
+        CALL TRIANG_INDEXES(I, INEXT, IPREV)
+        IP=TRIGP(I,IE)
+        IPNEXT=TRIGP(INEXT,IE)
+        IPPREV=TRIGP(IPREV,IE)
+        IF (STATUS(IP).EQ.0) THEN
+          STATUS(IP)=1
+          PREVVERT(IP)=IPPREV
+          NEXTVERT(IP)=IPNEXT
+        END IF
+      END DO
+    END DO
+    STATUS(:)=0
+    DO
+      COLLECTED(:)=0
+      DO IE=1,MNE
+        DO I=1,3
           CALL TRIANG_INDEXES(I, INEXT, IPREV)
           IP=TRIGP(I,IE)
           IPNEXT=TRIGP(INEXT,IE)
           IPPREV=TRIGP(IPREV,IE)
           IF (STATUS(IP).EQ.0) THEN
-             STATUS(IP)=1
-             PREVVERT(IP)=IPPREV
-             NEXTVERT(IP)=IPNEXT
+            ZNEXT=NEXTVERT(IP)
+            IF (ZNEXT.EQ.IPPREV) THEN
+              COLLECTED(IP)=1
+              NEXTVERT(IP)=IPNEXT
+              IF (NEXTVERT(IP).EQ.PREVVERT(IP)) THEN
+                STATUS(IP)=1
+              END IF
+            END IF
           END IF
-       END DO
-    END DO
-    STATUS(:)=0
-    DO
-       COLLECTED(:)=0
-       DO IE=1,MNE
-          DO I=1,3
-             CALL TRIANG_INDEXES(I, INEXT, IPREV)
-             IP=TRIGP(I,IE)
-             IPNEXT=TRIGP(INEXT,IE)
-             IPPREV=TRIGP(IPREV,IE)
-             IF (STATUS(IP).EQ.0) THEN
-                ZNEXT=NEXTVERT(IP)
-                IF (ZNEXT.EQ.IPPREV) THEN
-                   COLLECTED(IP)=1
-                   NEXTVERT(IP)=IPNEXT
-                   IF (NEXTVERT(IP).EQ.PREVVERT(IP)) THEN
-                      STATUS(IP)=1
-                   END IF
-                END IF
-             END IF
-          END DO
-       END DO
+        END DO
+      END DO
 
-       ISFINISHED=1
-       DO IP=1,MNP
-          IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
-             STATUS(IP)=-1
-             NEIGHBOR_NEXT(IP)=NEXTVERT(IP)
-          END IF
-          IF (STATUS(IP).EQ.0) THEN
-             ISFINISHED=0
-          END IF
-       END DO
-       IF (ISFINISHED.EQ.1) THEN
-          EXIT
-       END IF
+      ISFINISHED=1
+      DO IP=1,MNP
+        IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
+          STATUS(IP)=-1
+          NEIGHBOR_NEXT(IP)=NEXTVERT(IP)
+        END IF
+        IF (STATUS(IP).EQ.0) THEN
+          ISFINISHED=0
+        END IF
+      END DO
+      IF (ISFINISHED.EQ.1) THEN
+        EXIT
+      END IF
     END DO
 
     !  Now computing the prev items
@@ -1616,71 +1616,71 @@ CONTAINS
     NEXTVERT = 0
     PREVVERT = 0
     DO IE=1,MNE
-       DO I=1,3
+      DO I=1,3
+        CALL TRIANG_INDEXES(I, INEXT, IPREV)
+        IP=TRIGP(I,IE)
+        IPNEXT=TRIGP(INEXT,IE)
+        IPPREV=TRIGP(IPREV,IE)
+        IF (STATUS(IP).EQ.0) THEN
+          STATUS(IP)=1
+          PREVVERT(IP)=IPPREV
+          NEXTVERT(IP)=IPNEXT
+        END IF
+      END DO
+    END DO
+    STATUS(:)=0
+    DO
+      COLLECTED(:)=0
+      DO IE=1,MNE
+        DO I=1,3
           CALL TRIANG_INDEXES(I, INEXT, IPREV)
           IP=TRIGP(I,IE)
           IPNEXT=TRIGP(INEXT,IE)
           IPPREV=TRIGP(IPREV,IE)
           IF (STATUS(IP).EQ.0) THEN
-             STATUS(IP)=1
-             PREVVERT(IP)=IPPREV
-             NEXTVERT(IP)=IPNEXT
+            ZPREV=PREVVERT(IP)
+            IF (ZPREV.EQ.IPNEXT) THEN
+              COLLECTED(IP)=1
+              PREVVERT(IP)=IPPREV
+              IF (PREVVERT(IP).EQ.NEXTVERT(IP)) THEN
+                STATUS(IP)=1
+              END IF
+            END IF
           END IF
-       END DO
-    END DO
-    STATUS(:)=0
-    DO
-       COLLECTED(:)=0
-       DO IE=1,MNE
-          DO I=1,3
-             CALL TRIANG_INDEXES(I, INEXT, IPREV)
-             IP=TRIGP(I,IE)
-             IPNEXT=TRIGP(INEXT,IE)
-             IPPREV=TRIGP(IPREV,IE)
-             IF (STATUS(IP).EQ.0) THEN
-                ZPREV=PREVVERT(IP)
-                IF (ZPREV.EQ.IPNEXT) THEN
-                   COLLECTED(IP)=1
-                   PREVVERT(IP)=IPPREV
-                   IF (PREVVERT(IP).EQ.NEXTVERT(IP)) THEN
-                      STATUS(IP)=1
-                   END IF
-                END IF
-             END IF
-          END DO
-       END DO
+        END DO
+      END DO
 
-       ISFINISHED=1
-       DO IP=1,MNP
-          IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
-             STATUS(IP)=-1
-             NEIGHBOR_PREV(IP)=PREVVERT(IP)     ! new code
-          END IF
-          IF (STATUS(IP).EQ.0) THEN
-             ISFINISHED=0
-          END IF
-       END DO
-       IF (ISFINISHED.EQ.1) THEN
-          EXIT
-       END IF
+      ISFINISHED=1
+      DO IP=1,MNP
+        IF ((COLLECTED(IP).EQ.0).AND.(STATUS(IP).EQ.0)) THEN
+          STATUS(IP)=-1
+          NEIGHBOR_PREV(IP)=PREVVERT(IP)     ! new code
+        END IF
+        IF (STATUS(IP).EQ.0) THEN
+          ISFINISHED=0
+        END IF
+      END DO
+      IF (ISFINISHED.EQ.1) THEN
+        EXIT
+      END IF
     END DO
     !  Now making checks
     DO IP=1,MNP
-       IP2=NEIGHBOR_NEXT(IP)
-       IF (IP2.GT.0) THEN
-          IP3=NEIGHBOR_PREV(IP2)
-          IF (ABS(IP3 - IP).GT.0) THEN
-             WRITE(*,*) 'IP=', IP, ' IP2=', IP2, ' IP3=', IP3
-             WRITE(*,*) 'We have a dramatic inconsistency'
-             STOP 'wmscrpmd, case 3'
-          END IF
-       END IF
+      IP2=NEIGHBOR_NEXT(IP)
+      IF (IP2.GT.0) THEN
+        IP3=NEIGHBOR_PREV(IP2)
+        IF (ABS(IP3 - IP).GT.0) THEN
+          WRITE(*,*) 'IP=', IP, ' IP2=', IP2, ' IP3=', IP3
+          WRITE(*,*) 'We have a dramatic inconsistency'
+          STOP 'wmscrpmd, case 3'
+        END IF
+      END IF
     END DO
     !   Now assigning the boundary IOBP array
     DO IP=1,MNP
-       IF (STATUS(IP).EQ.-1 .AND. IOBP(IP) .EQ. 0) THEN
-          IOBP(IP)=1
-       END IF
+      IF (STATUS(IP).EQ.-1 .AND. IOBP(IP) .EQ. 0) THEN
+        IOBP(IP)=1
+      END IF
     END DO
 
     DEALLOCATE(STATUS, STAT=ISTAT)
@@ -1778,11 +1778,11 @@ CONTAINS
     ! if R1GT180+R2GT180+R3GT180 .eq. 2 the element crosses the dateline
 
     IF ( R1GT180 + R2GT180 == 2 ) THEN
-       PT(3,1)=PT(3,1)-SIGN(360.0d0,(PT(3,1)-PT(2,1)))
+      PT(3,1)=PT(3,1)-SIGN(360.0d0,(PT(3,1)-PT(2,1)))
     ELSE IF ( R2GT180 + R3GT180 == 2 ) THEN
-       PT(1,1)=PT(1,1)-SIGN(360.0d0,(PT(1,1)-PT(2,1)))
+      PT(1,1)=PT(1,1)-SIGN(360.0d0,(PT(1,1)-PT(2,1)))
     ELSE IF ( R1GT180 + R3GT180 == 2 ) THEN
-       PT(2,1)=PT(2,1)-SIGN(360.0d0,(PT(2,1)-PT(3,1)))
+      PT(2,1)=PT(2,1)-SIGN(360.0d0,(PT(2,1)-PT(3,1)))
     ENDIF
 
     RETURN

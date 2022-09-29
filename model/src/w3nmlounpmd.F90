@@ -25,49 +25,49 @@ MODULE W3NMLOUNPMD
 
   ! point structure
   TYPE NML_POINT_T
-     CHARACTER(15)               :: TIMESTART
-     CHARACTER(15)               :: TIMESTRIDE
-     CHARACTER(15)               :: TIMECOUNT
-     INTEGER                     :: TIMESPLIT
-     CHARACTER(1024)             :: LIST
-     LOGICAL                     :: SAMEFILE
-     INTEGER                     :: BUFFER
-     INTEGER                     :: TYPE
-     LOGICAL                     :: DIMORDER
+    CHARACTER(15)               :: TIMESTART
+    CHARACTER(15)               :: TIMESTRIDE
+    CHARACTER(15)               :: TIMECOUNT
+    INTEGER                     :: TIMESPLIT
+    CHARACTER(1024)             :: LIST
+    LOGICAL                     :: SAMEFILE
+    INTEGER                     :: BUFFER
+    INTEGER                     :: TYPE
+    LOGICAL                     :: DIMORDER
   END TYPE NML_POINT_T
 
   ! file structure
   TYPE NML_FILE_T
-     CHARACTER(30)               :: PREFIX
-     INTEGER                     :: NETCDF
+    CHARACTER(30)               :: PREFIX
+    INTEGER                     :: NETCDF
   END TYPE NML_FILE_T
 
   ! spectra structure
   TYPE NML_SPECTRA_T
-     INTEGER                     :: OUTPUT
-     REAL                        :: SCALE_FAC
-     REAL                        :: OUTPUT_FAC
-     INTEGER                     :: TYPE
+    INTEGER                     :: OUTPUT
+    REAL                        :: SCALE_FAC
+    REAL                        :: OUTPUT_FAC
+    INTEGER                     :: TYPE
   END TYPE NML_SPECTRA_T
 
   ! param structure
   TYPE NML_PARAM_T
-     INTEGER                     :: OUTPUT
+    INTEGER                     :: OUTPUT
   END TYPE NML_PARAM_T
 
   ! source structure
   TYPE NML_SOURCE_T
-     INTEGER                     :: OUTPUT
-     REAL                        :: SCALE_FAC
-     REAL                        :: OUTPUT_FAC
-     INTEGER                     :: TABLE_FAC
-     LOGICAL                     :: SPECTRUM
-     LOGICAL                     :: INPUT
-     LOGICAL                     :: INTERACTIONS
-     LOGICAL                     :: DISSIPATION
-     LOGICAL                     :: BOTTOM
-     LOGICAL                     :: ICE
-     LOGICAL                     :: TOTAL
+    INTEGER                     :: OUTPUT
+    REAL                        :: SCALE_FAC
+    REAL                        :: OUTPUT_FAC
+    INTEGER                     :: TABLE_FAC
+    LOGICAL                     :: SPECTRUM
+    LOGICAL                     :: INPUT
+    LOGICAL                     :: INTERACTIONS
+    LOGICAL                     :: DISSIPATION
+    LOGICAL                     :: BOTTOM
+    LOGICAL                     :: ICE
+    LOGICAL                     :: TOTAL
   END TYPE NML_SOURCE_T
 
 
@@ -173,15 +173,15 @@ CONTAINS
     NDSN = 3
     OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+      RETURN
     END IF
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read point namelist
@@ -314,10 +314,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=POINT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_POINT_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_POINT_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! save namelist
@@ -419,10 +419,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=FILE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_FILE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (2)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_FILE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (2)
     END IF
 
     ! save namelist
@@ -526,10 +526,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=SPECTRA_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_SPECTRA_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (3)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_SPECTRA_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (3)
     END IF
 
     ! save namelist
@@ -628,10 +628,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=PARAM_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_PARAM_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (4)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_PARAM_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (4)
     END IF
 
     ! save namelist
@@ -739,10 +739,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=SOURCE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_SOURCE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (5)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_SOURCE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (5)
     END IF
 
     ! save namelist

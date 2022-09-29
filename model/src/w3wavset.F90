@@ -193,26 +193,26 @@ CONTAINS
     DVDY = 0.0
 
     DO IE = 1, NE
-       NI = INE(:,IE)
-       I1 = INE(1,IE)
-       I2 = INE(2,IE)
-       I3 = INE(3,IE)
-       WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
-       DEDX(1) = PDLIB_IEN(1,IE)
-       DEDX(2) = PDLIB_IEN(3,IE)
-       DEDX(3) = PDLIB_IEN(5,IE)
-       DEDY(1) = PDLIB_IEN(2,IE)
-       DEDY(2) = PDLIB_IEN(4,IE)
-       DEDY(3) = PDLIB_IEN(6,IE)
-       DVDXIE  = DOT_PRODUCT( VAR(NI),DEDX)
-       DVDYIE  = DOT_PRODUCT( VAR(NI),DEDY)
-       DVDX(NI) = DVDX(NI) + DVDXIE
-       DVDY(NI) = DVDY(NI) + DVDYIE
+      NI = INE(:,IE)
+      I1 = INE(1,IE)
+      I2 = INE(2,IE)
+      I3 = INE(3,IE)
+      WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
+      DEDX(1) = PDLIB_IEN(1,IE)
+      DEDX(2) = PDLIB_IEN(3,IE)
+      DEDX(3) = PDLIB_IEN(5,IE)
+      DEDY(1) = PDLIB_IEN(2,IE)
+      DEDY(2) = PDLIB_IEN(4,IE)
+      DEDY(3) = PDLIB_IEN(6,IE)
+      DVDXIE  = DOT_PRODUCT( VAR(NI),DEDX)
+      DVDYIE  = DOT_PRODUCT( VAR(NI),DEDY)
+      DVDX(NI) = DVDX(NI) + DVDXIE
+      DVDY(NI) = DVDY(NI) + DVDYIE
     END DO
     DO IX=1,npa
-       eW=WEI(IX)
-       DVDX(IX)=DVDX(IX) / eW
-       DVDY(IX)=DVDY(IX) / eW
+      eW=WEI(IX)
+      DVDX(IX)=DVDX(IX) / eW
+      DVDY(IX)=DVDY(IX) / eW
     END DO
     CALL PDLIB_exchange1Dreal(DVDX)
     CALL PDLIB_exchange1Dreal(DVDY)
@@ -315,44 +315,44 @@ CONTAINS
     DVDY = 0.0
 
     DO IE = 1, NE
-       NI = INE(:,IE)
-       I1 = INE(1,IE)
-       I2 = INE(2,IE)
-       I3 = INE(3,IE)
-       IX1=iplg(I1)
-       IX2=iplg(I2)
-       IX3=iplg(I3)
-       IF ((MAPSTA(1,IX1) .gt. 0).and.(MAPSTA(1,IX2) .gt. 0).and.(MAPSTA(1,IX3) .gt. 0)) THEN
-          WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
-          DEDX(1) = PDLIB_IEN(1,IE)
-          DEDX(2) = PDLIB_IEN(3,IE)
-          DEDX(3) = PDLIB_IEN(5,IE)
-          DEDY(1) = PDLIB_IEN(2,IE)
-          DEDY(2) = PDLIB_IEN(4,IE)
-          DEDY(3) = PDLIB_IEN(6,IE)
-          DVDXIE  = DOT_PRODUCT( VAR(NI),DEDX)
-          DVDYIE  = DOT_PRODUCT( VAR(NI),DEDY)
-          DVDX(NI) = DVDX(NI) + DVDXIE
-          DVDY(NI) = DVDY(NI) + DVDYIE
-       END IF
+      NI = INE(:,IE)
+      I1 = INE(1,IE)
+      I2 = INE(2,IE)
+      I3 = INE(3,IE)
+      IX1=iplg(I1)
+      IX2=iplg(I2)
+      IX3=iplg(I3)
+      IF ((MAPSTA(1,IX1) .gt. 0).and.(MAPSTA(1,IX2) .gt. 0).and.(MAPSTA(1,IX3) .gt. 0)) THEN
+        WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
+        DEDX(1) = PDLIB_IEN(1,IE)
+        DEDX(2) = PDLIB_IEN(3,IE)
+        DEDX(3) = PDLIB_IEN(5,IE)
+        DEDY(1) = PDLIB_IEN(2,IE)
+        DEDY(2) = PDLIB_IEN(4,IE)
+        DEDY(3) = PDLIB_IEN(6,IE)
+        DVDXIE  = DOT_PRODUCT( VAR(NI),DEDX)
+        DVDYIE  = DOT_PRODUCT( VAR(NI),DEDY)
+        DVDX(NI) = DVDX(NI) + DVDXIE
+        DVDY(NI) = DVDY(NI) + DVDYIE
+      END IF
     END DO
     DO IP=1,npa
-       IX=iplg(IP)
-       eW=WEI(IP)
-       IF (eW .gt. 0 .and. MAPSTA(1,IX) .gt. 0) THEN
-          DVDX(IP)=DVDX(IP) / eW
-          DVDY(IP)=DVDY(IP) / eW
-       ELSE
-          DVDX(IP)=0.
-          DVDY(IP)=0.
-       ENDIF
+      IX=iplg(IP)
+      eW=WEI(IP)
+      IF (eW .gt. 0 .and. MAPSTA(1,IX) .gt. 0) THEN
+        DVDX(IP)=DVDX(IP) / eW
+        DVDY(IP)=DVDY(IP) / eW
+      ELSE
+        DVDX(IP)=0.
+        DVDY(IP)=0.
+      ENDIF
     END DO
     DO IP=1,npa
-       IX=iplg(IP)
-       IF (MAPSTA(1,IX) .lt. 0) THEN
-          DVDX(IP)=0.
-          DVDY(IP)=0.
-       END IF
+      IX=iplg(IP)
+      IF (MAPSTA(1,IX) .lt. 0) THEN
+        DVDX(IP)=0.
+        DVDY(IP)=0.
+      END IF
     END DO
     CALL PDLIB_exchange1Dreal(DVDX)
     CALL PDLIB_exchange1Dreal(DVDY)
@@ -546,18 +546,18 @@ CONTAINS
     SYY_p=0
     DWNX=0
     DO JSEA=1,NSEAL
-       IP = JSEA ! We remove the Z_status because now NX = NSEA
-       IX=iplg(IP)
-       ISEA=MAPFS(1,IX)
-       IF (SXXmethod .eq. 1) THEN
-          eSXX=SXX(JSEA)/(DWAT*GRAV)
-          eSXY=SXY(JSEA)/(DWAT*GRAV)
-          eSYY=SYY(JSEA)/(DWAT*GRAV)
-       END IF
-       SXX_p(IP)=DBLE(eSXX)
-       SXY_p(IP)=DBLE(eSXY)
-       SYY_p(IP)=DBLE(eSYY)
-       DWNX(IP)=DW(ISEA)
+      IP = JSEA ! We remove the Z_status because now NX = NSEA
+      IX=iplg(IP)
+      ISEA=MAPFS(1,IX)
+      IF (SXXmethod .eq. 1) THEN
+        eSXX=SXX(JSEA)/(DWAT*GRAV)
+        eSXY=SXY(JSEA)/(DWAT*GRAV)
+        eSYY=SYY(JSEA)/(DWAT*GRAV)
+      END IF
+      SXX_p(IP)=DBLE(eSXX)
+      SXY_p(IP)=DBLE(eSXY)
+      SYY_p(IP)=DBLE(eSYY)
+      DWNX(IP)=DW(ISEA)
     END DO
     !
 #ifdef W3_DEBUGSTP
@@ -808,73 +808,73 @@ CONTAINS
     ASPAR=0
     B=0
     DO I=1,3
-       DO J=1,3
-          K= I-J+1
-          IF (K .le. 0) THEN
-             K=K+3
-          END IF
-          IF (K .ge. 4) THEN
-             K=K-3
-          END IF
-          POS_SHIFT(I,J)=K
-       END DO
+      DO J=1,3
+        K= I-J+1
+        IF (K .le. 0) THEN
+          K=K+3
+        END IF
+        IF (K .ge. 4) THEN
+          K=K-3
+        END IF
+        POS_SHIFT(I,J)=K
+      END DO
     END DO
     DO I=1,3
-       jdx=0
-       DO IDX=1,3
-          K=POS_SHIFT(I,IDX)
-          IF (K .ne. I) THEN
-             jdx=jdx+1
-             LIDX(jdx)=IDX
-             KIDX(jdx)=K
-          END IF
-       END DO
-       POS_SHIFT(I,LIDX(1))=KIDX(2)
-       POS_SHIFT(I,LIDX(2))=KIDX(1)
+      jdx=0
+      DO IDX=1,3
+        K=POS_SHIFT(I,IDX)
+        IF (K .ne. I) THEN
+          jdx=jdx+1
+          LIDX(jdx)=IDX
+          KIDX(jdx)=K
+        END IF
+      END DO
+      POS_SHIFT(I,LIDX(1))=KIDX(2)
+      POS_SHIFT(I,LIDX(2))=KIDX(1)
     END DO
     ACTIVESEC=0
     DO IE=1,ne
-       IP1=INE(1,IE)
-       IP2=INE(2,IE)
-       IP3=INE(3,IE)
-       eFX =(FX(IP1) + FX(IP2) + FX(IP3))/3
-       eFY =(FY(IP1) + FY(IP2) + FY(IP3))/3
-       sumActive=ACTIVE(IP1) + ACTIVE(IP2) + ACTIVE(IP3)
-       IF (sumActive .eq. 3) THEN
-          ACTIVESEC(IP1)=1
-          ACTIVESEC(IP2)=1
-          ACTIVESEC(IP3)=1
-          eDep=(DWNX(IP1) + DWNX(IP2) + DWNX(IP3))/3.0
-          eArea=PDLIB_TRIA(IE)
-          eFact=eDep*eArea
-          DO I1=1,3
-             I2=POS_TRICK(I1,1)
-             I3=POS_TRICK(I1,2)
-             IP1=INE(I1,IE)
-             IP2=INE(I2,IE)
-             IP3=INE(I3,IE)
-             IDX1=PDLIB_JA_IE(I1,1,IE)
-             IDX2=PDLIB_JA_IE(I1,2,IE)
-             IDX3=PDLIB_JA_IE(I1,3,IE)
-             CALL TRIG_COMPUTE_DIFF(IE, I1, UGRAD1, VGRAD1)
-             eScal=UGRAD1*eFX + VGRAD1*eFY
-             B(IP1) = B(IP1) + eScal*eArea
-             !
-             DO IDX=1,3
-                K=POS_SHIFT(I1, IDX)
-                CALL TRIG_COMPUTE_DIFF(IE, K, UGRAD, VGRAD)
-                eScal=UGRAD*UGRAD1 + VGRAD*VGRAD1
-                J=PDLIB_JA_IE(I1,IDX,IE)
-                ASPAR(J)=ASPAR(J) + eFact*eScal
-             END DO
+      IP1=INE(1,IE)
+      IP2=INE(2,IE)
+      IP3=INE(3,IE)
+      eFX =(FX(IP1) + FX(IP2) + FX(IP3))/3
+      eFY =(FY(IP1) + FY(IP2) + FY(IP3))/3
+      sumActive=ACTIVE(IP1) + ACTIVE(IP2) + ACTIVE(IP3)
+      IF (sumActive .eq. 3) THEN
+        ACTIVESEC(IP1)=1
+        ACTIVESEC(IP2)=1
+        ACTIVESEC(IP3)=1
+        eDep=(DWNX(IP1) + DWNX(IP2) + DWNX(IP3))/3.0
+        eArea=PDLIB_TRIA(IE)
+        eFact=eDep*eArea
+        DO I1=1,3
+          I2=POS_TRICK(I1,1)
+          I3=POS_TRICK(I1,2)
+          IP1=INE(I1,IE)
+          IP2=INE(I2,IE)
+          IP3=INE(I3,IE)
+          IDX1=PDLIB_JA_IE(I1,1,IE)
+          IDX2=PDLIB_JA_IE(I1,2,IE)
+          IDX3=PDLIB_JA_IE(I1,3,IE)
+          CALL TRIG_COMPUTE_DIFF(IE, I1, UGRAD1, VGRAD1)
+          eScal=UGRAD1*eFX + VGRAD1*eFY
+          B(IP1) = B(IP1) + eScal*eArea
+          !
+          DO IDX=1,3
+            K=POS_SHIFT(I1, IDX)
+            CALL TRIG_COMPUTE_DIFF(IE, K, UGRAD, VGRAD)
+            eScal=UGRAD*UGRAD1 + VGRAD*VGRAD1
+            J=PDLIB_JA_IE(I1,IDX,IE)
+            ASPAR(J)=ASPAR(J) + eFact*eScal
           END DO
-       END IF
+        END DO
+      END IF
     END DO
     DoPrintOut=.TRUE.
     IF (DoPrintOut .eqv. .TRUE.) THEN
-       DO IP=1,NP
-          eOff=0
-       END DO
+      DO IP=1,NP
+        eOff=0
+      END DO
     END IF
   END SUBROUTINE TRIG_WAVE_SETUP_COMPUTE_SYSTEM
   !/ ------------------------------------------------------------------- /
@@ -973,41 +973,41 @@ CONTAINS
     REAL(8) :: eCoeff
     INTEGER :: ThePrecond = 2
     IF (ThePrecond .eq. 0) THEN
-       TheOut=TheIn
+      TheOut=TheIn
     END IF
     IF (ThePrecond .eq. 1) THEN
-       TheOut=0
-       DO IP=1,npa
-          IF (ACTIVE(IP) .eq. 1) THEN
-             J1=PDLIB_I_DIAG(IP)
-             DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
-                JP=PDLIB_JA(J)
-                IF (ACTIVESEC(JP) .eq. 1) THEN
-                   IF (J .eq. J1) THEN
-                      eCoeff=1.0/ASPAR(J)
-                   ELSE
-                      J2=PDLIB_I_DIAG(JP)
-                      eCoeff=-ASPAR(J) /(ASPAR(J1)*ASPAR(J2))
-                   END IF
-                   TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
-                END IF
-             END DO
-          END IF
-       END DO
+      TheOut=0
+      DO IP=1,npa
+        IF (ACTIVE(IP) .eq. 1) THEN
+          J1=PDLIB_I_DIAG(IP)
+          DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
+            JP=PDLIB_JA(J)
+            IF (ACTIVESEC(JP) .eq. 1) THEN
+              IF (J .eq. J1) THEN
+                eCoeff=1.0/ASPAR(J)
+              ELSE
+                J2=PDLIB_I_DIAG(JP)
+                eCoeff=-ASPAR(J) /(ASPAR(J1)*ASPAR(J2))
+              END IF
+              TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
+            END IF
+          END DO
+        END IF
+      END DO
     END IF
     IF (ThePrecond .eq. 2) THEN
-       DO IP=1,npa
-          IF (ACTIVESEC(IP) .eq. 1) THEN
-             J=PDLIB_I_DIAG(IP)
-             ListDiag(IP)=ASPAR(J)
-             TheOut(IP)=TheIn(IP)/ASPAR(J)
-          ELSE
-             ListDiag(IP)=1
-             TheOut(IP)=TheIn(IP)
-          END IF
-       END DO
-       WRITE(740+IAPROC,*) 'Diag, min=', minval(ListDiag), ' max=', maxval(ListDiag)
-       WRITE(740+IAPROC,*) 'Diag, quot=', maxval(ListDiag)/minval(ListDiag)
+      DO IP=1,npa
+        IF (ACTIVESEC(IP) .eq. 1) THEN
+          J=PDLIB_I_DIAG(IP)
+          ListDiag(IP)=ASPAR(J)
+          TheOut(IP)=TheIn(IP)/ASPAR(J)
+        ELSE
+          ListDiag(IP)=1
+          TheOut(IP)=TheIn(IP)
+        END IF
+      END DO
+      WRITE(740+IAPROC,*) 'Diag, min=', minval(ListDiag), ' max=', maxval(ListDiag)
+      WRITE(740+IAPROC,*) 'Diag, quot=', maxval(ListDiag)/minval(ListDiag)
     END IF
     CALL PDLIB_exchange1Dreal(TheOut)
   END SUBROUTINE TRIG_WAVE_SETUP_APPLY_PRECOND
@@ -1104,13 +1104,13 @@ CONTAINS
     REAL(8) :: eCoeff
     TheOut=0
     DO IP=1,npa
-       IF (ACTIVESEC(IP) .eq. 1) THEN
-          DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
-             JP=PDLIB_JA(J)
-             eCoeff=ASPAR(J)
-             TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
-          END DO
-       END IF
+      IF (ACTIVESEC(IP) .eq. 1) THEN
+        DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
+          JP=PDLIB_JA(J)
+          eCoeff=ASPAR(J)
+          TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
+        END DO
+      END IF
     END DO
     CALL PDLIB_exchange1Dreal(TheOut)
   END SUBROUTINE TRIG_WAVE_SETUP_APPLY_FCT
@@ -1209,19 +1209,19 @@ CONTAINS
     CALL MPI_COMM_SIZE(MPI_COMM_WCMP, myproc, ierr)
     lScal=0
     DO IP=1,np
-       lScal(1)=lScal(1) + V1(IP)*V2(IP)
+      lScal(1)=lScal(1) + V1(IP)*V2(IP)
     END DO
     IF (IAPROC .eq. 1) THEN
-       DO iProc=2,NAPROC
-          CALL MPI_RECV(rScal,1,rtype, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
-          lScal = lScal + rScal
-       END DO
-       DO iProc=2,NAPROC
-          CALL MPI_SEND(lScal,1,rtype, iProc-1, 23, MPI_COMM_WCMP, ierr)
-       END DO
+      DO iProc=2,NAPROC
+        CALL MPI_RECV(rScal,1,rtype, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
+        lScal = lScal + rScal
+      END DO
+      DO iProc=2,NAPROC
+        CALL MPI_SEND(lScal,1,rtype, iProc-1, 23, MPI_COMM_WCMP, ierr)
+      END DO
     ELSE
-       CALL MPI_SEND(lScal,1,rtype, 0, 19, MPI_COMM_WCMP, ierr)
-       CALL MPI_RECV(lScal,1,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
+      CALL MPI_SEND(lScal,1,rtype, 0, 19, MPI_COMM_WCMP, ierr)
+      CALL MPI_RECV(lScal,1,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
     END IF
     eScal=lScal(1)
   END SUBROUTINE TRIG_WAVE_SETUP_SCALAR_PROD
@@ -1344,64 +1344,64 @@ CONTAINS
     WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR, ' eNorm(B)=', eNorm
     IF (eNorm .le. SOLVERTHR) THEN
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) 'Leaving here, zero solution'
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'Leaving here, zero solution'
+      FLUSH(740+IAPROC)
 #endif
-       TheOut=V_X
-       RETURN
+      TheOut=V_X
+      RETURN
     END IF
     DO
-       nbIter=nbIter + 1
+      nbIter=nbIter + 1
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) ' nbIter=', nbIter
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) ' nbIter=', nbIter
+      FLUSH(740+IAPROC)
 #endif
-       CALL TRIG_WAVE_SETUP_APPLY_FCT(ASPAR, V_P, V_Y, ACTIVE, ACTIVESEC)
-       CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_P, V_Y, h2)
+      CALL TRIG_WAVE_SETUP_APPLY_FCT(ASPAR, V_P, V_Y, ACTIVE, ACTIVESEC)
+      CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_P, V_Y, h2)
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) ' h2=', h2
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) ' h2=', h2
+      FLUSH(740+IAPROC)
 #endif
-       alphaV=uO/h2
+      alphaV=uO/h2
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) ' alphaV=', alphaV
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) ' alphaV=', alphaV
+      FLUSH(740+IAPROC)
 #endif
 
-       !
-       DO IP=1,npa
-          V_X(IP) = V_X(IP) + alphaV * V_P(IP)
-          V_R(IP) = V_R(IP) - alphaV * V_Y(IP)
-       END DO
-       !
-       CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_R, V_R, eNorm)
+      !
+      DO IP=1,npa
+        V_X(IP) = V_X(IP) + alphaV * V_P(IP)
+        V_R(IP) = V_R(IP) - alphaV * V_Y(IP)
+      END DO
+      !
+      CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_R, V_R, eNorm)
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) 'eNorm=', eNorm
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'eNorm=', eNorm
+      FLUSH(740+IAPROC)
 #endif
-       WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' eNorm(res)=', eNorm
-       FLUSH(740+IAPROC)
-       IF (eNorm .le. SOLVERTHR) THEN
-          EXIT
-       END IF
-       !
-       CALL TRIG_WAVE_SETUP_APPLY_PRECOND(ASPAR, V_R, V_Z, ACTIVE, ACTIVESEC)
-       CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_Z, V_R, uN)
+      WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' eNorm(res)=', eNorm
+      FLUSH(740+IAPROC)
+      IF (eNorm .le. SOLVERTHR) THEN
+        EXIT
+      END IF
+      !
+      CALL TRIG_WAVE_SETUP_APPLY_PRECOND(ASPAR, V_R, V_Z, ACTIVE, ACTIVESEC)
+      CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_Z, V_R, uN)
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) ' uN=', uN
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) ' uN=', uN
+      FLUSH(740+IAPROC)
 #endif
-       !
-       beta=uN/uO
-       uO=uN
+      !
+      beta=uN/uO
+      uO=uN
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) 'beta=', beta
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'beta=', beta
+      FLUSH(740+IAPROC)
 #endif
-       !
-       DO IP=1,npa
-          V_P(IP)=V_Z(IP) + beta * V_P(IP)
-       END DO
+      !
+      DO IP=1,npa
+        V_P(IP)=V_Z(IP) + beta * V_P(IP)
+      END DO
     END DO
     TheOut=V_X
   END SUBROUTINE TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR
@@ -1497,8 +1497,8 @@ CONTAINS
     SUM_SI_Var=0
     SUM_SI=0
     DO IP=1,np
-       SUM_SI_Var = SUM_SI_Var + PDLIB_SI(IP)*TheVar(IP)
-       SUM_SI     = SUM_SI     + PDLIB_SI(IP)
+      SUM_SI_Var = SUM_SI_Var + PDLIB_SI(IP)*TheVar(IP)
+      SUM_SI     = SUM_SI     + PDLIB_SI(IP)
     END DO
     eVect(1)=SUM_SI_Var
     eVect(2)=SUM_SI
@@ -1507,16 +1507,16 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
     IF (IAPROC .eq. 1) THEN
-       DO iProc=2,NAPROC
-          CALL MPI_RECV(rVect,2,rtype, iProc-1, 367, MPI_COMM_WCMP, istatus, ierr)
-          eVect=eVect + rVect
-       END DO
-       DO iProc=2,NAPROC
-          CALL MPI_SEND(eVect,2,rtype, iProc-1, 37, MPI_COMM_WCMP, ierr)
-       END DO
+      DO iProc=2,NAPROC
+        CALL MPI_RECV(rVect,2,rtype, iProc-1, 367, MPI_COMM_WCMP, istatus, ierr)
+        eVect=eVect + rVect
+      END DO
+      DO iProc=2,NAPROC
+        CALL MPI_SEND(eVect,2,rtype, iProc-1, 37, MPI_COMM_WCMP, ierr)
+      END DO
     ELSE
-       CALL MPI_SEND(eVect,2,rtype, 0, 367, MPI_COMM_WCMP, ierr)
-       CALL MPI_RECV(eVect,2,rtype, 0, 37, MPI_COMM_WCMP, istatus, ierr)
+      CALL MPI_SEND(eVect,2,rtype, 0, 367, MPI_COMM_WCMP, ierr)
+      CALL MPI_RECV(eVect,2,rtype, 0, 37, MPI_COMM_WCMP, istatus, ierr)
     END IF
     SUM_SI_Var=eVect(1)
     SUM_SI    =eVect(2)
@@ -1526,7 +1526,7 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
     DO IP=1,npa
-       TheVar(IP)=TheVar(IP) - TheMean
+      TheVar(IP)=TheVar(IP) - TheMean
     END DO
   END SUBROUTINE TRIG_SET_MEANVALUE_TO_ZERO
   !/ ------------------------------------------------------------------- /
@@ -1618,15 +1618,15 @@ CONTAINS
     nbActive=0
 #endif
     DO IP=1,NPA
-       IF (DWNX(IP) .ge. CRIT_DEP_STP) THEN
-          eAct=1
-       ELSE
-          eAct=0
-       END IF
+      IF (DWNX(IP) .ge. CRIT_DEP_STP) THEN
+        eAct=1
+      ELSE
+        eAct=0
+      END IF
 #ifdef W3_DEBUGSTP
-       nbActive=nbActive + eAct
+      nbActive=nbActive + eAct
 #endif
-       ACTIVE(IP)=eAct
+      ACTIVE(IP)=eAct
     END DO
 #ifdef W3_DEBUGSTP
     WRITE(740+IAPROC,*) 'min/max(DWNX)=', minval(DWNX), maxval(DWNX)
@@ -1735,11 +1735,11 @@ CONTAINS
     FLUSH(740+IAPROC)
     ZETA_WORK=0
     DO IP=1,npa
-       IX=iplg(IP)
-       ISEA=MAPFS(1,IX)
-       IF (ISEA .gt. 0) THEN
-          ZETA_WORK(IP)=ZETA_SETUP(ISEA)
-       END IF
+      IX=iplg(IP)
+      ISEA=MAPFS(1,IX)
+      IF (ISEA .gt. 0) THEN
+        ZETA_WORK(IP)=ZETA_SETUP(ISEA)
+      END IF
     END DO
 #ifdef W3_DEBUGSTP
     WRITE(740+IAPROC,*) 'Before TRIG_COMPUTE_LH_STRESS'
@@ -1778,15 +1778,15 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
     DO IP=1,npa
-       IX=iplg(IP)
-       ZETA_WORK_ALL(IX)=ZETA_WORK(IP)
+      IX=iplg(IP)
+      ZETA_WORK_ALL(IX)=ZETA_WORK(IP)
     END DO
     CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
     DO IX=1,NX
-       ISEA=MAPFS(1,IX)
-       IF (ISEA .gt. 0) THEN
-          ZETA_SETUP(ISEA) = ZETA_WORK_ALL(IX)
-       END IF
+      ISEA=MAPFS(1,IX)
+      IF (ISEA .gt. 0) THEN
+        ZETA_SETUP(ISEA) = ZETA_WORK_ALL(IX)
+      END IF
     END DO
 #ifdef W3_DEBUGSTP
     WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
@@ -1885,9 +1885,9 @@ CONTAINS
     allocate(STAT_SeaLand(NX,NY))
     STAT_SeaLand=0
     DO ISEA=1,NSEA
-       IX=MAPSF(ISEA,1)
-       IY=MAPSF(ISEA,2)
-       STAT_SeaLand(IX,IY)=ISEA
+      IX=MAPSF(ISEA,1)
+      IY=MAPSF(ISEA,2)
+      STAT_SeaLand(IX,IY)=ISEA
     END DO
     NeighMat(1,1)=1
     NeighMat(1,2)=0
@@ -1900,43 +1900,43 @@ CONTAINS
     nbEdge=0
     PDLIB_NNZ=0
     DO ISEA=1,NSEA
-       IX=MAPSF(ISEA,1)
-       IY=MAPSF(ISEA,2)
-       idx=0
-       DO IN=1,4
-          IXN=IX+NeighMat(IN,1)
-          JXN=IX+NeighMat(IN,2)
-          JSEA=STAT_SeaLand(IXN,JXN)
-          IF (JSEA .gt. 0) THEN
-             idx=idx+1
-             GRIDS(IMOD)%NEIGH(ISEA,idx)=JSEA
-             IF (JSEA < ISEA) THEN
-                nbEdge=nbEdge+1
-             END IF
-             PDLIB_NNZ=PDLIB_NNZ+1
+      IX=MAPSF(ISEA,1)
+      IY=MAPSF(ISEA,2)
+      idx=0
+      DO IN=1,4
+        IXN=IX+NeighMat(IN,1)
+        JXN=IX+NeighMat(IN,2)
+        JSEA=STAT_SeaLand(IXN,JXN)
+        IF (JSEA .gt. 0) THEN
+          idx=idx+1
+          GRIDS(IMOD)%NEIGH(ISEA,idx)=JSEA
+          IF (JSEA < ISEA) THEN
+            nbEdge=nbEdge+1
           END IF
-       END DO
-       PDLIB_NNZ=PDLIB_NNZ+1
+          PDLIB_NNZ=PDLIB_NNZ+1
+        END IF
+      END DO
+      PDLIB_NNZ=PDLIB_NNZ+1
     END DO
     !
     GRIDS(IMOD)%NBEDGE=NBEDGE
     ALLOCATE(GRIDS(IMOD)%EDGES(NBEDGE,2))
     idx=0
     DO ISEA=1,NSEA
-       IX=MAPSF(ISEA,1)
-       IY=MAPSF(ISEA,2)
-       DO IN=1,4
-          IXN=IX+NeighMat(IN,1)
-          JXN=IX+NeighMat(IN,2)
-          JSEA=STAT_SeaLand(IXN,JXN)
-          IF (JSEA .gt. 0) THEN
-             IF (JSEA < ISEA) THEN
-                idx=idx+1
-                GRIDS(IMOD)%EDGES(idx,1)=JSEA
-                GRIDS(IMOD)%EDGES(idx,2)=ISEA
-             END IF
+      IX=MAPSF(ISEA,1)
+      IY=MAPSF(ISEA,2)
+      DO IN=1,4
+        IXN=IX+NeighMat(IN,1)
+        JXN=IX+NeighMat(IN,2)
+        JSEA=STAT_SeaLand(IXN,JXN)
+        IF (JSEA .gt. 0) THEN
+          IF (JSEA < ISEA) THEN
+            idx=idx+1
+            GRIDS(IMOD)%EDGES(idx,1)=JSEA
+            GRIDS(IMOD)%EDGES(idx,2)=ISEA
           END IF
-       END DO
+        END IF
+      END DO
     END DO
     !
     ALLOCATE(PDLIB_IA(NSEA+1))
@@ -1945,19 +1945,19 @@ CONTAINS
     PDLIB_IA(1)=1
     J=0
     DO ISEA=1,NSEA
-       DO IN=1,4
-          IXN=IX+NeighMat(IN,1)
-          JXN=IX+NeighMat(IN,2)
-          JSEA=STAT_SeaLand(IXN,JXN)
-          IF (JSEA .gt. 0) THEN
-             J=J+1
-             PDLIB_JA(J)=JSEA
-          END IF
-       END DO
-       J=J+1
-       PDLIB_JA(J)=ISEA
-       PDLIB_I_DIAG(ISEA)=J
-       PDLIB_IA(ISEA+1)=J+1
+      DO IN=1,4
+        IXN=IX+NeighMat(IN,1)
+        JXN=IX+NeighMat(IN,2)
+        JSEA=STAT_SeaLand(IXN,JXN)
+        IF (JSEA .gt. 0) THEN
+          J=J+1
+          PDLIB_JA(J)=JSEA
+        END IF
+      END DO
+      J=J+1
+      PDLIB_JA(J)=ISEA
+      PDLIB_I_DIAG(ISEA)=J
+      PDLIB_IA(ISEA+1)=J+1
     END DO
   END SUBROUTINE PREPARATION_FD_SCHEME
   !/ ------------------------------------------------------------------- /
@@ -2048,11 +2048,11 @@ CONTAINS
     REAL(8) :: eCoeff
     TheOut=0
     DO IP=1,NSEA
-       DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
-          JP=PDLIB_JA(J)
-          eCoeff=ASPAR(J)
-          TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
-       END DO
+      DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
+        JP=PDLIB_JA(J)
+        eCoeff=ASPAR(J)
+        TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
+      END DO
     END DO
   END SUBROUTINE FD_WAVE_SETUP_APPLY_FCT
   !/ ------------------------------------------------------------------- /
@@ -2143,30 +2143,30 @@ CONTAINS
     REAL(8) :: eCoeff
     INTEGER :: ThePrecond = 0
     IF (ThePrecond .eq. 0) THEN
-       TheOut=TheIn
+      TheOut=TheIn
     END IF
     IF (ThePrecond .eq. 1) THEN
-       TheOut=0
-       DO IP=1,NSEA
-          J1=PDLIB_I_DIAG(IP)
-          DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
-             JP=PDLIB_JA(J)
-             IF (J .eq. J1) THEN
-                eCoeff=1.0/ASPAR(J)
-             ELSE
-                J2=PDLIB_I_DIAG(JP)
-                eCoeff=-ASPAR(J) /(ASPAR(J1)*ASPAR(J2))
-             END IF
-             TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
-          END DO
-       END DO
+      TheOut=0
+      DO IP=1,NSEA
+        J1=PDLIB_I_DIAG(IP)
+        DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
+          JP=PDLIB_JA(J)
+          IF (J .eq. J1) THEN
+            eCoeff=1.0/ASPAR(J)
+          ELSE
+            J2=PDLIB_I_DIAG(JP)
+            eCoeff=-ASPAR(J) /(ASPAR(J1)*ASPAR(J2))
+          END IF
+          TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
+        END DO
+      END DO
     END IF
     IF (ThePrecond .eq. 2) THEN
 
-       DO IP=1,NSEA
-          J=PDLIB_I_DIAG(IP)
-          TheOut(IP)=TheIn(IP)/ASPAR(J)
-       END DO
+      DO IP=1,NSEA
+        J=PDLIB_I_DIAG(IP)
+        TheOut(IP)=TheIn(IP)/ASPAR(J)
+      END DO
     END IF
   END SUBROUTINE FD_WAVE_SETUP_APPLY_PRECOND
   !/ ------------------------------------------------------------------- /
@@ -2260,41 +2260,41 @@ CONTAINS
     real(8), allocatable :: rVect(:)
     integer IPROC, NSEAL_loc
     DO ISEA=1,NSEAL
-       SXX_p(ISEA)=SXX(ISEA)
-       SXY_p(ISEA)=SXY(ISEA)
-       SYY_p(ISEA)=SYY(ISEA)
+      SXX_p(ISEA)=SXX(ISEA)
+      SXY_p(ISEA)=SXY(ISEA)
+      SYY_p(ISEA)=SYY(ISEA)
     END DO
     IF (IAPROC .eq. 1) THEN
-       DO JSEA=1,NSEAL
-          ISEA=1 + (JSEA-1)*NAPROC
-          SXX_t(ISEA)=SXX_p(JSEA)
-          SXY_t(ISEA)=SXY_p(JSEA)
-          SYY_t(ISEA)=SYY_p(JSEA)
-       END DO
-       DO IPROC=2,NAPROC
-          NSEAL_loc=1 + (NSEA-IPROC)/NAPROC
-          allocate(rVect(NSEAL_loc))
-          CALL MPI_RECV(rVect,NSEAL_loc,rtype, iProc-1, 83, MPI_COMM_WCMP, istatus, ierr)
-          DO JSEA=1,NSEAL_loc
-             ISEA = IPROC + (JSEA-1)*NAPROC
-             SXX_t(ISEA)=rVect(JSEA)
-          END DO
-          CALL MPI_RECV(rVect,NSEAL_loc,rtype, iProc-1, 89, MPI_COMM_WCMP, istatus, ierr)
-          DO JSEA=1,NSEAL_loc
-             ISEA = IPROC + (JSEA-1)*NAPROC
-             SXY_t(ISEA)=rVect(JSEA)
-          END DO
-          CALL MPI_RECV(rVect,NSEAL_loc,rtype, iProc-1, 97, MPI_COMM_WCMP, istatus, ierr)
-          DO JSEA=1,NSEAL_loc
-             ISEA = IPROC + (JSEA-1)*NAPROC
-             SYY_t(ISEA)=rVect(JSEA)
-          END DO
-          deallocate(rVect)
-       END DO
+      DO JSEA=1,NSEAL
+        ISEA=1 + (JSEA-1)*NAPROC
+        SXX_t(ISEA)=SXX_p(JSEA)
+        SXY_t(ISEA)=SXY_p(JSEA)
+        SYY_t(ISEA)=SYY_p(JSEA)
+      END DO
+      DO IPROC=2,NAPROC
+        NSEAL_loc=1 + (NSEA-IPROC)/NAPROC
+        allocate(rVect(NSEAL_loc))
+        CALL MPI_RECV(rVect,NSEAL_loc,rtype, iProc-1, 83, MPI_COMM_WCMP, istatus, ierr)
+        DO JSEA=1,NSEAL_loc
+          ISEA = IPROC + (JSEA-1)*NAPROC
+          SXX_t(ISEA)=rVect(JSEA)
+        END DO
+        CALL MPI_RECV(rVect,NSEAL_loc,rtype, iProc-1, 89, MPI_COMM_WCMP, istatus, ierr)
+        DO JSEA=1,NSEAL_loc
+          ISEA = IPROC + (JSEA-1)*NAPROC
+          SXY_t(ISEA)=rVect(JSEA)
+        END DO
+        CALL MPI_RECV(rVect,NSEAL_loc,rtype, iProc-1, 97, MPI_COMM_WCMP, istatus, ierr)
+        DO JSEA=1,NSEAL_loc
+          ISEA = IPROC + (JSEA-1)*NAPROC
+          SYY_t(ISEA)=rVect(JSEA)
+        END DO
+        deallocate(rVect)
+      END DO
     ELSE
-       CALL MPI_SEND(SXX_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
-       CALL MPI_SEND(SXY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
-       CALL MPI_SEND(SYY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
+      CALL MPI_SEND(SXX_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
+      CALL MPI_SEND(SXY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
+      CALL MPI_SEND(SYY_p,NSEAL,rtype, 0, 83, MPI_COMM_WCMP, ierr)
     END IF
   END SUBROUTINE FD_COLLECT_SXX_XY_YY
   !/ ------------------------------------------------------------------- /
@@ -2404,50 +2404,50 @@ CONTAINS
     FX=0
     FY=0
     DO ISEA=1,NSEA
-       JSEA1=NEIGH(ISEA,1)
-       JSEA2=NEIGH(ISEA,2)
-       JSEA3=NEIGH(ISEA,3)
-       JSEA4=NEIGH(ISEA,4)
-       SXX_X=0
-       SXX_Y=0
-       SXY_X=0
-       SXY_Y=0
-       SYY_X=0
-       SYY_Y=0
-       IF ((JSEA1 .gt. 0).and.(JSEA2 .gt. 0)) THEN
-          SXX_X=(SXX(JSEA1) - SXX(JSEA2))/(2*dist_X)
-          SXY_X=(SXY(JSEA1) - SXY(JSEA2))/(2*dist_X)
-          SYY_X=(SXY(JSEA1) - SYY(JSEA2))/(2*dist_X)
-       END IF
-       IF ((JSEA1 .gt. 0).and.(JSEA2 .eq. 0)) THEN
-          SXX_X=(SXX(JSEA1) - SXX(ISEA ))/dist_X
-          SXY_X=(SXY(JSEA1) - SXY(ISEA ))/dist_X
-          SYY_X=(SXY(JSEA1) - SYY(ISEA ))/dist_X
-       END IF
-       IF ((JSEA1 .eq. 0).and.(JSEA2 .gt. 0)) THEN
-          SXX_X=(SXX(ISEA ) - SXX(JSEA2))/dist_X
-          SXY_X=(SXY(ISEA ) - SXY(JSEA2))/dist_X
-          SYY_X=(SXY(ISEA ) - SYY(JSEA2))/dist_X
-       END IF
-       IF ((JSEA3 .gt. 0).and.(JSEA4 .gt. 0)) THEN
-          SXX_X=(SXX(JSEA3) - SXX(JSEA4))/(2*dist_Y)
-          SXY_X=(SXY(JSEA3) - SXY(JSEA4))/(2*dist_Y)
-          SYY_X=(SXY(JSEA3) - SYY(JSEA4))/(2*dist_Y)
-       END IF
-       IF ((JSEA3 .eq. 0).and.(JSEA4 .gt. 0)) THEN
-          SXX_X=(SXX(ISEA ) - SXX(JSEA4))/dist_Y
-          SXY_X=(SXY(ISEA ) - SXY(JSEA4))/dist_Y
-          SYY_X=(SXY(ISEA ) - SYY(JSEA4))/dist_Y
-       END IF
-       IF ((JSEA3 .gt. 0).and.(JSEA4 .gt. 0)) THEN
-          SXX_X=(SXX(JSEA3) - SXX(ISEA ))/dist_Y
-          SXY_X=(SXY(JSEA3) - SXY(ISEA ))/dist_Y
-          SYY_X=(SXY(JSEA3) - SYY(ISEA ))/dist_Y
-       END IF
-       eFX=-SXX_X - SXY_Y
-       eFY=-SYY_Y - SXY_X
-       FX(ISEA)=eFX
-       FY(ISEA)=eFY
+      JSEA1=NEIGH(ISEA,1)
+      JSEA2=NEIGH(ISEA,2)
+      JSEA3=NEIGH(ISEA,3)
+      JSEA4=NEIGH(ISEA,4)
+      SXX_X=0
+      SXX_Y=0
+      SXY_X=0
+      SXY_Y=0
+      SYY_X=0
+      SYY_Y=0
+      IF ((JSEA1 .gt. 0).and.(JSEA2 .gt. 0)) THEN
+        SXX_X=(SXX(JSEA1) - SXX(JSEA2))/(2*dist_X)
+        SXY_X=(SXY(JSEA1) - SXY(JSEA2))/(2*dist_X)
+        SYY_X=(SXY(JSEA1) - SYY(JSEA2))/(2*dist_X)
+      END IF
+      IF ((JSEA1 .gt. 0).and.(JSEA2 .eq. 0)) THEN
+        SXX_X=(SXX(JSEA1) - SXX(ISEA ))/dist_X
+        SXY_X=(SXY(JSEA1) - SXY(ISEA ))/dist_X
+        SYY_X=(SXY(JSEA1) - SYY(ISEA ))/dist_X
+      END IF
+      IF ((JSEA1 .eq. 0).and.(JSEA2 .gt. 0)) THEN
+        SXX_X=(SXX(ISEA ) - SXX(JSEA2))/dist_X
+        SXY_X=(SXY(ISEA ) - SXY(JSEA2))/dist_X
+        SYY_X=(SXY(ISEA ) - SYY(JSEA2))/dist_X
+      END IF
+      IF ((JSEA3 .gt. 0).and.(JSEA4 .gt. 0)) THEN
+        SXX_X=(SXX(JSEA3) - SXX(JSEA4))/(2*dist_Y)
+        SXY_X=(SXY(JSEA3) - SXY(JSEA4))/(2*dist_Y)
+        SYY_X=(SXY(JSEA3) - SYY(JSEA4))/(2*dist_Y)
+      END IF
+      IF ((JSEA3 .eq. 0).and.(JSEA4 .gt. 0)) THEN
+        SXX_X=(SXX(ISEA ) - SXX(JSEA4))/dist_Y
+        SXY_X=(SXY(ISEA ) - SXY(JSEA4))/dist_Y
+        SYY_X=(SXY(ISEA ) - SYY(JSEA4))/dist_Y
+      END IF
+      IF ((JSEA3 .gt. 0).and.(JSEA4 .gt. 0)) THEN
+        SXX_X=(SXX(JSEA3) - SXX(ISEA ))/dist_Y
+        SXY_X=(SXY(JSEA3) - SXY(ISEA ))/dist_Y
+        SYY_X=(SXY(JSEA3) - SYY(ISEA ))/dist_Y
+      END IF
+      eFX=-SXX_X - SXY_Y
+      eFY=-SYY_Y - SXY_X
+      FX(ISEA)=eFX
+      FY(ISEA)=eFY
     END DO
   END SUBROUTINE FD_COMPUTE_LH_STRESS
   !/ ------------------------------------------------------------------- /
@@ -2551,11 +2551,11 @@ CONTAINS
     deltaY=YGRD(IX1,IY1) - YGRD(IX2,IY2)
     dist=SQRT(deltaX*deltaX + deltaY*deltaY)
     IF (ISEA .eq. ISEA1) THEN
-       UGRAD= deltaX/dist
-       VGRAD= deltaY/dist
+      UGRAD= deltaX/dist
+      VGRAD= deltaY/dist
     ELSE
-       UGRAD=-deltaX/dist
-       VGRAD=-deltaY/dist
+      UGRAD=-deltaX/dist
+      VGRAD=-deltaY/dist
     END IF
   END SUBROUTINE FD_COMPUTE_DIFF
   !/ ------------------------------------------------------------------- /
@@ -2656,24 +2656,24 @@ CONTAINS
     ASPAR=0
     B=0
     DO IEDGE=1,NBEDGE
-       ISEA=EDGES(IEDGE,1)
-       JSEA=EDGES(IEDGE,2)
-       eDep=(DW(ISEA) + DW(JSEA))/2.0
-       eFX =(FX(ISEA) + FX(JSEA))/2.0
-       eFY =(FY(ISEA) + FY(JSEA))/2.0
-       DO I=1,2
-          ISEAREL=EDGES(IEDGE,I)
-          CALL FD_COMPUTE_DIFF(IEDGE, ISEAREL, UGRAD1, VGRAD1, dist1)
-          eScal=UGRAD1*eFX + VGRAD1*eFY
-          B(ISEAREL) = B(ISEAREL) + eScal*dist1
-          !
-          DO J=1,2
-             JSEAREL=EDGES(IEDGE,J)
-             CALL FD_COMPUTE_DIFF(IEDGE, JSEAREL, UGRAD, VGRAD, dist2)
-             eScal=UGRAD*UGRAD1 + VGRAD*VGRAD1
-             ASPAR(J)=ASPAR(J)+eFact*eScal
-          END DO
-       END DO
+      ISEA=EDGES(IEDGE,1)
+      JSEA=EDGES(IEDGE,2)
+      eDep=(DW(ISEA) + DW(JSEA))/2.0
+      eFX =(FX(ISEA) + FX(JSEA))/2.0
+      eFY =(FY(ISEA) + FY(JSEA))/2.0
+      DO I=1,2
+        ISEAREL=EDGES(IEDGE,I)
+        CALL FD_COMPUTE_DIFF(IEDGE, ISEAREL, UGRAD1, VGRAD1, dist1)
+        eScal=UGRAD1*eFX + VGRAD1*eFY
+        B(ISEAREL) = B(ISEAREL) + eScal*dist1
+        !
+        DO J=1,2
+          JSEAREL=EDGES(IEDGE,J)
+          CALL FD_COMPUTE_DIFF(IEDGE, JSEAREL, UGRAD, VGRAD, dist2)
+          eScal=UGRAD*UGRAD1 + VGRAD*VGRAD1
+          ASPAR(J)=ASPAR(J)+eFact*eScal
+        END DO
+      END DO
     END DO
   END SUBROUTINE FD_WAVE_SETUP_COMPUTE_SYSTEM
   !/ ------------------------------------------------------------------- /
@@ -2761,7 +2761,7 @@ CONTAINS
     integer IP
     eScal=0
     DO IP=1,NX
-       eScal=eScal + V1(IP)*V2(IP)
+      eScal=eScal + V1(IP)*V2(IP)
     END DO
   END SUBROUTINE FD_WAVE_SETUP_SCALAR_PROD
   !/ ------------------------------------------------------------------- /
@@ -2861,30 +2861,30 @@ CONTAINS
     V_P=V_Z
     CALL FD_WAVE_SETUP_SCALAR_PROD(V_Z, V_R, uO)
     DO
-       nbIter=nbIter + 1
-       CALL FD_WAVE_SETUP_APPLY_FCT(ASPAR, V_P, V_Y)
-       CALL FD_WAVE_SETUP_SCALAR_PROD(V_P, V_Y, h2)
-       alphaV=uO/h2
-       !
-       DO IP=1,NX
-          V_X(IP) = V_X(IP) + alphaV * V_P(IP)
-          V_R(IP) = V_R(IP) - alphaV * V_Y(IP)
-       END DO
-       !
-       CALL FD_WAVE_SETUP_SCALAR_PROD(V_R, V_R, eNorm)
-       IF (eNorm .le. SOLVERTHR) THEN
-          EXIT
-       END IF
-       !
-       CALL FD_WAVE_SETUP_APPLY_PRECOND(ASPAR, V_R, V_Z)
-       CALL FD_WAVE_SETUP_SCALAR_PROD(V_Z, V_R, uN)
-       !
-       beta=uN/uO
-       uO=uN
-       !
-       DO IP=1,NX
-          V_P(IP)=V_Z(IP) + beta * V_P(IP)
-       END DO
+      nbIter=nbIter + 1
+      CALL FD_WAVE_SETUP_APPLY_FCT(ASPAR, V_P, V_Y)
+      CALL FD_WAVE_SETUP_SCALAR_PROD(V_P, V_Y, h2)
+      alphaV=uO/h2
+      !
+      DO IP=1,NX
+        V_X(IP) = V_X(IP) + alphaV * V_P(IP)
+        V_R(IP) = V_R(IP) - alphaV * V_Y(IP)
+      END DO
+      !
+      CALL FD_WAVE_SETUP_SCALAR_PROD(V_R, V_R, eNorm)
+      IF (eNorm .le. SOLVERTHR) THEN
+        EXIT
+      END IF
+      !
+      CALL FD_WAVE_SETUP_APPLY_PRECOND(ASPAR, V_R, V_Z)
+      CALL FD_WAVE_SETUP_SCALAR_PROD(V_Z, V_R, uN)
+      !
+      beta=uN/uO
+      uO=uN
+      !
+      DO IP=1,NX
+        V_P(IP)=V_Z(IP) + beta * V_P(IP)
+      END DO
     END DO
     TheOut=V_X
   END SUBROUTINE FD_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR
@@ -2972,12 +2972,12 @@ CONTAINS
     SUM_SI_Var=0
     SUM_SI=0
     DO IP=1,NX
-       SUM_SI_Var = SUM_SI_Var + SI(IP)*TheVar(IP)
-       SUM_SI     = SUM_SI     + SI(IP)
+      SUM_SI_Var = SUM_SI_Var + SI(IP)*TheVar(IP)
+      SUM_SI     = SUM_SI     + SI(IP)
     END DO
     TheMean=SUM_SI_Var/SUM_SI
     DO IP=1,NX
-       TheVar(IP)=TheVar(IP) - TheMean
+      TheVar(IP)=TheVar(IP) - TheMean
     END DO
   END SUBROUTINE FD_SET_MEANVALUE_TO_ZERO
   !/ ------------------------------------------------------------------- /
@@ -3072,21 +3072,21 @@ CONTAINS
     integer ierr
     CALL FD_COLLECT_SXX_XY_YY(SXX_t, SXY_t, SYY_t)
     IF (IAPROC .eq. 1) THEN
-       CALL FD_COMPUTE_LH_STRESS(SXX_t, SXY_t, SYY_t, F_X, F_Y)
-       DO ISEA=1,NSEA
-          ZETA_WORK(ISEA)=ZETA_SETUP(ISEA)
-       END DO
-       CALL FD_WAVE_SETUP_COMPUTE_SYSTEM(ASPAR, B, F_X, F_Y)
-       CALL FD_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR(ASPAR, B, ZETA_WORK)
-       CALL FD_SET_MEANVALUE_TO_ZERO(ZETA_WORK)
-       DO IPROC=2,NAPROC
-          CALL MPI_SEND(ZETA_WORK,NSEA,rtype, IPROC-1, 23, MPI_COMM_WCMP, ierr)
-       END DO
+      CALL FD_COMPUTE_LH_STRESS(SXX_t, SXY_t, SYY_t, F_X, F_Y)
+      DO ISEA=1,NSEA
+        ZETA_WORK(ISEA)=ZETA_SETUP(ISEA)
+      END DO
+      CALL FD_WAVE_SETUP_COMPUTE_SYSTEM(ASPAR, B, F_X, F_Y)
+      CALL FD_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR(ASPAR, B, ZETA_WORK)
+      CALL FD_SET_MEANVALUE_TO_ZERO(ZETA_WORK)
+      DO IPROC=2,NAPROC
+        CALL MPI_SEND(ZETA_WORK,NSEA,rtype, IPROC-1, 23, MPI_COMM_WCMP, ierr)
+      END DO
     ELSE
-       CALL MPI_RECV(ZETA_WORK,NSEAL,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
+      CALL MPI_RECV(ZETA_WORK,NSEAL,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
     END IF
     DO ISEA=1,NSEA
-       ZETA_SETUP(ISEA)=ZETA_WORK(ISEA)
+      ZETA_SETUP(ISEA)=ZETA_WORK(ISEA)
     END DO
   END SUBROUTINE FD_WAVE_SETUP_COMPUTATION
   !/ ------------------------------------------------------------------- /
@@ -3176,16 +3176,16 @@ CONTAINS
 #endif
     IF (IAPROC .le. NAPROC) THEN
 #ifdef W3_DEBUGSTP
-       WRITE(740+IAPROC,*) 'Begin WAVE_SETUP_COMPUTATION'
-       FLUSH(740+IAPROC)
+      WRITE(740+IAPROC,*) 'Begin WAVE_SETUP_COMPUTATION'
+      FLUSH(740+IAPROC)
 #endif
-       IF (DO_WAVE_SETUP) THEN
-          IF (GTYPE .EQ. UNGTYPE) THEN
-             CALL TRIG_WAVE_SETUP_COMPUTATION
-          ELSE
-             CALL FD_WAVE_SETUP_COMPUTATION
-          END IF
-       END IF
+      IF (DO_WAVE_SETUP) THEN
+        IF (GTYPE .EQ. UNGTYPE) THEN
+          CALL TRIG_WAVE_SETUP_COMPUTATION
+        ELSE
+          CALL FD_WAVE_SETUP_COMPUTATION
+        END IF
+      END IF
     END IF
 #ifdef W3_DEBUGSTP
     WRITE(740+IAPROC,*) 'Begin WAVE_SETUP_COMPUTATION'

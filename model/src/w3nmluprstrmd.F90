@@ -25,16 +25,16 @@ MODULE W3NMLUPRSTRMD
 
   ! restart time
   TYPE NML_RESTART_T
-     CHARACTER(15)               :: RESTARTTIME
+    CHARACTER(15)               :: RESTARTTIME
   END TYPE NML_RESTART_T
 
   ! update approach
   TYPE NML_UPDATE_T
-     CHARACTER(5)                :: UPDPROC
-     REAL                        :: PRCNTG
-     REAL                        :: PRCNTGCAP
-     REAL                        :: THRWSEA
-     CHARACTER(30)               :: FILE
+    CHARACTER(5)                :: UPDPROC
+    REAL                        :: PRCNTG
+    REAL                        :: PRCNTGCAP
+    REAL                        :: THRWSEA
+    CHARACTER(30)               :: FILE
   END TYPE NML_UPDATE_T
 
   ! miscellaneous
@@ -133,15 +133,15 @@ CONTAINS
     NDSN = 3
     OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
+      RETURN
     END IF
 
     ! open input file
     OPEN (NDSI, file=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-       RETURN
+      WRITE (NDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+      RETURN
     END IF
 
     ! read restart time namelist
@@ -251,10 +251,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=RESTART_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_RESTART_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (1)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_RESTART_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (1)
     END IF
 
     ! save namelist
@@ -360,10 +360,10 @@ CONTAINS
     REWIND (NDSI)
     READ (NDSI, nml=UPDATE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
-       WRITE (NDSE,'(A,/A)') &
-            'ERROR: READ_UPDATE_NML: namelist read error', &
-            'ERROR: '//TRIM(MSG)
-       CALL EXTCDE (2)
+      WRITE (NDSE,'(A,/A)') &
+           'ERROR: READ_UPDATE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (2)
     END IF
 
     ! save namelist
@@ -534,15 +534,15 @@ CONTAINS
     WRITE (NDSN,10) TRIM(MSG),'UPDPROC   = ', TRIM(NML_UPDATE%UPDPROC)
     ! PRCNTG only used by UPD0F
     IF (TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD0F') THEN
-       WRITE (NDSN,11) TRIM(MSG),'PRCNTG    = ', NML_UPDATE%PRCNTG
+      WRITE (NDSN,11) TRIM(MSG),'PRCNTG    = ', NML_UPDATE%PRCNTG
     ELSE
-       WRITE (NDSN,11) TRIM(MSG),'PRCNTGCAP = ', NML_UPDATE%PRCNTGCAP
-       ! THRWSEA only used by UPD5/6
-       IF ((TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD5') .OR. &
-            (TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD6')) THEN
-          WRITE (NDSN,11) TRIM(MSG),'THRWSEA   = ', NML_UPDATE%THRWSEA
-       ENDIF
-       WRITE (NDSN,10) TRIM(MSG),'FILE      = ', TRIM(NML_UPDATE%FILE)
+      WRITE (NDSN,11) TRIM(MSG),'PRCNTGCAP = ', NML_UPDATE%PRCNTGCAP
+      ! THRWSEA only used by UPD5/6
+      IF ((TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD5') .OR. &
+           (TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD6')) THEN
+        WRITE (NDSN,11) TRIM(MSG),'THRWSEA   = ', NML_UPDATE%THRWSEA
+      ENDIF
+      WRITE (NDSN,10) TRIM(MSG),'FILE      = ', TRIM(NML_UPDATE%FILE)
     ENDIF
 
 10  FORMAT (A,2X,A,A)

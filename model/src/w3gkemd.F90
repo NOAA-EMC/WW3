@@ -263,7 +263,7 @@ contains
     ! Odin used qr_dmax = 2500.
     !
     if (qr_depth > qr_eps .and. qr_depth < qr_dmax) then
-       QFunc = QFunc * tanh(QFunc * qr_depth)  ! finite-deep
+      QFunc = QFunc * tanh(QFunc * qr_depth)  ! finite-deep
     end if
     !
     return
@@ -462,10 +462,10 @@ contains
     om03 = sqrt(qr_grav * QFunc(k0x-k3x, k0y-k3y))
     !
     if (abs(k0x+k1x) > qr_eps .or. abs(k0y+k1y) > qr_eps) then
-       !           k₀ + k₁ = k₂ + k₃ = 0., ω_{0+1} = 0.,
-       !           V^{(-)}_{0+1, 0, 1} ~ 1/ω_{0+1} = NaN, L56 = NaN
-       om0p1 = sqrt(qr_grav * QFunc(k0x+k1x, k0y+k1y))
-       om2p3 = sqrt(qr_grav * QFunc(k2x+k3x, k2y+k3y))
+      !           k₀ + k₁ = k₂ + k₃ = 0., ω_{0+1} = 0.,
+      !           V^{(-)}_{0+1, 0, 1} ~ 1/ω_{0+1} = NaN, L56 = NaN
+      om0p1 = sqrt(qr_grav * QFunc(k0x+k1x, k0y+k1y))
+      om2p3 = sqrt(qr_grav * QFunc(k2x+k3x, k2y+k3y))
     end if
     !
     ! W^{(2)}_{1, 2, 3, 4} [Call U function here] for direct interaction
@@ -498,14 +498,14 @@ contains
     ! Fifth & Sixth lines for virtual-state interaction in J09
     !
     if (abs(k0x+k1x) > qr_eps .or. abs(k0y+k1y) > qr_eps) then
-       !           k₁ + k₂ = k₃ + k₄ = 0., ω_{1+2} = 0.,
-       !           V^{(-)}_{1+2, 1, 2} ~ 1/ω_{1+2} = NaN, L56 = NaN
-       L56 = VmFunc(k0x+k1x, k0y+k1y, k0x, k0y, k1x, k1y) *        &
-            VmFunc(k2x+k3x, k2y+k3y, k2x, k2y, k3x, k3y) *        &
-            (1.0/(om0p1 - om0 - om1) + 1.0/(om2p3 - om2 - om3)) + &
-            VpFunc(-k0x-k1x, -k0y-k1y, k0x, k0y, k1x, k1y) *      &
-            VpFunc(-k2x-k3x, -k2y-k3y, k2x, k2y, k3x, k3y) *      &
-            (1.0/(om0p1 + om0 + om1) + 1.0/(om2p3 + om2 + om3))
+      !           k₁ + k₂ = k₃ + k₄ = 0., ω_{1+2} = 0.,
+      !           V^{(-)}_{1+2, 1, 2} ~ 1/ω_{1+2} = NaN, L56 = NaN
+      L56 = VmFunc(k0x+k1x, k0y+k1y, k0x, k0y, k1x, k1y) *        &
+           VmFunc(k2x+k3x, k2y+k3y, k2x, k2y, k3x, k3y) *        &
+           (1.0/(om0p1 - om0 - om1) + 1.0/(om2p3 - om2 - om3)) + &
+           VpFunc(-k0x-k1x, -k0y-k1y, k0x, k0y, k1x, k1y) *      &
+           VpFunc(-k2x-k3x, -k2y-k3y, k2x, k2y, k3x, k3y) *      &
+           (1.0/(om0p1 + om0 + om1) + 1.0/(om2p3 + om2 + om3))
     end if
     !
     ! T_{1, 2, 3, 4}
@@ -672,8 +672,8 @@ contains
     !
     ! Boundary conditions: include k4 beyond kmin & kmax
     if (qi_interp .eq. 1 .and. qi_bound .eq. 1) then
-       kmin = kmin / 9.  ! 1/3 fmax
-       kmax = kmax * 9.  ! 3   fmax
+      kmin = kmin / 9.  ! 1/3 fmax
+      kmax = kmax * 9.  ! 3   fmax
     end if
     !
     ! Start to find the quartets: \vec{k_j}, j = 1, 2, 3 are chosen at the
@@ -683,45 +683,45 @@ contains
     nnz = 0
     !
     do i1 = 1, ns
-       !           criterion 3.a) ← starting from i1
-       do i2 = i1, ns
-          do i3 = 1, ns
-             !                   criterion 3.b)
-             if (i3 .ne. i1 .and. i3 .ne. i2) then
-                !                       criterion 1)
-                k4x = kx(i1) + kx(i2) - kx(i3)
-                k4y = ky(i1) + ky(i2) - ky(i3)
-                k4  = sqrt(k4x*k4x + k4y*k4y)
-                !
-                ! wavenumber k4 falls outside the grid (criterion 3.e)
-                if (k4 >= kmin .and. k4 <= kmax) then
-                   !                           ω = √(qg) & Δω
-                   om4 = sqrt(qr_grav * QFunc(k4x, k4y))
-                   dom = abs(om(i1) + om(i2) - om(i3) - om4) / &
-                        min(om(i1), om(i2), om(i3), om4)
-                   !                           criterion 2)
-                   if (oml <= qr_eps .or. dom <= oml) then
-                      i4 = minloc((kx - k4x)*(kx - k4x) +     &
-                           (ky - k4y)*(ky - k4y), 1)
-                      !                               criterion 3.d)
-                      if (i4 .ne. i1 .and. i4 .ne. i2) then
-                         !                                   criterion 3.c)
-                         if (i4 >= i3) then
-                            row = i1 + ns * (i2-1)
-                            col = i3 + ns * (i4-1)
-                            !                                       criterion 4)
-                            if (col > row) then
-                               nnz = nnz + 1
-                            end if
-                         end if
-                      end if
-                   end if
+      !           criterion 3.a) ← starting from i1
+      do i2 = i1, ns
+        do i3 = 1, ns
+          !                   criterion 3.b)
+          if (i3 .ne. i1 .and. i3 .ne. i2) then
+            !                       criterion 1)
+            k4x = kx(i1) + kx(i2) - kx(i3)
+            k4y = ky(i1) + ky(i2) - ky(i3)
+            k4  = sqrt(k4x*k4x + k4y*k4y)
+            !
+            ! wavenumber k4 falls outside the grid (criterion 3.e)
+            if (k4 >= kmin .and. k4 <= kmax) then
+              !                           ω = √(qg) & Δω
+              om4 = sqrt(qr_grav * QFunc(k4x, k4y))
+              dom = abs(om(i1) + om(i2) - om(i3) - om4) / &
+                   min(om(i1), om(i2), om(i3), om4)
+              !                           criterion 2)
+              if (oml <= qr_eps .or. dom <= oml) then
+                i4 = minloc((kx - k4x)*(kx - k4x) +     &
+                     (ky - k4y)*(ky - k4y), 1)
+                !                               criterion 3.d)
+                if (i4 .ne. i1 .and. i4 .ne. i2) then
+                  !                                   criterion 3.c)
+                  if (i4 >= i3) then
+                    row = i1 + ns * (i2-1)
+                    col = i3 + ns * (i4-1)
+                    !                                       criterion 4)
+                    if (col > row) then
+                      nnz = nnz + 1
+                    end if
+                  end if
                 end if
-             end if
-          end do
-       end do
+              end if
+            end if
+          end if
+        end do
+      end do
 #ifdef W3_TS
-       write(*, *) '→ nnz = ', nnz
+      write(*, *) '→ nnz = ', nnz
 #endif
     end do
     !/
@@ -792,8 +792,8 @@ contains
     !
     ! Boundary conditions: include k4 beyond kmin & kmax
     if (qi_interp .eq. 1 .and. qi_bound .eq. 1) then
-       kmin = kmin / 9.  ! 1/3 fmax
-       kmax = kmax * 9.  ! 3   fmax
+      kmin = kmin / 9.  ! 1/3 fmax
+      kmax = kmax * 9.  ! 3   fmax
     end if
     !
     ! Start to find the quartets: \vec{k_j}, j = 1, 2, 3 are chosen at the
@@ -806,60 +806,60 @@ contains
     s = 0
     !
     do i1 = 1, ns
-       !           criterion 3.a) ← starting from i1
-       do i2 = i1, ns
-          do i3 = 1, ns
-             !                   criterion 3.b)
-             if (i3 .ne. i1 .and. i3 .ne. i2) then
-                !                       criterion 1)
-                k4xT = kx(i1) + kx(i2) - kx(i3)
-                k4yT = ky(i1) + ky(i2) - ky(i3)
-                k4T  = sqrt(k4xT*k4xT + k4yT*k4yT)
-                !
-                ! wavenumber k4 falls outside the grid (criterion 3.e)
-                if (k4T >= kmin .and. k4T <= kmax) then
-                   !                           ω = √qg & Δω
-                   om4T = sqrt(qr_grav * QFunc(k4xT, k4yT))
-                   dom  = abs(om(i1) + om(i2) - om(i3) - om4T)/&
-                        min(om(i1), om(i2), om(i3), om4T)
-                   !                           criterion 2)
-                   if (oml <= qr_eps .or. dom <= oml) then
-                      i4 = minloc((kx - k4xT)*(kx - k4xT) +   &
-                           (ky - k4yT)*(ky - k4yT), 1)
-                      !                               criterion 3.d)
-                      if (i4 .ne. i1 .and. i4 .ne. i2) then
-                         !                                   criterion 3.c)
-                         if (i4 >= i3) then
-                            row = i1 + ns * (i2-1)
-                            col = i3 + ns * (i4-1)
-                            !                                       criterion 4)
-                            if (col > row) then
-                               !                                           nnz    = nnz + 1
-                               s      = s + 1 ! Find 1 quartet
-                               !
-                               NN(s)  = i1    ! Store index
-                               PP(s)  = i2
-                               QQ(s)  = i3
-                               RR(s)  = i4
-                               !
-                               k4x(s) = k4xT  ! k₄, ω₄
-                               k4y(s) = k4yT
-                               om4(s) = om4T
-                               !
-                            end if
-                         end if
-                      end if
-                   end if
+      !           criterion 3.a) ← starting from i1
+      do i2 = i1, ns
+        do i3 = 1, ns
+          !                   criterion 3.b)
+          if (i3 .ne. i1 .and. i3 .ne. i2) then
+            !                       criterion 1)
+            k4xT = kx(i1) + kx(i2) - kx(i3)
+            k4yT = ky(i1) + ky(i2) - ky(i3)
+            k4T  = sqrt(k4xT*k4xT + k4yT*k4yT)
+            !
+            ! wavenumber k4 falls outside the grid (criterion 3.e)
+            if (k4T >= kmin .and. k4T <= kmax) then
+              !                           ω = √qg & Δω
+              om4T = sqrt(qr_grav * QFunc(k4xT, k4yT))
+              dom  = abs(om(i1) + om(i2) - om(i3) - om4T)/&
+                   min(om(i1), om(i2), om(i3), om4T)
+              !                           criterion 2)
+              if (oml <= qr_eps .or. dom <= oml) then
+                i4 = minloc((kx - k4xT)*(kx - k4xT) +   &
+                     (ky - k4yT)*(ky - k4yT), 1)
+                !                               criterion 3.d)
+                if (i4 .ne. i1 .and. i4 .ne. i2) then
+                  !                                   criterion 3.c)
+                  if (i4 >= i3) then
+                    row = i1 + ns * (i2-1)
+                    col = i3 + ns * (i4-1)
+                    !                                       criterion 4)
+                    if (col > row) then
+                      !                                           nnz    = nnz + 1
+                      s      = s + 1 ! Find 1 quartet
+                      !
+                      NN(s)  = i1    ! Store index
+                      PP(s)  = i2
+                      QQ(s)  = i3
+                      RR(s)  = i4
+                      !
+                      k4x(s) = k4xT  ! k₄, ω₄
+                      k4y(s) = k4yT
+                      om4(s) = om4T
+                      !
+                    end if
+                  end if
                 end if
-             end if
-          end do
-       end do
+              end if
+            end if
+          end if
+        end do
+      end do
     end do
     !
     ! Check consistency of s and nnz
     if (s .ne.  nnz) then
-       write(*, 1001) 'FindQuartetConfig'
-       call exit(1)
+      write(*, 1001) 'FindQuartetConfig'
+      call exit(1)
     end if
     !
     ! Formats
@@ -940,7 +940,7 @@ contains
     ! iao(nrow+1) = 0
     iao(1:nrow+1) = 0
     do k = 1, nnz
-       iao(ir(k)) = iao(ir(k)) + 1 ! row by row
+      iao(ir(k)) = iao(ir(k)) + 1 ! row by row
     end do
     !
     ! Find the positions that correspond to the first value in each row.
@@ -948,29 +948,29 @@ contains
     ! iao(nrow+1) = 1 + nnz
     k = 1
     do j = 1, nrow+1
-       k0     = iao(j)  ! num_i, # of nonzero in this row
-       iao(j) = k       ! starting pos
-       k      = k + k0  ! k = Σnum_i, where i <= j
+      k0     = iao(j)  ! num_i, # of nonzero in this row
+      iao(j) = k       ! starting pos
+      k      = k + k0  ! k = Σnum_i, where i <= j
     end do
     !
     ! Go through the structure once more. Fill in ind_translate
     do k = 1, nnz
-       i = ir(k)        ! coo row
-       j = jc(k)        ! coo col
-       !
-       ! When i-th row is encountered by the first time, iad = iao(i) denotes
-       ! the starting position for this row. Afterwards, iao(i) is added by 1
-       ! when i-th row arrives every time. In the end, iao(i) records the
-       ! starting position for the (i+1)-th row. However, the last element of
-       ! iao remains unchanged, i.e., iao(nrow+1) = iao(nrow) = 1 + nnz
-       iad                = iao(i)
-       ind_translate(iad) = k
-       iao(i)             = iad + 1
+      i = ir(k)        ! coo row
+      j = jc(k)        ! coo col
+      !
+      ! When i-th row is encountered by the first time, iad = iao(i) denotes
+      ! the starting position for this row. Afterwards, iao(i) is added by 1
+      ! when i-th row arrives every time. In the end, iao(i) records the
+      ! starting position for the (i+1)-th row. However, the last element of
+      ! iao remains unchanged, i.e., iao(nrow+1) = iao(nrow) = 1 + nnz
+      iad                = iao(i)
+      ind_translate(iad) = k
+      iao(i)             = iad + 1
     end do
     !
     ! Shift back IAO.
     do j = nrow, 1, -1
-       iao(j+1) = iao(j)
+      iao(j+1) = iao(j)
     end do
     iao(1) = 1
     !
@@ -1043,16 +1043,16 @@ contains
     y(1:n) = 0.0
     !
     do i = 1, n
-       t = 0.0
-       do k = ia(i), ia(i+1)-1
-          !
-          ! M_{i, 1} =  Σa(i, j) * x(j, 1)
-          t        = t + a(k) * x(ja(k))
-          !
-          !±N_{j, 1} = ±Σa(i, j)  * x(i, 1)
-          y(ja(k)) = y(ja(k)) + Symb * a(k)*x(i)
-       end do
-       y(i) = y(i) + t
+      t = 0.0
+      do k = ia(i), ia(i+1)-1
+        !
+        ! M_{i, 1} =  Σa(i, j) * x(j, 1)
+        t        = t + a(k) * x(ja(k))
+        !
+        !±N_{j, 1} = ±Σa(i, j)  * x(i, 1)
+        y(ja(k)) = y(ja(k)) + Symb * a(k)*x(i)
+      end do
+      y(i) = y(i) + t
     end do
     ! The final Y = M ± N = A * x ± A^T * x
     !
@@ -1120,70 +1120,70 @@ contains
     dth = qr_tpi / real(nth)
     !
     do ith = 1, nth
-       angR      = th(ith)
-       esin(ith) = sin(angR)
-       ecos(ith) = cos(angR)
-       !
-       if (abs(esin(ith)) .lt. 1.E-5) then
-          esin(ith) = 0.
-          if (ecos(ith) .gt. 0.5) then
-             ecos(ith) = 1.      ! θ = 0.
-          else
-             ecos(ith) = -1.     ! θ = π
-          end if
-       end if
-       !
-       if (abs(ecos(ith)) .lt. 1.E-5) then
-          ecos(ith) = 0.
-          if (esin(ith) .gt. 0.5) then
-             esin(ith) = 1.     ! θ = π/2
-          else
-             esin(ith) = -1.    ! θ = π * 3/2
-          end if
-       end if
+      angR      = th(ith)
+      esin(ith) = sin(angR)
+      ecos(ith) = cos(angR)
+      !
+      if (abs(esin(ith)) .lt. 1.E-5) then
+        esin(ith) = 0.
+        if (ecos(ith) .gt. 0.5) then
+          ecos(ith) = 1.      ! θ = 0.
+        else
+          ecos(ith) = -1.     ! θ = π
+        end if
+      end if
+      !
+      if (abs(ecos(ith)) .lt. 1.E-5) then
+        ecos(ith) = 0.
+        if (esin(ith) .gt. 0.5) then
+          esin(ith) = 1.     ! θ = π/2
+        else
+          esin(ith) = -1.    ! θ = π * 3/2
+        end if
+      end if
     end do
     !
     do ik = 1, nk
-       if (dispopt .eq. 0) then
-          ! Calc k & Cg (`z_cmpcg` & `z_wnumb` of serv_xnl4v5.f90)
-          omega   = sig(ik)**2.0/qr_grav
-          y       = omega*dpt
-          xx      = y*(y+1.0/(1.0+y*(0.66667+y*(0.35550+y*(0.16084+y*(0.06320+y* &
-               (0.02174+y*(0.00654+y*(0.00171+y*(0.00039+y*0.00011))))))))))
-          x       = sqrt(xx)
-          k       = x/dpt
-          !
-          if(dpt*k > 30.0) then
-             cg  = qr_grav/(2.0*sig(ik))
-          else
-             cg  = sig(ik)/k*(0.5+dpt*k/sinh(2.0*dpt*k))
-          end if
-          !
-       else if (dispopt .eq. 1) then
-          ! Calc k & cg (WAVNU1 from WW3)
-          call WAVNU1(sig(ik), dpt, k, cg)
-       end if
-       qr_wn1(ik) = k ! Store k in qr_wn1 ('ll used for interp.)
+      if (dispopt .eq. 0) then
+        ! Calc k & Cg (`z_cmpcg` & `z_wnumb` of serv_xnl4v5.f90)
+        omega   = sig(ik)**2.0/qr_grav
+        y       = omega*dpt
+        xx      = y*(y+1.0/(1.0+y*(0.66667+y*(0.35550+y*(0.16084+y*(0.06320+y* &
+             (0.02174+y*(0.00654+y*(0.00171+y*(0.00039+y*0.00011))))))))))
+        x       = sqrt(xx)
+        k       = x/dpt
+        !
+        if(dpt*k > 30.0) then
+          cg  = qr_grav/(2.0*sig(ik))
+        else
+          cg  = sig(ik)/k*(0.5+dpt*k/sinh(2.0*dpt*k))
+        end if
+        !
+      else if (dispopt .eq. 1) then
+        ! Calc k & cg (WAVNU1 from WW3)
+        call WAVNU1(sig(ik), dpt, k, cg)
+      end if
+      qr_wn1(ik) = k ! Store k in qr_wn1 ('ll used for interp.)
 #ifdef W3_TS
-       write(*, *) 'σ, k, cg: ', sig(ik), k, cg
+      write(*, *) 'σ, k, cg: ', sig(ik), k, cg
 #endif
-       ! Calc Δσ
-       if (ik .eq. 1) then
-          dsii = 0.5 * (sig(2) - sig(1))       ! first bin
-       else if (ik .eq. nk) then
-          dsii = 0.5 * (sig(nk) - sig(nk-1))   ! last bin
-       else
-          dsii = 0.5 * (sig(ik+1) - sig(ik-1)) ! interm. bin
-       end if
-       ! Calc Kx, Ky
-       do ith = 1, nth
-          jkth        = ith + (ik - 1) * nth
-          qr_kx(jkth) = k * ecos(ith)
-          qr_ky(jkth) = k * esin(ith)
-          ! Calc Δ\vec{k} = k Δk Δθ = k Δσ/cg Δθ
-          qr_dk(jkth) = k * dsii / cg * dth
-          qr_om(jkth) = sig(ik)
-       end do
+      ! Calc Δσ
+      if (ik .eq. 1) then
+        dsii = 0.5 * (sig(2) - sig(1))       ! first bin
+      else if (ik .eq. nk) then
+        dsii = 0.5 * (sig(nk) - sig(nk-1))   ! last bin
+      else
+        dsii = 0.5 * (sig(ik+1) - sig(ik-1)) ! interm. bin
+      end if
+      ! Calc Kx, Ky
+      do ith = 1, nth
+        jkth        = ith + (ik - 1) * nth
+        qr_kx(jkth) = k * ecos(ith)
+        qr_ky(jkth) = k * esin(ith)
+        ! Calc Δ\vec{k} = k Δk Δθ = k Δσ/cg Δθ
+        qr_dk(jkth) = k * dsii / cg * dth
+        qr_om(jkth) = sig(ik)
+      end do
     end do
 #ifdef W3_TS
     write(*, *) 'qr_kx: ', qr_kx
@@ -1265,214 +1265,214 @@ contains
     write(qs_cfg, "(A, '_d', I4.4, '.cfg')") trim(qs_ver), int(qr_depth)
     !
     if (trim(act) == 'WRITE') then
-       ! Calc KGrid → [qr_kx/ky/dk/om/wn]
-       if (allocated(qr_kx))     deallocate(qr_kx);    allocate(qr_kx(ns))
-       if (allocated(qr_ky))     deallocate(qr_ky);    allocate(qr_ky(ns))
-       if (allocated(qr_wn1))    deallocate(qr_wn1);   allocate(qr_wn1(nk))
-       call PrepKGrid(nk, nth, qr_depth, sig, th)
-       ! Find total # of quartets → [qi_nnz]
-       call FindQuartetNumber(ns, qr_kx, qr_ky, qr_om, qr_oml, qi_nnz)
-       ! Find Quartet Config. → [qi_NN/PP/QQ/RR & qr_k4x/k4y/om4]
-       if (allocated(qi_NN))     deallocate(qi_NN);    allocate(qi_NN(qi_nnz))
-       if (allocated(qi_PP))     deallocate(qi_PP);    allocate(qi_PP(qi_nnz))
-       if (allocated(qi_QQ))     deallocate(qi_QQ);    allocate(qi_QQ(qi_nnz))
-       if (allocated(qi_RR))     deallocate(qi_RR);    allocate(qi_RR(qi_nnz))
-       !
-       if (allocated(qr_k4x))    deallocate(qr_k4x);   allocate(qr_k4x(qi_nnz))
-       if (allocated(qr_k4y))    deallocate(qr_k4y);   allocate(qr_k4y(qi_nnz))
-       if (allocated(qr_om4))    deallocate(qr_om4);   allocate(qr_om4(qi_nnz))
-       !
-       call FindQuartetConfig(ns, qr_kx, qr_ky, qr_om, qr_oml, qi_nnz, &
-            qi_NN, qi_PP, qi_QQ, qi_RR,              &
-            qr_k4x, qr_k4y, qr_om4)
-       !
-       ! Calc Kernel `T`
-       if (allocated(qr_TKern))  deallocate(qr_TKern); allocate(qr_TKern(qi_nnz))
-       if (allocated(qr_TKurt))  deallocate(qr_TKurt); allocate(qr_TKurt(qi_nnz))
-       if (allocated(qr_dom))    deallocate(qr_dom);   allocate(qr_dom(qi_nnz))
-       !
-       do iq = 1, qi_nnz
-          qr_TKern(iq) = TFunc(qr_kx(qi_NN(iq)), qr_ky(qi_NN(iq)),&
-               qr_kx(qi_PP(iq)), qr_ky(qi_PP(iq)),&
-               qr_kx(qi_QQ(iq)), qr_ky(qi_QQ(iq)),&
-               qr_k4x(iq)      , qr_k4y(iq)      )
-       end do
-       ! Calc Kernel coeff. for Kurtosis
-       qr_TKurt = qr_TKern * sqrt(qr_om(qi_NN) * qr_om(qi_PP) * qr_om(qi_QQ) * qr_om4)
-       ! Calc Δω (Remove very small Δω; Δω=0 →  resonant quartets)
-       qr_dom = qr_om(qi_NN) + qr_om(qi_PP) - qr_om(qi_QQ) - qr_om4
-       ! TODO: should we use double precision for qr_dom
-       ! Note for GNU compiler, qr_eps~1.2E-7 (single prec.) & ~2.2E-16 (double).
-       ! The values above are also true for the intel compiler.
-       ! sin(Δωt) / Δω is very different for Δω = 0 and Δw~1E-7 when t is large.
-       where(abs(qr_dom) < qr_eps) qr_dom = 0.0
-       !
-       ! Calc interp. weight if necessary
-       if (qi_interp .eq. 1) then
-          if (allocated(qi_bind)) deallocate(qi_bind); allocate(qi_bind(4, qi_nnz))
-          if (allocated(qr_bwgh)) deallocate(qr_bwgh); allocate(qr_bwgh(4, qi_nnz))
-          if (qi_bound .eq. 1 ) then
-             if (allocated(qr_bdry)) deallocate(qr_bdry); allocate(qr_bdry(qi_nnz))
-          end if
-          call BiInterpWT(nk, nth, qr_wn1, th)
-       end if
-       !
-       deallocate(qr_kx, qr_ky)
-       deallocate(qr_k4x, qr_k4y, qr_om4)
-       if (qi_interp .eq. 1) deallocate(qr_wn1)
-       !
-       ! Sparse matrix index conversion [icCos shared by two formats: COO & CSR]
-       if (allocated(qi_icCos))  deallocate(qi_icCos); allocate(qi_icCos(qi_nnz))
-       if (allocated(irow_coo))  deallocate(irow_coo); allocate(irow_coo(qi_nnz))
-       if (allocated(icooTcsr))  deallocate(icooTcsr); allocate(icooTcsr(qi_nnz))
-       !
-       irow_coo = qi_NN + (qi_PP - 1) * ns
-       qi_icCos = qi_QQ + (qi_RR - 1) * ns
-       !
-       ! FindQuartetConfig stores the quartet row by row in a discontinuous order,
-       ! so we need keep icooTcsr & qi_irCsr
-       call CooCsrInd(qi_nrsm, qi_nnz, irow_coo, qi_icCos, icooTcsr, qi_irCsr)
-       !
-       ! Reorder index & arrays [coo → crs]
-       qi_NN    = qi_NN(icooTcsr)     ! used for calc. action prod.
-       qi_PP    = qi_PP(icooTcsr)
-       qi_QQ    = qi_QQ(icooTcsr)
-       qi_RR    = qi_RR(icooTcsr)
-       qr_TKern = qr_TKern(icooTcsr)
-       qr_TKurt = qr_TKurt(icooTcsr)
-       qr_dom   = qr_dom(icooTcsr)    ! Δω
-       !
-       if (qi_interp .eq. 1) then     ! bilinear interp. weight
-          qi_bind = qi_bind(:, icooTcsr)
-          qr_bwgh = qr_bwgh(:, icooTcsr)
-          if (qi_bound .eq. 1) qr_bdry = qr_bdry(icooTcsr)
-       end if
-       !
-       qi_icCos = qi_icCos(icooTcsr)
-       deallocate(irow_coo, icooTcsr)
-       !
-       ! Construct the sum vectors [used for 6D integration]
-       ! Σ over Q, R [qr_sumQR]
-       qr_sumQR = 2.0
-       do i3 = 1, ns
-          !              i3 == i4
-          icol = i3 + (i3 - 1) * ns
-          qr_sumQR(icol) = 1.0
-       end do
-       ! Σ over P [qr_sumNP]
-       qr_sumNP = 1.0
-       do i1 = 1, ns
-          !               i1 == i2
-          qr_sumNP(i1, i1) = 0.5
-       end do
-       !
-       ! WRITE KGrid & Kernel into qs_cfg
-       write(*, *) '[W] Writing |', trim(qs_cfg), '| ...'
-       open(51, file=trim(qs_cfg), form='unformatted', convert=file_endian, &
-            access='stream', status='replace')
-       !
-       ! It is not necessary to store `ns` since `ns = nk * nth`
-       write(51) nk, nth, sig, th                  ! (f, θ) grid
-       write(51) qr_depth, qr_oml, qi_disc,        &
-            qi_kev, qi_interp                 ! parameters
-       write(51) qr_om, qr_dk
-       write(51) qi_nnz
-       write(51) qi_NN, qi_PP, qi_QQ, qi_RR
-       write(51) qr_TKern, qr_TKurt, qr_dom
-       write(51) qi_icCos, qi_irCsr
-       write(51) qr_sumQR, qr_sumNP
-       !
-       if (qi_interp .eq. 1) write(51) qi_bind, qr_bwgh
-       if ( (qi_interp .eq. 1) .and. (qi_bound .eq. 1) ) &
-            write(51) qr_bdry
-       close(51)
-       ! Screen Test
+      ! Calc KGrid → [qr_kx/ky/dk/om/wn]
+      if (allocated(qr_kx))     deallocate(qr_kx);    allocate(qr_kx(ns))
+      if (allocated(qr_ky))     deallocate(qr_ky);    allocate(qr_ky(ns))
+      if (allocated(qr_wn1))    deallocate(qr_wn1);   allocate(qr_wn1(nk))
+      call PrepKGrid(nk, nth, qr_depth, sig, th)
+      ! Find total # of quartets → [qi_nnz]
+      call FindQuartetNumber(ns, qr_kx, qr_ky, qr_om, qr_oml, qi_nnz)
+      ! Find Quartet Config. → [qi_NN/PP/QQ/RR & qr_k4x/k4y/om4]
+      if (allocated(qi_NN))     deallocate(qi_NN);    allocate(qi_NN(qi_nnz))
+      if (allocated(qi_PP))     deallocate(qi_PP);    allocate(qi_PP(qi_nnz))
+      if (allocated(qi_QQ))     deallocate(qi_QQ);    allocate(qi_QQ(qi_nnz))
+      if (allocated(qi_RR))     deallocate(qi_RR);    allocate(qi_RR(qi_nnz))
+      !
+      if (allocated(qr_k4x))    deallocate(qr_k4x);   allocate(qr_k4x(qi_nnz))
+      if (allocated(qr_k4y))    deallocate(qr_k4y);   allocate(qr_k4y(qi_nnz))
+      if (allocated(qr_om4))    deallocate(qr_om4);   allocate(qr_om4(qi_nnz))
+      !
+      call FindQuartetConfig(ns, qr_kx, qr_ky, qr_om, qr_oml, qi_nnz, &
+           qi_NN, qi_PP, qi_QQ, qi_RR,              &
+           qr_k4x, qr_k4y, qr_om4)
+      !
+      ! Calc Kernel `T`
+      if (allocated(qr_TKern))  deallocate(qr_TKern); allocate(qr_TKern(qi_nnz))
+      if (allocated(qr_TKurt))  deallocate(qr_TKurt); allocate(qr_TKurt(qi_nnz))
+      if (allocated(qr_dom))    deallocate(qr_dom);   allocate(qr_dom(qi_nnz))
+      !
+      do iq = 1, qi_nnz
+        qr_TKern(iq) = TFunc(qr_kx(qi_NN(iq)), qr_ky(qi_NN(iq)),&
+             qr_kx(qi_PP(iq)), qr_ky(qi_PP(iq)),&
+             qr_kx(qi_QQ(iq)), qr_ky(qi_QQ(iq)),&
+             qr_k4x(iq)      , qr_k4y(iq)      )
+      end do
+      ! Calc Kernel coeff. for Kurtosis
+      qr_TKurt = qr_TKern * sqrt(qr_om(qi_NN) * qr_om(qi_PP) * qr_om(qi_QQ) * qr_om4)
+      ! Calc Δω (Remove very small Δω; Δω=0 →  resonant quartets)
+      qr_dom = qr_om(qi_NN) + qr_om(qi_PP) - qr_om(qi_QQ) - qr_om4
+      ! TODO: should we use double precision for qr_dom
+      ! Note for GNU compiler, qr_eps~1.2E-7 (single prec.) & ~2.2E-16 (double).
+      ! The values above are also true for the intel compiler.
+      ! sin(Δωt) / Δω is very different for Δω = 0 and Δw~1E-7 when t is large.
+      where(abs(qr_dom) < qr_eps) qr_dom = 0.0
+      !
+      ! Calc interp. weight if necessary
+      if (qi_interp .eq. 1) then
+        if (allocated(qi_bind)) deallocate(qi_bind); allocate(qi_bind(4, qi_nnz))
+        if (allocated(qr_bwgh)) deallocate(qr_bwgh); allocate(qr_bwgh(4, qi_nnz))
+        if (qi_bound .eq. 1 ) then
+          if (allocated(qr_bdry)) deallocate(qr_bdry); allocate(qr_bdry(qi_nnz))
+        end if
+        call BiInterpWT(nk, nth, qr_wn1, th)
+      end if
+      !
+      deallocate(qr_kx, qr_ky)
+      deallocate(qr_k4x, qr_k4y, qr_om4)
+      if (qi_interp .eq. 1) deallocate(qr_wn1)
+      !
+      ! Sparse matrix index conversion [icCos shared by two formats: COO & CSR]
+      if (allocated(qi_icCos))  deallocate(qi_icCos); allocate(qi_icCos(qi_nnz))
+      if (allocated(irow_coo))  deallocate(irow_coo); allocate(irow_coo(qi_nnz))
+      if (allocated(icooTcsr))  deallocate(icooTcsr); allocate(icooTcsr(qi_nnz))
+      !
+      irow_coo = qi_NN + (qi_PP - 1) * ns
+      qi_icCos = qi_QQ + (qi_RR - 1) * ns
+      !
+      ! FindQuartetConfig stores the quartet row by row in a discontinuous order,
+      ! so we need keep icooTcsr & qi_irCsr
+      call CooCsrInd(qi_nrsm, qi_nnz, irow_coo, qi_icCos, icooTcsr, qi_irCsr)
+      !
+      ! Reorder index & arrays [coo → crs]
+      qi_NN    = qi_NN(icooTcsr)     ! used for calc. action prod.
+      qi_PP    = qi_PP(icooTcsr)
+      qi_QQ    = qi_QQ(icooTcsr)
+      qi_RR    = qi_RR(icooTcsr)
+      qr_TKern = qr_TKern(icooTcsr)
+      qr_TKurt = qr_TKurt(icooTcsr)
+      qr_dom   = qr_dom(icooTcsr)    ! Δω
+      !
+      if (qi_interp .eq. 1) then     ! bilinear interp. weight
+        qi_bind = qi_bind(:, icooTcsr)
+        qr_bwgh = qr_bwgh(:, icooTcsr)
+        if (qi_bound .eq. 1) qr_bdry = qr_bdry(icooTcsr)
+      end if
+      !
+      qi_icCos = qi_icCos(icooTcsr)
+      deallocate(irow_coo, icooTcsr)
+      !
+      ! Construct the sum vectors [used for 6D integration]
+      ! Σ over Q, R [qr_sumQR]
+      qr_sumQR = 2.0
+      do i3 = 1, ns
+        !              i3 == i4
+        icol = i3 + (i3 - 1) * ns
+        qr_sumQR(icol) = 1.0
+      end do
+      ! Σ over P [qr_sumNP]
+      qr_sumNP = 1.0
+      do i1 = 1, ns
+        !               i1 == i2
+        qr_sumNP(i1, i1) = 0.5
+      end do
+      !
+      ! WRITE KGrid & Kernel into qs_cfg
+      write(*, *) '[W] Writing |', trim(qs_cfg), '| ...'
+      open(51, file=trim(qs_cfg), form='unformatted', convert=file_endian, &
+           access='stream', status='replace')
+      !
+      ! It is not necessary to store `ns` since `ns = nk * nth`
+      write(51) nk, nth, sig, th                  ! (f, θ) grid
+      write(51) qr_depth, qr_oml, qi_disc,        &
+           qi_kev, qi_interp                 ! parameters
+      write(51) qr_om, qr_dk
+      write(51) qi_nnz
+      write(51) qi_NN, qi_PP, qi_QQ, qi_RR
+      write(51) qr_TKern, qr_TKurt, qr_dom
+      write(51) qi_icCos, qi_irCsr
+      write(51) qr_sumQR, qr_sumNP
+      !
+      if (qi_interp .eq. 1) write(51) qi_bind, qr_bwgh
+      if ( (qi_interp .eq. 1) .and. (qi_bound .eq. 1) ) &
+           write(51) qr_bdry
+      close(51)
+      ! Screen Test
 #ifdef W3_TS
-       write(*, *) "[W] qr_depth: ", qr_depth
-       write(*, *) "[W] qr_oml  : ", qr_oml
-       write(*, *) "[W] qi_disc : ", qi_disc
-       write(*, *) "[W] qi_kev  : ", qi_kev
-       write(*, *) "[W] qr_om   : ", qr_om
-       write(*, *) "[W] qr_dk   : ", qr_dk
-       write(*, *) "[W] The total number of quartets is ", qi_nnz
-       write(*, *) '[W] qi_NN   : ', qi_NN
-       write(*, *) '[W] qi_PP   : ', qi_PP
-       write(*, *) '[W] qi_QQ   : ', qi_QQ
-       write(*, *) '[W] qi_RR   : ', qi_RR
-       write(*, *) '[W] qr_TKern: ', qr_TKern
-       write(*, *) '[W] qr_TKurt: ', qr_TKurt
-       write(*, *) '[W] qr_dom  : ', qr_dom
-       write(*, *) '[W] qi_icCos: ', qi_icCos
-       write(*, *) '[W] qi_irCsr: ', qi_irCsr
-       write(*, *) '[W] Σ_QR    : ', qr_sumQR(1: qi_nrsm: ns+1)
-       write(*, *) '[W] Σ_P     : ', (qr_sumNP(iq, iq), iq = 1, ns)
+      write(*, *) "[W] qr_depth: ", qr_depth
+      write(*, *) "[W] qr_oml  : ", qr_oml
+      write(*, *) "[W] qi_disc : ", qi_disc
+      write(*, *) "[W] qi_kev  : ", qi_kev
+      write(*, *) "[W] qr_om   : ", qr_om
+      write(*, *) "[W] qr_dk   : ", qr_dk
+      write(*, *) "[W] The total number of quartets is ", qi_nnz
+      write(*, *) '[W] qi_NN   : ', qi_NN
+      write(*, *) '[W] qi_PP   : ', qi_PP
+      write(*, *) '[W] qi_QQ   : ', qi_QQ
+      write(*, *) '[W] qi_RR   : ', qi_RR
+      write(*, *) '[W] qr_TKern: ', qr_TKern
+      write(*, *) '[W] qr_TKurt: ', qr_TKurt
+      write(*, *) '[W] qr_dom  : ', qr_dom
+      write(*, *) '[W] qi_icCos: ', qi_icCos
+      write(*, *) '[W] qi_irCsr: ', qi_irCsr
+      write(*, *) '[W] Σ_QR    : ', qr_sumQR(1: qi_nrsm: ns+1)
+      write(*, *) '[W] Σ_P     : ', (qr_sumNP(iq, iq), iq = 1, ns)
 #endif
-       !
+      !
     else if (trim(act) == 'READ') then
-       write(*, *) '⊚ → [R] Reading |', trim(qs_cfg), '| ...'
-       open(51, file=trim(qs_cfg), form='unformatted', convert=file_endian, &
-            access='stream', status='old')
-       ! nk, nth, sig, th can be skipped by using pos
-       rpos = 1_8 + qi_lrb * (2_8 + nk + nth)
-       read(51, pos=rpos) qr_depth, qr_oml, qi_disc,   &
-            qi_kev, qi_interp
-       !
-       ! read ω & Δ\vec{k}
-       read(51) qr_om, qr_dk
-       ! read total # of quartets
-       read(51) qi_nnz
-       write(*, *) "⊚ → [R] The total number of quartets is ", qi_nnz
-       write(*, *)
-       ! allocate arrays
-       if (allocated(qi_NN))     deallocate(qi_NN);    allocate(qi_NN(qi_nnz))
-       if (allocated(qi_PP))     deallocate(qi_PP);    allocate(qi_PP(qi_nnz))
-       if (allocated(qi_QQ))     deallocate(qi_QQ);    allocate(qi_QQ(qi_nnz))
-       if (allocated(qi_RR))     deallocate(qi_RR);    allocate(qi_RR(qi_nnz))
-       !
-       if (allocated(qr_TKern))  deallocate(qr_TKern); allocate(qr_TKern(qi_nnz))
-       if (allocated(qr_TKurt))  deallocate(qr_TKurt); allocate(qr_TKurt(qi_nnz))
-       if (allocated(qr_dom))    deallocate(qr_dom);   allocate(qr_dom(qi_nnz))
-       !
-       if (allocated(qi_icCos))  deallocate(qi_icCos); allocate(qi_icCos(qi_nnz))
-       !
-       read(51) qi_NN, qi_PP, qi_QQ, qi_RR
-       read(51) qr_TKern, qr_TKurt, qr_dom
-       read(51) qi_icCos, qi_irCsr
-       read(51) qr_sumQR, qr_sumNP
-       !
-       if (qi_interp .eq. 1) then
-          if (allocated(qi_bind)) deallocate(qi_bind); allocate(qi_bind(4, qi_nnz))
-          if (allocated(qr_bwgh)) deallocate(qr_bwgh); allocate(qr_bwgh(4, qi_nnz))
-          read(51) qi_bind, qr_bwgh
-          !
-          if (qi_bound .eq. 1) then
-             if (allocated(qr_bdry)) deallocate(qr_bdry); allocate(qr_bdry(qi_nnz))
-             read(51) qr_bdry
-          end if
-          !
-       end if
-       !
-       close(51)
-       ! Screen Test
+      write(*, *) '⊚ → [R] Reading |', trim(qs_cfg), '| ...'
+      open(51, file=trim(qs_cfg), form='unformatted', convert=file_endian, &
+           access='stream', status='old')
+      ! nk, nth, sig, th can be skipped by using pos
+      rpos = 1_8 + qi_lrb * (2_8 + nk + nth)
+      read(51, pos=rpos) qr_depth, qr_oml, qi_disc,   &
+           qi_kev, qi_interp
+      !
+      ! read ω & Δ\vec{k}
+      read(51) qr_om, qr_dk
+      ! read total # of quartets
+      read(51) qi_nnz
+      write(*, *) "⊚ → [R] The total number of quartets is ", qi_nnz
+      write(*, *)
+      ! allocate arrays
+      if (allocated(qi_NN))     deallocate(qi_NN);    allocate(qi_NN(qi_nnz))
+      if (allocated(qi_PP))     deallocate(qi_PP);    allocate(qi_PP(qi_nnz))
+      if (allocated(qi_QQ))     deallocate(qi_QQ);    allocate(qi_QQ(qi_nnz))
+      if (allocated(qi_RR))     deallocate(qi_RR);    allocate(qi_RR(qi_nnz))
+      !
+      if (allocated(qr_TKern))  deallocate(qr_TKern); allocate(qr_TKern(qi_nnz))
+      if (allocated(qr_TKurt))  deallocate(qr_TKurt); allocate(qr_TKurt(qi_nnz))
+      if (allocated(qr_dom))    deallocate(qr_dom);   allocate(qr_dom(qi_nnz))
+      !
+      if (allocated(qi_icCos))  deallocate(qi_icCos); allocate(qi_icCos(qi_nnz))
+      !
+      read(51) qi_NN, qi_PP, qi_QQ, qi_RR
+      read(51) qr_TKern, qr_TKurt, qr_dom
+      read(51) qi_icCos, qi_irCsr
+      read(51) qr_sumQR, qr_sumNP
+      !
+      if (qi_interp .eq. 1) then
+        if (allocated(qi_bind)) deallocate(qi_bind); allocate(qi_bind(4, qi_nnz))
+        if (allocated(qr_bwgh)) deallocate(qr_bwgh); allocate(qr_bwgh(4, qi_nnz))
+        read(51) qi_bind, qr_bwgh
+        !
+        if (qi_bound .eq. 1) then
+          if (allocated(qr_bdry)) deallocate(qr_bdry); allocate(qr_bdry(qi_nnz))
+          read(51) qr_bdry
+        end if
+        !
+      end if
+      !
+      close(51)
+      ! Screen Test
 #ifdef W3_TS
-       write(*, *) "[R] qr_depth: ", qr_depth
-       write(*, *) "[R] qr_oml  : ", qr_oml
-       write(*, *) "[R] qi_disc : ", qi_disc
-       write(*, *) "[R] qi_kev  : ", qi_kev
-       write(*, *) "[R] qr_om   : ", qr_om
-       write(*, *) "[R] qr_dk   : ", qr_dk
-       write(*, *) "[R] The total number of quartets is ", qi_nnz
-       write(*, *) '[R] qi_NN   : ', qi_NN
-       write(*, *) '[R] qi_PP   : ', qi_PP
-       write(*, *) '[R] qi_QQ   : ', qi_QQ
-       write(*, *) '[R] qi_RR   : ', qi_RR
-       write(*, *) '[R] qr_TKern: ', qr_TKern
-       write(*, *) '[R] qr_TKurt: ', qr_TKurt
-       write(*, *) '[R] qr_dom  : ', qr_dom
-       write(*, *) '[R] qi_icCos: ', qi_icCos
-       write(*, *) '[R] qi_irCsr: ', qi_irCsr
-       write(*, *) '[R] Σ_QR    : ', qr_sumQR(1: qi_nrsm: ns+1)
-       write(*, *) '[R] Σ_P     : ', (qr_sumNP(iq, iq), iq = 1, ns)
+      write(*, *) "[R] qr_depth: ", qr_depth
+      write(*, *) "[R] qr_oml  : ", qr_oml
+      write(*, *) "[R] qi_disc : ", qi_disc
+      write(*, *) "[R] qi_kev  : ", qi_kev
+      write(*, *) "[R] qr_om   : ", qr_om
+      write(*, *) "[R] qr_dk   : ", qr_dk
+      write(*, *) "[R] The total number of quartets is ", qi_nnz
+      write(*, *) '[R] qi_NN   : ', qi_NN
+      write(*, *) '[R] qi_PP   : ', qi_PP
+      write(*, *) '[R] qi_QQ   : ', qi_QQ
+      write(*, *) '[R] qi_RR   : ', qi_RR
+      write(*, *) '[R] qr_TKern: ', qr_TKern
+      write(*, *) '[R] qr_TKurt: ', qr_TKurt
+      write(*, *) '[R] qr_dom  : ', qr_dom
+      write(*, *) '[R] qi_icCos: ', qi_icCos
+      write(*, *) '[R] qi_irCsr: ', qi_irCsr
+      write(*, *) '[R] Σ_QR    : ', qr_sumQR(1: qi_nrsm: ns+1)
+      write(*, *) '[R] Σ_P     : ', (qr_sumNP(iq, iq), iq = 1, ns)
 #endif
     end if
     !/
@@ -1529,90 +1529,90 @@ contains
     !
     ! qr_k4x(nnz), qr_k4y(nnz), wn(nk) are already available for use
     do iq = 1, qi_nnz
-       k4R = sqrt(qr_k4x(iq)**2. + qr_k4y(iq)**2.)  ! k₄
-       angR= atan2(qr_k4y(iq), qr_k4x(iq))          ! θ₄ [-π, π]
-       ! Boundary
-       if (qi_bound .eq. 1) then
-          k4T = max(kmin, min(k4R, kmax))
-       else
-          k4T = k4R ! already bounded in [kmin, kmax]
-       end if
-       !
-       ! Layout of surrouding four (f, θ) grid points
-       !
-       !          (θ)↑
-       !             ↑ ₄             ₃
-       !       jth4+1 ▪ ----------- ▪
-       !              |             |
-       !              |      r_jth) |
-       !     w-       |---✗ (r_jk,  |
-       !     t|       |   |         |
-       !     h|       |₁  |         |₂
-       !     4-  jth4 ▪ ----------- ▪  → → (k)
-       !             jk4            jk4+1
-       !              |---|
-       !               wk4
-       !
-       ! i) θ index (counted counterclockwisely)
-       r_jth = (angR - aRef) / dth + 1.
-       jth4T = floor(r_jth)              ! 'll be revised later
-       w_th4 = r_jth - real(jth4T)       ! dirc. weight
-       !
-       jth4  = mod(jth4T-1+nth, nth) + 1 ! wrap around 2π
-       jth4p = mod(jth4T+nth, nth) + 1
-       !
-       ! ii) k index (counted in an ascending order). Note, as required in
-       ! FindQuartetConfig, k4T >= kmin & k4T <= kmax are already satisfied.
-       ! Thus, the resulted jkU will be in [1, nk].
-       ! Two special cases:
-       !           /  1,  k4T = kmin
-       !     jkU = |
-       !           \ NK,  k4T = kmax or k4T in (wn(nk-1), kmax)
-       !
-       jkU = 1
-       do while (k4T > wn(jkU))
-          jkU  = jkU + 1
-          if (jkU > nk) exit ! impossible in our case
-       end do
-       !
-       if (jkU .eq. 1) then           ! k4T = kmin
-          r_jk = 1.
-       else                           ! k4T in (kmin, kmax]
-          delK = wn(jkU) - wn(jkU-1) ! Δk
-          r_jk = real(jkU - 1.) + (k4T - wn(jkU-1)) / delK
-       end if
-       ! Parse r_jk
-       jk4   = floor(r_jk)            ! in [1, nk]
-       w_k4  = r_jk  - real(jk4)
-       jk4p  = min(jk4+1, nk)         ! k4T = kmax ← min func.
-       !
-       ! Store indices (in 1D vector; jkth = ith + (ik-1) * nth)
-       qi_bind(1, iq) = jth4  + (jk4  - 1) * nth
-       qi_bind(2, iq) = jth4  + (jk4p - 1) * nth
-       qi_bind(3, iq) = jth4p + (jk4p - 1) * nth
-       qi_bind(4, iq) = jth4p + (jk4  - 1) * nth
-       !
-       ! Store weights
-       qr_bwgh(1, iq) = (1. - w_k4) * (1. - w_th4)
-       qr_bwgh(2, iq) = w_k4 * (1. - w_th4)
-       qr_bwgh(3, iq) = w_k4 * w_th4
-       qr_bwgh(4, iq) = (1. - w_k4) * w_th4
-       !
-       ! Note that the qi_bind & qr_bwgh do not make full sense when
-       ! k4 < kmin (k indices are not correct at all) or k4 > kmax (k index = NK)
-       ! because we have capped k4T in between kmin and kmax.
-       ! But no need to worry about this because
-       !     1) C(k) = 0. when k < kmin
-       !     2) C(k) = C(NK) * power decay when k > kmax
-       !
-       if (qi_bound .eq. 1) then
-          if (k4R < kmin) then
-             qr_bdry(iq) = 0.
-          else if (k4R > kmax) then
-             qr_bdry(iq) = (k4R/kmax)**qr_kpow
-          end if
-       end if
-       !
+      k4R = sqrt(qr_k4x(iq)**2. + qr_k4y(iq)**2.)  ! k₄
+      angR= atan2(qr_k4y(iq), qr_k4x(iq))          ! θ₄ [-π, π]
+      ! Boundary
+      if (qi_bound .eq. 1) then
+        k4T = max(kmin, min(k4R, kmax))
+      else
+        k4T = k4R ! already bounded in [kmin, kmax]
+      end if
+      !
+      ! Layout of surrouding four (f, θ) grid points
+      !
+      !          (θ)↑
+      !             ↑ ₄             ₃
+      !       jth4+1 ▪ ----------- ▪
+      !              |             |
+      !              |      r_jth) |
+      !     w-       |---✗ (r_jk,  |
+      !     t|       |   |         |
+      !     h|       |₁  |         |₂
+      !     4-  jth4 ▪ ----------- ▪  → → (k)
+      !             jk4            jk4+1
+      !              |---|
+      !               wk4
+      !
+      ! i) θ index (counted counterclockwisely)
+      r_jth = (angR - aRef) / dth + 1.
+      jth4T = floor(r_jth)              ! 'll be revised later
+      w_th4 = r_jth - real(jth4T)       ! dirc. weight
+      !
+      jth4  = mod(jth4T-1+nth, nth) + 1 ! wrap around 2π
+      jth4p = mod(jth4T+nth, nth) + 1
+      !
+      ! ii) k index (counted in an ascending order). Note, as required in
+      ! FindQuartetConfig, k4T >= kmin & k4T <= kmax are already satisfied.
+      ! Thus, the resulted jkU will be in [1, nk].
+      ! Two special cases:
+      !           /  1,  k4T = kmin
+      !     jkU = |
+      !           \ NK,  k4T = kmax or k4T in (wn(nk-1), kmax)
+      !
+      jkU = 1
+      do while (k4T > wn(jkU))
+        jkU  = jkU + 1
+        if (jkU > nk) exit ! impossible in our case
+      end do
+      !
+      if (jkU .eq. 1) then           ! k4T = kmin
+        r_jk = 1.
+      else                           ! k4T in (kmin, kmax]
+        delK = wn(jkU) - wn(jkU-1) ! Δk
+        r_jk = real(jkU - 1.) + (k4T - wn(jkU-1)) / delK
+      end if
+      ! Parse r_jk
+      jk4   = floor(r_jk)            ! in [1, nk]
+      w_k4  = r_jk  - real(jk4)
+      jk4p  = min(jk4+1, nk)         ! k4T = kmax ← min func.
+      !
+      ! Store indices (in 1D vector; jkth = ith + (ik-1) * nth)
+      qi_bind(1, iq) = jth4  + (jk4  - 1) * nth
+      qi_bind(2, iq) = jth4  + (jk4p - 1) * nth
+      qi_bind(3, iq) = jth4p + (jk4p - 1) * nth
+      qi_bind(4, iq) = jth4p + (jk4  - 1) * nth
+      !
+      ! Store weights
+      qr_bwgh(1, iq) = (1. - w_k4) * (1. - w_th4)
+      qr_bwgh(2, iq) = w_k4 * (1. - w_th4)
+      qr_bwgh(3, iq) = w_k4 * w_th4
+      qr_bwgh(4, iq) = (1. - w_k4) * w_th4
+      !
+      ! Note that the qi_bind & qr_bwgh do not make full sense when
+      ! k4 < kmin (k indices are not correct at all) or k4 > kmax (k index = NK)
+      ! because we have capped k4T in between kmin and kmax.
+      ! But no need to worry about this because
+      !     1) C(k) = 0. when k < kmin
+      !     2) C(k) = C(NK) * power decay when k > kmax
+      !
+      if (qi_bound .eq. 1) then
+        if (k4R < kmin) then
+          qr_bdry(iq) = 0.
+        else if (k4R > kmax) then
+          qr_bdry(iq) = (k4R/kmax)**qr_kpow
+        end if
+      end if
+      !
     end do
     !/
   end subroutine BiInterpWT
@@ -1707,29 +1707,29 @@ contains
     !
     ! Read quartets & kernel coefficients in
     if (FlRead) then
-       ! Only read data once
-       call PrepKernelIO(nk, nth, sig, th, 'READ')
-       FlRead = .false.
-       !           write(*, *) "⊚ → [R] FLag for Reading Kernels becomes |", FlRead, "|"
-       ! Allocate arrays
-       ! ✓ A variable with the SAVE attribute retains its value and definition,
-       ! association, and `allocation` status on exit from a procedure
-       !
-       if (allocated(Fnpqr0)) deallocate(Fnpqr0); allocate(Fnpqr0(qi_nnz))
-       if (allocated(Fnpqr1)) deallocate(Fnpqr1); allocate(Fnpqr1(qi_nnz))
-       if (allocated(ETau  )) deallocate(ETau  ); allocate(ETau  (qi_nnz))
-       if (allocated(EDelT )) deallocate(EDelT ); allocate(EDelT (qi_nnz))
-       if (allocated(Mnpqr )) deallocate(Mnpqr ); allocate(Mnpqr (qi_nnz))
-       if (allocated(Inpqr1)) deallocate(Inpqr1); allocate(Inpqr1(qi_nnz))
-       !
-       if (allocated(Mnp1D))  deallocate(Mnp1D);  allocate(Mnp1D(qi_nrsm))
-       if (allocated(Mnp2D))  deallocate(Mnp2D);  allocate(Mnp2D(ns, ns))
-       !
-       if (qi_disc .eq. 0) then
-          if (allocated(Cvk0_R)) deallocate(Cvk0_R); allocate(Cvk0_R(qi_nnz))
-          if (allocated(Cvk1_R)) deallocate(Cvk1_R); allocate(Cvk1_R(qi_nnz))
-       end if
-       !
+      ! Only read data once
+      call PrepKernelIO(nk, nth, sig, th, 'READ')
+      FlRead = .false.
+      !           write(*, *) "⊚ → [R] FLag for Reading Kernels becomes |", FlRead, "|"
+      ! Allocate arrays
+      ! ✓ A variable with the SAVE attribute retains its value and definition,
+      ! association, and `allocation` status on exit from a procedure
+      !
+      if (allocated(Fnpqr0)) deallocate(Fnpqr0); allocate(Fnpqr0(qi_nnz))
+      if (allocated(Fnpqr1)) deallocate(Fnpqr1); allocate(Fnpqr1(qi_nnz))
+      if (allocated(ETau  )) deallocate(ETau  ); allocate(ETau  (qi_nnz))
+      if (allocated(EDelT )) deallocate(EDelT ); allocate(EDelT (qi_nnz))
+      if (allocated(Mnpqr )) deallocate(Mnpqr ); allocate(Mnpqr (qi_nnz))
+      if (allocated(Inpqr1)) deallocate(Inpqr1); allocate(Inpqr1(qi_nnz))
+      !
+      if (allocated(Mnp1D))  deallocate(Mnp1D);  allocate(Mnp1D(qi_nrsm))
+      if (allocated(Mnp2D))  deallocate(Mnp2D);  allocate(Mnp2D(ns, ns))
+      !
+      if (qi_disc .eq. 0) then
+        if (allocated(Cvk0_R)) deallocate(Cvk0_R); allocate(Cvk0_R(qi_nnz))
+        if (allocated(Cvk1_R)) deallocate(Cvk1_R); allocate(Cvk1_R(qi_nnz))
+      end if
+      !
     end if
     !
     ! Screen output (check whether the kernel data are stored in memory)
@@ -1747,165 +1747,165 @@ contains
     !
     num_I = size(Inpqr0)
     if (num_I .ne. qi_nnz) then
-       write(*, 1001) 'CalcQRSNL'
-       call exit(1)
+      write(*, 1001) 'CalcQRSNL'
+      call exit(1)
     end if
     !
     ! Start to calc. Snl term
     if (qi_disc == 0) then
-       ! Define ΔC = dC/dt * Δk Δt, we have ΔC₁ = ΔC₂ = -ΔC₃ = -ΔC₄ (Δt can be
-       ! removed by taking the unit time)
-       !
-       ! Cvk0/1_R (bilinear interp. or nearest bin)
-       if (qi_interp .eq. 0) then
-          Cvk0_R = Cvk0(qi_RR)
-          Cvk1_R = Cvk1(qi_RR)
-          !
-       else if (qi_interp .eq. 1) then
-          Cvk0_R = qr_bwgh(1, :) * Cvk0(qi_bind(1, :)) + &
-               qr_bwgh(2, :) * Cvk0(qi_bind(2, :)) + &
-               qr_bwgh(3, :) * Cvk0(qi_bind(3, :)) + &
-               qr_bwgh(4, :) * Cvk0(qi_bind(4, :))
-          !
-          Cvk1_R = qr_bwgh(1, :) * Cvk1(qi_bind(1, :)) + &
-               qr_bwgh(2, :) * Cvk1(qi_bind(2, :)) + &
-               qr_bwgh(3, :) * Cvk1(qi_bind(3, :)) + &
-               qr_bwgh(4, :) * Cvk1(qi_bind(4, :))
-          !
-          if (qi_bound .eq. 1) then
-             Cvk0_R = Cvk0_R * qr_bdry
-             Cvk1_R = Cvk1_R * qr_bdry
-          end if
-          !
-       end if
-       !
-       ! F = [C₃ C₄ (C₁ + C₂) - C₁ C₂ (C₃ + C₄)] dk₂ dk₃ dk₄ ∙ dk₁
-       ! dk₄ vanishes with the δ function
-       Fnpqr0 = (Cvk0(qi_QQ) * Cvk0_R      * (  &
-            Cvk0(qi_NN) + Cvk0(qi_PP) ) -  &
-            Cvk0(qi_NN) * Cvk0(qi_PP) * (  &
-            Cvk0(qi_QQ) + Cvk0_R      )) * &
-            qr_dk(qi_NN) * qr_dk(qi_PP) * qr_dk(qi_QQ)
-       !
-       Fnpqr1 = (Cvk1(qi_QQ) * Cvk1_R      * (  &
-            Cvk1(qi_NN) + Cvk1(qi_PP) ) -  &
-            Cvk1(qi_NN) * Cvk1(qi_PP) * (  &
-            Cvk1(qi_QQ) + Cvk1_R      )) * &
-            qr_dk(qi_NN) * qr_dk(qi_PP) * qr_dk(qi_QQ)
-       !
+      ! Define ΔC = dC/dt * Δk Δt, we have ΔC₁ = ΔC₂ = -ΔC₃ = -ΔC₄ (Δt can be
+      ! removed by taking the unit time)
+      !
+      ! Cvk0/1_R (bilinear interp. or nearest bin)
+      if (qi_interp .eq. 0) then
+        Cvk0_R = Cvk0(qi_RR)
+        Cvk1_R = Cvk1(qi_RR)
+        !
+      else if (qi_interp .eq. 1) then
+        Cvk0_R = qr_bwgh(1, :) * Cvk0(qi_bind(1, :)) + &
+             qr_bwgh(2, :) * Cvk0(qi_bind(2, :)) + &
+             qr_bwgh(3, :) * Cvk0(qi_bind(3, :)) + &
+             qr_bwgh(4, :) * Cvk0(qi_bind(4, :))
+        !
+        Cvk1_R = qr_bwgh(1, :) * Cvk1(qi_bind(1, :)) + &
+             qr_bwgh(2, :) * Cvk1(qi_bind(2, :)) + &
+             qr_bwgh(3, :) * Cvk1(qi_bind(3, :)) + &
+             qr_bwgh(4, :) * Cvk1(qi_bind(4, :))
+        !
+        if (qi_bound .eq. 1) then
+          Cvk0_R = Cvk0_R * qr_bdry
+          Cvk1_R = Cvk1_R * qr_bdry
+        end if
+        !
+      end if
+      !
+      ! F = [C₃ C₄ (C₁ + C₂) - C₁ C₂ (C₃ + C₄)] dk₂ dk₃ dk₄ ∙ dk₁
+      ! dk₄ vanishes with the δ function
+      Fnpqr0 = (Cvk0(qi_QQ) * Cvk0_R      * (  &
+           Cvk0(qi_NN) + Cvk0(qi_PP) ) -  &
+           Cvk0(qi_NN) * Cvk0(qi_PP) * (  &
+           Cvk0(qi_QQ) + Cvk0_R      )) * &
+           qr_dk(qi_NN) * qr_dk(qi_PP) * qr_dk(qi_QQ)
+      !
+      Fnpqr1 = (Cvk1(qi_QQ) * Cvk1_R      * (  &
+           Cvk1(qi_NN) + Cvk1(qi_PP) ) -  &
+           Cvk1(qi_NN) * Cvk1(qi_PP) * (  &
+           Cvk1(qi_QQ) + Cvk1_R      )) * &
+           qr_dk(qi_NN) * qr_dk(qi_PP) * qr_dk(qi_QQ)
+      !
     else if (qi_disc == 1) then
-       ! Used in GS13 & GB16
-       ! F = [C₃dk₃ C₄dk₄ (C₁dk₁ + C₂dk₂) - C₁dk₁ C₂dk₂ (C₃dk₃ + C₄dk₄)]
-       ! It seems the bilinear interpolation for this discretization approach
-       ! is not very meaningful.
-       Dvk0   = Cvk0 * qr_dk
-       Fnpqr0 = Dvk0(qi_QQ) * Dvk0(qi_RR) * ( &
-            Dvk0(qi_NN) + Dvk0(qi_PP) ) - &
-            Dvk0(qi_NN) * Dvk0(qi_PP) * ( &
-            Dvk0(qi_QQ) + Dvk0(qi_RR) )
-       !
-       Dvk1   = Cvk1 * qr_dk
-       Fnpqr1 = Dvk1(qi_QQ) * Dvk1(qi_RR) * ( &
-            Dvk1(qi_NN) + Dvk1(qi_PP) ) - &
-            Dvk1(qi_NN) * Dvk1(qi_PP) * ( &
-            Dvk1(qi_QQ) + Dvk1(qi_RR) )
-       !
+      ! Used in GS13 & GB16
+      ! F = [C₃dk₃ C₄dk₄ (C₁dk₁ + C₂dk₂) - C₁dk₁ C₂dk₂ (C₃dk₃ + C₄dk₄)]
+      ! It seems the bilinear interpolation for this discretization approach
+      ! is not very meaningful.
+      Dvk0   = Cvk0 * qr_dk
+      Fnpqr0 = Dvk0(qi_QQ) * Dvk0(qi_RR) * ( &
+           Dvk0(qi_NN) + Dvk0(qi_PP) ) - &
+           Dvk0(qi_NN) * Dvk0(qi_PP) * ( &
+           Dvk0(qi_QQ) + Dvk0(qi_RR) )
+      !
+      Dvk1   = Cvk1 * qr_dk
+      Fnpqr1 = Dvk1(qi_QQ) * Dvk1(qi_RR) * ( &
+           Dvk1(qi_NN) + Dvk1(qi_PP) ) - &
+           Dvk1(qi_NN) * Dvk1(qi_PP) * ( &
+           Dvk1(qi_QQ) + Dvk1(qi_RR) )
+      !
     end if
     !|KT|! Calc m2 for Kurtosis estimation ((2.6) of Annekov & Shrira (2013))
     !|KT|        SecM2 = sum(Cvk1 * qr_om * qr_dk) ** 2.
     !
     !       write(*, *) '.... Input args: t0, t1 :', t0, t1
     if (abs(t1) < qr_eps) then
-       ! t1 = 0.0 [essentially I₁ = 0 → I₀ = 0]
-       t0     = 0.0
-       Cvk0   = Cvk1
-       Inpqr0 = (0.0, 0.0)  ! \int_{0}^{0} dt  = 0
-       Snl    = 0.0
-       Dnl    = 0.0
-       Kurt   = 0.0
+      ! t1 = 0.0 [essentially I₁ = 0 → I₀ = 0]
+      t0     = 0.0
+      Cvk0   = Cvk1
+      Inpqr0 = (0.0, 0.0)  ! \int_{0}^{0} dt  = 0
+      Snl    = 0.0
+      Dnl    = 0.0
+      Kurt   = 0.0
     else
-       ! t1 ≠ 0.0
-       DelT   = t1 - t0
-       if (DelT < 0.0) then
-          write(*, 1002) 'CalcQRSNL'
-          call exit(2)
-       end if
-       ETau   = exp(qc_iu * cmplx(qr_dom * t1))       ! exp(iΔωt)
-       EDelT  = exp(qc_iu * cmplx(qr_dom * DelT))     ! exp(iΔωΔt)
-       !
-       ! ◆ Calc. I₁: note here I₁ = I(t₁) dk₁ dk₂ dk₃ for both qi_disc = 0/1
-       if (qi_kev .eq. 0) then
-          ! GKE from GS13, GB16
-          Inpqr1 = Inpqr0 + cmplx(0.5 * DelT) *  &
-               conjg(ETau)                *  &       ! exp(-iΔωt)
-               (cmplx(Fnpqr0) * EDelT + cmplx(Fnpqr1))
-       else if (qi_kev .eq. 1) then
-          ! KE from J03 (Fnpqr1 is taken outside the time integral; Fnpqr0 is not
-          ! used in this case; and the real part of Inpqr1 is sin(Δωt)/Δω, and
-          ! the imaginary part is [1 - cos(Δωt)] / Δω
-          ! Approximation used before
-          !               Inpqr1 = Inpqr0 + cmplx(0.5 * DelT) *  &
-          !                        conjg(ETau) * (EDelT + 1)
-          !
-          where (abs(qr_dom) < qr_eps)
-             ! Δω = 0., sin(Δωt)/Δω ~ t, [1 - cos(Δωt)] / Δω ~ 0
-             Inpqr1 = cmplx(t1, 0.)
-          elsewhere
-             ! Δω ≠ 0., cacl. sin(Δωt)/Δω & [1 - cos(Δωt)] / Δω directly
-             ! TODO: the sign of cos is not clear yet.
-             Inpqr1 = cmplx(sin(qr_dom * t1) / qr_dom,     &
-                  (1 - cos(qr_dom * t1)) / qr_dom)
-          end where
-       end if
-       ! ◆ Snl [Tranfer Integal]
-       if (qi_kev .eq. 0) then
-          ! GKE from GS13, GB16
-          Mnpqr  = 4.0 * (qr_TKern ** 2.) * real(ETau * Inpqr1)
-       else if (qi_kev .eq. 1) then
-          ! KE from J03
-          !               Mnpqr  = 4.0 * (qr_TKern ** 2.) * Fnpqr1 * real(ETau * Inpqr1)
-          Mnpqr  = 4.0 * (qr_TKern ** 2.) * Fnpqr1 * real(Inpqr1)
-       end if
-       ! Calc. Σ over Q, R [Mnpqr is a upper triangular sparse matrix]
-       ! dN₁/dt = - dN₃/dt →  anti-symmetric array operation
-       ! Mnp1D  = (Mnpqr - Mnpqr^{T}) × S_{qr}
-       call ASymSmatTimVec(qi_nrsm, Mnpqr, qi_icCos, qi_irCsr, qr_sumQR, Mnp1D, -1.0)
-       ! Calc. Σ over P [Mnp2D is a upper triangular matrix]
-       ! dN₁/dt = dN₂/dt →  symmetric array operation
-       ! Snl    = {Σ (Mnp + Mnp^{T}) ⊙ S_{p}} / d\vec{k₁}
-       Mnp2D  = reshape(Mnp1D, (/ns, ns/))
-       Snl    = sum((Mnp2D + transpose(Mnp2D)) * qr_sumNP, 2) / qr_dk
-       ! ◆ Conservation Check
+      ! t1 ≠ 0.0
+      DelT   = t1 - t0
+      if (DelT < 0.0) then
+        write(*, 1002) 'CalcQRSNL'
+        call exit(2)
+      end if
+      ETau   = exp(qc_iu * cmplx(qr_dom * t1))       ! exp(iΔωt)
+      EDelT  = exp(qc_iu * cmplx(qr_dom * DelT))     ! exp(iΔωΔt)
+      !
+      ! ◆ Calc. I₁: note here I₁ = I(t₁) dk₁ dk₂ dk₃ for both qi_disc = 0/1
+      if (qi_kev .eq. 0) then
+        ! GKE from GS13, GB16
+        Inpqr1 = Inpqr0 + cmplx(0.5 * DelT) *  &
+             conjg(ETau)                *  &       ! exp(-iΔωt)
+             (cmplx(Fnpqr0) * EDelT + cmplx(Fnpqr1))
+      else if (qi_kev .eq. 1) then
+        ! KE from J03 (Fnpqr1 is taken outside the time integral; Fnpqr0 is not
+        ! used in this case; and the real part of Inpqr1 is sin(Δωt)/Δω, and
+        ! the imaginary part is [1 - cos(Δωt)] / Δω
+        ! Approximation used before
+        !               Inpqr1 = Inpqr0 + cmplx(0.5 * DelT) *  &
+        !                        conjg(ETau) * (EDelT + 1)
+        !
+        where (abs(qr_dom) < qr_eps)
+          ! Δω = 0., sin(Δωt)/Δω ~ t, [1 - cos(Δωt)] / Δω ~ 0
+          Inpqr1 = cmplx(t1, 0.)
+        elsewhere
+          ! Δω ≠ 0., cacl. sin(Δωt)/Δω & [1 - cos(Δωt)] / Δω directly
+          ! TODO: the sign of cos is not clear yet.
+          Inpqr1 = cmplx(sin(qr_dom * t1) / qr_dom,     &
+               (1 - cos(qr_dom * t1)) / qr_dom)
+        end where
+      end if
+      ! ◆ Snl [Tranfer Integal]
+      if (qi_kev .eq. 0) then
+        ! GKE from GS13, GB16
+        Mnpqr  = 4.0 * (qr_TKern ** 2.) * real(ETau * Inpqr1)
+      else if (qi_kev .eq. 1) then
+        ! KE from J03
+        !               Mnpqr  = 4.0 * (qr_TKern ** 2.) * Fnpqr1 * real(ETau * Inpqr1)
+        Mnpqr  = 4.0 * (qr_TKern ** 2.) * Fnpqr1 * real(Inpqr1)
+      end if
+      ! Calc. Σ over Q, R [Mnpqr is a upper triangular sparse matrix]
+      ! dN₁/dt = - dN₃/dt →  anti-symmetric array operation
+      ! Mnp1D  = (Mnpqr - Mnpqr^{T}) × S_{qr}
+      call ASymSmatTimVec(qi_nrsm, Mnpqr, qi_icCos, qi_irCsr, qr_sumQR, Mnp1D, -1.0)
+      ! Calc. Σ over P [Mnp2D is a upper triangular matrix]
+      ! dN₁/dt = dN₂/dt →  symmetric array operation
+      ! Snl    = {Σ (Mnp + Mnp^{T}) ⊙ S_{p}} / d\vec{k₁}
+      Mnp2D  = reshape(Mnp1D, (/ns, ns/))
+      Snl    = sum((Mnp2D + transpose(Mnp2D)) * qr_sumNP, 2) / qr_dk
+      ! ◆ Conservation Check
 #ifdef W3_TS
-       write(*, '(A, E15.3)') '   ← {WW3 GKE } ΣSnl(k) * dk: ', sum(Snl * qr_dk)
+      write(*, '(A, E15.3)') '   ← {WW3 GKE } ΣSnl(k) * dk: ', sum(Snl * qr_dk)
 #endif
-       !
-       ! ◆ Dnl [Diagonal term]  <TODO>
-       !   i) it is easy to calculate Dnl for Janssen's KE (but we may
-       !      have to abandon the sparse array approach)
-       !  ii) it is challenging to get Dnl for GKE.
-       Dnl  = 0.0
-       Kurt = 0.0
-       !
-       !|KT|! ◆ Kurtosis
-       !|KT|            if (qi_kev .eq. 0) then
-       !|KT|! GKE from GS13, GB16
-       !|KT|                Mnpqr  = -3.0 / SecM2 * qr_TKurt * aimag(ETau * Inpqr1)
-       !|KT|            else if (qi_kev .eq. 1) then
-       !|KT|! KE from J03 (here the imaginary part becomes [1 - cos(Δωt)] / Δω
-       !|KT|!               Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(ETau * Inpqr1)
-       !|KT|                Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(Inpqr1)
-       !|KT|            end if
-       !|KT|! Calc. Σ over Q, R [Mnpqr is a upper triangular sparse matrix]
-       !|KT|! symmetric array operation Mnp1D  = (Mnpqr - Mnpqr^{T}) × S_{qr}
-       !|KT|            call ASymSmatTimVec(qi_nrsm, Mnpqr, qi_icCos, qi_irCsr, qr_sumQR, Mnp1D, 1.0)
-       !|KT|            Mnp2D  = reshape(Mnp1D, (/ns, ns/))
-       !|KT|            Kurt   = sum((Mnp2D + transpose(Mnp2D)) * qr_sumNP)
-       !
-       ! I₁ → I₀ for next computation (time step)
-       t0     = t1
-       Cvk0   = Cvk1
-       Inpqr0 = Inpqr1
+      !
+      ! ◆ Dnl [Diagonal term]  <TODO>
+      !   i) it is easy to calculate Dnl for Janssen's KE (but we may
+      !      have to abandon the sparse array approach)
+      !  ii) it is challenging to get Dnl for GKE.
+      Dnl  = 0.0
+      Kurt = 0.0
+      !
+      !|KT|! ◆ Kurtosis
+      !|KT|            if (qi_kev .eq. 0) then
+      !|KT|! GKE from GS13, GB16
+      !|KT|                Mnpqr  = -3.0 / SecM2 * qr_TKurt * aimag(ETau * Inpqr1)
+      !|KT|            else if (qi_kev .eq. 1) then
+      !|KT|! KE from J03 (here the imaginary part becomes [1 - cos(Δωt)] / Δω
+      !|KT|!               Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(ETau * Inpqr1)
+      !|KT|                Mnpqr  = -3.0 / SecM2 * qr_TKurt * Fnpqr1 * aimag(Inpqr1)
+      !|KT|            end if
+      !|KT|! Calc. Σ over Q, R [Mnpqr is a upper triangular sparse matrix]
+      !|KT|! symmetric array operation Mnp1D  = (Mnpqr - Mnpqr^{T}) × S_{qr}
+      !|KT|            call ASymSmatTimVec(qi_nrsm, Mnpqr, qi_icCos, qi_irCsr, qr_sumQR, Mnp1D, 1.0)
+      !|KT|            Mnp2D  = reshape(Mnp1D, (/ns, ns/))
+      !|KT|            Kurt   = sum((Mnp2D + transpose(Mnp2D)) * qr_sumNP)
+      !
+      ! I₁ → I₀ for next computation (time step)
+      t0     = t1
+      Cvk0   = Cvk1
+      Inpqr0 = Inpqr1
     end if
     !
     !       write(*, *) '.... Output args: t0, t1 :', t0, t1

@@ -45,14 +45,14 @@
 !
 !-----------------------------------------------------------------------
 
-      use SCRIP_KindsMod        ! defines common data types
-      use SCRIP_ErrorMod        ! SCRIP error handler
-      use SCRIP_NetcdfMod       ! netCDF error handler
-      use netcdf                ! netCDF library
+      use SCRIP_KindsMod   ! defines common data types
+      use SCRIP_ErrorMod   ! SCRIP error handler
+      use SCRIP_NetcdfMod  ! netCDF error handler
+      use netcdf           ! netCDF library
 
-      use SCRIP_constants       ! defines common scalar constants
-      use scrip_grids           ! module containing grid information
-      use scrip_remap_vars      ! module containing remap information
+      use SCRIP_constants  ! defines common scalar constants
+      use scrip_grids      ! module containing grid information
+      use scrip_remap_vars ! module containing remap information
 
       implicit none
 
@@ -64,9 +64,9 @@
 
 
       character(SCRIP_charLength), private ::
-     &     map_method           ! character string for map_type
-     &     ,  normalize_opt     ! character string for normalization option
-     &     ,  convention        ! character string for output convention
+     &   map_method       ! character string for map_type
+     &,  normalize_opt    ! character string for normalization option
+     &,  convention       ! character string for output convention
 
 !-----------------------------------------------------------------------
 !
@@ -75,35 +75,35 @@
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4), private ::
-     &     ncstat               ! error flag for netCDF calls
-     &     ,  nc_file_id        ! id for netCDF file
-     &     ,  nc_srcgrdsize_id  ! id for source grid size
-     &     ,  nc_dstgrdsize_id  ! id for destination grid size
-     &     ,  nc_srcgrdcorn_id  ! id for number of source grid corners
-     &     ,  nc_dstgrdcorn_id  ! id for number of dest grid corners
-     &     ,  nc_srcgrdrank_id  ! id for source grid rank
-     &     ,  nc_dstgrdrank_id  ! id for dest grid rank
-     &     ,  nc_numlinks_id    ! id for number of links in mapping
-     &     ,  nc_numwgts_id     ! id for number of weights for mapping
-     &     ,  nc_srcgrddims_id  ! id for source grid dimensions
-     &     ,  nc_dstgrddims_id  ! id for dest grid dimensions,
-     &     ,  nc_srcgrdcntrlat_id ! id for source grid center latitude
-     &     ,  nc_dstgrdcntrlat_id ! id for dest grid center latitude
-     &     ,  nc_srcgrdcntrlon_id ! id for source grid center longitude
-     &     ,  nc_dstgrdcntrlon_id ! id for dest grid center longitude
-     &     ,  nc_srcgrdimask_id ! id for source grid mask
-     &     ,  nc_dstgrdimask_id ! id for dest grid mask
-     &     ,  nc_srcgrdcrnrlat_id ! id for latitude of source grid corners
-     &     ,  nc_srcgrdcrnrlon_id ! id for longitude of source grid corners
-     &     ,  nc_dstgrdcrnrlat_id ! id for latitude of dest grid corners
-     &     ,  nc_dstgrdcrnrlon_id ! id for longitude of dest grid corners
-     &     ,  nc_srcgrdarea_id  ! id for area of source grid cells
-     &     ,  nc_dstgrdarea_id  ! id for area of dest grid cells
-     &     ,  nc_srcgrdfrac_id  ! id for area fraction on source grid
-     &     ,  nc_dstgrdfrac_id  ! id for area fraction on dest grid
-     &     ,  nc_srcgrdadd_id   ! id for map source address
-     &     ,  nc_dstgrdadd_id   ! id for map dest address
-     &     ,  nc_rmpmatrix_id   ! id for remapping matrix
+     &   ncstat                ! error flag for netCDF calls
+     &,  nc_file_id            ! id for netCDF file
+     &,  nc_srcgrdsize_id      ! id for source grid size
+     &,  nc_dstgrdsize_id      ! id for destination grid size
+     &,  nc_srcgrdcorn_id      ! id for number of source grid corners
+     &,  nc_dstgrdcorn_id      ! id for number of dest grid corners
+     &,  nc_srcgrdrank_id      ! id for source grid rank
+     &,  nc_dstgrdrank_id      ! id for dest grid rank
+     &,  nc_numlinks_id        ! id for number of links in mapping
+     &,  nc_numwgts_id         ! id for number of weights for mapping
+     &,  nc_srcgrddims_id      ! id for source grid dimensions
+     &,  nc_dstgrddims_id      ! id for dest grid dimensions,
+     &,  nc_srcgrdcntrlat_id   ! id for source grid center latitude
+     &,  nc_dstgrdcntrlat_id   ! id for dest grid center latitude
+     &,  nc_srcgrdcntrlon_id   ! id for source grid center longitude
+     &,  nc_dstgrdcntrlon_id   ! id for dest grid center longitude
+     &,  nc_srcgrdimask_id     ! id for source grid mask
+     &,  nc_dstgrdimask_id     ! id for dest grid mask
+     &,  nc_srcgrdcrnrlat_id   ! id for latitude of source grid corners
+     &,  nc_srcgrdcrnrlon_id   ! id for longitude of source grid corners
+     &,  nc_dstgrdcrnrlat_id   ! id for latitude of dest grid corners
+     &,  nc_dstgrdcrnrlon_id   ! id for longitude of dest grid corners
+     &,  nc_srcgrdarea_id      ! id for area of source grid cells
+     &,  nc_dstgrdarea_id      ! id for area of dest grid cells
+     &,  nc_srcgrdfrac_id      ! id for area fraction on source grid
+     &,  nc_dstgrdfrac_id      ! id for area fraction on dest grid
+     &,  nc_srcgrdadd_id       ! id for map source address
+     &,  nc_dstgrdadd_id       ! id for map dest address
+     &,  nc_rmpmatrix_id       ! id for remapping matrix
 
 !***********************************************************************
 
@@ -127,7 +127,7 @@
 !-----------------------------------------------------------------------
 
       character(SCRIP_CharLength), intent(in) ::
-     &     interp_file          ! filename for remap data
+     &            interp_file  ! filename for remap data
 
 !-----------------------------------------------------------------------
 !
@@ -136,7 +136,7 @@
 !-----------------------------------------------------------------------
 
       character(SCRIP_CharLength), intent(out) ::
-     &     map_name             ! name for mapping
+     &            map_name     ! name for mapping
 
 !-----------------------------------------------------------------------
 !
@@ -145,10 +145,10 @@
 !-----------------------------------------------------------------------
 
       integer (SCRIP_i4) ::
-     &     errorCode            ! error code for SCRIP routine
+     &  errorCode            ! error code for SCRIP routine
 
       character (14), parameter ::
-     &     rtnName = 'read_remap_ww3'
+     &  rtnName = 'read_remap_ww3'
 
 !-----------------------------------------------------------------------
 !
@@ -158,70 +158,70 @@
 
       ncstat = nf90_open(interp_file, NF90_NOCLOBBER, nc_file_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
-     &     opening interpolation file')) return
+     &   opening interpolation file')) return
 
       !***
       !*** map name
       !***
       map_name = ' '
-         ncstat = nf90_get_att(nc_file_id, NF90_GLOBAL, 'title',
-     &        map_name)
-         if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
-     &        reading map name')) return
+      ncstat = nf90_get_att(nc_file_id, NF90_GLOBAL, 'title',
+     &                         map_name)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
+     &   reading map name')) return
 
 
-         !***
-         !*** normalization option
-         !***
-         normalize_opt = ' '
-         ncstat = nf90_get_att(nc_file_id, NF90_GLOBAL, 'normalization',
-     &        normalize_opt)
-         if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
-     &        reading interpolation option')) return
+      !***
+      !*** normalization option
+      !***
+      normalize_opt = ' '
+      ncstat = nf90_get_att(nc_file_id, NF90_GLOBAL, 'normalization',
+     &                         normalize_opt)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
+     &   reading interpolation option')) return
 
-         select case(normalize_opt)
+      select case(normalize_opt)
       case ('none')
-         norm_opt = norm_opt_none
+        norm_opt = norm_opt_none
       case ('fracarea')
-         norm_opt = norm_opt_frcarea
+        norm_opt = norm_opt_frcarea
       case ('destarea')
-         norm_opt = norm_opt_dstarea
+        norm_opt = norm_opt_dstarea
       case default
-         print *,'normalize_opt = ',normalize_opt
-         stop 'Invalid normalization option'
+        print *,'normalize_opt = ',normalize_opt
+        stop 'Invalid normalization option'
       end select
 
-!***
-!*** map method
-!***
+      !***
+      !*** map method
+      !***
       map_method = ' '
-         ncstat = nf90_get_att (nc_file_id, NF90_GLOBAL, 'map_method',
-     &        map_method)
-         if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
-     &        reading map method')) return
+      ncstat = nf90_get_att (nc_file_id, NF90_GLOBAL, 'map_method',
+     &                          map_method)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
+     &   reading map method')) return
 
-         select case(map_method)
+      select case(map_method)
       case('Conservative remapping')
-         map_type = map_type_conserv
-         case('Bilinear remapping')
-            map_type = map_type_bilinear
-            case('Distance weighted avg of nearest neighbors')
-               map_type = map_type_distwgt
-               case('Bicubic remapping')
-                  map_type = map_type_bicubic
-                  case default
-                     print *,'map_type = ',map_method
-                     stop 'Invalid Map Type'
-                  end select
+        map_type = map_type_conserv
+      case('Bilinear remapping')
+        map_type = map_type_bilinear
+      case('Distance weighted avg of nearest neighbors')
+        map_type = map_type_distwgt
+      case('Bicubic remapping')
+        map_type = map_type_bicubic
+      case default
+        print *,'map_type = ',map_method
+        stop 'Invalid Map Type'
+      end select
 
-!***
-!*** file convention
-!***
-                  convention = ' '
-                  ncstat = nf90_get_att (nc_file_id, NF90_GLOBAL, 'conventions',
-     &convention)
-                  if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
-     &                 reading file convention')) return
+      !***
+      !*** file convention
+      !***
+      convention = ' '
+      ncstat = nf90_get_att (nc_file_id, NF90_GLOBAL, 'conventions',
+     &                          convention)
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
+     &   reading file convention')) return
 
 !-----------------------------------------------------------------------
 !
@@ -229,21 +229,21 @@
 !
 !-----------------------------------------------------------------------
 
-                  select case(convention)
-               case ('SCRIP')
-                  call read_remap_scrip_ww3
-               case ('NCAR-CSM')
-                  print *,'convention = NCAR-CSM not supported for WW3'
-                  stop 'unsupported file convention'
-!     call read_remap_csm
-               case default
-                  print *,'convention = ',convention
-                  stop 'unknown output file convention'
-               end select
+      select case(convention)
+      case ('SCRIP')
+        call read_remap_scrip_ww3
+      case ('NCAR-CSM')
+        print *,'convention = NCAR-CSM not supported for WW3'
+        stop 'unsupported file convention'
+!       call read_remap_csm
+      case default
+        print *,'convention = ',convention
+        stop 'unknown output file convention'
+      end select
 
 !-----------------------------------------------------------------------
 
-               end subroutine read_remap_ww3
+      end subroutine read_remap_ww3
 
 !***********************************************************************
 

@@ -262,13 +262,13 @@ CONTAINS
 
     DELXERF   = (2*XERFMAX)/REAL(SIZEERFTABLE)
     DO I=0,SIZEERFTABLE
-       x=-1.*XERFMAX+I*DELXERF
-       if(x.lt.0.)then
-          y=2**(1/2)*(1-abs(erf(x)))/2
-       else
-          y=2**(1/2)*(1+erf(x))/2
-       end if
-       ERFTABLE(I)=y
+      x=-1.*XERFMAX+I*DELXERF
+      if(x.lt.0.)then
+        y=2**(1/2)*(1-abs(erf(x)))/2
+      else
+        y=2**(1/2)*(1+erf(x))/2
+      end if
+      ERFTABLE(I)=y
     END DO
     RETURN
     !/ ------------------------------------------------------------------- /
@@ -403,8 +403,8 @@ CONTAINS
     !
     ! 0.  Initializations ------------------------------------------------ *
     IF ( FIRST ) THEN
-       CALL INSBT4
-       FIRST  = .FALSE.
+      CALL INSBT4
+      FIRST  = .FALSE.
     END IF
 
     !
@@ -423,124 +423,124 @@ CONTAINS
     TAUBBL(:)=0.
     !
     DO ISUB=1,3
-       !
-       ! 2.a  Computes bulk parameters : E, Uorb, Aorb------------------------- *
-       !
-       DSUB=DEPTH*(1.+XSUB(ISUB))
-       UORB=0.
-       AORB=0.
-       AX  =0.
-       AY  =0.
+      !
+      ! 2.a  Computes bulk parameters : E, Uorb, Aorb------------------------- *
+      !
+      DSUB=DEPTH*(1.+XSUB(ISUB))
+      UORB=0.
+      AORB=0.
+      AX  =0.
+      AY  =0.
 
-       DO IK=1, NK
-          IF ( WN(IK)*DSUB .LT. 6. ) THEN
-             EB  = 0.
-             EBX = 0.
-             EBY = 0.
-             DO ITH=1, NTH
-                IS=ITH+(IK-1)*NTH
-                EB  = EB  + A(IS)
-                EBX = EBX +A(IS)*ECOS(ITH)
-                EBY = EBY +A(IS)*ESIN(ITH)
-             END DO
-             !
-             ! U_bot=sigma * Zeta / sinh(KD)  and CBETA = 0.5*sigma^2 /(g*sinh^(kD))
-             ! therefore variance(u_bot)= variance(elevation)*2*CBETA/D
-             !
-             !            CBETA(IK) = MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )/DSUB
-             CBETA(IK) = 0.5*SIG(IK)**2 /(GRAV*(SINH(WN(IK)*DSUB))**2)
-             !  N.B.:  could also include shoaling effect on EB ...
-             FACTOR= (DDEN(IK) / CG(IK))*2*CBETA(IK)*GRAV
-             VARU= EB * FACTOR
-             UORB = UORB + VARU
-             AORB = AORB + VARU/(SIG(IK)**2)
-             AX   = AX   + (EBX * FACTOR)
-             AY   = AY   + (EBY * FACTOR)
-          ELSE
-             CBETA(IK) = 0.
-          END IF
-       END DO
-       !
-       ! Computes RMS orbital amplitudes
-       !
-       UORB2 = 2*UORB
-       UORB = SQRT(MAX(1.0E-7,UORB2))
-       AORB = SQRT(MAX(1.0E-7,2*AORB))
-       !
-       ! Computes potential ripple wavelength, 1.7 = 2 * sqrt(2) * 0.6
-       ! Based on Ardhuin et al. (JGR 2002): lambda = 0.6 * d_1/3
-       !
-       LX = AORB*1.7*AX/SQRT(AX**2+AY**2+1E-12)
-       LY = AORB*1.7*AY/SQRT(AX**2+AY**2+1E-12)
-       !
-       ! 2.b First use of FWTABLE to get skin roughness and estimate Shields parameter
-       !
-       XI=MAX((ALOG10(MAX(AORB/DD50,0.3))-ABMIN)/DELAB,1.)
-       IND  = MIN (SIZEFWTABLE-1, INT(XI))
-       DELI1= MIN (1. ,XI-FLOAT(IND))
-       DELI2= 1. - DELI1
-       FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
+      DO IK=1, NK
+        IF ( WN(IK)*DSUB .LT. 6. ) THEN
+          EB  = 0.
+          EBX = 0.
+          EBY = 0.
+          DO ITH=1, NTH
+            IS=ITH+(IK-1)*NTH
+            EB  = EB  + A(IS)
+            EBX = EBX +A(IS)*ECOS(ITH)
+            EBY = EBY +A(IS)*ESIN(ITH)
+          END DO
+          !
+          ! U_bot=sigma * Zeta / sinh(KD)  and CBETA = 0.5*sigma^2 /(g*sinh^(kD))
+          ! therefore variance(u_bot)= variance(elevation)*2*CBETA/D
+          !
+          !            CBETA(IK) = MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )/DSUB
+          CBETA(IK) = 0.5*SIG(IK)**2 /(GRAV*(SINH(WN(IK)*DSUB))**2)
+          !  N.B.:  could also include shoaling effect on EB ...
+          FACTOR= (DDEN(IK) / CG(IK))*2*CBETA(IK)*GRAV
+          VARU= EB * FACTOR
+          UORB = UORB + VARU
+          AORB = AORB + VARU/(SIG(IK)**2)
+          AX   = AX   + (EBX * FACTOR)
+          AY   = AY   + (EBY * FACTOR)
+        ELSE
+          CBETA(IK) = 0.
+        END IF
+      END DO
+      !
+      ! Computes RMS orbital amplitudes
+      !
+      UORB2 = 2*UORB
+      UORB = SQRT(MAX(1.0E-7,UORB2))
+      AORB = SQRT(MAX(1.0E-7,2*AORB))
+      !
+      ! Computes potential ripple wavelength, 1.7 = 2 * sqrt(2) * 0.6
+      ! Based on Ardhuin et al. (JGR 2002): lambda = 0.6 * d_1/3
+      !
+      LX = AORB*1.7*AX/SQRT(AX**2+AY**2+1E-12)
+      LY = AORB*1.7*AY/SQRT(AX**2+AY**2+1E-12)
+      !
+      ! 2.b First use of FWTABLE to get skin roughness and estimate Shields parameter
+      !
+      XI=MAX((ALOG10(MAX(AORB/DD50,0.3))-ABMIN)/DELAB,1.)
+      IND  = MIN (SIZEFWTABLE-1, INT(XI))
+      DELI1= MIN (1. ,XI-FLOAT(IND))
+      DELI2= 1. - DELI1
+      FW =FWTABLE(IND)*DELI2+FWTABLE(IND+1)*DELI1
 
-       PSI=FW*UORB2/(2.*GRAV*(SED_SG-1)*DD50)
-       !
-       ! Normalized Shields parameter
-       !
-       SHIELDS(ISUB)=PSI/PSIC
-       !
+      PSI=FW*UORB2/(2.*GRAV*(SED_SG-1)*DD50)
+      !
+      ! Normalized Shields parameter
+      !
+      SHIELDS(ISUB)=PSI/PSIC
+      !
     END DO ! end of loop on ISUB
     DPSI=(SHIELDS(2)-SHIELDS(1))/(XSUB(2)-XSUB(1))*SBTCX(5)
     !
     ! Tests if the variation in psi is large enough to use subgrid
     !
     IF (ABS(DPSI).LT.0.0001*SHIELDS(3).OR.ABS(DPSI).LT.1.E-8) THEN
-       !
-       ! no subgrid in this case
-       !
-       IF(SHIELDS(3).GT.SBTCX(3)) THEN
+      !
+      ! no subgrid in this case
+      !
+      IF(SHIELDS(3).GT.SBTCX(3)) THEN
 
-          !  ripple roughness, see Ardhuin et al. (2003)
-          KSUBR=AORB*SBTCX(1)*SHIELDS(3)**SBTCX(2)
-          !  Sheet flow roughness, see Wilson (1989)
-          KSUBS=AORB*0.0655*(UORB2/((SED_SG-1)*GRAV*AORB))**1.4
-          KSUBN = KSUBR + KSUBS
-          BEDFORM(2)=LX
-          BEDFORM(3)=LY
-       ELSE
-          !  relict roughness, see Ardhuin et al. (2003)
-          KSUBN=MAX(BACKGROUND,AORB*SBTCX(4))
-          BEDFORM(2)=-LX
-          BEDFORM(3)=-LY
-       END IF
+        !  ripple roughness, see Ardhuin et al. (2003)
+        KSUBR=AORB*SBTCX(1)*SHIELDS(3)**SBTCX(2)
+        !  Sheet flow roughness, see Wilson (1989)
+        KSUBS=AORB*0.0655*(UORB2/((SED_SG-1)*GRAV*AORB))**1.4
+        KSUBN = KSUBR + KSUBS
+        BEDFORM(2)=LX
+        BEDFORM(3)=LY
+      ELSE
+        !  relict roughness, see Ardhuin et al. (2003)
+        KSUBN=MAX(BACKGROUND,AORB*SBTCX(4))
+        BEDFORM(2)=-LX
+        BEDFORM(3)=-LY
+      END IF
 
-       BEDFORM(1)=KSUBN
+      BEDFORM(1)=KSUBN
 
     ELSE
-       !
-       ! subgrid in this case
-       !
-       PSIX=(SBTCX(3)-SHIELDS(3))/DPSI
+      !
+      ! subgrid in this case
+      !
+      PSIX=(SBTCX(3)-SHIELDS(3))/DPSI
 
-       PSIXT=MAX((PSIX + XERFMAX)/DELXERF,0.)
-       INDE  = MAX(MIN (SIZEERFTABLE-1, INT(PSIXT)),0)
-       DELI1  = MIN (1. ,PSIXT-FLOAT(INDE))
-       DELI2  = 1. - DELI1
-       PROBA2=MAX(MIN(ERFTABLE(INDE)*DELI2+ERFTABLE(INDE+1)*DELI1,1.),0.)
-       PROBA1 = 1. - PROBA2
-       ! Mean psi with ripples (Tolman 1995, eq. XX)
-       PSIN2=MAX(SHIELDS(3)+EXP(-(0.5*PSIX**2))/SQRT(TPI)*DPSI/(PROBA2+0.0001),SBTCX(3))
-       ! Sum of relict, ripple and sheet flow roughnesses
-       KSUBN = PROBA1*MAX(BACKGROUND,AORB*SBTCX(4))       &
-            +PROBA2*AORB*(SBTCX(1)*PSIN2**SBTCX(2)+                   &
-            0.0655*(UORB2/((SED_SG-1)*GRAV*AORB))**1.4)
-       !
-       IF (PROBA2.GT.0.5) THEN
-          BEDFORM(2)=LX
-          BEDFORM(3)=LY
-       ELSE
-          BEDFORM(2)=-LX
-          BEDFORM(3)=-LY
-       END IF
-       !
+      PSIXT=MAX((PSIX + XERFMAX)/DELXERF,0.)
+      INDE  = MAX(MIN (SIZEERFTABLE-1, INT(PSIXT)),0)
+      DELI1  = MIN (1. ,PSIXT-FLOAT(INDE))
+      DELI2  = 1. - DELI1
+      PROBA2=MAX(MIN(ERFTABLE(INDE)*DELI2+ERFTABLE(INDE+1)*DELI1,1.),0.)
+      PROBA1 = 1. - PROBA2
+      ! Mean psi with ripples (Tolman 1995, eq. XX)
+      PSIN2=MAX(SHIELDS(3)+EXP(-(0.5*PSIX**2))/SQRT(TPI)*DPSI/(PROBA2+0.0001),SBTCX(3))
+      ! Sum of relict, ripple and sheet flow roughnesses
+      KSUBN = PROBA1*MAX(BACKGROUND,AORB*SBTCX(4))       &
+           +PROBA2*AORB*(SBTCX(1)*PSIN2**SBTCX(2)+                   &
+           0.0655*(UORB2/((SED_SG-1)*GRAV*AORB))**1.4)
+      !
+      IF (PROBA2.GT.0.5) THEN
+        BEDFORM(2)=LX
+        BEDFORM(3)=LY
+      ELSE
+        BEDFORM(2)=-LX
+        BEDFORM(3)=-LY
+      END IF
+      !
     END IF
     BEDFORM(1)=KSUBN
 
@@ -556,17 +556,17 @@ CONTAINS
     ! 5. Fills output arrays and estimates the energy and momentum loss
     !
     DO IK=1, NK
-       CONST2=DDEN(IK)/CG(IK) &         !Jacobian to get energy in band
-            *GRAV/(SIG(IK)/WN(IK))    ! coefficient to get momentum
-       DSUM(IK)=-FW*UORB*CBETA(IK)      !*WSUB(ISUB)
-       DO ITH=1,NTH
-          IS=ITH+(IK-1)*NTH
-          D(IS)=DSUM(IK)
-          TEMP2=CONST2*D(IS)*A(IS)
-          TAUBBL(1) = TAUBBL(1) - TEMP2*ECOS(IS)
-          TAUBBL(2) = TAUBBL(2) - TEMP2*ESIN(IS)
-          S(IS)=D(IS)*A(IS)
-       END DO
+      CONST2=DDEN(IK)/CG(IK) &         !Jacobian to get energy in band
+           *GRAV/(SIG(IK)/WN(IK))    ! coefficient to get momentum
+      DSUM(IK)=-FW*UORB*CBETA(IK)      !*WSUB(ISUB)
+      DO ITH=1,NTH
+        IS=ITH+(IK-1)*NTH
+        D(IS)=DSUM(IK)
+        TEMP2=CONST2*D(IS)*A(IS)
+        TAUBBL(1) = TAUBBL(1) - TEMP2*ECOS(IS)
+        TAUBBL(2) = TAUBBL(2) - TEMP2*ESIN(IS)
+        S(IS)=D(IS)*A(IS)
+      END DO
     END DO
     !
     RETURN

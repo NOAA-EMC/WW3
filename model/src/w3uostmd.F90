@@ -54,23 +54,23 @@ MODULE W3UOSTMD
 
 
   TYPE UOST_SOURCETERM
-     REAL, ALLOCATABLE :: COSTH(:), SINTH(:)
-     REAL :: GAMMAUP = 10
-     REAL :: GAMMADOWN = 20
-     ! griddata is a pointer to the grid actually computed
-     TYPE(GRID), POINTER :: GRD
-     TYPE(SGRD), POINTER :: SGD
-   CONTAINS
-     !PROCEDURE, PASS, PRIVATE :: COMPUTE_PSI => UOST_SOURCETERM_COMPUTE_PSI
+    REAL, ALLOCATABLE :: COSTH(:), SINTH(:)
+    REAL :: GAMMAUP = 10
+    REAL :: GAMMADOWN = 20
+    ! griddata is a pointer to the grid actually computed
+    TYPE(GRID), POINTER :: GRD
+    TYPE(SGRD), POINTER :: SGD
+  CONTAINS
+    !PROCEDURE, PASS, PRIVATE :: COMPUTE_PSI => UOST_SOURCETERM_COMPUTE_PSI
 
-     !compute_ld: estimates the local dissipation (private method)
-     PROCEDURE, PASS, PRIVATE :: COMPUTE_LD => UOST_SOURCETERM_COMPUTE_LD
-     !compute_se: estimates the shadow effect (private method)
-     PROCEDURE, PASS, PRIVATE :: COMPUTE_SE => UOST_SOURCETERM_COMPUTE_SE
-     !compute: estimates the whole dissipation
-     PROCEDURE, PASS :: COMPUTE => UOST_SOURCETERM_COMPUTE
-     !setgrid: sets grd pointer and computes some cached structures
-     PROCEDURE, PASS :: SETGRID => UOST_SOURCETERM_SETGRID
+    !compute_ld: estimates the local dissipation (private method)
+    PROCEDURE, PASS, PRIVATE :: COMPUTE_LD => UOST_SOURCETERM_COMPUTE_LD
+    !compute_se: estimates the shadow effect (private method)
+    PROCEDURE, PASS, PRIVATE :: COMPUTE_SE => UOST_SOURCETERM_COMPUTE_SE
+    !compute: estimates the whole dissipation
+    PROCEDURE, PASS :: COMPUTE => UOST_SOURCETERM_COMPUTE
+    !setgrid: sets grd pointer and computes some cached structures
+    PROCEDURE, PASS :: SETGRID => UOST_SOURCETERM_SETGRID
   END TYPE UOST_SOURCETERM
 
   ! srctrm: global singleton source term
@@ -138,7 +138,7 @@ CONTAINS
 #endif
 
     IF ( (IGRID .LE. 0) .OR. (.NOT. ALLOCATED(GRIDS)) ) THEN
-       RETURN
+      RETURN
     ENDIF
 
     GRD => GRIDS(IGRID)
@@ -165,18 +165,18 @@ CONTAINS
 
 
     IF ( (IGRID .GT. 0) .AND. ( ALLOCATED(SRCTRM)) ) THEN
-       !  loading local/shadow alpha/beta
-       CALL LOAD_ALPHABETA(GRD, SGD, UNIT_AB)
+      !  loading local/shadow alpha/beta
+      CALL LOAD_ALPHABETA(GRD, SGD, UNIT_AB)
 
-       !  warning the user that for cells too small UOST may be inaccurate
-       CGMAX = 20 ! simply taking a high value for the max group velocity to give an indication of this threshold
-       MINSIZE = CGMAX*GRD%DTMAX/1000
-       WRITE(NDSO,*)'*** WAVEWATCH-III WARNING IN W3UOST/UOST_INITGRID'
-       WRITE(NDSO,*)'UOST: grid ',TRIM(GRD%GNAME),':'
-       WRITE(NDSO,*)'      global time step == ', GRD%DTMAX, ' s'
-       WRITE(NDSO,*)'      FOR CELLS SMALLER THAN ABOUT ', MINSIZE,    &
-            ' KM UOST MAY UNDERESTIMATE THE DISSIPATION'
-       WRITE(NDSO,*)
+      !  warning the user that for cells too small UOST may be inaccurate
+      CGMAX = 20 ! simply taking a high value for the max group velocity to give an indication of this threshold
+      MINSIZE = CGMAX*GRD%DTMAX/1000
+      WRITE(NDSO,*)'*** WAVEWATCH-III WARNING IN W3UOST/UOST_INITGRID'
+      WRITE(NDSO,*)'UOST: grid ',TRIM(GRD%GNAME),':'
+      WRITE(NDSO,*)'      global time step == ', GRD%DTMAX, ' s'
+      WRITE(NDSO,*)'      FOR CELLS SMALLER THAN ABOUT ', MINSIZE,    &
+           ' KM UOST MAY UNDERESTIMATE THE DISSIPATION'
+      WRITE(NDSO,*)
     ENDIF
   END SUBROUTINE UOST_INITGRID
 
@@ -226,7 +226,7 @@ CONTAINS
 #endif
 
     IF ( .NOT. ALLOCATED(SRCTRM) ) THEN
-       ALLOCATE(SRCTRM)
+      ALLOCATE(SRCTRM)
     ENDIF
 
     CALL SRCTRM%SETGRID(GRIDS(IGRID), SGRDS(IGRID))
@@ -338,9 +338,9 @@ CONTAINS
 
     J = LEN_TRIM(FILENAME)
     IF (.NOT. FILEEXISTS) THEN
-       WRITE(NDSE,*)'*** WAVEWATCH III ERROR IN W3UOST: '// &
-            'FILE '//FILENAME(:J)//' NOT FOUND. QUITTING'
-       CALL EXTCDE (9999)
+      WRITE(NDSE,*)'*** WAVEWATCH III ERROR IN W3UOST: '// &
+           'FILE '//FILENAME(:J)//' NOT FOUND. QUITTING'
+      CALL EXTCDE (9999)
     ENDIF
     WRITE(NDSO,*)'FILE '//FILENAME(:J)//' FOUND.'// &
          'LOADING UOST SETTINGS FOR GRID '//GRD%GNAME
@@ -356,9 +356,9 @@ CONTAINS
 
     J = LEN_TRIM(FILENAME)
     IF (.NOT. FILEEXISTS) THEN
-       WRITE(NDSE,*)'*** WAVEWATCH III ERROR IN W3UOST: '// &
-            'FILE '//FILENAME(:J)//' NOT FOUND. QUITTING'
-       CALL EXTCDE (9999)
+      WRITE(NDSE,*)'*** WAVEWATCH III ERROR IN W3UOST: '// &
+           'FILE '//FILENAME(:J)//' NOT FOUND. QUITTING'
+      CALL EXTCDE (9999)
     ENDIF
     WRITE(NDSO,*)'FILE '//FILENAME(:J)//' FOUND.'//&
          'LOADING UOST SETTINGS FOR GRID '//GRD%GNAME
@@ -443,55 +443,55 @@ CONTAINS
 
     OPEN(FILEUNIT, FILE=FILENAME, STATUS='OLD', ACTION='READ')
     READ_LOOP: DO
-       READ(FILEUNIT, '(A)', IOSTAT=FIOSTAT) LINE
+      READ(FILEUNIT, '(A)', IOSTAT=FIOSTAT) LINE
 
-       IF (FIOSTAT .NE. 0) EXIT READ_LOOP
+      IF (FIOSTAT .NE. 0) EXIT READ_LOOP
 
-       IF (LINE(1:1) .EQ. '$') CYCLE
+      IF (LINE(1:1) .EQ. '$') CYCLE
 
-       IF (FILESTART) THEN
-          !  reading the first line
-          READ(LINE, '(I5)') SPGRDS_SIZE
-          FILESTART = .FALSE.
-       ELSEIF (HEADER) THEN
-          !  reading the position of an obstructed cell
-          READ(LINE, *) IX, IY
-          ISOBSTRUCTED(IX, IY) = .TRUE.
-          IF ((IX .GT. NX) .OR. (IY .GT. NY)) THEN
-             WRITE(NDSE,*) '*** WAVEWATCH III ERROR IN W3UOST: '// &
-                  'GRID INDICES OUT OF RANGE.'// &
-                  'CHECK FILE '//FILENAME
-             CALL EXTCDE (9999)
-          ENDIF
-          !  marking the end of the reading of the header
-          HEADER = .FALSE.
+      IF (FILESTART) THEN
+        !  reading the first line
+        READ(LINE, '(I5)') SPGRDS_SIZE
+        FILESTART = .FALSE.
+      ELSEIF (HEADER) THEN
+        !  reading the position of an obstructed cell
+        READ(LINE, *) IX, IY
+        ISOBSTRUCTED(IX, IY) = .TRUE.
+        IF ((IX .GT. NX) .OR. (IY .GT. NY)) THEN
+          WRITE(NDSE,*) '*** WAVEWATCH III ERROR IN W3UOST: '// &
+               'GRID INDICES OUT OF RANGE.'// &
+               'CHECK FILE '//FILENAME
+          CALL EXTCDE (9999)
+        ENDIF
+        !  marking the end of the reading of the header
+        HEADER = .FALSE.
+        IK = 1
+        READINGCELLSIZE = .TRUE.
+      ELSEIF (READINGCELLSIZE) THEN
+        !  reading the sizes of the cell
+        READ(LINE, *) CELLSIZE(IX, IY, :)
+        READINGCELLSIZE = .FALSE.
+        READINGALPHA = .TRUE.
+      ELSE
+        READ(LINE, *) TRANS
+        IF (READINGALPHA) THEN
+          !  reading alpha for frequency IK
+          ALPHAMTX(IX, IY, IK, :) = NINT(TRANS*MULTFACTOR)
+        ELSE
+          !  reading beta for frequency IK
+          BETAMTX(IX, IY, IK, :) = NINT(TRANS*MULTFACTOR)
+        ENDIF
+        IF (IK .LT. NK) THEN
+          IK = IK + 1
+        ELSE IF (READINGALPHA) THEN
+          !  preparing to read the next cell
+          READINGALPHA = .FALSE.
           IK = 1
-          READINGCELLSIZE = .TRUE.
-       ELSEIF (READINGCELLSIZE) THEN
-          !  reading the sizes of the cell
-          READ(LINE, *) CELLSIZE(IX, IY, :)
-          READINGCELLSIZE = .FALSE.
-          READINGALPHA = .TRUE.
-       ELSE
-          READ(LINE, *) TRANS
-          IF (READINGALPHA) THEN
-             !  reading alpha for frequency IK
-             ALPHAMTX(IX, IY, IK, :) = NINT(TRANS*MULTFACTOR)
-          ELSE
-             !  reading beta for frequency IK
-             BETAMTX(IX, IY, IK, :) = NINT(TRANS*MULTFACTOR)
-          ENDIF
-          IF (IK .LT. NK) THEN
-             IK = IK + 1
-          ELSE IF (READINGALPHA) THEN
-             !  preparing to read the next cell
-             READINGALPHA = .FALSE.
-             IK = 1
-          ELSE
-             HEADER = .TRUE.
-             IK = 1
-          ENDIF
-       ENDIF
+        ELSE
+          HEADER = .TRUE.
+          IK = 1
+        ENDIF
+      ENDIF
     ENDDO READ_LOOP
     CLOSE(FILEUNIT)
 
@@ -551,16 +551,16 @@ CONTAINS
     THIS%SGD => SGD
 
     IF (ALLOCATED(THIS%COSTH)) THEN
-       DEALLOCATE(THIS%COSTH)
-       DEALLOCATE(THIS%SINTH)
+      DEALLOCATE(THIS%COSTH)
+      DEALLOCATE(THIS%SINTH)
     ENDIF
 
     NTH = THIS%SGD%NTH
     ALLOCATE(THIS%COSTH(NTH))
     ALLOCATE(THIS%SINTH(NTH))
     DO ITH=1,NTH
-       THIS%COSTH(ITH) = COS(SGD%TH(ITH))
-       THIS%SINTH(ITH) = SIN(SGD%TH(ITH))
+      THIS%COSTH(ITH) = COS(SGD%TH(ITH))
+      THIS%SINTH(ITH) = SIN(SGD%TH(ITH))
     ENDDO
   END SUBROUTINE UOST_SOURCETERM_SETGRID
 
@@ -626,27 +626,27 @@ CONTAINS
     ! computing the wave age
     THDELTA = ABS(U10DIR - CGDIR)
     DO WHILE (THDELTA .GT. PI)
-       THDELTA = THDELTA - 2*PI
+      THDELTA = THDELTA - 2*PI
     ENDDO
     THDELTA = ABS(THDELTA)
     IF (PI/2 - THDELTA .GT. TOLERANCE) THEN
-       CP = CGABS*2 ! this is scrictly valid only in deep water
-       WA = CP/U10ABS/COS(THDELTA)
+      CP = CGABS*2 ! this is scrictly valid only in deep water
+      WA = CP/U10ABS/COS(THDELTA)
     ELSE
-       WA = 9999999 ! a very high number
+      WA = 9999999 ! a very high number
     ENDIF
 
     IF (WA .LE. WHTHR1) THEN
-       !  if the wave age is less that 0.5, psi = 0, i.e.
-       !  no unresolved obstacle is considered
-       PSI = 0
+      !  if the wave age is less that 0.5, psi = 0, i.e.
+      !  no unresolved obstacle is considered
+      PSI = 0
     ELSEIF ((WA .GT. WHTHR1) .AND. (WA .LT. WHTHR2)) THEN
-       !  if the wave age is between 0.5 and 1.5
-       !  psi scales linearly with WA
-       PSI = (WA - WHTHR1)/(WHTHR2 - WHTHR1)
+      !  if the wave age is between 0.5 and 1.5
+      !  psi scales linearly with WA
+      PSI = (WA - WHTHR1)/(WHTHR2 - WHTHR1)
     ELSE
-       !  if the wave age is greater than 1.5 psi = 1
-       PSI = 1
+      !  if the wave age is greater than 1.5 psi = 1
+      PSI = 1
     ENDIF
 
   END SUBROUTINE COMPUTE_REDUCTION_PSI
@@ -723,39 +723,39 @@ CONTAINS
     NTH = THIS%SGD%NTH
 
     DO IK = 1,NK
-       CGI = CG(IK)
-       DO ITH = 1,NTH
+      CGI = CG(IK)
+      DO ITH = 1,NTH
 
-          !  Getting alpha and beta for local dissipation
-          ALPHA = THIS%GRD%UOSTLOCALALPHA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
-          ALPHA = MAX(MIN(ALPHA*THIS%GRD%UOSTLOCALFACTOR, 1.), 0.)
-          BETA = THIS%GRD%UOSTLOCALBETA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
-          BETA = MAX(MIN(BETA*THIS%GRD%UOSTLOCALFACTOR, 1.), 0.)
+        !  Getting alpha and beta for local dissipation
+        ALPHA = THIS%GRD%UOSTLOCALALPHA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
+        ALPHA = MAX(MIN(ALPHA*THIS%GRD%UOSTLOCALFACTOR, 1.), 0.)
+        BETA = THIS%GRD%UOSTLOCALBETA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
+        BETA = MAX(MIN(BETA*THIS%GRD%UOSTLOCALFACTOR, 1.), 0.)
 
 
-          IF (ALPHA .EQ. 1) CYCLE
+        IF (ALPHA .EQ. 1) CYCLE
 
-          !  Getting the size of the cell along direction ith
-          CELLSIZE = THIS%GRD%UOSTCELLSIZE(IX, IY, ITH)*THIS%GRD%UOSTCELLSIZEFACTOR
+        !  Getting the size of the cell along direction ith
+        CELLSIZE = THIS%GRD%UOSTCELLSIZE(IX, IY, ITH)*THIS%GRD%UOSTCELLSIZEFACTOR
 
-          ISP = ITH + (IK-1)*NTH
-          SPECI = SPEC(ISP)
+        ISP = ITH + (IK-1)*NTH
+        SPECI = SPEC(ISP)
 
-          TH = THIS%SGD%TH(ITH)
-          CALL COMPUTE_REDUCTION_PSI(U10ABS, U10DIR, CG(IK), TH, DT, PSI)
+        TH = THIS%SGD%TH(ITH)
+        CALL COMPUTE_REDUCTION_PSI(U10ABS, U10DIR, CG(IK), TH, DT, PSI)
 
-          IF (BETA > 0.09) THEN
-             !  Computing the local dissipation for a partially obstructed cell
-             SFC = - CGI/CELLSIZE * (1 - BETA)/BETA
-          ELSE
-             !  The cell is almost completely obstructed.
-             !  Dissipating the energy almost completely.
-             SFC = - CGI/CELLSIZE * THIS%GAMMAUP
-          ENDIF
+        IF (BETA > 0.09) THEN
+          !  Computing the local dissipation for a partially obstructed cell
+          SFC = - CGI/CELLSIZE * (1 - BETA)/BETA
+        ELSE
+          !  The cell is almost completely obstructed.
+          !  Dissipating the energy almost completely.
+          SFC = - CGI/CELLSIZE * THIS%GAMMAUP
+        ENDIF
 
-          S(ISP) = SFC * SPECI * PSI
-          D(ISP) = SFC * PSI
-       ENDDO
+        S(ISP) = SFC * SPECI * PSI
+        D(ISP) = SFC * PSI
+      ENDDO
     ENDDO
 
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_LD
@@ -838,42 +838,42 @@ CONTAINS
     IF (.NOT. CELLOBSTRUCTED) RETURN
 
     DO IK=1,NK
-       DO ITH=1,NTH
+      DO ITH=1,NTH
 
-          !  Getting alpha and beta of the shadow
-          ALPHASH = THIS%GRD%UOSTSHADOWALPHA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
-          ALPHASH = MAX(MIN(ALPHASH*THIS%GRD%UOSTSHADOWFACTOR, 1.), 0.)
-          BETASH = THIS%GRD%UOSTSHADOWBETA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
-          BETASH = MAX(MIN(BETASH*THIS%GRD%UOSTSHADOWFACTOR, 1.), 0.)
+        !  Getting alpha and beta of the shadow
+        ALPHASH = THIS%GRD%UOSTSHADOWALPHA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
+        ALPHASH = MAX(MIN(ALPHASH*THIS%GRD%UOSTSHADOWFACTOR, 1.), 0.)
+        BETASH = THIS%GRD%UOSTSHADOWBETA(IX, IY, IK, ITH)/THIS%GRD%UOSTABMULTFACTOR
+        BETASH = MAX(MIN(BETASH*THIS%GRD%UOSTSHADOWFACTOR, 1.), 0.)
 
-          IF (ALPHASH .EQ. 1) CYCLE
+        IF (ALPHASH .EQ. 1) CYCLE
 
-          !  Getting the size of the cell along direction ith
-          CELLSIZE = THIS%GRD%UOSTCELLSIZE(IX, IY, ITH)*THIS%GRD%UOSTCELLSIZEFACTOR
+        !  Getting the size of the cell along direction ith
+        CELLSIZE = THIS%GRD%UOSTCELLSIZE(IX, IY, ITH)*THIS%GRD%UOSTCELLSIZEFACTOR
 
-          CGI = CG(IK)
+        CGI = CG(IK)
 
-          GG = CGI/CELLSIZE
+        GG = CGI/CELLSIZE
 
-          IF (ALPHASH > 0.2) THEN
-             !  Computing the shadow gamma coefficient for a partially obstructed cell
-             GAMMMA = (BETASH/ALPHASH - 1)
-          ELSE
-             !  Alpha is small. The shadow dissipates the energy almost completely
-             GAMMMA = THIS%GAMMADOWN
-          ENDIF
+        IF (ALPHASH > 0.2) THEN
+          !  Computing the shadow gamma coefficient for a partially obstructed cell
+          GAMMMA = (BETASH/ALPHASH - 1)
+        ELSE
+          !  Alpha is small. The shadow dissipates the energy almost completely
+          GAMMMA = THIS%GAMMADOWN
+        ENDIF
 
-          TH = THIS%SGD%TH(ITH)
-          !  Computing the reduction psi related with the wind component of the spectrum
-          CALL COMPUTE_REDUCTION_PSI(U10ABS, U10DIR, CG(IK), TH, DT, PSI)
+        TH = THIS%SGD%TH(ITH)
+        !  Computing the reduction psi related with the wind component of the spectrum
+        CALL COMPUTE_REDUCTION_PSI(U10ABS, U10DIR, CG(IK), TH, DT, PSI)
 
-          SFC = - GG*GAMMMA
+        SFC = - GG*GAMMMA
 
-          ISP = ITH + (IK-1)*NTH
-          SPECI = SPEC(ISP)
-          S(ISP) = SFC * SPECI * PSI
-          D(ISP) = SFC * PSI
-       ENDDO
+        ISP = ITH + (IK-1)*NTH
+        SPECI = SPEC(ISP)
+        S(ISP) = SFC * SPECI * PSI
+        D(ISP) = SFC * PSI
+      ENDDO
     ENDDO
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_SE
 
@@ -938,8 +938,8 @@ CONTAINS
 #endif
 
     IF (.NOT. THIS%GRD%UOSTENABLED) THEN
-       S = 0
-       RETURN
+      S = 0
+      RETURN
     ENDIF
 
     !  Initializing the LD and SE components

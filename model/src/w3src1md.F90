@@ -194,20 +194,20 @@ CONTAINS
     ! 1.  Integral over directions
     !
     DO IK=1, NK
-       EB(IK) = 0.
-       DO ITH=1, NTH
-          EB(IK) = EB(IK) + A(ITH,IK)
-          AMAX   = MAX ( AMAX , A(ITH,IK) )
-       END DO
+      EB(IK) = 0.
+      DO ITH=1, NTH
+        EB(IK) = EB(IK) + A(ITH,IK)
+        AMAX   = MAX ( AMAX , A(ITH,IK) )
+      END DO
     END DO
     !
     ! 2.  Integrate over directions
     !
     DO IK=1, NK
-       EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
-       EMEAN  = EMEAN  + EB(IK)
-       FMEAN  = FMEAN  + EB(IK) / SIG(IK)
-       WNMEAN = WNMEAN + EB(IK) / SQRT(WN(IK))
+      EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
+      EMEAN  = EMEAN  + EB(IK)
+      FMEAN  = FMEAN  + EB(IK) / SIG(IK)
+      WNMEAN = WNMEAN + EB(IK) / SQRT(WN(IK))
     END DO
     !
     ! 3.  Add tail beyond discrete spectrum
@@ -381,9 +381,9 @@ CONTAINS
     ! 2.  Diagonal
     !
     DO IS=1, NSPEC
-       D(IS) = SINC1 * SIG2(IS) * MAX ( 0. ,                         &
-            ( USTAR * (ECOS(IS)*COSU+ESIN(IS)*SINU)                  &
-            * K(IS)/SIG2(IS) - 0.035714) )
+      D(IS) = SINC1 * SIG2(IS) * MAX ( 0. ,                         &
+           ( USTAR * (ECOS(IS)*COSU+ESIN(IS)*SINU)                  &
+           * K(IS)/SIG2(IS) - 0.035714) )
     END DO
     !
     S = D * A
@@ -392,9 +392,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !
@@ -564,9 +564,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !

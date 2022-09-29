@@ -1159,17 +1159,17 @@ CONTAINS
     !
     INQUIRE(FILE=TRIM(FNMPRE)//"ww3_grid.nml", EXIST=FLGNML)
     IF (FLGNML) THEN
-       ! Read namelist
-       CALL W3NMLGRID (NDSI, TRIM(FNMPRE)//'ww3_grid.nml', NML_SPECTRUM, NML_RUN,  &
-            NML_TIMESTEPS, NML_GRID, NML_RECT, NML_CURV,   &
-            NML_UNST, NML_SMC, NML_DEPTH, NML_MASK,        &
-            NML_OBST, NML_SLOPE, NML_SED, NML_INBND_COUNT, &
-            NML_INBND_POINT, NML_EXCL_COUNT,               &
-            NML_EXCL_POINT, NML_EXCL_BODY,                 &
-            NML_OUTBND_COUNT, NML_OUTBND_LINE, IERR)
+      ! Read namelist
+      CALL W3NMLGRID (NDSI, TRIM(FNMPRE)//'ww3_grid.nml', NML_SPECTRUM, NML_RUN,  &
+           NML_TIMESTEPS, NML_GRID, NML_RECT, NML_CURV,   &
+           NML_UNST, NML_SMC, NML_DEPTH, NML_MASK,        &
+           NML_OBST, NML_SLOPE, NML_SED, NML_INBND_COUNT, &
+           NML_INBND_POINT, NML_EXCL_COUNT,               &
+           NML_EXCL_POINT, NML_EXCL_BODY,                 &
+           NML_OUTBND_COUNT, NML_OUTBND_LINE, IERR)
     ELSE
-       OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_grid.inp',STATUS='OLD',        &
-            ERR=2000,IOSTAT=IERR)
+      OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_grid.inp',STATUS='OLD',        &
+           ERR=2000,IOSTAT=IERR)
     END IF
     !
     NDSTRC =  6
@@ -1196,30 +1196,30 @@ CONTAINS
     !
 
     IF (FLGNML) THEN
-       ! grid name
-       GNAME=TRIM(NML_GRID%NAME)
-       WRITE (NDSO,902) GNAME
+      ! grid name
+      GNAME=TRIM(NML_GRID%NAME)
+      WRITE (NDSO,902) GNAME
 
-       ! spectrum parameters
-       RXFR=NML_SPECTRUM%XFR
-       RFR1=NML_SPECTRUM%FREQ1
-       NKI=NML_SPECTRUM%NK
-       NTHI=NML_SPECTRUM%NTH
-       RTH0=NML_SPECTRUM%THOFF
+      ! spectrum parameters
+      RXFR=NML_SPECTRUM%XFR
+      RFR1=NML_SPECTRUM%FREQ1
+      NKI=NML_SPECTRUM%NK
+      NTHI=NML_SPECTRUM%NTH
+      RTH0=NML_SPECTRUM%THOFF
 
     ELSE
 
-       READ (NDSI,'(A)',END=2001,ERR=2002,IOSTAT=IERR) COMSTR
-       IF (COMSTR.EQ.' ') COMSTR = '$'
-       WRITE (NDSO,901) COMSTR
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       !
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       READ (NDSI,*,END=2001,ERR=2002) GNAME
-       WRITE (NDSO,902) GNAME
-       !
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       READ (NDSI,*,END=2001,ERR=2002) RXFR, RFR1, NKI, NTHI, RTH0
+      READ (NDSI,'(A)',END=2001,ERR=2002,IOSTAT=IERR) COMSTR
+      IF (COMSTR.EQ.' ') COMSTR = '$'
+      WRITE (NDSO,901) COMSTR
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      !
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002) GNAME
+      WRITE (NDSO,902) GNAME
+      !
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002) RXFR, RFR1, NKI, NTHI, RTH0
     END IF
 
 
@@ -1242,39 +1242,39 @@ CONTAINS
     ! 5.a Directions :
     !
     DO ITH=1, NTH
-       TH  (ITH) = DTH * ( RTH0 + REAL(ITH-1) )
-       ESIN(ITH) = SIN ( TH(ITH) )
-       ECOS(ITH) = COS ( TH(ITH) )
-       IF ( ABS(ESIN(ITH)) .LT. 1.E-5 ) THEN
-          ESIN(ITH) = 0.
-          IF ( ECOS(ITH) .GT. 0.5 ) THEN
-             ECOS(ITH) =  1.
-          ELSE
-             ECOS(ITH) = -1.
-          END IF
-       END IF
-       IF ( ABS(ECOS(ITH)) .LT. 1.E-5 ) THEN
-          ECOS(ITH) = 0.
-          IF ( ESIN(ITH) .GT. 0.5 ) THEN
-             ESIN(ITH) =  1.
-          ELSE
-             ESIN(ITH) = -1.
-          END IF
-       END IF
-       ES2 (ITH) = ESIN(ITH)**2
-       EC2 (ITH) = ECOS(ITH)**2
-       ESC (ITH) = ESIN(ITH)*ECOS(ITH)
+      TH  (ITH) = DTH * ( RTH0 + REAL(ITH-1) )
+      ESIN(ITH) = SIN ( TH(ITH) )
+      ECOS(ITH) = COS ( TH(ITH) )
+      IF ( ABS(ESIN(ITH)) .LT. 1.E-5 ) THEN
+        ESIN(ITH) = 0.
+        IF ( ECOS(ITH) .GT. 0.5 ) THEN
+          ECOS(ITH) =  1.
+        ELSE
+          ECOS(ITH) = -1.
+        END IF
+      END IF
+      IF ( ABS(ECOS(ITH)) .LT. 1.E-5 ) THEN
+        ECOS(ITH) = 0.
+        IF ( ESIN(ITH) .GT. 0.5 ) THEN
+          ESIN(ITH) =  1.
+        ELSE
+          ESIN(ITH) = -1.
+        END IF
+      END IF
+      ES2 (ITH) = ESIN(ITH)**2
+      EC2 (ITH) = ECOS(ITH)**2
+      ESC (ITH) = ESIN(ITH)*ECOS(ITH)
     END DO
     !
     DO IK=2, NK+1
-       ITH0   = (IK-1)*NTH
-       DO ITH=1, NTH
-          ESIN(ITH0+ITH) = ESIN(ITH)
-          ECOS(ITH0+ITH) = ECOS(ITH)
-          ES2 (ITH0+ITH) = ES2 (ITH)
-          EC2 (ITH0+ITH) = EC2 (ITH)
-          ESC (ITH0+ITH) = ESC (ITH)
-       END DO
+      ITH0   = (IK-1)*NTH
+      DO ITH=1, NTH
+        ESIN(ITH0+ITH) = ESIN(ITH)
+        ECOS(ITH0+ITH) = ECOS(ITH)
+        ES2 (ITH0+ITH) = ES2 (ITH)
+        EC2 (ITH0+ITH) = EC2 (ITH)
+        ESC (ITH0+ITH) = ESC (ITH)
+      END DO
     END DO
     !
     !   b Frequencies :
@@ -1283,25 +1283,25 @@ CONTAINS
     SXFR    = 0.5 * (XFR-1./XFR)
     !
     DO IK=0, NK+1
-       SIGMA    = SIGMA * XFR
-       SIG (IK) = SIGMA
-       DSIP(IK) = SIGMA * SXFR
+      SIGMA    = SIGMA * XFR
+      SIG (IK) = SIGMA
+      DSIP(IK) = SIGMA * SXFR
     END DO
     !
     DSII( 1) = 0.5 * SIG( 1) * (XFR-1.)
     DO IK=2, NK-1
-       DSII(IK) = DSIP(IK)
+      DSII(IK) = DSIP(IK)
     END DO
     DSII(NK) = 0.5 * SIG(NK) * (XFR-1.) / XFR
     !
     DO IK=1, NK
-       DDEN(IK) = DTH * DSII(IK) * SIG(IK)
+      DDEN(IK) = DTH * DSII(IK) * SIG(IK)
     END DO
     !
     DO ISP=1, NSPEC
-       IK         = 1 + (ISP-1)/NTH
-       SIG2 (ISP) = SIG (IK)
-       DDEN2(ISP) = DDEN(IK)
+      IK         = 1 + (ISP-1)/NTH
+      SIG2 (ISP) = SIG (IK)
+      DDEN2(ISP) = DDEN(IK)
     END DO
     !
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1310,16 +1310,16 @@ CONTAINS
     !
     WRITE (NDSO,910)
     IF (FLGNML) THEN
-       FLDRY=NML_RUN%FLDRY
-       FLCX=NML_RUN%FLCX
-       FLCY=NML_RUN%FLCY
-       FLCTH=NML_RUN%FLCTH
-       FLCK=NML_RUN%FLCK
-       FLSOU=NML_RUN%FLSOU
+      FLDRY=NML_RUN%FLDRY
+      FLCX=NML_RUN%FLCX
+      FLCY=NML_RUN%FLCY
+      FLCTH=NML_RUN%FLCTH
+      FLCK=NML_RUN%FLCK
+      FLSOU=NML_RUN%FLSOU
     ELSE
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       READ (NDSI,*,END=2001,ERR=2002)                                 &
-            FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002)                                 &
+           FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
     END IF
     !
     IYN = 2
@@ -1333,25 +1333,25 @@ CONTAINS
     WRITE (NDSO,911) (YESXNO(IYN(IFL)),IFL=1,NFL)
     !
     IF ( .NOT. (FLDRY.OR.FLCX.OR.FLCY.OR.FLCK.OR.FLCTH.OR.FLSOU) ) THEN
-       WRITE (NDSE,1010)
-       CALL EXTCDE ( 2 )
+      WRITE (NDSE,1010)
+      CALL EXTCDE ( 2 )
     END IF
     !
     IF (FLGNML) THEN
-       DTMAX=NML_TIMESTEPS%DTMAX
-       DTCFL=NML_TIMESTEPS%DTXY
-       DTCFLI=NML_TIMESTEPS%DTKTH
-       DTMIN=NML_TIMESTEPS%DTMIN
+      DTMAX=NML_TIMESTEPS%DTMAX
+      DTCFL=NML_TIMESTEPS%DTXY
+      DTCFLI=NML_TIMESTEPS%DTKTH
+      DTMIN=NML_TIMESTEPS%DTMIN
     ELSE
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       READ (NDSI,*,END=2001,ERR=2002) DTMAX, DTCFL, DTCFLI, DTMIN
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002) DTMAX, DTCFL, DTCFLI, DTMIN
     END IF
 #ifdef W3_SEC1
     IF (DTMAX.LT.1.) THEN
-       NITERSEC1=CEILING(1./DTMAX)
-       WRITE (NDSO,913) NITERSEC1
+      NITERSEC1=CEILING(1./DTMAX)
+      WRITE (NDSO,913) NITERSEC1
     ELSE
-       NITERSEC1=1
+      NITERSEC1=1
     END IF
 #endif
 
@@ -1520,59 +1520,59 @@ CONTAINS
          .NOT.FLBT  .AND.  .NOT.FLIC   .AND.  .NOT.FLIS .AND.        &
          .NOT.FLDB  .AND.  .NOT.FLTR   .AND.  .NOT.FLBS .AND.        &
          .NOT.FLREF .AND.  FLSOU ) THEN
-       WRITE (NDSE,1020)
-       CALL EXTCDE ( 10 )
+      WRITE (NDSE,1020)
+      CALL EXTCDE ( 10 )
     END IF
     !
     IF ( ( FLLIN .OR. FLINDS .OR. FLNL .OR. FLBT .OR. FLDB .OR.     &
          FLTR .OR. FLBS .OR. FLREF .OR. FLIC )          &
          .AND. .NOT.FLSOU ) THEN
-       WRITE (NDSE,1021)
+      WRITE (NDSE,1021)
     END IF
     !
     IF ( NRLIN .NE. 1 ) THEN
-       WRITE (NDSE,1022) NRLIN
-       CALL EXTCDE ( 11 )
+      WRITE (NDSE,1022) NRLIN
+      CALL EXTCDE ( 11 )
     END IF
     !
     IF ( NRSRCE .NE. 1 ) THEN
-       WRITE (NDSE,1023) NRSRCE
-       CALL EXTCDE ( 12 )
+      WRITE (NDSE,1023) NRSRCE
+      CALL EXTCDE ( 12 )
     END IF
     !
     IF ( NRNL .NE. 1 ) THEN
-       WRITE (NDSE,1024) NRNL
-       CALL EXTCDE ( 13 )
+      WRITE (NDSE,1024) NRNL
+      CALL EXTCDE ( 13 )
     END IF
     !
     IF ( NRBT .NE. 1 ) THEN
-       WRITE (NDSE,1025) NRBT
-       CALL EXTCDE ( 14 )
+      WRITE (NDSE,1025) NRBT
+      CALL EXTCDE ( 14 )
     END IF
     !
     IF ( NRDB .NE. 1 ) THEN
-       WRITE (NDSE,1026) NRDB
-       CALL EXTCDE ( 15 )
+      WRITE (NDSE,1026) NRDB
+      CALL EXTCDE ( 15 )
     END IF
     !
     IF ( NRTR .NE. 1 ) THEN
-       WRITE (NDSE,1027) NRTR
-       CALL EXTCDE ( 16 )
+      WRITE (NDSE,1027) NRTR
+      CALL EXTCDE ( 16 )
     END IF
     !
     IF ( NRBS .NE. 1 ) THEN
-       WRITE (NDSE,1028) NRBS
-       CALL EXTCDE ( 17 )
+      WRITE (NDSE,1028) NRBS
+      CALL EXTCDE ( 17 )
     END IF
     !
     IF ( NRIC .GT. 1 ) THEN
-       WRITE (NDSE,1034) NRIC
-       CALL EXTCDE ( 19 )
+      WRITE (NDSE,1034) NRIC
+      CALL EXTCDE ( 19 )
     END IF
     !
     IF ( NRIS .GT. 1 ) THEN
-       WRITE (NDSE,1036) NRIS
-       CALL EXTCDE ( 26 )
+      WRITE (NDSE,1036) NRIS
+      CALL EXTCDE ( 26 )
     END IF
 
 
@@ -1581,18 +1581,18 @@ CONTAINS
     !
     WRITE (NDSO,915)
     IF (FLGNML) THEN
-       OPEN (NDSS,FILE=TRIM(FNMPRE)//TRIM(NML_GRID%NML),STATUS='OLD',FORM='FORMATTED')
+      OPEN (NDSS,FILE=TRIM(FNMPRE)//TRIM(NML_GRID%NML),STATUS='OLD',FORM='FORMATTED')
     ELSE
-       OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_grid.scratch',FORM='FORMATTED')
-       DO
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,'(A)',END=2001,ERR=2002) LINE
-          IF ( LINE(1:16) .EQ. 'END OF NAMELISTS' ) THEN
-             EXIT
-          ELSE
-             WRITE (NDSS,'(A)') LINE
-          ENDIF
-       END DO
+      OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_grid.scratch',FORM='FORMATTED')
+      DO
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,'(A)',END=2001,ERR=2002) LINE
+        IF ( LINE(1:16) .EQ. 'END OF NAMELISTS' ) THEN
+          EXIT
+        ELSE
+          WRITE (NDSS,'(A)') LINE
+        ENDIF
+      END DO
     END IF
     WRITE (NDSO,916)
     !
@@ -1622,10 +1622,10 @@ CONTAINS
     WRITE (NDSO,810) STATUS
     CDMAX  = MAX ( 0. , CDMAX )
     IF ( CTYPE .EQ. 1 ) THEN
-       TYPEID = 'hyperbolic tangent'
+      TYPEID = 'hyperbolic tangent'
     ELSE
-       CTYPE = 0
-       TYPEID = 'discontinuous     '
+      CTYPE = 0
+      TYPEID = 'discontinuous     '
     END IF
     WRITE (NDSO,811) CDMAX*1.E3, TYPEID
     CD_MAX =    CDMAX
@@ -1739,14 +1739,14 @@ CONTAINS
     WRITE (NDSO,921) ZWND, SWELLF
     IF ( STABSH .LT. 0.1 ) STABSH = 1.
     IF ( CNEG*CPOS .EQ. 0. ) THEN
-       CNEG   = 0.
-       CPOS   = 0.
-       FNEG   = 0.
-       FPOS   = 0.
+      CNEG   = 0.
+      CPOS   = 0.
+      FNEG   = 0.
+      FPOS   = 0.
     ELSE
-       CPOS   = - ABS(CPOS) * ABS(CNEG)/CNEG
-       FNEG   = - MAX(1.,ABS(FNEG))
-       FPOS   = FNEG * CNEG/CPOS
+      CPOS   = - ABS(CPOS) * ABS(CNEG)/CNEG
+      FNEG   = - MAX(1.,ABS(FNEG))
+      FPOS   = FNEG * CNEG/CPOS
     END IF
 #endif
 #ifdef W3_STAB2
@@ -1822,13 +1822,13 @@ CONTAINS
 #ifdef W3_NL1
     LAMBDA =  0.25
     IF ( FLTC96 ) THEN
-       NLPROP =  1.00E7
+      NLPROP =  1.00E7
     ELSE IF ( FLST4 ) THEN
-       NLPROP =  2.50E7
+      NLPROP =  2.50E7
     ELSE IF ( FLST6 ) THEN
-       NLPROP =  3.00E7
+      NLPROP =  3.00E7
     ELSE
-       NLPROP =  2.78E7
+      NLPROP =  2.78E7
     END IF
 #endif
     !
@@ -1910,37 +1910,37 @@ CONTAINS
     WRITE (NDSO,922) STATUS
     TAILNL = MIN ( MAX ( TAILNL, -5. ) , -4. )
     IF ( IQTYPE .EQ. 3 ) THEN
-       WRITE (NDSO,923) 'Shallow water', TAILNL
+      WRITE (NDSO,923) 'Shallow water', TAILNL
     ELSE IF ( IQTYPE .EQ. 2 ) THEN
-       WRITE (NDSO,923) 'Deep water with scaling', TAILNL
+      WRITE (NDSO,923) 'Deep water with scaling', TAILNL
     ELSE
-       WRITE (NDSO,923) 'Deep water', TAILNL
-       IQTYPE = 1
+      WRITE (NDSO,923) 'Deep water', TAILNL
+      IQTYPE = 1
     END IF
 #endif
     !
 #ifdef W3_NL2
     IF ( IQTYPE .NE. 3 ) THEN
-       NDEPTH = 1
-       ALLOCATE ( MPARS(1)%SNLPS%DPTHNL(NDEPTH) )
-       DPTHNL => MPARS(1)%SNLPS%DPTHNL
-       DPTHNL = 1000.
+      NDEPTH = 1
+      ALLOCATE ( MPARS(1)%SNLPS%DPTHNL(NDEPTH) )
+      DPTHNL => MPARS(1)%SNLPS%DPTHNL
+      DPTHNL = 1000.
     ELSE
-       IF ( NDEPTH .EQ. 0 ) NDEPTH = 7
-       NDEPTH = MAX ( 1 , NDEPTH )
-       ALLOCATE ( MPARS(1)%SNLPS%DPTHNL(NDEPTH) )
-       DPTHNL => MPARS(1)%SNLPS%DPTHNL
-       DPTHNL(1) = 640.
-       DPTHNL(NDEPTH) = 10.
-       IF ( NDEPTH .GT. 1 ) THEN
-          DPTFAC = (DPTHNL(NDEPTH)/DPTHNL(1))**(1./(REAL(NDEPTH-1)))
-          DO IDEPTH=2, NDEPTH-1
-             DPTHNL(IDEPTH) = DPTFAC*DPTHNL(IDEPTH-1)
-          END DO
-       END IF
-       CALL READNL ( NDSS, 'ANL2', STATUS )
-       WRITE (NDSO,1923) NDEPTH, DPTHNL(1:MIN(5,NDEPTH))
-       IF (NDEPTH .GT. 5 )WRITE (NDSO,2923) DPTHNL(6:NDEPTH)
+      IF ( NDEPTH .EQ. 0 ) NDEPTH = 7
+      NDEPTH = MAX ( 1 , NDEPTH )
+      ALLOCATE ( MPARS(1)%SNLPS%DPTHNL(NDEPTH) )
+      DPTHNL => MPARS(1)%SNLPS%DPTHNL
+      DPTHNL(1) = 640.
+      DPTHNL(NDEPTH) = 10.
+      IF ( NDEPTH .GT. 1 ) THEN
+        DPTFAC = (DPTHNL(NDEPTH)/DPTHNL(1))**(1./(REAL(NDEPTH-1)))
+        DO IDEPTH=2, NDEPTH-1
+          DPTHNL(IDEPTH) = DPTFAC*DPTHNL(IDEPTH-1)
+        END DO
+      END IF
+      CALL READNL ( NDSS, 'ANL2', STATUS )
+      WRITE (NDSO,1923) NDEPTH, DPTHNL(1:MIN(5,NDEPTH))
+      IF (NDEPTH .GT. 5 )WRITE (NDSO,2923) DPTHNL(6:NDEPTH)
     END IF
     WRITE (NDST,*)
     IQTPE  = IQTYPE
@@ -1962,21 +1962,21 @@ CONTAINS
 #ifdef W3_NL3
     NQDEF  = MAX ( 0 , NQDEF )
     IF ( NQDEF .EQ. 0 ) THEN
-       NQDEF  = 1
-       QPARMS(1:5) = [ 0.25 , 0.00, -1., 1.E7, 0.00 ]
+      NQDEF  = 1
+      QPARMS(1:5) = [ 0.25 , 0.00, -1., 1.E7, 0.00 ]
     ELSE
-       DO J=1, NQDEF
-          QPARMS((J-1)*5+1:J*5) = [ 0.25, 0.00, -1., 1.E7, 1.E6 ]
-       END DO
-       CALL READNL ( NDSS, 'ANL3', STATUS )
+      DO J=1, NQDEF
+        QPARMS((J-1)*5+1:J*5) = [ 0.25, 0.00, -1., 1.E7, 1.E6 ]
+      END DO
+      CALL READNL ( NDSS, 'ANL3', STATUS )
     END IF
     DO J=1, NQDEF
-       QPARMS((J-1)*5+1) = MAX(0.,MIN (LAMMAX,QPARMS((J-1)*5+1)))
-       QPARMS((J-1)*5+2) = MAX(0.,MIN (QPARMS((J-1)*5+1),        &
-            QPARMS((J-1)*5+2)))
-       QPARMS((J-1)*5+3) = MIN (DELTHM,QPARMS((J-1)*5+3))
-       QPARMS((J-1)*5+4) = MAX (0.,QPARMS((J-1)*5+4))
-       QPARMS((J-1)*5+5) = MAX (0.,QPARMS((J-1)*5+5))
+      QPARMS((J-1)*5+1) = MAX(0.,MIN (LAMMAX,QPARMS((J-1)*5+1)))
+      QPARMS((J-1)*5+2) = MAX(0.,MIN (QPARMS((J-1)*5+1),        &
+           QPARMS((J-1)*5+2)))
+      QPARMS((J-1)*5+3) = MIN (DELTHM,QPARMS((J-1)*5+3))
+      QPARMS((J-1)*5+4) = MAX (0.,QPARMS((J-1)*5+4))
+      QPARMS((J-1)*5+5) = MAX (0.,QPARMS((J-1)*5+5))
     END DO
     WRITE (NDSO,1923) NQDEF
     WRITE (NDSO,2923) QPARMS(1:NQDEF*5)
@@ -2145,21 +2145,21 @@ CONTAINS
     CALL READNL ( NDSS, 'SDS2', STATUS )
     WRITE (NDSO,924) STATUS
     IF ( PHIMIN .LE. 0. ) THEN
-       SDSB2  = 0.
-       SDSB3  = 0.
-       PHIMIN = SDSB0 + SDSB1*FPIMIN
+      SDSB2  = 0.
+      SDSB3  = 0.
+      PHIMIN = SDSB0 + SDSB1*FPIMIN
     ELSE
-       FPIA   = ( PHIMIN - SDSB0 ) / SDSB1
-       IF ( FPIA .LT. FPIMIN ) THEN
-          SDSB3  = 4.
-          SDSB2  = FPIMIN**SDSB3 * (PHIMIN-SDSB0-SDSB1*FPIMIN)
-       ELSE
-          FPIB   = MAX ( FPIA-0.0025 , FPIMIN )
-          DPHID  = MAX ( PHIMIN - SDSB0 - SDSB1*FPIB , 1.E-15 )
-          SDSB3  = MIN ( 10. , SDSB1*FPIB / DPHID )
-          SDSB2  = FPIB**SDSB3 * DPHID
-          FPIMIN = FPIB
-       END IF
+      FPIA   = ( PHIMIN - SDSB0 ) / SDSB1
+      IF ( FPIA .LT. FPIMIN ) THEN
+        SDSB3  = 4.
+        SDSB2  = FPIMIN**SDSB3 * (PHIMIN-SDSB0-SDSB1*FPIMIN)
+      ELSE
+        FPIB   = MAX ( FPIA-0.0025 , FPIMIN )
+        DPHID  = MAX ( PHIMIN - SDSB0 - SDSB1*FPIB , 1.E-15 )
+        SDSB3  = MIN ( 10. , SDSB1*FPIB / DPHID )
+        SDSB2  = FPIB**SDSB3 * DPHID
+        FPIMIN = FPIB
+      END IF
     END IF
     WRITE (NDSO,925) SDSA0, SDSA1, SDSA2,                      &
          SDSB0, SDSB1, SDSB2, SDSB3, FPIMIN, PHIMIN
@@ -2259,9 +2259,9 @@ CONTAINS
     SWL6B1 = SWLB1
     SWL6CSTB1 = CSTB1
     IF (CSTB1) THEN
-       WRITE (NDSO,940) YESXNO(J), '(constant)           ' ,SWL6B1
+      WRITE (NDSO,940) YESXNO(J), '(constant)           ' ,SWL6B1
     ELSE
-       WRITE (NDSO,940) YESXNO(J), '(steepness dependent)' ,SWL6B1
+      WRITE (NDSO,940) YESXNO(J), '(steepness dependent)' ,SWL6B1
     END IF
 #endif
     !
@@ -2329,10 +2329,10 @@ CONTAINS
     BJGAM  = MAX ( 0. , BJGAM )
     WRITE (NDSO,929) BJALFA, BJGAM
     IF ( BJFLAG ) THEN
-       WRITE (NDSO,*) '      Using Hmax/d ratio only.'
+      WRITE (NDSO,*) '      Using Hmax/d ratio only.'
     ELSE
-       WRITE (NDSO,*)                                       &
-            '      Using Hmax/d in Miche style formulation.'
+      WRITE (NDSO,*)                                       &
+           '      Using Hmax/d in Miche style formulation.'
     END IF
     WRITE (NDSO,*)
     SDBC1  = BJALFA
@@ -2461,15 +2461,15 @@ CONTAINS
     IF (EXPTOTAL) nbSel = nbSel+1
 
     IF (GTYPE .EQ. UNGTYPE) THEN
-       IF (nbSel .ne. 1) THEN
-          IF (nbSel .gt. 1) THEN
-             WRITE (NDSE,*) 'MORE THAN ONE UNSTRUCTURED SCHEME SELECTED'
-             CALL EXTCDE ( 19 )
-          ELSE IF (nbSel .eq. 0) THEN
-             WRITE (NDSE,*) 'NOTHING SELECTED FROM THE UNSTRUCTURED PART'
-             CALL EXTCDE ( 19 )
-          END IF
-       END IF
+      IF (nbSel .ne. 1) THEN
+        IF (nbSel .gt. 1) THEN
+          WRITE (NDSE,*) 'MORE THAN ONE UNSTRUCTURED SCHEME SELECTED'
+          CALL EXTCDE ( 19 )
+        ELSE IF (nbSel .eq. 0) THEN
+          WRITE (NDSE,*) 'NOTHING SELECTED FROM THE UNSTRUCTURED PART'
+          CALL EXTCDE ( 19 )
+        END IF
+      END IF
     END IF
     !
     ! 6.m Select propagation scheme
@@ -2509,22 +2509,22 @@ CONTAINS
 #endif
     !
     IF ( (FLCX.OR.FLCY.OR.FLCTH.OR.FLCK) .AND. .NOT. FLPROP ) THEN
-       WRITE (NDSE,1030)
-       CALL EXTCDE ( 20 )
+      WRITE (NDSE,1030)
+      CALL EXTCDE ( 20 )
     END IF
     !
     IF ( .NOT.(FLCX.OR.FLCY.OR.FLCTH.OR.FLCK) .AND. FLPROP ) THEN
-       WRITE (NDSE,1031)
+      WRITE (NDSE,1031)
     END IF
     !
     IF ( NRPROP.EQ.0 ) THEN
-       WRITE (NDSE,1032)
-       CALL EXTCDE ( 21 )
+      WRITE (NDSE,1032)
+      CALL EXTCDE ( 21 )
     END IF
     !
     IF ( NRPROP .GT. 1 ) THEN
-       WRITE (NDSE,1033) NRPROP
-       CALL EXTCDE ( 22 )
+      WRITE (NDSE,1033) NRPROP
+      CALL EXTCDE ( 22 )
     END IF
     !
     ! 6.m Parameters for propagation scheme
@@ -2583,9 +2583,9 @@ CONTAINS
     LATMIN = MIN ( 89. , ABS(LATMIN) )
     CLATMN = COS ( LATMIN * DERA )
     IF ( DTIME .EQ. 0. ) THEN
-       WRITE (NDSO,953) CFLTM, LATMIN
+      WRITE (NDSO,953) CFLTM, LATMIN
     ELSE
-       WRITE (NDSO,954) CFLTM, DTIME/3600., LATMIN
+      WRITE (NDSO,954) CFLTM, DTIME/3600., LATMIN
     END IF
     DTME   = DTIME
 #endif
@@ -2631,13 +2631,13 @@ CONTAINS
 #endif
     IF (GTYPE.NE.UNGTYPE) THEN
 #ifdef W3_PR3
-       WRITE (NDSO,952) STATUS(1:18)
-       CFLTM  = MAX ( 0. , CFLTM )
-       WRITE (NDSO,953) CFLTM, WDTHCG
-       IF ( WDTHCG*(XFR-1.) .GT. 1. ) WRITE (NDSO,955) 1./(XFR-1.)
-       WRITE (NDSO,954) WDTHTH
-       IF ( WDTHTH*DTH .GT. 1. ) WRITE (NDSO,955) 1./DTH
-       WRITE (NDSO,*)
+      WRITE (NDSO,952) STATUS(1:18)
+      CFLTM  = MAX ( 0. , CFLTM )
+      WRITE (NDSO,953) CFLTM, WDTHCG
+      IF ( WDTHCG*(XFR-1.) .GT. 1. ) WRITE (NDSO,955) 1./(XFR-1.)
+      WRITE (NDSO,954) WDTHTH
+      IF ( WDTHTH*DTH .GT. 1. ) WRITE (NDSO,955) 1./DTH
+      WRITE (NDSO,*)
 #endif
     ENDIF
 #ifdef W3_PR3
@@ -2658,8 +2658,8 @@ CONTAINS
     PLON = MOD( PLON + 180., 360. ) - 180.
     ! Ensure that a grid with pole at the geographic North is standard lat-lon
     IF ( PLAT == 90. .AND. ( PLON /= -180. .OR. UNROT ) ) THEN
-       WRITE( NDSE, 1052 )
-       CALL EXTCDE ( 33 )
+      WRITE( NDSE, 1052 )
+      CALL EXTCDE ( 33 )
     ENDIF
     ! Default poles of output b. c. are non-rotated:
     BPLAT = 90.
@@ -2667,14 +2667,14 @@ CONTAINS
     CALL READNL ( NDSS, 'ROTB', STATUS )
     ! A b. c. dest. grid with pole at the geographic North must be non-rotated
     DO I=1,9
-       IF ( BPLAT(I) == 90. ) THEN
-          ! Require BPLON(I) == -180., but don't blaim the user if BPLON(I) == 180.
-          IF ( BPLON(I) == 180. ) BPLON(I) = -180.
-          IF ( BPLON(I) == -180. ) CYCLE
-       END IF
-       IF ( BPLAT(I) < 90. ) CYCLE
-       WRITE( NDSE, 1053 )
-       CALL EXTCDE ( 34 )
+      IF ( BPLAT(I) == 90. ) THEN
+        ! Require BPLON(I) == -180., but don't blaim the user if BPLON(I) == 180.
+        IF ( BPLON(I) == 180. ) BPLON(I) = -180.
+        IF ( BPLON(I) == -180. ) CYCLE
+      END IF
+      IF ( BPLAT(I) < 90. ) CYCLE
+      WRITE( NDSE, 1053 )
+      CALL EXTCDE ( 34 )
     END DO
 #endif
     !
@@ -2958,16 +2958,16 @@ CONTAINS
     USSPF(1) = USSP
     USSPF(2) = MAX( 1 , MIN(25, IUSSP ) )
     IF (IUSSP.GT.25) THEN
-       WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN ww3_grid:'
-       WRITE(NDSE,*) "  Stokes drift partition outputs not    "
-       WRITE(NDSE,*) "   intended for use with more than 25   "
-       WRITE(NDSE,*) "   partitions.  Please reduce IUSSP     "
-       WRITE(NDSE,*) "   specified in ww3_grid.inp to proceed "
-       CALL EXTCDE( 31)
+      WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN ww3_grid:'
+      WRITE(NDSE,*) "  Stokes drift partition outputs not    "
+      WRITE(NDSE,*) "   intended for use with more than 25   "
+      WRITE(NDSE,*) "   partitions.  Please reduce IUSSP     "
+      WRITE(NDSE,*) "   specified in ww3_grid.inp to proceed "
+      CALL EXTCDE( 31)
     ENDIF
 
     DO J=1,USSPF(2)
-       USSP_WN(j) = STK_WN(J)
+      USSP_WN(j) = STK_WN(J)
     ENDDO
 
     !
@@ -2976,7 +2976,7 @@ CONTAINS
     WRITE (NDSO,4973) E3DF(1:3,1)
     WRITE (NDSO,4974) USSPF(1:2)
     DO J=1,USSPF(2)
-       WRITE(NDSO,4975) J,USSP_WN(J)
+      WRITE(NDSO,4975) J,USSP_WN(J)
     ENDDO
     !
     CALL READNL ( NDSS, 'MISC', STATUS )
@@ -3014,10 +3014,10 @@ CONTAINS
     ! Notes: Presently, if we select CICE0.ne.CICEN requires an obstruction
     !     grid, that is initialized with zeros as default.
     IF ( FLAGTR .LT. 3 ) THEN
-       IF (CICE0.NE.CICEN) THEN
-          CICE0 = CICEN
-          IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
-       END IF
+      IF (CICE0.NE.CICEN) THEN
+        CICE0 = CICEN
+        IF (STATUS=='(user def. values) :')  WRITE (NDSO,2961)
+      END IF
     END IF
 #ifdef W3_IC0
     IF ( CICE0.EQ.CICEN .AND. FLAGTR.GE.3 ) FLAGTR = FLAGTR - 2
@@ -3028,20 +3028,20 @@ CONTAINS
     ! Variables for Space-Time Extremes
     STEXU = STDX
     IF ( STDY .LE. 0. ) THEN
-       STDY = STDX
+      STDY = STDX
     END IF
     STEYU = STDY
     STEDU = STDT
     IF ( STDX .GT. 0 ) THEN
-       WRITE (NDSO,1040) STDX
-       WRITE (NDSO,1041) STDY
+      WRITE (NDSO,1040) STDX
+      WRITE (NDSO,1041) STDY
     ELSE
-       WRITE (NDSO,1042)
+      WRITE (NDSO,1042)
     END IF
     IF ( STDT .GT. 0 ) THEN
-       WRITE (NDSO,1043) STDT
+      WRITE (NDSO,1043) STDT
     ELSE
-       WRITE (NDSO,1044)
+      WRITE (NDSO,1044)
     END IF
 #ifdef W3_MGG
     WRITE (NDSO,962) PMOVE
@@ -3082,33 +3082,33 @@ CONTAINS
     PTFCUT = PTFC ! Freq cutoff for partitiong method 5
     PMNAM2 = ""
     IF( PTMETH .EQ. 1 ) THEN
-       PMNAME = "WW3 default"
+      PMNAME = "WW3 default"
     ELSE IF( PTMETH .EQ. 2 ) THEN
-       PMNAME = "Watershedding plus wind cut-off"
+      PMNAME = "Watershedding plus wind cut-off"
     ELSE IF( PTMETH .EQ. 3 ) THEN
-       PMNAME = "Watershedding only"
-       WSCUT = 0.0 ! We don't want to classify by ws frac
-       PMNAM2 = "WSC set to 0.0"
+      PMNAME = "Watershedding only"
+      WSCUT = 0.0 ! We don't want to classify by ws frac
+      PMNAM2 = "WSC set to 0.0"
     ELSE IF( PTMETH .EQ. 4 ) THEN
-       PMNAME = "Wind speed cut-off only"
-       PMNAM2 = "WSC set to 0.0, NOSW set to 1"
-       WSCUT = 0.0 ! We don't want to classify by ws frac
-       NOSWLL = 1  ! Only ever one swell
+      PMNAME = "Wind speed cut-off only"
+      PMNAM2 = "WSC set to 0.0, NOSW set to 1"
+      WSCUT = 0.0 ! We don't want to classify by ws frac
+      NOSWLL = 1  ! Only ever one swell
     ELSE IF( PTMETH .EQ. 5 ) THEN
-       WRITE(PMNAME, '("2-Band hi/low cutoff at ", F4.2,"Hz")') PTFCUT
-       PMNAM2 = "WSC set to 0.0, NOSW set to 1"
-       WSCUT = 0.0 ! We don't want to classify by ws frac
-       NOSWLL = 1  ! Only ever one swell
+      WRITE(PMNAME, '("2-Band hi/low cutoff at ", F4.2,"Hz")') PTFCUT
+      PMNAM2 = "WSC set to 0.0, NOSW set to 1"
+      WSCUT = 0.0 ! We don't want to classify by ws frac
+      NOSWLL = 1  ! Only ever one swell
     ELSE
-       WRITE( NDSE, * )                                                &
-            "*** Error - unknown partitioing method (PTM)! ***"
-       CALL EXIT(1)
+      WRITE( NDSE, * )                                                &
+           "*** Error - unknown partitioing method (PTM)! ***"
+      CALL EXIT(1)
     ENDIF
 
     IF ( FLCOMB ) THEN
-       J      = 1
+      J      = 1
     ELSE
-       J      = 2
+      J      = 2
     END IF
     WRITE (NDSO,966) IHMAX, HSPMIN, WSMULT, WSCUT, YESXNO(J), NOSWLL
     WRITE (NDSO,5971) PMNAME
@@ -3164,255 +3164,255 @@ CONTAINS
     ! 6.o End of namelist processing
     !
     IF (FLGNML) THEN
-       CLOSE (NDSS)
+      CLOSE (NDSS)
     ELSE
-       CLOSE (NDSS,STATUS='DELETE')
+      CLOSE (NDSS,STATUS='DELETE')
     END IF
     !
     IF ( FLNMLO ) THEN
-       WRITE (NDSO,917)
+      WRITE (NDSO,917)
 #ifdef W3_FLX3
-       WRITE (NDSO,2810) CDMAX*1.E3, CTYPE
+      WRITE (NDSO,2810) CDMAX*1.E3, CTYPE
 #endif
 #ifdef W3_FLX4
-       WRITE (NDSO,2810) CDFAC
+      WRITE (NDSO,2810) CDFAC
 #endif
 #ifdef W3_LN1
-       WRITE (NDSO,2820) CLIN, RFPM, RFHF
+      WRITE (NDSO,2820) CLIN, RFPM, RFHF
 #endif
 #ifdef W3_ST1
-       WRITE (NDSO,2920) CINP
+      WRITE (NDSO,2920) CINP
 #endif
-       IF ( .NOT. FLSTB2 ) THEN
+      IF ( .NOT. FLSTB2 ) THEN
 #ifdef W3_ST2
-          WRITE (NDSO,2920) ZWND, SWELLF
+        WRITE (NDSO,2920) ZWND, SWELLF
 #endif
-       ELSE
+      ELSE
 #ifdef W3_STAB2
-          WRITE (NDSO,2921) ZWND, SWELLF, STABSH, STABOF,  &
-               CNEG, CPOS, FNEG
+        WRITE (NDSO,2921) ZWND, SWELLF, STABSH, STABOF,  &
+             CNEG, CPOS, FNEG
 #endif
-       END IF
-       !
+      END IF
+      !
 #ifdef W3_ST3
-       WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
-            SWELLF
+      WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
+           SWELLF
 #endif
 #ifdef W3_ST4
-       WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
-            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-            SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
+      WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
+           TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
+           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
 #endif
 #ifdef W3_ST6
-       WRITE (NDSO,2920) SINA0, SINWS, SINFC
+      WRITE (NDSO,2920) SINA0, SINWS, SINFC
 #endif
 #ifdef W3_NL1
-       WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
-            SNLCS1, SNLCS2, SNLCS3
+      WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
+           SNLCS1, SNLCS2, SNLCS3
 #endif
 #ifdef W3_NL2
-       WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
-       IF ( IQTYPE .EQ. 3 ) THEN
-          IF ( NDEPTH .EQ. 1 ) THEN
-             WRITE (NDSO,3923) DPTHNL(1)
-          ELSE
-             WRITE (NDSO,4923) DPTHNL(1)
-          END IF
-          WRITE (NDSO,5923) DPTHNL(2:NDEPTH-1)
-          WRITE (NDSO,6923) DPTHNL(NDEPTH)
-       END IF
+      WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
+      IF ( IQTYPE .EQ. 3 ) THEN
+        IF ( NDEPTH .EQ. 1 ) THEN
+          WRITE (NDSO,3923) DPTHNL(1)
+        ELSE
+          WRITE (NDSO,4923) DPTHNL(1)
+        END IF
+        WRITE (NDSO,5923) DPTHNL(2:NDEPTH-1)
+        WRITE (NDSO,6923) DPTHNL(NDEPTH)
+      END IF
 #endif
 #ifdef W3_NL3
-       WRITE (NDSO,2922) NQDEF, MSC, NSC, KDFD, KDFS
-       IF ( NQDEF .EQ. 1 ) THEN
-          WRITE (NDSO,3923) QPARMS(1:5)
-       ELSE
-          WRITE (NDSO,4923) QPARMS(1:5)
-          DO J=2, NQDEF-1
-             WRITE (NDSO,5923) QPARMS((J-1)*5+1:J*5)
-          END DO
-          WRITE (NDSO,6923) QPARMS((NQDEF-1)*5+1:NQDEF*5)
-       END IF
+      WRITE (NDSO,2922) NQDEF, MSC, NSC, KDFD, KDFS
+      IF ( NQDEF .EQ. 1 ) THEN
+        WRITE (NDSO,3923) QPARMS(1:5)
+      ELSE
+        WRITE (NDSO,4923) QPARMS(1:5)
+        DO J=2, NQDEF-1
+          WRITE (NDSO,5923) QPARMS((J-1)*5+1:J*5)
+        END DO
+        WRITE (NDSO,6923) QPARMS((NQDEF-1)*5+1:NQDEF*5)
+      END IF
 #endif
 #ifdef W3_NL4
-       WRITE (NDSO,2922) INDTSA, ALTLP
+      WRITE (NDSO,2922) INDTSA, ALTLP
 #endif
 #ifdef W3_NL5
-       WRITE (NDSO,2922) QR5DPT, QR5OML, QI5DIS, QI5KEV, QI5IPL, QI5PMX
+      WRITE (NDSO,2922) QR5DPT, QR5OML, QI5DIS, QI5KEV, QI5IPL, QI5PMX
 #endif
 #ifdef W3_NLS
-       WRITE (NDSO,8922) A34, FHFC, DNM, FC1, FC2, FC3
+      WRITE (NDSO,8922) A34, FHFC, DNM, FC1, FC2, FC3
 #endif
 #ifdef W3_ST1
-       WRITE (NDSO,2924) CDIS, APM
+      WRITE (NDSO,2924) CDIS, APM
 #endif
 #ifdef W3_ST2
-       WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
+      WRITE (NDSO,2924) SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN
 #endif
 #ifdef W3_ST3
-       WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
-            SDSDELTA2
+      WRITE (NDSO,2924) SDSC1, WNMEANP, FXPM3, FXFM3, SDSDELTA1,  &
+           SDSDELTA2
 #endif
 
 #ifdef W3_ST4
-       WRITE (NDSO,2924) SDSBCHOICE, SDSC2, SDSCUM, SDSC4,         &
-            SDSC5, SDSC6, &
-            WNMEANP, FXPM3, FXFM3, FXFMAGE,                   &
-            SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
-            SDSBR, SDSSTRAIN,  SDSSTRAINA,  SDSSTRAIN2,       &
-            SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
-            SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
-            SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
-            SDSCUMP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
+      WRITE (NDSO,2924) SDSBCHOICE, SDSC2, SDSCUM, SDSC4,         &
+           SDSC5, SDSC6, &
+           WNMEANP, FXPM3, FXFM3, FXFMAGE,                   &
+           SDSBINT, SDSBCK, SDSABK, SDSPBK, SDSHCK,          &
+           SDSBR, SDSSTRAIN,  SDSSTRAINA,  SDSSTRAIN2,       &
+           SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
+           SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
+           SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
+           SDSCUMP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
 #endif
 #ifdef W3_ST6
-       WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
-       WRITE (NDSO,2937) SWLB1, CSTB1
+      WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
+      WRITE (NDSO,2937) SWLB1, CSTB1
 #endif
 #ifdef W3_BT1
-       WRITE (NDSO,2926) GAMMA
+      WRITE (NDSO,2926) GAMMA
 #endif
 #ifdef W3_BT4
-       WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
-            RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
-            BOTROUGHMIN, BOTROUGHFAC
+      WRITE (NDSO,2926) SEDMAPD50, SED_D50_UNIFORM,      &
+           RIPFAC1,RIPFAC2,RIPFAC3,RIPFAC4, SIGDEPTH, &
+           BOTROUGHMIN, BOTROUGHFAC
 #endif
 #ifdef W3_DB1
-       IF ( BJFLAG ) THEN
-          WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
-       ELSE
-          WRITE (NDSO,2928) BJALFA, BJGAM, '.FALSE.'
-       END IF
+      IF ( BJFLAG ) THEN
+        WRITE (NDSO,2928) BJALFA, BJGAM, '.TRUE.'
+      ELSE
+        WRITE (NDSO,2928) BJALFA, BJGAM, '.FALSE.'
+      END IF
 #endif
 #ifdef W3_PR1
-       WRITE (NDSO,2953) CFLTM
+      WRITE (NDSO,2953) CFLTM
 #endif
 #ifdef W3_PR2
-       WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
+      WRITE (NDSO,2953) CFLTM, DTIME, LATMIN
 #endif
 #ifdef W3_SMC
-       WRITE (NDSO,2954) CFLSM, DTIMS, Arctic, RFMAXD, UNO3, &
-            AVERG, LvSMC, NBISMC, ISHFT, JEQT, SEAWND
+      WRITE (NDSO,2954) CFLSM, DTIMS, Arctic, RFMAXD, UNO3, &
+           AVERG, LvSMC, NBISMC, ISHFT, JEQT, SEAWND
 #endif
 #ifdef W3_PR3
-       WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
+      WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 #endif
-       !
-       WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
-            EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
-            IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
-            IMPSOURCE, SETUP_APPLY_WLV,                 &
-            JGS_TERMINATE_MAXITER,                      &
-            JGS_TERMINATE_DIFFERENCE,                   &
-            JGS_TERMINATE_NORM,                         &
-            JGS_LIMITER,                                &
-            JGS_USE_JACOBI,                             &
-            JGS_BLOCK_GAUSS_SEIDEL,                     &
-            JGS_MAXITER,                                &
-            JGS_PMIN,                                   &
-            JGS_DIFF_THR,                               &
-            JGS_NORM_THR,                               &
-            JGS_NLEVEL,                                 &
-            JGS_SOURCE_NONLINEAR
-       !
-       WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
-            US3D, I1US3D, I2US3D,                    &
-            USSP, IUSSP,                             &
-            E3D, I1E3D, I2E3D,                       &
-            TH1MF, I1TH1M, I2TH1M,                   &
-            STH1MF, I1STH1M, I2STH1M,                &
-            TH2MF, I1TH2M, I2TH2M,                   &
-            STH2MF, I1STH2M, I2STH2M
-       !
+      !
+      WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
+           EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
+           IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
+           IMPSOURCE, SETUP_APPLY_WLV,                 &
+           JGS_TERMINATE_MAXITER,                      &
+           JGS_TERMINATE_DIFFERENCE,                   &
+           JGS_TERMINATE_NORM,                         &
+           JGS_LIMITER,                                &
+           JGS_USE_JACOBI,                             &
+           JGS_BLOCK_GAUSS_SEIDEL,                     &
+           JGS_MAXITER,                                &
+           JGS_PMIN,                                   &
+           JGS_DIFF_THR,                               &
+           JGS_NORM_THR,                               &
+           JGS_NLEVEL,                                 &
+           JGS_SOURCE_NONLINEAR
+      !
+      WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
+           US3D, I1US3D, I2US3D,                    &
+           USSP, IUSSP,                             &
+           E3D, I1E3D, I2E3D,                       &
+           TH1MF, I1TH1M, I2TH1M,                   &
+           STH1MF, I1STH1M, I2STH1M,                &
+           TH2MF, I1TH2M, I2TH2M,                   &
+           STH2MF, I1STH2M, I2STH2M
+      !
 #ifdef W3_REF1
-       WRITE(NDSO,2986) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
-            REFMAPD, REFSUBGRID , REFRMAX, REFFREQPOW,  &
-            REFICEBERG, REFCOSP_STRAIGHT, REFUNSTSOURCE
+      WRITE(NDSO,2986) REFCOAST, REFFREQ, REFSLOPE, REFMAP,  &
+           REFMAPD, REFSUBGRID , REFRMAX, REFFREQPOW,  &
+           REFICEBERG, REFCOSP_STRAIGHT, REFUNSTSOURCE
 #endif
-       !
+      !
 #ifdef W3_IG1
-       WRITE(NDSO,2977) IGMETHOD, IGADDOUTP, IGSOURCE,         &
-            IGSTERMS, IGBCOVERWRITE, IGSWELLMAX,         &
-            IGMAXFREQ, IGSOURCEATBP, IGKDMIN,            &
-            IGFIXEDDEPTH, IGEMPIRICAL
+      WRITE(NDSO,2977) IGMETHOD, IGADDOUTP, IGSOURCE,         &
+           IGSTERMS, IGBCOVERWRITE, IGSWELLMAX,         &
+           IGMAXFREQ, IGSOURCEATBP, IGKDMIN,            &
+           IGFIXEDDEPTH, IGEMPIRICAL
 #endif
-       !
+      !
 #ifdef W3_IC2
-       WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
-            IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS,  &
-            IC2DMAX
+      WRITE(NDSO,2978) IC2DISPER, IC2TURB, IC2ROUGH,          &
+           IC2REYNOLDS,  IC2SMOOTH, IC2VISC, IC2TURBS,  &
+           IC2DMAX
 #endif
-       !
+      !
 #ifdef W3_IC3
-       WRITE(NDSO,2979) IC3MAXTHK, IC3MAXCNC, IC2TURB,         &
-            IC2ROUGH,  IC2REYNOLDS,  IC2SMOOTH,    &
-            IC2VISC, IC2TURBS, IC3CHENG,           &
-            USECGICE, IC3HILIM, IC3KILIM,          &
-            IC3HICE, IC3VISC, IC3DENS, IC3ELAS
+      WRITE(NDSO,2979) IC3MAXTHK, IC3MAXCNC, IC2TURB,         &
+           IC2ROUGH,  IC2REYNOLDS,  IC2SMOOTH,    &
+           IC2VISC, IC2TURBS, IC3CHENG,           &
+           USECGICE, IC3HILIM, IC3KILIM,          &
+           IC3HICE, IC3VISC, IC3DENS, IC3ELAS
 #endif
-       !
+      !
 #ifdef W3_IC4
-       WRITE(NDSO,NML=SIC4)
+      WRITE(NDSO,NML=SIC4)
 #endif
-       !
+      !
 #ifdef W3_IC5
-       WRITE(NDSO,2981) IC5MINIG, IC5MINWT, IC5MAXKRATIO,       &
-            IC5MAXKI, IC5MINHW, IC5MAXITER,         &
-            IC5RKICK, IC5KFILTER, IC5VEMOD
+      WRITE(NDSO,2981) IC5MINIG, IC5MINWT, IC5MAXKRATIO,       &
+           IC5MAXKI, IC5MINHW, IC5MAXITER,         &
+           IC5RKICK, IC5KFILTER, IC5VEMOD
 #endif
-       !
+      !
 #ifdef W3_IS1
-       WRITE (NDSO,2946) IS1C1, IS1C2
+      WRITE (NDSO,2946) IS1C1, IS1C2
 #endif
-       !
+      !
 #ifdef W3_IS2
-       WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK,  &
-            IS2DUPDATE, IS2FLEXSTR, IS2DISP,  IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2,   &
-            IS2C3, IS2CONC, IS2CREEPB, IS2CREEPC, IS2CREEPD,  &
-            IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1, IS2ANDISB, &
-            IS2ANDISE, IS2ANDISD, IS2ANDISN
+      WRITE (NDSO,948) ISC1, IS2BACKSCAT, IS2ISOSCAT, IS2BREAK,  &
+           IS2DUPDATE, IS2FLEXSTR, IS2DISP,  IS2DAMP, IS2FRAGILITY, IS2DMIN, IS2C2,   &
+           IS2C3, IS2CONC, IS2CREEPB, IS2CREEPC, IS2CREEPD,  &
+           IS2CREEPN, IS2BREAKE, IS2BREAKF, IS2WIM1, IS2ANDISB, &
+           IS2ANDISE, IS2ANDISD, IS2ANDISN
 #endif
-       !
+      !
 #ifdef W3_UOST
-       WRITE (NDSO, 4502) ADJUSTL(TRIM(UOSTFILELOCAL)), ADJUSTL(TRIM(UOSTFILESHADOW)), &
-            UOSTFACTORLOCAL, UOSTFACTORSHADOW
+      WRITE (NDSO, 4502) ADJUSTL(TRIM(UOSTFILELOCAL)), ADJUSTL(TRIM(UOSTFILESHADOW)), &
+           UOSTFACTORLOCAL, UOSTFACTORSHADOW
 #endif
 
-       !
-       IF ( FLCOMB ) THEN
-          WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
-               XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
-               WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
-               RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-               STDX, STDY, STDT, ICEHMIN, ICEHFAC,   &
-               ICEHINIT, ICEDISP, ICEHDISP,          &
-               ICESLN, ICEWIND, ICESNL, ICESDS,      &
-               ICEDDISP,ICEFDISP, CALTYPE, TRCKCMPR, &
-               BTBETA
-       ELSE
-          WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
-               XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
-               WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
-               RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
-               STDX, STDY, STDT,  ICEHMIN, ICEHFAC,  &
-               ICEHINIT, ICEDISP, ICEHDISP,          &
-               ICESLN, ICEWIND, ICESNL, ICESDS,      &
-               ICEDDISP, ICEFDISP, CALTYPE, TRCKCMPR,&
-               BTBETA
-       END IF
-       !
+      !
+      IF ( FLCOMB ) THEN
+        WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
+             XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
+             WSCUT, '.TRUE.', NOSWLL, FHMAX,       &
+             RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
+             STDX, STDY, STDT, ICEHMIN, ICEHFAC,   &
+             ICEHINIT, ICEDISP, ICEHDISP,          &
+             ICESLN, ICEWIND, ICESNL, ICESDS,      &
+             ICEDDISP,ICEFDISP, CALTYPE, TRCKCMPR, &
+             BTBETA
+      ELSE
+        WRITE (NDSO,2966) CICE0, CICEN, LICE, PMOVE, XSEED, FLAGTR, &
+             XP, XR, XFILT, IHMAX, HSPMIN, WSMULT, &
+             WSCUT, '.FALSE.', NOSWLL, FHMAX,      &
+             RWNDC, WCOR1, WCOR2, FACBERG, GSHIFT, &
+             STDX, STDY, STDT,  ICEHMIN, ICEHFAC,  &
+             ICEHINIT, ICEDISP, ICEHDISP,          &
+             ICESLN, ICEWIND, ICESNL, ICESDS,      &
+             ICEDDISP, ICEFDISP, CALTYPE, TRCKCMPR,&
+             BTBETA
+      END IF
+      !
 #ifdef W3_FLD1
-       WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 #endif
 #ifdef W3_FLD2
-       WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+      WRITE(NDSO,2987) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
 #endif
 #ifdef W3_RTD
-       WRITE(NDSO,4991) PLAT, PLON, UNROT
-       WRITE(NDSO,4992) BPLAT, BPLON
+      WRITE(NDSO,4991) PLAT, PLON, UNROT
+      WRITE(NDSO,4992) BPLAT, BPLON
 #endif
-       !
-       WRITE (NDSO,918)
+      !
+      WRITE (NDSO,918)
     END IF
     !
     ! 6.p Set various other values ...
@@ -3480,199 +3480,199 @@ CONTAINS
     ! 7.a Type of grid
     !
     IF (FLGNML) THEN
-       GSTRG=TRIM(NML_GRID%TYPE)
-       IF (TRIM(NML_GRID%COORD).EQ.'SPHE') FLAGLL=.TRUE.
-       IF (TRIM(NML_GRID%COORD).EQ.'CART') FLAGLL=.FALSE.
-       CSTRG=TRIM(NML_GRID%CLOS)
+      GSTRG=TRIM(NML_GRID%TYPE)
+      IF (TRIM(NML_GRID%COORD).EQ.'SPHE') FLAGLL=.TRUE.
+      IF (TRIM(NML_GRID%COORD).EQ.'CART') FLAGLL=.FALSE.
+      CSTRG=TRIM(NML_GRID%CLOS)
     ELSE
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       READ (NDSI,*,END=2001,ERR=2002) GSTRG, FLAGLL, CSTRG
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002) GSTRG, FLAGLL, CSTRG
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
     END IF
 
     SELECT CASE (TRIM(GSTRG))
     CASE ('RECT')
-       GTYPE = RLGTYPE
-       WRITE (NDSO,3000) 'rectilinear'
+      GTYPE = RLGTYPE
+      WRITE (NDSO,3000) 'rectilinear'
     CASE ('CURV')
-       GTYPE = CLGTYPE
-       WRITE (NDSO,3000) 'curvilinear'
+      GTYPE = CLGTYPE
+      WRITE (NDSO,3000) 'curvilinear'
     CASE ('UNST')
-       GTYPE = UNGTYPE
-       WRITE (NDSO,3000) 'unstructured'
-       !!Li  Add SMC grid type option.  JGLi12Oct2020
+      GTYPE = UNGTYPE
+      WRITE (NDSO,3000) 'unstructured'
+      !!Li  Add SMC grid type option.  JGLi12Oct2020
     CASE ('SMCG')
-       GTYPE = SMCTYPE
-       WRITE (NDSO,3000) 'SMC Grid'
+      GTYPE = SMCTYPE
+      WRITE (NDSO,3000) 'SMC Grid'
     CASE DEFAULT
-       WRITE (NDSE,1007) TRIM(GSTRG)
-       CALL EXTCDE ( 25 )
+      WRITE (NDSE,1007) TRIM(GSTRG)
+      CALL EXTCDE ( 25 )
     END SELECT
     !
     IF ( FLAGLL ) THEN
-       FACTOR = 1.
-       WRITE (NDSO,3001) 'spherical'
+      FACTOR = 1.
+      WRITE (NDSO,3001) 'spherical'
     ELSE
-       FACTOR = 1.E-3
-       WRITE (NDSO,3001) 'Cartesian'
+      FACTOR = 1.E-3
+      WRITE (NDSO,3001) 'Cartesian'
     END IF
     !
     !     Only process grid closure string for logically rectangular grids.
     !     Closure setting for unstructured grids is NONE.
     ICLOSE = ICLOSE_NONE
     IF ( GTYPE.NE.UNGTYPE ) THEN
-       SELECT CASE (TRIM(CSTRG))
-       CASE ('NONE')
-          ICLOSE = ICLOSE_NONE
-          WRITE (NDSO,3002) 'none'
-       CASE ('SMPL')
+      SELECT CASE (TRIM(CSTRG))
+      CASE ('NONE')
+        ICLOSE = ICLOSE_NONE
+        WRITE (NDSO,3002) 'none'
+      CASE ('SMPL')
+        ICLOSE = ICLOSE_SMPL
+        WRITE (NDSO,3002) 'simple'
+      CASE ('TRPL')
+        WRITE (NDSE,'(/2A)') ' *** WARNING WW3_GRID: TRIPOLE ',  &
+             'GRID CLOSURE IMPLEMENTATION IS INCOMPLETE ***'
+        ICLOSE = ICLOSE_TRPL
+        WRITE (NDSO,3002) 'tripole'
+        IF ( GTYPE.EQ.RLGTYPE ) THEN
+          WRITE (NDSE,1009)
+          CALL EXTCDE ( 25 )
+        END IF
+      CASE DEFAULT
+        ! Check for old style GLOBAL input
+        SELECT CASE (TRIM(CSTRG))
+        CASE ('T','t','.TRU','.tru')
           ICLOSE = ICLOSE_SMPL
           WRITE (NDSO,3002) 'simple'
-       CASE ('TRPL')
-          WRITE (NDSE,'(/2A)') ' *** WARNING WW3_GRID: TRIPOLE ',  &
-               'GRID CLOSURE IMPLEMENTATION IS INCOMPLETE ***'
-          ICLOSE = ICLOSE_TRPL
-          WRITE (NDSO,3002) 'tripole'
-          IF ( GTYPE.EQ.RLGTYPE ) THEN
-             WRITE (NDSE,1009)
-             CALL EXTCDE ( 25 )
-          END IF
-       CASE DEFAULT
-          ! Check for old style GLOBAL input
-          SELECT CASE (TRIM(CSTRG))
-          CASE ('T','t','.TRU','.tru')
-             ICLOSE = ICLOSE_SMPL
-             WRITE (NDSO,3002) 'simple'
-             WRITE (NDSE,1013)
-          CASE ('F','f','.FAL','.fal')
-             ICLOSE = ICLOSE_NONE
-             WRITE (NDSO,3002) 'none'
-             WRITE (NDSE,1013)
-          CASE DEFAULT
-             WRITE (NDSE,1012) TRIM(CSTRG)
-             CALL EXTCDE ( 25 )
-          END SELECT
-       END SELECT
-       IF ( ICLOSE.NE.ICLOSE_NONE .AND. .NOT.FLAGLL ) THEN
-          WRITE (NDSE,1008)
+          WRITE (NDSE,1013)
+        CASE ('F','f','.FAL','.fal')
+          ICLOSE = ICLOSE_NONE
+          WRITE (NDSO,3002) 'none'
+          WRITE (NDSE,1013)
+        CASE DEFAULT
+          WRITE (NDSE,1012) TRIM(CSTRG)
           CALL EXTCDE ( 25 )
-       END IF
+        END SELECT
+      END SELECT
+      IF ( ICLOSE.NE.ICLOSE_NONE .AND. .NOT.FLAGLL ) THEN
+        WRITE (NDSE,1008)
+        CALL EXTCDE ( 25 )
+      END IF
     END IF !GTYPE.NE.UNGTYPE
     !
     ! 7.b Size of grid
     !
     IF (FLGNML) THEN
-       SELECT CASE ( GTYPE )
-          !!Li  SMCTYPE shares domain info with RLGTYPE.  JGLi12Oct2020
-       CASE ( RLGTYPE, SMCTYPE )
-          NX = NML_RECT%NX
-          NY = NML_RECT%NY
-          NX = MAX ( 3 , NX )
-          NY = MAX ( 3 , NY )
-          WRITE (NDSO,3003) NX, NY
-       CASE ( CLGTYPE )
-          NX = NML_CURV%NX
-          NY = NML_CURV%NY
-          NX = MAX ( 3 , NX )
-          NY = MAX ( 3 , NY )
-          WRITE (NDSO,3003) NX, NY
-       CASE ( UNGTYPE )
-          NY=1
-       END SELECT
+      SELECT CASE ( GTYPE )
+        !!Li  SMCTYPE shares domain info with RLGTYPE.  JGLi12Oct2020
+      CASE ( RLGTYPE, SMCTYPE )
+        NX = NML_RECT%NX
+        NY = NML_RECT%NY
+        NX = MAX ( 3 , NX )
+        NY = MAX ( 3 , NY )
+        WRITE (NDSO,3003) NX, NY
+      CASE ( CLGTYPE )
+        NX = NML_CURV%NX
+        NY = NML_CURV%NY
+        NX = MAX ( 3 , NX )
+        NY = MAX ( 3 , NY )
+        WRITE (NDSO,3003) NX, NY
+      CASE ( UNGTYPE )
+        NY=1
+      END SELECT
     ELSE
-       IF ( GTYPE.NE.UNGTYPE) THEN
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NX, NY
-          NX     = MAX ( 3 , NX )
-          NY     = MAX ( 3 , NY )
-          WRITE (NDSO,3003) NX, NY
-       ELSE
-          NY =1
-       END IF
+      IF ( GTYPE.NE.UNGTYPE) THEN
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NX, NY
+        NX     = MAX ( 3 , NX )
+        NY     = MAX ( 3 , NY )
+        WRITE (NDSO,3003) NX, NY
+      ELSE
+        NY =1
+      END IF
     END IF
     !
     ! Propagation specific to unstructured grids
     !
     DO_CHANGE_WLV=.FALSE.
     IF ( GTYPE.EQ.UNGTYPE) THEN
-       UNSTSCHEMES = 0
-       IF (EXPFSN)   UNSTSCHEMES(1) = 1
-       IF (EXPFSPSI) UNSTSCHEMES(2) = 1
-       IF (EXPFSFCT) UNSTSCHEMES(3) = 1
-       IF (IMPFSN)   UNSTSCHEMES(4) = 1
-       IF (IMPTOTAL) UNSTSCHEMES(5) = 1
-       IF (EXPTOTAL) UNSTSCHEMES(6) = 1
+      UNSTSCHEMES = 0
+      IF (EXPFSN)   UNSTSCHEMES(1) = 1
+      IF (EXPFSPSI) UNSTSCHEMES(2) = 1
+      IF (EXPFSFCT) UNSTSCHEMES(3) = 1
+      IF (IMPFSN)   UNSTSCHEMES(4) = 1
+      IF (IMPTOTAL) UNSTSCHEMES(5) = 1
+      IF (EXPTOTAL) UNSTSCHEMES(6) = 1
 
-       IF (SUM(UNSTSCHEMES) .eq. 0) THEN
-          WRITE(NDSE,*) 'NO UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-       ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
-          WRITE(NDSE,*) 'MORE THAN ONE UNST SCHEME SELECTED'
-          CALL EXTCDE ( 19 )
-       ENDIF
+      IF (SUM(UNSTSCHEMES) .eq. 0) THEN
+        WRITE(NDSE,*) 'NO UNST SCHEME SELECTED'
+        CALL EXTCDE ( 19 )
+      ELSE IF (SUM(UNSTSCHEMES) .gt. 1) THEN
+        WRITE(NDSE,*) 'MORE THAN ONE UNST SCHEME SELECTED'
+        CALL EXTCDE ( 19 )
+      ENDIF
 
-       UNSTSCHEME=-1
-       DO IX=1,6
-          IF (UNSTSCHEMES(IX).EQ.1) THEN
-             UNSTSCHEME=IX
-             EXIT
-          END IF
-       END DO
+      UNSTSCHEME=-1
+      DO IX=1,6
+        IF (UNSTSCHEMES(IX).EQ.1) THEN
+          UNSTSCHEME=IX
+          EXIT
+        END IF
+      END DO
 
-       FSBCCFL = UGBCCFL
-       SELECT CASE (UNSTSCHEME)
-       CASE (1)
-          FSN = EXPFSN
-          PNAME2 = 'N Explicit (Fluctuation Splitting) '
-       CASE (2)
-          FSPSI = EXPFSPSI
-          PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
-       CASE (3)
-          FSFCT = EXPFSFCT
-          PNAME2 = ' Flux Corrected Transport Explicit'
-       CASE (4)
-          FSNIMP = IMPFSN
-          PNAME2 = 'N Implicit (Fluctuation Splitting) '
-       CASE (5)
-          FSTOTALIMP = IMPTOTAL
-          PNAME2 = 'N Implicit (Fluctuation Splitting) for total implicit'
-       CASE (6)
-          FSTOTALEXP = EXPTOTAL
-          PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
-       END SELECT
-       !
-       IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
-       WRITE (NDSO,2951) PNAME2
+      FSBCCFL = UGBCCFL
+      SELECT CASE (UNSTSCHEME)
+      CASE (1)
+        FSN = EXPFSN
+        PNAME2 = 'N Explicit (Fluctuation Splitting) '
+      CASE (2)
+        FSPSI = EXPFSPSI
+        PNAME2 = 'PSI Explicit (Fluctuation Splitting)  '
+      CASE (3)
+        FSFCT = EXPFSFCT
+        PNAME2 = ' Flux Corrected Transport Explicit'
+      CASE (4)
+        FSNIMP = IMPFSN
+        PNAME2 = 'N Implicit (Fluctuation Splitting) '
+      CASE (5)
+        FSTOTALIMP = IMPTOTAL
+        PNAME2 = 'N Implicit (Fluctuation Splitting) for total implicit'
+      CASE (6)
+        FSTOTALEXP = EXPTOTAL
+        PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
+      END SELECT
+      !
+      IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
+      WRITE (NDSO,2951) PNAME2
 
 
-       IF (IMPREFRACTION .and. IMPTOTAL .AND. FLCTH) THEN
-          FSREFRACTION = .TRUE.
-          PNAME2 = 'Refraction done implicitly'
-          WRITE (NDSO,2951) PNAME2
-       ELSE
-          FSREFRACTION = .FALSE.
-       END IF
-       IF (IMPFREQSHIFT .and. IMPTOTAL .AND. FLCK) THEN
-          FSFREQSHIFT = .TRUE.
-          PNAME2 = 'Frequency shifting done implicitly'
-          WRITE (NDSO,2951) PNAME2
-       ELSE
-          FSFREQSHIFT = .FALSE.
-       END IF
-       IF (IMPSOURCE .and. IMPTOTAL .AND. FLSOU) THEN
-          FSSOURCE = .TRUE.
-          PNAME2 = 'Source terms integrated implicitly'
-          WRITE (NDSO,2951) PNAME2
-       ELSE
-          FSSOURCE = .FALSE.
-       END IF
-       IF (SETUP_APPLY_WLV) THEN
-          DO_CHANGE_WLV = SETUP_APPLY_WLV
-          PNAME2 = ' we change WLV'
-          WRITE (NDSO,2952) PNAME2
-       END IF
-       SOLVERTHR_STP = SOLVERTHR_SETUP
-       CRIT_DEP_STP  = CRIT_DEP_SETUP
+      IF (IMPREFRACTION .and. IMPTOTAL .AND. FLCTH) THEN
+        FSREFRACTION = .TRUE.
+        PNAME2 = 'Refraction done implicitly'
+        WRITE (NDSO,2951) PNAME2
+      ELSE
+        FSREFRACTION = .FALSE.
+      END IF
+      IF (IMPFREQSHIFT .and. IMPTOTAL .AND. FLCK) THEN
+        FSFREQSHIFT = .TRUE.
+        PNAME2 = 'Frequency shifting done implicitly'
+        WRITE (NDSO,2951) PNAME2
+      ELSE
+        FSFREQSHIFT = .FALSE.
+      END IF
+      IF (IMPSOURCE .and. IMPTOTAL .AND. FLSOU) THEN
+        FSSOURCE = .TRUE.
+        PNAME2 = 'Source terms integrated implicitly'
+        WRITE (NDSO,2951) PNAME2
+      ELSE
+        FSSOURCE = .FALSE.
+      END IF
+      IF (SETUP_APPLY_WLV) THEN
+        DO_CHANGE_WLV = SETUP_APPLY_WLV
+        PNAME2 = ' we change WLV'
+        WRITE (NDSO,2952) PNAME2
+      END IF
+      SOLVERTHR_STP = SOLVERTHR_SETUP
+      CRIT_DEP_STP  = CRIT_DEP_SETUP
     END IF
 
     !
@@ -3680,234 +3680,234 @@ CONTAINS
     !
     IF ( GTYPE.NE.UNGTYPE) ALLOCATE ( XGRDIN(NX,NY), YGRDIN(NX,NY) )
     SELECT CASE ( GTYPE )
-       !
-       ! 7.c.1 Rectilinear grid
-       !
-       !!Li  SMC grid shares domain info with RLGTYPE.   JGLi12Oct2020
+      !
+      ! 7.c.1 Rectilinear grid
+      !
+      !!Li  SMC grid shares domain info with RLGTYPE.   JGLi12Oct2020
     CASE ( RLGTYPE, SMCTYPE )
-       !
-       IF (FLGNML) THEN
-          SX = NML_RECT%SX
-          SY = NML_RECT%SY
-          VSC = NML_RECT%SF
-          X0 = NML_RECT%X0
-          Y0 = NML_RECT%Y0
-          VSC0 = NML_RECT%SF0
-       ELSE
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) SX, SY, VSC
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) X0, Y0, VSC0
-       END IF
-       !
-       VSC    = MAX ( 1.E-7 , VSC )
-       SX     = SX / VSC
-       SY     = SY / VSC
-       SX     = MAX ( 1.E-7 , SX )
-       SY     = MAX ( 1.E-7 , SY )
-       IF ( ICLOSE.EQ.ICLOSE_SMPL ) SX = 360. / REAL(NX)
-       !
-       VSC0    = MAX ( 1.E-7 , VSC0 )
-       X0     = X0 / VSC0
-       Y0     = Y0 / VSC0
-       !
-       IF ( FLAGLL ) THEN
-          WRITE (NDSO,3004) FACTOR*SX, FACTOR*SY,         &
-               FACTOR*X0, FACTOR*(X0+REAL(NX-1)*SX),    &
-               FACTOR*Y0, FACTOR*(Y0+REAL(NY-1)*SY)
-       ELSE
-          WRITE (NDSO,3005) FACTOR*SX, FACTOR*SY,         &
-               FACTOR*X0, FACTOR*(X0+REAL(NX-1)*SX),    &
-               FACTOR*Y0, FACTOR*(Y0+REAL(NY-1)*SY)
-       END IF
-       !
-       DO IY=1, NY
-          DO IX=1, NX
-             XGRDIN(IX,IY) = X0 + REAL(IX-1)*SX
-             YGRDIN(IX,IY) = Y0 + REAL(IY-1)*SY
-          END DO
-       END DO
-       !
-       ! 7.c.2 Curvilinear grid
-       !
+      !
+      IF (FLGNML) THEN
+        SX = NML_RECT%SX
+        SY = NML_RECT%SY
+        VSC = NML_RECT%SF
+        X0 = NML_RECT%X0
+        Y0 = NML_RECT%Y0
+        VSC0 = NML_RECT%SF0
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) SX, SY, VSC
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) X0, Y0, VSC0
+      END IF
+      !
+      VSC    = MAX ( 1.E-7 , VSC )
+      SX     = SX / VSC
+      SY     = SY / VSC
+      SX     = MAX ( 1.E-7 , SX )
+      SY     = MAX ( 1.E-7 , SY )
+      IF ( ICLOSE.EQ.ICLOSE_SMPL ) SX = 360. / REAL(NX)
+      !
+      VSC0    = MAX ( 1.E-7 , VSC0 )
+      X0     = X0 / VSC0
+      Y0     = Y0 / VSC0
+      !
+      IF ( FLAGLL ) THEN
+        WRITE (NDSO,3004) FACTOR*SX, FACTOR*SY,         &
+             FACTOR*X0, FACTOR*(X0+REAL(NX-1)*SX),    &
+             FACTOR*Y0, FACTOR*(Y0+REAL(NY-1)*SY)
+      ELSE
+        WRITE (NDSO,3005) FACTOR*SX, FACTOR*SY,         &
+             FACTOR*X0, FACTOR*(X0+REAL(NX-1)*SX),    &
+             FACTOR*Y0, FACTOR*(Y0+REAL(NY-1)*SY)
+      END IF
+      !
+      DO IY=1, NY
+        DO IX=1, NX
+          XGRDIN(IX,IY) = X0 + REAL(IX-1)*SX
+          YGRDIN(IX,IY) = Y0 + REAL(IY-1)*SY
+        END DO
+      END DO
+      !
+      ! 7.c.2 Curvilinear grid
+      !
     CASE ( CLGTYPE )
-       !
-       ! 7.c.2.a Process x-coordinates
-       !
-       IF (FLGNML) THEN
-          NDSG = NML_CURV%XCOORD%IDF
-          VSC = NML_CURV%XCOORD%SF
-          VOF = NML_CURV%XCOORD%OFF
-          IDLA = NML_CURV%XCOORD%IDLA
-          IDFM = NML_CURV%XCOORD%IDFM
-          RFORM = TRIM(NML_CURV%XCOORD%FORMAT)
-          FROM = TRIM(NML_CURV%XCOORD%FROM)
-          FNAME = TRIM(NML_CURV%XCOORD%FILENAME)
-       ELSE
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
-               IDLA, IDFM, RFORM, FROM, FNAME
-       END IF
-       !
-       IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
-       IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
-       !
-       WRITE (NDSO,3006) NDSG, VSC, VOF, IDLA, IDFM
-       IF (IDFM.EQ.2) WRITE (NDSO,3008) TRIM(RFORM)
-       IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
-            WRITE (NDSO,3009) TRIM(FNAME)
-       !
-       IF ( NDSG .EQ. NDSI ) THEN
-          IF ( IDFM .EQ. 3 ) THEN
-             WRITE (NDSE,1004) NDSG
-             CALL EXTCDE (23)
-          ELSE
-             IF (.NOT.FLGNML) THEN
-                CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             END IF
+      !
+      ! 7.c.2.a Process x-coordinates
+      !
+      IF (FLGNML) THEN
+        NDSG = NML_CURV%XCOORD%IDF
+        VSC = NML_CURV%XCOORD%SF
+        VOF = NML_CURV%XCOORD%OFF
+        IDLA = NML_CURV%XCOORD%IDLA
+        IDFM = NML_CURV%XCOORD%IDFM
+        RFORM = TRIM(NML_CURV%XCOORD%FORMAT)
+        FROM = TRIM(NML_CURV%XCOORD%FROM)
+        FNAME = TRIM(NML_CURV%XCOORD%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
+             IDLA, IDFM, RFORM, FROM, FNAME
+      END IF
+      !
+      IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+      IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
+      !
+      WRITE (NDSO,3006) NDSG, VSC, VOF, IDLA, IDFM
+      IF (IDFM.EQ.2) WRITE (NDSO,3008) TRIM(RFORM)
+      IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
+           WRITE (NDSO,3009) TRIM(FNAME)
+      !
+      IF ( NDSG .EQ. NDSI ) THEN
+        IF ( IDFM .EQ. 3 ) THEN
+          WRITE (NDSE,1004) NDSG
+          CALL EXTCDE (23)
+        ELSE
+          IF (.NOT.FLGNML) THEN
+            CALL NEXTLN ( COMSTR , NDSI , NDSE )
           END IF
-       ELSE
-          IF ( IDFM .EQ. 3 ) THEN
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                     form='UNFORMATTED', convert=file_endian,                 &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             ELSE
-                OPEN (NDSG,                               &
-                     form='UNFORMATTED', convert=file_endian,                 &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF
+        END IF
+      ELSE
+        IF ( IDFM .EQ. 3 ) THEN
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                 form='UNFORMATTED', convert=file_endian,                 &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           ELSE
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             ELSE
-                OPEN (NDSG,                               &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF
-          END IF !IDFM
-       END IF !NDSG
-       !
-       CALL INA2R ( XGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
-            IDFM, RFORM, IDLA, VSC, VOF)
-       !
-       ! 7.c.2.b Process y-coordinates
-       !
-       IF (FLGNML) THEN
-          NDSG = NML_CURV%YCOORD%IDF
-          VSC = NML_CURV%YCOORD%SF
-          VOF = NML_CURV%YCOORD%OFF
-          IDLA = NML_CURV%YCOORD%IDLA
-          IDFM = NML_CURV%YCOORD%IDFM
-          RFORM = TRIM(NML_CURV%YCOORD%FORMAT)
-          FROM = TRIM(NML_CURV%YCOORD%FROM)
-          FNAME = TRIM(NML_CURV%YCOORD%FILENAME)
-       ELSE
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
-               IDLA, IDFM, RFORM, FROM, FNAME
-       END IF
-       !
-       IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
-       IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
-       !
-       WRITE (NDSO,3007) NDSG, VSC, VOF, IDLA, IDFM
-       IF (IDFM.EQ.2) WRITE (NDSO,3008) TRIM(RFORM)
-       IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
-            WRITE (NDSO,3009) TRIM(FNAME)
-       !
-       IF ( NDSG .EQ. NDSI ) THEN
-          IF ( IDFM .EQ. 3 ) THEN
-             WRITE (NDSE,1004) NDSG
-             CALL EXTCDE (23)
-          ELSE
-             IF (.NOT.FLGNML) THEN
-                CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             END IF
+            OPEN (NDSG,                               &
+                 form='UNFORMATTED', convert=file_endian,                 &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           END IF
-       ELSE
-          IF ( IDFM .EQ. 3 ) THEN
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                     form='UNFORMATTED', convert=file_endian,                 &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             ELSE
-                OPEN (NDSG,                               &
-                     form='UNFORMATTED', convert=file_endian,                 &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF
+        ELSE
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           ELSE
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             ELSE
-                OPEN (NDSG,                               &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF
-          END IF !IDFM
-       END IF !NDSG
-       !
-       CALL INA2R ( YGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
-            IDFM, RFORM, IDLA, VSC, VOF)
-       !
-       ! 7.c.2.c Check for obvious errors in grid definition or input
-       !
-       ! ....... Check for inverted grid (can result from wrong IDLA)
-       IF ( (XGRDIN(2,1)-XGRDIN(1,1))*(YGRDIN(1,2)-YGRDIN(1,1)) .LT. &
-            (YGRDIN(2,1)-YGRDIN(1,1))*(XGRDIN(1,2)-XGRDIN(1,1)) ) THEN
-          WRITE (NDSE,1011) IDLA
-          !.........Notes: here, we are checking to make sure that the j axis is ~90 degrees
-          !................counter-clockwise from the i axis (the standard cartesian setup).
-          !................So, it is a check on the handedness of the grid.
-          !................We have confirmed for one case that a left-handed grid produces
-          !................errors in SCRIP. We have not confirmed that left-handed grids necessarily
-          !................produce errors in single-grid simulations, or that they necessarily
-          !................produce errors in all multi-grid simulations.
-          !................Note that transposing or flipping a grid will generally change the handedness.
-          CALL EXTCDE (25)
-       END IF
-       !
-       ! 7.c.3 Unstructured grid
-       !
+            OPEN (NDSG,                               &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+          END IF
+        END IF !IDFM
+      END IF !NDSG
+      !
+      CALL INA2R ( XGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
+           IDFM, RFORM, IDLA, VSC, VOF)
+      !
+      ! 7.c.2.b Process y-coordinates
+      !
+      IF (FLGNML) THEN
+        NDSG = NML_CURV%YCOORD%IDF
+        VSC = NML_CURV%YCOORD%SF
+        VOF = NML_CURV%YCOORD%OFF
+        IDLA = NML_CURV%YCOORD%IDLA
+        IDFM = NML_CURV%YCOORD%IDFM
+        RFORM = TRIM(NML_CURV%YCOORD%FORMAT)
+        FROM = TRIM(NML_CURV%YCOORD%FROM)
+        FNAME = TRIM(NML_CURV%YCOORD%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSG, VSC, VOF, &
+             IDLA, IDFM, RFORM, FROM, FNAME
+      END IF
+      !
+      IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+      IF (IDFM.LT.1 .OR. IDFM.GT.3) IDFM   = 1
+      !
+      WRITE (NDSO,3007) NDSG, VSC, VOF, IDLA, IDFM
+      IF (IDFM.EQ.2) WRITE (NDSO,3008) TRIM(RFORM)
+      IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
+           WRITE (NDSO,3009) TRIM(FNAME)
+      !
+      IF ( NDSG .EQ. NDSI ) THEN
+        IF ( IDFM .EQ. 3 ) THEN
+          WRITE (NDSE,1004) NDSG
+          CALL EXTCDE (23)
+        ELSE
+          IF (.NOT.FLGNML) THEN
+            CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          END IF
+        END IF
+      ELSE
+        IF ( IDFM .EQ. 3 ) THEN
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                 form='UNFORMATTED', convert=file_endian,                 &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+          ELSE
+            OPEN (NDSG,                               &
+                 form='UNFORMATTED', convert=file_endian,                 &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+          END IF
+        ELSE
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),&
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+          ELSE
+            OPEN (NDSG,                               &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+          END IF
+        END IF !IDFM
+      END IF !NDSG
+      !
+      CALL INA2R ( YGRDIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE, &
+           IDFM, RFORM, IDLA, VSC, VOF)
+      !
+      ! 7.c.2.c Check for obvious errors in grid definition or input
+      !
+      ! ....... Check for inverted grid (can result from wrong IDLA)
+      IF ( (XGRDIN(2,1)-XGRDIN(1,1))*(YGRDIN(1,2)-YGRDIN(1,1)) .LT. &
+           (YGRDIN(2,1)-YGRDIN(1,1))*(XGRDIN(1,2)-XGRDIN(1,1)) ) THEN
+        WRITE (NDSE,1011) IDLA
+        !.........Notes: here, we are checking to make sure that the j axis is ~90 degrees
+        !................counter-clockwise from the i axis (the standard cartesian setup).
+        !................So, it is a check on the handedness of the grid.
+        !................We have confirmed for one case that a left-handed grid produces
+        !................errors in SCRIP. We have not confirmed that left-handed grids necessarily
+        !................produce errors in single-grid simulations, or that they necessarily
+        !................produce errors in all multi-grid simulations.
+        !................Note that transposing or flipping a grid will generally change the handedness.
+        CALL EXTCDE (25)
+      END IF
+      !
+      ! 7.c.3 Unstructured grid
+      !
     CASE ( UNGTYPE )
-       !
-       MAXX = 0.
-       MAXY = 0.
-       DXYMAX = 0.
-       WRITE (NDSO,1150)
+      !
+      MAXX = 0.
+      MAXY = 0.
+      DXYMAX = 0.
+      WRITE (NDSO,1150)
 
-       IF (FLGNML) THEN
-          ZLIM = NML_GRID%ZLIM
-          DMIN = NML_GRID%DMIN
-          NDSG = NML_UNST%IDF
-          VSC = NML_UNST%SF
-          IDLA = NML_UNST%IDLA
-          IDFM = NML_UNST%IDFM
-          RFORM = TRIM(NML_UNST%FORMAT)
-          FROM = 'NAME'
-          FNAME = TRIM(NML_UNST%FILENAME)
-          UGOBCFILE = TRIM(NML_UNST%UGOBCFILE)
-       END IF
+      IF (FLGNML) THEN
+        ZLIM = NML_GRID%ZLIM
+        DMIN = NML_GRID%DMIN
+        NDSG = NML_UNST%IDF
+        VSC = NML_UNST%SF
+        IDLA = NML_UNST%IDLA
+        IDFM = NML_UNST%IDFM
+        RFORM = TRIM(NML_UNST%FORMAT)
+        FROM = 'NAME'
+        FNAME = TRIM(NML_UNST%FILENAME)
+        UGOBCFILE = TRIM(NML_UNST%UGOBCFILE)
+      END IF
     END SELECT !GTYPE
     !
     ! 7.d Depth information for grid
     !
     IF (FLGNML) THEN
-       IF (GTYPE.NE.UNGTYPE) THEN
-          ZLIM = NML_GRID%ZLIM
-          DMIN = NML_GRID%DMIN
-          NDSG = NML_DEPTH%IDF
-          VSC = NML_DEPTH%SF
-          IDLA = NML_DEPTH%IDLA
-          IDFM = NML_DEPTH%IDFM
-          RFORM = TRIM(NML_DEPTH%FORMAT)
-          FROM = TRIM(NML_DEPTH%FROM)
-          FNAME = TRIM(NML_DEPTH%FILENAME)
-       END IF
+      IF (GTYPE.NE.UNGTYPE) THEN
+        ZLIM = NML_GRID%ZLIM
+        DMIN = NML_GRID%DMIN
+        NDSG = NML_DEPTH%IDF
+        VSC = NML_DEPTH%SF
+        IDLA = NML_DEPTH%IDLA
+        IDFM = NML_DEPTH%IDFM
+        RFORM = TRIM(NML_DEPTH%FORMAT)
+        FROM = TRIM(NML_DEPTH%FROM)
+        FNAME = TRIM(NML_DEPTH%FILENAME)
+      END IF
     ELSE
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       READ (NDSI,*,END=2001,ERR=2002) ZLIM, DMIN, NDSG, VSC, IDLA,    &
-            IDFM, RFORM, FROM, FNAME
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002) ZLIM, DMIN, NDSG, VSC, IDLA,    &
+           IDFM, RFORM, FROM, FNAME
     END IF
     !
     DMIN    = MAX ( 1.E-3 , DMIN )
@@ -3923,66 +3923,66 @@ CONTAINS
     ! 7.e Read bottom depths
     !
     IF ( GTYPE.NE.UNGTYPE ) THEN
-       !
-       ! Reading depths on structured grid
-       !
-       ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
-       !
-       !       Initialize subgrid obstructions with zeros.
-       ZBIN(:,:)=0.
-       OBSX(:,:)=0.
-       OBSY(:,:)=0.
+      !
+      ! Reading depths on structured grid
+      !
+      ALLOCATE ( ZBIN(NX,NY), OBSX(NX,NY), OBSY(NX,NY) )
+      !
+      !       Initialize subgrid obstructions with zeros.
+      ZBIN(:,:)=0.
+      OBSX(:,:)=0.
+      OBSY(:,:)=0.
 
-       !Li Suspended for SMC grid, which uses depth stored in its cell array.
-       !Li               JGLi15Oct2014
-       IF( GTYPE .NE. SMCTYPE ) THEN
-          !
-          IF ( NDSG .EQ. NDSI ) THEN
-             IF ( IDFM .EQ. 3 ) THEN
-                WRITE (NDSE,1004) NDSG
-                CALL EXTCDE (23)
-             ELSE
-                CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             END IF
-          ELSE  ! NDSG.NE.NDSI
-             IF ( IDFM .EQ. 3 ) THEN
-                IF (FROM.EQ.'NAME') THEN
-                   OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME), &
-                        form='UNFORMATTED', convert=file_endian,&
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                ELSE
-                   OPEN (NDSG, form='UNFORMATTED', convert=file_endian,                &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
-             ELSE
-                IF (FROM.EQ.'NAME') THEN
-                   OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),  &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                ELSE
-                   OPEN (NDSG,                                     &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
-             END IF
-          END IF  !( NDSG .EQ. NDSI )
-          !
-          CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
-               IDFM, RFORM, IDLA, VSC, 0.0)
-          !
-          !Li     End of IF( GTYPE .NE. SMCTYPE ) block
-       ENDIF
-       !
+      !Li Suspended for SMC grid, which uses depth stored in its cell array.
+      !Li               JGLi15Oct2014
+      IF( GTYPE .NE. SMCTYPE ) THEN
+        !
+        IF ( NDSG .EQ. NDSI ) THEN
+          IF ( IDFM .EQ. 3 ) THEN
+            WRITE (NDSE,1004) NDSG
+            CALL EXTCDE (23)
+          ELSE
+            CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          END IF
+        ELSE  ! NDSG.NE.NDSI
+          IF ( IDFM .EQ. 3 ) THEN
+            IF (FROM.EQ.'NAME') THEN
+              OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME), &
+                   form='UNFORMATTED', convert=file_endian,&
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSG, form='UNFORMATTED', convert=file_endian,                &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            END IF
+          ELSE
+            IF (FROM.EQ.'NAME') THEN
+              OPEN (NDSG,FILE=TRIM(FNMPRE)//TRIM(FNAME),  &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSG,                                     &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            END IF
+          END IF
+        END IF  !( NDSG .EQ. NDSI )
+        !
+        CALL INA2R ( ZBIN, NX, NY, 1, NX, 1, NY, NDSG, NDST, NDSE,      &
+             IDFM, RFORM, IDLA, VSC, 0.0)
+        !
+        !Li     End of IF( GTYPE .NE. SMCTYPE ) block
+      ENDIF
+      !
     ELSE
-       !
-       ! Reading depths on unstructured grid (this also sets number of mesh points, NX)
-       !
-       CALL READMSH(NDSG,FNAME)
-       ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
-       ZBIN(:,1) = VSC * ZB(:)
-       !
-       ! subgrid obstructions are not yet handled in unstructured grids
-       !
-       OBSX(:,:)=0.
-       OBSY(:,:)=0.
+      !
+      ! Reading depths on unstructured grid (this also sets number of mesh points, NX)
+      !
+      CALL READMSH(NDSG,FNAME)
+      ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
+      ZBIN(:,1) = VSC * ZB(:)
+      !
+      ! subgrid obstructions are not yet handled in unstructured grids
+      !
+      OBSX(:,:)=0.
+      OBSY(:,:)=0.
 
     END IF
     !
@@ -3992,117 +3992,117 @@ CONTAINS
     TMPSTA = 0
     !
     IF (GTYPE .EQ. UNGTYPE) THEN
-       TMPSTA = 1
+      TMPSTA = 1
     ELSE
-       DO IY=1, NY
-          DO IX=1, NX
-             IF ( ZBIN(IX,IY) .LE. ZLIM ) TMPSTA(IY,IX) = 1
-          END DO
-       END DO
+      DO IY=1, NY
+        DO IX=1, NX
+          IF ( ZBIN(IX,IY) .LE. ZLIM ) TMPSTA(IY,IX) = 1
+        END DO
+      END DO
     ENDIF
     !
     !Li   Suspended for SMC grid.  JGLi15Oct2014
     IF( GTYPE .NE. SMCTYPE ) THEN
-       !
-       ! 7.g Subgrid information
-       !
-       TRFLAG = FLAGTR
-       IF ( TRFLAG.GT.6 .OR. TRFLAG.LT.0 ) TRFLAG = 0
-       !
-       IF ( TRFLAG .EQ. 0 ) THEN
-          WRITE (NDSO,976) 'Not available.'
-       ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 .OR. TRFLAG.EQ.5 ) THEN
-          WRITE (NDSO,976) 'In between grid points.'
-       ELSE
-          WRITE (NDSO,976) 'At grid points.'
-       END IF
-       !
-       IF ( TRFLAG .NE. 0 ) THEN
-          !
-          ! 7.g.1 Info from input file
-          !
-          IF (FLGNML) THEN
-             NDSTR = NML_OBST%IDF
-             VSC = NML_OBST%SF
-             IDLA = NML_OBST%IDLA
-             IDFT = NML_OBST%IDFM
-             RFORM = TRIM(NML_OBST%FORMAT)
-             FROM = TRIM(NML_OBST%FROM)
-             TNAME = TRIM(NML_OBST%FILENAME)
+      !
+      ! 7.g Subgrid information
+      !
+      TRFLAG = FLAGTR
+      IF ( TRFLAG.GT.6 .OR. TRFLAG.LT.0 ) TRFLAG = 0
+      !
+      IF ( TRFLAG .EQ. 0 ) THEN
+        WRITE (NDSO,976) 'Not available.'
+      ELSE IF ( TRFLAG.EQ.1 .OR. TRFLAG.EQ.3 .OR. TRFLAG.EQ.5 ) THEN
+        WRITE (NDSO,976) 'In between grid points.'
+      ELSE
+        WRITE (NDSO,976) 'At grid points.'
+      END IF
+      !
+      IF ( TRFLAG .NE. 0 ) THEN
+        !
+        ! 7.g.1 Info from input file
+        !
+        IF (FLGNML) THEN
+          NDSTR = NML_OBST%IDF
+          VSC = NML_OBST%SF
+          IDLA = NML_OBST%IDLA
+          IDFT = NML_OBST%IDFM
+          RFORM = TRIM(NML_OBST%FORMAT)
+          FROM = TRIM(NML_OBST%FROM)
+          TNAME = TRIM(NML_OBST%FILENAME)
+        ELSE
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+               FROM, TNAME
+        END IF
+        !
+        IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
+        IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+        IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+        !
+        WRITE (NDSO,977) NDSTR, VSC, IDLA, IDFT
+        IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
+        IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
+        !
+        ! 7.g.2 Open file and check if necessary
+        !
+        IF ( NDSTR .EQ. NDSI ) THEN
+          IF ( IDFT .EQ. 3 ) THEN
+            WRITE (NDSE,1004) NDSTR
+            CALL EXTCDE (23)
           ELSE
-             CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
-                  FROM, TNAME
+            CALL NEXTLN ( COMSTR , NDSI , NDSE )
           END IF
-          !
-          IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
-          IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
-          IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
-          !
-          WRITE (NDSO,977) NDSTR, VSC, IDLA, IDFT
-          IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
-          IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
-          !
-          ! 7.g.2 Open file and check if necessary
-          !
-          IF ( NDSTR .EQ. NDSI ) THEN
-             IF ( IDFT .EQ. 3 ) THEN
-                WRITE (NDSE,1004) NDSTR
-                CALL EXTCDE (23)
-             ELSE
-                CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             END IF
-          ELSE IF ( NDSTR .EQ. NDSG ) THEN
-             IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
-                  ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
-                WRITE (NDSE,1005) IDFM, IDFT
-                CALL EXTCDE (24)
-             END IF
+        ELSE IF ( NDSTR .EQ. NDSG ) THEN
+          IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
+               ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
+            WRITE (NDSE,1005) IDFM, IDFT
+            CALL EXTCDE (24)
+          END IF
+        ELSE
+          IF ( IDFT .EQ. 3 ) THEN
+            IF (FROM.EQ.'NAME') THEN
+              OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+                   form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                   IOSTAT=IERR)
+            ELSE
+              OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            END IF
           ELSE
-             IF ( IDFT .EQ. 3 ) THEN
-                IF (FROM.EQ.'NAME') THEN
-                   OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                        form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
-                        IOSTAT=IERR)
-                ELSE
-                   OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
-             ELSE
-                IF (FROM.EQ.'NAME') THEN
-                   OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                ELSE
-                   OPEN (NDSTR,                                    &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
-             END IF
+            IF (FROM.EQ.'NAME') THEN
+              OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSTR,                                    &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            END IF
           END IF
-          !
-          ! 7.g.3 Read the data
-          !
-          CALL INA2R ( OBSX, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-               IDFT, RFORM, IDLA, VSC, 0.0)
-          !
-          IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          !
-          CALL INA2R ( OBSY, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-               IDFT, RFORM, IDLA, VSC, 0.0)
-          !
-          ! 7.g.4 Limit
-          !
-          DO IX=1, NX
-             DO IY=1, NY
-                OBSX(IX,IY) = MAX( 0. , MIN(1.,OBSX(IX,IY)) )
-                OBSY(IX,IY) = MAX( 0. , MIN(1.,OBSY(IX,IY)) )
-             END DO
+        END IF
+        !
+        ! 7.g.3 Read the data
+        !
+        CALL INA2R ( OBSX, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+             IDFT, RFORM, IDLA, VSC, 0.0)
+        !
+        IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        !
+        CALL INA2R ( OBSY, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+             IDFT, RFORM, IDLA, VSC, 0.0)
+        !
+        ! 7.g.4 Limit
+        !
+        DO IX=1, NX
+          DO IY=1, NY
+            OBSX(IX,IY) = MAX( 0. , MIN(1.,OBSX(IX,IY)) )
+            OBSY(IX,IY) = MAX( 0. , MIN(1.,OBSY(IX,IY)) )
           END DO
-          !
-          WRITE (NDSO,*)
-          !
-       END IF ! TRFLAG
-       !
-       !Li     End of IF( GTYPE .NE. SMCTYPE ) block
+        END DO
+        !
+        WRITE (NDSO,*)
+        !
+      END IF ! TRFLAG
+      !
+      !Li     End of IF( GTYPE .NE. SMCTYPE ) block
     END IF
     !
 #ifdef W3_RTD
@@ -4115,17 +4115,17 @@ CONTAINS
     ALLOCATE( AnglDin(NX,NY) )
     ! For standard lat-lon the rotation angles are zero
     IF ( PoLat == 90. ) THEN
-       AnglDin = 0.
+      AnglDin = 0.
     ELSE
-       ALLOCATE(StdLat(NX,NY), StdLon(NX,NY))
+      ALLOCATE(StdLat(NX,NY), StdLon(NX,NY))
 
-       !       Calculate rotation angles; (StdLon/Lat are returned, but not used)
-       !       The regular grid X/YGRDIN are used as equatorial lon and lat
-       CALL W3EQTOLL( YGRDIN, XGRDIN, StdLat, StdLon, AnglDin, &
-            PoLat, PoLon, NX*NY )
+      !       Calculate rotation angles; (StdLon/Lat are returned, but not used)
+      !       The regular grid X/YGRDIN are used as equatorial lon and lat
+      CALL W3EQTOLL( YGRDIN, XGRDIN, StdLat, StdLon, AnglDin, &
+           PoLat, PoLon, NX*NY )
 
-       !       Clean up
-       DEALLOCATE( StdLat, StdLon )
+      !       Clean up
+      DEALLOCATE( StdLat, StdLon )
     END IF
     !     Write out rotation information
     WRITE (NDSO,4203)   PoLat, PoLon
@@ -4142,271 +4142,271 @@ CONTAINS
     !! 7.i  Read SMC grid cell and face integer arrays.
     IF( GTYPE .EQ. SMCTYPE ) THEN
 
-       !! Overwrite 2 parameters for SMC grid.  JGLi03Mar2021
-       DTMS   = DTIMS
-       CTMAX  = CFLSM
+      !! Overwrite 2 parameters for SMC grid.  JGLi03Mar2021
+      DTMS   = DTIMS
+      CTMAX  = CFLSM
 #endif
-       !
+      !
 #ifdef W3_SMC
-       IF (FLGNML) THEN
-          NDSTR = NML_SMC%MCELS%IDF
-          IDLA = NML_SMC%MCELS%IDLA
-          IDFM = NML_SMC%MCELS%IDFM
-          RFORM = TRIM(NML_SMC%MCELS%FORMAT)
-          TNAME = TRIM(NML_SMC%MCELS%FILENAME)
-       ELSE
+      IF (FLGNML) THEN
+        NDSTR = NML_SMC%MCELS%IDF
+        IDLA = NML_SMC%MCELS%IDLA
+        IDFM = NML_SMC%MCELS%IDFM
+        RFORM = TRIM(NML_SMC%MCELS%FORMAT)
+        TNAME = TRIM(NML_SMC%MCELS%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+      END IF
+      OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+      ALLOCATE (  NLvCelsk( 0:NRLv ) )
+      READ (NDSTR,*) NLvCelsk
+      NCel=NLvCelsk(0)
+      NGLO=NCel
+      WRITE (NDSO,4004)  NCel, NLvCelsk
+
+      ALLOCATE (   IJKCelin( 5, NCel))
+      CALL INA2I ( IJKCelin, 5, NCel, 1, 5, 1, NCel, NDSTR, NDST, NDSE, &
+           IDFM, RFORM, IDLA, 1, 0)
+      CLOSE(NDSTR)
+      !!Li     Offset to change Equator index = 0 to regular grid index JEQT
+      IJKCelin( 2, :) = IJKCelin( 2, :) + JEQT
+      !!Li     Offset to change i-index = 0 to regular grid index ISHFT
+      IJKCelin( 1, :) = IJKCelin( 1, :) + ISHFT
+
+      WRITE (NDSO,4005) TNAME
+      WRITE (NDSO,4006)    1,(IJKCelin(ix,    1), ix=1,5)
+      WRITE (NDSO,4006) NCel,(IJKCelin(ix, NCel), ix=1,5)
+      WRITE (NDSO,*) ' '
+
+      IF (FLGNML) THEN
+        NDSTR = NML_SMC%ISIDE%IDF
+        IDLA = NML_SMC%ISIDE%IDLA
+        IDFM = NML_SMC%ISIDE%IDFM
+        RFORM = TRIM(NML_SMC%ISIDE%FORMAT)
+        TNAME = TRIM(NML_SMC%ISIDE%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+      END IF
+      OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+      ALLOCATE (  NLvUFcsk( 0:NRLv ) )
+      READ (NDSTR,*)  NLvUFcsk
+      NUFc = NLvUFcsk(0)
+      NGUI = NUFc
+      WRITE (NDSO,4007)   NUFc, NLvUFcsk
+
+      ALLOCATE (   IJKUFcin( 7, NUFc) )
+      CALL INA2I ( IJKUFcin, 7, NUFc, 1, 7, 1, NUFc, NDSTR, NDST, NDSE, &
+           IDFM, RFORM, IDLA, 1, 0)
+      CLOSE(NDSTR)
+      !!Li     Offset to change Equator index = 0 to regular grid index
+      IJKUFcin( 2, :) = IJKUFcin( 2, :) + JEQT
+      IJKUFcin( 1, :) = IJKUFcin( 1, :) + ISHFT
+
+      WRITE (NDSO,4008) TNAME
+      WRITE (NDSO,4009)    1,(IJKUFcin(ix,    1), ix=1,7)
+      WRITE (NDSO,4009) NUFc,(IJKUFcin(ix, NUFc), ix=1,7)
+      WRITE (NDSO,*) ' '
+
+      IF (FLGNML) THEN
+        NDSTR = NML_SMC%JSIDE%IDF
+        IDLA = NML_SMC%JSIDE%IDLA
+        IDFM = NML_SMC%JSIDE%IDFM
+        RFORM = TRIM(NML_SMC%JSIDE%FORMAT)
+        TNAME = TRIM(NML_SMC%JSIDE%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+      END IF
+      OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+      ALLOCATE (  NLvVFcsk( 0:NRLv ) )
+      READ (NDSTR,*) NLvVFcsk
+      NVFc= NLvVFcsk(0)
+      NGVJ= NVFc
+      WRITE (NDSO,4010)   NVFc, NLvVFcsk
+
+      ALLOCATE (   IJKVFcin( 8, NVFc) )
+      CALL INA2I ( IJKVFcin, 8, NVFc, 1, 8, 1, NVFc, NDSTR, NDST, NDSE, &
+           IDFM, RFORM, IDLA, 1, 0)
+      CLOSE(NDSTR)
+      !!Li     Offset to change Equator index = 0 to regular grid index
+      IJKVFcin( 2, :) = IJKVFcin( 2, :) + JEQT
+      IJKVFcin( 1, :) = IJKVFcin( 1, :) + ISHFT
+
+      WRITE (NDSO,4011) TNAME
+      WRITE (NDSO,4012)    1,(IJKVFcin(ix,    1), ix=1,8)
+      WRITE (NDSO,4012) NVFc,(IJKVFcin(ix, NVFc), ix=1,8)
+      WRITE (NDSO,*) ' '
+
+      !!Li  Subgrid obstruction for each SMCels.  JGLi15Oct2014
+      IF (FLGNML) THEN
+        NDSTR = NML_SMC%SUBTR%IDF
+        IDLA = NML_SMC%SUBTR%IDLA
+        IDFM = NML_SMC%SUBTR%IDFM
+        RFORM = TRIM(NML_SMC%SUBTR%FORMAT)
+        TNAME = TRIM(NML_SMC%SUBTR%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+      END IF
+      OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+           FORM='FORMATTED',STATUS='OLD',ERR=2000)
+      READ (NDSTR,*) NCObst, JObs
+      WRITE (NDSO,4110)   NCObst, JObs
+
+      ALLOCATE (   IJKObstr( JObs, NCObst) )
+      CALL INA2I ( IJKObstr, JObs, NCObst, 1, JObs, 1, NCObst, NDSTR, NDST,  &
+           NDSE, IDFM, RFORM, IDLA, 1, 0)
+      CLOSE(NDSTR)
+
+      WRITE (NDSO,4111) TNAME
+      WRITE (NDSO,4012)      1, (IJKObstr(ix,      1), ix=1,JObs)
+      WRITE (NDSO,4012) NCObst, (IJKObstr(ix, NCObst), ix=1,JObs)
+      WRITE (NDSO,*) ' '
+
+      !!Li     Bounary cell sequential numbers are read only if NBISMC>0
+      IF( NBISMC .GT. 0 ) THEN
+        IF (FLGNML) THEN
+          NDSTR = NML_SMC%BUNDY%IDF
+          IDLA = NML_SMC%BUNDY%IDLA
+          IDFM = NML_SMC%BUNDY%IDFM
+          RFORM = TRIM(NML_SMC%BUNDY%FORMAT)
+          TNAME = TRIM(NML_SMC%BUNDY%FILENAME)
+        ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
           READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-       END IF
-       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-            FORM='FORMATTED',STATUS='OLD',ERR=2000)
-       ALLOCATE (  NLvCelsk( 0:NRLv ) )
-       READ (NDSTR,*) NLvCelsk
-       NCel=NLvCelsk(0)
-       NGLO=NCel
-       WRITE (NDSO,4004)  NCel, NLvCelsk
+        END IF
+        OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+        ALLOCATE (  NBICelin( NBISMC )  )
+        CALL INA2I ( NBICelin, 1, NBISMC, 1, 1, 1, NBISMC, NDSTR, NDST, &
+             NDSE, IDFM, RFORM, IDLA, 1, 0)
+        CLOSE(NDSTR)
 
-       ALLOCATE (   IJKCelin( 5, NCel))
-       CALL INA2I ( IJKCelin, 5, NCel, 1, 5, 1, NCel, NDSTR, NDST, NDSE, &
-            IDFM, RFORM, IDLA, 1, 0)
-       CLOSE(NDSTR)
-       !!Li     Offset to change Equator index = 0 to regular grid index JEQT
-       IJKCelin( 2, :) = IJKCelin( 2, :) + JEQT
-       !!Li     Offset to change i-index = 0 to regular grid index ISHFT
-       IJKCelin( 1, :) = IJKCelin( 1, :) + ISHFT
-
-       WRITE (NDSO,4005) TNAME
-       WRITE (NDSO,4006)    1,(IJKCelin(ix,    1), ix=1,5)
-       WRITE (NDSO,4006) NCel,(IJKCelin(ix, NCel), ix=1,5)
-       WRITE (NDSO,*) ' '
-
-       IF (FLGNML) THEN
-          NDSTR = NML_SMC%ISIDE%IDF
-          IDLA = NML_SMC%ISIDE%IDLA
-          IDFM = NML_SMC%ISIDE%IDFM
-          RFORM = TRIM(NML_SMC%ISIDE%FORMAT)
-          TNAME = TRIM(NML_SMC%ISIDE%FILENAME)
-       ELSE
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-       END IF
-       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-            FORM='FORMATTED',STATUS='OLD',ERR=2000)
-       ALLOCATE (  NLvUFcsk( 0:NRLv ) )
-       READ (NDSTR,*)  NLvUFcsk
-       NUFc = NLvUFcsk(0)
-       NGUI = NUFc
-       WRITE (NDSO,4007)   NUFc, NLvUFcsk
-
-       ALLOCATE (   IJKUFcin( 7, NUFc) )
-       CALL INA2I ( IJKUFcin, 7, NUFc, 1, 7, 1, NUFc, NDSTR, NDST, NDSE, &
-            IDFM, RFORM, IDLA, 1, 0)
-       CLOSE(NDSTR)
-       !!Li     Offset to change Equator index = 0 to regular grid index
-       IJKUFcin( 2, :) = IJKUFcin( 2, :) + JEQT
-       IJKUFcin( 1, :) = IJKUFcin( 1, :) + ISHFT
-
-       WRITE (NDSO,4008) TNAME
-       WRITE (NDSO,4009)    1,(IJKUFcin(ix,    1), ix=1,7)
-       WRITE (NDSO,4009) NUFc,(IJKUFcin(ix, NUFc), ix=1,7)
-       WRITE (NDSO,*) ' '
-
-       IF (FLGNML) THEN
-          NDSTR = NML_SMC%JSIDE%IDF
-          IDLA = NML_SMC%JSIDE%IDLA
-          IDFM = NML_SMC%JSIDE%IDFM
-          RFORM = TRIM(NML_SMC%JSIDE%FORMAT)
-          TNAME = TRIM(NML_SMC%JSIDE%FILENAME)
-       ELSE
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-       END IF
-       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-            FORM='FORMATTED',STATUS='OLD',ERR=2000)
-       ALLOCATE (  NLvVFcsk( 0:NRLv ) )
-       READ (NDSTR,*) NLvVFcsk
-       NVFc= NLvVFcsk(0)
-       NGVJ= NVFc
-       WRITE (NDSO,4010)   NVFc, NLvVFcsk
-
-       ALLOCATE (   IJKVFcin( 8, NVFc) )
-       CALL INA2I ( IJKVFcin, 8, NVFc, 1, 8, 1, NVFc, NDSTR, NDST, NDSE, &
-            IDFM, RFORM, IDLA, 1, 0)
-       CLOSE(NDSTR)
-       !!Li     Offset to change Equator index = 0 to regular grid index
-       IJKVFcin( 2, :) = IJKVFcin( 2, :) + JEQT
-       IJKVFcin( 1, :) = IJKVFcin( 1, :) + ISHFT
-
-       WRITE (NDSO,4011) TNAME
-       WRITE (NDSO,4012)    1,(IJKVFcin(ix,    1), ix=1,8)
-       WRITE (NDSO,4012) NVFc,(IJKVFcin(ix, NVFc), ix=1,8)
-       WRITE (NDSO,*) ' '
-
-       !!Li  Subgrid obstruction for each SMCels.  JGLi15Oct2014
-       IF (FLGNML) THEN
-          NDSTR = NML_SMC%SUBTR%IDF
-          IDLA = NML_SMC%SUBTR%IDLA
-          IDFM = NML_SMC%SUBTR%IDFM
-          RFORM = TRIM(NML_SMC%SUBTR%FORMAT)
-          TNAME = TRIM(NML_SMC%SUBTR%FILENAME)
-       ELSE
-          CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-       END IF
-       OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-            FORM='FORMATTED',STATUS='OLD',ERR=2000)
-       READ (NDSTR,*) NCObst, JObs
-       WRITE (NDSO,4110)   NCObst, JObs
-
-       ALLOCATE (   IJKObstr( JObs, NCObst) )
-       CALL INA2I ( IJKObstr, JObs, NCObst, 1, JObs, 1, NCObst, NDSTR, NDST,  &
-            NDSE, IDFM, RFORM, IDLA, 1, 0)
-       CLOSE(NDSTR)
-
-       WRITE (NDSO,4111) TNAME
-       WRITE (NDSO,4012)      1, (IJKObstr(ix,      1), ix=1,JObs)
-       WRITE (NDSO,4012) NCObst, (IJKObstr(ix, NCObst), ix=1,JObs)
-       WRITE (NDSO,*) ' '
-
-       !!Li     Bounary cell sequential numbers are read only if NBISMC>0
-       IF( NBISMC .GT. 0 ) THEN
-          IF (FLGNML) THEN
-             NDSTR = NML_SMC%BUNDY%IDF
-             IDLA = NML_SMC%BUNDY%IDLA
-             IDFM = NML_SMC%BUNDY%IDFM
-             RFORM = TRIM(NML_SMC%BUNDY%FORMAT)
-             TNAME = TRIM(NML_SMC%BUNDY%FILENAME)
-          ELSE
-             CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-          END IF
-          OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-               FORM='FORMATTED',STATUS='OLD',ERR=2000)
-          ALLOCATE (  NBICelin( NBISMC )  )
-          CALL INA2I ( NBICelin, 1, NBISMC, 1, 1, 1, NBISMC, NDSTR, NDST, &
-               NDSE, IDFM, RFORM, IDLA, 1, 0)
-          CLOSE(NDSTR)
-
-          WRITE (NDSO,4013) TNAME
-          WRITE (NDSO,4014)      1, NBICelin(     1)
-          WRITE (NDSO,4014) NBISMC, NBICelin(NBISMC)
-          WRITE (NDSO,*) ' '
-       ENDIF
+        WRITE (NDSO,4013) TNAME
+        WRITE (NDSO,4014)      1, NBICelin(     1)
+        WRITE (NDSO,4014) NBISMC, NBICelin(NBISMC)
+        WRITE (NDSO,*) ' '
+      ENDIF
 
 #endif
-       !
+      !
 #ifdef W3_SMC
-       !! 7.j  Read Arctic grid cell and boundary cell integer arrays.
-       IF( ARCTC ) THEN
+      !! 7.j  Read Arctic grid cell and boundary cell integer arrays.
+      IF( ARCTC ) THEN
 
-          IF (FLGNML) THEN
-             NDSTR = NML_SMC%MBARC%IDF
-             IDLA = NML_SMC%MBARC%IDLA
-             IDFM = NML_SMC%MBARC%IDFM
-             RFORM = TRIM(NML_SMC%MBARC%FORMAT)
-             TNAME = TRIM(NML_SMC%MBARC%FILENAME)
-          ELSE
-             CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-          END IF
-          OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-               FORM='FORMATTED',STATUS='OLD',ERR=2000)
-          READ (NDSTR,*) NARC, NBGL, NBAC
-          WRITE (NDSO,4015)  NARC, NBGL, NBAC
+        IF (FLGNML) THEN
+          NDSTR = NML_SMC%MBARC%IDF
+          IDLA = NML_SMC%MBARC%IDLA
+          IDFM = NML_SMC%MBARC%IDFM
+          RFORM = TRIM(NML_SMC%MBARC%FORMAT)
+          TNAME = TRIM(NML_SMC%MBARC%FILENAME)
+        ELSE
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+        END IF
+        OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+        READ (NDSTR,*) NARC, NBGL, NBAC
+        WRITE (NDSO,4015)  NARC, NBGL, NBAC
 
-          ALLOCATE (   IJKCelAC( 5, NARC) )
-          CALL INA2I ( IJKCelAC, 5, NARC, 1, 5, 1, NARC, NDSTR, NDST, NDSE, &
-               IDFM, RFORM, IDLA, 1, 0)
-          CLOSE(NDSTR)
-          !!Li     Offset to change Equator index = 0 to regular grid index JEQT
-          IJKCelAC( 2, :) = IJKCelAC( 2, :) + JEQT
-          IJKCelAC( 1, :) = IJKCelAC( 1, :) + ISHFT
+        ALLOCATE (   IJKCelAC( 5, NARC) )
+        CALL INA2I ( IJKCelAC, 5, NARC, 1, 5, 1, NARC, NDSTR, NDST, NDSE, &
+             IDFM, RFORM, IDLA, 1, 0)
+        CLOSE(NDSTR)
+        !!Li     Offset to change Equator index = 0 to regular grid index JEQT
+        IJKCelAC( 2, :) = IJKCelAC( 2, :) + JEQT
+        IJKCelAC( 1, :) = IJKCelAC( 1, :) + ISHFT
 
-          WRITE (NDSO,4016) TNAME
-          WRITE (NDSO,4006)    1,(IJKCelAC(ix,    1), ix=1,5)
-          WRITE (NDSO,4006) NARC,(IJKCelAC(ix, NARC), ix=1,5)
-          WRITE (NDSO,*) ' '
+        WRITE (NDSO,4016) TNAME
+        WRITE (NDSO,4006)    1,(IJKCelAC(ix,    1), ix=1,5)
+        WRITE (NDSO,4006) NARC,(IJKCelAC(ix, NARC), ix=1,5)
+        WRITE (NDSO,*) ' '
 
-          IF (FLGNML) THEN
-             NDSTR = NML_SMC%AISID%IDF
-             IDLA = NML_SMC%AISID%IDLA
-             IDFM = NML_SMC%AISID%IDFM
-             RFORM = TRIM(NML_SMC%AISID%FORMAT)
-             TNAME = TRIM(NML_SMC%AISID%FILENAME)
-          ELSE
-             CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-          END IF
-          OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-               FORM='FORMATTED',STATUS='OLD',ERR=2000)
-          READ (NDSTR,*)  NAUI
-          WRITE (NDSO,4017)   NAUI
+        IF (FLGNML) THEN
+          NDSTR = NML_SMC%AISID%IDF
+          IDLA = NML_SMC%AISID%IDLA
+          IDFM = NML_SMC%AISID%IDFM
+          RFORM = TRIM(NML_SMC%AISID%FORMAT)
+          TNAME = TRIM(NML_SMC%AISID%FILENAME)
+        ELSE
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+        END IF
+        OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+        READ (NDSTR,*)  NAUI
+        WRITE (NDSO,4017)   NAUI
 
-          ALLOCATE (   IJKUFcAC( 7, NAUI) )
-          CALL INA2I ( IJKUFcAC, 7, NAUI, 1, 7, 1, NAUI, NDSTR, NDST, NDSE, &
-               IDFM, RFORM, IDLA, 1, 0)
-          CLOSE(NDSTR)
-          !!Li     Offset to change Equator index = 0 to regular grid index
-          IJKUFcAC( 2, :) = IJKUFcAC( 2, :) + JEQT
-          IJKUFcAC( 1, :) = IJKUFcAC( 1, :) + ISHFT
-          !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
-          DO  IP=1, NAUI
-             DO  IX=4,7
-                IF( IJKUFcAC(IX,IP) > 0 ) IJKUFcAC(IX,IP) = IJKUFcAC(IX,IP) + NGLO
-             ENDDO
+        ALLOCATE (   IJKUFcAC( 7, NAUI) )
+        CALL INA2I ( IJKUFcAC, 7, NAUI, 1, 7, 1, NAUI, NDSTR, NDST, NDSE, &
+             IDFM, RFORM, IDLA, 1, 0)
+        CLOSE(NDSTR)
+        !!Li     Offset to change Equator index = 0 to regular grid index
+        IJKUFcAC( 2, :) = IJKUFcAC( 2, :) + JEQT
+        IJKUFcAC( 1, :) = IJKUFcAC( 1, :) + ISHFT
+        !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
+        DO  IP=1, NAUI
+          DO  IX=4,7
+            IF( IJKUFcAC(IX,IP) > 0 ) IJKUFcAC(IX,IP) = IJKUFcAC(IX,IP) + NGLO
           ENDDO
+        ENDDO
 
-          WRITE (NDSO,4018) TNAME
-          WRITE (NDSO,4009)    1,(IJKUFcAC(ix,    1), ix=1,7)
-          WRITE (NDSO,4009) NAUI,(IJKUFcAC(ix, NAUI), ix=1,7)
-          WRITE (NDSO,*) ' '
+        WRITE (NDSO,4018) TNAME
+        WRITE (NDSO,4009)    1,(IJKUFcAC(ix,    1), ix=1,7)
+        WRITE (NDSO,4009) NAUI,(IJKUFcAC(ix, NAUI), ix=1,7)
+        WRITE (NDSO,*) ' '
 
-          IF (FLGNML) THEN
-             NDSTR = NML_SMC%AJSID%IDF
-             IDLA = NML_SMC%AJSID%IDLA
-             IDFM = NML_SMC%AJSID%IDFM
-             RFORM = TRIM(NML_SMC%AJSID%FORMAT)
-             TNAME = TRIM(NML_SMC%AJSID%FILENAME)
-          ELSE
-             CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
-          END IF
-          OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-               FORM='FORMATTED',STATUS='OLD',ERR=2000)
-          READ (NDSTR,*) NAVJ
-          WRITE (NDSO,4019)   NAVJ
+        IF (FLGNML) THEN
+          NDSTR = NML_SMC%AJSID%IDF
+          IDLA = NML_SMC%AJSID%IDLA
+          IDFM = NML_SMC%AJSID%IDFM
+          RFORM = TRIM(NML_SMC%AJSID%FORMAT)
+          TNAME = TRIM(NML_SMC%AJSID%FILENAME)
+        ELSE
+          CALL NEXTLN ( COMSTR , NDSI , NDSE )
+          READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFM, RFORM, TNAME
+        END IF
+        OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+             FORM='FORMATTED',STATUS='OLD',ERR=2000)
+        READ (NDSTR,*) NAVJ
+        WRITE (NDSO,4019)   NAVJ
 
-          ALLOCATE (   IJKVFcAC( 8, NAVJ) )
-          CALL INA2I ( IJKVFcAC, 8, NAVJ, 1, 8, 1, NAVJ, NDSTR, NDST, NDSE, &
-               IDFM, RFORM, IDLA, 1, 0)
-          CLOSE(NDSTR)
-          !!Li     Offset to change Equator index = 0 to regular grid index
-          IJKVFcAC( 2, :) = IJKVFcAC( 2, :) + JEQT
-          IJKVFcAC( 1, :) = IJKVFcAC( 1, :) + ISHFT
-          !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
-          DO  IP=1, NAVJ
-             DO  IY=4,7
-                IF( IJKVFcAC(IY,IP) > 0 ) IJKVFcAC(IY,IP) = IJKVFcAC(IY,IP) + NGLO
-             ENDDO
+        ALLOCATE (   IJKVFcAC( 8, NAVJ) )
+        CALL INA2I ( IJKVFcAC, 8, NAVJ, 1, 8, 1, NAVJ, NDSTR, NDST, NDSE, &
+             IDFM, RFORM, IDLA, 1, 0)
+        CLOSE(NDSTR)
+        !!Li     Offset to change Equator index = 0 to regular grid index
+        IJKVFcAC( 2, :) = IJKVFcAC( 2, :) + JEQT
+        IJKVFcAC( 1, :) = IJKVFcAC( 1, :) + ISHFT
+        !!Li     Offset Arctic cell sequential numbers by global cell number NGLO
+        DO  IP=1, NAVJ
+          DO  IY=4,7
+            IF( IJKVFcAC(IY,IP) > 0 ) IJKVFcAC(IY,IP) = IJKVFcAC(IY,IP) + NGLO
           ENDDO
+        ENDDO
 
-          WRITE (NDSO,4020) TNAME
-          WRITE (NDSO,4012)    1,(IJKVFcAC(ix,    1), ix=1,8)
-          WRITE (NDSO,4012) NAVJ,(IJKVFcAC(ix, NAVJ), ix=1,8)
-          WRITE (NDSO,*) ' '
+        WRITE (NDSO,4020) TNAME
+        WRITE (NDSO,4012)    1,(IJKVFcAC(ix,    1), ix=1,8)
+        WRITE (NDSO,4012) NAVJ,(IJKVFcAC(ix, NAVJ), ix=1,8)
+        WRITE (NDSO,*) ' '
 
-          !!Li  Reset total cell and face numbers
-          NCel = NGLO + NARC
-          NUFc = NGUI + NAUI
-          NVFc = NGVJ + NAVJ
-          !!Li  Also append Arctic part into base level sub-loops
-          NLvCelsk(NRLv)=NLvCelsk(NRLv)+NARC
-          NLvUFcsk(NRLv)=NLvUFcsk(NRLv)+NAUI
-          NLvVFcsk(NRLv)=NLvVFcsk(NRLv)+NAVJ
-          !!Li  Reset NBAC to total number of boundary cells.
-          NBAC = NBGL + NBAC
+        !!Li  Reset total cell and face numbers
+        NCel = NGLO + NARC
+        NUFc = NGUI + NAUI
+        NVFc = NGVJ + NAVJ
+        !!Li  Also append Arctic part into base level sub-loops
+        NLvCelsk(NRLv)=NLvCelsk(NRLv)+NARC
+        NLvUFcsk(NRLv)=NLvUFcsk(NRLv)+NAUI
+        NLvVFcsk(NRLv)=NLvVFcsk(NRLv)+NAVJ
+        !!Li  Reset NBAC to total number of boundary cells.
+        NBAC = NBGL + NBAC
 
-       ENDIF  !! ARCTC section.
+      ENDIF  !! ARCTC section.
 
     ENDIF  !! GTYPE .EQ. SMCTYPE
 #endif
@@ -4424,325 +4424,325 @@ CONTAINS
     ! 8.b Determine where to get the data
     !
     IF (FLGNML) THEN
-       NDSTR = NML_MASK%IDF
-       IDLA = NML_MASK%IDLA
-       IDFT = NML_MASK%IDFM
-       RFORM = TRIM(NML_MASK%FORMAT)
-       FROM = TRIM(NML_MASK%FROM)
-       TNAME = TRIM(NML_MASK%FILENAME)
-       IF (TNAME.EQ.'unset' .OR. TNAME.EQ.'UNSET') FROM='PART'
+      NDSTR = NML_MASK%IDF
+      IDLA = NML_MASK%IDLA
+      IDFT = NML_MASK%IDFM
+      RFORM = TRIM(NML_MASK%FORMAT)
+      FROM = TRIM(NML_MASK%FROM)
+      TNAME = TRIM(NML_MASK%FILENAME)
+      IF (TNAME.EQ.'unset' .OR. TNAME.EQ.'UNSET') FROM='PART'
     ELSE
-       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFT, RFORM,     &
-            FROM, TNAME
+      CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      READ (NDSI,*,END=2001,ERR=2002) NDSTR, IDLA, IDFT, RFORM,     &
+           FROM, TNAME
     END IF
     !
     ! ... Data to be read in parts
     !
     IF ( FROM .EQ. 'PART' ) THEN
-       !
-       ! 8.b Update TMPSTA with input boundary data (ILOOP=1)
-       !                        and excluded points (ILOOP=2)
-       !
-       IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
-          WRITE(NDSE,*)'PROGRAM W3GRID STATUS MAP CALCULATION IS '//   &
-               'NOT TESTED FOR TRIPOLE GRIDS FOR CASE WHERE USER OPTS '//   &
-               'TO READ DATA IN PARTS. STOPPING NOW (107).'
-          CALL EXTCDE ( 107 )
-       END IF
-       DO ILOOP=1, 2
+      !
+      ! 8.b Update TMPSTA with input boundary data (ILOOP=1)
+      !                        and excluded points (ILOOP=2)
+      !
+      IF ( ICLOSE .EQ. ICLOSE_TRPL ) THEN
+        WRITE(NDSE,*)'PROGRAM W3GRID STATUS MAP CALCULATION IS '//   &
+             'NOT TESTED FOR TRIPOLE GRIDS FOR CASE WHERE USER OPTS '//   &
+             'TO READ DATA IN PARTS. STOPPING NOW (107).'
+        CALL EXTCDE ( 107 )
+      END IF
+      DO ILOOP=1, 2
+        !
+        I = 1
+        IF ( ILOOP .EQ. 1 ) THEN
+          WRITE (NDSO,979) 'boundary points'
+          NSTAT  = 2
+        ELSE
+          WRITE (NDSO,979) 'excluded points'
+          NSTAT  = -1
+        END IF
+        FIRST  = .TRUE.
+        !
+        DO
+          IF (FLGNML) THEN
+            ! inbound points
+            IF (ILOOP.EQ.1) THEN
+              IF (NML_INBND_COUNT%N_POINT.GT.0 .AND. I.LE.NML_INBND_COUNT%N_POINT) THEN
+                IX = NML_INBND_POINT(I)%X_INDEX
+                IY = NML_INBND_POINT(I)%Y_INDEX
+                CONNCT = NML_INBND_POINT(I)%CONNECT
+                I=I+1
+              ELSE
+                EXIT
+              END IF
+              ! excluded points
+            ELSE IF (ILOOP.EQ.2) THEN
+              IF (NML_EXCL_COUNT%N_POINT.GT.0 .AND. I.LE.NML_EXCL_COUNT%N_POINT) THEN
+                IX = NML_EXCL_POINT(I)%X_INDEX
+                IY = NML_EXCL_POINT(I)%Y_INDEX
+                CONNCT = NML_EXCL_POINT(I)%CONNECT
+                I=I+1
+              ELSE
+                EXIT
+              END IF
+            END IF
+          ELSE
+            CALL NEXTLN ( COMSTR , NDSI , NDSE )
+            READ (NDSI,*,END=2001,ERR=2002) IX, IY, CONNCT
+          END IF
+          !
+          ! ... Check if last point reached.
+          !
+          IF (IX.EQ.0 .AND. IY.EQ.0) EXIT
+          !
+          ! ... Check if point in grid.
+          !
+          IF (GTYPE.EQ.UNGTYPE.AND.(UGOBCAUTO.OR.UGOBCOK)) CYCLE
+          IF (IX.LT.1 .OR. IX.GT.NX .OR.  IY.LT.1 .OR. IY.GT.NY) THEN
+            WRITE (NDSO,981)
+            WRITE (NDSO,*) '       ', IX, IY
+            CYCLE
+          END IF
+          !
+          ! ... Check if intermediate points are to be added.
+          !
+          IF ( CONNCT .AND. .NOT.FIRST ) THEN
+            IDX    = IX - IXO
+            IDY    = IY - IYO
+            IF ( IDX.EQ.0 .OR. IDY.EQ.0 .OR.                      &
+                 ABS(IDX).EQ.ABS(IDY) ) THEN
+              NBA    = MAX ( MAX(ABS(IDX),ABS(IDY))-1 , 0 )
+              IF (IDX.NE.0) IDX = SIGN(1,IDX)
+              IF (IDY.NE.0) IDY = SIGN(1,IDY)
+              IX     = IXO
+              IY     = IYO
+              DO IBA=1, NBA
+                IX     = IX + IDX
+                IY     = IY + IDY
+                IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
+                  TMPSTA(IY,IX) = NSTAT
+                ELSE
+                  WRITE(NDSO,*) 'WARNING: POINT (',IX,',',IY,  &
+                       ') CANNOT BE GIVEN THE STATUS ',NSTAT
+                END IF
+              END DO
+              IX     = IX + IDX
+              IY     = IY + IDY
+            ELSE
+              WRITE (NDSO,982)
+              WRITE (NDSO,*) '       ', IX , IY
+              WRITE (NDSO,*) '       ', IXO, IYO
+            END IF
+          END IF
+          !
+          ! ... Check if point itself is to be added
+          !
+          IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
+            TMPSTA(IY,IX) = NSTAT
+          END IF
+          !
+          ! ... Save data of previous point
+          !
+          IXO    = IX
+          IYO    = IY
+          FIRST  = .FALSE.
+          !
+          ! ... Branch back to read.
+          !
+        END DO
+        !
+        ! 8.c Final processing excluded points
+        !
+        IF ( ILOOP .EQ. 2 ) THEN
           !
           I = 1
-          IF ( ILOOP .EQ. 1 ) THEN
-             WRITE (NDSO,979) 'boundary points'
-             NSTAT  = 2
-          ELSE
-             WRITE (NDSO,979) 'excluded points'
-             NSTAT  = -1
-          END IF
-          FIRST  = .TRUE.
-          !
           DO
-             IF (FLGNML) THEN
-                ! inbound points
-                IF (ILOOP.EQ.1) THEN
-                   IF (NML_INBND_COUNT%N_POINT.GT.0 .AND. I.LE.NML_INBND_COUNT%N_POINT) THEN
-                      IX = NML_INBND_POINT(I)%X_INDEX
-                      IY = NML_INBND_POINT(I)%Y_INDEX
-                      CONNCT = NML_INBND_POINT(I)%CONNECT
-                      I=I+1
-                   ELSE
-                      EXIT
-                   END IF
-                   ! excluded points
-                ELSE IF (ILOOP.EQ.2) THEN
-                   IF (NML_EXCL_COUNT%N_POINT.GT.0 .AND. I.LE.NML_EXCL_COUNT%N_POINT) THEN
-                      IX = NML_EXCL_POINT(I)%X_INDEX
-                      IY = NML_EXCL_POINT(I)%Y_INDEX
-                      CONNCT = NML_EXCL_POINT(I)%CONNECT
-                      I=I+1
-                   ELSE
-                      EXIT
-                   END IF
-                END IF
-             ELSE
-                CALL NEXTLN ( COMSTR , NDSI , NDSE )
-                READ (NDSI,*,END=2001,ERR=2002) IX, IY, CONNCT
-             END IF
-             !
-             ! ... Check if last point reached.
-             !
-             IF (IX.EQ.0 .AND. IY.EQ.0) EXIT
-             !
-             ! ... Check if point in grid.
-             !
-             IF (GTYPE.EQ.UNGTYPE.AND.(UGOBCAUTO.OR.UGOBCOK)) CYCLE
-             IF (IX.LT.1 .OR. IX.GT.NX .OR.  IY.LT.1 .OR. IY.GT.NY) THEN
-                WRITE (NDSO,981)
-                WRITE (NDSO,*) '       ', IX, IY
-                CYCLE
-             END IF
-             !
-             ! ... Check if intermediate points are to be added.
-             !
-             IF ( CONNCT .AND. .NOT.FIRST ) THEN
-                IDX    = IX - IXO
-                IDY    = IY - IYO
-                IF ( IDX.EQ.0 .OR. IDY.EQ.0 .OR.                      &
-                     ABS(IDX).EQ.ABS(IDY) ) THEN
-                   NBA    = MAX ( MAX(ABS(IDX),ABS(IDY))-1 , 0 )
-                   IF (IDX.NE.0) IDX = SIGN(1,IDX)
-                   IF (IDY.NE.0) IDY = SIGN(1,IDY)
-                   IX     = IXO
-                   IY     = IYO
-                   DO IBA=1, NBA
-                      IX     = IX + IDX
-                      IY     = IY + IDY
-                      IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
-                         TMPSTA(IY,IX) = NSTAT
-                      ELSE
-                         WRITE(NDSO,*) 'WARNING: POINT (',IX,',',IY,  &
-                              ') CANNOT BE GIVEN THE STATUS ',NSTAT
+            IF (FLGNML) THEN
+              ! excluded bodies
+              IF (NML_EXCL_COUNT%N_BODY.GT.0 .AND. I.LE.NML_EXCL_COUNT%N_BODY) THEN
+                IX = NML_EXCL_BODY(I)%X_INDEX
+                IY = NML_EXCL_BODY(I)%Y_INDEX
+                I=I+1
+              ELSE
+                EXIT
+              END IF
+            ELSE
+              CALL NEXTLN ( COMSTR , NDSI , NDSE )
+              READ (NDSI,*,END=2001,ERR=2002) IX, IY
+            END IF
+            !
+            ! ... Check if last point reached.
+            !
+            IF (IX.EQ.0 .AND. IY.EQ.0) EXIT
+            !
+            ! ... Check if point in grid.
+            !
+            IF (IX.LT.1 .OR. IX.GT.NX .OR. IY.LT.1 .OR. IY.GT.NY) THEN
+              WRITE (NDSO,981)
+              WRITE (NDSO,*) '       ', IX, IY
+              CYCLE
+            END IF
+            !
+            ! ... Check if point already excluded
+            !
+            IF ( TMPSTA(IY,IX) .EQ. NSTAT ) THEN
+              WRITE (NDSO,1981)
+              WRITE (NDSO,*) '       ', IX, IY
+              CYCLE
+            END IF
+            !
+            ! ... Search for points to exclude
+            !
+            TMPMAP = TMPSTA
+            J      = 1
+            IX1    = IX
+            IY1    = IY
+            !
+            JJ     = TMPSTA(IY,IX)
+            TMPSTA(IY,IX) = NSTAT
+            DO
+              NBT    = 0
+              DO IX=MAX(1,IX1-J), MIN(IX1+J,NX)
+                DO IY=MAX(1,IY1-J), MIN(IY1+J,NY)
+                  IF ( TMPSTA(IY,IX) .EQ. JJ ) THEN
+                    IF (IX.GT.1) THEN
+                      IF (TMPSTA(IY  ,IX-1).EQ.NSTAT           &
+                           .AND. TMPMAP(IY  ,IX-1).EQ.JJ ) THEN
+                        TMPSTA(IY,IX) = NSTAT
                       END IF
-                   END DO
-                   IX     = IX + IDX
-                   IY     = IY + IDY
-                ELSE
-                   WRITE (NDSO,982)
-                   WRITE (NDSO,*) '       ', IX , IY
-                   WRITE (NDSO,*) '       ', IXO, IYO
-                END IF
-             END IF
-             !
-             ! ... Check if point itself is to be added
-             !
-             IF ( TMPSTA(IY,IX).EQ.1 .OR. J.EQ.2 ) THEN
-                TMPSTA(IY,IX) = NSTAT
-             END IF
-             !
-             ! ... Save data of previous point
-             !
-             IXO    = IX
-             IYO    = IY
-             FIRST  = .FALSE.
-             !
-             ! ... Branch back to read.
-             !
+                    END IF
+                    IF (IX.LT.NX) THEN
+                      IF (TMPSTA(IY  ,IX+1).EQ.NSTAT           &
+                           .AND. TMPMAP(IY  ,IX+1).EQ.JJ ) THEN
+                        TMPSTA(IY,IX) = NSTAT
+                      END IF
+                    END IF
+                    IF (IY.LT.NY) THEN
+                      IF (TMPSTA(IY+1,IX  ).EQ.NSTAT           &
+                           .AND. TMPMAP(IY+1,IX  ).EQ.JJ ) THEN
+                        TMPSTA(IY,IX) = NSTAT
+                      END IF
+                    END IF
+                    IF (IY.GT.1) THEN
+                      IF (TMPSTA(IY-1,IX  ).EQ.NSTAT           &
+                           .AND. TMPMAP(IY-1,IX  ).EQ.JJ ) THEN
+                        TMPSTA(IY,IX) = NSTAT
+                      END IF
+                    END IF
+                    IF (TMPSTA(IY,IX).EQ.NSTAT) NBT = NBT + 1
+                  END IF
+                END DO
+              END DO
+              !
+              IF ( NBT .NE. 0 ) THEN
+                J = J + 1
+              ELSE
+                EXIT
+              END IF
+            END DO
           END DO
           !
-          ! 8.c Final processing excluded points
+          ! ... Outer boundary excluded points
           !
-          IF ( ILOOP .EQ. 2 ) THEN
-             !
-             I = 1
-             DO
-                IF (FLGNML) THEN
-                   ! excluded bodies
-                   IF (NML_EXCL_COUNT%N_BODY.GT.0 .AND. I.LE.NML_EXCL_COUNT%N_BODY) THEN
-                      IX = NML_EXCL_BODY(I)%X_INDEX
-                      IY = NML_EXCL_BODY(I)%Y_INDEX
-                      I=I+1
-                   ELSE
-                      EXIT
-                   END IF
-                ELSE
-                   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-                   READ (NDSI,*,END=2001,ERR=2002) IX, IY
-                END IF
-                !
-                ! ... Check if last point reached.
-                !
-                IF (IX.EQ.0 .AND. IY.EQ.0) EXIT
-                !
-                ! ... Check if point in grid.
-                !
-                IF (IX.LT.1 .OR. IX.GT.NX .OR. IY.LT.1 .OR. IY.GT.NY) THEN
-                   WRITE (NDSO,981)
-                   WRITE (NDSO,*) '       ', IX, IY
-                   CYCLE
-                END IF
-                !
-                ! ... Check if point already excluded
-                !
-                IF ( TMPSTA(IY,IX) .EQ. NSTAT ) THEN
-                   WRITE (NDSO,1981)
-                   WRITE (NDSO,*) '       ', IX, IY
-                   CYCLE
-                END IF
-                !
-                ! ... Search for points to exclude
-                !
-                TMPMAP = TMPSTA
-                J      = 1
-                IX1    = IX
-                IY1    = IY
-                !
-                JJ     = TMPSTA(IY,IX)
-                TMPSTA(IY,IX) = NSTAT
-                DO
-                   NBT    = 0
-                   DO IX=MAX(1,IX1-J), MIN(IX1+J,NX)
-                      DO IY=MAX(1,IY1-J), MIN(IY1+J,NY)
-                         IF ( TMPSTA(IY,IX) .EQ. JJ ) THEN
-                            IF (IX.GT.1) THEN
-                               IF (TMPSTA(IY  ,IX-1).EQ.NSTAT           &
-                                    .AND. TMPMAP(IY  ,IX-1).EQ.JJ ) THEN
-                                  TMPSTA(IY,IX) = NSTAT
-                               END IF
-                            END IF
-                            IF (IX.LT.NX) THEN
-                               IF (TMPSTA(IY  ,IX+1).EQ.NSTAT           &
-                                    .AND. TMPMAP(IY  ,IX+1).EQ.JJ ) THEN
-                                  TMPSTA(IY,IX) = NSTAT
-                               END IF
-                            END IF
-                            IF (IY.LT.NY) THEN
-                               IF (TMPSTA(IY+1,IX  ).EQ.NSTAT           &
-                                    .AND. TMPMAP(IY+1,IX  ).EQ.JJ ) THEN
-                                  TMPSTA(IY,IX) = NSTAT
-                               END IF
-                            END IF
-                            IF (IY.GT.1) THEN
-                               IF (TMPSTA(IY-1,IX  ).EQ.NSTAT           &
-                                    .AND. TMPMAP(IY-1,IX  ).EQ.JJ ) THEN
-                                  TMPSTA(IY,IX) = NSTAT
-                               END IF
-                            END IF
-                            IF (TMPSTA(IY,IX).EQ.NSTAT) NBT = NBT + 1
-                         END IF
-                      END DO
-                   END DO
-                   !
-                   IF ( NBT .NE. 0 ) THEN
-                      J = J + 1
-                   ELSE
-                      EXIT
-                   END IF
-                END DO
-             END DO
-             !
-             ! ... Outer boundary excluded points
-             !
-             IF ( GTYPE.NE.UNGTYPE ) THEN
+          IF ( GTYPE.NE.UNGTYPE ) THEN
 
-                DO IX=1, NX
-                   IF ( TMPSTA( 1,IX) .EQ. 1 ) TMPSTA( 1,IX) = NSTAT
-                   IF ( TMPSTA(NY,IX) .EQ. 1 ) TMPSTA(NY,IX) = NSTAT
-                END DO
-                !
-                IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
-                   DO IY=2, NY-1
-                      IF ( TMPSTA(IY, 1) .EQ. 1 ) TMPSTA(IY, 1) = NSTAT
-                      IF ( TMPSTA(IY,NX) .EQ. 1 ) TMPSTA(IY,NX) = NSTAT
-                   END DO
-                END IF
+            DO IX=1, NX
+              IF ( TMPSTA( 1,IX) .EQ. 1 ) TMPSTA( 1,IX) = NSTAT
+              IF ( TMPSTA(NY,IX) .EQ. 1 ) TMPSTA(NY,IX) = NSTAT
+            END DO
+            !
+            IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
+              DO IY=2, NY-1
+                IF ( TMPSTA(IY, 1) .EQ. 1 ) TMPSTA(IY, 1) = NSTAT
+                IF ( TMPSTA(IY,NX) .EQ. 1 ) TMPSTA(IY,NX) = NSTAT
+              END DO
+            END IF
 
-             END IF ! GTYPE
-             !
-          END IF ! ILOOP .EQ. 2
+          END IF ! GTYPE
           !
-          ! ... Branch back input / excluded points ( ILOOP in 8.b )
-          !
-       END DO
-       !
+        END IF ! ILOOP .EQ. 2
+        !
+        ! ... Branch back input / excluded points ( ILOOP in 8.b )
+        !
+      END DO
+      !
     ELSE ! FROM .EQ. PART
-       !
-       ! 8.d Read the map from file instead
-       !
-       NSTAT  = -1
-       IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
-       IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+      !
+      ! 8.d Read the map from file instead
+      !
+      NSTAT  = -1
+      IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+      IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
 
-       !!Li  Suspended for SMC grid though the file input line in  ww3_grid.inp
-       !!Li  is kept to divert the program into this block.  JGLi15Oct2014
-       !!Li
-       IF( GTYPE .NE. SMCTYPE ) THEN
-          !!Li
-          !
-          WRITE (NDSO,978) NDSTR, IDLA, IDFT
-          IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
-          IF (FROM.EQ.'NAME') WRITE (NDSO,974) TNAME
-          !
-          IF ( NDSTR .EQ. NDSI ) THEN
-             IF ( IDFT .EQ. 3 ) THEN
-                WRITE (NDSE,1004) NDSTR
-                CALL EXTCDE (23)
-             ELSE
-                CALL NEXTLN ( COMSTR , NDSI , NDSE )
-             END IF
+      !!Li  Suspended for SMC grid though the file input line in  ww3_grid.inp
+      !!Li  is kept to divert the program into this block.  JGLi15Oct2014
+      !!Li
+      IF( GTYPE .NE. SMCTYPE ) THEN
+        !!Li
+        !
+        WRITE (NDSO,978) NDSTR, IDLA, IDFT
+        IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
+        IF (FROM.EQ.'NAME') WRITE (NDSO,974) TNAME
+        !
+        IF ( NDSTR .EQ. NDSI ) THEN
+          IF ( IDFT .EQ. 3 ) THEN
+            WRITE (NDSE,1004) NDSTR
+            CALL EXTCDE (23)
           ELSE
-             IF ( IDFT .EQ. 3 ) THEN
-                IF (FROM.EQ.'NAME') THEN
-                   OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                        form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
-                        IOSTAT=IERR)
-                ELSE
-                   OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
-             ELSE
-                IF (FROM.EQ.'NAME') THEN
-                   OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                ELSE
-                   OPEN (NDSTR,                                    &
-                        STATUS='OLD',ERR=2000,IOSTAT=IERR)
-                END IF
-             END IF
+            CALL NEXTLN ( COMSTR , NDSI , NDSE )
           END IF
-          !
-          ALLOCATE ( READMP(NX,NY) )
-          CALL INA2I ( READMP, NX, NY, 1, NX, 1, NY, NDSTR, NDST,    &
-               NDSE, IDFT, RFORM, IDLA, 1, 0 )
-          !
-          IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
-             DO IY=2, NY-1
-                IF ( READMP( 1,IY) .EQ. 1 ) READMP( 1,IY) = 3
-                IF ( READMP(NX,IY) .EQ. 1 ) READMP(NX,IY) = 3
-             END DO
+        ELSE
+          IF ( IDFT .EQ. 3 ) THEN
+            IF (FROM.EQ.'NAME') THEN
+              OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+                   form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                   IOSTAT=IERR)
+            ELSE
+              OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            END IF
+          ELSE
+            IF (FROM.EQ.'NAME') THEN
+              OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            ELSE
+              OPEN (NDSTR,                                    &
+                   STATUS='OLD',ERR=2000,IOSTAT=IERR)
+            END IF
           END IF
-          !
+        END IF
+        !
+        ALLOCATE ( READMP(NX,NY) )
+        CALL INA2I ( READMP, NX, NY, 1, NX, 1, NY, NDSTR, NDST,    &
+             NDSE, IDFT, RFORM, IDLA, 1, 0 )
+        !
+        IF ( ICLOSE.EQ.ICLOSE_NONE ) THEN
+          DO IY=2, NY-1
+            IF ( READMP( 1,IY) .EQ. 1 ) READMP( 1,IY) = 3
+            IF ( READMP(NX,IY) .EQ. 1 ) READMP(NX,IY) = 3
+          END DO
+        END IF
+        !
+        DO IX=1, NX
+          IF ( READMP(IX, 1) .EQ. 1 ) READMP(IX, 1) = 3
+          IF ( READMP(IX,NY) .EQ. 1 .AND. ICLOSE .NE. ICLOSE_TRPL)   &
+               READMP(IX,NY) = 3
+        END DO
+        !
+        DO IY=1, NY
           DO IX=1, NX
-             IF ( READMP(IX, 1) .EQ. 1 ) READMP(IX, 1) = 3
-             IF ( READMP(IX,NY) .EQ. 1 .AND. ICLOSE .NE. ICLOSE_TRPL)   &
-                  READMP(IX,NY) = 3
+            IF ( READMP(IX,IY) .EQ. 3 ) THEN
+              TMPSTA(IY,IX) = NSTAT
+            ELSE
+              TMPSTA(IY,IX) = READMP(IX,IY)
+              ! force to dry the sea points over zlim
+              IF ( ZBIN(IX,IY) .GT. ZLIM ) TMPSTA(IY,IX) = 0
+            END IF
           END DO
-          !
-          DO IY=1, NY
-             DO IX=1, NX
-                IF ( READMP(IX,IY) .EQ. 3 ) THEN
-                   TMPSTA(IY,IX) = NSTAT
-                ELSE
-                   TMPSTA(IY,IX) = READMP(IX,IY)
-                   ! force to dry the sea points over zlim
-                   IF ( ZBIN(IX,IY) .GT. ZLIM ) TMPSTA(IY,IX) = 0
-                END IF
-             END DO
-          END DO
-          DEALLOCATE ( READMP )
-          !!Li
-       ENDIF   !! GTYPE .NE. SMCTYPE
-       !
+        END DO
+        DEALLOCATE ( READMP )
+        !!Li
+      ENDIF   !! GTYPE .NE. SMCTYPE
+      !
     END IF !FROM .NE. 'PART'
     !
     ! 8.e Get NSEA and other counters
@@ -4753,67 +4753,67 @@ CONTAINS
     NBT    = 0
     !
     DO IX=1, NX
-       DO IY=1, NY
-          IF ( TMPSTA(IY,IX) .GT. 0 ) NSEA   = NSEA + 1
-          IF ( TMPSTA(IY,IX) .EQ. 0 ) NLAND  = NLAND + 1
-          IF ( TMPSTA(IY,IX) .LT. 0 ) NBT    = NBT + 1
-          IF ( TMPSTA(IY,IX) .EQ. 2 ) NBI    = NBI + 1
-       END DO
+      DO IY=1, NY
+        IF ( TMPSTA(IY,IX) .GT. 0 ) NSEA   = NSEA + 1
+        IF ( TMPSTA(IY,IX) .EQ. 0 ) NLAND  = NLAND + 1
+        IF ( TMPSTA(IY,IX) .LT. 0 ) NBT    = NBT + 1
+        IF ( TMPSTA(IY,IX) .EQ. 2 ) NBI    = NBI + 1
+      END DO
     END DO
     !
 #ifdef W3_SMC
     IF( GTYPE .EQ. SMCTYPE ) THEN
-       !Li   Moved before FLBPI is defined with NBI value.  JGLi05Jun2015
-       !Li   Overwrite NSEA with NCel for SMC grid.
-       NSEA = NCel
-       !Li   Use input NBI number for SMC grid because merged
-       !Li   cells are over-counted by model.
-       NBI = NBISMC
-       !Li   No land points are used in SMC grid.   JGLi26Feb2016
-       NLAND = 0
+      !Li   Moved before FLBPI is defined with NBI value.  JGLi05Jun2015
+      !Li   Overwrite NSEA with NCel for SMC grid.
+      NSEA = NCel
+      !Li   Use input NBI number for SMC grid because merged
+      !Li   cells are over-counted by model.
+      NBI = NBISMC
+      !Li   No land points are used in SMC grid.   JGLi26Feb2016
+      NLAND = 0
     ENDIF  !!  GTYPE .EQ. SMCTYPE
 #endif
     !
     WRITE (NDSO,980)
     FLBPI  = NBI .GT. 0
     IF ( .NOT. FLBPI ) THEN
-       WRITE (NDSO,985)
+      WRITE (NDSO,985)
     ELSE
-       WRITE (NDSO,986) NBI
+      WRITE (NDSO,986) NBI
 #ifdef W3_O1
-       IF ( FLAGLL ) THEN
-          WRITE (NDSO, 987)
-       ELSE
-          WRITE (NDSO,1987)
-       END IF
-       IBI    = 1
-       DO IY=1, NY
-          DO IX=1, NX
-             IF (GTYPE.NE.UNGTYPE) THEN
-                X = FACTOR * ( XGRDIN(IX,IY) )
-                Y = FACTOR * ( YGRDIN(IX,IY) )
-             ELSE
-                X = FACTOR * XGRD(1,IX)
-                Y = FACTOR * YGRD(1,IX)
-             END IF
-             IF ( TMPSTA(IY,IX).EQ.2 ) THEN
-                IF ( FLAGLL ) THEN
-                   WRITE (NDSO, 988) IBI, IX, IY, X, Y
-                ELSE
-                   WRITE (NDSO,1988) IBI, IX, IY, X, Y
-                END IF
-                IBI    = IBI + 1
-             END IF
-          END DO
-       END DO
+      IF ( FLAGLL ) THEN
+        WRITE (NDSO, 987)
+      ELSE
+        WRITE (NDSO,1987)
+      END IF
+      IBI    = 1
+      DO IY=1, NY
+        DO IX=1, NX
+          IF (GTYPE.NE.UNGTYPE) THEN
+            X = FACTOR * ( XGRDIN(IX,IY) )
+            Y = FACTOR * ( YGRDIN(IX,IY) )
+          ELSE
+            X = FACTOR * XGRD(1,IX)
+            Y = FACTOR * YGRD(1,IX)
+          END IF
+          IF ( TMPSTA(IY,IX).EQ.2 ) THEN
+            IF ( FLAGLL ) THEN
+              WRITE (NDSO, 988) IBI, IX, IY, X, Y
+            ELSE
+              WRITE (NDSO,1988) IBI, IX, IY, X, Y
+            END IF
+            IBI    = IBI + 1
+          END IF
+        END DO
+      END DO
 #endif
     END IF
     !
     WRITE (NDSO,1980)
     IF ( NBT .EQ. 0 ) THEN
-       WRITE (NDSO,1985)
+      WRITE (NDSO,1985)
     ELSE
-       WRITE (NDSO,1986) NBT
+      WRITE (NDSO,1986) NBT
     END IF
     !
     ! 8.f Set up all maps
@@ -4842,20 +4842,20 @@ CONTAINS
     REFPARS(10)=REFFREQPOW
     IF (GTYPE.EQ.UNGTYPE) REFPARS(2:5)=0.
     IF (REFMAP.EQ.0) THEN
-       REFLC(3,:)=REFPARS(7)
+      REFLC(3,:)=REFPARS(7)
     END IF
 #endif
 
 
     IF (GTYPE.NE.UNGTYPE) THEN
-       DO IY=1, NY
-          DO IX=1, NX
-             XGRD(IY,IX) = XGRDIN(IX,IY)
-             YGRD(IY,IX) = YGRDIN(IX,IY)
-          END DO
-       END DO
-       DEALLOCATE ( XGRDIN, YGRDIN )
-       CALL W3GNTX ( 1, 6, 6 )
+      DO IY=1, NY
+        DO IX=1, NX
+          XGRD(IY,IX) = XGRDIN(IX,IY)
+          YGRD(IY,IX) = YGRDIN(IX,IY)
+        END DO
+      END DO
+      DEALLOCATE ( XGRDIN, YGRDIN )
+      CALL W3GNTX ( 1, 6, 6 )
     ELSE
     END IF   ! GTYPE
     !
@@ -4863,313 +4863,313 @@ CONTAINS
     !!Li  Shelter MAPSTA LLG definition for SMC
     IF( GTYPE .NE. SMCTYPE ) THEN
 #endif
-       !
-       MAPSTA = TMPSTA
-       MAPFS  = 0
-       !
+      !
+      MAPSTA = TMPSTA
+      MAPFS  = 0
+      !
 #ifdef W3_T
-       ALLOCATE ( MAPOUT(NX,NY) )
-       MAPOUT = 0
+      ALLOCATE ( MAPOUT(NX,NY) )
+      MAPOUT = 0
 #endif
-       !
+      !
 #ifdef W3_T
-       IX3    = 1 + NX/60
-       IY3    = 1 + NY/60
-       CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 1, 0.,          &
-            1, NX, IX3, 1, NY, IY3, 'Zb', 'm')
+      IX3    = 1 + NX/60
+      IY3    = 1 + NY/60
+      CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 1, 0.,          &
+           1, NX, IX3, 1, NY, IY3, 'Zb', 'm')
 #endif
-       !
-       TRNX   = 0.
-       TRNY   = 0.
-       !
-       ISEA   = 0
-       DO IY=1, NY
-          DO IX=1, NX
-             IF ( TMPSTA(IY,IX) .EQ. NSTAT ) THEN
-                MAPSTA(IY,IX) = 0
-                MAPST2(IY,IX) = 1
-                TMPSTA(IY,IX) = 3
-             ELSE
-                MAPSTA(IY,IX) = TMPSTA(IY,IX)
-                MAPST2(IY,IX) = 0
-             END IF
-             IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
-                ISEA           = ISEA + 1
-                MAPFS (IY,IX)  = ISEA
-                ZB(ISEA)       = ZBIN(IX,IY)
+      !
+      TRNX   = 0.
+      TRNY   = 0.
+      !
+      ISEA   = 0
+      DO IY=1, NY
+        DO IX=1, NX
+          IF ( TMPSTA(IY,IX) .EQ. NSTAT ) THEN
+            MAPSTA(IY,IX) = 0
+            MAPST2(IY,IX) = 1
+            TMPSTA(IY,IX) = 3
+          ELSE
+            MAPSTA(IY,IX) = TMPSTA(IY,IX)
+            MAPST2(IY,IX) = 0
+          END IF
+          IF ( MAPSTA(IY,IX) .NE. 0 ) THEN
+            ISEA           = ISEA + 1
+            MAPFS (IY,IX)  = ISEA
+            ZB(ISEA)       = ZBIN(IX,IY)
 #ifdef W3_T
-                MAPOUT(IX,IY)  = 1
+            MAPOUT(IX,IY)  = 1
 #endif
-                MAPSF(ISEA,1)  = IX
-                MAPSF(ISEA,2)  = IY
-                IF ( FLAGLL ) THEN
-                   Y              = YGRD(IY,IX)
-                   CLATS(ISEA)    = COS(Y*DERA)
-                   CLATIS(ISEA)   = 1. / CLATS(ISEA)
-                   CTHG0S(ISEA)   = - TAN(DERA*Y) / RADIUS
-                ELSE
-                   CLATS(ISEA)    = 1.
-                   CLATIS(ISEA)   = 1.
-                   CTHG0S(ISEA)   = 0.
-                END IF
-             END IF
+            MAPSF(ISEA,1)  = IX
+            MAPSF(ISEA,2)  = IY
+            IF ( FLAGLL ) THEN
+              Y              = YGRD(IY,IX)
+              CLATS(ISEA)    = COS(Y*DERA)
+              CLATIS(ISEA)   = 1. / CLATS(ISEA)
+              CTHG0S(ISEA)   = - TAN(DERA*Y) / RADIUS
+            ELSE
+              CLATS(ISEA)    = 1.
+              CLATIS(ISEA)   = 1.
+              CTHG0S(ISEA)   = 0.
+            END IF
+          END IF
 
-             !/ ------------------------------------------------------------------- /
+          !/ ------------------------------------------------------------------- /
 
-             ! notes: Oct 22 2012: I moved the following "if-then" statement from
-             ! inside the  "IF ( MAPSTA(IY,IX) .NE. 0 )" statement to outside that
-             ! statement. This is needed since later on, ATRNX is computed from
-             ! TRNX(ix-1) , TRNX(ix) etc. which causes boundary effects if the
-             ! MAPSTA=0 values are set to TRNX=0
+          ! notes: Oct 22 2012: I moved the following "if-then" statement from
+          ! inside the  "IF ( MAPSTA(IY,IX) .NE. 0 )" statement to outside that
+          ! statement. This is needed since later on, ATRNX is computed from
+          ! TRNX(ix-1) , TRNX(ix) etc. which causes boundary effects if the
+          ! MAPSTA=0 values are set to TRNX=0
 
-             IF ( TRFLAG .NE. 0 ) THEN
-                TRNX(IY,IX) = 1. - OBSX(IX,IY)
-                TRNY(IY,IX) = 1. - OBSY(IX,IY)
-             END IF
+          IF ( TRFLAG .NE. 0 ) THEN
+            TRNX(IY,IX) = 1. - OBSX(IX,IY)
+            TRNY(IY,IX) = 1. - OBSY(IX,IY)
+          END IF
 
-          END DO
-       END DO
-       !
+        END DO
+      END DO
+      !
 #ifdef W3_SMC
-       !!Li SMC grid definition of mapping arrays.
+      !!Li SMC grid definition of mapping arrays.
     ELSE
 #endif
-       !
+      !
 #ifdef W3_SMC
-       !!Li  Pass refined level cell and face counts to NLv*(NRLv)
-       NLvCel(0)=0
-       NLvUFc(0)=0
-       NLvVFc(0)=0
-       DO IP = 1, NRLv
-          NLvCel(IP)=NLvCelsk(IP) + NLvCel(IP-1)
-          NLvUFc(IP)=NLvUFcsk(IP) + NLvUFc(IP-1)
-          NLvVFc(IP)=NLvVFcsk(IP) + NLvVFc(IP-1)
-       ENDDO
-       WRITE (NDSO,4022)   NLvCel
-       WRITE (NDSO,4023)   NLvUFc
-       WRITE (NDSO,4024)   NLvVFc
+      !!Li  Pass refined level cell and face counts to NLv*(NRLv)
+      NLvCel(0)=0
+      NLvUFc(0)=0
+      NLvVFc(0)=0
+      DO IP = 1, NRLv
+        NLvCel(IP)=NLvCelsk(IP) + NLvCel(IP-1)
+        NLvUFc(IP)=NLvUFcsk(IP) + NLvUFc(IP-1)
+        NLvVFc(IP)=NLvVFcsk(IP) + NLvVFc(IP-1)
+      ENDDO
+      WRITE (NDSO,4022)   NLvCel
+      WRITE (NDSO,4023)   NLvUFc
+      WRITE (NDSO,4024)   NLvVFc
 
-       !Li     Redefine MAPSF MAPFS MAPSTA MAPST2 CLATS and ZB for SMC Grid,
-       !Li     using SMC grid cell array and assuming NSEA=NCel.
-       MAPSTA = 0
-       MAPST2 = 1
-       MAPFS  = 0
-       !LS    Allocation for read-in variables that remain local only.
-       ALLOCATE ( IJKVFc8(NVFc) )
-       ALLOCATE ( IJKDep(-9:NCel) )
+      !Li     Redefine MAPSF MAPFS MAPSTA MAPST2 CLATS and ZB for SMC Grid,
+      !Li     using SMC grid cell array and assuming NSEA=NCel.
+      MAPSTA = 0
+      MAPST2 = 1
+      MAPFS  = 0
+      !LS    Allocation for read-in variables that remain local only.
+      ALLOCATE ( IJKVFc8(NVFc) )
+      ALLOCATE ( IJKDep(-9:NCel) )
 
-       !Li     Pass input SMC arrays to newly declared grid arrays.
-       WRITE (NDSO,4025)   NCel
-       IJKCel(1:4, 1:NGLO)=IJKCelin(1:4, 1:NGLO)
-       IJKDep(1:NGLO)=IJKCelin(5, 1:NGLO)
-       IJKUFc(1:7, 1:NGUI)=IJKUFcin(1:7, 1:NGUI)
-       IJKVFc(1:7, 1:NGVJ)=IJKVFcin(1:7, 1:NGVJ)
-       IJKVFc8(1:NGVJ)=IJKVFcin(8, 1:NGVJ)
-       !Li     Append Arctic part
-       IF( ARCTC ) THEN
-          IJKCel(1:4, NGLO+1:NCel)=IJKCelAC(1:4, 1:NARC)
-          IJKDep(NGLO+1:NCel)=IJKCelAC(5, 1:NARC)
-          IJKUFc(1:7, NGUI+1:NUFc)=IJKUFcAC(1:7, 1:NAUI)
-          IJKVFc(1:7, NGVJ+1:NVFc)=IJKVFcAC(1:7, 1:NAVJ)
-          IJKVFc8(NGVJ+1:NVFc)=IJKVFcAC(8, 1:NAVJ)
-       ENDIF !! ARCTC
+      !Li     Pass input SMC arrays to newly declared grid arrays.
+      WRITE (NDSO,4025)   NCel
+      IJKCel(1:4, 1:NGLO)=IJKCelin(1:4, 1:NGLO)
+      IJKDep(1:NGLO)=IJKCelin(5, 1:NGLO)
+      IJKUFc(1:7, 1:NGUI)=IJKUFcin(1:7, 1:NGUI)
+      IJKVFc(1:7, 1:NGVJ)=IJKVFcin(1:7, 1:NGVJ)
+      IJKVFc8(1:NGVJ)=IJKVFcin(8, 1:NGVJ)
+      !Li     Append Arctic part
+      IF( ARCTC ) THEN
+        IJKCel(1:4, NGLO+1:NCel)=IJKCelAC(1:4, 1:NARC)
+        IJKDep(NGLO+1:NCel)=IJKCelAC(5, 1:NARC)
+        IJKUFc(1:7, NGUI+1:NUFc)=IJKUFcAC(1:7, 1:NAUI)
+        IJKVFc(1:7, NGVJ+1:NVFc)=IJKVFcAC(1:7, 1:NAVJ)
+        IJKVFc8(NGVJ+1:NVFc)=IJKVFcAC(8, 1:NAVJ)
+      ENDIF !! ARCTC
 
-       WRITE (NDSO,4026)
-       WRITE (NDSO,4006)    1,(IJKCel(ix,  1), ix=1,4), IJKDep(1)
-       JJ=NCel
-       WRITE (NDSO,4006)   JJ,(IJKCel(ix, JJ), ix=1,4), IJKDep(JJ)
-       WRITE (NDSO,*) ' '
-       WRITE (NDSO,4027)
-       WRITE (NDSO,4009)    1,(IJKUFc(ix,  1), ix=1,7)
-       JJ=NUFc
-       WRITE (NDSO,4009)   JJ,(IJKUFc(ix, JJ), ix=1,7)
-       WRITE (NDSO,*) ' '
-       WRITE (NDSO,4028)
-       WRITE (NDSO,4012)    1,(IJKVFc(ix,  1), ix=1,7), IJKVFc8(1)
-       JJ=NVFc
-       WRITE (NDSO,4012)   JJ,(IJKVFc(ix, JJ), ix=1,7), IJKVFc8(JJ)
-       WRITE (NDSO,*) ' '
+      WRITE (NDSO,4026)
+      WRITE (NDSO,4006)    1,(IJKCel(ix,  1), ix=1,4), IJKDep(1)
+      JJ=NCel
+      WRITE (NDSO,4006)   JJ,(IJKCel(ix, JJ), ix=1,4), IJKDep(JJ)
+      WRITE (NDSO,*) ' '
+      WRITE (NDSO,4027)
+      WRITE (NDSO,4009)    1,(IJKUFc(ix,  1), ix=1,7)
+      JJ=NUFc
+      WRITE (NDSO,4009)   JJ,(IJKUFc(ix, JJ), ix=1,7)
+      WRITE (NDSO,*) ' '
+      WRITE (NDSO,4028)
+      WRITE (NDSO,4012)    1,(IJKVFc(ix,  1), ix=1,7), IJKVFc8(1)
+      JJ=NVFc
+      WRITE (NDSO,4012)   JJ,(IJKVFc(ix, JJ), ix=1,7), IJKVFc8(JJ)
+      WRITE (NDSO,*) ' '
 
-       !Li    Boundary -9 to 0 cells for cell x-size 2**n
-       !Li    Note the position indice for bounary cell are not used.
-       IJKCel(1, -9:0)=0
-       !Li    Use Equator Y index for boundary cells.  JGLi04Apr2011
-       !Li   IJKCel(2, -9:0)=0
-       IJKCel(2, -9:0)=JEQT
-       IJKCel(3,    0)=1
-       IJKCel(4,    0)=1
-       !Li    Use minimum 10 m depth for boundary cells.
-       !Li    Y-size is restricted below base-cell value.
-       !Li    For refined boundary cells, its y-size is replaced with
-       !Li    the inner cell y-size for flux gradient.
-       IJKDep(0)=10
-       DO ip=1,9
-          IJKCel(3,-ip)=IJKCel(3,-ip+1)*2
-          IK=MIN(ip, NRLv-1)
-          IJKCel(4,-ip)=2**IK
-          IJKDep(-ip)=10
-       ENDDO
-       WRITE (NDSO,4029)
-       DO ip=0, -9, -1
-          WRITE (NDSO,4030)  IJKCel(:,ip), IJKDep(ip)
-       ENDDO
+      !Li    Boundary -9 to 0 cells for cell x-size 2**n
+      !Li    Note the position indice for bounary cell are not used.
+      IJKCel(1, -9:0)=0
+      !Li    Use Equator Y index for boundary cells.  JGLi04Apr2011
+      !Li   IJKCel(2, -9:0)=0
+      IJKCel(2, -9:0)=JEQT
+      IJKCel(3,    0)=1
+      IJKCel(4,    0)=1
+      !Li    Use minimum 10 m depth for boundary cells.
+      !Li    Y-size is restricted below base-cell value.
+      !Li    For refined boundary cells, its y-size is replaced with
+      !Li    the inner cell y-size for flux gradient.
+      IJKDep(0)=10
+      DO ip=1,9
+        IJKCel(3,-ip)=IJKCel(3,-ip+1)*2
+        IK=MIN(ip, NRLv-1)
+        IJKCel(4,-ip)=2**IK
+        IJKDep(-ip)=10
+      ENDDO
+      WRITE (NDSO,4029)
+      DO ip=0, -9, -1
+        WRITE (NDSO,4030)  IJKCel(:,ip), IJKDep(ip)
+      ENDDO
 
-       WRITE (NDSO,4031)   NCel
-       !Li    Multi-resolution SMC grid requires rounding of x, y indices
-       !Li    by a factor MRFct.
-       MRFct = 2**(NRLv - 1)
-       WRITE (NDSO,4032)   MRFct
+      WRITE (NDSO,4031)   NCel
+      !Li    Multi-resolution SMC grid requires rounding of x, y indices
+      !Li    by a factor MRFct.
+      MRFct = 2**(NRLv - 1)
+      WRITE (NDSO,4032)   MRFct
 
-       !Li   Cosine for SMC uses refined latitude increment.
-       SYMR = SY*DERA/FLOAT( MRFct )
-       !Li   Reference y point for adjusted cell j=0 in radian.  JGLi16Feb2016
-       YJ0R = ( Y0 - 0.5*SY )*DERA
+      !Li   Cosine for SMC uses refined latitude increment.
+      SYMR = SY*DERA/FLOAT( MRFct )
+      !Li   Reference y point for adjusted cell j=0 in radian.  JGLi16Feb2016
+      YJ0R = ( Y0 - 0.5*SY )*DERA
 
-       DO ISEA=1, NCel
-          !Li   There is no polar cell row so it is mapped to last row.
-          IF( ARCTC .AND. (ISEA .EQ. NCel) ) THEN
-             IX=1
-             IY=NY
-             IK=1
-             JS=1
-          ELSE
-             IX=IJKCel(1,ISEA)/MRFct + 1
-             IY=IJKCel(2,ISEA)/MRFct + 1
-             IK=MAX(1, IJKCel(3,ISEA)/MRFct)
-             JS=MAX(1, IJKCel(4,ISEA)/MRFct)
-          ENDIF
+      DO ISEA=1, NCel
+        !Li   There is no polar cell row so it is mapped to last row.
+        IF( ARCTC .AND. (ISEA .EQ. NCel) ) THEN
+          IX=1
+          IY=NY
+          IK=1
+          JS=1
+        ELSE
+          IX=IJKCel(1,ISEA)/MRFct + 1
+          IY=IJKCel(2,ISEA)/MRFct + 1
+          IK=MAX(1, IJKCel(3,ISEA)/MRFct)
+          JS=MAX(1, IJKCel(4,ISEA)/MRFct)
+        ENDIF
 
-          !      Check that IX, IY are in the bound of [1,NX] and [1,NY] respec.
-          IF ((IX+IK-1 .GT. NX) .OR. (IX .LE. 0)) THEN
-             WRITE (NDSE,1014) ISEA, IX, IX+IK-1, NX
-             CALL EXTCDE(65)
-          END IF
+        !      Check that IX, IY are in the bound of [1,NX] and [1,NY] respec.
+        IF ((IX+IK-1 .GT. NX) .OR. (IX .LE. 0)) THEN
+          WRITE (NDSE,1014) ISEA, IX, IX+IK-1, NX
+          CALL EXTCDE(65)
+        END IF
 
-          IF ((IY+JS-1 .GT. NY) .OR. (IY .LE. 0)) THEN
-             WRITE (NDSE,1015) ISEA, IY, IY+JS-1, NY
-             CALL EXTCDE(65)
-          END IF
+        IF ((IY+JS-1 .GT. NY) .OR. (IY .LE. 0)) THEN
+          WRITE (NDSE,1015) ISEA, IY, IY+JS-1, NY
+          CALL EXTCDE(65)
+        END IF
 
-          !Li  Minimum DMIN depth is used as well for SMC.
-          ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
-          MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
-          MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
+        !Li  Minimum DMIN depth is used as well for SMC.
+        ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
+        MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
+        MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
+        MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
+        MAPSF(ISEA,1)  = IX
+        MAPSF(ISEA,2)  = IY
+        MAPSF(ISEA,3)  = IY + (IX    -1)*NY
+
+        !Li   New variable CLATS to hold cosine latitude at cell centre.
+        !Li   Also added CLATIS and CTHG0S for version 4.08.
+        !Li   Use adjusted j-index to calculate cell centre y from YJ0R.
+        Y = YJ0R + SYMR*( FLOAT(IJKCel(2,ISEA))+0.5*FLOAT(IJKCel(4,ISEA)) )
+        !Li   Arctic polar cell does not need COS(LAT), set 1 row down.
+        IF(Y .GE. HPI-0.1*SYMR) Y=HPI - SYMR*0.5*FLOAT( MRFct )
+
+        CLATS(ISEA) = COS( Y )
+        CLATIS(ISEA)= 1. / CLATS(ISEA)
+        CTHG0S(ISEA)= - TAN( Y ) / RADIUS
+        !!Li  Sub-grid obstruction is set zero beyond NCObst cells.
+        IF(ISEA .GT. NCObst) THEN
+          TRNMX=1.0
+          TRNMY=1.0
+        ELSE
+          !!Li    Present obstruction is isotropic and in percentage.
+          TRNMX=1.0 - IJKObstr(1,    ISEA)*0.01
+          TRNMY=1.0 - IJKObstr(JObs, ISEA)*0.01
+        ENDIF
+        CTRNX(ISEA) = MAX(0.11, TRNMX)
+        CTRNY(ISEA) = MAX(0.11, TRNMY)
+      END DO
+      !!Li    Transparency for boundary cells are 1.0   JGLi16Jan2012
+      CTRNX(-9:0) = 1.0
+      CTRNY(-9:0) = 1.0
+      !!Li  Check range of MAPSF and MAPFS
+      WRITE (NDSO,4033) MINVAL( MAPSF(:,1) ), MAXVAL( MAPSF(:,1) )
+      WRITE (NDSO,4034) MINVAL( MAPSF(:,2) ), MAXVAL( MAPSF(:,2) )
+      WRITE (NDSO,4035) MINVAL( MAPSF(:,3) ), MAXVAL( MAPSF(:,3) )
+      WRITE (NDSO,4036) MINVAL( MAPFS(:,:) ), MAXVAL( MAPFS(:,:) )
+
+      !Li   New variable CLATF to hold cosine latitude at cell V face.
+      DO IP = 1, NVFC
+        !        CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP) - JEQT) )
+        !Li   Use adjusted j-index to calculate cell face Y from YJ0R.
+        CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP)) + YJ0R )
+      ENDDO
+      IF(NBISMC .GT. 0) THEN
+        !Li   Save input boundary SMC list to ISMCBP(NBSMC)
+        ISMCBP(1:NBISMC) = NBICelin(1:NBISMC)
+        !Li   Reset MAPSTA for boundary cells if any.
+        DO IP=1, NBISMC
+          ISEA = NBICelin(IP)
+          IX=IJKCel(1,ISEA)/MRFct + 1
+          IY=IJKCel(2,ISEA)/MRFct + 1
+          IK=MAX(1, IJKCel(3,ISEA)/MRFct)
+          JS=MAX(1, IJKCel(4,ISEA)/MRFct)
+          MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 2
           MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
-          MAPSF(ISEA,1)  = IX
-          MAPSF(ISEA,2)  = IY
-          MAPSF(ISEA,3)  = IY + (IX    -1)*NY
+        ENDDO
+      ENDIF
 
-          !Li   New variable CLATS to hold cosine latitude at cell centre.
-          !Li   Also added CLATIS and CTHG0S for version 4.08.
-          !Li   Use adjusted j-index to calculate cell centre y from YJ0R.
-          Y = YJ0R + SYMR*( FLOAT(IJKCel(2,ISEA))+0.5*FLOAT(IJKCel(4,ISEA)) )
-          !Li   Arctic polar cell does not need COS(LAT), set 1 row down.
-          IF(Y .GE. HPI-0.1*SYMR) Y=HPI - SYMR*0.5*FLOAT( MRFct )
+#endif
+      !
+#ifdef W3_SMC
+      !Li   Define rotation angle for Arctic cells.
+      IF( ARCTC ) THEN
 
-          CLATS(ISEA) = COS( Y )
-          CLATIS(ISEA)= 1. / CLATS(ISEA)
-          CTHG0S(ISEA)= - TAN( Y ) / RADIUS
-          !!Li  Sub-grid obstruction is set zero beyond NCObst cells.
-          IF(ISEA .GT. NCObst) THEN
-             TRNMX=1.0
-             TRNMY=1.0
+        PoLonAC = 179.999
+        PoLatAC =   0.001
+        ALLOCATE( XLONAC(NARC),YLATAC(NARC),ELONAC(NARC),ELATAC(NARC) )
+        DO ISEA=NGLO+1, NCel
+          !Li   There is no polar cell row so it is mapped to last row.
+          IF(ISEA .EQ. NCel) THEN
+            IX=1
+            IY=NY
+            IK=1
+            JS=1
           ELSE
-             !!Li    Present obstruction is isotropic and in percentage.
-             TRNMX=1.0 - IJKObstr(1,    ISEA)*0.01
-             TRNMY=1.0 - IJKObstr(JObs, ISEA)*0.01
+            IX=IJKCel(1,ISEA)/MRFct + 1
+            IY=IJKCel(2,ISEA)/MRFct + 1
+            IK=MAX(1, IJKCel(3,ISEA)/MRFct)
+            JS=MAX(1, IJKCel(4,ISEA)/MRFct)
           ENDIF
-          CTRNX(ISEA) = MAX(0.11, TRNMX)
-          CTRNY(ISEA) = MAX(0.11, TRNMY)
-       END DO
-       !!Li    Transparency for boundary cells are 1.0   JGLi16Jan2012
-       CTRNX(-9:0) = 1.0
-       CTRNY(-9:0) = 1.0
-       !!Li  Check range of MAPSF and MAPFS
-       WRITE (NDSO,4033) MINVAL( MAPSF(:,1) ), MAXVAL( MAPSF(:,1) )
-       WRITE (NDSO,4034) MINVAL( MAPSF(:,2) ), MAXVAL( MAPSF(:,2) )
-       WRITE (NDSO,4035) MINVAL( MAPSF(:,3) ), MAXVAL( MAPSF(:,3) )
-       WRITE (NDSO,4036) MINVAL( MAPFS(:,:) ), MAXVAL( MAPFS(:,:) )
+          XLONAC(ISEA-NGLO)= X0 + REAL(IX-1+IK/2)*SX
+          YLATAC(ISEA-NGLO)= Y0 + REAL(IY-1+JS/2)*SY
+        ENDDO
 
-       !Li   New variable CLATF to hold cosine latitude at cell V face.
-       DO IP = 1, NVFC
-          !        CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP) - JEQT) )
-          !Li   Use adjusted j-index to calculate cell face Y from YJ0R.
-          CLATF(IP) = COS( SYMR*FLOAT(IJKVFc(2,IP)) + YJ0R )
-       ENDDO
-       IF(NBISMC .GT. 0) THEN
-          !Li   Save input boundary SMC list to ISMCBP(NBSMC)
-          ISMCBP(1:NBISMC) = NBICelin(1:NBISMC)
-          !Li   Reset MAPSTA for boundary cells if any.
-          DO IP=1, NBISMC
-             ISEA = NBICelin(IP)
-             IX=IJKCel(1,ISEA)/MRFct + 1
-             IY=IJKCel(2,ISEA)/MRFct + 1
-             IK=MAX(1, IJKCel(3,ISEA)/MRFct)
-             JS=MAX(1, IJKCel(4,ISEA)/MRFct)
-             MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 2
-             MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
-          ENDDO
-       ENDIF
+        CALL W3LLTOEQ ( YLATAC, XLONAC, ELATAC, ELONAC,   &
+             &                 ANGARC, PoLatAC, PoLonAC, NARC  )
+
+        WRITE (NDSO,4037)  NARC
+        WRITE (NDSO,4038) (ANGARC(ix), ix=1,NARC,NARC/8)
 
 #endif
-       !
+        !
 #ifdef W3_SMC
-       !Li   Define rotation angle for Arctic cells.
-       IF( ARCTC ) THEN
-
-          PoLonAC = 179.999
-          PoLatAC =   0.001
-          ALLOCATE( XLONAC(NARC),YLATAC(NARC),ELONAC(NARC),ELATAC(NARC) )
-          DO ISEA=NGLO+1, NCel
-             !Li   There is no polar cell row so it is mapped to last row.
-             IF(ISEA .EQ. NCel) THEN
-                IX=1
-                IY=NY
-                IK=1
-                JS=1
-             ELSE
-                IX=IJKCel(1,ISEA)/MRFct + 1
-                IY=IJKCel(2,ISEA)/MRFct + 1
-                IK=MAX(1, IJKCel(3,ISEA)/MRFct)
-                JS=MAX(1, IJKCel(4,ISEA)/MRFct)
-             ENDIF
-             XLONAC(ISEA-NGLO)= X0 + REAL(IX-1+IK/2)*SX
-             YLATAC(ISEA-NGLO)= Y0 + REAL(IY-1+JS/2)*SY
+        !Li   Mapping Arctic boundary cells with inner model cells
+        DO IP=1, NBAC
+          IX=IJKCel(1,IP+NGLO)
+          IY=IJKCel(2,IP+NGLO)
+          DO ISEA=1, NGLO
+            IF( (IX .EQ. IJKCel(1,ISEA)) .AND.      &
+                 &          (IY .EQ. IJKCel(2,ISEA)) ) THEN
+              ICLBAC(IP) = ISEA
+            ENDIF
           ENDDO
+        ENDDO
+        WRITE (NDSO,4039)  NBAC
+        WRITE (NDSO,4040) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
 
-          CALL W3LLTOEQ ( YLATAC, XLONAC, ELATAC, ELONAC,   &
-               &                 ANGARC, PoLatAC, PoLonAC, NARC  )
+        !Li   Redefine GCT term factor for Arctic part or the netative of
+        !Li   tangient of rotated latitude divided by radius. JGLi14Sep2015
+        DO ISEA=NGLO+1, NCel-1
+          CTHG0S(ISEA)= - TAN( ELATAC(ISEA-NGLO)*DERA ) / RADIUS
+        ENDDO
+        CTHG0S(NCel)=0.0
 
-          WRITE (NDSO,4037)  NARC
-          WRITE (NDSO,4038) (ANGARC(ix), ix=1,NARC,NARC/8)
-
+      ENDIF  !! ARCTC section.
 #endif
-          !
-#ifdef W3_SMC
-          !Li   Mapping Arctic boundary cells with inner model cells
-          DO IP=1, NBAC
-             IX=IJKCel(1,IP+NGLO)
-             IY=IJKCel(2,IP+NGLO)
-             DO ISEA=1, NGLO
-                IF( (IX .EQ. IJKCel(1,ISEA)) .AND.      &
-                     &          (IY .EQ. IJKCel(2,ISEA)) ) THEN
-                   ICLBAC(IP) = ISEA
-                ENDIF
-             ENDDO
-          ENDDO
-          WRITE (NDSO,4039)  NBAC
-          WRITE (NDSO,4040) (ICLBAC(ix), ix=1,NBAC,NBAC/8)
-
-          !Li   Redefine GCT term factor for Arctic part or the netative of
-          !Li   tangient of rotated latitude divided by radius. JGLi14Sep2015
-          DO ISEA=NGLO+1, NCel-1
-             CTHG0S(ISEA)= - TAN( ELATAC(ISEA-NGLO)*DERA ) / RADIUS
-          ENDDO
-          CTHG0S(NCel)=0.0
-
-       ENDIF  !! ARCTC section.
-#endif
-       !
+      !
 #ifdef W3_SMC
     ENDIF  !! (GTYPE .NE. SMCTYPE) ELSE SMCTYPE block.
 #endif
@@ -5177,9 +5177,9 @@ CONTAINS
 #ifdef W3_RTD
     !Li   Assign rotated grid angle for all sea points.  JGLi01Feb2016
     DO ISEA=1,NSEA
-       IX = MAPSF(ISEA,1)
-       IY = MAPSF(ISEA,2)
-       AnglD(ISEA) = AnglDin(IX,IY)
+      IX = MAPSF(ISEA,1)
+      IY = MAPSF(ISEA,2)
+      AnglD(ISEA) = AnglDin(IX,IY)
     END DO
 #endif
     !
@@ -5190,20 +5190,20 @@ CONTAINS
 #endif
     !
     DO ISP=1, NSPEC+NTH
-       MAPWN(ISP) = 1 + (ISP-1)/NTH
-       MAPTH(ISP) = 1 + MOD(ISP-1,NTH)
+      MAPWN(ISP) = 1 + (ISP-1)/NTH
+      MAPTH(ISP) = 1 + MOD(ISP-1,NTH)
     END DO
     !
 #ifdef W3_O2
     NMAP   = 1 + (NX-1)/NCOL
     WRITE (NDSO,1100) NMAP
     DO IMAP=1, NMAP
-       IX0    = 1 + (IMAP-1)*NCOL
-       IXN    = MIN ( NX , IMAP*NCOL )
-       DO IY=NY,1,-1
-          WRITE (NDSO,1101) (TMPSTA(IY,IX),IX=IX0,IXN)
-       END DO
-       WRITE (NDSO,*) ' '
+      IX0    = 1 + (IMAP-1)*NCOL
+      IXN    = MIN ( NX , IMAP*NCOL )
+      DO IY=NY,1,-1
+        WRITE (NDSO,1101) (TMPSTA(IY,IX),IX=IX0,IXN)
+      END DO
+      WRITE (NDSO,*) ' '
     END DO
     WRITE (NDSO,1102)
 #endif
@@ -5211,45 +5211,45 @@ CONTAINS
 #ifdef W3_O2a
     OPEN (NDSM,FILE=TRIM(FNMPRE)//'mask.ww3')
     DO IY=1, NY
-       WRITE (NDSM,998) MIN(1,MAPSTA(IY,:))
+      WRITE (NDSM,998) MIN(1,MAPSTA(IY,:))
     END DO
     CLOSE (NDSM)
 #endif
     !
 #ifdef W3_O2b
     IF ( TRFLAG .GT. 0 ) THEN
-       NMAPB  = 1 + (NX-1)/NCOL
-       WRITE (NDSO,1103) 'X', NMAPB
-       DO IMAPB=1, NMAPB
-          IX0    = 1 + (IMAPB-1)*NCOL
-          IXN    = MIN ( NX , IMAPB*NCOL )
-          DO IY=NY,1,-1
-             WRITE (NDSO,1101) (NINT(10.*OBSX(IX,IY)),IX=IX0,IXN)
-          END DO
-          WRITE (NDSO,*) ' '
-       END DO
-       WRITE (NDSO,1104)
-       WRITE (NDSO,1103) 'Y', NMAPB
-       DO IMAPB=1, NMAPB
-          IX0    = 1 + (IMAPB-1)*NCOL
-          IXN    = MIN ( NX , IMAPB*NCOL )
-          DO IY=NY,1,-1
-             WRITE (NDSO,1101) (NINT(10.*OBSY(IX,IY)),IX=IX0,IXN)
-          END DO
-          WRITE (NDSO,*) ' '
-       END DO
-       WRITE (NDSO,1104)
+      NMAPB  = 1 + (NX-1)/NCOL
+      WRITE (NDSO,1103) 'X', NMAPB
+      DO IMAPB=1, NMAPB
+        IX0    = 1 + (IMAPB-1)*NCOL
+        IXN    = MIN ( NX , IMAPB*NCOL )
+        DO IY=NY,1,-1
+          WRITE (NDSO,1101) (NINT(10.*OBSX(IX,IY)),IX=IX0,IXN)
+        END DO
+        WRITE (NDSO,*) ' '
+      END DO
+      WRITE (NDSO,1104)
+      WRITE (NDSO,1103) 'Y', NMAPB
+      DO IMAPB=1, NMAPB
+        IX0    = 1 + (IMAPB-1)*NCOL
+        IXN    = MIN ( NX , IMAPB*NCOL )
+        DO IY=NY,1,-1
+          WRITE (NDSO,1101) (NINT(10.*OBSY(IX,IY)),IX=IX0,IXN)
+        END DO
+        WRITE (NDSO,*) ' '
+      END DO
+      WRITE (NDSO,1104)
     END IF
 #endif
     !
 #ifdef W3_O2c
     OPEN (NDSM,FILE=TRIM(FNMPRE)//'mapsta.ww3', RECL=2*NX*NY*50+1)
     DO IY=NY,1, -1
-       DO IX=1,NX
-          DO I=1,50
-             WRITE (NDSM,1998,ADVANCE='NO') (TMPSTA(IY,IX))
-          END DO
-       END DO
+      DO IX=1,NX
+        DO I=1,50
+          WRITE (NDSM,1998,ADVANCE='NO') (TMPSTA(IY,IX))
+        END DO
+      END DO
     END DO
     CLOSE (NDSM)
 #endif
@@ -5264,7 +5264,7 @@ CONTAINS
     IF (IGSWELLMAX) IGPARS(4)=IGPARS(4)+2
     IGPARS(5)=1
     DO IK=1,NK
-       IF (SIG(IK)*TPIINV.LT.IGMAXFREQ) IGPARS(5)=IK
+      IF (SIG(IK)*TPIINV.LT.IGMAXFREQ) IGPARS(5)=IK
     END DO
     IGMINDEP=MINVAL(ZB*(-1.)-2)  ! -2 / +2 is there for water level changes
     IGMAXDEP=MAXVAL(ZB*(-1.)+2)
@@ -5367,11 +5367,11 @@ CONTAINS
     ! AR: this is not anymore needed and will be deleted ...
     !
     IF (GTYPE.EQ.UNGTYPE) THEN
-       CALL SET_UG_IOBP
+      CALL SET_UG_IOBP
 
 #ifdef W3_REF1
     ELSE
-       CALL W3SETREF
+      CALL W3SETREF
 #endif
     END IF
 #ifdef W3_REF1
@@ -5380,116 +5380,116 @@ CONTAINS
     !
     ALLOCATE ( REFD(NX,NY), REFD2(NX,NY), REFS(NX,NY) )
     IF (REFMAP.EQ.0) THEN
-       REFS(:,:)=1.
+      REFS(:,:)=1.
     ELSE
-       !
-       !  9.b Info from input file
-       !
-       IF (FLGNML) THEN
-          NDSTR = NML_SLOPE%IDF
-          VSC = NML_SLOPE%SF
-          IDLA = NML_SLOPE%IDLA
-          IDFT = NML_SLOPE%IDFM
-          RFORM = TRIM(NML_SLOPE%FORMAT)
-          FROM = TRIM(NML_SLOPE%FROM)
-          TNAME = TRIM(NML_SLOPE%FILENAME)
-       ELSE
+      !
+      !  9.b Info from input file
+      !
+      IF (FLGNML) THEN
+        NDSTR = NML_SLOPE%IDF
+        VSC = NML_SLOPE%SF
+        IDLA = NML_SLOPE%IDLA
+        IDFT = NML_SLOPE%IDFM
+        RFORM = TRIM(NML_SLOPE%FORMAT)
+        FROM = TRIM(NML_SLOPE%FROM)
+        TNAME = TRIM(NML_SLOPE%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+             FROM, TNAME
+      END IF
+      !
+      IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
+      IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+      IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+      !
+      WRITE (NDSO,1977) NDSTR, VSC, IDLA, IDFT
+      IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
+      IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
+      !
+      ! 9;c  Open file and check if necessary
+      !
+      IF ( NDSTR .EQ. NDSI ) THEN
+        IF ( IDFT .EQ. 3 ) THEN
+          WRITE (NDSE,1004) NDSTR
+          CALL EXTCDE (23)
+        ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
-               FROM, TNAME
-       END IF
-       !
-       IF (   ABS(VSC) .LT. 1.E-7  ) VSC    = 1.
-       IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
-       IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
-       !
-       WRITE (NDSO,1977) NDSTR, VSC, IDLA, IDFT
-       IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
-       IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
-       !
-       ! 9;c  Open file and check if necessary
-       !
-       IF ( NDSTR .EQ. NDSI ) THEN
-          IF ( IDFT .EQ. 3 ) THEN
-             WRITE (NDSE,1004) NDSTR
-             CALL EXTCDE (23)
+        END IF
+      ELSE IF ( NDSTR .EQ. NDSG ) THEN
+        IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
+             ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
+          WRITE (NDSE,1005) IDFM, IDFT
+          CALL EXTCDE (24)
+        END IF
+      ELSE
+        IF ( IDFT .EQ. 3 ) THEN
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,                 &
+                 form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                 IOSTAT=IERR)
           ELSE
-             CALL NEXTLN ( COMSTR , NDSI , NDSE )
+            OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           END IF
-       ELSE IF ( NDSTR .EQ. NDSG ) THEN
-          IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
-               ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
-             WRITE (NDSE,1005) IDFM, IDFT
-             CALL EXTCDE (24)
-          END IF
-       ELSE
-          IF ( IDFT .EQ. 3 ) THEN
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,                 &
-                     form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
-                     IOSTAT=IERR)
-             ELSE
-                OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF
+        ELSE
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           ELSE
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             ELSE
-                OPEN (NDSTR,                                    &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF   !end  of (FROM.EQ.'NAME')
-          END IF     !end of ( IDFT .EQ. 3 )
-       END IF       !end of ( NDSTR .EQ. NDSG )
-       !
-       ! 9.d Read the data
-       !
-       !         CALL INA2R ( REFD, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-       !                       IDFM, RFORM, IDLA, VSC, 0.0)
-       !
-       IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       !
-       !         CALL INA2R ( REFD2, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-       !                       IDFM, RFORM, IDLA, VSC, 0.0)
-       CALL INA2R ( REFS, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-            IDFM, RFORM, IDLA, VSC, 0.0)
-       DO ISEA=1,NSEA
-          IX = MAPSF(ISEA,1)
-          IY = MAPSF(ISEA,2)
-          REFLC(3,ISEA) = REFS(IX,IY)*REFMAP
-       END DO
+            OPEN (NDSTR,                                    &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
+          END IF   !end  of (FROM.EQ.'NAME')
+        END IF     !end of ( IDFT .EQ. 3 )
+      END IF       !end of ( NDSTR .EQ. NDSG )
+      !
+      ! 9.d Read the data
+      !
+      !         CALL INA2R ( REFD, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+      !                       IDFM, RFORM, IDLA, VSC, 0.0)
+      !
+      IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      !
+      !         CALL INA2R ( REFD2, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+      !                       IDFM, RFORM, IDLA, VSC, 0.0)
+      CALL INA2R ( REFS, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+           IDFM, RFORM, IDLA, VSC, 0.0)
+      DO ISEA=1,NSEA
+        IX = MAPSF(ISEA,1)
+        IY = MAPSF(ISEA,2)
+        REFLC(3,ISEA) = REFS(IX,IY)*REFMAP
+      END DO
 #endif
-       !
+      !
 #ifdef W3_REF1
-       NMAPB  = 1 + (NX-1)/NCOL
-       WRITE (NDSO,1105) NMAPB
+      NMAPB  = 1 + (NX-1)/NCOL
+      WRITE (NDSO,1105) NMAPB
 #endif
 #ifdef W3_T
 #ifdef W3_REF1
-       WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
+      WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
 #endif
 #endif
-       !
+      !
 #ifdef W3_REF1
-       DO IMAPB=1, NMAPB
-          IX0    = 1 + (IMAPB-1)*NCOL
-          IXN    = MIN ( NX , IMAPB*NCOL )
+      DO IMAPB=1, NMAPB
+        IX0    = 1 + (IMAPB-1)*NCOL
+        IXN    = MIN ( NX , IMAPB*NCOL )
 #endif
 #ifdef W3_T
 #ifdef W3_REF1
-          DO IY=NY,1,-1
-             WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
-          END DO
+        DO IY=NY,1,-1
+          WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
+        END DO
 #endif
 #endif
 #ifdef W3_REF1
-          WRITE (NDSO,*) ' '
-       END DO
-       WRITE (NDSO,1106)
-       !
-       WRITE (NDSO,*)
-       !
+        WRITE (NDSO,*) ' '
+      END DO
+      WRITE (NDSO,1106)
+      !
+      WRITE (NDSO,*)
+      !
     END IF         !end of (REFMAP.EQ.0)
 #endif
     !
@@ -5504,100 +5504,100 @@ CONTAINS
     ALLOCATE ( SED_D50FILE(NX,NY))
     IF ( SEDMAPD50 ) THEN
 
-       !
-       !  9.e.1 Info from input file
-       !
-       IF (FLGNML) THEN
-          NDSTR = NML_SED%IDF
-          VSC = NML_SED%SF
-          IDLA = NML_SED%IDLA
-          IDFT = NML_SED%IDFM
-          RFORM = TRIM(NML_SED%FORMAT)
-          FROM = TRIM(NML_SED%FROM)
-          TNAME = TRIM(NML_SED%FILENAME)
-       ELSE
+      !
+      !  9.e.1 Info from input file
+      !
+      IF (FLGNML) THEN
+        NDSTR = NML_SED%IDF
+        VSC = NML_SED%SF
+        IDLA = NML_SED%IDLA
+        IDFT = NML_SED%IDFM
+        RFORM = TRIM(NML_SED%FORMAT)
+        FROM = TRIM(NML_SED%FROM)
+        TNAME = TRIM(NML_SED%FILENAME)
+      ELSE
+        CALL NEXTLN ( COMSTR , NDSI , NDSE )
+        READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
+             FROM, TNAME
+      END IF
+      !
+      IF (   ABS(VSC) .LT. 1.E-7  ) THEN
+        VSC    = 1.
+      ELSE
+        ! WARNING TO BE ADDED ...
+      END IF
+      IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
+      IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
+      !
+      WRITE (NDSO,1978) NDSTR, VSC, IDLA, IDFT
+      IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
+      IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
+      !
+      ! 9.e.2  Open file and check if necessary
+      !
+      IF ( NDSTR .EQ. NDSI ) THEN
+        IF ( IDFT .EQ. 3 ) THEN
+          WRITE (NDSE,1004) NDSTR
+          CALL EXTCDE (23)
+        ELSE
           CALL NEXTLN ( COMSTR , NDSI , NDSE )
-          READ (NDSI,*,END=2001,ERR=2002) NDSTR, VSC, IDLA, IDFT, RFORM, &
-               FROM, TNAME
-       END IF
-       !
-       IF (   ABS(VSC) .LT. 1.E-7  ) THEN
-          VSC    = 1.
-       ELSE
-          ! WARNING TO BE ADDED ...
-       END IF
-       IF (IDLA.LT.1 .OR. IDLA.GT.4) IDLA   = 1
-       IF (IDFT.LT.1 .OR. IDFT.GT.3) IDFT   = 1
-       !
-       WRITE (NDSO,1978) NDSTR, VSC, IDLA, IDFT
-       IF (IDFT.EQ.2) WRITE (NDSO,973) RFORM
-       IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSTR) WRITE (NDSO,974) TNAME
-       !
-       ! 9.e.2  Open file and check if necessary
-       !
-       IF ( NDSTR .EQ. NDSI ) THEN
-          IF ( IDFT .EQ. 3 ) THEN
-             WRITE (NDSE,1004) NDSTR
-             CALL EXTCDE (23)
+        END IF
+      ELSE IF ( NDSTR .EQ. NDSG ) THEN
+        IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
+             ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
+          WRITE (NDSE,1005) IDFM, IDFT
+          CALL EXTCDE (24)
+        END IF
+      ELSE
+        IF ( IDFT .EQ. 3 ) THEN
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+                 form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
+                 IOSTAT=IERR)
           ELSE
-             CALL NEXTLN ( COMSTR , NDSI , NDSE )
+            OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           END IF
-       ELSE IF ( NDSTR .EQ. NDSG ) THEN
-          IF ( ( IDFM.EQ.3 .AND. IDFT.NE.3 ) .OR.                 &
-               ( IDFM.NE.3 .AND. IDFT.EQ.3 ) ) THEN
-             WRITE (NDSE,1005) IDFM, IDFT
-             CALL EXTCDE (24)
-          END IF
-       ELSE
-          IF ( IDFT .EQ. 3 ) THEN
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                     form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=2000, &
-                     IOSTAT=IERR)
-             ELSE
-                OPEN (NDSTR,           form='UNFORMATTED', convert=file_endian,      &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF
+        ELSE
+          IF (FROM.EQ.'NAME') THEN
+            OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           ELSE
-             IF (FROM.EQ.'NAME') THEN
-                OPEN (NDSTR,FILE=TRIM(FNMPRE)//TNAME,             &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             ELSE
-                OPEN (NDSTR,                                    &
-                     STATUS='OLD',ERR=2000,IOSTAT=IERR)
-             END IF
+            OPEN (NDSTR,                                    &
+                 STATUS='OLD',ERR=2000,IOSTAT=IERR)
           END IF
-       END IF
-       !
-       ! 9.e.3 Read the data
-       !
-       CALL INA2R ( SED_D50FILE, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
-            IDFM, RFORM, IDLA, VSC, VOF)
-       !
-       IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
-       !
-       WRITE (NDSO,*) 'Min and Max values of grain sizes:',MINVAL(SED_D50FILE), MAXVAL(SED_D50FILE)
-       WRITE (NDSO,*)
-       !
+        END IF
+      END IF
+      !
+      ! 9.e.3 Read the data
+      !
+      CALL INA2R ( SED_D50FILE, NX, NY, 1, NX, 1, NY, NDSTR, NDST, NDSE, &
+           IDFM, RFORM, IDLA, VSC, VOF)
+      !
+      IF ( NDSTR .EQ. NDSI ) CALL NEXTLN ( COMSTR , NDSI , NDSE )
+      !
+      WRITE (NDSO,*) 'Min and Max values of grain sizes:',MINVAL(SED_D50FILE), MAXVAL(SED_D50FILE)
+      WRITE (NDSO,*)
+      !
     ELSE
-       SED_D50FILE(:,:)=SED_D50_UNIFORM
+      SED_D50FILE(:,:)=SED_D50_UNIFORM
     END IF
     !
     DO IY=1, NY
-       DO IX=1, NX
-          ISEA = MAPFS (IY,IX)
-          SED_D50(ISEA)       = SED_D50FILE(IX,IY)
-          SED_D50(ISEA)       = MAX(SED_D50(ISEA),1E-5)
-          ! Critical Shields number, Soulsby, R.L. and R J S W Whitehouse
-          ! Threshold of sed. motion in coastal environments, Proc. Pacific Coasts and
-          ! ports, 1997 conference, Christchurch, p149-154, University of Cantebury, NZ
-          SED_DSTAR=(GRAV*(SED_SG-1)/nu_water**2)**(0.333333)*SED_D50(ISEA)
-          SED_PSIC(ISEA)=0.3/(1+1.2*SED_DSTAR)+0.55*(1-exp(-0.02*SED_DSTAR))
+      DO IX=1, NX
+        ISEA = MAPFS (IY,IX)
+        SED_D50(ISEA)       = SED_D50FILE(IX,IY)
+        SED_D50(ISEA)       = MAX(SED_D50(ISEA),1E-5)
+        ! Critical Shields number, Soulsby, R.L. and R J S W Whitehouse
+        ! Threshold of sed. motion in coastal environments, Proc. Pacific Coasts and
+        ! ports, 1997 conference, Christchurch, p149-154, University of Cantebury, NZ
+        SED_DSTAR=(GRAV*(SED_SG-1)/nu_water**2)**(0.333333)*SED_D50(ISEA)
+        SED_PSIC(ISEA)=0.3/(1+1.2*SED_DSTAR)+0.55*(1-exp(-0.02*SED_DSTAR))
 #endif
 
 
 #ifdef W3_BT4
-       END DO
+      END DO
     END DO
 #endif
     !
@@ -5611,353 +5611,353 @@ CONTAINS
          OPEN (NDSS,FILE=TRIM(FNMPRE)//'ww3_grid.scratch',FORM='FORMATTED')
     !
     DO ILOOP = 1, 2
-       !
-       IF ( ILOOP.EQ.2 ) CALL W3DMO5 ( 1, NDST, NDSE, 2 )
-       !
-       I = 1
-       NBOTOT = 0
-       NFBPO  = 0
-       NBO(0) = 0
-       NBO2(0)= 0
-       FIRST  = .TRUE.
-       IF ( .NOT. FLGNML ) THEN
-          REWIND (NDSS)
-          IF ( ILOOP .EQ. 1 ) THEN
-             NDSI2 = NDSI
+      !
+      IF ( ILOOP.EQ.2 ) CALL W3DMO5 ( 1, NDST, NDSE, 2 )
+      !
+      I = 1
+      NBOTOT = 0
+      NFBPO  = 0
+      NBO(0) = 0
+      NBO2(0)= 0
+      FIRST  = .TRUE.
+      IF ( .NOT. FLGNML ) THEN
+        REWIND (NDSS)
+        IF ( ILOOP .EQ. 1 ) THEN
+          NDSI2 = NDSI
+        ELSE
+          NDSI2 = NDSS
+        END IF
+      END IF
+      !
+      DO
+        IF (FLGNML) THEN
+          ! outbound lines
+          IF (NML_OUTBND_COUNT%N_LINE.GT.0 .AND. I.LE.NML_OUTBND_COUNT%N_LINE) THEN
+            XO0 = NML_OUTBND_LINE(I)%X0
+            YO0 = NML_OUTBND_LINE(I)%Y0
+            DXO = NML_OUTBND_LINE(I)%DX
+            DYO = NML_OUTBND_LINE(I)%DY
+            NPO = NML_OUTBND_LINE(I)%NP
+            I=I+1
           ELSE
-             NDSI2 = NDSS
+            NPO=0
           END IF
-       END IF
-       !
-       DO
-          IF (FLGNML) THEN
-             ! outbound lines
-             IF (NML_OUTBND_COUNT%N_LINE.GT.0 .AND. I.LE.NML_OUTBND_COUNT%N_LINE) THEN
-                XO0 = NML_OUTBND_LINE(I)%X0
-                YO0 = NML_OUTBND_LINE(I)%Y0
-                DXO = NML_OUTBND_LINE(I)%DX
-                DYO = NML_OUTBND_LINE(I)%DY
-                NPO = NML_OUTBND_LINE(I)%NP
-                I=I+1
-             ELSE
-                NPO=0
-             END IF
-          ELSE
-             CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
-             READ (NDSI2,*,END=2001,ERR=2002) XO0, YO0, DXO, DYO, NPO
-          END IF
+        ELSE
+          CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
+          READ (NDSI2,*,END=2001,ERR=2002) XO0, YO0, DXO, DYO, NPO
+        END IF
+        !
+        IF ( .NOT. FLGNML .AND. ILOOP .EQ. 1 ) THEN
+          BACKSPACE (NDSI)
+          READ (NDSI,'(A)') LINE
+          WRITE (NDSS,'(A)') LINE
+        END IF
+        !
+        ! ... Check if new file to be used
+        !
+        FIRST  = FIRST .OR. NPO.LE.0
+        NPO    = ABS(NPO)
+        !
+        ! ... Preparations for new output file including end check
+        !     and output for last output file
+        !
+        IF ( FIRST ) THEN
           !
-          IF ( .NOT. FLGNML .AND. ILOOP .EQ. 1 ) THEN
-             BACKSPACE (NDSI)
-             READ (NDSI,'(A)') LINE
-             WRITE (NDSS,'(A)') LINE
-          END IF
+          FIRST  = .FALSE.
           !
-          ! ... Check if new file to be used
-          !
-          FIRST  = FIRST .OR. NPO.LE.0
-          NPO    = ABS(NPO)
-          !
-          ! ... Preparations for new output file including end check
-          !     and output for last output file
-          !
-          IF ( FIRST ) THEN
-             !
-             FIRST  = .FALSE.
-             !
 #ifdef W3_RTD
-             IF ( NPO.NE.0 ) THEN
-                ! Destination pole lat, lon from namelist
-                bPolat = BPLAT(NFBPO+1)
-                bPolon = BPLON(NFBPO+1)
-             END IF
-             !
+          IF ( NPO.NE.0 ) THEN
+            ! Destination pole lat, lon from namelist
+            bPolat = BPLAT(NFBPO+1)
+            bPolon = BPLON(NFBPO+1)
+          END IF
+          !
 #endif
-             IF ( NFBPO.GE.1 .AND. ILOOP.EQ.2 ) THEN
-                WRITE (NDSO,991)  NFBPO, NBO(NFBPO) - NBO(NFBPO-1), &
-                     NBO2(NFBPO) - NBO2(NFBPO-1)
+          IF ( NFBPO.GE.1 .AND. ILOOP.EQ.2 ) THEN
+            WRITE (NDSO,991)  NFBPO, NBO(NFBPO) - NBO(NFBPO-1), &
+                 NBO2(NFBPO) - NBO2(NFBPO-1)
 #ifdef W3_RTD
-                ! Print dest. Pole lat/lon if either the dest or present grid is rotated
-                IF ( BPLAT(NFBPO) < 90. .OR. Polat < 90. )      &
-                     WRITE (NDSO,1991) BPLAT(NFBPO), BPLON(NFBPO)
-                !
+            ! Print dest. Pole lat/lon if either the dest or present grid is rotated
+            IF ( BPLAT(NFBPO) < 90. .OR. Polat < 90. )      &
+                 WRITE (NDSO,1991) BPLAT(NFBPO), BPLON(NFBPO)
+            !
 #endif
 #ifdef W3_O1
-                IF ( NBO(NFBPO) - NBO(NFBPO-1) .EQ. 1 ) THEN
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSO,992)
-                   ELSE
-                      WRITE (NDSO,2992)
-                   END IF
-                ELSE
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSO,1992)
-                   ELSE
-                      WRITE (NDSO,3992)
-                   END IF
-                END IF
-                IP0    = NBO(NFBPO-1)+1
-                IPN    = NBO(NFBPO)
-                IPH    = IP0 + (IPN-IP0-1)/2
-                IPI    = IPH -IP0 + 1 + MOD(IPN-IP0+1,2)
-                DO IP=IP0, IPH
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSO,1993) IP-NBO(NFBPO-1),     &
-                           FACTOR*XBPO(IP),     &
-                           FACTOR*YBPO(IP),     &
-                           IP+IPI-NBO(NFBPO-1), &
-                           FACTOR*XBPO(IP+IPI), &
-                           FACTOR*YBPO(IP+IPI)
-                   ELSE
-                      WRITE (NDSO,3993) IP-NBO(NFBPO-1),     &
-                           FACTOR*XBPO(IP),     &
-                           FACTOR*YBPO(IP),     &
-                           IP+IPI-NBO(NFBPO-1), &
-                           FACTOR*XBPO(IP+IPI), &
-                           FACTOR*YBPO(IP+IPI)
-                   END IF
-                END DO
-                IF ( MOD(IPN-IP0+1,2) .EQ. 1 ) THEN
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSO, 993) IPH+1-NBO(NFBPO-1), &
-                           FACTOR*XBPO(IPH+1), &
-                           FACTOR*YBPO(IPH+1)
-                   ELSE
-                      WRITE (NDSO,2993) IPH+1-NBO(NFBPO-1), &
-                           FACTOR*XBPO(IPH+1), &
-                           FACTOR*YBPO(IPH+1)
-                   END IF
-                END IF
-                WRITE (NDSO,*)
+            IF ( NBO(NFBPO) - NBO(NFBPO-1) .EQ. 1 ) THEN
+              IF ( FLAGLL ) THEN
+                WRITE (NDSO,992)
+              ELSE
+                WRITE (NDSO,2992)
+              END IF
+            ELSE
+              IF ( FLAGLL ) THEN
+                WRITE (NDSO,1992)
+              ELSE
+                WRITE (NDSO,3992)
+              END IF
+            END IF
+            IP0    = NBO(NFBPO-1)+1
+            IPN    = NBO(NFBPO)
+            IPH    = IP0 + (IPN-IP0-1)/2
+            IPI    = IPH -IP0 + 1 + MOD(IPN-IP0+1,2)
+            DO IP=IP0, IPH
+              IF ( FLAGLL ) THEN
+                WRITE (NDSO,1993) IP-NBO(NFBPO-1),     &
+                     FACTOR*XBPO(IP),     &
+                     FACTOR*YBPO(IP),     &
+                     IP+IPI-NBO(NFBPO-1), &
+                     FACTOR*XBPO(IP+IPI), &
+                     FACTOR*YBPO(IP+IPI)
+              ELSE
+                WRITE (NDSO,3993) IP-NBO(NFBPO-1),     &
+                     FACTOR*XBPO(IP),     &
+                     FACTOR*YBPO(IP),     &
+                     IP+IPI-NBO(NFBPO-1), &
+                     FACTOR*XBPO(IP+IPI), &
+                     FACTOR*YBPO(IP+IPI)
+              END IF
+            END DO
+            IF ( MOD(IPN-IP0+1,2) .EQ. 1 ) THEN
+              IF ( FLAGLL ) THEN
+                WRITE (NDSO, 993) IPH+1-NBO(NFBPO-1), &
+                     FACTOR*XBPO(IPH+1), &
+                     FACTOR*YBPO(IPH+1)
+              ELSE
+                WRITE (NDSO,2993) IPH+1-NBO(NFBPO-1), &
+                     FACTOR*XBPO(IPH+1), &
+                     FACTOR*YBPO(IPH+1)
+              END IF
+            END IF
+            WRITE (NDSO,*)
 #endif
-             END IF
-             !
-             IF ( NPO .EQ. 0 ) EXIT
-             !
-             NFBPO  = NFBPO + 1
-             IF ( NFBPO .GT. 9 ) THEN
-                WRITE (NDSE,1006)
-                CALL EXTCDE ( 50 )
-             END IF
-             NBO2(NFBPO) = NBO2(NFBPO-1)
-             NBO(NFBPO) = NBOTOT
-             !
           END IF
           !
-          ! ... Loop over line segment - - - - - - - - - - - - - - - - - - - - -
+          IF ( NPO .EQ. 0 ) EXIT
           !
-#ifdef W3_RTD
-          ! If either base or destination grid is rotated lat-lon
-          IF ( allocated(BDYLON) .eqv. .TRUE. ) THEN
-             deallocate( BDYLON, BDYLAT )
-             IF ( bPolat < 90. .OR. Polat < 90. ) &
-                  deallocate( ELatbdy, ELonbdy, Anglbdy )
+          NFBPO  = NFBPO + 1
+          IF ( NFBPO .GT. 9 ) THEN
+            WRITE (NDSE,1006)
+            CALL EXTCDE ( 50 )
           END IF
-          allocate( BDYLON(NPO), BDYLAT(NPO))
-          IF ( bPolat < 90. .OR. Polat < 90. ) &
-               allocate( ELatbdy(NPO), ELonbdy(NPO), Anglbdy(NPO) )
-          !
-#endif
-#ifdef W3_T
-          WRITE (NDST,9090)
-#endif
-          !
-          DO IP=1, NPO
-             !
-             XO     = XO0 + REAL(IP-1)*DXO
-             YO     = YO0 + REAL(IP-1)*DYO
-#ifdef W3_RTD
-             !
-             ! Boundary points are specified in coordinates of the destination grid
-             !
-             ! Collect the line segment points into arrays
-             BDYLON(IP)     = XO
-             BDYLAT(IP)     = YO
-             ! Close the loop before calculating rotated lat-lon coordinates.
-          END DO
-
-          ! Create one or two sets of the segment points:
-          ! 1. (BDYLAT, BDYLON) in standard lat-lon coordinates,
-          ! 2. Also (ELatbdy, ELonbdy) in case the base grid is rotated
-
-          IF ( bPolat < 90. ) THEN
-             ! The destination grid is rotated (std->rot or rot->rot)
-             ! Change BDYLAT, BDYLON to their standard lat-lon positions
-             ! Let ELatbdy,ELonbdy contain the rotated lat-lon coordinates
-             ELatbdy(:) = BDYLAT(:)
-             ELonbdy(:) = BDYLON(:)
-             CALL W3EQTOLL ( ELatbdy, ELonbdy, BDYLAT, BDYLON,     &
-                  &                Anglbdy, bPolat, bPolon, NPO )
-             ! Let the standard longitudes BDYLON be within the range [-180.,180.[
-             ! or [0., 360.[ depending on the grid pole
-             IF ( Polon < -90. .OR. Polon > 90. ) THEN
-                BDYLON(:) = MOD( BDYLON(:) + 180., 360. ) - 180.
-             ELSE
-                BDYLON(:) = MOD( BDYLON(:) + 360., 360. )
-             END IF
-          END IF ! bPolat < 90.
-          ! From now, BDYLAT, BDYLON are defined in standard lat-lon coordinates
-          !
-          IF ( Polat < 90. ) THEN
-             ! The base grid is rotated (rot->std or rot->rot)
-             ! Find lat-lon in coordinates of the rotated base grid
-             CALL W3LLTOEQ ( BDYLAT, BDYLON, ELatbdy, ELonbdy,     &
-                  &                Anglbdy, Polat, Polon, NPO )
-          END IF
-          !
-          ! Take up again the loop over the line segment points
-          DO IP=1, NPO
-             IF ( Polat < 90. ) THEN
-                ! The base grid is rotated (rot->std, rot->rot)
-                ! (The std. lat-lon values BDYLAT, BDYLON go to YBPO, XBPO)
-                XO = ELonbdy(IP)
-                YO = ELatbdy(IP)
-             ELSE
-                ! The base grid is standard geographic (std->rot or std->std)
-                XO = BDYLON(IP)
-                YO = BDYLAT(IP)
-             END IF
-#endif
-             !
-             ! ... Compute bilinear remapping weights
-             !
-             INGRID = W3GRMP( GSU, XO, YO, IXR, IYR, RD )
-             !
-             !           Change cell-corners from counter-clockwise to column-major order
-             IX     = IXR(3);  IY     = IYR(3);  X     = RD(3);
-             IXR(3) = IXR(4);  IYR(3) = IYR(4);  RD(3) = RD(4);
-             IXR(4) = IX    ;  IYR(4) = IY    ;  RD(4) = X    ;
-             !
-#ifdef W3_T
-             WRITE (NDST,9091) FACTOR*XO, FACTOR*YO,                   &
-                  (IXR(J), IYR(J), RD(J), J=1,4)
-#endif
-             !
-             ! ... Check if point in grid
-             !
-             IF ( INGRID ) THEN
-                !
-                ! ... Check if point not on land
-                !
-                IF ( ( MAPSTA(IYR(1),IXR(1)).GT.0 .AND.                 &
-                     RD(1).GT.0.05 ) .OR.          &
-                     ( MAPSTA(IYR(2),IXR(2)).GT.0 .AND.                 &
-                     RD(2).GT.0.05 ) .OR.          &
-                     ( MAPSTA(IYR(3),IXR(3)).GT.0 .AND.                 &
-                     RD(3).GT.0.05 ) .OR.          &
-                     ( MAPSTA(IYR(4),IXR(4)).GT.0 .AND.                 &
-                     RD(4).GT.0.05 ) ) THEN
-                   !
-                   ! ... Check storage and store coordinates
-                   !
-                   NBOTOT = NBOTOT + 1
-                   IF ( ILOOP .EQ. 1 ) CYCLE
-                   !
-#ifdef W3_RTD
-                   ! BDYLAT, BDYLON contain Y0, X0, which are remapped to standard lat/lon.
-                   ! BDYLAT, BDYLON are stored in the mod_def file.
-                   IF ( Polat < 90. ) THEN
-                      XO = BDYLON(IP)
-                      YO = BDYLAT(IP)
-                   END IF
-#endif
-                   XBPO(NBOTOT) = XO
-                   YBPO(NBOTOT) = YO
-                   !
-                   ! ... Interpolation factors
-                   !
-                   RDTOT = 0.
-                   DO J=1, 4
-                      IF ( MAPSTA(IYR(J),IXR(J)).GT.0 .AND.               &
-                           RD(J).GT.0.05 ) THEN
-                         RDBPO(NBOTOT,J) = RD(J)
-                      ELSE
-                         RDBPO(NBOTOT,J) = 0.
-                      END IF
-                      RDTOT = RDTOT + RDBPO(NBOTOT,J)
-                   END DO
-                   !
-                   DO J=1, 4
-                      RDBPO(NBOTOT,J) = RDBPO(NBOTOT,J) / RDTOT
-                   END DO
-                   !
-#ifdef W3_T
-                   WRITE (NDST,9092) RDTOT, (RDBPO(NBOTOT,J),J=1,4)
-#endif
-                   !
-                   ! ... Determine sea and interpolation point counters
-                   !
-                   DO J=1, 4
-                      ISEAI(J) = MAPFS(IYR(J),IXR(J))
-                   END DO
-                   !
-                   DO J=1, 4
-                      IF ( ISEAI(J).EQ.0 .OR. RDBPO(NBOTOT,J).EQ. 0. ) THEN
-                         IPBPO(NBOTOT,J) = 0
-                      ELSE
-                         FLNEW   = .TRUE.
-                         DO IST=NBO2(NFBPO-1)+1, NBO2(NFBPO)
-                            IF ( ISEAI(J) .EQ. ISBPO(IST) ) THEN
-                               FLNEW  = .FALSE.
-                               IPBPO(NBOTOT,J) = IST - NBO2(NFBPO-1)
-                            END IF
-                         END DO
-                         IF ( FLNEW ) THEN
-                            NBO2(NFBPO)        = NBO2(NFBPO) + 1
-                            IPBPO(NBOTOT,J)    = NBO2(NFBPO) - NBO2(NFBPO-1)
-                            ISBPO(NBO2(NFBPO)) = ISEAI(J)
-                         END IF
-                      END IF
-                   END DO
-                   !
-#ifdef W3_T
-                   WRITE (NDST,9093) ISEAI, (IPBPO(NBOTOT,J),J=1,4)
-#endif
-                   !
-                   ! ... Error output
-                   !
-                ELSE
-                   IF ( FLAGLL ) THEN
-                      WRITE (NDSE,2995) FACTOR*XO, FACTOR*YO
-                   ELSE
-                      WRITE (NDSE,995) FACTOR*XO, FACTOR*YO
-                   END IF
-                END IF
-             ELSE
-                IF ( FLAGLL ) THEN
-                   WRITE (NDSE,2994) FACTOR*XO, FACTOR*YO
-                ELSE
-                   WRITE (NDSE,994) FACTOR*XO, FACTOR*YO
-                END IF
-             END IF
-             !
-          END DO
-          !
+          NBO2(NFBPO) = NBO2(NFBPO-1)
           NBO(NFBPO) = NBOTOT
           !
-          ! ... Branch back to read.
+        END IF
+        !
+        ! ... Loop over line segment - - - - - - - - - - - - - - - - - - - - -
+        !
+#ifdef W3_RTD
+        ! If either base or destination grid is rotated lat-lon
+        IF ( allocated(BDYLON) .eqv. .TRUE. ) THEN
+          deallocate( BDYLON, BDYLAT )
+          IF ( bPolat < 90. .OR. Polat < 90. ) &
+               deallocate( ELatbdy, ELonbdy, Anglbdy )
+        END IF
+        allocate( BDYLON(NPO), BDYLAT(NPO))
+        IF ( bPolat < 90. .OR. Polat < 90. ) &
+             allocate( ELatbdy(NPO), ELonbdy(NPO), Anglbdy(NPO) )
+        !
+#endif
+#ifdef W3_T
+        WRITE (NDST,9090)
+#endif
+        !
+        DO IP=1, NPO
           !
-       END DO
-       !
-       ! ... End of ILOOP loop
-       !
+          XO     = XO0 + REAL(IP-1)*DXO
+          YO     = YO0 + REAL(IP-1)*DYO
+#ifdef W3_RTD
+          !
+          ! Boundary points are specified in coordinates of the destination grid
+          !
+          ! Collect the line segment points into arrays
+          BDYLON(IP)     = XO
+          BDYLAT(IP)     = YO
+          ! Close the loop before calculating rotated lat-lon coordinates.
+        END DO
+
+        ! Create one or two sets of the segment points:
+        ! 1. (BDYLAT, BDYLON) in standard lat-lon coordinates,
+        ! 2. Also (ELatbdy, ELonbdy) in case the base grid is rotated
+
+        IF ( bPolat < 90. ) THEN
+          ! The destination grid is rotated (std->rot or rot->rot)
+          ! Change BDYLAT, BDYLON to their standard lat-lon positions
+          ! Let ELatbdy,ELonbdy contain the rotated lat-lon coordinates
+          ELatbdy(:) = BDYLAT(:)
+          ELonbdy(:) = BDYLON(:)
+          CALL W3EQTOLL ( ELatbdy, ELonbdy, BDYLAT, BDYLON,     &
+               &                Anglbdy, bPolat, bPolon, NPO )
+          ! Let the standard longitudes BDYLON be within the range [-180.,180.[
+          ! or [0., 360.[ depending on the grid pole
+          IF ( Polon < -90. .OR. Polon > 90. ) THEN
+            BDYLON(:) = MOD( BDYLON(:) + 180., 360. ) - 180.
+          ELSE
+            BDYLON(:) = MOD( BDYLON(:) + 360., 360. )
+          END IF
+        END IF ! bPolat < 90.
+        ! From now, BDYLAT, BDYLON are defined in standard lat-lon coordinates
+        !
+        IF ( Polat < 90. ) THEN
+          ! The base grid is rotated (rot->std or rot->rot)
+          ! Find lat-lon in coordinates of the rotated base grid
+          CALL W3LLTOEQ ( BDYLAT, BDYLON, ELatbdy, ELonbdy,     &
+               &                Anglbdy, Polat, Polon, NPO )
+        END IF
+        !
+        ! Take up again the loop over the line segment points
+        DO IP=1, NPO
+          IF ( Polat < 90. ) THEN
+            ! The base grid is rotated (rot->std, rot->rot)
+            ! (The std. lat-lon values BDYLAT, BDYLON go to YBPO, XBPO)
+            XO = ELonbdy(IP)
+            YO = ELatbdy(IP)
+          ELSE
+            ! The base grid is standard geographic (std->rot or std->std)
+            XO = BDYLON(IP)
+            YO = BDYLAT(IP)
+          END IF
+#endif
+          !
+          ! ... Compute bilinear remapping weights
+          !
+          INGRID = W3GRMP( GSU, XO, YO, IXR, IYR, RD )
+          !
+          !           Change cell-corners from counter-clockwise to column-major order
+          IX     = IXR(3);  IY     = IYR(3);  X     = RD(3);
+          IXR(3) = IXR(4);  IYR(3) = IYR(4);  RD(3) = RD(4);
+          IXR(4) = IX    ;  IYR(4) = IY    ;  RD(4) = X    ;
+          !
+#ifdef W3_T
+          WRITE (NDST,9091) FACTOR*XO, FACTOR*YO,                   &
+               (IXR(J), IYR(J), RD(J), J=1,4)
+#endif
+          !
+          ! ... Check if point in grid
+          !
+          IF ( INGRID ) THEN
+            !
+            ! ... Check if point not on land
+            !
+            IF ( ( MAPSTA(IYR(1),IXR(1)).GT.0 .AND.                 &
+                 RD(1).GT.0.05 ) .OR.          &
+                 ( MAPSTA(IYR(2),IXR(2)).GT.0 .AND.                 &
+                 RD(2).GT.0.05 ) .OR.          &
+                 ( MAPSTA(IYR(3),IXR(3)).GT.0 .AND.                 &
+                 RD(3).GT.0.05 ) .OR.          &
+                 ( MAPSTA(IYR(4),IXR(4)).GT.0 .AND.                 &
+                 RD(4).GT.0.05 ) ) THEN
+              !
+              ! ... Check storage and store coordinates
+              !
+              NBOTOT = NBOTOT + 1
+              IF ( ILOOP .EQ. 1 ) CYCLE
+              !
+#ifdef W3_RTD
+              ! BDYLAT, BDYLON contain Y0, X0, which are remapped to standard lat/lon.
+              ! BDYLAT, BDYLON are stored in the mod_def file.
+              IF ( Polat < 90. ) THEN
+                XO = BDYLON(IP)
+                YO = BDYLAT(IP)
+              END IF
+#endif
+              XBPO(NBOTOT) = XO
+              YBPO(NBOTOT) = YO
+              !
+              ! ... Interpolation factors
+              !
+              RDTOT = 0.
+              DO J=1, 4
+                IF ( MAPSTA(IYR(J),IXR(J)).GT.0 .AND.               &
+                     RD(J).GT.0.05 ) THEN
+                  RDBPO(NBOTOT,J) = RD(J)
+                ELSE
+                  RDBPO(NBOTOT,J) = 0.
+                END IF
+                RDTOT = RDTOT + RDBPO(NBOTOT,J)
+              END DO
+              !
+              DO J=1, 4
+                RDBPO(NBOTOT,J) = RDBPO(NBOTOT,J) / RDTOT
+              END DO
+              !
+#ifdef W3_T
+              WRITE (NDST,9092) RDTOT, (RDBPO(NBOTOT,J),J=1,4)
+#endif
+              !
+              ! ... Determine sea and interpolation point counters
+              !
+              DO J=1, 4
+                ISEAI(J) = MAPFS(IYR(J),IXR(J))
+              END DO
+              !
+              DO J=1, 4
+                IF ( ISEAI(J).EQ.0 .OR. RDBPO(NBOTOT,J).EQ. 0. ) THEN
+                  IPBPO(NBOTOT,J) = 0
+                ELSE
+                  FLNEW   = .TRUE.
+                  DO IST=NBO2(NFBPO-1)+1, NBO2(NFBPO)
+                    IF ( ISEAI(J) .EQ. ISBPO(IST) ) THEN
+                      FLNEW  = .FALSE.
+                      IPBPO(NBOTOT,J) = IST - NBO2(NFBPO-1)
+                    END IF
+                  END DO
+                  IF ( FLNEW ) THEN
+                    NBO2(NFBPO)        = NBO2(NFBPO) + 1
+                    IPBPO(NBOTOT,J)    = NBO2(NFBPO) - NBO2(NFBPO-1)
+                    ISBPO(NBO2(NFBPO)) = ISEAI(J)
+                  END IF
+                END IF
+              END DO
+              !
+#ifdef W3_T
+              WRITE (NDST,9093) ISEAI, (IPBPO(NBOTOT,J),J=1,4)
+#endif
+              !
+              ! ... Error output
+              !
+            ELSE
+              IF ( FLAGLL ) THEN
+                WRITE (NDSE,2995) FACTOR*XO, FACTOR*YO
+              ELSE
+                WRITE (NDSE,995) FACTOR*XO, FACTOR*YO
+              END IF
+            END IF
+          ELSE
+            IF ( FLAGLL ) THEN
+              WRITE (NDSE,2994) FACTOR*XO, FACTOR*YO
+            ELSE
+              WRITE (NDSE,994) FACTOR*XO, FACTOR*YO
+            END IF
+          END IF
+          !
+        END DO
+        !
+        NBO(NFBPO) = NBOTOT
+        !
+        ! ... Branch back to read.
+        !
+      END DO
+      !
+      ! ... End of ILOOP loop
+      !
     END DO
     !
     IF ( .NOT. FLGNML ) CLOSE ( NDSS, STATUS='DELETE' )
     !
     FLBPO  = NBOTOT .GT. 0
     IF ( .NOT. FLBPO ) THEN
-       WRITE (NDSO,996)
+      WRITE (NDSO,996)
     ELSE
-       WRITE (NDSO,997) NBOTOT, NBO2(NFBPO)
+      WRITE (NDSO,997) NBOTOT, NBO2(NFBPO)
     END IF
     !
 #ifdef W3_T0
     WRITE (NDST,9095)
     DO IFILE=1, NFBPO
-       DO IP=NBO2(IFILE-1)+1, NBO2(IFILE)
-          WRITE (NDST,9096) IFILE, IP-NBO2(IFILE-1), ISBPO(IP)
-       END DO
+      DO IP=NBO2(IFILE-1)+1, NBO2(IFILE)
+        WRITE (NDST,9096) IFILE, IP-NBO2(IFILE-1), ISBPO(IP)
+      END DO
     END DO
 #endif
     !
@@ -5991,19 +5991,19 @@ CONTAINS
     !
 2222 CONTINUE
     IF ( GTYPE .NE. UNGTYPE) THEN
-       IF ( NX*NY .NE. NSEA ) THEN
-          WRITE (NDSO,9997) NX, NY, NX*NY, NSEA,                       &
-               100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
-       ELSE
-          WRITE (NDSO,9998) NX, NY, NX*NY, NSEA, NBI, NLAND, NBT
-       END IF
+      IF ( NX*NY .NE. NSEA ) THEN
+        WRITE (NDSO,9997) NX, NY, NX*NY, NSEA,                       &
+             100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
+      ELSE
+        WRITE (NDSO,9998) NX, NY, NX*NY, NSEA, NBI, NLAND, NBT
+      END IF
     ELSE IF ( GTYPE .EQ. UNGTYPE ) THEN
-       IF ( NX*NY .NE. NSEA ) THEN
-          WRITE (NDSO,9997)  0,  0, NX*NY, NSEA,                       &
-               100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
-       ELSE
-          WRITE (NDSO,9998)  0,  0, NX*NY, NSEA, NBI, NLAND, NBT
-       END IF
+      IF ( NX*NY .NE. NSEA ) THEN
+        WRITE (NDSO,9997)  0,  0, NX*NY, NSEA,                       &
+             100.*REAL(NSEA)/REAL(NX*NY), NBI, NLAND, NBT
+      ELSE
+        WRITE (NDSO,9998)  0,  0, NX*NY, NSEA, NBI, NLAND, NBT
+      END IF
     ENDIF ! GTYPE .EQ. UNGTYPE
 
     WRITE (NDSO,9999)
@@ -6021,23 +6021,23 @@ CONTAINS
 
 #ifdef W3_SCRIP
     IF (GTYPE .EQ. UNGTYPE) THEN
-       GRID1_RANK=1
-       DEALLOCATE(GRID1_DIMS)
-       ALLOCATE(GRID1_DIMS(GRID1_RANK))
-       GRID1_DIMS(1) = GRID1_SIZE
+      GRID1_RANK=1
+      DEALLOCATE(GRID1_DIMS)
+      ALLOCATE(GRID1_DIMS(GRID1_RANK))
+      GRID1_DIMS(1) = GRID1_SIZE
     ENDIF
 #endif
 
 #ifdef W3_SCRIP
     DO I = 1,GRID1_SIZE
-       IF (GRID1_CENTER_LON(I) < 0.0) THEN
-          GRID1_CENTER_LON(I) = GRID1_CENTER_LON(I)+360.0
-       ENDIF
-       DO J = 1,GRID1_CORNERS
-          IF (GRID1_CORNER_LON(J,I) < 0.0) THEN
-             GRID1_CORNER_LON(J,I) = GRID1_CORNER_LON(J,I)+360.0
-          ENDIF
-       ENDDO
+      IF (GRID1_CENTER_LON(I) < 0.0) THEN
+        GRID1_CENTER_LON(I) = GRID1_CENTER_LON(I)+360.0
+      ENDIF
+      DO J = 1,GRID1_CORNERS
+        IF (GRID1_CORNER_LON(J,I) < 0.0) THEN
+          GRID1_CORNER_LON(J,I) = GRID1_CORNER_LON(J,I)+360.0
+        ENDIF
+      ENDDO
     ENDDO
 #endif
 
@@ -6070,9 +6070,9 @@ CONTAINS
     ALLOCATE(GRID1_IMASK(GRID1_DIMS(1)))
     GRID1_IMASK = 0
     DO I = 1,GRID1_DIMS(1)
-       IF (GRID1_MASK(I)) THEN
-          GRID1_IMASK(I) = 1
-       ENDIF
+      IF (GRID1_MASK(I)) THEN
+        GRID1_IMASK(I) = 1
+      ENDIF
     ENDDO
 #endif
 
@@ -7232,194 +7232,194 @@ CONTAINS
     STATUS  = '(default values) :  '
     !
     DO
-       READ (NDS,'(A)',END=800,ERR=800,IOSTAT=IERR) LINE
-       DO I=1, 70
-          IF ( LINE(I:I) .NE. ' ' ) THEN
-             IF ( LINE(I:I) .EQ. '&' ) THEN
-                IF ( LINE(I+1:I+4) .EQ. NAME ) THEN
-                   BACKSPACE (NDS)
-                   SELECT CASE(NAME)
+      READ (NDS,'(A)',END=800,ERR=800,IOSTAT=IERR) LINE
+      DO I=1, 70
+        IF ( LINE(I:I) .NE. ' ' ) THEN
+          IF ( LINE(I:I) .EQ. '&' ) THEN
+            IF ( LINE(I+1:I+4) .EQ. NAME ) THEN
+              BACKSPACE (NDS)
+              SELECT CASE(NAME)
 #ifdef W3_FLD1
-                   CASE('FLD1')
-                      READ (NDS,NML=FLD1,END=801,ERR=802,IOSTAT=J)
+              CASE('FLD1')
+                READ (NDS,NML=FLD1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_FLD2
-                   CASE('FLD2')
-                      READ (NDS,NML=FLD2,END=801,ERR=802,IOSTAT=J)
+              CASE('FLD2')
+                READ (NDS,NML=FLD2,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_FLX3
-                   CASE('FLX3')
-                      READ (NDS,NML=FLX3,END=801,ERR=802,IOSTAT=J)
+              CASE('FLX3')
+                READ (NDS,NML=FLX3,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_FLX4
-                   CASE('FLX4')
-                      READ (NDS,NML=FLX4,END=801,ERR=802,IOSTAT=J)
+              CASE('FLX4')
+                READ (NDS,NML=FLX4,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_LN1
-                   CASE('SLN1')
-                      READ (NDS,NML=SLN1,END=801,ERR=802,IOSTAT=J)
+              CASE('SLN1')
+                READ (NDS,NML=SLN1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST1
-                   CASE('SIN1')
-                      READ (NDS,NML=SIN1,END=801,ERR=802,IOSTAT=J)
+              CASE('SIN1')
+                READ (NDS,NML=SIN1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST2
-                   CASE('SIN2')
-                      READ (NDS,NML=SIN2,END=801,ERR=802,IOSTAT=J)
+              CASE('SIN2')
+                READ (NDS,NML=SIN2,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST3
-                   CASE('SIN3')
-                      READ (NDS,NML=SIN3,END=801,ERR=802,IOSTAT=J)
+              CASE('SIN3')
+                READ (NDS,NML=SIN3,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST4
-                   CASE('SIN4')
-                      READ (NDS,NML=SIN4,END=801,ERR=802,IOSTAT=J)
+              CASE('SIN4')
+                READ (NDS,NML=SIN4,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST6
-                   CASE('SIN6')
-                      READ (NDS,NML=SIN6,END=801,ERR=802,IOSTAT=J)
+              CASE('SIN6')
+                READ (NDS,NML=SIN6,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_NL1
-                   CASE('SNL1')
-                      READ (NDS,NML=SNL1,END=801,ERR=802,IOSTAT=J)
+              CASE('SNL1')
+                READ (NDS,NML=SNL1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_NL2
-                   CASE('SNL2')
-                      READ (NDS,NML=SNL2,END=801,ERR=802,IOSTAT=J)
-                   CASE('ANL2')
-                      IF ( NDEPTH .GT. 100 ) GOTO 804
-                      DEPTHS(1:NDEPTH) = DPTHNL
-                      READ (NDS,NML=ANL2,END=801,ERR=802,IOSTAT=J)
-                      DPTHNL = DEPTHS(1:NDEPTH)
+              CASE('SNL2')
+                READ (NDS,NML=SNL2,END=801,ERR=802,IOSTAT=J)
+              CASE('ANL2')
+                IF ( NDEPTH .GT. 100 ) GOTO 804
+                DEPTHS(1:NDEPTH) = DPTHNL
+                READ (NDS,NML=ANL2,END=801,ERR=802,IOSTAT=J)
+                DPTHNL = DEPTHS(1:NDEPTH)
 #endif
 #ifdef W3_NL3
-                   CASE('SNL3')
-                      READ (NDS,NML=SNL3,END=801,ERR=802,IOSTAT=J)
-                   CASE('ANL3')
-                      IF ( NQDEF .GT. 100 ) GOTO 804
-                      READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
+              CASE('SNL3')
+                READ (NDS,NML=SNL3,END=801,ERR=802,IOSTAT=J)
+              CASE('ANL3')
+                IF ( NQDEF .GT. 100 ) GOTO 804
+                READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_NL4
-                   CASE('SNL4')
-                      READ (NDS,NML=SNL4,END=801,ERR=802,IOSTAT=J)
+              CASE('SNL4')
+                READ (NDS,NML=SNL4,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_NL5
-                   CASE('SNL5')
-                      READ (NDS,NML=SNL5,END=801,ERR=802,IOSTAT=J)
+              CASE('SNL5')
+                READ (NDS,NML=SNL5,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_NLS
-                   CASE('SNLS')
-                      READ (NDS,NML=SNLS,END=801,ERR=802,IOSTAT=J)
+              CASE('SNLS')
+                READ (NDS,NML=SNLS,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST1
-                   CASE('SDS1')
-                      READ (NDS,NML=SDS1,END=801,ERR=802,IOSTAT=J)
+              CASE('SDS1')
+                READ (NDS,NML=SDS1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST2
-                   CASE('SDS2')
-                      READ (NDS,NML=SDS2,END=801,ERR=802,IOSTAT=J)
+              CASE('SDS2')
+                READ (NDS,NML=SDS2,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST3
-                   CASE('SDS3')
-                      READ (NDS,NML=SDS3,END=801,ERR=802,IOSTAT=J)
+              CASE('SDS3')
+                READ (NDS,NML=SDS3,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST4
-                   CASE('SDS4')
-                      READ (NDS,NML=SDS4,END=801,ERR=802,IOSTAT=J)
+              CASE('SDS4')
+                READ (NDS,NML=SDS4,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_ST6
-                   CASE('SDS6')
-                      READ (NDS,NML=SDS6,END=801,ERR=802,IOSTAT=J)
-                   CASE('SWL6')
-                      READ (NDS,NML=SWL6,END=801,ERR=802,IOSTAT=J)
+              CASE('SDS6')
+                READ (NDS,NML=SDS6,END=801,ERR=802,IOSTAT=J)
+              CASE('SWL6')
+                READ (NDS,NML=SWL6,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_BT1
-                   CASE('SBT1')
-                      READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
+              CASE('SBT1')
+                READ (NDS,NML=SBT1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_BT4
-                   CASE('SBT4')
-                      READ (NDS,NML=SBT4,END=801,ERR=802,IOSTAT=J)
+              CASE('SBT4')
+                READ (NDS,NML=SBT4,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_IS1
-                   CASE('SIS1')
-                      READ (NDS,NML=SIS1,END=801,ERR=802,IOSTAT=J)
+              CASE('SIS1')
+                READ (NDS,NML=SIS1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_IS2
-                   CASE('SIS2')
-                      READ (NDS,NML=SIS2,END=801,ERR=802,IOSTAT=J)
+              CASE('SIS2')
+                READ (NDS,NML=SIS2,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_DB1
-                   CASE('SDB1')
-                      READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
+              CASE('SDB1')
+                READ (NDS,NML=SDB1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_UOST
-                   CASE('UOST')
-                      READ (NDS,NML=UOST,END=801,ERR=802,IOSTAT=J)
+              CASE('UOST')
+                READ (NDS,NML=UOST,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_PR1
-                   CASE('PRO1')
-                      READ (NDS,NML=PRO1,END=801,ERR=802,IOSTAT=J)
+              CASE('PRO1')
+                READ (NDS,NML=PRO1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_PR2
-                   CASE('PRO2')
-                      READ (NDS,NML=PRO2,END=801,ERR=802,IOSTAT=J)
+              CASE('PRO2')
+                READ (NDS,NML=PRO2,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_SMC
-                   CASE('PSMC')
-                      READ (NDS,NML=PSMC,END=801,ERR=802,IOSTAT=J)
+              CASE('PSMC')
+                READ (NDS,NML=PSMC,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_PR3
-                   CASE('PRO3')
-                      READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
+              CASE('PRO3')
+                READ (NDS,NML=PRO3,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_RTD
-                   CASE('ROTD')
-                      READ (NDS,NML=ROTD,END=801,ERR=802,IOSTAT=J)
-                   CASE('ROTB')
-                      READ (NDS,NML=ROTB,END=801,ERR=802,IOSTAT=J)
+              CASE('ROTD')
+                READ (NDS,NML=ROTD,END=801,ERR=802,IOSTAT=J)
+              CASE('ROTB')
+                READ (NDS,NML=ROTB,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_REF1
-                   CASE('REF1')
-                      READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
+              CASE('REF1')
+                READ (NDS,NML=REF1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_IG1
-                   CASE('SIG1')
-                      READ (NDS,NML=SIG1,END=801,ERR=802,IOSTAT=J)
+              CASE('SIG1')
+                READ (NDS,NML=SIG1,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_IC2
-                   CASE('SIC2')
-                      READ (NDS,NML=SIC2,END=801,ERR=802,IOSTAT=J)
+              CASE('SIC2')
+                READ (NDS,NML=SIC2,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_IC3
-                   CASE('SIC3')
-                      READ (NDS,NML=SIC3,END=801,ERR=802,IOSTAT=J)
+              CASE('SIC3')
+                READ (NDS,NML=SIC3,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_IC4
-                   CASE('SIC4 ')
-                      READ (NDS,NML=SIC4,END=801,ERR=802,IOSTAT=J)
+              CASE('SIC4 ')
+                READ (NDS,NML=SIC4,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_IC5
-                   CASE('SIC5 ')
-                      READ (NDS,NML=SIC5,END=801,ERR=802,IOSTAT=J)
+              CASE('SIC5 ')
+                READ (NDS,NML=SIC5,END=801,ERR=802,IOSTAT=J)
 #endif
-                   CASE('UNST')
-                      READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
-                   CASE('OUTS')
-                      READ (NDS,NML=OUTS,END=801,ERR=802,IOSTAT=J)
-                   CASE('MISC')
-                      READ (NDS,NML=MISC,END=801,ERR=802,IOSTAT=J)
-                   CASE DEFAULT
-                      GOTO 803
-                   END SELECT
-                   STATUS  = '(user def. values) :'
-                   RETURN
-                END IF
-             ELSE
-                EXIT
-             END IF
-          ENDIF
-       END DO
+              CASE('UNST')
+                READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
+              CASE('OUTS')
+                READ (NDS,NML=OUTS,END=801,ERR=802,IOSTAT=J)
+              CASE('MISC')
+                READ (NDS,NML=MISC,END=801,ERR=802,IOSTAT=J)
+              CASE DEFAULT
+                GOTO 803
+              END SELECT
+              STATUS  = '(user def. values) :'
+              RETURN
+            END IF
+          ELSE
+            EXIT
+          END IF
+        ENDIF
+      END DO
     END DO
     !
 800 CONTINUE

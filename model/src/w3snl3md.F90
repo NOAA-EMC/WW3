@@ -332,7 +332,7 @@ CONTAINS
     XCG(1:NFR) = CG
     !
     DO IFR = NFR+1, NFRMAX
-       CALL WAVNU1 ( XSI(IFR), DEPTH, XWN(IFR), XCG(IFR) )
+      CALL WAVNU1 ( XSI(IFR), DEPTH, XWN(IFR), XCG(IFR) )
     END DO
     !
     ! 1.b Expanded pseudo spetrum
@@ -345,219 +345,219 @@ CONTAINS
     AUX2   = GRAV**2 / TPI**11
     !
     DO IFR=1, NFRCUT
-       SCALE1(IFR) = AUX1 * XWN(IFR)**(4.+SNLMSC) *                 &
-            XSI(IFR)**(13.-2.*SNLMSC) / XCG(IFR)**2
-       SCALE2(IFR) = AUX2 * XWN(IFR)**11 *                          &
-            (XWN(IFR)*DEPTH)**SNLNSC / XCG(IFR)
+      SCALE1(IFR) = AUX1 * XWN(IFR)**(4.+SNLMSC) *                 &
+           XSI(IFR)**(13.-2.*SNLMSC) / XCG(IFR)**2
+      SCALE2(IFR) = AUX2 * XWN(IFR)**11 *                          &
+           (XWN(IFR)*DEPTH)**SNLNSC / XCG(IFR)
     END DO
     !
     ! 1.d Set up depth scaling counters
     !
     DO IFR=1, NFRCUT
-       SIT      = XSI(IFR) * SQRT(DEPTH/GRAV)
-       IKD      = 1 + NINT ( ( LOG(SIT) - LOG(SITMIN) ) / XSITLN )
-       JKD(IFR) = MAX ( 1 , MIN(IKD,NKD) )
+      SIT      = XSI(IFR) * SQRT(DEPTH/GRAV)
+      IKD      = 1 + NINT ( ( LOG(SIT) - LOG(SITMIN) ) / XSITLN )
+      JKD(IFR) = MAX ( 1 , MIN(IKD,NKD) )
     END DO
     !
     ! 2.  Base loop over quadruplet realizations ------------------------- *
     !
     DO IQA=1 , NQA
-       !
-       ! 3.  Obtain quadruplet energies for all spectral bins --------------- *
-       ! 3.a Set frequency ranges
-       !
-       AUX1   = QST3(5,IQA,1)
-       AUX2   = QST3(6,IQA,1)
-       !
-       IF1MIN = 1
-       IF1MAX = NFRCUT
-       IF2MIN = 1
-       IF2MAX = NFR
-       !
-       IF ( AUX1 .LE. 0. .AND. AUX2 .LE. 0. ) THEN
+      !
+      ! 3.  Obtain quadruplet energies for all spectral bins --------------- *
+      ! 3.a Set frequency ranges
+      !
+      AUX1   = QST3(5,IQA,1)
+      AUX2   = QST3(6,IQA,1)
+      !
+      IF1MIN = 1
+      IF1MAX = NFRCUT
+      IF2MIN = 1
+      IF2MAX = NFR
+      !
+      IF ( AUX1 .LE. 0. .AND. AUX2 .LE. 0. ) THEN
+        !
+        CYCLE
+        !
+      ELSE IF ( AUX2 .LE. 0. ) THEN
+        !
+        SIT    = SNLSFD * SQRT(GRAV/DEPTH)
+        IFR    = NINT ( FACTI2 + FACTI1*LOG(SIT) )
+        IF ( IFR .GT. NFR ) CYCLE
+        !
+        IF ( IFR .GT. 1 ) THEN
+          IF1MIN = MAX ( 1 , IFR )
+          IF2MIN = MAX ( 1 , IF1MIN + NFRMIN )
+          DSB(1:(IF1MIN-1)*NTH) = 0.
+          DD1(1:(IF1MIN-1)*NTH) = 0.
+          DD2(1:(IF1MIN-1)*NTH) = 0.
+          DD3(1:(IF1MIN-1)*NTH) = 0.
+          DD4(1:(IF1MIN-1)*NTH) = 0.
+        END IF
+        !
+      ELSE IF ( AUX1 .LE. 0. ) THEN
+        !
+        SIT    = SNLSFS * SQRT(GRAV/DEPTH)
+        IFR    = NINT ( FACTI2 + FACTI1*LOG(SIT) )
+        IF ( IFR .LT. 1 ) CYCLE
+        !
+        IF ( IFR .LT. NFRCUT ) THEN
+          IF1MAX = MIN ( NFRCUT, IFR )
+          !               IF2MAX = NFR
+          DSB(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
+          DD1(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
+          DD2(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
+          DD3(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
+          DD4(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
+        END IF
+        !
+      END IF
+      !
+      ! 3.b Loop over frequencies
+      !
+      DO IFR=IF1MIN, IF1MAX
+        !
+        ! 3.c Find discrete depths
+        !
+        IKD    = JKD(IFR)
+        !
+        ! 3.d Get offsets and weights
+        !
+        LQST1  = QST1(:,IQA,IKD)
+        LQST2  = QST2(:,IQA,IKD)
+        FACT   = QST3(:,IQA,IKD)
+        FACT(1:4) = FACT(1:4) * XCG(IFR) / ( XWN(IFR) *XSI(IFR) )
+        FPROP  = SCALE1(IFR)*FACT(5) + SCALE2(IFR)*FACT(6)
+        !
+        ! 3.e Loop over directions
+        !
+        ISP0   = (IFR-1)*NTH
+        ISPX0  = (IFR-1)*NTHEXP
+        !
+        DO ITH=1, NTH
           !
-          CYCLE
+          ISP    = ISP0 + ITH
+          ISPX   = ISPX0 + ITH
           !
-       ELSE IF ( AUX2 .LE. 0. ) THEN
+          FQ1    = ( UE(ISPX+LQST1( 1)) * LQST2( 1) +               &
+               UE(ISPX+LQST1( 2)) * LQST2( 2) +               &
+               UE(ISPX+LQST1( 3)) * LQST2( 3) +               &
+               UE(ISPX+LQST1( 4)) * LQST2( 4) ) * FACT(1)
+          FQ2    = ( UE(ISPX+LQST1( 5)) * LQST2( 5) +               &
+               UE(ISPX+LQST1( 6)) * LQST2( 6) +               &
+               UE(ISPX+LQST1( 7)) * LQST2( 7) +               &
+               UE(ISPX+LQST1( 8)) * LQST2( 8) ) * FACT(2)
+          FQ3    = ( UE(ISPX+LQST1( 9)) * LQST2( 9) +               &
+               UE(ISPX+LQST1(10)) * LQST2(10) +               &
+               UE(ISPX+LQST1(11)) * LQST2(11) +               &
+               UE(ISPX+LQST1(12)) * LQST2(12) ) * FACT(3)
+          FQ4    = ( UE(ISPX+LQST1(13)) * LQST2(13) +               &
+               UE(ISPX+LQST1(14)) * LQST2(14) +               &
+               UE(ISPX+LQST1(15)) * LQST2(15) +               &
+               UE(ISPX+LQST1(16)) * LQST2(16) ) * FACT(4)
           !
-          SIT    = SNLSFD * SQRT(GRAV/DEPTH)
-          IFR    = NINT ( FACTI2 + FACTI1*LOG(SIT) )
-          IF ( IFR .GT. NFR ) CYCLE
+          AUX1   = FQ1 * FQ2 * ( FQ3 + FQ4 )
+          AUX2   = FQ3 * FQ4 * ( FQ1 + FQ2 )
+          DSB(ISP) = FPROP * ( AUX1 - AUX2 )
           !
-          IF ( IFR .GT. 1 ) THEN
-             IF1MIN = MAX ( 1 , IFR )
-             IF2MIN = MAX ( 1 , IF1MIN + NFRMIN )
-             DSB(1:(IF1MIN-1)*NTH) = 0.
-             DD1(1:(IF1MIN-1)*NTH) = 0.
-             DD2(1:(IF1MIN-1)*NTH) = 0.
-             DD3(1:(IF1MIN-1)*NTH) = 0.
-             DD4(1:(IF1MIN-1)*NTH) = 0.
-          END IF
+          AUX1   = FQ3 + FQ4
+          AUX2   = FQ3 * FQ4
+          DD1(ISP) = FPROP * FACT(1) * ( FQ2 * AUX1 - AUX2 )
+          DD2(ISP) = FPROP * FACT(2) * ( FQ1 * AUX1 - AUX2 )
           !
-       ELSE IF ( AUX1 .LE. 0. ) THEN
+          AUX1   = FQ1 + FQ2
+          AUX2   = FQ1 * FQ2
+          DD3(ISP) = FPROP * FACT(3) * ( AUX2 - FQ4*AUX1 )
+          DD4(ISP) = FPROP * FACT(4) * ( AUX2 - FQ3*AUX1 )
           !
-          SIT    = SNLSFS * SQRT(GRAV/DEPTH)
-          IFR    = NINT ( FACTI2 + FACTI1*LOG(SIT) )
-          IF ( IFR .LT. 1 ) CYCLE
+          ! ... End loop 3.e
           !
-          IF ( IFR .LT. NFRCUT ) THEN
-             IF1MAX = MIN ( NFRCUT, IFR )
-             !               IF2MAX = NFR
-             DSB(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
-             DD1(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
-             DD2(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
-             DD3(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
-             DD4(IF1MAX*NTH+1:NFRCUT*NTH) = 0.
-          END IF
+        END DO
+        !
+        ! ... End loop 3.b
+        !
+      END DO
+      !
+      ! 3.e Expand arrays
+      !
+      CALL EXPND2 ( DSB(1:NTH*NFRCUT), DSB )
+      CALL EXPND2 ( DD1(1:NTH*NFRCUT), DD1 )
+      CALL EXPND2 ( DD2(1:NTH*NFRCUT), DD2 )
+      CALL EXPND2 ( DD3(1:NTH*NFRCUT), DD3 )
+      CALL EXPND2 ( DD4(1:NTH*NFRCUT), DD4 )
+      !
+      ! 4.  Put it all together -------------------------------------------- *
+      ! 4.a Loop over frequencies
+      !
+      DO IFR=IF2MIN, IF2MAX
+        !
+        ! 4.b Find discrete depths and storage
+        !
+        IKD    = JKD(IFR)
+        !
+        ! 4.c Get offsets and weights
+        !
+        LQST4  = QST4(:,IQA,IKD)
+        LQST5  = QST5(:,IQA,IKD)
+        LQST6  = QST6(:,IQA,IKD)
+        !
+        ! 4.d Loop over directions
+        !
+        ISPX0  = (IFR-1)*NTHEXP
+        !
+        DO ITH=1, NTH
           !
-       END IF
-       !
-       ! 3.b Loop over frequencies
-       !
-       DO IFR=IF1MIN, IF1MAX
+          ISPX   = ISPX0 + ITH
           !
-          ! 3.c Find discrete depths
+          S(ITH,IFR) = S(ITH,IFR) + DSB(ISPX+LQST4( 1)) * LQST5( 1) &
+               + DSB(ISPX+LQST4( 2)) * LQST5( 2) &
+               + DSB(ISPX+LQST4( 3)) * LQST5( 3) &
+               + DSB(ISPX+LQST4( 4)) * LQST5( 4) &
+               + DSB(ISPX+LQST4( 5)) * LQST5( 5) &
+               + DSB(ISPX+LQST4( 6)) * LQST5( 6) &
+               + DSB(ISPX+LQST4( 7)) * LQST5( 7) &
+               + DSB(ISPX+LQST4( 8)) * LQST5( 8) &
+               + DSB(ISPX+LQST4( 9)) * LQST5( 9) &
+               + DSB(ISPX+LQST4(10)) * LQST5(10) &
+               + DSB(ISPX+LQST4(11)) * LQST5(11) &
+               + DSB(ISPX+LQST4(12)) * LQST5(12) &
+               + DSB(ISPX+LQST4(13)) * LQST5(13) &
+               + DSB(ISPX+LQST4(14)) * LQST5(14) &
+               + DSB(ISPX+LQST4(15)) * LQST5(15) &
+               + DSB(ISPX+LQST4(16)) * LQST5(16)
           !
-          IKD    = JKD(IFR)
+          D(ITH,IFR) = D(ITH,IFR) + DD1(ISPX+LQST4( 1)) * LQST6( 1) &
+               + DD1(ISPX+LQST4( 2)) * LQST6( 2) &
+               + DD1(ISPX+LQST4( 3)) * LQST6( 3) &
+               + DD1(ISPX+LQST4( 4)) * LQST6( 4) &
+               + DD2(ISPX+LQST4( 5)) * LQST6( 5) &
+               + DD2(ISPX+LQST4( 6)) * LQST6( 6) &
+               + DD2(ISPX+LQST4( 7)) * LQST6( 7) &
+               + DD2(ISPX+LQST4( 8)) * LQST6( 8) &
+               + DD3(ISPX+LQST4( 9)) * LQST6( 9) &
+               + DD3(ISPX+LQST4(10)) * LQST6(10) &
+               + DD3(ISPX+LQST4(11)) * LQST6(11) &
+               + DD3(ISPX+LQST4(12)) * LQST6(12) &
+               + DD4(ISPX+LQST4(13)) * LQST6(13) &
+               + DD4(ISPX+LQST4(14)) * LQST6(14) &
+               + DD4(ISPX+LQST4(15)) * LQST6(15) &
+               + DD4(ISPX+LQST4(16)) * LQST6(16)
           !
-          ! 3.d Get offsets and weights
+          ! ... End loop 4.d
           !
-          LQST1  = QST1(:,IQA,IKD)
-          LQST2  = QST2(:,IQA,IKD)
-          FACT   = QST3(:,IQA,IKD)
-          FACT(1:4) = FACT(1:4) * XCG(IFR) / ( XWN(IFR) *XSI(IFR) )
-          FPROP  = SCALE1(IFR)*FACT(5) + SCALE2(IFR)*FACT(6)
-          !
-          ! 3.e Loop over directions
-          !
-          ISP0   = (IFR-1)*NTH
-          ISPX0  = (IFR-1)*NTHEXP
-          !
-          DO ITH=1, NTH
-             !
-             ISP    = ISP0 + ITH
-             ISPX   = ISPX0 + ITH
-             !
-             FQ1    = ( UE(ISPX+LQST1( 1)) * LQST2( 1) +               &
-                  UE(ISPX+LQST1( 2)) * LQST2( 2) +               &
-                  UE(ISPX+LQST1( 3)) * LQST2( 3) +               &
-                  UE(ISPX+LQST1( 4)) * LQST2( 4) ) * FACT(1)
-             FQ2    = ( UE(ISPX+LQST1( 5)) * LQST2( 5) +               &
-                  UE(ISPX+LQST1( 6)) * LQST2( 6) +               &
-                  UE(ISPX+LQST1( 7)) * LQST2( 7) +               &
-                  UE(ISPX+LQST1( 8)) * LQST2( 8) ) * FACT(2)
-             FQ3    = ( UE(ISPX+LQST1( 9)) * LQST2( 9) +               &
-                  UE(ISPX+LQST1(10)) * LQST2(10) +               &
-                  UE(ISPX+LQST1(11)) * LQST2(11) +               &
-                  UE(ISPX+LQST1(12)) * LQST2(12) ) * FACT(3)
-             FQ4    = ( UE(ISPX+LQST1(13)) * LQST2(13) +               &
-                  UE(ISPX+LQST1(14)) * LQST2(14) +               &
-                  UE(ISPX+LQST1(15)) * LQST2(15) +               &
-                  UE(ISPX+LQST1(16)) * LQST2(16) ) * FACT(4)
-             !
-             AUX1   = FQ1 * FQ2 * ( FQ3 + FQ4 )
-             AUX2   = FQ3 * FQ4 * ( FQ1 + FQ2 )
-             DSB(ISP) = FPROP * ( AUX1 - AUX2 )
-             !
-             AUX1   = FQ3 + FQ4
-             AUX2   = FQ3 * FQ4
-             DD1(ISP) = FPROP * FACT(1) * ( FQ2 * AUX1 - AUX2 )
-             DD2(ISP) = FPROP * FACT(2) * ( FQ1 * AUX1 - AUX2 )
-             !
-             AUX1   = FQ1 + FQ2
-             AUX2   = FQ1 * FQ2
-             DD3(ISP) = FPROP * FACT(3) * ( AUX2 - FQ4*AUX1 )
-             DD4(ISP) = FPROP * FACT(4) * ( AUX2 - FQ3*AUX1 )
-             !
-             ! ... End loop 3.e
-             !
-          END DO
-          !
-          ! ... End loop 3.b
-          !
-       END DO
-       !
-       ! 3.e Expand arrays
-       !
-       CALL EXPND2 ( DSB(1:NTH*NFRCUT), DSB )
-       CALL EXPND2 ( DD1(1:NTH*NFRCUT), DD1 )
-       CALL EXPND2 ( DD2(1:NTH*NFRCUT), DD2 )
-       CALL EXPND2 ( DD3(1:NTH*NFRCUT), DD3 )
-       CALL EXPND2 ( DD4(1:NTH*NFRCUT), DD4 )
-       !
-       ! 4.  Put it all together -------------------------------------------- *
-       ! 4.a Loop over frequencies
-       !
-       DO IFR=IF2MIN, IF2MAX
-          !
-          ! 4.b Find discrete depths and storage
-          !
-          IKD    = JKD(IFR)
-          !
-          ! 4.c Get offsets and weights
-          !
-          LQST4  = QST4(:,IQA,IKD)
-          LQST5  = QST5(:,IQA,IKD)
-          LQST6  = QST6(:,IQA,IKD)
-          !
-          ! 4.d Loop over directions
-          !
-          ISPX0  = (IFR-1)*NTHEXP
-          !
-          DO ITH=1, NTH
-             !
-             ISPX   = ISPX0 + ITH
-             !
-             S(ITH,IFR) = S(ITH,IFR) + DSB(ISPX+LQST4( 1)) * LQST5( 1) &
-                  + DSB(ISPX+LQST4( 2)) * LQST5( 2) &
-                  + DSB(ISPX+LQST4( 3)) * LQST5( 3) &
-                  + DSB(ISPX+LQST4( 4)) * LQST5( 4) &
-                  + DSB(ISPX+LQST4( 5)) * LQST5( 5) &
-                  + DSB(ISPX+LQST4( 6)) * LQST5( 6) &
-                  + DSB(ISPX+LQST4( 7)) * LQST5( 7) &
-                  + DSB(ISPX+LQST4( 8)) * LQST5( 8) &
-                  + DSB(ISPX+LQST4( 9)) * LQST5( 9) &
-                  + DSB(ISPX+LQST4(10)) * LQST5(10) &
-                  + DSB(ISPX+LQST4(11)) * LQST5(11) &
-                  + DSB(ISPX+LQST4(12)) * LQST5(12) &
-                  + DSB(ISPX+LQST4(13)) * LQST5(13) &
-                  + DSB(ISPX+LQST4(14)) * LQST5(14) &
-                  + DSB(ISPX+LQST4(15)) * LQST5(15) &
-                  + DSB(ISPX+LQST4(16)) * LQST5(16)
-             !
-             D(ITH,IFR) = D(ITH,IFR) + DD1(ISPX+LQST4( 1)) * LQST6( 1) &
-                  + DD1(ISPX+LQST4( 2)) * LQST6( 2) &
-                  + DD1(ISPX+LQST4( 3)) * LQST6( 3) &
-                  + DD1(ISPX+LQST4( 4)) * LQST6( 4) &
-                  + DD2(ISPX+LQST4( 5)) * LQST6( 5) &
-                  + DD2(ISPX+LQST4( 6)) * LQST6( 6) &
-                  + DD2(ISPX+LQST4( 7)) * LQST6( 7) &
-                  + DD2(ISPX+LQST4( 8)) * LQST6( 8) &
-                  + DD3(ISPX+LQST4( 9)) * LQST6( 9) &
-                  + DD3(ISPX+LQST4(10)) * LQST6(10) &
-                  + DD3(ISPX+LQST4(11)) * LQST6(11) &
-                  + DD3(ISPX+LQST4(12)) * LQST6(12) &
-                  + DD4(ISPX+LQST4(13)) * LQST6(13) &
-                  + DD4(ISPX+LQST4(14)) * LQST6(14) &
-                  + DD4(ISPX+LQST4(15)) * LQST6(15) &
-                  + DD4(ISPX+LQST4(16)) * LQST6(16)
-             !
-             ! ... End loop 4.d
-             !
-          END DO
-          !
-          ! ... End loop 4.a
-          !
-       END DO
-       !
-       ! ... End of loop 2.
-       !
+        END DO
+        !
+        ! ... End loop 4.a
+        !
+      END DO
+      !
+      ! ... End of loop 2.
+      !
     END DO
     !
     ! 5.  Convert back to wave action ------------------------------------ *
     !
     DO IFR=IF2MIN, IF2MAX
-       S(:,IFR) = S(:,IFR) / XSI(IFR) * XCG(IFR) * TPIINV
+      S(:,IFR) = S(:,IFR) / XSI(IFR) * XCG(IFR) * TPIINV
     END DO
     !
     RETURN
@@ -609,16 +609,16 @@ CONTAINS
       SPEC(1:NTH,1:NFR) = A * TPI
       !
       DO IFR=1, NFR
-         SPEC(1:NTH,IFR) = SPEC(1:NTH,IFR) * XSI(IFR) / XCG(IFR)
+        SPEC(1:NTH,IFR) = SPEC(1:NTH,IFR) * XSI(IFR) / XCG(IFR)
       END DO
       !
       DO IFR=NFR+1, NFRMAX
-         SPEC(1:NTH,IFR) = SPEC(1:NTH,IFR-1) * FACHFE
+        SPEC(1:NTH,IFR) = SPEC(1:NTH,IFR-1) * FACHFE
       END DO
       !
       DO ITH=1, NTHMAX
-         SPEC(NTH+ITH,1:NFRMAX) = SPEC(   ITH   ,1:NFRMAX)
-         SPEC( 1 -ITH,1:NFRMAX) = SPEC(NTH+1-ITH,1:NFRMAX)
+        SPEC(NTH+ITH,1:NFRMAX) = SPEC(   ITH   ,1:NFRMAX)
+        SPEC( 1 -ITH,1:NFRMAX) = SPEC(NTH+1-ITH,1:NFRMAX)
       END DO
       !
       RETURN
@@ -675,8 +675,8 @@ CONTAINS
       AROUT(1:NTH,1:NFRCUT) = TEMP
       !
       DO ITH=1, NTHMAX
-         AROUT(NTH+ITH,1:NFRCUT) = AROUT(   ITH   ,1:NFRCUT)
-         AROUT( 1 -ITH,1:NFRCUT) = AROUT(NTH+1-ITH,1:NFRCUT)
+        AROUT(NTH+ITH,1:NFRCUT) = AROUT(   ITH   ,1:NFRCUT)
+        AROUT( 1 -ITH,1:NFRCUT) = AROUT(NTH+1-ITH,1:NFRCUT)
       END DO
       !
       RETURN
@@ -807,9 +807,9 @@ CONTAINS
          WFROFF, SIOFF, WF
     !
     TYPE QST
-       INTEGER               :: OFR(4), OFR1(4), OTH(4), OTH1(4)
-       REAL                  :: HFR(4), HFR1(4), HTH(4), HTH1(4)
-       REAL                  :: F1, F2, F3, F4, CQD, CQS
+      INTEGER               :: OFR(4), OFR1(4), OTH(4), OTH1(4)
+      REAL                  :: HFR(4), HFR1(4), HTH(4), HTH1(4)
+      REAL                  :: F1, F2, F3, F4, CQD, CQS
     END TYPE QST
     !
     TYPE(QST), ALLOCATABLE  :: TSTORE(:,:)
@@ -852,182 +852,182 @@ CONTAINS
     S0     = SITMIN * SQRT ( GRAV / DEPTH )  / XSIT
     !
     DO IKD=1, NKD
-       !
-       S0     = S0 * XSIT
-       CALL WAVNU2 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
-       !
-       ! 2.b Loop over representative quadruplets
-       !
-       NQA    = 0
-       NQD    = 0
-       NQS    = 0
-       !
-       DO IQ=1, SNLNQ
-          !
+      !
+      S0     = S0 * XSIT
+      CALL WAVNU2 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
+      !
+      ! 2.b Loop over representative quadruplets
+      !
+      NQA    = 0
+      NQD    = 0
+      NQS    = 0
+      !
+      DO IQ=1, SNLNQ
+        !
 #ifdef W3_T1
-          WRITE (NDST,9020) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
+        WRITE (NDST,9020) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
 #endif
-          !
-          OFF12  = SNLM(IQ)
-          OFF34  = SNLL(IQ)
-          TH12   = SNLT(IQ) * DERA
-          IF ( SNLCD(IQ) .GT. 0. ) NQD = NQD + 1
-          IF ( SNLCS(IQ) .GT. 0. ) NQS = NQS + 1
-          !
-          IF ( TH12 .LT. 0. ) THEN
-             IF ( OFF12.LT.0. .OR. OFF12.GT.0.5 .OR.                 &
-                  OFF34.LT.0. .OR. OFF34.GT.0.5 ) GOTO 801
-          ELSE
-             IF ( SNLT(IQ).GT.DELTHM .OR. OFF12.LT.0. .OR.           &
-                  OFF12.GE.1.                                        &
-                  .OR.  OFF34.LT.MINLAM(OFF12,SNLT(IQ)) .OR.         &
-                  OFF34.GT.MAXLAM(OFF12,SNLT(IQ)) ) GOTO 802
-          END IF
-          !
+        !
+        OFF12  = SNLM(IQ)
+        OFF34  = SNLL(IQ)
+        TH12   = SNLT(IQ) * DERA
+        IF ( SNLCD(IQ) .GT. 0. ) NQD = NQD + 1
+        IF ( SNLCS(IQ) .GT. 0. ) NQS = NQS + 1
+        !
+        IF ( TH12 .LT. 0. ) THEN
+          IF ( OFF12.LT.0. .OR. OFF12.GT.0.5 .OR.                 &
+               OFF34.LT.0. .OR. OFF34.GT.0.5 ) GOTO 801
+        ELSE
+          IF ( SNLT(IQ).GT.DELTHM .OR. OFF12.LT.0. .OR.           &
+               OFF12.GE.1.                                        &
+               .OR.  OFF34.LT.MINLAM(OFF12,SNLT(IQ)) .OR.         &
+               OFF34.GT.MAXLAM(OFF12,SNLT(IQ)) ) GOTO 802
+        END IF
+        !
 #ifdef W3_T1
-          WRITE (NDST,9021) SNLT(IQ), OFF12, OFF34,               &
-               SNLCD(IQ), SNLCS(IQ)
+        WRITE (NDST,9021) SNLT(IQ), OFF12, OFF34,               &
+             SNLCD(IQ), SNLCS(IQ)
 #endif
-          !
-          ! 2.c Offset angles
-          !
-          S1     = S0 * ( 1. + OFF12 )
-          CALL WAVNU2 ( S1, DEPTH, WN1, CG1, 1.E-6, 25, IERR)
-          S2     = S0 * ( 1. - OFF12 )
-          CALL WAVNU2 ( S2, DEPTH, WN2, CG2, 1.E-6, 25, IERR)
-          S3     = S0 * ( 1. + OFF34 )
-          CALL WAVNU2 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
-          S4     = S0 * ( 1. - OFF34 )
-          CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
-          !
-          AUXFR(1) = S1 / S0
-          AUXFR(2) = S2 / S0
-          AUXFR(3) = S3 / S0
-          AUXFR(4) = S4 / S0
-          !
-          IF ( TH12 .LT. 0. ) THEN
-             BB = 2. * WN0
-          ELSE
-             BB = WN1**2 + WN2**2 + 2.*WN1*WN2*COS(TH12)
-             BB = SQRT ( MAX ( BB , 0. ) )
-          END IF
-          !
-          IF ( TH12.LT.0. .AND. ABS(OFF12).LE.1.E-4 ) THEN
-             DELTH(1) = 0.
-             DELTH(2) = 0.
-          ELSE
-             CC       = WN1
-             AA       = WN2
-             AUX1     = (CC**2+BB**2-AA**2) / (2.*BB*CC)
-             AUX2     = (AA**2+BB**2-CC**2) / (2.*BB*AA)
-             DELTH(1) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
-             DELTH(2) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
-          END IF
-          CC       = WN3
-          AA       = WN4
+        !
+        ! 2.c Offset angles
+        !
+        S1     = S0 * ( 1. + OFF12 )
+        CALL WAVNU2 ( S1, DEPTH, WN1, CG1, 1.E-6, 25, IERR)
+        S2     = S0 * ( 1. - OFF12 )
+        CALL WAVNU2 ( S2, DEPTH, WN2, CG2, 1.E-6, 25, IERR)
+        S3     = S0 * ( 1. + OFF34 )
+        CALL WAVNU2 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
+        S4     = S0 * ( 1. - OFF34 )
+        CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
+        !
+        AUXFR(1) = S1 / S0
+        AUXFR(2) = S2 / S0
+        AUXFR(3) = S3 / S0
+        AUXFR(4) = S4 / S0
+        !
+        IF ( TH12 .LT. 0. ) THEN
+          BB = 2. * WN0
+        ELSE
+          BB = WN1**2 + WN2**2 + 2.*WN1*WN2*COS(TH12)
+          BB = SQRT ( MAX ( BB , 0. ) )
+        END IF
+        !
+        IF ( TH12.LT.0. .AND. ABS(OFF12).LE.1.E-4 ) THEN
+          DELTH(1) = 0.
+          DELTH(2) = 0.
+        ELSE
+          CC       = WN1
+          AA       = WN2
           AUX1     = (CC**2+BB**2-AA**2) / (2.*BB*CC)
           AUX2     = (AA**2+BB**2-CC**2) / (2.*BB*AA)
-          DELTH(3) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
-          DELTH(4) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
-          !
+          DELTH(1) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
+          DELTH(2) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
+        END IF
+        CC       = WN3
+        AA       = WN4
+        AUX1     = (CC**2+BB**2-AA**2) / (2.*BB*CC)
+        AUX2     = (AA**2+BB**2-CC**2) / (2.*BB*AA)
+        DELTH(3) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
+        DELTH(4) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
+        !
 #ifdef W3_T1
-          WRITE (NDST,9022) DELTH(:) * RADE
+        WRITE (NDST,9022) DELTH(:) * RADE
 #endif
-          !
-          ! 2.d Frequency indices
-          !
-          DO J=1, 4
-             JFR (J) = INT( LOG(AUXFR(J)) / XFRLN )
-             JFR1(J) = JFR(J) + 1 * SIGN(1.,AUXFR(J)-1.)
-             WFR (J) = (XFR**JFR1(J)-AUXFR(J))/(XFR**JFR1(J)-XFR**JFR(J))
-             WFR1(J) = 1. - WFR(J)
-          END DO
-          !
-          IFRMIN = MIN ( IFRMIN , MINVAL(JFR1) )
-          IFRMAX = MAX ( IFRMAX , MAXVAL(JFR1) )
-          !
+        !
+        ! 2.d Frequency indices
+        !
+        DO J=1, 4
+          JFR (J) = INT( LOG(AUXFR(J)) / XFRLN )
+          JFR1(J) = JFR(J) + 1 * SIGN(1.,AUXFR(J)-1.)
+          WFR (J) = (XFR**JFR1(J)-AUXFR(J))/(XFR**JFR1(J)-XFR**JFR(J))
+          WFR1(J) = 1. - WFR(J)
+        END DO
+        !
+        IFRMIN = MIN ( IFRMIN , MINVAL(JFR1) )
+        IFRMAX = MAX ( IFRMAX , MAXVAL(JFR1) )
+        !
 #ifdef W3_T1
-          WRITE (NDST,9023) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
-          DO, J=2, 4
-             WRITE (NDST,9024) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
-          END DO
+        WRITE (NDST,9023) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
+        DO, J=2, 4
+          WRITE (NDST,9024) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
+        END DO
 #endif
-          !
-          ! 2.e Directional indices
-          !
-          DO J=1, 4
-             AUX1    = DELTH(J) / DTH
-             JTH (J) = INT(AUX1)
-             JTH1(J) = JTH(J) + 1 * SIGN(1.,DELTH(J))
-             WTH1(J) = ABS(AUX1) - REAL(ABS(JTH(J)))
-             WTH (J) = 1. - WTH1(J)
-          END DO
-          !
-          NTHMAX = MAX ( NTHMAX , MAXVAL(ABS(JTH1)) )
-          !
+        !
+        ! 2.e Directional indices
+        !
+        DO J=1, 4
+          AUX1    = DELTH(J) / DTH
+          JTH (J) = INT(AUX1)
+          JTH1(J) = JTH(J) + 1 * SIGN(1.,DELTH(J))
+          WTH1(J) = ABS(AUX1) - REAL(ABS(JTH(J)))
+          WTH (J) = 1. - WTH1(J)
+        END DO
+        !
+        NTHMAX = MAX ( NTHMAX , MAXVAL(ABS(JTH1)) )
+        !
 #ifdef W3_T1
-          WRITE (NDST,9025) 1, JTH(1), JTH1(1), WTH(1), WTH1(1)
-          DO, J=2, 4
-             WRITE (NDST,9024) J, JTH(J), JTH1(J), WTH(J), WTH1(J)
-          END DO
+        WRITE (NDST,9025) 1, JTH(1), JTH1(1), WTH(1), WTH1(1)
+        DO, J=2, 4
+          WRITE (NDST,9024) J, JTH(J), JTH1(J), WTH(J), WTH1(J)
+        END DO
 #endif
+        !
+        ! 2.f Temp storage of data
+        !
+        IF ( SNLM(IQ).EQ.0. .AND. SNLT(IQ).LT.0. ) THEN
+          JJ     = 2
+        ELSE
+          JJ     = 4
+        END IF
+        !
+        DO J=1, JJ
+          SELECT CASE (J)
+          CASE (2)
+            JTH (3) = -JTH (3)
+            JTH (4) = -JTH (4)
+            JTH1(3) = -JTH1(3)
+            JTH1(4) = -JTH1(4)
+          CASE (3)
+            JTH     = -JTH
+            JTH1    = -JTH1
+          CASE (4)
+            JTH (3) = -JTH (3)
+            JTH (4) = -JTH (4)
+            JTH1(3) = -JTH1(3)
+            JTH1(4) = -JTH1(4)
+          CASE DEFAULT
+          END SELECT
           !
-          ! 2.f Temp storage of data
-          !
-          IF ( SNLM(IQ).EQ.0. .AND. SNLT(IQ).LT.0. ) THEN
-             JJ     = 2
+          NQA    = NQA + 1
+          TSTORE(NQA,IKD)%OFR  = JFR
+          TSTORE(NQA,IKD)%OFR1 = JFR1
+          TSTORE(NQA,IKD)%HFR  = WFR
+          TSTORE(NQA,IKD)%HFR1 = WFR1
+          TSTORE(NQA,IKD)%OTH  = JTH
+          TSTORE(NQA,IKD)%OTH1 = JTH1
+          TSTORE(NQA,IKD)%HTH  = WTH
+          TSTORE(NQA,IKD)%HTH1 = WTH1
+          IF ( JJ .EQ. 2 ) THEN
+            TSTORE(NQA,IKD)%CQD  = SNLCD(IQ) * 2.
+            TSTORE(NQA,IKD)%CQS  = SNLCS(IQ) * 2.
           ELSE
-             JJ     = 4
+            TSTORE(NQA,IKD)%CQD  = SNLCD(IQ)
+            TSTORE(NQA,IKD)%CQS  = SNLCS(IQ)
           END IF
+          AUXF                 = ( WN0 * S0 ) / CG0
+          TSTORE(NQA,IKD)%F1   = AUXF * CG1 / ( WN1 * S1 )
+          TSTORE(NQA,IKD)%F2   = AUXF * CG2 / ( WN2 * S2 )
+          TSTORE(NQA,IKD)%F3   = AUXF * CG3 / ( WN3 * S3 )
+          TSTORE(NQA,IKD)%F4   = AUXF * CG4 / ( WN4 * S4 )
           !
-          DO J=1, JJ
-             SELECT CASE (J)
-             CASE (2)
-                JTH (3) = -JTH (3)
-                JTH (4) = -JTH (4)
-                JTH1(3) = -JTH1(3)
-                JTH1(4) = -JTH1(4)
-             CASE (3)
-                JTH     = -JTH
-                JTH1    = -JTH1
-             CASE (4)
-                JTH (3) = -JTH (3)
-                JTH (4) = -JTH (4)
-                JTH1(3) = -JTH1(3)
-                JTH1(4) = -JTH1(4)
-             CASE DEFAULT
-             END SELECT
-             !
-             NQA    = NQA + 1
-             TSTORE(NQA,IKD)%OFR  = JFR
-             TSTORE(NQA,IKD)%OFR1 = JFR1
-             TSTORE(NQA,IKD)%HFR  = WFR
-             TSTORE(NQA,IKD)%HFR1 = WFR1
-             TSTORE(NQA,IKD)%OTH  = JTH
-             TSTORE(NQA,IKD)%OTH1 = JTH1
-             TSTORE(NQA,IKD)%HTH  = WTH
-             TSTORE(NQA,IKD)%HTH1 = WTH1
-             IF ( JJ .EQ. 2 ) THEN
-                TSTORE(NQA,IKD)%CQD  = SNLCD(IQ) * 2.
-                TSTORE(NQA,IKD)%CQS  = SNLCS(IQ) * 2.
-             ELSE
-                TSTORE(NQA,IKD)%CQD  = SNLCD(IQ)
-                TSTORE(NQA,IKD)%CQS  = SNLCS(IQ)
-             END IF
-             AUXF                 = ( WN0 * S0 ) / CG0
-             TSTORE(NQA,IKD)%F1   = AUXF * CG1 / ( WN1 * S1 )
-             TSTORE(NQA,IKD)%F2   = AUXF * CG2 / ( WN2 * S2 )
-             TSTORE(NQA,IKD)%F3   = AUXF * CG3 / ( WN3 * S3 )
-             TSTORE(NQA,IKD)%F4   = AUXF * CG4 / ( WN4 * S4 )
-             !
-          END DO
-          !
-          ! ... End loop 2.b
-          !
-       END DO
-       !
-       ! ... End loop 2.a
-       !
+        END DO
+        !
+        ! ... End loop 2.b
+        !
+      END DO
+      !
+      ! ... End loop 2.a
+      !
     END DO
     !
 #ifdef W3_T1
@@ -1062,7 +1062,7 @@ CONTAINS
     !
     XSI(1:NFR) = SIG(1:NFR)
     DO IFR=NFR+1, NFRMAX
-       XSI(IFR) = XSI(IFR-1) * XFR
+      XSI(IFR) = XSI(IFR-1) * XFR
     END DO
     FRQ    = XSI * TPIINV
     !
@@ -1078,38 +1078,38 @@ CONTAINS
     ! 2.h.1 Basic data
     !
     DO IKD=1, NKD
-       DO IQA=1, NQA
+      DO IQA=1, NQA
+        !
+        DO J=1, 4
           !
-          DO J=1, 4
-             !
-             QST1((J-1)*4+1,IQA,IKD) = TSTORE(IQA,IKD)%OTH (J) +       &
-                  TSTORE(IQA,IKD)%OFR (J) * NTHEXP
-             QST1((J-1)*4+2,IQA,IKD) = TSTORE(IQA,IKD)%OTH1(J) +       &
-                  TSTORE(IQA,IKD)%OFR (J) * NTHEXP
-             QST1((J-1)*4+3,IQA,IKD) = TSTORE(IQA,IKD)%OTH (J) +       &
-                  TSTORE(IQA,IKD)%OFR1(J) * NTHEXP
-             QST1((J-1)*4+4,IQA,IKD) = TSTORE(IQA,IKD)%OTH1(J) +       &
-                  TSTORE(IQA,IKD)%OFR1(J) * NTHEXP
-             !
-             QST2((J-1)*4+1,IQA,IKD) = TSTORE(IQA,IKD)%HFR (J) *       &
-                  TSTORE(IQA,IKD)%HTH (J)
-             QST2((J-1)*4+2,IQA,IKD) = TSTORE(IQA,IKD)%HFR (J) *       &
-                  TSTORE(IQA,IKD)%HTH1(J)
-             QST2((J-1)*4+3,IQA,IKD) = TSTORE(IQA,IKD)%HFR1(J) *       &
-                  TSTORE(IQA,IKD)%HTH (J)
-             QST2((J-1)*4+4,IQA,IKD) = TSTORE(IQA,IKD)%HFR1(J) *       &
-                  TSTORE(IQA,IKD)%HTH1(J)
-             !
-          END DO
+          QST1((J-1)*4+1,IQA,IKD) = TSTORE(IQA,IKD)%OTH (J) +       &
+               TSTORE(IQA,IKD)%OFR (J) * NTHEXP
+          QST1((J-1)*4+2,IQA,IKD) = TSTORE(IQA,IKD)%OTH1(J) +       &
+               TSTORE(IQA,IKD)%OFR (J) * NTHEXP
+          QST1((J-1)*4+3,IQA,IKD) = TSTORE(IQA,IKD)%OTH (J) +       &
+               TSTORE(IQA,IKD)%OFR1(J) * NTHEXP
+          QST1((J-1)*4+4,IQA,IKD) = TSTORE(IQA,IKD)%OTH1(J) +       &
+               TSTORE(IQA,IKD)%OFR1(J) * NTHEXP
           !
-          QST3(1,IQA,IKD) = TSTORE(IQA,IKD)%F1
-          QST3(2,IQA,IKD) = TSTORE(IQA,IKD)%F2
-          QST3(3,IQA,IKD) = TSTORE(IQA,IKD)%F3
-          QST3(4,IQA,IKD) = TSTORE(IQA,IKD)%F4
-          QST3(5,IQA,IKD) = TSTORE(IQA,IKD)%CQD
-          QST3(6,IQA,IKD) = TSTORE(IQA,IKD)%CQS
+          QST2((J-1)*4+1,IQA,IKD) = TSTORE(IQA,IKD)%HFR (J) *       &
+               TSTORE(IQA,IKD)%HTH (J)
+          QST2((J-1)*4+2,IQA,IKD) = TSTORE(IQA,IKD)%HFR (J) *       &
+               TSTORE(IQA,IKD)%HTH1(J)
+          QST2((J-1)*4+3,IQA,IKD) = TSTORE(IQA,IKD)%HFR1(J) *       &
+               TSTORE(IQA,IKD)%HTH (J)
+          QST2((J-1)*4+4,IQA,IKD) = TSTORE(IQA,IKD)%HFR1(J) *       &
+               TSTORE(IQA,IKD)%HTH1(J)
           !
-       END DO
+        END DO
+        !
+        QST3(1,IQA,IKD) = TSTORE(IQA,IKD)%F1
+        QST3(2,IQA,IKD) = TSTORE(IQA,IKD)%F2
+        QST3(3,IQA,IKD) = TSTORE(IQA,IKD)%F3
+        QST3(4,IQA,IKD) = TSTORE(IQA,IKD)%F4
+        QST3(5,IQA,IKD) = TSTORE(IQA,IKD)%CQD
+        QST3(6,IQA,IKD) = TSTORE(IQA,IKD)%CQS
+        !
+      END DO
     END DO
     !
     IF ( NQD .GT. 0 ) QST3(5,:,:) = QST3(5,:,:) / REAL(NQD)
@@ -1134,200 +1134,200 @@ CONTAINS
     S0     = SITMIN * SQRT ( GRAV / DEPTH )  / XSIT
     !
     DO IKD=1, NKD
-       !
-       S0     = S0 * XSIT
-       CALL WAVNU2 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
-       !
-       ! 3.b Loop over representative quadruplets
-       !
-       NQA    = 0
-       !
-       DO IQ=1, SNLNQ
-          !
+      !
+      S0     = S0 * XSIT
+      CALL WAVNU2 ( S0, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
+      !
+      ! 3.b Loop over representative quadruplets
+      !
+      NQA    = 0
+      !
+      DO IQ=1, SNLNQ
+        !
 #ifdef W3_T2
-          WRITE (NDST,9030) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
+        WRITE (NDST,9030) IKD, IQ, WN0*DEPTH, S0*TPIINV, DEPTH
 #endif
-          !
-          OFF12  = SNLM(IQ)
-          OFF34  = SNLL(IQ)
-          TH12   = SNLT(IQ) * DERA
-          !
+        !
+        OFF12  = SNLM(IQ)
+        OFF34  = SNLL(IQ)
+        TH12   = SNLT(IQ) * DERA
+        !
 #ifdef W3_T2
-          WRITE (NDST,9031) SNLT(IQ), OFF12, OFF34
+        WRITE (NDST,9031) SNLT(IQ), OFF12, OFF34
 #endif
+        !
+        ! 3.c Frequency indices
+        !
+        AUXFR(1) = ( 1. + OFF12 )
+        AUXFR(2) = ( 1. - OFF12 )
+        AUXFR(3) = ( 1. + OFF34 )
+        AUXFR(4) = ( 1. - OFF34 )
+        !
+        DO J=1, 4
+          JFR (J) = INT( LOG(AUXFR(J)) / XFRLN )
+          JFR1(J) = JFR(J) + 1 * SIGN(1.,AUXFR(J)-1.)
+          WFR (J) = (XFR**JFR1(J)-AUXFR(J))/(XFR**JFR1(J)-XFR**JFR(J))
+          WFR1(J) = 1. - WFR(J)
+        END DO
+        !
+#ifdef W3_T2
+        WRITE (NDST,9032) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
+        DO, J=2, 4
+          WRITE (NDST,9033) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
+        END DO
+#endif
+        !
+        ! 3.d Loop over quadruplet components
+        !
+        DO JIQ=1, 4
           !
-          ! 3.c Frequency indices
+          IF ( JIQ .LE. 2 ) THEN
+            WF     = -1.
+          ELSE
+            WF     =  1.
+          END IF
           !
-          AUXFR(1) = ( 1. + OFF12 )
-          AUXFR(2) = ( 1. - OFF12 )
-          AUXFR(3) = ( 1. + OFF34 )
-          AUXFR(4) = ( 1. - OFF34 )
+          ! 3.e Loop over frequency offsets, get directional offsets
           !
-          DO J=1, 4
-             JFR (J) = INT( LOG(AUXFR(J)) / XFRLN )
-             JFR1(J) = JFR(J) + 1 * SIGN(1.,AUXFR(J)-1.)
-             WFR (J) = (XFR**JFR1(J)-AUXFR(J))/(XFR**JFR1(J)-XFR**JFR(J))
-             WFR1(J) = 1. - WFR(J)
+          DO JOF=1, 2
+            !
+            IF ( JOF .EQ. 1 ) THEN
+              IFR    = -JFR(JIQ)
+              WFROFF =  WFR(JIQ)
+            ELSE
+              IFR    = -JFR1(JIQ)
+              WFROFF =  WFR1(JIQ)
+            END IF
+            !
+            SIOFF  = S0 * XFR**IFR
+            CALL WAVNU2 ( SIOFF, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
+            S1     = SIOFF * ( 1. + OFF12 )
+            CALL WAVNU2 ( S1, DEPTH, WN1, CG1, 1.E-6, 25, IERR)
+            S2     = SIOFF * ( 1. - OFF12 )
+            CALL WAVNU2 ( S2, DEPTH, WN2, CG2, 1.E-6, 25, IERR)
+            S3     = SIOFF * ( 1. + OFF34 )
+            CALL WAVNU2 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
+            S4     = SIOFF * ( 1. - OFF34 )
+            CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
+            !
+#ifdef W3_T2
+            WRITE (NDST,9034) JIQ, JOF, IFR, WFROFF, SIOFF/S0
+#endif
+            !
+            IF ( TH12 .LT. 0. ) THEN
+              BB = 2. * WN0
+            ELSE
+              BB = WN1**2 + WN2**2 + 2.*WN1*WN2*COS(TH12)
+              BB = SQRT ( MAX ( BB , 0. ) )
+            END IF
+            !
+            IF ( TH12.LT.0. .AND. ABS(OFF12).LE.1.E-4 ) THEN
+              DELTH(1) = 0.
+              DELTH(2) = 0.
+            ELSE
+              CC       = WN1
+              AA       = WN2
+              AUX1     = (CC**2+BB**2-AA**2) / (2.*BB*CC)
+              AUX2     = (AA**2+BB**2-CC**2) / (2.*BB*AA)
+              DELTH(1) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
+              DELTH(2) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
+            END IF
+            CC       = WN3
+            AA       = WN4
+            AUX1     = (CC**2+BB**2-AA**2) / (2.*BB*CC)
+            AUX2     = (AA**2+BB**2-CC**2) / (2.*BB*AA)
+            DELTH(3) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
+            DELTH(4) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
+            !
+#ifdef W3_T2
+            WRITE (NDST,9035) DELTH(:) * RADE
+#endif
+            !
+            AUX1    = DELTH(JIQ) / DTH
+            JTH (JIQ) = INT(AUX1)
+            JTH1(JIQ) = JTH(JIQ) + 1 * SIGN(1.,DELTH(JIQ))
+            WTH1(JIQ) = ABS(AUX1) - REAL(ABS(JTH(JIQ)))
+            WTH (JIQ) = 1. - WTH1(JIQ)
+            !
+            NTHMX2 = MAX ( NTHMX2 , ABS(JTH1(JIQ)) )
+            !
+#ifdef W3_T2
+            WRITE (NDST,9036) JIQ, JTH(JIQ), JTH1(JIQ),         &
+                 WTH(JIQ), WTH1(JIQ)
+#endif
+            !
+            ! 3.f Loop over quadruplet realizations
+            !
+            IF ( SNLM(IQ).EQ.0. .AND. SNLT(IQ).LT.0. ) THEN
+              JJ     = 2
+            ELSE
+              JJ     = 4
+            END IF
+            !
+            DO JQR=1, JJ
+              !
+              SELECT CASE (JQR)
+              CASE (2)
+                JTH (3) = -JTH (3)
+                JTH (4) = -JTH (4)
+                JTH1(3) = -JTH1(3)
+                JTH1(4) = -JTH1(4)
+              CASE (3)
+                JTH     = -JTH
+                JTH1    = -JTH1
+              CASE (4)
+                JTH (3) = -JTH (3)
+                JTH (4) = -JTH (4)
+                JTH1(3) = -JTH1(3)
+                JTH1(4) = -JTH1(4)
+              CASE DEFAULT
+                JTH     = -JTH
+                JTH1    = -JTH1
+              END SELECT
+              !
+              IST    = (JIQ-1)*4 + (JOF-1)*2 + 1
+              AST1(IST,NQA+JQR,IKD) = IFR
+              AST2(IST,NQA+JQR,IKD) = JTH(JIQ)
+              QST5(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH(JIQ) )
+              QST6(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH(JIQ) )**2
+              IST    = IST + 1
+              AST1(IST,NQA+JQR,IKD) = IFR
+              AST2(IST,NQA+JQR,IKD) = JTH1(JIQ)
+              QST5(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH1(JIQ) )
+              QST6(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH1(JIQ) )**2
+              !
+              ! ... End loop 3.f
+              !
+            END DO
+            !
+            ! ... End loop 3.e
+            !
           END DO
           !
-#ifdef W3_T2
-          WRITE (NDST,9032) 1, JFR(1), JFR1(1), WFR(1), WFR1(1)
-          DO, J=2, 4
-             WRITE (NDST,9033) J, JFR(J), JFR1(J), WFR(J), WFR1(J)
-          END DO
-#endif
+          ! ... End loop 3.d
           !
-          ! 3.d Loop over quadruplet components
-          !
-          DO JIQ=1, 4
-             !
-             IF ( JIQ .LE. 2 ) THEN
-                WF     = -1.
-             ELSE
-                WF     =  1.
-             END IF
-             !
-             ! 3.e Loop over frequency offsets, get directional offsets
-             !
-             DO JOF=1, 2
-                !
-                IF ( JOF .EQ. 1 ) THEN
-                   IFR    = -JFR(JIQ)
-                   WFROFF =  WFR(JIQ)
-                ELSE
-                   IFR    = -JFR1(JIQ)
-                   WFROFF =  WFR1(JIQ)
-                END IF
-                !
-                SIOFF  = S0 * XFR**IFR
-                CALL WAVNU2 ( SIOFF, DEPTH, WN0, CG0, 1.E-6, 25, IERR)
-                S1     = SIOFF * ( 1. + OFF12 )
-                CALL WAVNU2 ( S1, DEPTH, WN1, CG1, 1.E-6, 25, IERR)
-                S2     = SIOFF * ( 1. - OFF12 )
-                CALL WAVNU2 ( S2, DEPTH, WN2, CG2, 1.E-6, 25, IERR)
-                S3     = SIOFF * ( 1. + OFF34 )
-                CALL WAVNU2 ( S3, DEPTH, WN3, CG3, 1.E-6, 25, IERR)
-                S4     = SIOFF * ( 1. - OFF34 )
-                CALL WAVNU2 ( S4, DEPTH, WN4, CG4, 1.E-6, 25, IERR)
-                !
-#ifdef W3_T2
-                WRITE (NDST,9034) JIQ, JOF, IFR, WFROFF, SIOFF/S0
-#endif
-                !
-                IF ( TH12 .LT. 0. ) THEN
-                   BB = 2. * WN0
-                ELSE
-                   BB = WN1**2 + WN2**2 + 2.*WN1*WN2*COS(TH12)
-                   BB = SQRT ( MAX ( BB , 0. ) )
-                END IF
-                !
-                IF ( TH12.LT.0. .AND. ABS(OFF12).LE.1.E-4 ) THEN
-                   DELTH(1) = 0.
-                   DELTH(2) = 0.
-                ELSE
-                   CC       = WN1
-                   AA       = WN2
-                   AUX1     = (CC**2+BB**2-AA**2) / (2.*BB*CC)
-                   AUX2     = (AA**2+BB**2-CC**2) / (2.*BB*AA)
-                   DELTH(1) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
-                   DELTH(2) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
-                END IF
-                CC       = WN3
-                AA       = WN4
-                AUX1     = (CC**2+BB**2-AA**2) / (2.*BB*CC)
-                AUX2     = (AA**2+BB**2-CC**2) / (2.*BB*AA)
-                DELTH(3) = - ACOS( MAX ( 0. , MIN ( 1. , AUX1 ) ) )
-                DELTH(4) =   ACOS( MAX ( 0. , MIN ( 1. , AUX2 ) ) )
-                !
-#ifdef W3_T2
-                WRITE (NDST,9035) DELTH(:) * RADE
-#endif
-                !
-                AUX1    = DELTH(JIQ) / DTH
-                JTH (JIQ) = INT(AUX1)
-                JTH1(JIQ) = JTH(JIQ) + 1 * SIGN(1.,DELTH(JIQ))
-                WTH1(JIQ) = ABS(AUX1) - REAL(ABS(JTH(JIQ)))
-                WTH (JIQ) = 1. - WTH1(JIQ)
-                !
-                NTHMX2 = MAX ( NTHMX2 , ABS(JTH1(JIQ)) )
-                !
-#ifdef W3_T2
-                WRITE (NDST,9036) JIQ, JTH(JIQ), JTH1(JIQ),         &
-                     WTH(JIQ), WTH1(JIQ)
-#endif
-                !
-                ! 3.f Loop over quadruplet realizations
-                !
-                IF ( SNLM(IQ).EQ.0. .AND. SNLT(IQ).LT.0. ) THEN
-                   JJ     = 2
-                ELSE
-                   JJ     = 4
-                END IF
-                !
-                DO JQR=1, JJ
-                   !
-                   SELECT CASE (JQR)
-                   CASE (2)
-                      JTH (3) = -JTH (3)
-                      JTH (4) = -JTH (4)
-                      JTH1(3) = -JTH1(3)
-                      JTH1(4) = -JTH1(4)
-                   CASE (3)
-                      JTH     = -JTH
-                      JTH1    = -JTH1
-                   CASE (4)
-                      JTH (3) = -JTH (3)
-                      JTH (4) = -JTH (4)
-                      JTH1(3) = -JTH1(3)
-                      JTH1(4) = -JTH1(4)
-                   CASE DEFAULT
-                      JTH     = -JTH
-                      JTH1    = -JTH1
-                   END SELECT
-                   !
-                   IST    = (JIQ-1)*4 + (JOF-1)*2 + 1
-                   AST1(IST,NQA+JQR,IKD) = IFR
-                   AST2(IST,NQA+JQR,IKD) = JTH(JIQ)
-                   QST5(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH(JIQ) )
-                   QST6(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH(JIQ) )**2
-                   IST    = IST + 1
-                   AST1(IST,NQA+JQR,IKD) = IFR
-                   AST2(IST,NQA+JQR,IKD) = JTH1(JIQ)
-                   QST5(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH1(JIQ) )
-                   QST6(IST,NQA+JQR,IKD) = WF * ( WFROFF * WTH1(JIQ) )**2
-                   !
-                   ! ... End loop 3.f
-                   !
-                END DO
-                !
-                ! ... End loop 3.e
-                !
-             END DO
-             !
-             ! ... End loop 3.d
-             !
-          END DO
-          !
+        END DO
+        !
 #ifdef W3_T3
-          DO JQR=1, JJ
-             WRITE (NDST,9037) IKD, NQA+JQR
-             DO IST=1, 16
-                WRITE (NDST,9038) IST, AST1(IST,NQA+JQR,IKD),       &
-                     AST2(IST,NQA+JQR,IKD),       &
-                     QST5(IST,NQA+JQR,IKD),       &
-                     QST6(IST,NQA+JQR,IKD)
-             END DO
+        DO JQR=1, JJ
+          WRITE (NDST,9037) IKD, NQA+JQR
+          DO IST=1, 16
+            WRITE (NDST,9038) IST, AST1(IST,NQA+JQR,IKD),       &
+                 AST2(IST,NQA+JQR,IKD),       &
+                 QST5(IST,NQA+JQR,IKD),       &
+                 QST6(IST,NQA+JQR,IKD)
           END DO
+        END DO
 #endif
-          !
-          ! ... End loop 3.b
-          !
-          NQA    = NQA + JJ
-          !
-       END DO
-       !
-       ! ... End loop 3.a
-       !
+        !
+        ! ... End loop 3.b
+        !
+        NQA    = NQA + JJ
+        !
+      END DO
+      !
+      ! ... End loop 3.a
+      !
     END DO
     !
     ! 3.g Finalize storage
@@ -1462,15 +1462,15 @@ CONTAINS
       !/ ------------------------------------------------------------------- /
       !/
       IF ( THETA .LT. 0. ) THEN
-         MINLAM = 0.
+        MINLAM = 0.
       ELSE
-         MULOC  = MAX ( 0. , MIN ( 1., MU ) )
-         THETAR = THETA * ATAN(1.) / 45.
-         BB     = (1.+MULOC)**4 + (1.-MULOC)**4 +                    &
-              2. * (1.+MULOC)**2 * (1.-MULOC)**2 * COS(THETAR)
-         BB     = SQRT ( MAX ( BB , 0. ) )
-         AUX    = MAX ( 0. , 0.5*BB-1. )
-         MINLAM = SQRT ( AUX )
+        MULOC  = MAX ( 0. , MIN ( 1., MU ) )
+        THETAR = THETA * ATAN(1.) / 45.
+        BB     = (1.+MULOC)**4 + (1.-MULOC)**4 +                    &
+             2. * (1.+MULOC)**2 * (1.-MULOC)**2 * COS(THETAR)
+        BB     = SQRT ( MAX ( BB , 0. ) )
+        AUX    = MAX ( 0. , 0.5*BB-1. )
+        MINLAM = SQRT ( AUX )
       END IF
       !
       RETURN
@@ -1517,14 +1517,14 @@ CONTAINS
       !/ ------------------------------------------------------------------- /
       !/
       IF ( THETA .LT. 0. ) THEN
-         MAXLAM = 0.5
+        MAXLAM = 0.5
       ELSE
-         MULOC  = MAX ( 0. , MIN ( 1., MU ) )
-         THETAR = THETA * ATAN(1.) / 45.
-         BB     = (1.+MULOC)**4 + (1.-MULOC)**4 +                    &
-              2. * (1.+MULOC)**2 * (1.-MULOC)**2 * COS(THETAR)
-         BB     = SQRT ( MAX ( BB , 0. ) )
-         MAXLAM = 0.25 * BB
+        MULOC  = MAX ( 0. , MIN ( 1., MU ) )
+        THETAR = THETA * ATAN(1.) / 45.
+        BB     = (1.+MULOC)**4 + (1.-MULOC)**4 +                    &
+             2. * (1.+MULOC)**2 * (1.-MULOC)**2 * COS(THETAR)
+        BB     = SQRT ( MAX ( BB , 0. ) )
+        MAXLAM = 0.25 * BB
       END IF
       !
       RETURN

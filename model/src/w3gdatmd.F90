@@ -626,440 +626,440 @@ MODULE W3GDATMD
   !/
   !/ Grid type
   TYPE GRID          ! this is the geographical grid with all associated parameters
-     INTEGER          :: GTYPE
-     INTEGER          :: RSTYPE = -1
-     INTEGER          :: ICLOSE
-     INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
+    INTEGER          :: GTYPE
+    INTEGER          :: RSTYPE = -1
+    INTEGER          :: ICLOSE
+    INTEGER          :: NX, NY, NSEA, NSEAL, TRFLAG
 #ifdef W3_SEC1
-     INTEGER          :: NITERSEC1
+    INTEGER          :: NITERSEC1
 #endif
-     INTEGER, POINTER :: MAPSTA(:,:), MAPST2(:,:),            &
-          MAPFS(:,:), MAPSF(:,:)
-     !
+    INTEGER, POINTER :: MAPSTA(:,:), MAPST2(:,:),            &
+         MAPFS(:,:), MAPSF(:,:)
+    !
 #ifdef W3_SMC
-     !!Li     Cell and face arrays for SMC grid.
-     INTEGER          :: NCel, NUFc, NVFc, NRLv, MRFct
-     INTEGER          :: NGLO, NARC, NBGL, NBAC, NBSMC
-     INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:)
-     INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
-     INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
+    !!Li     Cell and face arrays for SMC grid.
+    INTEGER          :: NCel, NUFc, NVFc, NRLv, MRFct
+    INTEGER          :: NGLO, NARC, NBGL, NBAC, NBSMC
+    INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:)
+    INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
+    INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
 
-     !/ Data duplicated for better performance
-     INTEGER, POINTER :: IJKCel3(:), IJKCel4(:), &
-          IJKVFc5(:), IJKVFc6(:), &
-          IJKUFc5(:), IJKUFc6(:)
+    !/ Data duplicated for better performance
+    INTEGER, POINTER :: IJKCel3(:), IJKCel4(:), &
+         IJKVFc5(:), IJKVFc6(:), &
+         IJKUFc5(:), IJKUFc6(:)
 #endif
-     !
-     REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
-          DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
-          PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
-          IICEHINIT, ICESCALES(4), IICEHFAC, IICEHDISP, &
-          IICEDDISP, IICEFDISP, BTBETA, AAIRCMIN, AAIRGB
+    !
+    REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
+         DTMIN, DMIN, CTMAX, FICE0, FICEN, FICEL,   &
+         PFMOVE, STEXU, STEYU, STEDU, IICEHMIN,     &
+         IICEHINIT, ICESCALES(4), IICEHFAC, IICEHDISP, &
+         IICEDDISP, IICEFDISP, BTBETA, AAIRCMIN, AAIRGB
 
-     REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
+    REAL(8)          :: GRIDSHIFT ! see notes in WMGHGH
 
 #ifdef W3_RTD
-     REAL                  :: PoLat, PoLon   ! Rotated N-Pole lat/lon
-     REAL, POINTER         :: AnglD(:)       ! Angle in degree
-     LOGICAL               :: FLAGUNR
+    REAL                  :: PoLat, PoLon   ! Rotated N-Pole lat/lon
+    REAL, POINTER         :: AnglD(:)       ! Angle in degree
+    LOGICAL               :: FLAGUNR
 #endif
 
-     REAL   , POINTER :: ZB(:)     ! BOTTOM GRID, DEFINED ON ISEA
-     REAL   , POINTER :: CLATS(:)  ! COS(LAT), DEFINED ON SEA POINTS
-     REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
-     REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
+    REAL   , POINTER :: ZB(:)     ! BOTTOM GRID, DEFINED ON ISEA
+    REAL   , POINTER :: CLATS(:)  ! COS(LAT), DEFINED ON SEA POINTS
+    REAL   , POINTER :: CLATIS(:) ! INVERSE OF COS(LAT) DEFINED ON ISEA
+    REAL   , POINTER :: CTHG0S(:) ! TAN(Y)/R, DEFINED ON ISEA
 
-     REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
+    REAL   , POINTER :: TRNX(:,:), TRNY(:,:) ! TRANSPARENCY INFORMATION ON IX,IY
 #ifdef W3_SMC
-     REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
+    REAL, POINTER         :: CTRNX(:), CTRNY(:), CLATF(:)
 #endif
-     REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
-     DOUBLE PRECISION, POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
-     REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
-     REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
-     REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
-     REAL   , POINTER :: DQDX(:,:), DQDY(:,:) ! DQ/DX & DQ/DY DEFINED ON IX,IY
-     REAL   , POINTER :: GSQRT(:,:) ! SQRT(G) DEFINED ON IX,IY
-     REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
-     REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
+    REAL   , POINTER :: SPCBAC(:,:), ANGARC(:)
+    DOUBLE PRECISION, POINTER :: XGRD(:,:), YGRD(:,:) ! X AND Y DEFINED ON IX,IY
+    REAL   , POINTER :: DXDP(:,:), DXDQ(:,:) ! DX/DP & DX/DQ DEFINED ON IX,IY
+    REAL   , POINTER :: DYDP(:,:), DYDQ(:,:) ! DY/DP & DY/DQ DEFINED ON IX,IY
+    REAL   , POINTER :: DPDX(:,:), DPDY(:,:) ! DP/DX & DP/DY DEFINED ON IX,IY
+    REAL   , POINTER :: DQDX(:,:), DQDY(:,:) ! DQ/DX & DQ/DY DEFINED ON IX,IY
+    REAL   , POINTER :: GSQRT(:,:) ! SQRT(G) DEFINED ON IX,IY
+    REAL   , POINTER :: HPFAC(:,:) ! H_P = SQRT(G_PP) DEFINED ON IX,IY
+    REAL   , POINTER :: HQFAC(:,:) ! H_Q = SQRT(G_QQ) DEFINED ON IX,IY
 
-     LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
-          IICESMOOTH
-     LOGICAL          :: FLAGLL
-     LOGICAL          :: CMPRTRCK
-     LOGICAL, POINTER :: FLAGST(:)
-     CHARACTER(LEN=30):: GNAME
-     CHARACTER(LEN=13):: FILEXT
-     LOGICAL          :: GUGINIT
+    LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
+         IICESMOOTH
+    LOGICAL          :: FLAGLL
+    LOGICAL          :: CMPRTRCK
+    LOGICAL, POINTER :: FLAGST(:)
+    CHARACTER(LEN=30):: GNAME
+    CHARACTER(LEN=13):: FILEXT
+    LOGICAL          :: GUGINIT
 #ifdef W3_REF1
-     REAL, POINTER    :: REFLC(:,:)  ! reflection coefficient
-     INTEGER, POINTER :: REFLD(:,:)  ! reflection direction
+    REAL, POINTER    :: REFLC(:,:)  ! reflection coefficient
+    INTEGER, POINTER :: REFLD(:,:)  ! reflection direction
 #endif
-     INTEGER          :: E3DF(3,5), P2MSF(3), US3DF(3), USSPF(2) ! freq. indices for 3D output
-     REAL             :: USSP_WN(25) !Max set to 25 decay scales.
-     !
-     TYPE(T_GSU) :: GSU ! Grid search utility object
-     !
-     REAL                  :: FFACBERG    ! mutiplicative factor for iceberg mask
+    INTEGER          :: E3DF(3,5), P2MSF(3), US3DF(3), USSPF(2) ! freq. indices for 3D output
+    REAL             :: USSP_WN(25) !Max set to 25 decay scales.
+    !
+    TYPE(T_GSU) :: GSU ! Grid search utility object
+    !
+    REAL                  :: FFACBERG    ! mutiplicative factor for iceberg mask
 #ifdef W3_BT4
-     REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
+    REAL, POINTER         :: SED_D50(:), SED_PSIC(:)
 #endif
 #ifdef W3_REF1
-     LOGICAL, POINTER      :: RREF(:)
-     REAL,    POINTER      :: REFPARS(:)
+    LOGICAL, POINTER      :: RREF(:)
+    REAL,    POINTER      :: REFPARS(:)
 #endif
 #ifdef W3_IG1
-     REAL,    POINTER      :: IGPARS(:)
+    REAL,    POINTER      :: IGPARS(:)
 #endif
 #ifdef W3_IC2
-     REAL,    POINTER      :: IC2PARS(:)
+    REAL,    POINTER      :: IC2PARS(:)
 #endif
 #ifdef W3_IC3
-     REAL,    POINTER      :: IC3PARS(:)
+    REAL,    POINTER      :: IC3PARS(:)
 #endif
 #ifdef W3_IC4
-     INTEGER, POINTER      :: IC4PARS(:)
-     REAL, POINTER         :: IC4_KI(:)
-     REAL, POINTER         :: IC4_FC(:)
+    INTEGER, POINTER      :: IC4PARS(:)
+    REAL, POINTER         :: IC4_KI(:)
+    REAL, POINTER         :: IC4_FC(:)
 #endif
 #ifdef W3_IC5
-     REAL,    POINTER      :: IC5PARS(:)
+    REAL,    POINTER      :: IC5PARS(:)
 #endif
 #ifdef W3_IS2
-     REAL,    POINTER      :: IS2PARS(:)
+    REAL,    POINTER      :: IS2PARS(:)
 #endif
-     !
-     ! unstructured data
-     !
-     INTEGER               :: NTRI
-     INTEGER, POINTER      :: TRIGP(:,:)
+    !
+    ! unstructured data
+    !
+    INTEGER               :: NTRI
+    INTEGER, POINTER      :: TRIGP(:,:)
 #ifdef W3_PDLIB
-     INTEGER :: NBND_MAP
-     INTEGER, POINTER     :: INDEX_MAP(:)
-     INTEGER, POINTER     :: MAPSTA_LOC(:)
-     INTEGER*1, POINTER   :: IOBPD_LOC(:,:)
-     INTEGER*2, POINTER   :: IOBP_LOC(:)
-     INTEGER*1, POINTER   :: IOBDP_LOC(:)
-     INTEGER*1, POINTER   :: IOBPA_LOC(:)
+    INTEGER :: NBND_MAP
+    INTEGER, POINTER     :: INDEX_MAP(:)
+    INTEGER, POINTER     :: MAPSTA_LOC(:)
+    INTEGER*1, POINTER   :: IOBPD_LOC(:,:)
+    INTEGER*2, POINTER   :: IOBP_LOC(:)
+    INTEGER*1, POINTER   :: IOBDP_LOC(:)
+    INTEGER*1, POINTER   :: IOBPA_LOC(:)
 #endif
 
-     REAL(8), POINTER      :: LEN(:,:),SI(:), IEN(:,:)
+    REAL(8), POINTER      :: LEN(:,:),SI(:), IEN(:,:)
 
-     REAL                  :: MAXX, MAXY, DXYMAX
-     REAL, POINTER         :: ANGLE(:,:),ANGLE0(:,:)
-     INTEGER               :: COUNTRI,COUNTOT,NNZ, NBEDGE
-     INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), &
-          POS_CELL(:),   &
-          IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:),       &
-          I_DIAG(:), JA_IE(:,:,:)
-     INTEGER*2, POINTER    :: IOBP(:)
-     INTEGER*1, POINTER    :: IOBPD(:,:), IOBDP(:), IOBPA(:)
-     INTEGER, POINTER      :: EDGES(:,:), NEIGH(:,:)
-     REAL(8), POINTER      :: TRIA(:)
-     REAL, POINTER         :: CROSSDIFF(:,:)
+    REAL                  :: MAXX, MAXY, DXYMAX
+    REAL, POINTER         :: ANGLE(:,:),ANGLE0(:,:)
+    INTEGER               :: COUNTRI,COUNTOT,NNZ, NBEDGE
+    INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), &
+         POS_CELL(:),   &
+         IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:),       &
+         I_DIAG(:), JA_IE(:,:,:)
+    INTEGER*2, POINTER    :: IOBP(:)
+    INTEGER*1, POINTER    :: IOBPD(:,:), IOBDP(:), IOBPA(:)
+    INTEGER, POINTER      :: EDGES(:,:), NEIGH(:,:)
+    REAL(8), POINTER      :: TRIA(:)
+    REAL, POINTER         :: CROSSDIFF(:,:)
 
 #ifdef W3_UOST
-     CHARACTER(LEN=256)      :: UOSTFILELOCAL, UOSTFILESHADOW
-     LOGICAL, ALLOCATABLE    :: UOST_LCL_OBSTRUCTED(:,:), UOST_SHD_OBSTRUCTED(:,:)
-     INTEGER*1, ALLOCATABLE  :: UOSTLOCALALPHA(:,:,:,:), UOSTLOCALBETA(:,:,:,:)
-     INTEGER*1, ALLOCATABLE  :: UOSTSHADOWALPHA(:,:,:,:), UOSTSHADOWBETA(:,:,:,:)
-     REAL*4, ALLOCATABLE     :: UOSTCELLSIZE(:,:,:)
-     REAL                    :: UOSTABMULTFACTOR = 100
-     REAL                    :: UOSTCELLSIZEFACTOR = 1000
-     REAL                    :: UOSTLOCALFACTOR = 1
-     REAL                    :: UOSTSHADOWFACTOR = 1
-     LOGICAL                 :: UOSTENABLED = .true.
+    CHARACTER(LEN=256)      :: UOSTFILELOCAL, UOSTFILESHADOW
+    LOGICAL, ALLOCATABLE    :: UOST_LCL_OBSTRUCTED(:,:), UOST_SHD_OBSTRUCTED(:,:)
+    INTEGER*1, ALLOCATABLE  :: UOSTLOCALALPHA(:,:,:,:), UOSTLOCALBETA(:,:,:,:)
+    INTEGER*1, ALLOCATABLE  :: UOSTSHADOWALPHA(:,:,:,:), UOSTSHADOWBETA(:,:,:,:)
+    REAL*4, ALLOCATABLE     :: UOSTCELLSIZE(:,:,:)
+    REAL                    :: UOSTABMULTFACTOR = 100
+    REAL                    :: UOSTCELLSIZEFACTOR = 1000
+    REAL                    :: UOSTLOCALFACTOR = 1
+    REAL                    :: UOSTSHADOWFACTOR = 1
+    LOGICAL                 :: UOSTENABLED = .true.
 #endif
 
   END TYPE GRID
   !
   TYPE SGRD   ! this is the spectral grid with all parameters that vary with freq. and direction
-     INTEGER               :: NK=0, NK2=0, NTH=0, NSPEC=0
-     INTEGER, POINTER      :: MAPWN(:), MAPTH(:)
-     REAL                  :: DTH=0., XFR=0., FR1=0., FTE=0., FTF=0., FTWN=0., FTTR=0., &
-          FTWL=0., FACTI1=0., FACTI2=0., FACHFA=0., FACHFE=0.
-     REAL, POINTER         :: TH(:), ESIN(:), ECOS(:), ES2(:),     &
-          ESC(:), EC2(:), SIG(:), SIG2(:),     &
-          DSIP(:), DSII(:), DDEN(:), DDEN2(:)
-     LOGICAL               :: SINIT=.FALSE.
+    INTEGER               :: NK=0, NK2=0, NTH=0, NSPEC=0
+    INTEGER, POINTER      :: MAPWN(:), MAPTH(:)
+    REAL                  :: DTH=0., XFR=0., FR1=0., FTE=0., FTF=0., FTWN=0., FTTR=0., &
+         FTWL=0., FACTI1=0., FACTI2=0., FACHFA=0., FACHFE=0.
+    REAL, POINTER         :: TH(:), ESIN(:), ECOS(:), ES2(:),     &
+         ESC(:), EC2(:), SIG(:), SIG2(:),     &
+         DSIP(:), DSII(:), DDEN(:), DDEN2(:)
+    LOGICAL               :: SINIT=.FALSE.
   END TYPE SGRD
   !
   TYPE NPAR
-     REAL                  :: FACP, XREL, XFLT, FXFM, FXPM,        &
-          XFT, XFC, FACSD, FHMAX
+    REAL                  :: FACP, XREL, XFLT, FXFM, FXPM,        &
+         XFT, XFC, FACSD, FHMAX
 #ifdef W3_RWND
-     REAL            :: RWINDC
+    REAL            :: RWINDC
 #endif
 #ifdef W3_WCOR
-     REAL            :: WWCOR(2)
+    REAL            :: WWCOR(2)
 #endif
   END TYPE NPAR
   !
   TYPE PROP
 #ifdef W3_PR0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_PR1
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_PR2
-     REAL                  :: DTME, CLATMN
+    REAL                  :: DTME, CLATMN
 #endif
 #ifdef W3_PR3
-     REAL                  :: WDCG, WDTH
+    REAL                  :: WDCG, WDTH
 #endif
 #ifdef W3_SMC
-     REAL                  :: DTMS, Refran
-     LOGICAL               :: FUNO3, FVERG, FSWND, ARCTC
+    REAL                  :: DTMS, Refran
+    LOGICAL               :: FUNO3, FVERG, FSWND, ARCTC
 #endif
   END TYPE PROP
   !
   TYPE FLDP
-     REAL :: DUMMY
+    REAL :: DUMMY
 #ifdef W3_FLD1
-     INTEGER               :: Tail_ID
-     REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
+    INTEGER               :: Tail_ID
+    REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
 #endif
 #ifdef W3_FLD2
-     INTEGER               :: Tail_ID
-     REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
+    INTEGER               :: Tail_ID
+    REAL                  :: Tail_Lev, TAIL_TRAN1, TAIL_TRAN2
 #endif
   END TYPE FLDP
   TYPE SFLP
 #ifdef W3_FLX0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_FLX1
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_FLX2
-     INTEGER               :: NITTIN
-     REAL                  :: CINXSI
+    INTEGER               :: NITTIN
+    REAL                  :: CINXSI
 #endif
 #ifdef W3_FLX3
-     INTEGER               :: NITTIN, CAP_ID
-     REAL                  :: CINXSI, CD_MAX
+    INTEGER               :: NITTIN, CAP_ID
+    REAL                  :: CINXSI, CD_MAX
 #endif
 #ifdef W3_FLX4
-     REAL                  :: FLX4A0
+    REAL                  :: FLX4A0
 #endif
   END TYPE SFLP
   !
   TYPE SLNP
 #ifdef W3_SEED
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_LN0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_LN1
-     REAL                  :: SLNC1, FSPM, FSHF
+    REAL                  :: SLNC1, FSPM, FSHF
 #endif
   END TYPE SLNP
   !
   TYPE SRCP
-     REAL                       :: WWNMEANPTAIL, SSTXFTFTAIL
+    REAL                       :: WWNMEANPTAIL, SSTXFTFTAIL
 #ifdef W3_ST1
-     REAL                  :: SINC1, SDSC1
+    REAL                  :: SINC1, SDSC1
 #endif
 #ifdef W3_ST2
-     REAL                  :: ZWIND, FSWELL, SHSTAB,               &
-          OFSTAB, CCNG, CCPS, FFNG, FFPS,      &
-          CDSA0, CDSA1, CDSA2, SDSALN,         &
-          CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN,  &
-          XFH, XF1, XF2
+    REAL                  :: ZWIND, FSWELL, SHSTAB,               &
+         OFSTAB, CCNG, CCPS, FFNG, FFPS,      &
+         CDSA0, CDSA1, CDSA2, SDSALN,         &
+         CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN,  &
+         XFH, XF1, XF2
 #endif
 #ifdef W3_ST3
-     INTEGER               :: SSDSISO, SSDSBRFDF
-     REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
-          SSINTHP, TTAUWSHELTER, SSWELLF(1:6), &
-          SSDSC1, SSDSC2, SSDSC3, SSDSBR,      &
-          SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
-          FFXPM, FFXFM,                        &
-          SSDSC4, SSDSC5, SSDSC6, DDELTA1,     &
-          DDELTA2, ZZWND
+    INTEGER               :: SSDSISO, SSDSBRFDF
+    REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
+         SSINTHP, TTAUWSHELTER, SSWELLF(1:6), &
+         SSDSC1, SSDSC2, SSDSC3, SSDSBR,      &
+         SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
+         FFXPM, FFXFM,                        &
+         SSDSC4, SSDSC5, SSDSC6, DDELTA1,     &
+         DDELTA2, ZZWND
 #endif
-     !
+    !
 #ifdef W3_ST4
-     INTEGER               :: SSWELLFPAR, SSDSISO, SSDSBRFDF
-     INTEGER,  POINTER     :: IKTAB(:,:), SATINDICES(:,:)
-     REAL,     POINTER     :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
-     REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
-          SSINTHP, TTAUWSHELTER, SSWELLF(1:7), &
-          SSDSC(1:21), SSDSBR,                 &
-          SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
-          FFXPM, FFXFM, FFXFA,   &
-          SSDSBRF1, SSDSBRF2, SSDSBINT,SSDSBCK,&
-          SSDSHCK, SSDSABK, SSDSPBK, SSINBR
-     REAL                  :: ZZWND
-     REAL                  :: SSDSCOS, SSDSDTH, SSDSBT, SSDSBM(0:4)
+    INTEGER               :: SSWELLFPAR, SSDSISO, SSDSBRFDF
+    INTEGER,  POINTER     :: IKTAB(:,:), SATINDICES(:,:)
+    REAL,     POINTER     :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
+    REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
+         SSINTHP, TTAUWSHELTER, SSWELLF(1:7), &
+         SSDSC(1:21), SSDSBR,                 &
+         SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
+         FFXPM, FFXFM, FFXFA,   &
+         SSDSBRF1, SSDSBRF2, SSDSBINT,SSDSBCK,&
+         SSDSHCK, SSDSABK, SSDSPBK, SSINBR
+    REAL                  :: ZZWND
+    REAL                  :: SSDSCOS, SSDSDTH, SSDSBT, SSDSBM(0:4)
 #endif
-     !
+    !
 #ifdef W3_ST6
-     REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1, &
-          SIN6WS, SIN6FC
-     INTEGER               :: SDS6P1, SDS6P2
-     LOGICAL               :: SDS6ET, SWL6S6, SWL6CSTB1
+    REAL                  :: SIN6A0, SDS6A1, SDS6A2, SWL6B1, &
+         SIN6WS, SIN6FC
+    INTEGER               :: SDS6P1, SDS6P2
+    LOGICAL               :: SDS6ET, SWL6S6, SWL6CSTB1
 #endif
   END TYPE SRCP
   !
   TYPE SNLP
 #ifdef W3_NL0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_NL1
-     REAL                  :: SNLC1, LAM, KDCON, KDMN,             &
-          SNLS1, SNLS2, SNLS3
+    REAL                  :: SNLC1, LAM, KDCON, KDMN,             &
+         SNLS1, SNLS2, SNLS3
 #endif
 #ifdef W3_NL2
-     INTEGER               :: IQTPE, NDPTHS
-     REAL                  :: NLTAIL
-     REAL, POINTER         :: DPTHNL(:)
+    INTEGER               :: IQTPE, NDPTHS
+    REAL                  :: NLTAIL
+    REAL, POINTER         :: DPTHNL(:)
 #endif
 #ifdef W3_NL3
-     INTEGER               :: NFRMIN, NFRMAX, NFRCUT, NTHMAX,      &
-          NTHEXP, NSPMIN, NSPMAX, NSPMX2,      &
-          NQA, SNLNQ
-     INTEGER, POINTER      :: QST1(:,:,:), QST4(:,:,:)
-     REAL                  :: SNLMSC, SNLNSC, SNLSFD, SNLSFS
-     REAL, POINTER         :: FRQ(:), XSI(:),                      &
-          QST2(:,:,:), QST3(:,:,:),            &
-          QST5(:,:,:), QST6(:,:,:),            &
-          SNLL(:), SNLM(:), SNLT(:),           &
-          SNLCD(:), SNLCS(:)
+    INTEGER               :: NFRMIN, NFRMAX, NFRCUT, NTHMAX,      &
+         NTHEXP, NSPMIN, NSPMAX, NSPMX2,      &
+         NQA, SNLNQ
+    INTEGER, POINTER      :: QST1(:,:,:), QST4(:,:,:)
+    REAL                  :: SNLMSC, SNLNSC, SNLSFD, SNLSFS
+    REAL, POINTER         :: FRQ(:), XSI(:),                      &
+         QST2(:,:,:), QST3(:,:,:),            &
+         QST5(:,:,:), QST6(:,:,:),            &
+         SNLL(:), SNLM(:), SNLT(:),           &
+         SNLCD(:), SNLCS(:)
 #endif
 #ifdef W3_NL4
-     INTEGER               :: ITSA, IALT
+    INTEGER               :: ITSA, IALT
 #endif
 #ifdef W3_NL5
-     REAL                  :: QR5DPT, QR5OML
-     INTEGER               :: QI5DIS, QI5KEV, QI5IPL, QI5PMX
-     INTEGER(KIND=8)       :: QI5NNZ
+    REAL                  :: QR5DPT, QR5OML
+    INTEGER               :: QI5DIS, QI5KEV, QI5IPL, QI5PMX
+    INTEGER(KIND=8)       :: QI5NNZ
 #endif
 #ifdef W3_NLS
-     INTEGER               :: NTHX, NFRX, NSPL, NSPH
-     REAL                  :: CNLSA, CNLSC, CNLSFM,                &
-          CNLSC1, CNLSC2, CNLSC3
-     REAL, POINTER         :: SNSST(:,:)
+    INTEGER               :: NTHX, NFRX, NSPL, NSPH
+    REAL                  :: CNLSA, CNLSC, CNLSFM,                &
+         CNLSC1, CNLSC2, CNLSC3
+    REAL, POINTER         :: SNSST(:,:)
 #endif
 
   END TYPE SNLP
   !
   TYPE SBTP
 #ifdef W3_BT0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_BT1
-     REAL                  :: SBTC1
+    REAL                  :: SBTC1
 #endif
 #ifdef W3_BT4
-     REAL                  :: SBTCX(10)
+    REAL                  :: SBTCX(10)
 #endif
 #ifdef W3_BT8
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_BT9
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
   END TYPE SBTP
   !
   TYPE SDBP
 #ifdef W3_DB0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_DB1
-     REAL                  :: SDBC1, SDBC2
-     LOGICAL               :: FDONLY
-     REAL                  :: SDBSC
+    REAL                  :: SDBC1, SDBC2
+    LOGICAL               :: FDONLY
+    REAL                  :: SDBSC
 #endif
   END TYPE SDBP
 
 #ifdef W3_UOST
   TYPE UOSTP
-     CHARACTER(LEN=256)    :: UOSTFILELOCAL, UOSTFILESHADOW
-     REAL              :: UOSTFACTORLOCAL, UOSTFACTORSHADOW
+    CHARACTER(LEN=256)    :: UOSTFILELOCAL, UOSTFILESHADOW
+    REAL              :: UOSTFACTORLOCAL, UOSTFACTORSHADOW
   END TYPE UOSTP
 #endif
 
   !
   TYPE STRP
 #ifdef W3_TR0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_TR1
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
   END TYPE STRP
   !
   TYPE SBSP
 #ifdef W3_BS0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_BS1
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
   END TYPE SBSP
   !
   TYPE SICP
 #ifdef W3_IS0
-     REAL                  :: DUMMY
+    REAL                  :: DUMMY
 #endif
 #ifdef W3_IS1
-     REAL                  :: IS1C1, IS1C2
+    REAL                  :: IS1C1, IS1C2
 #endif
 #ifdef W3_IS2
-     REAL                  :: IS2C1, IS2C2
+    REAL                  :: IS2C1, IS2C2
 #endif
   END TYPE SICP
 
   ! specific type for unstructured scheme
   TYPE SCHM
-     LOGICAL :: FSN          = .FALSE.
-     LOGICAL :: FSPSI        = .FALSE.
-     LOGICAL :: FSFCT        = .FALSE.
-     LOGICAL :: FSNIMP       = .FALSE.
-     LOGICAL :: FSTOTALIMP   = .FALSE.
-     LOGICAL :: FSTOTALEXP   = .FALSE.
-     LOGICAL :: FSREFRACTION = .FALSE.
-     LOGICAL :: FSFREQSHIFT  = .FALSE.
-     LOGICAL :: FSSOURCE     = .FALSE.
-     LOGICAL :: FSBCCFL      = .FALSE.
-     LOGICAL :: DO_CHANGE_WLV
-     REAL(8) :: SOLVERTHR_STP
-     REAL(8) :: CRIT_DEP_STP
-     LOGICAL :: B_JGS_TERMINATE_MAXITER
-     LOGICAL :: B_JGS_TERMINATE_DIFFERENCE
-     LOGICAL :: B_JGS_TERMINATE_NORM
-     LOGICAL :: B_JGS_LIMITER
-     LOGICAL :: B_JGS_USE_JACOBI
-     LOGICAL :: B_JGS_BLOCK_GAUSS_SEIDEL
-     INTEGER :: B_JGS_MAXITER
-     REAL*8  :: B_JGS_PMIN
-     REAL*8  :: B_JGS_DIFF_THR
-     REAL*8  :: B_JGS_NORM_THR
-     INTEGER :: B_JGS_NLEVEL
-     LOGICAL :: B_JGS_SOURCE_NONLINEAR
+    LOGICAL :: FSN          = .FALSE.
+    LOGICAL :: FSPSI        = .FALSE.
+    LOGICAL :: FSFCT        = .FALSE.
+    LOGICAL :: FSNIMP       = .FALSE.
+    LOGICAL :: FSTOTALIMP   = .FALSE.
+    LOGICAL :: FSTOTALEXP   = .FALSE.
+    LOGICAL :: FSREFRACTION = .FALSE.
+    LOGICAL :: FSFREQSHIFT  = .FALSE.
+    LOGICAL :: FSSOURCE     = .FALSE.
+    LOGICAL :: FSBCCFL      = .FALSE.
+    LOGICAL :: DO_CHANGE_WLV
+    REAL(8) :: SOLVERTHR_STP
+    REAL(8) :: CRIT_DEP_STP
+    LOGICAL :: B_JGS_TERMINATE_MAXITER
+    LOGICAL :: B_JGS_TERMINATE_DIFFERENCE
+    LOGICAL :: B_JGS_TERMINATE_NORM
+    LOGICAL :: B_JGS_LIMITER
+    LOGICAL :: B_JGS_USE_JACOBI
+    LOGICAL :: B_JGS_BLOCK_GAUSS_SEIDEL
+    INTEGER :: B_JGS_MAXITER
+    REAL*8  :: B_JGS_PMIN
+    REAL*8  :: B_JGS_DIFF_THR
+    REAL*8  :: B_JGS_NORM_THR
+    INTEGER :: B_JGS_NLEVEL
+    LOGICAL :: B_JGS_SOURCE_NONLINEAR
   END TYPE SCHM
   !
   !
   TYPE MPAR
-     LOGICAL               :: PINIT
-     TYPE(NPAR)            :: NPARS
-     TYPE(PROP)            :: PROPS
-     TYPE(FLDP)            :: FLDPS
-     TYPE(SFLP)            :: SFLPS
-     TYPE(SLNP)            :: SLNPS
-     TYPE(SRCP)            :: SRCPS
-     TYPE(SNLP)            :: SNLPS
-     TYPE(SBTP)            :: SBTPS
-     TYPE(SDBP)            :: SDBPS
+    LOGICAL               :: PINIT
+    TYPE(NPAR)            :: NPARS
+    TYPE(PROP)            :: PROPS
+    TYPE(FLDP)            :: FLDPS
+    TYPE(SFLP)            :: SFLPS
+    TYPE(SLNP)            :: SLNPS
+    TYPE(SRCP)            :: SRCPS
+    TYPE(SNLP)            :: SNLPS
+    TYPE(SBTP)            :: SBTPS
+    TYPE(SDBP)            :: SDBPS
 #ifdef W3_UOST
-     TYPE(UOSTP)            :: UOSTPS
+    TYPE(UOSTP)            :: UOSTPS
 #endif
-     TYPE(STRP)            :: STRPS
-     TYPE(SBSP)            :: SBSPS
-     TYPE(SICP)            :: SICPS
-     TYPE(SCHM)            :: SCHMS
+    TYPE(STRP)            :: STRPS
+    TYPE(SBSP)            :: SBSPS
+    TYPE(SICP)            :: SICPS
+    TYPE(SCHM)            :: SCHMS
   END TYPE MPAR
   !/
   !/ Data storage
@@ -1487,24 +1487,24 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .NE. -1 ) THEN
-       WRITE (NDSE,1001) NGRIDS
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001) NGRIDS
+      CALL EXTCDE (1)
     END IF
     !
     IF ( NUMBER .LT. 1 ) THEN
-       WRITE (NDSE,1002) NUMBER
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) NUMBER
+      CALL EXTCDE (2)
     END IF
     !
     IF ( PRESENT(NAUX) ) THEN
-       NLOW   = -NAUX
+      NLOW   = -NAUX
     ELSE
-       NLOW   = 1
+      NLOW   = 1
     END IF
     !
     IF ( NLOW .GT. 1 ) THEN
-       WRITE (NDSE,1003) -NLOW
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003) -NLOW
+      CALL EXTCDE (3)
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -1522,12 +1522,12 @@ CONTAINS
     ! 2.  Initialize GINIT and SINIT
     !
     DO I=NLOW, NUMBER
-       GRIDS(I)%GINIT  = .FALSE.
-       GRIDS(I)%GUGINIT  = .FALSE.
-       SGRDS(I)%SINIT  = .FALSE.
-       MPARS(I)%PINIT  = .FALSE.
+      GRIDS(I)%GINIT  = .FALSE.
+      GRIDS(I)%GUGINIT  = .FALSE.
+      SGRDS(I)%SINIT  = .FALSE.
+      MPARS(I)%PINIT  = .FALSE.
 #ifdef W3_NL2
-       MPARS(I)%SNLPS%NDPTHS = 0
+      MPARS(I)%SNLPS%NDPTHS = 0
 #endif
     END DO
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3NMOD)
@@ -1672,23 +1672,23 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NGRIDS ) THEN
-       WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
+      CALL EXTCDE (2)
     END IF
     !
     IF ( MX.LT.3 .OR. (MY.LT.3.AND.GTYPE.NE.UNGTYPE) .OR. MSEA.LT.1 ) THEN
-       WRITE (NDSE,1003) MX, MY, MSEA, GTYPE
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003) MX, MY, MSEA, GTYPE
+      CALL EXTCDE (3)
     END IF
     !
     IF ( GRIDS(IMOD)%GINIT ) THEN
-       WRITE (NDSE,1004)
-       CALL EXTCDE (4)
+      WRITE (NDSE,1004)
+      CALL EXTCDE (4)
     END IF
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMX)
     WRITE (NDST,9000) IMOD, MX, MY, MSEA
@@ -1700,11 +1700,11 @@ CONTAINS
     ! NB: Some array start at 0 because MAPFS(IY,IX)=0 for missing points
     !
     IF (GTYPE .NE. UNGTYPE) THEN
-       ALLOCATE ( GRIDS(IMOD)%ZB(MSEA),  &
-            GRIDS(IMOD)%XGRD(MY,MX),    &
-            GRIDS(IMOD)%YGRD(MY,MX),    &
-            STAT=ISTAT                  )
-       CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( GRIDS(IMOD)%ZB(MSEA),  &
+           GRIDS(IMOD)%XGRD(MY,MX),    &
+           GRIDS(IMOD)%YGRD(MY,MX),    &
+           STAT=ISTAT                  )
+      CHECK_ALLOC_STATUS ( ISTAT )
     ENDIF
 
     ALLOCATE ( GRIDS(IMOD)%MAPSTA(MY,MX),  &
@@ -2017,23 +2017,23 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NGRIDS ) THEN
-       WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
+      CALL EXTCDE (2)
     END IF
     !
     IF ( MK.LT.3 .OR. MTH.LT.4 ) THEN
-       WRITE (NDSE,1003) MK, MTH
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003) MK, MTH
+      CALL EXTCDE (3)
     END IF
     !
     IF ( SGRDS(IMOD)%SINIT ) THEN
-       WRITE (NDSE,1004)
-       CALL EXTCDE (4)
+      WRITE (NDSE,1004)
+      CALL EXTCDE (4)
     END IF
     !
     MK2    = MK + 2
@@ -2247,13 +2247,13 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NGRIDS ) THEN
-       WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
+      CALL EXTCDE (2)
     END IF
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3SETG)
     WRITE (NDST,9000) IMOD
@@ -2419,68 +2419,68 @@ CONTAINS
     ZB     => GRIDS(IMOD)%ZB
     !
     IF ( GINIT ) THEN
-       !
-       MAPSTA => GRIDS(IMOD)%MAPSTA
-       MAPST2 => GRIDS(IMOD)%MAPST2
-       MAPFS  => GRIDS(IMOD)%MAPFS
-       MAPSF  => GRIDS(IMOD)%MAPSF
-       FLAGST => GRIDS(IMOD)%FLAGST
-       !
+      !
+      MAPSTA => GRIDS(IMOD)%MAPSTA
+      MAPST2 => GRIDS(IMOD)%MAPST2
+      MAPFS  => GRIDS(IMOD)%MAPFS
+      MAPSF  => GRIDS(IMOD)%MAPSF
+      FLAGST => GRIDS(IMOD)%FLAGST
+      !
 #ifdef W3_RTD
-       AnglD  => GRIDS(IMOD)%AnglD
+      AnglD  => GRIDS(IMOD)%AnglD
 #endif
-       CLATS  => GRIDS(IMOD)%CLATS
-       CLATIS => GRIDS(IMOD)%CLATIS
-       CTHG0S => GRIDS(IMOD)%CTHG0S
-       TRNX   => GRIDS(IMOD)%TRNX
-       TRNY   => GRIDS(IMOD)%TRNY
-       !
-       DXDP   => GRIDS(IMOD)%DXDP
-       DXDQ   => GRIDS(IMOD)%DXDQ
-       DYDP   => GRIDS(IMOD)%DYDP
-       DYDQ   => GRIDS(IMOD)%DYDQ
-       DPDX   => GRIDS(IMOD)%DPDX
-       DPDY   => GRIDS(IMOD)%DPDY
-       DQDX   => GRIDS(IMOD)%DQDX
-       DQDY   => GRIDS(IMOD)%DQDY
-       GSQRT  => GRIDS(IMOD)%GSQRT
-       HPFAC  => GRIDS(IMOD)%HPFAC
-       HQFAC  => GRIDS(IMOD)%HQFAC
-       !
+      CLATS  => GRIDS(IMOD)%CLATS
+      CLATIS => GRIDS(IMOD)%CLATIS
+      CTHG0S => GRIDS(IMOD)%CTHG0S
+      TRNX   => GRIDS(IMOD)%TRNX
+      TRNY   => GRIDS(IMOD)%TRNY
+      !
+      DXDP   => GRIDS(IMOD)%DXDP
+      DXDQ   => GRIDS(IMOD)%DXDQ
+      DYDP   => GRIDS(IMOD)%DYDP
+      DYDQ   => GRIDS(IMOD)%DYDQ
+      DPDX   => GRIDS(IMOD)%DPDX
+      DPDY   => GRIDS(IMOD)%DPDY
+      DQDX   => GRIDS(IMOD)%DQDX
+      DQDY   => GRIDS(IMOD)%DQDY
+      GSQRT  => GRIDS(IMOD)%GSQRT
+      HPFAC  => GRIDS(IMOD)%HPFAC
+      HQFAC  => GRIDS(IMOD)%HQFAC
+      !
 #ifdef W3_BT4
-       SED_D50  => GRIDS(IMOD)%SED_D50
-       SED_PSIC => GRIDS(IMOD)%SED_PSIC
+      SED_D50  => GRIDS(IMOD)%SED_D50
+      SED_PSIC => GRIDS(IMOD)%SED_PSIC
 #endif
-       !
+      !
 #ifdef W3_SMC
-       NLvCel => GRIDS(IMOD)%NLvCel
-       NLvUFc => GRIDS(IMOD)%NLvUFc
-       NLvVFc => GRIDS(IMOD)%NLvVFc
-       IJKCel => GRIDS(IMOD)%IJKCel
-       IJKUFc => GRIDS(IMOD)%IJKUFc
-       IJKVFc => GRIDS(IMOD)%IJKVFc
-       ISMCBP => GRIDS(IMOD)%ISMCBP
-       CTRNX  => GRIDS(IMOD)%CTRNX
-       CTRNY  => GRIDS(IMOD)%CTRNY
-       CLATF  => GRIDS(IMOD)%CLATF
+      NLvCel => GRIDS(IMOD)%NLvCel
+      NLvUFc => GRIDS(IMOD)%NLvUFc
+      NLvVFc => GRIDS(IMOD)%NLvVFc
+      IJKCel => GRIDS(IMOD)%IJKCel
+      IJKUFc => GRIDS(IMOD)%IJKUFc
+      IJKVFc => GRIDS(IMOD)%IJKVFc
+      ISMCBP => GRIDS(IMOD)%ISMCBP
+      CTRNX  => GRIDS(IMOD)%CTRNX
+      CTRNY  => GRIDS(IMOD)%CTRNY
+      CLATF  => GRIDS(IMOD)%CLATF
 
-       IJKCel3 => GRIDS(IMOD)%IJKCel3
-       IJKCel4 => GRIDS(IMOD)%IJKCel4
-       IJKVFc5 => GRIDS(IMOD)%IJKVFc5
-       IJKVFc6 => GRIDS(IMOD)%IJKVFc6
-       IJKUFc5 => GRIDS(IMOD)%IJKUFc5
-       IJKUFc6 => GRIDS(IMOD)%IJKUFc6
+      IJKCel3 => GRIDS(IMOD)%IJKCel3
+      IJKCel4 => GRIDS(IMOD)%IJKCel4
+      IJKVFc5 => GRIDS(IMOD)%IJKVFc5
+      IJKVFc6 => GRIDS(IMOD)%IJKVFc6
+      IJKUFc5 => GRIDS(IMOD)%IJKUFc5
+      IJKUFc6 => GRIDS(IMOD)%IJKUFc6
 
 #endif
-       !
+      !
 #ifdef W3_SMC
-       ICLBAC => GRIDS(IMOD)%ICLBAC
-       ANGARC => GRIDS(IMOD)%ANGARC
-       SPCBAC => GRIDS(IMOD)%SPCBAC
+      ICLBAC => GRIDS(IMOD)%ICLBAC
+      ANGARC => GRIDS(IMOD)%ANGARC
+      SPCBAC => GRIDS(IMOD)%SPCBAC
 #endif
-       !
-       GSU  => GRIDS(IMOD)%GSU
-       !
+      !
+      GSU  => GRIDS(IMOD)%GSU
+      !
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -2507,23 +2507,23 @@ CONTAINS
     SINIT  => SGRDS(IMOD)%SINIT
     !
     IF ( SINIT ) THEN
-       !
-       MAPWN  => SGRDS(IMOD)%MAPWN
-       MAPTH  => SGRDS(IMOD)%MAPTH
-       !
-       TH     => SGRDS(IMOD)%TH
-       ESIN   => SGRDS(IMOD)%ESIN
-       ECOS   => SGRDS(IMOD)%ECOS
-       ES2    => SGRDS(IMOD)%ES2
-       ESC    => SGRDS(IMOD)%ESC
-       EC2    => SGRDS(IMOD)%EC2
-       SIG    => SGRDS(IMOD)%SIG
-       SIG2   => SGRDS(IMOD)%SIG2
-       DSIP   => SGRDS(IMOD)%DSIP
-       DSII   => SGRDS(IMOD)%DSII
-       DDEN   => SGRDS(IMOD)%DDEN
-       DDEN2  => SGRDS(IMOD)%DDEN2
-       !
+      !
+      MAPWN  => SGRDS(IMOD)%MAPWN
+      MAPTH  => SGRDS(IMOD)%MAPTH
+      !
+      TH     => SGRDS(IMOD)%TH
+      ESIN   => SGRDS(IMOD)%ESIN
+      ECOS   => SGRDS(IMOD)%ECOS
+      ES2    => SGRDS(IMOD)%ES2
+      ESC    => SGRDS(IMOD)%ESC
+      EC2    => SGRDS(IMOD)%EC2
+      SIG    => SGRDS(IMOD)%SIG
+      SIG2   => SGRDS(IMOD)%SIG2
+      DSIP   => SGRDS(IMOD)%DSIP
+      DSII   => SGRDS(IMOD)%DSII
+      DDEN   => SGRDS(IMOD)%DDEN
+      DDEN2  => SGRDS(IMOD)%DDEN2
+      !
     END IF
     !
     ! -------------------------------------------------------------------- /
@@ -2962,13 +2962,13 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NGRIDS ) THEN
-       WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, -NAUXGR, NGRIDS
+      CALL EXTCDE (2)
     END IF
     !
     SELECT CASE ( GRIDS(IMOD)%GTYPE )
@@ -2976,8 +2976,8 @@ CONTAINS
     CASE ( CLGTYPE )
     CASE ( SMCTYPE )
     CASE DEFAULT
-       WRITE (NDSE,1003) GRIDS(IMOD)%GTYPE
-       CALL EXTCDE (3)
+      WRITE (NDSE,1003) GRIDS(IMOD)%GTYPE
+      CALL EXTCDE (3)
     END SELECT
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
     WRITE (NDST,9000) IMOD
@@ -3017,37 +3017,37 @@ CONTAINS
     LBO = (/ 1, 1/)
     UBO = (/NY,NX/)
     SELECT CASE ( GTYPE )
-       !!Li  SMC grid shares the settings with rectilinear grid. JGLi12Oct2020
+      !!Li  SMC grid shares the settings with rectilinear grid. JGLi12Oct2020
     CASE ( RLGTYPE, SMCTYPE )
-       CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-            PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
-            NFD=NFD, SPHERE=SPHERE, DX=SX, DY=SY,           &
-            DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
-            DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
-            HPFC=HPFAC, HQFC=HQFAC, GSQR=GSQRT,             &
+      CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
+           PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
+           NFD=NFD, SPHERE=SPHERE, DX=SX, DY=SY,           &
+           DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
+           DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
+           HPFC=HPFAC, HQFC=HQFAC, GSQR=GSQRT,             &
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
-            COSA=COSA,                                      &
+           COSA=COSA,                                      &
 #endif
-            RC=ISTAT )
-       IF ( ISTAT.NE.0 ) THEN
-          WRITE (NDSE,1004) GTYPE
-          CALL EXTCDE (4)
-       END IF
+           RC=ISTAT )
+      IF ( ISTAT.NE.0 ) THEN
+        WRITE (NDSE,1004) GTYPE
+        CALL EXTCDE (4)
+      END IF
     CASE ( CLGTYPE )
-       CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
-            PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
-            NFD=NFD, SPHERE=SPHERE,                         &
-            DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
-            DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
-            HPFC=HPFAC, HQFC=HQFAC, GSQR=GSQRT,             &
+      CALL W3CGDM( IJG, FLAGLL, ICLOSE, PTILED, QTILED,            &
+           PRANGE, QRANGE, LBI, UBI, LBO, UBO, REAL(XGRD), REAL(YGRD), &
+           NFD=NFD, SPHERE=SPHERE,                         &
+           DXDP=DXDP, DYDP=DYDP, DXDQ=DXDQ, DYDQ=DYDQ,     &
+           DPDX=DPDX, DPDY=DPDY, DQDX=DQDX, DQDY=DQDY,     &
+           HPFC=HPFAC, HQFC=HQFAC, GSQR=GSQRT,             &
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
-            COSA=COSA,                                      &
+           COSA=COSA,                                      &
 #endif
-            RC=ISTAT )
-       IF ( ISTAT.NE.0 ) THEN
-          WRITE (NDSE,1004) GTYPE
-          CALL EXTCDE (4)
-       END IF
+           RC=ISTAT )
+      IF ( ISTAT.NE.0 ) THEN
+        WRITE (NDSE,1004) GTYPE
+        CALL EXTCDE (4)
+      END IF
     END SELECT
     !
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
@@ -3194,17 +3194,17 @@ CONTAINS
     ! 1.  Test input and module status
     !
     IF ( NGRIDS .EQ. -1 ) THEN
-       WRITE (NDSE,1001)
-       CALL EXTCDE (1)
+      WRITE (NDSE,1001)
+      CALL EXTCDE (1)
     END IF
     !
     IF ( IMOD.LT.-NAUXGR .OR. IMOD.GT.NGRIDS ) THEN
-       WRITE (NDSE,1002) IMOD, NGRIDS
-       CALL EXTCDE (2)
+      WRITE (NDSE,1002) IMOD, NGRIDS
+      CALL EXTCDE (2)
     END IF
     IF ( GRIDS(IMOD)%GUGINIT ) THEN
-       WRITE (NDSE,1004)
-       CALL EXTCDE (4)
+      WRITE (NDSE,1004)
+      CALL EXTCDE (4)
     END IF
     !
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
@@ -3378,163 +3378,163 @@ CONTAINS
     !
 #ifdef W3_REF1
     DO IY=2, NY-1
-       DO IX=2, NX-1
-          IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
-          !No reflection from artificial island on pole.
-          IF (FLAGLL.AND.(YGRD(IY,IX).GT.85)) RREF(1)=.FALSE.
-          IF (MAPSTA(IY,IX).GT.0) THEN
-             !
-             ! Prepares for reflection from subgrid islands
-             !
-             IF (RREF(2)) &
-                  REFLC(2,MAPFS(IY,IX))= MAX((1. - TRNX(IY,IX)),(1.-TRNY(IY,IX)))
-             !
-             ! Prepares for iceberg reflections
-             !
-             IF (RREF(4)) &
-                  REFLC(4,MAPFS(IY,IX))= 1.
-             !
-             ! resolved shoreline reflection
-             !
-             IF (RREF(1)) THEN
-                REFLC(1,  MAPFS(IY,IX)) = 0.
-                REFLD(1:6,MAPFS(IY,IX)) = 0
-                !
-                ! Search for neighboring coastline.        3 2 1
-                ! around X. These are the neighbors of X:  4 X 0
-                !                                          5 6 7
-                !
-                !
-                NEIGH1(0)=8*MAPST2(IY,IX+1)+MAPSTA(IY,IX+1)
-                NEIGH1(1:3)=8*MAPST2(IY+1,IX+1:IX-1:-1)+MAPSTA(IY+1,IX+1:IX-1:-1)
-                NEIGH1(4)=8*MAPST2(IY,IX-1)+MAPSTA(IY,IX-1)
-                NEIGH1(5:7)=8*MAPST2(IY-1,IX-1:IX+1)+MAPSTA(IY-1,IX-1:IX+1)
-                !
-                ! if one of the surrounding points is land: determines directions ...
-                !
-                IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN
-                   IF ( FLAGLL ) THEN
-                      CLAT   = COS(YGRD(IY,IX)*DERA)
-                   ELSE
-                      CLAT = 1.
-                   END IF
-                   ANGLES(0)= ATAN2(DYDP(IY,IX),DXDP(IY,IX)*CLAT)
-                   ANGLES(1)= ATAN2(DYDP(IY,IX)+DYDQ(IY,IX),(DXDP(IY,IX)+DXDQ(IY,IX))*CLAT)
-                   ANGLES(2)= ATAN2(DYDQ(IY,IX),DXDQ(IY,IX)*CLAT)
-                   ANGLES(3)= ATAN2(DYDQ(IY,IX)-DYDP(IY,IX),(DXDQ(IY,IX)-DXDP(IY,IX))*CLAT)
-                   ANGLES(4:7)= ANGLES(0:3)+PI
-                   IF ((NEIGH1(0).GE.1).AND.(NEIGH1(4).GE.1)) THEN
-                      REFLD(3,MAPFS(IY,IX))=0
-                   ELSE
-                      IF ((NEIGH1(0).GE.1).OR.(NEIGH1(4).GE.1)) REFLD(3,MAPFS(IY,IX))=1
-                   END IF
-                   IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).GE.1)) THEN
-                      REFLD(4,MAPFS(IY,IX))=0
-                   ELSE
-                      IF ((NEIGH1(2).GE.1).OR.(NEIGH1(6).GE.1)) REFLD(4,MAPFS(IY,IX))=1
-                   END IF
-                   !
-                   ! Looks for a locally straight coast in all 8 orientations
-                   !
-                   J=0
-                   REFLD(1,MAPFS(IY,IX))=0
-                   COSAVG=0
-                   SINAVG=0
-                   ! Shore angle is corrected for grid rotation in w3ref1md.ftn with  REFLD(5:6,MAPFS(IY,IX))
-                   REFLD(5,MAPFS(IY,IX))= MOD(NTH+NINT(ANGLES(0)/TPI*NTH),NTH)
-                   REFLD(6,MAPFS(IY,IX))= MOD(NTH+NINT((ANGLES(2)/TPI-0.25)*NTH),NTH)
+      DO IX=2, NX-1
+        IF (REFPARS(1).GT.0) RREF(1)=.TRUE.
+        !No reflection from artificial island on pole.
+        IF (FLAGLL.AND.(YGRD(IY,IX).GT.85)) RREF(1)=.FALSE.
+        IF (MAPSTA(IY,IX).GT.0) THEN
+          !
+          ! Prepares for reflection from subgrid islands
+          !
+          IF (RREF(2)) &
+               REFLC(2,MAPFS(IY,IX))= MAX((1. - TRNX(IY,IX)),(1.-TRNY(IY,IX)))
+          !
+          ! Prepares for iceberg reflections
+          !
+          IF (RREF(4)) &
+               REFLC(4,MAPFS(IY,IX))= 1.
+          !
+          ! resolved shoreline reflection
+          !
+          IF (RREF(1)) THEN
+            REFLC(1,  MAPFS(IY,IX)) = 0.
+            REFLD(1:6,MAPFS(IY,IX)) = 0
+            !
+            ! Search for neighboring coastline.        3 2 1
+            ! around X. These are the neighbors of X:  4 X 0
+            !                                          5 6 7
+            !
+            !
+            NEIGH1(0)=8*MAPST2(IY,IX+1)+MAPSTA(IY,IX+1)
+            NEIGH1(1:3)=8*MAPST2(IY+1,IX+1:IX-1:-1)+MAPSTA(IY+1,IX+1:IX-1:-1)
+            NEIGH1(4)=8*MAPST2(IY,IX-1)+MAPSTA(IY,IX-1)
+            NEIGH1(5:7)=8*MAPST2(IY-1,IX-1:IX+1)+MAPSTA(IY-1,IX-1:IX+1)
+            !
+            ! if one of the surrounding points is land: determines directions ...
+            !
+            IF (MINVAL(ABS(NEIGH1)).EQ.0) THEN
+              IF ( FLAGLL ) THEN
+                CLAT   = COS(YGRD(IY,IX)*DERA)
+              ELSE
+                CLAT = 1.
+              END IF
+              ANGLES(0)= ATAN2(DYDP(IY,IX),DXDP(IY,IX)*CLAT)
+              ANGLES(1)= ATAN2(DYDP(IY,IX)+DYDQ(IY,IX),(DXDP(IY,IX)+DXDQ(IY,IX))*CLAT)
+              ANGLES(2)= ATAN2(DYDQ(IY,IX),DXDQ(IY,IX)*CLAT)
+              ANGLES(3)= ATAN2(DYDQ(IY,IX)-DYDP(IY,IX),(DXDQ(IY,IX)-DXDP(IY,IX))*CLAT)
+              ANGLES(4:7)= ANGLES(0:3)+PI
+              IF ((NEIGH1(0).GE.1).AND.(NEIGH1(4).GE.1)) THEN
+                REFLD(3,MAPFS(IY,IX))=0
+              ELSE
+                IF ((NEIGH1(0).GE.1).OR.(NEIGH1(4).GE.1)) REFLD(3,MAPFS(IY,IX))=1
+              END IF
+              IF ((NEIGH1(2).EQ.1).AND.(NEIGH1(6).GE.1)) THEN
+                REFLD(4,MAPFS(IY,IX))=0
+              ELSE
+                IF ((NEIGH1(2).GE.1).OR.(NEIGH1(6).GE.1)) REFLD(4,MAPFS(IY,IX))=1
+              END IF
+              !
+              ! Looks for a locally straight coast in all 8 orientations
+              !
+              J=0
+              REFLD(1,MAPFS(IY,IX))=0
+              COSAVG=0
+              SINAVG=0
+              ! Shore angle is corrected for grid rotation in w3ref1md.ftn with  REFLD(5:6,MAPFS(IY,IX))
+              REFLD(5,MAPFS(IY,IX))= MOD(NTH+NINT(ANGLES(0)/TPI*NTH),NTH)
+              REFLD(6,MAPFS(IY,IX))= MOD(NTH+NINT((ANGLES(2)/TPI-0.25)*NTH),NTH)
 #endif
 #ifdef W3_REFT
-                   IF (IY.EQ.4) THEN
-                      WRITE(6,*) 'POINT (IX,IY):',IX,IY
-                      WRITE(6,*) 'REFT:',NEIGH1(3),NEIGH1(2), NEIGH1(1)
-                      WRITE(6,*) 'REFT:',NEIGH1(4),1, NEIGH1(0)
-                      WRITE(6,*) 'REFT:',NEIGH1(5:7)
-                      WRITE(6,*) 'ANG:',ANGLES(3)*RADE,ANGLES(2)*RADE, ANGLES(1)*RADE
-                      WRITE(6,*) 'ANG:',ANGLES(4)*RADE,1, ANGLES(0) *RADE
-                      WRITE(6,*) 'ANG:',ANGLES(5:7)*RADE
-                      WRITE(6,*) 'REFT:',XGRD(IY+1,IX-1:IX+1), YGRD(IY+1,IX-1:IX+1)
-                      WRITE(6,*) 'REFT:',XGRD(IY,IX-1:IX+1) , YGRD(IY,IX-1:IX+1)
-                      WRITE(6,*) 'REFT:',XGRD(IY-1,IX-1:IX+1), YGRD(IY-1,IX-1:IX+1)
-                      WRITE(6,*) 'REFLD:',REFLD(3:6,MAPFS(IY,IX))
-                   ENDIF
+              IF (IY.EQ.4) THEN
+                WRITE(6,*) 'POINT (IX,IY):',IX,IY
+                WRITE(6,*) 'REFT:',NEIGH1(3),NEIGH1(2), NEIGH1(1)
+                WRITE(6,*) 'REFT:',NEIGH1(4),1, NEIGH1(0)
+                WRITE(6,*) 'REFT:',NEIGH1(5:7)
+                WRITE(6,*) 'ANG:',ANGLES(3)*RADE,ANGLES(2)*RADE, ANGLES(1)*RADE
+                WRITE(6,*) 'ANG:',ANGLES(4)*RADE,1, ANGLES(0) *RADE
+                WRITE(6,*) 'ANG:',ANGLES(5:7)*RADE
+                WRITE(6,*) 'REFT:',XGRD(IY+1,IX-1:IX+1), YGRD(IY+1,IX-1:IX+1)
+                WRITE(6,*) 'REFT:',XGRD(IY,IX-1:IX+1) , YGRD(IY,IX-1:IX+1)
+                WRITE(6,*) 'REFT:',XGRD(IY-1,IX-1:IX+1), YGRD(IY-1,IX-1:IX+1)
+                WRITE(6,*) 'REFLD:',REFLD(3:6,MAPFS(IY,IX))
+              ENDIF
 #endif
 #ifdef W3_REF1
-                   DO K=0,7
-                      IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+7,8)).EQ.0 &
-                           .AND.NEIGH1(MOD(K+1,8)).EQ.0 &
-                           .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
-                         REFLC(1,MAPFS(IY,IX))= REFPARS(1)
-                         !
-                         ! Defines direction index for specular reflection (normal to coast)
-                         !
-                         !  for example, if we have this layout   1 1 0
-                         !  (NB: 1 is sea, 0 is land)             1 X 0
-                         !                                        1 1 0
-                         !
-                         !  then there is only a coastline detection for K=0, giving J=1
-                         !  and the final result will be REFLD(1,MAPFS(IY,IX))=1
-                         !  Namely, the direction TH(REFLD) is the direction pointing INTO the coast
-                         !
-                         REFLD(2,MAPFS(IY,IX))= 2
-                         COSAVG=COSAVG+COS(ANGLES(K))  !ECOS(1+(K*NTH)/8)
-                         SINAVG=SINAVG+SIN(ANGLES(K))  !ESIN(1+(K*NTH)/8)
-                         J=J+1
-                      ENDIF
-                   END DO
-                   IF (J.GT.0) THEN
-                      IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
-                      THAVG=ATAN2(SINAVG,COSAVG)
+              DO K=0,7
+                IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+7,8)).EQ.0 &
+                     .AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+                     .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
+                  REFLC(1,MAPFS(IY,IX))= REFPARS(1)
+                  !
+                  ! Defines direction index for specular reflection (normal to coast)
+                  !
+                  !  for example, if we have this layout   1 1 0
+                  !  (NB: 1 is sea, 0 is land)             1 X 0
+                  !                                        1 1 0
+                  !
+                  !  then there is only a coastline detection for K=0, giving J=1
+                  !  and the final result will be REFLD(1,MAPFS(IY,IX))=1
+                  !  Namely, the direction TH(REFLD) is the direction pointing INTO the coast
+                  !
+                  REFLD(2,MAPFS(IY,IX))= 2
+                  COSAVG=COSAVG+COS(ANGLES(K))  !ECOS(1+(K*NTH)/8)
+                  SINAVG=SINAVG+SIN(ANGLES(K))  !ESIN(1+(K*NTH)/8)
+                  J=J+1
+                ENDIF
+              END DO
+              IF (J.GT.0) THEN
+                IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
+                THAVG=ATAN2(SINAVG,COSAVG)
 #endif
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3SETREF)
 #ifdef W3_REF1
-                      !WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
-                      !SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+                !WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
+                !SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
 #endif
 #endif
 #ifdef W3_REF1
-                      REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
-                   ELSE
+                REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
+              ELSE
 
-                      !                             1 1 1
-                      ! Looks for mild corners like 1 1 1
-                      !                             1 0 0
-                      DO K=0,7
-                         IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
-                              .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
-                            REFLC(1,MAPFS(IY,IX))= REFPARS(1)
-                            REFLD(1,MAPFS(IY,IX))= 1+MOD((K*NTH+(K+1)*NTH)/16,NTH)
-                            REFLD(2,MAPFS(IY,IX))= 1
-                         ENDIF
-                      END DO
-                      !                              1 1 1                        1 1 1
-                      ! Looks for sharp corners like 1 1 1 but not diagonals like 1 1 1
-                      !                              1 0 1                        1 1 0
-                      IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN
-                         DO K=0,7,2
-                            IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
-                               REFLC(1,MAPFS(IY,IX))= REFPARS(1)
-                               REFLD(1,MAPFS(IY,IX))= 1+(K*NTH)/8
-                               REFLD(2,MAPFS(IY,IX))= 0
-                               !WRITE(6,*) 'NEIGH3:',IX,IY,K,NEIGH1,K*(NTH/8)
-                            END IF
-                         END DO
-                      END IF
-                   END IF
-                   ! End of test if surrounding point is land
+                !                             1 1 1
+                ! Looks for mild corners like 1 1 1
+                !                             1 0 0
+                DO K=0,7
+                  IF (NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+1,8)).EQ.0 &
+                       .AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
+                    REFLC(1,MAPFS(IY,IX))= REFPARS(1)
+                    REFLD(1,MAPFS(IY,IX))= 1+MOD((K*NTH+(K+1)*NTH)/16,NTH)
+                    REFLD(2,MAPFS(IY,IX))= 1
+                  ENDIF
+                END DO
+                !                              1 1 1                        1 1 1
+                ! Looks for sharp corners like 1 1 1 but not diagonals like 1 1 1
+                !                              1 0 1                        1 1 0
+                IF (REFLC(1,MAPFS(IY,IX)).LE.0) THEN
+                  DO K=0,7,2
+                    IF ( NEIGH1(K).EQ.0.AND.NEIGH1(MOD(K+4,8)).NE.0) THEN
+                      REFLC(1,MAPFS(IY,IX))= REFPARS(1)
+                      REFLD(1,MAPFS(IY,IX))= 1+(K*NTH)/8
+                      REFLD(2,MAPFS(IY,IX))= 0
+                      !WRITE(6,*) 'NEIGH3:',IX,IY,K,NEIGH1,K*(NTH/8)
+                    END IF
+                  END DO
                 END IF
+              END IF
+              ! End of test if surrounding point is land
+            END IF
 #endif
 #ifdef W3_REFT
-                IF (REFLC(1,MAPFS(IY,IX)).GT.0)  THEN
-                   WRITE (6,*) 'COAST DIRECTION AT POINT:',IX,IY,' IS ', &
-                        REFLD(:,MAPFS(IY,IX)),TH(REFLD(1,MAPFS(IY,IX)))*360/TPI
-                ENDIF
+            IF (REFLC(1,MAPFS(IY,IX)).GT.0)  THEN
+              WRITE (6,*) 'COAST DIRECTION AT POINT:',IX,IY,' IS ', &
+                   REFLD(:,MAPFS(IY,IX)),TH(REFLD(1,MAPFS(IY,IX)))*360/TPI
+            ENDIF
 #endif
 #ifdef W3_REF1
-                ! End of test if local point is sea
-             END IF
+            ! End of test if local point is sea
           END IF
-       END DO
+        END IF
+      END DO
     END DO
 #endif
     !

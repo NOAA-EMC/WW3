@@ -209,17 +209,17 @@ CONTAINS
     ETOT = 0.
     FMEAN2 = 0.
     DO IK=1, NK
-       EB(IK) = 0.
-       DO ITH=1, NTH
-          EB(IK) = EB(IK) + A(ITH+(IK-1)*NTH)
-       END DO
+      EB(IK) = 0.
+      DO ITH=1, NTH
+        EB(IK) = EB(IK) + A(ITH+(IK-1)*NTH)
+      END DO
     END DO
     DO IK=1, NK
-       EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
-       ETOT  = ETOT  + EB(IK)
+      EB(IK) = EB(IK) * DDEN(IK) / CG(IK)
+      ETOT  = ETOT  + EB(IK)
     END DO
     DO IK=1, NK
-       FMEAN2 = FMEAN2 + EB(IK) * SIG(IK)
+      FMEAN2 = FMEAN2 + EB(IK) * SIG(IK)
     END DO
     FMEAN2 = FMEAN2 / ETOT * TPIINV
     !
@@ -229,12 +229,12 @@ CONTAINS
     ! 1.a.1. Simple limit
     !
     IF ( FDONLY ) THEN
-       HM     = DBLE(SDBC2) * DBLE(DEPTH)
+      HM     = DBLE(SDBC2) * DBLE(DEPTH)
     ELSE
-       !
-       ! 1.a.2. Miche style criterion
-       !
-       HM     = DBLE(SDBC2) / DBLE(WNMEAN) * TANH ( DBLE(WNMEAN) * MAX(DEPTH,0.) )
+      !
+      ! 1.a.2. Miche style criterion
+      !
+      HM     = DBLE(SDBC2) / DBLE(WNMEAN) * TANH ( DBLE(WNMEAN) * MAX(DEPTH,0.) )
     END IF
     !
     !AR: Add Dingemans ...
@@ -242,73 +242,73 @@ CONTAINS
     !
     HRMS = DSQRT (8.d0 * DBLE(EMEAN))
     IF ( HM .GT. THR) THEN
-       BB     = HRMS * HRMS / ( HM * HM )
-       B      = DSQRT(BB)
+      BB     = HRMS * HRMS / ( HM * HM )
+      B      = DSQRT(BB)
     ELSE
-       BB     = 0.d0
-       B      = 0.d0
+      BB     = 0.d0
+      B      = 0.d0
     END IF
     !
     ! 2. Fraction of breaking waves -------------------------------------- /
     ! 2.a. First guess breaking fraction
     !
     IF ( B .LE. 0.5d0 ) THEN
-       Q0     = 0.d0
+      Q0     = 0.d0
     ELSE IF ( B .LE. 1.d0 ) THEN
-       Q0     = ( 2.d0 * B - 1.d0 ) ** 2
+      Q0     = ( 2.d0 * B - 1.d0 ) ** 2
     END IF
     !
     ! 2.b. Iterate to obtain actual breaking fraction
     !
     IF ( B .LE. 0.2d0 ) THEN
-       QB     = 0.d0
+      QB     = 0.d0
     ELSE IF ( B .LT. 1.d0 ) THEN
-       ARG    = EXP  (( Q0 - 1.d0 ) / BB )
-       QB     = Q0 - BB * ( Q0 - ARG ) / ( BB - ARG )
-       DO IS=1, 3
-          QB     = EXP((QB-1.)/BB)
-       END DO
+      ARG    = EXP  (( Q0 - 1.d0 ) / BB )
+      QB     = Q0 - BB * ( Q0 - ARG ) / ( BB - ARG )
+      DO IS=1, 3
+        QB     = EXP((QB-1.)/BB)
+      END DO
     ELSE
-       QB = 1.0 - THR
+      QB = 1.0 - THR
     END IF
     !
     ! 3. Estimate the breaking coefficient ------------------------------- /
     !
     CBJ  = 0
     IF (IWB == 1) THEN
-       IF ( ( BB .GT. THR) .AND. ( ABS ( BB - QB ) .GT. THR) ) THEN
-          IF ( BB .LT. 1.0) THEN
-             CBJ = 2 * DBLE(SDBC1) * QB * DBLE(FMEAN) / BB
-          ELSE
-             CBJ = 2 * DBLE(SDBC1) * DBLE(FMEAN) * BB ! AR: degenerative regime, all waves must be .le. Hmax, we just smoothly let the excessive energy vanish by * BB.
-          END IF
-       ELSE
-          CBJ = 0.d0
-       ENDIF
-       D = - CBJ
-       S = D * A
+      IF ( ( BB .GT. THR) .AND. ( ABS ( BB - QB ) .GT. THR) ) THEN
+        IF ( BB .LT. 1.0) THEN
+          CBJ = 2 * DBLE(SDBC1) * QB * DBLE(FMEAN) / BB
+        ELSE
+          CBJ = 2 * DBLE(SDBC1) * DBLE(FMEAN) * BB ! AR: degenerative regime, all waves must be .le. Hmax, we just smoothly let the excessive energy vanish by * BB.
+        END IF
+      ELSE
+        CBJ = 0.d0
+      ENDIF
+      D = - CBJ
+      S = D * A
     ELSE IF (IWB == 2) THEN
-       IF (ETOT .GT. THR) THEN
-          HRMS = SQRT(8*EMEAN)
-          FAK  = (1+4./SQRT(PI)*(B*BB+1.5*B)*exp(-BB)-ERF(B))
-          CBJ  = -SDBC1*SQRT(PI)/16.*FMEAN*HRMS**3/DEPTH/ETOT
-       ELSE
-          CBJ  = 0.
-       ENDIF
-       D = - CBJ
-       S = D * A
+      IF (ETOT .GT. THR) THEN
+        HRMS = SQRT(8*EMEAN)
+        FAK  = (1+4./SQRT(PI)*(B*BB+1.5*B)*exp(-BB)-ERF(B))
+        CBJ  = -SDBC1*SQRT(PI)/16.*FMEAN*HRMS**3/DEPTH/ETOT
+      ELSE
+        CBJ  = 0.
+      ENDIF
+      D = - CBJ
+      S = D * A
     ENDIF
 
     IF (CBJ .GT. 0.) THEN
-       LBREAK = .TRUE.
+      LBREAK = .TRUE.
     ELSE
-       LBREAK = .FALSE.
+      LBREAK = .FALSE.
     ENDIF
 
 #ifdef W3_DEBUGRUN
     IF (IX == DEBUG_NODE) THEN
-       WRITE(*,'(A200)') 'IX, DEPTH, CBJ, BB, QB, SDBC1, SDBC2, FMEAN, FMEAN2, HS'
-       WRITE(*,'(I10,20F20.10)') IX, DEPTH, CBJ, BB, QB, SDBC1, SDBC2, FMEAN, FMEAN2, 4*SQRT(ETOT)
+      WRITE(*,'(A200)') 'IX, DEPTH, CBJ, BB, QB, SDBC1, SDBC2, FMEAN, FMEAN2, HS'
+      WRITE(*,'(I10,20F20.10)') IX, DEPTH, CBJ, BB, QB, SDBC1, SDBC2, FMEAN, FMEAN2, 4*SQRT(ETOT)
     ENDIF
 #endif
     !
@@ -316,9 +316,9 @@ CONTAINS
     !
 #ifdef W3_T0
     DO IK=1, NK
-       DO ITH=1, NTH
-          DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
-       END DO
+      DO ITH=1, NTH
+        DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
+      END DO
     END DO
 #endif
     !

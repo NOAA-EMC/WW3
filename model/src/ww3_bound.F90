@@ -279,28 +279,28 @@ PROGRAM W3BOUND
   !
   INQUIRE(FILE=TRIM(FNMPRE)//"ww3_bound.nml", EXIST=FLGNML)
   IF (FLGNML) THEN
-     ! Read namelist
-     CALL W3NMLBOUND (NDSI, TRIM(FNMPRE)//'ww3_bound.nml', NML_BOUND, IERR)
+    ! Read namelist
+    CALL W3NMLBOUND (NDSI, TRIM(FNMPRE)//'ww3_bound.nml', NML_BOUND, IERR)
 
-     INXOUT = NML_BOUND%MODE
-     INTERP = NML_BOUND%INTERP
-     VERBOSE = NML_BOUND%VERBOSE
-     BNDFILE = NML_BOUND%FILE
+    INXOUT = NML_BOUND%MODE
+    INTERP = NML_BOUND%INTERP
+    VERBOSE = NML_BOUND%VERBOSE
+    BNDFILE = NML_BOUND%FILE
 
-     NBO2 = 0
-     OPEN(NDSL,FILE=TRIM(BNDFILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
-     REWIND (NDSL)
-     DO
-        READ (NDSL,*,END=400,ERR=802)
-        NBO2 = NBO2 + 1
-     END DO
-400  CONTINUE
-     ALLOCATE(SPECFILES(NBO2))
-     REWIND (NDSL)
-     DO I=1,NBO2
-        READ (NDSL,'(A120)',END=801,ERR=802) SPECFILES(I)
-     END DO
-     CLOSE(NDSL)
+    NBO2 = 0
+    OPEN(NDSL,FILE=TRIM(BNDFILE),STATUS='OLD',ERR=809,IOSTAT=IERR)
+    REWIND (NDSL)
+    DO
+      READ (NDSL,*,END=400,ERR=802)
+      NBO2 = NBO2 + 1
+    END DO
+400 CONTINUE
+    ALLOCATE(SPECFILES(NBO2))
+    REWIND (NDSL)
+    DO I=1,NBO2
+      READ (NDSL,'(A120)',END=801,ERR=802) SPECFILES(I)
+    END DO
+    CLOSE(NDSL)
 
   END IF ! FLGNML
 
@@ -308,59 +308,59 @@ PROGRAM W3BOUND
   ! process old ww3_bound.inp format
   !
   IF (.NOT. FLGNML) THEN
-     OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bound.inp',STATUS='OLD',ERR=803,IOSTAT=IERR)
-     REWIND (NDSI)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_bound.inp',STATUS='OLD',ERR=803,IOSTAT=IERR)
+    REWIND (NDSI)
 
-     READ (NDSI,'(A)',END=801,ERR=802) COMSTR
-     IF (COMSTR.EQ.' ') COMSTR = '$'
+    READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+    IF (COMSTR.EQ.' ') COMSTR = '$'
 
 
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*) INXOUT
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*) INTERP
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     READ (NDSI,*) VERBOSE
-     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-     !
-     NBO2 = 0
-     !
-     !       ILOOP = 1 to count NBO2
-     !       ILOOP = 2 to read the file names
-     !
-     DO ILOOP = 1, 2
-        OPEN (NDSS,FILE='ww3_bound.scratch',FORM='FORMATTED',          &
-             status='UNKNOWN')
-        IF ( ILOOP .EQ. 1 ) THEN
-           NDSI2 = NDSI
-        ELSE
-           NDSI2 = NDSS
-           ALLOCATE(SPECFILES(NBO2))
-           NBO2=0
-        ENDIF
-
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*) INXOUT
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*) INTERP
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    READ (NDSI,*) VERBOSE
+    CALL NEXTLN ( COMSTR , NDSI , NDSE )
+    !
+    NBO2 = 0
+    !
+    !       ILOOP = 1 to count NBO2
+    !       ILOOP = 2 to read the file names
+    !
+    DO ILOOP = 1, 2
+      OPEN (NDSS,FILE='ww3_bound.scratch',FORM='FORMATTED',          &
+           status='UNKNOWN')
+      IF ( ILOOP .EQ. 1 ) THEN
+        NDSI2 = NDSI
+      ELSE
+        NDSI2 = NDSS
+        ALLOCATE(SPECFILES(NBO2))
         NBO2=0
-        !         Read input file names
-        DO
-           CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
-           READ (NDSI2,'(A120)') FILENAME
-           JJ     = LEN_TRIM(FILENAME)
-           IF ( ILOOP .EQ. 1 ) THEN
-              BACKSPACE (NDSI)
-              READ (NDSI,'(A)') LINE
-              WRITE (NDSS,'(A)') LINE
-           END IF
-           IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT
-           NBO2=NBO2+1
-           IF (ILOOP.EQ.1) CYCLE
-           SPECFILES(NBO2)=FILENAME
-        END DO
+      ENDIF
 
-        IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS)
+      NBO2=0
+      !         Read input file names
+      DO
+        CALL NEXTLN ( COMSTR , NDSI2 , NDSE )
+        READ (NDSI2,'(A120)') FILENAME
+        JJ     = LEN_TRIM(FILENAME)
+        IF ( ILOOP .EQ. 1 ) THEN
+          BACKSPACE (NDSI)
+          READ (NDSI,'(A)') LINE
+          WRITE (NDSS,'(A)') LINE
+        END IF
+        IF (FILENAME(:JJ).EQ."'STOPSTRING'") EXIT
+        NBO2=NBO2+1
+        IF (ILOOP.EQ.1) CYCLE
+        SPECFILES(NBO2)=FILENAME
+      END DO
 
-        IF ( ILOOP .EQ. 2 ) CLOSE ( NDSS, STATUS='DELETE' )
-     END DO ! ILOOP = 1, 2
-     CLOSE(NDSI)
+      IF ( ILOOP .EQ. 1 ) CLOSE ( NDSS)
+
+      IF ( ILOOP .EQ. 2 ) CLOSE ( NDSS, STATUS='DELETE' )
+    END DO ! ILOOP = 1, 2
+    CLOSE(NDSI)
   END IF ! .NOT. FLGNML
 
 
@@ -369,304 +369,304 @@ PROGRAM W3BOUND
   ! 4. Tests the reading of the file
   !
   IF ( INXOUT.EQ.'READ') THEN
-     OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='old')
-     READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
-     NSPEC1  = NK1 * NTH1
-     IF ( IDTST .NE. IDSTRBC ) THEN
-        WRITE (NDSO,901) IDTST, IDSTRBC
-     END IF
-     WRITE(NDSO,*) "FORMAT VERSION: '",VERTEST,"'"
-     WRITE(NDSO,*) "FILE TYPE: '",IDTST,"'"
-     IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', &
-          NK1,NTH1,XFR, FR1I, TH1I, NBI
-     ALLOCATE (XBPI(NBI),YBPI(NBI))
-     ALLOCATE (IPBPI(NBI,4),RDBPI(NBI,4))
-     READ(NDSB) (XBPI(I),I=1,NBI),           &
-          (YBPI(I),I=1,NBI),             &
-          ((IPBPI(I,J),I=1,NBI),J=1,4),  &
-          ((RDBPI(I,J),I=1,NBI),J=1,4)
-     IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'XBPI:',XBPI
-     IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'YBPI:',YBPI
-     IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'IPBPI:'
-     DO I=1,NBI
-        IF (VERBOSE.EQ.1) WRITE(NDSO,*) I,' interpolated from:',IPBPI(I,1:4)
-        IF (VERBOSE.EQ.1) WRITE(NDSO,*) I,' with coefficient :',RDBPI(I,1:4)
-     END DO
-     !
-     READ (NDSB) TIME2, NBI2
-     BACKSPACE (NDSB)
-     ALLOCATE (ABPIN(NSPEC1,NBI2))
-     IERR=0
-     DO WHILE (IERR.EQ.0)
-        READ (NDSB,IOSTAT=IERR) TIME2, NBI2
-        IF (IERR.EQ.0) THEN
-           IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR
-           DO IP=1, NBI2
-              READ (NDSB,IOSTAT=IERR) ABPIN(:,IP)
-           END DO
-        END IF
-     END DO
-     CLOSE(NDSB)
+    OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='old')
+    READ(NDSB) IDTST, VERTEST, NK1, NTH1, XFR, FR1I, TH1I, NBI
+    NSPEC1  = NK1 * NTH1
+    IF ( IDTST .NE. IDSTRBC ) THEN
+      WRITE (NDSO,901) IDTST, IDSTRBC
+    END IF
+    WRITE(NDSO,*) "FORMAT VERSION: '",VERTEST,"'"
+    WRITE(NDSO,*) "FILE TYPE: '",IDTST,"'"
+    IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,2I5,3F12.6,I5)') 'NK,NTH,XFR, FR1I, TH1I, NBI :', &
+         NK1,NTH1,XFR, FR1I, TH1I, NBI
+    ALLOCATE (XBPI(NBI),YBPI(NBI))
+    ALLOCATE (IPBPI(NBI,4),RDBPI(NBI,4))
+    READ(NDSB) (XBPI(I),I=1,NBI),           &
+         (YBPI(I),I=1,NBI),             &
+         ((IPBPI(I,J),I=1,NBI),J=1,4),  &
+         ((RDBPI(I,J),I=1,NBI),J=1,4)
+    IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'XBPI:',XBPI
+    IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'YBPI:',YBPI
+    IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'IPBPI:'
+    DO I=1,NBI
+      IF (VERBOSE.EQ.1) WRITE(NDSO,*) I,' interpolated from:',IPBPI(I,1:4)
+      IF (VERBOSE.EQ.1) WRITE(NDSO,*) I,' with coefficient :',RDBPI(I,1:4)
+    END DO
+    !
+    READ (NDSB) TIME2, NBI2
+    BACKSPACE (NDSB)
+    ALLOCATE (ABPIN(NSPEC1,NBI2))
+    IERR=0
+    DO WHILE (IERR.EQ.0)
+      READ (NDSB,IOSTAT=IERR) TIME2, NBI2
+      IF (IERR.EQ.0) THEN
+        IF (VERBOSE.EQ.1) WRITE(NDSO,*)      'TIME2,NBI2:',TIME2, NBI2,IERR
+        DO IP=1, NBI2
+          READ (NDSB,IOSTAT=IERR) ABPIN(:,IP)
+        END DO
+      END IF
+    END DO
+    CLOSE(NDSB)
   END IF
   !
   !
   IF ( INXOUT.EQ.'WRITE') THEN
-     IF ( FLBPI) THEN
-        !
-        !  Defines position of active boundary points
-        !
-        NBO = 0
-        DO ISEA=1,NSEA
-           IX     = MAPSF(ISEA,1)
-           IY     = MAPSF(ISEA,2)
-           IF (MAPSTA(IY,IX).EQ.2) THEN
-              NBO=NBO+1
-           END IF
-        END DO
-        ALLOCATE(XBPO(NBO),YBPO(NBO))
+    IF ( FLBPI) THEN
+      !
+      !  Defines position of active boundary points
+      !
+      NBO = 0
+      DO ISEA=1,NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IF (MAPSTA(IY,IX).EQ.2) THEN
+          NBO=NBO+1
+        END IF
+      END DO
+      ALLOCATE(XBPO(NBO),YBPO(NBO))
 #ifdef W3_RTD
-        IF (ISRTD) ALLOCATE(XTMP(NBO), YTMP(NBO), ANGTMP(NBO))
+      IF (ISRTD) ALLOCATE(XTMP(NBO), YTMP(NBO), ANGTMP(NBO))
 #endif
-        ALLOCATE (IPBPO(NBO,4),RDBPO(NBO,4))
-        IBO=0
-        DO ISEA=1,NSEA
-           IX     = MAPSF(ISEA,1)
-           IY     = MAPSF(ISEA,2)
-           IF (MAPSTA(IY,IX).EQ.2) THEN
-              IBO=IBO+1
-              SELECT CASE ( GTYPE )
-              CASE ( RLGTYPE )
-                 XBPO(IBO)=X0+SX*(IX-1)
-                 YBPO(IBO)=Y0+SY*(IY-1)
-              CASE ( CLGTYPE )
-                 XBPO(IBO)= XGRD(IY,IX)
-                 YBPO(IBO)= YGRD(IY,IX)
-              CASE (UNGTYPE)
-                 XBPO(IBO)= XGRD(1,IX)
-                 YBPO(IBO)= YGRD(1,IX)
-              END SELECT !GTYPE
-           END IF
-        END DO
+      ALLOCATE (IPBPO(NBO,4),RDBPO(NBO,4))
+      IBO=0
+      DO ISEA=1,NSEA
+        IX     = MAPSF(ISEA,1)
+        IY     = MAPSF(ISEA,2)
+        IF (MAPSTA(IY,IX).EQ.2) THEN
+          IBO=IBO+1
+          SELECT CASE ( GTYPE )
+          CASE ( RLGTYPE )
+            XBPO(IBO)=X0+SX*(IX-1)
+            YBPO(IBO)=Y0+SY*(IY-1)
+          CASE ( CLGTYPE )
+            XBPO(IBO)= XGRD(IY,IX)
+            YBPO(IBO)= YGRD(IY,IX)
+          CASE (UNGTYPE)
+            XBPO(IBO)= XGRD(1,IX)
+            YBPO(IBO)= YGRD(1,IX)
+          END SELECT !GTYPE
+        END IF
+      END DO
 #ifdef W3_RTD
-        ! Convert grid boundary cell locations to standard pole
-        IF( ISRTD ) THEN
-           XTMP = XBPO
-           YTMP = YBPO
-           CALL W3EQTOLL(YTMP, XTMP, YBPO, XBPO, ANGTMP, POLAT, POLON, NBO)
-           DEALLOCATE(XTMP, YTMP, ANGTMP)
-        ENDIF
+      ! Convert grid boundary cell locations to standard pole
+      IF( ISRTD ) THEN
+        XTMP = XBPO
+        YTMP = YBPO
+        CALL W3EQTOLL(YTMP, XTMP, YBPO, XBPO, ANGTMP, POLAT, POLON, NBO)
+        DEALLOCATE(XTMP, YTMP, ANGTMP)
+      ENDIF
 #endif
-        OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='unknown')
-        ALLOCATE(LATS(NBO2),LONS(NBO2))
+      OPEN(NDSB,FILE='nest.ww3',form='UNFORMATTED', convert=file_endian,status='unknown')
+      ALLOCATE(LATS(NBO2),LONS(NBO2))
+      DO IP=1,NBO2
+        OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)
+        IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') &
+             'IP, file, I/O stat:',IP,', ', &
+             TRIM(SPECFILES(IP)), ', ',IERR
+        IF (IERR.NE.0) GOTO 810
+        READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
+             space,string1,space,NKI,NTHI
+        IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
+        IF (IP.EQ.1) THEN
+          NK1=NKI
+          NTH1=NTHI
+          NSPEC1  = NK1 * NTH1
+          ALLOCATE (FREQ(NK1),THETA(NTH1))
+          ALLOCATE (SPEC2D(NK1,NTH1))
+          ALLOCATE (ABPIN(NK*NTH1,NBO2))
+        ELSE
+          !
+          !  To be cleaned up later ...
+          !
+          IF (NK1.NE.NKI.OR.NTH1.NE.NTHI) THEN
+            WRITE(NDSE,'(A,A,4I5)') 'ERROR, SPECTRAL GRID IN FILE:',     &
+                 TRIM(SPECFILES(IP)),NK1,NKI,NTH1,NTHI
+            STOP
+          END IF
+        END IF
+        !
+        READ(200+IP,*) FREQ(1:NK1)
+        READ(200+IP,*) THETA(1:NTH1)
+      END DO
+
+      !
+      ! Defines frequency range in spectra
+      !
+
+      ! Checks consistency of NK
+      IF (NKI.GT.NK) GOTO 808
+      !
+      ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
+      ! such that source spec SPEC (read in input) links with output spec
+      ! APBIN with APBIN(IFMIN2:IFMAX2) = SPEC(IFMIN:IFMAX)
+      ! Then APBIN(1:IFMIN2) = 0 and APBIN(IFMAX2:end) = 0
+      IFMIN=1  ! index of first freq. in source spectrum
+      IFMIN2=1 ! index of first freq. in output spectrum
+      IFMAX=NK1 ! index of last freq. in source spectrum
+      !        IFMAX2=NK ! index of last freq. in output spectrum
+      !
+      ! Checks consistency of XFR
+      IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 806
+      !
+      ! Checks consistency of NTH
+      ! WARNING: check is only done on number of directions, no check
+      ! is done on the relative offset of first direction in terms of
+      ! the directional increment [-0.5,0.5] (last parameter of the
+      ! spectral definition in ww3_grid.inp, on second active line)
+      IF (NTHI.NE.NTH) GOTO 807
+
+      IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN
+        DO J=1,MIN(NK1,NK)
+          IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN
+            IFMIN=J
+          END IF
+        END DO
+      END IF
+      !
+      IF ((FREQ(1)-FR1)/FR1.GT. 0.03) THEN
+        DO J=1,MIN(NK,NK1)
+          IF (ABS(FREQ(J)-FR1*XFR**(J-1)) .LT. ABS(FREQ(IFMIN2)-FR1)) THEN
+            IFMIN2=J
+          END IF
+        END DO
+      END IF
+      !
+      IF ((FREQ(NK1)-FR1*XFR**(NK-1))/FREQ(NK1) .GT.0.03) THEN
+        DO J=1,NK
+          IF (ABS(FREQ(J)-FR1*XFR**(NK1-1)) .LT. ABS(FREQ(IFMAX)-FR1*XFR**(NK1-1))) THEN
+            IFMAX=J
+          END IF
+        END DO
+      END IF
+      !
+      IERR=0
+      ITIME=0
+      !
+      ! Loop on times
+      !
+      DO WHILE (IERR.EQ.0)
         DO IP=1,NBO2
-           OPEN(200+IP,FILE=SPECFILES(IP),status='old',iostat=IERR)
-           IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,I5,3A,I5)') &
-                'IP, file, I/O stat:',IP,', ', &
-                TRIM(SPECFILES(IP)), ', ',IERR
-           IF (IERR.NE.0) GOTO 810
-           READ(200+IP,'(A1,A22,A1,X,2I6)',iostat=IERR)  &
-                space,string1,space,NKI,NTHI
-           IF (VERBOSE.EQ.1) WRITE(NDSO,'(A,3I5)') 'IP and spectral dimensions:',IP, NKI,NTHI
-           IF (IP.EQ.1) THEN
-              NK1=NKI
-              NTH1=NTHI
-              NSPEC1  = NK1 * NTH1
-              ALLOCATE (FREQ(NK1),THETA(NTH1))
-              ALLOCATE (SPEC2D(NK1,NTH1))
-              ALLOCATE (ABPIN(NK*NTH1,NBO2))
-           ELSE
-              !
-              !  To be cleaned up later ...
-              !
-              IF (NK1.NE.NKI.OR.NTH1.NE.NTHI) THEN
-                 WRITE(NDSE,'(A,A,4I5)') 'ERROR, SPECTRAL GRID IN FILE:',     &
-                      TRIM(SPECFILES(IP)),NK1,NKI,NTH1,NTHI
-                 STOP
+          READ(200+IP,*,IOSTAT=IERR) TIME2
+          IF (IERR.EQ.0) THEN
+            !
+            IF (IP.EQ.1) THEN
+              TIME1=TIME2
+            ELSE
+              IF (TIME1(1).NE.TIME2(1).OR.TIME1(2).NE.TIME2(2)) THEN
+                WRITE(NDSE,*) 'AT POINT ',IP,', BAD TIMES:',TIME1, TIME2
               END IF
-           END IF
-           !
-           READ(200+IP,*) FREQ(1:NK1)
-           READ(200+IP,*) THETA(1:NTH1)
-        END DO
-
-        !
-        ! Defines frequency range in spectra
-        !
-
-        ! Checks consistency of NK
-        IF (NKI.GT.NK) GOTO 808
-        !
-        ! HERE we define IFMIN IFMIN2 IFMAX and IFMAX2 frequency indices
-        ! such that source spec SPEC (read in input) links with output spec
-        ! APBIN with APBIN(IFMIN2:IFMAX2) = SPEC(IFMIN:IFMAX)
-        ! Then APBIN(1:IFMIN2) = 0 and APBIN(IFMAX2:end) = 0
-        IFMIN=1  ! index of first freq. in source spectrum
-        IFMIN2=1 ! index of first freq. in output spectrum
-        IFMAX=NK1 ! index of last freq. in source spectrum
-        !        IFMAX2=NK ! index of last freq. in output spectrum
-        !
-        ! Checks consistency of XFR
-        IF (ABS((FREQ(IFMIN+1)/FREQ(IFMIN))-XFR).GT.0.005) GOTO 806
-        !
-        ! Checks consistency of NTH
-        ! WARNING: check is only done on number of directions, no check
-        ! is done on the relative offset of first direction in terms of
-        ! the directional increment [-0.5,0.5] (last parameter of the
-        ! spectral definition in ww3_grid.inp, on second active line)
-        IF (NTHI.NE.NTH) GOTO 807
-
-        IF ((FR1-FREQ(1))/FR1.GT. 0.03) THEN
-           DO J=1,MIN(NK1,NK)
-              IF (ABS(FREQ(J)-FR1) .LT. ABS(FREQ(IFMIN)-FR1)) THEN
-                 IFMIN=J
-              END IF
-           END DO
-        END IF
-        !
-        IF ((FREQ(1)-FR1)/FR1.GT. 0.03) THEN
-           DO J=1,MIN(NK,NK1)
-              IF (ABS(FREQ(J)-FR1*XFR**(J-1)) .LT. ABS(FREQ(IFMIN2)-FR1)) THEN
-                 IFMIN2=J
-              END IF
-           END DO
-        END IF
-        !
-        IF ((FREQ(NK1)-FR1*XFR**(NK-1))/FREQ(NK1) .GT.0.03) THEN
-           DO J=1,NK
-              IF (ABS(FREQ(J)-FR1*XFR**(NK1-1)) .LT. ABS(FREQ(IFMAX)-FR1*XFR**(NK1-1))) THEN
-                 IFMAX=J
-              END IF
-           END DO
-        END IF
-        !
-        IERR=0
-        ITIME=0
-        !
-        ! Loop on times
-        !
-        DO WHILE (IERR.EQ.0)
-           DO IP=1,NBO2
-              READ(200+IP,*,IOSTAT=IERR) TIME2
-              IF (IERR.EQ.0) THEN
-                 !
-                 IF (IP.EQ.1) THEN
-                    TIME1=TIME2
-                 ELSE
-                    IF (TIME1(1).NE.TIME2(1).OR.TIME1(2).NE.TIME2(2)) THEN
-                       WRITE(NDSE,*) 'AT POINT ',IP,', BAD TIMES:',TIME1, TIME2
-                    END IF
-                 END IF
-                 !
-                 READ(200+IP,'(A1,A10,A1,2F7.2,F10.1,F7.2,F6.1,F7.2,F6.1)') &
-                      space,buoyname,space,LATS(IP),LONS(IP),depth,U10,Udir,Curr,Currdir
+            END IF
+            !
+            READ(200+IP,'(A1,A10,A1,2F7.2,F10.1,F7.2,F6.1,F7.2,F6.1)') &
+                 space,buoyname,space,LATS(IP),LONS(IP),depth,U10,Udir,Curr,Currdir
 #ifdef W3_RTD
-                 IF (ISRTD) THEN
-                    ! Rotated coordinates are scaled in range 0 - 360
-                    IF(LONS(IP) .LT. 0) LONS(IP) = LONS(IP) + 360.0
-                    IF(LONS(IP) .GT. 360) LONS(IP) = LONS(IP) - 360.0
-                 ENDIF
+            IF (ISRTD) THEN
+              ! Rotated coordinates are scaled in range 0 - 360
+              IF(LONS(IP) .LT. 0) LONS(IP) = LONS(IP) + 360.0
+              IF(LONS(IP) .GT. 360) LONS(IP) = LONS(IP) - 360.0
+            ENDIF
 #endif
-                 READ(200+IP,*,IOSTAT=IERR) SPEC2D
-                 IF (IFMIN2.GT.1) THEN
-                    !
-                    !  Fills in the low frequency end of the spectrum
-                    !
-                    ABPIN(1:(IFMIN2-1)*NTH,IP)=0.
-                 END IF
-                 DO I=IFMIN,IFMAX
-                    DO J=1,NTH
-                       ABPIN((I-IFMIN+(IFMIN2-1))*NTH+J,IP)=SPEC2D(I,J)*tpiinv
-                    END DO
-                 END DO
-                 IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN
-                    !IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
-                    ABPIN((IFMAX-IFMIN+IFMIN2)*NTH+1:NK1*NTH,IP)=0.
-                 END IF
-              END IF  ! ned of test on IERR
-           END DO
-           !
-           ! Writes header
-           !
-           IF (IERR.EQ.0) THEN
-              IF (ITIME.EQ.0) THEN
-                 ! Correction for rounding error in ASCII files ...
-                 IF (ABS(THETA(1)-0.5*PI).LT.0.01) THETA(1)=0.5*PI
-                 ! Writes header in nest.ww3 file
-                 WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH, XFR, FREQ(1), &
-                      MOD(2.5*PI-THETA(1),TPI), NBO
-                 IPBPO(:,:)=1
-                 RDBPO(:,1)=1.
-                 RDBPO(:,2:4)=0.
-                 !
-                 DO IP1=1,NBO
-                    DMIN=360.+180.
-                    DMIN2=360.+180.
-                    DO IP=1,NBO2
-                       !
-                       ! Searches for the nearest 2 points where spectra are available
-                       !
-                       DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
-                       IF (DMIN.EQ.(360.+180.)) THEN
-                          IF(DIST.LT.DMIN) THEN
-                             IPBPO(IP1,1)=IP
-                             DMIN=DIST
-                          END IF
-                       ELSE
-                          IF(DIST.LT.DMIN2) THEN
-                             IF(DIST.LT.DMIN) THEN
-                                IPBPO(IP1,2)=IPBPO(IP1,1)
-                                DMIN2=DMIN
-                                IPBPO(IP1,1)=IP
-                                DMIN=DIST
-                             ELSE
-                                IPBPO(IP1,2)=IP
-                                DMIN2=DIST
-                             END IF
-                          ENDIF
-                       END IF
-                    END DO
-                    !IF (VERBOSE.EQ.1)  WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
-                    !                    LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
-                    !                    LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
-                    !
-                    !  Computes linear interpolation coefficient between the nearest 2 points
-                    !
-                    IF (INTERP.GT.1.AND.NBO2.GT.1) THEN
-                       DIST=SQRT((LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))**2   &
-                            +(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2)))**2)
-                       COS1=( (XBPO(IP1)-LONS(IPBPO(IP1,1)))  &
-                            *(LONS(IPBPO(IP1,2))-LONS(IPBPO(IP1,1))) &
-                            + (YBPO(IP1)-LATS(IPBPO(IP1,1)))  &
-                            *(LATS(IPBPO(IP1,2))-LATS(IPBPO(IP1,1))))/(DIST**2)
-                       !COS2=( (XBPO(IP1)-LONS(IPBPO(IP1,2)))  &
-                       !      *(LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))
-                       !      + (YBPO(IP1)-LATS(IPBPO(IP1,2)))  &
-                       !      *(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2))))/(DIST**2)
-                       RDBPO(IP1,1)=1-MIN(1.,MAX(0.,COS1))
-                       RDBPO(IP1,2)=MIN(1.,MAX(0.,COS1))
-                    END IF
-                    !
-                    IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
-                    IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
-                    !
-                 END DO
-                 WRITE(NDSB) (XBPO(I),I=1,NBO),           &
-                      (YBPO(I),I=1,NBO),           &
-                      ((IPBPO(I,J),I=1,NBO),J=1,4),&
-                      ((RDBPO(I,J),I=1,NBO),J=1,4)
-              END IF
-
-              WRITE(NDSO,*) 'Writing boundary data for time:', TIME2, NBO2
-              WRITE(NDSB,IOSTAT=IERR) TIME2, NBO2
-              DO IP=1, NBO2
-                 WRITE (NDSB) ABPIN(:,IP)
+            READ(200+IP,*,IOSTAT=IERR) SPEC2D
+            IF (IFMIN2.GT.1) THEN
+              !
+              !  Fills in the low frequency end of the spectrum
+              !
+              ABPIN(1:(IFMIN2-1)*NTH,IP)=0.
+            END IF
+            DO I=IFMIN,IFMAX
+              DO J=1,NTH
+                ABPIN((I-IFMIN+(IFMIN2-1))*NTH+J,IP)=SPEC2D(I,J)*tpiinv
               END DO
-
-              ITIME=ITIME+1
-           END IF
+            END DO
+            IF (IFMAX-IFMIN+IFMIN2.LT.NK1) THEN
+              !IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'FILLING TAIL',IFMAX-IFMIN,NK1,IFMAX-IFMIN+(IFMIN2-1)
+              ABPIN((IFMAX-IFMIN+IFMIN2)*NTH+1:NK1*NTH,IP)=0.
+            END IF
+          END IF  ! ned of test on IERR
         END DO
-        CLOSE(NDSB)
-     END IF
+        !
+        ! Writes header
+        !
+        IF (IERR.EQ.0) THEN
+          IF (ITIME.EQ.0) THEN
+            ! Correction for rounding error in ASCII files ...
+            IF (ABS(THETA(1)-0.5*PI).LT.0.01) THETA(1)=0.5*PI
+            ! Writes header in nest.ww3 file
+            WRITE(NDSB) IDSTRBC, VERBPTBC, NK1, NTH, XFR, FREQ(1), &
+                 MOD(2.5*PI-THETA(1),TPI), NBO
+            IPBPO(:,:)=1
+            RDBPO(:,1)=1.
+            RDBPO(:,2:4)=0.
+            !
+            DO IP1=1,NBO
+              DMIN=360.+180.
+              DMIN2=360.+180.
+              DO IP=1,NBO2
+                !
+                ! Searches for the nearest 2 points where spectra are available
+                !
+                DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
+                IF (DMIN.EQ.(360.+180.)) THEN
+                  IF(DIST.LT.DMIN) THEN
+                    IPBPO(IP1,1)=IP
+                    DMIN=DIST
+                  END IF
+                ELSE
+                  IF(DIST.LT.DMIN2) THEN
+                    IF(DIST.LT.DMIN) THEN
+                      IPBPO(IP1,2)=IPBPO(IP1,1)
+                      DMIN2=DMIN
+                      IPBPO(IP1,1)=IP
+                      DMIN=DIST
+                    ELSE
+                      IPBPO(IP1,2)=IP
+                      DMIN2=DIST
+                    END IF
+                  ENDIF
+                END IF
+              END DO
+              !IF (VERBOSE.EQ.1)  WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
+              !                    LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &
+              !                    LATS(IPBPO(IP1,1)),LATS(IPBPO(IP1,2)),YBPO(IP1)
+              !
+              !  Computes linear interpolation coefficient between the nearest 2 points
+              !
+              IF (INTERP.GT.1.AND.NBO2.GT.1) THEN
+                DIST=SQRT((LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))**2   &
+                     +(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2)))**2)
+                COS1=( (XBPO(IP1)-LONS(IPBPO(IP1,1)))  &
+                     *(LONS(IPBPO(IP1,2))-LONS(IPBPO(IP1,1))) &
+                     + (YBPO(IP1)-LATS(IPBPO(IP1,1)))  &
+                     *(LATS(IPBPO(IP1,2))-LATS(IPBPO(IP1,1))))/(DIST**2)
+                !COS2=( (XBPO(IP1)-LONS(IPBPO(IP1,2)))  &
+                !      *(LONS(IPBPO(IP1,1))-LONS(IPBPO(IP1,2)))
+                !      + (YBPO(IP1)-LATS(IPBPO(IP1,2)))  &
+                !      *(LATS(IPBPO(IP1,1))-LATS(IPBPO(IP1,2))))/(DIST**2)
+                RDBPO(IP1,1)=1-MIN(1.,MAX(0.,COS1))
+                RDBPO(IP1,2)=MIN(1.,MAX(0.,COS1))
+              END IF
+              !
+              IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'IPBP:',IP1,(IPBPO(IP1,J),J=1,4)
+              IF (VERBOSE.EQ.1) WRITE(NDSO,*) 'RDBP:',IP1,(RDBPO(IP1,J),J=1,4)
+              !
+            END DO
+            WRITE(NDSB) (XBPO(I),I=1,NBO),           &
+                 (YBPO(I),I=1,NBO),           &
+                 ((IPBPO(I,J),I=1,NBO),J=1,4),&
+                 ((RDBPO(I,J),I=1,NBO),J=1,4)
+          END IF
+
+          WRITE(NDSO,*) 'Writing boundary data for time:', TIME2, NBO2
+          WRITE(NDSB,IOSTAT=IERR) TIME2, NBO2
+          DO IP=1, NBO2
+            WRITE (NDSB) ABPIN(:,IP)
+          END DO
+
+          ITIME=ITIME+1
+        END IF
+      END DO
+      CLOSE(NDSB)
+    END IF
   END IF
   STOP
   !

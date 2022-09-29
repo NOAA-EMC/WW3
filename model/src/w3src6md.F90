@@ -203,9 +203,9 @@ CONTAINS
     FP    = 0.0
     !
     IF (4.0*SQRT(EMEAN) .GT. HSMIN) THEN
-       EB = SUM(A,1) * SIG(1:NK) /CG * DTH
-       FP = SUM(SIG(1:NK) * EB**4 * DSII) / MAX(1E-10, SUM(EB**4 * DSII))
-       FP = FP * TPIINV
+      EB = SUM(A,1) * SIG(1:NK) /CG * DTH
+      FP = SUM(SIG(1:NK) * EB**4 * DSII) / MAX(1E-10, SUM(EB**4 * DSII))
+      FP = FP * TPIINV
     END IF
     !
     RETURN
@@ -371,7 +371,7 @@ CONTAINS
     CINV2  = WN2 / SIG2            ! inverse phase speed
     !
     DO ITH = 1, NTH
-       CG2(IKN+(ITH-1)) = CG       ! Apply CG to all directions.
+      CG2(IKN+(ITH-1)) = CG       ! Apply CG to all directions.
     END DO
     !
     !/ 1) --- calculate 1d action density spectrum (A(sigma)) and
@@ -383,11 +383,11 @@ CONTAINS
     !/ 2) --- calculate normalised directional spectrum K(theta,sigma) --- /
     KMAX = MAXVAL(K,1)
     DO IK = 1,NK
-       IF (KMAX(IK).LT.1.0E-34) THEN
-          K(1:NTH,IK) = 1.
-       ELSE
-          K(1:NTH,IK) = K(1:NTH,IK)/KMAX(IK)
-       END IF
+      IF (KMAX(IK).LT.1.0E-34) THEN
+        K(1:NTH,IK) = 1.
+      ELSE
+        K(1:NTH,IK) = K(1:NTH,IK)/KMAX(IK)
+      END IF
     END DO
     !
     !/ 3) --- calculate normalised spectral saturation BN(IK) ------------ /
@@ -395,7 +395,7 @@ CONTAINS
     !
     SQRTBN  = SQRT( ANAR * ADENSIG * WN**3 )
     DO ITH  = 1, NTH
-       SQRTBN2(IKN+(ITH-1)) = SQRTBN          ! Calculate SQRTBN for
+      SQRTBN2(IKN+(ITH-1)) = SQRTBN          ! Calculate SQRTBN for
     END DO                                    ! the entire spectrum.
     !
     !/ 4) --- calculate growth rate GAMMA and S for all directions for
@@ -418,10 +418,10 @@ CONTAINS
     !
     !/ 6) --- apply reduction (LFACT) to the entire spectrum ------------- /
     IF (SUM(LFACT) .LT. NK) THEN
-       DO ITH = 1, NTH
-          D(IKN+ITH-1) = D(IKN+ITH-1) * LFACT
-       END DO
-       S = D * A
+      DO ITH = 1, NTH
+        D(IKN+ITH-1) = D(IKN+ITH-1) * LFACT
+      END DO
+      S = D * A
     END IF
     !
     !/ 7) --- compute negative wind input for adverse winds. negative
@@ -430,14 +430,14 @@ CONTAINS
     !/        the factor is adjustable with NAMELIST parameter in
     !/        ww3_grid.inp: '&SIN6 SINA0 = 0.04 /' ----------------------- /
     IF (SIN6A0.GT.0.0) THEN
-       W2    = MIN( 0., UPROXY * CINV2* ( ECOS2*COSU + ESIN2*SINU ) - 1. )**2
-       D     = D - ( (DAIR / DWAT) * SIG2 * SIN6A0 *                   &
-            (2.8 - ( 1. + TANH(10.*SQRTBN2*W2 - 11.) )) *SQRTBN2*W2 )
-       S     = D * A
-       !     --- compute negative component of the wave supported stresses
-       !         from negative part of the wind input  ---------------------- /
-       SDENSIG = RESHAPE(S*SIG2/CG2,(/ NTH,NK /))
-       CALL TAU_WAVE_ATMOS(SDENSIG, CINV, SIG, DSII, TAUNWX, TAUNWY )
+      W2    = MIN( 0., UPROXY * CINV2* ( ECOS2*COSU + ESIN2*SINU ) - 1. )**2
+      D     = D - ( (DAIR / DWAT) * SIG2 * SIN6A0 *                   &
+           (2.8 - ( 1. + TANH(10.*SQRTBN2*W2 - 11.) )) *SQRTBN2*W2 )
+      S     = D * A
+      !     --- compute negative component of the wave supported stresses
+      !         from negative part of the wind input  ---------------------- /
+      SDENSIG = RESHAPE(S*SIG2/CG2,(/ NTH,NK /))
+      CALL TAU_WAVE_ATMOS(SDENSIG, CINV, SIG, DSII, TAUNWX, TAUNWY )
     END IF
     !
     !/
@@ -593,16 +593,16 @@ CONTAINS
     !
     !/    --- normalise by a generic spectral density -------------------- /
     IF (SDS6ET) THEN                ! ww3_grid.inp: &SDS6 SDSET = T or F
-       NEXDENS = EXDENS / ETDENS    ! normalise by threshold spectral density
+      NEXDENS = EXDENS / ETDENS    ! normalise by threshold spectral density
     ELSE                            ! normalise by spectral density
-       EDENSMAX = MAXVAL(EDENS)*1E-5
-       IF (ALL(EDENS .GT. EDENSMAX)) THEN
-          NEXDENS = EXDENS / EDENS
-       ELSE
-          DO IK = 1,NK
-             IF (EDENS(IK) .GT. EDENSMAX) NEXDENS(IK) = EXDENS(IK) / EDENS(IK)
-          END DO
-       END IF
+      EDENSMAX = MAXVAL(EDENS)*1E-5
+      IF (ALL(EDENS .GT. EDENSMAX)) THEN
+        NEXDENS = EXDENS / EDENS
+      ELSE
+        DO IK = 1,NK
+          IF (EDENS(IK) .GT. EDENSMAX) NEXDENS(IK) = EXDENS(IK) / EDENS(IK)
+        END DO
+      END IF
     END IF
     !
     !/ 2) --- Calculate inherent breaking component T1 ------------------- /
@@ -613,16 +613,16 @@ CONTAINS
     ADF    = ANAR * (NEXDENS**SDS6P2)
     XFAC   = (1.0-1.0/XFR)/(XFR-1.0/XFR)
     DO IK = 1,NK
-       DFII = DSII/TPI
-       !        IF (IK .GT. 1) DFII(IK) = DFII(IK) * XFAC
-       IF (IK .GT. 1 .AND. IK .LT. NK) DFII(IK) = DFII(IK) * XFAC
-       T2(IK) = SDS6A2 * SUM( ADF(1:IK)*DFII(1:IK) )
+      DFII = DSII/TPI
+      !        IF (IK .GT. 1) DFII(IK) = DFII(IK) * XFAC
+      IF (IK .GT. 1 .AND. IK .LT. NK) DFII(IK) = DFII(IK) * XFAC
+      T2(IK) = SDS6A2 * SUM( ADF(1:IK)*DFII(1:IK) )
     END DO
     !
     !/ 4) --- Sum up dissipation terms and apply to all directions ------- /
     T12 = -1.0 * ( MAX(0.0,T1)+MAX(0.0,T2) )
     DO ITH = 1, NTH
-       D(IKN+ITH-1) = T12
+      D(IKN+ITH-1) = T12
     END DO
     !
     S = D * A
@@ -796,28 +796,28 @@ CONTAINS
     !         grid per se. Limit the constraint to the positive part of the
     !         wind input only. ---------------------------------------------- /
     IF (NK .LT. NK10Hz) THEN
-       SDENS10Hz(1:NK)         = SUM(S,1) * DTH
-       SDENSX10Hz(1:NK)        = SUM(MAX(0.,S)*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
-       SDENSY10Hz(1:NK)        = SUM(MAX(0.,S)*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
-       SIG10Hz                 = SIG(1)*XFR**(IK10Hz-1.0)
-       CINV10Hz(1:NK)          = CINV
-       CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978 ! 1/c=σ/g
-       DSII10Hz                = 0.5 * SIG10Hz * (XFR-1.0/XFR)
-       !        The first and last frequency bin:
-       DSII10Hz(1)             = 0.5 * SIG10Hz(1) * (XFR-1.0)
-       DSII10Hz(NK10Hz)        = 0.5 * SIG10Hz(NK10Hz) * (XFR-1.0) / XFR
-       !
-       !        --- Spectral slope for S_IN(F) is proportional to F**(-2) ------ /
-       SDENS10Hz(NK+1:NK10Hz)  = SDENS10Hz(NK)  * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
-       SDENSX10Hz(NK+1:NK10Hz) = SDENSX10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
-       SDENSY10hz(NK+1:NK10Hz) = SDENSY10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
+      SDENS10Hz(1:NK)         = SUM(S,1) * DTH
+      SDENSX10Hz(1:NK)        = SUM(MAX(0.,S)*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
+      SDENSY10Hz(1:NK)        = SUM(MAX(0.,S)*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
+      SIG10Hz                 = SIG(1)*XFR**(IK10Hz-1.0)
+      CINV10Hz(1:NK)          = CINV
+      CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978 ! 1/c=σ/g
+      DSII10Hz                = 0.5 * SIG10Hz * (XFR-1.0/XFR)
+      !        The first and last frequency bin:
+      DSII10Hz(1)             = 0.5 * SIG10Hz(1) * (XFR-1.0)
+      DSII10Hz(NK10Hz)        = 0.5 * SIG10Hz(NK10Hz) * (XFR-1.0) / XFR
+      !
+      !        --- Spectral slope for S_IN(F) is proportional to F**(-2) ------ /
+      SDENS10Hz(NK+1:NK10Hz)  = SDENS10Hz(NK)  * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
+      SDENSX10Hz(NK+1:NK10Hz) = SDENSX10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
+      SDENSY10hz(NK+1:NK10Hz) = SDENSY10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
     ELSE
-       SIG10Hz          = SIG
-       CINV10Hz         = CINV
-       DSII10Hz         = DSII
-       SDENS10Hz(1:NK)  = SUM(S,1) * DTH
-       SDENSX10Hz(1:NK) = SUM(MAX(0.,S)*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
-       SDENSY10Hz(1:NK) = SUM(MAX(0.,S)*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
+      SIG10Hz          = SIG
+      CINV10Hz         = CINV
+      DSII10Hz         = DSII
+      SDENS10Hz(1:NK)  = SUM(S,1) * DTH
+      SDENSX10Hz(1:NK) = SUM(MAX(0.,S)*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
+      SDENSY10Hz(1:NK) = SUM(MAX(0.,S)*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
     END IF
     !
     !/ 2) --- Stress calculation ----------------------------------------- /
@@ -852,49 +852,49 @@ CONTAINS
     IK = 0
     !
     IF (TAU .GT. TAU_TOT) THEN
-       OVERSHOT    = .FALSE.
-       RTAU        = ERR / 90.
-       DRTAU       = 2.0
-       SIGN_NEW    = INT(SIGN(1.0,ERR))
+      OVERSHOT    = .FALSE.
+      RTAU        = ERR / 90.
+      DRTAU       = 2.0
+      SIGN_NEW    = INT(SIGN(1.0,ERR))
 
-       UPROXY      = SIN6WS * USTAR
-       UCINV10Hz   = 1.0 - (UPROXY * CINV10Hz)
-       !
+      UPROXY      = SIN6WS * USTAR
+      UCINV10Hz   = 1.0 - (UPROXY * CINV10Hz)
+      !
 #ifdef W3_T6
-       WRITE (NDST,270) IDTIME, U10
-       WRITE (NDST,271)
+      WRITE (NDST,270) IDTIME, U10
+      WRITE (NDST,271)
 #endif
-       DO IK=1,ITERMAX
-          LF10Hz   = MIN(1.0, EXP(UCINV10Hz * RTAU) )
-          !
-          TAU_NND  = TAUWINDS(SDENS10Hz *LF10Hz,CINV10Hz,DSII10Hz)
-          TAUWX    = TAUWINDS(SDENSX10Hz*LF10Hz,CINV10Hz,DSII10Hz)
-          TAUWY    = TAUWINDS(SDENSY10Hz*LF10Hz,CINV10Hz,DSII10Hz)
-          TAU_WAV  = SQRT(TAUWX**2 + TAUWY**2)
-          !
-          TAUX     = TAUVX + TAUWX
-          TAUY     = TAUVY + TAUWY
-          TAU      = SQRT(TAUX**2 + TAUY**2)
-          ERR      = (TAU-TAU_TOT) / TAU_TOT
-          !
-          SIGN_OLD = SIGN_NEW
-          SIGN_NEW = INT(SIGN(1.0, ERR))
+      DO IK=1,ITERMAX
+        LF10Hz   = MIN(1.0, EXP(UCINV10Hz * RTAU) )
+        !
+        TAU_NND  = TAUWINDS(SDENS10Hz *LF10Hz,CINV10Hz,DSII10Hz)
+        TAUWX    = TAUWINDS(SDENSX10Hz*LF10Hz,CINV10Hz,DSII10Hz)
+        TAUWY    = TAUWINDS(SDENSY10Hz*LF10Hz,CINV10Hz,DSII10Hz)
+        TAU_WAV  = SQRT(TAUWX**2 + TAUWY**2)
+        !
+        TAUX     = TAUVX + TAUWX
+        TAUY     = TAUVY + TAUWY
+        TAU      = SQRT(TAUX**2 + TAUY**2)
+        ERR      = (TAU-TAU_TOT) / TAU_TOT
+        !
+        SIGN_OLD = SIGN_NEW
+        SIGN_NEW = INT(SIGN(1.0, ERR))
 #ifdef W3_T6
-          WRITE (NDST,272) IK, RTAU, DRTAU, TAU, TAU_TOT, ERR, &
-               TAUWX, TAUWY, TAUVX, TAUVY, TAU_NND
+        WRITE (NDST,272) IK, RTAU, DRTAU, TAU, TAU_TOT, ERR, &
+             TAUWX, TAUWY, TAUVX, TAUVY, TAU_NND
 #endif
-          !
-          !        --- Slow down DRTAU when overshot. -------------------------- /
-          IF (SIGN_NEW .NE. SIGN_OLD) OVERSHOT = .TRUE.
-          IF (OVERSHOT) DRTAU = MAX(0.5*(1.0+DRTAU),1.00010)
-          !
-          RTAU = RTAU * (DRTAU**SIGN_NEW)
-          !
-          IF (ABS(ERR) .LT. 1.54E-4) EXIT
-       END DO
-       !
-       IF (IK .GE. ITERMAX) WRITE (NDST,280) IDTIME(1:19), U10, TAU, &
-            TAU_TOT, ERR, TAUWX, TAUWY, TAUVX, TAUVY,TAU_NND
+        !
+        !        --- Slow down DRTAU when overshot. -------------------------- /
+        IF (SIGN_NEW .NE. SIGN_OLD) OVERSHOT = .TRUE.
+        IF (OVERSHOT) DRTAU = MAX(0.5*(1.0+DRTAU),1.00010)
+        !
+        RTAU = RTAU * (DRTAU**SIGN_NEW)
+        !
+        IF (ABS(ERR) .LT. 1.54E-4) EXIT
+      END DO
+      !
+      IF (IK .GE. ITERMAX) WRITE (NDST,280) IDTIME(1:19), U10, TAU, &
+           TAU_TOT, ERR, TAUWX, TAUWY, TAUVX, TAUVY,TAU_NND
     END IF
     !
     LFACT(1:NK) = LF10Hz(1:NK)
@@ -1030,25 +1030,25 @@ CONTAINS
     !         grid per se. Limit the constraint to the positive part of the
     !         wind input only. ---------------------------------------------- /
     IF (NK .LT. NK10Hz) THEN
-       SDENSX10Hz(1:NK)        = SUM(ABS(MIN(0.,S))*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
-       SDENSY10Hz(1:NK)        = SUM(ABS(MIN(0.,S))*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
-       SIG10Hz                 = SIG(1)*XFR**(IK10Hz-1.0)
-       CINV10Hz(1:NK)          = CINV
-       CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978
-       DSII10Hz                = 0.5 * SIG10Hz * (XFR-1.0/XFR)
-       !        The first and last frequency bin:
-       DSII10Hz(1)             = 0.5 * SIG10Hz(1) * (XFR-1.0)
-       DSII10Hz(NK10Hz)        = 0.5 * SIG10Hz(NK10Hz) * (XFR-1.0) / XFR
-       !
-       !        --- Spectral slope for S_IN(F) is proportional to F**(-2) ------ /
-       SDENSX10Hz(NK+1:NK10Hz) = SDENSX10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
-       SDENSY10hz(NK+1:NK10Hz) = SDENSY10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
+      SDENSX10Hz(1:NK)        = SUM(ABS(MIN(0.,S))*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
+      SDENSY10Hz(1:NK)        = SUM(ABS(MIN(0.,S))*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
+      SIG10Hz                 = SIG(1)*XFR**(IK10Hz-1.0)
+      CINV10Hz(1:NK)          = CINV
+      CINV10Hz(NK+1:NK10Hz)   = SIG10Hz(NK+1:NK10Hz)*0.101978
+      DSII10Hz                = 0.5 * SIG10Hz * (XFR-1.0/XFR)
+      !        The first and last frequency bin:
+      DSII10Hz(1)             = 0.5 * SIG10Hz(1) * (XFR-1.0)
+      DSII10Hz(NK10Hz)        = 0.5 * SIG10Hz(NK10Hz) * (XFR-1.0) / XFR
+      !
+      !        --- Spectral slope for S_IN(F) is proportional to F**(-2) ------ /
+      SDENSX10Hz(NK+1:NK10Hz) = SDENSX10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
+      SDENSY10hz(NK+1:NK10Hz) = SDENSY10Hz(NK) * (SIG10Hz(NK)/SIG10Hz(NK+1:NK10Hz))**2
     ELSE
-       SIG10Hz          = SIG
-       CINV10Hz         = CINV
-       DSII10Hz         = DSII
-       SDENSX10Hz(1:NK) = SUM(ABS(MIN(0.,S))*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
-       SDENSY10Hz(1:NK) = SUM(ABS(MIN(0.,S))*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
+      SIG10Hz          = SIG
+      CINV10Hz         = CINV
+      DSII10Hz         = DSII
+      SDENSX10Hz(1:NK) = SUM(ABS(MIN(0.,S))*RESHAPE(ECOS2,(/NTH,NK/)),1) * DTH
+      SDENSY10Hz(1:NK) = SUM(ABS(MIN(0.,S))*RESHAPE(ESIN2,(/NTH,NK/)),1) * DTH
     END IF
     !
     !/ 2) --- Stress calculation ----------------------------------------- /
@@ -1085,7 +1085,7 @@ CONTAINS
     N = INT(REAL(X1-X0)/REAL(DX))+1
     ALLOCATE(IX(N))
     DO I = 1, N
-       IX(I) = X0+ (I-1)*DX
+      IX(I) = X0+ (I-1)*DX
     END DO
     !/
   END FUNCTION IRANGE
