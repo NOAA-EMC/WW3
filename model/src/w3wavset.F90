@@ -185,9 +185,9 @@
       REAL(rkind), INTENT(OUT) :: DVDX(npa), DVDY(npa)
       INTEGER           :: NI(3)
       INTEGER           :: IE, I1, I2, I3, IP
-      REAL(8)           :: DEDY(3),DEDX(3)
-      REAL(8)           :: DVDXIE, DVDYIE
-      REAL(8)           :: WEI(npa), eW
+      REAL(rkind)           :: DEDY(3),DEDX(3)
+      REAL(rkind)           :: DVDXIE, DVDYIE
+      REAL(rkind)           :: WEI(npa), eW
       INTEGER           :: IX
       WEI  = 0.0
       DVDX = 0.0
@@ -303,13 +303,13 @@
 #endif
 !
 
-      REAL(8), INTENT(IN)  :: VAR(npa)
-      REAL(8), INTENT(OUT) :: DVDX(npa), DVDY(npa)
+      REAL(rkind), INTENT(IN)  :: VAR(npa)
+      REAL(rkind), INTENT(OUT) :: DVDX(npa), DVDY(npa)
       INTEGER           :: NI(3)
       INTEGER           :: IE, I1, I2, I3, IP, IX
-      REAL(8)           :: DEDY(3),DEDX(3)
-      REAL(8)           :: DVDXIE, DVDYIE
-      REAL(8)           :: WEI(npa), eW
+      REAL(rkind)           :: DEDY(3),DEDX(3)
+      REAL(rkind)           :: DVDXIE, DVDYIE
+      REAL(rkind)           :: WEI(npa), eW
       INTEGER           :: IX1, IX2, IX3, ISEA
       WEI  = 0.0
       DVDX = 0.0
