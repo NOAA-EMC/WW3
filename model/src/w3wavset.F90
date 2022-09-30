@@ -65,6 +65,7 @@
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
+      use yowDatapool, only: rkind
 !/
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -180,8 +181,8 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      REAL(8), INTENT(IN)  :: VAR(npa)
-      REAL(8), INTENT(OUT) :: DVDX(npa), DVDY(npa)
+      REAL(rkind), INTENT(IN)  :: VAR(npa)
+      REAL(rkind), INTENT(OUT) :: DVDX(npa), DVDY(npa)
       INTEGER           :: NI(3)
       INTEGER           :: IE, I1, I2, I3, IP
       REAL(8)           :: DEDY(3),DEDX(3)
@@ -437,8 +438,8 @@
 #endif
 !
 
-      REAL(8), INTENT(IN)  :: VAR(npa)
-      REAL(8), INTENT(OUT) :: DVDX(npa), DVDY(npa)
+      REAL(rkind), INTENT(IN)  :: VAR(npa)
+      REAL(rkind), INTENT(OUT) :: DVDX(npa), DVDY(npa)
       CALL DIFFERENTIATE_XYDIR_MAPSTA(VAR, DVDX, DVDY)
 !      CALL DIFFERENTIATE_XYDIR_NATIVE(VAR, DVDX, DVDY)
   END SUBROUTINE DIFFERENTIATE_XYDIR
@@ -529,17 +530,17 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(out) :: F_X(npa), F_Y(npa), DWNX(npa)
-      REAL(8) :: h
-      REAL(8) :: SXX_X, SXX_Y
-      REAL(8) :: SXY_X, SXY_Y
-      REAL(8) :: SYY_X, SYY_Y
+      real(rkind), intent(out) :: F_X(npa), F_Y(npa), DWNX(npa)
+      REAL(rkind) :: h
+      REAL(rkind) :: SXX_X, SXX_Y
+      REAL(rkind) :: SXY_X, SXY_Y
+      REAL(rkind) :: SYY_X, SYY_Y
       INTEGER I, IP, IX
       INTEGER JSEA, ISEA
-      real(8) :: U_X1(npa), U_Y1(npa)
-      real(8) :: U_X2(npa), U_Y2(npa)
-      real(8) :: SXX_p(npa), SXY_p(npa), SYY_p(npa)
-      real(8) :: eSXX, eSXY, eSYY
+      real(rkind) :: U_X1(npa), U_Y1(npa)
+      real(rkind) :: U_X2(npa), U_Y2(npa)
+      real(rkind) :: SXX_p(npa), SXY_p(npa), SYY_p(npa)
+      real(rkind) :: eSXX, eSXY, eSYY
       integer :: SXXmethod = 1
       SXX_p=0
       SXY_p=0
@@ -678,8 +679,8 @@
 #endif
 !
       INTEGER, intent(in) :: IE, I1
-      REAL(8), intent(inout) :: UGRAD, VGRAD
-      REAL(8) :: h
+      REAL(rkind), intent(inout) :: UGRAD, VGRAD
+      REAL(rkind) :: h
       integer I2, I3, IP1, IP2, IP3
       INTEGER :: POS_TRICK(3,2)
       POS_TRICK(1,1) = 2
@@ -783,18 +784,18 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(in)  :: FX(npa), FY(npa), DWNX(npa)
-      real(8), intent(out) :: ASPAR(PDLIB_NNZ)
-      real(8), intent(out) :: B(npa)
+      real(rkind), intent(in)  :: FX(npa), FY(npa), DWNX(npa)
+      real(rkind), intent(out) :: ASPAR(PDLIB_NNZ)
+      real(rkind), intent(out) :: B(npa)
       integer, intent(in)  :: ACTIVE(npa)
       integer, intent(out)  :: ACTIVESEC(npa)
       INTEGER :: POS_TRICK(3,2), POS_SHIFT(3,3)
       integer I1, I2, I3, IP1, IP2, IP3
       integer IDX, IDX1, IDX2, IDX3
       INTEGER IE, IP, I, J, K, IPp, JPp
-      real(8) :: eDep, eFX, eFY, eScal, eFact, eArea
-      real(8) :: UGRAD, VGRAD, UGRAD1, VGRAD1
-      real(8) :: eOff
+      real(rkind) :: eDep, eFX, eFY, eScal, eFact, eArea
+      real(rkind) :: UGRAD, VGRAD, UGRAD1, VGRAD1
+      real(rkind) :: eOff
       logical DoPrintOut
       INTEGER sumActive
       INTEGER LIDX(2), KIDX(2), jdx
@@ -964,13 +965,13 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      REAL(8), intent(in) :: ASPAR(PDLIB_NNZ)
-      REAL(8), intent(in) :: TheIn(npa)
-      REAL(8), intent(out) :: TheOut(npa)
+      REAL(rkind), intent(in) :: ASPAR(PDLIB_NNZ)
+      REAL(rkind), intent(in) :: TheIn(npa)
+      REAL(rkind), intent(out) :: TheOut(npa)
       INTEGER, intent(IN) :: ACTIVE(npa), ACTIVESEC(npa)
-      REAL(8) :: ListDiag(npa)
+      REAL(rkind) :: ListDiag(npa)
       integer IP, J1, J, JP, J2
-      REAL(8) :: eCoeff
+      REAL(rkind) :: eCoeff
       INTEGER :: ThePrecond = 2
       IF (ThePrecond .eq. 0) THEN
         TheOut=TheIn
@@ -1096,12 +1097,12 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      REAL(8), intent(in) :: ASPAR(PDLIB_NNZ)
-      REAL(8), intent(in) :: TheIn(npa)
-      REAL(8), intent(out) :: TheOut(npa)
+      REAL(rkind), intent(in) :: ASPAR(PDLIB_NNZ)
+      REAL(rkind), intent(in) :: TheIn(npa)
+      REAL(rkind), intent(out) :: TheOut(npa)
       INTEGER, intent(in) :: ACTIVE(npa), ACTIVESEC(npa)
       integer IP, J, JP
-      REAL(8) :: eCoeff
+      REAL(rkind) :: eCoeff
       TheOut=0
       DO IP=1,npa
         IF (ACTIVESEC(IP) .eq. 1) THEN
@@ -1199,10 +1200,10 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(in) :: V1(npa), V2(npa)
-      real(8), intent(inout) :: eScal
+      real(rkind), intent(in) :: V1(npa), V2(npa)
+      real(rkind), intent(inout) :: eScal
       integer IP, myrank, myproc
-      real(8) :: rScal(1), lScal(1)
+      real(rkind) :: rScal(1), lScal(1)
       integer iProc
       integer ierr
       CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
@@ -1310,14 +1311,14 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(in) :: ASPAR(PDLIB_NNZ)
-      real(8), intent(in) :: B(npa)
-      real(8), intent(out) :: TheOut(npa)
+      real(rkind), intent(in) :: ASPAR(PDLIB_NNZ)
+      real(rkind), intent(in) :: B(npa)
+      real(rkind), intent(out) :: TheOut(npa)
       integer, intent(in) :: ACTIVE(npa), ACTIVESEC(npa)
-      real(8) :: V_X(npa), V_R(npa), V_Z(npa), V_P(npa), V_Y(npa)
-      real(8) :: uO, uN, alphaV, h1, h2
-      real(8) :: eNorm, beta
-      real(8) :: SOLVERTHR
+      real(rkind) :: V_X(npa), V_R(npa), V_Z(npa), V_P(npa), V_Y(npa)
+      real(rkind) :: uO, uN, alphaV, h1, h2
+      real(rkind) :: eNorm, beta
+      real(rkind) :: SOLVERTHR
       integer IP, nbIter
       SOLVERTHR=SOLVERTHR_STP
 
@@ -1489,10 +1490,10 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(inout) :: TheVar(npa)
-      real(8) :: SUM_SI_Var, SUM_SI, TheMean
+      real(rkind), intent(inout) :: TheVar(npa)
+      real(rkind) :: SUM_SI_Var, SUM_SI, TheMean
       INTEGER IP, ierr
-      real(8) :: eVect(2), rVect(2)
+      real(rkind) :: eVect(2), rVect(2)
       integer iProc
       SUM_SI_Var=0
       SUM_SI=0
@@ -1610,7 +1611,7 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      REAL*8, INTENT(in) :: DWNX(npa)
+      REAL(rkind), INTENT(in) :: DWNX(npa)
       INTEGER, INTENT(out) :: ACTIVE(npa)
       INTEGER IP, eAct
 #ifdef W3_DEBUGSTP
@@ -1720,9 +1721,10 @@
 #endif
 !
 !      CALL W3SETG
-      REAL(8) :: ZETA_WORK(npa), ZETA_WORK_ALL(NX)
-      REAL(8) :: F_X(npa), F_Y(npa), DWNX(npa)
-      REAL(8) :: ASPAR(PDLIB_NNZ), B(npa)
+      REAL(rkind) :: ZETA_WORK(npa)
+!      REAL(rkind) :: ZETA_WORK_ALL(NX)
+      REAL(rkind) :: F_X(npa), F_Y(npa), DWNX(npa)
+      REAL(rkind) :: ASPAR(PDLIB_NNZ), B(npa)
       INTEGER I, ISEA, JSEA, IX, IP, IP_glob
       INTEGER :: ACTIVE(npa), ACTIVESEC(npa)
 !   ZETA_SETUP is allocated on 1:NSEA
@@ -1731,8 +1733,8 @@
       WRITE(740+IAPROC,*) 'NAPROC=', NAPROC, ' NTPROC=', NTPROC
       WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
       WRITE(740+IAPROC,*) 'npa=', npa, ' np=', np
-#endif
       FLUSH(740+IAPROC)
+#endif
       ZETA_WORK=0
       DO IP=1,npa
         IX=iplg(IP)
@@ -1777,17 +1779,25 @@
       WRITE(740+IAPROC,*) 'After SET_MEAN min=', minval(ZETA_WORK), ' max=', maxval(ZETA_WORK)
       FLUSH(740+IAPROC)
 #endif
+      CALL PDLIB_exchange1Dreal(ZETA_WORK)
       DO IP=1,npa
         IX=iplg(IP)
-        ZETA_WORK_ALL(IX)=ZETA_WORK(IP)
-      END DO
-      CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
-      DO IX=1,NX
         ISEA=MAPFS(1,IX)
         IF (ISEA .gt. 0) THEN
-          ZETA_SETUP(ISEA) = ZETA_WORK_ALL(IX)
+          ZETA_SETUP(ISEA) = ZETA_WORK(IP)
         END IF
       END DO
+!      DO IP=1,npa
+!        IX=iplg(IP)
+!        ZETA_WORK_ALL(IX)=ZETA_WORK(IP)
+!      END DO
+!      CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
+!      DO IX=1,NX
+!        ISEA=MAPFS(1,IX)
+!        IF (ISEA .gt. 0) THEN
+!          ZETA_SETUP(ISEA) = ZETA_WORK_ALL(IX)
+!        END IF
+!      END DO
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
@@ -2041,11 +2051,11 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      REAL(8), intent(in) :: ASPAR(NNZ)
-      REAL(8), intent(in) :: TheIn(NSEA)
-      REAL(8), intent(out) :: TheOut(NSEA)
+      REAL(rkind), intent(in) :: ASPAR(NNZ)
+      REAL(rkind), intent(in) :: TheIn(NSEA)
+      REAL(rkind), intent(out) :: TheOut(NSEA)
       integer IP, J, JP
-      REAL(8) :: eCoeff
+      REAL(rkind) :: eCoeff
       TheOut=0
       DO IP=1,NSEA
         DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
@@ -2136,11 +2146,11 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      REAL(8), intent(in) :: ASPAR(PDLIB_NNZ)
-      REAL(8), intent(in) :: TheIn(NSEA)
-      REAL(8), intent(out) :: TheOut(NSEA)
+      REAL(rkind), intent(in) :: ASPAR(PDLIB_NNZ)
+      REAL(rkind), intent(in) :: TheIn(NSEA)
+      REAL(rkind), intent(out) :: TheOut(NSEA)
       integer IP, J1, J, JP, J2
-      REAL(8) :: eCoeff
+      REAL(rkind) :: eCoeff
       INTEGER :: ThePrecond = 0
       IF (ThePrecond .eq. 0) THEN
         TheOut=TheIn
@@ -2255,9 +2265,9 @@
 !
       integer ISEA, JSEA
       integer ierr
-      real(8), intent(out) :: SXX_t(NSEA), SXY_t(NSEA), SYY_t(NSEA)
-      real(8) :: SXX_p(NSEAL), SXY_p(NSEAL), SYY_p(NSEAL)
-      real(8), allocatable :: rVect(:)
+      real(rkind), intent(out) :: SXX_t(NSEA), SXY_t(NSEA), SYY_t(NSEA)
+      real(rkind) :: SXX_p(NSEAL), SXY_p(NSEAL), SYY_p(NSEAL)
+      real(rkind), allocatable :: rVect(:)
       integer IPROC, NSEAL_loc
       DO ISEA=1,NSEAL
         SXX_p(ISEA)=SXX(ISEA)
@@ -2380,18 +2390,18 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(in) :: SXX_t(NSEA), SXY_t(NSEA), SYY_t(NSEA)
-      real(8), intent(out) :: FX(NSEA), FY(NSEA)
-      REAL(8) :: h
-      REAL(8) :: SXX_X, SXX_Y
-      REAL(8) :: SXY_X, SXY_Y
-      REAL(8) :: SYY_X, SYY_Y
-      REAL(8) :: eFX, eFY
-      REAL(8) :: UGRAD, VGRAD
+      real(rkind), intent(in) :: SXX_t(NSEA), SXY_t(NSEA), SYY_t(NSEA)
+      real(rkind), intent(out) :: FX(NSEA), FY(NSEA)
+      REAL(rkind) :: h
+      REAL(rkind) :: SXX_X, SXX_Y
+      REAL(rkind) :: SXY_X, SXY_Y
+      REAL(rkind) :: SYY_X, SYY_Y
+      REAL(rkind) :: eFX, eFY
+      REAL(rkind) :: UGRAD, VGRAD
       INTEGER IE, I1, I2, I3, IP1, IP2, IP3
       integer ISEA, JSEA1, JSEA2, JSEA3, JSEA4
       integer NeighMat(4,2)
-      real(8) dist_X, dist_Y
+      real(rkind) dist_X, dist_Y
       !
       NeighMat(1,1)=1
       NeighMat(1,2)=0
@@ -2534,12 +2544,12 @@
 #endif
 !
       INTEGER, intent(in) :: IEDGE, ISEA
-      REAL(8), intent(inout) :: UGRAD, VGRAD, dist
-      REAL(8) :: h
+      REAL(rkind), intent(inout) :: UGRAD, VGRAD, dist
+      REAL(rkind) :: h
       integer I2, I3, IP1, IP2, IP3
       integer IX1, IY1, IX2, IY2
       integer ISEA1, ISEA2
-      REAL(8) deltaX, deltaY
+      REAL(rkind) deltaX, deltaY
       !
       ISEA1=EDGES(IEDGE,1)
       ISEA2=EDGES(IEDGE,2)
@@ -2641,15 +2651,15 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(in)  :: FX(NSEA), FY(NSEA)
-      real(8), intent(out) :: ASPAR(PDLIB_NNZ)
-      real(8), intent(out) :: B(NX)
+      real(rkind), intent(in)  :: FX(NSEA), FY(NSEA)
+      real(rkind), intent(out) :: ASPAR(PDLIB_NNZ)
+      real(rkind), intent(out) :: B(NX)
       INTEGER :: POS_TRICK(3,2), POS_SHIFT(3,3)
       integer I1, I2, I3, IP1, IP2, IP3
       integer IDX, IDX1, IDX2, IDX3
       INTEGER IE, IP, I, J, K, IPp, JPp
-      real(8) :: eDep, eFX, eFY, eScal, eFact, eLen
-      real(8) :: UGRAD, VGRAD, UGRAD1, VGRAD1, dist1, dist2
+      real(rkind) :: eDep, eFX, eFY, eScal, eFact, eLen
+      real(rkind) :: UGRAD, VGRAD, UGRAD1, VGRAD1, dist1, dist2
       INTEGER LIDX(2), KIDX(2), jdx
       INTEGER ISEAREL, JSEAREL, ISEA, JSEA, IEDGE
       !
@@ -2756,8 +2766,8 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(in) :: V1(NX), V2(NX)
-      real(8), intent(inout) :: eScal
+      real(rkind), intent(in) :: V1(NX), V2(NX)
+      real(rkind), intent(inout) :: eScal
       integer IP
       eScal=0
       DO IP=1,NX
@@ -2845,13 +2855,13 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(in) :: ASPAR(PDLIB_NNZ)
-      real(8), intent(in) :: B(NX)
-      real(8), intent(out) :: TheOut(NX)
-      real(8) :: V_X(NX), V_R(NX), V_Z(NX), V_P(NX), V_Y(NX)
-      real(8) :: uO, uN, alphaV, h1, h2
-      real(8) :: eNorm, beta
-      real(8) :: SOLVERTHR
+      real(rkind), intent(in) :: ASPAR(PDLIB_NNZ)
+      real(rkind), intent(in) :: B(NX)
+      real(rkind), intent(out) :: TheOut(NX)
+      real(rkind) :: V_X(NX), V_R(NX), V_Z(NX), V_P(NX), V_Y(NX)
+      real(rkind) :: uO, uN, alphaV, h1, h2
+      real(rkind) :: eNorm, beta
+      real(rkind) :: SOLVERTHR
       integer IP, nbIter
       SOLVERTHR=0.00000001
       nbIter=0
@@ -2966,8 +2976,8 @@
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
 !
-      real(8), intent(inout) :: TheVar(NX)
-      real(8) :: SUM_SI_Var, SUM_SI, TheMean
+      real(rkind), intent(inout) :: TheVar(NX)
+      real(rkind) :: SUM_SI_Var, SUM_SI, TheMean
       INTEGER IP
       SUM_SI_Var=0
       SUM_SI=0
@@ -3064,11 +3074,11 @@
 #endif
 !
 !      CALL W3SETG
-      REAL(8) :: ZETA_WORK(NSEA)
-      REAL(8) :: F_X(NSEA), F_Y(NSEA)
-      REAL(8) :: ASPAR(PDLIB_NNZ), B(NX)
+      REAL(rkind) :: ZETA_WORK(NSEA)
+      REAL(rkind) :: F_X(NSEA), F_Y(NSEA)
+      REAL(rkind) :: ASPAR(PDLIB_NNZ), B(NX)
       INTEGER ISEA, IPROC
-      real(8) :: SXX_t(NSEA), SXY_t(NSEA), SYY_t(NSEA)
+      real(rkind) :: SXX_t(NSEA), SXY_t(NSEA), SYY_t(NSEA)
       integer ierr
       CALL FD_COLLECT_SXX_XY_YY(SXX_t, SXY_t, SYY_t)
       IF (IAPROC .eq. 1) THEN
@@ -3168,7 +3178,7 @@
 #endif
 !
       INTEGER ISEA, JSEA
-      REAL*8, allocatable :: ZETA_WORK(:)
+      REAL(rkind), allocatable :: ZETA_WORK(:)
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'NAPROC=', NAPROC
       WRITE(740+IAPROC,*) 'NTPROC=', NTPROC
