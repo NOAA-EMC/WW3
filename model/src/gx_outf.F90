@@ -131,7 +131,7 @@
                           UST, USTDIR, RHOAIR
       USE W3ADATMD, ONLY: CFLXYMAX, CFLTHMAX, AS, CX, CY, UA, UD, WN,  &
                           DW, HS, WLM, T01, T0M1, T02, THM, THS, FP0,  &
-                          THP0, FP1, THP1, ABA, ABD, UBA, UBD, FCUT,   &
+                          THP0, ABA, ABD, UBA, UBD, FCUT,              &
                           SXX, SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,&
                           PTM1, PT1, PT2, PEP, TAUA, TAUADIR,          &
                           PTHP0, PQP, PSW, PPE, PGW, QP,               &
