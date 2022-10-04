@@ -1225,7 +1225,6 @@
 ! 5.a Loop over types for unified output
 !
       NOTYPE = 6
-!!/COU      NOTYPE = 7
       DO J=1, NOTYPE
 !
 ! 5.b Process standard line
@@ -1430,17 +1429,6 @@
                         WRITE (MDSS,960) 'output', 'FORMATTED'
                       END IF
                   END IF
-
-!!/COU! NOT YET IMPLEMENTED
-!
-!!/COU              ELSE IF ( J .EQ. 7 ) THEN
-!
-! 5.i Type 7: coupling
-!
-!!/COU              CALL W3READFLGRD ( MDSI, MDSS, MDSO, MDSE2, COMSTR, FLG1D,    &
-!!/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
-!!/COU              FLGR2(:,:,1)=FLG2D
-!!/COU              FLG2(:,1)   =FLG1D
 !
 ! ... End of output type selecttion ELSE IF
 !
@@ -3104,9 +3092,6 @@
 #ifdef W3_O10
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,999)
 #endif
-!!!!!/MPI CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
-!!!!!/MPI CALL MPI_FINALIZE  ( IERR_MPI )
-!!!!!/MPI stop 'Ending in wminitmd, case 1'
 !
       RETURN
 !
@@ -4631,7 +4616,6 @@
       DO I=1, NRGRD
         IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,950) TRIM(MNAMES(NRGRD+I))
         NOTYPE = 6
-!!/COU      NOTYPE = 7
 
         READ(NML_OUTPUT_DATE(I)%FIELD%START, *)   ODAT(1,I), ODAT(2,I)
         READ(NML_OUTPUT_DATE(I)%FIELD%STRIDE, *)  ODAT(3,I)
@@ -4656,10 +4640,6 @@
         READ(NML_OUTPUT_DATE(I)%PARTITION%START, *)   ODAT(26,I), ODAT(27,I)
         READ(NML_OUTPUT_DATE(I)%PARTITION%STRIDE, *)  ODAT(28,I)
         READ(NML_OUTPUT_DATE(I)%PARTITION%STOP, *)    ODAT(29,I), ODAT(30,I)
-!!/COU! NOT YET IMPLEMENTED
-!!/COU        READ(NML_OUTPUT_DATE(I)%COUPLING%START, *)   ODAT(31,I), ODAT(32,I)
-!!/COU        READ(NML_OUTPUT_DATE(I)%COUPLING%STRIDE, *)  ODAT(33,I)
-!!/COU        READ(NML_OUTPUT_DATE(I)%COUPLING%STOP, *)    ODAT(34,I), ODAT(35,I)
 
         ! set the time stride at 0 or more
         ODAT(3,I) = MAX ( 0 , ODAT(3,I) )
@@ -4668,7 +4648,6 @@
         ODAT(18,I) = MAX ( 0 , ODAT(18,I) )
         ODAT(23,I) = MAX ( 0 , ODAT(23,I) )
         ODAT(28,I) = MAX ( 0 , ODAT(28,I) )
-!!/COU        ODAT(33,I) = MAX ( 0 , ODAT(33,I) )
         ODAT(38,I) = MAX ( 0 , ODAT(38,I) )
 
         ! define the time of the output point grid (index 0) as the   &
@@ -4870,18 +4849,6 @@
                         WRITE (MDSS,960) 'output', 'FORMATTED'
                       END IF
                   END IF
-
-!!/COU! NOT YET IMPLEMENTED
-!
-!!/COU              ELSE IF ( J .EQ. 7 ) THEN
-!
-! 5.i Type 7: coupling
-!
-!!/COU              FLDOUT = NML_OUTPUT_TYPE(I)%COUPLING%LIST
-!!/COU              CALL W3FLGRDFLAG ( MDSS, MDSO, MDSE2, FLDOUT, FLG1D,       &
-!!/COU                                 FLG2D, IMPROC, NMPSCR, IERR )
-!!/COU              FLGR2(:,:,I)=FLG2D
-!!/COU              FLG2(:,I)   =FLG1D
 !
 ! ... End of output type selecttion ELSE IF
 !
@@ -6224,9 +6191,6 @@
 #ifdef W3_O10
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC ) WRITE (MDSS,999)
 #endif
-!!!!!/MPI CALL MPI_BARRIER (MPI_COMM_MWAVE,IERR_MPI)
-!!!!!/MPI CALL MPI_FINALIZE  ( IERR_MPI )
-!!!!!/MPI stop
 !
       RETURN
 !
