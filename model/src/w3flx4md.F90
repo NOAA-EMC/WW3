@@ -1,5 +1,29 @@
+!> @file 
+!> @brief Flux/stress computations according to Hwang (2011).
+!> 
+!> @author H. L. Tolman
+!> @author S. Zieger
+!> @author Q. Liu
+!> @date   24-Nov-2017
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Flux/stress computations according to Hwang ( 2011).
+!> 
+!> @details Hwang 2011: J Atmos Ocean Tech 28(3)  436-443.
+!>
+!> @author H. L. Tolman
+!> @author S. Zieger
+!> @author Q. Liu
+!> @date   24-Nov-2017
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
       MODULE W3FLX4MD
 !/
 !/                  +-----------------------------------+
@@ -59,6 +83,25 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Flux/stress computations according to Hwang (JTECH, 2011).
+!>
+!> @verbatim   
+!>     CD    = 1E-4 ( -0.016 U10**2 + 0.967U10 + 8.058)
+!>     USTAR = U10 * SQRT( U10 )     
+!> @endverbatim        
+!>
+!> @param[in]  ZWND Wind height.
+!> @param[in]  U10  Wind speed.
+!> @param[in]  U10D Wind direction.
+!> @param[out] UST  Friction velocity.
+!> @param[out] USTD Direction of friction velocity.
+!> @param[out] Z0   Z0 in profile law.
+!> @param[out] CD   Drag coefficient.
+!>
+!> @author H. L. Tolman
+!> @date   03-Jul-2006
+!>        
       SUBROUTINE W3FLX4 ( ZWND, U10, U10D, UST, USTD, Z0, CD )
 !/
 !/                  +-----------------------------------+
