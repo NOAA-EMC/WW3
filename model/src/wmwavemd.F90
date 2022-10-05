@@ -1263,12 +1263,6 @@
             IF ( MPI_COMM_GRD .NE. MPI_COMM_NULL ) THEN
 #endif
 !
-!!/MPRF                CALL PRTIME ( PRFT0 )
-!!/MPRF                CALL WMWOUT ( I, NRGRD, 3 )
-!!/MPRF                CALL PRTIME ( PRFTN )
-!!/MPRF                WRITE (MDSP,991) PRFT0, PRFTN, get_memory(),  &
-!!/MPRF                                'BCST',I
-!
 #ifdef W3_MPRF
                 CALL PRTIME ( PRFT0 )
 #endif
@@ -1276,7 +1270,6 @@
                 IF ( FLG_O1 ) THEN
                     CALL W3SETG ( I, MDSE, MDST )
                     CALL WMSETM ( I, MDSE, MDST )
-!
                     IF ( FLGHG1 .AND. .NOT.FLGHG2 .AND.               &
                          GRDHGH(I,0).GT.0 ) THEN
                         MAPST2 = MAPST2 - 8*MAPMSK
@@ -2061,10 +2054,6 @@
       ITAG   = MTAGB + IMOD + ID*NMOD
 #endif
 !
-!!/MPIT      WRITE (MDST,9000) IMOD, NMOD, ID, ITAG-MTAGB
-!!/MPIT      WRITE (MDST,9001) IMPROC, NMPROC
-!!/MPIT      WRITE (MDST,9002) ALLPRC(:,IMOD)
-!
 ! -------------------------------------------------------------------- /
 ! 1.  Processor to send data from
 !
@@ -2073,7 +2062,6 @@
           DO IP=1, NMPROC
             IF ( ALLPRC(IP,IMOD) .EQ. 0 ) THEN
 #endif
-!!/MPIT                WRITE (MDST,9010) ALLPRC(IMPROC,IMOD), IP
 #ifdef W3_MPI
                 CALL MPI_SEND ( DATA, NR, MPI_INTEGER, IP-1,     &
                                 ITAG, MPI_COMM_MWAVE, IERR_MPI )
@@ -2087,7 +2075,6 @@
 #ifdef W3_MPI
         ELSE IF ( ALLPRC(IMPROC,IMOD) .EQ. 0 ) THEN
 #endif
-!!/MPIT          WRITE (MDST,9020) ALLPRC(IMPROC,IMOD), CROOT
 #ifdef W3_MPI
           CALL MPI_RECV ( DATA, NR, MPI_INTEGER, CROOT-1, ITAG,  &
                           MPI_COMM_MWAVE, STATUS, IERR_MPI )
@@ -2097,8 +2084,6 @@
 ! -------------------------------------------------------------------- /
 ! 3.  Processor with no action
 !
-!!/MPIT        ELSE
-!!/MPIT          WRITE (MDST,9030) ALLPRC(IMPROC,IMOD)
 #ifdef W3_MPI
         END IF
 #endif
@@ -2260,12 +2245,9 @@
       ITAG   = MTAGB + IMOD + ID*NMOD
 #endif
 !
-!!/MPIT      WRITE (MDST,9000) IMOD, NMOD, ID, ITAG-MTAGB
-!!/MPIT      WRITE (MDST,9001) IAPROC, NAPROC, NTPROC
 #ifdef W3_MPI
       IF ( IAPROC .LT. 1 ) THEN
 #endif
-!!/MPIT          WRITE (MDST,9002)
 #ifdef W3_MPI
           RETURN
         END IF
@@ -2278,7 +2260,6 @@
       IF ( IAPROC .EQ. 1 ) THEN
           DO IP=NAPROC+1, NTPROC
 #endif
-!!/MPIT            WRITE (MDST,9010) IAPROC, IP
 #ifdef W3_MPI
             CALL MPI_SEND ( DUMMY, 1, MPI_INTEGER, IP-1,         &
                             ITAG, MPI_COMM_WAVE, IERR_MPI )
@@ -2291,7 +2272,6 @@
 #ifdef W3_MPI
         ELSE IF ( IAPROC .GT. NAPROC ) THEN
 #endif
-!!/MPIT          WRITE (MDST,9020) IAPROC, 1
 #ifdef W3_MPI
           CALL MPI_RECV ( DUMMY, 1, MPI_INTEGER, 0, ITAG,        &
                           MPI_COMM_WAVE, STATUS, IERR_MPI )
@@ -2300,8 +2280,6 @@
 ! -------------------------------------------------------------------- /
 ! 3.  Processor with no action
 !
-!!/MPIT        ELSE
-!!/MPIT          WRITE (MDST,9030) IAPROC
 #ifdef W3_MPI
         END IF
 #endif
