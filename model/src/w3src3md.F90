@@ -288,7 +288,7 @@
 !/
 !/ End of W3SPR3 ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+  END SUBROUTINE W3SPR3
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3SIN3 (A, CG, K, U, USTAR, DRAT, AS, USDIR, Z0, CD,    &
                          TAUWX, TAUWY, TAUWNX, TAUWNY, ICE, S, D, LLWS, IX, IY)
@@ -626,7 +626,7 @@
 !/
 !/ End of W3SIN3 ----------------------------------------------------- /
 !/
-      END SUBROUTINE
+  END SUBROUTINE W3SIN3
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INSIN3
 !/

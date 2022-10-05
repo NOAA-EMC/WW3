@@ -1,5 +1,23 @@
+!> @file 
+!> @brief Flux/stress computations according to Wu (1980).
+!> 
+!> @author H. L. Tolman
+!> @date   29-May-2009
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Flux/stress computations according to Wu (1980).
+!> 
+!> @author H. L. Tolman
+!> @date   29-May-2009
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
       MODULE W3FLX1MD
 !/
 !/                  +-----------------------------------+
@@ -53,6 +71,20 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief FLux/stress computations according to Wu (1980).
+!>
+!> @param[inout] ZWND Wind height.
+!> @param[inout] U10  Wind speed.
+!> @param[inout] U10D Wind direction.
+!> @param[inout] UST  Friction velocity.
+!> @param[inout] USTD Direction of friction velocity.
+!> @param[inout] Z0   Z0 in profile law.
+!> @param[inout] CD   Drag coefficient.
+!>
+!> @author H. L. Tolman
+!> @date   03-Jul-2006
+!>        
       SUBROUTINE W3FLX1 ( ZWND, U10, U10D, UST, USTD, Z0, CD )
 !/
 !/                  +-----------------------------------+

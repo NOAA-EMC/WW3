@@ -2943,7 +2943,9 @@
 !!!      INTEGER                 :: NSMALL, IGMIN(NG), NNEXT, JG, IGADD, &
 !!!                                 IGTEST, FREE(NG), NFREE, NBIG, IGB,  &
 !!!                                 MX, MY, NX0, NXN, NY0, NYN
-!!!!/S      INTEGER, SAVE           :: IENT = 0
+#ifdef W3_S
+      INTEGER, SAVE           :: IENT = 0
+#endif
       CHARACTER(LEN=1)        :: NEXTTO(0:NG,0:NG), TEMP(NG)
 !/
 !/ ------------------------------------------------------------------- /

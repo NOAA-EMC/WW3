@@ -88,7 +88,7 @@ module MallocInfo_m
       integer(c_int) :: fordblks        
       !> This is the size of the top-most releasable chunk that normally borders the end of the heap (i.e., the high end of the virtual address space’s data segment).
       integer(c_int) :: keepcost      
-    end type
+  end type MallInfo_t
     
     interface
       function mallinfo() bind(c, name="mallinfo") result(data)
@@ -106,9 +106,9 @@ module MallocInfo_m
           integer(c_int) :: uordblks        
           integer(c_int) :: fordblks        
           integer(c_int) :: keepcost      
-        end type
+       end type MallInfo_t
         type(MallInfo_t) :: data
-      end function
+     end function mallinfo
     end interface
   
   contains
@@ -181,7 +181,7 @@ module MallocInfo_m
 #endif
     type(MallInfo_t), intent(out) :: malinfo
     malinfo = mallinfo()
-  end subroutine
+  end subroutine getMallocInfo
   
   subroutine printMallInfo(ihdnl,malinfo)
 !/
@@ -269,7 +269,7 @@ module MallocInfo_m
     write(ihdnl,'(A72,2F20.10)') "VM size in proc ", vmsize/1024. 
     write(ihdnl,'(A72,2F20.10)') "RSS size in prof ", vmRSS/1024.
     call flush(ihdnl)
-  end subroutine
+  end subroutine printMallInfo
 
 !VmPeak: Peak virtual memory usage
 !VmSize: Current virtual memory usage
@@ -455,7 +455,7 @@ module MallocInfo_m
     vmRSS = -1
   end function getVmRSS
   
-end module
+end module MallocInfo_m
 
 !program test
 !  use MallocInfo_m

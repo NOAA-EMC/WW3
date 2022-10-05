@@ -74,7 +74,6 @@
 
       REAL*8,  PARAMETER     :: THR8      = TINY(1.d0)
       REAL,  PARAMETER     :: THR       = TINY(1.0)
-!!/S      CALL STRACE (IENT, 'W3XXXX')
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE WAV_MY_WTIME(eTime)
@@ -156,7 +155,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE WAV_MY_WTIME
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PRINT_MY_TIME(string)
 !/
@@ -231,7 +230,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PRINT_MY_TIME
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PROP_REFRACTION_PR1(ISEA,DTG, CAD)
 !/
@@ -380,7 +379,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_REFRACTION_PR1
 !/ ------------------------------------------------------------------- /
 !
       SUBROUTINE PROP_REFRACTION_PR3(IP, ISEA, DTG, CAD, DoLimiter)
@@ -528,7 +527,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_REFRACTION_PR3
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PROP_FREQ_SHIFT(IP, ISEA, CAS, DMM, DTG)
 !/
@@ -667,7 +666,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_FREQ_SHIFT
 !/ ------------------------------------------------------------------- /
       SUBROUTINE PROP_FREQ_SHIFT_M2(IP, ISEA, CWNB_M2, DWNI_M2, DTG)
 !/
@@ -812,7 +811,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE PROP_FREQ_SHIFT_M2
 !/ ------------------------------------------------------------------- /
       SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
 !/
@@ -926,7 +925,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY
 !/ ....................----------------------------------------------- /
       SUBROUTINE SET_UP_NSEAL_NSEALM(NSEALout, NSEALMout)
 !/
@@ -1038,7 +1037,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE SET_UP_NSEAL_NSEALM
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
 !/ ------------------------------------------------------------------- /
@@ -1135,7 +1134,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE INIT_GET_JSEA_ISPROC
 !/ ------------------------------------------------------------------- /
       SUBROUTINE GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
 !/ ------------------------------------------------------------------- /
@@ -1252,7 +1251,7 @@
 !/
 !/ End of INIT_GET_ISEA ---------------------------------------------- /
 !/
-      END SUBROUTINE
+  END SUBROUTINE GET_JSEA_IBELONG
 !/ ------------------------------------------------------------------- /
       SUBROUTINE INIT_GET_ISEA(ISEA, JSEA)
 !/ ------------------------------------------------------------------- /
@@ -1359,7 +1358,7 @@
 !/
 !/ End of INIT_GET_ISEA ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE INIT_GET_ISEA
 !**********************************************************************
 !*  An array of size (NSEA) is send but only the (1:NSEAL) values     *
 !*  are correct. The program synchonizes everything on all nodes.     *
@@ -1476,7 +1475,7 @@
 !/
 !/ End of JACOBI_INIT ------------------------------------------------ /
 !/
-      END SUBROUTINE
+  END SUBROUTINE SYNCHRONIZE_GLOBAL_ARRAY
 !/ ------------------------------------------------------------------- /
       END MODULE W3PARALL
 !/ ------------------------------------------------------------------- /

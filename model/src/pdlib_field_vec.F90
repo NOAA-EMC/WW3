@@ -385,7 +385,7 @@ MODULE PDLIB_FIELD_VEC
         END IF
       END DO
       TheSize=IH
-      END SUBROUTINE
+  END SUBROUTINE GET_ARRAY_SIZE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE UNST_PDLIB_READ_FROM_FILE(NDREAD)
 !/
@@ -530,8 +530,6 @@ MODULE PDLIB_FIELD_VEC
             ISEA = (iBlock - 1)*BlockSize + IB
             NREC = ISEA + 2
             RPOS = 1_8 + LRECL*(NREC-1_8)
-!!/DEBUGIO     WRITE(740+IAPROC,*) 'READ AT ISEA=', ISEA, ' RPOS=', RPOS
-!!/DEBUGIO     FLUSH(740+IAPROC)
             READ (NDREAD, POS=RPOS, IOSTAT=IERR) (DATAread(I,IB), I=1,NSPEC)
           END DO
 #ifdef W3_TIMINGS
@@ -600,7 +598,7 @@ MODULE PDLIB_FIELD_VEC
       IF (IAPROC .eq. 1) THEN
         deallocate(DATAread)
       END IF
-      END SUBROUTINE
+  END SUBROUTINE UNST_PDLIB_READ_FROM_FILE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE UNST_PDLIB_WRITE_TO_FILE(NDWRITE)
 !/
@@ -749,8 +747,6 @@ MODULE PDLIB_FIELD_VEC
             idx  = ISEA - iFirst + 1
             NREC = ISEA + 2
             RPOS = 1_8 + LRECL*(NREC-1_8)
-!!/DEBUGIO     WRITE(740+IAPROC,*) 'WRITE AT ISEA=', ISEA, ' RPOS=', RPOS
-!!/DEBUGIO     FLUSH(740+IAPROC)
             WRITEBUFF(:) = 0
             WRITEBUFF(1:NSPEC) = DATAwrite(1:NSPEC, idx)
             WRITE(NDWRITE, POS=RPOS) WRITEBUFF
@@ -780,7 +776,7 @@ MODULE PDLIB_FIELD_VEC
           END IF
         END IF
       END DO
-      END SUBROUTINE
+  END SUBROUTINE UNST_PDLIB_WRITE_TO_FILE
 !/ ------------------------------------------------------------------- /
       SUBROUTINE DO_OUTPUT_EXCHANGES(IMOD)
 !/
@@ -814,7 +810,7 @@ MODULE PDLIB_FIELD_VEC
       USE W3WDATMD, ONLY: VA, UST, USTDIR, ASF, FPIS
       USE W3ADATMD, ONLY: MPI_COMM_WAVE, WW3_FIELD_VEC
       USE W3ADATMD, ONLY: HS, WLM, T02
-      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1,  &
+      USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0,             &
                           DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
                           SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
                           PDIR, PSI, PWS, PWST, PNR, PHIAW,      &

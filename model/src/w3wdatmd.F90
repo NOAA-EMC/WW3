@@ -159,7 +159,6 @@
   REAL, POINTER     :: VAOLD(:,:)
   LOGICAL, POINTER  :: SHAVETOT(:)
 #endif
-!!/PDLIB     REAL, POINTER     :: VAOLD(:,:)
         LOGICAL               :: DINIT, FL_ALL
       END TYPE WDATA
 !
@@ -193,7 +192,6 @@
       REAL, POINTER           :: VAOLD(:,:)
       LOGICAL, POINTER        :: SHAVETOT(:)
 #endif
-!!/PDLIB      REAL, POINTER           :: VAOLD(:,:)
       LOGICAL, POINTER        :: DINIT, FL_ALL
 !/
       CONTAINS
@@ -787,7 +785,6 @@
             QC5INT0 => WDATAS(IMOD)%QC5INT0
             QR5TMIX => WDATAS(IMOD)%QR5TMIX
 #endif
-!!/PDLIB            VAOLD     => WDATAS(IMOD)%VAOLD
 #ifdef W3_PDLIB
             SHAVETOT     => WDATAS(IMOD)%SHAVETOT
             VSTOT     => WDATAS(IMOD)%VSTOT

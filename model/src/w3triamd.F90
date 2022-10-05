@@ -67,9 +67,7 @@
 !      USE W3ODATMD, ONLY: W3NOUT, W3SETO, W3DMO5
 !      USE W3IOGRMD, ONLY: W3IOGR
 !     USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
-!!/S      USE W3SERVMD, ONLY: STRACE
 !      USE W3ARRYMD, ONLY: INA2R, INA2I
-!!/T      USE W3ARRYMD, ONLY: PRTBLK
 !      USE W3DISPMD, ONLY: DISTAB
 !      USE W3GDATMD
 !      USE W3ODATMD, ONLY: NDSE, NDST, NDSO
@@ -597,7 +595,7 @@ CONTAINS
           EXIT
         END IF
       END DO
-      END SUBROUTINE
+  END SUBROUTINE GET_BOUNDARY_STATUS
 
 !/ -------------------------------------------------------------------/
       SUBROUTINE READMSHOBC(NDS, FNAME, TMPSTA, UGOBCOK) 
@@ -900,7 +898,7 @@ CONTAINS
          !STOP 
          END IF    
        END DO
-     END SUBROUTINE
+  END SUBROUTINE SPATIAL_GRID
 !/--------------------------------------------------------------------/
 !
 !/--------------------------------------------------------------------/
@@ -1020,7 +1018,7 @@ CONTAINS
     
          END DO
 
-     END SUBROUTINE
+  END SUBROUTINE NVECTRI
 !/---------------------------------------------------------------------------
 
 !/------------------------------------------------------------------------
@@ -1129,7 +1127,7 @@ J=0
  ENDDO
  COUNTOT=J  
 
-END SUBROUTINE
+  END SUBROUTINE COUNT
 
 !/----------------------------------------------------------------------------  
       SUBROUTINE COORDMAX
@@ -1201,7 +1199,7 @@ END SUBROUTINE
     SX = MINVAL(LEN(:,:))
     SY = SX
 ! 
- END SUBROUTINE
+  END SUBROUTINE COORDMAX
 !-------------------------------------------------------------------------
 
   SUBROUTINE AREA_SI(IMOD)
@@ -1452,7 +1450,7 @@ END SUBROUTINE
 
          DEALLOCATE(PTABLE)
 
-       END SUBROUTINE
+  END SUBROUTINE AREA_SI
        
      SUBROUTINE IS_IN_UNGRID(IMOD, XTIN, YTIN, ITOUT, IS, JS, RW)
 !/ -------------------------------------------------------------------
@@ -2101,7 +2099,7 @@ END SUBROUTINE
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOBC : '/                &
              '     NUMBER OF MAPSTA=2 DIFFERS FROM NUMBER IN nest.ww3    '/                &
              '     CHECK nest.ww3 AND ww3_grid.inp ',2I8/)
-END SUBROUTINE
+  END SUBROUTINE W3NESTUG
 
 
 !/ ------------------------------------------------------------------- /
@@ -2477,7 +2475,7 @@ END SUBROUTINE
         DEALLOCATE(PREVVERT, STAT=ISTAT)
         CHECK_DEALLOC_STATUS ( ISTAT )
 
-      END SUBROUTINE
+  END SUBROUTINE GET_BOUNDARY
 
 !/ ------------------------------------------------------------------- /
 
@@ -2558,7 +2556,7 @@ END SUBROUTINE
         ELSE
           IPREV=I+1
         END IF
-      END SUBROUTINE
+  END SUBROUTINE TRIANG_INDEXES
 
 !/ ------------------------------------------------------------------- /
 
@@ -2665,7 +2663,7 @@ END SUBROUTINE
  ENDIF
 #endif
    
-   END SUBROUTINE
+  END SUBROUTINE GET_INTERFACE
 !/ ------------------------------------------------------------------- /
    SUBROUTINE SET_UG_IOBP()
 !/

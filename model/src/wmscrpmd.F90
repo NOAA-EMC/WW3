@@ -1426,7 +1426,7 @@
         ELSE
           IPREV=I+1
         END IF
-      END SUBROUTINE
+  END SUBROUTINE TRIANG_INDEXES
 
 !/ ------------------------------------------------------------------- /
 !>
@@ -1692,7 +1692,7 @@
         DEALLOCATE(PREVVERT, STAT=ISTAT)
         CHECK_DEALLOC_STATUS ( ISTAT )
         
-      END SUBROUTINE
+  END SUBROUTINE GET_BOUNDARY
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Adjust element longitude coordinates for elements straddling the

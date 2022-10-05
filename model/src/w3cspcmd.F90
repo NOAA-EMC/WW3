@@ -1,5 +1,23 @@
+!> @file 
+!> @brief Convert spectra to new discrete spectral grid.
+!> 
+!> @author H. L. Tolman
+!> @date   01-Nov-2012
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Convert spectra to new discrete spectral grid.
+!> 
+!> @author H. L. Tolman
+!> @date   01-Nov-2012
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
       MODULE W3CSPCMD
 !/
 !/                  +-----------------------------------+
@@ -97,6 +115,31 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Convert a set of spectra to a new spectral grid.
+!>
+!> @details Conservative distribution of input energies over new grid.
+!>
+!> @param[in]  SP1  Input spectra.
+!> @param[in]  NFR1 Input number of frequencies.
+!> @param[in]  NTH1 Input number of directions.
+!> @param[in]  XF1  Input frequency increment factor.
+!> @param[in]  FR1  First input frequency.
+!> @param[in]  TH1  First input direction.
+!> @param[out] SP2  Output spectra.
+!> @param[in]  NFR2 Output number of frequencies.
+!> @param[in]  NTH2 Output number of directions.
+!> @param[in]  XF2  Output frequency increment factor.
+!> @param[in]  FR2  First output frequency.
+!> @param[in]  TH2  First output direction.
+!> @param[in]  NSP  Number of spectra.
+!> @param[in]  NDST Unit number for test output.
+!> @param[in]  NDSE Unit number for error output.
+!> @param[in]  FTL  Factor for tail description = XF2**N.
+!>
+!> @author H. L. Tolman
+!> @date   01-Nov-2012
+!>        
       SUBROUTINE W3CSPC ( SP1, NFR1, NTH1, XF1, FR1, TH1,             &
                           SP2, NFR2, NTH2, XF2, FR2, TH2,             &
                           NSP, NDST, NDSE, FTL )
