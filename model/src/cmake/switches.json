@@ -209,7 +209,7 @@
             {
                 "name": "LN1",
                 "build_files": ["w3sln1md.F90"]
-            }   
+            }
         ]
     },
     {
@@ -260,11 +260,11 @@
             {
                 "name": "STAB2",
                 "requires": ["ST2"]
-                
+
             },
             {
                 "name": "STAB3",
-                "requires": [["ST3", "ST4"]]
+                "requires": ["ST3", "ST4"]
             }
         ]
     },
@@ -357,7 +357,7 @@
         "valid-options": [
             {
                 "name": "MLIM"
-            }   
+            }
         ]
     },
     {
@@ -385,7 +385,7 @@
             {
                 "name": "BS1",
                 "build_files": ["w3sbs1md.F90"]
-            }   
+            }
         ]
     },
     {
@@ -561,7 +561,7 @@
         "valid-options": [
             {
                 "name": "MGP"
-            }   
+            }
         ]
     },
     {
@@ -780,8 +780,8 @@
     },
     {
         "name": "uost",
-        "num_switches": "unresolved obstacles source term",
-        "description": "upto1",
+        "num_switches": "upto1",
+        "description": "unresolved obstacles source term",
         "valid-options": [
             {
                 "name": "UOST",

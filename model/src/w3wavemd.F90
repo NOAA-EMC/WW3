@@ -1649,7 +1649,6 @@ CONTAINS
             IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
                  & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
 #endif
-              !!/PDLIB               IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN
 
 
 #ifdef W3_PDLIB
@@ -2450,15 +2449,6 @@ CONTAINS
             END IF
 #endif
 #endif
-
-            !
-            ! This barrier is from older code versions. It has been removed in 3.11
-            ! to optimize IO2/3 settings. May be needed on some systems still
-            !
-            !!/MPI              IF (FLAG0) CALL MPI_BARRIER (MPI_COMM_WCMP,IERR_MPI)
-            !!/MPI            ELSE
-            !!/MPI              CALL MPI_BARRIER (MPI_COMM_WCMP,IERR_MPI)
-            !
           END IF
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After source terms", 1)
@@ -2957,12 +2947,6 @@ CONTAINS
 #ifdef W3_T
         WRITE (NDST,9044)
 #endif
-        !
-        ! This barrier is from older code versions. It has been removed in 3.11
-        ! to optimize IO2/3 settings. May be needed on some systems still
-        !
-        !!/MPI            IF (FLDRY) CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
-        !
       END IF
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("Before update log file")
@@ -2976,12 +2960,6 @@ CONTAINS
 
       !
       ! 5.  Update log file ------------------------------------------------ /
-
-      !      IF (MINVAL(VA) .LT. 0.) THEN
-      !        WRITE(740+IAPROC,*) 'TEST W3WAVE 13', SUM(VA), MINVAL(VA), MAXVAL(VA)
-      !        CALL FLUSH(740+IAPROC)
-      !        STOP
-      !      ENDIF
       !
       IF ( IAPROC.EQ.NAPLOG ) THEN
         !

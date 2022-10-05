@@ -2374,13 +2374,13 @@ CONTAINS
           IF ((DIS >= 1 .AND. KAPPA>=1 .AND.  &
                IMAG(WN0)>=0.1*IMAG(WNM1).AND. &
                ABS(WN-KP)<ABS(WN0-KP)) .OR.  &
-                                ! wn0 has larger attenuation and closer to k0
+               ! wn0 has larger attenuation and closer to k0
                ( DIS>=1 .AND. KAPPA<1 .AND. &
                ((KAPPA> 0.2 .AND. IMAG(WN0)/REAL(WN0)<0.5).or. &
                ABS(REAL(WN)-REAL(KP))<ABS(REAL(WN0)-REAL(KP)))).OR.&
-                                ! wn0 has smaller attenuation and farther to k0,
-                                ! wn0 could be wrong at high G
-                                ! (kappa>1 .and. dis<1 .and. dis>  0.8 ))then
+               ! wn0 has smaller attenuation and farther to k0,
+               ! wn0 could be wrong at high G
+               ! (kappa>1 .and. dis<1 .and. dis>  0.8 ))then
                ( KAPPA>1 .AND. DIS<1 .AND. &
                ABS(REAL(WN)-REAL(WNM1))>   &
                ABS(REAL(WN0)-REAL(WNM1)) ))THEN

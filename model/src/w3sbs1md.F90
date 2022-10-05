@@ -88,7 +88,6 @@ MODULE W3SBS1MD
   REAL               :: CURTX, CURTY
   !/
 CONTAINS
-  !
   !>
   !> @brief Bottom scattering source term.
   !>

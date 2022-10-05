@@ -1733,8 +1733,6 @@ CONTAINS
          GRIDS(IMOD)%HQFAC(MY,MX),   &
          STAT=ISTAT                  )
     CHECK_ALLOC_STATUS ( ISTAT )
-    !!/DEBUGINIT         WRITE(740+IAPROC,*) 'After alocation of MAPST2, MY=', MY, ' MX=', MX
-    !!/DEBUGINIT         FLUSH(740+IAPROC)
 #ifdef W3_BT4
     ALLOCATE ( GRIDS(IMOD)%SED_D50(0:MSEA), &
          GRIDS(IMOD)%SED_PSIC(0:MSEA),&
