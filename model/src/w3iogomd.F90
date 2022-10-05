@@ -69,9 +69,11 @@ MODULE W3IOGOMD
   !/                  (Roberto Padilla-Hernandez & J.H. Alves)
   !/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
   !/                  seperate subroutine. (C. Bunney)
-  !/    15-Jan-2020 : Added TP output based on exsiting   ( version 7.12 )
+  !/    15-Jan-2021 : Added TP output based on exsiting   ( version 7.12 )
   !/                  FP internal field. (C. Bunney)
   !/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
+  !/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
+  !/                  min/max freq band (B. Pouliot, CMC)
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1315,8 +1317,7 @@ CONTAINS
     !/
     INTEGER                 :: IK, ITH, JSEA, ISEA, IX, IY,         &
          IKP0(NSEAL), NKH(NSEAL),             &
-         ILOW, ICEN, IHGH, I, J, LKMS, HKMS,  &
-         ITL
+         I, J, LKMS, HKMS, ITL
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -2051,7 +2052,7 @@ CONTAINS
     DO JSEA=1, NSEAL
       EC  (JSEA) = EBD(NK,JSEA)
       FP0 (JSEA) = UNDEF
-      IKP0(JSEA) = 0
+      IKP0(JSEA) = NK
       THP0(JSEA) = UNDEF
     END DO
     !
@@ -2061,7 +2062,7 @@ CONTAINS
     !
     ! 4.b Discrete peak frequencies
     !
-    DO IK=NK-1, 2, -1
+    DO IK=NK-1, 1, -1
       !
 #ifdef W3_OMPG
       !$OMP PARALLEL DO PRIVATE(JSEA)
@@ -2085,7 +2086,7 @@ CONTAINS
 #endif
     !
     DO JSEA=1, NSEAL
-      IF ( IKP0(JSEA) .NE. 0 ) FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
+      IF ( IKP0(JSEA) .NE. NK ) FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
     END DO
     !
 #ifdef W3_OMPG
@@ -2100,18 +2101,23 @@ CONTAINS
     XH2    = XH**2
     !
 #ifdef W3_OMPG
-    !$OMP PARALLEL DO PRIVATE(JSEA,ILOW,ICEN,IHGH,EL,EH,DENOM)
+    !$OMP PARALLEL DO PRIVATE(JSEA,EL,EH,DENOM)
 #endif
     !
     DO JSEA=1, NSEAL
-      ILOW   = MAX (  1 , IKP0(JSEA)-1 )
-      ICEN   = MAX (  1 , IKP0(JSEA)   )
-      IHGH   = MIN ( NK , IKP0(JSEA)+1 )
-      EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
-      EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
-      DENOM  = XL*EH - XH*EL
-      FP0(JSEA) = FP0 (JSEA) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )     &
-           / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
+      IF ( IKP0(JSEA) .NE. NK ) THEN
+        IF ( IKP0(JSEA) .EQ. 1 ) THEN
+          EL = - EBD(IKP0(JSEA), JSEA)
+        ELSE
+          EL = EBD(IKP0(JSEA)-1, JSEA) - EBD(IKP0(JSEA), JSEA)
+        END IF
+
+        EH = EBD(IKP0(JSEA)+1, JSEA) - EBD(IKP0(JSEA), JSEA)
+
+        DENOM  = XL*EH - XH*EL
+        FP0(JSEA) = FP0 (JSEA) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )   &
+             / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
+      END IF
     END DO
     !
 #ifdef W3_OMPG
@@ -2140,7 +2146,7 @@ CONTAINS
 #endif
       !
       DO JSEA=1, NSEAL
-        IF (IKP0(JSEA).NE.0) THEN
+        IF ( IKP0(JSEA) .NE. NK ) THEN
           ETX(JSEA) = ETX(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ECOS(ITH)
           ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
         END IF
