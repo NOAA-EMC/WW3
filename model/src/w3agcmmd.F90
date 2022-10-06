@@ -1,5 +1,25 @@
+!> @file 
+!> @brief Contains module used for coupling applications between atmospheric model
+!>  and WW3 with OASIS3-MCT.
+!> 
+!> @author J. Pianezze
+!> @date   Mar-2021
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Module used for coupling applications between atmospheric model
+!>  and WW3 with OASIS3-MCT.
+!> 
+!> @author J. Pianezze
+!> @date   Mar-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
       MODULE W3AGCMMD
 !/
 !/                  +-----------------------------------+
@@ -59,6 +79,13 @@
 !
       CONTAINS
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Send coupling fields to atmospheric model.
+!>
+!> @author J. Pianezze
+!> @date   Apr-2016
+!>
       SUBROUTINE SND_FIELDS_TO_ATMOS()
 !/
 !/                  +-----------------------------------+
@@ -192,6 +219,19 @@
 !
 !/ ------------------------------------------------------------------- /
       END SUBROUTINE SND_FIELDS_TO_ATMOS
+
+!>
+!> @brief Receive coupling fields from atmospheric model.
+!>
+!> @param[in]    ID_LCOMM MPI communicator.
+!> @param[in]    IDFLD    Name of the exchange fields.
+!> @param[inout] FXN      First exchange field.
+!> @param[inout] FYN      Second exchange field.
+!> @param[inout] FAN      Third exchange field.
+!>
+!> @author J. Pianezze
+!> @date   Mar-2021
+!>      
 !/ ------------------------------------------------------------------- /
       SUBROUTINE RCV_FIELDS_FROM_ATMOS(ID_LCOMM, IDFLD, FXN, FYN, FAN)
 !/

@@ -231,7 +231,6 @@
                     DAL1, DAL2, DAL3, AF11,                           &
                     AWG1, AWG2, AWG3, AWG4, AWG5, AWG6, AWG7, AWG8,   &
                     SWG1, SWG2, SWG3, SWG4, SWG5, SWG6, SWG7, SWG8
-!!/DEBUGSRC      USE W3ODATMD, only : IAPROC
 #ifdef W3_T
       USE W3ODATMD, ONLY: NDST
 #endif
@@ -363,9 +362,6 @@
 !
 ! 4.  Put source and diagonal term together -------------------------- *
 !
-!!/DEBUGSRC     WRITE(740+IAPROC,*)  'W3SNL1 : sum(SA1)=', sum(SA1)
-!!/DEBUGSRC     WRITE(740+IAPROC,*)  'W3SNL1 : sum(SA2)=', sum(SA2)
-!!/DEBUGSRC     FLUSH(740+IAPROC)
       DO ISP=1, NSPEC
 !
         S(ISP) = CON(ISP) * ( - 2. * ( SA1(ISP) + SA2(ISP) )       &
@@ -389,9 +385,6 @@
                 + SWG8 * ( DA1M(IC81(ISP)) + DA2M(IC82(ISP)) )
 !
         END DO
-!!/DEBUGSRC     WRITE(740+IAPROC,*)  'W3SNL1 : sum(S)=', sum(S)
-!!/DEBUGSRC     WRITE(740+IAPROC,*)  'W3SNL1 : sum(D)=', sum(D)
-!!/DEBUGSRC     FLUSH(740+IAPROC)
 !
 ! ... Test output :
 !

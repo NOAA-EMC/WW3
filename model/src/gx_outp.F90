@@ -1177,9 +1177,6 @@
 #ifdef W3_NL4
                 CALL W3SNL4 ( A, CG, WN, DEPTH,         XNL, DIA )
 #endif
-!!/NLS                CALL W3SNLS ( A, CG, WN, DEPTH, UABS, 900.,      &
-!!/NLS                                                 SNL=XNL, AA=DIA )
-!
               END IF
             IF ( FLSRCE(4) ) THEN
 #ifdef W3_ST1

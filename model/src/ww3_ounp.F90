@@ -75,6 +75,8 @@
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
 !/    06-Sep-2021 : scale factor on spectra output      ( version 7.12 )
 !/    05-Jan-2022 : Added TIMESPLIT=0 (nodate) support  ( version 7.14 )
+!/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
+!/                  min/max freq band (B. Pouliot, CMC)
 !/
 !/    Copyright 2009 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1595,7 +1597,7 @@
 
 !/ Local parameters
 !/
-      INTEGER                 :: J, J1, I1, I2, ISP, IKM, IKL, IKH,    &
+      INTEGER                 :: J, J1, I1, I2, ISP, IKM,              &
                                  ITH, IK, ITT, NPART, IX, IY, ISEA
       INTEGER                 :: CURDATE(8), REFDATE(8)
 #ifdef W3_S
@@ -2031,13 +2033,17 @@
             END IF
           END DO
 !
-          IKL    = MAX (  1 , IKM-1 )
-          IKH    = MIN ( NK , IKM+1 )
-          EL     = E1(IKL) - E1(IKM)
-          EH     = E1(IKH) - E1(IKM)
-          DENOM  = XL*EH - XH*EL
+          IF ( HSIG .GE. HSMIN .AND. IKM .NE. NK ) THEN
+            IF ( IKM .EQ. 1 ) THEN
+              EL = - E1(IKM)
+            ELSE
+              EL = E1(IKM-1) - E1(IKM)
+            END IF
+
+            EH = E1(IKM+1) - E1(IKM)
+
+            DENOM  = XL*EH - XH*EL
 !
-          IF ( HSIG .GE. HSMIN ) THEN
             FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
                         / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
             THP    = THBND(IKM)

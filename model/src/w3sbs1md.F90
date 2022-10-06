@@ -1,4 +1,23 @@
+!> @file 
+!> @brief Computes scattering term.
+!> 
+!> @author F. Ardhuin
+!> @date   14-Nov-2010
+!> 
+
 #include "w3macros.h"
+!>
+!> @brief This module computes a scattering term 
+!>  based on the theory by Ardhuin and Magne (JFM 2007).
+!> 
+!> @author F. Ardhuin
+!> @date   14-Nov-2010
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3SBS1MD
 !/
@@ -70,6 +89,27 @@
 !/
       CONTAINS
 !
+!>
+!> @brief Bottom scattering source term.
+!>        
+!> @details Without current, goes through a diagonalization of the matrix 
+!>  problem  S(f,:) = M(f,:,:)**E(f,:).
+!>  With current, integrates the source term along the resonant locus.
+        
+!> @param[in] A         Action density spectrum (1-D)
+!> @param[in] CG        Group velocities
+!> @param[in] WN        Wavenumbers
+!> @param[in] DEPTH     Mean water depth
+!> @param[in] CX1       Current components at ISEA
+!> @param[in] CY1       Current components at ISEA
+!> @param[out] TAUSCX   Change of wave momentum due to scattering
+!> @param[out] TAUSCY   Change of wave momentum due to scattering
+!> @param[out] S        Source term (1-D version)
+!> @param[out] D        Diagonal term of derivative (1-D version)
+!>
+!> @author F. Ardhuin
+!> @date   23-Jun-2006
+!>        
       SUBROUTINE W3SBS1(A, CG, WN, DEPTH, CX1, CY1,      &
                                               TAUSCX, TAUSCY, S, D)
 !/
@@ -422,6 +462,15 @@
 !/
       END SUBROUTINE W3SBS1
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialization for bottom scattering source term routine.
+!>
+!> @param[in] inistep
+!>
+!> @author F. Ardhuin
+!> @date   23-Jun-2006
+!>
+      
       SUBROUTINE INSBS1( inistep )
 !/
 !/                  +-----------------------------------+
