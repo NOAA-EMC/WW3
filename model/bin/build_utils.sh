@@ -1,6 +1,6 @@
 #!/bin/bash -e
 # --------------------------------------------------------------------------- #
-# build_utils.sh : Shell functions that can be used by multiple scripts       # 
+# build_utils.sh : Shell functions that can be used by multiple scripts       #
 #                  for building the model                                     #
 #                                                                             #
 # programs used : w3_new  Touches the correct files if compiler switches      #
@@ -24,7 +24,7 @@
 #    Performs quality check on switches defined in variable $switch. Checks   #
 #    to make sure that swtich choices are compatible and that only the valid  #
 #    switches have been identified. Groups switched into different variables  #
-#    by type                                                                  # 
+#    by type                                                                  #
 # --------------------------------------------------------------------------- #
 
 
@@ -32,7 +32,7 @@
 check_switches()
  {
 
- # 1.a Step through categories 
+ # 1.a Step through categories
 
   for type in nco grib scrip scripnc \
               shared mpp mpiexp thread GSE prop smcg \
@@ -291,7 +291,7 @@ check_switches()
                ID='use pdlib'
                TS='PDLIB'
                OK='PDLIB' ;;
-#sort:memck: 
+#sort:memck:
       memck  ) TY='upto1'
                ID='check memory use'
                TS='MEMCHECK'
@@ -436,7 +436,7 @@ check_switches()
     esac
   done
 
-# 1.b Check switch compatibility 
+# 1.b Check switch compatibility
 
   case $stress in
    FLX0) str_st1='no' ; str_st2='no' ; str_st3='OK' ; str_st6='no' ;;
@@ -541,11 +541,11 @@ check_switches()
   fi
 
   if [ "$pdlib" = 'PDLIB' ] && [ "$mpp" != 'MPI' ]
-  then 
+  then
       echo ' '
       echo "   *** For PDLIB, we need to have MPI as well."
       echo ' ' ; exit 17
-  fi 
+  fi
 
 
 } #end of check_switches
@@ -565,12 +565,12 @@ switch_files()
    PR1) pr='w3profsmd w3pro1md' ;;
    PR2) pr='w3profsmd w3pro2md' ;;
    PR3) pr='w3profsmd w3pro3md' ;;
-  esac 
+  esac
 
   case $p_switch in
    UQ ) pr="$pr w3uqckmd" ;;
    UNO) pr="$pr w3uno2md" ;;
-  esac 
+  esac
 
   smcm=$NULL
   smco=$NULL
@@ -697,16 +697,16 @@ switch_files()
    REF1) refcode='w3ref1md'
   esac
 
-  pdlibcode=$NULL 
-  pdlibyow=$NULL 
+  pdlibcode=$NULL
+  pdlibyow=$NULL
   case $pdlib in
    PDLIB) pdlibcode='yowfunction pdlib_field_vec w3profsmd_pdlib'
           pdlibyow='yowsidepool yowdatapool yowerr yownodepool yowelementpool yowexchangeModule yowrankModule yowpdlibmain yowpd' ;;
   esac
 
-  memcode=$NULL 
-  case $memck in 
-    MEMCHECK) memcode='w3meminfo' 
+  memcode=$NULL
+  case $memck in
+    MEMCHECK) memcode='w3meminfo'
   esac
 
   setupcode=$NULL
@@ -756,13 +756,13 @@ switch_files()
 
 
 # --------------------------------------------------------------------------- #
-# 3. Create list of files for a prog                                          # 
+# 3. Create list of files for a prog                                          #
 #    For a particular prog create files and filesl a list of files and a      #
 #    list of files to be linked.  The variable prog needs to be set and       #
-#    the switch_files should be used first (which requires check_switches()   # 
+#    the switch_files should be used first (which requires check_switches()   #
 # --------------------------------------------------------------------------- #
 
-create_file_list() 
+create_file_list()
 {
     case $prog in
       ww3_grid)
@@ -776,8 +776,8 @@ create_file_list()
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
-                  aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd" 
-                fi 
+                  aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
+                fi
                 if [ "$scripnc" = 'SCRIPNC' ]
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
@@ -803,7 +803,7 @@ create_file_list()
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode $stx $nlx $btx $is wmmdatmd w3parall w3triamd $uostmd"
                  IO='w3iobcmd w3iogrmd w3dispmd w3gsrumd'
                 aux="constants w3servmd w3arrymd w3timemd w3cspcmd w3nmlbouncmd" ;;
-      ww3_prep) 
+      ww3_prep)
                core='w3fldsmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd wmmdatmd"
                prop=
@@ -817,14 +817,14 @@ create_file_list()
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $flx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd w3tidemd w3nmlprncmd" ;;
-      ww3_prtide) 
+      ww3_prtide)
                core='w3fldsmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop="$pr $smcm"
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode w3triamd $stx $nlx $btx $is w3parall $uostmd"
                  IO="w3iogrmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
-      ww3_shel) 
+      ww3_shel)
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data="wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop="$pr $smcm"
@@ -849,7 +849,7 @@ create_file_list()
                  IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
                  IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants $tidecode w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux"
-                aux="$aux  wmunitmd w3nmlmultimd" 
+                aux="$aux  wmunitmd w3nmlmultimd"
                 if [ "$scrip" = 'SCRIP' ]
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
@@ -860,22 +860,22 @@ create_file_list()
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
                 fi ;;
-      ww3_sbs1) 
-               core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd' 
-               core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd" 
-               data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd" 
-               prop="$pr $smcm" 
-            sourcet="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $refcode $igcode $is $ic $uostmd" 
-                 IO='w3iogrmd w3iogomd w3iopomd wmiopomd' 
-                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd" 
-                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode" 
-                aux="$aux  wmunitmd w3nmlmultimd"  
+      ww3_sbs1)
+               core='wminitmd wmwavemd wmfinlmd wmgridmd wmupdtmd wminiomd'
+               core="$core w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd"
+               data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
+               prop="$pr $smcm"
+            sourcet="$pdlibcode $pdlibyow w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $db $tr $bs $refcode $igcode $is $ic $uostmd"
+                 IO='w3iogrmd w3iogomd w3iopomd wmiopomd'
+                 IO="$IO w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd $oasismd $agcmmd $ogcmmd $igcmmd"
+                aux="constants w3servmd w3timemd w3arrymd w3dispmd w3cspcmd w3gsrumd $mprfaux $tidecode"
+                aux="$aux  wmunitmd w3nmlmultimd"
                 if [ "$scrip" = 'SCRIP' ]
                 then
                   aux="$aux scrip_constants scrip_grids scrip_iounitsmod"
                   aux="$aux scrip_remap_vars scrip_timers scrip_errormod scrip_interface"
                   aux="$aux scrip_kindsmod scrip_remap_conservative wmscrpmd"
-                fi 
+                fi
                 if [ "$scripnc" = 'SCRIPNC' ]
                 then
                   aux="$aux scrip_netcdfmod scrip_remap_write scrip_remap_read"
@@ -896,7 +896,7 @@ create_file_list()
                  IO='w3iogrmd w3iogomd w3iorsmd w3iopomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux w3nmlounfmd $smco w3ounfmetamd w3metamd" ;;
-      ww3_outp) 
+      ww3_outp)
                core=
                data="wmmdatmd w3parall w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
@@ -911,7 +911,7 @@ create_file_list()
                  IO='w3bullmd w3iogrmd w3iopomd w3partmd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux w3nmlounpmd" ;;
-      ww3_trck) 
+      ww3_trck)
                core=
                data="$memcode w3gdatmd w3odatmd"
                prop=
@@ -925,7 +925,7 @@ create_file_list()
             sourcet=
                  IO=
                 aux="constants w3servmd w3timemd w3gsrumd w3nmltrncmd" ;;
-      ww3_grib) 
+      ww3_grib)
                core=
                data="w3parall wmmdatmd w3triamd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
@@ -933,14 +933,14 @@ create_file_list()
                  IO='w3iogrmd w3iogomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
-      ww3_gspl) 
+      ww3_gspl)
                core='w3fldsmd'
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $stx $flx $nlx $btx $is $uostmd"
                  IO="w3iogrmd  $oasismd $agcmmd $ogcmmd $igcmmd"
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd $tidecode" ;;
-      ww3_gint) 
+      ww3_gint)
                core=
                data="w3parall wmmdatmd $memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                  IO='w3iogrmd w3iogomd'
@@ -956,38 +956,38 @@ create_file_list()
                  IO='w3iogrmd w3iogomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
                 aux="$aux" ;;
-      gx_outp) 
+      gx_outp)
                core=
                data="$memcode w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3parall w3triamd $ln $flx $st $nlx $btx $tr $bs $is $ic $uostmd"
                  IO='w3iogrmd w3iopomd'
                 aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" ;;
-      ww3_systrk) 
+      ww3_systrk)
                core='w3strkmd'
                data="$memcode w3gdatmd w3adatmd w3idatmd w3odatmd w3wdatmd"
                prop=
             sourcet="$pdlibcode $pdlibyow $db $bt $setupcode wmmdatmd w3dispmd w3triamd $ln $stx $flx $nlx $btx $tr $bs $is $uostmd"
                  IO=
                 aux="constants w3servmd w3timemd w3arrymd w3gsrumd w3parall" ;;
-      libww3|libww3.so) 
+      libww3|libww3.so)
                core='w3fldsmd w3initmd w3wavemd w3wdasmd w3updtmd'
                data='wmmdatmd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
                prop="$pr $smcm"
             sourcet="w3triamd w3srcemd $dsx $flx $ln $st $nl $bt $ic $is $db $tr $bs $refcode $igcode $uostmd"
                  IO='w3iogrmd w3iogomd w3iopomd w3iotrmd w3iorsmd w3iobcmd w3iosfmd w3partmd'
                 aux="constants w3servmd w3timemd $tidecode w3arrymd w3dispmd w3cspcmd w3gsrumd" ;;
-      ww3_uprstr) 
-              core= 
-	      data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd' 
-              prop= 
+      ww3_uprstr)
+              core=
+	      data='wmmdatmd w3triamd w3gdatmd w3wdatmd w3adatmd w3idatmd w3odatmd'
+              prop=
            sourcet="$memcode $pdlibcode $pdlibyow $flx $ln $st $nl $bt $ic $is $db $tr $bs $uostmd"
-                IO='w3iogrmd w3iogomd w3iorsmd' 
-               aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd" 
-               aux="$aux w3parall w3nmluprstrmd" ;; 
+                IO='w3iogrmd w3iogomd w3iorsmd'
+               aux="constants w3servmd w3timemd w3arrymd w3dispmd w3gsrumd"
+               aux="$aux w3parall w3nmluprstrmd" ;;
     esac
 
-    # if esmf is included in program name or if 
+    # if esmf is included in program name or if
     # the target is compile and create archive
     if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
     then

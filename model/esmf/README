@@ -20,7 +20,7 @@ concomp.F90: coupled application connector component
 mdl.F90: coupled application model components (ATM, OCN, or ICE)
 dum.F90: dummy model component
 utl.F90: utilities module
-Makefile: the 
+Makefile: the
 
 The WAV model component is Wavewatch (wmesmfmd.ftn).
 

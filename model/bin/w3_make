@@ -53,7 +53,7 @@
   fi
 
 
-# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -142,7 +142,7 @@
   reg_programs="$reg_programs ww3_gint"
   reg_programs="$reg_programs gx_outf"
   reg_programs="$reg_programs gx_outp"
-  reg_programs="$reg_programs ww3_uprstr" 
+  reg_programs="$reg_programs ww3_uprstr"
 
   # PRNC OUNF OUNP BOUNC TRNC
   cdf_programs="ww3_prnc"
@@ -197,7 +197,7 @@
     reg_programs="$reg_programs ww3_prep"
   fi
 
-  #SHEL 
+  #SHEL
   if [ -n "`grep OASIS $switch_file`" ]  || [ -n "`grep PDLIB $switch_file`" ]
   then
     cdf_programs="$cdf_programs ww3_shel"
@@ -229,9 +229,9 @@
     pres_type='SEQ'
     flag_OMP=`grep OMP $switch_file | wc -l | awk '{ print $1}'`
     if [ "$flag_OMP" -gt '0' ]
-    then 
+    then
       pres_type='OMP'
-    fi 
+    fi
   else
     if [ "$flag_OMPH" -gt '0' ]
     then
@@ -257,7 +257,7 @@
 
 
 
-# 1.g Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.g Setup for NetCDF compile - - - - - - - - - - - - - - - - - - - - - - - -
 
 # 1.g.1 NetCDF compile message function
 
@@ -277,10 +277,10 @@ is required:
 The nc-config utility (part of the NetCDF-4 install) is used to
 determine the appropriate compile and link flags.
 
-For NetCDF routines to compile, WAVEWATCH III requires 
-NetCDF version 4.1.1 or higher. Use "nc-config --version" to check 
-the version of the installed NetCDF. It is also required for NetCDF 
-to be compiled with the NetCDF-4 API enabled. Use "nc-config --has-nc4" 
+For NetCDF routines to compile, WAVEWATCH III requires
+NetCDF version 4.1.1 or higher. Use "nc-config --version" to check
+the version of the installed NetCDF. It is also required for NetCDF
+to be compiled with the NetCDF-4 API enabled. Use "nc-config --has-nc4"
 to check if the installed NetCDF has the NetCDF-4 API enabled.
 
 ***********************************************************************
@@ -332,7 +332,7 @@ EOF
       echo "will not be compiled unless NetCDF compile environment is properly set."; echo ' '
       echo "Continuing with compile of non-NetCDF programs ..."; echo ' '
       all_programs="$reg_programs"
-    else 
+    else
       all_programs="$reg_programs $cdf_programs"
     fi
   else
@@ -362,10 +362,10 @@ EOF
 
 # 1.h set progs list   - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  # no filtering is done to distinguish sequential to parallel programs 
+  # no filtering is done to distinguish sequential to parallel programs
   progs=$all_programs
 
-# 1.i Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.i Prepare scratch directory  - - - - - - - - - - - - - - - - - - - - - - -
 
   if test ! -d $temp_dir
   then
@@ -410,7 +410,7 @@ EOF
         then
           cp $switch_file ${switch_file_old}_OMP
           cp $makefile ${makefile}_OMP
-        else 
+        else
           cp $switch_file ${switch_file_old}_SEQ
           cp $makefile ${makefile}_SEQ
         fi
@@ -430,7 +430,7 @@ EOF
   fi
   echo ' '
 
-# 1.k Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.k Export paths - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   aPb="$main_dir/bin"     # path containing shell scripts
   aPo="$main_dir/obj"     # path containing .o files
@@ -449,7 +449,7 @@ EOF
     echo "Processing $prog"
     echo "---------------------"
 
-# 2.b Check input  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.b Check input  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     OK='n'
     for check in $all_programs
@@ -465,7 +465,7 @@ EOF
       echo ' '
       exit 1
 
-# 2.c Run make - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.c Run make - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     else
 
@@ -491,14 +491,14 @@ EOF
       export omp_mod
 
       oasis_mod=no
-      if [ -n "`grep OASIS $switch_file`" ] 
+      if [ -n "`grep OASIS $switch_file`" ]
       then
         export oasis_mod='yes'
       fi
       export oasis_mod
 
       pdlib_mod=no
-      esmfpdlib='' 
+      esmfpdlib=''
       if [ -n "`grep PDLIB $switch_file`" ]
       then
         export pdlib_mod='yes'
@@ -508,14 +508,14 @@ EOF
 
       # NCEP GRIB
       export ncep_grib_compile="no"
-      #check for switch file: 
+      #check for switch file:
       if [ -n "`grep NCEP $switch_file`" ]
       then
-        #only set to yes if compiling ww3_grib: 
+        #only set to yes if compiling ww3_grib:
         if [ -n "`echo $prog | grep ww3_grib`" ]
         then
           export ncep_grib_compile="yes"
-        fi 
+        fi
       fi
 
       # if esmf is included in program name, then the compile
@@ -523,7 +523,7 @@ EOF
       # processed to get required ESMF compile options
       if [ -n "`echo $prog | grep esmf 2>/dev/null`" ]
       then
-        if [ -z "`grep DIST $switch_file`" ] 
+        if [ -z "`grep DIST $switch_file`" ]
         then
           echo ' '
           echo "*** DIST switch must be set when compiling with ESMF ***"
@@ -602,10 +602,10 @@ EOF
         then
           mod_dir=$main_dir/mod_HYB
           obj_dir=$main_dir/obj_HYB
-        else 
+        else
           mod_dir=$main_dir/mod_MPI
           obj_dir=$main_dir/obj_MPI
-        fi 
+        fi
         rm -f $mkfile
         touch $mkfile
         echo "#-----------------------------------------------"      >> $mkfile
@@ -626,11 +626,11 @@ EOF
 
   done
 
-# 2.d copy comp and link 
+# 2.d copy comp and link
 
   cp  $main_dir/bin/comp $main_dir/exe/
   cp  $main_dir/bin/link $main_dir/exe/
- 
+
 # --------------------------------------------------------------------------- #
 # 3. End of program ID.                                                       #
 # --------------------------------------------------------------------------- #

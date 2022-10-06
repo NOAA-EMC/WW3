@@ -22,7 +22,7 @@ env:
   I_MPI_F90: ifort
 
 # Split into a dependency build step, and a WW3 build step which
-# builds multiple switches in a matrix. The setup is run once and 
+# builds multiple switches in a matrix. The setup is run once and
 # the environment is cached so each build of WW3 can share the dependencies.
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
-        with: 
+        with:
             path: ww3
 
       # Cache spack, OASIS, and compiler
@@ -98,7 +98,7 @@ jobs:
     steps:
       - name: checkout-ww3
         uses: actions/checkout@v2
-        with: 
+        with:
             path: ww3
 
       - name: install-intel
@@ -131,5 +131,3 @@ jobs:
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
           make -j2 VERBOSE=1
-
-          

@@ -8,12 +8,12 @@
 !
 !     CVS:$Id: remap_read.f,v 1.6 2000/04/19 21:56:26 pwjones Exp $
 !
-!     Copyright (c) 1997, 1998 the Regents of the University of 
+!     Copyright (c) 1997, 1998 the Regents of the University of
 !       California.
 !
-!     This software and ancillary information (herein called software) 
-!     called SCRIP is made available under the terms described here.  
-!     The software has been approved for release with associated 
+!     This software and ancillary information (herein called software)
+!     called SCRIP is made available under the terms described here.
+!     The software has been approved for release with associated
 !     LA-CC Number 98-45.
 !
 !     Unless otherwise indicated, this software has been authored
@@ -28,16 +28,16 @@
 !     any liability or responsibility for the use of this software.
 !
 !     If software is modified to produce derivative works, such modified
-!     software should be clearly marked, so as not to confuse it with 
+!     software should be clearly marked, so as not to confuse it with
 !     the version available from Los Alamos National Laboratory.
 !
-!     This code has been modified from the version available from 
+!     This code has been modified from the version available from
 !     Los Alamos National Laboratory, for the purpose of running it
 !     within WW3.
 !
 !***********************************************************************
 
-      module scrip_remap_read 
+      module scrip_remap_read
 
 !-----------------------------------------------------------------------
 !
@@ -63,7 +63,7 @@
 !-----------------------------------------------------------------------
 
 
-      character(SCRIP_charLength), private :: 
+      character(SCRIP_charLength), private ::
      &   map_method       ! character string for map_type
      &,  normalize_opt    ! character string for normalization option
      &,  convention       ! character string for output convention
@@ -144,10 +144,10 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4) ::  
+      integer (SCRIP_i4) ::
      &  errorCode            ! error code for SCRIP routine
 
-      character (14), parameter :: 
+      character (14), parameter ::
      &  rtnName = 'read_remap_ww3'
 
 !-----------------------------------------------------------------------
@@ -267,7 +267,7 @@
      &  grid1_name           ! grid name for source grid
      &, grid2_name           ! grid name for dest   grid
 
-      integer (SCRIP_i4) ::  
+      integer (SCRIP_i4) ::
      &  n                    ! dummy index
      &, errorCode            ! error code for SCRIP routine
 
@@ -275,7 +275,7 @@
      &  grid1_mask_int,      ! integer masks to determine
      &  grid2_mask_int       ! cells that participate in map
 
-      character (20), parameter :: 
+      character (20), parameter ::
      &  rtnName = 'read_remap_scrip_ww3'
 
 !-----------------------------------------------------------------------
@@ -293,7 +293,7 @@
       errorCode = SCRIP_Success
       ncstat = nf90_get_att (nc_file_id, NF90_GLOBAL, 'source_grid',
      &                          grid1_name)
-      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error 
+      if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading source grid name')) return
 
       ncstat = nf90_get_att (nc_file_id, NF90_GLOBAL, 'dest_grid',
@@ -313,34 +313,34 @@
 !
 !-----------------------------------------------------------------------
 
-      ncstat = nf90_inq_dimid(nc_file_id, 'dst_grid_size', 
+      ncstat = nf90_inq_dimid(nc_file_id, 'dst_grid_size',
      &                      nc_dstgrdsize_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid id')) return
 !     ncstat = nf90_inq_dimlen(nc_file_id, nc_dstgrdsize_id, grid2_size)
-      ncstat = nf90_inquire_dimension(nc_file_id, nc_dstgrdsize_id, 
+      ncstat = nf90_inquire_dimension(nc_file_id, nc_dstgrdsize_id,
      &                                len = grid2_size)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid size')) return
 
-      ncstat = nf90_inq_dimid(nc_file_id, 'num_links', 
+      ncstat = nf90_inq_dimid(nc_file_id, 'num_links',
      &                      nc_numlinks_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading number of links id')) return
-!     ncstat = nf90_inq_dimlen(nc_file_id, nc_numlinks_id, 
+!     ncstat = nf90_inq_dimlen(nc_file_id, nc_numlinks_id,
 !    &                       num_links_map1)
-      ncstat = nf90_inquire_dimension(nc_file_id, nc_numlinks_id, 
+      ncstat = nf90_inquire_dimension(nc_file_id, nc_numlinks_id,
      &                                len = num_links_map1)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading number of links')) return
       max_links_map1 = num_links_map1
 
-      ncstat = nf90_inq_dimid(nc_file_id, 'num_wgts', 
+      ncstat = nf90_inq_dimid(nc_file_id, 'num_wgts',
      &                      nc_numwgts_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading number of weights id')) return
 !     ncstat = nf90_inq_dimlen(nc_file_id, nc_numwgts_id, num_wts)
-      ncstat = nf90_inquire_dimension(nc_file_id, nc_numwgts_id, 
+      ncstat = nf90_inquire_dimension(nc_file_id, nc_numwgts_id,
      &                                len = num_wts)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading number of weights')) return
@@ -369,22 +369,22 @@
 !
 !-----------------------------------------------------------------------
 
-      ncstat = nf90_inq_varid(nc_file_id, 'dst_grid_frac', 
+      ncstat = nf90_inq_varid(nc_file_id, 'dst_grid_frac',
      &                                   nc_dstgrdfrac_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid fraction id')) return
 
-      ncstat = nf90_inq_varid(nc_file_id, 'src_address', 
+      ncstat = nf90_inq_varid(nc_file_id, 'src_address',
      &                                   nc_srcgrdadd_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading source grid address id')) return
 
-      ncstat = nf90_inq_varid(nc_file_id, 'dst_address', 
+      ncstat = nf90_inq_varid(nc_file_id, 'dst_address',
      &                                   nc_dstgrdadd_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid address id')) return
 
-      ncstat = nf90_inq_varid(nc_file_id, 'remap_matrix', 
+      ncstat = nf90_inq_varid(nc_file_id, 'remap_matrix',
      &                                   nc_rmpmatrix_id)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading remap matrix id')) return
@@ -395,22 +395,22 @@
 !
 !-----------------------------------------------------------------------
 
-      ncstat = nf90_get_var(nc_file_id, nc_dstgrdfrac_id, 
+      ncstat = nf90_get_var(nc_file_id, nc_dstgrdfrac_id,
      &                                       grid2_frac)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid fraction')) return
 
-      ncstat = nf90_get_var(nc_file_id, nc_srcgrdadd_id, 
+      ncstat = nf90_get_var(nc_file_id, nc_srcgrdadd_id,
      &                        grid1_add_map1)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading source grid address')) return
 
-      ncstat = nf90_get_var(nc_file_id, nc_dstgrdadd_id, 
+      ncstat = nf90_get_var(nc_file_id, nc_dstgrdadd_id,
      &                        grid2_add_map1)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading destination grid address')) return
 
-      ncstat = nf90_get_var(nc_file_id, nc_rmpmatrix_id, 
+      ncstat = nf90_get_var(nc_file_id, nc_rmpmatrix_id,
      &                                       wts_map1)
       if (SCRIP_NetcdfErrorCheck(ncstat, errorCode, rtnName, 'error
      &   reading remap weights')) return

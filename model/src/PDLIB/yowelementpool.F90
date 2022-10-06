@@ -47,7 +47,7 @@ module yowElementpool
   !> number of local elements
   integer, public :: ne = 0
 
-  !> number of elements of the augmented domain 
+  !> number of elements of the augmented domain
 
   !> local element array. it stores the local node IDs
   !> first index from 1 to 3.
@@ -64,7 +64,7 @@ module yowElementpool
   !> ne long. give the global element id
   integer, public, target, allocatable :: ielg(:)
 
-  contains
+contains
 
 
   !> Returns true if the element belongs to rank.

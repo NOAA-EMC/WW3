@@ -46,7 +46,7 @@
   name="$1"
   echo "      Compiling $name"
 
-# 1.b Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.b Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   rm -f $name.l
   rm -f $name.o
@@ -120,7 +120,7 @@
     fi
   fi
 
-# 3.b Make file comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 3.b Make file comp.stat  - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   echo "ERROR    $nr_err"   > comp.stat.$name
   echo "WARNING  $nr_war"  >> comp.stat.$name
@@ -131,12 +131,12 @@
 #     comment lines are to be numbered.
 
   # listing done by the compiler
-  if [ -s $name.lst ] 
+  if [ -s $name.lst ]
   then
     mv $name.lst $name.l
   fi
   # add comp options, warnings and error to listing
-  if [ -s $name.l ] 
+  if [ -s $name.l ]
   then
     echo '------------' >> $name.l
     echo "$comp $opt"   >> $name.l

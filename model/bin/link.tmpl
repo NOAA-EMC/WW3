@@ -33,7 +33,7 @@
   echo "      Linking $prog"
   input="$*"
 
-# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -42,7 +42,7 @@
   list=$WWATCH3_LIST
 
 
-# 1.c Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.c Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   rm -f $main_dir/exe/$prog
 
@@ -117,7 +117,7 @@
     libs="$libs `$NETCDF_CONFIG --flibs` `$NETCDF_CONFIG --libs`"
   fi
 
-  # parmetis library 
+  # parmetis library
   if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ; then
     if [ "$pdlib_mod" = 'yes' ] ; then
       if [ -z "$(env | grep METIS_PATH)" ] ; then
@@ -125,7 +125,7 @@
         echo "[ERROR] METIS_PATH is not defined"
         exit 1
       fi
-      echo "link with parmetis" 
+      echo "link with parmetis"
       libs="$libs $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
     fi
   fi
