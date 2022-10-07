@@ -137,7 +137,7 @@ contains
 
     integer                :: ncnt,ecnt,lb,ub
     integer                :: nowndn, nownde
-    integer, allocatable   :: nids(:), eid(:), nowners(:)
+    integer, allocatable   :: nids(:), eids(:), nowners(:)
     character(len=*),parameter :: subname = '(wav_shr_mod:mesh_diagnose) '
     !-------------------------------------------------------
 
