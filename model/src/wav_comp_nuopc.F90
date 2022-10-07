@@ -417,7 +417,7 @@ contains
     use wav_grdout   , only : wavinit_grdout
     use wav_shr_mod  , only : diagnose_mesh
 #ifdef W3_PDLIB
-    use yowNodepool  , only : ng, npa
+    use yowNodepool  , only : ng
 #endif
 
     ! input/output variables
@@ -429,7 +429,7 @@ contains
 
     ! local variables
     type(ESMF_DistGrid)            :: distGrid
-    type(ESMF_Mesh)                :: Emesh, EmeshTemp
+    type(ESMF_Mesh)                :: Emesh
     type(ESMF_Array)               :: elemMaskArray
     type(ESMF_VM)                  :: vm
     type(ESMF_Time)                :: esmfTime, stopTime
@@ -445,11 +445,8 @@ contains
     integer                        :: ix, iy
     character(CL)                  :: starttype
     integer                        :: ntrace(2)
-    integer                        :: i,j
-    integer                        :: ierr
     integer                        :: n, jsea,isea, ncnt
-    integer                        :: ntotal, nlnd
-    integer                        :: nlnd_global, nlnd_local
+    integer                        :: nlnd, nlnd_global, nlnd_local
     integer                        :: my_lnd_start, my_lnd_end
     integer, allocatable, target   :: mask_global(:)
     integer, allocatable, target   :: mask_local(:)
@@ -458,12 +455,10 @@ contains
     integer, allocatable           :: gindex(:)
     integer(i4)                    :: maskmin
     integer(i4), pointer           :: meshmask(:)
-    logical                        :: isPresent, isSet
     character(23)                  :: dtme21
     integer                        :: iam, mpi_comm
     character(ESMF_MAXSTR)         :: msgString
     character(ESMF_MAXSTR)         :: diro
-    character(ESMF_MAXSTR)         :: timestring
     character(CL)                  :: logfile
     logical                        :: local
     integer                        :: imod, idsi, idso, idss, idst, idse
@@ -785,13 +780,6 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='mesh_wav', value=cvalue, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! read in the mesh with an auto-generated distGrid
-    EMeshTemp = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if ( root_task ) then
-       write(nds(1),*)'mesh file for domain is ',trim(cvalue)
-    end if
-
     ! read in the mesh with the above DistGrid
     EMesh = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, &
          elementDistgrid=Distgrid,rc=rc)
@@ -883,7 +871,6 @@ contains
 
     ! local variables
     type(ESMF_State)  :: exportState
-    integer           :: jsea
     real(r8), pointer :: z0rlen(:)
     real(r8), pointer :: sw_lamult(:)
     real(r8), pointer :: sw_ustokes(:)
