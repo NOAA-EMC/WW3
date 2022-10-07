@@ -19,8 +19,9 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
-  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag, multigrid
+  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag, multigrid, unstr_mesh
   use constants    , only : grav, tpi, dwat
+  use w3parall     , only : init_get_isea
 
   implicit none
   private ! except
@@ -40,7 +41,7 @@ module wav_import_export
   interface FillGlobalInput
      module procedure fillglobal_with_import
      module procedure fillglobal_with_merge_import
-  end interface
+  end interface FillGlobalInput
 
   type fld_list_type                                !< @private a structure for the list of fields
      character(len=128) :: stdname                  !< a standard field name
@@ -64,28 +65,30 @@ module wav_import_export
 #endif
 
   integer, parameter :: nwav_elev_spectrum = 25     !< the size of the wave spectrum exported if coupling
-                                                    !! waves to cice6
+  !! waves to cice6
+  integer, public    :: nseal_local                 !< the number of local sea points on a processor, exclusive
+                                                    !! of the ghost points. For non-PDLIB cases, this is nseal
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
        __FILE__
 
-!===============================================================================
+  !===============================================================================
 contains
-!===============================================================================
-!> Set up the list of exchanged field to be advertised
-!!
-!> @details Called by InitializAdvertise, a list of standard field names to or
-!! from the wave model is created and then advertised in either the import or
-!! export state. A field with name set by the configuration variable ScalarFieldName
-!! and size of ScalarFieldCount is added to the list of fields in the export state
-!! and is used by CMEPS to write mediator history and restart fields as 2D arrays
-!!
-!! @param       importState       an ESMF_State for the import
-!! @param       exportState       an ESMF_State for the export
-!! @param[in]   flds_scalar_name  the name of the scalar field
-!! @param[out]  rc                a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Set up the list of exchanged field to be advertised
+  !!
+  !> @details Called by InitializAdvertise, a list of standard field names to or
+  !! from the wave model is created and then advertised in either the import or
+  !! export state. A field with name set by the configuration variable ScalarFieldName
+  !! and size of ScalarFieldCount is added to the list of fields in the export state
+  !! and is used by CMEPS to write mediator history and restart fields as 2D arrays
+  !!
+  !! @param       importState       an ESMF_State for the import
+  !! @param       exportState       an ESMF_State for the export
+  !! @param[in]   flds_scalar_name  the name of the scalar field
+  !! @param[out]  rc                a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine advertise_fields(importState, ExportState, flds_scalar_name, rc)
     ! input/output variables
     type(ESMF_State)               :: importState
@@ -106,7 +109,7 @@ contains
     ! Advertise import fields
     !--------------------------------
 
-   !call fldlist_add(fldsToWav_num, fldsToWav, 'So_h'       )
+    !call fldlist_add(fldsToWav_num, fldsToWav, 'So_h'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'Si_ifrac'   )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_u'       )
     call fldlist_add(fldsToWav_num, fldsToWav, 'So_v'       )
@@ -135,12 +138,14 @@ contains
     ! Advertise export fields
     !--------------------------------
 
-    call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
+    if (.not. unstr_mesh) then
+       call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
+    end if
     if (cesmcoupled) then
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
-      !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
+       !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
        call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
     else
@@ -173,19 +178,19 @@ contains
   end subroutine advertise_fields
 
   !===============================================================================
-!> Realize the advertised fields
-!!
-!> @details Called by InitializeRealize, realize the advertised fields on the mesh
-!! and set all initial values to zero
-!!
-!! @param       gcomp             an ESMF_GridComp object
-!! @param       mesh              an ESMF_Mesh object
-!! @param[in]   flds_scalar_name  the name of the scalar field
-!! @param[in]   flds_scalar_num   the number of scalar fields
-!! @param[out]  rc                a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Realize the advertised fields
+  !!
+  !> @details Called by InitializeRealize, realize the advertised fields on the mesh
+  !! and set all initial values to zero
+  !!
+  !! @param       gcomp             an ESMF_GridComp object
+  !! @param       mesh              an ESMF_Mesh object
+  !! @param[in]   flds_scalar_name  the name of the scalar field
+  !! @param[in]   flds_scalar_num   the number of scalar fields
+  !! @param[out]  rc                a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine realize_fields(gcomp, mesh, flds_scalar_name, flds_scalar_num, rc)
 
     ! input/output variables
@@ -242,21 +247,21 @@ contains
   end subroutine realize_fields
 
   !===============================================================================
-!> Fill WW3 fields with values from the import state
-!!
-!> @details Called by ModelAdvance, a global field for each connected field is
-!! created in SetGlobalInput and used to fill the internal WW3 global variables in
-!! FillGlobalInput. Optionally, the  WW3 field can be created by merging with a
-!! provided field in cases where the WW3 model domain extends outside the source
-!! domain
-!!
-!! @param[inout]   gcomp   an ESMF_GridComp object
-!! @param[in]      time0   the starting time of ModelAdvance
-!! @param[in]      timen   the ending time of ModelAdvance
-!! @param[out]     rc      return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Fill WW3 fields with values from the import state
+  !!
+  !> @details Called by ModelAdvance, a global field for each connected field is
+  !! created in SetGlobalInput and used to fill the internal WW3 global variables in
+  !! FillGlobalInput. Optionally, the  WW3 field can be created by merging with a
+  !! provided field in cases where the WW3 model domain extends outside the source
+  !! domain
+  !!
+  !! @param[inout]   gcomp   an ESMF_GridComp object
+  !! @param[in]      time0   the starting time of ModelAdvance
+  !! @param[in]      timen   the ending time of ModelAdvance
+  !! @param[out]     rc      return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine import_fields( gcomp, time0, timen, rc )
 
     !---------------------------------------------------------------------------
@@ -555,8 +560,8 @@ contains
                 !TODO: when is this active? jmod = -999
                 jmod = inpmap(imod,j)
                 if ( jmod.lt.0 .and. jmod.ne.-999 ) then
-                  call wmupd2( imod, j, jmod, rc )
-                  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                   call wmupd2( imod, j, jmod, rc )
+                   if (ChkErr(rc,__LINE__,u_FILE_u)) return
                 endif
              end do
           end if
@@ -568,15 +573,15 @@ contains
   end subroutine import_fields
 
   !===============================================================================
-!> Fill the export state with values from WW3 fields
-!!
-!> @details Called by ModelAdvance, fill or compute the values in the export state.
-!!
-!! @param          gcomp   an ESMF_GridComp object
-!! @param[out]     rc      return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Fill the export state with values from WW3 fields
+  !!
+  !> @details Called by ModelAdvance, fill or compute the values in the export state.
+  !!
+  !! @param          gcomp   an ESMF_GridComp object
+  !! @param[out]     rc      return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine export_fields (gcomp, rc)
 
     !---------------------------------------------------------------------------
@@ -611,8 +616,8 @@ contains
     real(r8), pointer :: wbcuru(:)
     real(r8), pointer :: wbcurv(:)
     real(r8), pointer :: wbcurp(:)
-   !real(r8), pointer :: uscurr(:)
-   !real(r8), pointer :: vscurr(:)
+    !real(r8), pointer :: uscurr(:)
+    !real(r8), pointer :: vscurr(:)
     real(r8), pointer :: sxxn(:)
     real(r8), pointer :: sxyn(:)
     real(r8), pointer :: syyn(:)
@@ -657,8 +662,8 @@ contains
        call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_lamult(:) = fillvalue
-       do jsea=1, nseal
-          isea = iaproc + (jsea-1)*naproc
+       do jsea=1, nseal_local
+          call init_get_isea(isea, jsea)
           ix  = mapsf(isea,1)
           iy  = mapsf(isea,2)
           if (mapsta(iy,ix) == 1) then
@@ -675,8 +680,8 @@ contains
        call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_ustokes(:) = fillvalue
-       do jsea=1, nseal
-          isea = iaproc + (jsea-1)*naproc
+       do jsea=1, nseal_local
+          call init_get_isea(isea, jsea)
           ix  = mapsf(isea,1)
           iy  = mapsf(isea,2)
           if (mapsta(iy,ix) == 1) then
@@ -690,8 +695,8 @@ contains
        call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_vstokes(:) = fillvalue
-       do jsea=1, nseal
-          isea = iaproc + (jsea-1)*naproc
+       do jsea=1, nseal_local
+          call init_get_isea(isea, jsea)
           ix  = mapsf(isea,1)
           iy  = mapsf(isea,2)
           if (mapsta(iy,ix) == 1) then
@@ -757,8 +762,8 @@ contains
        ! Initialize wave elevation spectrum
        wave_elevation_spectrum(:,:) = fillvalue
 
-       do jsea=1, nseal                         ! jsea is local
-          isea = iaproc + (jsea-1)*naproc       ! isea is global
+       do jsea=1, nseal_local                   ! jsea is local
+          call init_get_isea(isea, jsea)        ! isea is global
           ix  = mapsf(isea,1)                   ! global ix
           iy  = mapsf(isea,2)                   ! global iy
           if (mapsta(iy,ix) .eq. 1) then        ! active sea point
@@ -835,16 +840,16 @@ contains
   end subroutine export_fields
 
   !===============================================================================
-!> Add a fieldname to a list of fields in a state
-!!
-!! @param[inout]    num                a counter for added fields
-!! @param[inout]    fldlist            a structure for the standard name and ungridded dims
-!! @param[in]       stdname            a standard field name
-!! @param[in]       ungridded_lbound   the lower bound of an ungridded dimension
-!! @param[in]       ungridded_ubound   the upper bound of an ungridded dimension
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Add a fieldname to a list of fields in a state
+  !!
+  !! @param[inout]    num                a counter for added fields
+  !! @param[inout]    fldlist            a structure for the standard name and ungridded dims
+  !! @param[in]       stdname            a standard field name
+  !! @param[in]       ungridded_lbound   the lower bound of an ungridded dimension
+  !! @param[in]       ungridded_ubound   the upper bound of an ungridded dimension
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine fldlist_add(num, fldlist, stdname, ungridded_lbound, ungridded_ubound)
     integer,                    intent(inout) :: num
     type(fld_list_type),        intent(inout) :: fldlist(:)
@@ -874,23 +879,23 @@ contains
   end subroutine fldlist_add
 
   !===============================================================================
-!> Realize a list of fields in a state
-!!
-!> @details For a connected field in a State, create an ESMF_Field object of
-!! the required dimensionality on the ESMF_Mesh. Remove any unconnected fields from
-!! the State. For a scalar field, create a field of dimensionality (1:flds_scalar_num)
-!!
-!! @param[inout]   state               an ESMF_State object
-!! @param[in]      fldlist             a list of fields in the State
-!! @param[in]      numflds             the number of fields in the state
-!! @param[in]      flds_scalar_name    the name of the scalar field
-!! @param[in]      flds_scalar_num     the count of scalar fields
-!! @param[in]      tag                 a character string for logging
-!! @param[in]      mesh                an ESMF_Mesh object
-!! @param[inout]   rc                  a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Realize a list of fields in a state
+  !!
+  !> @details For a connected field in a State, create an ESMF_Field object of
+  !! the required dimensionality on the ESMF_Mesh. Remove any unconnected fields from
+  !! the State. For a scalar field, create a field of dimensionality (1:flds_scalar_num)
+  !!
+  !! @param[inout]   state               an ESMF_State object
+  !! @param[in]      fldlist             a list of fields in the State
+  !! @param[in]      numflds             the number of fields in the state
+  !! @param[in]      flds_scalar_name    the name of the scalar field
+  !! @param[in]      flds_scalar_num     the count of scalar fields
+  !! @param[in]      tag                 a character string for logging
+  !! @param[in]      mesh                an ESMF_Mesh object
+  !! @param[inout]   rc                  a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine fldlist_realize(state, fldList, numflds, flds_scalar_name, flds_scalar_num, mesh, tag, rc)
 
     ! input/output variables
@@ -954,15 +959,15 @@ contains
     end do
 
   contains  !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!> Create a field with scalar data on the root pe
-!!
-!! @param[inout]   field               an ESMF_Field
-!! @param[in]      flds_scalar_name    the scalar field name
-!! @param[in[      flds_scalar_num     the dimnsionality of the scalar field
-!! @param[inout]   rc                  a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+    !> Create a field with scalar data on the root pe
+    !!
+    !! @param[inout]   field               an ESMF_Field
+    !! @param[in]      flds_scalar_name    the scalar field name
+    !! @param[in[      flds_scalar_num     the dimnsionality of the scalar field
+    !! @param[inout]   rc                  a return code
+    !!
+    !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+    !> @date 01-05-2022
     subroutine SetScalarField(field, flds_scalar_name, flds_scalar_num, rc)
       ! ----------------------------------------------
       ! create a field with scalar data on the root pe
@@ -997,14 +1002,14 @@ contains
   end subroutine fldlist_realize
 
   !===============================================================================
-!> Calculate Charnok parameter for export
-!!
-!> @details TODO:
-!!
-!! @param[inout] chkn             a 1-D pointer to a field on a mesh
-!!
-!> @author T. J. Campbell, NRL
-!> @date 09-Aug-2017
+  !> Calculate Charnok parameter for export
+  !!
+  !> @details TODO:
+  !!
+  !! @param[inout] chkn             a 1-D pointer to a field on a mesh
+  !!
+  !> @author T. J. Campbell, NRL
+  !> @date 09-Aug-2017
   subroutine CalcCharnk ( chkn )
 
     ! Calculate Charnok for export
@@ -1033,8 +1038,8 @@ contains
     !----------------------------------------------------------------------
 
     !TODO: fix firstCall like for Roughl
-    jsea_loop: do jsea = 1,nseal
-       isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_local
+       call init_get_isea(isea, jsea)
        if ( firstCall ) then
           charn(jsea) = zero
           llws(:) = .true.
@@ -1042,16 +1047,16 @@ contains
           ustdr = zero
 #ifdef W3_ST3
           call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                       emean, fmean, fmean1, wnmean, amax,         &
-                       u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                       tauwy, cd, z0, charn(jsea), llws, fmeanws )
+               emean, fmean, fmean1, wnmean, amax,         &
+               u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+               tauwy, cd, z0, charn(jsea), llws, fmeanws )
 #endif
 #ifdef W3_ST4
-           call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),  &
-                       emean, fmean, fmean1, wnmean, amax,         &
-                       u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                       tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-                       dlwmean )
+          call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),  &
+               emean, fmean, fmean1, wnmean, amax,         &
+               u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+               tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+               dlwmean )
 #endif
        endif !firstCall
        chkn(jsea) = charn(jsea)
@@ -1062,14 +1067,14 @@ contains
   end subroutine CalcCharnk
 
   !===============================================================================
-!> Calculate wave roughness length for export
-!!
-!> @details TODO:
-!!
-!! @param[inout] wrln             a 1-D pointer to a field on a mesh
-!!
-!> @author T. J. Campbell, NRL
-!> @date 09-Aug-2017
+  !> Calculate wave roughness length for export
+  !!
+  !> @details TODO:
+  !!
+  !! @param[inout] wrln             a 1-D pointer to a field on a mesh
+  !!
+  !> @author T. J. Campbell, NRL
+  !> @date 09-Aug-2017
   subroutine CalcRoughl ( wrln)
 
     ! Calculate 2D wave roughness length for export
@@ -1097,13 +1102,13 @@ contains
 
     !----------------------------------------------------------------------
 
-    jsea_loop: do jsea = 1,nseal
-       isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_local
+       call init_get_isea(isea, jsea)
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
        if ( firstCall ) then
           if(( runtype == 'initial'  .and.     mapsta(iy,ix)  == 1 ) .or. &
-             ( runtype == 'continue' .and. abs(mapsta(iy,ix)) == 1 )) then
+               ( runtype == 'continue' .and. abs(mapsta(iy,ix)) == 1 )) then
              charn(jsea) = zero
              llws(:) = .true.
              ustar = zero
@@ -1112,16 +1117,16 @@ contains
              tauwy = zero
 #ifdef W3_ST3
              call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                          emean, fmean, fmean1, wnmean, amax,         &
-                          u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                          tauwy, cd, z0, charn(jsea), llws, fmeanws )
+                  emean, fmean, fmean1, wnmean, amax,         &
+                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                  tauwy, cd, z0, charn(jsea), llws, fmeanws )
 #endif
 #ifdef W3_ST4
              call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-                          emean, fmean, fmean1, wnmean, amax,         &
-                          u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-                          tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-                          dlwmean )
+                  emean, fmean, fmean1, wnmean, amax,         &
+                  u10(isea), u10d(isea), ustar, ustdr, tauwx, &
+                  tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
+                  dlwmean )
 #endif
           end if
        endif !firstCall
@@ -1133,17 +1138,17 @@ contains
   end subroutine CalcRoughl
 
   !===============================================================================
-!> Calculate wave-bottom currents for export
-!!
-!> @details TODO:
-!!
-!! @param[in] a                    input spectra
-!! @param     wbxn                 a 1-D pointer to a field on a mesh
-!! @param     wbyn                 a 1-D pointer to a field on a mesh
-!! @param     wbpn                 a 1-D pointer to a field on a mesh
-!!
-!> @author T. J. Campbell, NRL
-!> @date 09-Aug-2017
+  !> Calculate wave-bottom currents for export
+  !!
+  !> @details TODO:
+  !!
+  !! @param[in] a                    input spectra
+  !! @param     wbxn                 a 1-D pointer to a field on a mesh
+  !! @param     wbyn                 a 1-D pointer to a field on a mesh
+  !! @param     wbpn                 a 1-D pointer to a field on a mesh
+  !!
+  !> @author T. J. Campbell, NRL
+  !> @date 09-Aug-2017
   subroutine CalcBotcur ( a, wbxn, wbyn, wbpn )
 
     ! Calculate wave-bottom currents for export
@@ -1177,8 +1182,8 @@ contains
     wbyn(:) = zero
     wbpn(:) = zero
 
-    jsea_loop: do jsea = 1,nseal
-       isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_local
+       call init_get_isea(isea, jsea)
        if ( dw(isea).le.zero ) cycle jsea_loop
        depth = max(dmin,dw(isea))
        abr = zero
@@ -1216,17 +1221,17 @@ contains
   end subroutine CalcBotcur
 
   !===============================================================================
-!> Calculate radiation stresses for export
-!!
-!> @details TODO:
-!!
-!! @param[in] a                    input spectra
-!! @param     sxxn                 a 1-D pointer to a field on a mesh
-!! @param     sxyn                 a 1-D pointer to a field on a mesh
-!! @param     syyn                 a 1-D pointer to a field on a mesh
-!!
-!> @author T. J. Campbell, NRL
-!> @date 09-Aug-2017
+  !> Calculate radiation stresses for export
+  !!
+  !> @details TODO:
+  !!
+  !! @param[in] a                    input spectra
+  !! @param     sxxn                 a 1-D pointer to a field on a mesh
+  !! @param     sxyn                 a 1-D pointer to a field on a mesh
+  !! @param     syyn                 a 1-D pointer to a field on a mesh
+  !!
+  !> @author T. J. Campbell, NRL
+  !> @date 09-Aug-2017
   subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
 
     ! Calculate 2D radiation stresses for export
@@ -1234,9 +1239,6 @@ contains
     use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
     use w3adatmd,   only : dw, cg, wn
     use w3odatmd,   only : naproc, iaproc
-#ifdef W3_PDLIB
-    use yowNodepool, only: np, iplg
-#endif
 
     ! input/output variables
     real, intent(in)               :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
@@ -1256,8 +1258,8 @@ contains
     !----------------------------------------------------------------------
 
     facd = dwat*grav
-    jsea_loop: do jsea = 1,nseal
-       isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_local
+       call init_get_isea(isea, jsea)
        if ( dw(isea).le.zero ) cycle jsea_loop
        sxxs = zero
        sxys = zero
@@ -1287,19 +1289,19 @@ contains
   end subroutine CalcRadstr2D
 
   !====================================================================================
-!> Create a global field across all PEs
-!!
-!> @details Distributes the global values of the named import state field to all PEs
-!! using a global reduce across all PEs.
-!!
-!! @param[in]    importstate        the import state
-!! @param[in]    fldname            the field name
-!! @param[in]    vm                 the ESMF VM object
-!! @param[out]   global_output      the global nsea values
-!! @param[out]   rc                 a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Create a global field across all PEs
+  !!
+  !> @details Distributes the global values of the named import state field to all PEs
+  !! using a global reduce across all PEs.
+  !!
+  !! @param[in]    importstate        the import state
+  !! @param[in]    fldname            the field name
+  !! @param[in]    vm                 the ESMF VM object
+  !! @param[out]   global_output      the global nsea values
+  !! @param[out]   rc                 a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine SetGlobalInput(importState, fldname, vm, global_output, rc)
 
     use w3gdatmd, only: nsea, nseal, nx, ny
@@ -1327,8 +1329,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
-    do jsea = 1, nseal
-       isea = iaproc + (jsea-1)*naproc
+    do jsea = 1, nseal_local
+       call init_get_isea(isea, jsea)
        global_input(isea) = real(dataptr(jsea),4)
     end do
     call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_output, count=nsea, reduceflag=ESMF_REDUCE_SUM, rc=rc)
@@ -1337,15 +1339,15 @@ contains
   end subroutine SetGlobalInput
 
   !====================================================================================
-!> Fill a global field with import state values at nsea points
-!!
-!> @details Fills a global field on all points from the values at all sea points
-!!
-!! @param[in]    global_data        values of a global field on nsea points
-!! @param[inout] globalfield        values of a global field on all points
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Fill a global field with import state values at nsea points
+  !!
+  !> @details Fills a global field on all points from the values at all sea points
+  !!
+  !! @param[in]    global_data        values of a global field on nsea points
+  !! @param[inout] globalfield        values of a global field on all points
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine fillglobal_with_import(global_data, globalfield)
 
     use w3gdatmd, only: nsea, mapsf, nx, ny
@@ -1365,18 +1367,18 @@ contains
   end subroutine fillglobal_with_import
 
   !====================================================================================
-!> Fill a global field by merging
-!!
-!> @details Merges the global import field values on sea points with values from a file
-!! using a provided mask
-!!
-!! @param[in]    global_data        values of a global field on nsea points
-!! @param[in]    global_mask        values of a global mask
-!! @param[in]    filedata           values of a global field from a file
-!! @param[inout] globalfield        values of a global field on all points
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Fill a global field by merging
+  !!
+  !> @details Merges the global import field values on sea points with values from a file
+  !! using a provided mask
+  !!
+  !! @param[in]    global_data        values of a global field on nsea points
+  !! @param[in]    global_mask        values of a global mask
+  !! @param[in]    filedata           values of a global field from a file
+  !! @param[inout] globalfield        values of a global field on all points
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine fillglobal_with_merge_import(global_data, global_mask, filedata, globalfield)
 
     use w3gdatmd, only: nsea, mapsf, nx, ny
@@ -1398,27 +1400,27 @@ contains
   end subroutine fillglobal_with_merge_import
 
   !====================================================================================
-!> Obtain the import mask used to merge a field from the import state with values from
-!! a file
-!!
-!> @details Set the import mask for merging an import state field with values from
-!! a file. The import mask is set 0 where the field from the import state has a value
-!! of fillValue due to non-overlapping model domains. The field values read from a
-!! file will be used to provide the values in these regions. The values of the import
-!! mask are set initially (on the first ModelAdvance) to be 0 everywhere. In this case
-!! there are no valid import state values and only the values read from the file are
-!! used. At the second ModelAdvance, the import state contains valid values and the
-!! import mask can be set according the regions where the import state contains the
-!! fillValue. The import mask is fixed in time after the second ModelAdvance.
-!!
-!! @param[in]    importState     an ESMF_State object for import fields
-!! @param[in]    clock           an ESMF_Clock object
-!! @param[in]    fldname         a field name
-!! @param[in]    vm              an ESMF_VM object
-!! @param[out]   rc              return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Obtain the import mask used to merge a field from the import state with values from
+  !! a file
+  !!
+  !> @details Set the import mask for merging an import state field with values from
+  !! a file. The import mask is set 0 where the field from the import state has a value
+  !! of fillValue due to non-overlapping model domains. The field values read from a
+  !! file will be used to provide the values in these regions. The values of the import
+  !! mask are set initially (on the first ModelAdvance) to be 0 everywhere. In this case
+  !! there are no valid import state values and only the values read from the file are
+  !! used. At the second ModelAdvance, the import state contains valid values and the
+  !! import mask can be set according the regions where the import state contains the
+  !! fillValue. The import mask is fixed in time after the second ModelAdvance.
+  !!
+  !! @param[in]    importState     an ESMF_State object for import fields
+  !! @param[in]    clock           an ESMF_Clock object
+  !! @param[in]    fldname         a field name
+  !! @param[in]    vm              an ESMF_VM object
+  !! @param[out]   rc              return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine set_importmask(importState, clock, fldname, vm, rc)
 
     use w3gdatmd, only: nsea, nseal, nx, ny
@@ -1451,14 +1453,14 @@ contains
 
     ! set call flags
     if (startTime == currTime) then
-     firstCall  = .true.
-     secondCall = .false.
+       firstCall  = .true.
+       secondCall = .false.
     elseif (currTime == startTime+timeStep) then
-     firstCall  = .false.
-     secondCall = .true.
+       firstCall  = .false.
+       secondCall = .true.
     else
-     firstCall  = .false.
-     secondCall = .false.
+       firstCall  = .false.
+       secondCall = .false.
     end if
     if (firstcall) then
        allocate(import_mask(nsea))
@@ -1471,7 +1473,7 @@ contains
     if (firstCall) then
        import_mask(:) = 0.0_r4
        call ESMF_ClockPrint(clock, options='currTime', preString='Setting initial import_mask at currTime : ', &
-          unit=msgString, rc=rc)
+            unit=msgString, rc=rc)
        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     end if
 
@@ -1479,7 +1481,7 @@ contains
     ! import_mask will be 1 where valid import exists and 0 where no valid import exists
     if (secondCall) then
        call ESMF_ClockPrint(clock, options='currTime', preString='Setting new import_mask at currTime : ', &
-          unit=msgString, rc=rc)
+            unit=msgString, rc=rc)
        call state_getfldptr(importState, trim(fldname), dataptr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -1500,20 +1502,20 @@ contains
   end subroutine set_importmask
 
   !====================================================================================
-!> Write a netCDF file containing the global field values for debugging
-!!
-!> @details Write a time-stamped netCDF file containing the values of a global field,
-!! where the global_field is provided on either on all points or only nsea points. In
-!! either case, the field will be written to the file on the mesh.
-!!
-!! @param[in]    gcomp           an ESMF_GridComp object
-!! @param[in]    fldname         a field name
-!! @param[in]    global_data     a global field
-!! @param[in]    nvals           the dimension of global_data
-!! @param[out]   rc              return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Write a netCDF file containing the global field values for debugging
+  !!
+  !> @details Write a time-stamped netCDF file containing the values of a global field,
+  !! where the global_field is provided on either on all points or only nsea points. In
+  !! either case, the field will be written to the file on the mesh.
+  !!
+  !! @param[in]    gcomp           an ESMF_GridComp object
+  !! @param[in]    fldname         a field name
+  !! @param[in]    global_data     a global field
+  !! @param[in]    nvals           the dimension of global_data
+  !! @param[out]   rc              return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine check_globaldata(gcomp, fldname, global_data, nvals, rc)
 
     use w3gdatmd, only: nseal, nsea, mapsf, nx, ny
@@ -1577,6 +1579,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dataptr1d(:) = fillValue
 
+    !TODO: get working for unstr
     if (nvals .eq. nx*ny) then
        do jsea = 1, nseal
           isea = iaproc + (jsea-1)*naproc
@@ -1592,7 +1595,7 @@ contains
     end if
 
     call ESMF_FieldWrite(newfield, filename=trim(fldname)//'.'//trim(timestr)//'.nc', &
-      variableName=trim(fldname), overwrite=.true., rc=rc)
+         variableName=trim(fldname), overwrite=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldDestroy(newfield, rc=rc, noGarbage=.true.)
 
@@ -1601,20 +1604,20 @@ contains
   end subroutine check_globaldata
 
   !========================================================================
-!> Read input from a file
-!!
-!> @details Obtain values from a file to fill an import state within a
-!! non-overlapped region of the wave domain
-!!
-!! @param[in]  idfld                  a file name to read
-!! @param[in]  time0                  the initial time
-!! @param[in]  timen                  the ending time
-!! @param[out] wxdata                 a 1-D pointer to a zonal wind field
-!! @param[out] wydata                 a 1-D pointer to a meridional wind field
-!! @param[out] rc                     a return code
-!!
-!> @author U. Turuncoglu, NCAR
-!> @date 18-May-2021
+  !> Read input from a file
+  !!
+  !> @details Obtain values from a file to fill an import state within a
+  !! non-overlapped region of the wave domain
+  !!
+  !! @param[in]  idfld                  a file name to read
+  !! @param[in]  time0                  the initial time
+  !! @param[in]  timen                  the ending time
+  !! @param[out] wxdata                 a 1-D pointer to a zonal wind field
+  !! @param[out] wydata                 a 1-D pointer to a meridional wind field
+  !! @param[out] rc                     a return code
+  !!
+  !> @author U. Turuncoglu, NCAR
+  !> @date 18-May-2021
   subroutine readfromfile (idfld, wxdata, wydata, time0, timen, rc)
 
     use w3gdatmd, only: nsea, mapsf, gtype, nx, ny
@@ -1651,17 +1654,17 @@ contains
 
     lstring = trim(idfld)
     if (firstCall) then
-      ! open file
-      call w3fldo('READ', lstring, mdsf, mdst, mdse, nx, ny, gtype, ierr)
-      write(logmsg,*) "Opening "//lstring//", iostat = ", ierr
-      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
-      if (ierr.ne.0) then
-        write(logmsg,*) "Error in opening "//lstring//", iostat = ", ierr
-        call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_ERROR)
-        rc = ESMF_FAILURE
-        return
-      endif
-      firstCall = .false.
+       ! open file
+       call w3fldo('READ', lstring, mdsf, mdst, mdse, nx, ny, gtype, ierr)
+       write(logmsg,*) "Opening "//lstring//", iostat = ", ierr
+       call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+       if (ierr.ne.0) then
+          write(logmsg,*) "Error in opening "//lstring//", iostat = ", ierr
+          call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+       endif
+       firstCall = .false.
     end if
 
     ! init variables
@@ -1680,12 +1683,12 @@ contains
     ! this was inside of w3fldo call but since we are opening file
     ! once and rewinding, the header need to be read
     read(mdsf, iostat=ierr) tsstr, tsfld, nxt, nyt, &
-      gtypet, filler(1:2), tideflag
+         gtypet, filler(1:2), tideflag
 
     ! read input
     call w3fldg('READ', lstring, mdsf, mdst, mdse, nx, ny, &
-           nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
-           wxnl, wynl, dtnl, ierr, flagsc)
+         nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
+         wxnl, wynl, dtnl, ierr, flagsc)
 
     wxdata(:) = 0.0_r4
     wydata(:) = 0.0_r4

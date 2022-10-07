@@ -29,6 +29,7 @@ module wav_shr_mod
   use NUOPC           , only : NUOPC_CompAttributeGet
   use NUOPC_Model     , only : NUOPC_ModelGet
   use wav_kind_mod    , only : r8 => shr_kind_r8, i8 => shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use wav_kind_mod    , only : i4 => shr_kind_i4
 
   implicit none
   private
@@ -44,6 +45,7 @@ module wav_shr_mod
   public  :: ymd2date          !< @public convert  year,month,day to integer
   private :: timeInit          !< @public create an ESMF_Time object
   private :: field_getfldptr   !< @private obtain a pointer to a field
+  public  :: diagnose_mesh     !< @public write out info about mesh
 
   interface state_getfldptr
      module procedure state_getfldptr_1d
@@ -52,8 +54,9 @@ module wav_shr_mod
 
   ! used by both CESM and UFS
   logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
-                                                                !! fields for coupling to CICE (TODO: generalize)
+  !! fields for coupling to CICE (TODO: generalize)
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
+  logical            , public :: unstr_mesh = .false.           !< @public flag to specify use of unstructured mesh
   character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
 
   ! Only used by cesm and optionally by uwm
@@ -66,9 +69,9 @@ module wav_shr_mod
 
   ! Only used by ufs
   logical            , public :: merge_import  = .false.  !< @public logical to specify whether import fields will
-                                                          !! be merged with a field provided from a file
+  !! be merged with a field provided from a file
   logical            , public :: multigrid = .false.      !< @public logical to control whether wave model is run
-                                                          !! as multigrid
+  !! as multigrid
 
   interface ymd2date
      module procedure ymd2date_int
@@ -102,23 +105,132 @@ module wav_shr_mod
   character(len=*), parameter :: u_FILE_u = &          !< a character string for an ESMF log message
        __FILE__
 
-!===============================================================================
+  !===============================================================================
 contains
-!===============================================================================
-!> Get scalar data from a state
-!!
-!> @details Obtain the field flds_scalar_name from a State and broadcast and
-!! it to all PEs
-!!
-!! @param[in]    State            an ESMF_State
-!! @param[in]    scalar_value     the value of the scalar
-!! @param[in]    scalar_id        the identity of the scalar
-!! @param[in]    flds_scalar_name the name of the scalar
-!! @param[in]    flds_scalar_num  the number of scalars
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Get properties of a mesh
+  !!
+  !! @param[in]    EMeshIn          an ESMF Mesh
+  !! @param[in]    gindex_size      the length of the gindex
+  !! @param[in]    mesh_name        a name to identify the mesh in the PET log
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 09-12-2022
+  subroutine diagnose_mesh(EMeshIn, gindex_size, mesh_name, rc)
+
+    use ESMF          , only : ESMF_Mesh, ESMF_LOGMSG_Info
+
+    ! input/output variables
+    type(ESMF_Mesh) , intent(in)  :: EMeshIn
+    integer         , intent(in)  :: gindex_size
+    character(len=*), intent(in)  :: mesh_name
+    integer         , intent(out) :: rc
+
+    !local variables
+    logical                :: elementCoordsIsPresent
+    logical                :: elementDistGridIsPresent
+    logical                :: nodalDistGridIsPresent
+    logical                :: elementMaskIsPresent
+    logical                :: nodeMaskIsPresent
+    character(ESMF_MAXSTR) :: msgString
+
+    integer                :: ncnt,ecnt,lb,ub
+    integer                :: nowndn, nownde
+    integer, allocatable   :: nids(:), eid(:), nowners(:)
+    character(len=*),parameter :: subname = '(wav_shr_mod:mesh_diagnose) '
+    !-------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+
+    !The Mesh class is distributed by elements. This means that a node must be present on any PET that
+    !contains an element associated with that node, but not on any other PET (a node can't be on a PET
+    !without an element "home"). Since a node may be used by two or more elements located on different
+    !PETS, a node may be duplicated on multiple PETs. When a node is duplicated in this manner, one and
+    !only one of the PETs that contain the node must "own" the node. The user sets this ownership when they
+    !define the nodes during Mesh creation. When a Field is created on a Mesh (i.e. on the Mesh nodes),
+    !on each PET the Field is only created on the nodes which are owned by that PET. This means that the
+    !size of the Field memory on the PET can be smaller than the number of nodes used to create the Mesh
+    !on that PET.
+
+    !The node id is a unique (across all PETs) integer attached to the particular node. It is used to
+    !indicate which nodes are the same when connecting together pieces of the Mesh on different processors.
+    !The node owner indicates which PET is in charge of the node
+
+    !The element id is a unique (across all PETs) integer attached to the particular element. The element
+    !connectivity indicates which nodes are to be connected together to form the element. The entries
+    !in this list are NOT the global ids of the nodes, but are indices into the PET local lists of node info used
+    !in the Mesh Create.
+
+    call ESMF_MeshGet(EMeshIn, nodeCount=ncnt, elementCount=ecnt, &
+         numOwnedElements=nownde, numOwnedNodes=nowndn, &
+         elementCoordsIsPresent=elementCoordsIsPresent, &
+         elementDistGridIsPresent=elementDistGridIsPresent,&
+         nodalDistGridIsPresent=nodalDistGridIsPresent, &
+         elementMaskIsPresent=elementMaskIsPresent, &
+         nodeMaskIsPresent=nodeMaskIsPresent, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    write(msgString,'(5(a,i6))')trim(mesh_name)//' Info: Node Cnt = ',ncnt,' Elem Cnt = ',ecnt, &
+         ' num Owned Elms = ',nownde,' num Owned Nodes = ',nowndn,&
+         ' Gindex size = ',gindex_size
+    call ESMF_LogWrite(trim(msgString), rc=rc)
+
+    allocate(nids(ncnt))
+    allocate(nowners(ncnt))
+    allocate(eids(ecnt))
+
+    if (elementDistGridIsPresent) call ESMF_LogWrite('element Distgrid is Present', rc=rc)
+    if (nodalDistGridIsPresent) call ESMF_LogWrite('nodal Distgrid is Present', rc=rc)
+    if (elementMaskIsPresent) call ESMF_LogWrite('element Mask is Present', rc=rc)
+    if (nodeMaskIsPresent) call ESMF_LogWrite('node Mask is Present', rc=rc)
+    if (elementCoordsIsPresent) call ESMF_LogWrite('element Coords is Present', rc=rc)
+
+    call ESMF_MeshGet(EMeshIn, nodeIds=nids, nodeOwners=nowners, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    lb = lbound(nids,1); ub = ubound(nids,1)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeIds(lb:lb+9) = ',lb,ub,nids(lb:lb+9)
+    call ESMF_LogWrite(trim(msgString), rc=rc)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners(lb:lb+9) = ',lb,ub,nowners(lb:lb+9)
+    call ESMF_LogWrite(trim(msgString), rc=rc)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeIds(ub-9:ub) = ',lb,ub,nids(ub-9:ub)
+    call ESMF_LogWrite(trim(msgString), rc=rc)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners(ub-9:ub) = ',lb,ub,nowners(ub-9:ub)
+    call ESMF_LogWrite(trim(msgString), rc=rc)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners min,max = ',minval(nowners),maxval(nowners)
+    call ESMF_LogWrite(trim(msgString), rc=rc)
+
+    ! some methods not avail when using a dual mesh
+    if (.not. unstr_mesh) then
+       call ESMF_MeshGet(EMeshIn, elementIds=eids, rc=rc)
+       lb = lbound(eids,1); ub = ubound(eids,1)
+       write(msgString,'(a,12i8)')trim(mesh_name)//' : ElemIds(lb:lb+9) = ',lb,ub,eids(lb:lb+9)
+       call ESMF_LogWrite(trim(msgString), rc=rc)
+       write(msgString,'(a,12i8)')trim(mesh_name)//' : ElemIds(ub-9:ub) = ',lb,ub,eids(ub-9:ub)
+       call ESMF_LogWrite(trim(msgString), rc=rc)
+    end if
+    deallocate(nids)
+    deallocate(eids)
+    deallocate(nowners)
+
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+
+  end subroutine diagnose_mesh
+  !===============================================================================
+  !> Get scalar data from a state
+  !!
+  !> @details Obtain the field flds_scalar_name from a State and broadcast and
+  !! it to all PEs
+  !!
+  !! @param[in]    State            an ESMF_State
+  !! @param[in]    scalar_value     the value of the scalar
+  !! @param[in]    scalar_id        the identity of the scalar
+  !! @param[in]    flds_scalar_name the name of the scalar
+  !! @param[in]    flds_scalar_num  the number of scalars
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_getscalar(state, scalar_id, scalar_value, flds_scalar_name, flds_scalar_num, rc)
 
     ! ----------------------------------------------
@@ -154,14 +266,14 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     if (mytask == 0) then
-      call ESMF_FieldGet(field, farrayPtr = farrayptr, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
-        call ESMF_LogWrite(trim(subname)//": ERROR in scalar_id", ESMF_LOGMSG_INFO, line=__LINE__, file=u_FILE_u)
-        rc = ESMF_FAILURE
-        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=u_FILE_u)) return
-      endif
-      tmp(:) = farrayptr(scalar_id,:)
+       call ESMF_FieldGet(field, farrayPtr = farrayptr, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
+          call ESMF_LogWrite(trim(subname)//": ERROR in scalar_id", ESMF_LOGMSG_INFO, line=__LINE__, file=u_FILE_u)
+          rc = ESMF_FAILURE
+          if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=u_FILE_u)) return
+       endif
+       tmp(:) = farrayptr(scalar_id,:)
     endif
     call ESMF_VMBroadCast(vm, tmp, 1, 0, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -169,24 +281,24 @@ contains
 
   end subroutine state_getscalar
 
-!================================================================================
-!> Set scalar data into a state
-!!
-!! Called by fldlist_realize to set the required scalar data into a state. The
-!! scalar_value will be set into a field with name flds_scalar_name. The scalar_id
-!! identifies which dimension in the scalar field is given by the scalar_value. The
-!! number of scalars is used to ensure that the scalar_id is within the bounds of
-!! the scalar field
-!!
-!! @param[inout]   State            an ESMF_State
-!! @param[in]      scalar_value     the value of the scalar
-!! @param[in]      scalar_id        the identity of the scalar
-!! @param[in]      flds_scalar_name the name of the scalar
-!! @param[in]      flds_scalar_num  the number of scalars
-!! @param[inout]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !================================================================================
+  !> Set scalar data into a state
+  !!
+  !! Called by fldlist_realize to set the required scalar data into a state. The
+  !! scalar_value will be set into a field with name flds_scalar_name. The scalar_id
+  !! identifies which dimension in the scalar field is given by the scalar_value. The
+  !! number of scalars is used to ensure that the scalar_id is within the bounds of
+  !! the scalar field
+  !!
+  !! @param[inout]   State            an ESMF_State
+  !! @param[in]      scalar_value     the value of the scalar
+  !! @param[in]      scalar_id        the identity of the scalar
+  !! @param[in]      flds_scalar_name the name of the scalar
+  !! @param[in]      flds_scalar_num  the number of scalars
+  !! @param[inout]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_setscalar(scalar_value, scalar_id, State, flds_scalar_name, flds_scalar_num,  rc)
 
     ! ----------------------------------------------
@@ -233,15 +345,15 @@ contains
 
   end subroutine state_setscalar
 
-!===============================================================================
-!> Reset all fields in a state to a value
-!!
-!! @param[inout] State            an ESMF_State
-!! @param[in]    reset_value      the reset value
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Reset all fields in a state to a value
+  !!
+  !! @param[inout] State            an ESMF_State
+  !! @param[in]    reset_value      the reset value
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_reset(State, reset_value, rc)
 
     ! ----------------------------------------------
@@ -298,15 +410,15 @@ contains
   end subroutine state_reset
 
   !===============================================================================
-!> Obtain a 1-D pointer to a field in a state
-!!
-!! @param[in]    State            an ESMF_State
-!! @param[in]    fldname          the name of an ESMF field
-!! @param[inout] fldptr           a 1-d pointer to an ESMF field
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Obtain a 1-D pointer to a field in a state
+  !!
+  !! @param[in]    State            an ESMF_State
+  !! @param[in]    fldname          the name of an ESMF field
+  !! @param[inout] fldptr           a 1-d pointer to an ESMF field
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_getfldptr_1d(State, fldname, fldptr, rc)
     ! ----------------------------------------------
     ! Get pointer to a state field
@@ -344,15 +456,15 @@ contains
   end subroutine state_getfldptr_1d
 
   !===============================================================================
-!> Obtain a 2-D pointer to a field in a state
-!!
-!! @param[in]    State            an ESMF_State
-!! @param[in]    fldname          the name of an ESMF field
-!! @param[inout] fldptr           a 2-d pointer to an ESMF field
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Obtain a 2-D pointer to a field in a state
+  !!
+  !! @param[in]    State            an ESMF_State
+  !! @param[in]    fldname          the name of an ESMF field
+  !! @param[inout] fldptr           a 2-d pointer to an ESMF field
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_getfldptr_2d(State, fldname, fldptr, rc)
     ! ----------------------------------------------
     ! Get pointer to a state field
@@ -389,14 +501,14 @@ contains
   end subroutine state_getfldptr_2d
 
   !===============================================================================
-!> Return true if a field is in a state
-!!
-!! @param[in] State               an ESMF_State
-!! @param[in] fldname             the name of an ESMF field
-!! @return    state_fldchk        logical indicating a field is present in a state
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Return true if a field is in a state
+  !!
+  !! @param[in] State               an ESMF_State
+  !! @param[in] fldname             the name of an ESMF field
+  !! @return    state_fldchk        logical indicating a field is present in a state
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   logical function state_fldchk(State, fldname)
     ! ----------------------------------------------
     ! Determine if field is in state
@@ -415,15 +527,15 @@ contains
 
   end function state_fldchk
 
-!===============================================================================
-!> Print minimum, maximum, sum and size for a field in a state
-!!
-!! @param[in] State               an ESMF_State
-!! @param[in] string              a string for denoting the location of the call
-!! @param[out] rc                 a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Print minimum, maximum, sum and size for a field in a state
+  !!
+  !! @param[in] State               an ESMF_State
+  !! @param[in] string              a string for denoting the location of the call
+  !! @param[out] rc                 a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_diagnose(State, string, rc)
 
     ! ----------------------------------------------
@@ -489,18 +601,18 @@ contains
 
   end subroutine state_diagnose
 
-!===============================================================================
-!> Obtain a 1 or 2-D pointer to a field
-!!
-!! @param[in]    field            an ESMF_Field
-!! @param[inout] fldptr1          a 1-d pointer to an ESMF field
-!! @param[inout] fldptr2          a 2-d pointer to an ESMF field
-!! @param[out]   rank             the field rank
-!! @param[in]    abort            an optional flag to override the default abort value
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Obtain a 1 or 2-D pointer to a field
+  !!
+  !! @param[in]    field            an ESMF_Field
+  !! @param[inout] fldptr1          a 1-d pointer to an ESMF field
+  !! @param[inout] fldptr2          a 2-d pointer to an ESMF field
+  !! @param[out]   rank             the field rank
+  !! @param[in]    abort            an optional flag to override the default abort value
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine field_getfldptr(field, fldptr1, fldptr2, rank, abort, rc)
 
     ! ----------------------------------------------
@@ -612,25 +724,25 @@ contains
 
   end subroutine field_getfldptr
 
-!===============================================================================
-!> Set up an alarm in a clock
-!!
-!> @details Create an ESMF_Alarm according to the desired frequency, where the
-!! frequency is relative to a time frequency of seconds, days, hours etc.
-!!
-!! @param[inout]  clock           an ESMF_Clock
-!! @param[inout]  alarm           an ESMF_Alarm
-!! @param[in]     option          the alarm option (day,hour etc)
-!! @param[in]     opt_n           the alarm frequency
-!! @param[in]     opt_ymd         the YMD, required for alarm_option when option is
-!!                                date
-!! @param[in]     opt_tod         the time-of-day in seconds
-!! @param[in]     Reftime         initial guess of next alarm time
-!! @param[in]     alarmname       the alarm name
-!! @param[inout]  rc              a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Set up an alarm in a clock
+  !!
+  !> @details Create an ESMF_Alarm according to the desired frequency, where the
+  !! frequency is relative to a time frequency of seconds, days, hours etc.
+  !!
+  !! @param[inout]  clock           an ESMF_Clock
+  !! @param[inout]  alarm           an ESMF_Alarm
+  !! @param[in]     option          the alarm option (day,hour etc)
+  !! @param[in]     opt_n           the alarm frequency
+  !! @param[in]     opt_ymd         the YMD, required for alarm_option when option is
+  !!                                date
+  !! @param[in]     opt_tod         the time-of-day in seconds
+  !! @param[in]     Reftime         initial guess of next alarm time
+  !! @param[in]     alarmname       the alarm name
+  !! @param[inout]  rc              a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine alarmInit( clock, alarm, option, &
        opt_n, opt_ymd, opt_tod, RefTime, alarmname, rc)
 
@@ -713,9 +825,9 @@ contains
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
 
-          call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
+       call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
+            ESMF_LOGMSG_INFO, rc=rc)
+       rc = ESMF_FAILURE
 
     case (optDate)
        if (.not. present(opt_ymd)) then
@@ -994,9 +1106,9 @@ contains
        update_nextalarm  = .true.
 
     case default
-          call ESMF_LogWrite(trim(subname)//'unknown option '//trim(option), &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
+       call ESMF_LogWrite(trim(subname)//'unknown option '//trim(option), &
+            ESMF_LOGMSG_INFO, rc=rc)
+       rc = ESMF_FAILURE
 
     end select
 
@@ -1020,20 +1132,20 @@ contains
 
   end subroutine alarmInit
 
-!===============================================================================
-!> Create an ESMF_Time object
-!!
-!> @details Create a ESMF_Time corresponding to a input time YYYYMMMDD and
-!! time of day in seconds
-!!
-!! @param[inout] Time             an ESMF_Time object
-!! @param[in]    ymd              year, month, day YYYYMMDD
-!! @param[in]    cal              an ESMF_Calendar
-!! @param[in]    tod              time of day in secons
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Create an ESMF_Time object
+  !!
+  !> @details Create a ESMF_Time corresponding to a input time YYYYMMMDD and
+  !! time of day in seconds
+  !!
+  !! @param[inout] Time             an ESMF_Time object
+  !! @param[in]    ymd              year, month, day YYYYMMDD
+  !! @param[in]    cal              an ESMF_Calendar
+  !! @param[in]    tod              time of day in secons
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine timeInit( Time, ymd, cal, tod, rc)
 
     ! Create the ESMF_Time object corresponding to the given input time,
@@ -1075,15 +1187,15 @@ contains
   end subroutine timeInit
 
   !===============================================================================
-!> Convert  year, month, day to integer*4 coded-date
-!!
-!! @param[in]   year              calendar year
-!! @param[in]   month             calendary month
-!! @param[in]   day               calendar day
-!! @param[out]  date              calendar date yyyymmmdd
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Convert  year, month, day to integer*4 coded-date
+  !!
+  !! @param[in]   year              calendar year
+  !! @param[in]   month             calendary month
+  !! @param[in]   day               calendar day
+  !! @param[out]  date              calendar date yyyymmmdd
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine ymd2date_int(year,month,day,date)
     ! Converts  year, month, day to coded-date
 
@@ -1098,15 +1210,15 @@ contains
   end subroutine ymd2date_int
 
   !===============================================================================
-!> Converts  year, month, day to integer*8 coded-date
-!!
-!! @param[in]   year              calendar year
-!! @param[in]   month             calendary month
-!! @param[in]   day               calendar day
-!! @param[out]  date              calendar date yyyymmmdd
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Converts  year, month, day to integer*8 coded-date
+  !!
+  !! @param[in]   year              calendar year
+  !! @param[in]   month             calendary month
+  !! @param[in]   day               calendar day
+  !! @param[out]  date              calendar date yyyymmmdd
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine ymd2date_long(year,month,day,date)
     ! Converts  year, month, day to coded-date
 
@@ -1120,16 +1232,16 @@ contains
     if (year < 0) date = -date
   end subroutine ymd2date_long
 
-!===============================================================================
-!> Return a logical true if ESMF_LogFoundError detects an error
-!!
-!! @param[in]  rc                 return code
-!! @param[in]  line               source code line number
-!! @param[in]  file               user provided source file name
-!! @return     chkerr             logical indicating an error was found
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Return a logical true if ESMF_LogFoundError detects an error
+  !!
+  !! @param[in]  rc                 return code
+  !! @param[in]  line               source code line number
+  !! @param[in]  file               user provided source file name
+  !! @return     chkerr             logical indicating an error was found
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   logical function chkerr(rc, line, file)
 
     integer, intent(in) :: rc

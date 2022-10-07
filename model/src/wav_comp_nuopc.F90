@@ -38,7 +38,7 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : NUOPC_ModelGet, SetVM
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, i4=>shr_kind_i4
   use wav_kind_mod          , only : cl=>shr_kind_cl, cs=>shr_kind_cs
-  use wav_import_export     , only : advertise_fields, realize_fields
+  use wav_import_export     , only : advertise_fields, realize_fields, nseal_local
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
   use wav_shr_mod           , only : wav_coupling_to_cice
@@ -47,7 +47,7 @@ module wav_comp_nuopc
   use w3odatmd              , only : runtype, use_user_histname, user_histfname, use_user_restname, user_restfname
   use w3odatmd              , only : user_netcdf_grdout
   use w3odatmd              , only : time_origin, calendar_name, elapsed_secs
-  use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index
+  use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index, unstr_mesh
 #ifndef W3_CESMCOUPLED
   use wmwavemd              , only : wmwave
   use wmupdtmd              , only : wmupd2
@@ -81,7 +81,7 @@ module wav_comp_nuopc
   integer                 :: flds_scalar_index_nx = 0      !< the default size of the scalar field nx
   integer                 :: flds_scalar_index_ny = 0      !< the default size of the scalar field ny
   logical                 :: profile_memory = .false.      !< default logical to control use of ESMF
-                                                           !! memory profiling
+  !! memory profiling
 
   logical                 :: root_task = .false.           !< logical to indicate root task
 #ifdef W3_CESMCOUPLED
@@ -90,15 +90,15 @@ module wav_comp_nuopc
   logical :: cesmcoupled = .false.                         !< logical to indicate non-CESM use case
 #endif
   integer, allocatable :: tend(:,:)                        !< the ending time of ModelAdvance when
-                                                           !! run with multigrid=true
+  !! run with multigrid=true
   logical                 :: user_histalarm = .false.      !< logical flag for user to set history alarms
-                                                           !! using ESMF. If history_option is present as config
-                                                           !! option, user_histalarm will be true and will be
-                                                           !! set using history_option, history_n and history_ymd
+  !! using ESMF. If history_option is present as config
+  !! option, user_histalarm will be true and will be
+  !! set using history_option, history_n and history_ymd
   logical                 :: user_restalarm = .false.      !< logical flag for user to set restart alarms
-                                                           !! using ESMF. If restart_option is present as config
-                                                           !! option, user_restalarm will be true and will be
-                                                           !! set using restart_option, restart_n and restart_ymd
+  !! using ESMF. If restart_option is present as config
+  !! option, user_restalarm will be true and will be
+  !! set using restart_option, restart_n and restart_ymd
   integer :: time0(2)
   integer :: timen(2)
 
@@ -224,6 +224,7 @@ contains
   !> @date 01-05-2022
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
 
+    use wav_shr_flags, only : w3_pdlib_flag
     ! input/output arguments
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -303,7 +304,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
        read(cvalue,*) profile_memory
-       call ESMF_LogWrite(trim(subname)//': profile_memory = '//trim(cvalue), ESMF_LOGMSG_INFO, rc=rc)
+       call ESMF_LogWrite(trim(subname)//': profile_memory = '//trim(cvalue), ESMF_LOGMSG_INFO)
     end if
 
     call NUOPC_CompAttributeGet(gcomp, name="merge_import", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
@@ -311,6 +312,12 @@ contains
     if (isPresent .and. isSet) then
        if (trim(cvalue) == '.true.') then
           merge_import = .true.
+       end if
+    end if
+    if (merge_import) then
+       if (w3_pdlib_flag) then
+          call ESMF_LogWrite('Merge_import is not valid with PDLIB', ESMF_LOGMSG_INFO)
+          call ESMF_Finalize(endflag=ESMF_END_ABORT)
        end if
     end if
 
@@ -399,13 +406,19 @@ contains
     use w3adatmd     , only : w3naux, w3seta
     use w3idatmd     , only : w3seti, w3ninp
     use w3gdatmd     , only : nseal, nsea, nx, ny, mapsf, w3nmod, w3setg
+    use w3gdatmd     , only : rlgtype, ungtype, gtype
     use w3wdatmd     , only : va, time, w3ndat, w3dimw, w3setw
+    use w3parall     , only : init_get_isea
 #ifndef W3_CESMCOUPLED
     use wminitmd     , only : wminit, wminitnml
     use wmunitmd     , only : wmuget, wmuset
 #endif
     use wav_shel_inp , only : set_shel_io
     use wav_grdout   , only : wavinit_grdout
+    use wav_shr_mod  , only : diagnose_mesh
+#ifdef W3_PDLIB
+    use yowNodepool  , only : ng, npa
+#endif
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -683,70 +696,92 @@ contains
     ! Mesh initialization
     !--------------------------------------------------------------------
 
-    ! Note that nsea is the global number of sea points - and nseal is
-    ! the local number of sea points
+    if (gtype .eq. ungtype) then
+       unstr_mesh = .true.
+    else
+       unstr_mesh = .false.
+    end if
 
-    ! create a  global index array for sea points
-    allocate(gindex_sea(nseal))
-    do jsea=1, nseal
-       isea = iaproc + (jsea-1)*naproc
+    ! Note that nsea is the global number of sea points - and nseal is the local number
+    ! of sea points
+
+    ! create a  global index array for sea points. For the unstr mesh, the nsea points are
+    ! on mesh nodes. We will use the gindex to set the element distgrid of a dual mesh. A
+    ! dual mesh contains the mesh nodes at the center of each element. For a triangular mesh,
+    ! this element is composed of 2 overlapping triangles (6 vertices)).
+
+    ! set a value of the local sea points on this processor minus the ghost points (pdlib only)
+#ifdef W3_PDLIB
+    nseal_local = nseal - ng
+#else
+    nseal_local = nseal
+#endif
+    allocate(gindex_sea(nseal_local))
+    do jsea=1, nseal_local
+       call init_get_isea(isea, jsea)
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
        gindex_sea(jsea) = ix + (iy-1)*nx
     end do
 
-    ! create a global index array for non-sea (i.e. land points)
-    allocate(mask_global(nx*ny), mask_local(nx*ny))
-    mask_local(:) = 0
-    mask_global(:) = 0
-    do jsea=1, nseal
-       isea = iaproc + (jsea-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       mask_local(ix + (iy-1)*nx) = 1
-    end do
-    call ESMF_VMAllReduce(vm, sendData=mask_local, recvData=mask_global, count=nx*ny, &
-         reduceflag=ESMF_REDUCE_MAX, rc=rc)
+    if (unstr_mesh) then
+       ! create distGrid from global index array of sea points with no ghost points
+       DistGrid = ESMF_DistGridCreate(arbSeqIndexList=gindex_sea, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       ! create a global index array for non-sea (i.e. land points)
+       allocate(mask_global(nx*ny), mask_local(nx*ny))
+       mask_local(:) = 0
+       mask_global(:) = 0
+       do jsea=1, nseal_local
+          call init_get_isea(isea, jsea)
+          ix = mapsf(isea,1)
+          iy = mapsf(isea,2)
+          mask_local(ix + (iy-1)*nx) = 1
+       end do
+       call ESMF_VMAllReduce(vm, sendData=mask_local, recvData=mask_global, count=nx*ny, &
+            reduceflag=ESMF_REDUCE_MAX, rc=rc)
 
-    nlnd_global = nx*ny - nsea
-    nlnd_local = nlnd_global / naproc
-    my_lnd_start = nlnd_local*iam + min(iam, mod(nlnd_global, naproc)) + 1
-    if (iam < mod(nlnd_global, naproc)) then
-       nlnd_local = nlnd_local + 1
-    end if
-    my_lnd_end = my_lnd_start + nlnd_local - 1
+       nlnd_global = nx*ny - nsea
+       nlnd_local = nlnd_global / naproc
+       my_lnd_start = nlnd_local*iam + min(iam, mod(nlnd_global, naproc)) + 1
+       if (iam < mod(nlnd_global, naproc)) then
+          nlnd_local = nlnd_local + 1
+       end if
+       my_lnd_end = my_lnd_start + nlnd_local - 1
 
-    allocate(gindex_lnd(my_lnd_end - my_lnd_start + 1))
-    ncnt = 0
-    do n = 1,nx*ny
-       if (mask_global(n) == 0) then ! this is a land point
-          ncnt = ncnt + 1
-          if (ncnt >= my_lnd_start .and. ncnt <= my_lnd_end) then
-             gindex_lnd(ncnt - my_lnd_start + 1) = n
+       allocate(gindex_lnd(my_lnd_end - my_lnd_start + 1))
+       ncnt = 0
+       do n = 1,nx*ny
+          if (mask_global(n) == 0) then ! this is a land point
+             ncnt = ncnt + 1
+             if (ncnt >= my_lnd_start .and. ncnt <= my_lnd_end) then
+                gindex_lnd(ncnt - my_lnd_start + 1) = n
+             end if
           end if
-       end if
-    end do
-    deallocate(mask_global)
-    deallocate(mask_local)
+       end do
+       deallocate(mask_global)
+       deallocate(mask_local)
 
-    ! create a global index that includes both sea and land - but put land at the end
-    nlnd = (my_lnd_end - my_lnd_start + 1)
-    allocate(gindex(nlnd + nseal))
-    do ncnt = 1,nlnd + nseal
-       if (ncnt <= nseal) then
-          gindex(ncnt) = gindex_sea(ncnt)
-       else
-          gindex(ncnt) = gindex_lnd(ncnt-nseal)
-       end if
-    end do
-    deallocate(gindex_sea)
-    deallocate(gindex_lnd)
+       ! create a global index that includes both sea and land - but put land at the end
+       nlnd = (my_lnd_end - my_lnd_start + 1)
+       allocate(gindex(nlnd + nseal_local))
+       do ncnt = 1,nlnd + nseal
+          if (ncnt <= nseal_local) then
+             gindex(ncnt) = gindex_sea(ncnt)
+          else
+             gindex(ncnt) = gindex_lnd(ncnt-nseal_local)
+          end if
+       end do
+       deallocate(gindex_sea)
+       deallocate(gindex_lnd)
 
-    ! create distGrid from global index array
-    DistGrid = ESMF_DistGridCreate(arbSeqIndexList=gindex, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       ! create distGrid from global index array
+       DistGrid = ESMF_DistGridCreate(arbSeqIndexList=gindex, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
-    ! create the mesh
+    ! get the mesh file name
     call NUOPC_CompAttributeGet(gcomp, name='mesh_wav', value=cvalue, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -757,37 +792,46 @@ contains
        write(nds(1),*)'mesh file for domain is ',trim(cvalue)
     end if
 
-    ! recreate the mesh using the above distGrid
-    EMesh = ESMF_MeshCreate(EMeshTemp, elementDistgrid=Distgrid, rc=rc)
+    ! read in the mesh with the above DistGrid
+    EMesh = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, &
+         elementDistgrid=Distgrid,rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    ! obtain the mesh mask and find the minimum value across all PEs
-    call ESMF_DistGridGet(Distgrid, localDe=0, elementCount=ncnt, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(meshmask(ncnt))
-    elemMaskArray = ESMF_ArrayCreate(Distgrid, farrayPtr=meshmask, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_MeshGet(Emesh, elemMaskArray=elemMaskArray, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMAllFullReduce(vm, sendData=meshmask, recvData=maskmin, count=ncnt, &
-         reduceflag=ESMF_REDUCE_MIN, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (maskmin == 1) then
-       ! replace mesh mask with internal mask
-       meshmask(:) = 0
-       meshmask(1:nseal) = 1
-       call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-    end if
-
     if (dbug_flag > 5) then
-       call ESMF_ArrayWrite(elemMaskArray, 'meshmask.nc', variableName = 'mask', &
-            overwrite=.true., rc=rc)
+       call diagnose_mesh(EMesh, size(gindex), 'EMesh', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-    deallocate(meshmask)
-    deallocate(gindex)
+
+    if (.not. unstr_mesh) then
+       ! obtain the mesh mask and find the minimum value across all PEs
+       call ESMF_MeshGet(EMesh, elementDistgrid=Distgrid, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_DistGridGet(Distgrid, localDe=0, elementCount=ncnt, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       allocate(meshmask(ncnt))
+       elemMaskArray = ESMF_ArrayCreate(Distgrid, farrayPtr=meshmask, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_MeshGet(Emesh, elemMaskArray=elemMaskArray, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_VMAllFullReduce(vm, sendData=meshmask, recvData=maskmin, count=ncnt, &
+            reduceflag=ESMF_REDUCE_MIN, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       if (maskmin == 1) then
+          ! replace mesh mask with internal mask
+          meshmask(:) = 0
+          meshmask(1:nseal_local) = 1
+          call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       if (dbug_flag > 5) then
+          call ESMF_ArrayWrite(elemMaskArray, 'meshmask.nc', variableName = 'mask', &
+               overwrite=.true., rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+       deallocate(meshmask)
+       deallocate(gindex)
+    end if
 
     !--------------------------------------------------------------------
     ! Realize the actively coupled fields
@@ -884,11 +928,13 @@ contains
        wave_elevation_spectrum(:,:) = 0.
     endif
 
-    ! Set global grid size scalars in export state
-    call State_SetScalar(dble(nx), flds_scalar_index_nx, exportState, flds_scalar_name, flds_scalar_num, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call State_SetScalar(dble(ny), flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (.not. unstr_mesh) then
+       ! Set global grid size scalars in export state
+       call State_SetScalar(dble(nx), flds_scalar_index_nx, exportState, flds_scalar_name, flds_scalar_num, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call State_SetScalar(dble(ny), flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     if ( dbug_flag > 5) then
        call state_diagnose(exportState, 'at DataInitialize ', rc=rc)
@@ -1345,7 +1391,6 @@ contains
     real(r8)          :: dtcfl_in  ! Maximum CFL time step X-Y propagation.
     real(r8)          :: dtcfli_in ! Maximum CFL time step X-Y propagation intra-spectral
     integer           :: stdout
-    character(len=CL) :: cvalue
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:wavinit_cesm)'
     ! -------------------------------------------------------------------
 
