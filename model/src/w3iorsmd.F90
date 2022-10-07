@@ -327,6 +327,7 @@
 #ifdef W3_TIMINGS
       USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
+    USE w3odatmd, ONLY : RUNTYPE, INITFILE      
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
 #endif
