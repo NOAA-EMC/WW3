@@ -1401,13 +1401,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCxUNO2 ended.'
 
     RETURN
   END SUBROUTINE SMCxUNO2
@@ -1456,9 +1451,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST8)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1537,13 +1529,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO2 ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO2
@@ -1588,9 +1575,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
     !$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1655,13 +1639,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCxUNO2r ended.'
 
     RETURN
   END SUBROUTINE SMCxUNO2r
@@ -1701,9 +1680,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST8)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1765,13 +1741,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO2r ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO2r
@@ -1824,9 +1795,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
     !$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1927,13 +1895,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCxUNO3 ended.'
 
     RETURN
   END SUBROUTINE SMCxUNO3
@@ -1985,9 +1948,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2098,13 +2058,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO3 ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO3
@@ -2149,9 +2104,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
     !$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2235,9 +2187,6 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
 
@@ -2282,9 +2231,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2369,13 +2315,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO3r ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO3r
@@ -2442,9 +2383,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2544,10 +2482,8 @@ CONTAINS
         !         Side gradients over 2 cell lengths for central cell.
         !         Face size factor is also included for average.
         CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
         CNST6 = int(CNST6 * 1.0e6) ! CB B4B
-#endif
 #endif
 
         !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2575,12 +2511,10 @@ CONTAINS
     !$OMP END DO
 #endif
 
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
     !$OMP SINGLE
     AVN = AVN / 1.0e6  !CB B4B
     !$OMP END SINGLE
-#endif
 #endif
 
 #ifdef W3_OMPG
@@ -2597,16 +2531,11 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
 
     !!Li  Y-gradient for polar cell in Arctic part is set to zero.
     IF( ARCTC ) GrdY(NSEA) = 0.0
-
-    ! 999  PRINT*, ' Sub SMCGradn ended.'
 
     RETURN
   END SUBROUTINE SMCGradn
@@ -2651,9 +2580,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, j, L, M, n),  &
     !$OMP& Private(CNST3,CNST4,CNST5,CNST6)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2694,12 +2620,10 @@ CONTAINS
     !$OMP END DO
 #endif
 
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
     !$OMP SINGLE
     AUN = AUN / 1.0e6  !CB B4B
     !$OMP END SINGLE
-#endif
 #endif
 
 #ifdef W3_OMPG
@@ -2715,10 +2639,8 @@ CONTAINS
 
       !       Face size is required for multi-resolution grid.
       CNST6=Real( IJKVfc(3,j) )*(CVF(M)+CVF(L))
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
       CNST6=INT(CNST6 * 1e6)
-#endif
 #endif
 
       !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2745,12 +2667,10 @@ CONTAINS
     !$OMP END DO
 #endif
 
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
     !$OMP SINGLE
     AVN = AVN / 1.0e6  !CB B4B
     !$OMP END SINGLE
-#endif
 #endif
 
 #ifdef W3_OMPG
@@ -2770,9 +2690,6 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
 
