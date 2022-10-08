@@ -3484,12 +3484,6 @@ CONTAINS
                 IF (J.GT.1) REFLD(2,MAPFS(IY,IX))= 1
                 THAVG=ATAN2(SINAVG,COSAVG)
 #endif
-#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3SETREF)
-#ifdef W3_REF1
-                !WRITE (6,*) 'COASTAL REFLECTION:',IX,IY,   &
-                !SINAVG,COSAVG,THAVG/TPI,NINT(THAVG/TPI*NTH),MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
-#endif
-#endif
 #ifdef W3_REF1
                 REFLD(1,MAPFS(IY,IX))=1+MOD(NTH+NINT(THAVG/TPI*NTH),NTH)
               ELSE

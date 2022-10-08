@@ -5458,10 +5458,8 @@ CONTAINS
       NMAPB  = 1 + (NX-1)/NCOL
       WRITE (NDSO,1105) NMAPB
 #endif
-#ifdef W3_T
-#ifdef W3_REF1
+#if defined W3_T && defined W3_REF1
       WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
-#endif
 #endif
       !
 #ifdef W3_REF1
@@ -5469,12 +5467,10 @@ CONTAINS
         IX0    = 1 + (IMAPB-1)*NCOL
         IXN    = MIN ( NX , IMAPB*NCOL )
 #endif
-#ifdef W3_T
-#ifdef W3_REF1
+#if defined  W3_T && defined W3_REF1
         DO IY=NY,1,-1
           WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
         END DO
-#endif
 #endif
 #ifdef W3_REF1
         WRITE (NDSO,*) ' '
