@@ -697,15 +697,14 @@ contains
        unstr_mesh = .false.
     end if
 
-    ! Note that nsea is the global number of sea points - and nseal is the local number
-    ! of sea points
-
-    ! create a  global index array for sea points. For the unstr mesh, the nsea points are
-    ! on mesh nodes. We will use the gindex to set the element distgrid of a dual mesh. A
-    ! dual mesh contains the mesh nodes at the center of each element. For a triangular mesh,
-    ! this element is composed of 2 overlapping triangles (6 vertices)).
-
-    ! set a value of the local sea points on this processor minus the ghost points (pdlib only)
+    ! Create a  global index array for sea points.
+    ! Note that nsea is the global number of sea points - and nseal is the local
+    ! number of sea points. For the unstr mesh, the nsea points are on mesh nodes.
+    ! We will use the gindex to set the element distgrid of a dual mesh. A dual mesh
+    ! contains the mesh nodes at the center of each element. For a triangular mesh,
+    ! this element is composed of 2 overlapping triangles (6 vertices)). For the domain
+    ! decomposition case (PDLIB), set a value of the local sea points on this processor
+    ! minus the ghost points.
 #ifdef W3_PDLIB
     nseal_local = nseal - ng
 #else
