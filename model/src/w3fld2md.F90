@@ -657,9 +657,6 @@ CONTAINS
     REAL, INTENT(OUT) :: SAT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !
-#ifdef W3_S
     CALL STRACE (IENT, 'WND2SAT')
 #endif
     !

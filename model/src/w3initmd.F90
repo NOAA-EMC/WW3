@@ -440,13 +440,11 @@ CONTAINS
 #ifdef W3_TIMINGS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGCOH
+#if defined W3_PDLIB && defined W3_DEBUGCOH
     USE PDLIB_W3PROFSMD, ONLY: ALL_VA_INTEGRAL_PRINT, TEST_MPI_STATUS
 #endif
-#ifdef W3_DEBUGINIT
+#if defined W3_PDLIB && defined W3_DEBUGINIT
     USE PDLIB_W3PROFSMD, ONLY: PRINT_WN_STATISTIC
-#endif
 #endif
 #ifdef W3_UOST
     USE W3UOSTMD, ONLY: UOST_SETGRID
@@ -5864,9 +5862,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 2, 7) ) THEN
               IH     = IH + 1
               IT     = IT0 + 12
@@ -5878,9 +5874,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 2, 19) ) THEN
               IH     = IH + 1
               IT     = IT0 + 13
@@ -5906,9 +5900,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             ENDIF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 5, 5) ) THEN
               IH     = IH + 1
               IT     = IT0 + 15
@@ -5929,9 +5921,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 5,11) ) THEN
               IH     = IH + 1
               IT     = IT0 + 17
@@ -5943,9 +5933,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 6, 2) ) THEN
               IH     = IH + 1
               IT     = IT0 + 18
@@ -5966,9 +5954,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 6, 3) ) THEN
               IH     = IH + 1
               IT     = IT0 + 20
@@ -5980,9 +5966,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 6, 4) ) THEN
               IH     = IH + 1
               IT     = IT0 + 21
@@ -5994,9 +5978,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 6, 5) ) THEN
               IH     = IH + 1
               IT     = IT0 + 22
@@ -6017,9 +5999,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 6, 6) ) THEN
               IH     = IH + 1
               IT     = IT0 + 24
@@ -6040,9 +6020,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 6,10) ) THEN
               IH     = IH + 1
               IT     = IT0 + 26
@@ -6063,9 +6041,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 6,13) ) THEN
               IH     = IH + 1
               IT     = IT0 + 28
@@ -6086,9 +6062,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 7, 2) ) THEN
               IH     = IH + 1
               IT     = IT0 + 30
@@ -6109,9 +6083,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 7, 4) ) THEN
               IH     = IH + 1
               IT     = IT0 + 32
@@ -6123,9 +6095,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF ( FLOGRR( 7, 5) ) THEN
               IH     = IH + 1
               IT     = IT0 + 33
@@ -6147,9 +6117,7 @@ CONTAINS
 #ifdef W3_MPI
             END IF
           END DO
-#endif
           !
-#ifdef W3_MPI
           CALL W3SETA ( IMOD, NDSE, NDST )
         END IF
       END IF
@@ -6187,19 +6155,13 @@ CONTAINS
 #endif
 #ifdef W3_MPI
         IH     = 0
-#endif
         !
-#ifdef W3_MPI
         IF ((.NOT. LPDLIB).OR.(GTYPE .NE. UNGTYPE)) THEN
           IF ( IAPROC .NE. NAPRST ) THEN
-#endif
             !
-#ifdef W3_MPI
             ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NBLKRS) )
             IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
-#endif
             !
-#ifdef W3_MPI
             DO IB=1, NBLKRS
               IH     = IH + 1
               IT     = IT0 + 3 + IB
@@ -6216,13 +6178,9 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END DO
-#endif
             !
-#ifdef W3_MPI
           ELSE
-#endif
             !
-#ifdef W3_MPI
             ALLOCATE                                       &
                  ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,     &
                  OUTPTS(IMOD)%OUT4%VAAUX(NSPEC,2*RSBLKS,NAPROC) )
@@ -6253,9 +6211,7 @@ CONTAINS
                 END IF
               END DO
             END DO
-#endif
             !
-#ifdef W3_MPI
           END IF
         END IF
 #endif
@@ -6266,13 +6222,9 @@ CONTAINS
 #endif
 #ifdef W3_MPI
         IT0    = IT0 + NBLKRS
-#endif
         !
-#ifdef W3_MPI
       END IF
-#endif
       !
-#ifdef W3_MPI
     END IF
 #endif
     !
@@ -6284,9 +6236,7 @@ CONTAINS
     IH     = 0
     IT     = IT0
     IROOT  = NAPBPT - 1
-#endif
     !
-#ifdef W3_MPI
     IF ( FLOUT(5) ) THEN
       ALLOCATE ( OUTPTS(IMOD)%OUT5%IRQBP1(NBO2(NFBPO)),      &
            OUTPTS(IMOD)%OUT5%IRQBP2(NBO2(NFBPO)) )
@@ -6303,22 +6253,16 @@ CONTAINS
 #ifdef W3_MPI
       DO J=1, NFBPO
         DO I=NBO2(J-1)+1, NBO2(J)
-#endif
           !
-#ifdef W3_MPI
           IT     = IT + 1
-#endif
           !
           ! 3.b Residence processor of point
           !
-#ifdef W3_MPI
           ISEA   = ISBPO(I)
           CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-#endif
           !
           ! 3.c If stored locally, send data
           !
-#ifdef W3_MPI
           IF ( IAPROC .EQ. ISPROC ) THEN
             IH     = IH + 1
             CALL MPI_SEND_INIT (VA(1,JSEA),NSPEC,MPI_REAL, &
@@ -6329,9 +6273,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
           END IF
-#endif
           !
-#ifdef W3_MPI
         END DO
       END DO
 #endif
@@ -6374,11 +6316,9 @@ CONTAINS
 #ifdef W3_MPI
             ISEA   = ISBPO(I)
             CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
-#endif
             !
             ! 3.g Receive in correct array
             !
-#ifdef W3_MPI
             IH     = IH + 1
             IT     = IT + 1
             ITARG  = ISPROC - 1
@@ -6392,9 +6332,7 @@ CONTAINS
 #ifdef W3_MPI
           END DO
         END DO
-#endif
         !
-#ifdef W3_MPI
         NRQBP2 = IH
 #endif
         !
@@ -6411,9 +6349,7 @@ CONTAINS
       !
 #ifdef W3_MPI
       IT0    = IT0 + NBO2(NFBPO)
-#endif
       !
-#ifdef W3_MPI
     END IF
 #endif
     !
@@ -6426,9 +6362,7 @@ CONTAINS
 #ifdef W3_MPI
     IH     = 0
     IROOT  = NAPTRK - 1
-#endif
     !
-#ifdef W3_MPI
     IF ( FLOUT(3) ) THEN
 #endif
       !
@@ -6529,9 +6463,6 @@ CONTAINS
 9012 FORMAT ( ' +------+-------+------+------+--------------+')
 9013 FORMAT ( ' TEST W3MPIO: NRQGO :',2I10)
 9014 FORMAT ( ' TEST W3MPIO: NRQGO2:',2I10)
-#endif
-    !
-#ifdef W3_MPIT
 9020 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (F)'/      &
          ' +------+------+------+------+--------------+'/       &
          ' |  IH  |  ID  | TARG |  TAG |   handle err |'/       &
@@ -6539,9 +6470,6 @@ CONTAINS
 9021 FORMAT ( ' |',I5,' | ',A4,' |',2(I5,' |'),I9,I4,' |')
 9022 FORMAT ( ' +------+------+------+------+--------------+')
 9023 FORMAT ( ' TEST W3MPIO: NRQRS :',I10)
-#endif
-    !
-#ifdef W3_MPIT
 9025 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (S)'/      &
          '              BLOCK SIZE / BLOCKS : ',2I6/      &
          ' +------+------+------+------+--------------+---------+'/ &
@@ -6552,9 +6480,6 @@ CONTAINS
 9027 FORMAT (                                                  &
          ' +------+------+------+------+--------------+---------+')
 9028 FORMAT ( ' TEST W3MPIO: IHMAX :',I10)
-#endif
-    !
-#ifdef W3_MPIT
 9030 FORMAT (/' TEST W3MPIO: ',A,' CALLS FOR W3IOBC'/          &
          ' +------+------+---+------+------+--------------+'/   &
          ' |  IH  | IPT  | F | TARG |  TAG |   handle err |'/   &
@@ -6564,9 +6489,6 @@ CONTAINS
          ' +------+------+---+------+------+--------------+')
 9033 FORMAT ( ' TEST W3MPIO: NRQBC :',I10)
 9034 FORMAT ( ' TEST W3MPIO: TOTAL :',I10)
-#endif
-    !
-#ifdef W3_MPIT
 9040 FORMAT (/' TEST W3MPIO: COMMUNICATION CALLS FOR W3IOTR'/  &
          ' +------+------+------+------+--------------+'/       &
          ' |  IH  |  ID  | TARG |  TAG |   handle err |'/       &
@@ -6661,9 +6583,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     USE W3SERVMD, ONLY: EXTCDE
-#endif
     !/
-#ifdef W3_MPI
     USE W3GDATMD, ONLY: NX, NY, NSPEC, MAPFS
     USE W3WDATMD, ONLY: VA
     USE W3ADATMD, ONLY: MPI_COMM_WAVE, SPPNT
@@ -6708,19 +6628,15 @@ CONTAINS
       WRITE (NDSE,1001)
       CALL EXTCDE (1)
     END IF
-#endif
     !
     ! 1.  Set-up for W3IOPE/O ( SENDs ) ---------------------------------- /
     !
-#ifdef W3_MPI
     NRQPO  = 0
     NRQPO2 = 0
     IH     = 0
     IT0    = IT0PNT
     IROOT  = NAPPNT - 1
-#endif
     !
-#ifdef W3_MPI
     ALLOCATE ( OUTPTS(IMOD)%OUT2%IRQPO1(4*NOPTS),              &
          OUTPTS(IMOD)%OUT2%IRQPO2(4*NOPTS) )
     IRQPO1 => OUTPTS(IMOD)%OUT2%IRQPO1
@@ -6740,14 +6656,10 @@ CONTAINS
         IX(K)=IPTINT(1,K,I)
         IY(K)=IPTINT(2,K,I)
       END DO
-#endif
       ! 1.b Loop over corner points
       !
-#ifdef W3_MPI
       DO J=1, 4
-#endif
         !
-#ifdef W3_MPI
         IT     = IT0 + (I-1)*4 + J
         IS(J)  = MAPFS (IY(J),IX(J))
         IF ( IS(J) .EQ. 0 ) THEN
@@ -6771,21 +6683,15 @@ CONTAINS
 #endif
 #ifdef W3_MPI
         END IF
-#endif
         !
         ! ... End of loop 1.b
         !
-#ifdef W3_MPI
       END DO
-#endif
       !
       ! ... End of loop 1.a
       !
-#ifdef W3_MPI
     END DO
-#endif
     !
-#ifdef W3_MPI
     NRQPO  = IH
 #endif
     !
@@ -6798,9 +6704,7 @@ CONTAINS
     !
 #ifdef W3_MPI
     IF ( IAPROC .EQ. NAPPNT ) THEN
-#endif
       !
-#ifdef W3_MPI
       IH     = 0
 #endif
       !
@@ -6816,13 +6720,9 @@ CONTAINS
           IX(K)=IPTINT(1,K,I)
           IY(K)=IPTINT(2,K,I)
         END DO
-#endif
         !
-#ifdef W3_MPI
         DO J=1, 4
-#endif
           !
-#ifdef W3_MPI
           IT     = IT0 + (I-1)*4 + J
           IS(J)  = MAPFS (IY(J),IX(J))
           IF ( IS(J) .EQ. 0 ) THEN
@@ -6849,15 +6749,11 @@ CONTAINS
           !
 #ifdef W3_MPI
         END DO
-#endif
         !
         ! ... End of loop 1.e
         !
-#ifdef W3_MPI
       END DO
-#endif
       !
-#ifdef W3_MPI
       NRQPO2 = NOPTS*4
 #endif
       !
