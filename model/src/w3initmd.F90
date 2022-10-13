@@ -706,8 +706,10 @@
       IFT    = LEN_TRIM(TFILE)
       J      = LEN_TRIM(FNMPRE)
 !
+#ifndef W3_CESMCOUPLED      
       IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
           OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
+#endif
 !
       IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
           INQUIRE (MDS(3),OPENED=OPENED)
