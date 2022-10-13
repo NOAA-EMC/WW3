@@ -1176,9 +1176,6 @@ CONTAINS
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITTIN, CINXSI
     END IF
-#endif
-    !
-#ifdef W3_FLX2
     IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CINXSI
 #endif
     !
@@ -1190,9 +1187,6 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
            NITTIN, CINXSI, CD_MAX, CAP_ID
     END IF
-#endif
-    !
-#ifdef W3_FLX3
     IF ( FLTEST ) WRITE (NDST,9048) NITTIN, CAP_ID, CINXSI, CD_MAX
 #endif
     !
@@ -1211,9 +1205,6 @@ CONTAINS
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SLNC1, FSPM, FSHF
     END IF
-#endif
-    !
-#ifdef W3_LN1
     IF ( FLTEST ) WRITE (NDST,9049) SLNC1, FSPM, FSHF
 #endif
     !
@@ -1223,9 +1214,6 @@ CONTAINS
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SINC1, SDSC1
     END IF
-#endif
-    !
-#ifdef W3_ST1
     IF ( FLTEST ) WRITE (NDST,9050) SINC1, SDSC1
 #endif
     !
@@ -1245,9 +1233,6 @@ CONTAINS
       IF ( .NOT. FLINP ) CALL INPTAB
       FLINP  = .TRUE.
     END IF
-#endif
-    !
-#ifdef W3_ST2
     IF ( FLTEST ) WRITE (NDST,9050)                            &
          ZWIND, FSWELL, CDSA0, CDSA1, CDSA2,                   &
          SDSALN, CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, &
@@ -1332,9 +1317,6 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
     END IF
-#endif
-    !
-#ifdef W3_NL1
     IF ( FLTEST ) WRITE (NDST,9051) SNLC1, LAM,                &
          KDCON, KDMN, SNLS1, SNLS2, SNLS3
 #endif
@@ -1351,9 +1333,6 @@ CONTAINS
       PINIT  = .TRUE.
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
     END IF
-#endif
-    !
-#ifdef W3_NL2
     IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS
     IF ( FLTEST ) WRITE (NDST,9151) DPTHNL
 #endif
@@ -1381,9 +1360,6 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            SNLL, SNLM, SNLT, SNLCD, SNLCS
     END IF
-#endif
-    !
-#ifdef W3_NL3
     IF ( FLTEST ) WRITE (NDST,9051) SNLNQ, SNLMSC, SNLNSC,     &
          SNLSFD, SNLSFS
     IF ( FLTEST ) THEN
@@ -1401,9 +1377,6 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            ITSA, IALT
     END IF
-#endif
-    !
-#ifdef W3_NL4
     IF ( FLTEST ) WRITE (NDST,9051) ITSA, IALT
 #endif
     !
@@ -1431,9 +1404,6 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
     END IF
-#endif
-    !
-#ifdef W3_NLS
     IF ( FLTEST ) WRITE (NDST,9251)                            &
          CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
 #endif
@@ -1476,9 +1446,6 @@ CONTAINS
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
     END IF
-#endif
-    !
-#ifdef W3_BT1
     IF ( FLTEST ) WRITE (NDST,9052) SBTC1
 #endif
     !
@@ -1509,9 +1476,7 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            SDBC1, SDBC2, FDONLY
     END IF
-#endif
     !
-#ifdef W3_DB1
     IF ( FLTEST ) WRITE (NDST,9053) SDBC1, SDBC2, FDONLY
 #endif
 
@@ -1562,9 +1527,7 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            DTME, CLATMN
     END IF
-#endif
     !
-#ifdef W3_PR2
     IF ( FLTEST ) WRITE (NDST,9060) DTME, CLATMN
 #endif
     !
@@ -1575,9 +1538,7 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            WDCG, WDTH
     END IF
-#endif
     !
-#ifdef W3_PR3
     IF ( FLTEST ) WRITE (NDST,9060) WDCG, WDTH
 #endif
     !
@@ -1588,9 +1549,7 @@ CONTAINS
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
     END IF
-#endif
     !
-#ifdef W3_SMC
     IF ( FLTEST ) WRITE (NDST,9260) DTMS, Refran
 #endif
     !
@@ -1718,9 +1677,7 @@ CONTAINS
          '      FNAMEI : ',A)
 9002 FORMAT ('      NBO    : ',10I5)
 9003 FORMAT ('      NBO2   : ',10I5)
-#endif
     !
-#ifdef W3_T
 9010 FORMAT (' TEST W3IOGR : MODULE W3GDATMD GRID'/               &
          '      GTYPE  : ',I9/                                &
          '      FLAGLL : ',L9/                                &
@@ -1740,25 +1697,19 @@ CONTAINS
          '      STEXU  : ',F9.2 /                             &
          '      STEYU  : ',F9.2 /                             &
          '      STEDU  : ',F9.2)
-#endif
     !
-#ifdef W3_T
 9016 FORMAT ('      FLAGS  : ',8L2)
 9017 FORMAT ('      CLATS   : ',3F8.3,' ...'/                      &
          '      CLATIS  : ',3F8.3,' ...'/                      &
          '      CTHG0S  : ',3E11.3,' ...')
-#endif
     !
-#ifdef W3_T
 9020 FORMAT (' TEST W3IOGR : MODULE W3ODATMD OUT5')
 9021 FORMAT ('      INTERPOLATION DATA : FILE ',I1)
 9022 FORMAT ('          ',I5,2X,4I4,2X,4F5.2)
 9023 FORMAT ('          ',10I7)
 9025 FORMAT (' TEST W3IOGR : MODULE W3ODATMD OUT6'/               &
          '      PARTITIONING DATA :',I5,3E10.3,L4,2X,I4)
-#endif
     !
-#ifdef W3_T
 9030 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SGRD'/               &
          '      MAPWN  : ',8I4,' ...'/                        &
          '      MAPTH  : ',8I4,' ...'/                        &
@@ -1770,9 +1721,7 @@ CONTAINS
          '      FR     : ',F6.3,' ...',F6.3/                  &
          '      FACs   : ',6E10.3/                            &
          '               ',3E10.3)
-#endif
     !
-#ifdef W3_T
 9040 FORMAT (' TEST W3IOGR : MODULE W3GDATMD NPAR'/               &
          '      FACs   : ',5E10.3/                            &
          '               ',4E10.3)
