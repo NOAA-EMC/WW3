@@ -912,13 +912,7 @@ CONTAINS
 #ifdef W3_T
 9001 FORMAT (' TEST W3PSMC : ISP, ITH, IK, COS-SIN :',I8,2I4,2F7.3)
 9003 FORMAT (' TEST W3PSMC : NO DISPERSION CORRECTION ')
-#endif
-    !
-#ifdef W3_T
 9010 FORMAT (' TEST W3PSMC : INITIALIZE ARRAYS')
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST W3PSMC : CALCULATING LCFLX/Y AND DSS/NN (NSEA=', &
          I6,')')
 #endif
@@ -927,9 +921,6 @@ CONTAINS
 #endif
 #ifdef W3_T
 9022 FORMAT (' TEST W3PSMC : CORRECTING FOR CURRENT')
-#endif
-    !
-#ifdef W3_T
 9040 FORMAT (' TEST W3PSMC : FIELD AFTER PROP. (NSEA=',I6,')')
 #endif
 #ifdef W3_T2
@@ -1401,13 +1392,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCxUNO2 ended.'
 
     RETURN
   END SUBROUTINE SMCxUNO2
@@ -1456,9 +1442,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST8)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1537,13 +1520,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO2 ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO2
@@ -1588,9 +1566,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
     !$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1655,13 +1630,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCxUNO2r ended.'
 
     RETURN
   END SUBROUTINE SMCxUNO2r
@@ -1701,9 +1671,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST8)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1765,13 +1732,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO2r ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO2r
@@ -1824,9 +1786,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
     !$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -1927,13 +1886,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCxUNO3 ended.'
 
     RETURN
   END SUBROUTINE SMCxUNO3
@@ -1985,9 +1939,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2098,13 +2049,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO3 ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO3
@@ -2149,9 +2095,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, ij, K, L, M, N),  &
     !$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2235,9 +2178,6 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
 
@@ -2282,9 +2222,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST4,CNST5,CNST6,CNST7,CNST8,CNST9)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2369,13 +2306,8 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
-
-    ! 999  PRINT*, ' Sub SMCyUNO3r ended.'
 
     RETURN
   END SUBROUTINE SMCyUNO3r
@@ -2442,9 +2374,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, j, K, L, M, N),  &
     !$OMP& Private(CNST,CNST0,CNST1,CNST2,CNST3,CNST4,CNST5,CNST6)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2468,10 +2397,8 @@ CONTAINS
         !         Side gradients over 2 cell lengths for central cell.
         !         Face size factor is also included for average.
         CNST5=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
         CNST5=INT(CNST5 * 1.0e6)   ! CB: B4B
-#endif
 #endif
 
         !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2499,12 +2426,10 @@ CONTAINS
     !$OMP END DO
 #endif
 
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
     !$OMP SINGLE
     AUN = AUN / 1.0e6  ! CB B4B
     !$OMP END SINGLE
-#endif
 #endif
 
     !  Assign averaged side-gradient to GrdX, plus latitude factor
@@ -2525,9 +2450,6 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2551,10 +2473,8 @@ CONTAINS
         !         Side gradients over 2 cell lengths for central cell.
         !         Face size factor is also included for average.
         CNST6=CNST1*(CVF(M)-CVF(L))/(CNST2+CNST3)
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
         CNST6 = int(CNST6 * 1.0e6) ! CB B4B
-#endif
 #endif
 
         !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2582,12 +2502,10 @@ CONTAINS
     !$OMP END DO
 #endif
 
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
     !$OMP SINGLE
     AVN = AVN / 1.0e6  !CB B4B
     !$OMP END SINGLE
-#endif
 #endif
 
 #ifdef W3_OMPG
@@ -2604,16 +2522,11 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
 
     !!Li  Y-gradient for polar cell in Arctic part is set to zero.
     IF( ARCTC ) GrdY(NSEA) = 0.0
-
-    ! 999  PRINT*, ' Sub SMCGradn ended.'
 
     RETURN
   END SUBROUTINE SMCGradn
@@ -2658,9 +2571,6 @@ CONTAINS
 #ifdef W3_OMPG
     !$OMP Parallel Default(Shared), Private(i, j, L, M, n),  &
     !$OMP& Private(CNST3,CNST4,CNST5,CNST6)
-#endif
-
-#ifdef W3_OMPG
     !$OMP DO
 #endif
 
@@ -2701,12 +2611,10 @@ CONTAINS
     !$OMP END DO
 #endif
 
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
     !$OMP SINGLE
     AUN = AUN / 1.0e6  !CB B4B
     !$OMP END SINGLE
-#endif
 #endif
 
 #ifdef W3_OMPG
@@ -2722,10 +2630,8 @@ CONTAINS
 
       !       Face size is required for multi-resolution grid.
       CNST6=Real( IJKVfc(3,j) )*(CVF(M)+CVF(L))
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
       CNST6=INT(CNST6 * 1e6)
-#endif
 #endif
 
       !! Replace CRITICAL with ATOMIC.  JGLi15Jan2019
@@ -2752,12 +2658,10 @@ CONTAINS
     !$OMP END DO
 #endif
 
-#ifdef W3_B4B
-#ifdef W3_OMPG
+#if defined W3_B4B && defined W3_OMPG
     !$OMP SINGLE
     AVN = AVN / 1.0e6  !CB B4B
     !$OMP END SINGLE
-#endif
 #endif
 
 #ifdef W3_OMPG
@@ -2777,9 +2681,6 @@ CONTAINS
 
 #ifdef W3_OMPG
     !$OMP END DO
-#endif
-
-#ifdef W3_OMPG
     !$OMP END Parallel
 #endif
 
@@ -3086,14 +2987,12 @@ CONTAINS
       !Li   Directional depedent depth gradient limiter.  JGLi16Jun2011
       IF ( CNST4 .GT. 1.0E-5 ) THEN
 
-#ifdef W3_T
-#ifdef W3_OMPG
+#if defined W3_T && defined W3_OMPG
         !$OMP ATOMIC Update   !CB - added T switch
 #endif
         L = L + 1       !CB - added T switch
-#ifdef W3_OMPG
+#if defined W3_T && defined W3_OMPG
         !$OMP END ATOMIC      !CB - added T switch
-#endif
 #endif
 
         DO i=1, NTH
@@ -3419,9 +3318,7 @@ CONTAINS
     DO ISEA=1, NSEA
       FIELD(ISEA) = A(ISPEC,ISEA)
     END DO
-#endif
     !
-#ifdef W3_SHRD
     RETURN
 #endif
     !
@@ -3432,12 +3329,10 @@ CONTAINS
     ISPLOC = ISPLOC + 1
     IBFLOC = IBFLOC + 1
     IF ( IBFLOC .GT. MPIBUF ) IBFLOC = 1
-#endif
     !
     ! 2.b Check status of present buffer
     ! 2.b.1 Scatter (send) still in progress, wait to end
     !
-#ifdef W3_MPI
     IF ( BSTAT(IBFLOC) .EQ. 2 ) THEN
       IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
       IF ( NRQSG2 .GT. 0 ) CALL                              &
@@ -3445,11 +3340,9 @@ CONTAINS
            STATUS, IERR_MPI )
       BSTAT(IBFLOC) = 0
     END IF
-#endif
     !
     ! 2.b.2 Gather (recv) not yet posted, post now
     !
-#ifdef W3_MPI
     IF ( BSTAT(IBFLOC) .EQ. 0 ) THEN
       BSTAT(IBFLOC) = 1
       BISPL(IBFLOC) = ISPLOC
@@ -3457,41 +3350,30 @@ CONTAINS
       IF ( NRQSG2 .GT. 0 ) CALL                              &
            MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
     END IF
-#endif
     !
     ! 2.c Put local spectral densities in store
     !
-#ifdef W3_MPI
     DO JSEA=1, NSEAL
       GSTORE(IAPROC+(JSEA-1)*NAPROC,IBFLOC) = A(ISPEC,JSEA)
     END DO
-#endif
     !
     ! 2.d Wait for remote spectral densities
     !
-#ifdef W3_MPI
     IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
     IF ( NRQSG2 .GT. 0 ) CALL                                  &
          MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,1), STATUS, IERR_MPI )
-#endif
     !
     ! 2.e Convert storage array to field.
     !
-#ifdef W3_MPI
     DO ISEA=1, NSEA
       FIELD(ISEA) = GSTORE(ISEA,IBFLOC)
     END DO
-#endif
     !
     ! 2.f Pre-fetch data in available buffers
     !
-#ifdef W3_MPI
     IS0    = ISPLOC
     IB0    = IBFLOC
     NPST   = 0
-#endif
-    !
-#ifdef W3_MPI
     DO J=1, MPIBUF-1
       IS0    = IS0 + 1
       IF ( IS0 .GT. NSPLOC ) EXIT
@@ -3506,9 +3388,6 @@ CONTAINS
       END IF
       IF ( NPST .GE. 2 ) EXIT
     END DO
-#endif
-    !
-#ifdef W3_MPI
     RETURN
 #endif
     !
@@ -3625,11 +3504,9 @@ CONTAINS
 #ifdef W3_MPI
     USE W3ADATMD, ONLY: MPIBUF, BSTAT, IBFLOC, ISPLOC, BISPL, &
          NSPLOC, NRQSG2, IRQSG2, SSTORE
-#endif
-    USE W3ODATMD, ONLY: NDST
-#ifdef W3_MPI
     USE W3ODATMD, ONLY: IAPROC, NAPROC
 #endif
+    USE W3ODATMD, ONLY: NDST
     !/
     IMPLICIT NONE
     !
@@ -3674,9 +3551,7 @@ CONTAINS
       IXY           = MAPSF(ISEA,3)
       IF ( MAPSTA(IXY) .GE. 1 ) A(ISPEC,ISEA) = FIELD(ISEA)
     END DO
-#endif
     !
-#ifdef W3_SHRD
     RETURN
 #endif
     !
@@ -3690,34 +3565,26 @@ CONTAINS
       IXY    = MAPSF(ISEA,3)
       IF ( MAPSTA(IXY) .GE. 1 ) SSTORE(ISEA,IBFLOC) = FIELD(ISEA)
     END DO
-#endif
     !
     ! 2.c Send spectral densities to appropriate remote
     !
-#ifdef W3_MPI
     IOFF   = 1 + (ISPLOC-1)*NRQSG2
     IF ( NRQSG2 .GT. 0 ) CALL                                  &
          MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,2), IERR_MPI )
     BSTAT(IBFLOC) = 2
-#endif
     !
     ! 2.d Save locally stored results
     !
-#ifdef W3_MPI
     DO JSEA=1, NSEAL
       !!Li   ISEA   = IAPROC+(JSEA-1)*NAPROC
       ISEA   = MIN( IAPROC+(JSEA-1)*NAPROC, NSEA )
       A(ISPEC,JSEA) = SSTORE(ISEA,IBFLOC)
     END DO
-#endif
     !
     ! 2.e Check if any sends have finished
     !
-#ifdef W3_MPI
     IB0    = IBFLOC
-#endif
     !
-#ifdef W3_MPI
     DO J=1, MPIBUF
       IB0    = 1 + MOD(IB0,MPIBUF)
       IF ( BSTAT(IB0) .EQ. 2 ) THEN
@@ -3742,9 +3609,6 @@ CONTAINS
     !
 #ifdef W3_MPI
     IF ( ISPLOC .EQ. NSPLOC ) THEN
-#endif
-      !
-#ifdef W3_MPI
       DO IB0=1, MPIBUF
         IF ( BSTAT(IB0) .EQ. 2 ) THEN
           IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
@@ -3754,18 +3618,9 @@ CONTAINS
           BSTAT(IB0) = 0
         END IF
       END DO
-#endif
-      !
-#ifdef W3_MPI
       ISPLOC = 0
       IBFLOC = 0
-#endif
-      !
-#ifdef W3_MPI
     END IF
-#endif
-    !
-#ifdef W3_MPI
     RETURN
 #endif
     !

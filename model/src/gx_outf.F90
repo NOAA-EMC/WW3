@@ -1417,9 +1417,6 @@ CONTAINS
     !
 #ifdef W3_T
 9000 FORMAT (' TEST GXEXGO : FLAGS  :',40L2)
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST GXEXGO : OUTPUT FIELD : ',A)
 #endif
     !/
