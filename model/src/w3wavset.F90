@@ -877,6 +877,14 @@
           eOff=0
         END DO
       END IF
+#ifdef W3_DEBUGSTP
+      DO IP=1,npa
+         J=PDLIB_I_DIAG(IP)
+         ListDiag(IP)=ASPAR(J)
+      END DO
+      WRITE(740+IAPROC,*) 'Diag, min=', minval(ListDiag), ' max=', maxval(ListDiag)
+      WRITE(740+IAPROC,*) 'Diag, quot=', maxval(ListDiag)/minval(ListDiag)
+#endif
   END SUBROUTINE TRIG_WAVE_SETUP_COMPUTE_SYSTEM
 !/ ------------------------------------------------------------------- /
 !>
@@ -969,7 +977,6 @@
       REAL(rkind), intent(in) :: TheIn(npa)
       REAL(rkind), intent(out) :: TheOut(npa)
       INTEGER, intent(IN) :: ACTIVE(npa), ACTIVESEC(npa)
-      REAL(rkind) :: ListDiag(npa)
       integer IP, J1, J, JP, J2
       REAL(rkind) :: eCoeff
       INTEGER :: ThePrecond = 2
@@ -1000,15 +1007,11 @@
         DO IP=1,npa
           IF (ACTIVESEC(IP) .eq. 1) THEN
             J=PDLIB_I_DIAG(IP)
-            ListDiag(IP)=ASPAR(J)
             TheOut(IP)=TheIn(IP)/ASPAR(J)
           ELSE
-            ListDiag(IP)=1
             TheOut(IP)=TheIn(IP)
           END IF
         END DO
-        WRITE(740+IAPROC,*) 'Diag, min=', minval(ListDiag), ' max=', maxval(ListDiag)
-        WRITE(740+IAPROC,*) 'Diag, quot=', maxval(ListDiag)/minval(ListDiag)
       END IF
       CALL PDLIB_exchange1Dreal(TheOut)
   END SUBROUTINE TRIG_WAVE_SETUP_APPLY_PRECOND
@@ -1182,6 +1185,7 @@
       use yowNodepool, only: np, npa
       USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
       USE W3GDATMD, ONLY: NSEAL
+      USE MPI, only : MPI_SUM
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -1202,30 +1206,19 @@
 !
       real(rkind), intent(in) :: V1(npa), V2(npa)
       real(rkind), intent(inout) :: eScal
-      integer IP, myrank, myproc
-      real(rkind) :: rScal(1), lScal(1)
-      integer iProc
+      integer IP
+      real(rkind) :: lScal_loc(1), lScal_gl(1)
       integer ierr
-      CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
-      CALL MPI_COMM_SIZE(MPI_COMM_WCMP, myproc, ierr)
-      lScal=0
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif
+      lScal_loc = 0
       DO IP=1,np
-        lScal(1)=lScal(1) + V1(IP)*V2(IP)
+        lScal_loc(1) = lScal_loc(1) + V1(IP)*V2(IP)
       END DO
-      IF (IAPROC .eq. 1) THEN
-        DO iProc=2,NAPROC
-          CALL MPI_RECV(rScal,1,rtype, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
-          lScal = lScal + rScal
-        END DO
-        DO iProc=2,NAPROC
-          CALL MPI_SEND(lScal,1,rtype, iProc-1, 23, MPI_COMM_WCMP, ierr)
-        END DO
-      ELSE
-        CALL MPI_SEND(lScal,1,rtype, 0, 19, MPI_COMM_WCMP, ierr)
-        CALL MPI_RECV(lScal,1,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
-      END IF
-      eScal=lScal(1)
-  END SUBROUTINE TRIG_WAVE_SETUP_SCALAR_PROD
+      CALL MPI_ALLREDUCE(lScal_loc,lScal_gl,1,rtype,MPI_SUM,MPI_COMM_WCMP,ierr)
+      eScal = lScal_gl(1)
+      END SUBROUTINE
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Poisson equation solver.
@@ -1320,7 +1313,7 @@
       real(rkind) :: eNorm, beta
       real(rkind) :: SOLVERTHR
       integer IP, nbIter
-      SOLVERTHR=SOLVERTHR_STP
+      SOLVERTHR = SOLVERTHR_STP
 
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'Begin TRIG_WAVE_SETUP_SOLVE ....'
@@ -1353,22 +1346,9 @@
       END IF
       DO
         nbIter=nbIter + 1
-#ifdef W3_DEBUGSTP
-        WRITE(740+IAPROC,*) ' nbIter=', nbIter
-        FLUSH(740+IAPROC)
-#endif
         CALL TRIG_WAVE_SETUP_APPLY_FCT(ASPAR, V_P, V_Y, ACTIVE, ACTIVESEC)
         CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_P, V_Y, h2)
-#ifdef W3_DEBUGSTP
-        WRITE(740+IAPROC,*) ' h2=', h2
-        FLUSH(740+IAPROC)
-#endif
         alphaV=uO/h2
-#ifdef W3_DEBUGSTP
-        WRITE(740+IAPROC,*) ' alphaV=', alphaV
-        FLUSH(740+IAPROC)
-#endif
-
         !
         DO IP=1,npa
           V_X(IP) = V_X(IP) + alphaV * V_P(IP)
@@ -1377,26 +1357,20 @@
         !
         CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_R, V_R, eNorm)
 #ifdef W3_DEBUGSTP
-        WRITE(740+IAPROC,*) 'eNorm=', eNorm
-        FLUSH(740+IAPROC)
-#endif
         WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' eNorm(res)=', eNorm
         FLUSH(740+IAPROC)
+#endif
         IF (eNorm .le. SOLVERTHR) THEN
           EXIT
         END IF
         !
         CALL TRIG_WAVE_SETUP_APPLY_PRECOND(ASPAR, V_R, V_Z, ACTIVE, ACTIVESEC)
         CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_Z, V_R, uN)
-#ifdef W3_DEBUGSTP
-        WRITE(740+IAPROC,*) ' uN=', uN
-        FLUSH(740+IAPROC)
-#endif
         !
         beta=uN/uO
         uO=uN
 #ifdef W3_DEBUGSTP
-        WRITE(740+IAPROC,*) 'beta=', beta
+        WRITE(740+IAPROC,*) '  beta=', beta, ' uN=', uN, ' alphaV=', alphaV, ' h2=', h2
         FLUSH(740+IAPROC)
 #endif
         !
@@ -1405,6 +1379,10 @@
         END DO
       END DO
       TheOut=V_X
+#ifdef W3_DEBUGSTP
+      WRITE(740+IAPROC,*) 'TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR, max/min=', maxval(TheOut), minval(TheOut)
+      FLUSH(740+IAPROC)
+#endif
   END SUBROUTINE TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR
 !/ ------------------------------------------------------------------- /
 !>
@@ -1472,6 +1450,7 @@
       USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
       use yowDatapool, only: rtype, istatus
       use yowNodepool, only: np, npa
+      USE MPI, only : MPI_SUM
       IMPLICIT NONE
 !/
 !/ ------------------------------------------------------------------- /
@@ -1493,7 +1472,7 @@
       real(rkind), intent(inout) :: TheVar(npa)
       real(rkind) :: SUM_SI_Var, SUM_SI, TheMean
       INTEGER IP, ierr
-      real(rkind) :: eVect(2), rVect(2)
+      real(rkind) :: eVect_loc(2), eVect_gl(2)
       integer iProc
       SUM_SI_Var=0
       SUM_SI=0
@@ -1501,26 +1480,15 @@
         SUM_SI_Var = SUM_SI_Var + PDLIB_SI(IP)*TheVar(IP)
         SUM_SI     = SUM_SI     + PDLIB_SI(IP)
       END DO
-      eVect(1)=SUM_SI_Var
-      eVect(2)=SUM_SI
+      eVect_loc(1)=SUM_SI_Var
+      eVect_loc(2)=SUM_SI
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'SUM_SI_Var=', SUM_SI_Var, 'SUM_SI=', SUM_SI
       FLUSH(740+IAPROC)
 #endif
-      IF (IAPROC .eq. 1) THEN
-        DO iProc=2,NAPROC
-          CALL MPI_RECV(rVect,2,rtype, iProc-1, 367, MPI_COMM_WCMP, istatus, ierr)
-          eVect=eVect + rVect
-        END DO
-        DO iProc=2,NAPROC
-          CALL MPI_SEND(eVect,2,rtype, iProc-1, 37, MPI_COMM_WCMP, ierr)
-        END DO
-      ELSE
-        CALL MPI_SEND(eVect,2,rtype, 0, 367, MPI_COMM_WCMP, ierr)
-        CALL MPI_RECV(eVect,2,rtype, 0, 37, MPI_COMM_WCMP, istatus, ierr)
-      END IF
-      SUM_SI_Var=eVect(1)
-      SUM_SI    =eVect(2)
+      CALL MPI_ALLREDUCE(eVect_loc,eVect_gl,2,rtype,MPI_SUM,MPI_COMM_WCMP,ierr)
+      SUM_SI_Var=eVect_gl(1)
+      SUM_SI    =eVect_gl(2)
       TheMean=SUM_SI_Var/SUM_SI
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'TheMean=', TheMean
@@ -1615,8 +1583,13 @@
       INTEGER, INTENT(out) :: ACTIVE(npa)
       INTEGER IP, eAct
 #ifdef W3_DEBUGSTP
-     INTEGER nbActive
-     nbActive=0
+      INTEGER nbActive
+#endif
+#ifdef W3_S
+      CALL STRACE (IENT, 'VA_SETUP_IOBPD')
+#endif
+#ifdef W3_DEBUGSTP
+      nbActive=0
 #endif
       DO IP=1,NPA
         IF (DWNX(IP) .ge. CRIT_DEP_STP) THEN
@@ -1625,7 +1598,7 @@
           eAct=0
         END IF
 #ifdef W3_DEBUGSTP
-     nbActive=nbActive + eAct
+        nbActive=nbActive + eAct
 #endif
         ACTIVE(IP)=eAct
       END DO
@@ -1727,6 +1700,7 @@
       REAL(rkind) :: ASPAR(PDLIB_NNZ), B(npa)
       INTEGER I, ISEA, JSEA, IX, IP, IP_glob
       INTEGER :: ACTIVE(npa), ACTIVESEC(npa)
+      REAL(rkind) max_val, min_val
 !   ZETA_SETUP is allocated on 1:NSEA
 !   ZETA_WORK is on 1:npa
 #ifdef W3_DEBUGSTP
@@ -1776,17 +1750,25 @@
 
       CALL TRIG_SET_MEANVALUE_TO_ZERO(ZETA_WORK)
 #ifdef W3_DEBUGSTP
-      WRITE(740+IAPROC,*) 'After SET_MEAN min=', minval(ZETA_WORK), ' max=', maxval(ZETA_WORK)
+      WRITE(740+IAPROC,*) 'After SET_MEAN ZETA_WORK(min/max)=', minval(ZETA_WORK), maxval(ZETA_WORK)
       FLUSH(740+IAPROC)
 #endif
       CALL PDLIB_exchange1Dreal(ZETA_WORK)
+      max_val = -100000000
+      min_val = -100000000
       DO IP=1,npa
         IX=iplg(IP)
         ISEA=MAPFS(1,IX)
         IF (ISEA .gt. 0) THEN
-          ZETA_SETUP(ISEA) = ZETA_WORK(IP)
+           ZETA_SETUP(ISEA) = ZETA_WORK(IP)
+           max_val = MAX(max_Val, ZETA_WORK(IP))
+           min_val = MAX(min_Val, ZETA_WORK(IP))
         END IF
       END DO
+#ifdef W3_DEBUGSTP
+      WRITE(740+IAPROC,*) 'TRIG_WAVE_SETUP_COMPUTATION, max/min=', max_val, min_val
+      FLUSH(740+IAPROC)
+#endif
 !      DO IP=1,npa
 !        IX=iplg(IP)
 !        ZETA_WORK_ALL(IX)=ZETA_WORK(IP)
@@ -3080,6 +3062,9 @@
       INTEGER ISEA, IPROC
       real(rkind) :: SXX_t(NSEA), SXY_t(NSEA), SYY_t(NSEA)
       integer ierr
+#ifdef W3_DEBUGSTP
+      real(rkind) max_val, min_val
+#endif
       CALL FD_COLLECT_SXX_XY_YY(SXX_t, SXY_t, SYY_t)
       IF (IAPROC .eq. 1) THEN
         CALL FD_COMPUTE_LH_STRESS(SXX_t, SXY_t, SYY_t, F_X, F_Y)
@@ -3095,9 +3080,21 @@
       ELSE
         CALL MPI_RECV(ZETA_WORK,NSEAL,rtype, 0, 23, MPI_COMM_WCMP, istatus, ierr)
       END IF
+#ifdef W3_DEBUGSTP
+      max_val = ZETA_WORK(ISEA)
+      min_val = ZETA_WORK(ISEA)
+#endif
       DO ISEA=1,NSEA
-        ZETA_SETUP(ISEA)=ZETA_WORK(ISEA)
+         ZETA_SETUP(ISEA)=ZETA_WORK(ISEA)
+#ifdef W3_DEBUGSTP
+         max_val = MAX(max_val, ZETA_WORK(ISEA))
+         min_val = MIN(min_val, ZETA_WORK(ISEA))
+#endif
       END DO
+#ifdef W3_DEBUGSTP
+      WRITE(740+IAPROC,*) 'FD_WAVE_SETUP_COMPUTATION, max/min=', max_val, min_val
+      FLUSH(740+IAPROC)
+#endif
   END SUBROUTINE FD_WAVE_SETUP_COMPUTATION
 !/ ------------------------------------------------------------------- /
 !>
@@ -3198,7 +3195,7 @@
         END IF
       END IF
 #ifdef W3_DEBUGSTP
-      WRITE(740+IAPROC,*) 'Begin WAVE_SETUP_COMPUTATION'
+      WRITE(740+IAPROC,*) 'End WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
 #endif
   END SUBROUTINE WAVE_SETUP_COMPUTATION
