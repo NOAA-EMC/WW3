@@ -396,9 +396,6 @@ CONTAINS
         DOUT(IFR,ITH) = D(ISP)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
     CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:), '  ', 1.,  &
          0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
     CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,  &

@@ -218,9 +218,6 @@ CONTAINS
         DOUT(IK,ITH) = D(IK,ITH)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
     CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,  &
          0.0, 0.001, 'Snl(f,t)', ' ', 'NONAME')
     CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,  &
