@@ -26,7 +26,7 @@ $(aPo)/scrip_remap_vars.o: SCRIP/scrip_remap_vars.f \
 	$(aPo)/scrip_constants.o \
 	$(aPo)/scrip_grids.o \
 	$(aPo)/scrip_errormod.o \
-	$(aPo)/scrip_iounitsmod.o 
+	$(aPo)/scrip_iounitsmod.o
 	@$(aPb)/ad3 scrip_remap_vars
 
 $(aPo)/scrip_remap_conservative.o: SCRIP/scrip_remap_conservative.f \
@@ -36,7 +36,7 @@ $(aPo)/scrip_remap_conservative.o: SCRIP/scrip_remap_conservative.f \
 	$(aPo)/scrip_remap_vars.o \
 	$(aPo)/scrip_grids.o \
 	$(aPo)/scrip_errormod.o \
-	$(aPo)/scrip_iounitsmod.o 
+	$(aPo)/scrip_iounitsmod.o
 	@$(aPb)/ad3 scrip_remap_conservative
 
 $(aPo)/scrip_timers.o: SCRIP/scrip_timers.f \
@@ -51,6 +51,5 @@ $(aPo)/scrip_interface.o: SCRIP/scrip_interface.F90 \
 	$(aPo)/scrip_grids.o \
 	$(aPo)/scrip_remap_conservative.o \
 	$(aPo)/scrip_iounitsmod.o \
-	$(aPo)/scrip_errormod.o 
+	$(aPo)/scrip_errormod.o
 	@$(aPb)/ad3 scrip_interface
-

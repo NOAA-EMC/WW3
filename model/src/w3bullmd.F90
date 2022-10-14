@@ -1,5 +1,25 @@
+!> @file
+!> @brief Contains module W3BULLMD.
+!>
+!> @author J. H. Alves
+!> @author H. L. Tolman
+!> @date   26-Dec-2012
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Module W3BULLMD.
+!>
+!> @author J. H. Alves
+!> @author H. L. Tolman
+!> @date   26-Dec-2012
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3BULLMD
   !/
   !/                  +-----------------------------------+
@@ -42,6 +62,30 @@ MODULE W3BULLMD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Read a WAVEWATCH-III version 1.17 point output data file and
+  !>     produces a table of mean parameters for all individual wave
+  !>     systems.
+  !>
+  !> @details Partitioning is made using the built-in module w3partmd.
+  !>     Partitions are ranked and organized into coherent sequences that
+  !>     are then written as tables to output files. Input options for generating
+  !>     tables are defined in ww3_outp.inp. This module sorts the table
+  !>     data, output to file is controlled by WW3_OUTP.
+  !>
+  !> @param[in]    NPART
+  !> @param[in]    XPART
+  !> @param[in]    DIMXP
+  !> @param[in]    UABS
+  !> @param[in]    UD
+  !> @param        IPNT
+  !> @param[in]    IOUT
+  !> @param[inout] TIMEV
+  !>
+  !> @author J. H. Alves
+  !> @author H. L. Tolman
+  !> @date   11-Mar-2013
+  !>
   SUBROUTINE W3BULL                                                &
        ( NPART, XPART, DIMXP, UABS, UD, IPNT, IOUT, TIMEV )
     !/

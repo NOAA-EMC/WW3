@@ -1,14 +1,14 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III NETCDF Point output post-processing                    $
 $--------------------------------------------------------------------- $
-$ First output time (yyyymmdd hhmmss), increment of output (s), 
+$ First output time (yyyymmdd hhmmss), increment of output (s),
 $ and number of output times.
 $
   19850101 000000  3600.  1000
 $
 $ Points requested --------------------------------------------------- $
 $
-$ Define points index for which output is to be generated. 
+$ Define points index for which output is to be generated.
 $ If no one defined, all points are selected
 $ One index number per line, negative number identifies end of list.
 $ 1
@@ -20,7 +20,7 @@ $--------------------------------------------------------------------- $
 $ file prefix
 $ number of characters in date [0(nodate),4(yearly),6(monthly),8(daily),10(hourly)]
 $ netCDF version [3,4]
-$ points in same file [T] or not [F] 
+$ points in same file [T] or not [F]
 $                    and max number of points to be processed in one pass
 $ output type ITYPE [0,1,2,3]
 $ flag for global attributes WW3 [0] or variable version [1-2-3-4]
@@ -29,7 +29,7 @@ $
  ww3.
  6
  4
- T 150 
+ T 150
  1
  0
  T
@@ -71,7 +71,7 @@ $                              2 : Mean wave pars.
 $                              3 : Nondimensional pars. (U*)
 $                              4 : Nondimensional pars. (U10)
 $                              5 : 'Validation table'
-$                              6 : WMO standard output 
+$                              6 : WMO standard output
 $  4
 $
 $ -------------------------------------------------------------------- $

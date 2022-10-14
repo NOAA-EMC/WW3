@@ -856,38 +856,18 @@ CONTAINS
         WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
         IF (PRESENT(UNIT)) THEN
           WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
-#endif
-          !!/MPI          ELSE
-          !!/MPI            WRITE(*,'(A)') 'EXTCDE UNIT missing'
-#ifdef W3_MPI
         END IF
         IF (PRESENT(MSG)) THEN
           WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
-#endif
-          !!/MPI          ELSE
-          !!/MPI            WRITE(*,'(A)') 'EXTCDE MSG missing'
-#ifdef W3_MPI
         END IF
         IF (PRESENT(FILE)) THEN
           WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
-#endif
-          !!/MPI          ELSE
-          !!/MPI            WRITE(*,'(A)') 'EXTCDE FILE missing'
-#ifdef W3_MPI
         END IF
         IF (PRESENT(LINE)) THEN
           WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
-#endif
-          !!/MPI          ELSE
-          !!/MPI            WRITE(*,'(A)') 'EXTCDE LINE missing'
-#ifdef W3_MPI
         END IF
         IF (PRESENT(COMM)) THEN
           WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
-#endif
-          !!/MPI          ELSE
-          !!/MPI            WRITE(*,'(A)') 'EXTCDE COMM missing'
-#ifdef W3_MPI
         END IF
         CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
       END IF

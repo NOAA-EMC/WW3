@@ -1,0 +1,72 @@
+;;========================================
+;; start the emacsserver that listens to emacsclient
+;(server-start)
+
+;;; XEmacs backwards compatibility file
+;(setq user-init-file
+;      (expand-file-name "init.el"
+;                        (expand-file-name ".xemacs" "~")))
+;(setq custom-file
+;      (expand-file-name "custom.el"
+;                        (expand-file-name ".xemacs" "~")))
+
+;(setq lazy-highlight-cleanup nil)
+
+;(setq-default indent-tabs-mode nil)
+;(setq fortran-blink-matching-if nil)
+
+;(load-file user-init-file)
+;(load-file custom-file)
+
+; Fortran-90 mode
+(autoload 'f90-mode "f90"
+          "Major mode for editing Fortran 90 code in free format." t)
+
+;; Set Fortran and Fortran 90 mode for appropriate extensions
+(setq auto-mode-alist
+      (cons '("\\.F90$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.pf$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.fpp$" . f90-mode) auto-mode-alist))
+(setq auto-mode-alist
+      (cons '("\\.F$" . fortran-mode) auto-mode-alist))
+
+
+(defun f90-change-indent (&optional cols)
+  "Set a new basic indent for a Fortran file (usually to match existing indent)"
+  (interactive "P")
+  (if (not cols) (setq cols 2))
+  (let ((colsp (+ 1 cols)))
+    (if (> cols 2) (setq colsp cols))
+    (setq f90-associate-indent cols)
+    (setq f90-basic-offset cols)
+    (setq f90-continuation-indent 5)
+    (setq f90-critical-indent cols)
+    (setq f90-do-indent cols)
+    (setq f90-if-indent cols)
+    (setq f90-program-indent cols)
+    (setq f90-structure-indent cols)
+    (setq f90-type-indent cols)
+    )
+)
+
+(add-hook 'f90-mode-hook
+          (lambda ()
+;            (local-set-key (kbd "RET") 'reindent-then-newline-and-indent)
+            (setq indent-tabs-mode nil)
+            (setq tab-width 4)
+            (font-lock-mode t)
+            (f90-change-indent 2)
+            )
+          )
+
+;(defun xml-format ()
+;  (interactive)
+;  (save-excursion
+;    (shell-command-on-region (mark) (point) "xmllint --format -" (buffer-name) t)
+;  )
+;)
+
+(add-hook 'before-save-hook
+          'delete-trailing-whitespace)

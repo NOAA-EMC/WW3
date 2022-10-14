@@ -74,7 +74,6 @@ MODULE W3PARALL
 
   REAL*8,  PARAMETER     :: THR8      = TINY(1.d0)
   REAL,  PARAMETER     :: THR       = TINY(1.0)
-  !!/S      CALL STRACE (IENT, 'W3XXXX')
 CONTAINS
   !/ ------------------------------------------------------------------- /
   SUBROUTINE WAV_MY_WTIME(eTime)

@@ -328,7 +328,6 @@ CONTAINS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
     USE w3odatmd, ONLY : RUNTYPE, INITFILE
-!!!!!/PDLIB    USE PDLIB_FIELD_VEC!, only : UNST_PDLIB_READ_FROM_FILE, UNST_PDLIB_WRITE_TO_FILE
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
 #endif
@@ -1540,15 +1539,6 @@ CONTAINS
     !/ End of W3IORS ----------------------------------------------------- /
     !/
   END SUBROUTINE W3IORS
-
-
-
-
-
-
-
-
-
   !/
   !/ End of module W3IORSMD -------------------------------------------- /
   !/

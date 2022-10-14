@@ -527,7 +527,6 @@ CONTAINS
     ! 1.  Set-up of data structures and I/O  ----------------------------- /
     ! 1.a Point to proper data structures.
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 1")
 
 #ifdef W3_MEMCHECK
     WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 1'
@@ -606,7 +605,6 @@ CONTAINS
     IAPROC = IAPROC + 1
 #endif
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 3")
     IF ( IOSTYP .LE. 1 ) THEN
       !
       NAPFLD = MAX(1,NAPROC-1)
@@ -652,7 +650,6 @@ CONTAINS
       END IF
     END IF
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 4")
     FRACOS = 100. * REAL(NTPROC-NAPROC) / REAL(NTPROC)
     IF ( FRACOS.GT.CRITOS .AND. IAPROC.EQ.NAPERR )                  &
          WRITE (NDSE,8002) FRACOS
@@ -675,7 +672,6 @@ CONTAINS
       DEALLOCATE ( TMPRNK )
     END IF
 #endif
-!!!/PDLIB    CALL W3SETG(IMOD, NDSE, NDST)
     !
     LPDLIB = .FALSE.
 #ifdef W3_PDLIB
@@ -696,7 +692,6 @@ CONTAINS
     IE     = LEN_TRIM(FEXT)
     LFILE  = 'log.' // FEXT(:IE)
     IFL    = LEN_TRIM(LFILE)
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 5")
 #ifdef W3_SHRD
     TFILE  = 'test.' // FEXT(:IE)
 #endif
@@ -711,7 +706,6 @@ CONTAINS
     IFT    = LEN_TRIM(TFILE)
     J      = LEN_TRIM(FNMPRE)
     !
-
 #ifndef W3_CESMCOUPLED
     IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
          OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
@@ -725,7 +719,6 @@ CONTAINS
     !
     ! 1.d Dataset unit numbers
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 6")
     NDS    = MDS
     NDSO   = NDS(1)
     NDSE   = NDS(2)
@@ -744,7 +737,6 @@ CONTAINS
     call printMallInfo(10000+IAPROC,mallInfos)
 #endif
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 7")
 
     IF ( IAPROC .EQ. NAPLOG ) THEN
       CALL WWDATE ( STDATE )
@@ -772,7 +764,6 @@ CONTAINS
     ! 2.  Model definition ---------------------------------------------- /
     ! 2.a Read model definition file
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 8")
     CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
     IF (GTYPE .eq. UNGTYPE) THEN
       CALL SPATIAL_GRID
@@ -840,7 +831,6 @@ CONTAINS
 
     CALL W3FLGRDUPDT ( NDSO, NDSE, FLGRD, FLGR2, FLGD, FLG2 )
 
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 9")
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3FLGRDUPDT")
 #endif
@@ -867,7 +857,6 @@ CONTAINS
     ! 2.c MPP preparation
     ! 2.c.1 Set simple counters and variables
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 10")
     CALL SET_UP_NSEAL_NSEALM(NSEALout, NSEALMout)
     NSEAL  = NSEALout
     NSEALM = NSEALMout
@@ -939,7 +928,6 @@ CONTAINS
     call printMallInfo(10000+IAPROC,mallInfos)
 #endif
     CALL W3DIMI ( IMOD, NDSE, NDST , FLAGSTIDEIN )
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 13")
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3DIMI")
 #endif
@@ -1038,7 +1026,6 @@ CONTAINS
     END IF
 #endif
     !
-    !!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 14")
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After Case 14")
 #endif
@@ -1438,10 +1425,6 @@ CONTAINS
       IF ( WLVeff-ZB(ISEA) .LE.0. ) THEN
         MAPTST(IY,IX) = 1
         MAPSTA(IY,IX) = -ABS(MAPSTA(IY,IX))
-        !!/DEBUGINIT     WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' JSEA=', JSEA
-        !!/DEBUGINIT     WRITE(740+IAPROC,*) 'NSEA=', NSEA, ' NSEAL=', NSEAL
-        !!/DEBUGINIT     WRITE(740+IAPROC,*) 'IAPROC=', IAPROC, ' ISPROC=', ISPROC
-        !!/DEBUGINIT     FLUSH(740+IAPROC)
       END IF
       !Li     END IF
     END DO
@@ -1456,10 +1439,6 @@ CONTAINS
 #endif
       DW(ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
       IF ( WLVeff-ZB(ISEA) .LE.0. ) THEN
-        !!/DEBUGINIT     WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' JSEA=', JSEA
-        !!/DEBUGINIT     WRITE(740+IAPROC,*) 'NSEA=', NSEA, ' NSEAL=', NSEAL
-        !!/DEBUGINIT     WRITE(740+IAPROC,*) 'IAPROC=', IAPROC, ' ISPROC=', ISPROC
-        !!/DEBUGINIT     FLUSH(740+IAPROC)
         VA(:,JSEA) = 0.
       END IF
     END DO
@@ -1651,7 +1630,6 @@ CONTAINS
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.3", 1)
 #endif
-    !!/PDLIB         CALL VA_SETUP_IOBPD
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.4", 1)
 #endif
@@ -2321,7 +2299,7 @@ CONTAINS
 
 
 #ifdef W3_MPI
-    USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, FP1, THP1,   &
+    USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0,             &
          DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
          SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
          PDIR, PSI, PWS, PWST, PNR, PHIAW, PHIOC,&

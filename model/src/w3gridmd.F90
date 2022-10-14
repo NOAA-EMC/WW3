@@ -1917,9 +1917,7 @@ CONTAINS
       WRITE (NDSO,923) 'Deep water', TAILNL
       IQTYPE = 1
     END IF
-#endif
     !
-#ifdef W3_NL2
     IF ( IQTYPE .NE. 3 ) THEN
       NDEPTH = 1
       ALLOCATE ( MPARS(1)%SNLPS%DPTHNL(NDEPTH) )
@@ -1951,15 +1949,10 @@ CONTAINS
 #ifdef W3_NL3
     CALL READNL ( NDSS, 'SNL3', STATUS )
     WRITE (NDSO,922) STATUS
-#endif
-    !!/NL3      MSC    = MAX ( 0. , MIN ( 8. , MSC ) )  ! Disabled HLT ca. 2009
-#ifdef W3_NL3
     KDFD   = MAX ( 0.001 , MIN ( 10. , KDFD ) )
     KDFS   = MAX ( KDFD , MIN ( 10. , KDFS ) )
     WRITE (NDSO,923) MSC, NSC, KDFD, KDFS
-#endif
     !
-#ifdef W3_NL3
     NQDEF  = MAX ( 0 , NQDEF )
     IF ( NQDEF .EQ. 0 ) THEN
       NQDEF  = 1

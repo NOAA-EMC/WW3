@@ -1,5 +1,30 @@
+!> @file
+!> @brief Unified process to obtain friction velocity and drag when stresses
+!>  are an input (from atmospheric model).
+!>
+!> @author N.G. Valiente
+!> @author J. Edward
+!> @author A. Saulter
+!> @date   01-Jul-2021
+!>
+
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Unified process to obtain friction velocity and drag when stresses
+!>  are an input (from atmospheric model).
+!>
+!> @author N.G. Valiente
+!> @author J. Edward
+!> @author A. Saulter
+!> @date   01-Jul-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3FLX5MD
   !/
   !/                  +-----------------------------------+
@@ -61,6 +86,35 @@ MODULE W3FLX5MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Unified process to obtain friction velocity and drag when
+  !>  stresses are an input (from atmospheric model).
+  !>
+  !> @verbatim
+  !>     UST       = SQRT(TAUA / RHOAIR)
+  !>     USTD      = TAUADIR
+  !>     CD        = (UST/U10)**2
+  !>     SQRTCDM1  = MIN(U10/UST,100.0)
+  !>     Z0        = ZWND*EXP(-KAPPA*SQRTCDM1)
+  !> @endverbatim
+  !>
+  !> @param[in]  ZWND    Wind height.
+  !> @param[in]  U10     Wind speed.
+  !> @param[in]  U10D    Wind direction.
+  !> @param[in]  TAUA    Atmosphere total stress.
+  !> @param[in]  TAUADIR Atmosphere total stress directions.
+  !> @param[in]  RHOAIR  Air density.
+  !> @param[out] UST     Friction velocity.
+  !> @param[out] USTD    Direction of friction velocity.
+  !> @param[out] Z0      Z0 in profile law.
+  !> @param[out] CD      Drag coefficient.
+  !> @param[out] CHARN   Charnock coefficient.
+  !>
+  !> @author N.G. Valiente
+  !> @author J. Edward
+  !> @author A. Saulter
+  !> @date   01-Jul-2021
+  !>
   SUBROUTINE W3FLX5 ( ZWND, U10, U10D, TAUA, TAUADIR, RHOAIR, UST, USTD, Z0, CD, CHARN )
     !/
     !/                  +-----------------------------------+

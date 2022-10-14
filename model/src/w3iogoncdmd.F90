@@ -48,7 +48,7 @@ contains
     use w3adatmd   , only : w3seta, w3dima, w3xeta
     use w3adatmd   , only : ainit, dw, ua, ud, as, cx, cy, wn, taua, tauadir
     use w3adatmd   , only : hs, wlm, t02, t0m1, t01, fp0, thm, ths, thp0, wbt, wnmean
-    use w3adatmd   , only : fp1, thp1, dtdyn
+    use w3adatmd   , only : dtdyn
     use w3adatmd   , only : fcut, aba, abd, uba, ubd, sxx, syy, sxy
     use w3adatmd   , only : phs, ptp, plp, pdir, psi, pws, pwst, pnr
     use w3adatmd   , only : pthp0, pqp, ppe, pgw, psw, ptm1, pt1, pt2

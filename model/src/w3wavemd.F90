@@ -625,6 +625,8 @@ CONTAINS
     !
     XXX = undef
     memunit = 40000+iaproc
+    ! 0.a Set pointers to data structure
+    !
 #ifdef W3_COU
     SCREEN   =  333
 #endif
@@ -847,9 +849,9 @@ CONTAINS
     ! 1.g Air density time
     !
     IF ( FLRHOA ) THEN
-      DTTST1 = DSEC21 ( TU0 , TUN )
-      DTTST2 = DSEC21 ( TU0 , TIME )
-      DTTST3 = DSEC21 ( TEND , TUN )
+      DTTST1 = DSEC21 ( TR0 , TRN )
+      DTTST2 = DSEC21 ( TR0 , TIME )
+      DTTST3 = DSEC21 ( TEND , TRN )
 #ifdef W3_T
       WRITE (NDST,9018) DTTST1, DTTST2, DTTST3
 #endif
@@ -1491,6 +1493,7 @@ CONTAINS
             CALL W3MAPT
 #endif
           END IF  !! GTYPE
+
           !! Hides call to W3NMIN, which currently only serves to warn when
           !! one or more procs have zero active seapoints.
 #ifdef W3_DEBUGRUN
@@ -1640,7 +1643,6 @@ CONTAINS
             IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
                  & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
 #endif
-              !!/PDLIB               IF ( MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA)) THEN
 
 
 #ifdef W3_PDLIB
@@ -2434,15 +2436,6 @@ CONTAINS
             END IF
 #endif
 #endif
-
-            !
-            ! This barrier is from older code versions. It has been removed in 3.11
-            ! to optimize IO2/3 settings. May be needed on some systems still
-            !
-            !!/MPI              IF (FLAG0) CALL MPI_BARRIER (MPI_COMM_WCMP,IERR_MPI)
-            !!/MPI            ELSE
-            !!/MPI              CALL MPI_BARRIER (MPI_COMM_WCMP,IERR_MPI)
-            !
           END IF
 #ifdef W3_DEBUGCOH
           CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After source terms", 1)
@@ -2599,14 +2592,7 @@ CONTAINS
         if (do_startall) then
           IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
             IF (NRQGO.NE.0 ) THEN
-#ifdef W3_DEBUGRUN
-              WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO.NE.0 , step 0', &
-                   NRQGO, IRQGO, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
-#endif
               CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
-#ifdef W3_DEBUGRUN
-              WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO.NE.0, step 0'
-#endif
 
               FLGMPI(0) = .TRUE.
               NRQMAX    = MAX ( NRQMAX , NRQGO )
@@ -2616,15 +2602,8 @@ CONTAINS
             END IF
             !
             IF (NRQGO2.NE.0 ) THEN
-#ifdef W3_DEBUGRUN
-              WRITE(740+IAPROC,*) 'BEFORE STARTALL NRQGO2.NE.0, step 0', &
-                   NRQGO2, IRQGO2, GTYPE, UNGTYPE, .NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)
-#endif
               CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
 
-#ifdef W3_DEBUGRUN
-              WRITE(740+IAPROC,*) 'AFTER STARTALL NRQGO2.NE.0, step 0'
-#endif
               FLGMPI(1) = .TRUE.
               NRQMAX    = MAX ( NRQMAX , NRQGO2 )
 #ifdef W3_MPIT
@@ -2632,9 +2611,6 @@ CONTAINS
 #endif
             END IF
           ELSE
-#ifdef W3_DEBUGRUN
-            WRITE(740+IAPROC,*) 'BEFORE DO_OUTPUT_EXCHANGES, step 0'
-#endif
 #ifdef W3_PDLIB
             CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
@@ -2744,10 +2720,6 @@ CONTAINS
 
           IF ( FLOUT(J) ) THEN
             !
-#ifdef W3_DEBUGRUN
-            WRITE(740+IAPROC,*) 'Matching FLOUT(J)'
-            FLUSH(740+IAPROC)
-#endif
             !
             ! Determine output flags
             !
@@ -2976,12 +2948,6 @@ CONTAINS
 #ifdef W3_T
         WRITE (NDST,9044)
 #endif
-        !
-        ! This barrier is from older code versions. It has been removed in 3.11
-        ! to optimize IO2/3 settings. May be needed on some systems still
-        !
-        !!/MPI            IF (FLDRY) CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
-        !
       END IF
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("Before update log file")
@@ -2995,12 +2961,6 @@ CONTAINS
 
       !
       ! 5.  Update log file ------------------------------------------------ /
-
-      !      IF (MINVAL(VA) .LT. 0.) THEN
-      !        WRITE(740+IAPROC,*) 'TEST W3WAVE 13', SUM(VA), MINVAL(VA), MAXVAL(VA)
-      !        CALL FLUSH(740+IAPROC)
-      !        STOP
-      !      ENDIF
       !
       IF ( IAPROC.EQ.NAPLOG ) THEN
         !

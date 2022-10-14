@@ -52,10 +52,10 @@ $    input for grid preprocessor), and a format
 $ 3) Unit number and (dummy) name of first file.
 $ 4) Unit number and (dummy) name of second file (F2 only).
 $
-$ 15  3                                              
+$ 15  3
 $ 'UNIT' 3 1 '(.L.L.)'
 $ 10 'll_file.1'
-$ 10 'll_file.2'      
+$ 10 'll_file.2'
 $
 $ Additional input for data ------------------------------------------ $
 $ Dimension of data (0,1,2 for mean pars, 1D or 2D spectra), "record
@@ -67,7 +67,7 @@ $ Define data files -------------------------------------------------- $
 $ The first input line identifies the file format with FROM, IDLA and
 $ IDFM, the second (third) lines give the file unit number and name.
 $
-  'UNIT' 3 1 '(..T..)' '(..F..)' 
+  'UNIT' 3 1 '(..T..)' '(..F..)'
   10 'data_file.1'
 $ 10 'data_file.2'
 $
