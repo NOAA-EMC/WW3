@@ -415,7 +415,7 @@ contains
 #endif
     use wav_shel_inp , only : set_shel_io
     use wav_grdout   , only : wavinit_grdout
-    use wav_shr_mod  , only : diagnose_mesh
+    use wav_shr_mod       , only : diagnose_mesh, write_meshdecomp
 #ifdef W3_PDLIB
     use yowNodepool  , only : ng
 #endif
@@ -722,6 +722,7 @@ contains
        ! create distGrid from global index array of sea points with no ghost points
        DistGrid = ESMF_DistGridCreate(arbSeqIndexList=gindex_sea, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       deallocate(gindex_sea)
     else
        ! create a global index array for non-sea (i.e. land points)
        allocate(mask_global(nx*ny), mask_local(nx*ny))
@@ -820,6 +821,10 @@ contains
        deallocate(gindex)
     end if
 
+    if (dbug_flag > 5) then
+       call write_meshdecomp(Emesh, 'emesh', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
     !--------------------------------------------------------------------
     ! Realize the actively coupled fields
     !--------------------------------------------------------------------

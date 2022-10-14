@@ -46,6 +46,7 @@ module wav_shr_mod
   private :: timeInit          !< @public create an ESMF_Time object
   private :: field_getfldptr   !< @private obtain a pointer to a field
   public  :: diagnose_mesh     !< @public write out info about mesh
+  public  :: write_meshdecomp  !< @public write the mesh decomposition to a file
 
   interface state_getfldptr
      module procedure state_getfldptr_1d
@@ -216,6 +217,99 @@ contains
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine diagnose_mesh
+  !===============================================================================
+  !> Write the mesh decomposition to a file
+  !!
+  !! @param[in]    EMeshIn          an ESMF Mesh
+  !! @param[in]    mesh_name        a name to identify the mesh
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 09-12-2022
+  subroutine write_meshdecomp(EMeshIn, mesh_name, rc)
+
+    use ESMF          , only : ESMF_Mesh, ESMF_Field, ESMF_FieldBundle, ESMF_FieldBundleAdd
+    use ESMF          , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_FieldBundleGet
+    use ESMF          , only : ESMF_MESHLOC_ELEMENT, ESMF_TYPEKIND_R8, ESMF_LOGMSG_Info
+    use ESMF          , only : ESMF_FieldBundleWrite, ESMF_FieldBundleDestroy
+
+    use w3odatmd      , only : iaproc
+
+    ! input/output variables
+    type(ESMF_Mesh) , intent(in)  :: EMeshIn
+    character(len=*), intent(in)  :: mesh_name
+    integer         , intent(out) :: rc
+
+    ! local variables
+    type(ESMF_FieldBundle)         :: FBTemp
+    type(ESMF_Field)               :: lfield
+    character(len=6), dimension(3) :: lfieldlist
+    integer                        :: i,ndims,nelements
+    real(r8), pointer              :: fldptr1d(:)
+    real(r8), pointer              :: ownedElemCoords(:), ownedElemCoords_x(:), ownedElemCoords_y(:)
+    character(len=*),parameter     :: subname = '(wav_shr_mod:write_meshdecomp) '
+    !-------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+
+    lfieldlist = (/'coordx', 'coordy', 'decomp'/)
+
+    ! create a temporary FB to write the fields
+    FBtemp = ESMF_FieldBundleCreate(rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    do i = 1,size(lfieldlist)
+       lfield = ESMF_FieldCreate(EMeshIn, ESMF_TYPEKIND_R8, name=trim(lfieldlist(i)), &
+            meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_FieldBundleAdd(FBTemp, (/lfield/), rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end do
+
+    call ESMF_MeshGet(EMeshIn, spatialDim=ndims, numOwnedElements=nelements, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    ! Set element coordinates
+    allocate(ownedElemCoords(ndims*nelements))
+    allocate(ownedElemCoords_x(ndims*nelements/2))
+    allocate(ownedElemCoords_y(ndims*nelements/2))
+    call ESMF_MeshGet(EmeshIn, ownedElemCoords=ownedElemCoords, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    ownedElemCoords_x(1:nelements) = ownedElemCoords(1::2)
+    ownedElemCoords_y(1:nelements) = ownedElemCoords(2::2)
+
+    call ESMF_FieldBundleGet(FBtemp, fieldName='coordx', field=lfield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    fldptr1d(:) = ownedElemCoords_x(:)
+
+    call ESMF_FieldBundleGet(FBtemp, fieldName='coordy', field=lfield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    fldptr1d(:) = ownedElemCoords_y(:)
+
+    call ESMF_FieldBundleGet(FBtemp, fieldName='decomp', field=lfield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    do i = 1,ndims*nelements/2
+       fldptr1d(i) = iaproc
+    end do
+
+    call ESMF_FieldBundleWrite(FBtemp, filename=trim(mesh_name)//'.decomp.nc', rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    deallocate(ownedElemCoords)
+    deallocate(ownedElemCoords_x)
+    deallocate(ownedElemCoords_y)
+
+    call ESMF_FieldBundleDestroy(FBtemp, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+  end subroutine write_meshdecomp
   !===============================================================================
   !> Get scalar data from a state
   !!

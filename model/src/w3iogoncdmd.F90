@@ -290,7 +290,7 @@ contains
           ! Group 5
           if (vname .eq.    'USTX') call write_var2d(vname, ust      (1:nsea)*asf(1:nsea), dir=cos(ustdir(1:nsea)), usemask='true')
           if (vname .eq.    'USTY') call write_var2d(vname, ust      (1:nsea)*asf(1:nsea), dir=sin(ustdir(1:nsea)), usemask='true')
-          if (vname .eq.     'CHA') call write_var2d(vname, charn    (1:nsea) )
+          if (vname .eq.   'CHARN') call write_var2d(vname, charn    (1:nsea) )
           if (vname .eq.     'CGE') call write_var2d(vname, cge      (1:nsea) )
           if (vname .eq.   'PHIAW') call write_var2d(vname, phiaw    (1:nsea),   init2='true')
           if (vname .eq.  'TAUWIX') call write_var2d(vname, tauwix   (1:nsea),   init2='true')
