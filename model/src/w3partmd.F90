@@ -686,9 +686,6 @@ CONTAINS
     INTEGER                 :: N, J, I, K
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'PTNGHB')
 #endif
     !

@@ -1117,13 +1117,7 @@ CONTAINS
 
 #ifdef W3_DEBUGSOLVER
       IF (testWrite) THEN
-        CALL SCAL_INTEGRAL_PRINT_R4(AC, "AC before synchronization")
-      END IF
-#endif
-      !        CALL PDLIB_exchange1DREAL(AC)
-#ifdef W3_DEBUGSOLVER
-      IF (testWrite) THEN
-        CALL SCAL_INTEGRAL_PRINT_R4(AC, "AC after synchronization")
+        CALL SCAL_INTEGRAL_PRINT_R4(AC, "AC in loop")
       END IF
 #endif
       !
