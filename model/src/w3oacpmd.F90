@@ -458,6 +458,10 @@
           ! * total number of segments of the global domain
           ILA_PARAL(2) = NSEAL
           !
+
+#ifdef W3_HYCOM
+      IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN
+#endif
           DO JSEA=1, NSEAL
             CALL INIT_GET_ISEA(ISEA,JSEA)
    
@@ -488,9 +492,12 @@
          !
          ! 1.3. Unstructured grids
          ! ----------------------------------
+#ifdef W3_HYCOM
+#else
          WRITE(*,*) 'TO BE VERIFIED FOR UNSTRUCTURED GRIDS'
          STOP
-         !
+#endif
+
          DO JSEA=1,NSEAL
             ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
             ILA_PARAL(JSEA*2+2) = 1
@@ -500,7 +507,11 @@
       !
       ! 2. Partition definition
       ! ----------------------------------
+#ifdef W3_HYCOM
+      CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NSEA)
+#else
       CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NNODES)
+#endif
       IF(IL_ERR /= 0) THEN
          CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_partition')
       ENDIF
@@ -842,18 +853,24 @@
          ID_NB_RCV=ID_NB_RCV+1
          RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDH'
 #endif
-!
+
+
+#ifdef W3_HYCOM
+#else
+
 #ifdef W3_OASOCM
-         ! wet-drying at u-location
-         ID_NB_RCV=ID_NB_RCV+1
-         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
+         ! wet-drying at u-location 
+        ID_NB_RCV=ID_NB_RCV+1
+        RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
 #endif
-!  
+  
 #ifdef W3_OASOCM
          ! wet-drying at v-location
          ID_NB_RCV=ID_NB_RCV+1
          RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDV'
 #endif
+#endif
+
 !
 #ifdef W3_OASOCM
       CASE('SSH')

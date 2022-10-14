@@ -2032,7 +2032,13 @@
       ENDIF 
  ! Estimate the weights for the spatial interpolation
       IF (DTOUT(7).NE.0) THEN
+#ifdef W3_OASIS
+
+#ifdef W3_HYCOM
+!        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
+#else
         CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
+#endif
         CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
       END IF
 #endif
