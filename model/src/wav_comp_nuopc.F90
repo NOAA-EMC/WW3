@@ -81,7 +81,7 @@ module wav_comp_nuopc
   integer                 :: flds_scalar_index_nx = 0      !< the default size of the scalar field nx
   integer                 :: flds_scalar_index_ny = 0      !< the default size of the scalar field ny
   logical                 :: profile_memory = .false.      !< default logical to control use of ESMF
-                                                           !! memory profiling
+  !! memory profiling
 
   logical                 :: root_task = .false.           !< logical to indicate root task
 #ifdef W3_CESMCOUPLED
@@ -90,15 +90,15 @@ module wav_comp_nuopc
   logical :: cesmcoupled = .false.                         !< logical to indicate non-CESM use case
 #endif
   integer, allocatable :: tend(:,:)                        !< the ending time of ModelAdvance when
-                                                           !! run with multigrid=true
+  !! run with multigrid=true
   logical                 :: user_histalarm = .false.      !< logical flag for user to set history alarms
-                                                           !! using ESMF. If history_option is present as config
-                                                           !! option, user_histalarm will be true and will be
-                                                           !! set using history_option, history_n and history_ymd
+  !! using ESMF. If history_option is present as config
+  !! option, user_histalarm will be true and will be
+  !! set using history_option, history_n and history_ymd
   logical                 :: user_restalarm = .false.      !< logical flag for user to set restart alarms
-                                                           !! using ESMF. If restart_option is present as config
-                                                           !! option, user_restalarm will be true and will be
-                                                           !! set using restart_option, restart_n and restart_ymd
+  !! using ESMF. If restart_option is present as config
+  !! option, user_restalarm will be true and will be
+  !! set using restart_option, restart_n and restart_ymd
   integer :: time0(2)
   integer :: timen(2)
 
@@ -247,77 +247,77 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldName", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       flds_scalar_name = trim(cvalue)
-       call ESMF_LogWrite(trim(subname)//' flds_scalar_name = '//trim(flds_scalar_name), ESMF_LOGMSG_INFO)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      flds_scalar_name = trim(cvalue)
+      call ESMF_LogWrite(trim(subname)//' flds_scalar_name = '//trim(flds_scalar_name), ESMF_LOGMSG_INFO)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldName',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldName',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     endif
 
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldCount", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue, *) flds_scalar_num
-       write(logmsg,*) flds_scalar_num
-       call ESMF_LogWrite(trim(subname)//' flds_scalar_num = '//trim(logmsg), ESMF_LOGMSG_INFO)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      read(cvalue, *) flds_scalar_num
+      write(logmsg,*) flds_scalar_num
+      call ESMF_LogWrite(trim(subname)//' flds_scalar_num = '//trim(logmsg), ESMF_LOGMSG_INFO)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldCount',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldCount',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     endif
 
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNX", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) flds_scalar_index_nx
-       write(logmsg,*) flds_scalar_index_nx
-       call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_nx = '//trim(logmsg), ESMF_LOGMSG_INFO)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      read(cvalue,*) flds_scalar_index_nx
+      write(logmsg,*) flds_scalar_index_nx
+      call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_nx = '//trim(logmsg), ESMF_LOGMSG_INFO)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldIdxGridNX',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldIdxGridNX',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     endif
 
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldIdxGridNY", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) flds_scalar_index_ny
-       write(logmsg,*) flds_scalar_index_ny
-       call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_ny = '//trim(logmsg), ESMF_LOGMSG_INFO)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      read(cvalue,*) flds_scalar_index_ny
+      write(logmsg,*) flds_scalar_index_ny
+      call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_ny = '//trim(logmsg), ESMF_LOGMSG_INFO)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldIdxGridNY',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//'Need to set attribute ScalarFieldIdxGridNY',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     endif
 
     call NUOPC_CompAttributeGet(gcomp, name="ProfileMemory", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) profile_memory
-       call ESMF_LogWrite(trim(subname)//': profile_memory = '//trim(cvalue), ESMF_LOGMSG_INFO, rc=rc)
+      read(cvalue,*) profile_memory
+      call ESMF_LogWrite(trim(subname)//': profile_memory = '//trim(cvalue), ESMF_LOGMSG_INFO, rc=rc)
     end if
 
     call NUOPC_CompAttributeGet(gcomp, name="merge_import", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       if (trim(cvalue) == '.true.') then
-          merge_import = .true.
-       end if
+      if (trim(cvalue) == '.true.') then
+        merge_import = .true.
+      end if
     end if
 
     call NUOPC_CompAttributeGet(gcomp, name='dbug_flag', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) dbug_flag
+      read(cvalue,*) dbug_flag
     end if
     write(logmsg,'(A,i6)') trim(subname)//': Wave cap dbug_flag is ',dbug_flag
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
@@ -332,13 +332,13 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (isPresent) then
-       call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", value=inst_suffix, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       cvalue = inst_suffix(2:)
-       read(cvalue, *) inst_index
+      call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", value=inst_suffix, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      cvalue = inst_suffix(2:)
+      read(cvalue, *) inst_index
     else
-       inst_suffix = ""
-       inst_index=1
+      inst_suffix = ""
+      inst_index=1
     endif
 
     ! Get Multigrid setting
@@ -346,7 +346,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='multigrid', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       multigrid=(trim(cvalue)=="true")
+      multigrid=(trim(cvalue)=="true")
     end if
     write(logmsg,'(A,l)') trim(subname)//': Wave multigrid setting is ',multigrid
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
@@ -357,7 +357,7 @@ contains
          isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       wav_coupling_to_cice=(trim(cvalue)=="true")
+      wav_coupling_to_cice=(trim(cvalue)=="true")
     end if
     write(logmsg,'(A,l)') trim(subname)//': Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
@@ -470,17 +470,17 @@ contains
     !--------------------------------------------------------------------
 
     if (.not. multigrid) then
-       call w3nmod ( 1, 6, 6 )
-       call w3ndat (    6, 6 )
-       call w3naux (    6, 6 )
-       call w3nout (    6, 6 )
-       call w3ninp (    6, 6 )
+      call w3nmod ( 1, 6, 6 )
+      call w3ndat (    6, 6 )
+      call w3naux (    6, 6 )
+      call w3nout (    6, 6 )
+      call w3ninp (    6, 6 )
 
-       call w3setg ( 1, 6, 6 )
-       call w3setw ( 1, 6, 6 )
-       call w3seta ( 1, 6, 6 )
-       call w3seto ( 1, 6, 6 )
-       call w3seti ( 1, 6, 6 )
+      call w3setg ( 1, 6, 6 )
+      call w3setw ( 1, 6, 6 )
+      call w3seta ( 1, 6, 6 )
+      call w3seto ( 1, 6, 6 )
+      call w3seti ( 1, 6, 6 )
     end if
 
     !----------------------------------------------------------------------------
@@ -502,13 +502,13 @@ contains
 #ifndef W3_CESMCOUPLED
     improc = iam + 1
     if (multigrid) then
-       nmpscr = 1
-       is_esmf_component = .true.
+      nmpscr = 1
+      is_esmf_component = .true.
     else
-       iaproc = iam + 1
-       naproc = nmproc
-       napout = 1
-       naperr = 1
+      iaproc = iam + 1
+      naproc = nmproc
+      napout = 1
+      naperr = 1
     end if
     if (improc == 1) root_task = .true.
 #else
@@ -523,25 +523,25 @@ contains
     !--------------------------------------------------------------------
 
     if (cesmcoupled) then
-       shrlogunit = 6
-       if ( root_task ) then
-          call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          open (newunit=stdout, file=trim(diro)//"/"//trim(logfile))
-       else
-          stdout = 6
-       endif
+      shrlogunit = 6
+      if ( root_task ) then
+        call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        open (newunit=stdout, file=trim(diro)//"/"//trim(logfile))
+      else
+        stdout = 6
+      endif
     else
-       stdout = 6
+      stdout = 6
     end if
 
     if (.not. multigrid) call set_shel_io(stdout,mds,ntrace)
 
     if ( root_task ) then
-       write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
-       write(stdout,'(a)')'==============================================='
+      write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
+      write(stdout,'(a)')'==============================================='
     end if
 
     !--------------------------------------------------------------------
@@ -551,14 +551,14 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='start_type', value=starttype, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if ( trim(starttype) == trim('startup')) then
-       runtype = "initial"
+      runtype = "initial"
     else if (trim(starttype) == trim('continue') ) then
-       runtype = "continue"
+      runtype = "continue"
     else if (trim(starttype) == trim('branch')) then
-       runtype = "branch"
+      runtype = "branch"
     end if
     if ( root_task ) then
-       write(stdout,*) 'WW3 runtype is '//trim(runtype)
+      write(stdout,*) 'WW3 runtype is '//trim(runtype)
     end if
     call ESMF_LogWrite('WW3 runtype is '//trim(runtype), ESMF_LOGMSG_INFO)
 
@@ -570,17 +570,17 @@ contains
     ! NOTE - are not setting TIMEN here
 
     if ( root_task ) then
-       write(stdout,'(a)')'  Time interval : '
-       write(stdout,'(a)')'--------------------------------------------------'
+      write(stdout,'(a)')'  Time interval : '
+      write(stdout,'(a)')'--------------------------------------------------'
     end if
 
     ! Initial run or restart run
     if ( runtype == "initial") then
-       call ESMF_ClockGet( clock, startTime=esmfTime, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_ClockGet( clock, startTime=esmfTime, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
-       call ESMF_ClockGet( clock, currTime=esmfTime, rc=rc )
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_ClockGet( clock, currTime=esmfTime, rc=rc )
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
     ! Determine time attributes for history output
     call ESMF_TimeGet( esmfTime, timeString=time_origin, calendar=calendar, rc=rc )
@@ -588,9 +588,9 @@ contains
     time_origin = 'seconds since '//time_origin(1:10)//' '//time_origin(12:19)
     !call ESMF_ClockGet(clock, calendar=calendar)
     if (calendar == ESMF_CALKIND_GREGORIAN) then
-       calendar_name = 'standard'
+      calendar_name = 'standard'
     else if (calendar == ESMF_CALKIND_NOLEAP) then
-       calendar_name = 'noleap'
+      calendar_name = 'noleap'
     end if
     call ESMF_TimeGet( esmfTime, yy=yy, mm=mm, dd=dd, s=start_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -618,8 +618,8 @@ contains
 
     call stme21 ( time0 , dtme21 )
     if ( root_task ) then
-       write (stdout,'(a)')' Starting time : '//trim(dtme21)
-       write (stdout,'(a,i8,2x,i8)') 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
+      write (stdout,'(a)')' Starting time : '//trim(dtme21)
+      write (stdout,'(a,i8,2x,i8)') 'start_ymd, stop_ymd = ',start_ymd, stop_ymd
     end if
 #ifndef W3_CESMCOUPLED
     stime = time0
@@ -632,30 +632,30 @@ contains
 
 #ifndef W3_CESMCOUPLED
     if (multigrid) then
-       call ESMF_UtilIOUnitGet(idsi); open(unit=idsi, status='scratch')
-       call ESMF_UtilIOUnitGet(idso); open(unit=idso, status='scratch')
-       call ESMF_UtilIOUnitGet(idss); open(unit=idss, status='scratch')
-       call ESMF_UtilIOUnitGet(idst); open(unit=idst, status='scratch')
-       call ESMF_UtilIOUnitGet(idse); open(unit=idse, status='scratch')
-       close(idsi); close(idso); close(idss); close(idst); close(idse)
+      call ESMF_UtilIOUnitGet(idsi); open(unit=idsi, status='scratch')
+      call ESMF_UtilIOUnitGet(idso); open(unit=idso, status='scratch')
+      call ESMF_UtilIOUnitGet(idss); open(unit=idss, status='scratch')
+      call ESMF_UtilIOUnitGet(idst); open(unit=idst, status='scratch')
+      call ESMF_UtilIOUnitGet(idse); open(unit=idse, status='scratch')
+      close(idsi); close(idso); close(idss); close(idst); close(idse)
 
-       if ( trim(ifname) == 'ww3_multi.nml' ) then
-          call wminitnml ( idsi, idso, idss, idst, idse, trim(ifname), &
-               mpi_comm, preamb=preamb )
-       else
-          call wminit ( idsi, idso, idss, idst, idse, trim(ifname), &
-               mpi_comm, preamb=preamb )
-       endif
+      if ( trim(ifname) == 'ww3_multi.nml' ) then
+        call wminitnml ( idsi, idso, idss, idst, idse, trim(ifname), &
+             mpi_comm, preamb=preamb )
+      else
+        call wminit ( idsi, idso, idss, idst, idse, trim(ifname), &
+             mpi_comm, preamb=preamb )
+      endif
 
-       allocate(tend(2,nrgrd))
-       do imod = 1,nrgrd
-          tend(1,imod) = etime(1)
-          tend(2,imod) = etime(2)
-       end do
-       call ESMF_LogWrite(trim(subname)//' done = wminit', ESMF_LOGMSG_INFO)
+      allocate(tend(2,nrgrd))
+      do imod = 1,nrgrd
+        tend(1,imod) = etime(1)
+        tend(2,imod) = etime(2)
+      end do
+      call ESMF_LogWrite(trim(subname)//' done = wminit', ESMF_LOGMSG_INFO)
     else
-       call waveinit_ufs(gcomp, ntrace, mpi_comm, mds, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call waveinit_ufs(gcomp, ntrace, mpi_comm, mds, rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 #else
     time = time0
@@ -667,8 +667,8 @@ contains
 
     ! call mpi_barrier ( mpi_comm, ierr )
     if ( root_task ) then
-       inquire(unit=nds(1), name=logfile)
-       print *,'WW3 log written to '//trim(logfile)
+      inquire(unit=nds(1), name=logfile)
+      print *,'WW3 log written to '//trim(logfile)
     end if
 
     !--------------------------------------------------------------------
@@ -676,7 +676,7 @@ contains
     !--------------------------------------------------------------------
 
     if (user_netcdf_grdout) then
-       call wavinit_grdout
+      call wavinit_grdout
     end if
 
     !--------------------------------------------------------------------
@@ -689,10 +689,10 @@ contains
     ! create a  global index array for sea points
     allocate(gindex_sea(nseal))
     do jsea=1, nseal
-       isea = iaproc + (jsea-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       gindex_sea(jsea) = ix + (iy-1)*nx
+      isea = iaproc + (jsea-1)*naproc
+      ix = mapsf(isea,1)
+      iy = mapsf(isea,2)
+      gindex_sea(jsea) = ix + (iy-1)*nx
     end do
 
     ! create a global index array for non-sea (i.e. land points)
@@ -700,10 +700,10 @@ contains
     mask_local(:) = 0
     mask_global(:) = 0
     do jsea=1, nseal
-       isea = iaproc + (jsea-1)*naproc
-       ix = mapsf(isea,1)
-       iy = mapsf(isea,2)
-       mask_local(ix + (iy-1)*nx) = 1
+      isea = iaproc + (jsea-1)*naproc
+      ix = mapsf(isea,1)
+      iy = mapsf(isea,2)
+      mask_local(ix + (iy-1)*nx) = 1
     end do
     call ESMF_VMAllReduce(vm, sendData=mask_local, recvData=mask_global, count=nx*ny, &
          reduceflag=ESMF_REDUCE_MAX, rc=rc)
@@ -712,19 +712,19 @@ contains
     nlnd_local = nlnd_global / naproc
     my_lnd_start = nlnd_local*iam + min(iam, mod(nlnd_global, naproc)) + 1
     if (iam < mod(nlnd_global, naproc)) then
-       nlnd_local = nlnd_local + 1
+      nlnd_local = nlnd_local + 1
     end if
     my_lnd_end = my_lnd_start + nlnd_local - 1
 
     allocate(gindex_lnd(my_lnd_end - my_lnd_start + 1))
     ncnt = 0
     do n = 1,nx*ny
-       if (mask_global(n) == 0) then ! this is a land point
-          ncnt = ncnt + 1
-          if (ncnt >= my_lnd_start .and. ncnt <= my_lnd_end) then
-             gindex_lnd(ncnt - my_lnd_start + 1) = n
-          end if
-       end if
+      if (mask_global(n) == 0) then ! this is a land point
+        ncnt = ncnt + 1
+        if (ncnt >= my_lnd_start .and. ncnt <= my_lnd_end) then
+          gindex_lnd(ncnt - my_lnd_start + 1) = n
+        end if
+      end if
     end do
     deallocate(mask_global)
     deallocate(mask_local)
@@ -733,11 +733,11 @@ contains
     nlnd = (my_lnd_end - my_lnd_start + 1)
     allocate(gindex(nlnd + nseal))
     do ncnt = 1,nlnd + nseal
-       if (ncnt <= nseal) then
-          gindex(ncnt) = gindex_sea(ncnt)
-       else
-          gindex(ncnt) = gindex_lnd(ncnt-nseal)
-       end if
+      if (ncnt <= nseal) then
+        gindex(ncnt) = gindex_sea(ncnt)
+      else
+        gindex(ncnt) = gindex_lnd(ncnt-nseal)
+      end if
     end do
     deallocate(gindex_sea)
     deallocate(gindex_lnd)
@@ -754,7 +754,7 @@ contains
     EMeshTemp = ESMF_MeshCreate(filename=trim(cvalue), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if ( root_task ) then
-       write(nds(1),*)'mesh file for domain is ',trim(cvalue)
+      write(nds(1),*)'mesh file for domain is ',trim(cvalue)
     end if
 
     ! recreate the mesh using the above distGrid
@@ -774,17 +774,17 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (maskmin == 1) then
-       ! replace mesh mask with internal mask
-       meshmask(:) = 0
-       meshmask(1:nseal) = 1
-       call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+      ! replace mesh mask with internal mask
+      meshmask(:) = 0
+      meshmask(1:nseal) = 1
+      call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
     end if
 
     if (dbug_flag > 5) then
-       call ESMF_ArrayWrite(elemMaskArray, 'meshmask.nc', variableName = 'mask', &
-            overwrite=.true., rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_ArrayWrite(elemMaskArray, 'meshmask.nc', variableName = 'mask', &
+           overwrite=.true., rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
     deallocate(meshmask)
     deallocate(gindex)
@@ -799,16 +799,16 @@ contains
 #ifndef W3_CESMCOUPLED
     !TODO: when is this required?
     if (multigrid) then
-       do imod = 1,nrgrd
-          call w3setg ( imod, mdse, mdst )
-          call w3setw ( imod, mdse, mdst )
-          call w3seta ( imod, mdse, mdst )
-          call w3seti ( imod, mdse, mdst )
-          call w3seto ( imod, mdse, mdst )
-          call wmsetm ( imod, mdse, mdst )
-          local = iaproc .gt. 0 .and. iaproc .le. naproc
-          if ( local .and. flcold .and. fliwnd ) call w3uini( va )
-       enddo
+      do imod = 1,nrgrd
+        call w3setg ( imod, mdse, mdst )
+        call w3setw ( imod, mdse, mdst )
+        call w3seta ( imod, mdse, mdst )
+        call w3seti ( imod, mdse, mdst )
+        call w3seto ( imod, mdse, mdst )
+        call wmsetm ( imod, mdse, mdst )
+        local = iaproc .gt. 0 .and. iaproc .le. naproc
+        if ( local .and. flcold .and. fliwnd ) call w3uini( va )
+      enddo
     end if
 #endif
 
@@ -859,29 +859,29 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (state_fldchk(exportState, 'Sw_lamult')) then
-       call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       sw_lamult (:) = 1.
+      call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_lamult (:) = 1.
     endif
     if (state_fldchk(exportState, 'Sw_ustokes')) then
-       call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       sw_ustokes(:) = 0.
+      call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_ustokes(:) = 0.
     endif
     if (state_fldchk(exportState, 'Sw_vstokes')) then
-       call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       sw_vstokes(:) = 0.
+      call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      sw_vstokes(:) = 0.
     endif
     if (state_fldchk(exportState, 'Sw_z0')) then
-       call state_getfldptr(exportState, 'Sw_z0', z0rlen, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call CalcRoughl(z0rlen)
+      call state_getfldptr(exportState, 'Sw_z0', z0rlen, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call CalcRoughl(z0rlen)
     endif
     if (wav_coupling_to_cice) then
-       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       wave_elevation_spectrum(:,:) = 0.
+      call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      wave_elevation_spectrum(:,:) = 0.
     endif
 
     ! Set global grid size scalars in export state
@@ -891,8 +891,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if ( dbug_flag > 5) then
-       call state_diagnose(exportState, 'at DataInitialize ', rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call state_diagnose(exportState, 'at DataInitialize ', rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
@@ -978,7 +978,7 @@ contains
     time0(1) = ymd
     time0(2) = hh*10000 + mm*100 + ss
     if ( root_task ) then
-       write(nds(1),'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
+      write(nds(1),'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
     end if
 
     ! use next time; the NUOPC clock is not updated
@@ -1003,10 +1003,10 @@ contains
     time = time0
 #ifndef W3_CESMCOUPLED
     if (multigrid) then
-       do imod = 1,nrgrd
-          tend(1,imod) = timen(1)
-          tend(2,imod) = timen(2)
-       end do
+      do imod = 1,nrgrd
+        tend(1,imod) = timen(1)
+        tend(2,imod) = timen(2)
+      end do
     end if
 #endif
 
@@ -1022,47 +1022,47 @@ contains
     if(profile_memory) call ESMF_VMLogMemInfo("Entering WW3 Run : ")
 
     if (user_restalarm) then
-       ! Determine if time to write ww3 restart files
-       call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          rstwr = .true.
-          call ESMF_AlarmRingerOff( alarm, rc=rc )
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       else
-          rstwr = .false.
-       endif
+      ! Determine if time to write ww3 restart files
+      call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        rstwr = .true.
+        call ESMF_AlarmRingerOff( alarm, rc=rc )
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      else
+        rstwr = .false.
+      endif
     else
-       rstwr = .false.
+      rstwr = .false.
     end if
 
     if (user_histalarm) then
-       ! Determine if time to write ww3 history files
-       call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          histwr = .true.
-          call ESMF_AlarmRingerOff( alarm, rc=rc )
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       else
-          histwr = .false.
-       endif
+      ! Determine if time to write ww3 history files
+      call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        histwr = .true.
+        call ESMF_AlarmRingerOff( alarm, rc=rc )
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      else
+        histwr = .false.
+      endif
     else
-       histwr = .false.
+      histwr = .false.
     end if
     if ( root_task ) then
-       !  write(nds(1),*) 'wav_comp_nuopc time', time, timen
-       !  write(nds(1),*) 'ww3 hist flag ', histwr, hh
+      !  write(nds(1),*) 'wav_comp_nuopc time', time, timen
+      !  write(nds(1),*) 'ww3 hist flag ', histwr, hh
     end if
 
     ! Advance the wave model
 #ifndef W3_CESMCOUPLED
     if (multigrid) then
-       call wmwave ( tend )
+      call wmwave ( tend )
     else
-       call w3wave ( 1, odat, timen )
+      call w3wave ( 1, odat, timen )
     end if
 #else
     call w3wave ( 1, odat, timen )
@@ -1151,104 +1151,104 @@ contains
 
     if (alarmCount == 0) then
 
-       call ESMF_ClockGet(mclock, startTime=mStartTime,  rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_ClockGet(mclock, startTime=mStartTime,  rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_GridCompGet(gcomp, name=name, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_LogWrite(trim(subname)//'setting alarms for ' // trim(name), ESMF_LOGMSG_INFO)
+      call ESMF_GridCompGet(gcomp, name=name, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_LogWrite(trim(subname)//'setting alarms for ' // trim(name), ESMF_LOGMSG_INFO)
 
-       !----------------
-       ! Restart alarm
-       !----------------
-       call NUOPC_CompAttributeGet(gcomp, name="restart_option", isPresent=isPresent, isSet=isSet, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       if (isPresent .and. isSet) then
-          call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      !----------------
+      ! Restart alarm
+      !----------------
+      call NUOPC_CompAttributeGet(gcomp, name="restart_option", isPresent=isPresent, isSet=isSet, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      if (isPresent .and. isSet) then
+        call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          call NUOPC_CompAttributeGet(gcomp, name="restart_n", value=cvalue, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          read(cvalue,*) restart_n
+        call NUOPC_CompAttributeGet(gcomp, name="restart_n", value=cvalue, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        read(cvalue,*) restart_n
 
-          call NUOPC_CompAttributeGet(gcomp, name="restart_ymd", value=cvalue, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          read(cvalue,*) restart_ymd
+        call NUOPC_CompAttributeGet(gcomp, name="restart_ymd", value=cvalue, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        read(cvalue,*) restart_ymd
 
-          call alarmInit(mclock, restart_alarm, restart_option, &
-               opt_n   = restart_n,           &
-               opt_ymd = restart_ymd,         &
-               RefTime = mCurrTime,           &
-               alarmname = 'alarm_restart', rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        call alarmInit(mclock, restart_alarm, restart_option, &
+             opt_n   = restart_n,           &
+             opt_ymd = restart_ymd,         &
+             RefTime = mCurrTime,           &
+             alarmname = 'alarm_restart', rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          user_restalarm = .true.
-       else
-          ! If attribute is not present - write restarts at native WW3 freq
-          restart_option = 'none'
-          restart_n = -999
-          user_restalarm = .false.
-       end if
+        call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        user_restalarm = .true.
+      else
+        ! If attribute is not present - write restarts at native WW3 freq
+        restart_option = 'none'
+        restart_n = -999
+        user_restalarm = .false.
+      end if
 
-       !----------------
-       ! Stop alarm
-       !----------------
-       call NUOPC_CompAttributeGet(gcomp, name="stop_option", value=stop_option, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      !----------------
+      ! Stop alarm
+      !----------------
+      call NUOPC_CompAttributeGet(gcomp, name="stop_option", value=stop_option, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call NUOPC_CompAttributeGet(gcomp, name="stop_n", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) stop_n
+      call NUOPC_CompAttributeGet(gcomp, name="stop_n", value=cvalue, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      read(cvalue,*) stop_n
 
-       call NUOPC_CompAttributeGet(gcomp, name="stop_ymd", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) stop_ymd
+      call NUOPC_CompAttributeGet(gcomp, name="stop_ymd", value=cvalue, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      read(cvalue,*) stop_ymd
 
-       call alarmInit(mclock, stop_alarm, stop_option, &
-            opt_n   = stop_n,           &
-            opt_ymd = stop_ymd,         &
-            RefTime = mCurrTime,       &
-            alarmname = 'alarm_stop', rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call alarmInit(mclock, stop_alarm, stop_option, &
+           opt_n   = stop_n,           &
+           opt_ymd = stop_ymd,         &
+           RefTime = mCurrTime,       &
+           alarmname = 'alarm_stop', rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       !----------------
-       ! History alarm
-       !----------------
-       call NUOPC_CompAttributeGet(gcomp, name="history_option", isPresent=isPresent, isSet=isSet, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       if (isPresent .and. isSet) then
-          call NUOPC_CompAttributeGet(gcomp, name='history_option', value=history_option, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      !----------------
+      ! History alarm
+      !----------------
+      call NUOPC_CompAttributeGet(gcomp, name="history_option", isPresent=isPresent, isSet=isSet, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      if (isPresent .and. isSet) then
+        call NUOPC_CompAttributeGet(gcomp, name='history_option', value=history_option, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          call NUOPC_CompAttributeGet(gcomp, name="history_n", value=cvalue, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          read(cvalue,*) history_n
+        call NUOPC_CompAttributeGet(gcomp, name="history_n", value=cvalue, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        read(cvalue,*) history_n
 
-          call NUOPC_CompAttributeGet(gcomp, name="history_ymd", value=cvalue, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          read(cvalue,*) history_ymd
+        call NUOPC_CompAttributeGet(gcomp, name="history_ymd", value=cvalue, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        read(cvalue,*) history_ymd
 
-          call alarmInit(mclock, history_alarm, history_option, &
-               opt_n   = history_n,           &
-               opt_ymd = history_ymd,         &
-               RefTime = mStartTime,          &
-               alarmname = 'alarm_history', rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        call alarmInit(mclock, history_alarm, history_option, &
+             opt_n   = history_n,           &
+             opt_ymd = history_ymd,         &
+             RefTime = mStartTime,          &
+             alarmname = 'alarm_history', rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          call ESMF_AlarmSet(history_alarm, clock=mclock, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          user_histalarm = .true.
-       else
-          ! If attribute is not present - write history output at native WW3 frequency
-          history_option = 'none'
-          history_n = -999
-          user_histalarm = .false.
-       end if
+        call ESMF_AlarmSet(history_alarm, clock=mclock, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        user_histalarm = .true.
+      else
+        ! If attribute is not present - write history output at native WW3 frequency
+        history_option = 'none'
+        history_n = -999
+        user_histalarm = .false.
+      end if
 
     end if
 
@@ -1290,9 +1290,9 @@ contains
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     if ( root_task ) then
-       write(nds(1),F91)
-       write(nds(1),F00) 'WW3: end of main integration loop'
-       write(nds(1),F91)
+      write(nds(1),F91)
+      write(nds(1),F00) 'WW3: end of main integration loop'
+      write(nds(1),F91)
     end if
 
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
@@ -1357,70 +1357,70 @@ contains
     inst_name = "WAV"//trim(inst_suffix)
     ! Read namelist (set initfile in w3odatmd)
     if ( root_task ) then
-       open (newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
-       read (unitn, ww3_inparm, iostat=ierr)
-       if (ierr /= 0) then
-          call ESMF_LogWrite(trim(subname)//' problem reading ww3_inparm namelist',&
-               ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-          rc = ESMF_FAILURE
-          return
-       end if
-       close (unitn)
+      open (newunit=unitn, file='wav_in'//trim(inst_suffix), status='old')
+      read (unitn, ww3_inparm, iostat=ierr)
+      if (ierr /= 0) then
+        call ESMF_LogWrite(trim(subname)//' problem reading ww3_inparm namelist',&
+             ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+        rc = ESMF_FAILURE
+        return
+      end if
+      close (unitn)
 
-       ! Write out input
-       stdout = mds(1)
-       write(stdout,*)
-       write(stdout,'(a)')' --------------------------------------------------'
-       write(stdout,'(a)')'  Initializations : '
-       write(stdout,'(a)')' --------------------------------------------------'
-       write(stdout,'(a)')' Case Name is '//trim(casename)
-       write(stdout,'(a)') trim(subname)//' inst_name   = '//trim(inst_name)
-       write(stdout,'(a)') trim(subname)//' inst_suffix = '//trim(inst_suffix)
-       write(stdout,'(a,i4)') trim(subname)//' inst_index  = ',inst_index
-       write(stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
-       write(stdout,'(a)')' initfile = '//trim(initfile)
-       write(stdout,'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
-       write(stdout,'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
-       write(stdout,'(a, 2x, f10.3)')' dtmax    = ',dtmax
-       write(stdout,'(a, 2x, f10.3)')' dtmin    = ',dtmin
-       write(stdout,*)
+      ! Write out input
+      stdout = mds(1)
+      write(stdout,*)
+      write(stdout,'(a)')' --------------------------------------------------'
+      write(stdout,'(a)')'  Initializations : '
+      write(stdout,'(a)')' --------------------------------------------------'
+      write(stdout,'(a)')' Case Name is '//trim(casename)
+      write(stdout,'(a)') trim(subname)//' inst_name   = '//trim(inst_name)
+      write(stdout,'(a)') trim(subname)//' inst_suffix = '//trim(inst_suffix)
+      write(stdout,'(a,i4)') trim(subname)//' inst_index  = ',inst_index
+      write(stdout,'(a)')' Read in ww3_inparm namelist from wav_in'//trim(inst_suffix)
+      write(stdout,'(a)')' initfile = '//trim(initfile)
+      write(stdout,'(a, 2x, f10.3)')' dtcfl    = ',dtcfl
+      write(stdout,'(a, 2x, f10.3)')' dtcfli   = ',dtcfli
+      write(stdout,'(a, 2x, f10.3)')' dtmax    = ',dtmax
+      write(stdout,'(a, 2x, f10.3)')' dtmin    = ',dtmin
+      write(stdout,*)
     end if
 
     ! ESMF does not have a broadcast for chars
     call mpi_bcast(initfile, len(initfile), MPI_CHARACTER, 0, mpi_comm, ierr)
     if (ierr /= MPI_SUCCESS) then
-       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for initfile ', &
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for initfile ', &
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     end if
     call mpi_bcast(dtcfl, 1, MPI_INTEGER, 0, mpi_comm, ierr)
     if (ierr /= MPI_SUCCESS) then
-       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtcfl ',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtcfl ',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     end if
     call mpi_bcast(dtcfli, 1, MPI_INTEGER, 0, mpi_comm, ierr)
     if (ierr /= MPI_SUCCESS) then
-       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtcfli ',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtcfli ',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     end if
     call mpi_bcast(dtmax, 1, MPI_INTEGER, 0, mpi_comm, ierr)
     if (ierr /= MPI_SUCCESS) then
-       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtmax ',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtmax ',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     end if
     call mpi_bcast(dtmin, 1, MPI_INTEGER, 0, mpi_comm, ierr)
     if (ierr /= MPI_SUCCESS) then
-       call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtmax ',&
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//' error in mpi broadcast for dtmax ',&
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     end if
     dtmax_in  = dtmax
     dtcfl_in  = dtcfl
@@ -1444,16 +1444,16 @@ contains
     ! Currently IC4 is used in cesm
     inflags2(:) = .false.
     if (wav_coupling_to_cice) then
-       inflags2(4)  = .true. ! inflags2(4) is true if ice concentration was read during initialization
-       inflags1(-7) = .true. ! ice thickness
-       inflags2(-7) = .true. ! ice thickness
-       inflags1(-3) = .true. ! ice floe size
-       inflags2(-3) = .true. ! ice floe size
+      inflags2(4)  = .true. ! inflags2(4) is true if ice concentration was read during initialization
+      inflags1(-7) = .true. ! ice thickness
+      inflags2(-7) = .true. ! ice thickness
+      inflags1(-3) = .true. ! ice floe size
+      inflags2(-3) = .true. ! ice floe size
     else
-       inflags1(-7) = .false. ! ice thickness
-       inflags2(-7) = .false. ! ice thickness
-       inflags1(-3) = .false. ! ice floe size
-       inflags2(-3) = .false. ! ice floe size
+      inflags1(-7) = .false. ! ice thickness
+      inflags2(-7) = .false. ! ice thickness
+      inflags1(-3) = .false. ! ice floe size
+      inflags2(-3) = .false. ! ice floe size
     end if
 
     ! custom restart and history file names are used for CESM
@@ -1462,11 +1462,11 @@ contains
 
     ! if runtype=initial, the initfile will be read in w3iorsmd
     if (len_trim(inst_suffix) > 0) then
-       user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
-       user_histfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.'
+      user_restfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.r.'
+      user_histfname = trim(casename)//'.ww3'//trim(inst_suffix)//'.hi.'
     else
-       user_restfname = trim(casename)//'.ww3.r.'
-       user_histfname = trim(casename)//'.ww3.hi.'
+      user_restfname = trim(casename)//'.ww3.r.'
+      user_histfname = trim(casename)//'.ww3.hi.'
     endif
 
     ! netcdf gridded output is used for CESM
@@ -1541,7 +1541,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='user_sets_histname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       use_user_histname=(trim(cvalue)=="true")
+      use_user_histname=(trim(cvalue)=="true")
     end if
     write(logmsg,'(A,l)') trim(subname)//': Custom history names in use ',use_user_histname
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
@@ -1549,7 +1549,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='user_sets_restname', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       use_user_restname=(trim(cvalue)=="true")
+      use_user_restname=(trim(cvalue)=="true")
     end if
     write(logmsg,'(A,l)') trim(subname)//': Custom restart names in use ',use_user_restname
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
@@ -1557,16 +1557,16 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='gridded_netcdfout', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       user_netcdf_grdout=(trim(cvalue)=="true")
+      user_netcdf_grdout=(trim(cvalue)=="true")
     end if
     write(logmsg,'(A,l)') trim(subname)//': Gridded netcdf output is requested ',user_netcdf_grdout
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
     if (use_user_histname) then
-       user_histfname = trim(casename)//'.ww3.hi.'
+      user_histfname = trim(casename)//'.ww3.hi.'
     end if
     if (use_user_restname) then
-       user_restfname = trim(casename)//'.ww3.r.'
+      user_restfname = trim(casename)//'.ww3.r.'
     end if
 
     fnmpre = './'

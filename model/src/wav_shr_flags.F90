@@ -1050,10 +1050,10 @@ module wav_shr_flags
 #endif
 
   interface print_logmsg
-     module procedure print_logmsg_1line
-     module procedure print_logmsg_2line
-     module procedure print_logmsg_3line
-     module procedure print_logmsg_4line
+    module procedure print_logmsg_1line
+    module procedure print_logmsg_2line
+    module procedure print_logmsg_3line
+    module procedure print_logmsg_4line
   end interface print_logmsg
 
 contains
