@@ -185,9 +185,6 @@ CONTAINS
           SOUT(IK,ITH) = S(IS)
         END DO
       END DO
-#endif
-      !
-#ifdef W3_T
       CALL PRT2DS (NDST, NK, NK, NTH, SOUT, SIG(1:NK), '  ', 1.,    &
            0.0, 0.001, 'Diag Sir1', ' ', 'NONAME')
 #endif

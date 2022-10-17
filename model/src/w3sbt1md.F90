@@ -221,9 +221,6 @@ CONTAINS
         DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
     CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
          0.0, 0.001, 'Diag Sbt', ' ', 'NONAME')
 #endif
