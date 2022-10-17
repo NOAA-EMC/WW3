@@ -485,7 +485,7 @@ module yowpdlibMain
     integer, allocatable :: xadj(:), part(:), vwgt(:), adjwgt(:), vtxdist(:), options(:), adjncy(:), iweights(:)
     ! parmetis need single precision
     real(4), allocatable :: xyz(:), tpwgts(:), ubvec(:)
-    integer :: IP_glob, itmp
+    integer :: IP_glob, itmp, ret
     logical :: lexist = .false. 
 
     ! Node to domain mapping.
@@ -682,7 +682,7 @@ module yowpdlibMain
                                   adjwgt, & ! adjwgt - ignore weights
                                   wgtflag, &
                                   numflag,ndims,xyz,ncon,nparts,tpwgts,ubvec,options, &
-                                  edgecut,part, comm)
+                                  edgecut,part, comm, ret)
 
     CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 9")
 
