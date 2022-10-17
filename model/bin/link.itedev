@@ -86,8 +86,11 @@
 
   # linking options
   libs=""
-#  opt=" -g -ggdb -fno-omit-frame-pointer -ffree-line-length-none -fbacktrace -Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument -fcheck=all -fsanitize=address -fsanitize=undefined -ffpe-trap=invalid,zero,overflow -DPDLIB -o $prog"
- opt="-traceback -g -O0 -check all -check noarg_temp_created -warn interfaces,nouncalled -gen-interface -assume byterecl -no-wrap-margin -o $prog"
+#  opt=" -g -ggdb -fno-omit-frame-pointer -ffree-line-length-none -fbacktrace -Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument -fcheck=all -DPDLIB -o $prog"
+
+  opt=" -g -DPDLIB -ffree-line-length-none -o $prog"
+
+# opt="-traceback -g -O0 -check all -check noarg_temp_created -warn interfaces,nouncalled -gen-interface -assume byterecl -no-wrap-margin -o $prog"
 # opt="-traceback -g -O1 -check all -warn interfaces,nouncalled -gen-interface -assume byterecl -init=snan,arrays -no-wrap-margin -DPDLIB -ip -o $prog"
 # opt="-O1 -axSSE4.2 -prec-div -assume byterecl -DCGTABLE -DPDLIB -no-wrap-margin -g -traceback -o $prog"
 # opt="-O3 -prec-div -prec-sqrt -xHost -align array128byte -ip -o $prog"
@@ -96,17 +99,18 @@
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=mpiifort
-    which mpiifort 1> /dev/null 2> /dev/null
+    comp=mpif90
+    which mpif90 1> /dev/null 2> /dev/null
     OK=$?
     if [ $OK != 0 ]
     then
-      comp='ifort -lmpi'
+      #comp='ifort -lmpi'
+    comp=gfortran
     fi
 #   opt="-O3 -o $prog"
   else
-    comp=ifort
-    #comp=gfortran
+    #comp=ifort
+    comp=gfortran
   fi
 
   # open mpi implementation
@@ -138,21 +142,21 @@
   then
     case $WWATCH3_NETCDF in
       NC3) libs="$libs -L$NETCDF_LIBDIR" ;;
-      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIGF --fc`"; fi
            libs="$libs -L$NETCDF_LIBDIR -lnetcdf -lnetcdff" ;;
     esac
   fi
 
-  # parmetis library 
+  # scotch library 
   if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] || [ "$prog" = 'ww3_prtide' ] || [ "$prog" = 'ww3_prnc' ]; then
     if [ "$pdlib_mod" = 'yes' ] ; then
-      if [ -z "$(env | grep METIS_PATH)" ] ; then
+      if [ -z "$(env | grep SCOTCH_PATH)" ] ; then
         echo ''
-        echo "[ERROR] METIS_PATH is not defined"
+        echo "[ERROR] SCOTCH_PATH is not defined"
         exit 1
       fi
-      echo "link with parmetis" 
-      libs="$libs $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
+      echo "link with scotch" 
+      libs="$libs $SCOTCH_PATH/lib/libptscotchparmetisv3.a $SCOTCH_PATH/lib/libptscotch.a $SCOTCH_PATH/lib/libscotch.a $SCOTCH_PATH/lib/libscotcherr.a"
     fi
   fi
 

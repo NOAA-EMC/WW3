@@ -677,7 +677,7 @@ module yowpdlibMain
     endif
 
     !if(debugParmetis) write(710+myrank,*) "Run ParMETIS now..."
-    call ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
+    call SCOTCH_ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
                                   vwgt, & !vwgt - ignore weights
                                   adjwgt, & ! adjwgt - ignore weights
                                   wgtflag, &

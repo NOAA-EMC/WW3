@@ -78,31 +78,35 @@
 # Intel compiler on Linux ----------------------------------------------------
 # 2.b.1 Build options and determine compiler name
 
-# opt="-c $list -g -ggdb -fno-omit-frame-pointer -ffree-line-length-none -fbacktrace -Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument -fcheck=all -fsanitize=address -fsanitize=undefined -ffpe-trap=invalid,zero,overflow -DPDLIB -J$path_m"
- opt="-c $list -traceback -O0 -g -check noarg_temp_created -check all -warn interfaces,nouncalled -gen-interface -assume byterecl -no-wrap-margin -module $path_m"
+# opt="-c $list -g -ggdb -fno-omit-frame-pointer -ffree-line-length-none -fbacktrace -Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument -fcheck=all -fsanitize=address -fsanitize=undefined -ffpe-trap=invalid,overflow -DPDLIB -J$path_m"
+# opt="-c $list -g -ggdb -fno-omit-frame-pointer -ffree-line-length-none -fbacktrace -Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument -fcheck=all -DPDLIB -J$path_m"
+ opt="-c $list -g -ffree-line-length-none -DPDLIB -J$path_m"
+
+# opt="-c $list -g -ggdb -ffree-line-length-none -fbacktrace -DPDLIB -J$path_m"
+# opt="-c $list -traceback -O0 -g -check noarg_temp_created -check all -warn interfaces,nouncalled -gen-interface -assume byterecl -no-wrap-margin -module $path_m"
 # opt="-c $list -O1 -axSSE4.2 -prec-div -assume byterecl -DCGTABLE -DPDLIB -no-wrap-margin -g -traceback -module $path_m"
 # opt="-c $list -O3 -ipo -axSSE4.2 -prec-div -assume byterecl -DCGTABLE -DPDLIB -no-wrap-margin -g -traceback -module $path_m"
 
   if [ "$name" != 'ww3_gspl' ]
   then
-    opt="$opt -convert big_endian"
+    opt="$opt -fconvert=big-endian"
   fi
 
   # mpi implementation
   if [ "$mpi_mod" = 'yes' ]
   then
-    comp=mpiifort
-    which mpiifort 1> /dev/null 2> /dev/null
+    comp=mpif90
+    which mpif90 1> /dev/null 2> /dev/null
     OK=$?
     if [ $OK != 0 ]
     then 
-      comp=ifort
-      #comp=gfortran
+      #comp=ifort
+      comp=gfortran
     fi
     
   else
-    comp=ifort
-    #comp=gfortran
+    #comp=ifort
+    comp=gfortran
   fi
 
   # open mpi implementation
@@ -122,7 +126,7 @@
   then
     case $WWATCH3_NETCDF in
       NC3) opt="$opt -I$NETCDF_INCDIR" ;;
-      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIGF --fc`"; fi
            opt="$opt -I`$NETCDF_CONFIG --includedir`" ;;
     esac
   fi
