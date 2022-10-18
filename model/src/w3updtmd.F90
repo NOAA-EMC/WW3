@@ -691,18 +691,12 @@ CONTAINS
     !
 #ifdef W3_RWND
     IF ( FLCUR ) THEN
-#endif
-      !
-#ifdef W3_RWND
       DO ISEA=1, NSEA
         UXR        = UA(ISEA)*COS(UD(ISEA)) - RWINDC*CX(ISEA)
         UYR        = UA(ISEA)*SIN(UD(ISEA)) - RWINDC*CY(ISEA)
         U10 (ISEA) = MAX ( 0.001 , SQRT(UXR**2+UYR**2) )
         U10D(ISEA) = MOD ( TPI+ATAN2(UYR,UXR) , TPI )
       END DO
-#endif
-      !
-#ifdef W3_RWND
     ELSE
 #endif
       !
@@ -735,22 +729,16 @@ CONTAINS
     !
 #ifdef W3_STAB2
     STAB0  = ZWIND * GRAV / 273.
-#endif
     !
-#ifdef W3_STAB2
     DO ISEA=1, NSEA
       STAB   = STAB0 * AS(ISEA) / MAX(5.,U10(ISEA))**2
       STAB   = MAX ( -1. , MIN ( 1. , STAB ) )
-#endif
       !
-#ifdef W3_STAB2
       THARG1 = MAX ( 0. , FFNG*(STAB-OFSTAB))
       THARG2 = MAX ( 0. , FFPS*(STAB-OFSTAB))
       COR1   = CCNG * TANH(THARG1)
       COR2   = CCPS * TANH(THARG2)
-#endif
       !
-#ifdef W3_STAB2
       ASF(ISEA) = SQRT ( (1.+COR1+COR2)/SHSTAB )
       U10(ISEA) = U10(ISEA) / ASF(ISEA)
     END DO
@@ -1181,9 +1169,6 @@ CONTAINS
 #ifdef W3_T
     HSIG   = 0.
     MAPOUT = 0
-#endif
-    !
-#ifdef W3_T
     DO ISEA=IAPROC, NSEA, NAPROC
       JSEA   = 1 + (ISEA-1)/NAPROC
       ETOT   = 0.
@@ -1199,9 +1184,6 @@ CONTAINS
       HSIG  (IX,IY) = 4. * SQRT ( ETOT * DTH )
       MAPOUT(IX,IY) = 1
     END DO
-#endif
-    !
-#ifdef W3_T
     IX0    = 1
     DO
       IXN    = MIN ( NX , IX0+NXP-1 )
@@ -2340,9 +2322,6 @@ CONTAINS
           ITH         = MAPTH(ISPEC)
           OUT(IK,ITH) = A(ITH,IK,JSEA) * SIG(IK) / CG(IK,ISEA)
         END DO
-#endif
-        !
-#ifdef W3_T3
         CALL PRT2DS ( NDST, NK, NK, NTH, OUT, SIG, ' ',    &
              TPI, 0., 1.E-5, 'F(f,th)', 'm2s', 'After' )
 #endif
@@ -2382,9 +2361,6 @@ CONTAINS
 #ifdef W3_T
 9000 FORMAT ( ' TEST W3ULEV : KDMAX    :',F6.1/                   &
          '               RDKMIN   :',F8.3)
-#endif
-    !
-#ifdef W3_T
 9010 FORMAT ( ' TEST W3ULEV : TIME     :',I9.8,I7.6/              &
          '               OLD TLEV :',I9.8,I7.6)
 9011 FORMAT ( '               NEW TLEV :',I9.8,I7.6)
@@ -2846,9 +2822,7 @@ CONTAINS
             TRIX(IXY) = EXP(-ICE(ISEA)*DX/FICEL)
             TRIY(IXY) = EXP(-ICE(ISEA)*DY/FICEL)
           ELSE
-#endif
             ! Otherwise: original Tolman expression (Tolman 2003)
-#ifdef W3_IC0
             LICE0  = FICE0*DX
             LICEN  = FICEN*DX
             TRIX(IXY) = ( LICEN - ICE(ISEA)*DX ) / ( LICEN - LICE0 )
@@ -2867,9 +2841,7 @@ CONTAINS
             LICEN  = FICEN*DY
             TRIY(IXY) = ( LICEN - ICE(ISEA)*DY ) / ( LICEN - LICE0 )
           END IF
-#endif
           !
-#ifdef W3_IC0
           TRIX(IXY) = MAX ( 0. , MIN ( 1. , TRIX(IXY) ) )
           TRIY(IXY) = MAX ( 0. , MIN ( 1. , TRIY(IXY) ) )
         END IF

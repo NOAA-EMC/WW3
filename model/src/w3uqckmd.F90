@@ -258,9 +258,6 @@ CONTAINS
       END DO
     END DO
     QMAX   = MAX ( 0.01*QMAX , 1.E-10 )
-#endif
-    !
-#ifdef W3_T0
     WRITE (NDST,9001) 'CFLL'
     DO IY=NY,1,-1
       WRITE (NDST,9002) (NINT(100.*CFLL(IY+(IX-1)*MY)),IX=1,NX)
@@ -653,9 +650,6 @@ CONTAINS
       END DO
     END DO
     QMAX   = MAX ( 0.01*QMAX , 1.E-10 )
-#endif
-    !
-#ifdef W3_T0
     WRITE (NDST,9001) 'VELO'
     DO IY=NY,1,-1
       WRITE (NDST,9002) (NINT(100.*VELO(IY+(IX-1)*MY)           &
@@ -1056,9 +1050,6 @@ CONTAINS
       END DO
     END DO
     QMAX   = MAX ( 0.01*QMAX , 1.E-10 )
-#endif
-    !
-#ifdef W3_T0
     WRITE (NDST,9001) 'CFLL'
     DO IY=NY,1,-1
       WRITE (NDST,9002) (NINT(100.*CFLL(IY+(IX-1)*MY)),IX=1,NX)
