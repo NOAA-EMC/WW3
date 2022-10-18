@@ -1033,9 +1033,6 @@ CONTAINS
     INTEGER                 :: JGRID, NLOW
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DMO2')
 #endif
     !
@@ -1231,9 +1228,6 @@ CONTAINS
     INTEGER                 :: JGRID
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DMO3')
 #endif
     !
@@ -1403,9 +1397,6 @@ CONTAINS
     INTEGER                 :: JGRID
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DMO5')
 #endif
     !
@@ -1610,9 +1601,6 @@ CONTAINS
     INTEGER                 :: J
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3SETO')
 #endif
     !

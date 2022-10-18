@@ -538,9 +538,6 @@ CONTAINS
         DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
     CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
          0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
 #endif
@@ -802,9 +799,6 @@ CONTAINS
         DOUT(IK,ITH) = D(ITH,IK)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
     CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
          0.0, 0.001, 'Diag Sds', ' ', 'NONAME')
 #endif
@@ -1017,9 +1011,7 @@ CONTAINS
              (NINT(ENORM*ERR(IDRAG)),IDRAG=IE1+1,NRDRAG-1)
       ENDIF
     END DO
-#endif
     !
-#ifdef W3_T1
     WRITE (NDST,9030)
     IE1    = MIN (30,NRDRAG)
     ENORM  = 1000. / ABS(BETATB(0,NRDRAG))
@@ -1062,9 +1054,6 @@ CONTAINS
          '               ISIGA, SIGA, TABLE (x1000)')
 9021 FORMAT (1X,I4,F7.2,35I3)
 9022 FORMAT (12X,35I3)
-#endif
-    !
-#ifdef W3_T1
 9030 FORMAT (/' TEST INPTAB : ERROR DUE TO SIGA, NORMALIZED WITH ',  &
          'BETATB(ISIGA,NRDRAG)'/                            &
          '               ISIGA, SIGA, TABLE (x1000)')
