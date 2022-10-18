@@ -1604,9 +1604,6 @@ CONTAINS
 #endif
 #ifdef W3_FLX2
     WRITE (NDSO,810)
-#endif
-    !
-#ifdef W3_FLX2
     CINXSI =    0.20
     NITTIN =    3
 #endif
@@ -1615,9 +1612,6 @@ CONTAINS
     NITTIN =    3
     CDMAX  =    2.5E-3
     CTYPE  =    0
-#endif
-    !
-#ifdef W3_FLX3
     CALL READNL ( NDSS, 'FLX3', STATUS )
     WRITE (NDSO,810) STATUS
     CDMAX  = MAX ( 0. , CDMAX )
@@ -1656,9 +1650,6 @@ CONTAINS
     CLIN   = 80.
     RFPM   =  1.
     RFHF   =  0.5
-#endif
-    !
-#ifdef W3_LN1
     CALL READNL ( NDSS, 'SLN1', STATUS )
     WRITE (NDSO,820) STATUS
     CLIN   = MAX (0.,CLIN)
@@ -1830,17 +1821,11 @@ CONTAINS
     ELSE
       NLPROP =  2.78E7
     END IF
-#endif
-    !
-#ifdef W3_NL1
     KDCONV =  0.75
     KDMIN  =  0.50
     SNLCS1 =  5.5
     SNLCS2 =  0.833
     SNLCS3 = -1.25
-#endif
-    !
-#ifdef W3_NL1
     CALL READNL ( NDSS, 'SNL1', STATUS )
     WRITE (NDSO,922) STATUS
     WRITE (NDSO,923) LAMBDA, NLPROP, KDCONV, KDMIN,            &
@@ -2204,9 +2189,7 @@ CONTAINS
     SSDSC(19)  = SDSNMTF
     SSDSC(20)  = SDSCUMP
     SSDSC(21)  = SDSNUW
-#endif
     !
-#ifdef W3_ST4
     SSDSBR   = SDSBR
     SSDSBRF1 = SDSBRF1
     SSDSBRFDF= SDSBRFDF
@@ -2269,9 +2252,6 @@ CONTAINS
     !
 #ifdef W3_BT1
     GAMMA  = -0.067
-#endif
-    !
-#ifdef W3_BT1
     CALL READNL ( NDSS, 'SBT1', STATUS )
     WRITE (NDSO,926) STATUS
     WRITE (NDSO,927) GAMMA
@@ -2313,9 +2293,6 @@ CONTAINS
     BJALFA = 1.
     BJGAM  = 0.73
     BJFLAG = .TRUE.
-#endif
-    !
-#ifdef W3_DB1
     CALL READNL ( NDSS, 'SDB1', STATUS )
     WRITE (NDSO,928) STATUS
     BJALFA = MAX ( 0. , BJALFA )
@@ -2595,9 +2572,6 @@ CONTAINS
     WRITE (NDSO,1950)
     WRITE (NDSO,1951) PNSMC
     WRITE (NDSO,1953) CFLSM, DTIMS/3600., RFMAXD
-#endif
-    !
-#ifdef W3_SMC
     FUNO3  = UNO3
     FVERG  = AVERG
     FSWND  = SEAWND
@@ -2782,9 +2756,7 @@ CONTAINS
     IS2DAMP=0.
     IS2CREEPB=0.
     IS2CREEPC=0.4     ! This gives an impact of break-up over a wider freq. range
-#endif
     !                            ! compared to the 0.2 value in Boutin et al. 2018
-#ifdef W3_IS2
     IS2CREEPD=0.5
     IS2CREEPN=3.0
     IS2BREAKE=1.
@@ -2813,9 +2785,7 @@ CONTAINS
     REFSUBGRID=0.
     REFICEBERG=0.
     REFUNSTSOURCE=0.
-#endif
     !
-#ifdef W3_REF1
     CALL READNL ( NDSS, 'REF1', STATUS )
     WRITE (NDSO,969) STATUS
 #endif
@@ -2832,9 +2802,6 @@ CONTAINS
     IGKDMIN = 1.1
     IGFIXEDDEPTH = 0.
     IGEMPIRICAL = 0.00125
-#endif
-    !
-#ifdef W3_IG1
     CALL READNL ( NDSS, 'SIG1 ', STATUS )
     WRITE (NDSO,970) STATUS
 #endif
@@ -4138,9 +4105,7 @@ CONTAINS
       !! Overwrite 2 parameters for SMC grid.  JGLi03Mar2021
       DTMS   = DTIMS
       CTMAX  = CFLSM
-#endif
       !
-#ifdef W3_SMC
       IF (FLGNML) THEN
         NDSTR = NML_SMC%MCELS%IDF
         IDLA = NML_SMC%MCELS%IDLA
@@ -4285,10 +4250,7 @@ CONTAINS
         WRITE (NDSO,4014) NBISMC, NBICelin(NBISMC)
         WRITE (NDSO,*) ' '
       ENDIF
-
-#endif
       !
-#ifdef W3_SMC
       !! 7.j  Read Arctic grid cell and boundary cell integer arrays.
       IF( ARCTC ) THEN
 
@@ -4863,9 +4825,7 @@ CONTAINS
 #ifdef W3_T
       ALLOCATE ( MAPOUT(NX,NY) )
       MAPOUT = 0
-#endif
       !
-#ifdef W3_T
       IX3    = 1 + NX/60
       IY3    = 1 + NY/60
       CALL PRTBLK (NDST, NX, NY, NX, ZBIN, MAPOUT, 1, 0.,          &
@@ -4926,9 +4886,6 @@ CONTAINS
 #ifdef W3_SMC
       !!Li SMC grid definition of mapping arrays.
     ELSE
-#endif
-      !
-#ifdef W3_SMC
       !!Li  Pass refined level cell and face counts to NLv*(NRLv)
       NLvCel(0)=0
       NLvUFc(0)=0
@@ -5103,10 +5060,6 @@ CONTAINS
           MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
         ENDDO
       ENDIF
-
-#endif
-      !
-#ifdef W3_SMC
       !Li   Define rotation angle for Arctic cells.
       IF( ARCTC ) THEN
 
@@ -5136,9 +5089,6 @@ CONTAINS
         WRITE (NDSO,4037)  NARC
         WRITE (NDSO,4038) (ANGARC(ix), ix=1,NARC,NARC/8)
 
-#endif
-        !
-#ifdef W3_SMC
         !Li   Mapping Arctic boundary cells with inner model cells
         DO IP=1, NBAC
           IX=IJKCel(1,IP+NGLO)
@@ -5161,9 +5111,6 @@ CONTAINS
         CTHG0S(NCel)=0.0
 
       ENDIF  !! ARCTC section.
-#endif
-      !
-#ifdef W3_SMC
     ENDIF  !! (GTYPE .NE. SMCTYPE) ELSE SMCTYPE block.
 #endif
     !
@@ -5452,16 +5399,11 @@ CONTAINS
         IY = MAPSF(ISEA,2)
         REFLC(3,ISEA) = REFS(IX,IY)*REFMAP
       END DO
-#endif
-      !
-#ifdef W3_REF1
       NMAPB  = 1 + (NX-1)/NCOL
       WRITE (NDSO,1105) NMAPB
 #endif
-#ifdef W3_T
-#ifdef W3_REF1
+#if defined W3_T && defined W3_REF1
       WRITE(NDSO,*) 'Maximum slope for reflection:',MAXVAL(REFS*REFMAP)
-#endif
 #endif
       !
 #ifdef W3_REF1
@@ -5469,12 +5411,10 @@ CONTAINS
         IX0    = 1 + (IMAPB-1)*NCOL
         IXN    = MIN ( NX , IMAPB*NCOL )
 #endif
-#ifdef W3_T
-#ifdef W3_REF1
+#if defined W3_T && defined W3_REF1
         DO IY=NY,1,-1
           WRITE (NDSO,1101) (NINT(100.*REFS(IX,IY)*REFMAP),IX=IX0,IXN)
         END DO
-#endif
 #endif
 #ifdef W3_REF1
         WRITE (NDSO,*) ' '
@@ -7030,9 +6970,6 @@ CONTAINS
 1014 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
          '   SMC CELL LONGITUDE RANGE OUTSIDE BASE GRID RANGE:'/&
          '   ISEA =', I6, '; IX =', I4, ':', I4,'; NX =', I4/)
-#endif
-    !
-#ifdef W3_SMC
 1015 FORMAT (/' *** WAVEWATCH-III ERROR IN W3GRID :'/                &
          '   SMC CELL LATITUDE RANGE OUTSIDE BASE GRID RANGE: '/&
          '   ISEA =', I6, '; IY =', I4, ':', I4,'; NY =', I4/)
@@ -7076,9 +7013,6 @@ CONTAINS
 1052 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
          '     WITH NAMELIST VALUE PLAT == 90, PLON MUST BE -180'/ &
          '     AND UNROT MUST BE .FALSE.' )
-#endif
-    !
-#ifdef W3_RTD
 1053 FORMAT (/' *** WAVEWATCH III ERROR IN W3GRID :'/                &
          '     WITH NAMELIST VALUE BPLAT == 90, BPLON MUST BE -180')
 #endif
