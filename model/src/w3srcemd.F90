@@ -940,8 +940,7 @@ CONTAINS
            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined W3_DEBUGSRC && defined W3_ST4
       IF (IX == DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) '1: out value USTAR=', USTAR, ' USTDIR=', USTDIR
         WRITE(740+IAPROC,*) '1: out value EMEAN=', EMEAN, ' FMEAN=', FMEAN
@@ -950,7 +949,6 @@ CONTAINS
         WRITE(740+IAPROC,*) '1: out value ALPHA=', CHARN, ' FMEANWS=', FMEANWS
       END IF
 #endif
-#endif
 
 #ifdef W3_ST4
       CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
@@ -958,8 +956,7 @@ CONTAINS
            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
     END IF
 #endif
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined W3_DEBUGSRC && defined W3_ST4
     IF (IX == DEBUG_NODE) THEN
       WRITE(740+IAPROC,*) '1: U10DIR=', U10DIR, ' Z0=', Z0, ' CHARN=', CHARN
       WRITE(740+IAPROC,*) '1: USTAR=', USTAR, ' U10ABS=', U10ABS, ' AS=', AS
@@ -970,7 +967,6 @@ CONTAINS
       WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
       WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
     END IF
-#endif
 #endif
 
 #ifdef W3_ST4
@@ -1031,9 +1027,7 @@ CONTAINS
 #endif
 #ifdef W3_ST4
     ! Introduces a Long & Resio (JGR2007) type dependance on wave age
-#endif
-    ! !/ST4      FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
-#ifdef W3_ST4
+    !      FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
     FAGE   = 0.
     FHIGH  = MAX( (FFXFM + FAGE ) * MAX(FMEAN1,FMEANWS), FFXPM / USTAR)
     FHIGI  = FFXFA * FMEAN1
@@ -1097,13 +1091,11 @@ CONTAINS
            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 #endif
 
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined W3_DEBUGSRC && defined W3_ST4
       IF (IX == DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
         WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
       END IF
-#endif
 #endif
 
 #ifdef W3_ST6
@@ -1158,13 +1150,11 @@ CONTAINS
            VDDS, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
 #endif
 
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined W3_DEBUGSRC && defined W3_ST4
       IF (IX == DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VSDS=', minval(VSDS), maxval(VSDS), sum(VSDS)
         WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VDDS=', minval(VDDS), maxval(VDDS), sum(VDDS)
       END IF
-#endif
 #endif
 
 #ifdef W3_ST6
@@ -1227,9 +1217,6 @@ CONTAINS
 8888  FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
       WRITE (NDSD,ERR=801,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
            DTTOT, FLAGNN, DEPTH, U10ABS, U10DIR
-#endif
-      !
-#ifdef W3_NNT
       IF ( FLAGNN ) THEN
         DO IK=1, NK
           FACNN  = TPI * SIG(IK) / CG1(IK)
@@ -1670,9 +1657,6 @@ CONTAINS
       FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
-#endif
-      !
-#ifdef W3_ST1
       IF ( FLTEST ) WRITE (NDST,9060)                           &
            FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 #endif
@@ -1683,9 +1667,6 @@ CONTAINS
       DFH    = FHIGH - FHTRAN
       NKH    = MAX ( 1 ,                                        &
            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHTRAN)) ) )
-#endif
-      !
-#ifdef W3_ST2
       IF ( FLTEST ) WRITE (NDST,9061) FHTRAN, FHIGH, NKH
 #endif
       !
@@ -1695,9 +1676,6 @@ CONTAINS
       FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
-#endif
-      !
-#ifdef W3_ST3
       IF ( FLTEST ) WRITE (NDST,9062)                           &
            FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 #endif
@@ -1706,9 +1684,6 @@ CONTAINS
       ! Introduces a Long & Resio (JGR2007) type dependance on wave age
       FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
       FH1    = (FFXFM+FAGE) * FMEAN1
-#endif
-
-#ifdef W3_ST4
       FH2    = FFXPM / USTAR
       FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
@@ -1723,9 +1698,6 @@ CONTAINS
       ENDIF
       NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
            INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
-#endif
-      !
-#ifdef W3_ST6
       IF ( FLTEST ) WRITE (NDST,9063) FHIGH*TPIINV, NKH
 #endif
       !
@@ -1827,9 +1799,6 @@ CONTAINS
 800 CONTINUE
     WRITE (NDSE,8000) FNAME, IERR
     CALL EXTCDE (1)
-#endif
-    !
-#ifdef W3_NNT
 801 CONTINUE
     WRITE (NDSE,8001) IERR
     CALL EXTCDE (2)
@@ -2087,9 +2056,7 @@ CONTAINS
            REFLEC, REFLED, TRNX, TRNY,  &
            BERG, DTG, IX, IY,  VREF )
       IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
-#endif
         !AR: this can be further simplified let's do some simple tests 1st ...
-#ifdef W3_REF1
         IF (IOBP(IX).EQ.0) THEN
           DO IK=1, NK
             DO ITH=1, NTH
@@ -2135,50 +2102,35 @@ CONTAINS
 9001 FORMAT (' TEST W3SRCE : DEPTH      :',F8.1/                     &
          '               WIND SPEED :',F8.1/                     &
          '               WIND DIR   :',F8.1)
+9020 FORMAT (' TEST W3SRCE : NSTEP : ',I4,'    DTTOT :',F6.1)
+9021 FORMAT (' TEST W3SRCE : NKH (3X)   : ',2I3,I6)
+9040 FORMAT (' TEST W3SRCE : DTRAW, DT, SHAVE :',2F6.1,2X,L1)
 #endif
 #ifdef W3_ST1
 9004 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
          ' ------------- NEW DYNAMIC INTEGRATION LOOP',          &
          ' ------------- ')
+9060 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
+         '               NKH        : ',I3)
 #endif
 #ifdef W3_ST2
 9005 FORMAT (' TEST W3SRCE : FHIGH      : ',F8.4/                    &
          ' ------------- NEW DYNAMIC INTEGRATION LOOP',          &
          ' ------------- ')
-#endif
-#ifdef W3_ST3
-9006 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
-         ' ------------- NEW DYNAMIC INTEGRATION LOOP',          &
-         ' ------------- ')
-#endif
-#ifdef W3_ST4
-9006 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
-         ' ------------- NEW DYNAMIC INTEGRATION LOOP',          &
-         ' ------------- ')
-#endif
-    !
-#ifdef W3_T
-9020 FORMAT (' TEST W3SRCE : NSTEP : ',I4,'    DTTOT :',F6.1)
-9021 FORMAT (' TEST W3SRCE : NKH (3X)   : ',2I3,I6)
-#endif
-    !
-#ifdef W3_T
-9040 FORMAT (' TEST W3SRCE : DTRAW, DT, SHAVE :',2F6.1,2X,L1)
-#endif
-    !
-#ifdef W3_ST1
-9060 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
-         '               NKH        : ',I3)
-#endif
-#ifdef W3_ST2
 9061 FORMAT (' TEST W3SRCE : FHIGH (2X) : ',2F8.4/                   &
          '               NKH        : ',I3)
 #endif
 #ifdef W3_ST3
+9006 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
+         ' ------------- NEW DYNAMIC INTEGRATION LOOP',          &
+         ' ------------- ')
 9062 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
          '               NKH        : ',I3)
 #endif
 #ifdef W3_ST4
+9006 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
+         ' ------------- NEW DYNAMIC INTEGRATION LOOP',          &
+         ' ------------- ')
 9062 FORMAT (' TEST W3SRCE : FHIGH (3X) : ',3F8.4/                   &
          '               NKH        : ',I3)
 #endif
