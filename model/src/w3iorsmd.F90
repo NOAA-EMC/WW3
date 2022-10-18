@@ -641,9 +641,7 @@ CONTAINS
           !
 #ifdef W3_MPI
         ELSE
-#endif
           !
-#ifdef W3_MPI
           IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
 #endif
 #ifdef W3_TIMINGS
@@ -657,9 +655,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
           ELSE
-#endif
 
-#ifdef W3_MPI
             IF ( IAPROC .NE. NAPRST ) THEN
               NRQ    = 1
             ELSE IF ( NAPRST .LE. NAPROC ) THEN
@@ -667,25 +663,17 @@ CONTAINS
             ELSE
               NRQ    = NAPROC
             END IF
-#endif
             !
-#ifdef W3_MPI
             ALLOCATE ( STAT1(MPI_STATUS_SIZE,NRQ) )
             IF ( IAPROC .EQ. NAPRST ) CALL MPI_STARTALL    &
                  ( NRQ, IRQRSS, IERR_MPI )
-#endif
             !
-#ifdef W3_MPI
             DO IB=1, NBLKRS
               ISEA0  = 1 + (IB-1)*RSBLKS*NAPROC
               ISEAN  = MIN ( NSEA , IB*RSBLKS*NAPROC )
-#endif
               !
-#ifdef W3_MPI
               IF ( IAPROC .EQ. NAPRST ) THEN
-#endif
                 !
-#ifdef W3_MPI
                 IH     = 1 + NRQ * (IB-1)
                 CALL MPI_WAITALL                         &
                      ( NRQ, IRQRSS(IH), STAT1, IERR_MPI )
@@ -694,9 +682,7 @@ CONTAINS
                   CALL MPI_STARTALL                    &
                        ( NRQ, IRQRSS(IH), IERR_MPI )
                 END IF
-#endif
                 !
-#ifdef W3_MPI
                 DO ISEA=ISEA0, ISEAN
                   NREC   = ISEA + 2
                   CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, IP)
@@ -711,25 +697,17 @@ CONTAINS
                   WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) &
                        WRITEBUFF
                 END DO
-#endif
                 !
-#ifdef W3_MPI
               ELSE
-#endif
                 !
-#ifdef W3_MPI
                 CALL MPI_STARTALL                        &
                      ( 1, IRQRSS(IB), IERR_MPI )
                 CALL MPI_WAITALL                         &
                      ( 1, IRQRSS(IB), STAT1, IERR_MPI )
-#endif
                 !
-#ifdef W3_MPI
               END IF
             END DO
-#endif
             !
-#ifdef W3_MPI
             DEALLOCATE ( STAT1 )
           END IF
 #endif
@@ -1473,9 +1451,7 @@ CONTAINS
 9006 FORMAT (' TEST W3IORS : SPECTRA PROCESSED ')
 9007 FORMAT (' TEST W3IORS : WATER LEVELS ETC. PROCESSED ')
 9008 FORMAT (' TEST W3IORS : WATER LEVELS ETC. PROCESSED (DUMMY)')
-#endif
     !
-#ifdef W3_T
 9020 FORMAT (' TEST W3IORS : RSTYPE = ',A,', PERFORMED BY W3INIT')
 #endif
     !/

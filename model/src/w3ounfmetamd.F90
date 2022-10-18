@@ -2732,9 +2732,7 @@ CONTAINS
     META(1)%VARNG='ice_thickness'
     META(1)%VMIN = 0
     META(1)%VMAX = 30
-#endif
     ! IFI=1, IFJ=12, IC5
-#ifdef W3_IS2
     META => GROUP(1)%FIELD(12)%META
     META(1)%FSC = 0.05
     META(1)%UNITS = 'm'

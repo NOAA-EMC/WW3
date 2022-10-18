@@ -184,9 +184,6 @@ CONTAINS
     INTEGER         :: ISPECI, ISPEC, IK, ITH, ITH2, ITH3, ITH2X, ITH2Y, &
          NRS, IK1
     INTEGER         :: ISEA, ICALC, IOBPDIP(NTH)
-#ifdef W3_S
-    INTEGER, SAVE           :: IENT = 0
-#endif
     LOGICAL         :: IGBCOVERWRITE, IGSWELLMAX
     REAL            :: R1, R2, R3, R4, R2X, R2Y, DEPTHIG
     REAL            :: DELA, DELX, DELY, FACX
@@ -199,10 +196,8 @@ CONTAINS
     REAL           :: ATMP(NSPEC),ATMP2(NSPEC), STMP1(NSPEC),      &
          STMP2(NSPEC), WNB(NK), CGB(NK), SIX, IGFAC1, IGFAC2
 #endif
-    !/
-    !/ ------------------------------------------------------------------- /
-    !/
 #ifdef W3_S
+    INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3SREF')
 #endif
     !
@@ -211,9 +206,7 @@ CONTAINS
 #ifdef W3_IG1
     IGBCOVERWRITE =(MOD( NINT(IGPARS(4)),2).EQ.1)
     IGSWELLMAX =( NINT(IGPARS(4)).GE.2)
-#endif
     ! This following line is a quick fix before the bug is understood ....
-#ifdef W3_IG1
     IF (GTYPE.EQ.UNGTYPE) IGSWELLMAX =.FALSE.
     IGFAC1 = 0.25
     IGFAC2 = 0.25

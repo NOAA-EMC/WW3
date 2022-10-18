@@ -834,42 +834,32 @@ CONTAINS
       SELECT CASE(TRIM(TESTSTR(1:6)))
         !
         !
-        ! OCEAM MODEL VARIABLES
+        ! OCEAN MODEL VARIABLES
         !
 #ifdef W3_OASOCM
       CASE('DRY')
         ! wet-drying at the middle of the cell
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDH'
-#endif
         !
-#ifdef W3_OASOCM
         ! wet-drying at u-location
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
-#endif
         !
-#ifdef W3_OASOCM
         ! wet-drying at v-location
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDV'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('SSH')
         ! ssh : sea surface height (m)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__SSH'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('CUR')
         ! uz : sea surface zonal currents (m.s-1)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OSSU'
-#endif
         !
-#ifdef W3_OASOCM
         ! vz : sea surface meridional currents (m.s-1)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OSSV'
@@ -884,28 +874,20 @@ CONTAINS
         ! U10 : 10m u-wind speed (m.s-1)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__U10'
-#endif
         !
-#ifdef W3_OASACM
         ! V10 : 10m v-wind speed (m.s-1)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__V10'
-#endif
         !
-#ifdef W3_OASACM
       CASE('TAU')
         ! UTAUA : u-momentum (m2.s-2)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_UTAU'
-#endif
         !
-#ifdef W3_OASACM
         ! V10 : v-momentum speed (m2.s-2)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_VTAU'
-#endif
         !
-#ifdef W3_OASACM
       CASE('RHO')
         ! rhoa : air density (kg.m-3)
         ID_NB_RCV=ID_NB_RCV+1
@@ -921,16 +903,12 @@ CONTAINS
         ! IC1 : ice thickness (m)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__IC1'
-#endif
         !
-#ifdef W3_OASICM
       CASE('IC5')
         ! ICEF : ice floe diameters (m)
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3__IC5'
-#endif
         !
-#ifdef W3_OASICM
       CASE('ICE')
         ! ICE : ice concentration (n.d)
         ID_NB_RCV=ID_NB_RCV+1
@@ -956,184 +934,132 @@ CONTAINS
       SELECT CASE(TRIM(TESTSTR(1:6)))
         !
         !
-        ! OCEAM MODEL VARIABLES
+        ! OCEAN MODEL VARIABLES
         !
 #ifdef W3_OASOCM
       CASE('OHS')
         ! Significant wave height (m)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__OHS'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('DRY')
         ! mask to manage wet-drying
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_ODRY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('T0M1')
         ! T0M1 / wave_t0m1 : mean period (s)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_T0M1'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('T01')
         ! T01 / wave_t01 : mean period (s)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__T01'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('DIR')
         ! THM / wave_thm : cosinus of mean direction (n/a)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_CDIR'
-#endif
         !
-#ifdef W3_OASOCM
         ! THM / wave_thm : sinus of mean direction (n/a)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_SDIR'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('THM')
         ! THM / wave_thm : mean direction (n/a)
         ! exchange the mean direction instead of cos/sin projection
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__DIR'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('BHD')
         ! BHD / wave_bhd : wave-induced Bernoulli head pressure (bhd in N.m-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__BHD'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('TWO')
         ! tauox / wave_tauox : x-component of the wave-ocean momentum flux (tauox in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWOX'
-#endif
         !
-#ifdef W3_OASOCM
         ! tauoy / wave_tauoy : y-component of the wave-ocean momentum flux (tauox in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWOY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('TOC')
         ! tauocx / wave_tauocx : x-component of the total wave-ocean momentum flux (tauocx in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TOCX'
-#endif
         !
-#ifdef W3_OASOCM
         ! tauocy / wave_tauocy : y-component of the total wave-ocean momentum flux (tauocx in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TOCY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('FOC')
         ! phioc / wave_phioc : Wave-to-ocean TKE flux (phioc in W.m-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__FOC'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('TBB')
         ! Momentum flux due to bottom friction, u component (m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TBBX'
-#endif
         !
-#ifdef W3_OASOCM
         ! Momentum flux due to bottom friction, v component (m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TBBY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('FBB')
         ! phibbl / wave_phibbl : Energy flux due to bottom friction (phioc in W.m-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__FBB'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('UBR')
         ! uba / wave_ubrx : x component of the rms amplitude of orbital velocity of the waves (m/s)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_UBRX'
-#endif
         !
-#ifdef W3_OASOCM
         ! uba / wave_ubry : y component of the rms amplitude of orbital velocity of the waves (m/s)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_UBRY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('TAW')
         ! tauwix / wave_tauwix : Net wave-supported stress, u component (tauwix in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TAWX'
-#endif
         !
-#ifdef W3_OASOCM
         ! tauwiy / wave_tauwiy : ! Net wave-supported stress, v component (tauwix in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TAWY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('LM')
         ! wlm / wave_wlm : mean length wave (m)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3___LM'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('WNM')
         ! wnmean / wave_wnmean : mean wave number (m-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__WNM'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('TUS')
         ! Volume transport associated to Stokes drift, u component (m2.s-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TUSX'
-#endif
         !
-#ifdef W3_OASOCM
         ! Volume transport associated to Stokes drift, v component (m2.s-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TUSY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('USS')
         ! Surface Stokes drift, u component (m.s-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_USSX'
-#endif
         !
-#ifdef W3_OASOCM
         ! Surface Stokes drift, v component (m.s-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_USSY'
-#endif
         !
-#ifdef W3_OASOCM
       CASE('OCHA')
         ! Charnock Coefficient (-)
         ID_NB_SND = ID_NB_SND +1
@@ -1148,43 +1074,31 @@ CONTAINS
         ! Significant wave height (m)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3__AHS'
-#endif
         !
-#ifdef W3_OASACM
       CASE('CUR')
         ! Ocean sea surface current (m.s-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_WSSU'
-#endif
         !
-#ifdef W3_OASACM
         ! Ocean sea surface current (m.s-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_WSSV'
-#endif
         !
-#ifdef W3_OASACM
       CASE('ACHA')
         ! Charnock Coefficient (-)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_ACHA'
-#endif
         !
-#ifdef W3_OASACM
       CASE('FP')
         ! Peak frequency (s-1)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3___FP'
-#endif
         !
-#ifdef W3_OASACM
       CASE('TP')
         ! Peak period (s)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3___TP'
-#endif
         !
-#ifdef W3_OASACM
       CASE('FWS')
         ! Wind_sea_mean_period_T0M1 (s)
         ID_NB_SND=ID_NB_SND+1
@@ -1200,16 +1114,11 @@ CONTAINS
         ! Ice floe diameters (m)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_ICEF'
-#endif
         !
-#ifdef W3_OASICM
       CASE('TWI')
         ! TWIX : x stress to ice , u component (twix in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWIX'
-#endif
-        !
-#ifdef W3_OASICM
         ! TWIY : y stress to ice , v component (twiy in m2.s-2)
         ID_NB_SND = ID_NB_SND +1
         SND(ID_NB_SND)%CL_FIELD_NAME='WW3_TWIY'

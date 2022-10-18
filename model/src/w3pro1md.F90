@@ -806,9 +806,6 @@ CONTAINS
     !
 #ifdef W3_T1
 9010 FORMAT (' TEST W3XYP1 : INIT. VFX-YL, ITLOC =',I3)
-#endif
-    !
-#ifdef W3_T1
 9020 FORMAT (' TEST W3XYP1 : ISEA, IXY, FIELD, VCX, VCY')
 9021 FORMAT ('           ',2I8,3E12.4)
 9024 FORMAT (' TEST W3XYP1 : GLOBAL CLOSURE: IY, FIELD, VCX ')
@@ -957,9 +954,6 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: ITH, IK, ISP, ITH0
-#ifdef W3_S
-    INTEGER, SAVE           :: IENT = 0
-#endif
     REAL                    :: FDDMAX, FDG, DCYX, DCXXYY, DCXY,     &
          DCXX, DCXYYX, DCYY, FKD, FKD0, CTHB, &
          CWNB
@@ -967,13 +961,13 @@ CONTAINS
          VAA(1-NTH:NSPEC+NTH), VFLTH(NSPEC),  &
          VFLWN(1-NTH:NSPEC), DSDD(0:NK+1),    &
          FRK(NK), FRG(NK), FKC(NTH), DWNI(NK)
+#ifdef W3_S
+    INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3KTP1')
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3KTP1')
-#endif
-    !
 #ifdef W3_T
     WRITE (NDST,9000) FLCTH, FLCK, FACTH, FACK, CTMAX
     WRITE (NDST,9001) ISEA, DEPTH, CX, CY,                       &
@@ -1032,34 +1026,18 @@ CONTAINS
         VCTH(ISP) = FRG(MAPWN(ISP)) * ECOS(ISP)                   &
              + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
       END DO
-#ifdef W3_DEBUG
-      WRITE(740+IAPROC,*) 'pro1 FACTH=', FACTH
-      WRITE(740+IAPROC,*) 'pro1 CTHG0=', CTHG0
-      WRITE(740+IAPROC,*) 'pro1 FDG=', FDG
-      WRITE(740+IAPROC,*) 'pro1 FDDMAX=', FDDMAX
-      WRITE(740+IAPROC,*) 'pro1 sum(FRK)=', sum(FRK)
-      WRITE(740+IAPROC,*) 'pro1 sum(FRG)=', sum(FRG)
-      WRITE(740+IAPROC,*) 'pro1 sum(DSDD)=', sum(DSDD)
-      WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' sum(VCTH)=', sum(VCTH)
-      FLUSH(740+IAPROC)
-#endif
-
       !
 #ifdef W3_REFRX
       ! 2.c @C/@x refraction and great-circle propagation
       VCTH = 0.
       FRK  = 0.
       FDDMAX = 0.
-#endif
       !
-#ifdef W3_REFRX
       DO ISP=1, NSPEC
         FDDMAX = MAX ( FDDMAX , ABS (                      &
              ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
       END DO
-#endif
       !
-#ifdef W3_REFRX
       DO IK=1, NK
         FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
         FRK(IK) = FRK(IK) / MAX ( 1. , FRK(IK)*FDDMAX/CTMAX )
