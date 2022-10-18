@@ -249,7 +249,7 @@ PROGRAM W3OUNP
   INTEGER, SAVE           :: IENT   = 0
 #endif
 #ifdef W3_NCO
-  INTEGER                 :: NDSTAB, NDST
+  INTEGER                 :: NDSTAB
 #endif
   !
   INTEGER, ALLOCATABLE    :: INDREQ(:), INDREQTMP(:)
