@@ -1396,9 +1396,6 @@ CONTAINS
         !
 #ifdef W3_IS2
         IF ( FLIC5 .AND. DTI50.NE.0. ) THEN
-#endif
-          !
-#ifdef W3_IS2
           IF ( TIC5(1).GE.0 ) THEN
             IF ( DTI50 .LT. 0. ) THEN
               IDACT(18:18) = 'B'
@@ -1409,18 +1406,12 @@ CONTAINS
           ELSE
             IDACT(18:18) = 'I'
           END IF
-#endif
-          !
-#ifdef W3_IS2
           IF ( IDACT(18:18).NE.' ' ) THEN
             CALL W3UIC5( FLFRST )
             DTI50   = 0.
             FLACT  = .TRUE.
             FLMAP  = .TRUE.
           END IF
-#endif
-          !
-#ifdef W3_IS2
         END IF
 #endif
 
@@ -1624,9 +1615,6 @@ CONTAINS
               DELY=HQFAC(IY,IX)/ FACX
               DELA=DELX*DELY
             END IF
-#endif
-            !
-#ifdef W3_REF1
             REFLEC=REFLC(:,ISEA)
             REFLEC(4)=BERG(ISEA)*REFLEC(4)
             REFLED=REFLD(:,ISEA)
@@ -1973,18 +1961,11 @@ CONTAINS
             !
 #ifdef W3_PDLIB
             IF ((FSTOTALIMP .eqv. .FALSE.).and.(FLCX .or. FLCY)) THEN
-#endif
-#ifdef W3_PDLIB
               DO ISPEC=1,NSPEC
                 CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
                      VGX, VGY, UGDTUPDATE )
               END DO
-#endif
-#ifdef W3_PDLIB
             END IF
-#endif
-            !
-#ifdef W3_PDLIB
             IF (FSTOTALIMP .and. (IT .ne. 0)) THEN
 #endif
 #ifdef W3_DEBUGCOH
@@ -1992,14 +1973,8 @@ CONTAINS
 #endif
 #ifdef W3_PDLIB
               CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY)
-#endif
-#ifdef W3_PDLIB
             ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
-#endif
-#ifdef W3_PDLIB
               CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY)
-#endif
-#ifdef W3_PDLIB
             ENDIF
 #endif
           ELSE
@@ -2145,9 +2120,6 @@ CONTAINS
                   !
 #ifdef W3_SMC
                 END DO   !! Loop IK ends.
-#endif
-                !
-#ifdef W3_SMC
                 !!Li    Update Arctic boundary cell spectra if within local range
                 ALLOCATE ( BACSPEC(NSPEC) )
                 DO IK = 1, NBAC
@@ -2304,8 +2276,7 @@ CONTAINS
             REFLEC(:)=0.
             REFLED(:)=0
             PSIC=0.
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGSRC
+#if defined W3_PDLIB && defined W3_DEBUGSRC
             WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
             CALL ALL_VAOLD_INTEGRAL_PRINT("VAOLD before W3SRCE_IMP_POST", 1)
             CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA before W3SRCE_IMP_POST", 1)
@@ -2316,7 +2287,6 @@ CONTAINS
               WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
               WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
             END IF
-#endif
 #endif
             !
 #ifdef W3_OMPG
@@ -2344,9 +2314,6 @@ CONTAINS
                 DELY=HQFAC(IY,IX)/ FACX
                 DELA=DELX*DELY
               END IF
-#endif
-              !
-#ifdef W3_REF1
               REFLEC=REFLC(:,ISEA)
               REFLEC(4)=BERG(ISEA)*REFLEC(4)
               REFLED=REFLD(:,ISEA)
@@ -2437,8 +2404,7 @@ CONTAINS
             !$OMP END PARALLEL
 #endif
             !
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGSRC
+#if defined W3_PDLIB && defined W3_DEBUGSRC
             WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
             CALL ALL_VAOLD_INTEGRAL_PRINT("VAOLD after W3SRCE_IMP_PRE_POST", 1)
             CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA after W3SRCE_IMP_PRE_POST", 1)
@@ -2447,7 +2413,6 @@ CONTAINS
               WRITE(740+IAPROC,*) '     sum(VA)=', sum(VA(:,DEBUG_NODE))
               WRITE(740+IAPROC,*) '     min/max(VA)=', minval(VA(:,DEBUG_NODE)), maxval(VA(:,DEBUG_NODE))
             END IF
-#endif
 #endif
           END IF
 #ifdef W3_DEBUGCOH
@@ -2580,20 +2545,12 @@ CONTAINS
 #ifdef W3_MPI
         FLGMPI = .FALSE.
         NRQMAX = 0
-#endif
-        !
-#ifdef W3_MPI
         IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
              (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. &
              SBSED ) ) THEN
           IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
             IF (NRQGO.NE.0 ) THEN
-#endif
-#ifdef W3_MPI
               CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
-#endif
-
-#ifdef W3_MPI
               FLGMPI(0) = .TRUE.
               NRQMAX    = MAX ( NRQMAX , NRQGO )
 #endif
@@ -2602,15 +2559,9 @@ CONTAINS
 #endif
 #ifdef W3_MPI
             END IF
-#endif
             !
-#ifdef W3_MPI
             IF (NRQGO2.NE.0 ) THEN
-#endif
-#ifdef W3_MPI
               CALL MPI_STARTALL ( NRQGO2, IRQGO2, IERR_MPI )
-#endif
-#ifdef W3_MPI
               FLGMPI(1) = .TRUE.
               NRQMAX    = MAX ( NRQMAX , NRQGO2 )
 #endif
@@ -2649,9 +2600,7 @@ CONTAINS
 #ifdef W3_MPI
           END IF
         END IF
-#endif
         !
-#ifdef W3_MPI
         IF ( FLOUT(4) .AND. NRQRS.NE.0 ) THEN
           IF ( DSEC21(TIME,TONEXT(:,4)).EQ.0. ) THEN
             CALL MPI_STARTALL ( NRQRS, IRQRS , IERR_MPI )
@@ -2664,9 +2613,7 @@ CONTAINS
 #ifdef W3_MPI
           END IF
         END IF
-#endif
         !
-#ifdef W3_MPI
         IF ( FLOUT(8) .AND. NRQRS.NE.0 ) THEN
           IF ( DSEC21(TIME,TONEXT(:,8)).EQ.0. ) THEN
             CALL MPI_STARTALL ( NRQRS, IRQRS , IERR_MPI )
@@ -2679,9 +2626,7 @@ CONTAINS
 #ifdef W3_MPI
           END IF
         END IF
-#endif
         !
-#ifdef W3_MPI
         IF ( FLOUT(5) .AND. NRQBP.NE.0 ) THEN
           IF ( DSEC21(TIME,TONEXT(:,5)).EQ.0. ) THEN
             CALL MPI_STARTALL ( NRQBP , IRQBP1, IERR_MPI )
@@ -2694,9 +2639,7 @@ CONTAINS
 #ifdef W3_MPI
           END IF
         END IF
-#endif
         !
-#ifdef W3_MPI
         IF ( FLOUT(5) .AND. NRQBP2.NE.0 .AND.                &
              IAPROC.EQ.NAPBPT) THEN
           IF ( DSEC21(TIME,TONEXT(:,5)).EQ.0. ) THEN
@@ -2709,9 +2652,7 @@ CONTAINS
 #ifdef W3_MPI
           END IF
         END IF
-#endif
         !
-#ifdef W3_MPI
         IF ( NRQMAX .NE. 0 ) ALLOCATE                         &
              ( STATIO(MPI_STATUS_SIZE,NRQMAX) )
 #endif
@@ -2760,9 +2701,6 @@ CONTAINS
                     CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
 #ifdef W3_SBS
                   ENDIF
-#endif
-                  !
-#ifdef W3_SBS
                   !
                   !     Generate output flag file for fields and SBS coupling.
                   !
@@ -2771,9 +2709,7 @@ CONTAINS
                   FOUTNAME = 'Field_done.' // IDTIME(1:4) &
                        // IDTIME(6:7) // IDTIME(9:10) &
                        // IDTIME(12:13) // '.' // FILEXT(1:JJ)
-#endif
                   !
-#ifdef W3_SBS
                   OPEN( UNIT=NDSOFLG, FILE=FOUTNAME)
                   CLOSE( NDSOFLG )
 #endif
@@ -3286,9 +3222,6 @@ CONTAINS
       IXY        = MAPSF(ISEA,3)
       FIELD(IXY) = A(ISPEC,ISEA)
     END DO
-#endif
-    !
-#ifdef W3_SHRD
     RETURN
 #endif
     !
@@ -3327,11 +3260,9 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     END IF
-#endif
     !
     ! 2.b.2 Gather (recv) not yet posted, post now
     !
-#ifdef W3_MPI
     IF ( BSTAT(IBFLOC) .EQ. 0 ) THEN
       BSTAT(IBFLOC) = 1
       BISPL(IBFLOC) = ISPLOC
@@ -3353,11 +3284,9 @@ CONTAINS
       CALL INIT_GET_ISEA(ISEA, JSEA)
       GSTORE(ISEA,IBFLOC) = A(ISPEC,JSEA)
     END DO
-#endif
     !
     ! 2.d Wait for remote spectral densities
     !
-#ifdef W3_MPI
     IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
     IF ( NRQSG2 .GT. 0 ) CALL                                  &
          MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,1), STATUS, IERR_MPI )
@@ -3376,17 +3305,12 @@ CONTAINS
       IXY        = MAPSF(ISEA,3)
       FIELD(IXY) = GSTORE(ISEA,IBFLOC)
     END DO
-#endif
     !
     ! 2.f Pre-fetch data in available buffers
     !
-#ifdef W3_MPI
     IS0    = ISPLOC
     IB0    = IBFLOC
     NPST   = 0
-#endif
-    !
-#ifdef W3_MPI
     DO J=1, MPIBUF-1
       IS0    = IS0 + 1
       IF ( IS0 .GT. NSPLOC ) EXIT
@@ -3609,9 +3533,6 @@ CONTAINS
       IXY           = MAPSF(ISEA,3)
       IF ( MAPSTA(IXY) .NE. 0 ) A(ISPEC,ISEA) = FIELD(IXY)
     END DO
-#endif
-    !
-#ifdef W3_SHRD
     RETURN
 #endif
     !
@@ -3622,9 +3543,6 @@ CONTAINS
     DO IB0=1, MPIBUF
       STR(IB0) = '              |'
     END DO
-#endif
-    !
-#ifdef W3_MPIT
     STRT   = STR(IBFLOC)
     STRT(9:9) = 'A'
 #endif
@@ -3636,11 +3554,9 @@ CONTAINS
       IXY    = MAPSF(ISEA,3)
       IF ( MAPSTA(IXY) .NE. 0 ) SSTORE(ISEA,IBFLOC) = FIELD(IXY)
     END DO
-#endif
     !
     ! 2.c Send spectral densities to appropriate remote
     !
-#ifdef W3_MPI
     IOFF   = 1 + (ISPLOC-1)*NRQSG2
     IF ( NRQSG2 .GT. 0 ) CALL                                  &
          MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,2), IERR_MPI )
@@ -3666,9 +3582,6 @@ CONTAINS
     !
 #ifdef W3_MPI
     IB0    = IBFLOC
-#endif
-    !
-#ifdef W3_MPI
     DO J=1, MPIBUF
       IB0    = 1 + MOD(IB0,MPIBUF)
       IF ( BSTAT(IB0) .EQ. 2 ) THEN
@@ -3701,9 +3614,6 @@ CONTAINS
     !
 #ifdef W3_MPI
     IF ( ISPLOC .EQ. NSPLOC ) THEN
-#endif
-      !
-#ifdef W3_MPI
       DO IB0=1, MPIBUF
         IF ( BSTAT(IB0) .EQ. 2 ) THEN
           IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
@@ -3721,14 +3631,8 @@ CONTAINS
 #ifdef W3_MPI
         END IF
       END DO
-#endif
-      !
-#ifdef W3_MPI
       ISPLOC = 0
       IBFLOC = 0
-#endif
-      !
-#ifdef W3_MPI
     END IF
 #endif
     !
@@ -3746,13 +3650,7 @@ CONTAINS
         STR(IB0) = STRT
       END IF
     END DO
-#endif
-    !
-#ifdef W3_MPIT
     WRITE (NDST,9000) STR
-#endif
-    !
-#ifdef W3_MPIT
     IF ( ISPLOC .EQ. 0 ) THEN
       DO IB0=1, MPIBUF
         STR(IB0) = '--------------+'
