@@ -707,7 +707,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_T0
-    CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1), '  ', 1.,         &
+    CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,     &
          0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
 #endif
     !
