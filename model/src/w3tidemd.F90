@@ -305,9 +305,6 @@ CONTAINS
     INTEGER J, FOUND
 #ifdef W3_S
     INTEGER, SAVE           :: IENT   =   0
-#endif
-    !
-#ifdef W3_S
     CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
 #endif
     !
@@ -406,9 +403,6 @@ CONTAINS
     INTEGER                      :: INDS(65), J, FOUND, NTIDES
 #ifdef W3_S
     INTEGER, SAVE           :: IENT   =   0
-#endif
-    !
-#ifdef W3_S
     CALL STRACE (IENT, 'TIDE_FIND_INDICES_PREDICTION')
 #endif
     !

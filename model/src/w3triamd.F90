@@ -861,9 +861,6 @@ CONTAINS
 
 #ifdef W3_S
     INTEGER                      ::  IENT = 0
-#endif
-    !/ ------------------------------------------------------------------- /
-#ifdef W3_S
     CALL STRACE (IENT, 'SPATIAL_GRID')
 #endif
 
@@ -965,9 +962,6 @@ CONTAINS
     REAL*8    :: PT(3,2)
 #ifdef W3_S
     INTEGER                      ::  IENT = 0
-#endif
-    !/ ------------------------------------------------------------------- /
-#ifdef W3_S
     CALL STRACE (IENT, 'NVECTRI')
 #endif
     !

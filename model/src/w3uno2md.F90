@@ -188,15 +188,13 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
 #endif
-#ifdef W3_T1
-    INTEGER                 :: IX2, IY2
-#endif
     REAL                    :: CFL, VEL, QB, DQ, DQNZ, QCN, QBN,    &
          QBR, CFAC, FLA(1-MY:MY*MX)
 #ifdef W3_T0
     REAL                    :: QMAX
 #endif
 #ifdef W3_T1
+    INTEGER                 :: IX2, IY2
     REAL                    :: QBO, QN, XCFL
 #endif
 #ifdef W3_T2
@@ -221,9 +219,6 @@ CONTAINS
       END DO
     END DO
     QMAX   = MAX ( 0.01*QMAX , 1.E-10 )
-#endif
-    !
-#ifdef W3_T0
     WRITE (NDST,9001) 'VELO'
     DO IY=NY,1,-1
       WRITE (NDST,9002) (NINT(100.*VELO(IY+(IX-1)*MY)           &
@@ -566,15 +561,13 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-#ifdef W3_T1
-    INTEGER                 :: IX2, IY2
-#endif
     REAL                    :: CFL, QB, DQ, DQNZ, QCN, QBN, QBR, CFAC
     REAL                    :: FLA(1-MY:MY*MX)
 #ifdef W3_T0
     REAL                    :: QMAX
 #endif
 #ifdef W3_T1
+    INTEGER                 :: IX2, IY2
     REAL                    :: QBO, QN
 #endif
 #ifdef W3_T2
@@ -599,9 +592,6 @@ CONTAINS
       END DO
     END DO
     QMAX   = MAX ( 0.01*QMAX , 1.E-10 )
-#endif
-    !
-#ifdef W3_T0
     WRITE (NDST,9001) 'CFLL'
     DO IY=NY,1,-1
       WRITE (NDST,9002) (NINT(100.*CFLL(IY+(IX-1)*MY)),IX=1,NX)
@@ -773,16 +763,14 @@ CONTAINS
          '               USED              :',2I6/           &
          '              BCLOSE, INC        :',L6,I6/         &
          '               NB0, NB1, NB2     :',3I6)
+9005 FORMAT (' TEST W3UNO2r : GLOBAL CLOSURE (1)')
+9015 FORMAT (' TEST W3UNO2r : GLOBAL CLOSURE (2)')
 #endif
 #ifdef W3_T0
 9001 FORMAT ( ' TEST W3UNO2r : DUMP ARRAY ',A,' :')
 9002 FORMAT ( 1X,43I3)
 9003 FORMAT ( 1X,21I6)
 #endif
-#ifdef W3_T
-9005 FORMAT (' TEST W3UNO2r : GLOBAL CLOSURE (1)')
-#endif
-    !
 #ifdef W3_T1
 9010 FORMAT (' TEST W3UNO2r : IP, 2x(IX,IY), CFL (b,i,i+1), ',    &
          ' Q (b,b,i-1,i,i+1,i+2)')
@@ -793,10 +781,6 @@ CONTAINS
 9014 FORMAT (10X,I6,4I4,1X,F6.2,'  --- ',F6.2,1X,F7.2,1X,'  --- ',&
          2F6.2,'  --- ')
 #endif
-#ifdef W3_T
-9015 FORMAT (' TEST W3UNO2r : GLOBAL CLOSURE (2)')
-#endif
-    !
 #ifdef W3_T2
 9020 FORMAT (' TEST W3UNO2r : IP, IXY, 2Q, 2FL')
 9021 FORMAT ('            ',2I6,2(1X,2E11.3))
@@ -966,9 +950,6 @@ CONTAINS
       END DO
     END DO
     QMAX   = MAX ( 0.01*QMAX , 1.E-10 )
-#endif
-    !
-#ifdef W3_T0
     WRITE (NDST,9001) 'CFLL'
     DO IY=NY,1,-1
       WRITE (NDST,9002) (NINT(100.*CFLL(IY+(IX-1)*MY)),IX=1,NX)
