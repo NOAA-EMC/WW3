@@ -4066,7 +4066,7 @@
                            ECOS, ESIN, US3DF, USSPF, USSP_WN
       USE W3ADATMD,  ONLY: CG, WN, DW
       USE W3ADATMD,  ONLY: USSX, USSY,  US3D, USSP
-      USE W3ODATMD, ONLY: IAPROC, NAPROC
+      USE W3PARALL,  ONLY: INIT_GET_ISEA
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
@@ -4141,12 +4141,7 @@
 #endif
 !
             DO JSEA=1, NSEAL
-#ifdef W3_DIST
-                ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-                ISEA         = JSEA
-#endif
+               CALL INIT_GET_ISEA(ISEA, JSEA)
                ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
                ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
             END DO
@@ -4165,12 +4160,7 @@
 #endif
 !
          DO JSEA=1, NSEAL
-#ifdef W3_DIST
-              ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-              ISEA         = JSEA
-#endif
+            CALL INIT_GET_ISEA(ISEA, JSEA)
             FACTOR       = DDEN(IK) / CG(IK,ISEA)
 !
 ! Deep water limits

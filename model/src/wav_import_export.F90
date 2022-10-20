@@ -788,7 +788,7 @@ contains
        if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
           call CALC_U3STOKES(va, 2)
           do ib = 1, USSPF(2)
-             do jsea = 1, nseal
+             do jsea = 1, nseal_local
                 sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
                 sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
              enddo
@@ -822,7 +822,7 @@ contains
        sw_ustokes3(:)= zero
        sw_vstokes3(:)= zero
        call CALC_U3STOKES(va, 2)
-       do jsea = 1,nseal
+       do jsea = 1,nseal_local
           sw_ustokes1(jsea)=ussp(jsea,1)
           sw_vstokes1(jsea)=ussp(jsea,nk+1)
           sw_ustokes2(jsea)=ussp(jsea,2)
@@ -1077,7 +1077,7 @@ contains
   !> @date 09-Aug-2017
   subroutine CalcRoughl ( wrln)
 
-    ! Calculate 2D wave roughness length for export
+    ! Calculate wave roughness length for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
     use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
@@ -1159,9 +1159,9 @@ contains
 
     ! input/output variables
     real, intent(in)            :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
-    real(ESMF_KIND_R8), pointer :: wbxn(:)           ! 2D eastward-component export field pointer
-    real(ESMF_KIND_R8), pointer :: wbyn(:)           ! 2D northward-component export field pointer
-    real(ESMF_KIND_R8), pointer :: wbpn(:)           ! 2D period export field pointer
+    real(ESMF_KIND_R8), pointer :: wbxn(:)           ! eastward-component export field pointer
+    real(ESMF_KIND_R8), pointer :: wbyn(:)           ! northward-component export field pointer
+    real(ESMF_KIND_R8), pointer :: wbpn(:)           ! period export field pointer
 
     ! local variables
     real(8), parameter   :: half  = 0.5_r8
@@ -1234,7 +1234,7 @@ contains
   !> @date 09-Aug-2017
   subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
 
-    ! Calculate 2D radiation stresses for export
+    ! Calculate radiation stresses for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
     use w3adatmd,   only : dw, cg, wn
@@ -1242,9 +1242,9 @@ contains
 
     ! input/output variables
     real, intent(in)               :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
-    real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! 2D eastward-component export field
-    real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! 2D eastward-northward-component export field
-    real(ESMF_KIND_R8), pointer    :: syyn(:)           ! 2D northward-component export field
+    real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! eastward-component export field
+    real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! eastward-northward-component export field
+    real(ESMF_KIND_R8), pointer    :: syyn(:)           ! northward-component export field
 
     ! local variables
     character(ESMF_MAXSTR) :: cname
