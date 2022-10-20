@@ -1367,12 +1367,10 @@ CONTAINS
     END DO
     WRITE (NDST,9042)
     WRITE (NDST,9043) TOFRST
-#endif
     !
     ! 5.  Define wavenumber grid ----------------------------------------- *
     ! 5.a Calculate depth
     !
-#ifdef W3_T
     ALLOCATE ( MAPOUT(NX,NY), XOUT(NX,NY) )
     XOUT = -1.
 #endif
@@ -1917,13 +1915,11 @@ CONTAINS
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3MPII')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3MPII')
-#endif
     !
     ! 1.  Set up derived data types -------------------------------------- /
     !
@@ -5735,11 +5731,9 @@ CONTAINS
       END IF
       !
     END IF
-#endif
     !
     ! 3.  Set-up for W3IOBC ( SENDs ) ------------------------------------ /
     !
-#ifdef W3_MPI
     NRQBP  = 0
     NRQBP2 = 0
     IH     = 0
@@ -5785,11 +5779,9 @@ CONTAINS
           !
         END DO
       END DO
-#endif
       !
       ! ... End of loops 4.a
       !
-#ifdef W3_MPI
       NRQBP  = IH
 #endif
       !
@@ -5936,11 +5928,9 @@ CONTAINS
       !
 #ifdef W3_MPI
     END IF
-#endif
     !
     ! 5.  Set-up remaining counters -------------------------------------- /
     !
-#ifdef W3_MPI
     IT0PRT = IT0
     IT0PNT = IT0PRT + 2*NAPROC
     IT0TRK = IT0PNT + 5000
@@ -6116,13 +6106,11 @@ CONTAINS
     INTEGER                 :: itout
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
+    CALL STRACE (IENT, 'W3MPIP')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3MPIP')
-#endif
     !
 #ifdef W3_MPI
     IF ( O2IRQI ) THEN
@@ -6169,11 +6157,9 @@ CONTAINS
         ELSE
           CALL INIT_GET_JSEA_ISPROC(IS(J), JSEA, IP(J))
         END IF
-#endif
         !
         ! 1.c Send if point is stored here
         !
-#ifdef W3_MPI
         IF ( IP(J) .EQ. IAPROC ) THEN
           IH     = IH + 1
           CALL MPI_SEND_INIT ( VA(1,JSEA), NSPEC, MPI_REAL, &
@@ -6232,11 +6218,9 @@ CONTAINS
           ELSE
             CALL INIT_GET_JSEA_ISPROC(IS(J), JSEA, IP(J))
           END IF
-#endif
           !
           ! 1.g Receive in correct array
           !
-#ifdef W3_MPI
           IH     = IH + 1
           ITARG  = IP(J) - 1
           CALL MPI_RECV_INIT ( SPPNT(1,1,J), NSPEC, MPI_REAL, &
@@ -6265,16 +6249,12 @@ CONTAINS
       !
 #ifdef W3_MPI
     END IF
-#endif
     !
     !
-#ifdef W3_MPI
     IT0    = IT0 + 8*NOPTS
-#endif
     !
     ! 1.h Base tag number for track output
     !
-#ifdef W3_MPI
     IT0TRK = IT0
 #endif
     !

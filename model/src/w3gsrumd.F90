@@ -9622,18 +9622,18 @@ CONTAINS
   !/ Local routines for use outside of WW3 ============================= /
   !/
   SUBROUTINE EXTCDE(IEXIT)
-#ifdef ENABLE_MPI
+# ifdef ENABLE_MPI
     INCLUDE "mpif.h"
-#endif
+# endif
     INTEGER, INTENT(IN) :: IEXIT
-#ifdef ENABLE_MPI
+# ifdef ENABLE_MPI
     INTEGER             :: IERR_MPI
     LOGICAL             :: RUN
     CALL MPI_INITIALIZED ( RUN, IERR_MPI )
     IF ( RUN ) THEN
       CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
     END IF
-#endif
+# endif
     CALL EXIT(IEXIT)
   END SUBROUTINE EXTCDE
   !/

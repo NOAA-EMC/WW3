@@ -2960,14 +2960,12 @@ CONTAINS
     CALL W3SETG ( IMOD, NDSE, NDST )
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
     WRITE (NDST,9002)
-#endif
     !
     ! -------------------------------------------------------------------- /
     ! 4.  Construct curvilinear grid derivatives and metric
     !     Note that in the case of lon/lat grids, these quantities do not
     !     include the spherical coordinate metric (SPHERE=.FALSE.).
     !
-#if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3GNTX)
     ALLOCATE ( COSA(NY,NX), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
 #endif
