@@ -281,12 +281,10 @@ CONTAINS
     DO IY=NY, 1, -1
       WRITE (NDST,9001) (MAPTXY(IY,IX),IX=1, NX)
     END DO
-#endif
     !
     ! 2.  Map MAPY2 ------------------------------------------------------ *
     ! 2.a Range 1 to NMY0
     !
-#ifdef W3_T
     MAPTXY = 0.
 #endif
     !

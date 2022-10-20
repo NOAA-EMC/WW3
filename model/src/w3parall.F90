@@ -995,13 +995,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'SET_UP_NSEAL_NSEALM')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'SET_UP_NSEAL_NSEALM')
-#endif
 
 #ifdef W3_SHRD
     NSEALout  = NSEA

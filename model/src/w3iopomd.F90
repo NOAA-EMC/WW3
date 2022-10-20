@@ -899,9 +899,9 @@ CONTAINS
       TAUAO(I) = SQRT ( TAUX**2 + TAUY**2 )
       IF ( TAUAO(I).GT.1.E-7 ) THEN
         TAUDO(I) = ATAN2(TAUY,TAUX)
-#ifdef W3_RTD
+# ifdef W3_RTD
         IF ( FLAGUNR ) TAUDO(I) = TAUDO(I) - AnglD(IS(1))*DERA
-#endif
+# endif
       ELSE
         TAUDO(I) = 0.
       END IF

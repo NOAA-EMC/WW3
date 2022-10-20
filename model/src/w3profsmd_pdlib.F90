@@ -91,7 +91,7 @@ MODULE PDLIB_W3PROFSMD
   !/ Parameter list
   !/
   !/ ------------------------------------------------------------------- /
-  !/ Local PARAMETERs
+  !/ Local parameters
   !/
 #ifdef W3_S
   INTEGER, SAVE           :: IENT = 0
@@ -7458,14 +7458,12 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'BLOCK_SOLVER_FINALIZE')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
     !
-#ifdef W3_S
-    CALL STRACE (IENT, 'BLOCK_SOLVER_FINALIZE')
-#endif
     IF (B_JGS_USE_JACOBI) THEN
       CALL JACOBI_FINALIZE
     END IF
@@ -7734,13 +7732,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'JACOBI_FINALIZE')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'JACOBI_FINALIZE')
-#endif
     IF (IMEM == 1) THEN
       DEALLOCATE(ASPAR_JAC)
     ELSE IF (IMEM == 2) THEN

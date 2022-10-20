@@ -435,11 +435,9 @@ CONTAINS
     !
 #ifdef W3_T
     WRITE (NDST,9021) TIMEB, TIMEE
-#endif
     !
     ! 3.  Loop over input points ----------------------------------------- *
     !
-#ifdef W3_T
     NREAD  = 0
     NTRACK = 0
 #endif

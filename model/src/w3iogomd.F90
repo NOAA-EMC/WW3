@@ -251,13 +251,11 @@ CONTAINS
     CHARACTER(LEN=10)  :: VARNAME1(5),VARNAME2(5)
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3FLGRDUPDT')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3FLGRDUPDT')
-#endif
     !
     VARNAME1(1) = 'EF';    VARNAME2(1) = 'E3D'
     VARNAME1(2) = 'TH1M';  VARNAME2(2) = 'TH1MF'
@@ -2122,11 +2120,9 @@ CONTAINS
     !
 #ifdef W3_OMPG
     !$OMP END PARALLEL DO
-#endif
     !
     ! 4.d Peak directions
     !
-#ifdef W3_OMPG
     !$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
     !

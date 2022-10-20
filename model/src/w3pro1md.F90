@@ -160,13 +160,11 @@ CONTAINS
     INTEGER                 :: IX, IY, IXY, ISP, IXNEXT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3MAP1')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3MAP1')
-#endif
     !
 
     ! 1.  Initialize x-y arrays ------------------------------------------ *
@@ -741,10 +739,6 @@ CONTAINS
                VFLX2D(IY,IX-1), VFLX2D(IY,IX), VFLY2D(IY-1,IX), &
                VFLY2D(IY,IX) , CG(IK,ISEA)/CLATS(ISEA),AOLD,    &
                FLD2D(IY,IX)
-#endif
-          !
-          !
-#ifdef W3_T3
           WRITE (NDST,9042) ISEA, MAPSTA(IXY), AOLD,FLD2D(IY,IX)
 #endif
           !

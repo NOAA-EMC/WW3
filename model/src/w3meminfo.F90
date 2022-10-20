@@ -58,13 +58,11 @@ module MallocInfo_m
   !/
 #ifdef W3_S
   INTEGER, SAVE           :: IENT = 0
+  CALL STRACE (IENT, 'W3XXXX')
 #endif
   !/
   !/ ------------------------------------------------------------------- /
   !/
-#ifdef W3_S
-  CALL STRACE (IENT, 'W3XXXX')
-#endif
 
   !> This structure type is used to return information about the dynamic memory allocator.
   type, bind(c) :: MallInfo_t
@@ -172,13 +170,11 @@ contains
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3XXXX')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3XXXX')
-#endif
     type(MallInfo_t), intent(out) :: malinfo
     malinfo = mallinfo()
   end subroutine getMallocInfo
@@ -242,13 +238,11 @@ contains
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3XXXX')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3XXXX')
-#endif
     real :: ib2m
     integer(8) :: vmsize, vmRSS
     integer, intent(in)          :: ihdnl
@@ -342,13 +336,11 @@ contains
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3XXXX')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3XXXX')
-#endif
     integer(8) :: vmsize
     character(len=80) :: stat_key, stat_value
     !
@@ -428,13 +420,11 @@ contains
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3XXXX')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3XXXX')
-#endif
     integer(8) :: vmRSS
     character(len=80) :: stat_key, stat_value
     !

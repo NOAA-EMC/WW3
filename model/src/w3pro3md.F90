@@ -286,14 +286,11 @@ CONTAINS
       DO IY=NY, 1, -1
         WRITE (NDST,9001) (MAPTXY(IY,IX),IX=1, NX)
       END DO
+      MAPTXY = 0.
 #endif
       !
       ! 2.  Map MAPY2 ------------------------------------------------------ *
       ! 2.a Range 1 to NMY0
-      !
-#ifdef W3_T
-      MAPTXY = 0.
-#endif
       !
       NMY0   = 0
       DO IX=1, NX
@@ -555,13 +552,11 @@ CONTAINS
     INTEGER                 :: ISEA, IXY
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3MAPT')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3MAPT')
-#endif
     !
     ! 1.  Map MAPTRN ----------------------------------------------------- *
     !
@@ -880,13 +875,11 @@ CONTAINS
 #ifdef W3_T
     WRITE (NDST,9000) YFIRST
     WRITE (NDST,9001) ISP, ITH, IK, ECOS(ITH), ESIN(ITH)
+    WRITE (NDST,9010)
 #endif
     !
     ! 1.b Initialize arrays
     !
-#ifdef W3_T
-    WRITE (NDST,9010)
-#endif
     !
     VLCFLX = 0.
     VLCFLY = 0.
