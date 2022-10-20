@@ -528,13 +528,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3IC5WNCG')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3IC5WNCG')
-#endif
     !/
     ! Initialize SIGMA {in w3gdatmd: SIG (0: NK+1)}
     IF (ALLOCATED(SIGMA)) DEALLOCATE(SIGMA); ALLOCATE(SIGMA(SIZE(CG)))
@@ -689,13 +687,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'FSDISP')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'FSDISP')
-#endif
     ! Note, same as W3IC3WNCG_xx in w3sic3md :
     !     HICE   →   ICE1
     !     IVISC  →   ICE2
@@ -1873,12 +1869,10 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'CMPLX_SINH')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-    CALL STRACE (IENT, 'CMPLX_SINH')
-#endif
     !/
     CMPLX_SINH = (EXP(X) - EXP(-X)) * 0.5
     !/
@@ -1970,12 +1964,10 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'CMPLX_COSH')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-    CALL STRACE (IENT, 'CMPLX_COSH')
-#endif
     !/
     CMPLX_COSH = (EXP(X) + EXP(-X)) * 0.5
     !/
@@ -2069,12 +2061,10 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'CMPLX_TANH2')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-    CALL STRACE (IENT, 'CMPLX_TANH2')
-#endif
     !/
     CMPLX_TANH2 = (1 - EXP(-2*X)) / (1 + EXP(-2*X))
     !/

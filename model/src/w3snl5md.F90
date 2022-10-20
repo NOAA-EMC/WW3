@@ -455,13 +455,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'INSNL5')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'INSNL5')
-#endif
     !
     ! Set important parameters for GKE module (QR[I]5DPT/OML/DIS/KEV are
     ! defined in ww3_grid.inp, and QI5NNZ is not known yet)

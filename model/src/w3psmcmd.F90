@@ -3302,13 +3302,11 @@ CONTAINS
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
+    CALL STRACE (IENT, 'W3GATH')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3GATH')
-#endif
     !
     !      FIELD  = 0.
     !
@@ -3530,19 +3528,15 @@ CONTAINS
     INTEGER                 :: ISEA, IXY, IOFF, IERR_MPI, J,   &
          STATUS(MPI_STATUS_SIZE,NSPEC),  &
          JSEA, IB0
+    LOGICAL                 :: DONE
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
-#endif
-#ifdef W3_MPI
-    LOGICAL                 :: DONE
+    CALL STRACE (IENT, 'W3SCAT')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3SCAT')
-#endif
     !
     ! 1.  Shared memory version ------------------------------------------ *
     !
@@ -3603,11 +3597,9 @@ CONTAINS
         END IF
       END IF
     END DO
-#endif
     !
     ! 2.f Last component, finish message passing, reset buffer control
     !
-#ifdef W3_MPI
     IF ( ISPLOC .EQ. NSPLOC ) THEN
       DO IB0=1, MPIBUF
         IF ( BSTAT(IB0) .EQ. 2 ) THEN

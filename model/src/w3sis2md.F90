@@ -130,13 +130,11 @@ CONTAINS
     REAL                    :: SIS1ALPHATABLE2(NTHICK,25)
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'SIS2ALPHATAB')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'SIS2ALPHATAB')
-#endif
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Fills array of reflection as a function of frequency and ice thickness

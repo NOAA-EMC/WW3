@@ -186,13 +186,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'INSIN3')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'INSIN3')
-#endif
     !
     ! 1.  .... ----------------------------------------------------------- *
     !
