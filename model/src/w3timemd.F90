@@ -145,13 +145,11 @@ CONTAINS
     INTEGER                 :: NYMD, NHMS, NSEC
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'TICK21')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'TICK21')
-#endif
     !
     ! Zero increment: get "legal" date
     !
@@ -397,13 +395,11 @@ CONTAINS
          ND, NST
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'DSEC21')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'DSEC21')
-#endif
     !
     ! Convert dates and times :
     !
@@ -648,13 +644,11 @@ CONTAINS
     REAL                    :: E1, E2
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'TDIFF')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'TDIFF')
-#endif
     !
     ! Convert dates and times :
     !
@@ -902,13 +896,11 @@ CONTAINS
     INTEGER(KIND=4)         :: JDAY
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'TICK21')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'TICK21')
-#endif
     !
     ! Zero increment: get "legal" date
     !
@@ -1122,13 +1114,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'T2D')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'T2D')
-#endif
     !
     DAT(1)=TIME(1)/10000
     DAT(2)=(TIME(1)-DAT(1)*10000)/100
@@ -1203,13 +1193,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'D2T')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'D2T')
-#endif
     !
     TIME(1)=DAT(1)*10000+DAT(2)*100+DAT(3)
     TIME(2)=DAT(5)*10000+DAT(6)*100+DAT(7)
@@ -1295,13 +1283,11 @@ CONTAINS
     INTEGER                 :: A, Y, M, JDN
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'D2J')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'D2J')
-#endif
     !
     YEAR   = DAT(1)                        ! Year
     MONTH  = DAT(2)                        ! Month
@@ -1410,13 +1396,11 @@ CONTAINS
     INTEGER                   :: JALPHA,JA,JB,JC,JD,JE,IJUL
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'J2D')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'J2D')
-#endif
     !
     IF(JULIAN.LT.0.d0) THEN                      ! Negative Julian Day not allowed
       IERR=1
@@ -1546,13 +1530,11 @@ CONTAINS
     DOUBLE PRECISION        :: E1, E2
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'TSUB')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'TSUB')
-#endif
     !
     ! Convert dates and times :
     !
@@ -1647,13 +1629,11 @@ CONTAINS
     INTEGER(KIND=8)         :: E1, E2
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'TSUBSEC')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'TSUBSEC')
-#endif
     !
     IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
       A1 = (T2(1)-T1(1))*360 + (T2(2)-T1(2))*30 + (T2(3)-T1(3))
@@ -1752,13 +1732,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'U2D')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'U2D')
-#endif
     !
 
     DAT(4) = 0  ! force to UTC timezone
@@ -1997,13 +1975,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'T2ISO')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'T2ISO')
-#endif
     !
     !/
     WRITE(ISODT,'(I4,"-",I2.2,"-",I2.2,"T",I2.2,":",I2.2,":",I2.2)') &

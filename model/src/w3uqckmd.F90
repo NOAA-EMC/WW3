@@ -1103,9 +1103,9 @@ CONTAINS
     !
 #ifdef W3_OMPH
     !$OMP PARALLEL DO PRIVATE (IP, IXY, CFL, IXYC, QB, IXYU, IXYD, &
-#ifdef W3_T1
+# ifdef W3_T1
     !$OMP                      QBO, QN, IX, IY, IX2, IY2,              &
-#endif
+# endif
     !$OMP&                     DQ, DQNZ, QCN, QBN, QBR, CFAC )
 #endif
     !

@@ -2759,15 +2759,13 @@ CONTAINS
     CHARACTER(60) :: FNAME
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'SETUGIOBP')
 #endif
     !/ ------------------------------------------------------------------- /
     !
     ! 1.  Preparations --------------------------------------------------- *
     ! 1.a Set constants
     !
-#ifdef W3_S
-    CALL STRACE (IENT, 'SETUGIOBP')
-#endif
     !
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 2.  Searches for boundary points

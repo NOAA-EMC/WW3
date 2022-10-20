@@ -1731,14 +1731,12 @@ CONTAINS
 #ifdef W3_T
     WRITE (NDST,9000) FICEN
     IF ( .NOT. LOCAL ) WRITE (NDST,9001)
+    WRITE (NDST,9010) TIME, TICE, TIN
 #endif
     !
     ! 1.  Preparations --------------------------------------------------- *
     ! 1.a Update times
     !
-#ifdef W3_T
-    WRITE (NDST,9010) TIME, TICE, TIN
-#endif
     TICE(1) = TIN(1)
     TICE(2) = TIN(2)
     !
@@ -1768,23 +1766,23 @@ CONTAINS
         MAPICE(IY,IX) = 1
         CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
         IF (LOCAL .AND. (IAPROC .eq. ISPROC)) THEN
-#ifdef W3_T
+# ifdef W3_T
           WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                ICEI(IX,IY), 'ICE (NEW)'
-#endif
+# endif
           VA(:,JSEA) = 0.
-#ifdef W3_T
+# ifdef W3_T
         ELSE
           WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                ICEI(IX,IY), 'ICE (NEW X)'
-#endif
+# endif
         END IF
         !
-#ifdef W3_T
+# ifdef W3_T
       ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
         WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
              ICEI(IX,IY), 'ICE'
-#endif
+# endif
       END IF
       !
       ! 2.b Ice point to be re-activated.
@@ -1799,31 +1797,31 @@ CONTAINS
           !
           CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
           IF ( LOCAL .AND. (IAPROC .eq. ISPROC) ) THEN
-#ifdef W3_T
+# ifdef W3_T
             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                  ICEI(IX,IY), 'SEA (NEW)'
-#endif
+# endif
             VA(:,JSEA) = 0.
             !
-#ifdef W3_T
+# ifdef W3_T
           ELSE
             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                  ICEI(IX,IY), 'SEA (NEW X)'
-#endif
+# endif
           END IF
           !
-#ifdef W3_T
+# ifdef W3_T
         ELSE
           WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                ICEI(IX,IY), 'DIS'
-#endif
+# endif
         END IF
         !
-#ifdef W3_T
+# ifdef W3_T
       ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
         WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
              ICEI(IX,IY), 'SEA'
-#endif
+# endif
         !
       END IF
 #endif

@@ -933,9 +933,9 @@ CONTAINS
     ELSE
       CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
            AMAX, U10ABS, U10DIR,                           &
-#ifdef W3_FLX5
+# ifdef W3_FLX5
            TAUA, TAUADIR, DAIR,                             &
-#endif
+# endif
            USTAR, USTDIR,                                  &
            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
@@ -972,9 +972,9 @@ CONTAINS
 #ifdef W3_ST4
     CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
          AMAX, U10ABS, U10DIR,                         &
-#ifdef W3_FLX5
+# ifdef W3_FLX5
          TAUA, TAUADIR, DAIR,                    &
-#endif
+# endif
          USTAR, USTDIR,                                &
          TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
     TWS = 1./FMEANWS
@@ -1353,22 +1353,22 @@ CONTAINS
         WRITE(740+IAPROC,*) 'min/max/sum(VDNL)=', minval(VDNL), maxval(VDNL), sum(VDNL)
         WRITE(740+IAPROC,*) 'min/max/sum(VSDS)=', minval(VSDS), maxval(VSDS), sum(VSDS)
         WRITE(740+IAPROC,*) 'min/max/sum(VDDS)=', minval(VDDS), maxval(VDDS), sum(VDDS)
-#ifdef W3_ST6
+# ifdef W3_ST6
         WRITE(740+IAPROC,*) 'min/max/sum(VSWL)=', minval(VSWL), maxval(VSWL), sum(VSWL)
         WRITE(740+IAPROC,*) 'min/max/sum(VDWL)=', minval(VDWL), maxval(VDWL), sum(VDWL)
-#endif
-#ifdef W3_DB1
+# endif
+# ifdef W3_DB1
         WRITE(740+IAPROC,*) 'min/max/sum(VSDB)=', minval(VSDB), maxval(VSDB), sum(VSDB)
         WRITE(740+IAPROC,*) 'min/max/sum(VDDB)=', minval(VDDB), maxval(VDDB), sum(VDDB)
-#endif
-#ifdef W3_TR1
+# endif
+# ifdef W3_TR1
         WRITE(740+IAPROC,*) 'min/max/sum(VSTR)=', minval(VSTR), maxval(VSTR), sum(VSTR)
         WRITE(740+IAPROC,*) 'min/max/sum(VDTR)=', minval(VDTR), maxval(VDTR), sum(VDTR)
-#endif
-#ifdef W3_BS1
+# endif
+# ifdef W3_BS1
         WRITE(740+IAPROC,*) 'min/max/sum(VSBS)=', minval(VSBS), maxval(VSBS), sum(VSBS)
         WRITE(740+IAPROC,*) 'min/max/sum(VDBS)=', minval(VDBS), maxval(VDBS), sum(VDBS)
-#endif
+# endif
         WRITE(740+IAPROC,*) 'min/max/sum(VSBT)=', minval(VSBT), maxval(VSBT), sum(VSBT)
         WRITE(740+IAPROC,*) 'min/max/sum(VDBT)=', minval(VDBT), maxval(VDBT), sum(VDBT)
       END IF
@@ -1397,7 +1397,7 @@ CONTAINS
                 eVD    = MIN(0.,VD(ISP))
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
-#ifdef W3_DB1
+# ifdef W3_DB1
                 eVS = VSDB(ISP) * JAC
                 eVD = MIN(0.,VDDB(ISP))
                 IF (eVS .gt. 0.) THEN
@@ -1407,11 +1407,11 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
+# endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 
-#ifdef W3_TR1
+# ifdef W3_TR1
                 eVS = VSTR(ISP) * JAC
                 eVD = VDTR(ISP)
                 IF (eVS .gt. 0.) THEN
@@ -1421,7 +1421,7 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
+# endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
               END DO
@@ -1446,10 +1446,10 @@ CONTAINS
                 PreVS     = DVS / FAKS
                 eVS = PreVS / CG1(IK) * CLATSL
                 eVD = VD(ISP)
-#ifdef W3_DB1
+# ifdef W3_DB1
                 eVS = eVS + DBLE(VSDB(ISP)) * JAC
                 eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
-#endif
+# endif
                 B_JAC(ISP,JSEA)          = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA))
                 ASPAR_DIAG_ALL(ISP,JSEA) = ASPAR_DIAG_ALL(ISP,JSEA) - SIDT * eVD
               END DO
@@ -1495,7 +1495,7 @@ CONTAINS
           VDIO = VD
         ENDIF
 
-#ifdef W3_DEBUGSRC
+# ifdef W3_DEBUGSRC
         IF (IX == DEBUG_NODE) THEN
           WRITE(740+IAPROC,*) '     srce_imp_pre : SHAVE = ', SHAVE
           WRITE(740+IAPROC,*) '     srce_imp_pre : DT=', DT, ' HDT=', HDT, 'DTG=', DTG
@@ -1514,7 +1514,7 @@ CONTAINS
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
-#endif
+# endif
         RETURN ! return everything is done for the implicit ...
 
       END IF ! srce_imp_pre
@@ -1633,9 +1633,9 @@ CONTAINS
 #ifdef W3_ST4
       CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
            AMAX, U10ABS, U10DIR,                          &
-#ifdef W3_FLX5
+# ifdef W3_FLX5
            TAUA, TAUADIR, DAIR,                     &
-#endif
+# endif
            USTAR, USTDIR,                                 &
            TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
