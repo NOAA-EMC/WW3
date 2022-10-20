@@ -881,9 +881,9 @@ CONTAINS
       ELSE
         DTI50   = 1.
       END IF
-#ifdef W3_T
+# ifdef W3_T
       WRITE (NDST,9016) DTI50
-#endif
+# endif
       IF ( DTI50 .LT. 0. ) THEN
         IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1006)
         CALL EXTCDE ( 5 )
@@ -1310,9 +1310,9 @@ CONTAINS
 
 #ifdef W3_PDLIB
         CALL APPLY_BOUNDARY_CONDITION_VA
-#ifdef W3_DEBUGCOH
+# ifdef W3_DEBUGCOH
         CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After FLBPI and LOCAL", 1)
-#endif
+# endif
 #endif
 #ifdef W3_TIMINGS
         CALL PRINT_MY_TIME("After FLBPI and LOCAL")
@@ -1537,7 +1537,7 @@ CONTAINS
         FLFRST = .FALSE.
         !
 #ifdef W3_PDLIB
-#ifdef W3_DEBUGSRC
+# ifdef W3_DEBUGSRC
         WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
         CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA before W3SRCE_IMP_PRE", 1)
         CALL ALL_FIELD_INTEGRAL_PRINT(VSTOT, "VSTOT before W3SRCE_IMP_PRE")
@@ -1548,7 +1548,7 @@ CONTAINS
           WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
           WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
         END IF
-#endif
+# endif
         IF (IT .eq. 0) THEN
           DTGpre = 1.
         ELSE
@@ -1575,9 +1575,6 @@ CONTAINS
           REFLEC(:)=0.
           REFLED(:)=0
           PSIC=0.
-#endif
-
-#ifdef W3_PDLIB
           IF (.not. LSLOC) THEN
             VSTOT = 0.
             VDTOT = 0.
@@ -1586,24 +1583,14 @@ CONTAINS
             B_JAC     = 0.
             ASPAR_JAC = 0.
           ENDIF
-#endif
-
-
-#ifdef W3_PDLIB
           DO JSEA = 1, NP
-#endif
-
-#ifdef W3_PDLIB
             CALL INIT_GET_ISEA(ISEA, JSEA)
-#endif
-
-#ifdef W3_PDLIB
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
             DELA=1.
             DELX=1.
             DELY=1.
-#ifdef W3_REF1
+# ifdef W3_REF1
             IF (GTYPE.EQ.RLGTYPE) THEN
               DELX=SX*CLATS(ISEA)/FACX
               DELY=SY/FACX
@@ -1618,29 +1605,26 @@ CONTAINS
             REFLEC=REFLC(:,ISEA)
             REFLEC(4)=BERG(ISEA)*REFLEC(4)
             REFLED=REFLD(:,ISEA)
-#endif
-#ifdef W3_BT4
+# endif
+# ifdef W3_BT4
             D50=SED_D50(ISEA)
             PSIC=SED_PSIC(ISEA)
-#endif
-#ifdef W3_REF1
+# endif
+# ifdef W3_REF1
             REFLEC=REFLC(:,ISEA)
             REFLEC(4)=BERG(ISEA)*REFLEC(4)
             REFLED=REFLD(:,ISEA)
-#endif
-#ifdef W3_BT4
+# endif
+# ifdef W3_BT4
             D50=SED_D50(ISEA)
             PSIC=SED_PSIC(ISEA)
-#endif
+# endif
             !
-#ifdef W3_PDLIB
             IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
                  & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
-#endif
 
 
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGSRC
+# ifdef W3_DEBUGSRC
               IF (IX .eq. DEBUG_NODE) THEN
                 WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
               END IF
@@ -1648,16 +1632,16 @@ CONTAINS
               WRITE(740+IAPROC,*) 'ISEA/JSEA=', ISEA, JSEA
               WRITE(740+IAPROC,*) 'Before sum(VA)=', sum(VA(:,JSEA))
               FLUSH(740+IAPROC)
-#endif
+# endif
               CALL W3SRCE(srce_imp_pre, IT, ISEA, JSEA, IX, IY, IMOD, &
                    VAold(:,JSEA), VA(:,JSEA),                        &
                    VSioDummy, VDioDummy, SHAVETOT(JSEA),  &
                    ALPHA(1:NK,JSEA), WN(1:NK,ISEA),               &
                    CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),            &
                    U10D(ISEA),                                    &
-#ifdef W3_FLX5
+# ifdef W3_FLX5
                    TAUA(ISEA), TAUADIR(ISEA),                  &
-#endif
+# endif
                    AS(ISEA), UST(ISEA),               &
                    USTDIR(ISEA), CX(ISEA), CY(ISEA),              &
                    ICE(ISEA), ICEH(ISEA), ICEF(ISEA),             &
@@ -1677,14 +1661,13 @@ CONTAINS
                 VSTOT(:,JSEA) = VSioDummy
                 VDTOT(:,JSEA) = VDioDummy
               ENDIF
-#ifdef W3_DEBUGSRC
+# ifdef W3_DEBUGSRC
               WRITE(740+IAPROC,*) 'After sum(VA)=', sum(VA(:,JSEA))
               WRITE(740+IAPROC,*) '   sum(VSTOT)=', sum(VSTOT(:,JSEA))
               WRITE(740+IAPROC,*) '   sum(VDTOT)=', sum(VDTOT(:,JSEA))
               WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
               FLUSH(740+IAPROC)
-#endif
-#endif
+# endif
             ELSE
               UST   (ISEA) = UNDEF
               USTDIR(ISEA) = UNDEF
@@ -1697,7 +1680,7 @@ CONTAINS
 
 
 #ifdef W3_PDLIB
-#ifdef W3_DEBUGSRC
+# ifdef W3_DEBUGSRC
         WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
         CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA after W3SRCE_IMP_PRE", 1)
         CALL ALL_FIELD_INTEGRAL_PRINT(VSTOT, "VSTOT after W3SRCE_IMP_PRE")
@@ -1708,7 +1691,7 @@ CONTAINS
           WRITE(740+IAPROC,*) '     sum(VSTOT)=', sum(VSTOT(:,DEBUG_NODE))
           WRITE(740+IAPROC,*) '     sum(VDTOT)=', sum(VDTOT(:,DEBUG_NODE))
         END IF
-#endif
+# endif
 #endif
 
 #ifdef W3_MEMCHECK
@@ -2092,33 +2075,27 @@ CONTAINS
                   ENDIF
 
                   !Li    Work out root PE (ISPEC) and JSEA numbers for IY
-#ifdef W3_DIST
+# ifdef W3_DIST
                   ISPEC = MOD( IY-1, NAPROC )
                   JSEA = 1 + (IY - ISPEC - 1)/NAPROC
-#endif
-#ifdef W3_SHRD
+# endif
+# ifdef W3_SHRD
                   ISPEC = 0
                   JSEA = IY
-#endif
-#endif
+# endif
                   ! W3_SMC ...
                   !
-#ifdef W3_SMC
                   !!Li   Assign boundary cell spectra.
                   IF( IAPROC .EQ. ISPEC+1 ) THEN
                     SPCBAC(:,IK)=VA(:,JSEA)
                   ENDIF
-#endif
                   !
-#ifdef W3_SMC
                   !!Li   Broadcast local SPCBAC(:,IK) to all other PEs.
-#ifdef W3_MPI
+# ifdef W3_MPI
                   CALL MPI_BCAST(SPCBAC(1,IK),NSPEC,MPI_REAL,ISPEC,MPI_COMM_WAVE,IERR_MPI)
                   CALL MPI_BARRIER (MPI_COMM_WAVE,IERR_MPI)
-#endif
-#endif
+# endif
                   !
-#ifdef W3_SMC
                 END DO   !! Loop IK ends.
                 !!Li    Update Arctic boundary cell spectra if within local range
                 ALLOCATE ( BACSPEC(NSPEC) )
@@ -2132,17 +2109,15 @@ CONTAINS
                   ENDIF
 
                   !!Li    Work out boundary PE (ISPEC) and JSEA numbers for IX
-#ifdef W3_DIST
+# ifdef W3_DIST
                   ISPEC = MOD( IX-1, NAPROC )
                   JSEA = 1 + (IX - ISPEC - 1)/NAPROC
-#endif
-#ifdef W3_SHRD
+# endif
+# ifdef W3_SHRD
                   ISPEC = 0
                   JSEA = IX
-#endif
-#endif
+# endif
                   !
-#ifdef W3_SMC
                   IF( IAPROC .EQ. ISPEC+1 ) THEN
                     BACSPEC = SPCBAC(:,IK)
 
@@ -2337,9 +2312,9 @@ CONTAINS
                        ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
                        CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
                        U10D(ISEA),                                 &
-#ifdef W3_FLX5
+# ifdef W3_FLX5
                        TAUA(ISEA), TAUADIR(ISEA),                  &
-#endif
+# endif
                        AS(ISEA), UST(ISEA),                        &
                        USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
                        ICE(ISEA), ICEH(ISEA), ICEF(ISEA),          &
@@ -3275,11 +3250,9 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     END IF
-#endif
     !
     ! 2.c Put local spectral densities in store
     !
-#ifdef W3_MPI
     DO JSEA=1, NSEAL
       CALL INIT_GET_ISEA(ISEA, JSEA)
       GSTORE(ISEA,IBFLOC) = A(ISPEC,JSEA)
@@ -3576,11 +3549,9 @@ CONTAINS
       IXY    = MAPSF(ISEA,3)
       IF (MAPSTA(IXY) .NE. 0) A(ISPEC,JSEA) = SSTORE(ISEA,IBFLOC)
     END DO
-#endif
     !
     ! 2.e Check if any sends have finished
     !
-#ifdef W3_MPI
     IB0    = IBFLOC
     DO J=1, MPIBUF
       IB0    = 1 + MOD(IB0,MPIBUF)
@@ -3608,11 +3579,9 @@ CONTAINS
         END IF
       END IF
     END DO
-#endif
     !
     ! 2.f Last component, finish message passing, reset buffer control
     !
-#ifdef W3_MPI
     IF ( ISPLOC .EQ. NSPLOC ) THEN
       DO IB0=1, MPIBUF
         IF ( BSTAT(IB0) .EQ. 2 ) THEN
@@ -3768,13 +3737,11 @@ CONTAINS
     INTEGER                 :: JSEA, ISPROC
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
+    CALL STRACE (IENT, 'W3NMIN')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3NMIN')
-#endif
     !
     NMIN   = NSEA
     !
