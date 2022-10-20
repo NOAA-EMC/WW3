@@ -249,7 +249,10 @@ PROGRAM W3OUNP
   INTEGER, SAVE           :: IENT   = 0
 #endif
 #ifdef W3_NCO
-  INTEGER                 :: NDSTAB, NDST
+  INTEGER                 :: NDSTAB
+#endif
+#if defined W3_NCO && !defined W3_T
+  INTEGER                 :: NDST
 #endif
   !
   INTEGER, ALLOCATABLE    :: INDREQ(:), INDREQTMP(:)
@@ -329,7 +332,9 @@ PROGRAM W3OUNP
   NDSI   = 11
   NDSO   =  6
   NDSE   = NDSO
+# ifndef W3_T
   NDST   = NDSO
+# endif
   NDSM   = 12
   NDSOP  = 13
 #endif
