@@ -165,13 +165,11 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'W3FLX1')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'W3FLX1')
-#endif
     !
     ! 1.  Tests ---------------------------------------------------------- *
     !

@@ -1521,14 +1521,11 @@ CONTAINS
 #endif
 
     !
-#ifdef W3_T
-    WRITE (NDST,9002)
-#endif
-    !
     ! -------------------------------------------------------------------- /
     ! 4.  Update counters in grid
     !
 #ifdef W3_T
+    WRITE (NDST,9002)
     WRITE (NDST,9003)
 #endif
     !

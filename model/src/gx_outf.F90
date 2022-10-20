@@ -1013,11 +1013,9 @@ CONTAINS
           ELSE IF ( J.EQ.1 .AND. K.EQ.11 ) THEN
             FLONE = .TRUE.
             CALL W3S2XY (NSEA, NSEA, NX, NY, ICEH  , MAPSF, X1 )
-#endif
             !
             !     Average sea ice floe diameter
             !
-#ifdef W3_IS2
           ELSE IF ( J.EQ.1 .AND. K.EQ.12) THEN
             FLONE = .TRUE.
             CALL W3S2XY (NSEA, NSEA, NX, NY, ICEF  , MAPSF, X1 )

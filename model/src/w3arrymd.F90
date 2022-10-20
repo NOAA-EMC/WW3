@@ -166,14 +166,11 @@ CONTAINS
     INTEGER                 :: IIDFM, IIDLA, IX, IY, ISTAT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'INA2R')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'INA2R')
-#endif
-    !
 #ifdef W3_T
     WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
          IDFM, RFORM, IDLA, VSC, VOF
@@ -336,13 +333,11 @@ CONTAINS
     INTEGER                 :: IIDFM, IIDLA, IX, IY, ISTAT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'INA2I')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'INA2I')
-#endif
     !
 #ifdef W3_T
     WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
@@ -512,13 +507,11 @@ CONTAINS
     INTEGER                 :: IIDFM, IIDLA, IX, IY, ISTAT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'OUTA2R')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'OUTA2R')
-#endif
     !
 #ifdef W3_T
     WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
@@ -667,13 +660,11 @@ CONTAINS
     INTEGER                 :: IIDFM, IIDLA, IX, IY, ISTAT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'OUTA2I')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'OUTA2I')
-#endif
     !
 #ifdef W3_T
     WRITE (NDST,9000) MX, MY, LX, HX, LY, HY, NDS, NDST, NDSE, &
@@ -816,13 +807,11 @@ CONTAINS
     INTEGER                 :: I, K
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'OUTREA')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'OUTREA')
-#endif
     !
     WRITE (NDS,8000) ANAME
     !
@@ -929,13 +918,11 @@ CONTAINS
     INTEGER                 :: I, K
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'OUTINT')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'OUTINT')
-#endif
     !
     WRITE (NDS,8000) ANAME
     !
@@ -1046,13 +1033,11 @@ CONTAINS
     INTEGER                 :: LBLOK, NBLOK, IBLOK, IX, IX1, IX2, IY
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
+    CALL STRACE (IENT, 'OUTMAT')
 #endif
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_S
-    CALL STRACE (IENT, 'OUTMAT')
-#endif
     !
     WRITE(NDS,8000) MNAME
     !
