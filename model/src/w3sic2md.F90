@@ -269,7 +269,6 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
 #ifdef W3_T0
-    INTEGER                 :: ITH
     REAL                    :: DOUT(NK,NTH)
 #endif
     INTEGER                 :: IKTH, IK
