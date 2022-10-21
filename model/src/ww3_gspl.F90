@@ -1,18 +1,28 @@
 !> @file
 !> @brief Contains the grid splitting program.
 !>
-!> @author H. L. Tolman @date 18-Nov-2013
+!> @author H. L. Tolman
+!> @date 18-Nov-2013
+!>
 
 #include "w3macros.h"
-
+!/ ------------------------------------------------------------------- /
+!>
 !> @brief Grid splitting program
 !>
 !> @details Take an existing grid and create from this the grid data
 !>  for a set of overlapping grids to be used in the ww3_multi code
 !>  for hybid paralellization.
 !>
-!> @author H. L. Tolman @date 18-Nov-2013
-!/ ------------------------------------------------------------------- /
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
+!> @author H. L. Tolman
+!> @date 18-Nov-2013
+!>
+
 PROGRAM W3GSPL
   !/
   !/                  +-----------------------------------+
