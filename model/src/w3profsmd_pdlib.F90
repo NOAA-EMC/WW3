@@ -6167,20 +6167,14 @@
         END DO
         WRITE(740+IAPROC,*) 'sum(eDiff/VAnew/VAold)=', sum(abs(eDiff)), sum(abs(VAnew)), sum(abs(VAold))
 #endif
-
-!AR: Must go outside of the iterative loop ...
-            !IF (B_JGS_LIMITER) THEN
-            !  CALL ACTION_LIMITER_LOCAL(IP, eSum, ACLOC, DTG)
-            !END IF
-
             IF (B_JGS_BLOCK_GAUSS_SEIDEL) THEN
-              VA(1:NSPEC,IP)    = eSum !* IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
+              VA(1:NSPEC,IP)    = REAL(eSum) !* IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
               !IF (IP_glob == 64058) WRITE(740+IAPROC,*) 'TEST SUM VA', IP, SUM(VA(1:NSPEC,IP)), DW(ISEA)
             ELSE
-              U_JAC(1:NSPEC,IP) = eSum
+              U_JAC(1:NSPEC,IP) = REAL(eSum)
             END IF
           ELSE 
-            esum = VA(1:NSPEC,IP) 
+            esum = DBLE(VA(1:NSPEC,IP))
           ENDIF ! LCONVERGED
 
           IF (B_JGS_TERMINATE_DIFFERENCE) THEN
