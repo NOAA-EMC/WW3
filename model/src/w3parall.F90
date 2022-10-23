@@ -1339,7 +1339,7 @@
       CALL STRACE (IENT, 'INIT_GET_ISEA')
 #endif
 #ifdef W3_SHRD
-          ISEA         = JSEA
+          ISEA = JSEA
 #endif
 #ifdef W3_DIST
           IF (.NOT. LPDLIB) THEN

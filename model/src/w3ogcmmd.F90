@@ -136,6 +136,7 @@
 !
       DO I = 1, NSEAL
          ISEA = IAPROC + (I-1)*NAPROC
+         CALL INIT_GET_ISEA(ISEA, I)
          IX = MAPSF(ISEA,1)
          IY = MAPSF(ISEA,2)
          ! Get the mask : 1 - sea 0 - open boundary cells dried cells
@@ -463,6 +464,7 @@
       USE W3GDATMD, ONLY: NX, NY, NSEAL, NSEA, MAPSF
       USE W3ODATMD, ONLY: NAPROC, IAPROC
       USE W3SERVMD, ONLY: W3S2XY
+      USE W3PARALL, ONLY: INIT_GET_ISEA
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -554,7 +556,8 @@
 #endif
                   SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
-                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     CALL INIT_GET_ISEA(IB_I, IB_J)
+                     !IB_J = IAPROC + (IB_I-1)*NAPROC
                      SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
                   !
@@ -589,7 +592,8 @@
 #endif
                   SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
-                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     CALL INIT_GET_ISEA(IB_I, IB_J)
+                     !IB_J = IAPROC + (IB_I-1)*NAPROC
                      SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
                   !
@@ -620,7 +624,8 @@
 
                   SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
-                     IB_J = IAPROC + (IB_I-1)*NAPROC
+                     !IB_J = IAPROC + (IB_I-1)*NAPROC
+                     CALL INIT_GET_ISEA(IB_I, IB_J)
                      SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
                   !
