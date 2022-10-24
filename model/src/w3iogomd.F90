@@ -1732,7 +1732,7 @@
 #endif
 !
         DO JSEA=1, NSEAL
-          CALL IeNIT_GET_ISEA(ISEA, JSEA)
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           FACTOR       = DDEN(IK) / CG(IK,ISEA)
           MSSXM(JSEA)  = MSSXM(JSEA) + ABX2M(JSEA)*FACTOR*             &
             WN(IK,ISEA)**2
