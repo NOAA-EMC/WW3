@@ -116,6 +116,7 @@
                            TAUOCY, WNMEAN
       USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
       USE CONSTANTS, ONLY: PI, DERA
+      USE W3PARALL, ONLY: INIT_GET_ISEA
 !
 !/ ------------------------------------------------------------------- /
 !/ Parameter list
@@ -135,7 +136,7 @@
 ! * Executable part
 !
       DO I = 1, NSEAL
-         ISEA = IAPROC + (I-1)*NAPROC
+         !ISEA = IAPROC + (I-1)*NAPROC
          CALL INIT_GET_ISEA(ISEA, I)
          IX = MAPSF(ISEA,1)
          IY = MAPSF(ISEA,2)
@@ -556,7 +557,7 @@
 #endif
                   SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
-                     CALL INIT_GET_ISEA(IB_I, IB_J)
+                     CALL INIT_GET_ISEA(IB_J, IB_I)
                      !IB_J = IAPROC + (IB_I-1)*NAPROC
                      SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
@@ -592,7 +593,7 @@
 #endif
                   SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
-                     CALL INIT_GET_ISEA(IB_I, IB_J)
+                     CALL INIT_GET_ISEA(IB_J, IB_I) 
                      !IB_J = IAPROC + (IB_I-1)*NAPROC
                      SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
@@ -625,7 +626,7 @@
                   SND_BUFF(1:NSEA) = 0.0
                   DO IB_I = 1, NSEAL
                      !IB_J = IAPROC + (IB_I-1)*NAPROC
-                     CALL INIT_GET_ISEA(IB_I, IB_J)
+                     CALL INIT_GET_ISEA(IB_J, IB_I)
                      SND_BUFF(IB_J) = TMP(IB_I)
                   ENDDO
                   !

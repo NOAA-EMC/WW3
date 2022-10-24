@@ -327,7 +327,7 @@
                                               ! TOLAST
 ! Output time
           IF (ABS(TDEL1) < 1E-6 .OR. ABS(TDEL2) < 1E-6) THEN
-! JSEA→ ISEA
+! JSEA → ISEA
               CALL INIT_GET_ISEA(ISEA, JSEA)
 ! Find the loc of ISEA at PSEA (nearest sea grid point)
               IF (ALLOCATED(PDIFF)) DEALLOCATE(PDIFF); ALLOCATE(PDIFF(NSEL))
