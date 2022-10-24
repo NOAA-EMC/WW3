@@ -1258,11 +1258,11 @@ MODULE PDLIB_FIELD_VEC
             END IF
             IF ( FLGRDALL( 5, 1) ) THEN
               IH = IH + 1
-              Arrexch(IH,JSEA)=UST(JSEA)
+              Arrexch(IH,JSEA)=UST(ISEA)
               IH = IH + 1
-              Arrexch(IH,JSEA)=USTDIR(JSEA)
+              Arrexch(IH,JSEA)=USTDIR(ISEA)
               IH = IH + 1
-              Arrexch(IH,JSEA)=ASF(JSEA)
+              Arrexch(IH,JSEA)=ASF(ISEA)
             END IF 
             IF ( FLGRDALL( 5, 2) ) THEN
               IH = IH + 1
