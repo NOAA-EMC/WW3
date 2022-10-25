@@ -38,7 +38,7 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : NUOPC_ModelGet, SetVM
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, i4=>shr_kind_i4
   use wav_kind_mod          , only : cl=>shr_kind_cl, cs=>shr_kind_cs
-  use wav_import_export     , only : advertise_fields, realize_fields, nseal_local
+  use wav_import_export     , only : advertise_fields, realize_fields, nseal_noghost
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
   use wav_shr_mod           , only : wav_coupling_to_cice
@@ -81,7 +81,7 @@ module wav_comp_nuopc
   integer                 :: flds_scalar_index_nx = 0      !< the default size of the scalar field nx
   integer                 :: flds_scalar_index_ny = 0      !< the default size of the scalar field ny
   logical                 :: profile_memory = .false.      !< default logical to control use of ESMF
-  !! memory profiling
+                                                           !! memory profiling
 
   logical                 :: root_task = .false.           !< logical to indicate root task
 #ifdef W3_CESMCOUPLED
@@ -90,15 +90,15 @@ module wav_comp_nuopc
   logical :: cesmcoupled = .false.                         !< logical to indicate non-CESM use case
 #endif
   integer, allocatable :: tend(:,:)                        !< the ending time of ModelAdvance when
-  !! run with multigrid=true
+                                                           !! run with multigrid=true
   logical                 :: user_histalarm = .false.      !< logical flag for user to set history alarms
-  !! using ESMF. If history_option is present as config
-  !! option, user_histalarm will be true and will be
-  !! set using history_option, history_n and history_ymd
+                                                           !! using ESMF. If history_option is present as config
+                                                           !! option, user_histalarm will be true and will be
+                                                           !! set using history_option, history_n and history_ymd
   logical                 :: user_restalarm = .false.      !< logical flag for user to set restart alarms
-  !! using ESMF. If restart_option is present as config
-  !! option, user_restalarm will be true and will be
-  !! set using restart_option, restart_n and restart_ymd
+                                                           !! using ESMF. If restart_option is present as config
+                                                           !! option, user_restalarm will be true and will be
+                                                           !! set using restart_option, restart_n and restart_ymd
   integer :: time0(2)
   integer :: timen(2)
 
@@ -698,20 +698,20 @@ contains
     end if
 
     ! Create a  global index array for sea points.
+    !
     ! Note that nsea is the global number of sea points - and nseal is the local
     ! number of sea points. For the unstr mesh, the nsea points are on mesh nodes.
     ! We will use the gindex to set the element distgrid of a dual mesh. A dual mesh
-    ! contains the mesh nodes at the center of each element. For a triangular mesh,
-    ! this element is composed of 2 overlapping triangles (6 vertices)). For the domain
-    ! decomposition case (PDLIB), set a value of the local sea points on this processor
-    ! minus the ghost points.
+    ! contains the mesh nodes at the center of each element. For the domain decomposition
+    ! case (PDLIB), set a value of the local sea points on this processor minus the
+    ! ghost points.
 #ifdef W3_PDLIB
-    nseal_local = nseal - ng
+    nseal_noghost = nseal - ng
 #else
-    nseal_local = nseal
+    nseal_noghost = nseal
 #endif
-    allocate(gindex_sea(nseal_local))
-    do jsea=1, nseal_local
+    allocate(gindex_sea(nseal_noghost))
+    do jsea=1, nseal_noghost
        call init_get_isea(isea, jsea)
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
@@ -728,7 +728,7 @@ contains
        allocate(mask_global(nx*ny), mask_local(nx*ny))
        mask_local(:) = 0
        mask_global(:) = 0
-       do jsea=1, nseal_local
+       do jsea=1, nseal_noghost
           call init_get_isea(isea, jsea)
           ix = mapsf(isea,1)
           iy = mapsf(isea,2)
@@ -760,12 +760,12 @@ contains
 
        ! create a global index that includes both sea and land - but put land at the end
        nlnd = (my_lnd_end - my_lnd_start + 1)
-       allocate(gindex(nlnd + nseal_local))
+       allocate(gindex(nlnd + nseal_noghost))
        do ncnt = 1,nlnd + nseal
-          if (ncnt <= nseal_local) then
+          if (ncnt <= nseal_noghost) then
              gindex(ncnt) = gindex_sea(ncnt)
           else
-             gindex(ncnt) = gindex_lnd(ncnt-nseal_local)
+             gindex(ncnt) = gindex_lnd(ncnt-nseal_noghost)
           end if
        end do
        deallocate(gindex_sea)
@@ -807,7 +807,7 @@ contains
        if (maskmin == 1) then
           ! replace mesh mask with internal mask
           meshmask(:) = 0
-          meshmask(1:nseal_local) = 1
+          meshmask(1:nseal_noghost) = 1
           call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end if
@@ -825,6 +825,7 @@ contains
        call write_meshdecomp(Emesh, 'emesh', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
+
     !--------------------------------------------------------------------
     ! Realize the actively coupled fields
     !--------------------------------------------------------------------

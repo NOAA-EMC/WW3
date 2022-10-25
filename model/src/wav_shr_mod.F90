@@ -55,7 +55,7 @@ module wav_shr_mod
 
   ! used by both CESM and UFS
   logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
-  !! fields for coupling to CICE (TODO: generalize)
+                                                                !! fields for coupling to CICE (TODO: generalize)
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
   logical            , public :: unstr_mesh = .false.           !< @public flag to specify use of unstructured mesh
   character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
@@ -70,9 +70,9 @@ module wav_shr_mod
 
   ! Only used by ufs
   logical            , public :: merge_import  = .false.  !< @public logical to specify whether import fields will
-  !! be merged with a field provided from a file
+                                                          !! be merged with a field provided from a file
   logical            , public :: multigrid = .false.      !< @public logical to control whether wave model is run
-  !! as multigrid
+                                                          !! as multigrid
 
   interface ymd2date
      module procedure ymd2date_int

@@ -65,8 +65,8 @@ module wav_import_export
 #endif
 
   integer, parameter :: nwav_elev_spectrum = 25     !< the size of the wave spectrum exported if coupling
-  !! waves to cice6
-  integer, public    :: nseal_local                 !< the number of local sea points on a processor, exclusive
+                                                    !! waves to cice6
+  integer, public    :: nseal_noghost               !< the number of local sea points on a processor, exclusive
                                                     !! of the ghost points. For non-PDLIB cases, this is nseal
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
        __FILE__
@@ -662,7 +662,7 @@ contains
        call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_lamult(:) = fillvalue
-       do jsea=1, nseal_local
+       do jsea=1, nseal_noghost
           call init_get_isea(isea, jsea)
           ix  = mapsf(isea,1)
           iy  = mapsf(isea,2)
@@ -680,7 +680,7 @@ contains
        call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_ustokes(:) = fillvalue
-       do jsea=1, nseal_local
+       do jsea=1, nseal_noghost
           call init_get_isea(isea, jsea)
           ix  = mapsf(isea,1)
           iy  = mapsf(isea,2)
@@ -695,7 +695,7 @@ contains
        call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        sw_vstokes(:) = fillvalue
-       do jsea=1, nseal_local
+       do jsea=1, nseal_noghost
           call init_get_isea(isea, jsea)
           ix  = mapsf(isea,1)
           iy  = mapsf(isea,2)
@@ -762,7 +762,7 @@ contains
        ! Initialize wave elevation spectrum
        wave_elevation_spectrum(:,:) = fillvalue
 
-       do jsea=1, nseal_local                   ! jsea is local
+       do jsea=1, nseal_noghost                   ! jsea is local
           call init_get_isea(isea, jsea)        ! isea is global
           ix  = mapsf(isea,1)                   ! global ix
           iy  = mapsf(isea,2)                   ! global iy
@@ -788,7 +788,7 @@ contains
        if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
           call CALC_U3STOKES(va, 2)
           do ib = 1, USSPF(2)
-             do jsea = 1, nseal_local
+             do jsea = 1, nseal_noghost
                 sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
                 sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
              enddo
@@ -822,7 +822,7 @@ contains
        sw_ustokes3(:)= zero
        sw_vstokes3(:)= zero
        call CALC_U3STOKES(va, 2)
-       do jsea = 1,nseal_local
+       do jsea = 1,nseal_noghost
           sw_ustokes1(jsea)=ussp(jsea,1)
           sw_vstokes1(jsea)=ussp(jsea,nk+1)
           sw_ustokes2(jsea)=ussp(jsea,2)
@@ -1038,7 +1038,7 @@ contains
     !----------------------------------------------------------------------
 
     !TODO: fix firstCall like for Roughl
-    jsea_loop: do jsea = 1,nseal_local
+    jsea_loop: do jsea = 1,nseal_noghost
        call init_get_isea(isea, jsea)
        if ( firstCall ) then
           charn(jsea) = zero
@@ -1102,7 +1102,7 @@ contains
 
     !----------------------------------------------------------------------
 
-    jsea_loop: do jsea = 1,nseal_local
+    jsea_loop: do jsea = 1,nseal_noghost
        call init_get_isea(isea, jsea)
        ix = mapsf(isea,1)
        iy = mapsf(isea,2)
@@ -1182,7 +1182,7 @@ contains
     wbyn(:) = zero
     wbpn(:) = zero
 
-    jsea_loop: do jsea = 1,nseal_local
+    jsea_loop: do jsea = 1,nseal_noghost
        call init_get_isea(isea, jsea)
        if ( dw(isea).le.zero ) cycle jsea_loop
        depth = max(dmin,dw(isea))
@@ -1258,7 +1258,7 @@ contains
     !----------------------------------------------------------------------
 
     facd = dwat*grav
-    jsea_loop: do jsea = 1,nseal_local
+    jsea_loop: do jsea = 1,nseal_noghost
        call init_get_isea(isea, jsea)
        if ( dw(isea).le.zero ) cycle jsea_loop
        sxxs = zero
@@ -1329,7 +1329,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
-    do jsea = 1, nseal_local
+    do jsea = 1, nseal_noghost
        call init_get_isea(isea, jsea)
        global_input(isea) = real(dataptr(jsea),4)
     end do
