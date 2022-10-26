@@ -60,6 +60,8 @@
 !/    27-Jun-2017 : Expanding WMO table to 2 digits JHA ( version 6.02 )
 !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
 !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+!/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
+!/                  min/max freq band (B. Pouliot, CMC)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1224,7 +1226,7 @@
 !/ ------------------------------------------------------------------- /
 !/ Local parameters
 !/
-      INTEGER                 :: J, I1, I2, ISP, IKM, IKL, IKH, ITH,  &
+      INTEGER                 :: J, I1, I2, ISP, IKM, ITH,            &
                                  IK, IH, IM, IS, IYR, IMTH, IDY, ITT, &
                                  I, NPART, IP, IX, IY, ISEA
       INTEGER, SAVE           :: IPASS  = 0
@@ -1439,10 +1441,12 @@
             RHOAIR   = MAX ( 0. , DAIRO(J))
 #endif
             CDIR     = MOD ( 270. - CDO(J)*RADE , 360. )
+#ifdef W3_IS2
             ICEDMAX  = MAX ( 0., ICEFO(J))
             ICEF     = ICEDMAX
             ICETHICK = MAX (0., ICEHO(J))
             ICECON   = MAX (0., ICEO(J))
+#endif
 !
 #ifdef W3_STAB2
             STAB0  = ZWIND * GRAV / 273.
@@ -1568,14 +1572,18 @@
                   IKM    = IK
                 END IF
               END DO
+
+            IF ( HSIG .GE. HSMIN .AND. IKM .NE. NK ) THEN
+                IF ( IKM .EQ. 1 ) THEN
+                    EL = - E1(IKM)
+                ELSE
+                    EL = E1(IKM-1) - E1(IKM)
+                END IF
+
+                EH = E1(IKM+1) - E1(IKM)
+
+                DENOM  = XL*EH - XH*EL
 !
-            IKL    = MAX (  1 , IKM-1 )
-            IKH    = MIN ( NK , IKM+1 )
-            EL     = E1(IKL) - E1(IKM)
-            EH     = E1(IKH) - E1(IKM)
-            DENOM  = XL*EH - XH*EL
-!
-            IF ( HSIG .GE. HSMIN ) THEN
                 FP     = SIG(IKM) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )  &
                             / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
                 THP    = THBND(IKM)
