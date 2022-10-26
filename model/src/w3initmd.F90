@@ -163,7 +163,6 @@ CONTAINS
        , FLGRD,                               &
        FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
        IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
-
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
