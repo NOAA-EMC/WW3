@@ -2039,7 +2039,6 @@ CONTAINS
               ITARG  = IP - 1
               IH     = IH + 1
               !
-#ifdef W3_MPI
               CALL MPI_RECV_INIT ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1,        &
                    WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,1), IERR2 )
               CALL MPI_SEND_INIT ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1,        &
