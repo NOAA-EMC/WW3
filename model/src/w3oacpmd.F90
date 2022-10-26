@@ -484,7 +484,8 @@
           ILA_PARAL(2) = NSEAL
           !
           DO JSEA=1, NSEAL
-            ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
+            CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
+            !ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
           ENDDO
 #endif
 !
@@ -499,7 +500,8 @@
 #endif
 
          DO JSEA=1,NSEAL
-            ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
+            CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
+            !ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
             ILA_PARAL(JSEA*2+2) = 1
          END DO
          !
