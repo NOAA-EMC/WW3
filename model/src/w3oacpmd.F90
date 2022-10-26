@@ -440,7 +440,10 @@
 !/ Executable part
 !/
 !
+#ifdef W3_OASIS
+#else
       IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN 
+#endif
           !
           ! 1.1. regular and curvilinear grids
           ! ----------------------------------
@@ -459,7 +462,8 @@
           ILA_PARAL(2) = NSEAL
           !
 
-#ifdef W3_HYCOM
+!#ifdef W3_HYCOM
+#ifdef W3_OASIS
       IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN
 #endif
           DO JSEA=1, NSEAL
@@ -492,7 +496,8 @@
          !
          ! 1.3. Unstructured grids
          ! ----------------------------------
-#ifdef W3_HYCOM
+!#ifdef W3_HYCOM
+#ifdef W3_OASIS
 #else
          WRITE(*,*) 'TO BE VERIFIED FOR UNSTRUCTURED GRIDS'
          STOP
@@ -507,7 +512,8 @@
       !
       ! 2. Partition definition
       ! ----------------------------------
-#ifdef W3_HYCOM
+!#ifdef W3_HYCOM
+#ifdef W3_OASIS
       CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NSEA)
 #else
       CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NNODES)
@@ -855,7 +861,8 @@
 #endif
 
 
-#ifdef W3_HYCOM
+!#ifdef W3_HYCOM
+#ifdef W3_OASIS
 #else
 
 #ifdef W3_OASOCM

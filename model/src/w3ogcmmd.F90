@@ -550,7 +550,8 @@
             IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__SSH') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
-#ifdef W3_HYCOM
+!#ifdef W3_HYCOM
+#ifdef W3_OASIS
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) 
 #else
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKT(1:NSEAL)
@@ -586,7 +587,8 @@
             IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSU') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
-#ifdef W3_HYCOM
+!#ifdef W3_HYCOM
+#ifdef W3_OASIS
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKT(1:NSEAL)
 #else
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKU(1:NSEAL)
@@ -617,7 +619,8 @@
             IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OSSV') THEN
                CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
                IF (LL_ACTION) THEN
-#ifdef W3_HYCOM
+!#ifdef W3_HYCOM
+#ifdef W3_OASIS
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKT(1:NSEAL)
 #else
                   TMP(1:NSEAL) = RLA_OASIS_RCV(1:NSEAL,1) * MASKV(1:NSEAL)
