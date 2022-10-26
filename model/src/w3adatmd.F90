@@ -1,5 +1,28 @@
+!> @file 
+!> @brief Define data structures to set up wave model auxiliary data
+!>  for several models simultaneously.
+!> 
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Define data structures to set up wave model auxiliary data
+!>  for several models simultaneously.
+!> 
+!> @details The number of grids is taken from W3GDATMD, and needs to be
+!>  set first with W3DIMG.
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
       MODULE W3ADATMD
 #ifdef W3_MEMCHECK
         USE MallocInfo_m
@@ -665,6 +688,17 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Set up the number of grids to be used.
+!>
+!> @details Use data stored in NGRIDS in W3GDATMD.
+!>
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!>
+!> @author H. L. Tolman
+!> @date   10-Dec-2014
+!>        
       SUBROUTINE W3NAUX ( NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -797,6 +831,20 @@
 !/
       END SUBROUTINE W3NAUX
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize an individual data grid at the proper dimensions.
+!>
+!> @details Allocate directly into the structure array. Note that
+!>  this cannot be done through the pointer alias!
+!>
+!> @param[in] IMOD   Model number to point to.
+!> @param[in] NDSE   Error output unit number.
+!> @param[in] NDST   Test output unit number.
+!> @param[in] D_ONLY Flag for initializing data arrays only.
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>      
       SUBROUTINE W3DIMA  ( IMOD, NDSE, NDST, D_ONLY )
 !/
 !/                  +-----------------------------------+
@@ -1523,6 +1571,17 @@
 !/
       END SUBROUTINE W3DIMA
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Version of W3DIMX for extended ouput arrays only.
+!>
+!> @param[in] IMOD     Model number to point to.
+!> @param[in] NDSE     Error output unit number.
+!> @param[in] NDST     Test output unit number.
+!> @param[in] OUTFLAGS 
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>      
       SUBROUTINE W3XDMA  ( IMOD, NDSE, NDST, OUTFLAGS )
 !/
 !/                  +-----------------------------------+
@@ -2395,6 +2454,21 @@
 !/
       END SUBROUTINE W3XDMA
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Initialize an individual data grid at the proper dimensions (DIA).
+!>
+!> @details Allocate directly into the structure array. Note that
+!>  this cannot be done through the pointer alias!
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!> @param[in] NSP  Array dimensions.
+!> @param[in] NSPX Array dimensions.
+!>
+!> @author H. L. Tolman
+!> @date   10-Dec-2014
+!>      
       SUBROUTINE W3DMNL  ( IMOD, NDSE, NDST, NSP, NSPX )
 !/
 !/                  +-----------------------------------+
@@ -2603,6 +2677,19 @@
 !/
       END SUBROUTINE W3DMNL
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Select one of the WAVEWATCH III grids / models.
+!>
+!> @details Point pointers to the proper variables in the proper element
+!>  of the GRIDS array.
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>      
       SUBROUTINE W3SETA ( IMOD, NDSE, NDST )
 !/
 !/                  +-----------------------------------+
@@ -3069,6 +3156,16 @@
 !/
       END SUBROUTINE W3SETA
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Reduced version of W3SETA to point to expended output arrays.
+!>
+!> @param[in] IMOD Model number to point to.
+!> @param[in] NDSE Error output unit number.
+!> @param[in] NDST Test output unit number.      
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>      
       SUBROUTINE W3XETA ( IMOD, NDSE, NDST )
 !/
 !/                  +-----------------------------------+

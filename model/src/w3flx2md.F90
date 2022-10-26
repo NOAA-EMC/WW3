@@ -1,5 +1,23 @@
+!> @file 
+!> @brief FLux/stress computations according Tolman and Chalikov (1996).
+!> 
+!> @author H. L. Tolman
+!> @date   20-Apr-2010
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief FLux/stress computations according Tolman and Chalikov (1996).
+!> 
+!> @author H. L. Tolman
+!> @date   20-Apr-2020
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
       MODULE W3FLX2MD
 !/
 !/                  +-----------------------------------+
@@ -53,6 +71,22 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief FLux/stress computations according Tolman and Chalikov (1996).
+!>
+!> @param[in]    ZWIND Height of wind.
+!> @param[in]    DEPTH Depth.
+!> @param[in]    FP    Peak frequency.
+!> @param[in]    U     Wind speed.
+!> @param[in]    UDIR  Wind direction.
+!> @param[inout] UST   Friction velocity.
+!> @param[out]   USTD  Direction of friction velocity.
+!> @param[out]   Z0    Z0 in profile law.
+!> @param[out]   CD    Drag coefficient.
+!>
+!> @author H. L. Tolman
+!> @date   10-Jan-2014
+!>        
       SUBROUTINE W3FLX2 ( ZWIND, DEPTH, FP, U, UDIR, UST, USTD, Z0, CD )
 !/
 !/                  +-----------------------------------+
