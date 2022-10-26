@@ -62,18 +62,18 @@ module yowNodepool
     !> The first domain starts by 1. Fortran Stye
     integer :: domainID = 0
 
-    contains
-      !> Insert a node to the connected Nodes array. See Node_insertConnNode()
-      !> Just a helper subroutine to make nicer code
-      procedure :: insertConnNode
+  contains
+    !> Insert a node to the connected Nodes array. See Node_insertConnNode()
+    !> Just a helper subroutine to make nicer code
+    procedure :: insertConnNode
 
-      !> return a pointer to the i-th node number conntected to this node
-      !> Just a helper function to make nicer code
-      procedure :: connNodes
+    !> return a pointer to the i-th node number conntected to this node
+    !> Just a helper function to make nicer code
+    procedure :: connNodes
 
-      !> returns true if this node is a ghost node
-      procedure :: isGhost
-  end type
+    !> returns true if this node is a ghost node
+    procedure :: isGhost
+  end type t_Node
 
   !> coordinates of the local +  ghost nodes. range [1:npa]
   real(rkind), public, target, allocatable :: x(:), y(:), z(:)
@@ -138,7 +138,7 @@ module yowNodepool
   integer, public, allocatable :: np_perProcSum(:)
 
 
-  contains
+contains
 
   !> return a pointer to the i-th node number conntected to this node.
   !> \param i
@@ -149,7 +149,7 @@ module yowNodepool
     integer, intent(in) :: i
     type(t_Node), pointer :: connNodes
     connNodes => nodes_global(connNodes_data(this%id_global, i))
-  end function
+  end function connNodes
 
   !> return pointer to the (global) node from the local id.
   !> This is in effekt iplg(id_local)
@@ -160,7 +160,7 @@ module yowNodepool
     integer, intent(in) :: id_local
     type(t_Node), pointer :: nodes
     nodes => nodes_global(iplg(id_local))
-  end function
+  end function nodes
 
   !> return pointer to the (global) (ghost) node
   !> Ghost nodes are nodes in the global node array, with the particularity
@@ -173,7 +173,7 @@ module yowNodepool
     integer, intent(in) :: id
     type(t_Node), pointer :: ghosts
     ghosts => nodes_global(ghostlg(id))
-  end function
+  end function ghosts
 
   !> Insert a node number to the end of the conntected node array
   !> \param index optional - node number to insert. If it not present, just increas temporarily array lenght for later allocation
@@ -195,9 +195,9 @@ module yowNodepool
       end do
 
       this%nConnNodes = this%nConnNodes +1
-!       connNode => this%connNodes(this%nConnNodes)
+      !       connNode => this%connNodes(this%nConnNodes)
       connNodes_data(this%id_global, this%nConnNodes) = ind
-!       connNode = index
+      !       connNode = index
     else
       this%nConnNodes = this%nConnNodes +1
     end if
@@ -214,7 +214,7 @@ module yowNodepool
     else
       isGhost = .true.
     endif
-  end function
+  end function isGhost
 
   subroutine finalizeNodepool()
     implicit none
@@ -230,5 +230,5 @@ module yowNodepool
     if(allocated(ghostgl))        deallocate(ghostgl)
     if(allocated(np_perProc))     deallocate(np_perProc)
     if(allocated(np_perProcSum))  deallocate(np_perProcSum)
-  end subroutine
+  end subroutine finalizeNodepool
 end module yowNodepool

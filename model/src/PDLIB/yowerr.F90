@@ -38,7 +38,7 @@
 !> Has some subroutine to make a nice error message
 module yowerr
   implicit none
-  contains
+contains
   subroutine parallel_abort(string, error)
     use yowDatapool, only: comm
     use MPI
@@ -73,148 +73,148 @@ module yowerr
         if(lopen) write(11,'(i4,2a)') myrank,': MPI ERROR: ', errorstring
       endif
       do i=1,200; inquire(i,opened=lopen); if(lopen) close(i); enddo;
-      call mpi_abort(comm, error,ierr)
-      if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
-    else
-      do i=1,200; inquire(i,opened=lopen); if(lopen) close(i); enddo;
-      call mpi_abort(comm, 0,ierr)
-      if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
-    endif
-  end subroutine parallel_abort
-  
-  
-  !> print various error strings and exit.
-  !> Call this to print an error string and optional line number, file and MPI error string
-  !> \param[in] string Errorstring
-  !> \param[in] line Line number
-  !> \param[in] file Filename
-  !> \param[in] errno The MPI error number which is translated into an error string
-  subroutine abort(string, line, file, errno)
-    use yowDatapool, only: comm     
-    use MPI
-    implicit none
-    ! Errorstring to print
-    character(*), optional, intent(in) :: string
-    ! Linenumber to print
-    integer,      optional, intent(in) :: line
-    ! Filename to print
-    character(*), optional, intent(in) :: file
-    ! MPI error number to translate
-    integer,      optional, intent(in) :: errno
-    ! Linenumber as string
-    character(50) :: lineNumber
-    ! MPI_MAX_ERROR_STRING = 1024
-    ! MPI Errorstring
-    character(MPI_MAX_ERROR_STRING) :: errorstring
-    ! The rank of this thread
-    integer :: myrank
-    ! real MPI errorsting lengt
-    integer :: stringLengh
-    !
-    integer :: ierr
+        call mpi_abort(comm, error,ierr)
+        if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
+      else
+        do i=1,200; inquire(i,opened=lopen); if(lopen) close(i); enddo;
+          call mpi_abort(comm, 0,ierr)
+          if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
+        endif
+      end subroutine parallel_abort
 
-    ! Get rank
-    call mpi_comm_rank(comm, myrank,ierr)
-!     if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
 
-    ! Always print rank
-    write(*, '(i2,a)', advance='no') myrank, " "
+      !> print various error strings and exit.
+      !> Call this to print an error string and optional line number, file and MPI error string
+      !> \param[in] string Errorstring
+      !> \param[in] line Line number
+      !> \param[in] file Filename
+      !> \param[in] errno The MPI error number which is translated into an error string
+      subroutine abort(string, line, file, errno)
+        use yowDatapool, only: comm
+        use MPI
+        implicit none
+        ! Errorstring to print
+        character(*), optional, intent(in) :: string
+        ! Linenumber to print
+        integer,      optional, intent(in) :: line
+        ! Filename to print
+        character(*), optional, intent(in) :: file
+        ! MPI error number to translate
+        integer,      optional, intent(in) :: errno
+        ! Linenumber as string
+        character(50) :: lineNumber
+        ! MPI_MAX_ERROR_STRING = 1024
+        ! MPI Errorstring
+        character(MPI_MAX_ERROR_STRING) :: errorstring
+        ! The rank of this thread
+        integer :: myrank
+        ! real MPI errorsting lengt
+        integer :: stringLengh
+        !
+        integer :: ierr
 
-    ! Print a simple "ERROR" when no MPI error number was given because the MPI error string contain an "ERROR" allready
-    if(.not. present(errno)) then
-      write(*,'(a)', advance='no' ) " ERROR "
-    endif
-    
-    ! print file and linenumber
-    if(present(file)) then
-      write(*,'(a)',advance='no' ) file
-      
-      if(present(line)) then
-        Write(lineNumber, '(i10)') line
-        write(*, '(2a)', advance='no') ":", trim(adjustl(lineNumber))
-      endif
-      
-      write(*, '(a)', advance='no') " "
-    endif
-    
-    ! if only linenumber is present, add an "Line:" string
-    if(.not. present(file) .and. present(line)) then
-        Write(lineNumber, '(i10)') line
-        write(*, '(2a)', advance='no') "Line:", trim(adjustl(lineNumber))
-        write(*, '(a)', advance='no') " "
-    endif
-    
-    ! print the errror string
-    if(present(string)) then
-      write(*,'(a)', advance='no') string
-    endif
-    
-    ! translate and print the MPI error string
-    if(present(errno) .and. errno /= MPI_SUCCESS) then
-      call mpi_error_string(errno, errorstring, stringLengh, ierr)
-      write(*,'(2a)', advance='no') 'MPI ERROR: ', errorstring(1:stringLengh)
-    endif
-    
-    write(*,*)
-    stop
-  
-  end subroutine
+        ! Get rank
+        call mpi_comm_rank(comm, myrank,ierr)
+        !     if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
 
-  !> print warning
-  !> Call this to print an warning string and optional line number, and file
-  !> \param[in] string warnstring
-  !> \param[in] line Line number
-  !> \param[in] file Filename
-  subroutine warn(string, line, file)
-    use yowDatapool, only: comm
-    use MPI
-    implicit none
-    ! Errorstring to print
-    character(*), optional, intent(in) :: string
-    ! Linenumber to print
-    integer,      optional, intent(in) :: line
-    ! Filename to print
-    character(*), optional, intent(in) :: file
-    ! Linenumber as string
-    character(50) :: lineNumber
-    ! The rank of this thread
-    integer :: myrank
-    !
-    integer :: ierr
+        ! Always print rank
+        write(*, '(i2,a)', advance='no') myrank, " "
 
-    ! Get rank
-    call mpi_comm_rank(comm, myrank,ierr)
-!     if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
+        ! Print a simple "ERROR" when no MPI error number was given because the MPI error string contain an "ERROR" allready
+        if(.not. present(errno)) then
+          write(*,'(a)', advance='no' ) " ERROR "
+        endif
 
-    ! Always print rank
-    write(*, '(i2,a)', advance='no') myrank, " "
+        ! print file and linenumber
+        if(present(file)) then
+          write(*,'(a)',advance='no' ) file
 
-    write(*,'(a)', advance='no' ) " WARN "
+          if(present(line)) then
+            Write(lineNumber, '(i10)') line
+            write(*, '(2a)', advance='no') ":", trim(adjustl(lineNumber))
+          endif
 
-    ! print file and linenumber
-    if(present(file)) then
-      write(*,'(a)',advance='no' ) file
+          write(*, '(a)', advance='no') " "
+        endif
 
-      if(present(line)) then
-        Write(lineNumber, '(i10)') line
-        write(*, '(2a)', advance='no') ":", trim(adjustl(lineNumber))
-      endif
+        ! if only linenumber is present, add an "Line:" string
+        if(.not. present(file) .and. present(line)) then
+          Write(lineNumber, '(i10)') line
+          write(*, '(2a)', advance='no') "Line:", trim(adjustl(lineNumber))
+          write(*, '(a)', advance='no') " "
+        endif
 
-      write(*, '(a)', advance='no') " "
-    endif
+        ! print the errror string
+        if(present(string)) then
+          write(*,'(a)', advance='no') string
+        endif
 
-    ! if only linenumber is present, add an "Line:" string
-    if(.not. present(file) .and. present(line)) then
-        Write(lineNumber, '(i10)') line
-        write(*, '(2a)', advance='no') "Line:", trim(adjustl(lineNumber))
-        write(*, '(a)', advance='no') " "
-    endif
+        ! translate and print the MPI error string
+        if(present(errno) .and. errno /= MPI_SUCCESS) then
+          call mpi_error_string(errno, errorstring, stringLengh, ierr)
+          write(*,'(2a)', advance='no') 'MPI ERROR: ', errorstring(1:stringLengh)
+        endif
 
-    ! print the errror string
-    if(present(string)) then
-      write(*,'(a)', advance='no') string
-    endif
+        write(*,*)
+        stop
 
-    write(*,*)
-  end subroutine
-end module yowerr
+      end subroutine abort
+
+      !> print warning
+      !> Call this to print an warning string and optional line number, and file
+      !> \param[in] string warnstring
+      !> \param[in] line Line number
+      !> \param[in] file Filename
+      subroutine warn(string, line, file)
+        use yowDatapool, only: comm
+        use MPI
+        implicit none
+        ! Errorstring to print
+        character(*), optional, intent(in) :: string
+        ! Linenumber to print
+        integer,      optional, intent(in) :: line
+        ! Filename to print
+        character(*), optional, intent(in) :: file
+        ! Linenumber as string
+        character(50) :: lineNumber
+        ! The rank of this thread
+        integer :: myrank
+        !
+        integer :: ierr
+
+        ! Get rank
+        call mpi_comm_rank(comm, myrank,ierr)
+        !     if(ierr/=MPI_SUCCESS) write(*,*) "parallel_abort: ierr=", ierr
+
+        ! Always print rank
+        write(*, '(i2,a)', advance='no') myrank, " "
+
+        write(*,'(a)', advance='no' ) " WARN "
+
+        ! print file and linenumber
+        if(present(file)) then
+          write(*,'(a)',advance='no' ) file
+
+          if(present(line)) then
+            Write(lineNumber, '(i10)') line
+            write(*, '(2a)', advance='no') ":", trim(adjustl(lineNumber))
+          endif
+
+          write(*, '(a)', advance='no') " "
+        endif
+
+        ! if only linenumber is present, add an "Line:" string
+        if(.not. present(file) .and. present(line)) then
+          Write(lineNumber, '(i10)') line
+          write(*, '(2a)', advance='no') "Line:", trim(adjustl(lineNumber))
+          write(*, '(a)', advance='no') " "
+        endif
+
+        ! print the errror string
+        if(present(string)) then
+          write(*,'(a)', advance='no') string
+        endif
+
+        write(*,*)
+      end subroutine warn
+    end module yowerr

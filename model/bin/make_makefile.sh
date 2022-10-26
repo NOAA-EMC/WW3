@@ -126,7 +126,7 @@
     # Get file - the list of files to be compiled
     # and filel - list of files for linking a particular prog
     create_file_list
- 
+
     case $prog in
       ww3_grid) IDstring='Grid preprocessor' ;;
       ww3_strt) IDstring='Initial conditions program' ;;

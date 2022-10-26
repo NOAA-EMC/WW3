@@ -4,7 +4,7 @@
 
 
 ! -------------------------------------------------------------------- !
-! Define the assimilation time for initialising the wave model. This 
+! Define the assimilation time for initialising the wave model. This
 !  has to be the same as the time of the restart.ww3
 !
 ! * namelist must be terminated with /
@@ -22,7 +22,7 @@
 !  set. Setting non-relevant variables should not affect the way the
 !  code works
 !
-! A number of different update approaches are available. UPDN is used 
+! A number of different update approaches are available. UPDN is used
 !  for the Nth approach
 !
 !  The UPDN*, with N<2 the same correction factor is applied at all
@@ -40,12 +40,12 @@
 !        the maximum SWH correction factor applied to all the
 !        gridpoints, as both a multiple or divisor (e.g. cap at 5.0
 !        means SWHANL/SWHBKG<=5.0 and SWHANL/SWHBKG>=0.2). The value
-!        given should not be less than 1.0 
+!        given should not be less than 1.0
 !       Name of the file with the SWH analysis from the DA system
 !        suffix .grbtxt for text out of grib2 file.
 !  UPD2 :: Option 2    The fac(x,y,frq,theta), is calculated at each
-!          grid point according to HsBckg and HsAnl 
-!          Expected input the Analysis field, grbtxt format 
+!          grid point according to HsBckg and HsAnl
+!          Expected input the Analysis field, grbtxt format
 !  UPD3 :: Option 3    The update factor is a surface with the shape
 !          of the background spectrum.
 !          Expected input: the Analysis field, grbtxt format and cap
@@ -57,9 +57,9 @@
 !          The algorithm requires the mapping of each partition on the
 !          individual spectra; the map is used to determine the
 !          weighting surfaces.
-!          Expected input: the Analysis field, grbtxt format and the 
+!          Expected input: the Analysis field, grbtxt format and the
 !          functions(frq,theta) of the update to be applied.
-! 
+!
 !  UPDN, with N>=5 each gridpoint has its own update factor and uses
 !       wind field data to evaluate wind-sea and swell fields. Also
 !       uses:
@@ -110,4 +110,3 @@
 ! -------------------------------------------------------------------- !
 ! WAVEWATCH III - end of namelist                                      !
 ! -------------------------------------------------------------------- !
-

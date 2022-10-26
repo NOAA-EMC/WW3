@@ -60,7 +60,7 @@ module yowRankModule
 
     !> global start node number for every thread
     integer:: IStart = 0
-  end type
+  end type t_rank
 
   !> Provides access to some information of all threads e.g. iplg
   !> \note range [1:nTasks]
@@ -69,7 +69,7 @@ module yowRankModule
   integer, public, allocatable :: IPGL_TO_PROC(:), ipgl_tot(:)
   integer, public, allocatable :: ipgl_npa(:)
 
-  contains
+contains
 
   !> allocate and exchange
   subroutine initRankModule()
@@ -83,7 +83,7 @@ module yowRankModule
 
     call exchangeIPLG()
     call calcISTART()
-  end subroutine
+  end subroutine initRankModule
 
   !> send iplg from this thread to every neighbor thread
   !> \internal
@@ -107,7 +107,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_IRecv(rank(i)%np, 1, itype, i-1, &
-            42, comm, recvRqst(i), ierr)
+             42, comm, recvRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_IRecv", ierr)
         endif
@@ -120,7 +120,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_ISend(np, 1, itype, i-1, &
-            42, comm, sendRqst(i), ierr)
+             42, comm, sendRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_ISend", ierr)
         endif
@@ -155,7 +155,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_ISend(npa, 1, itype, i-1, &
-            42, comm, sendRqst(i), ierr)
+             42, comm, sendRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_ISend", ierr)
         endif
@@ -185,7 +185,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_IRecv(rank(i)%iplg, rank(i)%npa, itype, i-1, &
-            42, comm, recvRqst(i), ierr)
+             42, comm, recvRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_IRecv", ierr)
         endif
@@ -198,7 +198,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_ISend(iplg, npa, itype, i-1, &
-            42, comm, sendRqst(i), ierr)
+             42, comm, sendRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_ISend", ierr)
         endif
@@ -231,7 +231,7 @@ module yowRankModule
       IPglob=rank(myrank+1)%iplg(J)
       ipgl_npa(IPglob)=J
     END DO
-  end subroutine
+  end subroutine exchangeIPLG
 
   !> \internal
   subroutine calcISTART()
@@ -243,17 +243,17 @@ module yowRankModule
     do ir=2, nTasks
       rank(ir)%IStart = rank(ir-1)%IStart + rank(ir-1)%np
     end do
-  end subroutine
+  end subroutine calcISTART
 
   subroutine finalizeRankModule()
     implicit none
     integer :: i
-  
+
     if(allocated(rank)) then
       do i=1, size(rank)
         if(allocated(rank(i)%iplg)) deallocate(rank(i)%iplg)
       end do
       deallocate(rank)
     endif
-  end subroutine
-end module
+  end subroutine finalizeRankModule
+end module yowRankModule
