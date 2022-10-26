@@ -64,7 +64,7 @@ module wav_import_export
 #endif
 
   integer, parameter :: nwav_elev_spectrum = 25     !< the size of the wave spectrum exported if coupling
-  !! waves to cice6
+                                                    !! waves to cice6
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
        __FILE__
 

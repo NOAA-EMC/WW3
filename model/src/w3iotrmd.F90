@@ -878,22 +878,22 @@ CONTAINS
 9011 FORMAT (' TEST W3IOTR : OPENING INPUT    : ',A,' [',A,']')
 9012 FORMAT (' TEST W3IOTR : OPENING OUTPUT   : ',A,' [',A,']')
 9015 FORMAT (' TEST W3IOTR : PREPARING MASKS')
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST W3IOTR : SHIFTING MASKS')
 9021 FORMAT (' TEST W3IOTR : OUTPUT TIME FRAME: ',I8.8,I7.6/      &
          '                                  ',I8.8,I7.6)
 9022 FORMAT (' TEST W3IOTR : ENDING TIME REACHED')
+9033 FORMAT (' TEST W3IOTR : END OF INPUT FILE')
+9034 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED')
+9090 FORMAT (' TEST W3IOTR : NUMBER OF TRACK P: ',I10,            &
+         '  (OUT OF',I10,')'/                                 &
+         '               NUMBER OF SPECTRA: ',I10,            &
+         '  (OUT OF',I10,')')
+9080 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED.')
 #endif
     !
 #ifdef W3_T1
 9030 FORMAT (' TEST W3IOTR : POINT-BY-POINT STATUS')
 9031 FORMAT ('      ',I8.8,I7.6,2F9.2,1X,A,1X,4I4,2L3)
-#endif
-#ifdef W3_T
-9033 FORMAT (' TEST W3IOTR : END OF INPUT FILE')
-9034 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED')
 #endif
 #ifdef W3_T2
 9035 FORMAT (' TEST W3IOTR : DUMP OF MAPS : ')
@@ -903,16 +903,6 @@ CONTAINS
 #ifdef W3_T3
 9040 FORMAT (' TEST W3IOTR : POINT',2I4,' (',I6,')',             &
          ' ON PROCESS',I4,2X,A,I10.8,I7.6)
-#endif
-#ifdef W3_T
-9090 FORMAT (' TEST W3IOTR : NUMBER OF TRACK P: ',I10,            &
-         '  (OUT OF',I10,')'/                                 &
-         '               NUMBER OF SPECTRA: ',I10,            &
-         '  (OUT OF',I10,')')
-#endif
-    !
-#ifdef W3_T
-9080 FORMAT (' TEST W3IOTR : OUTPUT TYPE DISABLED.')
 #endif
     !/
     !/ End of W3IOTR ----------------------------------------------------- /

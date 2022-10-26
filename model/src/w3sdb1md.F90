@@ -174,9 +174,6 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-#ifdef W3_T0
-    INTEGER                 :: IK, ITH
-#endif
     REAL*8                    :: HM, BB, ARG, Q0, QB, B, CBJ, HRMS, EB(NK)
     REAL*8                    :: AUX, CBJ2, RATIO, S0, S1, THR, BR1, BR2, FAK
     REAL                      :: ETOT, FMEAN2
@@ -320,9 +317,6 @@ CONTAINS
         DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
     CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG, '  ', 1.,    &
          0.0, 0.001, 'Diag Sdb', ' ', 'NONAME')
 #endif

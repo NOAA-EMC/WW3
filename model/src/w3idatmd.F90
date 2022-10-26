@@ -361,9 +361,6 @@ CONTAINS
     INTEGER                 :: I
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3NINP')
 #endif
     !
@@ -531,9 +528,6 @@ CONTAINS
     LOGICAL                 :: FLAGSTIDE(4)=.FALSE.
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DIMI')
 #endif
     !
@@ -910,9 +904,6 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3SETI')
 #endif
     !

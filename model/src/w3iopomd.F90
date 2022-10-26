@@ -276,25 +276,19 @@ CONTAINS
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
-#ifdef W3_O7a
-    INTEGER                 :: IX0, IXN, IY0, IYN, NNX,         &
-         KX, KY, JX, IIX, IX2, IY2, IS1
-#endif
     INTEGER                 :: IX(4), IY(4)   ! Indices of points used in interp.
     REAL                    :: RD(4)          ! Interpolation coefficient
-#ifdef W3_O7a
-    REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
-#endif
     REAL, PARAMETER         :: ACC = 0.05
     REAL                    :: FACTOR
     INTEGER                 :: ITOUT          ! Triangle index in unstructured grids
 #ifdef W3_O7a
+    INTEGER                 :: IX0, IXN, IY0, IYN, NNX,         &
+         KX, KY, JX, IIX, IX2, IY2, IS1
+    REAL                    :: RD1, RD2, RDTOT, ZBOX(4), DEPTH
     CHARACTER(LEN=1)         :: SEA(5), LND(5), OUT(5)
     CHARACTER(LEN=9)         :: PARTS
     CHARACTER(LEN=1), ALLOCATABLE :: STRING(:), LINE1(:), LINE2(:)
-#endif
     !
-#ifdef W3_O7a
     DATA SEA / ' ', 's', 'e', 'a', ' ' /
     DATA LND / ' ', 'l', 'n', 'd', ' ' /
     DATA OUT / ' ', 'x', 'x', 'x', ' ' /
@@ -429,17 +423,13 @@ CONTAINS
     IF ( IAPROC .EQ. NAPOUT ) THEN
       WRITE (SCREEN,940) NOPTS
       DO J=1, NOPTS
-#endif
         !
-#ifdef W3_O7a
         WRITE (SCREEN,941) PTNME(J), PTLOC(:,J)*FACTOR
         IX(:) = IPTINT(1,:,J)
         IY(:) = IPTINT(2,:,J)
         RD(:) = PTIFAC(:,J)
         WRITE (SCREEN,942) (IX(K),IY(K),RD(K),K=1,4)
-#endif
         !
-#ifdef W3_O7a
         ZBOX   = 0.
         RDTOT  = 0.
         DO K = 1,4
@@ -449,21 +439,15 @@ CONTAINS
           END IF
         END DO
         RDTOT  = MAX ( 1.E-7 , RDTOT )
-#endif
         !
-#ifdef W3_O7a
         DEPTH  = - ( RD(1)*ZBOX(1) + &
              RD(2)*ZBOX(2) + &
              RD(3)*ZBOX(3) + &
              RD(4)*ZBOX(4) ) / RDTOT
         WRITE (SCREEN,943) DEPTH
-#endif
         !
-#ifdef W3_O7a
         ! *** implementation of O7a option with curvilinear grids is incomplete ***
-#endif
         !
-#ifdef W3_O7a
         IF ( RD1 .LT. 0.05 ) IX2 = IX1
         IF ( RD1 .GT. 0.95 ) IX1 = IX2
         IF ( RD2 .LT. 0.05 ) IY2 = IY1
@@ -473,9 +457,7 @@ CONTAINS
         IY0    = MAX ( 1 , IY1 - 1 )
         IYN    = MIN ( IY2 + 1 , NY )
         NNX    = 13 * ( IXN - IX0 + 1 )
-#endif
         !
-#ifdef W3_O7a
         ALLOCATE ( STRING(NNX), LINE1(NNX), LINE2(NNX) )
         DO KX=1, NNX
           LINE1(KX) = ' '
@@ -485,22 +467,16 @@ CONTAINS
           LINE1(KX) = '|'
           LINE2(KX) = '+'
         END DO
-#endif
         !
-#ifdef W3_O7a
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
           WRITE (SCREEN,945) (1+MOD(KX+NX-1,NX),KX=IX0,IXN)
         ELSE
           WRITE (SCREEN,945) (KX,KX=IX0,IXN)
         END IF
         WRITE (SCREEN,946) LINE1
-#endif
         !
-#ifdef W3_O7a
         DO KY=IYN, IY0, -1
-#endif
           !
-#ifdef W3_O7a
           STRING  = LINE1
           DO KX=IX0, IXN
             IF ( ICLOSE.NE.ICLOSE_NONE .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
@@ -516,9 +492,7 @@ CONTAINS
             END IF
           END DO
           WRITE (SCREEN,946) STRING
-#endif
           !
-#ifdef W3_O7a
           STRING = LINE2
           DO KX=IX0, IXN
             NNX    = 5 + (KX-IX0)*13
@@ -534,9 +508,7 @@ CONTAINS
             END IF
           END DO
           WRITE (SCREEN,947) KY, STRING
-#endif
           !
-#ifdef W3_O7a
           STRING  = LINE1
           DO KX=IX0, IXN
             IF ( ICLOSE.NE.ICLOSE_NONE .OR. (KX.GE.1 .AND. KX.LE.NX) ) THEN
@@ -555,22 +527,16 @@ CONTAINS
           END DO
           WRITE (SCREEN,946) STRING
           WRITE (SCREEN,946) LINE1
-#endif
           !
-#ifdef W3_O7a
         END DO
-#endif
         !
-#ifdef W3_O7a
         IF ( ICLOSE.NE.ICLOSE_NONE ) THEN
           WRITE (SCREEN,945) (1+MOD(KX+NX-1,NX),KX=IX0,IXN)
         ELSE
           WRITE (SCREEN,945) (KX,KX=IX0,IXN)
         END IF
         DEALLOCATE ( STRING, LINE1, LINE2 )
-#endif
 
-#ifdef W3_O7a
       END DO
       WRITE (SCREEN,*)
       WRITE (SCREEN,*)
@@ -1480,9 +1446,7 @@ CONTAINS
 9000 FORMAT (' TEST W3IOPO : IPASS =',I4,'    INXOUT = ',A,       &
          ' WRITE = ',L1,' UNIT =',I3/                         &
          '               IGRD =',I3,' FEXT = ',A)
-#endif
 
-#ifdef W3_T
 9001 FORMAT (' TEST W3IOPO : OPENING NEW FILE [',A,']')
 9002 FORMAT (' TEST W3IOPO : TEST PARAMETERS:'/                   &
          '       IDSTR : ',A/                                 &
@@ -1491,14 +1455,10 @@ CONTAINS
          '        NOPT :',I5)
 9003 FORMAT (' TEST W3IOPO : POINT LOCATION AND ID')
 9004 FORMAT (3X,I4,2F10.2,2X,A)
-#endif
     !
-#ifdef W3_T
 9010 FORMAT (' TEST W3IOPO : TIME  :',I9.8,I7.6)
 9011 FORMAT (' TEST W3IOPO : END OF FILE REACHED')
-#endif
     !
-#ifdef W3_T
 9020 FORMAT (' TEST W3IOPO : POINT NR.:',I5)
 9021 FORMAT (' TEST W3IOPO :',2I4,2F6.3)
 9022 FORMAT (' TEST W3IOPO :',4I7,2X,4I2,2X,4F5.2)

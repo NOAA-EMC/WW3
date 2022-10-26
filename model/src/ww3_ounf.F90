@@ -758,7 +758,6 @@ PROGRAM W3OUNF
   !
 #ifdef W3_SMC
 4100 FORMAT (//'  SMC grid output :' /                               &
-          !
        ' --------------------------------------------------')
 4110 FORMAT ( '   SMC to regular lat/lon grid using cell averaging' /&
        '   Aligned output grid definition: ' /                &

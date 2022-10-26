@@ -357,6 +357,9 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: DWAT, srce_imp_post, srce_imp_pre,         &
          srce_direct, GRAV, TPI, TPIINV, LPDLIB
+#ifdef W3_T
+    USE CONSTANTS, ONLY: RADE
+#endif
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
          DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
          XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &

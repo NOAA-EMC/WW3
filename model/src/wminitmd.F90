@@ -2432,7 +2432,7 @@ CONTAINS
           IDINP(I,J) = IDSTR(J)
           IF ( INPMAP(I,J) .LT. 0 ) CYCLE
           CALL W3FLDO ('READ', IDINP(I,J), MDSF(I,J), MDST, MDSE2,&
-               !!Li                        NX, NY, GTYPE, IERR, MNAMES(I),           &
+               !!Li     NX, NY, GTYPE, IERR, MNAMES(I),           &
                NX, NY,   JJJ, IERR, MNAMES(I),           &
                TRIM(FNMPRE) )
           IF ( IERR .NE. 0 ) GOTO 2080

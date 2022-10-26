@@ -560,19 +560,19 @@ MODULE W3ODATMD
   REAL, POINTER           :: PTFCUT   ! C. Bunney; Part. 5 freq cut
   character(len=8)   :: runtype = ''                 !< @public the run type (startup,branch,continue)
   character(len=256) :: initfile = ''                !< @public name of wave initial condition file
-  !! if runtype is startup or branch run, then initfile is used
+                                                     !! if runtype is startup or branch run, then initfile is used
   logical            :: use_user_histname = .false.  !<@public logical flag for user set history filenames
   logical            :: use_user_restname = .false.  !<@public logical flag for user set restart filenames
   character(len=512) :: user_histfname = ''          !<@public user history filename prefix, timestring
-  !! YYYY-MM-DD-SSSSS will be appended
+                                                     !! YYYY-MM-DD-SSSSS will be appended
   character(len=512) :: user_restfname = ''          !<@public user restart filename prefix, timestring
-  !! YYYY-MM-DD-SSSSS will be appended
+                                                     !! YYYY-MM-DD-SSSSS will be appended
   logical            :: histwr = .false.             !<@public logical to trigger history write
-  !! if true => write history file (snapshot)
+                                                     !! if true => write history file (snapshot)
   logical            :: rstwr = .false.              !<@public logical to trigger restart write
-  !! if true => write restart
+                                                     !! if true => write restart
   logical            :: user_netcdf_grdout = .false. !<@public logical flag to use netCDF for gridded
-  !! field output
+                                                     !! field output
   character(len= 36) :: time_origin = ''             !< @public the time_origin used for netCDF output
   character(len= 36) :: calendar_name = ''           !< @public the calendar used for netCDF output
   integer(kind=8)    :: elapsed_secs = 0             !< @public the time in seconds from the time_origin
@@ -1056,9 +1056,6 @@ CONTAINS
     INTEGER                 :: JGRID, NLOW
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DMO2')
 #endif
     !
@@ -1253,9 +1250,6 @@ CONTAINS
     INTEGER                 :: JGRID
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DMO3')
 #endif
     !
@@ -1424,9 +1418,6 @@ CONTAINS
     INTEGER                 :: JGRID
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DMO5')
 #endif
     !
@@ -1630,9 +1621,6 @@ CONTAINS
     INTEGER                 :: J
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3SETO')
 #endif
     !

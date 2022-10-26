@@ -566,10 +566,7 @@ CONTAINS
         DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
-    CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1), '  ', 1.,         &
+    CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,      &
          0.0, 0.001, 'Diag Sin', ' ', 'NONAME')
 #endif
     !
@@ -935,9 +932,6 @@ CONTAINS
     REAL                    :: X0
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !
-#ifdef W3_S
     CALL STRACE (IENT, 'TABU_HF')
 #endif
     !
@@ -1261,10 +1255,7 @@ CONTAINS
         DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
-    CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1), '  ', 1.,         &
+    CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:NK), '  ', 1.,      &
          0.0, 0.001, 'Diag Sds', ' ', 'NONAME')
 #endif
     !

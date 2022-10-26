@@ -1453,21 +1453,12 @@ CONTAINS
          '               FLBE       :',L4/                    &
          '               FLST       :',L4/                    &
          '               FIRST      :',L4)
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST W3FLDG : FIELD SHIFTED')
 9021 FORMAT ('               NO FIELD TO SHIFT')
-#endif
-    !
-#ifdef W3_T
 9030 FORMAT (' TEST W3FLDG : WRITE TIME : ',I8,I7.6)
 9031 FORMAT (' TEST W3FLDG : NEW TIME   : ',I8,I7.6)
 9032 FORMAT (' TEST W3FLDG : NEW TIME   : ',I8,I7.6,              &
          ' EOF (IERR =',I3,')')
-#endif
-    !
-#ifdef W3_T
 9040 FORMAT (' TEST W3FLDG : FILLING IN FIRST FIELD')
 9041 FORMAT (' TEST W3FLDG : FINAL TIMES: ',I8,I7.6/              &
          '                            ',I8,I7.6)
@@ -1740,16 +1731,10 @@ CONTAINS
          '               IERR       :',I4)
 9001 FORMAT (' TEST W3FLDD : WRITE      :',L4/                    &
          '               SIZE       :',L4)
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST W3FLDD : WRITE TIME : ',I8,I7.6/              &
          '               RECORDS    : ',I6)
 9021 FORMAT (' TEST W3FLDD : NEW TIME   : ',I8,I7.6/              &
          '               RECORDS    : ',I6)
-#endif
-    !
-#ifdef W3_T
 9030 FORMAT (' TEST W3FLDD : FINAL TIME : ',I8,I7.6)
 #endif
     !/
@@ -2130,9 +2115,6 @@ CONTAINS
 9010 FORMAT ( ' TEST W3FLDP : IX =',I4,' IY =',I4,             &
          '  LONGITUDE =',F8.2, '  LATITUDE =',F8.2,       &
          '  ================================')
-#endif
-    !
-#ifdef W3_T1
 9020 FORMAT ( ' TEST W3FLDP : IX =',I4,' IY =',I4,             &
          '  LONGITUDE =',F8.2, '  LATITUDE =',F8.2,       &
          '   (',A,')')
@@ -2488,14 +2470,8 @@ CONTAINS
          '               TF0        : ',I8,I7.6/              &
          '               TFN, IERR  : ',I8,I7.6,I4)
 9001 FORMAT (' TEST W3FLDH : FIRST FIELD : ',L2)
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST W3FLDH : FIELD SHIFTED')
 9021 FORMAT ('               NO FIELD TO SHIFT')
-#endif
-    !
-#ifdef W3_T
 9050 FORMAT (' TEST W3FLDH : NEW VALUE(S) : ',3F8.2)
 9051 FORMAT (' TEST W3FLDH : NEW TIME     : ',I8,I7.6)
 9052 FORMAT (' TEST W3FLDH : NEW TIME     : ',I8,I7.6,            &
@@ -2734,14 +2710,8 @@ CONTAINS
          '               TF0        : ',I8,I7.6/              &
          '               TFN, IERR  : ',I8,I7.6,I4)
 9001 FORMAT (' TEST W3FLDM : FIRST FIELD : ',L2)
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST W3FLDM : FIELD SHIFTED')
 9021 FORMAT ('               NO FIELD TO SHIFT')
-#endif
-    !
-#ifdef W3_T
 9050 FORMAT (' TEST W3FLDM : NEW VALUE(S) : ',2F8.2)
 9051 FORMAT (' TEST W3FLDM : NEW TIME     : ',I8,I7.6)
 9052 FORMAT (' TEST W3FLDM : NEW TIME     : ',I8,I7.6,            &

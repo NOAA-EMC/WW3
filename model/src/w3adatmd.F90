@@ -786,9 +786,6 @@ CONTAINS
     INTEGER                 :: I
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3NAUX')
 #endif
     !
@@ -965,9 +962,6 @@ CONTAINS
     INTEGER                 :: JGRID, NXXX, NSEAL_tmp
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DIMA')
 #endif
     !
@@ -1659,9 +1653,6 @@ CONTAINS
     INTEGER                 :: JGRID, NXXX, I
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3XDMA')
 #endif
     !
@@ -2597,9 +2588,6 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3DMNL')
 #endif
     !
@@ -2666,9 +2654,6 @@ CONTAINS
          WADATS(IMOD)%AF11(NSPX),        &
          STAT=ISTAT                      )
     CHECK_ALLOC_STATUS ( ISTAT )
-#endif
-    !
-#ifdef W3_NL1
     WADATS(IMOD)%NLINIT = .TRUE.
 #endif
     !
@@ -2819,9 +2804,6 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3SETA')
 #endif
     !
@@ -3186,9 +3168,6 @@ CONTAINS
       IRQSG1 => WADATS(IMOD)%IRQSG1
       IRQSG2 => WADATS(IMOD)%IRQSG2
     END IF
-#endif
-    !
-#ifdef W3_MPI
     GSTORE => WADATS(IMOD)%GSTORE
     SSTORE => WADATS(IMOD)%SSTORE
 #endif
@@ -3262,9 +3241,6 @@ CONTAINS
     !/
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-#ifdef W3_S
     CALL STRACE (IENT, 'W3XETA')
 #endif
     !

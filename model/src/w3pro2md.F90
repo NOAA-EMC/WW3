@@ -402,9 +402,6 @@ CONTAINS
     DO IK=NK+2, 1, -1
       WRITE (NDST,9001) (MAPTST(IK,ITH),ITH=1, NTH)
     END DO
-#endif
-    !
-#ifdef W3_T
     MAPTST = 0
 #endif
     !
@@ -459,9 +456,6 @@ CONTAINS
          '      BELOW   : ',I6/                              &
          '      TOTAL   : ',I6/)
 9001 FORMAT (1X,130I1)
-#endif
-    !
-#ifdef W3_T
 9010 FORMAT (' TEST W3MAP2 : COMPOSITE MAPS TH2, WN2 AND BTK')
 9011 FORMAT (2X,60I2)
 #endif
@@ -1207,25 +1201,14 @@ CONTAINS
 9001 FORMAT (' TEST W3XYP2 : ISP, ITH, IK, COS-SIN :',I8,2I4,2F7.3)
 9002 FORMAT (' TEST W3XYP2 : DFRR, CELLP, DTME     :',3E10.3)
 9003 FORMAT (' TEST W3XYP2 : NO DISPERSION CORRECTION ')
-#endif
-    !
-#ifdef W3_T
 9010 FORMAT (' TEST W3XYP2 : INITIALIZE ARRAYS')
-#endif
-    !
-#ifdef W3_T
 9020 FORMAT (' TEST W3XYP2 : CALCULATING LCFLX/Y AND DSS/NN (NSEA=', &
          I6,')')
+9022 FORMAT (' TEST W3XYP2 : CORRECTING FOR CURRENT')
+9040 FORMAT (' TEST W3XYP2 : FIELD AFTER PROP. (NSEA=',I6,')')
 #endif
 #ifdef W3_T1
 9021 FORMAT (1X,I6,2I5,E12.4,2f7.3)
-#endif
-#ifdef W3_T
-9022 FORMAT (' TEST W3XYP2 : CORRECTING FOR CURRENT')
-#endif
-    !
-#ifdef W3_T
-9040 FORMAT (' TEST W3XYP2 : FIELD AFTER PROP. (NSEA=',I6,')')
 #endif
 #ifdef W3_T2
 9041 FORMAT (1X,I6,2I5,E12.4)
@@ -1462,16 +1445,12 @@ CONTAINS
       VCFLT  = 0.
       FRK    = 0.
       FDDMAX = 0.
-#endif
       !
-#ifdef W3_REFRX
       DO ISP=1, NSPEC
         FDDMAX = MAX ( FDDMAX , ABS (                      &
              ESIN(ISP)*DCDX(MAPWN(ISP)) - ECOS(ISP)*DCDY(MAPWN(ISP)) ) )
       END DO
-#endif
       !
-#ifdef W3_REFRX
       DO IK=1, NK
         FRK(IK) = FACTH * CG(IK) * WN(IK) / SIG(IK)
       END DO

@@ -66,9 +66,9 @@ module wav_shr_mod
 
   ! Only used by ufs
   logical            , public :: merge_import  = .false.  !< @public logical to specify whether import fields will
-  !! be merged with a field provided from a file
+                                                          !! be merged with a field provided from a file
   logical            , public :: multigrid = .false.      !< @public logical to control whether wave model is run
-  !! as multigrid
+                                                          !! as multigrid
 
   interface ymd2date
     module procedure ymd2date_int

@@ -269,7 +269,6 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
 #ifdef W3_T0
-    INTEGER                 :: ITH
     REAL                    :: DOUT(NK,NTH)
 #endif
     INTEGER                 :: IKTH, IK
@@ -444,9 +443,6 @@ CONTAINS
         DOUT(IK,ITH) = D(ITH+(IK-1)*NTH)
       END DO
     END DO
-#endif
-    !
-#ifdef W3_T0
     CALL PRT2DS (NDST, NK, NK, NTH, DOUT, SIG(1:), '  ', 1.,    &
          0.0, 0.001, 'Diag Sice', ' ', 'NONAME')
 #endif
