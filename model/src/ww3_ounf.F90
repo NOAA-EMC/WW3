@@ -169,9 +169,7 @@
       USE W3IOGOMD, ONLY: W3IOGO, W3READFLGRD, W3FLGRDFLAG
       USE W3INITMD, ONLY: WWVER, SWITCHES
       USE W3ODATMD, ONLY: NAPROC, NOSWLL, PTMETH, PTFCUT
-#ifdef W3_DEBUG
       USE W3ODATMD, only : IAPROC
-#endif
 !/
       USE W3GDATMD
       USE W3WDATMD, ONLY: TIME, WLV, ICE, ICEH, ICEF, BERG,            &
@@ -305,12 +303,6 @@
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 3.  Read general data and first fields from file
 !
-#ifdef W3_DEBUG
-      WRITE (NDSO,*) 'Before FLOGRD(2,1)=', FLOGRD(2,1)
-      WRITE (NDSO,*) 'IAPROC=', IAPROC
-      WRITE(740+IAPROC,*) 'Calling W3IOGO from ww3_ounf'
-      FLUSH(740+IAPROC)
-#endif
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
 !
       WRITE (NDSO,930)
@@ -1344,16 +1336,6 @@
 #endif
 
               CALL S2GRID(THM, X1, .TRUE.)
-!              IF( SMCGRD ) THEN
-!!/SMC                CALL W3S2XY_SMC( THM, X1, .TRUE. )
-!              ELSE
-!                 DO ISEA=1, NSEA
-!                   IF ( THM(ISEA) .NE. UNDEF )  THEN
-!                     THM(ISEA) = MOD ( 630. - RADE*THM(ISEA) , 360. )
-!                     END IF
-!                   END DO
-!                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THM, MAPSF, X1 )
-!              ENDIF
 !
             ! Directional spread
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
@@ -1366,16 +1348,6 @@
               IF ( FLAGUNR ) CALL W3THRTN(NSEA, THP0, AnglD, .FALSE.)
 #endif
               CALL S2GRID(THP0, X1, .TRUE.)
-!              IF( SMCGRD ) THEN
-!!/SMC                CALL W3S2XY_SMC( THP0, X1, .TRUE. )
-!              ELSE
-!                 DO ISEA=1, NSEA
-!                   IF ( THP0(ISEA) .NE. UNDEF ) THEN
-!                     THP0(ISEA) = MOD ( 630-RADE*THP0(ISEA) , 360. )
-!                     END IF
-!                   END DO
-!                 CALL W3S2XY ( NSEA, NSEA, NX+1, NY, THP0  , MAPSF, X1 )
-!              ENDIF
 !
             ! Infragravity wave height
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 10 ) THEN
@@ -1525,16 +1497,6 @@
                 IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR(:,IPART), AnglD, .FALSE.)
 #endif
               CALL S2GRID(PDIR(:,IPART), X1, .TRUE.)
-!              IF( SMCGRD ) THEN
-!!/SMC                CALL W3S2XY_SMC( PDIR(:,IPART), X1, .TRUE. )
-!              ELSE
-!                DO ISEA=1, NSEA
-!                  IF ( PDIR(ISEA,IPART) .NE. UNDEF ) THEN
-!                     PDIR(ISEA,IPART) = MOD ( 630-RADE*PDIR(ISEA,IPART) , 360. )
-!                  END IF
-!                END DO
-!                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PDIR(:,IPART), MAPSF, X1 )
-!              ENDIF
 !
             ! Partition directional spread
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
@@ -1551,16 +1513,6 @@
                 IF ( FLAGUNR ) CALL W3THRTN(NSEA, PTHP0(:,IPART), AnglD, .FALSE.)
 #endif
               CALL S2GRID(PTHP0(:,IPART), X1, .TRUE.)
-!              IF( SMCGRD ) THEN
-!!/SMC                CALL W3S2XY_SMC( PTHP0(:,IPART), X1, .TRUE. )
-!              ELSE
-!                DO ISEA=1, NSEA
-!                  IF ( PTHP0(ISEA,IPART) .NE. UNDEF ) THEN
-!                    PTHP0(ISEA,IPART) = MOD ( 630-RADE*PTHP0(ISEA,IPART) , 360. )
-!                    END IF
-!                  END DO
-!                CALL W3S2XY ( NSEA, NSEA, NX+1, NY, PTHP0(:,IPART), MAPSF, X1 )
-!              END IF
 !
             ! Partition peakedness
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8 ) THEN

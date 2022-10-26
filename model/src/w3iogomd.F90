@@ -1,4 +1,16 @@
+!> @file
+!> @brief Gridded output of mean wave parameters.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!> 
+
 #include "w3macros.h"
+
+!>
+!> @brief Gridded output of mean wave parameters.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3IOGOMD
 !/
@@ -57,9 +69,11 @@
 !/                  (Roberto Padilla-Hernandez & J.H. Alves)
 !/    03-Nov-2020 : Factored out NAME matching into     ( version 7.12 )
 !/                  seperate subroutine. (C. Bunney)
-!/    15-Jan-2020 : Added TP output based on exsiting   ( version 7.12 )
+!/    15-Jan-2021 : Added TP output based on exsiting   ( version 7.12 )
 !/                  FP internal field. (C. Bunney)
 !/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
+!/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
+!/                  min/max freq band (B. Pouliot, CMC)
 !/
 !/    Copyright 2009-2014 National Weather Service (NWS),
 !/       National Oceanic and Atmospheric Administration.  All rights
@@ -148,6 +162,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Updates the flags for output parameters based on the mod_def file
+!>  this is to prevent the allocation of big 3D arrays when not requested.
+!>
+!> @param[in]    NDSO   Output file logical unit number. 
+!> @param[in]    NDSEN  Error output file logical unit number.
+!> @param[inout] FLGRD  1D array of flags for groups.
+!> @param[inout] FLGR2  1D array of flags for groups.
+!> @param[inout] FLGD   2D array of flags.
+!> @param[inout] FLG2   2D array of flags.
+!>
+!> @author F. Ardhuin  @date 15-Apr-2013
+!>        
       SUBROUTINE W3FLGRDUPDT ( NDSO, NDSEN, FLGRD, FLGR2, FLGD, FLG2 )
 !/
 !/                  +-----------------------------------+
@@ -287,6 +314,22 @@
 !
       END SUBROUTINE W3FLGRDUPDT
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Fills in FLG1D and FLG2D arrays from ASCII input file.
+!>
+!> @param[in] NDSI    Input file logical unit number.
+!> @param[in] NDSO    Output file logical unit number.
+!> @param[in] NDSS    Screen file logical unit number.
+!> @param[in] NDSEN   Error output file logical unit number.
+!> @param[in] COMSTR  Comment string, usually '$'.
+!> @param[out] FLG1D  1D array of flags for groups.
+!> @param[out] FLG2D  2D array of flags.
+!> @param[in] IAPROC  Index of current processor.
+!> @param[in] NAPOUT  Index of processor for output (screen).
+!> @param[out] IERR   Error message number.
+!>
+!> @author F. Ardhuin  @date 25-Sep-2020
+!>
       SUBROUTINE W3READFLGRD ( NDSI , NDSO, NDSS, NDSEN, COMSTR,      &
                                FLG1D, FLG2D, IAPROC, NAPOUT, IERR)
 !/
@@ -521,6 +564,21 @@
       END SUBROUTINE W3READFLGRD
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Fills in FLG1D and FLG2D arrays from ASCII input file.
+!>
+!> @param[in] NDSO    Output file logical unit number.
+!> @param[in] NDSS    Screen file logical unit number.
+!> @param[in] NDSEN   Error output file logical unit number.
+!> @param[in] FLDOUT  List of field names.
+!> @param[out] FLG1D  1D array of flags for groups.
+!> @param[out] FLG2D  2D array of flags.
+!> @param[in] IAPROC  Index of current processor.
+!> @param[in] NAPOUT  Index of processor for output (screen).
+!> @param[out] IERR   Error message number.
+!>
+!> @author F. Ardhuin  @date 25-Sep-2020
+!>      
       SUBROUTINE W3FLGRDFLAG ( NDSO, NDSS, NDSEN, FLDOUT,      &
                                FLG1D, FLG2D, IAPROC, NAPOUT, IERR)
 !/
@@ -684,6 +742,18 @@
       END SUBROUTINE W3FLGRDFLAG
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Returns the group/field (I/J) indices for a named output field.
+!>
+!> @param[in]  FLD     Field names.
+!> @param[out] I       Output group number (IFI).
+!> @param[out] J       Output field number (IFJ).
+!> @param[in]  IAPROC  Index of current processor.
+!> @param[in]  NAPOUT  Index of processor for output (screen).
+!> @param[in]  NDSEN   Error output file logical unit number.
+!>
+!> @author C. Bunney  @date 22-Mar-2021
+!>      
       SUBROUTINE W3FLDTOIJ(FLD, I, J, IAPROC, NAPOUT, NDSEN)
 !/
 !/                  +-----------------------------------+
@@ -1098,6 +1168,16 @@
       END SUBROUTINE W3FLDTOIJ
 
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Fill necessary arrays with gridded data for output.
+!>
+!> @param[in] A        Input spectra, left in par list to changeshape.
+!> @param[in] FLPART   Flag for filling fields with partition data.
+!> @param[in] FLOUTG   Flag for file field output.
+!> @param[in] FLOUTG2  Flag for coupling field output.
+!>
+!> @author H. L. Tolman  @date 10-Apr-2015
+!>      
       SUBROUTINE W3OUTG ( A, FLPART, FLOUTG, FLOUTG2 )
 !/
 !/                  +-----------------------------------+
@@ -1202,7 +1282,7 @@
       USE W3ADATMD, ONLY: CG, WN, DW
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0,               &
                           THM, THS, THP0
-      USE W3ADATMD, ONLY: FP1, THP1, ABA, ABD, UBA, UBD, FCUT, SXX,   &
+      USE W3ADATMD, ONLY: ABA, ABD, UBA, UBD, FCUT, SXX,              &
                           SYY, SXY, PHS, PTP, PLP, PDIR, PSI, PWS,    &
                           PWST, PNR, USERO, TUSX, TUSY, PRMS, TPMS,   &
                           USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,   &
@@ -1249,14 +1329,13 @@
 !/ Local parameters
 !/
       INTEGER                 :: IK, ITH, JSEA, ISEA, IX, IY,         &
-                                 IKP0(NSEAL), IKP1(NSEAL), NKH(NSEAL),&
-                                 ILOW, ICEN, IHGH, I, J, LKMS, HKMS,  &
-                                 ITL
+                                 IKP0(NSEAL), NKH(NSEAL),             &
+                                 I, J, LKMS, HKMS, ITL
 #ifdef W3_S
       INTEGER, SAVE           :: IENT = 0
 #endif
       REAL                    :: FXPMC, FACTOR, FACTOR2, EBAND, FKD,  &
-                                 FP1STR, FP1TST, FPISTR, AABS, UABS,  &
+                                 AABS, UABS,                          &
                                  XL, XH, XL2, XH2, EL, EH, DENOM, KD, &
                                  M1, M2, MA, MB, MC, STEX, STEY, STED
       REAL                    :: ET(NSEAL), EWN(NSEAL), ETR(NSEAL),   &
@@ -1307,18 +1386,6 @@
 !/
 #ifdef W3_S
       CALL STRACE (IENT, 'W3OUTG')
-#endif
-!
-#ifdef W3_DEBUGSTP
-    WRITE(740+IAPROC,*) 'NTH=', NTH
-    WRITE(740+IAPROC,*) 'NK=', NK
-    WRITE(740+IAPROC,*) 'NSPEC=', NSPEC
-    WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
-    WRITE(740+IAPROC,*) 'W3OUTG, initial A printing'
-    WRITE(740+IAPROC,*) 'size(A,1)=', size(A,1)
-    WRITE(740+IAPROC,*) 'size(A,2)=', size(A,2)
-    WRITE(740+IAPROC,*) 'size(A,3)=', size(A,3)
-    FLUSH(740+IAPROC)
 #endif
       DO I=1,NOGRP
         DO J=1,NGRPP
@@ -1420,8 +1487,6 @@
       QP    = UNDEF
       WBT    = UNDEF
 !
-      FP1    = UNDEF
-      THP1   = UNDEF
 #ifdef W3_CESMCOUPLED
       ETUSSX  = 0.
       ETUSSY  = 0.
@@ -1701,12 +1766,7 @@
 !  Compute spectral parameters wrt the mean wave direction
 !  (no tail contribution - Prognostic)
       DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA   = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA   = JSEA
-#endif
+        CALL INIT_GET_ISEA(ISEA, JSEA)
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         IF ( MAPSTA(IY,IX) .GT. 0 ) THEN
@@ -1727,16 +1787,10 @@
         DO ITH=1, NTH
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
           DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA      = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA      = JSEA
-#endif
             ABX2M(JSEA) = ABX2M(JSEA) + A(ITH,IK,JSEA)*                &
               (ECOS(ITH)*COS(THMP(JSEA))+ESIN(ITH)*SIN(THMP(JSEA)))**2
             ABY2M(JSEA) = ABY2M(JSEA) + A(ITH,IK,JSEA)*                &
@@ -1761,12 +1815,7 @@
 #endif
 !
         DO JSEA=1, NSEAL
-#ifdef W3_DIST
-          ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-          ISEA         = JSEA
-#endif
+          CALL INIT_GET_ISEA(ISEA, JSEA)
           FACTOR       = DDEN(IK) / CG(IK,ISEA)
           MSSXM(JSEA)  = MSSXM(JSEA) + ABX2M(JSEA)*FACTOR*             &
             WN(IK,ISEA)**2
@@ -1787,18 +1836,10 @@
         END DO
 
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY,STEX,STEY,STED,ITL,IK)
+!$OMP PARALLEL DO PRIVATE(JSEA,STEX,STEY,STED,ITL,IK)
 #endif
 !
         DO JSEA=1, NSEAL
-#ifdef W3_DIST
-        ISEA      = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-        ISEA      = JSEA
-#endif
-        IX     = MAPSF(ISEA,1)
-        IY     = MAPSF(ISEA,2)
 !
 !  Mean wave period (no tail contribution - Prognostic)
         IF ( ET02(JSEA) .GT. 1.E-7 ) THEN
@@ -2178,54 +2219,14 @@
 ! 4.a Initialize
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,FPISTR,FP1STR,FP1TST)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
       DO JSEA=1, NSEAL
-        CALL INIT_GET_ISEA(ISEA, JSEA)
         EC  (JSEA) = EBD(NK,JSEA)
         FP0 (JSEA) = UNDEF
-        IKP0(JSEA) = 0
+        IKP0(JSEA) = NK
         THP0(JSEA) = UNDEF
-#ifdef W3_ST0
-        FP1 (JSEA) = UNDEF
-        IKP1(JSEA) = NK
-#endif
-#ifdef W3_ST1
-        FP1 (JSEA) = UNDEF
-        IKP1(JSEA) = 0
-#endif
-#ifdef W3_ST2
-        FP1 (JSEA) = UNDEF
-        IKP1(JSEA) = NK
-        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )
-        FP1STR     = 3.6E-4 + 0.92*FPISTR - 6.3E-10/FPISTR**3
-        FP1TST     = MAX ( 0.003 , FP1STR * UST(ISEA) / GRAV )
-        IF ( FP1TST.LE.SIG(NK) .AND. FP1TST.GT.SIG(1) ) THEN
-            FP1 (JSEA) = TPIINV * FP1TST
-            IKP1(JSEA) = MAX ( 1 , NINT(FACTI2+FACTI1*LOG(FP1TST)) )
-          END IF
-#endif
-#ifdef W3_ST3
-        FP1 (JSEA) = UNDEF
-        IKP1(JSEA) = 0
-#endif
-#ifdef W3_ST4
-        FP1 (JSEA) = UNDEF
-        IKP1(JSEA) = 0
-#endif
-#ifdef W3_ST6
-        FP1 (JSEA) = UNDEF
-        IKP1(JSEA) = NK
-        FPISTR     = MAX ( 0.003 , FPIS(ISEA) * UST(ISEA) / GRAV )
-        FP1STR     = 3.6E-4 + 0.92*FPISTR - 6.3E-10/FPISTR**3
-        FP1TST     = FP1STR / UST(ISEA) * GRAV
-        IF ( FP1TST.LE.SIG(NK) .AND. FP1TST.GT.SIG(1) ) THEN
-            FP1 (JSEA) = TPIINV * FP1TST
-            IKP1(JSEA) = MAX ( 1 , NINT(FACTI2+FACTI1*LOG(FP1TST)) )
-          END IF
-#endif
-        THP1(JSEA) = UNDEF
         END DO
 !
 #ifdef W3_OMPG
@@ -2234,42 +2235,17 @@
 !
 ! 4.b Discrete peak frequencies
 !
-      DO IK=NK-1, 2, -1
+      DO IK=NK-1, 1, -1
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
         DO JSEA=1, NSEAL
-          CALL INIT_GET_ISEA(ISEA, JSEA)
           IF ( EC(JSEA) .LT. EBD(IK,JSEA) ) THEN
               EC  (JSEA) = EBD(IK,JSEA)
               IKP0(JSEA) = IK
             END IF
-#ifdef W3_ST1
-          IF ( IKP1(JSEA).EQ.0                             &
-                 .AND. EBD(IK-1,JSEA).LT.EBD(IK,JSEA)      &
-                 .AND. EBD(IK-1,JSEA).LT.EBD(IK+1,JSEA)    &
-                 .AND. SIG(IK).GT.FXPMC/UST(ISEA)          &
-                 .AND. SIG(IK).LT.0.75*SIG(NK) )           &
-              IKP1(JSEA) = IK
-#endif
-#ifdef W3_ST3
-          IF ( IKP1(JSEA).EQ.0                             &
-                 .AND. EBD(IK-1,JSEA).LT.EBD(IK,JSEA)      &
-                 .AND. EBD(IK-1,JSEA).LT.EBD(IK+1,JSEA)    &
-                 .AND. SIG(IK).GT.FXPMC/MAX(1.E-4,UST(ISEA)) &
-                 .AND. SIG(IK).LT.0.75*SIG(NK) )           &
-              IKP1(JSEA) = IK
-#endif
-#ifdef W3_ST4
-          IF ( IKP1(JSEA).EQ.0                             &
-                 .AND. EBD(IK-1,JSEA).LT.EBD(IK,JSEA)      &
-                 .AND. EBD(IK-1,JSEA).LT.EBD(IK+1,JSEA)    &
-                 .AND. SIG(IK).GT.FXPMC/MAX(1.E-4,UST(ISEA)) &
-                 .AND. SIG(IK).LT.0.75*SIG(NK) )           &
-              IKP1(JSEA) = IK
-#endif
           END DO
 !
 #ifdef W3_OMPG
@@ -2279,21 +2255,11 @@
         END DO
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
       DO JSEA=1, NSEAL
-        CALL INIT_GET_ISEA(ISEA, JSEA)
-        IF ( IKP0(JSEA) .NE. 0 ) FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
-#ifdef W3_ST1
-        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
-#endif
-#ifdef W3_ST3
-        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
-#endif
-#ifdef W3_ST4
-        IF ( IKP1(JSEA) .NE. 0 ) FP1(JSEA) = SIG(IKP1(JSEA)) * TPIINV
-#endif
+        IF ( IKP0(JSEA) .NE. NK ) FP0(JSEA) = SIG(IKP0(JSEA)) * TPIINV
         END DO
 !
 #ifdef W3_OMPG
@@ -2308,50 +2274,24 @@
       XH2    = XH**2
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA,ILOW,ICEN,IHGH,EL,EH,DENOM)
+!$OMP PARALLEL DO PRIVATE(JSEA,EL,EH,DENOM)
 #endif
 !
       DO JSEA=1, NSEAL
-        CALL INIT_GET_ISEA(ISEA, JSEA)
-        ILOW   = MAX (  1 , IKP0(JSEA)-1 )
-        ICEN   = MAX (  1 , IKP0(JSEA)   )
-        IHGH   = MIN ( NK , IKP0(JSEA)+1 )
-        EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
-        EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
-        DENOM  = XL*EH - XH*EL
-        FP0(JSEA) = FP0 (JSEA) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )     &
-                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
-#ifdef W3_ST1
-        ILOW   = MAX (  1 , IKP1(JSEA)-1 )
-        ICEN   = MAX (  1 , IKP1(JSEA)   )
-        IHGH   = MIN ( NK , IKP1(JSEA)+1 )
-        EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
-        EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
-        DENOM  = XL*EH - XH*EL
-        FP1(JSEA) = FP1(JSEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
-                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
-#endif
-#ifdef W3_ST3
-        ILOW   = MAX (  1 , IKP1(JSEA)-1 )
-        ICEN   = MAX (  1 , IKP1(JSEA)   )
-        IHGH   = MIN ( NK , IKP1(JSEA)+1 )
-        EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
-        EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
-        DENOM  = XL*EH - XH*EL
-        FP1(JSEA) = FP1(JSEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
-                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
-#endif
-#ifdef W3_ST4
-        ILOW   = MAX (  1 , IKP1(JSEA)-1 )
-        ICEN   = MAX (  1 , IKP1(JSEA)   )
-        IHGH   = MIN ( NK , IKP1(JSEA)+1 )
-        EL     = EBD(ILOW,JSEA) - EBD(ICEN,JSEA)
-        EH     = EBD(IHGH,JSEA) - EBD(ICEN,JSEA)
-        DENOM  = XL*EH - XH*EL
-        FP1(JSEA) = FP1(JSEA) * ( 1. + 0.5 * (XL2*EH - XH2*EL )  &
-                       / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
-#endif
-        END DO
+        IF ( IKP0(JSEA) .NE. NK ) THEN
+          IF ( IKP0(JSEA) .EQ. 1 ) THEN
+            EL = - EBD(IKP0(JSEA), JSEA)
+          ELSE
+            EL = EBD(IKP0(JSEA)-1, JSEA) - EBD(IKP0(JSEA), JSEA)
+          END IF
+
+          EH = EBD(IKP0(JSEA)+1, JSEA) - EBD(IKP0(JSEA), JSEA)
+
+          DENOM  = XL*EH - XH*EL
+          FP0(JSEA) = FP0 (JSEA) * ( 1. + 0.5 * ( XL2*EH - XH2*EL )   &
+                         / SIGN ( MAX(ABS(DENOM),1.E-15) , DENOM ) )
+        END IF
+      END DO
 !
 #ifdef W3_OMPG
 !$OMP END PARALLEL DO
@@ -2375,12 +2315,11 @@
       DO ITH=1, NTH
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
         DO JSEA=1, NSEAL
-          CALL INIT_GET_ISEA(ISEA, JSEA)
-          IF (IKP0(JSEA).NE.0) THEN
+          IF ( IKP0(JSEA) .NE. NK ) THEN
               ETX(JSEA) = ETX(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ECOS(ITH)
               ETY(JSEA) = ETY(JSEA) + A(ITH,IKP0(JSEA),JSEA)*ESIN(ITH)
             END IF
@@ -2393,42 +2332,20 @@
         END DO
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
       DO JSEA=1, NSEAL
-        CALL INIT_GET_ISEA(ISEA, JSEA)
         IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
              FP0(JSEA).NE.UNDEF )                                     &
             THP0(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
         ETX(JSEA) = 0.
         ETY(JSEA) = 0.
-        IKP1(JSEA) = MAX ( 1 , IKP1(JSEA) )
         END DO
 !
 #ifdef W3_OMPG
 !$OMP END PARALLEL DO
 #endif
-!
-      DO ITH=1, NTH
-!
-#ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
-#endif
-!
-        DO JSEA=1, NSEAL
-          CALL INIT_GET_ISEA(ISEA, JSEA)
-          IF ( FP1(JSEA).NE.UNDEF) THEN
-              ETX(JSEA) = ETX(JSEA) + A(ITH,IKP1(JSEA),JSEA)*ECOS(ITH)
-              ETY(JSEA) = ETY(JSEA) + A(ITH,IKP1(JSEA),JSEA)*ESIN(ITH)
-            END IF
-          END DO
-!
-#ifdef W3_OMPG
-!$OMP END PARALLEL DO
-#endif
-!
-        END DO
 !
 #ifdef W3_OMPG
 !$OMP PARALLEL DO PRIVATE(JSEA,ISEA,IX,IY)
@@ -2441,23 +2358,7 @@
         IF ( MAPSTA(IY,IX) .LE. 0 ) THEN
             FP0 (JSEA) = UNDEF
             THP0(JSEA) = UNDEF
-            FP1 (JSEA) = UNDEF
           END IF
-        END DO
-!
-#ifdef W3_OMPG
-!$OMP END PARALLEL DO
-#endif
-!
-#ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(ISEA,JSEA)
-#endif
-!
-      DO JSEA=1, NSEAL
-        CALL INIT_GET_ISEA(ISEA, JSEA)
-        IF ( ABS(ETX(JSEA))+ABS(ETY(JSEA)) .GT. 1.E-7 .AND.           &
-             FP1(JSEA) .NE. UNDEF )                                   &
-            THP1(JSEA) = ATAN2(ETY(JSEA),ETX(JSEA))
         END DO
 !
 #ifdef W3_OMPG
@@ -2479,14 +2380,10 @@
           ELSE IF ( FP0(JSEA) .EQ. UNDEF ) THEN
             WRITE (NDST,9053) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
                    T0M1(JSEA), RADE*THM(JSEA), THS(JSEA)
-          ELSE IF ( FP1(JSEA) .EQ. UNDEF ) THEN
+          ELSE
             WRITE (NDST,9054) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
                    T0M1(JSEA), RADE*THM(JSEA), THS(JSEA), FP0(JSEA),&
                    THP0(JSEA)
-          ELSE
-            WRITE (NDST,9055) ISEA, IX, IY, HS(JSEA), WLM(JSEA),   &
-                   T0M1(JSEA), RADE*THM(JSEA), THS(JSEA), FP0(JSEA),&
-                   THP0(JSEA), FP1(JSEA), THP1(JSEA)
           END IF
         END DO
 #endif
@@ -2616,12 +2513,11 @@
 !
 #ifdef W3_T
  9050 FORMAT (' TEST W3OUTG : ISEA, IX, IY, HS, L, Tm, THm, THs',     &
-              ', FP0, THP0, FP1, THP1')
+              ', FP0, THP0')
  9051 FORMAT (2X,I8,2I8)
  9052 FORMAT (2X,I8,2I8,F6.2)
  9053 FORMAT (2X,I8,2I8,F6.2,F7.1,F6.2,2F6.1)
  9054 FORMAT (2X,I8,2I8,F6.2,F7.1,F6.2,2F6.1,F6.3,F6.0)
- 9055 FORMAT (2X,I8,2I8,F6.2,F7.1,F6.2,2F6.1,2(F6.3,F6.0))
 #endif
 
 !/
@@ -2630,6 +2526,18 @@
       END SUBROUTINE W3OUTG
 !/ ------------------------------------------------------------------- /
 !/
+!>
+!> @brief  Read/write gridded output.
+!>
+!> @details Fields in file are determined by flags in FLOGRD in W3ODATMD.
+!>
+!> @param[inout] INXOUT  Test string for read/write.
+!> @param[inout] NDSOG   File unit number.
+!> @param[inout] IOTST   Test indictor for reading.
+!> @param[inout] IMOD    Model number for W3GDAT etc.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>      
       SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD )
 !/
 !/                  +-----------------------------------+
@@ -2752,8 +2660,7 @@
                           TAUA, TAUADIR
       USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0,&
                           WBT, WNMEAN
-      USE W3ADATMD, ONLY: FP1, THP1, DTDYN, &
-                          FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,     &
+      USE W3ADATMD, ONLY: DTDYN, FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,&
                           PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
                           PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2,  &
                           PEP, USERO, TAUOX, TAUOY, TAUWIX, TAUWIY,    &
@@ -3982,6 +3889,18 @@
       END SUBROUTINE W3IOGO
 !/
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Output Stokes drift related parameters.
+!>
+!> @details This code is built for the purpose of outputting Stokes 
+!>  drift related parameters that can be utilized to obtain full
+!>  Stokes drift profiles external to the wave model.
+!>
+!> @param[in] A  Input spectra, left in par list to change shape.
+!> @param[in] USS_SWITCH  Switch if computing US3D (spectral) or USSP (partitions).
+!>
+!> @author H. L. Tolman  @date 10-Jan-2017
+!>      
       SUBROUTINE CALC_U3STOKES ( A , USS_SWITCH )
 !/
 !/                  +-----------------------------------+
@@ -4067,6 +3986,7 @@
       USE W3ADATMD,  ONLY: CG, WN, DW
       USE W3ADATMD,  ONLY: USSX, USSY,  US3D, USSP
       USE W3ODATMD, ONLY: IAPROC, NAPROC
+      USE W3PARALL, ONLY: INIT_GET_ISEA
 #ifdef W3_S
       USE W3SERVMD, ONLY: STRACE
 #endif
@@ -4137,16 +4057,10 @@
          DO ITH=1, NTH
 !
 #ifdef W3_OMPG
-!$OMP PARALLEL DO PRIVATE(JSEA,ISEA)
+!$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
 !
             DO JSEA=1, NSEAL
-#ifdef W3_DIST
-                ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-                ISEA         = JSEA
-#endif
                ABX(JSEA)  = ABX(JSEA) + A(ITH,IK,JSEA)*ECOS(ITH)
                ABY(JSEA)  = ABY(JSEA) + A(ITH,IK,JSEA)*ESIN(ITH)
             END DO
@@ -4165,12 +4079,7 @@
 #endif
 !
          DO JSEA=1, NSEAL
-#ifdef W3_DIST
-              ISEA         = IAPROC + (JSEA-1)*NAPROC
-#endif
-#ifdef W3_SHRD
-              ISEA         = JSEA
-#endif
+            CALL INIT_GET_ISEA(ISEA, JSEA)
             FACTOR       = DDEN(IK) / CG(IK,ISEA)
 !
 ! Deep water limits
@@ -4224,6 +4133,29 @@
       END SUBROUTINE CALC_U3STOKES
 !/
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Estimate the dominant wave breaking probability b_T.
+!>
+!> @details Estimate the dominant wave breaking probability b_T based on
+!>  the empirical parameterization proposed by Babanin et al. (2001).
+!>
+!> @verbatim
+!>     From their Fig. 12, we have
+!>
+!>         b_T = 85.1 * [(εp - 0.055) * (1 + H_s/d)]^2.33,
+!>
+!>     where ε is the significant steepness of the spectral peak, H_s is
+!>     the significant wave height, d is the water depth.
+!>
+!>     For more details, please see
+!>         Banner et al.  2000: JPO,      30,  3145 -  3160.
+!>         Babanin et al. 2001: JGR, 106(C6), 11569 - 11676.      
+!> @endverbatim
+!>  
+!> @param[in] A  Input wave action spectra N(j, θ, k).
+!>
+!> @author Q. Liu  @date 24-Aug-2018
+!>      
       SUBROUTINE CALC_WBT (A)
 !/
 !/                  +-----------------------------------+

@@ -1,5 +1,16 @@
+!> @file
+!> @brief Read/write restart files.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Read/write restart files.
+!> 
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
       MODULE W3IORSMD
 !/
 !/                  +-----------------------------------+
@@ -66,6 +77,40 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Reads/writes restart files.
+!>
+!> @details
+!> @verbatim
+!>     The file is opened within the routine, the name is pre-defined
+!>     and the unit number is given in the parameter list. The restart
+!>     file is written using UNFORMATTED write statements. The routine
+!>     generates new names when called more than once. File names are :
+!>
+!>                                 restart000.FILEXT
+!>                                 restart001.FILEXT
+!>                                 restart002.FILEXT etc.
+!>
+!>     Optionally, a second stream of restart files is generated given
+!>     a secondary stride definad by an additional start/end time line
+!>     triggered by an optional argument added to the end of the stan-
+!>     dard restart request line (a sixth argument flag set to T). File
+!>     names include a time-tag prefix:
+!>
+!>                                YYYYMMDD.HHMMSS.restart.FILEXT
+!>
+!>     The file to be read thus always is unnumbered, whereas all
+!>     written files are automatically numbered.
+!> @endverbatim        
+!>
+!> @param[in]    INXOUT   Test string for read/write.
+!> @param[inout] NDSR     File unit number.
+!> @param[in]    DUMFPI   Dummy values for FPIS for cold start.
+!> @param[in]    IMOD     Optional grid number, defaults to 1.
+!> @param[in]    FLRSTRT  A second request for restart files (optional TRUE).
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>        
       SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
 !/
 !/                  +-----------------------------------+
@@ -282,8 +327,7 @@
 #ifdef W3_TIMINGS
       USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
-      USE w3odatmd, ONLY : RUNTYPE, INITFILE
-!!!!!/PDLIB    USE PDLIB_FIELD_VEC!, only : UNST_PDLIB_READ_FROM_FILE, UNST_PDLIB_WRITE_TO_FILE
+    USE w3odatmd, ONLY : RUNTYPE, INITFILE      
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
 #endif
@@ -356,11 +400,6 @@
 !  UNFORMATTED files in OPEN
 !
 !     NDSR = 525
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'Beginning of W3IORS subroutine'
-        WRITE(740+IAPROC,*)  'W3IORS, step 1'
-        FLUSH(740+IAPROC)
-#endif
 
       IOSFLG = IOSTYP .GT. 0
 !
@@ -399,10 +438,6 @@
 !
 ! initializations ---------------------------------------------------- *
 !
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 2'
-        FLUSH(740+IAPROC)
-#endif
       IF ( .NOT.DINIT ) THEN
           IF ( IAPROC .LE. NAPROC ) THEN
               CALL W3DIMW ( IMOD, NDSE, NDST )
@@ -410,20 +445,12 @@
               CALL W3DIMW ( IMOD, NDSE, NDST, .FALSE. )
             END IF
         END IF
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 3'
-        FLUSH(740+IAPROC)
-#endif
 !
       IF ( IAPROC .LE. NAPROC ) VA(:,0) = 0.
 !
       LRECL  = MAX ( LRB*NSPEC ,                                      &
                      LRB*(6+(25/LRB)+(9/LRB)+(29/LRB)+(3/LRB)) )
       NSIZE  = LRECL / LRB
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, LRECL=', LRECL, ' NSIZE=', NSIZE
-        FLUSH(740+IAPROC)
-#endif
 !     --- Allocate buffer array with zeros (used to
 !         fill bytes up to size LRECL). ---
       ALLOCATE(WRITEBUFF(NSIZE))
@@ -512,10 +539,6 @@
             //'TEST OUTPUT ARE THE SAME : ',NDST
          CALL EXTCDE ( 15 )
       ENDIF
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 4'
-        FLUSH(740+IAPROC)
-#endif
 
       IF ( WRITE ) THEN
           IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
@@ -604,10 +627,6 @@
 !
 ! TIME if required --------------------------------------------------- *
 !
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 5'
-        FLUSH(740+IAPROC)
-#endif
       IF (TYPE.EQ.'FULL') THEN
           RPOS  = 1_8 + LRECL*(2-1_8)
           IF ( WRITE ) THEN
@@ -646,18 +665,7 @@
 ! Spectra ------------------------------------------------------------ *
 !          ( Bail out if write for TYPE.EQ.'WIND' )
 !
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 6'
-        FLUSH(740+IAPROC)
-#endif
       IF ( WRITE ) THEN
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, Matching WRITE statement'
-        FLUSH(740+IAPROC)
-        WRITE(740+IAPROC,*)  'W3IORS, TYPE=', TYPE, ' IOSFLG=', IOSFLG
-        WRITE(740+IAPROC,*)  'W3IORS, NAPROC=', NAPROC, ' NAPRST=', NAPRST
-        FLUSH(740+IAPROC)
-#endif
           IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
               IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
                 CLOSE ( NDSR )
@@ -674,18 +682,10 @@
 
               RETURN
             ELSE IF ( IAPROC.LE.NAPROC .OR. IAPROC.EQ. NAPRST ) THEN
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, Need to match 1'
-        FLUSH(740+IAPROC)
-#endif
 !
 ! Original non-server version writing of spectra
 !
               IF ( .NOT.IOSFLG .OR. (NAPROC.EQ.1.AND.NAPRST.EQ.1) ) THEN
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, Need to match 2'
-        FLUSH(740+IAPROC)
-#endif
                   DO JSEA=1, NSEAL
                     CALL INIT_GET_ISEA(ISEA, JSEA)
                     NREC   = ISEA + 2
@@ -701,18 +701,8 @@
                 ELSE
 #endif
 !
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, Before test for UNST_PDLIB_WRITE_TO_FILE'
-        WRITE(740+IAPROC,*)  'W3IORS, GTPYPE=', GTYPE, ' UNGTYPE=', UNGTYPE
-        WRITE(740+IAPROC,*)  'W3IORS, PDLIB=', LPDLIB
-        FLUSH(740+IAPROC)
-#endif
 #ifdef W3_MPI
                 IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
-#endif
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, Directly before call for UNST_PDLIB_WRITE_TO_FILE, NDSR=', NDSR
-        FLUSH(740+IAPROC)
 #endif
 #ifdef W3_TIMINGS
                CALL PRINT_MY_TIME("Before UNST_PDLIB_WRITE_TO_FILE")
@@ -806,10 +796,6 @@
 !
             END IF
         ELSE
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 7'
-        FLUSH(740+IAPROC)
-#endif
 !
 ! Reading spectra
 !
@@ -819,12 +805,6 @@
 #endif
           ELSE
             IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*)  'Before call to UNST_PDLIB_READ_FROM_FILE'
-        FLUSH(740+IAPROC)
-#endif
-#endif
 #ifdef W3_TIMINGS
                CALL PRINT_MY_TIME("Before UNST_PDLIB_READ_FROM_FILE")
 #endif
@@ -833,16 +813,6 @@
 #endif
 #ifdef W3_TIMINGS
                CALL PRINT_MY_TIME("After UNST_PDLIB_READ_FROM_FILE")
-#endif
-#ifdef W3_PDLIB
-#ifdef W3_DEBUGINIT
-        WRITE(740+IAPROC,*)  ' After call to UNST_PDLIB_READ_FROM_FILE'
-        WRITE(740+IAPROC,*)  ' min/max(VA)=', minval(VA), maxval(VA)
-        DO JSEA=1,NSEAL
-          WRITE(740+IAPROC,*) ' JSEA=', JSEA, ' sum(VA)=', sum(VA(:,JSEA))
-        END DO
-        FLUSH(740+IAPROC)
-#endif
 #endif
             ELSE
 #ifdef W3_MPI
@@ -925,10 +895,6 @@
       NPRTX2 = 1 + (NX-1)/NSIZE
       NPRTY2 = 1 + (NY-1)/NSIZE
 !
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 8'
-        FLUSH(740+IAPROC)
-#endif
       IF ( WRITE ) THEN
 !
           IF (TYPE.EQ.'FULL') THEN
@@ -1128,9 +1094,6 @@
               RPOS = 1_8 + LRECL*(NREC-1_8)
               READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)                &
                       TLEV, TICE, TRHO
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading WLV'
-#endif
               DO IPART=1,NPART
                 NREC  = NREC + 1
                 RPOS = 1_8 + LRECL*(NREC-1_8)
@@ -1138,9 +1101,6 @@
                       (WLV(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading ICE'
-#endif
               DO IPART=1,NPART
                 NREC  = NREC + 1
                 RPOS = 1_8 + LRECL*(NREC-1_8)
@@ -1169,9 +1129,6 @@
               END DO
 #endif
               ALLOCATE ( MAPTMP(NY,NX) )
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading MAPTMP'
-#endif
               DO IY=1, NY
                 DO IPART=1,NPRTX2
                   NREC  = NREC + 1
@@ -1194,9 +1151,6 @@
 #endif
                 ENDIF
 !
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading UST'
-#endif
               DO IPART=1,NPART
                 NREC  = NREC + 1
                 RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -1204,9 +1158,6 @@
                       (UST(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading USTDIR'
-#endif
               DO IPART=1,NPART
                 NREC  = NREC + 1
                 RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -1214,9 +1165,6 @@
                       (USTDIR(ISEA),ISEA=1+(IPART-1)*NSIZE,           &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading ASF'
-#endif
               DO IPART=1,NPART
                 NREC  = NREC + 1
                 RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -1224,9 +1172,6 @@
                       (ASF(ISEA),ISEA=1+(IPART-1)*NSIZE,              &
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading FPIS'
-#endif
               DO IPART=1,NPART
                 NREC  = NREC + 1
                 RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -1235,22 +1180,13 @@
                                       MIN(NSEA,IPART*NSIZE))
                 END DO
             IF (OARST) THEN
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading CUR'
-#endif
               IF ( FLOGOA(1,2) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) CX(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) CY(1:NSEA)
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading ICEF'
-#endif
               IF ( FLOGOA(1,12) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) ICEF(1:NSEA)
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading HS'
-#endif
               IF ( FLOGOA(2,1) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1258,9 +1194,6 @@
                   IF (J .LE. NSEA) HS(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading WLM'
-#endif
               IF ( FLOGOA(2,2) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1268,9 +1201,6 @@
                   IF (J .LE. NSEA) WLM(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading T0M1'
-#endif
               IF ( FLOGOA(2,4) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1278,9 +1208,6 @@
                   IF (J .LE. NSEA) T0M1(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading T01'
-#endif
               IF ( FLOGOA(2,5) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1288,9 +1215,6 @@
                   IF (J .LE. NSEA) T01(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading FP0'
-#endif
               IF ( FLOGOA(2,6) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1298,9 +1222,6 @@
                   IF (J .LE. NSEA) FP0(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading THM'
-#endif
               IF ( FLOGOA(2,7) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1308,9 +1229,6 @@
                   IF (J .LE. NSEA) THM(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading WNMEAN'
-#endif
               IF ( FLOGOA(2,19) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1318,9 +1236,6 @@
                   IF (J .LE. NSEA) WNMEAN(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading CHARN'
-#endif
               IF ( FLOGOA(5,2) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1328,9 +1243,6 @@
                   IF (J .LE. NSEA) CHARN(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading TAUWI'
-#endif
               IF ( FLOGOA(5,5) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1342,9 +1254,6 @@
                   ENDIF
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading TWS'
-#endif
               IF ( FLOGOA(5,11) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1352,9 +1261,6 @@
                   IF (J .LE. NSEA) TWS(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading TAUO'
-#endif
               IF ( FLOGOA(6,2) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1366,9 +1272,6 @@
                   ENDIF
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading BHD'
-#endif
               IF ( FLOGOA(6,3) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1376,9 +1279,6 @@
                   IF (J .LE. NSEA) BHD(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading PHIOC'
-#endif
               IF ( FLOGOA(6,4) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1386,9 +1286,6 @@
                   IF (J .LE. NSEA) PHIOC(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading TUS'
-#endif
               IF ( FLOGOA(6,5) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1400,9 +1297,6 @@
                   ENDIF
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading USS'
-#endif
               IF ( FLOGOA(6,6) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1414,9 +1308,6 @@
                   ENDIF
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading TAUICE'
-#endif
               IF ( FLOGOA(6,10) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1428,9 +1319,6 @@
                   ENDIF
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading TAUOC'
-#endif
               IF ( FLOGOA(6,13) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1442,9 +1330,6 @@
                   ENDIF
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading UB'
-#endif
               IF ( FLOGOA(7,2) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1456,9 +1341,6 @@
                   ENDIF
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading PHIBBL'
-#endif
               IF ( FLOGOA(7,4) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 DO I=1, NSEALM
@@ -1466,9 +1348,6 @@
                   IF (J .LE. NSEA) PHIBBL(I) = TMP(J)
                 ENDDO
               ENDIF
-#ifdef W3_DEBUGINIT
-         WRITE(740+IAPROC,*) 'Before reading TAUBBL'
-#endif
               IF ( FLOGOA(7,5) ) THEN
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
                 READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1550,11 +1429,6 @@
   ELSE
      CLOSE ( NDSR )
   END IF
-!
-#ifdef W3_DEBUGIO
-        WRITE(740+IAPROC,*)  'W3IORS, step 9'
-        FLUSH(740+IAPROC)
-#endif
 !
       IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
       IF (ALLOCATED(TMP))  DEALLOCATE(TMP)

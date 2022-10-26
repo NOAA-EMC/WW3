@@ -1,5 +1,20 @@
+!> @file
+!> @brief Process point output.
+!> 
+!> @author H. L. Tolman  @date 05-Jun-2018
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Process point output.
+!>
+!> @details Allocation of allocatable arrays takes place at different
+!>  places throughout the code, in W3IOPP on write, and in W3IOPO on 
+!>  read.
+!>
+!> @author H. L. Tolman  @date 05-Jun-2018
+!>
       MODULE W3IOPOMD
 !/
 !/                  +-----------------------------------+
@@ -106,6 +121,20 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Preprocessing of point output.
+!>
+!> @details Check location of points in grid and calculate interpolation
+!>  factors.
+!>
+!> @param[in]    NPT     Number of output points in input.
+!> @param[inout] XPT     X (longitude) coordinates of output points.
+!> @param[inout] YPT     Y (latitude) coordinates of output points.
+!> @param[in]    PNAMES  Names of output points.
+!> @param[in]    IMOD    Grid ID number.
+!>
+!> @author H. L. Tolman  @date 02-Sep-2012
+!>        
       SUBROUTINE W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD )
 !/
 !/                  +-----------------------------------+
@@ -595,6 +624,18 @@
 !/
       END SUBROUTINE W3IOPP
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Extract point output data and store in output COMMONs.
+!>
+!> @details This action is taken from an earlier version of W3IOPO 
+!>  so that the point output postprocessor does not need the full 
+!>  sea-point grid to be able to run.  Note that the output spectrum 
+!>  is F(f,theta). Interpolation is performed for this spectrum.
+!>
+!> @param[in] A  Action spectra on storage grid.
+!>
+!> @author H. L. Tolman  @date 12-Jun-2012
+!>      
       SUBROUTINE W3IOPE ( A )
 !/
 !/                  +-----------------------------------+
@@ -1017,6 +1058,16 @@
 !/
       END SUBROUTINE W3IOPE
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Read/write point output.
+!>
+!> @param[in]  INXOUT  Test string for read/write.
+!> @param[in]  NDSOP   File unit number.
+!> @param[out] IOTST   Test indictor for reading.
+!> @param[in]  IMOD    Model number for W3GDAT etc.
+!>
+!> @author H. L. Tolman  @date 25-Jul-2006
+!>      
       SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD )
 !/
 !/                  +-----------------------------------+

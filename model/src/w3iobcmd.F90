@@ -1,5 +1,16 @@
+!> @file
+!> @brief Processing of boundary data output.
+!> 
+!> @author H. L. Tolman @date 01-Mar-2018
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Processing of boundary data output.
+!> 
+!> @author H. L. Tolman @date 01-Mar-2018
+!>
       MODULE W3IOBCMD
 !/
 !/                  +-----------------------------------+
@@ -68,6 +79,22 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Write/read boundary conditions file(s).
+!>
+!> @details The file(s) are opened within the routine, the names are
+!>  pre-defined as nest.FILEXT for the input file and nest1.FILEXT
+!>  through nest9.FILEXT for up to 9 output files.
+!>
+!> @param[inout] INXOUT  Test string for read/write.
+!> @param[inout] NDSB    Data set unit number.
+!> @param[inout] TIME1   Present time (w), time of first field (r).
+!> @param[inout] TIME2   Time of second field.
+!> @param[inout] IOTST   Test indictor for reading.
+!> @param[inout] IMOD    Optional grid number, defaults to 1.
+!>
+!> @author H. L. Tolman  @date 20-Jan-2017
+!>        
       SUBROUTINE W3IOBC ( INXOUT, NDSB, TIME1, TIME2, IOTST, IMOD )
 !/
 !/                  +-----------------------------------+
@@ -725,11 +752,11 @@
 #endif
       TIME1(1) = TIME2(1)
       TIME1(2) = TIME2(2)
-      DO 812, IP=0, NBI2
-        DO 811, ISP=1, NSPEC
+    DO IP=0, NBI2
+       DO ISP=1, NSPEC
           ABPI0(ISP,IP) = ABPIN(ISP,IP)
-  811     CONTINUE
-  812   CONTINUE
+       END DO
+    END DO
 !
       IOTST  = -1
       FLBPI  = .FALSE.

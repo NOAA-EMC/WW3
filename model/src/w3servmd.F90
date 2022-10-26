@@ -393,11 +393,11 @@
 !/
 !/ ------------------------------------------------------------------- /
 !/
-      DO 100, ISEA=1, NSEA
+    DO ISEA=1, NSEA
         IX     = MAPSF(ISEA,1)
         IY     = MAPSF(ISEA,2)
         XY(IX,IY) = S(ISEA)
-  100   CONTINUE
+    end do
 !/
 !/ End of W3S2XY ----------------------------------------------------- /
 !/
@@ -511,7 +511,7 @@
 !/
 !/ End of NEXTLN ----------------------------------------------------- /
 !/
-      END FUNCTION
+  END FUNCTION EJ5P
 !/ ------------------------------------------------------------------- /
       REAL FUNCTION DIST_SPHERE ( lo1,la1,lo2,la2 )
 !/
@@ -589,7 +589,7 @@
 !/
 !/ End of NEXTLN ----------------------------------------------------- /
 !/
-      END FUNCTION
+  END FUNCTION DIST_SPHERE
 !/ ------------------------------------------------------------------- /
 
 !/ ------------------------------------------------------------------- /
@@ -856,38 +856,18 @@
           WRITE(*,'(/A,I6/)') 'EXTCDE MPI_ABORT, IEXIT=', IEXIT
           IF (PRESENT(UNIT)) THEN
             WRITE(*,'(/A,I6/)') 'EXTCDE UNIT=', UNIT
-#endif
-!!/MPI          ELSE
-!!/MPI            WRITE(*,'(A)') 'EXTCDE UNIT missing'
-#ifdef W3_MPI
           END IF
           IF (PRESENT(MSG)) THEN
             WRITE(*,'(/2A/)') 'EXTCDE MSG=', MSG
-#endif
-!!/MPI          ELSE
-!!/MPI            WRITE(*,'(A)') 'EXTCDE MSG missing'
-#ifdef W3_MPI
           END IF
           IF (PRESENT(FILE)) THEN
             WRITE(*,'(/2A/)') 'EXTCDE FILE=', FILE
-#endif
-!!/MPI          ELSE
-!!/MPI            WRITE(*,'(A)') 'EXTCDE FILE missing'
-#ifdef W3_MPI
           END IF
           IF (PRESENT(LINE)) THEN
             WRITE(*,'(/A,I8/)') 'EXTCDE LINE=', LINE
-#endif
-!!/MPI          ELSE
-!!/MPI            WRITE(*,'(A)') 'EXTCDE LINE missing'
-#ifdef W3_MPI
           END IF
           IF (PRESENT(COMM)) THEN
             WRITE(*,'(/A,I6/)') 'EXTCDE COMM=', COMM
-#endif
-!!/MPI          ELSE
-!!/MPI            WRITE(*,'(A)') 'EXTCDE COMM missing'
-#ifdef W3_MPI
           END IF
           CALL MPI_ABORT ( MPI_COMM_WORLD, IEXIT, IERR_MPI )
         END IF
@@ -1635,9 +1615,9 @@ END SUBROUTINE STR_TO_UPPER
 !     Alter array X to get decreasing order if needed
 !
       IF (KFLAG .LE. -1) THEN
-         DO 10 I=1,NN
+       DO  I=1,NN
             X(I) = -X(I)
-   10    CONTINUE
+       end do
       ENDIF
 !
       IF (KK .EQ. 2) GO TO 100
@@ -1871,9 +1851,9 @@ END SUBROUTINE STR_TO_UPPER
 !     Clean up
 !
   190 IF (KFLAG .LE. -1) THEN
-         DO 200 I=1,NN
+       DO  I=1,NN
             X(I) = -X(I)
-  200    CONTINUE
+       end do
       ENDIF
       RETURN
       END SUBROUTINE SSORT1

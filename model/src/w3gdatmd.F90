@@ -1733,8 +1733,6 @@
                  GRIDS(IMOD)%HQFAC(MY,MX),   &
                  STAT=ISTAT                  )
       CHECK_ALLOC_STATUS ( ISTAT )
-!!/DEBUGINIT         WRITE(740+IAPROC,*) 'After alocation of MAPST2, MY=', MY, ' MX=', MX
-!!/DEBUGINIT         FLUSH(740+IAPROC)
 #ifdef W3_BT4
     ALLOCATE ( GRIDS(IMOD)%SED_D50(0:MSEA), &
                GRIDS(IMOD)%SED_PSIC(0:MSEA),&
@@ -1746,9 +1744,9 @@
       ALLOCATE ( GRIDS(IMOD)%NLvCel(0:MRLv),     &
                  GRIDS(IMOD)%NLvUFc(0:MRLv),     &
                  GRIDS(IMOD)%NLvVFc(0:MRLv),     &
-                 GRIDS(IMOD)%IJKCel(5, -9:MCel), &
+                 GRIDS(IMOD)%IJKCel(4, -9:MCel), &
                  GRIDS(IMOD)%IJKUFc(7,MUFc),     &
-                 GRIDS(IMOD)%IJKVFc(8,MVFc),     &
+                 GRIDS(IMOD)%IJKVFc(7,MVFc),     &
                  GRIDS(IMOD)%CTRNX(-9:MCel),     &  
                  GRIDS(IMOD)%CTRNY(-9:MCel),     &
                  GRIDS(IMOD)%CLATF(MVFc),        &

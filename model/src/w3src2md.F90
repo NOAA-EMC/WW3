@@ -1,4 +1,17 @@
+!> @file
+!> @brief Contains MODULE W3SRC2MD.
+!> 
+!> @author H. L. Tolman  @date 29-May-2009
+!> 
+
 #include "w3macros.h"
+!>
+!> @brief Tolman and Chalikov (1996) input and dissipation source terms.
+!>  
+!> @details Bundled with interpolation tables.
+!>
+!> @author H. L. Tolman  @date 29-May-2009
+!>
 !/ ------------------------------------------------------------------- /
       MODULE W3SRC2MD
 !/
@@ -87,6 +100,28 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate mean wave parameters for the use in the source term
+!>  routines (Tolman and Chalikov).
+!>
+!> @param[in]  A      Action density spectrum.
+!> @param[in]  CG     Group velocities.
+!> @param[in]  WN     Wavenumbers.
+!> @param[in]  DEPTH  Water depth.
+!> @param[in]  FPI    Peak input frequency.
+!> @param[in]  U      Wind speed.
+!> @param[in]  USTAR  Friction velocity.
+!> @param[out] EMEAN  Total energy (variance).
+!> @param[out] FMEAN  Mean frequency.
+!> @param[out] WNMEAN Mean wavenumber.
+!> @param[out] AMAX   Maximum of action spectrum.
+!> @param[out] ALFA   Phillips' constant.
+!> @param[out] FP     Peak frequency.
+!>
+!> @author H. L. Tolman
+!> @author D. Chalikov
+!> @date   13-Apr-2007
+!>        
       SUBROUTINE W3SPR2 (A, CG, WN, DEPTH, FPI, U, USTAR,             &
                          EMEAN, FMEAN, WNMEAN, AMAX, ALFA, FP )
 !/
@@ -252,6 +287,24 @@
 !/
       END SUBROUTINE W3SPR2
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate input source term.
+!>
+!> @param[in]  A    Action density spectrum (1-D).
+!> @param[in]  CG   Group velocities for k-axis of spectrum.
+!> @param[in]  K    Wavenumber for entire spectrum (1-D).
+!> @param[in]  U    Wind speed at reference height.
+!> @param[in]  UDIR Direction of U.
+!> @param[in]  CD   Drag coefficient at wind level ZWIND.
+!> @param[in]  Z0   Corresponding z0.
+!> @param[out] FPI  Input 'peak' frequency.
+!> @param[out] S    Source term (1-D version).
+!> @param[out] D    Diagonal term of derivative (1-D version).
+!>
+!> @author H. L. Tolman
+!> @author D. Chalikov
+!> @date   21-Feb-2004
+!>      
       SUBROUTINE W3SIN2 ( A, CG, K, U, UDIR, CD, Z0, FPI, S, D )
 !/
 !/                  +-----------------------------------+
@@ -515,6 +568,20 @@
 !/
       END SUBROUTINE W3SIN2
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate whitecapping source term and diagonal term of derivative.
+!>
+!> @param[in]  A     Input action density spectrum.
+!> @param[in]  CG    Group velocity array.
+!> @param[in]  K     Wavenumber array.
+!> @param[in]  FPI   'Peak frequency' of input (rad/s).
+!> @param[in]  USTAR Friction velocity (m/s).
+!> @param[in]  ALFA  Phillips' constant.
+!> @param[out] S     Source term (1-D version).
+!> @param[out] D     Diagonal term of derivative (1-D version).
+!>
+!> @author H. L. Tolman  @date 21-Feb-2004
+!>      
       SUBROUTINE W3SDS2 (A, CG, K, FPI, USTAR, ALFA, S, D)
 !/
 !/                  +-----------------------------------+
@@ -763,6 +830,26 @@
 !/
       END SUBROUTINE W3SDS2
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Generate an interpolation table for the air-sea interaction
+!>  parameter of Chalikov and Belevich (1993).
+!>
+!> @details The size of the table is set in parameter statements,
+!>  the range is set by the input parameters of this routine. The first
+!>  counter of the table corresponds to the nondimensional frequency
+!>      
+!> @verbatim      
+!>                  SIGMA Ul
+!>        SIGA  =  ----------  COS ( THETA - THETA     )           (1)
+!>                     g                          wind
+!> @endverbatim
+!>      
+!>  The second counter of the table represents the drag coefficient.
+!>  The maximum values of both parameters are passed to the routine
+!>  through the parameter list.      
+!> 
+!> @author H. L. Tolman  @date 21-Feb-2004
+!>      
       SUBROUTINE INPTAB
 !/
 !/                  +-----------------------------------+
@@ -989,6 +1076,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate wind-wave interaction parameter beta.
+!>
+!> @param   OMA    Non-dimensional apparent frequency.
+!> @param   CL     Drag coefficient at height l.
+!> @param   NDST    
+!> @returns W3BETA Wind-wave interaction parameter multiplied
+!>          by density ratio.
+!>
+!> @author  H. L. Tolman  
+!> @author  D. Chalikov
+!> @date    21-Feb-2004            
+!>        
       REAL FUNCTION W3BETA ( OMA , CL , NDST )
 !/
 !/                  +-----------------------------------+
