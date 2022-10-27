@@ -47,8 +47,7 @@ target_include_directories(ww3_lib
 
 # Set compiler flags.
 if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
-  set(compile_flags -no-fma -ip -g -traceback -i4 -real-size 32 -fp-model precise
-    -assume byterecl -fno-alias -fno-fnalias)
+  set(compile_flags -assume byterecl) 
   # -sox only works on Linux
   if(LINUX)
     list(APPEND compile_flags -sox)
@@ -56,7 +55,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
   set(compile_flags_release -O3)
   # SHELL: prefix fixes CMake attempting to de-duplicate the repeated uses of 'all' in -warn, -debug, -check
   # See https://cmake.org/cmake/help/latest/command/target_compile_options.html#option-de-duplication
-  set(compile_flags_debug -O0 "SHELL:-debug all" "SHELL:-warn all" "SHELL:-check all" -check noarg_temp_created -fp-stack-check -heap-arrays -traceback -fpe0)
+  set(compile_flags_debug -traceback -g -check all -warn interfaces,nouncalled -gen-interface)
 
   if(APPLE)
     # The linker on macOS does not include `common symbols` (usually module variables without a default value) by default
