@@ -1329,7 +1329,7 @@ CONTAINS
   !>  median dual cell. For a given point, the surface of the dual cell is one third
   !>  of the sum of the surface of connected triangles.
   !>
-  !>  This routine is from WWM developped in Darmstadt(Aaron Roland).
+  !>  This routine is from WWM developed in Darmstadt(Aaron Roland).
   !>
   !> @param[in] IMOD  Model number to point to.
   !>
