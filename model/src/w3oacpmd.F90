@@ -440,6 +440,7 @@
 !/ Executable part
 !/
 !
+      WRITE(*,*) 'INIT OASIS'
 #ifdef W3_OASIS
 #else
       IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN 
@@ -514,6 +515,7 @@
       ! 2. Partition definition
       ! ----------------------------------
 !#ifdef W3_HYCOM
+      WRITE(*,*) 'CALL OASIS_DEF_PARTITION'
 #ifdef W3_OASIS
       CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NSEA)
 #else
@@ -529,6 +531,9 @@
       !
       ILA_VAR_NODIMS(1) = 2    ! rank of fields array
       ILA_VAR_NODIMS(2) = 1    ! always 1 with OASIS3-MCT 2.0
+
+      WRITE(*,*) 'CALL GET_LIST_EXCH_FIELD'
+
       !
       CALL GET_LIST_EXCH_FIELD(NDSO, RCV_FLD, SND_FLD, IL_NB_RCV, IL_NB_SND, RCV_STR, SND_STR)
       !
@@ -548,6 +553,8 @@
             CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_var')
          ENDIF         
       ENDDO
+
+      WRITE(*,*) 'AFTER CALL OASIS_DEF_VAR SEND'
       !   
       ! 3.2 Received coupling fields
       ! ---------------------------------- 
@@ -565,6 +572,8 @@
             CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_var')
          ENDIF         
       ENDDO   
+
+      WRITE(*,*) 'AFTER CALL OASIS_DEF_VAR RECV'
       !
       ! 4. End of definition phase
       ! ---------------------------------- 
