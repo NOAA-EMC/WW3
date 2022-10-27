@@ -348,9 +348,13 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 
   !>
-  !> @brief 
+  !> @brief Calculate diagonal and input source term for WAM4+ approach.
   !>
-  !> @details 
+  !> @verbatim
+  !>       WAM-4 : Janssen et al.
+  !>       WAM-"4.5" : gustiness effect (Cavaleri et al. )
+  !>       SWELLF: damping coefficient (=1) for Janssen (2004) theory  
+  !> @endverbatim  
   !>
   !> @param[in]  A       Action density spectrum (1-D).
   !> @param[in]  CG      Group speed.
