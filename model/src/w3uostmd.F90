@@ -347,10 +347,8 @@ CONTAINS
   !>
   !> @brief Loads local and shadow alpha and beta from files.
   !>
-  !> @param[inout] GRD       Object representing the spatial grid to
-  !>                         be loaded.
-  !> @param[inout] SRD       Object representing the current spectral
-  !>                         grid.
+  !> @param[inout] GRD       Object representing the spatial grid to be loaded.
+  !> @param[inout] SRD       Object representing the current spectral grid.
   !> @param[inout] FILEUNIT  Unit id of the input files.
   !>
   !> @author Lorenzo Mentaschi
@@ -600,8 +598,7 @@ CONTAINS
   !>  actual spatial and spectral grid.
   !>
   !> @param[inout] THIS  
-  !> @param[in]    GRD   Object representing the spatial grid to
-  !>                     be loaded.
+  !> @param[in]    GRD   Object representing the spatial grid to be loaded.
   !> @param[in]    SGD   Object representing the current spectral grid.
   !>
   !> @author Lorenzo Mentaschi
