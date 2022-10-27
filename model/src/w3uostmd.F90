@@ -1,5 +1,5 @@
 !> @file 
-!> @brief Parmeterization of the unresoled obstacles.
+!> @brief Parmeterization of the unresolved obstacles.
 !> 
 !> @author Lorenzo Mentaschi
 !> @date   08-Oct-2018
@@ -9,7 +9,7 @@
 !/ ------------------------------------------------------------------- /
 
 !>
-!> @brief Parmeterization of the unresoled obstacles.
+!> @brief Parmeterization of the unresolved obstacles.
 !> 
 !> @author Lorenzo Mentaschi
 !> @date   08-Oct-2018
