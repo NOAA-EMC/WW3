@@ -2113,7 +2113,7 @@ CONTAINS
   !> @brief Remove seapoints with only one adjacent point in same grid.
   !>
   !> @details Remove points from a grid that are in the middle of the
-  !>  sea, but that have omly one adjacent point in the same grid. Directly
+  !>  sea, but that have only one adjacent point in the same grid. Directly
   !>  select a new grid for this point rather than deactivate and use
   !>  GRFILL.
   !>
