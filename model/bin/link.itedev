@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 # --------------------------------------------------------------------------- #
 # link  : Linker script for use in make (customized for hardware and          #
 #         optimization. Note that this script will not be replaced if part    #
@@ -13,13 +13,14 @@
 # remarks :                                                                   #
 #                                                                             #
 #  - Upon (first) installation of WAVEWATCH III the user needs to check the   #
-#    existing compilers and options available in the script cmplr.env         #
+#    following parts of this scripts :                                        #
+#      sec. 3 : Provide correct link command                                  #
 #                                                                             #
-#  - This version is a template for mpt/intel/gnu/pgi with optimized or       #
-#    debugging options by adding _debug                                       #
+#  - This version is made for the Intel ifort version 12 on nehalem.          #
+#    processor.                                                               #
 #                                                                             #
-#                                                      M. Accensi             #
-#                                                      August   2018          #
+#                                                      Hendrik L. Tolman      #
+#                                                      February 2012          #
 # --------------------------------------------------------------------------- #
 # 1. Preparations                                                             #
 # --------------------------------------------------------------------------- #
@@ -29,11 +30,12 @@
   then
     echo "usage: link name [name]" ; exit 1
   fi
+
   prog=$1
   echo "      Linking $prog"
   input="$*"
 
-# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.b Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -42,7 +44,7 @@
   list=$WWATCH3_LIST
 
 
-# 1.c Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 1.c Initial clean-up - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
   rm -f $main_dir/exe/$prog
 
@@ -74,27 +76,54 @@
   fi
 
 # --------------------------------------------------------------------------- #
-# 3. Link                                                                     #
+# 3. Link all things                                                          #
 # --------------------------------------------------------------------------- #
+# Add here the correct linker call including switches
 
-# 3.a Build options and determine compiler name - - - - - - - - - - - - - - - -
-
-  # compiler
-  if [ "$mpi_mod" = 'yes' ] ; then
-    comp='<comp_mpi>'
-  else
-    comp='<comp_seq>'
-  fi
+# Intel compiler ------------------------------------------------------------
+# 3.a Build options and determine compiler name
+#     No GRIB libraries for this one
 
   # linking options
-  opt="<optl>"
+  libs=""
+  opt=" -g -ggdb -fno-omit-frame-pointer -ffree-line-length-none -fbacktrace -Wall -Wextra -Wconversion  -Wno-unused  -Wno-unused-dummy-argument -fcheck=all -fsanitize=address -fsanitize=undefined -ffpe-trap=invalid,zero,overflow -DPDLIB -o $prog"
+# opt="-traceback -g -O0 -check all -check noarg_temp_created -warn interfaces,nouncalled -gen-interface -assume byterecl -no-wrap-margin -o $prog"
+# opt="-traceback -g -O1 -check all -warn interfaces,nouncalled -gen-interface -assume byterecl -init=snan,arrays -no-wrap-margin -DPDLIB -ip -o $prog"
+# opt="-O1 -axSSE4.2 -prec-div -assume byterecl -DCGTABLE -DPDLIB -no-wrap-margin -g -traceback -o $prog"
+# opt="-O3 -prec-div -prec-sqrt -xHost -align array128byte -ip -o $prog"
+# opt="-O0 -g -traceback -check all -o $prog"
+
+  # mpi implementation
+  if [ "$mpi_mod" = 'yes' ]
+  then
+    comp=mpiifort
+    which mpiifort 1> /dev/null 2> /dev/null
+    OK=$?
+    if [ $OK != 0 ]
+    then
+      comp='ifort -lmpi'
+    fi
+#   opt="-O3 -o $prog"
+  else
+    comp=ifort
+    #comp=gfortran
+  fi
+
+  # open mpi implementation
+  if [ "$omp_mod" = 'yes' ]
+  then
+    opt="$opt -openmp"
+  fi
 
   # oasis coupler archive
-  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ||  \
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] || \
      [ "$prog" = 'ww3_prnc' ] || [ "$prog" = 'ww3_prep' ] || [ "$prog" = 'ww3_prtide' ] || \
-     [ "$prog" = 'ww3_gspl' ] ; then
-    if [ "$oasis_mod" = 'yes' ] ; then
-      if [ -z "$(env | grep OASISDIR)" ] ; then
+     [ "$prog" = 'ww3_gspl' ]
+  then
+    if [ "$oasis_mod" = 'yes' ]
+    then
+      if [ -z "$(env | grep OASISDIR)" ]
+      then
         echo ''
         echo "[ERROR] OASISDIR is not defined"
         exit 1
@@ -104,54 +133,32 @@
     fi
   fi
 
-  # grib library
-  if [ "$ncep_grib_compile" = 'yes' ]
-  then
-    opt="$opt -convert big_endian -assume byterecl -prec-div -prec-sqrt -ip"
-    libs="$libs ${G2_LIB4} ${W3EMC_LIB4} ${BACIO_LIB4} ${JASPER_LIB} ${PNG_LIB} ${Z_LIB}"
-  fi
-
   # netcdf library dir
-  if [ "$netcdf_compile" = 'yes' ] ; then
-    if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
-    libs="$libs `$NETCDF_CONFIG --flibs` `$NETCDF_CONFIG --libs`"
+  if [ "$netcdf_compile" = 'yes' ]
+  then
+    case $WWATCH3_NETCDF in
+      NC3) libs="$libs -L$NETCDF_LIBDIR" ;;
+      NC4) if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+           libs="$libs -L$NETCDF_LIBDIR -lnetcdf -lnetcdff" ;;
+    esac
   fi
 
-  # parmetis library 
-  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ; then
+  # scotch library 
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] || [ "$prog" = 'ww3_prtide' ] || [ "$prog" = 'ww3_prnc' ]; then
     if [ "$pdlib_mod" = 'yes' ] ; then
       if [ -z "$(env | grep SCOTCH_PATH)" ] ; then
         echo ''
-        echo "[ERROR] METIS_PATH is not defined"
+        echo "[ERROR] SCOTCH_PATH is not defined"
         exit 1
       fi
       echo "link with scotch" 
-     libs="$libs $SCOTCH_PATH/lib/libptscotchparmetisv3.a $SCOTCH_PATH/lib/libptscotch.a  $SCOTCH_PATH/lib/libptscotcherr.a $SCOTCH_PATH/lib/libscotch.a"
+      libs="$libs $SCOTCH_PATH/lib/libscotchmetisv5.a $SCOTCH_PATH/lib/libscotch.a $SCOTCH_PATH/lib/libscotcherr.a"
     fi
-  fi
-
-
-  # parmetis library
-#  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ; then
-#    if [ "$pdlib_mod" = 'yes' ] ; then
-#      if [ -z "$(env | grep METIS_PATH)" ] ; then
-#        echo ''
-#        echo "[ERROR] METIS_PATH is not defined"
-#        exit 1
-#      fi
-#      echo "link with parmetis"
-#      libs="$libs $METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
-#    fi
-#  fi
-
-  # OMP support
-  if [ "$omp_mod" = 'yes' ] ; then
-    opt="$opt <optomp>"
   fi
 
   opt="$opt $EXTRA_LINK_OPTIONS"
 
-# 3.b Link - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# 3.b Link
 
   rprfx="-Wl,-rpath,"
   rpath=
