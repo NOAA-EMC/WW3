@@ -1501,7 +1501,7 @@ CONTAINS
     !/
   END SUBROUTINE W3UBPT
   !/ ------------------------------------------------------------------- /
-  !> @attn FLFRST not used.
+  !> @attention FLFRST not used.
   !> @brief Update ice thickness in the wave model.
   !>
   !> @param[in] FLFRST
@@ -1612,7 +1612,7 @@ CONTAINS
   END SUBROUTINE W3UIC1
   !/ ------------------------------------------------------------------- /
   
-  !> @attn FLFRST not currently used.
+  !> @attention FLFRST not currently used.
   !> @brief Update ice floe mean and max diameters in the wave model.
   !>
   !> @param[in] FLFRST  
