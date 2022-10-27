@@ -2715,8 +2715,7 @@ CONTAINS
   !>  at (IXY,-1) indicates the transparency to be used if the lower
   !>  or left boundary is an inflow boundary. (IXY,1) is used if the
   !>  upper or right boundary is an inflow boundary. (IXY,0) is used
-  !>
-  for all other cases (by definition full transparency).
+  !>  for all other cases (by definition full transparency).
   !>
   !> @param[inout] TRNX  Transparencies from model definition file.
   !> @param[inout] TRNY  Transparencies from model definition file.  
