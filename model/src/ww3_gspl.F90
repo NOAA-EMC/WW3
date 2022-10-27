@@ -2284,11 +2284,11 @@ CONTAINS
 
   !> @brief Remove smaller grid parts.
   !>
-  !> @details Remove smller parts of a grid that are separated from
+  !> @details Remove smaller parts of a grid that are separated from
   !>  the main body, and that can be attached to other grids.
   !>
   !> @param[inout] OK
-  !> @param[inout] FRAC Fraction of average size used to remove grid part.
+  !> @param[in]    FRAC Fraction of average size used to remove grid part.
   !> @author H. L. Tolman  @date 01-Feb-2013
   SUBROUTINE GRSEPA ( OK, FRAC )
     !/
