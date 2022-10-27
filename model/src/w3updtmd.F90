@@ -1742,7 +1742,7 @@ CONTAINS
 !> @details Points with an ice concentration larger than FICEN are
 !>  removed from the sea map in the wave model. Such points are 
 !>  identified by negative numbers is the grid status map MAPSTA. For
-!>  ice points spectra are set to zero. Points from wich ice disappears
+!>  ice points spectra are set to zero. Points from which ice disappears
 !>  are initialized with a "small" JONSWAP spectrum, based on the
 !>  frequency SIG(NK-1) and the local wind direction.
 !>
