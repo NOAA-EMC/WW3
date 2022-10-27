@@ -467,8 +467,7 @@
       IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN
 #endif
           DO JSEA=1, NSEAL
-            CALL INIT_GET_ISEA(ISEA,JSEA)
-   
+             CALL INIT_GET_ISEA(ISEA,JSEA)
              IX = MAPSF(ISEA,1)
              IY = MAPSF(ISEA,2)
              ILA_PARAL(JSEA*2+1) = (IY - NHYN -1)*(NX - NHXE - NHXW) + (IX - NHXW - 1)
@@ -488,8 +487,8 @@
           ILA_PARAL(2) = NSEAL
           !
           DO JSEA=1, NSEAL
-            CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
             !ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
+            CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
           ENDDO
 #endif
 !
@@ -505,8 +504,8 @@
 #endif
 
          DO JSEA=1,NSEAL
-            CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
             !ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
+            CALL INIT_GET_ISEA(ILA_PARAL(JSEA*2+1),JSEA)
             ILA_PARAL(JSEA*2+2) = 1
          END DO
          !
