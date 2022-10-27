@@ -2034,6 +2034,8 @@
       IF (DTOUT(7).NE.0) THEN
 #endif
 
+    WRITE(*,*) 'START OASIS DEFINE'
+
 #ifdef W3_OASIS
 !#ifdef W3_HYCOM
 !        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
@@ -2044,6 +2046,7 @@
       END IF
 #endif
 
+    WRITE(*,*) 'FINISHED OASIS DEFINE' 
 
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
@@ -2063,6 +2066,8 @@
       call getMallocInfo(mallinfos)
       call printMallInfo(IAPROC,mallInfos)
 #endif
+
+      WRITE(*,*) 'START W3WAVE OASIS'
 
       IF ( .NOT. FLFLG ) THEN
 !
@@ -2087,13 +2092,19 @@
       IF ( FLOUT(7) .AND. CPLT0 ) THEN
 #endif
 #ifdef W3_OASACM
+      WRITE(*,*) 'START SND_FIELDS_TO_ATMOS'
        CALL SND_FIELDS_TO_ATMOS()
+      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_ATMOS'
 #endif
 #ifdef W3_OASOCM
+      WRITE(*,*) 'START SND_FIELDS_TO_OCEAN'
        CALL SND_FIELDS_TO_OCEAN()
+      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_OCEAN'
 #endif
 #ifdef W3_OASICM
+      WRITE(*,*) 'START SND_FIELDS_TO_ICE'
        CALL SND_FIELDS_TO_ICE()
+      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_ICE'
 #endif
 #ifdef W3_OASIS
       END IF
