@@ -498,15 +498,19 @@
          ! 1.3. Unstructured grids
          ! ----------------------------------
 #ifdef W3_OASIS
-          ALLOCATE(ILA_PARAL(2+2+NSEAL))
+          ! * allocate : OASIS ORANGE partition
+          ALLOCATE(ILA_PARAL(2+NSEAL*2))
+          ! * allocate : OASIS POINT partition
+!          ALLOCATE(ILA_PARAL(2+NSEAL))
           !
           ! * Define the partition : OASIS ORANGE partition
           ILA_PARAL(1) = 3 
+          ! * Define the partition : OASIS POINTS partition
+!          ILA_PARAL(1) = 4
           !
           ! * total number of segments of the global domain
           ILA_PARAL(2) = NSEAL
 #endif
-
          DO JSEA=1,NSEAL
             !ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
             CALL INIT_GET_ISEA(ILA_PARAL(JSEA*2+1),JSEA)
