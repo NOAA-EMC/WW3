@@ -497,11 +497,14 @@
          !
          ! 1.3. Unstructured grids
          ! ----------------------------------
-!#ifdef W3_HYCOM
 #ifdef W3_OASIS
-#else
-         WRITE(*,*) 'TO BE VERIFIED FOR UNSTRUCTURED GRIDS'
-         STOP
+          ALLOCATE(ILA_PARAL(2+2+NSEAL))
+          !
+          ! * Define the partition : OASIS ORANGE partition
+          ILA_PARAL(1) = 3 
+          !
+          ! * total number of segments of the global domain
+          ILA_PARAL(2) = NSEAL
 #endif
 
          DO JSEA=1,NSEAL
@@ -517,7 +520,7 @@
 !#ifdef W3_HYCOM
       WRITE(*,*) 'CALL OASIS_DEF_PARTITION'
 #ifdef W3_OASIS
-      CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NSEA)
+      CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NSEAL)
 #else
       CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NNODES)
 #endif
