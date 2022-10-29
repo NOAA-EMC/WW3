@@ -584,7 +584,7 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : USSX, USSY, EF, USSP
+    use w3adatmd      , only : USSX, USSY, USSP
     use w3adatmd      , only : w3seta
     use w3idatmd      , only : w3seti
     use w3wdatmd      , only : va, w3setw
@@ -753,22 +753,8 @@ contains
     if (wav_coupling_to_cice) then
       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-      ! Initialize wave elevation spectrum
       wave_elevation_spectrum(:,:) = fillvalue
-
-      do jsea=1, nseal                         ! jsea is local
-        isea = iaproc + (jsea-1)*naproc       ! isea is global
-        ix  = mapsf(isea,1)                   ! global ix
-        iy  = mapsf(isea,2)                   ! global iy
-        if (mapsta(iy,ix) .eq. 1) then        ! active sea point
-          ! If wave_elevation_spectrum is UNDEF  - needs ouput flag to be turned on
-          ! wave_elevation_spectrum as 25 variables
-          wave_elevation_spectrum(1:nwav_elev_spectrum,jsea)  = EF(jsea,1:nwav_elev_spectrum)
-        else
-          wave_elevation_spectrum(:,jsea) = 0.
-        endif
-      enddo
+      call CalcEF(va, wave_elevation_spectrum)
     end if
 
     if ( state_fldchk(exportState, 'Sw_pstokes_x') .and. &
@@ -1285,6 +1271,69 @@ contains
     enddo jsea_loop
 
   end subroutine CalcRadstr2D
+
+  !===============================================================================
+  !> Calculate wave elevation spectrum for export
+  !!
+  !> @details Calculates wave elevation spectrum independently of w3iogomd to ensure
+  !! that EF field sent to sea ice component is updated at the coupling frequency
+  !!
+  !! @param[in]    a                         input spectra
+  !! @param[inout] wave_elevation_spectrum   a 2-D pointer to a field on a mesh
+  !!
+  !> @author Denise.Worthen@noaa.gov
+  !> @date 10-28-2022
+  subroutine CalcEF (a, wave_elevation_spectrum)
+
+    use constants, only : tpi
+    use w3gdatmd,  only : nth, nk, nseal, e3df, mapsf, mapsta, dden, dsii
+    use w3adatmd,  only : nsealm, cg
+    use w3parall,  only : init_get_isea
+
+    ! input/output variables
+    real, intent(in)     :: a(nth,nk,0:nseal)
+    real(r8), pointer    :: wave_elevation_spectrum(:,:)
+
+    ! local variables
+    real    :: ebd(nk,nseal), ab(nseal), efloc(nsealm,e3df(2,1):e3df(3,1))
+    real    :: factor
+    integer :: ik, ith, isea, jsea, ix, iy
+
+    efloc = 0.0
+    ebd = 0.0
+    do ik = 1,nk
+      ab = 0.0
+      do ith = 1, nth
+        do jsea = 1,nseal
+          ab(jsea)  = ab(jsea) + a(ith,ik,jsea)
+        end do
+      end do
+
+      do jsea = 1,nseal
+        call init_get_isea(isea, jsea)
+        factor       = dden(ik) / cg(ik,isea)
+        ebd(ik,jsea) = ab(jsea) * factor
+        ebd(ik,jsea) = ebd(ik,jsea) / dsii(ik)
+        if (ik .ge. e3df(2,1) .and. ik .le. e3df(3,1)) then
+          efloc(jsea,ik)  = ebd(ik,jsea) * tpi
+        end if
+      end do
+    end do
+
+    do jsea=1, nseal
+      call init_get_isea(isea, jsea)
+      ix  = mapsf(isea,1)                   ! global ix
+      iy  = mapsf(isea,2)                   ! global iy
+      if (mapsta(iy,ix) .eq. 1) then        ! active sea point
+        ! if wave_elevation_spectrum is undef  - needs ouput flag to be turned on
+        ! wave_elevation_spectrum as 25 variables
+        wave_elevation_spectrum(1:nwav_elev_spectrum,jsea)  = efloc(jsea,1:nwav_elev_spectrum)
+      else
+        wave_elevation_spectrum(:,jsea) = 0.
+      endif
+    enddo
+
+  end subroutine CalcEF
 
   !====================================================================================
   !> Create a global field across all PEs
