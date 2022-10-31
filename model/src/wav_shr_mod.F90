@@ -52,7 +52,9 @@ module wav_shr_mod
 
   ! used by both CESM and UFS
   logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
-  !! fields for coupling to CICE (TODO: generalize)
+                                                                !! fields for coupling to CICE (TODO: generalize)
+  integer, parameter , public :: nwav_elev_spectrum = 25        !< the size of the wave spectrum exported if coupling
+                                                                !! waves to cice6
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
   character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
 

@@ -19,7 +19,7 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
-  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag, multigrid
+  use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, multigrid
   use constants    , only : grav, tpi, dwat
 
   implicit none
@@ -42,7 +42,7 @@ module wav_import_export
     module procedure fillglobal_with_merge_import
   end interface FillGlobalInput
 
-  type fld_list_type                                !< @private a structure for the list of fields
+  type fld_list_type                               !< @private a structure for the list of fields
     character(len=128) :: stdname                  !< a standard field name
     integer :: ungridded_lbound = 0                !< the ungridded dimension lower bound
     integer :: ungridded_ubound = 0                !< the ugridded dimension upper bound
@@ -62,9 +62,6 @@ module wav_import_export
 #else
   logical :: cesmcoupled = .false.                  !< logical defining a non-CESM use case (UWM)
 #endif
-
-  integer, parameter :: nwav_elev_spectrum = 25     !< the size of the wave spectrum exported if coupling
-                                                    !! waves to cice6
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
        __FILE__
 
@@ -604,7 +601,7 @@ contains
     ! Local variables
     real(R8)          :: fillvalue = 1.0e30_R8                 ! special missing value
     type(ESMF_State)  :: exportState
-    integer           :: n, jsea, isea, ix, iy, lsize, ib
+    integer           :: n, jsea, isea, ix, iy, ib
 
     real(r8), pointer :: z0rlen(:)
     real(r8), pointer :: charno(:)
@@ -753,6 +750,7 @@ contains
     if (wav_coupling_to_cice) then
       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      ! Initialize wave elevation spectrum
       wave_elevation_spectrum(:,:) = fillvalue
       call CalcEF(va, wave_elevation_spectrum)
     end if
@@ -1286,7 +1284,7 @@ contains
   subroutine CalcEF (a, wave_elevation_spectrum)
 
     use constants, only : tpi
-    use w3gdatmd,  only : nth, nk, nseal, e3df, mapsf, mapsta, dden, dsii
+    use w3gdatmd,  only : nth, nk, nseal, mapsf, mapsta, dden, dsii
     use w3adatmd,  only : nsealm, cg
     use w3parall,  only : init_get_isea
 
@@ -1295,43 +1293,32 @@ contains
     real(r8), pointer    :: wave_elevation_spectrum(:,:)
 
     ! local variables
-    real    :: ebd(nk,nseal), ab(nseal), efloc(nsealm,e3df(2,1):e3df(3,1))
-    real    :: factor
+    real    :: ab(nseal)
+    real    :: ebd, factor
     integer :: ik, ith, isea, jsea, ix, iy
 
-    efloc = 0.0
-    ebd = 0.0
-    do ik = 1,nk
+    do ik = 1,nwav_elev_spectrum
       ab = 0.0
       do ith = 1, nth
         do jsea = 1,nseal
-          ab(jsea)  = ab(jsea) + a(ith,ik,jsea)
+          ab(jsea) = ab(jsea) + a(ith,ik,jsea)
         end do
       end do
 
       do jsea = 1,nseal
         call init_get_isea(isea, jsea)
-        factor       = dden(ik) / cg(ik,isea)
-        ebd(ik,jsea) = ab(jsea) * factor
-        ebd(ik,jsea) = ebd(ik,jsea) / dsii(ik)
-        if (ik .ge. e3df(2,1) .and. ik .le. e3df(3,1)) then
-          efloc(jsea,ik)  = ebd(ik,jsea) * tpi
+        ix  = mapsf(isea,1)                   ! global ix
+        iy  = mapsf(isea,2)                   ! global iy
+        if (mapsta(iy,ix) .eq. 1) then        ! active sea point
+          factor = dden(ik) / cg(ik,isea)
+          ebd = ab(jsea) * factor
+          ebd = ebd / dsii(ik)
+          wave_elevation_spectrum(ik,jsea) = ebd * tpi
+        else
+          wave_elevation_spectrum(ik,jsea) = 0.
         end if
       end do
     end do
-
-    do jsea=1, nseal
-      call init_get_isea(isea, jsea)
-      ix  = mapsf(isea,1)                   ! global ix
-      iy  = mapsf(isea,2)                   ! global iy
-      if (mapsta(iy,ix) .eq. 1) then        ! active sea point
-        ! if wave_elevation_spectrum is undef  - needs ouput flag to be turned on
-        ! wave_elevation_spectrum as 25 variables
-        wave_elevation_spectrum(1:nwav_elev_spectrum,jsea)  = efloc(jsea,1:nwav_elev_spectrum)
-      else
-        wave_elevation_spectrum(:,jsea) = 0.
-      endif
-    enddo
 
   end subroutine CalcEF
 

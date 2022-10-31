@@ -41,7 +41,7 @@ module wav_comp_nuopc
   use wav_import_export     , only : advertise_fields, realize_fields
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
-  use wav_shr_mod           , only : wav_coupling_to_cice
+  use wav_shr_mod           , only : wav_coupling_to_cice, nwav_elev_spectrum
   use wav_shr_mod           , only : merge_import, dbug_flag
   use w3odatmd              , only : nds, iaproc, napout
   use w3odatmd              , only : runtype, use_user_histname, user_histfname, use_user_restname, user_restfname
@@ -81,7 +81,7 @@ module wav_comp_nuopc
   integer                 :: flds_scalar_index_nx = 0      !< the default size of the scalar field nx
   integer                 :: flds_scalar_index_ny = 0      !< the default size of the scalar field ny
   logical                 :: profile_memory = .false.      !< default logical to control use of ESMF
-  !! memory profiling
+                                                           !! memory profiling
 
   logical                 :: root_task = .false.           !< logical to indicate root task
 #ifdef W3_CESMCOUPLED
@@ -398,7 +398,7 @@ contains
     use w3timemd     , only : stme21
     use w3adatmd     , only : w3naux, w3seta
     use w3idatmd     , only : w3seti, w3ninp
-    use w3gdatmd     , only : nseal, nsea, nx, ny, mapsf, w3nmod, w3setg
+    use w3gdatmd     , only : nk, nseal, nsea, nx, ny, mapsf, w3nmod, w3setg
     use w3wdatmd     , only : va, time, w3ndat, w3dimw, w3setw
 #ifndef W3_CESMCOUPLED
     use wminitmd     , only : wminit, wminitnml
@@ -669,6 +669,13 @@ contains
     if ( root_task ) then
       inquire(unit=nds(1), name=logfile)
       print *,'WW3 log written to '//trim(logfile)
+    end if
+
+    if (wav_coupling_to_cice) then
+      if (nwav_elev_spectrum .gt. nk) then
+        call ESMF_LogWrite('nwav_elev_spectrum is greater than nk ', ESMF_LOGMSG_INFO)
+        call ESMF_Finalize(endflag=ESMF_END_ABORT)
+      end if
     end if
 
     !--------------------------------------------------------------------
