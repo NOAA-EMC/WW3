@@ -1,5 +1,26 @@
+!> @file 
+!> @brief Source term integration routine.
+!> 
+!> @author H. L. Tolman
+!> @author F. Ardhuin
+!> @date   22-Mar-2021
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Source term integration routine.
+!>
+!> @author H. L. Tolman
+!> @author F. Ardhuin
+!> @date   22-Mar-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SRCEMD
   !/
   !/                  +-----------------------------------+
@@ -49,6 +70,123 @@ MODULE W3SRCEMD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Calculate and integrate source terms for a single grid point.
+  !>
+  !> @verbatim
+  !>     Physics  : see manual and corresponding subroutines.
+  !>
+  !>     Numerics :
+  !>
+  !>     Dynamic-implicit integration of the source terms based on
+  !>     WW-II (Tolman 1992). The dynamic time step is calculated
+  !>     given a maximum allowed change of spectral densities for
+  !>     frequencies / wavenumbers below the usual cut-off.
+  !>     The maximum change is given by the minimum of a parametric
+  !>     and a relative change. The parametric change relates to a
+  !>     PM type equilibrium range
+  !>
+  !>                                -1  (2pi)**4       1
+  !>       dN(k)     =  Xp alpha  pi   ---------- ------------
+  !>            max                       g**2     k**3 sigma
+  !>
+  !>                              1                                     .
+  !>                 =  FACP ------------                              (1)
+  !>                          k**3 sigma                                .
+  !>
+  !>     where
+  !>           alpha = 0.62e-4                       (set in W3GRID)
+  !>           Xp      fraction of PM shape          (read in W3GRID)
+  !>           FACP    combined factor               (set in W3GRID)
+  !>
+  !>     The maximum relative change is given as
+  !>
+  !>                           /            +-                  -+ \    .
+  !>       dN(k)     =  Xr max | N(k) , max | Nx , Xfilt N(k)    | |   (2)
+  !>            max            \            +-               max-+ /    .
+  !>
+  !>     where
+  !>           Xr      fraction of relative change   (read in W3GRID)
+  !>           Xfilt   filter level                  (read in W3GRID)
+  !>           Nx      Maximum parametric change (1)
+  !>                   for largest wavenumber.
+  !> @endverbatim  
+  !>
+  !> @param[in]    srce_call 
+  !> @param[in]    IT 
+  !> @param[in]    ISEA
+  !> @param[in]    JSEA 
+  !> @param[in]    IX         Discrete grid point counters.
+  !> @param[in]    IY         Discrete grid point counters.
+  !> @param[in]    IMOD       Model number.
+  !> @param[in]    SPECOLD 
+  !> @param[inout] SPEC       Spectrum (action) in 1-D form.
+  !> @param[out]   VSIO 
+  !> @param[out]   VDIO 
+  !> @param[out]   SHAVEIO 
+  !> @param[inout] ALPHA      Nondimensional 1-D spectrum corresponding
+  !>                          to above full spectra (Phillip's const.).
+  !> @param[inout] WN1        Discrete wavenumbers.
+  !> @param[inout] CG1        Id. group velocities.
+  !> @param[in]    CLATSL     
+  !> @param[in]    D_INP      Depth, compared to DMIN to get DEPTH.
+  !> @param[in]    U10ABS     Wind speed at reference height.
+  !> @param[in]    U10DIR     Id. wind direction.
+  !> @param[inout] TAUA       Magnitude of total atmospheric stress.
+  !> @param[inout] TAUADIR    Direction of atmospheric stress.
+  !> @param[in]    AS         Air-sea temperature difference.
+  !> @param[inout] USTAR      Friction velocity.
+  !> @param[inout] USTDIR     Idem, direction.
+  !> @param[in]    CX         Current velocity component.
+  !> @param[in]    CY         Current velocity component.
+  !> @param[in]    ICE        Sea ice concentration.
+  !> @param[in]    ICEH       Sea ice thickness.
+  !> @param[inout] ICEF       Sea ice floe diameter.
+  !> @param[in]    ICEDMAX    Sea ice maximum floe diameter
+  !> @param[in]    REFLEC     Reflection coefficients.
+  !> @param[in]    REFLED     Reflection direction.
+  !> @param[in]    DELX       Grid cell size in X direction.
+  !> @param[in]    DELY       Grid cell size in Y direction.
+  !> @param[in]    DELA       Grid cell area.
+  !> @param[in]    TRNX       Grid transparency in X.
+  !> @param[in]    TRNY       Grid transparency in Y.
+  !> @param[in]    BERG       Iceberg damping coefficient.
+  !> @param[inout] FPI        Peak-input frequency.
+  !> @param[out]   DTDYN      Average dynamic time step.
+  !> @param[out]   FCUT       Cut-off frequency for tail.
+  !> @param[in]    DTG        Global time step.
+  !> @param[inout] TAUWX      
+  !> @param[inout] TAUWY 
+  !> @param[inout] TAUOX 
+  !> @param[inout] TAUWIX 
+  !> @param[inout] TAUWIY 
+  !> @param[inout] TAUWNX
+  !> @param[inout] TAUWNY
+  !> @param[inout] PHIAW 
+  !> @param[inout] CHARN 
+  !> @param[inout] TWS 
+  !> @param[inout] PHIOC 
+  !> @param[inout] WHITECAP   Whitecap statistics.
+  !> @param[in]    D50        Sand grain size.
+  !> @param[in]    PSIC       Critical shields.
+  !> @param[inout] BEDFORM    Bedform parameters.
+  !> @param[inout] PHIBBL     Energy flux to BBL.
+  !> @param[inout] TAUBBL     Momentum flux to BBL.
+  !> @param[inout] TAUICE     Momentum flux to sea ice.
+  !> @param[inout] PHICE      Energy flux to sea ice.
+  !> @param[inout] TAUOCX     Total ocean momentum component.
+  !> @param[inout] TAUOCY     Total ocean momentum component.
+  !> @param[inout] WNMEAN     Mean wave number.
+  !> @param[in]    DAIR       Air density.
+  !> @param[in]    COEF 
+  !>
+  !> @author H. L. Tolman
+  !> @author F. Ardhuin
+  !> @author A. Roland
+  !> @author M. Dutour Sikiric
+  !> @date   22-Mar-2021
+  !>  
   SUBROUTINE W3SRCE ( srce_call, IT, ISEA, JSEA, IX, IY, IMOD,          &
        SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
        ALPHA, WN1, CG1, CLATSL,                    &
@@ -2194,6 +2332,20 @@ CONTAINS
     !/
   END SUBROUTINE W3SRCE
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Calculate equivalent peak frequency.
+  !>
+  !> @details Tolman and Chalikov (1996), equivalent peak frequency from source.
+  !>
+  !> @param[in]  A    Action density spectrum (1-D).
+  !> @param[in]  CG   Group velocities for k-axis of spectrum.
+  !> @param[out]  FPI  Input 'peak' frequency.
+  !> @param[in] S    Source term (1-D version).
+  !>
+  !> @author Jessica Meixner
+  !> @date   06-Jun-2018
+  !>
   SUBROUTINE CALC_FPI( A, CG, FPI, S )
     !/
     !/                  +-----------------------------------+
@@ -2313,6 +2465,18 @@ CONTAINS
 
   END SUBROUTINE CALC_FPI
   !/ ------------------------------------------------------------------- /!
+
+  !>
+  !> @brief Put source term in matrix same as done always.
+  !>
+  !> @param[in]    SPEC 
+  !> @param[inout] VS 
+  !> @param[inout] VD 
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC, VS, VD)
     !/
     !/                  +-----------------------------------+
@@ -2389,6 +2553,18 @@ CONTAINS
     END DO
   END SUBROUTINE SIGN_VSD_SEMI_IMPLICIT_WW3
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Put source term in matrix Patankar style (experimental).
+  !>
+  !> @param[in]    SPEC 
+  !> @param[inout] VS 
+  !> @param[inout] VD 
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>  
   SUBROUTINE SIGN_VSD_PATANKAR_WW3(SPEC, VS, VD)
     !/
     !/                  +-----------------------------------+
