@@ -305,6 +305,8 @@
     ./sort_switch -s -r switch
     sed -e 's/DIST/SHRD/g' \
         -e 's/PDLIB //g'    \
+        -e 's/METIS //g'    \
+        -e 's/SCOTCH //g'    \
         -e 's/OMPG //g'    \
         -e 's/PDLIB //g'    \
         -e 's/OMPH //g'    \
