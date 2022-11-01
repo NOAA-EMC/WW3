@@ -1,5 +1,37 @@
+!> @file 
+!> @brief Post-processing of grid output.
+!> 
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Post-processing of grid output.
+!>
+!> @details Data is read from the grid output file out_grd.ww3 (raw data)
+!>     and from the file ww3_outf.inp ( NDSI, output requests ).
+!>     Model definition and raw data files are read using WAVEWATCH III
+!>     subroutines.
+!>
+!> @verbatim
+!>     Output types :
+!>      1 : print plots
+!>      2 : field statistics
+!>      3 : transfer file
+!>      4 : text output at sea points (1:NSEA).
+!> @endverbatim
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!> 
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 PROGRAM W3OUTF
   !/
   !/                  +-----------------------------------+
@@ -497,6 +529,20 @@ PROGRAM W3OUTF
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Perform actual grid output.
+!>
+!> @details Note that arrays CX and CY of the main program now contain
+!>  the absolute current speed and direction respectively.
+!>
+!> @param NX   X grid dimension
+!> @param NY   Y grid dimension
+!> @param NSEA Number of sea points
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>  
   SUBROUTINE W3EXGO ( NX, NY, NSEA )
     !/
     !/                  +-----------------------------------+

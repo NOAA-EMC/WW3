@@ -4,7 +4,7 @@
 !> @author A. J. van der Westhuysen
 !> @author Jeff Hanson
 !> @author Eve-Marie Devaliere
-!> date 16-Jan-2017
+!> @date   16-Jan-2017
 !
 !/ ------------------------------------------------------------------- /
 !> @brief Perform spatial and temporal tracking of wave systems, based
@@ -18,7 +18,13 @@
 !> @author A. J. van der Westhuysen
 !> @author Jeff Hanson
 !> @author Eve-Marie Devaliere
-!> date 16-Jan-2017
+!> @date   16-Jan-2017
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 !
 PROGRAM WW3_SYSTRK
   !/
@@ -1099,6 +1105,25 @@ PROGRAM WW3_SYSTRK
 END PROGRAM WW3_SYSTRK
 !
 #ifdef W3_TRKNC
+!>
+!> @brief N/A
+!>
+!> @param lons
+!> @param lats
+!> @param data_in
+!> @param nlons
+!> @param nlats
+!> @param nsys
+!> @param date1
+!> @param date2
+!> @param dt
+!> @param ntime
+!> @param ivar
+!> @param outputType
+!>
+!> @author N/A
+!> @date   N/A
+!>
 subroutine t2netcdf(lons,lats,data_in,nlons,nlats,nsys,date1,date2,&
      dt,ntime,ivar, outputType)
   USE W3TIMEMD
@@ -1262,6 +1287,14 @@ end subroutine t2netcdf
 #endif
 !
 #ifdef W3_TRKNC
+!>
+!> @brief N/A
+!>
+!> @param[in] status
+!>
+!> @author N/A
+!> @date   N/A
+!>
 subroutine check(status)
   use netcdf
   integer, intent ( in) :: status
@@ -1276,6 +1309,24 @@ end subroutine check
 #endif
 !
 #ifdef W3_TRKNC
+!>
+!> @brief N/A
+!>
+!> @param longitude 
+!> @param latitude
+!> @param hs
+!> @param tp
+!> @param dir
+!> @param npoints
+!> @param date1
+!> @param date2
+!> @param dt
+!> @param ntime
+!> @param outputType
+!>
+!> @author N/A
+!> @date   N/A
+!>
 subroutine pt2netcdf(longitude,latitude,hs,tp,&
      dir,npoints,date1,date2,dt,ntime,outputType)
   USE W3TIMEMD

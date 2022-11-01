@@ -1,5 +1,24 @@
+!> @file 
+!> @brief Parmeterization of the unresolved obstacles.
+!> 
+!> @author Lorenzo Mentaschi
+!> @date   08-Oct-2018
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Parmeterization of the unresolved obstacles.
+!> 
+!> @author Lorenzo Mentaschi
+!> @date   08-Oct-2018
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>  National Oceanic and Atmospheric Administration.  All rights
+!>  reserved.  WAVEWATCH III is a trademark of the NWS.
+!>  No unauthorized use without permission.
+!>
 MODULE W3UOSTMD
   !/                  +-----------------------------------+
   !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -83,6 +102,23 @@ CONTAINS
 
 
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Allocate the UOST variables for a given grid, and load
+  !>        them from file.
+  !>
+  !> @param[in] IGRID         Id of the grid being initialized.
+  !> @param[in] FILELOCAL     File from where the alpha/beta coefficient
+  !>                             for the local dissipation are loaded.
+  !> @param[in] FILESHADOW    File from where the alpha/beta coefficient
+  !>                             for the shadow effect are loaded.
+  !> @param[in] LOCALFACTOR   Adjustment parameter for the local
+  !>                             dissipation alpha and beta.
+  !> @param[in] SHADOWFACTOR  Adjustment parameter for the shadow
+  !>                             dissipation alpha and beta.
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE UOST_INITGRID(IGRID, FILELOCAL, FILESHADOW, LOCALFACTOR, SHADOWFACTOR)
     !/
     !/                  +-----------------------------------+
@@ -183,6 +219,15 @@ CONTAINS
 
 
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Sets the current grid in the sourceterm object.
+  !>
+  !> @param[in] IGRID  Id of the actual grid.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE UOST_SETGRID(IGRID)
     !/
     !/                  +-----------------------------------+
@@ -233,8 +278,23 @@ CONTAINS
   END SUBROUTINE UOST_SETGRID
   !/ ------------------------------------------------------------------- /
 
-
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Estimates the UOST source term for a give spectrum.
+  !>
+  !> @param[in]  IX      
+  !> @param[in]  IY      
+  !> @param[in]  SPEC    
+  !> @param[in]  CG      
+  !> @param[in]  DT      
+  !> @param[in]  U10ABS  
+  !> @param[in]  U10DIR  
+  !> @param[out] S       
+  !> @param[out] D       
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>  
   SUBROUTINE UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG, DT, U10ABS, U10DIR, S, D)
     !/
     !/                  +-----------------------------------+
@@ -283,6 +343,17 @@ CONTAINS
   END SUBROUTINE UOST_SRCTRMCOMPUTE
 
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Loads local and shadow alpha and beta from files.
+  !>
+  !> @param[inout] GRD       Object representing the spatial grid to be loaded.
+  !> @param[inout] SRD       Object representing the current spectral grid.
+  !> @param[inout] FILEUNIT  Unit id of the input files.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE LOAD_ALPHABETA(GRD, SGD, FILEUNIT)
     !/
     !/                  +-----------------------------------+
@@ -371,6 +442,27 @@ CONTAINS
   END SUBROUTINE LOAD_ALPHABETA
 
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Loads alpha and beta from a single obstructions file.
+  !>
+  !> @param[in]    FILEUNIT      Unit of the file to be opened.
+  !> @param[in]    FILENAME      Name of the file.
+  !> @param[in]    NX            Size of spatial grid X dim.
+  !> @param[in]    NY            Size of spatial grid Y dim.
+  !> @param[in]    NK            Size of spectral grid K dim.
+  !> @param[in]    NTH           Size of spectral grid TH dim.
+  !> @param[in]    MULTFACTOR    Multiplication factor for alpha and beta.
+  !> @param[inout] ALPHAMTX      Loaded alpha spatial/spectral matrices.
+  !> @param[inout] BETAMTX       Loaded beta spatial/spectral matrices.
+  !> @param[inout] CELLSIZE      Cell size for each spectral direction,
+  !>                             also loaded from the file.
+  !> @param[inout] ISOBSTRUCTED  Matrix of logicals, indicating for each cell
+  !>                             if it is obstructed or not.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE LOAD_ALPHABETA_FROMFILE(FILEUNIT, FILENAME, NX, NY, NK, NTH,&
        MULTFACTOR, ALPHAMTX, BETAMTX, CELLSIZE, ISOBSTRUCTED)
     !/
@@ -500,7 +592,18 @@ CONTAINS
   END SUBROUTINE LOAD_ALPHABETA_FROMFILE
 
   !/ ------------------------------------------------------------------- /
-
+  
+  !>
+  !> @brief Method of the class UOST_SOURCETERM, to set the
+  !>  actual spatial and spectral grid.
+  !>
+  !> @param[inout] THIS  
+  !> @param[in]    GRD   Object representing the spatial grid to be loaded.
+  !> @param[in]    SGD   Object representing the current spectral grid.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE UOST_SOURCETERM_SETGRID(THIS, GRD, SGD)
     !/
     !/                  +-----------------------------------+
@@ -566,7 +669,23 @@ CONTAINS
 
   !/ ------------------------------------------------------------------- /
 
-
+  !>
+  !> @brief In conditions of wind sea, the effect of the unresolved 
+  !>  obstacles is reduced.             
+  !>
+  !> @details Here a reduction psi is computed, as a function of the
+  !>  wave age.
+  !>
+  !> @param[in]  U10ABS  Absolute value of U10.
+  !> @param[in]  U10DIR  Direction of U10.
+  !> @param[in]  CGABS   Absolute value of the group velocity.
+  !> @param[in]  CGDIR   Direction of the group velocity.
+  !> @param[in]  DT      Time step.
+  !> @param[out] PSI     Output psi factor.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE COMPUTE_REDUCTION_PSI(U10ABS, U10DIR, CGABS, CGDIR, DT, PSI)
     !/
     !/                  +-----------------------------------+
@@ -652,7 +771,26 @@ CONTAINS
   END SUBROUTINE COMPUTE_REDUCTION_PSI
 
   !/ ------------------------------------------------------------------- /
-
+  
+  !>
+  !> @brief Method of the class UOST_SOURCETERM.
+  !>
+  !> @details Computation of the local dissipation of the spectrum.
+  !>
+  !> @param[inout] THIS    Instance of UOST_SOURCETERM passed to the method.
+  !> @param[in]    IX      X coordinates of actual call.
+  !> @param[in]    IY      Y coordinates of actual call.
+  !> @param[in]    SPEC    Input spectrum.
+  !> @param[in]    CG      Group velocity.
+  !> @param[in]    DT      Time step.
+  !> @param[in]    U10ABS  Absolute value of U10.
+  !> @param[in]    U10DIR  Direction of U10.
+  !> @param[out]   S       Source term.
+  !> @param[out]   D       Differential of the source term over the spectrum.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE UOST_SOURCETERM_COMPUTE_LD(THIS, IX, IY, SPEC, CG, DT, U10ABS, U10DIR, S, D)
     !/
     !/                  +-----------------------------------+
@@ -761,6 +899,26 @@ CONTAINS
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_LD
 
   !/ ------------------------------------------------------------------- /
+  
+  !>
+  !> @brief Method of the class UOST_SOURCETERM.
+  !>
+  !> @details Computation of the shadow dissipation of the spectrum.
+  !>
+  !> @param[inout] THIS    Instance of UOST_SOURCETERM passed to the method.
+  !> @param[in]    IX      X coordinates of actual call.
+  !> @param[in]    IY      Y coordinates of actual call.
+  !> @param[in]    SPEC    Input spectrum.
+  !> @param[in]    CG      Group velocity.
+  !> @param[in]    DT      Time step.
+  !> @param[in]    U10ABS  Absolute value of U10.
+  !> @param[in]    U10DIR  Direction of U10.
+  !> @param[out]   S       Source term.
+  !> @param[out]   D       Differential of the source term over the spectrum.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE UOST_SOURCETERM_COMPUTE_SE(THIS, IX, IY, SPEC, CG, DT, U10ABS, U10DIR, S, D)
     !/
     !/                  +-----------------------------------+
@@ -878,7 +1036,26 @@ CONTAINS
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_SE
 
   !/ ------------------------------------------------------------------- /
-
+  
+  !>
+  !> @brief Method of the class UOST_SOURCETERM.
+  !>
+  !> @details Computation of the source term.
+  !>
+  !> @param[inout] THIS    Instance of UOST_SOURCETERM passed to the method.
+  !> @param[in]    IX      X coordinates of actual call.
+  !> @param[in]    IY      Y coordinates of actual call.
+  !> @param[in]    SPEC    Input spectrum.
+  !> @param[in]    CG      Group velocity.
+  !> @param[in]    DT      Time step.
+  !> @param[in]    U10ABS  Absolute value of U10.
+  !> @param[in]    U10DIR  Direction of U10.
+  !> @param[out]   S       Source term.
+  !> @param[out]   D       Differential of the source term over the spectrum.
+  !>
+  !> @author Lorenzo Mentaschi
+  !> @date   01-Oct-2018
+  !>
   SUBROUTINE UOST_SOURCETERM_COMPUTE(THIS, IX, IY, SPEC, CG, DT, U10ABS, U10DIR, S, D)
     !/
     !/                  +-----------------------------------+

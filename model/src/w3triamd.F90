@@ -1,5 +1,23 @@
+!> @file 
+!> @brief Reads triangle and unstructured grid information.
+!> 
+!> @author F. Ardhuin
+!> @author A. Roland
+!> @date   26-Jan-2014
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Reads triangle and unstructured grid information.
+!>
+!> @details Look for namelist with name NAME in unit NDS and read if found.
+!> 
+!> @author F. Ardhuin
+!> @author A. Roland
+!> @date   26-Jan-2014
+!>
 MODULE W3TRIAMD
   !/ -------------------------------------------------------------------
   !/                  +-----------------------------------+
@@ -98,6 +116,20 @@ MODULE W3TRIAMD
 
 CONTAINS
   !/ -------------------------------------------------------------------/
+
+  !>
+  !> @brief Reads triangle and unstructured grid information from GMSH files.
+  !>
+  !> @details Calls the subroutines needed to compute grid connectivity.
+  !>  Look for namelist with name NAME in unit NDS and read if found.
+  !>
+  !> @param[in] NDS    Data set number used for search.
+  !> @param[in] FNAME  Name of namelist.
+  !>
+  !> @author F. Ardhuin
+  !> @author A. Roland
+  !> @date   06-Jun-2018
+  !>
   SUBROUTINE READMSH(NDS,FNAME)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -340,6 +372,19 @@ CONTAINS
     CLOSE(NDS)
   END SUBROUTINE READMSH
   !/--------------------------------------------------------------------/
+
+  !>
+  !> @brief Reads triangle and unstructured grid information from GMSH files.
+  !>
+  !> @details Calls the subroutines needed to compute grid connectivity.
+  !>  Look for namelist with name NAME in unit NDS and read if found.
+  !>
+  !> @param[in] NDS    Data set number used for search.
+  !> @param[in] FNAME  Name of namelist.
+  !>
+  !> @author 
+  !> @date 
+  !>
   SUBROUTINE READMSH_IOBP(NDS,FNAME)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -452,6 +497,16 @@ CONTAINS
     CLOSE(NDS)
   END SUBROUTINE READMSH_IOBP
   !/--------------------------------------------------------------------/
+
+  !>
+  !> @brief Boundary status (code duplication).
+  !>
+  !> @param[out] STATUS
+  !>
+  !> @author Mathieu Dutour-Sikiric
+  !> @author Aron Roland
+  !> @date   01-May-2018
+  !>  
   SUBROUTINE GET_BOUNDARY_STATUS(STATUS)
     !/
     !/                  +-----------------------------------+
@@ -598,6 +653,19 @@ CONTAINS
   END SUBROUTINE GET_BOUNDARY_STATUS
 
   !/ -------------------------------------------------------------------/
+
+  !>
+  !> @brief Reads open boundary information for UNST grids following
+  !>  GMESH type format.
+  !>
+  !> @param[in]    NDS      Data set number used for search.
+  !> @param[in]    FNAME    File name.
+  !> @param[inout] TMPSTA   Status map to be updated (for OBC,TMPSTA = 2).
+  !> @param[out]   UGOBCOK  Flag for proper reading of OBC file.
+  !>
+  !> @author F. Ardhuin
+  !> @date   14-Mar-2018
+  !>
   SUBROUTINE READMSHOBC(NDS, FNAME, TMPSTA, UGOBCOK)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -713,6 +781,18 @@ CONTAINS
 
 
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Defines open boundary points based on depth.
+  !>
+  !> @details A boundary node has more node around it than triangles.
+  !>
+  !> @param[inout] TMPSTA  Status map to be updated (for OBC, TMPSTA = 2).
+  !> @param[in]    ZBIN    
+  !> @param[in]    ZLIM    
+  !>
+  !> @author F. Ardhuin
+  !> @date   30-Aug-2012
+  !>  
   SUBROUTINE UG_GETOPENBOUNDARY(TMPSTA,ZBIN,ZLIM)
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -796,6 +876,17 @@ CONTAINS
 
 
   !/----------------------------------------------------------------------
+
+  !>
+  !> @brief Calculates triangle areas and reorders the triangles to have
+  !>  them oriented counterclockwise.
+  !>
+  !> @details The triangle surface calculation is based on cross product.
+  !>
+  !> @author A. Roland
+  !> @author F. Ardhuin
+  !> @date   31-Aug-2011
+  !>
   SUBROUTINE SPATIAL_GRID
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -902,6 +993,16 @@ CONTAINS
   !/--------------------------------------------------------------------/
   !
   !/--------------------------------------------------------------------/
+
+  !>
+  !> @brief Calculate cell tools: inward normal, angles and length of edges.
+  !>
+  !> @details To get inward pointing normals, triangle are glanced through
+  !>  anti-clockwisely.
+  !>
+  !> @author A. Roland
+  !> @date   15-May-2008
+  !>  
   SUBROUTINE NVECTRI
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -1023,8 +1124,17 @@ CONTAINS
 
   !/------------------------------------------------------------------------
 
+  !>
+  !> @brief Calculate global and maximum number of connection for array
+  !>  allocations.
+  !>
+  !> @param[in] TRIGPTEMP  Temporary array of triangle vertices.
+  !>
+  !> @author A. Roland
+  !> @author F. Ardhuin
+  !> @date   15-May-2008
+  !>
   SUBROUTINE COUNT(TRIGPTEMP)
-
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1130,6 +1240,14 @@ CONTAINS
   END SUBROUTINE COUNT
 
   !/----------------------------------------------------------------------------
+
+  !>
+  !> @brief Calculate first point and last point coordinates, and minimum and
+  !>  maximum edge length.
+  !>
+  !> @author F. Ardhuin
+  !> @date   15-May-2008
+  !>
   SUBROUTINE COORDMAX
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -1202,6 +1320,22 @@ CONTAINS
   END SUBROUTINE COORDMAX
   !-------------------------------------------------------------------------
 
+  !>
+  !> @brief Define optimized connection arrays (points and triangles) for
+  !>  spatial propagation schemes.
+  !>
+  !> @details The storage is optimize especially considering the iterative solver used.
+  !>  The schemes used are vertex-centered, a point has to be considered within its
+  !>  median dual cell. For a given point, the surface of the dual cell is one third
+  !>  of the sum of the surface of connected triangles.
+  !>
+  !>  This routine is from WWM developed in Darmstadt(Aaron Roland).
+  !>
+  !> @param[in] IMOD  Model number to point to.
+  !>
+  !> @author A. Roland
+  !> @date   23-Aug-2011
+  !>
   SUBROUTINE AREA_SI(IMOD)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -1452,6 +1586,30 @@ CONTAINS
 
   END SUBROUTINE AREA_SI
 
+  !>
+  !> @brief Determine whether a point is inside or outside an 
+  !>  unstructured grid, and returns index of triangle and 
+  !>  interpolation weights.
+  !>
+  !> @details This is the analogue for triangles of the FUNCTION W3GRMP.
+  !>
+  !>  Using barycentric coordinates defined as the ratio of triangle 
+  !>  algebric areas which are positive or negative.  Computes the 3 
+  !>  interpolation weights for each triangle until they are all positive.
+  !>
+  !> @param[in]  IMOD   Model number to point to.
+  !> @param[in]  XTIN   X-coordinate of target point.
+  !> @param[in]  YTIN   Y-coordinate of target point.
+  !> @param[out] ITOUT  Model number to point to.
+  !> @param[out] IS     I indices of vertices of enclosing grid cell.
+  !> @param[out] JS     J indices of vertices of enclosing grid cell.
+  !> @param[out] RW     Array of interpolation weights.
+  !>
+  !> @author Mathieu Dutour Sikiric, IRB
+  !> @author Aron Roland, Z&P
+  !> @author Fabrice Ardhuin
+  !> @date   26-Jan-2014
+  !>  
   SUBROUTINE IS_IN_UNGRID(IMOD, XTIN, YTIN, ITOUT, IS, JS, RW)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -1628,6 +1786,32 @@ CONTAINS
     ENDDO
   END SUBROUTINE IS_IN_UNGRID
   !/ -------------------------------------------------------------------
+
+  !>
+  !> @brief Determine whether a point is inside or outside an 
+  !>  unstructured grid, and returns index of triangle and 
+  !>  interpolation weights.
+  !>
+  !> @details This is the analogue for triangles of the FUNCTION W3GRMP.
+  !>
+  !>  Using barycentric coordinates defined as the ratio of triangle 
+  !>  algebric areas which are positive or negative.  Computes the 3 
+  !>  interpolation weights for each triangle until they are all positive.
+  !>
+  !> @param[in]  IMOD   Model number to point to.
+  !> @param[in]  XTIN   X-coordinate of target point.
+  !> @param[in]  YTIN   Y-coordinate of target point.
+  !> @param[in]  FORCE
+  !> @param[out] ITOUT  Model number to point to.  
+  !> @param[out] IS     I indices of vertices of enclosing grid cell.
+  !> @param[out] JS     J indices of vertices of enclosing grid cell.
+  !> @param[out] RW     Array of interpolation weights.
+  !>
+  !> @author Mathieu Dutour Sikiric, IRB
+  !> @author Aron Roland, Z&P
+  !> @author Fabrice Ardhuin
+  !> @date   26-Jan-2014
+  !>    
   SUBROUTINE IS_IN_UNGRID2(IMOD, XTIN, YTIN, FORCE, ITOUT, IS, JS, RW)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -1845,6 +2029,21 @@ CONTAINS
     ENDIF
   END SUBROUTINE IS_IN_UNGRID2
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Calculate gradients at a point via its connection.
+  !>
+  !> @details Using linear shape function this is a basis on which
+  !>  all advection schemes in Roland (2008) are checked.
+  !>
+  !> @param[in]  PARAM  Depth or current field (indices 0 to NSEA). 
+  !> @param[out] DIFFX  X gradient (indices 1 to NX).
+  !> @param[out] DIFFY  Y gradient (indices 1 to NY).
+  !>
+  !> @author F. Ardhuin
+  !> @author A. Roland
+  !> @date   14-Oct-2013
+  !>  
   SUBROUTINE UG_GRADIENTS (PARAM, DIFFX, DIFFY)
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1979,6 +2178,17 @@ CONTAINS
     !
   END SUBROUTINE UG_GRADIENTS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief UGTYPE nesting initialization.
+  !>
+  !> @param[in]    DISTMIN 
+  !> @param[inout] FLOK
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE W3NESTUG(DISTMIN,FLOK)
     !/
     !/                  +-----------------------------------+
@@ -2103,6 +2313,17 @@ CONTAINS
 
 
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Setup boundary pointer.
+  !>
+  !> @param[inout] MASK 
+  !> @param[inout] STATUS 
+  !>
+  !> @author Aron Roland
+  !> @author Mathiew Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE SET_IOBP (MASK, STATUS)
     !/
     !/                  +-----------------------------------+
@@ -2250,6 +2471,20 @@ CONTAINS
   END SUBROUTINE SET_IOBP
   !/ ------------------------------------------------------------------- /
 
+  !>
+  !> @brief Find boundary points.
+  !>
+  !> @param[in]    MNP
+  !> @param[in]    MNE
+  !> @param[in]    TRIGP
+  !> @param[inout] IOBP
+  !> @param[inout] NEIGHBOR_PREV
+  !> @param[inout] NEIGHBOR_NEXT
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE GET_BOUNDARY(MNP, MNE, TRIGP, IOBP, NEIGHBOR_PREV,       &
        &   NEIGHBOR_NEXT)
     !/
@@ -2479,6 +2714,17 @@ CONTAINS
 
   !/ ------------------------------------------------------------------- /
 
+  !>
+  !> @brief Set indices of the triangle.
+  !>
+  !> @param[in]  I
+  !> @param[out] INEXT
+  !> @param[out] IPREV
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE TRIANG_INDEXES(I, INEXT, IPREV)
     !/
     !/                  +-----------------------------------+
@@ -2560,6 +2806,13 @@ CONTAINS
 
   !/ ------------------------------------------------------------------- /
 
+  !>
+  !> @brief Get interface nodes of the wetting and drying part.
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE GET_INTERFACE()
     !/
     !/                  +-----------------------------------+
@@ -2665,6 +2918,17 @@ CONTAINS
 
   END SUBROUTINE GET_INTERFACE
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Redefines the values of the boundary points and angle pointers
+  !>  based on the MAPSTA array.
+  !>
+  !> @details Adapted boundary detection from A. Roland and M. Dutour (WWM code).
+  !>
+  !> @author Fabrice Ardhuin
+  !> @author Aron Roland
+  !> @date   17-Apr-2016
+  !>  
   SUBROUTINE SET_UG_IOBP()
     !/
     !/                  +-----------------------------------+
@@ -2895,6 +3159,24 @@ CONTAINS
   END SUBROUTINE SET_UG_IOBP
   !/ ------------------------------------------------------------------- /
 
+  !>
+  !> @brief Adjust element longitude coordinates for elements straddling the
+  !>  dateline with distance of ~360 degrees.
+  !>
+  !> @details Detect if element has nodes on both sides of dateline and adjust
+  !>  coordinates so that all nodes have the same sign.
+  !>
+  !> @param[in]  I1
+  !> @param[in]  I2
+  !> @param[in]  I3
+  !> @param[in]  XGRD
+  !> @param[in]  YGRD
+  !> @param[out] PT
+  !>
+  !> @author Steven Brus
+  !> @author Ali Abdolali
+  !> @date   21-May-2020
+  !>
   SUBROUTINE FIX_PERIODCITY(I1,I2,I3,XGRD,YGRD,PT)
     !/
     !/                  +-----------------------------------+
