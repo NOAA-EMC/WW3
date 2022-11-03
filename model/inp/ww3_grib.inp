@@ -5,11 +5,11 @@ $ Time, time increment and number of outputs.
 $
   19680606 000000  3600. 3
 $
-$ Time, time increment and number of outputs. Option to encode grib2 
+$ Time, time increment and number of outputs. Option to encode grib2
 $ from ensemble runs (replace line above with commented line below).
-$ Usage: include additional (optional) 5th parameter 
-$   0 - deterministic (default) 
-$   1 - ensemble run 
+$ Usage: include additional (optional) 5th parameter
+$   0 - deterministic (default)
+$   1 - ensemble run
 $  19680606 000000  3600. 3 1
 $
 $ Output request flags identifying fields as in ww3_shel.inp. See that
@@ -22,15 +22,15 @@ $
 $ Additional info needed for grib file
 $   Forecast time, center ID, generating process ID, grid definition,
 $   GDS/BMS flag and grid definition template number GDTN (0 = regular;
-$   30 = Lambert Conformal, only these two types available now) 
+$   30 = Lambert Conformal, only these two types available now)
 $
   19680606 010000 7 10 255 192 0
 $
-$ if GDTN is 30 (lambert conformal) read next line with proj parms 
-$ LATAN1, LONV, DSX, DSY, SCNMOD, LATIN1, LATIN2, LATSP, LONSP   
-$ Example for the GLW grid at NCEP 
-$ 25 265 2.539703 2.539703 64 25 25 -90 0 
-$ Other curvilinear grids not yet implemented 
+$ if GDTN is 30 (lambert conformal) read next line with proj parms
+$ LATAN1, LONV, DSX, DSY, SCNMOD, LATIN1, LATIN2, LATSP, LONSP
+$ Example for the GLW grid at NCEP
+$ 25 265 2.539703 2.539703 64 25 25 -90 0
+$ Other curvilinear grids not yet implemented
 $
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $

@@ -46,13 +46,15 @@ module wav_shr_mod
   private :: field_getfldptr   !< @private obtain a pointer to a field
 
   interface state_getfldptr
-     module procedure state_getfldptr_1d
-     module procedure state_getfldptr_2d
+    module procedure state_getfldptr_1d
+    module procedure state_getfldptr_2d
   end interface state_getfldptr
 
   ! used by both CESM and UFS
   logical            , public :: wav_coupling_to_cice = .false. !< @public flag to specify additional wave export
                                                                 !! fields for coupling to CICE (TODO: generalize)
+  integer, parameter , public :: nwav_elev_spectrum = 25        !< the size of the wave spectrum exported if coupling
+                                                                !! waves to cice6
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
   character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
 
@@ -71,8 +73,8 @@ module wav_shr_mod
                                                           !! as multigrid
 
   interface ymd2date
-     module procedure ymd2date_int
-     module procedure ymd2date_long
+    module procedure ymd2date_int
+    module procedure ymd2date_long
   end interface ymd2date
 
   ! Clock and alarm option
@@ -102,23 +104,23 @@ module wav_shr_mod
   character(len=*), parameter :: u_FILE_u = &          !< a character string for an ESMF log message
        __FILE__
 
-!===============================================================================
+  !===============================================================================
 contains
-!===============================================================================
-!> Get scalar data from a state
-!!
-!> @details Obtain the field flds_scalar_name from a State and broadcast and
-!! it to all PEs
-!!
-!! @param[in]    State            an ESMF_State
-!! @param[in]    scalar_value     the value of the scalar
-!! @param[in]    scalar_id        the identity of the scalar
-!! @param[in]    flds_scalar_name the name of the scalar
-!! @param[in]    flds_scalar_num  the number of scalars
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Get scalar data from a state
+  !!
+  !> @details Obtain the field flds_scalar_name from a State and broadcast and
+  !! it to all PEs
+  !!
+  !! @param[in]    State            an ESMF_State
+  !! @param[in]    scalar_value     the value of the scalar
+  !! @param[in]    scalar_id        the identity of the scalar
+  !! @param[in]    flds_scalar_name the name of the scalar
+  !! @param[in]    flds_scalar_num  the number of scalars
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_getscalar(state, scalar_id, scalar_value, flds_scalar_name, flds_scalar_num, rc)
 
     ! ----------------------------------------------
@@ -169,24 +171,24 @@ contains
 
   end subroutine state_getscalar
 
-!================================================================================
-!> Set scalar data into a state
-!!
-!! Called by fldlist_realize to set the required scalar data into a state. The
-!! scalar_value will be set into a field with name flds_scalar_name. The scalar_id
-!! identifies which dimension in the scalar field is given by the scalar_value. The
-!! number of scalars is used to ensure that the scalar_id is within the bounds of
-!! the scalar field
-!!
-!! @param[inout]   State            an ESMF_State
-!! @param[in]      scalar_value     the value of the scalar
-!! @param[in]      scalar_id        the identity of the scalar
-!! @param[in]      flds_scalar_name the name of the scalar
-!! @param[in]      flds_scalar_num  the number of scalars
-!! @param[inout]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !================================================================================
+  !> Set scalar data into a state
+  !!
+  !! Called by fldlist_realize to set the required scalar data into a state. The
+  !! scalar_value will be set into a field with name flds_scalar_name. The scalar_id
+  !! identifies which dimension in the scalar field is given by the scalar_value. The
+  !! number of scalars is used to ensure that the scalar_id is within the bounds of
+  !! the scalar field
+  !!
+  !! @param[inout]   State            an ESMF_State
+  !! @param[in]      scalar_value     the value of the scalar
+  !! @param[in]      scalar_id        the identity of the scalar
+  !! @param[in]      flds_scalar_name the name of the scalar
+  !! @param[in]      flds_scalar_num  the number of scalars
+  !! @param[inout]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_setscalar(scalar_value, scalar_id, State, flds_scalar_name, flds_scalar_num,  rc)
 
     ! ----------------------------------------------
@@ -221,27 +223,27 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     if (mytask == 0) then
-       call ESMF_FieldGet(lfield, farrayPtr = farrayptr, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
-          call ESMF_LogWrite(trim(subname)//": ERROR in scalar_id", ESMF_LOGMSG_INFO)
-          rc = ESMF_FAILURE
-          return
-       endif
-       farrayptr(scalar_id,1) = scalar_value
+      call ESMF_FieldGet(lfield, farrayPtr = farrayptr, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
+        call ESMF_LogWrite(trim(subname)//": ERROR in scalar_id", ESMF_LOGMSG_INFO)
+        rc = ESMF_FAILURE
+        return
+      endif
+      farrayptr(scalar_id,1) = scalar_value
     endif
 
   end subroutine state_setscalar
 
-!===============================================================================
-!> Reset all fields in a state to a value
-!!
-!! @param[inout] State            an ESMF_State
-!! @param[in]    reset_value      the reset value
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Reset all fields in a state to a value
+  !!
+  !! @param[inout] State            an ESMF_State
+  !! @param[in]    reset_value      the reset value
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_reset(State, reset_value, rc)
 
     ! ----------------------------------------------
@@ -274,23 +276,23 @@ contains
 
 
     do n = 1, fieldCount
-       call ESMF_StateGet(State, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_StateGet(State, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rank=lrank, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rank=lrank, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       if (lrank == 0) then
-          ! no local data
-       elseif (lrank == 1) then
-          fldptr1 = reset_value
-       elseif (lrank == 2) then
-          fldptr2 = reset_value
-       else
-          call ESMF_LogWrite(trim(subname)//": ERROR in rank "//trim(lfieldnamelist(n)), ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
-       endif
+      if (lrank == 0) then
+        ! no local data
+      elseif (lrank == 1) then
+        fldptr1 = reset_value
+      elseif (lrank == 2) then
+        fldptr2 = reset_value
+      else
+        call ESMF_LogWrite(trim(subname)//": ERROR in rank "//trim(lfieldnamelist(n)), ESMF_LOGMSG_ERROR)
+        rc = ESMF_FAILURE
+        return
+      endif
     enddo
 
     deallocate(lfieldnamelist)
@@ -298,15 +300,15 @@ contains
   end subroutine state_reset
 
   !===============================================================================
-!> Obtain a 1-D pointer to a field in a state
-!!
-!! @param[in]    State            an ESMF_State
-!! @param[in]    fldname          the name of an ESMF field
-!! @param[inout] fldptr           a 1-d pointer to an ESMF field
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Obtain a 1-D pointer to a field in a state
+  !!
+  !! @param[in]    State            an ESMF_State
+  !! @param[in]    fldname          the name of an ESMF field
+  !! @param[inout] fldptr           a 1-d pointer to an ESMF field
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_getfldptr_1d(State, fldname, fldptr, rc)
     ! ----------------------------------------------
     ! Get pointer to a state field
@@ -333,26 +335,26 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
-       call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+      rc = ESMF_FAILURE
+      return
     else
-       call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
   end subroutine state_getfldptr_1d
 
   !===============================================================================
-!> Obtain a 2-D pointer to a field in a state
-!!
-!! @param[in]    State            an ESMF_State
-!! @param[in]    fldname          the name of an ESMF field
-!! @param[inout] fldptr           a 2-d pointer to an ESMF field
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Obtain a 2-D pointer to a field in a state
+  !!
+  !! @param[in]    State            an ESMF_State
+  !! @param[in]    fldname          the name of an ESMF field
+  !! @param[inout] fldptr           a 2-d pointer to an ESMF field
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_getfldptr_2d(State, fldname, fldptr, rc)
     ! ----------------------------------------------
     ! Get pointer to a state field
@@ -379,24 +381,24 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
-       call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+      rc = ESMF_FAILURE
+      return
     else
-       call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
   end subroutine state_getfldptr_2d
 
   !===============================================================================
-!> Return true if a field is in a state
-!!
-!! @param[in] State               an ESMF_State
-!! @param[in] fldname             the name of an ESMF field
-!! @return    state_fldchk        logical indicating a field is present in a state
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Return true if a field is in a state
+  !!
+  !! @param[in] State               an ESMF_State
+  !! @param[in] fldname             the name of an ESMF field
+  !! @return    state_fldchk        logical indicating a field is present in a state
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   logical function state_fldchk(State, fldname)
     ! ----------------------------------------------
     ! Determine if field is in state
@@ -415,15 +417,15 @@ contains
 
   end function state_fldchk
 
-!===============================================================================
-!> Print minimum, maximum, sum and size for a field in a state
-!!
-!! @param[in] State               an ESMF_State
-!! @param[in] string              a string for denoting the location of the call
-!! @param[out] rc                 a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Print minimum, maximum, sum and size for a field in a state
+  !!
+  !! @param[in] State               an ESMF_State
+  !! @param[in] string              a string for denoting the location of the call
+  !! @param[out] rc                 a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine state_diagnose(State, string, rc)
 
     ! ----------------------------------------------
@@ -455,52 +457,52 @@ contains
 
     do n = 1, fieldCount
 
-       call ESMF_StateGet(state, itemName=lfieldnamelist(n), field=lfield, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_StateGet(state, itemName=lfieldnamelist(n), field=lfield, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       call field_getfldptr(lfield, fldptr1=dataPtr1d, fldptr2=dataPtr2d, rank=lrank, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call field_getfldptr(lfield, fldptr1=dataPtr1d, fldptr2=dataPtr2d, rank=lrank, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       if (lrank == 0) then
-          ! no local data
-       elseif (lrank == 1) then
-          if (size(dataPtr1d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
-                  minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
-          else
-             write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
-          endif
-       elseif (lrank == 2) then
-          if (size(dataPtr2d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
-                  minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
-          else
-             write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
-          endif
-       else
-          call ESMF_LogWrite(trim(subname)//": ERROR rank not supported ", ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
-       endif
-       call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+      if (lrank == 0) then
+        ! no local data
+      elseif (lrank == 1) then
+        if (size(dataPtr1d) > 0) then
+          write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
+               minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
+        else
+          write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
+        endif
+      elseif (lrank == 2) then
+        if (size(dataPtr2d) > 0) then
+          write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n))//'  ', &
+               minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
+        else
+          write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
+        endif
+      else
+        call ESMF_LogWrite(trim(subname)//": ERROR rank not supported ", ESMF_LOGMSG_ERROR)
+        rc = ESMF_FAILURE
+        return
+      endif
+      call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     enddo
 
     deallocate(lfieldnamelist)
 
   end subroutine state_diagnose
 
-!===============================================================================
-!> Obtain a 1 or 2-D pointer to a field
-!!
-!! @param[in]    field            an ESMF_Field
-!! @param[inout] fldptr1          a 1-d pointer to an ESMF field
-!! @param[inout] fldptr2          a 2-d pointer to an ESMF field
-!! @param[out]   rank             the field rank
-!! @param[in]    abort            an optional flag to override the default abort value
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Obtain a 1 or 2-D pointer to a field
+  !!
+  !! @param[in]    field            an ESMF_Field
+  !! @param[inout] fldptr1          a 1-d pointer to an ESMF field
+  !! @param[inout] fldptr2          a 2-d pointer to an ESMF field
+  !! @param[out]   rank             the field rank
+  !! @param[in]    abort            an optional flag to override the default abort value
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine field_getfldptr(field, fldptr1, fldptr2, rank, abort, rc)
 
     ! ----------------------------------------------
@@ -527,17 +529,17 @@ contains
     ! ----------------------------------------------
 
     if (.not.present(rc)) then
-       call ESMF_LogWrite(trim(subname)//": ERROR rc not present ", &
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+      call ESMF_LogWrite(trim(subname)//": ERROR rc not present ", &
+           ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+      rc = ESMF_FAILURE
+      return
     endif
 
     rc = ESMF_SUCCESS
 
     labort = .true.
     if (present(abort)) then
-       labort = abort
+      labort = abort
     endif
     lrank = -99
 
@@ -545,92 +547,92 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
-       lrank = 0
-       if (labort) then
-          call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-          return
-       else
-          call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
-       endif
+      lrank = 0
+      if (labort) then
+        call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+        return
+      else
+        call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+      endif
     else
 
-       call ESMF_FieldGet(field, geomtype=geomtype, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_FieldGet(field, geomtype=geomtype, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       if (geomtype == ESMF_GEOMTYPE_GRID) then
-          call ESMF_FieldGet(field, rank=lrank, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-       elseif (geomtype == ESMF_GEOMTYPE_MESH) then
-          call ESMF_FieldGet(field, rank=lrank, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_FieldGet(field, mesh=lmesh, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          if (nnodes == 0 .and. nelements == 0) lrank = 0
-       else
-          call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-          return
-       endif ! geomtype
+      if (geomtype == ESMF_GEOMTYPE_GRID) then
+        call ESMF_FieldGet(field, rank=lrank, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+      elseif (geomtype == ESMF_GEOMTYPE_MESH) then
+        call ESMF_FieldGet(field, rank=lrank, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_FieldGet(field, mesh=lmesh, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        if (nnodes == 0 .and. nelements == 0) lrank = 0
+      else
+        call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+        return
+      endif ! geomtype
 
-       if (lrank == 0) then
-          call ESMF_LogWrite(trim(subname)//": no local nodes or elements ", &
-               ESMF_LOGMSG_INFO)
-       elseif (lrank == 1) then
-          if (.not.present(fldptr1)) then
-             call ESMF_LogWrite(trim(subname)//": ERROR missing rank=1 array ", &
-                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-             rc = ESMF_FAILURE
-             return
-          endif
-          call ESMF_FieldGet(field, farrayPtr=fldptr1, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-       elseif (lrank == 2) then
-          if (.not.present(fldptr2)) then
-             call ESMF_LogWrite(trim(subname)//": ERROR missing rank=2 array ", &
-                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-             rc = ESMF_FAILURE
-             return
-          endif
-          call ESMF_FieldGet(field, farrayPtr=fldptr2, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-       else
-          call ESMF_LogWrite(trim(subname)//": ERROR in rank ", &
+      if (lrank == 0) then
+        call ESMF_LogWrite(trim(subname)//": no local nodes or elements ", &
+             ESMF_LOGMSG_INFO)
+      elseif (lrank == 1) then
+        if (.not.present(fldptr1)) then
+          call ESMF_LogWrite(trim(subname)//": ERROR missing rank=1 array ", &
                ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
           rc = ESMF_FAILURE
           return
-       endif
+        endif
+        call ESMF_FieldGet(field, farrayPtr=fldptr1, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+      elseif (lrank == 2) then
+        if (.not.present(fldptr2)) then
+          call ESMF_LogWrite(trim(subname)//": ERROR missing rank=2 array ", &
+               ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+          rc = ESMF_FAILURE
+          return
+        endif
+        call ESMF_FieldGet(field, farrayPtr=fldptr2, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+      else
+        call ESMF_LogWrite(trim(subname)//": ERROR in rank ", &
+             ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
+        rc = ESMF_FAILURE
+        return
+      endif
 
     endif  ! status
 
     if (present(rank)) then
-       rank = lrank
+      rank = lrank
     endif
 
   end subroutine field_getfldptr
 
-!===============================================================================
-!> Set up an alarm in a clock
-!!
-!> @details Create an ESMF_Alarm according to the desired frequency, where the
-!! frequency is relative to a time frequency of seconds, days, hours etc.
-!!
-!! @param[inout]  clock           an ESMF_Clock
-!! @param[inout]  alarm           an ESMF_Alarm
-!! @param[in]     option          the alarm option (day,hour etc)
-!! @param[in]     opt_n           the alarm frequency
-!! @param[in]     opt_ymd         the YMD, required for alarm_option when option is
-!!                                date
-!! @param[in]     opt_tod         the time-of-day in seconds
-!! @param[in]     Reftime         initial guess of next alarm time
-!! @param[in]     alarmname       the alarm name
-!! @param[inout]  rc              a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Set up an alarm in a clock
+  !!
+  !> @details Create an ESMF_Alarm according to the desired frequency, where the
+  !! frequency is relative to a time frequency of seconds, days, hours etc.
+  !!
+  !! @param[inout]  clock           an ESMF_Clock
+  !! @param[inout]  alarm           an ESMF_Alarm
+  !! @param[in]     option          the alarm option (day,hour etc)
+  !! @param[in]     opt_n           the alarm frequency
+  !! @param[in]     opt_ymd         the YMD, required for alarm_option when option is
+  !!                                date
+  !! @param[in]     opt_tod         the time-of-day in seconds
+  !! @param[in]     Reftime         initial guess of next alarm time
+  !! @param[in]     alarmname       the alarm name
+  !! @param[inout]  rc              a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine alarmInit( clock, alarm, option, &
        opt_n, opt_ymd, opt_tod, RefTime, alarmname, rc)
 
@@ -688,9 +690,9 @@ contains
 
     ! initial guess of next alarm, this will be updated below
     if (present(RefTime)) then
-       NextAlarm = RefTime
+      NextAlarm = RefTime
     else
-       NextAlarm = CurrTime
+      NextAlarm = CurrTime
     endif
 
     ! Determine calendar
@@ -700,303 +702,303 @@ contains
     selectcase (trim(option))
 
     case (optNONE)
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       update_nextalarm  = .false.
+      call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      update_nextalarm  = .false.
 
     case (optNever)
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       update_nextalarm  = .false.
+      call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      update_nextalarm  = .false.
 
-          call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
+      call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
+           ESMF_LOGMSG_INFO, rc=rc)
+      rc = ESMF_FAILURE
 
     case (optDate)
-       if (.not. present(opt_ymd)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (lymd < 0 .or. ltod < 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//'opt_ymd, opt_tod invalid', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call timeInit(NextAlarm, lymd, cal, ltod, rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       update_nextalarm  = .false.
+      if (.not. present(opt_ymd)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (lymd < 0 .or. ltod < 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//'opt_ymd, opt_tod invalid', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call timeInit(NextAlarm, lymd, cal, ltod, rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      update_nextalarm  = .false.
 
     case (optIfdays0)
-       if (.not. present(opt_ymd)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0)  then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_TimeSet( NextAlarm, yy=cyy, mm=cmm, dd=opt_n, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       update_nextalarm  = .true.
+      if (.not. present(opt_ymd)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0)  then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TimeSet( NextAlarm, yy=cyy, mm=cmm, dd=opt_n, s=0, calendar=cal, rc=rc )
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      update_nextalarm  = .true.
 
     case (optNSteps)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_ClockGet(clock, TimeStep=AlarmInterval, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_ClockGet(clock, TimeStep=AlarmInterval, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNStep)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0)  then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_ClockGet(clock, TimeStep=AlarmInterval, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0)  then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_ClockGet(clock, TimeStep=AlarmInterval, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNSeconds)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNSecond)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNMinutes)
-       call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNMinute)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNHours)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNHour)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNDays)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNDay)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNMonths)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNMonth)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optMonthly)
-       call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_TimeSet( NextAlarm, yy=cyy, mm=cmm, dd=1, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       update_nextalarm  = .true.
+      call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TimeSet( NextAlarm, yy=cyy, mm=cmm, dd=1, s=0, calendar=cal, rc=rc )
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      update_nextalarm  = .true.
 
     case (optNYears)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optNYear)
-       if (.not.present(opt_n)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       if (opt_n <= 0) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+      if (.not.present(opt_n)) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      if (opt_n <= 0) then
+        call ESMF_LogWrite(trim(subname)//trim(option)//' invalid opt_n', &
+             ESMF_LOGMSG_INFO, rc=rc)
+        rc = ESMF_FAILURE
+      end if
+      call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optYearly)
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_TimeSet( NextAlarm, yy=cyy, mm=1, dd=1, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       update_nextalarm  = .true.
+      call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TimeSet( NextAlarm, yy=cyy, mm=1, dd=1, s=0, calendar=cal, rc=rc )
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      update_nextalarm  = .true.
 
     case default
-          call ESMF_LogWrite(trim(subname)//'unknown option '//trim(option), &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
+      call ESMF_LogWrite(trim(subname)//'unknown option '//trim(option), &
+           ESMF_LOGMSG_INFO, rc=rc)
+      rc = ESMF_FAILURE
 
     end select
 
@@ -1008,10 +1010,10 @@ contains
     ! --- most options above. go back one alarminterval just to be careful
 
     if (update_nextalarm) then
-       NextAlarm = NextAlarm - AlarmInterval
-       do while (NextAlarm <= CurrTime)
-          NextAlarm = NextAlarm + AlarmInterval
-       enddo
+      NextAlarm = NextAlarm - AlarmInterval
+      do while (NextAlarm <= CurrTime)
+        NextAlarm = NextAlarm + AlarmInterval
+      enddo
     endif
 
     alarm = ESMF_AlarmCreate( name=lalarmname, clock=clock, ringTime=NextAlarm, &
@@ -1020,20 +1022,20 @@ contains
 
   end subroutine alarmInit
 
-!===============================================================================
-!> Create an ESMF_Time object
-!!
-!> @details Create a ESMF_Time corresponding to a input time YYYYMMMDD and
-!! time of day in seconds
-!!
-!! @param[inout] Time             an ESMF_Time object
-!! @param[in]    ymd              year, month, day YYYYMMDD
-!! @param[in]    cal              an ESMF_Calendar
-!! @param[in]    tod              time of day in secons
-!! @param[out]   rc               a return code
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Create an ESMF_Time object
+  !!
+  !> @details Create a ESMF_Time corresponding to a input time YYYYMMMDD and
+  !! time of day in seconds
+  !!
+  !! @param[inout] Time             an ESMF_Time object
+  !! @param[in]    ymd              year, month, day YYYYMMDD
+  !! @param[in]    cal              an ESMF_Calendar
+  !! @param[in]    tod              time of day in secons
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine timeInit( Time, ymd, cal, tod, rc)
 
     ! Create the ESMF_Time object corresponding to the given input time,
@@ -1058,9 +1060,9 @@ contains
     rc = ESMF_SUCCESS
 
     if ( (ymd < 0) .or. (tod < 0) .or. (tod > SecPerDay) )then
-       call ESMF_LogWrite(trim(subname)//'ERROR yymmdd is a negative number or time-of-day out of bounds', &
-            ESMF_LOGMSG_INFO, rc=rc)
-       rc = ESMF_FAILURE
+      call ESMF_LogWrite(trim(subname)//'ERROR yymmdd is a negative number or time-of-day out of bounds', &
+           ESMF_LOGMSG_INFO, rc=rc)
+      rc = ESMF_FAILURE
     end if
 
     tdate = abs(date)
@@ -1075,15 +1077,15 @@ contains
   end subroutine timeInit
 
   !===============================================================================
-!> Convert  year, month, day to integer*4 coded-date
-!!
-!! @param[in]   year              calendar year
-!! @param[in]   month             calendary month
-!! @param[in]   day               calendar day
-!! @param[out]  date              calendar date yyyymmmdd
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Convert  year, month, day to integer*4 coded-date
+  !!
+  !! @param[in]   year              calendar year
+  !! @param[in]   month             calendary month
+  !! @param[in]   day               calendar day
+  !! @param[out]  date              calendar date yyyymmmdd
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine ymd2date_int(year,month,day,date)
     ! Converts  year, month, day to coded-date
 
@@ -1098,15 +1100,15 @@ contains
   end subroutine ymd2date_int
 
   !===============================================================================
-!> Converts  year, month, day to integer*8 coded-date
-!!
-!! @param[in]   year              calendar year
-!! @param[in]   month             calendary month
-!! @param[in]   day               calendar day
-!! @param[out]  date              calendar date yyyymmmdd
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !> Converts  year, month, day to integer*8 coded-date
+  !!
+  !! @param[in]   year              calendar year
+  !! @param[in]   month             calendary month
+  !! @param[in]   day               calendar day
+  !! @param[out]  date              calendar date yyyymmmdd
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   subroutine ymd2date_long(year,month,day,date)
     ! Converts  year, month, day to coded-date
 
@@ -1120,16 +1122,16 @@ contains
     if (year < 0) date = -date
   end subroutine ymd2date_long
 
-!===============================================================================
-!> Return a logical true if ESMF_LogFoundError detects an error
-!!
-!! @param[in]  rc                 return code
-!! @param[in]  line               source code line number
-!! @param[in]  file               user provided source file name
-!! @return     chkerr             logical indicating an error was found
-!!
-!> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
-!> @date 01-05-2022
+  !===============================================================================
+  !> Return a logical true if ESMF_LogFoundError detects an error
+  !!
+  !! @param[in]  rc                 return code
+  !! @param[in]  line               source code line number
+  !! @param[in]  file               user provided source file name
+  !! @return     chkerr             logical indicating an error was found
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 01-05-2022
   logical function chkerr(rc, line, file)
 
     integer, intent(in) :: rc
@@ -1141,7 +1143,7 @@ contains
     chkerr = .false.
     lrc = rc
     if (ESMF_LogFoundError(rcToCheck=lrc, msg=ESMF_LOGERR_PASSTHRU, line=line, file=file)) then
-       chkerr = .true.
+      chkerr = .true.
     endif
   end function chkerr
 

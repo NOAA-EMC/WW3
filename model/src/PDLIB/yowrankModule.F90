@@ -69,7 +69,7 @@ module yowRankModule
   integer, public, allocatable :: IPGL_TO_PROC(:), ipgl_tot(:)
   integer, public, allocatable :: ipgl_npa(:)
 
-  contains
+contains
 
   !> allocate and exchange
   subroutine initRankModule()
@@ -107,7 +107,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_IRecv(rank(i)%np, 1, itype, i-1, &
-            42, comm, recvRqst(i), ierr)
+             42, comm, recvRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_IRecv", ierr)
         endif
@@ -120,7 +120,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_ISend(np, 1, itype, i-1, &
-            42, comm, sendRqst(i), ierr)
+             42, comm, sendRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_ISend", ierr)
         endif
@@ -155,7 +155,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_ISend(npa, 1, itype, i-1, &
-            42, comm, sendRqst(i), ierr)
+             42, comm, sendRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_ISend", ierr)
         endif
@@ -185,7 +185,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_IRecv(rank(i)%iplg, rank(i)%npa, itype, i-1, &
-            42, comm, recvRqst(i), ierr)
+             42, comm, recvRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_IRecv", ierr)
         endif
@@ -198,7 +198,7 @@ module yowRankModule
     do i=1, nTasks
       if(i /= myrank+1) then
         call MPI_ISend(iplg, npa, itype, i-1, &
-            42, comm, sendRqst(i), ierr)
+             42, comm, sendRqst(i), ierr)
         if(ierr/=MPI_SUCCESS) then
           CALL PARALLEL_ABORT("MPI_ISend", ierr)
         endif
@@ -248,7 +248,7 @@ module yowRankModule
   subroutine finalizeRankModule()
     implicit none
     integer :: i
-  
+
     if(allocated(rank)) then
       do i=1, size(rank)
         if(allocated(rank(i)%iplg)) deallocate(rank(i)%iplg)

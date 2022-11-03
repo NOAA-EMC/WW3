@@ -9,7 +9,7 @@
 ! * IOSTYP defines the output server mode for parallel implementation.
 !             0 : No data server processes, direct access output from
 !                 each process (requires true parallel file system).
-!             1 : No data server process. All output for each type 
+!             1 : No data server process. All output for each type
 !                 performed by process that performs computations too.
 !             2 : Last process is reserved for all output, and does no
 !                 computing.
@@ -25,7 +25,7 @@
 !     DOMAIN%PSHARE =  F  ! Flag for grids sharing dedicated output processes.
 !     DOMAIN%FLGHG1 =  F  ! Flag for masking computation in two-way nesting
 !     DOMAIN%FLGHG2 =  F  ! Flag for masking at printout time
-!     DOMAIN%START  = '19680606 000000'  ! Start date for the entire model 
+!     DOMAIN%START  = '19680606 000000'  ! Start date for the entire model
 !     DOMAIN%STOP   = '19680607 000000'  ! Stop date for the entire model
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
@@ -90,7 +90,7 @@
 !
 ! * index I must match indexes from 1 to DOMAIN%NRGRD
 ! * MODEL(I)%NAME must be set for each active model grid I
-! * FORCING can be set as : 
+! * FORCING can be set as :
 !    - 'no'          : This input is not used.
 !    - 'native'      : This grid has its own input files, e.g. grid
 !                      grdX (mod_def.grdX) uses ice.grdX.
@@ -203,7 +203,7 @@
 !  ABR UBR BED FBB TBB
 !  MSS MSC WL02 AXT AYT AXY
 !  DTD FC CFX CFD CFK
-!  U1 U2 
+!  U1 U2
 !
 ! * output track file formatted (T) or unformated (F)
 !
@@ -263,10 +263,10 @@
 !     ALLDATE%PARTITION%START     =  '19680606 000000'
 !     ALLDATE%PARTITION%STRIDE    =  '0'
 !     ALLDATE%PARTITION%STOP      =  '19680607 000000'
-!     
+!
 !     ALLDATE%RESTART             =  '19680606 000000' '0' '19680607 000000'
 !
-!     IDATE(3)%PARTITION%START    =  '19680606 000000' 
+!     IDATE(3)%PARTITION%START    =  '19680606 000000'
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
   ALLDATE%FIELD%START         = '20100101 000000'
@@ -278,9 +278,9 @@
 
   ALLDATE%RESTART             = '20101231 000000' '43200' '20501231 000000'
 
-  IDATE(5)%PARTITION%START    = '20100601 000000' 
-  IDATE(5)%PARTITION%STRIDE   = '3600' 
-  IDATE(5)%PARTITION%START    = '20101201 000000' 
+  IDATE(5)%PARTITION%START    = '20100601 000000'
+  IDATE(5)%PARTITION%STRIDE   = '3600'
+  IDATE(5)%PARTITION%START    = '20101201 000000'
 /
 
 

@@ -62,17 +62,17 @@ module yowNodepool
     !> The first domain starts by 1. Fortran Stye
     integer :: domainID = 0
 
-    contains
-      !> Insert a node to the connected Nodes array. See Node_insertConnNode()
-      !> Just a helper subroutine to make nicer code
-      procedure :: insertConnNode
+  contains
+    !> Insert a node to the connected Nodes array. See Node_insertConnNode()
+    !> Just a helper subroutine to make nicer code
+    procedure :: insertConnNode
 
-      !> return a pointer to the i-th node number conntected to this node
-      !> Just a helper function to make nicer code
-      procedure :: connNodes
+    !> return a pointer to the i-th node number conntected to this node
+    !> Just a helper function to make nicer code
+    procedure :: connNodes
 
-      !> returns true if this node is a ghost node
-      procedure :: isGhost
+    !> returns true if this node is a ghost node
+    procedure :: isGhost
   end type t_Node
 
   !> coordinates of the local +  ghost nodes. range [1:npa]
@@ -138,7 +138,7 @@ module yowNodepool
   integer, public, allocatable :: np_perProcSum(:)
 
 
-  contains
+contains
 
   !> return a pointer to the i-th node number conntected to this node.
   !> \param i
@@ -195,9 +195,9 @@ module yowNodepool
       end do
 
       this%nConnNodes = this%nConnNodes +1
-!       connNode => this%connNodes(this%nConnNodes)
+      !       connNode => this%connNodes(this%nConnNodes)
       connNodes_data(this%id_global, this%nConnNodes) = ind
-!       connNode = index
+      !       connNode = index
     else
       this%nConnNodes = this%nConnNodes +1
     end if
