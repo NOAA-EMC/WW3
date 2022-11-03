@@ -19,7 +19,7 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
-  use wav_shr_mod  , only : wav_coupling_to_cice, merge_import, dbug_flag, multigrid, unstr_mesh
+  use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, multigrid, unstr_mesh
   use constants    , only : grav, tpi, dwat
   use w3parall     , only : init_get_isea
 
@@ -43,7 +43,7 @@ module wav_import_export
     module procedure fillglobal_with_merge_import
   end interface FillGlobalInput
 
-  type fld_list_type                                !< @private a structure for the list of fields
+  type fld_list_type                               !< @private a structure for the list of fields
     character(len=128) :: stdname                  !< a standard field name
     integer :: ungridded_lbound = 0                !< the ungridded dimension lower bound
     integer :: ungridded_ubound = 0                !< the ugridded dimension upper bound
@@ -63,9 +63,6 @@ module wav_import_export
 #else
   logical :: cesmcoupled = .false.                  !< logical defining a non-CESM use case (UWM)
 #endif
-
-  integer, parameter :: nwav_elev_spectrum = 25     !< the size of the wave spectrum exported if coupling
-                                                    !! waves to cice6
   integer, public    :: nseal_noghost               !< the number of local sea points on a processor, exclusive
                                                     !! of the ghost points. For non-PDLIB cases, this is nseal
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
@@ -589,7 +586,7 @@ contains
     !---------------------------------------------------------------------------
 
     use wav_kind_mod,   only : R8 => SHR_KIND_R8
-    use w3adatmd      , only : USSX, USSY, EF, USSP
+    use w3adatmd      , only : USSX, USSY, USSP
     use w3adatmd      , only : w3seta
     use w3idatmd      , only : w3seti
     use w3wdatmd      , only : va, w3setw
@@ -609,7 +606,7 @@ contains
     ! Local variables
     real(R8)          :: fillvalue = 1.0e30_R8                 ! special missing value
     type(ESMF_State)  :: exportState
-    integer           :: n, jsea, isea, ix, iy, lsize, ib
+    integer           :: n, jsea, isea, ix, iy, ib
 
     real(r8), pointer :: z0rlen(:)
     real(r8), pointer :: charno(:)
@@ -758,22 +755,9 @@ contains
     if (wav_coupling_to_cice) then
       call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
       ! Initialize wave elevation spectrum
       wave_elevation_spectrum(:,:) = fillvalue
-
-      do jsea=1, nseal_noghost                   ! jsea is local
-        call init_get_isea(isea, jsea)        ! isea is global
-        ix  = mapsf(isea,1)                   ! global ix
-        iy  = mapsf(isea,2)                   ! global iy
-        if (mapsta(iy,ix) .eq. 1) then        ! active sea point
-          ! If wave_elevation_spectrum is UNDEF  - needs ouput flag to be turned on
-          ! wave_elevation_spectrum as 25 variables
-          wave_elevation_spectrum(1:nwav_elev_spectrum,jsea)  = EF(jsea,1:nwav_elev_spectrum)
-        else
-          wave_elevation_spectrum(:,jsea) = 0.
-        endif
-      enddo
+      call CalcEF(va, wave_elevation_spectrum)
     end if
 
     if ( state_fldchk(exportState, 'Sw_pstokes_x') .and. &
@@ -1287,6 +1271,58 @@ contains
     enddo jsea_loop
 
   end subroutine CalcRadstr2D
+
+  !===============================================================================
+  !> Calculate wave elevation spectrum for export
+  !!
+  !> @details Calculates wave elevation spectrum independently of w3iogomd to ensure
+  !! that EF field sent to sea ice component is updated at the coupling frequency
+  !!
+  !! @param[in]    a                         input spectra
+  !! @param[inout] wave_elevation_spectrum   a 2-D pointer to a field on a mesh
+  !!
+  !> @author Denise.Worthen@noaa.gov
+  !> @date 10-28-2022
+  subroutine CalcEF (a, wave_elevation_spectrum)
+
+    use constants, only : tpi
+    use w3gdatmd,  only : nth, nk, nseal, mapsf, mapsta, dden, dsii
+    use w3adatmd,  only : nsealm, cg
+    use w3parall,  only : init_get_isea
+
+    ! input/output variables
+    real, intent(in)     :: a(nth,nk,0:nseal)
+    real(r8), pointer    :: wave_elevation_spectrum(:,:)
+
+    ! local variables
+    real    :: ab(nseal)
+    real    :: ebd, factor
+    integer :: ik, ith, isea, jsea, ix, iy
+
+    do ik = 1,nwav_elev_spectrum
+      ab = 0.0
+      do ith = 1, nth
+        do jsea = 1,nseal
+          ab(jsea) = ab(jsea) + a(ith,ik,jsea)
+        end do
+      end do
+
+      do jsea = 1,nseal_noghost
+        call init_get_isea(isea, jsea)
+        ix  = mapsf(isea,1)                   ! global ix
+        iy  = mapsf(isea,2)                   ! global iy
+        if (mapsta(iy,ix) .eq. 1) then        ! active sea point
+          factor = dden(ik) / cg(ik,isea)
+          ebd = ab(jsea) * factor
+          ebd = ebd / dsii(ik)
+          wave_elevation_spectrum(ik,jsea) = ebd * tpi
+        else
+          wave_elevation_spectrum(ik,jsea) = 0.
+        end if
+      end do
+    end do
+
+  end subroutine CalcEF
 
   !====================================================================================
   !> Create a global field across all PEs
