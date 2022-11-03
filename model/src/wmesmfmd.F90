@@ -1,10 +1,10 @@
 !> @file
-!> @brief Contains module WMESMFMD.
+!> @brief NUOPC based ESMF interface module for multi-grid wave model.
 !>
 !> @author T. J. Campell
 !> @author J. Meixner
 !> @author A. J. van der Westhuysen
-!> @date 09-Aug-2017
+!> @date   09-Aug-2017
 !>
 
 #include "w3macros.h"
@@ -49,7 +49,7 @@
 #define TEST_WMESMFMD_STOKES3D___disabled
 #define TEST_WMESMFMD_PSTOKES___disabled
 #define TEST_WMESMFMD_READFROMFILE___disabled
-!/
+
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief National Unified Prediction Capability (NUOPC) based
@@ -62,7 +62,12 @@
 !> @author T. J. Campell
 !> @author J. Meixner
 !> @author A. J. van der Westhuysen
-!> @date 09-Aug-2017
+!> @date   09-Aug-2017
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>  National Oceanic and Atmospheric Administration.  All rights
+!>  reserved.  WAVEWATCH III is a trademark of the NWS.
+!>  No unauthorized use without permission.
 !>
 module WMESMFMD
   !/
@@ -328,18 +333,21 @@ module WMESMFMD
   type(ESMF_Field), allocatable :: mdtField(:)         !< mdtField
   !/
   !/ ------------------------------------------------------------------- /
+  
 contains
+  
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "SetServices"
   !>
   !> @brief Wave model ESMF set services.
   !>
   !> @param      gcomp Gridded component.
-  !> @param[out] rc Return code.
+  !> @param[out] rc    Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "SetServices"
+  !>  
   subroutine SetServices ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -496,21 +504,22 @@ contains
     !/
   end subroutine SetServices
   !/ ------------------------------------------------------------------- /
+
+#undef METHOD
+#define METHOD "InitializeP0"
   !>
   !> @brief  Initialize wave model (phase 0).
   !>
   !> @details Define the NUOPC Initialize Phase Mapping.
   !>
-  !> @param gcomp Gridded component.
+  !> @param gcomp    Gridded component.
   !> @param impState Import state.
   !> @param expState Export state.
   !> @param extClock External clock.
   !> @param[out] rc  Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "InitializeP0"
+  !>  
   subroutine InitializeP0 ( gcomp, impState, expState, extClock, rc )
     !/
     !/                  +-----------------------------------+
@@ -653,21 +662,22 @@ contains
     !/
   end subroutine InitializeP0
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "InitializeP1"
   !>
   !> @brief  Initialize wave model (phase 1).
   !>
   !> @details Advertise fields in import and export states.
   !>
-  !> @param gcomp Gridded component.
+  !> @param gcomp    Gridded component.
   !> @param impState Import state.
   !> @param expState Export state.
   !> @param extClock External clock.
   !> @param[out] rc  Return code.
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "InitializeP1"
+  !>  
   subroutine InitializeP1 ( gcomp, impState, expState, extClock, rc )
     !/
     !/                  +-----------------------------------+
@@ -1396,12 +1406,15 @@ contains
     !/
   end subroutine InitializeP1
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "InitializeP3"
   !>
   !> @brief Initialize wave model (phase 3).
   !>
   !> @details Realize fields in import and export states.
   !>
-  !> @param gcomp Gridded component.
+  !> @param gcomp    Gridded component.
   !> @param impState Import state.
   !> @param expState Export state.
   !> @param extClock External clock.
@@ -1411,8 +1424,6 @@ contains
   !> @author A. J. van der Westhuysen
   !> @date 09-Aug-2017
   !>
-#undef METHOD
-#define METHOD "InitializeP3"
   subroutine InitializeP3 ( gcomp, impState, expState, extClock, rc )
     !/
     !/                  +-----------------------------------+
@@ -1754,16 +1765,17 @@ contains
     !/
   end subroutine InitializeP3
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "Finalize"
   !>
   !> @brief Finalize wave model.
   !>
-  !> @param gcomp Gridded component.
+  !> @param gcomp   Gridded component.
   !> @param[out] rc Return code.
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "Finalize"
+  !>  
   subroutine Finalize ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -1978,16 +1990,17 @@ contains
     !/
   end subroutine Finalize
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "DataInitialize"
   !>
   !> @brief  Initialize wave model export data
   !>
-  !> @param gcomp Gridded component.
+  !> @param gcomp   Gridded component.
   !> @param[out] rc Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "DataInitialize"
+  !>  
   subroutine DataInitialize ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -2200,6 +2213,9 @@ contains
     !/
   end subroutine DataInitialize
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "ModelAdvance"
   !>
   !> @brief Advance wave model in time.
   !>
@@ -2207,9 +2223,7 @@ contains
   !> @param[out] rc    Return code.
   !>
   !> @author T. J. Campbell   @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "ModelAdvance"
+  !>  
   subroutine ModelAdvance ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -2404,6 +2418,9 @@ contains
     !/
   end subroutine ModelAdvance
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "GetImport"
   !>
   !> @brief Get import fields and put in internal data structures.
   !>
@@ -2411,9 +2428,7 @@ contains
   !> @param[out] rc    Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "GetImport"
+  !>  
   subroutine GetImport ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -2791,6 +2806,9 @@ contains
     !/
   end subroutine GetImport
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "SetExport"
   !>
   !> @brief Set export fields from internal data structures.
   !>
@@ -2798,9 +2816,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "SetExport"
+  !>  
   subroutine SetExport ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -3025,6 +3041,9 @@ contains
     !/
   end subroutine SetExport
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CreateImpGrid"
   !>
   !> @brief Create ESMF grid for import fields.
   !>
@@ -3032,9 +3051,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "CreateImpGrid"
+  !>  
   subroutine CreateImpGrid ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -3486,6 +3503,9 @@ contains
     !/
   end subroutine CreateImpGrid
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CreateExpGrid"
   !>
   !> @brief Create ESMF grid for export fields
   !>
@@ -3493,9 +3513,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "CreateExpGrid"
+  !>  
   subroutine CreateExpGrid ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -4099,6 +4117,9 @@ contains
     !/
   end subroutine CreateExpGrid
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CreateImpMesh"
   !>
   !> @brief Create ESMF mesh (unstructured) for import fields.
   !>
@@ -4112,9 +4133,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author A. J. van der Westhuysen  @date 28-Feb-2018
-  !>
-#undef METHOD
-#define METHOD "CreateImpMesh"
+  !>  
   subroutine CreateImpMesh ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -4507,6 +4526,9 @@ contains
     !/
   end subroutine CreateImpMesh
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CreateExpMesh"
   !>
   !> @brief Create ESMF mesh (unstructured) for export fields.
   !>
@@ -4527,9 +4549,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author A. J. van der Westhuysen  @date 28-Feb-2018
-  !>
-#undef METHOD
-#define METHOD "CreateExpMesh"
+  !>  
   subroutine CreateExpMesh ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -5037,6 +5057,9 @@ contains
     !/
   end subroutine CreateExpMesh
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "SetupImpBmsk"
   !>
   !> @brief Setup background blending mask field for an import field.
   !>
@@ -5046,9 +5069,7 @@ contains
   !> @param rc          Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "SetupImpBmsk"
+  !>  
   subroutine SetupImpBmsk( bmskField, impField, missingVal, rc )
     !/
     !/                  +-----------------------------------+
@@ -5265,6 +5286,9 @@ contains
     !/
   end subroutine SetupImpBmsk
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "BlendImpField"
   !>
   !> @brief Blend import field with background field.
   !>
@@ -5275,8 +5299,6 @@ contains
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
   !>
-#undef METHOD
-#define METHOD "BlendImpField"
   subroutine BlendImpField( impField, mbgField, bmskField, rc )
     !/
     !/                  +-----------------------------------+
@@ -5377,6 +5399,9 @@ contains
     !/
   end subroutine BlendImpField
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "SetupImpMmsk"
   !>
   !> @brief Setup merging mask field for an import field for the cases
   !>  that model domains does not overlap completely.
@@ -5388,9 +5413,7 @@ contains
   !> @param rc         Return code
   !>
   !> @author U. Turuncoglu  @date 18-May-2021
-  !>
-#undef METHOD
-#define METHOD "SetupImpMmsk"
+  !>  
   subroutine SetupImpMmsk( mmskField, impField, fillVal, mskCreated, rc )
     !/
     !/                  +-----------------------------------+
@@ -5518,17 +5541,18 @@ contains
     !/
   end subroutine SetupImpMmsk
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "FieldFill"
   !>
   !> @brief Fill ESMF field.
   !>
-  !> @param field
-  !> @param fillVal
-  !> @param rc
+  !> @param field   ESMF field
+  !> @param fillVal Fill value
+  !> @param rc      Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "FieldFill"
+  !>  
   subroutine FieldFill(field, fillVal, rc)
     !/
     !/                  +-----------------------------------+
@@ -5648,6 +5672,9 @@ contains
     !/
   end subroutine FieldFill
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "FieldGather"
   !>
   !> @brief All gather of ESMF field.
   !>
@@ -5659,10 +5686,8 @@ contains
   !>
   !> @author  T. J. Campbell
   !> @author  A. J. van der Westhuysen
-  !> @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "FieldGather"
+  !> @date    20-Jan-2017
+  !>  
   subroutine FieldGather(field, n1, n2, fout, rc)
     !/
     !/                  +-----------------------------------+
@@ -5815,18 +5840,19 @@ contains
     !/
   end subroutine FieldGather
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "FieldIndex"
   !>
   !> @brief Return index associated with field name.
   !>
-  !> @param[inout] fnameList Array of field names
-  !> @param[inout] fname     Field name
-  !> @param[inout] rc        Return code
-  !> @returns      indx      Returned index of fname
+  !> @param    fnameList Array of field names
+  !> @param    fname     Field name
+  !> @param    rc        Return code
+  !> @returns  indx      Returned index of fname
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "FieldIndex"
+  !>  
   function FieldIndex ( fnameList, fname, rc ) result (indx)
     !/
     !/                  +-----------------------------------+
@@ -5909,18 +5935,19 @@ contains
     !/
   end function FieldIndex
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "PrintTimers"
   !>
   !> @brief Print wallclock timers to ESMF log file.
   !>
-  !> @param cname
-  !> @param wtnam
-  !> @param wtcnt
-  !> @param wtime
+  !> @param cname  Name of component
+  !> @param wtnam  Timer names
+  !> @param wtcnt  Timer counts
+  !> @param wtime  Timers
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>
-#undef METHOD
-#define METHOD "PrintTimers"
+  !>  
   subroutine PrintTimers ( cname, wtnam, wtcnt, wtime )
     !/
     !/                  +-----------------------------------+
@@ -6004,22 +6031,23 @@ contains
     !/
   end subroutine PrintTimers
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CalcDecomp"
   !>
   !> @brief Calculate a 2D processor layout
   !>
-  !> @param[in] nx       Grid dimension x
-  !> @param[in] ny       Grid dimension y
-  !> @param[in] nproc    Total processor count
-  !> @param[in] npmin    Min number of grid points per tile per direction
-  !> @param[in] adjust   Enable/disable adjusting proc count downward
-  !> @param[out] nxproc   Processor count in x-direction
-  !> @param[out] nyproc   Processor count in y-direction
+  !> @param[in]    nx       Grid dimension x
+  !> @param[in]    ny       Grid dimension y
+  !> @param[in]    nproc    Total processor count
+  !> @param[in]    npmin    Min number of grid points per tile per direction
+  !> @param[in]    adjust   Enable/disable adjusting proc count downward
+  !> @param[out]   nxproc   Processor count in x-direction
+  !> @param[out]   nyproc   Processor count in y-direction
   !> @param[inout] rc       Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
   !>
-#undef METHOD
-#define METHOD "CalcDecomp"
   subroutine CalcDecomp ( nx, ny, nproc, npmin, adjust, nxproc, nyproc, rc )
     !/
     !/                  +-----------------------------------+
@@ -6150,17 +6178,18 @@ contains
     !/
   end subroutine CalcDecomp
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "GetEnvValue"
   !>
   !> @brief Get value of environment variable.
   !>
-  !> @param cenv Name of environment variable
-  !> @param cval Value of environment variable
-  !> @param rc   Return code
+  !> @param cenv  Name of environment variable
+  !> @param cval  Value of environment variable
+  !> @param rc    Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "GetEnvValue"
+  !>  
   subroutine GetEnvValue ( cenv, cval, rc )
     !/
     !/                  +-----------------------------------+
@@ -6247,15 +6276,16 @@ contains
     !/
   end subroutine GetEnvValue
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "GetZlevels"
   !>
   !> @brief Get array of z-levels from zlfile for SDC.
   !>
-  !> @param[inout] rc Return code
+  !> @param rc  Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "GetZlevels"
+  !>  
   subroutine GetZlevels ( rc )
     !/
     !/                  +-----------------------------------+
@@ -6362,16 +6392,17 @@ contains
     !/
   end subroutine GetZlevels
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CalcCharnk"
   !>
   !> @brief Calculate Charnock for export.
   !>
-  !> @param chkField 2D Charnock export field
-  !> @param rc       Return code
+  !> @param chkField  2D Charnock export field
+  !> @param rc        Return code
   !>
-  !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "CalcCharnk"
+  !> @author T. J. Campbell
+  !> @date   09-Aug-2017
   subroutine CalcCharnk ( chkField, rc )
     !/
     !/                  +-----------------------------------+
@@ -6511,16 +6542,17 @@ contains
     !/
   end subroutine CalcCharnk
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CalcRoughl"
   !>
   !> @brief Calculate 2D wave roughness length for export.
   !>
   !> @param wrlField  2D roughness length export field
   !> @param rc        Return code
   !>
-  !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "CalcRoughl"
+  !> @author T. J. Campbell
+  !> @date   09-Aug-2017
   subroutine CalcRoughl ( wrlField, rc )
     !/
     !/                  +-----------------------------------+
@@ -6664,8 +6696,13 @@ contains
     !/
   end subroutine CalcRoughl
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CalcBotcur"
   !>
   !> @brief Calculate wave-bottom currents for export.
+  !>
+  !> @details Madsen, O. S. (1994), ICCE.
   !>
   !> @param a         Input spectra (in par list to change shape)
   !> @param wbxField  WBC 2D eastward-component export field
@@ -6673,10 +6710,8 @@ contains
   !> @param wbpField  WBC 2D period export field
   !> @param rc        Return code
   !>
-  !> @author T. J. Campbell @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "CalcBotcur"
+  !> @author T. J. Campbell
+  !> @date   09-Aug-2017
   subroutine CalcBotcur ( a, wbxField, wbyField, wbpField, rc )
     !/
     !/                  +-----------------------------------+
@@ -6899,6 +6934,9 @@ contains
     !/
   end subroutine CalcBotcur
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CalcRadstr2D"
   !>
   !> @brief Calculate 2D radiation stresses for export.
   !>
@@ -6908,10 +6946,9 @@ contains
   !> @param[inout] syyField  RS 2D northward-component field
   !> @param[inout] rc        Return code
   !>
-  !> @author T. J. Campbell  @date 09-Aug-2017
+  !> @author T. J. Campbell
+  !> @date   09-Aug-2017
   !>
-#undef METHOD
-#define METHOD "CalcRadstr2D"
   subroutine CalcRadstr2D ( a, sxxField, sxyField, syyField, rc )
     !/
     !/                  +-----------------------------------+
@@ -7177,6 +7214,9 @@ contains
     !/
   end subroutine CalcRadstr2D
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CalcStokes3D"
   !>
   !> @brief Calculate 3D Stokes drift current for export.
   !>
@@ -7185,10 +7225,9 @@ contains
   !> @param usyField 3D SDC northward-component export field
   !> @param rc       Return code
   !>
-  !> @author T. J. Campbell  @date 09-Aug-2017
-  !>
-#undef METHOD
-#define METHOD "CalcStokes3D"
+  !> @author T. J. Campbell
+  !> @date   09-Aug-2017
+  !>  
   subroutine CalcStokes3D ( a, usxField, usyField, rc )
     !/
     !/                  +-----------------------------------+
@@ -7437,6 +7476,9 @@ contains
     !/
   end subroutine CalcStokes3D
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "CalcPStokes"
   !>
   !> @brief Calculate partitioned Stokes drift for export.
   !>
@@ -7450,9 +7492,7 @@ contains
   !> @param rc       Return code
   !>
   !> @author J. Meixner  @date 29-Oct-2019
-  !>
-#undef METHOD
-#define METHOD "CalcPStokes"
+  !>  
   subroutine CalcPStokes ( a, p1xField, p1yField, p2xField,   &
        p2yField, p3xField, p3yField, rc )
     !/
@@ -7649,20 +7689,22 @@ contains
     !/
   end subroutine CalcPStokes
   !/ ------------------------------------------------------------------- /
+  !/
+#undef METHOD
+#define METHOD "ReadFromFile"
   !>
   !> @brief Read input file to fill unmapped point for regional applications.
   !>
   !> @param[inout] idfld  Field name
   !> @param[inout] fldwx  2D eastward-component of field
   !> @param[inout] fldwy  2D northward-component of field
-  !> @param[in] time0  Time stamp for current time
-  !> @param[in] timen  Time stamp for end time
+  !> @param[in]    time0  Time stamp for current time
+  !> @param[in]    timen  Time stamp for end time
   !> @param[inout] rc     Return code
   !>
-  !> @author U. Turuncoglu  @date 18-May-2021
+  !> @author U. Turuncoglu
+  !> @date 18-May-2021
   !>
-#undef METHOD
-#define METHOD "ReadFromFile"
   subroutine ReadFromFile (idfld, fldwx, fldwy, time0, timen, rc)
     !/
     !/                  +-----------------------------------+
