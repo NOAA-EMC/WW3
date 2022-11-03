@@ -65,6 +65,7 @@ EOF
     modcomp='hpc-intel/18.0.5.274'
     modmpi='hpc-impi/2018.0.4'
     metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+    scotchpath='/scratch1/NCEPDEV/climate/Ali.Abdolali/Scotch/scotchh/install'
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
@@ -143,6 +144,7 @@ EOF
   echo "  module load $modesmf"                             >> matrix.head
 
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
+  echo "  export SCOTCH_PATH=${scotchpath}"                   >> matrix.head
   echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
   echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'         >> matrix.head
   echo ' ' 
