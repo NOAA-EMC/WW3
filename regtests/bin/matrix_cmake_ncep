@@ -65,7 +65,7 @@ EOF
     modcomp='hpc-intel/18.0.5.274'
     modmpi='hpc-impi/2018.0.4'
     metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
-    scotchpath='/scratch1/NCEPDEV/climate/Ali.Abdolali/Scotch/scotchh/install'
+    scotchpath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/scotch/install'
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
@@ -75,6 +75,7 @@ EOF
     modcomp='hpc-intel/2018.4'
     modmpi='hpc-impi/2018.4'
     metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
+    scotchpath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/scotch/install'
     modcmake='cmake/3.22.1'
   else
     batchq=
@@ -126,7 +127,7 @@ EOF
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-# Netcdf and Parmetis modules & variables
+# Netcdf, Parmetis and SCOTCH modules & variables
   echo "  module purge"                                     >> matrix.head
   echo "  module load $modcmake"                            >> matrix.head
   echo "  module use $hpcstackpath"                         >> matrix.head
