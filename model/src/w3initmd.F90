@@ -699,7 +699,7 @@ CONTAINS
       CALL WWTIME ( STTIME )
       WRITE (NDSO,900) WWVER, STDATE, STTIME
     END IF
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2a')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2a')
     !
 #ifdef W3_S
     CALL STRACE (IENT, 'W3INIT')
