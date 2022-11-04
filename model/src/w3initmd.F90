@@ -120,6 +120,9 @@ MODULE W3INITMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
+  ! module default
+  implicit none
+
   PUBLIC
   !/
   REAL, PARAMETER                :: CRITOS = 15.
@@ -156,11 +159,9 @@ CONTAINS
   !>
   !> @author H. L. Tolman  @date 03-Sep-2012
   !>
-  SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
-       , FLGRD,                               &
-       FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
-       IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
-
+  SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT, FLGRD,     &
+       FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES, IPRT, PRTFRM, MPI_COMM, &
+       FLAGSTIDEIN)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -363,17 +364,13 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
+    use w3servmd, only : print_memcheck
+
     USE CONSTANTS
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
     !/
     USE W3GDATMD, ONLY: W3SETG, RSTYPE
     USE W3WDATMD, ONLY: W3SETW, W3DIMW
     USE W3ADATMD, ONLY: W3SETA, W3DIMA
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, ONLY: MALLINFOS
-#endif
     USE W3IDATMD, ONLY: W3SETI, W3DIMI
     USE W3ODATMD, ONLY: W3SETO, W3DMO5
     USE W3IOGOMD, ONLY: W3FLGRDUPDT
@@ -450,8 +447,6 @@ CONTAINS
     USE W3UOSTMD, ONLY: UOST_SETGRID
 #endif
     !/
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
 #endif
@@ -518,50 +513,27 @@ CONTAINS
 #ifdef W3_PDLIB
     INTEGER                 :: IScal(1), IPROC
 #endif
+    integer                 :: memunit
     !/
     !/ ------------------------------------------------------------------- /
     !
     ! 1.  Set-up of data structures and I/O  ----------------------------- /
     ! 1.a Point to proper data structures.
     !
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    memunit = 10000+IAPROC
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 1')
 
     CALL W3SETO ( IMOD, MDS(2), MDS(3) )
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 1a'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 1a')
 
     CALL W3SETG ( IMOD, MDS(2), MDS(3) )
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 1b'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 1b')
 
     CALL W3SETW ( IMOD, MDS(2), MDS(3) )
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 1c'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 1c')
 
     CALL W3SETA ( IMOD, MDS(2), MDS(3) )
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 1d'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 1d')
 
     CALL W3SETI ( IMOD, MDS(2), MDS(3) )
 #ifdef W3_UOST
@@ -570,13 +542,7 @@ CONTAINS
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("Case 2")
 #endif
-
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 1e'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 1e')
     !
     !
     ! 1.b Number of processors and processor number.
@@ -726,24 +692,14 @@ CONTAINS
     !
     ! 1.f Initial and test outputs
     !
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2')
     !
-
     IF ( IAPROC .EQ. NAPLOG ) THEN
       CALL WWDATE ( STDATE )
       CALL WWTIME ( STTIME )
       WRITE (NDSO,900) WWVER, STDATE, STTIME
     END IF
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2a'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2a')
     !
 #ifdef W3_S
     CALL STRACE (IENT, 'W3INIT')
@@ -772,12 +728,7 @@ CONTAINS
       ENDIF
 #endif
     ENDIF
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2b'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2b')
 #ifdef W3_PDLIB
     IF (GTYPE .ne. UNGTYPE) THEN
 #endif
@@ -791,12 +742,7 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL PDLIB_INIT(IMOD)
 #endif
-
-#ifdef W3_MEMCHECK
-      WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2c'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2c')
 
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("After PDLIB_INIT")
@@ -805,22 +751,12 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
 #endif
-
-#ifdef W3_MEMCHECK
-      WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2cc'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2cc')
 
 #ifdef W3_PDLIB
     END IF
 #endif
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2d'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2d')
 
     ! Update of output parameter flags based on mod_def parameters (for 3D arrays)
 
@@ -841,12 +777,7 @@ CONTAINS
     !
     ALLOCATE ( MAPTST(NY,NX) )
     MAPTST  = MAPSTA
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2e'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2e')
     !
     !
     ! 2.c MPP preparation
@@ -855,13 +786,7 @@ CONTAINS
     CALL SET_UP_NSEAL_NSEALM(NSEALout, NSEALMout)
     NSEAL  = NSEALout
     NSEALM = NSEALMout
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2f'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2f')
 #ifdef W3_DIST
     IF ( NSEA .LT. NAPROC ) GOTO 820
     IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
@@ -888,50 +813,29 @@ CONTAINS
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After BLOCK_SOLVER_INIT")
 #endif
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2g'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2g')
     !
     !
     ! 2.c.2 Allocate arrays
     !
     IF ( IAPROC .LE. NAPROC ) THEN
       CALL W3DIMW ( IMOD, NDSE, NDST )
-#ifdef W3_MEMCHECK
-      WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2h'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+      call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2h')
     ELSE
       CALL W3DIMW ( IMOD, NDSE, NDST, .FALSE. )
-#ifdef W3_MEMCHECK
-      WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2i'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+      call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2i')
     END IF
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3DIMW")
 #endif
     CALL W3DIMA ( IMOD, NDSE, NDST )
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 2j'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2j')
+
     CALL W3DIMI ( IMOD, NDSE, NDST , FLAGSTIDEIN )
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3DIMI")
 #endif
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 3'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 3')
     !
     ! 2.c.3 Calculated expected number of prop. calls per processor
     !
@@ -1055,11 +959,7 @@ CONTAINS
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3IORS")
 #endif
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 3a'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 3a')
 
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After W3IORS call", 1)
@@ -1094,12 +994,7 @@ CONTAINS
         END IF
       END DO
     END DO
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 3b'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 3b')
     !
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.3", 1)
@@ -1131,12 +1026,7 @@ CONTAINS
       WRITE (NDST,9031)
 #endif
     END IF
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 4'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 4')
     !
     ! 3.e Prepare propagation scheme
     !
@@ -1286,9 +1176,7 @@ CONTAINS
       !
     END DO
     !
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 5')
     !
     ! J=8, second stream of restart files
     !
@@ -1340,12 +1228,7 @@ CONTAINS
     END IF
     ! END J=8
     !
-#ifdef W3_MEMCHECK
-    WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 5')
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After NOTYPE loop")
 #endif
@@ -1441,11 +1324,7 @@ CONTAINS
     MAPST2 = MAPST2 + 2*MAPTST
     !
     DEALLOCATE ( MAPTST )
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 6'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 6')
     !
 #ifdef W3_T
     WRITE (NDST,9050)
@@ -1601,12 +1480,7 @@ CONTAINS
     END IF
     !
     IF ( NOPTS .EQ. 0 ) FLOUT(2) = .FALSE.
-
-#ifdef W3_MEMCHECK
-    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 7 - After allocation of group velocities'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 7 - After allocation of group velocities')
     !
     ! Boundary set up for the directions
     !
@@ -1896,8 +1770,6 @@ CONTAINS
 #endif
     USE W3ODATMD, ONLY: NDST, NAPROC, IAPROC
     !/
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
 #endif
@@ -2281,8 +2153,6 @@ CONTAINS
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
     USE CONSTANTS, ONLY: LPDLIB
     !/
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
 #endif
@@ -6094,8 +5964,6 @@ CONTAINS
     USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 #endif
     !/
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
 #endif

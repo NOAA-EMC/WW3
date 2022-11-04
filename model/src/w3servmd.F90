@@ -77,6 +77,7 @@ MODULE W3SERVMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
+  IMPLICIT NONE
   PUBLIC
   !
   INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0
@@ -123,7 +124,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -186,7 +186,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -264,7 +263,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -377,7 +375,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -470,7 +467,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -568,7 +564,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -633,7 +628,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -706,7 +700,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -793,7 +786,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
@@ -897,7 +889,6 @@ CONTAINS
     !   This routine is distinct from W3ACTURN since orders spectrum as freq, dirn
     !
     ! Subroutine arguments
-    IMPLICIT NONE
     INTEGER, INTENT(IN) :: NFreq, NDirc         ! No. freq and dirn bins
     REAL,    INTENT(IN) :: Alpha                ! Turning angle (degrees)
     REAL, INTENT(INOUT) :: Spectr(NFreq,NDirc)  ! Wave spectrum in/out
@@ -986,7 +977,6 @@ CONTAINS
     !   Routine is distinct from W3SPECTN since orders spectrum as dirn, freq
     !
     ! Subroutine arguments
-    IMPLICIT NONE
     INTEGER, INTENT(IN) :: NFreq, NDirc          ! No. freq and dirn bins
     REAL,    INTENT(IN) :: Alpha                 ! Turning angle (degrees)
     REAL, INTENT(INOUT) :: Spectr(NDirc, NFreq)  ! Wave action in/out
@@ -1088,8 +1078,6 @@ CONTAINS
   !* Arguments:--------------------------------------------------------
   SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ,     &
        &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
-
-    IMPLICIT NONE
 
     INTEGER:: POINTS    !IN  Number of points to be processed
 
@@ -1234,8 +1222,6 @@ CONTAINS
   SUBROUTINE W3EQTOLL( PHI_EQ, LAMBDA_EQ, PHI, LAMBDA,   &
        &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
 
-    IMPLICIT NONE
-
     INTEGER:: POINTS      !IN  Number of points to be processed
 
     REAL :: PHI_POLE,   & !IN  Latitude of equatorial lat-lon pole
@@ -1365,7 +1351,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY : DERA, TPI, UNDEF
-    IMPLICIT NONE
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1420,7 +1405,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY : DERA, TPI, UNDEF
-    IMPLICIT NONE
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1483,11 +1467,6 @@ CONTAINS
     !       TAB      Str   O   Array of strings
     !     ----------------------------------------------------------------
     !
-
-    IMPLICIT NONE
-
-
-
     CHARACTER(LEN=*), intent(IN)         :: STRING
     CHARACTER(LEN=100), intent(INOUT)    :: TAB(*)
     INTEGER                              :: cnt, I
@@ -1863,7 +1842,6 @@ CONTAINS
   !*********************************************************************
   SUBROUTINE DIAGONALIZE(a1,d,v,nrot)
     !*********************************************************************
-    IMPLICIT NONE
     INTEGER,                          INTENT(out)   :: nrot
     DOUBLE PRECISION, DIMENSION(:)  , INTENT(OUT)   ::d
     DOUBLE PRECISION, DIMENSION(:,:), INTENT(IN)    ::a1  ! Modified from INOUT to IN by F.A. on 2018/01/21
@@ -1984,8 +1962,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: RADE, UNDEF
-    IMPLICIT NONE
-
     REAL, INTENT(INOUT)             :: U(NSEA), V(NSEA)
     INTEGER, INTENT(IN)             :: NSEA
     REAL, INTENT(OUT), OPTIONAL     :: MAG(NSEA), DIR(NSEA)
@@ -2045,6 +2021,31 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE UV_TO_MAG_DIR
+
+  !========================================================================
+  !> Write memory statistics if requested
+  !!
+  !> @details Writes a single line of memory statistics
+  !!
+  !! @param[in]   iun               unit number
+  !! @param[in]   msg               message
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 06-01-2022
+
+  subroutine print_memcheck(iun, msg)
+#if W3_MEMCHECK
+    USE MallocInfo_m
+#endif
+    integer          , intent(in) :: iun
+    character(len=*) , intent(in) :: msg
+
+#if W3_MEMCHECK
+    write(iun,*) trim(msg)
+    call getMallocInfo(mallinfos)
+    call printMallInfo(iun, mallInfos)
+#endif
+  end subroutine print_memcheck
   !/
   !/ End of module W3SERVMD -------------------------------------------- /
   !/
