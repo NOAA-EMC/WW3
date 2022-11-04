@@ -728,7 +728,7 @@ CONTAINS
       ENDIF
 #endif
     ENDIF
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2b')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2b')
 #ifdef W3_PDLIB
     IF (GTYPE .ne. UNGTYPE) THEN
 #endif
@@ -742,7 +742,7 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL PDLIB_INIT(IMOD)
 #endif
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2c')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2c')
 
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("After PDLIB_INIT")
@@ -751,12 +751,12 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
 #endif
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2cc')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2cc')
 
 #ifdef W3_PDLIB
     END IF
 #endif
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2d')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2d')
 
     ! Update of output parameter flags based on mod_def parameters (for 3D arrays)
 
@@ -777,7 +777,7 @@ CONTAINS
     !
     ALLOCATE ( MAPTST(NY,NX) )
     MAPTST  = MAPSTA
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2e')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2e')
     !
     !
     ! 2.c MPP preparation
@@ -786,7 +786,7 @@ CONTAINS
     CALL SET_UP_NSEAL_NSEALM(NSEALout, NSEALMout)
     NSEAL  = NSEALout
     NSEALM = NSEALMout
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2f')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2f')
 #ifdef W3_DIST
     IF ( NSEA .LT. NAPROC ) GOTO 820
     IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
@@ -813,29 +813,29 @@ CONTAINS
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After BLOCK_SOLVER_INIT")
 #endif
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2g')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2g')
     !
     !
     ! 2.c.2 Allocate arrays
     !
     IF ( IAPROC .LE. NAPROC ) THEN
       CALL W3DIMW ( IMOD, NDSE, NDST )
-      call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2h')
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2h')
     ELSE
       CALL W3DIMW ( IMOD, NDSE, NDST, .FALSE. )
-      call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2i')
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2i')
     END IF
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3DIMW")
 #endif
     CALL W3DIMA ( IMOD, NDSE, NDST )
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 2j')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2j')
 
     CALL W3DIMI ( IMOD, NDSE, NDST , FLAGSTIDEIN )
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3DIMI")
 #endif
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 3')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 3')
     !
     ! 2.c.3 Calculated expected number of prop. calls per processor
     !
@@ -959,7 +959,7 @@ CONTAINS
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After W3IORS")
 #endif
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 3a')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 3a')
 
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "After W3IORS call", 1)
@@ -994,7 +994,7 @@ CONTAINS
         END IF
       END DO
     END DO
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 3b')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 3b')
     !
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 4.3", 1)
@@ -1026,7 +1026,7 @@ CONTAINS
       WRITE (NDST,9031)
 #endif
     END IF
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 4')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 4')
     !
     ! 3.e Prepare propagation scheme
     !
@@ -1176,7 +1176,7 @@ CONTAINS
       !
     END DO
     !
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 5')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 5')
     !
     ! J=8, second stream of restart files
     !
@@ -1228,7 +1228,7 @@ CONTAINS
     END IF
     ! END J=8
     !
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 5')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 5')
 #ifdef W3_TIMINGS
     CALL PRINT_MY_TIME("After NOTYPE loop")
 #endif
@@ -1324,7 +1324,7 @@ CONTAINS
     MAPST2 = MAPST2 + 2*MAPTST
     !
     DEALLOCATE ( MAPTST )
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 6')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 6')
     !
 #ifdef W3_T
     WRITE (NDST,9050)
@@ -1480,7 +1480,7 @@ CONTAINS
     END IF
     !
     IF ( NOPTS .EQ. 0 ) FLOUT(2) = .FALSE.
-    call print_memcheck(unit, 'memcheck_____:'//' WW3_INIT SECTION 7 - After allocation of group velocities')
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 7 - After allocation of group velocities')
     !
     ! Boundary set up for the directions
     !
