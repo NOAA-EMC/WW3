@@ -2272,6 +2272,8 @@ CONTAINS
     LOGICAL :: LocalizeMaximum = .TRUE.
     LOGICAL :: CheckUncovered = .TRUE.
     LOGICAL :: PrintFullValue = .TRUE.
+    integer :: ip
+
     IF (FULL_NSPEC) THEN
       CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(TheARR, string, maxidx, PrintMinISP, LocalizeMaximum)
     ELSE
