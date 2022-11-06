@@ -5810,9 +5810,9 @@ CONTAINS
     WRITE(740+IAPROC,*) 'FSGEOADVECT=', FSGEOADVECT
     WRITE(740+IAPROC,*) 'DTG=', DTG
 #endif
-    !
-    !    init matrix and right hand side
-    !
+!
+!    init matrix and right hand side
+!
 #ifdef W3_MEMCHECK
     write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 2'
     call getMallocInfo(mallinfos)
@@ -5856,19 +5856,6 @@ CONTAINS
     !     geographical advection
     !
     IF (IMEM == 1) call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
-
-!
-!     geographical advection  
-!
-      IF (IMEM == 1) call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
-
-      do ip = 1, np
-        IP_glob =iplg(IP)
-        ISEA    = MAPFS(1,IP_glob)
-        JSEA    = JX_TO_JSEA(IP)
-!        IF (ISEA == 28447) write(740+IAPROC,*) 'SOLVER ENTRY', ISEA, JSEA, SUM(B_JAC(:,JSEA)), &
-!                                     SUM(ASPAR_JAC(:,PDLIB_I_DIAG(JSEA))), PDLIB_I_DIAG(JSEA)
-      enddo
 
 
 #ifdef W3_DEBUGSOLVER
