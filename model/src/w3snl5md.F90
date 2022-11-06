@@ -313,26 +313,27 @@ CONTAINS
              ' ⊚ → [WW3 SNL₅] # of valid points: ', NSEL
         WRITE(SCREEN, *)
       END IF
-!
-! Calc FACTOR used for Jacobian tranformation from N(k, θ) to E(f, θ)
-      FACTOR = TPI / CG * SIG(1:NK)
-!
-! Regular grid & curvilinear grid
-      IF ( ((GTYPE .EQ. RLGTYPE) .OR. (GTYPE .EQ. CLGTYPE)) &
-           .AND. FLOUT(2) .AND. NSEL .GT. 0) THEN
-          TDEL1 = DSEC21(T1ABS, TOSNL5)
-          TDEL2 = DSEC21(T1ABS, TOLAST(:, 2)) ! not really useful since
-                                              ! TOSNL5 can never catch
-                                              ! TOLAST
-! Output time
-          IF (ABS(TDEL1) < 1E-6 .OR. ABS(TDEL2) < 1E-6) THEN
-! JSEA→ ISEA
-              CALL INIT_GET_ISEA(ISEA, JSEA)
-! Find the loc of ISEA at PSEA (nearest sea grid point)
-              IF (ALLOCATED(PDIFF)) DEALLOCATE(PDIFF); ALLOCATE(PDIFF(NSEL))
-              PDIFF = ABS(PSEA(1:NSEL) - ISEA)
-              IF (ANY(PDIFF .EQ. 0)) THEN
-                  JLOC = MINLOC(PDIFF, 1)
+    END IF
+    !
+    ! Calc FACTOR used for Jacobian tranformation from N(k, θ) to E(f, θ)
+    FACTOR = TPI / CG * SIG(1:NK)
+    !
+    ! Regular grid & curvilinear grid
+    IF ( ((GTYPE .EQ. RLGTYPE) .OR. (GTYPE .EQ. CLGTYPE)) &
+         .AND. FLOUT(2) .AND. NSEL .GT. 0) THEN
+      TDEL1 = DSEC21(T1ABS, TOSNL5)
+      TDEL2 = DSEC21(T1ABS, TOLAST(:, 2)) ! not really useful since
+      ! TOSNL5 can never catch
+      ! TOLAST
+      ! Output time
+      IF (ABS(TDEL1) < 1E-6 .OR. ABS(TDEL2) < 1E-6) THEN
+        ! JSEA→ ISEA
+        CALL INIT_GET_ISEA(ISEA, JSEA)
+        ! Find the loc of ISEA at PSEA (nearest sea grid point)
+        IF (ALLOCATED(PDIFF)) DEALLOCATE(PDIFF); ALLOCATE(PDIFF(NSEL))
+        PDIFF = ABS(PSEA(1:NSEL) - ISEA)
+        IF (ANY(PDIFF .EQ. 0)) THEN
+          JLOC = MINLOC(PDIFF, 1)
 #ifdef W3_TS
           IF (IAPROC .EQ. NAPOUT)                               &
                WRITE(SCREEN, '(3A, I10.8, I7.6)')                    &

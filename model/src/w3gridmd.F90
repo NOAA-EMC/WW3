@@ -3608,6 +3608,7 @@ CONTAINS
       IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
       WRITE (NDSO,2951) PNAME2
 
+
       IF (IMPREFRACTION .and. IMPTOTAL .AND. FLCTH) THEN
         FSREFRACTION = .TRUE.
         PNAME2 = 'Refraction done implicitly'

@@ -11,155 +11,155 @@
 !> @author H. L. Tolman  @date 22-Mar-2021
 !>
 !/ ------------------------------------------------------------------- /
-      MODULE W3INITMD
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           H. L. Tolman            |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
-!/                  +-----------------------------------+
-!/
-!/    28-Dec-2004 : Origination (out of W3WAVEMD).      ( version 3.06 )
-!/                  Multiple grid version.
-!/    03-Jan-2005 : Add US2x to MPI communication.      ( version 3.06 )
-!/    04-Jan-2005 : Add grid output flags to W3INIT.    ( version 3.06 )
-!/    07-Feb-2005 : Combined vs. separate test output.  ( version 3.07 )
-!/    04-May-2005 : Change to MPI_COMM_WAVE.            ( version 3.07 )
-!/    21-Jul-2005 : Add output fields.                  ( version 3.07 )
-!/    09-Nov-2005 : Drying out of points added.         ( version 3.08 )
-!/    13-Jun-2006 : Splitting STORE in G/SSTORE.        ( version 3.09 )
-!/    26-Jun-2006 : adding wiring for output type 6.    ( version 3.09 )
-!/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
-!/    04-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
-!/    02-Aug-2006 : Adding W3MPIP.                      ( version 3.10 )
-!/    02-Nov-2006 : Adding partitioning options.        ( version 3.10 )
-!/    11-Jan-2007 : Updating IAPPRO computation.        ( version 3.10 )
-!/    02-Apr-2007 : Add partitioned field data.         ( version 3.11 )
-!/                  Add user-defined field data.
-!/    01-May-2007 : Move O7a output to W3IOPP.          ( version 3.11 )
-!/    08-May-2007 : Starting from calm as an option.    ( version 3.11 )
-!/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-!/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
-!/    29-Feb-2008 : Add NEC compiler directives.        ( version 3.13 )
-!/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
-!/    23-Jul-2009 : Implement unstructured grids        ( version 3.14 )
-!/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
-!/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
-!/                  (W. E. Rogers & T. J. Campbell, NRL)
-!/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
-!/                  specify index closure for a grid.   ( version 3.14 )
-!/                  (T. J. Campbell, NRL)
-!/    02-Sep.2012 : Set up for > 999 test files.        ( version 4.10 )
-!/                  Reset UST initialization.
-!/    03-Sep-2012 : Switch test file on/off (TSTOUT)    ( version 4.10 )
-!/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
-!/    30-Sep-2012 : Implemetation of tidal constituents ( version 4.09 )
-!/    07-Dec-2012 : Initialize UST non-zero.            ( version 4.11 )
-!/    12-Dec-2012 : Changes for SMC grid.  JG_Li        ( version 4.11 )
-!/    26-Dec-2012 : Modify field output MPI for new     ( version 4.11 )
-!/                  structure and smaller memory footprint.
-!/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
-!/    10-Oct-2013 : CG and WN values at DMIN for ISEA=0 ( version 4.12 )
-!/    14-Nov-2013 : Remove UST(DIR) initialization.     ( version 4.13 )
-!/    15-Dec-2013 : Adds fluxes to ice                  ( version 5.01 )
-!/    01-May-2017 : Adds directional MSS parameters     ( version 6.04 )
-!/    05-Jun-2018 : Adds PDLIB/MEMCHECK/DEBUG           ( version 6.04 )
-!/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
-!/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
-!/    25-Sep-2020 : Extra fields for coupling restart   ( version 7.10 )
-!/    22-Mar-2021 : Extra coupling fields               ( version 7.13 )
-!/    22-Jun-2021 : GKE NL5 (Q. Liu)                    ( version 7.13 )
-!/
-!/    Copyright 2009-2013 National Weather Service (NWS),
-!/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
-!/       No unauthorized use without permission.
-!/
-!/    Note: Changes in version numbers not logged above.
-!/
-!  1. Purpose :
-!
-!  2. Variables and types :
-!
-!      Name      Type  Scope    Description
-!     ----------------------------------------------------------------
-!      CRITOS    R.P.  Public   Critical percentage of resources used
-!                               for output to trigger warning.
-!      WWVER     C*10  Public   Model version number.
-!      SWITCHES  C*256 Public   switches taken from bin/switch
-!     ----------------------------------------------------------------
-!
-!  3. Subroutines and functions :
-!
-!      Name      Type  Scope    Description
-!     ----------------------------------------------------------------
-!      W3INIT    Subr. Public   Wave model initialization.
-!      W3MPII    Subr. Public   Initialize MPI data transpose.
-!      W3MPIO    Subr. Public   Initialize MPI output gathering.
-!      W3MPIP    Subr. Public   Initialize MPI point output gathering.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines and functions used :
-!
-!     See subroutine documentation.
-!
-!  5. Remarks :
-!
-!  6. Switches :
-!
-!       !/SHRD  Switch for shared / distributed memory architecture.
-!       !/DIST  Id.
-!       !/MPI   Id.
-!
-!       !/S     Enable subroutine tracing.
-!       !/Tn    Enable test output.
-!       !/MPIT  Enable test output (MPI).
-!
-!  7. Source code :
-!
-!/ ------------------------------------------------------------------- /
-      PUBLIC
-!/
-      REAL, PARAMETER                :: CRITOS = 15.
-      CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.14  '
-      CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
-           __WW3_SWITCHES__
-!/
-      CONTAINS
-!/ ------------------------------------------------------------------- /
-!>
-!> @brief Initialize WAVEWATCH III.
-!>
-!> @details Initialize data structure and wave fields from data files.
-!>  Initialize grid from local and instantaneous data.
-!>
-!> @param[in] IMOD        Model number.
-!> @param[in] IsMulti  
-!> @param[in] FEXT        Extension of data files.
-!> @param[in] MDS         Array with dataset numbers saved as NDS in W3ODATMD.
-!> @param[in] MTRACE      Array with subroutine tracing information.
-!> @param[in] ODAT        Output data, five parameters per output type.
-!> @param[inout] FLGRD    Flags for gridded output.
-!> @param[inout] FLGR2    Flags for coupling output.
-!> @param[inout] FLGD     
-!> @param[inout] FLG2 
-!> @param[in] NPT           Number of output points.
-!> @param[inout] XPT        Coordinates of output points.
-!> @param[inout] YPT        Coordinates of output points.
-!> @param[in] PNAMES        Output point names.
-!> @param[in] IPRT          Partitioning grid info. 
-!> @param[inout] PRTFRM     Partitioning format flag.
-!> @param[in] MPI_COMM      MPI communicator to be used for model.
-!> @param[in] FLAGSTIDEIN
-!>
-!> @author H. L. Tolman  @date 03-Sep-2012
-!>        
-      SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
-                          , FLGRD,                               &
-                           FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
-                          IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
+MODULE W3INITMD
+  !/
+  !/                  +-----------------------------------+
+  !/                  | WAVEWATCH III           NOAA/NCEP |
+  !/                  |           H. L. Tolman            |
+  !/                  |                        FORTRAN 90 |
+  !/                  | Last update :         22-Mar-2021 |
+  !/                  +-----------------------------------+
+  !/
+  !/    28-Dec-2004 : Origination (out of W3WAVEMD).      ( version 3.06 )
+  !/                  Multiple grid version.
+  !/    03-Jan-2005 : Add US2x to MPI communication.      ( version 3.06 )
+  !/    04-Jan-2005 : Add grid output flags to W3INIT.    ( version 3.06 )
+  !/    07-Feb-2005 : Combined vs. separate test output.  ( version 3.07 )
+  !/    04-May-2005 : Change to MPI_COMM_WAVE.            ( version 3.07 )
+  !/    21-Jul-2005 : Add output fields.                  ( version 3.07 )
+  !/    09-Nov-2005 : Drying out of points added.         ( version 3.08 )
+  !/    13-Jun-2006 : Splitting STORE in G/SSTORE.        ( version 3.09 )
+  !/    26-Jun-2006 : adding wiring for output type 6.    ( version 3.09 )
+  !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
+  !/    04-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
+  !/    02-Aug-2006 : Adding W3MPIP.                      ( version 3.10 )
+  !/    02-Nov-2006 : Adding partitioning options.        ( version 3.10 )
+  !/    11-Jan-2007 : Updating IAPPRO computation.        ( version 3.10 )
+  !/    02-Apr-2007 : Add partitioned field data.         ( version 3.11 )
+  !/                  Add user-defined field data.
+  !/    01-May-2007 : Move O7a output to W3IOPP.          ( version 3.11 )
+  !/    08-May-2007 : Starting from calm as an option.    ( version 3.11 )
+  !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
+  !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
+  !/    29-Feb-2008 : Add NEC compiler directives.        ( version 3.13 )
+  !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
+  !/    23-Jul-2009 : Implement unstructured grids        ( version 3.14 )
+  !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
+  !/                  (W. E. Rogers & T. J. Campbell, NRL)
+  !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
+  !/                  (W. E. Rogers & T. J. Campbell, NRL)
+  !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
+  !/                  specify index closure for a grid.   ( version 3.14 )
+  !/                  (T. J. Campbell, NRL)
+  !/    02-Sep.2012 : Set up for > 999 test files.        ( version 4.10 )
+  !/                  Reset UST initialization.
+  !/    03-Sep-2012 : Switch test file on/off (TSTOUT)    ( version 4.10 )
+  !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
+  !/    30-Sep-2012 : Implemetation of tidal constituents ( version 4.09 )
+  !/    07-Dec-2012 : Initialize UST non-zero.            ( version 4.11 )
+  !/    12-Dec-2012 : Changes for SMC grid.  JG_Li        ( version 4.11 )
+  !/    26-Dec-2012 : Modify field output MPI for new     ( version 4.11 )
+  !/                  structure and smaller memory footprint.
+  !/    02-Jul-2013 : Bug fix MPI_FLOAT -> MPI_REAL.      ( version 4.11 )
+  !/    10-Oct-2013 : CG and WN values at DMIN for ISEA=0 ( version 4.12 )
+  !/    14-Nov-2013 : Remove UST(DIR) initialization.     ( version 4.13 )
+  !/    15-Dec-2013 : Adds fluxes to ice                  ( version 5.01 )
+  !/    01-May-2017 : Adds directional MSS parameters     ( version 6.04 )
+  !/    05-Jun-2018 : Adds PDLIB/MEMCHECK/DEBUG           ( version 6.04 )
+  !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
+  !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
+  !/    25-Sep-2020 : Extra fields for coupling restart   ( version 7.10 )
+  !/    22-Mar-2021 : Extra coupling fields               ( version 7.13 )
+  !/    22-Jun-2021 : GKE NL5 (Q. Liu)                    ( version 7.13 )
+  !/
+  !/    Copyright 2009-2013 National Weather Service (NWS),
+  !/       National Oceanic and Atmospheric Administration.  All rights
+  !/       reserved.  WAVEWATCH III is a trademark of the NWS.
+  !/       No unauthorized use without permission.
+  !/
+  !/    Note: Changes in version numbers not logged above.
+  !/
+  !  1. Purpose :
+  !
+  !  2. Variables and types :
+  !
+  !      Name      Type  Scope    Description
+  !     ----------------------------------------------------------------
+  !      CRITOS    R.P.  Public   Critical percentage of resources used
+  !                               for output to trigger warning.
+  !      WWVER     C*10  Public   Model version number.
+  !      SWITCHES  C*256 Public   switches taken from bin/switch
+  !     ----------------------------------------------------------------
+  !
+  !  3. Subroutines and functions :
+  !
+  !      Name      Type  Scope    Description
+  !     ----------------------------------------------------------------
+  !      W3INIT    Subr. Public   Wave model initialization.
+  !      W3MPII    Subr. Public   Initialize MPI data transpose.
+  !      W3MPIO    Subr. Public   Initialize MPI output gathering.
+  !      W3MPIP    Subr. Public   Initialize MPI point output gathering.
+  !     ----------------------------------------------------------------
+  !
+  !  4. Subroutines and functions used :
+  !
+  !     See subroutine documentation.
+  !
+  !  5. Remarks :
+  !
+  !  6. Switches :
+  !
+  !       !/SHRD  Switch for shared / distributed memory architecture.
+  !       !/DIST  Id.
+  !       !/MPI   Id.
+  !
+  !       !/S     Enable subroutine tracing.
+  !       !/Tn    Enable test output.
+  !       !/MPIT  Enable test output (MPI).
+  !
+  !  7. Source code :
+  !
+  !/ ------------------------------------------------------------------- /
+  PUBLIC
+  !/
+  REAL, PARAMETER                :: CRITOS = 15.
+  CHARACTER(LEN=10), PARAMETER   :: WWVER  = '7.14  '
+  CHARACTER(LEN=512), PARAMETER  :: SWITCHES  = &
+       __WW3_SWITCHES__
+  !/
+CONTAINS
+  !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Initialize WAVEWATCH III.
+  !>
+  !> @details Initialize data structure and wave fields from data files.
+  !>  Initialize grid from local and instantaneous data.
+  !>
+  !> @param[in] IMOD        Model number.
+  !> @param[in] IsMulti
+  !> @param[in] FEXT        Extension of data files.
+  !> @param[in] MDS         Array with dataset numbers saved as NDS in W3ODATMD.
+  !> @param[in] MTRACE      Array with subroutine tracing information.
+  !> @param[in] ODAT        Output data, five parameters per output type.
+  !> @param[inout] FLGRD    Flags for gridded output.
+  !> @param[inout] FLGR2    Flags for coupling output.
+  !> @param[inout] FLGD
+  !> @param[inout] FLG2
+  !> @param[in] NPT           Number of output points.
+  !> @param[inout] XPT        Coordinates of output points.
+  !> @param[inout] YPT        Coordinates of output points.
+  !> @param[in] PNAMES        Output point names.
+  !> @param[in] IPRT          Partitioning grid info.
+  !> @param[inout] PRTFRM     Partitioning format flag.
+  !> @param[in] MPI_COMM      MPI communicator to be used for model.
+  !> @param[in] FLAGSTIDEIN
+  !>
+  !> @author H. L. Tolman  @date 03-Sep-2012
+  !>
+  SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
+       , FLGRD,                               &
+       FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
+       IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
 
     !/
     !/                  +-----------------------------------+
@@ -755,22 +755,21 @@
     WRITE (NDST,9002) NDSO, NDSE, NDST, SCREEN
     WRITE (NDST,9003) LFILE(:IFL), TFILE(:IFT)
 #endif
-!
-! 2.  Model defintition ---------------------------------------------- /
-! 2.a Read model defintition file
-!
-!!/DEBUGMPI     CALL TEST_MPI_STATUS("Case 8")
-      CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
-      IF (GTYPE .eq. UNGTYPE) THEN
-        CALL SPATIAL_GRID
-        CALL NVECTRI
-        CALL COORDMAX
+    !
+    ! 2.  Model defintition ---------------------------------------------- /
+    ! 2.a Read model defintition file
+    !
+    CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
+    IF (GTYPE .eq. UNGTYPE) THEN
+      CALL SPATIAL_GRID
+      CALL NVECTRI
+      CALL COORDMAX
 #ifdef W3_PDLIB
- IF(.false.) THEN
+      IF(.false.) THEN
 #endif
         CALL AREA_SI(1)
 #ifdef W3_PDLIB
- ENDIF
+      ENDIF
 #endif
     ENDIF
 #ifdef W3_MEMCHECK
@@ -1288,56 +1287,52 @@
     END DO
     !
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
+    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5'
 #endif
-!
-! J=8, second stream of restart files
-!
-      J=8
-!
-! ... check time step  
-!
-        DTOUT(J) = MAX ( 0. , DTOUT(J) )
-        FLOUT(J) = FLOUT(J) .AND. ( DTOUT(J) .GT. 0.5 )
-!
-! ... get first time 
-!
-        IF ( FLOUT(J) ) THEN
-            TOUT = TONEXT(:,J)
-            TLST = TOLAST(:,J)
-!
-            DO
-              DTTST   = DSEC21 ( TIME , TOUT )
-              IF ( ( J.NE.4 .AND. DTTST.LT.0. ) .OR.                  &
-                   ( J.EQ.4 .AND. DTTST.LE.0. ) ) THEN
-                  CALL TICK21 ( TOUT, DTOUT(J) )
-                ELSE
-                  EXIT
-                END IF
-              END DO
-!
-! ... reset first time
-!
-            TONEXT(:,J) = TOUT
-!
-! ... check last time
-!
-            DTTST  = DSEC21 ( TOUT , TLST )
-            IF ( DTTST.LT.0.) FLOUT(J) = .FALSE.
-!
-! ... check overall first time
-!
-            IF ( FLOUT(J) ) THEN
-                IF ( TOFRST(1).EQ.-1 ) THEN
-                    TOFRST = TOUT
-                  ELSE
-                    DTTST  = DSEC21 ( TOUT , TOFRST )
-                    IF ( DTTST.GT.0.) THEN
-                        TOFRST = TOUT
-                      END IF
-                  END IF
-              END IF
-!
+    !
+    ! J=8, second stream of restart files
+    !
+    J=8
+    !
+    ! ... check time step
+    !
+    DTOUT(J) = MAX ( 0. , DTOUT(J) )
+    FLOUT(J) = FLOUT(J) .AND. ( DTOUT(J) .GT. 0.5 )
+    !
+    ! ... get first time
+    !
+    IF ( FLOUT(J) ) THEN
+      TOUT = TONEXT(:,J)
+      TLST = TOLAST(:,J)
+      !
+      DO
+        DTTST   = DSEC21 ( TIME , TOUT )
+        IF ( ( J.NE.4 .AND. DTTST.LT.0. ) .OR.                  &
+             ( J.EQ.4 .AND. DTTST.LE.0. ) ) THEN
+          CALL TICK21 ( TOUT, DTOUT(J) )
+        ELSE
+          EXIT
+        END IF
+      END DO
+      !
+      ! ... reset first time
+      !
+      TONEXT(:,J) = TOUT
+      !
+      ! ... check last time
+      !
+      DTTST  = DSEC21 ( TOUT , TLST )
+      IF ( DTTST.LT.0.) FLOUT(J) = .FALSE.
+      !
+      ! ... check overall first time
+      !
+      IF ( FLOUT(J) ) THEN
+        IF ( TOFRST(1).EQ.-1 ) THEN
+          TOFRST = TOUT
+        ELSE
+          DTTST  = DSEC21 ( TOUT , TOFRST )
+          IF ( DTTST.GT.0.) THEN
+            TOFRST = TOUT
           END IF
         END IF
       END IF
@@ -1362,7 +1357,7 @@
     !
     IF ( FLOUT(2) ) CALL W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD )
 #ifdef W3_PDLIB
-        CALL DEALLOCATE_PDLIB_GLOBAL(IMOD)
+    CALL DEALLOCATE_PDLIB_GLOBAL(IMOD)
 #endif
     !
 #ifdef W3_T
@@ -1425,22 +1420,12 @@
         WLVeff=WLVeff + ZETA_SETUP(ISEA)
       END IF
 #endif
-        DW(ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
-        IF ( WLVeff-ZB(ISEA) .LE.0. ) THEN
-!!/DEBUGINIT     WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' JSEA=', JSEA
-!!/DEBUGINIT     WRITE(740+IAPROC,*) 'NSEA=', NSEA, ' NSEAL=', NSEAL
-!!/DEBUGINIT     WRITE(740+IAPROC,*) 'IAPROC=', IAPROC, ' ISPROC=', ISPROC
-!!/DEBUGINIT     FLUSH(740+IAPROC)
-          VA(:,JSEA) = 0.
-        END IF
-      END DO
-
-#ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 5b'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
-#endif
-!
+      DW(ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
+      IF ( WLVeff-ZB(ISEA) .LE.0. ) THEN
+        VA(:,JSEA) = 0.
+      END IF
+    END DO
+    !
 #ifdef W3_PDLIB
     IF ( IAPROC .LE. NAPROC ) THEN
       CALL SET_IOBDP_PDLIB
@@ -1457,9 +1442,9 @@
     !
     DEALLOCATE ( MAPTST )
 #ifdef W3_MEMCHECK
-       WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 6'
-       call getMallocInfo(mallinfos)
-       call printMallInfo(10000+IAPROC,mallInfos)
+    WRITE(10000+IAPROC,*) 'memcheck_____:', 'WW3_INIT SECTION 6'
+    call getMallocInfo(mallinfos)
+    call printMallInfo(10000+IAPROC,mallInfos)
 #endif
     !
 #ifdef W3_T
@@ -1493,16 +1478,12 @@
 #ifdef W3_T1
       WRITE (NDST,9051) IS, DEPTH
 #endif
-!
+      !
       DO IK=0, NK+1
-!
-!         Calculate wavenumbers and group velocities.
-#ifdef W3_PDLIB 
-        CALL WAVNU3(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
-#else
+        !
+        !         Calculate wavenumbers and group velocities.
         CALL WAVNU1(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
-#endif
-!
+        !
 #ifdef W3_T1
         WRITE (NDST,9052) IK, TPI/SIG(IK), WN(IK,IS), CG(IK,IS)
 #endif

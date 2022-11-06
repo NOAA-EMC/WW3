@@ -284,21 +284,7 @@ CONTAINS
                  (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2
 
           END DO
-        END IF 
-!  
-      DO iIG=1,NKIG
-        DO ifr=1,nk
-          CALL WAVNU1 (SIG(ifr)+SIG(iIG),DEPTH,WN1,CG2)
-          DO ith1=1,nth
-            DO ith2=1,nth 
-!
-! This is the coupling coefficient for the SURFACE ELEVATION. See .e.g. forristall (JPO 2000)
-!
-              DD(iIG,ifr,ith1,ith2)=(Df1f2theta(SIG(ifr)+SIG(iIG),-SIG(ifr), WN1,WN(IFR), &
-                                 (abs(TH(ith1)-TH(ith2))+pi),DEPTH))**2 
-
-              END DO
-            END DO
+        END DO
         !
         ! weights
         !

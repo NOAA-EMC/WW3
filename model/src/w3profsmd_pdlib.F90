@@ -292,6 +292,7 @@ CONTAINS
           ISEA_TO_JSEA(ISEA)=JSEA
         END IF
       END DO
+      !
 #ifdef W3_DEBUGSOLVER
       WRITE(740+IAPROC,*) 'After JX_TO_JSEA, ISEA_TO_JSEA and friend computation'
       FLUSH(740+IAPROC)
@@ -314,7 +315,6 @@ CONTAINS
       FLUSH(740+IAPROC)
 #endif
     END IF
-
     FSGEOADVECT = .FALSE.
     IF ((FLCX .eqv. .TRUE.).and.(FLCY .eqv. .TRUE.)) THEN
       FSGEOADVECT =.TRUE.
@@ -3574,10 +3574,10 @@ CONTAINS
             WRITE(740+IAPROC,*) 'I1=', I1, ' PDLIB_I_DIAG=', PDLIB_I_DIAG(IP)
 #endif
 #ifdef W3_REF1
-              eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
-              IF (eIOBPDR .eq. 1) THEN
-                K1=ZERO
-              END IF
+            eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
+            IF (eIOBPDR .eq. 1) THEN
+              K1=ZERO
+            END IF
 #endif
             DTK               = KP(POS,IE) * DTG * IB1
 
@@ -3752,90 +3752,90 @@ CONTAINS
     call printMallInfo(IAPROC+50000,mallInfos)
 #endif
 
-      J = 0
-      DO IP = 1, npa
-        IP_glob=iplg(IP)
-        ISEA=MAPFS(1,IP_glob)
-        DO I = 1, PDLIB_CCON(IP)
-          J = J + 1
-          IE    =  PDLIB_IE_CELL2(I,IP)
-          IEN_LOCAL = PDLIB_IEN(:,IE)
-          POS   =  PDLIB_POS_CELL2(I,IP)
-          I1    =  PDLIB_POSI(1,J)
-          I2    =  PDLIB_POSI(2,J)
-          I3    =  PDLIB_POSI(3,J)
-          IP1   =  INE(POS_TRICK(POS,1),IE)
-          IP2   =  INE(POS_TRICK(POS,2),IE)
-          IPP1  =  POS_TRICK(POS,1)
-          IPP2  =  POS_TRICK(POS,2)
-          NI    = INE(:,IE)
-          NI_GLOB = iplg(NI)
-          NI_ISEA = MAPFS(1,NI_GLOB)
-          DO ISP=1,NSPEC
-            ITH    = 1 + MOD(ISP-1,NTH)
-            IK     = 1 + (ISP-1)/NTH
-            CCOS   = FACX * ECOS(ITH)
-            CSIN   = FACY * ESIN(ITH)
-            CXY(:,1) = CCOS * CG(IK,NI_ISEA) / CLATS(NI_ISEA)
-            CXY(:,2) = CSIN * CG(IK,NI_ISEA)
-            IF (FLCUR) THEN
-              CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATS(NI_ISEA)
-              CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)
-            ENDIF
+    J = 0
+    DO IP = 1, npa
+      IP_glob=iplg(IP)
+      ISEA=MAPFS(1,IP_glob)
+      DO I = 1, PDLIB_CCON(IP)
+        J = J + 1
+        IE    =  PDLIB_IE_CELL2(I,IP)
+        IEN_LOCAL = PDLIB_IEN(:,IE)
+        POS   =  PDLIB_POS_CELL2(I,IP)
+        I1    =  PDLIB_POSI(1,J)
+        I2    =  PDLIB_POSI(2,J)
+        I3    =  PDLIB_POSI(3,J)
+        IP1   =  INE(POS_TRICK(POS,1),IE)
+        IP2   =  INE(POS_TRICK(POS,2),IE)
+        IPP1  =  POS_TRICK(POS,1)
+        IPP2  =  POS_TRICK(POS,2)
+        NI    = INE(:,IE)
+        NI_GLOB = iplg(NI)
+        NI_ISEA = MAPFS(1,NI_GLOB)
+        DO ISP=1,NSPEC
+          ITH    = 1 + MOD(ISP-1,NTH)
+          IK     = 1 + (ISP-1)/NTH
+          CCOS   = FACX * ECOS(ITH)
+          CSIN   = FACY * ESIN(ITH)
+          CXY(:,1) = CCOS * CG(IK,NI_ISEA) / CLATS(NI_ISEA)
+          CXY(:,2) = CSIN * CG(IK,NI_ISEA)
+          IF (FLCUR) THEN
+            CXY(:,1) = CXY(:,1) + FACX * CX(NI_ISEA)/CLATS(NI_ISEA)
+            CXY(:,2) = CXY(:,2) + FACY * CY(NI_ISEA)
+          ENDIF
 #ifdef W3_MGP
-        CXY(:,1) = CXY(:,1) - CCURX*VGX/CLATS(ISEA)
-        CXY(:,2) = CXY(:,2) - CCURY*VGY
+          CXY(:,1) = CXY(:,1) - CCURX*VGX/CLATS(ISEA)
+          CXY(:,2) = CXY(:,2) - CCURY*VGY
 #endif
-            FL11 = CXY(2,1)*IEN_LOCAL(1)+CXY(2,2)*IEN_LOCAL(2)
-            FL12 = CXY(3,1)*IEN_LOCAL(1)+CXY(3,2)*IEN_LOCAL(2)
-            FL21 = CXY(3,1)*IEN_LOCAL(3)+CXY(3,2)*IEN_LOCAL(4)
-            FL22 = CXY(1,1)*IEN_LOCAL(3)+CXY(1,2)*IEN_LOCAL(4)
-            FL31 = CXY(1,1)*IEN_LOCAL(5)+CXY(1,2)*IEN_LOCAL(6)
-            FL32 = CXY(2,1)*IEN_LOCAL(5)+CXY(2,2)*IEN_LOCAL(6)
-            CRFS(1) = - ONESIXTH *  (2.0d0 *FL31 + FL32 + FL21 + 2.0d0 * FL22 )
-            CRFS(2) = - ONESIXTH *  (2.0d0 *FL32 + 2.0d0 * FL11 + FL12 + FL31 )
-            CRFS(3) = - ONESIXTH *  (2.0d0 *FL12 + 2.0d0 * FL21 + FL22 + FL11 )
-            LAMBDA(1) = ONESIXTH * SUM(CXY(:,1))
-            LAMBDA(2) = ONESIXTH * SUM(CXY(:,2))
-            K(1)  = LAMBDA(1) * IEN_LOCAL(1) + LAMBDA(2) * IEN_LOCAL(2)
-            K(2)  = LAMBDA(1) * IEN_LOCAL(3) + LAMBDA(2) * IEN_LOCAL(4)
-            K(3)  = LAMBDA(1) * IEN_LOCAL(5) + LAMBDA(2) * IEN_LOCAL(6)
-            KP(:) = MAX(ZERO,K(:))
-            DELTAL(:) = CRFS(:) - KP(:)
-            KM(:) = MIN(ZERO,K(:))
-            NM = 1.d0/MIN(-THR,SUM(KM))
-            K1 =  KP(POS)
+          FL11 = CXY(2,1)*IEN_LOCAL(1)+CXY(2,2)*IEN_LOCAL(2)
+          FL12 = CXY(3,1)*IEN_LOCAL(1)+CXY(3,2)*IEN_LOCAL(2)
+          FL21 = CXY(3,1)*IEN_LOCAL(3)+CXY(3,2)*IEN_LOCAL(4)
+          FL22 = CXY(1,1)*IEN_LOCAL(3)+CXY(1,2)*IEN_LOCAL(4)
+          FL31 = CXY(1,1)*IEN_LOCAL(5)+CXY(1,2)*IEN_LOCAL(6)
+          FL32 = CXY(2,1)*IEN_LOCAL(5)+CXY(2,2)*IEN_LOCAL(6)
+          CRFS(1) = - ONESIXTH *  (2.0d0 *FL31 + FL32 + FL21 + 2.0d0 * FL22 )
+          CRFS(2) = - ONESIXTH *  (2.0d0 *FL32 + 2.0d0 * FL11 + FL12 + FL31 )
+          CRFS(3) = - ONESIXTH *  (2.0d0 *FL12 + 2.0d0 * FL21 + FL22 + FL11 )
+          LAMBDA(1) = ONESIXTH * SUM(CXY(:,1))
+          LAMBDA(2) = ONESIXTH * SUM(CXY(:,2))
+          K(1)  = LAMBDA(1) * IEN_LOCAL(1) + LAMBDA(2) * IEN_LOCAL(2)
+          K(2)  = LAMBDA(1) * IEN_LOCAL(3) + LAMBDA(2) * IEN_LOCAL(4)
+          K(3)  = LAMBDA(1) * IEN_LOCAL(5) + LAMBDA(2) * IEN_LOCAL(6)
+          KP(:) = MAX(ZERO,K(:))
+          DELTAL(:) = CRFS(:) - KP(:)
+          KM(:) = MIN(ZERO,K(:))
+          NM = 1.d0/MIN(-THR,SUM(KM))
+          K1 =  KP(POS)
 #ifdef W3_REF1
-            eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
-            IF (eIOBPDR .eq. 1) THEN
-              K1=ZERO
-            END IF
+          eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
+          IF (eIOBPDR .eq. 1) THEN
+            K1=ZERO
+          END IF
 #endif
-            TRIA03 = 1./3. * PDLIB_TRIA(IE)
-            DTK    =  K1 * DTG * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP) * (1-IOBPA_LOC(IP))
-            TMP3   =  DTK * NM
-            IF (FSGEOADVECT) THEN
-              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS) 
-              ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(IPP1)
-              ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(IPP2)
-            ELSE
-              ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 
-            END IF
-            B_JAC(ISP,IP) = B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP)
-          END DO
+          TRIA03 = 1./3. * PDLIB_TRIA(IE)
+          DTK    =  K1 * DTG * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP) * (1-IOBPA_LOC(IP))
+          TMP3   =  DTK * NM
+          IF (FSGEOADVECT) THEN
+            ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03 + DTK - TMP3*DELTAL(POS)
+            ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                - TMP3*DELTAL(IPP1)
+            ASPAR_JAC(ISP,I3) = ASPAR_JAC(ISP,I3)                - TMP3*DELTAL(IPP2)
+          ELSE
+            ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + TRIA03
+          END IF
+          B_JAC(ISP,IP) = B_JAC(ISP,IP) + TRIA03 * VA(ISP,IP) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP)
         END DO
       END DO
+    END DO
 
 #ifdef W3_MEMCHECK
-      write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 1'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC+50000,mallInfos)
+    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 1'
+    call getMallocInfo(mallinfos)
+    call printMallInfo(IAPROC+50000,mallInfos)
 #endif
-!/
-!/ End of W3XYPFSN ----------------------------------------------------- /
-!/
+    !/
+    !/ End of W3XYPFSN ----------------------------------------------------- /
+    !/
   END SUBROUTINE calcARRAY_JACOBI2
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
   SUBROUTINE calcARRAY_JACOBI3(IP,J,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
     !/
     !/                  +-----------------------------------+
@@ -5795,8 +5795,8 @@ CONTAINS
 #endif
         VA(ISP,JSEA) = VA(ISP,JSEA) / CG1(IK) * CLATS(ISEA)
       END DO
-      VAOLD = VA(1:NSPEC,1:NSEAL)
-    ENDDO
+    END DO
+    VAOLD = VA(1:NSPEC,1:NSEAL)
 
 #ifdef W3_DEBUGSRC
     DO JSEA=1,NSEAL
@@ -5817,9 +5817,9 @@ CONTAINS
     WRITE(740+IAPROC,*) 'FSGEOADVECT=', FSGEOADVECT
     WRITE(740+IAPROC,*) 'DTG=', DTG
 #endif
-!
-!    init matrix and right hand side
-!
+    !
+    !    init matrix and right hand side
+    !
 #ifdef W3_MEMCHECK
     write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 2'
     call getMallocInfo(mallinfos)
@@ -5954,8 +5954,8 @@ CONTAINS
           ipiter(ip) = ipiter(ip) + 1
 #endif
 #ifdef W3_DEBUGFREQSHIFT
-    WRITE(740+IAPROC,*) 'Begin loop'
-    WRITE(740+IAPROC,*) 'IP/IP_glob/ISEA/JSEA=', IP, IP_glob, ISEA, JSEA
+          WRITE(740+IAPROC,*) 'Begin loop'
+          WRITE(740+IAPROC,*) 'IP/IP_glob/ISEA/JSEA=', IP, IP_glob, ISEA, JSEA
 #endif
 #ifdef W3_DEBUGSRC
           WRITE(740+IAPROC,*) 'IP=', IP, ' IP_glob=', IP_glob
@@ -6003,7 +6003,7 @@ CONTAINS
             eOff=ZERO
 #endif
             DO i = PDLIB_IA_P(IP)+1, PDLIB_IA_P(IP+1)
-                JP = PDLIB_JA(I)
+              JP = PDLIB_JA(I)
               IF (JP .ne. IP) THEN
                 eProd(1:NSPEC) = ASPAR_JAC(1:NSPEC,i) * VA(1:NSPEC,JP)
                 eSum(1:NSPEC)  = eSum(1:NSPEC) - eProd(1:NSPEC)
@@ -6247,17 +6247,17 @@ CONTAINS
         WRITE(740+IAPROC,*) 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
         FLUSH(740+IAPROC)
 #endif
-          IF (myrank == 0) WRITE(*,*) 'No. of solver iterations', nbiter, is_converged, prop_conv, B_JGS_PMIN
-          IF (prop_conv .le. B_JGS_PMIN + TINY(1.)) THEN
+        IF (myrank == 0) WRITE(*,*) 'No. of solver iterations', nbiter, is_converged, prop_conv, B_JGS_PMIN
+        IF (prop_conv .le. B_JGS_PMIN + TINY(1.)) THEN
 #ifdef W3_DEBUGFREQSHIFT
           WRITE(740+IAPROC,*) 'prop_conv=', prop_conv
           WRITE(740+IAPROC,*) 'NX=', NX
           WRITE(740+IAPROC,*) 'is_converged=', is_converged
           WRITE(740+IAPROC,*) 'Exiting by TERMINATE_DIFFERENCE'
 #endif
-            EXIT
-          END IF
+          EXIT
         END IF
+      END IF
 
 #ifdef W3_MEMCHECK
       write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 5'
@@ -6330,8 +6330,8 @@ CONTAINS
         CALL MPI_ALLREDUCE(Sum_L2, Sum_L2_GL, 1, rtype, MPI_SUM, MPI_COMM_WCMP, ierr)
         !WRITE(*,*) 'Sum_L2_gl=', Sum_L2_gl
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'Sum_L2_gl=', Sum_L2_gl
-     FLUSH(740+IAPROC)
+        WRITE(740+IAPROC,*) 'Sum_L2_gl=', Sum_L2_gl
+        FLUSH(740+IAPROC)
 #endif
         IF (Sum_L2_gl .le. B_JGS_NORM_THR) THEN
 #ifdef W3_DEBUGFREQSHIFT
@@ -6364,7 +6364,7 @@ CONTAINS
         !IF (IOBPD_LOC(ITH,IP) .ne. IOBPD(ITH,IP_glob)) STOP 'ERROR IN BOUNDARY'
         VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
 #ifdef W3_REF1
-          IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
+        IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
 #endif
       END DO
       !WRITE(*,'(4I10,A20)') IP, IOBDP_LOC(IP), IOBP_LOC(IP), IOBPA_LOC(IP), 'IOBP TEST'
