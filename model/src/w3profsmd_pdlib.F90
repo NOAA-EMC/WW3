@@ -5796,6 +5796,7 @@ CONTAINS
         VA(ISP,JSEA) = VA(ISP,JSEA) / CG1(IK) * CLATS(ISEA)
       END DO
       VAOLD = VA(1:NSPEC,1:NSEAL)
+    ENDDO
 
 #ifdef W3_DEBUGSRC
     DO JSEA=1,NSEAL
@@ -5953,8 +5954,8 @@ CONTAINS
           ipiter(ip) = ipiter(ip) + 1
 #endif
 #ifdef W3_DEBUGFREQSHIFT
-    	WRITE(740+IAPROC,*) 'Begin loop'
-        WRITE(740+IAPROC,*) 'IP/IP_glob/ISEA/JSEA=', IP, IP_glob, ISEA, JSEA
+    WRITE(740+IAPROC,*) 'Begin loop'
+    WRITE(740+IAPROC,*) 'IP/IP_glob/ISEA/JSEA=', IP, IP_glob, ISEA, JSEA
 #endif
 #ifdef W3_DEBUGSRC
           WRITE(740+IAPROC,*) 'IP=', IP, ' IP_glob=', IP_glob
