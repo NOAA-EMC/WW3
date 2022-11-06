@@ -5671,7 +5671,7 @@ CONTAINS
     INTEGER :: ISPp1, ISPm1, JP, ICOUNT1, ICOUNT2
     ! for the exchange
     REAL  :: CCOS, CSIN, CCURX, CCURY
-    REAL  :: eSum(NSPEC)
+    REAL  :: eSum(NSPEC), FRLOCAL, SPEC(NSPEC)
     REAL  :: eA_THE, eC_THE, eA_SIG, eC_SIG, eSI
     REAL  :: CAD(NSPEC), CAS(NSPEC), ACLOC(NSPEC)
     REAL  :: CP_SIG(NSPEC), CM_SIG(NSPEC)
@@ -5681,15 +5681,17 @@ CONTAINS
     REAL  :: DMM(0:NK2), DAM(NSPEC), DAM2(NSPEC)
     REAL  :: eDiff(NSPEC), eProd(NSPEC)
     REAL  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
-    REAL  :: VAnew(NSPEC), VFLWN(1-NTH:NSPEC)
+    REAL  :: VAnew(NSPEC), VFLWN(1-NTH:NSPEC), JAC, JAC2
     REAL  :: VAAnew(1-NTH:NSPEC+NTH), VAAacloc(1-NTH:NSPEC+NTH)
     REAL  :: VAinput(NSPEC), VAacloc(NSPEC), eDiffB(NSPEC),ASPAR_DIAG(NSPEC)
     REAL  :: aspar_diag_local(nspec), aspar_off_diag_local(nspec), b_jac_local(nspec)
     REAL  :: eDiffSing, eSumPart
+    REAL  :: EMEAN, FMEAN, FMEAN1, WNMEAN, AMAX, U10ABS, U10DIR, TAUA, TAUADIR
+    REAL  :: USTAR, USTDIR, TAUWX, TAUWY, CD, Z0, CHARN, FMEANWS, DLWMEAN
     REAL  :: eVal1, eVal2!, extmp(nspec,nseal)
-    REAL  :: eVA, CG2
+    REAL  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
     REAL  :: CG1(0:NK+1), WN1(0:NK+1)
-    LOGICAL :: LCONVERGED(NSEAL), lexist
+    LOGICAL :: LCONVERGED(NSEAL), lexist, LLWS(NSPEC)
 #ifdef WEIGHTS
     INTEGER :: ipiter(nseal), ipitergl(np_global), ipiterout(np_global)
 #endif
@@ -6398,6 +6400,7 @@ CONTAINS
         CG1(IK)    = CG(IK,ISEA)
 #endif
         eVA = MAX ( ZERO ,CG1(IK)/CLATS(ISEA)*REAL(VA(ISP,IP)) )
+        eVO = MAX ( ZERO ,CG1(IK)/CLATS(ISEA)*REAL(VAOLD(ISP,JSEA)) )
 #ifdef W3_DEBUGSRC
         SumACout=SumACout + REAL(VA(ISP,IP))
         VS_w3srce = VSTOT(ISP,JSEA) * DTG / MAX(1., (1. - DTG*VDTOT(ISP,JSEA)))
@@ -6413,6 +6416,7 @@ CONTAINS
         SumVAout = SumVAout + abs(eVA)
         SumVAw3srce = SumVAw3srce + abs(eVA_w3srce)
 #endif
+        VAOLD(ISP,JSEA) = eVO
         VA(ISP,JSEA) = eVA
       END DO
 #ifdef W3_DEBUGSRC
