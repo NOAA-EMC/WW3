@@ -292,7 +292,6 @@ CONTAINS
           ISEA_TO_JSEA(ISEA)=JSEA
         END IF
       END DO
-      !
 #ifdef W3_DEBUGSOLVER
       WRITE(740+IAPROC,*) 'After JX_TO_JSEA, ISEA_TO_JSEA and friend computation'
       FLUSH(740+IAPROC)
@@ -315,6 +314,7 @@ CONTAINS
       FLUSH(740+IAPROC)
 #endif
     END IF
+
     FSGEOADVECT = .FALSE.
     IF ((FLCX .eqv. .TRUE.).and.(FLCY .eqv. .TRUE.)) THEN
       FSGEOADVECT =.TRUE.
@@ -4593,13 +4593,16 @@ CONTAINS
                 ISP=ITH + (IK-1)*NTH
                 B_SIG(ISP)= CP_SIG(ISP)/DMM(IK-1) - CM_SIG(ISP)/DMM(IK)
               END DO
-              ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_SIG(:)*eSI
-            ELSE
-              CAS=0
-            END IF
-            CAS_SIG(:,IP) = CAS
-          ELSE IF (FreqShiftMethod .eq. 2) THEN
-            IF (IOBP_LOC(IP).eq.1) THEN
+              ISP  = ITH + (NK-1)*NTH
+              B_SIG(ISP)= B_SIG(ISP) + CM_SIG(ISP)/DMM(NK) * FACHFA
+            END DO
+            ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_SIG(:)*eSI
+          ELSE
+            CAS=0
+          END IF
+          CAS_SIG(:,IP) = CAS
+        ELSE IF (FreqShiftMethod .eq. 2) THEN
+            IF (IOBP_LOC(IP).eq.1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
               CALL PROP_FREQ_SHIFT_M2(IP, ISEA, CWNB_M2, DWNI_M2, DTG)
 #ifdef W3_DEBUGFREQSHIFT
             WRITE(740+IAPROC,*) 'sum(CWNB_M2)=', sum(CWNB_M2)
@@ -4754,7 +4757,7 @@ CONTAINS
             END DO
             ASPAR_DIAG_LOCAL(:,IP) = ASPAR_DIAG_LOCAL(:,IP) + B_SIG * eSI
           ELSE
-            CAS=0
+            CAS = 0
           END IF
           CAS_SIG(:,IP) = CAS
         END IF
@@ -6152,8 +6155,6 @@ CONTAINS
           END DO
           WRITE(740+IAPROC,*) 'sum(eDiff/VAnew/VAold)=', sum(abs(eDiff)), sum(abs(VAnew)), sum(abs(VAold))
 #endif
-
-
 
           IF (B_JGS_BLOCK_GAUSS_SEIDEL) THEN
             VA(1:NSPEC,IP)    = eSum !* IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
