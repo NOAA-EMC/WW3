@@ -40,7 +40,7 @@ $ parallel file system like GPFS.
 $
 $    IOSTYP = 0 : No data server processes, direct access output from
 $                 each process (requires true parallel file system).
-$             1 : No data server process. All output for each type 
+$             1 : No data server process. All output for each type
 $                 performed by process that performs computations too.
 $             2 : Last process is reserved for all output, and does no
 $                 computing.
@@ -50,7 +50,7 @@ $
 $
 $ Five output types are available (see below). All output types share
 $ a similar format for the first input line:
-$ - first time in yyyymmdd hhmmss format, output interval (s), and 
+$ - first time in yyyymmdd hhmmss format, output interval (s), and
 $   last time in yyyymmdd hhmmss format (all integers).
 $ Output is disabled by setting the output interval to 0.
 $
@@ -62,25 +62,25 @@ $          fields as defined in section 2.4 of the manual. The logical
 $          flags are not supplied if no output is requested. The logical
 $          flags can be placed on multiple consecutive lines. However,
 $          the total number and order of the logical flags is fixed.
-$                               The raw data file is out_grd.ww3, 
+$                               The raw data file is out_grd.ww3,
 $                               see w3iogo.ftn for additional doc.
 $
    19680606 000000   3600  19680608 000000
 $----------------------------------------------------------------
 $ Output request flags identifying fields.
-$ 
-$ The table below provides a full definition of field output parameters
-$  as well as flags indicating if they are available in different field 
-$  output output file types (ASCII, grib, NetCDF). 
-$ Further definitions are found in section 2.4 of the manual. 
 $
-$ Selection of field outputs may be made in two ways: 
+$ The table below provides a full definition of field output parameters
+$  as well as flags indicating if they are available in different field
+$  output output file types (ASCII, grib, NetCDF).
+$ Further definitions are found in section 2.4 of the manual.
+$
+$ Selection of field outputs may be made in two ways:
 $   F/T flags: first flag is set to F, requests made per group (1st line)
 $              followed by parameter flags (total of 10 groups).
-$   Namelists: first line is set to N, next line contains parameter 
+$   Namelists: first line is set to N, next line contains parameter
 $              symbol as per table below.
-$ 
-$   Example of F/T flag use is given in this sample ww3_shel.inp, below. 
+$
+$   Example of F/T flag use is given in this sample ww3_shel.inp, below.
 $    For namelist usage, see the sample ww3_ounf.inp for an example.
 $
 $ ----------------------------------------
@@ -88,7 +88,7 @@ $ Output field parameter definitions table
 $ ----------------------------------------
 $
 $ All parameters listed below are available in output file of the types
-$  ASCII and NetCDF. If selected output file types are grads or grib, 
+$  ASCII and NetCDF. If selected output file types are grads or grib,
 $  some parameters may not be available. The first two columns in the
 $  table below identify such cases by flags, cols 1 (GRB) and 2 (GXO)
 $  refer to grib (ww3_grib) and grads (gx_outf), respectively.
@@ -96,13 +96,13 @@ $
 $ Columns 3 and 4 provide group and parameter numbers per group.
 $ Columns 5, 6 and 7 provide:
 $   5 - code name (internal)
-$   6 - output tags (names used is ASCII file extensions, NetCDF 
+$   6 - output tags (names used is ASCII file extensions, NetCDF
 $       variable names and namelist-based selection (see ww3_ounf.inp)
 $   7 - Long parameter name/definition
 $
 $  G  G
 $  R  X Grp  Param Code     Output  Parameter/Group
-$  B  O Numb Numbr Name        Tag  Definition 
+$  B  O Numb Numbr Name        Tag  Definition
 $  --------------------------------------------------
 $        1                          Forcing Fields
 $   -------------------------------------------------
@@ -113,11 +113,11 @@ $  T  T  1     4   AS         AST   Air-sea temperature difference.
 $  T  T  1     5   WLV        WLV   Water levels.
 $  T  T  1     6   ICE        ICE   Ice concentration.
 $  T  T  1     7   IBG        IBG   Iceberg-induced damping.
-$  T  T  1     8   TAUA       TAU   Atm. momentum. 
-$  T  T  1     9   RHOAIR     RHO   Air density. 
+$  T  T  1     8   TAUA       TAU   Atm. momentum.
+$  T  T  1     9   RHOAIR     RHO   Air density.
 $  T  T  1    10   D50        D50   Median sediment grain size.
 $  T  T  1    11   IC1        IC1   Ice thickness.
-$  T  T  1    12   IC5        IC5   Ice flow diameter. 
+$  T  T  1    12   IC5        IC5   Ice flow diameter.
 $   -------------------------------------------------
 $        2                          Standard mean wave Parameters
 $   -------------------------------------------------
@@ -138,7 +138,7 @@ $  T  T  2    14   HCMAXE     MXHC  Max wave height from crest (STE)
 $  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 $  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 $  F  T  2    17   WBT        WBT   Dominant wave breaking probability bT
-$  F  F  2    18   FP0        TP    Peak period (from peak freq)        
+$  F  F  2    18   FP0        TP    Peak period (from peak freq)
 $   -------------------------------------------------
 $        3                          Spectral Parameters (first 5)
 $   -------------------------------------------------
@@ -149,7 +149,7 @@ $  F  F  3     4   TH2M       TH2M  Mean wave direction from a2,b2
 $  F  F  3     5   STH2M      STH2M Directional spreading from a2,b2
 $  F  F  3     6   WN         WN    Wavenumber array
 $   -------------------------------------------------
-$        4                          Spectral Partition Parameters 
+$        4                          Spectral Partition Parameters
 $   -------------------------------------------------
 $  T  T  4     1   PHS        PHS   Partitioned wave heights.
 $  T  T  4     2   PTP        PTP   Partitioned peak period.
@@ -183,15 +183,15 @@ $  F  F  5     9   WHITECAP   WCH   Mean breaking height
 $  F  F  5    10   WHITECAP   WCM   Whitecap moment
 $  F  F  5    11   FWS        FWS   Wind sea mean period
 $   -------------------------------------------------
-$        6                          Wave-ocean layer 
+$        6                          Wave-ocean layer
 $   -------------------------------------------------
 $  F  F  6     1   S[XX,YY,XY] SXY  Radiation stresses.
 $  F  F  6     2   TAUO[X,Y]  TWO   Wave to ocean momentum flux
-$  F  F  6     3   BHD        BHD   Bernoulli head (J term) 
+$  F  F  6     3   BHD        BHD   Bernoulli head (J term)
 $  F  F  6     4   PHIOC      FOC   Wave to ocean energy flux
 $  F  F  6     5   TUS[X,Y]   TUS   Stokes transport
 $  F  F  6     6   USS[X,Y]   USS   Surface Stokes drift
-$  F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure 
+$  F  F  6     7   [PR,TP]MS  P2S   Second-order sum pressure
 $  F  F  6     8   US3D       USF   Spectrum of surface Stokes drift
 $  F  F  6     9   P2SMS      P2L   Micro seism  source term
 $  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
@@ -199,12 +199,12 @@ $  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
 $  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
 $  F  F  6    13   TAUOC[X,Y] TOC   Total momentum to the ocean
 $   -------------------------------------------------
-$        7                          Wave-bottom layer 
+$        7                          Wave-bottom layer
 $   -------------------------------------------------
 $  F  F  7     1   ABA        ABR   Near bottom rms amplitides.
 $  F  F  7     2   UBA        UBR   Near bottom rms velocities.
 $  F  F  7     3   BEDFORMS   BED   Bedforms
-$  F  F  7     4   PHIBBL     FBB   Energy flux due to bottom friction 
+$  F  F  7     4   PHIBBL     FBB   Energy flux due to bottom friction
 $  F  F  7     5   TAUBBL     TBB   Momentum flux due to bottom friction
 $   -------------------------------------------------
 $        8                          Spectrum parameters
@@ -216,15 +216,15 @@ $  F  F  8     4   ALPXT      AXT   Correl sea surface gradients (x,t)
 $  F  F  8     5   ALPYT      AYT   Correl sea surface gradients (y,t)
 $  F  F  8     6   ALPXY      AXY   Correl sea surface gradients (x,y)
 $   -------------------------------------------------
-$        9                          Numerical diagnostics  
+$        9                          Numerical diagnostics
 $   -------------------------------------------------
 $  T  T  9     1   DTDYN      DTD   Average time step in integration.
 $  T  T  9     2   FCUT       FC    Cut-off frequency.
-$  T  T  9     3   CFLXYMAX   CFX   Max. CFL number for spatial advection. 
-$  T  T  9     4   CFLTHMAX   CFD   Max. CFL number for theta-advection. 
-$  F  F  9     5   CFLKMAX    CFK   Max. CFL number for k-advection. 
+$  T  T  9     3   CFLXYMAX   CFX   Max. CFL number for spatial advection.
+$  T  T  9     4   CFLTHMAX   CFD   Max. CFL number for theta-advection.
+$  F  F  9     5   CFLKMAX    CFK   Max. CFL number for k-advection.
 $   -------------------------------------------------
-$        10                         User defined          
+$        10                         User defined
 $   -------------------------------------------------
 $  F  F  10    1              U1    User defined #1. (requires coding ...)
 $  F  F  10    2              U2    User defined #1. (requires coding ...)
@@ -249,7 +249,7 @@ $ EF TH1M STH1M TH2M STH2M WN
   T   T   T   F   F   F
 $ (4) Spectral Partition Parameters
   T
-$ PHS PTP PLP PDIR PSPR PNR PDP PQP PPE PGW PSW PTM10 PT01 PT02 PEP PWS TWS 
+$ PHS PTP PLP PDIR PSPR PNR PDP PQP PPE PGW PSW PTM10 PT01 PT02 PEP PWS TWS
   T   T   T   T    T    T   T   T   T   T   T   T     T    T    T   T   T
 $ (5) Atmosphere-waves layer
   T
@@ -279,17 +279,17 @@ $
 $----------------------------------------------------------------
 $
 $ Type 2 : Point output
-$          Standard line and a number of lines identifying the 
+$          Standard line and a number of lines identifying the
 $          longitude, latitude and name (C*40) of output points.
 $          The list is closed by defining a point with the name
 $          'STOPSTRING'. No point info read if no point output is
 $          requested (i.e., no 'STOPSTRING' needed).
 $          Example for spherical grid.
-$                               The raw data file is out_pnt.ww3, 
+$                               The raw data file is out_pnt.ww3,
 $                               see w3iogo.ftn for additional doc.
 $
 $   NOTE : Spaces may be included in the name, but this is not
-$          advised, because it will break the GrADS utility to 
+$          advised, because it will break the GrADS utility to
 $          plots spectra and source terms, and will make it more
 $          difficult to use point names in data files.
 $

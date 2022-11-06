@@ -8,12 +8,12 @@
 !
 !     CVS:$Id: remap_vars.f,v 1.5 2000/04/19 21:56:26 pwjones Exp $
 !
-!     Copyright (c) 1997, 1998 the Regents of the University of 
+!     Copyright (c) 1997, 1998 the Regents of the University of
 !       California.
 !
-!     This software and ancillary information (herein called software) 
-!     called SCRIP is made available under the terms described here.  
-!     The software has been approved for release with associated 
+!     This software and ancillary information (herein called software)
+!     called SCRIP is made available under the terms described here.
+!     The software has been approved for release with associated
 !     LA-CC Number 98-45.
 !
 !     Unless otherwise indicated, this software has been authored
@@ -28,10 +28,10 @@
 !     any liability or responsibility for the use of this software.
 !
 !     If software is modified to produce derivative works, such modified
-!     software should be clearly marked, so as not to confuse it with 
+!     software should be clearly marked, so as not to confuse it with
 !     the version available from Los Alamos National Laboratory.
 !
-!     This code has been modified from the version available from 
+!     This code has been modified from the version available from
 !     Los Alamos National Laboratory, for the purpose of running it
 !     within WW3.
 !
@@ -63,7 +63,7 @@
      &,     map_type_distwgt  = 4
      &,     map_type_particle = 5
 
-      integer (SCRIP_i4), save :: 
+      integer (SCRIP_i4), save ::
      &      max_links_map1  ! current size of link arrays
      &,     num_links_map1  ! actual number of links for remapping
      &,     max_links_map2  ! current size of link arrays
@@ -98,7 +98,7 @@
 !-----------------------------------------------------------------------
 !
 !     this routine initializes some variables and provides an initial
-!     allocation of arrays (fairly large so frequent resizing 
+!     allocation of arrays (fairly large so frequent resizing
 !     unnecessary).
 !
 !-----------------------------------------------------------------------
@@ -124,11 +124,11 @@
 
 !-----------------------------------------------------------------------
 !
-!     initialize num_links and set max_links to four times the largest 
+!     initialize num_links and set max_links to four times the largest
 !     of the destination grid sizes initially (can be changed later).
 !     set a default resize increment to increase the size of link
 !     arrays if the number of links exceeds the initial size
-!   
+!
 !-----------------------------------------------------------------------
 
       num_links_map1 = 0
@@ -144,7 +144,7 @@
 !-----------------------------------------------------------------------
 !
 !     allocate address and weight arrays for mapping 1
-!   
+!
 !-----------------------------------------------------------------------
 
       allocate (grid1_add_map1(max_links_map1),
@@ -153,8 +153,8 @@
 
 !-----------------------------------------------------------------------
 !
-!     allocate address and weight arrays for mapping 2 if necessary 
-!   
+!     allocate address and weight arrays for mapping 2 if necessary
+!
 !-----------------------------------------------------------------------
 
       if (num_maps > 1) then
@@ -219,13 +219,13 @@
         !***
 
         mxlinks = size(grid1_add_map1)
-        allocate (add1_tmp(mxlinks), add2_tmp(mxlinks), 
+        allocate (add1_tmp(mxlinks), add2_tmp(mxlinks),
      &            wts_tmp(num_wts,mxlinks))
 
         add1_tmp = grid1_add_map1
         add2_tmp = grid2_add_map1
         wts_tmp  = wts_map1
-        
+
         !***
         !*** deallocate originals and increment max_links then
         !*** reallocate arrays at new size
@@ -261,7 +261,7 @@
         !***
 
         mxlinks = size(grid1_add_map2)
-        allocate (add1_tmp(mxlinks), add2_tmp(mxlinks), 
+        allocate (add1_tmp(mxlinks), add2_tmp(mxlinks),
      &            wts_tmp(num_wts,mxlinks),stat=ierr)
         if (ierr .ne. 0) then
           print *,'error allocating temps in resize: ',ierr
@@ -271,7 +271,7 @@
         add1_tmp = grid1_add_map2
         add2_tmp = grid2_add_map2
         wts_tmp  = wts_map2
-        
+
         !***
         !*** deallocate originals and increment max_links then
         !*** reallocate arrays at new size

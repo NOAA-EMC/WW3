@@ -39,13 +39,13 @@
 module yowDatapool
   use MPI, only: MPI_COMM_WORLD, MPI_INTEGER, MPI_REAL4, MPI_REAL8, MPI_STATUS_SIZE
   implicit none
-!#ifdef USE_SINGLE
-!  !> single precision. Enable with compiler flag -DUSE_SINGLE
-!  integer,parameter :: rkind = 4
-!#else
+  !#ifdef USE_SINGLE
+  !  !> single precision. Enable with compiler flag -DUSE_SINGLE
+  !  integer,parameter :: rkind = 4
+  !#else
   !> double precision. Default real datatype
-  integer,parameter :: rkind = 4 
-!#endif
+  integer,parameter :: rkind = 4
+  !#endif
   logical, parameter :: debugPrePartition = .false.
   logical, parameter :: debugPostPartition = .false.
   logical, parameter :: debugParmetis = .false.
@@ -72,10 +72,10 @@ module yowDatapool
   !> MPI Real Type
   !> Shpuld be MPI_REAL8
   integer :: istatus(MPI_STATUS_SIZE)
-!#ifdef USE_SINGLE
+  !#ifdef USE_SINGLE
   integer, save :: rtype = MPI_REAL4
-!#else
-!  integer, save :: rtype = MPI_REAL8  
-!#endif
+  !#else
+  !  integer, save :: rtype = MPI_REAL8
+  !#endif
 
 end module yowDatapool

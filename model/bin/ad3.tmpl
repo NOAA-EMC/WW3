@@ -89,7 +89,7 @@
   compress=0               # source code compression par in w3adc
                            # if not 0, documentaion removed from .f90 file
 
-# 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.d Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -201,14 +201,14 @@
   if [ "$w3adc" = 'yes' ]
   then
 
-# 2.b Run CPP preprocessor  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 2.b Run CPP preprocessor  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     #Generate list of CPP Flags based on switches:
     CPPFLAGS=()
-    for sw in $sw_str 
-    do 
+    for sw in $sw_str
+    do
        CPPFLAGS+=("-DW3_$sw")
-    done 
+    done
 
     CPPFLAGS+=("-D__WW3_SWITCHES__='$sw_str'")
 
@@ -259,14 +259,14 @@
 #  rm -f *.mod ## too indiscriminate
 
   ## Using find -iname most succinct, but maybe not all version of find have
-  ## the -iname option? 
+  ## the -iname option?
 #  find . -iname "${name}.mod" -delete  # not all versions of find have -iname?
 
-  # Fall back on grep -i 
+  # Fall back on grep -i
   mods=`ls *.mod 2> /dev/null | grep -i "${name}.mod"`
   if [ -n ${mods} ]; then
     rm -f ${mods}
-  fi 
+  fi
 
 # --------------------------------------------------------------------------- #
 # 3. Compile source code f / f90                                              #
@@ -346,13 +346,13 @@ then
       ## ChrisB: Don't move all module files...could break parallel make.
       ## Just target specific module file (could be mixed case filename
       ## depending on compiler - use case insensitive find):
-#      mods=`ls *.mod 2> /dev/null` 
+#      mods=`ls *.mod 2> /dev/null`
 
       ## Using find -iname most succinct, but maybe not all version of find have
-      ## the -iname option? 
+      ## the -iname option?
 #      mods=`find . -iname "${name}.mod"` # not all versions of find have -iname?
 
-      # Fall back on grep -i 
+      # Fall back on grep -i
       mods=`ls *.mod 2> /dev/null | grep -i "${name}.mod"`
       if [ -n "$mods" ]
       then

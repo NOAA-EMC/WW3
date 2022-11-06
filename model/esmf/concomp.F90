@@ -288,7 +288,7 @@ module CON
 
     if (verbose) &
     call ESMF_LogWrite(trim(cname)//': leaving ComputeRH', ESMF_LOGMSG_INFO)
- 
+
   end subroutine
 
   !-----------------------------------------------------------------------------
@@ -345,7 +345,7 @@ module CON
 
     if (verbose) &
     call ESMF_LogWrite(trim(cname)//': leaving ExecuteRH', ESMF_LOGMSG_INFO)
- 
+
   end subroutine
 
   !-----------------------------------------------------------------------------

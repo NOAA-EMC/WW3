@@ -1,22 +1,22 @@
-#include "w3macros.h" 
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
-      MODULE W3NMLUPRSTRMD
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Oct-2020 |
-!/                  +-----------------------------------+
-!/
-!/    For updates see subroutines.
-!/
-!  1. Purpose :
-!
-!     Manages namelists from configuration file ww3_uprstr.nml for ww3_uprstr program
-!
-!/ ------------------------------------------------------------------- /
+MODULE W3NMLUPRSTRMD
+  !/
+  !/                  +-----------------------------------+
+  !/                  | WAVEWATCH III           NOAA/NCEP |
+  !/                  |           M. Accensi              |
+  !/                  |                                   |
+  !/                  |                        FORTRAN 90 |
+  !/                  | Last update :         06-Oct-2020 |
+  !/                  +-----------------------------------+
+  !/
+  !/    For updates see subroutines.
+  !/
+  !  1. Purpose :
+  !
+  !     Manages namelists from configuration file ww3_uprstr.nml for ww3_uprstr program
+  !
+  !/ ------------------------------------------------------------------- /
 
   ! module defaults
   IMPLICIT NONE
@@ -44,73 +44,73 @@
 
 
 
-  CONTAINS
-!/ ------------------------------------------------------------------- /
+CONTAINS
+  !/ ------------------------------------------------------------------- /
   SUBROUTINE W3NMLUPRSTR (NDSI, INFILE, NML_RESTART, NML_UPDATE, IERR)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Oct-2020 |
-!/                  +-----------------------------------+
-!/
-!
-!  1. Purpose :
-!
-!     Reads all the namelist to define the output field
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI        Int.
-!      INFILE      Char.
-!      NML_RESTART type.
-!      NML_UPDATE  type.
-!      IERR        Int.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      TYPE  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!      READ_RESTART_NML
-!      READ_UPDATE_NML
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name       TYPE   Module   Description
-!     ----------------------------------------------------------------
-!      WW3_UPRSTR Prog.  N/A      Update restart file
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         06-Oct-2020 |
+    !/                  +-----------------------------------+
+    !/
+    !
+    !  1. Purpose :
+    !
+    !     Reads all the namelist to define the output field
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI        Int.
+    !      INFILE      Char.
+    !      NML_RESTART type.
+    !      NML_UPDATE  type.
+    !      IERR        Int.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      TYPE  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !      READ_RESTART_NML
+    !      READ_UPDATE_NML
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name       TYPE   Module   Description
+    !     ----------------------------------------------------------------
+    !      WW3_UPRSTR Prog.  N/A      Update restart file
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE W3ODATMD, ONLY: NDSE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -121,12 +121,12 @@
     TYPE(NML_UPDATE_T), INTENT(INOUT)           :: NML_UPDATE
     INTEGER, INTENT(OUT)                        :: IERR
 #ifdef W3_S
-      INTEGER, SAVE                             :: IENT = 0
+    INTEGER, SAVE                             :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'W3NMLUPRSTR')
+    CALL STRACE (IENT, 'W3NMLUPRSTR')
 #endif
 
     ! open namelist log file
@@ -159,71 +159,71 @@
   END SUBROUTINE W3NMLUPRSTR
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_RESTART_NML (NDSI, NML_RESTART)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Oct-2020 |
-!/                  +-----------------------------------+
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI         Int.
-!      NML_RESTART  Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      TYPE  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name        TYPE   Module  Description
-!     ----------------------------------------------------------------
-!      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         06-Oct-2020 |
+    !/                  +-----------------------------------+
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI         Int.
+    !      NML_RESTART  Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      TYPE  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name        TYPE   Module  Description
+    !     ----------------------------------------------------------------
+    !      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -236,12 +236,12 @@
     TYPE(NML_RESTART_T) :: RESTART
     NAMELIST /RESTART_NML/ RESTART
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_RESTART_NML')
+    CALL STRACE (IENT, 'READ_RESTART_NML')
 #endif
 
     ! set default values
@@ -252,8 +252,8 @@
     READ (NDSI, nml=RESTART_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
       WRITE (NDSE,'(A,/A)') &
-        'ERROR: READ_RESTART_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_RESTART_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (1)
     END IF
 
@@ -262,71 +262,71 @@
 
   END SUBROUTINE READ_RESTART_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_UPDATE_NML (NDSI, NML_UPDATE)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Oct-2020 |
-!/                  +-----------------------------------+
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI         Int.
-!      NML_UPDATE   Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      TYPE  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name        TYPE   Module  Description
-!     ----------------------------------------------------------------
-!      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         06-Oct-2020 |
+    !/                  +-----------------------------------+
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI         Int.
+    !      NML_UPDATE   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      TYPE  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name        TYPE   Module  Description
+    !     ----------------------------------------------------------------
+    !      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -339,12 +339,12 @@
     TYPE(NML_UPDATE_T) :: UPDATE
     NAMELIST /UPDATE_NML/ UPDATE
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_UPDATE_NML')
+    CALL STRACE (IENT, 'READ_UPDATE_NML')
 #endif
 
     ! set default values for update approach
@@ -361,8 +361,8 @@
     READ (NDSI, nml=UPDATE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (NDSE,'(A,/A)') &
-        'ERROR: READ_UPDATE_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_UPDATE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (2)
     END IF
 
@@ -371,186 +371,186 @@
 
   END SUBROUTINE READ_UPDATE_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_RESTART_NML (NML_RESTART)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Oct-2020 |
-!/                  +-----------------------------------+
-!/
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NML_RESTART  Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      TYPE  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name        TYPE   Module  Description
-!     ----------------------------------------------------------------
-!      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         06-Oct-2020 |
+    !/                  +-----------------------------------+
+    !/
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NML_RESTART  Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      TYPE  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name        TYPE   Module  Description
+    !     ----------------------------------------------------------------
+    !      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
 
     TYPE(NML_RESTART_T), INTENT(IN) :: NML_RESTART
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_RESTART_NML')
+    CALL STRACE (IENT, 'REPORT_RESTART_NML')
 #endif
 
-      WRITE (MSG,'(A)') 'RESTART % '
-      WRITE (NDSN,'(A)')
-      WRITE (NDSN,10) TRIM(MSG),'RESTARTTIME = ', TRIM(NML_RESTART%RESTARTTIME)
+    WRITE (MSG,'(A)') 'RESTART % '
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,10) TRIM(MSG),'RESTARTTIME = ', TRIM(NML_RESTART%RESTARTTIME)
 
 10  FORMAT (A,2X,A,A)
 
   END SUBROUTINE REPORT_RESTART_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_UPDATE_NML (NML_UPDATE)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         06-Oct-2020 |
-!/                  +-----------------------------------+
-!/
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NML_UPDATE  Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      TYPE  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name        TYPE   Module  Description
-!     ----------------------------------------------------------------
-!      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         06-Oct-2020 |
+    !/                  +-----------------------------------+
+    !/
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NML_UPDATE  Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      TYPE  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name        TYPE   Module  Description
+    !     ----------------------------------------------------------------
+    !      W3NMLUPRSTR Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
 
     TYPE(NML_UPDATE_T), INTENT(IN) :: NML_UPDATE
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_UPDATE_NML')
+    CALL STRACE (IENT, 'REPORT_UPDATE_NML')
 #endif
 
-      WRITE (MSG,'(A)') 'UPDATE % '
-      WRITE (NDSN,'(A)')
-      WRITE (NDSN,10) TRIM(MSG),'UPDPROC   = ', TRIM(NML_UPDATE%UPDPROC)
-      ! PRCNTG only used by UPD0F
-      IF (TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD0F') THEN
-         WRITE (NDSN,11) TRIM(MSG),'PRCNTG    = ', NML_UPDATE%PRCNTG
-      ELSE
-         WRITE (NDSN,11) TRIM(MSG),'PRCNTGCAP = ', NML_UPDATE%PRCNTGCAP
-         ! THRWSEA only used by UPD5/6
-         IF ((TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD5') .OR. &
-             (TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD6')) THEN
-            WRITE (NDSN,11) TRIM(MSG),'THRWSEA   = ', NML_UPDATE%THRWSEA
-         ENDIF
-         WRITE (NDSN,10) TRIM(MSG),'FILE      = ', TRIM(NML_UPDATE%FILE)
+    WRITE (MSG,'(A)') 'UPDATE % '
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,10) TRIM(MSG),'UPDPROC   = ', TRIM(NML_UPDATE%UPDPROC)
+    ! PRCNTG only used by UPD0F
+    IF (TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD0F') THEN
+      WRITE (NDSN,11) TRIM(MSG),'PRCNTG    = ', NML_UPDATE%PRCNTG
+    ELSE
+      WRITE (NDSN,11) TRIM(MSG),'PRCNTGCAP = ', NML_UPDATE%PRCNTGCAP
+      ! THRWSEA only used by UPD5/6
+      IF ((TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD5') .OR. &
+           (TRIM(NML_UPDATE%UPDPROC) .EQ. 'UPD6')) THEN
+        WRITE (NDSN,11) TRIM(MSG),'THRWSEA   = ', NML_UPDATE%THRWSEA
       ENDIF
+      WRITE (NDSN,10) TRIM(MSG),'FILE      = ', TRIM(NML_UPDATE%FILE)
+    ENDIF
 
 10  FORMAT (A,2X,A,A)
 11  FORMAT (A,2X,A,F5.3)
 
   END SUBROUTINE REPORT_UPDATE_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 

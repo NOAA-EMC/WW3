@@ -14,5 +14,5 @@ find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
     REQUIRED_VARS metis_lib
     metis_inc)
-  
+
 message(STATUS "Found METIS: ${metis_lib}")
