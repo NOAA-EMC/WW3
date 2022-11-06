@@ -1911,7 +1911,7 @@ CONTAINS
 
     INTEGER              :: VERTICES(3), NI(3), NI_GL(3)
     REAL                 :: TMP1(3), TMP2(3)
-    INTEGER              :: I, IX, IE, IE_GL
+    INTEGER              :: I, IX, IE, IE_GL, IP
     REAL                 :: VAR(3), FACT, LATMEAN
     REAL                 :: DIFFXTMP, DIFFYTMP
     REAL                 :: DEDX(3), DEDY(3)

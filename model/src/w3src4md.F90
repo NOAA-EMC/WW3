@@ -1612,6 +1612,7 @@ CONTAINS
     !-----------------------------------------------------------------------------!
     USE CONSTANTS, ONLY: GRAV, KAPPA
     USE W3GDATMD,  ONLY: ZZWND, AALPHA
+    USE W3ODATMD, ONLY: IAPROC
 #ifdef W3_T
     USE W3ODATMD, ONLY: NDST
 #endif
