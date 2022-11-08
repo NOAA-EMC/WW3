@@ -77,7 +77,10 @@ MODULE W3SERVMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
-  IMPLICIT NONE
+
+  ! module default
+  implicit none
+
   PUBLIC
   !
   INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0
@@ -315,15 +318,15 @@ CONTAINS
     ! Formats
     !
 900 FORMAT (A)
-910 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
+910 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
          '     PREMATURE END OF INPUT FILE'/)
-911 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
-         '     ERROR IN READING FROM FILE'/               &
-         '     IOSTAT =',I5,/                             &
+911 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
+         '     ERROR IN READING FROM FILE'/           &
+         '     IOSTAT =',I5,/                         &
          '     IOMSG = ',A/)
-912 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
-         '     ERROR ON BACKSPACE'/                       &
-         '     IOSTAT =',I5,/                             &
+912 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
+         '     ERROR ON BACKSPACE'/                   &
+         '     IOSTAT =',I5,/                         &
          '     IOMSG = ',A/)
     !/
     !/ End of NEXTLN ----------------------------------------------------- /
@@ -1076,8 +1079,8 @@ CONTAINS
   !Li            Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
   !Li
   !* Arguments:--------------------------------------------------------
-  SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ,     &
-       &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
+  SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ, ANGLED, PHI_POLE, &
+       LAMBDA_POLE, POINTS )
 
     INTEGER:: POINTS    !IN  Number of points to be processed
 
@@ -1092,8 +1095,7 @@ CONTAINS
          &        PHI_EQ       !OUT Latitude in equatorial lat-lon coords
 
     ! Define local varables:-----------------------------------------------
-    REAL(KIND=8) :: A_LAMBDA, A_PHI, E_LAMBDA, E_PHI,                 &
-         SIN_PHI_POLE, COS_PHI_POLE,                       &
+    REAL(KIND=8) :: A_LAMBDA, A_PHI, E_LAMBDA, E_PHI, SIN_PHI_POLE, COS_PHI_POLE, &
          TERM1, TERM2, ARG, LAMBDA_ZERO, LAMBDA_POLE_KEEP
     INTEGER      :: I
 
@@ -1140,8 +1142,7 @@ CONTAINS
 
       ! Compute eq latitude using equation (4.4)
 
-      ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
-           &    +SIN_PHI_POLE*SIN(A_PHI)
+      ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA) + SIN_PHI_POLE*SIN(A_PHI)
       ARG=MIN(ARG, 1.D0)
       ARG=MAX(ARG,-1.D0)
       E_PHI=ASIN(ARG)
@@ -1149,8 +1150,7 @@ CONTAINS
 
       ! Compute eq longitude using equation (4.6)
 
-      TERM1 = SIN_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
-           &       +COS_PHI_POLE*SIN(A_PHI)
+      TERM1 = SIN_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA) + COS_PHI_POLE*SIN(A_PHI)
       TERM2 = COS(E_PHI)
       IF(TERM2 .LT. SMALL) THEN
         E_LAMBDA=0.D0
@@ -1279,8 +1279,7 @@ CONTAINS
 
       ! Compute latitude using equation (4.7)
 
-      ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA)    &
-           &   +SIN_PHI_POLE*SIN(E_PHI)
+      ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA) + SIN_PHI_POLE*SIN(E_PHI)
       ARG=MIN(ARG, 1.D0)
       ARG=MAX(ARG,-1.D0)
       A_PHI=ASIN(ARG)
@@ -1288,8 +1287,7 @@ CONTAINS
 
       ! Compute longitude using equation (4.8)
 
-      TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA)   &
-           &       -SIN(E_PHI)*COS_PHI_POLE
+      TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA) - SIN(E_PHI)*COS_PHI_POLE
       TERM2 = COS(A_PHI)
       IF(TERM2.LT.SMALL) THEN
         A_LAMBDA=0.D0
@@ -1425,10 +1423,8 @@ CONTAINS
     DO ISEA=1, NSEA
       IF (( XVEC(ISEA) .NE. UNDEF ) .AND. &
            ( YVEC(ISEA) .NE. UNDEF )) THEN
-        XVTMP = XVEC(ISEA)*COS(AnglD(ISEA)*DERA) + &
-             YVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
-        YVTMP = YVEC(ISEA)*COS(AnglD(ISEA)*DERA) - &
-             XVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
+        XVTMP = XVEC(ISEA)*COS(AnglD(ISEA)*DERA) + YVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
+        YVTMP = YVEC(ISEA)*COS(AnglD(ISEA)*DERA) - XVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
         XVEC(ISEA) = XVTMP
         YVEC(ISEA) = YVTMP
       END IF

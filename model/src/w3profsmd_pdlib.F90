@@ -83,6 +83,7 @@ MODULE PDLIB_W3PROFSMD
   ! 10. Source code :
   !
   !/ ------------------------------------------------------------------- /
+  !
   use w3servmd, only : print_memcheck
 #ifdef W3_S
   USE W3SERVMD, only: STRACE
@@ -676,7 +677,7 @@ CONTAINS
     !
     USE W3TIMEMD, only: DSEC21
     !
-    USE W3GDATMD, only: NX, NY, MAPFS, CLATS,                       &
+    USE W3GDATMD, only: NX, NY, MAPFS, CLATS,        &
          FLCX, FLCY, NK, NTH, DTH, XFR,              &
          ECOS, ESIN, SIG,  PFMOVE,                   &
          IOBP, IOBPD,                                &
@@ -3649,7 +3650,7 @@ CONTAINS
     USE W3PARALL, only : ONESIXTH, ZERO, THR, IMEM
     use yowElementpool, only: ne, INE
     USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
-         PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,          &
+         PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,        &
          PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
          PDLIB_I_DIAG, PDLIB_JA
     USE W3ODATMD, only : IAPROC

@@ -366,9 +366,9 @@ CONTAINS
     call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 1')
 
     MESSAGE =(/ '     MOD DEF FILE WAS GENERATED WITH A DIFFERENT    ', &
-         '     WW3 VERSION OR USING A DIFFERENT SWITCH FILE.  ', &
-         '     MAKE SURE WW3_GRID IS COMPILED WITH SAME SWITCH', &
-         '     AS WW3_SHEL OR WW3_MULTI, RUN WW3_GRID AGAIN   ', &
+         '     WW3 VERSION OR USING A DIFFERENT SWITCH FILE.  ',        &
+         '     MAKE SURE WW3_GRID IS COMPILED WITH SAME SWITCH',        &
+         '     AS WW3_SHEL OR WW3_MULTI, RUN WW3_GRID AGAIN   ',        &
          '     AND THEN TRY AGAIN THE PROGRAM YOU JUST USED.  '/)
     !
     TNAMEF = '------------------------------'

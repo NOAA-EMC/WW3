@@ -1265,7 +1265,7 @@ PROGRAM W3SHEL
          .OR. INFLAGS1(3)  .OR. INFLAGS1(4)  .OR. INFLAGS1(5)            &
          .OR. INFLAGS1(6)  .OR. INFLAGS1(7)  .OR. INFLAGS1(8)            &
          .OR. INFLAGS1(9)
-    FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)       &
+    FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)   &
          .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLH(0)   &
          .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4)      &
          .OR. FLH(5) .OR. FLH(6) .OR. FLH(10)
