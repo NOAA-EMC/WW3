@@ -1,5 +1,32 @@
+!> @file 
+!> @brief The 'WAM4+' source terms based on P.A.E.M. Janssen's work, with
+!>  extensions by him and by J.-R. Bidlot.
+!> 
+!> @author F. Ardhuin
+!> @author H. L. Tolman
+!> @date   02-Sep-2012
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief The 'WAM4+' source terms based on P.A.E.M. Janssen's work, with
+!>  extensions by him and by J.-R. Bidlot.
+!> 
+!> @details Converted from the original WAM codes by F. Ardhuin,
+!>  with further extensions to adapt to a saturation-based breaking
+!>  and observation-based swell dissipation.
+!>
+!> @author F. Ardhuin
+!> @author H. L. Tolman
+!> @date   02-Sep-2012
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SRC3MD
   !/
   !/                  +-----------------------------------+
@@ -75,6 +102,35 @@ MODULE W3SRC3MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Calculate mean wave parameters for the use in the source term
+  !>  routines.
+  !>
+  !> @param[in]    A       Action density spectrum.
+  !> @param[in]    CG      Group velocities.
+  !> @param[in]    WN      Wavenumbers.
+  !> @param[out]   EMEAN   Energy.
+  !> @param[out]   FMEAN   Mean frequency for determination of tail.
+  !> @param[out]   FMEANS  Mean frequency for dissipation source term.
+  !> @param[out]   WNMEAN  Mean wavenumber.
+  !> @param[out]   AMAX    Maximum of action spectrum.
+  !> @param[in]    U       Wind speed.
+  !> @param[in]    UDIR    Wind direction.
+  !> @param[inout] USTAR   Friction velocity
+  !> @param[inout] USDIR   Wind stress direction.
+  !> @param[in]    TAUWX   Component of wave-supported stress.
+  !> @param[in]    TAUWY   Component of wave-supported stress.
+  !> @param[out]   CD      Drag coefficient at wind level ZWND.
+  !> @param[out]   Z0      Corresponding z0.
+  !> @param[out]   CHARN   
+  !> @param[in]    LLWS    Wind sea true/false array for each component.
+  !> @param[out]   FMEANWS Mean frequency of wind sea, used for tail.
+  !>
+  !> @author F. Ardhuin
+  !> @author H. L. Tolman
+  !> @date   17-Oct-2007
+  !>
   SUBROUTINE W3SPR3 (A, CG, WN, EMEAN, FMEAN, FMEANS, WNMEAN,     &
        AMAX, U, UDIR, USTAR, USDIR, TAUWX, TAUWY, CD, Z0,&
        CHARN, LLWS, FMEANWS)
@@ -290,6 +346,41 @@ CONTAINS
     !/
   END SUBROUTINE W3SPR3
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Calculate diagonal and input source term for WAM4+ approach.
+  !>
+  !> @verbatim
+  !>       WAM-4 : Janssen et al.
+  !>       WAM-"4.5" : gustiness effect (Cavaleri et al. )
+  !>       SWELLF: damping coefficient (=1) for Janssen (2004) theory  
+  !> @endverbatim  
+  !>
+  !> @param[in]  A       Action density spectrum (1-D).
+  !> @param[in]  CG      Group speed.
+  !> @param[in]  K       Wavenumber for entire spectrum.
+  !> @param[in]  U       Wind speed.
+  !> @param[in]  USTAR   Friction velocity.
+  !> @param[in]  DRAT    Air/water density ratio.
+  !> @param[in]  AS      Air-sea temperature difference.
+  !> @param[in]  USDIR   Wind stress direction.
+  !> @param[in]  Z0      Air-sea roughness length.
+  !> @param[in]  CD      Wind drag coefficient.
+  !> @param[out] TAUWX   Component of the wave-supported stress.
+  !> @param[out] TAUWY   Component of the wave-supported stress.
+  !> @param[out] TAUWNX  Component of the negative wave-supported stress.
+  !> @param[out] TAUWNY  Component of the negative wave-supported stress.
+  !> @param[in]  ICE     Sea ice fraction.
+  !> @param[out] S       Source term (1-D version).
+  !> @param[out] D       Diagonal term of derivative.
+  !> @param[out] LLWS    Wind sea true/false array for each component.
+  !> @param[in]  IX 
+  !> @param[in]  IY 
+  !>
+  !> @author F. Ardhuin
+  !> @author H. L. Tolman
+  !> @date   02-Sep-2012
+  !>
   SUBROUTINE W3SIN3 (A, CG, K, U, USTAR, DRAT, AS, USDIR, Z0, CD,    &
        TAUWX, TAUWY, TAUWNX, TAUWNY, ICE, S, D, LLWS, IX, IY)
     !/
@@ -625,6 +716,13 @@ CONTAINS
     !/
   END SUBROUTINE W3SIN3
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Initialization for source term routine.
+  !>
+  !> @author F. Ardhuin
+  !> @date   23-Jul-2009
+  !>
   SUBROUTINE INSIN3
     !/
     !/                  +-----------------------------------+
@@ -714,6 +812,13 @@ CONTAINS
     !/
   END SUBROUTINE INSIN3
   ! ----------------------------------------------------------------------
+
+  !>
+  !> @brief To generate the friction velocity table, TAUT(TAUW,U10)=SQRT(TAU).
+  !>
+  !> @author F. Ardhuin
+  !> @date   17-Oct-2007
+  !>  
   SUBROUTINE TABU_STRESS
     !/
     !/                  +-----------------------------------+
@@ -837,6 +942,19 @@ CONTAINS
     RETURN
   END SUBROUTINE TABU_STRESS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Tabulation of the high-frequency wave-supported stress.
+  !>
+  !> @details SEE REFERENCE FOR WAVE STRESS CALCULATION.
+  !>  FOR QUASILINEAR EFFECT SEE PETER A.E.M. JANSSEN,1990.
+  !>  See tech. Memo ECMWF 03 december 2003 by Bidlot & Janssen.
+  !>
+  !> @param[in] FRMAX  Maximum frequency.
+  !>
+  !> @author F. Ardhuin
+  !> @date   14-Aug-2006
+  !>
   SUBROUTINE TABU_TAUHF(FRMAX)
     !/
     !/                  +-----------------------------------+
@@ -999,6 +1117,21 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Compute friction velocity based on wind speed U10.
+  !>
+  !> @details Computation of u* based on Quasi-linear theory.
+  !>
+  !> @param[in]  WINDSPEED  10-m wind speed ... should be NEUTRAL
+  !> @param[in]  TAUW       Wave-supported stress.
+  !> @param[out] USTAR      Friction velocity.
+  !> @param[out] Z0         Air-side roughness length.
+  !> @param[out] CHARN      
+  !>
+  !> @author F. Ardhuin
+  !> @date   14-Aug-2006
+  !>
   SUBROUTINE CALC_USTAR(WINDSPEED,TAUW,USTAR,Z0,CHARN)
     !/
     !/                  +-----------------------------------+
@@ -1093,6 +1226,31 @@ CONTAINS
     RETURN
   END SUBROUTINE CALC_USTAR
   !/ ------------------------------------------------------------------- /
+  
+  !>
+  !> @brief Calculate whitecapping source term and diagonal term of derivative.
+  !>
+  !> @details WAM-Cycle 4 and following.
+  !>  The last update (09-May-2005) follows the redefinition of
+  !>  the mean wavenumber as in Bidlot et al. (2005).
+  !>
+  !> @param[in] A       Action density spectrum (1-D).
+  !> @param[in] K       Wavenumber for entire spectrum.
+  !> @param[in] CG     
+  !> @param[in] EMEAN   Mean wave energy.
+  !> @param[in] FMEAN   Mean wave frequency.
+  !> @param[in] WNMEAN  Mean wavenumber.
+  !> @param[in] USTAR   Friction velocity.
+  !> @param[in] USDIR   Wind stress direction.
+  !> @param[in] DEPTH   Water depth.
+  !> @param[out] S      Source term (1-D version).
+  !> @param[out] D      Diagonal term of derivative.
+  !> @param[in] IX
+  !> @param[in] IY  
+  !>
+  !> @author F. Ardhuin
+  !> @date   23-Jul-2009
+  !>
   SUBROUTINE W3SDS3 (A, K, CG, EMEAN, FMEAN, WNMEAN, USTAR, USDIR,    &
        DEPTH, S, D, IX, IY)
     !/
