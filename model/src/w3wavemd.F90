@@ -923,8 +923,7 @@ CONTAINS
         FIXEDVISC=IC3PARS(14)
         FIXEDDENS=IC3PARS(15)
         FIXEDELAS=IC3PARS(16)
-        IF ( (FIXEDVISC.LT.0.0).OR.(FIXEDDENS.LT.0.0) .OR. &
-             (FIXEDELAS.LT.0.0) ) THEN
+        IF ( (FIXEDVISC.LT.0.0).OR.(FIXEDDENS.LT.0.0) .OR. (FIXEDELAS.LT.0.0) ) THEN
           IF ( IAPROC .EQ. NAPERR )                          &
                WRITE(NDSE,*)'Cheng method requires stationary',   &
                ' and uniform rheology from namelist.'
@@ -976,14 +975,13 @@ CONTAINS
             ELSEIF (IC3PARS(13).GE.0.0)THEN
               HICE=IC3PARS(13)
             ELSE
-              IF ( IAPROC .EQ. NAPERR )                       &
-                   WRITE(NDSE,*)'ICE THICKNESS NOT AVAILABLE ',    &
-                   'FOR CG CALC'
+              IF ( IAPROC .EQ. NAPERR ) then
+                WRITE(NDSE,*)'ICE THICKNESS NOT AVAILABLE FOR CG CALC'
+              end if
               CALL EXTCDE(2)
             ENDIF
             IF (HICE > 0.0) THEN ! non-zero ice
-              CALL W3IC3WNCG_CHENG(WN(:,ISEA),WN_I(:),        &
-                   CG(:,ISEA),HICE,FIXEDVISC,                    &
+              CALL W3IC3WNCG_CHENG(WN(:,ISEA),WN_I(:), CG(:,ISEA),HICE,FIXEDVISC, &
                    FIXEDDENS, FIXEDELAS, DEPTH)
             END IF ! non-zero ice
 #endif
@@ -997,14 +995,13 @@ CONTAINS
 #ifdef W3_IC3
             IF (FLIC1.AND.FLIC2.AND.FLIC3.AND.FLIC4) THEN
               IF (ICEP1(IX,IY)>0.0) THEN ! non-zero ice
-                CALL W3IC3WNCG_V1(WN(:,ISEA),WN_I(:),        &
-                     CG(:,ISEA),ICEP1(IX,IY),ICEP2(IX,IY),      &
-                     ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
+                CALL W3IC3WNCG_V1(WN(:,ISEA),WN_I(:), CG(:,ISEA),ICEP1(IX,IY), &
+                     ICEP2(IX,IY), ICEP3(IX,IY),ICEP4(IX,IY),DEPTH)
               END IF ! non-zero ice
             ELSE
-              IF ( IAPROC .EQ. NAPERR )                       &
-                   WRITE(NDSE,*)'ICE PARAMETERS NOT AVAILABLE ',   &
-                   'FOR CG CALC'
+              IF ( IAPROC .EQ. NAPERR ) then
+                WRITE(NDSE,*)'ICE PARAMETERS NOT AVAILABLE FOR CG CALC'
+              end if
               CALL EXTCDE(2)
             END IF
           ENDIF ! IF USE_CHENG...
@@ -1099,18 +1096,15 @@ CONTAINS
           DTTST1 = DSEC21 ( TIME, TGN )
           DTTST2 = DSEC21 ( TG0, TGN )
           FAC    = DTTST1 / MAX ( 1. , DTTST2 )
-          VGX    = (FAC*GA0+(1.-FAC)*GAN) *                       &
-               COS(FAC*GD0+(1.-FAC)*GDN)
-          VGY    = (FAC*GA0+(1.-FAC)*GAN) *                       &
-               SIN(FAC*GD0+(1.-FAC)*GDN)
+          VGX    = (FAC*GA0+(1.-FAC)*GAN) * COS(FAC*GD0+(1.-FAC)*GDN)
+          VGY    = (FAC*GA0+(1.-FAC)*GAN) * SIN(FAC*GD0+(1.-FAC)*GDN)
         END IF
 #ifdef W3_TIMINGS
         CALL PRINT_MY_TIME("After VGX/VGY assignation")
 #endif
         !
 #ifdef W3_T
-        WRITE (NDST,9021) ITIME, IT, TIME, FLMAP, FLDDIR,          &
-             VGX, VGY, DTG, DTRES
+        WRITE (NDST,9021) ITIME, IT, TIME, FLMAP, FLDDIR, VGX, VGY, DTG, DTRES
 #endif
         !
         ! 3.1 Interpolate winds, currents, and momentum.
@@ -1119,7 +1113,7 @@ CONTAINS
 #ifdef W3_DEBUGDCXDX
         WRITE(740+IAPROC,*) 'Debug DCXDX FLCUR=', FLCUR
 #endif
-        call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME 3a')
+        call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 3a')
 
         IF ( FLCUR  ) THEN
 #ifdef W3_DEBUGCOH
@@ -1128,7 +1122,6 @@ CONTAINS
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("W3WAVE, step 6.4.1")
 #endif
-
           CALL W3UCUR ( FLFRST )
 
           call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 3b')
@@ -1239,8 +1232,7 @@ CONTAINS
             FLACT  = READBC .OR. FLACT
 
             IF ( READBC ) THEN
-              CALL W3IOBC ( 'READ', NDS(9), TBPI0, TBPIN,       &
-                   ITEST, IMOD )
+              CALL W3IOBC ( 'READ', NDS(9), TBPI0, TBPIN, ITEST, IMOD )
               IF ( ITEST .NE. 1 ) CALL W3UBPT
             ELSE
               ITEST  = 0
@@ -1325,9 +1317,7 @@ CONTAINS
         !
 #ifdef W3_IS2
         IF ( FLIC5 .AND. DTI50.NE.0. ) THEN
-#endif
           !
-#ifdef W3_IS2
           IF ( TIC5(1).GE.0 ) THEN
             IF ( DTI50 .LT. 0. ) THEN
               IDACT(18:18) = 'B'
@@ -1338,18 +1328,14 @@ CONTAINS
           ELSE
             IDACT(18:18) = 'I'
           END IF
-#endif
           !
-#ifdef W3_IS2
           IF ( IDACT(18:18).NE.' ' ) THEN
             CALL W3UIC5( FLFRST )
             DTI50   = 0.
             FLACT  = .TRUE.
             FLMAP  = .TRUE.
           END IF
-#endif
           !
-#ifdef W3_IS2
         END IF
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 11a')
@@ -1378,8 +1364,7 @@ CONTAINS
             DTL0   = 0.
             FLACT  = .TRUE.
             FLMAP  = .TRUE.
-            FLDDIR = FLDDIR .OR.  FLCTH .OR. FSREFRACTION        &
-                 .OR. FLCK .OR. FSFREQSHIFT
+            FLDDIR = FLDDIR .OR. FLCTH .OR. FSREFRACTION .OR. FLCK .OR. FSFREQSHIFT
           END IF
         END IF
 #ifdef W3_DEBUGCOH
@@ -1543,15 +1528,6 @@ CONTAINS
             D50=SED_D50(ISEA)
             PSIC=SED_PSIC(ISEA)
 #endif
-#ifdef W3_REF1
-            REFLEC=REFLC(:,ISEA)
-            REFLEC(4)=BERG(ISEA)*REFLEC(4)
-            REFLED=REFLD(:,ISEA)
-#endif
-#ifdef W3_BT4
-            D50=SED_D50(ISEA)
-            PSIC=SED_PSIC(ISEA)
-#endif
             !
 #ifdef W3_PDLIB
             IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
@@ -1570,28 +1546,28 @@ CONTAINS
               FLUSH(740+IAPROC)
 #endif
               CALL W3SRCE(srce_imp_pre, IT, ISEA, JSEA, IX, IY, IMOD, &
-                   VAold(:,JSEA), VA(:,JSEA),                        &
-                   VSioDummy, VDioDummy, SHAVETOT(JSEA),  &
-                   ALPHA(1:NK,JSEA), WN(1:NK,ISEA),               &
-                   CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),            &
-                   U10D(ISEA),                                    &
+                   VAold(:,JSEA), VA(:,JSEA),                         &
+                   VSioDummy, VDioDummy, SHAVETOT(JSEA),              &
+                   ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                   &
+                   CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),   &
+                   U10D(ISEA),                                        &
 #ifdef W3_FLX5
-                   TAUA(ISEA), TAUADIR(ISEA),                  &
+                   TAUA(ISEA), TAUADIR(ISEA),                         &
 #endif
-                   AS(ISEA), UST(ISEA),               &
-                   USTDIR(ISEA), CX(ISEA), CY(ISEA),              &
-                   ICE(ISEA), ICEH(ISEA), ICEF(ISEA),             &
-                   ICEDMAX(ISEA),                                 &
-                   REFLEC, REFLED, DELX, DELY, DELA,              &
-                   TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),          &
-                   FPIS(ISEA), DTDYN(JSEA),                       &
-                   FCUT(JSEA), DTGpre, TAUWX(JSEA), TAUWY(JSEA),  &
-                   TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),        &
-                   TAUWIY(JSEA), TAUWNX(JSEA),                    &
-                   TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),       &
-                   TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2, &
-                   PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),         &
-                   TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),      &
+                   AS(ISEA), UST(ISEA),                               &
+                   USTDIR(ISEA), CX(ISEA), CY(ISEA),                  &
+                   ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                 &
+                   ICEDMAX(ISEA),                                     &
+                   REFLEC, REFLED, DELX, DELY, DELA,                  &
+                   TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),              &
+                   FPIS(ISEA), DTDYN(JSEA),                           &
+                   FCUT(JSEA), DTGpre, TAUWX(JSEA), TAUWY(JSEA),      &
+                   TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),            &
+                   TAUWIY(JSEA), TAUWNX(JSEA),                        &
+                   TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),           &
+                   TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
+                   PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),             &
+                   TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),          &
                    RHOAIR(ISEA), ASF(ISEA))
               IF (.not. LSLOC) THEN
                 VSTOT(:,JSEA) = VSioDummy
@@ -1679,8 +1655,8 @@ CONTAINS
                   IF (.NOT. LPDLIB) THEN
 #endif
 #ifdef W3_PR3
-                    CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG,  &
-                         MAPFS,  CFLXYMAX(JSEA), VGX, VGY )
+                    CALL W3CFLUG ( ISEA, NKCFL, FACX, FACX, DTG, MAPFS, CFLXYMAX(JSEA), &
+                         VGX, VGY )
 #endif
 #ifdef W3_PDLIB
                   ENDIF
@@ -1688,8 +1664,7 @@ CONTAINS
 #ifdef W3_PR3
                 END IF
               ELSE
-                CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS,      &
-                     CFLXYMAX(JSEA), VGX, VGY )
+                CALL W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS, CFLXYMAX(JSEA), VGX, VGY )
               END IF
 #endif
             END DO
@@ -1719,8 +1694,9 @@ CONTAINS
             DO JSEA = 1, MIN(NSEAL,200)
               ISEA   = NINT(INDSORT(JSEA))            ! will not work with MPI
               IX     = MAPSF(ISEA,1)
-              IF (JSEA.EQ.1) &
-                   WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
+              IF (JSEA.EQ.1) then
+                WRITE(995,*) '       IP  dtmax_exp(ip)        x-coord        y-coord        z-coord'
+              end if
               WRITE(995,'(I10,F10.2,3F10.4)') IX,  DTCFL1(JSEA), XGRD(1,IX), YGRD(2,IX), ZB(IX)
             END DO ! JSEA
             CLOSE(995)
@@ -1739,7 +1715,9 @@ CONTAINS
 #endif
           NTLOC  = 1 + INT( DTG/DTCFLI - 0.001 )
 #ifdef W3_SEC1
-          IF ( IAPROC .EQ. NAPOUT )    WRITE(NDSE,'(A,I4,A,I4)') '   SUBSECOND STEP:',ISEC1,' out of ',NITERSEC1
+          IF ( IAPROC .EQ. NAPOUT ) then
+            WRITE(NDSE,'(A,I4,A,I4)') '   SUBSECOND STEP:',ISEC1,' out of ',NITERSEC1
+          end if
 #endif
           !
           FACTH  = DTG / (DTH*REAL(NTLOC))
@@ -1794,11 +1772,11 @@ CONTAINS
                     J = 1
 #ifdef W3_SMC
                     !!Li    Refraction and GCT in theta direction is done by rotation.
-                    CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-                         CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-                         DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
-                         CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
-                         DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), &
+                    CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                         CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                         DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),          &
+                         CX(ISEA), CY(ISEA), DCXDX(IY,IX),               &
+                         DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX),       &
                          DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )
 #endif
                     !
@@ -1806,24 +1784,24 @@ CONTAINS
                     J = 1
                     !
 #ifdef W3_PR1
-                    CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-                         CG(:,ISEA), WN(:,ISEA), DEPTH,            &
+                    CALL W3KTP1 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                         CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                          CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                          DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
 #ifdef W3_PR2
-                    CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-                         CG(:,ISEA), WN(:,ISEA), DEPTH,            &
+                    CALL W3KTP2 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                         CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                          CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                          DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
 #ifdef W3_PR3
-                    CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-                         CG(:,ISEA), WN(:,ISEA), DEPTH,            &
+                    CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                         CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                          CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
                          DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
@@ -1869,8 +1847,7 @@ CONTAINS
 #endif
 #ifdef W3_PDLIB
               DO ISPEC=1,NSPEC
-                CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
-                     VGX, VGY, UGDTUPDATE )
+                CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
               END DO
 #endif
 #ifdef W3_PDLIB
@@ -1935,16 +1912,13 @@ CONTAINS
                     IF (.NOT. LPDLIB) THEN
 #endif
 #ifdef W3_PR1
-                      CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
-                           FIELD, VGX, VGY, UGDTUPDATE )
+                      CALL W3XYPUG ( ISPEC, FACX, FACX, DTG, FIELD, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_PR2
-                      CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
-                           FIELD, VGX, VGY, UGDTUPDATE )
+                      CALL W3XYPUG ( ISPEC, FACX, FACX, DTG, FIELD, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_PR3
-                      CALL W3XYPUG ( ISPEC, FACX, FACX, DTG,           &
-                           FIELD, VGX, VGY, UGDTUPDATE )
+                      CALL W3XYPUG ( ISPEC, FACX, FACX, DTG, FIELD, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_MPI
                     END IF
@@ -1980,10 +1954,8 @@ CONTAINS
 #ifdef W3_MPI
               IF ( NRQSG1 .GT. 0 ) THEN
                 ALLOCATE ( STATCO(MPI_STATUS_SIZE,NRQSG1) )
-                CALL MPI_WAITALL (NRQSG1, IRQSG1(1,1), STATCO, &
-                     IERR_MPI)
-                CALL MPI_WAITALL (NRQSG1, IRQSG1(1,2), STATCO, &
-                     IERR_MPI)
+                CALL MPI_WAITALL (NRQSG1, IRQSG1(1,1), STATCO, IERR_MPI)
+                CALL MPI_WAITALL (NRQSG1, IRQSG1(1,2), STATCO, IERR_MPI)
                 DEALLOCATE ( STATCO )
               END IF
 #endif
@@ -2124,11 +2096,11 @@ CONTAINS
                     J = 1
 #ifdef W3_SMC
                     !!Li    Refraction and GCT in theta direction is done by rotation.
-                    CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA), &
-                         CG(:,ISEA), WN(:,ISEA), DEPTH,            &
-                         DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),    &
-                         CX(ISEA), CY(ISEA), DCXDX(IY,IX),         &
-                         DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX), &
+                    CALL W3KRTN ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                         CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
+                         DHDX(ISEA), DHDY(ISEA), DHLMT(:,ISEA),          &
+                         CX(ISEA), CY(ISEA), DCXDX(IY,IX),               &
+                         DCXDY(IY,IX), DCYDX(IY,IX), DCYDY(IY,IX),       &
                          DCDX(:,IY,IX), DCDY(:,IY,IX), VA(:,JSEA) )
 #endif
                     !
@@ -2252,55 +2224,55 @@ CONTAINS
                 TMP4   = TAUICE(JSEA,1:2)
 #ifdef W3_PDLIB
                 IF (FSSOURCE) THEN
-                  CALL W3SRCE(srce_imp_post,IT,ISEA,JSEA,IX,IY,IMOD,  &
-                       VAOLD(:,JSEA), VA(:,JSEA),                  &
-                       VSioDummy,VDioDummy,SHAVETOT(JSEA), &
-                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
+                  CALL W3SRCE(srce_imp_post,IT,ISEA,JSEA,IX,IY,IMOD,     &
+                       VAOLD(:,JSEA), VA(:,JSEA),                        &
+                       VSioDummy,VDioDummy,SHAVETOT(JSEA),               &
+                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
                        CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
-                       U10D(ISEA),                                 &
+                       U10D(ISEA),                                       &
 #ifdef W3_FLX5
-                       TAUA(ISEA), TAUADIR(ISEA),                  &
+                       TAUA(ISEA), TAUADIR(ISEA),                        &
 #endif
-                       AS(ISEA), UST(ISEA),                        &
-                       USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
-                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),          &
-                       ICEDMAX(ISEA),                              &
-                       REFLEC, REFLED, DELX, DELY, DELA,           &
-                       TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),       &
-                       FPIS(ISEA), DTDYN(JSEA),                    &
-                       FCUT(JSEA), DTG, TAUWX(JSEA), TAUWY(JSEA),  &
-                       TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),     &
-                       TAUWIY(JSEA), TAUWNX(JSEA),                 &
-                       TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),    &
-                       TWS(JSEA),PHIOC(JSEA), TMP1, D50, PSIC, TMP2,&
-                       PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),      &
-                       TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),   &
+                       AS(ISEA), UST(ISEA),                              &
+                       USTDIR(ISEA), CX(ISEA), CY(ISEA),                 &
+                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
+                       ICEDMAX(ISEA),                                    &
+                       REFLEC, REFLED, DELX, DELY, DELA,                 &
+                       TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
+                       FPIS(ISEA), DTDYN(JSEA),                          &
+                       FCUT(JSEA), DTG, TAUWX(JSEA), TAUWY(JSEA),        &
+                       TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
+                       TAUWIY(JSEA), TAUWNX(JSEA),                       &
+                       TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),          &
+                       TWS(JSEA),PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
+                       PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),            &
+                       TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),         &
                        RHOAIR(ISEA), ASF(ISEA))
                 ELSE
 #endif
                   CALL W3SRCE(srce_direct, IT, ISEA, JSEA, IX, IY, IMOD, &
-                       VAoldDummy, VA(:,JSEA),                     &
-                       VSioDummy, VDioDummy, SHAVETOTioDummy,      &
-                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
-                       CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),         &
-                       U10D(ISEA),                                 &
+                       VAoldDummy, VA(:,JSEA),                           &
+                       VSioDummy, VDioDummy, SHAVETOTioDummy,            &
+                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
+                       CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
+                       U10D(ISEA),                                       &
 #ifdef W3_FLX5
-                       TAUA(ISEA), TAUADIR(ISEA),                  &
+                       TAUA(ISEA), TAUADIR(ISEA),                        &
 #endif
-                       AS(ISEA), UST(ISEA),                        &
-                       USTDIR(ISEA), CX(ISEA), CY(ISEA),           &
-                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),          &
-                       ICEDMAX(ISEA),                              &
-                       REFLEC, REFLED, DELX, DELY, DELA,           &
-                       TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),       &
-                       FPIS(ISEA), DTDYN(JSEA),                    &
-                       FCUT(JSEA), DTG, TAUWX(JSEA), TAUWY(JSEA),  &
-                       TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),     &
-                       TAUWIY(JSEA), TAUWNX(JSEA),                 &
-                       TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),    &
-                       TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,&
-                       PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),     &
-                       TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),   &
+                       AS(ISEA), UST(ISEA),                              &
+                       USTDIR(ISEA), CX(ISEA), CY(ISEA),                 &
+                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
+                       ICEDMAX(ISEA),                                    &
+                       REFLEC, REFLED, DELX, DELY, DELA,                 &
+                       TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
+                       FPIS(ISEA), DTDYN(JSEA),                          &
+                       FCUT(JSEA), DTG, TAUWX(JSEA), TAUWY(JSEA),        &
+                       TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
+                       TAUWIY(JSEA), TAUWNX(JSEA),                       &
+                       TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),          &
+                       TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,     &
+                       PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),           &
+                       TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),         &
                        RHOAIR(ISEA), ASF(ISEA))
 #ifdef W3_PDLIB
                 END IF
@@ -2368,12 +2340,10 @@ CONTAINS
         IF ( FLACT .AND. IT.NE.NT .AND. IAPROC.EQ.NAPLOG ) THEN
           CALL STME21 ( TIME , IDTIME )
           IF ( IDLAST .NE. TIME(1) ) THEN
-            WRITE (NDSO,900) ITIME, IPASS, IDTIME(01:19),       &
-                 IDACT, OUTID
+            WRITE (NDSO,900) ITIME, IPASS, IDTIME(01:19), IDACT, OUTID
             IDLAST = TIME(1)
           ELSE
-            WRITE (NDSO,901) ITIME, IPASS, IDTIME(12:19),       &
-                 IDACT, OUTID
+            WRITE (NDSO,901) ITIME, IPASS, IDTIME(12:19), IDACT, OUTID
           END IF
           FLACT  = .FALSE.
           IDACT  = '         '
@@ -2448,18 +2418,21 @@ CONTAINS
         END IF
         !
         FLPART = .FALSE.
-        IF ( FLOUT(1) .AND. FLPFLD )                               &
-             FLPART = FLPART .OR. DSEC21(TIME,TONEXT(:,1)).EQ.0.
-        IF ( FLOUT(6) )                                            &
-             FLPART = FLPART .OR. DSEC21(TIME,TONEXT(:,6)).EQ.0.
+        IF ( FLOUT(1) .AND. FLPFLD ) then
+          FLPART = FLPART .OR. DSEC21(TIME,TONEXT(:,1)).EQ.0.
+        end if
+        IF ( FLOUT(6) ) then
+          FLPART = FLPART .OR. DSEC21(TIME,TONEXT(:,6)).EQ.0.
+        end if
         !
 #ifdef W3_T
         WRITE (NDST,9042) LOCAL, FLPART, FLOUTG
 #endif
         !
         IF ( LOCAL .AND. FLPART ) CALL W3CPRT ( IMOD )
-        IF ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) )                   &
-             CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
+        IF ( LOCAL .AND. (FLOUTG .OR. FLOUTG2) ) then
+          CALL W3OUTG ( VA, FLPFLD, FLOUTG, FLOUTG2 )
+        end if
         !
 #ifdef W3_MPI
         FLGMPI = .FALSE.
@@ -2575,8 +2548,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-        IF ( FLOUT(5) .AND. NRQBP2.NE.0 .AND.                &
-             IAPROC.EQ.NAPBPT) THEN
+        IF ( FLOUT(5) .AND. NRQBP2.NE.0 .AND. IAPROC.EQ.NAPBPT) THEN
           IF ( DSEC21(TIME,TONEXT(:,5)).EQ.0. ) THEN
             CALL MPI_STARTALL (NRQBP2,IRQBP2,IERR_MPI)
             NRQMAX    = MAX ( NRQMAX , NRQBP2 )
@@ -2590,8 +2562,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-        IF ( NRQMAX .NE. 0 ) ALLOCATE                         &
-             ( STATIO(MPI_STATUS_SIZE,NRQMAX) )
+        IF ( NRQMAX .NE. 0 ) ALLOCATE ( STATIO(MPI_STATUS_SIZE,NRQMAX) )
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 2')
         !
@@ -2621,8 +2592,7 @@ CONTAINS
                    ) THEN
                 IF ( IAPROC .EQ. NAPFLD ) THEN
 #ifdef W3_MPI
-                  IF ( FLGMPI(1) ) CALL MPI_WAITALL  &
-                       ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
+                  IF ( FLGMPI(1) ) CALL MPI_WAITALL ( NRQGO2, IRQGO2, STATIO, IERR_MPI )
                   FLGMPI(1) = .FALSE.
 #endif
                   !
@@ -2674,8 +2644,7 @@ CONTAINS
               ELSE IF ( J .EQ. 5 ) THEN
                 IF ( IAPROC .EQ. NAPBPT ) THEN
 #ifdef W3_MPI
-                  IF (NRQBP2.NE.0) CALL MPI_WAITALL  &
-                       ( NRQBP2, IRQBP2,STATIO, IERR_MPI )
+                  IF (NRQBP2.NE.0) CALL MPI_WAITALL ( NRQBP2, IRQBP2,STATIO, IERR_MPI )
 #endif
                   CALL W3IOBC ( 'WRITE', NDS(10),         &
                        TIME, TIME, ITEST, IMOD )
@@ -2794,16 +2763,11 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 3')
         !
 #ifdef W3_MPI
-        IF ( FLGMPI(0) ) CALL MPI_WAITALL                    &
-             ( NRQGO, IRQGO , STATIO, IERR_MPI )
-        IF ( FLGMPI(2) ) CALL MPI_WAITALL                    &
-             ( NRQPO, IRQPO1, STATIO, IERR_MPI )
-        IF ( FLGMPI(4) ) CALL MPI_WAITALL                    &
-             ( NRQRS, IRQRS , STATIO, IERR_MPI )
-        IF ( FLGMPI(8) ) CALL MPI_WAITALL                    &
-             ( NRQRS, IRQRS , STATIO, IERR_MPI )
-        IF ( FLGMPI(5) ) CALL MPI_WAITALL                    &
-             ( NRQBP, IRQBP1, STATIO, IERR_MPI )
+        IF ( FLGMPI(0) ) CALL MPI_WAITALL ( NRQGO, IRQGO , STATIO, IERR_MPI )
+        IF ( FLGMPI(2) ) CALL MPI_WAITALL ( NRQPO, IRQPO1, STATIO, IERR_MPI )
+        IF ( FLGMPI(4) ) CALL MPI_WAITALL ( NRQRS, IRQRS , STATIO, IERR_MPI )
+        IF ( FLGMPI(8) ) CALL MPI_WAITALL ( NRQRS, IRQRS , STATIO, IERR_MPI )
+        IF ( FLGMPI(5) ) CALL MPI_WAITALL ( NRQBP, IRQBP1, STATIO, IERR_MPI )
         IF ( NRQMAX .NE. 0 ) DEALLOCATE ( STATIO )
 #endif
         !
@@ -2843,12 +2807,10 @@ CONTAINS
         END IF
         !
         IF ( IDLAST.NE.TIME(1) ) THEN
-          WRITE (NDSO,900) ITIME, IPASS, IDTIME(1:19),          &
-               IDACT, OUTID
+          WRITE (NDSO,900) ITIME, IPASS, IDTIME(1:19), IDACT, OUTID
           IDLAST = TIME(1)
         ELSE
-          WRITE (NDSO,901) ITIME, IPASS, IDTIME(12:19),         &
-               IDACT, OUTID
+          WRITE (NDSO,901) ITIME, IPASS, IDTIME(12:19), IDACT, OUTID
         END IF
         !
       END IF
@@ -3163,9 +3125,7 @@ CONTAINS
 #ifdef W3_MPI
     IF ( BSTAT(IBFLOC) .EQ. 2 ) THEN
       IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
-      IF ( NRQSG2 .GT. 0 ) CALL                              &
-           MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2),             &
-           STATUS, IERR_MPI )
+      IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2), STATUS, IERR_MPI )
       BSTAT(IBFLOC) = 0
 #endif
 #ifdef W3_MPIT
@@ -3182,8 +3142,7 @@ CONTAINS
       BSTAT(IBFLOC) = 1
       BISPL(IBFLOC) = ISPLOC
       IOFF =  1 + (ISPLOC-1)*NRQSG2
-      IF ( NRQSG2 .GT. 0 ) CALL                              &
-           MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
+      IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
 #endif
 #ifdef W3_MPIT
       STRT(10:10) = 'g'
@@ -3205,8 +3164,7 @@ CONTAINS
     !
 #ifdef W3_MPI
     IOFF =  1 + (BISPL(IBFLOC)-1)*NRQSG2
-    IF ( NRQSG2 .GT. 0 ) CALL                                  &
-         MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,1), STATUS, IERR_MPI )
+    IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,1), STATUS, IERR_MPI )
 #endif
     !
 #ifdef W3_MPIT
@@ -3241,8 +3199,7 @@ CONTAINS
         BSTAT(IB0) = 1
         BISPL(IB0) = IS0
         IOFF       = 1 + (IS0-1)*NRQSG2
-        IF ( NRQSG2 .GT. 0 ) CALL                            &
-             MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
+        IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,1), IERR_MPI )
         NPST       = NPST + 1
 #endif
 #ifdef W3_MPIT
@@ -3486,8 +3443,7 @@ CONTAINS
     !
 #ifdef W3_MPI
     IOFF   = 1 + (ISPLOC-1)*NRQSG2
-    IF ( NRQSG2 .GT. 0 ) CALL                                  &
-         MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,2), IERR_MPI )
+    IF ( NRQSG2 .GT. 0 ) CALL MPI_STARTALL ( NRQSG2, IRQSG2(IOFF,2), IERR_MPI )
     BSTAT(IBFLOC) = 2
 #endif
 #ifdef W3_MPIT
@@ -3518,14 +3474,13 @@ CONTAINS
       IF ( BSTAT(IB0) .EQ. 2 ) THEN
         IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
         IF ( NRQSG2 .GT. 0 ) THEN
-          CALL MPI_TESTALL ( NRQSG2, IRQSG2(IOFF,2), DONE,  &
-               STATUS, IERR_MPI )
+          CALL MPI_TESTALL ( NRQSG2, IRQSG2(IOFF,2), DONE, STATUS, IERR_MPI )
         ELSE
           DONE   = .TRUE.
         END IF
-        IF ( DONE .AND. NRQSG2.GT.0 ) CALL                   &
-             MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2),       &
-             STATUS, IERR_MPI )
+        IF ( DONE .AND. NRQSG2.GT.0 ) THEN
+          CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2), STATUS, IERR_MPI )
+        END IF
         IF ( DONE ) THEN
           BSTAT(IB0) = 0
 #endif
@@ -3551,9 +3506,7 @@ CONTAINS
       DO IB0=1, MPIBUF
         IF ( BSTAT(IB0) .EQ. 2 ) THEN
           IOFF   = 1 + (BISPL(IB0)-1)*NRQSG2
-          IF ( NRQSG2 .GT. 0 ) CALL                        &
-               MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2),       &
-               STATUS, IERR_MPI )
+          IF ( NRQSG2 .GT. 0 ) CALL MPI_WAITALL ( NRQSG2, IRQSG2(IOFF,2), STATUS, IERR_MPI )
           BSTAT(IB0) = 0
 #endif
 #ifdef W3_MPIT

@@ -7399,28 +7399,28 @@ CONTAINS
     !/
     INTEGER, INTENT(IN) :: IMOD
 
-    DEALLOCATE ( &
-                                !                 GRIDS(IMOD)%TRIGP,                         &
-         GRIDS(IMOD)%SI,                                &
-         GRIDS(IMOD)%TRIA,                            &
-         GRIDS(IMOD)%CROSSDIFF,                     &
-         GRIDS(IMOD)%IEN,                           &
-         GRIDS(IMOD)%LEN,                           &
-         GRIDS(IMOD)%ANGLE,                         &
-         GRIDS(IMOD)%ANGLE0,                        &
-         GRIDS(IMOD)%CCON,                              &
-         GRIDS(IMOD)%COUNTCON,                          &
-         GRIDS(IMOD)%INDEX_CELL,                      &
-         GRIDS(IMOD)%IE_CELL,                     &
-         GRIDS(IMOD)%POS_CELL,                    &
-         GRIDS(IMOD)%IAA,                             &
-         GRIDS(IMOD)%JAA,                              &
-         GRIDS(IMOD)%POSI,                      &
-         GRIDS(IMOD)%I_DIAG,                            &
-         GRIDS(IMOD)%JA_IE,                       &
-                                !GRIDS(IMOD)%IOBP,                         &
-                                !GRIDS(IMOD)%IOBPD,                         &
-         GRIDS(IMOD)%IOBDP,                             &
+    DEALLOCATE (                 &
+         ! GRIDS(IMOD)%TRIGP,    &
+         GRIDS(IMOD)%SI,         &
+         GRIDS(IMOD)%TRIA,       &
+         GRIDS(IMOD)%CROSSDIFF,  &
+         GRIDS(IMOD)%IEN,        &
+         GRIDS(IMOD)%LEN,        &
+         GRIDS(IMOD)%ANGLE,      &
+         GRIDS(IMOD)%ANGLE0,     &
+         GRIDS(IMOD)%CCON,       &
+         GRIDS(IMOD)%COUNTCON,   &
+         GRIDS(IMOD)%INDEX_CELL, &
+         GRIDS(IMOD)%IE_CELL,    &
+         GRIDS(IMOD)%POS_CELL,   &
+         GRIDS(IMOD)%IAA,        &
+         GRIDS(IMOD)%JAA,        &
+         GRIDS(IMOD)%POSI,       &
+         GRIDS(IMOD)%I_DIAG,     &
+         GRIDS(IMOD)%JA_IE,      &
+         !GRIDS(IMOD)%IOBP,      &
+         !GRIDS(IMOD)%IOBPD,     &
+         GRIDS(IMOD)%IOBDP,      &
          GRIDS(IMOD)%IOBPA  )
     !/
     !/ End of DEALLOCATE_PDLIB_GLOBAL ------------------------------------------------ /

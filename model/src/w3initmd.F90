@@ -712,8 +712,8 @@ CONTAINS
     WRITE (NDST,9003) LFILE(:IFL), TFILE(:IFT)
 #endif
     !
-    ! 2.  Model defintition ---------------------------------------------- /
-    ! 2.a Read model defintition file
+    ! 2.  Model definition ---------------------------------------------- /
+    ! 2.a Read model definition file
     !
     CALL W3IOGR ( 'READ', NDS(5), IMOD, FEXT )
     IF (GTYPE .eq. UNGTYPE) THEN
@@ -1175,8 +1175,6 @@ CONTAINS
       END IF
       !
     END DO
-    !
-    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 5')
     !
     ! J=8, second stream of restart files
     !
@@ -1802,10 +1800,8 @@ CONTAINS
     NXXXX  = NSEALM * NAPROC
     !
 #ifdef W3_MPI
-    CALL MPI_TYPE_VECTOR ( NSEALM, 1, NAPROC, MPI_REAL,        &
-         WW3_FIELD_VEC, IERR_MPI )
-    CALL MPI_TYPE_VECTOR ( NSEALM, 1, NSPEC, MPI_REAL,         &
-         WW3_SPEC_VEC, IERR_MPI )
+    CALL MPI_TYPE_VECTOR ( NSEALM, 1, NAPROC, MPI_REAL, WW3_FIELD_VEC, IERR_MPI )
+    CALL MPI_TYPE_VECTOR ( NSEALM, 1, NSPEC, MPI_REAL, WW3_SPEC_VEC, IERR_MPI )
     CALL MPI_TYPE_COMMIT ( WW3_FIELD_VEC, IERR_MPI )
     CALL MPI_TYPE_COMMIT ( WW3_SPEC_VEC, IERR_MPI )
 #endif
@@ -1854,14 +1850,13 @@ CONTAINS
         IF ( IAPPRO(ISP) .NE. IAPROC ) THEN
           ITARG  = IAPPRO(ISP) - 1
           IH     = IH + 1
-          CALL MPI_SEND_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC,     &
-               ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,1), IERR1 )
-          CALL MPI_RECV_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC,     &
-               ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,2), IERR2 )
+          CALL MPI_SEND_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, &
+               IRQSG1(IH,1), IERR1 )
+          CALL MPI_RECV_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, &
+               IRQSG1(IH,2), IERR2 )
 #endif
 #ifdef W3_MPIT
-          WRITE (NDST,9022) IH, ISP, ITARG+1,                 &
-               IRQSG1(IH,1), IERR1, IRQSG1(IH,2), IERR2
+          WRITE (NDST,9022) IH, ISP, ITARG+1, IRQSG1(IH,1), IERR1, IRQSG1(IH,2), IERR2
 #endif
 #ifdef W3_MPI
         END IF
@@ -1877,8 +1872,8 @@ CONTAINS
       !
 #ifdef W3_MPI
       NRQSG2 = MAX( 1 , NAPROC-1 )
-      ALLOCATE ( WADATS(IMOD)%IRQSG2(NRQSG2*NSPLOC,2),           &
-           WADATS(IMOD)%GSTORE(NAPROC*NSEALM,MPIBUF),      &
+      ALLOCATE ( WADATS(IMOD)%IRQSG2(NRQSG2*NSPLOC,2), &
+           WADATS(IMOD)%GSTORE(NAPROC*NSEALM,MPIBUF),  &
            WADATS(IMOD)%SSTORE(NAPROC*NSEALM,MPIBUF) )
       NRQSG2 = NAPROC - 1
       !
@@ -1915,18 +1910,14 @@ CONTAINS
               ITARG  = IP - 1
               IH     = IH + 1
               !
-              CALL MPI_RECV_INIT                             &
-                   ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1,        &
-                   WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, &
-                   IRQSG2(IH,1), IERR2 )
-              CALL MPI_SEND_INIT                             &
-                   ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1,        &
-                   WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, &
-                   IRQSG2(IH,2), IERR2 )
+              CALL MPI_RECV_INIT ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1, WW3_FIELD_VEC, &
+                   ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,1), IERR2 )
+              CALL MPI_SEND_INIT ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1, WW3_FIELD_VEC, &
+                   ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,2), IERR2 )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9032) IH, ISP, ITARG+1, IBFLOC,   &
-                   IRQSG2(IH,1), IERR1, IRQSG2(IH,2), IERR2
+              WRITE (NDST,9032) IH, ISP, ITARG+1, IBFLOC, IRQSG2(IH,1), IERR1, &
+                   IRQSG2(IH,2), IERR2
 #endif
               !
               ! ... End of loops
@@ -2235,12 +2226,10 @@ CONTAINS
 
       ! Extra contributions to NRQMAX from group 3
       DO IFJ=1,5
-        IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX +               &
-             E3DF(3,IFJ) - E3DF(2,IFJ) + 1
+        IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX + E3DF(3,IFJ) - E3DF(2,IFJ) + 1
       END DO
       ! Extra contributions to NRQMAX from group 6
-      IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX +               &
-           P2MSF(3) - P2MSF(2) + 1
+      IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX + P2MSF(3) - P2MSF(2) + 1
       IF ( FLGRDALL( 6, 8) ) NRQMAX = NRQMAX + 2*NK
       IF ( FLGRDALL( 6,12) ) NRQMAX = NRQMAX + 2*NK
       !
@@ -2266,8 +2255,8 @@ CONTAINS
         IF ( FLGRDALL( 1, 12) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (ICEF (IAPROC), 1, WW3_FIELD_VEC,    &
-               IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+          CALL MPI_SEND_INIT (ICEF (IAPROC), 1, WW3_FIELD_VEC, IROOT, IT, &
+               MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH, ' 1/09', IROOT, IT, IRQGO(IH), IERR
@@ -5549,13 +5538,11 @@ CONTAINS
               JSEA0  = 1 + (IB-1)*RSBLKS
               JSEAN  = MIN ( NSEALM , IB*RSBLKS )
               NSEAB  = 1 + JSEAN - JSEA0
-              CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB,&
-                   MPI_REAL, IROOT, IT, MPI_COMM_WAVE,    &
-                   IRQRSS(IH), IERR )
+              CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB, MPI_REAL, IROOT, IT, &
+                   MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9026) IH, 'S', IB, IROOT, IT,   &
-                   IRQRSS(IH), IERR, NSEAB
+              WRITE (NDST,9026) IH, 'S', IB, IROOT, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
             END DO
@@ -5578,13 +5565,11 @@ CONTAINS
                   IH     = IH + 1
                   IFROM  = I0 - 1
                   IBOFF  = MOD(IB-1,2)*RSBLKS
-                  CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0),&
-                       NSPEC*NSEAB, MPI_REAL, IFROM, IT,  &
-                       MPI_COMM_WAVE, IRQRSS(IH), IERR )
+                  CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0), NSPEC*NSEAB, MPI_REAL, &
+                       IFROM, IT, MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-                  WRITE (NDST,9026) IH, 'R', IB, IFROM, &
-                       IT, IRQRSS(IH), IERR, NSEAB
+                  WRITE (NDST,9026) IH, 'R', IB, IFROM, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
                 END IF
@@ -5617,7 +5602,7 @@ CONTAINS
     IROOT  = NAPBPT - 1
     !
     IF ( FLOUT(5) ) THEN
-      ALLOCATE ( OUTPTS(IMOD)%OUT5%IRQBP1(NBO2(NFBPO)),      &
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%IRQBP1(NBO2(NFBPO)),  &
            OUTPTS(IMOD)%OUT5%IRQBP2(NBO2(NFBPO)) )
       IRQBP1 => OUTPTS(IMOD)%OUT5%IRQBP1
       IRQBP2 => OUTPTS(IMOD)%OUT5%IRQBP2
@@ -5644,8 +5629,8 @@ CONTAINS
           !
           IF ( IAPROC .EQ. ISPROC ) THEN
             IH     = IH + 1
-            CALL MPI_SEND_INIT (VA(1,JSEA),NSPEC,MPI_REAL, &
-                 IROOT, IT, MPI_COMM_WAVE, IRQBP1(IH), IERR)
+            CALL MPI_SEND_INIT (VA(1,JSEA),NSPEC,MPI_REAL, IROOT, IT, MPI_COMM_WAVE, &
+                 IRQBP1(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9031) IH, I, J, IROOT, IT, IRQBP1(IH), IERR
@@ -5697,8 +5682,8 @@ CONTAINS
             IH     = IH + 1
             IT     = IT + 1
             ITARG  = ISPROC - 1
-            CALL MPI_RECV_INIT (ABPOS(1,IH),NSPEC,MPI_REAL,&
-                 ITARG, IT, MPI_COMM_WAVE, IRQBP2(IH), IERR)
+            CALL MPI_RECV_INIT (ABPOS(1,IH),NSPEC,MPI_REAL, ITARG, IT, MPI_COMM_WAVE, &
+                 IRQBP2(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9031) IH, I, J, ITARG, IT, IRQBP2(IH), IERR
@@ -5751,8 +5736,8 @@ CONTAINS
         IRQTR  => OUTPTS(IMOD)%OUT3%IRQTR
         IH     = IH + 1
         IT     = IT0 + 1
-        CALL MPI_SEND_INIT (UST   (IAPROC),1,WW3_FIELD_VEC,&
-             IROOT, IT, MPI_COMM_WAVE, IRQTR(IH), IERR )
+        CALL MPI_SEND_INIT (UST   (IAPROC),1,WW3_FIELD_VEC, IROOT, IT, &
+             MPI_COMM_WAVE, IRQTR(IH), IERR )
 #endif
 #ifdef W3_MPIT
         WRITE (NDST,9041) IH, 'S U*', IROOT, IT, IRQTR(IH), IERR
@@ -5760,8 +5745,8 @@ CONTAINS
 #ifdef W3_MPI
         IH     = IH + 1
         IT     = IT0 + 2
-        CALL MPI_SEND_INIT (USTDIR(IAPROC),1,WW3_FIELD_VEC,&
-             IROOT, IT, MPI_COMM_WAVE, IRQTR(IH), IERR )
+        CALL MPI_SEND_INIT (USTDIR(IAPROC),1,WW3_FIELD_VEC, IROOT, IT, &
+             MPI_COMM_WAVE, IRQTR(IH), IERR )
 #endif
 #ifdef W3_MPIT
         WRITE (NDST,9041) IH, 'S U*', IROOT, IT, IRQTR(IH), IERR
@@ -5775,8 +5760,8 @@ CONTAINS
           IF ( I0 .NE. IAPROC ) THEN
             IH     = IH + 1
             IT     = IT0 + 1
-            CALL MPI_RECV_INIT(UST   (I0),1,WW3_FIELD_VEC,&
-                 IFROM,IT,MPI_COMM_WAVE, IRQTR(IH), IERR)
+            CALL MPI_RECV_INIT(UST   (I0),1,WW3_FIELD_VEC, IFROM, IT, &
+                 MPI_COMM_WAVE, IRQTR(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9041) IH, 'R U*', IFROM, IT, IRQTR(IH), IERR
@@ -5784,8 +5769,8 @@ CONTAINS
 #ifdef W3_MPI
             IH     = IH + 1
             IT     = IT0 + 2
-            CALL MPI_RECV_INIT(USTDIR(I0),1,WW3_FIELD_VEC,&
-                 IFROM,IT,MPI_COMM_WAVE, IRQTR(IH), IERR)
+            CALL MPI_RECV_INIT(USTDIR(I0),1,WW3_FIELD_VEC, IFROM, IT, &
+                 MPI_COMM_WAVE, IRQTR(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9041) IH, 'R U*', IFROM, IT, IRQTR(IH), IERR
@@ -6044,8 +6029,8 @@ CONTAINS
 #ifdef W3_MPI
         IF ( IP(J) .EQ. IAPROC ) THEN
           IH     = IH + 1
-          CALL MPI_SEND_INIT ( VA(1,JSEA), NSPEC, MPI_REAL, &
-               IROOT, IT, MPI_COMM_WAVE, IRQPO1(IH), IERR )
+          CALL MPI_SEND_INIT ( VA(1,JSEA), NSPEC, MPI_REAL, IROOT, IT, MPI_COMM_WAVE, &
+               IRQPO1(IH), IERR )
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH,I,J, IROOT,IT, IRQPO1(IH), IERR
