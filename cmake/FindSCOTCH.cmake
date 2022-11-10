@@ -25,6 +25,33 @@ add_library(PTSCOTCH::PTSCOTCH STATIC IMPORTED)
 add_library(SCOTCHerr::SCOTCHerr STATIC IMPORTED)
 add_library(PTSCOTCHerr::PTSCOTCHerr STATIC IMPORTED)
 
+set_target_properties(SCOTCH::SCOTCH PROPERTIES
+  IMPORTED_LOCATION "${scotch_lib}"
+  INTERFACE_INCLUDE_DIRECTORIES "${scotch_inc}")
+
+set_target_properties(SCOTCHerr::SCOTCHerr PROPERTIES
+  IMPORTED_LOCATION "${scotcherr_lib}"
+  INTERFACE_INCLUDE_DIRECTORIES "${scotcherr_inc}")
+
+set_target_properties(PTSCOTCH::PTSCOTCH PROPERTIES
+  IMPORTED_LOCATION "${ptscotch_lib}"
+  INTERFACE_INCLUDE_DIRECTORIES "${ptscotch_inc}")
+
+set_target_properties(PTSCOTCHerr::PTSCOTCHerr PROPERTIES
+  IMPORTED_LOCATION "${ptscotcherr_lib}"
+  INTERFACE_INCLUDE_DIRECTORIES "${ptscotcherr_inc}")
+
+set_target_properties(PTSCOTCHparmetis::PTSCOTCHparmetis PROPERTIES
+  IMPORTED_LOCATION "${ptscotchparmetis_lib}"
+  INTERFACE_INCLUDE_DIRECTORIES "${ptscotchparmetis_inc}")
+
+
+## Interfaces and links
+  target_link_libraries(PTSCOTCHparmetis::PTSCOTCHparmetis INTERFACE PTSCOTCHerr::PTSCOTCHerr SCOTCHerr::SCOTCHerr PTSCOTCH::PTSCOTCH SCOTCH::SCOTCH)
+
+  target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis SCOTCHerr::SCOTCHerr)
+
+
 ## Finalize find_package
 include(FindPackageHandleStandardArgs)
 
@@ -53,38 +80,8 @@ find_package_handle_standard_args(
     REQUIRED_VARS ptscotchparmetis_lib
     ptscotchparmetis_inc)
 
-
-set_target_properties(SCOTCH::SCOTCH PROPERTIES
-  IMPORTED_LOCATION "${scotch_lib}"
-  INTERFACE_INCLUDE_DIRECTORIES "${scotch_inc}")
-
-set_target_properties(SCOTCHerr::SCOTCHerr PROPERTIES
-  IMPORTED_LOCATION "${scotcherr_lib}"
-  INTERFACE_INCLUDE_DIRECTORIES "${scotcherr_inc}")
-
-set_target_properties(PTSCOTCH::PTSCOTCH PROPERTIES
-  IMPORTED_LOCATION "${ptscotch_lib}"
-  INTERFACE_INCLUDE_DIRECTORIES "${ptscotch_inc}")
-
-set_target_properties(PTSCOTCHerr::PTSCOTCHerr PROPERTIES
-  IMPORTED_LOCATION "${ptscotcherr_lib}"
-  INTERFACE_INCLUDE_DIRECTORIES "${ptscotcherr_inc}")
-
-set_target_properties(PTSCOTCHparmetis::PTSCOTCHparmetis PROPERTIES
-  IMPORTED_LOCATION "${ptscotchparmetis_lib}"
-  INTERFACE_INCLUDE_DIRECTORIES "${ptscotchparmetis_inc}")
-
-
 message(STATUS "Found SCOTCH: ${scotch_lib}")
 message(STATUS "Found PTSCOTCH: ${ptscotch_lib}")
 message(STATUS "Found SCOTCHerr: ${scotcherr_lib}")
 message(STATUS "Found PTSCOTCHerr: ${ptscotcherr_lib}")
-
-
-## Interfaces and links
-  target_link_libraries(PTSCOTCHparmetis::PTSCOTCHparmetis INTERFACE PTSCOTCHerr::PTSCOTCHerr SCOTCHerr::SCOTCHerr PTSCOTCH::PTSCOTCH SCOTCH::SCOTCH)
-
-  target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis SCOTCHerr::SCOTCHerr)
-
-
 message(STATUS "Found PTSCOTCHparmetis: ${ptscotchparmetis_lib}")
