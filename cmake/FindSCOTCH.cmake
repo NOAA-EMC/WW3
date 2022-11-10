@@ -77,13 +77,13 @@ message(STATUS "Found PTSCOTCH: ${ptscotch_lib}")
 message(STATUS "Found SCOTCHerr: ${scotcherr_lib}")
 message(STATUS "Found PTSCOTCHerr: ${ptscotcherr_lib}")
 
+## Finalize find_package
+include(FindPackageHandleStandardArgs)
 
 ## Interfaces and links
   target_link_libraries(PTSCOTCHparmetis::PTSCOTCHparmetis INTERFACE PTSCOTCHerr::PTSCOTCHerr SCOTCHerr::SCOTCHerr PTSCOTCH::PTSCOTCH SCOTCH::SCOTCH)
 
   target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis SCOTCHerr::SCOTCHerr)
 
-## Finalize find_package
-include(FindPackageHandleStandardArgs)
 
 message(STATUS "Found PTSCOTCHparmetis: ${ptscotchparmetis_lib}")
