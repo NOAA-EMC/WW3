@@ -25,6 +25,8 @@ add_library(PTSCOTCH::PTSCOTCH STATIC IMPORTED)
 add_library(SCOTCHerr::SCOTCHerr STATIC IMPORTED)
 add_library(PTSCOTCHerr::PTSCOTCHerr STATIC IMPORTED)
 
+## Finalize find_package
+include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
@@ -50,6 +52,7 @@ find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
     REQUIRED_VARS ptscotchparmetis_lib
     ptscotchparmetis_inc)
+
 
 set_target_properties(SCOTCH::SCOTCH PROPERTIES
   IMPORTED_LOCATION "${scotch_lib}"
@@ -77,8 +80,6 @@ message(STATUS "Found PTSCOTCH: ${ptscotch_lib}")
 message(STATUS "Found SCOTCHerr: ${scotcherr_lib}")
 message(STATUS "Found PTSCOTCHerr: ${ptscotcherr_lib}")
 
-## Finalize find_package
-include(FindPackageHandleStandardArgs)
 
 ## Interfaces and links
   target_link_libraries(PTSCOTCHparmetis::PTSCOTCHparmetis INTERFACE PTSCOTCHerr::PTSCOTCHerr SCOTCHerr::SCOTCHerr PTSCOTCH::PTSCOTCH SCOTCH::SCOTCH)
