@@ -1,6 +1,6 @@
-message(STATUS "Searching for PTSCOTCHparmetisv3 library ...")
-find_library(ptscotchparmetisv3_lib NAMES libptscotchparmetisv3.a  HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
-find_path(ptscotchparmetisv3_inc parmetis.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
+message(STATUS "Searching for PTSCOTCHparmetis library ...")
+find_library(ptscotchparmetis_lib NAMES libptscotchparmetisv3.a  HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
+find_path(ptscotchparmetis_inc parmetis.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
 
 message(STATUS "Searching for SCOTCH library ...")
 find_library(scotch_lib NAMES libscotch.a HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
@@ -18,7 +18,7 @@ message(STATUS "Searching for PTSCOTCHerr library ...")
 find_library(ptscotcherr_lib NAMES libptscotcherr.a HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(ptscotcherr_inc ptscotch.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
 
-add_library(PTSCOTCHparmetisv3::PTSCOTCHparmetisv3 STATIC IMPORTED)
+add_library(PTSCOTCHparmetis::PTSCOTCHparmetis STATIC IMPORTED)
 add_library(SCOTCH::SCOTCH STATIC IMPORTED)
 add_library(PTSCOTCH::PTSCOTCH STATIC IMPORTED)
 add_library(SCOTCHerr::SCOTCHerr STATIC IMPORTED)
@@ -40,15 +40,15 @@ set_target_properties(PTSCOTCHerr::PTSCOTCHerr PROPERTIES
   IMPORTED_LOCATION "${ptscotcherr_lib}"
   INTERFACE_INCLUDE_DIRECTORIES "${ptscotcherr_inc}")
 
-set_target_properties(PTSCOTCHparmetisv3::PTSCOTCHparmetisv3 PROPERTIES
-  IMPORTED_LOCATION "${ptscotchparmetisv3_lib}"
-  INTERFACE_INCLUDE_DIRECTORIES "${ptscotchparmetisv3_inc}")
+set_target_properties(PTSCOTCHparmetis::PTSCOTCHparmetis PROPERTIES
+  IMPORTED_LOCATION "${ptscotchparmetis_lib}"
+  INTERFACE_INCLUDE_DIRECTORIES "${ptscotchparmetis_inc}")
 
 
 ## Interfaces and links
-  target_link_libraries(PTSCOTCHparmetisv3::PTSCOTCHparmetisv3 INTERFACE PTSCOTCHerr::PTSCOTCHerr SCOTCHerr::SCOTCHerr PTSCOTCH::PTSCOTCH SCOTCH::SCOTCH)
+  target_link_libraries(PTSCOTCHparmetis::PTSCOTCHparmetis INTERFACE PTSCOTCHerr::PTSCOTCHerr SCOTCHerr::SCOTCHerr PTSCOTCH::PTSCOTCH SCOTCH::SCOTCH)
 
-  target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetisv3::PTSCOTCHparmetisv3 SCOTCHerr::SCOTCHerr)
+  target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis SCOTCHerr::SCOTCHerr)
 
 
 ## Finalize find_package
@@ -76,11 +76,11 @@ find_package_handle_standard_args(
 
 find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
-    REQUIRED_VARS ptscotchparmetisv3_lib
-    ptscotchparmetisv3_inc)
+    REQUIRED_VARS ptscotchparmetis_lib
+    ptscotchparmetis_inc)
 
 message(STATUS "Found SCOTCH: ${scotch_lib}")
 message(STATUS "Found PTSCOTCH: ${ptscotch_lib}")
 message(STATUS "Found SCOTCHerr: ${scotcherr_lib}")
 message(STATUS "Found PTSCOTCHerr: ${ptscotcherr_lib}")
-message(STATUS "Found PTSCOTCHparmetisv3: ${ptscotchparmetisv3_lib}")
+message(STATUS "Found PTSCOTCHparmetis: ${ptscotchparmetis_lib}")
