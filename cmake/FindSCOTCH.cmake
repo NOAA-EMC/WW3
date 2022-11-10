@@ -1,11 +1,15 @@
 message(STATUS "Searching for PTSCOTCHparmetis library ...")
 find_library(ptscotchparmetis_lib NAMES libptscotchparmetisv3.a  HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(ptscotchparmetis_inc parmetis.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
+if(ptscotchparmetis_inc)
+  message(STATUS "  Found: ${ptscotchparmetis_inc}")
+else()
+  message(STATUS "  ptscotchparmetis_inc not found...")
+endif()
 
 message(STATUS "Searching for SCOTCH library ...")
 find_library(scotch_lib NAMES libscotch.a HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(scotch_inc scotch.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
-
 
 message(STATUS "Searching for PTSCOTCH library ...")
 find_library(ptscotch_lib NAMES libptscotch.a HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
@@ -84,4 +88,3 @@ message(STATUS "Found SCOTCH: ${scotch_lib}")
 message(STATUS "Found PTSCOTCH: ${ptscotch_lib}")
 message(STATUS "Found SCOTCHerr: ${scotcherr_lib}")
 message(STATUS "Found PTSCOTCHerr: ${ptscotcherr_lib}")
-message(STATUS "Found PTSCOTCHparmetis: ${ptscotchparmetis_lib}")
