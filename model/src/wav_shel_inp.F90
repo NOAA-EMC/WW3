@@ -16,7 +16,7 @@ module wav_shel_inp
 
   public  :: set_shel_io         !< @public set the IO unit numbers
   public  :: read_shel_config    !< @public reads ww3_shel.nml if present, otherwise
-  !! read ww3_shel.inp
+                                 !! read ww3_shel.inp
 
   integer, public :: odat(40) !< @public output dates
   character(len=40), allocatable, public :: pnames(:) !< @public point names
@@ -120,7 +120,7 @@ contains
     use w3odatmd       , only : flogrr, flogr, ofiles
     use w3iogrmd       , only : w3iogr
     use w3iogomd       , only : w3readflgrd, fldout, w3flgrdflag
-    use w3servmd       , only : nextln, extcde
+    use w3servmd       , only : nextln, extcde, print_memcheck
     use w3timemd       , only : dsec21, stme21, tick21, t2d, d2j
 #ifdef W3_OASIS
     use w3wdatmd       , only : time00, timeend
@@ -172,6 +172,7 @@ contains
     integer             :: time0(2), timen(2), ttime(2)
     character(len=80)   :: msg1
     logical             :: is_open
+    integer             :: memunit
 
     data idflds / 'ice param. 1 ' , 'ice param. 2 ' ,               &
          'ice param. 3 ' , 'ice param. 4 ' ,               &
@@ -201,6 +202,7 @@ contains
     flgr2 = .false.
     flh(:) = .false.
     iprt(:) = 0
+    memunit = 740+IAPROC
     call print_logmsg(740+IAPROC, 'read_shel_config, step 1', w3_debuginit_flag)
 
     ! ndso, ndse, ndst are set in w3initmd using mds;  w3initmd is called by either
@@ -830,7 +832,7 @@ contains
         if (flagsc(2) .and. inflags1(1) .and. .not. flagsc(1)) goto 2102
       end if
 
-      call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2b')
+      call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 2b')
 
       inflags1(10) = .false.
       if (w3_mgw_flag .or. w3_mgp_flag) then
@@ -867,11 +869,11 @@ contains
       call nextln ( comstr , ndsi , ndsen )
       read (ndsi,*) time0
 
-      call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2c')
+      call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 2c')
 
       call nextln ( comstr , ndsi , ndsen )
       read (ndsi,*) timen
-      call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2d')
+      call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 2d')
 
       !--------------------
       ! 2.3 Domain setup
@@ -988,7 +990,7 @@ contains
           end if !j le 2
           odat(5*(j-1)+3) = max ( 0 , odat(5*(j-1)+3) )
           write(msg1, *) 'read_shel_config NOTTYPE', J
-          call print_memcheck(740+IAPROC, 'memcheck_____:'//trim(msg1))
+          call print_memcheck(memunit, 'memcheck_____:'//trim(msg1))
 
           !--------------------
           ! 2.5 Output types
@@ -1192,7 +1194,7 @@ contains
             end if
           end do
         end do
-        call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 3')
+        call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 3')
 
         if (w3_o7_flag) then
           do j=jfirst, 10
@@ -1231,7 +1233,7 @@ contains
       close(ndsi)
     end if  ! .not. flgnml
 
-    call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 4')
+    call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 4')
 
     !--------------------
     ! 2.2 Time setup
@@ -1410,9 +1412,8 @@ contains
       if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
       continue
     end if
-    !
 
-    call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 5')
+    call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 5')
 
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
