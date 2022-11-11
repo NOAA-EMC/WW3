@@ -670,8 +670,8 @@ CONTAINS
     !
     IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
       INQUIRE (MDS(3),OPENED=OPENED)
-      IF ( .NOT. OPENED ) OPEN (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT), &
-           ERR=889,IOSTAT=IERR)
+      IF ( .NOT. OPENED ) OPEN (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT), ERR=889, &
+           IOSTAT=IERR)
     END IF
     !
     ! 1.d Dataset unit numbers
@@ -5541,8 +5541,7 @@ CONTAINS
             !
           ELSE
             !
-            ALLOCATE                                       &
-                 ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,     &
+            ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,  &
                  OUTPTS(IMOD)%OUT4%VAAUX(NSPEC,2*RSBLKS,NAPROC) )
             !
             IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
@@ -5728,8 +5727,8 @@ CONTAINS
         IRQTR  => OUTPTS(IMOD)%OUT3%IRQTR
         IH     = IH + 1
         IT     = IT0 + 1
-        CALL MPI_SEND_INIT (UST   (IAPROC),1,WW3_FIELD_VEC, IROOT, IT, &
-             MPI_COMM_WAVE, IRQTR(IH), IERR )
+        CALL MPI_SEND_INIT (UST   (IAPROC),1,WW3_FIELD_VEC, IROOT, IT, MPI_COMM_WAVE, &
+             IRQTR(IH), IERR )
 #endif
 #ifdef W3_MPIT
         WRITE (NDST,9041) IH, 'S U*', IROOT, IT, IRQTR(IH), IERR
@@ -5737,8 +5736,8 @@ CONTAINS
 #ifdef W3_MPI
         IH     = IH + 1
         IT     = IT0 + 2
-        CALL MPI_SEND_INIT (USTDIR(IAPROC),1,WW3_FIELD_VEC, IROOT, IT, &
-             MPI_COMM_WAVE, IRQTR(IH), IERR )
+        CALL MPI_SEND_INIT (USTDIR(IAPROC),1,WW3_FIELD_VEC, IROOT, IT, MPI_COMM_WAVE, &
+             IRQTR(IH), IERR )
 #endif
 #ifdef W3_MPIT
         WRITE (NDST,9041) IH, 'S U*', IROOT, IT, IRQTR(IH), IERR
@@ -5752,8 +5751,8 @@ CONTAINS
           IF ( I0 .NE. IAPROC ) THEN
             IH     = IH + 1
             IT     = IT0 + 1
-            CALL MPI_RECV_INIT(UST   (I0),1,WW3_FIELD_VEC, IFROM, IT, &
-                 MPI_COMM_WAVE, IRQTR(IH), IERR)
+            CALL MPI_RECV_INIT(UST   (I0),1,WW3_FIELD_VEC, IFROM, IT, MPI_COMM_WAVE, &
+                 IRQTR(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9041) IH, 'R U*', IFROM, IT, IRQTR(IH), IERR
@@ -5761,8 +5760,8 @@ CONTAINS
 #ifdef W3_MPI
             IH     = IH + 1
             IT     = IT0 + 2
-            CALL MPI_RECV_INIT(USTDIR(I0),1,WW3_FIELD_VEC, IFROM, IT, &
-                 MPI_COMM_WAVE, IRQTR(IH), IERR)
+            CALL MPI_RECV_INIT(USTDIR(I0),1,WW3_FIELD_VEC, IFROM, IT, MPI_COMM_WAVE, &
+                 IRQTR(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9041) IH, 'R U*', IFROM, IT, IRQTR(IH), IERR
@@ -6084,8 +6083,8 @@ CONTAINS
 #ifdef W3_MPI
           IH     = IH + 1
           ITARG  = IP(J) - 1
-          CALL MPI_RECV_INIT ( SPPNT(1,1,J), NSPEC, MPI_REAL, ITARG, IT, &
-               MPI_COMM_WAVE, IRQPO2(IH), IERR )
+          CALL MPI_RECV_INIT ( SPPNT(1,1,J), NSPEC, MPI_REAL, ITARG, IT, MPI_COMM_WAVE, &
+               IRQPO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH,I,J, ITARG,IT, IRQPO2(IH), IERR

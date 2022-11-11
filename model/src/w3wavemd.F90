@@ -1421,7 +1421,7 @@ CONTAINS
 
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 12')
         !
-        !         Calculate PHASE SPEED GRADIENT.
+        ! Calculate PHASE SPEED GRADIENT.
         DCDX = 0.
         DCDY = 0.
 #ifdef W3_REFRX
@@ -1435,7 +1435,7 @@ CONTAINS
         ELSE
           WRITE (NDSE,1040)
           CALL EXTCDE(2)
-          !      CALL UG_GRADIENTS(CMN, DCDX, DCDY) !/ Stefan, to be confirmed!
+          ! CALL UG_GRADIENTS(CMN, DCDX, DCDY) !/ Stefan, to be confirmed!
         END IF
 #endif
         !
