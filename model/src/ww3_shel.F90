@@ -1612,7 +1612,7 @@ PROGRAM W3SHEL
           END IF
         END DO
       END DO
-      call print_memcheck(740+IAPROC, 'memcheck_____:'//' WW3_SHEL SECTION 3')
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 3')
       !
 #ifdef W3_O7
       DO J=JFIRST, 10

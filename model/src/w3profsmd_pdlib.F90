@@ -7399,6 +7399,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/
     INTEGER, INTENT(IN) :: IMOD
+
     DEALLOCATE (                 &
          ! GRIDS(IMOD)%TRIGP,    &
          GRIDS(IMOD)%SI,         &
