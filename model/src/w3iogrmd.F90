@@ -364,7 +364,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
     call getMallocInfo(mallinfos)
-    call printMallInfo(740+IAPROC,mallInfos)
+    call printMallInfo(IAPROC,mallInfos)
 #endif
 
 
@@ -558,7 +558,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 2'
     call getMallocInfo(mallinfos)
-    call printMallInfo(740+IAPROC,mallInfos)
+    call printMallInfo(IAPROC,mallInfos)
 #endif
     !
     ! open file ---------------------------------------------------------- *
@@ -716,7 +716,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
     call getMallocInfo(mallinfos)
-    call printMallInfo(740+IAPROC,mallInfos)
+    call printMallInfo(IAPROC,mallInfos)
 #endif
 
     !
@@ -811,7 +811,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
       write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
       call getMallocInfo(mallinfos)
-      call printMallInfo(740+IAPROC,mallInfos)
+      call printMallInfo(IAPROC,mallInfos)
 #endif
 
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
@@ -871,7 +871,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
         write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
         call getMallocInfo(mallinfos)
-        call printMallInfo(740+IAPROC,mallInfos)
+        call printMallInfo(IAPROC,mallInfos)
 #endif
         READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
              X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA,             &
@@ -882,7 +882,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
         write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
         call getMallocInfo(mallinfos)
-        call printMallInfo(740+IAPROC,mallInfos)
+        call printMallInfo(IAPROC,mallInfos)
 #endif
 
 
@@ -957,7 +957,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7'
     call getMallocInfo(mallinfos)
-    call printMallInfo(740+IAPROC,mallInfos)
+    call printMallInfo(IAPROC,mallInfos)
 #endif
 
 
@@ -1465,7 +1465,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 8'
     call getMallocInfo(mallinfos)
-    call printMallInfo(740+IAPROC,mallInfos)
+    call printMallInfo(IAPROC,mallInfos)
 #endif
 
 #ifdef W3_DB1
@@ -1586,7 +1586,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 9'
     call getMallocInfo(mallinfos)
-    call printMallInfo(740+IAPROC,mallInfos)
+    call printMallInfo(IAPROC,mallInfos)
 #endif
     !
     RETURN

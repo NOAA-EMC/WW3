@@ -62,6 +62,10 @@ module MallocInfo_m
   !/
   !/ ------------------------------------------------------------------- /
   !/
+#ifdef W3_S
+  CALL STRACE (IENT, 'W3XXXX')
+#endif
+
   !> This structure type is used to return information about the dynamic memory allocator.
   type, bind(c) :: MallInfo_t
     !> This is the total size of memory allocated with sbrk by malloc, in bytes.

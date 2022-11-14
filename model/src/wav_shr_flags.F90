@@ -1185,16 +1185,13 @@ contains
   !> @date 06-01-2022
 
   subroutine print_memcheck(iun, msg)
-#ifdef W3_MEMCHECK
+#if W3_MEMCHECK
     USE MallocInfo_m
 #endif
     integer          , intent(in) :: iun
     character(len=*) , intent(in) :: msg
 
-#ifdef W3_MEMCHECK
-    ! local variables
-    type(MallInfo_t)        :: mallinfos
-
+#if W3_MEMCHECK
     write(iun,*) trim(msg)
     call getMallocInfo(mallinfos)
     call printMallInfo(iun, mallInfos)
