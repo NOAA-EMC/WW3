@@ -14,7 +14,7 @@ defaults:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel7
+  cache_key: intel8
   CC: icc
   FC: ifort
   CXX: icpc
