@@ -1611,7 +1611,6 @@ CONTAINS
     !/
   END SUBROUTINE W3UIC1
   !/ ------------------------------------------------------------------- /
-
   !> @attention FLFRST not currently used.
   !> @brief Update ice floe mean and max diameters in the wave model.
   !>
@@ -1735,7 +1734,6 @@ CONTAINS
     !/
   END SUBROUTINE W3UIC5
   !/ ------------------------------------------------------------------- /
-
 !>
 !> @brief Update ice map in the wave model.
 !>

@@ -592,7 +592,6 @@ CONTAINS
   END SUBROUTINE LOAD_ALPHABETA_FROMFILE
 
   !/ ------------------------------------------------------------------- /
-
   !>
   !> @brief Method of the class UOST_SOURCETERM, to set the
   !>  actual spatial and spectral grid.
@@ -899,7 +898,6 @@ CONTAINS
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_LD
 
   !/ ------------------------------------------------------------------- /
-
   !>
   !> @brief Method of the class UOST_SOURCETERM.
   !>
@@ -1036,7 +1034,6 @@ CONTAINS
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_SE
 
   !/ ------------------------------------------------------------------- /
-
   !>
   !> @brief Method of the class UOST_SOURCETERM.
   !>
