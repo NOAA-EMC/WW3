@@ -102,6 +102,7 @@ EOF
     echo '#SBATCH -J ww3_regtest'                           >> matrix.head
     echo '#SBATCH -o matrix.out'                            >> matrix.head
     echo '#SBATCH -p orion'                                 >> matrix.head
+    echo '#SBATCH --exclusive'                              >> matrix.head
     echo 'ulimit -s unlimited'                              >> matrix.head
   elif [ $batchq = "slurm" ]
   then
