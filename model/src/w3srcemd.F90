@@ -869,14 +869,6 @@ CONTAINS
     VDIN = 0.
 #endif
 
-#ifdef W3_NL0
-    VSNL = 0.
-    VDNL = 0.
-#endif
-#ifdef W3_NL1
-    VSNL = 0.
-    VDNL = 0.
-#endif
 #ifdef W3_TR1
     VSTR = 0.
     VDTR = 0.
@@ -1254,6 +1246,10 @@ CONTAINS
       !
       ! 2.b Nonlinear interactions.
       !
+#ifdef W3_NL0
+      VSNL = 0.
+      VDNL = 0.
+#endif
 #ifdef W3_NL1
       CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH,        VSNL, VDNL )
 #endif

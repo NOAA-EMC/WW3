@@ -90,7 +90,7 @@ CONTAINS
     !     frequency grid is invariant, the nonlinear interactions are
     !     calculated for the frequency spectrum, as in WAM. This requires
     !     only a single set of interpolation data which can be applied
-    !     throughout the spatial domain. For deep water this is idenitical
+    !     throughout the spatial domain. For deep water this is identical
     !     to a direct application to the wavenumber spectrum, for shallow
     !     water it is not. As the shallow water correction is nothing but
     !     a crude approximation, the choice between spectra is expected to
