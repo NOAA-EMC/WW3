@@ -38,7 +38,7 @@ module wav_comp_nuopc
   use NUOPC_Model           , only : NUOPC_ModelGet, SetVM
   use wav_kind_mod          , only : r8=>shr_kind_r8, i8=>shr_kind_i8, i4=>shr_kind_i4
   use wav_kind_mod          , only : cl=>shr_kind_cl, cs=>shr_kind_cs
-  use wav_import_export     , only : advertise_fields, realize_fields, nseal_noghost
+  use wav_import_export     , only : advertise_fields, realize_fields, nseal_cpl
   use wav_shr_mod           , only : state_diagnose, state_getfldptr, state_fldchk
   use wav_shr_mod           , only : chkerr, state_setscalar, state_getscalar, alarmInit, ymd2date
   use wav_shr_mod           , only : wav_coupling_to_cice, nwav_elev_spectrum
@@ -713,12 +713,12 @@ contains
     ! case (PDLIB), set a value of the local sea points on this processor minus the
     ! ghost points.
 #ifdef W3_PDLIB
-    nseal_noghost = nseal - ng
+    nseal_cpl = nseal - ng
 #else
-    nseal_noghost = nseal
+    nseal_cpl = nseal
 #endif
-    allocate(gindex_sea(nseal_noghost))
-    do jsea=1, nseal_noghost
+    allocate(gindex_sea(nseal_cpl))
+    do jsea=1, nseal_cpl
       call init_get_isea(isea, jsea)
       ix = mapsf(isea,1)
       iy = mapsf(isea,2)
@@ -735,7 +735,7 @@ contains
       allocate(mask_global(nx*ny), mask_local(nx*ny))
       mask_local(:) = 0
       mask_global(:) = 0
-      do jsea=1, nseal_noghost
+      do jsea=1, nseal_cpl
         call init_get_isea(isea, jsea)
         ix = mapsf(isea,1)
         iy = mapsf(isea,2)
@@ -767,12 +767,12 @@ contains
 
       ! create a global index that includes both sea and land - but put land at the end
       nlnd = (my_lnd_end - my_lnd_start + 1)
-      allocate(gindex(nlnd + nseal_noghost))
+      allocate(gindex(nlnd + nseal_cpl))
       do ncnt = 1,nlnd + nseal
-        if (ncnt <= nseal_noghost) then
+        if (ncnt <= nseal_cpl) then
           gindex(ncnt) = gindex_sea(ncnt)
         else
-          gindex(ncnt) = gindex_lnd(ncnt-nseal_noghost)
+          gindex(ncnt) = gindex_lnd(ncnt-nseal_cpl)
         end if
       end do
       deallocate(gindex_sea)
@@ -814,7 +814,7 @@ contains
       if (maskmin == 1) then
         ! replace mesh mask with internal mask
         meshmask(:) = 0
-        meshmask(1:nseal_noghost) = 1
+        meshmask(1:nseal_cpl) = 1
         call ESMF_MeshSet(mesh=EMesh, elementMask=meshmask, rc=rc)
         if (chkerr(rc,__LINE__,u_FILE_u)) return
       end if

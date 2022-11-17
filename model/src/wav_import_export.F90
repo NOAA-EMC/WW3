@@ -63,7 +63,7 @@ module wav_import_export
 #else
   logical :: cesmcoupled = .false.                  !< logical defining a non-CESM use case (UWM)
 #endif
-  integer, public    :: nseal_noghost               !< the number of local sea points on a processor, exclusive
+  integer, public    :: nseal_cpl                   !< the number of local sea points on a processor, exclusive
                                                     !! of the ghost points. For non-PDLIB cases, this is nseal
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
        __FILE__
@@ -659,7 +659,7 @@ contains
       call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_lamult(:) = fillvalue
-      do jsea=1, nseal_noghost
+      do jsea=1, nseal_cpl
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
@@ -677,7 +677,7 @@ contains
       call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_ustokes(:) = fillvalue
-      do jsea=1, nseal_noghost
+      do jsea=1, nseal_cpl
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
@@ -692,7 +692,7 @@ contains
       call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_vstokes(:) = fillvalue
-      do jsea=1, nseal_noghost
+      do jsea=1, nseal_cpl
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
@@ -772,7 +772,7 @@ contains
       if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
         call CALC_U3STOKES(va, 2)
         do ib = 1, USSPF(2)
-          do jsea = 1, nseal_noghost
+          do jsea = 1, nseal_cpl
             sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
             sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
           enddo
@@ -806,7 +806,7 @@ contains
       sw_ustokes3(:)= zero
       sw_vstokes3(:)= zero
       call CALC_U3STOKES(va, 2)
-      do jsea = 1,nseal_noghost
+      do jsea = 1,nseal_cpl
         sw_ustokes1(jsea)=ussp(jsea,1)
         sw_vstokes1(jsea)=ussp(jsea,nk+1)
         sw_ustokes2(jsea)=ussp(jsea,2)
@@ -1022,7 +1022,7 @@ contains
     !----------------------------------------------------------------------
 
     !TODO: fix firstCall like for Roughl
-    jsea_loop: do jsea = 1,nseal_noghost
+    jsea_loop: do jsea = 1,nseal_cpl
       call init_get_isea(isea, jsea)
       if ( firstCall ) then
         charn(jsea) = zero
@@ -1086,7 +1086,7 @@ contains
 
     !----------------------------------------------------------------------
 
-    jsea_loop: do jsea = 1,nseal_noghost
+    jsea_loop: do jsea = 1,nseal_cpl
       call init_get_isea(isea, jsea)
       ix = mapsf(isea,1)
       iy = mapsf(isea,2)
@@ -1166,7 +1166,7 @@ contains
     wbyn(:) = zero
     wbpn(:) = zero
 
-    jsea_loop: do jsea = 1,nseal_noghost
+    jsea_loop: do jsea = 1,nseal_cpl
       call init_get_isea(isea, jsea)
       if ( dw(isea).le.zero ) cycle jsea_loop
       depth = max(dmin,dw(isea))
@@ -1242,7 +1242,7 @@ contains
     !----------------------------------------------------------------------
 
     facd = dwat*grav
-    jsea_loop: do jsea = 1,nseal_noghost
+    jsea_loop: do jsea = 1,nseal_cpl
       call init_get_isea(isea, jsea)
       if ( dw(isea).le.zero ) cycle jsea_loop
       sxxs = zero
@@ -1307,7 +1307,7 @@ contains
         end do
       end do
 
-      do jsea = 1,nseal_noghost
+      do jsea = 1,nseal_cpl
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)                   ! global ix
         iy  = mapsf(isea,2)                   ! global iy
@@ -1365,7 +1365,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
-    do jsea = 1, nseal_noghost
+    do jsea = 1, nseal_cpl
       call init_get_isea(isea, jsea)
       global_input(isea) = real(dataptr(jsea),4)
     end do
