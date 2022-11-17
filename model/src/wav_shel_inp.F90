@@ -1457,13 +1457,12 @@ contains
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1009) ODAT(33), NINT(DTMAX)
     CALL EXTCDE ( 1009 )
 2222 CONTINUE
-
     ! Formats
 900 FORMAT (/15X,'      *** WAVEWATCH III Program shell ***      '/ &
          15X,'==============================================='/)
 901 FORMAT ( '  Comment character is ''',A,''''/)
-905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
-         '     Requested: ', I2/                          &
+905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/              &
+         '     Requested: ', I2/                                    &
          '      Provided: ', I2/ )
 920 FORMAT (/'  Input fields : '/                                   &
          ' --------------------------------------------------')
@@ -1474,7 +1473,7 @@ contains
 931 FORMAT ( '       Starting time : ',A)
 932 FORMAT ( '       Ending time   : ',A/)
 940 FORMAT (/'  Output requests : '/                                &
-         ' --------------------------------------------------'/ &
+         ' --------------------------------------------------'/     &
          '       ',A)
 941 FORMAT (/'       Type',I2,' : ',A/                              &
          '      -----------------------------------------')
@@ -1493,56 +1492,56 @@ contains
 2956 FORMAT ( '              ',I6,' : ',2(F8.1,'E3'),2X,A)
 2947 FORMAT ( '            No points defined')
 3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
-6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
-         '            IY first,last,inc :',3I5/                 &
+6945 FORMAT ( '            IX first,last,inc :',3I5/                &
+         '            IY first,last,inc :',3I5/                     &
          '            Formatted file    :    ',A)
-8945 FORMAT ( '            output dates out of run dates : ', A,     &
+8945 FORMAT ( '            output dates out of run dates : ', A,    &
          ' deactivated')
-950 FORMAT (/'  Initializations :'/                                  &
+950 FORMAT (/'  Initializations :'/                                 &
          ' --------------------------------------------------')
 951 FORMAT ( '       ',A)
 952 FORMAT ( '       ',I6,2X,A)
 953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
+1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
          '     PREMATURE END OF INPUT FILE'/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM INPUT FILE'/               &
+1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
+         '     ERROR IN READING FROM INPUT FILE'/                   &
          '     IOSTAT =',I5/)
-1102 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
+1102 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
+         '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/    &
          '     IT MUST BE FULLY COUPLED OR DISABLED '/)
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
+1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
          '     ILLEGAL TIME INTERVAL'/)
-1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING POINT FILE'/                    &
+1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
+         '     ERROR IN OPENING POINT FILE'/                        &
          '     IOSTAT =',I5/)
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM POINT FILE'/               &
+1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
+         '     ERROR IN READING FROM POINT FILE'/                   &
          '     IOSTAT =',I5/)
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
+1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
          '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
-1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
+1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
          '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
-1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : ***'/            &
+1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : ***'/           &
          '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
-1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
+1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
          '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
-1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING OUTPUT FILE'/                   &
+1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
+         '     ERROR IN OPENING OUTPUT FILE'/                       &
          '     IOSTAT =',I5/)
-1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
+1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
+         '     COUPLING TIME STEP NOT MULTIPLE OF'/                 &
          '     MODEL TIME STEP: ',I6, I6/)
-1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/         &
-         '     COUPLING TIME STEP NOT DEFINED, '/               &
-         '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
+1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/        &
+         '     COUPLING TIME STEP NOT DEFINED, '/                   &
+         '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/              &
          '     FROM ',I6, ' TO ',I6/)
-1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
+1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/          &
          '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)
 9020 FORMAT ( ' TEST W3SHEL : FLAGS DEF / HOM  : ',9L2,2X,9L2)
-9040 FORMAT ( ' TEST W3SHEL : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
+9040 FORMAT ( ' TEST W3SHEL : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,    &
          4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
 9041 FORMAT ( ' TEST W3SHEL : FLGRD  : ',20L2)
 9042 FORMAT ( ' TEST W3SHEL : IPR, PRFRM : ',6I6,1X,L1)
