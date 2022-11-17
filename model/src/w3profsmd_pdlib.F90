@@ -680,7 +680,7 @@ CONTAINS
     !
     USE W3TIMEMD, only: DSEC21
     !
-    USE W3GDATMD, only: NX, NY, MAPFS, CLATS,                       &
+    USE W3GDATMD, only: NX, NY, MAPFS, CLATS,        &
          FLCX, FLCY, NK, NTH, DTH, XFR,              &
          ECOS, ESIN, SIG,  PFMOVE,                   &
          IOBP, IOBPD,                                &
@@ -2277,6 +2277,8 @@ CONTAINS
     LOGICAL :: LocalizeMaximum = .TRUE.
     LOGICAL :: CheckUncovered = .TRUE.
     LOGICAL :: PrintFullValue = .TRUE.
+    integer :: ip
+
     IF (FULL_NSPEC) THEN
       CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(TheARR, string, maxidx, PrintMinISP, LocalizeMaximum)
     ELSE
@@ -3686,7 +3688,7 @@ CONTAINS
     USE W3PARALL, only : ONESIXTH, ZERO, THR, IMEM
     use yowElementpool, only: ne, INE
     USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
-         PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,          &
+         PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,        &
          PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
          PDLIB_I_DIAG, PDLIB_JA
     USE W3ODATMD, only : IAPROC
@@ -7547,28 +7549,28 @@ CONTAINS
     !/
     INTEGER, INTENT(IN) :: IMOD
 
-    DEALLOCATE ( &
-         !                 GRIDS(IMOD)%TRIGP,                         &
-         GRIDS(IMOD)%SI,                                &
-         GRIDS(IMOD)%TRIA,                            &
-         GRIDS(IMOD)%CROSSDIFF,                     &
-         GRIDS(IMOD)%IEN,                           &
-         GRIDS(IMOD)%LEN,                           &
-         GRIDS(IMOD)%ANGLE,                         &
-         GRIDS(IMOD)%ANGLE0,                        &
-         GRIDS(IMOD)%CCON,                              &
-         GRIDS(IMOD)%COUNTCON,                          &
-         GRIDS(IMOD)%INDEX_CELL,                      &
-         GRIDS(IMOD)%IE_CELL,                     &
-         GRIDS(IMOD)%POS_CELL,                    &
-         GRIDS(IMOD)%IAA,                             &
-         GRIDS(IMOD)%JAA,                              &
-         GRIDS(IMOD)%POSI,                      &
-         GRIDS(IMOD)%I_DIAG,                            &
-         GRIDS(IMOD)%JA_IE,                       &
-                                !GRIDS(IMOD)%IOBP,                         &
-                                !GRIDS(IMOD)%IOBPD,                         &
-         GRIDS(IMOD)%IOBDP,                             &
+    DEALLOCATE (                 &
+         ! GRIDS(IMOD)%TRIGP,    &
+         GRIDS(IMOD)%SI,         &
+         GRIDS(IMOD)%TRIA,       &
+         GRIDS(IMOD)%CROSSDIFF,  &
+         GRIDS(IMOD)%IEN,        &
+         GRIDS(IMOD)%LEN,        &
+         GRIDS(IMOD)%ANGLE,      &
+         GRIDS(IMOD)%ANGLE0,     &
+         GRIDS(IMOD)%CCON,       &
+         GRIDS(IMOD)%COUNTCON,   &
+         GRIDS(IMOD)%INDEX_CELL, &
+         GRIDS(IMOD)%IE_CELL,    &
+         GRIDS(IMOD)%POS_CELL,   &
+         GRIDS(IMOD)%IAA,        &
+         GRIDS(IMOD)%JAA,        &
+         GRIDS(IMOD)%POSI,       &
+         GRIDS(IMOD)%I_DIAG,     &
+         GRIDS(IMOD)%JA_IE,      &
+         !GRIDS(IMOD)%IOBP,      &
+         !GRIDS(IMOD)%IOBPD,     &
+         GRIDS(IMOD)%IOBDP,      &
          GRIDS(IMOD)%IOBPA  )
     !/
     !/ End of DEALLOCATE_PDLIB_GLOBAL ------------------------------------------------ /

@@ -121,7 +121,7 @@ MODULE W3INITMD
   !
   !/ ------------------------------------------------------------------- /
   ! module default
-  IMPLICIT NONE
+  implicit none
 
   PUBLIC
   !/
@@ -159,10 +159,8 @@ CONTAINS
   !>
   !> @author H. L. Tolman  @date 03-Sep-2012
   !>
-  SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT      &
-       , FLGRD,                               &
-       FLGR2, FLGD, FLG2, NPT, XPT, YPT, PNAMES,   &
-       IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
+  SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT, FLGRD,  FLGR2, FLGD, &
+       FLG2, NPT, XPT, YPT, PNAMES, IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -642,14 +640,13 @@ CONTAINS
         IF ( ODAT( 8).GT.0 ) NAPPNT = NAPROC
         IF ( ODAT(18).GT.0 ) NAPRST = NAPROC
         IF ( ODAT(23).GT.0 ) NAPBPT = NAPROC
-        IF ( ( ODAT( 8).GT.0 .OR. ODAT(18).GT.0 .OR.            &
+        IF ( ( ODAT( 8).GT.0 .OR. ODAT(18).GT.0 .OR.           &
              ODAT(23).GT.0 ) ) NAPROC = MAX(1,NAPROC-1)
       END IF
     END IF
     !
     FRACOS = 100. * REAL(NTPROC-NAPROC) / REAL(NTPROC)
-    IF ( FRACOS.GT.CRITOS .AND. IAPROC.EQ.NAPERR )                  &
-         WRITE (NDSE,8002) FRACOS
+    IF ( FRACOS.GT.CRITOS .AND. IAPROC.EQ.NAPERR ) WRITE (NDSE,8002) FRACOS
     !
 #ifdef W3_MPI
     IF ( NAPROC .EQ. NTPROC ) THEN
@@ -660,10 +657,8 @@ CONTAINS
       DO J=1, NAPROC
         TMPRNK(J) = J - 1
       END DO
-      CALL MPI_GROUP_INCL ( BGROUP, NAPROC, TMPRNK, LGROUP,  &
-           IERR_MPI )
-      CALL MPI_COMM_CREATE ( MPI_COMM_WAVE, LGROUP,          &
-           MPI_COMM_WCMP, IERR_MPI )
+      CALL MPI_GROUP_INCL ( BGROUP, NAPROC, TMPRNK, LGROUP, IERR_MPI )
+      CALL MPI_COMM_CREATE ( MPI_COMM_WAVE, LGROUP, MPI_COMM_WCMP, IERR_MPI )
       CALL MPI_GROUP_FREE ( LGROUP, IERR_MPI )
       CALL MPI_GROUP_FREE ( BGROUP, IERR_MPI )
       DEALLOCATE ( TMPRNK )
@@ -695,7 +690,7 @@ CONTAINS
 #ifdef W3_DIST
     IW     = 1 + INT ( LOG10 ( REAL(NAPROC) + 0.5 ) )
     IW     = MAX ( 3 , MIN ( 9 , IW ) )
-    WRITE (FORMAT,'(A5,I1.1,A1,I1.1,A4)')                     &
+    WRITE (FORMAT,'(A5,I1.1,A1,I1.1,A4)')                    &
          '(A4,I', IW, '.', IW, ',2A)'
     WRITE (TFILE,FORMAT) 'test',                             &
          OUTPTS(IMOD)%IAPROC, '.', FEXT(:IE)
@@ -710,8 +705,8 @@ CONTAINS
     !
     IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
       INQUIRE (MDS(3),OPENED=OPENED)
-      IF ( .NOT. OPENED ) OPEN                                    &
-           (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT),ERR=889,IOSTAT=IERR)
+      IF ( .NOT. OPENED ) OPEN (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT), ERR=889, &
+           IOSTAT=IERR)
     END IF
     !
     ! 1.d Dataset unit numbers
@@ -1027,8 +1022,7 @@ CONTAINS
     WRITE (NDST,9025)
     DO IK=NK, 1, -1
       WRITE (NDST,9026) IK, (IAPPRO(ITH+(IK-1)*NTH),ITH=1,MIN(24,NTH))
-      IF ( NTH .GT. 24 ) WRITE (NDST,9027)                       &
-           (IAPPRO(ITH+(IK-1)*NTH),ITH=25,NTH)
+      IF ( NTH .GT. 24 ) WRITE (NDST,9027) (IAPPRO(ITH+(IK-1)*NTH),ITH=25,NTH)
     END DO
 #endif
     !
@@ -1454,8 +1448,8 @@ CONTAINS
     NX0    = 1
     DO
       NXN    = MIN ( NX0+NXS-1 , NX )
-      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0.,        &
-           NX0, NXN, 1, 1, NY, 1, 'Depth', 'm')
+      CALL PRTBLK (NDST, NX, NY, NX, XOUT, MAPOUT, 0, 0., NX0, NXN, 1, 1, &
+           NY, 1, 'Depth', 'm')
       IF ( NXN .NE. NX ) THEN
         NX0    = NX0 + NXS
       ELSE
@@ -1483,7 +1477,7 @@ CONTAINS
       !
       DO IK=0, NK+1
         !
-        !         Calculate wavenumbers and group velocities.
+        !  Calculate wavenumbers and group velocities.
         CALL WAVNU1(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
         !
 #ifdef W3_T1
@@ -1573,11 +1567,9 @@ CONTAINS
           END IF
           DO IP=1, NOPTS
             IF ( FLAGLL ) THEN
-              WRITE (NDSO,980) IP, FACTOR*PTLOC(1,IP),      &
-                   FACTOR*PTLOC(2,IP), PTNME(IP)
+              WRITE (NDSO,980) IP, FACTOR*PTLOC(1,IP), FACTOR*PTLOC(2,IP), PTNME(IP)
             ELSE
-              WRITE (NDSO,986) IP, FACTOR*PTLOC(1,IP),      &
-                   FACTOR*PTLOC(2,IP), PTNME(IP)
+              WRITE (NDSO,986) IP, FACTOR*PTLOC(1,IP), FACTOR*PTLOC(2,IP), PTNME(IP)
             END IF
           END DO
         END IF
@@ -1660,7 +1652,7 @@ CONTAINS
     !
     ! Formats
     !
-900 FORMAT ( ' WAVEWATCH III log file            ',                 &
+900 FORMAT ( ' WAVEWATCH III log file            ',             &
          '                     version ',A/                     &
          ' ==================================',                 &
          '==================================='/                 &
@@ -1683,20 +1675,19 @@ CONTAINS
 9975 FORMAT( ' ',A,' ice parameter 3')
 9976 FORMAT( ' ',A,' ice parameter 4')
 9977 FORMAT( ' ',A,' ice parameter 5')
-
     !
-975 FORMAT (/' Gridded output fields : '/                           &
+975 FORMAT (/' Gridded output fields : '/                            &
          '--------------------------------------------------')
 976 FORMAT ( '     ',A)
     !
-977 FORMAT (/' Point output requested for',I6,' points : '/         &
+977 FORMAT (/' Point output requested for',I6,' points : '/          &
          '------------------------------------------')
 978 FORMAT (/'      Point output disabled')
-979 FORMAT                                                     &
-         (/'      point  |  longitude  |   latitude  |  name  '/  &
+979 FORMAT                                                           &
+         (/'      point  |  longitude  |   latitude  |  name  '/     &
          '     --------|-------------|-------------|----------------')
-985 FORMAT                                                     &
-         (/'      point  |      X      |      Y      |  name  '/  &
+985 FORMAT                                                           &
+         (/'      point  |      X      |      Y      |  name  '/     &
          '     --------|-------------|-------------|----------------')
 980 FORMAT ( 5X,I5,'   |',2(F10.2,'   |'),2X,A)
 986 FORMAT ( 5X,I5,'   |',2(F8.1,'E3   |'),2X,A)
@@ -1706,39 +1697,39 @@ CONTAINS
 983 FORMAT ( ' Ice field time   : ',A)
 990 FORMAT ( ' Air density time : ',A)
     !
-984 FORMAT (//                                                      &
-         37X,'  |         input         |      output      |'/         &
-         37X,'  |-----------------------|------------------|'/         &
-         2X,'   step | pass |    date      time   |',                 &
-         ' b w l c t r i i1 i5 d | g p t r b f c r2 |'/          &
-         2X,'--------|------|---------------------|',                 &
-         '-----------------------|------------------|'/            &
-         2X,'--------+------+---------------------+',                 &
+984 FORMAT (//                                                       &
+         37X,'  |         input         |      output      |'/       &
+         37X,'  |-----------------------|------------------|'/       &
+         2X,'   step | pass |    date      time   |',                &
+         ' b w l c t r i i1 i5 d | g p t r b f c r2 |'/              &
+         2X,'--------|------|---------------------|',                &
+         '-----------------------|------------------|'/              &
+         2X,'--------+------+---------------------+',                &
          '---------------------------+--------------+')
-987 FORMAT (/' Coupling output fields : '/                          &
+987 FORMAT (/' Coupling output fields : '/                           &
          '--------------------------------------------------')
     !
 8000 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
-         '     ERROR IN OPENING LOG FILE'/                      &
+         '     ERROR IN OPENING LOG FILE'/                           &
          '     IOSTAT =',I5/)
 8001 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
-         '     ERROR IN OPENING TEST FILE'/                     &
+         '     ERROR IN OPENING TEST FILE'/                          &
          '     IOSTAT =',I5/)
 8002 FORMAT (/' *** WAVEWATCH III WARNING IN W3INIT : '/             &
-         '     SIGNIFICANT PART OF RESOURCES RESERVED FOR',     &
+         '     SIGNIFICANT PART OF RESOURCES RESERVED FOR',          &
          ' OUTPUT :',F6.1,'%'/)
 #ifdef W3_DIST
-8020 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/         &
-         '     NUMBER OF SEA POINTS LESS THAN NUMBER OF PROC.'/ &
+8020 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
+         '     NUMBER OF SEA POINTS LESS THAN NUMBER OF PROC.'/      &
          '     NSEA, NAPROC =',2I8/)
-8021 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/         &
+8021 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
          '     NUMBER OF SPECTRAL POINTS LESS THAN NUMBER OF PROC.'/ &
          '     NSPEC, NAPROC =',2I8/)
-8028 FORMAT (/' *** WAVEWATCH III WARNING IN W3INIT : '/       &
-         '     INCREASING TARGET IN MPP PROPAGATION MAP.'/      &
+8028 FORMAT (/' *** WAVEWATCH III WARNING IN W3INIT : '/             &
+         '     INCREASING TARGET IN MPP PROPAGATION MAP.'/           &
          '     IMBALANCE BETWEEN OVERALL AND CFL TIME STEPS'/)
-8029 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/         &
-         '     SOMETHING WRONG WITH MPP PROPAGATION MAP.'/      &
+8029 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
+         '     SOMETHING WRONG WITH MPP PROPAGATION MAP.'/           &
          '     CALL HENDRIK !!!'/)
 #endif
     !
@@ -1898,7 +1889,6 @@ CONTAINS
 #endif
     USE W3ODATMD, ONLY: NDST, NAPROC, IAPROC
     !/
-    !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
 #endif
@@ -1981,8 +1971,10 @@ CONTAINS
         IF ( IAPPRO(ISP) .NE. IAPROC ) THEN
           ITARG  = IAPPRO(ISP) - 1
           IH     = IH + 1
-          CALL MPI_SEND_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,1), IERR1 )
-          CALL MPI_RECV_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG1(IH,2), IERR2 )
+          CALL MPI_SEND_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, &
+               IRQSG1(IH,1), IERR1 )
+          CALL MPI_RECV_INIT ( VA(ISP,1), 1, WW3_SPEC_VEC, ITARG, ISP, MPI_COMM_WAVE, &
+               IRQSG1(IH,2), IERR2 )
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9022) IH, ISP, ITARG+1, IRQSG1(IH,1), IERR1, IRQSG1(IH,2), IERR2
@@ -2001,8 +1993,8 @@ CONTAINS
       !
 #ifdef W3_MPI
       NRQSG2 = MAX( 1 , NAPROC-1 )
-      ALLOCATE ( WADATS(IMOD)%IRQSG2(NRQSG2*NSPLOC,2),           &
-           WADATS(IMOD)%GSTORE(NAPROC*NSEALM,MPIBUF),      &
+      ALLOCATE ( WADATS(IMOD)%IRQSG2(NRQSG2*NSPLOC,2), &
+           WADATS(IMOD)%GSTORE(NAPROC*NSEALM,MPIBUF),  &
            WADATS(IMOD)%SSTORE(NAPROC*NSEALM,MPIBUF) )
       NRQSG2 = NAPROC - 1
       !
@@ -2039,14 +2031,14 @@ CONTAINS
               ITARG  = IP - 1
               IH     = IH + 1
               !
-              CALL MPI_RECV_INIT ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1,        &
-                   WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,1), IERR2 )
-              CALL MPI_SEND_INIT ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1,        &
-                   WW3_FIELD_VEC, ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,2), IERR2 )
+              CALL MPI_RECV_INIT ( WADATS(IMOD)%GSTORE(IP,IBFLOC), 1, WW3_FIELD_VEC, &
+                   ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,1), IERR2 )
+              CALL MPI_SEND_INIT ( WADATS(IMOD)%SSTORE(IP,IBFLOC), 1, WW3_FIELD_VEC, &
+                   ITARG, ISP, MPI_COMM_WAVE, IRQSG2(IH,2), IERR2 )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9032) IH, ISP, ITARG+1, IBFLOC, &
-                   IRQSG2(IH,1), IERR1, IRQSG2(IH,2), IERR2
+              WRITE (NDST,9032) IH, ISP, ITARG+1, IBFLOC, IRQSG2(IH,1), IERR1, &
+                   IRQSG2(IH,2), IERR2
 #endif
               !
               ! ... End of loops
@@ -2081,35 +2073,35 @@ CONTAINS
     ! Format statements
     !
 #ifdef W3_MPIT
-9010 FORMAT ( ' TEST W3MPII: DATA TYPES DEFINED'/     &
-         '              WW3_FIELD_VEC : ',I10/   &
+9010 FORMAT ( ' TEST W3MPII: DATA TYPES DEFINED'/                 &
+         '              WW3_FIELD_VEC : ',I10/                    &
          '              WW3_SPEC_VEC  : ',I10)
 9011 FORMAT ( ' TEST W3MPII: NO COMPUTATIONS ON THIS NODE')
-9020 FORMAT ( ' TEST W3MPII: W3WAVE COMM. SET UP FINISHED'/    &
+9020 FORMAT ( ' TEST W3MPII: W3WAVE COMM. SET UP FINISHED'/       &
          '              NRQSG1        : ',I10)
-9021 FORMAT (/' TEST W3MPII: COMMUNICATION CALLS FOR W3WAVE '/ &
+9021 FORMAT (/' TEST W3MPII: COMMUNICATION CALLS FOR W3WAVE '/    &
          ' +------+------+------+--------------+--------------+'/ &
          ' |  IH  |  ISP | TARG |    SCATTER   |    GATHER    |'/ &
          ' |      |      |      |   handle err |   handle err |'/ &
          ' +------+------+------+--------------+--------------+')
 9022 FORMAT ( ' |',3(I5,' |'),2(I9,I4,' |'))
-9023 FORMAT (                                                  &
+9023 FORMAT (                                                     &
          ' +------+------+------+--------------+--------------+'/)
-9030 FORMAT ( ' TEST W3MPII: GATH/SCAT COMM. SET UP FINISHED'/ &
-         '              NSPLOC        : ',I10/            &
-         '              NRQSG2        : ',I10/            &
+9030 FORMAT ( ' TEST W3MPII: GATH/SCAT COMM. SET UP FINISHED'/    &
+         '              NSPLOC        : ',I10/                    &
+         '              NRQSG2        : ',I10/                    &
          '              TOTAL REQ.    : ',I10/)
-9031 FORMAT (/' TEST W3MPII: COMM. CALLS FOR W3GATH/W3SCAT '/  &
-         ' +------+------+------+------+--------------+', &
-         '--------------+'/                               &
-         ' |  IH  |  ISP | TARG | IBFR |     GATHER   |', &
-         '    SCATTER   |'/                               &
-         ' |      |      |      |      |   handle err |', &
-         '   handle err |'/                               &
-         ' +------+------+------+------+--------------+', &
+9031 FORMAT (/' TEST W3MPII: COMM. CALLS FOR W3GATH/W3SCAT '/     &
+         ' +------+------+------+------+--------------+',         &
+         '--------------+'/                                       &
+         ' |  IH  |  ISP | TARG | IBFR |     GATHER   |',         &
+         '    SCATTER   |'/                                       &
+         ' |      |      |      |      |   handle err |',         &
+         '   handle err |'/                                       &
+         ' +------+------+------+------+--------------+',         &
          '--------------+')
 9032 FORMAT ( ' |',4(I5,' |'),2(I9,I4,' |'))
-9033 FORMAT ( ' +------+------+------+------+--------------+', &
+9033 FORMAT ( ' +------+------+------+------+--------------+',    &
          '--------------+'/)
 #endif
     !/
@@ -2237,21 +2229,21 @@ CONTAINS
 
 
 #ifdef W3_MPI
-    USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0,             &
-         DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,&
-         SXX, SYY, SXY, USERO, PHS, PTP, PLP,   &
-         PDIR, PSI, PWS, PWST, PNR, PHIAW, PHIOC,&
-         TUSX, TUSY, TAUWIX, TAUWIY, TAUOX,     &
-         TAUOY, USSX, USSY, MSSX, MSSY, MSSD,   &
-         MSCX, MSCY, MSCD, PRMS, TPMS, CHARN,   &
-         TWS, TAUWNX, TAUWNY, BHD, CGE,         &
-         CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP, &
-         BEDFORMS, PHIBBL, TAUBBL, T01,         &
-         P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
-         STH2M, HSIG, PHICE, TAUICE, USSP,      &
-         STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD,  &
-         HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW, &
-         PTM1, PT1, PT2, PEP, WBT, CX, CY,      &
+    USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, &
+         DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,   &
+         SXX, SYY, SXY, USERO, PHS, PTP, PLP,      &
+         PDIR, PSI, PWS, PWST, PNR, PHIAW, PHIOC,  &
+         TUSX, TUSY, TAUWIX, TAUWIY, TAUOX,        &
+         TAUOY, USSX, USSY, MSSX, MSSY, MSSD,      &
+         MSCX, MSCY, MSCD, PRMS, TPMS, CHARN,      &
+         TWS, TAUWNX, TAUWNY, BHD, CGE,            &
+         CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP,    &
+         BEDFORMS, PHIBBL, TAUBBL, T01,            &
+         P2SMS, US3D, EF,  TH1M, STH1M, TH2M,      &
+         STH2M, HSIG, PHICE, TAUICE, USSP,         &
+         STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD,     &
+         HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW,    &
+         PTM1, PT1, PT2, PEP, WBT, CX, CY,         &
          TAUOCX, TAUOCY, WNMEAN
 #endif
 
@@ -2262,23 +2254,22 @@ CONTAINS
 
 #ifdef W3_MPI
     USE W3GDATMD, ONLY: NK
-    USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
-         NAPFLD, NAPPNT, NAPRST, NAPBPT, NAPTRK,&
+    USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,  &
+         NAPFLD, NAPPNT, NAPRST, NAPBPT, NAPTRK,              &
          NOGRP, NGRPP, NOGE, FLOGRR
-    USE W3ODATMD, ONLY: OUTPTS, NRQGO, NRQGO2, IRQGO, IRQGO2,  &
-         FLOGRD, NRQPO, NRQPO2, IRQPO1, IRQPO2, &
-         NOPTS, IPTINT, NRQRS, IRQRS, NBLKRS,   &
-         RSBLKS, IRQRSS, VAAUX, NRQBP, NRQBP2,  &
-         IRQBP1, IRQBP2, NFBPO, NBO2, ISBPO,    &
-         ABPOS, NRQTR, IRQTR, IT0PNT, IT0TRK,   &
-         IT0PRT, NOSWLL, NOEXTR, NDSE, IOSTYP,  &
+    USE W3ODATMD, ONLY: OUTPTS, NRQGO, NRQGO2, IRQGO, IRQGO2, &
+         FLOGRD, NRQPO, NRQPO2, IRQPO1, IRQPO2,               &
+         NOPTS, IPTINT, NRQRS, IRQRS, NBLKRS,                 &
+         RSBLKS, IRQRSS, VAAUX, NRQBP, NRQBP2,                &
+         IRQBP1, IRQBP2, NFBPO, NBO2, ISBPO,                  &
+         ABPOS, NRQTR, IRQTR, IT0PNT, IT0TRK,                 &
+         IT0PRT, NOSWLL, NOEXTR, NDSE, IOSTYP,                &
          FLOGR2
     USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
 #endif
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
     USE CONSTANTS, ONLY: LPDLIB
     !/
-    !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
 #endif
@@ -2348,25 +2339,23 @@ CONTAINS
       !
       ! Calculation of NRQMAX splitted by output groups and field type
       !       scalar                2-comp   3-comp
-      NRQMAX =   1                +    0  +    0  +  &  ! group 1
+      NRQMAX =   1           +    0  +    0  +  &  ! group 1
            18                +    0  +    0  +  &  ! group 2
-           0                +    0  +    0  +  &  ! group 3 (extra contributions below)
+           0                 +    0  +    0  +  &  ! group 3 (extra contributions below)
            2+(NOGE(4)-2)*(NOSWLL+1) +    0  +    0  +  &  ! group 4
            11                +    3  +    1  +  &  ! group 5
            12                +    7  +    1  +  &  ! group 6 (extra contributions below)
-           5                +    4  +    1  +  &  ! group 7
-           5                +    2  +    0  +  &  ! group 8
-           5                +    0  +    0  +  &  ! group 9
-           NOEXTR                +    0  +    0        ! group 10
+           5                 +    4  +    1  +  &  ! group 7
+           5                 +    2  +    0  +  &  ! group 8
+           5                 +    0  +    0  +  &  ! group 9
+           NOEXTR            +    0  +    0        ! group 10
 
       ! Extra contributions to NRQMAX from group 3
       DO IFJ=1,5
-        IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX +               &
-             E3DF(3,IFJ) - E3DF(2,IFJ) + 1
+        IF ( FLGRDALL( 3,IFJ)) NRQMAX = NRQMAX + E3DF(3,IFJ) - E3DF(2,IFJ) + 1
       END DO
       ! Extra contributions to NRQMAX from group 6
-      IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX +               &
-           P2MSF(3) - P2MSF(2) + 1
+      IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX + P2MSF(3) - P2MSF(2) + 1
       IF ( FLGRDALL( 6, 8) ) NRQMAX = NRQMAX + 2*NK
       IF ( FLGRDALL( 6,12) ) NRQMAX = NRQMAX + 2*NK
       !
@@ -2392,8 +2381,8 @@ CONTAINS
         IF ( FLGRDALL( 1, 12) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (ICEF (IAPROC), 1, WW3_FIELD_VEC,    &
-               IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+          CALL MPI_SEND_INIT (ICEF (IAPROC), 1, WW3_FIELD_VEC, IROOT, IT, &
+               MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH, ' 1/09', IROOT, IT, IRQGO(IH), IERR
@@ -5697,21 +5686,18 @@ CONTAINS
               JSEA0  = 1 + (IB-1)*RSBLKS
               JSEAN  = MIN ( NSEALM , IB*RSBLKS )
               NSEAB  = 1 + JSEAN - JSEA0
-              CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB,&
-                   MPI_REAL, IROOT, IT, MPI_COMM_WAVE,    &
-                   IRQRSS(IH), IERR )
+              CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB, MPI_REAL, IROOT, IT, &
+                   MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9026) IH, 'S', IB, IROOT, IT,   &
-                   IRQRSS(IH), IERR, NSEAB
+              WRITE (NDST,9026) IH, 'S', IB, IROOT, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
             END DO
             !
           ELSE
             !
-            ALLOCATE                                       &
-                 ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,     &
+            ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,  &
                  OUTPTS(IMOD)%OUT4%VAAUX(NSPEC,2*RSBLKS,NAPROC) )
             !
             IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
@@ -5726,13 +5712,11 @@ CONTAINS
                   IH     = IH + 1
                   IFROM  = I0 - 1
                   IBOFF  = MOD(IB-1,2)*RSBLKS
-                  CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0),&
-                       NSPEC*NSEAB, MPI_REAL, IFROM, IT,  &
-                       MPI_COMM_WAVE, IRQRSS(IH), IERR )
+                  CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0), NSPEC*NSEAB, MPI_REAL, &
+                       IFROM, IT, MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-                  WRITE (NDST,9026) IH, 'R', IB, IFROM, &
-                       IT, IRQRSS(IH), IERR, NSEAB
+                  WRITE (NDST,9026) IH, 'R', IB, IFROM, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
                 END IF
@@ -5765,7 +5749,7 @@ CONTAINS
     IROOT  = NAPBPT - 1
     !
     IF ( FLOUT(5) ) THEN
-      ALLOCATE ( OUTPTS(IMOD)%OUT5%IRQBP1(NBO2(NFBPO)),      &
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%IRQBP1(NBO2(NFBPO)),  &
            OUTPTS(IMOD)%OUT5%IRQBP2(NBO2(NFBPO)) )
       IRQBP1 => OUTPTS(IMOD)%OUT5%IRQBP1
       IRQBP2 => OUTPTS(IMOD)%OUT5%IRQBP2
@@ -5792,8 +5776,8 @@ CONTAINS
           !
           IF ( IAPROC .EQ. ISPROC ) THEN
             IH     = IH + 1
-            CALL MPI_SEND_INIT (VA(1,JSEA),NSPEC,MPI_REAL, &
-                 IROOT, IT, MPI_COMM_WAVE, IRQBP1(IH), IERR)
+            CALL MPI_SEND_INIT (VA(1,JSEA),NSPEC,MPI_REAL, IROOT, IT, MPI_COMM_WAVE, &
+                 IRQBP1(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9031) IH, I, J, IROOT, IT, IRQBP1(IH), IERR
@@ -5845,8 +5829,8 @@ CONTAINS
             IH     = IH + 1
             IT     = IT + 1
             ITARG  = ISPROC - 1
-            CALL MPI_RECV_INIT (ABPOS(1,IH),NSPEC,MPI_REAL,&
-                 ITARG, IT, MPI_COMM_WAVE, IRQBP2(IH), IERR)
+            CALL MPI_RECV_INIT (ABPOS(1,IH),NSPEC,MPI_REAL, ITARG, IT, MPI_COMM_WAVE, &
+                 IRQBP2(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9031) IH, I, J, ITARG, IT, IRQBP2(IH), IERR
@@ -5899,8 +5883,8 @@ CONTAINS
         IRQTR  => OUTPTS(IMOD)%OUT3%IRQTR
         IH     = IH + 1
         IT     = IT0 + 1
-        CALL MPI_SEND_INIT (UST   (IAPROC),1,WW3_FIELD_VEC,&
-             IROOT, IT, MPI_COMM_WAVE, IRQTR(IH), IERR )
+        CALL MPI_SEND_INIT (UST   (IAPROC),1,WW3_FIELD_VEC, IROOT, IT, MPI_COMM_WAVE, &
+             IRQTR(IH), IERR )
 #endif
 #ifdef W3_MPIT
         WRITE (NDST,9041) IH, 'S U*', IROOT, IT, IRQTR(IH), IERR
@@ -5908,8 +5892,8 @@ CONTAINS
 #ifdef W3_MPI
         IH     = IH + 1
         IT     = IT0 + 2
-        CALL MPI_SEND_INIT (USTDIR(IAPROC),1,WW3_FIELD_VEC,&
-             IROOT, IT, MPI_COMM_WAVE, IRQTR(IH), IERR )
+        CALL MPI_SEND_INIT (USTDIR(IAPROC),1,WW3_FIELD_VEC, IROOT, IT, MPI_COMM_WAVE, &
+             IRQTR(IH), IERR )
 #endif
 #ifdef W3_MPIT
         WRITE (NDST,9041) IH, 'S U*', IROOT, IT, IRQTR(IH), IERR
@@ -5923,8 +5907,8 @@ CONTAINS
           IF ( I0 .NE. IAPROC ) THEN
             IH     = IH + 1
             IT     = IT0 + 1
-            CALL MPI_RECV_INIT(UST   (I0),1,WW3_FIELD_VEC,&
-                 IFROM,IT,MPI_COMM_WAVE, IRQTR(IH), IERR)
+            CALL MPI_RECV_INIT(UST   (I0),1,WW3_FIELD_VEC, IFROM, IT, MPI_COMM_WAVE, &
+                 IRQTR(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9041) IH, 'R U*', IFROM, IT, IRQTR(IH), IERR
@@ -5932,8 +5916,8 @@ CONTAINS
 #ifdef W3_MPI
             IH     = IH + 1
             IT     = IT0 + 2
-            CALL MPI_RECV_INIT(USTDIR(I0),1,WW3_FIELD_VEC,&
-                 IFROM,IT,MPI_COMM_WAVE, IRQTR(IH), IERR)
+            CALL MPI_RECV_INIT(USTDIR(I0),1,WW3_FIELD_VEC, IFROM, IT, MPI_COMM_WAVE, &
+                 IRQTR(IH), IERR)
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9041) IH, 'R U*', IFROM, IT, IRQTR(IH), IERR
@@ -5974,46 +5958,46 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPIT
-9010 FORMAT (/' TEST W3MPIO: COMMUNICATION CALLS FOR W3IOGO ',A/ &
-         ' +------+-------+------+------+--------------+'/ &
-         ' |  IH  |   ID  | TARG |  TAG |   handle err |'/ &
+9010 FORMAT (/' TEST W3MPIO: COMMUNICATION CALLS FOR W3IOGO ',A/    &
+         ' +------+-------+------+------+--------------+'/          &
+         ' |  IH  |   ID  | TARG |  TAG |   handle err |'/          &
          ' +------+-------+------+------+--------------+')
 9011 FORMAT ( ' |',I5,' | ',A5,' |',2(I5,' |'),I9,I4,' |')
 9012 FORMAT ( ' +------+-------+------+------+--------------+')
 9013 FORMAT ( ' TEST W3MPIO: NRQGO :',2I10)
 9014 FORMAT ( ' TEST W3MPIO: NRQGO2:',2I10)
-9020 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (F)'/      &
-         ' +------+------+------+------+--------------+'/       &
-         ' |  IH  |  ID  | TARG |  TAG |   handle err |'/       &
+9020 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (F)'/           &
+         ' +------+------+------+------+--------------+'/           &
+         ' |  IH  |  ID  | TARG |  TAG |   handle err |'/           &
          ' +------+------+------+------+--------------+')
 9021 FORMAT ( ' |',I5,' | ',A4,' |',2(I5,' |'),I9,I4,' |')
 9022 FORMAT ( ' +------+------+------+------+--------------+')
 9023 FORMAT ( ' TEST W3MPIO: NRQRS :',I10)
-9025 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (S)'/      &
-         '              BLOCK SIZE / BLOCKS : ',2I6/      &
+9025 FORMAT (/' TEST W3MPIO: COMM. CALLS FOR W3IORS (S)'/           &
+         '              BLOCK SIZE / BLOCKS : ',2I6/                &
          ' +------+------+------+------+--------------+---------+'/ &
          ' |  IH  |  ID  | TARG |  TAG |   handle err | spectra |'/ &
          ' +------+------+------+------+--------------+---------+')
-9026 FORMAT (                                                  &
+9026 FORMAT (                                                       &
          ' |',I5,' | ',A1,I3,' |',2(I5,' |'),I9,I4,' |',I8,' |')
-9027 FORMAT (                                                  &
+9027 FORMAT (                                                       &
          ' +------+------+------+------+--------------+---------+')
 9028 FORMAT ( ' TEST W3MPIO: IHMAX :',I10)
-9030 FORMAT (/' TEST W3MPIO: ',A,' CALLS FOR W3IOBC'/          &
-         ' +------+------+---+------+------+--------------+'/   &
-         ' |  IH  | IPT  | F | TARG |  TAG |   handle err |'/   &
+9030 FORMAT (/' TEST W3MPIO: ',A,' CALLS FOR W3IOBC'/               &
+         ' +------+------+---+------+------+--------------+'/       &
+         ' |  IH  | IPT  | F | TARG |  TAG |   handle err |'/       &
          ' +------+------+---+------+------+--------------+')
 9031 FORMAT ( ' |',2(I5,' |'),I2,' |',2(I5,' |'),I9,I4,' |')
-9032 FORMAT (                                                  &
+9032 FORMAT (                                                       &
          ' +------+------+---+------+------+--------------+')
 9033 FORMAT ( ' TEST W3MPIO: NRQBC :',I10)
 9034 FORMAT ( ' TEST W3MPIO: TOTAL :',I10)
-9040 FORMAT (/' TEST W3MPIO: COMMUNICATION CALLS FOR W3IOTR'/  &
-         ' +------+------+------+------+--------------+'/       &
-         ' |  IH  |  ID  | TARG |  TAG |   handle err |'/       &
+9040 FORMAT (/' TEST W3MPIO: COMMUNICATION CALLS FOR W3IOTR'/       &
+         ' +------+------+------+------+--------------+'/           &
+         ' |  IH  |  ID  | TARG |  TAG |   handle err |'/           &
          ' +------+------+------+------+--------------+')
 9041 FORMAT ( ' |',I5,' | ',A4,' |',2(I5,' |'),I9,I4,' |')
-9042 FORMAT (                                                  &
+9042 FORMAT (                                                       &
          ' +------+------+------+------+--------------+')
 9043 FORMAT ( ' TEST W3MPIO: NRQTR :',I10)
 #endif
@@ -6112,7 +6096,6 @@ CONTAINS
     USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC
 #endif
     !/
-    !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
 #endif
@@ -6155,7 +6138,7 @@ CONTAINS
     IT0    = IT0PNT
     IROOT  = NAPPNT - 1
     !
-    ALLOCATE ( OUTPTS(IMOD)%OUT2%IRQPO1(4*NOPTS),              &
+    ALLOCATE ( OUTPTS(IMOD)%OUT2%IRQPO1(4*NOPTS),  &
          OUTPTS(IMOD)%OUT2%IRQPO2(4*NOPTS) )
     IRQPO1 => OUTPTS(IMOD)%OUT2%IRQPO1
     IRQPO2 => OUTPTS(IMOD)%OUT2%IRQPO2
@@ -6193,8 +6176,8 @@ CONTAINS
 #ifdef W3_MPI
         IF ( IP(J) .EQ. IAPROC ) THEN
           IH     = IH + 1
-          CALL MPI_SEND_INIT ( VA(1,JSEA), NSPEC, MPI_REAL, &
-               IROOT, IT, MPI_COMM_WAVE, IRQPO1(IH), IERR )
+          CALL MPI_SEND_INIT ( VA(1,JSEA), NSPEC, MPI_REAL, IROOT, IT, MPI_COMM_WAVE, &
+               IRQPO1(IH), IERR )
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH,I,J, IROOT,IT, IRQPO1(IH), IERR
@@ -6256,8 +6239,8 @@ CONTAINS
 #ifdef W3_MPI
           IH     = IH + 1
           ITARG  = IP(J) - 1
-          CALL MPI_RECV_INIT ( SPPNT(1,1,J), NSPEC, MPI_REAL, &
-               ITARG, IT, MPI_COMM_WAVE, IRQPO2(IH), IERR )
+          CALL MPI_RECV_INIT ( SPPNT(1,1,J), NSPEC, MPI_REAL, ITARG, IT, MPI_COMM_WAVE, &
+               IRQPO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH,I,J, ITARG,IT, IRQPO2(IH), IERR
@@ -6304,12 +6287,12 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPIT
-9010 FORMAT (/' TEST W3MPIP: ',A,' CALLS FOR W3IOPO'/          &
-         ' +------+------+---+------+------+--------------+'/   &
-         ' |  IH  | IPT  | J | TARG |  TAG |   handle err |'/   &
+9010 FORMAT (/' TEST W3MPIP: ',A,' CALLS FOR W3IOPO'/         &
+         ' +------+------+---+------+------+--------------+'/ &
+         ' |  IH  | IPT  | J | TARG |  TAG |   handle err |'/ &
          ' +------+------+---+------+------+--------------+')
 9011 FORMAT ( ' |',2(I5,' |'),I2,' |',2(I5,' |'),I9,I4,' |')
-9012 FORMAT (                                                  &
+9012 FORMAT (                                                 &
          ' +------+------+---+------+------+--------------+')
 9013 FORMAT ( ' TEST W3MPIP: NRQPO :',I10)
 9014 FORMAT ( ' TEST W3MPIP: TOTAL :',I10)

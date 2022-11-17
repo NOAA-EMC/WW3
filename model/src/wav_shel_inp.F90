@@ -173,26 +173,26 @@ contains
     character(len=80)   :: msg1
     logical             :: is_open
 
-    data idflds / 'ice param. 1 ' , 'ice param. 2 ' ,               &
-         'ice param. 3 ' , 'ice param. 4 ' ,               &
-         'ice param. 5 ' ,                                 &
-         'mud density  ' , 'mud thkness  ' ,               &
-         'mud viscos.  ' ,                                 &
-         'water levels ' , 'currents     ' ,               &
-         'winds        ' , 'ice fields   ' ,               &
-         'momentum     ' , 'air density  ' ,               &
-         'mean param.  ' , '1D spectra   ' ,               &
+    data idflds / 'ice param. 1 ' , 'ice param. 2 ' , &
+         'ice param. 3 ' , 'ice param. 4 ' ,          &
+         'ice param. 5 ' ,                            &
+         'mud density  ' , 'mud thkness  ' ,          &
+         'mud viscos.  ' ,                            &
+         'water levels ' , 'currents     ' ,          &
+         'winds        ' , 'ice fields   ' ,          &
+         'momentum     ' , 'air density  ' ,          &
+         'mean param.  ' , '1D spectra   ' ,          &
          '2D spectra   ' , 'moving grid  ' /
-    data idotyp / 'Fields of mean wave parameters' ,                &
-         'Point output                  ' ,                &
-         'Track point output            ' ,                &
-         'Restart files                 ' ,                &
-         'Nesting data                  ' ,                &
-         'Partitioned wave field data   ' ,                &
-         'Fields for coupling           ' ,                &
+    data idotyp / 'Fields of mean wave parameters' ,  &
+         'Point output                  ' ,           &
+         'Track point output            ' ,           &
+         'Restart files                 ' ,           &
+         'Nesting data                  ' ,           &
+         'Partitioned wave field data   ' ,           &
+         'Fields for coupling           ' ,           &
          'Restart files second request  '/
     data idstr  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
-         'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',  &
+         'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',           &
          'DT0', 'DT1', 'DT2', 'MOV' /
     !---------------------------------------------------
     !
