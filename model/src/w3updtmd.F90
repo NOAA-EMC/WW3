@@ -1911,7 +1911,7 @@ CONTAINS
                ICEI(IX,IY), 'ICE (NEW)'
 #endif
           VA(:,JSEA) = 0.
-#if defind W3_ST3 || defined(W3_ST4)
+#if defined W3_ST3 || defined(W3_ST4)
           CHARN(JSEA) = AALPHA
 #else 
           CHARN(JSEA) = 0.
