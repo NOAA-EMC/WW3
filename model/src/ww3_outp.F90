@@ -1,6 +1,6 @@
-!> @file 
+!> @file
 !> @brief Post-processing of point output.
-!> 
+!>
 !> @author H. L. Tolman
 !> @author J.H. Alves
 !> @author A. Chawla
@@ -17,9 +17,9 @@
 !> @brief Post-processing of point output.
 !>
 !> @details Data is read from the grid output file out_pnt.ww3 (raw data)
-!>  and from the file ww3_outp.inp ( NDSI, output requests ). Model 
+!>  and from the file ww3_outp.inp ( NDSI, output requests ). Model
 !>  definition and raw data files are read using WAVEWATCH III subroutines.
-!> 
+!>
 !> @author H. L. Tolman
 !> @author J.H. Alves
 !> @author A. Chawla
@@ -27,7 +27,7 @@
 !> @author E. Rogers
 !> @author T. Campbell
 !> @date   27-Aug-2015
-!> 
+!>
 !> @copyright Copyright 2009-2022 National Weather Service (NWS),
 !>       National Oceanic and Atmospheric Administration.  All rights
 !>       reserved.  WAVEWATCH III is a trademark of the NWS.
@@ -1025,7 +1025,7 @@ CONTAINS
 !> @author F. Ardhuin
 !> @author A. Chawla
 !> @date   06-Feb-2014
-!>  
+!>
   SUBROUTINE W3EXPO
     !/
     !/                  +-----------------------------------+
