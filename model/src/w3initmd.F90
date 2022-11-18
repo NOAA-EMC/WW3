@@ -566,6 +566,7 @@ CONTAINS
     CALL MPI_COMM_RANK ( MPI_COMM_WAVE, IAPROC, IERR_MPI )
     IAPROC = IAPROC + 1
 #endif
+    memunit = 10000+IAPROC
     !
     IF ( IOSTYP .LE. 1 ) THEN
       !

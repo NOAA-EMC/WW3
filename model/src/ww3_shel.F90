@@ -432,7 +432,6 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 0.  Set up data structures
   !
-  memunit = 740+IAPROC
 #ifdef W3_OASIS
   OASISED=1
 #endif
@@ -452,6 +451,7 @@ PROGRAM W3SHEL
   CALL W3SETO ( 1, 6, 6 )
   CALL W3SETI ( 1, 6, 6 )
 
+  memunit = 740+IAPROC
   call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 1')
   !
 #ifdef W3_SHRD
@@ -495,6 +495,7 @@ PROGRAM W3SHEL
   CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
   IAPROC = IAPROC + 1
 #endif
+  memunit = 740+IAPROC
   !
 #ifdef W3_NCO
   !     IF ( IAPROC .EQ. 1 ) CALL W3TAGB                         &
