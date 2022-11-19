@@ -1,0 +1,89 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.07
+  SPECTRUM%FREQ1     =  0.035
+  SPECTRUM%NK        =  50
+  SPECTRUM%NTH       =  36
+  SPECTRUM%THOFF     =  0.5
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+  RUN%FLCK         =  T
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  900.0
+  TIMESTEPS%DTXY         =  200.0
+  TIMESTEPS%DTKTH        =  400.0
+  TIMESTEPS%DTMIN        =  30.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'GFSv16-wave S Hemisphere 1/4 deg'
+  GRID%NML          =  '../input/namelists_gsh_15m.nml'
+  GRID%TYPE         =  'RECT'
+  GRID%COORD        =  'SPHE'
+  GRID%CLOS         =  'SMPL'
+  GRID%ZLIM         =  -0.10
+  GRID%DMIN         =  2.50
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  1440
+  RECT%NY           =  277
+  RECT%SX           =  15.00
+  RECT%SY           =  15.00
+  RECT%SF           =  60.00
+  RECT%X0           =  0.0000
+  RECT%Y0           =  -79.5000
+  RECT%SF0          =  1.00
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  0.001000
+  DEPTH%FILENAME  =  '../input/gsh_15m.bot'
+/
+
+! -------------------------------------------------------------------- !
+! Define the point status map via MASK_NML namelist
+! -------------------------------------------------------------------- !
+&MASK_NML
+  MASK%FILENAME  =  '../input/gsh_15m.mask'
+/
+
+! -------------------------------------------------------------------- !
+! Define the obstruction map via OBST_NML namelist
+! -------------------------------------------------------------------- !
+&OBST_NML
+  OBST%SF        =  0.010000
+  OBST%FILENAME  =  '../input/gsh_15m.obs'
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

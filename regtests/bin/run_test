@@ -436,7 +436,8 @@ fi
 
 if [ $multi -eq 0 ] && [ $coupl = "OASIS" ]
 then
-  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr
+  ww3_dir=${path_s}/..
+  if $path_i/prep_env.sh $path_i $path_w $cmplr $swtstr $ww3_dir
   then :
   else
     errmsg "Error occured during WW3 $prog build"
@@ -1258,7 +1259,14 @@ then
         else
            inputs="`ls $path_i/$prog*.inp 2>/dev/null`"
         fi
-        inputs_tmp=`( ls ${path_i}/${prog}${gu}* )`
+
+        if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
+          then
+          inputs_tmp=`( ls ${path_i}/${prog}${gu}*nml)`
+        else
+          inputs_tmp=`( ls ${path_i}/${prog}${gu}*inp)`
+        fi
+         
         if [ ! -z "$inputs_tmp" ];then
            inputs=$inputs_tmp
         fi

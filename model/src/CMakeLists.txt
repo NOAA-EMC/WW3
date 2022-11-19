@@ -37,7 +37,6 @@ message("ESMF_F90COMPILEPATHS:   ${ESMF_F90COMPILEPATHS}")
 # These were the initial switch definitions in CESM
 # F90 NOGRB NC4 PR3 UQ FLX0 LN1 ST4 BT1 DB1 MLIM NL1 TR0 BS0 REF0 IS0 IC4 XX0 WNT1 WNX1 CRT1 CRX1 O0 O1 O2 O3 O4 O5 O6 O7 O11 MPI DIST
 
-add_compile_definitions(CESMCOUPLED)
 add_compile_definitions(W3_CESMCOUPLED)
 add_compile_definitions(W3_NCO)
 add_compile_definitions(W3_DIST)
@@ -75,12 +74,7 @@ add_compile_definitions(W3_O15)
 add_compile_definitions(W3_IC4)
 add_compile_definitions(W3_IS0)
 add_compile_definitions(W3_REF0)
-
-set_property(SOURCE w3initmd.F90
-  APPEND
-  PROPERTY COMPILE_DEFINITIONS
-  "__WW3_SWITCHES__=\'\'"
-  )
+add_compile_definitions(ENDIANNESS="big_endian")
 
 # Note that w3iogocdmd is a new file for netcdf io
 # Set source files
@@ -107,6 +101,7 @@ set(SRCFILES constants.F90
              w3iosfmd.F90
              w3iotrmd.F90
              w3meminfo.F90
+             w3nmlshelmd.F90             
              w3odatmd.F90
              w3parall.F90
              w3partmd.F90
@@ -131,11 +126,13 @@ set(SRCFILES constants.F90
              w3wavemd.F90
              w3wdasmd.F90
              w3wdatmd.F90
+             wmmdatmd.F90
              wav_comp_nuopc.F90
-             wav_import_export.F90
              wav_grdout.F90
+             wav_import_export.F90
              wav_kind_mod.F90
              wav_shel_inp.F90
+             wav_shr_flags.F90
              wav_shr_mod.F90)
 
 foreach(FILE ${SRCFILES})

@@ -137,7 +137,7 @@
       echo "$rtst -s PR1 -w work_PR1_b    -g b     $ww3 ww3_tp2.9" >> matrix.body
       echo "$rtst        -w work_PR1               $ww3 ww3_tp2.12" >> matrix.body
       echo "$rtst -s PR1 -w work_PR1               $ww3 ww3_tp2.13" >> matrix.body
-      echo "$rtst -s PR1 -w work_PR1_TRPL      -g TRPL  $ww3 ww3_tp2.13" >> matrix.body
+      echo "$rtst -s PR1 -w work_PR1_TRPL -g TRPL  $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst -s PR1 -w work_PR1               $ww3 ww3_tp2.5" >> matrix.body
     fi
 
@@ -326,9 +326,9 @@
     then
       echo ' ' >> matrix.body
       echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_a  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_b  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_c  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_d  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_b  -m grdset_b  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_c  -m grdset_c  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UNO_MPI  -w work_PR2_UNO_MPI_d  -m grdset_d  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
@@ -450,9 +450,9 @@
     then
       echo ' ' >> matrix.body
       echo "$rtst -s PR2_UQ_MPI -w work_PR2_UQ_MPI_a  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UQ_MPI -w work_PR2_UQ_MPI_b  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UQ_MPI -w work_PR2_UQ_MPI_c  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR2_UQ_MPI -w work_PR2_UQ_MPI_d  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UQ_MPI -w work_PR2_UQ_MPI_b  -m grdset_b  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UQ_MPI -w work_PR2_UQ_MPI_c  -m grdset_c  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR2_UQ_MPI -w work_PR2_UQ_MPI_d  -m grdset_d  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
@@ -605,9 +605,9 @@
     then
       echo ' ' >> matrix.body
       echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI_a  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI_b  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI_c  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI_d  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI_b  -m grdset_b  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI_c  -m grdset_c  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UNO_MPI  -w work_PR3_UNO_MPI_d  -m grdset_d  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
@@ -632,9 +632,9 @@
     then
       echo ' ' >> matrix.body
       echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_a_c  -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_b_c  -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_c_c  -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_d_c  -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_b_c  -m grdset_b -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_c_c  -m grdset_c -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UNO_MPI_SCRIP -w work_PR3_UNO_MPI_d_c  -m grdset_d -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
@@ -676,11 +676,11 @@
 
     if [ "$prop1D" = 'y' ] && [ "$shrd" = 'y' ]
     then
-      echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.7" >> matrix.body
-      echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.8" >> matrix.body
-      echo "$rtst -i input_BJ -w work_BJ_PR3_UQ $ww3 ww3_tp1.8" >> matrix.body
-      echo "$rtst             -w work_PR3_UQ    $ww3 ww3_tp1.9" >> matrix.body
-      echo "$rtst          -N -w work_PR3_UQ    $ww3 ww3_tp1.11" >> matrix.body
+      echo "$rtst              -w work_PR3_UQ    $ww3 ww3_tp1.7"  >> matrix.body
+      echo "$rtst              -w work_PR3_UQ    $ww3 ww3_tp1.8"  >> matrix.body
+      echo "$rtst -i input_BJ  -w work_BJ_PR3_UQ $ww3 ww3_tp1.8"  >> matrix.body
+      echo "$rtst              -w work_PR3_UQ    $ww3 ww3_tp1.9"  >> matrix.body
+      echo "$rtst           -N -w work_PR3_UQ    $ww3 ww3_tp1.11" >> matrix.body
       echo "$rtst -i input2 -N -w work_PR3_UQ    $ww3 ww3_tp1.11" >> matrix.body
     fi
 
@@ -705,15 +705,15 @@
     if [ "$prop2D" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.1" >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.2" >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.3" >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.4" >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ_curv -g curv    $ww3 ww3_tp2.4" >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.5" >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ_a    -g a       $ww3 ww3_tp2.9" >> matrix.body
-      echo "$rtst -s PR3_UQ              -w work_PR3_UQ_b    -g b       $ww3 ww3_tp2.9" >> matrix.body
-      echo "$rtst                        -w work_PR3_UQ                 $ww3 ww3_tp2.8" >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.1"  >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.2"  >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.3"  >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.4"  >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ_curv -g curv    $ww3 ww3_tp2.4"  >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.5"  >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ_a    -g a       $ww3 ww3_tp2.9"  >> matrix.body
+      echo "$rtst -s PR3_UQ              -w work_PR3_UQ_b    -g b       $ww3 ww3_tp2.9"  >> matrix.body
+      echo "$rtst                        -w work_PR3_UQ                 $ww3 ww3_tp2.8"  >> matrix.body
       echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst                        -w work_PR3_UQ                 $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst                        -w work_5km -g 5km             $ww3 ww3_tp2.15" >> matrix.body
@@ -757,37 +757,37 @@
     if [ "$multi02" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_a_c -m grdset_a  -g curv                   $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_b_c -m grdset_b  -g curv                   $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_c_c -m grdset_c  -g curv                   $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_d_c -m grdset_d  -g curv                   $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_a_c -m grdset_a  -g curv  $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_b_c -m grdset_b  -g curv  $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_c_c -m grdset_c  -g curv  $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_d_c -m grdset_d  -g curv  $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_a_c -m grdset_a                            $ww3 mww3_test_03" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_b_c -m grdset_b                            $ww3 mww3_test_03" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_c_c -m grdset_c                            $ww3 mww3_test_03" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_d_c -m grdset_d                            $ww3 mww3_test_03" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_e_c -m grdset_e                            $ww3 mww3_test_03" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_a_c -m grdset_a           $ww3 mww3_test_03" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_b_c -m grdset_b           $ww3 mww3_test_03" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_c_c -m grdset_c           $ww3 mww3_test_03" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_d_c -m grdset_d           $ww3 mww3_test_03" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_e_c -m grdset_e           $ww3 mww3_test_03" >> matrix.body
     fi
     if [ "$multi04" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_a_c -m grdset_a                            $ww3 mww3_test_04" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_b_c -m grdset_b                            $ww3 mww3_test_04" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_f_c -m grdset_f                            $ww3 mww3_test_04" >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_g_c -m grdset_g                            $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_a_c -m grdset_a           $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_b_c -m grdset_b           $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_f_c -m grdset_f           $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_g_c -m grdset_g           $ww3 mww3_test_04" >> matrix.body
     fi
     if [ "$multi06" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_d   -m grdset_d                            $ww3 mww3_test_06" >> matrix.body
+      echo "$rtst -s PR3_UQ_SCRIP -w work_PR3_UQ_d   -m grdset_d           $ww3 mww3_test_06" >> matrix.body
     fi
     if [ "$multi07" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst                 -w work_PR3_UQ     -m grdset                              $ww3 mww3_test_07" >> matrix.body
+      echo "$rtst                 -w work_PR3_UQ     -m grdset             $ww3 mww3_test_07" >> matrix.body
     fi
 
   fi
@@ -798,15 +798,15 @@
     if [ "$prop2D" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s MPI                     -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp1.9" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.1" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.2" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.3" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_curv_MPI -g curv     -f -p $mpi -n $np $ww3 ww3_tp2.4" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.5" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_a_MPI    -g a        -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_b_MPI    -g b        -f -p $mpi -n $np $ww3 ww3_tp2.9" >> matrix.body
+      echo "$rtst -s MPI                     -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp1.9"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.1"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.2"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.3"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.4"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_curv_MPI -g curv     -f -p $mpi -n $np $ww3 ww3_tp2.4"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.5"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_a_MPI    -g a        -f -p $mpi -n $np $ww3 ww3_tp2.9"  >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_b_MPI    -g b        -f -p $mpi -n $np $ww3 ww3_tp2.9"  >> matrix.body
       echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst -s MPI                     -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s MPI                     -w work_MPI_5km         -g 5km      -f -p $mpi -n $np $ww3 ww3_tp2.15" >> matrix.body
@@ -823,9 +823,9 @@
     then
       echo ' ' >> matrix.body
       echo "$rtst -s PR3_UQ_MPI -w work_PR3_UQ_MPI_a  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI -w work_PR3_UQ_MPI_b  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI -w work_PR3_UQ_MPI_c  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI -w work_PR3_UQ_MPI_d  -m grdset_a  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI -w work_PR3_UQ_MPI_b  -m grdset_b  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI -w work_PR3_UQ_MPI_c  -m grdset_c  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI -w work_PR3_UQ_MPI_d  -m grdset_d  -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
@@ -850,9 +850,9 @@
     then
       echo ' ' >> matrix.body
       echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_a_c -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_b_c -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_c_c -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_d_c -m grdset_a -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_b_c -m grdset_b -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_c_c -m grdset_c -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_d_c -m grdset_d -g curv -f -p $mpi -n $np $ww3 mww3_test_02" >> matrix.body
     fi
     if [ "$multi03" = 'y' ]
     then
@@ -867,10 +867,10 @@
     if [ "$multi04" = 'y' ]
     then
       echo ' ' >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_b_c -m grdset_b -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_c_c -m grdset_c -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_d_c -m grdset_d -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
-      echo "$rtst -s PR3_UQ_MPI_SCRIP -w work_PR3_UQ_MPI_e_c -m grdset_e -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI_SCRIP   -w work_PR3_UQ_MPI_b_c    -m grdset_b -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI_SCRIP   -w work_PR3_UQ_MPI_c_c    -m grdset_c -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI_SCRIP   -w work_PR3_UQ_MPI_d_c    -m grdset_d -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
+      echo "$rtst -s PR3_UQ_MPI_SCRIP   -w work_PR3_UQ_MPI_e_c    -m grdset_e -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
       echo "$rtst -s PR3_UQ_MPI_SCRIPNC -w work_PR3_UQ_MPI_NC_b_c -m grdset_b -f -p $mpi -n $np $ww3 mww3_test_04" >> matrix.body
     fi
 
@@ -900,17 +900,17 @@
   if [ "$time" = 'y' ] && [ "$shrd" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -s ST1      -w work_ST1      $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST1_RWND -w work_ST1_RWND $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST2      -w work_ST2      $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST3      -w work_ST3      $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST4      -w work_ST4      $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST1      -w work_ST1                     $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST1_RWND -w work_ST1_RWND                $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST2      -w work_ST2                     $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST3      -w work_ST3                     $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4      -w work_ST4                     $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4      -w work_ST4_T700 -g ST4_T700 -N $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST4_WRT  -w work_ST4_WRT  $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST4_GMD  -w work_ST4_GMD  $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST4_TSA  -w work_ST4_TSA  $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -s ST6      -w work_ST6      $ww3 ww3_ts1" >> matrix.body
-    echo "$rtst -i input_nl5_matrix -w work_NL5 $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4_WRT  -w work_ST4_WRT                 $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4_GMD  -w work_ST4_GMD                 $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4_TSA  -w work_ST4_TSA                 $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST6      -w work_ST6                     $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst             -w work_NL5 -i input_nl5_matrix $ww3 ww3_ts1" >> matrix.body
   fi
 
 # fetch limited growth, no switch sharing here
@@ -1914,69 +1914,69 @@
   if [ "$mudice" = 'y' ] && [ "$shrd" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -s BT8           -w work_BT8                                $ww3 ww3_tbt1.1" >> matrix.body
-    echo "$rtst -s BT8           -w work_BT8                                $ww3 ww3_tbt2.1" >> matrix.body
-    echo "$rtst -s BT9           -w work_BT9                                $ww3 ww3_tbt1.1" >> matrix.body
-    echo "$rtst -s BT9           -w work_BT9                                $ww3 ww3_tbt2.1" >> matrix.body
-    echo "$rtst -g 100m          -w work_100m_IC1  -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 350m          -w work_350m_IC1  -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_1000m_IC1 -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 2500m         -w work_2500m_IC1 -i input_IC1_156x3       $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 5km           -w work_5km_IC1   -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 10km          -w work_10km_IC1  -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 20km          -w work_20km_IC1  -i input_IC1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst                  -w work_IC1              -i input_IC1      $ww3 ww3_tic2.1" >> matrix.body
-    echo "$rtst                  -w work_IC2IS2                             $ww3 ww3_tic2.2" >> matrix.body
-    echo "$rtst -g 1000m         -w work_1000m_IC2_nrl -i input_IC2_nrl             $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -s BT8           -w work_BT8                                        $ww3 ww3_tbt1.1" >> matrix.body
+    echo "$rtst -s BT8           -w work_BT8                                        $ww3 ww3_tbt2.1" >> matrix.body
+    echo "$rtst -s BT9           -w work_BT9                                        $ww3 ww3_tbt1.1" >> matrix.body
+    echo "$rtst -s BT9           -w work_BT9                                        $ww3 ww3_tbt2.1" >> matrix.body
+    echo "$rtst -g 100m          -w work_100m_IC1              -i input_IC1_156x3   $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 350m          -w work_350m_IC1              -i input_IC1_156x3   $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_1000m_IC1             -i input_IC1_156x3   $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 2500m         -w work_2500m_IC1             -i input_IC1_156x3   $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 5km           -w work_5km_IC1               -i input_IC1         $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 10km          -w work_10km_IC1              -i input_IC1         $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 20km          -w work_20km_IC1              -i input_IC1         $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC1                   -i input_IC1         $ww3 ww3_tic2.1" >> matrix.body
+    echo "$rtst                  -w work_IC2IS2                                     $ww3 ww3_tic2.2" >> matrix.body
+    echo "$rtst -g 1000m         -w work_1000m_IC2_nrl         -i input_IC2_nrl     $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst                  -w work_IC2_nondisp_SMPL      -i input_IC2_nondisp $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 1000m_nondisp -w work_1000m_nondisp_IC2_ifr -i input_IC2_ifr     $ww3 ww3_tic1.1" >> matrix.body
     echo "$rtst -g 1000m_nondisp -w work_1000m_nondisp_IC2_nrl -i input_IC2_nrl     $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 350m          -w work_350m_IC3  -i input_IC3             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_1000m_IC3 -i input_IC3             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 2500m         -w work_2500m_IC3 -i input_IC3             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst                  -w work_IC3_nondisp -i input_IC3_nondisp   $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g CGICE_CHENG   -w work_IC3_CGICE_CHENG -i input_IC3NL     $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M1 -i input_IC4_M1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M2 -i input_IC4_M2             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M3 -i input_IC4_M3             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M4 -i input_IC4_M4             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC4_M5 -i input_IC4_M5             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst                  -w work_IC4_M6 -i input_IC4_M6             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 206H          -w work_IC4_M6H -i input_IC4_M6            $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 206L          -w work_IC4_M6L -i input_IC4_M6            $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst                  -w work_IC4_M7  -i input_IC4_M7            $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC5_M1 -i input_IC5_M1             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC5_M2 -i input_IC5_M2             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst -g 1000m         -w work_IC5_M3 -i input_IC5_M3             $ww3 ww3_tic1.1" >> matrix.body
-    echo "$rtst                  -w work_IC3_A0.5k -i input_IC3_A0.5k       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_A1.0k -i input_IC3_A1.0k       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_A2.5k -i input_IC3_A2.5k       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_B0.5k -i input_IC3_B0.5k       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_B1.0k -i input_IC3_B1.0k       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_B2.5k -i input_IC3_B2.5k       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_CHENG -i input_IC3_CHENG       $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_V1_h  -i input_IC3_V1_h        $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst                  -w work_IC3_V1_G  -i input_IC3_V1_G        $ww3 ww3_tic1.2" >> matrix.body
-    echo "$rtst -s PR1_REFRX     -w work_IC3_0.5k_PR1 -i input_IC3_0.5k     $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR1_REFRX     -w work_IC3_2.5k_PR1 -i input_IC3_2.5k     $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR1_REFRX     -w work_IC3_CHENG    -i input_IC3_CHENG    $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR2_UQ_REFRX  -w work_IC3_0.5k_PR2_UQ -i input_IC3_0.5k  $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR2_UQ_REFRX  -w work_IC3_2.5k_PR2_UQ -i input_IC3_2.5k  $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR2_UQ_REFRX  -w work_IC3_V1_h        -i input_IC3_V1_h  $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR2_UNO_REFRX -w work_IC3_0.5k_PR2_UNO -i input_IC3_0.5k $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR2_UNO_REFRX -w work_IC3_2.5k_PR2_UNO -i input_IC3_2.5k $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR2_UNO_REFRX -w work_IC3_V1_G         -i input_IC3_V1_G $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR3_UQ_REFRX  -w work_IC3_0.5k_PR3_UQ -i input_IC3_0.5k  $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR3_UQ_REFRX  -w work_IC3_2.5k_PR3_UQ -i input_IC3_2.5k  $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR3_UNO_REFRX -w work_IC3_0.5k_PR3_UNO -i input_IC3_0.5k $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s PR3_UNO_REFRX -w work_IC3_2.5k_PR3_UNO -i input_IC3_2.5k $ww3 ww3_tic1.3" >> matrix.body
-    echo "$rtst -s IC0IS2        -w work_IC0IS2_1000 -g 1000m               $ww3 ww3_tic1.4" >> matrix.body
-    echo "$rtst -s IC1IS2        -w work_IC1IS2_1000 -g 1000m               $ww3 ww3_tic1.4" >> matrix.body
-    echo "$rtst -s IC2IS2       -w work_IC2IS2_IC2b -g IC2b_1000m           $ww3 ww3_tic1.4" >> matrix.body
-    echo "$rtst -s IC2IS2       -w work_IC2IS2_IC2d -g IC2d_1000m           $ww3 ww3_tic1.4" >> matrix.body
-    echo "$rtst -s IC2IS2        -w work_IC2IS2scat   -g scat               $ww3 ww3_tic2.3" >> matrix.body    
-    echo "$rtst -s IC2IS2        -w work_IC2IS2creep  -g creepOnly          $ww3 ww3_tic2.3" >> matrix.body
-    echo "$rtst -s IC2IS2        -w work_IC2IS2dissip -g dissipOnly         $ww3 ww3_tic2.3" >> matrix.body
+    echo "$rtst -g 350m          -w work_350m_IC3              -i input_IC3         $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_1000m_IC3             -i input_IC3         $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 2500m         -w work_2500m_IC3             -i input_IC3         $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC3_nondisp           -i input_IC3_nondisp $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g CGICE_CHENG   -w work_IC3_CGICE_CHENG       -i input_IC3NL       $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M1                -i input_IC4_M1      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M2                -i input_IC4_M2      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M3                -i input_IC4_M3      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M4                -i input_IC4_M4      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC4_M5                -i input_IC4_M5      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC4_M6                -i input_IC4_M6      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 206H          -w work_IC4_M6H               -i input_IC4_M6      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 206L          -w work_IC4_M6L               -i input_IC4_M6      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC4_M7                -i input_IC4_M7      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC5_M1                -i input_IC5_M1      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC5_M2                -i input_IC5_M2      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst -g 1000m         -w work_IC5_M3                -i input_IC5_M3      $ww3 ww3_tic1.1" >> matrix.body
+    echo "$rtst                  -w work_IC3_A0.5k             -i input_IC3_A0.5k   $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_A1.0k             -i input_IC3_A1.0k   $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_A2.5k             -i input_IC3_A2.5k   $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_B0.5k             -i input_IC3_B0.5k   $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_B1.0k             -i input_IC3_B1.0k   $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_B2.5k             -i input_IC3_B2.5k   $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_CHENG             -i input_IC3_CHENG   $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_V1_h              -i input_IC3_V1_h    $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst                  -w work_IC3_V1_G              -i input_IC3_V1_G    $ww3 ww3_tic1.2" >> matrix.body
+    echo "$rtst -s PR1_REFRX     -w work_IC3_0.5k_PR1          -i input_IC3_0.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR1_REFRX     -w work_IC3_2.5k_PR1          -i input_IC3_2.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR1_REFRX     -w work_IC3_CHENG             -i input_IC3_CHENG   $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR2_UQ_REFRX  -w work_IC3_0.5k_PR2_UQ       -i input_IC3_0.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR2_UQ_REFRX  -w work_IC3_2.5k_PR2_UQ       -i input_IC3_2.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR2_UQ_REFRX  -w work_IC3_V1_h              -i input_IC3_V1_h    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR2_UNO_REFRX -w work_IC3_0.5k_PR2_UNO      -i input_IC3_0.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR2_UNO_REFRX -w work_IC3_2.5k_PR2_UNO      -i input_IC3_2.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR2_UNO_REFRX -w work_IC3_V1_G              -i input_IC3_V1_G    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR3_UQ_REFRX  -w work_IC3_0.5k_PR3_UQ       -i input_IC3_0.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR3_UQ_REFRX  -w work_IC3_2.5k_PR3_UQ       -i input_IC3_2.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR3_UNO_REFRX -w work_IC3_0.5k_PR3_UNO      -i input_IC3_0.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s PR3_UNO_REFRX -w work_IC3_2.5k_PR3_UNO      -i input_IC3_2.5k    $ww3 ww3_tic1.3" >> matrix.body
+    echo "$rtst -s IC0IS2        -w work_IC0IS2_1000      -g 1000m                  $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst -s IC1IS2        -w work_IC1IS2_1000      -g 1000m                  $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst -s IC2IS2        -w work_IC2IS2_IC2b      -g IC2b_1000m             $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst -s IC2IS2        -w work_IC2IS2_IC2d      -g IC2d_1000m             $ww3 ww3_tic1.4" >> matrix.body
+    echo "$rtst -s IC2IS2        -w work_IC2IS2scat       -g scat                   $ww3 ww3_tic2.3" >> matrix.body    
+    echo "$rtst -s IC2IS2        -w work_IC2IS2creep      -g creepOnly              $ww3 ww3_tic2.3" >> matrix.body
+    echo "$rtst -s IC2IS2        -w work_IC2IS2dissip     -g dissipOnly             $ww3 ww3_tic2.3" >> matrix.body
   fi
 
   if [ "$mudice" = 'y' ] && [ "$dist" = 'y' ]
@@ -2002,23 +2002,23 @@
  if [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst -s MPI -s NO_PDLIB -w work_a -g a -f -p $mpi -n $np $ww3 ww3_tp2.17"                    >> matrix.body
-   echo "$rtst -s MPI -s NO_PDLIB -w work_ma -m grdset_a -f -p $mpi -n $np $ww3 ww3_tp2.17"            >> matrix.body
-   echo "$rtst -s MPI -s PDLIB -w work_b -g b -f -p $mpi -n $np  $ww3 ww3_tp2.17"                       >> matrix.body
-   echo "$rtst -s MPI -s PDLIB -w work_c -g c -f -p $mpi -n $np  $ww3 ww3_tp2.17"                       >> matrix.body
-   echo "$rtst -s MPI -s PDLIB -w work_pdlib -g pdlib -f -p $mpi -n $np $ww3 ww3_tp2.6"                >> matrix.body 
-   echo "$rtst -s MPI -s PDLIB -w work_mb -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.17"               >> matrix.body
-   echo "$rtst -s MPI -s PDLIB -w work_mc -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17"               >> matrix.body
+   echo "$rtst -s MPI -s NO_PDLIB -w work_a     -g a        -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
+   echo "$rtst -s MPI -s NO_PDLIB -w work_ma    -m grdset_a -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
+   echo "$rtst -s MPI -s PDLIB    -w work_b     -g b        -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
+   echo "$rtst -s MPI -s PDLIB    -w work_c     -g c        -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
+   echo "$rtst -s MPI -s PDLIB    -w work_pdlib -g pdlib    -f -p $mpi -n $np $ww3 ww3_tp2.6"      >> matrix.body 
+   echo "$rtst -s MPI -s PDLIB    -w work_mb    -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
+   echo "$rtst -s MPI -s PDLIB    -w work_mc    -m grdset_c -f -p $mpi -n $np $ww3 ww3_tp2.17"     >> matrix.body
      if [ "$rstrt_b4b" = 'y' ]
      then
-        echo "mkdir -p ww3_tp2.17/work_ma1"                                                                    >> matrix.body
-        echo "cp ww3_tp2.17/work_ma/restart001.inla ww3_tp2.17/work_ma1/restart.inla"                         >> matrix.body
-        echo "$rtst -s MPI -s NO_PDLIB -w work_ma1 -m grdset_a1 -f -p $mpi -n $np  $ww3 ww3_tp2.17"     >> matrix.body
-        echo "./bin/test.comp ww3_tp2.17 work_ma work_ma1"                                                     >> matrix.body
-        echo "mkdir -p ww3_tp2.17/work_mc1"                                                                    >> matrix.body
-        echo "cp ww3_tp2.17/work_mc/restart001.inlc ww3_tp2.17/work_mc1/restart.inlc"                         >> matrix.body
-        echo "$rtst -s MPI -s PDLIB -w work_mc1 -m grdset_c1 -f -p $mpi -n $np  $ww3 ww3_tp2.17"        >> matrix.body
-        echo "./bin/test.comp ww3_tp2.17 work_mc work_mc1"                                                     >> matrix.body
+        echo "mkdir -p ww3_tp2.17/work_ma1"                                                        >> matrix.body
+        echo "cp ww3_tp2.17/work_ma/restart001.inla ww3_tp2.17/work_ma1/restart.inla"              >> matrix.body
+        echo "$rtst -s MPI -s NO_PDLIB -w work_ma1 -m grdset_a1 -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+        echo "./bin/test.comp ww3_tp2.17 work_ma work_ma1"                                         >> matrix.body
+        echo "mkdir -p ww3_tp2.17/work_mc1"                                                        >> matrix.body
+        echo "cp ww3_tp2.17/work_mc/restart001.inlc ww3_tp2.17/work_mc1/restart.inlc"              >> matrix.body
+        echo "$rtst -s MPI -s PDLIB    -w work_mc1 -m grdset_c1 -f -p $mpi -n $np $ww3 ww3_tp2.17" >> matrix.body
+        echo "./bin/test.comp ww3_tp2.17 work_mc work_mc1"                                         >> matrix.body
      fi
  fi
 
@@ -2028,13 +2028,13 @@
    echo ' ' >> matrix.body
    if [ "$dist" = 'y' ]
    then 
-     echo "$rtst -s MPI -w work_rg_shel_MPI -i input_rg_shel -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_rg_shel_MPI  -i input_rg_shel            -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
      echo "$rtst -s MPI -w work_rg_multi_MPI -i input_rg_multi -m grdset -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
-     echo "$rtst -s MPI -w work_ug_MPI -i input_ug -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst -s MPI -w work_ug_MPI       -i input_ug                 -f -p $mpi -n $np $ww3 ww3_ts4" >> matrix.body
    else 
-     echo "$rtst -w work_rg_shel -i input_rg_shel $ww3 ww3_ts4" >> matrix.body
-     echo "$rtst -w work_rg_multi -i input_rg_multi -m grdset $ww3 ww3_ts4" >> matrix.body
-     echo "$rtst -w work_ug -i input_ug $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst        -w work_rg_shel      -i input_rg_shel                              $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst        -w work_rg_multi     -i input_rg_multi -m grdset                   $ww3 ww3_ts4" >> matrix.body
+     echo "$rtst        -w work_ug           -i input_ug                                   $ww3 ww3_ts4" >> matrix.body
    fi
  fi
 
@@ -2042,31 +2042,31 @@
  if [ "$uost" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst -s MPI -s NO_PDLIB -w work_a -g a -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
+   echo "$rtst -s MPI -s NO_PDLIB -w work_a  -g a        -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
    echo "$rtst -s MPI -s NO_PDLIB -w work_ma -m grdset_a -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
- if [ "$pdlib" = 'y' ]
- then
-   echo "$rtst -s MPI -s PDLIB -w work_b -g b -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
-   echo "$rtst -s MPI -s PDLIB -w work_mb -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
- fi
+   if [ "$pdlib" = 'y' ]
+   then
+     echo "$rtst -s MPI -s PDLIB -w work_b  -g b        -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
+     echo "$rtst -s MPI -s PDLIB -w work_mb -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
+   fi
  fi
 
  #Test of updating the restart spectra 
  if [ "$assim" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD0F_O    -i input_UPD0F_O    $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD0F_U    -i input_UPD0F_U    $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD2_O     -i input_UPD2_O     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD2_U     -i input_UPD2_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD2_U_cap -i input_UPD2_U_cap $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_O     -i input_UPD3_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD3_U     -i input_UPD3_U     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD3_U_cap -i input_UPD3_U_cap $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD5_O     -i input_UPD5_O     $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD5_U     -i input_UPD5_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD5_U_cap -i input_UPD5_U_cap $ww3 ww3_ta1" >> matrix.body
-   echo "$rtst -s ST4 -N -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
+   echo "$rtst -s ST4 -w work_UPD6_O     -i input_UPD6_O     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD6_U     -i input_UPD6_U     $ww3 ww3_ta1" >> matrix.body
    echo "$rtst -s ST4 -w work_UPD6_U_cap -i input_UPD6_U_cap $ww3 ww3_ta1" >> matrix.body
   fi
@@ -2075,19 +2075,19 @@
  if [ "$oasis" = 'y' ] && [ "$dist" = 'y' ]
  then
    echo ' ' >> matrix.body
-   echo "$rtst             -s OASACM  -i input_oasacm -w work_OASACM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst             -s OASACM2 -i input_oasacm2 -w work_OASACM2 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASACM  -i input_oasacm  -w work_OASACM  -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASACM2 -i input_oasacm2 -w work_OASACM2 -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
    halfnp=$(($np / 2))
-   echo "$rtst             -s OASACM3 -i input_oasacm3 -w work_OASACM3          -f -p $mpi -n $halfnp $ww3 ww3_tp2.14" >> matrix.body
-   echo "mkdir -p ww3_tp2.14/work_OASACM4"                                                                    >> matrix.body
-   echo "ln -sf ../work_OASACM3/restart001.ww3 ww3_tp2.14/work_OASACM4/restart.ww3"                           >> matrix.body
-   echo "$rtst -s OASACM4 -i input_oasacm4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "mkdir -p ww3_tp2.14/work_OASACM5"                                                                    >> matrix.body
-   echo "ln -sf ../work_OASACM4/restart001.ww3 ww3_tp2.14/work_OASACM5/restart.ww3"                           >> matrix.body
-    echo "$rtst -s OASACM5 -i input_oasacm5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -s OASACM6 -i input_oasacm6 -w work_OASACM6 -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -s OASOCM  -i input_oasocm -w work_OASOCM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
-   echo "$rtst -s OASICM  -i input_oasicm -w work_OASICM  -C OASIS -f -p $mpi -n $np $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASACM3 -i input_oasacm3 -w work_OASACM3          -f -p $mpi -n $halfnp $ww3 ww3_tp2.14" >> matrix.body
+   echo "mkdir -p ww3_tp2.14/work_OASACM4"                                                                 >> matrix.body
+   echo "ln -sf ../work_OASACM3/restart001.ww3 ww3_tp2.14/work_OASACM4/restart.ww3"                        >> matrix.body
+   echo "$rtst -s OASACM4 -i input_oasacm4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
+   echo "mkdir -p ww3_tp2.14/work_OASACM5"                                                                 >> matrix.body
+   echo "ln -sf ../work_OASACM4/restart001.ww3 ww3_tp2.14/work_OASACM5/restart.ww3"                        >> matrix.body
+   echo "$rtst -s OASACM5 -i input_oasacm5 -w work_OASACM5 -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASACM6 -i input_oasacm6 -w work_OASACM6 -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASOCM  -i input_oasocm  -w work_OASOCM  -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASICM  -i input_oasicm  -w work_OASICM  -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
  fi
 
  #Test of UFS applications with ww3_multi and grib2 output
@@ -2097,44 +2097,44 @@
      if [ "$ufscoarse" = 'y' ]
      then
        echo ' ' >> matrix.body
-       echo "$rtst -s MPI -w work_c -m grdset_c -f -p $mpi -n $np $ww3 ww3_ufs1.1"                           >> matrix.body
+       echo "$rtst -s MPI -w work_c -m grdset_c -f -p $mpi -n $np $ww3 ww3_ufs1.1"                         >> matrix.body
         if [ "$npl_b4b" = 'y' ]
         then
            halfnp=$(($np / 2))
-           echo "$rtst -s MPI -w work_c_npl -m grdset_c -f -p $mpi -n $halfnp $ww3 ww3_ufs1.1"                >> matrix.body
-           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_npl"                                                       >> matrix.body
+           echo "$rtst -s MPI -w work_c_npl -m grdset_c -f -p $mpi -n $halfnp $ww3 ww3_ufs1.1"             >> matrix.body
+           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_npl"                                             >> matrix.body
         fi
         if [ "$nth_b4b" = 'y' ]
         then
-           echo "$rtst -s MPI_OMPH -w work_c_nth -m grdset_c -f -p $mpi -n $nr -t $nth $ww3 ww3_ufs1.1"       >> matrix.body
-           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_nth"                                                       >> matrix.body
+           echo "$rtst -s MPI_OMPH -w work_c_nth -m grdset_c -f -p $mpi -n $nr -t $nth $ww3 ww3_ufs1.1"    >> matrix.body
+           echo "./bin/test.comp ww3_ufs1.1 work_c work_c_nth"                                             >> matrix.body
         fi
         if [ "$rstrt_b4b" = 'y' ]
         then
-           echo "mkdir -p ww3_ufs1.1/work_d"                                                                         >> matrix.body
-           echo "cp ww3_ufs1.1/work_c/20210401.030000.restart.glo_5deg ww3_ufs1.1/work_d/restart.glo_5deg"           >> matrix.body
-           echo "$rtst -s MPI -w work_d -m grdset_d -f -p $mpi -n $np $ww3 ww3_ufs1.1"                       >> matrix.body
-           echo "./bin/test.comp ww3_ufs1.1 work_c work_d"                                                           >> matrix.body
+           echo "mkdir -p ww3_ufs1.1/work_d"                                                               >> matrix.body
+           echo "cp ww3_ufs1.1/work_c/20210401.030000.restart.glo_5deg ww3_ufs1.1/work_d/restart.glo_5deg" >> matrix.body
+           echo "$rtst -s MPI -w work_d -m grdset_d -f -p $mpi -n $np $ww3 ww3_ufs1.1"                     >> matrix.body
+           echo "./bin/test.comp ww3_ufs1.1 work_c work_d"                                                 >> matrix.body
         fi
      else
       echo ' ' >> matrix.body
-      echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl -t $nth1 $ww3 ww3_ufs1.1"             >> matrix.body
+      echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl -t $nth1 $ww3 ww3_ufs1.1"           >> matrix.body
       if [ "$npl_b4b" = 'y' ]
       then
-          echo "$rtst -s MPI_OMPH -w work_a_npl -m grdset_a -f -p $mpi -n $npl1 -t $nth1 $ww3 ww3_ufs1.1"     >> matrix.body
-          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_npl"                                                        >> matrix.body
+          echo "$rtst -s MPI_OMPH -w work_a_npl -m grdset_a -f -p $mpi -n $npl1 -t $nth1 $ww3 ww3_ufs1.1"  >> matrix.body
+          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_npl"                                              >> matrix.body
       fi
       if [ "$nth_b4b" = 'y' ]
       then
-          echo "$rtst -s MPI_OMPH -w work_a_nth -m grdset_a -f -p $mpi -n $npl -t $nth $ww3 ww3_ufs1.1"       >> matrix.body
-          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_nth"                                                        >> matrix.body
+          echo "$rtst -s MPI_OMPH -w work_a_nth -m grdset_a -f -p $mpi -n $npl -t $nth $ww3 ww3_ufs1.1"    >> matrix.body
+          echo "./bin/test.comp ww3_ufs1.1 work_a work_a_nth"                                              >> matrix.body
       fi
       if [ "$rstrt_b4b" = 'y' ]
       then
-          echo "mkdir -p ww3_ufs1.1/work_b"                                                                          >> matrix.body
-          echo "cp ww3_ufs1.1/work_a/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b/restart.glo_1deg"            >> matrix.body
-          echo "$rtst -s MPI_OMPH -w work_b -m grdset_b -f -p $mpi -n $npl -t $nth1 $ww3 ww3_ufs1.1"         >> matrix.body
-          echo "./bin/test.comp ww3_ufs1.1 work_a work_b"                                                            >> matrix.body
+          echo "mkdir -p ww3_ufs1.1/work_b"                                                                >> matrix.body
+          echo "cp ww3_ufs1.1/work_a/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b/restart.glo_1deg"  >> matrix.body
+          echo "$rtst -s MPI_OMPH -w work_b -m grdset_b -f -p $mpi -n $npl -t $nth1 $ww3 ww3_ufs1.1"       >> matrix.body
+          echo "./bin/test.comp ww3_ufs1.1 work_a work_b"                                                  >> matrix.body
       fi
      fi
   fi
@@ -2143,13 +2143,13 @@
   if [ "$ufs" = 'y' ] && [ "$esmf" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -s MPI -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl   $ww3 ww3_ufs1.1"               >> matrix.body
+    echo "$rtst -s MPI -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl   $ww3 ww3_ufs1.1"            >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
-       echo "mkdir -p ww3_ufs1.1/work_b_esmf"                                                                        >> matrix.body
-       echo "cp ww3_ufs1.1/work_a_esmf/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b_esmf/restart.glo_1deg"     >> matrix.body
-       echo "$rtst -s MPI -w work_b_esmf -m grdset_b -C ESMF -f -p $mpi -n $npl $ww3 ww3_ufs1.1"            >> matrix.body
-       echo "./bin/test.comp ww3_ufs1.1 work_a_esmf work_b_esmf"                                                     >> matrix.body
+      echo "mkdir -p ww3_ufs1.1/work_b_esmf"                                                               >> matrix.body
+      echo "cp ww3_ufs1.1/work_a_esmf/20210401.030000.restart.glo_1deg ww3_ufs1.1/work_b_esmf/restart.glo_1deg"     >> matrix.body
+      echo "$rtst -s MPI -w work_b_esmf -m grdset_b -C ESMF -f -p $mpi -n $npl $ww3 ww3_ufs1.1"            >> matrix.body
+      echo "./bin/test.comp ww3_ufs1.1 work_a_esmf work_b_esmf"                                            >> matrix.body
     fi
   fi
 
@@ -2157,15 +2157,15 @@
   if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"              >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_a -m grdset_a -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"            >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
-       echo "mkdir -p ww3_ufs1.2/work_b"                                                                             >> matrix.body
-       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b/restart.gnh_10m"                 >> matrix.body
-       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b/restart.gsh_15m"                 >> matrix.body
-       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b/restart.aoc_9km"                 >> matrix.body
-       echo "$rtst -s MPI_OMPH -w work_b -m grdset_b -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"            >> matrix.body
-       echo "./bin/test.comp ww3_ufs1.2 work_a work_b"                                                               >> matrix.body
+       echo "mkdir -p ww3_ufs1.2/work_b"                                                                   >> matrix.body
+       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b/restart.gnh_10m"       >> matrix.body
+       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b/restart.gsh_15m"       >> matrix.body
+       echo "cp ww3_ufs1.2/work_a/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b/restart.aoc_9km"       >> matrix.body
+       echo "$rtst -s MPI_OMPH -w work_b -m grdset_b -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"         >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.2 work_a work_b"                                                     >> matrix.body
     fi
   fi
 
@@ -2173,15 +2173,15 @@
   if [ "$ufs" = 'y' ] && [ "$esmf" = 'y' ] && [ "$grib" = 'y' ]
   then
     echo ' ' >> matrix.body
-    echo "$rtst -s MPI_OMPH -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"  >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_a_esmf -m grdset_a -C ESMF -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"     >> matrix.body
     if [ "$rstrt_b4b" = 'y' ]
     then
-       echo "mkdir -p ww3_ufs1.2/work_b_esmf"                                                                            >> matrix.body
-       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b_esmf/restart.gnh_10m"           >> matrix.body
-       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b_esmf/restart.gsh_15m"           >> matrix.body
-       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b_esmf/restart.aoc_9km"           >> matrix.body
+       echo "mkdir -p ww3_ufs1.2/work_b_esmf"                                                                    >> matrix.body
+       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gnh_10m ww3_ufs1.2/work_b_esmf/restart.gnh_10m"   >> matrix.body
+       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.gsh_15m ww3_ufs1.2/work_b_esmf/restart.gsh_15m"   >> matrix.body
+       echo "cp ww3_ufs1.2/work_a_esmf/20210401.030000.restart.aoc_9km ww3_ufs1.2/work_b_esmf/restart.aoc_9km"   >> matrix.body
        echo "$rtst -s MPI_OMPH -w work_b_esmf -m grdset_b  -C ESMF -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2" >> matrix.body
-       echo "./bin/test.comp ww3_ufs1.2 work_a_esmf work_b_esmf"                                                         >> matrix.body
+       echo "./bin/test.comp ww3_ufs1.2 work_a_esmf work_b_esmf"                                                 >> matrix.body
     fi
   fi
 

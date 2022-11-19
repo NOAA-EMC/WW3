@@ -1,5 +1,16 @@
+!> @file
+!> @brief Contains module WMINIOMD.
+!> 
+!> @author H. L. Tolman  @date 28-Sep-2016
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Internal IO routines for the multi-grid model.
+!>
+!> @author H. L. Tolman  @date 28-Sep-2016
+!>
       MODULE WMINIOMD
 !/
 !/                  +-----------------------------------+
@@ -77,6 +88,19 @@
 !/
       CONTAINS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Stage internal boundary data in the data structure BPSTGE.
+!>
+!> @details For the shared memory version, arrays are initialized and
+!>  the data are copied. For the distributed memory version, the data
+!>  are moved using a non-blocking send. In this case, the arrays
+!>  are dimensioned on the receiving side.
+!>
+!> @param[in] IMOD Model number of grid from which data is to
+!>                    be staged.
+!>
+!> @author H. L. Tolman  @date 06-Jun-2018
+!>        
       SUBROUTINE WMIOBS ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -450,6 +474,25 @@
 !/
       END SUBROUTINE WMIOBS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Gather internal boundary data for a given model.
+!>
+!> @details For the shared memory version, data are gathered from
+!>  the data structure BPSTGE. For the distributed memory version,
+!>  the gathering of the data are finished first.
+!>
+!>  Gathering of data is triggered by the time stamp of the data
+!>  that is presently in the storage arrays.
+!>
+!>  This routine preempts the data flow normally executed by
+!>  W3IOBC and W3UBPT, and hence bypasses both routines in W3WAVE.
+!>
+!> @param[in] IMOD Model number of grid from which data is to
+!>                    be gathered.
+!> @param[out] DONE Flag for completion of operation (opt).
+!>
+!> @author H. L. Tolman  @date 29-May-2006
+!>      
       SUBROUTINE WMIOBG ( IMOD, DONE ) 
 !/
 !/                  +-----------------------------------+
@@ -1161,6 +1204,18 @@
 !/
       END SUBROUTINE WMIOBG
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Finalize staging of  internal boundary data in the data
+!>  structure BPSTGE (MPI only).
+!>
+!> @details Post appropriate 'wait' functions to assure that the
+!>  communication has finished.
+!>
+!> @param[in] IMOD Model number of grid from which data has
+!>                    been staged.
+!>
+!> @author H. L. Tolman  @date 29-May-2006
+!>      
       SUBROUTINE WMIOBF ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -1322,6 +1377,17 @@
 !/
       END SUBROUTINE WMIOBF
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Stage internal high-to-low data in the data structure HGSTGE.
+!>
+!> @details Directly fill staging arrays in shared memory version, or post
+!>  the corresponding sends in distributed memory version.
+!>
+!> @param[in] IMOD Model number of grid from which data is to
+!>                    be staged.
+!>
+!> @author H. L. Tolman  @date 28-Sep-2016
+!>      
       SUBROUTINE WMIOHS ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -1647,6 +1713,21 @@
 !/
       END SUBROUTINE WMIOHS
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Gather internal high-to-low data for a given model.
+!>
+!> @details For distributed memory version first receive all staged data.
+!>  After staged data is present, average, convert as necessary,
+!>  and store in basic spectral arrays.
+!>
+!>  Using storage array HGSTAGE and time stamps.
+!>      
+!> @param[in] IMOD Model number of grid from which data is to
+!>                    be gathered.
+!> @param[out] DONE Flag for completion of operation (opt).
+!>
+!> @author H. L. Tolman  @date 20-Dec-2006
+!>      
       SUBROUTINE WMIOHG ( IMOD, DONE ) 
 !/
 !/                  +-----------------------------------+
@@ -1667,7 +1748,7 @@
 !
 !     For distributed memory version first receive all staged data.
 !     After staged data is present, average, convert as necessary,
-!     and store in basic spatral arrays.
+!     and store in basic spectral arrays.
 !
 !  2. Method :
 !
@@ -2236,6 +2317,18 @@
 !/
       END SUBROUTINE WMIOHG
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Finalize staging of internal high-to-low data in the data
+!>  structure HGSTGE (MPI only).
+!>
+!> @details Post appropriate 'wait' functions to assure that the
+!>  communication has finished.
+!>
+!> @param[in] IMOD Model number of grid from which data has
+!>                    been staged.
+!>
+!> @author H. L. Tolman  @date 16-Jan-2006
+!>      
       SUBROUTINE WMIOHF ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -2393,6 +2486,17 @@
 !/
       END SUBROUTINE WMIOHF
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Stage internal same-rank data in the data structure EQSTGE.
+!>
+!> @details Directly fill staging arrays in shared memory version, or post
+!>  the corresponding sends in distributed memory version.
+!>
+!> @param[in] IMOD Model number of grid from which data is to
+!>                 be staged.
+!>
+!> @author H. L. Tolman  @date 28-Sep-2016
+!>      
       SUBROUTINE WMIOES ( IMOD )
 !/
 !/                  +-----------------------------------+
@@ -2705,6 +2809,21 @@
 !/
       END SUBROUTINE WMIOES
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Gather internal same-rank data for a given model.
+!>
+!> @details For distributed memory version first receive all staged
+!>  data. After staged data is present, average, convert as necessary,
+!>  and store in basic spectral arrays.
+!>
+!>  Using storage array EQSTGE and time stamps.
+!>      
+!> @param[in] IMOD Model number of grid from which data is to
+!>                    be gathered.
+!> @param[out] DONE Flag for completion of operation (opt).
+!>
+!> @author H. L. Tolman  @date 22-Jan-2007
+!>      
       SUBROUTINE WMIOEG ( IMOD, DONE ) 
 !/
 !/                  +-----------------------------------+
@@ -2726,7 +2845,7 @@
 !
 !     For distributed memory version first receive all staged data.
 !     After staged data is present, average, convert as necessary,
-!     and store in basic spatral arrays.
+!     and store in basic spectral arrays.
 !
 !  2. Method :
 !
@@ -3272,6 +3391,18 @@
 !/
       END SUBROUTINE WMIOEG
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Finalize staging of internal same-rank data in the data
+!>  structure EQSTGE (MPI only).
+!>
+!> @details Post appropriate 'wait' functions to assure that the
+!>  communication has finished.
+!>
+!> @param[in] IMOD Model number of grid from which data has
+!>                 been staged.
+!>
+!> @author H. L. Tolman  @date 25-May-2006
+!>      
       SUBROUTINE WMIOEF ( IMOD )
 !/
 !/                  +-----------------------------------+

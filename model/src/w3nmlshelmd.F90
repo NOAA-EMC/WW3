@@ -1,4 +1,4 @@
-#include "w3macros.h" 
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
       MODULE W3NMLSHELMD
 !/
@@ -111,7 +111,7 @@
 
 
   ! output date structure
-  TYPE NML_OUTPUT_TIME_T 
+  TYPE NML_OUTPUT_TIME_T
     CHARACTER(15)               :: START
     CHARACTER(15)               :: STRIDE
     CHARACTER(15)               :: STOP
@@ -274,6 +274,7 @@
 #ifdef W3_S
       INTEGER, SAVE                           :: IENT = 0
 #endif
+      logical                                 :: is_open
 
     IERR = 0
 #ifdef W3_S
@@ -288,20 +289,22 @@
 
     ! open namelist log file
     IF ( NMPLOG .EQ. IMPROC ) THEN
-      NDSN = 3
-      OPEN (NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
+      OPEN (newunit=NDSN, file=TRIM(INFILE)//'.log', form='formatted', iostat=IERR)
       IF (IERR.NE.0) THEN
         WRITE (MDSE,'(A)') 'ERROR: open full nml file '//TRIM(INFILE)//'.log failed'
         RETURN
       END IF
     END IF
 
+    inquire (unit=ndsi, opened=is_open)
+    if (.not. is_open) then
     ! open input file
-    open (NDSI, FILE=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
-    IF (IERR.NE.0) THEN
-      WRITE (MDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
-      RETURN
-    END IF
+       open (NDSI, FILE=TRIM(INFILE), form='formatted', status='old', iostat=IERR)
+       IF (IERR.NE.0) THEN
+          WRITE (MDSE,'(A)') 'ERROR: open input file '//TRIM(INFILE)//' failed'
+          RETURN
+       END IF
+    end if
 
     ! read domain namelist
     CALL READ_DOMAIN_NML (NDSI, NML_DOMAIN)
@@ -987,7 +990,7 @@
     NML_HOMOG_COUNT = HOMOG_COUNT
     NML_HOMOG_INPUT = HOMOG_INPUT
 
-    
+
   END SUBROUTINE READ_HOMOGENEOUS_NML
 
 !/ ------------------------------------------------------------------- /

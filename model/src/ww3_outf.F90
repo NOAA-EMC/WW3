@@ -2356,7 +2356,7 @@
                   IF(GTYPE .NE. UNGTYPE) THEN
                     JJ     = LEN_TRIM(FNMPRE)
                     OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,             &
-                          FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                          form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
                     WRITE (NDSDAT) FILEID, TIME,                      &
                        MINVAL(XGRD(IY1:IYN,IX1:IXN)),                 &
                        MAXVAL(XGRD(IY1:IYN,IX1:IXN)), IXN-IX1+1,      &
@@ -2365,7 +2365,7 @@
                        ENAME, FSC, UNITS, IDLA, IDFM, FORMF, MFILL
                   ELSE 
                     OPEN (NDSDAT,FILE=FNAME,             &
-                    FORM='UNFORMATTED',ERR=800,IOSTAT=IERR)
+                    form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
                     WRITE (NDSDAT) FILEID, TIME,                      &
                          X0,MAXX,NX, &
                          Y0,MAXY,NY, &

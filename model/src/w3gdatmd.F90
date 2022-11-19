@@ -643,6 +643,11 @@
         INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:) 
         INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
         INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
+
+!/ Data duplicated for better performance
+        INTEGER, POINTER :: IJKCel3(:), IJKCel4(:), &
+                            IJKVFc5(:), IJKVFc6(:), &
+                            IJKUFc5(:), IJKUFc6(:)
 #endif
 !
         REAL             :: SX, SY, X0, Y0, DTCFL, DTCFLI, DTMAX,      &
@@ -729,22 +734,26 @@
         INTEGER               :: NTRI
         INTEGER, POINTER      :: TRIGP(:,:)
 #ifdef W3_PDLIB
-        INTEGER               :: NBND_MAP
-        INTEGER, POINTER      :: INDEX_MAP(:)
-        INTEGER, POINTER      :: MAPSTA_LOC(:)
+        INTEGER :: NBND_MAP
+        INTEGER, POINTER     :: INDEX_MAP(:)
+        INTEGER, POINTER     :: MAPSTA_LOC(:)
+        INTEGER*1, POINTER   :: IOBPD_LOC(:,:)
+        INTEGER*2, POINTER   :: IOBP_LOC(:)
+        INTEGER*1, POINTER   :: IOBDP_LOC(:)
+        INTEGER*1, POINTER   :: IOBPA_LOC(:)
 #endif
+
         REAL(8), POINTER      :: LEN(:,:),SI(:), IEN(:,:)
 
         REAL                  :: MAXX, MAXY, DXYMAX
         REAL, POINTER         :: ANGLE(:,:),ANGLE0(:,:)
         INTEGER               :: COUNTRI,COUNTOT,NNZ, NBEDGE
         INTEGER, POINTER      :: CCON(:), COUNTCON(:), IE_CELL(:), &
-                                 POS_CELL(:), IOBP(:), IOBPD(:,:), IOBDP(:), IOBPA(:),   &
-#ifdef W3_PDLIB
-                          IOBPD_loc(:,:), IOBP_loc(:),                    &
-#endif
+                                 POS_CELL(:),   &
                                  IAA(:), JAA(:), POSI(:,:), INDEX_CELL(:),       &
                                  I_DIAG(:), JA_IE(:,:,:)
+        INTEGER*2, POINTER    :: IOBP(:)
+        INTEGER*1, POINTER    :: IOBPD(:,:), IOBDP(:), IOBPA(:)
         INTEGER, POINTER      :: EDGES(:,:), NEIGH(:,:)
         REAL(8), POINTER      :: TRIA(:)
         REAL, POINTER         :: CROSSDIFF(:,:)
@@ -961,6 +970,7 @@
 #ifdef W3_DB1
         REAL                  :: SDBC1, SDBC2
         LOGICAL               :: FDONLY
+        REAL                  :: SDBSC
 #endif
       END TYPE SDBP
 
@@ -1082,17 +1092,21 @@
       INTEGER, POINTER        :: NBND_MAP
       INTEGER, POINTER        :: INDEX_MAP(:)
       INTEGER, POINTER        :: MAPSTA_LOC(:)
+        INTEGER*1, POINTER   :: IOBPD_LOC(:,:)
+        INTEGER*2, POINTER   :: IOBP_LOC(:)
+        INTEGER*1, POINTER   :: IOBDP_LOC(:)
+        INTEGER*1, POINTER   :: IOBPA_LOC(:)
 #endif
+
       REAL(8), POINTER        :: IEN(:,:), LEN(:,:), SI(:)
       REAL, POINTER           :: ANGLE(:,:),ANGLE0(:,:)
       INTEGER,  POINTER       :: CCON(:),  COUNTCON(:), IE_CELL(:),           &
-                                 POS_CELL(:), IOBP(:), IOBPD(:,:), IOBDP(:), IOBPA(:),  &
-#ifdef W3_PDLIB
-                                 IOBPD_loc(:,:), IOBP_loc(:),          &
-#endif
+                                 POS_CELL(:),  &
                                  IAA(:), JAA(:), POSI(:,:),                   &
                                  I_DIAG(:), JA_IE(:,:,:),                     &
                                  INDEX_CELL(:)
+      INTEGER*2, POINTER      :: IOBP(:)
+      INTEGER*1, POINTER      :: IOBPD(:,:), IOBDP(:), IOBPA(:)
       REAL(8), POINTER        :: TRIA(:)
       REAL, POINTER           :: CROSSDIFF(:,:)
       REAL,POINTER            :: MAXX, MAXY, DXYMAX 
@@ -1132,6 +1146,12 @@
         INTEGER, POINTER :: NLvCel(:), NLvUFc(:), NLvVFc(:)
         INTEGER, POINTER :: IJKCel(:,:), IJKUFc(:,:), IJKVFc(:,:)
         INTEGER, POINTER :: ISMCBP(:),   ICLBAC(:)
+
+!/ Data duplicated for better performance
+        INTEGER, POINTER :: IJKCel3(:), IJKCel4(:), &
+                            IJKVFc5(:), IJKVFc6(:), &
+                            IJKUFc5(:), IJKUFc6(:)
+!/
 #endif
 !
 #ifdef W3_SEC1
@@ -1346,6 +1366,7 @@
 #ifdef W3_DB1
       REAL, POINTER           :: SDBC1, SDBC2
       LOGICAL, POINTER        :: FDONLY
+      REAL, POINTER           :: SDBSC
 #endif
 !/
 #ifdef W3_UOST
@@ -1378,6 +1399,7 @@
       REAL, POINTER           :: IS1C1, IS1C2
 #endif
 !/
+
       CONTAINS
 !/ ------------------------------------------------------------------- /
       SUBROUTINE W3NMOD ( NUMBER, NDSE, NDST, NAUX )
@@ -1732,6 +1754,14 @@
                  GRIDS(IMOD)%CLATF(MVFc),        &
                  STAT=ISTAT                      )
       CHECK_ALLOC_STATUS ( ISTAT )
+
+      ALLOCATE ( GRIDS(IMOD)%IJKCel3(-9:MCel),  &
+                 GRIDS(IMOD)%IJKCel4(-9:MCel),  &
+                 GRIDS(IMOD)%IJKVFc5(MVFc),     &
+                 GRIDS(IMOD)%IJKVFc6(MVFc),     &
+                 GRIDS(IMOD)%IJKUFc5(MUFc),     &
+                 GRIDS(IMOD)%IJKUFc6(MUFc),     &
+                 STAT=ISTAT)
 #endif
 !
 #ifdef W3_SMC
@@ -2353,11 +2383,6 @@
       GNAME  => GRIDS(IMOD)%GNAME
       FILEXT => GRIDS(IMOD)%FILEXT
       TRIGP  => GRIDS(IMOD)%TRIGP
-#ifdef W3_PDLIB
-      NBND_MAP => GRIDS(IMOD)%NBND_MAP
-      INDEX_MAP => GRIDS(IMOD)%INDEX_MAP
-      MAPSTA_LOC => GRIDS(IMOD)%MAPSTA_LOC
-#endif
       NTRI     => GRIDS(IMOD)%NTRI
       COUNTRI     => GRIDS(IMOD)%COUNTRI
       SI     => GRIDS(IMOD)%SI
@@ -2384,10 +2409,6 @@
       IOBPD     => GRIDS(IMOD)%IOBPD
       IOBDP     => GRIDS(IMOD)%IOBDP
       IOBPA     => GRIDS(IMOD)%IOBPA
-#ifdef W3_PDLIB
-      IOBP_loc     => GRIDS(IMOD)%IOBP_loc
-      IOBPD_loc     => GRIDS(IMOD)%IOBPD_loc
-#endif
       TRIA     => GRIDS(IMOD)%TRIA
       CROSSDIFF => GRIDS(IMOD)%CROSSDIFF
       MAXX     => GRIDS(IMOD)%MAXX
@@ -2442,6 +2463,14 @@
           CTRNX  => GRIDS(IMOD)%CTRNX
           CTRNY  => GRIDS(IMOD)%CTRNY
           CLATF  => GRIDS(IMOD)%CLATF
+
+          IJKCel3 => GRIDS(IMOD)%IJKCel3
+          IJKCel4 => GRIDS(IMOD)%IJKCel4
+          IJKVFc5 => GRIDS(IMOD)%IJKVFc5
+          IJKVFc6 => GRIDS(IMOD)%IJKVFc6
+          IJKUFc5 => GRIDS(IMOD)%IJKUFc5
+          IJKUFc6 => GRIDS(IMOD)%IJKUFc6
+
 #endif
 !
 #ifdef W3_SMC
@@ -2773,6 +2802,7 @@
       SDBC1  => MPARS(IMOD)%SDBPS%SDBC1
       SDBC2  => MPARS(IMOD)%SDBPS%SDBC2
       FDONLY => MPARS(IMOD)%SDBPS%FDONLY
+      SDBSC  => MPARS(IMOD)%SDBPS%SDBSC
 #endif
 !
 !
@@ -3180,17 +3210,11 @@
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
       WRITE (NDST,9000) IMOD, MX, MTRI
 #endif
-
-#ifdef W3_MEMCHECK
-      WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_UG_ALLOCATE SECTION 1'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC,mallInfos)
-#endif
 !
 ! -------------------------------------------------------------------- /
 ! 2.  Allocate arrays
 !
-      ALLOCATE ( GRIDS(IMOD)%TRIGP(MTRI,3),                         &
+      ALLOCATE ( GRIDS(IMOD)%TRIGP(3,MTRI),                         &
                  GRIDS(IMOD)%SI(MX),                                &
                  GRIDS(IMOD)%XGRD(1,MX),                            &
                  GRIDS(IMOD)%YGRD(1,MX),                            &
@@ -3244,12 +3268,6 @@
 #if defined(TEST_W3GDATMD) || defined(TEST_W3GDATMD_W3DIMUG)
       WRITE (NDST,9003)
 #endif
-#ifdef W3_MEMCHECK
-      WRITE(740+IAPROC,*) 'memcheck_____:', 'WW3_UG_ALLOCATE SECTION 2'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC,mallInfos)
-#endif
-
       RETURN
 !
 ! Formats

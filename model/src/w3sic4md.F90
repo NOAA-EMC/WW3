@@ -319,10 +319,10 @@
       REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
                                  ICECOEF4, ICECOEF5, ICECOEF6, &
                                  ICECOEF7, ICECOEF8
-#ifdef W3_CESMCOUPLED
-      REAL                    :: x1,x2,x3,x1sqr,x2sqr,x3sqr
-      REAL                    :: perfour,amhb,bmhb,iceconc
-#endif
+
+      REAL                    :: x1,x2,x3,x1sqr,x2sqr,x3sqr   !case 8
+      REAL                    :: perfour,amhb,bmhb            !case 8
+
       REAL                    :: KI1,KI2,KI3,KI4,FC5,FC6,FC7,FREQ
       REAL                    :: HS, EMEAN, HICE
       REAL, ALLOCATABLE       :: WN_I(:)  ! exponential decay rate for amplitude
@@ -526,7 +526,6 @@
            END DO
            WN_I= 0.5 * ALPHA
 
-#ifdef W3_CESMCOUPLED
         CASE (8)
            !CMB added option of cubic fit to Meylan, Horvat & Bitz in prep
            ! ICECOEF1 is thickness
@@ -538,8 +537,6 @@
            x2=max(2.5,x2)
            x2sqr=x2*x2
            x3sqr=x3*x3
-           ! write(*,*) 'floe size', x2
-           ! write(*,*) 'sic',iceconc
            amhb = 2.12e-3
            bmhb = 4.59e-2
 
@@ -557,9 +554,6 @@
                   0.00031073*x1**3 + 1.5996e-06*x2**3 + 0.090994*x3**3
        	      KARG1(ik)=min(karg1(ik),0.0)
               WN_I(ik)  = 10.0**KARG1(ik)
-              ! if (WN_I(ik).gt.0.9) then
-              !    write(*,*) 'whacky',WN_I(ik),x1,x2,x3
-              ! endif
 	      perfour=x1sqr*x1sqr
 	      if ((x1.gt.5.0) .and. (x1.lt.20.0)) then
 	        WN_I(IK) = WN_I(IK) + amhb/x1sqr+bmhb/perfour
@@ -567,9 +561,6 @@
 	        WN_I(IK) = amhb/x1sqr+bmhb/perfour
 	      endif
            end do
-           ! write(*,*) 'Attena',(10.0**KARG1(IK),IK=1,5)
-           ! write(*,*) 'Attenb',(WN_I(IK),IK=1,5)
-#endif
         CASE DEFAULT
           WN_I = ICECOEF1 !Default to IC1: Uniform in k
       
