@@ -76,6 +76,12 @@ add_compile_definitions(W3_IS0)
 add_compile_definitions(W3_REF0)
 add_compile_definitions(ENDIANNESS="big_endian")
 
+set_property(SOURCE w3initmd.F90
+  APPEND
+  PROPERTY COMPILE_DEFINITIONS
+  "__WW3_SWITCHES__=\'\'"
+  )
+
 # Note that w3iogocdmd is a new file for netcdf io
 # Set source files
 set(SRCFILES constants.F90

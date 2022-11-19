@@ -292,9 +292,6 @@
 #ifdef W3_T1
       USE W3ARRYMD, ONLY: OUTMAT
 #endif
-#ifdef W3_CESMCOUPLED
-      USE W3IDATMD, ONLY: ICEI
-#endif
 !
       IMPLICIT NONE
 !/
@@ -354,9 +351,6 @@
       KARG2    = 0.0
       KARG3    = 0.0
       WN_I     = 0.0
-#ifdef W3_CESMCOUPLED
-      iceconc  = 0.0
-#endif
       ALPHA    = 0.0
       ICECOEF1 = 0.0
       ICECOEF2 = 0.0
@@ -385,9 +379,6 @@
       IF (INFLAGS2(-5)) ICECOEF3 = ICEP3(IX,IY)
       IF (INFLAGS2(-4)) ICECOEF4 = ICEP4(IX,IY)
       IF (INFLAGS2(-3)) ICECOEF5 = ICEP5(IX,IY)
-#ifdef W3_CESMCOUPLED
-      IF (INFLAGS2(4))  iceconc  = ICEI(IX,IY)
-#endif
 
 ! Borrow from Smud (error if BT8 or BT9)
 #ifdef W3_BT8
