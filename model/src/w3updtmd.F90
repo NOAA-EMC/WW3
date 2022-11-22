@@ -1947,7 +1947,7 @@ CONTAINS
                  ICEI(IX,IY), 'SEA (NEW)'
 #endif
             VA(:,JSEA) = 0.
-#ifdef W3_ST3 || defined(W3_ST4)
+#if defined W3_ST3 || defined(W3_ST4)
             CHARN(JSEA) = AALPHA
 #else 
             CHARN(JSEA) = 0.
