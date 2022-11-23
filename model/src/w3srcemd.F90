@@ -1441,7 +1441,7 @@ CONTAINS
                 eVD = MIN(0.,VDDB(ISP))
                 IF (eVS .gt. 0.) THEN
                   evS = 2*evS
-                  evD = -evD 
+                  evD = -evD
                 ELSE
                   evS = -evS
                   evD = 2*evD

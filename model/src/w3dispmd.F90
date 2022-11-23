@@ -534,6 +534,9 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     REAL                    :: DEPTH
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/
     !
     !/
     !/ End of WAVNU_LOCAL------------------------------------------------- /
@@ -833,19 +836,6 @@ CONTAINS
     !/ 0) --- Initialize/allocate variables ------------------------------ /
 
 
-        GET_CG  = .FALSE.
-        !/T38      WRITE(*,*)'FORWARD IN: H_ICE,VISC,H_WDEPTH,FWANTED = ', &
-        !/T38                          H_ICE,VISC,H_WDEPTH,FWANTED
-             FWANTED=SIGMA(IK)/TPI
-        ! First guess for k :
-              
-              CALL WAVNU1(SIGMA(IK),H_WDEPTH,K_OPEN,CG_OPEN)
-        !     KWN(1)  = 0.2 ! (old method)
-              KWN(1)  =K_OPEN ! new method, Mar 10 2014
-        !
-        !/ 1) ----- Iteration loop to find k --------------------------------- /
-              ITER = 0
-              DF   = 999.
 
 
     DO IK = 1, NK

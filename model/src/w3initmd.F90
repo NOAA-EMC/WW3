@@ -1388,6 +1388,10 @@ CONTAINS
     !Li   DO IY=1, NY
     !Li     DO IX=1, NX
     !Li       ISEA   = MAPFS(IY,IX)
+#ifdef W3_DEBUGSTP
+    max_val = 0
+    min_val = 0
+#endif
     DO ISEA=1, NSEA
       IX = MAPSF(ISEA,1)
       IY = MAPSF(ISEA,2)
@@ -1401,6 +1405,10 @@ CONTAINS
         WLVeff=WLVeff + ZETA_SETUP(ISEA)
       END IF
 #endif
+#ifdef W3_DEBUGSTP
+      max_val = MAX(max_val, WLVeff)
+      min_val = MIN(min_val, WLVeff)
+#endif
       DW(ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
 #ifdef W3_T
       XOUT(IX,IY) = DW(ISEA)
@@ -1412,6 +1420,12 @@ CONTAINS
       !Li     END IF
     END DO
     !Li   END DO
+#ifdef W3_DEBUGSTP
+      WRITE(740+IAPROC,*) 'w3initmd 1: max/min(WLVeff)=', max_val, min_val
+      FLUSH(740+IAPROC)
+      max_val = 0
+      min_val = 0
+#endif
     DO JSEA=1, NSEAL
       CALL INIT_GET_ISEA(ISEA, JSEA)
       WLVeff=WLV(ISEA)
@@ -1420,11 +1434,19 @@ CONTAINS
         WLVeff=WLVeff + ZETA_SETUP(ISEA)
       END IF
 #endif
+#ifdef W3_DEBUGSTP
+      max_val = MAX(max_val, WLVeff)
+      min_val = MIN(min_val, WLVeff)
+#endif
       DW(ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
       IF ( WLVeff-ZB(ISEA) .LE.0. ) THEN
         VA(:,JSEA) = 0.
       END IF
     END DO
+#ifdef W3_DEBUGSTP
+    WRITE(740+IAPROC,*) 'w3initmd 2: max/min(WLVeff)=', max_val, min_val
+    FLUSH(740+IAPROC)
+#endif
     !
 #ifdef W3_PDLIB
     IF ( IAPROC .LE. NAPROC ) THEN
@@ -1612,6 +1634,9 @@ CONTAINS
     !
 #ifdef W3_DEBUGCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.3", 1)
+#endif
+#ifdef W3_DEBUGCOH
+    CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3INIT, step 8.4", 1)
 #endif
     !
     ! 8.  Final MPI set up ----------------------------------------------- /

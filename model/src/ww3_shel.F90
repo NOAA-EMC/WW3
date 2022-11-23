@@ -2019,17 +2019,17 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !
 #ifdef W3_OASIS
- ! Initialize L_MASTER, COUPL_COMM
-      IF ( IAPROC .EQ. 1) THEN
-        L_MASTER = .TRUE.
-      ELSE
-        L_MASTER = .FALSE.
-      ENDIF 
- ! Estimate the weights for the spatial interpolation
-      IF (DTOUT(7).NE.0) THEN
-        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
-        CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
-      END IF
+  ! Initialize L_MASTER, COUPL_COMM
+  IF ( IAPROC .EQ. 1) THEN
+    L_MASTER = .TRUE.
+  ELSE
+    L_MASTER = .FALSE.
+  ENDIF
+  ! Estimate the weights for the spatial interpolation
+  IF (DTOUT(7).NE.0) THEN
+    CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
+    CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
+  END IF
 #endif
 
 
