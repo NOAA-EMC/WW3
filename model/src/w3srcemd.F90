@@ -2115,9 +2115,6 @@ CONTAINS
            REFLEC, REFLED, TRNX, TRNY,  &
            BERG, DTG, IX, IY,  VREF )
       IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
-#endif
-        !AR: this can be further simplified let's do some simple tests 1st ...
-#ifdef W3_REF1
         IF (IOBP(IX).EQ.0) THEN
           DO IK=1, NK
             DO ITH=1, NTH

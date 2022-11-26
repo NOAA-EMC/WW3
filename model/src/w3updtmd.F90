@@ -2365,7 +2365,6 @@ CONTAINS
     ! 4. Re-generates the boundary data ---------------------------------- *
     !
     IF (GTYPE.EQ.UNGTYPE) THEN
-      !CALL SET_UG_IOBP
 #ifdef W3_PDLIB
       CALL SET_IOBDP_PDLIB
 #endif
