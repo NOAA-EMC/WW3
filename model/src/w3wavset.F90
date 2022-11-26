@@ -1317,8 +1317,8 @@
       WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR
       FLUSH(740+IAPROC)
 #endif
-      WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR, ' eNorm(B)=', eNorm
       IF (eNorm .le. SOLVERTHR) THEN
+        WRITE(740+IAPROC,*) 'ZERO SOLUTION SOLVERTHR=', SOLVERTHR, ' eNorm(B)=', eNorm
 #ifdef W3_DEBUGSTP
         WRITE(740+IAPROC,*) 'Leaving here, zero solution'
         FLUSH(740+IAPROC)
@@ -1338,10 +1338,10 @@
         END DO
         !
         CALL TRIG_WAVE_SETUP_SCALAR_PROD(V_R, V_R, eNorm)
-#ifdef W3_DEBUGSTP
+!#ifdef W3_DEBUGSTP
         WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' eNorm(res)=', eNorm
         FLUSH(740+IAPROC)
-#endif
+!#endif
         IF (eNorm .le. SOLVERTHR) THEN
           EXIT
         END IF

@@ -6364,7 +6364,9 @@ CONTAINS
         !IF (IOBPD_LOC(ITH,IP) .ne. IOBPD(ITH,IP_glob)) STOP 'ERROR IN BOUNDARY'
         VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
 #ifdef W3_REF1
-        IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
+        IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) THEN
+           VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
+        ENDIF
 #endif
       END DO
       !WRITE(*,'(4I10,A20)') IP, IOBDP_LOC(IP), IOBP_LOC(IP), IOBPA_LOC(IP), 'IOBP TEST'

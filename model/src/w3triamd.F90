@@ -2619,7 +2619,7 @@ CONTAINS
     USE CONSTANTS, ONLY : LPDLIB
 #ifdef W3_PDLIB
     USE W3GDATMD, ONLY : NX, NSEAL, IOBP_LOC, IOBDP_LOC, IOBDP_LOC, TRIGP
-    USE yowNodepool, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
+    USE yowNodepool, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2, NPA
     USE yowElementpool, only: INE
 #else
     USE W3GDATMD, ONLY : NX, IOBP, CCON, NSEAL, IOBDP, IE_CELL, IOBDP, TRIGP
@@ -2642,35 +2642,17 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'GET_INTERFACE')
 #endif
-#ifdef W3_PDLIB
-    IF (LPDLIB) THEN
-      DO IP = 1, NSEAL
-        IF (IOBP(IP) .NE. 0 .OR. IOBDP(IP) .EQ. 0) CYCLE
-        DO I = 1, PDLIB_CCON(IP)
-          IE = PDLIB_IE_CELL2(I,IP)
-          IF (ANY(IOBDP(TRIGP(:,IE)) .EQ. 0)) THEN
-            IOBDP(IP) = -1
-            CYCLE
-          ENDIF
-        ENDDO
+
+    DO IP = 1, NPA
+      IF (IOBP_LOC(IP) .NE. 0 .OR. IOBDP_LOC(IP) .EQ. 0) CYCLE
+      DO I = 1, PDLIB_CCON(IP)
+        IE = PDLIB_IE_CELL2(I,IP)
+        IF (ANY(IOBDP_LOC(TRIGP(:,IE)) .EQ. 0)) THEN
+          IOBDP_LOC(IP) = -1
+          CYCLE
+        ENDIF
       ENDDO
-      !CALL EXCHANGE_....
-    ELSE
-#endif
-      J = 0
-      DO IP = 1, NSEAL
-        DO I = 1, CCON(IP)
-          J = J + 1
-          IE = IE_CELL(J)
-          IF (ANY(IOBDP(TRIGP(:,IE)) .EQ. 0)) THEN
-            IOBDP(IP) = -1 ! Set this node as a wet node adjacent to a dry one ... now what's next? Here on this points we want to compute the reflection source term, yes?
-            EXIT
-          ENDIF
-        ENDDO
-      ENDDO
-#ifdef W3_PDLIB
-    ENDIF
-#endif
+    ENDDO
 
   END SUBROUTINE GET_INTERFACE
   !/ ------------------------------------------------------------------- /
