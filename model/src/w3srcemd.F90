@@ -674,7 +674,7 @@ CONTAINS
     REAL                    :: eInc1, eInc2, eVS, eVD, JAC
     REAL                    :: DeltaSRC(NSPEC)
     REAL, PARAMETER         :: DTMINTOT = 0.01
-    LOGICAL                 :: LNEWLIMITER = .FALSE.
+    LOGICAL                 :: LNEWLIMITER = .TRUE.
 #ifdef W3_PDLIB
     REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
@@ -731,7 +731,6 @@ CONTAINS
     VSIN = 0.
     VDIN = 0.
 #endif
-
 #ifdef W3_NL0
     VSNL = 0.
     VDNL = 0.
@@ -792,12 +791,10 @@ CONTAINS
     VDIR = 0.
     VDIR2= 0.
 #endif
-    !
 #ifdef W3_ST6
     VSWL = 0.
     VDWL = 0.
 #endif
-    !
 #ifdef W3_ST0
     ZWND   = 10.
 #endif
@@ -1176,7 +1173,7 @@ CONTAINS
 #endif
       !
 #ifdef W3_PDLIB
-      IF (.NOT. FSSOURCE .or. LSLOC) THEN
+      IF (.not. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_DB1
         CALL W3SDB1 ( IX, SPEC, DEPTH, EMEAN, FMEAN, WNMEAN, CG1,       &
@@ -1351,7 +1348,7 @@ CONTAINS
 #endif
       END DO  ! end of loop on IS
       !
-      DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
+      DT     = MAX ( 0.01, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
       !
       DTDYN  = DTDYN + DT
 #ifdef W3_T

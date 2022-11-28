@@ -3576,7 +3576,7 @@ CONTAINS
 #ifdef W3_REF1
             eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
             IF (eIOBPDR .eq. 1) THEN
-              K1=ZERO
+              K1 = ZERO
             END IF
 #endif
             DTK               = KP(POS,IE) * DTG * IB1
@@ -5718,7 +5718,7 @@ CONTAINS
     INTEGER JP_glob
     INTEGER is_converged, itmp
 
-    integer :: testknoten = 923
+    INTEGER :: TESTNODE = 923
 
     LOGICAL :: LSIG = .FALSE.
 
@@ -5733,10 +5733,6 @@ CONTAINS
     call getMallocInfo(mallinfos)
     call printMallInfo(IAPROC+50000,mallInfos)
 #endif
-
-    !DO JSEA = 1, NSEAL
-    !  WRITE(70000+IAPROC,*) 'SUM VA ENTRY SOLVER', JSEA, SUM(VA(:,JSEA))
-    !ENDDO
 
     CCURX  = FACX
     CCURY  = FACY
@@ -5761,10 +5757,12 @@ CONTAINS
     WRITE(740+IAPROC,*) 'B_JGS_BLOCK_GAUSS_SEIDEL=', B_JGS_BLOCK_GAUSS_SEIDEL
     FLUSH(740+IAPROC)
 #endif
+
 #ifdef W3_DEBUGSRC
     WRITE(740+IAPROC,*) 'optionCall=', optionCall
     FLUSH(740+IAPROC)
 #endif
+
 #ifdef W3_MEMCHECK
     write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 1'
     call getMallocInfo(mallinfos)
@@ -5804,10 +5802,12 @@ CONTAINS
       WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA(:,JSEA)), maxval(VA(:,JSEA)), sum(VA(:,JSEA))
     END DO
 #endif
+
 #ifdef W3_DEBUGSOLVERCOH
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) just defined", 0)
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) just defined", 1)
 #endif
+
 #ifdef W3_DEBUGSOLVER
     FLUSH(740+IAPROC)
     WRITE(740+IAPROC,*) 'JACOBI_SOLVER, step 4'
@@ -5866,7 +5866,7 @@ CONTAINS
 
 
 #ifdef W3_DEBUGSOLVER
-    !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
+    WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
 #endif
 
 #ifdef W3_MEMCHECK
@@ -5876,9 +5876,8 @@ CONTAINS
 #endif
     !
 #ifdef W3_DEBUGSOLVER
-    !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
+    WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
 #endif
-
     !
     !     spectral advection
     !
@@ -5915,8 +5914,6 @@ CONTAINS
 
       is_converged = 0
 
-      !        WRITE(740+IAPROC,*) myrank, 'start solver', nbiter
-
 #ifdef W3_MEMCHECK
       write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 1'
       call getMallocInfo(mallinfos)
@@ -5926,8 +5923,6 @@ CONTAINS
 
         IP_glob = iplg(IP)
         ISEA    = MAPFS(1,IP_glob)
-
-        !WRITE(*,*) 'TEST VA 1', IP, SUM(VA(:,IP)), lconverged(ip)
 
         IF (IOBDP_LOC(IP) .eq. 0) THEN
           is_converged   = is_converged + 1
@@ -5979,10 +5974,6 @@ CONTAINS
             !CALL calcARRAY_JACOBI3(IP,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
             !WRITE(*,'(A10,10F20.10)') 'JAC3', SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_OFF_DIAG_LOCAL), SUM(B_JAC_LOCAL)
             ASPAR_DIAG(1:NSPEC) = ASPAR_DIAG_LOCAL(1:NSPEC) + ASPAR_DIAG_ALL(1:NSPEC,IP)
-            !IF (ANY(ABS(ASPAR_DIAG) .LT. TINY(1.))) THEN
-            !  WRITE(*,'(8I10,4F20.10)') IP, JSEA, ISEA, NSEA, NSEAL, np, npa, IP_glob, SUM(ASPAR_DIAG), SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_DIAG_ALL(:,IP)), SUM(B_JAC(:,IP))
-            !  CALL PDLIB_ABORT(25)
-            !ENDIF
             esum       = B_JAC_LOCAL - ASPAR_OFF_DIAG_LOCAL + B_JAC(1:NSPEC,IP)
           ELSEIF (IMEM == 1) THEN
             !CALL calcARRAY_JACOBI4(IP,ICOUNT2,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
@@ -5991,7 +5982,6 @@ CONTAINS
             !WRITE(*,'(A10,10F20.10)') 'JAC3', SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_OFF_DIAG_LOCAL), SUM(B_JAC_LOCAL)
             eSum(1:NSPEC)       = B_JAC(1:NSPEC,IP)
             ASPAR_DIAG(1:NSPEC) = ASPAR_JAC(1:NSPEC,PDLIB_I_DIAG(IP))
-            !IF (IP_glob == 64058) WRITE(740+IAPROC,*) 'TEST ASPAR B_JAC', IP, SUM(B_JAC(1:NSPEC,IP)), SUM(ASPAR_DIAG)
 #ifdef W3_DEBUGFREQSHIFT
             WRITE(740+IAPROC,*) 'eSI=', eSI
             WRITE(740+IAPROC,*) 'sum(ASPAR_DIAG)=', sum(ASPAR_DIAG)
@@ -6151,14 +6141,13 @@ CONTAINS
 #endif
 
           IF (B_JGS_BLOCK_GAUSS_SEIDEL) THEN
-            VA(1:NSPEC,IP)    = eSum !* IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
-            !IF (IP_glob == 64058) WRITE(740+IAPROC,*) 'TEST SUM VA', IP, SUM(VA(1:NSPEC,IP)), DW(ISEA)
+            VA(1:NSPEC,IP) = eSum * IOBDP_LOC(IP)
           ELSE
             U_JAC(1:NSPEC,IP) = eSum
           END IF
         ELSE
           esum = VA(1:NSPEC,IP)
-        ENDIF ! LCONVERGED
+        ENDIF ! .NOT. LCONVERGED
 
         IF (B_JGS_TERMINATE_DIFFERENCE) THEN
           Sum_New = sum(eSum)

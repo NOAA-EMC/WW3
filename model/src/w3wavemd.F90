@@ -1590,13 +1590,12 @@ CONTAINS
 #endif
 
 #ifdef W3_PDLIB
-          IF (.not. LSLOC) THEN
-            VSTOT = 0.
-            VDTOT = 0.
-          ENDIF
           IF (LSLOC) THEN
             B_JAC     = 0.
             ASPAR_JAC = 0.
+          ELSE
+            VSTOT = 0.
+            VDTOT = 0.
           ENDIF
 #endif
 
@@ -1649,8 +1648,7 @@ CONTAINS
 #endif
             !
 #ifdef W3_PDLIB
-            IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
-                 & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
+             IF ( IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
 #endif
 
 

@@ -2084,6 +2084,7 @@ CONTAINS
     !
 #endif
     DO ISEA=1, NSEA
+      !
       IX     = MAPSF(ISEA,1)
       IY     = MAPSF(ISEA,2)
       DWO(ISEA) = DW(ISEA)
@@ -2129,9 +2130,10 @@ CONTAINS
         WLVeff    = WLV(ISEA)
 
 #ifdef W3_SETUP
-        IF (DO_CHANGE_WLV) THEN
-          WLVeff=WLVeff + ZETA_SETUP(ISEA)
-        END IF
+       IF (DO_CHANGE_WLV) THEN
+         WLVeff    = WLVeff + ZETA_SETUP(ISEA)
+         WLV(ISEA) = ZETA_SETUP(ISEA) 
+       END IF
 #endif
 #ifdef W3_TIDE
       ENDIF

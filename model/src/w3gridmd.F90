@@ -3632,7 +3632,7 @@ CONTAINS
       END IF
       IF (SETUP_APPLY_WLV) THEN
         DO_CHANGE_WLV = SETUP_APPLY_WLV
-        PNAME2 = ' we change WLV'
+        PNAME2 = 'Wave setup is added to the WLV'
         WRITE (NDSO,2952) PNAME2
       END IF
       SOLVERTHR_STP = SOLVERTHR_SETUP

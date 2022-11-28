@@ -1721,8 +1721,6 @@
       WRITE(740+IAPROC,*) 'After,B,min=', minval(B), ' max=', maxval(B)
       FLUSH(740+IAPROC)
 #endif
-
-
       CALL TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR(ASPAR, B, ZETA_WORK, ACTIVE, ACTIVESEC)
 
       CALL TRIG_SET_MEANVALUE_TO_ZERO(ZETA_WORK)
@@ -1733,30 +1731,27 @@
       CALL PDLIB_exchange1Dreal(ZETA_WORK)
       max_val = -100000000
       min_val = -100000000
-      DO IP=1,npa
-        IX=iplg(IP)
-        ISEA=MAPFS(1,IX)
+      ZETA_SETUP = 0.d0 
+      DO IP = 1, npa
+        ISEA = iplg(IP)
         IF (ISEA .gt. 0) THEN
            ZETA_SETUP(ISEA) = ZETA_WORK(IP)
            max_val = MAX(max_Val, ZETA_WORK(IP))
            min_val = MAX(min_Val, ZETA_WORK(IP))
         END IF
       END DO
-#ifdef W3_DEBUGSTP
+!!#ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'TRIG_WAVE_SETUP_COMPUTATION, max/min=', max_val, min_val
       FLUSH(740+IAPROC)
-#endif
-!      DO IP=1,npa
-!        IX=iplg(IP)
-!        ZETA_WORK_ALL(IX)=ZETA_WORK(IP)
-!      END DO
-!      CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
-!      DO IX=1,NX
-!        ISEA=MAPFS(1,IX)
-!        IF (ISEA .gt. 0) THEN
-!          ZETA_SETUP(ISEA) = ZETA_WORK_ALL(IX)
-!        END IF
-!      END DO
+!!#endif
+      DO IP = 1, npa
+        isea = iplg(IP)
+        ZETA_WORK_ALL(isea) = ZETA_WORK(IP)
+      END DO
+      CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
+      DO IX = 1, NX
+        ZETA_SETUP(IX) = ZETA_WORK_ALL(IX)
+      END DO
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
