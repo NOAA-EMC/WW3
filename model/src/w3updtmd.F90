@@ -1834,7 +1834,7 @@ CONTAINS
          NSPEC, FICEN
     USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
     USE W3ADATMD, ONLY: NSEALM, CHARN
-#ifdef W3_ST3 || defined(W3_ST4)
+#if defined W3_ST3 || defined(W3_ST4)
     USE W3GDATMD, ONLY: AALPHA
 #endif
     USE W3IDATMD, ONLY: TIN, ICEI, BERGI
@@ -1909,7 +1909,7 @@ CONTAINS
                ICEI(IX,IY), 'ICE (NEW)'
 #endif
           VA(:,JSEA) = 0.
-#ifdef W3_ST3 || defined(W3_ST4)
+#if defined W3_ST3 || defined(W3_ST4)
           CHARN(JSEA) = AALPHA
 #else
           CHARN(JSEA) = 0.
@@ -1945,7 +1945,7 @@ CONTAINS
                  ICEI(IX,IY), 'SEA (NEW)'
 #endif
             VA(:,JSEA) = 0.
-#ifdef W3_ST3 || defined(W3_ST4)
+#if defined W3_ST3 || defined(W3_ST4)
             CHARN(JSEA) = AALPHA
 #else
             CHARN(JSEA) = 0.
