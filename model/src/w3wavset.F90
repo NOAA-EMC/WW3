@@ -1669,7 +1669,7 @@
 !
 !      CALL W3SETG
       REAL(rkind) :: ZETA_WORK(npa)
-!      REAL(rkind) :: ZETA_WORK_ALL(NX)
+      REAL(rkind) :: ZETA_WORK_ALL(NX)
       REAL(rkind) :: F_X(npa), F_Y(npa), DWNX(npa)
       REAL(rkind) :: ASPAR(PDLIB_NNZ), B(npa)
       INTEGER I, ISEA, JSEA, IX, IP, IP_glob
@@ -1733,25 +1733,26 @@
       min_val = -100000000
       ZETA_SETUP = 0.d0 
       DO IP = 1, npa
-        ISEA = iplg(IP)
+        ISEA = iplg(IP) 
         IF (ISEA .gt. 0) THEN
            ZETA_SETUP(ISEA) = ZETA_WORK(IP)
            max_val = MAX(max_Val, ZETA_WORK(IP))
            min_val = MAX(min_Val, ZETA_WORK(IP))
         END IF
       END DO
-!!#ifdef W3_DEBUGSTP
+!#ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'TRIG_WAVE_SETUP_COMPUTATION, max/min=', max_val, min_val
       FLUSH(740+IAPROC)
-!!#endif
-      DO IP = 1, npa
-        isea = iplg(IP)
-        ZETA_WORK_ALL(isea) = ZETA_WORK(IP)
-      END DO
-      CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
-      DO IX = 1, NX
-        ZETA_SETUP(IX) = ZETA_WORK_ALL(IX)
-      END DO
+!#endif
+      !ZETA_WORK_ALL = 0.
+      !DO IP = 1, npa
+      !  isea = iplg(IP)
+      !  ZETA_WORK_ALL(isea) = ZETA_WORK(IP)
+      !END DO
+      !CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
+      !DO IX = 1, NX
+      !  ZETA_SETUP(IX) = ZETA_WORK_ALL(IX)
+      !END DO
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)

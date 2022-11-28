@@ -1422,6 +1422,7 @@ CONTAINS
     use yowDatapool, only: rtype, istatus
     USE yowNodepool, only: npa
     use yowNodepool, only: iplg
+    use yowDatapool, only: rkind
 #endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
@@ -1441,8 +1442,8 @@ CONTAINS
 #endif
     INTEGER ISEA, JSEA, Status(NX), rStatus(NX)
     INTEGER IPROC, I, ierr, IP, IX, IP_glob
-    REAL*8, intent(inout) :: TheVar(NX)
-    REAL*8  rVect(NX)
+    REAL(rkind), intent(inout) :: TheVar(NX)
+    REAL(rkind) ::  rVect(NX)
     Status=0
 #ifdef W3_S
     CALL STRACE (IENT, 'SYNCHRONIZE_GLOBAL_ARRAY')

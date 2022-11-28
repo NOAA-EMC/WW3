@@ -2132,7 +2132,7 @@ CONTAINS
 #ifdef W3_SETUP
        IF (DO_CHANGE_WLV) THEN
          WLVeff    = WLVeff + ZETA_SETUP(ISEA)
-         WLV(ISEA) = ZETA_SETUP(ISEA) 
+         !WLV(ISEA) = ZETA_SETUP(ISEA) 
        END IF
 #endif
 #ifdef W3_TIDE
