@@ -1744,15 +1744,15 @@
       WRITE(740+IAPROC,*) 'TRIG_WAVE_SETUP_COMPUTATION, max/min=', max_val, min_val
       FLUSH(740+IAPROC)
 !#endif
-      !ZETA_WORK_ALL = 0.
-      !DO IP = 1, npa
-      !  isea = iplg(IP)
-      !  ZETA_WORK_ALL(isea) = ZETA_WORK(IP)
-      !END DO
-      !CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
-      !DO IX = 1, NX
-      !  ZETA_SETUP(IX) = ZETA_WORK_ALL(IX)
-      !END DO
+      ZETA_WORK_ALL = 0.
+      DO IP = 1, npa
+        isea = iplg(IP)
+        ZETA_WORK_ALL(isea) = ZETA_WORK(IP)
+      END DO
+      CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
+      DO IX = 1, NX
+        ZETA_SETUP(IX) = ZETA_WORK_ALL(IX)
+      END DO
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)

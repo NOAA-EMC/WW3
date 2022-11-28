@@ -3471,10 +3471,7 @@ CONTAINS
     INTEGER :: I, J, ITH, IK, J2
     INTEGER :: IE, POS, JSEA
     INTEGER :: I1, I2, I3, NI(3)
-    INTEGER :: counter, IB1, IB2
-#ifdef W3_REF1
-    INTEGER :: eIOBPDR
-#endif
+    INTEGER :: counter, IB1, IB2, IBR
     REAL    :: DTK, TMP3
     REAL    :: LAMBDA(2)
     REAL    :: FL11, FL12
@@ -3565,6 +3562,9 @@ CONTAINS
       DO IP = 1, np
         IB1 = (1-IOBPA_LOC(IP)) * IOBPD_LOC(ITH,IP)
         IB2 = IOBPD_LOC(ITH,IP)
+#ifdef W3_REF1
+        IBR = (1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
+#endif
         IF (IOBDP_LOC(IP) .eq. 1) THEN
           DO I = 1, PDLIB_CCON(IP)
             J     =  J + 1
@@ -3573,19 +3573,21 @@ CONTAINS
 #ifdef W3_DEBUGSRC
             WRITE(740+IAPROC,*) 'I1=', I1, ' PDLIB_I_DIAG=', PDLIB_I_DIAG(IP)
 #endif
-#ifdef W3_REF1
-            eIOBPDR=(1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
-            IF (eIOBPDR .eq. 1) THEN
-              K1 = ZERO
-            END IF
-#endif
-            DTK               = KP(POS,IE) * DTG * IB1
+            DTK               =  KP(POS,IE) * DTG 
 
             I1                =  PDLIB_POSI(1,J)
             I2                =  PDLIB_POSI(2,J)
             I3                =  PDLIB_POSI(3,J)
 
-            B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB2
+#ifdef W3_REF1 
+            IF (IBR == 1) THEN
+              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP)
+            ELSE
+              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1 * IB2
+            ENDIF
+#else
+            B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1 * IB2
+#endif
 
             IF (FSGEOADVECT) THEN
               ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + PDLIB_TRIA03(IE) + DTK - DTK * DELTAL(POS,IE)
@@ -6141,7 +6143,14 @@ CONTAINS
 #endif
 
           IF (B_JGS_BLOCK_GAUSS_SEIDEL) THEN
-            VA(1:NSPEC,IP) = eSum * IOBDP_LOC(IP)
+            IF (IOBPA_LOC(IP) .eq. 0) THEN
+              DO IK = 1, NK
+                DO ITH = 1, NTH
+                  ISP  = ITH + (IK-1)*NTH
+                  VA(ISP,IP) = eSum(ISP) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP)
+                ENDDO
+              ENDDO 
+            ENDIF
           ELSE
             U_JAC(1:NSPEC,IP) = eSum
           END IF
