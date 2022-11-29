@@ -1458,7 +1458,7 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-                B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
+                B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #endif
               END DO
@@ -2109,21 +2109,17 @@ CONTAINS
 #endif
 #ifdef W3_REF1
     IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
-      CALL GET_INTERFACE
       CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
            REFLEC, REFLED, TRNX, TRNY,  &
-           BERG, DTG, IX, IY,  VREF )
+           BERG, DTG, IX, IY, JSEA, VREF )
       IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
-        IF (IOBP(IX).EQ.0) THEN
-          DO IK=1, NK
-            DO ITH=1, NTH
-              IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH) = DTG*VREF(ITH+(IK-1)*NTH)
+        IF (IOBP_LOC(JSEA).EQ.0) THEN
+          DO IK = 1, NK
+            DO ITH = 1, NTH
+              ISP = ITH+(IK-1)*NTH
+              IF (IOBPD_LOC(ITH,JSEA).EQ.0) SPEC(ISP) = DTG*VREF(ISP)
             END DO
           END DO
-        ELSE
-          IF (IOBDP(IX) .EQ. -1) THEN
-            SPEC(:) = SPEC(:) + DTG * VREF(:)
-          ENDIF
         ENDIF
       ELSE
         SPEC(:) = SPEC(:) + DTG * VREF(:)

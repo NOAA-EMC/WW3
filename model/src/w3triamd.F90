@@ -2647,10 +2647,10 @@ CONTAINS
       IF (IOBP_LOC(IP) .NE. 0 .OR. IOBDP_LOC(IP) .EQ. 0) CYCLE
       DO I = 1, PDLIB_CCON(IP)
         IE = PDLIB_IE_CELL2(I,IP)
-        IF (ANY(IOBDP_LOC(TRIGP(:,IE)) .EQ. 0)) THEN
-          IOBDP_LOC(IP) = -1
-          CYCLE
-        ENDIF
+        !IF ( ANY(IOBDP_LOC(INE(:,IE))) .EQV. 0) THEN
+        !  IOBDP_LOC(IP) = -1
+        !  CYCLE
+        !ENDIF
       ENDDO
     ENDDO
 

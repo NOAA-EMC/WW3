@@ -3563,7 +3563,7 @@ CONTAINS
         IB1 = (1-IOBPA_LOC(IP)) * IOBPD_LOC(ITH,IP)
         IB2 = IOBPD_LOC(ITH,IP)
 #ifdef W3_REF1
-        IBR = (1-IOBP_LOC(IP))*(1-IOBPD_LOC(ITH,IP))
+        IBR = (1-IOBP_LOC(IP)) * (1-IOBPD_LOC(ITH,IP)) * (1-IOBPA_LOC(IP)) 
 #endif
         IF (IOBDP_LOC(IP) .eq. 1) THEN
           DO I = 1, PDLIB_CCON(IP)
@@ -3573,22 +3573,23 @@ CONTAINS
 #ifdef W3_DEBUGSRC
             WRITE(740+IAPROC,*) 'I1=', I1, ' PDLIB_I_DIAG=', PDLIB_I_DIAG(IP)
 #endif
-            DTK               =  KP(POS,IE) * DTG 
-
-            I1                =  PDLIB_POSI(1,J)
-            I2                =  PDLIB_POSI(2,J)
-            I3                =  PDLIB_POSI(3,J)
-
+      
 #ifdef W3_REF1 
             IF (IBR == 1) THEN
-              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP)
+              DTK               = KP(POS,IE) * DTG 
+              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) 
             ELSE
-              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1 * IB2
+              DTK               = KP(POS,IE) * DTG * IB1
+              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1
             ENDIF
 #else
-            B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1 * IB2
+            DTK               = KP(POS,IE) * DTG * IB1
+            B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1
 #endif
 
+            I1  =  PDLIB_POSI(1,J)
+            I2  =  PDLIB_POSI(2,J)
+            I3  =  PDLIB_POSI(3,J)
             IF (FSGEOADVECT) THEN
               ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + PDLIB_TRIA03(IE) + DTK - DTK * DELTAL(POS,IE)
               ASPAR_JAC(ISP,I2) = ASPAR_JAC(ISP,I2)                          - DTK * DELTAL(POS_TRICK(POS,1),IE)
@@ -5798,6 +5799,18 @@ CONTAINS
     END DO
     VAOLD = VA(1:NSPEC,1:NSEAL)
 
+#ifdef W3_REF1
+    !DO JSEA = 1, NSEAL
+    !  DO ISP = 1, NSPEC
+    !    ITH    = 1 + MOD(ISP-1,NTH)
+    !    IK     = 1 + (ISP-1)/NTH
+    !    IF (IOBP_LOC(JSEA) .EQ. 0 .and. IOBPD_LOC(ITH,JSEA) .EQ. 0) THEN
+    !      VA(ISP,JSEA) = 20.
+    !    ENDIF
+    !  ENDDO 
+    !ENDDO
+#endif
+
 #ifdef W3_DEBUGSRC
     DO JSEA=1,NSEAL
       WRITE(740+IAPROC,*) 'JSEA=', JSEA
@@ -6363,6 +6376,7 @@ CONTAINS
         VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
 #ifdef W3_REF1
         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) THEN
+           !WRITE(*,*) 'TEST WAVE ACTION RESTORING FOR REFLECTION', IOBP_LOC(IP), IOBPD_LOC(ITH,IP), IOBPA_LOC(IP)
            VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
         ENDIF
 #endif

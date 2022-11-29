@@ -1648,7 +1648,7 @@ CONTAINS
 #endif
             !
 #ifdef W3_PDLIB
-             IF ( IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
+            IF ( IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
 #endif
 
 
