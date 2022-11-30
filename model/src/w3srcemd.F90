@@ -1607,8 +1607,6 @@ CONTAINS
         END IF
 #endif
       END IF
-
-
       !
       ! 5.b  Computes
       !              atmos->wave flux PHIAW-------------------------------- *
@@ -1814,7 +1812,6 @@ CONTAINS
            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 #endif
-
       !
       ! 7.  Check if integration complete ---------------------------------- *
       !
@@ -1829,7 +1826,7 @@ CONTAINS
         !            IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
         EXIT
       ENDIF
-    END DO ! INTEGRATIN LOOP
+    END DO ! INTEGRATION LOOP
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
       WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS
@@ -2117,9 +2114,11 @@ CONTAINS
           DO IK = 1, NK
             DO ITH = 1, NTH
               ISP = ITH+(IK-1)*NTH
-              IF (IOBPD_LOC(ITH,JSEA).EQ.0) SPEC(ISP) = DTG*VREF(ISP)
+              IF (IOBPD_LOC(ITH,JSEA).EQ.0) SPEC(ISP) = SPEC(ISP) + DTG * VREF(ISP)
             END DO
           END DO
+        ELSE
+          SPEC(:) = SPEC(:) + DTG * VREF(:)
         ENDIF
       ELSE
         SPEC(:) = SPEC(:) + DTG * VREF(:)

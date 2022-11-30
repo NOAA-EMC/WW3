@@ -3580,11 +3580,11 @@ CONTAINS
               B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) 
             ELSE
               DTK               = KP(POS,IE) * DTG * IB1
-              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1
+              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB2
             ENDIF
 #else
             DTK               = KP(POS,IE) * DTG * IB1
-            B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB1
+            B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB2
 #endif
 
             I1  =  PDLIB_POSI(1,J)
@@ -6156,14 +6156,17 @@ CONTAINS
 #endif
 
           IF (B_JGS_BLOCK_GAUSS_SEIDEL) THEN
-            IF (IOBPA_LOC(IP) .eq. 0) THEN
-              DO IK = 1, NK
-                DO ITH = 1, NTH
-                  ISP  = ITH + (IK-1)*NTH
-                  VA(ISP,IP) = eSum(ISP) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP)
-                ENDDO
+            VA(1:NSPEC,IP) = eSum * IOBDP_LOC(IP)
+#ifdef W3_REF1
+            DO IK=1,NK
+              DO ITH=1,NTH
+                ISP  = ITH + (IK-1)*NTH
+                IF (REFPARS(3) .LT. 0.5 .AND. IOBPD_LOC(ITH,IP) .EQ. 0 .AND. IOBPA_LOC(IP) .EQ. 0) THEN       
+                  VA(ISP,IP) = VAOLD(ISP,IP) * IOBDP_LOC(IP) ! Restores reflected action spectra ...
+                ENDIF
               ENDDO 
-            ENDIF
+            ENDDO
+#endif
           ELSE
             U_JAC(1:NSPEC,IP) = eSum
           END IF

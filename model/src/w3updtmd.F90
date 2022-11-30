@@ -2126,7 +2126,7 @@ CONTAINS
       ELSE
 #endif
         !
-        WLV(ISEA) = WLEV(IX,IY)
+        WLV(ISEA) = 0.!WLEV(IX,IY)
         WLVeff    = WLV(ISEA)
 
 #ifdef W3_SETUP
