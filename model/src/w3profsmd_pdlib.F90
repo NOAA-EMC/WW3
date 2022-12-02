@@ -1408,15 +1408,6 @@ CONTAINS
         ST(NI) = ST(NI) + THETA_L ! the 2nd term are the theta values of each node ...
       END DO
 
-      !U = DBLE(AC)
-      !ST = ZERO
-      DO IE = 1, NE
-        NI     = INE(:,IE)
-        UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-        THETA_L(:) = KELEM(:,IE) * (U(NI) - UTILDE) 
-        !ST(NI) = ST(NI) + THETA_L(:) ! the 2nd term are the theta values of each node ...
-      END DO ! IE
-
 #ifdef W3_DEBUGSOLVER
       IF (testWrite) THEN
         CALL SCAL_INTEGRAL_PRINT_R4(ST, "ST in loop")
@@ -1711,6 +1702,8 @@ CONTAINS
       DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/PDLIB_SI(IP) ! Some precalculations for the time integration.
     END DO
 
+    !WRITE(*,*) 'MAXVAL ITER', ITH, IK, ITER(IK,ITH)
+
     DO IT = 1, ITER(IK,ITH)
 
       U  = DBLE(AC)
@@ -1750,9 +1743,7 @@ CONTAINS
 
       DO IP = 1, npa
         UL(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
-#ifdef W3_REF1
-        IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
-#endif
+        !IF (IP == 100 .and. ITH == 13 .and. IK == 17) WRITE(*,*) IP, ITH, IK, UL(IP), DTSI(IP) * ST(IP)
       END DO
 
 #ifdef MPI_PARALL_GRID
@@ -1800,11 +1791,14 @@ CONTAINS
       END DO
 
       DO IP = 1, npa
-        UL(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
+        U(IP) = MAX(ZERO,UL(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
 #ifdef W3_REF1
         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
 #endif
+        !IF (IP == 100 .and. ITH == 13 .and. IK == 17) WRITE(*,*) IP, ITH, IK, U(IP), DTSI(IP) * ST(IP)
       END DO
+
+      AC = REAL(U)
 
 #ifdef W3_DEBUGSOLVER
       IF (testWrite) THEN

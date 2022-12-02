@@ -1132,7 +1132,7 @@ CONTAINS
 #endif
       !
 #ifdef W3_PDLIB
-      IF (.NOT. FSSOURCE .or. LSLOC) THEN
+      IF(.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
         CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
@@ -1306,7 +1306,7 @@ CONTAINS
 #ifdef W3_ST6
         VS(IS) = VS(IS) + VSWL(IS)
 #endif
-#ifndef W3_PDLIB
+#ifndef W3_PDLIB 
 #ifdef W3_TR1
           VS(IS) = VS(IS) + VSTR(IS)
 #endif
@@ -1566,6 +1566,7 @@ CONTAINS
       ! 5.  Increment spectrum --------------------------------------------- *
       !
       IF (srce_call .eq. srce_direct) THEN
+
         IF ( SHAVE ) THEN
           DO IS=IS1, NSPECH
             eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
@@ -1573,18 +1574,25 @@ CONTAINS
             SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc2 )
           END DO
         ELSE
-          !
           DO IS=IS1, NSPECH
             eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
             SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
           END DO
         END IF
-        !
+
+#ifdef PDLIB
 #ifdef W3_DB1
         DO IS=IS1, NSPECH
           eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
           SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
         END DO
+#endif
+#ifdef W3_TR1
+        DO IS=IS1, NSPECH
+          eInc1 = VDTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
+          SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+        END DO
+#endif 
 #endif
 
 #ifdef W3_DEBUGSRC
