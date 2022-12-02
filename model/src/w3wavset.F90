@@ -1753,6 +1753,10 @@
       DO IX = 1, NX
         ZETA_SETUP(IX) = ZETA_WORK_ALL(IX)
       END DO
+      IF (IAPROC .EQ. 1) THEN
+        write(6666)  1. 
+        write(6666)  (ZETA_WORK_ALL(IX), ZETA_WORK_ALL(IX), ZETA_WORK_ALL(IX), IX = 1, NX)
+      ENDIF
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'Now exiting TRIG_WAVE_SETUP_COMPUTATION'
       FLUSH(740+IAPROC)
