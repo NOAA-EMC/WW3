@@ -222,11 +222,12 @@ PROGRAM W3GRID_INTERP
   WORDS(1:5)=''
   READ (NDSI,'(A)') LINEIN
   READ(LINEIN,*,iostat=ierr) WORDS
+
   READ(WORDS( 1 ), * ) TOUT(1)
   READ(WORDS( 2 ), * ) TOUT(2)
   READ(WORDS( 3 ), * ) DTREQ
   READ(WORDS( 4 ), * ) NOUT
-  READ(WORDS( 5 ), * ) OUTorREST
+  !READ(WORDS( 5 ), * ) OUTorREST
 
   ! Set flag OUTorREST for out_grd (True) or restart.* (FALSE)
   IF (WORDS(5) .EQ. 'F') THEN 
@@ -251,7 +252,6 @@ PROGRAM W3GRID_INTERP
   !!!!CALL NEXTLN ( COMSTR, NDSI, NDSE )
   !!!!READ (NDSI,*,END=2001,ERR=2002) OUTorREST
   !!!!
-
   !
   ! 3.c Read number of grids and allocate memory
   !
@@ -287,29 +287,24 @@ PROGRAM W3GRID_INTERP
            'TESTED WITH TRIPOLE GRIDS. STOPPING NOW.'
       CALL EXTCDE ( 1 )
     END IF
-
     IF ( IG .NE. NG .AND. NOSWLL_MIN .GE. OUTPTS(IG)%NOSWLL ) THEN
       NOSWLL_MIN = OUTPTS(IG)%NOSWLL
     END IF
-
     IF ( IG .EQ. NG) THEN 
       ALLOCATE(MAPSTA_NG(NY,NX),MAPST2_NG(NY,NX)) 
       MAPSTA_NG=MAPSTA
       MAPST2_NG=MAPST2
     END IF 
   END DO
-
-  CLOSE(NDSI)
-
   IF ( NOSWLL_MIN .NE. OUTPTS(NG)%NOSWLL ) THEN
     WRITE (NDSO,907) NOSWLL_MIN, OUTPTS(NG)%NOSWLL
     NOSWLL_MIN = MIN (NOSWLL_MIN,OUTPTS(NG)%NOSWLL)
   END IF
-
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
   READ (NDSI,'(I1)',END=2001,ERR=2002) INTMETHOD
   WRITE (NDSO,917) INTMETHOD
-
+  CLOSE(NDSI)
+ 
   !
   ! 3.e Allocate memory for integration map and initialize with grid status map
   !
