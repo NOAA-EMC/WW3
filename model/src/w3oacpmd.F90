@@ -488,13 +488,17 @@ CONTAINS
       !
       ! 1.3. Unstructured grids
       ! ----------------------------------
-      WRITE(*,*) 'TO BE VERIFIED FOR UNSTRUCTURED GRIDS'
-      STOP
+      ALLOCATE(ILA_PARAL(2+NSEAL))
       !
-      DO JSEA=1,NSEAL
-        ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
-        ILA_PARAL(JSEA*2+2) = 1
-      END DO
+      ! * Define the partition : OASIS POINTS partition
+      ILA_PARAL(1) = 4
+      !
+      ! * total number of segments of the global domain
+      ILA_PARAL(2) = NSEAL
+      !
+      DO JSEA=1, NP
+        ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
+      ENDDO
       !
     ENDIF
     !

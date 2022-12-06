@@ -453,14 +453,14 @@ CONTAINS
 !---------------------------------------------
 
     HS = 4.*SQRT( MAX(0.,EMEAN) )
-    IF (HS .GT. HMAX) THEN
-      A2 = (ALPHAR * A + (1-ALPHAR) * AOLD) * HMAX/HS
-      HS = HMAX
-      A3 = A2 + JACEPS 
-    ELSE
-      A2 = (ALPHAR * A + (1-ALPHAR) * AOLD)
-      A3 = A2 + JACEPS 
-    ENDIF 
+    !IF (HS .GT. HMAX) THEN
+    !  A2 = (ALPHAR * A + (1-ALPHAR) * AOLD) * HMAX/HS
+    !  HS = HMAX
+    !  A3 = A2 + JACEPS 
+    !ELSE
+    !  A2 = (ALPHAR * A + (1-ALPHAR) * AOLD)
+    !  A3 = A2 + JACEPS 
+    !ENDIF 
     URSELL = (GRAV*HS)/(2.*SQRT(2.)*SIGM01**2*DEPTH**2)
 !---------------------------------------------
 
@@ -511,7 +511,7 @@ CONTAINS
 
         DO ITH = 1, NTH
           DO IK = 1, NK
-            E(IK)  = A2(ITH+(IK-1)*NTH) * TPI * SIG(IK) / CG(IK)
+            E(IK)  = A(ITH+(IK-1)*NTH) * TPI * SIG(IK) / CG(IK)
             EF(IK) = EF(IK) + E(IK)        
           END DO
           DO IK = 1, ISMAX
@@ -541,21 +541,13 @@ CONTAINS
           END DO
         END DO
 
-        !IF (IX == 1762) WRITE(*,'(A20,I10,4F20.10)') 'DEPTH AND HS        ', IX, DEPTH, HS, HMAX
         DO IK = 1, NK - 1 
           SIGPICG = SIG(IK)*TPI/CG(IK) ! 1/s * s/m = 1/m
           DO ITH = 1, NTH
             STRI    = SA(ITH,IK)  - 2 * (WISP *  SA(ITH,IK+ISP1) + WISP1 *  SA(ITH,IK+ISP)) 
-            !STRI2   = SA2(ITH,IK) - 2 * (WISP * SA2(ITH,IK+ISP1) + WISP1 * SA2(ITH,IK+ISP))
-            !DIFFSTR = STRI2-STRI
-            IF (A2(ITH+(IK-1)*NTH) .gt. JACEPS) THEN
-              !D(ITH+(IK-1)*NTH) = DIFFSTR / (JACEPS * SIGPICG)
-              D(ITH+(IK-1)*NTH) = STRI / ((A2(ITH+(IK-1)*NTH)) * SIGPICG) 
+            IF (A(ITH+(IK-1)*NTH) .gt. JACEPS) THEN
+              D(ITH+(IK-1)*NTH) = STRI / ((A(ITH+(IK-1)*NTH)) * SIGPICG) 
               S(ITH+(IK-1)*NTH) = STRI / SIGPICG 
-              !D(ITH+(IK-1)*NTH) = DIFFSTR / (JACEPS * SIGPICG)
-              !S(ITH+(IK-1)*NTH) = DIFFSTR / (JACEPS * SIGPICG) * A2(ITH+(IK-1)*NTH)
-              !IF (IX == 1762) WRITE(*,'(A20,10F20.10)')     'S, D, A, A2 and STRI', S(ITH+(IK-1)*NTH),&
-              !&D(ITH+(IK-1)*NTH), A(ITH+(IK-1)*NTH), A2(ITH+(IK-1)*NTH), STRI
             ELSE
               D(ITH+(IK-1)*NTH) = 0.
               S(ITH+(IK-1)*NTH) = 0.

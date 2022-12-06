@@ -1458,7 +1458,7 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-                B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
+                B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #endif
               END DO
