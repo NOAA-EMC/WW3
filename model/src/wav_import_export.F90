@@ -138,17 +138,11 @@ contains
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes')
       !call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_hstokes')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
     else
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_z0')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes1')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes2')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes3')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes1')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes2')
-      call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_vstokes3')
     end if
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_x', ungridded_lbound=1, ungridded_ubound=3)
+    call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_pstokes_y', ungridded_lbound=1, ungridded_ubound=3)
 
     ! AA TODO: In the above fldlist_add calls, we are passing hardcoded ungridded_ubound values (3) because, USSPF(2)
     ! is not initialized yet. It is set during w3init which gets called at a later phase (realize). A permanent solution
@@ -608,8 +602,6 @@ contains
     real(r8), pointer :: wbcuru(:)
     real(r8), pointer :: wbcurv(:)
     real(r8), pointer :: wbcurp(:)
-    !real(r8), pointer :: uscurr(:)
-    !real(r8), pointer :: vscurr(:)
     real(r8), pointer :: sxxn(:)
     real(r8), pointer :: sxyn(:)
     real(r8), pointer :: syyn(:)
@@ -622,14 +614,8 @@ contains
     real(r8), pointer :: wave_elevation_spectrum(:,:)
 
     ! Partitioned stokes drift
-    real(r8), pointer :: sw_pstokes_x(:,:) ! cesm
-    real(r8), pointer :: sw_pstokes_y(:,:) ! cesm
-    real(r8), pointer :: sw_ustokes1(:)    ! ufs
-    real(r8), pointer :: sw_vstokes1(:)    ! ufs
-    real(r8), pointer :: sw_ustokes2(:)    ! ufs
-    real(r8), pointer :: sw_vstokes2(:)    ! ufs
-    real(r8), pointer :: sw_ustokes3(:)    ! ufs
-    real(r8), pointer :: sw_vstokes3(:)    ! ufs
+    real(r8), pointer :: sw_pstokes_x(:,:)
+    real(r8), pointer :: sw_pstokes_y(:,:)
     character(len=*), parameter :: subname='(wav_import_export:export_fields)'
     !---------------------------------------------------------------------------
 
@@ -666,7 +652,6 @@ contains
       enddo
     end if
 #endif
-
     ! surface stokes drift
     if (state_fldchk(exportState, 'Sw_ustokes')) then
       call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
@@ -710,19 +695,6 @@ contains
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call CalcRoughl(z0rlen)
     endif
-
-    !TODO: what is difference between uscurr/vscurr and sw_ustokes,sw_vstokes?
-    ! uscurr has standard name eastward_stokes_drift_current
-    ! vscurr has standard name northward_stokes_drift_current
-    ! in fd_nems.yaml but this seems to be calculated a (:,:) value
-    !if ( state_fldchk(exportState, 'uscurr') .and. &
-    !     state_fldchk(exportState, 'vscurr')) then
-    !   call state_getfldptr(exportState, 'uscurr', uscurr, rc=rc)
-    !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    !   call state_getfldptr(exportState, 'vscurr', vscurr, rc=rc)
-    !   if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    !   call CalcStokes3D( va, uscurr, vscurr )
-    !endif
 
     if ( state_fldchk(exportState, 'wbcuru') .and. &
          state_fldchk(exportState, 'wbcurv') .and. &
@@ -774,42 +746,6 @@ contains
         end do
       end if
     endif
-
-    if ( state_fldchk(exportState, 'Sw_ustokes1') .and. &
-         state_fldchk(exportState, 'Sw_ustokes2') .and. &
-         state_fldchk(exportState, 'Sw_ustokes3') .and. &
-         state_fldchk(exportState, 'Sw_vstokes1') .and. &
-         state_fldchk(exportState, 'Sw_vstokes2') .and. &
-         state_fldchk(exportState, 'Sw_vstokes3') ) then
-
-      call state_getfldptr(exportState, 'Sw_ustokes1', sw_ustokes1, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_ustokes2', sw_ustokes2, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_ustokes3', sw_ustokes3, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_vstokes1', sw_vstokes1, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_vstokes2', sw_vstokes2, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call state_getfldptr(exportState, 'Sw_vstokes3', sw_vstokes3, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      sw_ustokes1(:)= zero
-      sw_vstokes1(:)= zero
-      sw_ustokes2(:)= zero
-      sw_vstokes2(:)= zero
-      sw_ustokes3(:)= zero
-      sw_vstokes3(:)= zero
-      call CALC_U3STOKES(va, 2)
-      do jsea = 1,nseal
-        sw_ustokes1(jsea)=ussp(jsea,1)
-        sw_vstokes1(jsea)=ussp(jsea,nk+1)
-        sw_ustokes2(jsea)=ussp(jsea,2)
-        sw_vstokes2(jsea)=ussp(jsea,nk+2)
-        sw_ustokes3(jsea)=ussp(jsea,3)
-        sw_vstokes3(jsea)=ussp(jsea,nk+3)
-      end do
-    end if
 
     if (dbug_flag > 5) then
       call state_diagnose(exportState, 'at export ', rc=rc)
