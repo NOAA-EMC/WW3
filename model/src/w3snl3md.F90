@@ -774,7 +774,7 @@ CONTAINS
   !>
   !> @brief Initialization for generalized multiple DIA routine.
   !>
-  !> @details Fill storage aryays as described in the main subroutine
+  !> @details Fill storage arrays as described in the main subroutine
   !>  with interpolation, model and distribution data.
   !>
   !> @author H. L. Tolman
