@@ -9,7 +9,7 @@
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 !>
-!> @brief Bundles routines calculate nonlinear wave-wave interactions
+!> @brief Bundles routines to calculate nonlinear wave-wave interactions
 !>  according to the Discrete Interaction Approximation (DIA) of
 !>  Hasselmann et al. (JPO, 1985).
 !>
