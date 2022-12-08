@@ -2019,19 +2019,29 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !
 #ifdef W3_OASIS
-  ! Initialize L_MASTER, COUPL_COMM
-  IF ( IAPROC .EQ. 1) THEN
-    L_MASTER = .TRUE.
-  ELSE
-    L_MASTER = .FALSE.
-  ENDIF
-  ! Estimate the weights for the spatial interpolation
-  IF (DTOUT(7).NE.0) THEN
-    CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
-    CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
-  END IF
+ ! Initialize L_MASTER, COUPL_COMM
+      IF ( IAPROC .EQ. 1) THEN
+        L_MASTER = .TRUE.
+      ELSE
+        L_MASTER = .FALSE.
+      ENDIF 
+ ! Estimate the weights for the spatial interpolation
+      IF (DTOUT(7).NE.0) THEN
 #endif
 
+    WRITE(*,*) 'START OASIS DEFINE'
+
+#ifdef W3_OASIS
+!#ifdef W3_HYCOM
+!        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
+!#else
+!        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
+!#endif
+        CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
+      END IF
+#endif
+
+    WRITE(*,*) 'FINISHED OASIS DEFINE' 
 
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
@@ -2072,17 +2082,23 @@ PROGRAM W3SHEL
   !
 
 #ifdef W3_OASIS
-  ! Send coupling fields at the initial time step
-  IF ( FLOUT(7) .AND. CPLT0 ) THEN
+      ! Send coupling fields at the initial time step
+      IF ( FLOUT(7) .AND. CPLT0 ) THEN
 #endif
 #ifdef W3_OASACM
-    CALL SND_FIELDS_TO_ATMOS()
+      WRITE(*,*) 'START SND_FIELDS_TO_ATMOS'
+       CALL SND_FIELDS_TO_ATMOS()
+      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_ATMOS'
 #endif
 #ifdef W3_OASOCM
-    CALL SND_FIELDS_TO_OCEAN()
+      WRITE(*,*) 'START SND_FIELDS_TO_OCEAN'
+       CALL SND_FIELDS_TO_OCEAN()
+      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_OCEAN'
 #endif
 #ifdef W3_OASICM
-    CALL SND_FIELDS_TO_ICE()
+      WRITE(*,*) 'START SND_FIELDS_TO_ICE'
+       CALL SND_FIELDS_TO_ICE()
+      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_ICE'
 #endif
 #ifdef W3_OASIS
   END IF
