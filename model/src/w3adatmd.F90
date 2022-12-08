@@ -458,9 +458,6 @@ MODULE W3ADATMD
          XPRMS(:), XTPMS(:), XPHICE(:),       &
          XTAUICE(:,:)
     REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:), XUSSP(:,:)
-#ifdef W3_CESMCOUPLED
-    REAL, POINTER         ::  XLANGMT(:)
-#endif
     !
     ! Output fields group 7)
     !
@@ -489,12 +486,6 @@ MODULE W3ADATMD
     !
     REAL, POINTER         ::  USERO(:,:)
     REAL, POINTER         :: XUSERO(:,:)
-#ifdef W3_CESMCOUPLED
-    ! Output fileds for Langmuir mixing in group
-    REAL, POINTER         :: LANGMT(:), LAPROJ(:), LASL(:),       &
-         LASLPJ(:), LAMULT(:), ALPHAL(:),     &
-         ALPHALS(:), USSXH(:), USSYH(:)
-#endif
     !
     ! Spatial derivatives
     !
@@ -575,11 +566,6 @@ MODULE W3ADATMD
   !/
   !/ Data aliases for structure WADAT(S)
   !/
-#ifdef W3_CESMCOUPLED
-  REAL, POINTER           :: LANGMT(:), LAPROJ(:), ALPHAL(:),      &
-       ALPHALS(:), LAMULT(:), LASL(:),       &
-       LASLPJ(:), USSXH(:), USSYH(:)
-#endif
   REAL, POINTER           :: CG(:,:), WN(:,:)
   REAL, POINTER           :: IC3WN_R(:,:), IC3WN_I(:,:), IC3CG(:,:)
   !
@@ -1078,19 +1064,6 @@ CONTAINS
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
 
-#ifdef W3_CESMCOUPLED
-    ALLOCATE ( WADATS(IMOD)%USSXH(NSEALM)   , &
-         WADATS(IMOD)%USSYH(NSEALM)   , &
-         WADATS(IMOD)%LANGMT(NSEALM)  , &
-         WADATS(IMOD)%LAPROJ(NSEALM)  , &
-         WADATS(IMOD)%LASL(NSEALM)    , &
-         WADATS(IMOD)%LASLPJ(NSEALM)  , &
-         WADATS(IMOD)%ALPHAL(NSEALM)  , &
-         WADATS(IMOD)%ALPHALS(NSEALM) , &
-         WADATS(IMOD)%LAMULT(NSEALM)  , &
-         STAT=ISTAT )
-    CHECK_ALLOC_STATUS ( ISTAT )
-#endif
     !
     WADATS(IMOD)%HS     = UNDEF
     WADATS(IMOD)%WLM    = UNDEF
@@ -1293,9 +1266,6 @@ CONTAINS
     WADATS(IMOD)%TPMS   = UNDEF
     WADATS(IMOD)%PHICE  = UNDEF
     WADATS(IMOD)%TAUICE = UNDEF
-#ifdef W3_CESMCOUPLED
-    WADATS(IMOD)%LANGMT = UNDEF
-#endif
     IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
     IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
     IF (  USSPF(1).GT.0 ) WADATS(IMOD)%USSP   = UNDEF
@@ -2246,15 +2216,6 @@ CONTAINS
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
-#ifdef W3_CESMCOUPLED
-    IF ( OUTFLAGS( 6, 14) ) THEN
-      ALLOCATE ( WADATS(IMOD)%XLANGMT(NXXX), STAT=ISTAT )
-      CHECK_ALLOC_STATUS ( ISTAT )
-    ELSE
-      ALLOCATE ( WADATS(IMOD)%XLANGMT(1), STAT=ISTAT )
-      CHECK_ALLOC_STATUS ( ISTAT )
-    END IF
-#endif
     !
     WADATS(IMOD)%XSXX    = UNDEF
     WADATS(IMOD)%XSYY    = UNDEF
@@ -2276,9 +2237,6 @@ CONTAINS
     WADATS(IMOD)%XUSSP   = UNDEF
     WADATS(IMOD)%XTAUOCX = UNDEF
     WADATS(IMOD)%XTAUOCY = UNDEF
-#ifdef W3_CESMCOUPLED
-    WADATS(IMOD)%XLANGMT = UNDEF
-#endif
     !
     IF ( OUTFLAGS( 7, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XABA(NXXX), STAT=ISTAT )
@@ -3018,18 +2976,6 @@ CONTAINS
       USERO  => WADATS(IMOD)%USERO
       !
       WN     => WADATS(IMOD)%WN
-#ifdef W3_CESMCOUPLED
-      ! USSX and USSY are already set
-      LANGMT => WADATS(IMOD)%LANGMT
-      LAPROJ => WADATS(IMOD)%LAPROJ
-      LASL   => WADATS(IMOD)%LASL
-      LASLPJ => WADATS(IMOD)%LASLPJ
-      ALPHAL => WADATS(IMOD)%ALPHAL
-      ALPHALS=> WADATS(IMOD)%ALPHALS
-      USSXH  => WADATS(IMOD)%USSXH
-      USSYH  => WADATS(IMOD)%USSYH
-      LAMULT => WADATS(IMOD)%LAMULT
-#endif
 #ifdef W3_IC3
       IC3WN_R=> WADATS(IMOD)%IC3WN_R
       IC3WN_I=> WADATS(IMOD)%IC3WN_I
@@ -3352,9 +3298,6 @@ CONTAINS
       BEDFORMS=> WADATS(IMOD)%XBEDFORMS
       PHIBBL => WADATS(IMOD)%XPHIBBL
       TAUBBL => WADATS(IMOD)%XTAUBBL
-#ifdef W3_CESMCOUPLED
-      LANGMT => WADATS(IMOD)%XLANGMT
-#endif
       !
       MSSX   => WADATS(IMOD)%XMSSX
       MSSY   => WADATS(IMOD)%XMSSY

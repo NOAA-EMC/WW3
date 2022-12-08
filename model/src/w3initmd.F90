@@ -703,10 +703,6 @@ CONTAINS
     IFT    = LEN_TRIM(TFILE)
     J      = LEN_TRIM(FNMPRE)
     !
-#ifndef W3_CESMCOUPLED
-    IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG )             &
-         OPEN (MDS(1),FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
-#endif
     !
     IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
       INQUIRE (MDS(3),OPENED=OPENED)
@@ -2255,11 +2251,6 @@ CONTAINS
          TAUOCX, TAUOCY, WNMEAN
 #endif
 
-#ifdef W3_CESMCOUPLED
-    USE W3ADATMD, ONLY: LANGMT, LAPROJ, ALPHAL, LASL, LASLPJ,  &
-         ALPHALS, LAMULT
-#endif
-
 #ifdef W3_MPI
     USE W3GDATMD, ONLY: NK
     USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC, NTPROC, FLOUT,   &
@@ -3325,17 +3316,6 @@ CONTAINS
 #ifdef W3_MPI
         END IF
         !
-#ifdef W3_CESMCOUPLED
-        IF ( FLGRDALL( 6, 14) ) THEN
-          IH     = IH + 1
-          IT     = IT + 1
-          CALL MPI_SEND_INIT (LANGMT(1),NSEALM , MPI_REAL, IROOT,   &
-               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
-#ifdef W3_MPIT
-          WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
-#endif
-        END IF
-#endif !W3_CESMCOUPLED
         IF ( FLGRDALL( 7, 1) ) THEN
           IH     = IH + 1
           IT     = IT + 1
@@ -4569,17 +4549,6 @@ CONTAINS
 #ifdef W3_MPI
           END IF
           !
-#ifdef W3_CESMCOUPLED
-          IF ( FLGRDALL( 6, 14) ) THEN
-            IH     = IH + 1
-            IT     = IT + 1
-            CALL MPI_RECV_INIT (LANGMT(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
-                 MPI_COMM_WAVE, IRQGO2(IH), IERR)
-#ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
-#endif
-          END IF
-#endif ! W3_CESMCOUPLED
           IF ( FLGRDALL( 7, 1) ) THEN
             IH     = IH + 1
             IT     = IT + 1
