@@ -1,18 +1,28 @@
 !> @file
 !> @brief Contains the grid splitting program.
 !>
-!> @author H. L. Tolman @date 18-Nov-2013
+!> @author H. L. Tolman
+!> @date 18-Nov-2013
+!>
 
 #include "w3macros.h"
-
+!/ ------------------------------------------------------------------- /
+!>
 !> @brief Grid splitting program
 !>
 !> @details Take an existing grid and create from this the grid data
 !>  for a set of overlapping grids to be used in the ww3_multi code
 !>  for hybid paralellization.
 !>
-!> @author H. L. Tolman @date 18-Nov-2013
-!/ ------------------------------------------------------------------- /
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
+!> @author H. L. Tolman
+!> @date 18-Nov-2013
+!>
+
 PROGRAM W3GSPL
   !/
   !/                  +-----------------------------------+
@@ -2103,7 +2113,7 @@ CONTAINS
   !> @brief Remove seapoints with only one adjacent point in same grid.
   !>
   !> @details Remove points from a grid that are in the middle of the
-  !>  sea, but that have omly one adjacent point in the same grid. Directly
+  !>  sea, but that have only one adjacent point in the same grid. Directly
   !>  select a new grid for this point rather than deactivate and use
   !>  GRFILL.
   !>
@@ -2274,11 +2284,11 @@ CONTAINS
 
   !> @brief Remove smaller grid parts.
   !>
-  !> @details Remove smller parts of a grid that are separated from
+  !> @details Remove smaller parts of a grid that are separated from
   !>  the main body, and that can be attached to other grids.
   !>
   !> @param[inout] OK
-  !> @param[inout] FRAC Fraction of average size used to remove grid part.
+  !> @param[in]    FRAC Fraction of average size used to remove grid part.
   !> @author H. L. Tolman  @date 01-Feb-2013
   SUBROUTINE GRSEPA ( OK, FRAC )
     !/
@@ -2620,9 +2630,9 @@ CONTAINS
 
   !> @brief Subroutine called when lowest grid size is stuck.
   !>
-  !> @details Attempting to joint to neighbor grid, otherwise mark
-  !>  as accepted small grid. note that small grid does not influence
-  !>  parallel scaling like a big grid does .....
+  !> @details Attempting to join to neighbor grid, otherwise mark
+  !>  as a accepted small grid. note that a small grid does not 
+  !>  influence parallel scaling like a big grid does .....
   !>
   !> @author H. L. Tolman  @date  04-Feb-2013
   SUBROUTINE GRFSML

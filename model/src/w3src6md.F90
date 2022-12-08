@@ -1,5 +1,29 @@
+!> @file 
+!> @brief Observation-based wind input and dissipation after Donelan et al (2006),
+!>  and Babanin et al. (2010).
+!>
+!> @author S. Zieger
+!> @author Q. Liu
+!> @date   26-Jun-2018
+!> 
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!> @brief Observation-based wind input and dissipation after Donelan et al (2006),
+!>  and Babanin et al. (2010).
+!>
+!> @details Parameterisation is based on the field
+!>  data from Lake George, Australia. Initial implementation of input
+!>  and dissipation is based on work from Tsagareli et al. (2010) and
+!>  Rogers et al. (2012). Parameterisation extended and account for
+!>  negative input due to opposing winds (see Donelan et al, 2006) and
+!>  the vector version of the stress computation.
+!>
+!> @author S. Zieger
+!> @author Q. Liu
+!> @date   26-Jun-2018
+!>
 MODULE W3SRC6MD
   !/
   !/                  +-----------------------------------+
@@ -76,6 +100,24 @@ MODULE W3SRC6MD
   PRIVATE ::  LFACTOR, TAUWINDS, IRANGE
 CONTAINS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Calculate mean wave parameters.
+  !>
+  !> @details See source term routines.
+  !>
+  !> @param[inout] A        Action as a function of direction and wavenumber.
+  !> @param[inout] CG       Group velocities.
+  !> @param[inout] WN       Wavenumbers.
+  !> @param[inout] EMEAN    Mean wave energy.
+  !> @param[inout] FMEAN    Mean wave frequency.
+  !> @param[inout] WNMEAN   Mean wavenumber.
+  !> @param[inout] AMAX     Maximum action density in spectrum.
+  !> @param[inout] FP       Peak frequency (rad).
+  !>
+  !> @author S. Zieger
+  !> @date   11-Feb-2011
+  !>
   SUBROUTINE W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
     !/
     !/                  +-----------------------------------+
@@ -214,6 +256,37 @@ CONTAINS
     !/
   END SUBROUTINE W3SPR6
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Observation-based source term for wind input.
+  !>
+  !> @details After Donelan, Babanin, Young and Banner (Donelan et al ,2006) 
+  !>  following the implementation by Rogers et al. (2012).
+  !>
+  !>      References:
+  !>        Donelan et al. 2006: JPO 36(8) 1672-1689.
+  !>        Rogers  et al. 2012: JTECH 29(9) 1329-1346
+  !>
+  !>
+  !> @param[in]  A        Action density spectrum
+  !> @param[in]  CG       Group velocities.
+  !> @param[in]  WN2      Wavenumbers.
+  !> @param[in]  UABS     Wind speed at 10 m above sea level (U10).
+  !> @param[in]  USTAR    Friction velocity.
+  !> @param[in]  USDIR    Direction of USTAR.
+  !> @param[in]  CD       Drag coefficient.
+  !> @param[in]  DAIR     Air density.
+  !> @param[out] TAUWX    Component of the wave-supported stress.
+  !> @param[out] TAUWY    Component of the wave-supported stress.
+  !> @param[out] TAUWNX   Component of the negative part of the stress.
+  !> @param[out] TAUWNY   Component of the negative part of the stress.
+  !> @param[out] S        Source term.
+  !> @param[out] D        Diagonal term of derivative.
+  !>
+  !> @author S. Zieger
+  !> @author Q. Liu
+  !> @date   13-Aug-2021
+  !>
   SUBROUTINE W3SIN6 (A, CG, WN2, UABS, USTAR, USDIR, CD, DAIR, &
        TAUWX, TAUWY, TAUNWX, TAUNWY, S, D )
     !/
@@ -445,6 +518,31 @@ CONTAINS
     !/
   END SUBROUTINE W3SIN6
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Observation-based source term for dissipation.
+  !>
+  !> @details After Babanin et al. (2010) following the implementation by 
+  !>  Rogers et al. (2012). The dissipation function Sds accommodates an 
+  !>  inherent breaking term T1 and an additional cumulative term T2 at 
+  !>  all frequencies above the peak. The forced dissipation term T2 is
+  !>  an integral that grows toward higher frequencies and dominates at
+  !>  smaller scales (Babanin et al. 2010).
+  !>
+  !>  References:
+  !>    Babanin et al. 2010: JPO 40(4), 667-683
+  !>    Rogers  et al. 2012: JTECH 29(9) 1329-1346
+  !>
+  !> @param[in]  A   Action density spectrum.
+  !> @param[in]  CG  Group velocities.
+  !> @param[in]  WN  Wavenumbers.
+  !> @param[out] S   Source term (1-D version).
+  !> @param[out] D   Diagonal term of derivative.
+  !>
+  !> @author S. Zieger
+  !> @author Q. Liu
+  !> @date   26-Jun-2018
+  !>  
   SUBROUTINE W3SDS6 (A, CG, WN, S, D)
     !/
     !/                  +-----------------------------------+
@@ -643,6 +741,31 @@ CONTAINS
   END SUBROUTINE W3SDS6
   !/ ------------------------------------------------------------------- /
   !/
+
+  !>
+  !> @brief Numerical approximation for the reduction factor.
+  !>
+  !> @details Numerical approximation for the reduction factor LFACTOR(f) to
+  !>  reduce energy in the high-frequency part of the resolved part
+  !>  of the spectrum to meet the constraint on total stress (TAU).
+  !>  The constraint is TAU <= TAU_TOT (TAU_TOT = TAU_WAV + TAU_VIS),
+  !>  thus the wind input is reduced to match our constraint.
+  !>
+  !> @param[in]  S      Wind input energy density spectrum.
+  !> @param[in]  CINV   Inverse phase speed.
+  !> @param[in]  U10    Wind speed.
+  !> @param[in]  USTAR  Friction velocity.
+  !> @param[in]  USDIR  Wind direction.
+  !> @param[in]  SIG    Relative frequencies (in rad.).
+  !> @param[in]  DSII   Frequency bandwidths (in rad.).
+  !> @param[out] LFACT  Factor array.
+  !> @param[out] TAUWX  Component of the wave-supported stress.
+  !> @param[out] TAUWY  Component of the wave-supported stress.
+  !>
+  !> @author S. Zieger
+  !> @author Q. Liu
+  !> @date   26-Jun-2018
+  !>
   SUBROUTINE LFACTOR(S, CINV, U10, USTAR, USDIR, SIG, DSII, &
        LFACT, TAUWX, TAUWY                    )
     !/
@@ -921,6 +1044,25 @@ CONTAINS
   END SUBROUTINE LFACTOR
   !/ ------------------------------------------------------------------- /
   !/
+
+  !>
+  !> @brief Calculated the stress for the negative part of the input term.
+  !>
+  !> @details Calculated the stress for the negative part of the input term,
+  !>  that is the stress from the waves to the atmosphere. Relevant
+  !>  in the case of opposing winds.
+  !>
+  !> @param[in]  S        Wind-input source term Sin.
+  !> @param[in]  CINV     Inverse phase speed.
+  !> @param[in]  SIG      Relative frequencies.
+  !> @param[in]  DSII     Frequency bandwidths.
+  !> @param[out] TAUNWX   Stress components (wave->atmos).
+  !> @param[out] TAUNWY   Stress components (wave->atmos).
+  !>
+  !> @author S. Zieger
+  !> @author Q. Liu
+  !> @date   26-Jun-2018
+  !>
   SUBROUTINE TAU_WAVE_ATMOS(S, CINV, SIG, DSII, TAUNWX, TAUNWY )
     !/
     !/                  +-----------------------------------+
@@ -1055,6 +1197,20 @@ CONTAINS
   END SUBROUTINE TAU_WAVE_ATMOS
   !/ ------------------------------------------------------------------- /
   !/
+
+  !>
+  !> @brief Generate a sequence of linear-spaced integer numbers.
+  !>
+  !> @details Used for instance array addressing (indexing).
+  !>
+  !> @param   X0
+  !> @param   X1
+  !> @param   DX
+  !> @returns IX
+  !>
+  !> @author S. Zieger
+  !> @date   15-Feb-2011
+  !>
   FUNCTION IRANGE(X0,X1,DX) RESULT(IX)
     !/
     !/                  +-----------------------------------+
@@ -1087,6 +1243,27 @@ CONTAINS
   END FUNCTION IRANGE
   !/ ------------------------------------------------------------------- /
   !/
+
+  !>
+  !> @brief Wind stress (tau) computation from wind-momentum-input.
+  !>
+  !> @verbatim
+  !>      Wind stress (tau) computation from wind-momentum-input
+  !>      function which can be obtained from wind-energy-input (Sin).
+  !>
+  !>                            / FRMAX
+  !>      tau = g * rho_water * | Sin(f)/C(f) df
+  !>                            /
+  !> @endverbatim  
+  !>
+  !> @param    SDENSIG    Sin(sigma) in (m2/rad-Hz).
+  !> @param    CINV       Inverse phase speed.
+  !> @param    DSII       Frequency bandwidths in (rad).
+  !> @returns  TAU_WINDS  Wind stress.
+  !>
+  !> @author S. Zieger
+  !> @date   13-Aug-2012
+  !>
   FUNCTION TAUWINDS(SDENSIG,CINV,DSII) RESULT(TAU_WINDS)
     !/
     !/                  +-----------------------------------+
