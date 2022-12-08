@@ -593,7 +593,11 @@ contains
     integer          , intent(out) :: rc
 
     ! Local variables
+#ifdef W3_CESMCOUPLED
     real(R8)          :: fillvalue = 1.0e30_R8                 ! special missing value
+#else
+    real(R8)          :: fillvalue = zero                      ! special missing value
+#endif
     type(ESMF_State)  :: exportState
     integer           :: n, jsea, isea, ix, iy, ib
 
@@ -944,7 +948,6 @@ contains
     real(ESMF_KIND_R8), pointer :: chkn(:)  ! 1D Charnock export field pointer
 
     ! local variables
-    real   , parameter :: zero  = 0.0
     integer            :: isea, jsea, ix, iy
     real               :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
     real               :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
