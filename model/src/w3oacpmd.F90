@@ -331,7 +331,7 @@ CONTAINS
         !
         ! 1.3. Unstructured grids
         ! ----------------------------------
-        WRITE(*,*) 'TO BE IMPLEMENT FOR UNSTRUCTURED GRIDS'
+        WRITE(*,*) 'TO BE IMPLEMENT FOR UNSTRUCTURED GRIDS CPL_OASIS_GRID'
         STOP
       END IF
       !
@@ -417,6 +417,9 @@ CONTAINS
          & UNGTYPE, RLGTYPE, CLGTYPE, SMCTYPE
     USE W3ODATMD, ONLY: NAPROC, IAPROC
     USE W3PARALL, ONLY : INIT_GET_ISEA
+#ifdef W3_PDLIB
+    USE YOWNODEPOOL, only: npa, np, iplg
+#endif
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -427,7 +430,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IB_I,I
+    INTEGER                 :: IB_I,I,IPART
     INTEGER                 :: IL_PART_ID      ! PartitionID
     INTEGER, ALLOCATABLE, DIMENSION(:)   :: ILA_PARAL       ! Description of the local partition in the global index space
     INTEGER, DIMENSION(4)   :: ILA_SHAPE       ! Vector giving the min & max index for each dim of the fields
@@ -488,17 +491,29 @@ CONTAINS
       !
       ! 1.3. Unstructured grids
       ! ----------------------------------
-      ALLOCATE(ILA_PARAL(2+NSEAL))
-      !
-      ! * Define the partition : OASIS POINTS partition
-      ILA_PARAL(1) = 4
-      !
+      IPART = 3
+      IF (IPART == 3) THEN
+      ! * allocate : OASIS ORANGE partition
+        ALLOCATE(ILA_PARAL(2+NP*2))
+      ! * Define the partition : OASIS ORANGE partition
+        ILA_PARAL(1) = 3
       ! * total number of segments of the global domain
-      ILA_PARAL(2) = NSEAL
-      !
-      DO JSEA=1, NP
-        ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
-      ENDDO
+        ILA_PARAL(2) = NP
+        DO JSEA = 1, NP
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA*2+1),JSEA)
+          ILA_PARAL(JSEA*2+2) = 1
+        END DO
+      ELSE IF (IPART == 4) THEN
+      ! * allocate : OASIS POINT partition
+        ALLOCATE(ILA_PARAL(2+NP))
+      ! * Define the partition : OASIS POINTS partition
+        ILA_PARAL(1) = 4
+      ! * total number of segments of the global domain
+        ILA_PARAL(2) = NP
+        DO JSEA = 1, NP
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
+        ENDDO
+      ENDIF
       !
     ENDIF
     !
