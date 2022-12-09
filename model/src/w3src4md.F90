@@ -1,6 +1,6 @@
-!> @file 
+!> @file
 !> @brief The 'SHOM/Ifremer' source terms based on P.A.E.M.
-!> 
+!>
 !> @author F. Ardhuin
 !> @date   13-Nov-2013
 !>
@@ -10,7 +10,7 @@
 
 !>
 !> @brief The 'SHOM/Ifremer' source terms based on P.A.E.M.
-!> 
+!>
 !> @details Janssen's wind input
 !>  and dissipation functions by Ardhuin et al. (2009,2010)
 !>  and Filipot & Ardhuin (2010)
@@ -135,7 +135,7 @@ CONTAINS
 !> @param[in]    LLWS      Wind sea true/false array for each component.
 !> @param[out]   FMEANWS   Mean frequency of wind sea, used for tail.
 !> @param[out]   DLWMEAN   Mean Long wave direction  (L. Romero 2019).
-!>  
+!>
 !> @author F. Ardhuin
 !> @author H. L. Tolman
 !> @date   22-Feb-2020
@@ -412,10 +412,10 @@ CONTAINS
   !> @param[out] TAUWNY    Component of the negative wave-supported stress.
   !> @param[out] S         Source term (1-D version).
   !> @param[out] D         Diagonal term of derivative.
-  !> @param[out] LLWS      
-  !> @param[in]  IX        
-  !> @param[in]  IY        
-  !> @param[in]  BRLAMBDA  
+  !> @param[out] LLWS
+  !> @param[in]  IX
+  !> @param[in]  IY
+  !> @param[in]  BRLAMBDA
   !>
   !> @author F. Ardhuin
   !> @author H. L. Tolman
@@ -1284,7 +1284,7 @@ CONTAINS
   !> @details SEE REFERENCE FOR WAVE STRESS CALCULATION.
   !>       FOR QUASILINEAR EFFECT SEE PETER A.E.M. JANSSEN,1990.
   !>     See tech. Memo ECMWF 03 december 2003 by Bidlot & Janssen.
-  !> 
+  !>
   !>
   !> @param[in] SIGMAX  Maximum frequency * TPI.
   !>
@@ -1824,13 +1824,13 @@ CONTAINS
   !> @param[in]  USDIR      Wind stress direction.
   !> @param[in]  DEPTH      Water depth.
   !> @param[in]  DAIR       Air density.
-  !> @param[out] SRHS 
-  !> @param[out] DDIAG 
+  !> @param[out] SRHS
+  !> @param[out] DDIAG
   !> @param[in]  IX         Grid Index.
   !> @param[in]  IY         Grid Index.
   !> @param[out] BRLAMBDA   Phillips' Lambdas.
-  !> @param[out] WHITECAP 
-  !> @param[in]  DLWMEAN 
+  !> @param[out] WHITECAP
+  !> @param[in]  DLWMEAN
   !>
   !> @author F. Ardhuin
   !> @author F. Leckler

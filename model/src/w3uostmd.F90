@@ -1,16 +1,16 @@
-!> @file 
+!> @file
 !> @brief Parmeterization of the unresolved obstacles.
-!> 
+!>
 !> @author Lorenzo Mentaschi
 !> @date   08-Oct-2018
-!> 
+!>
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 
 !>
 !> @brief Parmeterization of the unresolved obstacles.
-!> 
+!>
 !> @author Lorenzo Mentaschi
 !> @date   08-Oct-2018
 !>
@@ -282,19 +282,19 @@ CONTAINS
   !>
   !> @brief Estimates the UOST source term for a give spectrum.
   !>
-  !> @param[in]  IX      
-  !> @param[in]  IY      
-  !> @param[in]  SPEC    
-  !> @param[in]  CG      
-  !> @param[in]  DT      
-  !> @param[in]  U10ABS  
-  !> @param[in]  U10DIR  
-  !> @param[out] S       
-  !> @param[out] D       
+  !> @param[in]  IX
+  !> @param[in]  IY
+  !> @param[in]  SPEC
+  !> @param[in]  CG
+  !> @param[in]  DT
+  !> @param[in]  U10ABS
+  !> @param[in]  U10DIR
+  !> @param[out] S
+  !> @param[out] D
   !>
   !> @author Lorenzo Mentaschi
   !> @date   01-Oct-2018
-  !>  
+  !>
   SUBROUTINE UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG, DT, U10ABS, U10DIR, S, D)
     !/
     !/                  +-----------------------------------+
@@ -592,12 +592,11 @@ CONTAINS
   END SUBROUTINE LOAD_ALPHABETA_FROMFILE
 
   !/ ------------------------------------------------------------------- /
-  
   !>
   !> @brief Method of the class UOST_SOURCETERM, to set the
   !>  actual spatial and spectral grid.
   !>
-  !> @param[inout] THIS  
+  !> @param[inout] THIS
   !> @param[in]    GRD   Object representing the spatial grid to be loaded.
   !> @param[in]    SGD   Object representing the current spectral grid.
   !>
@@ -670,8 +669,8 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 
   !>
-  !> @brief In conditions of wind sea, the effect of the unresolved 
-  !>  obstacles is reduced.             
+  !> @brief In conditions of wind sea, the effect of the unresolved
+  !>  obstacles is reduced.
   !>
   !> @details Here a reduction psi is computed, as a function of the
   !>  wave age.
@@ -771,7 +770,7 @@ CONTAINS
   END SUBROUTINE COMPUTE_REDUCTION_PSI
 
   !/ ------------------------------------------------------------------- /
-  
+
   !>
   !> @brief Method of the class UOST_SOURCETERM.
   !>
@@ -899,7 +898,6 @@ CONTAINS
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_LD
 
   !/ ------------------------------------------------------------------- /
-  
   !>
   !> @brief Method of the class UOST_SOURCETERM.
   !>
@@ -1036,7 +1034,6 @@ CONTAINS
   END SUBROUTINE UOST_SOURCETERM_COMPUTE_SE
 
   !/ ------------------------------------------------------------------- /
-  
   !>
   !> @brief Method of the class UOST_SOURCETERM.
   !>

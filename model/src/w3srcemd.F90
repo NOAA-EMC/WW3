@@ -1,10 +1,10 @@
-!> @file 
+!> @file
 !> @brief Source term integration routine.
-!> 
+!>
 !> @author H. L. Tolman
 !> @author F. Ardhuin
 !> @date   22-Mar-2021
-!> 
+!>
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
@@ -111,25 +111,25 @@ CONTAINS
   !>           Xfilt   filter level                  (read in W3GRID)
   !>           Nx      Maximum parametric change (1)
   !>                   for largest wavenumber.
-  !> @endverbatim  
+  !> @endverbatim
   !>
-  !> @param[in]    srce_call 
-  !> @param[in]    IT 
+  !> @param[in]    srce_call
+  !> @param[in]    IT
   !> @param[in]    ISEA
-  !> @param[in]    JSEA 
+  !> @param[in]    JSEA
   !> @param[in]    IX         Discrete grid point counters.
   !> @param[in]    IY         Discrete grid point counters.
   !> @param[in]    IMOD       Model number.
-  !> @param[in]    SPECOLD 
+  !> @param[in]    SPECOLD
   !> @param[inout] SPEC       Spectrum (action) in 1-D form.
-  !> @param[out]   VSIO 
-  !> @param[out]   VDIO 
-  !> @param[out]   SHAVEIO 
+  !> @param[out]   VSIO
+  !> @param[out]   VDIO
+  !> @param[out]   SHAVEIO
   !> @param[inout] ALPHA      Nondimensional 1-D spectrum corresponding
   !>                          to above full spectra (Phillip's const.).
   !> @param[inout] WN1        Discrete wavenumbers.
   !> @param[inout] CG1        Id. group velocities.
-  !> @param[in]    CLATSL     
+  !> @param[in]    CLATSL
   !> @param[in]    D_INP      Depth, compared to DMIN to get DEPTH.
   !> @param[in]    U10ABS     Wind speed at reference height.
   !> @param[in]    U10DIR     Id. wind direction.
@@ -156,17 +156,17 @@ CONTAINS
   !> @param[out]   DTDYN      Average dynamic time step.
   !> @param[out]   FCUT       Cut-off frequency for tail.
   !> @param[in]    DTG        Global time step.
-  !> @param[inout] TAUWX      
-  !> @param[inout] TAUWY 
-  !> @param[inout] TAUOX 
-  !> @param[inout] TAUWIX 
-  !> @param[inout] TAUWIY 
+  !> @param[inout] TAUWX
+  !> @param[inout] TAUWY
+  !> @param[inout] TAUOX
+  !> @param[inout] TAUWIX
+  !> @param[inout] TAUWIY
   !> @param[inout] TAUWNX
   !> @param[inout] TAUWNY
-  !> @param[inout] PHIAW 
-  !> @param[inout] CHARN 
-  !> @param[inout] TWS 
-  !> @param[inout] PHIOC 
+  !> @param[inout] PHIAW
+  !> @param[inout] CHARN
+  !> @param[inout] TWS
+  !> @param[inout] PHIOC
   !> @param[inout] WHITECAP   Whitecap statistics.
   !> @param[in]    D50        Sand grain size.
   !> @param[in]    PSIC       Critical shields.
@@ -179,14 +179,14 @@ CONTAINS
   !> @param[inout] TAUOCY     Total ocean momentum component.
   !> @param[inout] WNMEAN     Mean wave number.
   !> @param[in]    DAIR       Air density.
-  !> @param[in]    COEF 
+  !> @param[in]    COEF
   !>
   !> @author H. L. Tolman
   !> @author F. Ardhuin
   !> @author A. Roland
   !> @author M. Dutour Sikiric
   !> @date   22-Mar-2021
-  !>  
+  !>
   SUBROUTINE W3SRCE ( srce_call, IT, ISEA, JSEA, IX, IY, IMOD,          &
        SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
        ALPHA, WN1, CG1, CLATSL,                    &
@@ -2469,9 +2469,9 @@ CONTAINS
   !>
   !> @brief Put source term in matrix same as done always.
   !>
-  !> @param[in]    SPEC 
-  !> @param[inout] VS 
-  !> @param[inout] VD 
+  !> @param[in]    SPEC
+  !> @param[inout] VS
+  !> @param[inout] VD
   !>
   !> @author Aron Roland
   !> @author Mathieu Dutour-Sikiric
@@ -2557,14 +2557,14 @@ CONTAINS
   !>
   !> @brief Put source term in matrix Patankar style (experimental).
   !>
-  !> @param[in]    SPEC 
-  !> @param[inout] VS 
-  !> @param[inout] VD 
+  !> @param[in]    SPEC
+  !> @param[inout] VS
+  !> @param[inout] VD
   !>
   !> @author Aron Roland
   !> @author Mathieu Dutour-Sikiric
   !> @date   01-Jun-2018
-  !>  
+  !>
   SUBROUTINE SIGN_VSD_PATANKAR_WW3(SPEC, VS, VD)
     !/
     !/                  +-----------------------------------+
