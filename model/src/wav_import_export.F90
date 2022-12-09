@@ -1013,7 +1013,6 @@ contains
     real(ESMF_KIND_R8), pointer :: chkn(:)  ! 1D Charnock export field pointer
 
     ! local variables
-    real   , parameter :: zero  = 0.0
     integer            :: isea, jsea, ix, iy
     real               :: emean, fmean, fmean1, wnmean, amax, ustar, ustdr
     real               :: tauwx, tauwy, cd, z0, fmeanws, dlwmean
@@ -1030,17 +1029,14 @@ contains
         ustar = zero
         ustdr = zero
 #ifdef W3_ST3
-        call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-             emean, fmean, fmean1, wnmean, amax,         &
-             u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-             tauwy, cd, z0, charn(jsea), llws, fmeanws )
+        call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+             amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+             llws, fmeanws )
 #endif
 #ifdef W3_ST4
-        call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),  &
-             emean, fmean, fmean1, wnmean, amax,         &
-             u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-             tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-             dlwmean )
+        call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+             amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+             llws, fmeanws, dlwmean )
 #endif
       endif !firstCall
       chkn(jsea) = charn(jsea)
@@ -1100,17 +1096,14 @@ contains
           tauwx = zero
           tauwy = zero
 #ifdef W3_ST3
-          call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-               emean, fmean, fmean1, wnmean, amax,         &
-               u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-               tauwy, cd, z0, charn(jsea), llws, fmeanws )
+          call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+               amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+               llws, fmeanws )
 #endif
 #ifdef W3_ST4
-          call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-               emean, fmean, fmean1, wnmean, amax,         &
-               u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-               tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-               dlwmean )
+          call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+               amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+               llws, fmeanws, dlwmean )
 #endif
         end if
       endif !firstCall
@@ -1718,13 +1711,11 @@ contains
     ! read header information
     ! this was inside of w3fldo call but since we are opening file
     ! once and rewinding, the header need to be read
-    read(mdsf, iostat=ierr) tsstr, tsfld, nxt, nyt, &
-         gtypet, filler(1:2), tideflag
+    read(mdsf, iostat=ierr) tsstr, tsfld, nxt, nyt, gtypet, filler(1:2), tideflag
 
     ! read input
-    call w3fldg('READ', lstring, mdsf, mdst, mdse, nx, ny, &
-         nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
-         wxnl, wynl, dtnl, ierr, flagsc)
+    call w3fldg('READ', lstring, mdsf, mdst, mdse, nx, ny, nx, ny, time0, timen, tw0l, wx0l, wy0l, &
+         dt0l, twnl, wxnl, wynl, dtnl, ierr, flagsc)
 
     wxdata(:) = 0.0_r4
     wydata(:) = 0.0_r4
