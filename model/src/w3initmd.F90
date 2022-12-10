@@ -3464,7 +3464,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-      END IF
+      END IF !IF ( IAPROC .LE. NAPROC ) THEN
       !
       IF ( NRQGO .GT. NRQMAX ) THEN
         WRITE (NDSE,1010) NRQGO, NRQMAX
@@ -4713,14 +4713,14 @@ CONTAINS
 #ifdef W3_MPI
         CALL W3SETA ( IMOD, NDSE, NDST )
         !
-      END IF
+      END IF ! IF ( IAPROC .EQ. NAPFLD ) THEN
       !
       IF ( NRQGO2 .GT. NRQMAX*NAPROC ) THEN
         WRITE (NDSE,1011) NRQGO2, NRQMAX*NAPROC
         CALL EXTCDE (11)
       END IF
       !
-    END IF
+    END IF !IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
     !
     ! 2.  Set-up for W3IORS ---------------------------------------------- /
     ! 2.a General preparations
@@ -5514,7 +5514,7 @@ CONTAINS
           END DO
           !
           CALL W3SETA ( IMOD, NDSE, NDST )
-        END IF
+        END IF ! IF ( IAPROC .EQ. NAPRST ) THEN
       END IF
       !
       NRQRS  = IH
