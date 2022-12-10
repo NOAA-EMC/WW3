@@ -1226,7 +1226,6 @@ CONTAINS
     RETURN
   END SUBROUTINE CALC_USTAR
   !/ ------------------------------------------------------------------- /
-
   !>
   !> @brief Calculate whitecapping source term and diagonal term of derivative.
   !>

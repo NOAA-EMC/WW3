@@ -80,6 +80,9 @@ MODULE W3IOGRMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
+  ! module default
+  implicit none
+
   PUBLIC
   !/
   !/ Private parameter statements (ID strings)
@@ -255,6 +258,8 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
+    use w3servmd, only : print_memcheck
+
     USE CONSTANTS
     USE W3GDATMD
 #ifdef W3_MPI
@@ -300,12 +305,6 @@ CONTAINS
 #ifdef W3_UOST
     USE W3UOSTMD, ONLY: UOST_INITGRID
 #endif
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, ONLY: MALLINFOS
-    USE MallocInfo_m
-#endif
-    !
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
@@ -350,22 +349,21 @@ CONTAINS
          FNAME4, FNAME5, FNAME6,              &
          FNAMEP, FNAMEG, FNAMEF, FNAMEI
     CHARACTER(LEN=35)       :: IDTST
-    CHARACTER(LEN=60)      :: MESSAGE(5)
+    CHARACTER(LEN=60)       :: MESSAGE(5)
     LOGICAL                 :: GLOBAL
 
     REAL, ALLOCATABLE       :: XGRD4(:,:), YGRD4(:,:)
+
+    integer                 :: memunit
     !/
     !/ ------------------------------------------------------------------- /
     !/
+    memunit = 740+IAPROC
 #ifdef W3_S
     CALL STRACE (IENT, 'W3IOGR')
 #endif
     !
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 1')
 
     MESSAGE =(/ '     MOD DEF FILE WAS GENERATED WITH A DIFFERENT    ', &
          '     WW3 VERSION OR USING A DIFFERENT SWITCH FILE.  ',        &
@@ -554,11 +552,7 @@ CONTAINS
     CALL W3SETO ( IGRD, NDSE, NDST )
     CALL W3SETG ( IGRD, NDSE, NDST )
     FILEXT = TEMPXT
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 2'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 2')
     !
     ! open file ---------------------------------------------------------- *
     !
@@ -712,12 +706,7 @@ CONTAINS
 #endif
       !
     ENDIF
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 3'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 3')
     !
     ! Parameters in modules  --------------------------------------------- *
     !                                                   Module W3GDAT GRID
@@ -807,13 +796,9 @@ CONTAINS
       !!        WRITE(NDSM)                                                 &
       !!             COUG_2D, COUG_RAD3D, COUG_US3D
     ELSE
-#ifdef W3_MEMCHECK
-      write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 4'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC,mallInfos)
-#endif
+      call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 4')
 
-      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                      &
            GTYPE, FLAGLL, ICLOSE
       !!Li      IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST )
       IF (.NOT.GINIT) CALL W3DIMX ( IGRD, NX, NY, NSEA, NDSE, NDST &
@@ -867,23 +852,14 @@ CONTAINS
         IF (.NOT. GUGINIT) THEN
           CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
         END IF
-#ifdef W3_MEMCHECK
-        write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 5'
-        call getMallocInfo(mallinfos)
-        call printMallInfo(IAPROC,mallInfos)
-#endif
+        call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 5')
+
         READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
              X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
              LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
              DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,     &
              POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
-
-#ifdef W3_MEMCHECK
-        write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 6'
-        call getMallocInfo(mallinfos)
-        call printMallInfo(IAPROC,mallInfos)
-#endif
-
+        call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 6')
 
       END SELECT !GTYPE
       !
@@ -952,14 +928,7 @@ CONTAINS
 #endif
       !
     END IF
-
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 7'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
-
-
+    call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 7')
     !
 #ifdef W3_T
     WRITE (NDST,9010) GTYPE, FLAGLL, ICLOSE, SX, SY, X0, Y0, TRFLAG
@@ -1461,12 +1430,7 @@ CONTAINS
     !
     ! ... Depth induced breaking ...
     !
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 8'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 8')
 #ifdef W3_DB1
     IF ( WRITE ) THEN
       WRITE (NDSM)                                            &
@@ -1581,12 +1545,7 @@ CONTAINS
     END IF
     !
     CLOSE ( NDSM )
-
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 9'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 9')
     !
     RETURN
     !

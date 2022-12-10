@@ -24,9 +24,6 @@
 !>       No unauthorized use without permission.
 !>
 MODULE W3ADATMD
-#ifdef W3_MEMCHECK
-  USE MallocInfo_m
-#endif
   !/
   !/                  +-----------------------------------+
   !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -358,6 +355,12 @@ MODULE W3ADATMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
+
+  use w3servmd, only : print_memcheck
+
+  ! module default
+  implicit none
+
   PUBLIC
   !/
   !/ Module private variable for checking error returns
@@ -694,11 +697,6 @@ MODULE W3ADATMD
   INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM
   REAL, POINTER           :: ALPHA(:,:)
   LOGICAL, POINTER        :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
-
-#ifdef W3_MEMCHECK
-  type(MallInfo_t)        :: mallinfos
-#endif
-
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -773,7 +771,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -948,7 +945,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -964,15 +960,13 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3DIMA')
 #endif
+    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
     !
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 0'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    memunit = 30000+IAPROC
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 0')
 
     IF ( PRESENT(D_ONLY) ) THEN
       FL_ALL = .NOT. D_ONLY
@@ -1002,11 +996,7 @@ CONTAINS
     JGRID  = IGRID
     IF ( JGRID .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 1')
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Allocate arrays
@@ -1043,11 +1033,7 @@ CONTAINS
     WADATS(IMOD)%TAUA(:)   =0.
     WADATS(IMOD)%TAUADIR(:)=0.
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 2'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 2')
     !
     !     Water level WLV stored in W3WDATMD
     !     Ice concentration ICE stored in W3WDATMD
@@ -1112,11 +1098,7 @@ CONTAINS
     WADATS(IMOD)%WBT    = UNDEF
     WADATS(IMOD)%WNMEAN = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 3'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 3')
     !
     ! 3) Frequency-dependent standard parameters
     !
@@ -1155,12 +1137,7 @@ CONTAINS
     IF (  E3DF(1,4).GT.0 ) WADATS(IMOD)%TH2M    = UNDEF
     IF (  E3DF(1,5).GT.0 ) WADATS(IMOD)%STH2M   = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 4'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 4')
     !
     ! 4) Spectral Partitions parameters
     !
@@ -1228,12 +1205,7 @@ CONTAINS
     WADATS(IMOD)%TAUWNY   = UNDEF
     WADATS(IMOD)%WHITECAP = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 5'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 5')
     !
     ! 6) Wave-ocean layer
     !
@@ -1297,11 +1269,7 @@ CONTAINS
     IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
     IF (  USSPF(1).GT.0 ) WADATS(IMOD)%USSP   = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 6'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 6')
     !
     ! 7) Wave-bottom layer
     !
@@ -1320,11 +1288,7 @@ CONTAINS
     WADATS(IMOD)%PHIBBL = UNDEF
     WADATS(IMOD)%TAUBBL = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 7'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 7')
     !
     ! 8) Spectrum parameters
     !
@@ -1340,11 +1304,7 @@ CONTAINS
     WADATS(IMOD)%MSCX   = UNDEF
     WADATS(IMOD)%MSCY   = UNDEF
     WADATS(IMOD)%MSCD   = UNDEF
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 8'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 8')
     !
     ! 9) Numerical diagnostics
     !
@@ -1362,11 +1322,7 @@ CONTAINS
     WADATS(IMOD)%CFLTHMAX = UNDEF
     WADATS(IMOD)%CFLKMAX  = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 9'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 9')
     !
     ! 10) User defined
     !
@@ -1384,12 +1340,7 @@ CONTAINS
     ALLOCATE (WADATS(IMOD)%IC3WN_I(0:NK+1,0:300), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
 #endif
-
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 10'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 10')
     !
     IF ( FL_ALL ) THEN
       !
@@ -1526,12 +1477,7 @@ CONTAINS
     !
     WADATS(IMOD)%AINIT  = .TRUE.
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 11'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 11')
     !
 #ifdef W3_T
     WRITE (NDST,9001)
@@ -1542,12 +1488,7 @@ CONTAINS
     !
     CALL W3SETA ( IMOD, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 12'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 12')
     !
 #ifdef W3_T
     WRITE (NDST,9002)
@@ -1565,11 +1506,7 @@ CONTAINS
     !
     IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA END'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA END')
     !
     RETURN
     !
@@ -1636,7 +1573,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1652,10 +1588,12 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3XDMA')
 #endif
+    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
     !
+    memunit = 30000+IAPROC
     IF ( NGRIDS .EQ. -1 ) THEN
       WRITE (NDSE,1001)
       CALL EXTCDE (1)
@@ -2457,11 +2395,7 @@ CONTAINS
     !
     IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3XDMA'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3XDMA')
     !
     RETURN
     !
@@ -2573,7 +2507,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -2789,7 +2722,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -3226,7 +3158,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
