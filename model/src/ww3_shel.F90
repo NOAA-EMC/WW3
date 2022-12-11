@@ -2027,21 +2027,15 @@ PROGRAM W3SHEL
       ENDIF 
  ! Estimate the weights for the spatial interpolation
       IF (DTOUT(7).NE.0) THEN
-#endif
-
-    WRITE(*,*) 'START OASIS DEFINE'
-
-#ifdef W3_OASIS
-!#ifdef W3_HYCOM
-!        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
-!#else
-!        CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
-!#endif
         CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
       END IF
 #endif
 
-    WRITE(*,*) 'FINISHED OASIS DEFINE' 
+#ifdef W3_MPI
+  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  WRITE(*,*) 'WW3_SHEL - AFTER CPL_OASIS_DEFINE', FLFLG 
+#endif
+
 
 !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ! 6.  Model without input
@@ -2102,6 +2096,12 @@ PROGRAM W3SHEL
 #endif
 #ifdef W3_OASIS
   END IF
+
+#ifdef W3_MPI
+  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  WRITE(*,*) 'WW3_SHEL - AFTER SND_FIELDS'
+#endif
+
 #endif
 
 700 CONTINUE
@@ -2348,6 +2348,12 @@ PROGRAM W3SHEL
               COUPL_COMM = MPI_COMM
 #endif
 #ifdef W3_OASOCM
+
+#ifdef W3_MPI
+  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  WRITE(*,*) 'WW3_SHEL - BEFORE W3FLDG 2353'
+#endif
+
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
               CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
@@ -2358,6 +2364,13 @@ PROGRAM W3SHEL
                    , COUPL_COMM                       &
 #endif
                    )
+
+#ifdef W3_MPI
+  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  WRITE(*,*) 'WW3_SHEL - AFTER W3FLDG 2364'
+#endif
+
+
 #ifdef W3_TIDE
             END IF
 #endif
@@ -2391,6 +2404,11 @@ PROGRAM W3SHEL
               TC0(:) = TCN(:)
               CALL TICK21 ( TCN, TIDE_DT )
             ELSE
+#ifdef W3_MPI
+  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  WRITE(*,*) 'WW3_SHEL - BEFORE W3FLDG 2399'
+#endif
+
 #endif
 #ifdef W3_OASIS
               COUPL_COMM = MPI_COMM
@@ -2406,6 +2424,12 @@ PROGRAM W3SHEL
                    , COUPL_COMM                       &
 #endif
                    )
+
+#ifdef W3_MPI
+  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  WRITE(*,*) 'WW3_SHEL - BEFORE W3FLDG 2420'
+#endif
+
 #ifdef W3_TIDE
             END IF
 #endif
@@ -2629,6 +2653,12 @@ PROGRAM W3SHEL
   !
   ! update the next assimilation data time
   !
+#ifdef W3_MPI
+  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
+  WRITE(*,*) 'WW3_SHEL - AFTER W3FLD'
+  STOP 'STOP STOP STOP - AFTER W3FLD'
+#endif
+
 
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 8'

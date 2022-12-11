@@ -58,6 +58,13 @@ MODULE W3OACPMD
   !
   USE MOD_OASIS                                      ! OASIS3-MCT module
   !
+  USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
+  USE MPI, only : MPI_SUM, MPI_INT
+#ifdef W3_PDLIB
+    USE W3PARALL, ONLY : INIT_GET_ISEA
+    USE YOWNODEPOOL, only: npa, np, iplg
+#endif
+
   IMPLICIT NONE
   PRIVATE
   !
@@ -416,10 +423,12 @@ CONTAINS
     USE W3GDATMD, ONLY: NSEAL,NSEA, NX, NY, MAPSTA, MAPSF, GTYPE, &
          & UNGTYPE, RLGTYPE, CLGTYPE, SMCTYPE
     USE W3ODATMD, ONLY: NAPROC, IAPROC
-    USE W3PARALL, ONLY : INIT_GET_ISEA
+    USE W3ADATMD, ONLY: MPI_COMM_WAVE
 #ifdef W3_PDLIB
+    USE W3PARALL, ONLY : INIT_GET_ISEA 
     USE YOWNODEPOOL, only: npa, np, iplg
 #endif
+    IMPLICIT NONE
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -430,7 +439,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IB_I,I,IPART
+    INTEGER                 :: IB_I,I,IPART,IERR_MPI
     INTEGER                 :: IL_PART_ID      ! PartitionID
     INTEGER, ALLOCATABLE, DIMENSION(:)   :: ILA_PARAL       ! Description of the local partition in the global index space
     INTEGER, DIMENSION(4)   :: ILA_SHAPE       ! Vector giving the min & max index for each dim of the fields
@@ -516,6 +525,9 @@ CONTAINS
       ENDIF
       !
     ENDIF
+
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(*,*) 'MPI BARRIER BEFORE OASIS_DEF_PARTITION'
     !
     ! 2. Partition definition
     ! ----------------------------------
@@ -523,15 +535,26 @@ CONTAINS
     IF(IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_partition')
     ENDIF
+
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(*,*) 'MPI BARRIER AFTER OASIS_DEF_PARTITION'
+
     !
     ! 3. Coupling fields declaration
     ! ----------------------------------
+#ifdef W3_PDLIB
+    ILA_SHAPE(:) = (/1, NP, 1, 1 /)
+#else
     ILA_SHAPE(:) = (/1, NSEAL, 1, 1 /)
+#endif
     !
     ILA_VAR_NODIMS(1) = 2    ! rank of fields array
     ILA_VAR_NODIMS(2) = 1    ! always 1 with OASIS3-MCT 2.0
     !
     CALL GET_LIST_EXCH_FIELD(NDSO, RCV_FLD, SND_FLD, IL_NB_RCV, IL_NB_SND, RCV_STR, SND_STR)
+
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(*,*) 'MPI BARRIER AFTER GET_LIST_EXCH_FIELD'
     !
     ! 3.1 Send coupling fields
     ! ----------------------------------
@@ -549,6 +572,10 @@ CONTAINS
         CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_var')
       ENDIF
     ENDDO
+
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(*,*) 'MPI BARRIER AFTER OASIS_DEF_VAR'
+
     !
     ! 3.2 Received coupling fields
     ! ----------------------------------
@@ -566,10 +593,17 @@ CONTAINS
         CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_var')
       ENDIF
     ENDDO
+
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER OASIS_DEF_VAR'
+
     !
     ! 4. End of definition phase
     ! ----------------------------------
     CALL OASIS_ENDDEF(IL_ERR)
+
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER OASIS_ENDDEF'
 
     IF (IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_enddef')
@@ -695,6 +729,9 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
+    USE W3ADATMD, ONLY: MPI_COMM_WAVE
+    USE W3GDATMD, ONLY: NSEAL, NSEA, NX
+    IMPLICIT NONE
     INTEGER, INTENT(IN)   :: ID_NB                          ! Number of the field to be received
     INTEGER, INTENT(IN)   :: ID_TIME                        ! Ocean time-step in seconds
     REAL(KIND=8), DIMENSION(:,:), INTENT(OUT) :: RDA_FIELD    ! Coupling field array to be received
@@ -704,10 +741,25 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER :: IL_INFO                                      ! OASIS3-MCT info argument
+    INTEGER :: IERR_MPI, NPSUM
     !/
     !/ ------------------------------------------------------------------- /
     !/ Executable part
     !/
+
+    NPSUM = 0
+    CALL MPI_ALLREDUCE(NP, NPSUM, 1, MPI_INT, MPI_SUM, MPI_COMM_WAVE, IERR_MPI)
+
+    WRITE(4000+IAPROC,*) 'ID_NB', ID_NB
+    WRITE(4000+IAPROC,*) 'RCV_fld(ID_NB)%IL_FIELD_ID', RCV_fld(ID_NB)%IL_FIELD_ID
+    WRITE(4000+IAPROC,*) 'ID_TIME', ID_TIME
+    WRITE(4000+IAPROC,*) 'NSEA, NX', NSEA, NX
+    WRITE(4000+IAPROC,*) 'NSEAL, NPSUM', NSEAL, NPSUM
+    WRITE(4000+IAPROC,*) 'NP, NPA', NP, NPA
+    WRITE(4000+IAPROC,*) 'SIZE(RDA_FIELD)', SIZE(RDA_FIELD), NP, NPA
+    WRITE(4000+IAPROC,*) 'RDA_FIELD', RDA_FIELD
+    CALL FLUSH(4000+IAPROC)
+
     CALL OASIS_GET ( RCV_fld(ID_NB)%IL_FIELD_ID &
          &              , ID_TIME                    &
          &              , RDA_FIELD                  &
