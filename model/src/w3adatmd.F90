@@ -24,9 +24,6 @@
 !>       No unauthorized use without permission.
 !>
 MODULE W3ADATMD
-#ifdef W3_MEMCHECK
-  USE MallocInfo_m
-#endif
   !/
   !/                  +-----------------------------------+
   !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -358,6 +355,12 @@ MODULE W3ADATMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
+
+  use w3servmd, only : print_memcheck
+
+  ! module default
+  implicit none
+
   PUBLIC
   !/
   !/ Module private variable for checking error returns
@@ -680,11 +683,6 @@ MODULE W3ADATMD
   INTEGER, POINTER        :: ITIME, IPASS, IDLAST, NSEALM
   REAL, POINTER           :: ALPHA(:,:)
   LOGICAL, POINTER        :: AINIT, AINIT2, FL_ALL, FLCOLD, FLIWND
-
-#ifdef W3_MEMCHECK
-  type(MallInfo_t)        :: mallinfos
-#endif
-
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -759,7 +757,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -934,7 +931,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -950,15 +946,13 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3DIMA')
 #endif
+    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
     !
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 0'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    memunit = 30000+IAPROC
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 0')
 
     IF ( PRESENT(D_ONLY) ) THEN
       FL_ALL = .NOT. D_ONLY
@@ -988,11 +982,7 @@ CONTAINS
     JGRID  = IGRID
     IF ( JGRID .NE. IMOD ) CALL W3SETG ( IMOD, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 1')
     !
     ! -------------------------------------------------------------------- /
     ! 2.  Allocate arrays
@@ -1029,11 +1019,7 @@ CONTAINS
     WADATS(IMOD)%TAUA(:)   =0.
     WADATS(IMOD)%TAUADIR(:)=0.
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 2'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 2')
     !
     !     Water level WLV stored in W3WDATMD
     !     Ice concentration ICE stored in W3WDATMD
@@ -1049,18 +1035,18 @@ CONTAINS
     IF (NSEALM .eq. 0) THEN
       NSEALM=NSEA
     END IF
-    ALLOCATE ( WADATS(IMOD)%HS   (NSEALM), WADATS(IMOD)%WLM (NSEALM), &
-         WADATS(IMOD)%T02  (NSEALM), WADATS(IMOD)%T0M1(NSEALM), &
-         WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0 (NSEALM), &
-         WADATS(IMOD)%THM  (NSEALM), WADATS(IMOD)%THS (NSEALM), &
-         WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%HSIG(NSEALM), &
-         WADATS(IMOD)%STMAXE (NSEALM),                          &
-         WADATS(IMOD)%STMAXD(NSEALM),                           &
-         WADATS(IMOD)%HMAXE(NSEALM), WADATS(IMOD)%HMAXD(NSEALM),&
-         WADATS(IMOD)%HCMAXE(NSEALM),                           &
-         WADATS(IMOD)%HCMAXD(NSEALM), WADATS(IMOD)%QP(NSEALM),  &
-         WADATS(IMOD)%WBT(NSEALM),                              &
-         WADATS(IMOD)%WNMEAN(NSEALM),                           &
+    ALLOCATE ( WADATS(IMOD)%HS (NSEALM), WADATS(IMOD)%WLM (NSEALM), &
+         WADATS(IMOD)%T02  (NSEALM), WADATS(IMOD)%T0M1(NSEALM),     &
+         WADATS(IMOD)%T01  (NSEALM), WADATS(IMOD)%FP0 (NSEALM),     &
+         WADATS(IMOD)%THM  (NSEALM), WADATS(IMOD)%THS (NSEALM),     &
+         WADATS(IMOD)%THP0 (NSEALM), WADATS(IMOD)%HSIG(NSEALM),     &
+         WADATS(IMOD)%STMAXE (NSEALM),                              &
+         WADATS(IMOD)%STMAXD(NSEALM),                               &
+         WADATS(IMOD)%HMAXE(NSEALM), WADATS(IMOD)%HMAXD(NSEALM),    &
+         WADATS(IMOD)%HCMAXE(NSEALM),                               &
+         WADATS(IMOD)%HCMAXD(NSEALM), WADATS(IMOD)%QP(NSEALM),      &
+         WADATS(IMOD)%WBT(NSEALM),                                  &
+         WADATS(IMOD)%WNMEAN(NSEALM),                               &
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1084,11 +1070,7 @@ CONTAINS
     WADATS(IMOD)%WBT    = UNDEF
     WADATS(IMOD)%WNMEAN = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 3'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 3')
     !
     ! 3) Frequency-dependent standard parameters
     !
@@ -1127,12 +1109,7 @@ CONTAINS
     IF (  E3DF(1,4).GT.0 ) WADATS(IMOD)%TH2M    = UNDEF
     IF (  E3DF(1,5).GT.0 ) WADATS(IMOD)%STH2M   = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 4'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 4')
     !
     ! 4) Spectral Partitions parameters
     !
@@ -1200,16 +1177,11 @@ CONTAINS
     WADATS(IMOD)%TAUWNY   = UNDEF
     WADATS(IMOD)%WHITECAP = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 5'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 5')
     !
     ! 6) Wave-ocean layer
     !
-    ALLOCATE ( WADATS(IMOD)%SXX   (NSEALM) ,                        &
+    ALLOCATE ( WADATS(IMOD)%SXX   (NSEALM) ,                  &
          WADATS(IMOD)%SYY   (NSEALM) ,                        &
          WADATS(IMOD)%SXY   (NSEALM) ,                        &
          WADATS(IMOD)%TAUOX (NSEALM) ,                        &
@@ -1233,18 +1205,15 @@ CONTAINS
     !                    by specific variables defined through the mod_def file
     !                    and read by w3iogr, which is called before W3DIMA.
     IF (  P2MSF(1).GT.0 ) THEN
-      ALLOCATE(WADATS(IMOD)%P2SMS(NSEALM,P2MSF(2):P2MSF(3)), &
-           STAT=ISTAT )
+      ALLOCATE(WADATS(IMOD)%P2SMS(NSEALM,P2MSF(2):P2MSF(3)), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF (  US3DF(1).GT.0 ) THEN ! maybe use US3DF(2:3)
-      ALLOCATE(WADATS(IMOD)%US3D(NSEALM,NK*2), &
-           STAT=ISTAT )
+      ALLOCATE(WADATS(IMOD)%US3D(NSEALM,NK*2), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     IF ( USSPF(1).GT.0 ) THEN
-      ALLOCATE(WADATS(IMOD)%USSP(NSEALM,NK*2), &
-           STAT=ISTAT )
+      ALLOCATE(WADATS(IMOD)%USSP(NSEALM,NK*2), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
@@ -1269,18 +1238,14 @@ CONTAINS
     IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
     IF (  USSPF(1).GT.0 ) WADATS(IMOD)%USSP   = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 6'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 6')
     !
     ! 7) Wave-bottom layer
     !
     ALLOCATE ( WADATS(IMOD)%ABA(NSEALM) , WADATS(IMOD)%ABD(NSEALM) , &
-         WADATS(IMOD)%UBA(NSEALM) , WADATS(IMOD)%UBD(NSEALM) , &
-         WADATS(IMOD)%BEDFORMS(NSEALM,3),                      &
-         WADATS(IMOD)%PHIBBL  (NSEALM)  ,                      &
+         WADATS(IMOD)%UBA(NSEALM) , WADATS(IMOD)%UBD(NSEALM) ,       &
+         WADATS(IMOD)%BEDFORMS(NSEALM,3),                            &
+         WADATS(IMOD)%PHIBBL  (NSEALM)  ,                            &
          WADATS(IMOD)%TAUBBL  (NSEALM,2), STAT=ISTAT           )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1292,11 +1257,7 @@ CONTAINS
     WADATS(IMOD)%PHIBBL = UNDEF
     WADATS(IMOD)%TAUBBL = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 7'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 7')
     !
     ! 8) Spectrum parameters
     !
@@ -1312,19 +1273,15 @@ CONTAINS
     WADATS(IMOD)%MSCX   = UNDEF
     WADATS(IMOD)%MSCY   = UNDEF
     WADATS(IMOD)%MSCD   = UNDEF
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 8'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 8')
     !
     ! 9) Numerical diagnostics
     !
     !
-    ALLOCATE ( WADATS(IMOD)%DTDYN   (NSEALM) ,                       &
-         WADATS(IMOD)%FCUT    (NSEALM) ,                       &
-         WADATS(IMOD)%CFLXYMAX(NSEALM) ,                       &
-         WADATS(IMOD)%CFLTHMAX(NSEALM) ,                       &
+    ALLOCATE ( WADATS(IMOD)%DTDYN   (NSEALM) , &
+         WADATS(IMOD)%FCUT    (NSEALM) ,       &
+         WADATS(IMOD)%CFLXYMAX(NSEALM) ,       &
+         WADATS(IMOD)%CFLTHMAX(NSEALM) ,       &
          WADATS(IMOD)%CFLKMAX (NSEALM) , STAT=ISTAT            )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1334,11 +1291,7 @@ CONTAINS
     WADATS(IMOD)%CFLTHMAX = UNDEF
     WADATS(IMOD)%CFLKMAX  = UNDEF
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 9'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 9')
     !
     ! 10) User defined
     !
@@ -1356,12 +1309,7 @@ CONTAINS
     ALLOCATE (WADATS(IMOD)%IC3WN_I(0:NK+1,0:300), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
 #endif
-
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 10'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 10')
     !
     IF ( FL_ALL ) THEN
       !
@@ -1375,37 +1323,37 @@ CONTAINS
 
       !
       IF ( FLCUR  ) THEN
-        ALLOCATE ( WADATS(IMOD)%CA0(NSEA) ,           &
-             WADATS(IMOD)%CAI(NSEA) ,           &
-             WADATS(IMOD)%CD0(NSEA) ,           &
-             WADATS(IMOD)%CDI(NSEA) ,           &
+        ALLOCATE ( WADATS(IMOD)%CA0(NSEA) , &
+             WADATS(IMOD)%CAI(NSEA) ,       &
+             WADATS(IMOD)%CD0(NSEA) ,       &
+             WADATS(IMOD)%CDI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF
       !
       IF ( FLWIND ) THEN
-        ALLOCATE ( WADATS(IMOD)%UA0(NSEA) ,           &
-             WADATS(IMOD)%UAI(NSEA) ,           &
-             WADATS(IMOD)%UD0(NSEA) ,           &
-             WADATS(IMOD)%UDI(NSEA) ,           &
-             WADATS(IMOD)%AS0(NSEA) ,           &
-             WADATS(IMOD)%ASI(NSEA) ,           &
+        ALLOCATE ( WADATS(IMOD)%UA0(NSEA) , &
+             WADATS(IMOD)%UAI(NSEA) ,       &
+             WADATS(IMOD)%UD0(NSEA) ,       &
+             WADATS(IMOD)%UDI(NSEA) ,       &
+             WADATS(IMOD)%AS0(NSEA) ,       &
+             WADATS(IMOD)%ASI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF
       !
       IF ( FLTAUA  ) THEN
-        ALLOCATE ( WADATS(IMOD)%MA0(NSEA) ,           &
-             WADATS(IMOD)%MAI(NSEA) ,           &
-             WADATS(IMOD)%MD0(NSEA) ,           &
-             WADATS(IMOD)%MDI(NSEA) ,           &
+        ALLOCATE ( WADATS(IMOD)%MA0(NSEA) , &
+             WADATS(IMOD)%MAI(NSEA) ,       &
+             WADATS(IMOD)%MD0(NSEA) ,       &
+             WADATS(IMOD)%MDI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF
       !
       IF ( FLRHOA  ) THEN
-        ALLOCATE ( WADATS(IMOD)%RA0(NSEA) ,           &
-             WADATS(IMOD)%RAI(NSEA) ,           &
+        ALLOCATE ( WADATS(IMOD)%RA0(NSEA) , &
+             WADATS(IMOD)%RAI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF
@@ -1415,23 +1363,23 @@ CONTAINS
       CHECK_ALLOC_STATUS ( ISTAT )
       !
       IF (.NOT. LPDLIB) THEN
-        ALLOCATE ( WADATS(IMOD)%DDDX(NY,NX)  ,                      &
-             WADATS(IMOD)%DDDY(NY,NX)  ,                      &
-             WADATS(IMOD)%DCDX(0:NK+1,NY,NX)  ,               &
-             WADATS(IMOD)%DCDY(0:NK+1,NY,NX)  ,               &
-             WADATS(IMOD)%DCXDX(NY,NX) ,                      &
-             WADATS(IMOD)%DCYDX(NY,NX) ,                      &
-             WADATS(IMOD)%DCXDY(NY,NX) ,                      &
+        ALLOCATE ( WADATS(IMOD)%DDDX(NY,NX)  ,    &
+             WADATS(IMOD)%DDDY(NY,NX)  ,          &
+             WADATS(IMOD)%DCDX(0:NK+1,NY,NX)  ,   &
+             WADATS(IMOD)%DCDY(0:NK+1,NY,NX)  ,   &
+             WADATS(IMOD)%DCXDX(NY,NX) ,          &
+             WADATS(IMOD)%DCYDX(NY,NX) ,          &
+             WADATS(IMOD)%DCXDY(NY,NX) ,          &
              WADATS(IMOD)%DCYDY(NY,NX) , STAT=ISTAT           )
       ELSE
-        ALLOCATE ( WADATS(IMOD)%DDDX(1,NSEAL)  ,                      &
-             WADATS(IMOD)%DDDY(1,NSEAL)  ,                      &
-             WADATS(IMOD)%DCDX(0:NK+1,1,NSEAL)  ,               &
-             WADATS(IMOD)%DCDY(0:NK+1,1,NSEAL)  ,               &
-             WADATS(IMOD)%DCXDX(1,NSEAL) ,                      &
-             WADATS(IMOD)%DCYDX(1,NSEAL) ,                      &
-             WADATS(IMOD)%DCXDY(1,NSEAL) ,                      &
-             WADATS(IMOD)%DCYDY(1,NSEAL) ,                      &
+        ALLOCATE ( WADATS(IMOD)%DDDX(1,NSEAL)  ,  &
+             WADATS(IMOD)%DDDY(1,NSEAL)  ,        &
+             WADATS(IMOD)%DCDX(0:NK+1,1,NSEAL)  , &
+             WADATS(IMOD)%DCDY(0:NK+1,1,NSEAL)  , &
+             WADATS(IMOD)%DCXDX(1,NSEAL) ,        &
+             WADATS(IMOD)%DCYDX(1,NSEAL) ,        &
+             WADATS(IMOD)%DCXDY(1,NSEAL) ,        &
+             WADATS(IMOD)%DCYDY(1,NSEAL) ,        &
              STAT=ISTAT           )
       ENDIF
       CHECK_ALLOC_STATUS ( ISTAT )
@@ -1445,7 +1393,7 @@ CONTAINS
       WADATS(IMOD)%DCYDY = 0.
       !
 #ifdef W3_SMC
-      ALLOCATE ( WADATS(IMOD)%DHDX(NSEA) ,                        &
+      ALLOCATE ( WADATS(IMOD)%DHDX(NSEA) ,                  &
            WADATS(IMOD)%DHDY(NSEA) ,                        &
            WADATS(IMOD)%DHLMT(NTH,NSEA) , STAT=ISTAT        )
       CHECK_ALLOC_STATUS ( ISTAT )
@@ -1455,7 +1403,7 @@ CONTAINS
       CHECK_ALLOC_STATUS ( ISTAT )
       !
 #ifdef W3_PR1
-      ALLOCATE ( WADATS(IMOD)%IS0(NSPEC)   ,                 &
+      ALLOCATE ( WADATS(IMOD)%IS0(NSPEC)   ,           &
            WADATS(IMOD)%IS2(NSPEC)   ,                 &
            WADATS(IMOD)%FACVX(NY*NX) ,                 &
            WADATS(IMOD)%FACVY(NY*NX) , STAT=ISTAT      )
@@ -1463,7 +1411,7 @@ CONTAINS
 #endif
       !
 #ifdef W3_PR2
-      ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)       ,           &
+      ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)       ,     &
            WADATS(IMOD)%MAPY2(NY*NX)       ,           &
            WADATS(IMOD)%MAPAXY(NY*NX)      ,           &
            WADATS(IMOD)%MAPXY(NSEA)        ,           &
@@ -1479,7 +1427,7 @@ CONTAINS
       END IF
       !
 #ifdef W3_PR3
-      ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)       ,           &
+      ALLOCATE ( WADATS(IMOD)%MAPX2(NY*NX)       ,     &
            WADATS(IMOD)%MAPY2(NY*NX)       ,           &
            WADATS(IMOD)%MAPAXY(NY*NX)      ,           &
            WADATS(IMOD)%MAPCXY(NSEA)       ,           &
@@ -1490,7 +1438,7 @@ CONTAINS
       WADATS(IMOD)%MAPTH2 = 0
 #endif
       !
-      ALLOCATE ( WADATS(IMOD)%IAPPRO(NSPEC) ,                     &
+      ALLOCATE ( WADATS(IMOD)%IAPPRO(NSPEC) ,          &
            WADATS(IMOD)%SPPNT(NTH,NK,4), STAT=ISTAT         )
       CHECK_ALLOC_STATUS ( ISTAT )
       !
@@ -1498,12 +1446,7 @@ CONTAINS
     !
     WADATS(IMOD)%AINIT  = .TRUE.
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 11'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 11')
     !
 #ifdef W3_T
     WRITE (NDST,9001)
@@ -1514,12 +1457,7 @@ CONTAINS
     !
     CALL W3SETA ( IMOD, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA 12'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 12')
     !
 #ifdef W3_T
     WRITE (NDST,9002)
@@ -1537,19 +1475,15 @@ CONTAINS
     !
     IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3DIMA END'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA END')
     !
     RETURN
     !
     ! Formats
     !
-1001 FORMAT (/' *** ERROR W3DIMA : GRIDS NOT INITIALIZED *** '/      &
+1001 FORMAT (/' *** ERROR W3DIMA : GRIDS NOT INITIALIZED *** '/ &
          '                    RUN W3NMOD FIRST '/)
-1002 FORMAT (/' *** ERROR W3DIMA : ILLEGAL MODEL NUMBER *** '/       &
+1002 FORMAT (/' *** ERROR W3DIMA : ILLEGAL MODEL NUMBER *** '/  &
          '                    IMOD   = ',I10/                   &
          '                    NADATA = ',I10/)
 1003 FORMAT (/' *** ERROR W3DIMA : ARRAY(S) ALREADY ALLOCATED *** ')
@@ -1608,7 +1542,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1624,10 +1557,12 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3XDMA')
 #endif
+    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
     !
+    memunit = 30000+IAPROC
     IF ( NGRIDS .EQ. -1 ) THEN
       WRITE (NDSE,1001)
       CALL EXTCDE (1)
@@ -2056,7 +1991,7 @@ CONTAINS
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
-    IF ( OUTFLAGS( 5, 7) .OR. OUTFLAGS( 5, 8) .OR.                        &
+    IF ( OUTFLAGS( 5, 7) .OR. OUTFLAGS( 5, 8) .OR.           &
          OUTFLAGS( 5, 9) .OR. OUTFLAGS( 5,10)) THEN
       ALLOCATE ( WADATS(IMOD)%XWHITECAP(NXXX,4), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
@@ -2214,7 +2149,6 @@ CONTAINS
       ALLOCATE ( WADATS(IMOD)%XTAUOCY(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
-
     !
     WADATS(IMOD)%XSXX    = UNDEF
     WADATS(IMOD)%XSYY    = UNDEF
@@ -2417,19 +2351,15 @@ CONTAINS
     !
     IF ( JGRID .NE. IMOD ) CALL W3SETG ( JGRID, NDSE, NDST )
 
-#ifdef W3_MEMCHECK
-    WRITE(30000+IAPROC,*) 'memcheck_____:', 'W3XDMA'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(30000+IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' W3XDMA')
     !
     RETURN
     !
     ! Formats
     !
-1001 FORMAT (/' *** ERROR W3XDMA : GRIDS NOT INITIALIZED *** '/      &
+1001 FORMAT (/' *** ERROR W3XDMA : GRIDS NOT INITIALIZED *** '/ &
          '                    RUN W3NMOD FIRST '/)
-1002 FORMAT (/' *** ERROR W3XDMA : ILLEGAL MODEL NUMBER *** '/       &
+1002 FORMAT (/' *** ERROR W3XDMA : ILLEGAL MODEL NUMBER *** '/  &
          '                    IMOD   = ',I10/                   &
          '                    NADATA = ',I10/)
 1003 FORMAT (/' *** ERROR W3XDMA : ARRAY(S) ALREADY ALLOCATED *** ')
@@ -2533,7 +2463,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -2576,7 +2505,7 @@ CONTAINS
     ! 2.  Allocate arrays
     !
 #ifdef W3_NL1
-    ALLOCATE ( WADATS(IMOD)%IP11(NSPX),        &
+    ALLOCATE ( WADATS(IMOD)%IP11(NSPX),  &
          WADATS(IMOD)%IP12(NSPX),        &
          WADATS(IMOD)%IP13(NSPX),        &
          WADATS(IMOD)%IP14(NSPX),        &
@@ -2642,9 +2571,9 @@ CONTAINS
     !
     ! Formats
     !
-1001 FORMAT (/' *** ERROR W3DMNL : GRIDS NOT INITIALIZED *** '/      &
+1001 FORMAT (/' *** ERROR W3DMNL : GRIDS NOT INITIALIZED *** '/ &
          '                    RUN W3NMOD FIRST '/)
-1002 FORMAT (/' *** ERROR W3DMNL : ILLEGAL MODEL NUMBER *** '/       &
+1002 FORMAT (/' *** ERROR W3DMNL : ILLEGAL MODEL NUMBER *** '/  &
          '                    IMOD   = ',I10/                   &
          '                    NADATA = ',I10/)
 #ifdef W3_NL1
@@ -2749,7 +2678,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -3121,9 +3049,9 @@ CONTAINS
     !
     ! Formats
     !
-1001 FORMAT (/' *** ERROR W3SETA : GRIDS NOT INITIALIZED *** '/      &
+1001 FORMAT (/' *** ERROR W3SETA : GRIDS NOT INITIALIZED *** '/ &
          '                    RUN W3NMOD FIRST '/)
-1002 FORMAT (/' *** ERROR W3SETA : ILLEGAL MODEL NUMBER *** '/       &
+1002 FORMAT (/' *** ERROR W3SETA : ILLEGAL MODEL NUMBER *** '/  &
          '                    IMOD   = ',I10/                   &
          '                    NADATA = ',I10/)
     !
@@ -3174,7 +3102,6 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -3319,9 +3246,9 @@ CONTAINS
     !
     ! Formats
     !
-1001 FORMAT (/' *** ERROR W3XETA : GRIDS NOT INITIALIZED *** '/      &
+1001 FORMAT (/' *** ERROR W3XETA : GRIDS NOT INITIALIZED *** '/ &
          '                    RUN W3NMOD FIRST '/)
-1002 FORMAT (/' *** ERROR W3XETA : ILLEGAL MODEL NUMBER *** '/       &
+1002 FORMAT (/' *** ERROR W3XETA : ILLEGAL MODEL NUMBER *** '/  &
          '                    IMOD   = ',I10/                   &
          '                    NADATA = ',I10/)
     !

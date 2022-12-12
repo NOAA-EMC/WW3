@@ -1,7 +1,7 @@
-!> @file 
+!> @file
 !> @brief The 'WAM4+' source terms based on P.A.E.M. Janssen's work, with
 !>  extensions by him and by J.-R. Bidlot.
-!> 
+!>
 !> @author F. Ardhuin
 !> @author H. L. Tolman
 !> @date   02-Sep-2012
@@ -13,7 +13,7 @@
 !>
 !> @brief The 'WAM4+' source terms based on P.A.E.M. Janssen's work, with
 !>  extensions by him and by J.-R. Bidlot.
-!> 
+!>
 !> @details Converted from the original WAM codes by F. Ardhuin,
 !>  with further extensions to adapt to a saturation-based breaking
 !>  and observation-based swell dissipation.
@@ -123,7 +123,7 @@ CONTAINS
   !> @param[in]    TAUWY   Component of wave-supported stress.
   !> @param[out]   CD      Drag coefficient at wind level ZWND.
   !> @param[out]   Z0      Corresponding z0.
-  !> @param[out]   CHARN   
+  !> @param[out]   CHARN
   !> @param[in]    LLWS    Wind sea true/false array for each component.
   !> @param[out]   FMEANWS Mean frequency of wind sea, used for tail.
   !>
@@ -353,8 +353,8 @@ CONTAINS
   !> @verbatim
   !>       WAM-4 : Janssen et al.
   !>       WAM-"4.5" : gustiness effect (Cavaleri et al. )
-  !>       SWELLF: damping coefficient (=1) for Janssen (2004) theory  
-  !> @endverbatim  
+  !>       SWELLF: damping coefficient (=1) for Janssen (2004) theory
+  !> @endverbatim
   !>
   !> @param[in]  A       Action density spectrum (1-D).
   !> @param[in]  CG      Group speed.
@@ -374,8 +374,8 @@ CONTAINS
   !> @param[out] S       Source term (1-D version).
   !> @param[out] D       Diagonal term of derivative.
   !> @param[out] LLWS    Wind sea true/false array for each component.
-  !> @param[in]  IX 
-  !> @param[in]  IY 
+  !> @param[in]  IX
+  !> @param[in]  IY
   !>
   !> @author F. Ardhuin
   !> @author H. L. Tolman
@@ -818,7 +818,7 @@ CONTAINS
   !>
   !> @author F. Ardhuin
   !> @date   17-Oct-2007
-  !>  
+  !>
   SUBROUTINE TABU_STRESS
     !/
     !/                  +-----------------------------------+
@@ -1127,7 +1127,7 @@ CONTAINS
   !> @param[in]  TAUW       Wave-supported stress.
   !> @param[out] USTAR      Friction velocity.
   !> @param[out] Z0         Air-side roughness length.
-  !> @param[out] CHARN      
+  !> @param[out] CHARN
   !>
   !> @author F. Ardhuin
   !> @date   14-Aug-2006
@@ -1226,7 +1226,6 @@ CONTAINS
     RETURN
   END SUBROUTINE CALC_USTAR
   !/ ------------------------------------------------------------------- /
-  
   !>
   !> @brief Calculate whitecapping source term and diagonal term of derivative.
   !>
@@ -1236,7 +1235,7 @@ CONTAINS
   !>
   !> @param[in] A       Action density spectrum (1-D).
   !> @param[in] K       Wavenumber for entire spectrum.
-  !> @param[in] CG     
+  !> @param[in] CG
   !> @param[in] EMEAN   Mean wave energy.
   !> @param[in] FMEAN   Mean wave frequency.
   !> @param[in] WNMEAN  Mean wavenumber.
@@ -1246,7 +1245,7 @@ CONTAINS
   !> @param[out] S      Source term (1-D version).
   !> @param[out] D      Diagonal term of derivative.
   !> @param[in] IX
-  !> @param[in] IY  
+  !> @param[in] IY
   !>
   !> @author F. Ardhuin
   !> @date   23-Jul-2009

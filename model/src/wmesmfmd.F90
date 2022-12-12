@@ -333,9 +333,9 @@ module WMESMFMD
   type(ESMF_Field), allocatable :: mdtField(:)         !< mdtField
   !/
   !/ ------------------------------------------------------------------- /
-  
+
 contains
-  
+
   !/ ------------------------------------------------------------------- /
   !/
 #undef METHOD
@@ -347,7 +347,7 @@ contains
   !> @param[out] rc    Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   subroutine SetServices ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -519,7 +519,7 @@ contains
   !> @param[out] rc  Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   subroutine InitializeP0 ( gcomp, impState, expState, extClock, rc )
     !/
     !/                  +-----------------------------------+
@@ -677,7 +677,7 @@ contains
   !> @param[out] rc  Return code.
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>  
+  !>
   subroutine InitializeP1 ( gcomp, impState, expState, extClock, rc )
     !/
     !/                  +-----------------------------------+
@@ -1775,7 +1775,7 @@ contains
   !> @param[out] rc Return code.
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>  
+  !>
   subroutine Finalize ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -2000,7 +2000,7 @@ contains
   !> @param[out] rc Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   subroutine DataInitialize ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -2223,7 +2223,7 @@ contains
   !> @param[out] rc    Return code.
   !>
   !> @author T. J. Campbell   @date 20-Jan-2017
-  !>  
+  !>
   subroutine ModelAdvance ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -2428,7 +2428,7 @@ contains
   !> @param[out] rc    Return code.
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   subroutine GetImport ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -2816,7 +2816,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>  
+  !>
   subroutine SetExport ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -3051,7 +3051,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   subroutine CreateImpGrid ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -3513,7 +3513,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   subroutine CreateExpGrid ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -4133,7 +4133,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author A. J. van der Westhuysen  @date 28-Feb-2018
-  !>  
+  !>
   subroutine CreateImpMesh ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -4549,7 +4549,7 @@ contains
   !> @param[out] rc    Return code
   !>
   !> @author A. J. van der Westhuysen  @date 28-Feb-2018
-  !>  
+  !>
   subroutine CreateExpMesh ( gcomp, rc )
     !/
     !/                  +-----------------------------------+
@@ -5069,7 +5069,7 @@ contains
   !> @param rc          Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>  
+  !>
   subroutine SetupImpBmsk( bmskField, impField, missingVal, rc )
     !/
     !/                  +-----------------------------------+
@@ -5413,7 +5413,7 @@ contains
   !> @param rc         Return code
   !>
   !> @author U. Turuncoglu  @date 18-May-2021
-  !>  
+  !>
   subroutine SetupImpMmsk( mmskField, impField, fillVal, mskCreated, rc )
     !/
     !/                  +-----------------------------------+
@@ -5552,7 +5552,7 @@ contains
   !> @param rc      Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>  
+  !>
   subroutine FieldFill(field, fillVal, rc)
     !/
     !/                  +-----------------------------------+
@@ -5687,7 +5687,7 @@ contains
   !> @author  T. J. Campbell
   !> @author  A. J. van der Westhuysen
   !> @date    20-Jan-2017
-  !>  
+  !>
   subroutine FieldGather(field, n1, n2, fout, rc)
     !/
     !/                  +-----------------------------------+
@@ -5852,7 +5852,7 @@ contains
   !> @returns  indx      Returned index of fname
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   function FieldIndex ( fnameList, fname, rc ) result (indx)
     !/
     !/                  +-----------------------------------+
@@ -5947,7 +5947,7 @@ contains
   !> @param wtime  Timers
   !>
   !> @author T. J. Campbell  @date 20-Jan-2017
-  !>  
+  !>
   subroutine PrintTimers ( cname, wtnam, wtcnt, wtime )
     !/
     !/                  +-----------------------------------+
@@ -6189,7 +6189,7 @@ contains
   !> @param rc    Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>  
+  !>
   subroutine GetEnvValue ( cenv, cval, rc )
     !/
     !/                  +-----------------------------------+
@@ -6285,7 +6285,7 @@ contains
   !> @param rc  Return code
   !>
   !> @author T. J. Campbell  @date 09-Aug-2017
-  !>  
+  !>
   subroutine GetZlevels ( rc )
     !/
     !/                  +-----------------------------------+
@@ -7227,7 +7227,7 @@ contains
   !>
   !> @author T. J. Campbell
   !> @date   09-Aug-2017
-  !>  
+  !>
   subroutine CalcStokes3D ( a, usxField, usyField, rc )
     !/
     !/                  +-----------------------------------+
@@ -7492,7 +7492,7 @@ contains
   !> @param rc       Return code
   !>
   !> @author J. Meixner  @date 29-Oct-2019
-  !>  
+  !>
   subroutine CalcPStokes ( a, p1xField, p1yField, p2xField,   &
        p2yField, p3xField, p3yField, rc )
     !/
