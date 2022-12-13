@@ -62,6 +62,8 @@ EOF
     batchq='slurm'
     hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
     hpcstackversion='hpc/1.2.0'
+    basemodcomp='intel/2022.1.2'
+    basemodmpi='impi/2022.1.2'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
     metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
@@ -135,6 +137,12 @@ EOF
   echo "  module load $modcmake"                            >> matrix.head
   echo "  module use $hpcstackpath"                         >> matrix.head
   echo "  module load $hpcstackversion"                     >> matrix.head
+  if [ ! -z $basemodcomp ]; then
+    echo "  module load $basemodcomp"                       >> matrix.head
+  fi
+  if [ ! -z $basemodmpi ]; then
+    echo "  module load $basemodmpi"                        >> matrix.head
+  fi
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
   echo "  module load $modnetcdf"                           >> matrix.head
