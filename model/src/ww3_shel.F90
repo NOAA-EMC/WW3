@@ -249,6 +249,8 @@ PROGRAM W3SHEL
   ! 10. Source code :
   !
   !/ ------------------------------------------------------------------- /
+
+  use w3servmd, only : print_memcheck
 #ifdef W3_PDLIB
   USE CONSTANTS, ONLY: LPDLIB
 #endif
@@ -261,9 +263,6 @@ PROGRAM W3SHEL
   USE W3WDATMD, ONLY: QI5TBEG
 #endif
   USE W3ADATMD, ONLY: W3NAUX, W3DIMA, W3SETA
-#ifdef W3_MEMCHECK
-  USE W3ADATMD, ONLY: MALLINFOS
-#endif
   USE W3IDATMD
 #ifdef W3_OASIS
   USE W3ODATMD, ONLY: DTOUT, FLOUT
@@ -284,9 +283,6 @@ PROGRAM W3SHEL
   USE W3IOPOMD
   USE W3SERVMD, ONLY : NEXTLN, EXTCDE
   USE W3TIMEMD
-#ifdef W3_MEMCHECK
-  USE MallocInfo_m
-#endif
 
 #ifdef W3_OASIS
   USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
@@ -377,7 +373,7 @@ PROGRAM W3SHEL
   CHARACTER(LEN=8)    :: WORDS(7)=''
 
 #ifdef W3_COU
-  CHARACTER(LEN=30)       :: OFILE
+  CHARACTER(LEN=30)   :: OFILE
 #endif
   !
   LOGICAL             :: FLLSTL, FLLSTI, FLLSTR, FLFLG, FLHOM,     &
@@ -396,6 +392,8 @@ PROGRAM W3SHEL
   LOGICAL             :: L_MASTER
   LOGICAL             :: FIRST_STEP = .TRUE.
 #endif
+  character(len=10)   :: jchar
+  integer             :: memunit
   !
   !/
   !/ ------------------------------------------------------------------- /
@@ -454,11 +452,8 @@ PROGRAM W3SHEL
   CALL W3SETO ( 1, 6, 6 )
   CALL W3SETI ( 1, 6, 6 )
 
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 1'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
+  memunit = 740+IAPROC
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 1')
   !
 #ifdef W3_SHRD
   NAPROC = 1
@@ -501,17 +496,13 @@ PROGRAM W3SHEL
   CALL MPI_COMM_RANK ( MPI_COMM, IAPROC, IERR_MPI )
   IAPROC = IAPROC + 1
 #endif
+  memunit = 740+IAPROC
   !
 #ifdef W3_NCO
   !     IF ( IAPROC .EQ. 1 ) CALL W3TAGB                         &
   !                         ('WAVEFCST',1998,0007,0050,'NP21   ')
 #endif
-
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 2')
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 1.  IO set-up
@@ -678,13 +669,7 @@ PROGRAM W3SHEL
   JFIRST=-7
 #endif
 
-
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2a'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
-
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 2a')
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 2.  Define input fields
@@ -1258,13 +1243,7 @@ PROGRAM W3SHEL
     IF (FLAGSC(1) .AND. INFLAGS1(2) .AND. .NOT. FLAGSC(2)) GOTO 2102
     IF (FLAGSC(2) .AND. INFLAGS1(1) .AND. .NOT. FLAGSC(1)) GOTO 2102
 #endif
-
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2b'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 2b')
     !
     INFLAGS1(10) = .FALSE.
 #ifdef W3_MGW
@@ -1288,7 +1267,7 @@ PROGRAM W3SHEL
          .OR. INFLAGS1(3)  .OR. INFLAGS1(4)  .OR. INFLAGS1(5)            &
          .OR. INFLAGS1(6)  .OR. INFLAGS1(7)  .OR. INFLAGS1(8)            &
          .OR. INFLAGS1(9)
-    FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)       &
+    FLHOM  = FLH(-7) .OR. FLH(-6) .OR. FLH(-5) .OR. FLH(-4)   &
          .OR. FLH(-3) .OR. FLH(-2) .OR. FLH(-1) .OR. FLH(0)   &
          .OR. FLH(1) .OR. FLH(2) .OR. FLH(3) .OR. FLH(4)      &
          .OR. FLH(5) .OR. FLH(6) .OR. FLH(10)
@@ -1308,21 +1287,12 @@ PROGRAM W3SHEL
 
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
     READ (NDSI,*) TIME0
-
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2c'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 2c')
 
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
     READ (NDSI,*) TIMEN
     !
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2d'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 2d')
 
     ! 2.3 Domain setup
 
@@ -1433,13 +1403,9 @@ PROGRAM W3SHEL
         !
         ODAT(5*(J-1)+3) = MAX ( 0 , ODAT(5*(J-1)+3) )
         !
-#ifdef W3_MEMCHECK
-        write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL NOTTYPE', J
-        call getMallocInfo(mallinfos)
-        call printMallInfo(IAPROC,mallInfos)
-#endif
+        write(jchar, '(i0)') j
+        call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL NOTTYPE '//trim(jchar))
         !
-
         ! 2.5 Output types
 
         IF ( ODAT(5*(J-1)+3) .NE. 0 ) THEN
@@ -1648,14 +1614,8 @@ PROGRAM W3SHEL
           END IF
         END DO
       END DO
-
-#ifdef W3_MEMCHECK
-      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 3'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC,mallInfos)
-#endif
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 3')
       !
-
 #ifdef W3_O7
       DO J=JFIRST, 10
         IF ( FLH(J) .AND. IAPROC.EQ.NAPOUT ) THEN
@@ -1753,13 +1713,7 @@ PROGRAM W3SHEL
     !
   END IF ! FLFLG
 
-
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 4'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
-
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 4')
 
   ! 2.2 Time setup
 
@@ -1916,11 +1870,7 @@ PROGRAM W3SHEL
     CONTINUE
   END IF
   !
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 5')
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 5.  Initializations
@@ -1965,12 +1915,7 @@ PROGRAM W3SHEL
   !        CALL EXTCDE(666)
   !      ENDIF
 
-
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 5')
   !
 #ifdef W3_TIDE
   IF (FLAGSTIDE(1)) CALL W3FLDTIDE2 ( 'READ',  NDSF(1), NDST, NDSEN, NX, NY, IDSTR(1), 1, IERR )
@@ -2019,12 +1964,7 @@ PROGRAM W3SHEL
   !        CALL FLUSH(740+IAPROC)
   !        CALL EXTCDE(666)
   !      ENDIF
-
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 6'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 6')
 
   IF ( .NOT. FLFLG ) THEN
     !
@@ -2094,20 +2034,12 @@ PROGRAM W3SHEL
        IDSTR(10), INFLAGS1(10), TG0, TGN
 #endif
   !
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 7'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
-
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 7')
 
   DO J=JFIRST,10
     !
-#ifdef W3_MEMCHECK
-    write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL UPDATE', J
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
-#endif
+    write(jchar, '(i0)') j
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL UPDATE '//trim(jchar))
 
     IF ( INFLAGS1(J) ) THEN
       !
@@ -2659,11 +2591,7 @@ PROGRAM W3SHEL
   FIRST_STEP = .FALSE.
 #endif
 
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 8'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 8')
 
   TDN = TTIME
   CALL TICK21 ( TDN, 1. )
@@ -2708,12 +2636,7 @@ PROGRAM W3SHEL
        , .TRUE., .FALSE., MPI_COMM, TIMEN                         &
 #endif
        )
-
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 9'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 9')
   !
   ! The following lines prevents us from trying to read past the end
   ! of the files. This feature existed in v3.14.
@@ -2761,11 +2684,7 @@ PROGRAM W3SHEL
   !
   ! 7.e Check times
   !
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 10'
-  call getMallocInfo(mallinfos)
-#endif
-
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 10')
 
   DTTST  = DSEC21 ( TIME0 , TIMEN )
   IF ( DTTST .GT. 0. ) GOTO 700

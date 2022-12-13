@@ -77,6 +77,10 @@ MODULE W3SERVMD
   !  7. Source code :
   !
   !/ ------------------------------------------------------------------- /
+
+  ! module default
+  implicit none
+
   PUBLIC
   !
   INTEGER, PRIVATE        :: NDSTRC = 6, NTRACE = 0
@@ -123,7 +127,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -186,7 +189,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -264,7 +266,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -317,15 +318,15 @@ CONTAINS
     ! Formats
     !
 900 FORMAT (A)
-910 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
+910 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
          '     PREMATURE END OF INPUT FILE'/)
-911 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
-         '     ERROR IN READING FROM FILE'/               &
-         '     IOSTAT =',I5,/                             &
+911 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
+         '     ERROR IN READING FROM FILE'/           &
+         '     IOSTAT =',I5,/                         &
          '     IOMSG = ',A/)
-912 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/         &
-         '     ERROR ON BACKSPACE'/                       &
-         '     IOSTAT =',I5,/                             &
+912 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
+         '     ERROR ON BACKSPACE'/                   &
+         '     IOSTAT =',I5,/                         &
          '     IOMSG = ',A/)
     !/
     !/ End of NEXTLN ----------------------------------------------------- /
@@ -377,7 +378,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -470,7 +470,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -568,7 +567,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -633,7 +631,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -706,7 +703,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -793,7 +789,6 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
@@ -897,7 +892,6 @@ CONTAINS
     !   This routine is distinct from W3ACTURN since orders spectrum as freq, dirn
     !
     ! Subroutine arguments
-    IMPLICIT NONE
     INTEGER, INTENT(IN) :: NFreq, NDirc         ! No. freq and dirn bins
     REAL,    INTENT(IN) :: Alpha                ! Turning angle (degrees)
     REAL, INTENT(INOUT) :: Spectr(NFreq,NDirc)  ! Wave spectrum in/out
@@ -986,7 +980,6 @@ CONTAINS
     !   Routine is distinct from W3SPECTN since orders spectrum as dirn, freq
     !
     ! Subroutine arguments
-    IMPLICIT NONE
     INTEGER, INTENT(IN) :: NFreq, NDirc          ! No. freq and dirn bins
     REAL,    INTENT(IN) :: Alpha                 ! Turning angle (degrees)
     REAL, INTENT(INOUT) :: Spectr(NDirc, NFreq)  ! Wave action in/out
@@ -1086,10 +1079,8 @@ CONTAINS
   !Li            Valid for 0<PHI_POLE<90 or new pole in N. hemisphere.
   !Li
   !* Arguments:--------------------------------------------------------
-  SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ,     &
-       &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
-
-    IMPLICIT NONE
+  SUBROUTINE W3LLTOEQ ( PHI, LAMBDA, PHI_EQ, LAMBDA_EQ, ANGLED, PHI_POLE, &
+       LAMBDA_POLE, POINTS )
 
     INTEGER:: POINTS    !IN  Number of points to be processed
 
@@ -1104,8 +1095,7 @@ CONTAINS
          &        PHI_EQ       !OUT Latitude in equatorial lat-lon coords
 
     ! Define local varables:-----------------------------------------------
-    REAL(KIND=8) :: A_LAMBDA, A_PHI, E_LAMBDA, E_PHI,                 &
-         SIN_PHI_POLE, COS_PHI_POLE,                       &
+    REAL(KIND=8) :: A_LAMBDA, A_PHI, E_LAMBDA, E_PHI, SIN_PHI_POLE, COS_PHI_POLE, &
          TERM1, TERM2, ARG, LAMBDA_ZERO, LAMBDA_POLE_KEEP
     INTEGER      :: I
 
@@ -1152,8 +1142,7 @@ CONTAINS
 
       ! Compute eq latitude using equation (4.4)
 
-      ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
-           &    +SIN_PHI_POLE*SIN(A_PHI)
+      ARG=-COS_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA) + SIN_PHI_POLE*SIN(A_PHI)
       ARG=MIN(ARG, 1.D0)
       ARG=MAX(ARG,-1.D0)
       E_PHI=ASIN(ARG)
@@ -1161,8 +1150,7 @@ CONTAINS
 
       ! Compute eq longitude using equation (4.6)
 
-      TERM1 = SIN_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA)   &
-           &       +COS_PHI_POLE*SIN(A_PHI)
+      TERM1 = SIN_PHI_POLE*COS(A_PHI)*COS(A_LAMBDA) + COS_PHI_POLE*SIN(A_PHI)
       TERM2 = COS(E_PHI)
       IF(TERM2 .LT. SMALL) THEN
         E_LAMBDA=0.D0
@@ -1234,8 +1222,6 @@ CONTAINS
   SUBROUTINE W3EQTOLL( PHI_EQ, LAMBDA_EQ, PHI, LAMBDA,   &
        &                 ANGLED, PHI_POLE, LAMBDA_POLE, POINTS )
 
-    IMPLICIT NONE
-
     INTEGER:: POINTS      !IN  Number of points to be processed
 
     REAL :: PHI_POLE,   & !IN  Latitude of equatorial lat-lon pole
@@ -1293,8 +1279,7 @@ CONTAINS
 
       ! Compute latitude using equation (4.7)
 
-      ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA)    &
-           &   +SIN_PHI_POLE*SIN(E_PHI)
+      ARG=COS_PHI_POLE*COS(E_PHI)*COS(E_LAMBDA) + SIN_PHI_POLE*SIN(E_PHI)
       ARG=MIN(ARG, 1.D0)
       ARG=MAX(ARG,-1.D0)
       A_PHI=ASIN(ARG)
@@ -1302,8 +1287,7 @@ CONTAINS
 
       ! Compute longitude using equation (4.8)
 
-      TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA)   &
-           &       -SIN(E_PHI)*COS_PHI_POLE
+      TERM1 = COS(E_PHI)*SIN_PHI_POLE*COS(E_LAMBDA) - SIN(E_PHI)*COS_PHI_POLE
       TERM2 = COS(A_PHI)
       IF(TERM2.LT.SMALL) THEN
         A_LAMBDA=0.D0
@@ -1365,7 +1349,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY : DERA, TPI, UNDEF
-    IMPLICIT NONE
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1420,7 +1403,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY : DERA, TPI, UNDEF
-    IMPLICIT NONE
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1441,10 +1423,8 @@ CONTAINS
     DO ISEA=1, NSEA
       IF (( XVEC(ISEA) .NE. UNDEF ) .AND. &
            ( YVEC(ISEA) .NE. UNDEF )) THEN
-        XVTMP = XVEC(ISEA)*COS(AnglD(ISEA)*DERA) + &
-             YVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
-        YVTMP = YVEC(ISEA)*COS(AnglD(ISEA)*DERA) - &
-             XVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
+        XVTMP = XVEC(ISEA)*COS(AnglD(ISEA)*DERA) + YVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
+        YVTMP = YVEC(ISEA)*COS(AnglD(ISEA)*DERA) - XVEC(ISEA)*SIN(AnglD(ISEA)*DERA)
         XVEC(ISEA) = XVTMP
         YVEC(ISEA) = YVTMP
       END IF
@@ -1483,11 +1463,6 @@ CONTAINS
     !       TAB      Str   O   Array of strings
     !     ----------------------------------------------------------------
     !
-
-    IMPLICIT NONE
-
-
-
     CHARACTER(LEN=*), intent(IN)         :: STRING
     CHARACTER(LEN=100), intent(INOUT)    :: TAB(*)
     INTEGER                              :: cnt, I
@@ -1863,7 +1838,6 @@ CONTAINS
   !*********************************************************************
   SUBROUTINE DIAGONALIZE(a1,d,v,nrot)
     !*********************************************************************
-    IMPLICIT NONE
     INTEGER,                          INTENT(out)   :: nrot
     DOUBLE PRECISION, DIMENSION(:)  , INTENT(OUT)   ::d
     DOUBLE PRECISION, DIMENSION(:,:), INTENT(IN)    ::a1  ! Modified from INOUT to IN by F.A. on 2018/01/21
@@ -1984,8 +1958,6 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: RADE, UNDEF
-    IMPLICIT NONE
-
     REAL, INTENT(INOUT)             :: U(NSEA), V(NSEA)
     INTEGER, INTENT(IN)             :: NSEA
     REAL, INTENT(OUT), OPTIONAL     :: MAG(NSEA), DIR(NSEA)
@@ -2045,6 +2017,34 @@ CONTAINS
     ENDIF
 
   END SUBROUTINE UV_TO_MAG_DIR
+
+  !========================================================================
+  !> Write memory statistics if requested
+  !!
+  !> @details Writes a single line of memory statistics
+  !!
+  !! @param[in]   iun               unit number
+  !! @param[in]   msg               message
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 06-01-2022
+
+  subroutine print_memcheck(iun, msg)
+#ifdef W3_MEMCHECK
+    USE MallocInfo_m
+#endif
+    integer          , intent(in) :: iun
+    character(len=*) , intent(in) :: msg
+
+#ifdef W3_MEMCHECK
+    ! local variables
+    type(MallInfo_t)        :: mallinfos
+
+    write(iun,*) trim(msg)
+    call getMallocInfo(mallinfos)
+    call printMallInfo(iun, mallInfos)
+#endif
+  end subroutine print_memcheck
   !/
   !/ End of module W3SERVMD -------------------------------------------- /
   !/
