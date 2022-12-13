@@ -60,7 +60,7 @@ EOF
   then
     # If no other h, assuming Hera
     batchq='slurm'
-    hpcstackpath='/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack'
+    hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
     hpcstackversion='hpc/1.2.0'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
