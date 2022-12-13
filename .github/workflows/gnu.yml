@@ -1,5 +1,5 @@
 name: GNU Linux Build
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 # Cancel in-progress workflows when pushing to a branch
 concurrency:
