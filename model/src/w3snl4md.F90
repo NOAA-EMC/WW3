@@ -1446,26 +1446,26 @@ CONTAINS
   !>
   !> @brief This routine sets up the geometric part of the Boltzmann integral.
   !>
-  !> @details This routine sets up the geometric part of the Boltzmann integral        !
-  !>  based on a grid of wave frequencies and directions, with wave-           !
-  !>  numbers related to frequency and depth by linear dispersion.  It         !
-  !>  is adapted from Don's original code with changes to modify the           !
-  !>  indexing so there are fewer unused elements, and a number of algo-       !
-  !>  rithmic changes that are mathematically equivalent to Don's but          !
-  !>  take advantage of intrinsic functions to form smooth results with        !
-  !>  less reliance on if statements.                                          !
-  !>                                                                             !
-  !>  It calls locus-solving routines shloxr and shlocr and coupling           !
-  !>  coefficient routine cplshr.  If shlocr does not converge, ierr_gr        !
-  !>  will be something other than 0 and the routine will terminate,           !
-  !>  returning ierr_gr to the calling program (see shlocr).                   !
-  !>                                                                             !
-  !>  It returns array grad(,,), which is an estimate of the product           !
-  !>  C(k1,k2,k3,k4)*H(k1,k3,k4)*ds/|dW/dn| (where n and the k's are all       !
-  !>  vectors) as given, for example, by Eq.(7) of 'Nonlinear energy           !
-  !>  fluxes and the finite depth equilibrium range in wave spectra,'          !
-  !>  by Resio, Pihl, Tracy and Vincent (2001, JGR, 106(C4), p. 6985),         !
-  !>  as well as arrays for indexing, interpolating and weighting locus-       !
+  !> @details This routine sets up the geometric part of the Boltzmann integral
+  !>  based on a grid of wave frequencies and directions, with wave-
+  !>  numbers related to frequency and depth by linear dispersion.  It
+  !>  is adapted from Don's original code with changes to modify the
+  !>  indexing so there are fewer unused elements, and a number of algo-
+  !>  rithmic changes that are mathematically equivalent to Don's but
+  !>  take advantage of intrinsic functions to form smooth results with
+  !>  less reliance on if statements.
+  !>
+  !>  It calls locus-solving routines shloxr and shlocr and coupling
+  !>  coefficient routine cplshr.  If shlocr does not converge, ierr_gr
+  !>  will be something other than 0 and the routine will terminate,
+  !>  returning ierr_gr to the calling program (see shlocr).
+  !>
+  !>  It returns array grad(,,), which is an estimate of the product
+  !>  C(k1,k2,k3,k4)*H(k1,k3,k4)*ds/|dW/dn| (where n and the k's are all
+  !>  vectors) as given, for example, by Eq.(7) of 'Nonlinear energy
+  !>  fluxes and the finite depth equilibrium range in wave spectra,'
+  !>  by Resio, Pihl, Tracy and Vincent (2001, JGR, 106(C4), p. 6985),
+  !>  as well as arrays for indexing, interpolating and weighting locus-
   !>  based wavenumber vectors within the discrete solution grid.
   !>
   !> @param[in] dep      Depth (m)
