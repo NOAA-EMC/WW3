@@ -1,5 +1,5 @@
 name: GNU Linux Build
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 # Cancel in-progress workflows when pushing to a branch
 concurrency:
@@ -19,7 +19,7 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout-ww3
@@ -37,19 +37,20 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_gnu.yaml') }}
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
+          sudo apt install cmake
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
-          spack env create ww3-gnu ww3/model/ci/spack.yaml
+          spack env create ww3-gnu ww3/model/ci/spack_gnu.yaml
           spack env activate ww3-gnu
           spack compiler find
-          spack external find
+          spack external find cmake
           spack add mpich@3.4.2
           spack concretize
           spack install --dirty -v
@@ -72,7 +73,7 @@ jobs:
     strategy:
       matrix:
         switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout-ww3
@@ -88,7 +89,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_gnu.yaml') }}
 
       - name: build-ww3
         run: |

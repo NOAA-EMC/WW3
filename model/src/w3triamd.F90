@@ -1,10 +1,10 @@
-!> @file 
+!> @file
 !> @brief Reads triangle and unstructured grid information.
-!> 
+!>
 !> @author F. Ardhuin
 !> @author A. Roland
 !> @date   26-Jan-2014
-!> 
+!>
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
@@ -13,7 +13,7 @@
 !> @brief Reads triangle and unstructured grid information.
 !>
 !> @details Look for namelist with name NAME in unit NDS and read if found.
-!> 
+!>
 !> @author F. Ardhuin
 !> @author A. Roland
 !> @date   26-Jan-2014
@@ -382,8 +382,8 @@ CONTAINS
   !> @param[in] NDS    Data set number used for search.
   !> @param[in] FNAME  Name of namelist.
   !>
-  !> @author 
-  !> @date 
+  !> @author
+  !> @date
   !>
   SUBROUTINE READMSH_IOBP(NDS,FNAME)
     !/ -------------------------------------------------------------------
@@ -506,7 +506,7 @@ CONTAINS
   !> @author Mathieu Dutour-Sikiric
   !> @author Aron Roland
   !> @date   01-May-2018
-  !>  
+  !>
   SUBROUTINE GET_BOUNDARY_STATUS(STATUS)
     !/
     !/                  +-----------------------------------+
@@ -787,12 +787,12 @@ CONTAINS
   !> @details A boundary node has more node around it than triangles.
   !>
   !> @param[inout] TMPSTA  Status map to be updated (for OBC, TMPSTA = 2).
-  !> @param[in]    ZBIN    
-  !> @param[in]    ZLIM    
+  !> @param[in]    ZBIN
+  !> @param[in]    ZLIM
   !>
   !> @author F. Ardhuin
   !> @date   30-Aug-2012
-  !>  
+  !>
   SUBROUTINE UG_GETOPENBOUNDARY(TMPSTA,ZBIN,ZLIM)
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1002,7 +1002,7 @@ CONTAINS
   !>
   !> @author A. Roland
   !> @date   15-May-2008
-  !>  
+  !>
   SUBROUTINE NVECTRI
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -1587,14 +1587,14 @@ CONTAINS
   END SUBROUTINE AREA_SI
 
   !>
-  !> @brief Determine whether a point is inside or outside an 
-  !>  unstructured grid, and returns index of triangle and 
+  !> @brief Determine whether a point is inside or outside an
+  !>  unstructured grid, and returns index of triangle and
   !>  interpolation weights.
   !>
   !> @details This is the analogue for triangles of the FUNCTION W3GRMP.
   !>
-  !>  Using barycentric coordinates defined as the ratio of triangle 
-  !>  algebric areas which are positive or negative.  Computes the 3 
+  !>  Using barycentric coordinates defined as the ratio of triangle
+  !>  algebric areas which are positive or negative.  Computes the 3
   !>  interpolation weights for each triangle until they are all positive.
   !>
   !> @param[in]  IMOD   Model number to point to.
@@ -1609,7 +1609,7 @@ CONTAINS
   !> @author Aron Roland, Z&P
   !> @author Fabrice Ardhuin
   !> @date   26-Jan-2014
-  !>  
+  !>
   SUBROUTINE IS_IN_UNGRID(IMOD, XTIN, YTIN, ITOUT, IS, JS, RW)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -1788,21 +1788,21 @@ CONTAINS
   !/ -------------------------------------------------------------------
 
   !>
-  !> @brief Determine whether a point is inside or outside an 
-  !>  unstructured grid, and returns index of triangle and 
+  !> @brief Determine whether a point is inside or outside an
+  !>  unstructured grid, and returns index of triangle and
   !>  interpolation weights.
   !>
   !> @details This is the analogue for triangles of the FUNCTION W3GRMP.
   !>
-  !>  Using barycentric coordinates defined as the ratio of triangle 
-  !>  algebric areas which are positive or negative.  Computes the 3 
+  !>  Using barycentric coordinates defined as the ratio of triangle
+  !>  algebric areas which are positive or negative.  Computes the 3
   !>  interpolation weights for each triangle until they are all positive.
   !>
   !> @param[in]  IMOD   Model number to point to.
   !> @param[in]  XTIN   X-coordinate of target point.
   !> @param[in]  YTIN   Y-coordinate of target point.
   !> @param[in]  FORCE
-  !> @param[out] ITOUT  Model number to point to.  
+  !> @param[out] ITOUT  Model number to point to.
   !> @param[out] IS     I indices of vertices of enclosing grid cell.
   !> @param[out] JS     J indices of vertices of enclosing grid cell.
   !> @param[out] RW     Array of interpolation weights.
@@ -1811,7 +1811,7 @@ CONTAINS
   !> @author Aron Roland, Z&P
   !> @author Fabrice Ardhuin
   !> @date   26-Jan-2014
-  !>    
+  !>
   SUBROUTINE IS_IN_UNGRID2(IMOD, XTIN, YTIN, FORCE, ITOUT, IS, JS, RW)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -2036,14 +2036,14 @@ CONTAINS
   !> @details Using linear shape function this is a basis on which
   !>  all advection schemes in Roland (2008) are checked.
   !>
-  !> @param[in]  PARAM  Depth or current field (indices 0 to NSEA). 
+  !> @param[in]  PARAM  Depth or current field (indices 0 to NSEA).
   !> @param[out] DIFFX  X gradient (indices 1 to NX).
   !> @param[out] DIFFY  Y gradient (indices 1 to NY).
   !>
   !> @author F. Ardhuin
   !> @author A. Roland
   !> @date   14-Oct-2013
-  !>  
+  !>
   SUBROUTINE UG_GRADIENTS (PARAM, DIFFX, DIFFY)
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2182,7 +2182,7 @@ CONTAINS
   !>
   !> @brief UGTYPE nesting initialization.
   !>
-  !> @param[in]    DISTMIN 
+  !> @param[in]    DISTMIN
   !> @param[inout] FLOK
   !>
   !> @author Aron Roland
@@ -2317,8 +2317,8 @@ CONTAINS
   !>
   !> @brief Setup boundary pointer.
   !>
-  !> @param[inout] MASK 
-  !> @param[inout] STATUS 
+  !> @param[inout] MASK
+  !> @param[inout] STATUS
   !>
   !> @author Aron Roland
   !> @author Mathiew Dutour-Sikiric
@@ -2928,7 +2928,7 @@ CONTAINS
   !> @author Fabrice Ardhuin
   !> @author Aron Roland
   !> @date   17-Apr-2016
-  !>  
+  !>
   SUBROUTINE SET_UG_IOBP()
     !/
     !/                  +-----------------------------------+

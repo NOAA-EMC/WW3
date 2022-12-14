@@ -1312,7 +1312,7 @@ end subroutine check
 !>
 !> @brief N/A
 !>
-!> @param longitude 
+!> @param longitude
 !> @param latitude
 !> @param hs
 !> @param tp

@@ -1,11 +1,11 @@
-!> @file 
+!> @file
 !> @brief Observation-based wind input and dissipation after Donelan et al (2006),
 !>  and Babanin et al. (2010).
 !>
 !> @author S. Zieger
 !> @author Q. Liu
 !> @date   26-Jun-2018
-!> 
+!>
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
@@ -260,7 +260,7 @@ CONTAINS
   !>
   !> @brief Observation-based source term for wind input.
   !>
-  !> @details After Donelan, Babanin, Young and Banner (Donelan et al ,2006) 
+  !> @details After Donelan, Babanin, Young and Banner (Donelan et al ,2006)
   !>  following the implementation by Rogers et al. (2012).
   !>
   !>      References:
@@ -522,9 +522,9 @@ CONTAINS
   !>
   !> @brief Observation-based source term for dissipation.
   !>
-  !> @details After Babanin et al. (2010) following the implementation by 
-  !>  Rogers et al. (2012). The dissipation function Sds accommodates an 
-  !>  inherent breaking term T1 and an additional cumulative term T2 at 
+  !> @details After Babanin et al. (2010) following the implementation by
+  !>  Rogers et al. (2012). The dissipation function Sds accommodates an
+  !>  inherent breaking term T1 and an additional cumulative term T2 at
   !>  all frequencies above the peak. The forced dissipation term T2 is
   !>  an integral that grows toward higher frequencies and dominates at
   !>  smaller scales (Babanin et al. 2010).
@@ -542,7 +542,7 @@ CONTAINS
   !> @author S. Zieger
   !> @author Q. Liu
   !> @date   26-Jun-2018
-  !>  
+  !>
   SUBROUTINE W3SDS6 (A, CG, WN, S, D)
     !/
     !/                  +-----------------------------------+
@@ -1254,7 +1254,7 @@ CONTAINS
   !>                            / FRMAX
   !>      tau = g * rho_water * | Sin(f)/C(f) df
   !>                            /
-  !> @endverbatim  
+  !> @endverbatim
   !>
   !> @param    SDENSIG    Sin(sigma) in (m2/rad-Hz).
   !> @param    CINV       Inverse phase speed.

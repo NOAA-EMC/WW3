@@ -1,16 +1,10 @@
 name: Intel Linux Build
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 # Cancel in-progress workflows when pushing to a branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
-# Use custom shell with -l so .bash_profile is sourced which loads intel/oneapi/setvars.sh
-# without having to do it in manually every step
-defaults:
-  run:
-    shell: bash -leo pipefail {0}
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
@@ -22,7 +16,7 @@ env:
   I_MPI_F90: ifort
 
 # Split into a dependency build step, and a WW3 build step which
-# builds multiple switches in a matrix. The setup is run once and
+# builds multiple switches in a matrix. The setup is run once and 
 # the environment is cached so each build of WW3 can share the dependencies.
 
 jobs:
@@ -48,7 +42,7 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_intel.yaml') }}
 
       - name: install-intel-compilers
         if: steps.cache-env.outputs.cache-hit != 'true'
@@ -57,27 +51,31 @@ jobs:
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
-          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
+          sudo apt-get install intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
+          . /opt/intel/oneapi/setvars.sh
+          sudo mv /usr/local /usrlocal_renamed
+          sudo apt install cmake
           git clone -c feature.manyFiles=true https://github.com/spack/spack.git
           source spack/share/spack/setup-env.sh
-          spack env create ww3-intel ww3/model/ci/spack.yaml
+          ln -s $(realpath $(which gcc)) spack/lib/spack/env/intel/gcc # spack/make bug in ESMF
+          spack env create ww3-intel ww3/model/ci/spack_intel.yaml
           spack env activate ww3-intel
           spack compiler find
-          spack external find
+          spack external find cmake
           spack add intel-oneapi-mpi
           spack concretize
-          spack install --dirty -v
+          spack install --dirty -v --fail-fast
 
       - name: build-oasis
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
+          . /opt/intel/oneapi/setvars.sh
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
@@ -101,10 +99,6 @@ jobs:
         with:
             path: ww3
 
-      - name: install-intel
-        run: |
-          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
-
       - name: cache-env
         id: cache-env
         uses: actions/cache@v2
@@ -114,10 +108,11 @@ jobs:
             ~/.spack
             work_oasis3-mct
             /opt/intel
-          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack.yaml') }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_intel.yaml') }}
 
       - name: build-ww3
         run: |
+          . /opt/intel/oneapi/setvars.sh
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           cd ww3

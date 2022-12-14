@@ -1,9 +1,9 @@
-!> @file 
+!> @file
 !> @brief Post-processing of grid output.
-!> 
+!>
 !> @author H. L. Tolman
 !> @date   22-Mar-2021
-!> 
+!>
 
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
@@ -26,7 +26,7 @@
 !>
 !> @author H. L. Tolman
 !> @date   22-Mar-2021
-!> 
+!>
 !> @copyright Copyright 2009-2022 National Weather Service (NWS),
 !>       National Oceanic and Atmospheric Administration.  All rights
 !>       reserved.  WAVEWATCH III is a trademark of the NWS.
@@ -542,7 +542,7 @@ CONTAINS
 !>
 !> @author H. L. Tolman
 !> @date   22-Mar-2021
-!>  
+!>
   SUBROUTINE W3EXGO ( NX, NY, NSEA )
     !/
     !/                  +-----------------------------------+

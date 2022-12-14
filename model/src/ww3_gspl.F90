@@ -2631,7 +2631,7 @@ CONTAINS
   !> @brief Subroutine called when lowest grid size is stuck.
   !>
   !> @details Attempting to join to neighbor grid, otherwise mark
-  !>  as a accepted small grid. note that a small grid does not 
+  !>  as a accepted small grid. note that a small grid does not
   !>  influence parallel scaling like a big grid does .....
   !>
   !> @author H. L. Tolman  @date  04-Feb-2013

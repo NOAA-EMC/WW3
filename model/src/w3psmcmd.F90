@@ -1104,9 +1104,9 @@ CONTAINS
     REAL       :: FGC, FKD, FKS, FRK(NK), FRG(NK), DDNorm(NTH),     &
          FKC(NTH), VQ(NSPEC), VCFLT(NSPEC), DEPTH30,       &
          DB(0:NK+1), DM(-1:NK+1), CFLK(NTH,0:NK),          &
-                                !Li   For new refraction scheme using Cg.  JGLi26Jul2011
-                                !                   DPH2K(0:NK+1), SNH2K(0:NK+1)
-                                !Li   For old refraction scheme using phase speed.  JGLi26Jul2011
+         !Li   For new refraction scheme using Cg.  JGLi26Jul2011
+         !                   DPH2K(0:NK+1), SNH2K(0:NK+1)
+         !Li   For old refraction scheme using phase speed.  JGLi26Jul2011
          SIGSNH(0:NK+1)
     !/
     !/ ------------------------------------------------------------------- /
@@ -1180,9 +1180,9 @@ CONTAINS
           !Li   Apply depth gradient limited refraction, current and GCT term
           VCFLT(ISP)=FRG(IK)*ECOS(ITH) + FKC(ITH) +          &
                SIGN( MIN(ABS(FRK(IK)*DDNorm(ITH)), ALFLMT(ITH)),  &
-                                !Li   For new refraction scheme using Cg.  JGLi26Jul2011
-                                !                             FRK(IK)*DDNorm(ITH) )
-                                !Li   For old refraction scheme using phase speed.  JGLi26Jul2011
+               !Li   For new refraction scheme using Cg.  JGLi26Jul2011
+               !                             FRK(IK)*DDNorm(ITH) )
+               !Li   For old refraction scheme using phase speed.  JGLi26Jul2011
                DDNorm(ITH) )
         END DO
       END DO
