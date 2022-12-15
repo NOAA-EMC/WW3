@@ -1442,8 +1442,13 @@ CONTAINS
 #endif
     INTEGER ISEA, JSEA, Status(NX), rStatus(NX)
     INTEGER IPROC, I, ierr, IP, IX, IP_glob
+#ifdef W3_PDLIB
     REAL(rkind), intent(inout) :: TheVar(NX)
     REAL(rkind) ::  rVect(NX)
+#else
+    DOUBLE PRECISION, intent(inout) :: TheVar(NX)
+    DOUBLE PRECISION                ::  rVect(NX)
+#endif
     Status=0
 #ifdef W3_S
     CALL STRACE (IENT, 'SYNCHRONIZE_GLOBAL_ARRAY')

@@ -60,8 +60,8 @@ MODULE W3OACPMD
   !
   USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
   USE MPI, only : MPI_SUM, MPI_INT
+  USE W3PARALL, ONLY : INIT_GET_ISEA
 #ifdef W3_PDLIB
-    USE W3PARALL, ONLY : INIT_GET_ISEA
     USE YOWNODEPOOL, only: npa, np, iplg
 #endif
 
@@ -500,6 +500,7 @@ CONTAINS
       !
       ! 1.3. Unstructured grids
       ! ----------------------------------
+#ifdef W3_PDLIB
       IPART = 3
       IF (IPART == 3) THEN
       ! * allocate : OASIS ORANGE partition
@@ -523,6 +524,31 @@ CONTAINS
           CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
         ENDDO
       ENDIF
+#else
+      IPART = 3
+      IF (IPART == 3) THEN
+      ! * allocate : OASIS ORANGE partition
+        ALLOCATE(ILA_PARAL(2+NSEAL*2))
+      ! * Define the partition : OASIS ORANGE partition
+        ILA_PARAL(1) = 3
+      ! * total number of segments of the global domain
+        ILA_PARAL(2) = NSEAL
+        DO JSEA = 1, NSEAL
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA*2+1),JSEA)
+          ILA_PARAL(JSEA*2+2) = 1
+        END DO
+      ELSE IF (IPART == 4) THEN
+      ! * allocate : OASIS POINT partition
+        ALLOCATE(ILA_PARAL(2+NSEAL))
+      ! * Define the partition : OASIS POINTS partition
+        ILA_PARAL(1) = 4
+      ! * total number of segments of the global domain
+        ILA_PARAL(2) = NSEAL
+        DO JSEA = 1, NSEAL
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
+        ENDDO
+      ENDIF
+#endif
       !
     ENDIF
 
@@ -747,9 +773,9 @@ CONTAINS
     !/ Executable part
     !/
 
+#ifdef W3_PDLIB
     NPSUM = 0
     CALL MPI_ALLREDUCE(NP, NPSUM, 1, MPI_INT, MPI_SUM, MPI_COMM_WAVE, IERR_MPI)
-
     WRITE(4000+IAPROC,*) 'ID_NB', ID_NB
     WRITE(4000+IAPROC,*) 'RCV_fld(ID_NB)%IL_FIELD_ID', RCV_fld(ID_NB)%IL_FIELD_ID
     WRITE(4000+IAPROC,*) 'ID_TIME', ID_TIME
@@ -759,6 +785,7 @@ CONTAINS
     WRITE(4000+IAPROC,*) 'SIZE(RDA_FIELD)', SIZE(RDA_FIELD), NP, NPA
     WRITE(4000+IAPROC,*) 'RDA_FIELD', RDA_FIELD
     CALL FLUSH(4000+IAPROC)
+#endif
 
     CALL OASIS_GET ( RCV_fld(ID_NB)%IL_FIELD_ID &
          &              , ID_TIME                    &

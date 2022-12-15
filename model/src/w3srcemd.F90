@@ -509,7 +509,6 @@ CONTAINS
     USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, B_JGS_LIMITER
     USE W3WDATMD, ONLY: VA
     USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM, LSLOC
-    USE W3TRIAMD, ONLY: get_interface 
 #endif
     !/
     IMPLICIT NONE
@@ -1287,7 +1286,11 @@ CONTAINS
           JAC      = CG1(IK)/CLATSL 
           JAC2     = 1./TPI/SIG(IK)
           FRLOCAL  = SIG(IK)*TPIINV
+#ifdef W3_ST6
+          DAM2(1+(IK-1)*NTH) = 5E-7 * GRAV/FRLOCAL**4 * USTAR * FMEAN * DTMIN * JAC * JAC2
+#else
           DAM2(1+(IK-1)*NTH) = 5E-7 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTMIN * JAC * JAC2
+#endif
           !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
         END DO
         DO IK=1, NK

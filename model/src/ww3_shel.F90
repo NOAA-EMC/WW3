@@ -500,11 +500,6 @@ PROGRAM W3SHEL
   !                         ('WAVEFCST',1998,0007,0050,'NP21   ')
 #endif
 
-#ifdef W3_MEMCHECK
-  write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
-#endif
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 1.  IO set-up
@@ -1260,7 +1255,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
     write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2b'
     call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
+    call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
     !
@@ -1310,7 +1305,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
     write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2c'
     call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
+    call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -1319,7 +1314,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
     write(100000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 2d'
     call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
+    call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
     ! 2.3 Domain setup
@@ -1441,7 +1436,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
       write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL NOTTYPE', J
       call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC,mallInfos)
+      call printMallInfo(10000+IAPROC,mallInfos)
 #endif
         !
 
@@ -1667,9 +1662,9 @@ PROGRAM W3SHEL
       END DO
 
 #ifdef W3_MEMCHECK
-      write(740+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 3'
+      write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 3'
       call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC,mallInfos)
+      call printMallInfo(10000+IAPROC,mallInfos)
 #endif
       !
 
@@ -1946,7 +1941,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
   call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
+  call printMallInfo(10000+IAPROC,mallInfos)
 #endif
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1996,7 +1991,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
   call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
+  call printMallInfo(10000+IAPROC,mallInfos)
 #endif
   !
 #ifdef W3_TIDE
@@ -2054,7 +2049,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 6'
   call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
+  call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
   IF ( .NOT. FLFLG ) THEN
@@ -2140,7 +2135,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 7'
   call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
+  call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
 
@@ -2656,14 +2651,12 @@ PROGRAM W3SHEL
 #ifdef W3_MPI
   CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
   WRITE(*,*) 'WW3_SHEL - AFTER W3FLD'
-  STOP 'STOP STOP STOP - AFTER W3FLD'
 #endif
-
 
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 8'
   call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
+  call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
   TDN = TTIME
@@ -2713,7 +2706,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 9'
   call getMallocInfo(mallinfos)
-  call printMallInfo(IAPROC,mallInfos)
+  call printMallInfo(10000+IAPROC,mallInfos)
 #endif
   !
   ! The following lines prevents us from trying to read past the end
@@ -2765,6 +2758,7 @@ PROGRAM W3SHEL
 #ifdef W3_MEMCHECK
   write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 10'
   call getMallocInfo(mallinfos)
+  call printMallInfo(10000+IAPROC,mallInfos)
 #endif
 
 

@@ -364,7 +364,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     write(740+IAPROC,*) 'memcheck_____:', 'WIOGR SECTION 1'
     call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC,mallInfos)
+    call printMallInfo(740+IAPROC,mallInfos)
 #endif
 
 

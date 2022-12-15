@@ -5812,7 +5812,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
     USE W3ADATMD, only: MALLINFOS
 #endif
-    USE W3GDATMD, only: NSEA, SIG, FACP
+    USE W3GDATMD, only: NSEA, SIG, FACP, FLSOU
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
     USE W3GDATMD, only: NK, NK2, NTH, ECOS, ESIN, NSPEC, MAPFS, NSEA, SIG
     USE W3WDATMD, only: TIME
@@ -5832,7 +5832,9 @@ CONTAINS
     USE yowNodepool, only: np_global
     USE W3DISPMD, only : WAVNU_LOCAL
     USE W3ADATMD, ONLY: U10, U10D
+#ifdef W3_ST4
     USE W3SRC4MD, only: W3SPR4
+#endif
 #ifdef W3_REF1
       USE W3GDATMD, only: REFPARS
 #endif
@@ -6629,12 +6631,14 @@ CONTAINS
       WRITE(740+IAPROC,*) 'SumACout=', SumACout
 #endif
 
+      IF (FLSOU) THEN
        IF (B_JGS_LIMITER) THEN
 
          DO ISP=1,NSPEC
            IK   = 1 + (ISP-1)/NTH
            SPEC(ISP) = VAOLD(ISP,JSEA)
          ENDDO
+#ifdef W3_ST4
          CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
                    AMAX, U10(ISEA), U10D(ISEA),                           &
 #ifdef W3_FLX5
@@ -6642,6 +6646,7 @@ CONTAINS
 #endif
                   USTAR, USTDIR,                                  &
                   TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+#endif
 
          DAM = 0.
          DO IK=1, NK
@@ -6652,36 +6657,36 @@ CONTAINS
            IS0    = (IK-1)*NTH
            DO ITH=2, NTH
              DAM(ITH+IS0) = DAM(1+IS0)
-            END DO
-          END DO
+           END DO
+         END DO
 
-          DAM2 = 0.
-          DO IK=1, NK
-            JAC2     = 1./TPI/SIG(IK)
-            FRLOCAL  = SIG(IK)*TPIINV
-            DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
-            !IF (ISEA == 90) WRITE(*,*) 'LIMITER', JSEA, ISEA, IK, USTAR, MAX(FMEANWS,FMEAN), JAC2, DTG, SUM(VA(:,JSEA)), SUM(VAOLD(:,JSEA))
-            !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
-          END DO
-          DO IK=1, NK
-            IS0  = (IK-1)*NTH
-            DO ITH=2, NTH
-              DAM2(ITH+IS0) = DAM2(1+IS0)
-            END DO
-          END DO
+         DAM2 = 0.
+         DO IK=1, NK
+           JAC2     = 1./TPI/SIG(IK)
+           FRLOCAL  = SIG(IK)*TPIINV
+           DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
+           !IF (ISEA == 90) WRITE(*,*) 'LIMITER', JSEA, ISEA, IK, USTAR, MAX(FMEANWS,FMEAN), JAC2, DTG, SUM(VA(:,JSEA)), SUM(VAOLD(:,JSEA))
+           !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
+         END DO
+         DO IK=1, NK
+           IS0  = (IK-1)*NTH
+           DO ITH=2, NTH
+             DAM2(ITH+IS0) = DAM2(1+IS0)
+           END DO
+         END DO
 
-        DO IK = 1, NK
-          DO ITH = 1, NTH
-            ISP = ITH + (IK-1)*NTH
-            newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
-            maxdac     = max(DAM(ISP),DAM2(ISP))
+         DO IK = 1, NK
+           DO ITH = 1, NTH
+             ISP = ITH + (IK-1)*NTH
+             newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
+             maxdac     = max(DAM(ISP),DAM2(ISP))
             !IF (ISEA == 90) WRITe(*,*) 'TEST NON SPLIT', ISEA, JSEA, ISP, DAM(ISP), DAM2(ISP), VA(ISP,JSEA), VAOLD(ISP,JSEA)
-            NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
-            VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
-          ENDDO 
-        ENDDO
-
+             NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
+             VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
+           ENDDO 
+         ENDDO
         ENDIF ! B_JGS_LIMITER
+      ENDIF  ! FLSOU
     END DO ! JSEA
 
 #ifdef WEIGHTS

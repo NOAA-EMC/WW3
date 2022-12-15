@@ -2099,7 +2099,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
               write(40000+IAPROC,*) 'memcheck_____:', 'WW3_WAVE TIME LOOP 17'
               call getMallocInfo(mallinfos)
-              call printMallInfo(IAPROC+40000,mallInfos)
+              call printMallInfo(40000+IAPROC,mallInfos)
 #endif
               !
               !Li   Initialise IK IX IY in case ARC option is not used to avoid warnings.
@@ -2927,7 +2927,7 @@ CONTAINS
 #ifdef W3_MEMCHECK
         write(40000+IAPROC,*) 'memcheck_____:', 'WW3_WAVE AFTER TIME LOOP 3'
         call getMallocInfo(mallinfos)
-        call printMallInfo(IAPROC,mallInfos)
+        call printMallInfo(40000+IAPROC,mallInfos)
 #endif
 
         !
