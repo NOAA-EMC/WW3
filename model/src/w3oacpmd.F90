@@ -501,7 +501,7 @@ CONTAINS
       ! 1.3. Unstructured grids
       ! ----------------------------------
 #ifdef W3_PDLIB
-      IPART = 3
+      IPART = 3 
       IF (IPART == 3) THEN
       ! * allocate : OASIS ORANGE partition
         ALLOCATE(ILA_PARAL(2+NP*2))
@@ -553,7 +553,7 @@ CONTAINS
     ENDIF
 
     CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'MPI BARRIER BEFORE OASIS_DEF_PARTITION'
+    WRITE(*,*) 'W3OACPMD - MPI BARRIER BEFORE OASIS_DEF_PARTITION'
     !
     ! 2. Partition definition
     ! ----------------------------------
@@ -563,7 +563,7 @@ CONTAINS
     ENDIF
 
     CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'MPI BARRIER AFTER OASIS_DEF_PARTITION'
+    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER OASIS_DEF_PARTITION'
 
     !
     ! 3. Coupling fields declaration
@@ -580,7 +580,7 @@ CONTAINS
     CALL GET_LIST_EXCH_FIELD(NDSO, RCV_FLD, SND_FLD, IL_NB_RCV, IL_NB_SND, RCV_STR, SND_STR)
 
     CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'MPI BARRIER AFTER GET_LIST_EXCH_FIELD'
+    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER GET_LIST_EXCH_FIELD'
     !
     ! 3.1 Send coupling fields
     ! ----------------------------------
@@ -756,6 +756,7 @@ CONTAINS
     !/ Parameter list
     !/
     USE W3ADATMD, ONLY: MPI_COMM_WAVE
+    USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
     USE W3GDATMD, ONLY: NSEAL, NSEA, NX
     IMPLICIT NONE
     INTEGER, INTENT(IN)   :: ID_NB                          ! Number of the field to be received
@@ -774,6 +775,8 @@ CONTAINS
     !/
 
 #ifdef W3_PDLIB
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(*,*) 'W3OACPMD - CPL_OASIS_RCV'
     NPSUM = 0
     CALL MPI_ALLREDUCE(NP, NPSUM, 1, MPI_INT, MPI_SUM, MPI_COMM_WAVE, IERR_MPI)
     WRITE(4000+IAPROC,*) 'ID_NB', ID_NB
@@ -785,6 +788,8 @@ CONTAINS
     WRITE(4000+IAPROC,*) 'SIZE(RDA_FIELD)', SIZE(RDA_FIELD), NP, NPA
     WRITE(4000+IAPROC,*) 'RDA_FIELD', RDA_FIELD
     CALL FLUSH(4000+IAPROC)
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(4000+IAPROC,*) 'W3OACPMD - CPL_OASIS_RCV BEFORE GET'
 #endif
 
     CALL OASIS_GET ( RCV_fld(ID_NB)%IL_FIELD_ID &
@@ -792,6 +797,12 @@ CONTAINS
          &              , RDA_FIELD                  &
          &              , IL_INFO                    &
          &                )
+
+#ifdef W3_PDLIB
+    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
+    WRITE(4000+IAPROC,*) 'W3OACPMD - CPL_OASIS_RCV AFTER GET'
+#endif
+
     !
     LD_ACTION = IL_INFO == OASIS_RECVD   .OR. IL_INFO == OASIS_FROMREST .OR.   &
          &           IL_INFO == OASIS_RECVOUT .OR. IL_INFO == OASIS_FROMRESTOUT
