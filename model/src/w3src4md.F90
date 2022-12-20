@@ -815,8 +815,11 @@ CONTAINS
     TEMP=0.
     DO ITH=1,NTH
       IS=ITH+(NK-1)*NTH
-      COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
-      TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
+      IF ( A(IS).EQ.A(IS) ) THEN
+        ! action density is not NaN. Can be NaN on cold start
+        COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
+        TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
+      END IF
     END DO
 
     TAUPX=TAUX-ABS(TTAUWSHELTER)*XSTRESS
