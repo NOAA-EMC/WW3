@@ -3,6 +3,7 @@
 !>
 !> @author H. L. Tolman  @date 22-Mar-2021
 !>
+#define W3_DEBUGRUN
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 !>
@@ -2392,7 +2393,7 @@ CONTAINS
                 ELSE
 #endif
                   CALL W3SRCE(srce_direct, IT, ISEA, JSEA, IX, IY, IMOD, &
-                       VAoldDummy, VA(:,JSEA),                     &
+                       VAOLD(:,JSEA), VA(:,JSEA),                     &
                        VSioDummy, VDioDummy, SHAVETOTioDummy,      &
                        ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
                        CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),         &
