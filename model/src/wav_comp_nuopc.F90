@@ -574,14 +574,8 @@ contains
       write(stdout,'(a)')'--------------------------------------------------'
     end if
 
-    ! Initial run or restart run
-    if ( runtype == "initial") then
-      call ESMF_ClockGet( clock, startTime=esmfTime, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else
-      call ESMF_ClockGet( clock, currTime=esmfTime, rc=rc )
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif
+    call ESMF_ClockGet( clock, currTime=esmfTime, rc=rc )
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     ! Determine time attributes for history output
     call ESMF_TimeGet( esmfTime, timeString=time_origin, calendar=calendar, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
