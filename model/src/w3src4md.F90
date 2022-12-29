@@ -666,7 +666,12 @@ CONTAINS
     ! I got it from, maybe just made up from drag law ...
     !
 #ifdef W3_STAB3
-    Usigma=MAX(0.,-0.025*AS)
+    IF ( ISNAN(AS) ) THEN
+      ! AS is typically NaN on land and can propagate into the domain by interpolation
+      Usigma = 0.
+    ELSE
+      Usigma = MAX(0.,-0.025*AS)
+    END IF
     USTARsigma=(1.0+U/(10.+U))*Usigma
 #endif
     UST=USTAR
@@ -815,11 +820,8 @@ CONTAINS
     TEMP=0.
     DO ITH=1,NTH
       IS=ITH+(NK-1)*NTH
-      IF ( A(IS).EQ.A(IS) ) THEN
-        ! action density is not NaN. Can be NaN on cold start
-        COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
-        TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
-      END IF
+      COSWIND=(ECOS(IS)*COSU+ESIN(IS)*SINU)
+      TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
     END DO
 
     TAUPX=TAUX-ABS(TTAUWSHELTER)*XSTRESS
