@@ -1572,6 +1572,15 @@ then
     echo '+-------------------------+'
     echo ' '
 
+    #if its restart files, assume there is only one and copy it over:
+    if [ `grep -q '.false.' $ifile` ]
+    then 
+       for gname in $model_grids      
+       do 
+         cp restart001.$gname restart.$gname 
+       done 
+    fi 
+
     if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml

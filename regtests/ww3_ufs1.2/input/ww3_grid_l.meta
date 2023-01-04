@@ -1,0 +1,55 @@
+$ Define grid -------------------------------------- $
+$ Five records containing :
+$  1 Type of grid, coordinate system and type of closure: GSTRG, FLAGLL,
+$    CSTRG. Grid closure can only be applied in spherical coordinates.
+$      GSTRG  : String indicating type of grid :
+$               'RECT'  : rectilinear
+$               'CURV'  : curvilinear
+$      FLAGLL : Flag to indicate coordinate system :
+$               T  : Spherical (lon/lat in degrees)
+$               F  : Cartesian (meters)
+$      CSTRG  : String indicating the type of grid index space closure :
+$               'NONE'  : No closure is applied
+$               'SMPL'  : Simple grid closure : Grid is periodic in the
+$                         : i-index and wraps at i=NX+1. In other words,
+$                         : (NX+1,J) => (1,J). A grid with simple closure
+$                         : may be rectilinear or curvilinear.
+$               'TRPL'  : Tripole grid closure : Grid is periodic in the
+$                         : i-index and wraps at i=NX+1 and has closure at
+$                         : j=NY+1. In other words, (NX+1,J<=NY) => (1,J)
+$                         : and (I,NY+1) => (MOD(NX-I+1,NX)+1,NY). Tripole
+$                         : grid closure requires that NX be even. A grid
+$                         : with tripole closure must be curvilinear.
+$  2 NX, NY. As the outer grid lines are always defined as land
+$    points, the minimum size is 3x3.
+$  3 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+$    If NX*SX = 360., latitudinal closure is applied.
+$  4 Coordinates of (1,1) (degr.) and scaling (division) factor.
+$  5 Limiting bottom depth (m) to discriminate between land and sea
+$    points, minimum water depth (m) as allowed in model, unit number
+$    of file with bottom depths, scale factor for bottom depths (mult.),
+$    IDLA, IDFM, format for formatted read, FROM and filename.
+$      IDLA : Layout indicator :
+$                  1   : Read line-by-line bottom to top.
+$                  2   : Like 1, single read statement.
+$                  3   : Read line-by-line top to bottom.
+$                  4   : Like 3, single read statement.
+$      IDFM : format indicator :
+$                  1   : Free format.
+$                  2   : Fixed format with above format descriptor.
+$                  3   : Unformatted.
+$      FROM : file type parameter
+$             'UNIT' : open file by unit number only.
+$             'NAME' : open file by name and assign to unit.
+$  If the Unit Numbers in above files is 10 then data is read from this file
+$
+   'RECT'  FLAGLL CSTRNG
+901 	 441 
+ 6.00 	  6.00 	 60.00 
+262.0000 	   1.5000 	  1.00
+$ Bottom Bathymetry 
+-0.10   2.50  40  0.001000  1  1 '(....)'  NAME  'C:\Users\bin.liu\Documents\work\WW3\domain\ww3domaingridgen_6m/ww3_grid_l.depth_ascii' 
+$ Sub-grid information 
+50  0.010000  1  1  '(....)'  NAME  'C:\Users\bin.liu\Documents\work\WW3\domain\ww3domaingridgen_6m/ww3_grid_l.obstr_lev1'  
+$ Mask Information 
+60  1  1  '(....)'  NAME  'C:\Users\bin.liu\Documents\work\WW3\domain\ww3domaingridgen_6m/ww3_grid_l.mask'  

@@ -1,9 +1,11 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid integration input file                            $
 $ -------------------------------------------------------------------- $
-$ Time, time increment and number of outputs
+$ Time, time increment and number of outputs, and optional .true./.false. 
+$ option (default is .true.) to indicate out_grd (true) or restart (false)
+$ This option for example allows you to create a regional grid from global
 $
-  19680606 060000 10800. 1
+  19680606 060000 10800. 1 .true. 
 $
 $ Total number of grids (NGR). The code assumes that the first NGR-1
 $ grids are the input grids and the last grid is the target grid in
