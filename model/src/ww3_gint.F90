@@ -813,8 +813,8 @@ PROGRAM W3GRID_INTERP
   ! 5.a Set-up dimensions for target grid outputs and allocate file pointers
   !
   CALL W3SETA(NG, 6, 6)
-  CALL W3DIMA(NG, 6, 6, .TRUE. )
-  CALL W3DIMW(NG, 6, 6)
+  CALL W3DIMA(NG, 6, 6, .TRUE.)
+  CALL W3DIMW(NG, 6, 6, .TRUE.)
   ALLOCATE(FIDOUT(NG))
   DO IG = 1,NG
     FIDOUT(IG) = 30 + (IG-1)*10
@@ -915,7 +915,9 @@ PROGRAM W3GRID_INTERP
       CALL W3SETW(IG, 6, 6)
       CALL W3SETA(IG, 6, 6)
       CALL W3SETO(IG, 6, 6)
+#ifdef W3_WRST
       CALL W3DIMI(IG, 6, 6)
+#endif
       !CALL W3IORSOLD ( 'READ', 56, XXX, INTYPE, IG )!
       CALL W3IORS ( 'READ', 56, XXX, IG )
       !IF (INTYPE.EQ.0.OR.INTYPE.EQ.1.OR.INTYPE.EQ.4) THEN
@@ -924,13 +926,15 @@ PROGRAM W3GRID_INTERP
     END DO
 
     ! 5.d Carry out interpolation
-    CALL W3SETO(NG, 6, 6)
+    WDATAS(NG)%TIME = TOUT
     CALL W3SETG(NG, 6, 6)
     CALL W3SETA(NG, 6, 6)
     CALL W3SETW(NG, 6, 6)
+    CALL W3SETO(NG, 6, 6)
+#ifdef W3_WRST
     CALL W3DIMI(NG, 6, 6)
+#endif
 
-    WDATAS(NG)%TIME = TOUT
     !CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, OUTorREST,MAPSTA_NG,MAPST2_NG )
     CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, INTMETHOD, OUTorREST,MAPSTA_NG,MAPST2_NG )
 
@@ -3545,6 +3549,7 @@ CONTAINS
             VA(IK,ISEA) = 0.
           END IF
         END DO
+        write(*,*) 'jdm, isea, vasum', isea, sum(va(:,ISEA)) 
       END DO
  
       MAPST2=MAPST2_NG

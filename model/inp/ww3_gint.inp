@@ -4,6 +4,7 @@ $ -------------------------------------------------------------------- $
 $ Time, time increment and number of outputs, and optional T/F 
 $ option (default is T) to indicate out_grd (T) or restart (F)
 $ This option for example allows you to create a regional grid from global
+$ Note, there is no interpolation in spectral space only geographic
 $
   19680606 060000 10800. 1 T
 $
