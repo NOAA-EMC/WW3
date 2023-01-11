@@ -1,5 +1,24 @@
+!> @file
+!> @brief Bundles all input updating routines for WAVEWATCH III.
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Bundles all input updating routines for WAVEWATCH III.
+!>
+!> @author H. L. Tolman
+!> @date   22-Mar-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3UPDTMD
   !/
   !/                  +-----------------------------------+
@@ -136,6 +155,19 @@ MODULE W3UPDTMD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Interpolate the current field to the present time.
+  !>
+  !> @details Linear interpolation of speed and direction, with optionally
+  !>  a correction to get approximate quadratic interpolation of speed
+  !>  only.
+  !>
+  !> @param[in] FLFRST Flag for first pass through routine.
+  !>
+  !> @author H. L. Tolman
+  !> @date   15-Dec-2004
+  !>
   SUBROUTINE W3UCUR ( FLFRST )
     !/
     !/                  +-----------------------------------+
@@ -439,6 +471,20 @@ CONTAINS
     !/
   END SUBROUTINE W3UCUR
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Interpolate wind fields to the given time.
+  !>
+  !> @details Linear interpolation of wind speed and direction, with a
+  !>  simple correction to obtain quasi-conservation of energy.
+  !>
+  !> @param[in] FLFRST  Flag for first pass through routine.
+  !> @param[in] VGX     Grid velocity
+  !> @param[in] VGY     Grid velocity
+  !>
+  !> @author H. L. Tolman
+  !> @date   27-May-2014
+  !>
   SUBROUTINE W3UWND ( FLFRST, VGX, VGY )
     !/
     !/                  +-----------------------------------+
@@ -768,6 +814,17 @@ CONTAINS
     !/
   END SUBROUTINE W3UWND
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Interpolate atmosphere momentum fields to the given time.
+  !>
+  !> @details Linear interpolation of momentum module and direction, with
+  !>  a simple correction to obtain quasi-conservation of energy.
+  !>
+  !> @param[in] FLFRST  Flag for first pass through routine.
+  !>
+  !> @author J. M. Castillo
+  !> @date   22-Mar-2021
+  !>
   SUBROUTINE W3UTAU ( FLFRST )
     !/
     !/                  +-----------------------------------+
@@ -974,6 +1031,21 @@ CONTAINS
     !/
   END SUBROUTINE W3UTAU
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Initialize the wave field with fetch-limited spectra before
+  !>  the actual calculation start.
+  !>
+  !>
+  !> @details Named as an update routine due to placement in code.
+  !>
+  !>  Fetch-limited JONSWAP spectra with a cosine^2 directional
+  !>  distribution and a mean direction taken from the wind.
+  !>
+  !> @param[out] A  Action density spectra.
+  !>
+  !> @author H. L. Tolman
+  !> @date   06-Jun-2018
+  !>
   SUBROUTINE W3UINI ( A )
     !/
     !/                  +-----------------------------------+
@@ -1229,6 +1301,15 @@ CONTAINS
     !/
   END SUBROUTINE W3UINI
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Update spectra at the active boundary points.
+  !>
+  !> @details Spectra are read and interpolated in space and time from
+  !> the data read by W3IOBC.
+  !>
+  !> @author H. L. Tolman
+  !> @date   06-Jun-2018
+  !>
   SUBROUTINE W3UBPT
     !/
     !/                  +-----------------------------------+
@@ -1420,6 +1501,14 @@ CONTAINS
     !/
   END SUBROUTINE W3UBPT
   !/ ------------------------------------------------------------------- /
+  !> @attention FLFRST not used.
+  !> @brief Update ice thickness in the wave model.
+  !>
+  !> @param[in] FLFRST
+  !>
+  !> @author C. Sevigny
+  !> @date   27-Aug-2015
+  !>
   SUBROUTINE W3UIC1( FLFRST )
     !/
     !/                  +-----------------------------------+
@@ -1522,6 +1611,15 @@ CONTAINS
     !/
   END SUBROUTINE W3UIC1
   !/ ------------------------------------------------------------------- /
+  !> @attention FLFRST not currently used.
+  !> @brief Update ice floe mean and max diameters in the wave model.
+  !>
+  !> @param[in] FLFRST
+  !>
+  !> @author C. Sevigny
+  !> @author F. Ardhuin
+  !> @date   13-Jan-2016
+  !>
   SUBROUTINE W3UIC5( FLFRST )
     !/
     !/                  +-----------------------------------+
@@ -1636,7 +1734,24 @@ CONTAINS
     !/
   END SUBROUTINE W3UIC5
   !/ ------------------------------------------------------------------- /
-
+!>
+!> @brief Update ice map in the wave model.
+!>
+!> @details Points with an ice concentration larger than FICEN are
+!>  removed from the sea map in the wave model. Such points are
+!>  identified by negative numbers is the grid status map MAPSTA. For
+!>  ice points spectra are set to zero. Points from which ice disappears
+!>  are initialized with a "small" JONSWAP spectrum, based on the
+!>  frequency SIG(NK-1) and the local wind direction.
+!>
+!>  In the case of icebergs, the iceberg attenuation coefficient is
+!>  added to the subgrid obstruction map.
+!>
+!> @param[inout] VA  Spectra in 1-D or 2-D representation.
+!>
+!> @author H. L. Tolman
+!> @date   28-Mar-2014
+!>
   SUBROUTINE W3UICE ( VA )
     !/
     !/                  +-----------------------------------+
@@ -1718,7 +1833,10 @@ CONTAINS
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPSF, MAPSTA, MAPST2, &
          NSPEC, FICEN
     USE W3WDATMD, ONLY: TIME, TICE, ICE, BERG, UST
-    USE W3ADATMD, ONLY: NSEALM
+    USE W3ADATMD, ONLY: NSEALM, CHARN
+#if defined W3_ST3 || defined(W3_ST4)
+    USE W3GDATMD, ONLY: AALPHA
+#endif
     USE W3IDATMD, ONLY: TIN, ICEI, BERGI
     USE W3PARALL, ONLY: INIT_GET_JSEA_ISPROC, INIT_GET_ISEA
     !/
@@ -1791,13 +1909,18 @@ CONTAINS
                ICEI(IX,IY), 'ICE (NEW)'
 #endif
           VA(:,JSEA) = 0.
+#if defined W3_ST3 || defined(W3_ST4)
+          CHARN(JSEA) = AALPHA
+#else
+          CHARN(JSEA) = 0.
+#endif
 #ifdef W3_T
         ELSE
           WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                ICEI(IX,IY), 'ICE (NEW X)'
 #endif
         END IF
-        !
+
 #ifdef W3_T
       ELSE IF ( ICEI(IX,IY).GE.FICEN ) THEN
         WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),         &
@@ -1808,13 +1931,13 @@ CONTAINS
       ! 2.b Ice point to be re-activated.
       !
       IF ( ICEI(IX,IY).LT.FICEN .AND. MAPICE(IY,IX).EQ.1 ) THEN
-        !
+
         MAPICE(IY,IX) = 0
         UST(ISEA)     = 0.05
-        !
+
         IF ( MAPST2(IY,IX) .EQ. 0 ) THEN
           MAPSTA(IY,IX) = ABS(MAPSTA(IY,IX))
-          !
+
           CALL INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
           IF ( LOCAL .AND. (IAPROC .eq. ISPROC) ) THEN
 #ifdef W3_T
@@ -1822,30 +1945,34 @@ CONTAINS
                  ICEI(IX,IY), 'SEA (NEW)'
 #endif
             VA(:,JSEA) = 0.
-            !
+#if defined W3_ST3 || defined(W3_ST4)
+            CHARN(JSEA) = AALPHA
+#else
+            CHARN(JSEA) = 0.
+#endif
 #ifdef W3_T
           ELSE
             WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX), &
                  ICEI(IX,IY), 'SEA (NEW X)'
 #endif
           END IF
-          !
+
 #ifdef W3_T
         ELSE
           WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
                ICEI(IX,IY), 'DIS'
 #endif
         END IF
-        !
+
 #ifdef W3_T
       ELSE IF ( ICEI(IX,IY).LT.FICEN ) THEN
         WRITE (NDST,9021) ISEA, IX, IY, MAPSTA(IY,IX),     &
              ICEI(IX,IY), 'SEA'
 #endif
-        !
+
       END IF
 #endif
-      !
+
     END DO
     !
     ! 3.  Update MAPST2 -------------------------------------------------- *
@@ -1856,16 +1983,12 @@ CONTAINS
     !
     RETURN
     !
-    ! Formats
-    !
 #ifdef W3_T
 9000 FORMAT ( ' TEST W3UICE : FICEN    :',F9.3)
 9001 FORMAT ( ' TEST W3UICE : NO LOCAL SPECTRA')
-    !
 9010 FORMAT ( ' TEST W3UICE : TIME     :',I9.8,I7.6/              &
          '               OLD TICE :',I9.8,I7.6/              &
          '               NEW TICE :',I9.8,I7.6)
-    !
 9020 FORMAT ( ' TEST W3UICE : ISEA, IX, IY, MAP, ICE, STATUS :')
 9021 FORMAT ( '           ',I8,3I4,F6.2,2X,A)
 #endif
@@ -1874,6 +1997,18 @@ CONTAINS
     !/
   END SUBROUTINE W3UICE
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Update the water level.
+  !>
+  !> @details The wavenumber grid is modified without modyfying the
+  !>  spectrum (conservative linear interpolation to new grid).
+  !>
+  !> @param[inout] A   2-D represetation of the spectra.
+  !> @param[inout] VA  1-D represetation of the spectra.
+  !>
+  !> @author H. L. Tolman
+  !> @date   26-Sep-2012
+  !>
   SUBROUTINE W3ULEV ( A, VA )
     !/
     !/                  +-----------------------------------+
@@ -2404,6 +2539,16 @@ CONTAINS
     !/
   END SUBROUTINE W3ULEV
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Interpolate air density field to the given time.
+  !>
+  !> @details Linear interpolation.
+  !>
+  !> @param[in] FLFRST  Flag for first pass through routine.
+  !>
+  !> @author J. M. Castillo
+  !> @date   13-Aug-2021
+  !>
   SUBROUTINE W3URHO ( FLFRST )
     !/
     !/                  +-----------------------------------+
@@ -2572,6 +2717,22 @@ CONTAINS
     !/
   END SUBROUTINE W3URHO
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Update cell boundary transparencies for general use in
+  !>  propagation routines.
+  !>
+  !> @details Two arrays are generated with the size (NY*NX,-1:1). The value
+  !>  at (IXY,-1) indicates the transparency to be used if the lower
+  !>  or left boundary is an inflow boundary. (IXY,1) is used if the
+  !>  upper or right boundary is an inflow boundary. (IXY,0) is used
+  !>  for all other cases (by definition full transparency).
+  !>
+  !> @param[inout] TRNX  Transparencies from model definition file.
+  !> @param[inout] TRNY  Transparencies from model definition file.
+  !>
+  !> @author H. L. Tolman
+  !> @date   30-Oct-2009
+  !>
   SUBROUTINE W3UTRN ( TRNX, TRNY )
     !/
     !/                  +-----------------------------------+
@@ -2960,6 +3121,21 @@ CONTAINS
     !/
   END SUBROUTINE W3UTRN
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Calculate derivatives of a field.
+  !>
+  !> @details Derivatives are calculated in m/m from the longitude/latitude
+  !>  grid, central in space for iternal points, one-sided for coastal
+  !>  points.
+  !>
+  !> @param[in]  ZZ     Field to calculate derivatives of.
+  !> @param[in]  ZUNIT  Units of ZZ (used for test output).
+  !> @param[out] DZZDX  Derivative in X-direction (W-E).
+  !> @param[out] DZZDY  Derivative in Y-direction (S-N).
+  !>
+  !> @author W. E. Rogers, NRL
+  !> @date   06-Dec-2010
+  !>
   SUBROUTINE W3DZXY( ZZ, ZUNIT, DZZDX, DZZDY )
     !/
     !/                  +-----------------------------------+

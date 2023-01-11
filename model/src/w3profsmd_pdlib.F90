@@ -83,6 +83,8 @@ MODULE PDLIB_W3PROFSMD
   ! 10. Source code :
   !
   !/ ------------------------------------------------------------------- /
+  !
+  use w3servmd, only : print_memcheck
 #ifdef W3_S
   USE W3SERVMD, only: STRACE
 #endif
@@ -101,6 +103,9 @@ MODULE PDLIB_W3PROFSMD
   !/
   !/ ------------------------------------------------------------------- /
   !/
+  ! module default
+  implicit none
+
   PUBLIC
   !/
   !/ Public variables
@@ -119,6 +124,7 @@ MODULE PDLIB_W3PROFSMD
 #ifdef W3_DEBUGSRC
   INTEGER  :: TESTNODE = 1
 #endif
+  integer  :: memunit
   !
   !/ ------------------------------------------------------------------- /
   !
@@ -177,18 +183,12 @@ CONTAINS
 #endif
     !
     USE W3GDATMD, only: FLCX, FLCY
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
     USE CONSTANTS, only : GRAV, TPI
     USE W3GDATMD, only: XGRD, YGRD, NX, NSEA, NTRI, TRIGP, NSPEC, NSEAL
     USE W3GDATMD, only: MAPSTA, MAPFS, GRIDS, NTH, SIG, NK
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE W3GDATMD, only: CCON, COUNTCON, INDEX_CELL, IE_CELL
     USE W3GDATMD, only: IOBP, IOBPA, IOBPD, IOBDP, SI
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, only: MALLINFOS
-#endif
 
     USE W3ADATMD, only: MPI_COMM_WCMP, MPI_COMM_WAVE
     USE W3ODATMD, only: IAPROC, NAPROC, NTPROC
@@ -199,7 +199,6 @@ CONTAINS
     USE W3PARALL, only : JX_TO_JSEA, ISEA_TO_JSEA
     USE yowfunction, only : ComputeListNP_ListNPA_ListIPLG, pdlib_abort
     !/
-    IMPLICIT NONE
     INCLUDE "mpif.h"
     !/
     !/ ------------------------------------------------------------------- /
@@ -442,7 +441,6 @@ CONTAINS
     USE yowfunction, only: pdlib_abort
     USE W3ODATMD, only: IAPROC
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -559,7 +557,6 @@ CONTAINS
     USE yowfunction, only: pdlib_abort
     USE W3ODATMD, only: IAPROC
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -680,7 +677,7 @@ CONTAINS
     !
     USE W3TIMEMD, only: DSEC21
     !
-    USE W3GDATMD, only: NX, NY, MAPFS, CLATS,                       &
+    USE W3GDATMD, only: NX, NY, MAPFS, CLATS,        &
          FLCX, FLCY, NK, NTH, DTH, XFR,              &
          ECOS, ESIN, SIG,  PFMOVE,                   &
          IOBP, IOBPD,                                &
@@ -696,7 +693,6 @@ CONTAINS
     USE W3GDATMD, only: NSEAL
     USE W3ODATMD, only: IAPROC
     USE W3DISPMD, only : WAVNU_LOCAL
-    IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
@@ -925,7 +921,7 @@ CONTAINS
     USE W3PARALL, only : INIT_GET_JSEA_ISPROC
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
-    IMPLICIT NONE
+
     INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
     ! actual Wave Direction
     REAL,    INTENT(IN)    :: DT   ! Time intervall for which the
@@ -1262,7 +1258,7 @@ CONTAINS
     REAL,    INTENT(IN)    :: RD10, RD20  ! Time interpolation
     ! coefficients for boundary
     ! conditions
-    LOGICAL, INTENT(IN)    :: LCALC  ! Switch for the calculation of
+    LOGICAL, INTENT(IN)    :: LCALC   ! Switch for the calculation of
     ! the max. Global Time step
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -1273,13 +1269,7 @@ CONTAINS
     INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
     INTEGER :: IBI, NI(3)
     INTEGER :: JX
-    !
-    ! local REAL
-    !
     REAL    :: RD1, RD2
-    !:
-    ! local double
-    !
     REAL  :: SUMTHETA
     REAL  :: FT, UTILDE, CFLXY
     REAL  :: FL11, FL12, FL21, FL22, FL31, FL32
@@ -1321,7 +1311,7 @@ CONTAINS
     !2.a     Calculate K-Values and contour based quantities ...
     !
 
-    DO IE = 1, ne
+    DO IE = 1, NE
       I1 = INE(1,IE)
       I2 = INE(2,IE)
       I3 = INE(3,IE)
@@ -1404,6 +1394,8 @@ CONTAINS
             BET1(3)       = MAX(ZERO,MIN(BETAHAT(3),1.d0-BETAHAT(1),1.d0))
             THETA_L(:) = FT * BET1
           END IF
+        ELSE
+          THETA_L(:) = ZERO
         END IF
         ST(NI) = ST(NI) + THETA_L ! the 2nd term are the theta values of each node ...
       END DO
@@ -1418,22 +1410,14 @@ CONTAINS
       ! IOBPD=1 : waves coming from the coast
       !
       DO IP = 1, npa
-        U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
+        U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
 #endif
       END DO
-
       AC = REAL(U)
-
-#ifdef W3_DEBUGSOLVER
-      IF (testWrite) THEN
-        CALL SCAL_INTEGRAL_PRINT_R4(AC, "AC in loop")
-      END IF
-#endif
       !
-      ! 5 Update boundaries ... would be better to omit any if clause in this loop ...
-      !   a possibility would be to use NBI = 0 when FLBPI is FALSE and loop on IBI whatever the value of NBI
+      ! 5 Update boundaries ... this should be implemented differently ... it is better to omit any if clause in this loop ...
       !
       IF ( FLBPI ) THEN
         RD1=RD10 - DT * REAL(ITER(IK,ITH)-IT)/REAL(ITER(IK,ITH))
@@ -1445,15 +1429,14 @@ CONTAINS
           RD1    = 0.
           RD2    = 1.
         END IF
-#ifdef W3_DEBUGSOLVER
-        sumAC=0
-        sumBPI0=0
-        sumBPIN=0
-        sumCG=0
-        sumCLATS=0
-#endif
-        DO IBI = 1, NBI
-          IP_glob = MAPSF(ISBPI(IBI),1)
+        !
+        ! NB: this treatment of the open boundary (time interpolation) is different from
+        ! the constant boundary in the structured grids ... which restores the boundary
+        ! to the initial value: IF ( MAPSTA(IXY).EQ.2 ) VQ(IXY) = AQ(IXY)
+        ! Why this difference ?
+        !
+        DO IBI=1, NBI
+          IP_glob    = MAPSF(ISBPI(IBI),1)
           JX=IPGL_npa(IP_glob)
           IF (JX .gt. 0) THEN
             AC(JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
@@ -1466,7 +1449,7 @@ CONTAINS
             sumCLATS=sumCLATS + CLATS(ISBPI(IBI))
 #endif
           END IF
-        END DO
+        ENDDO
       END IF
 
 #ifdef W3_DEBUGSOLVER
@@ -1920,7 +1903,7 @@ CONTAINS
     USE W3GDATMD, only : GTYPE, UNGTYPE
     USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
     use yowDatapool, only: rtype, istatus
-    IMPLICIT NONE
+
     INCLUDE "mpif.h"
     CHARACTER(*), INTENT(in) :: string
     REAL VcollExp(1)
@@ -2009,7 +1992,7 @@ CONTAINS
     use yowDatapool, only: rtype, istatus
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
-    IMPLICIT NONE
+
     INCLUDE "mpif.h"
     !
     REAL*8, INTENT(in) :: V(NSEAL)
@@ -2162,7 +2145,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
 
     USE W3GDATMD, only : NSEAL
-    IMPLICIT NONE
+
     REAL*8, INTENT(in) :: V(NSEAL)
     CHARACTER(*), INTENT(in) :: string
     REAL*8 :: V8(NSEAL)
@@ -2219,7 +2202,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
 
     USE W3GDATMD, only : NSEAL
-    IMPLICIT NONE
+
     REAL, INTENT(in) :: V(NSEAL)
     CHARACTER(*), INTENT(in) :: string
     LOGICAL :: CheckUncovered = .FALSE.
@@ -2280,7 +2263,7 @@ CONTAINS
     USE W3ODATMD, only : IAPROC
     USE W3GDATMD, only : NSPEC
     USE YOWNODEPOOL, only: np, npa
-    IMPLICIT NONE
+
     CHARACTER(*), INTENT(in) :: string
     INTEGER, INTENT(in) :: choice
     REAL :: FIELD(NSPEC,NSEAL)
@@ -2352,7 +2335,7 @@ CONTAINS
     USE W3ODATMD, only : IAPROC, NAPROC
     USE W3GDATMD, only : NSPEC, GRIDS, GTYPE, UNGTYPE
     USE YOWNODEPOOL, only: npa, np, iplg
-    IMPLICIT NONE
+
     INTEGER, INTENT(in) :: IMOD
     CHARACTER(*), INTENT(in) :: string
     INTEGER, INTENT(in) :: choice
@@ -2446,7 +2429,7 @@ CONTAINS
     USE W3WDATMD, only : VA
     USE W3ODATMD, only : IAPROC
     USE W3GDATMD, only : NSPEC
-    IMPLICIT NONE
+
     INTEGER maxidx
     REAL, INTENT(in) :: FIELD(NSPEC,NSEAL)
     CHARACTER(*), INTENT(in) :: string
@@ -2513,7 +2496,7 @@ CONTAINS
     use yowDatapool, only: rtype, istatus
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
-    IMPLICIT NONE
+
     INCLUDE "mpif.h"
     CHARACTER(*), INTENT(in) :: string
     INTEGER, INTENT(in) :: maxidx
@@ -2732,6 +2715,8 @@ CONTAINS
     LOGICAL :: LocalizeMaximum = .TRUE.
     LOGICAL :: CheckUncovered = .TRUE.
     LOGICAL :: PrintFullValue = .TRUE.
+    integer :: ip
+
     IF (FULL_NSPEC) THEN
       CALL CHECK_ARRAY_INTEGRAL_NX_R8_MaxFunct(TheARR, string, maxidx, PrintMinISP, LocalizeMaximum)
     ELSE
@@ -2741,6 +2726,7 @@ CONTAINS
       CALL SCAL_INTEGRAL_PRINT_GENERAL(TheARR_red, string, maxidx, CheckUncovered, PrintFullValue)
     END IF
   END SUBROUTINE CHECK_ARRAY_INTEGRAL_NX_R8
+  !/ ------------------------------------------------------------------- /
   !/ ------------------------------------------------------------------- /
   SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY)
     !/ ------------------------------------------------------------------- /
@@ -2794,7 +2780,7 @@ CONTAINS
     !
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
-    IMPLICIT NONE
+
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
 #ifdef W3_DEBUGSOLVER
@@ -2863,7 +2849,7 @@ CONTAINS
     !
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
-    IMPLICIT NONE
+
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
     Print *, 'Before PDLIB_EXPLICIT_BLOCK'
@@ -2928,7 +2914,7 @@ CONTAINS
     USE W3ADATMD, only: WN
     USE W3GDATMD, only: NSEAL
     USE YOWNODEPOOL, only: NP
-    IMPLICIT NONE
+
     CHARACTER(*), INTENT(in) :: string
     REAL TotalSumDMM, eDMM, sumDMM
     INTEGER IP, IK, ISEA
@@ -3012,7 +2998,7 @@ CONTAINS
     use yowDatapool, only: rtype, istatus
     USE YOWNODEPOOL, only: npa, iplg, np
     USE W3PARALL, only: INIT_GET_ISEA
-    IMPLICIT NONE
+
     INCLUDE "mpif.h"
     CHARACTER(*), INTENT(in) :: eFile
     REAL, INTENT(in) :: TheARR(NSPEC, npa)
@@ -3139,7 +3125,7 @@ CONTAINS
     USE YOWNODEPOOL,    only: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P
     USE W3GDATMD, only: NSPEC
     USE W3ODATMD, only : IAPROC
-    IMPLICIT NONE
+
     CHARACTER(*), INTENT(in) :: string
     INTEGER J, IP, JP, I, ISP
     REAL TheSum1, TheSum2
@@ -3232,7 +3218,6 @@ CONTAINS
     USE W3SERVMD, only: STRACE
 #endif
     !
-    IMPLICIT NONE
     REAL, INTENT(IN)        :: A(NTH,NK), CG(NK), WN(NK)
     REAL, INTENT(OUT)       :: EMEAN, FMEAN, WNMEAN, AMAX
     INTEGER                 :: IK, ITH
@@ -3352,9 +3337,6 @@ CONTAINS
     USE W3GDATMD, only: MAPSTA
     USE W3WDATMD, only: VA
     USE W3ADATMD, only: CG, DW, WN, CX, CY
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, only: MALLINFOS
-#endif
     USE W3IDATMD, only: FLCUR, FLLEV
     USE W3GDATMD, only: ECOS, ESIN, MAPFS
     USE W3PARALL, only : ONESIXTH, ZERO, THR
@@ -3365,9 +3347,6 @@ CONTAINS
          PDLIB_I_DIAG, PDLIB_JA
     USE W3ODATMD, only : IAPROC
     USE W3PARALL, only : ZERO
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
 #ifdef W3_DB1
     USE W3SDB1MD
     USE W3GDATMD, only: SDBSC
@@ -3396,7 +3375,6 @@ CONTAINS
 #ifdef W3_TR1
     USE W3STR1MD
 #endif
-    implicit none
     REAL, INTENT(in) :: DTG, FACX, FACY, VGX, VGY
     INTEGER :: IP, ISP, ISEA, IP_glob
     INTEGER :: idx, IS
@@ -3426,6 +3404,7 @@ CONTAINS
     WRITE(740+IAPROC,*) 'calcARRAY_JACOBI, begin'
     FLUSH(740+IAPROC)
 #endif
+    memunit = 50000+IAPROC
 
     I      = 0
     IE     = 0
@@ -3436,11 +3415,7 @@ CONTAINS
     DTK    = 0
     TMP3   = 0
 
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 0'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
     DO IE = 1, NE
       I1 = INE(1,IE)
@@ -3520,12 +3495,7 @@ CONTAINS
         END DO
       END DO
     END DO
-
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 1')
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'sum(VA)=', sum(VA)
     CALL PrintTotalOffContrib("Offdiag after the geo advection")
@@ -3590,9 +3560,6 @@ CONTAINS
     USE W3GDATMD, only: MAPSTA, SIG
     USE W3WDATMD, only: VA
     USE W3ADATMD, only: CG, DW, WN, CX, CY
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, only: MALLINFOS
-#endif
     USE W3IDATMD, only: FLCUR, FLLEV
     USE W3GDATMD, only: ECOS, ESIN, MAPFS
     USE W3PARALL, only : ONESIXTH, ZERO, THR
@@ -3604,9 +3571,6 @@ CONTAINS
     USE W3ODATMD, only : IAPROC
     USE W3PARALL, only : ZERO
     USE W3DISPMD, only : WAVNU_LOCAL
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
 #ifdef W3_DB1
     USE W3SDB1MD
     USE W3GDATMD, only: SDBSC
@@ -3635,7 +3599,6 @@ CONTAINS
 #ifdef W3_TR1
     USE W3STR1MD
 #endif
-    implicit none
     REAL, INTENT(in) :: DTG, FACX, FACY, VGX, VGY
     INTEGER :: IP, ISP, ISEA, IP_glob
     INTEGER :: idx, IS
@@ -3662,6 +3625,7 @@ CONTAINS
     WRITE(740+IAPROC,*) 'calcARRAY_JACOBI, begin'
     FLUSH(740+IAPROC)
 #endif
+    memunit = 50000+IAPROC
 
     I      = 0
     IE     = 0
@@ -3674,12 +3638,8 @@ CONTAINS
 
     CCOSA = FACX * ECOS
     CSINA = FACX * ESIN
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 0'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
     DO ISP = 1, NSPEC
 
       ITH    = 1 + MOD(ISP-1,NTH)
@@ -3781,11 +3741,7 @@ CONTAINS
       END DO
     END DO ! ISP
 
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 1')
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'sum(VA)=', sum(VA)
     CALL PrintTotalOffContrib("Offdiag after the geo advection")
@@ -3851,16 +3807,12 @@ CONTAINS
     USE W3GDATMD, only: MAPSTA
     USE W3WDATMD, only: VA, VAOLD
     USE W3ADATMD, only: CG, DW, WN, CX, CY
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-    USE W3ADATMD, only: MALLINFOS
-#endif
     USE W3IDATMD, only: FLCUR, FLLEV
     USE W3GDATMD, only: ECOS, ESIN, MAPFS
     USE W3PARALL, only : ONESIXTH, ZERO, THR, IMEM
     use yowElementpool, only: ne, INE
     USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
-         PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,          &
+         PDLIB_CCON, PDLIB_POS_CELL2, PDLIB_IE_CELL2, NP, NPA,        &
          PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
          PDLIB_I_DIAG, PDLIB_JA
     USE W3ODATMD, only : IAPROC
@@ -3892,7 +3844,6 @@ CONTAINS
 #ifdef W3_TR1
     USE W3STR1MD
 #endif
-    implicit none
     REAL, INTENT(in) :: DTG, FACX, FACY, VGX, VGY
     INTEGER :: IP, ISP, ISEA, IP_glob
     INTEGER :: idx, IS
@@ -3920,11 +3871,9 @@ CONTAINS
     REAL  :: TRIA03, SIDT, CCOS, CSIN
     REAL    :: SPEC(NSPEC), DEPTH
 
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 0'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    memunit = 50000+IAPROC
+
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
     J = 0
     DO IP = 1, npa
@@ -3999,12 +3948,7 @@ CONTAINS
         END DO
       END DO
     END DO
-
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_JACOBI SECTION 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 1')
     !/
     !/ End of W3XYPFSN ----------------------------------------------------- /
     !/
@@ -4065,9 +4009,6 @@ CONTAINS
     USE W3GDATMD, only: MAPSTA
     USE W3WDATMD, only: VA, VAOLD
     USE W3ADATMD, only: CG, DW, WN, CX, CY
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, only: MALLINFOS
-#endif
     USE W3IDATMD, only: FLCUR, FLLEV
     USE W3GDATMD, only: ECOS, ESIN, MAPFS
     USE W3PARALL, only : ONESIXTH, ZERO, THR, ONETHIRD
@@ -4078,9 +4019,6 @@ CONTAINS
          PDLIB_I_DIAG, PDLIB_JA
     USE W3GDATMD, only: IOBP
     USE W3ODATMD, only : IAPROC
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
 #ifdef W3_DB1
     USE W3SDB1MD
     USE W3GDATMD, only: SDBSC
@@ -4109,7 +4047,6 @@ CONTAINS
 #ifdef W3_TR1
     USE W3STR1MD
 #endif
-    implicit none
     INTEGER, INTENT(IN) :: IP
     INTEGER, INTENT(INOUT) :: J
     REAL, INTENT(in) :: DTG, FACX, FACY, VGX, VGY
@@ -4275,9 +4212,6 @@ CONTAINS
     USE W3GDATMD, only: MAPSTA, NK
     USE W3WDATMD, only: VA, VAOLD
     USE W3ADATMD, only: CG, DW, WN, CX, CY
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, only: MALLINFOS
-#endif
     USE W3IDATMD, only: FLCUR, FLLEV
     USE W3GDATMD, only: ECOS, ESIN, MAPFS
     USE W3PARALL, only : ONESIXTH, ZERO, THR, ONETHIRD
@@ -4287,9 +4221,6 @@ CONTAINS
          PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
          PDLIB_I_DIAG, PDLIB_JA
     USE W3ODATMD, only : IAPROC
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
 #ifdef W3_DB1
     USE W3SDB1MD
     USE W3GDATMD, only: SDBSC
@@ -4318,7 +4249,6 @@ CONTAINS
 #ifdef W3_TR1
     USE W3STR1MD
 #endif
-    implicit none
     INTEGER, INTENT(IN) :: IP
     REAL, INTENT(in) :: DTG, FACX, FACY, VGX, VGY
     REAL, INTENT(out) :: ASPAR_DIAG_LOCAL(NSPEC), B_JAC_LOCAL(NSPEC), ASPAR_OFF_DIAG_LOCAL(NSPEC)
@@ -4517,9 +4447,6 @@ CONTAINS
     USE W3GDATMD, only: MAPSTA, NK
     USE W3WDATMD, only: VA, VAOLD
     USE W3ADATMD, only: CG, DW, WN, CX, CY
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, only: MALLINFOS
-#endif
     USE W3IDATMD, only: FLCUR, FLLEV
     USE W3GDATMD, only: ECOS, ESIN, MAPFS
     USE W3PARALL, only : ONESIXTH, ZERO, THR, ONETHIRD
@@ -4529,9 +4456,6 @@ CONTAINS
          PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
          PDLIB_I_DIAG, PDLIB_JA
     USE W3ODATMD, only : IAPROC
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
 #ifdef W3_DB1
     USE W3SDB1MD
     USE W3GDATMD, only: SDBSC
@@ -4560,7 +4484,6 @@ CONTAINS
 #ifdef W3_TR1
     USE W3STR1MD
 #endif
-    implicit none
     INTEGER, INTENT(IN) :: IE
     REAL, INTENT(in) :: DTG, FACX, FACY, VGX, VGY
     !
@@ -4731,7 +4654,7 @@ CONTAINS
     USE W3GDATMD, only: NK, NK2, NTH, NSPEC, MAPFS, DMIN, DSIP, NSEAL
     USE W3PARALL, only : PROP_REFRACTION_PR3, PROP_REFRACTION_PR1, PROP_FREQ_SHIFT, PROP_FREQ_SHIFT_M2, ZERO, IMEM
     USE W3ADATMD, only: CG, DW
-    IMPLICIT NONE
+
     REAL, INTENT(in) :: DTG
     INTEGER IP, IP_glob, ITH, IK
     INTEGER ISEA, ISP
@@ -4885,7 +4808,7 @@ CONTAINS
     USE W3GDATMD, only: NK, NK2, NTH, NSPEC, MAPFS, DMIN, DSIP, NSEAL, MAPSTA
     USE W3PARALL, only : PROP_REFRACTION_PR3, PROP_REFRACTION_PR1, PROP_FREQ_SHIFT, PROP_FREQ_SHIFT_M2, ZERO, IMEM
     USE W3ADATMD, only: CG, DW
-    IMPLICIT NONE
+
     REAL, INTENT(in) :: DTG
     REAL, INTENT(inout) :: ASPAR_DIAG_LOCAL(nspec,NSEAL)
     INTEGER IP, IP_glob, ITH, IK
@@ -5055,7 +4978,7 @@ CONTAINS
 #endif
     USE W3WDATMD, only: VA, VSTOT, VDTOT, SHAVETOT
     USE constants, only : TPI, TPIINV, GRAV
-    IMPLICIT NONE
+
     REAL, INTENT(in) :: DTG
     REAL, PARAMETER :: COEF4 = 5.0E-07
     REAL, PARAMETER :: FACDAM = 1
@@ -5222,7 +5145,7 @@ CONTAINS
 #endif
     USE W3WDATMD, only: VA, VSTOT, VDTOT, SHAVETOT
     USE constants, only : TPI, TPIINV, GRAV
-    IMPLICIT NONE
+
     REAL, INTENT(in) :: DTG
     REAL, INTENT(inout) :: ASPAR_DIAG_LOCAL(:,:)
     REAL, PARAMETER :: COEF4 = 5.0E-07
@@ -5376,7 +5299,6 @@ CONTAINS
     USE W3ODATMD, only: TBPI0, TBPIN, FLBPI, IAPROC, NAPROC, BBPI0, BBPIN, ISBPI, NBI
     USE W3PARALL, only : ISEA_TO_JSEA
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -5496,7 +5418,6 @@ CONTAINS
     USE W3GDATMD, only: DDEN
 #endif
     !/
-    IMPLICIT NONE
     INTEGER, INTENT(IN) :: IMOD
     !/
     !/ ------------------------------------------------------------------- /
@@ -5668,7 +5589,6 @@ CONTAINS
     USE W3ADATMD, only : WN, CG
     USE W3GDATMD, only : NTH, NK, NSPEC, MAPFS, SIG, FACP
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -5791,13 +5711,13 @@ CONTAINS
     USE W3SERVMD, only: STRACE
 #endif
     !/
+    USE CONSTANTS, only : TPI, TPIINV, GRAV
     USE W3GDATMD, only: MAPSTA
     USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP
     USE W3GDATMD, only: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN
     USE W3GDATMD, only: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
     USE W3GDATMD, only: B_JGS_TERMINATE_MAXITER, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_DIFF_THR
     USE W3GDATMD, only: MAPWN
-    USE constants, only : TPI, TPIINV, GRAV
 #ifdef W3_DEBUGSRC
     USE W3GDATMD, only: optionCall
     USE W3WDATMD, only: SHAVETOT
@@ -5809,9 +5729,6 @@ CONTAINS
     use yowExchangeModule, only : PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
     USE MPI, only : MPI_SUM, MPI_INT
     USE W3ADATMD, only: MPI_COMM_WCMP
-#ifdef W3_MEMCHECK
-    USE W3ADATMD, only: MALLINFOS
-#endif
     USE W3GDATMD, only: NSEA, SIG, FACP, FLSOU
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBDP_LOC, IOBPA_LOC
     USE W3GDATMD, only: NK, NK2, NTH, ECOS, ESIN, NSPEC, MAPFS, NSEA, SIG
@@ -5898,17 +5815,14 @@ CONTAINS
 
     LOGICAL :: LSIG = .FALSE.
 
+    memunit = 50000+IAPROC
     !AR: this is missing in init ... but there is a design error in ww3_grid with FLCUR and FLLEV
     LSIG = FLCUR .OR. FLLEV
 #ifdef W3_DEBUGSOLVERCOH
     OffDIAG = ZERO
 #endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 0')
 
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 0'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
 
     CCURX  = FACX
     CCURY  = FACY
@@ -5933,17 +5847,11 @@ CONTAINS
     WRITE(740+IAPROC,*) 'B_JGS_BLOCK_GAUSS_SEIDEL=', B_JGS_BLOCK_GAUSS_SEIDEL
     FLUSH(740+IAPROC)
 #endif
-
 #ifdef W3_DEBUGSRC
     WRITE(740+IAPROC,*) 'optionCall=', optionCall
     FLUSH(740+IAPROC)
 #endif
-
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 1')
     !
     ! 2.  Convert to Wave Action ---------------- *
     !
@@ -6008,11 +5916,7 @@ CONTAINS
     !
     !    init matrix and right hand side
     !
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 2'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 2')
     !
     IF (.not. LSLOC) THEN
       IF (IMEM == 1) THEN
@@ -6022,12 +5926,7 @@ CONTAINS
       ENDIF
       B_JAC = ZERO
     ENDIF
-
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 3'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 3')
     !
     !     source terms
     !
@@ -6040,32 +5939,21 @@ CONTAINS
         ENDIF
       ENDIF
     END IF
-
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 4'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
-
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 4')
     !
     !     geographical advection
     !
     IF (IMEM == 1) call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
 
-
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
 #endif
-
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 5'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 5')
     !
 #ifdef W3_DEBUGSOLVER
-    WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
+    !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
 #endif
+
     !
     !     spectral advection
     !
@@ -6077,11 +5965,7 @@ CONTAINS
       ENDIF
     END IF
     CALL APPLY_BOUNDARY_CONDITION(IMOD)
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 6'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 6')
     !
 #ifdef W3_DEBUGSOLVERCOH
     CALL CHECK_ARRAY_INTEGRAL_NX_R8(B_JAC, "B_JAC after calcARRAY", np)
@@ -6102,16 +5986,13 @@ CONTAINS
 
       is_converged = 0
 
-#ifdef W3_MEMCHECK
-      write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 1'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+      !        WRITE(740+IAPROC,*) myrank, 'start solver', nbiter
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 1')
+
       DO IP = 1, np
 
         IP_glob = iplg(IP)
         ISEA    = MAPFS(1,IP_glob)
-
         IF (IOBDP_LOC(IP) .eq. 0) THEN
           is_converged   = is_converged + 1
           lconverged(ip) = .true.
@@ -6377,12 +6258,7 @@ CONTAINS
       END DO ! IP
 
       !        WRITE(740+IAPROC,*) myrank, 'afer vertex loop', nbiter
-
-#ifdef W3_MEMCHECK
-      write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 2'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 2')
 
 #ifdef W3_DEBUGSOLVERCOH
       WRITE (eFile,40) nbIter
@@ -6398,11 +6274,7 @@ CONTAINS
         CALL PDLIB_exchange2DREAL(U_JAC)
         VA(:,1:NPA) = U_JAC
       END IF
-#ifdef W3_MEMCHECK
-      write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 3'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 3')
       !
       ! Terminate via number of iteration
       !
@@ -6414,12 +6286,7 @@ CONTAINS
           EXIT
         END IF
       END IF
-
-#ifdef W3_MEMCHECK
-      write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 4'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 4')
       !
       ! Terminate via differences
       !
@@ -6445,12 +6312,7 @@ CONTAINS
           EXIT
         END IF
       END IF
-
-#ifdef W3_MEMCHECK
-      write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 5'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 5')
       !
       ! Terminate via norm
       !
@@ -6527,19 +6389,15 @@ CONTAINS
           EXIT
         END IF
       END IF
-#ifdef W3_MEMCHECK
-      write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION SOLVER LOOP 6'
-      call getMallocInfo(mallinfos)
-      call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 6')
 
       nbiter = nbiter + 1
 
     END DO ! Open Do Loop ... End of Time Interval
 
 #ifdef W3_DEBUGSOLVER
-     WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' B_JGS_MAXITER=', B_JGS_MAXITER
-     FLUSH(740+IAPROC)
+    WRITE(740+IAPROC,*) 'nbIter=', nbIter, ' B_JGS_MAXITER=', B_JGS_MAXITER
+    FLUSH(740+IAPROC)
 #endif
     ! Tihs is below also goes into the matrix ... like the wave boundary ...
     DO IP = 1, npa
@@ -6716,11 +6574,7 @@ CONTAINS
     !ENDDO
 
     !
-#ifdef W3_MEMCHECK
-    write(50000+IAPROC,*) 'memcheck_____:', 'WW3_PROP SECTION 7'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(IAPROC+50000,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION LOOP 7')
     !
 #ifdef W3_DEBUGSRC
     DO JSEA=1,NSEAL
@@ -6821,7 +6675,6 @@ CONTAINS
     USE W3PARALL, only : JX_TO_JSEA
     USE W3GDATMD, only: B_JGS_NLEVEL
     !
-    implicit none
     INTEGER, INTENT(IN)     :: IMOD
     REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
     !
@@ -7159,8 +7012,6 @@ CONTAINS
     USE W3GDATMD, only: FSTOTALIMP
     USE W3ODATMD, only: IAPROC
     !/
-    IMPLICIT NONE
-
     INTEGER, INTENT(IN) :: IMOD
     !
     !/ ------------------------------------------------------------------- /
@@ -7292,7 +7143,6 @@ CONTAINS
     USE W3PARALL, only: INIT_GET_ISEA
     USE YOWNODEPOOL, only: iplg, np, npa
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -7383,7 +7233,6 @@ CONTAINS
     USE W3PARALL, only: INIT_GET_ISEA
     USE YOWNODEPOOL, only: iplg, np
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -7501,8 +7350,6 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, only: STRACE
 #endif
-
-    IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
@@ -7695,7 +7542,6 @@ CONTAINS
 #endif
     USE W3GDATMD, only: B_JGS_USE_JACOBI
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -7778,7 +7624,6 @@ CONTAINS
     USE W3ODATMD, only : IAPROC
 #endif
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -7794,28 +7639,28 @@ CONTAINS
     !/
     INTEGER, INTENT(IN) :: IMOD
 
-    DEALLOCATE ( &
-                                !                 GRIDS(IMOD)%TRIGP,                         &
-         GRIDS(IMOD)%SI,                                &
-         GRIDS(IMOD)%TRIA,                            &
-         GRIDS(IMOD)%CROSSDIFF,                     &
-         GRIDS(IMOD)%IEN,                           &
-         GRIDS(IMOD)%LEN,                           &
-         GRIDS(IMOD)%ANGLE,                         &
-         GRIDS(IMOD)%ANGLE0,                        &
-         GRIDS(IMOD)%CCON,                              &
-         GRIDS(IMOD)%COUNTCON,                          &
-         GRIDS(IMOD)%INDEX_CELL,                      &
-         GRIDS(IMOD)%IE_CELL,                     &
-         GRIDS(IMOD)%POS_CELL,                    &
-         GRIDS(IMOD)%IAA,                             &
-         GRIDS(IMOD)%JAA,                              &
-         GRIDS(IMOD)%POSI,                      &
-         GRIDS(IMOD)%I_DIAG,                            &
-         GRIDS(IMOD)%JA_IE,                       &
-                                !GRIDS(IMOD)%IOBP,                         &
-                                !GRIDS(IMOD)%IOBPD,                         &
-         GRIDS(IMOD)%IOBDP,                             &
+    DEALLOCATE (                 &
+         ! GRIDS(IMOD)%TRIGP,    &
+         GRIDS(IMOD)%SI,         &
+         GRIDS(IMOD)%TRIA,       &
+         GRIDS(IMOD)%CROSSDIFF,  &
+         GRIDS(IMOD)%IEN,        &
+         GRIDS(IMOD)%LEN,        &
+         GRIDS(IMOD)%ANGLE,      &
+         GRIDS(IMOD)%ANGLE0,     &
+         GRIDS(IMOD)%CCON,       &
+         GRIDS(IMOD)%COUNTCON,   &
+         GRIDS(IMOD)%INDEX_CELL, &
+         GRIDS(IMOD)%IE_CELL,    &
+         GRIDS(IMOD)%POS_CELL,   &
+         GRIDS(IMOD)%IAA,        &
+         GRIDS(IMOD)%JAA,        &
+         GRIDS(IMOD)%POSI,       &
+         GRIDS(IMOD)%I_DIAG,     &
+         GRIDS(IMOD)%JA_IE,      &
+         !GRIDS(IMOD)%IOBP,      &
+         !GRIDS(IMOD)%IOBPD,     &
+         GRIDS(IMOD)%IOBDP,      &
          GRIDS(IMOD)%IOBPA  )
     !/
     !/ End of DEALLOCATE_PDLIB_GLOBAL ------------------------------------------------ /
@@ -7879,7 +7724,6 @@ CONTAINS
     USE W3ODATMD, only : IAPROC
 #endif
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -7971,7 +7815,6 @@ CONTAINS
     USE W3GDATMD, only: B_JGS_BLOCK_GAUSS_SEIDEL
     USE W3PARALL, only: IMEM
     !/
-    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

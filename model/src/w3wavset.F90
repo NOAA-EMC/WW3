@@ -1093,15 +1093,23 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
-      TheOut=0
-      DO IP=1,npa
-        IF (ACTIVESEC(IP) .eq. 1) THEN
-          DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
-            JP=PDLIB_JA(J)
-            eCoeff=ASPAR(J)
-            TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
-          END DO
-        END IF
+    !
+    real(8), intent(in) :: V1(npa), V2(npa)
+    real(8), intent(inout) :: eScal
+    integer IP, myrank, myproc
+    real(8) :: rScal(1), lScal(1)
+    integer iProc
+    integer ierr
+    CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
+    CALL MPI_COMM_SIZE(MPI_COMM_WCMP, myproc, ierr)
+    lScal=0
+    DO IP=1,np
+      lScal(1)=lScal(1) + V1(IP)*V2(IP)
+    END DO
+    IF (IAPROC .eq. 1) THEN
+      DO iProc=2,NAPROC
+        CALL MPI_RECV(rScal,1,rtype, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
+        lScal = lScal + rScal
       END DO
       CALL PDLIB_exchange1Dreal(TheOut)
       END SUBROUTINE
