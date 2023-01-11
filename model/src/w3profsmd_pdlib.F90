@@ -6642,7 +6642,7 @@ CONTAINS
 #endif
     !/
     !USE W3GDATMD, only: MAPSTA
-    USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP
+    USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP, FSBCCFL
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE W3GDATMD, only: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN, NTRI
     USE W3GDATMD, only: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
@@ -6819,19 +6819,13 @@ CONTAINS
     END DO
     DTMAX_GLOBAL_EXP = 1.d0/THR
     DO IP = 1, NP
-      DTMAX_EXP        = PDLIB_SI(IP)/MAX(THR,MAXVAL(KKSUM(:,IP)))
-      DTMAX_GLOBAL_EXP = MIN ( DTMAX_GLOBAL_EXP, DTMAX_EXP)
-      CFLXYMAX(IP)     = DBLE(DTG)/DTMAX_EXP
+      IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
+        DTMAX_EXP        = PDLIB_SI(IP)/MAX(THR,MAXVAL(KKSUM(:,IP)))
+        DTMAX_GLOBAL_EXP = MIN ( DTMAX_GLOBAL_EXP, DTMAX_EXP)
+        CFLXYMAX(IP)     = DBLE(DTG)/DTMAX_EXP
+      ENDIF
     END DO
-    rest = CFLXYMAX(1)
-    DO IP = 2, NP
-      if (rest .lt. CFLXYMAX(IP)) then
-        rest = CFLXYMAX(IP)
-        iter_max = ip
-      endif
-    END DO
-
-    DTMAX_EXP=DTMAX_GLOBAL_EXP
+    DTMAX_EXP = DTMAX_GLOBAL_EXP
     call mpi_allreduce(DTMAX_EXP,DTMAX_GLOBAL_EXP,1,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
     CFLXY = DTG/DTMAX_GLOBAL_EXP
     REST = ABS(MOD(CFLXY,1.d0))
@@ -6845,10 +6839,10 @@ CONTAINS
 
     DT4AI = DTG/ITER_MAX
     DO IT = 1, ITER_MAX
-      DO IP = 1, NPA
+      DO IP = 1, NP
         ST3 = ZERO
         DO I = 1, PDLIB_CCON(IP)
-          IE       = PDLIB_IE_CELL2(IP,I)
+          IE       = PDLIB_IE_CELL2(I,IP)
           U33      = VA(:,INE(:,IE))
           UTILDE33 = N(:,IE)*(FLALLGL(:,1,IE)*U33(:,1)+FLALLGL(:,2,IE)*U33(:,2)+FLALLGL(:,3,IE)*U33(:,3))
           IPOS     = PDLIB_POS_CELL2(I,IP)
@@ -6860,13 +6854,12 @@ CONTAINS
     END DO !IT
 
     DO IP = 1, npa
-      IP_glob=iplg(IP)
 #ifdef W3_DEBUGSRC
       WRITE(740+IAPROC,*) 'IOBPD loop, Before, sum(VA)=', sum(VA(:,IP))
 #endif
       DO ISP=1,NSPEC
         ITH    = 1 + MOD(ISP-1,NTH)
-        VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP(IP_glob)*DBLE(IOBPD(ITH,IP_glob))
+        VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*IOBPD_LOC(ITH,IP)
       END DO
 #ifdef W3_DEBUGSRC
       WRITE(740+IAPROC,*) 'IOBPD loop, After, sum(VA)=', sum(VA(:,IP))
