@@ -1,5 +1,27 @@
+!> @file
+!> @brief Interface module for GKE (resonant & quasi-resonant four-wave
+!>        interactions).
+!>
+!> @author O. Gramstad
+!> @author Q. Liu
+!> @date   07-Jun-2021
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Interface module for GKE (resonant & quasi-resonant four-wave
+!>        interactions).
+!>
+!> @author O. Gramstad
+!> @author Q. Liu
+!> @date   07-Jun-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SNL5MD
   !/
   !/                  +-----------------------------------+
@@ -54,6 +76,25 @@ MODULE W3SNL5MD
   !
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Interface to CalcQRSNL subroutine of the GKE module.
+  !>
+  !> @param[in]  A
+  !> @param[in]  CG
+  !> @param[in]  WN
+  !> @param[in]  FMEAN
+  !> @param[in]  T1ABS
+  !> @param[in]  U10
+  !> @param[in]  UDIR
+  !> @param[in]  JSEA
+  !> @param[out] S
+  !> @param[out] D
+  !> @param[out] KURT
+  !>
+  !> @author O. Gramstad
+  !> @author Q. Liu
+  !> @date   24-Apr-2019
+  !>
   SUBROUTINE W3SNL5(A, CG, WN, FMEAN, T1ABS, U10, UDIR, JSEA, &
        S, D, KURT)
     !/
@@ -382,6 +423,14 @@ CONTAINS
     !/
   END SUBROUTINE W3SNL5
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Initialization for the GKE module (Prepare wavenumber grid & kernel
+  !>        coefficients).
+  !>
+  !> @author Q. Liu
+  !> @date   27-Feb-2019
+  !>
   SUBROUTINE INSNL5
     !/
     !/                  +-----------------------------------+
@@ -493,6 +542,23 @@ CONTAINS
     !/
   END SUBROUTINE INSNL5
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Estimate the dominant wave breaking probability.
+  !>
+  !> @details Based on the empirical parameterization proposed by
+  !>  Babanin et al. (2001).
+  !>
+  !> @param   A
+  !> @param   CG
+  !> @param   WN
+  !> @param   DPT
+  !> @param   U10
+  !> @param   UDIR
+  !> @returns CALC_WBTv2
+  !>
+  !> @author Q. Liu
+  !> @date   24-Apr-2019
+  !>
   FUNCTION CALC_WBTv2 (A, CG, WN, DPT, U10, UDIR)
     !/
     !/                  +-----------------------------------+
@@ -647,6 +713,12 @@ CONTAINS
   END FUNCTION CALC_WBTv2
 
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Initialization for point output (Snl).
+  !>
+  !> @author Q. Liu
+  !> @date   25-Mar-2019
+  !>
   SUBROUTINE INPOUT
     !/
     !/                  +-----------------------------------+
@@ -799,6 +871,18 @@ CONTAINS
     !
   END SUBROUTINE INPOUT
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Check if the 2D array `ARR2D` contains NaN.
+  !>
+  !> @param   NK
+  !> @param   NTH
+  !> @param   ARR2D
+  !> @returns HasNaN
+  !>
+  !> @author Q. Liu
+  !> @date   25-Apr-2019
+  !>
   FUNCTION HasNaN(NK, NTH, ARR2D)
     !/
     !/                  +-----------------------------------+
