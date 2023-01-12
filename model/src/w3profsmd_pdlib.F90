@@ -116,6 +116,11 @@ MODULE PDLIB_W3PROFSMD
   REAL, ALLOCATABLE     :: CWNB_SIG_M2(:,:)
   REAL, ALLOCATABLE     :: U_JAC(:,:)
   REAL, ALLOCATABLE     :: COFRM4(:)
+  REAL*8, ALLOCATABLE   :: FLALL1(:,:,:), KELEM1(:,:,:)
+  REAL*8, ALLOCATABLE   :: FLALL2(:,:,:), KELEM2(:,:,:)
+  REAL*8, ALLOCATABLE   :: FLALL3(:,:,:), KELEM3(:,:,:)
+  REAL*8, ALLOCATABLE   :: NM(:,:,:), DTSI(:)
+  INTEGER, ALLOCATABLE  :: ITER(:)
   INTEGER, ALLOCATABLE  :: IS0_pdlib(:)
   INTEGER               :: FreqShiftMethod = 2
   LOGICAL               :: FSGEOADVECT
@@ -959,14 +964,15 @@ CONTAINS
     REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL  :: LAMBDA(2), KTMP(3)
-    REAL  :: KELEM(3,NE), FLALL(3,NE)
-    REAL  :: KKSUM(npa), ST(npa)
-    REAL  :: NM(NE)
-    INTEGER :: ISPROC, JSEA, IP_glob, ierr, IX
+    REAL*8  :: LAMBDA(2), KTMP(3)
+    REAL*8  :: KELEM(3,NE), FLALL(3,NE)
+    REAL*8  :: KKSUM(npa), ST(npa)
+    REAL*8  :: NM(NE)
     REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
-    LOGICAL :: testWrite
     REAL  :: FIN(1), FOUT(1)
+    INTEGER :: ISPROC, JSEA, IP_glob, ierr, IX
+    LOGICAL :: testWrite
+
 #ifdef W3_S
     CALL STRACE (IENT, 'W3XYPFSN')
 #endif
@@ -1270,16 +1276,16 @@ CONTAINS
     INTEGER :: IBI, NI(3)
     INTEGER :: JX
     REAL    :: RD1, RD2
-    REAL  :: SUMTHETA
-    REAL  :: FT, UTILDE, CFLXY
-    REAL  :: FL11, FL12, FL21, FL22, FL31, FL32
-    REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
+    REAL    :: CFLXY
+    REAL*8  :: SUMTHETA, FT, UTILDE
+    REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
+    REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL  :: LAMBDA(2), KTMP(3)
-    REAL  :: KELEM(3,NE), FLALL(3,NE)
-    REAL  :: KKSUM(npa), ST(npa)
-    REAL  :: NM(NE), BET1(3), BETAHAT(3), THETA_L(3)
+    REAL*8  :: LAMBDA(2), KTMP(3)
+    REAL*8  :: KELEM(3,NE), FLALL(3,NE)
+    REAL*8  :: KKSUM(npa), ST(npa)
+    REAL*8  :: NM(NE), BET1(3), BETAHAT(3), THETA_L(3)
     INTEGER :: ISPROC, JSEA, IP_glob, ierr, IX
     REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
     LOGICAL :: testWrite
@@ -1577,24 +1583,24 @@ CONTAINS
     !:
     ! local double
     !
-    REAL  :: SUMTHETA
-    REAL  :: FT, UTILDE, CFLXY
-    REAL  :: FL11, FL12, FL21, FL22, FL31, FL32
-    REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
+    REAL  :: SUMTHETA, CFLXY
+    REAL*8  :: FT, UTILDE
+    REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
+    REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa), UL(npa) 
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL  :: LAMBDA(2), KTMP(3)
-    REAL  :: KELEM(3,NE), FLALL(3,NE)
-    REAL  :: KKSUM(npa), ST(npa)
-    REAL  :: NM(NE), BET1(3), BETAHAT(3), TMP(3), TMP1
+    REAL*8  :: LAMBDA(2), KTMP(3)
+    REAL*8  :: KELEM(3,NE), FLALL(3,NE)
+    REAL*8  :: KKSUM(npa), ST(npa)
+    REAL*8  :: NM(NE), BET1(3), BETAHAT(3), TMP(3), TMP1
     INTEGER :: ISPROC, JSEA, IP_glob, ierr, IX
     REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
     LOGICAL :: testWrite
     REAL  :: FIN(1), FOUT(1)
     REAL  :: UIP(NE), UIPIP(NPA), UIMIP(NPA), U3(3)
-    REAL  :: THETA_H(3), THETA_ACE(3,NE), THETA_L(3,NE)
-    REAL  :: PM(NPA), PP(NPA), UIM(NE)
-    REAL  :: WII(2,NPA), USTARI(2,NPA)
+    REAL*8 :: THETA_H(3), THETA_ACE(3,NE), THETA_L(3,NE)
+    REAL*8 :: PM(NPA), PP(NPA), UIM(NE), WII(2,NPA)
+    REAL   :: USTARI(2,NPA)
 
 #ifdef W3_S
     CALL STRACE (IENT, 'W3XYPFSN')
@@ -2728,7 +2734,7 @@ CONTAINS
   END SUBROUTINE CHECK_ARRAY_INTEGRAL_NX_R8
   !/ ------------------------------------------------------------------- /
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY)
+  SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC )
     !/ ------------------------------------------------------------------- /
     !/
     !/                  +-----------------------------------+
@@ -2781,6 +2787,7 @@ CONTAINS
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
 
+    LOGICAL, INTENT(IN) :: LCALC 
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
 #ifdef W3_DEBUGSOLVER
@@ -2788,7 +2795,7 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
     IF (B_JGS_USE_JACOBI) THEN
-      CALL PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
+      CALL PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
       RETURN
     END IF
     WRITE(*,*) 'Error: You need to use with JGS_USE_JACOBI'
@@ -2798,7 +2805,7 @@ CONTAINS
     !/
   END SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY)
+  SUBROUTINE PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2850,10 +2857,10 @@ CONTAINS
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
 
+    LOGICAL, INTENT(IN) :: LCALC 
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
-    Print *, 'Before PDLIB_EXPLICIT_BLOCK'
-    CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
+    CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
     !/
     !/ End of W3XYPFSN ----------------------------------------------------- /
     !/
@@ -3386,19 +3393,19 @@ CONTAINS
     INTEGER :: eIOBPDR
 #endif
     REAL :: DTK, TMP3
-    REAL  :: LAMBDA(2)
-    REAL  :: FL11, FL12
-    REAL  :: FL21, FL22
-    REAL  :: FL31, FL32
-    REAL  :: CRFS(3), K(3)
-    REAL  :: KP(3,NSPEC,NE)
-    REAL  :: KM(3), CXY(3,2)
-    REAL  :: K1, eSI, eVS, eVD
-    REAL  :: eVal1, eVal2, eVal3
-    REAL  :: DELTAL(3,NSPEC,NE)
-    REAL  :: NM(NSPEC,NE)
-    REAL  :: TRIA03, SIDT, CCOS, CSIN
-    REAL  :: SPEC(NSPEC), DEPTH
+    REAL :: LAMBDA(2)
+    REAL :: FL11, FL12
+    REAL :: FL21, FL22
+    REAL :: FL31, FL32
+    REAL :: CRFS(3), CXY(3,2)
+    REAL :: KP(3,NSPEC,NE)
+    REAL :: KM(3), K(3)
+    REAL :: K1, eSI, eVS, eVD
+    REAL :: eVal1, eVal2, eVal3
+    REAL :: DELTAL(3,NSPEC,NE)
+    REAL :: NM(NSPEC,NE)
+    REAL :: TRIA03, SIDT, CCOS, CSIN
+    REAL :: SPEC(NSPEC), DEPTH
 
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'calcARRAY_JACOBI, begin'
@@ -3607,16 +3614,16 @@ CONTAINS
     INTEGER :: I1, I2, I3, NI(3)
     INTEGER :: counter, IB1, IB2, IBR
     REAL    :: DTK, TMP3
-    REAL    :: LAMBDA(2)
+    REAL    :: LAMBDA(2), CXYY(2,3), CXY(2,NPA)
     REAL    :: FL11, FL12
     REAL    :: FL21, FL22
     REAL    :: FL31, FL32
     REAL    :: CRFS(3), K(3)
-    REAL    :: KP(3,NE), CXYY(2,3)
-    REAL    :: KM(3), CXY(2,NPA)
+    REAL    :: KP(3,NE)
+    REAL    :: KM(3), DELTAL(3,NE)
     REAL    :: K1, eSI, eVS, eVD
     REAL    :: eVal1, eVal2, eVal3
-    REAL    :: DELTAL(3,NE), CG1, WN1
+    REAL    :: CG1, WN1
     REAL    :: TRIA03, SIDT, CCOS, CSIN
     REAL    :: SPEC(NSPEC), DEPTH, CCOSA(NTH), CSINA(NTH)
     INTEGER :: IOBPTH1(NTH), IOBPTH2(NTH)
@@ -3866,10 +3873,10 @@ CONTAINS
     REAL  :: K1, eSI, eVS, eVD
     REAL  :: eVal1, eVal2, eVal3
     REAL  :: DELTAL(3)
-    REAL  :: NM
+    REAL  :: NM, TRIA03, SIDT
     REAL  :: IEN_LOCAL(6), CG2(NK,NTH)
-    REAL  :: TRIA03, SIDT, CCOS, CSIN
-    REAL    :: SPEC(NSPEC), DEPTH
+    REAL  :: CCOS, CSIN
+    REAL  :: SPEC(NSPEC), DEPTH
 
     memunit = 50000+IAPROC
 
@@ -4060,21 +4067,21 @@ CONTAINS
 #ifdef W3_REF1
     INTEGER :: eIOBPDR
 #endif
-    REAL*8  :: DTK, TMP3
-    REAL*8  :: LAMBDA(2)
-    REAL*8  :: FL11, FL12
-    REAL*8  :: FL21, FL22
-    REAL*8  :: FL31, FL32
-    REAL*8  :: CRFS(3), K(3)
-    REAL*8  :: KP(3)
-    REAL*8  :: KM(3), CXY(3,2)
-    REAL*8  :: K1, eSI, eVS, eVD
-    REAL*8  :: eVal1, eVal2, eVal3
-    REAL*8  :: ien_local(6)
-    REAL*8  :: DELTAL(3)
-    REAL*8  :: NM
-    REAL*8  :: TRIA03, SIDT, CCOS, CSIN
-    REAL*8  :: DEPTH
+    REAL :: DTK, TMP3
+    REAL :: LAMBDA(2)
+    REAL :: FL11, FL12
+    REAL :: FL21, FL22
+    REAL :: FL31, FL32
+    REAL :: CRFS(3), K(3)
+    REAL :: KP(3)
+    REAL :: KM(3), CXY(3,2)
+    REAL :: K1, eSI, eVS, eVD
+    REAL :: eVal1, eVal2, eVal3
+    REAL :: ien_local(6)
+    REAL :: DELTAL(3)
+    REAL :: NM
+    REAL :: TRIA03, SIDT, CCOS, CSIN
+    REAL :: DEPTH
 
     ASPAR_DIAG_LOCAL     = 0.d0
     B_JAC_LOCAL          = 0.d0
@@ -4262,21 +4269,21 @@ CONTAINS
 #ifdef W3_REF1
     INTEGER :: eIOBPDR
 #endif
-    REAL*8  :: DTK, TMP3, D1, D2
-    REAL*8  :: LAMBDA(2)
-    REAL*8  :: CRFS(3), K(3)
-    REAL*8  :: KP(3), UV_CUR(3,2)
-    REAL*8  :: KM(3), CSX(3), CSY(3)
-    REAL*8  :: K1, eSI, eVS, eVD
-    REAL*8  :: eVal1, eVal2, eVal3
-    REAL*8  :: ien_local(6)
-    REAL*8  :: DELTAL(3), K_X(3,NK), K_Y(3,NK), K_U(3)
-    REAL*8  :: CRFS_X(3,NK), CRFS_Y(3,NK), CRFS_U(3)
-    REAL*8  :: NM, CGFAK(3,NK), CSINA(NTH), CCOSA(NTH)
-    REAL*8  :: TRIA03, SIDT, CCOS, CSIN
-    REAL*8  :: FL11_X, FL12_X, FL21_X, FL22_X, FL31_X, FL32_X
-    REAL*8  :: FL11_Y, FL12_Y, FL21_Y, FL22_Y, FL31_Y, FL32_Y
-    REAL*8  :: FL11_U, FL12_U, FL21_U, FL22_U, FL31_U, FL32_U
+    REAL  :: DTK, TMP3, D1, D2
+    REAL  :: LAMBDA(2)
+    REAL  :: CRFS(3), K(3)
+    REAL  :: KP(3), UV_CUR(3,2)
+    REAL  :: KM(3), CSX(3), CSY(3)
+    REAL  :: K1, eSI, eVS, eVD
+    REAL  :: eVal1, eVal2, eVal3
+    REAL  :: ien_local(6)
+    REAL  :: DELTAL(3), K_X(3,NK), K_Y(3,NK), K_U(3)
+    REAL  :: CRFS_X(3,NK), CRFS_Y(3,NK), CRFS_U(3)
+    REAL  :: NM, CGFAK(3,NK), CSINA(NTH), CCOSA(NTH)
+    REAL  :: TRIA03, SIDT, CCOS, CSIN
+    REAL  :: FL11_X, FL12_X, FL21_X, FL22_X, FL31_X, FL32_X
+    REAL  :: FL11_Y, FL12_Y, FL21_Y, FL22_Y, FL31_Y, FL32_Y
+    REAL  :: FL11_U, FL12_U, FL21_U, FL22_U, FL31_U, FL32_U
 
     IP_glob              = iplg(IP)
     ASPAR_DIAG_LOCAL     = ZERO
@@ -5661,7 +5668,7 @@ CONTAINS
     ENDIF
   END SUBROUTINE ACTION_LIMITER_LOCAL
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
+  SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -5759,6 +5766,7 @@ CONTAINS
     USE MallocInfo_m
 #endif
     implicit none
+    LOGICAL, INTENT(IN) :: LCALC 
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
     !
@@ -6591,7 +6599,7 @@ CONTAINS
 #endif
   END SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY)
+  SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -6606,6 +6614,270 @@ CONTAINS
     !/    01-June-2018 : Origination.                        ( version 6.04 )
     !/
     !  1. Purpose : Explicit block solver
+    !  2. Method : It uses the n-scheme and the idea is to reduce latency due 
+    !              to DD communication and increase vectorization level on the 
+    !              single core 
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !  7. Remarks
+    !  8. Structure :
+    !  9. Switches :
+    !
+    !     !/S  Enable subroutine tracing.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    !
+#ifdef W3_S
+    USE W3SERVMD, only: STRACE
+#endif
+    USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, ESIN, ECOS, NSEAL, FSBCCFL, CLATS
+    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, MAPSF
+    USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
+    USE W3ADATMD, ONLY: DW, MPI_COMM_WCMP
+    USE W3WDATMD, ONLY: VA
+    USE W3DISPMD, ONLY: WAVNU3
+#ifdef W3_PDLIB
+    USE yowElementpool, only: ne, ine
+    USE yowNodepool, only: np, npa, pdlib_ien, pdlib_si, ipgl, iplg
+    use yowDatapool, only: rtype
+    use yowExchangeModule, only: PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
+    use yowRankModule,     only: ipgl_npa
+    USE MPI, only : MPI_MIN
+#endif
+
+    IMPLICIT NONE 
+  
+    LOGICAL, INTENT(IN) :: LCALC 
+
+    INTEGER, INTENT(IN) :: IMOD 
+
+    REAL, INTENT(IN)    :: FACX, FACY, DTG, VGX, VGY
+
+    REAL              :: KTMP(3), UTILDE(NTH), ST(NTH,NPA)
+    REAL              :: FL11(NTH), FL12(NTH), FL21(NTH), FL22(NTH), FL31(NTH), FL32(NTH), KKSUM(NTH,NPA)
+    REAL              :: FL111(NTH), FL112(NTH), FL211(NTH), FL212(NTH), FL311(NTH), FL312(NTH)
+
+    REAL              :: KSIG(NPA), CGSIG(NPA), CXX(NTH,NPA), CYY(NTH,NPA)
+    REAL              :: LAMBDAX(NTH), LAMBDAY(NTH)
+    REAL              :: DTMAX(NTH), DTMAXEXP(NTH), DTMAXOUT, DTMAXGL
+    REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2, RD10, RD20
+    REAL              :: UOLD(NSPEC,NPA), U(NSPEC,NPA) 
+
+    REAL, PARAMETER   :: ONESIXTH = 1.0/6.0
+    REAL, PARAMETER   :: ZERO = 0.0
+    REAL, PARAMETER   :: THR = TINY(1.)
+
+    INTEGER           :: IK, ISP, ITH, IE, IP, IT, IBI, NI(3), I1, I2, I3, JX, IERR, IP_GLOB
+    !
+    ! 1.b Initialize arrays
+    !
+    ! 2.  Calculate velocities ---------------- *
+    !
+    !   2a. Vectorized for all points looping over each wave number (maybe do a dirty save will be nice!)
+    !       
+    !WRITE(*,*) 'SUM VA2', SUM(VA) 
+
+    DO IK = 1, NK
+
+      IF (LCALC) THEN
+
+        DO IP = 1, NPA 
+          CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG(IP)) 
+        ENDDO 
+
+        DO ITH = 1, NTH
+          CXX(ITH,:) = CGSIG * FACX * ECOS(ITH)
+          CYY(ITH,:) = CGSIG * FACY * ESIN(ITH)
+        ENDDO 
+
+        DO IE = 1, NE
+
+          NI  = INE(:,IE)
+
+          I1  = NI(1)
+          I2  = NI(2)
+          I3  = NI(3)
+
+          DO ITH = 1, NTH
+            LAMBDAX(ITH) = ONESIXTH *SUM((CXX(ITH,NI)+CXX(ITH,NI)+CXX(ITH,NI))) ! Linearized advection speed in X and Y direction
+            LAMBDAY(ITH) = ONESIXTH *SUM((CYY(ITH,NI)+CYY(ITH,NI)+CYY(ITH,NI)))
+          ENDDO 
+
+          KELEM1(:,IE,IK) = LAMBDAX(:) * PDLIB_IEN(1,IE) + LAMBDAY(:) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
+          KELEM2(:,IE,IK) = LAMBDAX(:) * PDLIB_IEN(3,IE) + LAMBDAY(:) * PDLIB_IEN(4,IE)
+          KELEM3(:,IE,IK) = LAMBDAX(:) * PDLIB_IEN(5,IE) + LAMBDAY(:) * PDLIB_IEN(6,IE)
+
+          DO ITH = 1, NTH 
+            KTMP(1)           = KELEM1(ITH,IE,IK) ! Extract 
+            KTMP(2)           = KELEM2(ITH,IE,IK)
+            KTMP(3)           = KELEM3(ITH,IE,IK)
+            NM(ITH,IE,IK)     = - 1.D0/MIN(-THR,SUM(MIN(ZERO,KTMP))) ! N-Values
+            KELEM1(ITH,IE,IK) = MAX(ZERO,KTMP(1))
+            KELEM2(ITH,IE,IK) = MAX(ZERO,KTMP(2))
+            KELEM3(ITH,IE,IK) = MAX(ZERO,KTMP(3))
+          ENDDO 
+
+          FL11  = CXX(:,I2) * PDLIB_IEN(1,IE) + CYY(:,I2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration
+          FL12  = CXX(:,I3) * PDLIB_IEN(1,IE) + CYY(:,I3) * PDLIB_IEN(2,IE)
+          FL21  = CXX(:,I3) * PDLIB_IEN(3,IE) + CYY(:,I3) * PDLIB_IEN(4,IE)
+          FL22  = CXX(:,I1) * PDLIB_IEN(3,IE) + CYY(:,I1) * PDLIB_IEN(4,IE)
+          FL31  = CXX(:,I1) * PDLIB_IEN(5,IE) + CYY(:,I1) * PDLIB_IEN(6,IE)
+          FL32  = CXX(:,I2) * PDLIB_IEN(5,IE) + CYY(:,I2) * PDLIB_IEN(6,IE)
+
+          FL111 = 2.d0 * FL11 + FL12
+          FL112 = 2.d0 * FL12 + FL11
+          FL211 = 2.d0 * FL21 + FL22
+          FL212 = 2.d0 * FL22 + FL21
+          FL311 = 2.d0 * FL31 + FL32
+          FL312 = 2.d0 * FL32 + FL31
+
+          FLALL1(:,IE,IK) = (FL311 + FL212) * ONESIXTH + KELEM1(:,IE,IK)
+          FLALL2(:,IE,IK) = (FL111 + FL312) * ONESIXTH + KELEM2(:,IE,IK)
+          FLALL3(:,IE,IK) = (FL211 + FL112) * ONESIXTH + KELEM3(:,IE,IK)
+
+        ENDDO  ! IE
+
+        KKSUM = ZERO
+        DO IE = 1, NE
+          NI = INE(:,IE)
+          KKSUM(:,NI(1)) = KKSUM(:,NI(1)) + KELEM1(:,IE,IK)
+          KKSUM(:,NI(2)) = KKSUM(:,NI(2)) + KELEM2(:,IE,IK)
+          KKSUM(:,NI(3)) = KKSUM(:,NI(3)) + KELEM3(:,IE,IK)
+        END DO
+
+        DTMAXEXP = 1.E10 
+        DTMAX    = 1.E10
+        DO IP = 1, np
+          IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
+            DO ITH = 1, NTH
+              DTMAXEXP(ITH) = PDLIB_SI(IP)/MAX(THR,KKSUM(ITH,IP)*IOBDP_LOC(IP))
+              DTMAX(ITH)    = MIN(DTMAX(ITH),DTMAXEXP(ITH))
+            ENDDO
+            DTMAXOUT = MINVAL(DTMAX)
+          ENDIF
+        END DO
+
+        FIN(1) = DTMAXOUT
+        CALL MPI_ALLREDUCE(FIN,FOUT,1,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
+        DTMAXGL = FOUT(1)
+
+        CFLXY = DBLE(DTG)/DTMAXGL
+        REST  = ABS(MOD(CFLXY,1.0d0))
+        IF (REST .LT. THR) THEN
+          ITER(IK) = ABS(NINT(CFLXY))
+        ELSE IF (REST .GT. THR .AND. REST .LT. 0.5d0) THEN
+          ITER(IK) = ABS(NINT(CFLXY)) + 1
+        ELSE
+          ITER(IK) = ABS(NINT(CFLXY))
+        END IF
+
+        DO IP = 1, np
+          DTSI(IP) = DBLE(DTMAXGL)/DBLE(ITER(IK))/PDLIB_SI(IP) ! Some precalculations for the time integration.
+        END DO
+
+      END IF ! LCALC
+
+! Exact and convert Wave Action - should be some subroutine function or whatever 
+      DO ITH = 1, NTH
+        ISP = ITH + (IK-1) * NTH
+        DO IP = 1, NP
+          U(ISP,IP)  = VA(ISP,IP) / CGSIG(IP) * CLATS(IPGL(IP))
+        ENDDO 
+      ENDDO 
+      UOLD = U
+
+      DO IT = 1, ITER(IK)
+        ST = ZERO
+        DO IE = 1, NE
+          NI  = INE(:,IE)
+          UTILDE      = NM(:,IE,IK) * (FLALL1(:,IE,IK)*U(:,NI(1)) + FLALL2(:,IE,IK)*U(:,NI(2)) + FLALL3(:,IE,IK)*U(:,NI(3)))
+          ST(:,NI(1)) = ST(:,NI(1)) + KELEM1(:,IE,IK) * (U(:,NI(1)) - UTILDE) ! the 2nd term are the theta values of each node ...
+          ST(:,NI(2)) = ST(:,NI(2)) + KELEM2(:,IE,IK) * (U(:,NI(2)) - UTILDE) ! the 2nd term are the theta values of each node ...
+          ST(:,NI(3)) = ST(:,NI(3)) + KELEM3(:,IE,IK) * (U(:,NI(3)) - UTILDE) ! the 2nd term are the theta values of each node ...
+        END DO ! IE
+        DO IP = 1, NP
+          DO ITH = 1, NTH
+            ISP = ITH + (IK-1) * NTH
+            U(ISP,IP) = MAX(ZERO,U(ISP,IP)-DTSI(IP)*ST(ITH,IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
+#ifdef W3_REF1
+            IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(ISP,IP) = UOLD(ISP,IP) ! restores reflected boundary values
+#endif
+          ENDDO 
+        ENDDO ! IE
+
+        IF ( FLBPI ) THEN
+          DO ITH = 1, NTH
+            ISP = ITH + (IK-1) * NTH
+            RD1 = RD10 - DTG * REAL(ITER(IK)-IT)/REAL(ITER(IK))
+            RD2 = RD20
+            IF ( RD2 .GT. 0.001 ) THEN
+              RD2    = MIN(1.,MAX(0.,RD1/RD2))
+              RD1    = 1. - RD2
+            ELSE
+              RD1    = 0.
+              RD2    = 1.
+            END IF
+            DO IBI = 1, NBI
+              IP_glob = MAPSF(ISBPI(IBI),1)
+              JX      = IPGL_npa(IP_glob)
+              IF (JX .gt. 0) THEN
+                U(ISP,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) / CGSIG(ISBPI(IBI)) * CLATS(ISBPI(IBI))
+              END IF
+            END DO
+          ENDDO 
+        ENDIF ! FLBPI
+
+        !WRITE(*,*) 'SUM U', SUM(U), 'SUM CGSIG', SUM(CGSIG), 'SUM VA', SUM(VA)
+        CALL PDLIB_exchange2DREAL(U)
+
+      ENDDO ! IT
+
+! Exact and convert Wave Action 
+      DO ITH = 1, NTH
+        ISP = ITH + (IK-1) * NTH
+        DO IP = 1, NP
+          VA(ISP,IP)  = U(ISP,IP) * CGSIG(IP) / CLATS(IPGL(IP))
+        ENDDO
+      ENDDO
+
+    ENDDO ! IK
+
+    !WRITE(*,*) 'SUM VA3', SUM(VA)
+
+  END SUBROUTINE PDLIB_EXPLICIT_BLOCK
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE BLOCK_SOLVER_EXPLICIT_INIT()
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                                   |
+    !/                  | Aron Roland (BGS IT&E GmbH)       |
+    !/                  | Mathieu Dutour-Sikiric (IRB)      |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :        01-June-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    01-June-2018 : Origination.                        ( version 6.04 )
+    !/
+    !  1. Purpose : Initialization of the block solver
     !  2. Method :
     !  3. Parameters :
     !
@@ -6636,311 +6908,25 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    !
 #ifdef W3_S
     USE W3SERVMD, only: STRACE
 #endif
+    USE W3GDATMD, only:  NTH, NK
+#ifdef W3_PDLIB
+    USE YOWNODEPOOL, only: np
+    USE YOWELEMENTPOOL, only: ne
+#endif
+    IMPLICIT NONE
     !/
-    !USE W3GDATMD, only: MAPSTA
-    USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP, FSBCCFL
-    USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-    USE W3GDATMD, only: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN, NTRI
-    USE W3GDATMD, only: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
-    USE W3GDATMD, only: B_JGS_TERMINATE_MAXITER, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_DIFF_THR
-    USE W3GDATMD, only: MAPWN
-    USE MPI, only : MPI_MIN
-    use yowElementpool, only: ne, INE
-    USE YOWNODEPOOL, only: PDLIB_I_DIAG, PDLIB_IA_P, PDLIB_JA, np
-    USE YOWNODEPOOL, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
-    use yowDatapool, only: rtype
-    use YOWNODEPOOL, only: npa, iplg
-    use yowExchangeModule, only : PDLIB_exchange2Dreal_zero
-    USE W3ADATMD, only: WN
-    USE MPI, only : MPI_SUM, MPI_INT
-    USE W3ADATMD, only: MPI_COMM_WCMP, CFLXYMAX
-    USE W3GDATMD, only: IOBP, IOBPD, NSEA, SIG, IOBDP
-    USE W3GDATMD, only: NK, NK2, NTH, ECOS, ESIN, NSPEC, MAPFS
-    USE W3WDATMD, only: TIME
-    USE W3TIMEMD, only: DSEC21
-    USE W3GDATMD, only: NSEAL, CLATS, FACHFA
-    USE W3IDATMD, only: FLCUR
-#ifdef W3_DEBUGSRC
-    USE W3WDATMD, only: SHAVETOT
-#endif
-    USE W3WDATMD, only: VA, VSTOT, VDTOT
-    USE W3ADATMD, only: CG, CX, CY, MPI_COMM_WCMP
-    USE W3ODATMD, only: TBPIN, FLBPI, IAPROC
-    USE W3PARALL, only : INIT_GET_JSEA_ISPROC, ZERO, THR8
-    USE W3PARALL, only : ListISPprevDir, ListISPnextDir
-    USE W3PARALL, only : JX_TO_JSEA
-    USE W3GDATMD, only: B_JGS_NLEVEL
-    !
-    INTEGER, INTENT(IN)     :: IMOD
-    REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
-    !
-    INTEGER :: IP, ISP, ITH, IK, JSEA, ISEA, IP_glob, IE, IPOS
-    ! for the exchange
-    REAL :: CCOS, CSIN, CCURX, CCURY
-    REAL  :: eSum(NSPEC)
-    INTEGER :: ITER_EXP(nspec)
-    INTEGER :: ISPp1, ISPm1, JP, I1, I2, I3, NI(3), IT
-    INTEGER, SAVE :: ITER_MAX
-    REAL  :: eFactM1, eFactP1
-    REAL  :: Sum_Prev, Sum_New
-    REAL  :: prop_conv, eSI, p_is_converged
-    REAL  :: Sum_L2, Sum_L2_GL
-    REAL  :: DMM(0:NK2)
-    REAL  :: DiffNew, DTMAX_GLOBAL_EXP, DTMAX_EXP
-    REAL  :: eDiff(NSPEC), eProd(NSPEC), u33(nspec,3)
-    REAL  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC), LAMBDA(NSPEC,3)
-    REAL  :: VAnew(NSPEC), VAold(NSPEC), REST, CFLXY, DT4AI
-    REAL  :: VAinput(NSPEC), VAacloc(NSPEC), eDiffB(NSPEC), KTMP(nspec,3), TMP(nspec)
-    REAL  :: eDiffSing, eSumPart, N(nspec,ntri), kksum(nspec,npa), ST3(nspec), utilde33(nspec)
-    REAL  :: FL11(NSPEC),FL12(NSPEC),FL21(NSPEC),FL22(NSPEC),FL31(NSPEC),FL32(NSPEC)
-    REAL  :: FL111(NSPEC), FL112(NSPEC), FL211(NSPEC), FL212(NSPEC), FL311(NSPEC), FL312(NSPEC)
-    REAL  :: KELEMGL(NSPEC,3,NTRI), FLALLGL(NSPEC,3,NTRI)
-    REAL  :: eVal1, eVal2,thr
-    REAL    :: eVA
-#ifdef W3_DEBUGSRC
-    REAL :: IntDiff, eVA_w3srce, eVAsolve, SumACout
-    REAL :: SumVAin, SumVAout, SumVAw3srce, SumVS, SumVD, VS_w3srce
-    REAL    :: VAsolve(NSPEC)
-    REAL*8  :: ACsolve
-    REAL    :: eB
-#endif
-    REAL  :: ASPAR_DIAG(NSPEC)
-#ifdef W3_DEBUGSOLVERCOH
-    REAL*8 :: PRE_VA(NSPEC, npa)
-    REAL*8 :: OffDIAG(NSPEC, npa)
-    REAL*8 :: eOff(NSPEC)
-    REAL*8 :: eSum1(NSPEC), eSum2(NSPEC)
-#endif
-    CHARACTER(len=128) eFile
-    INTEGER ierr, i
-    INTEGER JP_glob
-    INTEGER is_converged, itmp
-    thr    = dble(tiny(1.))
-    CCURX  = FACX
-    CCURY  = FACY
-#ifdef W3_DEBUGSOLVER
-    WRITE(740+IAPROC,*) 'EXPLICIT BLOCK SOLVER, begin'
-    WRITE(740+IAPROC,*) 'NX=', NX
-    WRITE(740+IAPROC,*) 'NP=', NP
-    WRITE(740+IAPROC,*) 'NPA=', NPA
-    WRITE(740+IAPROC,*) 'NSEA=', NSEA
-    WRITE(740+IAPROC,*) 'NSEAL=', NSEAL
-    FLUSH(740+IAPROC)
-#endif
-    !
-    ! 1.b Initialize arrays
-    !
-    ! 2.  Calculate velocities ---------------- *
-    !
-#ifdef W3_DEBUGSRC
-    WRITE(740+IAPROC,*) 'NSEAL =', NSEAL
-    WRITE(740+IAPROC,*) 'NP    =', NP
-    WRITE(740+IAPROC,*) 'NPA   =', NPA
-#endif
-    DO JSEA=1,NSEAL
-      IP = JSEA
-      IP_glob=iplg(IP)
-      ISEA=MAPFS(1,IP_glob)
-      DO ISP=1,NSPEC
-        ITH    = 1 + MOD(ISP-1,NTH)
-        IK     = 1 + (ISP-1)/NTH
-        CCOS   = FACX * ECOS(ITH)
-        CSIN   = FACY * ESIN(ITH)
-        VA(ISP,IP) = DBLE(VA(ISP,JSEA) / CG(IK,ISEA) * CLATS(ISEA))
-#ifdef W3_MGP
-        VLCFLX(ISP,IP) = VLCFLX(ISP,IP) - CCURX*VGX/CLATS(ISEA)
-        VLCFLY(ISP,IP) = VLCFLY(ISP,IP) - CCURY*VGY
-#endif
-      END DO
-    END DO
-#ifdef W3_DEBUGSRC
-    DO IP=1,NP
-      WRITE(740+IAPROC,*) 'IP=', IP
-      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA(:,IP)), maxval(VA(:,IP)), sum(VA(:,IP))
-    END DO
-#endif
 
-#ifdef W3_DEBUGSOLVERCOH
-    CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) just defined", 0)
-    CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) just defined", 1)
-#endif
-#ifdef W3_DEBUGSOLVER
-    WRITE(740+IAPROC,*) 'JACOBI_SOLVER, step 3'
-    WRITE(740+IAPROC,*) 'FLCUR=', FLCUR
-    FLUSH(740+IAPROC)
-    WRITE(740+IAPROC,*) 'EXPLICIT BLOCK SOLVER, step 4'
-    WRITE(740+IAPROC,*) 'min,max(0)=', 0
-    WRITE(740+IAPROC,*) 'min,max(0)=', 0
-    FLUSH(740+IAPROC)
-#endif
-
-    DO IE = 1, NE
-      I1 = INE(1,IE)
-      I2 = INE(2,IE)
-      I3 = INE(3,IE)
-      !LAMBDA(:,1) = 1./6. *(C(:,I1,1)+C(:,I2,1)+C(:,I3,1))
-      !LAMBDA(:,2) = 1./6. *(C(:,I1,2)+C(:,I2,2)+C(:,I3,2))
-      KELEMGL(:,1,IE) = LAMBDA(:,1) * PDLIB_IEN(1,IE) + LAMBDA(:,2) * PDLIB_IEN(2,IE)
-      KELEMGL(:,2,IE) = LAMBDA(:,1) * PDLIB_IEN(3,IE) + LAMBDA(:,2) * PDLIB_IEN(4,IE)
-      KELEMGL(:,3,IE) = LAMBDA(:,1) * PDLIB_IEN(5,IE) + LAMBDA(:,2) * PDLIB_IEN(6,IE)
-      KTMP(:,1)  = KELEMGL(:,1,IE)
-      KTMP(:,2)  = KELEMGL(:,2,IE)
-      KTMP(:,3)  = KELEMGL(:,3,IE)
-      TMP(:)     = SUM(MIN(ZERO,KTMP(:,:)),DIM=2)
-      N(:,IE)  = -1.d0/MIN(-THR,TMP(:))
-      KELEMGL(:,1,IE)  = MAX(ZERO,KTMP(:,1))
-      KELEMGL(:,2,IE)  = MAX(ZERO,KTMP(:,2))
-      KELEMGL(:,3,IE)  = MAX(ZERO,KTMP(:,3))
-      !        FL11  = C(:,I2,1) * PDLIB_IEN(1,IE) + C(:,I2,2) * PDLIB_IEN(2,IE)
-      !        FL12  = C(:,I3,1) * PDLIB_IEN(1,IE) + C(:,I3,2) * PDLIB_IEN(2,IE)
-      !        FL21  = C(:,I3,1) * PDLIB_IEN(3,IE) + C(:,I3,2) * PDLIB_IEN(4,IE)
-      !        FL22  = C(:,I1,1) * PDLIB_IEN(3,IE) + C(:,I1,2) * PDLIB_IEN(4,IE)
-      !        FL31  = C(:,I1,1) * PDLIB_IEN(5,IE) + C(:,I1,2) * PDLIB_IEN(6,IE)
-      !        FL32  = C(:,I2,1) * PDLIB_IEN(5,IE) + C(:,I2,2) * PDLIB_IEN(6,IE)
-      FL111 = 2*FL11+FL12
-      FL112 = 2*FL12+FL11
-      FL211 = 2*FL21+FL22
-      FL212 = 2*FL22+FL21
-      FL311 = 2*FL31+FL32
-      FL312 = 2*FL32+FL31
-      FLALLGL(:,1,IE) = (FL311 + FL212) * 1./6. + KELEMGL(:,1,IE)
-      FLALLGL(:,2,IE) = (FL111 + FL312) * 1./6. + KELEMGL(:,2,IE)
-      FLALLGL(:,3,IE) = (FL211 + FL112) * 1./6. + KELEMGL(:,3,IE)
-    END DO
-
-    KKSUM = 0.d0
-    DO IE = 1, NE
-      NI = INE(:,IE)
-      KKSUM(:,NI) = KKSUM(:,NI) + KELEMGL(:,:,IE)
-    END DO
-    DTMAX_GLOBAL_EXP = 1.d0/THR
-    DO IP = 1, NP
-      IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
-        DTMAX_EXP        = PDLIB_SI(IP)/MAX(THR,MAXVAL(KKSUM(:,IP)))
-        DTMAX_GLOBAL_EXP = MIN ( DTMAX_GLOBAL_EXP, DTMAX_EXP)
-        CFLXYMAX(IP)     = DBLE(DTG)/DTMAX_EXP
-      ENDIF
-    END DO
-    DTMAX_EXP = DTMAX_GLOBAL_EXP
-    call mpi_allreduce(DTMAX_EXP,DTMAX_GLOBAL_EXP,1,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
-    CFLXY = DTG/DTMAX_GLOBAL_EXP
-    REST = ABS(MOD(CFLXY,1.d0))
-    IF (REST .LT. THR) THEN
-      ITER_MAX = ABS(NINT(CFLXY))
-    ELSE IF (REST .GT. THR .AND. REST .LT. 0.5d0) THEN
-      ITER_MAX = ABS(NINT(CFLXY)) + 1
-    ELSE
-      ITER_MAX = ABS(NINT(CFLXY))
-    END IF
-
-    DT4AI = DTG/ITER_MAX
-    DO IT = 1, ITER_MAX
-      DO IP = 1, NP
-        ST3 = ZERO
-        DO I = 1, PDLIB_CCON(IP)
-          IE       = PDLIB_IE_CELL2(I,IP)
-          U33      = VA(:,INE(:,IE))
-          UTILDE33 = N(:,IE)*(FLALLGL(:,1,IE)*U33(:,1)+FLALLGL(:,2,IE)*U33(:,2)+FLALLGL(:,3,IE)*U33(:,3))
-          IPOS     = PDLIB_POS_CELL2(I,IP)
-          ST3      = ST3 + KELEMGL(:,IPOS,IE)*(U33(:,IPOS)-UTILDE33)
-        END DO
-        VA(:,IP) = MAX(ZERO,VA(:,IP)-DT4AI/PDLIB_SI(IP)*ST3)
-      END DO !IP
-      CALL PDLIB_exchange2DREAL_ZERO(VA)
-    END DO !IT
-
-    DO IP = 1, npa
-#ifdef W3_DEBUGSRC
-      WRITE(740+IAPROC,*) 'IOBPD loop, Before, sum(VA)=', sum(VA(:,IP))
-#endif
-      DO ISP=1,NSPEC
-        ITH    = 1 + MOD(ISP-1,NTH)
-        VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*IOBPD_LOC(ITH,IP)
-      END DO
-#ifdef W3_DEBUGSRC
-      WRITE(740+IAPROC,*) 'IOBPD loop, After, sum(VA)=', sum(VA(:,IP))
-#endif
-    END DO
-
-#ifdef W3_DEBUGSOLVERCOH
-    CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) after loop", 1)
-#endif
-#ifdef W3_DEBUGSOLVER
-    WRITE(740+IAPROC,*) 'FLBPI=', FLBPI
-    FLUSH(740+IAPROC)
-#endif
-
-    DO JSEA=1, NSEAL
-      IP=JSEA
-      IP_glob=iplg(IP)
-      ISEA=MAPFS(1,IP_glob)
-      !
-#ifdef W3_DEBUGSRC
-      IntDiff=0
-      SumVS=0
-      SumVD=0
-      SumVAin=0
-      SumVAout=0
-      SumVAw3srce=0
-      SumACout=0
-#endif
-      !
-      DO ISP=1,NSPEC
-        IK     = 1 + (ISP-1)/NTH
-        eVA = MAX ( 0. ,CG(IK,ISEA)/CLATS(ISEA)*REAL(VA(ISP,IP)) )
-#ifdef W3_DEBUGSRC
-        SumACout=SumACout + REAL(VA(ISP,IP))
-        VS_w3srce = VSTOT(ISP,JSEA) * DTG / MAX(1., (1. - DTG*VDTOT(ISP,JSEA)))
-        eVA_w3srce = MAX(0., VA(ISP,JSEA) + VS_w3srce)
-        IntDiff = IntDiff + abs(eVA - eVA_w3srce)
-        ACsolve=B_JAC(ISP,IP)/ASPAR_JAC(ISP,PDLIB_I_DIAG(IP))
-        eB=VA(ISP,JSEA) + DTG*(VSTOT(ISP,JSEA) - VDTOT(ISP,JSEA)*VA(ISP,JSEA))
-        eVAsolve=MAX(0., CG(IK,ISEA)/CLATS(ISEA)*ACsolve)
-        VAsolve(ISP)=eVAsolve
-        SumVS = SumVS + abs(VSTOT(ISP,JSEA))
-        SumVD = SumVD + abs(VDTOT(ISP,JSEA))
-        SumVAin = SumVAin + abs(VA(ISP,JSEA))
-        SumVAout = SumVAout + abs(eVA)
-        SumVAw3srce = SumVAw3srce + abs(eVA_w3srce)
-#endif
-        VA(ISP,JSEA) = eVA
-      END DO
-
-#ifdef W3_DEBUGSRC
-      WRITE(740+IAPROC,*) 'ISEA=', ISEA, ' IntDiff=', IntDiff, ' DTG=', DTG
-      IF (ISEA .eq. TESTNODE) THEN
-        DO ISP=1,NSPEC
-          WRITE(740+IAPROC,*) 'ISP=', ISP, 'VA/VAsolve=', VA(ISP,JSEA), VAsolve(ISP)
-        END DO
-      END IF
-      WRITE(740+IAPROC,*) 'SHAVE=', SHAVETOT(JSEA)
-      WRITE(740+IAPROC,*) 'Sum(VS/VD)=', SumVS, SumVD
-      WRITE(740+IAPROC,*) 'min/max/sum(VS)=', minval(VSTOT(:,JSEA)), maxval(VSTOT(:,JSEA)), sum(VSTOT(:,JSEA))
-      WRITE(740+IAPROC,*) 'min/max/sum(VD)=', minval(VDTOT(:,JSEA)), maxval(VDTOT(:,JSEA)), sum(VDTOT(:,JSEA))
-      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA(:,JSEA)), maxval(VA(:,JSEA)), sum(VA(:,JSEA))
-      WRITE(740+IAPROC,*) 'min/max/sum(VAsolve)=', minval(VAsolve), maxval(VAsolve), sum(VAsolve)
-      WRITE(740+IAPROC,*) 'SumVA(in/out/w3srce)=', SumVAin, SumVAout, SumVAw3srce
-      WRITE(740+IAPROC,*) 'SumACout=', SumACout
-#endif
-    END DO
-#ifdef W3_DEBUGSRC
-    DO IP=1,NP
-      WRITE(740+IAPROC,*) 'IP=', IP
-      WRITE(740+IAPROC,*) 'min/max/sum(VA)=', minval(VA(:,IP)), maxval(VA(:,IP)), sum(VA(:,IP))
-    END DO
-    WRITE(740+IAPROC,*) 'min/max/sum(VAtot)=', minval(VA), maxval(VA), sum(VA)
-#endif
-
-
-#ifdef W3_DEBUGSOLVER
-    WRITE(740+IAPROC,*) 'PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK, end'
-    FLUSH(740+IAPROC)
-#endif
-  END SUBROUTINE PDLIB_EXPLICIT_BLOCK
+    ALLOCATE(FLALL1(NTH,NE,NK), FLALL2(NTH,NE,NK), FLALL3(NTH,NE,NK))
+    ALLOCATE(KELEM1(NTH,NE,NK), KELEM2(NTH,NE,NK), KELEM3(NTH,NE,NK))
+    ALLOCATE(NM(NTH,NE,NK), DTSI(NP)) 
+    ALLOCATE(ITER(NK))
+    
+    !/ ------------------------------------------------------------------- /
+    !/
+  END SUBROUTINE BLOCK_SOLVER_EXPLICIT_INIT
   !/ ------------------------------------------------------------------- /
   SUBROUTINE BLOCK_SOLVER_INIT(IMOD)
     !/

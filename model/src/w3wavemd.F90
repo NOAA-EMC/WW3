@@ -1841,6 +1841,8 @@ CONTAINS
             END IF
           END IF
           IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
+ 
+            !WRITE(*,*) 'SUM VA 1', SUM(VA)
             !
 #ifdef W3_PDLIB
             IF ((FSTOTALIMP .eqv. .FALSE.).and.(FLCX .or. FLCY)) THEN
@@ -1861,13 +1863,13 @@ CONTAINS
               CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before Block implicit", 1)
 #endif
 #ifdef W3_PDLIB
-              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY)
+              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_PDLIB
             ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
 #endif
 #ifdef W3_PDLIB
-              CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY)
+              CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_PDLIB
             ENDIF
