@@ -124,6 +124,8 @@ MODULE PDLIB_W3PROFSMD
   INTEGER, ALLOCATABLE  :: IS0_pdlib(:)
   INTEGER               :: FreqShiftMethod = 2
   LOGICAL               :: FSGEOADVECT
+  LOGICAL, SAVE         :: LINIT_OUTPUT = .TRUE.
+  REAL, SAVE            :: RTIME = 0.d0 
   INTEGER               :: POS_TRICK(3,2)
 
 #ifdef W3_DEBUGSRC
@@ -964,15 +966,14 @@ CONTAINS
     REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL*8  :: LAMBDA(2), KTMP(3)
-    REAL*8  :: KELEM(3,NE), FLALL(3,NE)
-    REAL*8  :: KKSUM(npa), ST(npa)
-    REAL*8  :: NM(NE)
-    REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
-    REAL  :: FIN(1), FOUT(1)
+    REAL  :: LAMBDA(2), KTMP(3)
+    REAL  :: KELEM(3,NE), FLALL(3,NE)
+    REAL  :: KKSUM(npa), ST(npa)
+    REAL  :: NM(NE)
     INTEGER :: ISPROC, JSEA, IP_glob, ierr, IX
+    REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
     LOGICAL :: testWrite
-
+    REAL  :: FIN(1), FOUT(1)
 #ifdef W3_S
     CALL STRACE (IENT, 'W3XYPFSN')
 #endif
@@ -1273,23 +1274,22 @@ CONTAINS
     INTEGER(KIND=1)    :: IOBPDR(NX)
 #endif
     INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
-    INTEGER :: IBI, NI(3)
-    INTEGER :: JX
+    INTEGER :: IBI, NI(3), JX
+    INTEGER :: ISPROC, IP_glob, JSEA, ierr
     REAL    :: RD1, RD2
-    REAL    :: CFLXY
-    REAL*8  :: SUMTHETA, FT, UTILDE
-    REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
-    REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
+    REAL  :: UTILDE
+    REAL  :: SUMTHETA
+    REAL  :: FL1, FL2, FL3
+    REAL  :: FT, CFLXY
+    REAL  :: FL11, FL12, FL21, FL22, FL31, FL32
+    REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
-    REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL*8  :: LAMBDA(2), KTMP(3)
-    REAL*8  :: KELEM(3,NE), FLALL(3,NE)
-    REAL*8  :: KKSUM(npa), ST(npa)
-    REAL*8  :: NM(NE), BET1(3), BETAHAT(3), THETA_L(3)
-    INTEGER :: ISPROC, JSEA, IP_glob, ierr, IX
-    REAL  :: eSumAC, sumAC, sumBPI0, sumBPIN, sumCG, sumCLATS
-    LOGICAL :: testWrite
-    REAL  :: FIN(1), FOUT(1)
+    REAL  :: DTMAX, DTMAX_GL, DTMAXEXP, REST
+    REAL  :: LAMBDA(2), KTMP(3), TMP(3)
+    REAL  :: THETA_L(3), BET1(3), BETAHAT(3)
+    REAL  :: KELEM(3,NE), FLALL(3,NE)
+    REAL  :: KKSUM(npa), ST(npa)
+    REAL  :: NM(NE), FIN(1), FOUT(1)
 #ifdef W3_S
     CALL STRACE (IENT, 'W3XYPFSN')
 #endif
@@ -7651,6 +7651,78 @@ CONTAINS
     !/
   END SUBROUTINE DEALLOCATE_PDLIB_GLOBAL
 
+  SUBROUTINE ERGOUT(FHNDL, ERGNAME)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                                   |
+    !/                  | Aron Roland (BGS IT&E GmbH)       |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :      01-Januar-2023 |
+    !/                  +-----------------------------------+
+    !/
+    !/    01-June-2018 : Origination.                        ( version 7.xx )
+    !/
+    !  1. Purpose : write spatial out for xfn
+    !  2. Method :
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD Subroutine tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !  7. Remarks
+    !  8. Structure :
+    !  9. Switches :
+    !
+    !     !/S  Enable subroutine tracing.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+#ifdef W3_S
+    USE W3SERVMD, only: STRACE
+#endif
+    USE W3GDATMD, only: NSPEC, NTH, NK, NSEAL
+    USE W3WDATMD, only: VA, VAOLD
+    IMPLICIT NONE
+  
+    INTEGER, INTENT(IN)           :: FHNDL  
+    CHARACTER(LEN=*), INTENT(IN) :: ERGNAME
+    REAL    :: SUMVA(NSEAL)
+    INTEGER :: JSEA 
+
+    IF (LINIT_OUTPUT) THEN
+      OPEN(FHNDL, FILE  = TRIM(ERGNAME), FORM = 'UNFORMATTED')
+      LINIT_OUTPUT = .false. 
+    ENDIF 
+
+    RTIME = RTIME + 1.
+
+    DO JSEA = 1, NSEAL 
+      SUMVA(JSEA) = SUM(VA(:,JSEA))
+    ENDDO 
+
+    WRITE(FHNDL)  RTIME  
+    WRITE(FHNDL) (SUMVA(JSEA), SUMVA(JSEA), SUMVA(JSEA), JSEA = 1, NSEAL)
+    
+  END SUBROUTINE
+  !/ ------------------------------------------------------------------- /
   SUBROUTINE JACOBI_INIT(IMOD)
     !/
     !/                  +-----------------------------------+

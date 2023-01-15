@@ -749,9 +749,11 @@ CONTAINS
         !Init COUNTCON to zero, it needs to be set somewhere or
         !removed
         COUNTCON=0
-        WRITE (NDSM)                                            &
-             X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP,    &
-             MAXX, MAXY, IOBPD, IOBP 
+        WRITE (NDSM)                                          &
+             X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
+             LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
+             DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,     &
+             POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
       END SELECT !GTYPE
       !
       WRITE (NDSM)                                            &
@@ -852,10 +854,11 @@ CONTAINS
         END IF
         call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 5')
 
-        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
-            X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP,    &
-            MAXX, MAXY, IOBPD, IOBP
-
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
+             X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
+             LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
+             DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,     &
+             POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
         call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 6')
 
       END SELECT !GTYPE

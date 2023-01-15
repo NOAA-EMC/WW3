@@ -628,11 +628,11 @@ contains
 
     !if(debugParmetis) write(710+myrank,*) "Run ParMETIS now..."
     call ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
-                                  vwgt, & !vwgt - ignore weights
-                                  adjwgt, & ! adjwgt - ignore weights
-                                  wgtflag, &
-                                  numflag,ndims,xyz,ncon,nparts,tpwgts,ubvec,options, &
-                                  edgecut,part, comm)
+         vwgt, & !vwgt - ignore weights
+         adjwgt, & ! adjwgt - ignore weights
+         wgtflag, &
+         numflag,ndims,xyz,ncon,nparts,tpwgts,ubvec,options, &
+         edgecut,part, comm)
 
     CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 9")
 

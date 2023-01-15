@@ -19,112 +19,112 @@
 !> @author M Accensi
 !> @date 21-Jul-2020
 !
-      PROGRAM W3BOUNC
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           F. Ardhuin              |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         21-Jul-2020 |
-!/                  +-----------------------------------+
-!/
-!/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
-!/     1-Apr-2015 : Add checks on lat lon xfr           ( version 5.05 )
-!/    11-May-2015 : Allow use of cartesian grids        ( version 5.08 )
-!/    17-Aug-2016 : Bug correction on RDBPO             ( version 5.10 ) 
-!/    20-Oct-2016 : Error statement updates             ( version 5.15 )
-!/    20-Mar-2018 : Improve netcdf file reading         ( version 6.02 )
-!/    15-May-2018 : Add namelist feature                ( version 6.05 )
-!/    04-May-2020 : Update spectral conversion          ( version 7.11 ) 
-!/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
-!/
-!/
-!/    Copyright 2012-2013 National Weather Service (NWS),
-!/       National Oceanic and Atmospheric Administration.  All rights
-!/       reserved.  WAVEWATCH III is a trademark of the NWS. 
-!/       No unauthorized use without permission.
-!/
-!  1. Purpose :
-!
-!     Combines spectra files into a nest.ww3 file for boundary conditions
-!
-!  2. Method :
-!
-!     Finds nearest points and performs linear interpolation
-!
-!     The initial conditions are written to the restart.ww3 using the
-!     subroutine W3IORS. Note that the name of the restart file is set
-!     in W3IORS.
-!
-!  3. Parameters :
-!
-!     Local parameters.
-!     ----------------------------------------------------------------
-!       NDSI    Int.  Input unit number ("ww3_assm.inp").
-!       ITYPE   Int.  Type of data
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr.   Id.    Subroutine tracing.
-!      NEXTLN    Subr.   Id.    Get next line from input filw
-!      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
-!      WAVNU1    Subr. W3DISPMD Solve dispersion relation.
-!      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
-!      W3EQTOLL  Subr  W3SERVMD Convert coordinates from rotated pole.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!     None, stand-alone program.
-!
-!  6. Error messages :
-!
-!  7. Remarks :
-!
-!     - Can be used also to diagnose contents of nest.ww3 file
-!       in read mode
-!
-!     - Input spectra are assumed to be formulated on a standard
-!       pole. However, the model grid can be on a rotated pole.
-!
-!  8. Structure :
-!
-!     ----------------------------------------------------
-!        1.a  Set up data structures.
-!                            ( W3NMOD , W3NDAT , W3NOUT 
-!                              W3SETG , W3SETW , W3SETO )
-!          b  I-O setup.
-!        ....
-!        9.   Convert energy to action
-!       10.   Write restart file.              ( W3IORS )
-!     ----------------------------------------------------
-!
-!  9. Switches :
-!
-!     !/SHRD  Switch for shared / distributed memory architecture.
-!     !/DIST  Id.
-!
-!     !/SHRD  Switch for message passing method.
-!     !/MPI   Id.
-!
-!     !/S     Enable subroutine tracing.
-!
-!     !/O4    Output normalized 1-D energy spectrum.
-!     !/O5    Output normalized 2-D energy spectrum.
-!     !/O6    Output normalized wave heights (not MPP adapted).
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
-      USE CONSTANTS
-      USE W3WDATMD, ONLY: W3NDAT, W3SETW
-      USE W3ADATMD, ONLY: W3NAUX, W3SETA
-      USE W3ODATMD, ONLY: W3NOUT, W3SETO, FNMPRE, NDST, NDSE
-      USE W3CSPCMD, ONLY: W3CSPC
+PROGRAM W3BOUNC
+  !/
+  !/                  +-----------------------------------+
+  !/                  | WAVEWATCH III           NOAA/NCEP |
+  !/                  |           F. Ardhuin              |
+  !/                  |           M. Accensi              |
+  !/                  |                        FORTRAN 90 |
+  !/                  | Last update :         21-Jul-2020 |
+  !/                  +-----------------------------------+
+  !/
+  !/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
+  !/     1-Apr-2015 : Add checks on lat lon xfr           ( version 5.05 )
+  !/    11-May-2015 : Allow use of cartesian grids        ( version 5.08 )
+  !/    17-Aug-2016 : Bug correction on RDBPO             ( version 5.10 )
+  !/    20-Oct-2016 : Error statement updates             ( version 5.15 )
+  !/    20-Mar-2018 : Improve netcdf file reading         ( version 6.02 )
+  !/    15-May-2018 : Add namelist feature                ( version 6.05 )
+  !/    04-May-2020 : Update spectral conversion          ( version 7.11 )
+  !/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
+  !/
+  !/
+  !/    Copyright 2012-2013 National Weather Service (NWS),
+  !/       National Oceanic and Atmospheric Administration.  All rights
+  !/       reserved.  WAVEWATCH III is a trademark of the NWS.
+  !/       No unauthorized use without permission.
+  !/
+  !  1. Purpose :
+  !
+  !     Combines spectra files into a nest.ww3 file for boundary conditions
+  !
+  !  2. Method :
+  !
+  !     Finds nearest points and performs linear interpolation
+  !
+  !     The initial conditions are written to the restart.ww3 using the
+  !     subroutine W3IORS. Note that the name of the restart file is set
+  !     in W3IORS.
+  !
+  !  3. Parameters :
+  !
+  !     Local parameters.
+  !     ----------------------------------------------------------------
+  !       NDSI    Int.  Input unit number ("ww3_assm.inp").
+  !       ITYPE   Int.  Type of data
+  !     ----------------------------------------------------------------
+  !
+  !  4. Subroutines used :
+  !
+  !      Name      Type  Module   Description
+  !     ----------------------------------------------------------------
+  !      STRACE    Subr.   Id.    Subroutine tracing.
+  !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
+  !      WAVNU1    Subr. W3DISPMD Solve dispersion relation.
+  !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
+  !      W3EQTOLL  Subr  W3SERVMD Convert coordinates from rotated pole.
+  !     ----------------------------------------------------------------
+  !
+  !  5. Called by :
+  !
+  !     None, stand-alone program.
+  !
+  !  6. Error messages :
+  !
+  !  7. Remarks :
+  !
+  !     - Can be used also to diagnose contents of nest.ww3 file
+  !       in read mode
+  !
+  !     - Input spectra are assumed to be formulated on a standard
+  !       pole. However, the model grid can be on a rotated pole.
+  !
+  !  8. Structure :
+  !
+  !     ----------------------------------------------------
+  !        1.a  Set up data structures.
+  !                            ( W3NMOD , W3NDAT , W3NOUT
+  !                              W3SETG , W3SETW , W3SETO )
+  !          b  I-O setup.
+  !        ....
+  !        9.   Convert energy to action
+  !       10.   Write restart file.              ( W3IORS )
+  !     ----------------------------------------------------
+  !
+  !  9. Switches :
+  !
+  !     !/SHRD  Switch for shared / distributed memory architecture.
+  !     !/DIST  Id.
+  !
+  !     !/SHRD  Switch for message passing method.
+  !     !/MPI   Id.
+  !
+  !     !/S     Enable subroutine tracing.
+  !
+  !     !/O4    Output normalized 1-D energy spectrum.
+  !     !/O5    Output normalized 2-D energy spectrum.
+  !     !/O6    Output normalized wave heights (not MPP adapted).
+  !
+  ! 10. Source code :
+  !
+  !/ ------------------------------------------------------------------- /
+  USE CONSTANTS
+  USE W3WDATMD, ONLY: W3NDAT, W3SETW
+  USE W3ADATMD, ONLY: W3NAUX, W3SETA
+  USE W3ODATMD, ONLY: W3NOUT, W3SETO, FNMPRE, NDST, NDSE
+  USE W3CSPCMD, ONLY: W3CSPC
 
 
   USE W3GDATMD, ONLY: NK, NTH, XFR, FR1, DTH, TH, FACHFE,           &

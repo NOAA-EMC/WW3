@@ -1109,7 +1109,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IX, IY, J, ISTAT, IERR_MPI
+    INTEGER                 :: IX, IY, J, ISTAT
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
