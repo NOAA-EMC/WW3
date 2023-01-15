@@ -6662,6 +6662,9 @@ CONTAINS
     use yowRankModule,     only: ipgl_npa
     USE MPI, only : MPI_MIN
 #endif
+#ifdef W3_REF1
+      USE W3GDATMD, only: REFPARS
+#endif
 
     IMPLICIT NONE 
   
