@@ -1093,23 +1093,15 @@
 #ifdef W3_S
       CALL STRACE (IENT, 'VA_SETUP_IOBPD')
 #endif
-    !
-    real(8), intent(in) :: V1(npa), V2(npa)
-    real(8), intent(inout) :: eScal
-    integer IP, myrank, myproc
-    real(8) :: rScal(1), lScal(1)
-    integer iProc
-    integer ierr
-    CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
-    CALL MPI_COMM_SIZE(MPI_COMM_WCMP, myproc, ierr)
-    lScal=0
-    DO IP=1,np
-      lScal(1)=lScal(1) + V1(IP)*V2(IP)
-    END DO
-    IF (IAPROC .eq. 1) THEN
-      DO iProc=2,NAPROC
-        CALL MPI_RECV(rScal,1,rtype, iProc-1, 19, MPI_COMM_WCMP, istatus, ierr)
-        lScal = lScal + rScal
+      TheOut=0
+      DO IP=1,npa
+        IF (ACTIVESEC(IP) .eq. 1) THEN
+          DO J=PDLIB_IA(IP),PDLIB_IA(IP+1)-1
+            JP=PDLIB_JA(J)
+            eCoeff=ASPAR(J)
+            TheOut(IP)=TheOut(IP) + eCoeff*TheIn(JP)
+          END DO
+        END IF
       END DO
       CALL PDLIB_exchange1Dreal(TheOut)
       END SUBROUTINE
@@ -1325,9 +1317,9 @@
       WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR
       FLUSH(740+IAPROC)
 #endif
+      WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR, ' eNorm(B)=', eNorm
       IF (eNorm .le. SOLVERTHR) THEN
 #ifdef W3_DEBUGSTP
-        WRITE(740+IAPROC,*) 'ZERO SOLUTION SOLVERTHR=', SOLVERTHR, ' eNorm(B)=', eNorm
         WRITE(740+IAPROC,*) 'Leaving here, zero solution'
         FLUSH(740+IAPROC)
 #endif
@@ -1729,6 +1721,8 @@
       WRITE(740+IAPROC,*) 'After,B,min=', minval(B), ' max=', maxval(B)
       FLUSH(740+IAPROC)
 #endif
+
+
       CALL TRIG_WAVE_SETUP_SOLVE_POISSON_NEUMANN_DIR(ASPAR, B, ZETA_WORK, ACTIVE, ACTIVESEC)
 
       CALL TRIG_SET_MEANVALUE_TO_ZERO(ZETA_WORK)
@@ -1739,14 +1733,14 @@
       CALL PDLIB_exchange1Dreal(ZETA_WORK)
       max_val = -100000000
       min_val = -100000000
-      ZETA_SETUP = 0.d0 
-      DO IP = 1, npa
-        ISEA = iplg(IP) 
-        !IF (ISEA .gt. 0) THEN
-           ZETA_SETUP(ISEA) = - ZETA_WORK(IP)
+      DO IP=1,npa
+        IX=iplg(IP)
+        ISEA=MAPFS(1,IX)
+        IF (ISEA .gt. 0) THEN
+           ZETA_SETUP(ISEA) = ZETA_WORK(IP)
            max_val = MAX(max_Val, ZETA_WORK(IP))
-           min_val = MIN(min_Val, ZETA_WORK(IP))
-        !END IF
+           min_val = MAX(min_Val, ZETA_WORK(IP))
+        END IF
       END DO
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'TRIG_WAVE_SETUP_COMPUTATION, max/min=', max_val, min_val
@@ -1755,7 +1749,7 @@
       ZETA_WORK_ALL = 0.
       DO IP = 1, npa
         isea = iplg(IP)
-        ZETA_WORK_ALL(isea) = - ZETA_WORK(IP)
+        ZETA_WORK_ALL(isea) = ZETA_WORK(IP)
       END DO
       CALL SYNCHRONIZE_GLOBAL_ARRAY(ZETA_WORK_ALL)
       DO IX = 1, NX
