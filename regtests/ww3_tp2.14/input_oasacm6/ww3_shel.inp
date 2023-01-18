@@ -128,7 +128,7 @@ $       - Ocean model : T0M1 OCHA OHS DIR BHD TWO UBR FOC TAW TUS USS LM DRY
 $       - Atmospheric model : ACHA AHS TP (or FP) FWS
 $       - Ice model : IC5 TWI
 $
- ACHA
+
 $
 $   - Received fields by ww3:
 $       - Ocean model : SSH CUR
