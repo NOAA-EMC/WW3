@@ -2261,13 +2261,13 @@ CONTAINS
       ELSE
 #endif
         !
-        WLV(ISEA) = 0.!WLEV(IX,IY)
+        WLV(ISEA) = WLEV(IX,IY)
         WLVeff    = WLV(ISEA)
 
 #ifdef W3_SETUP
        IF (DO_CHANGE_WLV) THEN
          WLVeff    = WLVeff + ZETA_SETUP(ISEA)
-         !WLV(ISEA) = ZETA_SETUP(ISEA) 
+         WLV(ISEA) = WLVeff
        END IF
 #endif
 #ifdef W3_TIDE
