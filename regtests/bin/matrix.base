@@ -2078,7 +2078,7 @@
    echo "$rtst -s OASACM  -i input_oasacm  -w work_OASACM  -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
    echo "$rtst -s OASACM2 -i input_oasacm2 -w work_OASACM2 -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
    halfnp=$(($np / 2))
-   echo "$rtst -s OASACM3 -i input_oasacm3 -w work_OASACM3 -C OASIS -f -p $mpi -n $halfnp $ww3 ww3_tp2.14" >> matrix.body
+   echo "$rtst -s OASACM3 -i input_oasacm3 -w work_OASACM3          -f -p $mpi -n $halfnp $ww3 ww3_tp2.14" >> matrix.body
    echo "mkdir -p ww3_tp2.14/work_OASACM4"                                                                 >> matrix.body
    echo "ln -sf ../work_OASACM3/restart001.ww3 ww3_tp2.14/work_OASACM4/restart.ww3"                        >> matrix.body
    echo "$rtst -s OASACM4 -i input_oasacm4 -w work_OASACM4 -C OASIS -f -p $mpi -n $np     $ww3 ww3_tp2.14" >> matrix.body
