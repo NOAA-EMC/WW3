@@ -1254,16 +1254,8 @@ CONTAINS
 #endif
 #ifdef W3_OASOCM
             ! Getting UCUR (CX), VCUR (CY), WLV from ocean model
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( COUPL_COMM, IERR_MPI )
-  WRITE(*,*) 'W2FLDSMD - BEFORE RCV_FIELDS_FROM_OCEAN 1259'
-#endif
             CALL RCV_FIELDS_FROM_OCEAN(COUPL_COMM,          &
                  IDFLD, FXN, FYN, FAN)
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( COUPL_COMM, IERR_MPI )
-  WRITE(*,*) 'W2FLDSMD - AFTER RCV_FIELDS_FROM_OCEAN 1265'
-#endif
 #endif
 #ifdef W3_OASICM
             ! Getting ICEF from ice model
