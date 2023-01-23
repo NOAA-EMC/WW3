@@ -939,13 +939,14 @@ CONTAINS
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDH'
         !
-        ! wet-drying at u-location
-        ID_NB_RCV=ID_NB_RCV+1
-        RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
+        !AR: in the latest coupling hycom does not see those fields
+        !hhh  wet-drying at u-location
+        !ID_NB_RCV=ID_NB_RCV+1
+        !RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
         !
         ! wet-drying at v-location
-        ID_NB_RCV=ID_NB_RCV+1
-        RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDV'
+        !ID_NB_RCV=ID_NB_RCV+1
+        !RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDV'
         !
       CASE('SSH')
         ! ssh : sea surface height (m)
