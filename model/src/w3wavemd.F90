@@ -1847,14 +1847,12 @@ CONTAINS
             !WRITE(*,*) 'SUM VA 1', SUM(VA)
             !
 #ifdef W3_PDLIB
-            IF ((FSTOTALIMP .eqv. .FALSE.).and.(FLCX .or. FLCY)) THEN
-#endif
-#ifdef W3_PDLIB
-              DO ISPEC=1,NSPEC
-                CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-              END DO
-#endif
-#ifdef W3_PDLIB
+            IF (FLCX .or. FLCY) THEN
+              IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
+                DO ISPEC=1,NSPEC
+                  CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+                END DO
+              END IF
             END IF
 #endif
             !

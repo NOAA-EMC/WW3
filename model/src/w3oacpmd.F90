@@ -552,8 +552,6 @@ CONTAINS
       !
     ENDIF
 
-    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'W3OACPMD - MPI BARRIER BEFORE OASIS_DEF_PARTITION'
     !
     ! 2. Partition definition
     ! ----------------------------------
@@ -562,8 +560,6 @@ CONTAINS
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_partition')
     ENDIF
 
-    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER OASIS_DEF_PARTITION'
 
     !
     ! 3. Coupling fields declaration
@@ -579,8 +575,6 @@ CONTAINS
     !
     CALL GET_LIST_EXCH_FIELD(NDSO, RCV_FLD, SND_FLD, IL_NB_RCV, IL_NB_SND, RCV_STR, SND_STR)
 
-    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER GET_LIST_EXCH_FIELD'
     !
     ! 3.1 Send coupling fields
     ! ----------------------------------
@@ -599,8 +593,6 @@ CONTAINS
       ENDIF
     ENDDO
 
-    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'MPI BARRIER AFTER OASIS_DEF_VAR'
 
     !
     ! 3.2 Received coupling fields
@@ -620,16 +612,12 @@ CONTAINS
       ENDIF
     ENDDO
 
-    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER OASIS_DEF_VAR'
 
     !
     ! 4. End of definition phase
     ! ----------------------------------
     CALL OASIS_ENDDEF(IL_ERR)
 
-    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-    WRITE(*,*) 'W3OACPMD - MPI BARRIER AFTER OASIS_ENDDEF'
 
     IF (IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_enddef')

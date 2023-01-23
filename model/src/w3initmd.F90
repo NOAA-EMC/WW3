@@ -388,7 +388,7 @@ CONTAINS
          ICLOSE, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
          FLCK, NK, NTH, NSPEC, SIG, GNAME
 #ifdef W3_PDLIB
-    USE W3GDATMD, ONLY : FLCTH
+    USE W3GDATMD, ONLY : FLCTH, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_USE_JACOBI
 #endif
     USE W3WDATMD, ONLY: TIME, TLEV, TICE, TRHO, WLV, UST, USTDIR, VA
     USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NDS, NTPROC,      &
@@ -639,12 +639,21 @@ CONTAINS
     IF (FSTOTALIMP .and. .NOT. LPDLIB) THEN
       WRITE(NDSE,*) 'IMPTOTAL is selected'
       WRITE(NDSE,*) 'But PDLIB is not'
-      STOP 'Stop, case 1'
+      CALL FLUSH(NDSE) 
+      STOP 
     ELSE IF (FSTOTALEXP .and. .NOT. LPDLIB) THEN
       WRITE(NDSE,*) 'EXPTOTAL is selected'
       WRITE(NDSE,*) 'But PDLIB is not'
-      STOP 'Stop, case 1'
+      CALL FLUSH(NDSE) 
+      STOP 
     END IF
+    IF (B_JGS_BLOCK_GAUSS_SEIDEL .AND. .NOT. B_JGS_USE_JACOBI) THEN
+      WRITE(NDSE,*) 'B_JGS_BLOCK_GAUSS_SEIDEL is used but the Jacobi solver is not choosen'
+      WRITE(NDSE,*) 'Please set JGS_USE_JACOBI .eqv. .true.'
+      CALL FLUSH(NDSE) 
+      STOP 
+    ENDIF
+      
     !
     ! 1.c Open files without unpacking MDS ,,,
     !
@@ -792,18 +801,12 @@ CONTAINS
 
 #ifdef W3_PDLIB
     IF ((IAPROC .LE. NAPROC).and.(GTYPE .eq. UNGTYPE)) THEN
-#endif
-
-#ifdef W3_PDLIB
       CALL BLOCK_SOLVER_INIT(IMOD)
-      CALL BLOCK_SOLVER_EXPLICIT_INIT()
       CALL PDLIB_IOBP_INIT(IMOD)
       CALL SET_IOBPA_PDLIB
-#endif
-
-#ifdef W3_PDLIB
-    ELSE IF (FSTOTALEXP) THEN
-      !AR: To do here the blocksolver ...
+      IF (FSTOTALEXP) THEN
+        CALL BLOCK_SOLVER_EXPLICIT_INIT()
+      ENDIF
     ENDIF
 #endif
 

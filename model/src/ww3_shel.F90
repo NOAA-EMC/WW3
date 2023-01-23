@@ -2257,12 +2257,6 @@ PROGRAM W3SHEL
               COUPL_COMM = MPI_COMM
 #endif
 #ifdef W3_OASOCM
-
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
-  WRITE(*,*) 'WW3_SHEL - BEFORE W3FLDG 2353'
-#endif
-
               IF (.NOT.FLAGSC(J)) ID_OASIS_TIME = -1
 #endif
               CALL W3FLDG ('READ', IDSTR(J), NDSF(J),         &
@@ -2273,12 +2267,6 @@ PROGRAM W3SHEL
                    , COUPL_COMM                       &
 #endif
                    )
-
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
-  WRITE(*,*) 'WW3_SHEL - AFTER W3FLDG 2364'
-#endif
-
 
 #ifdef W3_TIDE
             END IF
@@ -2313,10 +2301,6 @@ PROGRAM W3SHEL
               TC0(:) = TCN(:)
               CALL TICK21 ( TCN, TIDE_DT )
             ELSE
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
-  WRITE(*,*) 'WW3_SHEL - BEFORE W3FLDG 2399'
-#endif
 
 #endif
 #ifdef W3_OASIS
@@ -2333,11 +2317,6 @@ PROGRAM W3SHEL
                    , COUPL_COMM                       &
 #endif
                    )
-
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
-  WRITE(*,*) 'WW3_SHEL - BEFORE W3FLDG 2420'
-#endif
 
 #ifdef W3_TIDE
             END IF
@@ -2562,10 +2541,6 @@ PROGRAM W3SHEL
   !
   ! update the next assimilation data time
   !
-#ifdef W3_MPI
-  CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )
-  WRITE(*,*) 'WW3_SHEL - AFTER W3FLD'
-#endif
 
   call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 8')
 

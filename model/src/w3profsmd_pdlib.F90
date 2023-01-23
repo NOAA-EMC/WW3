@@ -755,22 +755,25 @@ CONTAINS
       IP      = JSEA
       IP_glob = iplg(IP)
       ISEA    = MAPFS(1,IP_glob)
-      !write(*,*) 'IP TEST', JSEA, ISEA, IP, IP_glob
 #ifdef NOCGTABLE
       CALL WAVNU_LOCAL(SIG(IK),DW(ISEA),WN1,CG1)
       AC(IP)  = VA(ISP,JSEA) / CG1 * CLATS(ISEA)
       VLCFLX(IP) = CCOS * CG1 / CLATS(ISEA)
-      VLCFLY(IP) = CSIN * CG(IK,ISEA)
+      VLCFLY(IP) = CSIN * CG1
 #else
       AC(IP)  = VA(ISP,JSEA) / CG(IK,ISEA) * CLATS(ISEA)
       VLCFLX(IP) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
       VLCFLY(IP) = CSIN * CG(IK,ISEA)
+      WRITE(740+IAPROC,*) 'VSingle LOOP', IK, ITH, JSEA, FACX*ECOS(ITH), FACY*ESIN(ITH), CG(IK,ISEA), VLCFLX(IP), VLCFLY(IP), CLATS(ISEA)
 #endif
 #ifdef W3_MGP
       VLCFLX(IP) = VLCFLX(IP) - CCURX*VGX/CLATS(ISEA)
       VLCFLY(IP) = VLCFLY(IP) - CCURY*VGY
 #endif
     END DO
+
+    WRITE(740+IAPROC,*) 'VSingle 1', IK, ITH, SUM(VLCFLX), SUM(VLCFLY), SUM(CG(IK,IPLG))
+
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'ISP=', ISP, ' ITH=', ITH, ' IK=', IK
     WRITE(740+IAPROC,*) '1: maxval(VLCFLX)=', maxval(VLCFLX)
@@ -792,6 +795,8 @@ CONTAINS
         END IF
       END DO
     END IF
+
+    WRITE(740+IAPROC,*) 'VSingle 2', IK, ITH, SUM(VLCFLX), SUM(VLCFLY), SUM(CG(IK,IPLG))
 
     C(:,1) = VLCFLX(:) * IOBDP_LOC
     C(:,2) = VLCFLY(:) * IOBDP_LOC
@@ -986,6 +991,7 @@ CONTAINS
     ITH    = 1 + MOD(ISP-1,NTH)
     IK     = 1 + (ISP-1)/NTH
     DTMAX  = DBLE(10.E10)
+
     !
 #ifdef W3_REF1
     IOBPDR(:)=(1-IOBP_LOC(:))*(1-IOBPD_LOC(ITH,:))
@@ -1060,6 +1066,7 @@ CONTAINS
         ITER(IK,ITH) = ABS(NINT(CFLXY))
       END IF
     END IF ! LCALC
+  
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'PDLIB_W3XYPFSN2, step 4'
     FLUSH(740+IAPROC)
@@ -1079,6 +1086,8 @@ CONTAINS
     WRITE(740+IAPROC,*) 'ITER=', ITER(IK,ITH)
     FLUSH(740+IAPROC)
 #endif
+
+    
     DO IT = 1, ITER(IK,ITH)
 #ifdef W3_DEBUGSOLVER
       WRITE(740+IAPROC,*) 'IK=', IK, ' ITH=', ITH
@@ -6647,16 +6656,17 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, only: STRACE
 #endif
-    USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, ESIN, ECOS, NSEAL, FSBCCFL, CLATS
-    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, MAPSF
+    USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, DTH, ESIN, ECOS, NSEAL, FSBCCFL, CLATS, MAPFS
+    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, MAPSF, NSEA
     USE W3ODATMD, ONLY: NDSE, NDST, FLBPI, NBI, TBPI0, TBPIN, ISBPI, BBPI0, BBPIN
     USE W3ADATMD, ONLY: DW, CX, CY, MPI_COMM_WCMP
     USE W3IDATMD, ONLY: FLCUR, FLLEV
     USE W3WDATMD, ONLY: VA
     USE W3DISPMD, ONLY: WAVNU3
+    USE W3ODATMD, ONLY : IAPROC
 #ifdef W3_PDLIB
     USE yowElementpool, only: ne, ine
-    USE yowNodepool, only: np, npa, pdlib_ien, pdlib_si, ipgl, iplg
+    USE yowNodepool, only: np, npa, pdlib_ien, pdlib_si, iplg
     use yowDatapool, only: rtype
     use yowExchangeModule, only: PDLIB_exchange2Dreal_zero, PDLIB_exchange2Dreal
     use yowRankModule,     only: ipgl_npa
@@ -6682,13 +6692,13 @@ CONTAINS
     REAL              :: LAMBDAX(NTH), LAMBDAY(NTH)
     REAL              :: DTMAX(NTH), DTMAXEXP(NTH), DTMAXOUT, DTMAXGL
     REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2, RD10, RD20
-    REAL              :: UOLD(NSPEC,NPA), U(NSPEC,NPA) 
+    REAL              :: UOLD(NTH,NPA), U(NTH,NPA) 
 
     REAL, PARAMETER   :: ONESIXTH = 1.0/6.0
     REAL, PARAMETER   :: ZERO = 0.0
-    REAL, PARAMETER   :: THR = TINY(1.)
+    REAL, PARAMETER   :: THR = 1E-12
 
-    INTEGER           :: IK, ISP, ITH, IE, IP, IT, IBI, NI(3), I1, I2, I3, JX, IERR, IP_GLOB
+    INTEGER           :: IK, ISP, ITH, IE, IP, IT, IBI, NI(3), I1, I2, I3, JX, IERR, IP_GLOB, ISEA
     !
     ! 1.b Initialize arrays
     !
@@ -6707,11 +6717,19 @@ CONTAINS
         ENDDO 
 
         DO ITH = 1, NTH
-          CXX(ITH,:) = CGSIG * FACX * ECOS(ITH) / CLATS(IPGL)
-          CYY(ITH,:) = CGSIG * FACY * ESIN(ITH)
+          DO IP = 1, NPA
+            ISEA = IPLG(IP)
+            CXX(ITH,IP) = CGSIG(IP) * FACX * ECOS(ITH) / CLATS(ISEA)
+            CYY(ITH,IP) = CGSIG(IP) * FACY * ESIN(ITH)
+          ENDDO 
           IF (FLCUR) THEN
-            CXX(ITH,:) = CXX(ITH,:) + FACX * CX(NI)/CLATS(IPGL)
-            CYY(ITH,:) = CYY(ITH,:) + FACY * CY(NI)
+            DO IP = 1, NPA 
+              ISEA = IPLG(IP)
+              IF (IOBP_LOC(IP) .GT. 0) THEN
+                CXX(ITH,IP) = CXX(ITH,IP) + FACX * CX(ISEA)/CLATS(ISEA)
+                CYY(ITH,IP) = CYY(ITH,IP) + FACY * CY(ISEA)
+              ENDIF
+            ENDDO 
           ENDIF
         ENDDO 
 
@@ -6724,15 +6742,11 @@ CONTAINS
           I3  = NI(3)
 
           DO ITH = 1, NTH
-            LAMBDAX(ITH) = ONESIXTH *SUM((CXX(ITH,NI)+CXX(ITH,NI)+CXX(ITH,NI))) ! Linearized advection speed in X and Y direction
-            LAMBDAY(ITH) = ONESIXTH *SUM((CYY(ITH,NI)+CYY(ITH,NI)+CYY(ITH,NI)))
-          ENDDO 
-
-          KELEM1(:,IE,IK) = LAMBDAX(:) * PDLIB_IEN(1,IE) + LAMBDAY(:) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
-          KELEM2(:,IE,IK) = LAMBDAX(:) * PDLIB_IEN(3,IE) + LAMBDAY(:) * PDLIB_IEN(4,IE)
-          KELEM3(:,IE,IK) = LAMBDAX(:) * PDLIB_IEN(5,IE) + LAMBDAY(:) * PDLIB_IEN(6,IE)
-
-          DO ITH = 1, NTH 
+            LAMBDAX(ITH) = ONESIXTH *(CXX(ITH,I1)+CXX(ITH,I2)+CXX(ITH,I3)) ! Linearized advection speed in X and Y direction
+            LAMBDAY(ITH) = ONESIXTH *(CYY(ITH,I1)+CYY(ITH,I2)+CYY(ITH,I3))
+            KELEM1(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(1,IE) + LAMBDAY(ITH) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
+            KELEM2(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(3,IE) + LAMBDAY(ITH) * PDLIB_IEN(4,IE)
+            KELEM3(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(5,IE) + LAMBDAY(ITH) * PDLIB_IEN(6,IE)
             KTMP(1)           = KELEM1(ITH,IE,IK) ! Extract 
             KTMP(2)           = KELEM2(ITH,IE,IK)
             KTMP(3)           = KELEM3(ITH,IE,IK)
@@ -6765,9 +6779,11 @@ CONTAINS
         KKSUM = ZERO
         DO IE = 1, NE
           NI = INE(:,IE)
-          KKSUM(:,NI(1)) = KKSUM(:,NI(1)) + KELEM1(:,IE,IK)
-          KKSUM(:,NI(2)) = KKSUM(:,NI(2)) + KELEM2(:,IE,IK)
-          KKSUM(:,NI(3)) = KKSUM(:,NI(3)) + KELEM3(:,IE,IK)
+          DO ITH = 1, NTH 
+            KKSUM(ITH,NI(1)) = KKSUM(ITH,NI(1)) + KELEM1(ITH,IE,IK)
+            KKSUM(ITH,NI(2)) = KKSUM(ITH,NI(2)) + KELEM2(ITH,IE,IK)
+            KKSUM(ITH,NI(3)) = KKSUM(ITH,NI(3)) + KELEM3(ITH,IE,IK)
+          ENDDO
         END DO
 
         DTMAXEXP = 1.E10 
@@ -6805,8 +6821,8 @@ CONTAINS
 ! Exact and convert Wave Action - should be some subroutine function or whatever 
       DO ITH = 1, NTH
         ISP = ITH + (IK-1) * NTH
-        DO IP = 1, NP
-          U(ISP,IP)  = VA(ISP,IP) / CGSIG(IP) * CLATS(IPGL(IP))
+        DO IP = 1, NPA
+          U(ITH,IP)  = VA(ISP,IP) / CGSIG(IP) * CLATS(IPLG(IP))
         ENDDO 
       ENDDO 
       UOLD = U
@@ -6815,17 +6831,20 @@ CONTAINS
         ST = ZERO
         DO IE = 1, NE
           NI  = INE(:,IE)
-          UTILDE      = NM(:,IE,IK) * (FLALL1(:,IE,IK)*U(:,NI(1)) + FLALL2(:,IE,IK)*U(:,NI(2)) + FLALL3(:,IE,IK)*U(:,NI(3)))
-          ST(:,NI(1)) = ST(:,NI(1)) + KELEM1(:,IE,IK) * (U(:,NI(1)) - UTILDE) ! the 2nd term are the theta values of each node ...
-          ST(:,NI(2)) = ST(:,NI(2)) + KELEM2(:,IE,IK) * (U(:,NI(2)) - UTILDE) ! the 2nd term are the theta values of each node ...
-          ST(:,NI(3)) = ST(:,NI(3)) + KELEM3(:,IE,IK) * (U(:,NI(3)) - UTILDE) ! the 2nd term are the theta values of each node ...
+          DO ITH = 1, NTH 
+        !    write(*,*) NM(ITH,IE,IK), FLALL1(ITH,IE,IK), U(ITH,NI(1)), FLALL2(ITH,IE,IK), U(ITH,NI(2)), FLALL3(ITH,IE,IK), U(ITH,NI(3))
+            UTILDE(ITH)   = NM(ITH,IE,IK) * (FLALL1(ITH,IE,IK)*U(ITH,NI(1)) + FLALL2(ITH,IE,IK)*U(ITH,NI(2)) + FLALL3(ITH,IE,IK)*U(ITH,NI(3)))
+            ST(ITH,NI(1)) = ST(ITH,NI(1)) + KELEM1(ITH,IE,IK) * (U(ITH,NI(1)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
+            ST(ITH,NI(2)) = ST(ITH,NI(2)) + KELEM2(ITH,IE,IK) * (U(ITH,NI(2)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
+            ST(ITH,NI(3)) = ST(ITH,NI(3)) + KELEM3(ITH,IE,IK) * (U(ITH,NI(3)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
+          ENDDO 
         END DO ! IE
         DO IP = 1, NP
           DO ITH = 1, NTH
             ISP = ITH + (IK-1) * NTH
-            U(ISP,IP) = MAX(ZERO,U(ISP,IP)-DTSI(IP)*ST(ITH,IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
+            U(ITH,IP) = MAX(ZERO,U(ITH,IP)-DTSI(IP)*ST(ITH,IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
-            IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(ISP,IP) = UOLD(ISP,IP) ! restores reflected boundary values
+            IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(ITH,IP) = UOLD(ITH,IP) ! restores reflected boundary values
 #endif
           ENDDO 
         ENDDO ! IE
@@ -6846,14 +6865,16 @@ CONTAINS
               IP_glob = MAPSF(ISBPI(IBI),1)
               JX      = IPGL_npa(IP_glob)
               IF (JX .gt. 0) THEN
-                U(ISP,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) / CGSIG(ISBPI(IBI)) * CLATS(ISBPI(IBI))
+                U(ITH,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) / CGSIG(ISBPI(IBI)) * CLATS(ISBPI(IBI))
               END IF
             END DO
           ENDDO 
         ENDIF ! FLBPI
 
         !WRITE(*,*) 'SUM U', SUM(U), 'SUM CGSIG', SUM(CGSIG), 'SUM VA', SUM(VA)
-        CALL PDLIB_exchange2DREAL(U)
+        CXX = U 
+        CALL PDLIB_exchange2DREAL(CXX)
+        U   = CXX
 
       ENDDO ! IT
 
@@ -6861,7 +6882,7 @@ CONTAINS
       DO ITH = 1, NTH
         ISP = ITH + (IK-1) * NTH
         DO IP = 1, NP
-          VA(ISP,IP)  = U(ISP,IP) * CGSIG(IP) / CLATS(IPGL(IP))
+          VA(ISP,IP)  = U(ITH,IP) * CGSIG(IP) / CLATS(IPLG(IP))
         ENDDO
       ENDDO
 
