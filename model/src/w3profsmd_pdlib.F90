@@ -272,7 +272,11 @@ CONTAINS
       FLUSH(740+IAPROC)
 #endif
       !
-      CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
+      IF (FSTOTALEXP) THEN
+        CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
+      ELSE
+        CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
+      ENDIF 
       !
 #ifdef W3_DEBUGSOLVER
       WRITE(740+IAPROC,*) 'After initFromGridDim'
@@ -6887,10 +6891,7 @@ CONTAINS
           ENDDO 
         ENDIF ! FLBPI
 
-        !WRITE(*,*) 'SUM U', SUM(U), 'SUM CGSIG', SUM(CGSIG), 'SUM VA', SUM(VA)
-        CXX = U 
-        CALL PDLIB_exchange2DREAL(CXX)
-        U   = CXX
+        CALL PDLIB_exchange2DREAL(U)
 
       ENDDO ! IT
 
