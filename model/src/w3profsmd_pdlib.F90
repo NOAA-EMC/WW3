@@ -273,7 +273,7 @@ CONTAINS
 #endif
       !
       IF (FSTOTALEXP) THEN
-        CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
+        CALL initFromGridDim(NX,NTRI,TRIGP,NTH,MPI_COMM_WCMP)
       ELSE
         CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
       ENDIF 
