@@ -1642,7 +1642,9 @@ CONTAINS
                 ENDIF
                 FAKS   = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
                 DVS    = VS(ISP) * FAKS
-                DVS    = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                IF (.NOT. B_JGS_LIMITER) THEN
+                  DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                ENDIF
                 PreVS  = DVS / FAKS
                 eVS    = PreVS / CG1(IK) * CLATSL
                 eVD    = MIN(0.,VD(ISP))
