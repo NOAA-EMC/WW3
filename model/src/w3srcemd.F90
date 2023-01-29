@@ -1565,7 +1565,7 @@ CONTAINS
 #endif
       END DO  ! end of loop on IS
       !
-      DT     = MAX ( 0.01, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
+      DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
       !
       DTDYN  = DTDYN + DT
 #ifdef W3_T
