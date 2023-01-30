@@ -1,5 +1,25 @@
+!> @file
+!> @brief Calculate ice source term S_{ice} according to simple methods.
+!>
+!> @author E. Rogers
+!> @author S. Zieger
+!> @date   11-Oct-2013
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate ice source term S_{ice} according to simple methods.
+!>
+!> @author E. Rogers
+!> @author S. Zieger
+!> @date   11-Oct-2013
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SIC1MD
   !/
   !/                  +-----------------------------------+
@@ -55,6 +75,21 @@ MODULE W3SIC1MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief S_{ice} source term using 5 parameters read from input files.
+  !>
+  !> @param[in]  A      Action density spectrum (1-D).
+  !> @param[in]  DEPTH  Local water depth.
+  !> @param[in]  CG     Group velocities.
+  !> @param[in]  IX     Grid index.
+  !> @param[in]  IY     Grid index.
+  !> @param[out] S      Source term (1-D version).
+  !> @param[out] D      Diagonal term of derivative (1-D version).
+  !>
+  !> @author E. Rogers
+  !> @author S. Zieger
+  !> @date   11-Oct-2013
+  !>
   SUBROUTINE W3SIC1 (A, DEPTH, CG, IX, IY, S, D)
     !/
     !/                  +-----------------------------------+

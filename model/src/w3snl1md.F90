@@ -1,5 +1,27 @@
+!> @file
+!> @brief Bundles routines calculate nonlinear wave-wave interactions
+!>  according to the Discrete Interaction Approximation (DIA).
+!>
+!> @author H. L. Tolman
+!> @date   03-Sep-2012
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Bundles routines to calculate nonlinear wave-wave interactions
+!>  according to the Discrete Interaction Approximation (DIA) of
+!>  Hasselmann et al. (JPO, 1985).
+!>
+!> @author H. L. Tolman
+!> @date   03-Sep-2012
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
+
 MODULE W3SNL1MD
   !/
   !/                  +-----------------------------------+
@@ -59,6 +81,21 @@ MODULE W3SNL1MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Calculate nonlinear interactions and the diagonal term of
+!>  its derivative.
+!>
+!> @param[in] A       Action spectrum A(ISP) as a function of
+!>                    direction (rad) and wavenumber.
+!> @param[in] CG      Group velocities (dimension NK).
+!> @param[in] KDMEAN  Mean relative depth.
+!> @param[out] S      Source term.
+!> @param[out] D      Diagonal term of derivative.
+!>
+!> @author H. L. Tolman
+!> @date   06-Jun-2018
+!>
   SUBROUTINE W3SNL1 (A, CG, KDMEAN, S, D)
     !/
     !/                  +-----------------------------------+
@@ -418,7 +455,15 @@ CONTAINS
     !/ End of W3SNL1 ----------------------------------------------------- /
     !/
   END SUBROUTINE W3SNL1
-  !/ ------------------------------------------------------------------- /
+!/ ------------------------------------------------------------------- /
+!>
+!> @brief Preprocessing for nonlinear interactions (weights).
+!>
+!> @param[in] IMOD  Model number.
+!>
+!> @author H. L. Tolman
+!> @date   24-Dec-2004
+!>
   SUBROUTINE INSNL1 ( IMOD )
     !/
     !/                  +-----------------------------------+

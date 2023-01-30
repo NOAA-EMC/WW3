@@ -1,5 +1,29 @@
+!> @file
+!> @brief Calculate ice source term S_{ice} according to simple methods.
+!>
+!> @author C. Collins
+!> @author E. Rogers
+!> @date   21-Jan-2015
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate ice source term S_{ice} according to simple methods.
+!>
+!> @details Attenuation is a function of frequency and specified directly
+!>  by the user. Example: a function is based on an exponential fit to
+!>  the empirical data of Wadhams et al. (1988).
+!>
+!> @author C. Collins
+!> @author E. Rogers
+!> @date   21-Jan-2015
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SIC4MD
   !/
   !/                  +-----------------------------------+
@@ -70,6 +94,21 @@ MODULE W3SIC4MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief S_{ice} source term using 5 parameters read from input files.
+  !>
+  !> @param[in]  A      Action density spectrum (1-D).
+  !> @param[in]  DEPTH  Local water depth.
+  !> @param[in]  CG     Group velocities.
+  !> @param[in]  IX     Grid index.
+  !> @param[in]  IY     Grid index.
+  !> @param[out] S      Source term (1-D version).
+  !> @param[out] D      Diagonal term of derivative (1-D version).
+  !>
+  !> @author C. Collins
+  !> @author E. Rogers
+  !> @date   24-Feb-2017
+  !>
   SUBROUTINE W3SIC4 (A, DEPTH, CG, IX, IY, S, D)
     !/
     !/                  +-----------------------------------+

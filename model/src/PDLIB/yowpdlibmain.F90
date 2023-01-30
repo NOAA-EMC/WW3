@@ -41,12 +41,12 @@
 !> \date 2011-2012
 module yowpdlibMain
   use yowerr
-  use yowDatapool, only: rkind
-#ifdef W3_MEMCHECK
-  USE MallocInfo_m
-  USE W3ADATMD, ONLY: MALLINFOS
-#endif
+  use yowDatapool, only : rkind
+  use w3servmd,    only : print_memcheck
+
+  !module default
   implicit none
+
   private
   public :: initFromGridDim, finalizePD
 
@@ -69,60 +69,41 @@ contains
     use yowSidepool,       only: ns, ns_global
     use yowExchangeModule, only: nConnDomains, setDimSize
     use yowRankModule,     only: initRankModule, ipgl_npa
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-    USE W3ADATMD, ONLY: MALLINFOS
-#endif
 
-    implicit none
     integer, intent(in) :: MNP, MNE
     integer, intent(in) :: INE_global(3,MNE)
     integer, intent(in) :: secDim
     integer, intent(in) :: MPIcomm
-    integer istat
+    integer :: istat, memunit
+
+    ! note: myrank=0 until after initMPI is called, so only rank=0 file
+    ! contains the 'section 1' information
+    memunit = 70000+myrank
 
     call setDimSize(secDim)
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 1'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 1')
 #ifdef W3_DEBUGINIT
     Print *, '1: MPIcomm=', MPIcomm
 #endif
     call initMPI(MPIcomm)
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 2'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+
+    memunit = 70000+myrank
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 2')
 #ifdef W3_DEBUGINIT
     Print *, '2: After initMPI'
 #endif
     call assignMesh(MNP, MNE)
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 3'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 3')
 #ifdef W3_DEBUGINIT
     Print *, '3: After assignMesh'
 #endif
     call prePartition()
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 4'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 4')
 #ifdef W3_DEBUGINIT
     Print *, '3: After prePartition'
 #endif
     call findConnNodes(INE_global)
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 5'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 5')
 #ifdef W3_DEBUGINIT
     Print *, '4: After findConnNodes'
 #endif
@@ -144,66 +125,37 @@ contains
 #endif
     !    CALL REAL_MPI_BARRIER_PDLIB(MPIcomm, "Before call to runParmetis")
     call runParmetis(MNP)
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 6'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 6')
     !    CALL REAL_MPI_BARRIER_PDLIB(MPIcomm, "After call to runParmetis")
 #ifdef W3_DEBUGINIT
     Print *, '5: After runParmetis'
 #endif
     call postPartition
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 7'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 7')
 #ifdef W3_DEBUGINIT
     Print *, 'Before findGhostNodes'
 #endif
     call findGhostNodes
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 8'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 8')
+
     call findConnDomains
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 9'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 9')
+
     call exchangeGhostIds
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 10'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 10')
+
     call postPartition2(INE_global)
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 11'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 11')
+
     call initRankModule
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 12'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 12')
+
     call ComputeTRIA_IEN_SI_CCON
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 13'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 13')
+
     call ComputeIA_JA_POSI_NNZ
-#ifdef W3_MEMCHECK
-    WRITE(70000+myrank,*) 'memcheck_____:', 'WW3_PDLIB SECTION 14'
-    call getMallocInfo(mallinfos)
-    call printMallInfo(70000+myrank,mallInfos)
-#endif
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_PDLIB SECTION 14')
+
     if(debugPostPartition) then
       if(myrank == 0) then
         write(*,*) "New data after partition"
@@ -223,7 +175,7 @@ contains
 
 
   SUBROUTINE REAL_MPI_BARRIER_PDLIB(TheComm, string)
-    IMPLICIT NONE
+
     INCLUDE "mpif.h"
     integer, intent(in) :: TheComm
     character(*), intent(in) :: string
@@ -259,7 +211,7 @@ contains
     use yowDatapool, only: comm, nTasks, myrank
     use yowerr
     use MPI
-    implicit none
+
     integer, intent(in) :: MPIcomm
     logical :: flag
     integer :: ierr
@@ -306,7 +258,7 @@ contains
     use yowNodepool,    only: nodes_global, np_global
     use yowElementpool, only: ne_global
     use yowerr,       only: parallel_abort
-    implicit none
+
     integer, intent(in) :: MNP, MNE
     !integer, intent(in) :: INE(3,MNE)
     integer :: stat, i
@@ -341,7 +293,6 @@ contains
     use yowDatapool, only: nTasks ,myrank
     use yowerr,    only: parallel_abort
     use yowNodepool, only: np_global, np, np_perProc, np_perProcSum, iplg
-    implicit none
 
     integer :: i, stat
 
@@ -392,7 +343,6 @@ contains
     use yowNodepool,    only: np, np_global, nodes_global, nodes, maxConnNodes, t_Node, connNodes_data
     use yowElementpool, only: ne_global
     use yowSidepool,    only: ns, ns_global
-    implicit none
 
     integer, intent(in) :: INE_global(3,ne_global)
     integer :: i, j, stat
@@ -476,7 +426,7 @@ contains
     use yowElementpool, only: ne, ne_global
     use w3gdatmd, only: xgrd, ygrd
     use MPI
-    implicit none
+
     integer, intent(in) :: MNP
 
     ! Parmetis
@@ -820,7 +770,6 @@ contains
     use yowDatapool, only: myrank, nTasks
     use yowNodepool, only: np_global, np, nodes_global, nodes, np_perProc, np_perProcSum, iplg, ipgl, t_Node
     use yowSidepool, only: ns
-    implicit none
 
     integer :: i, j, stat
     type(t_Node), pointer :: node
@@ -883,7 +832,7 @@ contains
     use yowerr,    only: parallel_abort
     use yowDatapool, only: myrank
     use yowNodepool, only: t_Node, np, nodes, ghosts, nodes_global, ng, ghostlg, ghostgl, npa, np_global, iplg
-    implicit none
+
     integer :: i, j, k, stat
     type(t_Node), pointer :: node, nodeNeighbor, nodeGhost
     !> temporary hold the ghost numbers
@@ -1007,7 +956,6 @@ contains
     use yowNodepool,       only: ghosts, ng, t_Node
     use yowDatapool,       only: nTasks, myrank
     use yowExchangeModule, only: neighborDomains, initNbrDomains
-    implicit none
 
     integer :: i, stat, itemp
     type(t_Node), pointer :: ghost
@@ -1093,7 +1041,6 @@ contains
     use yowDatapool,       only: nTasks, myrank, comm
     use yowExchangeModule, only: neighborDomains, nConnDomains, createMPITypes
     use MPI
-    implicit none
 
     integer :: i, j, k
     integer :: ierr
@@ -1224,7 +1171,7 @@ contains
     use yowNodepool,    only: np_global, np, nodes_global, iplg, t_Node, ghostlg, ng, npa
     use yowNodepool,    only: x, y, z
     use w3gdatmd,       only: xgrd, ygrd, zb
-    implicit none
+
     integer, intent(in) :: INE_global(3,ne_global)
 
     integer :: i, j, k, stat, IP_glob
@@ -1347,7 +1294,7 @@ contains
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, iplg, t_Node, ghostlg, ng, npa
     use yowNodepool,    only: x, y, z, PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, PDLIB_CCON, PDLIB_TRIA03
-    implicit none
+
     integer I1, I2, I3, stat, IE, NI(3)
     real(rkind) :: DXP1, DXP2, DXP3, DYP1, DYP2, DYP3, DBLTMP, TRIA03
     logical     :: CROSSES_DATELINE
@@ -1409,7 +1356,7 @@ contains
     !   Purpose: understanding if an element crosses the dateline.
     !   An element crossing the dateline has, e.g. a node with lon < 180
     !   and another 2 with lon > -180
-    IMPLICIT NONE
+
     REAL(rkind),  INTENT(IN)  :: RX1, RX2, RX3
     LOGICAL, INTENT(OUT) :: CROSSES_DATELINE
     INTEGER :: R1GT180, R2GT180, R3GT180
@@ -1428,7 +1375,7 @@ contains
     !   Purpose: the absolute zonal distance between 2 points is always <= 180
     !            This subroutine corrects the zonal distance to satifsy
     !            this requirement
-    IMPLICIT NONE
+
     REAL(rkind), INTENT(INOUT) :: DXP
     IF (DXP .le. -180) THEN
       DXP=DXP + 360
@@ -1448,7 +1395,7 @@ contains
     use yowNodepool,    only: PDLIB_CCON, PDLIB_IA, PDLIB_JA, PDLIB_JA_IE, PDLIB_IA_P, PDLIB_JA_P
     use yowNodepool,    only: PDLIB_NNZ, PDLIB_POSI, PDLIB_IE_CELL, PDLIB_POS_CELL, PDLIB_IE_CELL2
     use yowNodepool,    only: PDLIB_POS_CELL2, PDLIB_I_DIAG
-    IMPLICIT NONE
+
     integer CHILF(npa)
     integer istat
     integer MAXMNECON
@@ -1639,7 +1586,6 @@ contains
     use yowNodepool,    only: finalizeNodepool
     use yowElementpool, only: finalizeElementpool
     use yowRankModule,  only: finalizeRankModule
-    implicit none
 
     call finalizeRankModule()
     call finalizeExchangeModule()

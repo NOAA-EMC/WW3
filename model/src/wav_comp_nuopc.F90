@@ -419,8 +419,8 @@ contains
     type(ESMF_Mesh)                :: Emesh, EmeshTemp
     type(ESMF_Array)               :: elemMaskArray
     type(ESMF_VM)                  :: vm
-    type(ESMF_Time)                :: esmfTime, stopTime
-    type(ESMF_TimeInterval)        :: TimeStep
+    type(ESMF_Time)                :: esmfTime, startTime, currTime, stopTime
+    type(ESMF_TimeInterval)        :: TimeOffset
     type(ESMF_Calendar)            :: calendar
     character(CL)                  :: cvalue
     integer                        :: shrlogunit
@@ -457,6 +457,7 @@ contains
     integer                        :: mds(13) ! Note that nds is set to this in w3initmod
     integer                        :: stdout
     integer                        :: petcount
+    real(r8)                       :: toff
     character(ESMF_MAXSTR)         :: preamb = './'
     character(ESMF_MAXSTR)         :: ifname = 'ww3_multi.inp'
     character(len=*), parameter    :: subname = '(wav_comp_nuopc:InitializeRealize)'
@@ -574,10 +575,24 @@ contains
       write(stdout,'(a)')'--------------------------------------------------'
     end if
 
+    call ESMF_ClockPrint(clock, options="startTime", preString="Model Start Time: ", &
+         unit=msgString, rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    call ESMF_ClockPrint(clock, options="currTime", preString="Model Current Time: ", &
+         unit=msgString, rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    call ESMF_ClockGet( clock, startTime=startTime, currTime=currTime, rc=rc)
+    timeoffset = currTime - startTime
+    call ESMF_TimeIntervalGet(timeoffset, h_r8=toff, rc=rc)
+    write(msgstring,'(a,g14.7)')'TimeOffset: CurrTime - StartTime = ',toff
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     ! Initial run or restart run
     if ( runtype == "initial") then
       call ESMF_ClockGet( clock, startTime=esmfTime, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+#ifndef CESMCOUPLED
+      esmfTime = esmfTime + timeoffset
+#endif
     else
       call ESMF_ClockGet( clock, currTime=esmfTime, rc=rc )
       if (ChkErr(rc,__LINE__,u_FILE_u)) return

@@ -1,7 +1,9 @@
 spack:
   packages:
     all:
-      compiler: [intel, gcc]
+      compiler: [intel]
+      providers:
+        mpi: [intel-oneapi-mpi]
   specs:
   - metis@5.1.0~shared
   - parmetis@4.0.3~shared
@@ -12,5 +14,7 @@ spack:
   - bacio@2.4.1
   - w3emc@2.9.2
   - esmf@8.1.1~pio~pnetcdf~xerces
+  - intel-oneapi-mpi %intel
   view: true
-  concretization: together
+  concretizer:
+    unify: true

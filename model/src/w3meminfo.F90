@@ -43,9 +43,6 @@ module MallocInfo_m
   ! 10. Source code :
   !
   !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-  USE W3SERVMD, ONLY: STRACE
-#endif
   !
   use :: iso_c_binding
   implicit none
@@ -56,16 +53,9 @@ module MallocInfo_m
   !/ ------------------------------------------------------------------- /
   !/ Local PARAMETERs
   !/
-#ifdef W3_S
-  INTEGER, SAVE           :: IENT = 0
-#endif
   !/
   !/ ------------------------------------------------------------------- /
   !/
-#ifdef W3_S
-  CALL STRACE (IENT, 'W3XXXX')
-#endif
-
   !> This structure type is used to return information about the dynamic memory allocator.
   type, bind(c) :: MallInfo_t
     !> This is the total size of memory allocated with sbrk by malloc, in bytes.
@@ -232,7 +222,6 @@ contains
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    implicit none
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -332,7 +321,6 @@ contains
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    implicit none
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -418,7 +406,6 @@ contains
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    implicit none
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
