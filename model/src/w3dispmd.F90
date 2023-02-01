@@ -554,32 +554,45 @@ CONTAINS
     ! IENT does not work with PURE subroutines
     !!/S      CALL STRACE (IENT, 'WAVNU1')
     !
-    TP     = ZPI/SI
-    L0     = GRAV*TP*TP/ZPI
-    K0     = ZPI/L0
-    KD0    = K0*H
-    CALL WAVNU3 (SI,H,K,CG_Bej)
-    K1     = K
-    KD1    = K * H
-    L1     = ZPI/K
-    TMP    = KD0**(0.5*NU)
-    TMP2   = 1.d0/TANH(MIN(KDMAX,TMP))
-    L2     = L1 / (1 - ALPHA * (H/L0) * TMP2**(2.d0/NU))
-    K      = ZPI/L2
-    KD     = K*H
-    TMP    =  KD0**(0.5d0*NU)
-    COTH   =  1.d0/TANH(TMP)
-    COTH2  = COTH**(2.d0/NU)
-    TANHKD = tanh(KD0)
-    KD0NU  = KD0**(0.5*NU)
-    TMP    = (-TANHKD*KD0**(0.5*NU)*COTH**2+KD0*(TANHKD-1)*(TANHKD+1)*COTH+TANHKD*(KD0)**(0.5*NU))*ALPHA*K0*H*COTH**(2./NU)
-    TMP2   = - ZPI * COTH  * (-TANHKD-KD0+KD0*TANHKD**2)
-    VBAR1  = GRAV * PI * (TMP+TMP2)
-    TMP    = 1.d0/ZPI*ALPHA*K0*H*COTH2
-    TMP2   = SQRT(GRAV*K0*TANH(KD0)/(1.d0-TMP))
-    TMP3   = (-ZPI+ALPHA*K0*H*COTH2)**2*COTH
-    VBAR2  = 1.d0/(TMP2*TMP3)
-    CG     = VBAR1 * VBAR2
+    ! 
+
+    DO IK=1, NK
+      DO ITH=1, NTH
+        AB (JSEA)  = AB (JSEA) + A(ITH,IK,JSEA)
+      ENDDO 
+        ET(JSEA)     = ET(JSEA) + AB(JSEA) * DDEN(IK) / CG(IK,ISEA)
+#ifdef W3_IG1
+        IF (IK.EQ.NINT(IGPARS(5))) HSIG(JSEA) = 4*SQRT(ET(JSEA))
+#endif
+
+        TP     = ZPI/SI
+        L0     = GRAV*TP*TP/ZPI
+        K0     = ZPI/L0
+        KD0    = K0*H
+        CALL WAVNU3 (SI,H,K,CG_Bej)
+        K1     = K
+        KD1    = K * H
+        L1     = ZPI/K
+        TMP    = KD0**(0.5*NU)
+        TMP2   = 1.d0/TANH(MIN(KDMAX,TMP))
+        L2     = L1 / (1 - ALPHA * (H/L0) * TMP2**(2.d0/NU))
+        K      = ZPI/L2
+        KD     = K*H
+        TMP    =  KD0**(0.5d0*NU)
+        COTH   =  1.d0/TANH(TMP)
+        COTH2  = COTH**(2.d0/NU)
+        TANHKD = tanh(KD0)
+        KD0NU  = KD0**(0.5*NU)
+        TMP    = (-TANHKD*KD0**(0.5*NU)*COTH**2+KD0*(TANHKD-1)*(TANHKD+1)*COTH+TANHKD*(KD0)**(0.5*NU))*ALPHA*K0*H*COTH**(2./NU)
+        TMP2   = - ZPI * COTH  * (-TANHKD-KD0+KD0*TANHKD**2)
+        VBAR1  = GRAV * PI * (TMP+TMP2)
+        TMP    = 1.d0/ZPI*ALPHA*K0*H*COTH2
+        TMP2   = SQRT(GRAV*K0*TANH(KD0)/(1.d0-TMP))
+        TMP3   = (-ZPI+ALPHA*K0*H*COTH2)**2*COTH
+        VBAR2  = 1.d0/(TMP2*TMP3)
+        CG     = VBAR1 * VBAR2
+      ENDDO 
+    ENDDO 
     !
     RETURN
     !/

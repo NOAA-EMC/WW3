@@ -1769,6 +1769,12 @@ CONTAINS
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
+
+        IF (.not. FSSOURCE) THEN
+          B_JAC = 0.
+          ASPAR_DIAG_ALL = 0.
+        ENDIF   
+
 #endif
         RETURN ! return everything is done for the implicit ...
 
