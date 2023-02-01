@@ -273,7 +273,7 @@ CONTAINS
 #endif
       !
       IF (FSTOTALEXP) THEN
-        CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
+        CALL initFromGridDim(NX,NTRI,TRIGP,NTH,MPI_COMM_WCMP)
       ELSE
         CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
       ENDIF 
@@ -2889,6 +2889,7 @@ CONTAINS
     LOGICAL, INTENT(IN) :: LCALC 
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
+
     CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
     !/
     !/ End of W3XYPFSN ----------------------------------------------------- /
