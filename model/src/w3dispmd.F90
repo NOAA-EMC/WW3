@@ -556,14 +556,8 @@ CONTAINS
     !
     ! 
 
-    DO IK=1, NK
-      DO ITH=1, NTH
-        AB (JSEA)  = AB (JSEA) + A(ITH,IK,JSEA)
-      ENDDO 
-        ET(JSEA)     = ET(JSEA) + AB(JSEA) * DDEN(IK) / CG(IK,ISEA)
-#ifdef W3_IG1
-        IF (IK.EQ.NINT(IGPARS(5))) HSIG(JSEA) = 4*SQRT(ET(JSEA))
-#endif
+        !AB (JSEA)  = AB (JSEA) + A(ITH,IK,JSEA)
+        !ET(JSEA)     = ET(JSEA) + AB(JSEA) * DDEN(IK) / CG(IK,ISEA)
 
         TP     = ZPI/SI
         L0     = GRAV*TP*TP/ZPI
@@ -591,8 +585,6 @@ CONTAINS
         TMP3   = (-ZPI+ALPHA*K0*H*COTH2)**2*COTH
         VBAR2  = 1.d0/(TMP2*TMP3)
         CG     = VBAR1 * VBAR2
-      ENDDO 
-    ENDDO 
     !
     RETURN
     !/
