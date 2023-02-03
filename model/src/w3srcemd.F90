@@ -5,7 +5,7 @@
 !> @author F. Ardhuin
 !> @date   22-Mar-2021
 !>
-#define TEST_ARON_4
+!#define TEST_ARON_4
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 
