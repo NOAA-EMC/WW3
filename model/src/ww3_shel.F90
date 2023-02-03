@@ -343,7 +343,8 @@ PROGRAM W3SHEL
 #endif
   INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
 #ifdef W3_MPI
-  INTEGER             :: IERR_MPI
+  INTEGER                :: IERR_MPI
+  DOUBLE PRECISION, SAVE :: CPUTIME(30), DIFFTIME(30)
 #endif
   !
   REAL                :: FACTOR, DTTST, XX, YY,                    &
@@ -426,6 +427,7 @@ PROGRAM W3SHEL
 #ifdef W3_T
   PRTFRM = .TRUE.
 #endif
+
   !
   CALL DATE_AND_TIME ( VALUES=CLKDT1 )
   !
@@ -485,6 +487,10 @@ PROGRAM W3SHEL
 #endif
 #ifdef W3_OASIS
   END IF
+#endif
+
+#ifdef W3_MPI
+  CPUTIME(1) = MPI_WTIME()
 #endif
   !
   !
@@ -1969,6 +1975,10 @@ PROGRAM W3SHEL
   !      ENDIF
   call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 6')
 
+#ifdef W3_MPI
+  CPUTIME(2) = MPI_WTIME()
+#endif
+
   IF ( .NOT. FLFLG ) THEN
     !
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
@@ -2638,6 +2648,12 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !     End of shel
   !
+#ifdef W3_MPI
+  CPUTIME(3) = MPI_WTIME()
+#endif
+
+  WRITE(*,*) 'CPU TIMES', CPUTIME(1), CPUTIME(2), CPUTIME(3)
+
   GOTO 2222
   !
   ! Error escape locations
