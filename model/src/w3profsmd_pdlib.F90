@@ -3695,8 +3695,10 @@ CONTAINS
         CXY(1,IP) = CCOS * CG1/CLATS(IP_GLOB)
         CXY(2,IP) = CSIN * CG1
         IF (FLCUR) THEN
-          CXY(1,IP) = CXY(1,IP) + FACX * CX(IP_GLOB)/CLATS(IP_GLOB)
-          CXY(2,IP) = CXY(2,IP) + FACY * CY(IP_GLOB)
+          CXY(1,IP) = CXY(1,IP) + FACX * CX(IP_GLOB)/CLATS(IP_GLOB)*IOBDP_LOC(IP) 
+          CXY(2,IP) = CXY(2,IP) + FACY * CY(IP_GLOB)*IOBDP_LOC(IP)
+          !WRITE(IAPROC+4000,*) IP, CXY(1,IP), CXY(2,IP), FACX, FACY, CX(IP_GLOB), CY(IP_GLOB), CLATS(IP_GLOB)
+          !CALL FLUSH(IAPROC+4000)
         ENDIF
 #ifdef W3_MGP
         CXY(1,IP) = CXY(1,IP) - CCURX*VGX/CLATS(ISEA)
@@ -5805,26 +5807,26 @@ CONTAINS
     INTEGER :: nbIter, ISPnextDir, ISPprevDir
     INTEGER :: ISPp1, ISPm1, JP, ICOUNT1, ICOUNT2
     ! for the exchange
-    REAL  :: CCOS, CSIN, CCURX, CCURY
-    REAL  :: eSum(NSPEC), FRLOCAL, SPEC(NSPEC)
-    REAL  :: eA_THE, eC_THE, eA_SIG, eC_SIG, eSI
-    REAL  :: CAD(NSPEC), CAS(NSPEC), ACLOC(NSPEC)
-    REAL  :: CP_SIG(NSPEC), CM_SIG(NSPEC)
-    REAL  :: eFactM1, eFactP1
+    REAL*8  :: CCOS, CSIN, CCURX, CCURY
+    REAL*8  :: eSum(NSPEC), FRLOCAL
+    REAL*8  :: eA_THE, eC_THE, eA_SIG, eC_SIG, eSI
+    REAL*8  :: CAD(NSPEC), CAS(NSPEC), ACLOC(NSPEC)
+    REAL*8  :: CP_SIG(NSPEC), CM_SIG(NSPEC)
+    REAL*8  :: eFactM1, eFactP1
     REAL*8  :: Sum_Prev, Sum_New, p_is_converged, DiffNew, prop_conv
-    REAL  :: Sum_L2, Sum_L2_GL
-    REAL  :: DMM(0:NK2), DAM(NSPEC), DAM2(NSPEC)
-    REAL  :: eDiff(NSPEC), eProd(NSPEC)
-    REAL  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
+    REAL*8  :: Sum_L2, Sum_L2_GL
+    REAL  :: DMM(0:NK2), DAM(NSPEC), DAM2(NSPEC), SPEC(NSPEC)
+    REAL*8  :: eDiff(NSPEC), eProd(NSPEC), eDiffB(NSPEC)
+    REAL*8  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
     REAL  :: VAnew(NSPEC), VFLWN(1-NTH:NSPEC), JAC, JAC2
     REAL  :: VAAnew(1-NTH:NSPEC+NTH), VAAacloc(1-NTH:NSPEC+NTH)
-    REAL  :: VAinput(NSPEC), VAacloc(NSPEC), eDiffB(NSPEC),ASPAR_DIAG(NSPEC)
+    REAL  :: VAinput(NSPEC), VAacloc(NSPEC), ASPAR_DIAG(NSPEC)
     REAL  :: aspar_diag_local(nspec), aspar_off_diag_local(nspec), b_jac_local(nspec)
-    REAL  :: eDiffSing, eSumPart
+    REAL*8 :: eDiffSing, eSumPart
     REAL  :: EMEAN, FMEAN, FMEAN1, WNMEAN, AMAX, U10ABS, U10DIR, TAUA, TAUADIR
     REAL  :: USTAR, USTDIR, TAUWX, TAUWY, CD, Z0, CHARN, FMEANWS, DLWMEAN
-    REAL  :: eVal1, eVal2!, extmp(nspec,nseal)
-    REAL  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
+    REAL*8  :: eVal1, eVal2
+    REAL*8  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
     REAL  :: CG1(0:NK+1), WN1(0:NK+1)
     LOGICAL :: LCONVERGED(NSEAL), lexist, LLWS(NSPEC)
 #ifdef WEIGHTS
@@ -6198,6 +6200,10 @@ CONTAINS
 #ifdef W3_DEBUGSOLVERCOH
           PRE_VA(:, IP)=REAL(eSum)
 #endif
+          !DO ISP = 1, NSPEC
+          !  WRITE(4000+IAPROC,*) IPLG(IP), IAPROC, eSum(ISP), ASPAR_DIAG(ISP),eSum(ISP)/ASPAR_DIAG(ISP)
+          !  CALL FLUSH(4000+IAPROC)
+          !ENDDO 
           eSum(1:NSPEC)  = eSum(1:NSPEC) / ASPAR_DIAG(1:NSPEC)
 #ifdef W3_DEBUGFREQSHIFT
           WRITE(740+IAPROC,*) 'JSEA=', JSEA, ' nbIter=', nbIter
@@ -6248,7 +6254,7 @@ CONTAINS
 #endif
 
           IF (B_JGS_BLOCK_GAUSS_SEIDEL) THEN
-            VA(1:NSPEC,IP) = eSum * IOBDP_LOC(IP)
+            VA(1:NSPEC,IP) = REAL(eSum) * IOBDP_LOC(IP)
 #ifdef W3_REF1
             DO IK=1,NK
               DO ITH=1,NTH
