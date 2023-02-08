@@ -46,9 +46,7 @@ set_target_properties(PTSCOTCHparmetis::PTSCOTCHparmetis PROPERTIES
 
 
 ## Interfaces and links
-  target_link_libraries(PTSCOTCHparmetis::PTSCOTCHparmetis INTERFACE PTSCOTCHerr::PTSCOTCHerr SCOTCHerr::SCOTCHerr PTSCOTCH::PTSCOTCH SCOTCH::SCOTCH)
-
-  target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis SCOTCHerr::SCOTCHerr)
+target_link_libraries(PTSCOTCHparmetis::PTSCOTCHparmetis INTERFACE PTSCOTCH::PTSCOTCH PTSCOTCHerr::PTSCOTCHerr  SCOTCH::SCOTCH)
 
 
 ## Finalize find_package
