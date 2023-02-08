@@ -1048,7 +1048,9 @@ CONTAINS
       !
       DTRES  = 0.
 
+#ifdef W3_PDLIB
       CALL ERGOUT(12001,'ergtest1.bin')
+#endif
 
       !
       DO IT = IT0, NT
