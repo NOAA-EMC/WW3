@@ -647,12 +647,14 @@ CONTAINS
       CALL FLUSH(NDSE) 
       STOP 
     END IF
+#ifdef W3_PDLIB
     IF (B_JGS_BLOCK_GAUSS_SEIDEL .AND. .NOT. B_JGS_USE_JACOBI) THEN
       WRITE(NDSE,*) 'B_JGS_BLOCK_GAUSS_SEIDEL is used but the Jacobi solver is not choosen'
       WRITE(NDSE,*) 'Please set JGS_USE_JACOBI .eqv. .true.'
       CALL FLUSH(NDSE) 
       STOP 
     ENDIF
+#endif
       
     !
     ! 1.c Open files without unpacking MDS ,,,

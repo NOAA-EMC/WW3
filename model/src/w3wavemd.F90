@@ -545,6 +545,7 @@ CONTAINS
          FACX, XXX, REFLEC(4),                &
          DELX, DELY, DELA, DEPTH, D50, PSIC
     REAL                     :: VSioDummy(NSPEC), VDioDummy(NSPEC), VAoldDummy(NSPEC)
+    REAL, POINTER           :: VAOLD(:,:)
     LOGICAL                  :: SHAVETOTioDummy
 #ifdef W3_SEC1
     REAL                    :: DTGTEMP
@@ -2253,11 +2254,11 @@ CONTAINS
                 ELSE
 #endif
                   CALL W3SRCE(srce_direct, IT, ISEA, JSEA, IX, IY, IMOD, &
-                       VAOLD(:,JSEA), VA(:,JSEA),                     &
-                       VSioDummy, VDioDummy, SHAVETOTioDummy,      &
-                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),            &
-                       CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),         &
-                       U10D(ISEA),                                 &
+                       VAOLD(:,JSEA), VA(:,JSEA),                        &
+                       VSioDummy, VDioDummy, SHAVETOTioDummy,            &
+                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
+                       CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
+                       U10D(ISEA),                                       &
 #ifdef W3_FLX5
                        TAUA(ISEA), TAUADIR(ISEA),                        &
 #endif
