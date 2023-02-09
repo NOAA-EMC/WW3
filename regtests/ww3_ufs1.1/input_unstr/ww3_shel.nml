@@ -1,0 +1,52 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_shel.nml - single-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%IOSTYP  = 0
+  DOMAIN%START   = '20210401 000000'
+  DOMAIN%STOP    = '20210402 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each forcing via the INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_NML
+  INPUT%FORCING%ICE_CONC      = 'T'
+  INPUT%FORCING%CURRENTS      = 'T'
+  INPUT%FORCING%WINDS         = 'T'
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  TYPE%FIELD%LIST          = 'CHA EF UST WND HS FP DP PHS PTP PDIR CUR ICE'
+  TYPE%POINT%FILE          = '../input_unstr/ww3_points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  DATE%FIELD          = '20210401 000000' '3600' '20210402 000000'
+  DATE%POINT          = '20210401 000000' '3600' '20210402 000000'
+!  DATE%RESTART        = '20210401 000000' '86400' '20210402 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+/
+
+&HOMOG_INPUT_NML
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

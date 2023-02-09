@@ -67,7 +67,7 @@ CONTAINS
     !/                  |           A. Roland               |
     !/                  |                                   | 
     !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         22-Dez-2022 |
+    !/                  | Last update :         22-Dec-2022 |
     !/                  +-----------------------------------+
     !/
     !/    Jul-2013 : Origination.                    ( version 4.18 )

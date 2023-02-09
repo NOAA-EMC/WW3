@@ -1,0 +1,37 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_prnc.nml - Field preprocessor                      !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define the forcing fields to preprocess via FORCING_NML namelist
+! -------------------------------------------------------------------- !
+&FORCING_NML
+/
+
+! -------------------------------------------------------------------- !
+! Define the content of the input file via FILE_NML namelist
+! -------------------------------------------------------------------- !
+&FILE_NML
+  FILE%FILENAME      = 4 4
+  FILE%LONGITUDE     = 'N'
+  FILE%LATITUDE      = ''
+  FILE%VAR(1)        = 'WND'
+  FILE%VAR(2)        = 'CUR'
+  FILE%VAR(3)        = 'ICE'
+  FILE%VAR(4)        = 'HS'
+  FILE%VAR(5)        = 'T01'
+  FILE%VAR(6)        = 'T02'
+  FILE%VAR(7)        = 'DIR'
+  FILE%VAR(8)        = 'FP'
+  FILE%VAR(9)        = 'DP'
+  FILE%VAR(10)        = 'PHS'
+  FILE%VAR(11)        = 'PTP'
+  FILE%VAR(12)        = 'PDIR'
+  FILE%VAR(13)        = 'UST'
+  FILE%VAR(14)        = 'CHA'
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
