@@ -62,7 +62,7 @@
     modg2='g2/3.4.5'
     modw3emc='w3emc/2.9.2'
     modesmf='esmf/8.3.0b09'
-    metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+    metispath='/scratch2/STI/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then

@@ -2381,6 +2381,7 @@ CONTAINS
       CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
            REFLEC, REFLED, TRNX, TRNY,  &
            BERG, DTG, IX, IY, JSEA, VREF )
+#ifdef W3_PDLIB
       IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
         IF (IOBP_LOC(JSEA).EQ.0) THEN
           DO IK = 1, NK
@@ -2395,6 +2396,7 @@ CONTAINS
       ELSE
         SPEC(:) = SPEC(:) + DTG * VREF(:)
       END IF
+#endif
     END IF
 #endif
     !
