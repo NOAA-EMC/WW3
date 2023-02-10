@@ -591,7 +591,7 @@ contains
     if ( runtype == "initial") then
       call ESMF_ClockGet( clock, startTime=esmfTime, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-#ifndef CESMCOUPLED
+#ifndef W3_CESMCOUPLED
       esmfTime = esmfTime + TimeOffset
 #endif
     else
