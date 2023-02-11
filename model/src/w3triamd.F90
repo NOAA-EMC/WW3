@@ -2174,14 +2174,14 @@ CONTAINS
       DIFFX(1,:) = DIFFX(1,:)/WEI_LOCAL
       DIFFY(1,:) = DIFFY(1,:)/WEI_LOCAL
     ENDIF
-    DO IP = 1, NSEAL
+    DO IP = 1, np 
       IF (IOBP_LOC(IP) == 0) THEN
         DIFFX(1,IP) = 0.
         DIFFY(1,IP) = 0.
       ENDIF
     ENDDO
-    CALL PDLIB_exchange1Dreal(DIFFX(1,:))
-    CALL PDLIB_exchange1Dreal(DIFFY(1,:))
+    !CALL PDLIB_exchange1Dreal(DIFFX(1,:))
+    !CALL PDLIB_exchange1Dreal(DIFFY(1,:))
 #endif
     !
   END SUBROUTINE UG_GRADIENTS
