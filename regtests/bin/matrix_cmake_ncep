@@ -66,8 +66,8 @@ EOF
     basemodmpi='impi/2022.1.2'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
-    metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
-    scotchpath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/scotch/install'
+    metispath='/scratch2/STI/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+    scotchpath='/scratch2/STI/coastal/save/Ali.Abdolali/hpc-stack/scotch/install'
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
