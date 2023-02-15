@@ -66,7 +66,7 @@ EOF
     basemodmpi='impi/2022.1.2'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
-    metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+    metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
@@ -75,7 +75,7 @@ EOF
     hpcstackversion='hpc/1.2.0'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
-    metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
+    metispath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
     modcmake='cmake/3.22.1'
   else
     batchq=
