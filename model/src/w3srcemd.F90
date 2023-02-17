@@ -5,7 +5,7 @@
 !> @author F. Ardhuin
 !> @date   22-Mar-2021
 !>
-!#define TEST_ARON_4
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
 
@@ -811,7 +811,7 @@ CONTAINS
     REAL                    :: eInc1, eInc2, eVS, eVD, JAC
     REAL                    :: DeltaSRC(NSPEC)
     REAL, PARAMETER         :: DTMINTOT = 0.01
-    LOGICAL                 :: LNEWLIMITER = .TRUE.
+    LOGICAL                 :: LNEWLIMITER = .FALSE.
 #ifdef W3_PDLIB
     REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
@@ -832,12 +832,6 @@ CONTAINS
     !
     VDIO   = 0.
     VSIO   = 0.
-#ifdef TEST_ARON_0
-    RETURN
-#endif
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 1', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
     DEPTH  = MAX ( DMIN , D_INP )
 
     IKS1 = 1
@@ -1134,9 +1128,6 @@ CONTAINS
     CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 #endif
     !
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 2', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
     ! 1.c2 Stores the initial data
     !
     SPECINIT = SPEC
@@ -1453,70 +1444,6 @@ CONTAINS
       !
       VS = 0
       VD = 0
-#ifdef TEST_ARON_1
-      VSDS = 0
-      VDDS = 0
-#endif
-#ifdef TEST_ARON_2
-      VSDS = 0
-      VDDS = 0
-      VSBT = 0
-      VDBT = 0
-#endif
-#ifdef TEST_ARON_3
-      VSDS = 0
-      VDDS = 0
-      VSBT = 0
-      VDBT = 0
-      VSTR = 0
-      VDTR = 0
-      VSDB = 0
-      VDDB = 0
-#endif
-#ifdef TEST_ARON_4
-      VSDS = 0
-      VDDS = 0
-      VSBT = 0
-      VDBT = 0
-      VSTR = 0
-      VDTR = 0
-      VSDB = 0
-      VDDB = 0
-      VSIN = 0
-      VDIN = 0 
-      VSNL = 0 
-      VDNL = 0
-#endif
-#ifdef TEST_ARON_6
-      VSDS = 0
-      VDDS = 0
-      VSBT = 0
-      VDBT = 0
-      VSTR = 0
-      VDTR = 0
-      VSDB = 0
-      VDDB = 0
-      VSIN = 0
-      VDIN = 0
-#endif
-#ifdef TEST_ARON_7
-      VSDS = 0
-      VDDS = 0
-      VSBT = 0
-      VDBT = 0
-      VSTR = 0
-      VDTR = 0
-      VSDB = 0
-      VDDB = 0
-      VSNL = 0
-      VDNL = 0
-#endif
-
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 3', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
       DO IS=IS1, NSPECH
         VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
              + VSDS(IS) + VSBT(IS)
@@ -1525,7 +1452,7 @@ CONTAINS
 #endif
 #ifndef W3_PDLIB 
 #ifdef W3_TR1
-          VS(IS) = VS(IS) + VSTR(IS)
+        VS(IS) = VS(IS) + VSTR(IS)
 #endif
 #endif
 #ifdef W3_BS1
@@ -1541,7 +1468,7 @@ CONTAINS
 #endif
 #ifndef W3_PDLIB
 #ifdef W3_TR1
-          VD(IS) = VD(IS) + VDTR(IS)
+        VD(IS) = VD(IS) + VDTR(IS)
 #endif
 #endif
 #ifdef W3_BS1
@@ -1780,10 +1707,6 @@ CONTAINS
 
       END IF ! srce_imp_pre
 #endif W3_PDLIB
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 4', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
       !
 #ifdef W3_T
       WRITE (NDST,9040) DTRAW, DT, SHAVE
@@ -1792,7 +1715,6 @@ CONTAINS
       ! 5.  Increment spectrum --------------------------------------------- *
       !
       IF (srce_call .eq. srce_direct) THEN
-
         IF ( SHAVE ) THEN
           DO IS=IS1, NSPECH
             eInc1 = VS(IS) * DT / MAX ( 1. , (1.-HDT*VD(IS)))
@@ -1806,12 +1728,7 @@ CONTAINS
             SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
           END DO
         END IF
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 5', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
-#ifdef PDLIB
+        !
 #ifdef W3_DB1
         DO IS=IS1, NSPECH
           eInc1 = VSDB(IS) * DT / MAX ( 1. , (1.-HDT*VDDB(IS)))
@@ -1824,10 +1741,6 @@ CONTAINS
           SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
         END DO
 #endif 
-#endif
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 6', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
 #endif
 
 #ifdef W3_DEBUGSRC
@@ -2002,11 +1915,6 @@ CONTAINS
       !     Last time step ONLY !
       !     uses true depth (D_INP) instead of limited depth
       !
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 7', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
 #ifdef W3_MLIM
       IF ( DTTOT .GE. 0.9999*DTG ) THEN
         HM     = FHMAX *TANH(WNMEAN*MAX(0.,D_INP)) / MAX(1.E-4,WNMEAN )
@@ -2017,11 +1925,6 @@ CONTAINS
         END IF
       END IF
 #endif
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 8', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
       !
       ! 6.c Seeding of spectrum
       !     alpha = 0.005 , 0.5 in eq., 0.25 for directional distribution
@@ -2038,11 +1941,6 @@ CONTAINS
         END DO
       END DO
 #endif
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 9', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
       !
       ! 6.d Add tail
       !
@@ -2059,11 +1957,6 @@ CONTAINS
                + 0.
         END DO
       END DO
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 10', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
       !
       ! 6.e  Update wave-supported stress----------------------------------- *
       !
@@ -2107,11 +2000,6 @@ CONTAINS
     !
     DTDYN  = DTDYN / REAL(MAX(1,NSTEPS))
     FCUT   = FHIGH * TPIINV
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 11', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
     !
     GOTO 888
     !
@@ -2375,7 +2263,6 @@ CONTAINS
       WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
     END IF
 #endif
-
 #ifdef W3_REF1
     IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
       CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
@@ -2411,11 +2298,6 @@ CONTAINS
     IF (IT.EQ.0) SPEC = SPECINIT
 
     SPEC = MAX(0., SPEC)
-
-#ifdef TEST_ARON_5
-    WRITE(740+IAPROC,*) 'CHANGE OF WAE 12', SUM(SPEC), SUM(SPECOLD), SUM(SPEC)-SUM(SPECOLD)/SUM(SPECOLD)*100.d0
-#endif
-
     !
     RETURN
     !

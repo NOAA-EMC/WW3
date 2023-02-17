@@ -448,7 +448,7 @@ CONTAINS
     USE W3IOSFMD
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA
-    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT, ERGOUT
+    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
     USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
     USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
     USE yowNodepool, only: npa, iplg, np
@@ -1046,10 +1046,6 @@ CONTAINS
       ! 3.  Loop over time steps
       !
       DTRES  = 0.
-
-#ifdef W3_PDLIB
-      CALL ERGOUT(12001,'ergtest1.bin')
-#endif
 
       !
       DO IT = IT0, NT
@@ -1845,8 +1841,6 @@ CONTAINS
             END IF
           END IF
           IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
- 
-            !WRITE(*,*) 'SUM VA 1', SUM(VA)
             !
 #ifdef W3_PDLIB
             IF (FLCX .or. FLCY) THEN
@@ -2255,7 +2249,7 @@ CONTAINS
                 ELSE
 #endif
                   CALL W3SRCE(srce_direct, IT, ISEA, JSEA, IX, IY, IMOD, &
-                       VAoldDummy, VA(:,JSEA),                        &
+                       VAoldDummy, VA(:,JSEA),                           &
                        VSioDummy, VDioDummy, SHAVETOTioDummy,            &
                        ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
                        CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &

@@ -448,19 +448,8 @@ CONTAINS
     PTRIAD(3) = 10. ! not used 
     PTRIAD(4) = 0.2
     PTRIAD(5) = 0.01
-    JACEPS    = 1.E-12
-    ALPHAR    = 0.5
-!---------------------------------------------
 
     HS = 4.*SQRT( MAX(0.,EMEAN) )
-    !IF (HS .GT. HMAX) THEN
-    !  A2 = (ALPHAR * A + (1-ALPHAR) * AOLD) * HMAX/HS
-    !  HS = HMAX
-    !  A3 = A2 + JACEPS 
-    !ELSE
-    !  A2 = (ALPHAR * A + (1-ALPHAR) * AOLD)
-    !  A3 = A2 + JACEPS 
-    !ENDIF 
     URSELL = (GRAV*HS)/(2.*SQRT(2.)*SIGM01**2*DEPTH**2)
 !---------------------------------------------
 

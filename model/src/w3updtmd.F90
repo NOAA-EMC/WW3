@@ -2219,7 +2219,6 @@ CONTAINS
     !
 #endif
     DO ISEA=1, NSEA
-      !
       IX     = MAPSF(ISEA,1)
       IY     = MAPSF(ISEA,2)
       DWO(ISEA) = DW(ISEA)
