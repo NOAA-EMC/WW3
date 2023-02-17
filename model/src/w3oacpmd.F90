@@ -940,6 +940,7 @@ CONTAINS
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDH'
         !
         !AR: in the latest coupling hycom does not see those fields
+	!Todo: Heloise, please double check this!
         !hhh  wet-drying at u-location
         !ID_NB_RCV=ID_NB_RCV+1
         !RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
