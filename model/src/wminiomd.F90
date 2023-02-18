@@ -2250,8 +2250,8 @@ CONTAINS
       WRITE (MDST,9024)
 #endif
       !
-      DO IS = 1, NTOT
-        JSEA = HGSTGE(IMOD,J)%LJSEA(IS)
+      DO IS=1, NTOT
+        JSEA   = HGSTGE(IMOD,J)%LJSEA(IS)
         CALL INIT_GET_ISEA(ISEA, JSEA)
         DO I=1, NSPEC
           VA(I,JSEA) = SPEC2(I,IS) / SIG2(I) * CG(1+(I-1)/NTH,ISEA)

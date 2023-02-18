@@ -343,8 +343,7 @@ PROGRAM W3SHEL
 #endif
   INTEGER             :: CLKDT1(8), CLKDT2(8), CLKDT3(8)
 #ifdef W3_MPI
-  INTEGER                :: IERR_MPI
-  DOUBLE PRECISION, SAVE :: CPUTIME(30), DIFFTIME(30)
+  INTEGER             :: IERR_MPI
 #endif
   !
   REAL                :: FACTOR, DTTST, XX, YY,                    &
@@ -428,7 +427,6 @@ PROGRAM W3SHEL
 #ifdef W3_T
   PRTFRM = .TRUE.
 #endif
-
   !
   CALL DATE_AND_TIME ( VALUES=CLKDT1 )
   !
@@ -488,10 +486,6 @@ PROGRAM W3SHEL
 #endif
 #ifdef W3_OASIS
   END IF
-#endif
-
-#ifdef W3_MPI
-  CPUTIME(1) = MPI_WTIME()
 #endif
   !
   !
@@ -1921,12 +1915,7 @@ PROGRAM W3SHEL
   !        CALL EXTCDE(666)
   !      ENDIF
 
-
-#ifdef W3_MEMCHECK
-  write(10000+IAPROC,*) 'memcheck_____:', 'WW3_SHEL SECTION 5'
-  call getMallocInfo(mallinfos)
-  call printMallInfo(10000+IAPROC,mallInfos)
-#endif
+  call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 5')
   !
 #ifdef W3_TIDE
   IF (FLAGSTIDE(1)) CALL W3FLDTIDE2 ( 'READ',  NDSF(1), NDST, NDSEN, NX, NY, IDSTR(1), 1, IERR )
@@ -1948,13 +1937,13 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !
 #ifdef W3_OASIS
- ! Initialize L_MASTER, COUPL_COMM
+  ! Initialize L_MASTER, COUPL_COMM
   IF ( IAPROC .EQ. 1) THEN
     L_MASTER = .TRUE.
   ELSE
     L_MASTER = .FALSE.
-  ENDIF 
- ! Estimate the weights for the spatial interpolation
+  ENDIF
+  ! Estimate the weights for the spatial interpolation
   IF (DTOUT(7).NE.0) THEN
     CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
   END IF
@@ -1976,10 +1965,6 @@ PROGRAM W3SHEL
   !      ENDIF
   call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 6')
 
-#ifdef W3_MPI
-  CPUTIME(2) = MPI_WTIME()
-#endif
-
   IF ( .NOT. FLFLG ) THEN
     !
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
@@ -1999,27 +1984,20 @@ PROGRAM W3SHEL
   !
 
 #ifdef W3_OASIS
-      ! Send coupling fields at the initial time step
-      IF ( FLOUT(7) .AND. CPLT0 ) THEN
+  ! Send coupling fields at the initial time step
+  IF ( FLOUT(7) .AND. CPLT0 ) THEN
 #endif
 #ifdef W3_OASACM
-      WRITE(*,*) 'START SND_FIELDS_TO_ATMOS'
-       CALL SND_FIELDS_TO_ATMOS()
-      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_ATMOS'
+    CALL SND_FIELDS_TO_ATMOS()
 #endif
 #ifdef W3_OASOCM
-      WRITE(*,*) 'START SND_FIELDS_TO_OCEAN'
-       CALL SND_FIELDS_TO_OCEAN()
-      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_OCEAN'
+    CALL SND_FIELDS_TO_OCEAN()
 #endif
 #ifdef W3_OASICM
-      WRITE(*,*) 'START SND_FIELDS_TO_ICE'
-       CALL SND_FIELDS_TO_ICE()
-      WRITE(*,*) 'FINISHED W3WAVE SND_FIELDS_TO_ICE'
+    CALL SND_FIELDS_TO_ICE()
 #endif
 #ifdef W3_OASIS
   END IF
-
 #endif
 
 700 CONTINUE
@@ -2333,7 +2311,6 @@ PROGRAM W3SHEL
               TC0(:) = TCN(:)
               CALL TICK21 ( TCN, TIDE_DT )
             ELSE
-
 #endif
 #ifdef W3_OASIS
               COUPL_COMM = MPI_COMM
@@ -2714,12 +2691,6 @@ PROGRAM W3SHEL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !     End of shel
   !
-#ifdef W3_MPI
-  CPUTIME(3) = MPI_WTIME()
-  WRITE(*,*) 'CPU TIMES', CPUTIME(1), CPUTIME(2), CPUTIME(3)
-#endif
-
-
   GOTO 2222
   !
   ! Error escape locations
