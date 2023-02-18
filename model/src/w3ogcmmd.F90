@@ -637,7 +637,7 @@ CONTAINS
 #endif
 
           IF (LL_ACTION) THEN
-            TMP(1:NSEALL) = RLA_OASIS_RCV(1:NSEALL,1) * MASKT(1:NSEALL)
+            TMP(1:NSEALL) = RLA_OASIS_RCV(1:NSEALL,1)! * MASKT(1:NSEALL)
             SND_BUFF(1:NSEA) = 0.0
 #ifdef W3_PDLIB
             DO IB_I = 1, NSEALL

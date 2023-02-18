@@ -501,7 +501,7 @@ CONTAINS
       ! 1.3. Unstructured grids
       ! ----------------------------------
 #ifdef W3_PDLIB
-      IPART = 3 
+      IPART = 4
       IF (IPART == 3) THEN
       ! * allocate : OASIS ORANGE partition
         ALLOCATE(ILA_PARAL(2+NP*2))
@@ -525,7 +525,7 @@ CONTAINS
         ENDDO
       ENDIF
 #else
-      IPART = 3
+      IPART = 4 
       IF (IPART == 3) THEN
       ! * allocate : OASIS ORANGE partition
         ALLOCATE(ILA_PARAL(2+NSEAL*2))
