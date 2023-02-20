@@ -62,7 +62,7 @@ MODULE W3OACPMD
   USE MPI, only : MPI_SUM, MPI_INT
   USE W3PARALL, ONLY : INIT_GET_ISEA
 #ifdef W3_PDLIB
-    USE YOWNODEPOOL, only: npa, np, iplg
+    USE YOWNODEPOOL, only: NPA, NP, IPLG
 #endif
 
   IMPLICIT NONE
@@ -426,7 +426,7 @@ CONTAINS
     USE W3ADATMD, ONLY: MPI_COMM_WAVE
 #ifdef W3_PDLIB
     USE W3PARALL, ONLY : INIT_GET_ISEA 
-    USE YOWNODEPOOL, only: npa, np, iplg
+    USE YOWNODEPOOL, only: NPA, NP, IPLG 
 #endif
     IMPLICIT NONE
     !
@@ -501,7 +501,7 @@ CONTAINS
       ! 1.3. Unstructured grids
       ! ----------------------------------
 #ifdef W3_PDLIB
-      IPART = 4
+      IPART = 4 ! USING POINT PARTITION FOR UNSTRUCTURED DD 
       IF (IPART == 3) THEN
       ! * allocate : OASIS ORANGE partition
         ALLOCATE(ILA_PARAL(2+NP*2))
@@ -762,34 +762,11 @@ CONTAINS
     !/ Executable part
     !/
 
-#ifdef W3_PDLIB
-!    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-!    WRITE(*,*) 'W3OACPMD - CPL_OASIS_RCV'
-!    NPSUM = 0
-!    CALL MPI_ALLREDUCE(NP, NPSUM, 1, MPI_INT, MPI_SUM, MPI_COMM_WAVE, IERR_MPI)
-!    WRITE(4000+IAPROC,*) 'ID_NB', ID_NB
-!    WRITE(4000+IAPROC,*) 'RCV_fld(ID_NB)%IL_FIELD_ID', RCV_fld(ID_NB)%IL_FIELD_ID
-!    WRITE(4000+IAPROC,*) 'ID_TIME', ID_TIME
-!    WRITE(4000+IAPROC,*) 'NSEA, NX', NSEA, NX
-!    WRITE(4000+IAPROC,*) 'NSEAL, NPSUM', NSEAL, NPSUM
-!    WRITE(4000+IAPROC,*) 'NP, NPA', NP, NPA
-!    WRITE(4000+IAPROC,*) 'SIZE(RDA_FIELD)', SIZE(RDA_FIELD), NP, NPA
-!    WRITE(4000+IAPROC,*) 'RDA_FIELD', RDA_FIELD
-!    CALL FLUSH(4000+IAPROC)
-!    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-!    WRITE(4000+IAPROC,*) 'W3OACPMD - CPL_OASIS_RCV BEFORE GET'
-#endif
-
     CALL OASIS_GET ( RCV_fld(ID_NB)%IL_FIELD_ID &
          &              , ID_TIME                    &
          &              , RDA_FIELD                  &
          &              , IL_INFO                    &
          &                )
-
-#ifdef W3_PDLIB
-!    CALL MPI_BARRIER ( MPI_COMM_WAVE, IERR_MPI )
-!    WRITE(4000+IAPROC,*) 'W3OACPMD - CPL_OASIS_RCV AFTER GET'
-#endif
 
     !
     LD_ACTION = IL_INFO == OASIS_RECVD   .OR. IL_INFO == OASIS_FROMREST .OR.   &
@@ -939,16 +916,6 @@ CONTAINS
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDH'
         !
-        !AR: in the latest coupling hycom does not see those fields
-	!Todo: Heloise, please double check this!
-        !hhh  wet-drying at u-location
-        !ID_NB_RCV=ID_NB_RCV+1
-        !RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
-        !
-        ! wet-drying at v-location
-        !ID_NB_RCV=ID_NB_RCV+1
-        !RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDV'
-        !
       CASE('SSH')
         ! ssh : sea surface height (m)
         ID_NB_RCV=ID_NB_RCV+1
@@ -964,7 +931,6 @@ CONTAINS
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OSSV'
 #endif
         !
-
         !
         ! ATMOSPHERE MODEL VARIABLES
         !
@@ -1243,4 +1209,3 @@ CONTAINS
   !/
 END MODULE W3OACPMD
 !/
-!/ ------------------------------------------------------------------- /

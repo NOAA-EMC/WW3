@@ -246,19 +246,6 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
  
-!    WRITE(*,*) 'CALLING PDLIB INIT' 
-!    WRITE(*,*) 'FSTOTALIMP=', FSTOTALIMP
-!    WRITE(*,*) 'FSTOTALEXP=', FSTOTALEXP
-!    WRITE(*,*) 'FSNIMP=', FSNIMP
-!    WRITE(*,*) 'FSN=', FSN
-!    WRITE(*,*) 'FSPSI=', FSPSI
-!    WRITE(*,*) 'FSFCT=', FSFCT
-!    WRITE(*,*) 'FSREFRACTION=', FSREFRACTION
-!    WRITE(*,*) 'FSFREQSHIFT=', FSFREQSHIFT
-!    WRITE(*,*) 'FSSOURCE=', FSSOURCE
-!    WRITE(*,*) 'NAPROC=', NAPROC
-!    WRITE(*,*) 'NTPROC=', NTPROC
-
     PDLIB_NSEAL = 0
 
     IF (IAPROC .le. NAPROC) THEN
@@ -784,15 +771,12 @@ CONTAINS
       AC(IP)  = VA(ISP,JSEA) / CG(IK,ISEA) * CLATS(ISEA)
       VLCFLX(IP) = CCOS * CG(IK,ISEA) / CLATS(ISEA)
       VLCFLY(IP) = CSIN * CG(IK,ISEA)
-      !WRITE(740+IAPROC,*) 'VSingle LOOP', IK, ITH, JSEA, FACX*ECOS(ITH), FACY*ESIN(ITH), CG(IK,ISEA), VLCFLX(IP), VLCFLY(IP), CLATS(ISEA)
 #endif
 #ifdef W3_MGP
       VLCFLX(IP) = VLCFLX(IP) - CCURX*VGX/CLATS(ISEA)
       VLCFLY(IP) = VLCFLY(IP) - CCURY*VGY
 #endif
     END DO
-
-    !WRITE(740+IAPROC,*) 'VSingle 1', IK, ITH, SUM(VLCFLX), SUM(VLCFLY), SUM(CG(IK,IPLG))
 
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'ISP=', ISP, ' ITH=', ITH, ' IK=', IK
@@ -815,8 +799,6 @@ CONTAINS
         END IF
       END DO
     END IF
-
-    !WRITE(740+IAPROC,*) 'VSingle 2', IK, ITH, SUM(VLCFLX), SUM(VLCFLY), SUM(CG(IK,IPLG))
 
     C(:,1) = VLCFLX(:) * IOBDP_LOC
     C(:,2) = VLCFLY(:) * IOBDP_LOC
@@ -1441,9 +1423,6 @@ CONTAINS
       END IF
 #endif
       !
-      ! IOBPD=0  : waves coming from land
-      ! IOBPD=1 : waves coming from the coast
-      !
       DO IP = 1, npa
         U(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
@@ -1747,7 +1726,7 @@ CONTAINS
         END IF
         ST(NI) = ST(NI) + THETA_L(:,IE) ! the 2nd term are the theta values of each node ...
         THETA_H         = (1./3.+DT/(2.*PDLIB_TRIA(IE)) * KELEM(:,IE) ) * FT ! LAX
-!        THETA_H = (1./3.+2./3.*KELEM(:,IE)/SUM(MAX(ZERO,KELEM(:,IE))))*FT  ! CENTRAL
+!        THETA_H = (1./3.+2./3.*KELEM(:,IE)/SUM(MAX(ZERO,KELEM(:,IE))))*FT  ! CENTRAL ... can be tested as well a bit more dispersive then LAX
         THETA_ACE(:,IE) = THETA_H-THETA_L(:,IE)
         PP(NI) =  PP(NI) + MAX(ZERO, -THETA_ACE(:,IE)) * DTSI(NI)
         PM(NI) =  PM(NI) + MIN(ZERO, -THETA_ACE(:,IE)) * DTSI(NI)
@@ -1761,7 +1740,6 @@ CONTAINS
 
       DO IP = 1, npa
         UL(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
-        !IF (IP == 100 .and. ITH == 13 .and. IK == 17) WRITE(*,*) IP, ITH, IK, UL(IP), DTSI(IP) * ST(IP)
       END DO
 
 #ifdef MPI_PARALL_GRID
@@ -1813,7 +1791,6 @@ CONTAINS
 #ifdef W3_REF1
         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
 #endif
-        !IF (IP == 100 .and. ITH == 13 .and. IK == 17) WRITE(*,*) IP, ITH, IK, U(IP), DTSI(IP) * ST(IP)
       END DO
 
       AC = REAL(U)
@@ -4179,7 +4156,6 @@ CONTAINS
         TRIA03 = ONETHIRD * PDLIB_TRIA(IE)
         DTK    =  KP(POS) * DBLE(DTG) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP) * (1-IOBPA_LOC(IP))
         TMP3   =  DTK * NM
-        !          IF (IP == 224 .AND. ISP == 121) WRITE(10006,'(I10,20F20.15)') ISP, KP(POS), DTK, TMP3, DELTAL(POS)
         IF (FSGEOADVECT) THEN
           ASPAR_DIAG_LOCAL(ISP)     = ASPAR_DIAG_LOCAL(ISP)    + TRIA03 + DTK   - TMP3*DELTAL(POS)
           ASPAR_OFF_DIAG_LOCAL(ISP) = ASPAR_OFF_DIAG_LOCAL(ISP)                 - TMP3*DELTAL(IPP1)*VA(ISP,IP1)
@@ -4187,7 +4163,6 @@ CONTAINS
         ELSE
           ASPAR_DIAG_LOCAL(ISP) = ASPAR_DIAG_LOCAL(ISP) + TRIA03
         END IF
-        !IF (IP == 2) WRITE(10005,'(2I10,10G20.10)') ISP, IP, VAOLD(ISP,IP)
         B_JAC_LOCAL(ISP) = B_JAC_LOCAL(ISP) + TRIA03 * VAOLD(ISP,IP) * IOBDP_LOC(IP) * IOBPD_LOC(ITH,IP)
       END DO
     END DO
@@ -4414,7 +4389,6 @@ CONTAINS
         DELTAL(1:3) = CRFS(1:3) - KP(1:3)
         !NM      = 1.d0/MIN(-THR,SUM(MIN(ZERO,K)))
         DTK     = KP(POS) * DTG * IOBPTH1(ITH)!IOBDP(IP_glob) * (1-IOBPA(IP_glob)) * IOBPD(ITH,IP_glob)
-        !write(*,*)  IOBDP(IP_glob) , (1-IOBPA(IP_glob)), IOBPD(ITH,IP_glob)
         TMP3    = DTK * 1.d0/MIN(-THR,SUM(MIN(ZERO,K(1:3))))
         IF (FSGEOADVECT) THEN
           ASPAR_DIAG_LOCAL(ISP)     = ASPAR_DIAG_LOCAL(ISP) + TRIA03 + DTK - TMP3*DELTAL(POS)
@@ -4630,6 +4604,7 @@ CONTAINS
       IP2       = INE(POS_TRICK(I,2),IE)
       IPP1      = POS_TRICK(I,1)
       IPP2      = POS_TRICK(I,2)
+!AR: TODO: Check this stutff below ... 
       !ASPAR_DIAG(:,IP)      = ASPAR_DIAG(:,IP) + TRIA03 + DTK(I) - TMP3(:,I) * DELTAL
       !ASPAR_OFF_DIAG(:,IP1) = ASPAR_OFF_DIAG(:,IP1)              - TMP3(:,IPP1) * DELTAL(:,IPP1) * VA(:,IP1)
       !ASPAR_OFF_DIAG(:,IP2) = ASPAR_OFF_DIAG(:,IP2)              - TMP3(:,IPP2) * DELTAL(:,IPP2) * VA(:,IP2)
@@ -4711,6 +4686,7 @@ CONTAINS
     LOGICAL :: LSIG = .FALSE.
 
     !AR: this is missing in init ... but there is a design error in ww3_grid with FLCUR and FLLEV
+    !AR: TODO: check&report if needed ... 
     LSIG = FLCUR .OR. FLLEV
 
     DO IP = 1, np
@@ -4763,13 +4739,9 @@ CONTAINS
       ! The refraction
       !
       IF (FSREFRACTION) THEN
-        !
-        !IF ((MAPSTA(1,IP_glob) .eq. 1).and.(SUM(IOBPD(:,IP_glob)) .EQ. NTH)) THEN
-        !IF (MAPSTA(1,IP_glob) .eq. 1) THEN
-        !IF (IOBP(IP_glob) .eq. 1) THEN
         IF (IOBP_LOC(IP) .eq. 1 .and. IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-          !            CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
-          !            CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
+          !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Check statuts ...
+          !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
           CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
           CAD=ZERO
@@ -4865,7 +4837,6 @@ CONTAINS
 
     LOGICAL :: LSIG = .FALSE.
 
-    !AR: this is missing in init ... but there is a design error in ww3_grid with FLCUR and FLLEV
     LSIG = FLCUR .OR. FLLEV
 
     DO IP = 1, np
@@ -4926,12 +4897,9 @@ CONTAINS
       END IF
       !
       IF (FSREFRACTION) THEN
-        !IF ((MAPSTA(1,IP_glob) .eq. 1).and.(SUM(IOBPD(:,IP_glob)) .EQ. NTH)) THEN
-        !IF (MAPSTA(1,IP_glob) .eq. 1) THEN
-        !IF (IOBP(IP_glob) .eq. 1) THEN
         IF (IOBP_LOC(IP) .eq. 1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-          !            CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
-          !            CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
+          !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
+          !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
           CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
           CAD=ZERO
@@ -5083,7 +5051,6 @@ CONTAINS
         CALL COMPUTE_MEAN_PARAM(SPEC_VA, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX)
         CALL W3SDB2 ( JSEA, SPEC_VA, DEPTH, EMEAN, FMEAN, CG1, LBREAK, VSDB, VDDB )
 #endif
-        !          IF (JSEA == 10000) WRITE(*,'(2I20,10F20.10)') JSEA, ISEA, SUM(VSTOT(:,JSEA)), SUM(VDTOT(:,JSEA)), SUM(VSDB),SUM(VDDB), DEPTH, EMEAN, FMEAN, WNMEAN
         DO IK=1,NK
           DO ITH=1,NTH
             ISP=ITH + (IK-1)*NTH
@@ -5108,12 +5075,8 @@ CONTAINS
 #endif
             B_JAC(ISP,IP)                   = B_JAC(ISP,IP) + SIDT * (eVS - eVD*VA(ISP,JSEA))
             ASPAR_JAC(ISP,PDLIB_I_DIAG(IP)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(IP)) - SIDT * eVD
-            !IF (ISEA .eq. 100) THEN
-            !  WRITE(*,*) ' A and B', ISP, eVS, eVD, VA(ISP,JSEA), B_JAC(ISP,IP), ASPAR_JAC(ISP,PDLIB_I_DIAG(IP))
-            !ENDIF
           END DO
         END DO
-        !IF (IP .eq. 100) WRITE(*,*) 'SUM A and B', IP, SUM(B_JAC(:,IP)), SUM(ASPAR_JAC(:,PDLIB_I_DIAG(IP)))
       END IF
     END DO
   END SUBROUTINE CALCARRAY_JACOBI_SOURCE_1
@@ -5249,7 +5212,6 @@ CONTAINS
         CALL COMPUTE_MEAN_PARAM(SPEC_VA, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX)
         CALL W3SDB2 ( JSEA, SPEC_VA, DEPTH, EMEAN, FMEAN, CG1, LBREAK, VSDB, VDDB )
 #endif
-        !          IF (JSEA == 10000) WRITE(*,'(2I20,10F20.10)') JSEA, ISEA, SUM(VSTOT(:,JSEA)), SUM(VDTOT(:,JSEA)), SUM(VSDB),SUM(VDDB), DEPTH, EMEAN, FMEAN, WNMEAN
         DO IK=1,NK
           DO ITH=1,NTH
             ISP=ITH + (IK-1)*NTH
@@ -5902,7 +5864,6 @@ CONTAINS
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) before transform", 0)
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) before transform", 1)
 #endif
-    ! We have NSEAL = NPA so the whole field is assigned
     DO JSEA=1,NSEAL
       IP      = JSEA
       IP_glob = iplg(IP)
@@ -6026,7 +5987,6 @@ CONTAINS
 
       is_converged = 0
 
-      !        WRITE(740+IAPROC,*) myrank, 'start solver', nbiter
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 1')
 
       DO IP = 1, np
@@ -6200,10 +6160,6 @@ CONTAINS
 #ifdef W3_DEBUGSOLVERCOH
           PRE_VA(:, IP)=REAL(eSum)
 #endif
-          !DO ISP = 1, NSPEC
-          !  WRITE(4000+IAPROC,*) IPLG(IP), IAPROC, eSum(ISP), ASPAR_DIAG(ISP),eSum(ISP)/ASPAR_DIAG(ISP)
-          !  CALL FLUSH(4000+IAPROC)
-          !ENDDO 
           eSum(1:NSPEC)  = eSum(1:NSPEC) / ASPAR_DIAG(1:NSPEC)
 #ifdef W3_DEBUGFREQSHIFT
           WRITE(740+IAPROC,*) 'JSEA=', JSEA, ' nbIter=', nbIter
@@ -6582,7 +6538,7 @@ CONTAINS
              ISP = ITH + (IK-1)*NTH
              newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
              maxdac     = max(DAM(ISP),DAM2(ISP))
-            !IF (ISEA == 90) WRITe(*,*) 'TEST NON SPLIT', ISEA, JSEA, ISP, DAM(ISP), DAM2(ISP), VA(ISP,JSEA), VAOLD(ISP,JSEA)
+             !IF (ISEA == 90) WRITe(*,*) 'TEST NON SPLIT', ISEA, JSEA, ISP, DAM(ISP), DAM2(ISP), VA(ISP,JSEA), VAOLD(ISP,JSEA)
              NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
              VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
            ENDDO 
@@ -6609,14 +6565,6 @@ CONTAINS
       endif
     endif
 #endif
-
-    !B_JAC = 0.
-    !ASPAR_JAC = 0.
-
-    !DO JSEA = 1, NP
-    !  WRITE(70000+IAPROC,*) 'SUM VA EXIT SOLVER', JSEA, SUM(VA(:,JSEA))
-    !ENDDO
-
     !
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION LOOP 7')
     !
@@ -6733,7 +6681,6 @@ CONTAINS
     !
     !   2a. Vectorized for all points looping over each wave number (maybe do a dirty save will be nice!)
     !       
-    !WRITE(*,*) 'SUM VA2', SUM(VA) 
 
     DO IK = 1, NK
 
@@ -6859,7 +6806,6 @@ CONTAINS
         DO IE = 1, NE
           NI  = INE(:,IE)
           DO ITH = 1, NTH 
-        !    write(*,*) NM(ITH,IE,IK), FLALL1(ITH,IE,IK), U(ITH,NI(1)), FLALL2(ITH,IE,IK), U(ITH,NI(2)), FLALL3(ITH,IE,IK), U(ITH,NI(3))
             UTILDE(ITH)   = NM(ITH,IE,IK) * (FLALL1(ITH,IE,IK)*U(ITH,NI(1)) + FLALL2(ITH,IE,IK)*U(ITH,NI(2)) + FLALL3(ITH,IE,IK)*U(ITH,NI(3)))
             ST(ITH,NI(1)) = ST(ITH,NI(1)) + KELEM1(ITH,IE,IK) * (U(ITH,NI(1)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
             ST(ITH,NI(2)) = ST(ITH,NI(2)) + KELEM2(ITH,IE,IK) * (U(ITH,NI(2)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
@@ -6911,8 +6857,6 @@ CONTAINS
       ENDDO
 
     ENDDO ! IK
-
-    !WRITE(*,*) 'SUM VA3', SUM(VA)
 
   END SUBROUTINE PDLIB_EXPLICIT_BLOCK
   !/ ------------------------------------------------------------------- /
@@ -7473,20 +7417,6 @@ CONTAINS
     DO IP = 1, NPA
       IF ( IOBPA_LOC(IP) .eq. 1 .OR. IOBP_LOC(IP) .eq. 3 .OR. IOBP_LOC(IP) .eq. 4) IOBPD_LOC(:,IP) = 1
     END DO
-    !2do: recode for mpi
-    !        IF (LBCWA .OR. LBCSP) THEN
-    !          IF (.NOT. ANY(IOBP .EQ. 2)) THEN
-    !            CALL WWM_ABORT('YOU IMPOSED BOUNDARY CONDITIONS BUT IN THE BOUNDARY FILE ARE NO NODES WITH FLAG = 2')
-    !          ENDIF
-    !        ENDIF
-    !#ifdef MPI_PARALL_GRID
-    !      CALL exchange_p2di(IOBWB)
-    !      DO ID = 1, MDC
-    !        iwild = IOBPD(ID,:)
-    !        CALL exchange_p2di(iwild)
-    !        IOBPD(ID,:) = iwild
-    !      ENDDO
-    !#endif
 #ifdef W3_DEBUGSETUGIOBP
     WRITE(740+IAPROC,*) 'Calling SETUGIOBP, step 7'
     FLUSH(740+IAPROC)

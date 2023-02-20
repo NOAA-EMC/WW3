@@ -2793,7 +2793,19 @@ CONTAINS
       IPREV=I+1
     END IF
   END SUBROUTINE TRIANG_INDEXES
+  !/ ------------------------------------------------------------------- /
 
+  !>
+  !> @brief Find boundary nodes and store in IOBP.
+  !>
+  !> @param[in]  I
+  !> @param[out] INEXT
+  !> @param[out] IPREV
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   !/ ------------------------------------------------------------------- /
   SUBROUTINE SET_UG_IOBP()
     !/

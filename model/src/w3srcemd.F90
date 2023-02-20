@@ -1124,6 +1124,7 @@ CONTAINS
          TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
     TWS = 1./FMEANWS
 #endif
+
 #ifdef W3_ST6
     CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 #endif
@@ -1701,12 +1702,11 @@ CONTAINS
           B_JAC = 0.
           ASPAR_DIAG_ALL = 0.
         ENDIF   
-
 #endif
         RETURN ! return everything is done for the implicit ...
 
       END IF ! srce_imp_pre
-#endif W3_PDLIB
+#endif !W3_PDLIB
       !
 #ifdef W3_T
       WRITE (NDST,9040) DTRAW, DT, SHAVE
@@ -1741,7 +1741,6 @@ CONTAINS
           SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
         END DO
 #endif 
-#endif
 
 #ifdef W3_DEBUGSRC
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
