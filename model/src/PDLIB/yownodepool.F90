@@ -77,7 +77,7 @@ module yowNodepool
 
   !> coordinates of the local +  ghost nodes. range [1:npa]
   real(rkind), public, target, allocatable :: x(:), y(:), z(:)
-  real(rkind), public, target, allocatable :: PDLIB_SI(:), PDLIB_TRIA(:), PDLIB_TRIA03(:), PDLIB_IEN(:,:)
+  real(rkind), public, target, allocatable :: PDLIB_SI(:), PDLIB_TRIA(:), PDLIB_TRIA03(:), PDLIB_IEN(:,:), PDLIB_IEND(:,:,:)
   integer, public, target, allocatable :: PDLIB_CCON(:), PDLIB_IA(:), PDLIB_JA(:)
   integer, public, target, allocatable :: PDLIB_IA_P(:), PDLIB_JA_P(:), PDLIB_JA_IE(:,:,:)
   integer, public, target, allocatable :: PDLIB_POS_CELL(:), PDLIB_IE_CELL(:)
