@@ -107,6 +107,7 @@ EOF
     echo '#SBATCH -o matrix.out'                            >> matrix.head
     echo '#SBATCH -p orion'                                 >> matrix.head
     echo '#SBATCH --exclusive'                              >> matrix.head
+    echo ' '                                                >> matrix.head
     echo 'ulimit -s unlimited'                              >> matrix.head
     echo 'ulimit -c 0'                                      >> matrix.head
     echo 'export KMP_STACKSIZE=2G'                          >> matrix.head
@@ -137,21 +138,21 @@ EOF
 # Netcdf, Parmetis and SCOTCH modules & variables
   echo "  module purge"                                     >> matrix.head
   echo "  module load $modcmake"                            >> matrix.head
-  echo "  module use $hpcstackpath"                         >> matrix.head
-  echo "  module load $hpcstackversion"                     >> matrix.head
   if [ ! -z $basemodcomp ]; then
     echo "  module load $basemodcomp"                       >> matrix.head
   fi
   if [ ! -z $basemodmpi ]; then
     echo "  module load $basemodmpi"                        >> matrix.head
   fi
+  echo "  module use  $hpcstackpath"                        >> matrix.head
+  echo "  module load $hpcstackversion"                     >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
-  echo "  module load $modnetcdf"                           >> matrix.head
-  echo "  module load $modjasper"                           >> matrix.head
-  echo "  module load $modzlib"                             >> matrix.head
   echo "  module load $modpng"                              >> matrix.head
+  echo "  module load $modzlib"                             >> matrix.head
+  echo "  module load $modjasper"                           >> matrix.head
   echo "  module load $modhdf5"                             >> matrix.head
+  echo "  module load $modnetcdf"                           >> matrix.head
   echo "  module load $modbacio"                            >> matrix.head
   echo "  module load $modg2"                               >> matrix.head
   echo "  module load $modw3emc"                            >> matrix.head
