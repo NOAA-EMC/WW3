@@ -149,6 +149,10 @@ EOF
   if [ ! -z $basemodmpi ]; then
     echo "  module load $basemodmpi"                        >> matrix.head
   fi
+  if [ ! -z $gnumodfiles ]; then
+    echo "  module use  $gnumodfiles"                       >> matrix.head
+  fi
+  echo "  module load $modgnu"                              >> matrix.head
   echo "  module use  $hpcstackpath"                        >> matrix.head
   echo "  module load $hpcstackversion"                     >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
@@ -162,11 +166,7 @@ EOF
   echo "  module load $modg2"                               >> matrix.head
   echo "  module load $modw3emc"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
-  if [ ! -z $gnumodfiles ]; then
-    echo "  module use  $gnumodfiles"                       >> matrix.head
-  fi
-  echo "  module load $modgnu"                              >> matrix.head
-  echo " "
+
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
   echo "  export SCOTCH_PATH=${scotchpath}"                 >> matrix.head
   echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
