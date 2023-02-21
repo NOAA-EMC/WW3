@@ -60,10 +60,10 @@ EOF
   then
     # If no other h, assuming Hera
     batchq='slurm'
-    hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
-    hpcstackversion='hpc/1.2.0'
     basemodcomp='intel/2022.1.2'
     basemodmpi='impi/2022.1.2'
+    hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
+    hpcstackversion='hpc/1.2.0'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
     scotchpath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hpc-stack/scotch-v7.0.3/install'
@@ -72,6 +72,8 @@ EOF
   elif [ $isorion ]
   then
     batchq='slurm'
+    basemodcomp='intel/2022.1.2'
+    basemodmpi='impi/2022.1.2'
     hpcstackpath='/work/noaa/epic-ps/hpc-stack/libs/intel/2022.1.2/modulefiles/stack'
     hpcstackversion='hpc/1.2.0'
     modcomp='hpc-intel/2022.1.2'
