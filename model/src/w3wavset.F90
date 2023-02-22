@@ -1315,9 +1315,9 @@
 #ifdef W3_DEBUGSTP
       WRITE(740+IAPROC,*) 'eNorm(B)=', eNorm
       WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR
+      WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR, ' eNorm(B)=', eNorm
       FLUSH(740+IAPROC)
 #endif
-!      WRITE(740+IAPROC,*) 'SOLVERTHR=', SOLVERTHR, ' eNorm(B)=', eNorm
       IF (eNorm .le. SOLVERTHR) THEN
 #ifdef W3_DEBUGSTP
         WRITE(740+IAPROC,*) 'Leaving here, zero solution'

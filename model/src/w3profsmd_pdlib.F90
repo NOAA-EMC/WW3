@@ -3666,8 +3666,6 @@ CONTAINS
         IF (FLCUR) THEN
           CXY(1,IP) = CXY(1,IP) + FACX * CX(IP_GLOB)/CLATS(IP_GLOB)*IOBDP_LOC(IP) 
           CXY(2,IP) = CXY(2,IP) + FACY * CY(IP_GLOB)*IOBDP_LOC(IP)
-          !WRITE(IAPROC+4000,*) IP, CXY(1,IP), CXY(2,IP), FACX, FACY, CX(IP_GLOB), CY(IP_GLOB), CLATS(IP_GLOB)
-          !CALL FLUSH(IAPROC+4000)
         ENDIF
 #ifdef W3_MGP
         CXY(1,IP) = CXY(1,IP) - CCURX*VGX/CLATS(ISEA)
@@ -5872,18 +5870,6 @@ CONTAINS
       END DO
     END DO
     VAOLD = VA(1:NSPEC,1:NSEAL)
-
-#ifdef W3_REF1
-    !DO JSEA = 1, NSEAL
-    !  DO ISP = 1, NSPEC
-    !    ITH    = 1 + MOD(ISP-1,NTH)
-    !    IK     = 1 + (ISP-1)/NTH
-    !    IF (IOBP_LOC(JSEA) .EQ. 0 .and. IOBPD_LOC(ITH,JSEA) .EQ. 0) THEN
-    !      VA(ISP,JSEA) = 20.
-    !    ENDIF
-    !  ENDDO 
-    !ENDDO
-#endif
 
 #ifdef W3_DEBUGSRC
     DO JSEA=1,NSEAL
