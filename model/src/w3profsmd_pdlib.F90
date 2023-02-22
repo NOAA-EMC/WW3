@@ -1364,7 +1364,7 @@ CONTAINS
         KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
       END DO
       DTMAXEXP = 1.E10
-      DO IP = 1, np
+      DO IP = 1, npa
         IP_glob      = iplg(IP)
         IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
           DTMAXEXP     = PDLIB_SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP_LOC(IP))
@@ -1699,8 +1699,6 @@ CONTAINS
       DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/PDLIB_SI(IP) ! Some precalculations for the time integration.
     END DO
 
-    !WRITE(*,*) 'MAXVAL ITER', ITH, IK, ITER(IK,ITH)
-
     DO IT = 1, ITER(IK,ITH)
 
       U  = DBLE(AC)
@@ -1941,15 +1939,8 @@ CONTAINS
     WRITE(740+IAPROC,*) 'Leaving the TEST_MPI_STATUS'
     FLUSH(740+IAPROC)
   END SUBROUTINE TEST_MPI_STATUS
-  !/ ------------------------------------------------------------------- /
-  !/ ------------ SCALAR FUNCTIONALITY --------------------------------- /
-  !/ --------------- REAL V(NSEAL) ------------------------------------- /
-  !/ --------------- NSEAL = npa --------------------------------------- /
-  !/ ------- maxidx = npa or np for arrays that have been -------------- /
-  !/ ------- synchronized or not --------------------------------------- /
-  !/ ------- CheckUncovered is because some the triangulation ---------- /
-  !/ ------- may not cover all nodes ----------------------------------- /
-  !/ ------------------------------------------------------------------- /
+!/ ------------------------------------------------------------------- /
+
   SUBROUTINE SCAL_INTEGRAL_PRINT_GENERAL(V, string, maxidx, CheckUncovered, PrintFullValue)
     !/
     !/                  +-----------------------------------+
@@ -1964,8 +1955,9 @@ CONTAINS
     !/
     !/    01-June-2018 : Origination.                        ( version 6.04 )
     !/
-    !  1. Purpose : Source code for parallel debugging
-    !  2. Method :
+    !  1. Purpose : Source code for parallel debugging 
+    !  2. Method : maxidx = npa or np for arrays that have been synchronized or not
+    !              CheckUncovered is because some the triangulation may not cover all nodes
     !  3. Parameters :
     !
     !     Parameter list
