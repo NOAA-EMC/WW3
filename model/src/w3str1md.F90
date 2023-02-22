@@ -2,6 +2,7 @@
 !> @brief Contains module W3STR1MD.
 !>
 !> @author A. J. van der Westhuysen @date 13-Jan-2013
+!> @author A. Roland @date 22-Feb-2023
 !>
 
 #include "w3macros.h"
@@ -410,6 +411,7 @@ CONTAINS
 
     SIGM01 = 0.
     EMEAN  = 0.
+    JACEPS = 1E-12
 
     HMAX   = DEPTH * 0.73
 
@@ -534,7 +536,7 @@ CONTAINS
           SIGPICG = SIG(IK)*TPI/CG(IK) ! 1/s * s/m = 1/m
           DO ITH = 1, NTH
             STRI    = SA(ITH,IK)  - 2 * (WISP *  SA(ITH,IK+ISP1) + WISP1 *  SA(ITH,IK+ISP)) 
-            IF (A(ITH+(IK-1)*NTH) .gt. JACEPS) THEN
+            IF (ABS(A(ITH+(IK-1)*NTH)) .gt. JACEPS) THEN
               D(ITH+(IK-1)*NTH) = STRI / ((A(ITH+(IK-1)*NTH)) * SIGPICG) 
               S(ITH+(IK-1)*NTH) = STRI / SIGPICG 
             ELSE
@@ -548,7 +550,6 @@ CONTAINS
         S = 0.
       END IF
 
-    RETURN
     !/
     !/ End of W3STR1 ----------------------------------------------------- /
     !/
