@@ -2178,7 +2178,17 @@ CONTAINS
 #endif
     !
   END SUBROUTINE UG_GRADIENTS
-  !/ ------------------------------------------------------------------- /
+!>
+!> @brief UGTYPE nesting initialization.
+!>
+!> @param[in]    DISTMIN
+!> @param[inout] FLOK
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date   01-Jun-2018
+!>
+!/ ------------------------------------------------------------------- /
   SUBROUTINE W3NESTUG(DISTMIN,FLOK)
     !/
     !/                  +-----------------------------------+
