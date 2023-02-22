@@ -2804,14 +2804,8 @@ CONTAINS
     END IF
   END SUBROUTINE TRIANG_INDEXES
   !/ ------------------------------------------------------------------- /
-
   !>
-  !> @brief Find boundary nodes and store in IOBP.
-  !>
-  !> @param[in]  I
-  !> @param[out] INEXT
-  !> @param[out] IPREV
-  !>
+  !> @brief  Get interface nodes of the wetting and drying part.
   !> @author Aron Roland
   !> @author Mathieu Dutour-Sikiric
   !> @date   01-Jun-2018
