@@ -1,5 +1,0 @@
-$ WAVEWATCH III Initial conditions input file
-$ -------------------------------------------
-  1
-$  fp   sip     thm  ncos xm    six     ym     siy hmax
-   0.15 0.02    240. 4  -10.E3  20.E3   20.E3 1.E8  1.00
