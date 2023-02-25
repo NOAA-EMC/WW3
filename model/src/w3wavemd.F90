@@ -1531,7 +1531,8 @@ CONTAINS
 #endif
             !
 #ifdef W3_PDLIB
-            IF ( IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
+            IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
+                 & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
 #endif
 
 
@@ -1821,6 +1822,9 @@ CONTAINS
               !
             END DO
           END IF
+
+          WRITE(*,*) 'SUM VA 1', SUM(VA) 
+
           call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 16')
 
 #ifdef W3_DEBUGCOH
@@ -1840,6 +1844,7 @@ CONTAINS
               FACX   =  1.
             END IF
           END IF
+
           IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
             !
 #ifdef W3_PDLIB
@@ -2148,6 +2153,7 @@ CONTAINS
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("fter intraspectral adv.")
 #endif
+
           !
           UGDTUPDATE = .FALSE.
           !
@@ -2182,6 +2188,9 @@ CONTAINS
             !$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3,TMP4)
             !$OMP DO SCHEDULE (DYNAMIC,1)
 #endif
+
+          WRITE(*,*) 'SUM VA 2', SUM(VA)
+
             !
             DO JSEA=1, NSEAL
               CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -2286,7 +2295,12 @@ CONTAINS
                 FCUT  (JSEA) = UNDEF
                 !                    VA(:,JSEA)  = 0.
               END IF
+
+              !WRITE(*,*) 'SUM VA LOCAL SOURCES', JSEA, SUM(VA(:,JSEA))
             END DO
+
+
+          WRITE(*,*) 'SUM VA 3', SUM(VA)
 
 
             !
@@ -2322,6 +2336,9 @@ CONTAINS
         END DO
         IF (IT.GT.0) DTG=DTGTEMP
 #endif
+
+
+
 
         !
         !

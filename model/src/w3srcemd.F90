@@ -1124,7 +1124,6 @@ CONTAINS
          TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
     TWS = 1./FMEANWS
 #endif
-
 #ifdef W3_ST6
     CALL W3SPR6 (SPEC, CG1, WN1, EMEAN, FMEAN, WNMEAN, AMAX, FP)
 #endif
@@ -1697,11 +1696,6 @@ CONTAINS
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSBT)
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS)
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD)
-
-        IF (.not. FSSOURCE) THEN
-          B_JAC = 0.
-          ASPAR_DIAG_ALL = 0.
-        ENDIF   
 #endif
         RETURN ! return everything is done for the implicit ...
 
@@ -2261,19 +2255,27 @@ CONTAINS
     IF (IX .eq. DEBUG_NODE) THEN
       WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
     END IF
-#endif
+#endif 
+
 #ifdef W3_REF1
     IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
       CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
            REFLEC, REFLED, TRNX, TRNY,  &
            BERG, DTG, IX, IY, JSEA, VREF )
-#ifdef W3_PDLIB
       IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
+#ifdef W3_PDLIB
         IF (IOBP_LOC(JSEA).EQ.0) THEN
-          DO IK = 1, NK
-            DO ITH = 1, NTH
+#else
+        IF (IOBP(IX).EQ.0) THEN
+#endif
+          DO IK=1, NK
+            DO ITH=1, NTH
               ISP = ITH+(IK-1)*NTH
-              IF (IOBPD_LOC(ITH,JSEA).EQ.0) SPEC(ISP) = SPEC(ISP) + DTG * VREF(ISP)
+#ifdef W3_PDLIB
+              IF (IOBPD_LOC(ITH,JSEA).EQ.0) SPEC(ISP) = DTG*VREF(ISP)
+#else
+              IF (IOBPD(ITH,IX).EQ.0) SPEC(ISP) = DTG*VREF(ISP)
+#endif
             END DO
           END DO
         ELSE
@@ -2282,9 +2284,9 @@ CONTAINS
       ELSE
         SPEC(:) = SPEC(:) + DTG * VREF(:)
       END IF
-#endif
     END IF
 #endif
+
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
