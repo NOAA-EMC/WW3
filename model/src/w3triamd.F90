@@ -1413,8 +1413,6 @@ CONTAINS
     CALL STRACE (IENT, 'AREA_SI')
 #endif
 
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE SI, TRIA und CCON'
-
     SI(:) = 0.D0
     !
     CCON(:) = 0     ! Number of connected Elements
@@ -1434,8 +1432,6 @@ CONTAINS
     CELLVERTEX(:,:,:) = 0 ! Stores for each node the Elementnumbers of the connected Elements
     ! and the Position of the Node in the Element Index
 
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE CELLVERTEX'
-
     CHILF = 0
 
     DO IE = 1, NTRI
@@ -1446,8 +1442,6 @@ CONTAINS
         CELLVERTEX(I,CHILF(I),2) = J
       END DO
     ENDDO
-
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE IE_CELL and POS_CELL'
     !
     ! Second step in storage, the initial 3D array CELLVERTEX, is transformed in a 1D array
     ! the global index is J . From now, all the computation step based on these arrays must
