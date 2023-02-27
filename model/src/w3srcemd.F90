@@ -811,7 +811,6 @@ CONTAINS
     REAL                    :: eInc1, eInc2, eVS, eVD, JAC
     REAL                    :: DeltaSRC(NSPEC)
     REAL, PARAMETER         :: DTMINTOT = 0.01
-    LOGICAL                 :: LNEWLIMITER = .FALSE.
 #ifdef W3_PDLIB
     REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
@@ -1422,7 +1421,7 @@ CONTAINS
         VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
       END IF
 
-      IF (LNEWLIMITER) THEN
+      IF (JGS_LIMITER_FUNC == 2) THEN
         DO IK=1, NK
           JAC      = CG1(IK)/CLATSL 
           JAC2     = 1./TPI/SIG(IK)
@@ -1563,7 +1562,7 @@ CONTAINS
               DO ITH = 1, NTH
                 ISP = ITH + (IK-1)*NTH
                 VD(ISP) = MIN(0., VD(ISP))
-                IF (LNEWLIMITER) THEN
+                IF (JGS_LIMITER_FUNC == 2) THEN
                   MAXDAC = MAX(DAM(ISP),DAM2(ISP))
                 ELSE
                   MAXDAC = DAM(ISP)
@@ -1616,7 +1615,7 @@ CONTAINS
               DO ITH=1,NTH
                 ISP=ITH + (IK-1)*NTH
                 VD(ISP) = MIN(0., VD(ISP))
-                IF (LNEWLIMITER) THEN
+                IF (JGS_LIMITER_FUNC == 2) THEN
                   MAXDAC    = MAX(DAM(ISP),DAM2(ISP))
                 ELSE
                   MAXDAC    = DAM(ISP)
