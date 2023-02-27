@@ -292,7 +292,7 @@ $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
 $                           IMPFSN    : Activation of N implicit scheme
 $                           IMPTOTAL  : Activation of fully implicit scheme | Non splitting
-$                           EXPTOTAL  : Turn on implicit refraction (only with imptotal)
+$                           EXPTOTAL  : Activation of the Block explicit solver (e.g. parallel communication reduced to all directional components) 
 $                           IMPREFRACTION  : Turn on implicit freq. shift (only with imptotal)
 $                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (only with imptotal)
 $                           IMPSOURCE  : Turn on implicit source terms (only with imptotal)
