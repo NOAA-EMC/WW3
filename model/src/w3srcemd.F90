@@ -1442,8 +1442,6 @@ CONTAINS
         END DO
       ENDIF
       !
-      VS = 0
-      VD = 0
       DO IS=IS1, NSPECH
         VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
              + VSDS(IS) + VSBT(IS)
@@ -1491,6 +1489,9 @@ CONTAINS
         ENDIF
 #endif
       END DO  ! end of loop on IS
+
+      !VD = 0 
+      !VS = 0 
       !
       DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
       !
