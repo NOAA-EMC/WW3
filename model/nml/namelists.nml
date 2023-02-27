@@ -287,12 +287,12 @@ $   UNST parameters       : Namelist UNST
 $                           UGOBCAUTO : TRUE: OBC points are taken from  type 15 elements
 $                                       FALSE: OBC points must be listed in ww3_grid.inp
 $                           UGOBCDEPTH: Threshold ( < 0) depth for OBC points if UGOBCAUTO is TRUE
-$                           EXPFSN    : Activation of N scheme
+$                           EXPFSN    : Activation of N scheme (only one of the below 3) 
 $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
 $                           IMPFSN    : Activation of N implicit scheme
 $                           IMPTOTAL  : Activation of fully implicit scheme | Non splitting
-$                           EXPTOTAL  : Activation of the Block explicit solver (e.g. parallel communication reduced to all directional components) 
+$                           EXPTOTAL  : Activation of the Block explicit solver (e.g. parallel communication reduced to all directional components, activate by true all other false, see manual ) 
 $                           IMPREFRACTION  : Turn on implicit freq. shift (only with imptotal)
 $                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (only with imptotal)
 $                           IMPSOURCE  : Turn on implicit source terms (only with imptotal)
