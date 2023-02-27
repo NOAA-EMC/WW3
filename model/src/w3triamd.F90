@@ -2803,6 +2803,9 @@ CONTAINS
       IPREV=I+1
     END IF
   END SUBROUTINE TRIANG_INDEXES
+
+  !/ ------------------------------------------------------------------- /
+  
   !>
   !> @brief Redefines the values of the boundary points and angle pointers
   !>  based on the MAPSTA array.

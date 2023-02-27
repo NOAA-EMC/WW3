@@ -553,34 +553,7 @@ CONTAINS
         ! ---------------------------------------------------------------------
         IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3_OWDH') THEN
 
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(3000+IAPROC,*) 'W3OGCMMD - BEFORE CPL_OASIS_RCV WW3_OWDH - 556'
-!  CALL FLUSH(3000+IAPROC)
-#endif
-!          WRITE(3000+IAPROC,*) 'W3OGCMMD - TEST BEFORE BELOW OUTPUT'
-!          CALL FLUSH(3000+IAPROC)
-!          WRITE(3000+IAPROC,*) 'ID_OASIS_TIME', ID_OASIS_TIME
-!          CALL FLUSH(3000+IAPROC)
-!          WRITE(3000+IAPROC,*) 'IB_DO', IB_DO
-!          CALL FLUSH(3000+IAPROC)
-!          WRITE(3000+IAPROC,*) 'RLA_OASIS_RCV', RLA_OASIS_RCV
-!          CALL FLUSH(3000+IAPROC)
-
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(3000+IAPROC,*) 'W3OGCMMD - AFTER TEST WRITE - 563'
-!  CALL FLUSH(3000+IAPROC)
-#endif
-
           CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
-
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(3000+IAPROC,*) 'LL_ACTION', LL_ACTION
-!  WRITE(3000+IAPROC,*) 'W3OGCMMD - AFTER CPL_OASIS_RCV WW3_OWDH - 571'
-!  CALL FLUSH(3000+IAPROC)
-#endif
 
           IF (LL_ACTION) THEN
             MASKT(1:NSEALL)  = RLA_OASIS_RCV(1:NSEALL,1)
@@ -609,10 +582,6 @@ CONTAINS
       !
     ENDIF
     !
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(*,*) 'W3OGCMMD - AFTER 1st PART 579'
-#endif
     ! ---------------------------------------------------------------------
     ! Treatment of the dynamical variables
     ! ---------------------------------------------------------------------
@@ -624,20 +593,11 @@ CONTAINS
         !
         IF (RCV_FLD(IB_DO)%CL_FIELD_NAME == 'WW3__SSH') THEN
 
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(*,*) 'W3OGCMMD - BEFORE CPL_OASIS_RCV 610'
-#endif
-
           CALL CPL_OASIS_RCV(IB_DO, ID_OASIS_TIME, RLA_OASIS_RCV, LL_ACTION)
 
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(*,*) 'W3OGCMMD - AFTER CPL_OASIS_RCV 617'
-#endif
-
           IF (LL_ACTION) THEN
-            TMP(1:NSEALL) = RLA_OASIS_RCV(1:NSEALL,1)! * MASKT(1:NSEALL)
+            !AR: todo: double check the masking at this place 
+            TMP(1:NSEALL) = RLA_OASIS_RCV(1:NSEALL,1) * MASKT(1:NSEALL)
             SND_BUFF(1:NSEA) = 0.0
 #ifdef W3_PDLIB
             DO IB_I = 1, NSEALL
@@ -737,12 +697,6 @@ CONTAINS
         ENDIF
       ENDIF
     ENDDO
-
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(*,*) 'W3OGCMMD - AFTER DYNAMIC 712'
-#endif
-
     !
     ID_OASIS_TIME_WETDRYONLYONCE = ID_OASIS_TIME
     !

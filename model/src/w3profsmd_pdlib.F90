@@ -5722,7 +5722,7 @@ CONTAINS
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 5')
     !
 #ifdef W3_DEBUGSOLVER
-    !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
+    WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
 #endif
     !
     !     spectral advection
@@ -6009,16 +6009,13 @@ CONTAINS
             lconverged(ip) = .true.
           ELSE
             lconverged(ip) = .false.
-            !write(*,*) ip, p_is_converged, iobp_loc(ip), iobdp_loc(ip)
           ENDIF
         END IF
 #ifdef W3_DEBUGSRC
         WRITE(740+IAPROC,*) 'sum(VA)out=', sum(VA(:,IP))
 #endif
-        !WRITE(*,*) 'TEST VA 2', IP, SUM(VA(:,IP)), IOBDP_LOC(IP), IOBPA_LOC(IP)
       END DO ! IP
 
-      !        WRITE(740+IAPROC,*) myrank, 'afer vertex loop', nbiter
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 2')
 
 #ifdef W3_DEBUGSOLVERCOH
@@ -6052,12 +6049,9 @@ CONTAINS
       ! Terminate via differences
       !
       IF (B_JGS_TERMINATE_DIFFERENCE .and. INT(MOD(NBITER,10)) == 0) THEN ! Every 10th step check conv. 
-        !WRITE(740+IAPROC,*) myrank, 'solver before', nbiter, is_converged, prop_conv, B_JGS_PMIN
         CALL MPI_ALLREDUCE(is_converged, itmp, 1, MPI_INT, MPI_SUM, MPI_COMM_WCMP, ierr)
         is_converged = itmp
         prop_conv = (DBLE(NX) - DBLE(is_converged))/DBLE(NX) * 100.
-        !write(*,*) prop_conv, nbIter, is_converged
-        !WRITE(740+IAPROC,*) myrank, 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
 #ifdef W3_DEBUGSOLVER
         WRITE(740+IAPROC,*) 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
         FLUSH(740+IAPROC)
@@ -6138,7 +6132,6 @@ CONTAINS
           END IF
         END DO
         CALL MPI_ALLREDUCE(Sum_L2, Sum_L2_GL, 1, rtype, MPI_SUM, MPI_COMM_WCMP, ierr)
-        !WRITE(*,*) 'Sum_L2_gl=', Sum_L2_gl
 #ifdef W3_DEBUGSOLVER
         WRITE(740+IAPROC,*) 'Sum_L2_gl=', Sum_L2_gl
         FLUSH(740+IAPROC)
@@ -6167,16 +6160,13 @@ CONTAINS
 #endif
       DO ISP=1,NSPEC
         ITH    = 1 + MOD(ISP-1,NTH)
-        !IF (IOBPD_LOC(ITH,IP) .ne. IOBPD(ITH,IP_glob)) STOP 'ERROR IN BOUNDARY'
         VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
 #ifdef W3_REF1
         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) THEN
-           !WRITE(*,*) 'TEST WAVE ACTION RESTORING FOR REFLECTION', IOBP_LOC(IP), IOBPD_LOC(ITH,IP), IOBPA_LOC(IP)
            VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
         ENDIF
 #endif
       END DO
-      !WRITE(*,'(4I10,A20)') IP, IOBDP_LOC(IP), IOBP_LOC(IP), IOBPA_LOC(IP), 'IOBP TEST'
 #ifdef W3_DEBUGSRC
       WRITE(740+IAPROC,*) 'IOBPD loop, After, sum(VA)=', sum(VA(:,IP))
 #endif
@@ -6284,8 +6274,6 @@ CONTAINS
            JAC2     = 1./TPI/SIG(IK)
            FRLOCAL  = SIG(IK)*TPIINV
            DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
-           !IF (ISEA == 90) WRITE(*,*) 'LIMITER', JSEA, ISEA, IK, USTAR, MAX(FMEANWS,FMEAN), JAC2, DTG, SUM(VA(:,JSEA)), SUM(VAOLD(:,JSEA))
-           !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
          END DO
          DO IK=1, NK
            IS0  = (IK-1)*NTH
@@ -6299,7 +6287,6 @@ CONTAINS
              ISP = ITH + (IK-1)*NTH
              newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
              maxdac     = max(DAM(ISP),DAM2(ISP))
-             !IF (ISEA == 90) WRITe(*,*) 'TEST NON SPLIT', ISEA, JSEA, ISP, DAM(ISP), DAM2(ISP), VA(ISP,JSEA), VAOLD(ISP,JSEA)
              NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
              VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
            ENDDO 
@@ -6907,7 +6894,6 @@ CONTAINS
       ELSE
         IOBDP_LOC(IP)  = 1
       ENDIF
-      !WRITE(*,*) ip, ip_glob, IOBDP_LOC(IP), DW(IP_glob), DMIN
     END DO
     !/
     !/ End of SETDEPTH_PDLIB --------------------------------------------- /
