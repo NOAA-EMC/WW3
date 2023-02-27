@@ -644,7 +644,7 @@ CONTAINS
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES, ASPAR_DIAG_ALL
     USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P, PDLIB_SI
-    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, B_JGS_LIMITER_FUNC
     USE W3WDATMD, ONLY: VA
     USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM, LSLOC
 #endif
@@ -1421,7 +1421,7 @@ CONTAINS
         VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
       END IF
 
-      IF (JGS_LIMITER_FUNC == 2) THEN
+      IF (B_JGS_LIMITER_FUNC == 2) THEN
         DO IK=1, NK
           JAC      = CG1(IK)/CLATSL 
           JAC2     = 1./TPI/SIG(IK)
@@ -1562,7 +1562,7 @@ CONTAINS
               DO ITH = 1, NTH
                 ISP = ITH + (IK-1)*NTH
                 VD(ISP) = MIN(0., VD(ISP))
-                IF (JGS_LIMITER_FUNC == 2) THEN
+                IF (B_JGS_LIMITER_FUNC == 2) THEN
                   MAXDAC = MAX(DAM(ISP),DAM2(ISP))
                 ELSE
                   MAXDAC = DAM(ISP)
@@ -1615,7 +1615,7 @@ CONTAINS
               DO ITH=1,NTH
                 ISP=ITH + (IK-1)*NTH
                 VD(ISP) = MIN(0., VD(ISP))
-                IF (JGS_LIMITER_FUNC == 2) THEN
+                IF (B_JGS_LIMITER_FUNC == 2) THEN
                   MAXDAC    = MAX(DAM(ISP),DAM2(ISP))
                 ELSE
                   MAXDAC    = DAM(ISP)
