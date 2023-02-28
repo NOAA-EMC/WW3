@@ -185,12 +185,14 @@ CONTAINS
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
     !/                  |     A. J. van der Westhuysen      |
+    !/                  |     A. Roland                     |
     !/                  |                        FORTRAN 90 |
     !/                  | Last update :         13-Jan-2013 |
     !/                  +-----------------------------------+
     !/
     !/    13 Jan-2013 : Origination, based on SWAN v40.91 code ( version 4.08 )
     !/    05 Oct-2016 : Avoiding divide by zero for EMEAN      ( version 5.15 )
+    !/    28 Feb-2023 : Improvement of efficiency and stability ( version 7.xx)
     !/
     !  1. Purpose :
     !
@@ -369,7 +371,7 @@ CONTAINS
     !     XISLN :     log of XIS
     !
 #ifdef W3_S
-    INTEGER, SAVE           :: IENT = 0
+    INTEGER, SAVE :: IENT = 0
 #endif
     INTEGER :: I1, I2, ID, IDDUM, II, IS, ISM, ISM1, ISMAX
     INTEGER :: ISP, ISP1, ITH, IK
@@ -389,26 +391,11 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'W3STR1')
 #endif
-    !
-    ! 0.  Initializations ------------------------------------------------ *
-    !
-    !     **********************************************************
-    !     ***    The initialization routine should include all   ***
-    !     *** initialization, including reading data from files. ***
-    !     **********************************************************
-    !
-    !>      IF ( FIRST ) THEN
-    !>          CALL INSTR1
-    !>          FIRST  = .FALSE.
-    !>        END IF
-    !
-    ! 1.  .... ----------------------------------------------------------- *
-    !
-    !---- Compute SIGM01 (= 2pi/Tm01) for use in source term
-    !
-    ! 1.  Integral over directions
-    !
 
+!AR: todo: check all PRX routines for differences, check original thesis of elderberky. 
+!
+! 1.  Integral over directions
+!
     SIGM01 = 0.
     EMEAN  = 0.
     JACEPS = 1E-12
@@ -535,8 +522,8 @@ CONTAINS
         DO IK = 1, NK - 1 
           SIGPICG = SIG(IK)*TPI/CG(IK) ! 1/s * s/m = 1/m
           DO ITH = 1, NTH
-            STRI    = SA(ITH,IK)  - 2 * (WISP *  SA(ITH,IK+ISP1) + WISP1 *  SA(ITH,IK+ISP)) 
-            IF (ABS(A(ITH+(IK-1)*NTH)) .gt. JACEPS) THEN
+            STRI = SA(ITH,IK) - 2 * (WISP *  SA(ITH,IK+ISP1) + WISP1 *  SA(ITH,IK+ISP))
+            IF (A(ITH+(IK-1)*NTH) .gt. JACEPS) THEN
               D(ITH+(IK-1)*NTH) = STRI / ((A(ITH+(IK-1)*NTH)) * SIGPICG) 
               S(ITH+(IK-1)*NTH) = STRI / SIGPICG 
             ELSE
