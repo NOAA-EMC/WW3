@@ -1423,6 +1423,7 @@ CONTAINS
         VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
       END IF
 
+#ifdef W3_PDLIB
       IF (LNEWLIMITER) THEN
         DO IK=1, NK
           JAC      = CG1(IK)/CLATSL 
@@ -1442,6 +1443,7 @@ CONTAINS
           END DO
         END DO
       ENDIF
+#endif
       !
       VS = 0
       VD = 0

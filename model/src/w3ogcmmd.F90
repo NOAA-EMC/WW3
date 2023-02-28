@@ -539,12 +539,6 @@ CONTAINS
     !cval well but it cannot work because MASKT,MASKU,MASKV variable are not global variable
     !cval Anyway we will give up the exchange of mask, it is not a good idea at all
 
-#ifdef W3_MPI
-!  CALL MPI_BARRIER ( ID_LCOMM, IERR_MPI )
-!  WRITE(3000+IAPROC,*) 'W3OGCMMD - BEGINN 543', ID_OASIS_TIME > ID_OASIS_TIME_WETDRYONLYONCE
-!  CALL FLUSH(3000+IAPROC)
-#endif
-
     IF (ID_OASIS_TIME > ID_OASIS_TIME_WETDRYONLYONCE) THEN
       !
       DO IB_DO = 1, IL_NB_RCV
