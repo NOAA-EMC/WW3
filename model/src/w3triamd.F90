@@ -964,14 +964,14 @@ CONTAINS
       I2 = TRIGP(2,K)
       I3 = TRIGP(3,K)
 
+!AR: todo call this only for global grid 
       CALL FIX_PERIODCITY(I1,I2,I3,XGRD,YGRD,PT)
       !
       ! cross product of edge-vector  (orientated anticlockwise)
       !
-
-      TRIA(K) = REAL( (PT(2,2)-PT(1,2))      &     !  (Y2-Y1)
-           *(PT(1,1)-PT(3,1))      &     ! *(X1-X3)
-           +(PT(3,2)-PT(1,2))      &     !  (Y3-Y1)*(X2-X1)
+      TRIA(K) = REAL( (PT(2,2)-PT(1,2)) & 
+           *(PT(1,1)-PT(3,1))      &    
+           +(PT(3,2)-PT(1,2))      &    
            *(PT(2,1)-PT(1,1))      )*0.5
       !
       ! test on negative triangle area, which means that the orientiation is not as assumed to be anticw.
@@ -984,9 +984,6 @@ CONTAINS
         I2 = TRIGP(2,K)
         I3 = TRIGP(3,K)
         TRIA(K) = -1.d0*TRIA(K)
-        !WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, XYB(I2,2)-XYB(I1,2), &
-        !                 XYB(I1,1)-XYB(I3,1),XYB(I3,2)-XYB(I1,2), XYB(I2,1)-XYB(I1,1)
-        !STOP
       END IF
     END DO
   END SUBROUTINE SPATIAL_GRID
