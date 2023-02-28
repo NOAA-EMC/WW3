@@ -1364,7 +1364,7 @@ CONTAINS
         KKSUM(NI) = KKSUM(NI) + KELEM(:,IE)
       END DO
       DTMAXEXP = 1.E10
-      DO IP = 1, np
+      DO IP = 1, npa
         IP_glob      = iplg(IP)
         IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
           DTMAXEXP     = PDLIB_SI(IP)/MAX(DBLE(10.E-10),KKSUM(IP)*IOBDP_LOC(IP))
@@ -1699,8 +1699,6 @@ CONTAINS
       DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/PDLIB_SI(IP) ! Some precalculations for the time integration.
     END DO
 
-    !WRITE(*,*) 'MAXVAL ITER', ITH, IK, ITER(IK,ITH)
-
     DO IT = 1, ITER(IK,ITH)
 
       U  = DBLE(AC)
@@ -1941,15 +1939,8 @@ CONTAINS
     WRITE(740+IAPROC,*) 'Leaving the TEST_MPI_STATUS'
     FLUSH(740+IAPROC)
   END SUBROUTINE TEST_MPI_STATUS
-  !/ ------------------------------------------------------------------- /
-  !/ ------------ SCALAR FUNCTIONALITY --------------------------------- /
-  !/ --------------- REAL V(NSEAL) ------------------------------------- /
-  !/ --------------- NSEAL = npa --------------------------------------- /
-  !/ ------- maxidx = npa or np for arrays that have been -------------- /
-  !/ ------- synchronized or not --------------------------------------- /
-  !/ ------- CheckUncovered is because some the triangulation ---------- /
-  !/ ------- may not cover all nodes ----------------------------------- /
-  !/ ------------------------------------------------------------------- /
+!/ ------------------------------------------------------------------- /
+
   SUBROUTINE SCAL_INTEGRAL_PRINT_GENERAL(V, string, maxidx, CheckUncovered, PrintFullValue)
     !/
     !/                  +-----------------------------------+
@@ -1964,8 +1955,9 @@ CONTAINS
     !/
     !/    01-June-2018 : Origination.                        ( version 6.04 )
     !/
-    !  1. Purpose : Source code for parallel debugging
-    !  2. Method :
+    !  1. Purpose : Source code for parallel debugging 
+    !  2. Method : maxidx = npa or np for arrays that have been synchronized or not
+    !              CheckUncovered is because some the triangulation may not cover all nodes
     !  3. Parameters :
     !
     !     Parameter list
@@ -3674,8 +3666,6 @@ CONTAINS
         IF (FLCUR) THEN
           CXY(1,IP) = CXY(1,IP) + FACX * CX(IP_GLOB)/CLATS(IP_GLOB)*IOBDP_LOC(IP) 
           CXY(2,IP) = CXY(2,IP) + FACY * CY(IP_GLOB)*IOBDP_LOC(IP)
-          !WRITE(IAPROC+4000,*) IP, CXY(1,IP), CXY(2,IP), FACX, FACY, CX(IP_GLOB), CY(IP_GLOB), CLATS(IP_GLOB)
-          !CALL FLUSH(IAPROC+4000)
         ENDIF
 #ifdef W3_MGP
         CXY(1,IP) = CXY(1,IP) - CCURX*VGX/CLATS(ISEA)
@@ -3748,8 +3738,8 @@ CONTAINS
         ELSE
           DO I = 1, PDLIB_CCON(IP)
             J = J + 1
-            I1    =  PDLIB_POSI(1,J)
-            IE    =  PDLIB_IE_CELL2(I,IP)
+            I1                =  PDLIB_POSI(1,J)
+            IE                =  PDLIB_IE_CELL2(I,IP)
             ASPAR_JAC(ISP,I1) = ASPAR_JAC(ISP,I1) + PDLIB_TRIA03(IE)
           END DO
           B_JAC(ISP,IP) = 0.
@@ -4404,213 +4394,6 @@ CONTAINS
     END DO
   END SUBROUTINE calcARRAY_JACOBI4
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE calcARRAY_JACOBI5(IE,DTG,FACX,FACY,VGX,VGY)
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |                                   |
-    !/                  | Aron Roland (BGS IT&E GmbH)       |
-    !/                  | Mathieu Dutour-Sikiric (IRB)      |
-    !/                  |                                   |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :        01-June-2018 |
-    !/                  +-----------------------------------+
-    !/
-    !/    01-June-2018 : Origination.                        ( version 6.04 )
-    !/
-    !  1. Purpose : Compute matrix coefficients for advection part
-    !  2. Method :
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      STRACE    Subr. W3SERVMD Subroutine tracing.
-    !     ----------------------------------------------------------------
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !  7. Remarks
-    !  8. Structure :
-    !  9. Switches :
-    !
-    !     !/S  Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-    USE W3SERVMD, only: STRACE
-#endif
-    !
-
-    USE W3GDATMD, only: NK, NK2, NTH, NSPEC, FACHFA, DMIN
-    USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-    USE W3GDATMD, only: NSEAL, CLATS
-    USE W3GDATMD, only: MAPSTA, NK
-    USE W3WDATMD, only: VA, VAOLD
-    USE W3ADATMD, only: CG, DW, WN, CX, CY
-    USE W3IDATMD, only: FLCUR, FLLEV
-    USE W3GDATMD, only: ECOS, ESIN, MAPFS
-    USE W3PARALL, only : ONESIXTH, ZERO, THR, ONETHIRD
-    use yowElementpool, only: ne, INE
-    USE YOWNODEPOOL,    only: PDLIB_IEN, PDLIB_TRIA,                  &
-         PDLIB_CCON, NP, NPA,          &
-         PDLIB_IA_P, PDLIB_POSI, PDLIB_IA, PDLIB_NNZ, iplg,           &
-         PDLIB_I_DIAG, PDLIB_JA
-    USE W3ODATMD, only : IAPROC
-#ifdef W3_DB1
-    USE W3SDB1MD
-    USE W3GDATMD, only: SDBSC
-#endif
-#ifdef W3_BT1
-    USE W3SBT1MD
-#endif
-#ifdef W3_BT4
-    USE W3SBT4MD
-#endif
-#ifdef W3_BT8
-    USE W3SBT8MD
-#endif
-#ifdef W3_BT9
-    USE W3SBT9MD
-#endif
-#ifdef W3_IC1
-    USE W3SIC1MD
-#endif
-#ifdef W3_IC2
-    USE W3SIC2MD
-#endif
-#ifdef W3_IC3
-    USE W3SIC3MD
-#endif
-#ifdef W3_TR1
-    USE W3STR1MD
-#endif
-    INTEGER, INTENT(IN) :: IE
-    REAL, INTENT(in) :: DTG, FACX, FACY, VGX, VGY
-    !
-    INTEGER :: IP, IP1, IP2
-    INTEGER :: ITH, IK
-    INTEGER :: POS, JSEA
-    INTEGER :: I, I1, I2, I3, NI(3), NI_GLOB(3), NI_ISEA(3)
-    INTEGER :: ISP, IP_glob, IPP1, IPP2
-    INTEGER :: counter
-#ifdef W3_REF1
-    INTEGER :: eIOBPDR
-#endif
-    REAL  :: DTK(3), TMP3(NSPEC,3)
-    REAL  :: LAMBDA(2)
-    REAL  :: CRFS(3), K(3)
-    REAL  :: KP(3), UV_CUR(3,2)
-    REAL  :: KM(3), CSX(3), CSY(3)
-    REAL  :: K1, eSI, eVS, eVD
-    REAL  :: eVal1, eVal2, eVal3
-    REAL  :: ien_local(6)
-    REAL  :: DELTAL(NSPEC,3), K_X(3,NK), K_Y(3,NK), K_U(3)
-    REAL  :: CRFS_X(3,NK), CRFS_Y(3,NK), CRFS_U(3)
-    REAL  :: NM, CGFAK(3,NK)
-    REAL  :: TRIA03, SIDT, CCOS, CSIN
-    REAL  :: FL11_X, FL12_X, FL21_X, FL22_X, FL31_X, FL32_X
-    REAL  :: FL11_Y, FL12_Y, FL21_Y, FL22_Y, FL31_Y, FL32_Y
-    REAL  :: FL11_U, FL12_U, FL21_U, FL22_U, FL31_U, FL32_U
-
-    TRIA03    = ONETHIRD * PDLIB_TRIA(IE)
-    IEN_LOCAL = PDLIB_IEN(:,IE)
-    NI        = INE(:,IE)
-    NI_GLOB   = iplg(NI)
-    NI_ISEA   = MAPFS(1,NI_GLOB)
-    CRFS_U    = ZERO
-    K_U       = ZERO
-
-    IF (FLCUR) THEN
-      UV_CUR(:,1) = CX(NI_ISEA) / CLATS(NI_ISEA)
-      UV_CUR(:,2) = CY(NI_ISEA)
-      LAMBDA(1)=ONESIXTH*(UV_CUR(1,1)+UV_CUR(2,1)+UV_CUR(3,1))
-      LAMBDA(2)=ONESIXTH*(UV_CUR(1,2)+UV_CUR(2,2)+UV_CUR(3,2))
-      K_U(1)  = LAMBDA(1) * IEN_LOCAL(1) + LAMBDA(2) * IEN_LOCAL(2)
-      K_U(2)  = LAMBDA(1) * IEN_LOCAL(3) + LAMBDA(2) * IEN_LOCAL(4)
-      K_U(3)  = LAMBDA(1) * IEN_LOCAL(5) + LAMBDA(2) * IEN_LOCAL(6)
-      FL11_U = UV_CUR(2,1)*IEN_LOCAL(1)+UV_CUR(2,2)*IEN_LOCAL(2)
-      FL12_U = UV_CUR(3,1)*IEN_LOCAL(1)+UV_CUR(3,2)*IEN_LOCAL(2)
-      FL21_U = UV_CUR(3,1)*IEN_LOCAL(3)+UV_CUR(3,2)*IEN_LOCAL(4)
-      FL22_U = UV_CUR(1,1)*IEN_LOCAL(3)+UV_CUR(1,2)*IEN_LOCAL(4)
-      FL31_U = UV_CUR(1,1)*IEN_LOCAL(5)+UV_CUR(1,2)*IEN_LOCAL(6)
-      FL32_U = UV_CUR(2,1)*IEN_LOCAL(5)+UV_CUR(2,2)*IEN_LOCAL(6)
-      CRFS_U(1) = - ONESIXTH*(2.d0 *FL31_U + FL32_U + FL21_U + 2.d0 * FL22_U)
-      CRFS_U(2) = - ONESIXTH*(2.d0 *FL32_U + 2.d0 * FL11_U + FL12_U + FL31_U)
-      CRFS_U(3) = - ONESIXTH*(2.d0 *FL12_U + 2.d0 * FL21_U + FL22_U + FL11_U)
-    ENDIF
-
-    DO IK = 1, NK
-      CSX = CG(IK,NI_ISEA) / CLATS(NI_ISEA)
-      CSY = CG(IK,NI_ISEA)
-      LAMBDA(1) = ONESIXTH * (CSX(1) + CSX(2) + CSX(3))
-      LAMBDA(2) = ONESIXTH * (CSY(1) + CSY(2) + CSY(3))
-      K_X(1,IK) = LAMBDA(1) * IEN_LOCAL(1)
-      K_X(2,IK) = LAMBDA(1) * IEN_LOCAL(3)
-      K_X(3,IK) = LAMBDA(1) * IEN_LOCAL(5)
-      K_Y(1,IK) = LAMBDA(2) * IEN_LOCAL(2)
-      K_Y(2,IK) = LAMBDA(2) * IEN_LOCAL(4)
-      K_Y(3,IK) = LAMBDA(2) * IEN_LOCAL(6)
-      FL11_X = CSX(2) * IEN_LOCAL(1)
-      FL12_X = CSX(3) * IEN_LOCAL(1)
-      FL21_X = CSX(3) * IEN_LOCAL(3)
-      FL22_X = CSX(1) * IEN_LOCAL(3)
-      FL31_X = CSX(1) * IEN_LOCAL(5)
-      FL32_X = CSX(2) * IEN_LOCAL(5)
-      FL11_Y = CSY(2) * IEN_LOCAL(2)
-      FL12_Y = CSY(3) * IEN_LOCAL(2)
-      FL21_Y = CSY(3) * IEN_LOCAL(4)
-      FL22_Y = CSY(1) * IEN_LOCAL(4)
-      FL31_Y = CSY(1) * IEN_LOCAL(6)
-      FL32_Y = CSY(2) * IEN_LOCAL(6)
-      CRFS_X(1,IK) = - ONESIXTH * (2.d0*FL31_X + FL32_X + FL21_X + 2.d0 * FL22_X)
-      CRFS_X(2,IK) = - ONESIXTH * (2.d0*FL32_X + 2.d0 * FL11_X + FL12_X + FL31_X)
-      CRFS_X(3,IK) = - ONESIXTH * (2.d0*FL12_X + 2.d0 * FL21_X + FL22_X + FL11_X)
-      CRFS_Y(1,IK) = - ONESIXTH * (2.d0*FL31_Y + FL32_Y + FL21_Y + 2.d0 * FL22_Y)
-      CRFS_Y(2,IK) = - ONESIXTH * (2.d0*FL32_Y + 2.d0 * FL11_Y + FL12_Y + FL31_Y)
-      CRFS_Y(3,IK) = - ONESIXTH * (2.d0*FL12_Y + 2.d0 * FL21_Y + FL22_Y + FL11_Y)
-    ENDDO
-
-    DO ISP=1,NSPEC
-      ITH     = 1 + MOD(ISP-1,NTH)
-      IK      = 1 + (ISP-1)/NTH
-      CCOS    = FACX * ECOS(ITH)
-      CSIN    = FACY * ESIN(ITH)
-      K       = K_X(:,IK)    * CCOS + K_Y(:,IK)    * CSIN + K_U
-      CRFS    = CRFS_X(:,IK) * CCOS + CRFS_Y(:,IK) * CSIN + CRFS_U
-      KM      = MIN(ZERO,K)
-      KP      = MAX(ZERO,K)
-      DELTAL(ISP,:) = CRFS - KP
-      NM      = 1.d0/MIN(-THR,SUM(KM))
-      DTK     = KP * DTG * IOBDP_LOC(NI) * IOBPD_LOC(ITH,NI) * (1-IOBPA_LOC(NI))
-      TMP3(ISP,:) = DTK * NM
-    ENDDO
-
-    DO I = 1, 3
-      IP        = NI(I)
-      IP1       = INE(POS_TRICK(I,1),IE)
-      IP2       = INE(POS_TRICK(I,2),IE)
-      IPP1      = POS_TRICK(I,1)
-      IPP2      = POS_TRICK(I,2)
-!AR: TODO: Check this stutff below ... 
-      !ASPAR_DIAG(:,IP)      = ASPAR_DIAG(:,IP) + TRIA03 + DTK(I) - TMP3(:,I) * DELTAL
-      !ASPAR_OFF_DIAG(:,IP1) = ASPAR_OFF_DIAG(:,IP1)              - TMP3(:,IPP1) * DELTAL(:,IPP1) * VA(:,IP1)
-      !ASPAR_OFF_DIAG(:,IP2) = ASPAR_OFF_DIAG(:,IP2)              - TMP3(:,IPP2) * DELTAL(:,IPP2) * VA(:,IP2)
-    ENDDO
-  END SUBROUTINE calcARRAY_JACOBI5
-  !/ ------------------------------------------------------------------- /
   SUBROUTINE calcARRAY_JACOBI_SPECTRAL_1(DTG)
     !/
     !/                  +-----------------------------------+
@@ -4684,8 +4467,6 @@ CONTAINS
     INTEGER :: ITH0
 
     LOGICAL :: LSIG = .FALSE.
-
-    !AR: this is missing in init ... but there is a design error in ww3_grid with FLCUR and FLLEV
     !AR: TODO: check&report if needed ... 
     LSIG = FLCUR .OR. FLLEV
 
@@ -4836,7 +4617,6 @@ CONTAINS
     INTEGER :: ITH0
 
     LOGICAL :: LSIG = .FALSE.
-
     LSIG = FLCUR .OR. FLLEV
 
     DO IP = 1, np
@@ -5881,18 +5661,6 @@ CONTAINS
     END DO
     VAOLD = VA(1:NSPEC,1:NSEAL)
 
-#ifdef W3_REF1
-    !DO JSEA = 1, NSEAL
-    !  DO ISP = 1, NSPEC
-    !    ITH    = 1 + MOD(ISP-1,NTH)
-    !    IK     = 1 + (ISP-1)/NTH
-    !    IF (IOBP_LOC(JSEA) .EQ. 0 .and. IOBPD_LOC(ITH,JSEA) .EQ. 0) THEN
-    !      VA(ISP,JSEA) = 20.
-    !    ENDIF
-    !  ENDDO 
-    !ENDDO
-#endif
-
 #ifdef W3_DEBUGSRC
     DO JSEA=1,NSEAL
       WRITE(740+IAPROC,*) 'JSEA=', JSEA
@@ -5944,7 +5712,9 @@ CONTAINS
     !
     !     geographical advection
     !
-    IF (IMEM == 1) call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
+    IF (IMEM == 1) THEN 
+      call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
+    ENDIF
 
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
@@ -5952,9 +5722,8 @@ CONTAINS
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION 5')
     !
 #ifdef W3_DEBUGSOLVER
-    !WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
+    WRITE(740+IAPROC,'(A20,20E20.10)') 'SUM BJAC 1', sum(B_JAC), SUM(ASPAR_JAC)
 #endif
-
     !
     !     spectral advection
     !
@@ -6039,16 +5808,9 @@ CONTAINS
 
           IF (IMEM == 2) THEN
             CALL calcARRAY_JACOBI4(IP,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
-            !WRITE(*,'(A10,10F20.10)') 'JAC4', SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_OFF_DIAG_LOCAL), SUM(B_JAC_LOCAL)
-            !CALL calcARRAY_JACOBI3(IP,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
-            !WRITE(*,'(A10,10F20.10)') 'JAC3', SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_OFF_DIAG_LOCAL), SUM(B_JAC_LOCAL)
             ASPAR_DIAG(1:NSPEC) = ASPAR_DIAG_LOCAL(1:NSPEC) + ASPAR_DIAG_ALL(1:NSPEC,IP)
             esum       = B_JAC_LOCAL - ASPAR_OFF_DIAG_LOCAL + B_JAC(1:NSPEC,IP)
           ELSEIF (IMEM == 1) THEN
-            !CALL calcARRAY_JACOBI4(IP,ICOUNT2,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
-            !WRITE(*,'(A10,10F20.10)') 'JAC4', SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_OFF_DIAG_LOCAL), SUM(B_JAC_LOCAL)
-            !CALL calcARRAY_JACOBI3(IP,ICOUNT1,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
-            !WRITE(*,'(A10,10F20.10)') 'JAC3', SUM(ASPAR_DIAG_LOCAL), SUM(ASPAR_OFF_DIAG_LOCAL), SUM(B_JAC_LOCAL)
             eSum(1:NSPEC)       = B_JAC(1:NSPEC,IP)
             ASPAR_DIAG(1:NSPEC) = ASPAR_JAC(1:NSPEC,PDLIB_I_DIAG(IP))
 #ifdef W3_DEBUGFREQSHIFT
@@ -6247,17 +6009,13 @@ CONTAINS
             lconverged(ip) = .true.
           ELSE
             lconverged(ip) = .false.
-            !write(*,*) ip, is_converged, p_is_converged, iobp_loc(ip), iobdp_loc(ip)
           ENDIF
         END IF
-        !IF (IP == 2) STOP
 #ifdef W3_DEBUGSRC
         WRITE(740+IAPROC,*) 'sum(VA)out=', sum(VA(:,IP))
 #endif
-        !WRITE(*,*) 'TEST VA 2', IP, SUM(VA(:,IP)), IOBDP_LOC(IP), IOBPA_LOC(IP)
       END DO ! IP
 
-      !        WRITE(740+IAPROC,*) myrank, 'afer vertex loop', nbiter
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 2')
 
 #ifdef W3_DEBUGSOLVERCOH
@@ -6291,12 +6049,9 @@ CONTAINS
       ! Terminate via differences
       !
       IF (B_JGS_TERMINATE_DIFFERENCE .and. INT(MOD(NBITER,10)) == 0) THEN ! Every 10th step check conv. 
-        !WRITE(740+IAPROC,*) myrank, 'solver before', nbiter, is_converged, prop_conv, B_JGS_PMIN
         CALL MPI_ALLREDUCE(is_converged, itmp, 1, MPI_INT, MPI_SUM, MPI_COMM_WCMP, ierr)
         is_converged = itmp
         prop_conv = (DBLE(NX) - DBLE(is_converged))/DBLE(NX) * 100.
-        !write(*,*) prop_conv, nbIter, is_converged
-        !WRITE(740+IAPROC,*) myrank, 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
 #ifdef W3_DEBUGSOLVER
         WRITE(740+IAPROC,*) 'solver', nbiter, is_converged, prop_conv, B_JGS_PMIN
         FLUSH(740+IAPROC)
@@ -6377,7 +6132,6 @@ CONTAINS
           END IF
         END DO
         CALL MPI_ALLREDUCE(Sum_L2, Sum_L2_GL, 1, rtype, MPI_SUM, MPI_COMM_WCMP, ierr)
-        !WRITE(*,*) 'Sum_L2_gl=', Sum_L2_gl
 #ifdef W3_DEBUGSOLVER
         WRITE(740+IAPROC,*) 'Sum_L2_gl=', Sum_L2_gl
         FLUSH(740+IAPROC)
@@ -6406,16 +6160,13 @@ CONTAINS
 #endif
       DO ISP=1,NSPEC
         ITH    = 1 + MOD(ISP-1,NTH)
-        !IF (IOBPD_LOC(ITH,IP) .ne. IOBPD(ITH,IP_glob)) STOP 'ERROR IN BOUNDARY'
         VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
 #ifdef W3_REF1
         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) THEN
-           !WRITE(*,*) 'TEST WAVE ACTION RESTORING FOR REFLECTION', IOBP_LOC(IP), IOBPD_LOC(ITH,IP), IOBPA_LOC(IP)
            VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
         ENDIF
 #endif
       END DO
-      !WRITE(*,'(4I10,A20)') IP, IOBDP_LOC(IP), IOBP_LOC(IP), IOBPA_LOC(IP), 'IOBP TEST'
 #ifdef W3_DEBUGSRC
       WRITE(740+IAPROC,*) 'IOBPD loop, After, sum(VA)=', sum(VA(:,IP))
 #endif
@@ -6523,8 +6274,6 @@ CONTAINS
            JAC2     = 1./TPI/SIG(IK)
            FRLOCAL  = SIG(IK)*TPIINV
            DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
-           !IF (ISEA == 90) WRITE(*,*) 'LIMITER', JSEA, ISEA, IK, USTAR, MAX(FMEANWS,FMEAN), JAC2, DTG, SUM(VA(:,JSEA)), SUM(VAOLD(:,JSEA))
-           !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
          END DO
          DO IK=1, NK
            IS0  = (IK-1)*NTH
@@ -6538,7 +6287,6 @@ CONTAINS
              ISP = ITH + (IK-1)*NTH
              newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
              maxdac     = max(DAM(ISP),DAM2(ISP))
-             !IF (ISEA == 90) WRITe(*,*) 'TEST NON SPLIT', ISEA, JSEA, ISP, DAM(ISP), DAM2(ISP), VA(ISP,JSEA), VAOLD(ISP,JSEA)
              NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
              VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
            ENDDO 
@@ -7146,7 +6894,6 @@ CONTAINS
       ELSE
         IOBDP_LOC(IP)  = 1
       ENDIF
-      !WRITE(*,*) ip, ip_glob, IOBDP_LOC(IP), DW(IP_glob), DMIN
     END DO
     !/
     !/ End of SETDEPTH_PDLIB --------------------------------------------- /

@@ -1467,7 +1467,7 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
         !
 #ifdef W3_PDLIB
-        IF ( FLSOU .and. LPDLIB .and. FSSOURCE) THEN
+        IF (LPDLIB .and. FLSOU .and. FSSOURCE) THEN
 #endif
 
 #ifdef W3_OMP0
@@ -1530,10 +1530,10 @@ CONTAINS
             PSIC=SED_PSIC(ISEA)
 #endif
             !
-#ifdef W3_PDLIB
-            IF ( IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
-#endif
-
+!#ifdef W3_PDLIB
+!            IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
+!                 & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
+!#endif
 
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGSRC
@@ -1581,12 +1581,12 @@ CONTAINS
               FLUSH(740+IAPROC)
 #endif
 #endif
-            ELSE
-              UST   (ISEA) = UNDEF
-              USTDIR(ISEA) = UNDEF
-              DTDYN (JSEA) = UNDEF
-              FCUT  (JSEA) = UNDEF
-            END IF
+!            ELSE
+!              UST   (ISEA) = UNDEF
+!              USTDIR(ISEA) = UNDEF
+!              DTDYN (JSEA) = UNDEF
+!              FCUT  (JSEA) = UNDEF
+!            END IF
           END DO ! JSEA
         END IF ! PDLIB
 #endif
@@ -1821,6 +1821,7 @@ CONTAINS
               !
             END DO
           END IF
+
           call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 16')
 
 #ifdef W3_DEBUGCOH
@@ -1840,6 +1841,7 @@ CONTAINS
               FACX   =  1.
             END IF
           END IF
+
           IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
             !
 #ifdef W3_PDLIB
@@ -2148,6 +2150,7 @@ CONTAINS
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("fter intraspectral adv.")
 #endif
+
           !
           UGDTUPDATE = .FALSE.
           !
@@ -2182,6 +2185,7 @@ CONTAINS
             !$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3,TMP4)
             !$OMP DO SCHEDULE (DYNAMIC,1)
 #endif
+
             !
             DO JSEA=1, NSEAL
               CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -2288,7 +2292,6 @@ CONTAINS
               END IF
             END DO
 
-
             !
 #ifdef W3_OMPG
             !$OMP END DO
@@ -2322,6 +2325,9 @@ CONTAINS
         END DO
         IF (IT.GT.0) DTG=DTGTEMP
 #endif
+
+
+
 
         !
         !

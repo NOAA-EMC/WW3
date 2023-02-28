@@ -292,19 +292,21 @@ $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
 $                           IMPFSN    : Activation of N implicit scheme
 $                           IMPTOTAL  : Activation of fully implicit scheme | Non splitting
-$                           EXPTOTAL  : Turn on implicit refraction (only with imptotal)
+$                           EXPTOTAL  : Activation of the Block explicit solver (e.g. parallel communication reduced to all directional components) 
 $                           IMPREFRACTION  : Turn on implicit freq. shift (only with imptotal)
 $                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (only with imptotal)
 $                           IMPSOURCE  : Turn on implicit source terms (only with imptotal)
 $                           JGS_TERMINATE_MAXITER  : max. Number of iterations
-$                           JGS_TERMINATE_DIFFERENCE  : terminate based on the total change of wave action
-$                           JGS_TERMINATE_NORM  : terminate based on the norm of the solution
-$                           JGS_USE_JACOBI  : Use Jacobi solver for imptotal
-$                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal
+$                           JGS_TERMINATE_DIFFERENCE  : Terminate based on the total change of the unweightet sum of wave action
+$                           JGS_TERMINATE_NORM  : Terminate based on the norm of the solution
+$                           JGS_USE_JACOBI  : Use Jacobi solver family 
+$                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal instead of the conservative jacobi iterator. 
 $                           JGS_MAXITER  : max. Number of solver iterations
 $                           JGS_PMIN  : % of grid points that do not need to converge during solver iteration.
 $                           JGS_DIFF_THR  : implicit solver threshold for JGS_TERMINATE_DIFFERENCE
 $                           JGS_NORM_THR  : terminate based on the norm of the solution
+$                           JGS_LIMITER   : use total (quasi-steady) instead of local limiter (un-steady) for more info check manual 
+$                           JGS_LIMITER_FUNC : 1 - old limiter; 2 - alternatnive limiter for implicit schemes. 
 $                           SETUP_APPLY_WLV  : Compute wave setup (experimental)
 $                           SOLVERTHR_SETUP  : Solver threshold for setup computations
 $                           CRIT_DEP_SETUP  : Critical depths for setup computations

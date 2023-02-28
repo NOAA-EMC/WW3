@@ -1413,8 +1413,6 @@ CONTAINS
     CALL STRACE (IENT, 'AREA_SI')
 #endif
 
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE SI, TRIA und CCON'
-
     SI(:) = 0.D0
     !
     CCON(:) = 0     ! Number of connected Elements
@@ -1434,8 +1432,6 @@ CONTAINS
     CELLVERTEX(:,:,:) = 0 ! Stores for each node the Elementnumbers of the connected Elements
     ! and the Position of the Node in the Element Index
 
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE CELLVERTEX'
-
     CHILF = 0
 
     DO IE = 1, NTRI
@@ -1446,8 +1442,6 @@ CONTAINS
         CELLVERTEX(I,CHILF(I),2) = J
       END DO
     ENDDO
-
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE IE_CELL and POS_CELL'
     !
     ! Second step in storage, the initial 3D array CELLVERTEX, is transformed in a 1D array
     ! the global index is J . From now, all the computation step based on these arrays must
@@ -2094,10 +2088,9 @@ CONTAINS
          MAPSTA, ANGLE, FLAGLL,  IOBP, IEN, TRIA, NSEAL, NTRI
     USE W3ADATMD, ONLY : NSEALM
 #ifdef W3_PDLIB
-     USE yowElementpool
-     USE yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
-     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
-     USE yowExchangeModule, only : PDLIB_exchange1Dreal
+    USE yowElementpool
+    use yowNodepool,    only: PDLIB_IEN, PDLIB_TRIA, NPA
+    USE yowExchangeModule, only : PDLIB_exchange1Dreal
 #endif
 
     IMPLICIT NONE
@@ -2110,7 +2103,7 @@ CONTAINS
 
     INTEGER              :: VERTICES(3), NI(3), NI_GL(3)
     REAL                 :: TMP1(3), TMP2(3)
-    INTEGER              :: I, IX, IE, IE_GL, IP
+    INTEGER              :: I, IX, IE, IE_GL
     REAL                 :: VAR(3), FACT, LATMEAN
     REAL                 :: DIFFXTMP, DIFFYTMP
     REAL                 :: DEDX(3), DEDY(3)
@@ -2179,6 +2172,17 @@ CONTAINS
     !
   END SUBROUTINE UG_GRADIENTS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief UGTYPE nesting initialization.
+  !>
+  !> @param[in]    DISTMIN
+  !> @param[inout] FLOK
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE W3NESTUG(DISTMIN,FLOK)
     !/
     !/                  +-----------------------------------+
@@ -2793,20 +2797,19 @@ CONTAINS
       IPREV=I+1
     END IF
   END SUBROUTINE TRIANG_INDEXES
-  !/ ------------------------------------------------------------------- /
 
-  !>
-  !> @brief Find boundary nodes and store in IOBP.
-  !>
-  !> @param[in]  I
-  !> @param[out] INEXT
-  !> @param[out] IPREV
-  !>
-  !> @author Aron Roland
-  !> @author Mathieu Dutour-Sikiric
-  !> @date   01-Jun-2018
-  !>
   !/ ------------------------------------------------------------------- /
+  
+  !>
+  !> @brief Redefines the values of the boundary points and angle pointers
+  !>  based on the MAPSTA array.
+  !>
+  !> @details Adapted boundary detection from A. Roland and M. Dutour (WWM code).
+  !>
+  !> @author Fabrice Ardhuin
+  !> @author Aron Roland
+  !> @date   17-Apr-2016
+  !>
   SUBROUTINE SET_UG_IOBP()
     !/
     !/                  +-----------------------------------+

@@ -59,10 +59,10 @@ MODULE W3OACPMD
   USE MOD_OASIS                                      ! OASIS3-MCT module
   !
   USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
-  USE MPI, only : MPI_SUM, MPI_INT
+  USE MPI, ONLY : MPI_SUM, MPI_INT
   USE W3PARALL, ONLY : INIT_GET_ISEA
 #ifdef W3_PDLIB
-    USE YOWNODEPOOL, only: NPA, NP, IPLG
+    USE YOWNODEPOOL, ONLY: NPA, NP, IPLG
 #endif
 
   IMPLICIT NONE
@@ -374,8 +374,10 @@ CONTAINS
     !/                  |           A. Thevenin             |
     !/                  |           V. Garnier              |
     !/                  |           M. Accensi              |
+    !/                  !           A. Roland               |
+    !/                  !           H. Michaud              |
     !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         08-Jun-2018 |
+    !/                  | Last update :         22-Feb-2023 |
     !/                  +-----------------------------------+
     !/
     !/      Jul-2013 : Origination.                         ( version 4.18 )
@@ -383,6 +385,7 @@ CONTAINS
     !/                   (R. Baraille & J. Pianezze)
     !/    April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
     !/    08-Jun-2018 : use INIT_GET_ISEA                   ( version 6.04 )
+    !/    22-Feb-2023 : Extend to domain decomposition      ( version 7.xx ) 
     !/
     !  1. Purpose :
     !
@@ -426,7 +429,7 @@ CONTAINS
     USE W3ADATMD, ONLY: MPI_COMM_WAVE
 #ifdef W3_PDLIB
     USE W3PARALL, ONLY : INIT_GET_ISEA 
-    USE YOWNODEPOOL, only: NPA, NP, IPLG 
+    USE YOWNODEPOOL, ONLY: NPA, NP, IPLG 
 #endif
     IMPLICIT NONE
     !
