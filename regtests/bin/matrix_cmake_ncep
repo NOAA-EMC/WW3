@@ -60,21 +60,25 @@ EOF
   then
     # If no other h, assuming Hera
     batchq='slurm'
-    hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
-    hpcstackversion='hpc/1.2.0'
     basemodcomp='intel/2022.1.2'
     basemodmpi='impi/2022.1.2'
+    hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
+    hpcstackversion='hpc/1.2.0'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
+    scotchpath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hpc-stack/scotch-v7.0.3/install'
     metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
     modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
     batchq='slurm'
+    basemodcomp='intel/2022.1.2'
+    basemodmpi='impi/2022.1.2'
     hpcstackpath='/work/noaa/epic-ps/hpc-stack/libs/intel/2022.1.2/modulefiles/stack'
     hpcstackversion='hpc/1.2.0'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'
+    scotchpath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/scotch-v7.0.3/install'
     metispath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
     modcmake='cmake/3.22.1'
   else
@@ -105,6 +109,7 @@ EOF
     echo '#SBATCH -o matrix.out'                            >> matrix.head
     echo '#SBATCH -p orion'                                 >> matrix.head
     echo '#SBATCH --exclusive'                              >> matrix.head
+    echo ' '                                                >> matrix.head
     echo 'ulimit -s unlimited'                              >> matrix.head
     echo 'ulimit -c 0'                                      >> matrix.head
     echo 'export KMP_STACKSIZE=2G'                          >> matrix.head
@@ -132,30 +137,31 @@ EOF
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-# Netcdf and Parmetis modules & variables
+# Netcdf, Parmetis and SCOTCH modules & variables
   echo "  module purge"                                     >> matrix.head
   echo "  module load $modcmake"                            >> matrix.head
-  echo "  module use $hpcstackpath"                         >> matrix.head
-  echo "  module load $hpcstackversion"                     >> matrix.head
   if [ ! -z $basemodcomp ]; then
     echo "  module load $basemodcomp"                       >> matrix.head
   fi
   if [ ! -z $basemodmpi ]; then
     echo "  module load $basemodmpi"                        >> matrix.head
   fi
+  echo "  module use  $hpcstackpath"                        >> matrix.head
+  echo "  module load $hpcstackversion"                     >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
-  echo "  module load $modnetcdf"                           >> matrix.head
-  echo "  module load $modjasper"                           >> matrix.head
-  echo "  module load $modzlib"                             >> matrix.head
   echo "  module load $modpng"                              >> matrix.head
+  echo "  module load $modzlib"                             >> matrix.head
+  echo "  module load $modjasper"                           >> matrix.head
   echo "  module load $modhdf5"                             >> matrix.head
+  echo "  module load $modnetcdf"                           >> matrix.head
   echo "  module load $modbacio"                            >> matrix.head
   echo "  module load $modg2"                               >> matrix.head
   echo "  module load $modw3emc"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
 
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
+  echo "  export SCOTCH_PATH=${scotchpath}"                 >> matrix.head
   echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
   echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'         >> matrix.head
   echo ' '

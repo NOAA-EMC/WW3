@@ -18,7 +18,8 @@
 #  Sample run_test commands :                                               #
 #  ./bin/run_test                        -s ST0   ../model ww3_tp2.6        #
 #  ./bin/run_test                        -s ST4   ../model ww3_tp2.6        #
-#  Domain Decomposition Implicit which needs PDLIB switch                   #
+#  Domain Decomposition Implicit needs PDLIB  and either of METIS or        #
+#                                                      SCOTCH switch        #
 #  ./bin/run_test                        -s PDLIB ../model ww3_tp2.6        #
 #                                                                           #
 #                             Aron Roland and Fabrice Ardhuin, Jan 2011     #
