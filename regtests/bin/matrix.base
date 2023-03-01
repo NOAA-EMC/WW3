@@ -2022,6 +2022,16 @@
      fi
  fi
 
+ # unstructured grid with PDLIB for domain decomposition and implicit solver, Neumann Bnd, depth breaking & triad interaction ST
+ if [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ] 
+ then
+   echo ' ' >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -w work_1A_a -f -g a -p $mpi -n $np -o netcdf -i input_Case1A $ww3 ww3_tp2.19" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -w work_1B_a -f -g a -p $mpi -n $np -o netcdf -i input_Case1B $ww3 ww3_tp2.19" >> matrix.body
+   echo "$rtst -s MPI -s PDLIB -w work_1C_a -f -g a -p $mpi -n $np -o netcdf -i input_Case1C $ww3 ww3_tp2.19" >> matrix.body
+ fi
+
+
  #Unresolved Obstacles Source Term (UOST) 
  if [ "$uost" = 'y' ] 
  then
