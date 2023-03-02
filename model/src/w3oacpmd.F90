@@ -386,6 +386,7 @@ CONTAINS
     !/    April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
     !/    08-Jun-2018 : use INIT_GET_ISEA                   ( version 6.04 )
     !/    22-Feb-2023 : Extend to domain decomposition      ( version 7.xx ) 
+    !/    01-Mar-2023 : Work on HYCOM part 
     !/
     !  1. Purpose :
     !
