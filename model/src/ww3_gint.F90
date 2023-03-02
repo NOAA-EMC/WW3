@@ -814,7 +814,11 @@ PROGRAM W3GRID_INTERP
   !
   CALL W3SETA(NG, 6, 6)
   CALL W3DIMA(NG, 6, 6, .TRUE.)
-  CALL W3DIMW(NG, 6, 6, .TRUE.)
+  IF (OUTorREST) THEN 
+    CALL W3DIMW(NG, 6, 6, .TRUE.)
+  ELSE 
+    CALL W3DIMW(NG, 6, 6)
+  END IF 
   ALLOCATE(FIDOUT(NG))
   DO IG = 1,NG
     FIDOUT(IG) = 30 + (IG-1)*10
@@ -928,8 +932,8 @@ PROGRAM W3GRID_INTERP
     ! 5.d Carry out interpolation
     WDATAS(NG)%TIME = TOUT
     CALL W3SETG(NG, 6, 6)
-    CALL W3SETA(NG, 6, 6)
     CALL W3SETW(NG, 6, 6)
+    CALL W3SETA(NG, 6, 6)
     CALL W3SETO(NG, 6, 6)
 #ifdef W3_WRST
     CALL W3DIMI(NG, 6, 6)
@@ -2569,6 +2573,8 @@ CONTAINS
                     END IF
                   END IF
                 END DO
+                write(*,*) 'wt',wt
+                write(*,*) 'jdm, gsea, vaaux,va(grid)', gsea, sum(vaaux(:)), sum(WDATAS(IGRID)%VA(:,GSEA))
               END IF
               !
               ! End of loop through the points per grid to obtain interpolated values
@@ -3544,6 +3550,7 @@ CONTAINS
       DEALLOCATE (NOINT,NOINT2,MAPSTATMP)  
 
       DO ISEA = 1, NSEA
+        write(*,*) 'jdm, prenonneg', isea, sum(va(:,ISEA))
         DO IK = 1,NSPEC
           IF ( VA(IK,ISEA) < 0. ) THEN 
             VA(IK,ISEA) = 0.
