@@ -117,9 +117,23 @@
     libs="$libs `$NETCDF_CONFIG --flibs` `$NETCDF_CONFIG --libs`"
   fi
 
+  # scotch library 
+  if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ; then
+    if [ "$scotch_mod" = 'yes' ] ; then
+      if [ -z "$(env | grep SCOTCH_PATH)" ] ; then
+        echo ''
+        echo "[ERROR] SCOTCH_PATH is not defined"
+        exit 1
+      fi
+      echo "link with scotch" 
+     libs="$libs $SCOTCH_PATH/lib/libptscotchparmetisv3.a $SCOTCH_PATH/lib/libptscotch.a  $SCOTCH_PATH/lib/libptscotcherr.a $SCOTCH_PATH/lib/libscotch.a"
+    fi
+  fi
+
+
   # parmetis library
   if [ "$prog" = 'ww3_shel' ] || [ "$prog" = 'ww3_multi' ] || [ "$prog" = 'ww3_sbs1' ] ; then
-    if [ "$pdlib_mod" = 'yes' ] ; then
+    if [ "$metis_mod" = 'yes' ] ; then
       if [ -z "$(env | grep METIS_PATH)" ] ; then
         echo ''
         echo "[ERROR] METIS_PATH is not defined"

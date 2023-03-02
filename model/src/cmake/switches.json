@@ -749,10 +749,25 @@
         "name": "pdlib",
         "num_switches": "upto1",
         "description": "use pdlib",
-        "valid-options": [
+        "valid-options":[
             {
                 "name": "PDLIB",
                 "requires": ["MPI"]
+       	    }
+        ]
+    },
+    {   
+        "name": "ddlib", 
+        "num_switches": "upto1",
+        "description": "domain decomposition library",
+        "valid-options": [
+            {   
+                "name": "METIS",
+                "requires": ["PDLIB"]
+            },  
+            {   
+                "name": "SCOTCH",
+                "requires": ["PDLIB"]
             }
         ]
     },

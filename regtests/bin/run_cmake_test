@@ -414,12 +414,14 @@ then
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                   sed 's/OMPG //'    | sed 's/NOGRB/NCEP2/' | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                  sed 's/B4B //' > $path_build/switch
+                  sed 's/B4B //'     | sed 's/METIS //' | \
+                  sed 's/SCOTCH //' > $path_build/switch
   else 
     cat $file_c | sed 's/DIST/SHRD/' | sed 's/MPI //'   | \
                   sed 's/OMPG //'    | \
                   sed 's/OMPH //'    | sed 's/PDLIB //' | \
-                  sed 's/B4B //' > $path_build/switch
+                  sed 's/B4B //'     | sed 's/METIS //' | \
+                  sed 's/SCOTCH //' >  $path_build/switch
   fi
 
   echo "Switch file is $path_build/switch with switches:" >> $ofile 

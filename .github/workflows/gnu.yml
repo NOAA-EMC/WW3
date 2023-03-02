@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  cache_key: gnu5
+  cache_key: gnu8
   CC: gcc-10
   FC: gfortran-10
   CXX: g++-10
