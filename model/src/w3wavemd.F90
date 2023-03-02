@@ -896,20 +896,6 @@ CONTAINS
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("First entry in the TIME LOOP")
 #endif
-      !      DO JSEA = 1, NSEAL
-      !        DO IS = 1, NSPEC
-      !          IF (VA(IS, JSEA) .LT. 0.) THEN
-      !            WRITE(740+IAPROC,*) 'TEST W3WAVE 2', VA(IS,JSEA)
-      !            CALL FLUSH(740+IAPROC)
-      !          ENDIF
-      !        ENDDO
-      !      ENDDO
-      !      IF (SUM(VA) .NE. SUM(VA)) THEN
-      !        WRITE(740+IAPROC,*) 'NAN in ACTION 2', IX, IY, SUM(VA)
-      !        CALL FLUSH(740+IAPROC)
-      !        STOP
-      !      ENDIF
-
 
 #ifdef W3_DEBUGCOH
       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6.1", 1)
@@ -1493,19 +1479,17 @@ CONTAINS
 
 
 #ifdef W3_PDLIB
+
           DO JSEA = 1, NP
-#endif
 
-#ifdef W3_PDLIB
             CALL INIT_GET_ISEA(ISEA, JSEA)
-#endif
 
-#ifdef W3_PDLIB
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
             DELA=1.
             DELX=1.
             DELY=1.
+
 #ifdef W3_REF1
             IF (GTYPE.EQ.RLGTYPE) THEN
               DELX=SX*CLATS(ISEA)/FACX
@@ -1518,24 +1502,16 @@ CONTAINS
               DELY=HQFAC(IY,IX)/ FACX
               DELA=DELX*DELY
             END IF
-#endif
-            !
-#ifdef W3_REF1
             REFLEC=REFLC(:,ISEA)
             REFLEC(4)=BERG(ISEA)*REFLEC(4)
             REFLED=REFLD(:,ISEA)
 #endif
+
 #ifdef W3_BT4
             D50=SED_D50(ISEA)
             PSIC=SED_PSIC(ISEA)
 #endif
             !
-!#ifdef W3_PDLIB
-!            IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
-!                 & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
-!#endif
-
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGSRC
               IF (IX .eq. DEBUG_NODE) THEN
                 WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
@@ -1580,13 +1556,6 @@ CONTAINS
               WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
               FLUSH(740+IAPROC)
 #endif
-#endif
-!            ELSE
-!              UST   (ISEA) = UNDEF
-!              USTDIR(ISEA) = UNDEF
-!              DTDYN (JSEA) = UNDEF
-!              FCUT  (JSEA) = UNDEF
-!            END IF
           END DO ! JSEA
         END IF ! PDLIB
 #endif
