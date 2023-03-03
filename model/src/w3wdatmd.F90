@@ -454,7 +454,6 @@ CONTAINS
     CALL STRACE (IENT, 'W3DIMW')
 #endif
 
-    write(*,*) 'in w3dimw', IMOD
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
@@ -464,7 +463,6 @@ CONTAINS
     ELSE
       FL_ALL = .TRUE.
     END IF
-    write(*,*) 'FL_ALL in w3dimw', FL_ALL
     !
     IF ( NGRIDS .EQ. -1 ) THEN
       WRITE (NDSE,1001)
@@ -495,7 +493,6 @@ CONTAINS
     NSEATM = NSEALM * NAPROC
     !
     IF ( FL_ALL ) THEN
-      write(*,*) 'allocate pointer for va, imod', IMOD
       ALLOCATE ( WDATAS(IMOD)%VA(NSPEC,0:NSEALM), STAT=ISTAT ); WDATAS(IMOD)%VA = 0.
       CHECK_ALLOC_STATUS ( ISTAT )
 #ifdef W3_PDLIB
@@ -741,7 +738,6 @@ CONTAINS
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
     !
-    write(*,*) 'in w3setw', IMOD
     IF ( NWDATA .EQ. -1 ) THEN
       WRITE (NDSE,1001)
       CALL EXTCDE (1)
@@ -780,12 +776,9 @@ CONTAINS
     DINIT  => WDATAS(IMOD)%DINIT
     FL_ALL => WDATAS(IMOD)%FL_ALL
     !
-    WRITE(*,*) 'JDM, DINIT', DINIT
-    WRITE(*,*) 'JDM,FL_ALL', FL_ALL
 
     IF ( DINIT ) THEN
       IF ( FL_ALL ) THEN
-        write(*,*) 'set pointer for va, imod', IMOD
         VA     => WDATAS(IMOD)%VA
 #ifdef W3_NL5
         QR5TIM0 => WDATAS(IMOD)%QR5TIM0

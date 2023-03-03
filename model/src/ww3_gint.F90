@@ -171,11 +171,11 @@ PROGRAM W3GRID_INTERP
   LOGICAL                 :: L360=.FALSE., LPLC, INGRD, BRNCHCL, BRNCHCR, INGRID
   CHARACTER               :: COMSTR*1, IDTIME*23, FNAMEWHT*32
   REAL                    :: XXX !< Dummy Value for w3iors call
-  LOGICAL                 :: OUTorREST
-  INTEGER                 :: INTYPE
-  INTEGER, ALLOCATABLE    :: MAPSTA_NG(:,:),MAPST2_NG(:,:)
-  INTEGER, ALLOCATABLE    :: NOINT(:),NOINT2(:),MAPSTATMP(:,:)
-  INTEGER                 :: iNOINT,iNOINT2,JSEA,iloops
+  LOGICAL                 :: OUTorREST !< True interpolate out_grd or False restart
+  INTEGER                 :: INTYPE !check if this can be removed
+  INTEGER, ALLOCATABLE    :: MAPSTA_NG(:,:),MAPST2_NG(:,:) 
+  INTEGER, ALLOCATABLE    :: NOINT(:),NOINT2(:),MAPSTATMP(:,:) 
+  INTEGER                 :: iNOINT,iNOINT2,JSEA,iloops 
   CHARACTER(LEN=8)        :: WORDS(5)
   CHARACTER(LEN=80)       :: LINEIN
   !
@@ -217,8 +217,6 @@ PROGRAM W3GRID_INTERP
   !
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
 
-!   19680606 060000 10800. 1
-
   WORDS(1:5)=''
   READ (NDSI,'(A)') LINEIN
   READ(LINEIN,*,iostat=ierr) WORDS
@@ -227,7 +225,6 @@ PROGRAM W3GRID_INTERP
   READ(WORDS( 2 ), * ) TOUT(2)
   READ(WORDS( 3 ), * ) DTREQ
   READ(WORDS( 4 ), * ) NOUT
-  !READ(WORDS( 5 ), * ) OUTorREST
 
   ! Set flag OUTorREST for out_grd (True) or restart.* (FALSE)
   IF (WORDS(5) .EQ. 'F') THEN 
@@ -236,22 +233,12 @@ PROGRAM W3GRID_INTERP
     OUTorREST = .true. 
   ENDIF
 
-
-
-
-  !!!JDM !!READ (NDSI,*,END=2001,ERR=2002) TOUT, DTREQ, NOUT
   DTREQ  = MAX ( 0. , DTREQ )
   IF ( DTREQ.EQ.0 ) NOUT = 1
   NOUT   = MAX ( 1 , NOUT )
   !
   CALL STME21 ( TOUT , IDTIME )
   WRITE (NDSO,902) IDTIME, DTREQ, NOUT
-  !!!!  JDM delete next lines 
-  !!!! 3.b.2 Read Flag for out_grd (True) or restart.* (FALSE) 
-  !!!!! 
-  !!!!CALL NEXTLN ( COMSTR, NDSI, NDSE )
-  !!!!READ (NDSI,*,END=2001,ERR=2002) OUTorREST
-  !!!!
   !
   ! 3.c Read number of grids and allocate memory
   !
@@ -924,13 +911,9 @@ PROGRAM W3GRID_INTERP
 #endif
       NSEAL=NSEA ! Set for reading restarts 
 
-      !CALL W3IORSOLD ( 'READ', 56, XXX, INTYPE, IG )!
-      write(*,*) 'about to call w3iors', IG 
+      !To use an older model version restart file (add a w3iorsold)
+      !CALL W3IORSOLD ( 'READ', 56, XXX, INTYPE, IG )
       CALL W3IORS ( 'READ', 56, XXX, IG )
-      write(*,*) 'after call to w3iors', IG
-      !IF (INTYPE.EQ.0.OR.INTYPE.EQ.1.OR.INTYPE.EQ.4) THEN
-      !  GO TO 2112
-      !ENDIF
     END DO
 
     ! 5.d Carry out interpolation
@@ -943,7 +926,6 @@ PROGRAM W3GRID_INTERP
     CALL W3DIMI(NG, 6, 6)
 #endif
 
-    !CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, OUTorREST,MAPSTA_NG,MAPST2_NG )
     CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, INTMETHOD, OUTorREST,MAPSTA_NG,MAPST2_NG )
 
     GOTO 2222
@@ -964,8 +946,6 @@ PROGRAM W3GRID_INTERP
   CALL EXTCDE ( 3 )
 2111 CONTINUE
   WRITE(NDSO,950)
-!2112 CONTINUE
-!  WRITE(NDSO,952)
 2222 CONTINUE
   WRITE(NDSO,999)
   !
@@ -1007,8 +987,6 @@ PROGRAM W3GRID_INTERP
 917 FORMAT (/'   Interpolation scheme = ',I1,'  ==> 0 linear, ',           &
        '1 extrapolate unstructured, 2 nearest'/)
 950 FORMAT (/'  End of file reached'/)
-!952 FORMAT (/'  *** ERROR IN WAVEGRID_INTERP : '/                          &
-!             '      ERROR IN READING RESTART FILE'/)
 999 FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
        15X,'==============================================='/)
   !
@@ -2577,8 +2555,6 @@ CONTAINS
                     END IF
                   END IF
                 END DO
-                write(*,*) 'wt',wt
-                write(*,*) 'jdm, gsea, vaaux,va(grid)', gsea, sum(vaaux(:)), sum(WDATAS(IGRID)%VA(:,GSEA))
               END IF
               !
               ! End of loop through the points per grid to obtain interpolated values
@@ -3554,13 +3530,11 @@ CONTAINS
       DEALLOCATE (NOINT,NOINT2,MAPSTATMP)  
 
       DO ISEA = 1, NSEA
-        !write(*,*) 'jdm, prenonneg', isea, sum(va(:,ISEA))
         DO IK = 1,NSPEC
           IF ( VA(IK,ISEA) < 0. ) THEN 
             VA(IK,ISEA) = 0.
           END IF
         END DO
-        !write(*,*) 'jdm, isea, vasum', isea, sum(va(:,ISEA)) 
       END DO
  
       MAPST2=MAPST2_NG
@@ -3586,11 +3560,6 @@ CONTAINS
       ASF=0.
       FPIS=0. 
       CALL W3IORS ( 'HOT', 55, XXX, NG) 
-  !> @param[in]    INXOUT   Test string for read/write.
-  !> @param[inout] NDSR     File unit number.
-  !> @param[in]    DUMFPI   Dummy values for FPIS for cold start.
-  !> @param[in]    IMOD     Optional grid number, defaults to 1.
-  !> @param[in]    FLRSTRT  A second request for restart files (optional TRUE).
     END IF 
     !
     RETURN
