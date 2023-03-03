@@ -69,8 +69,8 @@ $ ITYPE = 4, Netcdf Files
 $            S3: number of characters in date
 $            IX, IY range
 $
-ww3.Boers_1A.
-4
+ww3.
+6
  1 999999999 1 1 3 2
 $ For each field and time a new file is generated with the file name
 $ ww3.date_xxx.nc , where date is a conventional time idicator with S3
