@@ -922,8 +922,12 @@ PROGRAM W3GRID_INTERP
 #ifdef W3_WRST
       CALL W3DIMI(IG, 6, 6)
 #endif
+      NSEAL=NSEA ! Set for reading restarts 
+
       !CALL W3IORSOLD ( 'READ', 56, XXX, INTYPE, IG )!
+      write(*,*) 'about to call w3iors', IG 
       CALL W3IORS ( 'READ', 56, XXX, IG )
+      write(*,*) 'after call to w3iors', IG
       !IF (INTYPE.EQ.0.OR.INTYPE.EQ.1.OR.INTYPE.EQ.4) THEN
       !  GO TO 2112
       !ENDIF
@@ -3550,13 +3554,13 @@ CONTAINS
       DEALLOCATE (NOINT,NOINT2,MAPSTATMP)  
 
       DO ISEA = 1, NSEA
-        write(*,*) 'jdm, prenonneg', isea, sum(va(:,ISEA))
+        !write(*,*) 'jdm, prenonneg', isea, sum(va(:,ISEA))
         DO IK = 1,NSPEC
           IF ( VA(IK,ISEA) < 0. ) THEN 
             VA(IK,ISEA) = 0.
           END IF
         END DO
-        write(*,*) 'jdm, isea, vasum', isea, sum(va(:,ISEA)) 
+        !write(*,*) 'jdm, isea, vasum', isea, sum(va(:,ISEA)) 
       END DO
  
       MAPST2=MAPST2_NG
