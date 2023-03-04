@@ -926,7 +926,7 @@ CONTAINS
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
 #endif
-    USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa, np
+    USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_IEND, PDLIB_TRIA, ipgl, iplg, npa, np
     use yowElementpool, only: ne, INE
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
@@ -973,7 +973,7 @@ CONTAINS
     REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL  :: LAMBDA(2), KTMP(3)
+    REAL  :: LAMBDA(2), KTMP(3), DGSE(3), DFAK 
     REAL  :: KELEM(3,NE), FLALL(3,NE)
     REAL  :: KKSUM(npa), ST(npa)
     REAL  :: NM(NE)
@@ -1103,9 +1103,15 @@ CONTAINS
       U = DBLE(AC)
       ST = ZERO
       DO IE = 1, NE
-        NI     = INE(:,IE)
-        UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-        ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
+        NI      = INE(:,IE)
+        UTILDE  = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
+        ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
+        DGSE(1) = DFAK * DOT_PRODUCT(U(NI),PDLIB_IEND(:,1,IE))
+        DGSE(2) = DFAK * DOT_PRODUCT(U(NI),PDLIB_IEND(:,2,IE))
+        DGSE(3) = DFAK * DOT_PRODUCT(U(NI),PDLIB_IEND(:,3,IE))
+        ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) + DGSE ! the 2nd term are the theta values of each node ...
+      ENDIF
+
       END DO ! IE
 #ifdef W3_DEBUGSOLVER
       IF (testWrite) THEN
