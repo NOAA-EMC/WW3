@@ -907,6 +907,7 @@ MODULE W3GRIDMD
   LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
   LOGICAL :: JGS_LGSE = .FALSE. 
   INTEGER :: JGS_GSE_METHOD = 1
+  REAL(8) :: JGS_GSE_TS = 1.d0
   LOGICAL :: UGOBCAUTO = .FALSE.
   LOGICAL :: UGBCCFL   = .FALSE.
   LOGICAL :: EXPFSN    = .TRUE.
@@ -1085,6 +1086,7 @@ MODULE W3GRIDMD
        JGS_USE_JACOBI,                            &
        JGS_LGSE,                                  &
        JGS_GSE_METHOD,                            & 
+       JGS_GSE_TS,                                &
        JGS_BLOCK_GAUSS_SEIDEL,                    &
        JGS_MAXITER,                               &
        JGS_PMIN,                                  &
@@ -2404,6 +2406,7 @@ CONTAINS
     JGS_TERMINATE_NORM = .FALSE.
     JGS_LIMITER = .FALSE.
     JGS_LIMITER_FUNC = 1
+    JGS_GSE_TS = 1
     JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
     JGS_USE_JACOBI = .TRUE.
     JGS_LGSE = .FALSE. 
@@ -2431,6 +2434,7 @@ CONTAINS
     B_JGS_NLEVEL = JGS_NLEVEL
     B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
     B_JGS_LGSE = JGS_LGSE
+    B_JGS_GSE_TS = JGS_GSE_TS
     B_JGS_GSE_METHOD = JGS_GSE_METHOD 
 
     nbSel=0

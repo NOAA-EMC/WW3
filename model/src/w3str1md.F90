@@ -187,7 +187,7 @@ CONTAINS
     !/                  |     A. J. van der Westhuysen      |
     !/                  |     A. Roland                     |
     !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         13-Jan-2013 |
+    !/                  | Last update :         04-Mar-2022 |
     !/                  +-----------------------------------+
     !/
     !/    13 Jan-2013 : Origination, based on SWAN v40.91 code ( version 4.08 )
@@ -391,8 +391,6 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'W3STR1')
 #endif
-
-!AR: todo: check all PRX routines for differences, check original thesis of elderberky. 
 !
 ! 1.  Integral over directions
 !

@@ -915,7 +915,8 @@ CONTAINS
     USE W3SERVMD, only: STRACE
 #endif
     !
-    USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF
+    USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF, DTH
+    USE W3GDATMD, only: B_JGS_GSE_TS, B_JGS_LGSE
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
     USE W3WDATMD, only: TIME
     USE W3ADATMD, only: CG, ITER, DW , CFLXYMAX, NSEALM
@@ -973,7 +974,7 @@ CONTAINS
     REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL  :: LAMBDA(2), KTMP(3), DGSE(3), DFAK 
+    REAL  :: LAMBDA(2), KTMP(3), DGSE(3), DFAK(NE)
     REAL  :: KELEM(3,NE), FLALL(3,NE)
     REAL  :: KKSUM(npa), ST(npa)
     REAL  :: NM(NE)
@@ -1014,6 +1015,7 @@ CONTAINS
       I3 = INE(3,IE)
       LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
       LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
+      IF (B_JGS_LGSE) DFAK(IE) = SQRT(LAMBDA(1)**2+LAMBDA(2)**2) * DTH * B_JGS_GSE_TS / 12.
       KELEM(1,IE) = LAMBDA(1) * PDLIB_IEN(1,IE) + LAMBDA(2) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
       KELEM(2,IE) = LAMBDA(1) * PDLIB_IEN(3,IE) + LAMBDA(2) * PDLIB_IEN(4,IE)
       KELEM(3,IE) = LAMBDA(1) * PDLIB_IEN(5,IE) + LAMBDA(2) * PDLIB_IEN(6,IE)
@@ -1102,17 +1104,22 @@ CONTAINS
 #endif
       U = DBLE(AC)
       ST = ZERO
-      DO IE = 1, NE
-        NI      = INE(:,IE)
-        UTILDE  = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-        ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
-        DGSE(1) = DFAK * DOT_PRODUCT(U(NI),PDLIB_IEND(:,1,IE))
-        DGSE(2) = DFAK * DOT_PRODUCT(U(NI),PDLIB_IEND(:,2,IE))
-        DGSE(3) = DFAK * DOT_PRODUCT(U(NI),PDLIB_IEND(:,3,IE))
-        ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) + DGSE ! the 2nd term are the theta values of each node ...
+      IF (B_JGS_LGSE) THEN
+        DO IE = 1, NE
+          NI      = INE(:,IE)
+          UTILDE  = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
+          DGSE(1) = DFAK(IE) * DOT_PRODUCT(U(NI),PDLIB_IEND(:,1,IE))
+          DGSE(2) = DFAK(IE) * DOT_PRODUCT(U(NI),PDLIB_IEND(:,2,IE))
+          DGSE(3) = DFAK(IE) * DOT_PRODUCT(U(NI),PDLIB_IEND(:,3,IE))
+          ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) + DGSE 
+        END DO ! IE
+      ELSE
+        DO IE = 1, NE
+          NI      = INE(:,IE)
+          UTILDE  = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
+          ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE)
+        END DO ! IE
       ENDIF
-
-      END DO ! IE
 #ifdef W3_DEBUGSOLVER
       IF (testWrite) THEN
         CALL SCAL_INTEGRAL_PRINT_R4(ST, "ST in loop")
