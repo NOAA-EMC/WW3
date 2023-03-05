@@ -923,6 +923,7 @@ PROGRAM W3GRID_INTERP
     CALL W3SETA(NG, 6, 6)
     CALL W3SETO(NG, 6, 6)
 #ifdef W3_WRST
+    INPUTS(NG)%INFLAGS1(3)=.TRUE.
     CALL W3DIMI(NG, 6, 6)
 #endif
 
@@ -3549,6 +3550,9 @@ CONTAINS
     IF (OUTorRESTflag) THEN 
       CALL W3IOGO('WRITE',FIDOUT(NG),IOTST,NG)
     ELSE
+      ! A potential future improvement could be to also interpolate other fields 
+      ! in addition to VA for the restart interpolation.  For now these are 
+      ! set to zero.
       TICE(1)=-1
       TICE(2)=0
       TLEV(1)=-1
@@ -3559,6 +3563,10 @@ CONTAINS
       USTDIR=0.
       ASF=0.
       FPIS=0. 
+#ifdef W3_WRST
+      WXN=0.
+      WYN=0.
+#endif 
       CALL W3IORS ( 'HOT', 55, XXX, NG) 
     END IF 
     !
