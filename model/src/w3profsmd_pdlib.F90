@@ -119,6 +119,7 @@ MODULE PDLIB_W3PROFSMD
   REAL*8, ALLOCATABLE   :: FLALL1(:,:,:), KELEM1(:,:,:)
   REAL*8, ALLOCATABLE   :: FLALL2(:,:,:), KELEM2(:,:,:)
   REAL*8, ALLOCATABLE   :: FLALL3(:,:,:), KELEM3(:,:,:)
+  REAL*8, ALLOCATABLE   :: DIFRX(:), DIFRY(:), DIFRM(:) !AR: todo, allocate!
   REAL*8, ALLOCATABLE   :: NM(:,:,:), DTSI(:)
   INTEGER, ALLOCATABLE  :: ITER(:)
   INTEGER, ALLOCATABLE  :: IS0_pdlib(:)
@@ -127,6 +128,10 @@ MODULE PDLIB_W3PROFSMD
   LOGICAL, SAVE         :: LINIT_OUTPUT = .TRUE.
   REAL, SAVE            :: RTIME = 0.d0 
   INTEGER               :: POS_TRICK(3,2)
+  REAL*8, PARAMETER     :: KDMAX     = 300.d0
+  REAL*8, PARAMETER     :: PI = 3.14159265358979323846D0
+  REAL*8, PARAMETER     :: DEGRAD    = PI/180.d0
+  REAL*8, PARAMETER     :: RADDEG    = 180.d0/PI
 
 #ifdef W3_DEBUGSRC
   INTEGER  :: TESTNODE = 1
@@ -270,9 +275,7 @@ CONTAINS
       FLUSH(740+IAPROC)
 #endif
       !
-      !
       ! Now the computation of NSEAL
-      !
       !
       DO IP = 1, npa
         IX = iplg(IP)
@@ -806,11 +809,11 @@ CONTAINS
     ! 4. Prepares boundary update
     !
     IF ( FLBPI ) THEN
-      RD1    = DSEC21 ( TBPI0, TIME )
-      RD2    = DSEC21 ( TBPI0, TBPIN )
+      RD1 = DSEC21 ( TBPI0, TIME )
+      RD2 = DSEC21 ( TBPI0, TBPIN )
     ELSE
-      RD1=1.
-      RD2=0.
+      RD1 = 1.
+      RD2 = 0.
     END IF
     !
     ! Saving data for MAPSTA business
@@ -4307,7 +4310,7 @@ CONTAINS
       NI        = INE(1:3,IE)
       NI_GLOB   = IPLG(NI)
       NI_ISEA   = MAPFS(1,NI_GLOB)
-      CRFS_U    = ZERO
+      CRFS_U    = 0.d0 
 
       IF (FLCUR) THEN
 
@@ -5557,34 +5560,34 @@ CONTAINS
     REAL*8  :: eFactM1, eFactP1
     REAL*8  :: Sum_Prev, Sum_New, p_is_converged, DiffNew, prop_conv
     REAL*8  :: Sum_L2, Sum_L2_GL
-    REAL  :: DMM(0:NK2), DAM(NSPEC), DAM2(NSPEC), SPEC(NSPEC)
+    REAL    :: DMM(0:NK2), DAM(NSPEC), DAM2(NSPEC), SPEC(NSPEC)
     REAL*8  :: eDiff(NSPEC), eProd(NSPEC), eDiffB(NSPEC)
     REAL*8  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
-    REAL  :: VAnew(NSPEC), VFLWN(1-NTH:NSPEC), JAC, JAC2
-    REAL  :: VAAnew(1-NTH:NSPEC+NTH), VAAacloc(1-NTH:NSPEC+NTH)
-    REAL  :: VAinput(NSPEC), VAacloc(NSPEC), ASPAR_DIAG(NSPEC)
-    REAL  :: aspar_diag_local(nspec), aspar_off_diag_local(nspec), b_jac_local(nspec)
-    REAL*8 :: eDiffSing, eSumPart
-    REAL  :: EMEAN, FMEAN, FMEAN1, WNMEAN, AMAX, U10ABS, U10DIR, TAUA, TAUADIR
-    REAL  :: USTAR, USTDIR, TAUWX, TAUWY, CD, Z0, CHARN, FMEANWS, DLWMEAN
+    REAL    :: VAnew(NSPEC), VFLWN(1-NTH:NSPEC), JAC, JAC2
+    REAL    :: VAAnew(1-NTH:NSPEC+NTH), VAAacloc(1-NTH:NSPEC+NTH)
+    REAL    :: VAinput(NSPEC), VAacloc(NSPEC), ASPAR_DIAG(NSPEC)
+    REAL    :: aspar_diag_local(nspec), aspar_off_diag_local(nspec), b_jac_local(nspec)
+    REAL*8  :: eDiffSing, eSumPart
+    REAL    :: EMEAN, FMEAN, FMEAN1, WNMEAN, AMAX, U10ABS, U10DIR, TAUA, TAUADIR
+    REAL    :: USTAR, USTDIR, TAUWX, TAUWY, CD, Z0, CHARN, FMEANWS, DLWMEAN
     REAL*8  :: eVal1, eVal2
     REAL*8  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
-    REAL  :: CG1(0:NK+1), WN1(0:NK+1)
+    REAL    :: CG1(0:NK+1), WN1(0:NK+1)
     LOGICAL :: LCONVERGED(NSEAL), lexist, LLWS(NSPEC)
 #ifdef WEIGHTS
     INTEGER :: ipiter(nseal), ipitergl(np_global), ipiterout(np_global)
 #endif
 #ifdef W3_DEBUGSRC
-    REAL :: IntDiff, eVA_w3srce, eVAsolve, SumACout
-    REAL :: SumVAin, SumVAout, SumVAw3srce, SumVS, SumVD, VS_w3srce
+    REAL    :: IntDiff, eVA_w3srce, eVAsolve, SumACout
+    REAL    :: SumVAin, SumVAout, SumVAw3srce, SumVS, SumVD, VS_w3srce
     REAL    :: VAsolve(NSPEC)
     REAL*8  :: ACsolve
     REAL    :: eB
 #endif
 #ifdef W3_DEBUGSOLVERCOH
-    REAL :: TheARR(NSPEC, npa)
-    REAL :: PRE_VA(NSPEC, npa)
-    REAL :: OffDIAG(NSPEC, npa)
+    REAL   :: TheARR(NSPEC, npa)
+    REAL   :: PRE_VA(NSPEC, npa)
+    REAL   :: OffDIAG(NSPEC, npa)
     REAL*8 :: eOff(NSPEC)
     REAL*8 :: eSum1(NSPEC), eSum2(NSPEC)
 #endif
@@ -7631,5 +7634,572 @@ CONTAINS
     !/ End of JACOBI_FINALIZE -------------------------------------------- /
     !/
   END SUBROUTINE JACOBI_FINALIZE
-  !/ ------------------------------------------------------------------- /
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+  SUBROUTINE DIFFRA_SIMPLE
+    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH
+    USE W3ADATMD, only: CG, CX, CY, DW, WN, CG
+    USE W3WDATMD, only: VA
+    USE W3PARALL, ONLY: INIT_GET_ISEA
+    USE CONSTANTS, ONLY: RADIUS
+    USE yowNodepool, ONLY: np
+    IMPLICIT NONE
+    INTEGER :: IP, IK, ITH, IS, ID, ISP, ISEA, JSEA
+    REAL(8) :: ETOT, EWKTOT, ECGTOT, EAD
+    REAL(8) :: TMP, AUX, TRANS_X(NP), TRANS_Y(NP)
+    REAL(8) :: EWK(NP), ECG(NP), ENG(NP)
+    REAL(8) :: CGK(NP)
+    REAL(8) :: DXENG(NP), DYENG(NP), DXXEN(NP), DYYEN(NP), DXYEN(NP)
+    REAL(8) :: DXCGK(NP), DYCGK(NP)
+
+    EWK = 0.d0
+    ECG = 0.d0
+    ENG = 0.d0
+    CGK = 0.d0
+
+    DO IP = 1, NP
+      CALL INIT_GET_ISEA(ISEA, JSEA)
+      IF (DW(IP) .GT. DMIN) THEN
+        ETOT   = 0.d0 
+        EWKTOT = 0.d0 
+        ECGTOT = 0.d0
+        DO IS = 1, NK
+          DO ID = 1, NTH
+            ISP = ID + (IS-1) * NTH
+            EAD = EAD + VA(ISP,JSEA)/CG(ISP,JSEA)*CLATS(ISEA)*DTH*SIG(IS)**2
+          ENDDO
+          ETOT   = ETOT + EAD
+          EWKTOT = EWKTOT + WN(IS,IP) * EAD
+          ECGTOT = ECGTOT + CG(IS,IP) * EAD
+        END DO
+        IF (ETOT .GT. TINY(1.)) THEN
+          EWK(IP) = EWKTOT / ETOT
+          ECG(IP) = ECGTOT / ETOT
+          ENG(IP) = SQRT(ETOT)
+        ELSE
+          EWK(IP) = 0.d0
+          ECG(IP) = 0.d0
+          ENG(IP) = 0.d0
+        END IF
+        IF (EWK(IP) .GT. TINY(1.)) THEN
+          CGK(IP) = ECG(IP) / EWK(IP)
+        ELSE
+          CGK(IP) = 0.d0
+        END IF
+      ELSE
+        EWK(IP) = 0.d0
+        ECG(IP) = 0.d0
+        ENG(IP) = 0.d0
+        CGK(IP) = 0.d0
+      END IF
+    END DO
+
+    CALL DIFFERENTIATE_XYDIR(ENG  , DXENG, DYENG)
+    CALL DIFFERENTIATE_XYDIR(DXENG, DXXEN, DXYEN)
+    CALL DIFFERENTIATE_XYDIR(DYENG, DXYEN, DYYEN)
+    CALL DIFFERENTIATE_XYDIR(CGK  , DXCGK, DYCGK)
+
+    IF (FLAGLL) THEN
+      TRANS_X = 1.d0/(DEGRAD*RADIUS*CLATS(ISEA))
+      TRANS_Y = 1.d0/(DEGRAD*RADIUS)
+      DXENG = DXENG * TRANS_X
+      DYENG = DYENG * TRANS_Y
+      DXXEN = DXXEN * TRANS_X**2
+      DYYEN = DYYEN * TRANS_Y**2
+      DXCGK = DXCGK * TRANS_X
+      DYCGK = DYCGK * TRANS_Y
+    END IF
+
+    DO IP = 1, NP
+       IF (DW(IP) .GT. DMIN .AND. ENG(IP) .GT. TINY(1.)) THEN
+         TMP = ECG(IP)*EWK(IP)*ENG(IP)
+         IF (TMP > TINY(1.)) THEN
+            AUX = DXCGK(IP)*DXENG(IP)+DYCGK(IP)*DYENG(IP)+CGK(IP)*(DXXEN(IP)+DYYEN(IP))
+            TMP = AUX/TMP
+         ELSE
+            TMP = 0.d0
+         END IF
+         IF (TMP < -1.d0) THEN
+            DIFRM(IP) = 1.d0
+         ELSE
+            DIFRM(IP) = SQRT(1.d0+TMP)
+         END IF
+       ELSE
+         DIFRM(IP) = 1.d0
+       END IF
+    END DO
+
+    CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
+
+    IF (FLAGLL) THEN
+      DIFRX = DIFRX * TRANS_X
+      DIFRY = DIFRY * TRANS_Y
+    END IF
+
+    IF (.FALSE.) THEN
+      OPEN(555, FILE  = 'ergdiffr.bin'  , FORM = 'UNFORMATTED')
+      WRITE(555) SNGL(RTIME)
+      WRITE(555) (SNGL(DIFRX(IP)), SNGL(DIFRY(IP)),SNGL(DIFRM(IP))-1., IP = 1, NP)
+    END IF
+
+    END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+    SUBROUTINE BOTEFCT( EWK, DFBOT )
+      USE W3ADATMD, only: DW
+      USE CONSTANTS, only: GRAV 
+      USE YOWNODEPOOL, only: NP
+      IMPLICIT NONE
+
+      REAL(8), INTENT(IN)    :: EWK(NP)
+      REAL(8), INTENT(OUT)   :: DFBOT(NP)
+
+      REAL(8) :: SLPH(NP), CURH(NP)
+      REAL(8) :: DXDEP(NP) , DYDEP(NP)
+      REAL(8) :: DXXDEP(NP), DXYDEP(NP), DYYDEP(NP)
+
+      REAL(8) :: KH, BOTFC, BOTFS
+
+      INTEGER :: IP
+
+      LOGICAL :: MY_ISNAN, MY_ISINF
+
+!      CALL SMOOTH( -1.1, NP, XP, YP, DEP ) ! Add smoothing
+
+      CALL DIFFERENTIATE_XYDIR(DBLE(DW), DXDEP ,  DYDEP)
+      CALL DIFFERENTIATE_XYDIR(DXDEP , DXXDEP, DXYDEP)
+      CALL DIFFERENTIATE_XYDIR(DYDEP , DXYDEP, DYYDEP)
+
+      SLPH = DXDEP**2 + DYDEP**2
+      CURH = DXXDEP   + DYYDEP
+
+      DFBOT = 0.
+      DO IP = 1, NP
+        IF (EWK(IP) < TINY(1.)) CYCLE
+        KH = EWK(IP)*DW(IP)
+        IF (KH > PI) CYCLE
+        CALL CALC_BOTFC(KH,BOTFC)
+        CALL CALC_BOTFS(KH,BOTFS)
+        DFBOT(IP) = (BOTFC*CURH(IP)+BOTFS*EWK(IP)*SLPH(IP))*GRAV
+        IF (DFBOT(IP) .NE. DFBOT(IP)) THEN
+          WRITE(*,*)'DFBOT is NaN', IP,KH, CURH(IP), BOTFS, BOTFC, EWK(IP), SLPH(IP)
+          STOP
+        END IF
+      END DO
+    END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+    SUBROUTINE CALC_BOTFC(KH,BOTFC)
+      IMPLICIT NONE
+
+      REAL*8, INTENT(OUT) :: BOTFC
+      REAL*8, INTENT(IN)  :: KH
+      REAL*8              :: DKH, AUX, AUX1
+      REAL*8              :: COSHKH, COSH2KH, SINHKH, SINH2KH, SINH3KH
+
+      SINHKH  = DSINH(MIN(KDMAX,KH))
+      SINH2KH = DSINH(MIN(KDMAX,2*KH))
+      SINH3KH = DSINH(MIN(KDMAX,3*KH))
+      COSHKH  = DCOSH(MIN(KDMAX,KH))
+      COSH2KH = DCOSH(MIN(KDMAX,2*KH))
+      AUX = -4*KH*COSHKH+SINH3KH+SINHKH+8*(KH**2)*SINHKH
+      AUX1 = 8*COSHKH**3*(2*KH+SINH2KH)
+      BOTFC = AUX/MAX(TINY(1.),AUX1) - KH*DTANH(KH)/MAX(TINY(1.),(2*(COSHKH)**2))
+
+      IF (BOTFC .NE. BOTFC) THEN
+        WRITE(*,*)'BOTFC is NaN Aron', KH, AUX, AUX1, DTANH(KH)
+        STOP
+      END IF
+    END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE CALC_BOTFS(KH,BOTFS)
+        IMPLICIT NONE
+        REAL(8), INTENT(OUT) :: BOTFS
+        REAL(8), INTENT(IN)  :: KH
+        REAL(8)              :: SECH, SINH2KH, SINHKH, COSH2KH
+        REAL(8)              :: AUX, AUX1
+
+        IF (DABS(DCOSH(KH)) > TINY(1.)) THEN
+          SECH = 1.d0 / DCOSH(KH)
+        ELSE
+          SECH = 0.d0
+        END IF
+
+        SINHKH  = DSINH(MIN(KDMAX,KH))
+        SINH2KH = DSINH(MIN(KDMAX,2.0_8*KH))
+        COSH2KH = DCOSH(MIN(KDMAX,2.0_8*KH))
+        AUX     = SECH**2/MAX(TINY(1.),(6.d0*(2*KH+SINH2KH)**3))
+        AUX1    = 8.d0*(KH**4)+16.d0*(KH**3)*SINH2KH-9.d0*(SINH2KH**2*COSH2KH+12.d0*KH*(1.d0+2.d0*(SINHKH)**4)*(KH+SINH2KH))
+        BOTFS   = AUX * AUX1
+
+        IF (BOTFS .NE.  BOTFS) THEN
+          WRITE(*,*)'BOTFS is NaN', BOTFS, AUX, AUX1
+          STOP 
+        ENDIF
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE CUREFCT( NP, DXENG, DYENG, CURT, DFCUR )
+         IMPLICIT NONE
+
+         INTEGER, INTENT(IN)    :: NP
+         REAL(8), INTENT(IN)    :: DXENG(NP), DYENG(NP), CURT(NP,2)
+         REAL(8), INTENT(INOUT) :: DFCUR(NP)
+
+         REAL(8)                :: AUX(NP), AUXX(NP), AUXY(NP)
+         REAL(8)                :: DXAUXX(NP), DYAUXY(NP)
+
+         AUX(:)  = CURT(:,1) * DXENG(:) + CURT(:,2) * DYENG(:)
+         AUXX(:) = AUX(:) * CURT(:,1)
+         AUXY(:) = AUX(:) * CURT(:,2)
+
+         CALL DIFFERENTIATE_XYDIR(AUXX, DXAUXX, AUX)
+         CALL DIFFERENTIATE_XYDIR(AUXY, DYAUXY, AUX)
+
+         DFCUR(:) = DXAUXX(:) + DYAUXY(:)
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE CALC_BOTFC2(KH,BOTFC2)
+        IMPLICIT NONE
+        REAL(8), INTENT(IN)  :: KH
+        REAL(8), INTENT(OUT) :: BOTFC2
+        REAL(8)              :: AUX, AUX1
+        REAL(8)              :: SINHKH, COSHKH, SINH2KH, SINH3KH
+
+        IF (KH .GT. 1.d0/TINY(1.)) THEN
+          BOTFC2 = 0.d0
+          RETURN
+        END IF
+
+        COSHKH  = DCOSH(MIN(KDMAX,KH))
+        SINHKH  = DSINH(MIN(KDMAX,KH))
+        SINH2KH = DSINH(MIN(KDMAX,2*KH))
+        SINH3KH = DSINH(MIN(KDMAX,3*KH))
+
+        AUX = -4.d0*KH*COSHKH + SINH3KH + SINHKH + 8.d0*(KH**2)*SINHKH
+        AUX1 = 8.d0*COSHKH**3.d0*(2*KH + SINH2KH)
+        BOTFC2 = AUX / MAX(TINY(1.),AUX1) - KH*DTANH(KH) / (2*(COSHKH)**2)
+
+        IF (BOTFC2 .NE. BOTFC2) THEN
+           WRITE(*,*) 'BOTFC2'
+           WRITE(*,*) SINHKH, COSHKH, SINH2KH, SINH3KH, KH
+           WRITE(*,*) AUX, AUX1, KH*DTANH(KH), (2*(COSHKH)**2)
+           STOP 
+        ENDIF
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE CALC_BOTFS2(KH,BOTFS2)
+        IMPLICIT NONE
+        REAL(8), INTENT(IN)  :: KH
+        REAL(8), INTENT(OUT) :: BOTFS2
+        REAL(8)              :: SECH
+        REAL(8)              :: AUX, AUX1, SINHKH, COSHKH
+        REAL(8)              :: SINH2KH, SINH3KH, COSH2KH
+
+        IF (KH .GT. 1.d0/TINY(1.d0)) THEN
+          BOTFS2 = 0.
+          RETURN
+        END IF
+
+        COSHKH  = DCOSH(MIN(KDMAX,KH))
+        COSH2KH = DCOSH(MIN(KDMAX,2*KH))
+        SINHKH  = DSINH(MIN(KDMAX,KH))
+        SINH2KH = DSINH(MIN(KDMAX,2*KH))
+        SINH3KH = DSINH(MIN(KDMAX,3*KH))
+
+        SECH = 1.d0 / MAX(TINY(1.),COSHKH)
+        AUX = SECH**2 / MAX(TINY(1.), (6.d0*(2*KH + SINH2KH)**3))
+        IF (AUX .GT. TINY(1.)) THEN
+          AUX1 = 8.d0*(KH**4.d0) + 16.d0*(KH**3)*SINH2KH - 9.d0*(SINH2KH)**2*COSH2KH + 12.d0*KH*(1.d0 + 2*SINHKH**4)*(KH + SINH2KH)
+        ELSE
+          AUX1 = 0.d0
+        END IF
+
+        BOTFS2 = AUX * AUX1
+
+        IF (BOTFS2 .NE. BOTFS2) THEN
+          WRITE(*,*) 'BOTFS2'
+          WRITE(*,*) COSHKH, COSH2KH, SINHKH, SINH2KH, SINH3KH
+          WRITE(*,*) AUX, AUX1, KH, SECH, SECH**2, COSHKH
+          STOP 
+        END IF
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE CUREFCT2( NP, DXENG, DYENG, CX, CY, DFCUR )
+         IMPLICIT NONE
+         INTEGER, INTENT(IN)    :: NP
+         REAL(8), INTENT(IN)    :: DXENG(NP), DYENG(NP), CX(NP), CY(NP)
+         REAL(8), INTENT(OUT)   :: DFCUR(NP)
+         REAL(8)                :: AUX(NP), AUXX(NP), AUXY(NP)
+         REAL(8)                :: DXAUXX(NP), DYAUXY(NP)
+
+         AUX  = CY * DXENG + CY * DYENG
+         AUXX = AUX * CX
+         AUXY = AUX * CY
+
+         CALL DIFFERENTIATE_XYDIR(AUXX, DXAUXX, AUX)
+         CALL DIFFERENTIATE_XYDIR(AUXY, DYAUXY, AUX)
+
+         DFCUR(:) = DXAUXX(:) + DYAUXY(:)
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE BOTEFCT2(NP, EWK, DEP, DFBOT)
+        USE W3ADATMD, only: DW        
+        IMPLICIT NONE
+        REAL(8), PARAMETER     :: GRAV = 9.81
+        INTEGER, INTENT(IN)    :: NP
+        REAL(8), INTENT(IN)    :: EWK(NP)
+        REAL(8), INTENT(IN)    :: DEP(NP)
+        REAL(8), INTENT(INOUT) :: DFBOT(NP)
+        REAL(8)                :: SLPH(NP), CURH(NP)
+        REAL(8)                :: DXDEP(NP), DYDEP(NP)
+        REAL(8)                :: DXXDEP(NP), DXYDEP(NP), DYYDEP(NP)
+        REAL(8)                :: KH
+        INTEGER                :: IP
+        REAL(8)                :: BOTFC2, BOTFS2
+
+        CALL DIFFERENTIATE_XYDIR(DBLE(DW), DXDEP,  DYDEP)
+        CALL DIFFERENTIATE_XYDIR(DXDEP, DXXDEP, DXYDEP)
+        CALL DIFFERENTIATE_XYDIR(DYDEP, DXYDEP, DYYDEP)
+
+        SLPH(:) = DXDEP(:)**2 + DYDEP(:)**2
+        CURH(:) = DXXDEP(:) + DYYDEP(:)
+
+        DO IP = 1, NP
+          KH = EWK(IP)*DW(IP)
+          CALL CALC_BOTFS2(KH,BOTFS2)
+          CALL CALC_BOTFC2(KH,BOTFC2)
+          DFBOT(IP) = (BOTFC2*CURH(IP)+BOTFS2*EWK(IP)*SLPH(IP))*GRAV
+          IF (DFBOT(IP) .NE. DFBOT(IP)) THEN
+            WRITE(*,*) 'DFBOT'
+            WRITE(*,*) DFBOT(IP), BOTFC2, BOTFS2, CURH(IP), EWK(IP), SLPH(IP)
+            STOP 
+          ENDIF
+        END DO
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE DIFFRA_EXTENDED
+         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, CLATS, DTH, DSII
+         USE W3ADATMD, only: CG, CX, CY, DW
+         USE W3WDATMD, only: VA
+         USE W3PARALL, ONLY: INIT_GET_ISEA
+         USE W3IDATMD, ONLY: FLCUR
+         USE YOWNODEPOOL, ONLY: NP
+         IMPLICIT NONE
+         INTEGER :: IP, IK, ITH, ISEA, JSEA, IS, ID, ISP
+         REAL(8) :: WVC, WVK, WVCG, WVKDEP, WVN
+         REAL(8) :: ETOT, EWKTOT, EWCTOT, ECGTOT, EAD
+         REAL(8) :: DFWAV
+         REAL(8) :: AUX
+         REAL(8) :: DELTA
+         REAL(8) :: EWK(NP), EWC(NP), ECG(NP), ENG(NP)
+         REAL(8) :: CCG(NP)
+         REAL(8) :: DXENG(NP), DYENG(NP), DXXEN(NP), DYYEN(NP), DXYEN(NP)
+         REAL(8) :: DXCCG(NP), DYCCG(NP)
+         REAL(8) :: DFCUR(NP)
+         REAL(8) :: DFBOT(NP)
+         REAL(8) :: DFCUT
+         REAL(8) :: ETOTC, ETOTS, DM
+         REAL(8) :: US
+         REAL(8) :: CAUX, CAUX2
+         REAL(8) :: NAUX
+
+         DFBOT(:) = 0.d0 
+         DFCUR(:) = 0.d0 
+
+         DO IP = 1, NP
+           CALL INIT_GET_ISEA(ISEA, JSEA)
+           ETOT = 0.d0 
+           EWKTOT = 0.d0
+           EWCTOT = 0.d0
+           ECGTOT = 0.d0
+           IF (DW(IP) .GT. DMIN) THEN
+             DO IS = 1, NK
+               EAD = 0.d0 
+               DO ID = 1, NTH 
+                 ISP = ID + (IS-1) * NTH
+                 EAD = EAD + VA(ISP,JSEA)/CG(ISP,JSEA)*CLATS(ISEA)*DTH*SIG(IS)**2
+               ENDDO 
+               ETOT   = ETOT   + EAD
+               EWKTOT = EWKTOT + WVK  * EAD
+               EWCTOT = EWCTOT + WVC  * EAD
+               ECGTOT = ECGTOT + WVCG * EAD
+!AR: todo: check integration!
+             END DO
+             IF (ETOT .LT. TINY(1.)) THEN
+               EWK(IP) = 0.d0
+               EWC(IP) = 0.d0
+               ECG(IP) = 0.d0
+               ENG(IP) = 0.d0
+               CCG(IP) = 0.d0
+             ELSE
+               EWK(IP) = EWKTOT / ETOT
+               EWC(IP) = EWCTOT / ETOT
+               ECG(IP) = ECGTOT / ETOT
+               ENG(IP) = SQRT(ETOT)
+               CCG(IP) = EWC(IP) * ECG(IP)
+             END IF
+           ELSE
+             EWK(IP) = 0.d0 
+             EWC(IP) = 0.d0 
+             ECG(IP) = 0.d0 
+             ENG(IP) = 0.d0 
+             CCG(IP) = 0.d0
+           END IF
+         END DO
+
+         CALL DIFFERENTIATE_XYDIR(ENG, DXENG, DYENG)
+         CALL DIFFERENTIATE_XYDIR(DXENG, DXXEN, DXYEN)
+         CALL DIFFERENTIATE_XYDIR(DYENG, DXYEN, DYYEN)
+         CALL DIFFERENTIATE_XYDIR(CCG, DXCCG, DYCCG)
+
+         CALL BOTEFCT2( NP, EWK, DBLE(DW), DFBOT )
+
+         IF (FLCUR) CALL CUREFCT2( NP, DXENG, DYENG, DBLE(CX), DBLE(CY), DFCUR )
+
+         DO IP = 1, NP
+            AUX = CCG(IP)*EWK(IP)*EWK(IP)
+            IF ( AUX*ENG(IP) .GT. TINY(1.)) THEN
+               DFWAV = ( DXCCG(IP) * DXENG(IP) + DYCCG(IP) * DYENG(IP) + CCG(IP) * (DXXEN(IP) + DYYEN(IP)) ) / MAX(TINY(1.),ENG(IP))
+               NAUX = ECG(IP) / MAX(TINY(1.),EWC(IP))
+               IF (FLCUR) THEN
+                 ETOTC = 0.d0 
+                 ETOTS = 0.d0 
+                 DO ID = 1, NTH
+                   EAD = 0.d0 
+                   DO IK = 1, NK 
+                     ISP = ID + (ISP-1) * NTH
+                     EAD = EAD + VA(ISP,JSEA)/CG(ISP,JSEA)*CLATS(ISEA)*SIG(IK)*DSII(IK)*DTH
+                   ENDDO 
+                   ETOTC = ETOTC + EAD * ECOS(ITH)
+                   ETOTS = ETOTS + EAD * ESIN(ITH) 
+                 END DO
+                 DM    = ATAN2(ETOTS,ETOTC)
+                 US    = CX(IP)*COS(DM)+CY(IP)*SIN(DM)
+                 CAUX  = US / EWC(IP)
+                 DFCUT = (2.d0/NAUX+NAUX*CAUX)*CAUX
+               ELSE
+                 DFCUT = 0.d0 
+                 CAUX  = 0.d0 
+               END IF
+               CAUX2 = CAUX * CAUX
+               DELTA = CAUX2*(1.d0+CAUX)**2-NAUX*(CAUX2-NAUX)*(1.d0+(DFWAV+DFBOT(IP)+DFCUR(IP))/AUX+DFCUT)
+               IF (DELTA <= 0.d0) THEN
+                 DIFRM(IP) = 1.d0 
+               ELSE
+                 DIFRM(IP) = 1.d0/(CAUX2-NAUX)*(CAUX*(1.d0+CAUX)-SQRT(DELTA))
+               END IF
+            ELSE
+               DIFRM(IP) = 1.d0 
+            END IF
+         END DO
+         CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE COMPUTE_DIFFRACTION
+        USE W3GDATMD, only: B_JGS_LDIFR, B_JGS_IDIFR
+        IF (B_JGS_LDIFR) THEN
+          IF (B_JGS_IDIFR == 1 ) THEN
+            CALL DIFFRA_SIMPLE
+          ELSE IF (B_JGS_IDIFR == 2) THEN
+            CALL DIFFRA_EXTENDED
+          END IF
+        END IF
+      END SUBROUTINE COMPUTE_DIFFRACTION
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE DIFFERENTIATE_XYDIR(VAR, DVDX, DVDY)
+         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK
+         USE W3ADATMD, only: CG, CX, CY, DW
+         USE yowExchangeModule, only : PDLIB_exchange1DREAL
+         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP
+         USE yowElementpool, only : NE, INE
+         IMPLICIT NONE
+         REAL*8, INTENT(IN)    :: VAR(NP)
+         REAL*8, INTENT(INOUT) :: DVDX(NP), DVDY(NP)
+         REAL*4                :: DVDX4(NP), DVDY4(NP)
+         REAL*8                :: DEDY(3),DEDX(3)
+         REAL*8                :: DVDXIE, DVDYIE
+         REAL*8                :: WEI(NP)
+         INTEGER               :: NI(3)
+         INTEGER               :: IE, IP
+
+         WEI(:)  = 0.d0
+         DVDX(:) = 0.d0
+         DVDY(:) = 0.d0
+
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'DIFFERENTIATE_XYDIR'
+         WRITE(STAT%FHNDL,*) 'sum(VAR ) = ', sum(VAR)
+         WRITE(STAT%FHNDL,*) 'sum(IEN ) = ', sum(IEN)
+         WRITE(STAT%FHNDL,*) 'sum(TRIA) = ', sum(TRIA)
+#endif
+
+         DO IE = 1, NE
+            NI = INE(:,IE)
+            WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
+            DEDX(1) = PDLIB_IEN(1,IE)
+            DEDX(2) = PDLIB_IEN(3,IE)
+            DEDX(3) = PDLIB_IEN(5,IE)
+            DEDY(1) = PDLIB_IEN(2,IE)
+            DEDY(2) = PDLIB_IEN(4,IE)
+            DEDY(3) = PDLIB_IEN(6,IE)
+            DVDXIE  = DOT_PRODUCT( VAR(NI),DEDX)
+            DVDYIE  = DOT_PRODUCT( VAR(NI),DEDY)
+            DVDX(NI) = DVDX(NI) + DVDXIE
+            DVDY(NI) = DVDY(NI) + DVDYIE
+         END DO
+
+         DVDX = DVDX/WEI
+         DVDY = DVDY/WEI
+
+         DO IP = 1, NP
+           IF (DW(IP) .LT. DMIN) THEN
+             DVDX(IP) = 0.
+             DVDY(IP) = 0.
+           END IF
+         END DO
+
+#ifdef W3_PDLIB
+         DVDX4 = DVDX
+         DVDY4 = DVDY
+         CALL PDLIB_exchange1DREAL(DVDX4) ! AR: todo, checck pipes.
+         CALL PDLIB_exchange1DREAL(DVDY4)
+         DVDX = DVDX4
+         DVDY = DVDY4
+#endif
+
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'sum(DVDX) = ', sum(DVDX)
+         WRITE(STAT%FHNDL,*) 'sum(DVDY) = ', sum(DVDY)
+#endif
+
+         IF (.FALSE.) THEN
+           OPEN(2305, FILE  = 'erggrad.bin'  , FORM = 'UNFORMATTED')
+           WRITE(2305) 1.
+           WRITE(2305) (DVDX(IP), DVDY(IP), SQRT(DVDY(IP)**2+DVDY(IP)**2), IP = 1, NP)
+         ENDIF
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
 END MODULE PDLIB_W3PROFSMD

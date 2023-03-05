@@ -745,6 +745,8 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
+             B_JGS_LDIFR,                                     & 
+             B_JGS_IDIFR,                                     &
              B_JGS_SOURCE_NONLINEAR
         !Init COUNTCON to zero, it needs to be set somewhere or
         !removed
