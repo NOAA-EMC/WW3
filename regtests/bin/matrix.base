@@ -2047,6 +2047,7 @@
    if [ "$pdlib" = 'y' ]
    then
      echo "$rtst -s MPI -s PDLIB -w work_b  -g b        -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
+     echo "$rtst -s MPI -s PDLIB_METIS -w work_b_metis -g b -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
      echo "$rtst -s MPI -s PDLIB -w work_mb -m grdset_b -f -p $mpi -n $np $ww3 ww3_tp2.21" >> matrix.body
    fi
  fi

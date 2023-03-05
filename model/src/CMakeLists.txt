@@ -157,9 +157,17 @@ endif()
 
 # Handle PDLIB, SCRIP, SCRIPNC build files directly instead of through configuration file
 if("PDLIB" IN_LIST switches)
+  if("SCOTCH" IN_LIST switches)
+  find_package(SCOTCH REQUIRED)
+  target_sources(ww3_lib PRIVATE ${pdlib_src})
+  target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis)
+elseif("METIS"  IN_LIST switches)
   find_package(ParMETIS REQUIRED)
   target_sources(ww3_lib PRIVATE ${pdlib_src})
   target_link_libraries(ww3_lib PUBLIC ParMETIS::ParMETIS)
+  else()
+    message(FATAL_ERROR "PDLIB requires METIS or SCOTCH library for domain decomposition")
+ endif()
 endif()
 
 if("SCRIP" IN_LIST switches)
