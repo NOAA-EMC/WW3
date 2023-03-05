@@ -1512,9 +1512,7 @@ CONTAINS
     !/
   END SUBROUTINE SYNCHRONIZE_GLOBAL_ARRAY
   !/ ------------------------------------------------------------------- /
-!**********************************************************************
-!*                                                                    *
-!**********************************************************************
+#ifdef W3_PDLIB
   SUBROUTINE DIFFRA_SIMPLE(VA)
     USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH
     USE W3ADATMD, only: CG, CX, CY, DW, WN, CG
@@ -2064,8 +2062,6 @@ CONTAINS
            WRITE(2305) (DVDX(IP), DVDY(IP), SQRT(DVDY(IP)**2+DVDY(IP)**2), IP = 1, NP)
          ENDIF
       END SUBROUTINE
-!**********************************************************************
-!*                                                                    *
-!**********************************************************************  
+#endif
 END MODULE W3PARALL
 !/ ------------------------------------------------------------------- /
