@@ -776,7 +776,6 @@ CONTAINS
     DINIT  => WDATAS(IMOD)%DINIT
     FL_ALL => WDATAS(IMOD)%FL_ALL
     !
-
     IF ( DINIT ) THEN
       IF ( FL_ALL ) THEN
         VA     => WDATAS(IMOD)%VA
