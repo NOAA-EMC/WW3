@@ -1,5 +1,0 @@
-&UNST IMPFSN = T, EXPFSN = F /
-&UOST
-UOSTFILELOCAL = '../input_ug/obstructions_local.ugtest.in',
-UOSTFILESHADOW = '../input_ug/obstructions_shadow.ugtest.in' /
-END OF NAMELISTS
