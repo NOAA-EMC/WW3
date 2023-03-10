@@ -19,6 +19,7 @@ set(ftn_src
   w3iogrmd.F90
   w3iopomd.F90
   w3iorsmd.F90
+  w3iorsmdold.F90
   w3iosfmd.F90
   w3iotrmd.F90
   w3macros.h
