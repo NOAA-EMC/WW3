@@ -559,6 +559,10 @@ PROGRAM W3BOUND
             !
             READ(200+IP,'(A1,A10,A1,2F7.2,F10.1,F7.2,F6.1,F7.2,F6.1)') &
                  space,buoyname,space,LATS(IP),LONS(IP),depth,U10,Udir,Curr,Currdir
+            !JDM: NEED TO ADD LONGERTERM FIX HERE!!!! This is a fix
+            !because the lon from the spec points is (0-360) while grid
+            !uses -180:180  
+            IF ((XGRD(1,1)<0.0).AND.(LONS(IP)>179.0)) LONS(IP)=LONS(IP)-360.0 
 #ifdef W3_RTD
             IF (ISRTD) THEN
               ! Rotated coordinates are scaled in range 0 - 360
