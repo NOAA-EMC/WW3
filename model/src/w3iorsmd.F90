@@ -628,7 +628,7 @@ CONTAINS
         ! Original non-server version writing of spectra
         !
         IF ( .NOT.IOSFLG .OR. (NAPROC.EQ.1.AND.NAPRST.EQ.1) ) THEN
-          DO JSEA=1, NSEAL
+          DO JSEA=1, NSEA
             CALL INIT_GET_ISEA(ISEA, JSEA)
             NREC   = ISEA + 2
             RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -785,7 +785,7 @@ CONTAINS
           ELSE
 #endif
             VA = 0.
-            DO JSEA=1, NSEAL
+            DO JSEA=1, NSEA
               CALL INIT_GET_ISEA(ISEA, JSEA)
               NREC   = ISEA + 2
               RPOS   = 1_8 + LRECL*(NREC-1_8)
