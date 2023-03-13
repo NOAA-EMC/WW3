@@ -1,5 +1,35 @@
+!> @file
+!> @brief Floe-size dependant scattering of waves in the marginal ice zone.
+!> @details Based on tabulated scattering coefficients for a semi-infinite
+!>  ice sheet.
+!>
+!> @author F. Ardhuin
+!> @author P. Nicot
+!> @author C. Sevigny
+!> @author G. Boutin
+!> @date   21-Jan-2018
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Floe-size dependant scattering of waves in the marginal ice zone.
+!>
+!> @details based on tabulated scattering coefficients for a semi-infinite
+!>  ice sheet. See papers by Dumont et al. (JGR 2011) and Williams et al.
+!>  (OM 2013) combined with flexural dissipation and ice break-up.
+!>
+!> @author F. Ardhuin
+!> @author P. Nicot
+!> @author C. Sevigny
+!> @author G. Boutin
+!> @date   21-Jan-2018
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SIS2MD
   !/
   !/                  +-----------------------------------+
@@ -61,6 +91,15 @@ MODULE W3SIS2MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Fill tables used for scattering.
+  !>
+  !> @details Linear interpolation.
+  !>
+  !> @author P. Nicot
+  !> @author F. Ardhuin
+  !> @date   21-Jan-2018
+  !>
   SUBROUTINE INSIS2
     !/
     !/                  +-----------------------------------+
@@ -580,6 +619,36 @@ CONTAINS
     !/
   END SUBROUTINE INSIS2
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Wave scattering in the MIZ, adapted from Dumont et al.
+  !>
+  !> @details This scattering routine allows the estimation of the
+  !>  maximum floe size and an estimate of the creep-induced dissipation.
+  !>  For the scattering, it is based on the normal incidence results of
+  !>  Kohout and Meylan which are provided in a table.
+  !>
+  !> @param[in]    A       Action density spectrum (1-D).
+  !> @param[in]    DEPTH   Water depth.
+  !> @param[in]    CICE    Sea ice concentration.
+  !> @param[in]    ICEH    Ice thickness.
+  !> @param[inout] ICEF    Maximum floe size (updated).
+  !> @param[in]    ICEDMAX Maximum floe size.
+  !> @param[in]    IX      Not used.
+  !> @param[in]    IY      Not used.
+  !> @param[out]   S       Source term (1-D version).
+  !> @param[out]   D       Diagonal part of scattering (1-D version).
+  !> @param[out]   DISSIP  Diagonal dissipation term (1-D version)
+  !> @param[in]    WN      Wave number.
+  !> @param[in]    CG      Group speed.
+  !> @param[in]    WN_R    Wave number in ice.
+  !> @param[in]    CG_ICE  Group speed in ice.
+  !> @param[out]   R       Ratio of energy to wave energy without ice.
+  !>
+  !> @author P. Nicot
+  !> @author F. Ardhuin
+  !> @author G. Boutin
+  !> @date   04-May-2016
+  !>
   SUBROUTINE W3SIS2 (A, DEPTH, CICE, ICEH, ICEF, ICEDMAX, IX, IY, &
        S, D, DISSIP, WN, CG, WN_R, CG_ICE, R)
     !/
@@ -1016,9 +1085,17 @@ CONTAINS
     !/ End of W3SIS2 ----------------------------------------------------- /
     !/
   END SUBROUTINE W3SIS2
-
-
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief NA.
+  !>
+  !> @param[in]    ICEH
+  !> @param[inout] WN_I
+  !> @param[inout] DAMPING
+  !> @param[inout] CG_I
+  !>
+  !> @author C. Sevigny
+  !> @date   27-Aug-2015
   SUBROUTINE W3RPWNICE(ICEH,WN_I,DAMPING,CG_I)
     !/
     !/                  +-----------------------------------+
@@ -1113,6 +1190,18 @@ CONTAINS
 
   !/ ------------------------------------------------------------------- /
   !     SUBROUTINE FINDROOTS_NR(FUNCD,X0,VISC_RP,WN_ROOT)
+!>
+!> @brief  NA.
+!>
+!> @param[in]    GUESS
+!> @param[in]    VISC_RP
+!> @param[in]    ICEH
+!> @param[in]    SIGMA
+!> @param[inout] X
+!>
+!> @author C. Sevigny
+!> @date   27-Aug-2015
+!>
   SUBROUTINE FINDROOTS_NR(GUESS,VISC_RP,X,ICEH,SIGMA)
     !/
     !/                  +-----------------------------------+
@@ -1214,6 +1303,18 @@ CONTAINS
 
 
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Computes the mean flow size from the max floe size.
+  !>
+  !> @param   ICEDMIN
+  !> @param   ICEDMAX
+  !> @param   FRAGILITY
+  !> @returns W3FSD_DAVE
+  !>
+  !> @author C. Sevigny
+  !> @author F. Ardhuin
+  !> @date   06-Nov-2015
+  !>
   FUNCTION W3FSD_DAVE(ICEDMIN,ICEDMAX,FRAGILITY)
     !/
     !/                  +-----------------------------------+
@@ -1305,6 +1406,18 @@ CONTAINS
   END FUNCTION W3FSD_DAVE
   !
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief NA.
+  !>
+  !> @param   WN_GUESS
+  !> @param   VISC_RP
+  !> @param   ICEH
+  !> @param   SIGMA
+  !> @returns FVAL
+  !>
+  !> @author C. Sevigny
+  !> @date   27-Aug-2015
+  !>
   FUNCTION FUNCD_FVAL(WN_GUESS, VISC_RP,ICEH,SIGMA)  RESULT(FVAL)
     !/
     !/                  +-----------------------------------+
@@ -1396,6 +1509,18 @@ CONTAINS
 
   !/ ------------------------------------------------------------------- /
   !     FUNCTION FUNCD(WN_GUESS, VISC_RP,ICEH)
+  !>
+  !> @brief NA.
+  !>
+  !> @param   WN_GUESS
+  !> @param   VISC_RP
+  !> @param   ICEH
+  !> @param   SIGMA
+  !> @returns FDERIV
+  !>
+  !> @author C. Sevigny
+  !> @date   27-Aug-2015
+  !>
   FUNCTION FUNCD_FDERIV(WN_GUESS, VISC_RP,ICEH,SIGMA)  RESULT(FDERIV)
     !/
     !/                  +-----------------------------------+
