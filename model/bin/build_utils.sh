@@ -40,7 +40,7 @@ check_switches()
               dstress s_ice s_is reflection \
               wind windx wcor rwind curr currx mgwind mgprop mggse \
               subsec tdyn dss0 pdif tide refrx ig rotag nnt mprf \
-              cou oasis agcm ogcm igcm trknc setup pdlib memck uost rstwind b4b
+              cou oasis agcm ogcm igcm trknc setup pdlib ddlib memck uost rstwind b4b
   do
 
 # 1.a.1 Group switches by category
@@ -291,6 +291,12 @@ check_switches()
                ID='use pdlib'
                TS='PDLIB'
                OK='PDLIB' ;;
+
+#sort:ddlib:
+      ddlib  ) TY='upto1'
+               ID='domain decomposition library'
+               OK='METIS SCOTCH' ;;
+
 #sort:memck:
       memck  ) TY='upto1'
                ID='check memory use'
@@ -428,6 +434,7 @@ check_switches()
       igcm   ) igcm=$sw ;;
       trknc  ) trknc=$sw ;;
       pdlib  ) pdlib=$sw ;;
+      ddlib  ) ddlib=$sw ;;
       memck  ) memck=$sw ;;
       setup  ) setup=$sw ;;
       uost   ) uost=$sw ;;
@@ -547,6 +554,30 @@ check_switches()
       echo ' ' ; exit 17
   fi
 
+  if [ "$pdlib" = 'PDLIB' ] && [ "$ddlib" != 'SCOTCH' ]
+      then
+         if [ "$ddlib" != 'METIS' ]
+         then
+            echo ' '
+            echo "   *** For PDLIB, we need either SCOTCH or METIS, not both."
+            echo ' ' ; exit 18
+         fi
+  fi
+
+
+  if [ "$ddlib" = 'METIS' ] && [ "$pdlib" != 'PDLIB' ]
+  then
+      echo ' '
+      echo "   *** For METIS, we need to have PDLIB as well."
+      echo ' ' ; exit 19
+  fi
+
+  if [ "$ddlib" = 'SCOTCH' ] && [ "$pdlib" != 'PDLIB' ]
+  then
+      echo ' '
+      echo "   *** For SCOTCH, we need to have PDLIB as well."
+      echo ' ' ; exit 20
+  fi
 
 } #end of check_switches
 

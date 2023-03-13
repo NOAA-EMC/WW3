@@ -1201,7 +1201,7 @@ CONTAINS
     !
     real(8), intent(in) :: V1(npa), V2(npa)
     real(8), intent(inout) :: eScal
-    integer IP, myrank, myproc
+    integer :: IP, myrank, myproc
     real(8) :: rScal(1), lScal(1)
     integer iProc
     integer ierr

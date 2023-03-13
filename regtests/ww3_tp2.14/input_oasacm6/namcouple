@@ -9,7 +9,7 @@
  $NFIELDS
 # The number of fields described in the second part of the namcouple.
 #
-         3
+         2
  $END
 #########################################################################
  $NBMODEL
@@ -29,7 +29,7 @@
 # debug and time statistic information written by OASIS3-MCT for each model
 # and processor (see user manual for more details)
 #
- 1
+ 1 0
  $END
 ###########################################################################
  $STRINGS
@@ -118,18 +118,5 @@ TOY_V10M WW3__V10 1 180 1 r-toy.nc EXPOUT
 R  0  R  0
 MAPPING
 ../input_oasacm6/rmp_toyt_to_ww3t_NEARESTSTOD.nc
-#
-#                     -----------------------------------------
-#                        WW3 (wwatch) ==> TOY (toyexe)
-#                     -----------------------------------------
-#
-#~~~~~~~~~~~
-# Field 3 : 
-#~~~~~~~~~~~
-WW3_ACHA TOY__CHA 1 180 1 r-ww3.nc EXPOUT
-2889 1 80 80 ww3t toyt
-R  0  R  0
-MAPPING
-../input_oasacm6/rmp_ww3t_to_toyt_NEARESTSTOD.nc
 #
  $END
