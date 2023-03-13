@@ -27,6 +27,8 @@
 #                                                                           #
 # - No other optional switches should be used.                              #
 #                                                                           #
+#  Domain Decomposition Implicit needs PDLIB  and either of METIS or        #
+#                                                      SCOTCH switch        #
 #  Sample run_test commands :                                               #
 #  ./bin/run_test -c intel -S -T -s MPI -s NO_PDLIB -w work_a -g a -f -p    #
 #                            mpirun -n 24  -o netcdf ../model ww3_tp2.21    #
