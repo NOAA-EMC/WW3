@@ -20,7 +20,7 @@ usage()
 curr_dir=`pwd`
 
 # Set WW3 code version
-ww3ver=v7.12.6
+ww3ver=v7.14.1
 
 interactive='n'
 keep='n'
@@ -81,6 +81,7 @@ cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASOCM regtests/ww3_tp2.14/input_o
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASICM regtests/ww3_tp2.14/input_oasicm/r-ww3.nc
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input_oasacm/r-ww3.nc
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input_oasacm2/r-ww3.nc
+cp -r data_regtests/ww3_tp2.14/input/density.nc  regtests/ww3_tp2.14/input_oasacm6/
 cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasocm/
 cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasicm/
 cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasacm/

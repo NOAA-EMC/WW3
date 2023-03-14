@@ -770,6 +770,7 @@ CONTAINS
   END SUBROUTINE COMPUTE_REDUCTION_PSI
 
   !/ ------------------------------------------------------------------- /
+
   !>
   !> @brief Method of the class UOST_SOURCETERM.
   !>

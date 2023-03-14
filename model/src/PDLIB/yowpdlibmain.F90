@@ -436,6 +436,7 @@ contains
     ! parmetis need single precision
     real(4), allocatable :: xyz(:), tpwgts(:), ubvec(:)
     integer :: IP_glob, itmp
+    integer :: ref
     logical :: lexist = .false.
 
     ! Node to domain mapping.
@@ -627,12 +628,24 @@ contains
     endif
 
     !if(debugParmetis) write(710+myrank,*) "Run ParMETIS now..."
+#ifdef W3_SCOTCH
+    call SCOTCH_ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
+         vwgt, & !vwgt - ignore weights
+         adjwgt, & ! adjwgt - ignore weights
+         wgtflag, &
+         numflag,ndims,xyz,ncon,nparts,tpwgts,ubvec,options, &
+         edgecut,part, comm,ref)
+#endif
+
+#ifdef W3_METIS
     call ParMETIS_V3_PartGeomKway(vtxdist, xadj, adjncy, &
          vwgt, & !vwgt - ignore weights
          adjwgt, & ! adjwgt - ignore weights
          wgtflag, &
          numflag,ndims,xyz,ncon,nparts,tpwgts,ubvec,options, &
          edgecut,part, comm)
+#endif
+
 
     CALL REAL_MPI_BARRIER_PDLIB(comm, "runParmetis, step 9")
 
