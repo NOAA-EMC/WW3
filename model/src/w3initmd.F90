@@ -2198,6 +2198,7 @@ CONTAINS
     !
     IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or.       &
          (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
+    !IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or. (GTYPE .ne. UNGTYPE))) THEN
       !
       ! NRQMAX is the maximum number of output fields that require MPI communication,
       ! aimed to gather field values stored in each processor into one processor in
@@ -4720,7 +4721,7 @@ CONTAINS
         CALL EXTCDE (11)
       END IF
       !
-    END IF !IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
+    END IF ! IF ( (FLOUT(1) .OR. FLOUT(7)) .and. (.not. LPDLIB .or. (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
     !
     ! 2.  Set-up for W3IORS ---------------------------------------------- /
     ! 2.a General preparations
@@ -5516,6 +5517,7 @@ CONTAINS
           CALL W3SETA ( IMOD, NDSE, NDST )
         END IF ! IF ( IAPROC .EQ. NAPRST ) THEN
       END IF
+      END IF ! IF (OARST) THEN
       !
       NRQRS  = IH
       IF (OARST) THEN
@@ -5597,7 +5599,7 @@ CONTAINS
             END DO
             !
           END IF
-        END IF
+        END IF ! IF ((.NOT. LPDLIB).OR.(GTYPE .NE. UNGTYPE)) THEN
 #endif
         !
 #ifdef W3_MPIT

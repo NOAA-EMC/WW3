@@ -2615,7 +2615,7 @@ CONTAINS
               if (do_gridded_output) then
                 if (user_netcdf_grdout) then
 #ifdef W3_MPI
-                  CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
+                  IF ( FLGMPI(0) )CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
                   FLGMPI(0) = .FALSE.
 #endif
                   IF ( IAPROC .EQ. NAPFLD ) THEN
