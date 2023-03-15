@@ -5516,7 +5516,6 @@ CONTAINS
           !
           CALL W3SETA ( IMOD, NDSE, NDST )
         END IF ! IF ( IAPROC .EQ. NAPRST ) THEN
-      END IF
       END IF ! IF (OARST) THEN
       !
       NRQRS  = IH
