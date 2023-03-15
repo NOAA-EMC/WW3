@@ -259,13 +259,13 @@ contains
     rc = ESMF_SUCCESS
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
-
     ! create a temporary FB to write the fields
     FBtemp = ESMF_FieldBundleCreate(rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_MeshGet(EMeshIn, spatialDim=ndims, numOwnedElements=nelements, elementDistgrid=distgrid, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+
     lfieldlist = (/'dof   ', 'coordx', 'coordy', 'decomp'/)
     ! index array
     doffield = ESMF_FieldCreate(EMeshIn, ESMF_TYPEKIND_I4, name=trim(lfieldlist(1)), &
@@ -293,6 +293,7 @@ contains
     allocate(dof(1:nelements))
     call ESMF_DistGridGet(distgrid, localDE=0, seqIndexList=dof, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+
     call ESMF_FieldBundleGet(FBtemp, fieldName='dof', field=doffield, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldGet(doffield, farrayPtr=dofptr, rc=rc)
@@ -318,7 +319,6 @@ contains
     do i = 1,ndims*nelements/2
       fldptr1d(i) = iaproc
     end do
-
     call ESMF_FieldBundleWrite(FBtemp, filename=trim(mesh_name)//'.decomp.nc', overwrite=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
@@ -332,6 +332,7 @@ contains
 
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine write_meshdecomp
+
   !===============================================================================
   !> Get scalar data from a state
   !!

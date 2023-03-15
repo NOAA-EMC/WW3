@@ -1849,7 +1849,7 @@ CONTAINS
               FACX   =  1.
             END IF
           END IF
-          IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
+          IF (LPDLIB) THEN
             !
 #ifdef W3_PDLIB
             IF ((FSTOTALIMP .eqv. .FALSE.).and.(FLCX .or. FLCY)) THEN
@@ -2462,7 +2462,7 @@ CONTAINS
           end IF
         end if
         if (do_startall) then
-          IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
+          IF (.NOT. LPDLIB) THEN
             IF (NRQGO.NE.0 ) THEN
               CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
 
@@ -2486,7 +2486,7 @@ CONTAINS
 #ifdef W3_PDLIB
             CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
-          END IF ! IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE))
+          END IF ! IF (.NOT. LPDLIB) THEN
         END IF ! if (do_startall)
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 1')
