@@ -700,7 +700,7 @@ CONTAINS
 #ifdef W3_MPI
         ELSE
           !
-          IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
+          IF (LPDLIB) THEN
 #endif
 #ifdef W3_TIMINGS
             CALL PRINT_MY_TIME("Before UNST_PDLIB_WRITE_TO_FILE")
@@ -782,7 +782,7 @@ CONTAINS
         WRITE (NDST,9020) TYPE
 #endif
       ELSE
-        IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
+        IF (LPDLIB) THEN
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("Before UNST_PDLIB_READ_FROM_FILE")
 #endif

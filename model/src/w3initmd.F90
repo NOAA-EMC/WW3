@@ -787,7 +787,7 @@ CONTAINS
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2f')
 #ifdef W3_DIST
     IF ( NSEA .LT. NAPROC ) GOTO 820
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
       IF ( NSPEC .LT. NAPROC ) GOTO 821
     END IF
 #endif
@@ -852,7 +852,7 @@ CONTAINS
     ALLOCATE ( NT(NSPEC) )
     NT     = NTTOT
 #ifdef W3_DIST
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
       !
       DO
         !
@@ -934,7 +934,7 @@ CONTAINS
     ! 2.c.9 Test if any spectral points are left out
     !
 #ifdef W3_DIST
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
       DO ISP=1, NSPEC
         IF ( IAPPRO(ISP) .EQ. -1. ) GOTO 829
       END DO
@@ -1512,7 +1512,6 @@ CONTAINS
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8029)
     CALL EXTCDE ( 829 )
 #endif
-
     !
 888 CONTINUE
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8000) IERR
@@ -1822,7 +1821,7 @@ CONTAINS
     !     ( persistent communication calls )
     !
 #ifdef W3_DIST
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
 #endif
 #ifdef W3_MPI
       NSPLOC = 0
@@ -2196,9 +2195,7 @@ CONTAINS
     IROOT  = NAPFLD - 1
     !
     !
-    IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or.       &
-         (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
-    !IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or. (GTYPE .ne. UNGTYPE))) THEN
+    IF ((FLOUT(1) .OR. FLOUT(7)) .and. (.not. LPDLIB)) THEN
       !
       ! NRQMAX is the maximum number of output fields that require MPI communication,
       ! aimed to gather field values stored in each processor into one processor in
@@ -4721,7 +4718,7 @@ CONTAINS
         CALL EXTCDE (11)
       END IF
       !
-    END IF ! IF ( (FLOUT(1) .OR. FLOUT(7)) .and. (.not. LPDLIB .or. (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
+    END IF ! IF ((FLOUT(1) .OR. FLOUT(7)) .and. (.not. LPDLIB)) THEN
     !
     ! 2.  Set-up for W3IORS ---------------------------------------------- /
     ! 2.a General preparations
@@ -4730,7 +4727,7 @@ CONTAINS
     IH     = 0
     IROOT  = NAPRST - 1
     !
-    IF ( FLOUT(4) .OR. FLOUT(8) ) THEN
+    IF ((FLOUT(4) .OR. FLOUT(8)) .and. (.not. LPDLIB)) THEN
       IF (OARST) THEN
         ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(34*NAPROC) )
       ELSE
@@ -5548,7 +5545,6 @@ CONTAINS
 #ifdef W3_MPI
         IH     = 0
         !
-        IF ((.NOT. LPDLIB).OR.(GTYPE .NE. UNGTYPE)) THEN
           IF ( IAPROC .NE. NAPRST ) THEN
             !
             ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NBLKRS) )
@@ -5598,7 +5594,6 @@ CONTAINS
             END DO
             !
           END IF
-        END IF ! IF ((.NOT. LPDLIB).OR.(GTYPE .NE. UNGTYPE)) THEN
 #endif
         !
 #ifdef W3_MPIT
@@ -5610,7 +5605,7 @@ CONTAINS
         !
       END IF
       !
-    END IF
+    END IF ! IF ((FLOUT(4) .OR. FLOUT(8)) .and. (.not. LPDLIB)) THEN
 #endif
     !
     ! 3.  Set-up for W3IOBC ( SENDs ) ------------------------------------ /
