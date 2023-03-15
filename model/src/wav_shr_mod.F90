@@ -230,9 +230,9 @@ contains
   !> @date 09-12-2022
   subroutine write_meshdecomp(EMeshIn, mesh_name, rc)
 
-    use ESMF          , only : ESMF_Mesh, ESMF_Field, ESMF_FieldBundle, ESMF_FieldBundleAdd
-    use ESMF          , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_FieldBundleGet
-    use ESMF          , only : ESMF_MESHLOC_ELEMENT, ESMF_TYPEKIND_R8, ESMF_LOGMSG_Info
+    use ESMF          , only : ESMF_Mesh, ESMF_DistGrid, ESMF_Field, ESMF_FieldBundle, ESMF_FieldBundleAdd
+    use ESMF          , only : ESMF_DistGridGet, ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_FieldBundleGet
+    use ESMF          , only : ESMF_MESHLOC_ELEMENT, ESMF_TYPEKIND_R8, ESMF_TYPEKIND_I4, ESMF_LOGMSG_Info
     use ESMF          , only : ESMF_FieldBundleWrite, ESMF_FieldBundleDestroy
 
     use w3odatmd      , only : iaproc
@@ -245,9 +245,13 @@ contains
     ! local variables
     type(ESMF_FieldBundle)         :: FBTemp
     type(ESMF_Field)               :: lfield
-    character(len=6), dimension(3) :: lfieldlist
+    type(ESMF_DistGrid)            :: distgrid
+    type(ESMF_Field)               :: doffield
+    character(len=6), dimension(4) :: lfieldlist
     integer                        :: i,ndims,nelements
     real(r8), pointer              :: fldptr1d(:)
+    integer(i4), allocatable       :: dof(:)
+    integer(i4), pointer           :: dofptr(:)
     real(r8), pointer              :: ownedElemCoords(:), ownedElemCoords_x(:), ownedElemCoords_y(:)
     character(len=*),parameter     :: subname = '(wav_shr_mod:write_meshdecomp) '
     !-------------------------------------------------------
@@ -255,13 +259,22 @@ contains
     rc = ESMF_SUCCESS
     if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
-    lfieldlist = (/'coordx', 'coordy', 'decomp'/)
 
     ! create a temporary FB to write the fields
     FBtemp = ESMF_FieldBundleCreate(rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    do i = 1,size(lfieldlist)
+    call ESMF_MeshGet(EMeshIn, spatialDim=ndims, numOwnedElements=nelements, elementDistgrid=distgrid, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    lfieldlist = (/'dof   ', 'coordx', 'coordy', 'decomp'/)
+    ! index array
+    doffield = ESMF_FieldCreate(EMeshIn, ESMF_TYPEKIND_I4, name=trim(lfieldlist(1)), &
+         meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldBundleAdd(FBTemp, (/doffield/), rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    ! coords and decomp field
+    do i = 2,size(lfieldlist)
       lfield = ESMF_FieldCreate(EMeshIn, ESMF_TYPEKIND_R8, name=trim(lfieldlist(i)), &
            meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -269,8 +282,6 @@ contains
       if (chkerr(rc,__LINE__,u_FILE_u)) return
     end do
 
-    call ESMF_MeshGet(EMeshIn, spatialDim=ndims, numOwnedElements=nelements, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
     ! Set element coordinates
     allocate(ownedElemCoords(ndims*nelements))
     allocate(ownedElemCoords_x(ndims*nelements/2))
@@ -279,6 +290,14 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     ownedElemCoords_x(1:nelements) = ownedElemCoords(1::2)
     ownedElemCoords_y(1:nelements) = ownedElemCoords(2::2)
+    allocate(dof(1:nelements))
+    call ESMF_DistGridGet(distgrid, localDE=0, seqIndexList=dof, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldBundleGet(FBtemp, fieldName='dof', field=doffield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(doffield, farrayPtr=dofptr, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    dofptr(:) = dof(:)
 
     call ESMF_FieldBundleGet(FBtemp, fieldName='coordx', field=lfield, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -306,6 +325,7 @@ contains
     deallocate(ownedElemCoords)
     deallocate(ownedElemCoords_x)
     deallocate(ownedElemCoords_y)
+    deallocate(dof)
 
     call ESMF_FieldBundleDestroy(FBtemp, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return

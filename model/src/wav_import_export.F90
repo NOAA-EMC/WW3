@@ -1249,7 +1249,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)                   ! global ix
         iy  = mapsf(isea,2)                   ! global iy
-        if (mapsta(iy,ix) .eq. 1) then        ! active sea point
+        if (mapsta(iy,ix) == 1) then          ! active sea point
           factor = dden(ik) / cg(ik,isea)
           ebd = ab(jsea) * factor
           ebd = ebd / dsii(ik)
