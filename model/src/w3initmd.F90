@@ -740,7 +740,7 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL PDLIB_INIT(IMOD)
 #endif
-    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2c')
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2c')
 
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("After PDLIB_INIT")
@@ -749,7 +749,7 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
 #endif
-    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2cc')
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2cc')
 
 #ifdef W3_PDLIB
     END IF
@@ -5545,55 +5545,55 @@ CONTAINS
 #ifdef W3_MPI
         IH     = 0
         !
-          IF ( IAPROC .NE. NAPRST ) THEN
-            !
-            ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NBLKRS) )
-            IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
-            !
-            DO IB=1, NBLKRS
-              IH     = IH + 1
-              IT     = IT0 + 3 + IB
-              JSEA0  = 1 + (IB-1)*RSBLKS
-              JSEAN  = MIN ( NSEALM , IB*RSBLKS )
-              NSEAB  = 1 + JSEAN - JSEA0
-              CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB, MPI_REAL, IROOT, IT, &
-                   MPI_COMM_WAVE, IRQRSS(IH), IERR )
+        IF ( IAPROC .NE. NAPRST ) THEN
+          !
+          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NBLKRS) )
+          IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
+          !
+          DO IB=1, NBLKRS
+            IH     = IH + 1
+            IT     = IT0 + 3 + IB
+            JSEA0  = 1 + (IB-1)*RSBLKS
+            JSEAN  = MIN ( NSEALM , IB*RSBLKS )
+            NSEAB  = 1 + JSEAN - JSEA0
+            CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB, MPI_REAL, IROOT, IT, &
+                 MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9026) IH, 'S', IB, IROOT, IT, IRQRSS(IH), IERR, NSEAB
+            WRITE (NDST,9026) IH, 'S', IB, IROOT, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
-            END DO
-            !
-          ELSE
-            !
-            ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,  &
-                 OUTPTS(IMOD)%OUT4%VAAUX(NSPEC,2*RSBLKS,NAPROC) )
-            !
-            IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
-            VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
-            DO IB=1, NBLKRS
-              IT     = IT0 + 3 + IB
-              JSEA0  = 1 + (IB-1)*RSBLKS
-              JSEAN  = MIN ( NSEALM , IB*RSBLKS )
-              NSEAB  = 1 + JSEAN - JSEA0
-              DO I0=1, NAPROC
-                IF ( I0 .NE. NAPRST ) THEN
-                  IH     = IH + 1
-                  IFROM  = I0 - 1
-                  IBOFF  = MOD(IB-1,2)*RSBLKS
-                  CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0), NSPEC*NSEAB, MPI_REAL, &
-                       IFROM, IT, MPI_COMM_WAVE, IRQRSS(IH), IERR )
+          END DO
+          !
+        ELSE
+          !
+          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,  &
+               OUTPTS(IMOD)%OUT4%VAAUX(NSPEC,2*RSBLKS,NAPROC) )
+          !
+          IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
+          VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
+          DO IB=1, NBLKRS
+            IT     = IT0 + 3 + IB
+            JSEA0  = 1 + (IB-1)*RSBLKS
+            JSEAN  = MIN ( NSEALM , IB*RSBLKS )
+            NSEAB  = 1 + JSEAN - JSEA0
+            DO I0=1, NAPROC
+              IF ( I0 .NE. NAPRST ) THEN
+                IH     = IH + 1
+                IFROM  = I0 - 1
+                IBOFF  = MOD(IB-1,2)*RSBLKS
+                CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0), NSPEC*NSEAB, MPI_REAL, &
+                     IFROM, IT, MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-                  WRITE (NDST,9026) IH, 'R', IB, IFROM, IT, IRQRSS(IH), IERR, NSEAB
+                WRITE (NDST,9026) IH, 'R', IB, IFROM, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
-                END IF
-              END DO
+              END IF
             END DO
-            !
-          END IF
+          END DO
+          !
+        END IF
 #endif
         !
 #ifdef W3_MPIT
