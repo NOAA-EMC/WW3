@@ -614,7 +614,6 @@ CONTAINS
     logical :: do_wavefield_separation_output
     logical :: do_startall
     logical :: do_w3outg
-
     !/ ------------------------------------------------------------------- /
     ! 0.  Initializations
     !
@@ -1850,7 +1849,7 @@ CONTAINS
               FACX   =  1.
             END IF
           END IF
-          IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
+          IF (LPDLIB) THEN
             !
 #ifdef W3_PDLIB
             IF ((FSTOTALIMP .eqv. .FALSE.).and.(FLCX .or. FLCY)) THEN
@@ -2435,9 +2434,7 @@ CONTAINS
         WRITE (NDST,9042) LOCAL, FLPART, FLOUTG
 #endif
         !
-        IF ( LOCAL .AND. FLPART ) then
-          CALL W3CPRT ( IMOD )
-        end IF
+        IF ( LOCAL .AND. FLPART ) CALL W3CPRT ( IMOD )
 
         do_w3outg = .false.
         if (w3_cesmcoupled_flag .and. histwr) then
@@ -2465,7 +2462,7 @@ CONTAINS
           end IF
         end if
         if (do_startall) then
-          IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
+          IF (.NOT. LPDLIB) THEN
             IF (NRQGO.NE.0 ) THEN
               CALL MPI_STARTALL ( NRQGO, IRQGO , IERR_MPI )
 
@@ -2489,7 +2486,7 @@ CONTAINS
 #ifdef W3_PDLIB
             CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
-          END IF ! IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE))
+          END IF ! IF (.NOT. LPDLIB) THEN
         END IF ! if (do_startall)
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 1')
@@ -2618,7 +2615,7 @@ CONTAINS
               if (do_gridded_output) then
                 if (user_netcdf_grdout) then
 #ifdef W3_MPI
-                  CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
+                  IF ( FLGMPI(0) )CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
                   FLGMPI(0) = .FALSE.
 #endif
                   IF ( IAPROC .EQ. NAPFLD ) THEN
