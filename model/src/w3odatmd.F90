@@ -171,7 +171,7 @@ MODULE W3ODATMD
   !      IW        I.A.  Public   Id. water.
   !      II        I.A.  Public   Id. ice.
   !      IRQPO1/2  I.A.  Public   Array with MPI handles.       (!/MPI)
-  !      PTLOC     R.A.  Public   Name of output locations.
+  !      PTLOC     R.A.  Public   Output locations.
   !      PTIFAC    R.A.  Public   Interpolation weights.
   !      DPO       R.A.  Public   Interpolated depths.
   !      WAO       R.A.  Public   Interpolated wind speeds.
@@ -186,7 +186,7 @@ MODULE W3ODATMD
   !      ICEO      R.A.  Public   Interpolated ice concentration.
   !      ICEHO     R.A.  Public   Interpolated ice thickness.
   !      ICEFO     R.A.  Public   Interpolated ice floe.
-  !      PTNME     C.A.  Public   Output locations.
+  !      PTNME     C.A.  Public   Name of output locations.
   !      GRDID     C.A.  Public   Originating grid ID.
   !      O2INIT    Log.  Public   Flag for array initialization.
   !      O2IRQI    Log.  Public   Flag for array initialization.
