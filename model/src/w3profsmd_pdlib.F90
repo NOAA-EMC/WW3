@@ -5536,9 +5536,6 @@ CONTAINS
 #ifdef W3_REF1
       USE W3GDATMD, only: REFPARS
 #endif
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
-#endif
     implicit none
     LOGICAL, INTENT(IN) :: LCALC 
     INTEGER, INTENT(IN) :: IMOD
