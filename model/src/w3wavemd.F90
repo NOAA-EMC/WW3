@@ -1811,7 +1811,7 @@ CONTAINS
             END IF
           END IF
 
-          IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
+          IF (LPDLIB) THEN
             !
 #ifdef W3_PDLIB
             IF (FLCX .or. FLCY) THEN
@@ -2411,7 +2411,7 @@ CONTAINS
 #ifdef W3_MPI
         IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
              (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
-          IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
+          IF (.NOT. LPDLIB) THEN
             IF (NRQGO.NE.0 ) THEN
 #endif
 #ifdef W3_MPI
@@ -2450,7 +2450,7 @@ CONTAINS
             CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
 #ifdef W3_MPI
-          END IF
+          END IF ! IF (.NOT. LPDLIB) THEN
         END IF
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 1')

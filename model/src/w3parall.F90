@@ -1116,7 +1116,7 @@ CONTAINS
 #endif
 
 #ifdef W3_PDLIB
-    IF ((.NOT. LPDLIB ).or.(GTYPE .ne. UNGTYPE)) THEN
+    IF (.NOT. LPDLIB) THEN
 #endif
       JSEA   = 1 + (ISEA-1)/NAPROC
       ISPROC = ISEA - (JSEA-1)*NAPROC
