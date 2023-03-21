@@ -3,6 +3,7 @@
 # ww3_ufs1.1 Test script for WW-III, 1deg global structured.                #
 #                                                                           #
 # Grids:                                                                    #
+# input:                                                                    #
 # grdset_a and grdset_b                                                     #
 # MODEL: glo_1deg with 1 deg resolution from 85S to 85N, 50 spectral and 36 #
 #        directional bins.                                                  #
@@ -10,6 +11,13 @@
 # hourly  wind speed (gfs_wind.nc) and current fields with 3 hrs interval   #
 # (current.nc).                                                             #
 # POINT: points. The unified point output grid is glo_1deg                  #
+# --------------------------------------------------------------------------#
+# input_unstr (global unstr mesh with 1 deg resolution):                    #
+# Mesh: global_1deg_unstr.msh                                               #
+# Options:                                                                  #
+#   # grid_a: Domain Decomposition (PDLIB) and Explicit solver              #
+#   # grid_b: Domain Decomposition (PDLIB) and Block Explicit solver        #
+#   # grid_c: Domain Decomposition (PDLIB) and Implicit solver              #
 # --------------------------------------------------------------------------#
 # if "ufscoarse" option is selected in bin/matrix.base, a coarser grid with #
 # 5 deg. resolution is used for MODEL and INPUT grids.                      #
@@ -66,8 +74,12 @@
 # ./bin/run_test -c intel -S -T -w work_a -m grdset_a —C ESMF f -p mpirun   #
 #                                  -n 440 -t 8 -o all ../model ww3_ufs1.1   #
 # --------------------------------------------------------------------------#
+# global unstructured mesh:                                                 #
+# ./bin/run_cmake_test -c intel -o all -S -T -s MPI -s PDLIB -i input_unstr #
+#              -w work_unstr_a -g a -f -p mpirun -n 24 ../model ww3_ufs1.1  #
+# --------------------------------------------------------------------------#
 #                                                                           #
 #                                                 Ali Abdolali, April 2021  #
-#                                                   Last Mod : April 2021   #
+#                                                     Last Mod : Feb 2023   #
 #                                                                           #
 #############################################################################

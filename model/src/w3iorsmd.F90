@@ -827,7 +827,8 @@ CONTAINS
               !              Include remainder values (switch to record format) ---- *
               JSEA = NSEAL_MIN + 1
               IF ( JSEA.EQ.NSEAL ) THEN
-                ISEA = IAPROC + (JSEA - 1) * NAPROC
+                !ISEA = IAPROC + (JSEA - 1) * NAPROC
+                CALL INIT_GET_ISEA(ISEA, JSEA)
                 NREC = ISEA + 2
                 RPOS = 1_8 + LRECL*(NREC-1_8)
                 READ (NDSR, POS=RPOS, ERR=802, IOSTAT=IERR)          &
