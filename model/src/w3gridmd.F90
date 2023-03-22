@@ -901,6 +901,7 @@ MODULE W3GRIDMD
   LOGICAL :: JGS_TERMINATE_DIFFERENCE = .TRUE.
   LOGICAL :: JGS_TERMINATE_NORM = .TRUE.
   LOGICAL :: JGS_LIMITER = .FALSE.
+  INTEGER :: JGS_LIMITER_FUNC = 1
   LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
   LOGICAL :: JGS_USE_JACOBI = .TRUE.
   LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
@@ -1078,6 +1079,7 @@ MODULE W3GRIDMD
        JGS_TERMINATE_DIFFERENCE,                  &
        JGS_TERMINATE_NORM,                        &
        JGS_LIMITER,                               &
+       JGS_LIMITER_FUNC,                          &
        JGS_USE_JACOBI,                            &
        JGS_BLOCK_GAUSS_SEIDEL,                    &
        JGS_MAXITER,                               &
@@ -2390,13 +2392,14 @@ CONTAINS
     IMPREFRACTION = .FALSE.
     IMPFREQSHIFT = .FALSE.
     IMPSOURCE = .FALSE.
-    SETUP_APPLY_WLV = .FALSE.
-    SOLVERTHR_SETUP=1E-14
+    SETUP_APPLY_WLV = .TRUE.
+    SOLVERTHR_SETUP=1E-6
     CRIT_DEP_SETUP=0.1
     JGS_TERMINATE_MAXITER = .TRUE.
     JGS_TERMINATE_DIFFERENCE = .TRUE.
     JGS_TERMINATE_NORM = .FALSE.
     JGS_LIMITER = .FALSE.
+    JGS_LIMITER_FUNC = 1
     JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
     JGS_USE_JACOBI = .TRUE.
     JGS_MAXITER=100
@@ -2413,6 +2416,7 @@ CONTAINS
     B_JGS_TERMINATE_DIFFERENCE = JGS_TERMINATE_DIFFERENCE
     B_JGS_TERMINATE_NORM = JGS_TERMINATE_NORM
     B_JGS_LIMITER = JGS_LIMITER
+    B_JGS_LIMITER_FUNC = JGS_LIMITER_FUNC
     B_JGS_BLOCK_GAUSS_SEIDEL = JGS_BLOCK_GAUSS_SEIDEL
     B_JGS_MAXITER = JGS_MAXITER
     B_JGS_PMIN = JGS_PMIN
@@ -3266,6 +3270,7 @@ CONTAINS
            JGS_TERMINATE_DIFFERENCE,                   &
            JGS_TERMINATE_NORM,                         &
            JGS_LIMITER,                                &
+           JGS_LIMITER_FUNC,                           & 
            JGS_USE_JACOBI,                             &
            JGS_BLOCK_GAUSS_SEIDEL,                     &
            JGS_MAXITER,                                &
@@ -3600,6 +3605,10 @@ CONTAINS
         FSTOTALEXP = EXPTOTAL
         PNAME2 = 'N Explicit (Fluctuation Splitting) for one exchange explicit DC HPCF '
       END SELECT
+
+      IF (FSTOTALIMP .or. FSTOTALEXP) THEN
+        LPDLIB = .TRUE. 
+      ENDIF
       !
       IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
       WRITE (NDSO,2951) PNAME2
@@ -3628,7 +3637,7 @@ CONTAINS
       END IF
       IF (SETUP_APPLY_WLV) THEN
         DO_CHANGE_WLV = SETUP_APPLY_WLV
-        PNAME2 = ' we change WLV'
+        PNAME2 = 'Wave setup is added to the WLV'
         WRITE (NDSO,2952) PNAME2
       END IF
       SOLVERTHR_STP = SOLVERTHR_SETUP
@@ -6571,6 +6580,7 @@ CONTAINS
          ',  JGS_TERMINATE_DIFFERENCE=', L3,                    &
          ',  JGS_TERMINATE_NORM=', L3,                          &
          ',  JGS_LIMITER=', L3,                                 &
+         ',  JGS_LIMITER_FUNC=', I3,                            &
          ',  JGS_USE_JACOBI=', L3,                              &
          ',  JGS_BLOCK_GAUSS_SEIDEL=', L3,                      &
          ',  JGS_MAXITER=', I5,                                 &

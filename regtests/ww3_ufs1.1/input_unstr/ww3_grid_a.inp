@@ -1,0 +1,307 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+$ Grid name (C*30, in quotes)
+$
+  'GLOBAL'
+$
+$ Frequency increment factor and first frequency (Hz) ---------------- $
+$ number of frequencies (wavenumbers) and directions, relative offset
+$ of first direction in terms of the directional increment [-0.5,0.5].
+$ In versions 1.18 and 2.22 of the model this value was by definiton 0,
+$ it is added to mitigate the GSE for a first order scheme. Note that
+$ this factor is IGNORED in the print plots in ww3_outp.
+$
+ 1.07 0.035 50 36 0.
+$
+$ Set model flags ---------------------------------------------------- $
+$  - FLDRY         Dry run (input/output only, no calculation).
+$  - FLCX, FLCY    Activate X and Y component of propagation.
+$  - FLCTH, FLCK   Activate direction and wavenumber shifts.
+$  - FLSOU         Activate source terms.
+$
+   F T T T T T
+$
+$ Set time steps ----------------------------------------------------- $
+$ - Time step information (this information is always read)
+$     maximum global time step, maximum CFL time step for x-y and
+$     k-theta, minimum source term time step (all in seconds).
+$
+$
+ 720. 360. 360. 30.
+$
+$ Start of namelist input section ------------------------------------ $
+$   Starting with WAVEWATCH III version 2.00, the tunable parameters
+$   for source terms, propagation schemes, and numerics are read using
+$   namelists. Any namelist found in the folowing sections up to the
+$   end-of-section identifier string (see below) is temporarily written
+$   to ww3_grid.scratch, and read from there if necessary. Namelists
+$   not needed for the given switch settings will be skipped
+$   automatically, and the order of the namelists is immaterial.
+$
+&SLN1 CLIN =  80.0, RFPM =  1.00, RFHF =  0.50 /
+$
+&SIN4 ALPHA0=0.0095,
+  BETAMAX=1.33,
+  SINTHP=2.00,
+  Z0MAX=0.00,
+  ZALP=0.006,
+  ZWND=10.00,
+  TAUWSHELTER =1.00,
+  SWELLFPAR = 1,
+  SWELLF= 0.800,
+  SWELLF2=-0.018,
+  SWELLF3 =0.015,
+  SWELLF4 =100000.0,
+  SWELLF5 =1.200,
+  SWELLF6 =0.000,
+  SWELLF7 =230000.000,
+  Z0RAT =0.0400 /
+$
+$ Implicit with ww3ifr code version
+&UNST UGOBCAUTO = F,
+  UGOBCDEPTH= -10.,
+  EXPFSN = T,
+  EXPFSPSI = F,
+  EXPFSFCT = F,
+  IMPFSN = F /
+$
+$ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
+$   JONSWAP             : Namelist SBT1
+$                           GAMMA   : As it says.
+$  &SBT1 GAMMA = 0.15 /
+$
+$ Propagation schemes ------------------------------------------------ $
+$   First order         : Namelist PRO1
+$                           CFLTM  : Maximum CFL number for refraction.
+$
+$   UQ with diffusion   : Namelist PRO2
+$                           CFLTM  : Maximum CFL number for refraction.
+$                           FLSOFT : Flag for 'soft' land boundaries.
+$                           DTIME  : Swell age (s) in garden sprinkler
+$                                    correction. If 0., all diffusion
+$                                    switched off. If small non-zero
+$                                    (DEFAULT !!!) only wave growth
+$                                    diffusion.
+$                           LATMIN : Maximum latitude used in calc. of
+$                                    strength of diffusion for prop.
+$
+$   UQ with averaging   : Namelist PRO3
+$                           CFLTM  : Maximum CFL number for refraction.
+$                           FLSOFT : Flag for 'soft' land boundaries.
+$                           WDTHCG : Tuning factor propag. direction.
+$                           WDTHTH : Tuning factor normal direction.
+$
+$   UQ with divergence  : Namelist PRO4
+$                           CFLTM  : Maximum CFL number for refraction.
+$                           FLSOFT : Flag for 'soft' land boundaries.
+$                           QTFAC  : Tuning factor Eq. (3.41).
+$                           RSFAC  : Tuning factor Eq. (3.42).
+$                           RNFAC  : Tuning factor Eq. (3.43).
+$
+$ Miscellaneous ------------------------------------------------------ $
+$   Misc. parameters    : Namelist MISC
+$                           CICE0  : Ice concentration cut-off.
+$                           CICEN  : Ice concentration cut-off.
+$                           XSEED  : Xseed in seeding alg. (!/SEED).
+$                           FLAGTR : Indicating presence and type of
+$                                    subgrid information :
+$                                     0 : No subgrid information.
+$                                     1 : Transparancies at cell boun-
+$                                         daries between grid points.
+$                                     2 : Transp. at cell centers.
+$                                     3 : Like 1 with cont. ice.
+$                                     4 : Like 2 with cont. ice.
+$                           XP, XR, XFILT
+$                                    Xp, Xr and Xf for the dynamic
+$                                    integration scheme.
+$
+$ In the 'Out of the box' test setup we run with sub-grid obstacles
+$ and with continuous ice treatment.
+$
+$
+&SNL1 LAMBDA =  0.250, NLPROP = 0.250E+08, KDCONV =  0.750, KDMIN =  0.500,
+        SNLCS1 =  5.500, SNLCS2 =  0.833, SNLCS3 =  -1.250 /
+&SDS4 SDSBCHOICE = 1, SDSC2 = -0.2200E-04, SDSCUM = -0.4034E+00,
+        SDSC4 =  0.1000E+01, SDSC5 =  0.0000E+00, SDSC6 =  0.3000E+00,
+        WNMEANP =0.50, FXPM3 =4.00,FXFM3 =9.90,
+        SDSBINT =  0.3000E+00, SDSBCK =  0.0000E+00, SDSABK = 1.500, SDSPBK = 4.000,
+        SDSHCK = 1.50, SDSBR =   0.9000E-03, SDSSTRAIN = 0.000,
+        SDSP = 2.00, SDSISO = 2, SDSCOS =2.0, SDSDTH = 80.0,
+        SDSBRF1 =  0.50, SDSBRFDF = 0,
+        SDSBM0 =  1.00, SDSBM1 = 0.00, SDSBM2 = 0.00, SDSBM3 = 0.00, SDSBM4 = 0.00,
+,       WHITECAPWIDTH = 0.30/
+&SBT1 GAMMA = -0.6700E-01 /
+&SDB1 BJALFA =  1.000, BJGAM =  0.730, BJFLAG = .TRUE. /
+&PRO3 CFLTM = 0.70, WDTHCG = 1.50, WDTHTH = 1.50 /
+&OUTS P2SF  = 0, I1P2SF = 1, I2P2SF = 15,
+        US3D  = 0, I1US3D =  1, I2US3D = 32,
+        E3D   = 0, I1E3D  =  1, I2E3D  = 32,
+        TH1MF = 0, I1TH1M =  1, I2TH1M = 32,
+        STH1MF= 0, I1STH1M=  1, I2STH1M= 32,
+        TH2MF = 0, I1TH2M =  1, I2TH2M = 32,
+        STH2MF= 0, I1STH2M=  1, I2STH2M= 32,
+        E3D = 1, USSP = 1, IUSSP = 3, STK_WN = 0.04, 0.110, 0.3305 /
+$
+$
+$AW021317 &MISC P2SF = 1 ,I1P2SF = 2, I2P2SF = 16 /
+$&REF1 REFCOAST=0.1 /
+$&REF1 REFCOAST=0.10, REFSLOPE=0.1, REFCOSP_STRAIGHT=4, REFFREQ=1., REFSUBGRID = 0.00  /
+&REF1 REFCOAST=0.10, REFSLOPE=0.1, REFCOSP_STRAIGHT=4, REFFREQ=1., REFSUBGRID = 0.00  /
+&SIN4 BETAMAX = 1.33 /
+&MISC CICE0 = 0.250, CICEN = 0.750, LICE =      0.0, PMOVE = 0.500,
+        XSEED = 1.000, FLAGTR = 0, XP = 0.150, XR = 0.100, XFILT = 0.050
+        IHM =  100, HSPM = 0.050, WSM = 1.700, WSC = 0.333, FLC = .TRUE.
+        NOSW =  3, FMICHE = 1.600, RWNDC = 1.000,
+        FACBERG = 1.0, GSHIFT =   0.000E+00 /
+$&MISC CICE0 = 0.250, CICEN = 0.750, LICE =      0.0, PMOVE = 0.500,
+$        XSEED = 1.000, FLAGTR = 4, XP = 0.150, XR = 0.100, XFILT = 0.050
+$        IHM =  100, HSPM = 0.050, WSM = 1.700, WSC = 0.333, FLC = .TRUE.
+$        NOSW =  3, FMICHE = 1.600, RWNDC = 1.000, WCOR1 = 99.00, WCOR2 =  0.00,
+$        FACBERG = 1.0, GSHIFT =   0.000E+00, STDX =   -1.00, STDY =  -1.00,
+$        STDT =   -1.00, ICEHMIN = 0.20, ICEHFAC = 1.00,
+$        ICEHINIT = 0.50, ICEDISP =  F, ICEHDISP = 0.60,
+$        ICESLN =   1.00, ICEWIND =   1.00, ICESNL =   1.00, ICESDS =  1.00,
+$        ICEDDISP = 80.00, ICEFDISP =  2.00, CALTYPE = standard , TRCKCMPR =   T,
+$        BTBET  =   1.20 /
+$
+$ Mandatory string to identify end of namelist input section.
+$
+END OF NAMELISTS
+$
+$ FLAG for grid features
+$ 1 Type of grid 'UNST' 'RECT' 'CURV'
+$ 2 Flag for geographical coordinates (LLG)
+$ 3 Flag for periodic grid
+$
+$ Define grid -------------------------------------------------------- $
+$ Four records containing :
+$  1 NX, NY. As the outer grid lines are always defined as land
+$    points, the minimum size is 3x3.
+$  2 Grid increments SX, SY (degr.or m) and scaling (division) factor.
+$    If NX*SX is 360., latitudinal closure is applied.
+$  3 Coordinates of (1,1) (degr.) and scaling (division) factor.
+$  4 Limiting bottom depth (m) to discriminate between land and sea
+$    points, minimum water depth (m) as allowed in model, unit number
+$    of file with bottom depths, scale factor for bottom depths (mult.),
+$    IDLA, IDFM, format for formatted read, FROM and filename.
+$      IDLA : Layout indicator :
+$                  1   : Read line-by-line bottom to top.
+$                  2   : Like 1, single read statement.
+$                  3   : Read line-by-line top to bottom.
+$                  4   : Like 3, single read statement.
+$      IDFM : format indicator :
+$                  1   : Free format.
+$                  2   : Fixed format with above format descriptor.
+$                  3   : Unformatted.
+$      FROM : file type parameter
+$               'UNIT' : open file by unit number only.
+$               'NAME' : open file by name and assign to unit.
+$
+$ Example for longitude-latitude grid (switch !/LLG), for Cartesian
+$ grid the unit is meters (NOT km).
+$
+$
+ 'UNST' T T
+$
+   4.0 0.30  20  -1. 4 1 '(20f10.2)'  'NAME' '../input_unstr/global_1deg_unstr.msh'
+$
+$ If the above unit number equals 10, the bottom data is read from
+$ this file and follows below (no intermediate comment lines allowed).
+$
+$   1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+$
+$ If sub-grid information is avalaible as indicated by FLAGTR above,
+$ additional input to define this is needed below. In such cases a
+$ field of fractional obstructions at or between grid points needs to
+$ be supplied.  First the location and format of the data is defined
+$ by (as above) :
+$  - Unit number of file (can be 10, and/or identical to bottem depth
+$    unit), scale factor for fractional obstruction, IDLA, IDFM,
+$    format for formatted read, FROM and filename
+$
+$   10 0.2  3 1 '(....)' 'NAME' 'obstr.inp'
+$
+$ *** NOTE if this unit number is the same as the previous bottom
+$     depth unit number, it is assumed that this is the same file
+$     without further checks.                                      ***
+$
+$ If the above unit number equals 10, the bottom data is read from
+$ this file and follows below (no intermediate comment lines allowed,
+$ except between the two fields).
+$
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 5 0 0 0 0 0
+$  0 0 0 0 0 0 5 0 0 0 0 0
+$  0 0 0 0 0 0 4 0 0 0 0 0
+$  0 0 0 0 0 0 4 0 0 0 0 0
+$  0 0 0 0 0 0 5 0 0 0 0 0
+$  0 0 0 0 0 0 5 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 5 5 5 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$  0 0 0 0 0 0 0 0 0 0 0 0
+$
+$ *** NOTE size of fields is always NX * NY                        ***
+$
+   10 3 1 '(....)' 'PART' 'mapsta.inp'
+$ Input boundary points ---------------------------------------------- $
+$   An unlimited number of lines identifying points at which input
+$   boundary conditions are to be defined. If the actual input data is
+$   not defined in the actual wave model run, the initial conditions
+$   will be applied as constant boundary conditions. Each line contains:
+$     Discrete grid counters (IX,IY) of the active point and a
+$     connect flag. If this flag is true, and the present and previous
+$     point are on a grid line or diagonal, all intermediate points
+$     are also defined as boundary points.
+$
+$     are also defined as boundary points.
+$
+$  Close list by defining point (0,0) (mandatory)
+$
+      0   0   F
+$
+$
+$
+$ Excluded grid points from segment data ( FROM != PART )
+$   First defined as lines, identical to the definition of the input
+$   boundary points, and closed the same way.
+$
+      0   0   F
+$
+$   Second, define a point in a closed body of sea points to remove
+$   the entire body os sea points. Also close by point (0,0)
+$
+      0   0
+$
+$ Output boundary points --------------------------------------------- $
+$ Output boundary points are defined as a number of straight lines,
+$ defined by its starting point (X0,Y0), increments (DX,DY) and number
+$ of points. A negative number of points starts a new output file.
+$ Note that this data is only generated if requested by the actual
+$ program. Example again for spherical grid in degrees.
+$
+$    -2.5312  48.5  0.00  0.008738  102
+$    -2.5312 49.3850 0.013554  0.00  51
+$
+$  Close list by defining line with 0 points (mandatory)
+$
+       0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
