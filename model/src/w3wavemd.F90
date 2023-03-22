@@ -896,20 +896,6 @@ CONTAINS
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("First entry in the TIME LOOP")
 #endif
-      !      DO JSEA = 1, NSEAL
-      !        DO IS = 1, NSPEC
-      !          IF (VA(IS, JSEA) .LT. 0.) THEN
-      !            WRITE(740+IAPROC,*) 'TEST W3WAVE 2', VA(IS,JSEA)
-      !            CALL FLUSH(740+IAPROC)
-      !          ENDIF
-      !        ENDDO
-      !      ENDDO
-      !      IF (SUM(VA) .NE. SUM(VA)) THEN
-      !        WRITE(740+IAPROC,*) 'NAN in ACTION 2', IX, IY, SUM(VA)
-      !        CALL FLUSH(740+IAPROC)
-      !        STOP
-      !      ENDIF
-
 
 #ifdef W3_DEBUGCOH
       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "W3WAVEMD, step 6.1", 1)
@@ -1169,19 +1155,21 @@ CONTAINS
           USTDIR = 0.05
         END IF
 
-        !      DO JSEA = 1, NSEAL
-        !        DO IS = 1, NSPEC
-        !          IF (VA(IS, JSEA) .LT. 0.) THEN
-        !            WRITE(740+IAPROC,*) 'TEST W3WAVE 5', VA(IS,JSEA)
-        !            CALL FLUSH(740+IAPROC)
-        !          ENDIF
-        !        ENDDO
-        !      ENDDO
-        !      IF (SUM(VA) .NE. SUM(VA)) THEN
-        !        WRITE(740+IAPROC,*) 'NAN in ACTION 5', IX, IY, SUM(VA)
-        !        CALL FLUSH(740+IAPROC)
-        !        STOP
-        !      ENDIF
+#ifdef W3_DEBUGRUN
+      DO JSEA = 1, NSEAL
+        DO IS = 1, NSPEC
+          IF (VA(IS, JSEA) .LT. 0.) THEN
+            WRITE(740+IAPROC,*) 'TEST W3WAVE 5', VA(IS,JSEA)
+            CALL FLUSH(740+IAPROC)
+          ENDIF
+        ENDDO
+      ENDDO
+      IF (SUM(VA) .NE. SUM(VA)) THEN
+        WRITE(740+IAPROC,*) 'NAN in ACTION 5', IX, IY, SUM(VA)
+        CALL FLUSH(740+IAPROC)
+        STOP
+      ENDIF
+#endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 6')
 
 #ifdef W3_TIMINGS
@@ -1465,7 +1453,7 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
         !
 #ifdef W3_PDLIB
-        IF ( FLSOU .and. LPDLIB .and. FSSOURCE) THEN
+        IF (LPDLIB .and. FLSOU .and. FSSOURCE) THEN
 #endif
 
 #ifdef W3_OMP0
@@ -1480,31 +1468,28 @@ CONTAINS
 #endif
 
 #ifdef W3_PDLIB
-          IF (.not. LSLOC) THEN
-            VSTOT = 0.
-            VDTOT = 0.
-          ENDIF
           IF (LSLOC) THEN
             B_JAC     = 0.
             ASPAR_JAC = 0.
+          ELSE
+            VSTOT = 0.
+            VDTOT = 0.
           ENDIF
 #endif
 
 
 #ifdef W3_PDLIB
+
           DO JSEA = 1, NP
-#endif
 
-#ifdef W3_PDLIB
             CALL INIT_GET_ISEA(ISEA, JSEA)
-#endif
 
-#ifdef W3_PDLIB
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
             DELA=1.
             DELX=1.
             DELY=1.
+
 #ifdef W3_REF1
             IF (GTYPE.EQ.RLGTYPE) THEN
               DELX=SX*CLATS(ISEA)/FACX
@@ -1517,25 +1502,16 @@ CONTAINS
               DELY=HQFAC(IY,IX)/ FACX
               DELA=DELX*DELY
             END IF
-#endif
-            !
-#ifdef W3_REF1
             REFLEC=REFLC(:,ISEA)
             REFLEC(4)=BERG(ISEA)*REFLEC(4)
             REFLED=REFLD(:,ISEA)
 #endif
+
 #ifdef W3_BT4
             D50=SED_D50(ISEA)
             PSIC=SED_PSIC(ISEA)
 #endif
             !
-#ifdef W3_PDLIB
-            IF ((IOBP_LOC(JSEA) .eq. 1 .or. IOBP_LOC(JSEA) .eq. 3) &
-                 & .and. IOBDP_LOC(JSEA) .eq. 1 .and. IOBPA_LOC(JSEA) .eq. 0) THEN
-#endif
-
-
-#ifdef W3_PDLIB
 #ifdef W3_DEBUGSRC
               IF (IX .eq. DEBUG_NODE) THEN
                 WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
@@ -1580,13 +1556,6 @@ CONTAINS
               WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
               FLUSH(740+IAPROC)
 #endif
-#endif
-            ELSE
-              UST   (ISEA) = UNDEF
-              USTDIR(ISEA) = UNDEF
-              DTDYN (JSEA) = UNDEF
-              FCUT  (JSEA) = UNDEF
-            END IF
           END DO ! JSEA
         END IF ! PDLIB
 #endif
@@ -1821,6 +1790,7 @@ CONTAINS
               !
             END DO
           END IF
+
           call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 16')
 
 #ifdef W3_DEBUGCOH
@@ -1840,17 +1810,16 @@ CONTAINS
               FACX   =  1.
             END IF
           END IF
-          IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
+
+          IF (LPDLIB) THEN
             !
 #ifdef W3_PDLIB
-            IF ((FSTOTALIMP .eqv. .FALSE.).and.(FLCX .or. FLCY)) THEN
-#endif
-#ifdef W3_PDLIB
-              DO ISPEC=1,NSPEC
-                CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-              END DO
-#endif
-#ifdef W3_PDLIB
+            IF (FLCX .or. FLCY) THEN
+              IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
+                DO ISPEC=1,NSPEC
+                  CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+                END DO
+              END IF
             END IF
 #endif
             !
@@ -1861,13 +1830,13 @@ CONTAINS
               CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before Block implicit", 1)
 #endif
 #ifdef W3_PDLIB
-              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY)
+              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_PDLIB
             ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
 #endif
 #ifdef W3_PDLIB
-              CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY)
+              CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_PDLIB
             ENDIF
@@ -2150,6 +2119,7 @@ CONTAINS
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("fter intraspectral adv.")
 #endif
+
           !
           UGDTUPDATE = .FALSE.
           !
@@ -2184,6 +2154,7 @@ CONTAINS
             !$OMP&                  REFLEC,REFLED,D50,PSIC,TMP1,TMP2,TMP3,TMP4)
             !$OMP DO SCHEDULE (DYNAMIC,1)
 #endif
+
             !
             DO JSEA=1, NSEAL
               CALL INIT_GET_ISEA(ISEA, JSEA)
@@ -2290,7 +2261,6 @@ CONTAINS
               END IF
             END DO
 
-
             !
 #ifdef W3_OMPG
             !$OMP END DO
@@ -2324,6 +2294,9 @@ CONTAINS
         END DO
         IF (IT.GT.0) DTG=DTGTEMP
 #endif
+
+
+
 
         !
         !
@@ -2438,7 +2411,7 @@ CONTAINS
 #ifdef W3_MPI
         IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
              (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
-          IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
+          IF (.NOT. LPDLIB) THEN
             IF (NRQGO.NE.0 ) THEN
 #endif
 #ifdef W3_MPI
@@ -2477,7 +2450,7 @@ CONTAINS
             CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
 #ifdef W3_MPI
-          END IF
+          END IF ! IF (.NOT. LPDLIB) THEN
         END IF
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 1')

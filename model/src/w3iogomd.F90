@@ -1533,7 +1533,7 @@ CONTAINS
         CALL INIT_GET_ISEA(ISEA, JSEA)
         FACTOR       = DDEN(IK) / CG(IK,ISEA)
         EBD(IK,JSEA) = AB(JSEA) * FACTOR
-        ET (JSEA)    = ET (JSEA) + EBD(IK,JSEA)
+        ET(JSEA)     = ET(JSEA) + EBD(IK,JSEA)
 #ifdef W3_IG1
         IF (IK.EQ.NINT(IGPARS(5))) HSIG(JSEA) = 4*SQRT(ET(JSEA))
 #endif

@@ -642,7 +642,7 @@ CONTAINS
 #ifdef W3_MPI
         ELSE
           !
-          IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
+          IF (LPDLIB) THEN
 #endif
 #ifdef W3_TIMINGS
             CALL PRINT_MY_TIME("Before UNST_PDLIB_WRITE_TO_FILE")
@@ -724,7 +724,7 @@ CONTAINS
         WRITE (NDST,9020) TYPE
 #endif
       ELSE
-        IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
+        IF (LPDLIB) THEN
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("Before UNST_PDLIB_READ_FROM_FILE")
 #endif
@@ -769,7 +769,8 @@ CONTAINS
               !              Include remainder values (switch to record format) ---- *
               JSEA = NSEAL_MIN + 1
               IF ( JSEA.EQ.NSEAL ) THEN
-                ISEA = IAPROC + (JSEA - 1) * NAPROC
+                !ISEA = IAPROC + (JSEA - 1) * NAPROC
+                CALL INIT_GET_ISEA(ISEA, JSEA)
                 NREC = ISEA + 2
                 RPOS = 1_8 + LRECL*(NREC-1_8)
                 READ (NDSR, POS=RPOS, ERR=802, IOSTAT=IERR)          &

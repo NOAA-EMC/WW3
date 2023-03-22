@@ -1116,7 +1116,7 @@ CONTAINS
 #endif
 
 #ifdef W3_PDLIB
-    IF ((.NOT. LPDLIB ).or.(GTYPE .ne. UNGTYPE)) THEN
+    IF (.NOT. LPDLIB) THEN
 #endif
       JSEA   = 1 + (ISEA-1)/NAPROC
       ISPROC = ISEA - (JSEA-1)*NAPROC
@@ -1422,6 +1422,7 @@ CONTAINS
     use yowDatapool, only: rtype, istatus
     USE yowNodepool, only: npa
     use yowNodepool, only: iplg
+    use yowDatapool, only: rkind
 #endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
@@ -1441,8 +1442,13 @@ CONTAINS
 #endif
     INTEGER ISEA, JSEA, Status(NX), rStatus(NX)
     INTEGER IPROC, I, ierr, IP, IX, IP_glob
-    REAL*8, intent(inout) :: TheVar(NX)
-    REAL*8  rVect(NX)
+#ifdef W3_PDLIB
+    REAL(rkind), intent(inout) :: TheVar(NX)
+    REAL(rkind) ::  rVect(NX)
+#else
+    DOUBLE PRECISION, intent(inout) :: TheVar(NX)
+    DOUBLE PRECISION                ::  rVect(NX)
+#endif
     Status=0
 #ifdef W3_S
     CALL STRACE (IENT, 'SYNCHRONIZE_GLOBAL_ARRAY')

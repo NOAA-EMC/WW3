@@ -964,14 +964,14 @@ CONTAINS
       I2 = TRIGP(2,K)
       I3 = TRIGP(3,K)
 
+!AR: todo call this only for global grid 
       CALL FIX_PERIODCITY(I1,I2,I3,XGRD,YGRD,PT)
       !
       ! cross product of edge-vector  (orientated anticlockwise)
       !
-
-      TRIA(K) = REAL( (PT(2,2)-PT(1,2))      &     !  (Y2-Y1)
-           *(PT(1,1)-PT(3,1))      &     ! *(X1-X3)
-           +(PT(3,2)-PT(1,2))      &     !  (Y3-Y1)*(X2-X1)
+      TRIA(K) = REAL( (PT(2,2)-PT(1,2)) & 
+           *(PT(1,1)-PT(3,1))      &    
+           +(PT(3,2)-PT(1,2))      &    
            *(PT(2,1)-PT(1,1))      )*0.5
       !
       ! test on negative triangle area, which means that the orientiation is not as assumed to be anticw.
@@ -984,9 +984,6 @@ CONTAINS
         I2 = TRIGP(2,K)
         I3 = TRIGP(3,K)
         TRIA(K) = -1.d0*TRIA(K)
-        !WRITE(NDSE,*) 'WRONG TRIANGLE',TRIA(K),K,I1,I2,I3, XYB(I2,2)-XYB(I1,2), &
-        !                 XYB(I1,1)-XYB(I3,1),XYB(I3,2)-XYB(I1,2), XYB(I2,1)-XYB(I1,1)
-        !STOP
       END IF
     END DO
   END SUBROUTINE SPATIAL_GRID
@@ -1413,8 +1410,6 @@ CONTAINS
     CALL STRACE (IENT, 'AREA_SI')
 #endif
 
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE SI, TRIA und CCON'
-
     SI(:) = 0.D0
     !
     CCON(:) = 0     ! Number of connected Elements
@@ -1434,8 +1429,6 @@ CONTAINS
     CELLVERTEX(:,:,:) = 0 ! Stores for each node the Elementnumbers of the connected Elements
     ! and the Position of the Node in the Element Index
 
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE CELLVERTEX'
-
     CHILF = 0
 
     DO IE = 1, NTRI
@@ -1446,8 +1439,6 @@ CONTAINS
         CELLVERTEX(I,CHILF(I),2) = J
       END DO
     ENDDO
-
-    WRITE(*,'("+TRACE......",A)') 'COMPUTE IE_CELL and POS_CELL'
     !
     ! Second step in storage, the initial 3D array CELLVERTEX, is transformed in a 1D array
     ! the global index is J . From now, all the computation step based on these arrays must
@@ -2805,120 +2796,7 @@ CONTAINS
   END SUBROUTINE TRIANG_INDEXES
 
   !/ ------------------------------------------------------------------- /
-
-  !>
-  !> @brief Get interface nodes of the wetting and drying part.
-  !>
-  !> @author Aron Roland
-  !> @author Mathieu Dutour-Sikiric
-  !> @date   01-Jun-2018
-  !>
-  SUBROUTINE GET_INTERFACE()
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |                                   |
-    !/                  | Aron Roland (BGS IT&E GmbH)       |
-    !/                  | Mathieu Dutour-Sikiric (IRB)      |
-    !/                  |                                   |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :        01-June-2018 |
-    !/                  +-----------------------------------+
-    !/
-    !/    01-June-2018 : Origination.                        ( version 6.04 )
-    !/
-    !  1. Purpose : get interface nodes of the wetting and drying part
-    !  2. Method :
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      STRACE    Subr. W3SERVMD Subroutine tracing.
-    !     ----------------------------------------------------------------
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !  7. Remarks
-    !  8. Structure :
-    !  9. Switches :
-    !
-    !     !/S  Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
-#ifdef W3_S
-    USE W3SERVMD, ONLY: STRACE
-#endif
-    !
-    USE CONSTANTS, ONLY : LPDLIB
-    USE W3GDATMD, ONLY : NX, IOBP, CCON, NSEAL, IOBDP, IE_CELL, IOBDP, TRIGP
-#ifdef W3_PDLIB
-    USE yowNodepool, only: PDLIB_SI, PDLIB_IEN, PDLIB_CCON, NPA, PDLIB_IE_CELL2, PDLIB_POS_CELL2
-    USE yowElementpool, only: INE
-#endif
-    IMPLICIT NONE
-    !/
-    !/ ------------------------------------------------------------------- /
-    !/ Parameter list
-    !/
-    !/ ------------------------------------------------------------------- /
-    !/ Local PARAMETERs
-    !/
-#ifdef W3_S
-    INTEGER, SAVE           :: IENT = 0
-#endif
-    !/
-    !/ ------------------------------------------------------------------- /
-    !/
-    INTEGER :: I, J, IP, IE
-#ifdef W3_S
-    CALL STRACE (IENT, 'GET_INTERFACE')
-#endif
-#ifdef W3_PDLIB
-    IF (LPDLIB) THEN
-      DO IP = 1, NSEAL
-        IF (IOBP(IP) .NE. 0 .OR. IOBDP(IP) .EQ. 0) CYCLE
-        DO I = 1, PDLIB_CCON(IP)
-          IE = PDLIB_IE_CELL2(I,IP)
-          IF (ANY(IOBDP(TRIGP(:,IE)) .EQ. 0)) THEN
-            IOBDP(IP) = -1
-            CYCLE
-          ENDIF
-        ENDDO
-      ENDDO
-      !CALL EXCHANGE_....
-    ELSE
-#endif
-      J = 0
-      DO IP = 1, NSEAL
-        DO I = 1, CCON(IP)
-          J = J + 1
-          IE = IE_CELL(J)
-          IF (ANY(IOBDP(TRIGP(:,IE)) .EQ. 0)) THEN
-            IOBDP(IP) = -1 ! Set this node as a wet node adjacent to a dry one ... now what's next? Here on this points we want to compute the reflection source term, yes?
-            EXIT
-          ENDIF
-        ENDDO
-      ENDDO
-#ifdef W3_PDLIB
-    ENDIF
-#endif
-
-  END SUBROUTINE GET_INTERFACE
-  !/ ------------------------------------------------------------------- /
-
+  
   !>
   !> @brief Redefines the values of the boundary points and angle pointers
   !>  based on the MAPSTA array.
