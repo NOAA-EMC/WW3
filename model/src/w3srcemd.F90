@@ -504,7 +504,7 @@ CONTAINS
          FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
          ICESCALES, IICESMOOTH
     USE W3GDATMD, ONLY: FSSOURCE, optionCall
-    USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
+    USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR, B_JGS_LIMITER
 #ifdef W3_REF1
     USE W3GDATMD, ONLY: IOBP, IOBPD, IOBDP, GTYPE, UNGTYPE, REFPARS
 #endif
@@ -644,7 +644,7 @@ CONTAINS
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES, ASPAR_DIAG_ALL
     USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P, PDLIB_SI
-    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, B_JGS_LIMITER_FUNC
     USE W3WDATMD, ONLY: VA
     USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM, LSLOC
 #endif
@@ -811,7 +811,6 @@ CONTAINS
     REAL                    :: eInc1, eInc2, eVS, eVD, JAC
     REAL                    :: DeltaSRC(NSPEC)
     REAL, PARAMETER         :: DTMINTOT = 0.01
-    LOGICAL                 :: LNEWLIMITER = .FALSE.
 #ifdef W3_PDLIB
     REAL                 :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
 #endif
@@ -1275,7 +1274,7 @@ CONTAINS
       IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
-        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
+        CALL W3STR1 ( SPEC, SPECOLD, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
 #endif
 #ifdef W3_PDLIB
       ENDIF
@@ -1421,17 +1420,39 @@ CONTAINS
         VSDS(1:NSPECH) = ICESCALEDS * VSDS(1:NSPECH)
         VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
       END IF
+
+#ifdef W3_PDLIB
+      IF (B_JGS_LIMITER_FUNC == 2) THEN
+        DO IK=1, NK
+          JAC      = CG1(IK)/CLATSL 
+          JAC2     = 1./TPI/SIG(IK)
+          FRLOCAL  = SIG(IK)*TPIINV
+#ifdef W3_ST6
+          DAM2(1+(IK-1)*NTH) = 5E-7 * GRAV/FRLOCAL**4 * USTAR * FMEAN * DTMIN * JAC * JAC2
+#else
+          DAM2(1+(IK-1)*NTH) = 5E-7 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTMIN * JAC * JAC2
+#endif
+          !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * USTAR * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
+        END DO
+        DO IK=1, NK
+          IS0  = (IK-1)*NTH
+          DO ITH=2, NTH
+            DAM2(ITH+IS0) = DAM2(1+IS0)
+          END DO
+        END DO
+      ENDIF
+#endif
       !
-      VS = 0
-      VD = 0
       DO IS=IS1, NSPECH
         VS(IS) = VSLN(IS) + VSIN(IS) + VSNL(IS)  &
              + VSDS(IS) + VSBT(IS)
 #ifdef W3_ST6
         VS(IS) = VS(IS) + VSWL(IS)
 #endif
+#ifndef W3_PDLIB 
 #ifdef W3_TR1
         VS(IS) = VS(IS) + VSTR(IS)
+#endif
 #endif
 #ifdef W3_BS1
         VS(IS) = VS(IS) + VSBS(IS)
@@ -1444,8 +1465,10 @@ CONTAINS
 #ifdef W3_ST6
         VD(IS) = VD(IS) + VDWL(IS)
 #endif
+#ifndef W3_PDLIB
 #ifdef W3_TR1
         VD(IS) = VD(IS) + VDTR(IS)
+#endif
 #endif
 #ifdef W3_BS1
         VD(IS) = VD(IS) + VDBS(IS)
@@ -1467,6 +1490,9 @@ CONTAINS
         ENDIF
 #endif
       END DO  ! end of loop on IS
+
+      !VD = 0 
+      !VS = 0 
       !
       DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
       !
@@ -1538,14 +1564,16 @@ CONTAINS
               DO ITH = 1, NTH
                 ISP = ITH + (IK-1)*NTH
                 VD(ISP) = MIN(0., VD(ISP))
-                IF (LNEWLIMITER) THEN
+                IF (B_JGS_LIMITER_FUNC == 2) THEN
                   MAXDAC = MAX(DAM(ISP),DAM2(ISP))
                 ELSE
                   MAXDAC = DAM(ISP)
                 ENDIF
                 FAKS   = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
                 DVS    = VS(ISP) * FAKS
-                DVS    = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                IF (.NOT. B_JGS_LIMITER) THEN
+                  DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                ENDIF
                 PreVS  = DVS / FAKS
                 eVS    = PreVS / CG1(IK) * CLATSL
                 eVD    = MIN(0.,VD(ISP))
@@ -1589,23 +1617,25 @@ CONTAINS
               DO ITH=1,NTH
                 ISP=ITH + (IK-1)*NTH
                 VD(ISP) = MIN(0., VD(ISP))
-                IF (LNEWLIMITER) THEN
+                IF (B_JGS_LIMITER_FUNC == 2) THEN
                   MAXDAC    = MAX(DAM(ISP),DAM2(ISP))
                 ELSE
                   MAXDAC    = DAM(ISP)
                 ENDIF
                 FAKS      = DTG / MAX ( 1. , (1.-DTG*VD(ISP)))
                 DVS       = VS(ISP) * FAKS
-                DVS       = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                IF (.NOT. B_JGS_LIMITER) THEN
+                  DVS       = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
+                ENDIF
                 PreVS     = DVS / FAKS
                 eVS = PreVS / CG1(IK) * CLATSL
                 eVD = VD(ISP)
 #ifdef W3_DB1
                 eVS = eVS + DBLE(VSDB(ISP)) * JAC
                 eVD = evD + MIN(0.,DBLE(VDDB(ISP)))
-#endif
                 B_JAC(ISP,JSEA)          = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*VA(ISP,JSEA))
                 ASPAR_DIAG_ALL(ISP,JSEA) = ASPAR_DIAG_ALL(ISP,JSEA) - SIDT * eVD
+#endif
               END DO
             END DO
           ENDIF
@@ -1672,7 +1702,7 @@ CONTAINS
         RETURN ! return everything is done for the implicit ...
 
       END IF ! srce_imp_pre
-#endif W3_PDLIB
+#endif !W3_PDLIB
       !
 #ifdef W3_T
       WRITE (NDST,9040) DTRAW, DT, SHAVE
@@ -1701,6 +1731,12 @@ CONTAINS
           SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
         END DO
 #endif
+#ifdef W3_TR1
+        DO IS=IS1, NSPECH
+          eInc1 = VDTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
+          SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
+        END DO
+#endif 
 
 #ifdef W3_DEBUGSRC
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
@@ -1944,7 +1980,7 @@ CONTAINS
         !            IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
         EXIT
       ENDIF
-    END DO ! INTEGRATIN LOOP
+    END DO ! INTEGRATION LOOP
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN
       WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS
@@ -2221,32 +2257,38 @@ CONTAINS
     IF (IX .eq. DEBUG_NODE) THEN
       WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
     END IF
-#endif
+#endif 
+
 #ifdef W3_REF1
     IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
       CALL W3SREF ( SPEC, CG1, WN1, EMEAN, FMEAN, DEPTH, CX, CY,   &
            REFLEC, REFLED, TRNX, TRNY,  &
-           BERG, DTG, IX, IY,  VREF )
+           BERG, DTG, IX, IY, JSEA, VREF )
       IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
-#endif
-        !AR: this can be further simplified let's do some simple tests 1st ...
-#ifdef W3_REF1
+#ifdef W3_PDLIB
+        IF (IOBP_LOC(JSEA).EQ.0) THEN
+#else
         IF (IOBP(IX).EQ.0) THEN
+#endif
           DO IK=1, NK
             DO ITH=1, NTH
-              IF (IOBPD(ITH,IX).EQ.0) SPEC(ITH+(IK-1)*NTH) = DTG*VREF(ITH+(IK-1)*NTH)
+              ISP = ITH+(IK-1)*NTH
+#ifdef W3_PDLIB
+              IF (IOBPD_LOC(ITH,JSEA).EQ.0) SPEC(ISP) = DTG*VREF(ISP)
+#else
+              IF (IOBPD(ITH,IX).EQ.0) SPEC(ISP) = DTG*VREF(ISP)
+#endif
             END DO
           END DO
         ELSE
-          IF (IOBDP(IX) .EQ. -1) THEN
-            SPEC(:) = SPEC(:) + DTG * VREF(:)
-          ENDIF
+          SPEC(:) = SPEC(:) + DTG * VREF(:)
         ENDIF
       ELSE
         SPEC(:) = SPEC(:) + DTG * VREF(:)
       END IF
     END IF
 #endif
+
     !
 #ifdef W3_DEBUGSRC
     IF (IX .eq. DEBUG_NODE) THEN

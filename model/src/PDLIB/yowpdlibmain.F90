@@ -1309,8 +1309,8 @@ contains
     use yowNodepool,    only: x, y, z, PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, PDLIB_CCON, PDLIB_TRIA03
 
     integer I1, I2, I3, stat, IE, NI(3)
-    real(rkind) :: DXP1, DXP2, DXP3, DYP1, DYP2, DYP3, DBLTMP, TRIA03
-    logical     :: CROSSES_DATELINE
+    real  :: DXP1, DXP2, DXP3, DYP1, DYP2, DYP3, DBLTMP, TRIA03
+    logical :: CROSSES_DATELINE
 
     allocate(PDLIB_SI(npa), PDLIB_CCON(npa), PDLIB_IEN(6,ne), PDLIB_TRIA(ne), PDLIB_TRIA03(ne), stat=stat)
     if(stat/=0) call parallel_abort('SI allocation failure')
@@ -1354,7 +1354,7 @@ contains
       PDLIB_CCON(I1) = PDLIB_CCON(I1) + 1
       PDLIB_CCON(I2) = PDLIB_CCON(I2) + 1
       PDLIB_CCON(I3) = PDLIB_CCON(I3) + 1
-      TRIA03 = PDLIB_TRIA(IE)/3.d0
+      TRIA03         = PDLIB_TRIA(IE)/3.d0
       PDLIB_SI(I1) = PDLIB_SI(I1) + TRIA03
       PDLIB_SI(I2) = PDLIB_SI(I2) + TRIA03
       PDLIB_SI(I3) = PDLIB_SI(I3) + TRIA03
