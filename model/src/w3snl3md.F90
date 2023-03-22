@@ -336,7 +336,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NDSE, NDST
     !
     USE W3SERVMD, ONLY: EXTCDE
-    USE W3DISPMD, ONLY: WAVNU1
+    USE W3DISPMD, ONLY: WAVNU1, WAVNU3
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -393,7 +393,11 @@ CONTAINS
     XCG(1:NFR) = CG
     !
     DO IFR = NFR+1, NFRMAX
-      CALL WAVNU1 ( XSI(IFR), DEPTH, XWN(IFR), XCG(IFR) )
+#ifdef W3_PDLIB
+      CALL WAVNU3(XSI(IFR), DEPTH, XWN(IFR), XCG(IFR))
+#else
+      CALL WAVNU1(XSI(IFR), DEPTH, XWN(IFR), XCG(IFR))
+#endif
     END DO
     !
     ! 1.b Expanded pseudo spetrum
