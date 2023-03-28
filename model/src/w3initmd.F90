@@ -388,7 +388,7 @@ CONTAINS
          ICLOSE, ZB, TRNX, TRNY, DMIN, DTCFL, DTMAX, &
          FLCK, NK, NTH, NSPEC, SIG, GNAME
 #ifdef W3_PDLIB
-    USE W3GDATMD, ONLY : FLCTH
+    USE W3GDATMD, ONLY : FLCTH, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_USE_JACOBI
 #endif
     USE W3WDATMD, ONLY: TIME, TLEV, TICE, TRHO, WLV, UST, USTDIR, VA
     USE W3ODATMD, ONLY: NDSO, NDSE, NDST, SCREEN, NDS, NTPROC,      &
@@ -421,7 +421,7 @@ CONTAINS
     USE W3GDATMD, ONLY: GTYPE, UNGTYPE
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, ONLY : PDLIB_MAPSTA_INIT, SET_IOBDP_PDLIB, PDLIB_IOBP_INIT, SET_IOBPA_PDLIB
-    USE PDLIB_W3PROFSMD, ONLY : BLOCK_SOLVER_INIT, PDLIB_INIT, DEALLOCATE_PDLIB_GLOBAL
+    USE PDLIB_W3PROFSMD, ONLY : BLOCK_SOLVER_INIT, BLOCK_SOLVER_EXPLICIT_INIT, PDLIB_INIT, DEALLOCATE_PDLIB_GLOBAL
     use yowDatapool, only: istatus
 #endif
 #ifdef W3_SETUP
@@ -639,12 +639,23 @@ CONTAINS
     IF (FSTOTALIMP .and. .NOT. LPDLIB) THEN
       WRITE(NDSE,*) 'IMPTOTAL is selected'
       WRITE(NDSE,*) 'But PDLIB is not'
-      STOP 'Stop, case 1'
+      CALL FLUSH(NDSE) 
+      STOP 
     ELSE IF (FSTOTALEXP .and. .NOT. LPDLIB) THEN
       WRITE(NDSE,*) 'EXPTOTAL is selected'
       WRITE(NDSE,*) 'But PDLIB is not'
-      STOP 'Stop, case 1'
+      CALL FLUSH(NDSE) 
+      STOP 
     END IF
+#ifdef W3_PDLIB
+    IF (B_JGS_BLOCK_GAUSS_SEIDEL .AND. .NOT. B_JGS_USE_JACOBI) THEN
+      WRITE(NDSE,*) 'B_JGS_BLOCK_GAUSS_SEIDEL is used but the Jacobi solver is not choosen'
+      WRITE(NDSE,*) 'Please set JGS_USE_JACOBI .eqv. .true.'
+      CALL FLUSH(NDSE) 
+      STOP 
+    ENDIF
+#endif
+      
     !
     ! 1.c Open files without unpacking MDS ,,,
     !
@@ -740,7 +751,7 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL PDLIB_INIT(IMOD)
 #endif
-    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2c')
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2c')
 
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("After PDLIB_INIT")
@@ -749,7 +760,7 @@ CONTAINS
 #ifdef W3_PDLIB
       CALL SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
 #endif
-    call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2cc')
+      call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2cc')
 
 #ifdef W3_PDLIB
     END IF
@@ -787,24 +798,19 @@ CONTAINS
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2f')
 #ifdef W3_DIST
     IF ( NSEA .LT. NAPROC ) GOTO 820
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
       IF ( NSPEC .LT. NAPROC ) GOTO 821
     END IF
 #endif
 
 #ifdef W3_PDLIB
     IF ((IAPROC .LE. NAPROC).and.(GTYPE .eq. UNGTYPE)) THEN
-#endif
-
-#ifdef W3_PDLIB
       CALL BLOCK_SOLVER_INIT(IMOD)
       CALL PDLIB_IOBP_INIT(IMOD)
       CALL SET_IOBPA_PDLIB
-#endif
-
-#ifdef W3_PDLIB
-    ELSE IF (FSTOTALEXP) THEN
-      !AR: To do here the blocksolver ...
+      IF (FSTOTALEXP) THEN
+        CALL BLOCK_SOLVER_EXPLICIT_INIT()
+      ENDIF
     ENDIF
 #endif
 
@@ -852,7 +858,7 @@ CONTAINS
     ALLOCATE ( NT(NSPEC) )
     NT     = NTTOT
 #ifdef W3_DIST
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
       !
       DO
         !
@@ -934,7 +940,7 @@ CONTAINS
     ! 2.c.9 Test if any spectral points are left out
     !
 #ifdef W3_DIST
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
       DO ISP=1, NSPEC
         IF ( IAPPRO(ISP) .EQ. -1. ) GOTO 829
       END DO
@@ -1266,6 +1272,10 @@ CONTAINS
     !Li   DO IY=1, NY
     !Li     DO IX=1, NX
     !Li       ISEA   = MAPFS(IY,IX)
+#ifdef W3_DEBUGSTP
+    max_val = 0
+    min_val = 0
+#endif
     DO ISEA=1, NSEA
       IX = MAPSF(ISEA,1)
       IY = MAPSF(ISEA,2)
@@ -1279,6 +1289,10 @@ CONTAINS
         WLVeff=WLVeff + ZETA_SETUP(ISEA)
       END IF
 #endif
+#ifdef W3_DEBUGSTP
+      max_val = MAX(max_val, WLVeff)
+      min_val = MIN(min_val, WLVeff)
+#endif
       DW(ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
 #ifdef W3_T
       XOUT(IX,IY) = DW(ISEA)
@@ -1290,6 +1304,12 @@ CONTAINS
       !Li     END IF
     END DO
     !Li   END DO
+#ifdef W3_DEBUGSTP
+      WRITE(740+IAPROC,*) 'w3initmd 1: max/min(WLVeff)=', max_val, min_val
+      FLUSH(740+IAPROC)
+      max_val = 0
+      min_val = 0
+#endif
     DO JSEA=1, NSEAL
       CALL INIT_GET_ISEA(ISEA, JSEA)
       WLVeff=WLV(ISEA)
@@ -1298,11 +1318,19 @@ CONTAINS
         WLVeff=WLVeff + ZETA_SETUP(ISEA)
       END IF
 #endif
+#ifdef W3_DEBUGSTP
+      max_val = MAX(max_val, WLVeff)
+      min_val = MIN(min_val, WLVeff)
+#endif
       DW(ISEA) = MAX ( 0. , WLVeff-ZB(ISEA) )
       IF ( WLVeff-ZB(ISEA) .LE.0. ) THEN
         VA(:,JSEA) = 0.
       END IF
     END DO
+#ifdef W3_DEBUGSTP
+    WRITE(740+IAPROC,*) 'w3initmd 2: max/min(WLVeff)=', max_val, min_val
+    FLUSH(740+IAPROC)
+#endif
     !
 #ifdef W3_PDLIB
     IF ( IAPROC .LE. NAPROC ) THEN
@@ -1355,8 +1383,12 @@ CONTAINS
       !
       DO IK=0, NK+1
         !
-        !  Calculate wavenumbers and group velocities.
+        !         Calculate wavenumbers and group velocities.
+#ifdef W3_PDLIB
+        CALL WAVNU3(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
+#else
         CALL WAVNU1(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
+#endif
         !
 #ifdef W3_T1
         WRITE (NDST,9052) IK, TPI/SIG(IK), WN(IK,IS), CG(IK,IS)
@@ -1822,7 +1854,7 @@ CONTAINS
     !     ( persistent communication calls )
     !
 #ifdef W3_DIST
-    IF ((LPDLIB .eqv. .FALSE.).or.(GTYPE .NE. UNGTYPE)) THEN
+    IF (LPDLIB .eqv. .FALSE.) THEN
 #endif
 #ifdef W3_MPI
       NSPLOC = 0
@@ -2196,8 +2228,7 @@ CONTAINS
     IROOT  = NAPFLD - 1
     !
     !
-    IF ((FLOUT(1) .OR. FLOUT(7)).and.(.not. LPDLIB .or.       &
-         (GTYPE .ne. UNGTYPE).or. .TRUE.)) THEN
+    IF ((FLOUT(1) .OR. FLOUT(7)) .and. (.not. LPDLIB)) THEN
       !
       ! NRQMAX is the maximum number of output fields that require MPI communication,
       ! aimed to gather field values stored in each processor into one processor in
@@ -3464,7 +3495,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-      END IF
+      END IF !IF ( IAPROC .LE. NAPROC ) THEN
       !
       IF ( NRQGO .GT. NRQMAX ) THEN
         WRITE (NDSE,1010) NRQGO, NRQMAX
@@ -4713,14 +4744,14 @@ CONTAINS
 #ifdef W3_MPI
         CALL W3SETA ( IMOD, NDSE, NDST )
         !
-      END IF
+      END IF ! IF ( IAPROC .EQ. NAPFLD ) THEN
       !
       IF ( NRQGO2 .GT. NRQMAX*NAPROC ) THEN
         WRITE (NDSE,1011) NRQGO2, NRQMAX*NAPROC
         CALL EXTCDE (11)
       END IF
       !
-    END IF
+    END IF ! IF ((FLOUT(1) .OR. FLOUT(7)) .and. (.not. LPDLIB)) THEN
     !
     ! 2.  Set-up for W3IORS ---------------------------------------------- /
     ! 2.a General preparations
@@ -4729,7 +4760,7 @@ CONTAINS
     IH     = 0
     IROOT  = NAPRST - 1
     !
-    IF ( FLOUT(4) .OR. FLOUT(8) ) THEN
+    IF ((FLOUT(4) .OR. FLOUT(8)) .and. (.not. LPDLIB)) THEN
       IF (OARST) THEN
         ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRS(34*NAPROC) )
       ELSE
@@ -5514,8 +5545,8 @@ CONTAINS
           END DO
           !
           CALL W3SETA ( IMOD, NDSE, NDST )
-        END IF
-      END IF
+        END IF ! IF ( IAPROC .EQ. NAPRST ) THEN
+      END IF ! IF (OARST) THEN
       !
       NRQRS  = IH
       IF (OARST) THEN
@@ -5547,56 +5578,54 @@ CONTAINS
 #ifdef W3_MPI
         IH     = 0
         !
-        IF ((.NOT. LPDLIB).OR.(GTYPE .NE. UNGTYPE)) THEN
-          IF ( IAPROC .NE. NAPRST ) THEN
-            !
-            ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NBLKRS) )
-            IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
-            !
-            DO IB=1, NBLKRS
-              IH     = IH + 1
-              IT     = IT0 + 3 + IB
-              JSEA0  = 1 + (IB-1)*RSBLKS
-              JSEAN  = MIN ( NSEALM , IB*RSBLKS )
-              NSEAB  = 1 + JSEAN - JSEA0
-              CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB, MPI_REAL, IROOT, IT, &
-                   MPI_COMM_WAVE, IRQRSS(IH), IERR )
+        IF ( IAPROC .NE. NAPRST ) THEN
+          !
+          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NBLKRS) )
+          IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
+          !
+          DO IB=1, NBLKRS
+            IH     = IH + 1
+            IT     = IT0 + 3 + IB
+            JSEA0  = 1 + (IB-1)*RSBLKS
+            JSEAN  = MIN ( NSEALM , IB*RSBLKS )
+            NSEAB  = 1 + JSEAN - JSEA0
+            CALL MPI_SEND_INIT (VA(1,JSEA0), NSPEC*NSEAB, MPI_REAL, IROOT, IT, &
+                 MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9026) IH, 'S', IB, IROOT, IT, IRQRSS(IH), IERR, NSEAB
+            WRITE (NDST,9026) IH, 'S', IB, IROOT, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
-            END DO
-            !
-          ELSE
-            !
-            ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,  &
-                 OUTPTS(IMOD)%OUT4%VAAUX(NSPEC,2*RSBLKS,NAPROC) )
-            !
-            IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
-            VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
-            DO IB=1, NBLKRS
-              IT     = IT0 + 3 + IB
-              JSEA0  = 1 + (IB-1)*RSBLKS
-              JSEAN  = MIN ( NSEALM , IB*RSBLKS )
-              NSEAB  = 1 + JSEAN - JSEA0
-              DO I0=1, NAPROC
-                IF ( I0 .NE. NAPRST ) THEN
-                  IH     = IH + 1
-                  IFROM  = I0 - 1
-                  IBOFF  = MOD(IB-1,2)*RSBLKS
-                  CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0), NSPEC*NSEAB, MPI_REAL, &
-                       IFROM, IT, MPI_COMM_WAVE, IRQRSS(IH), IERR )
+          END DO
+          !
+        ELSE
+          !
+          ALLOCATE ( OUTPTS(IMOD)%OUT4%IRQRSS(NAPROC*NBLKRS) ,  &
+               OUTPTS(IMOD)%OUT4%VAAUX(NSPEC,2*RSBLKS,NAPROC) )
+          !
+          IRQRSS => OUTPTS(IMOD)%OUT4%IRQRSS
+          VAAUX  => OUTPTS(IMOD)%OUT4%VAAUX
+          DO IB=1, NBLKRS
+            IT     = IT0 + 3 + IB
+            JSEA0  = 1 + (IB-1)*RSBLKS
+            JSEAN  = MIN ( NSEALM , IB*RSBLKS )
+            NSEAB  = 1 + JSEAN - JSEA0
+            DO I0=1, NAPROC
+              IF ( I0 .NE. NAPRST ) THEN
+                IH     = IH + 1
+                IFROM  = I0 - 1
+                IBOFF  = MOD(IB-1,2)*RSBLKS
+                CALL MPI_RECV_INIT (VAAUX(1,1+IBOFF,I0), NSPEC*NSEAB, MPI_REAL, &
+                     IFROM, IT, MPI_COMM_WAVE, IRQRSS(IH), IERR )
 #endif
 #ifdef W3_MPIT
-                  WRITE (NDST,9026) IH, 'R', IB, IFROM, IT, IRQRSS(IH), IERR, NSEAB
+                WRITE (NDST,9026) IH, 'R', IB, IFROM, IT, IRQRSS(IH), IERR, NSEAB
 #endif
 #ifdef W3_MPI
-                END IF
-              END DO
+              END IF
             END DO
-            !
-          END IF
+          END DO
+          !
         END IF
 #endif
         !
@@ -5609,7 +5638,7 @@ CONTAINS
         !
       END IF
       !
-    END IF
+    END IF ! IF ((FLOUT(4) .OR. FLOUT(8)) .and. (.not. LPDLIB)) THEN
 #endif
     !
     ! 3.  Set-up for W3IOBC ( SENDs ) ------------------------------------ /
