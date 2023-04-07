@@ -937,19 +937,19 @@ CONTAINS
     USE yowRankModule, only : IPGL_npa
 
     INTEGER, INTENT(IN)    :: ISP        ! Actual Frequency/Wavenumber,
-    ! actual Wave Direction
+                                         ! actual Wave Direction
     REAL,    INTENT(IN)    :: DT         ! Time intervall for which the
-    ! advection should be computed
-    ! for the given velocity field
+                                         ! advection should be computed
+                                         ! for the given velocity field
     REAL,    INTENT(IN)    :: C(npa,2)   ! Velocity field in it's
-    ! X- and Y- Components,
+                                         ! X- and Y- Components,
     REAL,    INTENT(INOUT) :: AC(npa)    ! Wave Action before and
-    ! after advection
+                                         ! after advection
     REAL,    INTENT(IN)    :: RD10, RD20 ! Time interpolation
-    ! coefficients for boundary
-    ! conditions
+                                         ! coefficients for boundary
+                                         ! conditions
     LOGICAL, INTENT(IN)    :: LCALC      ! Switch for the calculation of
-    ! the max. Global Time step
+                                         ! the max. Global Time step
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1265,19 +1265,19 @@ CONTAINS
     USE yowRankModule, only : IPGL_npa
     IMPLICIT NONE
     INTEGER, INTENT(IN)    :: ISP        ! Actual Frequency/Wavenumber,
-    ! actual Wave Direction
+                                         ! actual Wave Direction
     REAL,    INTENT(IN)    :: DT         ! Time intervall for which the
-    ! advection should be computed
-    ! for the given velocity field
+                                         ! advection should be computed
+                                         ! for the given velocity field
     REAL,    INTENT(IN)    :: C(npa,2)   ! Velocity field in it's
-    ! X- and Y- Components,
+                                         ! X- and Y- Components,
     REAL,    INTENT(INOUT) :: AC(npa)    ! Wave Action before and
-    ! after advection
+                                         ! after advection
     REAL,    INTENT(IN)    :: RD10, RD20 ! Time interpolation
-    ! coefficients for boundary
-    ! conditions
+                                         ! coefficients for boundary
+                                         ! conditions
     LOGICAL, INTENT(IN)    :: LCALC      ! Switch for the calculation of
-    ! the max. Global Time step
+                                         ! the max. Global Time step
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1562,19 +1562,19 @@ CONTAINS
 
     IMPLICIT NONE
     INTEGER, INTENT(IN)    :: ISP        ! Actual Frequency/Wavenumber,
-    ! actual Wave Direction
+                                         ! actual Wave Direction
     REAL,    INTENT(IN)    :: DT         ! Time intervall for which the
-    ! advection should be computed
-    ! for the given velocity field
+                                         ! advection should be computed
+                                         ! for the given velocity field
     REAL,    INTENT(IN)    :: C(npa,2)   ! Velocity field in it's
-    ! X- and Y- Components,
+                                         ! X- and Y- Components,
     REAL,    INTENT(INOUT) :: AC(npa)    ! Wave Action before and
-    ! after advection
+                                         ! after advection
     REAL,    INTENT(IN)    :: RD10, RD20 ! Time interpolation
-    ! coefficients for boundary
-    ! conditions
+                                         ! coefficients for boundary
+                                         ! conditions
     LOGICAL, INTENT(IN)    :: LCALC      ! Switch for the calculation of
-    ! the max. Global Time step
+                                         ! the max. Global Time step
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
