@@ -6596,7 +6596,7 @@ CONTAINS
       ! Exact and convert Wave Action
       DO ITH = 1, NTH
         ISP = ITH + (IK-1) * NTH
-        DO IP = 1, NP
+        DO IP = 1, NPA
           VA(ISP,IP)  = U(ITH,IP) * CGSIG(IP) / CLATS(IPLG(IP))
         ENDDO
       ENDDO
