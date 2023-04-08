@@ -6538,7 +6538,7 @@ CONTAINS
       END IF ! LCALC
 
       ! Exact and convert Wave Action - should be some subroutine function or whatever
-      do ip = 1,np
+      do ip = 1,npa
         isp = 0
         do ith = 1,nth
           isp = ith + (ik-1)*nth
