@@ -6435,20 +6435,20 @@ CONTAINS
           CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG(IP))
         ENDDO
 
-        DO ITH = 1, NTH
-          DO IP = 1, NPA
+        DO IP = 1, NPA
+          DO ITH = 1, NTH
             ISEA = IPLG(IP)
             CXX(ITH,IP) = CGSIG(IP) * FACX * ECOS(ITH) / CLATS(ISEA)
             CYY(ITH,IP) = CGSIG(IP) * FACY * ESIN(ITH)
-          ENDDO
+          ENDDO ! ith
           IF (FLCUR) THEN
-            DO IP = 1, NPA
+            DO ITH = 1, NTH
               ISEA = IPLG(IP)
               IF (IOBP_LOC(IP) .GT. 0) THEN
                 CXX(ITH,IP) = CXX(ITH,IP) + FACX * CX(ISEA)/CLATS(ISEA)
                 CYY(ITH,IP) = CYY(ITH,IP) + FACY * CY(ISEA)
               ENDIF
-            ENDDO
+            ENDDO !ith
           ENDIF
         ENDDO
 
@@ -6538,12 +6538,13 @@ CONTAINS
       END IF ! LCALC
 
       ! Exact and convert Wave Action - should be some subroutine function or whatever
-      DO ITH = 1, NTH
-        ISP = ITH + (IK-1) * NTH
-        DO IP = 1, NPA
-          U(ITH,IP)  = VA(ISP,IP) / CGSIG(IP) * CLATS(IPLG(IP))
-        ENDDO
-      ENDDO
+      do ip = 1,np
+        isp = 0
+        do ith = 1,nth
+          isp = ith + (ik-1)*nth
+          u(ith,ip) = va(isp,ip) / cgsig(ip) * clats(iplg(ip))
+        enddo
+      enddo
       UOLD = U
 
       DO IT = 1, ITER(IK)
@@ -6559,7 +6560,6 @@ CONTAINS
         END DO ! IE
         DO IP = 1, NP
           DO ITH = 1, NTH
-            ISP = ITH + (IK-1) * NTH
             U(ITH,IP) = MAX(ZERO,U(ITH,IP)-DTSI(IP)*ST(ITH,IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
             IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(ITH,IP) = UOLD(ITH,IP) ! restores reflected boundary values
@@ -6594,12 +6594,13 @@ CONTAINS
       ENDDO ! IT
 
       ! Exact and convert Wave Action
-      DO ITH = 1, NTH
-        ISP = ITH + (IK-1) * NTH
-        DO IP = 1, NPA
-          VA(ISP,IP)  = U(ITH,IP) * CGSIG(IP) / CLATS(IPLG(IP))
-        ENDDO
-      ENDDO
+      do ip = 1,npa
+        isp = 0
+        do ith = 1,nth
+          isp = ith + (ik-1)*nth
+          va(isp,ip) = u(ith,ip) * cgsig(ip) / clats(iplg(ip))
+        end do
+      end do
 
     ENDDO ! IK
 
