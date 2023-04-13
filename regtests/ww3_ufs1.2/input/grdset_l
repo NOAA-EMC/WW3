@@ -1,0 +1,4 @@
+MODEL: hafsl  
+INPUT: glo_15mxt glox_10m
+POINT: points
+INTGL:  

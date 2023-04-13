@@ -2204,6 +2204,16 @@
     fi
   fi
 
+ #Test gint for restarts 
+  if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
+  then
+    echo ' ' >> matrix.body    
+    echo "$rtst -s MPI_OMPH -w work_c -m grdset_c -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"            >> matrix.body
+    echo "mkdir -p ww3_ufs1.2/work_l"                                                                      >> matrix.body
+    echo "cp ww3_ufs1.2/work_c/restart.hafsl ww3_ufs1.2/work_l/restart.hafsl"                              >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_l -m grdset_l -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"            >> matrix.body
+  fi 
+
 
  #GEFSv12 setup with ww3_multi and grib2 output
   if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]

@@ -328,6 +328,14 @@ then
     input_grids="`awk '/^INPUT:/' $path_i/$grdset | sed 's/INPUT\://'`"
     point_grids="`awk '/^POINT:/' $path_i/$grdset | sed 's/POINT\://'`"
     intgl_grids="`awk '/^INTGL:/' $path_i/$grdset | sed 's/INTGL\://'`"
+    if [ `grep -o 'RSTGL' $path_i/$grdset` ]
+    then
+      rstgl_grids="`awk '/^RSTGL:/' $path_i/$grdset | sed 's/RSTGL\://'`"
+      rstgl_gint="true"
+    else 
+      rstgl_grids=""
+      rstgl_gint="false"
+    fi
   else
     errmsg "grid_set file $path_i/$grdset not found"
     exit 1
@@ -337,16 +345,17 @@ else
   input_grids="none"
   point_grids="none"
   intgl_grids="none"
+  rstgl_grids="none"
+  rstgl_gint="false"
 fi
 all_grids=$model_grids
-for g in $input_grids $point_grids $intgl_grids
+for g in $input_grids $point_grids $intgl_grids $rstgl_grids
 do
   if [ -z "`echo $all_grids | grep $g`" ]
   then
     all_grids="$all_grids $g"
   fi
 done
-
 # 2.m Initialize time counter if time_count option
 if [ $time_count ]
 then # Add time counter if -T
@@ -1573,6 +1582,15 @@ then
     echo '|    Integrated output    |'
     echo '+-------------------------+'
     echo ' '
+
+    #if rstgl_gint is set to true copy over restart files (assume its restart001)  
+    if [ $rstgl_gint = "true" ]
+    then 
+       for gname in $model_grids      
+       do 
+         cp restart001.$gname restart.$gname 
+       done 
+    fi 
 
     if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
