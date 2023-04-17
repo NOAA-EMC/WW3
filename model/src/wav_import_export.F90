@@ -752,10 +752,8 @@ contains
             call init_get_isea(isea, jsea)
             ix  = mapsf(isea,1)
             iy  = mapsf(isea,2)
-            !if (mapsta(iy,ix) == 1) then
-              sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
-              sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
-            !end if
+            sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
+            sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
           enddo
         end do
       end if
