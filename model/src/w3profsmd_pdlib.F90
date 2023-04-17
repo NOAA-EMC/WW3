@@ -6416,7 +6416,7 @@ CONTAINS
 
     REAL, PARAMETER   :: ONESIXTH = 1.0/6.0
     REAL, PARAMETER   :: ZERO = 0.0
-    REAL, PARAMETER   :: THR = 1E-12
+    REAL, PARAMETER   :: THR = 1.0E-12
 
     INTEGER           :: IK, ISP, ITH, IE, IP, IT, IBI, NI(3), I1, I2, I3, JX, IERR, IP_GLOB, ISEA
     !
@@ -6507,7 +6507,7 @@ CONTAINS
 
         DTMAXEXP = 1.E10
         DTMAX    = 1.E10
-        DO IP = 1, np
+        DO IP = 1, npa
           IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
             DO ITH = 1, NTH
               DTMAXEXP(ITH) = PDLIB_SI(IP)/MAX(THR,KKSUM(ITH,IP)*IOBDP_LOC(IP))
@@ -6516,8 +6516,7 @@ CONTAINS
             DTMAXOUT = MINVAL(DTMAX)
           ENDIF
         END DO
-        !?
-        fout(1) = 0.0
+
         FIN(1) = DTMAXOUT
         CALL MPI_ALLREDUCE(FIN,FOUT,1,rtype,MPI_MIN,MPI_COMM_WCMP,ierr)
         DTMAXGL = FOUT(1)

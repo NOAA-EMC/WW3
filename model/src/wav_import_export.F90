@@ -1240,7 +1240,7 @@ contains
     do ik = 1,nwav_elev_spectrum
       ab = 0.0
       do ith = 1, nth
-        do jsea = 1,nseal
+        do jsea = 1,nseal_cpl
           ab(jsea) = ab(jsea) + a(ith,ik,jsea)
         end do
       end do
