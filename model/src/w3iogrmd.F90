@@ -746,9 +746,10 @@ CONTAINS
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
              B_JGS_SOURCE_NONLINEAR
-        !Init COUNTCON to zero, it needs to be set somewhere or
+        !Init COUNTCON and IOBDP to zero, it needs to be set somewhere or
         !removed
         COUNTCON=0
+        IOBDP=0  
         WRITE (NDSM)                                          &
              X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
              LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
