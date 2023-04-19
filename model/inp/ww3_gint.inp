@@ -1,9 +1,12 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid integration input file                            $
 $ -------------------------------------------------------------------- $
-$ Time, time increment and number of outputs
+$ Time, time increment and number of outputs, and optional T/F 
+$ option (default is T) to indicate out_grd (T) or restart (F)
+$ This option for example allows you to create a regional grid from global
+$ Note, there is no interpolation in spectral space only geographic
 $
-  19680606 060000 10800. 1
+  19680606 060000 10800. 1 T
 $
 $ Total number of grids (NGR). The code assumes that the first NGR-1
 $ grids are the input grids and the last grid is the target grid in

@@ -109,7 +109,7 @@ CONTAINS
   !> @date   11-Jun-2014
   !>
   SUBROUTINE W3SREF(A, CG, WN, EMEAN, FMEAN, DEPTH, CX1, CY1, REFLC, REFLD,     &
-       TRNX, TRNY, BERG, DT,  IX, IY,S)
+       TRNX, TRNY, BERG, DT, IX, IY, JSEA, S)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -217,7 +217,7 @@ CONTAINS
     REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, EMEAN, FMEAN
     REAL, INTENT(INOUT)     :: A(NSPEC)
     REAL, INTENT(IN)        :: CX1, CY1, DT
-    INTEGER, INTENT(IN)     :: REFLD(6), IX, IY
+    INTEGER, INTENT(IN)     :: REFLD(6), IX, IY, JSEA
     REAL, INTENT(IN)        :: REFLC(4), TRNX, &
          TRNY, BERG
     REAL, INTENT(OUT)       :: S(NSPEC)
@@ -284,8 +284,8 @@ CONTAINS
     IF (GTYPE.EQ.UNGTYPE) THEN
       IF (LPDLIB) THEN
 #ifdef W3_PDLIB
-        DELX=5.*SQRT(PDLIB_SI(IX))*(DERA * RADIUS)    ! first approximation ...
-        DELY=5.*SQRT(PDLIB_SI(IX))*(DERA * RADIUS)    ! first approximation ...
+        DELX=5.*SQRT(PDLIB_SI(JSEA))*(DERA * RADIUS)    ! first approximation ...
+        DELY=5.*SQRT(PDLIB_SI(JSEA))*(DERA * RADIUS)    ! first approximation ...
 #endif
       ELSE
         DELX=5.*SQRT(SI(IX))*(DERA * RADIUS)    ! first approximation ...
@@ -325,7 +325,7 @@ CONTAINS
     ATMP2(:)=A(:)     ! this is really to keep in memory the original spectrum
     IF (IGBCOVERWRITE.AND.REFLC(1).GT.0) THEN
       IGFAC1 = 1.
-      ATMP2(1:NSPECIGSTART)=0.
+      ATMP2(1:NSPECIGSTART) = 0.
     END IF
     !
     ! resets IG band energy to zero
@@ -483,7 +483,7 @@ CONTAINS
           IF (GTYPE.EQ.UNGTYPE.AND.REFPARS(3).LT.0.5) THEN
             IF (LPDLIB) THEN
 #ifdef W3_PDLIB
-              IOBPDIP = IOBPD_LOC(:,IX)
+              IOBPDIP = IOBPD_LOC(:,JSEA)
 #endif
             ELSE
               IOBPDIP = IOBPD(:,IX)

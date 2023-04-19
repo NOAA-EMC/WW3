@@ -1,0 +1,37 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Grid preprocessor input file                           $
+$ -------------------------------------------------------------------- $
+  'NATL 6 Minute'
+$
+   1.07  0.035  50  36  0.5
+$  1.1   0.0285 40  36  0.5
+$
+   F T T T F T
+$
+    360. 360. 360. 15.
+$
+  &SIN4 BETAMAX = 1.33 /
+  &SBT1 GAMMA = -0.019 /
+  &PRO3 WDTHCG = 12.00, WDTHTH = 12.00 /
+  &MISC FLAGTR = 4, CICE0 = 0.25, CICEN = 0.75 /
+  &FLD1 TAILTYPE=1 /
+END OF NAMELISTS
+$
+     'RECT'    T        'NONE'
+     901       441 
+     1.        1.       10.
+     -98.0     1.5      1.
+$ Bottom Bathymetry 
+-0.10   2.50  40  0.001000  1  1 '(....)'  NAME  '../input/ww3_grid_l.bot' 
+$ Sub-grid information 
+50  0.010000  1  1  '(....)'  NAME  '../input/ww3_grid_l.obr'  
+$ Mask Information 
+60  1  1  '(....)'  NAME  '../input/ww3_grid_l.msk'  
+$ Output boundary points --------------------------------------------- $
+$  Close list by defining line with 0 points (mandatory)
+$
+     0.    0.    0.    0.       0
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $

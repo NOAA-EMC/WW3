@@ -1,0 +1,153 @@
+#!/bin/bash
+# --------------------------------------------------------------------------- #
+# matrix.go: Run matrix of regression tests on target machine.                #
+#                                                                             #
+# Remarks:                                                                    #
+# - This version is set up for automatic w3_setenv script and for the         #
+#   NOAA RDHPC 'zeus' system. When using this for your own setup and          #
+#   computer, please copy rather than modify.                                 #
+#                                                                             #
+#                                                      Hendrik L. Tolman      #
+#                                                      August 2013            #
+#                                                      December 2013          #
+#                                                      April 2018             #
+#                                                                             #
+#    Copyright 2013 National Weather Service (NWS),                           #
+#       National Oceanic and Atmospheric Administration.  All rights          #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                   #
+#       No unauthorized use without permission.                               #
+#                                                                             #
+# --------------------------------------------------------------------------- #
+usage ()
+{ 
+  cat 2>&1 << EOF
+
+  Usage: $myname model_dir 
+  Required:
+    model_dir : path to model dir of WW3 source
+EOF
+}
+
+
+# Get required arguments
+  if [ ! $# = 0 ]
+  then
+    main_dir="$1" ; shift
+  else
+    usage
+    exit 1
+  fi
+
+# Convert main_dir to absolute path
+  main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
+
+# Set batchq queue, choose modules and other custom variables to fit system and 
+# to define headers etc (default to original version if empty)
+# 1. Set up
+# 1.a Computer/ user dependent set up
+
+  echo '#!/bin/sh '                                          > matrix.head
+  echo ' '                                                  >> matrix.head
+  echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
+  echo ' '                                                  >> matrix.head
+
+# Netcdf and Parmetis modules & variables
+  echo "  export NetCDF_ROOT=/home/thesser/tools/GNU "    >> matrix.head
+  echo "  export METIS_PATH=/home/thesser/public/parmetis " >> matrix.head
+  echo "  export PATH=/home/thesser/tools/cmake/bin:$PATH" >> matrix.head
+echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
+  echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'         >> matrix.head
+
+  echo ' ' 
+
+  if [ "$batchq" = 'slurm' ]
+  then
+    export  mpi='mpirun'
+  else
+    export  mpi='mpirun'
+  fi
+    export   np='24'
+    export   nr='0'
+    export  nth='0'
+# Compile option
+  opt="-o netcdf -S -T -N"
+# Batch queue option
+  if [ "$batchq" = 'slurm' ]
+  then
+     opt="-b $batchq $opt"
+  fi
+
+# Base run_test command line
+  export rtst="./bin/run_cmake_test $opt"
+
+  export  ww3='../model'
+
+# 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
+#     Addition selection by commenting out lines as below
+  export       shrd='y' # Do shared architecture tests
+  export       dist='y' # Do distributed architecture (MPI) tests
+  export        omp='y' # Threaded (OpenMP) tests
+  export       hybd='y' # Hybrid options
+
+  export     prop1D='y' # 1-D propagation tests (ww3_tp1.X)
+  export     prop2D='y' # 2-D propagation tests (ww3_tp2.X)
+  export       time='y' # time linmited growth
+  export      fetch='y' # fetch linmited growth
+  export     hur1mg='y' # Hurricane with one moving grid
+  export      shwtr='y' # shallow water tests
+  export      unstr='y' # unstructured grid tests
+  export      pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
+  export      smcgr='y' # SMC grid test
+  export        rtd='y' # Rotated pole test
+  export     mudice='y' # Mud/Ice and wave interaction tests 
+  export     infgrv='y' # Second harmonic generation tests
+  export       uost='y' # ww3_ts4 Unresolved Obstacles Source Term (UOST)
+  export      assim='y' # Restart spectra update
+  export      oasis='y' # Atmosphere, ocean, and ice coupling using OASIS
+  export   calendar='y' # Calendar type
+  export   confignc='y' # Configurable netCDF meta data (ww3_ounf)
+
+  export    multi01='y' # mww3_test_01 (wetting and drying)
+  export    multi02='y' # mww3_test_02 (basic two-way nesting test))
+  export    multi03='y' # mww3_test_03 (three high and three low res grids).
+  export    multi04='y' # mww3_test_04 (swell on sea mount and/or current)
+  export    multi05='y' # mww3_test_05 (three-grid moving hurricane)
+  export    multi06='y' # mww3_test_06 (curvilinear grid tests)
+  export    multi07='y' # mww3_test_07 (unstructured grid tests)
+  export    multi08='y' # mww3_test_08 (wind and ice tests)
+  export    multi09='y' # mww3_test_09 (SMC multi grid test)
+
+  export        ufs='n' # The Unified Forecast System
+  export  ufscoarse='n' # Option for small PCs
+  export       grib='n' # grib file field output
+  export  rstrt_b4b='n' # Restart Reproducibility
+  export    npl_b4b='n' # MPI task Reproducibility
+  export    nth_b4b='n' # Thread Reproducibility
+  export       esmf='n' # ESMF coupling
+                      # The filter does a set of consecutinve greps on the 
+                      # command lines generated by filter.base with the above
+                      # selected options.
+
+# --------------------------------------------------------------------------- #
+# 2.  Execute matrix.base ...                                                 #
+# --------------------------------------------------------------------------- #
+             
+
+  $main_dir/../regtests/bin/matrix.base
+
+  $main_dir/../regtests/bin/matrix_divider_cmake.sh
+
+
+  echo "#submit all of the diveded matrix files" > msuball.sh
+  if [ $batchq = "slurm" ]
+  then
+    files=`ls matrix??`
+    for file in $files
+    do
+      echo "sbatch < $file"  >> msuball.sh
+    done
+  fi 
+
+# --------------------------------------------------------------------------- #
+# End to the matrix                                                           #
+# --------------------------------------------------------------------------- #
