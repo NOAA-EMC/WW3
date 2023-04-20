@@ -1,9 +1,9 @@
 # About the bin directory 
 
-This is the WW3 bin directory which mostly serves to create the make file
-and set up the environment.  Below we have three sections, build environment
-varibles, quick start instructions and information from various centers that
-use WW3.
+This is the WW3 bin directory which mostly serves to provide information 
+and a few generic utilities.  Below we have three sections, CMAKE build
+information, quick start instructions and information from various centers 
+that use WW3.
 
 ## CMake Build
 
@@ -22,17 +22,16 @@ make install
 
 The CMake build builds all available executables with the given switches.
 
+
+
+## TODO: Update this  section for CMAKE or deleted 
+
 # Build Enivronment Variables 
 
 This is the WW3 bin directory which mostly serves to create the make file 
 and set up the environment 
 
 WW3 build can have the following env variables set: 
-
-## Optional variable to use with any configuration: 
-
-WW3_PARCOMPN = <how many parallel make tasks to use, default to 4 if not set >
-
 
 ## To build NetCDF executables you need:
 
@@ -60,20 +59,6 @@ If using NCEP hpc-stack, you just need to set the following:
     Z_LIB=$ZLIB_ROOT/lib/libz.a 
     
 the other vairables should already be appropriately set. 
-
-# Quick Start for building WW3 
-
-After cloning and changing into the WW3 directory: 
-
-Run the w3_setup script: 
-
-    ./model/bin/w3_setup model -c <comp> -s <switch> 
-
-Build a WW3 exe after setting up any appropraite environment variables described above. 
-
-    cd model/bin/ 
-    ./w3_make ww3_grid 
-
 
 # Below is information about various centers use of WW3: 
 

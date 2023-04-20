@@ -2,6 +2,8 @@
 # --------------------------------------------------------------------------- #
 # matrix_ukmo_cray: Run matrix of regression tests on Cray XC architecture    #
 #   as currently used at the UK Met Office.                                   #
+#
+# This version runs the CMake compilation version
 #                                                                             #
 # Remarks:                                                                    #
 #   Currently, programs using the PDLIB switch (METIS library) crash when     #
@@ -9,12 +11,10 @@
 #   it is required to use the GNU compiler.                                   #
 #                                                                             #
 #                                                      Chris Bunney           #
-#                                                      April 2019             #
+#                                                      April 2022             #
 #                                                                             #
 #                                                      Hendrik L. Tolman      #
 #                                                      August 2013            #
-#                                                      December 2013          #
-#                                                      April 2018             #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -24,16 +24,31 @@
 # --------------------------------------------------------------------------- #
 # 0. Environment file
 
-  source $(dirname $0)/../../model/bin/w3_setenv
-  main_dir=$WWATCH3_DIR
-  temp_dir=$WWATCH3_TMP
-  source=$WWATCH3_SOURCE
-  list=$WWATCH3_LIST
 
-  echo "Main directory    : $main_dir"
-  echo "Scratch directory : $temp_dir"
-  echo "Save source codes : $source"
-  echo "Save listings     : $list"
+usage ()
+{
+  cat 2>&1 << EOF
+
+  Usage: $myname model_dir 
+  Required:
+    model_dir : path to model dir of WW3 source
+EOF
+}
+
+
+# Get required arguments
+  if [ ! $# = 0 ]
+  then
+    main_dir="$1" ; shift
+  else
+    usage
+    exit 1
+  fi
+
+# Convert main_dir to absolute path
+  main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
+
+
 
   # Set Cray compiler variant: CCE (Cray Compiler Environment) or GNU.
   #  - ukmo_cray[_debug]       : Cray Fortan (Cray Compiler Environment)
@@ -87,27 +102,24 @@ else
     exit 1
 fi
 
+# Need newer cmake version on the XC
+  echo "module load cmake/3.21.3"                         >> matrix.head
+
 # SNP Launcher 7.7.4 allows -np switch:
-  echo "  module load cray-snplauncher/7.7.4"               >> matrix.head
+  echo "module load cray-snplauncher/7.7.4"               >> matrix.head
+  echo "export NETCDF_CONFIG=\$(which nc-config)"         >> matrix.head
 
-  echo "  export NETCDF_CONFIG=\$(which nc-config)"         >> matrix.head
+# On the Cray XC, we need to stop CMake from searching for
+# the NetCDF libraries - they are provided by the ftn wrapper.
+  echo "export CMAKE_OPTIONS=-DEXCLUDE_FIND=\"netcdf\"" >> matrix.head
 
-# Compiler option. Set cmplOption to
-# y if using for the first time or using a different compiler
-
-  export cmplOption='y'
-
+# Resources:
   export  mpi='mpiexec'
   export   np='16'
   export   nr='4'
   export  nth='4'
 
-  if [ "$cmplOption" = 'y' ]
-  then
-     export rtst="./bin/run_test -o both -c $cmplr -S"
-  else
-     export rtst="./bin/run_test -o both -S"
-  fi
+  export rtst="./bin/run_cmake_test -o both -S"
 
   export  ww3='../model'
 
@@ -163,6 +175,8 @@ fi
 # --------------------------------------------------------------------------- #
              
   $main_dir/../regtests/bin/matrix.base
+
+  $main_dir/../regtests/bin/matrix_divider_cmake.sh
 
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #

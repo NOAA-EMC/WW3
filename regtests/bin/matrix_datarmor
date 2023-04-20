@@ -14,6 +14,7 @@
 #                                                      December 2013          #
 #                                                      April 2018             #
 #                                                      October 2021           #
+#                                                      Feb 2022               #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -21,31 +22,39 @@
 #       No unauthorized use without permission.                               #
 #                                                                             #
 # --------------------------------------------------------------------------- #
-# 0. Environment file
 
-  source $(dirname $0)/../../model/bin/w3_setenv
-  main_dir=$WWATCH3_DIR
-  temp_dir=$WWATCH3_TMP
-  source=$WWATCH3_SOURCE
-  list=$WWATCH3_LIST
+usage ()
+{
+cat 2>&1 << EOF
 
-  echo "Main directory    : $main_dir"
-  echo "Scratch directory : $temp_dir"
-  echo "Save source codes : $source"
-  echo "Save listings     : $list"
+Usage: $myname model_dir 
+Required:
+  model_dir : path to model dir of WW3 source
+EOF
+}
 
-# Compiler option. Choose appropriate compiler and set cmplOption to
-# y if using for the first time or using a different compiler
+
+# 0.e Get required arguments
+if [ ! $# = 0 ]
+then
+  main_dir="$1" ; shift
+else
+  usage
+  exit 1
+fi
+
+#convert main_dir to absolute path
+main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
   cmplr=datarmor_intel
-  export cmplOption='y'
+
+
 
 # 1. Set up
-
-  export cmplOption='y'
+   
   export np='28'      #number of mpi tasks
-  export npl='28'     #number of mpi tasks for ufs applications and large setups
-  export npl1='20'    #number of mpi tasks for ufs/large setups (b4b check)
+  export npl='28'    #number of mpi tasks for ufs applications and large setups
+  export npl1='20'   #number of mpi tasks for ufs/large setups (b4b check)
   export nr='4'       #number of mpi tasks for hybrid
   export nth='7'      #number of threads
   export nth1='6'     #number of threads (b4b check)
@@ -56,7 +65,7 @@
   echo ' '                                                  >> matrix.head
   echo '#PBS -q mpi_1'                                      >> matrix.head
   echo "#PBS -l select=1:ncpus=28:mpiprocs=$nr:ompthreads=$nth:mem=20G"  >> matrix.head
-  echo '#PBS -l walltime=08:00:00'                          >> matrix.head
+  echo '#PBS -l walltime=12:00:00'                          >> matrix.head
   echo "#PBS -N $(basename $(dirname $(dirname $PWD)))"     >> matrix.head
   echo '#PBS -j oe'                                         >> matrix.head
   echo '#PBS -o matrix.out'                                 >> matrix.head
@@ -67,54 +76,62 @@
 
 # Netcdf, grib and Parmetis modules
 
-  echo '  source /usr/share/Modules/3.2.10/init/bash'                                 >> matrix.head
-  echo '  module purge'                                                               >> matrix.head
+  echo '  source /usr/share/Modules/3.2.10/init/bash'       >> matrix.head
+  echo '  module purge'                                     >> matrix.head
 
   if [ $cmplr = "datarmor_intel_debug" ] || [ $cmplr = "datarmor_intel" ]
   then
     COMP='INTEL'
-    echo '  module load intel-comp/18'                                                >> matrix.head
-    echo '  module load impi/2018.1.163'                                              >> matrix.head
+    echo '  module load intel-comp/18'                      >> matrix.head
+    echo '  module load impi/2018.1.163'                    >> matrix.head
+    echo '  export CC=mpiicc'                               >> matrix.head
+    echo '  export FC=mpiifort'                             >> matrix.head
   elif [ $cmplr = "datarmor_mpt_debug" ] || [ $cmplr = "datarmor_mpt" ]
   then
     COMP='MPT'
-    echo '  module load intel-comp/18'                                                >> matrix.head
-    echo '  module load mpt/2.18'                                                     >> matrix.head
-  elif [ $cmplr = "datarmor_gnu_debug" ] || [ $cmplr = "datarmor_gnu" ]
+    echo '  module load intel-comp/18'                      >> matrix.head
+    echo '  module load mpt/2.18'                           >> matrix.head
+    echo "  export CC='icc -lmpi'"                          >> matrix.head
+    echo "  export FC='ifort -lmpi'"                        >> matrix.head
+  elif [ $cmplr = "datarmor_gnu_debug" ] | [ $cmplr = "datarmor_gnu" ]
   then
     COMP='GNU'
-    echo '  module load impi/2018.1.163'                                              >> matrix.head
+    echo '  module load impi/2018.1.163'                    >> matrix.head
+    echo '  export CC=mpigcc'                               >> matrix.head
+    echo '  export FC=mpif90'                               >> matrix.head
   elif [ $cmplr = "datarmor_pgi_debug" ] || [ $cmplr = "datarmor_pgi" ]
   then
     COMP='PGI'
-    echo '  module load pgi/17.10'                                                    >> matrix.head
+    echo '  module load pgi/17.10'                          >> matrix.head
   fi
 
+  echo "  export PATH=\${PATH}:/home/datawork-wave/CMAKE2022/cmake-3.22.1/bin"             >> matrix.head
   echo "  export PATH=\${PATH}:/home/datawork-wave/NETCDF2019/${COMP}/bin"             >> matrix.head
   echo "  export CPATH=\${CPATH}:/home/datawork-wave/NETCDF2019/${COMP}/include"       >> matrix.head
   echo "  export LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/home/datawork-wave/NETCDF2019/${COMP}/lib"  >> matrix.head
   echo "  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/${COMP}/bin/nc-config"  >> matrix.head
+  echo "  export NetCDF_ROOT=/home/datawork-wave/NETCDF2019/${COMP}"  >> matrix.head
   echo "  export METIS_PATH=/home/datawork-wave/PARMETIS2019/${COMP}"                 >> matrix.head
   echo "  export WW3_PARCOMPN=4"                                                      >> matrix.head
-  echo "  export G2_LIB4=/home/datawork-wave/GRIB2021/${COMP}/lib/libg2.a"            >> matrix.head
-  echo "  export BACIO_LIB4=/home/datawork-wave/GRIB2021/${COMP}/lib/libbacio.a"      >> matrix.head
+  echo "  export G2_LIB4=/home/datawork-wave/NCEPLIBS/${COMP}/g2-3.4.5/lib64/libg2_4.a"            >> matrix.head
+  echo "  export BACIO_LIB4=/home/datawork-wave/NCEPLIBS/${COMP}/bacio-2.4.1/lib/libbacio_4.a"      >> matrix.head
   echo "  export JASPER_LIB=/home/datawork-wave/NETCDF2019/${COMP}/lib/libjasper.so"  >> matrix.head
   echo "  export PNG_LIB=/home/datawork-wave/NETCDF2019/${COMP}/lib/libpng.so"        >> matrix.head
   echo "  export Z_LIB=/lib64/libz.so.1"                                              >> matrix.head
+  echo "  # cmake dependencies"      >> matrix.head
+  echo "  export CMAKE_PREFIX_PATH=/home/datawork-wave/NETCDF2019/${COMP}"      >> matrix.head
+  echo "  export g2_DIR=/home/datawork-wave/NCEPLIBS/${COMP}/g2-3.4.5/lib64/cmake/g2"      >> matrix.head
+  echo "  export bacio_DIR=/home/datawork-wave/NCEPLIBS/${COMP}/bacio-2.4.1/lib/cmake/bacio"      >> matrix.head
+  echo "  export w3emc_DIR=/home/datawork-wave/NCEPLIBS/${COMP}/w3emc-2.9.2/lib/cmake/w3emc"      >> matrix.head
   echo ' '
 
   export mpi='$MPI_LAUNCH'
 
 # Compile option
-  if [ "$cmplOption" = 'y' ]
-  then
-     export opt="-o all -f -c $cmplr -S -T"
-  else
-     export opt="-o all -f -S -T"
-  fi
+  opt="-f -N -S -T"
 
 # Base run_test command line
-  export rtst="./bin/run_test $opt"
+  export rtst="./bin/run_cmake_test $opt"
 
   export  ww3='../model'
 
@@ -171,7 +188,8 @@
              
   $main_dir/../regtests/bin/matrix.base
 
-  $main_dir/../regtests/bin/matrix_divider_p.sh
+  $main_dir/../regtests/bin/matrix_divider_cmake.sh 
+
 # --------------------------------------------------------------------------- #
 # End to the matrix                                                           #
 # --------------------------------------------------------------------------- #
