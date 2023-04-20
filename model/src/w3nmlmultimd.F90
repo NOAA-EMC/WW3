@@ -1,22 +1,22 @@
-#include "w3macros.h" 
+#include "w3macros.h"
 !/ ------------------------------------------------------------------- /
-      MODULE W3NMLMULTIMD
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                                   |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
-!/                  +-----------------------------------+
-!/
-!/    For updates see subroutines.
-!/
-!  1. Purpose :
-!
-!     Manages namelists from configuration file ww3_multi.nml for ww3_multi program
-!
-!/ ------------------------------------------------------------------- /
+MODULE W3NMLMULTIMD
+  !/
+  !/                  +-----------------------------------+
+  !/                  | WAVEWATCH III           NOAA/NCEP |
+  !/                  |           M. Accensi              |
+  !/                  |                                   |
+  !/                  |                        FORTRAN 90 |
+  !/                  | Last update :         22-Mar-2021 |
+  !/                  +-----------------------------------+
+  !/
+  !/    For updates see subroutines.
+  !/
+  !  1. Purpose :
+  !
+  !     Manages namelists from configuration file ww3_multi.nml for ww3_multi program
+  !
+  !/ ------------------------------------------------------------------- /
 
   ! module defaults
   IMPLICIT NONE
@@ -56,21 +56,21 @@
     CHARACTER(13)               :: MUD_THICKNESS
     CHARACTER(13)               :: MUD_VISCOSITY
   END TYPE NML_MODEL_FORCING_T
-!
+  !
   TYPE NML_MODEL_ASSIM_T
     CHARACTER(13)               :: MEAN
     CHARACTER(13)               :: SPEC1D
     CHARACTER(13)               :: SPEC2D
   END TYPE NML_MODEL_ASSIM_T
-!
+  !
   TYPE NML_MODEL_RESOURCE_T
     INTEGER                     :: RANK_ID
     INTEGER                     :: GROUP_ID
     REAL(4)                     :: COMM_FRAC(2)
     LOGICAL                     :: BOUND_FLAG
   END TYPE NML_MODEL_RESOURCE_T
-!
-  TYPE NML_MODEL_GRID_T 
+  !
+  TYPE NML_MODEL_GRID_T
     CHARACTER(13)               :: NAME
     TYPE(NML_MODEL_FORCING_T)   :: FORCING
     TYPE(NML_MODEL_ASSIM_T)     :: ASSIM
@@ -96,13 +96,13 @@
     LOGICAL                     :: MUD_THICKNESS
     LOGICAL                     :: MUD_VISCOSITY
   END TYPE NML_INPUT_FORCING_T
-!
+  !
   TYPE NML_INPUT_ASSIM_T
     LOGICAL                     :: MEAN
     LOGICAL                     :: SPEC1D
     LOGICAL                     :: SPEC2D
   END TYPE NML_INPUT_ASSIM_T
-!
+  !
   TYPE NML_INPUT_GRID_T
     CHARACTER(13)               :: NAME
     TYPE(NML_INPUT_FORCING_T)   :: FORCING
@@ -115,16 +115,16 @@
   TYPE NML_FIELD_T
     CHARACTER(1024)             :: LIST
   END TYPE NML_FIELD_T
-!
+  !
   TYPE NML_POINT_T
     CHARACTER(13)               :: NAME
     CHARACTER(64)               :: FILE
   END TYPE NML_POINT_T
-!
+  !
   TYPE NML_TRACK_T
     LOGICAL                     :: FORMAT
   END TYPE NML_TRACK_T
-!
+  !
   TYPE NML_PARTITION_T
     INTEGER                     :: X0
     INTEGER                     :: XN
@@ -134,7 +134,7 @@
     INTEGER                     :: NY
     LOGICAL                     :: FORMAT
   END TYPE NML_PARTITION_T
-!
+  !
 #ifdef W3_COU
   TYPE NML_COUPLING_T
     CHARACTER(1024)             :: SENT
@@ -142,11 +142,11 @@
     LOGICAL                     :: COUPLET0
   END TYPE NML_COUPLING_T
 #endif
-!
+  !
   TYPE NML_RESTART_T
     CHARACTER(1024)             :: EXTRA
   END TYPE NML_RESTART_T
-!
+  !
   TYPE NML_OUTPUT_TYPE_T
     TYPE(NML_POINT_T)           :: POINT
     TYPE(NML_FIELD_T)           :: FIELD
@@ -161,14 +161,14 @@
 
 
   ! output date structure
-  TYPE NML_OUTPUT_TIME_T 
+  TYPE NML_OUTPUT_TIME_T
     CHARACTER(15)               :: START
     CHARACTER(15)               :: STRIDE
     CHARACTER(15)               :: STOP
     CHARACTER(1)                :: OUTFFILE
-!
+    !
   END TYPE NML_OUTPUT_TIME_T
-!
+  !
   TYPE NML_OUTPUT_DATE_T
     TYPE(NML_OUTPUT_TIME_T)     :: FIELD
     TYPE(NML_OUTPUT_TIME_T)     :: POINT
@@ -189,7 +189,7 @@
     INTEGER                     :: N_MOV
     INTEGER                     :: N_TOT
   END TYPE NML_HOMOG_COUNT_T
-!
+  !
   TYPE NML_HOMOG_INPUT_T
     CHARACTER(15)               :: NAME
     CHARACTER(15)               :: DATE
@@ -205,105 +205,105 @@
 
 
 
-  CONTAINS
-!/ ------------------------------------------------------------------- /
+CONTAINS
+  !/ ------------------------------------------------------------------- /
   SUBROUTINE W3NMLMULTIDEF (MPI_COMM, NDSI, INFILE, NML_DOMAIN, IERR)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |           F. Ardhuin              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!
-!  1. Purpose :
-!
-!     Reads the domain definition namelist to define the number of 
-!     model and forcing grids
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      MPI_COMM   Int.  Public   Communicator used in the wave MODEL.
-!      NDSI       Int.
-!      INFILE     Char.
-!      NML_DOMAIN type.
-!      IERR       Int.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!      READ_DOMAIN_NML
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      WMINITNML Subr.   N/A    Model configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |           F. Ardhuin              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !
+    !  1. Purpose :
+    !
+    !     Reads the domain definition namelist to define the number of
+    !     model and forcing grids
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      MPI_COMM   Int.  Public   Communicator used in the wave MODEL.
+    !      NDSI       Int.
+    !      INFILE     Char.
+    !      NML_DOMAIN type.
+    !      IERR       Int.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !      READ_DOMAIN_NML
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      WMINITNML Subr.   N/A    Model configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
     USE WMMDATMD, ONLY: MDSE, IMPROC, NMPLOG
 #ifdef W3_MPI
-      USE WMMDATMD, ONLY: MPI_COMM_MWAVE
+    USE WMMDATMD, ONLY: MPI_COMM_MWAVE
 #endif
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
 
     INTEGER, INTENT(IN)                       :: MPI_COMM, NDSI
     CHARACTER*(*), INTENT(IN)                 :: INFILE
-    TYPE(NML_DOMAIN_T), INTENT(OUT)           :: NML_DOMAIN 
+    TYPE(NML_DOMAIN_T), INTENT(OUT)           :: NML_DOMAIN
     INTEGER, INTENT(OUT)                      :: IERR
 
     ! locals
 #ifdef W3_MPI
-      INTEGER                                 :: IERR_MPI
+    INTEGER                                 :: IERR_MPI
 #endif
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'W3NMLMULTIDEF')
+    CALL STRACE (IENT, 'W3NMLMULTIDEF')
 #endif
 
 #ifdef W3_MPI
-      MPI_COMM_MWAVE = MPI_COMM
-      CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
-      IMPROC = IMPROC + 1
+    MPI_COMM_MWAVE = MPI_COMM
+    CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
+    IMPROC = IMPROC + 1
 #endif
 
     ! open namelist log file
@@ -333,104 +333,104 @@
 
   END SUBROUTINE W3NMLMULTIDEF
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE W3NMLMULTICONF (MPI_COMM, NDSI, INFILE, NML_DOMAIN,       &
-                             NML_INPUT_GRID, NML_MODEL_GRID,           &
-                             NML_OUTPUT_TYPE, NML_OUTPUT_DATE,         &
-                             NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |           F. Ardhuin              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
+       NML_INPUT_GRID, NML_MODEL_GRID,           &
+       NML_OUTPUT_TYPE, NML_OUTPUT_DATE,         &
+       NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |           F. Ardhuin              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
 
-!  1. Purpose :
-!
-!     Reads all the namelist to define the multi grid
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      MPI_COMM  Int.  Public   Communicator used in the wave MODEL.
-!      NDSI
-!      INFILE
-!      NML_DOMAIN
-!      NML_INPUT_GRID
-!      NML_MODEL_GRID
-!      NML_OUTPUT_TYPE
-!      NML_OUTPUT_DATE
-!      NML_HOMOG_COUNT
-!      NML_HOMOG_INPUT
-!      IERR
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!      READ_INPUT_GRID_NML
-!      REPORT_INPUT_GRID_NML
-!      READ_MODEL_GRID_NML
-!      REPORT_MODEL_GRID_NML
-!      READ_OUTPUT_TYPE_NML
-!      REPORT_OUTPUT_TYPE_NML
-!      READ_OUTPUT_DATE_NML
-!      REPORT_OUTPUT_DATE_NML
-!      READ_HOMOGENEOUS_NML
-!      REPORT_HOMOGENEOUS_NML
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      WMINITNML Subr.   N/A    Model configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !  1. Purpose :
+    !
+    !     Reads all the namelist to define the multi grid
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      MPI_COMM  Int.  Public   Communicator used in the wave MODEL.
+    !      NDSI
+    !      INFILE
+    !      NML_DOMAIN
+    !      NML_INPUT_GRID
+    !      NML_MODEL_GRID
+    !      NML_OUTPUT_TYPE
+    !      NML_OUTPUT_DATE
+    !      NML_HOMOG_COUNT
+    !      NML_HOMOG_INPUT
+    !      IERR
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !      READ_INPUT_GRID_NML
+    !      REPORT_INPUT_GRID_NML
+    !      READ_MODEL_GRID_NML
+    !      REPORT_MODEL_GRID_NML
+    !      READ_OUTPUT_TYPE_NML
+    !      REPORT_OUTPUT_TYPE_NML
+    !      READ_OUTPUT_DATE_NML
+    !      REPORT_OUTPUT_DATE_NML
+    !      READ_HOMOGENEOUS_NML
+    !      REPORT_HOMOGENEOUS_NML
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      WMINITNML Subr.   N/A    Model configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE, IMPROC, NMPLOG
 #ifdef W3_MPI
-      USE WMMDATMD, ONLY: MPI_COMM_MWAVE
+    USE WMMDATMD, ONLY: MPI_COMM_MWAVE
 #endif
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -438,8 +438,8 @@
     INTEGER, INTENT(IN)                       :: MPI_COMM, NDSI
     CHARACTER*(*), INTENT(IN)                 :: INFILE
     TYPE(NML_DOMAIN_T), INTENT(INOUT)         :: NML_DOMAIN
-    TYPE(NML_INPUT_GRID_T), INTENT(INOUT)     :: NML_INPUT_GRID(:) 
-    TYPE(NML_MODEL_GRID_T), INTENT(INOUT)     :: NML_MODEL_GRID(:) 
+    TYPE(NML_INPUT_GRID_T), INTENT(INOUT)     :: NML_INPUT_GRID(:)
+    TYPE(NML_MODEL_GRID_T), INTENT(INOUT)     :: NML_MODEL_GRID(:)
     TYPE(NML_OUTPUT_TYPE_T), INTENT(INOUT)    :: NML_OUTPUT_TYPE(:)
     TYPE(NML_OUTPUT_DATE_T), INTENT(INOUT)    :: NML_OUTPUT_DATE(:)
     TYPE(NML_HOMOG_COUNT_T), INTENT(INOUT)    :: NML_HOMOG_COUNT
@@ -448,21 +448,21 @@
 
     ! locals
 #ifdef W3_MPI
-      INTEGER                                 :: IERR_MPI
+    INTEGER                                 :: IERR_MPI
 #endif
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'W3NMLMULTICONF')
+    CALL STRACE (IENT, 'W3NMLMULTICONF')
 #endif
 
 #ifdef W3_MPI
-      MPI_COMM_MWAVE = MPI_COMM
-      CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
-      IMPROC = IMPROC + 1
+    MPI_COMM_MWAVE = MPI_COMM
+    CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
+    IMPROC = IMPROC + 1
 #endif
 
     ! open namelist log file
@@ -509,79 +509,79 @@
 
   END SUBROUTINE W3NMLMULTICONF
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_DOMAIN_NML (NDSI, NML_DOMAIN)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |           F. Ardhuin              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |           F. Ardhuin              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
 
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI            Int.
-!      NML_DOMAIN      Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTIDEF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI            Int.
+    !      NML_DOMAIN      Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTIDEF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -594,12 +594,12 @@
     TYPE(NML_DOMAIN_T) :: DOMAIN
     NAMELIST /DOMAIN_NML/ DOMAIN
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_DOMAIN_NML')
+    CALL STRACE (IENT, 'READ_DOMAIN_NML')
 #endif
 
     ! set default values for model definition data
@@ -619,8 +619,8 @@
     READ (NDSI, nml=DOMAIN_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_DOMAIN_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_DOMAIN_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (1)
     END IF
 
@@ -643,80 +643,80 @@
 
   END SUBROUTINE READ_DOMAIN_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_INPUT_GRID_NML (NDSI, NRINP, NML_INPUT_GRID)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI              Int.
-!      NRINP             Int.
-!      NML_INPUT_GRID    Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         22-Mar-2021 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI              Int.
+    !      NRINP             Int.
+    !      NML_INPUT_GRID    Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -730,20 +730,20 @@
     TYPE(NML_INPUT_GRID_T) :: INPUT(MAX_NRINP)
     NAMELIST /INPUT_GRID_NML/ INPUT
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_INPUT_GRID_NML')
+    CALL STRACE (IENT, 'READ_INPUT_GRID_NML')
 #endif
 
     ! test NRINP
     IF (NRINP.GT.MAX_NRINP) THEN
       WRITE (MDSE,'(A,/A,I6,/A,I6)') &
-        'ERROR: READ_INPUT_GRID_NML: NRINP > MAX_NRINP',      &
-        'ERROR: READ_INPUT_GRID_NML:     NRINP = ',    NRINP, &
-        'ERROR: READ_INPUT_GRID_NML: MAX_NRINP = ',MAX_NRINP
+           'ERROR: READ_INPUT_GRID_NML: NRINP > MAX_NRINP',      &
+           'ERROR: READ_INPUT_GRID_NML:     NRINP = ',    NRINP, &
+           'ERROR: READ_INPUT_GRID_NML: MAX_NRINP = ',MAX_NRINP
       CALL EXTCDE (6)
     END IF
 
@@ -777,8 +777,8 @@
     READ (NDSI, nml=INPUT_GRID_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_INPUT_GRID_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_INPUT_GRID_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (7)
     END IF
 
@@ -797,80 +797,80 @@
 
   END SUBROUTINE READ_INPUT_GRID_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_MODEL_GRID_NML (NDSI, NRGRD, NML_MODEL_GRID)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI              Int.
-!      NRGRD             Int.
-!      NML_MODEL_GRID    Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         22-Mar-2021 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI              Int.
+    !      NRGRD             Int.
+    !      NML_MODEL_GRID    Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -884,20 +884,20 @@
     TYPE(NML_MODEL_GRID_T) :: MODEL(MAX_NRGRD)
     NAMELIST /MODEL_GRID_NML/ MODEL
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_MODEL_GRID_NML')
+    CALL STRACE (IENT, 'READ_MODEL_GRID_NML')
 #endif
 
     ! test NRGRD
     IF (NRGRD.GT.MAX_NRGRD) THEN
       WRITE (MDSE,'(A,/A,I6,/A,I6)') &
-        'ERROR: READ_MODEL_GRID_NML: NRGRD > MAX_NRGRD',      &
-        'ERROR: READ_MODEL_GRID_NML:     NRGRD = ',    NRGRD, &
-        'ERROR: READ_MODEL_GRID_NML: MAX_NRGRD = ',MAX_NRGRD
+           'ERROR: READ_MODEL_GRID_NML: NRGRD > MAX_NRGRD',      &
+           'ERROR: READ_MODEL_GRID_NML:     NRGRD = ',    NRGRD, &
+           'ERROR: READ_MODEL_GRID_NML: MAX_NRGRD = ',MAX_NRGRD
       CALL EXTCDE (9)
     END IF
 
@@ -935,8 +935,8 @@
     READ (NDSI, nml=MODEL_GRID_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.NE.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_MODEL_GRID_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_MODEL_GRID_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (10)
     END IF
 
@@ -955,80 +955,80 @@
 
   END SUBROUTINE READ_MODEL_GRID_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_OUTPUT_TYPE_NML (NDSI, NRGRD, NML_OUTPUT_TYPE)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Sep-2020 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    25-Sep-2020 : Update namelist                     ( version 7.10 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI              Int.
-!      NRGRD             Int.
-!      NML_OUTPUT_TYPE   Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         25-Sep-2020 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/    25-Sep-2020 : Update namelist                     ( version 7.10 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI              Int.
+    !      NRGRD             Int.
+    !      NML_OUTPUT_TYPE   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -1043,12 +1043,12 @@
     TYPE(NML_OUTPUT_TYPE_T)   :: ITYPE(MAX_NRGRD)
     NAMELIST /OUTPUT_TYPE_NML/ ALLTYPE, ITYPE
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_OUTPUT_TYPE_NML')
+    CALL STRACE (IENT, 'READ_OUTPUT_TYPE_NML')
 #endif
 
     ! if no model grids, then exit
@@ -1098,8 +1098,8 @@
     READ (NDSI, nml=OUTPUT_TYPE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_OUTPUT_TYPE_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_OUTPUT_TYPE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (12)
     END IF
 
@@ -1113,90 +1113,90 @@
     READ (NDSI, nml=OUTPUT_TYPE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_OUTPUT_TYPE_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_OUTPUT_TYPE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (13)
     END IF
 
     ! save namelist
     NML_OUTPUT_TYPE = ITYPE(1:NRGRD)
 
-   
+
   END SUBROUTINE READ_OUTPUT_TYPE_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_OUTPUT_DATE_NML (NDSI, NRGRD, NML_OUTPUT_DATE)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI              Int.
-!      NRGRD             Int.
-!      NML_OUTPUT_DATE   Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI              Int.
+    !      NRGRD             Int.
+    !      NML_OUTPUT_DATE   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -1211,12 +1211,12 @@
     TYPE(NML_OUTPUT_DATE_T)   :: IDATE(MAX_NRGRD)
     NAMELIST /OUTPUT_DATE_NML/ ALLDATE, IDATE
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_OUTPUT_DATE_NML')
+    CALL STRACE (IENT, 'READ_OUTPUT_DATE_NML')
 #endif
 
     ! if no model grids, then exit
@@ -1288,8 +1288,8 @@
     READ (NDSI, nml=OUTPUT_DATE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_OUTPUT_DATE_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_OUTPUT_DATE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (14)
     END IF
 
@@ -1303,8 +1303,8 @@
     READ (NDSI, nml=OUTPUT_DATE_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_OUTPUT_DATE_NML: namelist read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_OUTPUT_DATE_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (15)
     END IF
 
@@ -1314,79 +1314,79 @@
 
   END SUBROUTINE READ_OUTPUT_DATE_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_HOMOGENEOUS_NML (NDSI, NML_HOMOG_COUNT, NML_HOMOG_INPUT)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NDSI               Int.
-!      NML_HOMOG_COUNT    Type.
-!      NML_HOMOG_INPUT    Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI               Int.
+    !      NML_HOMOG_COUNT    Type.
+    !      NML_HOMOG_INPUT    Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
     USE WMMDATMD, ONLY: MDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -1402,12 +1402,12 @@
     TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE   :: HOMOG_INPUT(:)
     NAMELIST /HOMOG_INPUT_NML/   HOMOG_INPUT
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
     IERR = 0
 #ifdef W3_S
-      CALL STRACE (IENT, 'READ_HOMOGENEOUS_NML')
+    CALL STRACE (IENT, 'READ_HOMOGENEOUS_NML')
 #endif
 
 
@@ -1421,8 +1421,8 @@
     READ (NDSI, nml=HOMOG_COUNT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_COUNT read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_COUNT read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (16)
     END IF
 
@@ -1447,8 +1447,8 @@
     READ (NDSI, nml=HOMOG_INPUT_NML, iostat=IERR, iomsg=MSG)
     IF (IERR.GT.0) THEN
       WRITE (MDSE,'(A,/A)') &
-        'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_INPUT_NML read error', &
-        'ERROR: '//TRIM(MSG)
+           'ERROR: READ_HOMOGENEOUS_NML: namelist HOMOG_INPUT_NML read error', &
+           'ERROR: '//TRIM(MSG)
       CALL EXTCDE (17)
     END IF
 
@@ -1456,10 +1456,10 @@
     NML_HOMOG_COUNT = HOMOG_COUNT
     NML_HOMOG_INPUT = HOMOG_INPUT
 
-    
+
   END SUBROUTINE READ_HOMOGENEOUS_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
@@ -1469,93 +1469,93 @@
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_DOMAIN_NML (NML_DOMAIN)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NML_DOMAIN       Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NML_DOMAIN       Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
 
     TYPE(NML_DOMAIN_T), INTENT(IN) :: NML_DOMAIN
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_DOMAIN_NML')
+    CALL STRACE (IENT, 'REPORT_DOMAIN_NML')
 #endif
 
-      WRITE (MSG,'(A)') 'DOMAIN % '
-      WRITE (NDSN,'(A)')
-      WRITE (NDSN,11) TRIM(MSG),'NRINP  = ', NML_DOMAIN%NRINP
-      WRITE (NDSN,11) TRIM(MSG),'NRGRD  = ', NML_DOMAIN%NRGRD
-      WRITE (NDSN,13) TRIM(MSG),'UNIPTS = ', NML_DOMAIN%UNIPTS
-      WRITE (NDSN,11) TRIM(MSG),'IOSTYP = ', NML_DOMAIN%IOSTYP
-      WRITE (NDSN,13) TRIM(MSG),'UPPROC = ', NML_DOMAIN%UPPROC
-      WRITE (NDSN,13) TRIM(MSG),'PSHARE = ', NML_DOMAIN%PSHARE
-      WRITE (NDSN,13) TRIM(MSG),'FLGHG1 = ', NML_DOMAIN%FLGHG1
-      WRITE (NDSN,13) TRIM(MSG),'FLGHG2 = ', NML_DOMAIN%FLGHG2
-      WRITE (NDSN,10) TRIM(MSG),'START  = ', TRIM(NML_DOMAIN%START)
-      WRITE (NDSN,10) TRIM(MSG),'STOP   = ', TRIM(NML_DOMAIN%STOP)
+    WRITE (MSG,'(A)') 'DOMAIN % '
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,11) TRIM(MSG),'NRINP  = ', NML_DOMAIN%NRINP
+    WRITE (NDSN,11) TRIM(MSG),'NRGRD  = ', NML_DOMAIN%NRGRD
+    WRITE (NDSN,13) TRIM(MSG),'UNIPTS = ', NML_DOMAIN%UNIPTS
+    WRITE (NDSN,11) TRIM(MSG),'IOSTYP = ', NML_DOMAIN%IOSTYP
+    WRITE (NDSN,13) TRIM(MSG),'UPPROC = ', NML_DOMAIN%UPPROC
+    WRITE (NDSN,13) TRIM(MSG),'PSHARE = ', NML_DOMAIN%PSHARE
+    WRITE (NDSN,13) TRIM(MSG),'FLGHG1 = ', NML_DOMAIN%FLGHG1
+    WRITE (NDSN,13) TRIM(MSG),'FLGHG2 = ', NML_DOMAIN%FLGHG2
+    WRITE (NDSN,10) TRIM(MSG),'START  = ', TRIM(NML_DOMAIN%START)
+    WRITE (NDSN,10) TRIM(MSG),'STOP   = ', TRIM(NML_DOMAIN%STOP)
 
 10  FORMAT (A,2X,A,A)
 11  FORMAT (A,2X,A,I8)
@@ -1563,77 +1563,77 @@
 
   END SUBROUTINE REPORT_DOMAIN_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_INPUT_GRID_NML (NRINP, NML_INPUT_GRID)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NRINP             Int.
-!      NML_INPUT_GRID    Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         22-Mar-2021 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NRINP             Int.
+    !      NML_INPUT_GRID    Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -1644,11 +1644,11 @@
     ! locals
     INTEGER              :: I
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_INPUT_GRID_NML')
+    CALL STRACE (IENT, 'REPORT_INPUT_GRID_NML')
 #endif
 
     DO I = 1,NRINP
@@ -1680,77 +1680,77 @@
 
   END SUBROUTINE REPORT_INPUT_GRID_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_MODEL_GRID_NML (NRGRD, NML_MODEL_GRID)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         22-Mar-2021 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NRGRD             Int.
-!      NML_MODEL_GRID    Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         22-Mar-2021 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/    22-Mar-2021 : Update namelist, new input fields   ( version 7.13 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NRGRD             Int.
+    !      NML_MODEL_GRID    Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -1761,11 +1761,11 @@
     ! locals
     INTEGER              :: I
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_MODEL_GRID_NML')
+    CALL STRACE (IENT, 'REPORT_MODEL_GRID_NML')
 #endif
 
     DO I = 1,NRGRD
@@ -1792,7 +1792,7 @@
       WRITE (NDSN,11) TRIM(MSG),'RESOURCE % RANK_ID       = ', NML_MODEL_GRID(I)%RESOURCE%RANK_ID
       WRITE (NDSN,11) TRIM(MSG),'RESOURCE % GROUP_ID      = ', NML_MODEL_GRID(I)%RESOURCE%GROUP_ID
       WRITE (NDSN,12) TRIM(MSG),'RESOURCE % COMM_FRAC     = ', NML_MODEL_GRID(I)%RESOURCE%COMM_FRAC(1), &
-                                                               NML_MODEL_GRID(I)%RESOURCE%COMM_FRAC(2)
+           NML_MODEL_GRID(I)%RESOURCE%COMM_FRAC(2)
       WRITE (NDSN,13) TRIM(MSG),'RESOURCE % BOUND_FLAG    = ', NML_MODEL_GRID(I)%RESOURCE%BOUND_FLAG
     END DO
     WRITE (NDSN,'(A)')
@@ -1804,77 +1804,77 @@
 
   END SUBROUTINE REPORT_MODEL_GRID_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_OUTPUT_TYPE_NML (NRGRD, NML_OUTPUT_TYPE)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         25-Sep-2020 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/    25-Sep-2020 : Update namelist                     ( version 7.10 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NRGRD             Int.
-!      NML_OUTPUT_TYPE   Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         25-Sep-2020 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/    25-Sep-2020 : Update namelist                     ( version 7.10 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NRGRD             Int.
+    !      NML_OUTPUT_TYPE   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -1885,11 +1885,11 @@
     ! locals
     INTEGER              :: I
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_OUTPUT_TYPE_NML')
+    CALL STRACE (IENT, 'REPORT_OUTPUT_TYPE_NML')
 #endif
 
     DO I=1,NRGRD
@@ -1921,76 +1921,76 @@
 
   END SUBROUTINE REPORT_OUTPUT_TYPE_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_OUTPUT_DATE_NML (NRGRD, NML_OUTPUT_DATE)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NRGRD             Int.
-!      NML_OUTPUT_DATE   Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NRGRD             Int.
+    !      NML_OUTPUT_DATE   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -2001,11 +2001,11 @@
     ! locals
     INTEGER              :: I
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_OUTPUT_DATE_NML')
+    CALL STRACE (IENT, 'REPORT_OUTPUT_DATE_NML')
 #endif
 
     DO I=1,NRGRD
@@ -2044,76 +2044,76 @@
 
   END SUBROUTINE REPORT_OUTPUT_DATE_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 
 
 
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_HOMOGENEOUS_NML (NML_HOMOG_COUNT, NML_HOMOG_INPUT)
-!/
-!/                  +-----------------------------------+
-!/                  | WAVEWATCH III           NOAA/NCEP |
-!/                  |           M. Accensi              |
-!/                  |                        FORTRAN 90 |
-!/                  | Last update :         15-May-2018 |
-!/                  +-----------------------------------+
-!/
-!/    09-Aug-2016 : Adding comments                     ( version 5.12 )
-!/    15-May-2018 : Update namelist                     ( version 6.05 )
-!/
-!  1. Purpose :
-!
-!
-!  2. Method :
-!
-!     See source term routines.
-!
-!  3. Parameters :
-!
-!     Parameter list
-!     ----------------------------------------------------------------
-!      NML_HOMOG_COUNT    Type.
-!      NML_HOMOG_INPUT    Type.
-!     ----------------------------------------------------------------
-!
-!  4. Subroutines used :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
-!     ----------------------------------------------------------------
-!
-!  5. Called by :
-!
-!      Name      Type  Module   Description
-!     ----------------------------------------------------------------
-!      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
-!     ----------------------------------------------------------------
-!
-!  6. Error messages :
-!
-!     None.
-!
-!  7. Remarks :
-!
-!  8. Structure :
-!
-!     See source code.
-!
-!  9. Switches :
-!
-!     !/MPI  Uses MPI communications
-!
-! 10. Source code :
-!
-!/ ------------------------------------------------------------------- /
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Accensi              |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         15-May-2018 |
+    !/                  +-----------------------------------+
+    !/
+    !/    09-Aug-2016 : Adding comments                     ( version 5.12 )
+    !/    15-May-2018 : Update namelist                     ( version 6.05 )
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NML_HOMOG_COUNT    Type.
+    !      NML_HOMOG_INPUT    Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLMULTICONF Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
-      USE W3SERVMD, ONLY: STRACE
+    USE W3SERVMD, ONLY: STRACE
 #endif
 
     IMPLICIT NONE
@@ -2124,11 +2124,11 @@
     ! locals
     INTEGER              :: I
 #ifdef W3_S
-      INTEGER, SAVE                           :: IENT = 0
+    INTEGER, SAVE                           :: IENT = 0
 #endif
 
 #ifdef W3_S
-      CALL STRACE (IENT, 'REPORT_HOMOGENEOUS_NML')
+    CALL STRACE (IENT, 'REPORT_HOMOGENEOUS_NML')
 #endif
 
     WRITE (MSG,'(A)') 'HOMOG_COUNT % '
@@ -2156,7 +2156,7 @@
 
   END SUBROUTINE REPORT_HOMOGENEOUS_NML
 
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
 
 

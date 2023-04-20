@@ -7,12 +7,12 @@
 !
 !     CVS:$Id: timers.f,v 1.2 2000/04/19 21:56:26 pwjones Exp $
 !
-!     Copyright (c) 1997, 1998 the Regents of the University of 
+!     Copyright (c) 1997, 1998 the Regents of the University of
 !       California.
 !
-!     This software and ancillary information (herein called software) 
-!     called SCRIP is made available under the terms described here.  
-!     The software has been approved for release with associated 
+!     This software and ancillary information (herein called software)
+!     called SCRIP is made available under the terms described here.
+!     The software has been approved for release with associated
 !     LA-CC Number 98-45.
 !
 !     Unless otherwise indicated, this software has been authored
@@ -27,10 +27,10 @@
 !     any liability or responsibility for the use of this software.
 !
 !     If software is modified to produce derivative works, such modified
-!     software should be clearly marked, so as not to confuse it with 
+!     software should be clearly marked, so as not to confuse it with
 !     the version available from Los Alamos National Laboratory.
 !
-!     This code has been modified from the version available from 
+!     This code has been modified from the version available from
 !     Los Alamos National Laboratory, for the purpose of running it
 !     within WW3.
 !
@@ -44,23 +44,23 @@
 
       implicit none
 
-      integer (SCRIP_i4), parameter ::  
+      integer (SCRIP_i4), parameter ::
      &     max_timers = 99  ! max number of timers allowed
 
-      integer (SCRIP_i4), save :: 
+      integer (SCRIP_i4), save ::
      &     cycles_max       ! max value of clock allowed by system
 
-      integer (SCRIP_i4), dimension(max_timers), save :: 
+      integer (SCRIP_i4), dimension(max_timers), save ::
      &     cycles1,         ! cycle number at start for each timer
      &     cycles2          ! cycle number at stop  for each timer
 
-      real (SCRIP_r4), save ::  
+      real (SCRIP_r4), save ::
      &     clock_rate       ! clock_rate in seconds for each cycle
 
-      real (SCRIP_r4), dimension(max_timers), save ::  
+      real (SCRIP_r4), dimension(max_timers), save ::
      &     cputime          ! accumulated cpu time in each timer
 
-      character (len=8), dimension(max_timers), save ::  
+      character (len=8), dimension(max_timers), save ::
      &     status           ! timer status string
 
 !***********************************************************************
@@ -85,7 +85,7 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), intent(in) ::  
+      integer (SCRIP_i4), intent(in) ::
      &    timer            ! timer number
 
 !-----------------------------------------------------------------------
@@ -115,7 +115,7 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), intent(in) ::  
+      integer (SCRIP_i4), intent(in) ::
      &    timer            ! timer number
 
 !-----------------------------------------------------------------------
@@ -133,7 +133,7 @@
 !-----------------------------------------------------------------------
 !
 !     This routine returns the result of a given timer.  This can be
-!     called instead of timer_print so that the calling routine can 
+!     called instead of timer_print so that the calling routine can
 !     print it in desired format.
 !
 !-----------------------------------------------------------------------
@@ -144,7 +144,7 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), intent(in) ::  
+      integer (SCRIP_i4), intent(in) ::
      &    timer            ! timer number
 
 !-----------------------------------------------------------------------
@@ -153,7 +153,7 @@
 !
 !-----------------------------------------------------------------------
 
-      real (SCRIP_r4) ::  
+      real (SCRIP_r4) ::
      &     timer_get   ! accumulated cputime in given timer
 
 !-----------------------------------------------------------------------
@@ -186,22 +186,22 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), intent(in) ::  
+      integer (SCRIP_i4), intent(in) ::
      &    timer            ! timer number
 
 !-----------------------------------------------------------------------
 
-      !--- 
-      !--- print the cputime accumulated for timer 
+      !---
+      !--- print the cputime accumulated for timer
       !--- make sure timer is stopped
       !---
 
       if (status(timer) .eq. 'stopped') then
-        write(*,"(' CPU time for timer',i3,':',1p,e16.8)")  
+        write(*,"(' CPU time for timer',i3,':',1p,e16.8)")
      &       timer,cputime(timer)
       else
         call timer_stop(timer)
-        write(*,"(' CPU time for timer',i3,':',1p,e16.8)")  
+        write(*,"(' CPU time for timer',i3,':',1p,e16.8)")
      &       timer,cputime(timer)
         call timer_start(timer)
       endif
@@ -226,7 +226,7 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), intent(in) ::  
+      integer (SCRIP_i4), intent(in) ::
      &    timer            ! timer number
 
 !-----------------------------------------------------------------------
@@ -260,7 +260,7 @@
 !
 !-----------------------------------------------------------------------
 
-      integer (SCRIP_i4), intent(in) ::  
+      integer (SCRIP_i4), intent(in) ::
      &    timer            ! timer number
 
 !-----------------------------------------------------------------------
@@ -278,10 +278,10 @@
         !---
 
         if (cycles2(timer) .ge. cycles1(timer)) then
-          cputime(timer) = cputime(timer) + clock_rate*  
+          cputime(timer) = cputime(timer) + clock_rate*
      &                     (cycles2(timer) - cycles1(timer))
         else
-          cputime(timer) = cputime(timer) + clock_rate*  
+          cputime(timer) = cputime(timer) + clock_rate*
      &                (cycles2(timer) - cycles1(timer) + cycles_max)
         endif
 

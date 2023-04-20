@@ -33,7 +33,7 @@ ifeq ($(WW3_COMP),Portland)
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","pgi" "datarmor_pgi" "datarmor_pgi_debug"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -byteswapio
 # intel
-else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.intel" "jet.intel" "s4.intel")) 
+else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)","Intel" "hera.intel" "orion.intel" "jet.intel" "s4.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
 else ifeq ("$(WW3_COMP)",$(filter "$(WW3_COMP)", "cheyenne.intel" "stampede.intel" "expanse.intel"))
  ESMF_F90COMPILEOPTS := $(ESMF_F90COMPILEOPTS) -convert big_endian
@@ -161,9 +161,9 @@ switch:
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
-# Setup switch file and compile serial routines ww3_grid, ww3_outf and ww3_outp 
+# Setup switch file and compile serial routines ww3_grid, ww3_outf and ww3_outp
 # ------------------------------------------------------------------------------
-gout: 
+gout:
 	@echo "$(SWITCHES)" > $(WW3_BINDIR)/tempswitch
 	@sed -e "s/DIST/SHRD/g"\
 	     -e "s/OMPG/ /g"\

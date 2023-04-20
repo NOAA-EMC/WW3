@@ -20,7 +20,7 @@ usage()
 curr_dir=`pwd`
 
 # Set WW3 code version
-ww3ver=v7.12.6
+ww3ver=v7.14.1
 
 interactive='n'
 keep='n'
@@ -81,6 +81,7 @@ cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASOCM regtests/ww3_tp2.14/input_o
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASICM regtests/ww3_tp2.14/input_oasicm/r-ww3.nc
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input_oasacm/r-ww3.nc
 cp -r data_regtests/ww3_tp2.14/input/r-ww3.nc.OASACM regtests/ww3_tp2.14/input_oasacm2/r-ww3.nc
+cp -r data_regtests/ww3_tp2.14/input/density.nc  regtests/ww3_tp2.14/input_oasacm6/
 cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasocm/
 cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasicm/
 cp -r data_regtests/ww3_tp2.14/input/rmp_* regtests/ww3_tp2.14/input_oasacm/
@@ -101,9 +102,11 @@ cp -r data_regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM regtests/ww
 cp -r data_regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM6
 cp -r data_regtests/ww3_tp2.14/input/toy/*.nc regtests/ww3_tp2.14/input/toy/
 cp -r data_regtests/ww3_tp2.17/input/*     regtests/ww3_tp2.17/input/
+cp -r data_regtests/ww3_tp2.19/input/*     regtests/ww3_tp2.19/input/
 cp -r data_regtests/ww3_tp2.21/input/*     regtests/ww3_tp2.21/input/
 cp -r data_regtests/mww3_test_09/input/*   regtests/mww3_test_09/input/
 cp -r data_regtests/ww3_ufs1.1/input/*     regtests/ww3_ufs1.1/input/
+cp -r data_regtests/ww3_ufs1.1/input_unstr/*     regtests/ww3_ufs1.1/input_unstr/
 cp -r data_regtests/ww3_ufs1.1/input/*.nc  regtests/ww3_ufs1.2/input/
 cp -r data_regtests/ww3_ufs1.2/input/*     regtests/ww3_ufs1.2/input/
 cp -r data_regtests/ww3_ufs1.3/input/*nc   regtests/ww3_ufs1.3/input/

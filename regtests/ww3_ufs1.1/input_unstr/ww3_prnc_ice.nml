@@ -1,0 +1,26 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_prnc.nml - Field preprocessor                      !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define the forcing fields to preprocess via FORCING_NML namelist
+! -------------------------------------------------------------------- !
+&FORCING_NML
+  FORCING%FIELD%ICE_CONC       = T
+  FORCING%GRID%LATLON          = T
+/
+
+! -------------------------------------------------------------------- !
+! Define the content of the input file via FILE_NML namelist
+! -------------------------------------------------------------------- !
+&FILE_NML
+  FILE%FILENAME      = '../input/ice.nc'
+  FILE%LONGITUDE     = 'longitude'
+  FILE%LATITUDE      = 'latitude'
+  FILE%VAR(1)        = 'ice'
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
