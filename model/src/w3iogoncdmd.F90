@@ -39,7 +39,7 @@ contains
   subroutine w3iogoncd ()
 
     use w3odatmd   , only : fnmpre
-    use w3gdatmd   , only : filext
+    use w3gdatmd   , only : filext, trigp, ntri
     use w3servmd   , only : extcde
     use w3wdatmd   , only : w3setw, w3dimw, time, wlv, ice, icef, iceh, berg, ust, ustdir, asf, rhoair
     use w3gdatmd   , only : xgrd, ygrd
@@ -67,6 +67,7 @@ contains
     use w3timemd   , only : set_user_timestring
     use w3odatmd   , only : time_origin, calendar_name, elapsed_secs
     use w3odatmd   , only : use_user_histname, user_histfname
+    use wav_shr_mod, only : unstr_mesh
 
     ! local variables
     integer               :: igrd
@@ -76,7 +77,7 @@ contains
     character(len=12)     :: vname
     character(len=16)     :: user_timestring    !YYYY-MM-DD-SSSSS
 
-    integer :: n, xtid, ytid, stid, mtid, ptid, ktid, timid, varid
+    integer :: n, xtid, ytid, xeid, ztid, stid, mtid, ptid, ktid, timid, varid
     logical :: s_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
 
     !-------------------------------------------------------------------------------
@@ -134,6 +135,10 @@ contains
     if (m_axis) ierr = nf90_def_dim(ncid, 'nm'    , len_m, mtid)
     if (p_axis) ierr = nf90_def_dim(ncid, 'np'    , len_p, ptid)
     if (k_axis) ierr = nf90_def_dim(ncid, 'freq'  , len_k, ktid)
+    if (unstr_mesh) then
+      ierr = nf90_def_dim(ncid, 'ne'  , ntri, xeid)
+      ierr = nf90_def_dim(ncid, 'nn'  ,    3, ztid)
+    end if
 
     ! define the time variable
     ierr = nf90_def_var(ncid, 'time', nf90_double, timid, varid)
@@ -150,6 +155,19 @@ contains
     ierr = nf90_def_var(ncid, 'lat', nf90_double, (/xtid,ytid/), varid)
     call handle_err(ierr,'def_latvar')
     ierr = nf90_put_att(ncid, varid, 'units', 'degrees_north')
+
+    ! add mapsta
+    ierr = nf90_def_var(ncid, 'mapsta', nf90_int, (/xtid, ytid, timid/), varid)
+    call handle_err(ierr, 'def_mapsta')
+    ierr = nf90_put_att(ncid, varid, 'units', 'unitless')
+    ierr = nf90_put_att(ncid, varid, 'long_name', 'map status')
+
+    if (unstr_mesh) then
+      ierr = nf90_def_var(ncid, 'nconn', nf90_int, (/ztid,xeid/), varid)
+      call handle_err(ierr,'def_nodeconnections')
+      ierr = nf90_put_att(ncid, varid, 'units', 'unitless')
+      ierr = nf90_put_att(ncid, varid, 'long_name', 'node connectivity')
+    end if
 
     ! define the variables
     dimid3(1:2) = (/xtid, ytid/)
@@ -197,6 +215,20 @@ contains
     call handle_err(ierr, 'inquire variable time ')
     ierr = nf90_put_var(ncid, varid, elapsed_secs)
     call handle_err(ierr, 'put time')
+
+    if (unstr_mesh) then
+      ierr = nf90_inq_varid(ncid,  'nconn', varid)
+      call handle_err(ierr, 'inquire variable nconn ')
+      ierr = nf90_put_var(ncid, varid, trigp)
+      call handle_err(ierr, 'put trigp')
+    end if
+
+    !maps
+    ierr = nf90_inq_varid(ncid,  'mapsta', varid)
+    call handle_err(ierr, 'inquire variable mapsta ')
+    ierr = nf90_put_var(ncid, varid, transpose(mapsta))
+    call handle_err(ierr, 'put mapsta')
+
     ! close the file
     ierr = nf90_close(ncid)
 
