@@ -822,7 +822,7 @@ CONTAINS
         IF ( IAPROC .EQ. NAPRST ) THEN
           !
 #ifdef W3_MPI
-          if (asociated(irqrs)) then
+          if (associated(irqrs)) then
             ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
             CALL MPI_WAITALL                               &
                  ( NRQRS, IRQRS , STAT2, IERR_MPI )
