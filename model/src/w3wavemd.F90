@@ -614,6 +614,7 @@ CONTAINS
     logical :: do_wavefield_separation_output
     logical :: do_startall
     logical :: do_w3outg
+
     !/ ------------------------------------------------------------------- /
     ! 0.  Initializations
     !
