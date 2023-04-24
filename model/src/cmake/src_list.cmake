@@ -58,11 +58,11 @@ set(ftn_src
   wav_grdout.F90
   w3iogoncdmd.F90
   wav_shr_flags.F90
+  wav_shr_mod.F90
   )
 
 set(nuopc_mesh_cap_src
   wav_kind_mod.F90
-  wav_shr_mod.F90
   wav_shel_inp.F90
   wav_comp_nuopc.F90
   wav_import_export.F90
@@ -107,5 +107,3 @@ set(scripnc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_write.f
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_read.f
   )
-
-
