@@ -98,6 +98,9 @@ regtests/ww3_tp2.14/input/ww3_shel.inp
 regtests/ww3_tp2.14/input/ww3_shel.nml
 regtests/ww3_tp2.15/input_rho/ww3_prnc.inp
 regtests/ww3_tp2.17/input/inlet.msh
+regtests/ww3_tp2.19/input/Boers.msh
+regtests/ww3_tp2.19/input/meshbnd.msh
+regtests/ww3_ufs1.1/input_unstr/global_1deg_unstr.msh
 regtests/ww3_tp2.21/input/mesh.msh
 regtests/ww3_tp2.21/input/obstructions_local.glo_unst.in
 regtests/ww3_tp2.21/input/obstructions_shadow.glo_unst.in
