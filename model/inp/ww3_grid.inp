@@ -305,7 +305,9 @@ $   limitation and the GSE alleviation.
 $
 $ Unstructured grids ------------------------------------------------ $
 $   UNST parameters       : Namelist UNST
-$                           UGBCCFL    : TRUE/FALSE: NEED DEFINITION, POSSIBLY UNUSED? (default True) 
+$                           UGBCCFL    : Turns on/off (TRUE/FALSE) the computation of the CFL number on the physical domain boundary. 
+$                                        If FALSE the explicit scheme can be much faster though stability is not guaranteed
+$                                        (default TRUE)
 $                           UGOBCAUTO  : TRUE: OBC points are taken from  type 15 elements (default)
 $                                        FALSE: OBC points must be listed in ww3_grid.inp
 $                           UGOBCDEPTH : Threshold ( < 0) depth (default -10) for OBC points if UGOBCAUTO is TRUE
