@@ -45,8 +45,8 @@ fi
 
 dir0=$(cd $(dirname $0) > /dev/null && pwd -P)
 ww3dir=$(dirname $(dirname $dir0))
- 
-#Get top level directory of ww3 from user: 
+
+#Get top level directory of ww3 from user:
 echo -e "\n\n This script will download data from the ftp for WAVEWATCH III "
 if [ "$interactive" = "n" ]
 then
@@ -55,19 +55,19 @@ else
 echo -e "Enter the absolute or relative path to the main/top directory, "
 echo -e "this would be '../../' if in the model/bin directory "
 echo -e "or './' if already in the top/main directory:"
-  read ww3dir 
+  read ww3dir
 fi
 
-#Move to top level directory of ww3: 
-cd $ww3dir 
+#Move to top level directory of ww3:
+cd $ww3dir
 
-#Download from ftp and uptar: 
-echo -e "Downloading and untaring file from ftp:" 
+#Download from ftp and uptar:
+echo -e "Downloading and untaring file from ftp:"
 wget --no-check-certificate https://ftp.emc.ncep.noaa.gov/static_files/public/WW3/ww3_from_ftp.${ww3ver}.tar.gz
 tar -xvzf ww3_from_ftp.${ww3ver}.tar.gz
 
 #Move regtest info from data_regtests to regtests:
-echo -e "Moving data from data_regtests to regtests"  
+echo -e "Moving data from data_regtests to regtests"
 cp -r data_regtests/ww3_tp2.18/input/*.nc  regtests/ww3_tp2.18/input/
 cp -r data_regtests/ww3_tp2.15/input/wind.nc  regtests/ww3_tp2.15/input/
 cp -r data_regtests/ww3_tp2.15/input/*.nc  regtests/ww3_tp2.15/input_rho/
@@ -93,7 +93,7 @@ if [ ! -d regtests/ww3_tp2.14/input/oasis3-mct/doc ]
 then
   mkdir regtests/ww3_tp2.14/input/oasis3-mct/doc
 fi
-cp -r data_regtests/ww3_tp2.14/input/oasis3-mct/doc/* regtests/ww3_tp2.14/input/oasis3-mct/doc/ 
+cp -r data_regtests/ww3_tp2.14/input/oasis3-mct/doc/* regtests/ww3_tp2.14/input/oasis3-mct/doc/
 cp -r data_regtests/ww3_tp2.14/input/toy/*.nc.OAS*CM regtests/ww3_tp2.14/input/toy/
 cp -r data_regtests/ww3_tp2.14/input/toy/r-toy.nc.OASACM regtests/ww3_tp2.14/input/toy/r-toy.nc.OASACM2
 cp -r data_regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM regtests/ww3_tp2.14/input/toy/toy_coupled_field.nc.OASACM2
@@ -110,7 +110,7 @@ cp -r data_regtests/ww3_ufs1.1/input_unstr/*     regtests/ww3_ufs1.1/input_unstr
 cp -r data_regtests/ww3_ufs1.1/input/*.nc  regtests/ww3_ufs1.2/input/
 cp -r data_regtests/ww3_ufs1.2/input/*     regtests/ww3_ufs1.2/input/
 cp -r data_regtests/ww3_ufs1.3/input/*nc   regtests/ww3_ufs1.3/input/
-#Do you want to clean up (aka delete tar file, delete the data_regtests directory) 
+#Do you want to clean up (aka delete tar file, delete the data_regtests directory)
 echo -e "\n\n Do you want to delete the tar file ww3_from_ftp.${ww3ver}.tar.gz [y|n]: "
 if [ "$interactive" = "n" ]
 then
@@ -120,10 +120,10 @@ else
 fi
 if [ "${keep}" = "N" ] || [ "${keep}" = "n" ]
 then
-  echo -e '\n Deleting tar file ww3_from_ftp.${ww3ver}.tar.gz'
+  echo -e "\n Deleting tar file ww3_from_ftp.${ww3ver}.tar.gz"
   rm ww3_from_ftp.${ww3ver}.tar.gz
 else
-  echo -e ' Not deleting tar file.' 
+  echo -e ' Not deleting tar file.'
 fi
 
 echo -e "\n\n Files were copied from the data_regtests to the regtests folder."
@@ -139,9 +139,9 @@ then
   echo -e '\n Deleting the data_regtests folder'
   rm -rf data_regtests
 else
-  echo -e ' Not deleting the data_regtests folder.' 
+  echo -e ' Not deleting the data_regtests folder.'
 fi
 
-#move back to original directory: 
+#move back to original directory:
 cd $curr_dir
 echo -e "End of ww3_from_ftp.sh"
