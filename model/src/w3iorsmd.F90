@@ -769,7 +769,6 @@ CONTAINS
               !              Include remainder values (switch to record format) ---- *
               JSEA = NSEAL_MIN + 1
               IF ( JSEA.EQ.NSEAL ) THEN
-                !ISEA = IAPROC + (JSEA - 1) * NAPROC
                 CALL INIT_GET_ISEA(ISEA, JSEA)
                 NREC = ISEA + 2
                 RPOS = 1_8 + LRECL*(NREC-1_8)
@@ -823,10 +822,12 @@ CONTAINS
         IF ( IAPROC .EQ. NAPRST ) THEN
           !
 #ifdef W3_MPI
-          ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
-          CALL MPI_WAITALL                               &
-               ( NRQRS, IRQRS , STAT2, IERR_MPI )
-          DEALLOCATE ( STAT2 )
+          if (associated(irqrs)) then
+            ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
+            CALL MPI_WAITALL                               &
+                 ( NRQRS, IRQRS , STAT2, IERR_MPI )
+            DEALLOCATE ( STAT2 )
+          end if
 #endif
           !
           RPOS  = 1_8 + LRECL*(NREC-1_8)
