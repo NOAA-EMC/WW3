@@ -415,7 +415,7 @@ contains
 #endif
     use wav_shel_inp , only : set_shel_io
     use wav_grdout   , only : wavinit_grdout
-    use wav_shr_mod       , only : diagnose_mesh, write_meshdecomp
+    use wav_shr_mod  , only : diagnose_mesh, write_meshdecomp
 #ifdef W3_PDLIB
     use yowNodepool  , only : ng
 #endif

@@ -738,20 +738,20 @@ contains
           end do
         end if
 
-        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or.                     &
-             ( flh(-6) .and. (nh(-6).eq.0) ) .or.                     &
-             ( flh(-5) .and. (nh(-5).eq.0) ) .or.                     &
-             ( flh(-4) .and. (nh(-4).eq.0) ) .or.                     &
-             ( flh(-3) .and. (nh(-3).eq.0) ) .or.                     &
-             ( flh(-2) .and. (nh(-2).eq.0) ) .or.                     &
-             ( flh(-1) .and. (nh(-1).eq.0) ) .or.                     &
-             ( flh(0)  .and. (nh(0).eq.0)  ) .or.                     &
-             ( flh(1)  .and. (nh(1).eq.0)  ) .or.                     &
-             ( flh(2)  .and. (nh(2).eq.0)  ) .or.                     &
-             ( flh(3)  .and. (nh(3).eq.0)  ) .or.                     &
-             ( flh(4)  .and. (nh(4).eq.0)  ) .or.                     &
-             ( flh(5)  .and. (nh(5).eq.0)  ) .or.                     &
-             ( flh(6)  .and. (nh(6).eq.0)  ) .or.                     &
+        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or. &
+             ( flh(-6) .and. (nh(-6).eq.0) ) .or. &
+             ( flh(-5) .and. (nh(-5).eq.0) ) .or. &
+             ( flh(-4) .and. (nh(-4).eq.0) ) .or. &
+             ( flh(-3) .and. (nh(-3).eq.0) ) .or. &
+             ( flh(-2) .and. (nh(-2).eq.0) ) .or. &
+             ( flh(-1) .and. (nh(-1).eq.0) ) .or. &
+             ( flh(0)  .and. (nh(0).eq.0)  ) .or. &
+             ( flh(1)  .and. (nh(1).eq.0)  ) .or. &
+             ( flh(2)  .and. (nh(2).eq.0)  ) .or. &
+             ( flh(3)  .and. (nh(3).eq.0)  ) .or. &
+             ( flh(4)  .and. (nh(4).eq.0)  ) .or. &
+             ( flh(5)  .and. (nh(5).eq.0)  ) .or. &
+             ( flh(6)  .and. (nh(6).eq.0)  ) .or. &
              ( flh(10) .and. (nh(10).eq.0) ) ) goto 2007
 
       end if ! flhom
@@ -1207,20 +1207,20 @@ contains
           end do
         end if
 
-        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or.                     &
-             ( flh(-6) .and. (nh(-6).eq.0) ) .or.                     &
-             ( flh(-5) .and. (nh(-5).eq.0) ) .or.                     &
-             ( flh(-4) .and. (nh(-4).eq.0) ) .or.                     &
-             ( flh(-3) .and. (nh(-3).eq.0) ) .or.                     &
-             ( flh(-2) .and. (nh(-2).eq.0) ) .or.                     &
-             ( flh(-1) .and. (nh(-1).eq.0) ) .or.                     &
-             ( flh(0)  .and. (nh(0).eq.0)  ) .or.                     &
-             ( flh(1)  .and. (nh(1).eq.0)  ) .or.                     &
-             ( flh(2)  .and. (nh(2).eq.0)  ) .or.                     &
-             ( flh(3)  .and. (nh(3).eq.0)  ) .or.                     &
-             ( flh(4)  .and. (nh(4).eq.0)  ) .or.                     &
-             ( flh(5)  .and. (nh(5).eq.0)  ) .or.                     &
-             ( flh(6)  .and. (nh(6).eq.0)  ) .or.                     &
+        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or. &
+             ( flh(-6) .and. (nh(-6).eq.0) ) .or. &
+             ( flh(-5) .and. (nh(-5).eq.0) ) .or. &
+             ( flh(-4) .and. (nh(-4).eq.0) ) .or. &
+             ( flh(-3) .and. (nh(-3).eq.0) ) .or. &
+             ( flh(-2) .and. (nh(-2).eq.0) ) .or. &
+             ( flh(-1) .and. (nh(-1).eq.0) ) .or. &
+             ( flh(0)  .and. (nh(0).eq.0)  ) .or. &
+             ( flh(1)  .and. (nh(1).eq.0)  ) .or. &
+             ( flh(2)  .and. (nh(2).eq.0)  ) .or. &
+             ( flh(3)  .and. (nh(3).eq.0)  ) .or. &
+             ( flh(4)  .and. (nh(4).eq.0)  ) .or. &
+             ( flh(5)  .and. (nh(5).eq.0)  ) .or. &
+             ( flh(6)  .and. (nh(6).eq.0)  ) .or. &
              ( flh(10) .and. (nh(10).eq.0) ) ) goto 2007
 
       end if ! flhom
