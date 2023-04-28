@@ -833,10 +833,12 @@ CONTAINS
         IF ( IAPROC .EQ. NAPRST ) THEN
           !
 #ifdef W3_MPI
-          ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
-          CALL MPI_WAITALL                               &
-               ( NRQRS, IRQRS , STAT2, IERR_MPI )
-          DEALLOCATE ( STAT2 )
+          if (associated(irqrs)) then
+            ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
+            CALL MPI_WAITALL                               &
+                 ( NRQRS, IRQRS , STAT2, IERR_MPI )
+            DEALLOCATE ( STAT2 )
+          end if
 #endif
           !
           RPOS  = 1_8 + LRECL*(NREC-1_8)
