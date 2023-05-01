@@ -1,0 +1,72 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.04118
+  SPECTRUM%NK        =  25
+  SPECTRUM%NTH       =  24
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  600.
+  TIMESTEPS%DTXY         =  120.
+  TIMESTEPS%DTKTH        =  120.
+  TIMESTEPS%DTMIN        =  120.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'Michi'
+  GRID%NML          =  '../input/namelists_Michi.nml'
+  GRID%TYPE         =  'SMCG'
+  GRID%COORD        =  'SPHE'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  10.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  384
+  RECT%NY           =  256
+  RECT%SX           =  0.04480000
+  RECT%SY           =  0.03200000
+  RECT%X0           =  267.29960
+  RECT%Y0           =  41.17400
+/
+
+! -------------------------------------------------------------------- !
+! Define the spherical multiple-cell grid via SMC_NML namelist
+! -------------------------------------------------------------------- !
+&SMC_NML
+  SMC%MCELS%FILENAME        =  '../input/GtLkMichiCels.dat'
+  SMC%ISIDE%FILENAME        =  '../input/GtLkMichiISid.dat'
+  SMC%JSIDE%FILENAME        =  '../input/GtLkMichiJSid.dat'
+  SMC%SUBTR%FILENAME        =  '../input/GtLkMichiObst.dat'
+  SMC%BUNDY%FILENAME        =  '../input/GtLkMichiBlst.dat'
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

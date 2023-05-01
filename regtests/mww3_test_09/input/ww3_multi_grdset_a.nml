@@ -1,0 +1,62 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_multi.nml - multi-grid model                       !
+! -------------------------------------------------------------------- !
+
+
+! -------------------------------------------------------------------- !
+! Define top-level model parameters via DOMAIN_NML namelist
+! -------------------------------------------------------------------- !
+&DOMAIN_NML
+  DOMAIN%NRGRD	= 3
+  DOMAIN%START  = '20160809 000000'
+  DOMAIN%STOP   = '20160809 060000'
+/
+
+! -------------------------------------------------------------------- !
+! Define each input grid via the INPUT_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&INPUT_GRID_NML
+/
+
+! -------------------------------------------------------------------- !
+! Define each model grid via the MODEL_GRID_NML namelist
+! -------------------------------------------------------------------- !
+&MODEL_GRID_NML
+  MODEL(1)%NAME                  = 'Michi'
+  MODEL(1)%RESOURCE%COMM_FRAC    = 0.00,0.30
+  MODEL(2)%NAME                  = 'Huron'
+  MODEL(2)%RESOURCE%RANK_ID      = 1
+  MODEL(2)%RESOURCE%COMM_FRAC    = 0.30,0.65
+  MODEL(3)%NAME                  = 'Super'
+  MODEL(3)%RESOURCE%RANK_ID      = 1
+  MODEL(3)%RESOURCE%COMM_FRAC    = 0.65,1.00
+/
+
+! -------------------------------------------------------------------- !
+! Define the output types point parameters via OUTPUT_TYPE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_TYPE_NML
+  ALLTYPE%FIELD%LIST       = 'HS FP DP'
+  ALLTYPE%POINT%FILE       = '../input/points.list'
+/
+
+! -------------------------------------------------------------------- !
+! Define output dates via OUTPUT_DATE_NML namelist
+! -------------------------------------------------------------------- !
+&OUTPUT_DATE_NML
+  ALLDATE%FIELD          = '20160809 000000' '3600' '20160809 060000'
+  ALLDATE%POINT          = '20160809 000000' '900' '20160810 000000'
+/
+
+! -------------------------------------------------------------------- !
+! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
+! -------------------------------------------------------------------- !
+&HOMOG_COUNT_NML
+/
+
+&HOMOG_INPUT_NML
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

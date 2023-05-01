@@ -1,0 +1,68 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.2
+  SPECTRUM%NK        =  5
+  SPECTRUM%NTH       =  10
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  10.
+  TIMESTEPS%DTXY         =  10.
+  TIMESTEPS%DTKTH        =  10.
+  TIMESTEPS%DTMIN        =  1.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'Duration-limited test'
+  GRID%NML          =  '../input_nl5_matrix/namelists_Duration-limited.nml'
+  GRID%TYPE         =  'RECT'
+  GRID%COORD        =  'CART'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -5.
+  GRID%DMIN         =  5.75
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  3
+  RECT%NY           =  3
+  RECT%SX           =  1.
+  RECT%SY           =  1.
+  RECT%X0           =  -1.
+  RECT%Y0           =  -1.
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  -3000.
+  DEPTH%FILENAME  =  '../input_nl5_matrix/Duration-limited.depth'
+  DEPTH%IDLA      =  3
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

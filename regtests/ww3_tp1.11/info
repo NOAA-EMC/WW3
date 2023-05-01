@@ -5,7 +5,7 @@
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
-#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS1 !/XX0                         #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS1                               #
 #                        Select bottom scattering option.                   #
 #   !/PRn                Selecting one of the propagation schemes.          #
 #                         1: First order.                                   #
@@ -17,12 +17,20 @@
 # Remarks :                                                                 #
 #                                                                           #
 #   * input options :                                                       #
+#        input : input spec as REAL                                         #
+#        input2 : input spec as SHORT                                       #
+#                                                                           #
+#   * compressed 2D spectra can be uncompress using two nco commandlines :  #
+#        ncpdq -O -U ww3.Point1_196806_spec.nc ww3.Point1_196806_spec.nc    #
+#        ncap2 -O -s 'efth=pow(10,efth)-1E-12' \                            #
+#               ww3.Point1_196806_spec.nc ww3.Point1_196806_spec.nc         #
 #                                                                           #
 #  Example run_test commands:                                               #
 #  ./bin/run_test  -N -o netcdf ../model ww3_tp1.11                         # 
+#  ./bin/run_test  -N -o netcdf -i input2 ../model ww3_tp1.11               # 
 #                                                                           #
 #                                            Fabrice Ardhuin,  Jan 2020     #
-#                                                   Last Mod : Feb 2020     #
+#                                                   Last Mod : Sep 2021     #
 #                                                                           #
 #    Copyright 2020 National Weather Service (NWS),                         #
 #       National Oceanic and Atmospheric Administration.  All rights        #

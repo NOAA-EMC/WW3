@@ -12,7 +12,7 @@
 !     POINT%TIMESTART            = '19000101 000000'  ! Stop date for the output field
 !     POINT%TIMESTRIDE           = '0'                ! Time stride for the output field
 !     POINT%TIMECOUNT            = '1000000000'       ! Number of time steps
-!     POINT%TIMESPLIT            = 6                  ! [4(yearly),6(monthly),8(daily),10(hourly)]
+!     POINT%TIMESPLIT            = 6                  ! [0(nodate),4(yearly),6(monthly),8(daily),10(hourly)]
 !     POINT%LIST                 = 'all'              ! List of points index ['all'|'1 2 3']
 !     POINT%SAMEFILE             = T                  ! All the points in the same file
 !     POINT%BUFFER               = 150                ! Number of points to process per pass
@@ -51,14 +51,14 @@
 ! -------------------------------------------------------------------- !
 ! Define the type 1, spectra via SPECTRA_NML namelist
 !
-! Table of 1-D spectra content : 
+! Table of 1-D spectra content :
 !   - time, station id, station name, longitude, latitude
 !   - frequency : unit Hz, center band frequency - linear log scale (XFR factor)
 !   - ffp, f, th1m, sth1m, alpha : 1D spectral parameters
 !   - dpt, ust, wnd, wnddir : mean parameters
 !
 ! Transfert file content :
-!   - time, station id, station name, longitude, latitude 
+!   - time, station id, station name, longitude, latitude
 !   - frequency : unit Hz, center band frequency - linear log scale (XFR factor)
 !   - frequency1 : unit Hz, lower band frequency
 !   - frequency2 : unit Hz, upper band frequency
@@ -66,12 +66,14 @@
 !   - efth(time,station,frequency,direction) : 2D spectral density
 !   - dpt, wnd, wnddir, cur, curdir : mean parameters
 !
-! Spectral partitioning content : 
+! Spectral partitioning content :
 !   - time, station id, station name, longitude, latitude
 !   - npart : number of partitions
 !   - hs, tp, lm, th1m, sth1m, ws, tm10, t01, t02 : partitioned parameters
 !   - dpt, wnd, wnddir, cur, curdir : mean parameters
 !
+!
+! * SCALE_FAC and OUTPUT_FAC are only applied to print plots (OUTPUT=1)
 !
 ! * namelist must be terminated with /
 ! * definitions & defaults:
@@ -81,6 +83,7 @@
 !                                          ! 4: Spectral partitioning
 !     SPECTRA%SCALE_FAC     = 1            ! Scale factor (-1=disabled)
 !     SPECTRA%OUTPUT_FAC    = 0            ! Output factor (0=normalized)
+!     SPECTRA%TYPE          = 4            ! [2 = SHORT, 3 = it depends , 4 = REAL]
 ! -------------------------------------------------------------------- !
 &SPECTRA_NML
 /
@@ -89,19 +92,19 @@
 ! -------------------------------------------------------------------- !
 ! Define the type 2, mean parameter via PARAM_NML namelist
 !
-! Forcing parameters content : 
+! Forcing parameters content :
 ! - dpt, wnd, wnddir, cur, curdir
 !
-! Mean wave parameters content : 
+! Mean wave parameters content :
 ! - hs, lm, tr, th1p, sth1p, fp, th1m, sth1m
 !
 ! Nondimensional parameters (U*) content :
 ! - ust, efst, fpst, cd, alpha
 !
-! Nondimensional parameters (U10) content : 
+! Nondimensional parameters (U10) content :
 ! - wnd, efst, fpst, cd, alpha
 !
-! Validation table content :  
+! Validation table content :
 ! - wnd, wnddir, hs, hsst, cpu, cmu, ast
 !
 ! WMO stantdard output content :
@@ -123,7 +126,7 @@
 ! -------------------------------------------------------------------- !
 ! Define the type 3, source terms via SOURCE_NML namelist
 !
-! Table of 1-D S(f) content : 
+! Table of 1-D S(f) content :
 !   - time, station id, station name, longitude, latitude
 !   - frequency : unit Hz, center band frequency
 !   - ef(frequency)   : 1D spectral density
@@ -135,7 +138,7 @@
 !   - Stot(frequency) : total source term
 !   - dpt, ust, wnd : mean parameters
 !
-! Table of 1-D inverse time scales (1/T = S/F) content : 
+! Table of 1-D inverse time scales (1/T = S/F) content :
 !   - time, station id, station name, longitude, latitude
 !   - frequency : unit Hz, center band frequency
 !   - ef(frequency)   : 1D spectral density
@@ -148,7 +151,7 @@
 !   - dpt, ust, wnd : mean parameters
 !
 ! Transfert file content :
-!   - time, station id, station name, longitude, latitude 
+!   - time, station id, station name, longitude, latitude
 !   - frequency : unit Hz, center band frequency - linear log scale (XFR factor)
 !   - frequency1 : unit Hz, lower band frequency
 !   - frequency2 : unit Hz, upper band frequency
@@ -171,7 +174,7 @@
 !                                          ! 4: Transfer file
 !     SOURCE%SCALE_FAC     = 0             ! Scale factor (-1=disabled)
 !     SOURCE%OUTPUT_FAC    = 0             ! Output factor (0=normalized)
-!     SOURCE%TABLE_FAC     = 0             ! Table factor 
+!     SOURCE%TABLE_FAC     = 0             ! Table factor
 !                                                          0 : Dimensional.
 !                                                          1 : Nondimensional in terms of U10
 !                                                          2 : Nondimensional in terms of U*

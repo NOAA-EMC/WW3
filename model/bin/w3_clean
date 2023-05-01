@@ -269,8 +269,8 @@ EOF
         rm -f switch.old_${type} switch.${type}
       done
     fi
-    # clean up ftn & aux
-    for folder in ftn aux
+    # clean up ftn & tools
+    for folder in ftn tools
     do
       if [ -d $main_dir/$folder ]
       then

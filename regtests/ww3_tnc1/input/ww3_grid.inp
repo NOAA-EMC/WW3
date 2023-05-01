@@ -12,7 +12,7 @@ $ Set model flags ---------------------------------------------------- $
    F F F F F T
 $
 $ Set time steps ----------------------------------------------------- $
-    1800. 0. 0. 15.
+    1800. 60. 1800. 15.
 $
 $ Start of namelist input section ------------------------------------ $
   &MISC FLAGTR = 0 /
@@ -25,8 +25,12 @@ $ Define grid -------------------------------------------------------- $
     -0.5   -0.5     1.
      -0.1 2.50  20  -100. 2 1 '(....)' 'NAME' '../input/grid.bot'
 $
+  10  1 1 '(....)' 'PART' 'input'
 $ Input boundary points and excluded points -------------------------- $
-   21 2 1 '(....)' 'NAME' '../input/grid.mask'
+$
+     0   0   F
+     0   0   F
+     0   0
 $
 $ Output boundary points --------------------------------------------- $
 $  Close list by defining line with 0 points (mandatory)

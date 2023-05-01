@@ -26,7 +26,7 @@
   echo 'Find switches in WAVEWATCH III'
   echo '------------------------------'
 
-# 1.b Process/save input - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.b Process/save input - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   if test "$#" != '0'
   then
@@ -38,7 +38,7 @@
 
   echo ' ' ; echo "Files including $switch :" ; echo ' '
 
-# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.c Get data from setup file - - - - - - - - - - - - - - - - - - - - - - - -
 
   source $(dirname $0)/w3_setenv
   main_dir=$WWATCH3_DIR
@@ -46,12 +46,13 @@
   source=$WWATCH3_SOURCE
   list=$WWATCH3_LIST
 
-# 1.d Raw data file  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.d Raw data file  - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  cd $main_dir/ftn
+### TO DO: This needs to be improved for CPP transition
+  cd $main_dir/src
   grep "$switch" * | sed 's/\:/ /' | awk '{ print $1}' > ../.switch.files
 
-# 1.e Output - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+# 1.e Output - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   last=$NULL
   for file in `cat ../.switch.files`

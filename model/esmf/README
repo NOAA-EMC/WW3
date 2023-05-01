@@ -16,17 +16,17 @@ https://earthsystemcog.org/projects/nuopc/
 
 esmApp.F90: coupled application main program
 esm.F90: coupled application driver component
-con.F90: coupled application connector component
+concomp.F90: coupled application connector component
 mdl.F90: coupled application model components (ATM, OCN, or ICE)
 dum.F90: dummy model component
 utl.F90: utilities module
-Makefile: the 
+Makefile: the
 
 The WAV model component is Wavewatch (wmesmfmd.ftn).
 
 The ATM, OCN, and ICE components read in and export forcing fields required
 by the WAV model.  The connector components (ATM->WAV, OCN->WAV, ICE->WAV)
-defined in con.F90 setup and execute the required data transforms (regrid or
+defined in concomp.F90 setup and execute the required data transforms (regrid or
 redist).  The driver component (esm.F90) creates the model components and
 connector components and sets up the run sequence.
 

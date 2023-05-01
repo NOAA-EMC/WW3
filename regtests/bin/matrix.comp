@@ -35,7 +35,7 @@
   home_dir=`pwd`
 
   rm -rf $home_dir/output
-  rm -f $home_dir/matrixDiff.out
+  rm -f $home_dir/matrixDiff.txt
 
 # 1.b Flags to do course selection - - - - - - - - - - - - - - - - - - - - - -
 
@@ -71,7 +71,7 @@
 
 
   if [ "$ctest" = 'all' ] ; then
-    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? ww3_ta? ww3_tr? ww3_tnc? mww3_test_0?` ; fi
+    ctest=`ls -d ww3_tp1.? ww3_tp2.? ww3_ts? ww3_tbt1.? ww3_tbt2.? ww3_tic1.? ww3_tic2.? ww3_tig1.? ww3_tp2.1? ww3_tp2.2? ww3_ta? ww3_tr? ww3_tnc? mww3_test_0? ww3_ufs1.?` ; fi
   echo "base directory : $base_dir" >> $home_dir/header.tmp
   echo "comp directory : $comp_dir" >> $home_dir/header.tmp
   echo "test(s)        : "          >> $home_dir/header.tmp
@@ -111,13 +111,7 @@
 # 3.  Looping over work directories                                           #
 # --------------------------------------------------------------------------- #
 
-        cases=$(find . -maxdepth 1 -type d -name "work*" | grep -v work_oasis)
-        # skip to next tst if no work directory
-        echo 'run : ' $cases
-        if [ -z "$cases" ] ; then 
-          echo "skip"
-          continue
-        fi
+        cases=$(find . -maxdepth 1 -type d -name "work*" )
 
         for run in $cases
         do
@@ -153,20 +147,58 @@
 
               cd $return_base ; cd $run
               rm -f diff_tempfile
-              files_1=`find -type f | sed "s#^./##"`
-              
+              files_0=`ls`
+              files_1=""
+              for file in $files_0 
+              do 
+                if [[ -d $file ]]; then
+                  if [[ $file == build* ]] || [[ $file == exe* ]] || 
+                     [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then 
+                    echo "do not compare build or exe directories $file" 
+                  else 
+                    #add files: 
+                    files_dir=`ls $file`
+                    for file1 in $files_dir 
+                    do 
+                      files_1="$files_1 $file/$file1"
+                    done 
+                  fi 
+                else
+                  files_1="$files_1 $file"
+                fi
+              done 
+
               #Generate list of binary files in the directory
               binaryfiles=`grep . -r * | grep 'Binary file' | sed -e "s/^Binary file //" -e "s/ matches$//"`
 
               #Generate list of files to skip
-              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out gmon.out time_count.txt oasis_make.out oasis_clean.out toy_make.out toy_clean.out"
+              skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out gmon.out time_count.txt oasis_make.out oasis_clean.out toy_model toy_make.out toy_clean.out build.log"
 
               nf_1=`echo $files_1 | wc -w | awk '{print $1}'`
               echo "  found $nf_1 files in base directory" >> $home_dir/fulldiff.tmp
 
               cd $return_comp ; cd $run
               rm -f diff_tempfile
-              files_2=`find -type f | sed "s#^./##"`
+              files_0=`ls`
+              files_2=""
+              for file in $files_0
+              do
+                if [[ -d $file ]]; then
+                  if [[ $file == build* ]] || [[ $file == exe* ]] ||
+                     [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then
+                    echo "do not compare build or exe directories $file" 
+                  else
+                    #add files: 
+                    files_dir=`ls $file`
+                    for file1 in $files_dir
+                    do
+                      files_2="$files_1 $file/$file1"
+                    done
+                  fi
+                else
+                  files_2="$files_2 $file"
+                fi
+              done
 
               nf_2=`echo $files_2 | wc -w | awk '{print $1}'`
               echo "  found $nf_2 files in compare directory" >> $home_dir/fulldiff.tmp
@@ -187,7 +219,7 @@
                   isIdentical=0; let "numNotInComp += 1"
                   echo "     $file not in compare directory" >> $home_dir/fulldiff.tmp
                 else
-                  files_2=`echo $files_2 | sed "s#$escapedfilename##g" | sed "s#  # #g"`
+                  files_2=`echo "$files_2" | sed "s#\b$escapedfilename\b##g" | sed "s#  # #g"`
 
                   if [[ $skipfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
                   then
@@ -316,7 +348,7 @@
 #             echo "files_2 = [$files_2]"
               done
 
-# 5.d Fils in compare directpry only
+# 5.d Files in compare directory only
             for file in $files_2
             do
               echo "     $file in comp directory only" >> $home_dir/fulldiff.tmp; isIdentical=0 ; let "numInCompOnly += 1"
@@ -374,25 +406,25 @@
 # --------------------------------------------------------------------------- #
 # 7.  End of script output                                                    #
 # --------------------------------------------------------------------------- #
-  cat $home_dir/header.tmp            > $home_dir/matrixCompFull.out
-  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompFull.out
-  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompFull.out
-  cat $home_dir/fulldiff.tmp         >> $home_dir/matrixCompFull.out
+  cat $home_dir/header.tmp            > $home_dir/matrixCompFull.txt
+  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompFull.txt
+  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompFull.txt
+  cat $home_dir/fulldiff.tmp         >> $home_dir/matrixCompFull.txt
 
-  cat $home_dir/header.tmp            > $home_dir/matrixCompSummary.out
-  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompSummary.out
-  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompSummary.out
-  cat $home_dir/summary.tmp          >> $home_dir/matrixCompSummary.out
+  cat $home_dir/header.tmp            > $home_dir/matrixCompSummary.txt
+  cat $home_dir/notIdenticalList.tmp >> $home_dir/matrixCompSummary.txt
+  cat $home_dir/isIdenticalList.tmp  >> $home_dir/matrixCompSummary.txt
+  cat $home_dir/summary.tmp          >> $home_dir/matrixCompSummary.txt
 
   for file in $(find $home_dir/output -name "*diff*")
   do
-    echo "***" >> $home_dir/matrixDiff.out
-    echo $file >> $home_dir/matrixDiff.out
-    echo "***" >> $home_dir/matrixDiff.out
-    cat $file >> $home_dir/matrixDiff.out
-    echo ""  >> $home_dir/matrixDiff.out
-    echo ""  >> $home_dir/matrixDiff.out
-    echo ""  >> $home_dir/matrixDiff.out
+    echo "***" >> $home_dir/matrixDiff.txt
+    echo $file >> $home_dir/matrixDiff.txt
+    echo "***" >> $home_dir/matrixDiff.txt
+    cat $file >> $home_dir/matrixDiff.txt
+    echo ""  >> $home_dir/matrixDiff.txt
+    echo ""  >> $home_dir/matrixDiff.txt
+    echo ""  >> $home_dir/matrixDiff.txt
   done
 
 
@@ -402,23 +434,10 @@
   rm -f $home_dir/summary.tmp
   rm -f $home_dir/fulldiff.tmp
 
-
-#  echo ' '
-#  cat $home_dir/fulldiff.tmp
-#  echo '**********************************************************************'
-#  
-#  echo ' '
-#  cat $home_dir/isIdenticalList.tmp
-#  echo '**********************************************************************'
-#
-#  echo ' '
-#  cat $home_dir/notIdenticalList.tmp
-#  echo '**********************************************************************'
-
   echo ' '
-  echo " Saved summary to $home_dir/matrixCompSummary.out"
-  echo " Saved full output to $home_dir/matrixCompFull.out"
-  echo " Saved diff output to $home_dir/matrixDiff.out"
+  echo " Saved summary to $home_dir/matrixCompSummary.txt"
+  echo " Saved full output to $home_dir/matrixCompFull.txt"
+  echo " Saved diff output to $home_dir/matrixDiff.txt"
   echo ' '
 
 
