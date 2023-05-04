@@ -177,40 +177,40 @@ contains
     write(msgString,'(5(a,i6))')trim(mesh_name)//' Info: Node Cnt = ',ncnt,' Elem Cnt = ',ecnt, &
          ' num Owned Elms = ',nownde,' num Owned Nodes = ',nowndn,&
          ' Gindex size = ',gindex_size
-    call ESMF_LogWrite(trim(msgString), rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
     allocate(nids(ncnt))
     allocate(nowners(ncnt))
     allocate(eids(ecnt))
 
-    if (elementDistGridIsPresent) call ESMF_LogWrite('element Distgrid is Present', rc=rc)
-    if (nodalDistGridIsPresent) call ESMF_LogWrite('nodal Distgrid is Present', rc=rc)
-    if (elementMaskIsPresent) call ESMF_LogWrite('element Mask is Present', rc=rc)
-    if (nodeMaskIsPresent) call ESMF_LogWrite('node Mask is Present', rc=rc)
-    if (elementCoordsIsPresent) call ESMF_LogWrite('element Coords is Present', rc=rc)
+    if (elementDistGridIsPresent) call ESMF_LogWrite('element Distgrid is Present', ESMF_LOGMSG_INFO)
+    if (nodalDistGridIsPresent) call ESMF_LogWrite('nodal Distgrid is Present', ESMF_LOGMSG_INFO)
+    if (elementMaskIsPresent) call ESMF_LogWrite('element Mask is Present', ESMF_LOGMSG_INFO)
+    if (nodeMaskIsPresent) call ESMF_LogWrite('node Mask is Present', ESMF_LOGMSG_INFO)
+    if (elementCoordsIsPresent) call ESMF_LogWrite('element Coords is Present', ESMF_LOGMSG_INFO)
 
     call ESMF_MeshGet(EMeshIn, nodeIds=nids, nodeOwners=nowners, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     lb = lbound(nids,1); ub = ubound(nids,1)
     write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeIds(lb:lb+9) = ',lb,ub,nids(lb:lb+9)
-    call ESMF_LogWrite(trim(msgString), rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners(lb:lb+9) = ',lb,ub,nowners(lb:lb+9)
-    call ESMF_LogWrite(trim(msgString), rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeIds(ub-9:ub) = ',lb,ub,nids(ub-9:ub)
-    call ESMF_LogWrite(trim(msgString), rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners(ub-9:ub) = ',lb,ub,nowners(ub-9:ub)
-    call ESMF_LogWrite(trim(msgString), rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners min,max = ',minval(nowners),maxval(nowners)
-    call ESMF_LogWrite(trim(msgString), rc=rc)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
     ! some methods not avail when using a dual mesh
     if (.not. unstr_mesh) then
       call ESMF_MeshGet(EMeshIn, elementIds=eids, rc=rc)
       lb = lbound(eids,1); ub = ubound(eids,1)
       write(msgString,'(a,12i8)')trim(mesh_name)//' : ElemIds(lb:lb+9) = ',lb,ub,eids(lb:lb+9)
-      call ESMF_LogWrite(trim(msgString), rc=rc)
+      call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
       write(msgString,'(a,12i8)')trim(mesh_name)//' : ElemIds(ub-9:ub) = ',lb,ub,eids(ub-9:ub)
-      call ESMF_LogWrite(trim(msgString), rc=rc)
+      call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     end if
     deallocate(nids)
     deallocate(eids)
@@ -561,7 +561,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
-      call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_ERROR)
       rc = ESMF_FAILURE
       return
     else
@@ -775,11 +775,11 @@ contains
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
       lrank = 0
       if (labort) then
-        call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+        call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_ERROR)
         rc = ESMF_FAILURE
         return
       else
-        call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+        call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO)
       endif
     else
 
@@ -798,8 +798,7 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         if (nnodes == 0 .and. nelements == 0) lrank = 0
       else
-        call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-             ESMF_LOGMSG_INFO, rc=rc)
+        call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", ESMF_LOGMSG_ERROR)
         rc = ESMF_FAILURE
         return
       endif ! geomtype
@@ -940,10 +939,6 @@ contains
       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       update_nextalarm  = .false.
-
-      call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-           ESMF_LOGMSG_INFO, rc=rc)
-      rc = ESMF_FAILURE
 
     case (optDate)
       if (.not. present(opt_ymd)) then
