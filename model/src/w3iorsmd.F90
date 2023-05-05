@@ -628,6 +628,7 @@ CONTAINS
         ! Original non-server version writing of spectra
         !
         IF ( .NOT.IOSFLG .OR. (NAPROC.EQ.1.AND.NAPRST.EQ.1) ) THEN
+#ifdef W3_MPI 
           DO JSEA=1, NSEAL
             CALL INIT_GET_ISEA(ISEA, JSEA)
             NREC   = ISEA + 2
@@ -636,6 +637,16 @@ CONTAINS
             WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
           END DO
+#else 
+          DO JSEA=1, NSEA
+            ISEA = JSEA
+            NREC   = ISEA + 2
+            RPOS  = 1_8 + LRECL*(NREC-1_8)
+            WRITEBUFF(:) = 0.
+            WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+          END DO
+#endif          
           !
           ! I/O server version writing of spectra ( !/MPI )
           !
@@ -785,7 +796,7 @@ CONTAINS
           ELSE
 #endif
             VA = 0.
-            DO JSEA=1, NSEAL
+            DO JSEA=1, NSEA
               CALL INIT_GET_ISEA(ISEA, JSEA)
               NREC   = ISEA + 2
               RPOS   = 1_8 + LRECL*(NREC-1_8)
