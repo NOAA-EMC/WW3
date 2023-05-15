@@ -16,7 +16,7 @@ module wav_shel_inp
 
   public  :: set_shel_io         !< @public set the IO unit numbers
   public  :: read_shel_config    !< @public reads ww3_shel.nml if present, otherwise
-  !! read ww3_shel.inp
+                                 !! read ww3_shel.inp
 
   integer, public :: odat(40) !< @public output dates
   character(len=40), allocatable, public :: pnames(:) !< @public point names
@@ -120,7 +120,7 @@ contains
     use w3odatmd       , only : flogrr, flogr, ofiles
     use w3iogrmd       , only : w3iogr
     use w3iogomd       , only : w3readflgrd, fldout, w3flgrdflag
-    use w3servmd       , only : nextln, extcde
+    use w3servmd       , only : nextln, extcde, print_memcheck
     use w3timemd       , only : dsec21, stme21, tick21, t2d, d2j
 #ifdef W3_OASIS
     use w3wdatmd       , only : time00, timeend
@@ -172,28 +172,28 @@ contains
     integer             :: time0(2), timen(2), ttime(2)
     character(len=80)   :: msg1
     logical             :: is_open
+    integer             :: memunit
 
-    data idflds / 'ice param. 1 ' , 'ice param. 2 ' ,               &
-         'ice param. 3 ' , 'ice param. 4 ' ,               &
-         'ice param. 5 ' ,                                 &
-         'mud density  ' , 'mud thkness  ' ,               &
-         'mud viscos.  ' ,                                 &
-         'water levels ' , 'currents     ' ,               &
-         'winds        ' , 'ice fields   ' ,               &
-         'momentum     ' , 'air density  ' ,               &
-         'mean param.  ' , '1D spectra   ' ,               &
+    data idflds / 'ice param. 1 ' , 'ice param. 2 ' , &
+         'ice param. 3 ' , 'ice param. 4 ' ,          &
+         'ice param. 5 ' ,                            &
+         'mud density  ' , 'mud thkness  ' ,          &
+         'mud viscos.  ' ,                            &
+         'water levels ' , 'currents     ' ,          &
+         'winds        ' , 'ice fields   ' ,          &
+         'momentum     ' , 'air density  ' ,          &
+         'mean param.  ' , '1D spectra   ' ,          &
          '2D spectra   ' , 'moving grid  ' /
-    data idotyp / 'Fields of mean wave parameters' ,                &
-         'Point output                  ' ,                &
-         'Track point output            ' ,                &
-         'Restart files                 ' ,                &
-         'Nesting data                  ' ,                &
-         'Partitioned wave field data   ' ,                &
-         'Fields for coupling           ' ,                &
+    data idotyp / 'Fields of mean wave parameters' ,  &
+         'Point output                  ' ,           &
+         'Track point output            ' ,           &
+         'Restart files                 ' ,           &
+         'Nesting data                  ' ,           &
+         'Partitioned wave field data   ' ,           &
+         'Fields for coupling           ' ,           &
          'Restart files second request  '/
-    data idstr  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH',  &
-         'MVS', 'LEV', 'CUR', 'WND', 'ICE', 'TAU', 'RHO',  &
-         'DT0', 'DT1', 'DT2', 'MOV' /
+    data idstr  / 'IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'MDN', 'MTH', 'MVS', 'LEV', 'CUR', &
+         'WND', 'ICE', 'TAU', 'RHO', 'DT0', 'DT1', 'DT2', 'MOV' /
     !---------------------------------------------------
     !
     !---------------------------------------------------
@@ -201,6 +201,7 @@ contains
     flgr2 = .false.
     flh(:) = .false.
     iprt(:) = 0
+    memunit = 740+IAPROC
     call print_logmsg(740+IAPROC, 'read_shel_config, step 1', w3_debuginit_flag)
 
     ! ndso, ndse, ndst are set in w3initmd using mds;  w3initmd is called by either
@@ -266,10 +267,8 @@ contains
       ! Read namelist
       !--------------------
 
-      call w3nmlshel (mpi_comm, ndsi, trim(fnmpre)//'ww3_shel.nml',  &
-           nml_domain, nml_input, nml_output_type,        &
-           nml_output_date, nml_homog_count,             &
-           nml_homog_input, ierr)
+      call w3nmlshel (mpi_comm, ndsi, trim(fnmpre)//'ww3_shel.nml', nml_domain, nml_input, &
+           nml_output_type, nml_output_date, nml_homog_count, nml_homog_input, ierr)
 
       !--------------------
       ! 2.1 forcing flags
@@ -392,23 +391,22 @@ contains
         inflags1(10) = .true.
         flh(10)   = .true.
       end if
-      if ( inflags1(10) .and. iaproc.eq.napout )                         &
-           write (ndso,921) idflds(10), 'yes/--', ' '
+      if ( inflags1(10) .and. iaproc.eq.napout ) write (ndso,921) idflds(10), 'yes/--', ' '
 
       flflg  = inflags1(-7) .or. inflags1(-6) .or. inflags1(-5) .or. inflags1(-4) &
-           .or. inflags1(-3) .or. inflags1(-2) .or. inflags1(-1) &
-           .or. inflags1(0)  .or. inflags1(1)  .or. inflags1(2)  &
-           .or. inflags1(3)  .or. inflags1(4)  .or. inflags1(5)  &
-           .or. inflags1(6)  .or. inflags1(7)  .or. inflags1(8)  &
-           .or. inflags1(9)
-      flhom  = flh(-7) .or. flh(-6) .or. flh(-5) .or. flh(-4) &
-           .or. flh(-3) .or. flh(-2) .or. flh(-1) .or. flh(0)  &
-           .or. flh(1) .or. flh(2) .or. flh(3) .or. flh(4)     &
-           .or. flh(5) .or. flh(6) .or. flh(10)
+                            .or. inflags1(-3) .or. inflags1(-2) .or. inflags1(-1) &
+                            .or. inflags1(0)  .or. inflags1(1)  .or. inflags1(2)  &
+                            .or. inflags1(3)  .or. inflags1(4)  .or. inflags1(5)  &
+                            .or. inflags1(6)  .or. inflags1(7)  .or. inflags1(8)  &
+                            .or. inflags1(9)
+      flhom  = flh(-7) .or. flh(-6) .or. flh(-5) .or. flh(-4)              &
+                       .or. flh(-3) .or. flh(-2) .or. flh(-1) .or. flh(0)  &
+                       .or. flh(1)  .or. flh(2)  .or. flh(3)  .or. flh(4)  &
+                       .or. flh(5)  .or. flh(6)  .or. flh(10)
 
       if ( iaproc .eq. napout ) write (ndso,922)
-      ! inflags2 is just "initial value of inflags1", i.e. does *not* get
-      ! changed when model reads last record of ice.ww3
+      ! inflags2 is just "initial value of inflags1", i.e. does *not* get changed when
+      ! model reads last record of ice.ww3
       inflags2=inflags1
       if (w3_t_flag) then
         write (ndst,9020) flflg, inflags1, flhom, flh
@@ -448,43 +446,41 @@ contains
       ! 2.4 Output dates
       !--------------------
 
-      read(nml_output_date%field%start, *)   odat(1), odat(2)
-      read(nml_output_date%field%stride, *)  odat(3)
-      read(nml_output_date%field%stop, *)    odat(4), odat(5)
+      read(nml_output_date%field%start,    *)   odat(1), odat(2)
+      read(nml_output_date%field%stride,   *)   odat(3)
+      read(nml_output_date%field%stop,     *)   odat(4), odat(5)
 
       read(nml_output_date%field%outffile, *)  ofiles(1)
-      !        outpts(i)%outstride(1)=odat(3,i)
 
-      read(nml_output_date%point%start, *)   odat(6), odat(7)
-      read(nml_output_date%point%stride, *)  odat(8)
-      read(nml_output_date%point%stop, *)    odat(9), odat(10)
+      read(nml_output_date%point%start,    *)   odat(6), odat(7)
+      read(nml_output_date%point%stride,   *)   odat(8)
+      read(nml_output_date%point%stop,     *)   odat(9), odat(10)
 
       read(nml_output_date%point%outffile, *)  ofiles(2)
-      !        outpts(i)%outstride(2)=odat(8,i)
 
-      read(nml_output_date%track%start, *)   odat(11), odat(12)
-      read(nml_output_date%track%stride, *)  odat(13)
-      read(nml_output_date%track%stop, *)    odat(14), odat(15)
+      read(nml_output_date%track%start,      *) odat(11), odat(12)
+      read(nml_output_date%track%stride,     *) odat(13)
+      read(nml_output_date%track%stop,       *) odat(14), odat(15)
 
-      read(nml_output_date%restart%start, *)   odat(16), odat(17)
-      read(nml_output_date%restart%stride, *)  odat(18)
-      read(nml_output_date%restart%stop, *)    odat(19), odat(20)
+      read(nml_output_date%restart%start,    *) odat(16), odat(17)
+      read(nml_output_date%restart%stride,   *) odat(18)
+      read(nml_output_date%restart%stop,     *) odat(19), odat(20)
 
-      read(nml_output_date%restart2%start, *)   odat(36), odat(37)
-      read(nml_output_date%restart2%stride, *)  odat(38)
-      read(nml_output_date%restart2%stop, *)    odat(39), odat(40)
+      read(nml_output_date%restart2%start,   *) odat(36), odat(37)
+      read(nml_output_date%restart2%stride,  *) odat(38)
+      read(nml_output_date%restart2%stop,    *) odat(39), odat(40)
 
-      read(nml_output_date%boundary%start, *)   odat(21), odat(22)
-      read(nml_output_date%boundary%stride, *)  odat(23)
-      read(nml_output_date%boundary%stop, *)    odat(24), odat(25)
+      read(nml_output_date%boundary%start,   *) odat(21), odat(22)
+      read(nml_output_date%boundary%stride,  *) odat(23)
+      read(nml_output_date%boundary%stop,    *) odat(24), odat(25)
 
-      read(nml_output_date%partition%start, *)   odat(26), odat(27)
-      read(nml_output_date%partition%stride, *)  odat(28)
-      read(nml_output_date%partition%stop, *)    odat(29), odat(30)
+      read(nml_output_date%partition%start,  *) odat(26), odat(27)
+      read(nml_output_date%partition%stride, *) odat(28)
+      read(nml_output_date%partition%stop,   *) odat(29), odat(30)
 
-      read(nml_output_date%coupling%start, *)   odat(31), odat(32)
-      read(nml_output_date%coupling%stride, *)  odat(33)
-      read(nml_output_date%coupling%stop, *)    odat(34), odat(35)
+      read(nml_output_date%coupling%start,   *) odat(31), odat(32)
+      read(nml_output_date%coupling%stride,  *) odat(33)
+      read(nml_output_date%coupling%stop,    *) odat(34), odat(35)
 
       ! set the time stride at 0 or more
       odat(3) = max ( 0 , odat(3) )
@@ -742,20 +738,20 @@ contains
           end do
         end if
 
-        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or.                     &
-             ( flh(-6) .and. (nh(-6).eq.0) ) .or.                     &
-             ( flh(-5) .and. (nh(-5).eq.0) ) .or.                     &
-             ( flh(-4) .and. (nh(-4).eq.0) ) .or.                     &
-             ( flh(-3) .and. (nh(-3).eq.0) ) .or.                     &
-             ( flh(-2) .and. (nh(-2).eq.0) ) .or.                     &
-             ( flh(-1) .and. (nh(-1).eq.0) ) .or.                     &
-             ( flh(0)  .and. (nh(0).eq.0)  ) .or.                     &
-             ( flh(1)  .and. (nh(1).eq.0)  ) .or.                     &
-             ( flh(2)  .and. (nh(2).eq.0)  ) .or.                     &
-             ( flh(3)  .and. (nh(3).eq.0)  ) .or.                     &
-             ( flh(4)  .and. (nh(4).eq.0)  ) .or.                     &
-             ( flh(5)  .and. (nh(5).eq.0)  ) .or.                     &
-             ( flh(6)  .and. (nh(6).eq.0)  ) .or.                     &
+        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or. &
+             ( flh(-6) .and. (nh(-6).eq.0) ) .or. &
+             ( flh(-5) .and. (nh(-5).eq.0) ) .or. &
+             ( flh(-4) .and. (nh(-4).eq.0) ) .or. &
+             ( flh(-3) .and. (nh(-3).eq.0) ) .or. &
+             ( flh(-2) .and. (nh(-2).eq.0) ) .or. &
+             ( flh(-1) .and. (nh(-1).eq.0) ) .or. &
+             ( flh(0)  .and. (nh(0).eq.0)  ) .or. &
+             ( flh(1)  .and. (nh(1).eq.0)  ) .or. &
+             ( flh(2)  .and. (nh(2).eq.0)  ) .or. &
+             ( flh(3)  .and. (nh(3).eq.0)  ) .or. &
+             ( flh(4)  .and. (nh(4).eq.0)  ) .or. &
+             ( flh(5)  .and. (nh(5).eq.0)  ) .or. &
+             ( flh(6)  .and. (nh(6).eq.0)  ) .or. &
              ( flh(10) .and. (nh(10).eq.0) ) ) goto 2007
 
       end if ! flhom
@@ -830,7 +826,7 @@ contains
         if (flagsc(2) .and. inflags1(1) .and. .not. flagsc(1)) goto 2102
       end if
 
-      call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2b')
+      call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 2b')
 
       inflags1(10) = .false.
       if (w3_mgw_flag .or. w3_mgp_flag) then
@@ -841,19 +837,19 @@ contains
            write (ndso,921) idflds(10), 'yes/--', ' '
 
       flflg  = inflags1(-7) .or. inflags1(-6) .or. inflags1(-5) .or. inflags1(-4) &
-           .or. inflags1(-3) .or. inflags1(-2) .or. inflags1(-1)           &
-           .or. inflags1(0)  .or. inflags1(1)  .or. inflags1(2)            &
-           .or. inflags1(3)  .or. inflags1(4)  .or. inflags1(5)            &
-           .or. inflags1(6)  .or. inflags1(7)  .or. inflags1(8)            &
-           .or. inflags1(9)
-      flhom  = flh(-7) .or. flh(-6) .or. flh(-5) .or. flh(-4)       &
-           .or. flh(-3) .or. flh(-2) .or. flh(-1) .or. flh(0)   &
-           .or. flh(1) .or. flh(2) .or. flh(3) .or. flh(4)      &
-           .or. flh(5) .or. flh(6) .or. flh(10)
+                            .or. inflags1(-3) .or. inflags1(-2) .or. inflags1(-1) &
+                            .or. inflags1(0)  .or. inflags1(1)  .or. inflags1(2)  &
+                            .or. inflags1(3)  .or. inflags1(4)  .or. inflags1(5)  &
+                            .or. inflags1(6)  .or. inflags1(7)  .or. inflags1(8)  &
+                            .or. inflags1(9)
+      flhom  = flh(-7) .or. flh(-6) .or. flh(-5) .or. flh(-4)              &
+                       .or. flh(-3) .or. flh(-2) .or. flh(-1) .or. flh(0)  &
+                       .or. flh(1)  .or. flh(2)  .or. flh(3)  .or. flh(4)  &
+                       .or. flh(5)  .or. flh(6)  .or. flh(10)
 
       if ( iaproc .eq. napout ) write (ndso,922)
-      ! inflags2 is just "initial value of inflags1", i.e. does *not* get
-      ! changed when model reads last record of ice.ww3
+      ! inflags2 is just "initial value of inflags1", i.e. does *not* get changed when
+      ! model reads last record of ice.ww3
       inflags2=inflags1
 
       if (w3_t_flag) then
@@ -867,11 +863,11 @@ contains
       call nextln ( comstr , ndsi , ndsen )
       read (ndsi,*) time0
 
-      call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2c')
+      call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 2c')
 
       call nextln ( comstr , ndsi , ndsen )
       read (ndsi,*) timen
-      call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 2d')
+      call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 2d')
 
       !--------------------
       ! 2.3 Domain setup
@@ -988,7 +984,7 @@ contains
           end if !j le 2
           odat(5*(j-1)+3) = max ( 0 , odat(5*(j-1)+3) )
           write(msg1, *) 'read_shel_config NOTTYPE', J
-          call print_memcheck(740+IAPROC, 'memcheck_____:'//trim(msg1))
+          call print_memcheck(memunit, 'memcheck_____:'//trim(msg1))
 
           !--------------------
           ! 2.5 Output types
@@ -1192,7 +1188,7 @@ contains
             end if
           end do
         end do
-        call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 3')
+        call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 3')
 
         if (w3_o7_flag) then
           do j=jfirst, 10
@@ -1211,27 +1207,27 @@ contains
           end do
         end if
 
-        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or.                     &
-             ( flh(-6) .and. (nh(-6).eq.0) ) .or.                     &
-             ( flh(-5) .and. (nh(-5).eq.0) ) .or.                     &
-             ( flh(-4) .and. (nh(-4).eq.0) ) .or.                     &
-             ( flh(-3) .and. (nh(-3).eq.0) ) .or.                     &
-             ( flh(-2) .and. (nh(-2).eq.0) ) .or.                     &
-             ( flh(-1) .and. (nh(-1).eq.0) ) .or.                     &
-             ( flh(0)  .and. (nh(0).eq.0)  ) .or.                     &
-             ( flh(1)  .and. (nh(1).eq.0)  ) .or.                     &
-             ( flh(2)  .and. (nh(2).eq.0)  ) .or.                     &
-             ( flh(3)  .and. (nh(3).eq.0)  ) .or.                     &
-             ( flh(4)  .and. (nh(4).eq.0)  ) .or.                     &
-             ( flh(5)  .and. (nh(5).eq.0)  ) .or.                     &
-             ( flh(6)  .and. (nh(6).eq.0)  ) .or.                     &
+        if ( ( flh(-7) .and. (nh(-7).eq.0) ) .or. &
+             ( flh(-6) .and. (nh(-6).eq.0) ) .or. &
+             ( flh(-5) .and. (nh(-5).eq.0) ) .or. &
+             ( flh(-4) .and. (nh(-4).eq.0) ) .or. &
+             ( flh(-3) .and. (nh(-3).eq.0) ) .or. &
+             ( flh(-2) .and. (nh(-2).eq.0) ) .or. &
+             ( flh(-1) .and. (nh(-1).eq.0) ) .or. &
+             ( flh(0)  .and. (nh(0).eq.0)  ) .or. &
+             ( flh(1)  .and. (nh(1).eq.0)  ) .or. &
+             ( flh(2)  .and. (nh(2).eq.0)  ) .or. &
+             ( flh(3)  .and. (nh(3).eq.0)  ) .or. &
+             ( flh(4)  .and. (nh(4).eq.0)  ) .or. &
+             ( flh(5)  .and. (nh(5).eq.0)  ) .or. &
+             ( flh(6)  .and. (nh(6).eq.0)  ) .or. &
              ( flh(10) .and. (nh(10).eq.0) ) ) goto 2007
 
       end if ! flhom
       close(ndsi)
     end if  ! .not. flgnml
 
-    call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 4')
+    call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 4')
 
     !--------------------
     ! 2.2 Time setup
@@ -1410,9 +1406,8 @@ contains
       if ( iaproc .eq. napout )  write (ndso,8945) trim(idotyp(j))
       continue
     end if
-    !
 
-    call print_memcheck(740+IAPROC, 'memcheck_____:'//'read_shel_config SECTION 5')
+    call print_memcheck(memunit, 'memcheck_____:'//' read_shel_config SECTION 5')
 
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1457,33 +1452,32 @@ contains
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1009) ODAT(33), NINT(DTMAX)
     CALL EXTCDE ( 1009 )
 2222 CONTINUE
-
     ! Formats
-900 FORMAT (/15X,'      *** WAVEWATCH III Program shell ***      '/ &
-         15X,'==============================================='/)
+900 FORMAT (/15X, '      *** WAVEWATCH III Program shell ***      '/   &
+         15X,     '==============================================='/)
 901 FORMAT ( '  Comment character is ''',A,''''/)
-905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
-         '     Requested: ', I2/                          &
-         '      Provided: ', I2/ )
-920 FORMAT (/'  Input fields : '/                                   &
-         ' --------------------------------------------------')
-921 FORMAT ( '       ',A,2X,A,2X,A)
-922 FORMAT ( ' ' )
-930 FORMAT (/'  Time interval : '/                                  &
-         ' --------------------------------------------------')
-931 FORMAT ( '       Starting time : ',A)
-932 FORMAT ( '       Ending time   : ',A/)
-940 FORMAT (/'  Output requests : '/                                &
-         ' --------------------------------------------------'/ &
-         '       ',A)
-941 FORMAT (/'       Type',I2,' : ',A/                              &
-         '      -----------------------------------------')
+905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/                 &
+             '     Requested: ', I2/                                   &
+             '      Provided: ', I2/ )
+920 FORMAT (/ '  Input fields : '/                                     &
+              ' --------------------------------------------------')
+921 FORMAT (  '       ',A,2X,A,2X,A)
+922 FORMAT (  ' ' )
+930 FORMAT (/ '  Time interval : '/                                    &
+              ' --------------------------------------------------')
+931 FORMAT (  '       Starting time : ',A)
+932 FORMAT (  '       Ending time   : ',A/)
+940 FORMAT (/ '  Output requests : '/                                  &
+              ' --------------------------------------------------'/   &
+              '       ',A)
+941 FORMAT (/ '       Type',I2,' : ',A/                                &
+              '      -----------------------------------------')
 942 FORMAT ( '            From     : ',A)
 943 FORMAT ( '            To       : ',A)
 954 FORMAT ( '            ',A,': file not needed')
 955 FORMAT ( '            ',A,': file OK')
-956 FORMAT ( '            ',A,': file OK, recl =',I3,               &
-         '  undef = ',E10.3)
+956 FORMAT (  '            ',A,': file OK, recl =',I3,                 &
+              '  undef = ',E10.3)
 1944 FORMAT ( '            Interval : ', 8X,A11/)
 2944 FORMAT ( '            Interval : ', 9X,A10/)
 3944 FORMAT ( '            Interval : ',11X,A8/)
@@ -1493,57 +1487,56 @@ contains
 2956 FORMAT ( '              ',I6,' : ',2(F8.1,'E3'),2X,A)
 2947 FORMAT ( '            No points defined')
 3945 FORMAT ( '            The file with ',A,' data is ',A,'.')
-6945 FORMAT ( '            IX first,last,inc :',3I5/                 &
-         '            IY first,last,inc :',3I5/                 &
-         '            Formatted file    :    ',A)
-8945 FORMAT ( '            output dates out of run dates : ', A,     &
-         ' deactivated')
-950 FORMAT (/'  Initializations :'/                                  &
-         ' --------------------------------------------------')
+6945 FORMAT ( '            IX first,last,inc :',3I5/                   &
+              '            IY first,last,inc :',3I5/                   &
+              '            Formatted file    :    ',A)
+8945 FORMAT ( '            output dates out of run dates : ', A,       &
+              ' deactivated')
+950 FORMAT (/ '  Initializations :'/                                   &
+              ' --------------------------------------------------')
 951 FORMAT ( '       ',A)
 952 FORMAT ( '       ',I6,2X,A)
 953 FORMAT ( '          ',I6,I11.8,I7.6,3E12.4)
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     PREMATURE END OF INPUT FILE'/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM INPUT FILE'/               &
-         '     IOSTAT =',I5/)
-1102 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/&
-         '     IT MUST BE FULLY COUPLED OR DISABLED '/)
-1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL TIME INTERVAL'/)
-1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING POINT FILE'/                    &
-         '     IOSTAT =',I5/)
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN READING FROM POINT FILE'/               &
-         '     IOSTAT =',I5/)
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
-1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
-1062 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : ***'/            &
-         '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
-1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
-1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     ERROR IN OPENING OUTPUT FILE'/                   &
-         '     IOSTAT =',I5/)
-1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     COUPLING TIME STEP NOT MULTIPLE OF'/             &
-         '     MODEL TIME STEP: ',I6, I6/)
-1010 FORMAT (/' *** WAVEWATCH III WARNING IN W3SHEL : *** '/         &
-         '     COUPLING TIME STEP NOT DEFINED, '/               &
-         '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/          &
-         '     FROM ',I6, ' TO ',I6/)
-1054 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-         '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
+1001 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     PREMATURE END OF INPUT FILE'/)
+1002 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     ERROR IN READING FROM INPUT FILE'/                &
+               '     IOSTAT =',I5/)
+1102 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     LEVEL AND CURRENT ARE MIXING COUPLED AND FORCED'/ &
+               '     IT MUST BE FULLY COUPLED OR DISABLED '/)
+1003 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     ILLEGAL TIME INTERVAL'/)
+1104 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     ERROR IN OPENING POINT FILE'/                     &
+               '     IOSTAT =',I5/)
+1004 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     ERROR IN READING FROM POINT FILE'/                &
+               '     IOSTAT =',I5/)
+1005 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
+1006 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     TOO MANY HOMOGENEOUS FIELDS : ',A,1X,I4/)
+1062 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : ***'/             &
+               '     HOMOGENEOUS NAME NOT RECOGNIZED : ', A/)
+1007 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
+1008 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     ERROR IN OPENING OUTPUT FILE'/                    &
+               '     IOSTAT =',I5/)
+1009 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     COUPLING TIME STEP NOT MULTIPLE OF'/              &
+               '     MODEL TIME STEP: ',I6, I6/)
+1010 FORMAT (/ ' *** WAVEWATCH III WARNING IN W3SHEL : *** '/          &
+               '     COUPLING TIME STEP NOT DEFINED, '/                &
+               '     IT WILL BE OVERRIDEN TO DEFAULT VALUE'/           &
+               '     FROM ',I6, ' TO ',I6/)
+1054 FORMAT (/ ' *** WAVEWATCH III ERROR IN W3SHEL : *** '/            &
+               '     POINT OUTPUT ACTIVATED BUT NO POINTS DEFINED'/)
 9000 FORMAT ( ' TEST W3SHEL : UNIT NUMBERS  :',12I4)
 9001 FORMAT ( ' TEST W3SHEL : SUBR. TRACING :',2I4)
 9020 FORMAT ( ' TEST W3SHEL : FLAGS DEF / HOM  : ',9L2,2X,9L2)
-9040 FORMAT ( ' TEST W3SHEL : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6,  &
-         4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
+9040 FORMAT ( ' TEST W3SHEL : ODAT   : ',I9.8,I7.6,I7,I9.8,I7.6, 4(/24X,I9.8,I7.6,I7,I9.8,I7.6) )
 9041 FORMAT ( ' TEST W3SHEL : FLGRD  : ',20L2)
 9042 FORMAT ( ' TEST W3SHEL : IPR, PRFRM : ',6I6,1X,L1)
 

@@ -2463,7 +2463,7 @@ CONTAINS
             CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
           END IF ! IF (.NOT. LPDLIB) THEN
-        END IF
+        END IF ! if (do_startall)
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 1')
         !
@@ -2591,7 +2591,7 @@ CONTAINS
               if (do_gridded_output) then
                 if (user_netcdf_grdout) then
 #ifdef W3_MPI
-                  CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
+                  IF ( FLGMPI(0) )CALL MPI_WAITALL( NRQGO, IRQGO, STATIO, IERR_MPI )
                   FLGMPI(0) = .FALSE.
 #endif
                   IF ( IAPROC .EQ. NAPFLD ) THEN

@@ -107,5 +107,3 @@ set(scripnc_src
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_write.f
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_read.f
   )
-
-
