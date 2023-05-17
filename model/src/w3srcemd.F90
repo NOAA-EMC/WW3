@@ -838,6 +838,7 @@ CONTAINS
     ! Does not integrate source terms for IG band if IGPARS(12) = 0.
     IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5))
 #endif
+    IS1=(IKS1-1)*NTH+1
 
     !! Initialise source term arrays:
     VDIO = 0.
