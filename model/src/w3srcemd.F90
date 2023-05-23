@@ -1378,7 +1378,7 @@ CONTAINS
 #ifdef W3_PDLIB
       IF (B_JGS_LIMITER_FUNC == 2) THEN
         DO IK=1, NK
-          JAC      = CG1(IK)/CLATSL 
+          JAC      = CG1(IK)/CLATSL
           JAC2     = 1./TPI/SIG(IK)
           FRLOCAL  = SIG(IK)*TPIINV
 #ifdef W3_ST6
@@ -1650,7 +1650,6 @@ CONTAINS
         RETURN ! return everything is done for the implicit ...
 
       END IF ! srce_imp_pre
-
 ! --end W3_PDLIB
 #endif
       !
@@ -1686,7 +1685,7 @@ CONTAINS
           eInc1 = VDTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
           SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
         END DO
-#endif 
+#endif
 
 #ifdef W3_DEBUGSRC
         IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
@@ -2195,7 +2194,7 @@ CONTAINS
     IF (IX .eq. DEBUG_NODE) THEN
       WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
     END IF
-#endif 
+#endif
 
 #ifdef W3_REF1
     IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
