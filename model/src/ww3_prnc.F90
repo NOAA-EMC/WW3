@@ -386,7 +386,6 @@ PROGRAM W3PRNC
 #endif
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
   ! 1.a  Set number of models
   !
   CALL W3NMOD ( 1, 6, 6 )
