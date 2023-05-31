@@ -245,6 +245,7 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: PTMETH2=5
+    REAL                    :: PTFCUT2=0.1
     INTEGER                 :: ITH, IMI(NSPEC), IMD(NSPEC),         &
          IMO(NSPEC), IND(NSPEC), NP_MAX,      &
          IP, IT(1), INDEX(DIMXP), NWS,        &
@@ -314,7 +315,7 @@ CONTAINS
     ! using a frequency cutoff:
     !
     IF( PTMETH2 .EQ. 5 ) THEN
-      SIGCUT = TPI * PTFCUT
+      SIGCUT = TPI * PTFCUT2
       DO IK = 1, NK
         ! If bin center <= freq cutoff then mark as "low band".
         IF(SIG(IK) .LE. SIGCUT) THEN
