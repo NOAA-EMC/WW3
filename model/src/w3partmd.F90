@@ -234,15 +234,17 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(OUT)          :: NP
+    INTEGER, INTENT(OUT)          :: NP, NP2
     INTEGER, INTENT(IN)           :: DIMXP
     REAL, INTENT(IN)              :: SPEC(NK,NTH), WN(NK), UABS,    &
          UDIR, DEPTH
     REAL, INTENT(OUT)             :: XP(DIMP,0:DIMXP)
+    REAL, INTENT(OUT)             :: XP2(DIMP,0:DIMXP)
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
+    INTEGER                 :: PTMETH2=5
     INTEGER                 :: ITH, IMI(NSPEC), IMD(NSPEC),         &
          IMO(NSPEC), IND(NSPEC), NP_MAX,      &
          IP, IT(1), INDEX(DIMXP), NWS,        &
@@ -311,7 +313,7 @@ CONTAINS
     ! PTMETH == 5 : produce "high" and "low" band partitions
     ! using a frequency cutoff:
     !
-    IF( PTMETH .EQ. 5 ) THEN
+    IF( PTMETH2 .EQ. 5 ) THEN
       SIGCUT = TPI * PTFCUT
       DO IK = 1, NK
         ! If bin center <= freq cutoff then mark as "low band".
@@ -332,10 +334,10 @@ CONTAINS
 
       ! Calculate mean parameters:
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-           NP, XP, DIMXP, PMAP )
+           NP2, XP2, DIMXP, PMAP )
 
       ! No more processing required, return:
-      RETURN
+      ! RETURN
     ENDIF ! PTMETH == 5
     !
     ! 1.b Invert spectrum and 'digitize'
