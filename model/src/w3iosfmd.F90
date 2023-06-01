@@ -195,13 +195,13 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,     &
-         IK, ITH, NP, TMPSIZ, OLDSIZ, FINSIZ
+         IK, ITH, NP, NP2, TMPSIZ, OLDSIZ, FINSIZ
     INTEGER, SAVE           :: TSFAC = 7
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
     REAL                    :: UABS, UDIR, DEPTH, FACT, E2(NK,NTH)
-    REAL, ALLOCATABLE       :: XP(:,:), TMP(:,:), TMP2(:,:)
+    REAL, ALLOCATABLE       :: XP(:,:), XP2(:,:), TMP(:,:), TMP2(:,:)
     !/
 #ifdef W3_S
     CALL STRACE (IENT, 'W3CPRT')
@@ -276,7 +276,7 @@ CONTAINS
         STOP 'CRITICAL ERROR IN DEPTH ARRAY'
       END IF
       CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
-           NP, XP, DIMXP )
+           NP, XP, NP2, XP2, DIMXP )
       !
       ! -------------------------------------------------------------------- /
       ! 5.  Store results (temp)

@@ -135,7 +135,7 @@ CONTAINS
   !> @author Barbara Tracey, H. L. Tolman, M. Szyszka, Chris Bunney
   !> @date 23 Jul 2018
   !>
-  SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, DIMXP )
+  SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, NP2, XP2, DIMXP )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III          USACE/NOAA |
@@ -172,8 +172,11 @@ CONTAINS
     !                           -1 : Spectrum without minumum energy.
     !                            0 : Spectrum with minumum energy.
     !                                but no partitions.
+    !       NP2     Int.   O   Number of partitions from second scheme.
     !       XP      R.A.   O   Parameters describing partitions.
     !                          Entry '0' contains entire spectrum.
+    !       XP2     R.A.   O   Parameters describing partitions from
+    !                          second scheme.
     !       DIMXP   Int.   I   Second dimension of XP.
     !     ----------------------------------------------------------------
     !
@@ -269,6 +272,8 @@ CONTAINS
     !
     NP     = 0
     XP     = 0.
+    NP2    = 0
+    XP2    = 0.
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Process input spectrum
