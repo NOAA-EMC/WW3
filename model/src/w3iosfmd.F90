@@ -194,6 +194,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
+    ! CAH: NP2 and XP2 are the number of partitions and bulk parameters for
+    ! the partitions, respectively
     INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,     &
          IK, ITH, NP, NP2, TMPSIZ, OLDSIZ, FINSIZ
     INTEGER, SAVE           :: TSFAC = 7
@@ -218,8 +220,13 @@ CONTAINS
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
     ENDIF
 
-    ALLOCATE ( XP(DIMP,0:DIMXP) )
+    ! CAH: DIMP is the number of parameters in partition
+    ! CAH: DIMXP is the number of partitions
+    ALLOCATE ( XP(DIMP,0:DIMXP) ) 
+    ! CAH: PTMETH2=5 only ever creates 2 partitions
+    ALLOCATE ( XP2(DIMP,0:2) ) 
     !
+    ! CAH: ICPRT is the counter for partitions
     IF ( O6INIT ) THEN
       DEALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT )
     ELSE

@@ -172,10 +172,10 @@ CONTAINS
     !                           -1 : Spectrum without minumum energy.
     !                            0 : Spectrum with minumum energy.
     !                                but no partitions.
-    !       NP2     Int.   O   Number of partitions from second scheme.
+    !       NP2     Int.   O   CAH: Number of partitions from second scheme.
     !       XP      R.A.   O   Parameters describing partitions.
     !                          Entry '0' contains entire spectrum.
-    !       XP2     R.A.   O   Parameters describing partitions from
+    !       XP2     R.A.   O   CAH: Parameters describing partitions from
     !                          second scheme.
     !       DIMXP   Int.   I   Second dimension of XP.
     !     ----------------------------------------------------------------
@@ -242,11 +242,14 @@ CONTAINS
     REAL, INTENT(IN)              :: SPEC(NK,NTH), WN(NK), UABS,    &
          UDIR, DEPTH
     REAL, INTENT(OUT)             :: XP(DIMP,0:DIMXP)
-    REAL, INTENT(OUT)             :: XP2(DIMP,0:DIMXP)
+    ! CAH: DIMXP is the number of partitions, always 2 for PTMETH2=5
+    REAL, INTENT(OUT)             :: XP2(DIMP,0:2)
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
+    ! CAH: We define a second partitioning method PTMETH2 that is always
+    ! the 5th scheme, a simple frequency split at frequency PTFCUT2.
     INTEGER                 :: PTMETH2=5
     REAL                    :: PTFCUT2=0.1
     INTEGER                 :: ITH, IMI(NSPEC), IMD(NSPEC),         &
@@ -343,6 +346,8 @@ CONTAINS
            NP2, XP2, DIMXP, PMAP )
 
       ! No more processing required, return:
+      ! CAH: we don't want to return here, since we want to also partition
+      ! the spectrum using whatever method is specified during runtime
       ! RETURN
     ENDIF ! PTMETH == 5
     !
