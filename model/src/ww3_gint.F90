@@ -1572,7 +1572,7 @@ CONTAINS
               !
               ! Group 1 variables
               !
-              IF ( FLOGRD(1,1) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,1) ) THEN
                 IF ( WADATS(IGRID)%DW(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(1) = SUMWT1(1) + WT
                   IF ( DWAUX .EQ. UNDEF ) THEN
@@ -1583,7 +1583,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,2) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,2) ) THEN
                 IF ( WADATS(IGRID)%CX(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(2) = SUMWT1(2) + WT
                   IF ( CXAUX .EQ. UNDEF ) THEN
@@ -1609,7 +1609,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,4) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,4) ) THEN
                 IF ( WADATS(IGRID)%AS(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(4) = SUMWT1(4) + WT
                   IF ( ASAUX .EQ. UNDEF ) THEN
@@ -1620,7 +1620,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,5) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,5) ) THEN
                 IF ( WDATAS(IGRID)%WLV(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(5) = SUMWT1(5) + WT
                   IF ( WLVAUX .EQ. UNDEF ) THEN
@@ -1642,7 +1642,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,7) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,7) ) THEN
                 IF ( WDATAS(IGRID)%BERG(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(7) = SUMWT1(7) + WT
                   IF ( BERGAUX .EQ. UNDEF ) THEN
@@ -1666,7 +1666,7 @@ CONTAINS
                 END IF
               END IF
               !
-              IF ( FLOGRD(1,9) .AND. ACTIVE ) THEN
+              IF ( FLOGRD(1,9) ) THEN
                 IF ( WDATAS(IGRID)%RHOAIR(GSEA) .NE. UNDEF ) THEN
                   SUMWT1(9) = SUMWT1(9) + WT
                   IF ( RHOAIRAUX .EQ. UNDEF ) THEN
