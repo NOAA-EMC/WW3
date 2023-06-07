@@ -2815,7 +2815,7 @@ CONTAINS
         ! CAH: Added parameters from second partitioning scheme
         !
         IF ( FLGRDALL( 4, 18) ) THEN
-            K=0
+          DO K=0, 1
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PHS2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2825,10 +2825,11 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
+          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 19) ) THEN
-            K=0
+          DO K=0, 1
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PTP2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2838,10 +2839,11 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
+          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 20) ) THEN
-            K=0
+          DO K=0, 1
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PDIR2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2851,10 +2853,11 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
+          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 21) ) THEN
-            K=0
+          DO K=0, 1
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PSI2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2864,10 +2867,11 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
+          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 22) ) THEN
-            K=0
+          DO K=0, 1
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PTHP02(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2877,10 +2881,11 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
+          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 23) ) THEN
-            K=0
+          DO K=0, 1
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PT12(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2890,6 +2895,7 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
+          END DO
         END IF
         !
         IF ( FLGRDALL( 4,24) ) THEN
@@ -4140,7 +4146,7 @@ CONTAINS
           ! CAH: Added parameters from second partitioning scheme
           !
           IF ( FLGRDALL( 4, 18) ) THEN
-            DO K=0
+            DO K=0, 1
               IH     = IH + 1
               IT     = IT + 1
               CALL MPI_RECV_INIT (PHS2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
@@ -4154,7 +4160,7 @@ CONTAINS
           END IF
           !
           IF ( FLGRDALL( 4, 19) ) THEN
-            DO K=0
+            DO K=0, 1
               IH     = IH + 1
               IT     = IT + 1
               CALL MPI_RECV_INIT (PTP2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
@@ -4168,7 +4174,7 @@ CONTAINS
           END IF
           !
           IF ( FLGRDALL( 4, 20) ) THEN
-            DO K=0
+            DO K=0, 1
               IH     = IH + 1
               IT     = IT + 1
               CALL MPI_RECV_INIT (PDIR2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
@@ -4182,7 +4188,7 @@ CONTAINS
           END IF
           !
           IF ( FLGRDALL( 4, 21) ) THEN
-            DO K=0
+            DO K=0, 1
               IH     = IH + 1
               IT     = IT + 1
               CALL MPI_RECV_INIT (PSI2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
@@ -4196,7 +4202,7 @@ CONTAINS
           END IF
           !
           IF ( FLGRDALL( 4, 22) ) THEN
-            DO K=0
+            DO K=0, 1
               IH     = IH + 1
               IT     = IT + 1
               CALL MPI_RECV_INIT (PTHP02(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
@@ -4210,7 +4216,7 @@ CONTAINS
           END IF
           !
           IF ( FLGRDALL( 4, 23) ) THEN
-            DO K=0
+            DO K=0, 1
               IH     = IH + 1
               IT     = IT + 1
               CALL MPI_RECV_INIT (PT12(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
