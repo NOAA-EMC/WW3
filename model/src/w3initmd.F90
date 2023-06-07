@@ -2149,9 +2149,8 @@ CONTAINS
          HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW,    &
          PTM1, PT1, PT2, PEP, WBT, CX, CY,         &
          TAUOCX, TAUOCY, WNMEAN,                   &
-         PHS2, PTP2, PLP2, PDIR2, PSI2, PWS2,      &
-         PWST2, PNR2, PTHP02, PQP2, PPE2, PGW2,    &
-         PTM12, PT12, PT22, PEP2
+         PHS2, PTP2, PDIR2, PSI2, PNR2, PTHP02,    &
+         PT12
 #endif
 
 #ifdef W3_MPI
@@ -2816,7 +2815,7 @@ CONTAINS
         ! CAH: Added parameters from second partitioning scheme
         !
         IF ( FLGRDALL( 4, 18) ) THEN
-          DO K=0
+            K=0
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PHS2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2826,11 +2825,10 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
-          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 19) ) THEN
-          DO K=0
+            K=0
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PTP2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2840,11 +2838,10 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
-          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 20) ) THEN
-          DO K=0
+            K=0
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PDIR2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2854,11 +2851,10 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
-          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 21) ) THEN
-          DO K=0
+            K=0
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PSI2(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2868,11 +2864,10 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
-          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 22) ) THEN
-          DO K=0
+            K=0
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PTHP02(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2882,11 +2877,10 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
-          END DO
         END IF
         !
         IF ( FLGRDALL( 4, 23) ) THEN
-          DO K=0
+            K=0
             IH     = IH + 1
             IT     = IT + 1
             CALL MPI_SEND_INIT (PT12(1,K),NSEALM , MPI_REAL, IROOT,    &
@@ -2896,7 +2890,6 @@ CONTAINS
             WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
-          END DO
         END IF
         !
         IF ( FLGRDALL( 4,24) ) THEN
