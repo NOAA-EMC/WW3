@@ -107,6 +107,9 @@ module yowExchangeModule
   !> number of the second dimension for exchange
   integer, public :: n2ndDim = 1
 
+  !> number of the second dimension for exchange (nth only for wave model) 
+  integer, public :: nnthDim = 1
+
 
 contains
 

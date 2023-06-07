@@ -6,6 +6,7 @@ spack:
   specs:
   - metis@5.1.0~shared
   - parmetis@4.0.3~shared
+  - scotch@7.0.1+mpi+metis~shared
   - netcdf-c@4.7.4~dap
   - netcdf-fortran@4.5.3
   - jasper@2.0.32
@@ -15,4 +16,4 @@ spack:
   - esmf@8.1.1~pio~pnetcdf~xerces
   view: true
   concretizer:
-    unify: true
+    unify: when_possible

@@ -12,6 +12,7 @@
   FIELD%LIST             =  'HS T02 T01 ABR UBR'
   FIELD%PARTITION        =  '0 1 2'
   FIELD%TYPE             =  4
+  FIELD %  SAMEFILE   = F 
 /
 
 ! -------------------------------------------------------------------- !

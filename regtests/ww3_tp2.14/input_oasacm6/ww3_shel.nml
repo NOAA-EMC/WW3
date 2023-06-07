@@ -16,6 +16,7 @@
 ! -------------------------------------------------------------------- !
 &INPUT_NML
   INPUT%FORCING%WINDS         = 'C'
+  INPUT%FORCING%AIR_DENSITY   = 'T'
 /
 
 ! -------------------------------------------------------------------- !
@@ -23,7 +24,7 @@
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
   TYPE%FIELD%LIST          = 'HS FP DIR DP CHA UST DPT CUR WND'
-  TYPE%COUPLING%SENT       = 'ACHA'
+  TYPE%COUPLING%SENT       = ''
   TYPE%COUPLING%RECEIVED   = 'WND'
   TYPE%COUPLING%COUPLET0   =  T
 /

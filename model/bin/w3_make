@@ -498,13 +498,28 @@ EOF
       export oasis_mod
 
       pdlib_mod=no
+      metis_mod=no
+      scotch_mod=no
+
       esmfpdlib=''
       if [ -n "`grep PDLIB $switch_file`" ]
       then
         export pdlib_mod='yes'
-        esmfpdlib="$METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
+        if [ -n "`grep METIS $switch_file`" ]
+        then
+             export metis_mod='yes'
+            esmfpdlib="$METIS_PATH/lib/libparmetis.a $METIS_PATH/lib/libmetis.a"
+        fi
+        if [ -n "`grep SCOTCH $switch_file`" ]
+        then
+            export scotch_mod='yes' 
+            esmfpdlib="$SCOTCH_PATH/lib/libptscotchparmetisv3.a $SCOTCH_PATH/lib/libptscotch.a \
+                       $SCOTCH_PATH/lib/libptscotcherr.a $SCOTCH_PATH/lib/libscotch.a"
+        fi
       fi
       export pdlib_mod
+      export metis_mod
+      export scotch_mod
 
       # NCEP GRIB
       export ncep_grib_compile="no"

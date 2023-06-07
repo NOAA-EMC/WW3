@@ -390,6 +390,7 @@ PROGRAM W3SHEL
 #endif
 #ifdef W3_OASIS
   LOGICAL             :: L_MASTER
+  LOGICAL             :: FIRST_STEP = .TRUE.
 #endif
   character(len=10)   :: jchar
   integer             :: memunit
@@ -2061,7 +2062,7 @@ PROGRAM W3SHEL
             DTTST=0.
           ELSE
             ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TFN(:,J) ))
-            IF ( NINT(MOD(DSEC21(TIME00,TIME), DTOUT(7))) .EQ. 0 .AND. &
+            IF ( MOD(NINT(DSEC21(TIME00,TIME)), NINT(DTOUT(7))) .EQ. 0 .AND. &
                  DSEC21 (TFN(:,J), TIMEEND) .GT. 0.0 ) DTTST=0.
           ENDIF
         ENDIF
@@ -2522,6 +2523,9 @@ PROGRAM W3SHEL
   !
   ! update the next assimilation data time
   !
+#ifdef W3_OASIS
+  FIRST_STEP = .FALSE.
+#endif
 
   call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 8')
 
