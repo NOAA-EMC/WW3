@@ -991,6 +991,28 @@ CONTAINS
     CASE('PNR')
       I = 4
       J = 17
+    ! CAH: adding parameters for PTMETH2
+    CASE('PHS2')
+      I = 4
+      J = 18
+    CASE('PTP2')
+      I = 4
+      J = 19
+    CASE('PDIR2')
+      I = 4
+      J = 20
+    CASE('PSPR2')
+      I = 4
+      J = 21
+    CASE('PDP2')
+      I = 4
+      J = 22
+    CASE('PT012')
+      I = 4
+      J = 23
+    CASE('PNR2')
+      I = 4
+      J = 24
       !
       ! Group 5
       !
@@ -1294,10 +1316,11 @@ CONTAINS
          TH2M, STH2M, HSIG, STMAXE, STMAXD,          &
          HCMAXE, HMAXE, HCMAXD, HMAXD, USSP, QP, PQP,&
          PTHP0, PPE, PGW, PSW, PTM1, PT1, PT2, PEP,  &
-         WBT
+         WBT, PHS2, PTP2, PDIR2, PSI2, PTHP02, PT12, &
+         PWST2, PNR2
     USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
-         ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
-         NOGRP, NGRPP
+         ICPRT, DTPRT, eSCUT, NOSWLL, FLOGRD, FLOGR2,&
+         NOGRP, NGRPP, ICPRT2, DTPRT2
     USE W3ADATMD, ONLY: NSEALM
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -2235,6 +2258,15 @@ CONTAINS
       PT1    = UNDEF
       PT2    = UNDEF
       PEP    = UNDEF
+      ! CAH: add parameters from PTMETH2
+      PHS2   = UNDEF
+      PTP2   = UNDEF
+      PDIR2  = UNDEF
+      PSI2   = UNDEF
+      PTHP02 = UNDEF
+      PT12   = UNDEF
+      PWST2   = UNDEF
+      PNR2    = UNDEF
       !
       ! 6.b Loop over local sea points
       !
@@ -2310,6 +2342,52 @@ CONTAINS
           END DO
         END IF
         !
+        ! CAH: Repeat for second partitioning scheme
+        !
+        IF ( MAPSTA(IY,IX).GT.0 ) THEN
+          I         = ICPRT2(JSEA,2)
+          PNR2(JSEA) = MAX ( 0. , REAL(ICPRT2(JSEA,1)-1) )
+          IF ( ICPRT2(JSEA,1).GE.1 ) PWST2(JSEA) = DTPRT2(6,I)
+        END IF
+        !
+        IF ( MAPSTA(IY,IX).GT.0 .AND. ICPRT2(JSEA,1).GT.1 ) THEN
+          I      = ICPRT2(JSEA,2) + 1
+          IF ( DTPRT2(6,I) .GE. WSCUT ) THEN
+            PHS2(JSEA,0) = DTPRT2(1,I)
+            PTP2(JSEA,0) = DTPRT2(2,I)
+            ! (PDIR is already in degrees nautical - convert back to
+            !  Cartesian in radians to maintain internal convention)
+            IF(DTPRT2(4,I) .NE. UNDEF) THEN
+              PDIR2(JSEA,0) = (270. - DTPRT2(4,I)) * DERA
+            ENDIF
+            PSI2(JSEA,0) = DTPRT2(5,I)
+            ! (PTHP0 is already in degrees nautical - convert back to
+            !  Cartesian in radians to maintain internal convention)
+            IF(DTPRT2(7,I) .NE. UNDEF) THEN
+              PTHP02(JSEA,0) = (270. - DTPRT2(7,I)) * DERA
+            ENDIF
+            PT12(JSEA,0) = DTPRT2(13,I)
+            I      = I + 1
+          END IF
+          ! CAH: Only one swell partition
+          J=1
+          IF ( I .GT.  ICPRT2(JSEA,2)+ICPRT2(JSEA,1)-1 ) EXIT
+          PHS2(JSEA,J) = DTPRT2(1,I)
+          PTP2(JSEA,J) = DTPRT2(2,I)
+          ! (PDIR is already in degrees nautical - convert back to
+          !  Cartesian in radians to maintain internal convention)
+          IF(DTPRT2(4,I) .NE. UNDEF) THEN
+            PDIR2(JSEA,J) = (270. - DTPRT2(4,I)) * DERA
+          ENDIF
+          PSI2(JSEA,J) = DTPRT2(5,I)
+          ! (PTHP0 is already in degrees nautical - convert back to
+          !  Cartesian in radians to maintain internal convention)
+          IF(DTPRT2(7,I) .NE. UNDEF) THEN
+            PTHP02(JSEA,J) = (270. - DTPRT2(7,I)) * DERA
+          ENDIF
+          PT12(JSEA,J) = DTPRT2(13,I)
+          I      = I + 1
+        END IF
       END DO
       !
 #ifdef W3_OMPG
@@ -2495,7 +2573,8 @@ CONTAINS
          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-         USSP, TAUOCX, TAUOCY
+         USSP, TAUOCX, TAUOCY, PHS2, PTP2, PDIR2, PSI2,&
+         PNR2, PWST2, PT12, PTHP02
     !/
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2798,6 +2877,14 @@ CONTAINS
           IF ( FLOGRD( 4,15) ) PEP (ISEA,:) = UNDEF
           IF ( FLOGRD( 4,16) ) PWST(ISEA  ) = UNDEF
           IF ( FLOGRD( 4,17) ) PNR (ISEA  ) = UNDEF
+          ! CAH flags for second partitioning scheme
+          IF ( FLOGRD( 4,18) ) PHS2 (ISEA,:)  = UNDEF
+          IF ( FLOGRD( 4,19) ) PTP2 (ISEA,:)  = UNDEF
+          IF ( FLOGRD( 4,20) ) PDIR2 (ISEA,:) = UNDEF
+          IF ( FLOGRD( 4,21) ) PSI2 (ISEA,:)  = UNDEF
+          IF ( FLOGRD( 4,22) ) PTHP0(ISEA,:)  = UNDEF
+          IF ( FLOGRD( 4,23) ) PT12 (ISEA,:)  = UNDEF
+          IF ( FLOGRD( 4,24) ) PNR2 (ISEA  )  = UNDEF
           !
           IF ( FLOGRD( 5, 2) ) CHARN (ISEA) = UNDEF
           IF ( FLOGRD( 5, 3) ) CGE   (ISEA) = UNDEF
@@ -3090,6 +3177,21 @@ CONTAINS
               WRITE ( NDSOG ) PWST(1:NSEA)
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
               WRITE ( NDSOG ) PNR(1:NSEA)
+              ! CAH: second partitioning scheme
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 18 ) THEN
+              WRITE ( NDSOG ) PHS2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 19 ) THEN
+              WRITE ( NDSOG ) PTP2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 20 ) THEN
+              WRITE ( NDSOG ) PDIR2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 21 ) THEN
+              WRITE ( NDSOG ) PSI2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 22 ) THEN
+              WRITE ( NDSOG ) PTHP02(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 23 ) THEN
+              WRITE ( NDSOG ) PT12(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 24 ) THEN
+              WRITE ( NDSOG ) PNR2(1:NSEA)
               !
               !     Section 5)
               !
@@ -3411,6 +3513,27 @@ CONTAINS
                    PWST(1:NSEA)
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) PNR(1:NSEA)
+              ! CAH: Read second partitioning scheme
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 18 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                   PHS2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 19 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                   PTP2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 20 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                   PDIR2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 21 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                   PSI2(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 22 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                   PTHP02(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 23 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
+                   PT12(1:NSEA,0:1)
+            ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 24 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) PNR2(1:NSEA)
               !
               !     Section 5)
               !

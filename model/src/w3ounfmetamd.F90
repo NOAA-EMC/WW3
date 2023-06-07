@@ -3285,6 +3285,96 @@ CONTAINS
     META(1)%VARNC = PARTCOM
     META(1)%VMIN = 0
     META(1)%VMAX = 100
+    ! IFI=4, IFJ=18, PHS2
+    META => GROUP(4)%FIELD(18)%META
+    META(1)%FSC    = 0.002
+    META(1)%UNITS  = 'm'
+    META(1)%ENAME = '.phs_secondary'// IPART_TOKEN
+    META(1)%VARNM = 'phs'// IPART_TOKEN
+    META(1)%VARNL = 'wave significant height partition '// IPART_TOKEN
+    META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_significant_height'
+    META(1)%VARNG = 'significant_wave_height_partition_'// IPART_TOKEN
+    META(1)%VARNC = PARTCOM
+    META(1)%VMIN = 0
+    META(1)%VMAX = 64
+    ! IFI=4, IFJ=19, PTP2
+    META => GROUP(4)%FIELD(19)%META
+    META(1)%FSC = 0.01
+    META(1)%UNITS = 's'
+    META(1)%ENAME = '.ptp_secondary'// IPART_TOKEN
+    META(1)%VARNM = 'ptp'// IPART_TOKEN
+    META(1)%VARNL = 'peak period partition '// IPART_TOKEN
+    META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_period_at_variance' // &
+         '_spectral_density_maximum'
+    META(1)%VARNG = 'dominant_wave_period_partition_'// IPART_TOKEN
+    META(1)%VARNC = PARTCOM
+    META(1)%VMIN = 0
+    META(1)%VMAX = 100
+    ! IFI=4, IFJ=20, PDIR2
+    META => GROUP(4)%FIELD(20)%META
+    META(1)%FSC = 0.1
+    META(1)%UNITS = 'degree'
+    META(1)%ENAME =  '.pdir_secondary'// IPART_TOKEN
+    META(1)%VARNM =  'pdir'// IPART_TOKEN
+    META(1)%VARNL = 'wave mean direction partition '// IPART_TOKEN
+    META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction'
+    META(1)%VARNG = 'wave_from_direction_partition_'// IPART_TOKEN
+    META(1)%VARNC = PARTCOM
+    META(1)%VARND = DIRCOM
+    META(1)%VMIN = 0
+    META(1)%VMAX = 360
+    ! IFI=4, IFJ=21, PSPR2
+    META => GROUP(4)%FIELD(21)%META
+    META(1)%FSC = 0.1
+    META(1)%UNITS = 'degree'
+    META(1)%ENAME = '.pspr_secondary'// IPART_TOKEN
+    META(1)%VARNM = 'pspr'// IPART_TOKEN
+    META(1)%VARNL = 'directional spread partition '// IPART_TOKEN
+    META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_diectional_spread'
+    META(1)%VARNG = 'directional_spread_partition_'// IPART_TOKEN
+    META(1)%VARNC = PARTCOM
+    META(1)%VMIN = 0
+    META(1)%VMAX = 90
+    ! IFI=4, IFJ=22, PDP2
+    META => GROUP(4)%FIELD(22)%META
+    META(1)%FSC = 0.1
+    META(1)%UNITS = 'degree'
+    META(1)%ENAME = '.pdp_secondary'// IPART_TOKEN
+    META(1)%VARNM = 'pdp'// IPART_TOKEN
+    META(1)%VARNL = 'peak direction partition '// IPART_TOKEN
+    META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction_at_variance' // &
+         '_spectral_density_maximum'
+    META(1)%VARNG = 'dominant_wave_from_direction_partition_'// IPART_TOKEN
+    META(1)%VARNC = PARTCOM
+    META(1)%VARND = DIRCOM
+    META(1)%VMIN = 0
+    META(1)%VMAX = 360
+    ! IFI=4, IFJ=22, PT012
+    META => GROUP(4)%FIELD(22)%META
+    META(1)%FSC = 0.01
+    META(1)%UNITS = 's'
+    META(1)%ENAME = '.pt01c_secondary'// IPART_TOKEN
+    META(1)%VARNM = 'pt01c'// IPART_TOKEN
+    META(1)%VARNL = 'mean period T01 partition '// IPART_TOKEN
+    META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_mean_period_from_variance' // &
+         '_spectral_density_first_frequency_moment'
+    META(1)%VARNG = 'mean_wave_period_T01_partition_'// IPART_TOKEN
+    META(1)%VARNC = PARTCOM
+    META(1)%VMIN = 0
+    META(1)%VMAX = 100
+    ! IFI=4, IFJ=23, PNR
+    META => GROUP(4)%FIELD(23)%META
+    META(1)%FSC = 1.
+    META(1)%UNITS = '1'
+    META(1)%ENAME = '.pnr_secondary'
+    META(1)%VARNM = 'pnr'
+    META(1)%VARNL = 'number of wave partitions'
+    !META(1)%VARNS = 'number_of_wave_partitions'
+    META(1)%VARNS = ''
+    META(1)%VARNG = 'number_of_wave_partitions'
+    META(1)%VARNC = PARTCOM
+    META(1)%VMIN = 0
+    META(1)%VMAX = 100
     !
     !---------- GROUP 5 ----------------
     !
