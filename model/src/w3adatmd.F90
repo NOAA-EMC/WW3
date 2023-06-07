@@ -446,7 +446,7 @@ MODULE W3ADATMD
          XPWST(:), XPNR(:), XPGW(:,:),        &
          XPTHP0(:,:), XPQP(:,:), XPPE(:,:),   &
          XPSW(:,:), XPTM1(:,:), XPT1(:,:),    &
-         XPT2(:,:), XPEP(:,:), XPHS2(:,;), XPTP2(:,:),            &
+         XPT2(:,:), XPEP(:,:), XPHS2(:,:), XPTP2(:,:),            &
          XPDIR2(:,:), XPSI2(:,:), XPNR2(:), XPTHP02(:,:),         &
          XPT12(:,:) 
     !
