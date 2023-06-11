@@ -343,7 +343,7 @@ CONTAINS
 
       ! Calculate mean parameters:
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-           NP2, XP2, DIMXP, PMAP )
+           NP2, XP2, 2, PMAP )
 
       ! No more processing required, return:
       ! CAH: we don't want to return here, since we want to also partition
