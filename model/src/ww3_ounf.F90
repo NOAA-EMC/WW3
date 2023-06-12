@@ -1556,6 +1556,42 @@ CONTAINS
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
             CALL S2GRID(PNR(:), X1)
             !
+            ! CAH: Added second partition parameters.
+            ! Partition 2 wave significant height
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 18 ) THEN
+            CALL S2GRID(PHS2(:,IPART), X1)
+            !
+            ! Partition 2 peak period
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 19 ) THEN
+            CALL S2GRID(PTP2(:,IPART), X1)
+            !
+            ! Partition 2 wave mean direction
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 20 ) THEN
+#ifdef W3_RTD
+            ! Rotate direction back to standard pole
+            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR2(:,IPART), AnglD, .FALSE.)
+#endif
+            CALL S2GRID(PDIR2(:,IPART), X1, .TRUE.)
+            !
+            ! Partition 2 directional spread
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 21 ) THEN
+            CALL S2GRID(PSI2(:,IPART), X1)
+            !
+            ! Partition 2 peak direction
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 22 ) THEN
+#ifdef W3_RTD
+            ! Rotate direction back to standard pole
+            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PTHP02(:,IPART), AnglD, .FALSE.)
+#endif
+            CALL S2GRID(PTHP02(:,IPART), X1, .TRUE.)
+            !
+            ! Partition 2 mean period T01
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 23 ) THEN
+            CALL S2GRID(PT12(:,IPART), X1)
+            !
+            ! Number of wave partitions 2
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 24 ) THEN
+            CALL S2GRID(PNR2(:), X1)
             ! Friction velocity
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
             !! Note - UST and USTDIR read in from .ww3 file are X-Y vectors
