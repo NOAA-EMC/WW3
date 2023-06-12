@@ -820,7 +820,7 @@ CONTAINS
     !
     ! 4) Spectral Partitions parameters
     !
-    NOGE(4) = 17
+    NOGE(4) = 24
     !
     IDOUT( 4, 1)  = 'Part. wave height   '
     IDOUT( 4, 2)  = 'Part. peak period   '
@@ -839,6 +839,14 @@ CONTAINS
     IDOUT( 4,15)  = 'Part. peak density  '
     IDOUT( 4,16)  = 'Total wind sea frac.'
     IDOUT( 4,17)  = 'Number of partitions'
+    ! CAH: Add second partitioning method
+    IDOUT( 4,18)  = 'Part. 2 wave height '
+    IDOUT( 4,19)  = 'Part. 2 peak period '
+    IDOUT( 4,20)  = 'Part. 2 mean dir    '
+    IDOUT( 4,21)  = 'Part. 2 dir spread  '
+    IDOUT( 4,22)  = 'Part. 2 peak dir    '
+    IDOUT( 4,23)  = 'Part. 2 mean per(+1)'
+    IDOUT( 4,24)  = 'Number of parts. 2  '
     !
     ! 5) Atmosphere-waves layer
     !
