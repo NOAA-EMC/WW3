@@ -500,24 +500,22 @@ CONTAINS
     !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: DWAT, srce_imp_post, srce_imp_pre,         &
-         srce_direct, GRAV, TPI, TPIINV, LPDLIB
-#ifdef W3_T
-    USE CONSTANTS, ONLY: RADE
-#endif
+         srce_direct, GRAV, TPI, TPIINV
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, TH, DMIN, DTMAX,       &
          DTMIN, FACTI1, FACTI2, FACSD, FACHFA, FACP, &
          XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
          FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
          ICESCALES, IICESMOOTH
-    USE W3GDATMD, ONLY: FSSOURCE, optionCall
-    USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR, B_JGS_LIMITER
-#ifdef W3_REF1
-    USE W3GDATMD, ONLY: IOBP, IOBPD, IOBDP, GTYPE, UNGTYPE, REFPARS
-#endif
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
-    USE W3IDATMD, ONLY: INFLAGS2, ICEP2
+    USE W3IDATMD, ONLY: INFLAGS2
     USE W3DISPMD
+#ifdef W3_T
+    USE CONSTANTS, ONLY: RADE
+#endif
+#ifdef W3_REF1
+    USE W3GDATMD, ONLY: IOBP, IOBPD, GTYPE, UNGTYPE, REFPARS
+#endif
 #ifdef W3_NNT
     USE W3ODATMD, ONLY: IAPROC, SCREEN, FNMPRE
 #endif
@@ -645,14 +643,15 @@ CONTAINS
     USE W3SERVMD, ONLY: EXTCDE
 #endif
 #ifdef W3_UOST
-    USE W3UOSTMD, ONLY : UOST_SRCTRMCOMPUTE
+    USE W3UOSTMD, ONLY: UOST_SRCTRMCOMPUTE
 #endif
 #ifdef W3_PDLIB
-    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_SOURCES, ASPAR_DIAG_ALL
-    USE yowNodepool,    ONLY: PDLIB_CCON, NPA, PDLIB_I_DIAG, PDLIB_JA, PDLIB_IA_P, PDLIB_SI
-    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC, B_JGS_LIMITER_FUNC
+    USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_ALL
+    USE yowNodepool, ONLY: PDLIB_I_DIAG, PDLIB_SI
+    USE W3GDATMD, ONLY: B_JGS_LIMITER, FSSOURCE, optionCall
+    USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, B_JGS_LIMITER_FUNC
     USE W3WDATMD, ONLY: VA
-    USE W3PARALL, ONLY: ONESIXTH, ZERO, THR, IMEM, LSLOC
+    USE W3PARALL, ONLY: IMEM, LSLOC
 #endif
 
     !GPU Refactor - extra imports
@@ -699,29 +698,28 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER :: IK, ITH, IS, IS0, NSTEPS,  NKH, NKH1,&
-               IKS1, IS1, NSPECH, IDT, IERR, NKD, ISP
-    INTEGER :: IOBPIP, IOBPDIP, IOBDPIP
-    REAL :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC,&
+    INTEGER :: IK, ITH, IS, IS0, NSTEPS, NKH, NKH1, &
+         IKS1, IS1, NSPECH, IDT, IERR, ISP
+    REAL :: DTTOT, FHIGH, DT, AFILT, DAMAX, AFAC, &
          HDT, ZWND, FP, DEPTH, TAUSCX, TAUSCY, FHIGI
     ! Scaling factor for SIN, SDS, SNL
     REAL :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS
     REAL :: EMEAN, FMEAN, AMAX, CD, Z0, SCAT,    &
-            SMOOTH_ICEDISP
-    REAL :: WN_R(NK), CG_ICE(NK),ALPHA_LIU(NK), ICECOEF2, R(NK)
+         SMOOTH_ICEDISP
+    REAL :: WN_R(NK), CG_ICE(NK), ALPHA_LIU(NK), ICECOEF2, R(NK)
     DOUBLE PRECISION :: ATT, ISO
     REAL :: EBAND, DIFF, EFINISH, HSTOT, PHINL,       &
-         FMEAN1, FMEANWS, MWXINIT, MWYINIT,        &
+         FMEAN1, FMEANWS, &
          FACTOR, FACTOR2, DRAT, TAUWAX, TAUWAY,    &
          MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
          COSI(2)
     REAL :: SPECINIT(NSPEC), SPEC2(NSPEC), FRLOCAL, JAC2
-    REAL :: DAM2(NSPEC),                         &
-            VSLN(NSPEC),                         &
-            VSIN(NSPEC), VDIN(NSPEC),            &
-            VSNL(NSPEC), VDNL(NSPEC),            &
-            VSDS(NSPEC), VDDS(NSPEC),            &
-            VSBT(NSPEC), VDBT(NSPEC)
+    REAL :: DAM (NSPEC), DAM2(NSPEC), WN2(NSPEC),  &
+         VSLN(NSPEC),                         &
+         VSIN(NSPEC), VDIN(NSPEC),            &
+         VSNL(NSPEC), VDNL(NSPEC),            &
+         VSDS(NSPEC), VDDS(NSPEC),            &
+         VSBT(NSPEC), VDBT(NSPEC)
     REAL :: VS(NSPEC), VD(NSPEC), EB(NK)
 
     LOGICAL :: SHAVE
@@ -730,8 +728,6 @@ CONTAINS
     LOGICAL :: PrintDeltaSmDA
     REAL :: eInc1, eInc2, eVS, eVD, JAC
     REAL :: DeltaSRC(NSPEC)
-    REAL, PARAMETER :: DTMINTOT = 0.01
-
     REAL :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
     REAL, SAVE :: TAUNUX, TAUNUY
     LOGICAL, SAVE :: FLTEST = .FALSE., FLAGNN = .TRUE.
@@ -837,7 +833,7 @@ CONTAINS
 #endif
 
 #ifdef W3_PDLIB
-    REAL :: PreVS, FAK, DVS, SIDT, FAKS, MAXDAC
+    REAL :: PreVS, DVS, SIDT, FAKS, MAXDAC
 #endif
 
 #ifdef W3_NNT
@@ -862,21 +858,30 @@ CONTAINS
     LOGICAL, ALLOCATABLE :: SRC_MASK(:)
 
 
-    !/
+    !
+    !/ -- End of variable delclarations
     !/ ------------------------------------------------------------------- /
     !/
 #ifdef W3_S
     CALL STRACE (IENT, 'W3SRCE')
 #endif
-    !
+
 #ifdef W3_T
     FLTEST = .TRUE.
 #endif
+<<<<<<< HEAD
 
 
     ! GPU Refactor - allocate locals
     ALLOCATE(SRC_MASK(CHUNKSIZE))
 
+
+    IKS1 = 1
+#ifdef W3_IG1
+    ! Does not integrate source terms for IG band if IGPARS(12) = 0.
+    IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5))
+#endif
+    IS1=(IKS1-1)*NTH+1
 
     ! Start of loop over tiles:
     DO
@@ -886,26 +891,18 @@ CONTAINS
       CHUNKN = MIN(NSEAL,CHUNK0 + CHUNKSIZE - 1)
       NSEAC = CHUNKN - CHUNK0 + 1
 
-    !
-      VDIO   = 0.
-      VSIO   = 0.
       DEPTH  = MAX ( DMIN , D_INP )
-
-      IKS1 = 1
+      DRAT = DAIR / DWAT
       ICESCALELN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(1)))
       ICESCALEIN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(2)))
       ICESCALENL = MAX(0.,MIN(1.,1.-ICE*ICESCALES(3)))
       ICESCALEDS = MAX(0.,MIN(1.,1.-ICE*ICESCALES(4)))
-#ifdef W3_IG1
-      !
-      ! Does not integrate source terms for IG band if IGPARS(12) = 0.
-      !
-      IF (NINT(IGPARS(12)).EQ.0) IKS1 = NINT(IGPARS(5))
-#endif
-      IS1=(IKS1-1)*NTH+1
-      !
 
       !! Initialise source term arrays:
+      VDIO = 0.
+      VSIO = 0.
+      VSBT = 0.
+      VDBT = 0.
 #if defined(W3_LN0) || defined(W3_LN1) || defined(W3_SEED)
       VSLN = 0.
 #endif
@@ -947,31 +944,32 @@ CONTAINS
       VSUO = 0.
       VDUO = 0.
 #endif
-      !
+
 #if defined(W3_IS1) || defined(W3_IS2)
       VSIR = 0.
       VDIR = 0.
 #endif
+
 #ifdef W3_IS2
-      VDIR2= 0.
+      VDIR2 = 0.
 #endif
       !
 #ifdef W3_ST6
       VSWL = 0.
       VDWL = 0.
 #endif
-      !
+
 #if defined(W3_ST0) || defined(W3_ST1) || defined(W3_ST6)
-      ZWND   = 10.
+      ZWND = 10.
 #endif
+
 #if defined(W3_ST2)
-      ZWND   = ZWIND
+      ZWND = ZWIND
 #endif
+
 #if defined(W3_ST4)
-      ZWND   = ZZWND
+      ZWND = ZZWND
 #endif
-      !
-      DRAT  = DAIR / DWAT
 
 #ifdef W3_T
       WRITE (NDST,9000)
@@ -1154,8 +1152,7 @@ CONTAINS
              TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined(W3_DEBUGSRC) && defined(W3_ST4)
         IF (IX == DEBUG_NODE) THEN
           WRITE(740+IAPROC,*) '1: out value USTAR=', USTAR, ' USTDIR=', USTDIR
           WRITE(740+IAPROC,*) '1: out value EMEAN=', EMEAN, ' FMEAN=', FMEAN
@@ -1164,7 +1161,6 @@ CONTAINS
           WRITE(740+IAPROC,*) '1: out value ALPHA=', CHARN, ' FMEANWS=', FMEANWS
         END IF
 #endif
-#endif
 
 #ifdef W3_ST4
         CALL W3SIN4 ( SPEC, CG1(:,JSEA), WN2(:,JSEA), U10ABS, USTAR, DRAT, AS,       &
@@ -1172,8 +1168,7 @@ CONTAINS
              VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
       END IF
 #endif
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined(W3_DEBUGSRC) && defined(W3_ST4)
       IF (IX == DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) '1: U10DIR=', U10DIR, ' Z0=', Z0, ' CHARN=', CHARN
         WRITE(740+IAPROC,*) '1: USTAR=', USTAR, ' U10ABS=', U10ABS, ' AS=', AS
@@ -1184,7 +1179,6 @@ CONTAINS
         WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
         WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
       END IF
-#endif
 #endif
 
 #ifdef W3_ST4
@@ -1245,9 +1239,7 @@ CONTAINS
 #endif
 #ifdef W3_ST4
       ! Introduces a Long & Resio (JGR2007) type dependance on wave age
-#endif
       ! !/ST4      FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
-#ifdef W3_ST4
       FAGE   = 0.
       FHIGH  = MAX( (FFXFM + FAGE ) * MAX(FMEAN1,FMEANWS), FFXPM / USTAR)
       FHIGI  = FFXFA * FMEAN1
@@ -1311,13 +1303,11 @@ CONTAINS
              VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
 #endif
 
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined(W3_DEBUGSRC) && defined(W3_ST4)
         IF (IX == DEBUG_NODE) THEN
           WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VSIN=', minval(VSIN), maxval(VSIN), sum(VSIN)
           WRITE(740+IAPROC,*) '2 : W3SIN4(min/max/sum)VDIN=', minval(VDIN), maxval(VDIN), sum(VDIN)
         END IF
-#endif
 #endif
 
 #ifdef W3_ST6
@@ -1328,16 +1318,16 @@ CONTAINS
         ! 2.b Nonlinear interactions.
         !
 #ifdef W3_NL1
-        CALL W3SNL1 ( SPEC, CG1(:,JSEA), WNMEAN*DEPTH,        VSNL, VDNL )
+        CALL W3SNL1 ( SPEC, CG1(:,JSEA), WNMEAN*DEPTH, VSNL, VDNL )
 #endif
 #ifdef W3_NL2
-        CALL W3SNL2 ( SPEC, CG1(:,JSEA), DEPTH,               VSNL, VDNL )
+        CALL W3SNL2 ( SPEC, CG1(:,JSEA), DEPTH, VSNL, VDNL )
 #endif
 #ifdef W3_NL3
-        CALL W3SNL3 ( SPEC, CG1(:,JSEA), WN1(:,JSEA), DEPTH,          VSNL, VDNL )
+        CALL W3SNL3 ( SPEC, CG1(:,JSEA), WN1(:,JSEA), DEPTH, VSNL, VDNL )
 #endif
 #ifdef W3_NL4
-        CALL W3SNL4 ( SPEC, CG1(:,JSEA), WN1(:,JSEA), DEPTH,          VSNL, VDNL )
+        CALL W3SNL4 ( SPEC, CG1(:,JSEA), WN1(:,JSEA), DEPTH, VSNL, VDNL )
 #endif
 #ifdef W3_NL5
         CALL W3SNL5 ( SPEC, CG1(:,JSEA), WN1(:,JSEA), FMEAN, QI5TSTART,          &
@@ -1372,13 +1362,11 @@ CONTAINS
              VDDS, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
 #endif
 
-#ifdef W3_DEBUGSRC
-#ifdef W3_ST4
+#if defined(W3_DEBUGSRC) && defined(W3_ST4)
         IF (IX == DEBUG_NODE) THEN
           WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VSDS=', minval(VSDS), maxval(VSDS), sum(VSDS)
           WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VDDS=', minval(VDDS), maxval(VDDS), sum(VDDS)
         END IF
-#endif
 #endif
 
 #ifdef W3_ST6
@@ -1438,12 +1426,10 @@ CONTAINS
 #ifdef W3_NNT
         WRITE (SCREEN,8888) TIME, DTTOT, FLAGNN, QCERR
         WRITE (NDSD2,8888) TIME, DTTOT, FLAGNN, QCERR
-8888  FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
+8888    FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
         WRITE (NDSD,ERR=801,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
              DTTOT, FLAGNN, DEPTH, U10ABS, U10DIR
-#endif
         !
-#ifdef W3_NNT
         IF ( FLAGNN ) THEN
           DO IK=1, NK
             FACNN  = TPI * SIG(IK) / CG1(IK,JSEA)
@@ -1523,10 +1509,8 @@ CONTAINS
 #ifdef W3_ST6
           VS(IS) = VS(IS) + VSWL(IS)
 #endif
-#ifndef W3_PDLIB
-#ifdef W3_TR1
+#if defined(W3_TR1) && !defined(W3_PDLIB)
           VS(IS) = VS(IS) + VSTR(IS)
-#endif
 #endif
 #ifdef W3_BS1
           VS(IS) = VS(IS) + VSBS(IS)
@@ -1539,10 +1523,8 @@ CONTAINS
 #ifdef W3_ST6
           VD(IS) = VD(IS) + VDWL(IS)
 #endif
-#ifndef W3_PDLIB
-#ifdef W3_TR1
+#if defined(W3_TR1) && !defined(W3_PDLIB)
           VD(IS) = VD(IS) + VDTR(IS)
-#endif
 #endif
 #ifdef W3_BS1
           VD(IS) = VD(IS) + VDBS(IS)
@@ -1550,35 +1532,33 @@ CONTAINS
 #ifdef W3_UOST
           VD(IS) = VD(IS) + VDUO(IS)
 #endif
-          DAMAX  = MIN ( DAM(IS,JSEA) , MAX ( XREL*SPECINIT(IS) , AFILT ) )  !!!  TODO
-          AFAC   = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
+          DAMAX = MIN ( DAM(IS,JSEA) , MAX ( XREL*SPECINIT(IS) , AFILT ) )  !!!  TODO
+          AFAC = 1. / MAX( 1.E-10 , ABS(VS(IS)/DAMAX) )
 #ifdef W3_NL5
           IF (NL5_SELECT .EQ. 1)  THEN
-            DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,             &
+            DT = MIN ( DT , AFAC / ( MAX ( 1.E-10,             &
                  1. + NL5_OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
           ELSE
 #endif
-            DT     = MIN ( DT , AFAC / ( MAX ( 1.E-10,                  &
+            DT = MIN ( DT , AFAC / ( MAX ( 1.E-10,                  &
                  1. + OFFSET*AFAC*MIN(0.,VD(IS)) ) ) )
 #ifdef W3_NL5
           ENDIF
 #endif
         END DO  ! end of loop on IS
 
-        !VD = 0
-        !VS = 0
         !
-        DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
+        DT = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
         !
-        DTDYN  = DTDYN + DT
+        DTDYN = DTDYN + DT
 #ifdef W3_T
-        DTRAW  = DT
+        DTRAW = DT
 #endif
-        IDT     = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations
-        DT      = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
-        SHAVE   = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ...
+        IDT = 1 + INT ( 0.99*(DTG-DTTOT)/DT ) ! number of iterations
+        DT = (DTG-DTTOT)/REAL(IDT)           ! actualy time step
+        SHAVE = DT.LT.DTMIN .AND. DT.LT.DTG-DTTOT   ! limiter check ...
         SHAVEIO = SHAVE
-        DT      = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
+        DT = MAX ( DT , MIN (DTMIN,DTG-DTTOT) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
         !
 #ifdef W3_NL5
         DT     = INT(DT) * 1.0
@@ -1776,7 +1756,7 @@ CONTAINS
           RETURN ! return everything is done for the implicit ...
 
         END IF ! srce_imp_pre
-!W3_PDLIB
+! --end W3_PDLIB
 #endif
         !
 #ifdef W3_T
@@ -1864,12 +1844,12 @@ CONTAINS
             HSTOT = HSTOT + SPEC(IS) * FACTOR
           END DO
         END DO
-        WHITECAP(3)=4.*SQRT(WHITECAP(3))
-        HSTOT=4.*SQRT(HSTOT)
-        TAUWIX= TAUWIX+ TAUWX * DRAT *DT
-        TAUWIY= TAUWIY+ TAUWY * DRAT *DT
-        TAUWNX= TAUWNX+ TAUWAX * DRAT *DT
-        TAUWNY= TAUWNY+ TAUWAY * DRAT *DT
+        WHITECAP(3) = 4. * SQRT(WHITECAP(3))
+        HSTOT = 4.*SQRT(HSTOT)
+        TAUWIX = TAUWIX + TAUWX * DRAT *DT
+        TAUWIY = TAUWIY + TAUWY * DRAT *DT
+        TAUWNX = TAUWNX + TAUWAX * DRAT *DT
+        TAUWNY = TAUWNY + TAUWAY * DRAT *DT
         ! MISSING: TAIL TO BE ADDED ?
         !
 #ifdef W3_NLS
@@ -1922,9 +1902,7 @@ CONTAINS
         FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
         NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
              INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
-#endif
         !
-#ifdef W3_ST1
         IF ( FLTEST ) WRITE (NDST,9060)                           &
              FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 #endif
@@ -1958,9 +1936,6 @@ CONTAINS
         ! Introduces a Long & Resio (JGR2007) type dependance on wave age
         FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
         FH1    = (FFXFM+FAGE) * FMEAN1
-#endif
-
-#ifdef W3_ST4
         FH2    = FFXPM / USTAR
         FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
         NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
@@ -2174,13 +2149,12 @@ CONTAINS
         R(:)=1 ! In case IC2 is defined but not IS2
         !
 #ifdef W3_IC1
-        CALL W3SIC1 ( SPEC,DEPTH, CG1(:,JSEA),       IX, IY, VSIC, VDIC )
+        CALL W3SIC1 ( SPEC,DEPTH, CG1, IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IS2
         CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
              VSIR, VDIR, VDIR2, WN1(:,JSEA), CG1(:,JSEA), WN_R, CG_ICE, R )
 #endif
-
 #ifdef W3_IC2
         CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1(:,JSEA), WN1(:,JSEA),&
              IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
@@ -2420,9 +2394,6 @@ CONTAINS
 #ifdef W3_T
 9020 FORMAT (' TEST W3SRCE : NSTEP : ',I4,'    DTTOT :',F6.1)
 9021 FORMAT (' TEST W3SRCE : NKH (3X)   : ',2I3,I6)
-#endif
-    !
-#ifdef W3_T
 9040 FORMAT (' TEST W3SRCE : DTRAW, DT, SHAVE :',2F6.1,2X,L1)
 #endif
     !
