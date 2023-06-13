@@ -523,7 +523,7 @@ PROGRAM W3OUNF
 
 
   ! 4.3 Output type
-  ! CAH: Add two spaces for second partitions? 
+  ! CAH: add + 2 again
   ALLOCATE(TABIPART(NOSWLL + 1 + 2))
   ALLOCATE(NCIDS(NOGRP,NGRPP,NOSWLL + 1 + 2))
   NBIPART=0
@@ -540,11 +540,10 @@ PROGRAM W3OUNF
     ENDIF
     TABIPART(NBIPART) = IPART
   ENDDO
-  ! CAH: added below: what should IPART be
   NBIPART = NBIPART + 1
-  TABIPART(NBIPART) = IPART
+  TABIPART(NBIPART) = 0
   NBIPART = NBIPART + 1
-  TABIPART(NBIPART) = IPART
+  TABIPART(NBIPART) = 1
   !
   IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
     WRITE (NDSE,1010) NCTYPE
@@ -681,7 +680,6 @@ PROGRAM W3OUNF
             END IF ! NCIDS
             ! close partition files (except part 0 which is already closed by (IFI,IFJ,1)
             IF ((IFI.EQ.4).AND.(IFJ.LE.NOGE(IFI))) THEN
-              ! CAH: added +2
               DO IPART=1,NOSWLL+2
                 IF (NCIDS(IFI,IFJ,IPART+1).NE.0) THEN
                   IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))
@@ -978,7 +976,7 @@ CONTAINS
     CHARACTER(30)           :: FILEPREFIX
     LOGICAL, INTENT(IN)     :: TOGETHER
     LOGICAL, INTENT(IN)     :: FLG2D(NOGRP,NGRPP)
-    ! CAH, added +2
+    ! CAH: added + 2 below
     INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,NOSWLL + 1 + 2), S3
     CHARACTER*30,INTENT(IN) :: STRSTOPDATE
     !/
@@ -1568,65 +1566,35 @@ CONTAINS
             ! CAH: Added second partition parameters.
             ! Partition 2 wave significant height
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 18 ) THEN
-            IF (IPART .EQ. 5) THEN
-              IPART2=0
-            ELSE IF (IPART .EQ. 6) THEN
-              IPART2=1
-            END IF
-              CALL S2GRID(PHS2(:,IPART2), X1)
+            CALL S2GRID(PHS2(:,IPART), X1)
             !
             ! Partition 2 peak period
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 19 ) THEN
-            IF (IPART .EQ. 5) THEN
-              IPART2=0
-            ELSE IF (IPART .EQ. 6) THEN
-              IPART2=1
-            END IF
-            CALL S2GRID(PTP2(:,IPART2), X1)
+            CALL S2GRID(PTP2(:,IPART), X1)
             !
             ! Partition 2 wave mean direction
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 20 ) THEN
-            IF (IPART .EQ. 5) THEN
-              IPART2=0
-            ELSE IF (IPART .EQ. 6) THEN
-              IPART2=1
-            END IF
 #ifdef W3_RTD
             ! Rotate direction back to standard pole
-            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR2(:,IPART2), AnglD, .FALSE.)
+            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR2(:,IPART), AnglD, .FALSE.)
 #endif
-            CALL S2GRID(PDIR2(:,IPART2), X1, .TRUE.)
+            CALL S2GRID(PDIR2(:,IPART), X1, .TRUE.)
             !
             ! Partition 2 directional spread
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 21 ) THEN
-            IF (IPART .EQ. 5) THEN
-              IPART2=0
-            ELSE IF (IPART .EQ. 6) THEN
-              IPART2=1
-            END IF
-            CALL S2GRID(PSI2(:,IPART2), X1)
+            CALL S2GRID(PSI2(:,IPART), X1)
             !
             ! Partition 2 peak direction
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 22 ) THEN
-            IF (IPART .EQ. 5) THEN
-              IPART2=0
-            ELSE IF (IPART .EQ. 6) THEN
-              IPART2=1
-            END IF
 #ifdef W3_RTD
             ! Rotate direction back to standard pole
-            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PTHP02(:,IPART2), AnglD, .FALSE.)
+            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PTHP02(:,IPART), AnglD, .FALSE.)
 #endif
-            CALL S2GRID(PTHP02(:,IPART2), X1, .TRUE.)
+            CALL S2GRID(PTHP02(:,IPART), X1, .TRUE.)
             !
             ! Partition 2 mean period T01
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 23 ) THEN
-            IF (IPART .EQ. 5) THEN
-              IPART2=0
-            ELSE IF (IPART .EQ. 6) THEN
-              IPART2=1
-            END IF
-            CALL S2GRID(PT12(:,IPART2), X1)
+            CALL S2GRID(PT12(:,IPART), X1)
             !
             ! Number of wave partitions 2
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 24 ) THEN
@@ -3457,8 +3425,15 @@ CONTAINS
           ! (16: total wind sea fraction, 17: number of parts) as these fields
           ! do not have partitions.
           ! CAH: going to be explicit about above
-          IF (IFI .EQ. 4 .AND. IFJ .NE. 16 .AND. IFJ .NE. 17 .AND. IFJ .NE. 24) THEN
+          IF (IFI .EQ. 4 .AND. IFJ .LE. 17 - 2) THEN 
 560         CONTINUE
+            IF (INDEXIPART.LT.NBIPART-2) THEN
+              INDEXIPART=INDEXIPART+1
+              IF (TABIPART(INDEXIPART).EQ.-1) GOTO 560
+              IPART=TABIPART(INDEXIPART)
+              GOTO 555
+            END IF
+          ELSE IF (IFI .EQ. 4 .AND. IFJ .GT. 17 .AND. IFJ .LE. NOGE(IFI) - 1) THEN
             IF (INDEXIPART.LT.NBIPART) THEN
               INDEXIPART=INDEXIPART+1
               IF (TABIPART(INDEXIPART).EQ.-1) GOTO 560
