@@ -228,8 +228,7 @@ PROGRAM W3OUNF
        IFI, IFJ, NCTYPE, IX1, IXN, IY1, IYN, &
        IOUT, S3, IRET,                       &
        NBIPART, CNTIPART, NCVARTYPEI, IPART, &
-  ! CAH: add IPART2
-       RTDNX, RTDNY, IPART2
+       RTDNX, RTDNY
   INTEGER                 :: TOUT(2), TDUM(2), TREF(2), TEPOCH(2), &
        STOPDATE(8), REFDATE(8)
   !
@@ -544,6 +543,8 @@ PROGRAM W3OUNF
   TABIPART(NBIPART) = 0
   NBIPART = NBIPART + 1
   TABIPART(NBIPART) = 1
+  WRITE(NDSO,*) TABIPART
+
   !
   IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
     WRITE (NDSE,1010) NCTYPE
@@ -1570,6 +1571,7 @@ CONTAINS
             ! CAH: Added second partition parameters.
             ! Partition 2 wave significant height
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 18 ) THEN
+            WRITE (NDSO,*) PHS2(:,IPART)
             CALL S2GRID(PHS2(:,IPART), X1)
             !
             ! Partition 2 peak period
@@ -2134,7 +2136,9 @@ CONTAINS
           IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
             OLDNCID = NCIDS(1,1,1)
           ELSE
-            OLDNCID = NCIDS(IFI,IFJ,IPART+1)
+            ! CAH: changing index value
+            !OLDNCID = NCIDS(IFI,IFJ,IPART+1)
+            OLDNCID = NCIDS(IFI,IFJ,INDEXIPART)
           END IF
 
 
@@ -2209,7 +2213,7 @@ CONTAINS
             IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
               NCIDS(1,1,1)=NCID
             ELSE
-              NCIDS(IFI,IFJ,IPART+1)=NCID
+              NCIDS(IFI,IFJ,INDEXIPART)=NCID
             END IF
 
             ! If curvilinear grid, instanciates lat / lon

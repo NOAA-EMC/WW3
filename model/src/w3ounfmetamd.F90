@@ -3349,8 +3349,8 @@ CONTAINS
     META(1)%VARND = DIRCOM
     META(1)%VMIN = 0
     META(1)%VMAX = 360
-    ! IFI=4, IFJ=22, PT012
-    META => GROUP(4)%FIELD(22)%META
+    ! IFI=4, IFJ=23, PT012
+    META => GROUP(4)%FIELD(23)%META
     META(1)%FSC = 0.01
     META(1)%UNITS = 's'
     META(1)%ENAME = '.pt01c_secondary'// IPART_TOKEN
@@ -3362,8 +3362,8 @@ CONTAINS
     META(1)%VARNC = PARTCOM
     META(1)%VMIN = 0
     META(1)%VMAX = 100
-    ! IFI=4, IFJ=23, PNR
-    META => GROUP(4)%FIELD(23)%META
+    ! IFI=4, IFJ=24, PNR
+    META => GROUP(4)%FIELD(24)%META
     META(1)%FSC = 1.
     META(1)%UNITS = '1'
     META(1)%ENAME = '.pnr_secondary'
