@@ -903,6 +903,7 @@ CONTAINS
       VSIO = 0.
       VSBT = 0.
       VDBT = 0.
+
 #if defined(W3_LN0) || defined(W3_LN1) || defined(W3_SEED)
       VSLN = 0.
 #endif
@@ -926,9 +927,6 @@ CONTAINS
       VSDS = 0.
       VDDS = 0.
 #endif
-
-      VSBT = 0.
-      VDBT = 0.
 
 #ifdef W3_DB1
       VSDB = 0.
@@ -1361,7 +1359,6 @@ CONTAINS
         CALL W3SDS4 ( SPEC, WN1(:,JSEA), CG1(:,JSEA), USTAR, USTDIR, DEPTH, DAIR, VSDS,   &
              VDDS, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
 #endif
-
 #if defined(W3_DEBUGSRC) && defined(W3_ST4)
         IF (IX == DEBUG_NODE) THEN
           WRITE(740+IAPROC,*) '2 : W3SDS4(min/max/sum)VSDS=', minval(VSDS), maxval(VSDS), sum(VSDS)
@@ -1913,9 +1910,7 @@ CONTAINS
         DFH    = FHIGH - FHTRAN
         NKH    = MAX ( 1 ,                                        &
              INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHTRAN)) ) )
-#endif
-        !
-#ifdef W3_ST2
+
         IF ( FLTEST ) WRITE (NDST,9061) FHTRAN, FHIGH, NKH
 #endif
         !
@@ -1926,8 +1921,6 @@ CONTAINS
         NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
              INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
 #endif
-        !
-#ifdef W3_ST3
         IF ( FLTEST ) WRITE (NDST,9062)                           &
              FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 #endif
@@ -1950,8 +1943,6 @@ CONTAINS
         ENDIF
         NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
              INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
-#endif
-        !
 #ifdef W3_ST6
         IF ( FLTEST ) WRITE (NDST,9063) FHIGH*TPIINV, NKH
 #endif
@@ -2023,15 +2014,19 @@ CONTAINS
 #ifdef W3_NL5
         CALL TICK21(QI5TSTART, DT)
 #endif
+
         IF (srce_call .eq. srce_imp_post) THEN
           EXIT
         ENDIF
+
         IF ( DTTOT .GE. 0.9999*DTG ) THEN
           !            IF (IX == DEBUG_NODE) WRITE(*,*) 'DTTOT, DTG', DTTOT, DTG
           EXIT
         ENDIF
+
       END DO ! INTEGRATION LOOP
 #ifdef W3_DEBUGSRC
+
       IF (IX .eq. DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS
         WRITE(740+IAPROC,*) '1 : sum(SPEC)=', sum(SPEC)
@@ -2055,8 +2050,6 @@ CONTAINS
       WRITE (NDSE,8000) FNAME, IERR
       CALL EXTCDE (1)
 #endif
-      !
-#ifdef W3_NNT
 801 CONTINUE
       WRITE (NDSE,8001) IERR
       CALL EXTCDE (2)
