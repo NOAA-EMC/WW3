@@ -1596,7 +1596,10 @@ CONTAINS
             !
             ! Wave energy flux
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
-            CGE=CGE*0.001  ! from W / m to kW / m
+            DO ISEA=1, NSEA
+              IF ( CGE(ISEA) .NE. UNDEF )                       &
+                   CGE(ISEA) = 0.001 * CGE(ISEA)  ! from W / m to kW / m
+            END DO
             CALL S2GRID(CGE(1:NSEA), X1)
             !
             ! Wind to wave energy flux
