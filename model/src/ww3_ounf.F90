@@ -543,7 +543,7 @@ PROGRAM W3OUNF
   TABIPART(NBIPART) = 0
   NBIPART = NBIPART + 1
   TABIPART(NBIPART) = 1
-  WRITE(NDSO,*) TABIPART
+  WRITE (NDSO,*) "TABIPART=", TABIPART
 
   !
   IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
@@ -1571,7 +1571,7 @@ CONTAINS
             ! CAH: Added second partition parameters.
             ! Partition 2 wave significant height
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 18 ) THEN
-            WRITE (NDSO,*) PHS2(:,IPART)
+            ! WRITE (NDSO,*) PHS2(:,IPART)
             CALL S2GRID(PHS2(:,IPART), X1)
             !
             ! Partition 2 peak period
