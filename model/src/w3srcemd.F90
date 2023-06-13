@@ -1498,7 +1498,7 @@ CONTAINS
 #ifdef W3_PDLIB
         IF (B_JGS_LIMITER_FUNC == 2) THEN
           DO IK=1, NK
-            JAC      = CG1(IK,JSEA)/CLATSL 
+            JAC      = CG1(IK,JSEA)/CLATSL
             JAC2     = 1./TPI/SIG(IK)
             FRLOCAL  = SIG(IK)*TPIINV
 #ifdef W3_ST6
@@ -1523,7 +1523,7 @@ CONTAINS
 #ifdef W3_ST6
           VS(IS) = VS(IS) + VSWL(IS)
 #endif
-#ifndef W3_PDLIB 
+#ifndef W3_PDLIB
 #ifdef W3_TR1
           VS(IS) = VS(IS) + VSTR(IS)
 #endif
@@ -1565,8 +1565,8 @@ CONTAINS
 #endif
         END DO  ! end of loop on IS
 
-        !VD = 0 
-        !VS = 0 
+        !VD = 0
+        !VS = 0
         !
         DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
         !
@@ -1776,7 +1776,8 @@ CONTAINS
           RETURN ! return everything is done for the implicit ...
 
         END IF ! srce_imp_pre
-#endif //W3_PDLIB
+!W3_PDLIB
+#endif
         !
 #ifdef W3_T
         WRITE (NDST,9040) DTRAW, DT, SHAVE
@@ -1810,7 +1811,7 @@ CONTAINS
             eInc1 = VDTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
             SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
           END DO
-#endif 
+#endif
 
 #ifdef W3_DEBUGSRC
           IF (IX == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN)
@@ -2331,7 +2332,7 @@ CONTAINS
       IF (IX .eq. DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) '5 : sum(SPEC)=', sum(SPEC)
       END IF
-#endif 
+#endif
 
 #ifdef W3_REF1
       IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
