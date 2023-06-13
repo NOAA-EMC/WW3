@@ -1180,7 +1180,11 @@ CONTAINS
         ! If the flag for the variable IFI of the group IFJ is .TRUE.
         IF ( FLG2D(IFI,IFJ) ) THEN
           ! Instanciates the partition array
-          INDEXIPART=1
+          IF (IFI .EQ. 4 .AND. IFJ .GT. 17) THEN
+            INDEXIPART=NOSWLL+1+1
+          ELSE
+            INDEXIPART=1
+          END IF
           IPART=TABIPART(INDEXIPART)
           NFIELD=1 ! Default is one field
 
@@ -3433,7 +3437,7 @@ CONTAINS
               IPART=TABIPART(INDEXIPART)
               GOTO 555
             END IF
-          ELSE IF (IFI .EQ. 4 .AND. IFJ .GT. 17 .AND. IFJ .LE. NOGE(IFI) - 1) THEN
+          ELSE IF (IFI .EQ. 4 .AND. IFJ .GT. 17 .AND. IFJ .LE. 23) THEN
             IF (INDEXIPART.LT.NBIPART) THEN
               INDEXIPART=INDEXIPART+1
               IF (TABIPART(INDEXIPART).EQ.-1) GOTO 560
