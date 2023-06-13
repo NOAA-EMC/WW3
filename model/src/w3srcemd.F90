@@ -862,6 +862,7 @@ CONTAINS
     !/ -- End of variable delclarations
     !/ ------------------------------------------------------------------- /
     !/
+
 #ifdef W3_S
     CALL STRACE (IENT, 'W3SRCE')
 #endif
@@ -869,8 +870,6 @@ CONTAINS
 #ifdef W3_T
     FLTEST = .TRUE.
 #endif
-<<<<<<< HEAD
-
 
     ! GPU Refactor - allocate locals
     ALLOCATE(SRC_MASK(CHUNKSIZE))
