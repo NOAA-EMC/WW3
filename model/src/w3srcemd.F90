@@ -714,7 +714,7 @@ CONTAINS
          MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
          COSI(2)
     REAL :: SPECINIT(NSPEC), SPEC2(NSPEC), FRLOCAL, JAC2
-    REAL :: DAM (NSPEC), DAM2(NSPEC), WN2(NSPEC),  &
+    REAL :: DAM2(NSPEC),  &
          VSLN(NSPEC),                         &
          VSIN(NSPEC), VDIN(NSPEC),            &
          VSNL(NSPEC), VDNL(NSPEC),            &
@@ -1919,7 +1919,7 @@ CONTAINS
         FHIGH  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
         NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
              INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
-#endif
+        !
         IF ( FLTEST ) WRITE (NDST,9062)                           &
              FH1*TPIINV, FH2*TPIINV, FHIGH*TPIINV, NKH
 #endif
@@ -1942,7 +1942,7 @@ CONTAINS
         ENDIF
         NKH    = MAX ( 2 , MIN ( NKH1 ,                           &
              INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH)) ) ) )
-#ifdef W3_ST6
+        !
         IF ( FLTEST ) WRITE (NDST,9063) FHIGH*TPIINV, NKH
 #endif
         !
@@ -2024,8 +2024,8 @@ CONTAINS
         ENDIF
 
       END DO ! INTEGRATION LOOP
-#ifdef W3_DEBUGSRC
 
+#ifdef W3_DEBUGSRC
       IF (IX .eq. DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) 'NSTEPS=', NSTEPS
         WRITE(740+IAPROC,*) '1 : sum(SPEC)=', sum(SPEC)
@@ -2048,7 +2048,7 @@ CONTAINS
 800 CONTINUE
       WRITE (NDSE,8000) FNAME, IERR
       CALL EXTCDE (1)
-#endif
+      !
 801 CONTINUE
       WRITE (NDSE,8001) IERR
       CALL EXTCDE (2)
