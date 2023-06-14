@@ -313,7 +313,7 @@ CONTAINS
 
       ! Calculate mean parameters:
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-           NP, XP, DIMXP, PMAP )
+           NP, XP, DIMXP, PMAP, PTMETH )
 
       ! No more processing required, return:
       RETURN
@@ -343,7 +343,9 @@ CONTAINS
 
       ! Calculate mean parameters:
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-           NP2, XP2, 2, PMAP )
+           NP2, XP2, 2, PMAP, PTMETH2 )
+      WRITE (*,*) "NP2= ", NP2
+      WRITE (*,*) "XP2= ", XP2
 
       ! No more processing required, return:
       ! CAH: we don't want to return here, since we want to also partition
@@ -380,7 +382,7 @@ CONTAINS
     !     NP and NX initialized inside routine.
     !
     CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-         NP, XP, DIMXP, PMAP )
+         NP, XP, DIMXP, PMAP, PTMETH )
     !
     ! 2.d PTMETH == 2: move the wind sea part of the partitions into a
     !     seperate partition and recalculate the mean parameters.
@@ -409,7 +411,7 @@ CONTAINS
         ! integrated parameters:
         NP_MAX = WIND_PART
         CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,     &
-             NP, XP, DIMXP, PMAP )
+             NP, XP, DIMXP, PMAP, PTMETH )
       ENDIF
     ENDIF
     !
@@ -464,7 +466,7 @@ CONTAINS
       END DO
       !
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,       &
-           NP, XP, DIMXP, PMAP )
+           NP, XP, DIMXP, PMAP, PTMETH )
       IF ( NP .LE. 1 ) RETURN
       !
       TP(:,1:NP)  = XP(:,1:NP)
@@ -1187,7 +1189,7 @@ CONTAINS
   !> @date 02 Dec 2010
   !>
   SUBROUTINE PTMEAN ( NPI, IMO, ZP, DEPTH, UABS, UDIR, WN,        &
-       NPO, XP, DIMXP, PMAP )
+       NPO, XP, DIMXP, PMAP, PTMETH )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III          USACE/NOAA |
@@ -1223,6 +1225,8 @@ CONTAINS
     !       XP      R.A.   O   Array with output parameters.
     !       DIMXP   int.   I   Second dimension of XP.
     !       PMAP    I.A.   O   Mapping between orig. and combined partitions
+    ! CAH: Added PTMETH into input args
+    !       PTMETH  I.A.   I   Method for partitioning
     !     ----------------------------------------------------------------
     !
     !  4. Subroutines used :
@@ -1252,7 +1256,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMXP
+    INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMXP, PTMETH
     INTEGER, INTENT(OUT)    :: NPO, PMAP(DIMXP)
     REAL, INTENT(IN)        :: ZP(NSPEC), DEPTH, UABS, UDIR, WN(NK)
     REAL, INTENT(OUT)       :: XP(DIMP,0:DIMXP)
