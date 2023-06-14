@@ -543,7 +543,6 @@ PROGRAM W3OUNF
   TABIPART(NBIPART) = 0
   NBIPART = NBIPART + 1
   TABIPART(NBIPART) = 1
-  WRITE (NDSO,*) "TABIPART=", TABIPART
 
   !
   IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
@@ -1181,6 +1180,7 @@ CONTAINS
         ! If the flag for the variable IFI of the group IFJ is .TRUE.
         IF ( FLG2D(IFI,IFJ) ) THEN
           ! Instanciates the partition array
+          ! CAH: changed this counter
           IF (IFI .EQ. 4 .AND. IFJ .GT. 17) THEN
             INDEXIPART=NOSWLL+1+1
           ELSE

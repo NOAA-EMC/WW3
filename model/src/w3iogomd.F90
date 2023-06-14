@@ -2346,12 +2346,15 @@ CONTAINS
         IF ( MAPSTA(IY,IX).GT.0 ) THEN
           I         = ICPRT2(JSEA,2)
           PNR2(JSEA) = MAX ( 0. , REAL(ICPRT2(JSEA,1)-1) )
+          WRITE (NDSO,*) 'PNR2(JSEA)=', PNR2(JSEA)
         END IF
         !
         IF ( MAPSTA(IY,IX).GT.0 .AND. ICPRT2(JSEA,1).GT.1 ) THEN
           I      = ICPRT2(JSEA,2) + 1
+          WRITE (NDSO,*) 'I=', I
           IF ( DTPRT2(6,I) .GE. WSCUT ) THEN
             PHS2(JSEA,0) = DTPRT2(1,I)
+            WRITE (NDSO,*) 'PHS2(JSEA,0)=', PHS2(JSEA,I)
             PTP2(JSEA,0) = DTPRT2(2,I)
             ! (PDIR is already in degrees nautical - convert back to
             !  Cartesian in radians to maintain internal convention)

@@ -3294,7 +3294,7 @@ CONTAINS
     META(1)%VARNL = 'wave significant height partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_significant_height'
     META(1)%VARNG = 'significant_wave_height_partition_'// IPART_TOKEN
-    META(1)%VARNC = PARTCOM
+    META(1)%VARNC = 'Wave components defined using 0.1 Hz spectral frequency cutoff'
     META(1)%VMIN = 0
     META(1)%VMAX = 64
     ! IFI=4, IFJ=19, PTP2
@@ -3307,7 +3307,7 @@ CONTAINS
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_period_at_variance' // &
          '_spectral_density_maximum'
     META(1)%VARNG = 'dominant_wave_period_partition_'// IPART_TOKEN
-    META(1)%VARNC = PARTCOM
+    META(1)%VARNC = 'Wave components defined using 0.1 Hz spectral frequency cutoff'
     META(1)%VMIN = 0
     META(1)%VMAX = 100
     ! IFI=4, IFJ=20, PDIR2
@@ -3319,7 +3319,7 @@ CONTAINS
     META(1)%VARNL = 'wave mean direction partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction'
     META(1)%VARNG = 'wave_from_direction_partition_'// IPART_TOKEN
-    META(1)%VARNC = PARTCOM
+    META(1)%VARNC = 'Wave components defined using 0.1 Hz spectral frequency cutoff'
     META(1)%VARND = DIRCOM
     META(1)%VMIN = 0
     META(1)%VMAX = 360
@@ -3332,7 +3332,7 @@ CONTAINS
     META(1)%VARNL = 'directional spread partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_diectional_spread'
     META(1)%VARNG = 'directional_spread_partition_'// IPART_TOKEN
-    META(1)%VARNC = PARTCOM
+    META(1)%VARNC = 'Wave components defined using 0.1 Hz spectral frequency cutoff'
     META(1)%VMIN = 0
     META(1)%VMAX = 90
     ! IFI=4, IFJ=22, PDP2
@@ -3345,7 +3345,7 @@ CONTAINS
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction_at_variance' // &
          '_spectral_density_maximum'
     META(1)%VARNG = 'dominant_wave_from_direction_partition_'// IPART_TOKEN
-    META(1)%VARNC = PARTCOM
+    META(1)%VARNC = 'Wave components defined using 0.1 Hz spectral frequency cutoff'
     META(1)%VARND = DIRCOM
     META(1)%VMIN = 0
     META(1)%VMAX = 360
@@ -3359,7 +3359,7 @@ CONTAINS
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_mean_period_from_variance' // &
          '_spectral_density_first_frequency_moment'
     META(1)%VARNG = 'mean_wave_period_T01_partition_'// IPART_TOKEN
-    META(1)%VARNC = PARTCOM
+    META(1)%VARNC = 'Wave components defined using 0.1 Hz spectral frequency cutoff'
     META(1)%VMIN = 0
     META(1)%VMAX = 100
     ! IFI=4, IFJ=24, PNR
@@ -3372,7 +3372,7 @@ CONTAINS
     !META(1)%VARNS = 'number_of_wave_partitions'
     META(1)%VARNS = ''
     META(1)%VARNG = 'number_of_wave_partitions'
-    META(1)%VARNC = PARTCOM
+    META(1)%VARNC = 'Wave components defined using 0.1 Hz spectral frequency cutoff'
     META(1)%VMIN = 0
     META(1)%VMAX = 100
     !

@@ -3284,6 +3284,14 @@ CONTAINS
       PT1    => WADATS(IMOD)%XPT1
       PT2    => WADATS(IMOD)%XPT2
       PEP    => WADATS(IMOD)%XPEP
+      ! CAH: Added second partition
+      PHS2   => WADATS(IMOD)%XPHS2
+      PTP2   => WADATS(IMOD)%XPTP2
+      PDIR2  => WADATS(IMOD)%XPDIR2
+      PSI2   => WADATS(IMOD)%XPSI2
+      PNR2   => WADATS(IMOD)%XPNR2
+      PTHP02 => WADATS(IMOD)%XPTHP02
+      PT12   => WADATS(IMOD)%XPT12
       !
       CHARN    => WADATS(IMOD)%XCHARN
       TWS      => WADATS(IMOD)%XTWS

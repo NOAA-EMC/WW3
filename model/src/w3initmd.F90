@@ -2822,7 +2822,7 @@ CONTAINS
                  IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
+            WRITE (NDST,9011) IH, ' 4/18', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
           END DO
@@ -2836,7 +2836,7 @@ CONTAINS
                  IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
+            WRITE (NDST,9011) IH, ' 4/19', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
           END DO
@@ -2850,7 +2850,7 @@ CONTAINS
                  IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
+            WRITE (NDST,9011) IH, ' 4/20', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
           END DO
@@ -2864,7 +2864,7 @@ CONTAINS
                  IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
+            WRITE (NDST,9011) IH, ' 4/21', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
           END DO
@@ -2878,7 +2878,7 @@ CONTAINS
                  IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
+            WRITE (NDST,9011) IH, ' 4/22', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
           END DO
@@ -2892,7 +2892,7 @@ CONTAINS
                  IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 4/01', IROOT, IT, IRQGO(IH), IERR
+            WRITE (NDST,9011) IH, ' 4/23', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
           END DO
@@ -2905,7 +2905,7 @@ CONTAINS
                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
-          WRITE (NDST,9011) IH, ' 4/17', IROOT, IT, IRQGO(IH), IERR
+          WRITE (NDST,9011) IH, ' 4/24', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
         END IF
@@ -4153,7 +4153,7 @@ CONTAINS
                    MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9011) IH, ' 4/01', IFROM, IT, IRQGO2(IH), IERR
+              WRITE (NDST,9011) IH, ' 4/18', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
             END DO
@@ -4167,7 +4167,7 @@ CONTAINS
                    MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9011) IH, ' 4/01', IFROM, IT, IRQGO2(IH), IERR
+              WRITE (NDST,9011) IH, ' 4/19', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
             END DO
@@ -4181,7 +4181,7 @@ CONTAINS
                    MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9011) IH, ' 4/01', IFROM, IT, IRQGO2(IH), IERR
+              WRITE (NDST,9011) IH, ' 4/20', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
             END DO
@@ -4195,7 +4195,7 @@ CONTAINS
                    MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9011) IH, ' 4/01', IFROM, IT, IRQGO2(IH), IERR
+              WRITE (NDST,9011) IH, ' 4/21', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
             END DO
@@ -4209,7 +4209,7 @@ CONTAINS
                    MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9011) IH, ' 4/01', IFROM, IT, IRQGO2(IH), IERR
+              WRITE (NDST,9011) IH, ' 4/22', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
             END DO
@@ -4223,7 +4223,7 @@ CONTAINS
                    MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
-              WRITE (NDST,9011) IH, ' 4/01', IFROM, IT, IRQGO2(IH), IERR
+              WRITE (NDST,9011) IH, ' 4/23', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
             END DO
@@ -4236,7 +4236,7 @@ CONTAINS
                  MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
-            WRITE (NDST,9011) IH, ' 4/17', IFROM, IT, IRQGO2(IH), IERR
+            WRITE (NDST,9011) IH, ' 4/24', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
           END IF
