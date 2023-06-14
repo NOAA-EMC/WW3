@@ -363,6 +363,9 @@ CONTAINS
     DTPRT => OUTPTS(IMOD)%OUT6%DTPRT
     IF ( FINSIZ .GT. 0 ) THEN
       DTPRT = TMP(:,1:FINSIZ)
+      WRITE (*,*), 'FINSIZ = ', FINSIZ
+      WRITE (*,*), 'DTPRT(:,0) = ', DTPRT(:,0)
+      WRITE (*,*), 'DTPRT(:,1) = ', DTPRT(:,1)
     ELSE
       DTPRT = 0.
     END IF

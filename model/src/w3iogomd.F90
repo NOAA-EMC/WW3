@@ -2350,7 +2350,8 @@ CONTAINS
         !
         IF ( MAPSTA(IY,IX).GT.0 .AND. ICPRT2(JSEA,1).GT.1 ) THEN
           I      = ICPRT2(JSEA,2) + 1
-          IF ( DTPRT2(6,I) .GE. WSCUT ) THEN
+          ! WSCUT has no meaning here, so we will use 0
+          IF ( DTPRT2(6,I) .GE. 0 ) THEN
             PHS2(JSEA,0) = DTPRT2(1,I)
             PTP2(JSEA,0) = DTPRT2(2,I)
             ! (PDIR is already in degrees nautical - convert back to
