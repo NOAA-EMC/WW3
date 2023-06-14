@@ -1302,19 +1302,11 @@ CONTAINS
       !
       IX = MAPSF(ISEA,1)
       IY = MAPSF(ISEA,2)
-      MAPICE = MOD(MAPST2(IY,IX),2)
-      MAPDRY = MOD(MAPST2(IY,IX)/2,2)
-      MAPLND = MOD(MAPST2(IY,IX)/4,2)
-      MAPMSK = MOD(MAPST2(IY,IX)/8,2)
       MAPINT = MOD(MAPST2(IY,IX)/16,2)
-      MAPST2(IY,IX) = MAPST2(IY,IX) - MAPICE - 2*MAPDRY - 4*MAPLND         &
-           - 8*MAPMSK
-      ACTIVE =  (MAPICE .NE. 1 .AND. MAPDRY .NE. 1)
       !
       IF ( MAPINT .EQ. 0 ) THEN
         !
         ! Initial loop to determine status map
-        ! Initialize by setting it to be ice free and wet
         !
         MAPICE = 0
         MAPDRY = 0
@@ -1361,8 +1353,8 @@ CONTAINS
           IF ( NMAPDRY .GT. 50 ) MAPDRYT = 1
           IF ( NMAPLND .GT. 50 ) MAPLNDT = 1
           IF ( NMAPMSK .GT. 50 ) MAPMSKT = 1
-          ACTIVE =  (MAPICET .NE. 1 .AND. MAPDRYT .NE. 1 .AND.             &
-               MAPLNDT .NE. 1 .AND. MAPMSKT .NE. 1)
+          ! Allow use of grid with ice or dry point. Allow merge of group 1 output
+          ACTIVE =  (MAPLNDT .NE. 1 .AND. MAPMSKT .NE. 1)
           IF ( ACTIVE ) THEN
             USEGRID(IG) = .TRUE.
             SUMGRD = SUMGRD+1
