@@ -292,6 +292,8 @@ CONTAINS
       END IF
       CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
            NP, XP, NP2, XP2, DIMXP )
+      WRITE (*,*) 'NP = ', NP
+      WRITE (*,*) 'NP2 = ', NP2
       !
       ! -------------------------------------------------------------------- /
       ! 5.  Store results (temp)
