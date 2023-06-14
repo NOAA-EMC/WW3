@@ -259,7 +259,8 @@ PROGRAM W3OUTP
 #endif
   REAL                    :: DTREQ, SCALE1, SCALE2, DTEST
   REAL                    :: M2KM
-  REAL, ALLOCATABLE       :: XPART(:,:)
+  ! CAH: Adding second partitioning
+  REAL, ALLOCATABLE       :: XPART(:,:), XPART2(:,:)
   LOGICAL                 :: FLFORM, FLSRCE(7)
   LOGICAL, ALLOCATABLE    :: FLREQ(:)
   CHARACTER               :: COMSTR*1, IDTIME*23, IDDDAY*11,      &
@@ -354,7 +355,9 @@ PROGRAM W3OUTP
   !
   DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
   ALLOCATE ( XPART(DIMP,0:DIMXP) )
+  ALLOCATE ( XPART2(DIMP,0:DIMXP) )
   XPART  = UNDEF
+  XPART2  = UNDEF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read general data and first fields from file
@@ -1269,9 +1272,10 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
+    ! CAH: Adding NPART2
     INTEGER                 :: J, I1, I2, ISP, IKM, ITH,            &
          IK, IH, IM, IS, IYR, IMTH, IDY, ITT, &
-         I, NPART, IP, IX, IY, ISEA
+         I, NPART, IP, IX, IY, ISEA, NPART2
     INTEGER, SAVE           :: IPASS  = 0
 #ifdef W3_S
     INTEGER, SAVE           :: IENT   = 0
@@ -1641,7 +1645,8 @@ CONTAINS
         ! spectral partitioning
         !
         IF ( ITYPE.EQ.4 ) CALL W3PART                              &
-             ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, DIMXP )
+             ( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, NPART2,   &
+               XPART2, DIMXP )
         !
         ! nondimensional parameters
         !
