@@ -220,6 +220,7 @@ CONTAINS
     ELSE
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
     ENDIF
+    WRITE (*,*) 'DIMXP =', DIMXP
 
     ! CAH: DIMP is the number of parameters in partition
     ! CAH: DIMXP is the number of partitions
@@ -293,7 +294,9 @@ CONTAINS
       CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
            NP, XP, NP2, XP2, DIMXP )
       WRITE (*,*) 'NP = ', NP
+      WRITE (*,*) 'HS = ', XP(1,1) 
       WRITE (*,*) 'NP2 = ', NP2
+      WRITE (*,*) 'HS2 = ', XP2(1,1)
       !
       ! -------------------------------------------------------------------- /
       ! 5.  Store results (temp)
