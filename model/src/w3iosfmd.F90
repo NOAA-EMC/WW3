@@ -197,7 +197,7 @@ CONTAINS
     ! CAH: NP2 and XP2 are the number of partitions and bulk parameters for
     ! the partitions, respectively
     INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,     &
-         IK, ITH, NP, NP2, TMPSIZ, OLDSIZ, FINSIZ, FINSIZ2
+         IK, ITH, NP, NP2, TMPSIZ, TMPSIZ2, OLDSIZ, OLDSIZ2, FINSIZ, FINSIZ2
     INTEGER, SAVE           :: TSFAC = 7
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -220,7 +220,6 @@ CONTAINS
     ELSE
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
     ENDIF
-    WRITE (*,*) 'DIMXP =', DIMXP
 
     ! CAH: DIMP is the number of parameters in partition
     ! CAH: DIMXP is the number of partitions
@@ -245,8 +244,9 @@ CONTAINS
     ICPRT2(1,2) = 1
     !
     TMPSIZ = TSFAC * NSEAL
+    TMPSIZ2 = TSFAC * NSEAL
     ALLOCATE ( TMP(DIMP,TMPSIZ) )
-    ALLOCATE ( TMPP2(DIMP,TMPSIZ) )
+    ALLOCATE ( TMPP2(DIMP,TMPSIZ2) )
     !
 #ifdef W3_T
     WRITE (NDST,9000) DIMP, DIMXP, TMPSIZ
@@ -293,10 +293,6 @@ CONTAINS
       END IF
       CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
            NP, XP, NP2, XP2, DIMXP )
-      WRITE (*,*) 'NP = ', NP
-      WRITE (*,*) 'HS = ', XP(1,1) 
-      WRITE (*,*) 'NP2 = ', NP2
-      WRITE (*,*) 'HS2 = ', XP2(1,1)
       !
       ! -------------------------------------------------------------------- /
       ! 5.  Store results (temp)
@@ -322,29 +318,29 @@ CONTAINS
         !
         TMP(:,ICPRT(JSEA,2):ICPRT(JSEA,2)+NP) = XP(:,0:NP)
         !
-        ! CAH: Repeat for NP2
-        !
+      END IF
+      !
+      ! CAH: Repeat for NP2
+      !
+      IF ( NP2 .GE. 0 ) THEN
         ICPRT2( JSEA ,1) = NP2 + 1
         ICPRT2(JSEA+1,2) = ICPRT2(JSEA,2) + NP2 + 1
-        !
-        IF ( ICPRT2(JSEA,2)+NP2 .GT. TMPSIZ ) THEN
-          ALLOCATE ( TMP2P2(DIMP,TMPSIZ) )
+        IF ( ICPRT2(JSEA,2)+NP2 .GT. TMPSIZ2 ) THEN
+          ALLOCATE ( TMP2P2(DIMP,TMPSIZ2) )
           TMP2P2   = TMPP2
           DEALLOCATE ( TMPP2 )
-          OLDSIZ = TMPSIZ
+          OLDSIZ2 = TMPSIZ2
           ! DIMXP is 2
-          TMPSIZ = TMPSIZ + MAX ( TSFAC*NSEAL , 2 )
-          ALLOCATE ( TMPP2(DIMP,TMPSIZ) )
-          TMPP2(:,1:OLDSIZ) = TMP2P2(:,1:OLDSIZ)
-          TMPP2(:,OLDSIZ+1:) = 0.
+          TMPSIZ2 = TMPSIZ2 + MAX ( TSFAC*NSEAL , 2 )
+          ALLOCATE ( TMPP2(DIMP,TMPSIZ2) )
+          TMPP2(:,1:OLDSIZ2) = TMP2P2(:,1:OLDSIZ2)
+          TMPP2(:,OLDSIZ2+1:) = 0.
           DEALLOCATE ( TMP2P2 )
 #ifdef W3_T
-          WRITE (NDST,9050) JSEA, OLDSIZ, TMPSIZ
+          WRITE (NDST,9050) JSEA, OLDSIZ2, TMPSIZ2
 #endif
         END IF
         !
-        TMP(:,ICPRT(JSEA,2):ICPRT(JSEA,2)+NP) = XP(:,0:NP)
-        ! CAH: added parameters from secondary method
         TMPP2(:,ICPRT2(JSEA,2):ICPRT2(JSEA,2)+NP2) = XP2(:,0:NP2)
         !
       END IF
