@@ -264,6 +264,8 @@ PROGRAM W3OUNP
   !
   REAL,ALLOCATABLE        :: THD(:)
   REAL, ALLOCATABLE       :: XPART(:,:)
+  ! CAH: Adding XPART2 for secondary partitioning
+  REAL, ALLOCATABLE       :: XPART2(:,:)
   !
   CHARACTER(LEN=16)            :: DATE, PASTDATE
   CHARACTER(LEN=30)            :: FILEPREFIX, STRSTARTDATE, STRSTOPDATE
@@ -382,7 +384,10 @@ PROGRAM W3OUNP
   !
   DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
   ALLOCATE ( XPART(DIMP,0:DIMXP) )
+  ! CAH: XPART2 for secondary partitioning, DIMXP always 2
+  ALLOCATE ( XPART2(DIMP,0:2) )
   XPART = UNDEF
+  XPART2 = UNDEF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read general data and first fields from file
@@ -1602,8 +1607,9 @@ CONTAINS
 
     !/ Local parameters
     !/
+    ! CAH: adding NPART2 for secondary partitioning
     INTEGER                 :: J, J1, I1, I2, ISP, IKM,              &
-         ITH, IK, ITT, NPART, IX, IY, ISEA
+         ITH, IK, ITT, NPART, IX, IY, ISEA, NPART2
     INTEGER                 :: CURDATE(8), REFDATE(8)
 #ifdef W3_S
     INTEGER, SAVE           :: IENT   = 0
@@ -2064,7 +2070,7 @@ CONTAINS
           !
           IF ( ITYPE.EQ.1 .AND. OTYPE.EQ.4 ) THEN
             CALL W3PART( E, UABS, UDIRCA, DEPTH, WN, NPART, XPART, &
-                 DIMXP )
+                 NPART2, XPART2, DIMXP )
           END IF
           !
           ! 3.d nondimensional parameters
