@@ -1320,7 +1320,7 @@ CONTAINS
          PNR2
     USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
          ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
-         NOGRP, NGRPP, ICPRT2, DTPRT2, NDSO
+         NOGRP, NGRPP, ICPRT2, DTPRT2
     USE W3ADATMD, ONLY: NSEALM
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -2350,7 +2350,7 @@ CONTAINS
         !
         IF ( MAPSTA(IY,IX).GT.0 .AND. ICPRT2(JSEA,1).GT.1 ) THEN
           I      = ICPRT2(JSEA,2) + 1
-          ! WSCUT has no meaning here, so we will use 0
+          ! CAH: WSCUT has no meaning here, so we will use 0
           IF ( DTPRT2(6,I) .GE. 0 ) THEN
             PHS2(JSEA,0) = DTPRT2(1,I)
             PTP2(JSEA,0) = DTPRT2(2,I)

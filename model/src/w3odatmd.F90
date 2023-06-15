@@ -820,7 +820,7 @@ CONTAINS
     !
     ! 4) Spectral Partitions parameters
     !
-    NOGE(4) = 24
+    NOGE(4) = 24 ! CAH: increased this for part.2 
     !
     IDOUT( 4, 1)  = 'Part. wave height   '
     IDOUT( 4, 2)  = 'Part. peak period   '

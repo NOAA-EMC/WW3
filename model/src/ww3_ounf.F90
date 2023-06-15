@@ -522,7 +522,7 @@ PROGRAM W3OUNF
 
 
   ! 4.3 Output type
-  ! CAH: add + 2 again
+  ! CAH: add + 2 to account for sea and swell part 2
   ALLOCATE(TABIPART(NOSWLL + 1 + 2))
   ALLOCATE(NCIDS(NOGRP,NGRPP,NOSWLL + 1 + 2))
   NBIPART=0
@@ -680,6 +680,7 @@ PROGRAM W3OUNF
             END IF ! NCIDS
             ! close partition files (except part 0 which is already closed by (IFI,IFJ,1)
             IF ((IFI.EQ.4).AND.(IFJ.LE.NOGE(IFI))) THEN
+            ! CAH: Added +2 for sea and swell secondary partitioning
               DO IPART=1,NOSWLL+2
                 IF (NCIDS(IFI,IFJ,IPART+1).NE.0) THEN
                   IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))

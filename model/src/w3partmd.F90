@@ -322,6 +322,7 @@ CONTAINS
     ! PTMETH == 5 : produce "high" and "low" band partitions
     ! using a frequency cutoff:
     !
+    ! CAH: Here's where we force PTMETH2
     IF( PTMETH2 .EQ. 5 ) THEN
       SIGCUT = TPI * PTFCUT2
       DO IK = 1, NK
@@ -344,8 +345,6 @@ CONTAINS
       ! Calculate mean parameters:
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
            NP2, XP2, 2, PMAP, PTMETH2 )
-      WRITE (*,*) "NP2= ", NP2
-      WRITE (*,*) "XP2= ", XP2
 
       ! No more processing required, return:
       ! CAH: we don't want to return here, since we want to also partition

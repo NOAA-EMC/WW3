@@ -363,9 +363,6 @@ CONTAINS
     DTPRT => OUTPTS(IMOD)%OUT6%DTPRT
     IF ( FINSIZ .GT. 0 ) THEN
       DTPRT = TMP(:,1:FINSIZ)
-      WRITE (*,*), 'FINSIZ = ', FINSIZ
-      WRITE (*,*), 'DTPRT(:,0) = ', DTPRT(:,0)
-      WRITE (*,*), 'DTPRT(:,1) = ', DTPRT(:,1)
     ELSE
       DTPRT = 0.
     END IF
@@ -378,9 +375,6 @@ CONTAINS
     DTPRT2 => OUTPTS(IMOD)%OUT6%DTPRT2
     IF ( FINSIZ2 .GT. 0 ) THEN
       DTPRT2 = TMPP2(:,1:FINSIZ2)
-      WRITE (*,*), 'FINSIZ2 = ', FINSIZ2
-      WRITE (*,*), 'DTPRT2(:,0) = ', DTPRT2(:,0)
-      WRITE (*,*), 'DTPRT2(:,1) = ', DTPRT2(:,1)
     ELSE
       DTPRT2 = 0.
     END IF
