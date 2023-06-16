@@ -2148,6 +2148,145 @@ CONTAINS
             END IF
 #endif
 #endif
+
+
+
+!!!!!! NEW SOURCE TERM CALL - PASS FULL ARRAYS
+
+
+!!CB: None of the below needed (DELA, DELX, DELY) as not actaully
+!!    used in W3SRCE.
+!              DELA=1.
+!              DELX=1.
+!              DELY=1.
+!#ifdef W3_REF1
+!             !! TODO: DELX, DELY, DELA not used in W3SRCE
+!              IF (GTYPE.EQ.RLGTYPE) THEN
+!                DELX=SX*CLATS(ISEA)/FACX
+!                DELY=SY/FACX
+!                DELA=DELX*DELY
+!              END IF
+!              IF (GTYPE.EQ.CLGTYPE) THEN
+!                ! Maybe what follows works also for RLGTYPE ... to be verified
+!                DELX=HPFAC(IY,IX)/ FACX
+!                DELY=HQFAC(IY,IX)/ FACX
+!                DELA=DELX*DELY
+!              END IF
+!#endif
+              !
+#ifdef W3_REF1
+              !TODO: Need to handle passing array when W3_REF1 now enabled
+              !      as RECLEC will not be allocated?
+              REFLEC=REFLC(:,ISEA)
+              REFLEC(4)=BERG(ISEA)*REFLEC(4) ! TODO : Calc this in W3SRCE
+              REFLED=REFLD(:,ISEA)
+#endif
+#ifdef W3_BT4
+              !TODO: Need to handle passing array when W3_REF1 now enabled
+              !      as SED_D50/SED_PSIC will not be allocated?
+              !
+              D50=SED_D50(ISEA)
+              PSIC=SED_PSIC(ISEA)
+#endif
+
+              ! Below not needed as  passing in whole arrays
+              ! TODO: Array dimentions need permuting.
+              !TMP1   = WHITECAP(JSEA,1:4)
+              !TMP2   = BEDFORMS(JSEA,1:3)
+              !TMP3   = TAUBBL(JSEA,1:2)
+              !TMP4   = TAUICE(JSEA,1:2)
+#ifdef W3_PDLIB
+              ! TODO: Sort out implicit call later
+              !
+!                IF (FSSOURCE) THEN
+!                  CALL W3SRCE(srce_imp_post,IT,ISEA,JSEA,IX,IY,IMOD,     &
+!                       VAOLD(:,JSEA), VA(:,JSEA),                        &
+!                       VSioDummy,VDioDummy,SHAVETOT(JSEA),               &
+!                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
+!                       CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
+!                       U10D(ISEA),                                       &
+!#ifdef W3_FLX5
+!                       TAUA(ISEA), TAUADIR(ISEA),                        &
+!#endif
+!                       AS(ISEA), UST(ISEA),                              &
+!                       USTDIR(ISEA), CX(ISEA), CY(ISEA),                 &
+!                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
+!                       ICEDMAX(ISEA),                                    &
+!                       REFLEC, REFLED, DELX, DELY, DELA,                 &
+!                       TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
+!                       FPIS(ISEA), DTDYN(JSEA),                          &
+!                       FCUT(JSEA), DTG, TAUWX(JSEA), TAUWY(JSEA),        &
+!                       TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
+!                       TAUWIY(JSEA), TAUWNX(JSEA),                       &
+!                       TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),          &
+!                       TWS(JSEA),PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
+!                       PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),            &
+!                       TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),         &
+!                       RHOAIR(ISEA), ASF(ISEA))
+!                ELSE
+#endif
+                  ! TESTING - TO AVOID BAD ARRAY ACCESS
+                  IX = 1
+                  IY = 1
+                  JSEA = 1
+                  ISEA = 1
+                  ! END TESTING
+                  CALL W3SRCE(srce_direct, IT, IMOD, &
+                       VAoldDummy, &
+                       VA(:,1:NSEALM),  &
+                       VSioDummy, VDioDummy,  &
+                       SHAVETOTioDummy, &
+                       ALPHA(1:NK,:),  &
+                       WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
+                       CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
+                       CLATS(ISEA),  &
+                       DW(ISEA),  &
+                       U10(1:NSEA),  &
+                       U10D(1:NSEA), &
+#ifdef W3_FLX5
+                       TAUA(ISEA), TAUADIR(ISEA),                        &
+#endif
+                       AS(ISEA),  &
+                       UST(1:NSEA), USTDIR(1:NSEA),  &
+                       CX(ISEA), CY(ISEA),  &
+                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
+                       ICEDMAX(ISEA),                                    &
+                       REFLEC, REFLED, DELX, DELY, DELA,                 &
+                       TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
+                       FPIS(ISEA), DTDYN(JSEA),                          &
+                       FCUT(JSEA), DTG,  &
+                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),        &
+                       TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
+                       TAUWIY(JSEA), TAUWNX(JSEA),                       &
+                       TAUWNY(JSEA),  PHIAW(JSEA), &
+                       CHARN(1:NSEALM),          &
+                       TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,     &
+                       PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),           &
+                       TAUOCX(JSEA), TAUOCY(JSEA), &
+                       WNMEAN(1:NSEALM),         &
+                       RHOAIR(ISEA), ASF(ISEA))
+#ifdef W3_PDLIB
+                END IF
+#endif
+                WHITECAP(JSEA,1:4) = TMP1
+                BEDFORMS(JSEA,1:3) = TMP2
+                TAUBBL(JSEA,1:2) = TMP3
+                TAUICE(JSEA,1:2) = TMP4
+
+
+                !! TODO: These set to under for MASKED points
+                !! NEEDS TO HAPPEN IN W3SRCE.
+!                UST   (ISEA) = UNDEF
+!                USTDIR(ISEA) = UNDEF
+!                DTDYN (JSEA) = UNDEF
+ !               FCUT  (JSEA) = UNDEF
+                !                    VA(:,JSEA)  = 0.
+
+!!!!!! END OF NEW SOURCE TERM CALL
+
+
+!!!!!! THIS IS THE OLD SOURCE TERM LOOP. REPLACED WITH ABOVE
+#if 0
             !
 #ifdef W3_OMPG
             !$OMP PARALLEL PRIVATE (JSEA,ISEA,IX,IY,DELA,DELX,DELY,        &
@@ -2164,6 +2303,7 @@ CONTAINS
               DELX=1.
               DELY=1.
 #ifdef W3_REF1
+             !! TODO: DELX, DELY, DELA not used in W3SRCE
               IF (GTYPE.EQ.RLGTYPE) THEN
                 DELX=SX*CLATS(ISEA)/FACX
                 DELY=SY/FACX
@@ -2266,6 +2406,13 @@ CONTAINS
             !$OMP END DO
             !$OMP END PARALLEL
 #endif
+
+!!!!!!!!!!!! END OF OLD SOURCE TERM LOOP (COMMENTED OUT)
+#endif // IF 0
+!!!
+
+
+
             !
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGSRC
