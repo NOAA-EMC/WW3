@@ -126,18 +126,23 @@ if(NetCDF_Fortran_FOUND)
   list(APPEND programs ${netcdf_programs})
 endif()
 
-if(MULTI_ESMF)
+if(UFS_CAP)
   # Don't search for ESMF if target already exists (when build WW3 as UFS submodule)
   if (NOT TARGET esmf)
     find_package(ESMF MODULE REQUIRED)
   endif()
+
+  if(UFS_CAP STREQUAL "MULTI_ESMF")
+    set(cap_src ${esmf_multi_cap_src})
+  elseif(UFS_CAP STREQUAL "NUOPC_MESH")
+    set(cap_src ${nuopc_mesh_cap_src})
+  endif()
   
-  target_sources(ww3_lib PRIVATE wmesmfmd.F90)
+  target_sources(ww3_lib PRIVATE ${cap_src})
   target_link_libraries(ww3_lib PUBLIC esmf)
-  set_target_properties(ww3_lib PROPERTIES OUTPUT_NAME "ww3_multi_esmf")
   # Don't build executables when building WW3 ESMF library
   set(programs "")
-endif() 
+endif()
 
 set_property(SOURCE w3initmd.F90
   APPEND
@@ -158,6 +163,7 @@ endif()
 # Handle PDLIB, SCRIP, SCRIPNC build files directly instead of through configuration file
 if("PDLIB" IN_LIST switches)
   if("SCOTCH" IN_LIST switches)
+  set(USE_SHARED_SCOTCH OFF)
   find_package(SCOTCH REQUIRED)
   target_sources(ww3_lib PRIVATE ${pdlib_src})
   target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis)
