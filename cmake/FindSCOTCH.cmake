@@ -1,21 +1,27 @@
+if(USE_SHARED_SCOTCH)
+  set(LIB_EXT so)
+else()
+  set(LIB_EXT a)
+endif()
+
 message(STATUS "Searching for PTSCOTCHparmetis library ...")
-find_library(ptscotchparmetis_lib NAMES libptscotchparmetisv3  HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
+find_library(ptscotchparmetis_lib NAMES libptscotchparmetisv3.${LIB_EXT}  HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(ptscotchparmetis_inc parmetis.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
 
 message(STATUS "Searching for SCOTCH library ...")
-find_library(scotch_lib NAMES libscotch HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
+find_library(scotch_lib NAMES libscotch.${LIB_EXT} HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(scotch_inc scotch.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
 
 message(STATUS "Searching for PTSCOTCH library ...")
-find_library(ptscotch_lib NAMES libptscotch HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
+find_library(ptscotch_lib NAMES libptscotch.${LIB_EXT} HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(ptscotch_inc ptscotch.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
 
 message(STATUS "Searching for SCOTCHerr library ...")
-find_library(scotcherr_lib NAMES libscotcherr HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
+find_library(scotcherr_lib NAMES libscotcherr.${LIB_EXT} HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(scotcherr_inc scotch.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
 
 message(STATUS "Searching for PTSCOTCHerr library ...")
-find_library(ptscotcherr_lib NAMES libptscotcherr HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
+find_library(ptscotcherr_lib NAMES libptscotcherr.${LIB_EXT} HINTS ENV SCOTCH_PATH PATH_SUFFIXES lib)
 find_path(ptscotcherr_inc ptscotch.h HINTS ENV SCOTCH_PATH PATH_SUFFIXES include)
 
 if(USE_SHARED_SCOTCH)
@@ -24,14 +30,17 @@ if(USE_SHARED_SCOTCH)
   add_library(PTSCOTCH::PTSCOTCH SHARED IMPORTED)
   add_library(SCOTCHerr::SCOTCHerr SHARED IMPORTED)
   add_library(PTSCOTCHerr::PTSCOTCHerr SHARED IMPORTED)
+  set(LIBRARY_TYPE "Shared")
 else()
   add_library(PTSCOTCHparmetis::PTSCOTCHparmetis STATIC IMPORTED)
   add_library(SCOTCH::SCOTCH STATIC IMPORTED)
   add_library(PTSCOTCH::PTSCOTCH STATIC IMPORTED)
   add_library(SCOTCHerr::SCOTCHerr STATIC IMPORTED)
   add_library(PTSCOTCHerr::PTSCOTCHerr STATIC IMPORTED)
+  set(LIBRARY_TYPE "Static")
 endif()
 
+message(STATUS "Using ${LIBRARY_TYPE} SCOTCH libraries.")
 
 set_target_properties(SCOTCH::SCOTCH PROPERTIES
   IMPORTED_LOCATION "${scotch_lib}"
