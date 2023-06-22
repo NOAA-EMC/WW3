@@ -2240,7 +2240,7 @@ CONTAINS
                        WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
                        CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
                        CLATS(ISEA),  &
-                       DW(ISEA),  &
+                       DW(1:NSEA),  &
                        U10(1:NSEA),  &
                        U10D(1:NSEA), &
 #ifdef W3_FLX5
@@ -2253,7 +2253,7 @@ CONTAINS
                        ICEDMAX(ISEA),                                    &
                        REFLEC, REFLED, DELX, DELY, DELA,                 &
                        TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
-                       FPIS(ISEA), DTDYN(JSEA),                          &
+                       FPIS(1:NSEA), DTDYN(JSEA),                          &
                        FCUT(JSEA), DTG,  &
                        TAUWX(1:NSEAL), TAUWY(1:NSEAL),        &
                        TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
