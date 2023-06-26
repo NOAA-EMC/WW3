@@ -60,9 +60,7 @@ contains
     use w3adatmd   , only : cflxymax, cflthmax, cflkmax, p2sms, us3d
     use w3adatmd   , only : th1m, sth1m, th2m, sth2m, hsig, phice, tauice
     use w3adatmd   , only : stmaxe, stmaxd, hmaxe, hcmaxe, hmaxd, hcmaxd, ussp, tauocx, tauocy
-#ifdef W3_CESMCOUPLED
-    use w3adatmd   , only : langmt
-#endif
+    use w3adatmd , only : usshx, usshy
     use wav_grdout , only : varatts, outvars
     use w3timemd   , only : set_user_timestring
     use w3odatmd   , only : time_origin, calendar_name, elapsed_secs
@@ -355,9 +353,8 @@ contains
         if (vname .eq.   'PHICE') call write_var2d(vname, phice    (1:nsea) )
         if (vname .eq.  'TAUOCX') call write_var2d(vname, tauocx   (1:nsea) )
         if (vname .eq.  'TAUOCY') call write_var2d(vname, tauocy   (1:nsea) )
-#ifdef W3_CESMCOUPLED
-        if (vname .eq.  'LANGMT') call write_var2d(vname, langmt   (1:nsea) )
-#endif
+        if (vname .eq.   'USSHX') call write_var2d(vname, usshx    (1:nsea) )
+        if (vname .eq.   'USSHY') call write_var2d(vname, usshy    (1:nsea) )
         ! Group 7
         if (vname .eq.    'ABAX') call write_var2d(vname, aba      (1:nsea), dir=cos(abd(1:nsea)) )
         if (vname .eq.    'ABAY') call write_var2d(vname, aba      (1:nsea), dir=sin(abd(1:nsea)) )
