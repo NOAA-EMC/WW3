@@ -229,6 +229,16 @@ MODULE W3ADATMD
   !      PT2       R.A.  Public   Mean wave period (m0,2) of partition.
   !      PEP       R.A.  Public   Peak spectral density of partition.
   !
+  !      CAH: Mean wave parameters from partitioned spectra using
+  !      PTMETH2; subset of parameters above
+  !      PHS2      R.A.  Public   Wave height of partition.
+  !      PTP2      R.A.  Public   Peak period of partition.
+  !      PDIR2     R.A.  Public   Mean direction of partition.
+  !      PSI2      R.A.  Public   Mean spread of partition.
+  !      PTHP02    R.A.  Public   Peak wave direction of partition.
+  !      PT12      R.A.  Public   Mean wave period (m0,1) of partition.
+  !      PNR2       R.A.  Public   Number of partitions found.
+  !
   !     Empty dummy fields (NOEXTR)
   !
   !      USERO     R.A.  Public   Empty output arrays than can be
@@ -423,18 +433,22 @@ MODULE W3ADATMD
     !
     ! Output fields group 4)
     !
+    ! CAH: Added parameters from PTMETH2
     REAL, POINTER         :: PHS(:,:),  PTP(:,:),  PLP(:,:),      &
          PDIR(:,:),  PSI(:,:),  PWS(:,:),     &
          PWST(:),  PNR(:), PGW(:,:),          &
          PTHP0(:,:), PQP(:,:), PPE(:,:),      &
          PSW(:,:), PTM1(:,:), PT1(:,:),       &
-         PT2(:,:), PEP(:,:)
+         PT2(:,:), PEP(:,:), PHS2(:,:), PTP2(:,:), PDIR2(:,:),    &
+         PSI2(:,:), PNR2(:), PTHP02(:,:), PT12(:,:)
     REAL, POINTER         :: XPHS(:,:), XPTP(:,:), XPLP(:,:),     &
          XPDIR(:,:), XPSI(:,:), XPWS(:,:),    &
          XPWST(:), XPNR(:), XPGW(:,:),        &
          XPTHP0(:,:), XPQP(:,:), XPPE(:,:),   &
          XPSW(:,:), XPTM1(:,:), XPT1(:,:),    &
-         XPT2(:,:), XPEP(:,:)
+         XPT2(:,:), XPEP(:,:), XPHS2(:,:), XPTP2(:,:),            &
+         XPDIR2(:,:), XPSI2(:,:), XPNR2(:), XPTHP02(:,:),         &
+         XPT12(:,:) 
     !
     ! Output fields group 5)
     !
@@ -591,11 +605,14 @@ MODULE W3ADATMD
   REAL, POINTER           :: EF(:,:), TH1M(:,:), STH1M(:,:),      &
        TH2M(:,:), STH2M(:,:)
   !
+  ! CAH: Added parameters from second partitioning scheme
   REAL, POINTER           :: PHS(:,:), PTP(:,:), PLP(:,:),        &
        PDIR(:,:), PSI(:,:), PWS(:,:),       &
        PWST(:), PNR(:), PGW(:,:), PSW(:,:), &
        PTHP0(:,:), PQP(:,:), PPE(:,:),      &
-       PTM1(:,:), PT1(:,:), PT2(:,:),PEP(:,:)
+       PTM1(:,:), PT1(:,:), PT2(:,:), PEP(:,:),                   &
+       PHS2(:,:), PTP2(:,:), PDIR2(:,:), PSI2(:,:), PNR2(:),      &
+       PTHP02(:,:), PT12(:,:)
   !
   REAL, POINTER           :: CHARN(:), CGE(:), PHIAW(:),          &
        TAUWIX(:), TAUWIY(:), TAUWNX(:),     &
@@ -1113,6 +1130,8 @@ CONTAINS
     !
     ! 4) Spectral Partitions parameters
     !
+    ! CAH: added parameters from second partitioning scheme
+    !
     ALLOCATE ( WADATS(IMOD)%PHS(NSEALM,0:NOSWLL),                   &
          WADATS(IMOD)%PTP(NSEALM,0:NOSWLL),                   &
          WADATS(IMOD)%PLP(NSEALM,0:NOSWLL),                   &
@@ -1130,6 +1149,13 @@ CONTAINS
          WADATS(IMOD)%PT1(NSEALM,0:NOSWLL),                   &
          WADATS(IMOD)%PT2(NSEALM,0:NOSWLL),                   &
          WADATS(IMOD)%PEP(NSEALM,0:NOSWLL),                   &
+         WADATS(IMOD)%PHS2(NSEALM,0:1),                       &
+         WADATS(IMOD)%PTP2(NSEALM,0:1),                       &
+         WADATS(IMOD)%PDIR2(NSEALM,0:1),                      &
+         WADATS(IMOD)%PSI2(NSEALM,0:1),                       &
+         WADATS(IMOD)%PNR2(NSEALM),                           &
+         WADATS(IMOD)%PTHP02(NSEALM,0:1),                     &
+         WADATS(IMOD)%PT12(NSEALM,0:1),                       &
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1150,6 +1176,13 @@ CONTAINS
     WADATS(IMOD)%PT1    = UNDEF
     WADATS(IMOD)%PT2    = UNDEF
     WADATS(IMOD)%PEP    = UNDEF
+    WADATS(IMOD)%PHS2   = UNDEF
+    WADATS(IMOD)%PTP2   = UNDEF
+    WADATS(IMOD)%PDIR2  = UNDEF
+    WADATS(IMOD)%PSI2   = UNDEF
+    WADATS(IMOD)%PNR2   = UNDEF
+    WADATS(IMOD)%PTHP02 = UNDEF
+    WADATS(IMOD)%PT12   = UNDEF
     !
     ! 5) Atmosphere-waves layer
     !
@@ -1924,6 +1957,56 @@ CONTAINS
       ALLOCATE ( WADATS(IMOD)%XPNR(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
+    ! CAH: Added parameters from second partitioning scheme
+    IF ( OUTFLAGS( 4,18) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XPHS2(NXXX,0:1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XPHS2(1,1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    END IF
+    IF ( OUTFLAGS( 4,19) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XPTP2(NXXX,0:1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XPTP2(1,1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    END IF
+    IF ( OUTFLAGS( 4,20) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XPDIR2(NXXX,0:1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XPDIR2(1,1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    END IF
+    IF ( OUTFLAGS( 4,21) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XPSI2(NXXX,0:1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XPSI2(1,1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    END IF
+    IF ( OUTFLAGS( 4,22) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XPTHP02(NXXX,0:1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XPTHP02(1,1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    END IF
+    IF ( OUTFLAGS( 4,23) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XPT12(NXXX,0:1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XPT12(1,1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    END IF
+    IF ( OUTFLAGS( 4,24) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XPNR2(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XPNR2(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+    END IF
     !
     WADATS(IMOD)%XPHS   = UNDEF
     WADATS(IMOD)%XPTP   = UNDEF
@@ -1942,6 +2025,13 @@ CONTAINS
     WADATS(IMOD)%XPT1   = UNDEF
     WADATS(IMOD)%XPT2   = UNDEF
     WADATS(IMOD)%XPEP   = UNDEF
+    WADATS(IMOD)%XPHS2  = UNDEF
+    WADATS(IMOD)%XPTP2  = UNDEF
+    WADATS(IMOD)%XPDIR2 = UNDEF
+    WADATS(IMOD)%XPSI2  = UNDEF
+    WADATS(IMOD)%XPNR2  = UNDEF
+    WADATS(IMOD)%XPTHP02= UNDEF
+    WADATS(IMOD)%XPT12  = UNDEF
     !
     IF ( OUTFLAGS( 5, 2) ) THEN
       ALLOCATE ( WADATS(IMOD)%XCHARN(NXXX), STAT=ISTAT )
@@ -2847,6 +2937,14 @@ CONTAINS
       PT1    => WADATS(IMOD)%PT1
       PT2    => WADATS(IMOD)%PT2
       PEP    => WADATS(IMOD)%PEP
+      ! CAH: Added parameters from second partitioning
+      PHS2   => WADATS(IMOD)%PHS2
+      PTP2   => WADATS(IMOD)%PTP2
+      PDIR2  => WADATS(IMOD)%PDIR2
+      PSI2   => WADATS(IMOD)%PSI2
+      PNR2   => WADATS(IMOD)%PNR2
+      PTHP02 => WADATS(IMOD)%PTHP02
+      PT12   => WADATS(IMOD)%PT12
       !
       CHARN    => WADATS(IMOD)%CHARN
       TWS      => WADATS(IMOD)%TWS
@@ -3186,6 +3284,14 @@ CONTAINS
       PT1    => WADATS(IMOD)%XPT1
       PT2    => WADATS(IMOD)%XPT2
       PEP    => WADATS(IMOD)%XPEP
+      ! CAH: Added second partition
+      PHS2   => WADATS(IMOD)%XPHS2
+      PTP2   => WADATS(IMOD)%XPTP2
+      PDIR2  => WADATS(IMOD)%XPDIR2
+      PSI2   => WADATS(IMOD)%XPSI2
+      PNR2   => WADATS(IMOD)%XPNR2
+      PTHP02 => WADATS(IMOD)%XPTHP02
+      PT12   => WADATS(IMOD)%XPT12
       !
       CHARN    => WADATS(IMOD)%XCHARN
       TWS      => WADATS(IMOD)%XTWS

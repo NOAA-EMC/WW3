@@ -176,7 +176,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NSEA, NSEAL, MAPSF, MAPSTA, NK, NTH, SIG
     USE W3ADATMD, ONLY: WN, CG, U10, U10D, DW
     USE W3ODATMD, ONLY: IAPROC, NAPROC, OUTPTS, O6INIT,       &
-         ICPRT, DTPRT, DIMP, PTMETH
+         ICPRT, DTPRT, DIMP, PTMETH, ICPRT2, DTPRT2
     USE W3WDATMD, ONLY: VA, ASF
     USE W3ADATMD, ONLY: NSEALM
     USE W3PARALL, ONLY: INIT_GET_ISEA, INIT_GET_JSEA_ISPROC
@@ -194,14 +194,17 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
+    ! CAH: NP2 and XP2 are the number of partitions and bulk parameters for
+    ! the partitions, respectively
     INTEGER                 :: DIMXP, JSEA, ISEA, IX, IY,     &
-         IK, ITH, NP, TMPSIZ, OLDSIZ, FINSIZ
+         IK, ITH, NP, NP2, TMPSIZ, TMPSIZ2, OLDSIZ, OLDSIZ2, FINSIZ, FINSIZ2
     INTEGER, SAVE           :: TSFAC = 7
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
     REAL                    :: UABS, UDIR, DEPTH, FACT, E2(NK,NTH)
-    REAL, ALLOCATABLE       :: XP(:,:), TMP(:,:), TMP2(:,:)
+    REAL, ALLOCATABLE       :: XP(:,:), XP2(:,:), TMP(:,:), TMP2(:,:)
+    REAL, ALLOCATABLE       :: TMPP2(:,:), TMP2P2(:,:)
     !/
 #ifdef W3_S
     CALL STRACE (IENT, 'W3CPRT')
@@ -218,20 +221,32 @@ CONTAINS
       DIMXP  = ((NK+1)/2) * ((NTH-1)/2)
     ENDIF
 
-    ALLOCATE ( XP(DIMP,0:DIMXP) )
+    ! CAH: DIMP is the number of parameters in partition
+    ! CAH: DIMXP is the number of partitions
+    ALLOCATE ( XP(DIMP,0:DIMXP) ) 
+    ! CAH: PTMETH2=5 only ever creates 2 partitions
+    ALLOCATE ( XP2(DIMP,0:2) ) 
     !
+    ! CAH: ICPRT is the counter for partitions
     IF ( O6INIT ) THEN
       DEALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT )
+      DEALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT2 )
     ELSE
       ALLOCATE ( OUTPTS(IMOD)%OUT6%ICPRT(NSEALM+1,2) )
       ICPRT => OUTPTS(IMOD)%OUT6%ICPRT
+      ALLOCATE ( OUTPTS(IMOD)%OUT6%ICPRT2(NSEALM+1,2) )
+      ICPRT2 => OUTPTS(IMOD)%OUT6%ICPRT2
       O6INIT = .TRUE.
     END IF
     ICPRT  = 0
     ICPRT(1,2) = 1
+    ICPRT2  = 0
+    ICPRT2(1,2) = 1
     !
     TMPSIZ = TSFAC * NSEAL
+    TMPSIZ2 = TSFAC * NSEAL
     ALLOCATE ( TMP(DIMP,TMPSIZ) )
+    ALLOCATE ( TMPP2(DIMP,TMPSIZ2) )
     !
 #ifdef W3_T
     WRITE (NDST,9000) DIMP, DIMXP, TMPSIZ
@@ -249,6 +264,7 @@ CONTAINS
       IX     = MAPSF(ISEA,1)
       IY     = MAPSF(ISEA,2)
       ICPRT(JSEA+1,2) = ICPRT(JSEA,2)
+      ICPRT2(JSEA+1,2) = ICPRT2(JSEA,2)
       !
       IF ( MAPSTA(IY,IX) .LT. 0 ) CYCLE
       !
@@ -276,7 +292,7 @@ CONTAINS
         STOP 'CRITICAL ERROR IN DEPTH ARRAY'
       END IF
       CALL W3PART ( E2, UABS, UDIR, DEPTH, WN(1:NK,ISEA),           &
-           NP, XP, DIMXP )
+           NP, XP, NP2, XP2, DIMXP )
       !
       ! -------------------------------------------------------------------- /
       ! 5.  Store results (temp)
@@ -304,12 +320,38 @@ CONTAINS
         !
       END IF
       !
+      ! CAH: Repeat for NP2
+      !
+      IF ( NP2 .GE. 0 ) THEN
+        ICPRT2( JSEA ,1) = NP2 + 1
+        ICPRT2(JSEA+1,2) = ICPRT2(JSEA,2) + NP2 + 1
+        IF ( ICPRT2(JSEA,2)+NP2 .GT. TMPSIZ2 ) THEN
+          ALLOCATE ( TMP2P2(DIMP,TMPSIZ2) )
+          TMP2P2   = TMPP2
+          DEALLOCATE ( TMPP2 )
+          OLDSIZ2 = TMPSIZ2
+          ! DIMXP is 2
+          TMPSIZ2 = TMPSIZ2 + MAX ( TSFAC*NSEAL , 2 )
+          ALLOCATE ( TMPP2(DIMP,TMPSIZ2) )
+          TMPP2(:,1:OLDSIZ2) = TMP2P2(:,1:OLDSIZ2)
+          TMPP2(:,OLDSIZ2+1:) = 0.
+          DEALLOCATE ( TMP2P2 )
+#ifdef W3_T
+          WRITE (NDST,9050) JSEA, OLDSIZ2, TMPSIZ2
+#endif
+        END IF
+        !
+        TMPP2(:,ICPRT2(JSEA,2):ICPRT2(JSEA,2)+NP2) = XP2(:,0:NP2)
+        !
+      END IF
+      !
       ! -------------------------------------------------------------------- /
       ! 6.  End of loop and clean up
       !
     END DO
     !
     FINSIZ = ICPRT(NSEAL+1,2) - 1
+    FINSIZ2 = ICPRT2(NSEAL+1,2) - 1
     !
 #ifdef W3_T
     WRITE (NDST,9060)
@@ -326,6 +368,18 @@ CONTAINS
     END IF
     !
     DEALLOCATE ( XP, TMP )
+    !
+    ! CAH: Repeat for second scheme
+    !
+    ALLOCATE ( OUTPTS(IMOD)%OUT6%DTPRT2(DIMP,MAX(1,FINSIZ2)) )
+    DTPRT2 => OUTPTS(IMOD)%OUT6%DTPRT2
+    IF ( FINSIZ2 .GT. 0 ) THEN
+      DTPRT2 = TMPP2(:,1:FINSIZ2)
+    ELSE
+      DTPRT2 = 0.
+    END IF
+    !
+    DEALLOCATE ( XP2, TMPP2 )
     !
     RETURN
     !

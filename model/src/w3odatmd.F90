@@ -269,7 +269,9 @@ MODULE W3ODATMD
   !      WSMULT    Real  Public   Multiplier for wind sea boundary.
   !      WSCUT     Real  Public   Cut-off wind factor for wind seas.
   !      ICPRT     I.A.  Public   Counters for partitions.
+  !      ICPRT2    I.A.  Public   Counters for partitions.!CAH: second
   !      DTPRT     R.A.  Public   Data from partitions.
+  !      DTPRT2    R.A.  Public   Data from partitions.!CAH: second scheme
   !      FLCOMB    Log.  Public   Flag for combining wind seas.
   !      FLFORM    Log.  Public   Flag for (un)formatted output
   !      O6INIT    Log.  Public   Flag for array initializations.
@@ -321,7 +323,7 @@ MODULE W3ODATMD
   INTEGER                 :: NOUTP = -1, IOUTP = -1, IOSTYP = 1
   !
   INTEGER, PARAMETER      :: NOGRP = 10
-  INTEGER, PARAMETER      :: NGRPP = 20
+  INTEGER, PARAMETER      :: NGRPP = 25 ! CAH: increased this
   INTEGER, PARAMETER      :: DIMP = 15
   INTEGER                 :: NOGE(NOGRP)
   INTEGER                 :: NOTYPE
@@ -419,8 +421,10 @@ MODULE W3ODATMD
     INTEGER               :: IPASS6, IHMAX, IX0, IXN, IXS,        &
          IY0, IYN, IYS
     INTEGER, POINTER      :: ICPRT(:,:)
+    INTEGER, POINTER      :: ICPRT2(:,:)
     REAL                  :: HSPMIN, WSMULT, WSCUT
     REAL, POINTER         :: DTPRT(:,:)
+    REAL, POINTER         :: DTPRT2(:,:)
     LOGICAL               :: FLFORM, FLCOMB, O6INIT
     INTEGER               :: PTMETH   ! C. Bunney; Partitioning method
     REAL                  :: PTFCUT   ! C. Bunney; Part. 5 freq cut
@@ -549,8 +553,8 @@ MODULE W3ODATMD
   !/ Type 6 ...
   !/
   INTEGER, POINTER        :: IPASS6, IHMAX, IX0, IXN, IXS,        &
-       IY0, IYN, IYS, ICPRT(:,:)
-  REAL, POINTER           :: HSPMIN, WSMULT, WSCUT, DTPRT(:,:)
+       IY0, IYN, IYS, ICPRT(:,:), ICPRT2(:,:)
+  REAL, POINTER           :: HSPMIN, WSMULT, WSCUT, DTPRT(:,:), DTPRT2(:,:)
   LOGICAL, POINTER        :: FLFORM, FLCOMB, O6INIT
   INTEGER, POINTER        :: PTMETH   ! C. Bunney; Partitioning method
   REAL, POINTER           :: PTFCUT   ! C. Bunney; Part. 5 freq cut
@@ -816,7 +820,7 @@ CONTAINS
     !
     ! 4) Spectral Partitions parameters
     !
-    NOGE(4) = 17
+    NOGE(4) = 24 ! CAH: increased this for part.2 
     !
     IDOUT( 4, 1)  = 'Part. wave height   '
     IDOUT( 4, 2)  = 'Part. peak period   '
@@ -835,6 +839,14 @@ CONTAINS
     IDOUT( 4,15)  = 'Part. peak density  '
     IDOUT( 4,16)  = 'Total wind sea frac.'
     IDOUT( 4,17)  = 'Number of partitions'
+    ! CAH: Add second partitioning method
+    IDOUT( 4,18)  = 'Part. 2 wave height '
+    IDOUT( 4,19)  = 'Part. 2 peak period '
+    IDOUT( 4,20)  = 'Part. 2 mean dir    '
+    IDOUT( 4,21)  = 'Part. 2 dir spread  '
+    IDOUT( 4,22)  = 'Part. 2 peak dir    '
+    IDOUT( 4,23)  = 'Part. 2 mean per(+1)'
+    IDOUT( 4,24)  = 'Number of parts. 2  '
     !
     ! 5) Atmosphere-waves layer
     !
@@ -1823,7 +1835,9 @@ CONTAINS
     IYN    => OUTPTS(IMOD)%OUT6%IYN
     IYS    => OUTPTS(IMOD)%OUT6%IYS
     ICPRT  => OUTPTS(IMOD)%OUT6%ICPRT
+    ICPRT2 => OUTPTS(IMOD)%OUT6%ICPRT2
     DTPRT  => OUTPTS(IMOD)%OUT6%DTPRT
+    DTPRT2 => OUTPTS(IMOD)%OUT6%DTPRT2
     FLCOMB => OUTPTS(IMOD)%OUT6%FLCOMB
     PTMETH => OUTPTS(IMOD)%OUT6%PTMETH
     PTFCUT => OUTPTS(IMOD)%OUT6%PTFCUT

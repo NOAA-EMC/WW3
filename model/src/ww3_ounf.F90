@@ -177,6 +177,7 @@ PROGRAM W3OUNF
 #ifdef W3_SETUP
   USE W3WDATMD, ONLY: ZETA_SETUP
 #endif
+  ! CAH: Added parameters from secondary partitioning
   USE W3ADATMD, ONLY: DW, UA, UD, AS, CX, CY, HS, WLM, T0M1, THM,  &
        THS, FP0, THP0, DTDYN, FCUT,                 &
        ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,    &
@@ -192,7 +193,8 @@ PROGRAM W3OUNF
        CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
        STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
        P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
-       WN, USSP, WBT, WNMEAN
+       WN, USSP, WBT, WNMEAN, PHS2, PTP2, PDIR2,    &
+       PSI2, PNR2, PTHP02, PT12 
   USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
        UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
   !
@@ -520,8 +522,9 @@ PROGRAM W3OUNF
 
 
   ! 4.3 Output type
-  ALLOCATE(TABIPART(NOSWLL + 1))
-  ALLOCATE(NCIDS(NOGRP,NGRPP,NOSWLL + 1))
+  ! CAH: add + 2 to account for sea and swell part 2
+  ALLOCATE(TABIPART(NOSWLL + 1 + 2))
+  ALLOCATE(NCIDS(NOGRP,NGRPP,NOSWLL + 1 + 2))
   NBIPART=0
   DO I=1,30
     IF(STRINGIPART(I:I) .EQ. ' ') CYCLE
@@ -536,6 +539,11 @@ PROGRAM W3OUNF
     ENDIF
     TABIPART(NBIPART) = IPART
   ENDDO
+  NBIPART = NBIPART + 1
+  TABIPART(NBIPART) = 0
+  NBIPART = NBIPART + 1
+  TABIPART(NBIPART) = 1
+
   !
   IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
     WRITE (NDSE,1010) NCTYPE
@@ -672,7 +680,8 @@ PROGRAM W3OUNF
             END IF ! NCIDS
             ! close partition files (except part 0 which is already closed by (IFI,IFJ,1)
             IF ((IFI.EQ.4).AND.(IFJ.LE.NOGE(IFI))) THEN
-              DO IPART=1,NOSWLL
+            ! CAH: Added +2 for sea and swell secondary partitioning
+              DO IPART=1,NOSWLL+2
                 IF (NCIDS(IFI,IFJ,IPART+1).NE.0) THEN
                   IRET = NF90_REDEF(NCIDS(IFI,IFJ,IPART+1))
                   CALL CHECK_ERR(IRET)
@@ -968,7 +977,8 @@ CONTAINS
     CHARACTER(30)           :: FILEPREFIX
     LOGICAL, INTENT(IN)     :: TOGETHER
     LOGICAL, INTENT(IN)     :: FLG2D(NOGRP,NGRPP)
-    INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,NOSWLL + 1), S3
+    ! CAH: added + 2 below
+    INTEGER, INTENT(INOUT)  :: NCIDS(NOGRP,NGRPP,NOSWLL + 1 + 2), S3
     CHARACTER*30,INTENT(IN) :: STRSTOPDATE
     !/
     !/ ------------------------------------------------------------------- /
@@ -1171,7 +1181,12 @@ CONTAINS
         ! If the flag for the variable IFI of the group IFJ is .TRUE.
         IF ( FLG2D(IFI,IFJ) ) THEN
           ! Instanciates the partition array
-          INDEXIPART=1
+          ! CAH: changed this counter
+          IF (IFI .EQ. 4 .AND. IFJ .GT. 17) THEN
+            INDEXIPART=NOSWLL+1+1
+          ELSE
+            INDEXIPART=1
+          END IF
           IPART=TABIPART(INDEXIPART)
           NFIELD=1 ! Default is one field
 
@@ -1554,6 +1569,43 @@ CONTAINS
           ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
             CALL S2GRID(PNR(:), X1)
             !
+            ! CAH: Added second partition parameters.
+            ! Partition 2 wave significant height
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 18 ) THEN
+            ! WRITE (NDSO,*) PHS2(:,IPART)
+            CALL S2GRID(PHS2(:,IPART), X1)
+            !
+            ! Partition 2 peak period
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 19 ) THEN
+            CALL S2GRID(PTP2(:,IPART), X1)
+            !
+            ! Partition 2 wave mean direction
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 20 ) THEN
+#ifdef W3_RTD
+            ! Rotate direction back to standard pole
+            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PDIR2(:,IPART), AnglD, .FALSE.)
+#endif
+            CALL S2GRID(PDIR2(:,IPART), X1, .TRUE.)
+            !
+            ! Partition 2 directional spread
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 21 ) THEN
+            CALL S2GRID(PSI2(:,IPART), X1)
+            !
+            ! Partition 2 peak direction
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 22 ) THEN
+#ifdef W3_RTD
+            ! Rotate direction back to standard pole
+            IF ( FLAGUNR ) CALL W3THRTN(NSEA, PTHP02(:,IPART), AnglD, .FALSE.)
+#endif
+            CALL S2GRID(PTHP02(:,IPART), X1, .TRUE.)
+            !
+            ! Partition 2 mean period T01
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 23 ) THEN
+            CALL S2GRID(PT12(:,IPART), X1)
+            !
+            ! Number of wave partitions 2
+          ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 24 ) THEN
+            CALL S2GRID(PNR2(:), X1)
             ! Friction velocity
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
             !! Note - UST and USTDIR read in from .ww3 file are X-Y vectors
@@ -2085,7 +2137,9 @@ CONTAINS
           IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
             OLDNCID = NCIDS(1,1,1)
           ELSE
-            OLDNCID = NCIDS(IFI,IFJ,IPART+1)
+            ! CAH: changing index value
+            !OLDNCID = NCIDS(IFI,IFJ,IPART+1)
+            OLDNCID = NCIDS(IFI,IFJ,INDEXIPART)
           END IF
 
 
@@ -2160,7 +2214,7 @@ CONTAINS
             IF (TOGETHER.AND.(.NOT.FLFRQ)) THEN
               NCIDS(1,1,1)=NCID
             ELSE
-              NCIDS(IFI,IFJ,IPART+1)=NCID
+              NCIDS(IFI,IFJ,INDEXIPART)=NCID
             END IF
 
             ! If curvilinear grid, instanciates lat / lon
@@ -3379,8 +3433,16 @@ CONTAINS
           ! ChrisBunney: Don't loop IPART for last two entries in section 4
           ! (16: total wind sea fraction, 17: number of parts) as these fields
           ! do not have partitions.
-          IF (IFI .EQ. 4 .AND. IFJ .LE. NOGE(IFI) - 2) THEN
+          ! CAH: going to be explicit about above
+          IF (IFI .EQ. 4 .AND. IFJ .LE. 17 - 2) THEN 
 560         CONTINUE
+            IF (INDEXIPART.LT.NBIPART-2) THEN
+              INDEXIPART=INDEXIPART+1
+              IF (TABIPART(INDEXIPART).EQ.-1) GOTO 560
+              IPART=TABIPART(INDEXIPART)
+              GOTO 555
+            END IF
+          ELSE IF (IFI .EQ. 4 .AND. IFJ .GT. 17 .AND. IFJ .LE. 23) THEN
             IF (INDEXIPART.LT.NBIPART) THEN
               INDEXIPART=INDEXIPART+1
               IF (TABIPART(INDEXIPART).EQ.-1) GOTO 560

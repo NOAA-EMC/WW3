@@ -135,7 +135,7 @@ CONTAINS
   !> @author Barbara Tracey, H. L. Tolman, M. Szyszka, Chris Bunney
   !> @date 23 Jul 2018
   !>
-  SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, DIMXP )
+  SUBROUTINE W3PART ( SPEC, UABS, UDIR, DEPTH, WN, NP, XP, NP2, XP2, DIMXP )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III          USACE/NOAA |
@@ -172,8 +172,11 @@ CONTAINS
     !                           -1 : Spectrum without minumum energy.
     !                            0 : Spectrum with minumum energy.
     !                                but no partitions.
+    !       NP2     Int.   O   CAH: Number of partitions from second scheme.
     !       XP      R.A.   O   Parameters describing partitions.
     !                          Entry '0' contains entire spectrum.
+    !       XP2     R.A.   O   CAH: Parameters describing partitions from
+    !                          second scheme.
     !       DIMXP   Int.   I   Second dimension of XP.
     !     ----------------------------------------------------------------
     !
@@ -234,15 +237,21 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(OUT)          :: NP
+    INTEGER, INTENT(OUT)          :: NP, NP2
     INTEGER, INTENT(IN)           :: DIMXP
     REAL, INTENT(IN)              :: SPEC(NK,NTH), WN(NK), UABS,    &
          UDIR, DEPTH
     REAL, INTENT(OUT)             :: XP(DIMP,0:DIMXP)
+    ! CAH: DIMXP is the number of partitions, always 2 for PTMETH2=5
+    REAL, INTENT(OUT)             :: XP2(DIMP,0:2)
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
+    ! CAH: We define a second partitioning method PTMETH2 that is always
+    ! the 5th scheme, a simple frequency split at frequency PTFCUT2.
+    INTEGER                 :: PTMETH2=5
+    REAL                    :: PTFCUT2=0.1
     INTEGER                 :: ITH, IMI(NSPEC), IMD(NSPEC),         &
          IMO(NSPEC), IND(NSPEC), NP_MAX,      &
          IP, IT(1), INDEX(DIMXP), NWS,        &
@@ -266,6 +275,8 @@ CONTAINS
     !
     NP     = 0
     XP     = 0.
+    NP2    = 0
+    XP2    = 0.
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Process input spectrum
@@ -302,7 +313,7 @@ CONTAINS
 
       ! Calculate mean parameters:
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-           NP, XP, DIMXP, PMAP )
+           NP, XP, DIMXP, PMAP, PTMETH )
 
       ! No more processing required, return:
       RETURN
@@ -311,8 +322,9 @@ CONTAINS
     ! PTMETH == 5 : produce "high" and "low" band partitions
     ! using a frequency cutoff:
     !
-    IF( PTMETH .EQ. 5 ) THEN
-      SIGCUT = TPI * PTFCUT
+    ! CAH: Here's where we force PTMETH2
+    IF( PTMETH2 .EQ. 5 ) THEN
+      SIGCUT = TPI * PTFCUT2
       DO IK = 1, NK
         ! If bin center <= freq cutoff then mark as "low band".
         IF(SIG(IK) .LE. SIGCUT) THEN
@@ -332,10 +344,12 @@ CONTAINS
 
       ! Calculate mean parameters:
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-           NP, XP, DIMXP, PMAP )
+           NP2, XP2, 2, PMAP, PTMETH2 )
 
       ! No more processing required, return:
-      RETURN
+      ! CAH: we don't want to return here, since we want to also partition
+      ! the spectrum using whatever method is specified during runtime
+      ! RETURN
     ENDIF ! PTMETH == 5
     !
     ! 1.b Invert spectrum and 'digitize'
@@ -367,7 +381,7 @@ CONTAINS
     !     NP and NX initialized inside routine.
     !
     CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,           &
-         NP, XP, DIMXP, PMAP )
+         NP, XP, DIMXP, PMAP, PTMETH )
     !
     ! 2.d PTMETH == 2: move the wind sea part of the partitions into a
     !     seperate partition and recalculate the mean parameters.
@@ -396,7 +410,7 @@ CONTAINS
         ! integrated parameters:
         NP_MAX = WIND_PART
         CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,     &
-             NP, XP, DIMXP, PMAP )
+             NP, XP, DIMXP, PMAP, PTMETH )
       ENDIF
     ENDIF
     !
@@ -451,7 +465,7 @@ CONTAINS
       END DO
       !
       CALL PTMEAN ( NP_MAX, IMO, ZP, DEPTH, UABS, UDIR, WN,       &
-           NP, XP, DIMXP, PMAP )
+           NP, XP, DIMXP, PMAP, PTMETH )
       IF ( NP .LE. 1 ) RETURN
       !
       TP(:,1:NP)  = XP(:,1:NP)
@@ -1174,7 +1188,7 @@ CONTAINS
   !> @date 02 Dec 2010
   !>
   SUBROUTINE PTMEAN ( NPI, IMO, ZP, DEPTH, UABS, UDIR, WN,        &
-       NPO, XP, DIMXP, PMAP )
+       NPO, XP, DIMXP, PMAP, PTMETH )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III          USACE/NOAA |
@@ -1210,6 +1224,8 @@ CONTAINS
     !       XP      R.A.   O   Array with output parameters.
     !       DIMXP   int.   I   Second dimension of XP.
     !       PMAP    I.A.   O   Mapping between orig. and combined partitions
+    ! CAH: Added PTMETH into input args
+    !       PTMETH  I.A.   I   Method for partitioning
     !     ----------------------------------------------------------------
     !
     !  4. Subroutines used :
@@ -1239,7 +1255,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMXP
+    INTEGER, INTENT(IN)     :: NPI, IMO(NSPEC), DIMXP, PTMETH
     INTEGER, INTENT(OUT)    :: NPO, PMAP(DIMXP)
     REAL, INTENT(IN)        :: ZP(NSPEC), DEPTH, UABS, UDIR, WN(NK)
     REAL, INTENT(OUT)       :: XP(DIMP,0:DIMXP)

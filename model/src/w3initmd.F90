@@ -2131,6 +2131,7 @@ CONTAINS
 #endif
 
 
+! CAH: Add partition parameters below
 #ifdef W3_MPI
     USE W3ADATMD, ONLY: T0M1, THM, THS, FP0, THP0, &
          DTDYN, FCUT, SPPNT, ABA, ABD, UBA, UBD,   &
@@ -2147,7 +2148,9 @@ CONTAINS
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD,     &
          HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW,    &
          PTM1, PT1, PT2, PEP, WBT, CX, CY,         &
-         TAUOCX, TAUOCY, WNMEAN
+         TAUOCX, TAUOCY, WNMEAN,                   &
+         PHS2, PTP2, PDIR2, PSI2, PNR2, PTHP02,    &
+         PT12
 #endif
 
 #ifdef W3_MPI
@@ -2805,6 +2808,104 @@ CONTAINS
 #endif
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH, ' 4/17', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+        END IF
+        !
+        ! CAH: Added parameters from second partitioning scheme
+        !
+        IF ( FLGRDALL( 4, 18) ) THEN
+          DO K=0, 1
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_SEND_INIT (PHS2(1,K),NSEALM , MPI_REAL, IROOT,    &
+                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 4/18', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+          END DO
+        END IF
+        !
+        IF ( FLGRDALL( 4, 19) ) THEN
+          DO K=0, 1
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_SEND_INIT (PTP2(1,K),NSEALM , MPI_REAL, IROOT,    &
+                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 4/19', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+          END DO
+        END IF
+        !
+        IF ( FLGRDALL( 4, 20) ) THEN
+          DO K=0, 1
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_SEND_INIT (PDIR2(1,K),NSEALM , MPI_REAL, IROOT,    &
+                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 4/20', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+          END DO
+        END IF
+        !
+        IF ( FLGRDALL( 4, 21) ) THEN
+          DO K=0, 1
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_SEND_INIT (PSI2(1,K),NSEALM , MPI_REAL, IROOT,    &
+                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 4/21', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+          END DO
+        END IF
+        !
+        IF ( FLGRDALL( 4, 22) ) THEN
+          DO K=0, 1
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_SEND_INIT (PTHP02(1,K),NSEALM , MPI_REAL, IROOT,    &
+                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 4/22', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+          END DO
+        END IF
+        !
+        IF ( FLGRDALL( 4, 23) ) THEN
+          DO K=0, 1
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_SEND_INIT (PT12(1,K),NSEALM , MPI_REAL, IROOT,    &
+                 IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 4/23', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+          END DO
+        END IF
+        !
+        IF ( FLGRDALL( 4,24) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (PNR2  (1),NSEALM , MPI_REAL, IROOT,    &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 4/24', IROOT, IT, IRQGO(IH), IERR
 #endif
 #ifdef W3_MPI
         END IF
@@ -4038,6 +4139,104 @@ CONTAINS
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9011) IH, ' 4/17', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+          END IF
+          !
+          ! CAH: Added parameters from second partitioning scheme
+          !
+          IF ( FLGRDALL( 4, 18) ) THEN
+            DO K=0, 1
+              IH     = IH + 1
+              IT     = IT + 1
+              CALL MPI_RECV_INIT (PHS2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
+                   MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+              WRITE (NDST,9011) IH, ' 4/18', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+            END DO
+          END IF
+          !
+          IF ( FLGRDALL( 4, 19) ) THEN
+            DO K=0, 1
+              IH     = IH + 1
+              IT     = IT + 1
+              CALL MPI_RECV_INIT (PTP2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
+                   MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+              WRITE (NDST,9011) IH, ' 4/19', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+            END DO
+          END IF
+          !
+          IF ( FLGRDALL( 4, 20) ) THEN
+            DO K=0, 1
+              IH     = IH + 1
+              IT     = IT + 1
+              CALL MPI_RECV_INIT (PDIR2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
+                   MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+              WRITE (NDST,9011) IH, ' 4/20', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+            END DO
+          END IF
+          !
+          IF ( FLGRDALL( 4, 21) ) THEN
+            DO K=0, 1
+              IH     = IH + 1
+              IT     = IT + 1
+              CALL MPI_RECV_INIT (PSI2(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
+                   MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+              WRITE (NDST,9011) IH, ' 4/21', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+            END DO
+          END IF
+          !
+          IF ( FLGRDALL( 4, 22) ) THEN
+            DO K=0, 1
+              IH     = IH + 1
+              IT     = IT + 1
+              CALL MPI_RECV_INIT (PTHP02(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
+                   MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+              WRITE (NDST,9011) IH, ' 4/22', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+            END DO
+          END IF
+          !
+          IF ( FLGRDALL( 4, 23) ) THEN
+            DO K=0, 1
+              IH     = IH + 1
+              IT     = IT + 1
+              CALL MPI_RECV_INIT (PT12(I0,K),1,WW3_FIELD_VEC, IFROM, IT,  &
+                   MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+              WRITE (NDST,9011) IH, ' 4/23', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+            END DO
+          END IF
+          !
+          IF ( FLGRDALL( 4,24) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (PNR2  (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 4/24', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
           END IF
