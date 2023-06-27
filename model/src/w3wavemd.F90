@@ -450,7 +450,7 @@ CONTAINS
     USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA, COMPUTE_DIFFRACTION
     USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
     USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
-    USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
+    USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM, DIFRX, DIFRY, DIFRM
     USE yowNodepool, only: npa, iplg, np
 #endif
     !/
@@ -887,6 +887,7 @@ CONTAINS
       DTI50   = 0.
     END IF
 #endif
+
     !
     ! 2.  Determine next time from ending and output --------------------- /
     !     time and get corresponding time step.
@@ -1026,6 +1027,10 @@ CONTAINS
 #ifdef W3_T
       WRITE (NDST,9020) IT0, NT, DTGA
 #endif
+
+      IF (B_JGS_LDIFR .and. .not. allocated(DIFRM)) THEN
+        ALLOCATE(DIFRX(NSEAL), DIFRY(NSEAL), DIFRM(NSEAL))
+      ENDIF
       !
       ! ==================================================================== /
       !
@@ -1126,9 +1131,6 @@ CONTAINS
             CALL UG_GRADIENTS(CY, DCYDX, DCYDY)
             UGDTUPDATE=.TRUE.
             CFLXYMAX = 0.
-#ifdef W3_PDLIB
-            IF (B_JGS_LDIFR) CALL COMPUTE_DIFFRACTION
-#endif
           ELSE
             CALL W3DZXY(CX(1:UBOUND(CX,1)),'m/s',DCXDX, DCXDY) !CX GRADIENT
             CALL W3DZXY(CY(1:UBOUND(CY,1)),'m/s',DCYDX, DCYDY) !CY GRADIENT
@@ -1454,8 +1456,14 @@ CONTAINS
         END IF
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
-        !
+
 #ifdef W3_PDLIB
+        WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR
+        IF (B_JGS_LDIFR) THEN
+          WRITE(*,*) 'COMPUTING DIFFRACTION' 
+          CALL COMPUTE_DIFFRACTION
+        ENDIF 
+
         IF (LPDLIB .and. FLSOU .and. FSSOURCE) THEN
 #endif
 

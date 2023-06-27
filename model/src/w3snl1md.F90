@@ -428,7 +428,7 @@ CONTAINS
 #ifdef W3_T0
     DO IFR=1, NFR
       DO ITH=1, NTH
-        ISP          = ITH + (IFR-1)*NTH
+        ISP           = ITH + (IFR-1)*NTH
         SOUT(IFR,ITH) = S(ISP) * TPI * SIG(IFR) / CG(IFR)
         DOUT(IFR,ITH) = D(ISP)
       END DO

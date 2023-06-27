@@ -1091,7 +1091,8 @@ MODULE W3GRIDMD
        JGS_NLEVEL,                                &
        JGS_SOURCE_NONLINEAR,                      &
        SETUP_APPLY_WLV, SOLVERTHR_SETUP,          &
-       CRIT_DEP_SETUP
+       CRIT_DEP_SETUP,                            & 
+       JGS_LDIFR, JGS_IDIFR
   NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, &
        XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
        RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &

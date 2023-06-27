@@ -4683,8 +4683,6 @@ CONTAINS
       !
       IF (FSREFRACTION) THEN
         IF (IOBP_LOC(IP) .eq. 1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-          !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
-          !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
           CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
           CAD=ZERO

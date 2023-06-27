@@ -1514,20 +1514,20 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 #ifdef W3_PDLIB
   SUBROUTINE DIFFRA_SIMPLE(VA)
-    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH
+    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH, NSEAL
     USE W3ADATMD, only: CG, CX, CY, DW, WN, CG
     !USE W3WDATMD, only: VA
     USE CONSTANTS, ONLY: RADIUS
-    USE yowNodepool, ONLY: np
+    USE yowNodepool, ONLY: np, npa
     IMPLICIT NONE
     REAL*4, INTENT(IN) :: VA(:,:)
     INTEGER :: IP, IK, ITH, IS, ID, ISP, ISEA, JSEA
     REAL(8) :: ETOT, EWKTOT, ECGTOT, EAD
-    REAL(8) :: TMP, AUX, TRANS_X(NP), TRANS_Y(NP)
-    REAL(8) :: EWK(NP), ECG(NP), ENG(NP)
-    REAL(8) :: CGK(NP)
-    REAL(8) :: DXENG(NP), DYENG(NP), DXXEN(NP), DYYEN(NP), DXYEN(NP)
-    REAL(8) :: DXCGK(NP), DYCGK(NP)
+    REAL(8) :: TMP, AUX, TRANS_X(NPA), TRANS_Y(NPA)
+    REAL(8) :: EWK(NPA), ECG(NPA), ENG(NPA)
+    REAL(8) :: CGK(NPA)
+    REAL(8) :: DXENG(NPA), DYENG(NPA), DXXEN(NPA), DYYEN(NPA), DXYEN(NPA)
+    REAL(8) :: DXCGK(NPA), DYCGK(NPA)
 
     EWK = 0.d0
     ECG = 0.d0
@@ -1535,19 +1535,20 @@ CONTAINS
     CGK = 0.d0
 
     DO IP = 1, NP
-      CALL INIT_GET_ISEA(ISEA, JSEA)
+      CALL INIT_GET_ISEA(ISEA, IP)
       IF (DW(IP) .GT. DMIN) THEN
         ETOT   = 0.d0 
         EWKTOT = 0.d0 
         ECGTOT = 0.d0
+        EAD    = 0.d0 
         DO IS = 1, NK
           DO ID = 1, NTH
             ISP = ID + (IS-1) * NTH
-            EAD = EAD + VA(ISP,JSEA)/CG(ISP,JSEA)*CLATS(ISEA)*DTH*SIG(IS)**2
+            EAD = EAD + VA(ISP,IP)/CG(IS,ISEA)*CLATS(ISEA)*DTH*SIG(IS)**2
           ENDDO
           ETOT   = ETOT + EAD
-          EWKTOT = EWKTOT + WN(IS,IP) * EAD
-          ECGTOT = ECGTOT + CG(IS,IP) * EAD
+          EWKTOT = EWKTOT + WN(IS,ISEA) * EAD
+          ECGTOT = ECGTOT + CG(IS,ISEA) * EAD
         END DO
         IF (ETOT .GT. TINY(1.)) THEN
           EWK(IP) = EWKTOT / ETOT
@@ -1604,6 +1605,7 @@ CONTAINS
        ELSE
          DIFRM(IP) = 1.d0
        END IF
+       WRITE(*,*) 'DIFRM', IP, DIFRM(IP)
     END DO
 
     CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
@@ -1994,15 +1996,15 @@ CONTAINS
          USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK
          USE W3ADATMD, only: CG, CX, CY, DW
          USE yowExchangeModule, only : PDLIB_exchange1DREAL
-         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP
+         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP, NPA
          USE yowElementpool, only : NE, INE
          IMPLICIT NONE
-         REAL*8, INTENT(IN)    :: VAR(NP)
-         REAL*8, INTENT(INOUT) :: DVDX(NP), DVDY(NP)
-         REAL*4                :: DVDX4(NP), DVDY4(NP)
+         REAL*8, INTENT(IN)    :: VAR(NPA)
+         REAL*8, INTENT(INOUT) :: DVDX(NPA), DVDY(NPA)
+         REAL*4                :: DVDX4(NPA), DVDY4(NPA)
          REAL*8                :: DEDY(3),DEDX(3)
          REAL*8                :: DVDXIE, DVDYIE
-         REAL*8                :: WEI(NP)
+         REAL*8                :: WEI(NPA)
          INTEGER               :: NI(3)
          INTEGER               :: IE, IP
 
