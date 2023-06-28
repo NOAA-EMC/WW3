@@ -3290,7 +3290,7 @@ CONTAINS
     META(1)%FSC    = 0.002
     META(1)%UNITS  = 'm'
     META(1)%ENAME = '.secondary_phs'// IPART_TOKEN
-    META(1)%VARNM = 'phs'// IPART_TOKEN
+    META(1)%VARNM = 'secondary_phs'// IPART_TOKEN
     META(1)%VARNL = 'wave significant height partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_significant_height'
     META(1)%VARNG = 'significant_wave_height_partition_'// IPART_TOKEN
@@ -3302,7 +3302,7 @@ CONTAINS
     META(1)%FSC = 0.01
     META(1)%UNITS = 's'
     META(1)%ENAME = '.secondary_ptp'// IPART_TOKEN
-    META(1)%VARNM = 'ptp'// IPART_TOKEN
+    META(1)%VARNM = 'secondary_ptp'// IPART_TOKEN
     META(1)%VARNL = 'peak period partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_period_at_variance' // &
          '_spectral_density_maximum'
@@ -3315,7 +3315,7 @@ CONTAINS
     META(1)%FSC = 0.1
     META(1)%UNITS = 'degree'
     META(1)%ENAME =  '.secondary_pdir'// IPART_TOKEN
-    META(1)%VARNM =  'pdir'// IPART_TOKEN
+    META(1)%VARNM =  'secondary_pdir'// IPART_TOKEN
     META(1)%VARNL = 'wave mean direction partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction'
     META(1)%VARNG = 'wave_from_direction_partition_'// IPART_TOKEN
@@ -3328,7 +3328,7 @@ CONTAINS
     META(1)%FSC = 0.1
     META(1)%UNITS = 'degree'
     META(1)%ENAME = '.secondary_pspr'// IPART_TOKEN
-    META(1)%VARNM = 'pspr'// IPART_TOKEN
+    META(1)%VARNM = 'secondary_pspr'// IPART_TOKEN
     META(1)%VARNL = 'directional spread partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_diectional_spread'
     META(1)%VARNG = 'directional_spread_partition_'// IPART_TOKEN
@@ -3340,7 +3340,7 @@ CONTAINS
     META(1)%FSC = 0.1
     META(1)%UNITS = 'degree'
     META(1)%ENAME = '.secondary_pdp'// IPART_TOKEN
-    META(1)%VARNM = 'pdp'// IPART_TOKEN
+    META(1)%VARNM = 'secondary_pdp'// IPART_TOKEN
     META(1)%VARNL = 'peak direction partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_from_direction_at_variance' // &
          '_spectral_density_maximum'
@@ -3354,7 +3354,7 @@ CONTAINS
     META(1)%FSC = 0.01
     META(1)%UNITS = 's'
     META(1)%ENAME = '.secondary_pt01c'// IPART_TOKEN
-    META(1)%VARNM = 'pt01c'// IPART_TOKEN
+    META(1)%VARNM = 'secondary_pt01c'// IPART_TOKEN
     META(1)%VARNL = 'mean period T01 partition '// IPART_TOKEN
     META(1)%VARNS = 'sea_surface_'// SPART_TOKEN_ //'_wave_mean_period_from_variance' // &
          '_spectral_density_first_frequency_moment'
@@ -3367,7 +3367,7 @@ CONTAINS
     META(1)%FSC = 1.
     META(1)%UNITS = '1'
     META(1)%ENAME = '.secondary_pnr'
-    META(1)%VARNM = 'pnr'
+    META(1)%VARNM = 'secondary_pnr'
     META(1)%VARNL = 'number of wave partitions'
     !META(1)%VARNS = 'number_of_wave_partitions'
     META(1)%VARNS = ''
