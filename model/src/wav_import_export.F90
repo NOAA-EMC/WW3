@@ -602,7 +602,7 @@ contains
     ! Local variables
 #ifdef W3_CESMCOUPLED
     real(R8)          :: fillvalue = 1.0e30_R8                 ! special missing value
-    real(R8)          :: sww, laslpj, alphal
+    real              :: sww, langmt, lasl, laslpj, alphal
 #else
     real(R8)          :: fillvalue = zero                      ! special missing value
 #endif
@@ -657,22 +657,21 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) == 1 .and. HS(jsea) > zero) then
+        if (mapsta(iy,ix) == 1 .and. HS(jsea) > zero .and. &
+            sqrt(USSX(jsea)**2+USSY(jsea)**2)>zero .and. sqrt(USSHX(jsea)**2+USSHY(jsea)**2)>zero ) then
            sww = atan2(USSHY(jsea),USSHX(jsea)) - UD(isea)
            alphal = atan( sin(sww) / (                                       &
                           2.5 * UST(isea)*ASF(isea)*sqrt(dair/dwat)          &
-                        / max(1.e-14, sqrt(USSX(jsea)**2+USSY(jsea)**2))     &
+                        / max(1.e-14_r8, sqrt(USSX(jsea)**2+USSY(jsea)**2))     &
                         * log(max(1.0, abs(1.25*HSL(ix,iy)/HS(jsea))))       &
                         + cos(sww)   )                                       &
                         )
-           ! note: an arbitrary minimum value of 0.2 is set to avoid zero
-           !       Langmuir number which may result from zero surface friction
-           !       velocity but may cause unphysically strong Langmuir mixing
-           laslpj = max( 0.2, sqrt( UST(isea)*ASF(isea)*sqrt(dair/dwat)      &
-                  / max(1.e-14, sqrt(USSHX(jsea)**2+USSHY(jsea)**2)) )       &
-                  * sqrt(abs(cos(alphal))/abs(cos(sww-alphal))) )
-           sw_lamult(jsea) = abs(cos(alphal)) *                              &
-                             sqrt(1.0+(1.5*laslpj)**(-2)+(5.4*laslpj)**(-4))
+           lasl = sqrt(ust(isea) * asf(isea) * sqrt(dair/dwat) &
+                                 / sqrt(usshx(jsea)**2 + usshy(jsea)**2 ))
+           laslpj = lasl * sqrt(abs(cos(alphal)) &
+               / abs(cos(sww-alphal)))
+           sw_lamult(jsea) = min(5.0, abs(cos(alphal)) * &
+                              sqrt(1.0+(1.5*laslpj)**(-2)+(5.4_r8*laslpj)**(-4)))
         else
           sw_lamult(jsea)  = 1.
         endif
