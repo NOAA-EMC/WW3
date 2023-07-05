@@ -2152,10 +2152,7 @@ CONTAINS
          TAUOCX, TAUOCY, WNMEAN
 #endif
 
-#ifdef W3_CESMCOUPLED
-    USE W3ADATMD, ONLY: LANGMT, LAPROJ, ALPHAL, LASL, LASLPJ,  &
-         ALPHALS, LAMULT
-#endif
+    USE W3ADATMD, ONLY: USSHX, USSHY
 
 #ifdef W3_MPI
     USE W3GDATMD, ONLY: NK
@@ -2248,7 +2245,7 @@ CONTAINS
            0                 +    0  +    0  +  &  ! group 3 (extra contributions below)
            2+(NOGE(4)-2)*(NOSWLL+1) +    0  +    0  +  &  ! group 4
            11                +    3  +    1  +  &  ! group 5
-           12                +    7  +    1  +  &  ! group 6 (extra contributions below)
+           10                +    7  +    1  +  &  ! group 6 (extra contributions below)
            5                 +    4  +    1  +  &  ! group 7
            5                 +    2  +    0  +  &  ! group 8
            5                 +    0  +    0  +  &  ! group 9
@@ -2262,6 +2259,7 @@ CONTAINS
       IF ( FLGRDALL( 6,9)) NRQMAX = NRQMAX + P2MSF(3) - P2MSF(2) + 1
       IF ( FLGRDALL( 6, 8) ) NRQMAX = NRQMAX + 2*NK
       IF ( FLGRDALL( 6,12) ) NRQMAX = NRQMAX + 2*NK
+      IF ( FLGRDALL( 6,14) ) NRQMAX = NRQMAX + 2
       !
       IF ( NRQMAX .GT. 0 ) THEN
         ALLOCATE ( OUTPTS(IMOD)%OUT1%IRQGO(NRQMAX) )
@@ -3218,17 +3216,22 @@ CONTAINS
 #ifdef W3_MPI
         END IF
         !
-#ifdef W3_CESMCOUPLED
         IF ( FLGRDALL( 6, 14) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (LANGMT(1),NSEALM , MPI_REAL, IROOT,   &
+          CALL MPI_SEND_INIT (USSHX (1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
+#endif
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (USSHY (1),NSEALM , MPI_REAL, IROOT,   &
                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #ifdef W3_MPIT
           WRITE (NDST,9011) IH, ' 6/14', IROOT, IT, IRQGO(IH), IERR
 #endif
         END IF
-#endif !W3_CESMCOUPLED
         IF ( FLGRDALL( 7, 1) ) THEN
           IH     = IH + 1
           IT     = IT + 1
@@ -4462,17 +4465,23 @@ CONTAINS
 #ifdef W3_MPI
           END IF
           !
-#ifdef W3_CESMCOUPLED
           IF ( FLGRDALL( 6, 14) ) THEN
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (LANGMT(I0),1,WW3_FIELD_VEC, IFROM, IT,  &
-                 MPI_COMM_WAVE, IRQGO2(IH), IERR)
+            CALL MPI_RECV_INIT (USSHX (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
+#endif
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (USSHY (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #ifdef W3_MPIT
             WRITE (NDST,9011) IH, ' 6/14', IFROM, IT, IRQGO2(IH), IERR
 #endif
           END IF
-#endif ! W3_CESMCOUPLED
+          !
           IF ( FLGRDALL( 7, 1) ) THEN
             IH     = IH + 1
             IT     = IT + 1

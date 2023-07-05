@@ -1105,6 +1105,7 @@ MODULE W3GRIDMD
        STH1MF, I1STH1M, I2STH1M,                &
        TH2MF, I1TH2M, I2TH2M,                   &
        STH2MF, I1STH2M, I2STH2M
+  NAMELIST /LMPN/ LMPENABLED, SDTAIL, HSLMODE
 #ifdef W3_IS1
   NAMELIST /SIS1/ ISC1, ISC2
 #endif
@@ -2731,6 +2732,11 @@ CONTAINS
     I2STH2M=NK
     !
     FACBERG=1.
+    !
+    LMPENABLED = .false.
+    SDTAIL = .false.
+    HSLMODE = 0   ! 0 for test (HSL=10m everywhere, 1 for coupler-based HSL)
+    !
 #ifdef W3_IS0
     WRITE (NDSO,944)
 #endif
@@ -2882,6 +2888,10 @@ CONTAINS
          IC5MAXKI, IC5MINHW, IC5MAXITER, IC5RKICK, &
          IC5KFILTER, IC5MSTR(NINT(IC5VEMOD))
 #endif
+    !
+    CALL READNL ( NDSS, 'LMPN', STATUS )
+    WRITE (NDSO,4960) STATUS
+    WRITE (NDSO,4961) LMPENABLED, SDTAIL, HSLMODE
     !
     CALL READNL ( NDSS, 'OUTS', STATUS )
     WRITE (NDSO,4970) STATUS
@@ -6673,7 +6683,11 @@ CONTAINS
          /'         (0.0==> no reduction and 1.0==> no wind', &
          /'         input with 100% ice cover)')
     !
-    !
+!
+4960 FORMAT (/'  Langmuir Mixing Parameterization ',A/                   &
+              ' --------------------------------------------------')
+4961 FORMAT ('  &LMPN LMPENABLED = ',L, 'SDTAIL = ', L, ' HSLMODE = ', I2 '/' )
+!
 4970 FORMAT (/'  Spectral output on full grid ',A/                   &
          ' --------------------------------------------------')
 4971 FORMAT ( '       Second order pressure at K=0:',3I4)
@@ -7344,6 +7358,8 @@ CONTAINS
                 READ (NDS,NML=UNST,END=801,ERR=802,IOSTAT=J)
               CASE('OUTS')
                 READ (NDS,NML=OUTS,END=801,ERR=802,IOSTAT=J)
+              CASE('LMPN')
+                READ (NDS,NML=LMPN,END=801,ERR=802,IOSTAT=J)
               CASE('MISC')
                 READ (NDS,NML=MISC,END=801,ERR=802,IOSTAT=J)
               CASE DEFAULT
