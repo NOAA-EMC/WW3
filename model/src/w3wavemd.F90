@@ -2236,34 +2236,43 @@ CONTAINS
                        VA(:,1:NSEALM),  &
                        VSioDummy, VDioDummy,  &
                        SHAVETOTioDummy, &
-                       ALPHA(1:NK,:),  &
+                       ALPHA(1:NK,1:NSEAL),  &
                        WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
                        CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
-                       CLATS(ISEA),  &
+                       CLATS(1:NSEA),  &
                        DW(1:NSEA),  &
                        U10(1:NSEA),  &
                        U10D(1:NSEA), &
 #ifdef W3_FLX5
-                       TAUA(ISEA), TAUADIR(ISEA),                        &
+                       TAUA(ISEA), TAUADIR(ISEA),  &
 #endif
-                       AS(ISEA),  &
+                       AS(1:NSEA),  &
                        UST(1:NSEA), USTDIR(1:NSEA),  &
-                       CX(ISEA), CY(ISEA),  &
+                       CX(1:NSEA), CY(1:NSEA),  &
                        ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
                        ICEDMAX(ISEA),                                    &
                        REFLEC, REFLED, DELX, DELY, DELA,                 &
-                       TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),             &
-                       FPIS(1:NSEA), DTDYN(JSEA),                          &
-                       FCUT(JSEA), DTG,  &
-                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),        &
-                       TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),           &
-                       TAUWIY(JSEA), TAUWNX(JSEA),                       &
-                       TAUWNY(JSEA),  PHIAW(JSEA), &
-                       CHARN(1:NSEALM),          &
-                       TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC,TMP2,     &
-                       PHIBBL(JSEA), TMP3, TMP4 , PHICE(JSEA),           &
-                       TAUOCX(JSEA), TAUOCY(JSEA), &
-                       WNMEAN(1:NSEALM),         &
+                       TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
+                       BERG(ISEA),             &
+                       FPIS(1:NSEA), &
+                       DTDYN(1:NSEAL), &
+                       FCUT(1:NSEAL),  &
+                       DTG,  &
+                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),   &
+                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),   &
+                       TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),   &
+                       TAUWNX(1:NSEAL), TAUWNY(1:NSEAL), &
+                       PHIAW(1:NSEAL),  &
+                       CHARN(1:NSEAL),  &
+                       TWS(1:NSEAL),    & 
+                       PHIOC(1:NSEAL),  &
+                       WHITECAP(1:NSEAL,1:4),  &    ! TODO: Makes temp array; switch dims
+                       D50, PSIC,TMP2,     &
+                       PHIBBL(1:NSEAL), &
+                       TAUBBL(1:NSEAL,:), &  ! WAS TMP2
+                       TMP4 , PHICE(JSEA),           &
+                       TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
+                       WNMEAN(1:NSEAL),         &
                        RHOAIR(ISEA), ASF(ISEA))
 #ifdef W3_PDLIB
                 END IF
