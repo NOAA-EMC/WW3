@@ -172,7 +172,7 @@ function isbinary {
                 if [[ -d $file ]]; then
                   if [[ $file == build* ]] || [[ $file == exe* ]] || 
                      [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then 
-                    echo "do not compare build or exe directories $file" 
+                    :   # skip
                   else 
                     #add files: 
                     files_dir=`ls $file`
@@ -201,7 +201,7 @@ function isbinary {
                 if [[ -d $file ]]; then
                   if [[ $file == build* ]] || [[ $file == exe* ]] ||
                      [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then
-                    echo "do not compare build or exe directories $file" 
+                    :   # skip
                   else
                     #add files: 
                     files_dir=`ls $file`
