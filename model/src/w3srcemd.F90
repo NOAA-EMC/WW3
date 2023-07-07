@@ -829,6 +829,9 @@ CONTAINS
     FLTEST = .TRUE.
 #endif
     !
+    VD     = 0.   ! VS and VD definitely need initialising.
+    VS     = 0.
+    !
     VDIO   = 0.
     VSIO   = 0.
     DEPTH  = MAX ( DMIN , D_INP )
