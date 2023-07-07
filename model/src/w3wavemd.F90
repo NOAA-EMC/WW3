@@ -2251,7 +2251,8 @@ CONTAINS
                        CX(1:NSEA), CY(1:NSEA),  &
                        ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
                        ICEDMAX(ISEA),                                    &
-                       REFLEC, REFLED, DELX, DELY, DELA,                 &
+                       REFLEC, REFLED, & 
+                       !DELX, DELY, DELA,   &    ! Removed these - they are not used in w3srce
                        TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
                        BERG(ISEA),             &
                        FPIS(1:NSEA), &

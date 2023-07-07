@@ -150,9 +150,9 @@ CONTAINS
   !> @param[in]    ICEDMAX    Sea ice maximum floe diameter
   !> @param[in]    REFLEC     Reflection coefficients.
   !> @param[in]    REFLED     Reflection direction.
-  !> @param[in]    DELX       Grid cell size in X direction.
-  !> @param[in]    DELY       Grid cell size in Y direction.
-  !> @param[in]    DELA       Grid cell area.
+  !> @param[in]    DELX       Grid cell size in X direction.   !! REMOVED - not used
+  !> @param[in]    DELY       Grid cell size in Y direction.   !! REMOVED - not used
+  !> @param[in]    DELA       Grid cell area.                  !! REMOVED - not used
   !> @param[in]    TRNX       Grid transparency in X.
   !> @param[in]    TRNY       Grid transparency in Y.
   !> @param[in]    BERG       Iceberg damping coefficient.
@@ -200,7 +200,7 @@ CONTAINS
 #endif
        AS, USTAR, USTDIR,                          &
        CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
-       REFLEC, REFLED, DELX, DELY, DELA, TRNX,     &
+       REFLEC, REFLED, TRNX,     &
        TRNY, BERG, FPI, DTDYN, FCUT, DTG, TAUWX,   &
        TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
        TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
@@ -348,9 +348,9 @@ CONTAINS
     !       REFLEC  R.A.   I   reflection coefficients        ( !/BS1 )
     !       REFLED  I.A.   I   reflection direction           ( !/BS1 )
     !       TRNX-Y  Real   I   Grid transparency in X and Y   ( !/BS1 )
-    !       DELX    Real.  I   grid cell size in X direction  ( !/BS1 )
-    !       DELY    Real.  I   grid cell size in Y direction  ( !/BS1 )
-    !       DELA    Real.  I   grid cell area                 ( !/BS1 )
+    !       DELX    Real.  I   grid cell size in X direction  ( !/BS1 )    !! REMOVED! Not used...
+    !       DELY    Real.  I   grid cell size in Y direction  ( !/BS1 )    !! REMOVED! Not used...
+    !       DELA    Real.  I   grid cell area                 ( !/BS1 )    !! REMOVED! Not used...
     !       FPI     Real  I/O  Peak-input frequency.          ( !/ST2 )
     !      WHITECAP R.A.   O   Whitecap statisics             ( !/ST4 )
     !       DTDYN   Real   O   Average dynamic time step.
@@ -674,8 +674,7 @@ CONTAINS
     REAL, INTENT(IN)        :: TAUA, TAUADIR
 #endif
     INTEGER, INTENT(IN)     :: REFLED(6)
-    REAL, INTENT(IN)        :: REFLEC(4), DELX, DELY, DELA,         &
-         BERG, ICEDMAX, DAIR
+    REAL, INTENT(IN)        :: REFLEC(4), BERG, ICEDMAX, DAIR
 
 
     ! GPU Refactor: Input arrays with dimension NSEA:
