@@ -2201,7 +2201,7 @@ CONTAINS
 !                IF (FSSOURCE) THEN
 !                  CALL W3SRCE(srce_imp_post,IT,ISEA,JSEA,IX,IY,IMOD,     &
 !                       VAOLD(:,JSEA), VA(:,JSEA),                        &
-!                       VSioDummy,VDioDummy,SHAVETOT(JSEA),               &
+!                       VSioDummy,VDioDummy,SHAVETOT(JSEA),               &  ! VSioDummy - pass in VSTOT array (or pointer to)
 !                       ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                  &
 !                       CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),  &
 !                       U10D(ISEA),                                       &
@@ -2234,7 +2234,7 @@ CONTAINS
                   CALL W3SRCE(srce_direct, IT, IMOD, &
                        VAoldDummy, &
                        VA(:,1:NSEALM),  &
-                       VSioDummy, VDioDummy,  &
+                       VSioDummy, VDioDummy,  &   !! TODO - Pass in pointer for these and nullify for true Dummy cases.
                        SHAVETOTioDummy, &
                        ALPHA(1:NK,1:NSEAL),  &
                        WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
@@ -2244,12 +2244,12 @@ CONTAINS
                        U10(1:NSEA),  &
                        U10D(1:NSEA), &
 #ifdef W3_FLX5
-                       TAUA(ISEA), TAUADIR(ISEA),  &
+                       TAUA(1:NSEA), TAUADIR(1:NSEA),  &
 #endif
                        AS(1:NSEA),  &
                        UST(1:NSEA), USTDIR(1:NSEA),  &
                        CX(1:NSEA), CY(1:NSEA),  &
-                       ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                &
+                       ICE(1:NSEA), ICEH(ISEA), ICEF(ISEA),                &
                        ICEDMAX(ISEA),                                    &
                        REFLEC, REFLED, & 
                        !DELX, DELY, DELA,   &    ! Removed these - they are not used in w3srce
@@ -2274,7 +2274,8 @@ CONTAINS
                        TMP4 , PHICE(JSEA),           &
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
                        WNMEAN(1:NSEAL),         &
-                       RHOAIR(ISEA), ASF(ISEA))
+                       RHOAIR(1:NSEA),  &
+                       ASF(ISEA))
 #ifdef W3_PDLIB
                 END IF
 #endif
