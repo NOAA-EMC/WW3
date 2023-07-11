@@ -990,8 +990,6 @@ CONTAINS
       ! Get start and end indices of tile:
       CHUNK0 = CHUNKN + 1
 
-      print*,CHUNK0,CHUNKN
-
       IF(CHUNK0 .GT. NSEAL) EXIT
       CHUNKN = MIN(NSEAL,CHUNK0 + CHUNKSIZE - 1)
       NSEAC = CHUNKN - CHUNK0 + 1
@@ -1004,6 +1002,8 @@ CONTAINS
       ICESCALEDS = MAX(0.,MIN(1.,1.-ICE*ICESCALES(4)))
 
       !! Initialise source term arrays:
+      VS   = 0.
+      VD   = 0.
       VDIO = 0.
       VSIO = 0.
       VSBT = 0.
@@ -1484,7 +1484,6 @@ CONTAINS
 #if 1
   IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
     ICHK=JSEA - CHUNK0 + 1
-    print*,'JSEA,CSEA',JSEA,ICHK
     print*,'CG1:',CG1_CHUNK(:,ICHK)
     print*,'WN2:',WN2(:,ICHK)
     print*,'U10/Star:',U10_CHUNK(ICHK), UST_CHUNK(ICHK)
@@ -2053,12 +2052,10 @@ CONTAINS
               END DO
             ELSE
               !
-              print*,'Increment spec ', JSEA
               DO IS=IS1, NSPECH
                 eInc1 = VS(IS,CSEA) * DT(CSEA) / MAX ( 1. , (1.-HDT*VD(IS,CSEA)))
                 SPEC(IS,JSEA) = MAX ( 0. , SPEC(IS,JSEA)+eInc1 )
               END DO
-              print*,'Sum: ', SUM(SPEC(:,JSEA))
             END IF
             !
 #ifdef W3_DB1
@@ -2367,12 +2364,8 @@ CONTAINS
 !$ACC PARALLEL
         ! GPU refactor: Update source mask with seapoints that have completed
         ! timestepping:
-        print*,'DTG', DTG
-        PRINT*,'DTTOT', DTTOT(:NSEAC)
-        PRINT*,'DT',DT(:NSEAC)
         WHERE(DTTOT(:NSEAC) .GE. 0.9999*DTG) SRC_MASK(:NSEAC) = .TRUE.
         COMPLETE = ALL(SRC_MASK(:NSEAC)) ! GPU Refactor - store in scalar and return
-        print*,'COMPLETE',COMPLETE
 !$ACC END PARALLEL
 !$ACC END DATA
 
@@ -2380,7 +2373,6 @@ CONTAINS
           EXIT
         ENDIF
 
-      print*,'LOOPING'
       END DO ! INTEGRATION LOOP
 
 #ifdef W3_DEBUGSRC
