@@ -832,7 +832,7 @@ CONTAINS
 #ifdef W3_T
     FLTEST = .TRUE.
 #endif
-
+    !
     IKS1 = 1
 #ifdef W3_IG1
     ! Does not integrate source terms for IG band if IGPARS(12) = 0.
@@ -841,6 +841,8 @@ CONTAINS
     IS1=(IKS1-1)*NTH+1
 
     !! Initialise source term arrays:
+    VD   = 0.
+    VS   = 0.
     VDIO = 0.
     VSIO = 0.
     VSBT = 0.

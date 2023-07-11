@@ -3356,7 +3356,7 @@ CONTAINS
       IRET=NF90_PUT_ATT(NCID,VARID(12),'scale_factor',1.)
       IRET=NF90_PUT_ATT(NCID,VARID(12),'add_offset',0.)
       IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_min',0.)
-      IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_max',100.)
+      IRET=NF90_PUT_ATT(NCID,VARID(12),'valid_max',1000.)
       IRET=NF90_PUT_ATT(NCID,VARID(12),'_FillValue',NF90_FILL_FLOAT)
       IRET=NF90_PUT_ATT(NCID,VARID(12),'content','TXY')
       IRET=NF90_PUT_ATT(NCID,VARID(12),'associates','time station frequency')
