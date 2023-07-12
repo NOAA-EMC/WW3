@@ -995,6 +995,23 @@ CONTAINS
 #endif
     IS1=(IKS1-1)*NTH+1
 
+    ! GPU refactor: initialise some (non chunked) fields:
+    !               (Moved outside chunk loop)
+    ! These are all variables dimensioned (NSEAL)
+    DTDYN  = 0.
+    PHIAW  = 0.
+    TAUWIX = 0.
+    TAUWIY = 0.
+    TAUWNX = 0.
+    TAUWNY = 0.
+    TAUOCX = 0.
+    TAUOCY = 0.
+    TAUBBL = 0.
+    TAUICE = 0.
+    PHIBBL = 0.
+    PHICE = 0.
+    WNMEAN = 0.
+
     ! Zero ice chunks if ICE field never read in.
     ! INFLAGS2(4) is true if ice concentration read in for this simulation
     IF(.NOT. INFLAGS2(4)) THEN
@@ -1194,28 +1211,30 @@ CONTAINS
       !
       ! 1.b Prepare dynamic time stepping
       !
-      DTDYN  = 0.
+
+      ! Refactor: Zero "chunksize" dimensioned variables
+      !DTDYN  = 0.
       DTTOT  = 0.
       NSTEPS = 0
-      PHIAW  = 0.
-      CHARN  = 0.
-      TWS    = 0. ! TODO probably dont want to zero this here
+      !PHIAW  = 0.  ! Moved outside chunk loop
+      !CHARN  = 0.
+      !TWS    = 0. ! TODO probably dont want to zero this here
       PHINL  = 0.
-      PHIBBL = 0.
-      TAUWIX = 0.
-      TAUWIY = 0.
-      TAUWNX = 0.
-      TAUWNY = 0.
+      !PHIBBL = 0.
+!      TAUWIX = 0.
+!      TAUWIY = 0.
+!      TAUWNX = 0.
+!      TAUWNY = 0.
       TAUWAX = 0.
-      TAUWAY = 0.
-      TAUSCX = 0.
+      TAUWAY = 0.  ! Only for ST3, ST4, ST6
+      TAUSCX = 0.  ! Only for W3_BS1
       TAUSCY = 0.
-      TAUBBL = 0.
-      TAUICE = 0.
-      PHICE  = 0.
-      TAUOCX = 0.
-      TAUOCY = 0.
-      WNMEAN = 0.
+      !TAUBBL = 0.
+      !TAUICE = 0.
+      !PHICE  = 0.
+      !TAUOCX = 0.
+      !TAUOCY = 0.
+      !WNMEAN = 0.
       !
       ! TIME is updated in W3WAVEMD prior to the call of W3SCRE, we should
       ! move 'TIME' one time step backward (QL)
@@ -2126,7 +2145,7 @@ CONTAINS
 #endif
           END IF ! if src_direct
 
-        END DO ! CSEA/JSEA loop (from section 3)
+        END DO ! CSEA/JSEA loop (from section 3) ! TODO: quite a big loop. Split?
 
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
@@ -2148,6 +2167,16 @@ CONTAINS
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
 
+          ! HDT Calculation copied from section 3 (to avoid making HDT an array)
+#ifdef W3_NL5
+          IF (NL5_SELECT .EQ. 1) THEN
+            HDT = NL5_OFFSET * DT(CSEA)
+          ELSE
+#endif
+            HDT = OFFSET * DT(CSEA)
+#ifdef W3_NL5
+          ENDIF
+#endif
 
           WHITECAP(JSEA,3)=0.
           HSTOT=0.
@@ -2159,8 +2188,8 @@ CONTAINS
             ! therefore there is a PLUS sign for the stress
             DO ITH=1, NTH
               IS = (IK-1)*NTH + ITH
-              COSI(1)=ECOS(IS)
-              COSI(2)=ESIN(IS)
+!!              COSI(1)=ECOS(IS)
+!!              COSI(2)=ESIN(IS)  ! [Refactor] - not used?
               PHIAW(JSEA) = PHIAW(JSEA) + (VSIN(IS,CSEA))* DT(CSEA) * FACTOR                    &
                    / MAX ( 1. , (1.-HDT*VDIN(IS,CSEA))) ! semi-implict integration scheme
 
@@ -2184,6 +2213,7 @@ CONTAINS
 
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
+          print*,'PHIAW,PHIBBL', PHIAW(JCHK), PHIBBL(JCHK)
           print*,'TAU',TAUWIX(JCHK),TAUWIY(JCHK),TAUWNX(JCHK),TAUWNY(JCHK)
           print*,'WHITECAP:',WHITECAP(JCHK,:)
         endif
@@ -2421,6 +2451,23 @@ CONTAINS
       !
       ! 8.  Save integration data ------------------------------------------ *
       !
+
+      ! TODO: Need to reset the SRC_MASK array
+      ! TODO: Need a better solution than recalculating.
+      !       Integer source mask? 0 = active, 1=masked(or complete), 2=masked+complete
+      I = 1
+      DO JSEA=CHUNK0,CHUNKN
+        ! GPU refactor - INIT_GET_ISEA as been inlined for efficiency
+        ! but we can't assume this in full code.
+        ! TODO - THIS BLOCK TEMPORARY - NEED BETTER SOLUTION
+
+        CALL INIT_GET_ISEA(ISEA, JSEA)  !!! SLOW!
+        IX = MAPSF(ISEA,1)
+        IY = MAPSF(ISEA,2)
+        SRC_MASK(I) = .NOT. (MAPSTA(IY,IX) .EQ. 1 .AND. FLAGST(ISEA))
+        I = I + 1
+      ENDDO ! END TEMPORARY SOLUTION FOR SRC_MASK
+
       DO CSEA=1,NSEAC
         JSEA = CHUNK0 + CSEA - 1
         IF(SRC_MASK(CSEA)) CYCLE
@@ -2501,6 +2548,10 @@ CONTAINS
         PHINL = DWAT * GRAV * PHINL / DTG  ! TODO: NOT USED ANYWHERE. REMOVE
         PHIBBL(JSEA) = DWAT * GRAV * PHIBBL(JSEA) / DTG
       END DO ! CSEA/JSEA
+      IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
+        ICHK = JCHK - CHUNK0 + 1
+        print*,'PHIAW(2)',PHIAW(JCHK)
+      ENDIF
       
       !! TESTING !!
       CYCLE ! cycle chunk loop
