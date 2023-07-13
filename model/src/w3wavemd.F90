@@ -2273,7 +2273,7 @@ CONTAINS
                        PHIBBL(1:NSEAL), &
                        TAUBBL(1:NSEAL,1:2), &  ! WAS TMP3
                        TAUICE(1:NSEAL,1:2), &  ! WAS TMP4 
-                       PHICE(JSEA),           &
+                       PHICE(1:NSEAL),      &
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
                        WNMEAN(1:NSEAL),         &
                        RHOAIR(1:NSEA),  &

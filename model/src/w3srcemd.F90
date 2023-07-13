@@ -72,7 +72,7 @@ MODULE W3SRCEMD
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
   INTEGER,PARAMETER :: CHUNKSIZE = 1
-  INTEGER, PARAMETER :: JCHK = 1
+  INTEGER, PARAMETER :: JCHK = 7
   INTEGER :: ICHK
 
   !/
@@ -728,7 +728,9 @@ CONTAINS
     REAL, INTENT(OUT) ::        &
         PHIAW(1:NSEAL),         &
         DTDYN(1:NSEAL),         &
-        FCUT(1:NSEAL)
+        FCUT(1:NSEAL),          &
+        PHICE(1:NSEAL)
+
 
     ! GPU Refactor: Input arrays with dimension NY,NX:
     REAL, INTENT(IN) ::         &
@@ -738,7 +740,6 @@ CONTAINS
         
     ! ChrisB: Variables yet to have NSEA(L) dimension added:
     REAL, INTENT(INOUT)     ::  &
-         PHICE,   &         
          ICEF
     
          
@@ -1118,7 +1119,7 @@ CONTAINS
 #ifdef W3_T
       ! TODO - move this (depth not calculated yet)
       WRITE (NDST,9000)
-      WRITE (NDST,9001) DEPTH, U10ABS, U10D_CHUNK(JSEA)*RADE
+      WRITE (NDST,9001) DEPTH, U10ABS, U10D_CHUNK(CSEA)*RADE
 #endif
       !
       ! 1.  Preparations --------------------------------------------------- *
@@ -1236,7 +1237,7 @@ CONTAINS
         WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECINIT)=', sum(SPECINIT)
         WRITE(740+IAPROC,*) 'W3SRCE start sum(VSIO)=', sum(VSIO)
         WRITE(740+IAPROC,*) 'W3SRCE start sum(VDIO)=', sum(VDIO)
-        WRITE(740+IAPROC,*) 'W3SRCE start USTAR=', UST_CHUNK(JSEA)
+        WRITE(740+IAPROC,*) 'W3SRCE start USTAR=', UST_CHUNK(CSEA)
       END IF
 #endif
 
@@ -1253,15 +1254,15 @@ CONTAINS
         JSEA = CHUNK0 + CSEA - 1
 
 #ifdef W3_ST0
-        CALL W3SPR0 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA))
+        CALL W3SPR0 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA))
         FP(CSEA) = 0.85 * FMEAN(CSEA)
 #endif
 #ifdef W3_ST1
-        CALL W3SPR1 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(JSEA))
+        CALL W3SPR1 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(JSEA))
         FP(CSEA)= 0.85 * FMEAN(CSEA)
 #endif
 #ifdef W3_ST2
-        CALL W3SPR2 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), DEPTH(CSEA), FPI(CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA),    & 
+        CALL W3SPR2 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), FPI(CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA),    & 
            EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), ALPHA(:,JSEA), FP(CSEA) )  !TODO
 #endif
 #ifdef W3_ST3
@@ -1271,18 +1272,18 @@ CONTAINS
           LLWS(:,CSEA) = .TRUE.
           USTAR(CSEA)=0.
           USTDIR(CSEA)=0.
-          CALL W3SPR3 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEANS, WNMEAN(JSEA), &
+          CALL W3SPR3 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEANS, WNMEAN(JSEA), &
              AMAX(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA),          &
              TAUWX(JSEA), TAUWY(JSEA), CD(CSEA), Z0(CSEA), CHARN(JSEA), LLWS(:,CSEA), FMEANWS(CSEA))
         ELSE
-          CALL W3SPR3 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEANS, WNMEAN(JSEA), &
+          CALL W3SPR3 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEANS, WNMEAN(JSEA), &
              AMAX(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA),          &
              TAUWX(JSEA), TAUWY(JSEA), CD(CSEA), Z0(CSEA), CHARN(JSEA), LLWS(:,CSEA), FMEANWS(CSEA))
-          CALL W3SIN3 ( SPEC(:,JSEA), CG1(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),   &
+          CALL W3SIN3 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),   &
              U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA),   &
              ICE_CHUNK(CSEA), VSIN(:,CSEA), VDIN(:,CSEA), LLWS(:,CSEA), IX, IY )
         END IF
-        CALL W3SPR3 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEANS, WNMEAN(JSEA), &
+        CALL W3SPR3 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEANS, WNMEAN(JSEA), &
            AMAX(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA),          &
            TAUWX(JSEA), TAUWY(JSEA), CD(CSEA), Z0(CSEA), CHARN(JSEA), LLWS(:,CSEA), FMEANWS(CSEA))
         TWS(JSEA) = 1./FMEANWS(CSEA)
@@ -1295,7 +1296,7 @@ CONTAINS
           USTAR(CSEA)=0.
           USTDIR(CSEA)=0.
         ELSE
-          CALL W3SPR4 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEAN1(CSEA), WNMEAN(JSEA), &
+          CALL W3SPR4 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEAN1(CSEA), WNMEAN(JSEA), &
              AMAX(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA),                           &
 #ifdef W3_FLX5
              TAUA_CHUNK(CSEA), TAUADIR_CHUNK(CSEA), DAIR_CHUNK(CSEA),    &
@@ -1306,7 +1307,7 @@ CONTAINS
 
 #if defined(W3_DEBUGSRC) && defined(W3_ST4)
           IF (IX == DEBUG_NODE) THEN
-            WRITE(740+IAPROC,*) '1: out value USTAR=', UST_CHUNK(CSEA), ' USTDIR=', USTD_CHUNK(JSEA)
+            WRITE(740+IAPROC,*) '1: out value USTAR=', UST_CHUNK(CSEA), ' USTDIR=', USTD_CHUNK(CSEA)
             WRITE(740+IAPROC,*) '1: out value EMEAN(JSEA)=', EMEAN(CSEA), ' FMEAN(JSEA)=', FMEAN(JSEA)
             WRITE(740+IAPROC,*) '1: out value FMEAN1(JSEA)=', FMEAN1(CSEA), ' WNMEAN(JSEA)=', WNMEAN(JSEA)
             WRITE(740+IAPROC,*) '1: out value CD=', CD(CSEA), ' Z0=', Z0(CSEA)
@@ -1315,7 +1316,7 @@ CONTAINS
 #endif
 
 #ifdef W3_ST4
-          CALL W3SIN4 ( SPEC(:,JSEA), CG1(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),       &
+          CALL W3SIN4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),       &
              U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA),       &
              VSIN(:,CSEA), VDIN(:,CSEA), LLWS(:,CSEA), IX, IY, BRLAMBDA(:,CSEA) )
         END IF  ! IT==0
@@ -1327,7 +1328,7 @@ CONTAINS
           WRITE(740+IAPROC,*) '1: DRAT=', DRAT(CSEA)
           WRITE(740+IAPROC,*) '1: TAUWX=', TAUWX(JSEA), ' TAUWY=', TAUWY(JSEA)
           WRITE(740+IAPROC,*) '1: TAUWAX=', TAUWAX, ' TAUWAY=', TAUWAY
-          WRITE(740+IAPROC,*) '1: min(CG1)=', minval(CG1(:,CSEA)), ' max(CG1)=', maxval(CG1(:,CSEA))
+          WRITE(740+IAPROC,*) '1: min(CG1)=', minval(CG1_CHUNK(:,CSEA)), ' max(CG1)=', maxval(CG1_CHUNK(:,CSEA))
           WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VSIN=', minval(VSIN(:,CSEA)), maxval(VSIN(:,CSEA)), sum(VSIN(:,CSEA))
           WRITE(740+IAPROC,*) '1: W3SIN4(min/max/sum)VDIN=', minval(VDIN(:,CSEA)), maxval(VDIN(:,CSEA)), sum(VDIN(:,CSEA))
         END IF
@@ -1347,7 +1348,7 @@ CONTAINS
         TWS(JSEA) = 1./FMEANWS(CSEA)
 #endif
 #ifdef W3_ST6
-        CALL W3SPR6 (SPEC(:,JSEA), CG1(:,CSEA), WN1(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), FP(CSEA))
+        CALL W3SPR6 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), FP(CSEA))
 #endif
 
       END DO ! CSEA
@@ -1379,22 +1380,22 @@ CONTAINS
       ! 1.d Stresses
       !
 #ifdef W3_FLX1
-      CALL W3FLX1 ( ZWND, U10_CHUNK(JSEA), U10D_CHUNK(JSEA), UST_CHUNK(JSEA), USTD_CHUNK(JSEA), Z0(JSEA), CD(JSEA) )
+      CALL W3FLX1 ( ZWND, U10_CHUNK(CSEA), U10D_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA), CD(JSEA) )
 #endif
 #ifdef W3_FLX2
-      CALL W3FLX2 ( ZWND, DEPTH(CSEA), FP(CSEA), U10_CHUNK(JSEA), U10D_CHUNK(JSEA),            &
-           UST_CHUNK(JSEA), USTD_CHUNK(JSEA), Z0(JSEA), CD(JSEA) )
+      CALL W3FLX2 ( ZWND, DEPTH(CSEA), FP(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA),            &
+           UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA), CD(JSEA) )
 #endif
 #ifdef W3_FLX3
-      CALL W3FLX3 ( ZWND, DEPTH(CSEA), FP(CSEA), U10_CHUNK(JSEA), U10D_CHUNK(JSEA),            &
-           UST_CHUNK(JSEA), USTD_CHUNK(JSEA), Z0(JSEA), CD(JSEA) )
+      CALL W3FLX3 ( ZWND, DEPTH(CSEA), FP(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA),            &
+           UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA), CD(JSEA) )
 #endif
 #ifdef W3_FLX4
-      CALL W3FLX4 ( ZWND, U10_CHUNK(JSEA), U10D_CHUNK(JSEA), UST_CHUNK(JSEA), USTD_CHUNK(JSEA), Z0(JSEA), CD(JSEA) )
+      CALL W3FLX4 ( ZWND, U10_CHUNK(CSEA), U10D_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA), CD(JSEA) )
 #endif
 #ifdef W3_FLX5
-      CALL W3FLX5 ( ZWND, U10_CHUNK(JSEA), U10D_CHUNK(JSEA), TAUA_CHUNK(CSEA), TAUADIR_CHUNK(CSEA), DAIR_CHUNK(CSEA),  &
-           UST_CHUNK(JSEA), USTD_CHUNK(JSEA), Z0(JSEA), CD(JSEA), CHARN(JSEA) )
+      CALL W3FLX5 ( ZWND, U10_CHUNK(CSEA), U10D_CHUNK(CSEA), TAUA_CHUNK(CSEA), TAUADIR_CHUNK(CSEA), DAIR_CHUNK(CSEA),  &
+           UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA), CD(JSEA), CHARN(JSEA) )
 #endif
       !
       ! 1.e Prepare cut-off beyond which the tail is imposed with a power law
@@ -1479,11 +1480,11 @@ CONTAINS
           CALL W3SIN1 (SPEC(:,JSEA), WN2(:,CSEA), UST_CHUNK(CSEA), U10D_CHUNK(CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
 #ifdef W3_ST2
-          CALL W3SIN2 ( SPEC(:,JSEA), CG1(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), CD(CSEA), Z0(CSEA),  &
+          CALL W3SIN2 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), CD(CSEA), Z0(CSEA),  &
              FPI(:,CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
 #ifdef W3_ST3
-          CALL W3SIN3 ( SPEC(:.JSEA), CG1(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),     &
+          CALL W3SIN3 ( SPEC(:.JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),     &
              U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA),       &
              ICE_CHUNK(CSEA), VSIN(:,CSEA), VDIN(:,CSEA), LLWS(:,CSEA), IX, IY )
 #endif
@@ -1508,7 +1509,7 @@ CONTAINS
 #endif
 
 #ifdef W3_ST6
-          CALL W3SIN6 ( SPEC(:,JSEA), CG1(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(JSEA), USTD_CHUNK(CSEA), CD(CSEA), DAIR_CHUNK(CSEA), &
+          CALL W3SIN6 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), CD(CSEA), DAIR_CHUNK(CSEA), &
              TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
         END DO ! CSEA; W3SINx
@@ -1516,6 +1517,7 @@ CONTAINS
 #if 1
   IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
     ICHK=JSEA - CHUNK0 + 1
+    print*,'DEPTH', DEPTH(ICHK)
     print*,'CG1:',CG1_CHUNK(:,ICHK)
     print*,'WN2:',WN2(:,ICHK)
     print*,'U10/Star:',U10_CHUNK(ICHK), UST_CHUNK(ICHK)
@@ -1548,7 +1550,7 @@ CONTAINS
 #endif
 #ifdef W3_NL5
           CALL W3SNL5 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), FMEAN(JSEA), QI5TSTART,          &
-             U10_CHUNK(JSEA), U10D_CHUNK(JSEA), JSEA, VSNL(:,CSEA), VDNL(:,CSEA), QR5KURT)
+             U10_CHUNK(CSEA), U10D_CHUNK(CSEA), JSEA, VSNL(:,CSEA), VDNL(:,CSEA), QR5KURT)
 #endif
         END DO ! CSEA; W3SNLx
         
@@ -1728,12 +1730,12 @@ CONTAINS
           WRITE (NDSD2,8888) TIME, DTTOT, FLAGNN, QCERR
 8888      FORMAT (1X,I8.8,1X,I6.6,F8.1,L2,F8.2)
           WRITE (NDSD,ERR=801,IOSTAT=IERR) IX, IY, TIME, NSTEPS,        &
-             DTTOT, FLAGNN, DEPTH(CSEA), U10_CHUNK(JSEA), U10D_CHUNK(JSEA)
+             DTTOT, FLAGNN, DEPTH(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA)
         !
           IF ( FLAGNN ) THEN
             DO JSEA=CHUNK0,CHUNKN
               DO IK=1, NK
-                FACNN  = TPI * SIG(IK) / CG1(IK,JSEA)
+                FACNN  = TPI * SIG(IK) / CG1_CHUNK(IK,CSEA)
                 DO ITH=1, NTH
                   IS     = ITH + (IK-1)*NTH
                   FOUT(IK,ITH) = SPEC(IS, JSEA) * FACNN
@@ -1809,7 +1811,7 @@ CONTAINS
 #else
               DAM2(1+(IK-1)*NTH) = 5E-7 * GRAV/FRLOCAL**4 * UST_CHUNK(CSEA) * MAX(FMEANWS(CSEA),FMEAN(CSEA)) * DTMIN * JAC * JAC2
 #endif
-              !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * UST_CHUNK(JSEA) * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
+              !FROM WWM:           5E-7  * GRAV/FR(IS)**4          * UST_CHUNK(CSEA) * MAX(FMEANWS(IP),FMEAN(IP)) * DT4S/PI2/SPSIG(IS)
             END DO
             DO IK=1, NK
               IS0  = (IK-1)*NTH
@@ -2319,7 +2321,7 @@ CONTAINS
           IF (FXFM .LE. 0) THEN
             FHIGH(CSEA) = SIG(NK)
           ELSE
-            FHIGH(CSEA) = MIN ( SIG(NK), MAX(FXFM * FMEAN(JSEA), FXPM / UST_CHUNK(JSEA)) )
+            FHIGH(CSEA) = MIN ( SIG(NK), MAX(FXFM * FMEAN(JSEA), FXPM / UST_CHUNK(CSEA)) )
           ENDIF
           NKH(CSEA) = MAX ( 2 , MIN ( NKH1(CSEA) ,                      &
                INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH(CSEA))) ) ) )
@@ -2348,12 +2350,12 @@ CONTAINS
 #ifdef W3_SEED
           DO IK=MIN(NK,NKH(CSEA)), NK
             UC     = FACSD * GRAV / SIG(IK)
-            SLEV   = MIN ( 1. , MAX ( 0. , U10_CHUNK(JSEA)/UC-1. ) ) *      &
-                 6.25E-4 / WN1(IK,JSEA)**3 / SIG(IK)
+            SLEV   = MIN ( 1. , MAX ( 0. , U10_CHUNK(CSEA)/UC-1. ) ) *      &
+                 6.25E-4 / WN1_CHUNK(IK,CSEA)**3 / SIG(IK)
             IF (INFLAGS2(4)) SLEV=SLEV*(1-ICE_CHUNK(CSEA))
             DO ITH=1, NTH
               SPEC(ITH+(IK-1)*NTH,JSEA) = MAX ( SPEC(ITH+(IK-1)*NTH,JSEA) ,  &
-                   SLEV * MAX ( 0. , COS(U10D_CHUNK(JSEA)-TH(ITH)) )**2 )
+                   SLEV * MAX ( 0. , COS(U10D_CHUNK(CSEA)-TH(ITH)) )**2 )
             END DO
           END DO
 #endif
@@ -2589,36 +2591,36 @@ CONTAINS
                 IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
                   SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13)))
                 END IF
-                WN_R(IK)=WN1(IK,JSEA)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
+                WN_R(IK)=WN1_CHUNK(IK,CSEA)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
               END DO
 #endif
             END IF
           ELSE
-            WN_R=WN1(:,JSEA)
-            CG_ICE=CG1(:,JSEA)
+            WN_R=WN1_CHUNK(:,CSEA)
+            CG_ICE=CG1_CHUNK(:,CSEA)
           END IF
           !
           R(:)=1 ! In case IC2 is defined but not IS2
           !
 #ifdef W3_IC1
-          CALL W3SIC1 ( SPEC,DEPTH(CSEA), CG1, IX, IY, VSIC, VDIC )
+          CALL W3SIC1 ( SPEC,DEPTH(CSEA), CG1_CHUNK, IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IS2
           CALL W3SIS2 ( SPEC, DEPTH(CSEA), ICE_CHUNK(CSEA), ICEH, ICEF, ICEDMAX, IX, IY, &
-               VSIR, VDIR, VDIR2, WN1(:,JSEA), CG1(:,JSEA), WN_R, CG_ICE, R )
+               VSIR, VDIR, VDIR2, WN1_CHUNK(:,CSEA), CG1_CHUNK(:,CSEA), WN_R, CG_ICE, R )
 #endif
 #ifdef W3_IC2
-          CALL W3SIC2 ( SPEC, DEPTH(CSEA), ICEH, ICEF, CG1(:,JSEA), WN1(:,JSEA),&
+          CALL W3SIC2 ( SPEC, DEPTH(CSEA), ICEH, ICEF, CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA),&
                IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
 #endif
 #ifdef W3_IC3
-          CALL W3SIC3 ( SPEC,DEPTH(CSEA), CG1(:,JSEA),  WN1(:,JSEA), IX, IY, VSIC, VDIC )
+          CALL W3SIC3 ( SPEC,DEPTH(CSEA), CG1_CHUNK(:,CSEA),  WN1_CHUNK(:,CSEA), IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IC4
-          CALL W3SIC4 ( SPEC,DEPTH(CSEA), CG1(:,JSEA),       IX, IY, VSIC, VDIC )
+          CALL W3SIC4 ( SPEC,DEPTH(CSEA), CG1_CHUNK(:,CSEA),       IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IC5
-          CALL W3SIC5 ( SPEC,DEPTH(CSEA), CG1(:,JSEA),  WN1(:,JSEA), IX, IY, VSIC, VDIC )
+          CALL W3SIC5 ( SPEC,DEPTH(CSEA), CG1_CHUNK(:,CSEA),  WN1_CHUNK(:,CSEA), IX, IY, VSIC, VDIC )
 #endif
           !
 #ifdef W3_IS1
@@ -2627,7 +2629,7 @@ CONTAINS
           SPEC2 = SPEC(:,JSEA)
           !
           TAUICE(JSEA,:) = 0.
-          PHICE = 0.
+          PHICE(JSEA) = 0.
           DO IK=1,NK
             IS = 1+(IK-1)*NTH
             !
@@ -2691,17 +2693,17 @@ CONTAINS
             !
             ! 10.2  Fluxes of energy and momentum due to ice effects
             !
-            FACTOR = DDEN(IK)/CG1(IK,JSEA)                    !Jacobian to get energy in band
-            FACTOR2= FACTOR*GRAV*WN1(IK,JSEA)/SIG(IK)         ! coefficient to get momentum
+            FACTOR = DDEN(IK)/CG1_CHUNK(IK,CSEA)                    !Jacobian to get energy in band
+            FACTOR2= FACTOR*GRAV*WN1_CHUNK(IK,CSEA)/SIG(IK)         ! coefficient to get momentum
             DO ITH = 1,NTH
               IS = ITH+(IK-1)*NTH
-              PHICE = PHICE + (SPEC(IS,JSEA)-SPEC2(IS)) * FACTOR
+              PHICE(JSEA) = PHICE(JSEA) + (SPEC(IS,JSEA)-SPEC2(IS)) * FACTOR
               COSI(1)=ECOS(IS)
               COSI(2)=ESIN(IS)
               TAUICE(JSEA,:) = TAUICE(JSEA,:) - (SPEC(IS,JSEA)-SPEC2(IS))*FACTOR2*COSI(:)
             END DO
           END DO
-          PHICE =-1.*DWAT*GRAV*PHICE /DTG
+          PHICE(JSEA) =-1.*DWAT*GRAV*PHICE(JSEA) /DTG
           TAUICE(JSEA,:)=TAUICE(JSEA,:)/DTG
         ENDDO ! CSEA/JSEA
       ELSE ! INPARS(4)
@@ -2728,26 +2730,26 @@ CONTAINS
 
       ! FLD1/2 requires the calculation of FPI:
 #ifdef W3_FLD1
-      CALL CALC_FPI(SPEC, CG1(:,JSEA), FPI(CSEA), VSIN(:,CSEA) )
+      CALL CALC_FPI(SPEC, CG1_CHUNK(:,CSEA), FPI(CSEA), VSIN(:,CSEA) )
 #endif
 #ifdef W3_FLD2
-      CALL CALC_FPI(SPEC, CG1(:,JSEA), FPI(CSEA), VSIN(:,CSEA) )
+      CALL CALC_FPI(SPEC, CG1_CHUNK(:,CSEA), FPI(CSEA), VSIN(:,CSEA) )
 #endif
       !
 #ifdef W3_FLD1
-      IF (U10_CHUNK(JSEA).GT.10. .and. HSTOT.gt.0.5) then
-        CALL W3FLD1 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF*U10_CHUNK(JSEA)*COS(U10D_CHUNK(JSEA)),        &
-             COEF*U10_CHUNK(JSEA)*Sin(U10D_CHUNK(JSEA)), ZWND, DEPTH(CSEA), 0.0, &
-             DAIR_CHUNK(CSEA), UST_CHUNK(JSEA), USTD_CHUNK(JSEA), Z0(JSEA),TAUNUX,TAUNUY,CHARN(JSEA))
+      IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
+        CALL W3FLD1 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
+             COEF*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
+             DAIR_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA),TAUNUX,TAUNUY,CHARN(JSEA))
       ELSE
         CHARN(JSEA) = AALPHA
       ENDIF
 #endif
 #ifdef W3_FLD2
-      IF (U10_CHUNK(JSEA).GT.10. .and. HSTOT.gt.0.5) then
-        CALL W3FLD2 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF*U10_CHUNK(JSEA)*COS(U10D_CHUNK(JSEA)),        &
-             COEF*U10_CHUNK(JSEA)*Sin(U10D_CHUNK(JSEA)), ZWND, DEPTH(CSEA), 0.0, &
-             DAIR_CHUNK(CSEA), UST_CHUNK(JSEA), USTD_CHUNK(JSEA), Z0(JSEA),TAUNUX,TAUNUY,CHARN(JSEA))
+      IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
+        CALL W3FLD2 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
+             COEF*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
+             DAIR_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA),TAUNUX,TAUNUY,CHARN(JSEA))
       ELSE
         CHARN(JSEA) = AALPHA
       ENDIF
@@ -2763,7 +2765,7 @@ CONTAINS
 
 #ifdef W3_REF1
       IF (REFLEC(1).GT.0.OR.REFLEC(2).GT.0.OR.(REFLEC(4).GT.0.AND.BERG.GT.0)) THEN
-        CALL W3SREF ( SPEC, CG1(:,JSEA), WN1(:,JSEA), EMEAN(JSEA), FMEAN(JSEA), DEPTH(CSEA), &
+        CALL W3SREF ( SPEC, CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(JSEA), FMEAN(JSEA), DEPTH(CSEA), &
              CX_CHUNK(CSEA), CY_CHUNK(CSEA),   &
              REFLEC, REFLED, TRNX_CHUNK(CSEA), TRNY_CHUNK(CSEA),  &
              BERG, DTG, IX, IY, JSEA, VREF )
