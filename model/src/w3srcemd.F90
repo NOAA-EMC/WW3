@@ -918,6 +918,7 @@ CONTAINS
 #ifdef W3_BS1
     REAL :: VSBS(NSPEC, CHUNKSIZE), VDBS(NSPEC, CHUNKSIZE)
 #endif
+
 #ifdef W3_UOST
     REAL :: VSUO(NSPEC, CHUNKSIZE), VDUO(NSPEC, CHUNKSIZE)
 #endif
@@ -926,6 +927,7 @@ CONTAINS
 #if defined(W3_ST3) || defined(W3_ST4)
     LOGICAL :: LLWS(NSPEC,CHUNKSIZE)
 #endif
+
 #ifdef W3_ST4
     REAL :: DLWMEAN(CHUNKSIZE),         &
             FAGE(CHUNKSIZE)
@@ -1065,6 +1067,7 @@ CONTAINS
       VDNL = 0.
 #endif
 
+
 #ifdef W3_TR1
       VSTR = 0.
       VDTR = 0.
@@ -1074,6 +1077,7 @@ CONTAINS
       VSDS = 0.
       VDDS = 0.
 #endif
+
 
 #ifdef W3_DB1
       VSDB = 0.
@@ -1085,6 +1089,7 @@ CONTAINS
       VDIC = 0.
 #endif
 
+
 #ifdef W3_UOST
       VSUO = 0.
       VDUO = 0.
@@ -1094,6 +1099,7 @@ CONTAINS
       VSIR = 0.
       VDIR = 0.
 #endif
+
 
 #ifdef W3_IS2
       VDIR2 = 0.
