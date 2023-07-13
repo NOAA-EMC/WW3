@@ -758,7 +758,7 @@ CONTAINS
     REAL :: WN_R(NK), CG_ICE(NK), ALPHA_LIU(NK), ICECOEF2, R(NK)
     DOUBLE PRECISION :: ATT, ISO
     REAL :: EBAND, DIFF, EFINISH, HSTOT, &
-         PHINL,       &    ! TODO: Computed but not actually used anywhere. REMOVE?
+!         PHINL,       &    ! TODO: Computed but not actually used anywhere. REMOVE?
          FACTOR, FACTOR2, &
          MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
          COSI(2)
@@ -1009,8 +1009,10 @@ CONTAINS
     TAUBBL = 0.
     TAUICE = 0.
     PHIBBL = 0.
-    PHICE = 0.
+    PHICE  = 0.  ! TODO
     WNMEAN = 0.
+    CHARN  = 0.
+    TWS    = 0.
 
     ! Zero ice chunks if ICE field never read in.
     ! INFLAGS2(4) is true if ice concentration read in for this simulation
@@ -1213,28 +1215,13 @@ CONTAINS
       !
 
       ! Refactor: Zero "chunksize" dimensioned variables
-      !DTDYN  = 0.
       DTTOT  = 0.
       NSTEPS = 0
-      !PHIAW  = 0.  ! Moved outside chunk loop
-      !CHARN  = 0.
-      !TWS    = 0. ! TODO probably dont want to zero this here
-      PHINL  = 0.
-      !PHIBBL = 0.
-!      TAUWIX = 0.
-!      TAUWIY = 0.
-!      TAUWNX = 0.
-!      TAUWNY = 0.
+      !PHINL  = 0.  ! Calculated value never used...ditch?
       TAUWAX = 0.
       TAUWAY = 0.  ! Only for ST3, ST4, ST6
       TAUSCX = 0.  ! Only for W3_BS1
       TAUSCY = 0.
-      !TAUBBL = 0.
-      !TAUICE = 0.
-      !PHICE  = 0.
-      !TAUOCX = 0.
-      !TAUOCY = 0.
-      !WNMEAN = 0.
       !
       ! TIME is updated in W3WAVEMD prior to the call of W3SCRE, we should
       ! move 'TIME' one time step backward (QL)
@@ -2195,8 +2182,10 @@ CONTAINS
 
               PHIBBL(JSEA)= PHIBBL(JSEA) - (VSBT(IS,CSEA))* DT(CSEA) * FACTOR                    &
                    / MAX ( 1. , (1.-HDT*VDBT(IS,CSEA))) ! semi-implict integration scheme
-              PHINL = PHINL + VSNL(IS,CSEA)* DT(CSEA) * FACTOR   & ! TODO: NOT USED ANYWHERE. DELETE?
-                   / MAX ( 1. , (1.-HDT*VDNL(IS,CSEA))) ! semi-implict integration scheme
+
+!             ! PHINL is calculated but never used; I have commented out (Chris Bunney):
+!              PHINL = PHINL + VSNL(IS,CSEA)* DT(CSEA) * FACTOR   &
+!                   / MAX ( 1. , (1.-HDT*VDNL(IS,CSEA))) ! semi-implict integration scheme
               IF (VSIN(IS,CSEA).GT.0.) WHITECAP(JSEA,3) = WHITECAP(JSEA,3) + SPEC(IS,JSEA) * FACTOR
               HSTOT = HSTOT + SPEC(IS,JSEA) * FACTOR
             END DO
@@ -2545,7 +2534,8 @@ CONTAINS
         !
         PHIOC(JSEA) = DWAT * GRAV * (EFINISH + PHIAW(JSEA) - PHIBBL(JSEA)) / DTG
         PHIAW(JSEA) = DWAT * GRAV * PHIAW(JSEA) / DTG
-        PHINL = DWAT * GRAV * PHINL / DTG  ! TODO: NOT USED ANYWHERE. REMOVE
+        ! PHINL is calculated but never used; I have commented out (Chris Bunney):
+        !PHINL = DWAT * GRAV * PHINL / DTG  ! TODO: NOT USED ANYWHERE. REMOVE?
         PHIBBL(JSEA) = DWAT * GRAV * PHIBBL(JSEA) / DTG
       END DO ! CSEA/JSEA
       IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
