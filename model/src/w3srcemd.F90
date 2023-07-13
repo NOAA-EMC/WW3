@@ -780,13 +780,6 @@ CONTAINS
     REAL :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
     REAL, SAVE :: TAUNUX, TAUNUY
     LOGICAL, SAVE :: FLTEST = .FALSE., FLAGNN = .TRUE.
-
-#ifdef W3_OMPG
-    !$omp threadprivate( TAUNUX, TAUNUY)
-    !$omp threadprivate( FLTEST, FLAGNN )
-    !$omp threadprivate( FIRST )
-#endif
-
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters dependent on compile switch
