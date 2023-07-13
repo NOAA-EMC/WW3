@@ -2277,7 +2277,7 @@ CONTAINS
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
                        WNMEAN(1:NSEAL),         &
                        RHOAIR(1:NSEA),  &
-                       ASF(ISEA))
+                       ASF(1:NSEA))
 #ifdef W3_PDLIB
                 END IF
 #endif

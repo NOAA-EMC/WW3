@@ -683,7 +683,9 @@ CONTAINS
         CX(1:NSEA),            &
         CY(1:NSEA),            &
         DAIR(1:NSEA),          &
-        ICE(1:NSEA)
+        ICE(1:NSEA),           &
+        COEF(1:NSEA)
+
 
 #ifdef W3_FLX5
     REAL, INTENT(IN) :: 
@@ -740,10 +742,7 @@ CONTAINS
         
     ! ChrisB: Variables yet to have NSEA(L) dimension added:
     REAL, INTENT(INOUT)     ::  &
-         ICEF
-    
-         
-    REAL, INTENT(IN)        :: COEF
+         ICEF         
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -947,7 +946,8 @@ CONTAINS
             UST_CHUNK(CHUNKSIZE),        &
             USTD_CHUNK(CHUNKSIZE),       &
             DAIR_CHUNK(CHUNKSIZE),       &
-            ICE_CHUNK(CHUNKSIZE)
+            ICE_CHUNK(CHUNKSIZE),        &
+            COEF_CHUNK(CHUNKSIZE)
 
 #if defined(W3_ST3) || defined(W3_ST4)
     REAL :: AS_CHUNK(CHUNKSIZE)
@@ -1172,6 +1172,8 @@ CONTAINS
         TRNY_CHUNK(I) = TRNY(IY,IX)
 #endif
         DAIR_CHUNK(I) = DAIR(ISEA)
+        COEF_CHUNK(I) = COEF(ISEA)   !! TODO: Only non-1 value if STAB2 set
+
         DRAT(I) = DAIR(ISEA) / DWAT
         DEPTH(I)  = MAX(DMIN , D_INP(ISEA))
 
@@ -2528,8 +2530,8 @@ CONTAINS
         TAUWNX(JSEA) = TAUWNX(JSEA)/DTG
         TAUWNY(JSEA) = TAUWNY(JSEA)/DTG
         TAUBBL(JSEA,:) = TAUBBL(JSEA,:)/DTG
-        TAUOCX(JSEA)= DAIR_CHUNK(CSEA)*COEF*COEF*UST_CHUNK(CSEA)*UST_CHUNK(CSEA)*COS(USTD_CHUNK(CSEA)) + DWAT*(TAUOX(JSEA)-TAUWIX(JSEA))
-        TAUOCY(JSEA)= DAIR_CHUNK(CSEA)*COEF*COEF*UST_CHUNK(CSEA)*UST_CHUNK(CSEA)*SIN(USTD_CHUNK(CSEA)) + DWAT*(TAUOY(JSEA)-TAUWIY(JSEA))
+        TAUOCX(JSEA)= DAIR_CHUNK(CSEA)*COEF_CHUNK(CSEA)*COEF_CHUNK(CSEA)*UST_CHUNK(CSEA)*UST_CHUNK(CSEA)*COS(USTD_CHUNK(CSEA)) + DWAT*(TAUOX(JSEA)-TAUWIX(JSEA))
+        TAUOCY(JSEA)= DAIR_CHUNK(CSEA)*COEF_CHUNK(CSEA)*COEF_CHUNK(CSEA)*UST_CHUNK(CSEA)*UST_CHUNK(CSEA)*SIN(USTD_CHUNK(CSEA)) + DWAT*(TAUOY(JSEA)-TAUWIY(JSEA))
         !
         ! Transformation in wave energy flux in W/m^2=kg / s^3
         !
@@ -2738,8 +2740,8 @@ CONTAINS
       !
 #ifdef W3_FLD1
       IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
-        CALL W3FLD1 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
-             COEF*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
+        CALL W3FLD1 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
+             COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
              DAIR_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA),TAUNUX,TAUNUY,CHARN(JSEA))
       ELSE
         CHARN(JSEA) = AALPHA
@@ -2747,8 +2749,8 @@ CONTAINS
 #endif
 #ifdef W3_FLD2
       IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
-        CALL W3FLD2 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
-             COEF*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
+        CALL W3FLD2 ( SPEC,min(FPI(CSEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
+             COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
              DAIR_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(JSEA),TAUNUX,TAUNUY,CHARN(JSEA))
       ELSE
         CHARN(JSEA) = AALPHA
