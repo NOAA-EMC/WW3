@@ -2267,11 +2267,13 @@ CONTAINS
                        CHARN(1:NSEAL),  &
                        TWS(1:NSEAL),    & 
                        PHIOC(1:NSEAL),  &
-                       WHITECAP(1:NSEAL,1:4),  &    ! TODO: Makes temp array; switch dims
-                       D50, PSIC,TMP2,     &
+                       WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
+                       D50, PSIC,  &
+                       BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
                        PHIBBL(1:NSEAL), &
-                       TAUBBL(1:NSEAL,:), &  ! WAS TMP2
-                       TMP4 , PHICE(JSEA),           &
+                       TAUBBL(1:NSEAL,1:2), &  ! WAS TMP3
+                       TAUICE(1:NSEAL,1:2), &  ! WAS TMP4 
+                       PHICE(JSEA),           &
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
                        WNMEAN(1:NSEAL),         &
                        RHOAIR(1:NSEA),  &
@@ -2279,10 +2281,11 @@ CONTAINS
 #ifdef W3_PDLIB
                 END IF
 #endif
-                WHITECAP(JSEA,1:4) = TMP1
-                BEDFORMS(JSEA,1:3) = TMP2
-                TAUBBL(JSEA,1:2) = TMP3
-                TAUICE(JSEA,1:2) = TMP4
+                ! Refactor - don't need to do this anymore.
+                !WHITECAP(JSEA,1:4) = TMP1
+                !BEDFORMS(JSEA,1:3) = TMP2
+                !TAUBBL(JSEA,1:2) = TMP3
+                !TAUICE(JSEA,1:2) = TMP4
 
 
                 !! TODO: These set to under for MASKED points

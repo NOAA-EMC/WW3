@@ -721,7 +721,9 @@ CONTAINS
         TAUOCX(1:NSEAL),       &
         TAUOCY(1:NSEAL),       &
         TAUBBL(1:NSEAL,2),     &    ! TODO: Swamp dims
-        TWS(1:NSEAL)
+        TWS(1:NSEAL),          &
+        BEDFORM(1:NSEAL,3),    &
+        TAUICE(1:NSEAL,2)
 
     REAL, INTENT(OUT) ::        &
         PHIAW(1:NSEAL),         &
@@ -736,9 +738,7 @@ CONTAINS
         
     ! ChrisB: Variables yet to have NSEA(L) dimension added:
     REAL, INTENT(INOUT)     ::  &
-         PHICE,   &
-         BEDFORM(3),       &
-         TAUICE(2),   &       
+         PHICE,   &         
          ICEF
     
          
@@ -993,6 +993,8 @@ CONTAINS
     ! GPU refactor: initialise some (non chunked) fields:
     !               (Moved outside chunk loop)
     ! These are all variables dimensioned (NSEAL)
+    VDIO = 0.
+    VSIO = 0.
     DTDYN  = 0.
     PHIAW  = 0.
     TAUWIX = 0.
@@ -1004,7 +1006,7 @@ CONTAINS
     TAUBBL = 0.
     TAUICE = 0.
     PHIBBL = 0.
-    PHICE  = 0.  ! TODO
+    PHICE  = 0.
     WNMEAN = 0.
     CHARN  = 0.
     TWS    = 0.
@@ -1041,8 +1043,6 @@ CONTAINS
       !! Initialise source term arrays:
       VS   = 0.
       VD   = 0.
-      VDIO = 0.
-      VSIO = 0.
       VSBT = 0.
       VDBT = 0.
 
@@ -1676,7 +1676,7 @@ CONTAINS
 #ifdef W3_BT4
           CALL W3SBT4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), &
               DEPTH(CSEA), D50, PSIC, TAUBBL(JSEA,:),    & !TODO
-              BEDFORM, VSBT(:,CSEA), VDBT(:,CSEA), IX, IY )
+              BEDFORM(JSEA,:), VSBT(:,CSEA), VDBT(:,CSEA), IX, IY )
 #endif
 #ifdef W3_BT8
           CALL W3SBT8 ( SPEC(:,JSEA), DEPTH(CSEA), VSBT(:,CSEA), VDBT(:,CSEA), IX, IY )
@@ -2046,8 +2046,8 @@ CONTAINS
               ELSE IF (optionCall .eq. 3) THEN
                 CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC(:,JSEA),VS(:,CSEA),VD(:,CSEA))
               ENDIF
-              VSIO = VS(:,CSEA)
-              VDIO = VD(:,CSEA)
+              VSIO(:,JSEA) = VS(:,CSEA)
+              VDIO(:,JSEA) = VD(:,CSEA)
             ENDIF
 
 #ifdef W3_DEBUGSRC
@@ -2626,7 +2626,7 @@ CONTAINS
 #endif
           SPEC2 = SPEC(:,JSEA)
           !
-          TAUICE(:) = 0.
+          TAUICE(JSEA,:) = 0.
           PHICE = 0.
           DO IK=1,NK
             IS = 1+(IK-1)*NTH
@@ -2698,11 +2698,11 @@ CONTAINS
               PHICE = PHICE + (SPEC(IS,JSEA)-SPEC2(IS)) * FACTOR
               COSI(1)=ECOS(IS)
               COSI(2)=ESIN(IS)
-              TAUICE(:) = TAUICE(:) - (SPEC(IS,JSEA)-SPEC2(IS))*FACTOR2*COSI(:)
+              TAUICE(JSEA,:) = TAUICE(JSEA,:) - (SPEC(IS,JSEA)-SPEC2(IS))*FACTOR2*COSI(:)
             END DO
           END DO
           PHICE =-1.*DWAT*GRAV*PHICE /DTG
-          TAUICE(:)=TAUICE(:)/DTG
+          TAUICE(JSEA,:)=TAUICE(JSEA,:)/DTG
         ENDDO ! CSEA/JSEA
       ELSE ! INPARS(4)
 #ifdef W3_IS2
