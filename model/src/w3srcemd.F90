@@ -668,11 +668,11 @@ CONTAINS
     REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
     LOGICAL, INTENT(OUT)    :: SHAVEIO
     REAL, INTENT(IN)        ::         &
-         DTG, D50,PSIC,   &
-         ICEH
+         DTG, D50,PSIC
+         
 
     INTEGER, INTENT(IN)     :: REFLED(6)
-    REAL, INTENT(IN)        :: REFLEC(4), BERG, ICEDMAX
+    REAL, INTENT(IN)        :: REFLEC(4), BERG
 
 
     ! GPU Refactor: Input arrays with dimension NSEA:
@@ -684,7 +684,9 @@ CONTAINS
         CY(1:NSEA),            &
         DAIR(1:NSEA),          &
         ICE(1:NSEA),           &
-        COEF(1:NSEA)
+        ICEH(1:NSEA),          &
+        COEF(1:NSEA),          &
+        ICEDMAX(1:NSEA)
 
 
 #ifdef W3_FLX5
@@ -701,6 +703,7 @@ CONTAINS
         USTAR(1:NSEA),          &
         USTDIR(1:NSEA),         &
         FPI(1:NSEA),            &
+        ICEF(1:NSEA),           &
         WHITECAP(1:NSEA, 4)       ! TODO: Swap dims to avoid temporary variable
 
     ! GPU Refactor: Input arrays with dimension NSEAL(M):
@@ -741,8 +744,6 @@ CONTAINS
     
         
     ! ChrisB: Variables yet to have NSEA(L) dimension added:
-    REAL, INTENT(INOUT)     ::  &
-         ICEF         
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -947,6 +948,9 @@ CONTAINS
             USTD_CHUNK(CHUNKSIZE),       &
             DAIR_CHUNK(CHUNKSIZE),       &
             ICE_CHUNK(CHUNKSIZE),        &
+            ICEH_CHUNK(CHUNKSIZE),       &
+            ICEF_CHUNK(CHUNKSIZE),       &
+            ICEDMAX_CHUNK(CHUNKSIZE),    &
             COEF_CHUNK(CHUNKSIZE)
 
 #if defined(W3_ST3) || defined(W3_ST4)
@@ -1178,7 +1182,14 @@ CONTAINS
         DEPTH(I)  = MAX(DMIN , D_INP(ISEA))
 
         ! Only bother copying ice if ice field read in (INFLAGS(4) is TRUE):
-        IF(INFLAGS2(4)) ICE_CHUNK(I) = ICE(ISEA)
+        IF(INFLAGS2(4)) THEN
+          ICE_CHUNK(I) = ICE(ISEA)
+          ICEH_CHUNK(I) = ICEH(ISEA)
+          ICEF_CHUNK(I) = ICEF(ISEA)
+#ifdef W3_IS2
+          ICEDMAX_CHUNK(I) = ICEDMAX(ISEA)
+#endif
+        ENDIF
 
         !
         ! 1.a Set maximum change and wavenumber arrays.
@@ -2545,11 +2556,6 @@ CONTAINS
         ICHK = JCHK - CHUNK0 + 1
         print*,'PHIAW(2)',PHIAW(JCHK)
       ENDIF
-      
-      !! TESTING !!
-      CYCLE ! cycle chunk loop
-      !! TESTING !!
-
 
       !
       ! 10.1  Adds ice scattering and dissipation: implicit integration---------------- *
@@ -2562,7 +2568,6 @@ CONTAINS
       END IF
 #endif
 
-
       !! GPU Refactor - loop over chunk elements
       !IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN  ! GPU refactor: have split this expression
       ! TODO: This is a very big loop (CSEA) - probably needs refactoring
@@ -2573,7 +2578,7 @@ CONTAINS
           IF(ICE_CHUNK(CSEA) .EQ. 0) THEN
 #ifdef W3_IS2
             IF(IS2PARS(10).LT.0.5) THEN
-              ICEF = 0.
+              ICEF_CHUNK(CSEA) = 0.
             ENDIF
 #endif
             CYCLE
@@ -2583,15 +2588,15 @@ CONTAINS
 
           IF (IICEDISP) THEN
             ICECOEF2 = 1E-6
-            CALL LIU_FORWARD_DISPERSION (ICEH,ICECOEF2,DEPTH(CSEA), &
+            CALL LIU_FORWARD_DISPERSION (ICEH_CHUNK(CSEA),ICECOEF2,DEPTH(CSEA), &
                  SIG,WN_R,CG_ICE,ALPHA_LIU)
             !
             IF (IICESMOOTH) THEN
 #ifdef W3_IS2
               DO IK=1,NK
                 SMOOTH_ICEDISP=0.
-                IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF) THEN ! IF ICE IS NOT TOO MUCH BROKEN
-                  SMOOTH_ICEDISP=TANH((ICEF-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF*IS2PARS(13)))
+                IF (IS2PARS(14)*(TPI/WN_R(IK)).LT.ICEF_CHUNK(CSEA)) THEN ! IF ICE IS NOT TOO MUCH BROKEN
+                  SMOOTH_ICEDISP=TANH((ICEF_CHUNK(CSEA)-IS2PARS(14)*(TPI/WN_R(IK)))/(ICEF_CHUNK(CSEA)*IS2PARS(13)))
                 END IF
                 WN_R(IK)=WN1_CHUNK(IK,CSEA)*(1-SMOOTH_ICEDISP)+WN_R(IK)*(SMOOTH_ICEDISP)
               END DO
@@ -2602,17 +2607,17 @@ CONTAINS
             CG_ICE=CG1_CHUNK(:,CSEA)
           END IF
           !
-          R(:)=1 ! In case IC2 is defined but not IS2
+          R(:)=1 ! In case IC2 is defined but not IS2  !!TODO - needs to be a chunk variable
           !
 #ifdef W3_IC1
           CALL W3SIC1 ( SPEC,DEPTH(CSEA), CG1_CHUNK, IX, IY, VSIC, VDIC )
 #endif
 #ifdef W3_IS2
-          CALL W3SIS2 ( SPEC, DEPTH(CSEA), ICE_CHUNK(CSEA), ICEH, ICEF, ICEDMAX, IX, IY, &
+          CALL W3SIS2 ( SPEC, DEPTH(CSEA), ICE_CHUNK(CSEA), ICEH_CHUNK(CSEA), ICEF_CHUNK(CSEA), ICEDMAX_CHUNK(CSEA), IX, IY, &
                VSIR, VDIR, VDIR2, WN1_CHUNK(:,CSEA), CG1_CHUNK(:,CSEA), WN_R, CG_ICE, R )
 #endif
 #ifdef W3_IC2
-          CALL W3SIC2 ( SPEC, DEPTH(CSEA), ICEH, ICEF, CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA),&
+          CALL W3SIC2 ( SPEC, DEPTH(CSEA), ICEH_CHUNK(CSEA), ICEF_CHUNK(CSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA),&
                IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
 #endif
 #ifdef W3_IC3
@@ -2711,10 +2716,15 @@ CONTAINS
       ELSE ! INPARS(4)
 #ifdef W3_IS2
         IF (IS2PARS(10).LT.0.5) THEN
-          ICEF = 0.
+          ICEF_CHUNK(CSEA) = 0.  !! TODO - setting chunk here - not return value from function
         ENDIF
 #endif
       ENDIF ! INPARS(4)
+
+
+      CYCLE !!!!! TESTING !!!!!
+
+
       !
       !
       ! - - - - - - - - - - - - - - - - - - - - - -

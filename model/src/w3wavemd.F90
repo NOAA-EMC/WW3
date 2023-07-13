@@ -2249,8 +2249,10 @@ CONTAINS
                        AS(1:NSEA),  &
                        UST(1:NSEA), USTDIR(1:NSEA),  &
                        CX(1:NSEA), CY(1:NSEA),  &
-                       ICE(1:NSEA), ICEH(ISEA), ICEF(ISEA),                &
-                       ICEDMAX(ISEA),                                    &
+                       ICE(1:NSEA),  &
+                       ICEH(1:NSEA),  &
+                       ICEF(1:NSEA),  &
+                       ICEDMAX(1:NSEA),  &
                        REFLEC, REFLED, & 
                        !DELX, DELY, DELA,   &    ! Removed these - they are not used in w3srce
                        TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
