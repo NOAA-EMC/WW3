@@ -2182,7 +2182,7 @@ CONTAINS
               REFLED=REFLD(:,ISEA)
 #endif
 #ifdef W3_BT4
-              !TODO: Need to handle passing array when W3_REF1 now enabled
+              !TODO: Need to handle passing array when W3_BT4 is enabled
               !      as SED_D50/SED_PSIC will not be allocated?
               !
               D50=SED_D50(ISEA)
@@ -2253,10 +2253,13 @@ CONTAINS
                        ICEH(1:NSEA),  &
                        ICEF(1:NSEA),  &
                        ICEDMAX(1:NSEA),  &
-                       REFLEC, REFLED, & 
+#ifdef W3_REF1
+                       !REFLEC, REFLED, &  ! Note - not passing REFLE[CD] - will calculate in w3srce
+                       REFLC(:,1:NSEA), REFLD(:,1:NSEA),  &
                        !DELX, DELY, DELA,   &    ! Removed these - they are not used in w3srce
                        TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
-                       BERG(ISEA),             &
+                       BERG(1:NSEA),  &
+#endif
                        FPIS(1:NSEA), &
                        DTDYN(1:NSEAL), &
                        FCUT(1:NSEAL),  &
