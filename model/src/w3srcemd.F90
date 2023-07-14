@@ -2478,7 +2478,7 @@ CONTAINS
         JSEA = CHUNK0 + CSEA - 1
         IF(SRC_MASK(CSEA)) CYCLE
 
-        DTDYN(JSEA)  = DTDYN(JSEA) / REAL(MAX(1,NSTEPS))   ! TODO - this will be wrong: not storing NSTEPS for each element yet...
+        DTDYN(JSEA)  = DTDYN(JSEA) / REAL(MAX(1,NSTEPS))
         FCUT(JSEA)   = FHIGH(CSEA) * TPIINV
       ENDDO 
 
