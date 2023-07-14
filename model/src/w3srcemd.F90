@@ -1378,8 +1378,10 @@ CONTAINS
         print*,'Charn,cd,z0', CHARN(JCHK), CD(ICHK), Z0(ICHK)
         print*,'AMAX',AMAX(ICHK)
         print*,'TAUWX/Y',TAUWX(JCHK), TAUWY(JCHK)
+#ifdef W3_ST4
         print*,'FMEANWS, DLWMEAN',FMEANWS(ICHK), DLWMEAN(ICHK)
         print*,'Any LLWS', ANY(LLWS(:,ICHK))
+#endif
         print*,LLWS(:,ICHK)
       ENDIF 
 #endif
@@ -1497,8 +1499,9 @@ CONTAINS
              FPI(:,CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
 #ifdef W3_ST3
-          CALL W3SIN3 ( SPEC(:.JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),     &
-             U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA),       &
+          CALL W3SIN3 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), &
+             UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA), U10D_CHUNK(CSEA),            &
+             Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA), &
              ICE_CHUNK(CSEA), VSIN(:,CSEA), VDIN(:,CSEA), LLWS(:,CSEA), IX, IY )
 #endif
 #ifdef W3_ST4
@@ -2644,7 +2647,7 @@ CONTAINS
             !
             ATT=1.
 #ifdef W3_IC1
-            ATT=EXP(_CHUNK(CSEA)*VDIC(IS)*DTG)
+            ATT=EXP(ICE_CHUNK(CSEA)*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IC2
             ATT=EXP(ICE_CHUNK(CSEA)*VDIC(IS)*DTG)
