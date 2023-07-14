@@ -757,7 +757,7 @@ CONTAINS
     REAL :: DTRAW
 #endif
 
-#if defined(W3_IC1) || W3_IC2 || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
     REAL :: VSIC(NSPEC), VDIC(NSPEC)
 #endif
 
