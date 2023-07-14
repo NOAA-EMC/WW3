@@ -817,7 +817,7 @@ CONTAINS
     REAL :: DTRAW
 #endif
 
-#if defined(W3_IC1) || W3_IC2 || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
     REAL :: VSIC(NSPEC), VDIC(NSPEC)
 #endif
 
@@ -2646,19 +2646,7 @@ CONTAINS
             ! First part of ice term integration: dissipation part
             !
             ATT=1.
-#ifdef W3_IC1
-            ATT=EXP(ICE_CHUNK(CSEA)*VDIC(IS)*DTG)
-#endif
-#ifdef W3_IC2
-            ATT=EXP(ICE_CHUNK(CSEA)*VDIC(IS)*DTG)
-#endif
-#ifdef W3_IC3
-            ATT=EXP(ICE_CHUNK(CSEA)*VDIC(IS)*DTG)
-#endif
-#ifdef W3_IC4
-            ATT=EXP(ICE_CHUNK(CSEA)*VDIC(IS)*DTG)
-#endif
-#ifdef W3_IC5
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
             ATT=EXP(ICE_CHUNK(CSEA)*VDIC(IS)*DTG)
 #endif
 #ifdef W3_IS1
@@ -2723,11 +2711,6 @@ CONTAINS
         ENDIF
 #endif
       ENDIF ! INPARS(4)
-
-
-      CYCLE !!!!! TESTING !!!!!
-
-
       !
       !
       ! - - - - - - - - - - - - - - - - - - - - - -
@@ -2744,12 +2727,9 @@ CONTAINS
 #endif
 
       ! FLD1/2 requires the calculation of FPI:
-#ifdef W3_FLD1
+#if defined (W3_FLD1) || defined(W3_FLD2)
       CALL CALC_FPI(SPEC, CG1_CHUNK(:,CSEA), FPI(CSEA), VSIN(:,CSEA) )
-#endif
-#ifdef W3_FLD2
-      CALL CALC_FPI(SPEC, CG1_CHUNK(:,CSEA), FPI(CSEA), VSIN(:,CSEA) )
-#endif
+#endif      
       !
 #ifdef W3_FLD1
       IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
