@@ -126,9 +126,9 @@ CONTAINS
   !> @param[in]    IMOD       Model number.
   !> @param[in]    SPECOLD
   !> @param[inout] SPEC       Spectrum (action) in 1-D form.
-  !> @param[out]   VSIO
-  !> @param[out]   VDIO
-  !> @param[out]   SHAVEIO
+  !> @param[out]   VSIO (Optional)
+  !> @param[out]   VDIO (Optional)
+  !> @param[out]   SHAVEIO (Optional)
   !> @param[inout] ALPHA      Nondimensional 1-D spectrum corresponding
   !>                          to above full spectra (Phillip's const.).
   !> @param[inout] WN1        Discrete wavenumbers.
@@ -192,7 +192,8 @@ CONTAINS
   !> @date   22-Mar-2021
   !>
   SUBROUTINE W3SRCE ( srce_call, IT, IMOD,          &
-       SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
+!!!      SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
+       SPECOLD, SPEC,         &
        ALPHA, WN1, CG1, CLATSL,                    &
        D_INP, U10ABS, U10DIR,                      &
 #ifdef W3_FLX5
@@ -210,7 +211,8 @@ CONTAINS
        D50, PSIC, BEDFORM , &
 #endif       
        PHIBBL, TAUBBL, TAUICE,&
-       PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF)
+       PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF, &
+       VSIO, VDIO, SHAVEIO) ! These now optionals
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -670,8 +672,6 @@ CONTAINS
     !/
     INTEGER, INTENT(IN)     :: srce_call, IT, IMOD
     REAL, intent(in)        :: SPECOLD(NSPEC)
-    REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
-    LOGICAL, INTENT(OUT)    :: SHAVEIO
     REAL, INTENT(IN)        ::         &
          DTG
 
@@ -731,7 +731,7 @@ CONTAINS
 ! Refactor - inputs depending on compile switch:
 #ifdef W3_REF1
     INTEGER, INTENT(IN) ::     &
-            REFLED(6,1:NSEA)
+        REFLED(6,1:NSEA)
 
     REAL, INTENT(IN) ::        &
         REFLEC(4,1:NSEA),      &
@@ -753,8 +753,11 @@ CONTAINS
         BEDFORM(1:NSEAL,3)
 #endif
 
-    ! ChrisB: Variables yet to have NSEA(L) dimension added:
-    !/
+    REAL, INTENT(OUT), OPTIONAL ::  &
+        VSIO(NSPEC,NSEAL),     &
+        VDIO(NSPEC,NSEAL)
+    LOGICAL, INTENT(OUT), OPTIONAL :: SHAVEIO
+
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
@@ -1016,8 +1019,8 @@ CONTAINS
     ! GPU refactor: initialise some (non chunked) fields:
     !               (Moved outside chunk loop)
     ! These are all variables dimensioned (NSEAL)
-    VDIO = 0.
-    VSIO = 0.
+    IF(PRESENT(VDIO)) VDIO = 0.
+    IF(PRESENT(VSIO)) VSIO = 0.
     DTDYN  = 0.
     PHIAW  = 0.
     TAUWIX = 0.
@@ -1920,7 +1923,7 @@ CONTAINS
           IDT = 1 + INT ( 0.99*(DTG-DTTOT(CSEA))/DT(CSEA) ) ! number of iterations
           DT(CSEA) = (DTG-DTTOT(CSEA))/REAL(IDT)           ! actualy time step
           SHAVE = DT(CSEA).LT.DTMIN .AND. DT(CSEA).LT.DTG-DTTOT(CSEA)   ! limiter check ...
-          SHAVEIO = SHAVE
+          IF(PRESENT(SHAVEIO)) SHAVEIO = SHAVE
           DT(CSEA) = MAX ( DT(CSEA) , MIN (DTMIN,DTG-DTTOT(CSEA)) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
           !
 #ifdef W3_NL5
@@ -2092,8 +2095,8 @@ CONTAINS
               ELSE IF (optionCall .eq. 3) THEN
                 CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC(:,JSEA),VS(:,CSEA),VD(:,CSEA))
               ENDIF
-              VSIO(:,JSEA) = VS(:,CSEA)
-              VDIO(:,JSEA) = VD(:,CSEA)
+              IF(PRESENT(VSIO)) VSIO(:,JSEA) = VS(:,CSEA)
+              IF(PRESENT(VDIO)) VDIO(:,JSEA) = VD(:,CSEA)
             ENDIF
 
 #ifdef W3_DEBUGSRC

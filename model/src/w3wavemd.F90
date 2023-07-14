@@ -2230,10 +2230,10 @@ CONTAINS
                   ISEA = 1
                   ! END TESTING
                   CALL W3SRCE(srce_direct, IT, IMOD, &
-                       VAoldDummy, &
+                       VAoldDummy, &   ! Not used, either here or in w3str1 (where it is passed from w3srce)
                        VA(:,1:NSEALM),  &
-                       VSioDummy, VDioDummy,  &   !! TODO - Pass in pointer for these and nullify for true Dummy cases.
-                       SHAVETOTioDummy, &
+                       !VSioDummy, VDioDummy,  &   ! Make optional
+                       !SHAVETOTioDummy, &         ! Make optional
                        ALPHA(1:NK,1:NSEAL),  &
                        WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
                        CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
@@ -2283,7 +2283,11 @@ CONTAINS
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
                        WNMEAN(1:NSEAL),         &
                        RHOAIR(1:NSEA),  &
-                       ASF(1:NSEA))
+                       ASF(1:NSEA),  &            
+                       !VSIO=VSioDummy, &   ! Now optional
+                       !VDIO=VDioDummy, &   ! Now  optional
+                       SHAVEIO=SHAVETOTioDummy & ! Now optional (not actually used)
+                    )
 #ifdef W3_PDLIB
                 END IF
 #endif
