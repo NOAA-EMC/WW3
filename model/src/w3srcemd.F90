@@ -206,7 +206,10 @@ CONTAINS
        FPI, DTDYN, FCUT, DTG, TAUWX,   &
        TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
        TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
-       D50, PSIC, BEDFORM , PHIBBL, TAUBBL, TAUICE,&
+#ifdef W3_BT4       
+       D50, PSIC, BEDFORM , &
+#endif       
+       PHIBBL, TAUBBL, TAUICE,&
        PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF)
     !/
     !/                  +-----------------------------------+
@@ -670,7 +673,7 @@ CONTAINS
     REAL, INTENT(OUT)       :: VSIO(NSPEC), VDIO(NSPEC)
     LOGICAL, INTENT(OUT)    :: SHAVEIO
     REAL, INTENT(IN)        ::         &
-         DTG, D50,PSIC   
+         DTG
 
     ! GPU Refactor: Input arrays with dimension NSEA:
     REAL, INTENT(IN) ::        &
@@ -717,7 +720,6 @@ CONTAINS
         TAUOCY(1:NSEAL),       &
         TAUBBL(1:NSEAL,2),     &    ! TODO: Swamp dims
         TWS(1:NSEAL),          &
-        BEDFORM(1:NSEAL,3),    &
         TAUICE(1:NSEAL,2)
 
     REAL, INTENT(OUT) ::       &
@@ -739,11 +741,16 @@ CONTAINS
         TRNX(NY,NX),           &
         TRNY(NY,NX)
 #endif
-    
 #ifdef W3_FLX5
     REAL, INTENT(IN) ::        &
         TAUA(1:NSEA),          &
         TAUADIR(1:NSEA)
+#endif
+#ifdef W3_BT4
+    REAL, INTENT(IN) ::        &
+        D50(1:NSEA),           &
+        PSIC(1:NSEA),          &
+        BEDFORM(1:NSEAL,3)
 #endif
 
     ! ChrisB: Variables yet to have NSEA(L) dimension added:
@@ -972,6 +979,10 @@ CONTAINS
 #ifdef FLX5
     REAL :: TAUA_CHUNK(CHUNKSIZE), TAUADIR_CHUNK(CHUNKSIZE)
 #endif
+#if W3_BT4
+    REAL :: D50_CHUNK(CHUNKSIZE),      &
+            PSIC_CHUNK(CHUNKSIZE),
+#endif
 
     ! For masking points that have completed integration or are not seapoints.
     LOGICAL, ALLOCATABLE :: SRC_MASK(:)
@@ -1171,6 +1182,9 @@ CONTAINS
         U10D_CHUNK(I) = U10DIR(ISEA)
         UST_CHUNK(I) = USTAR(ISEA)
         USTD_CHUNK(I) = USTDIR(ISEA)
+        DAIR_CHUNK(I) = DAIR(ISEA)
+        COEF_CHUNK(I) = COEF(ISEA)   !! TODO: Only non-1 value if STAB2 set
+
 #if defined(W3_ST3) || defined(W3_ST4)
         AS_CHUNK(I) = AS(ISEA)
 #endif        
@@ -1185,9 +1199,11 @@ CONTAINS
         REFLED_CHUNK(:,I) = REFLED(:,ISEA)
         BERG_CHUNK(I) = BERG(ISEA)
 #endif
-        DAIR_CHUNK(I) = DAIR(ISEA)
-        COEF_CHUNK(I) = COEF(ISEA)   !! TODO: Only non-1 value if STAB2 set
-
+#ifdef W3_BT4
+        D50_CHUNK(I) = D50(ISEA)
+        PSIC_CHUNK(I) = PSIC(ISEA)
+#endif
+        
         DRAT(I) = DAIR(ISEA) / DWAT
         DEPTH(I)  = MAX(DMIN , D_INP(ISEA))
 
@@ -1705,7 +1721,7 @@ CONTAINS
 #ifdef W3_BT4
 ! IX,IY not used
           CALL W3SBT4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), &
-              DEPTH(CSEA), D50, PSIC, TAUBBL(JSEA,:),    & !TODO
+              DEPTH(CSEA), D50_CHUNK(CSEA), PSIC_CHUNK(CSEA), TAUBBL(JSEA,:), &
               BEDFORM(JSEA,:), VSBT(:,CSEA), VDBT(:,CSEA), IX(CSEA), IY(CSEA) )
 #endif
 #ifdef W3_BT8

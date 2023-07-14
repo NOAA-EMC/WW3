@@ -2175,16 +2175,14 @@ CONTAINS
 !#endif
               !
 #ifdef W3_REF1
-              !TODO: Need to handle passing array when W3_REF1 now enabled
-              !      as RECLEC will not be allocated?
-              REFLEC=REFLC(:,ISEA)
-              REFLEC(4)=BERG(ISEA)*REFLEC(4) ! TODO : Calc this in W3SRCE
-              REFLED=REFLD(:,ISEA)
+              ! Refactor - Below is now calculated in W3SRCE
+              !REFLEC=REFLC(:,ISEA)
+              !REFLEC(4)=BERG(ISEA)*REFLEC(4)
+              !REFLED=REFLD(:,ISEA)
 #endif
 #ifdef W3_BT4
-              !TODO: Need to handle passing array when W3_BT4 is enabled
-              !      as SED_D50/SED_PSIC will not be allocated?
-              !
+              ! Refactor - scalars no longer needed, D50 and PSIC
+              ! passed directly to w3srce (procted with ifdef)
               D50=SED_D50(ISEA)
               PSIC=SED_PSIC(ISEA)
 #endif
@@ -2273,8 +2271,11 @@ CONTAINS
                        TWS(1:NSEAL),    & 
                        PHIOC(1:NSEAL),  &
                        WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
-                       D50, PSIC,  &
+#ifdef BT4                       
+                       SED_D50(1:NSEA),  &  ! Now passing full arrays, not local scalar
+                       SED_PSIC(1:NSEA),  & ! " "
                        BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
+#endif                       
                        PHIBBL(1:NSEAL), &
                        TAUBBL(1:NSEAL,1:2), &  ! WAS TMP3
                        TAUICE(1:NSEAL,1:2), &  ! WAS TMP4 
