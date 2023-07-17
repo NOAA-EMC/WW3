@@ -6824,6 +6824,123 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
   END SUBROUTINE BLOCK_SOLVER_INIT
+
+SUBROUTINE BLOCK_SOLVER_DIFFUSION(IMOD)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                                   |
+    !/                  | Aron Roland (Roland & Partner,    |
+    !/                  |              BGS IT&E GmbH)       |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :        01-June-2023 |
+    !/                  +-----------------------------------+
+    !/
+    !/    01-June-2018 : Origination.                        ( version 6.04 )
+    !/
+    !  1. Purpose : Solves the anisotropic diffusion equation 
+    !  2. Method :i Galerkin 
+    !  3. Parameters : a lot 
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD Subroutine tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !  7. Remarks
+    !  8. Structure :
+    !  9. Switches :
+    !
+    !     !/S  Enable subroutine tracing.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+#ifdef W3_S
+    USE W3SERVMD, only: STRACE
+#endif
+    !
+    USE CONSTANTS, only : LPDLIB, TPI, TPIINV
+    USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
+    USE W3ADATMD, only: DW
+    USE W3PARALL, only: INIT_GET_ISEA
+    USE YOWNODEPOOL, only: iplg, np
+    USE yowfunction, only: pdlib_abort
+    use YOWNODEPOOL, only: npa
+    USE W3GDATMD, only: B_JGS_USE_JACOBI
+    USE W3PARALL, only : ListISPprevDir, ListISPnextDir
+    USE W3PARALL, only : ListISPprevFreq, ListISPnextFreq
+    USE W3GDATMD, only: NSPEC, NTH, NK
+    USE W3GDATMD, only: FSTOTALIMP
+    USE W3ODATMD, only: IAPROC
+    !/
+    INTEGER, INTENT(IN) :: IMOD
+    !
+    !/ ------------------------------------------------------------------- /
+    !/
+    INTEGER ISP, ITH, IK, ISPprevFreq, ISPnextFreq
+    INTEGER NewISP, JTH, istat
+
+    IF ( DTME .NE. 0. ) THEN
+      !
+#ifdef W3_OMPH
+      !$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY, &
+      !$OMP&                     DCELL, XWIND, TFAC, DSS, DNN)
+#endif
+      !
+      DO ISEA=1, NSEA
+        IX        = MAPSF(ISEA,1)
+        IY        = MAPSF(ISEA,2)
+        IXY       = MAPSF(ISEA,3)
+        IF ( MIN ( ATRNX(IXY,1) , ATRNX(IXY,-1) ,                 &
+             ATRNY(IXY,1) , ATRNY(IXY,-1) ) .GT. TRNMIN ) THEN
+          DCELL     = CGD * MIN ( HPFAC(IY,IX)*RFAC, &
+               HQFAC(IY,IX)*RFAC ) / CELLP
+          XWIND     = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
+          XWIND     = MAX ( 0. , MIN ( 1. , XWIND ) )
+#ifdef W3_XW0
+          XWIND     = 0.
+#endif
+#ifdef W3_XW1
+          XWIND     = 1.
+#endif
+          TFAC      = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
+          DSS       = XWIND * DCELL + (1.-XWIND) * DSSD * TFAC
+#ifdef W3_DSS0
+          DSS       = 0.
+#endif
+          DNN       = XWIND * DCELL + (1.-XWIND) * DNND * TFAC
+
+          VDXX(IXY) = DTLOC * (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
+          VDYY(IXY) = DTLOC * (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) &
+               / CLATS(ISEA)**2
+          VDXY(IXY) = DTLOC * (DSS-DNN) * ESIN(ITH)*ECOS(ITH)     &
+               / CLATS(ISEA)
+
+        END IF
+      END DO
+      !
+#ifdef W3_OMPH
+      !$OMP END PARALLEL DO
+#endif
+      !
+    END IF
+
+
   !/ ------------------------------------------------------------------ /
   SUBROUTINE SET_IOBDP_PDLIB
     !/
