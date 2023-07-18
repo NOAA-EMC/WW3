@@ -2106,8 +2106,10 @@ CONTAINS
               ELSE IF (optionCall .eq. 3) THEN
                 CALL SIGN_VSD_SEMI_IMPLICIT_WW3(SPEC(:,JSEA),VS(:,CSEA),VD(:,CSEA))
               ENDIF
-              IF(PRESENT(VSIO)) VSIO(:,JSEA) = VS(:,CSEA)
-              IF(PRESENT(VDIO)) VDIO(:,JSEA) = VD(:,CSEA)
+              IF (.not. LSLOC) THEN ! Refactor notes: This test was originally in W3SRCE
+                IF(PRESENT(VSIO)) VSIO(:,JSEA) = VS(:,CSEA)
+                IF(PRESENT(VDIO)) VDIO(:,JSEA) = VD(:,CSEA)
+              END IF
             ENDIF
 
 #ifdef W3_DEBUGSRC
@@ -2829,7 +2831,7 @@ CONTAINS
 #ifdef W3_PDLIB
             IF (IOBP_LOC(JSEA).EQ.0) THEN
 #else
-            IF (IOBP(IX(CSEA)).EQ.0) THEN   ! TODO - need IX
+            IF (IOBP(IX(CSEA)).EQ.0) THEN
 #endif
               DO IK=1, NK
                 DO ITH=1, NTH
