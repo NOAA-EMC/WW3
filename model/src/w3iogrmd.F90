@@ -1242,10 +1242,11 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW
+           DIKCUMUL, CUMULW, SINTAILPAR
+      IF (SINTAILPAR(1).GT.0.5) WRITE (NDSM) DELUST, DELTAIL,&
+           DELTAUW, DELU, DELALP, TAUT, TAUHFT, TAUHFT2
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,     &
@@ -1256,10 +1257,14 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW
+           DIKCUMUL, CUMULW, SINTAILPAR
+      IF (SINTAILPAR(1).GT.0.5) THEN
+        CALL INSIN4(.FALSE.)
+        READ (NDSM) DELUST, DELTAIL,                         &
+             DELTAUW, DELU, DELALP, TAUT, TAUHFT, TAUHFT2
+      END IF
     END IF
 #endif
     !
