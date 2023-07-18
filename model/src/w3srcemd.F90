@@ -986,7 +986,7 @@ CONTAINS
     REAL :: D50_CHUNK(CHUNKSIZE),      &
             PSIC_CHUNK(CHUNKSIZE),
 #endif
-#ifdef PDLIB        
+#ifdef W3_PDLIB
     REAL :: CLATSL_CHUNK(CHUNKSIZE)
 #endif
 
@@ -1210,7 +1210,7 @@ CONTAINS
         D50_CHUNK(I) = D50(ISEA)
         PSIC_CHUNK(I) = PSIC(ISEA)
 #endif
-#ifdef PDLIB
+#ifdef W3_PDLIB
         CLATSL_CHUNK(I) = CLATSL(ISEA)
 #endif
         DRAT(I) = DAIR(ISEA) / DWAT
