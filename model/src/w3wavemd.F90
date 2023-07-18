@@ -1573,7 +1573,7 @@ CONTAINS
               ASF(1:NSEA),  &
               VSIO=VSTOT(:,1:NSEAL),  &
               VDIO=VDTOT(:,1:NSEAL),  &
-              SHAVEIO=SHAVETOT(1:NSEAL)
+              SHAVEIO=SHAVETOT(1:NSEAL)  &
             ) 
 
             !! This now done in W3SRCE (including test on LSLOC)
