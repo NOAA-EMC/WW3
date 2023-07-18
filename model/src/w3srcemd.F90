@@ -71,7 +71,7 @@ MODULE W3SRCEMD
   ! TODO: CHUNKSIZE should be user settable - not parameter
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
-  INTEGER,PARAMETER :: CHUNKSIZE = 1
+  INTEGER,PARAMETER :: CHUNKSIZE = 4
   INTEGER, PARAMETER :: JCHK = 7
   INTEGER :: ICHK
 
@@ -2475,7 +2475,17 @@ CONTAINS
 !$ACC PARALLEL
         ! GPU refactor: Update source mask with seapoints that have completed
         ! timestepping:
-        WHERE(DTTOT(:NSEAC) .GE. 0.9999*DTG) SRC_MASK(:NSEAC) = .TRUE.
+
+        !!WHERE(DTTOT(:NSEAC) .GE. 0.9999*DTG) SRC_MASK(:NSEAC) = .TRUE.
+        DO CSEA=1,NSEAC
+          IF(DTTOT(CSEA) .GE. 0.9999*DTG .AND. .NOT. SRC_MASK(CSEA)) THEN
+            ! Time stepping complete. Set mask to true and calculate DTDYN
+            SRC_MASK(CSEA) = .TRUE.
+            JSEA = CHUNK0 + CSEA - 1
+            DTDYN(JSEA) = DTDYN(JSEA) / REAL(MAX(1,NSTEPS))
+          END IF
+        END DO
+
         COMPLETE = ALL(SRC_MASK(:NSEAC)) ! GPU Refactor - store in scalar and return
 !$ACC END PARALLEL
 !$ACC END DATA
@@ -2516,8 +2526,7 @@ CONTAINS
       DO CSEA=1,NSEAC
         JSEA = CHUNK0 + CSEA - 1
         IF(SRC_MASK(CSEA)) CYCLE
-
-        DTDYN(JSEA)  = DTDYN(JSEA) / REAL(MAX(1,NSTEPS))
+        !DTDYN(JSEA)  = DTDYN(JSEA) / REAL(MAX(1,NSTEPS))  ! Refactor: Moved to section 7
         FCUT(JSEA)   = FHIGH(CSEA) * TPIINV
       ENDDO 
 
@@ -2594,10 +2603,6 @@ CONTAINS
         !PHINL = DWAT * GRAV * PHINL / DTG  ! TODO: NOT USED ANYWHERE. REMOVE?
         PHIBBL(JSEA) = DWAT * GRAV * PHIBBL(JSEA) / DTG
       END DO ! CSEA/JSEA
-      IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-        ICHK = JCHK - CHUNK0 + 1
-        print*,'PHIAW(2)',PHIAW(JCHK)
-      ENDIF
 
       !
       ! 10.1  Adds ice scattering and dissipation: implicit integration---------------- *
