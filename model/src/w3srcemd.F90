@@ -124,7 +124,7 @@ CONTAINS
   !> @param[in]    srce_call
   !> @param[in]    IT
   !> @param[in]    IMOD       Model number.
-  !> @param[in]    SPECOLD
+  !> @param[in]    SPECOLD     (REMOVED)
   !> @param[inout] SPEC       Spectrum (action) in 1-D form.
   !> @param[out]   VSIO (Optional)
   !> @param[out]   VDIO (Optional)
@@ -192,8 +192,8 @@ CONTAINS
   !> @date   22-Mar-2021
   !>
   SUBROUTINE W3SRCE ( srce_call, IT, IMOD,          &
-!!!      SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &
-       SPECOLD, SPEC,         &
+!!!      SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &  ! SPECOLD not used (removed) VSIO,VDIO,SHAVIO made optional
+       SPEC,         &
        ALPHA, WN1, CG1, CLATSL,                    &
        D_INP, U10ABS, U10DIR,                      &
 #ifdef W3_FLX5
@@ -671,7 +671,7 @@ CONTAINS
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)     :: srce_call, IT, IMOD
-    REAL, intent(in)        :: SPECOLD(NSPEC)
+    !!REAL, intent(in)        :: SPECOLD(NSPEC)  ! Refactor: Not used.
     REAL, INTENT(IN)        ::         &
          DTG
 
@@ -1273,7 +1273,7 @@ CONTAINS
 #ifdef W3_DEBUGSRC
       IF (IX(CSEA) .eq. DEBUG_NODE) THEN
         WRITE(740+IAPROC,*) 'W3SRCE start sum(SPEC)=', sum(SPEC)
-        WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECOLD)=', sum(SPECOLD)
+        !WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECOLD)=', sum(SPECOLD)
         WRITE(740+IAPROC,*) 'W3SRCE start sum(SPECINIT)=', sum(SPECINIT)
         WRITE(740+IAPROC,*) 'W3SRCE start sum(VSIO)=', sum(VSIO)
         WRITE(740+IAPROC,*) 'W3SRCE start sum(VDIO)=', sum(VDIO)
@@ -1618,10 +1618,20 @@ CONTAINS
           DO CSEA=1,NSEAC
             IF(SRC_MASK(CSEA)) CYCLE
             JSEA = CHUNK0 + CSEA - 1
-            ! Note: IX not used in W3STR1...
-            CALL W3STR1 ( SPEC(:,JSEA), SPECOLD, CG1_CHUNK(:,CSEA),  &
-              WN1_CHUNK(:,CSEA), DEPTH(CSEA), IX(CSEA), VSTR(:,CSEA), VDTR(:,CSEA) ) ! TODO
+            ! Refactor: IX and SPECOLD not used in W3STR1 - removed.
+            !CALL W3STR1 ( SPEC(:,JSEA), SPECOLD, CG1_CHUNK(:,CSEA),  &
+            CALL W3STR1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA),  &
+              WN1_CHUNK(:,CSEA), DEPTH(CSEA), VSTR(:,CSEA), VDTR(:,CSEA) )
+
+            IF(JCHK .EQ. JSEA) THEN
+              ICHK = JCHK - CHUNK0 + 1
+              PRINT*,'TR1: JSEA', JSEA
+              PRINT*,SUM(VSTR(:,CSEA)),MINVAL(VSTR(:,CSEA)), MAXVAL(VSTR(:,CSEA))
+              PRINT*,SUM(VDTR(:,CSEA)),MINVAL(VDTR(:,CSEA)), MAXVAL(VDTR(:,CSEA))
+            ENDIF
           END DO ! CSEA; W3STR1
+
+
 #endif
 #ifdef W3_PDLIB
         ENDIF

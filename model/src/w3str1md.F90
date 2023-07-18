@@ -20,10 +20,11 @@ MODULE W3STR1MD
   !/                  | WAVEWATCH III           NOAA/NCEP |
   !/                  |     A. J. van der Westhuysen      |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         13-Jan-2013 |
+  !/                  | Last update :         18-Jul-2023 |
   !/                  +-----------------------------------+
   !/
   !/    13 Jan-2013 : Origination, based on SWAN v40.91 code ( version 4.08 )
+  !/    18-Jul-2023 : Removed unused arguments ( version 7.14 )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -174,13 +175,12 @@ CONTAINS
   !> @param[in] CG Group velocities.
   !> @param[in] WN Wavenumbers.
   !> @param[in] DEPTH Mean water depth.
-  !> @param[in] IX
   !> @param[out] S Source term (1-D version).
   !> @param[out] D Diagonal term of derivative (1-D version).
   !>
   !> @author A. J. van der Westhuysen  @date 13-Jan-2013
   !>
-  SUBROUTINE W3STR1 (A, AOLD, CG, WN, DEPTH, IX, S, D)
+  SUBROUTINE W3STR1 (A, CG, WN, DEPTH, S, D)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -193,6 +193,8 @@ CONTAINS
     !/    13 Jan-2013 : Origination, based on SWAN v40.91 code ( version 4.08 )
     !/    05 Oct-2016 : Avoiding divide by zero for EMEAN      ( version 5.15 )
     !/    28 Feb-2023 : Improvement of efficiency and stability ( version 7.xx)
+    !/    18-Jul-2023 : Remove unused arguments and check EMEAN
+    !/                  to avoid divide by zero error.         ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -320,8 +322,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), AOLD(NSPEC) 
-    INTEGER, INTENT(IN)     :: IX
+    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC)
     REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
     !/
     !/ ------------------------------------------------------------------- /
@@ -425,6 +426,14 @@ CONTAINS
     EBAND  = EB(NK) / DDEN(NK)
     EMEAN  = EMEAN  + EBAND * FTE
     SIGM01 = SIGM01 + EBAND * FTF
+!
+! 3.1 Check for zero energy
+!
+    IF(EMEAN .EQ. 0.0) THEN
+      S(:) = 0.0
+      D(:) = 0.0
+      return
+    END IF
 !
 ! 4.  Final processing
 !

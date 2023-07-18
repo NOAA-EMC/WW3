@@ -2230,7 +2230,7 @@ CONTAINS
                   ISEA = 1
                   ! END TESTING
                   CALL W3SRCE(srce_direct, IT, IMOD, &
-                       VAoldDummy, &   ! Not used, either here or in w3str1 (where it is passed from w3srce)
+                       !VAoldDummy, &   ! Not used, either here or in w3str1 (where it is passed from w3srce)
                        VA(:,1:NSEALM),  &
                        !VSioDummy, VDioDummy,  &   ! Make optional
                        !SHAVETOTioDummy, &         ! Make optional
