@@ -756,7 +756,7 @@ CONTAINS
     REAL, INTENT(OUT), OPTIONAL ::  &
         VSIO(NSPEC,NSEAL),     &
         VDIO(NSPEC,NSEAL)
-    LOGICAL, INTENT(OUT), OPTIONAL :: SHAVEIO
+    LOGICAL, INTENT(OUT), OPTIONAL :: SHAVEIO(NSEAL)
 
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -1933,7 +1933,7 @@ CONTAINS
           IDT = 1 + INT ( 0.99*(DTG-DTTOT(CSEA))/DT(CSEA) ) ! number of iterations
           DT(CSEA) = (DTG-DTTOT(CSEA))/REAL(IDT)           ! actualy time step
           SHAVE = DT(CSEA).LT.DTMIN .AND. DT(CSEA).LT.DTG-DTTOT(CSEA)   ! limiter check ...
-          IF(PRESENT(SHAVEIO)) SHAVEIO = SHAVE
+          IF(PRESENT(SHAVEIO)) SHAVEIO(JSEA) = SHAVE
           DT(CSEA) = MAX ( DT(CSEA) , MIN (DTMIN,DTG-DTTOT(CSEA)) ) ! override dt with input time step or last time step if it is bigger ... anyway the limiter is on!
           !
 #ifdef W3_NL5

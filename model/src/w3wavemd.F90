@@ -2283,10 +2283,10 @@ CONTAINS
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
                        WNMEAN(1:NSEAL),         &
                        RHOAIR(1:NSEA),  &
-                       ASF(1:NSEA),  &            
+                       ASF(1:NSEA)   &
                        !VSIO=VSioDummy, &   ! Now optional
                        !VDIO=VDioDummy, &   ! Now  optional
-                       SHAVEIO=SHAVETOTioDummy & ! Now optional (not actually used)
+                       !SHAVEIO=SHAVETOTioDummy & ! Now optional (not actually used)
                     )
 #ifdef W3_PDLIB
                 END IF
