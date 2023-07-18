@@ -279,7 +279,7 @@ CONTAINS
          DIKCUMUL
 #endif
 #ifdef W3_NL1
-    USE W3SNL1MD, ONLY: INSNL1
+    USE W3SNL1MD, ONLY: INSNL1, INSNLGQM
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD, ONLY: INSNL2
@@ -1281,28 +1281,37 @@ CONTAINS
 #ifdef W3_NL1
     IF ( WRITE ) THEN
       WRITE (NDSM)                                         &
-           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
-           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) SNLC1, LAM,            &
-         KDCON, KDMN, SNLS1, SNLS2, SNLS3
+         KDCON, KDMN, SNLS1, SNLS2, SNLS3,                 &
+         IQTPE, NLTAIL, GQNF1, GQNT1, GQNQ_OM2,            &
+         GQTHRSAT, GQTHRCOU, GQAMP
 #endif
     !
 #ifdef W3_NL2
     IF ( WRITE ) THEN
-      WRITE (NDSM) IQTPE, NLTAIL, NDPTHS
+      WRITE (NDSM) IQTPE, NLTAIL, NDPTHS, GQNF1, GQNT1,    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
       WRITE (NDSM) DPTHNL
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
-           IQTPE, NLTAIL, NDPTHS
+           IQTPE, NLTAIL, NDPTHS, GQNF1, GQNT1,            &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
       ALLOCATE ( MPARS(IGRD)%SNLPS%DPTHNL(NDPTHS) )
       DPTHNL => MPARS(IGRD)%SNLPS%DPTHNL
       PINIT  = .TRUE.
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) DPTHNL
     END IF
-    IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS
+    IF ( FLTEST ) WRITE (NDST,9051) IQTPE, NLTAIL, NDPTHS, &
+         GQNF1, GQNT1, GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
     IF ( FLTEST ) WRITE (NDST,9151) DPTHNL
 #endif
     !
@@ -1378,7 +1387,16 @@ CONTAINS
 #endif
     !
 #ifdef W3_NL1
-    IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
+    IF ( .NOT. WRITE ) THEN
+      IF (IQTPE.GT.0) THEN
+        CALL INSNL1 ( IGRD )
+      ELSE
+        CALL INSNLGQM
+      END IF
+    END IF
+#endif
+#ifdef W3_NL2
+    IF ( .NOT. WRITE .AND. IQTPE.LT.0  ) CALL INSNL2
 #endif
 #ifdef W3_NL3
     IF ( .NOT. WRITE ) CALL INSNL3
@@ -1397,7 +1415,7 @@ CONTAINS
     END IF
 #endif
 #ifdef W3_NL2
-    IF ( .NOT. WRITE ) CALL INSNL2
+    IF ( .NOT. WRITE.AND.IQTPE.GT.0 ) CALL INSNL2
 #endif
 #ifdef W3_MPI
     IF ( FLSNL2 .AND. .NOT.WRITE ) THEN
@@ -1722,7 +1740,7 @@ CONTAINS
     !
 #ifdef W3_NL2
 9051 FORMAT (' TEST W3IOGR : MODULE W3GDATMD SNLP'/          &
-         '      DATA   : ',I4,F5.1,I4)
+         '      DATA   : ',I4,F5.1,4I4,2E10.4,3F6.3)
 9151 FORMAT ('               ',5F7.1)
 #endif
     !

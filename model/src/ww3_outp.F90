@@ -1983,10 +1983,14 @@ CONTAINS
           END IF
           IF ( FLSRCE(3) ) THEN
 #ifdef W3_NL1
-            CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
+            IF (IQTPE.GT.0) THEN
+              CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
+            ELSE
+              CALL W3SNLGQM ( A, CG, WN, DEPTH,  XNL, DIA )
+            END IF
 #endif
 #ifdef W3_NL2
-            CALL W3SNL2 ( A, CG, DEPTH,         XNL, DIA )
+            CALL W3SNL2 ( A, CG, WN, DEPTH,     XNL, DIA )
 #endif
 #ifdef W3_NL3
             CALL W3SNL3 ( A, CG, WN, DEPTH,     XNL, DIA )

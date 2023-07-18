@@ -564,6 +564,7 @@ CONTAINS
 #endif
 #ifdef W3_NL1
     USE W3SNL1MD
+    USE W3GDATMD, ONLY: IQTPE
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD
@@ -1215,10 +1216,14 @@ CONTAINS
       ! 2.b Nonlinear interactions.
       !
 #ifdef W3_NL1
-      CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH, VSNL, VDNL )
+      IF (IQTPE.GT.0) THEN
+        CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH, VSNL, VDNL )
+      ELSE
+        CALL W3SNLGQM ( SPEC, CG1, WN1, DEPTH, VSNL, VDNL )
+      END IF
 #endif
 #ifdef W3_NL2
-      CALL W3SNL2 ( SPEC, CG1, DEPTH, VSNL, VDNL )
+      CALL W3SNL2 ( SPEC, CG1, WN1, DEPTH, VSNL, VDNL )
 #endif
 #ifdef W3_NL3
       CALL W3SNL3 ( SPEC, CG1, WN1, DEPTH, VSNL, VDNL )

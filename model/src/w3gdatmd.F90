@@ -434,6 +434,8 @@ MODULE W3GDATMD
   !                                1 : Deep water
   !                                2 : Deep water / WAM scaling
   !                                3 : Finite water depth
+  !      GQNF1     Int.  Public   Gaussian quadrature resolution
+  !      GQNT1
   !      NDPTHS    Int.  Public   Number of depth for which integration
   !                               space needs to be computed.
   !      NLTAIL    Real  Public   Tail factor for parametric tail.
@@ -910,10 +912,12 @@ MODULE W3GDATMD
 #ifdef W3_NL1
     REAL                  :: SNLC1, LAM, KDCON, KDMN,             &
          SNLS1, SNLS2, SNLS3
+    INTEGER               :: IQTPE, GQNF1, GQNT1, GQNQ_OM2
+    REAL                  :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(4)
 #endif
 #ifdef W3_NL2
-    INTEGER               :: IQTPE, NDPTHS
-    REAL                  :: NLTAIL
+    INTEGER               :: IQTPE, NDPTHS, GQNF1, GQNT1, GQNQ_OM2
+    REAL                  :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(4)
     REAL, POINTER         :: DPTHNL(:)
 #endif
 #ifdef W3_NL3
@@ -1319,12 +1323,14 @@ MODULE W3GDATMD
   !/ Data aliasses for structure SNLP(S)
   !/
 #ifdef W3_NL1
+  INTEGER, POINTER        :: IQTPE, GQNF1, GQNT1, GQNQ_OM2
+  REAL, POINTER           :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(:)
   REAL, POINTER           :: SNLC1, LAM, KDCON, KDMN,             &
        SNLS1, SNLS2, SNLS3
 #endif
 #ifdef W3_NL2
-  INTEGER, POINTER        :: IQTPE, NDPTHS
-  REAL, POINTER           :: NLTAIL
+  INTEGER, POINTER        :: IQTPE, NDPTHS, GQNF1, GQNT1, GQNQ_OM2
+  REAL, POINTER           :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(:)
   REAL, POINTER           :: DPTHNL(:)
 #endif
 #ifdef W3_NL3
@@ -2690,11 +2696,25 @@ CONTAINS
     SNLS1  => MPARS(IMOD)%SNLPS%SNLS1
     SNLS2  => MPARS(IMOD)%SNLPS%SNLS2
     SNLS3  => MPARS(IMOD)%SNLPS%SNLS3
+    IQTPE  => MPARS(IMOD)%SNLPS%IQTPE
+    GQNF1  => MPARS(IMOD)%SNLPS%GQNF1
+    GQNT1  => MPARS(IMOD)%SNLPS%GQNT1
+    GQNQ_OM2  => MPARS(IMOD)%SNLPS%GQNQ_OM2
+    NLTAIL => MPARS(IMOD)%SNLPS%NLTAIL
+    GQTHRSAT => MPARS(IMOD)%SNLPS%GQTHRSAT
+    GQTHRCOU=> MPARS(IMOD)%SNLPS%GQTHRCOU
+    GQAMP=> MPARS(IMOD)%SNLPS%GQAMP
 #endif
 #ifdef W3_NL2
     IQTPE  => MPARS(IMOD)%SNLPS%IQTPE
+    GQNF1  => MPARS(IMOD)%SNLPS%GQNF1
+    GQNT1  => MPARS(IMOD)%SNLPS%GQNT1
+    GQNQ_OM2  => MPARS(IMOD)%SNLPS%GQNQ_OM2
     NDPTHS => MPARS(IMOD)%SNLPS%NDPTHS
     NLTAIL => MPARS(IMOD)%SNLPS%NLTAIL
+    GQTHRSAT => MPARS(IMOD)%SNLPS%GQTHRSAT
+    GQTHRCOU=> MPARS(IMOD)%SNLPS%GQTHRCOU
+    GQAMP=> MPARS(IMOD)%SNLPS%GQAMP
     IF ( NDPTHS .NE. 0 ) DPTHNL => MPARS(IMOD)%SNLPS%DPTHNL
 #endif
 #ifdef W3_NL3
