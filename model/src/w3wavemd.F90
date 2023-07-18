@@ -1521,8 +1521,8 @@ CONTAINS
           FLUSH(740+IAPROC)
 #endif
           ! Implicit source call
-          CALL W3SRCE(srce_imp_pre, IT, ISEA, JSEA, IX, IY, IMOD, &
-              VA(:,1:NSEALM),                        &
+          CALL W3SRCE(srce_imp_pre, IT, IMOD, &
+              VA(:,1:NSEALM),  &
               ALPHA(1:NK,1:NSEAL),  &
               WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
               CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
@@ -1530,9 +1530,9 @@ CONTAINS
               DW(1:NSEA),  &
               U10(1:NSEA),  &
               U10D(1:NSEA), &
-  #ifdef W3_FLX5
+#ifdef W3_FLX5
               TAUA(1:NSEA), TAUADIR(1:NSEA),  &
-  #endif
+#endif
               AS(1:NSEA),  &
               UST(1:NSEA), USTDIR(1:NSEA),  &
               CX(1:NSEA), CY(1:NSEA),  &
@@ -1540,22 +1540,22 @@ CONTAINS
               ICEH(1:NSEA),  &
               ICEF(1:NSEA),  &
               ICEDMAX(1:NSEA),  &
-  #ifdef W3_REF1
+#ifdef W3_REF1
               REFLC(:,1:NSEA), REFLD(:,1:NSEA),  &
               TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
               BERG(1:NSEA),  &
-  #endif
+#endif
               FPIS(1:NSEA), &
               DTDYN(1:NSEAL), &
               FCUT(1:NSEAL),  &
               DTG,  &
-              TAUWX(1:NSEAL), TAUWY(1:NSEAL),   &
-              TAUOX(1:NSEAL), TAUOY(1:NSEAL),   &
-              TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),   &
-              TAUWNX(1:NSEAL), TAUWNY(1:NSEAL), &
+              TAUWX(1:NSEAL), TAUWY(1:NSEAL),  &
+              TAUOX(1:NSEAL), TAUOY(1:NSEAL),  &
+              TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),  &
+              TAUWNX(1:NSEAL), TAUWNY(1:NSEAL),  &
               PHIAW(1:NSEAL),  &
               CHARN(1:NSEAL),  &
-              TWS(1:NSEAL),    & 
+              TWS(1:NSEAL),  &
               PHIOC(1:NSEAL),  &
               WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
 #ifdef BT4                       
@@ -1564,11 +1564,11 @@ CONTAINS
               BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
               PHIBBL(1:NSEAL), &
-              TAUBBL(1:NSEAL,1:2), &  ! WAS TMP3
-              TAUICE(1:NSEAL,1:2), &  ! WAS TMP4 
-              PHICE(1:NSEAL),      &
-              TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
-              WNMEAN(1:NSEAL),         &
+              TAUBBL(1:NSEAL,1:2),  &  ! WAS TMP3
+              TAUICE(1:NSEAL,1:2),  &  ! WAS TMP4
+              PHICE(1:NSEAL),  &
+              TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
+              WNMEAN(1:NSEAL),  &
               RHOAIR(1:NSEA),  &
               ASF(1:NSEA),  &
               VSIO=VSTOT(:,1:NSEAL),  &
@@ -2231,8 +2231,8 @@ CONTAINS
                 ! Implicit solver call
                 IF (FSSOURCE) THEN
                   ! VSIO, VDIO and SHAVEIO not needed in this call
-                  CALL W3SRCE(srce_imp_post,IT,IMOD,     &
-                       VA(:,1:NSEALM),                        &
+                  CALL W3SRCE(srce_imp_post,IT,IMOD,  &
+                       VA(:,1:NSEALM),  &
                        ALPHA(1:NK,1:NSEAL),  &
                        WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
                        CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
@@ -2255,17 +2255,17 @@ CONTAINS
                        TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
                        BERG(1:NSEA),  &
 #endif
-                       FPIS(1:NSEA), &
-                       DTDYN(1:NSEAL), &
+                       FPIS(1:NSEA),  &
+                       DTDYN(1:NSEAL),  &
                        FCUT(1:NSEAL),  &
                        DTG,  &
-                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),   &
-                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),   &
-                       TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),   &
-                       TAUWNX(1:NSEAL), TAUWNY(1:NSEAL), &
+                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),  &
+                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),  &
+                       TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),  &
+                       TAUWNX(1:NSEAL), TAUWNY(1:NSEAL),  &
                        PHIAW(1:NSEAL),  &
                        CHARN(1:NSEAL),  &
-                       TWS(1:NSEAL),    & 
+                       TWS(1:NSEAL),  &
                        PHIOC(1:NSEAL),  &
                        WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
 #ifdef BT4                       
@@ -2273,21 +2273,19 @@ CONTAINS
                        SED_PSIC(1:NSEA),  & ! " "
                        BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
-                       PHIBBL(1:NSEAL), &
-                       TAUBBL(1:NSEAL,1:2), &  ! WAS TMP3
-                       TAUICE(1:NSEAL,1:2), &  ! WAS TMP4 
-                       PHICE(1:NSEAL),      &
-                       TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
-                       WNMEAN(1:NSEAL),         &
+                       PHIBBL(1:NSEAL),  &
+                       TAUBBL(1:NSEAL,1:2),  &  ! WAS TMP3
+                       TAUICE(1:NSEAL,1:2),  &  ! WAS TMP4
+                       PHICE(1:NSEAL),  &
+                       TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
+                       WNMEAN(1:NSEAL),  &
                        RHOAIR(1:NSEA),  &
                        ASF(1:NSEA) )               
                 ELSE
 #endif
-                  CALL W3SRCE(srce_direct, IT, IMOD, &
+                  CALL W3SRCE(srce_direct, IT, IMOD,  &
                        !VAoldDummy, &   ! Not used, either here or in w3str1 (where it is passed from w3srce)
                        VA(:,1:NSEALM),  &
-                       !VSioDummy, VDioDummy,  &   ! Make optional
-                       !SHAVETOTioDummy, &         ! Make optional
                        ALPHA(1:NK,1:NSEAL),  &
                        WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
                        CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
@@ -2312,17 +2310,17 @@ CONTAINS
                        TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
                        BERG(1:NSEA),  &
 #endif
-                       FPIS(1:NSEA), &
-                       DTDYN(1:NSEAL), &
+                       FPIS(1:NSEA),  &
+                       DTDYN(1:NSEAL),  &
                        FCUT(1:NSEAL),  &
                        DTG,  &
-                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),   &
-                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),   &
-                       TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),   &
-                       TAUWNX(1:NSEAL), TAUWNY(1:NSEAL), &
+                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),  &
+                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),  &
+                       TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),  &
+                       TAUWNX(1:NSEAL), TAUWNY(1:NSEAL),  &
                        PHIAW(1:NSEAL),  &
                        CHARN(1:NSEAL),  &
-                       TWS(1:NSEAL),    & 
+                       TWS(1:NSEAL),  &
                        PHIOC(1:NSEAL),  &
                        WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
 #ifdef BT4                       
@@ -2330,14 +2328,14 @@ CONTAINS
                        SED_PSIC(1:NSEA),  & ! " "
                        BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
-                       PHIBBL(1:NSEAL), &
-                       TAUBBL(1:NSEAL,1:2), &  ! WAS TMP3
-                       TAUICE(1:NSEAL,1:2), &  ! WAS TMP4 
-                       PHICE(1:NSEAL),      &
-                       TAUOCX(1:NSEAL), TAUOCY(1:NSEAL), &
-                       WNMEAN(1:NSEAL),         &
+                       PHIBBL(1:NSEAL),  &
+                       TAUBBL(1:NSEAL,1:2),  &  ! WAS TMP3
+                       TAUICE(1:NSEAL,1:2),  &  ! WAS TMP4
+                       PHICE(1:NSEAL),  &
+                       TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
+                       WNMEAN(1:NSEAL),  &
                        RHOAIR(1:NSEA),  &
-                       ASF(1:NSEA)   &
+                       ASF(1:NSEA)  &
                        !VSIO=VSioDummy, &   ! Now optional
                        !VDIO=VDioDummy, &   ! Now  optional
                        !SHAVEIO=SHAVETOTioDummy & ! Now optional (not actually used)
