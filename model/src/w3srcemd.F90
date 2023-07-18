@@ -2006,7 +2006,7 @@ CONTAINS
                     ENDIF
                     PreVS  = DVS / FAKS
                     eVS    = PreVS / CG1_CHUNK(IK,CSEA) * CLATSL(JSEA)
-                    eVD    = MIN(0.,VD(ISP))
+                    eVD    = MIN(0.,VD(ISP,CSEA))
                     B_JAC(ISP,JSEA) = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP,JSEA)*JAC)
                     ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
@@ -2098,6 +2098,7 @@ CONTAINS
             END IF
 
             IF (.not. LSLOC) THEN
+              ! REFACTOR - TODO: INLINE THESE - they are very small subroutines (one liners almost)
               IF (optionCall .eq. 1) THEN
                 CALL SIGN_VSD_PATANKAR_WW3(SPEC(:,JSEA),VS(:,CSEA),VD(:,CSEA))
               ELSE IF (optionCall .eq. 2) THEN
@@ -2114,8 +2115,8 @@ CONTAINS
               WRITE(740+IAPROC,*) '     srce_imp_pre : SHAVE = ', SHAVE
               WRITE(740+IAPROC,*) '     srce_imp_pre : DT=', DT(CSEA), ' HDT=', HDT, 'DTG=', DTG
               WRITE(740+IAPROC,*) '     srce_imp_pre : sum(SPEC)=', sum(SPEC, JSEA)
-              WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VSTOT)=', sum(VS)
-              WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VDTOT)=', sum(MIN(0. , VD))
+              WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VSTOT)=', sum(VS(:,CSEA))
+              WRITE(740+IAPROC,*) '     srce_imp_pre : sum(VDTOT)=', sum(MIN(0. ,VD(:,CSEA)))
             END IF
 
             IF (IX(CSEA) == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VSIN(:,CSEA))
@@ -2184,8 +2185,8 @@ CONTAINS
               WRITE(740+IAPROC,*) '     srce_direct : SHAVE = ', SHAVE
               WRITE(740+IAPROC,*) '     srce_direct : DT=', DT(CSEA), ' HDT=', HDT, 'DTG=', DTG
               WRITE(740+IAPROC,*) '     srce_direct : sum(SPEC)=', sum(SPEC,JSEA)
-              WRITE(740+IAPROC,*) '     srce_direct : sum(VSTOT)=', sum(VS)
-              WRITE(740+IAPROC,*) '     srce_direct : sum(VDTOT)=', sum(MIN(0. , VD))
+              WRITE(740+IAPROC,*) '     srce_direct : sum(VSTOT)=', sum(VS(:,CSEA))
+              WRITE(740+IAPROC,*) '     srce_direct : sum(VDTOT)=', sum(MIN(0. ,VD(:,CSEA)))
             END IF
 #endif
           END IF ! if src_direct
