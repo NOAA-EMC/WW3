@@ -964,7 +964,7 @@ CONTAINS
             ICEH_CHUNK(CHUNKSIZE),       &
             ICEF_CHUNK(CHUNKSIZE),       &
             ICEDMAX_CHUNK(CHUNKSIZE),    &
-            COEF_CHUNK(CHUNKSIZE) 
+            COEF_CHUNK(CHUNKSIZE)
 
 #if defined(W3_ST3) || defined(W3_ST4)
     REAL :: AS_CHUNK(CHUNKSIZE)
@@ -986,6 +986,10 @@ CONTAINS
     REAL :: D50_CHUNK(CHUNKSIZE),      &
             PSIC_CHUNK(CHUNKSIZE),
 #endif
+#ifdef PDLIB        
+    REAL :: CLATSL_CHUNK(CHUNKSIZE)
+#endif
+
 
     ! For masking points that have completed integration or are not seapoints.
     LOGICAL, ALLOCATABLE :: SRC_MASK(:)
@@ -1206,7 +1210,9 @@ CONTAINS
         D50_CHUNK(I) = D50(ISEA)
         PSIC_CHUNK(I) = PSIC(ISEA)
 #endif
-        
+#ifdef PDLIB
+        CLATSL_CHUNK(I) = CLATSL(ISEA)
+#endif
         DRAT(I) = DAIR(ISEA) / DWAT
         DEPTH(I)  = MAX(DMIN , D_INP(ISEA))
 
@@ -1860,7 +1866,7 @@ CONTAINS
 #ifdef W3_PDLIB
           IF (B_JGS_LIMITER_FUNC == 2) THEN
             DO IK=1, NK
-              JAC      = CG1_CHUNK(IK,CSEA)/CLATSL(JSEA)
+              JAC      = CG1_CHUNK(IK,CSEA)/CLATSL_CHUNK(CSEA)
               JAC2     = 1./TPI/SIG(IK)
               FRLOCAL  = SIG(IK)*TPIINV
 #ifdef W3_ST6
@@ -1990,7 +1996,7 @@ CONTAINS
               IF (IMEM == 1) THEN
                 SIDT  = PDLIB_SI(JSEA) * DTG
                 DO IK = 1, NK
-                  JAC = CLATSL(JSEA)/CG1_CHUNK(IK,CSEA)
+                  JAC = CLATSL_CHUNK(CSEA)/CG1_CHUNK(IK,CSEA)
                   DO ITH = 1, NTH
                     ISP = ITH + (IK-1)*NTH
                     VD(ISP,CSEA) = MIN(0., VD(ISP,CSEA))
@@ -2005,7 +2011,7 @@ CONTAINS
                       DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
                     ENDIF
                     PreVS  = DVS / FAKS
-                    eVS    = PreVS / CG1_CHUNK(IK,CSEA) * CLATSL(JSEA)
+                    eVS    = PreVS / CG1_CHUNK(IK,CSEA) * CLATSL_CHUNK(CSEA)
                     eVD    = MIN(0.,VD(ISP,CSEA))
                     B_JAC(ISP,JSEA) = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP,JSEA)*JAC)
                     ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
@@ -2043,7 +2049,7 @@ CONTAINS
 
                 SIDT   = PDLIB_SI(JSEA) * DTG
                 DO IK=1,NK
-                  JAC = CLATSL/CG1_CHUNK(IK,CSEA)
+                  JAC = CLATSL_CHUNK(CSEA)/CG1_CHUNK(IK,CSEA)
                   DO ITH=1,NTH
                     ISP=ITH + (IK-1)*NTH
                     VD(ISP,CSEA) = MIN(0., VD(ISP,CSEA))
@@ -2058,7 +2064,7 @@ CONTAINS
                       DVS = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
                     ENDIF
                     PreVS = DVS / FAKS
-                    eVS = PreVS / CG1_CHUNK(IK,CSEA) * CLATSL(JSEA)
+                    eVS = PreVS / CG1_CHUNK(IK,CSEA) * CLATSL_CHUNK(CSEA)
                     eVD = VD(ISP,CSEA)
 #ifdef W3_DB1
                     eVS = eVS + DBLE(VSDB(ISP,CSEA)) * JAC
