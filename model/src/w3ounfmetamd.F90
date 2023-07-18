@@ -3291,7 +3291,7 @@ CONTAINS
     ! IFI=5, IFJ=1, UST
     META => GROUP(5)%FIELD(1)%META
     ! First component
-    META(1)%FSC    = 0.01
+    META(1)%FSC    = 0.001
     META(1)%ENAME  = '.ust'
     META(1)%UNITS  = 'm s-1'
     META(1)%VARNM='uust'
@@ -3956,6 +3956,19 @@ CONTAINS
     META(1)%VARNC='Goda wave peakedness parameter'
     META(1)%VMIN = 0
     META(1)%VMAX = 32
+    ! IFI=8, IFJ=6, QKK
+    META => GROUP(8)%FIELD(6)%META
+    META(1)%FSC    = 0.05
+    META(1)%UNITS  = 'm/rad'
+    META(1)%ENAME  = '.qkk'
+    META(1)%VARNM='qkk'
+    META(1)%VARNL='k-peakedness'
+    !META(1)%VARNS='sea_surface_wave_peakedness'
+    META(1)%VARNS=''
+    META(1)%VARNG='wavenumber_peakedness'
+    META(1)%VARNC='2D wavenumber peakedness'
+    META(1)%VMIN = 0
+    META(1)%VMAX = 1600
     !
     !---------- GROUP 9 ----------------
     !
