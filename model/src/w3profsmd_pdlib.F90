@@ -6880,7 +6880,7 @@ CONTAINS
     USE W3SERVMD, only: STRACE
 #endif
     !
-    USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV
+    USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV, DERA, RADIUS
     USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX, CLATS, CLATMN, SIG
     USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, B_JGS_GSE_TS, B_JGS_LGSE
     USE W3ADATMD, only: DW
@@ -6915,6 +6915,7 @@ CONTAINS
     REAL eNorm, DTquot
 
     DTME = B_JGS_GSE_TS
+    FACX = 1./(DERA * RADIUS)
 
     DO ITH = 1, NTH
       DO IK = 1, NK
@@ -6940,7 +6941,7 @@ CONTAINS
             V(2) = PDLIB_IEN(2*IDX  ,IE)
             eNorm = DOT_PRODUCT(V,V)
             IP = INE(IDX,IE)
-            !write(*,*) IE, IP, SI(IP), ALPHA, eNorm, eDet
+            write(*,*) IE, IP, SI(IP), ALPHA, eNorm, eDet
             eDeltaT = PDLIB_SI(IP) / (SQRT(VDXX(IP)**2+VDYY(IP)**2) * eNorm /(4. * eDet))
             IF (eDeltaT .lt. DeltaTmax) THEN
               DeltaTmax = eDeltaT
