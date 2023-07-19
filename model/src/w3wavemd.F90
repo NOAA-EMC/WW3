@@ -1548,7 +1548,7 @@ CONTAINS
               FPIS(1:NSEA), &
               DTDYN(1:NSEAL), &
               FCUT(1:NSEAL),  &
-              DTG,  &
+              DTGpre,  &
               TAUWX(1:NSEAL), TAUWY(1:NSEAL),  &
               TAUOX(1:NSEAL), TAUOY(1:NSEAL),  &
               TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),  &
