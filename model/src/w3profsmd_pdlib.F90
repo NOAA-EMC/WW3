@@ -6953,6 +6953,8 @@ CONTAINS
         DT_DIFF = DTG/NB_ITER
         PHI_V = 0.
 
+        write(*,*) IK, ITH, NB_ITER, DT_DIFF, MAXVAL(VDXX), MINVAL(VDXX), MAXVAL(VDYY), MINVAL(VDYY)
+
         DO IT = 1, NB_ITER
           DO IE = 1, NE
              NI = INE(:,IE)
