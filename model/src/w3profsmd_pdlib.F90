@@ -696,7 +696,7 @@ CONTAINS
          ECOS, ESIN, SIG,  PFMOVE,                   &
          IOBP, IOBPD,                                &
          FSN, FSPSI, FSFCT, FSNIMP,                  &
-         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP
+         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP, B_JGS_LGSE
     USE YOWNODEPOOL, only: PDLIB_IEN, PDLIB_TRIA
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE YOWNODEPOOL, only: iplg, npa
@@ -837,6 +837,7 @@ CONTAINS
     ELSE IF (FSNIMP) THEN
       STOP 'For PDLIB and FSNIMP, no function has been programmed yet'
     ENDIF
+   
     !
     IF (MAPSTA_HACK) THEN
       DO IBND_MAP=1,NBND_MAP
@@ -857,6 +858,11 @@ CONTAINS
       ISEA=MAPFS(1,IP_glob)
       VA(ISP,JSEA) = MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*AC(IP) )
     END DO
+
+    IF (B_JGS_LGSE) THEN
+      CALL BLOCK_SOLVER_DIFFUSION(DTG, VA)
+    ENDIF
+
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'Leaving PDLIB_W3XYPUG'
     FLUSH(740+IAPROC)
@@ -6825,7 +6831,7 @@ CONTAINS
 #endif
   END SUBROUTINE BLOCK_SOLVER_INIT
 
-SUBROUTINE BLOCK_SOLVER_DIFFUSION(IMOD)
+  SUBROUTINE BLOCK_SOLVER_DIFFUSION(DTG, U)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -6874,13 +6880,15 @@ SUBROUTINE BLOCK_SOLVER_DIFFUSION(IMOD)
     USE W3SERVMD, only: STRACE
 #endif
     !
-    USE CONSTANTS, only : LPDLIB, TPI, TPIINV
-    USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX
+    USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV
+    USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX, CLATS, CLATMN, SIG
+    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, B_JGS_GSE_TS, B_JGS_LGSE
     USE W3ADATMD, only: DW
     USE W3PARALL, only: INIT_GET_ISEA
-    USE YOWNODEPOOL, only: iplg, np
+    USE YOWNODEPOOL, only: iplg, np, pdlib_tria, pdlib_ien, pdlib_si
     USE yowfunction, only: pdlib_abort
     use YOWNODEPOOL, only: npa
+    use yowElementpool, only : INE, NE
     USE W3GDATMD, only: B_JGS_USE_JACOBI
     USE W3PARALL, only : ListISPprevDir, ListISPnextDir
     USE W3PARALL, only : ListISPprevFreq, ListISPnextFreq
@@ -6888,58 +6896,97 @@ SUBROUTINE BLOCK_SOLVER_DIFFUSION(IMOD)
     USE W3GDATMD, only: FSTOTALIMP
     USE W3ODATMD, only: IAPROC
     !/
-    INTEGER, INTENT(IN) :: IMOD
+    REAL, INTENT(IN)    :: DTG
+    REAL, INTENT(INOUT) :: U(:,:)
     !
     !/ ------------------------------------------------------------------- /
     !/
-    INTEGER ISP, ITH, IK, ISPprevFreq, ISPnextFreq
-    INTEGER NewISP, JTH, istat
+    INTEGER ITH, IK, IE, IS
+    INTEGER NewISP, JTH, istati, JSEA, ISEA
+    REAL    TFAC, DNN, DSS, DSSD, DNND, CGD, DFRR, DTME
+    REAL    VDXX(NSEAL), VDYY(NSEAL) 
+    REAL PHI_V(NSEAL)
+    REAL eDet, DEDX(3), DEDY(3)
+    INTEGER NI(3), ITR, IDX, IP, ISP, IT
+    REAL XSEL(3), DVDXIE, DVDYIE
+    REAL GRAD(2), V(2), eScal, DT_DIFF
+    INTEGER NB_ITER, iIter
+    REAL DeltaTmax, eDeltaT
+    REAL eNorm, DTquot
 
-    IF ( DTME .NE. 0. ) THEN
-      !
-#ifdef W3_OMPH
-      !$OMP PARALLEL DO PRIVATE (ISEA, IX, IY, IXY, &
-      !$OMP&                     DCELL, XWIND, TFAC, DSS, DNN)
-#endif
-      !
-      DO ISEA=1, NSEA
-        IX        = MAPSF(ISEA,1)
-        IY        = MAPSF(ISEA,2)
-        IXY       = MAPSF(ISEA,3)
-        IF ( MIN ( ATRNX(IXY,1) , ATRNX(IXY,-1) ,                 &
-             ATRNY(IXY,1) , ATRNY(IXY,-1) ) .GT. TRNMIN ) THEN
-          DCELL     = CGD * MIN ( HPFAC(IY,IX)*RFAC, &
-               HQFAC(IY,IX)*RFAC ) / CELLP
-          XWIND     = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
-          XWIND     = MAX ( 0. , MIN ( 1. , XWIND ) )
-#ifdef W3_XW0
-          XWIND     = 0.
-#endif
-#ifdef W3_XW1
-          XWIND     = 1.
-#endif
-          TFAC      = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
-          DSS       = XWIND * DCELL + (1.-XWIND) * DSSD * TFAC
-#ifdef W3_DSS0
-          DSS       = 0.
-#endif
-          DNN       = XWIND * DCELL + (1.-XWIND) * DNND * TFAC
+    DTME = B_JGS_GSE_TS
 
-          VDXX(IXY) = DTLOC * (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
-          VDYY(IXY) = DTLOC * (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) &
-               / CLATS(ISEA)**2
-          VDXY(IXY) = DTLOC * (DSS-DNN) * ESIN(ITH)*ECOS(ITH)     &
-               / CLATS(ISEA)
+    DO ITH = 1, NTH
+      DO IK = 1, NK
+        ISP    = ITH + (IK-1)*NTH
+        DO JSEA = 1, NSEAL
+          CALL INIT_GET_ISEA(ISEA, JSEA)
+          TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
+          CGD    = 0.5 * GRAV / SIG(IK)
+          DFRR   = XFR - 1.
+          DSSD   = ( DFRR * CGD )**2 * DTME / 12.
+          DNND   = ( CGD * DTH )**2 * DTME / 12.
+          DSS   = DSSD * TFAC
+          DNN   = DNND * TFAC
+          VDXX(ISEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
+          VDYY(ISEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
+        END DO
 
-        END IF
-      END DO
-      !
-#ifdef W3_OMPH
-      !$OMP END PARALLEL DO
-#endif
-      !
-    END IF
+        DeltaTmax = 1./TINY(1.)
+        DO IE=1,NE
+          eDet = 2. * PDLIB_TRIA(IE)
+          DO IDX=1,3
+            V(1) = PDLIB_IEN(2*IDX-1,IE)
+            V(2) = PDLIB_IEN(2*IDX  ,IE)
+            eNorm = DOT_PRODUCT(V,V)
+            IP = INE(IDX,IE)
+            !write(*,*) IE, IP, SI(IP), ALPHA, eNorm, eDet
+            eDeltaT = PDLIB_SI(IP) / (SQRT(VDXX(IP)**2+VDYY(IP)**2) * eNorm /(4. * eDet))
+            IF (eDeltaT .lt. DeltaTmax) THEN
+              DeltaTmax = eDeltaT
+            END IF
+          END DO
+        END DO
 
+        DTquot = DTG / DeltaTmax
+        NB_ITER = NINT(DTquot) + 1
+        DT_DIFF = DTG/NB_ITER
+        PHI_V = 0.
+
+        DO IT = 1, NB_ITER
+          DO IE = 1, NE
+             NI = INE(:,IE)
+             eDet = 2. * PDLIB_TRIA(IE)
+             DEDX(1) = PDLIB_IEN(1,IE)
+             DEDX(2) = PDLIB_IEN(3,IE)
+             DEDX(3) = PDLIB_IEN(5,IE)
+             DEDY(1) = PDLIB_IEN(2,IE)
+             DEDY(2) = PDLIB_IEN(4,IE)
+             DEDY(3) = PDLIB_IEN(6,IE)
+             XSEL    = U(ISP,NI)
+             DVDXIE  = DOT_PRODUCT(XSEL,DEDX)
+             DVDYIE  = DOT_PRODUCT(XSEL,DEDY)
+             GRAD(1) = DVDXIE / eDet * 1./3. * SUM(VDXX(NI))
+             GRAD(2) = DVDYIE / eDet * 1./3. * SUM(VDYY(NI))
+             !write(*,*) ie, grad, eDet, xsel 
+             DO IDX=1,3
+                V(1) = 0.5 * PDLIB_IEN(2*IDX-1,IE)
+                V(2) = 0.5 * PDLIB_IEN(2*IDX  ,IE)
+                eScal = DOT_PRODUCT(V, GRAD)
+                IP = INE(IDX,IE)
+                PHI_V(IP) = PHI_V(IP) + eScal
+             END DO
+          END DO
+          DO JSEA =1, NSEAL
+            !U(IP) = U(IP) - DT_DIFF * eDiff * PHI_V(IP) / SI(IP)
+            U(ISP,JSEA) = U(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA)
+          END DO       
+        END DO 
+
+      END DO 
+    END DO 
+
+    END SUBROUTINE BLOCK_SOLVER_DIFFUSION
 
   !/ ------------------------------------------------------------------ /
   SUBROUTINE SET_IOBDP_PDLIB

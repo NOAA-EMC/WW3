@@ -803,8 +803,8 @@ MODULE W3GDATMD
     REAL                  :: DUMMY
 #endif
 #ifdef W3_PR2
-    REAL                  :: DTME, CLATMN
 #endif
+    REAL                  :: DTME, CLATMN
 #ifdef W3_PR3
     REAL                  :: WDCG, WDTH
 #endif
@@ -1235,8 +1235,8 @@ MODULE W3GDATMD
   !/ Data aliasses for structure PROP(S)
   !/
 #ifdef W3_PR2
-  REAL, POINTER           :: DTME, CLATMN
 #endif
+  REAL, POINTER           :: DTME, CLATMN
 #ifdef W3_PR3
   REAL, POINTER           :: WDCG, WDTH
 #endif
@@ -2524,9 +2524,10 @@ CONTAINS
     !     Structure PROPS
     !
 #ifdef W3_PR2
+#endif
     DTME   => MPARS(IMOD)%PROPS%DTME
     CLATMN => MPARS(IMOD)%PROPS%CLATMN
-#endif
+!AR: taken out i need this for gse ...
 #ifdef W3_PR3
     WDCG   => MPARS(IMOD)%PROPS%WDCG
     WDTH   => MPARS(IMOD)%PROPS%WDTH
