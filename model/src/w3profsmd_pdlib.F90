@@ -961,7 +961,7 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
 #ifdef W3_REF1
-    INTEGER(KIND=1)    :: IOBPDR(NX)
+    INTEGER(KIND=1)    :: IOBPDR(NPA)
 #endif
     INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
     INTEGER :: IBI, NI(3)
@@ -1301,7 +1301,7 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
 #ifdef W3_REF1
-    INTEGER(KIND=1)    :: IOBPDR(NX)
+    INTEGER(KIND=1)    :: IOBPDR(NPA)
 #endif
     INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
     INTEGER :: IBI, NI(3), JX
@@ -1598,7 +1598,7 @@ CONTAINS
     INTEGER, SAVE           :: IENT = 0
 #endif
 #ifdef W3_REF1
-    INTEGER(KIND=1)    :: IOBPDR(NX)
+    INTEGER(KIND=1)    :: IOBPDR(NPA)
 #endif
     INTEGER :: IP, IE, POS, IT, I1, I2, I3, I, J, ITH, IK
     INTEGER :: IBI, NI(3)
@@ -6952,6 +6952,8 @@ CONTAINS
         NB_ITER = NINT(DTquot) + 1
         DT_DIFF = DTG/NB_ITER
         PHI_V = 0.
+  
+        write(*,*) IK, ITH, NB_ITER, DT_DIFF, MAXVAL(VDXX), MINVAL(VDXX), MAXVAL(VDYY), MINVAL(VDYY)
 
         DO IT = 1, NB_ITER
           DO IE = 1, NE
