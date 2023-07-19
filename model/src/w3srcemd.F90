@@ -696,8 +696,7 @@ CONTAINS
         USTAR(1:NSEA),          &
         USTDIR(1:NSEA),         &
         FPI(1:NSEA),            &
-        ICEF(1:NSEA),           &
-        WHITECAP(1:NSEA, 4)       ! TODO: Swap dims to avoid temporary variable
+        ICEF(1:NSEA)
 
     ! GPU Refactor: Input arrays with dimension NSEAL(M):
     ! TODO: Slice all these to 1:NSEAL in calling routine?   
@@ -720,7 +719,8 @@ CONTAINS
         TAUOCY(1:NSEAL),       &
         TAUBBL(1:NSEAL,2),     &    ! TODO: Swamp dims
         TWS(1:NSEAL),          &
-        TAUICE(1:NSEAL,2)
+        TAUICE(1:NSEAL,2),     &
+        WHITECAP(1:NSEAL,4)         ! TODO: Swap dims to avoid temporary variable
 
     REAL, INTENT(OUT) ::       &
         PHIAW(1:NSEAL),        &
