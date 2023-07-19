@@ -1215,6 +1215,11 @@ CONTAINS
 #endif
         DRAT(I) = DAIR(ISEA) / DWAT
         DEPTH(I)  = MAX(DMIN , D_INP(ISEA))
+#ifdef W3_MLIM
+        ! Do we want D_INP_CHUNK here for Miche Limiter?
+        ! Maybe just calculated ISEA in place in this case?
+        ! (That's what I've done - see MLIM section below)
+#endif
 
         ! Only bother copying ice if ice field read in (INFLAGS(4) is TRUE):
         IF(INFLAGS2(4)) THEN
@@ -2401,11 +2406,15 @@ CONTAINS
           !
 #ifdef W3_MLIM
           IF ( DTTOT(CSEA) .GE. 0.9999*DTG ) THEN
-            HM     = FHMAX *TANH(WNMEAN(JSEA)*MAX(0.,D_INP(CSEA))) / MAX(1.E-4,WNMEAN(JSEA) )
+            ! Refactor - need ISEA here for D_INP. Impact is likely small, so 
+            ! calculate rather than have an extra _CHUNK variable.
+            CALL INIT_GET_ISEA(ISEA, JSEA)  !!! SLOW!
+
+            HM     = FHMAX *TANH(WNMEAN(JSEA)*MAX(0.,D_INP(ISEA))) / MAX(1.E-4,WNMEAN(JSEA) )
             EM     = HM * HM / 16.
-            IF ( EMEAN(JSEA).GT.EM .AND. EMEAN(JSEA).GT.1.E-30 ) THEN
-              SPEC(:,JSEA)   = SPEC(:,JSEA) / EMEAN(JSEA) * EM
-              EMEAN(JSEA)  = EM
+            IF ( EMEAN(CSEA).GT.EM .AND. EMEAN(CSEA).GT.1.E-30 ) THEN
+              SPEC(:,JSEA)   = SPEC(:,JSEA) / EMEAN(CSEA) * EM
+              EMEAN(CSEA)  = EM
             END IF
           END IF
 #endif
@@ -2829,7 +2838,7 @@ CONTAINS
             REFLEC_CHUNK(2,CSEA) .GT. 0 .OR.  &
             (BERG_CHUNK(CSEA) .GT. 0 .AND. REFLEC_CHUNK(4,CSEA) * BERG_CHUNK(CSEA) .GT. 0) &
           ) THEN
-          CALL W3SREF ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(JSEA), &
+          CALL W3SREF ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), &
              FMEAN(JSEA), DEPTH(CSEA), CX_CHUNK(CSEA), CY_CHUNK(CSEA),   &
              REFLEC_CHUNK(:,CSEA), REFLED_CHUNK(:,CSEA), TRNX_CHUNK(CSEA), TRNY_CHUNK(CSEA),  &
              BERG_CHUNK(CSEA), DTG, IX(CSEA), IY(CSEA), JSEA, VREF(:,CSEA) )
