@@ -6955,6 +6955,8 @@ CONTAINS
   
         write(*,*) IK, ITH, NB_ITER, DT_DIFF, MAXVAL(VDXX), MINVAL(VDXX), MAXVAL(VDYY), MINVAL(VDYY)
 
+        write(*,*) IK, ITH, NB_ITER, DT_DIFF, MAXVAL(VDXX), MINVAL(VDXX), MAXVAL(VDYY), MINVAL(VDYY)
+
         DO IT = 1, NB_ITER
           DO IE = 1, NE
              NI = INE(:,IE)

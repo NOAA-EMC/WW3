@@ -745,7 +745,10 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-             B_JGS_SOURCE_NONLINEAR
+             B_JGS_SOURCE_NONLINEAR,                          & 
+             B_JGS_LGSE,                                      &
+             B_JGS_GSE_TS,                                    & 
+             B_JGS_GSE_METHOD
         !Init COUNTCON to zero, it needs to be set somewhere or
         !removed
         COUNTCON=0
@@ -848,7 +851,11 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-             B_JGS_SOURCE_NONLINEAR
+             B_JGS_SOURCE_NONLINEAR,                          & 
+             B_JGS_LGSE,                                      &
+             B_JGS_GSE_TS,                                    &
+             B_JGS_GSE_METHOD
+
         IF (.NOT. GUGINIT) THEN
           CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
         END IF
