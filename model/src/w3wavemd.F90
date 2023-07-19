@@ -1570,11 +1570,13 @@ CONTAINS
               TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
               WNMEAN(1:NSEAL),  &
               RHOAIR(1:NSEA),  &
-              ASF(1:NSEA),  &
-              VSIO=VSTOT(:,1:NSEAL),  &
-              VDIO=VDTOT(:,1:NSEAL),  &
-              SHAVEIO=SHAVETOT(1:NSEAL)  &
-            ) 
+              ASF(1:NSEA) )!,  &
+
+              ! TODO - These are problematic - they are not allocated is LSLOC is True...
+              !VSIO=VSTOT(:,1:NSEAL),  &
+              !VDIO=VDTOT(:,1:NSEAL),  &
+              !SHAVEIO=SHAVETOT(1:NSEAL)  &
+            !)
 
             !! This now done in W3SRCE (including test on LSLOC)
             !IF (.not. LSLOC) THEN
