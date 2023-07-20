@@ -1850,6 +1850,9 @@ CONTAINS
                 DO ISPEC=1,NSPEC
                   CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
                 END DO
+                IF (B_JGS_LGSE) THEN
+                  CALL BLOCK_SOLVER_DIFFUSION(DTG, VA(1:NSPEC,1:NSEAL))
+                ENDIF
               END IF
             END IF
 #endif
@@ -1862,9 +1865,6 @@ CONTAINS
 #endif
 #ifdef W3_PDLIB
               CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-              IF (B_JGS_LGSE) THEN
-                CALL BLOCK_SOLVER_DIFFUSION(DTG, VA)
-              ENDIF
 #endif
 #ifdef W3_PDLIB
             ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
@@ -1872,7 +1872,7 @@ CONTAINS
 #ifdef W3_PDLIB
               CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
               IF (B_JGS_LGSE) THEN
-                CALL BLOCK_SOLVER_DIFFUSION(DTG, VA)
+                CALL BLOCK_SOLVER_DIFFUSION(DTG, VA(1:NSPEC,1:NSEAL))
               ENDIF
 #endif
 #ifdef W3_PDLIB

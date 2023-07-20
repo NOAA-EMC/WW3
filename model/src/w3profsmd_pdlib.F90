@@ -696,7 +696,7 @@ CONTAINS
          ECOS, ESIN, SIG,  PFMOVE,                   &
          IOBP, IOBPD,                                &
          FSN, FSPSI, FSFCT, FSNIMP,                  &
-         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP, B_JGS_LGSE
+         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP, B_JGS_LGSE, NSPEC
     USE YOWNODEPOOL, only: PDLIB_IEN, PDLIB_TRIA
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE YOWNODEPOOL, only: iplg, npa
@@ -858,10 +858,6 @@ CONTAINS
       ISEA=MAPFS(1,IP_glob)
       VA(ISP,JSEA) = MAX ( 0. , CG(IK,ISEA)/CLATS(ISEA)*AC(IP) )
     END DO
-
-    IF (B_JGS_LGSE) THEN
-      CALL BLOCK_SOLVER_DIFFUSION(DTG, VA)
-    ENDIF
 
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'Leaving PDLIB_W3XYPUG'
@@ -6882,81 +6878,102 @@ CONTAINS
     !
     USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV, DERA, RADIUS
     USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX, CLATS, CLATMN, SIG
-    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, B_JGS_GSE_TS, B_JGS_LGSE
-    USE W3ADATMD, only: DW
+    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, B_JGS_GSE_TS, B_JGS_LGSE, NSPEC
+    USE W3ADATMD, only: DW, MPI_COMM_WCMP
     USE W3PARALL, only: INIT_GET_ISEA
+    USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE YOWNODEPOOL, only: iplg, np, pdlib_tria, pdlib_ien, pdlib_si
     USE yowfunction, only: pdlib_abort
     use YOWNODEPOOL, only: npa
     use yowElementpool, only : INE, NE
+    use yowDatapool, only: rtype
+    use yowExchangeModule, only : PDLIB_exchange1DREAL
     USE W3GDATMD, only: B_JGS_USE_JACOBI
-    USE W3PARALL, only : ListISPprevDir, ListISPnextDir
-    USE W3PARALL, only : ListISPprevFreq, ListISPnextFreq
     USE W3GDATMD, only: NSPEC, NTH, NK
     USE W3GDATMD, only: FSTOTALIMP
     USE W3ODATMD, only: IAPROC
+    USE MPI, only : MPI_MIN
     !/
     REAL, INTENT(IN)    :: DTG
-    REAL, INTENT(INOUT) :: U(:,:)
+    REAL, INTENT(INOUT) :: U(1:NSPEC,1:NSEAL)
     !
     !/ ------------------------------------------------------------------- /
     !/
-    INTEGER ITH, IK, IE, IS
+    INTEGER ITH, IK, IE, IS, IERR, MYRANK
     INTEGER NewISP, JTH, istati, JSEA, ISEA
     REAL    TFAC, DNN, DSS, DSSD, DNND, CGD, DFRR, DTME
-    REAL    VDXX(NSEAL), VDYY(NSEAL) 
-    REAL PHI_V(NSEAL)
+    REAL    VDXX(NPA), VDYY(NPA) 
+    REAL PHI_V(NPA)
     REAL eDet, DEDX(3), DEDY(3)
     INTEGER NI(3), ITR, IDX, IP, ISP, IT
-    REAL XSEL(3), DVDXIE, DVDYIE
+    REAL XSEL(3), DVDXIE, DVDYIE, FACX
     REAL GRAD(2), V(2), eScal, DT_DIFF
     INTEGER NB_ITER, iIter
-    REAL DeltaTmax, eDeltaT
-    REAL eNorm, DTquot
+    REAL DeltaTmax, eDeltaT, CLATSMN 
+    REAL eNorm, DTquot, eRealA(1), eRealB(1)
 
     DTME = B_JGS_GSE_TS
     FACX = 1./(DERA * RADIUS)
+    !WRITE(*,*) 'START BLOCK SOLVER' 
+    CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
+
+    !WRITE(3000+myrank,*) 'Entering Diffusion' 
+    !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
+
+    CLATMN=MINVAL(CLATS)
 
     DO ITH = 1, NTH
       DO IK = 1, NK
         ISP    = ITH + (IK-1)*NTH
-        DO JSEA = 1, NSEAL
+        DO JSEA = 1, NPA
           CALL INIT_GET_ISEA(ISEA, JSEA)
           TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
-          CGD    = 0.5 * GRAV / SIG(IK)
+          IF (IOBP_LOC(JSEA) .EQ. 1) THEN
+            CGD    = 0.5 * GRAV / SIG(IK) * FACX !* IOBPA_LOC(JSEA) * IOBDP_LOC(JSEA)
+          ELSE
+            CGD    = 0
+          ENDIF
           DFRR   = XFR - 1.
-          DSSD   = ( DFRR * CGD )**2 * DTME / 12.
+          DSSD   = ( CGD * DFRR )**2 * DTME / 12.
           DNND   = ( CGD * DTH )**2 * DTME / 12.
           DSS   = DSSD * TFAC
           DNN   = DNND * TFAC
-          VDXX(ISEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
-          VDYY(ISEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
+          VDXX(JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
+          VDYY(JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
+          !write(*,*) CGD * FACX, DFRR, DTME, DSS, DNN, VDXX(JSEA), VDYY(JSEA)
+          !  2.0065799E-04  7.0000052E-02   345600.0      5.6820122E-06  3.5323214E-05 5.6820122E-06  3.9108068E-05
         END DO
 
         DeltaTmax = 1./TINY(1.)
         DO IE=1,NE
+          NI = INE(:,IE)
           eDet = 2. * PDLIB_TRIA(IE)
           DO IDX=1,3
             V(1) = PDLIB_IEN(2*IDX-1,IE)
             V(2) = PDLIB_IEN(2*IDX  ,IE)
             eNorm = DOT_PRODUCT(V,V)
             IP = INE(IDX,IE)
-            write(*,*) IE, IP, SI(IP), ALPHA, eNorm, eDet
             eDeltaT = PDLIB_SI(IP) / (SQRT(VDXX(IP)**2+VDYY(IP)**2) * eNorm /(4. * eDet))
+            !write(*,*) IE, IP, eDeltaT
             IF (eDeltaT .lt. DeltaTmax) THEN
               DeltaTmax = eDeltaT
             END IF
           END DO
         END DO
 
+        eRealA(1)=DeltaTmax
+        CALL MPI_ALLREDUCE(eRealA, eRealB, 1, rtype, MPI_MIN, MPI_COMM_WCMP, ierr)
+        DeltaTmax=eRealB(1)
+ 
+        !WRITE(*,*) ITH, IK, MINVAL(VDXX), MAXVAL(VDXX), MINVAL(VDYY), MAXVAL(VDYY), DeltaTmax
+
         DTquot = DTG / DeltaTmax
         NB_ITER = NINT(DTquot) + 1
         DT_DIFF = DTG/NB_ITER
         PHI_V = 0.
-  
-        write(*,*) IK, ITH, NB_ITER, DT_DIFF, MAXVAL(VDXX), MINVAL(VDXX), MAXVAL(VDYY), MINVAL(VDYY)
-
-        write(*,*) IK, ITH, NB_ITER, DT_DIFF, MAXVAL(VDXX), MINVAL(VDXX), MAXVAL(VDYY), MINVAL(VDYY)
+ 
+        WRITE(3000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF
+        CALL MPI_BARRIER (MPI_COMM_WCMP,IERR) 
 
         DO IT = 1, NB_ITER
           DO IE = 1, NE
@@ -6982,14 +6999,19 @@ CONTAINS
                 PHI_V(IP) = PHI_V(IP) + eScal
              END DO
           END DO
+          CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
             !U(IP) = U(IP) - DT_DIFF * eDiff * PHI_V(IP) / SI(IP)
             U(ISP,JSEA) = U(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA)
           END DO       
         END DO 
-
+        !WRITE(3000+myrank,*) ITH, IK, 'FINISHED SUBITERATION' 
+        !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
       END DO 
     END DO 
+
+    WRITE(3000+myrank,*) 'FINISHED DIFFUSION' 
+    CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
 
     END SUBROUTINE BLOCK_SOLVER_DIFFUSION
 
