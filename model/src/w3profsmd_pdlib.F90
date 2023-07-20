@@ -696,7 +696,7 @@ CONTAINS
          ECOS, ESIN, SIG,  PFMOVE,                   &
          IOBP, IOBPD,                                &
          FSN, FSPSI, FSFCT, FSNIMP,                  &
-         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP, B_JGS_LGSE, NSPEC
+         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP, NSPEC
     USE YOWNODEPOOL, only: PDLIB_IEN, PDLIB_TRIA
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE YOWNODEPOOL, only: iplg, npa
@@ -918,7 +918,6 @@ CONTAINS
 #endif
     !
     USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF, DTH
-    USE W3GDATMD, only: B_JGS_GSE_TS, B_JGS_LGSE
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
     USE W3WDATMD, only: TIME
     USE W3ADATMD, only: CG, ITER, DW , CFLXYMAX, NSEALM
@@ -1017,7 +1016,6 @@ CONTAINS
       I3 = INE(3,IE)
       LAMBDA(1) = ONESIXTH *(C(I1,1)+C(I2,1)+C(I3,1)) ! Linearized advection speed in X and Y direction
       LAMBDA(2) = ONESIXTH *(C(I1,2)+C(I2,2)+C(I3,2))
-      IF (B_JGS_LGSE) DFAK(IE) = SQRT(LAMBDA(1)**2+LAMBDA(2)**2) * DTH * B_JGS_GSE_TS / 12.
       KELEM(1,IE) = LAMBDA(1) * PDLIB_IEN(1,IE) + LAMBDA(2) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
       KELEM(2,IE) = LAMBDA(1) * PDLIB_IEN(3,IE) + LAMBDA(2) * PDLIB_IEN(4,IE)
       KELEM(3,IE) = LAMBDA(1) * PDLIB_IEN(5,IE) + LAMBDA(2) * PDLIB_IEN(6,IE)
@@ -1106,22 +1104,11 @@ CONTAINS
 #endif
       U = DBLE(AC)
       ST = ZERO
-      IF (B_JGS_LGSE) THEN
-        DO IE = 1, NE
-          NI      = INE(:,IE)
-          UTILDE  = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-          DGSE(1) = DFAK(IE) * DOT_PRODUCT(U(NI),PDLIB_IEND(:,1,IE))
-          DGSE(2) = DFAK(IE) * DOT_PRODUCT(U(NI),PDLIB_IEND(:,2,IE))
-          DGSE(3) = DFAK(IE) * DOT_PRODUCT(U(NI),PDLIB_IEND(:,3,IE))
-          ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) + DGSE 
-        END DO ! IE
-      ELSE
-        DO IE = 1, NE
-          NI      = INE(:,IE)
-          UTILDE  = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-          ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE)
-        END DO ! IE
-      ENDIF
+      DO IE = 1, NE
+        NI      = INE(:,IE)
+        UTILDE  = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
+        ST(NI)  = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE)
+      END DO ! IE
 #ifdef W3_DEBUGSOLVER
       IF (testWrite) THEN
         CALL SCAL_INTEGRAL_PRINT_R4(ST, "ST in loop")
@@ -6827,7 +6814,7 @@ CONTAINS
 #endif
   END SUBROUTINE BLOCK_SOLVER_INIT
 
-  SUBROUTINE BLOCK_SOLVER_DIFFUSION(DTG, U)
+  SUBROUTINE BLOCK_SOLVER_DIFFUSION(DTG)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -6878,8 +6865,9 @@ CONTAINS
     !
     USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV, DERA, RADIUS
     USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX, CLATS, CLATMN, SIG
-    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, B_JGS_GSE_TS, B_JGS_LGSE, NSPEC
+    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, NSPEC, B_JGS_GSE_TS
     USE W3ADATMD, only: DW, MPI_COMM_WCMP
+    USE W3WDATMD, ONLY: VA
     USE W3PARALL, only: INIT_GET_ISEA
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
     USE YOWNODEPOOL, only: iplg, np, pdlib_tria, pdlib_ien, pdlib_si
@@ -6895,7 +6883,6 @@ CONTAINS
     USE MPI, only : MPI_MIN
     !/
     REAL, INTENT(IN)    :: DTG
-    REAL, INTENT(INOUT) :: U(1:NSPEC,1:NSEAL)
     !
     !/ ------------------------------------------------------------------- /
     !/
@@ -6972,8 +6959,8 @@ CONTAINS
         DT_DIFF = DTG/NB_ITER
         PHI_V = 0.
  
-        WRITE(3000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF
-        CALL MPI_BARRIER (MPI_COMM_WCMP,IERR) 
+        !WRITE(3000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF
+        !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR) 
 
         DO IT = 1, NB_ITER
           DO IE = 1, NE
@@ -6985,7 +6972,7 @@ CONTAINS
              DEDY(1) = PDLIB_IEN(2,IE)
              DEDY(2) = PDLIB_IEN(4,IE)
              DEDY(3) = PDLIB_IEN(6,IE)
-             XSEL    = U(ISP,NI)
+             XSEL    = VA(ISP,NI)
              DVDXIE  = DOT_PRODUCT(XSEL,DEDX)
              DVDYIE  = DOT_PRODUCT(XSEL,DEDY)
              GRAD(1) = DVDXIE / eDet * 1./3. * SUM(VDXX(NI))
@@ -7002,7 +6989,7 @@ CONTAINS
           CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
             !U(IP) = U(IP) - DT_DIFF * eDiff * PHI_V(IP) / SI(IP)
-            U(ISP,JSEA) = U(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA)
+            VA(ISP,JSEA) = VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA)
           END DO       
         END DO 
         !WRITE(3000+myrank,*) ITH, IK, 'FINISHED SUBITERATION' 
@@ -7010,8 +6997,8 @@ CONTAINS
       END DO 
     END DO 
 
-    WRITE(3000+myrank,*) 'FINISHED DIFFUSION' 
-    CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
+    !WRITE(3000+myrank,*) 'FINISHED DIFFUSION' 
+    !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
 
     END SUBROUTINE BLOCK_SOLVER_DIFFUSION
 
