@@ -72,7 +72,7 @@ MODULE W3SRCEMD
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
   INTEGER,PARAMETER :: CHUNKSIZE = 4
-  INTEGER, PARAMETER :: JCHK = 7
+  INTEGER, PARAMETER :: JCHK = -1
   INTEGER :: ICHK
 
   !/
@@ -1314,7 +1314,7 @@ CONTAINS
 #endif
 #ifdef W3_ST2
         CALL W3SPR2 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), FPI(CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA),    & 
-           EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), ALPHA(:,JSEA), FP(CSEA) )  !TODO
+           EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), ALPHA(:,JSEA), FP(CSEA) )
 #endif
 #ifdef W3_ST3
         TAUWX(JSEA)=0.
@@ -1776,7 +1776,7 @@ CONTAINS
             JSEA = CHUNK0 + CSEA - 1
 
             CALL W3SBS1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), & 
-                DEPTH(CSEA), CX_CHUNK(CSEA), CY_CHUNK(CSEA), TAUSCX, TAUSCY, VSBS(:,CSEA), VDBS(:,CSEA) ) ! TODO
+                DEPTH(CSEA), CX_CHUNK(CSEA), CY_CHUNK(CSEA), TAUSCX, TAUSCY, VSBS(:,CSEA), VDBS(:,CSEA) ) ! TODO - TAUSC[XY] not used.
           END DO ! CSEA; W3SBSx
 #endif
         !
@@ -2164,7 +2164,7 @@ CONTAINS
             IF ( SHAVE ) THEN
               DO IS=IS1, NSPECH
                 eInc1 = VS(IS,CSEA) * DT(CSEA) / MAX ( 1. , (1.-HDT*VD(IS,CSEA)))
-                eInc2 = SIGN ( MIN (DAM(IS,CSEA),ABS(eInc1)) , eInc1 )   !!! TODO
+                eInc2 = SIGN ( MIN (DAM(IS,CSEA),ABS(eInc1)) , eInc1 )
                 SPEC(IS,JSEA) = MAX ( 0. , SPEC(IS,JSEA)+eInc2 )
               END DO
             ELSE
@@ -2354,6 +2354,7 @@ CONTAINS
 
 #ifdef W3_ST1
           FH1    = FXFM * FMEAN(CSEA)
+          FH2 = FXPM / UST_CHUNK(CSEA)   ! GPU refactor - had to recalculate FH2 here
           FHIGH(CSEA)  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
           NKH(CSEA) = MAX ( 2 , MIN ( NKH1(CSEA) ,                  &
                INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH(CSEA))) ) ) )
