@@ -72,7 +72,7 @@ MODULE W3SRCEMD
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
   INTEGER, PARAMETER :: CHUNKSIZE = 1
-  INTEGER, PARAMETER :: JCHK = -1
+  INTEGER, PARAMETER :: JCHK = 1200
   INTEGER :: ICHK
 
   !/
@@ -181,7 +181,7 @@ CONTAINS
   !> @param[inout] PHICE      Energy flux to sea ice.
   !> @param[inout] TAUOCX     Total ocean momentum component.
   !> @param[inout] TAUOCY     Total ocean momentum component.
-  !> @param[inout] WNMEAN(JSEA)     Mean wave number.
+  !> @param[inout] WNMEAN     Mean wave number.
   !> @param[in]    DAIR       Air density.
   !> @param[in]    COEF
   !>
@@ -371,7 +371,7 @@ CONTAINS
     !       TAUICE  R.A.   O   Momentum flux to sea ice       ( !/ICx )
     !       PHICE   Real   O   Energy flux to sea ice         ( !/ICx )
     !       TAUOCX-YReal   O   Total ocean momentum components
-    !       WNMEAN(JSEA)  Real   O   Mean wave number
+    !       WNMEAN  Real   O   Mean wave number
     !       DAIR    Real   I   Air density
     !     ----------------------------------------------------------------
     !       Note: several pars are set to I/O to avoid compiler warnings.
@@ -663,6 +663,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NSEA, NSEAL, MAPSTA, MAPSF, FLAGST, NX, NY
     USE W3PARALL, ONLY: INIT_GET_ISEA
     USE W3ADATMD, ONLY: NSEALM
+    USE CONSTANTS, ONLY: UNDEF
 
     !/
     IMPLICIT NONE
@@ -1314,7 +1315,8 @@ CONTAINS
         FP(CSEA)= 0.85 * FMEAN(CSEA)
 #endif
 #ifdef W3_ST2
-        CALL W3SPR2 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), FPI(CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA),    & 
+        CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
+        CALL W3SPR2 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), FPI(ISEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA),  &
            EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), ALPHA(:,JSEA), FP(CSEA) )
 #endif
 #ifdef W3_ST3
@@ -1472,7 +1474,12 @@ CONTAINS
       END DO
 #endif
 #ifdef W3_ST2
-      FHIGH(1:NSEAC) = XFC * FPI(CSEA)
+      DO CSEA=1,NSEAC
+        JSEA = CHUNK0 + CSEA - 1
+        CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
+        FHIGH(CSEA) = XFC * FPI(ISEA)
+      ENDDO
+      !!FHIGH(1:NSEAC) = XFC * FPI(CSEA)  ! Have to do this explicitly above as FPI is NSEA and I/O
 #endif
 #ifdef W3_ST3
       FHIGH(1:NSEAC) = MAX(FFXFM * MAX(FMEAN(1:NSEAC),FMEANWS(1:NSEAC)), &
@@ -1539,8 +1546,9 @@ CONTAINS
           CALL W3SIN1 (SPEC(:,JSEA), WN2(:,CSEA), UST_CHUNK(CSEA), U10D_CHUNK(CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
 #ifdef W3_ST2
+          CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
           CALL W3SIN2 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), CD(CSEA), Z0(CSEA),  &
-             FPI(:,CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
+             FPI(ISEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
 #ifdef W3_ST3
           CALL W3SIN3 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), &
@@ -1665,7 +1673,8 @@ CONTAINS
           CALL W3SDS1 ( SPEC(:,JSEA), WN2(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), VSDS(:,CSEA), VDDS(:,CSEA) )
 #endif
 #ifdef W3_ST2
-          CALL W3SDS2 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), FPI(CSEA), UST_CHUNK(CSEA), ALPHA(JSEA), VSDS(:,CSEA), VDDS(:,CSEA) )
+          CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
+          CALL W3SDS2 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), FPI(ISEA), UST_CHUNK(CSEA), ALPHA(:,JSEA), VSDS(:,CSEA), VDDS(:,CSEA) )
 #endif
 #ifdef W3_ST3
 ! IX/IY not used...
@@ -1835,7 +1844,8 @@ CONTAINS
           JSEA = CHUNK0 + CSEA - 1
 
 #ifdef W3_ST2
-          FHIGH(CSEA)  = XFC * FPI(CSEA)
+          CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
+          FHIGH(CSEA)  = XFC * FPI(ISEA)
           IF ( FLTEST ) WRITE (NDST,9005) FHIGH*TPIINV
 #endif
           NKH(CSEA)    = MIN (NK, INT(FACTI2+FACTI1*LOG(MAX(1.E-7,FHIGH(CSEA)))) )
@@ -2308,7 +2318,8 @@ CONTAINS
           CALL W3SPR1 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA))
 #endif
 #ifdef W3_ST2
-          CALL W3SPR2 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), FPI(JSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA),   &
+          CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
+          CALL W3SPR2 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), FPI(ISEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA),   &
              EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), ALPHA(:,JSEA), FP(CSEA) )
 #endif
 #ifdef W3_ST3
@@ -2365,8 +2376,9 @@ CONTAINS
 #endif
           !
 #ifdef W3_ST2
-          FHTRAN = XFT*FPI(CSEA)
-          FHIGH(CSEA)  = XFC*FPI(CSEA)
+          CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
+          FHTRAN = XFT*FPI(ISEA)
+          FHIGH(CSEA)  = XFC*FPI(ISEA)
           DFH    = FHIGH(CSEA) - FHTRAN
           NKH(CSEA) = MAX ( 1 ,                                        &
                INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHTRAN)) ) )
@@ -2801,13 +2813,14 @@ CONTAINS
 
           ! FLD1/2 requires the calculation of FPI:
 #if defined (W3_FLD1) || defined(W3_FLD2)
-        CALL CALC_FPI(SPEC(:,JSEA), CG1_CHUNK(:,CSEA), FPI(CSEA), VSIN(:,CSEA) )
+        CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
+        CALL CALC_FPI(SPEC(:,JSEA), CG1_CHUNK(:,CSEA), FPI(ISEA), VSIN(:,CSEA) )
 #endif      
       !
 #ifdef W3_FLD1
         IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
           ! TODO - TAUNUX/Y not used. Remove?
-          CALL W3FLD1 ( SPEC(:,JSEA),min(FPI(CSEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
+          CALL W3FLD1 ( SPEC(:,JSEA),min(FPI(ISEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
              COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
              DAIR_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(CSEA),TAUNUX,TAUNUY,CHARN(JSEA))
         ELSE
@@ -2817,7 +2830,7 @@ CONTAINS
 #ifdef W3_FLD2
         IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
           ! TODO - TAUNUX/Y not used. Remove?
-          CALL W3FLD2 ( SPEC(:,JSEA),min(FPI(CSEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
+          CALL W3FLD2 ( SPEC(:,JSEA),min(PI(ISEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
              COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
              DAIR_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(CSEA),TAUNUX,TAUNUY,CHARN(JSEA))
         ELSE
@@ -2889,6 +2902,29 @@ CONTAINS
 
       SPEC(:,CHUNK0:CHUNKN) = MAX(0., SPEC(:,CHUNK0:CHUNKN))
       !
+
+      ! NEW Refactored code:
+      ! Write temporary local grid CHUNKED arrays back to full grid:
+      DO CSEA=1,NSEAC
+        JSEA = CHUNK0 + CSEA - 1
+        CALL INIT_GET_ISEA(ISEA, JSEA)
+
+        ! This moved  from W3WAVE (after direct W3SRCE call)
+        ! TODO - check this is ok for implicit calls too...
+        IF(.NOT. (MAPSTA(IY(CSEA),IX(CSEA)) .EQ. 1 .AND. FLAGST(ISEA))) THEN
+          USTAR (ISEA) = UNDEF
+          USTDIR(ISEA) = UNDEF
+          DTDYN (JSEA) = UNDEF
+          FCUT  (JSEA) = UNDEF
+          SPEC(:,JSEA)  = 0.
+        ENDIF
+
+        ! Set output values in full grid
+        USTAR(ISEA) = UST_CHUNK(CSEA)
+        USTDIR(ISEA) = USTD_CHUNK(CSEA)
+        !FPI(ISEA)
+        ! TODO - ARE MORE NEEDED NERE?
+      ENDDO
 
     END DO !! CHUNK LOOP (CHUNK0,CHUNKN)
     RETURN

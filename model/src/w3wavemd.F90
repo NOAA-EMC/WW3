@@ -2352,8 +2352,7 @@ CONTAINS
                 !TAUICE(JSEA,1:2) = TMP4
 
 
-                !! TODO: These set to under for MASKED points
-                !! NEEDS TO HAPPEN IN W3SRCE.
+                !! Below now happens at end of W3SRCE
 !                UST   (ISEA) = UNDEF
 !                USTDIR(ISEA) = UNDEF
 !                DTDYN (JSEA) = UNDEF
