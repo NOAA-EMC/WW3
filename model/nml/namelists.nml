@@ -224,7 +224,7 @@ $                                            w3sic4md.ftn
 $
 $ Triad nonlinear interactions - - - - - - - - - - - - - - - - - - - -
 $   Lumped Triad Interaction (LTA) : Namelist STR1 (To be implemented)
-$                           PTRIAD1 : Proportionality coefficient (default 0.05)
+$                           PTRIAD1 : Proportionality coefficient (default 1.)
 $                           PTRIAD2 : Multiple of Tm01 up to which interaction
 $                                     is computed (2.5)
 $                           PTRIAD3 : Ursell upper limit for computing
@@ -284,27 +284,30 @@ $   limitation and the GSE alleviation.
 $
 $ Unstructured grids ------------------------------------------------ $
 $   UNST parameters       : Namelist UNST
-$                           UGOBCAUTO : TRUE: OBC points are taken from  type 15 elements
+$                           UGOBCAUTO  : TRUE: OBC points are taken from  type 15 elements
 $                                       FALSE: OBC points must be listed in ww3_grid.inp
-$                           UGOBCDEPTH: Threshold ( < 0) depth for OBC points if UGOBCAUTO is TRUE
-$                           EXPFSN    : Activation of N scheme
+$                           UGOBCDEPTH : Threshold ( < 0) depth for OBC points if UGOBCAUTO is TRUE
+$                           UGOBCFILE : Reading boundary files from a file  
+$                           EXPFSN  : Activation of N scheme (only one of the below 4, True - Active, False - not active) 
 $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
-$                           IMPFSN    : Activation of N implicit scheme
+$                           IMPFSN  : Activation of N implicit scheme
+$                           EXPTOTAL  : Activation of the Block explicit N scheme solver 
 $                           IMPTOTAL  : Activation of fully implicit scheme | Non splitting
-$                           EXPTOTAL  : Turn on implicit refraction (only with imptotal)
-$                           IMPREFRACTION  : Turn on implicit freq. shift (only with imptotal)
+$                           IMPREFRACTION : Turn on implicit freq. shift (only with imptotal)
 $                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (only with imptotal)
-$                           IMPSOURCE  : Turn on implicit source terms (only with imptotal)
+$                           IMPSOURCE     : Turn on implicit source terms (only with imptotal)
 $                           JGS_TERMINATE_MAXITER  : max. Number of iterations
-$                           JGS_TERMINATE_DIFFERENCE  : terminate based on the total change of wave action
-$                           JGS_TERMINATE_NORM  : terminate based on the norm of the solution
-$                           JGS_USE_JACOBI  : Use Jacobi solver for imptotal
-$                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal
+$                           JGS_TERMINATE_DIFFERENCE  : Terminate based on the total change of the unweightet sum of wave action
+$                           JGS_TERMINATE_NORM  : Terminate based on the norm of the solution
+$                           JGS_USE_JACOBI  : Use Jacobi solver family 
+$                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal instead of the conservative jacobi iterator. 
 $                           JGS_MAXITER  : max. Number of solver iterations
 $                           JGS_PMIN  : % of grid points that do not need to converge during solver iteration.
 $                           JGS_DIFF_THR  : implicit solver threshold for JGS_TERMINATE_DIFFERENCE
 $                           JGS_NORM_THR  : terminate based on the norm of the solution
+$                           JGS_LIMITER  : use total (quasi-steady: limits whole equation) instead of local limiter (un-steady: limits only source terms)
+$                           JGS_LIMITER_FUNC  : 1 - old limiter; 2 - alternatnive limiter 
 $                           SETUP_APPLY_WLV  : Compute wave setup (experimental)
 $                           SOLVERTHR_SETUP  : Solver threshold for setup computations
 $                           CRIT_DEP_SETUP  : Critical depths for setup computations

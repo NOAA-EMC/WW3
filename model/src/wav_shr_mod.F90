@@ -29,6 +29,7 @@ module wav_shr_mod
   use NUOPC           , only : NUOPC_CompAttributeGet
   use NUOPC_Model     , only : NUOPC_ModelGet
   use wav_kind_mod    , only : r8 => shr_kind_r8, i8 => shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use wav_kind_mod    , only : i4 => shr_kind_i4
 
   implicit none
   private
@@ -44,6 +45,8 @@ module wav_shr_mod
   public  :: ymd2date          !< @public convert  year,month,day to integer
   private :: timeInit          !< @public create an ESMF_Time object
   private :: field_getfldptr   !< @private obtain a pointer to a field
+  public  :: diagnose_mesh     !< @public write out info about mesh
+  public  :: write_meshdecomp  !< @public write the mesh decomposition to a file
 
   interface state_getfldptr
     module procedure state_getfldptr_1d
@@ -56,6 +59,7 @@ module wav_shr_mod
   integer, parameter , public :: nwav_elev_spectrum = 25        !< the size of the wave spectrum exported if coupling
                                                                 !! waves to cice6
   integer            , public :: dbug_flag = 0                  !< @public flag used to produce additional output
+  logical            , public :: unstr_mesh = .false.           !< @public flag to specify use of unstructured mesh
   character(len=256) , public :: casename = ''                  !< @public the name pre-prended to an output file
 
   ! Only used by cesm and optionally by uwm
@@ -106,6 +110,228 @@ module wav_shr_mod
 
   !===============================================================================
 contains
+  !===============================================================================
+  !> Get properties of a mesh
+  !!
+  !! @param[in]    EMeshIn          an ESMF Mesh
+  !! @param[in]    gindex_size      the length of the gindex
+  !! @param[in]    mesh_name        a name to identify the mesh in the PET log
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 09-12-2022
+  subroutine diagnose_mesh(EMeshIn, gindex_size, mesh_name, rc)
+
+    use ESMF          , only : ESMF_Mesh, ESMF_LOGMSG_Info
+
+    ! input/output variables
+    type(ESMF_Mesh) , intent(in)  :: EMeshIn
+    integer         , intent(in)  :: gindex_size
+    character(len=*), intent(in)  :: mesh_name
+    integer         , intent(out) :: rc
+
+    !local variables
+    logical                :: elementCoordsIsPresent
+    logical                :: elementDistGridIsPresent
+    logical                :: nodalDistGridIsPresent
+    logical                :: elementMaskIsPresent
+    logical                :: nodeMaskIsPresent
+    character(ESMF_MAXSTR) :: msgString
+
+    integer                :: ncnt,ecnt,lb,ub
+    integer                :: nowndn, nownde
+    integer, allocatable   :: nids(:), eids(:), nowners(:)
+    character(len=*),parameter :: subname = '(wav_shr_mod:mesh_diagnose) '
+    !-------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+
+    !The Mesh class is distributed by elements. This means that a node must be present on any PET that
+    !contains an element associated with that node, but not on any other PET (a node can't be on a PET
+    !without an element "home"). Since a node may be used by two or more elements located on different
+    !PETS, a node may be duplicated on multiple PETs. When a node is duplicated in this manner, one and
+    !only one of the PETs that contain the node must "own" the node. The user sets this ownership when they
+    !define the nodes during Mesh creation. When a Field is created on a Mesh (i.e. on the Mesh nodes),
+    !on each PET the Field is only created on the nodes which are owned by that PET. This means that the
+    !size of the Field memory on the PET can be smaller than the number of nodes used to create the Mesh
+    !on that PET.
+
+    !The node id is a unique (across all PETs) integer attached to the particular node. It is used to
+    !indicate which nodes are the same when connecting together pieces of the Mesh on different processors.
+    !The node owner indicates which PET is in charge of the node
+
+    !The element id is a unique (across all PETs) integer attached to the particular element. The element
+    !connectivity indicates which nodes are to be connected together to form the element. The entries
+    !in this list are NOT the global ids of the nodes, but are indices into the PET local lists of node info used
+    !in the Mesh Create.
+
+    call ESMF_MeshGet(EMeshIn, nodeCount=ncnt, elementCount=ecnt, &
+         numOwnedElements=nownde, numOwnedNodes=nowndn, &
+         elementCoordsIsPresent=elementCoordsIsPresent, &
+         elementDistGridIsPresent=elementDistGridIsPresent,&
+         nodalDistGridIsPresent=nodalDistGridIsPresent, &
+         elementMaskIsPresent=elementMaskIsPresent, &
+         nodeMaskIsPresent=nodeMaskIsPresent, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    write(msgString,'(5(a,i6))')trim(mesh_name)//' Info: Node Cnt = ',ncnt,' Elem Cnt = ',ecnt, &
+         ' num Owned Elms = ',nownde,' num Owned Nodes = ',nowndn,&
+         ' Gindex size = ',gindex_size
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    allocate(nids(ncnt))
+    allocate(nowners(ncnt))
+    allocate(eids(ecnt))
+
+    if (elementDistGridIsPresent) call ESMF_LogWrite('element Distgrid is Present', ESMF_LOGMSG_INFO)
+    if (nodalDistGridIsPresent) call ESMF_LogWrite('nodal Distgrid is Present', ESMF_LOGMSG_INFO)
+    if (elementMaskIsPresent) call ESMF_LogWrite('element Mask is Present', ESMF_LOGMSG_INFO)
+    if (nodeMaskIsPresent) call ESMF_LogWrite('node Mask is Present', ESMF_LOGMSG_INFO)
+    if (elementCoordsIsPresent) call ESMF_LogWrite('element Coords is Present', ESMF_LOGMSG_INFO)
+
+    call ESMF_MeshGet(EMeshIn, nodeIds=nids, nodeOwners=nowners, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    lb = lbound(nids,1); ub = ubound(nids,1)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeIds(lb:lb+9) = ',lb,ub,nids(lb:lb+9)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners(lb:lb+9) = ',lb,ub,nowners(lb:lb+9)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeIds(ub-9:ub) = ',lb,ub,nids(ub-9:ub)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners(ub-9:ub) = ',lb,ub,nowners(ub-9:ub)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    write(msgString,'(a,12i8)')trim(mesh_name)//' : NodeOwners min,max = ',minval(nowners),maxval(nowners)
+    call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+
+    ! some methods not avail when using a dual mesh
+    if (.not. unstr_mesh) then
+      call ESMF_MeshGet(EMeshIn, elementIds=eids, rc=rc)
+      lb = lbound(eids,1); ub = ubound(eids,1)
+      write(msgString,'(a,12i8)')trim(mesh_name)//' : ElemIds(lb:lb+9) = ',lb,ub,eids(lb:lb+9)
+      call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+      write(msgString,'(a,12i8)')trim(mesh_name)//' : ElemIds(ub-9:ub) = ',lb,ub,eids(ub-9:ub)
+      call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+    end if
+    deallocate(nids)
+    deallocate(eids)
+    deallocate(nowners)
+
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+
+  end subroutine diagnose_mesh
+  !===============================================================================
+  !> Write the mesh decomposition to a file
+  !!
+  !! @param[in]    EMeshIn          an ESMF Mesh
+  !! @param[in]    mesh_name        a name to identify the mesh
+  !! @param[out]   rc               a return code
+  !!
+  !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
+  !> @date 09-12-2022
+  subroutine write_meshdecomp(EMeshIn, mesh_name, rc)
+
+    use ESMF          , only : ESMF_Mesh, ESMF_DistGrid, ESMF_Field, ESMF_FieldBundle, ESMF_FieldBundleAdd
+    use ESMF          , only : ESMF_DistGridGet, ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_FieldBundleGet
+    use ESMF          , only : ESMF_MESHLOC_ELEMENT, ESMF_TYPEKIND_R8, ESMF_TYPEKIND_I4, ESMF_LOGMSG_Info
+    use ESMF          , only : ESMF_FieldBundleWrite, ESMF_FieldBundleDestroy
+
+    use w3odatmd      , only : iaproc
+
+    ! input/output variables
+    type(ESMF_Mesh) , intent(in)  :: EMeshIn
+    character(len=*), intent(in)  :: mesh_name
+    integer         , intent(out) :: rc
+
+    ! local variables
+    type(ESMF_FieldBundle)         :: FBTemp
+    type(ESMF_Field)               :: lfield
+    type(ESMF_DistGrid)            :: distgrid
+    type(ESMF_Field)               :: doffield
+    character(len=6), dimension(4) :: lfieldlist
+    integer                        :: i,ndims,nelements
+    real(r8), pointer              :: fldptr1d(:)
+    integer(i4), allocatable       :: dof(:)
+    integer(i4), pointer           :: dofptr(:)
+    real(r8), pointer              :: ownedElemCoords(:), ownedElemCoords_x(:), ownedElemCoords_y(:)
+    character(len=*),parameter     :: subname = '(wav_shr_mod:write_meshdecomp) '
+    !-------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
+
+    ! create a temporary FB to write the fields
+    FBtemp = ESMF_FieldBundleCreate(rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_MeshGet(EMeshIn, spatialDim=ndims, numOwnedElements=nelements, elementDistgrid=distgrid, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    lfieldlist = (/'dof   ', 'coordx', 'coordy', 'decomp'/)
+    ! index array
+    doffield = ESMF_FieldCreate(EMeshIn, ESMF_TYPEKIND_I4, name=trim(lfieldlist(1)), &
+         meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldBundleAdd(FBTemp, (/doffield/), rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    ! coords and decomp field
+    do i = 2,size(lfieldlist)
+      lfield = ESMF_FieldCreate(EMeshIn, ESMF_TYPEKIND_R8, name=trim(lfieldlist(i)), &
+           meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_FieldBundleAdd(FBTemp, (/lfield/), rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end do
+
+    ! Set element coordinates
+    allocate(ownedElemCoords(ndims*nelements))
+    allocate(ownedElemCoords_x(ndims*nelements/2))
+    allocate(ownedElemCoords_y(ndims*nelements/2))
+    call ESMF_MeshGet(EmeshIn, ownedElemCoords=ownedElemCoords, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    ownedElemCoords_x(1:nelements) = ownedElemCoords(1::2)
+    ownedElemCoords_y(1:nelements) = ownedElemCoords(2::2)
+    allocate(dof(1:nelements))
+    call ESMF_DistGridGet(distgrid, localDE=0, seqIndexList=dof, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldBundleGet(FBtemp, fieldName='dof', field=doffield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(doffield, farrayPtr=dofptr, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    dofptr(:) = dof(:)
+
+    call ESMF_FieldBundleGet(FBtemp, fieldName='coordx', field=lfield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    fldptr1d(:) = ownedElemCoords_x(:)
+
+    call ESMF_FieldBundleGet(FBtemp, fieldName='coordy', field=lfield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    fldptr1d(:) = ownedElemCoords_y(:)
+
+    call ESMF_FieldBundleGet(FBtemp, fieldName='decomp', field=lfield, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(lfield, farrayPtr=fldptr1d, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    do i = 1,ndims*nelements/2
+      fldptr1d(i) = iaproc
+    end do
+    call ESMF_FieldBundleWrite(FBtemp, filename=trim(mesh_name)//'.decomp.nc', overwrite=.true., rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    deallocate(ownedElemCoords)
+    deallocate(ownedElemCoords_x)
+    deallocate(ownedElemCoords_y)
+    deallocate(dof)
+
+    call ESMF_FieldBundleDestroy(FBtemp, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    if (dbug_flag  > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+  end subroutine write_meshdecomp
+
   !===============================================================================
   !> Get scalar data from a state
   !!
@@ -335,7 +561,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
-      call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+      call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_ERROR)
       rc = ESMF_FAILURE
       return
     else
@@ -549,11 +775,11 @@ contains
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
       lrank = 0
       if (labort) then
-        call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+        call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_ERROR)
         rc = ESMF_FAILURE
         return
       else
-        call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+        call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO)
       endif
     else
 
@@ -572,8 +798,7 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         if (nnodes == 0 .and. nelements == 0) lrank = 0
       else
-        call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-             ESMF_LOGMSG_INFO, rc=rc)
+        call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", ESMF_LOGMSG_ERROR)
         rc = ESMF_FAILURE
         return
       endif ! geomtype
@@ -714,10 +939,6 @@ contains
       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       update_nextalarm  = .false.
-
-      call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-           ESMF_LOGMSG_INFO, rc=rc)
-      rc = ESMF_FAILURE
 
     case (optDate)
       if (.not. present(opt_ymd)) then

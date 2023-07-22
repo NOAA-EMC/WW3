@@ -29,7 +29,7 @@
 # debug and time statistic information written by OASIS3-MCT for each model
 # and processor (see user manual for more details)
 #
- 1
+ 1 0
  $END
 ###########################################################################
  $STRINGS

@@ -171,7 +171,7 @@ MODULE W3ODATMD
   !      IW        I.A.  Public   Id. water.
   !      II        I.A.  Public   Id. ice.
   !      IRQPO1/2  I.A.  Public   Array with MPI handles.       (!/MPI)
-  !      PTLOC     R.A.  Public   Name of output locations.
+  !      PTLOC     R.A.  Public   Output locations.
   !      PTIFAC    R.A.  Public   Interpolation weights.
   !      DPO       R.A.  Public   Interpolated depths.
   !      WAO       R.A.  Public   Interpolated wind speeds.
@@ -186,7 +186,7 @@ MODULE W3ODATMD
   !      ICEO      R.A.  Public   Interpolated ice concentration.
   !      ICEHO     R.A.  Public   Interpolated ice thickness.
   !      ICEFO     R.A.  Public   Interpolated ice floe.
-  !      PTNME     C.A.  Public   Output locations.
+  !      PTNME     C.A.  Public   Name of output locations.
   !      GRDID     C.A.  Public   Originating grid ID.
   !      O2INIT    Log.  Public   Flag for array initialization.
   !      O2IRQI    Log.  Public   Flag for array initialization.
@@ -1088,7 +1088,7 @@ CONTAINS
     ! -------------------------------------------------------------------- /
     ! 2.  Allocate arrays
     !
-    ALLOCATE ( OUTPTS(IMOD)%OUT2%IPTINT(2,4,NPT) ,                  &
+    ALLOCATE ( OUTPTS(IMOD)%OUT2%IPTINT(2,4,NPT) ,            &
          OUTPTS(IMOD)%OUT2%IL(NPT)         ,                  &
          OUTPTS(IMOD)%OUT2%IW(NPT)         ,                  &
          OUTPTS(IMOD)%OUT2%II(NPT)         ,                  &
@@ -1147,9 +1147,9 @@ CONTAINS
     !
     ! Formats
     !
-1001 FORMAT (/' *** ERROR W3DMO2 : GRIDS NOT INITIALIZED *** '/      &
+1001 FORMAT (/' *** ERROR W3DMO2 : GRIDS NOT INITIALIZED *** '/ &
          '                    RUN W3NMOD FIRST '/)
-1002 FORMAT (/' *** ERROR W3DMO2 : ILLEGAL MODEL NUMBER *** '/       &
+1002 FORMAT (/' *** ERROR W3DMO2 : ILLEGAL MODEL NUMBER *** '/  &
          '                    IMOD   = ',I10/                   &
          '                    NLOW   = ',I10/                   &
          '                    NOUTP  = ',I10/)
@@ -1281,7 +1281,7 @@ CONTAINS
     ! -------------------------------------------------------------------- /
     ! 2.  Allocate arrays
     !
-    ALLOCATE ( OUTPTS(IMOD)%OUT3%MASK1(NY,NX) ,                     &
+    ALLOCATE ( OUTPTS(IMOD)%OUT3%MASK1(NY,NX) ,               &
          OUTPTS(IMOD)%OUT3%MASK2(NY,NX) ,                     &
          OUTPTS(IMOD)%OUT3%TRCKID(NY,NX), STAT=ISTAT          )
     CHECK_ALLOC_STATUS ( ISTAT )
@@ -1320,7 +1320,7 @@ CONTAINS
 1001 FORMAT (/' *** ERROR W3DMO3 : GRIDS NOT INITIALIZED *** '/      &
          '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3DMO3 : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
+         '                    IMOD   = ',I10/                        &
          '                    NOUTP  = ',I10/)
 1003 FORMAT (/' *** ERROR W3DMO3 : ARRAY(S) ALREADY ALLOCATED *** ')
     !
@@ -1445,7 +1445,7 @@ CONTAINS
       !
     CASE (1)
       !
-      ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPI(NBI,4),                    &
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPI(NBI,4),              &
            OUTPTS(IMOD)%OUT5%ISBPI(NBI)  ,                    &
            OUTPTS(IMOD)%OUT5%XBPI(NBI)   ,                    &
            OUTPTS(IMOD)%OUT5%YBPI(NBI)   ,                    &
@@ -1462,7 +1462,7 @@ CONTAINS
       !
     CASE (2)
       !
-      ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPO(NBO(NFBPO),4),             &
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%IPBPO(NBO(NFBPO),4),       &
            OUTPTS(IMOD)%OUT5%ISBPO(4*NBO(NFBPO)),             &
            OUTPTS(IMOD)%OUT5%XBPO(NBO(NFBPO))   ,             &
            OUTPTS(IMOD)%OUT5%YBPO(NBO(NFBPO))   ,             &
@@ -1480,7 +1480,7 @@ CONTAINS
       !
     CASE (3)
       !
-      ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPI0(NSPEC,0:NBI2),             &
+      ALLOCATE ( OUTPTS(IMOD)%OUT5%ABPI0(NSPEC,0:NBI2),       &
            OUTPTS(IMOD)%OUT5%ABPIN(NSPEC,0:NBI2),             &
            OUTPTS(IMOD)%OUT5%BBPI0(NSPEC,0:NBI),              &
            OUTPTS(IMOD)%OUT5%BBPIN(NSPEC,0:NBI), STAT=ISTAT   )
@@ -1522,7 +1522,7 @@ CONTAINS
 1001 FORMAT (/' *** ERROR W3DMO5 : GRIDS NOT INITIALIZED *** '/      &
          '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3DMO5 : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
+         '                    IMOD   = ',I10/                        &
          '                    NOUTP  = ',I10/)
 1010 FORMAT (/' *** ERROR W3DMO5 : ILLEGAL BLOCK NUMBER  *** '/      &
          '                    IBLOCK = ',I10/)
@@ -1857,8 +1857,8 @@ CONTAINS
 1001 FORMAT (/' *** ERROR W3SETO : GRIDS NOT INITIALIZED *** '/      &
          '                    RUN W3NMOD FIRST '/)
 1002 FORMAT (/' *** ERROR W3SETO : ILLEGAL MODEL NUMBER *** '/       &
-         '                    IMOD   = ',I10/                   &
-         '                    NLOW   = ',I10/                   &
+         '                    IMOD   = ',I10/                        &
+         '                    NLOW   = ',I10/                        &
          '                    NOUTP  = ',I10/)
     !
 #ifdef W3_T

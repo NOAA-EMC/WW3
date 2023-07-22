@@ -173,7 +173,7 @@ PROGRAM W3GRID_INTERP
   CHARACTER               :: COMSTR*1, IDTIME*23, FNAMEWHT*32
   REAL                    :: XXX !< Dummy Value for w3iors call
   LOGICAL                 :: OUTorREST !< True interpolate out_grd or False restart
-  INTEGER                 :: INTYPE 
+  INTEGER                 :: INTYPE !check if this can be removed
   INTEGER, ALLOCATABLE    :: MAPSTA_NG(:,:),MAPST2_NG(:,:) 
   INTEGER, ALLOCATABLE    :: NOINT(:),NOINT2(:),MAPSTATMP(:,:) 
   INTEGER                 :: iNOINT,iNOINT2,JSEA,iloops 

@@ -1,5 +1,25 @@
+!> @file
+!> @brief Interface module to exact nonlinear interactions.
+!>
+!> @author H. L. Tolman
+!> @author G. Ph. van Vledder
+!> @date   29-May-2009
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Interface module to exact nonlinear interactions.
+!>
+!> @author H. L. Tolman
+!> @author G. Ph. van Vledder
+!> @date   29-May-2009
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SNL2MD
   !/
   !/                  +-----------------------------------+
@@ -57,7 +77,21 @@ MODULE W3SNL2MD
   PUBLIC
   !/
 CONTAINS
-  !/ ------------------------------------------------------------------- /
+!/ ------------------------------------------------------------------- /
+!>
+!> @brief Interface to exact interactions.
+!>
+!> @param[in] A      Action spectrum A(ITH,IK) as a function of
+!>                   direction (rad)  and wavenumber.
+!> @param[in] CG     Group velocities (dimension NK).
+!> @param[in] DEPTH  Water depth in meters.
+!> @param[out] S     Source term.
+!> @param[out] D     Diagonal term of derivative.
+!>
+!> @author H. L. Tolman
+!> @author G. Ph. van Vledder
+!> @date   24-Dec-2004
+!>
   SUBROUTINE W3SNL2 (  A, CG, DEPTH, S, D )
     !/
     !/                  +-----------------------------------+
@@ -250,6 +284,13 @@ CONTAINS
     !/
   END SUBROUTINE W3SNL2
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Preprocessing for nonlinear interactions (Xnl).
+  !>
+  !> @author H. L. Tolman
+  !> @author G. Ph. van Vledder
+  !> @date   24-Dec-2004
+  !>
   SUBROUTINE INSNL2
     !/
     !/                  +-----------------------------------+

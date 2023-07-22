@@ -1,5 +1,26 @@
+!> @file
+!> @brief Generalized and optimized multiple DIA implementation.
+!>
+!> @author H. L. Tolman
+!> @date   13-Jul-2012
+!>
+
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Generalized and optimized multiple DIA implementation.
+!>
+!> @details Expressions in terms of original F(f,theta) spectrum.
+!>
+!> @author H. L. Tolman
+!> @date   13-Jul-2012
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SNL3MD
   !/
   !/                  +-----------------------------------+
@@ -116,6 +137,46 @@ MODULE W3SNL3MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+
+  !>
+  !> @brief Multiple Discrete Interaction Parameterization for arbitrary
+  !>  depths with generalized quadruplet layout.
+  !>
+  !> @details This is a direct implementation of the Discrete Interaction
+  !>  Paramterization (DIA) with multiple representative quadruplets
+  !>  (MDIA) for arbitrary water depths.
+  !>
+  !>  The outer loop of the code is over quadruplet realizations,
+  !>  which implies two realizations for a conventional quadruplet
+  !>  definitions and four for extended definitions (with rescaling
+  !>  of the contants for consistency). Within this loop the compu-
+  !>  tations are performed in two stages. First, interactions
+  !>  contributions are computed for the entire spectral space,
+  !>  second all contributions are combined into the actual inter-
+  !>  actions and diagonal contributions.
+  !>
+  !>  Arbitrary depths are addressed by generating a lookup table
+  !>  for the relative depth. These tables are used for each discrete
+  !>  frequency separately. Efficient memory usages requires relative
+  !>  addressing to reduce the size of the lookup tables. To use this
+  !>  the spectral space is expanded to higher and lower frequencies
+  !>  as well as directional space is expanded/volded. This is done
+  !>  for the input (pseudo-) spectrum (action spectrum devided by the
+  !>  wavenumber) to determine spectral densities at the quadruplet
+  !>  components, and the spectral space describing individual contri-
+  !>  butions before they are combined into the actual interactions.
+  !>
+  !> @param[in]  A       Action spectrum A(ITH,IK) as a function of
+  !>                     direction (rad)  and wavenumber.
+  !> @param[in]  CG      Group velocities (dimension NK).
+  !> @param[in]  WN      Wavenumbers (dimension NK).
+  !> @param[in]  DEPTH   Water depth in meters.
+  !> @param[out] S       Source term.
+  !> @param[out] D       Diagonal term of derivative.
+  !>
+  !> @author H. L. Tolman
+  !> @date   01-Dec-2009
+  !>
   SUBROUTINE W3SNL3 (  A, CG, WN, DEPTH, S, D )
     !/
     !/                  +-----------------------------------+
@@ -275,7 +336,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NDSE, NDST
     !
     USE W3SERVMD, ONLY: EXTCDE
-    USE W3DISPMD, ONLY: WAVNU1
+    USE W3DISPMD, ONLY: WAVNU1, WAVNU3
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -332,7 +393,11 @@ CONTAINS
     XCG(1:NFR) = CG
     !
     DO IFR = NFR+1, NFRMAX
-      CALL WAVNU1 ( XSI(IFR), DEPTH, XWN(IFR), XCG(IFR) )
+#ifdef W3_PDLIB
+      CALL WAVNU3(XSI(IFR), DEPTH, XWN(IFR), XCG(IFR))
+#else
+      CALL WAVNU1(XSI(IFR), DEPTH, XWN(IFR), XCG(IFR))
+#endif
     END DO
     !
     ! 1.b Expanded pseudo spetrum
@@ -566,6 +631,15 @@ CONTAINS
     !/
   CONTAINS
     !/ ------------------------------------------------------------------- /
+
+    !>
+    !> @brief Expand spectrum, subroutine used to simplify addressing.
+    !>
+    !> @param[out] SPEC  Expanded spectrum.
+    !>
+    !> @author H. L. Tolman
+    !> @date   21-Aug-2009
+    !>
     SUBROUTINE EXPAND ( SPEC )
       !/
       !/                  +-----------------------------------+
@@ -627,6 +701,18 @@ CONTAINS
       !/
     END SUBROUTINE EXPAND
     !/ ------------------------------------------------------------------- /
+
+    !>
+    !> @brief Expand spectrum to simplify indirect addressing.
+    !>
+    !> @details Done 'in place' with temporary array ( ARIN = AROUT ).
+    !>
+    !> @param[in]  ARIN   Input array.
+    !> @param[out] AROUT  Output array.
+    !>
+    !> @author H. L. Tolman
+    !> @date   16-Jul-2008
+    !>
     SUBROUTINE EXPND2 ( ARIN, AROUT )
       !/
       !/                  +-----------------------------------+
@@ -689,6 +775,15 @@ CONTAINS
     !/
   END SUBROUTINE W3SNL3
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Initialization for generalized multiple DIA routine.
+  !>
+  !> @details Fill storage arrays as described in the main subroutine
+  !>  with interpolation, model and distribution data.
+  !>
+  !> @author H. L. Tolman
+  !> @date   13-Nov-2009
+  !>
   SUBROUTINE INSNL3
     !/
     !/                  +-----------------------------------+
@@ -1424,6 +1519,17 @@ CONTAINS
     !/
   CONTAINS
     !/ ------------------------------------------------------------------- /
+
+    !>
+    !> @brief Calculate minimum allowed lambda for quadruplet configuration.
+    !>
+    !> @param    MU       Quadruplet parameters.
+    !> @param    THETA    Theta in degrees.
+    !> @returns  MINLAM   Minimum allowed lambda.
+    !>
+    !> @author H. L. Tolman
+    !> @date   28-Jan-2004
+    !>
     REAL FUNCTION MINLAM ( MU, THETA )
       !/
       !/                  +-----------------------------------+
@@ -1479,6 +1585,19 @@ CONTAINS
       !/
     END FUNCTION MINLAM
     !/ ------------------------------------------------------------------- /
+
+    !>
+    !> @attention replaced (likely typo) 'minimum' from original header here
+    !>  with 'maximum'.
+    !> @brief Calculate maximum allowed lambda for quadruplet configuration.
+    !>
+    !> @param    MU       Quadruplet parameters.
+    !> @param    THETA    Theta in degrees.
+    !> @returns  MAXLAM   Maximum allowed lambda.
+    !>
+    !> @author H. L. Tolman
+    !> @date   28-Jan-2004
+    !>
     REAL FUNCTION MAXLAM ( MU, THETA )
       !/
       !/                  +-----------------------------------+

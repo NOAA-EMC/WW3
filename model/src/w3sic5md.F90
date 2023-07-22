@@ -1,5 +1,27 @@
+!> @file
+!> @brief Calculate ice source term S_{ice} according to different ice
+!>  models.
+!>
+!> @author Q. Liu
+!> @author E. Rogers
+!> @date   19-May-2021
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate ice source term S_{ice} according to different ice
+!>     models:
+!>
+!> @author Q. Liu
+!> @author E. Rogers
+!> @date   19-May-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SIC5MD
   !/
   !/                  +-----------------------------------+
@@ -124,6 +146,25 @@ MODULE W3SIC5MD
 CONTAINS
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Calculate ice source term S_{ice} according to 3 different sea ice
+  !>  models.
+  !>
+  !> @details (Mosig et al. 2015, Meylan et al. 2018, Liu et al. 2020).
+  !>
+  !> @param[in]  A      Action density spectrum (1-D).
+  !> @param[in]  DEPTH  Local water depth.
+  !> @param[in]  CG     Group velocities.
+  !> @param[in]  WN     Wavenumbers.
+  !> @param[in]  IX     Grid index.
+  !> @param[in]  IY     Grid index.
+  !> @param[out] S      Source term (1-D version).
+  !> @param[out] D      Diagonal term of derivative (1-D version).
+  !>
+  !> @author Q. Liu
+  !> @author E. Rogers
+  !> @date   19-May-2021
+  !>
   SUBROUTINE W3SIC5 (A, DEPTH, CG, WN, IX, IY, S, D)
     !/
     !/                  +-----------------------------------+
@@ -430,6 +471,25 @@ CONTAINS
   END SUBROUTINE W3SIC5
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Calculation of complex wavenumber arrays for ice-coupled waves.
+  !>
+  !> @details Using the  Fox-Squire dispersion relations to get (kr, ki) and
+  !>  then get cg by cg = dσ / dk (here dk uses kr).
+  !>
+  !> @param[inout] WN_R    The real part of the wave number.
+  !> @param[inout] WN_I    The imaginary part of the wave number.
+  !> @param[inout] CG      Group velocity (m s^{-1}).
+  !> @param[inout] HICE    Thickness of ice (m).
+  !> @param[inout] IVISC   Viscosity parameter of ice (m^2 s^{-1}).
+  !> @param[inout] RHOI    The density of ice (kg m^{-3}).
+  !> @param[inout] ISMODG  Effecitive shear modulus G of ice (Pa).
+  !> @param[inout] HWAT    Water depth.
+  !>
+  !> @author Q. Liu
+  !> @author E. Rogers
+  !> @date   25-Apr-2017
+  !>
   SUBROUTINE W3IC5WNCG(WN_R, WN_I, CG, HICE, IVISC, RHOI, ISMODG, &
        HWAT)
     !/
@@ -573,6 +633,22 @@ CONTAINS
   END SUBROUTINE W3IC5WNCG
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Calculate the complex wavenumber for waves in ice according to
+  !>  three different sea ice models.
+  !>
+  !> @param[in]  HICE     Thickness of ice (m).
+  !> @param[in]  IVISC    Viscosity parameter of ice (m^2 s^{-1}).
+  !> @param[in]  RHOI     The density of ice (kg m^{-3}).
+  !> @param[in]  ISMODG   Effecitive shear modulus G of ice (Pa).
+  !> @param[in]  HWAT     Water depth.
+  !> @param[in]  WT       Wave period (s; 1/freq).
+  !> @param[out] WNR      The real part of the wave number.
+  !> @param[out] WNI      The imaginary part of the wave number.
+  !>
+  !> @author Q. Liu
+  !> @date   19-May-2021
+  !>
   SUBROUTINE FSDISP(HICE, IVISC, RHOI, ISMODG, HWAT, WT, WNR, WNI)
     !/
     !/                  +-----------------------------------+
@@ -867,6 +943,16 @@ CONTAINS
   END SUBROUTINE FSDISP
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Reducing the sensitivity of eigenvalues to rounding errors during
+  !>  the execution of some algorithms.
+  !>
+  !> @param[in]    NMAT    The size of one dimension of MATRIX.
+  !> @param[inout] MATRIX  A matrix with the shape (NMAT, NMAT).
+  !>
+  !> @author Q. Liu
+  !> @date   15-Mar-2016
+  !>
   SUBROUTINE BALANCING_MATRIX(NMAT, MATRIX)
     !/
     !/                  +-----------------------------------+
@@ -1023,6 +1109,17 @@ CONTAINS
   END SUBROUTINE BALANCING_MATRIX
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Calculate the eigenvalues of a general matrix.
+  !>
+  !> @param[in]    NMAT  The size of one dimension of HMAT.
+  !> @param[inout] HMAT  The Hessenberg-type matrix (NMAT, NMAT).
+  !> @param[out]   EIGR  The real part of the N eigenvalues.
+  !> @param[out]   EIGI  The imaginary part of the N eigenvalues.
+  !>
+  !> @author Q. Liu
+  !> @date   17-Mar-2016
+  !>
   SUBROUTINE EIG_HQR (NMAT, HMAT, EIGR, EIGI)
     !/
     !/                  +-----------------------------------+
@@ -1323,6 +1420,18 @@ CONTAINS
   END SUBROUTINE EIG_HQR
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Find the roots of arbitrary polynomials through finding the
+  !>  eigenvalues of companion matrix.
+  !>
+  !> @param[in]  NPC    The # of the Polynomial coefficients.
+  !> @param[in]  PCVEC  The 1d vector for the Polynomial coefficients.
+  !> @param[out] RTRL   The real part of all of the roots shape: [NPC-1].
+  !> @param[out] RTIM   The real part of all of the roots shape: [NPC-1].
+  !>
+  !> @author Q. Liu
+  !> @date   16-Mar-2016
+  !>
   SUBROUTINE POLYROOTS(NPC, PCVEC, RTRL, RTIM)
     !/
     !/                  +-----------------------------------+
@@ -1477,6 +1586,19 @@ CONTAINS
   END SUBROUTINE POLYROOTS
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Calculate the corrected term in the Newton-Raphson root-finding
+  !>  method (Must use double precision).
+  !>
+  !> @param   K        Complex wave number.
+  !> @param   C1       C1 in FSDISP.
+  !> @param   C2       C2 in FSDISP.
+  !> @param   H        Water depth.
+  !> @returns NR_CORR  Newton-Raphson corrected term (DK).
+  !>
+  !> @author Q. Liu
+  !> @date   19-May-2021
+  !>
   FUNCTION NR_CORR(K, C1, C2, H)
     !/
     !/                  +-----------------------------------+
@@ -1628,6 +1750,18 @@ CONTAINS
   END FUNCTION NR_CORR
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief The iterative procedure of the Newton-Raphson method.
+  !>
+  !> @param    C1        C1 in FS dipsersion relations.
+  !> @param    C2        C2 in FS dipsersion relations.
+  !> @param    H         Water depth.
+  !> @param    GUESS     The first guess obtained from POLYROOTS.
+  !> @returns  NR_ROOT   The calculated complex wave number.
+  !>
+  !> @author Q. Liu
+  !> @date   19-May-2021
+  !>
   FUNCTION NR_ROOT(C1, C2, H, GUESS)
     !/
     !/                  +-----------------------------------+
@@ -1790,6 +1924,19 @@ CONTAINS
   END FUNCTION NR_ROOT
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Custom written sinh function for complex inputs.
+  !>
+  !> @details For a number of compilers, the built-in function sinh,
+  !>  cosh and tanh do not support the complex inputs. So here I write an
+  !>  external one.
+  !>
+  !> @param    X            A double-precision complex variable.
+  !> @returns  CMPLX_SINH   Complex sinh(x).
+  !>
+  !> @author Q. Liu
+  !> @date   24-Mar-2016
+  !>
   FUNCTION CMPLX_SINH(X)
     !/
     !/                  +-----------------------------------+
@@ -1887,6 +2034,19 @@ CONTAINS
   END FUNCTION CMPLX_SINH
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Hand written cosh function for complex inputs.
+  !>
+  !> @details For a number of compilers, the built-in function sinh,
+  !>  cosh and tanh do not support the complex inputs. So here I write an
+  !>  external one.
+  !>
+  !> @param   X           A double-precision complex variable.
+  !> @returns CMPLX_COSH  Complex cosh(x).
+  !>
+  !> @author Q. Liu
+  !> @date   24-Mar-2016
+  !>
   FUNCTION CMPLX_COSH(X)
     !/
     !/                  +-----------------------------------+
@@ -1984,6 +2144,19 @@ CONTAINS
   END FUNCTION CMPLX_COSH
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief An alternate version of tanh to avoid overflow error.
+  !>
+  !> @details We may encounter overflow error for the above tanh
+  !>  function as kh becomes huge. This is another version of tanh
+  !>  function.
+  !>
+  !> @param   X            A double-precision complex variable.
+  !> @returns CMPLX_TANH2  Complex tanh(x).
+  !>
+  !> @author Q. Liu
+  !> @date   24-Mar-2016
+  !>
   FUNCTION CMPLX_TANH2(X)
     !/
     !/                  +-----------------------------------+
@@ -2084,6 +2257,12 @@ CONTAINS
   !/
   !/ ------------------------------------------------------------------- /
   !/
+  !>
+  !> @brief Initialize the random seed based on the system's time.
+  !>
+  !> @author Q. Liu
+  !> @date   24-Mar-2016
+  !>
   SUBROUTINE INIT_RANDOM_SEED()
     !/
     !/                  +-----------------------------------+

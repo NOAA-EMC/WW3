@@ -1,5 +1,29 @@
+!> @file
+!> @brief Calculate ice dissipation source term S_{ice}.
+!>
+!> @author E. Rogers
+!> @author S. Zieger
+!> @author F. Ardhuin
+!> @author G. Boutin
+!> @date   05-Jan-2018
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Calculate ice dissipation source term S_{ice}.
+!>
+!> @author E. Rogers
+!> @author S. Zieger
+!> @author F. Ardhuin
+!> @author G. Boutin
+!> @date   05-Jan-2018
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SIC2MD
   !/
   !/                  +-----------------------------------+
@@ -69,6 +93,30 @@ MODULE W3SIC2MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief S_{ice} source term using 5 parameters read from input files.
+  !>
+  !> @param[in]  A      Action density spectrum (1-D).
+  !> @param[in]  DEPTH  Local water depth.
+  !> @param[in]  ICEH   Ice thickness.
+  !> @param[in]  ICEF   Ice Floe diameter.
+  !> @param[in]  CG     Group velocities.
+  !> @param[in]  WN     Wavenumbers.
+  !> @param[in]  IX     Grid index.
+  !> @param[in]  IY     Grid index.
+  !> @param[out] S      Source term (1-D version).
+  !> @param[out] D      Diagonal term of derivative (1-D version).
+  !> @param[in]  WN_R   Wavenumbers in ice.
+  !> @param[in]  CG_ICE Group velocities in ice.
+  !> @param[in]  ALPHA  Exponential decay rate of energy.
+  !> @param[in]  R      Ratio of energy to wave energy without ice.
+  !>
+  !> @author E. Rogers
+  !> @author S. Zieger
+  !> @author F. Ardhuin
+  !> @author G. Boutin
+  !> @date   04-Jan-2018
+  !>
   SUBROUTINE W3SIC2 (A, DEPTH, ICEH, ICEF, CG, WN, IX, IY, S, D, WN_R, &
        CG_ICE, ALPHA, R)
     !/

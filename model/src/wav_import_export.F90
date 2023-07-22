@@ -19,8 +19,9 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
-  use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, multigrid
+  use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, multigrid, unstr_mesh
   use constants    , only : grav, tpi, dwat
+  use w3parall     , only : init_get_isea
 
   implicit none
   private ! except
@@ -62,6 +63,8 @@ module wav_import_export
 #else
   logical :: cesmcoupled = .false.                  !< logical defining a non-CESM use case (UWM)
 #endif
+  integer, public    :: nseal_cpl                   !< the number of local sea points on a processor, exclusive
+                                                    !! of the ghost points. For non-PDLIB cases, this is nseal
   character(*),parameter :: u_FILE_u = &            !< a character string for an ESMF log message
        __FILE__
 
@@ -132,7 +135,9 @@ contains
     ! Advertise export fields
     !--------------------------------
 
-    call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
+    if (.not. unstr_mesh) then
+      call fldlist_add(fldsFrWav_num, fldsFrWav, trim(flds_scalar_name))
+    end if
     if (cesmcoupled) then
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_lamult' )
       call fldlist_add(fldsFrWav_num, fldsFrWav, 'Sw_ustokes')
@@ -644,8 +649,8 @@ contains
       call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_lamult(:) = fillvalue
-      do jsea=1, nseal
-        isea = iaproc + (jsea-1)*naproc
+      do jsea=1, nseal_cpl
+        call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
         if (mapsta(iy,ix) == 1) then
@@ -661,8 +666,8 @@ contains
       call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_ustokes(:) = fillvalue
-      do jsea=1, nseal
-        isea = iaproc + (jsea-1)*naproc
+      do jsea=1, nseal_cpl
+        call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
         if (mapsta(iy,ix) == 1) then
@@ -676,8 +681,8 @@ contains
       call state_getfldptr(exportState, 'Sw_vstokes', sw_vstokes, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_vstokes(:) = fillvalue
-      do jsea=1, nseal
-        isea = iaproc + (jsea-1)*naproc
+      do jsea=1, nseal_cpl
+        call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
         if (mapsta(iy,ix) == 1) then
@@ -743,7 +748,10 @@ contains
       if (USSPF(1) > 0) then ! Partitioned Stokes drift computation is turned on in mod_def file.
         call CALC_U3STOKES(va, 2)
         do ib = 1, USSPF(2)
-          do jsea = 1, nseal
+          do jsea = 1, nseal_cpl
+            call init_get_isea(isea, jsea)
+            ix  = mapsf(isea,1)
+            iy  = mapsf(isea,2)
             sw_pstokes_x(ib,jsea) = ussp(jsea,ib)
             sw_pstokes_y(ib,jsea) = ussp(jsea,nk+ib)
           enddo
@@ -956,25 +964,22 @@ contains
     !----------------------------------------------------------------------
 
     !TODO: fix firstCall like for Roughl
-    jsea_loop: do jsea = 1,nseal
-      isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
       if ( firstCall ) then
         charn(jsea) = zero
         llws(:) = .true.
         ustar = zero
         ustdr = zero
 #ifdef W3_ST3
-        call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-             emean, fmean, fmean1, wnmean, amax,         &
-             u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-             tauwy, cd, z0, charn(jsea), llws, fmeanws )
+        call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+             amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+             llws, fmeanws )
 #endif
 #ifdef W3_ST4
-        call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),  &
-             emean, fmean, fmean1, wnmean, amax,         &
-             u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-             tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-             dlwmean )
+        call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+             amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+             llws, fmeanws, dlwmean )
 #endif
       endif !firstCall
       chkn(jsea) = charn(jsea)
@@ -995,7 +1000,7 @@ contains
   !> @date 09-Aug-2017
   subroutine CalcRoughl ( wrln)
 
-    ! Calculate 2D wave roughness length for export
+    ! Calculate wave roughness length for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, dmin, ecos, esin, dden, mapsf, mapsta, nspec
     use w3adatmd,   only : dw, cg, wn, charn, u10, u10d
@@ -1020,8 +1025,8 @@ contains
 
     !----------------------------------------------------------------------
 
-    jsea_loop: do jsea = 1,nseal
-      isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
       ix = mapsf(isea,1)
       iy = mapsf(isea,2)
       if ( firstCall ) then
@@ -1034,17 +1039,14 @@ contains
           tauwx = zero
           tauwy = zero
 #ifdef W3_ST3
-          call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-               emean, fmean, fmean1, wnmean, amax,         &
-               u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-               tauwy, cd, z0, charn(jsea), llws, fmeanws )
+          call w3spr3( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+               amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+               llws, fmeanws )
 #endif
 #ifdef W3_ST4
-          call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea),   &
-               emean, fmean, fmean1, wnmean, amax,         &
-               u10(isea), u10d(isea), ustar, ustdr, tauwx, &
-               tauwy, cd, z0, charn(jsea), llws, fmeanws,  &
-               dlwmean )
+          call w3spr4( va(:,jsea), cg(1:nk,isea), wn(1:nk,isea), emean, fmean, fmean1, wnmean, &
+               amax, u10(isea), u10d(isea), ustar, ustdr, tauwx, tauwy, cd, z0, charn(jsea),   &
+               llws, fmeanws, dlwmean )
 #endif
         end if
       endif !firstCall
@@ -1077,9 +1079,9 @@ contains
 
     ! input/output variables
     real, intent(in)            :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
-    real(ESMF_KIND_R8), pointer :: wbxn(:)           ! 2D eastward-component export field pointer
-    real(ESMF_KIND_R8), pointer :: wbyn(:)           ! 2D northward-component export field pointer
-    real(ESMF_KIND_R8), pointer :: wbpn(:)           ! 2D period export field pointer
+    real(ESMF_KIND_R8), pointer :: wbxn(:)           ! eastward-component export field pointer
+    real(ESMF_KIND_R8), pointer :: wbyn(:)           ! northward-component export field pointer
+    real(ESMF_KIND_R8), pointer :: wbpn(:)           ! period export field pointer
 
     ! local variables
     real(8), parameter   :: half  = 0.5_r8
@@ -1100,8 +1102,8 @@ contains
     wbyn(:) = zero
     wbpn(:) = zero
 
-    jsea_loop: do jsea = 1,nseal
-      isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
       if ( dw(isea).le.zero ) cycle jsea_loop
       depth = max(dmin,dw(isea))
       abr = zero
@@ -1152,20 +1154,17 @@ contains
   !> @date 09-Aug-2017
   subroutine CalcRadstr2D ( a, sxxn, sxyn, syyn )
 
-    ! Calculate 2D radiation stresses for export
+    ! Calculate radiation stresses for export
 
     use w3gdatmd,   only : nseal, nk, nth, sig, es2, esc, ec2, fte, dden
     use w3adatmd,   only : dw, cg, wn
     use w3odatmd,   only : naproc, iaproc
-#ifdef W3_PDLIB
-    use yowNodepool, only: np, iplg
-#endif
 
     ! input/output variables
     real, intent(in)               :: a(nth,nk,0:nseal) ! Input spectra (in par list to change shape)
-    real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! 2D eastward-component export field
-    real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! 2D eastward-northward-component export field
-    real(ESMF_KIND_R8), pointer    :: syyn(:)           ! 2D northward-component export field
+    real(ESMF_KIND_R8), pointer    :: sxxn(:)           ! eastward-component export field
+    real(ESMF_KIND_R8), pointer    :: sxyn(:)           ! eastward-northward-component export field
+    real(ESMF_KIND_R8), pointer    :: syyn(:)           ! northward-component export field
 
     ! local variables
     character(ESMF_MAXSTR) :: cname
@@ -1179,8 +1178,8 @@ contains
     !----------------------------------------------------------------------
 
     facd = dwat*grav
-    jsea_loop: do jsea = 1,nseal
-      isea = iaproc + (jsea-1)*naproc
+    jsea_loop: do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
       if ( dw(isea).le.zero ) cycle jsea_loop
       sxxs = zero
       sxys = zero
@@ -1239,16 +1238,16 @@ contains
     do ik = 1,nwav_elev_spectrum
       ab = 0.0
       do ith = 1, nth
-        do jsea = 1,nseal
+        do jsea = 1,nseal_cpl
           ab(jsea) = ab(jsea) + a(ith,ik,jsea)
         end do
       end do
 
-      do jsea = 1,nseal
+      do jsea = 1,nseal_cpl
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)                   ! global ix
         iy  = mapsf(isea,2)                   ! global iy
-        if (mapsta(iy,ix) .eq. 1) then        ! active sea point
+        if (mapsta(iy,ix) == 1) then          ! active sea point
           factor = dden(ik) / cg(ik,isea)
           ebd = ab(jsea) * factor
           ebd = ebd / dsii(ik)
@@ -1302,8 +1301,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     global_output(:) = 0._r4
     global_input(:) = 0._r4
-    do jsea = 1, nseal
-      isea = iaproc + (jsea-1)*naproc
+    do jsea = 1, nseal_cpl
+      call init_get_isea(isea, jsea)
       global_input(isea) = real(dataptr(jsea),4)
     end do
     call ESMF_VMAllReduce(vm, sendData=global_input, recvData=global_output, count=nsea, reduceflag=ESMF_REDUCE_SUM, rc=rc)
@@ -1552,6 +1551,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dataptr1d(:) = fillValue
 
+    !TODO: get working for unstr
     if (nvals .eq. nx*ny) then
       do jsea = 1, nseal
         isea = iaproc + (jsea-1)*naproc
@@ -1654,13 +1654,11 @@ contains
     ! read header information
     ! this was inside of w3fldo call but since we are opening file
     ! once and rewinding, the header need to be read
-    read(mdsf, iostat=ierr) tsstr, tsfld, nxt, nyt, &
-         gtypet, filler(1:2), tideflag
+    read(mdsf, iostat=ierr) tsstr, tsfld, nxt, nyt, gtypet, filler(1:2), tideflag
 
     ! read input
-    call w3fldg('READ', lstring, mdsf, mdst, mdse, nx, ny, &
-         nx, ny, time0, timen, tw0l, wx0l, wy0l, dt0l, twnl, &
-         wxnl, wynl, dtnl, ierr, flagsc)
+    call w3fldg('READ', lstring, mdsf, mdst, mdse, nx, ny, nx, ny, time0, timen, tw0l, wx0l, wy0l, &
+         dt0l, twnl, wxnl, wynl, dtnl, ierr, flagsc)
 
     wxdata(:) = 0.0_r4
     wydata(:) = 0.0_r4

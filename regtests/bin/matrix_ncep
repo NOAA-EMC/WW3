@@ -47,38 +47,46 @@
     # If no other h, assuming Hera 
     cmplr='hera.intel'
     batchq='slurm'
-    hpcstackpath='/scratch2/NCEPDEV/nwprod/hpc-stack/libs/hpc-stack/modulefiles/stack'
-    hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/18.0.5.274'
-    modmpi='hpc-impi/2018.0.4'
+    hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
+    hpcstackversion='hpc/1.2.0'
+    basemodcomp='intel/2022.1.2'
+    basemodmpi='impi/2022.1.2'
+    modcomp='hpc-intel/2022.1.2'
+    modmpi='hpc-impi/2022.1.2'
     modnetcdf='netcdf/4.7.4'
-    metispath='/scratch2/COASTAL/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+    metispath='/scratch2/STI/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+    scotchpath='/scratch2/STI/coastal/save/Ali.Abdolali/hpc-stack/scotch/install'
     modjasper='jasper/2.0.25'
     modzlib='zlib/1.2.11'
-    modpng='png/1.6.35'
+    modpng='libpng/1.6.37'
     modhdf5='hdf5/1.10.6'
     modbacio='bacio/2.4.1'
-    modg2='g2/3.4.1'
+    modg2='g2/3.4.5'
     modw3emc='w3emc/2.9.2'
-    modesmf='esmf/8_1_1'
+    modesmf='esmf/8.3.0b09'
+    metispath='/scratch2/STI/coastal/save/Ali.Abdolali/hpc-stack/parmetis-4.0.3'
+    modcmake='cmake/3.20.1'
   elif [ $isorion ]
   then
     cmplr='orion.intel'
     batchq='slurm'
-    hpcstackpath='/apps/contrib/NCEP/libs/hpc-stack/modulefiles/stack'
-    hpcstackversion='hpc/1.1.0'
-    modcomp='hpc-intel/2018.4'
-    modmpi='hpc-impi/2018.4'
+    hpcstackpath='/work/noaa/epic-ps/hpc-stack/libs/intel/2022.1.2/modulefiles/stack'
+    hpcstackversion='hpc/1.2.0'
+    modcomp='hpc-intel/2022.1.2'
+    modmpi='hpc-impi/2022.1.2'
     modnetcdf='netcdf/4.7.4'
     metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
+    scotchpath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/scotch/install'
     modjasper='jasper/2.0.25'
     modzlib='zlib/1.2.11'
-    modpng='png/1.6.35'
+    modpng='libpng/1.6.37'
     modhdf5='hdf5/1.10.6'
     modbacio='bacio/2.4.1'
-    modg2='g2/3.4.1'
+    modg2='g2/3.4.5'
     modw3emc='w3emc/2.9.2'
-    modesmf='esmf/8_1_1'
+    modesmf='esmf/8.3.0b09'
+    metispath='/work/noaa/marine/ali.abdolali/Source/hpc-stack/parmetis-4.0.3'
+    modcmake='cmake/3.22.1'
   else
     batchq=
   fi
@@ -129,10 +137,16 @@
   echo "  cd $(dirname $main_dir)/regtests"                 >> matrix.head
   echo ' '                                                  >> matrix.head
 
-# Netcdf and Parmetis modules & variables
+# Netcdf, Parmetis and SCOTCH modules & variables
   echo "  module purge"                                     >> matrix.head
   echo "  module use $hpcstackpath"                         >> matrix.head
   echo "  module load $hpcstackversion"                     >> matrix.head
+  if [ ! -z $basemodcomp ]; then
+    echo "  module load $basemodcomp"                       >> matrix.head
+  fi
+  if [ ! -z $basemodmpi ]; then
+    echo "  module load $basemodmpi"                        >> matrix.head
+  fi
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
   echo "  module load $modnetcdf"                           >> matrix.head
@@ -147,6 +161,7 @@
 
   echo '  export NETCDF_CONFIG=$NETCDF_ROOT/bin/nc-config'  >> matrix.head
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
+  echo "  export SCOTCH_PATH=${scotchpath}"                 >> matrix.head
   echo '  export JASPER_LIB=$JASPER_ROOT/lib64/libjasper.a' >> matrix.head
   echo '  export PNG_LIB=$PNG_ROOT/lib64/libpng.a'          >> matrix.head
   echo '  export Z_LIB=$ZLIB_ROOT/lib/libz.a'               >> matrix.head
