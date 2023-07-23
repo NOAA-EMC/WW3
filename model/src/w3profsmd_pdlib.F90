@@ -975,7 +975,7 @@ CONTAINS
     REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL  :: LAMBDA(2), KTMP(3), DGSE(3), DFAK(NE)
+    REAL  :: LAMBDA(2), KTMP(3), DFAK(NE)
     REAL  :: KELEM(3,NE), FLALL(3,NE)
     REAL  :: KKSUM(npa), ST(npa)
     REAL  :: NM(NE)
@@ -6865,7 +6865,7 @@ CONTAINS
     !
     USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV, DERA, RADIUS
     USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX, CLATS, CLATMN, SIG
-    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, NSPEC, B_JGS_GSE_TS
+    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, NSPEC, B_JGS_GSE_TS, XGRD, YGRD
     USE W3ADATMD, only: DW, MPI_COMM_WCMP
     USE W3WDATMD, ONLY: VA
     USE W3PARALL, only: INIT_GET_ISEA
@@ -6876,7 +6876,7 @@ CONTAINS
     use yowElementpool, only : INE, NE
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
-    USE W3GDATMD, only: B_JGS_USE_JACOBI
+    USE W3GDATMD, only: B_JGS_USE_JACOBI, FLAGLL
     USE W3GDATMD, only: NSPEC, NTH, NK
     USE W3GDATMD, only: FSTOTALIMP
     USE W3ODATMD, only: IAPROC
@@ -6888,16 +6888,16 @@ CONTAINS
     !/
     INTEGER ITH, IK, IE, IS, IERR, MYRANK
     INTEGER NewISP, JTH, istati, JSEA, ISEA
-    REAL    TFAC, DNN, DSS, DSSD, DNND, CGD, DFRR, DTME
-    REAL    VDXX(NPA), VDYY(NPA) 
+    REAL*8    TFAC, DNN, DSS, DSSD, DNND, CGD, DFRR, DTME
     REAL PHI_V(NPA)
-    REAL eDet, DEDX(3), DEDY(3)
+    REAL*8 eDet, DEDX(3), DEDY(3), DIFFV(2)
     INTEGER NI(3), ITR, IDX, IP, ISP, IT
-    REAL XSEL(3), DVDXIE, DVDYIE, FACX
-    REAL GRAD(2), V(2), eScal, DT_DIFF
-    INTEGER NB_ITER, iIter
-    REAL DeltaTmax, eDeltaT, CLATSMN 
-    REAL eNorm, DTquot, eRealA(1), eRealB(1)
+    REAL*8 XSEL(3), DVDXIE, DVDYIE, FACX
+    REAL*8 GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(2,NPA)
+    INTEGER NB_ITER, iIter, ip_global
+    REAL*8 DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
+    REAL*8 eNorm, DTquot, diffc
+    REAL eRealA(1), eRealB(1)
 
     DTME = B_JGS_GSE_TS
     FACX = 1./(DERA * RADIUS)
@@ -6907,7 +6907,14 @@ CONTAINS
     !WRITE(3000+myrank,*) 'Entering Diffusion' 
     !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
 
-    CLATMN=MINVAL(CLATS)
+    IF ( FLAGLL ) THEN
+      RFAC = DERA * RADIUS
+      DFAC = 1. / RFAC**2
+    ELSE
+      RFAC = 1.
+      DFAC = 1.
+    END IF
+    CLATMN = COS ( 70 * DERA )
 
     DO ITH = 1, NTH
       DO IK = 1, NK
@@ -6915,20 +6922,12 @@ CONTAINS
         DO JSEA = 1, NPA
           CALL INIT_GET_ISEA(ISEA, JSEA)
           TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
-          IF (IOBP_LOC(JSEA) .EQ. 1) THEN
-            CGD    = 0.5 * GRAV / SIG(IK) * FACX !* IOBPA_LOC(JSEA) * IOBDP_LOC(JSEA)
-          ELSE
-            CGD    = 0
-          ENDIF
-          DFRR   = XFR - 1.
-          DSSD   = ( CGD * DFRR )**2 * DTME / 12.
-          DNND   = ( CGD * DTH )**2 * DTME / 12.
-          DSS   = DSSD * TFAC
-          DNN   = DNND * TFAC
-          VDXX(JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
-          VDYY(JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
-          !write(*,*) CGD * FACX, DFRR, DTME, DSS, DNN, VDXX(JSEA), VDYY(JSEA)
-          !  2.0065799E-04  7.0000052E-02   345600.0      5.6820122E-06  3.5323214E-05 5.6820122E-06  3.9108068E-05
+          CGD   = 0.5 * GRAV / SIG(IK) * IOBDP_LOC(JSEA)
+          DSS   = ( CGD * (XFR-1.))**2 * DTME / 12. * TFAC
+          DNN   = ( CGD * DTH )**2 * DTME / 12. * TFAC 
+          DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
+          DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
+          !write(3000+myrank,'(I10,20F20.10)') IK, SIG(IK), CGD, CLATS(ISEA), DSS, DNN, DIFFVEC(1,JSEA), DIFFVEC(2,JSEA)
         END DO
 
         DeltaTmax = 1./TINY(1.)
@@ -6940,8 +6939,13 @@ CONTAINS
             V(2) = PDLIB_IEN(2*IDX  ,IE)
             eNorm = DOT_PRODUCT(V,V)
             IP = INE(IDX,IE)
-            eDeltaT = PDLIB_SI(IP) / (SQRT(VDXX(IP)**2+VDYY(IP)**2) * eNorm /(4. * eDet))
-            !write(*,*) IE, IP, eDeltaT
+            eDiffNorm = HYPOT(DIFFVEC(1,IP), DIFFVEC(2,IP))
+            if (eDiffNorm .gt. tiny(1.)) then
+              eDeltaT = min(DTG, PDLIB_SI(IP) / (eDiffNorm * dfac * eNorm /(4. * eDet))) ! modified for diffusion vector
+            else
+              eDeltaT = DTG
+            endif
+            !write(4000+myrank,*) IE, iplg(IP), eDeltaT, eDiffNorm, eNorm, 4 * eDet
             IF (eDeltaT .lt. DeltaTmax) THEN
               DeltaTmax = eDeltaT
             END IF
@@ -6952,14 +6956,12 @@ CONTAINS
         CALL MPI_ALLREDUCE(eRealA, eRealB, 1, rtype, MPI_MIN, MPI_COMM_WCMP, ierr)
         DeltaTmax=eRealB(1)
  
-        !WRITE(*,*) ITH, IK, MINVAL(VDXX), MAXVAL(VDXX), MINVAL(VDYY), MAXVAL(VDYY), DeltaTmax
-
         DTquot = DTG / DeltaTmax
         NB_ITER = NINT(DTquot) + 1
         DT_DIFF = DTG/NB_ITER
         PHI_V = 0.
  
-        !WRITE(3000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF
+        !WRITE(5000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF, DeltaTmax
         !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR) 
 
         DO IT = 1, NB_ITER
@@ -6975,9 +6977,8 @@ CONTAINS
              XSEL    = VA(ISP,NI)
              DVDXIE  = DOT_PRODUCT(XSEL,DEDX)
              DVDYIE  = DOT_PRODUCT(XSEL,DEDY)
-             GRAD(1) = DVDXIE / eDet * 1./3. * SUM(VDXX(NI))
-             GRAD(2) = DVDYIE / eDet * 1./3. * SUM(VDYY(NI))
-             !write(*,*) ie, grad, eDet, xsel 
+             GRAD(1) = DVDXIE / eDet * 1./3. * SUM(DIFFVEC(1,NI))
+             GRAD(2) = DVDYIE / eDet * 1./3. * SUM(DIFFVEC(2,NI)) 
              DO IDX=1,3
                 V(1) = 0.5 * PDLIB_IEN(2*IDX-1,IE)
                 V(2) = 0.5 * PDLIB_IEN(2*IDX  ,IE)
@@ -6988,12 +6989,9 @@ CONTAINS
           END DO
           CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
-            !U(IP) = U(IP) - DT_DIFF * eDiff * PHI_V(IP) / SI(IP)
-            VA(ISP,JSEA) = VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA)
+            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) * DFAC)
           END DO       
         END DO 
-        !WRITE(3000+myrank,*) ITH, IK, 'FINISHED SUBITERATION' 
-        !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
       END DO 
     END DO 
 
