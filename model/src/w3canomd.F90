@@ -1622,13 +1622,29 @@ CONTAINS
     RETURN
   END FUNCTION U
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *W2(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
-
+  !>
+  !> @brief determines the contribution of the direct four-wave
+  !>        interactions of gravity waves of the type A_2^*A_3A_4.
+  !>
+  !> @param   XI   Wave number
+  !> @param   XJ   Wave number
+  !> @param   XK   Wave number
+  !> @param   XL   Wave number
+  !> @param   THI
+  !> @param   THJ
+  !> @param   THK
+  !> @param   THL
+  !> @returns W2
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION W2(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *W2(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *W2*  DETERMINES THE CONTRIBUTION OF THE DIRECT FOUR-WAVE
     !              INTERACTIONS OF GRAVITY WAVES OF THE TYPE
@@ -1675,12 +1691,29 @@ CONTAINS
     RETURN
   END FUNCTION W2
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *V2(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief determines the contribution of the virtual
+  !>        four-wave interactions of gravity waves.
+  !>
+  !> @param    XI    Wave number
+  !> @param    XJ    Wave number
+  !> @param    XK    Wave number
+  !> @param    XL    Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @param    THL
+  !> @returns  V2
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION V2(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *V2(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *V2*  DETERMINES THE CONTRIBUTION OF THE VIRTUAL
     !           FOUR-WAVE INTERACTIONS OF GRAVITY WAVES.
