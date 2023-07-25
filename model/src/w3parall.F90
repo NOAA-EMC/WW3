@@ -1027,7 +1027,7 @@ CONTAINS
   END SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY
   !/ ....................----------------------------------------------- /
   !>
-  !> @brief Setup nseal, nsealm in contect of pdlib.
+  !> @brief Setup NSEAL, NSEALM in context of PDLIB.
   !>
   !> @param[out] NSEALout
   !> @param[out] NSEALMout
