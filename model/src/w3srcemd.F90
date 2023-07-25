@@ -71,7 +71,7 @@ MODULE W3SRCEMD
   ! TODO: CHUNKSIZE should be user settable - not parameter
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
-  INTEGER, PARAMETER :: CHUNKSIZE = 1
+  INTEGER, PARAMETER :: CHUNKSIZE = 4
   INTEGER, PARAMETER :: JCHK = 1200
   INTEGER :: ICHK
 
@@ -1939,7 +1939,7 @@ CONTAINS
             AFAC = 1. / MAX( 1.E-10 , ABS(VS(IS,CSEA)/DAMAX) )
 #ifdef W3_NL5
             IF (NL5_SELECT .EQ. 1)  THEN
-              (CSEA) = MIN ( DT(CSEA) , AFAC / ( MAX ( 1.E-10,             &
+              DT(CSEA) = MIN ( DT(CSEA) , AFAC / ( MAX ( 1.E-10,             &
                    1. + NL5_OFFSET*AFAC*MIN(0.,VD(IS,CSEA)) ) ) )
             ELSE
 #endif
@@ -2755,15 +2755,15 @@ CONTAINS
                 !               - the rest     (SPEC-ISO): eigenvalue of scattering is VDIR(IS)
                 !
                 SCAT = EXP(VDIR(IS)*IS2PARS(2)*DTG)
-                ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))/NTH
-                SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = ISO &
-                     +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH)-ISO)*SCAT
+                ISO = SUM(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH, JSEA))/NTH
+                SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH, JSEA) = ISO &
+                     +(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH, JSEA)-ISO)*SCAT
               ELSE
                 !
                 ! General solution with matrix exponentials: same as bottom scattering, see Ardhuin & Herbers (JFM 2002)
                 !
-                SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH))
-                SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) =  &
+                SCATSPEC(1:NTH)=DBLE(SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH, JSEA))
+                SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH, JSEA) =  &
                      REAL(MATMUL(IS2EIGVEC(:,:), EXP(IS2EIGVAL(:)*VDIR(IS)*DTG*IS2PARS(2)) &
                      *MATMUL(TRANSPOSE(IS2EIGVEC(:,:)),SCATSPEC)))
               END IF
