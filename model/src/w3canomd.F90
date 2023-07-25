@@ -1135,7 +1135,7 @@ CONTAINS
 
   !
   !>
-  !> @brief gives nonlinear transfer coefficient for three wave interactions
+  !> @brief Gives nonlinear transfer coefficient for three wave interactions
   !>  interactions of gravity waves in the ideal case of no current. Determines
   !>  the minus interaction coefficients.
   !>
@@ -1212,7 +1212,7 @@ CONTAINS
   END FUNCTION A
   !
   !>
-  !> @brief gives nonlinear transfer coefficient for three wave interactions
+  !> @brief Gives nonlinear transfer coefficient for three wave interactions
   !>  interactions of gravity waves in the ideal case of no current. Determines
   !>  the plus interaction coefficients.
   !>
@@ -1286,7 +1286,7 @@ CONTAINS
   END FUNCTION B
   !
   !>
-  !> @brief determine contribution by quasi-linear terms.
+  !> @brief Determine contribution by quasi-linear terms.
   !>
   !> @param   XK0
   !> @param   XK1
@@ -1350,7 +1350,7 @@ CONTAINS
   !
   !
   !>
-  !> @brief determines the second-order transfer coefficient
+  !> @brief Determines the second-order transfer coefficient
   !>        for three wave interactions of gravity waves.
   !>
   !> @param   XI    wave numbers
@@ -1441,7 +1441,7 @@ CONTAINS
   END FUNCTION VPLUS
   !
   !>
-  !> @brief determines the second-order transfer coefficient for
+  !> @brief Determines the second-order transfer coefficient for
   !>        three wave interactions of gravity waves.
   !>
   !> @param XI  wave number
@@ -1532,7 +1532,7 @@ CONTAINS
   END FUNCTION VMIN
   !
   !>
-  !> @brief determines the third-order transfer coefficient for four
+  !> @brief Determines the third-order transfer coefficient for four
   !>        wave interactions of gravity waves.
   !>
   !> @param XI   wave number
@@ -1623,7 +1623,7 @@ CONTAINS
   END FUNCTION U
   !
   !>
-  !> @brief determines the contribution of the direct four-wave
+  !> @brief Determines the contribution of the direct four-wave
   !>        interactions of gravity waves of the type A_2^*A_3A_4.
   !>
   !> @param   XI   Wave number
@@ -1692,7 +1692,7 @@ CONTAINS
   END FUNCTION W2
   !
   !>
-  !> @brief determines the contribution of the virtual
+  !> @brief Determines the contribution of the virtual
   !>        four-wave interactions of gravity waves.
   !>
   !> @param    XI    Wave number
@@ -1997,7 +1997,7 @@ CONTAINS
   END FUNCTION W4
 
   !>
-  !> @brief weights of the A_2^*A_3^*A_4 part of the canonical transformation.
+  !> @brief Weights of the A_2^*A_3^*A_4 part of the canonical transformation.
   !>
   !> @param    XI   Wave number
   !> @param    XJ   Wave number
@@ -2129,7 +2129,7 @@ CONTAINS
   END FUNCTION B3
   !
   !>
-  !> @brief weights of the A_2^*A_3^*A_4^* part of the canonical
+  !> @brief Weights of the A_2^*A_3^*A_4^* part of the canonical
   !>        transformation.
   !>
   !> @param    XI   Wave number
@@ -2242,7 +2242,7 @@ CONTAINS
   END FUNCTION B4
   !
   !>
-  !> @brief weights of the A_2A_3A_4 part of the canonical
+  !> @brief Weights of the A_2A_3A_4 part of the canonical
   !>        transformation.
   !>
   !> @param    XI   Wave number
@@ -2361,7 +2361,7 @@ CONTAINS
   END FUNCTION B1
   !
   !>
-  !> @brief weights of the A_2^*A_3A_4 part of the canonical
+  !> @brief Weights of the A_2^*A_3A_4 part of the canonical
   !>        transformation.
   !>
   !> @param    XI   Wave number
@@ -2475,7 +2475,7 @@ CONTAINS
   END FUNCTION B2
   !
   !>
-  !> @brief auxiliary second-order coefficient.
+  !> @brief Auxiliary second-order coefficient.
   !>
   !> @param    XI   Wave number
   !> @param    XJ   Wave number
@@ -2549,7 +2549,7 @@ CONTAINS
   END FUNCTION A1
   !
   !>
-  !> @brief auxiliary second-order function.
+  !> @brief Auxiliary second-order function.
   !>
   !> @param    XI   Wave number
   !> @param    XJ   Wave number
@@ -2607,7 +2607,7 @@ CONTAINS
   END FUNCTION A2
   !
   !>
-  !> @brief auxiliary second-order function.
+  !> @brief Auxiliary second-order function.
   !>
   !> @param    XI   Wave number
   !> @param    XJ   Wave number
@@ -2737,7 +2737,7 @@ CONTAINS
   END FUNCTION OMEG
   !
   !>
-  !> @brief determines the group velocity for gravity- waves.
+  !> @brief Determines the group velocity for gravity- waves.
   !>
   !> @param    X   Wave number
   !> @returns  VG
