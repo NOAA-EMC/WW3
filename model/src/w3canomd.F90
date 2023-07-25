@@ -1842,12 +1842,29 @@ CONTAINS
     RETURN
   END FUNCTION V2
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *W1(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief Determines the nonlinear transfer coefficient for four wave
+  !>        interactions of gravity waves of the type A_2A_3A_4.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    XL   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @param    THL
+  !> @returns  W1
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION W1(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *W1(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *W1*  DETERMINES THE NONLINEAR TRANSFER COEFFICIENT FOR FOUR
     !              WAVE INTERACTIONS OF GRAVITY WAVES OF THE TYPE
@@ -1901,10 +1918,29 @@ CONTAINS
     RETURN
   END FUNCTION W1
   !
-  !***  *REAL FUNCTION* *W4(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief Determines the nonlinear transfer coefficient for four wave
+  !>        interactions of gravity waves of the type A_^*A_3^*A_4^*.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    XL   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @param    THL
+  !> @returns  W4
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION W4(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *W4(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *W4*  DETERMINES THE NONLINEAR TRANSFER COEFFICIENT FOR FOUR
     !              WAVE INTERACTIONS OF GRAVITY WAVES of the type
@@ -1959,13 +1995,29 @@ CONTAINS
 
     RETURN
   END FUNCTION W4
-  !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *B3(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
+
+  !>
+  !> @brief weights of the A_2^*A_3^*A_4 part of the canonical transformation.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    XL   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @param    THL
+  !> @returns  B3
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION B3(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *B3(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *B3*  WEIGHTS OF THE A_2^*A_3^*A_4 PART OF THE
     !           CANONICAL TRANSFORMATION.
@@ -2076,12 +2128,29 @@ CONTAINS
     RETURN
   END FUNCTION B3
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *B4(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief weights of the A_2^*A_3^*A_4^* part of the canonical
+  !>        transformation.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    XL   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @param    THL
+  !> @returns  B4
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION B4(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *B4(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *B4*  WEIGHTS OF THE A_2^*A_3^*A_4^* PART OF THE CANONICAL
     !           TRANSFORMATION.
@@ -2172,12 +2241,29 @@ CONTAINS
     RETURN
   END FUNCTION B4
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *B1(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief weights of the A_2A_3A_4 part of the canonical
+  !>        transformation.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    XL   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @param    THL
+  !> @returns  B1
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION B1(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *B1(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *B1*  WEIGHTS OF THE A_2A_3A_4 PART OF THE CANONICAL
     !           TRANSFORMATION.
@@ -2273,15 +2359,30 @@ CONTAINS
          ) +W1(RI,RJ,RK,RL,THI,THJ,THK,THL) )
     RETURN
   END FUNCTION B1
-
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *B2(XI,XJ,XK,XL,THI,THJ,THK,THL)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief weights of the A_2^*A_3A_4 part of the canonical
+  !>        transformation.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    XL   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @param    THL
+  !> @returns  B2
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION B2(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !-----------------------------------------------------------------------
     !
+    !***  *REAL FUNCTION* *B2(XI,XJ,XK,XL,THI,THJ,THK,THL)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *B2*  WEIGHTS OF THE A_2^*A_3A_4 PART OF THE CANONICAL
     !           TRANSFORMATION.
@@ -2373,12 +2474,26 @@ CONTAINS
     RETURN
   END FUNCTION B2
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *A1(XI,XJ,XK,THI,THJ,THK)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief auxiliary second-order coefficient.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @returns  A1
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION A1(XI,XJ,XK,THI,THJ,THK)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *A1(XI,XJ,XK,THI,THJ,THK)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *A1*  AUXILIARY SECOND-ORDER COEFFICIENT.
     !
@@ -2433,12 +2548,26 @@ CONTAINS
     RETURN
   END FUNCTION A1
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *A2(XI,XJ,XK,THI,THJ,THK)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief auxiliary second-order function.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @returns  A2
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION A2(XI,XJ,XK,THI,THJ,THK)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *A2(XI,XJ,XK,THI,THJ,THK)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *A2*  AUXILIARY SECOND-ORDER FUNCTION.
     !
@@ -2477,12 +2606,26 @@ CONTAINS
     RETURN
   END FUNCTION A2
   !
-  !-----------------------------------------------------------------------
-  !
-  !***  *REAL FUNCTION* *A3(XI,XJ,XK,THI,THJ,THK)
-  !
-  !-----------------------------------------------------------------------
+  !>
+  !> @brief auxiliary second-order function.
+  !>
+  !> @param    XI   Wave number
+  !> @param    XJ   Wave number
+  !> @param    XK   Wave number
+  !> @param    THI
+  !> @param    THJ
+  !> @param    THK
+  !> @returns  A3
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION A3(XI,XJ,XK,THI,THJ,THK)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *A3(XI,XJ,XK,THI,THJ,THK)
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *A3*  AUXILIARY SECOND-ORDER FUNCTION.
     !
@@ -2535,14 +2678,23 @@ CONTAINS
   END FUNCTION A3
 
   !
-  !-----------------------------------------------------------------------
-  !
-  !
-  !***  *REAL FUNCTION* *OMEG(X)*
-  !
-  !-----------------------------------------------------------------------
-  !
+  !>
+  !> @brief Determines the dispersion relation for gravity
+  !>        waves.
+  !>
+  !> @param    X     Wave number
+  !> @returns  OMEG
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION OMEG(X)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *OMEG(X)*
+    !
+    !-----------------------------------------------------------------------
+    !
     !
     !***  *OMEG*   DETERMINES THE DISPERSION RELATION FOR GRAVITY
     !              WAVES.
@@ -2584,15 +2736,21 @@ CONTAINS
     RETURN
   END FUNCTION OMEG
   !
-  !
-  !-----------------------------------------------------------------------
-  !
-  !
-  !***  *REAL FUNCTION* *VG(X)*
-  !
-  !-----------------------------------------------------------------------
-  !
+  !>
+  !> @brief determines the group velocity for gravity- waves.
+  !>
+  !> @param    X   Wave number
+  !> @returns  VG
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION VG(X)
+    !-----------------------------------------------------------------------
+    !
+    !***  *REAL FUNCTION* *VG(X)*
+    !
+    !-----------------------------------------------------------------------
     !
     !***  *VG*   DETERMINES THE GROUP VELOCITY FOR GRAVITY- WAVES.
     !
@@ -2634,6 +2792,16 @@ CONTAINS
     RETURN
   END FUNCTION VG
   !---------------------------------------------------------------------
+  !>
+  !> @brief Gives the wavenumber.
+  !>
+  !> @param   OM
+  !> @param   BETA
+  !> @returns AKI
+  !>
+  !> @author Peter Janssen
+  !> @date   NA
+  !>
   REAL FUNCTION AKI(OM,BETA)
     ! This function gives the wavenumber ...
     !---------------------------------------------------------------------
@@ -2662,6 +2830,18 @@ CONTAINS
     RETURN
   END FUNCTION AKI
   !
+  !>
+  !> @brief NA.
+  !>
+  !> @param   XI
+  !> @param   XJ
+  !> @param   THI
+  !> @param   THJ
+  !> @returns VABS
+  !>
+  !> @author NA
+  !> @date   NA
+  !>
   REAL FUNCTION VABS(XI,XJ,THI,THJ)
     !
     !---------------------------------------------------------------------
@@ -2680,6 +2860,18 @@ CONTAINS
     RETURN
   END FUNCTION VABS
   !
+  !>
+  !> @brief NA.
+  !>
+  !> @param   XI
+  !> @param   XJ
+  !> @param   THI
+  !> @param   THJ
+  !> @returns VDIR
+  !>
+  !> @author NA
+  !> @date   NA
+  !>
   REAL FUNCTION VDIR(XI,XJ,THI,THJ)
     !
     !---------------------------------------------------------------------
