@@ -1,5 +1,5 @@
 !> @file
-!> @brief SHOWEX bottom friction source term (Ardhuin et al. 2003).
+!> @brief SHOWEX bottom friction source term (Ardhuin et al 2003).
 !>
 !> @author F. Ardhuin
 !> @author J. Lepesqueur
