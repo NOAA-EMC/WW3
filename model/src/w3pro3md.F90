@@ -1474,7 +1474,7 @@ CONTAINS
 !> As with the spatial propagation, the two spaces are considered
 !> independently, but the propagation is performed in a 2-D space.
 !> Compared to the propagation in physical space, the directions
-!> rerpesent a closed space and are therefore comparable to the
+!> represent a closed space and are therefore comparable to the
 !> longitudinal or 'X' propagation. The wavenumber space has to be
 !> extended to allow for boundary treatment. Using a simple first
 !> order boundary treatment at both sided, two points need to
