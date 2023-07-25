@@ -701,7 +701,7 @@ CONTAINS
   !--------------------------------------------------------------------
   !
   !>
-  !> @brief computes tables for second order spectrum in frequency space.
+  !> @brief Computes tables for second order spectrum in frequency space.
   !>
   !> @param NFRE     number of frequencies
   !> @param NANG     number of directions
