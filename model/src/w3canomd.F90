@@ -890,7 +890,7 @@ CONTAINS
   !--------------------------------------------------------------------
   !
   !>
-  !> @brief computes second order spectrum in frequency space.
+  !> @brief Computes second order spectrum in frequency space.
   !>
   !> @param F1       2D free wave spectrum (input)
   !> @param F3       bound waves spectrum (output)
