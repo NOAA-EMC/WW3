@@ -18,7 +18,7 @@
 !>  Model definition and raw data files are read using WAVEWATCH III
 !>  subroutines.
 !>
-!>  Output files are ww3.ctl and ww3.grads. the output files
+!>  Output files are ww3.ctl and ww3.grads. The output files
 !>  contains a land-sea map, followed by requested fields. See the
 !>  control file for the names of the fields.
 !>
