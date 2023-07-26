@@ -2922,6 +2922,9 @@ CONTAINS
         ! Set output values in full grid
         USTAR(ISEA) = UST_CHUNK(CSEA)
         USTDIR(ISEA) = USTD_CHUNK(CSEA)
+#ifdef W3_IS2
+        ICEF(ISEA) = ICEF_CHUNK(CSEA)
+#endif
         !FPI(ISEA)
         ! TODO - ARE MORE NEEDED NERE?
       ENDDO
