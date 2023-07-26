@@ -2909,25 +2909,28 @@ CONTAINS
         JSEA = CHUNK0 + CSEA - 1
         CALL INIT_GET_ISEA(ISEA, JSEA)
 
-        ! This moved  from W3WAVE (after direct W3SRCE call)
+        ! Set output values in full grid
+        USTAR(ISEA) = UST_CHUNK(CSEA)
+        USTDIR(ISEA) = USTD_CHUNK(CSEA)
+#ifdef W3_IS2
+        ! Only copy ICEF back if ice field read in (INFLAGS(4) is TRUE):
+        IF(INFLAGS2(4)) THEN
+          ICEF(ISEA) = ICEF_CHUNK(CSEA)
+        ENDIF
+#endif
+
+        ! TODO - ARE MORE NEEDED NERE?
+
+        ! This moved from W3WAVE (after W3SRCE call)
         ! TODO - check this is ok for implicit calls too...
         IF(.NOT. (MAPSTA(IY(CSEA),IX(CSEA)) .EQ. 1 .AND. FLAGST(ISEA))) THEN
           USTAR (ISEA) = UNDEF
           USTDIR(ISEA) = UNDEF
           DTDYN (JSEA) = UNDEF
           FCUT  (JSEA) = UNDEF
-          SPEC(:,JSEA)  = 0.
+          !SPEC(:,JSEA)  = 0.  !! Do not zero spec if point not active.
         ENDIF
-
-        ! Set output values in full grid
-        USTAR(ISEA) = UST_CHUNK(CSEA)
-        USTDIR(ISEA) = USTD_CHUNK(CSEA)
-#ifdef W3_IS2
-        ICEF(ISEA) = ICEF_CHUNK(CSEA)
-#endif
-        !FPI(ISEA)
-        ! TODO - ARE MORE NEEDED NERE?
-      ENDDO
+      ENDDO ! CSEA
 
     END DO !! CHUNK LOOP (CHUNK0,CHUNKN)
     RETURN
