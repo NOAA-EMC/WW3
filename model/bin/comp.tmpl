@@ -77,9 +77,15 @@
   fi
 
   # netcdf include dir
+  # NOTE (Camille Teicheira 2023-07-26):
+  # NETCDFF_CONFIG should be the path to `nf-config`
+  # NETDCDF_CONFIG should be the path to `nc-config`
+  # as of netcdf-c 4.9.2 nc-config no longer looks for and returns
+  # values from nf-config if enabled, so we need to be specific
+  # https://github.com/Unidata/netcdf-c/blob/main/RELEASE_NOTES.md?plain=1#L29
   if [ "$netcdf_compile" = 'yes' ]
   then
-    if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDF_CONFIG --fc`"; fi
+    if [ "$mpi_mod" = 'no' ]; then comp="`$NETCDFF_CONFIG --fc`"; fi
     opt="$opt `$NETCDF_CONFIG --cflags`"
   fi
 

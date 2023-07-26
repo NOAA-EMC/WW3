@@ -273,8 +273,9 @@ For compiling with NetCDF, the following environment variable
 is required:
 
     NETCDF_CONFIG = <path to NetCDF-4 nc-config utility>
+    NETCDFF_CONFIG = <path to NetCDF-4 nf-config utility>
 
-The nc-config utility (part of the NetCDF-4 install) is used to
+The nc-config and nf-config utilities (part of the NetCDF-4 install) is used to
 determine the appropriate compile and link flags.
 
 For NetCDF routines to compile, WAVEWATCH III requires
@@ -317,6 +318,21 @@ EOF
     netcdf_compile_message
     echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
     return 1
+  fi
+
+
+  if [ -z "$NETCDFF_CONFIG" ]
+  then
+    if [ `echo $netcdf_version | tr -d . | tr -d - | tr -d 'A-Z a-z'` -gt 491 ]
+    then
+      netcdf_compile_message
+      echo "$mode: NetCDF version $netcdf_version > 4.9.1 and NETCDFF_CONFIG is not defined. NETCDFF_CONFIG must be defined for NetCDF versions > 4.9.1"; echo ' '
+      return 1
+    else
+      netcdf_compile_message
+      echo "$mode: NETCDFF_CONFIG not defined; using NETCDF_CONFIG value"; echo ' '
+      NETCDFF_CONFIG=$NETCDF_CONFIG
+    fi
   fi
 
   return 0

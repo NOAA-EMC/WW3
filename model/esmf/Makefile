@@ -13,7 +13,8 @@ SWITCHES := $(shell cat switch)
 
 WWATCH3_ENV := $(WW3_BINDIR)/wwatch3.env
 NETCDF_CONFIG := $(shell which nc-config)
-export WWATCH3_ENV NETCDF_CONFIG
+NETCDFF_CONFIG := $(shell which nf-config)
+export WWATCH3_ENV NETCDF_CONFIG NETCDFF_CONFIG
 
 EXE := $(WW3_EXEDIR)/ww3_multi_esmf
 

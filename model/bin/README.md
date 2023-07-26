@@ -39,9 +39,13 @@ WW3_PARCOMPN = <how many parallel make tasks to use, default to 4 if not set >
 The requirements for NetCDF are: 
 * NetCDF version 4.1.1 or higher (Use "nc-config --version" to check) 
 * NetCDF-4 API enabled (Use "nc-config --has-nc4" to check) 
-* Define NETCDF_CONFIG env variable
+* Define `NETCDF_CONFIG` env variable
+* Define `NETCDFF_CONFIG` env variable
 
-NETCDF_CONFIG = < path to NetCDF-4 nc-config utility >
+`NETCDF_CONFIG` = < path to NetCDF-4 nc-config utility >
+`NETCDFF_CONFIG` = < path to NetCDF-4 nf-config utility >
+
+>**Note:**  (Camille Teicheira 2023-07-26): as of [netcdf-c 4.9.2](https://github.com/Unidata/netcdf-c/blob/main/RELEASE_NOTES.md?plain=1#L29) `nc-config` no longer looks for and returns values from `nf-config` if enabled, so we need to be specific and provide both utilities. If using a version of NetCDF < 4.9.2, `NETCDFF_CONFIG` is optional and will be set to the value provided for `NETCDF_CONFIG`.
 
 ## To use the PDLIB switch:
 
