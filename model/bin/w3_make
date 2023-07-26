@@ -330,7 +330,7 @@ EOF
       return 1
     else
       netcdf_compile_message
-      echo "$mode: NETCDFF_CONFIG not defined; using NETCDF_CONFIG value"; echo ' '
+      echo "$mode: NETCDFF_CONFIG not defined; using NETCDF_CONFIG value: $NETCDF_CONFIG"; echo ' '
       NETCDFF_CONFIG=$NETCDF_CONFIG
     fi
   fi
