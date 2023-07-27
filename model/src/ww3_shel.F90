@@ -1999,6 +1999,7 @@ PROGRAM W3SHEL
 #endif
 #ifdef W3_OASIS
   END IF
+  ID_OASIS_TIME = -1
 #endif
 
 700 CONTINUE
@@ -2058,8 +2059,10 @@ PROGRAM W3SHEL
         IF ( DTOUT(7).NE.0 ) THEN
           ! TFN not initialized at TIME=TIME00, using TIME instead
           IF(NINT(DSEC21(TIME00,TIME)) == 0) THEN
-            ID_OASIS_TIME = 0
-            DTTST=0.
+            IF(ID_OASIS_TIME < 0) THEN
+              ID_OASIS_TIME = 0
+              DTTST=0.
+            END IF
           ELSE
             ID_OASIS_TIME = NINT(DSEC21 ( TIME00 , TFN(:,J) ))
             IF ( MOD(NINT(DSEC21(TIME00,TIME)), NINT(DTOUT(7))) .EQ. 0 .AND. &
