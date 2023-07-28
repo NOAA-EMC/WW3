@@ -2059,7 +2059,7 @@ PROGRAM W3SHEL
         IF ( DTOUT(7).NE.0 ) THEN
           ! TFN not initialized at TIME=TIME00, using TIME instead
           IF(NINT(DSEC21(TIME00,TIME)) == 0) THEN
-            IF(ID_OASIS_TIME .LT. 0) THEN
+            IF(ID_OASIS_TIME .LT. 0 .OR. .NOT. CPLT0) THEN
               ID_OASIS_TIME = 0
               DTTST=0.
             END IF
