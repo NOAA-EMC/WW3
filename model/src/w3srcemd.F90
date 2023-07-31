@@ -1039,9 +1039,9 @@ CONTAINS
     TAUOCX = 0.
     TAUOCY = 0.
     TAUBBL = 0.
-    TAUICE = 0.
     PHIBBL = 0.
-    PHICE  = 0.
+    !TAUICE = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
+    !PHICE  = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     WNMEAN = 0.
     CHARN  = 0.
     TWS    = 0.
