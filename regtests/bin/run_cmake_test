@@ -491,7 +491,9 @@ then
     cp $path_build/install/bin/ww3_shel $path_e/
     cp $path_build/install/bin/ww3_multi $path_e/
     cp $path_build/install/bin/ww3_systrk $path_e/
-    cp $path_build/install/bin/ww3_prtide $path_e/
+    if [ -e $path_build/install/bin/ww3_prtide ]; then
+      cp $path_build/install/bin/ww3_prtide $path_e/
+    fi
   fi
 else
   path_build=${path_build_root}
@@ -1127,9 +1129,9 @@ then
 
         if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
           then
-          inputs_tmp=`( ls ${path_i}/${prog}${gu}*nml)`
+          inputs_tmp="`ls ${path_i}/${prog}${gu}*nml 2>/dev/null`"
          else
-          inputs_tmp=`( ls ${path_i}/${prog}${gu}*inp)`
+          inputs_tmp="`ls ${path_i}/${prog}${gu}*inp 2>/dev/null`"
         fi
 
         if [ ! -z "$inputs_tmp" ];then
