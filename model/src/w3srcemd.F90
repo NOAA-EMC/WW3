@@ -1324,8 +1324,8 @@ CONTAINS
         TAUWY(JSEA)=0.
         IF ( IT .eq. 0 ) THEN
           LLWS(:,CSEA) = .TRUE.
-          USTAR(CSEA)=0.
-          USTDIR(CSEA)=0.
+          UST_CHUNK(CSEA)=0.
+          USTD_CHUNK(CSEA)=0.
           CALL W3SPR3 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEANS(CSEA), WNMEAN(JSEA), &
              AMAX(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA),          &
              TAUWX(JSEA), TAUWY(JSEA), CD(CSEA), Z0(CSEA), CHARN(JSEA), LLWS(:,CSEA), FMEANWS(CSEA))
@@ -1346,9 +1346,9 @@ CONTAINS
         TAUWX(JSEA)=0.
         TAUWY(JSEA)=0.
         IF ( IT .eq. 0 ) THEN
-          LLWS(:,:) = .TRUE.
-          USTAR(CSEA)=0.
-          USTDIR(CSEA)=0.
+          LLWS(:,CSEA) = .TRUE.
+          UST_CHUNK(CSEA)=0.
+          USTD_CHUNK(CSEA)=0.
         ELSE
           CALL W3SPR4 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), FMEAN1(CSEA), WNMEAN(JSEA), &
              AMAX(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA),                           &
