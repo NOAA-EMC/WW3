@@ -71,8 +71,8 @@ MODULE W3SRCEMD
   ! TODO: CHUNKSIZE should be user settable - not parameter
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
-  INTEGER, PARAMETER :: CHUNKSIZE = 4
-  INTEGER, PARAMETER :: JCHK = 1200
+  INTEGER, PARAMETER :: CHUNKSIZE = 1
+  INTEGER, PARAMETER :: JCHK = -1
   INTEGER :: ICHK
 
   !/
@@ -989,7 +989,7 @@ CONTAINS
 #endif
 #if W3_BT4
     REAL :: D50_CHUNK(CHUNKSIZE),      &
-            PSIC_CHUNK(CHUNKSIZE),
+            PSIC_CHUNK(CHUNKSIZE)
 #endif
 #ifdef W3_PDLIB
     REAL :: CLATSL_CHUNK(CHUNKSIZE)
@@ -2505,6 +2505,7 @@ CONTAINS
 #endif
 
         IF (srce_call .eq. srce_imp_post) THEN
+          DTDYN(CHUNK0:CHUNKN) = DTDYN(CHUNK0:CHUNKN) / REAL(MAX(1,NSTEPS))
           EXIT
         ENDIF
 
@@ -2830,7 +2831,7 @@ CONTAINS
 #ifdef W3_FLD2
         IF (U10_CHUNK(CSEA).GT.10. .and. HSTOT.gt.0.5) then
           ! TODO - TAUNUX/Y not used. Remove?
-          CALL W3FLD2 ( SPEC(:,JSEA),min(PI(ISEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
+          CALL W3FLD2 ( SPEC(:,JSEA),min(FPI(ISEA)/TPI,2.0),COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*COS(U10D_CHUNK(CSEA)),        &
              COEF_CHUNK(CSEA)*U10_CHUNK(CSEA)*Sin(U10D_CHUNK(CSEA)), ZWND, DEPTH(CSEA), 0.0, &
              DAIR_CHUNK(CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(CSEA),TAUNUX,TAUNUY,CHARN(JSEA))
         ELSE
