@@ -784,11 +784,11 @@ CONTAINS
          !VSNL(NSPEC), VDNL(NSPEC),            &
          !VSBT(NSPEC), VDBT(NSPEC)
     !REAL :: VS(NSPEC), VD(NSPEC)
-    REAL :: EB(NK)
+    REAL :: EB(NK)       ! TODO - not used?
 
     LOGICAL :: SHAVE
     LOGICAL :: LBREAK
-    LOGICAL, SAVE :: FIRST = .TRUE.
+    LOGICAL, SAVE :: FIRST = .TRUE.  ! TODO - not used?
     LOGICAL :: PrintDeltaSmDA
     REAL :: eInc1, eInc2, eVS, eVD, JAC
     REAL :: DeltaSRC(NSPEC)
@@ -1052,7 +1052,9 @@ CONTAINS
       ICE_CHUNK(:) = 0.0 ! Ice never read in
     END IF
 
+    ! ---------------------------------------------------------------------
     ! Start of loop over tiles:
+    ! ---------------------------------------------------------------------
     CHUNKN = 0
     DO
       ! Get start and end indices of tile:
@@ -1257,8 +1259,6 @@ CONTAINS
 
         I = I + 1
       ENDDO ! Gather to local grid loop
-
-      JSEA = 1 !!!! TODO: TESTING !!!!
 #if MANM
 !$ACC END KERNELS
 #endif
@@ -1295,9 +1295,9 @@ CONTAINS
 #endif
 
 #ifdef W3_ST4
-      DLWMEAN(:)= 0.
-      BRLAMBDA(:,:)=0.
-      WHITECAP(:,:)=0.
+      DLWMEAN(:) = 0.
+      BRLAMBDA(:,:) = 0.
+      WHITECAP(:,:) = 0.
 #endif
       !
       ! 1.c Set mean parameters
@@ -1560,7 +1560,7 @@ CONTAINS
           ! TESTING!
           VSIN(:,CSEA)=0  ! No needed?
           VDIN(:,CSEA)=0 
-          BRLAMBDA=0   ! TODO: Shouldn't be needed
+          BRLAMBDA(:,CSEA)=0   ! TODO: Shouldn't be needed
           ! TESTING !
           CALL W3SIN4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), &
              U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),       &
