@@ -2159,7 +2159,11 @@ CONTAINS
             IF (IX(CSEA) == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VS(:,CSEA))
             IF (IX(CSEA) == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD(:,CSEA))
 #endif
-            RETURN ! return everything is done for the implicit ...
+            !!RETURN ! return everything is done for the implicit ...
+            ! Refactor - don't return here - need to process rest of seapoints in tile.
+            ! Just exit the integration loop instead; a check on srce_imp_pre is now made
+            ! after integration loop is complete.
+            EXIT ! everything is done for the implicit ...
 
           END IF ! srce_imp_pre
 ! --end W3_PDLIB
@@ -2533,6 +2537,10 @@ CONTAINS
         ENDIF
 
       END DO ! INTEGRATION LOOP
+
+      ! Refactor - if implicit (pre), then we are all done - cycle chunk loop
+      IF(srce_call .eq. srce_imp_pre) CYCLE
+      
 
 #ifdef W3_DEBUGSRC
       IF (IX(CSEA) .eq. DEBUG_NODE) THEN
