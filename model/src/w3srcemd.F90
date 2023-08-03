@@ -652,7 +652,7 @@ CONTAINS
 #endif
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, ONLY : B_JAC, ASPAR_JAC, ASPAR_DIAG_ALL
-    USE yowNodepool, ONLY: PDLIB_I_DIAG, PDLIB_SI
+    USE yowNodepool, ONLY: PDLIB_I_DIAG, PDLIB_SI, NP
     USE W3GDATMD, ONLY: B_JGS_LIMITER, FSSOURCE, optionCall
     USE W3GDATMD, ONLY: IOBP_LOC, IOBPD_LOC, B_JGS_LIMITER_FUNC
     USE W3WDATMD, ONLY: VA
@@ -1060,6 +1060,13 @@ CONTAINS
       ! Get start and end indices of tile:
       CHUNK0 = CHUNKN + 1
 
+#ifdef W3_PDLIB
+      ! In W3SRCE, the loop is 1:NP for the src_inp_pre loop, rather than 1:NSEAL
+      ! Should it be the same for srce_imp_post?    
+      IF(srce_call .EQ. srce_imp_pre) THEN
+        IF(CHUNK0 .GT. NP) EXIT
+      ENDIF
+#endif
       IF(CHUNK0 .GT. NSEAL) EXIT
       CHUNKN = MIN(NSEAL,CHUNK0 + CHUNKSIZE - 1)
       NSEAC = CHUNKN - CHUNK0 + 1
@@ -2540,7 +2547,6 @@ CONTAINS
 
       ! Refactor - if implicit (pre), then we are all done - cycle chunk loop
       IF(srce_call .eq. srce_imp_pre) CYCLE
-      
 
 #ifdef W3_DEBUGSRC
       IF (IX(CSEA) .eq. DEBUG_NODE) THEN
