@@ -1596,7 +1596,10 @@ CONTAINS
             !
             ! Wave energy flux
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
-            CGE=CGE*0.001  ! from W / m to kW / m
+            DO ISEA=1, NSEA
+              IF ( CGE(ISEA) .NE. UNDEF )                       &
+                   CGE(ISEA) = 0.001 * CGE(ISEA)  ! from W / m to kW / m
+            END DO
             CALL S2GRID(CGE(1:NSEA), X1)
             !
             ! Wind to wave energy flux
@@ -2551,39 +2554,31 @@ CONTAINS
               IVAR=IVAR1+I
               IF (COORDTYPE.EQ.1) THEN
                 IF (NCVARTYPE.EQ.2) THEN
-                  IF( SMCGRD ) THEN
 #ifdef W3_SMC
-                    IF( SMCOTYPE .EQ. 1 ) THEN
-                      ! SMC Flat file
-                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
-                    ELSE
-                      ! SMC Regridded file
-                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                    ENDIF
-                    CALL CHECK_ERR(IRET)
+                  IF( SMCGRD .AND. SMCOTYPE .EQ. 1 ) THEN
+                    ! SMC Flat file
+                    IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
+                  ELSE
 #endif
-                  ELSE ! SMCGRD
-                    IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                    CALL CHECK_ERR(IRET)
-                  ENDIF ! SMCGRD
+                    IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+#ifdef W3_SMC
+                  ENDIF
+#endif
+                  CALL CHECK_ERR(IRET)
                   IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                   IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                 ELSE
-                  IF( SMCGRD ) THEN
 #ifdef W3_SMC
-                    IF( SMCOTYPE .EQ. 1 ) THEN
-                      ! SMC Flat file
-                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
-                    ELSE
-                      ! SMC Regridded file
-                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                    ENDIF
-                    CALL CHECK_ERR(IRET)
+                  IF( SMCGRD .AND. SMCOTYPE .EQ. 1 ) THEN
+                    ! SMC Flat file
+                    IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
+                  ELSE
 #endif
-                  ELSE ! SMCGRD
-                    IRET=NF90_DEF_VAR(NCID,META(I)%VARNM, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                    CALL CHECK_ERR(IRET)
-                  ENDIF ! SMCGRD
+                    IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
+#ifdef W3_SMC
+                  ENDIF
+#endif
+                  CALL CHECK_ERR(IRET)
                   IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                   IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                 END IF
@@ -2648,19 +2643,16 @@ CONTAINS
             ELSE
               ! If it is spherical coordinate
               IF (FLAGLL) THEN
-                IF(SMCGRD) THEN
 #ifdef W3_SMC
-                  IF(SMCOTYPE .EQ. 1) THEN
-                    IRET=NF90_INQ_DIMID (NCID, 'seapoint', DIMID(2))
-                  ELSE
-                    IRET=NF90_INQ_DIMID (NCID, 'longitude', DIMID(2))
-                    IRET=NF90_INQ_DIMID (NCID, 'latitude', DIMID(3))
-                  ENDIF
-#endif
+                IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                  IRET=NF90_INQ_DIMID (NCID, 'seapoint', DIMID(2))
                 ELSE
+#endif
                   IRET=NF90_INQ_DIMID (NCID, 'longitude', DIMID(2))
                   IRET=NF90_INQ_DIMID (NCID, 'latitude', DIMID(3))
-                ENDIF ! SMCGRD
+#ifdef W3_SMC
+                ENDIF
+#endif
                 IRET=NF90_INQ_VARID (NCID, 'longitude', VARID(1))
                 IRET=NF90_INQ_VARID (NCID, 'latitude', VARID(2))
                 ! If it is cartesian coordinate
@@ -2705,36 +2697,30 @@ CONTAINS
                 IVAR=IVAR1+I
                 IF (COORDTYPE.EQ.1) THEN
                   IF (NCVARTYPE.EQ.2) THEN
-                    IF( SMCGRD ) THEN
 #ifdef W3_SMC
-                      IF( SMCOTYPE .EQ. 1 ) THEN
-                        ! SMC Flat file
-                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
-                      ELSE
-                        ! SMC Regridded file
-                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                      ENDIF
-#endif
+                    IF( SMCGRD .AND. SMCOTYPE .EQ. 1 ) THEN
+                      ! SMC Flat file
+                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
                     ELSE
+#endif
                       IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_SHORT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                      CALL CHECK_ERR(IRET)
-                    ENDIF ! SMCGRD
+#ifdef W3_SMC
+                    ENDIF
+#endif
+                    CALL CHECK_ERR(IRET)
                     IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                   ELSE
-                    IF( SMCGRD ) THEN
 #ifdef W3_SMC
-                      IF( SMCOTYPE .EQ. 1 ) THEN
-                        ! SMC Flat file
-                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
-                      ELSE
-                        ! SMC Regridded file
-                        IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                      ENDIF
-#endif
+                    IF( SMCGRD .AND. SMCOTYPE .EQ. 1 ) THEN
+                      ! SMC Flat file
+                      IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, (/DIMID(2), DIMID(4+EXTRADIM)/), VARID(IVAR))
                     ELSE
+#endif
                       IRET = NF90_DEF_VAR(NCID,META(I)%varnm, NF90_FLOAT, DIMID(2:4+EXTRADIM), VARID(IVAR))
-                      CALL CHECK_ERR(IRET)
-                    ENDIF ! SMCGRD
+#ifdef W3_SMC
+                    ENDIF
+#endif
+                    CALL CHECK_ERR(IRET)
                     IF (NCTYPE.EQ.4) IRET = NF90_DEF_VAR_DEFLATE(NCID, VARID(IVAR), 1, 1, DEFLATE)
                     IF (NCTYPE.EQ.4) CALL CHECK_ERR(IRET)
                   END IF
@@ -2849,263 +2835,171 @@ CONTAINS
           ! NFIELD=3
           IF (NCVARTYPE.EQ.2) THEN
             IF ( NFIELD.EQ.3 ) THEN
-              IF (SMCGRD) THEN
+              DO IX=IX1, IXN
+                DO IY=IY1, IYN
+                  IF ( X1(IX,IY) .EQ. UNDEF ) THEN
+                    MXX(IX,IY) = MFILL
+                    MYY(IX,IY) = MFILL
+                    MXY(IX,IY) = MFILL
+                  ELSE
+                    MXX(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
+                    MYY(IX,IY) = NINT(X2(IX,IY)/META(2)%FSC)
+                    MXY(IX,IY) = NINT(XY(IX,IY)/META(3)%FSC)
+                  END IF
+                END DO
+              END DO
 #ifdef W3_SMC
+              IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                     MXX(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
+                     MYY(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
+                     MXY(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                call CHECK_ERR(IRET)
+              ELSE
+#endif
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                     MXX(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
+                     MYY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
+                     MXY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                call CHECK_ERR(IRET)
+#ifdef W3_SMC
+              ENDIF
+#endif
+              ! NFIELD=2
+            ELSE IF (NFIELD.EQ.2 ) THEN
+              ! EXTRADIM=0
+              IF (EXTRADIM.EQ.0) THEN
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    ! TODO: Find some other way to access MAPSTA
-                    IF ( X1(IX,IY) .EQ. UNDEF ) THEN
+                    IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                       MXX(IX,IY) = MFILL
                       MYY(IX,IY) = MFILL
-                      MXY(IX,IY) = MFILL
                     ELSE
-                      MXX(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
-                      MYY(IX,IY) = NINT(X2(IX,IY)/META(2)%FSC)
-                      MXY(IX,IY) = NINT(XY(IX,IY)/META(3)%FSC)
+                      MXX(IX,IY) = NINT(XX(IX,IY)/META(1)%FSC)
+                      MYY(IX,IY) = NINT(XY(IX,IY)/META(2)%FSC)
                     END IF
                   END DO
                 END DO
-                IF(SMCOTYPE .EQ. 1) THEN
+#ifdef W3_SMC
+                IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                        MXX(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
                   call CHECK_ERR(IRET)
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
                        MYY(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
                   call CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
-                       MXY(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                  call CHECK_ERR(IRET)
                 ELSE
+#endif
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                        MXX(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
                   call CHECK_ERR(IRET)
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
                        MYY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
                   call CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
-                       MXY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  call CHECK_ERR(IRET)
+#ifdef W3_SMC
                 ENDIF
 #endif
-              ELSE ! IF(SMCGRD)
-                DO IX=IX1, IXN
-                  DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
-                      MXX(IX,IY) = MFILL
-                      MYY(IX,IY) = MFILL
-                      MXY(IX,IY) = MFILL
-                    ELSE
-                      MXX(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
-                      MYY(IX,IY) = NINT(X2(IX,IY)/META(2)%FSC)
-                      MXY(IX,IY) = NINT(XY(IX,IY)/META(3)%FSC)
-                    END IF
-                  END DO
-                END DO
-
-                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),              &
-                     MXX(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                CALL CHECK_ERR(IRET)
-                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),            &
-                     MYY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                CALL CHECK_ERR(IRET)
-                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),            &
-                     MXY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                CALL CHECK_ERR(IRET)
-              ENDIF ! SMCGRD
-              ! NFIELD=2
-            ELSE IF (NFIELD.EQ.2 ) THEN
-              ! EXTRADIM=0
-              IF (EXTRADIM.EQ.0) THEN
-                IF (SMCGRD) THEN
-#ifdef W3_SMC
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      ! TODO: Find some other way to access MAPSTA
-                      IF ( XX(IX,IY) .EQ. UNDEF ) THEN
-                        MXX(IX,IY) = MFILL
-                        MYY(IX,IY) = MFILL
-                      ELSE
-                        MXX(IX,IY) = NINT(XX(IX,IY)/META(1)%FSC)
-                        MYY(IX,IY) = NINT(XY(IX,IY)/META(2)%FSC)
-                      END IF
-                    END DO
-                  END DO
-                  IF(SMCOTYPE .EQ. 1) THEN
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MXX(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                    call CHECK_ERR(IRET)
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
-                         MYY(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                    call CHECK_ERR(IRET)
-                  ELSE
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MXX(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                    call CHECK_ERR(IRET)
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
-                         MYY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                    call CHECK_ERR(IRET)
-                  ENDIF
-#endif
-                ELSE ! IF(SMCGRD)
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
-                        MXX(IX,IY) = MFILL
-                        MYY(IX,IY) = MFILL
-                      ELSE
-                        !PRINT*,XX(IX,IY),XY(IX,IY)
-                        !STOP
-                        MXX(IX,IY) = NINT(XX(IX,IY)/META(1)%FSC)
-                        MYY(IX,IY) = NINT(XY(IX,IY)/META(2)%FSC)
-                      END IF
-                    END DO
-                  END DO
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),             &
-                       MXX(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),           &
-                       MYY(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  CALL CHECK_ERR(IRET)
-                ENDIF ! SMCGRD
                 ! EXTRADIM=1
               ELSE
                 START(3+1-COORDTYPE)=0
                 DO IK=I1F,I2F
                   START(3+1-COORDTYPE)=START(3+1-COORDTYPE)+1
-
-                  IF (SMCGRD) THEN
+                  DO IX=IX1, IXN
+                    DO IY=IY1, IYN
+                      IF ( XXK(IX,IY,IK) .EQ. UNDEF ) THEN
+                        MXX(IX,IY) = MFILL
+                        MYY(IX,IY) = MFILL
+                      ELSE
+                        MXX(IX,IY) = NINT(XXK(IX,IY,IK)/META(1)%FSC)
+                        MYY(IX,IY) = NINT(XYK(IX,IY,IK)/META(2)%FSC)
+                      END IF
+                    END DO
+                  END DO
 #ifdef W3_SMC
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        ! TODO: Find some other way to access MAPSTA
-                        IF ( XXK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MXX(IX,IY) = MFILL
-                          MYY(IX,IY) = MFILL
-                        ELSE
-                          MXX(IX,IY) = NINT(XXK(IX,IY,IK)/META(1)%FSC)
-                          MYY(IX,IY) = NINT(XYK(IX,IY,IK)/META(2)%FSC)
-                        END IF
-                      END DO
-                    END DO
-                    IF(SMCOTYPE .EQ. 1) THEN
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),                     &
-                           MXX(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
-                           (/COUNT(1), COUNT(3), COUNT(4)/))
-                      call CHECK_ERR(IRET)
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),                     &
-                           MXY(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
-                           (/COUNT(1), COUNT(3), COUNT(4)/))
-                      call CHECK_ERR(IRET)
-                    ELSE
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MXX(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                      call CHECK_ERR(IRET)
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MXX(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                      call CHECK_ERR(IRET)
-                    ENDIF
+                  IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),                      &
+                         MXX(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
+                         (/COUNT(1), COUNT(3), COUNT(4)/))
+                    call CHECK_ERR(IRET)
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),                      &
+                         MXY(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
+                         (/COUNT(1), COUNT(3), COUNT(4)/))
+                    call CHECK_ERR(IRET)
+                  ELSE
 #endif
-                  ELSE ! IF(SMCGRD)
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MXX(IX,IY) = MFILL
-                          MYY(IX,IY) = MFILL
-                        ELSE
-                          MXX(IX,IY) = NINT(XXK(IX,IY,IK)/META(1)%FSC)
-                          MYY(IX,IY) = NINT(XYK(IX,IY,IK)/META(2)%FSC)
-                        END IF
-                      END DO
-                    END DO
                     IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                          MXX(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),             &
-                         MYY(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                  ENDIF ! SMCGRD
+                    call CHECK_ERR(IRET)
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
+                         MXX(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
+                    call CHECK_ERR(IRET)
+#ifdef W3_SMC
+                  ENDIF
+#endif
                 END DO
               END IF  ! EXTRADIM
               ! NFIELD=1
             ELSE
               ! EXTRADIM=0
               IF (EXTRADIM.EQ.0) THEN
-                IF (SMCGRD) THEN
+                DO IX=IX1, IXN
+                  DO IY=IY1, IYN
+                    IF ( X1(IX,IY) .EQ. UNDEF ) THEN
+                      MX1(IX,IY) = MFILL
+                    ELSE
+                      MX1(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
+                    END IF
+                  END DO
+                END DO
 #ifdef W3_SMC
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      ! TODO: Find some other way to access MAPSTA
-                      IF ( X1(IX,IY) .EQ. UNDEF ) THEN
-                        MX1(IX,IY) = MFILL
-                      ELSE
-                        MX1(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
-                      END IF
-                    END DO
-                  END DO
-                  IF(SMCOTYPE .EQ. 1) THEN
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MX1(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                    call CHECK_ERR(IRET)
-                  ELSE
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MX1(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                    call CHECK_ERR(IRET)
-                  ENDIF
+                IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                       MX1(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                  call CHECK_ERR(IRET)
+                ELSE
 #endif
-                ELSE ! IF(SMCGRD)
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
-                        MX1(IX,IY) = MFILL
-                      ELSE
-                        MX1(IX,IY) = NINT(X1(IX,IY)/META(1)%FSC)
-                      END IF
-                    END DO
-                  END DO
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                        MX1(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  CALL CHECK_ERR(IRET)
-                ENDIF ! SMCGRD
+                  call CHECK_ERR(IRET)
+#ifdef W3_SMC
+                ENDIF
+#endif
                 ! EXTRADIM=1
               ELSE
                 START(3+1-COORDTYPE)=0
                 DO IK=I1F,I2F
                   START(3+1-COORDTYPE)=START(3+1-COORDTYPE)+1
-
-                  IF (SMCGRD) THEN
+                  DO IX=IX1, IXN
+                    DO IY=IY1, IYN
+                      IF ( XK(IX,IY,IK) .EQ. UNDEF ) THEN
+                        MX1(IX,IY) = MFILL
+                      ELSE
+                        MX1(IX,IY) = NINT(XK(IX,IY,IK)/META(1)%FSC)
+                      END IF
+                    END DO
+                  END DO
 #ifdef W3_SMC
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        ! TODO: Find some other way to access MAPSTA
-                        IF ( XK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MX1(IX,IY) = MFILL
-                        ELSE
-                          MX1(IX,IY) = NINT(XK(IX,IY,IK)/META(1)%FSC)
-                        END IF
-                      END DO
-                    END DO
-                    IF(SMCOTYPE .EQ. 1) THEN
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MX1(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                      call CHECK_ERR(IRET)
-                    ELSE
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MX1(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                      call CHECK_ERR(IRET)
-                    ENDIF
+                  IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),                      &
+                         MX1(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
+                         (/COUNT(1), COUNT(3), COUNT(4)/))
+                    call CHECK_ERR(IRET)
+                  ELSE
 #endif
-                  ELSE ! IF(SMCGRD)
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MX1(IX,IY) = MFILL
-                        ELSE
-                          MX1(IX,IY) = NINT(XK(IX,IY,IK)/META(1)%FSC)
-                        END IF
-                      END DO
-                    END DO
                     IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                          MX1(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                    CALL CHECK_ERR(IRET)
-                  ENDIF ! SMCGRD
+                    call CHECK_ERR(IRET)
+#ifdef W3_SMC
+                  ENDIF
+#endif
                 END DO
               END IF   ! EXTRADIM
             END IF   ! NFIELD
@@ -3114,258 +3008,171 @@ CONTAINS
             !
           ELSE
             IF ( NFIELD.EQ.3 ) THEN
-              IF (SMCGRD) THEN
+              DO IX=IX1, IXN
+                DO IY=IY1, IYN
+                  IF ( X1(IX,IY) .EQ. UNDEF ) THEN
+                    MXXR(IX,IY) = MFILLR
+                    MYYR(IX,IY) = MFILLR
+                    MXYR(IX,IY) = MFILLR
+                  ELSE
+                    MXXR(IX,IY) = X1(IX,IY)
+                    MYYR(IX,IY) = X2(IX,IY)
+                    MXYR(IX,IY) = XY(IX,IY)
+                  END IF
+                END DO
+              END DO
 #ifdef W3_SMC
+              IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                     MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
+                     MYYR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
+                     MXYR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                call CHECK_ERR(IRET)
+              ELSE
+#endif
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                     MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
+                     MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                call CHECK_ERR(IRET)
+                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
+                     MXYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
+                call CHECK_ERR(IRET)
+#ifdef W3_SMC
+              ENDIF
+#endif
+              ! NFIELD=2
+            ELSE IF (NFIELD.EQ.2 ) THEN
+              ! EXTRADIM=0
+              IF (EXTRADIM.EQ.0) THEN
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    ! TODO: Find some other way to access MAPSTA
-                    IF ( X1(IX,IY) .EQ. UNDEF ) THEN
+                    IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                       MXXR(IX,IY) = MFILLR
                       MYYR(IX,IY) = MFILLR
-                      MXYR(IX,IY) = MFILLR
                     ELSE
-                      MXXR(IX,IY) = X1(IX,IY)
-                      MYYR(IX,IY) = X2(IX,IY)
-                      MXYR(IX,IY) = XY(IX,IY)
+                      MXXR(IX,IY) = XX(IX,IY)
+                      MYYR(IX,IY) = XY(IX,IY)
                     END IF
                   END DO
                 END DO
-                IF(SMCOTYPE .EQ. 1) THEN
+#ifdef W3_SMC
+                IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                        MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
                   call CHECK_ERR(IRET)
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
                        MYYR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
                   call CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
-                       MXYR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                  call CHECK_ERR(IRET)
                 ELSE
+#endif
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                        MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
                   call CHECK_ERR(IRET)
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
                        MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
                   call CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),               &
-                       MXYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  call CHECK_ERR(IRET)
+#ifdef W3_SMC
                 ENDIF
 #endif
-              ELSE ! IF(SMCGRD)
-                DO IX=IX1, IXN
-                  DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR. X1(IX,IY) .EQ. UNDEF ) THEN
-                      MXXR(IX,IY) = MFILLR
-                      MYYR(IX,IY) = MFILLR
-                      MXYR(IX,IY) = MFILLR
-                    ELSE
-                      MXXR(IX,IY) = X1(IX,IY)
-                      MYYR(IX,IY) = X2(IX,IY)
-                      MXYR(IX,IY) = XY(IX,IY)
-                    END IF
-                  END DO
-                END DO
-
-                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),              &
-                     MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                CALL CHECK_ERR(IRET)
-                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),            &
-                     MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                CALL CHECK_ERR(IRET)
-                IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+3),            &
-                     MXYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                CALL CHECK_ERR(IRET)
-              ENDIF ! SMCGRD
-              ! NFIELD=2
-            ELSE IF (NFIELD.EQ.2 ) THEN
-              ! EXTRADIM=0
-              IF (EXTRADIM.EQ.0) THEN
-                IF (SMCGRD) THEN
-#ifdef W3_SMC
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      ! TODO: Find some other way to access MAPSTA
-                      IF ( XX(IX,IY) .EQ. UNDEF ) THEN
-                        MXXR(IX,IY) = MFILLR
-                        MYYR(IX,IY) = MFILLR
-                      ELSE
-                        MXXR(IX,IY) = XX(IX,IY)
-                        MYYR(IX,IY) = XY(IX,IY)
-                      END IF
-                    END DO
-                  END DO
-                  IF(SMCOTYPE .EQ. 1) THEN
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                    call CHECK_ERR(IRET)
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
-                         MYYR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                    call CHECK_ERR(IRET)
-                  ELSE
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                    call CHECK_ERR(IRET)
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
-                         MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                    call CHECK_ERR(IRET)
-                  ENDIF
-#endif
-                ELSE ! IF SMCGRD
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      IF ( MAPSTA(IY,IX) .LE. 0 .OR. XX(IX,IY) .EQ. UNDEF ) THEN
-                        MXXR(IX,IY) = MFILLR
-                        MYYR(IX,IY) = MFILLR
-                      ELSE
-                        MXXR(IX,IY) = XX(IX,IY)
-                        MYYR(IX,IY) = XY(IX,IY)
-                      END IF
-                    END DO
-                  END DO
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),             &
-                       MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  CALL CHECK_ERR(IRET)
-                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),           &
-                       MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  CALL CHECK_ERR(IRET)
-                ENDIF ! SMCGRD
                 ! EXTRADIM=1
               ELSE
                 START(4-COORDTYPE)=0
                 DO IK=I1F,I2F
                   START(4-COORDTYPE)=START(4-COORDTYPE)+1
-
-                  IF (SMCGRD) THEN
+                  DO IX=IX1, IXN
+                    DO IY=IY1, IYN
+                      IF ( XXK(IX,IY,IK) .EQ. UNDEF ) THEN
+                        MXXR(IX,IY) = MFILLR
+                        MYYR(IX,IY) = MFILLR
+                      ELSE
+                        MXXR(IX,IY) = XXK(IX,IY,IK)
+                        MYYR(IX,IY) = XYK(IX,IY,IK)
+                      END IF
+                    END DO
+                  END DO
 #ifdef W3_SMC
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        ! TODO: Find some other way to access MAPSTA
-                        IF ( XXK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MXXR(IX,IY) = MFILLR
-                          MYYR(IX,IY) = MFILLR
-                        ELSE
-                          MXXR(IX,IY) = XXK(IX,IY,IK)
-                          MYYR(IX,IY) = XYK(IX,IY,IK)
-                        END IF
-                      END DO
-                    END DO
-                    IF(SMCOTYPE .EQ. 1) THEN
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                      call CHECK_ERR(IRET)
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
-                           MYYR(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                      call CHECK_ERR(IRET)
-                    ELSE
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MXXR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                      call CHECK_ERR(IRET)
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
-                           MYYR(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                      call CHECK_ERR(IRET)
-                    ENDIF
+                  IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),                       &
+                         MXXR(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
+                         (/COUNT(1), COUNT(3), COUNT(4)/))
+                    call CHECK_ERR(IRET)
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),                       &
+                         MYYR(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
+                         (/COUNT(1), COUNT(3), COUNT(4)/))
+                    call CHECK_ERR(IRET)
+                  ELSE
 #endif
-                  ELSE ! IF SMCGRD
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.XXK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MXXR(IX,IY) = MFILLR
-                          MYYR(IX,IY) = MFILLR
-                        ELSE
-                          MXXR(IX,IY) = XXK(IX,IY,IK)
-                          MYYR(IX,IY) = XYK(IX,IY,IK)
-                        END IF
-                      END DO
-                    END DO
                     IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                          MXXR(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),             &
+                    call CHECK_ERR(IRET)
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+2),               &
                          MYYR(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                  ENDIF ! SMCGRD
+                    call CHECK_ERR(IRET)
+#ifdef W3_SMC
+                  ENDIF
+#endif
                 END DO
               END IF  ! EXTRADIM
               ! NFIELD=1
             ELSE
               ! EXTRADIM=0
               IF (EXTRADIM.EQ.0) THEN
-                IF (SMCGRD) THEN
+                DO IX=IX1, IXN
+                  DO IY=IY1, IYN
+                    IF ( X1(IX,IY) .EQ. UNDEF ) THEN
+                      MX1R(IX,IY) = MFILLR
+                    ELSE
+                      MX1R(IX,IY) = X1(IX,IY)
+                    END IF
+                  END DO
+                END DO
 #ifdef W3_SMC
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      ! TODO: Find some other way to access MAPSTA
-                      IF ( X1(IX,IY) .EQ. UNDEF ) THEN
-                        MX1R(IX,IY) = MFILLR
-                      ELSE
-                        MX1R(IX,IY) = X1(IX,IY)
-                      END IF
-                    END DO
-                  END DO
-                  IF(SMCOTYPE .EQ. 1) THEN
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MX1R(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                    call CHECK_ERR(IRET)
-                  ELSE
-                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                         MX1R(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                    call CHECK_ERR(IRET)
-                  ENDIF
+                IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                  IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
+                       MX1R(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
+                  call CHECK_ERR(IRET)
+                ELSE
 #endif
-                ELSE ! IF SMCGRD
-                  DO IX=IX1, IXN
-                    DO IY=IY1, IYN
-                      IF ( MAPSTA(IY,IX) .LE. 0 .OR.X1(IX,IY) .EQ. UNDEF ) THEN
-                        MX1R(IX,IY) = MFILLR
-                      ELSE
-                        MX1R(IX,IY) = X1(IX,IY)
-                      END IF
-                    END DO
-                  END DO
                   IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                        MX1R(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                  CALL CHECK_ERR(IRET)
-                ENDIF ! SMCGRD
+                  call CHECK_ERR(IRET)
+#ifdef W3_SMC
+                ENDIF
+#endif
                 ! EXTRADIM=1
               ELSE
                 START(4-COORDTYPE)=0
                 DO IK=I1F,I2F
                   START(4-COORDTYPE)=START(4-COORDTYPE)+1
-                  IF (SMCGRD) THEN
+                  DO IX=IX1, IXN
+                    DO IY=IY1, IYN
+                      IF ( XK(IX,IY,IK) .EQ. UNDEF ) THEN
+                        MX1R(IX,IY) = MFILLR
+                      ELSE
+                        MX1R(IX,IY) = XK(IX,IY,IK)
+                      END IF
+                    END DO
+                  END DO
 #ifdef W3_SMC
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        ! TODO: Find some other way to access MAPSTA
-                        IF ( XK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MX1R(IX,IY) = MFILLR
-                        ELSE
-                          MX1R(IX,IY) = XK(IX,IY,IK)
-                        END IF
-                      END DO
-                    END DO
-                    IF(SMCOTYPE .EQ. 1) THEN
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MX1R(IX1:IXN,IY1:IYN),(/START(1), START(3)/),(/COUNT(1), COUNT(3)/))
-                      call CHECK_ERR(IRET)
-                    ELSE
-                      IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
-                           MX1R(IX1:IXN,IY1:IYN),(/START(1:3)/),(/COUNT(1:3)/))
-                      call CHECK_ERR(IRET)
-                    ENDIF
+                  IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+                    IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),                       &
+                         MX1R(IX1:IXN,IY1:IYN),(/START(1), START(3), START(4)/), &
+                         (/COUNT(1), COUNT(3), COUNT(4)/))
+                    call CHECK_ERR(IRET)
+                  ELSE
 #endif
-                  ELSE ! IF SMCGRD
-                    DO IX=IX1, IXN
-                      DO IY=IY1, IYN
-                        IF ( MAPSTA(IY,IX) .LE. 0 .OR.XK(IX,IY,IK) .EQ. UNDEF ) THEN
-                          MX1R(IX,IY) = MFILLR
-                        ELSE
-                          MX1R(IX,IY) = XK(IX,IY,IK)
-                        END IF
-                      END DO
-                    END DO
                     IRET=NF90_PUT_VAR(NCID,VARID(IVAR1+1),               &
                          MX1R(IX1:IXN,IY1:IYN),(/START(1:4)/),(/COUNT(1:4)/))
-                    CALL CHECK_ERR(IRET)
-                  END IF ! SMCGRD
+                    call CHECK_ERR(IRET)
+#ifdef W3_SMC
+                  ENDIF
+#endif
                 END DO
               END IF   ! EXTRADIM
             END IF   ! NFIELD
@@ -3510,21 +3317,18 @@ CONTAINS
     !
     IF (GTYPE.NE.UNGTYPE) THEN
       IF (FLAGLL) THEN
-        IF (SMCGRD) THEN
 #ifdef W3_SMC
-          IF(SMCOTYPE .EQ. 1) THEN
-            ! Flat seapoints file
-            IRET = NF90_DEF_DIM(NCID, 'seapoint', dimln(2), DIMID(2))
-          ELSE
-            ! Regular gridded file:
-            IRET = NF90_DEF_DIM(NCID, 'longitude', dimln(2), DIMID(2))
-            IRET = NF90_DEF_DIM(NCID, 'latitude', dimln(3), DIMID(3))
-          ENDIF
-#endif
+        IF(SMCGRD .AND. SMCOTYPE .EQ. 1) THEN
+          ! Flat seapoints file
+          IRET = NF90_DEF_DIM(NCID, 'seapoint', dimln(2), DIMID(2))
         ELSE
-          IRET = NF90_DEF_DIM(NCID, 'longitude', DIMLN(2), DIMID(2))
-          IRET = NF90_DEF_DIM(NCID, 'latitude', DIMLN(3), DIMID(3))
-        ENDIF ! SMCGRD
+#endif
+          ! Regular gridded file:
+          IRET = NF90_DEF_DIM(NCID, 'longitude', dimln(2), DIMID(2))
+          IRET = NF90_DEF_DIM(NCID, 'latitude', dimln(3), DIMID(3))
+#ifdef W3_SMC
+        ENDIF
+#endif
       ELSE
         IRET = NF90_DEF_DIM(NCID, 'x', DIMLN(2), DIMID(2))
         IRET = NF90_DEF_DIM(NCID, 'y', DIMLN(3), DIMID(3))
