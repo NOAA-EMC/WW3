@@ -1,5 +1,26 @@
+!> @file
+!> @brief Dummy slot for bottom friction source term.
+!>
+!> @author J. H. Alves
+!> @author H. L. Tolman
+!> @date   29-May-2009
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Dummy slot for bottom friction source term.
+!>
+!> @author J. H. Alves
+!> @author H. L. Tolman
+!> @date   29-May-2009
+!>
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SDB1MD
   !/
   !/                  +-----------------------------------+
@@ -50,6 +71,28 @@ MODULE W3SDB1MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Compute depth-induced breaking using Battjes and Janssen bore
+  !>  model approach.
+  !>
+  !> @details Note that the Miche criterion can influence wave growth.
+  !>
+  !> @param[in]    IX      Local grid number
+  !> @param[in]    A       Action density spectrum (1-D).
+  !> @param[inout] DEPTH   Mean water depth.
+  !> @param[inout] EMEAN   Mean wave energy.
+  !> @param[inout] FMEAN   Mean wave frequency.
+  !> @param[inout] WNMEAN  Mean wave number.
+  !> @param[in]    CG
+  !> @param[out]   LBREAK
+  !> @param[out]   S       Source term (1-D version).
+  !> @param[out]   D       Diagonal term of derivative (1-D version).
+  !>
+  !> @author J. H. Alves
+  !> @author H. L. Tolman
+  !> @author A. Roland
+  !> @date   08-Jun-2018
+  !>
   SUBROUTINE W3SDB1 (IX, A, DEPTH, EMEAN, FMEAN, WNMEAN, CG, LBREAK, S, D )
     !/
     !/                  +-----------------------------------+
