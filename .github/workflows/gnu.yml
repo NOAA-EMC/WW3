@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  cache_key: gnu8
+  cache_key: gnu9
   CC: gcc-10
   FC: gfortran-10
   CXX: g++-10
@@ -45,7 +45,7 @@ jobs:
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
           sudo apt install cmake
-          git clone -c feature.manyFiles=true https://github.com/spack/spack.git
+          git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
           source spack/share/spack/setup-env.sh
           spack env create ww3-gnu ww3/model/ci/spack_gnu.yaml
           spack env activate ww3-gnu
