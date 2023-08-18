@@ -1,0 +1,54 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.22 Test script for WW-III, two-dimensional propagation and LMP    #
+#           Propagation over half the globe.                                #
+#           Langmuir Mixing Parameterization                                #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0                               #
+#                        Select the 'no source terms' option.               #
+#   !/PRn                Selecting one of the propagation schemes.          #
+#                         1: First order.                                   #
+#                         2: UQ with diffusion term.                        #
+#                         3: UQ with averaging (set to zero here).          #
+#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
+#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+#                                                                           #
+# Remarks :                                                                 #
+# - Test case input (default):                                              #
+#   * Single grid, but run using ww3_multi.                                 #
+#   * ww3_grid.inp : (default)                                              #
+#     + Spatial grid: 193 x 93 rectilinear lat/lon grid                     #
+#       - dx = 1.0 deg, dy = 1.0 deg                                        #
+#       - Xrange = -6:186 deg, Yrange = -46:46 deg                          #
+#     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#   * map2_2.gs: grads script for visualizing results.                      #
+#   * GSE correction is enabled. To disable GSE correction                  #
+#     comment/uncomment the appropriate lines in ww3_grid.inp.              #
+#   * switch options (mostly self-explanatory).                             #
+#     + switch_PR1     : First order scheme                                 #
+#     + switch_PR2_UNO : UQ scheme with diffusion                           #
+#     + switch_PR2_UQ  : UQ scheme with diffusion                           #
+#     + switch_PR3_UNO : UQ scheme with averaging  (default)                #
+#     + switch_PR3_UQ  : UQ scheme with averaging  (default)                #
+#     + switch_PR1_MPI                                                      #
+#     + switch_PR2_UNO_MPI                                                  #
+#     + switch_PR2_UQ_MPI                                                   #
+#     + switch_PR3_UNO_MPI                                                  #
+#     + switch_PR3_UQ_MPI                                                   #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#   (Note: mpirun commands differ by local system)                          #
+#  ./bin/run_test                   -s PR1     ../model ww3_tp2.22          #
+#  ./bin/run_test -n 3 -p mpirun -f -s PR1_MPI ../model ww3_tp2.22          # 
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                                   Last Mod : Dec 2013     #
+#                                                                           #
+#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################
