@@ -8,7 +8,7 @@ concurrency:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel10
+  cache_key: intel11
   CC: icc
   FC: ifort
   CXX: icpc
@@ -35,7 +35,7 @@ jobs:
       # No way to flush Action cache, so key may have # appended
       - name: cache-env
         id: cache-env
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             spack
@@ -101,7 +101,7 @@ jobs:
 
       - name: cache-env
         id: cache-env
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             spack
