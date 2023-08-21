@@ -12,7 +12,7 @@ $ In versions 1.18 and 2.22 of the model this value was by definiton 0,
 $ it is added to mitigate the GSE for a first order scheme. Note that
 $ this factor is IGNORED in the print plots in ww3_outp.
 $
-1.1 0.05 36 36 0.
+1.1 0.05 36 72 0.
 $
 $ Set model flags ---------------------------------------------------- $
 $  - FLDRY         Dry run (input/output only, no calculation).
@@ -20,7 +20,7 @@ $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
 $
-   F T T F F F 
+   F T T T T T 
 $
 $ Set time steps ----------------------------------------------------- $
 $ - Time step information (this information is always read)
@@ -89,30 +89,18 @@ $                           SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN :
 $                                    Constants a0, a1, a2, b0, b1 and
 $                                    PHImin.
 $
-$ BAJ (adjusted) 
-$
-&SIN4 BETAMAX = 1.52, Z0MAX = 1.002 /
-$&SDS4 SDSC1 = 1.0, SDSC2 = 0.0 , SDSBCK = 0.100, SDSHCK = 1.0, SDSDTH = 0 /
-$&SDB1 BJGAM = 1.0, BJALFA = 0.001 /
-&SNL1 NLPROP = 3.1E7 /
-$
-$ TEST451
-$
-$ &SNL1 NLPROP=2.5E7 /
-$
-$
 &UNST
 UGOBCAUTO = F
 UGOBCDEPTH= -10.
-EXPFSN   = T,
+EXPFSN   = F,
 EXPFSPSI = F,
 EXPFSFCT = F,
 IMPFSN   = F,
-IMPTOTAL = F,
+IMPTOTAL = T,
 EXPTOTAL  = F,
-IMPREFRACTION = F,
-IMPFREQSHIFT  = F,
-IMPSOURCE     = F,
+IMPREFRACTION = T,
+IMPFREQSHIFT  = T,
+IMPSOURCE     = T,
 SETUP_APPLY_WLV = F
 SOLVERTHR_SETUP=1E-14
 CRIT_DEP_SETUP=0.1
@@ -129,6 +117,8 @@ JGS_PMIN = 3.0
 JGS_LIMITER = F,
 JGS_BLOCK_GAUSS_SEIDEL = T
 JGS_NORM_THR = 1.E-6
+JGS_LDIFR = T 
+JGS_IDIFR = 2 
 /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -

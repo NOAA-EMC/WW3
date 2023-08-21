@@ -343,7 +343,7 @@ CONTAINS
     !/
   END SUBROUTINE WAVNU2
   !/
-  PURE SUBROUTINE WAVNU3 (SI,H,K,CG)
+  PURE SUBROUTINE WAVNU3 (SI,H,K,CG,C)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -420,7 +420,7 @@ CONTAINS
     !/ Parameter list
     !/
     REAL, INTENT(IN)        :: SI, H
-    REAL, INTENT(OUT)       :: K, CG
+    REAL, INTENT(OUT)       :: K, CG, C
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -445,6 +445,7 @@ CONTAINS
     KH  = KH0 * (1 + KH0**1.09 * 1./EXP(MIN(KDMAX,TMP))) / SQRT(TANH(MIN(KDMAX,KH0)))
     K   = KH/H
     CG  = 0.5*(1+(2*KH/SINH(MIN(KDMAX,2*KH))))*SI/K
+    C   = CG/K
     !
     RETURN
     !/
@@ -533,7 +534,7 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
-    REAL                    :: DEPTH
+    REAL                    :: DEPTH, CP
     !
     !/
     !/ End of WAVNU_LOCAL------------------------------------------------- /
@@ -541,7 +542,7 @@ CONTAINS
 
     DEPTH  = MAX ( DMIN , DW)
     !
-    CALL WAVNU3(SIG,DEPTH,WNL,CGL)
+    CALL WAVNU3(SIG,DEPTH,WNL,CGL,CP)
 
   END SUBROUTINE WAVNU_LOCAL
   !/

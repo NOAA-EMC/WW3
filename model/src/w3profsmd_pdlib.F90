@@ -6418,7 +6418,7 @@ CONTAINS
     REAL              :: LAMBDAX(NTH), LAMBDAY(NTH)
     REAL              :: DTMAX(NTH), DTMAXEXP(NTH), DTMAXOUT, DTMAXGL
     REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2, RD10, RD20
-    REAL              :: UOLD(NTH,NPA), U(NTH,NPA) 
+    REAL              :: UOLD(NTH,NPA), U(NTH,NPA), CTMP
 
     REAL, PARAMETER   :: ONESIXTH = 1.0/6.0
     REAL, PARAMETER   :: ZERO = 0.0
@@ -6438,7 +6438,7 @@ CONTAINS
       IF (LCALC) THEN
 
         DO IP = 1, NPA 
-          CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG(IP)) 
+          CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG(IP), CTMP) 
         ENDDO 
 
         DO ITH = 1, NTH

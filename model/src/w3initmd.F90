@@ -496,7 +496,7 @@ CONTAINS
 #endif
     REAL                    :: DTTST, DEPTH, FRACOS
     REAL                    :: FACTOR
-    REAL                    :: WLVeff
+    REAL                    :: WLVeff, CTMP
 #ifdef W3_T
     REAL, ALLOCATABLE      :: XOUT(:,:)
 #endif
@@ -1383,7 +1383,7 @@ CONTAINS
         !
         !         Calculate wavenumbers and group velocities.
 #ifdef W3_PDLIB
-        CALL WAVNU3(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
+        CALL WAVNU3(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS), CTMP)
 #else
         CALL WAVNU1(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
 #endif

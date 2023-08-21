@@ -78,7 +78,7 @@ MODULE W3PARALL
   REAL*8, PARAMETER     :: PI = 3.14159265358979323846D0
   REAL*8, PARAMETER     :: DEGRAD    = PI/180.d0
   REAL*8, PARAMETER     :: RADDEG    = 180.d0/PI
-  REAL*8, PARAMETER     :: KDMAX     = 300.d0
+  REAL*8, PARAMETER     :: KDMAX     = 200.d0
 
 
   REAL*8, ALLOCATABLE   :: DIFRX(:), DIFRY(:), DIFRM(:) !AR: todo, allocate!
@@ -1514,7 +1514,7 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 #ifdef W3_PDLIB
   SUBROUTINE DIFFRA_SIMPLE(VA)
-    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH, NSEAL
+    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH, NSEAL, DDEN
     USE W3ADATMD, only: CG, CX, CY, DW, WN, CG
     !USE W3WDATMD, only: VA
     USE CONSTANTS, ONLY: RADIUS
@@ -1544,7 +1544,7 @@ CONTAINS
         DO IS = 1, NK
           DO ID = 1, NTH
             ISP = ID + (IS-1) * NTH
-            EAD = EAD + VA(ISP,IP)/CG(IS,ISEA)*CLATS(ISEA)*DTH*SIG(IS)**2
+            EAD = EAD + VA(ISP,IP) * DDEN(IK) / CG(IS,ISEA)!VA(ISP,IP)/CG(IS,ISEA)*CLATS(ISEA)*DTH*SIG(IS)**2
           ENDDO
           ETOT   = ETOT + EAD
           EWKTOT = EWKTOT + WN(IS,ISEA) * EAD
@@ -1796,6 +1796,9 @@ CONTAINS
         SINH3KH = DSINH(MIN(KDMAX,3*KH))
 
         SECH = 1.d0 / MAX(TINY(1.),COSHKH)
+        WRITE(*,*) '1st part', KH, COSHKH, COSH2KH
+        WRITE(*,*) '2nd part', SINHKH, SINH2KH, SINH3KH
+        WRITE(*,*) '3rd part', SECH**2, MAX(TINY(1.), (6.d0*(2*KH + SINH2KH)**3))
         AUX = SECH**2 / MAX(TINY(1.), (6.d0*(2*KH + SINH2KH)**3))
         IF (AUX .GT. TINY(1.)) THEN
           AUX1 = 8.d0*(KH**4.d0) + 16.d0*(KH**3)*SINH2KH - 9.d0*(SINH2KH)**2*COSH2KH + 12.d0*KH*(1.d0 + 2*SINHKH**4)*(KH + SINH2KH)
@@ -1859,6 +1862,7 @@ CONTAINS
 
         DO IP = 1, NP
           KH = EWK(IP)*DW(IP)
+          WRITE(*,*) 'DEPTH', IP, DW(IP), EWK(IP)
           CALL CALC_BOTFS2(KH,BOTFS2)
           CALL CALC_BOTFC2(KH,BOTFC2)
           DFBOT(IP) = (BOTFC2*CURH(IP)+BOTFS2*EWK(IP)*SLPH(IP))*GRAV
@@ -1876,12 +1880,13 @@ CONTAINS
          USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, CLATS, DTH, DSII
          USE W3ADATMD, only: CG, CX, CY, DW
          !USE W3WDATMD, only: VA
+         USE W3DISPMD, ONLY : WAVNU3
          USE W3IDATMD, ONLY: FLCUR
          USE YOWNODEPOOL, ONLY: NP
          IMPLICIT NONE
          REAL*4, INTENT(IN) :: VA(:,:)
          INTEGER :: IP, IK, ITH, ISEA, JSEA, IS, ID, ISP
-         REAL(8) :: WVC, WVK, WVCG, WVKDEP, WVN
+         REAL :: WVC, WVK, WVCG, WVKDEP, WVN
          REAL(8) :: ETOT, EWKTOT, EWCTOT, ECGTOT, EAD
          REAL(8) :: DFWAV
          REAL(8) :: AUX
@@ -1897,22 +1902,25 @@ CONTAINS
          REAL(8) :: US
          REAL(8) :: CAUX, CAUX2
          REAL(8) :: NAUX
+         REAL:: DEPTH 
 
          DFBOT(:) = 0.d0 
          DFCUR(:) = 0.d0 
 
-         DO IP = 1, NP
+         DO JSEA = 1, NP
            CALL INIT_GET_ISEA(ISEA, JSEA)
            ETOT = 0.d0 
            EWKTOT = 0.d0
            EWCTOT = 0.d0
            ECGTOT = 0.d0
-           IF (DW(IP) .GT. DMIN) THEN
+           DEPTH = DW(JSEA)
+           IF (DEPTH .GT. DMIN) THEN
              DO IS = 1, NK
+               CALL WAVNU3(SIG(IS),DEPTH,WVK,WVCG,WVC)
                EAD = 0.d0 
                DO ID = 1, NTH 
                  ISP = ID + (IS-1) * NTH
-                 EAD = EAD + VA(ISP,JSEA)/CG(ISP,JSEA)*CLATS(ISEA)*DTH*SIG(IS)**2
+                 EAD = EAD + VA(ISP,JSEA)/CG(IS,JSEA)*CLATS(ISEA)*DTH*SIG(IS)**2
                ENDDO 
                ETOT   = ETOT   + EAD
                EWKTOT = EWKTOT + WVK  * EAD
@@ -1921,24 +1929,24 @@ CONTAINS
 !AR: todo: check integration!
              END DO
              IF (ETOT .LT. TINY(1.)) THEN
-               EWK(IP) = 0.d0
-               EWC(IP) = 0.d0
-               ECG(IP) = 0.d0
-               ENG(IP) = 0.d0
-               CCG(IP) = 0.d0
+               EWK(JSEA) = 0.d0
+               EWC(JSEA) = 0.d0
+               ECG(JSEA) = 0.d0
+               ENG(JSEA) = 0.d0
+               CCG(JSEA) = 0.d0
              ELSE
-               EWK(IP) = EWKTOT / ETOT
-               EWC(IP) = EWCTOT / ETOT
-               ECG(IP) = ECGTOT / ETOT
-               ENG(IP) = SQRT(ETOT)
-               CCG(IP) = EWC(IP) * ECG(IP)
+               EWK(JSEA) = EWKTOT / ETOT
+               EWC(JSEA) = EWCTOT / ETOT
+               ECG(JSEA) = ECGTOT / ETOT
+               ENG(JSEA) = SQRT(ETOT)
+               CCG(JSEA) = EWC(JSEA) * ECG(JSEA)
              END IF
            ELSE
-             EWK(IP) = 0.d0 
-             EWC(IP) = 0.d0 
-             ECG(IP) = 0.d0 
-             ENG(IP) = 0.d0 
-             CCG(IP) = 0.d0
+             EWK(JSEA) = 0.d0 
+             EWC(JSEA) = 0.d0 
+             ECG(JSEA) = 0.d0 
+             ENG(JSEA) = 0.d0 
+             CCG(JSEA) = 0.d0
            END IF
          END DO
 
@@ -1946,16 +1954,15 @@ CONTAINS
          CALL DIFFERENTIATE_XYDIR(DXENG, DXXEN, DXYEN)
          CALL DIFFERENTIATE_XYDIR(DYENG, DXYEN, DYYEN)
          CALL DIFFERENTIATE_XYDIR(CCG, DXCCG, DYCCG)
-
          CALL BOTEFCT2( NP, EWK, DBLE(DW), DFBOT )
 
          IF (FLCUR) CALL CUREFCT2( NP, DXENG, DYENG, DBLE(CX), DBLE(CY), DFCUR )
 
-         DO IP = 1, NP
-            AUX = CCG(IP)*EWK(IP)*EWK(IP)
-            IF ( AUX*ENG(IP) .GT. TINY(1.)) THEN
-               DFWAV = ( DXCCG(IP) * DXENG(IP) + DYCCG(IP) * DYENG(IP) + CCG(IP) * (DXXEN(IP) + DYYEN(IP)) ) / MAX(TINY(1.),ENG(IP))
-               NAUX = ECG(IP) / MAX(TINY(1.),EWC(IP))
+         DO JSEA = 1, NP  
+            AUX = CCG(JSEA)*EWK(JSEA)*EWK(JSEA)
+            IF ( AUX*ENG(JSEA) .GT. TINY(1.)) THEN
+               DFWAV = ( DXCCG(JSEA) * DXENG(JSEA) + DYCCG(JSEA) * DYENG(JSEA) + CCG(JSEA) * (DXXEN(JSEA) + DYYEN(JSEA)) ) / MAX(TINY(1.),ENG(JSEA))
+               NAUX = ECG(JSEA) / MAX(TINY(1.),EWC(JSEA))
                IF (FLCUR) THEN
                  ETOTC = 0.d0 
                  ETOTS = 0.d0 
@@ -1969,22 +1976,22 @@ CONTAINS
                    ETOTS = ETOTS + EAD * ESIN(ITH) 
                  END DO
                  DM    = ATAN2(ETOTS,ETOTC)
-                 US    = CX(IP)*COS(DM)+CY(IP)*SIN(DM)
-                 CAUX  = US / EWC(IP)
+                 US    = CX(JSEA)*COS(DM)+CY(JSEA)*SIN(DM)
+                 CAUX  = US / EWC(JSEA)
                  DFCUT = (2.d0/NAUX+NAUX*CAUX)*CAUX
                ELSE
                  DFCUT = 0.d0 
                  CAUX  = 0.d0 
                END IF
                CAUX2 = CAUX * CAUX
-               DELTA = CAUX2*(1.d0+CAUX)**2-NAUX*(CAUX2-NAUX)*(1.d0+(DFWAV+DFBOT(IP)+DFCUR(IP))/AUX+DFCUT)
+               DELTA = CAUX2*(1.d0+CAUX)**2-NAUX*(CAUX2-NAUX)*(1.d0+(DFWAV+DFBOT(JSEA)+DFCUR(JSEA))/AUX+DFCUT)
                IF (DELTA <= 0.d0) THEN
-                 DIFRM(IP) = 1.d0 
+                 DIFRM(JSEA) = 1.d0 
                ELSE
-                 DIFRM(IP) = 1.d0/(CAUX2-NAUX)*(CAUX*(1.d0+CAUX)-SQRT(DELTA))
+                 DIFRM(JSEA) = 1.d0/(CAUX2-NAUX)*(CAUX*(1.d0+CAUX)-SQRT(DELTA))
                END IF
             ELSE
-               DIFRM(IP) = 1.d0 
+               DIFRM(JSEA) = 1.d0 
             END IF
          END DO
          CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
@@ -2006,7 +2013,7 @@ CONTAINS
          REAL*8                :: DVDXIE, DVDYIE
          REAL*8                :: WEI(NPA)
          INTEGER               :: NI(3)
-         INTEGER               :: IE, IP
+         INTEGER               :: IE, JSEA
 
          WEI(:)  = 0.d0
          DVDX(:) = 0.d0
@@ -2037,21 +2044,19 @@ CONTAINS
          DVDX = DVDX/WEI
          DVDY = DVDY/WEI
 
-         DO IP = 1, NP
-           IF (DW(IP) .LT. DMIN) THEN
-             DVDX(IP) = 0.
-             DVDY(IP) = 0.
+         DO JSEA = 1, NP
+           IF (DW(JSEA) .LT. DMIN) THEN
+             DVDX(JSEA) = 0.
+             DVDY(JSEA) = 0.
            END IF
          END DO
 
-#ifdef W3_PDLIB
          DVDX4 = DVDX
          DVDY4 = DVDY
          CALL PDLIB_exchange1DREAL(DVDX4) ! AR: todo, checck pipes.
          CALL PDLIB_exchange1DREAL(DVDY4)
          DVDX = DVDX4
          DVDY = DVDY4
-#endif
 
 #ifdef DEBUG
          WRITE(STAT%FHNDL,*) 'sum(DVDX) = ', sum(DVDX)
@@ -2061,7 +2066,7 @@ CONTAINS
          IF (.FALSE.) THEN
            OPEN(2305, FILE  = 'erggrad.bin'  , FORM = 'UNFORMATTED')
            WRITE(2305) 1.
-           WRITE(2305) (DVDX(IP), DVDY(IP), SQRT(DVDY(IP)**2+DVDY(IP)**2), IP = 1, NP)
+           WRITE(2305) (DVDX(JSEA), DVDY(JSEA), SQRT(DVDY(JSEA)**2+DVDY(JSEA)**2), JSEA = 1, NP)
          ENDIF
       END SUBROUTINE
 #endif
