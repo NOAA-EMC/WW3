@@ -16,8 +16,8 @@ spack:
   - w3emc@2.9.2
   - parallelio@2.5.9+fortran~pnetcdf
   - esmf@8.4.2~debug~xerces+external-parallelio
-  - diffutils@3.8%intel@2021.9.0
-  - intel-oneapi-mpi %intel@2021.9.0
+  - diffutils@3.8%intel@2021.10.0
+  - intel-oneapi-mpi %intel@2021.10.0
   view: true
   concretizer:
     unify: when_possible
