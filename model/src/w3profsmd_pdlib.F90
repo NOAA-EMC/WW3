@@ -6866,7 +6866,7 @@ CONTAINS
     USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV, DERA, RADIUS
     USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX, CLATS, CLATMN, SIG
     USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, NSPEC, B_JGS_GSE_TS, XGRD, YGRD
-    USE W3ADATMD, only: DW, MPI_COMM_WCMP
+    USE W3ADATMD, only: DW, MPI_COMM_WCMP, U10, WN, CG
     USE W3WDATMD, ONLY: VA
     USE W3PARALL, only: INIT_GET_ISEA
     USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
@@ -6896,7 +6896,7 @@ CONTAINS
     REAL*8 GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(2,NPA)
     INTEGER NB_ITER, iIter, ip_global
     REAL*8 DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
-    REAL*8 eNorm, DTquot, diffc
+    REAL*8 eNorm, DTquot, diffc, dcell, XWIND
     REAL eRealA(1), eRealB(1)
 
     DTME = B_JGS_GSE_TS
@@ -6925,6 +6925,22 @@ CONTAINS
           CGD   = 0.5 * GRAV / SIG(IK) * IOBDP_LOC(JSEA)
           DSS   = ( CGD * (XFR-1.))**2 * DTME / 12. * TFAC
           DNN   = ( CGD * DTH )**2 * DTME / 12. * TFAC 
+          DCELL = CGD / 10.0 ! -> CELLP needs probably redifinition ...
+          XWIND = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
+          XWIND = MAX ( 0. , MIN ( 1. , XWIND ) )
+#ifdef W3_XW0
+          XWIND = 0.
+#endif
+#ifdef W3_XW1
+          XWIND = 1.
+#endif
+          TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
+          DSS   = XWIND * DCELL + (1.-XWIND) * DSS * TFAC
+#ifdef W3_DSS0
+          DSS   = 0.
+#endif
+          DNN   = XWIND * DCELL + (1.-XWIND) * DNN * TFAC
+
           DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
           DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
           !write(3000+myrank,'(I10,20F20.10)') IK, SIG(IK), CGD, CLATS(ISEA), DSS, DNN, DIFFVEC(1,JSEA), DIFFVEC(2,JSEA)

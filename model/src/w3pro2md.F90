@@ -584,8 +584,7 @@ CONTAINS
     !       for all test cases. CURV2 is the longer version and results do match the
     !       original. DETAILED EXPLANATION: Discrepancies occur at the boundaries.
     !       This is because, at the boundaries, the pre-curvilinear version zeros out
-    !       some terms in the diffusion calculation. Since they are zeroed out,
-    !       they aren't there to *cancel* certain other terms: these "other terms"
+    !       some terms in the diffusion calculation.        they aren't there to *cancel* certain other terms: these "other terms"
     !       affect the result, so they have to be retained in the long vesion (CURV2)
     !       to get an exact match. In the short version, the "canceling out" is
     !       performed prior to coding the scheme, so both the canceled and canceling
@@ -1621,6 +1620,7 @@ CONTAINS
 9042 FORMAT (1X,60I3)
 #endif
     !/
+    !/ End of W3KTP2 ----------------------------------------------------- /
     !/ End of W3KTP2 ----------------------------------------------------- /
     !/
   END SUBROUTINE W3KTP2
