@@ -6893,7 +6893,7 @@ CONTAINS
     REAL*8 eDet, DEDX(3), DEDY(3), DIFFV(2)
     INTEGER NI(3), ITR, IDX, IP, ISP, IT
     REAL*8 XSEL(3), DVDXIE, DVDYIE, FACX
-    REAL*8 GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(2,NPA)
+    REAL*8 GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(3,NPA)
     INTEGER NB_ITER, iIter, ip_global
     REAL*8 DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
     REAL*8 eNorm, DTquot, diffc, dcell, XWIND
@@ -6943,6 +6943,7 @@ CONTAINS
 
           DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
           DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
+          DIFFVEC(3,JSEA) = ((DSS-DNN) * ESIN(ITH)*ECOS(ITH)) / CLATS(ISEA)
           !write(3000+myrank,'(I10,20F20.10)') IK, SIG(IK), CGD, CLATS(ISEA), DSS, DNN, DIFFVEC(1,JSEA), DIFFVEC(2,JSEA)
         END DO
 
@@ -6995,12 +6996,13 @@ CONTAINS
              DVDYIE  = DOT_PRODUCT(XSEL,DEDY)
              GRAD(1) = DVDXIE / eDet * 1./3. * SUM(DIFFVEC(1,NI))
              GRAD(2) = DVDYIE / eDet * 1./3. * SUM(DIFFVEC(2,NI)) 
+             GRAD(3) = -2.0 * DVDXIE * DVDYIE / eDet * 1./3. * SUM(DIFFVEC(3,NI))
              DO IDX=1,3
                 V(1) = 0.5 * PDLIB_IEN(2*IDX-1,IE)
                 V(2) = 0.5 * PDLIB_IEN(2*IDX  ,IE)
-                eScal = DOT_PRODUCT(V, GRAD)
+                eScal = DOT_PRODUCT(V, GRAD(1:2))
                 IP = INE(IDX,IE)
-                PHI_V(IP) = PHI_V(IP) + eScal
+                PHI_V(IP) = PHI_V(IP) + eScal + GRAD(3)
              END DO
           END DO
           CALL PDLIB_exchange1DREAL(PHI_V)
