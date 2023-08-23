@@ -312,6 +312,10 @@ $                           SETUP_APPLY_WLV  : Compute wave setup (experimental)
 $                           SOLVERTHR_SETUP  : Solver threshold for setup computations
 $                           CRIT_DEP_SETUP  : Critical depths for setup computations
 $
+$                           JGS_LGSE = T : Turn off/on GSE correction on unstructured grids
+$                           JGS_GSE_TS = 350000. : Swell age parameter see manual
+$
+$
 $ SMC grid propagation    : Namelist PSMC and default values
 $                           CFLTM  : Maximum CFL no. for propagation, 0.7
 $                           DTIME  : Swell age for diffusion term (s), 0.0

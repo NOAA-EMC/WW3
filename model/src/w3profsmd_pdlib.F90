@@ -6896,15 +6896,22 @@ CONTAINS
     REAL*8 GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(3,NPA)
     INTEGER NB_ITER, iIter, ip_global
     REAL*8 DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
-    REAL*8 eNorm, DTquot, diffc, dcell, XWIND
+    REAL*8 eNorm, DTquot, diffc, dcell, XWIND, DIFFTOT
+    REAL*8 DVDX(NPA), DVDY(NPA), DV2DXX(NPA), DV2DXY(NPA)
     REAL eRealA(1), eRealB(1)
+
+
+    DVDX = 0.d0
+    DVDY = 0.d0
+    DV2DXX = 0.d0 
+    DV2DXY = 0.d0 
 
     DTME = B_JGS_GSE_TS
     FACX = 1./(DERA * RADIUS)
     !WRITE(*,*) 'START BLOCK SOLVER' 
     CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
 
-    !WRITE(3000+myrank,*) 'Entering Diffusion' 
+    !WRITE (3000+myrank,*) 'Entering Diffusion' 
     !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
 
     IF ( FLAGLL ) THEN
@@ -6923,8 +6930,8 @@ CONTAINS
           CALL INIT_GET_ISEA(ISEA, JSEA)
           TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
           CGD   = 0.5 * GRAV / SIG(IK) * IOBDP_LOC(JSEA)
-          DSS   = ( CGD * (XFR-1.))**2 * DTME / 12. * TFAC
-          DNN   = ( CGD * DTH )**2 * DTME / 12. * TFAC 
+          DSS   = ( CGD * (XFR-1.))**2 * DTME / 12.! * TFAC
+          DNN   = ( CGD * DTH )**2 * DTME / 12.! * TFAC 
           DCELL = CGD / 10.0 ! -> CELLP needs probably redifinition ...
           XWIND = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
           XWIND = MAX ( 0. , MIN ( 1. , XWIND ) )
@@ -6980,6 +6987,8 @@ CONTAINS
  
         !WRITE(5000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF, DeltaTmax
         !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR) 
+        CALL DIFFERENTIATE_XYDIR(DBLE(VA(ISP,:)),DVDX,DVDY)
+        CALL DIFFERENTIATE_XYDIR(DVDX,DV2DXX,DV2DXY)
 
         DO IT = 1, NB_ITER
           DO IE = 1, NE
@@ -6996,18 +7005,20 @@ CONTAINS
              DVDYIE  = DOT_PRODUCT(XSEL,DEDY)
              GRAD(1) = DVDXIE / eDet * 1./3. * SUM(DIFFVEC(1,NI))
              GRAD(2) = DVDYIE / eDet * 1./3. * SUM(DIFFVEC(2,NI)) 
-             GRAD(3) = -2.0 * DVDXIE * DVDYIE / eDet * 1./3. * SUM(DIFFVEC(3,NI))
+             !GRAD(3) = -2.0 * DVDXIE * DVDYIE / eDet * 1./3. * SUM(DIFFVEC(3,NI))dd
              DO IDX=1,3
                 V(1) = 0.5 * PDLIB_IEN(2*IDX-1,IE)
                 V(2) = 0.5 * PDLIB_IEN(2*IDX  ,IE)
                 eScal = DOT_PRODUCT(V, GRAD(1:2))
                 IP = INE(IDX,IE)
-                PHI_V(IP) = PHI_V(IP) + eScal + GRAD(3)
+                PHI_V(IP) = PHI_V(IP) + eScal
              END DO
           END DO
           CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
-            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) * DFAC)
+            DIFFTOT = PHI_V(JSEA) + DV2DXY(JSEA) * DIFFVEC(3,JSEA)
+            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * DIFFTOT / PDLIB_SI(JSEA) * DFAC)
+            !IF (ABS(PHI_V(JSEA) .gt. 0.d0)) write(1040+myrank,*) JSEA, DT_DIFF, PHI_V(JSEA), DV2DXY(JSEA) * DIFFVEC(3,JSEA)
           END DO       
         END DO 
       END DO 
@@ -7017,6 +7028,77 @@ CONTAINS
     !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
 
     END SUBROUTINE BLOCK_SOLVER_DIFFUSION
+
+     SUBROUTINE DIFFERENTIATE_XYDIR(VAR, DVDX, DVDY)
+         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK
+         USE W3ADATMD, only: CG, CX, CY, DW
+         USE yowExchangeModule, only : PDLIB_exchange1DREAL
+         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP, NPA
+         USE yowElementpool, only : NE, INE
+         IMPLICIT NONE
+         REAL*8, INTENT(IN)    :: VAR(NPA)
+         REAL*8, INTENT(INOUT) :: DVDX(NPA), DVDY(NPA)
+         REAL*4                :: DVDX4(NPA), DVDY4(NPA)
+         REAL*8                :: DEDY(3),DEDX(3)
+         REAL*8                :: DVDXIE, DVDYIE
+         REAL*8                :: WEI(NPA)
+         INTEGER               :: NI(3)
+         INTEGER               :: IE, JSEA
+
+         WEI(:)  = 0.d0
+         DVDX(:) = 0.d0
+         DVDY(:) = 0.d0
+
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'DIFFERENTIATE_XYDIR'
+         WRITE(STAT%FHNDL,*) 'sum(VAR ) = ', sum(VAR)
+         WRITE(STAT%FHNDL,*) 'sum(IEN ) = ', sum(IEN)
+         WRITE(STAT%FHNDL,*) 'sum(TRIA) = ', sum(TRIA)
+#endif
+
+         DO IE = 1, NE
+            NI = INE(:,IE)
+            WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
+            DEDX(1) = PDLIB_IEN(1,IE)
+            DEDX(2) = PDLIB_IEN(3,IE)
+            DEDX(3) = PDLIB_IEN(5,IE)
+            DEDY(1) = PDLIB_IEN(2,IE)
+            DEDY(2) = PDLIB_IEN(4,IE)
+            DEDY(3) = PDLIB_IEN(6,IE)
+            DVDXIE  = DOT_PRODUCT( VAR(NI),DEDX)
+            DVDYIE  = DOT_PRODUCT( VAR(NI),DEDY)
+            DVDX(NI) = DVDX(NI) + DVDXIE
+            DVDY(NI) = DVDY(NI) + DVDYIE
+         END DO
+
+         DVDX = DVDX/WEI
+         DVDY = DVDY/WEI
+
+         DO JSEA = 1, NP
+           IF (DW(JSEA) .LT. DMIN) THEN
+             DVDX(JSEA) = 0.
+             DVDY(JSEA) = 0.
+           END IF
+         END DO
+
+         DVDX4 = DVDX
+         DVDY4 = DVDY
+         CALL PDLIB_exchange1DREAL(DVDX4) ! AR: todo, checck pipes.
+         CALL PDLIB_exchange1DREAL(DVDY4)
+         DVDX = DVDX4
+         DVDY = DVDY4
+
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'sum(DVDX) = ', sum(DVDX)
+         WRITE(STAT%FHNDL,*) 'sum(DVDY) = ', sum(DVDY)
+#endif
+
+         IF (.FALSE.) THEN
+           OPEN(2305, FILE  = 'erggrad.bin'  , FORM = 'UNFORMATTED')
+           WRITE(2305) 1.
+           WRITE(2305) (DVDX(JSEA), DVDY(JSEA), SQRT(DVDY(JSEA)**2+DVDY(JSEA)**2), JSEA = 1, NP)
+         ENDIF
+      END SUBROUTINE
 
   !/ ------------------------------------------------------------------ /
   SUBROUTINE SET_IOBDP_PDLIB
