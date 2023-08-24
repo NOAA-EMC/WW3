@@ -23,6 +23,9 @@
 #       - dx = 1.0 deg, dy = 1.0 deg                                        #
 #       - Xrange = -6:186 deg, Yrange = -46:46 deg                          #
 #     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+#     + Langmuir mixing parameterization (LMPENABLED = T) and tail          #
+#       contribution (SDTAIL = T) enabled. A uniform (10m) surface layer    #
+#       depth is asumed (HSLMODE = 0).                                      #
 #   * map2_2.gs: grads script for visualizing results.                      #
 #   * GSE correction is enabled. To disable GSE correction                  #
 #     comment/uncomment the appropriate lines in ww3_grid.inp.              #
@@ -45,6 +48,23 @@
 #                                                                           #
 #                                              Hendrik Tolman, Jun 2002     #
 #                                                   Last Mod : Dec 2013     #
+#                                                                           #
+# Notes on LMPN namelist and Langmuir Mixing Parameterization:              #
+#                                                                           #
+#    The LMPN namelist group configures the Langmuir Mixing                 #
+#    Parameterization used within the context of climate modeling and       #
+#    when WW3 is coupled with an active ocean model (.e.g., POP2, MOM6.     #
+#    The LMPENABLED flag turns on the parameterization computations.        #
+#    The SDTAIL flag enabled the spectral tail contribution.                #
+#    HSLMODE parameter determines the surface layer depth (HSL).            #
+#    When HSLMODE == 0, a uniform 10m HSL is assumed for testing purposes.  #
+#    When HSLMODE == 1, the HSL field is to be received from the active     #
+#    ocean model via coupler.                                               #
+#                                                                           #
+#    For more info on the Langmuir parameterization, see:                   #
+#       Li, Qing, et al. "Langmuir mixing effects on global climate:        #
+#       WAVEWATCH III in CESM." Ocean Modelling 103 (2016): 145-160.        #
+#                                                                           #
 #                                                                           #
 #    Copyright 2009-2013 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
