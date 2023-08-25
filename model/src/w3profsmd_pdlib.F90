@@ -7016,8 +7016,8 @@ CONTAINS
           END DO
           CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
-            DIFFTOT = PHI_V(JSEA) + DV2DXY(JSEA) * DIFFVEC(3,JSEA)
-            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * DIFFTOT / PDLIB_SI(JSEA) * DFAC)
+            DIFFTOT = PHI_V(JSEA) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA)
+            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) * DFAC) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA) * DFAC
             !IF (ABS(PHI_V(JSEA) .gt. 0.d0)) write(1040+myrank,*) JSEA, DT_DIFF, PHI_V(JSEA), DV2DXY(JSEA) * DIFFVEC(3,JSEA)
           END DO       
         END DO 
