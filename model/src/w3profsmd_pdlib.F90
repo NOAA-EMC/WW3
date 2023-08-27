@@ -6987,7 +6987,7 @@ CONTAINS
  
         !WRITE(5000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF, DeltaTmax
         !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR) 
-        CALL DIFFERENTIATE_XYDIR(DBLE(VA(ISP,:)),DVDX,DVDY)
+        CALL DIFFERENTIATE_XYDIR(DBLE(VA(ISP,:)),DVDX,DVDY) ! AR: this two lines can be optimized, however seems fast enough by now. 
         CALL DIFFERENTIATE_XYDIR(DVDX,DV2DXX,DV2DXY)
 
         DO IT = 1, NB_ITER
@@ -7005,7 +7005,6 @@ CONTAINS
              DVDYIE  = DOT_PRODUCT(XSEL,DEDY)
              GRAD(1) = DVDXIE / eDet * 1./3. * SUM(DIFFVEC(1,NI))
              GRAD(2) = DVDYIE / eDet * 1./3. * SUM(DIFFVEC(2,NI)) 
-             !GRAD(3) = -2.0 * DVDXIE * DVDYIE / eDet * 1./3. * SUM(DIFFVEC(3,NI))dd
              DO IDX=1,3
                 V(1) = 0.5 * PDLIB_IEN(2*IDX-1,IE)
                 V(2) = 0.5 * PDLIB_IEN(2*IDX  ,IE)
@@ -7016,8 +7015,7 @@ CONTAINS
           END DO
           CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
-            DIFFTOT = PHI_V(JSEA) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA)
-            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) * DFAC) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA) * DFAC
+            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA)) * DFAC * IOBDP_LOC(JSEA) 
             !IF (ABS(PHI_V(JSEA) .gt. 0.d0)) write(1040+myrank,*) JSEA, DT_DIFF, PHI_V(JSEA), DV2DXY(JSEA) * DIFFVEC(3,JSEA)
           END DO       
         END DO 
