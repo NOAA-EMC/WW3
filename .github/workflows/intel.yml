@@ -8,7 +8,7 @@ concurrency:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel11
+  cache_key: intel12
   CC: icc
   FC: ifort
   CXX: icpc
@@ -27,7 +27,7 @@ jobs:
 
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
             path: ww3
 
@@ -95,7 +95,7 @@ jobs:
 
     steps:
       - name: checkout-ww3
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
             path: ww3
 
