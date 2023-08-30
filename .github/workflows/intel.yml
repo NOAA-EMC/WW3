@@ -8,7 +8,7 @@ concurrency:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel12
+  cache_key: intel13
   CC: icc
   FC: ifort
   CXX: icpc
@@ -58,7 +58,8 @@ jobs:
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
-          . /opt/intel/oneapi/setvars.sh
+          ###MTM . /opt/intel/oneapi/setvars.sh
+          bash -c 'source /opt/intel/oneapi/setvars.sh'
           sudo mv /usr/local /usrlocal_renamed
           sudo apt install cmake
           git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
@@ -75,7 +76,8 @@ jobs:
       - name: build-oasis
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
-          . /opt/intel/oneapi/setvars.sh
+          ###MTM . /opt/intel/oneapi/setvars.sh
+          bash -c 'source /opt/intel/oneapi/setvars.sh'
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
@@ -112,7 +114,8 @@ jobs:
 
       - name: build-ww3
         run: |
-          . /opt/intel/oneapi/setvars.sh
+          ###MTM . /opt/intel/oneapi/setvars.sh
+          bash -c 'source /opt/intel/oneapi/setvars.sh'
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           cd ww3
