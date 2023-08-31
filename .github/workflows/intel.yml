@@ -52,15 +52,13 @@ jobs:
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
           sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
-          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
-          ###MTM . /opt/intel/oneapi/setvars.sh
-          ###MTM bash -c 'source /opt/intel/oneapi/setvars.sh'
+          . /opt/intel/oneapi/setvars.sh
           ### ?? sudo mv /usr/local /usrlocal_renamed
           git clone -c feature.manyFiles=true https://github.com/NOAA-EMC/spack.git
           source spack/share/spack/setup-env.sh
@@ -70,8 +68,8 @@ jobs:
           spack compiler find
           sudo apt install cmake
           spack external find
-          spack config add "packages:all:require:['%intel']"
           spack add intel-oneapi-mpi
+          spack config add "packages:all:require:['%intel']"
           spack concretize
           spack install --dirty -v --fail-fast
           spack clean --all
@@ -79,8 +77,7 @@ jobs:
       - name: build-oasis
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
-          ###MTM . /opt/intel/oneapi/setvars.sh
-          ###MTM bash -c 'source /opt/intel/oneapi/setvars.sh'
+          . /opt/intel/oneapi/setvars.sh
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
@@ -117,8 +114,7 @@ jobs:
 
       - name: build-ww3
         run: |
-          ###MTM . /opt/intel/oneapi/setvars.sh
-          ###MTM bash -c 'source /opt/intel/oneapi/setvars.sh'
+          . /opt/intel/oneapi/setvars.sh
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           cd ww3
