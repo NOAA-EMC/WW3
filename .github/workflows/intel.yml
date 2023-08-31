@@ -8,7 +8,7 @@ concurrency:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel15
+  cache_key: intel16
   CC: icc
   FC: ifort
   CXX: icpc
@@ -128,4 +128,3 @@ jobs:
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
           make -j2 VERBOSE=1
-          make install
