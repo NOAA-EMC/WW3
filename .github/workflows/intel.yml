@@ -8,7 +8,7 @@ concurrency:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel13
+  cache_key: intel14
   CC: icc
   FC: ifort
   CXX: icpc
@@ -51,7 +51,8 @@ jobs:
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+          echo "source /opt/intel/oneapi/setvars.sh" >> ~/.bash_profile
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
@@ -59,25 +60,27 @@ jobs:
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
           ###MTM . /opt/intel/oneapi/setvars.sh
-          bash -c 'source /opt/intel/oneapi/setvars.sh'
-          sudo mv /usr/local /usrlocal_renamed
-          sudo apt install cmake
-          git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
+          ###MTM bash -c 'source /opt/intel/oneapi/setvars.sh'
+          ### ?? sudo mv /usr/local /usrlocal_renamed
+          git clone -c feature.manyFiles=true https://github.com/NOAA-EMC/spack.git
           source spack/share/spack/setup-env.sh
           ln -s $(realpath $(which gcc)) spack/lib/spack/env/intel/gcc # spack/make bug in ESMF
           spack env create ww3-intel ww3/model/ci/spack_intel.yaml
           spack env activate ww3-intel
           spack compiler find
-          spack external find cmake
+          sudo apt install cmake
+          spack external find
+          spack config add "packages:all:require:['%intel']"
           spack add intel-oneapi-mpi
           spack concretize
           spack install --dirty -v --fail-fast
+          spack clean --all
 
       - name: build-oasis
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           ###MTM . /opt/intel/oneapi/setvars.sh
-          bash -c 'source /opt/intel/oneapi/setvars.sh'
+          ###MTM bash -c 'source /opt/intel/oneapi/setvars.sh'
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
@@ -115,12 +118,12 @@ jobs:
       - name: build-ww3
         run: |
           ###MTM . /opt/intel/oneapi/setvars.sh
-          bash -c 'source /opt/intel/oneapi/setvars.sh'
+          ###MTM bash -c 'source /opt/intel/oneapi/setvars.sh'
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
           cd ww3
-          export CC=mpicc
-          export FC=mpif90
+          export CC=mpiicc
+          export FC=mpiifort
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
           mkdir build && cd build
           if [[ ${{ matrix.switch }} == "MULTI_ESMF" ]]; then
@@ -129,3 +132,4 @@ jobs:
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
           make -j2 VERBOSE=1
+          make install
