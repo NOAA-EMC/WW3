@@ -59,7 +59,6 @@ jobs:
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
           . /opt/intel/oneapi/setvars.sh
-          ### ?? sudo mv /usr/local /usrlocal_renamed
           git clone -c feature.manyFiles=true https://github.com/NOAA-EMC/spack.git
           source spack/share/spack/setup-env.sh
           ln -s $(realpath $(which gcc)) spack/lib/spack/env/intel/gcc # spack/make bug in ESMF
