@@ -19,19 +19,19 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
             path: ww3
       # Cache spack, OASIS, and compiler
       # No way to flush Action cache, so key may have # appended
       - name: cache-env
         id: cache-env
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             spack
@@ -73,17 +73,17 @@ jobs:
     strategy:
       matrix:
         switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: checkout-ww3
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
             path: ww3
 
       - name: cache-env
         id: cache-env
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             spack
