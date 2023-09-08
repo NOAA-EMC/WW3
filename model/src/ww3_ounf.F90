@@ -1973,14 +1973,17 @@ CONTAINS
             !
             ! Maximum CFL for spatial advection
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
+            IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
             CALL S2GRID(CFLXYMAX, X1)
             !
             ! Maximum CFL for direction advection
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
+            IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
             CALL S2GRID(CFLTHMAX, X1)
             !
             ! Maximum CFL for frequency advection
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
+            IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
             CALL S2GRID(CFLKMAX, X1)
             !
             ! User defined...
