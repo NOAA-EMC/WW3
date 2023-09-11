@@ -38,7 +38,7 @@ WW3_PARCOMPN = <how many parallel make tasks to use, default to 4 if not set >
 
 The requirements for NetCDF are: 
 * NetCDF version 4.1.1 or higher (Use "nc-config --version" to check)
-  - if using NetCDF 4.9.2 or higher, `nc-config` no longer looks for and returns values from `nf-config` if enabled (see the [netcdf-c 4.9.2 changelog](https://github.com/Unidata/netcdf-c/blob/main/RELEASE_NOTES.md?plain=1#L29)).
+  - if using NetCDF 4.9.2 or higher, `nc-config` no longer looks for and returns values from `nf-config` if enabled (see the [netcdf-c 4.9.2 changelog](https://github.com/Unidata/netcdf-c/blob/main/RELEASE_NOTES.md#492---march-14-2023)).
 * NetCDF-4 API enabled (Use "nc-config --has-nc4" to check) 
 * Define `NETCDF_CONFIG` env variable
 * Define `NETCDFF_CONFIG` env variable
