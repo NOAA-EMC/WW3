@@ -6943,10 +6943,12 @@ CONTAINS
 #endif
           TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
           DSS   = XWIND * DCELL + (1.-XWIND) * DSS * TFAC
+          DSS   = XWIND * DCELL + (1.) * DSS * TFAC
 #ifdef W3_DSS0
           DSS   = 0.
 #endif
           DNN   = XWIND * DCELL + (1.-XWIND) * DNN * TFAC
+          DNN   = XWIND * DCELL + (1.) * DNN * TFAC
 
           DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
           DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
