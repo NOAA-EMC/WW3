@@ -283,6 +283,9 @@ NetCDF version 4.1.1 or higher. Use "nc-config --version" to check
 the version of the installed NetCDF. It is also required for NetCDF
 to be compiled with the NetCDF-4 API enabled. Use "nc-config --has-nc4"
 to check if the installed NetCDF has the NetCDF-4 API enabled.
+As of netcdf-c 4.9.2 "nc-config" no longer looks for and returns values
+from "nf-config" if enabled, so both paths to both utilities need to be
+explicitly provided.
 
 ***********************************************************************
 
@@ -319,7 +322,6 @@ EOF
     echo "$mode: NetCDF version $netcdf_version < 4.1.1"; echo ' '
     return 1
   fi
-
 
   if [ -z "$NETCDFF_CONFIG" ]
   then
