@@ -1,5 +1,27 @@
+!> @file
+!> @brief Contains routines for computing dissipation by viscous fluid mud using
+!>  Ng (2000).
+!>
+!> @author M. Orzech
+!> @author W. E. Rogers
+!> @date   21-Nov-2013
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Contains routines for computing dissipation by viscous fluid
+!>  mud using Ng (2000).
+!>
+!> @author M. Orzech
+!> @author W. E. Rogers
+!> @date   21-Nov-2013
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SBT9MD
   !/
   !/                  +-----------------------------------+
@@ -78,6 +100,21 @@ MODULE W3SBT9MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Compute dissipation by viscous fluid mud using Ng (2000)
+  !>  (adapted from Erick Rogers code by Mark Orzech, NRL).
+  !>
+  !> @param[in]  AC        Action density.
+  !> @param[in]  H_WDEPTH  Mean water depth.
+  !> @param[out] S         Source term (1-D version).
+  !> @param[out] D         Diagonal term of derivative (1-D version).
+  !> @param[in]  IX
+  !> @param[in]  IY
+  !>
+  !> @author M. Orzech
+  !> @author W. E. Rogers
+  !> @date   21-Nov-2013
+  !>
   SUBROUTINE W3SBT9(AC,H_WDEPTH,S,D,IX,IY)
     !/
     !/                  +-----------------------------------+
@@ -369,6 +406,26 @@ CONTAINS
   END SUBROUTINE W3SBT9
 
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Compute dissipation by viscous fluid mud using Ng (2000).
+  !>
+  !> @details Adapted from Erick Rogers code by Mark Orzech, NRL.
+  !>
+  !> @param[in]  SIGMA     Radian frequency (rad).
+  !> @param[in]  H_WDEPTH  Water depth, denoted "h" in Ng (m).
+  !> @param[in]  DTILDE    Normalized mud depth.
+  !> @param[in]  ZETA      The ratio of stokes' boundary layer.
+  !> @param[in]  SBLTM     Sbltm is what you get if you calculate sblt using
+  !>                       the viscosity of the mud
+  !> @param[in]  GAMMA     The gamma used in Ng page 238, density(water)/density(mud).
+  !> @param[in]  WK        Unmuddy wavenumber.
+  !> @param[out] WKDR      Muddy wavenumber.
+  !> @param[out] DISS      Dissipation rate.
+  !>
+  !> @author E. Rogers
+  !> @author M. Orzech
+  !> @date   21-Nov-2013
+  !>
   SUBROUTINE NG(SIGMA,H_WDEPTH,DTILDE,ZETA,SBLTM,GAMMA,WK,WKDR,DISS)
     !/
     !/                  +-----------------------------------+
@@ -500,6 +557,17 @@ CONTAINS
   END SUBROUTINE NG
 
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief NA
+  !>
+  !> @param[in]  KWAVE
+  !> @param[in]  H_WDEPTH
+  !> @param[in]  SND2
+  !> @param[out] ND
+  !>
+  !> @author NA
+  !> @date   NA
+  !>
   SUBROUTINE CALC_ND(KWAVE,H_WDEPTH,SND2,ND)
     !/ ------------------------------------------------------------------- /
 
