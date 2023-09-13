@@ -686,9 +686,9 @@
 
     if [ "$unstr" = 'y' ]
     then
-      echo "$rtst -s ST0 -w work_ST0          $ww3 ww3_tp2.6" >> matrix.body
-      echo "$rtst -s ST0 -w work_ST0          $ww3 ww3_tp2.7" >> matrix.body
-      echo "$rtst -s ST4 -w work_ST4 -o both  $ww3 ww3_tp2.6" >> matrix.body
+      echo "$rtst -s ST0 -w work_ST0 $ww3 ww3_tp2.6" >> matrix.body
+      echo "$rtst -s ST0 -w work_ST0 $ww3 ww3_tp2.7" >> matrix.body
+      echo "$rtst -s ST4 -w work_ST4 $ww3 ww3_tp2.6" >> matrix.body
     fi
 
     if [ "$prop1D" = 'y' ]
@@ -718,7 +718,7 @@
       echo "$rtst                        -w work_PR3_UQ                 $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst                        -w work_5km -g 5km             $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst           -i input_rho -w work_PR3_UQ_RHO             $ww3 ww3_tp2.15" >> matrix.body
-      echo "$rtst -s ST4    -i input_rho -w work_ST4FLX5     -o both    $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst -s ST4    -i input_rho -w work_ST4FLX5                $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s ST6    -i input_rho -w work_ST6FLX5                $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst           -s TIDE      -w work_TIDE                   $ww3 ww3_tp2.18" >> matrix.body
     fi
