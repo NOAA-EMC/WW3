@@ -423,6 +423,34 @@ $                                 provides 3 partitions of both x & y component,
 $                                 with a reasonable accuracy for using in
 $                                 a climate model.
 $
+$ Langmuir turbulence parameterization ------------------------------- $
+$
+$ In standalone WW3 simulations the default parameters should be used. In coupled
+$ simulations HSL can be received from the NUOPC cap or left at a uniform depth of
+$ 10m. Additionally, setting LMPENABLED to True allows for calculation of the
+$ surfaced averaged Stokes drift (USSHX/USSHY) and Langmuir parameters LAMULT
+$ (Langmuir enhancement factor), and LASL (surface layer averaged Langmuir number).
+$ The high frequency tail contribution can be added to the Stokes drift (USSX/USSY)
+$ as well as USSHX/USSHY by setting SDTAIL to True when LMPENABLED is also True.
+$ (Li et al., 2016, Ocean Modeling. http://dx.doi.org/10.1016/j.ocemod.2015.07.020)
+$
+$   Langmuir parameters : Namelist LMPN
+$                       LMPENABLED : Logical value controlling calculation of Stokes
+$                                    drift related quantities.
+$                                     T : Activates the calculation of surface layer
+$                                         Stokes drift and the tail contribution.
+$                                     F : (default) These calculations turned off.
+$                       SDTAIL     : Logical value controlling addition of the tail
+$                                    contribution (f^-5) to the Stokes drift.
+$                                     T : The tail contribution is added to the
+$                                         Stokes drift (LMPENABLED must also be T).
+$                                     F : (default) No tail contribution added.
+$                       HSLMODE    : Integer indicating the surface layer depth type.
+$                                     0 : (default) Uniform surface layer depth set
+$                                         to the value of HSL=10m.
+$                                     1 : Surface layer depth (HSL) recieved from
+$                                         NUOPC cap.
+$
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
 $                           CICE0  : Ice concentration cut-off.
