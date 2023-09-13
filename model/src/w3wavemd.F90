@@ -1558,7 +1558,7 @@ CONTAINS
               TWS(1:NSEAL),  &
               PHIOC(1:NSEAL),  &
               WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
-#ifdef BT4                       
+#ifdef W3_BT4
               SED_D50(1:NSEA),  &  ! Now passing full arrays, not local scalar
               SED_PSIC(1:NSEA),  & ! " "
               BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
@@ -2270,7 +2270,7 @@ CONTAINS
                        TWS(1:NSEAL),  &
                        PHIOC(1:NSEAL),  &
                        WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
-#ifdef BT4                       
+#ifdef W3_BT4
                        SED_D50(1:NSEA),  &  ! Now passing full arrays, not local scalar
                        SED_PSIC(1:NSEA),  & ! " "
                        BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
@@ -2325,7 +2325,7 @@ CONTAINS
                        TWS(1:NSEAL),  &
                        PHIOC(1:NSEAL),  &
                        WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
-#ifdef BT4                       
+#ifdef W3_BT4
                        SED_D50(1:NSEA),  &  ! Now passing full arrays, not local scalar
                        SED_PSIC(1:NSEA),  & ! " "
                        BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
