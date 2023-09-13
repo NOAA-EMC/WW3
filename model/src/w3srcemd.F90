@@ -1052,6 +1052,10 @@ CONTAINS
       ICE_CHUNK(:) = 0.0 ! Ice never read in
     END IF
 
+#ifdef W3_ST4
+    WHITECAP(:,:) = 0.
+#endif
+
     ! ---------------------------------------------------------------------
     ! Start of loop over tiles:
     ! ---------------------------------------------------------------------
@@ -1304,7 +1308,7 @@ CONTAINS
 #ifdef W3_ST4
       DLWMEAN(:) = 0.
       BRLAMBDA(:,:) = 0.
-      WHITECAP(:,:) = 0.
+      !WHITECAP(:,:) = 0.      Don't zero here - is in seapoint loop
 #endif
       !
       ! 1.c Set mean parameters
@@ -2170,7 +2174,11 @@ CONTAINS
             ! Refactor - don't return here - need to process rest of seapoints in tile.
             ! Just exit the integration loop instead; a check on srce_imp_pre is now made
             ! after integration loop is complete.
-            EXIT ! everything is done for the implicit ...
+            
+            !!EXIT ! everything is done for the implicit ...
+            ! Don't exit here: cycle as we might have other elemets in chunk
+            ! TODO - look to split the containing loop into smaller loops.
+            CYCLE
 
           END IF ! srce_imp_pre
 ! --end W3_PDLIB
@@ -2232,6 +2240,14 @@ CONTAINS
           END IF ! if src_direct
 
         END DO ! CSEA/JSEA loop (from section 3) ! TODO: quite a big loop. Split?
+
+
+
+      
+        if(srce_call .eq. srce_imp_pre) goto 7777
+
+
+
 
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
@@ -2546,7 +2562,10 @@ CONTAINS
       END DO ! INTEGRATION LOOP
 
       ! Refactor - if implicit (pre), then we are all done - cycle chunk loop
-      IF(srce_call .eq. srce_imp_pre) CYCLE
+      IF(srce_call .eq. srce_imp_pre) THEN
+        !CYCLE !! Need to update full grid variables first??
+        GOTO 7777
+      ENDIF
 
 #ifdef W3_DEBUGSRC
       IF (IX(CSEA) .eq. DEBUG_NODE) THEN
@@ -2920,6 +2939,7 @@ CONTAINS
 
       ! NEW Refactored code:
       ! Write temporary local grid CHUNKED arrays back to full grid:
+7777  CONTINUE     ! Landing point for srce_imp_pre 
       DO CSEA=1,NSEAC
         JSEA = CHUNK0 + CSEA - 1
         CALL INIT_GET_ISEA(ISEA, JSEA)
