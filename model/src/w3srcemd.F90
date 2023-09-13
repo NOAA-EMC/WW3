@@ -750,7 +750,8 @@ CONTAINS
 #ifdef W3_BT4
     REAL, INTENT(IN) ::        &
         D50(1:NSEA),           &
-        PSIC(1:NSEA),          &
+        PSIC(1:NSEA)
+    REAL, INTENT(INOUT) ::     &
         BEDFORM(1:NSEAL,3)
 #endif
 
@@ -1418,7 +1419,7 @@ CONTAINS
 
       END DO ! CSEA
 
-#if 1 
+#if 0
       IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
         ICHK = JCHK - CHUNK0 + 1     
         PRINT*,'AFTER SPR4 Call'
@@ -1593,7 +1594,7 @@ CONTAINS
 #endif
         END DO ! CSEA; W3SINx
 
-#if 1
+#if 0
   IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
     ICHK=JSEA - CHUNK0 + 1
     print*,'DEPTH', DEPTH(ICHK)
@@ -1633,7 +1634,7 @@ CONTAINS
 #endif
         END DO ! CSEA; W3SNLx
         
-#if 1 
+#if 0 
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1     
     
@@ -1659,12 +1660,15 @@ CONTAINS
             CALL W3STR1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA),  &
               WN1_CHUNK(:,CSEA), DEPTH(CSEA), VSTR(:,CSEA), VDTR(:,CSEA) )
 
+#if 0
             IF(JCHK .EQ. JSEA) THEN
               ICHK = JCHK - CHUNK0 + 1
               PRINT*,'TR1: JSEA', JSEA
               PRINT*,SUM(VSTR(:,CSEA)),MINVAL(VSTR(:,CSEA)), MAXVAL(VSTR(:,CSEA))
               PRINT*,SUM(VDTR(:,CSEA)),MINVAL(VDTR(:,CSEA)), MAXVAL(VDTR(:,CSEA))
             ENDIF
+#endif
+
           END DO ! CSEA; W3STR1
 
 
@@ -1710,7 +1714,7 @@ CONTAINS
         END DO ! CSEA; W3SDSx
         !
 
-#if 1
+#if 0
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
           print*,'VSDS stats:',SUM(VSDS(:,ICHK)), MINVAL(VSDS(:,ICHK)), MAXVAL(VSDS(:,ICHK))
@@ -1734,7 +1738,7 @@ CONTAINS
                 WNMEAN(JSEA), CG1_CHUNK(:,CSEA), LBREAK, VSDB(:,CSEA), VDDB(:,CSEA) )
           END DO ! CSEA; W3SDBx
 
-#if 1
+#if 0
           IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
             ICHK = JCHK - CHUNK0 + 1
             print*,'VSDB stats:',SUM(VSDB(:,ICHK)), MINVAL(VSDB(:,ICHK)), MAXVAL(VSDB(:,ICHK))
@@ -1782,7 +1786,7 @@ CONTAINS
 #endif
         END DO ! CSEA; W3SBTx
 
-#if 1
+#if 0
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
           print*,'VSDB stats:',SUM(VSBT(:,ICHK)), MINVAL(VSBT(:,ICHK)), MAXVAL(VSBT(:,ICHK))
@@ -2248,7 +2252,7 @@ CONTAINS
 
 
 
-
+#if 0
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
           print*,'VS stats:',SUM(VS(:,ICHK)), MINVAL(VS(:,ICHK)), MAXVAL(VS(:,ICHK))
@@ -2256,7 +2260,7 @@ CONTAINS
           print*,'VS:',VS(:,ICHK)
           print*,'VD:',VD(:,ICHK)
         ENDIF
-
+#endif
         !
         ! 5.b  Computes
         !              atmos->wave flux PHIAW-------------------------------- *
@@ -2315,12 +2319,14 @@ CONTAINS
           !
         ENDDO ! CSEA
 
+#if 0        
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
           print*,'PHIAW,PHIBBL', PHIAW(JCHK), PHIBBL(JCHK)
           print*,'TAU',TAUWIX(JCHK),TAUWIY(JCHK),TAUWNX(JCHK),TAUWNY(JCHK)
           print*,'WHITECAP:',WHITECAP(JCHK,:)
         endif
+#endif
 
 #ifdef W3_NLS
         DO CSEA=1,NSEAC
@@ -2368,10 +2374,12 @@ CONTAINS
 #endif
         END DO ! CSEA; W3SPRx
 
+#if 0
         IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
           ICHK = JCHK - CHUNK0 + 1
           PRINT*,'SPR4 (tail) means:', EMEAN(ICHK), FMEAN(ICHK), FMEAN1(ICHK), WNMEAN(JCHK)
         endif
+#endif
 
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
