@@ -65,6 +65,7 @@ PROGRAM W3OUNF
   !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
   !/    22-Mar-2021 : New coupling fields output          ( version 7.12 )
   !/    02-Sep-2021 : Added coordinates attribute         ( version 7.12 )
+  !/    14-Feb-2023 : Added QKK output                    ( version 7.12 )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -192,7 +193,7 @@ PROGRAM W3OUNF
        CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
        STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
        P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
-       WN, USSP, WBT, WNMEAN
+       WN, USSP, WBT, WNMEAN, QKK
   USE W3ODATMD, ONLY: NDSO, NDSE, SCREEN, NOGRP, NGRPP, IDOUT,     &
        UNDEF, FLOGRD, FNMPRE, NOSWLL, NOGE
   !
@@ -1957,6 +1958,10 @@ CONTAINS
             ! Peakedness
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
             CALL S2GRID(QP, X1)
+            !
+            ! k bandwidth
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
+            CALL S2GRID(QKK, X1)
             !
             ! Dynamic time step
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
