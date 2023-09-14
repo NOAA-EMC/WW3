@@ -432,7 +432,7 @@ $ surfaced averaged Stokes drift (USSHX/USSHY) and Langmuir parameters LAMULT
 $ (Langmuir enhancement factor), and LASL (surface layer averaged Langmuir number).
 $ The high frequency tail contribution can be added to the Stokes drift (USSX/USSY)
 $ as well as USSHX/USSHY by setting SDTAIL to True when LMPENABLED is also True.
-$ (Li et al., 2016, Ocean Modeling. http://dx.doi.org/10.1016/j.ocemod.2015.07.020)
+$ Ref: (Li et al., 2016, Ocean Model.)
 $
 $   Langmuir parameters : Namelist LMPN
 $                       LMPENABLED : Logical value controlling calculation of Stokes
