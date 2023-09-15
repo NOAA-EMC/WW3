@@ -2733,7 +2733,7 @@ CONTAINS
             CG_ICE=CG1_CHUNK(:,CSEA)
           END IF
           !
-          R(:)=1 ! In case IC2 is defined but not IS2  !!TODO - needs to be a chunk variable
+          R(:)=1 ! In case IC2 is defined but not IS2  !!TODO - needs to be a chunk variable (or does it?)
           !
 #ifdef W3_IC1
           CALL W3SIC1 ( SPEC(:,JSEA),DEPTH(CSEA), CG1_CHUNK(:,CSEA), IX(CSEA), IY(CSEA), VSIC, VDIC )
