@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  cache_key: gnu8
+  cache_key: gnu11
   CC: gcc-10
   FC: gfortran-10
   CXX: g++-10
@@ -24,14 +24,14 @@ jobs:
     steps:
       - name: checkout-ww3
         if: steps.cache-env.outputs.cache-hit != 'true'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
             path: ww3
       # Cache spack, OASIS, and compiler
       # No way to flush Action cache, so key may have # appended
       - name: cache-env
         id: cache-env
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             spack
@@ -45,7 +45,7 @@ jobs:
         run: |
           # Install NetCDF, ESMF, g2, etc using Spack
           sudo apt install cmake
-          git clone -c feature.manyFiles=true https://github.com/spack/spack.git
+          git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
           source spack/share/spack/setup-env.sh
           spack env create ww3-gnu ww3/model/ci/spack_gnu.yaml
           spack env activate ww3-gnu
@@ -77,13 +77,13 @@ jobs:
 
     steps:
       - name: checkout-ww3
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
             path: ww3
 
       - name: cache-env
         id: cache-env
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             spack

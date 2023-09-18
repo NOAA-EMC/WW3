@@ -1123,6 +1123,9 @@ CONTAINS
     CASE('QP')
       I = 8
       J = 5
+    CASE('QKK')
+      I = 8
+      J = 6
       !
       ! Group 9
       !
@@ -1294,7 +1297,7 @@ CONTAINS
          TH2M, STH2M, HSIG, STMAXE, STMAXD,          &
          HCMAXE, HMAXE, HCMAXD, HMAXD, USSP, QP, PQP,&
          PTHP0, PPE, PGW, PSW, PTM1, PT1, PT2, PEP,  &
-         WBT
+         WBT, QKK
     USE W3ODATMD, ONLY: NDST, UNDEF, IAPROC, NAPROC, NAPFLD,        &
          ICPRT, DTPRT, WSCUT, NOSWLL, FLOGRD, FLOGR2,&
          NOGRP, NGRPP
@@ -1353,7 +1356,8 @@ CONTAINS
          STMAXDL(NSEAL), TLPHI(NSEAL),        &
          WL02X(NSEAL), WL02Y(NSEAL),          &
          ALPXT(NSEAL), ALPYT(NSEAL),          &
-         ALPXY(NSEAL), SCREST(NSEAL)
+         ALPXY(NSEAL), SCREST(NSEAL),         &
+         QK1(NSEAL), QK2(NSEAL)
     REAL                       USSCO, FT1
     REAL, SAVE              :: HSMIN = 0.01
     LOGICAL                 :: FLOLOC(NOGRP,NGRPP)
@@ -1429,6 +1433,7 @@ CONTAINS
     TLPHI  = 0.
     STMAXEL = 0.
     STMAXDL = 0.
+    QK2 = 0.
     !
     HS     = UNDEF
     WLM    = UNDEF
@@ -1445,6 +1450,7 @@ CONTAINS
     ALPXY  = UNDEF
     ALPXT  = UNDEF
     ALPYT  = UNDEF
+    QKK    = UNDEF
     THMP = UNDEF
     T02P = UNDEF
     SCREST = UNDEF
@@ -1481,6 +1487,7 @@ CONTAINS
       ABXY   = 0.
       ABYX   = 0.
       ABST   = 0.
+      QK1    = 0.
       !
       ! 2.b Integrate energy in band
       !
@@ -1506,6 +1513,7 @@ CONTAINS
           IF (ITH.LE.NTH/2) THEN
             ABST(JSEA) = ABST(JSEA) +                               &
                  A(ITH,IK,JSEA)*A(ITH+NTH/2,IK,JSEA)
+            QK1 (JSEA) = QK1(JSEA) + (A(ITH,IK,JSEA)+A(ITH+NTH/2,IK,JSEA))**2
           END IF
           CALL INIT_GET_ISEA(ISEA, JSEA)
           FACTOR     = MAX ( 0.5 , CG(IK,ISEA)/SIG(IK)*WN(IK,ISEA) )
@@ -1532,8 +1540,8 @@ CONTAINS
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA, JSEA)
         FACTOR       = DDEN(IK) / CG(IK,ISEA)
-        EBD(IK,JSEA) = AB(JSEA) * FACTOR
-        ET(JSEA)     = ET(JSEA) + EBD(IK,JSEA)
+        EBD(IK,JSEA) = AB(JSEA) * FACTOR            ! this is E(f)*df
+        ET (JSEA)    = ET (JSEA) + EBD(IK,JSEA)
 #ifdef W3_IG1
         IF (IK.EQ.NINT(IGPARS(5))) HSIG(JSEA) = 4*SQRT(ET(JSEA))
 #endif
@@ -1541,7 +1549,8 @@ CONTAINS
         EWN(JSEA)  = EWN(JSEA) + EBD(IK,JSEA) / WN(IK,ISEA)
         ETR(JSEA)  = ETR(JSEA) + EBD(IK,JSEA) / SIG(IK)
         ET1(JSEA)  = ET1(JSEA) + EBD(IK,JSEA) * SIG(IK)
-        EET1(JSEA) = EET1(JSEA)+ EBD(IK,JSEA)**2 * SIG(IK)
+        !          EET1(JSEA) = EET1(JSEA)+ EBD(IK,JSEA)**2 * SIG(IK)
+        EET1(JSEA) = EET1(JSEA)+ EBD(IK,JSEA)**2 * SIG(IK)/DSII(IK)
         ET02(JSEA) = ET02(JSEA)+ EBD(IK,JSEA) * SIG(IK)**2
         ETX(JSEA)  = ETX(JSEA) + ABX(JSEA) * FACTOR
         ETY(JSEA)  = ETY(JSEA) + ABY(JSEA) * FACTOR
@@ -1550,6 +1559,8 @@ CONTAINS
         TUSY(JSEA)  = TUSY(JSEA) + ABY(JSEA)*FACTOR               &
              *GRAV*WN(IK,ISEA)/SIG(IK)
         ETXX(JSEA) = ETXX(JSEA) + ABX2(JSEA) * FACTOR* WN(IK,ISEA)**2
+        ! NB:     QK1 (JSEA) = QK1(JSEA) + A(ITH,IK,JSEA)**2
+        QK2 (JSEA) = QK2 (JSEA) + QK1(JSEA)  * FACTOR* SIG(IK) /WN(IK,ISEA)
         ETYY(JSEA) = ETYY(JSEA) + ABY2(JSEA) * FACTOR* WN(IK,ISEA)**2
         ETXY(JSEA) = ETXY(JSEA) + ABYX(JSEA) * FACTOR* WN(IK,ISEA)**2
         IF (SIG(IK)*0.5*(1+XFR).LT.0.4*TPI) THEN
@@ -1932,13 +1943,13 @@ CONTAINS
       ! 3.b Add tail
       !     ( DTH * SIG absorbed in FTxx )
 
-      EBAND     = AB(JSEA) / CG(NK,ISEA)
+      EBAND     = AB(JSEA) / CG(NK,ISEA)           ! EBAND is E(sigma)/sigma for the last frequency band
       ET (JSEA) = ET (JSEA) + FTE  * EBAND
       EWN(JSEA) = EWN(JSEA) + FTWL * EBAND
       ETF(JSEA) = ETF(JSEA) + GRAV * FTTR * EBAND  ! this is the integral of CgE in deep water
       ETR(JSEA) = ETR(JSEA) + FTTR * EBAND
       ET1(JSEA) = ET1(JSEA) + FT1  * EBAND
-      EET1(JSEA)= ET1(JSEA) + FT1  * EBAND**2
+      !        EET1(JSEA)= EET1(JSEA) + FT1  * EBAND**2 : this was not correct. Actually tail may not be needed for Qp.
       ET02(JSEA)= ET02(JSEA)+ EBAND* 0.5 * SIG(NK)**4 * DTH
       ETX(JSEA) = ETX(JSEA) + FTE * ABX(JSEA) / CG(NK,ISEA)
       ETY(JSEA) = ETY(JSEA) + FTE * ABY(JSEA) / CG(NK,ISEA)
@@ -1980,12 +1991,15 @@ CONTAINS
         END IF
 #endif
         IF ( ET(JSEA) .GT. 1.E-7 ) THEN
-          QP(JSEA) = ( 2. / ET(JSEA)**2 ) * EET1(JSEA) * TPIINV**2
+          QP(JSEA) = ( 2. / ET(JSEA)**2 ) * EET1(JSEA)
           WLM(JSEA) = EWN(JSEA) / ET(JSEA) * TPI
           T0M1(JSEA) = ETR(JSEA) / ET(JSEA) * TPI
           THS(JSEA) = RADE * SQRT ( MAX ( 0. , 2. * ( 1. - SQRT ( &
                MAX(0.,(ETX(JSEA)**2+ETY(JSEA)**2)/ET(JSEA)**2) ) ) ) )
           IF ( THS(JSEA) .LT. 0.01*RADE*DTH ) THS(JSEA) = 0.
+          ! NB:           QK1 (JSEA) = QK1(JSEA) + A(ITH,IK,JSEA)**2
+          !               QK2 (JSEA) = QK2 (JSEA) + QK1(JSEA)  * FACTOR* SIG(IK) /WN(IK,ISEA)
+          QKK (JSEA) = SQRT(0.5*QK2 (JSEA))/ET(JSEA)
         ELSE
           WLM(JSEA) = 0.
           T0M1(JSEA) = TPI / SIG(NK)
@@ -2495,7 +2509,7 @@ CONTAINS
          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-         USSP, TAUOCX, TAUOCY
+         USSP, TAUOCX, TAUOCY, QKK
     !/
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2871,6 +2885,7 @@ CONTAINS
           IF ( FLOGRD( 8, 3) ) MSSD (ISEA) = UNDEF
           IF ( FLOGRD( 8, 4) ) MSCD (ISEA) = UNDEF
           IF ( FLOGRD( 8, 5) ) QP   (ISEA) = UNDEF
+          IF ( FLOGRD( 8, 6) ) QKK  (ISEA) = UNDEF
           !
           IF ( FLOGRD( 9, 1) ) DTDYN (ISEA) = UNDEF
           IF ( FLOGRD( 9, 2) ) FCUT  (ISEA) = UNDEF
@@ -3225,6 +3240,8 @@ CONTAINS
               WRITE ( NDSOG ) MSCD(1:NSEA)
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) QP(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
+              WRITE ( NDSOG ) QKK(1:NSEA)
               !
               !     Section 9)
               !
@@ -3557,6 +3574,8 @@ CONTAINS
                    MSCD(1:NSEA)
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) QP(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) QKK(1:NSEA)
               !
               !     Section 9)
               !
