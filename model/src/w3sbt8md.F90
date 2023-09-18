@@ -1,5 +1,27 @@
+!> @file
+!> @brief Contains routines for computing dissipation by viscous fluid mud using
+!>  Dalrymple and Liu (1978) "Thin Model".
+!>
+!> @author M. Orzech
+!> @author W. E. Rogers
+!> @date   21-Nov-2013
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Contains routines for computing dissipation by viscous fluid mud using
+!>  Dalrymple and Liu (1978) "Thin Model".
+!>
+!> @author M. Orzech
+!> @author W. E. Rogers
+!> @date   21-Nov-2013
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SBT8MD
   !/
   !/                  +-----------------------------------+
@@ -70,6 +92,22 @@ MODULE W3SBT8MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Compute dissipation by viscous fluid mud using Dalrymple and Liu (1978).
+  !>
+  !> @details "Thin Model" (adapted from Erick Rogers code by Mark Orzech, NRL).
+  !>
+  !> @param[in]  AC        Action density spectrum (1-D).
+  !> @param[in]  H_WDEPTH  Mean water depth.
+  !> @param[out] S         Source term (1-D version).
+  !> @param[out] D         Diagonal term of derivative (1-D version).
+  !> @param[in]  IX
+  !> @param[in]  IY
+  !>
+  !> @author M. Orzech
+  !> @author W. E. Rogers
+  !> @date   21-Nov-2013
+  !>
   SUBROUTINE W3SBT8(AC,H_WDEPTH,S,D,IX,IY)
     !/
     !/                  +-----------------------------------+
@@ -454,7 +492,15 @@ CONTAINS
   END SUBROUTINE W3SBT8
 
   !/ ------------------------------------------------------------------- /
-
+  !>
+  !> @brief Complex hyperbolic sin (sinh).
+  !>
+  !> @param[in]  C
+  !> @param[out] CS
+  !>
+  !> @author NA
+  !> @date   NA
+  !>
   SUBROUTINE CSINH(C,CS)
     COMPLEX, INTENT(IN) ::  C
     COMPLEX, INTENT(OUT) :: CS
@@ -465,7 +511,15 @@ CONTAINS
   END SUBROUTINE CSINH
 
   !/ ------------------------------------------------------------------- /
-
+  !>
+  !> @brief Complex hyperbolic cos (cosh).
+  !>
+  !> @param[in]  C
+  !> @param[out] CC
+  !>
+  !> @author NA
+  !> @date   NA
+  !>
   SUBROUTINE CCOSH(C,CC)
     COMPLEX, INTENT(IN) ::  C
     COMPLEX, INTENT(OUT) :: CC

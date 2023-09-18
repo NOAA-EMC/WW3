@@ -1,5 +1,25 @@
+!> @file
+!> @brief Bundles routines for first order propagation scheme in single
+!>        module.
+!>
+!> @author H. L. Tolman
+!> @date   05-Jun-2018
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Bundles routines for first order propagation scheme in single
+!>        module.
+!>
+!> @author H. L. Tolman
+!> @date   05-Jun-2018
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3PRO1MD
   !/
   !/                  +-----------------------------------+
@@ -76,6 +96,14 @@ MODULE W3PRO1MD
   !/ ------------------------------------------------------------------- /
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Generate 'map' arrays for the first order upstream scheme.
+  !>
+  !> @param MAPSTA  Status map
+  !>
+  !> @author H. L. Tolman
+  !> @date   06-Dec-2010
+  !>
   SUBROUTINE W3MAP1 ( MAPSTA )
     !/
     !/                  +-----------------------------------+
@@ -258,6 +286,19 @@ CONTAINS
     !/
   END SUBROUTINE W3MAP1
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Propagation in physical space for a given spectral component.
+  !>
+  !> @param[in]      ISP  Number of spectral bin (IK-1)*NTH+ITH
+  !> @param[in]      DTG  Total time step.
+  !> @param[in]   MAPSTA  Grid point status map.
+  !> @param[inout] FIELD  Wave action spectral densities on full grid.
+  !> @param[in]      VGX  Speed of grid.
+  !> @param[in]      VGY  Speed of grid.
+  !>
+  !> @author H. L. Tolman
+  !> @date   29-May-2014
+  !>
   SUBROUTINE W3XYP1 ( ISP, DTG, MAPSTA, FIELD, VGX, VGY )
     !/
     !/                  +-----------------------------------+
@@ -828,6 +869,31 @@ CONTAINS
     !/
   END SUBROUTINE W3XYP1
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Propagation in spectral space.
+  !>
+  !> @param[inout] ISEA    Number of sea points.
+  !> @param[inout] FACTH   Factor in propagation velocity.
+  !> @param[inout] FACK    Factor in propagation velocity.
+  !> @param[inout] CTHG0   Factor in great circle refracftion term.
+  !> @param[inout] CG      Local group velocities.
+  !> @param[inout] WN      Local wavenumbers.
+  !> @param[inout] DEPTH   Depth.
+  !> @param[inout] DDDX    Depth gradients.
+  !> @param[inout] DDDY    Depth gradients.
+  !> @param[inout] CX      Local group velocities.
+  !> @param[inout] CY      Local group velocities.
+  !> @param[inout] DCXDX   Current gradients.
+  !> @param[inout] DCXDY   Current gradients.
+  !> @param[inout] DCYDX   Current gradients.
+  !> @param[inout] DCYDY   Current gradients.
+  !> @param[inout] DCDX    Phase speed gradients.
+  !> @param[inout] DCDY    Phase speed gradients.
+  !> @param[inout] VA      Spectrum.
+  !>
+  !> @author H. L. Tolman
+  !> @date   20-Dec-2004
+  !>
   SUBROUTINE W3KTP1 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
        DDDX, DDDY, CX, CY, DCXDX, DCXDY, DCYDX,    &
        DCYDY, DCDX, DCDY, VA )

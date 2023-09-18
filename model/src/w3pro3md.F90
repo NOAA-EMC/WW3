@@ -1,5 +1,25 @@
+!> @file
+!> @brief Bundles routines for third order propagation scheme in single
+!>  module.
+!>
+!> @author H. L. Tolman
+!> @date   27-May-2014
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Bundles routines for third order propagation scheme in single
+!>  module.
+!>
+!> @author H. L. Tolman
+!> @date   27-May-2014
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3PRO3MD
   !/
   !/                  +-----------------------------------+
@@ -110,6 +130,12 @@ MODULE W3PRO3MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Generate 'map' arrays for the ULTIMATE QUICKEST scheme.
+  !>
+  !> @author H. L. Tolman
+  !> @date   01-Apr-2008
+  !>
   SUBROUTINE W3MAP3
     !/
     !/                  +-----------------------------------+
@@ -488,6 +514,13 @@ CONTAINS
     !/
   END SUBROUTINE W3MAP3
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Generate 'map' arrays for the ULTIMATE QUICKEST scheme to combine
+  !>  GSE alleviation with obstructions.
+  !>
+  !> @author H. L. Tolman
+  !> @date   17-Dec-2004
+  !>
   SUBROUTINE W3MAPT
     !/
     !/                  +-----------------------------------+
@@ -588,6 +621,20 @@ CONTAINS
     !/
   END SUBROUTINE W3MAPT
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Propagation in phyiscal space for a given spectral component.
+  !>
+  !> @param[in]    ISP     Number of spectral bin (IK-1)*NTH+ITH.
+  !> @param[in]    DTG     Total time step.
+  !> @param[in]    MAPSTA  Grid point status map.
+  !> @param[in]    MAPFS   Storage map.
+  !> @param[inout] VQ      Field to propagate.
+  !> @param[in]    VGX     Speed of grid.
+  !> @param[in]    VGY     Speed of grid.
+  !>
+  !> @author H. L. Tolman
+  !> @date   27-May-2014
+  !>
   SUBROUTINE W3XYP3 ( ISP, DTG, MAPSTA, MAPFS, VQ, VGX, VGY )
     !/
     !/                  +-----------------------------------+
@@ -1419,6 +1466,46 @@ CONTAINS
     !/
   END SUBROUTINE W3XYP3
   !/ ------------------------------------------------------------------- /
+!>
+!> @brief Propagation in spectral space.
+!>
+!> @details Third order QUICKEST scheme with ULTIMATE limiter.
+!>
+!> As with the spatial propagation, the two spaces are considered
+!> independently, but the propagation is performed in a 2-D space.
+!> Compared to the propagation in physical space, the directions
+!> represent a closed space and are therefore comparable to the
+!> longitudinal or 'X' propagation. The wavenumber space has to be
+!> extended to allow for boundary treatment. Using a simple first
+!> order boundary treatment at both sided, two points need to
+!> be added. This implies that the spectrum needs to be extended,
+!> shifted and rotated, as is performed using MAPTH2 as set
+!> in W3MAP3.
+!>
+!> @param[in]    ISEA      Number of sea point.
+!> @param[in]    FACTH     Factor in propagation velocity.
+!> @param[in]    FACK      Factor in propagation velocity.
+!> @param[in]    CTHG0     Factor in great circle refracftion term.
+!> @param[in]    CG        Local group velocities.
+!> @param[in]    WN        Local wavenumbers.
+!> @param[in]    DW        Depth.
+!> @param[in]    DDDX      Depth gradients.
+!> @param[in]    DDDY      Depth gradients.
+!> @param[in]    CX        Current components.
+!> @param[in]    CY        Current components.
+!> @param[in]    DCXDX     Current gradients.
+!> @param[in]    DCXDY     Current gradients.
+!> @param[in]    DCYDX     Current gradients.
+!> @param[in]    DCYDY     Current gradients.
+!> @param[in]    DCDX      Phase speed gradients.
+!> @param[in]    DCDY      Phase speed gradients.
+!> @param[inout] VA        Spectrum.
+!> @param[out]   CFLTHMAX
+!> @param[out]   CFLKMAX
+!>
+!> @author H. L. Tolman
+!> @date   01-Jul-2013
+!>
   SUBROUTINE W3KTP3 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DW,       &
        DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
        DCYDX, DCYDY, DCDX, DCDY, VA, CFLTHMAX, CFLKMAX )
@@ -1863,6 +1950,23 @@ CONTAINS
     !/
   END SUBROUTINE W3KTP3
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Computes the maximum CFL number for spatial advection.
+  !>
+  !> @details Used for diagnostic purposes (Could be used to define a
+  !>  local time step ...).
+  !>
+  !> @param[in]    ISEA      Index of grid point.
+  !> @param[in]    DTG       Total time step.
+  !> @param[in]    MAPSTA    Grid point status map.
+  !> @param[in]    MAPFS     Storage map.
+  !> @param[inout] CFLXYMAX  Maximum CFL number for XY propagation.
+  !> @param[in]    VGX       Speed of grid.
+  !> @param[in]    VGY       Speed of grid.
+  !>
+  !> @author F. Ardhuin
+  !> @date   31-Oct-2010
+  !>
   SUBROUTINE W3CFLXY ( ISEA, DTG, MAPSTA, MAPFS, CFLXYMAX, VGX, VGY )
     !/
     !/                  +-----------------------------------+
