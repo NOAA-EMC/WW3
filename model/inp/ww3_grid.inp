@@ -423,6 +423,33 @@ $                                 provides 3 partitions of both x & y component,
 $                                 with a reasonable accuracy for using in
 $                                 a climate model.
 $
+$ Langmuir turbulence parameterization ------------------------------- $
+$   The LMPN namelist group configures the Langmuir Mixing
+$   Parameterization used within the context of climate modeling and
+$   when WW3 is coupled to an active ocean model (.e.g., POP2, MOM6).
+$   The LMPENABLED flag turns on the parameterization computations.
+$   The SDTAIL flag enables the spectral tail contribution. HSLMODE
+$   parameter determines the surface layer depth (HSL).
+$
+$   Langmuir parameters : Namelist LMPN
+$                       LMPENABLED : Logical controlling Langmuir
+$                                    related computations.
+$                                     T : Activates calculations
+$                                     F : Calculations off (default)
+$                       SDTAIL     : Logical controlling addition of
+$                                    tail contribution.
+$                                     T : Tail added to Stokes
+$                                         drift (LMPENABLED=T also).
+$                                     F : No tail added (default)
+$                       HSLMODE    : Integer indicating surface layer
+$                                    depth (HSL) type.
+$                                     0 : Uniform HSL=10m (default)
+$                                     1 : HSL from coupler
+$
+$   For more info on the Langmuir parameterization, see:
+$       Li, Qing, et al. "Langmuir mixing effects on global climate:
+$       WAVEWATCH III in CESM." Ocean Modelling 103 (2016): 145-160.
+$
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
 $                           CICE0  : Ice concentration cut-off.
