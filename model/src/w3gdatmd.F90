@@ -886,7 +886,7 @@ MODULE W3GDATMD
     REAL,     POINTER     :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
     REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
          SSINTHP, TTAUWSHELTER, SSWELLF(1:7), &
-         SSDSC(1:21), SSDSBR,                 &
+         SSDSC(1:21), SSDSBR, SINTAILPAR(1:5),&
          SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
          FFXPM, FFXFM, FFXFA,   &
          SSDSBRF1, SSDSBRF2, SSDSBINT,SSDSBCK,&
