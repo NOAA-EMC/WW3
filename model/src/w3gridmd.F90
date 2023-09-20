@@ -1074,7 +1074,7 @@ MODULE W3GRIDMD
        UGBCCFL, EXPFSN, EXPFSPSI, EXPFSFCT,       &
        IMPFSN, IMPTOTAL, EXPTOTAL,                &
        IMPREFRACTION, IMPFREQSHIFT,               &
-       IMPSOURCE,                                 &
+       IMPSOURCE, READGR3                         &
        JGS_TERMINATE_MAXITER,                     &
        JGS_TERMINATE_DIFFERENCE,                  &
        JGS_TERMINATE_NORM,                        &
@@ -2392,6 +2392,7 @@ CONTAINS
     IMPREFRACTION = .FALSE.
     IMPFREQSHIFT = .FALSE.
     IMPSOURCE = .FALSE.
+    READGR3   = .FALSE. 
     SETUP_APPLY_WLV = .TRUE.
     SOLVERTHR_SETUP=1E-6
     CRIT_DEP_SETUP=0.1
@@ -2411,6 +2412,7 @@ CONTAINS
     ! read data from the unstructured devoted namelist
     CALL READNL ( NDSS, 'UNST', STATUS )
 
+    LGR3             = READGR3
     B_JGS_USE_JACOBI = JGS_USE_JACOBI
     B_JGS_TERMINATE_MAXITER = JGS_TERMINATE_MAXITER
     B_JGS_TERMINATE_DIFFERENCE = JGS_TERMINATE_DIFFERENCE
@@ -3265,7 +3267,7 @@ CONTAINS
       WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
            EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
            IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
-           IMPSOURCE, SETUP_APPLY_WLV,                 &
+           IMPSOURCE, READGR3, SETUP_APPLY_WLV,        &
            JGS_TERMINATE_MAXITER,                      &
            JGS_TERMINATE_DIFFERENCE,                   &
            JGS_TERMINATE_NORM,                         &
@@ -3944,7 +3946,11 @@ CONTAINS
       !
       ! Reading depths on unstructured grid (this also sets number of mesh points, NX)
       !
-      CALL READMSH(NDSG,FNAME)
+      IF (LGR3) THEN
+        CALL READGR3(NDSG,FNAME)
+      ELSE
+        CALL READMSH(NDSG,FNAME)
+      ENDIF
       ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
       ZBIN(:,1) = VSC * ZB(:)
       !
