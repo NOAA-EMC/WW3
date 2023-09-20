@@ -368,8 +368,8 @@ CONTAINS
     !       PSIC    Real   I   Critical Shields               ( !/BT4 )
     !       PHIBBL  Real   O   Energy flux to BBL             ( !/BTx )
     !       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx )
-    !       TAUICE  R.A.   O   Momentum flux to sea ice       ( !/ICx )
-    !       PHICE   Real   O   Energy flux to sea ice         ( !/ICx )
+    !       TAUICE  R.A.  I/O  Momentum flux to sea ice       ( !/ICx )
+    !       PHICE   Real  I/O  Energy flux to sea ice         ( !/ICx )
     !       TAUOCX-YReal   O   Total ocean momentum components
     !       WNMEAN  Real   O   Mean wave number
     !       DAIR    Real   I   Air density
@@ -709,7 +709,9 @@ CONTAINS
         TAUWY(1:NSEAL),        &
         CHARN(1:NSEAL),        &
         PHIBBL(1:NSEAL),       &
+        PHIAW(1:NSEAL),        &
         PHIOC(1:NSEAL),        &
+        PHICE(1:NSEAL),        &
         TAUWIX(1:NSEAL),       &
         TAUWIY(1:NSEAL),       &
         TAUWNX(1:NSEAL),       &
@@ -718,16 +720,14 @@ CONTAINS
         TAUOY(1:NSEAL),        &
         TAUOCX(1:NSEAL),       &
         TAUOCY(1:NSEAL),       &
-        TAUBBL(1:NSEAL,2),     &    ! TODO: Swamp dims
+        TAUBBL(1:NSEAL,2),     &    ! TODO: Swap dims
         TWS(1:NSEAL),          &
-        TAUICE(1:NSEAL,2),     &
+        TAUICE(1:NSEAL,2),     &    ! TODO: Swap dims?
         WHITECAP(1:NSEAL,4)         ! TODO: Swap dims to avoid temporary variable
 
     REAL, INTENT(OUT) ::       &
-        PHIAW(1:NSEAL),        &
         DTDYN(1:NSEAL),        &
-        FCUT(1:NSEAL),         &
-        PHICE(1:NSEAL)
+        FCUT(1:NSEAL)
   
 ! Refactor - inputs depending on compile switch:
 #ifdef W3_REF1
