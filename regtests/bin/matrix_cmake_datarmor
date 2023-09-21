@@ -112,6 +112,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   echo "  export NETCDF_CONFIG=/home/datawork-wave/NETCDF2019/${COMP}/bin/nc-config"  >> matrix.head
   echo "  export NetCDF_ROOT=/home/datawork-wave/NETCDF2019/${COMP}"  >> matrix.head
   echo "  export METIS_PATH=/home/datawork-wave/PARMETIS2019/${COMP}"                 >> matrix.head
+  echo "  export SCOTCH_PATH=/home/datawork-wave/LIB/SCOTCH/v7.0.3/${COMP}"                 >> matrix.head
   echo "  export WW3_PARCOMPN=4"                                                      >> matrix.head
   echo "  export G2_LIB4=/home/datawork-wave/NCEPLIBS/${COMP}/g2-3.4.5/lib64/libg2_4.a"            >> matrix.head
   echo "  export BACIO_LIB4=/home/datawork-wave/NCEPLIBS/${COMP}/bacio-2.4.1/lib/libbacio_4.a"      >> matrix.head

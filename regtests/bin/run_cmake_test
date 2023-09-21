@@ -628,7 +628,7 @@ then
     fi
 
     # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -654,7 +654,7 @@ then
       if [ $multi -eq 2 ]
       then
         mv mod_def.ww3 mod_def.$g
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           mv $prog.nml.log ${prog}_$g.nml.log
         fi
@@ -752,7 +752,7 @@ then
         then
           mv restart.ww3 restart.$g
           \rm -f mod_def.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             mv $prog.nml.log ${prog}_$g.nml.log
           fi
@@ -851,7 +851,7 @@ then
         then
           mv nest.ww3 nest.$g
           \rm -f mod_def.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             mv $prog.nml.log ${prog}_$g.nml.log
           fi
@@ -950,7 +950,7 @@ then
         then
           mv nest.ww3 nest.$g
           \rm -f mod_def.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             mv $prog.nml.log ${prog}_$g.nml.log
           fi
@@ -1054,7 +1054,7 @@ then
           then
             \rm -f mod_def.ww3
             mv $otype.ww3 $otype.$g
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi
@@ -1178,7 +1178,7 @@ then
           then
             \rm -f mod_def.ww3
             mv $otype.ww3 $otype.$g
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi
@@ -1301,7 +1301,7 @@ then
           then
             \rm -f mod_def.ww3
             mv $otype.ww3 $otype.$g
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi
@@ -1445,7 +1445,7 @@ then
       \rm -f PET*.ESMF_LogFile
       \rm -f ww3_esmf.rc
       \cp -f ${path_i}/ww3_esmf.rc ww3_esmf.rc
-      if [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         echo "WAV_input_file_name: $prog.nml" >> ww3_esmf.rc
       fi
@@ -1754,7 +1754,7 @@ do
             then
               \rm -f mod_def.ww3
               \rm -f out_grd.ww3
-              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
               then
                 mv $prog.nml.log ${prog}_$g.nml.log
               fi
@@ -1821,7 +1821,7 @@ do
             then
               \rm -f mod_def.ww3
               \rm -f out_grd.ww3
-              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
               then
                 mv $prog.nml.log ${prog}_$g.nml.log
               fi
@@ -1989,7 +1989,7 @@ do
             then
               \rm -f mod_def.ww3
               \rm -f out_pnt.ww3
-              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
               then
                 mv $prog.nml.log ${prog}_$g.nml.log
               fi
@@ -2125,7 +2125,7 @@ do
           if [ $multi -eq 2 ]
           then
             \rm -f track_o.ww3
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi
