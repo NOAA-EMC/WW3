@@ -6897,7 +6897,7 @@ CONTAINS
     INTEGER NB_ITER, iIter, ip_global
     REAL*8 DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
     REAL*8 eNorm, DTquot, diffc, dcell, XWIND, DIFFTOT
-    REAL*8 DVDX(NPA), DVDY(NPA), DV2DXX(NPA), DV2DXY(NPA)
+    REAL*8 DVDX(NPA), DVDY(NPA), DV2DXX(NPA), DV2DXY(NPA), KH, SWFAC
     REAL eRealA(1), eRealB(1)
 
 
@@ -6933,6 +6933,12 @@ CONTAINS
           DSS   = ( CGD * (XFR-1.))**2 * DTME / 12.! * TFAC
           DNN   = ( CGD * DTH )**2 * DTME / 12.! * TFAC 
           DCELL = CGD / 10.0 ! -> CELLP needs probably redifinition ...
+          KH    = WN(IK,ISEA)*DW(JSEA) 
+          IF (DW(JSEA) .gt. 1000.) THEN
+            SWFAC = 1.
+          ELSE
+            SWFAC = 0.!(1.-0.5*(1+(2*KH/SINH(MIN(20.d0,2*KH)))))**8
+          ENDIF
           XWIND = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
           XWIND = MAX ( 0. , MIN ( 1. , XWIND ) )
 #ifdef W3_XW0
@@ -6942,19 +6948,20 @@ CONTAINS
           XWIND = 1.
 #endif
           TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
-          DSS   = XWIND * DCELL + (1.-XWIND) * DSS * TFAC
-          DSS   = XWIND * DCELL + (1.) * DSS * TFAC
+          DSS   = SWFAC * (XWIND * DCELL + (1.-XWIND) * DSS * TFAC) 
 #ifdef W3_DSS0
           DSS   = 0.
 #endif
-          DNN   = XWIND * DCELL + (1.-XWIND) * DNN * TFAC
-          DNN   = XWIND * DCELL + (1.) * DNN * TFAC
+          DNN   = SWFAC * (XWIND * DCELL + (1.-XWIND) * DNN * TFAC)
 
           DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
           DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
           DIFFVEC(3,JSEA) = ((DSS-DNN) * ESIN(ITH)*ECOS(ITH)) / CLATS(ISEA)
           !write(3000+myrank,'(I10,20F20.10)') IK, SIG(IK), CGD, CLATS(ISEA), DSS, DNN, DIFFVEC(1,JSEA), DIFFVEC(2,JSEA)
         END DO
+
+        CALL DIFFERENTIATE_XYDIR(DBLE(VA(ISP,:)),DVDX,DVDY) ! AR: this two lines can be optimized, however seems fast enough by now. 
+        CALL DIFFERENTIATE_XYDIR(DVDX,DV2DXX,DV2DXY)
 
         DeltaTmax = 1./TINY(1.)
         DO IE=1,NE
@@ -6988,9 +6995,7 @@ CONTAINS
         PHI_V = 0.
  
         !WRITE(5000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF, DeltaTmax
-        !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR) 
-        CALL DIFFERENTIATE_XYDIR(DBLE(VA(ISP,:)),DVDX,DVDY) ! AR: this two lines can be optimized, however seems fast enough by now. 
-        CALL DIFFERENTIATE_XYDIR(DVDX,DV2DXX,DV2DXY)
+        !CALL FLUSH(5000+myrank)
 
         DO IT = 1, NB_ITER
           DO IE = 1, NE
@@ -7017,14 +7022,14 @@ CONTAINS
           END DO
           CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
-            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA)) * DFAC * IOBDP_LOC(JSEA) 
-            !IF (ABS(PHI_V(JSEA) .gt. 0.d0)) write(1040+myrank,*) JSEA, DT_DIFF, PHI_V(JSEA), DV2DXY(JSEA) * DIFFVEC(3,JSEA)
+            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - (DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA)) * DFAC * IOBDP_LOC(JSEA))
           END DO       
         END DO 
       END DO 
     END DO 
 
     !WRITE(3000+myrank,*) 'FINISHED DIFFUSION' 
+    !CALL FLUSH(3000+myrank)
     !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
 
     END SUBROUTINE BLOCK_SOLVER_DIFFUSION
