@@ -16,7 +16,7 @@ $
 $
 $ Activated up to one line per namelist !!
 $
-  &OUTS E3D=1 /
+  &OUTS E3D=1, TH1MF=1, STH1MF=1 /
 $ &PRO2 DTIME= 0. /
 $ &PRO2 DTIME=172800. /
   &PRO2 DTIME=345600. /
