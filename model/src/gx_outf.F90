@@ -1,5 +1,37 @@
+!> @file
+!> @brief Generate GrADS input files from raw WAVEWATCH data file.
+!>
+!> @author H. L. Tolman
+!> @author A. Chawla
+!> @author J.H.G.M. Alves
+!> @date   22-Mar-2021
+!>
 #include "w3macros.h"
+
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Generate GrADS input files from raw WAVEWATCH data file.
+!>
+!> @details
+!>  Data is read from the grid output file out_grd.ww3 (raw data)
+!>  and from the file gx_outf.inp ( NDSI, output requests ).
+!>  Model definition and raw data files are read using WAVEWATCH III
+!>  subroutines.
+!>
+!>  Output files are ww3.ctl and ww3.grads. The output files
+!>  contains a land-sea map, followed by requested fields. See the
+!>  control file for the names of the fields.
+!>
+!> @author H. L. Tolman
+!> @author A. Chawla
+!> @author J.H.G.M. Alves
+!> @date   22-Mar-2021
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 PROGRAM GXOUTF
   !/
   !/                  +-----------------------------------+
@@ -740,6 +772,16 @@ PROGRAM GXOUTF
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Perform actual output for GrADS postprocessing.
+  !>
+  !> @param[in] NX    Grid dimensions.
+  !> @param[in] NY    Grid dimensions.
+  !> @param[in] NSEA  Number of sea points.
+  !>
+  !> @author H. L. Tolman
+  !> @date   22-Mar-2021
+  !>
   SUBROUTINE GXEXGO ( NX, NY, NSEA )
     !/
     !/                  +-----------------------------------+

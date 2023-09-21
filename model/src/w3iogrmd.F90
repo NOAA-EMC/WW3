@@ -745,13 +745,11 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-             B_JGS_SOURCE_NONLINEAR,                          & 
-             B_JGS_LGSE,                                      &
-             B_JGS_GSE_TS,                                    & 
-             B_JGS_GSE_METHOD
-        !Init COUNTCON to zero, it needs to be set somewhere or
+             B_JGS_SOURCE_NONLINEAR
+        !Init COUNTCON and IOBDP to zero, it needs to be set somewhere or
         !removed
         COUNTCON=0
+        IOBDP=0  
         WRITE (NDSM)                                          &
              X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
              LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
@@ -851,11 +849,7 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-             B_JGS_SOURCE_NONLINEAR,                          & 
-             B_JGS_LGSE,                                      &
-             B_JGS_GSE_TS,                                    &
-             B_JGS_GSE_METHOD
-
+             B_JGS_SOURCE_NONLINEAR
         IF (.NOT. GUGINIT) THEN
           CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
         END IF
