@@ -730,7 +730,7 @@ MODULE W3GDATMD
 #endif
     LOGICAL               :: LMPENABLED ! flag to enable Li et al. Langmuir parameterization
     LOGICAL               :: SDTAIL ! flag to enable high-freq tail in Li et al. Stokes Drift computations
-    REAL                  :: HSLMODE ! 0 for test (HSL=10m everywhere, 1 for coupler-based HSL)
+    INTEGER               :: HSLMODE ! 0 for test (HSL=10m everywhere, 1 for coupler-based HSL)
     !
     ! unstructured data
     !
@@ -1089,7 +1089,7 @@ MODULE W3GDATMD
   !
   LOGICAL, POINTER        :: LMPENABLED
   LOGICAL, POINTER        :: SDTAIL
-  REAL, POINTER           :: HSLMODE
+  INTEGER, POINTER        :: HSLMODE
   !
   ! Variables for unstructured grids
   !
