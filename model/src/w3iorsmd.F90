@@ -653,7 +653,7 @@ CONTAINS
 #ifdef W3_MPI
         ELSE
           !
-          IF (LPDLIB) THEN
+          IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
 #endif
 #ifdef W3_TIMINGS
             CALL PRINT_MY_TIME("Before UNST_PDLIB_WRITE_TO_FILE")
@@ -735,7 +735,7 @@ CONTAINS
         WRITE (NDST,9020) TYPE
 #endif
       ELSE
-        IF (LPDLIB) THEN
+        IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("Before UNST_PDLIB_READ_FROM_FILE")
 #endif
@@ -796,7 +796,8 @@ CONTAINS
           ELSE
 #endif
             VA = 0.
-            DO JSEA=1, NSEA
+!AR: 2do here is most likely a bug in develop there NSEA was used, which is global
+            DO JSEA=1, NSEAL
               CALL INIT_GET_ISEA(ISEA, JSEA)
               NREC   = ISEA + 2
               RPOS   = 1_8 + LRECL*(NREC-1_8)
