@@ -47,6 +47,7 @@ PROGRAM W3TRNC
   !     ----------------------------------------------------------------
   !      W3NMOD    Subr. W3GDATMD Set number of model.
   !      W3NOUT    Subr. W3ODATMD Set number of model for output.
+  !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
   !     ----------------------------------------------------------------
   !
   !  5. Called by :
@@ -70,13 +71,14 @@ PROGRAM W3TRNC
   !/ ------------------------------------------------------------------- /
   USE CONSTANTS
 
-  USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR
+  USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR, GNAME
   USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
   USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
   USE W3TIMEMD
+  USE W3IOGRMD, ONLY: W3IOGR
   !
   USE W3ODATMD, ONLY: NDSO, NDSE
   !
@@ -91,7 +93,7 @@ PROGRAM W3TRNC
   TYPE(NML_TRACK_T)       :: NML_TRACK
   TYPE(NML_FILE_T)        :: NML_FILE
   !
-  INTEGER                 :: NDSI, NDSINP,                        &
+  INTEGER                 :: NDSI, NDSINP, NDSM,                  &
        NDSOUT, NDSTRC, NTRACE,              &
        NSPEC, IERR, MK, MTH, IT,            &
        ILOC, ISPEC, S3, IOUT,               &
@@ -135,6 +137,7 @@ PROGRAM W3TRNC
   ! 1.  IO set-up.
   !
   NDSI   = 10
+  NDSM   = 20
   NDSINP = 11
   NDSOUT = 51
   !
@@ -148,11 +151,16 @@ PROGRAM W3TRNC
   !
   WRITE (NDSO,900)
   !
+  !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ! 2.  Read model definition file.
+  !
+  CALL W3IOGR ( 'READ', NDSM )
+  WRITE (NDSO,920) GNAME
 
 
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! 2.   Read requests from input file.
+  ! 3.   Read requests from input file.
   !
 
   !
@@ -163,13 +171,13 @@ PROGRAM W3TRNC
     ! Read namelist
     CALL W3NMLTRNC (NDSI, TRIM(FNMPRE)//'ww3_trnc.nml', NML_TRACK, NML_FILE, IERR)
 
-    ! 2.1 Time setup IDTIME, DTREQ, NOUT
+    ! 3.1 Time setup IDTIME, DTREQ, NOUT
     READ(NML_TRACK%TIMESTRIDE, *)  DTREQ
     READ(NML_TRACK%TIMECOUNT, *)   NOUT
     READ(NML_TRACK%TIMESTART, *)   TOUT(1), TOUT(2)
 
 
-    ! 2.2 Output type
+    ! 3.2 Output type
     NCTYPE = NML_FILE%NETCDF
     FILEPREFIX = NML_FILE%PREFIX
     S3 = NML_TRACK%TIMESPLIT
@@ -189,12 +197,12 @@ PROGRAM W3TRNC
     WRITE (NDSO,901) COMSTR
 
 
-    ! 2.1 Time setup IDTIME, DTREQ, NOUT
+    ! 3.1 Time setup IDTIME, DTREQ, NOUT
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
     READ (NDSI,*,END=806,ERR=807) TOUT, DTREQ, NOUT
 
 
-    ! 2.2 Output type
+    ! 3.2 Output type
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
     READ (NDSI,*,END=806,ERR=807) NCTYPE
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
@@ -208,7 +216,7 @@ PROGRAM W3TRNC
 
 
 
-  ! 2.1 Time setup IDTIME, DTREQ, NOUT
+  ! 3.3 Time setup IDTIME, DTREQ, NOUT
   DTREQ  = MAX ( 0. , DTREQ )
   IF ( DTREQ.EQ.0. ) NOUT = 1
   NOUT   = MAX ( 1 , NOUT )
@@ -227,7 +235,7 @@ PROGRAM W3TRNC
   WRITE (NDSO,941) IDTIME, NOUT
 
 
-  ! 2.2 Output type
+  ! 3.4 Output type
   IF ( NCTYPE.LT.3 .OR. NCTYPE.GT.4 ) THEN
     WRITE (NDSE,1010) NCTYPE
     CALL EXTCDE ( 1 )
@@ -239,7 +247,7 @@ PROGRAM W3TRNC
 
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! 3.  Check consistency with input file and track_o.ww3
+  ! 4.  Check consistency with input file and track_o.ww3
   !
   OPEN (NDSINP,FILE=TRIM(FNMPRE)//'track_o.ww3',form='UNFORMATTED', convert=file_endian, &
        STATUS='OLD',ERR=800,IOSTAT=IERR)
@@ -262,7 +270,7 @@ PROGRAM W3TRNC
 
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ! 4.  Time management.
+  ! 5.  Time management.
   !
   IOUT = 0
   NCID = 0
@@ -271,7 +279,7 @@ PROGRAM W3TRNC
   BACKSPACE (NDSINP)
 
 
-  ! 4.1 Loops on track_o.ww3 to read the time and data
+  ! 5.1 Loops on track_o.ww3 to read the time and data
   DO
     DTEST  = DSEC21 ( TIME , TOUT )
 
@@ -310,17 +318,17 @@ PROGRAM W3TRNC
     END IF
 
 
-    ! 4.1.1 Increments the global time counter IOUT
+    ! 5.1.1 Increments the global time counter IOUT
     IOUT = IOUT + 1
     CALL STME21 ( TOUT , IDTIME )
     WRITE (NDSO,971) IDTIME
 
 
-    ! 4.1.2  Processes the variable value for the time step IOUT
+    ! 5.1.2  Processes the variable value for the time step IOUT
     CALL W3EXNC ( FILEPREFIX, NCTYPE, NCID, S3, STRSTOPDATE, MK, MTH )
 
 
-    ! 4.1.3 Defines the stop date
+    ! 5.1.3 Defines the stop date
     CALL T2D(TOUT,STOPDATE,IERR)
     WRITE(STRSTOPDATE,'(I4.4,A,4(I2.2,A),I2.2)') STOPDATE(1),'-',STOPDATE(2), &
          '-',STOPDATE(3),' ',STOPDATE(5),':',STOPDATE(6),':',STOPDATE(7)
@@ -331,7 +339,7 @@ PROGRAM W3TRNC
 
 444 CONTINUE
 
-  ! 4.2 Closes the netCDF file
+  ! 5.2 Closes the netCDF file
   IF (NCID.NE.0) THEN
     IRET = NF90_REDEF(NCID)
     CALL CHECK_ERR(IRET)
@@ -383,6 +391,8 @@ PROGRAM W3TRNC
 902 FORMAT ( '      Spectral grid size : ',I3,' by ',I3//              &
        '  Opening file : '/                               &
        ' -----------------------------------------------')
+920 FORMAT ( '  Grid name : ',A/)
+  !
 940 FORMAT (/'  Output time data : '/                               &
        ' --------------------------------------------------'/ &
        '      First time         : ',A)
