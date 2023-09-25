@@ -227,7 +227,6 @@ CONTAINS
 #endif
     REAL                    :: A2(NK,NTH), S2(NK,NTH), D2(NK,NTH)
     REAL                    :: CONX
-    REAL, INTENT(IN)        :: A(NTH,NK), CG(NK), WN(NK), DEPTH
 #ifdef W3_T0
     REAL                    :: SOUT(NK,NK), DOUT(NK,NK)
 #endif
