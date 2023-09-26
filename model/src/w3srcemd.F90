@@ -2705,6 +2705,11 @@ CONTAINS
       IF( INFLAGS2(4) ) THEN
         DO CSEA = 1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
+
+          ! GPU Refactor: Zero TAUICE and PHIICE here; for B4B reproducibility. Chris Bunney.
+          TAUICE(JSEA,:) = 0.
+          PHICE(JSEA) = 0.
+
           IF(ICE_CHUNK(CSEA) .EQ. 0) THEN
 #ifdef W3_IS2
             IF(IS2PARS(10).LT.0.5) THEN
@@ -2765,8 +2770,8 @@ CONTAINS
 #endif
           SPEC2 = SPEC(:,JSEA)
           !
-          TAUICE(JSEA,:) = 0.
-          PHICE(JSEA) = 0.
+          !!TAUICE(JSEA,:) = 0.   ! ChrisB: GPU Refactor: Zeroed in outer seapoint loop for B4B reproducibility
+          !!PHICE(JSEA) = 0.      ! DITTO
           DO IK=1,NK
             IS = 1+(IK-1)*NTH
             !
