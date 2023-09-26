@@ -1210,7 +1210,11 @@ CONTAINS
 
 #if defined(W3_ST3) || defined(W3_ST4)
         AS_CHUNK(I) = AS(ISEA)
-#endif        
+#endif
+#ifdef W3_FLX5
+        TAUA_CHUNK(I) = TAUA(ISEA)
+        TAUADIR_CHUNK(I) = TAUADIR(ISEA)
+#endif
 #if defined(W3_BS1) || defined(W3_REF1)
         CX_CHUNK(I) = CX(ISEA)
         CY_CHUNK(I) = CY(ISEA)
