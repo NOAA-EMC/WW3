@@ -471,7 +471,7 @@ CONTAINS
     !/
     INTEGER                            :: i,j,k, NODES, NELTS, ID, KID
     INTEGER                            :: ID1, ID2, KID1, ITMP(3)
-    INTEGER                            :: I1, I2, I3
+    INTEGER                            :: I1, I2, I3, ISTAT
     INTEGER(KIND=4)                    :: Ind,eltype,ntag, INode
     CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
     REAL, ALLOCATABLE                  :: TAGS(:)
@@ -503,12 +503,12 @@ CONTAINS
     !
     ALLOCATE(TRIGPTMP1(3,NELTS))
     DO I= 1, NELTS
-      READ(NDS,*) j, i, ITMP
+      READ(NDS,*) j, j, TRIGPTMP1(:,I)
     END DO
     !
     ! organizes the grid data structure
     !
-    NTRI = NODES
+    NTRI = NELTS
 
     ALLOCATE(IFOUND(NODES))
 
@@ -819,7 +819,7 @@ CONTAINS
     !/
     !/ local parameters
     !/
-    INTEGER                            :: i,j,k, NODES
+    INTEGER                            :: i,j,k, NODES, istat, nelts
     LOGICAL                            :: lfile_exists
     CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
     DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:)
@@ -832,11 +832,12 @@ CONTAINS
     !
     READ(NDS,*)
     READ(NDS,*, IOSTAT = ISTAT) NELTS, NODES    
-    READ(NDS,*) NODES
+    ALLOCATE(XYBTMP1(3,NODES))
     DO I= 1, NODES
       READ(NDS,*) j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
       IF (INT(XYBTMP1(3,I)) .EQ. 2) IOBP(I) = 2
       IF (INT(XYBTMP1(3,I)) .EQ. 3) IOBP(I) = 3
+      write(*,*) I, IOBP(I)
     END DO
     !
     CLOSE(NDS)
@@ -3219,7 +3220,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPFS,                        &
          NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
          ECOS, ESIN, IEN, NTRI, TRIGP,               &
-         IOBP,IOBPD, IOBPA,                          &
+         IOBP,IOBPD, IOBPA, LGR3,                    &
 #ifdef W3_REF1
          REFPARS, REFLC, REFLD,                      &
 #endif
@@ -3266,9 +3267,12 @@ CONTAINS
     ! 2.  Searches for boundary points
     !
     ITMP = MAPSTA(1,:)
+
     CALL SET_IOBP(ITMP, IOBP)
+
     IF (LGR3) THEN
-      FNAME = 'meshbnd.msh'
+!AR: 2do - error handling ...
+      FNAME = 'meshbnd.gr3'
       CALL READGR3_IOBP(23456,FNAME)
     ELSE
       FNAME = 'meshbnd.msh'
