@@ -1044,7 +1044,7 @@ CONTAINS
     !TAUICE = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     !PHICE  = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     WNMEAN = 0.
-    CHARN  = 0.
+    !CHARN  = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     TWS    = 0.
 
     ! Refactor notes: Zero ice chunks if ICE field never read in.
@@ -1321,6 +1321,9 @@ CONTAINS
       DO CSEA=1,NSEAC
         IF(SRC_MASK(CSEA)) CYCLE
         JSEA = CHUNK0 + CSEA - 1
+
+        ! CB Refactor - zero CHARN element wise, rather than whole array (for b4b reproducibility)
+        CHARN(JSEA) = 0.
 
 #ifdef W3_ST0
         CALL W3SPR0 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA))
@@ -2742,7 +2745,7 @@ CONTAINS
             CG_ICE=CG1_CHUNK(:,CSEA)
           END IF
           !
-          R(:)=1 ! In case IC2 is defined but not IS2  !!TODO - needs to be a chunk variable (or does it?)
+          R(:)=1 ! TODO - MOVE THIS OUTSIDE LOOP?? ! In case IC2 is defined but not IS2  !!TODO - needs to be a chunk variable (or does it?)
           !
 #ifdef W3_IC1
           CALL W3SIC1 ( SPEC(:,JSEA),DEPTH(CSEA), CG1_CHUNK(:,CSEA), IX(CSEA), IY(CSEA), VSIC, VDIC )
