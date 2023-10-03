@@ -813,5 +813,15 @@
                 "name": "B4B"
             }
         ]
+    },
+    {
+        "name": "ascii",
+        "num_switches": "upto1",
+        "description": "ASCII output for binary .ww3 file",
+        "valid-options": [
+            {
+                "name": "ASCII"
+            }
+        ]
     }
 ]

@@ -427,6 +427,9 @@ CONTAINS
 #ifdef W3_MPRF
     USE WMMDATMD, ONLY: MDSP
 #endif
+#ifdef W3_ASCII
+    USE WMMDATMD, ONLY: MDSUPA
+#endif
     USE W3INITMD, ONLY: WWVER
     USE W3ODATMD, ONLY:  OFILES
     !
@@ -1897,6 +1900,12 @@ CONTAINS
         CALL WMUSET ( MDSS, MDST, MDSUP, .TRUE., 'OUT',         &
              TRIM(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II),  &
              'Unified point output')
+#ifdef W3_ASCII
+        CALL WMUGET ( MDSS, MDST, MDSUPA, 'OUA' )
+        CALL WMUSET ( MDSS, MDST, MDSUPA, .TRUE., 'OUA',         &
+             TRIM(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II)//'.txt',  &
+             'Unified point output ascii')
+#endif
       END IF
     END IF
     !
@@ -3751,6 +3760,9 @@ CONTAINS
 #ifdef W3_MPRF
     USE WMMDATMD, ONLY: MDSP
 #endif
+#ifdef W3_ASCII
+    USE WMMDATMD, ONLY: MDSUPA
+#endif
     USE W3INITMD, ONLY: WWVER
     USE W3NMLMULTIMD
     !/
@@ -4977,6 +4989,12 @@ CONTAINS
         CALL WMUSET ( MDSS, MDST, MDSUP, .TRUE., 'OUT',         &
              TRIM(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II),  &
              'Unified point output')
+#ifdef W3_ASCII
+        CALL WMUGET ( MDSS, MDST, MDSUPA, 'OUA' )
+        CALL WMUSET ( MDSS, MDST, MDSUPA, .TRUE., 'OUA',         &
+             TRIM(FNMPRE)//'out_pnt.'//MNAMES(0)(1:II)//'.txt',  &
+             'Unified point output ascii')
+#endif
       END IF
     END IF
     !
