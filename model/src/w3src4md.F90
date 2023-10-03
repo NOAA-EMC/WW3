@@ -2444,6 +2444,7 @@ CONTAINS
       ! Compute Lambda = PB* l(k,th)
       ! with l(k,th)=1/(2*pi²)= the breaking crest density
       BRLAMBDA = PB / (2.*PI**2.)
+      SRHS = DDIAG * A
       !############################################################################################"
     CASE(3)
       !
@@ -2553,7 +2554,7 @@ CONTAINS
       RETURN
     END IF
     !
-    WHITECAP(1:2) = 0.
+    WHITECAP(1:4) = 0.
     !
     ! precomputes integration of Lambda over direction
     ! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
