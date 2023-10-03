@@ -3330,12 +3330,6 @@ CONTAINS
               END DO
               WRITE ( NDSOG ) AUX1
 #ifdef W3_ASCII
-              DO ISEA=1, NSEA
-                WRITE ( NDSOA,* ) 'UST:', UST(ISEA)
-                WRITE ( NDSOA,* ) 'ASF:', ASF(ISEA)
-                WRITE ( NDSOA,* ) 'USTDIR:', cos(USTDIR(ISEA))
-                WRITE ( NDSOA,* ) 'AUX1 (UST*ASF*cos(USTDIR)):', AUX1(ISEA)
-              END DO
               WRITE ( NDSOA,* ) 'AUX1 (UST*ASF*cos(USTDIR)):', AUX1
 #endif
               WRITE ( NDSOG ) AUX2
