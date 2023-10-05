@@ -113,7 +113,7 @@ MODULE W3GRIDMD
   !/    27-May-2021 : Moved to a subroutine               ( version 7.13 )
   !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
-  !/    28-Feb-2023 : GQM as an alternative for NL1/NL2   ( version 7.15 )
+  !/    28-Feb-2023 : GQM as an alternative for NL1       ( version 7.15 )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -440,8 +440,8 @@ MODULE W3GRIDMD
   !             (2006) input and Babanin et al. (2001,2010) dissipation.
   !
   !     !/NL0   No nonlinear interactions.
-  !     !/NL1   Discrete interaction approximation (DIA).
-  !     !/NL2   Exact interactions (WRT or GQM).
+  !     !/NL1   Discrete interaction approximation (DIA or GQM).
+  !     !/NL2   Exact interactions (WRT).
   !     !/NL3   Generalized Multiple DIA (GMD).
   !     !/NL4   Two Scale Approximation
   !     !/NL5   Generalized Kinetic Equation (GKE)
@@ -869,8 +869,8 @@ MODULE W3GRIDMD
   REAL                    :: TAILNL, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
-  INTEGER                 :: IQTYPE, NDEPTH, GQMNF1, GQMNT1, GQMNQ_OM2
-  REAL                    :: TAILNL, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
+  INTEGER                 :: IQTYPE, NDEPTH
+  REAL                    :: TAILNL
 #endif
 #ifdef W3_NL3
   INTEGER                 :: NQDEF
@@ -1003,8 +1003,7 @@ MODULE W3GRIDMD
        GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
-  NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH, GQMNF1, GQMNT1,         &
-       GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
+  NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH
   NAMELIST /ANL2/ DEPTHS
 #endif
 #ifdef W3_NL3
@@ -1893,15 +1892,6 @@ CONTAINS
     IQTYPE =  2
     TAILNL = -FACHF
     NDEPTH =  0
-    GQMNF1 = 14
-    GQMNT1 = 8
-    GQMNQ_OM2=8
-    GQMTHRSAT=0.
-    GQMTHRCOU=0.015
-    GQAMP1=1.
-    GQAMP2=0.002
-    GQAMP3=1.
-    GQAMP4=1.
 #endif
 #ifdef W3_NL3
     NQDEF  =  0
@@ -1934,16 +1924,14 @@ CONTAINS
 #ifdef W3_NL2
     CALL READNL ( NDSS, 'SNL2', STATUS )
     WRITE (NDSO,922) STATUS
-    TAILNL = MIN ( MAX ( TAILNL, -6. ) , -4. )
+    TAILNL = MIN ( MAX ( TAILNL, -5. ) , -4. )
     IF ( IQTYPE .EQ. 3 ) THEN
-      WRITE (NDSO,923) 'Shallow water WRT', TAILNL
+      WRITE (NDSO,923) 'Shallow water', TAILNL
     ELSE IF ( IQTYPE .EQ. 2 ) THEN
-      WRITE (NDSO,923) 'Deep water WRT with scaling', TAILNL
-    ELSE  IF ( IQTYPE .EQ. 1 ) THEN
-      WRITE (NDSO,923) 'Deep water WRT', TAILNL
+      WRITE (NDSO,923) 'Deep water with scaling', TAILNL
     ELSE
-      WRITE (NDSO,923) 'Deep water GQM with scaling', TAILNL
-      IQTYPE = -2
+      WRITE (NDSO,923) 'Deep water', TAILNL
+      IQTYPE = 1
     END IF
     !
     IF ( IQTYPE .NE. 3 ) THEN
@@ -1970,15 +1958,6 @@ CONTAINS
     END IF
     WRITE (NDST,*)
     IQTPE  = IQTYPE
-    GQNF1  = GQMNF1
-    GQNT1  = GQMNT1
-    GQNQ_OM2  = GQMNQ_OM2
-    GQTHRSAT  = GQMTHRSAT
-    GQTHRCOU  = GQMTHRCOU
-    GQAMP(1)  = GQAMP1
-    GQAMP(2)  = GQAMP2
-    GQAMP(3)  = GQAMP3
-    GQAMP(4)  = GQAMP4
     NDPTHS = NDEPTH
     NLTAIL = TAILNL
 #endif
@@ -3228,8 +3207,7 @@ CONTAINS
            GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
-      WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH, GQMNF1,      &
-           GQMNT1, GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
+      WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
       IF ( IQTYPE .EQ. 3 ) THEN
         IF ( NDEPTH .EQ. 1 ) THEN
           WRITE (NDSO,3923) DPTHNL(1)
@@ -6290,10 +6268,7 @@ CONTAINS
          '       Depths (m)                  :',5F7.1)
 2923 FORMAT ( '                                    ',5F7.1)
 2922 FORMAT ( '  &SNL2 IQTYPE =',I2,', TAILNL =',F5.1,',',      &
-         ' NDEPTH =',I3,','/                        &
-         '        GQMNF1 =',I2,', GQMNT1 =',I2,',',        &
-         ' GQMNQ_OM2 =',I2,', GQMTHRSAT =',E11.4,', GQMTHRCOU =',F4.3,','/ &
-         '        GQAMP1 =',F5.3,', GQAMP2 =',F5.3,', GQAMP3 =',F5.3,', GQAMP4 =',F5.3,' /')
+         ' NDEPTH =',I3,' /')
 3923 FORMAT ( '  &SNL2 DEPTHS =',F9.2,' /')
 4923 FORMAT ( '  &ANL2 DEPTHS =',F9.2,' ,')
 5923 FORMAT ( '                ',F9.2,' ,')

@@ -1197,7 +1197,7 @@ CONTAINS
           CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,      XNL, DIA )
 #endif
 #ifdef W3_NL2
-          CALL W3SNL2 ( A, CG, WN, DEPTH,         XNL, DIA )
+          CALL W3SNL2 ( A, CG, DEPTH,             XNL, DIA )
 #endif
 #ifdef W3_NL3
           CALL W3SNL3 ( A, CG, WN, DEPTH,         XNL, DIA )

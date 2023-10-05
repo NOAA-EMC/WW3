@@ -429,13 +429,22 @@ MODULE W3GDATMD
   !      KDCON     Real  Public   Conversion factor for relative depth.
   !      KDMN      Real  Public   Minimum relative depth.
   !      SNLSn     Real  Public   Constants in shallow water factor.
+  !      IQTPE     Int.  Public   Type of depth treatment
+  !                               -2 : Deep water GQM with scaling
+  !                                1 : Deep water DIA
+  !                                2 : Deep water DIA with scaling
+  !                                3 : Finite water depth DIA
+  !      GQNF1     Int.  Public   Gaussian quadrature resolution
+  !      GQNT1     Int.  Public   Gaussian quadrature resolution
+  !      GQNNQ_OM2 Int.  Public   Gaussian quadrature resolution
+  !      GQTHRSAT  Real  Public   Threshold on saturation for SNL calculation
+  !      GQTHRCOU  Real  Public   Threshold for filter on coupling coefficient
+  !      GQAMP     R.A.  Public   Amplification factors
   !                                                             (!/NL2)
   !      IQTPE     Int.  Public   Type of depth treatment
   !                                1 : Deep water
   !                                2 : Deep water / WAM scaling
   !                                3 : Finite water depth
-  !      GQNF1     Int.  Public   Gaussian quadrature resolution
-  !      GQNT1
   !      NDPTHS    Int.  Public   Number of depth for which integration
   !                               space needs to be computed.
   !      NLTAIL    Real  Public   Tail factor for parametric tail.
@@ -916,8 +925,8 @@ MODULE W3GDATMD
     REAL                  :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(4)
 #endif
 #ifdef W3_NL2
-    INTEGER               :: IQTPE, NDPTHS, GQNF1, GQNT1, GQNQ_OM2
-    REAL                  :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(4)
+    INTEGER               :: IQTPE, NDPTHS
+    REAL                  :: NLTAIL
     REAL, POINTER         :: DPTHNL(:)
 #endif
 #ifdef W3_NL3
@@ -1329,8 +1338,8 @@ MODULE W3GDATMD
        SNLS1, SNLS2, SNLS3
 #endif
 #ifdef W3_NL2
-  INTEGER, POINTER        :: IQTPE, NDPTHS, GQNF1, GQNT1, GQNQ_OM2
-  REAL, POINTER           :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(:)
+  INTEGER, POINTER        :: IQTPE, NDPTHS
+  REAL, POINTER           :: NLTAIL
   REAL, POINTER           :: DPTHNL(:)
 #endif
 #ifdef W3_NL3
@@ -2707,14 +2716,8 @@ CONTAINS
 #endif
 #ifdef W3_NL2
     IQTPE  => MPARS(IMOD)%SNLPS%IQTPE
-    GQNF1  => MPARS(IMOD)%SNLPS%GQNF1
-    GQNT1  => MPARS(IMOD)%SNLPS%GQNT1
-    GQNQ_OM2  => MPARS(IMOD)%SNLPS%GQNQ_OM2
     NDPTHS => MPARS(IMOD)%SNLPS%NDPTHS
     NLTAIL => MPARS(IMOD)%SNLPS%NLTAIL
-    GQTHRSAT => MPARS(IMOD)%SNLPS%GQTHRSAT
-    GQTHRCOU=> MPARS(IMOD)%SNLPS%GQTHRCOU
-    GQAMP=> MPARS(IMOD)%SNLPS%GQAMP
     IF ( NDPTHS .NE. 0 ) DPTHNL => MPARS(IMOD)%SNLPS%DPTHNL
 #endif
 #ifdef W3_NL3
