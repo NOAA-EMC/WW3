@@ -2023,6 +2023,7 @@ do
 done # end of loop on progs
 
 # 3.i Track output ---------------------------------------------------------- #
+
 case $outopt in
   native) out_progs="ww3_trck" ;;
   netcdf) out_progs="ww3_trnc" ;;
