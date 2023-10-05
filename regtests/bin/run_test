@@ -2368,7 +2368,7 @@ done # end of loop on progs
 case $outopt in
   native) out_progs="ww3_trck" ;;
   netcdf) out_progs="ww3_trnc" ;;
-  both)   out_progs="ww3_trck ww3_trnc" ;;
+  both|all) out_progs="ww3_trck ww3_trnc" ;;
   *)      out_progs="" ;;
 esac
 
