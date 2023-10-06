@@ -610,7 +610,7 @@ CONTAINS
 #endif
       WRITE (NDSM) NGLO, NARC, NBGL, NBAC, NBSMC
 #ifdef W3_ASCII
-      WRITE (NDSM) 'NGLO, NARC, NBGL, NBAC, NBSMC:',             &
+      WRITE (NDSA,*) 'NGLO, NARC, NBGL, NBAC, NBSMC:',             &
                    NGLO, NARC, NBGL, NBAC, NBSMC
 #endif
 #endif
