@@ -586,6 +586,9 @@ MODULE W3GRIDMD
        IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
        IST, NKI, NTHI, NRIC, NRIS, I, IDFT, &
        NSTAT, NBT, NLAND, NOSW, NMAPB, IMAPB
+#ifdef W3_ASCII
+  INTEGER                  :: NDSMA
+#endif
 #ifdef W3_NL2
   INTEGER            :: IDEPTH
 #endif
@@ -5907,9 +5910,16 @@ CONTAINS
     !10.  Write model definition file.
     !
     WRITE (NDSO,999)
-    CALL W3IOGR ( 'WRITE', NDSM )
+    CALL W3IOGR ( 'WRITE', NDSM &
+#ifdef W3_ASCII
+                  ,NDSA=NDSMA        &
+#endif
+            )
     !
     CLOSE (NDSM)
+#ifdef W3_ASCII
+    CLOSE (NDSMA)
+#endif
     !
     GOTO 2222
     !

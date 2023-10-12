@@ -2376,7 +2376,11 @@ CONTAINS
   !>
   !> @author H. L. Tolman  @date 22-Mar-2021
   !>
-  SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD )
+  SUBROUTINE W3IOGO ( INXOUT, NDSOG, IOTST, IMOD &
+#ifdef W3_ASCII
+                      ,NDSOA &
+#endif
+          )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2535,6 +2539,9 @@ CONTAINS
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
     CHARACTER(LEN=15) :: TIMETAG
+#ifdef W3_ASCII
+    INTEGER, INTENT(IN), OPTIONAL :: NDSOA
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -2610,7 +2617,11 @@ CONTAINS
 #endif
       IF ( WRITE ) THEN
         OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
-             form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+             form ='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+#ifdef W3_ASCII
+        OPEN (NDSOA,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I)//'.txt',    &
+             form ='FORMATTED',ERR=800,IOSTAT=IERR)
+#endif
       ELSE
         OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
@@ -2625,6 +2636,13 @@ CONTAINS
         WRITE (NDSOG)                                           &
              IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
              UNDEF, NOSWLL
+#ifdef W3_ASCII
+        WRITE (NDSOA,*)                                           &
+             'IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
+             UNDEF, NOSWLL:',                                     &
+             IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
+             UNDEF, NOSWLL
+#endif
       ELSE
         READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)                &
              IDTST, VERTST, TNAME, MOGRP, MGRPP, NSEA, NX, NY,     &
@@ -2685,6 +2703,10 @@ CONTAINS
       IF ( WRITE ) THEN
         OPEN (NDSOG,FILE=FNMPRE(:J)//TIMETAG//'.out_grd.'  &
              //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+#ifdef W3_ASCII
+        OPEN (NDSOA,FILE=FNMPRE(:J)//TIMETAG//'.out_grd.'  &
+             //FILEXT(:I)//'.txt',form='FORMATTED',ERR=800,IOSTAT=IERR)
+#endif
       ELSE
         OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
@@ -2699,6 +2721,13 @@ CONTAINS
         WRITE (NDSOG)                                           &
              IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
              UNDEF, NOSWLL
+#ifdef W3_ASCII
+        WRITE (NDSOA,*)                                           &
+             'IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
+             UNDEF, NOSWLL:',                                     &
+             IDSTR, VEROGR, GNAME, NOGRP, NGRPP, NSEA, NX, NY,     &
+             UNDEF, NOSWLL
+#endif
       ELSE
         READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)                &
              IDTST, VERTST, TNAME, MOGRP, MGRPP, NSEA, NX, NY,     &
@@ -2737,6 +2766,10 @@ CONTAINS
     !
     IF ( WRITE ) THEN
       WRITE (NDSOG)                            TIME, FLOGRD
+#ifdef W3_ASCII
+      WRITE (NDSOA,*)                         'TIME, FLOGRD:', &
+                                               TIME, FLOGRD
+#endif
     ELSE
       READ (NDSOG,END=803,ERR=802,IOSTAT=IERR) TIME, FLOGRD
     END IF
@@ -2752,6 +2785,10 @@ CONTAINS
       MAPTMP = MAPSTA + 8*MAPST2
       WRITE (NDSOG)                                               &
            ((MAPTMP(IY,IX),IX=1,NX),IY=1,NY)
+#ifdef W3_ASCII
+      WRITE (NDSOA,*) 'MAPSTA:',                                  &
+           ((MAPTMP(IY,IX),IX=1,NX),IY=1,NY)
+#endif
     ELSE
       READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)                    &
            ((MAPTMP(IY,IX),IX=1,NX),IY=1,NY)
@@ -2946,9 +2983,18 @@ CONTAINS
             !
             IF ( IFI .EQ. 1 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) DW(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'DW:', DW(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) CX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CX:', CX(1:NSEA)
+#endif
               WRITE ( NDSOG ) CY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CY:', CY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 3 ) THEN
               DO ISEA=1, NSEA
 #ifdef W3_SMC
@@ -2967,15 +3013,33 @@ CONTAINS
                 END IF
               END DO
               WRITE ( NDSOG ) AUX1
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX1 (UA*cos(UD)):', AUX1
+#endif
               WRITE ( NDSOG ) AUX2
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX2 (UA*sin(UD)):', AUX2
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) AS(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AS:', AS(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) WLV(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WLV:', WLV(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 6 ) THEN
               WRITE ( NDSOG ) ICE(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'ICE:', ICE(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 7 ) THEN
               WRITE ( NDSOG ) BERG(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'BERG:', BERG(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 8 ) THEN
               DO ISEA=1, NSEA
 #ifdef W3_SMC
@@ -2994,22 +3058,43 @@ CONTAINS
                 END IF
               END DO
               WRITE ( NDSOG ) AUX1
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX1 (TAUA*cos(TAUADIR)):', AUX1
+#endif
               WRITE ( NDSOG ) AUX2
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX2 (TAUA*sin(TAUADIR)):', AUX2
+#endif
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 9 ) THEN
               WRITE ( NDSOG ) RHOAIR(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'RHOAIR:', RHOAIR(1:NSEA)
+#endif
 #ifdef W3_BT4
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 10 ) THEN
               WRITE ( NDSOG ) SED_D50(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'SED_D50:', SED_D50(1:NSEA)
+#endif
 #endif
 #ifdef W3_IS2
             ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 11 ) THEN
               WRITE (NDSOG ) ICEH(1:NSEA)
+#ifdef W3_ASCII
+              WRITE (NDSOA,* ) 'ICEH:', ICEH(1:NSEA)
+#endif
             ELSE IF (IFI .EQ. 1 .AND. IFJ .EQ. 12 ) THEN
               WRITE (NDSOG ) ICEF(1:NSEA)
+#ifdef W3_ASCII
+              WRITE (NDSOA,* ) 'ICEF:', ICEF(1:NSEA)
+#endif
 #endif
 #ifdef W3_SETUP
             ELSE IF ( IFI .EQ. 1 .AND. IFJ .EQ. 13 ) THEN
               WRITE ( NDSOG ) ZETA_SETUP(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'ZETA_SETUP:', ZETA_SETUP(1:NSEA)
+#endif
 #endif
 
               !
@@ -3017,94 +3102,217 @@ CONTAINS
               !
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) HS(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'HS:', HS(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) WLM(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WLM:', WLM(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 3 ) THEN
               WRITE ( NDSOG ) T02(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'T02:', T02(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) T0M1(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'T0M1:', T0M1(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) T01(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'T01:', T01(1:NSEA)
+#endif
             ELSE IF ( (IFI .EQ. 2 .AND. IFJ .EQ. 6) .OR.         &
                  (IFI .EQ. 2 .AND. IFJ .EQ. 18) ) THEN
               ! Note: TP output is derived from FP field.
               WRITE ( NDSOG ) FP0(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'FP0:', FP0(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 7 ) THEN
               WRITE ( NDSOG ) THM(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'THM:', THM(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 8 ) THEN
               WRITE ( NDSOG ) THS(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'THS:', THS(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 9 ) THEN
               WRITE ( NDSOG ) THP0(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'THP0:', THP0(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 10 ) THEN
               WRITE ( NDSOG ) HSIG(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'HSIG:', HSIG(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 11 ) THEN
               WRITE ( NDSOG ) STMAXE(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'STMAXE:', STMAXE(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 12 ) THEN
               WRITE ( NDSOG ) STMAXD(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'STMAXD:', STMAXD(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 13 ) THEN
               WRITE ( NDSOG ) HMAXE(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'HMAXE:', HMAXE(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 14 ) THEN
               WRITE ( NDSOG ) HCMAXE(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'HCMAXE:', HCMAXE(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 15 ) THEN
               WRITE ( NDSOG ) HMAXD(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'HMAXD:', HMAXD(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 16 ) THEN
               WRITE ( NDSOG ) HCMAXD(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'HCMAXD:', HCMAXD(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 17 ) THEN
               WRITE ( NDSOG ) WBT(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WBT:', WBT(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 2 .AND. IFJ .EQ. 19 ) THEN
               WRITE ( NDSOG ) WNMEAN(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WNMEAN:', WNMEAN(1:NSEA)
+#endif
               !
               !     Section 3)
               !
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) EF(1:NSEA,E3DF(2,1):E3DF(3,1))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'EF:', EF(1:NSEA,E3DF(2,1):E3DF(3,1))
+#endif
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) TH1M(1:NSEA,E3DF(2,2):E3DF(3,2))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TH1M:', TH1M(1:NSEA,E3DF(2,2):E3DF(3,2))
+#endif
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 3 ) THEN
               WRITE ( NDSOG ) STH1M(1:NSEA,E3DF(2,3):E3DF(3,3))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'STH1M:', STH1M(1:NSEA,E3DF(2,3):E3DF(3,3))
+#endif
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) TH2M(1:NSEA,E3DF(2,4):E3DF(3,4))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TH2M:', TH2M(1:NSEA,E3DF(2,4):E3DF(3,4))
+#endif
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'STH2M:', STH2M(1:NSEA,E3DF(2,5):E3DF(3,5))
+#endif
             ELSE IF ( IFI .EQ. 3 .AND. IFJ .EQ. 6) THEN
               WRITE ( NDSOG ) WN(1:NK,1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WN:', WN(1:NK,1:NSEA)
+#endif
               !
               !     Section 4)
               !
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) PHS(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PHS:', PHS(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) PTP(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PTP:', PTP(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 3 ) THEN
               WRITE ( NDSOG ) PLP(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PLP:', PLP(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) PDIR(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PDIR:', PDIR(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) PSI(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PSI:', PSI(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 6 ) THEN
               WRITE ( NDSOG ) PWS(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PWS:', PWS(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 7 ) THEN
               WRITE ( NDSOG ) PTHP0(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PTHP0:', PTHP0(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 8  ) THEN
               WRITE ( NDSOG ) PQP(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PQP:', PQP(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 9  ) THEN
               WRITE ( NDSOG ) PPE(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PPE:', PPE(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 10 ) THEN
               WRITE ( NDSOG ) PGW(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PGW:', PGW(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 11 ) THEN
               WRITE ( NDSOG ) PSW(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PSW:', PSW(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 12 ) THEN
               WRITE ( NDSOG ) PTM1(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PTM1:', PTM1(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 13 ) THEN
               WRITE ( NDSOG ) PT1(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PT1:', PT1(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 14 ) THEN
               WRITE ( NDSOG ) PT2(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PT2:', PT2(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 15 ) THEN
               WRITE ( NDSOG ) PEP(1:NSEA,0:NOSWLL)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PEP:', PEP(1:NSEA,0:NOSWLL)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 16 ) THEN
               WRITE ( NDSOG ) PWST(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PWST:', PWST(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 4 .AND. IFJ .EQ. 17 ) THEN
               WRITE ( NDSOG ) PNR(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PNR:', PNR(1:NSEA)
+#endif
               !
               !     Section 5)
               !
@@ -3123,68 +3331,179 @@ CONTAINS
                 END IF
               END DO
               WRITE ( NDSOG ) AUX1
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX1 (UST*ASF*cos(USTDIR)):', AUX1
+#endif
               WRITE ( NDSOG ) AUX2
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX2 (UST*ASF*sin(USTDIR)):', AUX2
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) CHARN(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CHARN:', CHARN(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 3 ) THEN
               WRITE ( NDSOG ) CGE(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CGE:', CGE(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) PHIAW(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PHIAW:', PHIAW(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) TAUWIX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUWIX:', TAUWIX(1:NSEA)
+#endif
               WRITE ( NDSOG ) TAUWIY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUWIY:', TAUWIY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 6 ) THEN
               WRITE ( NDSOG ) TAUWNX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUWNX:', TAUWNX(1:NSEA)
+#endif
               WRITE ( NDSOG ) TAUWNY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUWNY:', TAUWNY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
               WRITE ( NDSOG ) WHITECAP(1:NSEA,1)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WHITECAP(1):', WHITECAP(1:NSEA,1)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
               WRITE ( NDSOG ) WHITECAP(1:NSEA,2)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WHITECAP(2):', WHITECAP(1:NSEA,2)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
               WRITE ( NDSOG ) WHITECAP(1:NSEA,3)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WHITECAP(3):', WHITECAP(1:NSEA,3)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
               WRITE ( NDSOG ) WHITECAP(1:NSEA,4)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'WHITECAP(4):', WHITECAP(1:NSEA,4)
+#endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               WRITE ( NDSOG ) TWS(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TWS:', TWS(1:NSEA)
+#endif
               !
               !     Section 6)
               !
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) SXX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'SXX:', SXX(1:NSEA)
+#endif
               WRITE ( NDSOG ) SYY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'SYY:', SYY(1:NSEA)
+#endif
               WRITE ( NDSOG ) SXY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'SXY:', SXY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) TAUOX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUOX:', TAUOX(1:NSEA)
+#endif
               WRITE ( NDSOG ) TAUOY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUOY:', TAUOY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 3  ) THEN
               WRITE ( NDSOG ) BHD(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'BHD:', BHD(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) PHIOC(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PHIOC:', PHIOC(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) TUSX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TUSX:', TUSX(1:NSEA)
+#endif
               WRITE ( NDSOG ) TUSY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TUSY:', TUSY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 6 ) THEN
               WRITE ( NDSOG ) USSX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'USSX:', USSX(1:NSEA)
+#endif
               WRITE ( NDSOG ) USSY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'USSY:', USSY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 7 ) THEN
               WRITE ( NDSOG ) PRMS(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PRMS:', PRMS(1:NSEA)
+#endif
               WRITE ( NDSOG ) TPMS(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TPMS:', TPMS(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 8 ) THEN
               WRITE ( NDSOG ) US3D(1:NSEA,   US3DF(2):US3DF(3))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'US3D:', US3D(1:NSEA,   US3DF(2):US3DF(3))
+#endif
               WRITE ( NDSOG ) US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'US3D+NK:', US3D(1:NSEA,NK+US3DF(2):NK+US3DF(3))
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ.  9 ) THEN
               WRITE ( NDSOG ) P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'P2SMS:', P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
               WRITE ( NDSOG ) TAUICE(1:NSEA,1)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUICE(1):', TAUICE(1:NSEA,1)
+#endif
               WRITE ( NDSOG ) TAUICE(1:NSEA,2)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUICE(2):', TAUICE(1:NSEA,2)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
               WRITE ( NDSOG ) PHICE(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PHICE:', PHICE(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 12 ) THEN
               WRITE ( NDSOG ) USSP(1:NSEA,   1:USSPF(2))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'USSP:', USSP(1:NSEA,   1:USSPF(2))
+#endif
               WRITE ( NDSOG ) USSP(1:NSEA,NK+1:NK+USSPF(2))
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'USSP:', USSP(1:NSEA,NK+1:NK+USSPF(2))
+#endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 13 ) THEN
               WRITE ( NDSOG ) TAUOCX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUOCX:', TAUOCX(1:NSEA)
+#endif
               WRITE ( NDSOG ) TAUOCY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUOCY:', TAUOCY(1:NSEA)
+#endif
               !
               !     Section 7)
               !
@@ -3199,7 +3518,13 @@ CONTAINS
                 END IF
               END DO
               WRITE ( NDSOG ) AUX1
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX1 (ABA*cos(ABD)):', AUX1
+#endif
               WRITE ( NDSOG ) AUX2
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX2 (ABA*sin(ABD)):', AUX2
+#endif
               !WRITE ( NDSOG ) ABA(1:NSEA)
               !WRITE ( NDSOG ) ABD(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 2 ) THEN
@@ -3213,53 +3538,119 @@ CONTAINS
                 END IF
               END DO
               WRITE ( NDSOG ) AUX1
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX1 (UBA*cos(UBD)):', AUX1
+#endif
               WRITE ( NDSOG ) AUX2
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'AUX2 (UBA*sin(UBD)):', AUX2
+#endif
               !                    WRITE ( NDSOG ) UBA(1:NSEA)
               !                    WRITE ( NDSOG ) UBD(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
               WRITE ( NDSOG ) BEDFORMS(1:NSEA,1)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'BEDFORMS(1):', BEDFORMS(1:NSEA,1)
+#endif
               WRITE ( NDSOG ) BEDFORMS(1:NSEA,2)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'BEDFORMS(2):', BEDFORMS(1:NSEA,2)
+#endif
               WRITE ( NDSOG ) BEDFORMS(1:NSEA,3)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'BEDFORMS(3):', BEDFORMS(1:NSEA,3)
+#endif
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) PHIBBL(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'PHIBBL:', PHIBBL(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) TAUBBL(1:NSEA,1)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUBBL(1):', TAUBBL(1:NSEA,1)
+#endif
               WRITE ( NDSOG ) TAUBBL(1:NSEA,2)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'TAUBBL(2):', TAUBBL(1:NSEA,2)
+#endif
               !
               !     Section 8)
               !
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) MSSX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'MSSX:', MSSX(1:NSEA)
+#endif
               WRITE ( NDSOG ) MSSY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'MSSY:', MSSY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) MSCX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'MSCX:', MSCX(1:NSEA)
+#endif
               WRITE ( NDSOG ) MSCY(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'MSCY:', MSCY(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 3 ) THEN
               WRITE ( NDSOG ) MSSD(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'MSSD:', MSSD(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) MSCD(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'MSCD:', MSCD(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) QP(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'QP:', QP(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
               WRITE ( NDSOG ) QKK(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'QKK:', QKK(1:NSEA)
+#endif
               !
               !     Section 9)
               !
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) DTDYN(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'DTDYN:', DTDYN(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 2 ) THEN
               WRITE ( NDSOG ) FCUT(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'FCUT:', FCUT(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 3 ) THEN
               WRITE ( NDSOG ) CFLXYMAX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CFLXYMAX:', CFLXYMAX(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) CFLTHMAX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CFLTHMAX:', CFLTHMAX(1:NSEA)
+#endif
             ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 5 ) THEN
               WRITE ( NDSOG ) CFLKMAX(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'CFLMAX:', CFLKMAX(1:NSEA)
+#endif
               !
               !     Section 10)
               !
             ELSE IF ( IFI .EQ. 10 ) THEN
               WRITE ( NDSOG ) USERO(1:NSEA,IFJ)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'USER0:', USERO(1:NSEA,IFJ)
+#endif
               !
             END IF
             !
