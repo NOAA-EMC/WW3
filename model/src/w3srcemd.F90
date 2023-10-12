@@ -72,9 +72,6 @@ MODULE W3SRCEMD
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
   INTEGER, PARAMETER :: CHUNKSIZE = 1
-  INTEGER, PARAMETER :: JCHK = -1
-  INTEGER :: ICHK
-
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -191,27 +188,27 @@ CONTAINS
   !> @author M. Dutour Sikiric
   !> @date   22-Mar-2021
   !>
-  SUBROUTINE W3SRCE ( srce_call, IT, IMOD,          &
-!!!      SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &  ! SPECOLD not used (removed) VSIO,VDIO,SHAVIO made optional
-       SPEC,         &
+  SUBROUTINE W3SRCE ( srce_call, IT, IMOD,         &
+!!     SPECOLD, SPEC, VSIO, VDIO, SHAVEIO,         &  ! SPECOLD not used (removed) VSIO,VDIO,SHAVIO made optional
+       SPEC,                                       &
        ALPHA, WN1, CG1, CLATSL,                    &
        D_INP, U10ABS, U10DIR,                      &
 #ifdef W3_FLX5
-       TAUA, TAUADIR,                                &
+       TAUA, TAUADIR,                              &
 #endif
        AS, USTAR, USTDIR,                          &
        CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
 #ifdef W3_REF1
        REFLEC, REFLED, TRNX, TRNY, BERG,           &
 #endif
-       FPI, DTDYN, FCUT, DTG, TAUWX,   &
+       FPI, DTDYN, FCUT, DTG, TAUWX,               &
        TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
        TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
 #ifdef W3_BT4       
-       D50, PSIC, BEDFORM , &
+       D50, PSIC, BEDFORM,                         &
 #endif       
-       PHIBBL, TAUBBL, TAUICE,&
-       PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF, &
+       PHIBBL, TAUBBL, TAUICE,                     &
+       PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF,  &
        VSIO, VDIO, SHAVEIO) ! These now optionals
     !/
     !/                  +-----------------------------------+
@@ -276,6 +273,9 @@ CONTAINS
     !/    22-Mar-2021 : Add extra fields used in coupling   ( version 7.13 )
     !/    07-Jun-2021 : S_{nl5} GKE NL5 (Q. Liu)            ( version 7.13 )
     !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+    !/    10-Oct-2023 : Major refactor - W3SRCE now processes
+    !/                  all seapoints rather than single
+    !/                  seapoint. C. Bunney; UKMO           ( version 7.14 )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -284,7 +284,7 @@ CONTAINS
     !/
     !  1. Purpose :
     !
-    !     Calculate and integrate source terms for a single grid point.
+    !     Calculate and integrate source terms for all grid points.
     !
     !  2. Method :
     !
@@ -671,10 +671,14 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)     :: srce_call, IT, IMOD
     !!REAL, intent(in)        :: SPECOLD(NSPEC)  ! Refactor: Not used.
-    REAL, INTENT(IN)        ::         &
-         DTG
+
+    ! GPU Refactor: Scalar inputs
+    INTEGER, INTENT(IN) ::     &
+        srce_call,             &
+        IT,                    &
+        IMOD
+    REAL, INTENT(IN) :: DTG
 
     ! GPU Refactor: Input arrays with dimension NSEA:
     REAL, INTENT(IN) ::        &
@@ -689,14 +693,14 @@ CONTAINS
         COEF(1:NSEA),          &
         ICEDMAX(1:NSEA)
 
-    REAL, INTENT(INOUT) ::      &
-        WN1(1:NK,NSEA),         &  ! TODO: Eventually pass as 0:NK+1 ??
-        CG1(1:NK,NSEA),         &  !        here too
-        U10ABS(1:NSEA),         &
-        U10DIR(1:NSEA),         &
-        USTAR(1:NSEA),          &
-        USTDIR(1:NSEA),         &
-        FPI(1:NSEA),            &
+    REAL, INTENT(INOUT) ::     &
+        WN1(1:NK,NSEA),        &  ! TODO: Eventually pass as 0:NK+1 ??
+        CG1(1:NK,NSEA),        &  !        here too
+        U10ABS(1:NSEA),        &
+        U10DIR(1:NSEA),        &
+        USTAR(1:NSEA),         &
+        USTDIR(1:NSEA),        &
+        FPI(1:NSEA),           &
         ICEF(1:NSEA)
 
     ! GPU Refactor: Input arrays with dimension NSEAL(M):
@@ -729,7 +733,7 @@ CONTAINS
         DTDYN(1:NSEAL),        &
         FCUT(1:NSEAL)
   
-! Refactor - inputs depending on compile switch:
+! GPU Refactor - inputs depending on compile switch:
 #ifdef W3_REF1
     INTEGER, INTENT(IN) ::     &
         REFLED(6,1:NSEA)
@@ -755,6 +759,7 @@ CONTAINS
         BEDFORM(1:NSEAL,3)
 #endif
 
+    ! GPU Refactor: optional inputs
     REAL, INTENT(OUT), OPTIONAL ::  &
         VSIO(NSPEC,NSEAL),     &
         VDIO(NSPEC,NSEAL)
@@ -779,13 +784,8 @@ CONTAINS
          MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
          COSI(2)
     REAL :: SPEC2(NSPEC), FRLOCAL, JAC2
-    REAL :: DAM2(NSPEC)!,  &
-         !VSLN(NSPEC),                         &
-         !VSIN(NSPEC), VDIN(NSPEC),            &
-         !VSNL(NSPEC), VDNL(NSPEC),            &
-         !VSBT(NSPEC), VDBT(NSPEC)
-    !REAL :: VS(NSPEC), VD(NSPEC)
-    REAL :: EB(NK)       ! TODO - not used?
+    REAL :: DAM2(NSPEC)
+    !REAL :: EB(NK)       ! TODO - not used?
 
     LOGICAL :: SHAVE
     LOGICAL :: LBREAK
@@ -794,7 +794,7 @@ CONTAINS
     REAL :: eInc1, eInc2, eVS, eVD, JAC
     REAL :: DeltaSRC(NSPEC)
     REAL :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
-    REAL, SAVE :: TAUNUX, TAUNUY
+    REAL, SAVE :: TAUNUX, TAUNUY    ! TODO - returned from W3_FLD[12], but never used...
     LOGICAL, SAVE :: FLTEST = .FALSE., FLAGNN = .TRUE.
     !/
     !/ ------------------------------------------------------------------- /
@@ -846,7 +846,7 @@ CONTAINS
 #endif
 
 #ifdef W3_ST1
-    REAL :: FH1, FH2
+    REAL :: FH1, FH2  ! TODO- MERGE WITH ST2 and ST3 entries below
 #endif
 
 #ifdef W3_ST2
@@ -858,13 +858,8 @@ CONTAINS
 #endif
 
 #ifdef W3_ST4
-    REAL :: FH1, FH2 !, FAGE!, DLWMEAN
-!    REAL :: BRLAMBDA(NSPEC)
+    REAL :: FH1, FH2
 #endif
-
-!#if defined(W3_ST3) || defined(W3_ST4)
-!    LOGICAL :: LLWS(NSPEC)
-!#endif
 
 #ifdef W3_PDLIB
     REAL :: PreVS, DVS, SIDT, FAKS, MAXDAC
@@ -877,7 +872,8 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/ --- GPU REFACTOR --- !
-    !/ Local parameters added/changed for GPU refactor
+    !/ New local parameters or existing variables that have had CHUNKSIZE
+    !/ dimension added to allow for tiling.
     !/
 
     ! Exising locals with new CHUNKSIZE dimension
@@ -895,10 +891,6 @@ CONTAINS
             DEPTH(CHUNKSIZE),           &
             DT(CHUNKSIZE),              &
             DRAT(CHUNKSIZE)
-
-#if W3_ST3
-      REAL :: FMEANS(CHUNKSIZE)
-#endif
 
     INTEGER :: & 
             NKH(CHUNKSIZE), NKH1(CHUNKSIZE)
@@ -934,12 +926,12 @@ CONTAINS
     REAL :: VREF(NSPEC, CHUNKSIZE)  ! TODO: Can we share this with other switches? I.e 
                                     ! VSTMP and VDTMP.
 #endif
-
-
+#if W3_ST3
+      REAL :: FMEANS(CHUNKSIZE)
+#endif
 #if defined(W3_ST3) || defined(W3_ST4)
     LOGICAL :: LLWS(NSPEC,CHUNKSIZE)
 #endif
-
 #ifdef W3_ST4
     REAL :: DLWMEAN(CHUNKSIZE),         &
             FAGE(CHUNKSIZE)
@@ -950,15 +942,14 @@ CONTAINS
     REAL :: FP(CHUNKSIZE)
 #endif
 
-
     ! New locals for chunking
     INTEGER :: CHUNK0, CHUNKN, NSEAC, I, ISEA, JSEA, CSEA
     INTEGER :: IX(CHUNKSIZE), IY(CHUNKSIZE)
 
-    ! Chunk sized arrays for storing contiguous data from
+    ! Refactor: New CHUNK sized arrays for storing contiguous data from
     ! full seapoint array (NSEA) on local seapoint array (NSEAL)
-    ! TODO - HOIST THESE?
-    ! TODO - Not really needed for SHRD runs...
+    ! TODO - HOIST THESE TO MODULE SCOPE (Heap allocation)?
+    ! TODO - Not really needed for SHRD runs, where ISEA == JSEA...can we used pointers instead?
     REAL :: CG1_CHUNK(1:NK, CHUNKSIZE),  &
             WN1_CHUNK(1:NK, CHUNKSIZE),  &
             U10_CHUNK(CHUNKSIZE),        &
@@ -1041,10 +1032,10 @@ CONTAINS
     TAUOCY = 0.
     TAUBBL = 0.
     PHIBBL = 0.
-    !TAUICE = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
-    !PHICE  = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
+    !TAUICE = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
+    !PHICE  = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     WNMEAN = 0.
-    !CHARN  = 0.    ! Don't zero whole array here (for B4B purposes after refactor; zeroed later)
+    !CHARN  = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     TWS    = 0.
 
     ! Refactor notes: Zero ice chunks if ICE field never read in.
@@ -1076,15 +1067,15 @@ CONTAINS
       CHUNKN = MIN(NSEAL,CHUNK0 + CHUNKSIZE - 1)
       NSEAC = CHUNKN - CHUNK0 + 1
 
-      ! DEPTH  = MAX ( DMIN , D_INP ) ! Now in section 1
-      ! DRAT = DAIR / DWAT ! Now in section 1
+      !! GPU Refactor: Now in section 1
+      ! DEPTH  = MAX ( DMIN , D_INP )
+      ! DRAT = DAIR / DWAT
       
-      ! Moved to section 4
+      !! GPU Refactor: Moved to section 4:
       !ICESCALELN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(1)))
       !ICESCALEIN = MAX(0.,MIN(1.,1.-ICE*ICESCALES(2)))
       !ICESCALENL = MAX(0.,MIN(1.,1.-ICE*ICESCALES(3)))
       !ICESCALEDS = MAX(0.,MIN(1.,1.-ICE*ICESCALES(4)))
-
 
       !! Initialise source term arrays:
       VS   = 0.
@@ -1106,7 +1097,6 @@ CONTAINS
       VDNL = 0.
 #endif
 
-
 #ifdef W3_TR1
       VSTR = 0.
       VDTR = 0.
@@ -1116,7 +1106,6 @@ CONTAINS
       VSDS = 0.
       VDDS = 0.
 #endif
-
 
 #ifdef W3_DB1
       VSDB = 0.
@@ -1128,7 +1117,6 @@ CONTAINS
       VDIC = 0.
 #endif
 
-
 #ifdef W3_UOST
       VSUO = 0.
       VDUO = 0.
@@ -1139,7 +1127,6 @@ CONTAINS
       VDIR = 0.
 #endif
 
-
 #ifdef W3_IS2
       VDIR2 = 0.
 #endif
@@ -1149,6 +1136,7 @@ CONTAINS
       VDWL = 0.
 #endif
 
+      ! Set ZWND depeding on source term package
 #if defined(W3_ST0) || defined(W3_ST1) || defined(W3_ST6)
       ZWND = 10.
 #endif
@@ -1189,13 +1177,8 @@ CONTAINS
 
       I = 1
       DO JSEA=CHUNK0,CHUNKN
-        ! GPU refactor - INIT_GET_ISEA as been inlined for efficiency
-        ! but we can't assume this in full code.
+        CALL INIT_GET_ISEA(ISEA, JSEA)  !!! TODO: SLOW! Precalculate?
 
-        CALL INIT_GET_ISEA(ISEA, JSEA)  !!! SLOW!
-        !!ISEA = IAPROC + (JSEA-1)*NAPROC  !!! INLINED!
-
-        ! TODO: only needed for TRNX/Y?
         IX(I) = MAPSF(ISEA,1)
         IY(I) = MAPSF(ISEA,2)
 
@@ -1240,7 +1223,6 @@ CONTAINS
         ! Maybe just calculated ISEA in place in this case?
         ! (That's what I've done - see MLIM section below)
 #endif
-
         ! Only bother copying ice if ice field read in (INFLAGS(4) is TRUE):
         IF(INFLAGS2(4)) THEN
           ICE_CHUNK(I) = ICE(ISEA)
@@ -1250,11 +1232,9 @@ CONTAINS
           ICEDMAX_CHUNK(I) = ICEDMAX(ISEA)
 #endif
         ENDIF
-
         !
         ! 1.a Set maximum change and wavenumber arrays.
         !
-        !print*,'Local ',i,' from isea',isea
         DO IK=1, NK
           DAM(1+(IK-1)*NTH,I) = FACP / ( SIG(IK) * WN1(IK,ISEA)**3 )
           WN2(1+(IK-1)*NTH,I) = WN1(IK,ISEA)
@@ -1278,11 +1258,9 @@ CONTAINS
 #if MANM
 !$ACC END KERNELS
 #endif
-
       !
       ! 1.b Prepare dynamic time stepping
       !
-
       ! Refactor: Zero "chunksize" dimensioned variables
       DTTOT  = 0.
       NSTEPS = 0
@@ -1425,28 +1403,6 @@ CONTAINS
 #endif
 
       END DO ! CSEA
-
-#if 0
-      IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-        ICHK = JCHK - CHUNK0 + 1     
-        PRINT*,'AFTER SPR4 Call'
-        print*,'SPEC', SPEC(:,JCHK)
-        print*,'CG1', CG1_CHUNK(:,ICHK)
-        print*,'WN1', WN1_CHUNK(:,ICHK)
-        print*,'E/F/WN MEAN',EMEAN(ICHK), FMEAN(ICHK), FMEAN1(ICHK), WNMEAN(JCHK)
-        print*,'Ustar', UST_CHUNK(ICHK), USTD_CHUNK(ICHK)
-        print*,'Charn,cd,z0', CHARN(JCHK), CD(ICHK), Z0(ICHK)
-        print*,'AMAX',AMAX(ICHK)
-        print*,'TAUWX/Y',TAUWX(JCHK), TAUWY(JCHK)
-#ifdef W3_ST4
-        print*,'FMEANWS, DLWMEAN',FMEANWS(ICHK), DLWMEAN(ICHK)
-        print*,LLWS(:,ICHK)
-        print*,'Any LLWS', ANY(LLWS(:,ICHK))
-#endif
-      ENDIF 
-#endif
-  
-
       !
       ! 1.c2 Stores the initial data
       !
@@ -1600,22 +1556,6 @@ CONTAINS
              TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
         END DO ! CSEA; W3SINx
-
-#if 0
-  IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-    ICHK=JSEA - CHUNK0 + 1
-    print*,'DEPTH', DEPTH(ICHK)
-    print*,'CG1:',CG1_CHUNK(:,ICHK)
-    print*,'WN2:',WN2(:,ICHK)
-    print*,'U10/Star:',U10_CHUNK(ICHK), UST_CHUNK(ICHK)
-    print*,'Z0,CD:',Z0(ICHK), CD(ICHK)
-    print*,'Sum VSIN',SUM(VSIN(:,ICHK))
-    WRITE(*,*) VSIN(:,ICHK)
-    !WRITE(*,'("VSIN:",30F6.1)'),SUM(RESHAPE(VSIN(:), (/NTH,NK/)), 1)
-    !VSIN(:,JSEA) = NINT(10 * VSIN(:,JSEA) / MAXVAL(VSIN(:,JSEA)))
-    !write(*,'(36I2)') INT(VSIN(:,JSEA))
-  ENDIF
-#endif
         !
         ! 2.b Nonlinear interactions.
         !
@@ -1639,21 +1579,7 @@ CONTAINS
           CALL W3SNL5 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), FMEAN(CSEA), QI5TSTART,          &
              U10_CHUNK(CSEA), U10D_CHUNK(CSEA), JSEA, VSNL(:,CSEA), VDNL(:,CSEA), QR5KURT)
 #endif
-        END DO ! CSEA; W3SNLx
-        
-#if 0 
-        IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-          ICHK = JCHK - CHUNK0 + 1     
-    
-          WRITE(*,'(F20.15)') CG1_CHUNK(:,ICHK)
-          WRITE(*,'(F20.15)') WNMEAN(JCHK)
-          WRITE(*,'(F20.15)') DEPTH(ICHK)
-          WRITE(*,'(F20.15)') WNMEAN(JCHK)*DEPTH(ICHK)
-          WRITE(*,*) SUM(VSNL(:,ICHK)),MINVAL(VSNL(:,ICHK)),MAXVAL(VSNL(:,ICHK))
-          WRITE(*,*) SUM(VDNL(:,ICHK)),MINVAL(VDNL(:,ICHK)),MAXVAL(VDNL(:,ICHK))
-        endif
-#endif        
-        
+        END DO ! CSEA; W3SNLx     
         !
 #ifdef W3_PDLIB
         IF (.NOT. FSSOURCE .or. LSLOC) THEN
@@ -1666,19 +1592,7 @@ CONTAINS
             !CALL W3STR1 ( SPEC(:,JSEA), SPECOLD, CG1_CHUNK(:,CSEA),  &
             CALL W3STR1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA),  &
               WN1_CHUNK(:,CSEA), DEPTH(CSEA), VSTR(:,CSEA), VDTR(:,CSEA) )
-
-#if 0
-            IF(JCHK .EQ. JSEA) THEN
-              ICHK = JCHK - CHUNK0 + 1
-              PRINT*,'TR1: JSEA', JSEA
-              PRINT*,SUM(VSTR(:,CSEA)),MINVAL(VSTR(:,CSEA)), MAXVAL(VSTR(:,CSEA))
-              PRINT*,SUM(VDTR(:,CSEA)),MINVAL(VDTR(:,CSEA)), MAXVAL(VDTR(:,CSEA))
-            ENDIF
-#endif
-
           END DO ! CSEA; W3STR1
-
-
 #endif
 #ifdef W3_PDLIB
         ENDIF
@@ -1719,18 +1633,7 @@ CONTAINS
           CALL W3SDS6 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA),  VSDS(:,CSEA), VDDS(:,CSEA) )
 #endif
         END DO ! CSEA; W3SDSx
-        !
-
-#if 0
-        IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-          ICHK = JCHK - CHUNK0 + 1
-          print*,'VSDS stats:',SUM(VSDS(:,ICHK)), MINVAL(VSDS(:,ICHK)), MAXVAL(VSDS(:,ICHK))
-          print*,'VDDS stats:',SUM(VDDS(:,ICHK)), MINVAL(VDDS(:,ICHK)), MAXVAL(VDDS(:,ICHK))
-          !print*,'VSDS:',VSDS(:,ICHK)
-          !print*,'VDDS:',VDDS(:,ICHK)
-        endif
-#endif        
-
+        !     
 #ifdef W3_PDLIB
         IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
@@ -1744,15 +1647,6 @@ CONTAINS
             CALL W3SDB1 ( IX(CSEA), SPEC(:,JSEA), DEPTH(CSEA), EMEAN(CSEA), FMEAN(CSEA), &
                 WNMEAN(JSEA), CG1_CHUNK(:,CSEA), LBREAK, VSDB(:,CSEA), VDDB(:,CSEA) )
           END DO ! CSEA; W3SDBx
-
-#if 0
-          IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-            ICHK = JCHK - CHUNK0 + 1
-            print*,'VSDB stats:',SUM(VSDB(:,ICHK)), MINVAL(VSDB(:,ICHK)), MAXVAL(VSDB(:,ICHK))
-            print*,'VDDB stats:',SUM(VDDB(:,ICHK)), MINVAL(VDDB(:,ICHK)), MAXVAL(VDDB(:,ICHK))
-          endif
-#endif          
-
 #endif
 #ifdef W3_PDLIB
         ENDIF
@@ -1792,15 +1686,6 @@ CONTAINS
           CALL W3SBT9 ( SPEC(:,JSEA), DEPTH(CSEA), VSBT(:,CSEA), VDBT(:,CSEA), IX(CSEA), IY(CSEA) )
 #endif
         END DO ! CSEA; W3SBTx
-
-#if 0
-        IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-          ICHK = JCHK - CHUNK0 + 1
-          print*,'VSDB stats:',SUM(VSBT(:,ICHK)), MINVAL(VSBT(:,ICHK)), MAXVAL(VSBT(:,ICHK))
-          print*,'VDDB stats:',SUM(VDBT(:,ICHK)), MINVAL(VDBT(:,ICHK)), MAXVAL(VDBT(:,ICHK))          
-        endif
-#endif
-
 !
 #ifdef W3_BS1
           DO CSEA=1,NSEAC
@@ -2182,13 +2067,12 @@ CONTAINS
             IF (IX(CSEA) == DEBUG_NODE) WRITE(44,'(1EN15.4)') SUM(VD(:,CSEA))
 #endif
             !!RETURN ! return everything is done for the implicit ...
-            ! Refactor - don't return here - need to process rest of seapoints in tile.
-            ! Just exit the integration loop instead; a check on srce_imp_pre is now made
-            ! after integration loop is complete.
+
+
+            ! GPU Refactor - don't return here. CYCLE instead as we need to process rest
+            ! of seapoints in tile. A check on "srce_imp_pre" is now made after integration
+            ! loop is complete.
             
-            !!EXIT ! everything is done for the implicit ...
-            ! Don't exit here: cycle as we might have other elemets in chunk
-            ! TODO - look to split the containing loop into smaller loops.
             CYCLE
 
           END IF ! srce_imp_pre
@@ -2252,22 +2136,9 @@ CONTAINS
 
         END DO ! CSEA/JSEA loop (from section 3) ! TODO: quite a big loop. Split?
 
-
-
-      
+        ! GPU Refactor: Everything done for implicit (pre) source call.
         if(srce_call .eq. srce_imp_pre) goto 7777
 
-
-
-#if 0
-        IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-          ICHK = JCHK - CHUNK0 + 1
-          print*,'VS stats:',SUM(VS(:,ICHK)), MINVAL(VS(:,ICHK)), MAXVAL(VS(:,ICHK))
-          print*,'VD stats:',SUM(VD(:,ICHK)), MINVAL(VD(:,ICHK)), MAXVAL(VD(:,ICHK))
-          print*,'VS:',VS(:,ICHK)
-          print*,'VD:',VD(:,ICHK)
-        ENDIF
-#endif
         !
         ! 5.b  Computes
         !              atmos->wave flux PHIAW-------------------------------- *
@@ -2292,7 +2163,7 @@ CONTAINS
 #endif
 
           WHITECAP(JSEA,3)=0.
-          HSTOT=0.
+          HSTOT=0.  
           DO IK=IKS1, NK
             FACTOR = DDEN(IK)/CG1_CHUNK(IK,CSEA)             !Jacobian to get energy in band
             FACTOR2= FACTOR*GRAV*WN1_CHUNK(IK,CSEA)/SIG(IK)  ! coefficient to get momentum
@@ -2325,15 +2196,6 @@ CONTAINS
           ! MISSING: TAIL TO BE ADDED ?
           !
         ENDDO ! CSEA
-
-#if 0        
-        IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-          ICHK = JCHK - CHUNK0 + 1
-          print*,'PHIAW,PHIBBL', PHIAW(JCHK), PHIBBL(JCHK)
-          print*,'TAU',TAUWIX(JCHK),TAUWIY(JCHK),TAUWNX(JCHK),TAUWNY(JCHK)
-          print*,'WHITECAP:',WHITECAP(JCHK,:)
-        endif
-#endif
 
 #ifdef W3_NLS
         DO CSEA=1,NSEAC
@@ -2381,13 +2243,6 @@ CONTAINS
 #endif
         END DO ! CSEA; W3SPRx
 
-#if 0
-        IF(JCHK .GE. CHUNK0 .AND. JCHK .LE. CHUNKN) THEN
-          ICHK = JCHK - CHUNK0 + 1
-          PRINT*,'SPR4 (tail) means:', EMEAN(ICHK), FMEAN(ICHK), FMEAN1(ICHK), WNMEAN(JCHK)
-        endif
-#endif
-
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -2407,7 +2262,7 @@ CONTAINS
           JSEA = CHUNK0 + CSEA - 1
 
 #ifdef W3_ST1
-          FH1    = FXFM * FMEAN(CSEA)
+          FH1 = FXFM * FMEAN(CSEA)
           FH2 = FXPM / UST_CHUNK(CSEA)   ! GPU refactor - had to recalculate FH2 here
           FHIGH(CSEA)  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
           NKH(CSEA) = MAX ( 2 , MIN ( NKH1(CSEA) ,                  &
@@ -2421,7 +2276,7 @@ CONTAINS
           CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
           FHTRAN = XFT*FPI(ISEA)
           FHIGH(CSEA)  = XFC*FPI(ISEA)
-          DFH    = FHIGH(CSEA) - FHTRAN
+          DFH = FHIGH(CSEA) - FHTRAN
           NKH(CSEA) = MAX ( 1 ,                                        &
                INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHTRAN)) ) )
 
@@ -2429,10 +2284,10 @@ CONTAINS
 #endif
           !
 #ifdef W3_ST3
-          FH1    = FFXFM * FMEAN(CSEA)
-          FH2    = FFXPM / UST_CHUNK(CSEA)
+          FH1 = FFXFM * FMEAN(CSEA)
+          FH2 = FFXPM / UST_CHUNK(CSEA)
           FHIGH(CSEA)  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
-          NKH(CSEA)    = MAX ( 2 , MIN ( NKH1(CSEA) ,                           &
+          NKH(CSEA) = MAX ( 2 , MIN ( NKH1(CSEA) ,                           &
                INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH(CSEA))) ) ) )
           !
           IF ( FLTEST ) WRITE (NDST,9062)                           &
@@ -2441,10 +2296,10 @@ CONTAINS
           !
 #ifdef W3_ST4
           ! Introduces a Long & Resio (JGR2007) type dependance on wave age
-          FAGE(CSEA)   = FFXFA*TANH(0.3*U10_CHUNK(CSEA)*FMEANWS(CSEA)*TPI/GRAV)
-          FH1    = (FFXFM+FAGE(CSEA)) * FMEAN1(CSEA)
-          FH2    = FFXPM / UST_CHUNK(CSEA)
-          FHIGH(CSEA)  = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
+          FAGE(CSEA) = FFXFA*TANH(0.3*U10_CHUNK(CSEA)*FMEANWS(CSEA)*TPI/GRAV)
+          FH1 = (FFXFM+FAGE(CSEA)) * FMEAN1(CSEA)
+          FH2 = FFXPM / UST_CHUNK(CSEA)
+          FHIGH(CSEA) = MIN ( SIG(NK) , MAX ( FH1 , FH2 ) )
           NKH(CSEA) = MAX ( 2 , MIN ( NKH1(CSEA),                       &
                INT ( FACTI2 + FACTI1*LOG(MAX(1.E-7,FHIGH(CSEA))) ) ) )
 #endif
@@ -2485,8 +2340,8 @@ CONTAINS
           !
 #ifdef W3_SEED
           DO IK=MIN(NK,NKH(CSEA)), NK
-            UC     = FACSD * GRAV / SIG(IK)
-            SLEV   = MIN ( 1. , MAX ( 0. , U10_CHUNK(CSEA)/UC-1. ) ) *      &
+            UC = FACSD * GRAV / SIG(IK)
+            SLEV = MIN ( 1. , MAX ( 0. , U10_CHUNK(CSEA)/UC-1. ) ) *      &
                  6.25E-4 / WN1_CHUNK(IK,CSEA)**3 / SIG(IK)
             IF (INFLAGS2(4)) SLEV=SLEV*(1-ICE_CHUNK(CSEA))
             DO ITH=1, NTH
@@ -2512,8 +2367,6 @@ CONTAINS
             END DO
           END DO
         END DO ! CSEA/JSEA (section 6.a)
-
-
         !
         ! 6.e  Update wave-supported stress----------------------------------- *
         !
@@ -2615,7 +2468,6 @@ CONTAINS
         !DTDYN(JSEA)  = DTDYN(JSEA) / REAL(MAX(1,NSTEPS))  ! Refactor: Moved to section 7
         FCUT(JSEA)   = FHIGH(CSEA) * TPIINV
       ENDDO 
-
       !
       GOTO 888
       !
@@ -2643,7 +2495,6 @@ CONTAINS
         WRITE(740+IAPROC,*) '2 : sum(SPEC)=', sum(SPEC)
       END IF
 #endif
-
       !! GPU Refactor - loop over chunk elements
       DO CSEA = 1,NSEAC
         IF(SRC_MASK(CSEA)) CYCLE
@@ -2689,7 +2540,6 @@ CONTAINS
         !PHINL = DWAT * GRAV * PHINL / DTG  ! TODO: NOT USED ANYWHERE. REMOVE?
         PHIBBL(JSEA) = DWAT * GRAV * PHIBBL(JSEA) / DTG
       END DO ! CSEA/JSEA
-
       !
       ! 10.1  Adds ice scattering and dissipation: implicit integration---------------- *
       !     INFLAGS2(4) is true if ice concentration was ever read during
@@ -2700,7 +2550,6 @@ CONTAINS
         WRITE(740+IAPROC,*) '3 : sum(SPEC)=', sum(SPEC)
       END IF
 #endif
-
       !! GPU Refactor - loop over chunk elements
       !IF ( INFLAGS2(4).AND.ICE.GT.0 ) THEN  ! GPU refactor: have split this expression
       ! TODO: This is a very big loop (CSEA) - probably needs refactoring
@@ -2708,7 +2557,6 @@ CONTAINS
       IF( INFLAGS2(4) ) THEN
         DO CSEA = 1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
-
           ! GPU Refactor: Zero TAUICE and PHIICE here; for B4B reproducibility. Chris Bunney.
           TAUICE(JSEA,:) = 0.
           PHICE(JSEA) = 0.
@@ -2892,7 +2740,6 @@ CONTAINS
         ENDIF
 #endif
       END DO ! CSEA
-
       !
       ! 12. includes shoreline reflection --------------------------------------------- *
       !
@@ -2956,10 +2803,11 @@ CONTAINS
 
       SPEC(:,CHUNK0:CHUNKN) = MAX(0., SPEC(:,CHUNK0:CHUNKN))
       !
-
-      ! NEW Refactored code:
-      ! Write temporary local grid CHUNKED arrays back to full grid:
-7777  CONTINUE     ! Landing point for srce_imp_pre 
+      7777  CONTINUE  ! GPU Refactor: Landing point for srce_imp_pre 
+      !
+      ! NEW GPU Refactored code:
+      ! Write temporary local grid CHUNKED arrays back to full grid
+      ! (INOUT/OUT variables only)::
       DO CSEA=1,NSEAC
         JSEA = CHUNK0 + CSEA - 1
         CALL INIT_GET_ISEA(ISEA, JSEA)

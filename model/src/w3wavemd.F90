@@ -98,6 +98,8 @@ MODULE W3WAVEMD
   !/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx )
   !/    13-Sep-2022 : Add OMP for W3NMIN loops. Hide
   !/                  W3NMIN in W3_DEBUGRUN for scaling.  ( version 7.xx )
+  !/    10-Oct-2023 : Refactored W3SRCE subroutine calls
+  !/                  to pass full arrays. (C. Bunney)    ( version 7.14 )
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -304,6 +306,8 @@ CONTAINS
     !/    25-Sep-2020 : Oasis coupling at T+0               ( version 7.10 )
     !/    22-Mar-2021 : Update TAUA, RHOA                   ( version 7.13 )
     !/    06-May-2021 : Use ARCTC and SMCTYPE options. JGLi ( version 7.13 )
+    !/    10-Oct-2023 : Refactored W3SRCE subroutine calls
+  !/                    to pass full arrays. (C. Bunney)    ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -1480,36 +1484,7 @@ CONTAINS
 
 
 #ifdef W3_PDLIB
-
-          ! CB: Removed NP loop - now passing full arrays to W3SRCE
-
-            !!CB: None of the below needed (DELA, DELX, DELY) as not actaully
-!            DELA=1.
-!            DELX=1.
-!            DELY=1.
-!
-!#ifdef W3_REF1
-!            IF (GTYPE.EQ.RLGTYPE) THEN
-!              DELX=SX*CLATS(ISEA)/FACX
-!              DELY=SY/FACX
-!              DELA=DELX*DELY
-!            END IF
-!            IF (GTYPE.EQ.CLGTYPE) THEN
-!              ! Maybe what follows works also for RLGTYPE ... to be verified
-!              DELX=HPFAC(IY,IX)/ FACX
-!              DELY=HQFAC(IY,IX)/ FACX
-!              DELA=DELX*DELY
-!            END IF
-!            REFLEC=REFLC(:,ISEA)
-!            REFLEC(4)=BERG(ISEA)*REFLEC(4)
-!            REFLED=REFLD(:,ISEA)
-!#endif
-
-!#ifdef W3_BT4
-!          !D50=SED_D50(ISEA)
-!          !PSIC=SED_PSIC(ISEA)
-!#endif
-            !
+          ! CB: Refactor: removed NP loop; now passing full arrays to W3SRCE
 #ifdef W3_DEBUGSRC
           ! TODO - DEBUG will need changing/moving in to W3SRCE.
           IF (IX .eq. DEBUG_NODE) THEN
@@ -1521,58 +1496,59 @@ CONTAINS
           FLUSH(740+IAPROC)
 #endif
           ! Implicit source call
-          CALL W3SRCE(srce_imp_pre, IT, IMOD, &
-              VA(:,1:NSEALM),  &
-              ALPHA(1:NK,1:NSEAL),  &
-              WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
-              CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
-              CLATS(1:NSEA),  &
-              DW(1:NSEA),  &
-              U10(1:NSEA),  &
-              U10D(1:NSEA), &
+          CALL W3SRCE(srce_imp_pre, IT, IMOD,    &
+              VA(:,1:NSEALM),                    &
+              ALPHA(1:NK,1:NSEAL),               &
+              WN(1:NK,1:NSEA),                   & !! TODO: makes temp array
+              CG(1:NK,1:NSEA),                   & !! TODO: makes temp array
+              CLATS(1:NSEA),                     &
+              DW(1:NSEA),                        &
+              U10(1:NSEA),                       &
+              U10D(1:NSEA),                      &
 #ifdef W3_FLX5
-              TAUA(1:NSEA), TAUADIR(1:NSEA),  &
+              TAUA(1:NSEA), TAUADIR(1:NSEA),     &
 #endif
-              AS(1:NSEA),  &
-              UST(1:NSEA), USTDIR(1:NSEA),  &
-              CX(1:NSEA), CY(1:NSEA),  &
-              ICE(1:NSEA),  &
-              ICEH(1:NSEA),  &
-              ICEF(1:NSEA),  &
-              ICEDMAX(1:NSEA),  &
+              AS(1:NSEA),                        &
+              UST(1:NSEA), USTDIR(1:NSEA),       &
+              CX(1:NSEA), CY(1:NSEA),            &
+              ICE(1:NSEA),                       &
+              ICEH(1:NSEA),                      &
+              ICEF(1:NSEA),                      &
+              ICEDMAX(1:NSEA),                   &
 #ifdef W3_REF1
               REFLC(:,1:NSEA), REFLD(:,1:NSEA),  &
               TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
-              BERG(1:NSEA),  &
+              BERG(1:NSEA),                      &
 #endif
-              FPIS(1:NSEA), &
-              DTDYN(1:NSEAL), &
-              FCUT(1:NSEAL),  &
-              DTGpre,  &
-              TAUWX(1:NSEAL), TAUWY(1:NSEAL),  &
-              TAUOX(1:NSEAL), TAUOY(1:NSEAL),  &
+              FPIS(1:NSEA),                      &
+              DTDYN(1:NSEAL),                    &
+              FCUT(1:NSEAL),                     &
+              DTGpre,                            &
+              TAUWX(1:NSEAL), TAUWY(1:NSEAL),    &
+              TAUOX(1:NSEAL), TAUOY(1:NSEAL),    &
               TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),  &
               TAUWNX(1:NSEAL), TAUWNY(1:NSEAL),  &
-              PHIAW(1:NSEAL),  &
-              CHARN(1:NSEAL),  &
-              TWS(1:NSEAL),  &
-              PHIOC(1:NSEAL),  &
-              WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
+              PHIAW(1:NSEAL),                    &
+              CHARN(1:NSEAL),                    &
+              TWS(1:NSEAL),                      &
+              PHIOC(1:NSEAL),                    &
+              WHITECAP(1:NSEAL,1:4),             & ! WAS TMP1; TODO: Makes temp array; switch dims
 #ifdef W3_BT4
-              SED_D50(1:NSEA),  &  ! Now passing full arrays, not local scalar
-              SED_PSIC(1:NSEA),  & ! " "
-              BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
+              SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
+              SED_PSIC(1:NSEA),                  & !   "   "
+              BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
-              PHIBBL(1:NSEAL), &
-              TAUBBL(1:NSEAL,1:2),  &  ! WAS TMP3
-              TAUICE(1:NSEAL,1:2),  &  ! WAS TMP4
-              PHICE(1:NSEAL),  &
+              PHIBBL(1:NSEAL),                   &
+              TAUBBL(1:NSEAL,1:2),               & ! WAS TMP3
+              TAUICE(1:NSEAL,1:2),               & ! WAS TMP4
+              PHICE(1:NSEAL),                    &
               TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
-              WNMEAN(1:NSEAL),  &
-              RHOAIR(1:NSEA),  &
-              ASF(1:NSEA) )!,  &
+              WNMEAN(1:NSEAL),                   &
+              RHOAIR(1:NSEA),                    &
+              ASF(1:NSEA) )
 
-              ! TODO - These are problematic - they are not allocated is LSLOC is True...
+              ! TODO - These are problematic - they are not allocated if LSLOC is True, 
+              !        but thankfully it is hard coded to False, so we can just no pass them in
               !VSIO=VSTOT(:,1:NSEAL),  &
               !VDIO=VDTOT(:,1:NSEAL),  &
               !SHAVEIO=SHAVETOT(1:NSEAL)  &
@@ -2184,183 +2160,129 @@ CONTAINS
 #endif
 #endif
 
-
-
-!!!!!! NEW SOURCE TERM CALL - PASS FULL ARRAYS
-
-
-!!CB: None of the below needed (DELA, DELX, DELY) as not actaully
-!!    used in W3SRCE.
-!              DELA=1.
-!              DELX=1.
-!              DELY=1.
-!#ifdef W3_REF1
-!             !! TODO: DELX, DELY, DELA not used in W3SRCE
-!              IF (GTYPE.EQ.RLGTYPE) THEN
-!                DELX=SX*CLATS(ISEA)/FACX
-!                DELY=SY/FACX
-!                DELA=DELX*DELY
-!              END IF
-!              IF (GTYPE.EQ.CLGTYPE) THEN
-!                ! Maybe what follows works also for RLGTYPE ... to be verified
-!                DELX=HPFAC(IY,IX)/ FACX
-!                DELY=HQFAC(IY,IX)/ FACX
-!                DELA=DELX*DELY
-!              END IF
-!#endif
-!              !
-!#ifdef W3_REF1
-!              ! Refactor - Below is now calculated in W3SRCE
-!              !REFLEC=REFLC(:,ISEA)
-!              !REFLEC(4)=BERG(ISEA)*REFLEC(4)
-!              !REFLED=REFLD(:,ISEA)
-!#endif
-
-#ifdef W3_BT4
-              ! Refactor - scalars no longer needed, D50 and PSIC
-              ! passed directly to w3srce (procted with ifdef)
-              !D50=SED_D50(ISEA)
-              !PSIC=SED_PSIC(ISEA)
-#endif
-
-              ! Below not needed as  passing in whole arrays
-              ! TODO: Array dimentions need permuting.
-              !TMP1   = WHITECAP(JSEA,1:4)
-              !TMP2   = BEDFORMS(JSEA,1:3)
-              !TMP3   = TAUBBL(JSEA,1:2)
-              !TMP4   = TAUICE(JSEA,1:2)
 #ifdef W3_PDLIB             
                 ! Implicit solver call
                 IF (FSSOURCE) THEN
-                  ! VSIO, VDIO and SHAVEIO not needed in this call
-                  CALL W3SRCE(srce_imp_post,IT,IMOD,  &
-                       VA(:,1:NSEALM),  &
-                       ALPHA(1:NK,1:NSEAL),  &
-                       WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
-                       CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
-                       CLATS(1:NSEA),  &
-                       DW(1:NSEA),  &
-                       U10(1:NSEA),  &
-                       U10D(1:NSEA), &
+                  ! Note: VSIO, VDIO and SHAVEIO not needed in this call
+                  CALL W3SRCE(srce_imp_post,IT,IMOD,      &
+                       VA(:,1:NSEALM),                    &
+                       ALPHA(1:NK,1:NSEAL),               &
+                       WN(1:NK,1:NSEA),                   &  !! TODO: makes temp array
+                       CG(1:NK,1:NSEA),                   &   !! TODO: makes temp array
+                       CLATS(1:NSEA),                     &
+                       DW(1:NSEA),                        &
+                       U10(1:NSEA),                       &
+                       U10D(1:NSEA),                      &
 #ifdef W3_FLX5
-                       TAUA(1:NSEA), TAUADIR(1:NSEA),  &
+                       TAUA(1:NSEA), TAUADIR(1:NSEA),     &
 #endif
-                       AS(1:NSEA),  &
-                       UST(1:NSEA), USTDIR(1:NSEA),  &
-                       CX(1:NSEA), CY(1:NSEA),  &
-                       ICE(1:NSEA),  &
-                       ICEH(1:NSEA),  &
-                       ICEF(1:NSEA),  &
-                       ICEDMAX(1:NSEA),  &
+                       AS(1:NSEA),                        &
+                       UST(1:NSEA), USTDIR(1:NSEA),       &
+                       CX(1:NSEA), CY(1:NSEA),            &
+                       ICE(1:NSEA),                       &
+                       ICEH(1:NSEA),                      &
+                       ICEF(1:NSEA),                      &
+                       ICEDMAX(1:NSEA),                   &
 #ifdef W3_REF1
                        REFLC(:,1:NSEA), REFLD(:,1:NSEA),  &
                        TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
-                       BERG(1:NSEA),  &
+                       BERG(1:NSEA),                      &
 #endif
-                       FPIS(1:NSEA),  &
-                       DTDYN(1:NSEAL),  &
-                       FCUT(1:NSEAL),  &
-                       DTG,  &
-                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),  &
-                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),  &
+                       FPIS(1:NSEA),                      &
+                       DTDYN(1:NSEAL),                    &
+                       FCUT(1:NSEAL),                     &
+                       DTG,                               &
+                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),    &
+                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),    &
                        TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),  &
                        TAUWNX(1:NSEAL), TAUWNY(1:NSEAL),  &
-                       PHIAW(1:NSEAL),  &
-                       CHARN(1:NSEAL),  &
-                       TWS(1:NSEAL),  &
-                       PHIOC(1:NSEAL),  &
-                       WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
+                       PHIAW(1:NSEAL),                    &
+                       CHARN(1:NSEAL),                    &
+                       TWS(1:NSEAL),                      &
+                       PHIOC(1:NSEAL),                    &
+                       WHITECAP(1:NSEAL,1:4),             & ! WAS TMP1; TODO: Makes temp array; switch dims
 #ifdef W3_BT4
-                       SED_D50(1:NSEA),  &  ! Now passing full arrays, not local scalar
-                       SED_PSIC(1:NSEA),  & ! " "
-                       BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
+                       SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
+                       SED_PSIC(1:NSEA),                  & !  "  "
+                       BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
-                       PHIBBL(1:NSEAL),  &
-                       TAUBBL(1:NSEAL,1:2),  &  ! WAS TMP3
-                       TAUICE(1:NSEAL,1:2),  &  ! WAS TMP4
-                       PHICE(1:NSEAL),  &
+                       PHIBBL(1:NSEAL),                   &
+                       TAUBBL(1:NSEAL,1:2),               & ! WAS TMP3
+                       TAUICE(1:NSEAL,1:2),               & ! WAS TMP4
+                       PHICE(1:NSEAL),                    &
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
-                       WNMEAN(1:NSEAL),  &
-                       RHOAIR(1:NSEA),  &
+                       WNMEAN(1:NSEAL),                   &
+                       RHOAIR(1:NSEA),                    &
                        ASF(1:NSEA) )               
                 ELSE
 #endif
                   CALL W3SRCE(srce_direct, IT, IMOD,  &
-                       !VAoldDummy, &   ! Not used, either here or in w3str1 (where it is passed from w3srce)
-                       VA(:,1:NSEALM),  &
-                       ALPHA(1:NK,1:NSEAL),  &
-                       WN(1:NK,1:NSEA),  &  !! TODO: makes temp array
-                       CG(1:NK,1:NSEA),  &  !! TODO: makes temp array
-                       CLATS(1:NSEA),  &
-                       DW(1:NSEA),  &
-                       U10(1:NSEA),  &
-                       U10D(1:NSEA), &
+                       !VAoldDummy,                       & ! Not used, either here or in w3str1 (where it is passed from w3srce)
+                       VA(:,1:NSEALM),                    &
+                       ALPHA(1:NK,1:NSEAL),               &
+                       WN(1:NK,1:NSEA),                   & !! TODO: makes temp array
+                       CG(1:NK,1:NSEA),                   & !! TODO: makes temp array
+                       CLATS(1:NSEA),                     &
+                       DW(1:NSEA),                        &
+                       U10(1:NSEA),                       &
+                       U10D(1:NSEA),                      &
 #ifdef W3_FLX5
-                       TAUA(1:NSEA), TAUADIR(1:NSEA),  &
+                       TAUA(1:NSEA), TAUADIR(1:NSEA),     &
 #endif
-                       AS(1:NSEA),  &
-                       UST(1:NSEA), USTDIR(1:NSEA),  &
-                       CX(1:NSEA), CY(1:NSEA),  &
-                       ICE(1:NSEA),  &
-                       ICEH(1:NSEA),  &
-                       ICEF(1:NSEA),  &
-                       ICEDMAX(1:NSEA),  &
+                       AS(1:NSEA),                        &
+                       UST(1:NSEA), USTDIR(1:NSEA),       &
+                       CX(1:NSEA), CY(1:NSEA),            &
+                       ICE(1:NSEA),                       &
+                       ICEH(1:NSEA),                      &
+                       ICEF(1:NSEA),                      &
+                       ICEDMAX(1:NSEA),                   &
 #ifdef W3_REF1
-                       !REFLEC, REFLED, &  ! Note - not passing REFLE[CD] - will calculate in w3srce
+                       !REFLEC, REFLED,                   & ! Note - not passing REFLE[CD] - will calculate in w3srce
                        REFLC(:,1:NSEA), REFLD(:,1:NSEA),  &
-                       !DELX, DELY, DELA,   &    ! Removed these - they are not used in w3srce
+                       !DELX, DELY, DELA,                 & ! Removed these - they are not used in w3srce
                        TRNX(1:NY,1:NX), TRNY(1:NY,1:NX),  &
-                       BERG(1:NSEA),  &
+                       BERG(1:NSEA),                      &
 #endif
-                       FPIS(1:NSEA),  &
-                       DTDYN(1:NSEAL),  &
-                       FCUT(1:NSEAL),  &
-                       DTG,  &
-                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),  &
-                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),  &
+                       FPIS(1:NSEA),                      &
+                       DTDYN(1:NSEAL),                    &
+                       FCUT(1:NSEAL),                     &
+                       DTG,                               &
+                       TAUWX(1:NSEAL), TAUWY(1:NSEAL),    &
+                       TAUOX(1:NSEAL), TAUOY(1:NSEAL),    &
                        TAUWIX(1:NSEAL), TAUWIY(1:NSEAL),  &
                        TAUWNX(1:NSEAL), TAUWNY(1:NSEAL),  &
-                       PHIAW(1:NSEAL),  &
-                       CHARN(1:NSEAL),  &
-                       TWS(1:NSEAL),  &
-                       PHIOC(1:NSEAL),  &
-                       WHITECAP(1:NSEAL,1:4),  &    ! WAS TMP1; TODO: Makes temp array; switch dims
+                       PHIAW(1:NSEAL),                    &
+                       CHARN(1:NSEAL),                    &
+                       TWS(1:NSEAL),                      &
+                       PHIOC(1:NSEAL),                    &
+                       WHITECAP(1:NSEAL,1:4),             & ! WAS TMP1; TODO: Makes temp array; switch dims
 #ifdef W3_BT4
-                       SED_D50(1:NSEA),  &  ! Now passing full arrays, not local scalar
-                       SED_PSIC(1:NSEA),  & ! " "
-                       BEDFORMS(1:NSEAL,1:3),  &    ! WAS TMP2; TODO: Makes temp array ;switch dims
+                       SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
+                       SED_PSIC(1:NSEA),                  & ! "   "
+                       BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
-                       PHIBBL(1:NSEAL),  &
-                       TAUBBL(1:NSEAL,1:2),  &  ! WAS TMP3
-                       TAUICE(1:NSEAL,1:2),  &  ! WAS TMP4
-                       PHICE(1:NSEAL),  &
+                       PHIBBL(1:NSEAL),                   &
+                       TAUBBL(1:NSEAL,1:2),               & ! WAS TMP3
+                       TAUICE(1:NSEAL,1:2),               & ! WAS TMP4
+                       PHICE(1:NSEAL),                    &
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
-                       WNMEAN(1:NSEAL),  &
-                       RHOAIR(1:NSEA),  &
-                       ASF(1:NSEA)  &
-                       !VSIO=VSioDummy, &   ! Now optional
-                       !VDIO=VDioDummy, &   ! Now  optional
-                       !SHAVEIO=SHAVETOTioDummy & ! Now optional (not actually used)
+                       WNMEAN(1:NSEAL),                   &
+                       RHOAIR(1:NSEA),                    &
+                       ASF(1:NSEA)                        &
+                       !VSIO=VSioDummy,                   & ! Now optional
+                       !VDIO=VDioDummy,                   & ! Now optional
+                       !SHAVEIO=SHAVETOTioDummy           & ! Now optional (not actually used)
                     )
 #ifdef W3_PDLIB
                 END IF
 #endif
-                ! Refactor - don't need to do this anymore.
-                !WHITECAP(JSEA,1:4) = TMP1
-                !BEDFORMS(JSEA,1:3) = TMP2
-                !TAUBBL(JSEA,1:2) = TMP3
-                !TAUICE(JSEA,1:2) = TMP4
-
-
                 !! Below now happens at end of W3SRCE
 !                UST   (ISEA) = UNDEF
 !                USTDIR(ISEA) = UNDEF
 !                DTDYN (JSEA) = UNDEF
 !                FCUT  (JSEA) = UNDEF
 !                VA(:,JSEA)  = 0.
-
-
-            !
+!
 #ifdef W3_PDLIB
 #ifdef W3_DEBUGSRC
             WRITE(740+IAPROC,*) 'ITIME=', ITIME, ' IT=', IT
