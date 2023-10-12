@@ -1161,7 +1161,6 @@ CONTAINS
     NDSI   = 10
     NDSS   = 99
     NDSM   = 20
-    NDSM   = 21
     !
     INQUIRE(FILE=TRIM(FNMPRE)//"ww3_grid.nml", EXIST=FLGNML)
     IF (FLGNML) THEN

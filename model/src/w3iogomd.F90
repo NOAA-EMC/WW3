@@ -3318,7 +3318,9 @@ CONTAINS
               !
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 1 ) THEN
               DO ISEA=1, NSEA
-                IF ( UST(ISEA) .NE. UNDEF .AND. ASF(ISEA) .NE. UNDEF ) THEN
+                IX     = MAPSF(ISEA,1)
+                IY     = MAPSF(ISEA,2)
+                IF ( MAPSTA(IY,IX) .EQ. 1 ) THEN
                   AUX1(ISEA) = UST(ISEA) * ASF(ISEA) *        &
                        COS(USTDIR(ISEA))
                   AUX2(ISEA) = UST(ISEA) * ASF(ISEA) *        &
