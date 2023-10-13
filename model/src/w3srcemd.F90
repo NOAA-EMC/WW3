@@ -68,10 +68,13 @@ MODULE W3SRCEMD
   !/
   REAL, PARAMETER, PRIVATE:: OFFSET = 1.
 
-  ! TODO: CHUNKSIZE should be user settable - not parameter
-  ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
-!  INTEGER,PARAMETER :: CHUNKSIZE = 5000
-  !INTEGER, PARAMETER :: CHUNKSIZE = 1
+  ! GPU Refactor - user settable tile size for controlling chunking of 
+  ! seapoint loop in W3SRCE. To minimize memory usage and reduce cache misses
+  ! when running solely on the CPU (including MPI), set to 1.
+  ! For running on a GPU, set to a number large enough to populate all your
+  ! available GPU threads (e.g. on a nVidia V100 this would be 5000 - 10000).
+  ! This can be set via the runtime environment variable WW3_SRC_TILE_SIZE
+  ! and defaults to 1.
   INTEGER :: CHUNKSIZE = 1
   !/
 CONTAINS
@@ -803,8 +806,6 @@ CONTAINS
          HDT, ZWND, TAUSCX, TAUSCY
     ! Scaling factor for SIN, SDS, SNL
     REAL :: ICESCALELN, ICESCALEIN, ICESCALENL, ICESCALEDS
-    REAL :: SCAT,    &
-         SMOOTH_ICEDISP
     REAL :: WN_R(NK), CG_ICE(NK), ALPHA_LIU(NK), ICECOEF2, R(NK)
     DOUBLE PRECISION :: ATT, ISO
     REAL :: EBAND, DIFF, EFINISH, HSTOT, &
@@ -815,14 +816,12 @@ CONTAINS
     REAL :: SPEC2(NSPEC), FRLOCAL, JAC2
     REAL :: DAM2(NSPEC)
     !REAL :: EB(NK)       ! TODO - not used?
-
     LOGICAL :: SHAVE
-    LOGICAL :: LBREAK
-    LOGICAL, SAVE :: FIRST = .TRUE.  ! TODO - not used?
+    LOGICAL :: LBREAK     ! TODO - returned from W3SDB1 but never used. Make dummy?
+    !LOGICAL, SAVE :: FIRST = .TRUE.  ! TODO - not used?
     LOGICAL :: PrintDeltaSmDA
     REAL :: eInc1, eInc2, eVS, eVD, JAC
-    REAL :: DeltaSRC(NSPEC)
-    REAL :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
+    REAL :: DeltaSRC(NSPEC)  ! TODO - only used if PrintDeltaSmDA==True, hide behind #ifdef?
     REAL, SAVE :: TAUNUX, TAUNUY    ! TODO - returned from W3_FLD[12], but never used...
     LOGICAL, SAVE :: FLTEST = .FALSE., FLAGNN = .TRUE.
     !/
@@ -836,6 +835,7 @@ CONTAINS
 #ifdef W3_NNT
     INTEGER, SAVE :: NDSD = 89, NDSD2 = 88, J
     REAL :: QCERR  = 0.     !/XNL2 and !/NNT
+    REAL :: FOUT(NK,NTH), SOUT(NK,NTH), DOUT(NK,NTH)
 #endif
 
 #ifdef W3_NL5
@@ -872,6 +872,7 @@ CONTAINS
 #ifdef W3_IS2
     REAL :: VDIR2(NSPEC)
     DOUBLE PRECISION :: SCATSPEC(NTH)
+    REAL :: SCAT, SMOOTH_ICEDISP
 #endif
 
 #ifdef W3_ST1
@@ -1195,7 +1196,7 @@ CONTAINS
       ! NSEA) to local domain variables (define with size NSEAL)
       !
       ! Not technically required when running SHRD mode
-      ! TODO: Look into workaround for this
+      ! TODO: Look into workaround for this, use pointers instead?
       !
       ! TODO - rewrite to loop over I, to avoid loop dependency.
       !
@@ -1206,7 +1207,7 @@ CONTAINS
 
       I = 1
       DO JSEA=CHUNK0,CHUNKN
-        CALL INIT_GET_ISEA(ISEA, JSEA)  !!! TODO: SLOW! Precalculate?
+        CALL INIT_GET_ISEA(ISEA, JSEA)  !!! TODO: Potentially slow! Precalculate?
 
         IX(I) = MAPSF(ISEA,1)
         IY(I) = MAPSF(ISEA,2)
@@ -1562,10 +1563,10 @@ CONTAINS
 #endif
 #ifdef W3_ST4
           ! TESTING!
-          VSIN(:,CSEA)=0  ! No needed?
+          VSIN(:,CSEA)=0  ! Not needed?
           VDIN(:,CSEA)=0 
           BRLAMBDA(:,CSEA)=0   ! TODO: Shouldn't be needed
-          ! TESTING !
+          ! END TESTING !
           CALL W3SIN4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), &
              U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),       &
              U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), &
@@ -1805,7 +1806,7 @@ CONTAINS
           !             this simulation
           IF ( INFLAGS2(4) ) THEN
 
-            ! ICESCALExx calculations moved from start of routine.
+            ! GPU Refactor: ICESCALExx calculations moved from start of routine.
             ICESCALELN = MAX(0.,MIN(1.,1.-ICE_CHUNK(CSEA)*ICESCALES(1)))
             ICESCALEIN = MAX(0.,MIN(1.,1.-ICE_CHUNK(CSEA)*ICESCALES(2)))
             ICESCALENL = MAX(0.,MIN(1.,1.-ICE_CHUNK(CSEA)*ICESCALES(3)))
@@ -2097,11 +2098,9 @@ CONTAINS
 #endif
             !!RETURN ! return everything is done for the implicit ...
 
-
             ! GPU Refactor - don't return here. CYCLE instead as we need to process rest
             ! of seapoints in tile. A check on "srce_imp_pre" is now made after integration
             ! loop is complete.
-            
             CYCLE
 
           END IF ! srce_imp_pre
@@ -2825,14 +2824,14 @@ CONTAINS
 #endif
       END DO ! CSEA
 
-      FIRST  = .FALSE.
+      !FIRST  = .FALSE.  ! Refactor: Not used.
 
       !IF(IT.EQ.0) SPEC = SPECINIT
       IF(IT.EQ.0) SPEC(:,CHUNK0:CHUNKN) = SPECINIT(:,:NSEAC)
 
       SPEC(:,CHUNK0:CHUNKN) = MAX(0., SPEC(:,CHUNK0:CHUNKN))
       !
-      7777  CONTINUE  ! GPU Refactor: Landing point for srce_imp_pre 
+7777  CONTINUE  ! GPU Refactor: Landing point for srce_imp_pre 
       !
       ! NEW GPU Refactored code:
       ! Write temporary local grid CHUNKED arrays back to full grid
@@ -2863,7 +2862,6 @@ CONTAINS
           !SPEC(:,JSEA)  = 0.  !! Do not zero spec if point not active.
         ENDIF
       ENDDO ! CSEA
-
     END DO !! CHUNK LOOP (CHUNK0,CHUNKN)
     RETURN
     !
