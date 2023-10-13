@@ -71,9 +71,38 @@ MODULE W3SRCEMD
   ! TODO: CHUNKSIZE should be user settable - not parameter
   ! Chunksize of 10,000 proved fastest in recent test (31-Jan-23)
 !  INTEGER,PARAMETER :: CHUNKSIZE = 5000
-  INTEGER, PARAMETER :: CHUNKSIZE = 1
+  !INTEGER, PARAMETER :: CHUNKSIZE = 1
+  INTEGER :: CHUNKSIZE = 1
   !/
 CONTAINS
+
+  !>
+  !> @brief Initialise some variables at startup
+  !>
+  !> At the moment, just reads WW3_SRC_TILE_SIZE environment variable
+  !> if it exists to control the tile sized used for the source term
+  !> module. Defaults to tile size = 1.
+  !>
+  !> @author C. Bunney
+  !> @date   12-Oct-2023
+  SUBROUTINE W3SRCE_INIT()
+    USE W3ODATMD, ONLY: NDSE, NDSO
+
+    IMPLICIT NONE
+    CHARACTER(LEN=16) :: VAL
+    INTEGER :: STAT
+    CALL get_environment_variable("WW3_SRC_TILE_SIZE", VALUE=VAL, STATUS=STAT)
+    IF(STAT .EQ. 0) THEN
+      READ(VAL,*,IOSTAT=STAT) CHUNKSIZE
+      IF(STAT .NE. 0) THEN
+        WRITE(NDSE,*) "Error ",STAT, " parsing value for WW3_SRC_TILE_SIZE: ", TRIM(VAL)
+        WRITE(NDSE,*) "Will default to size of 1"
+      ELSE
+        WRITE(NDSO,*) "Source term tile size set to: ", CHUNKSIZE 
+      ENDIF
+    ENDIF
+  END SUBROUTINE W3SRCE_INIT
+
   !/ ------------------------------------------------------------------- /
 
   !>

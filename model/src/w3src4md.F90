@@ -2521,6 +2521,7 @@ CONTAINS
     END IF
     !
     WHITECAP(1:2) = 0.
+    WHITECAP(4) = 0.   ! CB: Also needs zeroing
     !
     ! precomputes integration of Lambda over direction
     ! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
