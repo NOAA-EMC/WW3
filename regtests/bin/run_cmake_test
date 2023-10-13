@@ -654,6 +654,10 @@ then
       if [ $multi -eq 2 ]
       then
         mv mod_def.ww3 mod_def.$g
+        if [ -e mod_def.ww3.txt ]
+        then
+          mv mod_def.ww3.txt mod_def.${g}.txt
+        fi
         if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           mv $prog.nml.log ${prog}_$g.nml.log
