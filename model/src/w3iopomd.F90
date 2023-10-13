@@ -1034,7 +1034,11 @@ CONTAINS
   !>
   !> @author H. L. Tolman  @date 25-Jul-2006
   !>
-  SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD )
+  SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD &
+#ifdef W3_ASCII
+      ,NDSOA &
+#endif
+      )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -1062,7 +1066,8 @@ CONTAINS
     !     ----------------------------------------------------------------
     !       INXOUT  C*(*)  I   Test string for read/write, valid are:
     !                          'READ' and 'WRITE'.
-    !       NDSOP   Int.   I   File unit number.
+    !       NDSOP   Int.   I   File unit number. for binary
+    !       NDSOA   Int.   I   File unit number. for ASCII
     !       IOTST   Int.   O   Test indictor for reading.
     !                           0 : Data read.
     !                          -1 : Past end of file.
@@ -1140,6 +1145,9 @@ CONTAINS
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)           :: NDSOP
+#ifdef W3_ASCII
+    INTEGER, INTENT(IN), OPTIONAL :: NDSOA
+#endif
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
@@ -1205,6 +1213,10 @@ CONTAINS
       IF ( WRITE ) THEN
         OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+#ifdef W3_ASCII
+        OPEN (NDSOA,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I)//'.txt',    &
+             form='FORMATTED', ERR=800,IOSTAT=IERR)
+#endif
       ELSE
         OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
@@ -1218,6 +1230,11 @@ CONTAINS
       IF ( WRITE ) THEN
         WRITE (NDSOP)                                           &
              IDSTR, VEROPT, NK, NTH, NOPTS
+#ifdef W3_ASCII
+        WRITE (NDSOA,*)                                           &
+             'IDSTR, VEROPT, NK, NTH, NOPTS:',                  &
+             IDSTR, VEROPT, NK, NTH, NOPTS
+#endif
       ELSE
         READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                &
              IDTST, VERTST, MK, MTH, NOPTS
@@ -1248,6 +1265,11 @@ CONTAINS
       IF ( WRITE ) THEN
         WRITE (NDSOP)                                           &
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+#ifdef W3_ASCII
+        WRITE (NDSOA,*)                                           &
+             '((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS):', &
+             ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+#endif
       ELSE
         READ  (NDSOP,END=801,ERR=802,IOSTAT=IERR)               &
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
@@ -1289,6 +1311,10 @@ CONTAINS
       IF ( WRITE ) THEN
         OPEN (NDSOP,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
              //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+#ifdef W3_ASCII
+        OPEN (NDSOA,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
+             //FILEXT(:I)//'.txt',form='FORMATTED', ERR=800,IOSTAT=IERR)
+#endif
       END IF
       !
       REWIND ( NDSOP )
@@ -1300,6 +1326,11 @@ CONTAINS
       IF ( WRITE ) THEN
         WRITE (NDSOP)                                           &
              IDSTR, VEROPT, NK, NTH, NOPTS
+#ifdef W3_ASCII
+        WRITE (NDSOA,*)                                           &
+             'IDSTR, VEROPT, NK, NTH, NOPTS:',                  &
+             IDSTR, VEROPT, NK, NTH, NOPTS
+#endif
       ELSE
         READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                &
              IDTST, VERTST, MK, MTH, NOPTS
@@ -1330,6 +1361,11 @@ CONTAINS
       IF ( WRITE ) THEN
         WRITE (NDSOP)                                           &
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+#ifdef W3_ASCII
+        WRITE (NDSOA,*)                                           &
+             '((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS):', &
+             ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
+#endif
       ELSE
         READ  (NDSOP,END=801,ERR=802,IOSTAT=IERR)               &
              ((PTLOC(J,I),J=1,2),I=1,NOPTS), (PTNME(I),I=1,NOPTS)
@@ -1349,6 +1385,9 @@ CONTAINS
     !
     IF ( WRITE ) THEN
       WRITE (NDSOP)                            TIME
+#ifdef W3_ASCII
+      WRITE (NDSOA,*) 'TIME:',                   TIME
+#endif
     ELSE
       READ (NDSOP,END=803,ERR=802,IOSTAT=IERR) TIME
     END IF
@@ -1378,6 +1417,23 @@ CONTAINS
 #endif
              ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
              ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
+#ifdef W3_ASCII
+        WRITE (NDSOA,*)                                            &
+             'IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I):',      &
+             IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &
+#ifdef W3_FLX5
+             'TAUAO(I), TAUDO(I), DAIRO(I):',                     &
+             TAUAO(I), TAUDO(I), DAIRO(I),                     &
+#endif
+#ifdef W3_SETUP
+             'ZET_SETO(I):',                                      &
+             ZET_SETO(I),                                      &
+#endif
+             'ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I):',        &
+             ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
+             'ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC):',       & 
+             ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
+#endif
       ELSE
         READ (NDSOP,END=801,ERR=802,IOSTAT=IERR)                 &
              IW(I), II(I), IL(I), DPO(I), WAO(I), WDO(I),      &

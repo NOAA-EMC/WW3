@@ -2583,7 +2583,11 @@ CONTAINS
 #ifdef W3_SBS
                   IF ( J .EQ. 1 ) THEN
 #endif
-                    CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
+                    CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD &
+#ifdef W3_ASCII
+                            ,NDS(14)                          &
+#endif
+                            )
 #ifdef W3_SBS
                   ENDIF
 #endif
@@ -2614,7 +2618,11 @@ CONTAINS
                   !   Gets the necessary spectral data
                   !
                   CALL W3IOPE ( VA )
-                  CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
+                  CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD &
+#ifdef W3_ASCII
+                          ,NDS(15)                           &
+#endif
+                          )
                 END IF
                 !
               ELSE IF ( J .EQ. 3 ) THEN
