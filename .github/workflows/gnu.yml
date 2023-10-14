@@ -106,4 +106,4 @@ jobs:
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
           make -j2 VERBOSE=1
-          make test
+          ctest
