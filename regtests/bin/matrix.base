@@ -689,6 +689,7 @@
       echo "$rtst -s ST0 -w work_ST0 $ww3 ww3_tp2.6" >> matrix.body
       echo "$rtst -s ST0 -w work_ST0 $ww3 ww3_tp2.7" >> matrix.body
       echo "$rtst -s ST4 -w work_ST4 $ww3 ww3_tp2.6" >> matrix.body
+      echo "$rtst -s ST4_ASCII -w work_ST4_ASCII $ww3 ww3_tp2.6" >> matrix.body
     fi
 
     if [ "$prop1D" = 'y' ]
@@ -1885,6 +1886,7 @@
   then
     echo ' ' >> matrix.body
     echo "$rtst -s MPI -w work_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
+    echo "$rtst -s MPI_ASCII -w work_MPI_ASCII -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
   fi
 
 # Rotated pole grid cases, (ww3_tp2.11 MPI only if requested)
