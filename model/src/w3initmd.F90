@@ -456,7 +456,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)           :: IMOD, MDS(13), MTRACE(2),      &
+    INTEGER, INTENT(IN)           :: IMOD, MDS(15), MTRACE(2),      &
          ODAT(40),NPT, IPRT(6),&
          MPI_COMM
     LOGICAL, INTENT(IN)           :: IsMulti
