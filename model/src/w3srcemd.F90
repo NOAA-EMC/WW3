@@ -726,8 +726,8 @@ CONTAINS
         ICEDMAX(1:NSEA)
 
     REAL, INTENT(INOUT) ::     &
-        WN1(1:NK,NSEA),        &  ! TODO: Eventually pass as 0:NK+1 ??
-        CG1(1:NK,NSEA),        &  !        here too
+        WN1(0:NK+1,NSEA),      &  ! Note: 0:NK+1 to avoid temporary array
+        CG1(0:NK+1,NSEA),      &  ! Note: 0:NK+1 to avoid temporary array
         U10ABS(1:NSEA),        &
         U10DIR(1:NSEA),        &
         USTAR(1:NSEA),         &

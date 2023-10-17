@@ -1499,8 +1499,8 @@ CONTAINS
           CALL W3SRCE(srce_imp_pre, IT, IMOD,    &
               VA(:,1:NSEALM),                    &
               ALPHA(1:NK,1:NSEAL),               &
-              WN(1:NK,1:NSEA),                   & !! TODO: makes temp array
-              CG(1:NK,1:NSEA),                   & !! TODO: makes temp array
+              WN(0:NK+1,1:NSEA),                 & ! Note 0:NK+1 to avoid temp array
+              CG(0:NK+1,1:NSEA),                 & ! Note 0:NK+1 to avoid temp array
               CLATS(1:NSEA),                     &
               DW(1:NSEA),                        &
               U10(1:NSEA),                       &
@@ -2167,8 +2167,8 @@ CONTAINS
                   CALL W3SRCE(srce_imp_post,IT,IMOD,      &
                        VA(:,1:NSEALM),                    &
                        ALPHA(1:NK,1:NSEAL),               &
-                       WN(1:NK,1:NSEA),                   &  !! TODO: makes temp array
-                       CG(1:NK,1:NSEA),                   &   !! TODO: makes temp array
+                       WN(0:NK+1,1:NSEA),                 & ! Note 0:NK+1 to avoid temp array
+                       CG(0:NK+1,1:NSEA),                 & ! Note 0:NK+1 to avoid temp array
                        CLATS(1:NSEA),                     &
                        DW(1:NSEA),                        &
                        U10(1:NSEA),                       &
@@ -2220,8 +2220,8 @@ CONTAINS
                        !VAoldDummy,                       & ! Not used, either here or in w3str1 (where it is passed from w3srce)
                        VA(:,1:NSEALM),                    &
                        ALPHA(1:NK,1:NSEAL),               &
-                       WN(1:NK,1:NSEA),                   & !! TODO: makes temp array
-                       CG(1:NK,1:NSEA),                   & !! TODO: makes temp array
+                       WN(0:NK+1,1:NSEA),                 & ! Note 0:NK+1 to avoid temp array
+                       CG(0:NK+1,1:NSEA),                 & ! Note 0:NK+1 to avoid temp array
                        CLATS(1:NSEA),                     &
                        DW(1:NSEA),                        &
                        U10(1:NSEA),                       &
