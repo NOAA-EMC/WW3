@@ -284,7 +284,7 @@ CONTAINS
          DIKCUMUL
 #endif
 #ifdef W3_NL1
-    USE W3SNL1MD, ONLY: INSNL1
+    USE W3SNL1MD, ONLY: INSNL1, INSNLGQM
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD, ONLY: INSNL2
@@ -1580,18 +1580,28 @@ CONTAINS
 #ifdef W3_NL1
     IF ( WRITE ) THEN
       WRITE (NDSM)                                         &
-           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
 #ifdef W3_ASCII
       WRITE (NDSA,*)                                       &
-           'SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3:',&
-           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+           'SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,  &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP:',          &
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
 #endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
-           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) SNLC1, LAM,            &
-         KDCON, KDMN, SNLS1, SNLS2, SNLS3
+         KDCON, KDMN, SNLS1, SNLS2, SNLS3,                 &
+         IQTPE, NLTAIL, GQNF1, GQNT1, GQNQ_OM2,            &
+         GQTHRSAT, GQTHRCOU, GQAMP
 #endif
     !
 #ifdef W3_NL2
@@ -1713,7 +1723,13 @@ CONTAINS
 #endif
     !
 #ifdef W3_NL1
-    IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
+    IF ( .NOT. WRITE ) THEN
+      IF (IQTPE.GT.0) THEN
+        CALL INSNL1 ( IGRD )
+      ELSE
+        CALL INSNLGQM
+      END IF
+    END IF
 #endif
 #ifdef W3_NL3
     IF ( .NOT. WRITE ) CALL INSNL3

@@ -912,6 +912,8 @@
     echo "$rtst -s ST4_TSA  -w work_ST4_TSA                 $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST6      -w work_ST6                     $ww3 ww3_ts1" >> matrix.body
     echo "$rtst             -w work_NL5 -i input_nl5_matrix $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -g ST4_T707 -w work_T707GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -g ST4_T713 -w work_T713GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
   fi
 
 # fetch limited growth, no switch sharing here
