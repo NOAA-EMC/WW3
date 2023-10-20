@@ -239,6 +239,9 @@ CONTAINS
     !                              (first).
     !                          11: Track information file unit number.
     !                          12: Track output file unit number.
+    !                          13: Wave separation output file unit number.
+    !                          14: Grid output file unit number.
+    !                          15: Point output file unit number. ascii
     !       MTRACE  I.A.   I   Array with subroutine tracing information.
     !                           1: Output unit number for trace.
     !                           2: Maximum number of trace prints.
@@ -453,7 +456,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)           :: IMOD, MDS(13), MTRACE(2),      &
+    INTEGER, INTENT(IN)           :: IMOD, MDS(15), MTRACE(2),      &
          ODAT(40),NPT, IPRT(6),&
          MPI_COMM
     LOGICAL, INTENT(IN)           :: IsMulti
