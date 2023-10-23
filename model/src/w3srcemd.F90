@@ -1539,9 +1539,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
 
 #ifdef W3_TR1
                 eVS = VSTR(ISP) * JAC
@@ -1553,9 +1553,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
               END DO
             END DO
 
