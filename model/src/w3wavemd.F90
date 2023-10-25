@@ -524,6 +524,7 @@ CONTAINS
     REAL                    :: ICEDAVE
     !
     LOGICAL                 :: SBSED
+    LOGICAL                 :: CPLWRTFLG
 #ifdef W3_SEC1
     INTEGER                 :: ISEC1
 #endif
@@ -2432,8 +2433,14 @@ CONTAINS
             do_startall = .true.
           end IF
         else
+          CPLWRTFLG=.FALSE.
+          IF ( FLOUT(7) .AND. SBSED ) THEN
+            IF (DSEC21(TIME,TONEXT(:,7)).EQ.0.) THEN
+              CPLWRTFLG=.TRUE.
+            END IF
+          END IF
           IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
-               ( (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
+               ( CPLWRTFLG=.FALSE. ) THEN
             do_startall = .true.
           end IF
         end if
