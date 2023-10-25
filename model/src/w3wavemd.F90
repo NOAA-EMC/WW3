@@ -2440,7 +2440,7 @@ CONTAINS
             END IF
           END IF
           IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
-               ( CPLWRTFLG ) THEN
+               ( CPLWRTFLG ) ) THEN
             do_startall = .true.
           end IF
         end if
