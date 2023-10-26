@@ -5,8 +5,8 @@
 #    Intended for interactive running only.                                   #
 #                                                                             #
 #                                                     Hendrik L. Tolman       #
-#						      Updated by Yukino Nagai #
-#                                                     June 2017 	      #
+#                                                     Updated by Yukino Nagai #
+#                                                     June 2017               #
 #                                                                             #
 #    Copyright 2013 National Weather Service (NWS),                           #
 #       National Oceanic and Atmospheric Administration.  All rights          #
@@ -17,6 +17,24 @@
 # This script takes in one argument: the name of a test directory or 'all'
 #
 # 1. Set up
+
+function isbinary {
+    # Check if file is binary [or text]
+    #
+    # Uses `file` command to check if a file is binary or text by inspecting
+    # the MIME type of file.
+    #
+    # `file -i ` will return `text/<something>` if file is a text file.
+    # Anything else can be considered a binary file.
+    #
+    # If your version of `file` does not accept the -i or --mime flag, you
+    # can also just run `file` with no flags and use `grep -i text`.
+    #
+    # The mime checking version is a bit more robust though.
+
+    file -i $1 | grep -vq "text/"
+}
+
 # 1.a Computer/ user dependent set up
 
   if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]
@@ -154,7 +172,7 @@
                 if [[ -d $file ]]; then
                   if [[ $file == build* ]] || [[ $file == exe* ]] || 
                      [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then 
-                    echo "do not compare build or exe directories $file" 
+                    :   # skip
                   else 
                     #add files: 
                     files_dir=`ls $file`
@@ -167,9 +185,6 @@
                   files_1="$files_1 $file"
                 fi
               done 
-
-              #Generate list of binary files in the directory
-              binaryfiles=`grep . -r * | grep 'Binary file' | sed -e "s/^Binary file //" -e "s/ matches$//"`
 
               #Generate list of files to skip
               skipfiles="ww3_shel.out ww3_multi.out prf.*.mww3 finished ww3_systrk.out gmon.out time_count.txt oasis_make.out oasis_clean.out toy_model toy_make.out toy_clean.out build.log"
@@ -186,7 +201,7 @@
                 if [[ -d $file ]]; then
                   if [[ $file == build* ]] || [[ $file == exe* ]] ||
                      [[ $file == *oasis3-mct* ]] || [[ $file == toy* ]]; then
-                    echo "do not compare build or exe directories $file" 
+                    :   # skip
                   else
                     #add files: 
                     files_dir=`ls $file`
@@ -227,7 +242,7 @@
                   elif [[ $file == log.* ]] || [[ $file == "output.ww3" ]]
                   then
                     filetype="log"
-                  elif [[ $binaryfiles =~ (^|[[:space:]])"$file"($|[[:space:]]) ]]
+                  elif isbinary $file
                   then
                     filetype="binary"
                   else

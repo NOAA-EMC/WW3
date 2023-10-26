@@ -681,7 +681,7 @@ CONTAINS
         IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) THEN
           U(IP) = AC(IP) ! restores reflected boundary values
         ENDIF
-#endif^
+#endif
       END DO
       ! update spectrum
       AC = U
@@ -1266,7 +1266,7 @@ CONTAINS
       DO IBI=1, NBI
         IP    = MAPSF(ISBPI(IBI),1)
         AC(IP) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) )   &
-             *IOBPA(IP)*(1-IOBPD(ITH,IP)) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
+             *IOBPA(IP)*IOBPD(ITH,IP) / CG(IK,ISBPI(IBI)) * CLATS(ISBPI(IBI))
       END DO
     END IF
 
