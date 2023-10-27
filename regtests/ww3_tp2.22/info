@@ -1,8 +1,8 @@
 #############################################################################
 #                                                                           #
-# ww3_tp2.22 Test script for WW-III, two-dimensional propagation and LMP    #
-#           Propagation over half the globe.                                #
-#           Langmuir Mixing Parameterization                                #
+# ww3_tp2.22 Test script for WW-III demonstrating the Langmuir Mixing       #
+#            Parmeterization, for the case of two-dimensional propagation   #
+#            over half the globe.                                           #
 #                                                                           #
 # Model should be compiled with the switches :                              #
 #                                                                           #
@@ -16,33 +16,12 @@
 #   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
 #                                                                           #
 # Remarks :                                                                 #
-# - Test case input (default):                                              #
-#   * Single grid, but run using ww3_multi.                                 #
-#   * ww3_grid.inp : (default)                                              #
-#     + Spatial grid: 193 x 93 rectilinear lat/lon grid                     #
-#       - dx = 1.0 deg, dy = 1.0 deg                                        #
-#       - Xrange = -6:186 deg, Yrange = -46:46 deg                          #
-#     + Spectral grid: ntheta = 24, nf =  3, f1 = 0.03679, fgamma = 1.1     #
+# - Test case input:
 #     + Langmuir mixing parameterization (LMPENABLED = T) and tail          #
 #       contribution (SDTAIL = T) enabled. A uniform (10m) surface layer    #
 #       depth is asumed (HSLMODE = 0).                                      #
-#   * map2_2.gs: grads script for visualizing results.                      #
-#   * GSE correction is enabled. To disable GSE correction                  #
-#     comment/uncomment the appropriate lines in ww3_grid.inp.              #
-#   * switch options (mostly self-explanatory).                             #
-#     + switch_PR1     : First order scheme                                 #
-#     + switch_PR2_UNO : UQ scheme with diffusion                           #
-#     + switch_PR2_UQ  : UQ scheme with diffusion                           #
-#     + switch_PR3_UNO : UQ scheme with averaging  (default)                #
-#     + switch_PR3_UQ  : UQ scheme with averaging  (default)                #
-#     + switch_PR1_MPI                                                      #
-#     + switch_PR2_UNO_MPI                                                  #
-#     + switch_PR2_UQ_MPI                                                   #
-#     + switch_PR3_UNO_MPI                                                  #
-#     + switch_PR3_UQ_MPI                                                   #
 # - Test case output:
-#   * USSX/USSY:   surface Stokes drift
-#   * USSHX/USSHY: surface layer averaged Stokes drift
+#     + USSX/USSY:   surface Stokes drift
 #
 #                                                                           #
 #  Sample run_test commands :                                               #
@@ -64,6 +43,8 @@
 #    When HSLMODE == 0, a uniform 10m HSL is assumed for testing purposes.  #
 #    When HSLMODE == 1, the HSL field is to be received from the active     #
 #    ocean model via coupler.                                               #
+#
+#    The WW3 output variables ... USSX,USSY.  USSHX,USSHY.
 #                                                                           #
 #    For more info on the Langmuir parameterization, see:                   #
 #       Li, Qing, et al. "Langmuir mixing effects on global climate:        #
