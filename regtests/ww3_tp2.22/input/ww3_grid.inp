@@ -1,6 +1,6 @@
 $ WAVEWATCH III Grid preprocessor input file
 $ ------------------------------------------
-  '2-D PROP. AROUND GLOBE WITH LANGMUIR MIXING PARAMETERIZATION'
+  'LANGMUIR MIXING PARAMETERIZATION FOR 2-D PROP. AROUND GLOBE'
 $
    1.1 0.040 9  24  0.
 $
