@@ -42,7 +42,7 @@
 #     + switch_PR3_UQ_MPI                                                   #
 # - Test case output:
 #   * USSX/USSY:   surface Stokes drift
-#   * USSHX/USSHX: surface layer averaged Stokes drift
+#   * USSHX/USSHY: surface layer averaged Stokes drift
 #
 #                                                                           #
 #  Sample run_test commands :                                               #
