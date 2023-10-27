@@ -1,7 +1,7 @@
 $ -------------------------------------------------------------------- $
 $ WAVEWATCH III Grid output post-processing                            $
 $--------------------------------------------------------------------- $
-$ First output time (yyyymmdd hhmmss), increment of output (s), 
+$ First output time (yyyymmdd hhmmss), increment of output (s),
 $ and number of output times.
 $
   19680606 000000 10800. 100
@@ -13,13 +13,13 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
  N
- HS T01 DIR SPR
+ HS T01 DIR SPR USSX USSY
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]
 $        and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]
 $ swell partitions [0 1 2 3 4 5]
-$ variables in same file [T] or not [F] 
+$ variables in same file [T] or not [F]
 $
  3 4
  0 1 2
