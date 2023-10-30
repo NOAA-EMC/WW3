@@ -2409,8 +2409,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-        IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
-             (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
+        IF ( (FLOUTG) .OR. (FLOUTG2 .AND. SBSED) ) THEN
           IF (.NOT. LPDLIB) THEN
             IF (NRQGO.NE.0 ) THEN
 #endif
