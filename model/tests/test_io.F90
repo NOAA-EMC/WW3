@@ -11,11 +11,14 @@ program test_io
   USE W3GDATMD
   use w3wdatmd
   use w3odatmd
+  use w3iogrmd
+  USE W3ADATMD  
   implicit none
   
   integer, target :: i, j, k, l
   integer :: ndsop, iotst, imod, ndstst, ierr, ndsbul, ndsi, ndsm
   integer :: ndstrc, ntrace
+  real :: m2km
 
   print *, 'Testing WW3 IO...'
 
@@ -46,6 +49,21 @@ program test_io
 
   open(ndsi, file = 'ww3_outp.inp', status='old', iostat = ierr)
   if (ierr .ne. 0) stop 10
+
+  ! 2.  Read model definition file.
+  CALL W3IOGR('READ', NDSM)
+  WRITE (NDSO,920) GNAME
+920 FORMAT ('  Grid name : ',A/)  
+
+  IF (FLAGLL) THEN
+    M2KM = 1.
+  ELSE
+    M2KM = 1.E-3
+  END IF
+
+!  DIMXP = ((NK+1)/2) * ((NTH-1)/2)
+!  ALLOCATE(XPART(DIMP,0:DIMXP))
+!  XPART = UNDEF
 
   ! ndsop = 10
   ! iotst = 11
