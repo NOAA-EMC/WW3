@@ -1656,7 +1656,7 @@ CONTAINS
 #endif
 #ifdef W3_ST4
     REAL                    :: AMAX, FMEANS, FMEANWS, TAUWX, TAUWY, &
-         TAUWNX, TAUWNY, FMEAN1, WHITECAP(1:4)
+         TAUWNX, TAUWNY, FMEAN1, WCAP_DUM1, WCAP_DUM2, WCAP_DUM3
     REAL                    :: LAMBDA(NSPEC), DLWMEAN
 #endif
 #ifdef W3_ST6
@@ -2185,7 +2185,7 @@ CONTAINS
                    USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
                    CHARN, LLWS, FMEANWS,DLWMEAN )
               CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
-                   DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
+                   DIA, IX, IY, LAMBDA, WCAP_DUM1, WCAP_DUM2, WCAP_DUM3, DLWMEAN )
               CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,     &
                    ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY, TAUWNX, &
                    TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
@@ -2313,7 +2313,7 @@ CONTAINS
                  USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
                  CHARN, LLWS, FMEANWS, DLWMEAN )
             CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
-                 DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
+                 DIA, IX, IY, LAMBDA, WCAP_DUM1, WCAP_DUM2, WCAP_DUM3, DLWMEAN )
 #endif
 #ifdef W3_ST6
             CALL W3SPR6 (A, CG, WN, EMEAN, FMEAN, WNMEAN, AMAX, FP)
@@ -2409,7 +2409,7 @@ CONTAINS
                    USTAR, USTD, TAUWX, TAUWY, CD, Z0,       &
                    CHARN, LLWS, FMEANWS, DLWMEAN )
               CALL W3SDS4 ( A, WN, CG, USTAR,  USTD, DEPTH, DAIR, XDS, &
-                   DIA, IX, IY, LAMBDA, WHITECAP, DLWMEAN )
+                   DIA, IX, IY, LAMBDA, WCAP_DUM1, WCAP_DUM2, WCAP_DUM3, DLWMEAN )
               CALL W3SIN4 (A, CG, WN2, UABS, USTAR, DAIR/DWAT,    &
                    ASO(J), UDIRR, Z0, CD, TAUWX, TAUWY, TAUWNX, &
                    TAUWNY, XIN, DIA, LLWS, IX, IY, LAMBDA )
@@ -2455,7 +2455,7 @@ CONTAINS
                    USTAR, USTD, TAUWX, TAUWY, CD, Z0,         &
                    CHARN, LLWS, FMEANWS, DLWMEAN )
               CALL W3SDS4 ( A, WN, CG,  USTAR, USTD, DEPTH, DAIR, XDS, &
-                   DIA, IX, IY, LAMBDA, WHITECAP , DLWMEAN)
+                   DIA, IX, IY, LAMBDA, WCAP_DUM1, WCAP_DUM2, WCAP_DUM3, DLWMEAN)
 #endif
 #ifdef W3_ST6
               CALL W3SDS6 ( A, CG, WN, XDS, DIA )

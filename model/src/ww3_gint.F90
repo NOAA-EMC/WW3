@@ -1239,7 +1239,10 @@ CONTAINS
     TAUWIY   = UNDEF
     TAUWNX   = UNDEF
     TAUWNY   = UNDEF
-    WHITECAP = UNDEF
+    WCAP_COV = UNDEF
+    WCAP_THK = UNDEF
+    WCAP_BHS = UNDEF
+    WCAP_MNT = UNDEF
     !
     ! Group 6 variables
     !
@@ -2224,22 +2227,77 @@ CONTAINS
                 END IF
               END IF
               !
-              DO ICAP = 1,4
-                !
-                IF ( FLOGRD(5,ICAP+6) .AND. ACTIVE ) THEN
-                  IF ( WADATS(IGRID)%WHITECAP(GSEA,ICAP) .NE. UNDEF ) THEN
-                    SUMWTC(ICAP) = SUMWTC(ICAP) + WT
-                    IF ( WHITECAPAUX(ICAP) .EQ. UNDEF ) THEN
-                      WHITECAPAUX(ICAP) = WADATS(IGRID)%WHITECAP(GSEA,ICAP)&
-                           *WT
-                    ELSE
-                      WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) +              &
-                           WADATS(IGRID)%WHITECAP(GSEA,ICAP)*WT
-                    END IF
+           
+! CB Refactor: Whitecap now split into 4 separate variables:
+!              DO ICAP = 1,4
+!                !
+!                IF ( FLOGRD(5,ICAP+6) .AND. ACTIVE ) THEN
+!                  IF ( WADATS(IGRID)%WHITECAP(GSEA,ICAP) .NE. UNDEF ) THEN
+!                    SUMWTC(ICAP) = SUMWTC(ICAP) + WT
+!                    IF ( WHITECAPAUX(ICAP) .EQ. UNDEF ) THEN
+!                      WHITECAPAUX(ICAP) = WADATS(IGRID)%WHITECAP(GSEA,ICAP)&
+!                           *WT
+!                    ELSE
+!                      WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) +              &
+!                           WADATS(IGRID)%WHITECAP(GSEA,ICAP)*WT
+!                    END IF
+!                  END IF
+!                END IF
+!                !
+!              END DO            
+!
+              ! Whitecap coverage
+              IF ( FLOGRD(5,7) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_COV(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(1) = SUMWTC(1) + WT
+                  IF ( WHITECAPAUX(1) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(1) = WADATS(IGRID)%WCAP_COV(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(1) = WHITECAPAUX(1) +                 &
+                        WADATS(IGRID)%WCAP_COV(GSEA) * WT
                   END IF
                 END IF
-                !
-              END DO
+              END IF
+
+              ! Whitecap Thickness
+              IF ( FLOGRD(5,8) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_THK(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(2) = SUMWTC(2) + WT
+                  IF ( WHITECAPAUX(2) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(2) = WADATS(IGRID)%WCAP_THK(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(2) = WHITECAPAUX(2) +                 &
+                        WADATS(IGRID)%WCAP_THK(GSEA) * WT
+                  END IF
+                END IF
+              END IF
+
+              ! Whitecap breaker height
+              IF ( FLOGRD(5,9) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_BHS(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(3) = SUMWTC(3) + WT
+                  IF ( WHITECAPAUX(3) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(3) = WADATS(IGRID)%WCAP_BHS(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(3) = WHITECAPAUX(3) +                 &
+                        WADATS(IGRID)%WCAP_BHS(GSEA) * WT
+                  END IF
+                END IF
+              END IF
+
+              ! Whitecap moment
+              IF ( FLOGRD(5,10) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_MNT(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(4) = SUMWTC(4) + WT
+                  IF ( WHITECAPAUX(4) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(4) = WADATS(IGRID)%WCAP_MNT(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(4) = WHITECAPAUX(4) +                 &
+                        WADATS(IGRID)%WCAP_MNT(GSEA) * WT
+                  END IF
+                END IF
+              END IF
+
               !
               ! Group 6 variables
               !
@@ -3131,17 +3189,60 @@ CONTAINS
               END IF
             END IF
             !
-            DO ICAP = 1,4
-              IF ( WHITECAPAUX(ICAP) .NE. UNDEF ) THEN
-                WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) / SUMWTC(ICAP)
-                IF ( WHITECAP(ISEA,ICAP) .EQ. UNDEF )  THEN
-                  WHITECAP(ISEA,ICAP) = WHITECAPAUX(ICAP) / REAL( SUMGRD )
-                ELSE
-                  WHITECAP(ISEA,ICAP) = WHITECAP(ISEA,ICAP) +              &
-                       WHITECAPAUX(ICAP) / REAL( SUMGRD )
-                END IF
+
+! WHITECAP now split into 4 separate variables:
+!            DO ICAP = 1,4
+!              IF ( WHITECAPAUX(ICAP) .NE. UNDEF ) THEN
+!                WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) / SUMWTC(ICAP)
+!                IF ( WHITECAP(ISEA,ICAP) .EQ. UNDEF )  THEN
+!                  WHITECAP(ISEA,ICAP) = WHITECAPAUX(ICAP) / REAL( SUMGRD )
+!                ELSE
+!                  WHITECAP(ISEA,ICAP) = WHITECAP(ISEA,ICAP) +              &
+!                       WHITECAPAUX(ICAP) / REAL( SUMGRD )
+!                END IF
+!              END IF
+!            END DO
+! 
+            ! Whitecap coverage:
+            IF ( WHITECAPAUX(1) .NE. UNDEF ) THEN
+              WHITECAPAUX(1) = WHITECAPAUX(1) / SUMWTC(1)
+              IF ( WCAP_COV(ISEA) .EQ. UNDEF )  THEN
+                WCAP_COV(ISEA) = WHITECAPAUX(1) / REAL( SUMGRD )
+              ELSE
+                WCAP_COV(ISEA) = WCAP_COV(ISEA) + WHITECAPAUX(1) / REAL( SUMGRD )
               END IF
-            END DO
+            END IF
+
+            ! Whitecap thickness:
+            IF ( WHITECAPAUX(2) .NE. UNDEF ) THEN
+              WHITECAPAUX(2) = WHITECAPAUX(2) / SUMWTC(2)
+              IF ( WCAP_THK(ISEA) .EQ. UNDEF )  THEN
+                WCAP_THK(ISEA) = WHITECAPAUX(2) / REAL( SUMGRD )
+              ELSE
+                WCAP_THK(ISEA) = WCAP_THK(ISEA) + WHITECAPAUX(2) / REAL( SUMGRD )
+              END IF
+            END IF
+
+            ! Whitecap breaker height:
+            IF ( WHITECAPAUX(3) .NE. UNDEF ) THEN
+              WHITECAPAUX(3) = WHITECAPAUX(3) / SUMWTC(3)
+              IF ( WCAP_BHS(ISEA) .EQ. UNDEF )  THEN
+                WCAP_BHS(ISEA) = WHITECAPAUX(3) / REAL( SUMGRD )
+              ELSE
+                WCAP_BHS(ISEA) = WCAP_BHS(ISEA) + WHITECAPAUX(3) / REAL( SUMGRD )
+              END IF
+            END IF
+
+            ! Whitecap moment:
+            IF ( WHITECAPAUX(4) .NE. UNDEF ) THEN
+              WHITECAPAUX(4) = WHITECAPAUX(4) / SUMWTC(4)
+              IF ( WCAP_MNT(ISEA) .EQ. UNDEF )  THEN
+                WCAP_MNT(ISEA) = WHITECAPAUX(4) / REAL( SUMGRD )
+              ELSE
+                WCAP_MNT(ISEA) = WCAP_MNT(ISEA) + WHITECAPAUX(4) / REAL( SUMGRD )
+              END IF
+            END IF
+!
             !
             ! Group 6 variables
             !

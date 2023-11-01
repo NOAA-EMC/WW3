@@ -824,7 +824,8 @@ CONTAINS
          TAUOY, USSX, USSY, MSSX, MSSY,         &
          MSCX, MSCY, PRMS, TPMS, CHARN,         &
          TAUWNX, TAUWNY, BHD, CGE,              &
-         CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP, &
+         CFLXYMAX, CFLTHMAX, CFLKMAX,           &
+         WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,&
          BEDFORMS, PHIBBL, TAUBBL, T01,         &
          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
          STH2M, HSIG, TAUICE, PHICE, PTHP0, PQP,&
@@ -1130,19 +1131,19 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 5, 7) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,1)
+            Arrexch(IH,JSEA)=WCAP_COV(JSEA)
           END IF
           IF ( FLGRDALL( 5, 8) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,2)
+            Arrexch(IH,JSEA)=WCAP_THK(JSEA)
           END IF
           IF ( FLGRDALL( 5, 9) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,3)
+            Arrexch(IH,JSEA)=WCAP_BHS(JSEA)
           END IF
           IF ( FLGRDALL( 5,10) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,4)
+            Arrexch(IH,JSEA)=WCAP_MNT(JSEA)
           END IF
           IF ( FLGRDALL( 6, 1) ) THEN
             IH = IH + 1
@@ -1573,19 +1574,19 @@ CONTAINS
         END IF
         IF ( FLGRDALL( 5, 7) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,1) = ARRtotal(IH,:)
+          WCAP_COV(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 5, 8) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,2) = ARRtotal(IH,:)
+          WCAP_THK(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 5, 9) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,3) = ARRtotal(IH,:)
+          WCAP_BHS(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 5,10) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,4) = ARRtotal(IH,:)
+          WCAP_MNT(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 6, 1) ) THEN
           IH = IH + 1

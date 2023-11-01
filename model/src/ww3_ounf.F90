@@ -189,7 +189,8 @@ PROGRAM W3OUNF
        USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
        MSCD, CHARN, TWS, TAUA, TAUADIR,             &
        TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
-       T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
+       T01, BEDFORMS, WCAP_COV, WCAP_THK,           &
+       WCAP_BHS, WCAP_MNT, TAUBBL, PHIBBL,          &
        CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
        STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
        P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
@@ -1646,19 +1647,19 @@ CONTAINS
             !
             ! Whitecap coverage
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,1), X1)
+            CALL S2GRID(WCAP_COV(1:NSEA), X1)
             !
             ! Whitecap foam thickness
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,2), X1)
+            CALL S2GRID(WCAP_THK(1:NSEA), X1)
             !
             ! Significant breaking wave height
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,3), X1)
+            CALL S2GRID(WCAP_BHS(1:NSEA), X1)
             !
             ! Whitecap moment
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,4), X1)
+            CALL S2GRID(WCAP_MNT(1:NSEA), X1)
             !
             ! Wind sea mean period T0M1
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN

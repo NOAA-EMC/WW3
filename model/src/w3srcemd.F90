@@ -200,7 +200,10 @@ CONTAINS
   !> @param[inout] CHARN
   !> @param[inout] TWS
   !> @param[inout] PHIOC
-  !> @param[inout] WHITECAP   Whitecap statistics.
+  !> @param[inout] WCAP_COV   Whitecap coverage
+  !> @param[inout] WCAP_THK   Whitecap foam thickness
+  !> @param[inout] WCAP_BHS   Whitecap breaking sig wave height
+  !> @param[inout] WCAP_MNT   Whitecap moment
   !> @param[in]    D50        Sand grain size.
   !> @param[in]    PSIC       Critical shields.
   !> @param[inout] BEDFORM    Bedform parameters.
@@ -229,13 +232,14 @@ CONTAINS
        TAUA, TAUADIR,                              &
 #endif
        AS, USTAR, USTDIR,                          &
-       CX, CY,  ICE, ICEH, ICEF, ICEDMAX,          &
+       CX, CY, ICE, ICEH, ICEF, ICEDMAX,          &
 #ifdef W3_REF1
        REFLEC, REFLED, TRNX, TRNY, BERG,           &
 #endif
        FPI, DTDYN, FCUT, DTG, TAUWX,               &
        TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
-       TAUWNY, PHIAW, CHARN, TWS, PHIOC, WHITECAP, &
+       TAUWNY, PHIAW, CHARN, TWS, PHIOC,           &
+       WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,     &
 #ifdef W3_BT4       
        D50, PSIC, BEDFORM,                         &
 #endif       
@@ -391,7 +395,10 @@ CONTAINS
     !       DELY    Real.  I   grid cell size in Y direction  ( !/BS1 )    !! REMOVED! Not used...
     !       DELA    Real.  I   grid cell area                 ( !/BS1 )    !! REMOVED! Not used...
     !       FPI     Real  I/O  Peak-input frequency.          ( !/ST2 )
-    !      WHITECAP R.A.   O   Whitecap statisics             ( !/ST4 )
+    !      WCAP_COV R.A.  I/O  Whitecap coverage              ( !/ST4 )
+    !      WCAP_THK R.A.  I/O  Whitecap foam thickness        ( !/ST4 )
+    !      WCAP_BHS R.A.  I/O  Whitecap breaking sig. wv. ht. ( !/ST4 )
+    !      WCAP_MNT R.A.  I/O  Whitecap moment
     !       DTDYN   Real   O   Average dynamic time step.
     !       FCUT    Real   O   Cut-off frequency for tail.
     !       DTG     Real   I   Global time step.
@@ -759,8 +766,11 @@ CONTAINS
         TAUBBL(1:NSEAL,2),     &    ! TODO: Swap dims
         TWS(1:NSEAL),          &
         TAUICE(1:NSEAL,2),     &    ! TODO: Swap dims?
-        WHITECAP(1:NSEAL,4)         ! TODO: Swap dims to avoid temporary variable
-
+        WCAP_COV(1:NSEAL),     &    ! -|
+        WCAP_THK(1:NSEAL),     &    !  | GPU Refactor: Split WHITECAPING into 4 separate
+        WCAP_BHS(1:NSEAL),     &    !  | arrays (WCAP_*) to avoid temporaries when slicing
+        WCAP_MNT(1:NSEAL)           ! -|
+    
     REAL, INTENT(OUT) ::       &
         DTDYN(1:NSEAL),        &
         FCUT(1:NSEAL)
@@ -1075,7 +1085,10 @@ CONTAINS
     END IF
 
 #ifdef W3_ST4
-    WHITECAP(:,:) = 0.
+    WCAP_COV(:) = 0.
+    WCAP_THK(:) = 0.
+    WCAP_BHS(:) = 0.
+    WCAP_MNT(:) = 0.
 #endif
 
     ! ---------------------------------------------------------------------
@@ -1198,12 +1211,7 @@ CONTAINS
       ! Not technically required when running SHRD mode
       ! TODO: Look into workaround for this, use pointers instead?
       !
-      ! TODO - rewrite to loop over I, to avoid loop dependency.
-      !
-      ! TODO WHITECAP array has its dimensions reversed which means a
-      ! temporary array is being used when chunking. This is maybe
-      ! causing odd behaviour on GPU?? Can we change the dim order
-      ! in whole code???
+      ! TODO - rewrite to loop over I for GPU, to avoid loop dependency.
 
       I = 1
       DO JSEA=CHUNK0,CHUNKN
@@ -1650,7 +1658,7 @@ CONTAINS
 #ifdef W3_ST4
 ! IX/IY not used...
           CALL W3SDS4 ( SPEC(:,JSEA), WN1_CHUNK(:,CSEA), CG1_CHUNK(:,CSEA), UST_CHUNK(CSEA), USTD_CHUNK(CSEA), DEPTH(CSEA), DAIR_CHUNK(CSEA), VSDS(:,CSEA),   &
-             VDDS(:,CSEA), IX(CSEA), IY(CSEA), BRLAMBDA(:,CSEA), WHITECAP(JSEA,:), DLWMEAN(CSEA) )
+             VDDS(:,CSEA), IX(CSEA), IY(CSEA), BRLAMBDA(:,CSEA), WCAP_COV(JSEA), WCAP_THK(JSEA), WCAP_MNT(JSEA), DLWMEAN(CSEA) )
 #endif
 #if defined(W3_DEBUGSRC) && defined(W3_ST4)
           IF (IX(CSEA) == DEBUG_NODE) THEN
@@ -2190,7 +2198,7 @@ CONTAINS
           ENDIF
 #endif
 
-          WHITECAP(JSEA,3)=0.
+          WCAP_BHS(JSEA) = 0.
           HSTOT=0.  
           DO IK=IKS1, NK
             FACTOR = DDEN(IK)/CG1_CHUNK(IK,CSEA)             !Jacobian to get energy in band
@@ -2211,11 +2219,11 @@ CONTAINS
 !             ! PHINL is calculated but never used; I have commented out (Chris Bunney):
 !              PHINL = PHINL + VSNL(IS,CSEA)* DT(CSEA) * FACTOR   &
 !                   / MAX ( 1. , (1.-HDT*VDNL(IS,CSEA))) ! semi-implict integration scheme
-              IF (VSIN(IS,CSEA).GT.0.) WHITECAP(JSEA,3) = WHITECAP(JSEA,3) + SPEC(IS,JSEA) * FACTOR
+              IF (VSIN(IS,CSEA).GT.0.) WCAP_BHS(JSEA) = WCAP_BHS(JSEA) + SPEC(IS,JSEA) * FACTOR
               HSTOT = HSTOT + SPEC(IS,JSEA) * FACTOR
             END DO
           END DO
-          WHITECAP(JSEA,3) = 4. * SQRT(WHITECAP(JSEA,3))
+          WCAP_BHS(JSEA) = 4. * SQRT(WCAP_BHS(JSEA))
           HSTOT = 4.*SQRT(HSTOT)
           TAUWIX(JSEA) = TAUWIX(JSEA) + TAUWX(JSEA) * DRAT(CSEA) * DT(CSEA)
           TAUWIY(JSEA) = TAUWIY(JSEA) + TAUWY(JSEA) * DRAT(CSEA) * DT(CSEA)

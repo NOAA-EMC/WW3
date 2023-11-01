@@ -156,11 +156,10 @@ MODULE W3ADATMD
   !      PHIAW     R.A.  Public   Wind to wave energy flux.
   !      TAUWIX/Y  R.A.  Public   Wind to wave energy flux.
   !      TAUWNX/Y  R.A.  Public   Wind to wave energy flux.
-  !      WHITECAP  R.A.  Public    1 : Whitecap coverage
-  !                                2 : Whitecap thickness
-  !                                3 : Mean breaking height
-  !                                4 : Mean breaking height
-  !
+  !      WCAP_COV  R.A.  Public   Whitecap coverage
+  !      WCAP_THK  R.A.  Public   Whitecap thickness
+  !      WCAP_BHS  R.A.  Public   Mean breaking height
+  !      WCAP_MNT  R.A.  Public   Whitecap moment
   !      Sxx       R.A.  Public   Radiation stresses.
   !      TAUOX/Y   R.A.  Public   Wave-ocean momentum flux.
   !      BHD       R.A.  Public   Wave-induced pressure (J term, Smith JPO 2006)
@@ -440,11 +439,13 @@ MODULE W3ADATMD
     ! Output fields group 5)
     !
     REAL, POINTER         ::  CHARN(:),  CGE(:),  PHIAW(:),       &
-         TAUWIX(:),  TAUWIY(:),  TAUWNX(:),  &
-         TAUWNY(:),  WHITECAP(:,:), TWS(:)
+         TAUWIX(:),  TAUWIY(:),  TAUWNX(:), TAUWNY(:),            &
+         WCAP_COV(:), WCAP_THK(:), WCAP_BHS(:), WCAP_MNT(:),      &
+         TWS(:)
     REAL, POINTER         :: XCHARN(:), XCGE(:), XPHIAW(:),       &
-         XTAUWIX(:), XTAUWIY(:), XTAUWNX(:),  &
-         XTAUWNY(:), XWHITECAP(:,:), XTWS(:)
+         XTAUWIX(:), XTAUWIY(:), XTAUWNX(:), XTAUWNY(:),          &
+         XWCAP_COV(:), XWCAP_THK(:), XWCAP_BHS(:), XWCAP_MNT(:),  &
+         XTWS(:)
     !
     ! Output fields group 6)
     !
@@ -599,8 +600,9 @@ MODULE W3ADATMD
        PTM1(:,:), PT1(:,:), PT2(:,:),PEP(:,:)
   !
   REAL, POINTER           :: CHARN(:), CGE(:), PHIAW(:),          &
-       TAUWIX(:), TAUWIY(:), TAUWNX(:),     &
-       TAUWNY(:), WHITECAP(:,:), TWS(:)
+       TAUWIX(:), TAUWIY(:), TAUWNX(:), TAUWNY(:),                &
+       WCAP_COV(:), WCAP_THK(:), WCAP_BHS(:), WCAP_MNT(:),        &
+       TWS(:)
   !
   REAL, POINTER           :: SXX(:), SYY(:), SXY(:), TAUOX(:),    &
        TAUOY(:), BHD(:), PHIOC(:),          &
@@ -1156,7 +1158,7 @@ CONTAINS
     !
     !    Friction velocity UST and USTDIR in W3WDATMD
     !
-    ALLOCATE ( WADATS(IMOD)%CHARN   (NSEALM),                       &
+    ALLOCATE ( WADATS(IMOD)%CHARN   (NSEALM),                 &
          WADATS(IMOD)%TWS     (NSEALM),                       &
          WADATS(IMOD)%CGE     (NSEALM),                       &
          WADATS(IMOD)%PHIAW   (NSEALM),                       &
@@ -1164,7 +1166,10 @@ CONTAINS
          WADATS(IMOD)%TAUWIY  (NSEALM),                       &
          WADATS(IMOD)%TAUWNX  (NSEALM),                       &
          WADATS(IMOD)%TAUWNY  (NSEALM),                       &
-         WADATS(IMOD)%WHITECAP(NSEALM,4),                     &
+         WADATS(IMOD)%WCAP_COV(NSEALM),                       &
+         WADATS(IMOD)%WCAP_THK(NSEALM),                       &
+         WADATS(IMOD)%WCAP_BHS(NSEALM),                       &
+         WADATS(IMOD)%WCAP_MNT(NSEALM),                       &
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1176,7 +1181,10 @@ CONTAINS
     WADATS(IMOD)%TAUWIY   = UNDEF
     WADATS(IMOD)%TAUWNX   = UNDEF
     WADATS(IMOD)%TAUWNY   = UNDEF
-    WADATS(IMOD)%WHITECAP = UNDEF
+    WADATS(IMOD)%WCAP_COV = UNDEF
+    WADATS(IMOD)%WCAP_THK = UNDEF
+    WADATS(IMOD)%WCAP_BHS = UNDEF
+    WADATS(IMOD)%WCAP_MNT = UNDEF
 
     call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 5')
     !
@@ -1995,10 +2003,22 @@ CONTAINS
     !
     IF ( OUTFLAGS( 5, 7) .OR. OUTFLAGS( 5, 8) .OR.           &
          OUTFLAGS( 5, 9) .OR. OUTFLAGS( 5,10)) THEN
-      ALLOCATE ( WADATS(IMOD)%XWHITECAP(NXXX,4), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_COV(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_THK(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_BHS(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_MNT(NXXX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     ELSE
-      ALLOCATE ( WADATS(IMOD)%XWHITECAP(1,4), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_COV(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_THK(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_BHS(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_MNT(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
@@ -2018,7 +2038,10 @@ CONTAINS
     WADATS(IMOD)%XTAUWIY   = UNDEF
     WADATS(IMOD)%XTAUWNX   = UNDEF
     WADATS(IMOD)%XTAUWNY   = UNDEF
-    WADATS(IMOD)%XWHITECAP = UNDEF
+    WADATS(IMOD)%WCAP_COV  = UNDEF
+    WADATS(IMOD)%WCAP_THK  = UNDEF
+    WADATS(IMOD)%WCAP_BHS  = UNDEF
+    WADATS(IMOD)%WCAP_MNT  = UNDEF
     !
     IF ( OUTFLAGS( 6, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XSXX(NXXX), STAT=ISTAT )
@@ -2865,7 +2888,10 @@ CONTAINS
       TAUWIY   => WADATS(IMOD)%TAUWIY
       TAUWNX   => WADATS(IMOD)%TAUWNX
       TAUWNY   => WADATS(IMOD)%TAUWNY
-      WHITECAP => WADATS(IMOD)%WHITECAP
+      WCAP_COV => WADATS(IMOD)%WCAP_COV
+      WCAP_THK => WADATS(IMOD)%WCAP_THK
+      WCAP_BHS => WADATS(IMOD)%WCAP_BHS
+      WCAP_MNT => WADATS(IMOD)%WCAP_MNT
       !
       SXX    => WADATS(IMOD)%SXX
       SYY    => WADATS(IMOD)%SYY
@@ -3205,7 +3231,10 @@ CONTAINS
       TAUWIY   => WADATS(IMOD)%XTAUWIY
       TAUWNX   => WADATS(IMOD)%XTAUWNX
       TAUWNY   => WADATS(IMOD)%XTAUWNY
-      WHITECAP => WADATS(IMOD)%XWHITECAP
+      WCAP_COV => WADATS(IMOD)%XWCAP_COV
+      WCAP_THK => WADATS(IMOD)%XWCAP_THK
+      WCAP_BHS => WADATS(IMOD)%XWCAP_BHS
+      WCAP_MNT => WADATS(IMOD)%XWCAP_MNT
       !
       SXX    => WADATS(IMOD)%XSXX
       SYY    => WADATS(IMOD)%XSYY

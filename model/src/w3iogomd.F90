@@ -2509,7 +2509,8 @@ CONTAINS
          PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,        &
          USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
          MSCD, QP, TAUWNX, TAUWNY, CHARN, TWS, BHD,   &
-         PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE, EF, &
+         PHIBBL, TAUBBL, WCAP_COV, WCAP_THK,          &
+         WCAP_BHS, WCAP_MNT, BEDFORMS, CGE, EF,       &
          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
@@ -2861,10 +2862,10 @@ CONTAINS
             TAUWNX(ISEA) = UNDEF
             TAUWNY(ISEA) = UNDEF
           END IF
-          IF ( FLOGRD( 5, 7) ) WHITECAP(ISEA,1) = UNDEF
-          IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
-          IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
-          IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
+          IF ( FLOGRD( 5, 7) ) WCAP_COV(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 8) ) WCAP_THK(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 9) ) WCAP_BHS(ISEA) = UNDEF
+          IF ( FLOGRD( 5,10) ) WCAP_MNT(ISEA) = UNDEF
           !
           IF ( FLOGRD( 6, 1) ) THEN
             SXX   (ISEA) = UNDEF
@@ -2943,10 +2944,10 @@ CONTAINS
             TAUWNX(ISEA) = UNDEF
             TAUWNY(ISEA) = UNDEF
           END IF
-          IF ( FLOGRD( 5, 7) ) WHITECAP(ISEA,1) = UNDEF
-          IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
-          IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
-          IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
+          IF ( FLOGRD( 5, 7) ) WCAP_COV(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 8) ) WCAP_THK(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 9) ) WCAP_BHS(ISEA) = UNDEF
+          IF ( FLOGRD( 5,10) ) WCAP_MNT(ISEA) = UNDEF
           !
           IF ( FLOGRD( 6, 2) )THEN
             TAUOX (ISEA) = UNDEF
@@ -3372,24 +3373,24 @@ CONTAINS
               WRITE ( NDSOA,* ) 'TAUWNY:', TAUWNY(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,1)
+              WRITE ( NDSOG ) WCAP_COV(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(1):', WHITECAP(1:NSEA,1)
+              WRITE ( NDSOA,* ) 'WCAP_COV:', WCAP_COV(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,2)
+              WRITE ( NDSOG ) WCAP_THK(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(2):', WHITECAP(1:NSEA,2)
+              WRITE ( NDSOA,* ) 'WCAP_THK:', WCAP_THK(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,3)
+              WRITE ( NDSOG ) WCAP_BHS(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(3):', WHITECAP(1:NSEA,3)
+              WRITE ( NDSOA,* ) 'WCAP_BHS:', WCAP_BHS(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,4)
+              WRITE ( NDSOG ) WCAP_MNT(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(4):', WHITECAP(1:NSEA,4)
+              WRITE ( NDSOA,* ) 'WCAP_MNT:', WCAP_MNT(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               WRITE ( NDSOG ) TWS(1:NSEA)
@@ -3847,16 +3848,16 @@ CONTAINS
                    TAUWNY(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,1)
+                   WCAP_COV(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,2)
+                   WCAP_THK(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,3)
+                   WCAP_BHS(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,4)
+                   WCAP_MNT(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                    TWS(1:NSEA)

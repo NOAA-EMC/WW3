@@ -1532,7 +1532,10 @@ CONTAINS
               CHARN(1:NSEAL),                    &
               TWS(1:NSEAL),                      &
               PHIOC(1:NSEAL),                    &
-              WHITECAP(1:NSEAL,1:4),             & ! WAS TMP1; TODO: Makes temp array; switch dims
+              WCAP_COV(1:NSEAL),                 & ! |
+              WCAP_THK(1:NSEAL),                 & ! | - WCAP_* was WHITECAP and formerly TMP1
+              WCAP_BHS(1:NSEAL),                 & ! |
+              WCAP_MNT(1:NSEAL),                 & ! |
 #ifdef W3_BT4
               SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
               SED_PSIC(1:NSEA),                  & !   "   "
@@ -2200,7 +2203,10 @@ CONTAINS
                        CHARN(1:NSEAL),                    &
                        TWS(1:NSEAL),                      &
                        PHIOC(1:NSEAL),                    &
-                       WHITECAP(1:NSEAL,1:4),             & ! WAS TMP1; TODO: Makes temp array; switch dims
+                       WCAP_COV(1:NSEAL),                 & ! |
+                       WCAP_THK(1:NSEAL),                 & ! | - WCAP_* was WHITECAP and formerly TMP1
+                       WCAP_BHS(1:NSEAL),                 & ! |
+                       WCAP_MNT(1:NSEAL),                 & ! |
 #ifdef W3_BT4
                        SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
                        SED_PSIC(1:NSEA),                  & !  "  "
@@ -2255,7 +2261,10 @@ CONTAINS
                        CHARN(1:NSEAL),                    &
                        TWS(1:NSEAL),                      &
                        PHIOC(1:NSEAL),                    &
-                       WHITECAP(1:NSEAL,1:4),             & ! WAS TMP1; TODO: Makes temp array; switch dims
+                       WCAP_COV(1:NSEAL),                 & ! |
+                       WCAP_THK(1:NSEAL),                 & ! | - WCAP_* was WHITECAP and formerly TMP1
+                       WCAP_BHS(1:NSEAL),                 & ! |
+                       WCAP_MNT(1:NSEAL),                 & ! |
 #ifdef W3_BT4
                        SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
                        SED_PSIC(1:NSEA),                  & ! "   "

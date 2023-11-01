@@ -2143,7 +2143,8 @@ CONTAINS
          TAUOY, USSX, USSY, MSSX, MSSY, MSSD,      &
          MSCX, MSCY, MSCD, PRMS, TPMS, CHARN,      &
          TWS, TAUWNX, TAUWNY, BHD, CGE,            &
-         CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP,    &
+         CFLXYMAX, CFLTHMAX, CFLKMAX,              &
+         WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,   &
          BEDFORMS, PHIBBL, TAUBBL, T01,            &
          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,      &
          STH2M, HSIG, PHICE, TAUICE, USSP,         &
@@ -2923,7 +2924,7 @@ CONTAINS
         IF ( FLGRDALL( 5, 7) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (WHITECAP(1,1),NSEALM , MPI_REAL, IROOT,&
+          CALL MPI_SEND_INIT (WCAP_COV(1), NSEALM, MPI_REAL, IROOT, &
                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
@@ -2935,7 +2936,7 @@ CONTAINS
         IF ( FLGRDALL( 5, 8) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (WHITECAP(1,2),NSEALM , MPI_REAL, IROOT,&
+          CALL MPI_SEND_INIT (WCAP_THK(1), NSEALM, MPI_REAL, IROOT, &
                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
@@ -2947,7 +2948,7 @@ CONTAINS
         IF ( FLGRDALL( 5, 9) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (WHITECAP(1,3),NSEALM , MPI_REAL, IROOT,&
+          CALL MPI_SEND_INIT (WCAP_BHS(1), NSEALM, MPI_REAL, IROOT, &
                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
@@ -2959,7 +2960,7 @@ CONTAINS
         IF ( FLGRDALL( 5,10) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (WHITECAP(1,4),NSEALM , MPI_REAL, IROOT,&
+          CALL MPI_SEND_INIT (WCAP_MNT(1), NSEALM, MPI_REAL, IROOT, &
                IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
@@ -4170,7 +4171,7 @@ CONTAINS
           IF ( FLGRDALL( 5, 7) ) THEN
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (WHITECAP(I0,1),1,WW3_FIELD_VEC, IFROM,  &
+            CALL MPI_RECV_INIT (WCAP_COV(I0),1,WW3_FIELD_VEC, IFROM,  &
                  IT, MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
@@ -4182,7 +4183,7 @@ CONTAINS
           IF ( FLGRDALL( 5, 8) ) THEN
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (WHITECAP(I0,2),1,WW3_FIELD_VEC, IFROM,  &
+            CALL MPI_RECV_INIT (WCAP_THK(I0),1,WW3_FIELD_VEC, IFROM,  &
                  IT, MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
@@ -4194,7 +4195,7 @@ CONTAINS
           IF ( FLGRDALL( 5, 9) ) THEN
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (WHITECAP(I0,3),1,WW3_FIELD_VEC, IFROM,  &
+            CALL MPI_RECV_INIT (WCAP_BHS(I0),1,WW3_FIELD_VEC, IFROM,  &
                  IT, MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
@@ -4206,7 +4207,7 @@ CONTAINS
           IF ( FLGRDALL( 5,10) ) THEN
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (WHITECAP(I0,4),1,WW3_FIELD_VEC, IFROM,  &
+            CALL MPI_RECV_INIT (WCAP_MNT(I0),1,WW3_FIELD_VEC, IFROM,  &
                  IT, MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT

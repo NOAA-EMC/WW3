@@ -164,8 +164,9 @@ PROGRAM W3OUTF
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
        TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
-       CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
-       CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
+       CFLTHMAX, CFLKMAX, BEDFORMS,                &
+       WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,     &
+       T02, CGE, T01, HSIG, STMAXE, STMAXD, HMAXE, &
        HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
        WNMEAN, TAUA, TAUADIR
   USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
@@ -1654,9 +1655,9 @@ CONTAINS
             UNITS  = '1'
             ENAME  = '.wcc'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,1)
+              XS1    = WCAP_COV(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_COV(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
@@ -1666,9 +1667,9 @@ CONTAINS
             UNITS  = 'm'
             ENAME  = '.wcf'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,2)
+              XS1    = WCAP_THK(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,2) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_THK(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
@@ -1678,9 +1679,9 @@ CONTAINS
             UNITS  = 'm'
             ENAME  = '.wch'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,3)
+              XS1    = WCAP_BHS(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,3) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_BHS(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
@@ -1690,9 +1691,9 @@ CONTAINS
             UNITS  = '1'
             ENAME  = '.wcm'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,4)
+              XS1    = WCAP_MNT(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,4) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_MNT(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
