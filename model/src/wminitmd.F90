@@ -743,7 +743,7 @@ CONTAINS
     !
     ! 2.c Set up I/O for individual models (initial)
     !
-    ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
+    ALLOCATE ( MDS(15,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
          FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
          MDSF(-NRINP:NRGRD,JFIRST:9), IPRT(6,NRGRD), LPRT(NRGRD),   &
          FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
@@ -2303,8 +2303,20 @@ CONTAINS
           SELECT CASE (J)
           CASE (1)
             MDS(7,I) = NDSFND
+#ifdef W3_ASCII
+            CALL WMUGET ( MDSE, MDST, NDSFND, 'OUT' )
+            CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,            &
+                 DESC='ASCII output file' )
+            MDS(14,I) = NDSFND  ! ASCII
+#endif
           CASE (2)
             MDS(8,I) = NDSFND
+#ifdef W3_ASCII
+            CALL WMUGET ( MDSE, MDST, NDSFND, 'OUT' )
+            CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,            &
+                 DESC='ASCII output file' )
+            MDS(15,I) = NDSFND  ! ASCII
+#endif
           CASE (3)
             MDS(12,I) = NDSFND
             CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
@@ -2422,6 +2434,28 @@ CONTAINS
         END IF
       END IF
       !
+#ifdef W3_ASCII
+      IF ( MDS(14,I) .NE. -1 ) THEN ! Grid output (ASCII)
+        IF ( IAPROC .EQ. NAPFLD ) THEN
+          TNAME  = TRIM(FNMPRE)//'out_grd.' // FILEXT(:II) // '.txt'
+          CALL WMUSET ( MDSE,MDST, MDS(14,I), .TRUE., NAME=TNAME )
+        ELSE
+          CALL WMUSET ( MDSE,MDST, MDS(14,I), .FALSE. )
+          MDS(14,I) = -1
+        END IF
+      END IF
+      !
+      IF ( MDS(15,I) .NE. -1 ) THEN ! Point output (ASCII)
+        IF ( IAPROC .EQ. NAPPNT ) THEN
+          TNAME  = TRIM(FNMPRE)//'out_pnt.' // FILEXT(:II) // '.txt'
+          CALL WMUSET ( MDSE,MDST, MDS(15,I), .TRUE., NAME=TNAME )
+        ELSE
+          CALL WMUSET ( MDSE,MDST, MDS(15,I), .FALSE. )
+          MDS(15,I) = -1
+        END IF
+      END IF
+#endif
+!
 #ifdef W3_T
       WRITE (MDST,9081) I, TIME
 #endif
@@ -3389,7 +3423,7 @@ CONTAINS
     !
 #ifdef W3_T
 9020 FORMAT ( ' TEST WMINIT : UNIT NUMBERS FOR GRIDS (',A,')'/    &
-         15X,'GRID MDS(1-13)',43X,'NTRACE')
+         15X,'GRID MDS(1-15)',43X,'NTRACE')
 9021 FORMAT (14X,16I4)
 9022 FORMAT ( ' TEST WMINIT : UNIT NUMBERS FOR INTPUT FILES'/     &
          15X,'GRID MDSF(JFIRST-9)')
@@ -4108,7 +4142,7 @@ CONTAINS
     !
     ! 2.c Set up I/O for individual models (initial)
     !
-    ALLOCATE ( MDS(13,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
+    ALLOCATE ( MDS(15,NRGRD), NTRACE(2,NRGRD), ODAT(40,0:NRGRD),    &
          FLGRD(NOGRP,NGRPP,NRGRD), OT2(0:NRGRD), FLGD(NOGRP,NRGRD), &
          MDSF(-NRINP:NRGRD,JFIRST:9), IPRT(6,NRGRD), LPRT(NRGRD),   &
          FLGR2(NOGRP,NGRPP,NRGRD),FLG2D(NOGRP,NGRPP), FLG1D(NOGRP), &
@@ -5400,8 +5434,20 @@ CONTAINS
           SELECT CASE (J)
           CASE (1)
             MDS(7,I) = NDSFND
+#ifdef W3_ASCII
+            CALL WMUGET ( MDSE, MDST, NDSFND, 'OUT' )
+            CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,            &
+                 DESC='ASCII output file' )
+            MDS(14,I) = NDSFND  ! ASCII
+#endif
           CASE (2)
             MDS(8,I) = NDSFND
+#ifdef W3_ASCII
+            CALL WMUGET ( MDSE, MDST, NDSFND, 'OUT' )
+            CALL WMUSET ( MDSE, MDST, NDSFND, .TRUE.,            &
+                 DESC='ASCII output file' )
+            MDS(15,I) = NDSFND  ! ASCII
+#endif
           CASE (3)
             MDS(12,I) = NDSFND
             CALL WMUGET ( MDSE, MDST, NDSFND, 'INP' )
@@ -5519,6 +5565,28 @@ CONTAINS
         END IF
       END IF
       !
+#ifdef W3_ASCII
+      IF ( MDS(14,I) .NE. -1 ) THEN ! Grid output (ASCII)
+        IF ( IAPROC .EQ. NAPFLD ) THEN
+          TNAME  = TRIM(FNMPRE)//'out_grd.' // FILEXT(:II) // '.txt'
+          CALL WMUSET ( MDSE,MDST, MDS(14,I), .TRUE., NAME=TNAME )
+        ELSE
+          CALL WMUSET ( MDSE,MDST, MDS(14,I), .FALSE. )
+          MDS(14,I) = -1
+        END IF
+      END IF
+      !
+      IF ( MDS(15,I) .NE. -1 ) THEN ! Point output (ASCII)
+        IF ( IAPROC .EQ. NAPPNT ) THEN
+          TNAME  = TRIM(FNMPRE)//'out_pnt.' // FILEXT(:II) // '.txt'
+          CALL WMUSET ( MDSE,MDST, MDS(15,I), .TRUE., NAME=TNAME )
+        ELSE
+          CALL WMUSET ( MDSE,MDST, MDS(15,I), .FALSE. )
+          MDS(15,I) = -1
+        END IF
+      END IF
+#endif
+!
 #ifdef W3_T
       WRITE (MDST,9081) I, TIME
 #endif
@@ -6493,7 +6561,7 @@ CONTAINS
     !
 #ifdef W3_T
 9020 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS FOR GRIDS (',A,')'/  &
-         15X,'GRID MDS(1-13)',43X,'NTRACE')
+         15X,'GRID MDS(1-15)',43X,'NTRACE')
 9021 FORMAT (14X,16I4)
 9022 FORMAT ( ' TEST WMINITNML : UNIT NUMBERS FOR INTPUT FILES'/   &
          15X,'GRID MDSF(JFIRST-9)')
