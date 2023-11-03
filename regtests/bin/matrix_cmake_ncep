@@ -96,7 +96,7 @@ EOF
 
 # 1.a Computer/ user dependent set up
 
-  echo '#!/bin/sh --login'                                   > matrix.head
+  echo '#!/bin/sh'                                           > matrix.head
   echo ' '                                                  >> matrix.head
   if [ $batchq = "slurm" ] && [ $isorion ]
   then
