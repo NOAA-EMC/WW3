@@ -16,7 +16,7 @@ program test_io
   implicit none
   
   integer, target :: i, j, k, l
-  integer :: ndsop, iotst, imod, ndstst, ierr, ndsbul, ndsi, ndsm
+  integer :: ndsop, iotest, imod, ndstst, ierr, ndsbul, ndsi, ndsm
   integer :: ndstrc, ntrace
   real :: m2km
 
@@ -79,8 +79,8 @@ program test_io
   ! ndstst = 22
   ! open(unit = ndstst, file = "test_io_test")
 !  call w3iopo('WRITE', ndsop, iotst, imod)
-  call w3iopo('READ', ndsop, iotst, imod)
-  if (iotst .ne. 0) stop 10
+  CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+  if (iotest .ne. 0) stop 10
   close(20)
 
   print *, 'SUCCESS!'
