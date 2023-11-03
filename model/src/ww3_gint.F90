@@ -1267,7 +1267,8 @@ CONTAINS
     IF ( P2MSF(1).GT.0) THEN
       P2SMS    = UNDEF
     ENDIF
-    TAUICE   = UNDEF
+    TAUICEX  = UNDEF
+    TAUICEY  = UNDEF
     PHICE    = UNDEF
     IF ( USSPF(1).GT.0 ) THEN
       USSP     = UNDEF
@@ -1281,7 +1282,8 @@ CONTAINS
     UBD      = UNDEF
     BEDFORMS = UNDEF
     PHIBBL   = UNDEF
-    TAUBBL   = UNDEF
+    TAUBBLX  = UNDEF
+    TAUBBLY  = UNDEF
     !
     ! Group 8 variables
     !
@@ -2420,14 +2422,14 @@ CONTAINS
               END IF
               !
               IF ( FLOGRD(6,10) .AND. ACTIVE ) THEN
-                IF ( WADATS(IGRID)%TAUICE(GSEA,1) .NE. UNDEF ) THEN
+                IF ( WADATS(IGRID)%TAUICEX(GSEA) .NE. UNDEF ) THEN
                   SUMWT6(10) = SUMWT6(10) + WT
                   IF ( TAUICEAUX(1) .EQ. UNDEF ) TAUICEAUX(1) = 0.
                   IF ( TAUICEAUX(2) .EQ. UNDEF ) TAUICEAUX(2) = 0.
                   TAUICEAUX(1) = TAUICEAUX(1) +                    &
-                       WADATS(IGRID)%TAUICE(GSEA,1)*WT
+                       WADATS(IGRID)%TAUICEX(GSEA)*WT
                   TAUICEAUX(2) = TAUICEAUX(2) +                    &
-                       WADATS(IGRID)%TAUICE(GSEA,2)*WT
+                       WADATS(IGRID)%TAUICEY(GSEA)*WT
                 END IF
               END IF
               !
@@ -2525,16 +2527,16 @@ CONTAINS
               END IF
               !
               IF ( FLOGRD(7,5) .AND. ACTIVE ) THEN
-                IF ( WADATS(IGRID)%TAUBBL(GSEA,1) .NE. UNDEF ) THEN
+                IF ( WADATS(IGRID)%TAUBBLX(GSEA) .NE. UNDEF ) THEN
                   SUMWT7(5) = SUMWT7(5) + WT
                   IF ( TAUBBLAUX(1) .EQ. UNDEF ) THEN
-                    TAUBBLAUX(1) = WADATS(IGRID)%TAUBBL(GSEA,1)*WT
-                    TAUBBLAUX(2) = WADATS(IGRID)%TAUBBL(GSEA,2)*WT
+                    TAUBBLAUX(1) = WADATS(IGRID)%TAUBBLX(GSEA)*WT
+                    TAUBBLAUX(2) = WADATS(IGRID)%TAUBBLY(GSEA)*WT
                   ELSE
                     TAUBBLAUX(1) = TAUBBLAUX(1) +                          &
-                         WADATS(IGRID)%TAUBBL(GSEA,1)*WT
+                         WADATS(IGRID)%TAUBBLX(GSEA)*WT
                     TAUBBLAUX(2) = TAUBBLAUX(2) +                          &
-                         WADATS(IGRID)%TAUBBL(GSEA,2)*WT
+                         WADATS(IGRID)%TAUBBLY(GSEA)*WT
                   END IF
                 END IF
               END IF
@@ -3354,11 +3356,11 @@ CONTAINS
             END IF
             !
             IF ( TAUICEAUX(1) .NE. UNDEF ) THEN
-              IF ( TAUICE(ISEA,1) .EQ. UNDEF )   TAUICE(ISEA,1) = 0.
-              IF ( TAUICE(ISEA,2) .EQ. UNDEF )   TAUICE(ISEA,2) = 0.
-              TAUICE(ISEA,1) = TAUICE(ISEA,1) +                    &
+              IF ( TAUICEX(ISEA) .EQ. UNDEF )   TAUICEX(ISEA) = 0.
+              IF ( TAUICEY(ISEA) .EQ. UNDEF )   TAUICEY(ISEA) = 0.
+              TAUICEX(ISEA) = TAUICEX(ISEA) +                    &
                    TAUICEAUX(1) / REAL( SUMWT6(10) * SUMGRD )
-              TAUICE(ISEA,2) = TAUICE(ISEA,2) +                    &
+              TAUICEY(ISEA) = TAUICEY(ISEA) +                    &
                    TAUICEAUX(2) / REAL( SUMWT6(10) * SUMGRD )
             END IF
             !
@@ -3446,13 +3448,13 @@ CONTAINS
             IF ( TAUBBLAUX(1) .NE. UNDEF ) THEN
               TAUBBLAUX(1) = TAUBBLAUX(1) / SUMWT7(5)
               TAUBBLAUX(2) = TAUBBLAUX(2) / SUMWT7(5)
-              IF ( TAUBBL(ISEA,1) .EQ. UNDEF )  THEN
-                TAUBBL(ISEA,1) = TAUBBLAUX(1) / REAL( SUMGRD )
-                TAUBBL(ISEA,2) = TAUBBLAUX(2) / REAL( SUMGRD )
+              IF ( TAUBBLX(ISEA) .EQ. UNDEF )  THEN
+                TAUBBLX(ISEA) = TAUBBLAUX(1) / REAL( SUMGRD )
+                TAUBBLY(ISEA) = TAUBBLAUX(2) / REAL( SUMGRD )
               ELSE
-                TAUBBL(ISEA,1) = TAUBBL(ISEA,1) +                  &
+                TAUBBLX(ISEA) = TAUBBLX(ISEA) +                  &
                      TAUBBLAUX(1) / REAL( SUMGRD )
-                TAUBBL(ISEA,2) = TAUBBL(ISEA,2) +                  &
+                TAUBBLY(ISEA) = TAUBBLY(ISEA) +                  &
                      TAUBBLAUX(2) / REAL( SUMGRD )
               END IF
             END IF

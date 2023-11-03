@@ -2482,7 +2482,7 @@ CONTAINS
               ISEA=1  ! to be fixed later
               D50 = SED_D50(ISEA)
               PSIC= SED_PSIC(ISEA)
-              CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
+              CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL(1), TAUBBL(2),   &
                    BEDFORM, XBT, DIA, IX, IY )
 #endif
 

@@ -1542,8 +1542,10 @@ CONTAINS
               BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
               PHIBBL(1:NSEAL),                   &
-              TAUBBL(1:NSEAL,1:2),               & ! WAS TMP3
-              TAUICE(1:NSEAL,1:2),               & ! WAS TMP4
+              TAUBBLX(1:NSEAL,                   & ! WAS TMP3
+              TAUBBLY(1:NSEAL),                  & ! WAS TMP3
+              TAUICEX(1:NSEAL),                  & ! WAS TMP4
+              TAUICEY(1:NSEAL),                  & ! WAS TMP4
               PHICE(1:NSEAL),                    &
               TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
               WNMEAN(1:NSEAL),                   &
@@ -2213,8 +2215,10 @@ CONTAINS
                        BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
                        PHIBBL(1:NSEAL),                   &
-                       TAUBBL(1:NSEAL,1:2),               & ! WAS TMP3
-                       TAUICE(1:NSEAL,1:2),               & ! WAS TMP4
+                       TAUBBLX(1:NSEAL),                  & ! WAS TMP3
+                       TAUBBLY(1:NSEAL),                  & ! WAS TMP3
+                       TAUICEX(1:NSEAL),                  & ! WAS TMP4
+                       TAUICEY(1:NSEAL),                  & ! WAS TMP4
                        PHICE(1:NSEAL),                    &
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
                        WNMEAN(1:NSEAL),                   &
@@ -2271,8 +2275,10 @@ CONTAINS
                        BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
 #endif                       
                        PHIBBL(1:NSEAL),                   &
-                       TAUBBL(1:NSEAL,1:2),               & ! WAS TMP3
-                       TAUICE(1:NSEAL,1:2),               & ! WAS TMP4
+                       TAUBBLX(1:NSEAL),                  & ! WAS TMP3
+                       TAUBBLY(1:NSEAL),                  & ! WAS TMP3
+                       TAUICEX(1:NSEAL),                  & ! WAS TMP4
+                       TAUICEY(1:NSEAL),                  & ! WAS TMP4
                        PHICE(1:NSEAL),                    &
                        TAUOCX(1:NSEAL), TAUOCY(1:NSEAL),  &
                        WNMEAN(1:NSEAL),                   &

@@ -36,6 +36,7 @@ MODULE W3SBT4MD
   !/                  inclusion in WAVEWATCH III.
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    14-Mar-2012 : Preparing distribution version.     ( version 4.05 )
+  !/    03-Nov-2023 : Split TAUBBL into two separate vars ( version 7.13 )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -326,7 +327,7 @@ CONTAINS
   !> @param[in]    DEPTH    Water depth.
   !> @param[in]    D50      Median grain size.
   !> @param[in]    PSIC     Critical Shields parameter.
-  !> @param[out]   TAUBBL   Components of stress leaking to the bottom.
+  !> @param[out] TAUBBL[XY] Components of stress leaking to the bottom.
   !> @param[inout] BEDFORM  Ripple parameters (roughness and wavelength).
   !> @param[out]   S        Source term (1-D version).
   !> @param[out]   D        Diagonal term of derivative.
@@ -337,7 +338,7 @@ CONTAINS
   !> @author J. Lepesqueur
   !> @date   15-Mar-2012
   !>
-  SUBROUTINE W3SBT4 (A, CG, WN, DEPTH, D50, PSIC, TAUBBL, BEDFORM, S, D, IX, IY )
+  SUBROUTINE W3SBT4 (A, CG, WN, DEPTH, D50, PSIC, TAUBBLX, TAUBBLY, BEDFORM, S, D, IX, IY )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -350,6 +351,7 @@ CONTAINS
     !/    23-Jun-2011 : Origination.                        ( version 4.04 )
     !/    04-Jul-2011 : Adding momentum flux TAUBBL         ( version 4.05 )
     !/    15-Mar-2012 : Adding subgrid treatment for depth  ( version 4.05 )
+    !/    03-Nov-2023 : Split TAUBBL into TUABBL[X,Y]       ( version 7.13 )
     !/
     !  1. Purpose :
     !
@@ -371,7 +373,7 @@ CONTAINS
     !       D50     Real  I   Median grain size.
     !       PSIC    Real  I   Critical Shields parameter
     !       BEFORMS Real I/O  Ripple parameters (roughness and wavelength).
-    !       TAUBBL  Real  O   Components of stress leaking to the bottom.
+    !    TAUBBL[XY] Real  O   Components of stress leaking to the bottom.
     !       S       R.A.  O   Source term (1-D version).
     !       D       R.A.  O   Diagonal term of derivative.             *)
     !       IX,IY   Int. I   Spatial grid indices
@@ -437,7 +439,7 @@ CONTAINS
     REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), D50
     REAL, INTENT(IN)        :: PSIC
     INTEGER, INTENT(IN)     :: IX, IY
-    REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUBBL(2)
+    REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUBBLX, TAUBBLY
     REAL, INTENT(INOUT)     :: BEDFORM(3)
     REAL                    :: CBETA(NK)
     REAL :: UORB2,UORB,AORB, EBX, EBY, AX, AY, LX, LY
@@ -481,7 +483,8 @@ CONTAINS
     ! 2. Subgrid loop
     !
     DSUM(:)=0.
-    TAUBBL(:)=0.
+    TAUBBLX(:)=0.
+    TAUBBLY(:)=0.
     !
     DO ISUB=1,3
       !
@@ -624,8 +627,8 @@ CONTAINS
         IS=ITH+(IK-1)*NTH
         D(IS)=DSUM(IK)
         TEMP2=CONST2*D(IS)*A(IS)
-        TAUBBL(1) = TAUBBL(1) - TEMP2*ECOS(IS)
-        TAUBBL(2) = TAUBBL(2) - TEMP2*ESIN(IS)
+        TAUBBLX = TAUBBLX - TEMP2 * ECOS(IS)
+        TAUBBLY = TAUBBLY - TEMP2 * ESIN(IS)
         S(IS)=D(IS)*A(IS)
       END DO
     END DO

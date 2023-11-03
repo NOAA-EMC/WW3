@@ -826,10 +826,10 @@ CONTAINS
          TAUWNX, TAUWNY, BHD, CGE,              &
          CFLXYMAX, CFLTHMAX, CFLKMAX,           &
          WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,&
-         BEDFORMS, PHIBBL, TAUBBL, T01,         &
+         BEDFORMS, PHIBBL, TAUBBLX, TABBBLY, T01,&
          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
-         STH2M, HSIG, TAUICE, PHICE, PTHP0, PQP,&
-         PPE, PGW, PSW, PTM1, PT1, PT2, PEP,   &
+         STH2M, HSIG, TAUICEX, TAUICEY, PHICE,  &
+         PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2, PEP,   &
          QP, MSSD, MSCD, STMAXE, STMAXD, HMAXE, &
          HCMAXE, HMAXD, HCMAXD, WBT, USSP
     USE W3GDATMD, ONLY: NK, NSEAL
@@ -1199,9 +1199,9 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 6, 10) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUICE(JSEA,1)
+            Arrexch(IH,JSEA)=TAUICEX(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUICE(JSEA,2)
+            Arrexch(IH,JSEA)=TAUICEY(JSEA)
           END IF
           IF ( FLGRDALL( 6, 11) ) THEN
             IH = IH + 1
@@ -1245,9 +1245,9 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 7, 5) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUBBL(JSEA,1)
+            Arrexch(IH,JSEA)=TAUBBLX(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUBBL(JSEA,2)
+            Arrexch(IH,JSEA)=TAUBBLY(JSEA)
           END IF
           IF ( FLGRDALL( 8, 1) ) THEN
             IH = IH + 1
@@ -1642,9 +1642,9 @@ CONTAINS
         END IF
         IF (  FLGRDALL( 6, 10) ) THEN
           IH = IH + 1
-          TAUICE(1:NSEA,1) = ARRtotal(IH,:)
+          TAUICEX(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          TAUICE(1:NSEA,2) = ARRtotal(IH,:)
+          TAUICEY(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF (  FLGRDALL( 6, 11) ) THEN
           IH = IH + 1
@@ -1688,9 +1688,9 @@ CONTAINS
         END IF
         IF ( FLGRDALL( 7, 5) ) THEN
           IH = IH + 1
-          TAUBBL(1:NSEA,1) = ARRtotal(IH,:)
+          TAUBBLX(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          TAUBBL(1:NSEA,2) = ARRtotal(IH,:)
+          TAUBBLY(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 8, 1) ) THEN
           IH = IH + 1

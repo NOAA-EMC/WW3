@@ -208,8 +208,10 @@ CONTAINS
   !> @param[in]    PSIC       Critical shields.
   !> @param[inout] BEDFORM    Bedform parameters.
   !> @param[inout] PHIBBL     Energy flux to BBL.
-  !> @param[inout] TAUBBL     Momentum flux to BBL.
-  !> @param[inout] TAUICE     Momentum flux to sea ice.
+  !> @param[inout] TAUBBLX    X-momentum flux to BBL.
+  !> @param[inout] TAUBBLY    Y-momentum flux to BBL.
+  !> @param[inout] TAUICEX    X-momentum flux to sea ice.
+  !> @param[inout] TAUICEY    Y-momentum flux to sea ice.
   !> @param[inout] PHICE      Energy flux to sea ice.
   !> @param[inout] TAUOCX     Total ocean momentum component.
   !> @param[inout] TAUOCY     Total ocean momentum component.
@@ -236,14 +238,15 @@ CONTAINS
 #ifdef W3_REF1
        REFLEC, REFLED, TRNX, TRNY, BERG,           &
 #endif
-       FPI, DTDYN, FCUT, DTG, TAUWX,               &
+       FPI, DTDYN, FCUT, DTG, TAUWX,               &  
        TAUWY, TAUOX, TAUOY, TAUWIX, TAUWIY, TAUWNX,&
        TAUWNY, PHIAW, CHARN, TWS, PHIOC,           &
        WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,     &
 #ifdef W3_BT4       
-       D50, PSIC, BEDFORM,                         &
+       D50, PSIC, BEDFORM,                         &  
 #endif       
-       PHIBBL, TAUBBL, TAUICE,                     &
+       PHIBBL, TAUBBLX, TAUBBLY,                   &
+       TAUICEX, TAUICEY,                           &
        PHICE, TAUOCX, TAUOCY, WNMEAN, DAIR, COEF,  &
        VSIO, VDIO, SHAVEIO) ! These now optionals
     !/
@@ -406,10 +409,10 @@ CONTAINS
     !       BEDFORM R.A.  I/O  Bedform parameters             ( !/BT4 )
     !       PSIC    Real   I   Critical Shields               ( !/BT4 )
     !       PHIBBL  Real   O   Energy flux to BBL             ( !/BTx )
-    !       TAUBBL  R.A.   O   Momentum flux to BBL           ( !/BTx )
-    !       TAUICE  R.A.  I/O  Momentum flux to sea ice       ( !/ICx )
+    !     TAUBBL[XY]R.A.   O   Momentum flux to BBL           ( !/BTx )
+    !     TAUICE[XY]R.A.  I/O  Momentum flux to sea ice       ( !/ICx )
     !       PHICE   Real  I/O  Energy flux to sea ice         ( !/ICx )
-    !       TAUOCX-YReal   O   Total ocean momentum components
+    !      TAUOC[XY]Real   O   Total ocean momentum components
     !       WNMEAN  Real   O   Mean wave number
     !       DAIR    Real   I   Air density
     !     ----------------------------------------------------------------
@@ -764,9 +767,13 @@ CONTAINS
         TAUOY(1:NSEAL),        &
         TAUOCX(1:NSEAL),       &
         TAUOCY(1:NSEAL),       &
-        TAUBBL(1:NSEAL,2),     &    ! TODO: Swap dims
+        !TAUBBL(1:NSEAL,2),     &    ! TODO: Swap dims
+        TAUBBLX(1:NSEAL),      &
+        TAUBBLY(1:NSEAL),      &
         TWS(1:NSEAL),          &
-        TAUICE(1:NSEAL,2),     &    ! TODO: Swap dims?
+        !TAUICE(1:NSEAL,2),     &    ! TODO: Swap dims?
+        TAUICEX(1:NSEAL),      &
+        TAUICEY(1:NSEAL),      &
         WCAP_COV(1:NSEAL),     &    ! -|
         WCAP_THK(1:NSEAL),     &    !  | GPU Refactor: Split WHITECAPING into 4 separate
         WCAP_BHS(1:NSEAL),     &    !  | arrays (WCAP_*) to avoid temporaries when slicing
@@ -1071,9 +1078,11 @@ CONTAINS
     TAUWNY = 0.
     TAUOCX = 0.
     TAUOCY = 0.
-    TAUBBL = 0.
+    TAUBBLX = 0.
+    TAUBBLY = 0.
     PHIBBL = 0.
-    !TAUICE = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
+    !TAUICEX = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
+    !TAUICEY = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     !PHICE  = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
     WNMEAN = 0.
     !CHARN  = 0.    ! GPU REFACTOR: Don't zero whole array here (for B4B purposes after refactor; zeroed later)
@@ -1720,7 +1729,7 @@ CONTAINS
 #ifdef W3_BT4
 ! IX,IY not used
           CALL W3SBT4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), &
-              DEPTH(CSEA), D50_CHUNK(CSEA), PSIC_CHUNK(CSEA), TAUBBL(JSEA,:), &
+              DEPTH(CSEA), D50_CHUNK(CSEA), PSIC_CHUNK(CSEA), TAUBBLX(JSEA), TAUBBLY(JSEA), &
               BEDFORM(JSEA,:), VSBT(:,CSEA), VDBT(:,CSEA), IX(CSEA), IY(CSEA) )
 #endif
 #ifdef W3_BT8
@@ -2564,13 +2573,14 @@ CONTAINS
         !
         ! Transformation in momentum flux in m^2 / s^2
         !
-        TAUOX(JSEA) = (GRAV*MWXFINISH+TAUWIX(JSEA)-TAUBBL(JSEA,1))/DTG
-        TAUOY(JSEA) = (GRAV*MWYFINISH+TAUWIY(JSEA)-TAUBBL(JSEA,2))/DTG
+        TAUOX(JSEA) = (GRAV*MWXFINISH+TAUWIX(JSEA)-TAUBBLX(JSEA))/DTG
+        TAUOY(JSEA) = (GRAV*MWYFINISH+TAUWIY(JSEA)-TAUBBLY(JSEA))/DTG
         TAUWIX(JSEA) = TAUWIX(JSEA)/DTG
         TAUWIY(JSEA) = TAUWIY(JSEA)/DTG
         TAUWNX(JSEA) = TAUWNX(JSEA)/DTG
         TAUWNY(JSEA) = TAUWNY(JSEA)/DTG
-        TAUBBL(JSEA,:) = TAUBBL(JSEA,:)/DTG
+        TAUBBLX(JSEA) = TAUBBLX(JSEA)/DTG
+        TAUBBLY(JSEA) = TAUBBLY(JSEA)/DTG
         TAUOCX(JSEA)= DAIR_CHUNK(CSEA)*COEF_CHUNK(CSEA)*COEF_CHUNK(CSEA)*UST_CHUNK(CSEA)*UST_CHUNK(CSEA)*COS(USTD_CHUNK(CSEA)) + DWAT*(TAUOX(JSEA)-TAUWIX(JSEA))
         TAUOCY(JSEA)= DAIR_CHUNK(CSEA)*COEF_CHUNK(CSEA)*COEF_CHUNK(CSEA)*UST_CHUNK(CSEA)*UST_CHUNK(CSEA)*SIN(USTD_CHUNK(CSEA)) + DWAT*(TAUOY(JSEA)-TAUWIY(JSEA))
         !
@@ -2600,7 +2610,8 @@ CONTAINS
         DO CSEA = 1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           ! GPU Refactor: Zero TAUICE and PHIICE here; for B4B reproducibility. Chris Bunney.
-          TAUICE(JSEA,:) = 0.
+          TAUICEX(JSEA) = 0.
+          TAUICEY(JSEA) = 0.
           PHICE(JSEA) = 0.
 
           IF(ICE_CHUNK(CSEA) .EQ. 0) THEN
@@ -2663,7 +2674,8 @@ CONTAINS
 #endif
           SPEC2 = SPEC(:,JSEA)
           !
-          !!TAUICE(JSEA,:) = 0.   ! ChrisB: GPU Refactor: Zeroed in outer seapoint loop for B4B reproducibility
+          !!TAUICEX(JSEA) = 0.   ! ChrisB: GPU Refactor: Zeroed in outer seapoint loop for B4B reproducibility
+          !!TAUICEY(JSEA) = 0.   ! ChrisB: GPU Refactor: Zeroed in outer seapoint loop for B4B reproducibility
           !!PHICE(JSEA) = 0.      ! DITTO
           DO IK=1,NK
             IS = 1+(IK-1)*NTH
@@ -2721,13 +2733,15 @@ CONTAINS
             DO ITH = 1,NTH
               IS = ITH+(IK-1)*NTH
               PHICE(JSEA) = PHICE(JSEA) + (SPEC(IS,JSEA)-SPEC2(IS)) * FACTOR
-              COSI(1)=ECOS(IS)
-              COSI(2)=ESIN(IS)
-              TAUICE(JSEA,:) = TAUICE(JSEA,:) - (SPEC(IS,JSEA)-SPEC2(IS))*FACTOR2*COSI(:)
+              !COSI(1)=ECOS(IS)
+              !COSI(2)=ESIN(IS)  ! GPU Refactor : Not needed after TAUICE -> TAUICE[XY]
+              TAUICEX(JSEA) = TAUICEX(JSEA) - (SPEC(IS,JSEA)-SPEC2(IS))*FACTOR2*ECOS(IS)
+              TAUICEY(JSEA) = TAUICEY(JSEA) - (SPEC(IS,JSEA)-SPEC2(IS))*FACTOR2*ESIN(IS)
             END DO
           END DO
-          PHICE(JSEA) =-1.*DWAT*GRAV*PHICE(JSEA) /DTG
-          TAUICE(JSEA,:)=TAUICE(JSEA,:)/DTG
+          PHICE(JSEA) = -1. * DWAT * GRAV * PHICE(JSEA) / DTG
+          TAUICEX(JSEA) = TAUICEX(JSEA) / DTG
+          TAUICEY(JSEA) = TAUICEY(JSEA) / DTG
         ENDDO ! CSEA/JSEA
       ELSE ! INPARS(4)
 #ifdef W3_IS2

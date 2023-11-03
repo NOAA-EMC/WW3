@@ -2039,7 +2039,7 @@ CONTAINS
 #endif
 
 #ifdef W3_BT4
-            CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL,   &
+            CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL(1), TAUBBL(2)  &
                  BEDFORM, XBT, DIA, IX, IY )
 #endif
 

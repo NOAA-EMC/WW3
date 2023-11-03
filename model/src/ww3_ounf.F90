@@ -190,8 +190,8 @@ PROGRAM W3OUNF
        MSCD, CHARN, TWS, TAUA, TAUADIR,             &
        TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
        T01, BEDFORMS, WCAP_COV, WCAP_THK,           &
-       WCAP_BHS, WCAP_MNT, TAUBBL, PHIBBL,          &
-       CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
+       WCAP_BHS, WCAP_MNT, TAUBBLX, TAUBBLY, PHIBBL, &
+       CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICEX, TAUICEY, PHICE,  &
        STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
        P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
        WN, USSP, WBT, WNMEAN, QKK
@@ -1807,10 +1807,10 @@ CONTAINS
           ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUICE(1:NSEA,1), TAUICE(1:NSEA,2), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUICEX(1:NSEA), TAUICEY(1:NSEA), AnglD)
 #endif
-            CALL S2GRID(TAUICE(1:NSEA,1), XX)
-            CALL S2GRID(TAUICE(1:NSEA,2), XY)
+            CALL S2GRID(TAUICEX(1:NSEA), XX)
+            CALL S2GRID(TAUICEY(1:NSEA), XY)
             NFIELD=2
             !
             ! Wave to sea ice energy flux
@@ -1900,11 +1900,11 @@ CONTAINS
           ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
-                 TAUBBL(1:NSEA,2), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBLX(1:NSEA), &
+                 TAUBBLY(1:NSEA), AnglD)
 #endif
-            CALL S2GRID(TAUBBL(1:NSEA,1), XX)
-            CALL S2GRID(TAUBBL(1:NSEA,2), XY)
+            CALL S2GRID(TAUBBLX(1:NSEA), XX)
+            CALL S2GRID(TAUBBLY(1:NSEA), XY)
             NFIELD=2
             !
             ! Mean square slope

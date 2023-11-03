@@ -163,7 +163,7 @@ PROGRAM W3OUTF
        TAUOX, TAUOY, TAUWIX,BHD,                   &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-       TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
+       TAUWNX, TAUWNY, TAUBBLX, TAUBBLY, PHIBBL, CFLXYMAX,   &
        CFLTHMAX, CFLKMAX, BEDFORMS,                &
        WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,     &
        T02, CGE, T01, HSIG, STMAXE, STMAXD, HMAXE, &
@@ -2072,16 +2072,16 @@ CONTAINS
             ENAME  = '.tbb'
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
-                 TAUBBL(1:NSEA,2), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBLX(1:NSEA), &
+                 TAUBBLY(1:NSEA), AnglD)
 #endif
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = TAUBBL(1:NSEA,1)
-              XS2    = TAUBBL(1:NSEA,2)
+              XS1    = TAUBBLX(1:NSEA)
+              XS2    = TAUBBLY(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,1)  &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBLX(1:NSEA)  &
                    , MAPSF, XX )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2)  &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBLY(1:NSEA)  &
                    , MAPSF, XY )
             ENDIF
             !
