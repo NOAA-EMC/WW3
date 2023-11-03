@@ -614,6 +614,7 @@ CONTAINS
 #endif
 #ifdef W3_NL1
     USE W3SNL1MD
+    USE W3GDATMD, ONLY: IQTPE
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD
@@ -1601,8 +1602,13 @@ CONTAINS
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
 #ifdef W3_NL1
-          CALL W3SNL1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), &
+          IF (IQTPE.GT.0) THEN
+            CALL W3SNL1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), &
               WNMEAN(JSEA)*DEPTH(CSEA), VSNL(:,CSEA), VDNL(:,CSEA) )
+          ELSE
+            CALL W3SNLGQM ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), &
+              DEPTH(CSEA), VSNL(:,CSEA), VDNL(:,CSEA) )
+          END IF
 #endif
 #ifdef W3_NL2
           CALL W3SNL2 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), DEPTH(CSEA), VSNL(:,CSEA), VDNL(:,CSEA) )
