@@ -14,6 +14,9 @@ program test_io
   integer :: ndsop, iotest, imod, ndstst, ierr, ndsbul, ndsi, ndsm
   integer :: ndstrc, ntrace
   real :: m2km
+  character*7 expected_ptnme
+  character*6 my_fmt
+  real :: expected_loc_1
 
   print *, 'Testing WW3 IO...'
 
@@ -63,10 +66,22 @@ program test_io
 
   ! Make sure we got the values we expected.
   if (nopts .ne. 11) stop 11
+  expected_loc_1 = 0.0
   do i = 1, nopts
+     ! Check ptnme and ptloc arrays.
      print *, ptnme(i), ptloc(1, i), ptloc(2, i)
+     if (i .lt. 10) then
+        my_fmt = '(a,i1)'
+     else
+        my_fmt = '(a,i2)'
+     endif
+     write(fmt = my_fmt, unit=expected_ptnme) 'Point', i
+     if (ptnme(i) .ne. expected_ptnme) stop 20
+     print *, expected_loc_1
+     if (ptloc(1, i) .ne. expected_loc_1) stop 21
+     expected_loc_1 = expected_loc_1 + 5000.0
+     if (ptloc(2, i) .ne. 0) stop 22
   end do
-  
   print *, 'SUCCESS!'
 end program test_io
   
