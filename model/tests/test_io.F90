@@ -63,8 +63,10 @@ program test_io
 
   ! Make sure we got the values we expected.
   if (nopts .ne. 11) stop 11
+  do i = 1, nopts
+     print *, ptnme(i), ptloc(1, i), ptloc(2, i)
+  end do
   
-
   print *, 'SUCCESS!'
 end program test_io
   
