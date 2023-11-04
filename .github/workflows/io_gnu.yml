@@ -98,7 +98,7 @@ jobs:
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
           mkdir build && cd build
           pwd
-          ls -l ww3/model/tests/data
-          cmake .. -DSWITCH=ww3/model/tests/data/switch.io
+          echo "${GITHUB_WORKSPACE}"
+          cmake .. -DSWITCH=${GITHUB_WORKSPACE}/ww3/model/tests/data/switch.io
           make -j2 VERBOSE=1
           ctest --verbose --output-on-failure --rerun-failed
