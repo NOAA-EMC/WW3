@@ -3,16 +3,11 @@
 ! Ed Hartnett 10/14/23
 program test_io
   use w3iopomd
-  ! USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
-  !      IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
-  !      ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
-  !      GRDID, ICEO, ICEHO, ICEFO
-!  USE W3GDATMD, ONLY: NGRIDS, NAUXGR
-  USE W3GDATMD
+  use w3gdatmd
   use w3wdatmd
   use w3odatmd
   use w3iogrmd
-  USE W3ADATMD  
+  use w3adatmd  
   implicit none
   
   integer, target :: i, j, k, l
@@ -61,27 +56,14 @@ program test_io
     M2KM = 1.E-3
   END IF
 
-!  DIMXP = ((NK+1)/2) * ((NTH-1)/2)
-!  ALLOCATE(XPART(DIMP,0:DIMXP))
-!  XPART = UNDEF
-
-  ! ndsop = 10
-  ! iotst = 11
-  ! ipass => i
-  ! ! Open file for error output.
-  ! ndse => j
-  ! ndse = 20
-  ! open(unit = ndse, file = "test_io_error")
-  ! ndst => k
-  ! ndst = 21
-  ! ngrids = 9
-  ! imod = 1
-  ! ndstst = 22
-  ! open(unit = ndstst, file = "test_io_test")
-!  call w3iopo('WRITE', ndsop, iotst, imod)
-  CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+  ! Read the file out_pnt.ww3 from the model/tests/data directory.n
+  call w3iopo('READ', ndsop, iotest)
   if (iotest .ne. 0) stop 10
-  close(20)
+  close(ndsop)
+
+  ! Make sure we got the values we expected.
+  if (nopts .ne. 11) stop 11
+  
 
   print *, 'SUCCESS!'
 end program test_io
