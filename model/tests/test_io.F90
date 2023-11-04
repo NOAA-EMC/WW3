@@ -24,10 +24,6 @@ program test_io
   call w3setg(1, 6, 6)
   call w3ndat(6, 6)
   call w3setw(1, 6, 6)
-#ifdef w3_nl1
-  call w3naux(6, 6)
-  call w3seta(1, 6, 6)
-#endif
   call w3nout(6, 6)
   call w3seto(1, 6, 6)
 
@@ -35,9 +31,6 @@ program test_io
   ndsm   = 20
   ndsop  = 20
   ndsbul = 0
-#ifdef w3_nco
-  ndscbul = 0
-#endif
   ndstrc =  6
   ntrace = 10
 
