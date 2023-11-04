@@ -1455,6 +1455,41 @@ CONTAINS
   !>
   !> @brief Read/write point output.
   !>
+  !> The format of the point output file is:
+  !> Size (bytes) | Type | Variable | Meaning
+  !> -------------|------|----------|--------
+  !> 40 | character*40 | IDTST | ID string
+  !> 4 | integer | VERTST | version of test?
+  !> 4 | integer | NK | ???
+  !> 4 | integer | MTH | ???
+  !> 4 | integer | NOPTS | ???
+  !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
+  !> 7*NOPTS | character*7 | PTNME | Point names
+  !> 8 | integer(2) | TIME | Time
+  !> reclen*NOPTS | * | * | record
+
+  !> Each record contains:
+  !> Size (bytes) | Type | Variable | Meaning
+  !> -------------|------|----------|--------
+  !> 4 | integer | IW | ???
+  !> 4 | integer | II | ???
+  !> 4 | integer | IL | ???
+  !> 4 | integer | DPO | ???
+  !> 4 | integer | WAO | ???
+  !> 4 | integer | WDO | ???
+  !> 4 | integer | TAUAO | (W3_FLX5 only) ???
+  !> 4 | integer | TAIDO | (W3_FLX5 only) ???
+  !> 4 | integer | DAIRO | (W3_FLX5 only) ???
+  !> 4 | integer | ZET_SETO | (W3_SETUP only) ???
+  !> 4 | integer | ASO | ???
+  !> 4 | integer | CAO | ???
+  !> 4 | integer | CDO | ???
+  !> 4 | integer | ICEO | ???
+  !> 4 | integer | ICEHO  | ???
+  !> 4 | integer | ICEFO | ???
+  !> 4 | integer | GRDID | ???
+  !> 4 | integer | SPCO(J,I),J=1,NSPEC | ???
+  !>
   !> @param[in]  INXOUT  Test string for read/write.
   !> @param[in]  NDSOP   File unit number.
   !> @param[out] IOTST   Test indictor for reading.
