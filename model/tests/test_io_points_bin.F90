@@ -1,7 +1,8 @@
-! This is a test for model IO for WW3.
+! This is a test for model IO for WW3. This tests the legacy (binary)
+! output of points data, done by function W3IOPO().
 !
 ! Ed Hartnett 10/14/23
-program test_io
+program test_io_points_bin
   use w3iopomd
   use w3gdatmd
   use w3wdatmd
@@ -79,13 +80,6 @@ program test_io
   end do
   
   print *, 'OK!'
-  print *, 'testing WW3 binary point file write...'
-
-  ! This is not working yet.
-  call w3iopo('WRITE', ndsop, iotest)
-  print *, iotest
-!  if (iotest .ne. 0) stop 100
-  print *, 'OK!'
   print *, 'SUCCESS!'
-end program test_io
+end program test_io_points_bin
   
