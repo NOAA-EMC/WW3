@@ -915,7 +915,7 @@ CONTAINS
     USE W3SERVMD, only: STRACE
 #endif
     !
-    USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF
+    USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF, DTH
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
     USE W3WDATMD, only: TIME
     USE W3ADATMD, only: CG, ITER, DW , CFLXYMAX, NSEALM
@@ -926,7 +926,7 @@ CONTAINS
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
 #endif
-    USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa, np
+    USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_IEND, PDLIB_TRIA, ipgl, iplg, npa, np
     use yowElementpool, only: ne, INE
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
