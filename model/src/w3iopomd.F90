@@ -1235,13 +1235,16 @@ CONTAINS
   !>
   !> @brief Read/write point output.
   !>
+  !> This can write per timestep or the whole model run. This is an
+  !> option in the input file.
+  !>
   !> The format of the point output file is:
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
   !> 40 | character*40 | IDTST | ID string
   !> 4 | integer | VERTST | version of test?
-  !> 4 | integer | NK | ???
-  !> 4 | integer | MTH | ???
+  !> 4 | integer | NK | Dimension of frequency
+  !> 4 | integer | MTH | Directionality of the frequency
   !> 4 | integer | NOPTS | ???
   !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
   !> 7*NOPTS | character*7 | PTNME | Point names

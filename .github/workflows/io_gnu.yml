@@ -95,9 +95,9 @@ jobs:
 
       - name: build-ww3
         run: |
-          set -x
           source spack/share/spack/setup-env.sh
           spack env activate ww3-gnu
+          set -x
           cd ww3
           export CC=mpicc
           export FC=mpif90
