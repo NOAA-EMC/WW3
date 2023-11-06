@@ -109,7 +109,7 @@ jobs:
           cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/model/tests/data/switch.io -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" -DCMAKE_C_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" ..
           make -j2 VERBOSE=1
           ctest --verbose --output-on-failure --rerun-failed
-          gcovr --root .. -v  --html-details --exclude ../tests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
+          gcovr --root .. -v  --html-details --exclude ../model/tests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
         
       - name: upload-test-coverage
         uses: actions/upload-artifact@v3
