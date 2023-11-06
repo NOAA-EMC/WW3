@@ -1074,9 +1074,10 @@ CONTAINS
     integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
+    character (len = *), parameter :: FILE_NAME = "f90tst_nc4.nc"
 
     ! ! Create the netCDF file.
-    ncerr = nf90_create("filename ", NF90_NETCDF4, fh)
+    ncerr = nf90_create(FILE_NAME, NF90_NETCDF4, fh)
     if (ncerr .ne. 0) return
 
     ! Define dimensions.
@@ -1245,7 +1246,7 @@ CONTAINS
   !> 4 | integer | VERTST | version of test?
   !> 4 | integer | NK | Dimension of frequency
   !> 4 | integer | MTH | Directionality of the frequency
-  !> 4 | integer | NOPTS | ???
+  !> 4 | integer | NOPTS | Number of output points.
   !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
   !> 7*NOPTS | character*7 | PTNME | Point names
   !> 8 | integer(2) | TIME | Time
