@@ -111,12 +111,12 @@ jobs:
           ctest --verbose --output-on-failure --rerun-failed
           gcovr --root .. -v  --html-details --exclude ../tests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
         
-    - name: upload-test-coverage
-      uses: actions/upload-artifact@v3
-      with:
-        name: ww3-test-coverage
-        path: |
-          ww3/build/*.html
-          ww3/build/*.css
+      - name: upload-test-coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: ww3-test-coverage
+          path: |
+            ww3/build/*.html
+            ww3/build/*.css
 
           
