@@ -1068,8 +1068,10 @@ CONTAINS
     INTEGER, INTENT(IN) :: IMOD
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
-    integer :: fh, dimid1, dimid2, ndim, nvar, fmt
-    integer :: v_vertst, v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
+    integer :: fh, ndim, nvar, fmt
+    integer :: d_nopts, d_nspec, d_vsize, d_namelen
+    integer :: v_idtst, v_vertst, v_nk, v_mth, v_ptloc, v_ptnme
+    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
 
@@ -1078,51 +1080,65 @@ CONTAINS
     if (ncerr .ne. 0) return
 
     ! Define dimensions.
-    ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, dimid1)
+    ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, d_nopts)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'NSPEC', NSPEC, dimid2)
+    ncerr = nf90_def_dim(fh, 'NSPEC', NSPEC, d_nspec)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, 'VSIZE', 2, d_vsize)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, 'NAMELEN', 7, d_namelen)
     if (ncerr .ne. 0) return
 
-    ! Define scalar variables.
+    ! Define variables.
+    ncerr = nf90_def_var(fh, 'IDTST', NF90_INT, v_idtst)
+    if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'VERTST', NF90_INT, v_vertst)
     if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'NK', NF90_INT, v_nk)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'MTH', NF90_INT, v_mth)
+    if (ncerr .ne. 0) return
 
-    ! Define non-scalar variables.
-    ncerr = nf90_def_var(fh, 'IW', NF90_INT, (/dimid1/), v_iw)
+    ! Define vars with nopts as a dimension.
+    ncerr = nf90_def_var(fh, 'PTLOC', NF90_INT, (/d_vsize, d_nopts/), v_ptloc)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'II', NF90_INT, (/dimid1/), v_ii)
+    ncerr = nf90_def_var(fh, 'PTNME', NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'IL', NF90_INT, (/dimid1/), v_il)
+    ncerr = nf90_def_var(fh, 'IW', NF90_INT, (/d_nopts/), v_iw)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'DPO', NF90_INT, (/dimid1/), v_dpo)
+    ncerr = nf90_def_var(fh, 'II', NF90_INT, (/d_nopts/), v_ii)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'WAO', NF90_INT, (/dimid1/), v_wao)
+    ncerr = nf90_def_var(fh, 'IL', NF90_INT, (/d_nopts/), v_il)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'WDO', NF90_INT, (/dimid1/), v_wdo)
+    ncerr = nf90_def_var(fh, 'DPO', NF90_INT, (/d_nopts/), v_dpo)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'TAUAO', NF90_INT, (/dimid1/), v_tauao)
+    ncerr = nf90_def_var(fh, 'WAO', NF90_INT, (/d_nopts/), v_wao)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'TAIDO', NF90_INT, (/dimid1/), v_taido)
+    ncerr = nf90_def_var(fh, 'WDO', NF90_INT, (/d_nopts/), v_wdo)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'DAIRO', NF90_INT, (/dimid1/), v_dairo)
+    ncerr = nf90_def_var(fh, 'TAUAO', NF90_INT, (/d_nopts/), v_tauao)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ZET_SETO', NF90_INT, (/dimid1/), v_zet_seto)
+    ncerr = nf90_def_var(fh, 'TAIDO', NF90_INT, (/d_nopts/), v_taido)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ASO', NF90_INT, (/dimid1/), v_aso)
+    ncerr = nf90_def_var(fh, 'DAIRO', NF90_INT, (/d_nopts/), v_dairo)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'CAO', NF90_INT, (/dimid1/), v_cao)
+    ncerr = nf90_def_var(fh, 'ZET_SETO', NF90_INT, (/d_nopts/), v_zet_seto)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'CDO', NF90_INT, (/dimid1/), v_cdo)
+    ncerr = nf90_def_var(fh, 'ASO', NF90_INT, (/d_nopts/), v_aso)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ICEO', NF90_INT, (/dimid1/), v_iceo)
+    ncerr = nf90_def_var(fh, 'CAO', NF90_INT, (/d_nopts/), v_cao)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ICEHO', NF90_INT, (/dimid1/), v_iceho)
+    ncerr = nf90_def_var(fh, 'CDO', NF90_INT, (/d_nopts/), v_cdo)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ICEFO', NF90_INT, (/dimid1/), v_icefo)
+    ncerr = nf90_def_var(fh, 'ICEO', NF90_INT, (/d_nopts/), v_iceo)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'GRDID', NF90_INT, (/dimid1/), v_grdid)
+    ncerr = nf90_def_var(fh, 'ICEHO', NF90_INT, (/d_nopts/), v_iceho)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/dimid2, dimid1/), v_spco)
+    ncerr = nf90_def_var(fh, 'ICEFO', NF90_INT, (/d_nopts/), v_icefo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'GRDID', NF90_INT, (/d_nopts/), v_grdid)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/d_nspec, d_nopts/), v_spco)
     if (ncerr .ne. 0) return
     ncerr = nf90_close(fh)
     if (ncerr .ne. 0) return
