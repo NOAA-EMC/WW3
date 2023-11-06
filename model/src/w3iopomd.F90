@@ -1035,8 +1035,8 @@ CONTAINS
   !>
   SUBROUTINE W3IOPON_READ (NDSOP, IOTST, IMOD)
     IMPLICIT NONE
-    
-    INTEGER, INTENT(IN)           :: NDSOP    
+
+    INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
 
@@ -1063,8 +1063,8 @@ CONTAINS
          ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
          GRDID, ICEO, ICEHO, ICEFO
     IMPLICIT NONE
-    
-    INTEGER, INTENT(IN) :: NDSOP    
+
+    INTEGER, INTENT(IN) :: NDSOP
     INTEGER, INTENT(IN) :: IMOD
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
@@ -1185,9 +1185,9 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     IMPLICIT NONE
-    
+
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
-    INTEGER, INTENT(IN)           :: NDSOP    
+    INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
 #ifdef W3_ASCII
@@ -1199,7 +1199,7 @@ CONTAINS
 
     ! Optimistically assume success.
     IOTST = 0
-    
+
     ! Has a model number been specified?
     IF (PRESENT(IMOD)) THEN
       IGRD = IMOD
@@ -1221,13 +1221,13 @@ CONTAINS
    IF (INXOUT .EQ. 'READ') THEN
       CALL W3IOPON_READ(NDSOP, IOTST, IMOD)
    ELSE
-      CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)      
+      CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)
    ENDIF
-   
+
     !/
     !/ End of W3IOPON ----------------------------------------------------- /
     !/
-    
+
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
          '     ILEGAL INXOUT VALUE: ',A/)
   END SUBROUTINE W3IOPON
@@ -1251,8 +1251,8 @@ CONTAINS
   !> Each record contains:
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
-  !> 4 | integer | IW | ???
-  !> 4 | integer | II | ???
+  !> 4 | integer | IW | Id. water
+  !> 4 | integer | II | Id. iceP
   !> 4 | integer | IL | ???
   !> 4 | integer | DPO | ???
   !> 4 | integer | WAO | ???
@@ -1691,7 +1691,7 @@ CONTAINS
 #endif
              'ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I):',        &
              ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
-             'ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC):',       & 
+             'ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC):',       &
              ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
 #endif
       ELSE
