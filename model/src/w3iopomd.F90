@@ -1239,10 +1239,10 @@ CONTAINS
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
   !> 40 | character*40 | IDTST | ID string
-  !> 4 | integer | VERTST | version of test?
-  !> 4 | integer | NK | ???
-  !> 4 | integer | MTH | ???
-  !> 4 | integer | NOPTS | ???
+  !> 10 | character*10 | VERTST | version of test??
+  !> 4 | integer | NK | Number of discrete wavenumbers.
+  !> 4 | integer | NTH | Number of discrete directions.
+  !> 4 | integer | NOPTS | Number of output points.
   !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
   !> 7*NOPTS | character*7 | PTNME | Point names
   !> 8 | integer(2) | TIME | Time
