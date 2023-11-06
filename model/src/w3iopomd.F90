@@ -1075,73 +1075,73 @@ CONTAINS
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
 
-    ! Create the netCDF file.
-    ncerr = nf90_create(filename, NF90_NETCDF4, fh)
-    if (ncerr .ne. 0) return
+    ! ! Create the netCDF file.
+    ! ncerr = nf90_create(filename, NF90_NETCDF4, fh)
+    ! if (ncerr .ne. 0) return
 
-    ! Define dimensions.
-    ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, d_nopts)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'NSPEC', NSPEC, d_nspec)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'VSIZE', 2, d_vsize)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'NAMELEN', 7, d_namelen)
-    if (ncerr .ne. 0) return
+    ! ! Define dimensions.
+    ! ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, d_nopts)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_dim(fh, 'NSPEC', NSPEC, d_nspec)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_dim(fh, 'VSIZE', 2, d_vsize)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_dim(fh, 'NAMELEN', 7, d_namelen)
+    ! if (ncerr .ne. 0) return
 
-    ! Define variables.
-    ncerr = nf90_def_var(fh, 'IDTST', NF90_INT, v_idtst)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'VERTST', NF90_INT, v_vertst)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'NK', NF90_INT, v_nk)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'MTH', NF90_INT, v_mth)
-    if (ncerr .ne. 0) return
+    ! ! Define variables.
+    ! ncerr = nf90_def_var(fh, 'IDTST', NF90_INT, v_idtst)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'VERTST', NF90_INT, v_vertst)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'NK', NF90_INT, v_nk)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'MTH', NF90_INT, v_mth)
+    ! if (ncerr .ne. 0) return
 
-    ! Define vars with nopts as a dimension.
-    ncerr = nf90_def_var(fh, 'PTLOC', NF90_INT, (/d_vsize, d_nopts/), v_ptloc)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'PTNME', NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'IW', NF90_INT, (/d_nopts/), v_iw)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'II', NF90_INT, (/d_nopts/), v_ii)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'IL', NF90_INT, (/d_nopts/), v_il)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'DPO', NF90_INT, (/d_nopts/), v_dpo)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'WAO', NF90_INT, (/d_nopts/), v_wao)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'WDO', NF90_INT, (/d_nopts/), v_wdo)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'TAUAO', NF90_INT, (/d_nopts/), v_tauao)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'TAIDO', NF90_INT, (/d_nopts/), v_taido)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'DAIRO', NF90_INT, (/d_nopts/), v_dairo)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ZET_SETO', NF90_INT, (/d_nopts/), v_zet_seto)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ASO', NF90_INT, (/d_nopts/), v_aso)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'CAO', NF90_INT, (/d_nopts/), v_cao)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'CDO', NF90_INT, (/d_nopts/), v_cdo)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ICEO', NF90_INT, (/d_nopts/), v_iceo)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ICEHO', NF90_INT, (/d_nopts/), v_iceho)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'ICEFO', NF90_INT, (/d_nopts/), v_icefo)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'GRDID', NF90_INT, (/d_nopts/), v_grdid)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/d_nspec, d_nopts/), v_spco)
-    if (ncerr .ne. 0) return
-    ncerr = nf90_close(fh)
-    if (ncerr .ne. 0) return
+    ! ! Define vars with nopts as a dimension.
+    ! ncerr = nf90_def_var(fh, 'PTLOC', NF90_INT, (/d_vsize, d_nopts/), v_ptloc)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'PTNME', NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'IW', NF90_INT, (/d_nopts/), v_iw)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'II', NF90_INT, (/d_nopts/), v_ii)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'IL', NF90_INT, (/d_nopts/), v_il)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'DPO', NF90_INT, (/d_nopts/), v_dpo)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'WAO', NF90_INT, (/d_nopts/), v_wao)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'WDO', NF90_INT, (/d_nopts/), v_wdo)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'TAUAO', NF90_INT, (/d_nopts/), v_tauao)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'TAIDO', NF90_INT, (/d_nopts/), v_taido)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'DAIRO', NF90_INT, (/d_nopts/), v_dairo)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'ZET_SETO', NF90_INT, (/d_nopts/), v_zet_seto)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'ASO', NF90_INT, (/d_nopts/), v_aso)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'CAO', NF90_INT, (/d_nopts/), v_cao)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'CDO', NF90_INT, (/d_nopts/), v_cdo)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'ICEO', NF90_INT, (/d_nopts/), v_iceo)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'ICEHO', NF90_INT, (/d_nopts/), v_iceho)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'ICEFO', NF90_INT, (/d_nopts/), v_icefo)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'GRDID', NF90_INT, (/d_nopts/), v_grdid)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/d_nspec, d_nopts/), v_spco)
+    ! if (ncerr .ne. 0) return
+    ! ncerr = nf90_close(fh)
+    ! if (ncerr .ne. 0) return
 
   END SUBROUTINE W3IOPON_WRITE
 
