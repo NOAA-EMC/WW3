@@ -1048,19 +1048,85 @@ CONTAINS
   !> @brief Write point output in netCDF format.
   !>
   !> @param[in]  NDSOP   File unit number.
-  !> @param[out] IOTST   Test indictor for reading.
   !> @param[in]  IMOD    Model number for W3GDAT etc.
+  !> @param[in]  filename Name of file to write.
+  !> @param[inout] ncerr Error code, 0 for success, netCDF error code
+  !> otherwise.
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_WRITE (NDSOP, IOTST, IMOD)
+  SUBROUTINE W3IOPON_WRITE (NDSOP, IMOD, filename, ncerr)
+    use netcdf
+    USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
+         IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         GRDID, ICEO, ICEHO, ICEFO
     IMPLICIT NONE
     
-    INTEGER, INTENT(IN)           :: NDSOP    
-    INTEGER, INTENT(OUT)          :: IOTST
-    INTEGER, INTENT(IN), OPTIONAL :: IMOD
+    INTEGER, INTENT(IN) :: NDSOP    
+    INTEGER, INTENT(IN) :: IMOD
+    character(*), intent(in) :: filename
+    integer, intent(inout) :: ncerr
+    integer :: fh, dimid1, dimid2, ndim, nvar, fmt
+    integer :: v_vertst, v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
+    integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
+    integer :: v_iceho, v_icefo, v_grdid, v_spco
 
-    IOTST = 0
+    ! Create the netCDF file.
+    ncerr = nf90_create(filename, NF90_NETCDF4, fh)
+    if (ncerr .ne. 0) return
+
+    ! Define dimensions.
+    ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, dimid1)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, 'NSPEC', NSPEC, dimid2)
+    if (ncerr .ne. 0) return
+
+    ! Define scalar variables.
+    ncerr = nf90_def_var(fh, 'VERTST', NF90_INT, v_vertst)
+    if (ncerr .ne. 0) return
+
+    ! Define non-scalar variables.
+    ncerr = nf90_def_var(fh, 'IW', NF90_INT, (/dimid1/), v_iw)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'II', NF90_INT, (/dimid1/), v_ii)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'IL', NF90_INT, (/dimid1/), v_il)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'DPO', NF90_INT, (/dimid1/), v_dpo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'WAO', NF90_INT, (/dimid1/), v_wao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'WDO', NF90_INT, (/dimid1/), v_wdo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'TAUAO', NF90_INT, (/dimid1/), v_tauao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'TAIDO', NF90_INT, (/dimid1/), v_taido)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'DAIRO', NF90_INT, (/dimid1/), v_dairo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'ZET_SETO', NF90_INT, (/dimid1/), v_zet_seto)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'ASO', NF90_INT, (/dimid1/), v_aso)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'CAO', NF90_INT, (/dimid1/), v_cao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'CDO', NF90_INT, (/dimid1/), v_cdo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'ICEO', NF90_INT, (/dimid1/), v_iceo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'ICEHO', NF90_INT, (/dimid1/), v_iceho)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'ICEFO', NF90_INT, (/dimid1/), v_icefo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'GRDID', NF90_INT, (/dimid1/), v_grdid)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/dimid2, dimid1/), v_spco)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_close(fh)
+    if (ncerr .ne. 0) return
+
   END SUBROUTINE W3IOPON_WRITE
 
   !/ ------------------------------------------------------------------- /
@@ -1113,6 +1179,10 @@ CONTAINS
 #endif
 
     INTEGER :: IGRD, IERR, MK, MTH, I, J
+    integer :: ncerr
+
+    ! Optimistically assume success.
+    IOTST = 0
     
     ! Has a model number been specified?
     IF (PRESENT(IMOD)) THEN
@@ -1135,7 +1205,7 @@ CONTAINS
    IF (INXOUT .EQ. 'READ') THEN
       CALL W3IOPON_READ(NDSOP, IOTST, IMOD)
    ELSE
-      CALL W3IOPON_WRITE(NDSOP, IOTST, IMOD)      
+      CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)      
    ENDIF
    
     !/
@@ -1160,8 +1230,8 @@ CONTAINS
   !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
   !> 7*NOPTS | character*7 | PTNME | Point names
   !> 8 | integer(2) | TIME | Time
-  !> reclen*NOPTS | * | * | record
-
+  !> reclen*NOPTS | * | * | records
+  !>
   !> Each record contains:
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
@@ -1184,11 +1254,7 @@ CONTAINS
   !> 4 | integer | GRDID | ???
   !> 4 | integer | SPCO(J,I),J=1,NSPEC | ???
   !>
-  !> @param[in] INXOUT String indicating read/write. Must be 'READ' or
-  !> 'WRITE'.
-  !> @param[in]  NDSOP   File unit number.
-  !> @param[out] IOTST   Error code:
-  !> - 0 No error.
+  !> In the event of error, EXTCDE() will be called with the following exit codes:
   !> - 1 INXOUT must be 'READ' or 'WRITE'.
   !> - 2 Changed from WRITE to READ in subsequent call???
   !> - 10 Unexpected IDSTR ???
@@ -1198,6 +1264,13 @@ CONTAINS
   !> - 21 Unexpected end of file during read ???.
   !> - 22 Error reading file.
   !> - 23 Unexpected end of file during read ???.
+  !>
+  !> @param[in] INXOUT String indicating read/write. Must be 'READ' or
+  !> 'WRITE'.
+  !> @param[in]  NDSOP   File unit number.
+  !> @param[out] IOTST   Error code:
+  !> - 0 No error.
+  !> - -1 Unexpected end of file when reading.
   !> @param[in]  IMOD    Model number for W3GDAT etc.
 #ifdef W3_ASCII
   !> @param[in]  NDSOA File unit number for ASCII output.
