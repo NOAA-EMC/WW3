@@ -1025,6 +1025,46 @@ CONTAINS
   END SUBROUTINE W3IOPE
   !/ ------------------------------------------------------------------- /
   !>
+  !> @brief Read point output in netCDF format.
+  !>
+  !> @param[in]  NDSOP   File unit number.
+  !> @param[out] IOTST   Test indictor for reading.
+  !> @param[in]  IMOD    Model number for W3GDAT etc.
+  !>
+  !> @author Edward Hartnett  @date 1-Nov-2023
+  !>
+  SUBROUTINE W3IOPON_READ (NDSOP, IOTST, IMOD)
+    IMPLICIT NONE
+    
+    INTEGER, INTENT(IN)           :: NDSOP    
+    INTEGER, INTENT(OUT)          :: IOTST
+    INTEGER, INTENT(IN), OPTIONAL :: IMOD
+
+    IOTST = 0
+  END SUBROUTINE W3IOPON_READ
+
+  !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Write point output in netCDF format.
+  !>
+  !> @param[in]  NDSOP   File unit number.
+  !> @param[out] IOTST   Test indictor for reading.
+  !> @param[in]  IMOD    Model number for W3GDAT etc.
+  !>
+  !> @author Edward Hartnett  @date 1-Nov-2023
+  !>
+  SUBROUTINE W3IOPON_WRITE (NDSOP, IOTST, IMOD)
+    IMPLICIT NONE
+    
+    INTEGER, INTENT(IN)           :: NDSOP    
+    INTEGER, INTENT(OUT)          :: IOTST
+    INTEGER, INTENT(IN), OPTIONAL :: IMOD
+
+    IOTST = 0
+  END SUBROUTINE W3IOPON_WRITE
+
+  !/ ------------------------------------------------------------------- /
+  !>
   !> @brief Read/write point output in netCDF format.
   !>
   !> @param[in]  INXOUT  Test string for read/write.
@@ -1039,13 +1079,71 @@ CONTAINS
       ,NDSOA &
 #endif
       )
-
+    USE W3GDATMD, ONLY: W3SETG
+    USE W3WDATMD, ONLY: W3SETW
+    USE W3ODATMD, ONLY: W3SETO, W3DMO2
+    !/
+    USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
+    USE W3WDATMD, ONLY: TIME
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
+         IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         GRDID, ICEO, ICEHO, ICEFO
+#ifdef W3_FLX5
+    USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
+    USE W3ODATMD, ONLY :  OFILES
+    !/
+#ifdef W3_SETUP
+    USE W3ODATMD, ONLY: ZET_SETO
+#endif
+    !/
+    USE W3SERVMD, ONLY: EXTCDE
+#ifdef W3_S
+    USE W3SERVMD, ONLY: STRACE
+#endif
+    IMPLICIT NONE
     
+    CHARACTER, INTENT(IN)         :: INXOUT*(*)
+    INTEGER, INTENT(IN)           :: NDSOP    
+    INTEGER, INTENT(OUT)          :: IOTST
+    INTEGER, INTENT(IN), OPTIONAL :: IMOD
+#ifdef W3_ASCII
+    INTEGER, INTENT(IN), OPTIONAL :: NDSOA
+#endif
 
+    INTEGER :: IGRD, IERR, MK, MTH, I, J
+    
+    ! Has a model number been specified?
+    IF (PRESENT(IMOD)) THEN
+      IGRD = IMOD
+    ELSE
+      IGRD = 1
+    END IF
+
+    CALL W3SETO ( IGRD, NDSE, NDST )
+    CALL W3SETG ( IGRD, NDSE, NDST )
+    CALL W3SETW ( IGRD, NDSE, NDST )
+
+    ! INXOUT must be 'READ' or 'WRITE'.
+    IF (INXOUT .NE. 'READ' .AND. INXOUT .NE. 'WRITE') THEN
+      WRITE (NDSE, 900) INXOUT
+      CALL EXTCDE(1)
+   END IF
+
+   ! Do a read or a write of the point file.
+   IF (INXOUT .EQ. 'READ') THEN
+      CALL W3IOPON_READ(NDSOP, IOTST, IMOD)
+   ELSE
+      CALL W3IOPON_WRITE(NDSOP, IOTST, IMOD)      
+   ENDIF
+   
     !/
     !/ End of W3IOPON ----------------------------------------------------- /
     !/
     
+900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
+         '     ILEGAL INXOUT VALUE: ',A/)
   END SUBROUTINE W3IOPON
   !/ ------------------------------------------------------------------- /
   !>
