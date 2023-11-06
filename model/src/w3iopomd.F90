@@ -1251,9 +1251,9 @@ CONTAINS
   !> Each record contains:
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
-  !> 4 | integer | IW | Id. water
-  !> 4 | integer | II | Id. iceP
-  !> 4 | integer | IL | ???
+  !> 4 | integer | IW | Number of water points in interpolation box for output point.
+  !> 4 | integer | II | Number of ice points in interpolation box for output point.
+  !> 4 | integer | IL | Number of land points in interpolation box for output point.
   !> 4 | integer | DPO | ???
   !> 4 | integer | WAO | ???
   !> 4 | integer | WDO | ???
