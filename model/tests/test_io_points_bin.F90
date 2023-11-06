@@ -49,11 +49,9 @@ program test_io_points_bin
   WRITE (NDSO,920) GNAME
 920 FORMAT ('  Grid name : ',A/)  
 
-  ! IF (FLAGLL) THEN
-  !   M2KM = 1.
-  ! ELSE
-  !   M2KM = 1.E-3
-  ! END IF
+  ! This will not work. But cannot be tested because it will change the value of IPASS,
+!  call w3iopo('EAD', ndsop, iotest)
+!  if (iotest .ne. 1) stop 7
 
   ! Read the file out_pnt.ww3 from the model/tests/data directory.
   call w3iopo('READ', ndsop, iotest)
