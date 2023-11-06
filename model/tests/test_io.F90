@@ -82,9 +82,9 @@ program test_io
   print *, 'testing WW3 binary point file write...'
 
   ! This is not working yet.
-  call w3iopo('WRITE', ndsop, iotest)
+  call w3iopon('WRITE', ndsop, iotest)
   print *, iotest
-!  if (iotest .ne. 0) stop 100
+  if (iotest .ne. 0) stop 100
   print *, 'OK!'
   print *, 'SUCCESS!'
 end program test_io
