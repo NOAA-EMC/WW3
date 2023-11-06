@@ -95,6 +95,7 @@ jobs:
 
       - name: build-ww3
         run: |
+          set -x
           source spack/share/spack/setup-env.sh
           spack env activate ww3-gnu
           cd ww3
@@ -104,6 +105,7 @@ jobs:
           mkdir build && cd build
           pwd
           echo "${GITHUB_WORKSPACE}"
+          which ncdump
           cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/model/tests/data/switch.io -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" -DCMAKE_C_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" ..
           make -j2 VERBOSE=1
           ctest --verbose --output-on-failure --rerun-failed
