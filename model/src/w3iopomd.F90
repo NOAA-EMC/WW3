@@ -1076,8 +1076,8 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
 
     ! ! Create the netCDF file.
-    ! ncerr = nf90_create(filename, NF90_NETCDF4, fh)
-    ! if (ncerr .ne. 0) return
+    ncerr = nf90_create(filename, NF90_NETCDF4, fh)
+    if (ncerr .ne. 0) return
 
     ! ! Define dimensions.
     ! ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, d_nopts)
@@ -1140,8 +1140,8 @@ CONTAINS
     ! if (ncerr .ne. 0) return
     ! ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/d_nspec, d_nopts/), v_spco)
     ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_close(fh)
-    ! if (ncerr .ne. 0) return
+    ncerr = nf90_close(fh)
+    if (ncerr .ne. 0) return
 
   END SUBROUTINE W3IOPON_WRITE
 
