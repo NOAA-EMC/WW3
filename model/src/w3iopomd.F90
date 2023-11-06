@@ -1076,7 +1076,7 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
 
     ! ! Create the netCDF file.
-    ncerr = nf90_create("filename", NF90_NETCDF4, fh)
+    ncerr = nf90_create("filename ", NF90_NETCDF4, fh)
     if (ncerr .ne. 0) return
 
     ! ! Define dimensions.
