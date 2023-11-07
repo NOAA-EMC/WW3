@@ -198,6 +198,7 @@ $  F  F  6    10   TAUICE     TWI   Wave to sea ice stress
 $  F  F  6    11   PHICE      FIC   Wave to sea ice energy flux
 $  F  F  6    12   USSP       USP   Partitioned surface Stokes drift
 $  F  F  6    13   TAUOC[X,Y] TOC   Total momentum to the ocean
+$  F  F  6    14   USSH[X,Y]  USSH  Surface averaged Stokes drift
 $   -------------------------------------------------
 $        7                          Wave-bottom layer
 $   -------------------------------------------------
