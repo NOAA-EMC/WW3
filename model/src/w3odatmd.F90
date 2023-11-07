@@ -171,7 +171,7 @@ MODULE W3ODATMD
   !      IW        I.A.  Public   Id. water.
   !      II        I.A.  Public   Id. ice.
   !      IRQPO1/2  I.A.  Public   Array with MPI handles.       (!/MPI)
-  !      PTLOC     R.A.  Public   Name of output locations.
+  !      PTLOC     R.A.  Public   Output locations.
   !      PTIFAC    R.A.  Public   Interpolation weights.
   !      DPO       R.A.  Public   Interpolated depths.
   !      WAO       R.A.  Public   Interpolated wind speeds.
@@ -186,7 +186,7 @@ MODULE W3ODATMD
   !      ICEO      R.A.  Public   Interpolated ice concentration.
   !      ICEHO     R.A.  Public   Interpolated ice thickness.
   !      ICEFO     R.A.  Public   Interpolated ice floe.
-  !      PTNME     C.A.  Public   Output locations.
+  !      PTNME     C.A.  Public   Name of output locations.
   !      GRDID     C.A.  Public   Originating grid ID.
   !      O2INIT    Log.  Public   Flag for array initialization.
   !      O2IRQI    Log.  Public   Flag for array initialization.
@@ -436,7 +436,7 @@ MODULE W3ODATMD
     INTEGER               :: TOSNL5(2)
 #endif
     INTEGER               :: TOFRST(2), TONEXT(2,8), TOLAST(2,8), &
-         TBPI0(2), TBPIN(2), NDS(13), OFILES(7)
+         TBPI0(2), TBPIN(2), NDS(15), OFILES(7)
     REAL                  :: DTOUT(8)
     LOGICAL               :: FLOUT(8)
     TYPE(OTYPE1)          :: OUT1
@@ -887,13 +887,14 @@ CONTAINS
     !
     ! 8) Spectrum parameters
     !
-    NOGE(8) = 5
+    NOGE(8) = 6
     !
     IDOUT( 8, 1)  = 'Mean square slopes  '
     IDOUT( 8, 2)  = 'Phillips tail const'
     IDOUT( 8, 3)  = 'Slope direction     '
     IDOUT( 8, 4)  = 'Tail slope direction'
     IDOUT( 8, 5)  = 'Goda peakedness parm'
+    IDOUT( 8, 6)  = 'kxky-peakdness      '
     !      IDOUT( 8, 3)  = 'Lx-Ly mean wvlength'
     !      IDOUT( 8, 4)  = 'Surf grad correl XT'
     !      IDOUT( 8, 5)  = 'Surf grad correl YT'

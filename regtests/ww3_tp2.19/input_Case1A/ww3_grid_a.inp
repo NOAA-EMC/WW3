@@ -3,7 +3,7 @@ $ WAVEWATCH III Grid preprocessor input file                           $
 $ -------------------------------------------------------------------- $
 $ Grid name (C*30, in quotes)
 $
-  'Flume ERDC'
+  'Boers'
 $
 $ Frequency increment factor and first frequency (Hz) ---------------- $
 $ number of frequencies (wavenumbers) and directions, relative offset
@@ -91,7 +91,7 @@ $                                    PHImin.
 $
 $ BAJ (adjusted) 
 $
-$&SDB1 BJGAM = 0.64, BJALFA = 0.8, DBFLAG = 1.0 /
+&SDB1 BJGAM = 0.64, BJALFA = 0.8 /
 $
 $
 &UNST

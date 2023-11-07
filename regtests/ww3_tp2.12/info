@@ -29,7 +29,7 @@
 #   * ww3_grid.inp (dummy grid input file, with assoc .bot, .mask, .obst)   #
 #   * partition.ww3 (raw fields of partition data, 4 time steps)            #
 #   * ww3_systrk.inp (instruction file)                                     #
-#   * ww3_systrk will ABORT if endianess is incompatible with binary file!  #
+#   * ww3_systrk will stop if endianess is incompatible with binary file!  #
 #                                                                           #
 # Sample run_test commands :                                                #
 #   (Note: mpirun commands differ by local system)                          #

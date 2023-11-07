@@ -447,10 +447,10 @@ CONTAINS
     USE W3IOBCMD
     USE W3IOSFMD
 #ifdef W3_PDLIB
-    USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA, COMPUTE_DIFFRACTION
+    USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA
     USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
     USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
-    USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM, DIFRX, DIFRY, DIFRM
+    USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
     USE yowNodepool, only: npa, iplg, np
 #endif
     !/
@@ -887,7 +887,6 @@ CONTAINS
       DTI50   = 0.
     END IF
 #endif
-
     !
     ! 2.  Determine next time from ending and output --------------------- /
     !     time and get corresponding time step.
@@ -1027,10 +1026,6 @@ CONTAINS
 #ifdef W3_T
       WRITE (NDST,9020) IT0, NT, DTGA
 #endif
-
-      IF (B_JGS_LDIFR .and. .not. allocated(DIFRM)) THEN
-        ALLOCATE(DIFRX(NSEAL), DIFRY(NSEAL), DIFRM(NSEAL))
-      ENDIF
       !
       ! ==================================================================== /
       !
@@ -1161,19 +1156,19 @@ CONTAINS
         END IF
 
 #ifdef W3_DEBUGRUN
-      DO JSEA = 1, NSEAL
-        DO IS = 1, NSPEC
-          IF (VA(IS, JSEA) .LT. 0.) THEN
-            WRITE(740+IAPROC,*) 'TEST W3WAVE 5', VA(IS,JSEA)
-            CALL FLUSH(740+IAPROC)
-          ENDIF
+        DO JSEA = 1, NSEAL
+          DO IS = 1, NSPEC
+            IF (VA(IS, JSEA) .LT. 0.) THEN
+              WRITE(740+IAPROC,*) 'TEST W3WAVE 5', VA(IS,JSEA)
+              CALL FLUSH(740+IAPROC)
+            ENDIF
+          ENDDO
         ENDDO
-      ENDDO
-      IF (SUM(VA) .NE. SUM(VA)) THEN
-        WRITE(740+IAPROC,*) 'NAN in ACTION 5', IX, IY, SUM(VA)
-        CALL FLUSH(740+IAPROC)
-        STOP
-      ENDIF
+        IF (SUM(VA) .NE. SUM(VA)) THEN
+          WRITE(740+IAPROC,*) 'NAN in ACTION 5', IX, IY, SUM(VA)
+          CALL FLUSH(740+IAPROC)
+          STOP
+        ENDIF
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 6')
 
@@ -1456,11 +1451,11 @@ CONTAINS
         END IF
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
-
+        !
 #ifdef W3_PDLIB
-        WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR
+        !WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR
         IF (B_JGS_LDIFR) THEN
-          WRITE(*,*) 'COMPUTING DIFFRACTION' 
+          !WRITE(*,*) 'COMPUTING DIFFRACTION' 
           CALL COMPUTE_DIFFRACTION
         ENDIF 
 
@@ -1524,48 +1519,48 @@ CONTAINS
 #endif
             !
 #ifdef W3_DEBUGSRC
-              IF (IX .eq. DEBUG_NODE) THEN
-                WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
-              END IF
-              WRITE(740+IAPROC,*) 'IT/IX/IY/IMOD=', IT, IX, IY, IMOD
-              WRITE(740+IAPROC,*) 'ISEA/JSEA=', ISEA, JSEA
-              WRITE(740+IAPROC,*) 'Before sum(VA)=', sum(VA(:,JSEA))
-              FLUSH(740+IAPROC)
+            IF (IX .eq. DEBUG_NODE) THEN
+              WRITE(740+IAPROC,*) 'NODE_SRCE_IMP_PRE : IX=', IX, ' JSEA=', JSEA
+            END IF
+            WRITE(740+IAPROC,*) 'IT/IX/IY/IMOD=', IT, IX, IY, IMOD
+            WRITE(740+IAPROC,*) 'ISEA/JSEA=', ISEA, JSEA
+            WRITE(740+IAPROC,*) 'Before sum(VA)=', sum(VA(:,JSEA))
+            FLUSH(740+IAPROC)
 #endif
-              CALL W3SRCE(srce_imp_pre, IT, ISEA, JSEA, IX, IY, IMOD, &
-                   VAold(:,JSEA), VA(:,JSEA),                         &
-                   VSioDummy, VDioDummy, SHAVETOT(JSEA),              &
-                   ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                   &
-                   CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),   &
-                   U10D(ISEA),                                        &
+            CALL W3SRCE(srce_imp_pre, IT, ISEA, JSEA, IX, IY, IMOD, &
+                 VAold(:,JSEA), VA(:,JSEA),                         &
+                 VSioDummy, VDioDummy, SHAVETOT(JSEA),              &
+                 ALPHA(1:NK,JSEA), WN(1:NK,ISEA),                   &
+                 CG(1:NK,ISEA), CLATS(ISEA), DW(ISEA), U10(ISEA),   &
+                 U10D(ISEA),                                        &
 #ifdef W3_FLX5
-                   TAUA(ISEA), TAUADIR(ISEA),                         &
+                 TAUA(ISEA), TAUADIR(ISEA),                         &
 #endif
-                   AS(ISEA), UST(ISEA),                               &
-                   USTDIR(ISEA), CX(ISEA), CY(ISEA),                  &
-                   ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                 &
-                   ICEDMAX(ISEA),                                     &
-                   REFLEC, REFLED, DELX, DELY, DELA,                  &
-                   TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),              &
-                   FPIS(ISEA), DTDYN(JSEA),                           &
-                   FCUT(JSEA), DTGpre, TAUWX(JSEA), TAUWY(JSEA),      &
-                   TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),            &
-                   TAUWIY(JSEA), TAUWNX(JSEA),                        &
-                   TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),           &
-                   TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
-                   PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),             &
-                   TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),          &
-                   RHOAIR(ISEA), ASF(ISEA))
-              IF (.not. LSLOC) THEN
-                VSTOT(:,JSEA) = VSioDummy
-                VDTOT(:,JSEA) = VDioDummy
-              ENDIF
+                 AS(ISEA), UST(ISEA),                               &
+                 USTDIR(ISEA), CX(ISEA), CY(ISEA),                  &
+                 ICE(ISEA), ICEH(ISEA), ICEF(ISEA),                 &
+                 ICEDMAX(ISEA),                                     &
+                 REFLEC, REFLED, DELX, DELY, DELA,                  &
+                 TRNX(IY,IX), TRNY(IY,IX), BERG(ISEA),              &
+                 FPIS(ISEA), DTDYN(JSEA),                           &
+                 FCUT(JSEA), DTGpre, TAUWX(JSEA), TAUWY(JSEA),      &
+                 TAUOX(JSEA), TAUOY(JSEA), TAUWIX(JSEA),            &
+                 TAUWIY(JSEA), TAUWNX(JSEA),                        &
+                 TAUWNY(JSEA),  PHIAW(JSEA), CHARN(JSEA),           &
+                 TWS(JSEA), PHIOC(JSEA), TMP1, D50, PSIC, TMP2,     &
+                 PHIBBL(JSEA), TMP3, TMP4, PHICE(JSEA),             &
+                 TAUOCX(JSEA), TAUOCY(JSEA), WNMEAN(JSEA),          &
+                 RHOAIR(ISEA), ASF(ISEA))
+            IF (.not. LSLOC) THEN
+              VSTOT(:,JSEA) = VSioDummy
+              VDTOT(:,JSEA) = VDioDummy
+            ENDIF
 #ifdef W3_DEBUGSRC
-              WRITE(740+IAPROC,*) 'After sum(VA)=', sum(VA(:,JSEA))
-              WRITE(740+IAPROC,*) '   sum(VSTOT)=', sum(VSTOT(:,JSEA))
-              WRITE(740+IAPROC,*) '   sum(VDTOT)=', sum(VDTOT(:,JSEA))
-              WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
-              FLUSH(740+IAPROC)
+            WRITE(740+IAPROC,*) 'After sum(VA)=', sum(VA(:,JSEA))
+            WRITE(740+IAPROC,*) '   sum(VSTOT)=', sum(VSTOT(:,JSEA))
+            WRITE(740+IAPROC,*) '   sum(VDTOT)=', sum(VDTOT(:,JSEA))
+            WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
+            FLUSH(740+IAPROC)
 #endif
           END DO ! JSEA
         END IF ! PDLIB
@@ -1822,7 +1817,7 @@ CONTAINS
             END IF
           END IF
 
-          IF ((GTYPE .EQ. UNGTYPE) .and. LPDLIB) THEN
+          IF (LPDLIB) THEN
             !
 #ifdef W3_PDLIB
             IF (FLCX .or. FLCY) THEN
@@ -2422,7 +2417,7 @@ CONTAINS
 #ifdef W3_MPI
         IF ( ( (DSEC21(TIME,TONEXT(:,1)).EQ.0.) .AND. FLOUT(1) ) .OR. &
              (  (DSEC21(TIME,TONEXT(:,7)).EQ.0.) .AND. FLOUT(7) .AND. SBSED ) ) THEN
-          IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) THEN
+          IF (.NOT. LPDLIB) THEN
             IF (NRQGO.NE.0 ) THEN
 #endif
 #ifdef W3_MPI
@@ -2461,7 +2456,7 @@ CONTAINS
             CALL DO_OUTPUT_EXCHANGES(IMOD)
 #endif
 #ifdef W3_MPI
-          END IF
+          END IF ! IF (.NOT. LPDLIB) THEN
         END IF
 #endif
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE AFTER TIME LOOP 1')
@@ -2578,7 +2573,11 @@ CONTAINS
 #ifdef W3_SBS
                   IF ( J .EQ. 1 ) THEN
 #endif
-                    CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD )
+                    CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD &
+#ifdef W3_ASCII
+                            ,NDS(14)                          &
+#endif
+                            )
 #ifdef W3_SBS
                   ENDIF
 #endif
@@ -2609,7 +2608,11 @@ CONTAINS
                   !   Gets the necessary spectral data
                   !
                   CALL W3IOPE ( VA )
-                  CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD )
+                  CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD &
+#ifdef W3_ASCII
+                          ,NDS(15)                           &
+#endif
+                          )
                 END IF
                 !
               ELSE IF ( J .EQ. 3 ) THEN

@@ -429,6 +429,17 @@ MODULE W3GDATMD
   !      KDCON     Real  Public   Conversion factor for relative depth.
   !      KDMN      Real  Public   Minimum relative depth.
   !      SNLSn     Real  Public   Constants in shallow water factor.
+  !      IQTPE     Int.  Public   Type of depth treatment
+  !                               -2 : Deep water GQM with scaling
+  !                                1 : Deep water DIA
+  !                                2 : Deep water DIA with scaling
+  !                                3 : Finite water depth DIA
+  !      GQNF1     Int.  Public   Gaussian quadrature resolution
+  !      GQNT1     Int.  Public   Gaussian quadrature resolution
+  !      GQNNQ_OM2 Int.  Public   Gaussian quadrature resolution
+  !      GQTHRSAT  Real  Public   Threshold on saturation for SNL calculation
+  !      GQTHRCOU  Real  Public   Threshold for filter on coupling coefficient
+  !      GQAMP     R.A.  Public   Amplification factors
   !                                                             (!/NL2)
   !      IQTPE     Int.  Public   Type of depth treatment
   !                                1 : Deep water
@@ -910,6 +921,8 @@ MODULE W3GDATMD
 #ifdef W3_NL1
     REAL                  :: SNLC1, LAM, KDCON, KDMN,             &
          SNLS1, SNLS2, SNLS3
+    INTEGER               :: IQTPE, GQNF1, GQNT1, GQNQ_OM2
+    REAL                  :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(4)
 #endif
 #ifdef W3_NL2
     INTEGER               :: IQTPE, NDPTHS
@@ -1321,6 +1334,8 @@ MODULE W3GDATMD
   !/ Data aliasses for structure SNLP(S)
   !/
 #ifdef W3_NL1
+  INTEGER, POINTER        :: IQTPE, GQNF1, GQNT1, GQNQ_OM2
+  REAL, POINTER           :: NLTAIL, GQTHRSAT, GQTHRCOU, GQAMP(:)
   REAL, POINTER           :: SNLC1, LAM, KDCON, KDMN,             &
        SNLS1, SNLS2, SNLS3
 #endif
@@ -2694,6 +2709,14 @@ CONTAINS
     SNLS1  => MPARS(IMOD)%SNLPS%SNLS1
     SNLS2  => MPARS(IMOD)%SNLPS%SNLS2
     SNLS3  => MPARS(IMOD)%SNLPS%SNLS3
+    IQTPE  => MPARS(IMOD)%SNLPS%IQTPE
+    GQNF1  => MPARS(IMOD)%SNLPS%GQNF1
+    GQNT1  => MPARS(IMOD)%SNLPS%GQNT1
+    GQNQ_OM2  => MPARS(IMOD)%SNLPS%GQNQ_OM2
+    NLTAIL => MPARS(IMOD)%SNLPS%NLTAIL
+    GQTHRSAT => MPARS(IMOD)%SNLPS%GQTHRSAT
+    GQTHRCOU=> MPARS(IMOD)%SNLPS%GQTHRCOU
+    GQAMP=> MPARS(IMOD)%SNLPS%GQAMP
 #endif
 #ifdef W3_NL2
     IQTPE  => MPARS(IMOD)%SNLPS%IQTPE
@@ -2811,9 +2834,6 @@ CONTAINS
     B_JGS_USE_JACOBI => MPARS(IMOD)%SCHMS%B_JGS_USE_JACOBI
     B_JGS_BLOCK_GAUSS_SEIDEL => MPARS(IMOD)%SCHMS%B_JGS_BLOCK_GAUSS_SEIDEL
     B_JGS_MAXITER => MPARS(IMOD)%SCHMS%B_JGS_MAXITER
-    B_JGS_LIMITER_FUNC => MPARS(IMOD)%SCHMS%B_JGS_LIMITER_FUNC
-    B_JGS_LDIFR => MPARS(IMOD)%SCHMS%B_JGS_LDIFR
-    B_JGS_IDIFR => MPARS(IMOD)%SCHMS%B_JGS_IDIFR
     B_JGS_PMIN => MPARS(IMOD)%SCHMS%B_JGS_PMIN
     B_JGS_DIFF_THR => MPARS(IMOD)%SCHMS%B_JGS_DIFF_THR
     B_JGS_NORM_THR => MPARS(IMOD)%SCHMS%B_JGS_NORM_THR

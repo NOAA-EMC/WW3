@@ -689,6 +689,7 @@
       echo "$rtst -s ST0 -w work_ST0 $ww3 ww3_tp2.6" >> matrix.body
       echo "$rtst -s ST0 -w work_ST0 $ww3 ww3_tp2.7" >> matrix.body
       echo "$rtst -s ST4 -w work_ST4 $ww3 ww3_tp2.6" >> matrix.body
+      echo "$rtst -s ST4_ASCII -w work_ST4_ASCII $ww3 ww3_tp2.6" >> matrix.body
     fi
 
     if [ "$prop1D" = 'y' ]
@@ -911,6 +912,8 @@
     echo "$rtst -s ST4_TSA  -w work_ST4_TSA                 $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST6      -w work_ST6                     $ww3 ww3_ts1" >> matrix.body
     echo "$rtst             -w work_NL5 -i input_nl5_matrix $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -g ST4_T707 -w work_T707GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -g ST4_T713 -w work_T713GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
   fi
 
 # fetch limited growth, no switch sharing here
@@ -1885,6 +1888,7 @@
   then
     echo ' ' >> matrix.body
     echo "$rtst -s MPI -w work_MPI -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
+    echo "$rtst -s MPI_ASCII -w work_MPI_ASCII -m grdset_a -f -p $mpi -n $np $ww3 mww3_test_09" >> matrix.body
   fi
 
 # Rotated pole grid cases, (ww3_tp2.11 MPI only if requested)
@@ -2148,15 +2152,7 @@
           echo "./bin/test.comp ww3_ufs1.1 work_a work_b"                                                  >> matrix.body
       fi
      fi
-
- # Global unstr case
- # Domain Decomposition Explicit
   fi
-     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a -g a -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
- # Domain Decomposition Block Explicit
-     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_b -g b -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
- # Domain Decomposition Implicit
-     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_c -g c -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
 
  #Test of UFS applications with ww3_multi_esmf and grib2 output
   if [ "$ufs" = 'y' ] && [ "$esmf" = 'y' ] && [ "$grib" = 'y' ]
@@ -2203,6 +2199,16 @@
        echo "./bin/test.comp ww3_ufs1.2 work_a_esmf work_b_esmf"                                                 >> matrix.body
     fi
   fi
+
+ #Test gint for restarts 
+  if [ "$ufs" = 'y' ] && [ "$grib" = 'y' ]
+  then
+    echo ' ' >> matrix.body    
+    echo "$rtst -s MPI_OMPH -w work_c -m grdset_c -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"            >> matrix.body
+    echo "mkdir -p ww3_ufs1.2/work_l"                                                                      >> matrix.body
+    echo "cp ww3_ufs1.2/work_c/restart.hafsl ww3_ufs1.2/work_l/restart.hafsl"                              >> matrix.body
+    echo "$rtst -s MPI_OMPH -w work_l -m grdset_l -f -p $mpi -n $npl  -t $nth1 $ww3 ww3_ufs1.2"            >> matrix.body
+  fi 
 
 
  #GEFSv12 setup with ww3_multi and grib2 output

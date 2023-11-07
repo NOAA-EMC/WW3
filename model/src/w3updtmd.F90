@@ -2151,7 +2151,6 @@ CONTAINS
 #endif
     LOGICAL                 :: LOCAL
     INTEGER                 :: IBELONG
-    REAL                    :: CTMP
     !
 #ifdef W3_TIDE
     INTEGER          :: J

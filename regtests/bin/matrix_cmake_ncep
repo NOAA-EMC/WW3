@@ -74,7 +74,7 @@ EOF
     batchq='slurm'
     basemodcomp='intel/2022.1.2'
     basemodmpi='impi/2022.1.2'
-    hpcstackpath='/work/noaa/epic-ps/hpc-stack/libs/intel/2022.1.2/modulefiles/stack'
+    hpcstackpath='/work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
     hpcstackversion='hpc/1.2.0'
     modcomp='hpc-intel/2022.1.2'
     modmpi='hpc-impi/2022.1.2'

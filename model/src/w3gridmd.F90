@@ -113,6 +113,7 @@ MODULE W3GRIDMD
   !/    27-May-2021 : Moved to a subroutine               ( version 7.13 )
   !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+  !/    28-Feb-2023 : GQM as an alternative for NL1       ( version 7.15 )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -439,7 +440,7 @@ MODULE W3GRIDMD
   !             (2006) input and Babanin et al. (2001,2010) dissipation.
   !
   !     !/NL0   No nonlinear interactions.
-  !     !/NL1   Discrete interaction approximation (DIA).
+  !     !/NL1   Discrete interaction approximation (DIA or GQM).
   !     !/NL2   Exact interactions (WRT).
   !     !/NL3   Generalized Multiple DIA (GMD).
   !     !/NL4   Two Scale Approximation
@@ -586,6 +587,9 @@ MODULE W3GRIDMD
        IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
        IST, NKI, NTHI, NRIC, NRIS, I, IDFT, &
        NSTAT, NBT, NLAND, NOSW, NMAPB, IMAPB
+#ifdef W3_ASCII
+  INTEGER                  :: NDSMA
+#endif
 #ifdef W3_NL2
   INTEGER            :: IDEPTH
 #endif
@@ -864,6 +868,8 @@ MODULE W3GRIDMD
 #ifdef W3_NL1
   REAL                    :: LAMBDA, KDCONV, KDMIN,               &
        SNLCS1, SNLCS2, SNLCS3
+  INTEGER                 :: IQTYPE, GQMNF1, GQMNT1, GQMNQ_OM2
+  REAL                    :: TAILNL, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
   INTEGER                 :: IQTYPE, NDEPTH
@@ -897,38 +903,36 @@ MODULE W3GRIDMD
 #ifdef W3_PR3
   REAL                    :: WDTHCG, WDTHTH
 #endif
-  LOGICAL :: JGS_TERMINATE_MAXITER = .TRUE.
-  LOGICAL :: JGS_TERMINATE_DIFFERENCE = .TRUE.
-  LOGICAL :: JGS_TERMINATE_NORM = .TRUE.
-  LOGICAL :: JGS_LIMITER = .FALSE.
-  INTEGER :: JGS_LIMITER_FUNC = 1
-  LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
-  LOGICAL :: JGS_USE_JACOBI = .TRUE.
-  LOGICAL :: JGS_SOURCE_NONLINEAR = .FALSE.
-  LOGICAL :: UGOBCAUTO = .FALSE.
-  LOGICAL :: UGBCCFL   = .FALSE.
-  LOGICAL :: EXPFSN    = .TRUE.
-  LOGICAL :: EXPFSPSI  = .FALSE.
-  LOGICAL :: EXPFSFCT  = .FALSE.
-  LOGICAL :: IMPFSN    = .FALSE.
-  LOGICAL :: EXPTOTAL  = .FALSE.
-  LOGICAL :: IMPTOTAL  = .FALSE.
-  LOGICAL :: IMPREFRACTION = .FALSE.
-  LOGICAL :: IMPFREQSHIFT = .FALSE.
-  LOGICAL :: IMPSOURCE = .FALSE.
-  LOGICAL :: SETUP_APPLY_WLV = .FALSE.
-  INTEGER :: JGS_MAXITER=100
+  LOGICAL :: JGS_TERMINATE_MAXITER
+  LOGICAL :: JGS_TERMINATE_DIFFERENCE
+  LOGICAL :: JGS_TERMINATE_NORM
+  LOGICAL :: JGS_LIMITER
+  INTEGER :: JGS_LIMITER_FUNC
+  LOGICAL :: JGS_BLOCK_GAUSS_SEIDEL
+  LOGICAL :: JGS_USE_JACOBI
+  LOGICAL :: JGS_SOURCE_NONLINEAR
+  LOGICAL :: UGOBCAUTO
+  LOGICAL :: UGBCCFL
+  LOGICAL :: EXPFSN
+  LOGICAL :: EXPFSPSI
+  LOGICAL :: EXPFSFCT
+  LOGICAL :: IMPFSN
+  LOGICAL :: EXPTOTAL
+  LOGICAL :: IMPTOTAL
+  LOGICAL :: IMPREFRACTION
+  LOGICAL :: IMPFREQSHIFT
+  LOGICAL :: IMPSOURCE
+  LOGICAL :: SETUP_APPLY_WLV
+  INTEGER :: JGS_MAXITER
   INTEGER :: nbSel
   INTEGER :: UNSTSCHEMES(6)
   INTEGER :: UNSTSCHEME
-  INTEGER :: JGS_NLEVEL = 0
-  LOGICAL :: JGS_LDIFR = .FALSE. 
-  INTEGER :: JGS_IDIFR = 1 
-  REAL*8  :: JGS_PMIN = 0.
-  REAL*8  :: JGS_DIFF_THR = 1.E-10
-  REAL*8  :: JGS_NORM_THR = 1.E-20
-  REAL*8  :: SOLVERTHR_SETUP = 1.E-20
-  REAL*8  :: CRIT_DEP_SETUP = 0.
+  INTEGER :: JGS_NLEVEL
+  REAL*8  :: JGS_PMIN
+  REAL*8  :: JGS_DIFF_THR
+  REAL*8  :: JGS_NORM_THR
+  REAL*8  :: SOLVERTHR_SETUP
+  REAL*8  :: CRIT_DEP_SETUP
   !
   CHARACTER               :: UGOBCFILE*60
   REAL                    :: UGOBCDEPTH
@@ -997,7 +1001,9 @@ MODULE W3GRIDMD
 #endif
 #ifdef W3_NL1
   NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
-       SNLCS1, SNLCS2, SNLCS3
+       SNLCS1, SNLCS2, SNLCS3,                         &
+       IQTYPE, TAILNL, GQMNF1, GQMNT1,                 &
+       GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
   NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH
@@ -1831,6 +1837,18 @@ CONTAINS
     SNLCS1 =  5.5
     SNLCS2 =  0.833
     SNLCS3 = -1.25
+    ! Additional parameters for GQM
+    IQTYPE =  1
+    TAILNL = -FACHF
+    GQMNF1 = 14
+    GQMNT1 = 8
+    GQMNQ_OM2=8
+    GQMTHRSAT=0.
+    GQMTHRCOU=0.015
+    GQAMP1=1.
+    GQAMP2=0.002
+    GQAMP3=1.
+    GQAMP4=1.
     CALL READNL ( NDSS, 'SNL1', STATUS )
     WRITE (NDSO,922) STATUS
     WRITE (NDSO,923) LAMBDA, NLPROP, KDCONV, KDMIN,            &
@@ -1842,6 +1860,18 @@ CONTAINS
     SNLS1  = SNLCS1
     SNLS2  = SNLCS2
     SNLS3  = SNLCS3
+    ! Additional parameters for GQM
+    IQTPE  = IQTYPE
+    GQNF1  = GQMNF1
+    GQNT1  = GQMNT1
+    GQNQ_OM2  = GQMNQ_OM2
+    GQTHRSAT  = GQMTHRSAT
+    GQTHRCOU  = GQMTHRCOU
+    GQAMP(1)  = GQAMP1
+    GQAMP(2)  = GQAMP2
+    GQAMP(3)  = GQAMP3
+    GQAMP(4)  = GQAMP4
+    NLTAIL = TAILNL
 #endif
     !
 #ifdef W3_ST0
@@ -3179,7 +3209,10 @@ CONTAINS
 #endif
 #ifdef W3_NL1
       WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
-           SNLCS1, SNLCS2, SNLCS3
+           SNLCS1, SNLCS2, SNLCS3,              &
+           IQTYPE, TAILNL, GQMNF1,              &
+           GQMNT1, GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU,&
+           GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
       WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
@@ -5914,9 +5947,16 @@ CONTAINS
     !10.  Write model definition file.
     !
     WRITE (NDSO,999)
-    CALL W3IOGR ( 'WRITE', NDSM )
+    CALL W3IOGR ( 'WRITE', NDSM &
+#ifdef W3_ASCII
+                  ,NDSA=NDSMA        &
+#endif
+            )
     !
     CLOSE (NDSM)
+#ifdef W3_ASCII
+    CLOSE (NDSMA)
+#endif
     !
     GOTO 2222
     !
@@ -6227,7 +6267,11 @@ CONTAINS
 2922 FORMAT ( '  &SNL1 LAMBDA =',F7.3,', NLPROP =',E10.3,       &
          ', KDCONV =',F7.3,', KDMIN =',F7.3,','/           &
          '        SNLCS1 =',F7.3,', SNLCS2 =',F7.3,        &
-         ', SNLCS3 = ',F7.3,' /')
+         ', SNLCS3 = ',F7.3','/                            &
+         '        IQTYPE =',I2,', TAILNL =',F5.1,','/      &
+         '        GQMNF1 =',I2,', GQMNT1 =',I2,',',        &
+         ' GQMNQ_OM2 =',I2,', GQMTHRSAT =',E11.4,', GQMTHRCOU =',F4.3,','/ &
+         '        GQAMP1 =',F5.3,', GQAMP2 =',F5.3,', GQAMP3 =',F5.3,', GQAMP4 =',F5.3,' /')
 #endif
     !
 #ifdef W3_NL2

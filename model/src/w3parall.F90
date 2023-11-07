@@ -1,3 +1,24 @@
+!> @file
+!> @brief Parallel routines for implicit solver.
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date   01-Jun-2018
+!>
+
+!/ ------------------------------------------------------------------- /
+!>
+!> @brief Parallel routines for implicit solver.
+!>
+!> @author Aron Roland
+!> @author Mathieu Dutour-Sikiric
+!> @date   01-Jun-2018
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3PARALL
   !/
   !/                  +-----------------------------------+
@@ -84,6 +105,15 @@ MODULE W3PARALL
   REAL*8, ALLOCATABLE   :: DIFRX(:), DIFRY(:), DIFRM(:) !AR: todo, allocate!
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief NA
+  !>
+  !> @param[out] eTime
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE WAV_MY_WTIME(eTime)
     !/ ------------------------------------------------------------------- /
     !/
@@ -165,6 +195,15 @@ CONTAINS
     !/
   END SUBROUTINE WAV_MY_WTIME
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Print timings.
+  !>
+  !> @param[in] string
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE PRINT_MY_TIME(string)
     !/
     !/                  +-----------------------------------+
@@ -240,6 +279,17 @@ CONTAINS
     !/
   END SUBROUTINE PRINT_MY_TIME
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Compute refraction part in matrix.
+  !>
+  !> @param[in]  ISEA
+  !> @param[in]  DTG
+  !> @param[out] CAD
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE PROP_REFRACTION_PR1(ISEA,DTG, CAD)
     !/
     !/                  +-----------------------------------+
@@ -390,6 +440,19 @@ CONTAINS
   END SUBROUTINE PROP_REFRACTION_PR1
   !/ ------------------------------------------------------------------- /
   !
+  !>
+  !> @brief Compute refraction part in matrix alternative approach.
+  !>
+  !> @param[in]  IP
+  !> @param[in]  ISEA
+  !> @param[in]  DTG
+  !> @param[out] CAD
+  !> @param[in]  DoLimiter
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE PROP_REFRACTION_PR3(IP, ISEA, DTG, CAD, DoLimiter)
     !/
     !/                  +-----------------------------------+
@@ -547,6 +610,19 @@ CONTAINS
     !/
   END SUBROUTINE PROP_REFRACTION_PR3
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Compute frequency shift in matrix.
+  !>
+  !> @param[in]  IP
+  !> @param[in]  ISEA
+  !> @param[out] CAS
+  !> @param[out] DMM
+  !> @param[in]  DTG
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE PROP_FREQ_SHIFT(IP, ISEA, CAS, DMM, DTG)
     !/
     !/                  +-----------------------------------+
@@ -693,6 +769,19 @@ CONTAINS
     !/
   END SUBROUTINE PROP_FREQ_SHIFT
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Compute frequency shift alternative approach.
+  !>
+  !> @param[in]  IP
+  !> @param[in]  ISEA
+  !> @param[out] CWNB_M2
+  !> @param[out] DWNI_M2
+  !> @param[in]  DTG
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE PROP_FREQ_SHIFT_M2(IP, ISEA, CWNB_M2, DWNI_M2, DTG)
     !/
     !/                  +-----------------------------------+
@@ -842,6 +931,16 @@ CONTAINS
     !/
   END SUBROUTINE PROP_FREQ_SHIFT_M2
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Sync global local arrays.
+  !>
+  !> @param[in] IMOD
+  !> @param[in] IsMulti
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY(IMOD, IsMulti)
     !/
     !/                  +-----------------------------------+
@@ -956,6 +1055,16 @@ CONTAINS
     !/
   END SUBROUTINE SYNCHRONIZE_IPGL_ETC_ARRAY
   !/ ....................----------------------------------------------- /
+  !>
+  !> @brief Setup NSEAL, NSEALM in context of PDLIB.
+  !>
+  !> @param[out] NSEALout
+  !> @param[out] NSEALMout
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE SET_UP_NSEAL_NSEALM(NSEALout, NSEALMout)
     !/
     !/                  +-----------------------------------+
@@ -1068,6 +1177,17 @@ CONTAINS
     !/
   END SUBROUTINE SET_UP_NSEAL_NSEALM
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Set JSEA for all schemes.
+  !>
+  !> @param[in]  ISEA
+  !> @param[out] JSEA
+  !> @param[out] ISPROC
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE INIT_GET_JSEA_ISPROC(ISEA, JSEA, ISPROC)
     !/ ------------------------------------------------------------------- /
     !/
@@ -1145,7 +1265,7 @@ CONTAINS
 #endif
 
 #ifdef W3_PDLIB
-    IF ((.NOT. LPDLIB ).or.(GTYPE .ne. UNGTYPE)) THEN
+    IF (.NOT. LPDLIB) THEN
 #endif
       JSEA   = 1 + (ISEA-1)/NAPROC
       ISPROC = ISEA - (JSEA-1)*NAPROC
@@ -1165,6 +1285,17 @@ CONTAINS
     !/
   END SUBROUTINE INIT_GET_JSEA_ISPROC
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Set belongings of JSEA in context of PDLIB.
+  !>
+  !> @param[in]  ISEA
+  !> @param[out] JSEA
+  !> @param[out] IBELONG
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE GET_JSEA_IBELONG(ISEA, JSEA, IBELONG)
     !/ ------------------------------------------------------------------- /
     !/
@@ -1282,6 +1413,16 @@ CONTAINS
     !/
   END SUBROUTINE GET_JSEA_IBELONG
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Set ISEA for all schemes.
+  !>
+  !> @param[out] ISEA
+  !> @param[in]  JSEA
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE INIT_GET_ISEA(ISEA, JSEA)
     !/ ------------------------------------------------------------------- /
     !/
@@ -1388,12 +1529,25 @@ CONTAINS
     !/ End of INIT_GET_ISEA ------------------------------------------------ /
     !/
   END SUBROUTINE INIT_GET_ISEA
-  !**********************************************************************
-  !*  An array of size (NSEA) is send but only the (1:NSEAL) values     *
-  !*  are correct. The program synchonizes everything on all nodes.     *
-  !**********************************************************************
+
+  !>
+  !> @brief Sync global array in context of PDLIB.
+  !>
+  !> @details An array of size (NSEA) is send but only the (1:NSEAL) values
+  !>          are correct. The program synchonizes everything on all nodes.
+  !>
+  !> @param[inout] TheVar
+  !>
+  !> @author Aron Roland
+  !> @author Mathieu Dutour-Sikiric
+  !> @date   01-Jun-2018
+  !>
   SUBROUTINE SYNCHRONIZE_GLOBAL_ARRAY(TheVar)
     !/ ------------------------------------------------------------------- /
+    !**********************************************************************
+    !*  An array of size (NSEA) is send but only the (1:NSEAL) values     *
+    !*  are correct. The program synchonizes everything on all nodes.     *
+    !**********************************************************************
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
