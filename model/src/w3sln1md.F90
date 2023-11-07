@@ -54,11 +54,94 @@ MODULE W3SLN1MD
 CONTAINS
   !/ ------------------------------------------------------------------- /
   SUBROUTINE W3SLN1 (K, FHIGH, USTAR, USDIR, S)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           H. L. Tolman            |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         23-Jun-2006 |
+    !/                  +-----------------------------------+
+    !/
+    !/    23-Jun-2006 : Origination.                        ( version 3.09 )
+    !/
+    !  1. Purpose :
+    !
+    !     Linear wind input according to Cavaleri and Melanotte-Rizzoli
+    !     (1982) filtered for low frequencies according to Tolman (1992).
+    !
+    !  2. Method :
+    !
+    !     The expression of Cavaleri and Melanotte-Rizzoli, converted to
+    !     action spectra defined in terms of wavenumber and direction
+    !     becomes
+    !
+    !                       -1       /     /                \ \ 4
+    !       Sln  = SLNC1 * k   * max | 0., | U* cos(Dtheta) | |        (1)
+    !                                \     \                / /
+    !
+    !                             2     -2
+    !              SLNC1 = 80 RHOr  GRAV   FILT                        (2)
+    !
+    !     Where :
+    !
+    !        RHOr     Density of air dev. by density of water.
+    !        U*       Wind friction velocity.
+    !        Dtheta   Difference in wind and wave direction.
+    !        FILT     Filter based on PM and cut-off frequencies.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       K       R.A.  I   Wavenumber for entire spectrum.
+    !       FHIGH   R.A.  I   Cut-off frequency in integration (rad/s)
+    !       USTAR   Real  I   Friction velocity.
+    !       USDIR   Real  I   Direction of USTAR.
+    !       S       R.A.  O   Source term.
+    !     ----------------------------------------------------------------
+    !                         *) Stored as 1-D array with dimension NTH*NK
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD Subroutine tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3SRCE    Subr. W3SRCEMD Source term integration.
+    !      W3EXPO    Subr.   N/A    Point output post-processor.
+    !      GXEXPO    Subr.   N/A    GrADS point output post-processor.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !       None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/S  Enable subroutine tracing.
+    !     !/T  Test output.
+    !
+    ! 10. Source code :
+    !
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
     USE W3GDATMD, ONLY: NTH, NK, ECOS, ESIN, SIG, SLNC1, FSPM, FSHF
     USE W3ODATMD, ONLY: NDSE, NDST
     USE W3SERVMD, ONLY: EXTCDE
+#ifdef W3_S
+    USE W3SERVMD, ONLY: STRACE
+#endif
     !/
     IMPLICIT NONE
     !/
@@ -72,9 +155,23 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: ITH, IK
+#ifdef W3_S
+    INTEGER, SAVE           :: IENT = 0
+#endif
     REAL                    :: COSU, SINU, DIRF(NTH), FAC, FF1, FF2, &
          FFILT, RFR, WNF(NK)
     !/
+    !/ ------------------------------------------------------------------- /
+    !/
+#ifdef W3_S
+    CALL STRACE (IENT, 'W3SLN1')
+#endif
+    !
+    ! 1.  Set up factors ------------------------------------------------- *
+    !
+#ifdef W3_T
+    WRITE (NDST,900) USTAR, USDIR*RADE
+#endif
     !
     COSU   = COS(USDIR)
     SINU   = SIN(USDIR)
@@ -104,6 +201,13 @@ CONTAINS
     !
     RETURN
     !
+    ! Formats
+    !
+#ifdef W3_T
+900 FORMAT ( ' TEST W3SLN1 : USTAR, DIR :',F6.3, F6.1)
+#endif
+    !/
+    !/ End of W3SLN1 ----------------------------------------------------- /
     !/
   END SUBROUTINE W3SLN1
   !/

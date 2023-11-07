@@ -499,7 +499,7 @@ CONTAINS
 #endif
     REAL                    :: DTTST, DEPTH, FRACOS
     REAL                    :: FACTOR
-    REAL                    :: WLVeff
+    REAL                    :: WLVeff, CTMP
 #ifdef W3_T
     REAL, ALLOCATABLE      :: XOUT(:,:)
 #endif

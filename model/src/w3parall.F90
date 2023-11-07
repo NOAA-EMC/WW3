@@ -102,7 +102,7 @@ MODULE W3PARALL
   REAL*8, PARAMETER     :: KDMAX     = 200.d0
 
 
-  REAL*8, ALLOCATABLE   :: DIFRX(:), DIFRY(:), DIFRM(:) !AR: todo, allocate!
+  REAL*8, ALLOCATABLE   :: DIFRX(:), DIFRY(:), DIFRM(:)
 CONTAINS
   !/ ------------------------------------------------------------------- /
   !>
@@ -542,7 +542,7 @@ CONTAINS
     FACTH  = 1.0 / DTH
     !
     FDG    = FACTH * eCTHG0
-    DEPTH  = MAX ( DMIN , DW(ISEA) ) ! This results in bathemtry modification and it used all over the code!
+    DEPTH  = MAX ( DMIN , DW(ISEA) )
     DO IK=0, NK+1
       IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
         DSDD(IK) = MAX ( 0. , CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
@@ -566,7 +566,7 @@ CONTAINS
         VCFLT(ISP) = ES2(ISP)*DCYX  + ESC(ISP)*DCXXYY - EC2(ISP)*DCXY
       END DO
     ELSE
-      VCFLT = 0
+      VCFLT=0
     END IF
     !
 #ifdef W3_REFRX
@@ -592,9 +592,8 @@ CONTAINS
         VCFLT(ISP)=VELNOFILT
       END IF
     END DO
-
-    DO ISP = 1, NSPEC
-      CAD(ISP) = DBLE(VCFLT(ISP))
+    DO ISP=1,NSPEC
+      CAD(ISP)=DBLE(VCFLT(ISP))
     END DO
 
     IF (B_JGS_LDIFR) THEN
@@ -700,7 +699,6 @@ CONTAINS
     CALL STRACE (IENT, 'PROP_FREQ_SHIFT')
 #endif
     !
-
     IF (LPDLIB) THEN
       eDCXDX = DCXDX(1,IP)
       eDCXDY = DCXDY(1,IP)
@@ -718,14 +716,13 @@ CONTAINS
       eDDDX=DDDX(IY,IX)
       eDDDY=DDDY(IY,IX)
     ENDIF
-
-    eCX    =     CX(ISEA)
-    eCY    =     CY(ISEA)
+    eCX=CX(ISEA)
+    eCY=CY(ISEA)
     DCXX   =  -   eDCXDX
     DCXYYX =  - ( eDCXDY + eDCYDX )
     DCYY   =  -   eDCYDY
     FKD    =    ( eCX*eDDDX + eCY*eDDDY )
-    FACK   = DTG
+    FACK = DTG
     DO ITH=1, NTH
       FKC(ITH) = EC2(ITH)*DCXX + ESC(ITH)*DCXYYX + ES2(ITH)*DCYY
     END DO
@@ -899,7 +896,7 @@ CONTAINS
     !
     DEPTH  = MAX ( DMIN , DW(ISEA) )
     DO IK=0, NK+1
-      IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN 
+      IF ( DEPTH*WN(IK,ISEA) .LT. 5. ) THEN
         IF (B_JGS_LDIFR) THEN
           DSDD(IK) = MAX ( 0. , DIFRM(IP)*CG(IK,ISEA)*WN(IK,ISEA)-0.5*SIG(IK) ) / DEPTH
         ELSE

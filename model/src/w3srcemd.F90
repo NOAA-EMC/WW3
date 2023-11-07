@@ -820,21 +820,7 @@ CONTAINS
 #ifdef W3_ST6
     REAL :: VSWL(NSPEC), VDWL(NSPEC)
 #endif
-    LOGICAL, SAVE           :: FLTEST = .FALSE., FLAGNN = .TRUE.
-#ifdef W3_OMPG
-    !$omp threadprivate( FLTEST, FLAGNN )
-#endif
-    LOGICAL                 :: SHAVE
-    LOGICAL                 :: LBREAK
-    LOGICAL, SAVE           :: FIRST = .TRUE.
-#ifdef W3_OMPG
-    !$omp threadprivate( FIRST )
-#endif
-    LOGICAL                 :: PrintDeltaSmDA
-    REAL                    :: eInc1, eInc2, eVS, eVD, JAC
-    REAL                    :: DeltaSRC(NSPEC)
-    REAL, PARAMETER         :: DTMINTOT = 0.01
-    LOGICAL                 :: LNEWLIMITER = .FALSE.
+
 #ifdef W3_PDLIB
     REAL :: PreVS, DVS, SIDT, FAKS, MAXDAC
 #endif

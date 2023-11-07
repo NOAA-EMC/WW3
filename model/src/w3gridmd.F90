@@ -928,6 +928,8 @@ MODULE W3GRIDMD
   INTEGER :: UNSTSCHEMES(6)
   INTEGER :: UNSTSCHEME
   INTEGER :: JGS_NLEVEL
+  LOGICAL :: JGS_LDIFR
+  INTEGER :: JGS_IDIFR
   REAL*8  :: JGS_PMIN
   REAL*8  :: JGS_DIFF_THR
   REAL*8  :: JGS_NORM_THR
@@ -1097,8 +1099,8 @@ MODULE W3GRIDMD
        JGS_NLEVEL,                                &
        JGS_SOURCE_NONLINEAR,                      &
        SETUP_APPLY_WLV, SOLVERTHR_SETUP,          &
-       CRIT_DEP_SETUP,                            & 
-       JGS_LDIFR, JGS_IDIFR
+       CRIT_DEP_SETUP, JGS_LDIFR, JGS_IDIFR
+
   NAMELIST /MISC/ CICE0, CICEN, LICE, XSEED, FLAGTR, XP, XR, &
        XFILT, PMOVE, IHM, HSPM, WSM, WSC, FLC, FMICHE, &
        RWNDC, FACBERG, NOSW, GSHIFT, WCOR1, WCOR2,     &
@@ -2441,7 +2443,7 @@ CONTAINS
     JGS_NORM_THR = 1.E-20
     JGS_NLEVEL = 0
     JGS_SOURCE_NONLINEAR = .FALSE.
-    JGS_LDIFR = .FALSE. 
+    JGS_LDIFR = .FALSE.
     JGS_IDIFR = 1
     ! read data from the unstructured devoted namelist
     CALL READNL ( NDSS, 'UNST', STATUS )
