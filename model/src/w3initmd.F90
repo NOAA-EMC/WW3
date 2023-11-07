@@ -71,6 +71,9 @@ MODULE W3INITMD
   !/    25-Sep-2020 : Extra fields for coupling restart   ( version 7.10 )
   !/    22-Mar-2021 : Extra coupling fields               ( version 7.13 )
   !/    22-Jun-2021 : GKE NL5 (Q. Liu)                    ( version 7.13 )
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

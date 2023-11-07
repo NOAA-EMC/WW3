@@ -100,6 +100,9 @@ MODULE W3WAVEMD
   !/                  W3NMIN in W3_DEBUGRUN for scaling.  ( version 7.xx )
   !/    10-Oct-2023 : Refactored W3SRCE subroutine calls
   !/                  to pass full arrays. (C. Bunney)    ( version 7.14 )
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. (C. Bunney)
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

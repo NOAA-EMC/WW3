@@ -74,6 +74,9 @@ MODULE W3IOGOMD
   !/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
   !/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
   !/                  min/max freq band (B. Pouliot, CMC)
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

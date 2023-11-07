@@ -62,6 +62,9 @@ MODULE W3ADATMD
   !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
   !/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
   !/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.13 )
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),

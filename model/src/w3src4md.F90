@@ -39,6 +39,9 @@ MODULE W3SRC4MD
   !/    02-Sep-2011 : Clean up and time optimization      ( version 4.04 )
   !/    04-Sep-2011 : Estimation of whitecap stats.       ( version 4.04 )
   !/    13-Nov-2013 : Reduced frequency range with IG     ( version 4.13 )
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !/
   !  1. Purpose :
   !
