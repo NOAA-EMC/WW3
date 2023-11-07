@@ -1077,7 +1077,7 @@ CONTAINS
     character (len = *), parameter :: FILE_NAME = "f90tst_nc4.nc"
 
     ! ! Create the netCDF file.
-    ncerr = nf90_create(FILE_NAME, NF90_NETCDF4, fh)
+    ncerr = nf90_create(filename, NF90_NETCDF4, fh)
     if (ncerr .ne. 0) return
 
     ! Define dimensions.
