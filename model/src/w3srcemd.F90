@@ -315,6 +315,9 @@ CONTAINS
     !/    10-Oct-2023 : Major refactor - W3SRCE now processes
     !/                  all seapoints rather than single
     !/                  seapoint. C. Bunney; UKMO           ( version 7.14 )
+    !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+    !/                  variables and TAUBBL/TAUICE into
+    !/                  X and Y components. C Bunney
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
