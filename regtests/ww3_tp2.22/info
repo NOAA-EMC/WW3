@@ -1,36 +1,23 @@
 #############################################################################
 #                                                                           #
-# ww3_tp2.22 Test script for WW-III demonstrating the Langmuir Mixing       #
-#            Parmeterization, for the case of two-dimensional propagation   #
-#            over half the globe.                                           #
-#                                                                           #
-# Model should be compiled with the switches :                              #
-#                                                                           #
-#   !/LN0 !/ST0 !/NL0 !/BT0 !/DB0 !/TR0 !/BS0                               #
-#                        Select the 'no source terms' option.               #
-#   !/PRn                Selecting one of the propagation schemes.          #
-#                         1: First order.                                   #
-#                         2: UQ with diffusion term.                        #
-#                         3: UQ with averaging (set to zero here).          #
-#   !/WNX1 !/WNT1 !/CRX1 !/CRT1      Wind and current interpolation.        #
-#   !/O0 !/O1 !/O2 !/O3 !/O4 !/O5 !/O6 !/O7   Sdt out output options.       #
+# ww3_tp2.22 Test script for WW-III, demonstrating Langmuir Mixing          #
+#            Parmeterization for the case of two-dimensional propagation    #
+#            over half the globe. Based on ww3_tp2.2 using switch           #
+#            PR3_UQ_MPI.                                                    #
 #                                                                           #
 # Remarks :                                                                 #
-# - Test case input:
-#     + Langmuir mixing parameterization (LMPENABLED = T) and tail          #
-#       contribution (SDTAIL = T) enabled. A uniform (10m) surface layer    #
-#       depth is asumed (HSLMODE = 0).                                      #
-# - Test case output:
-#     + USSX/USSY:   surface Stokes drift
-#
+# - Test case input:                                                        #
+#     + Langmuir mixing parameterization (LMPENABLED = T), with             #
+#     + tail contribution (SDTAIL = T) enabled.                             #
+#     + A uniform (10m) surface layer depth is assumed (HSLMODE = 0).       #
 #                                                                           #
-#  Sample run_test commands :                                               #
+# - Test case output:                                                       #
+#     + USSX/USSY:   surface Stokes drift           (.nc: uuss/vuss)        #
+#     + USSHX/USSHY: surface averaged Stokes drift  (.nc: uussh/vussh)      #
+#                                                                           #
+# Sample run_test commands :                                                #
 #   (Note: mpirun commands differ by local system)                          #
-#  ./bin/run_test                   -s PR1     ../model ww3_tp2.22          #
-#  ./bin/run_test -n 3 -p mpirun -f -s PR1_MPI ../model ww3_tp2.22          #
-#                                                                           #
-#                                              Hendrik Tolman, Jun 2002     #
-#                                                   Last Mod : Dec 2013     #
+# ./bin/run_cmake_test -n 4 -p mpirun -f -s PR3_UQ_MPI ../model ww3_tp2.22  #
 #                                                                           #
 # Notes on LMPN namelist and Langmuir Mixing Parameterization:              #
 #                                                                           #
@@ -43,15 +30,17 @@
 #    When HSLMODE == 0, a uniform 10m HSL is assumed for testing purposes.  #
 #    When HSLMODE == 1, the HSL field is to be received from the active     #
 #    ocean model via coupler.                                               #
-#
-#    The WW3 output variables ... USSX,USSY.  USSHX,USSHY.
+#                                                                           #
+#    The WW3 output variables ... USSX,USSY.  USSHX,USSHY.                  #
 #                                                                           #
 #    For more info on the Langmuir parameterization, see:                   #
 #       Li, Qing, et al. "Langmuir mixing effects on global climate:        #
 #       WAVEWATCH III in CESM." Ocean Modelling 103 (2016): 145-160.        #
 #                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                   Last Mod : Li / Altuntas,  Nov 2023     #
 #                                                                           #
-#    Copyright 2009-2013 National Weather Service (NWS),                    #
+#    Copyright 2009-2023 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
 #       No unauthorized use without permission.                             #
