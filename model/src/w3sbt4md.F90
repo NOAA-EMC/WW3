@@ -483,8 +483,8 @@ CONTAINS
     ! 2. Subgrid loop
     !
     DSUM(:)=0.
-    TAUBBLX(:)=0.
-    TAUBBLY(:)=0.
+    TAUBBLX=0.
+    TAUBBLY=0.
     !
     DO ISUB=1,3
       !
