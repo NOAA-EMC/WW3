@@ -1030,16 +1030,34 @@ CONTAINS
   !> @param[in]  NDSOP   File unit number.
   !> @param[out] IOTST   Test indictor for reading.
   !> @param[in]  IMOD    Model number for W3GDAT etc.
+  !> @param[in]  filename Name of file to read.
+  !> @param[inout] ncerr Error code, 0 for success, netCDF error code
+  !> otherwise.
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_READ (NDSOP, IOTST, IMOD)
+  SUBROUTINE W3IOPON_READ (NDSOP, IOTST, IMOD, filename, ncerr)
+    use netcdf
+    USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
+         IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         GRDID, ICEO, ICEHO, ICEFO
+#ifdef W3_FLX5
+    USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
+#ifdef W3_SETUP
+    USE W3ODATMD, ONLY: ZET_SETO
+#endif
     IMPLICIT NONE
     
     INTEGER, INTENT(IN)           :: NDSOP    
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
+    character(*), intent(in) :: filename
+    integer, intent(inout) :: ncerr
 
+    ncerr = 0
     IOTST = 0
   END SUBROUTINE W3IOPON_READ
 
@@ -1288,7 +1306,7 @@ CONTAINS
 
    ! Do a read or a write of the point file.
    IF (INXOUT .EQ. 'READ') THEN
-      CALL W3IOPON_READ(NDSOP, IOTST, IMOD)
+      CALL W3IOPON_READ(NDSOP, IOTST, IMOD, 'ww3_out_pnt.nc', ncerr)
    ELSE
       CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)      
    ENDIF
