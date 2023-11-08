@@ -816,7 +816,9 @@
 
       if [ "$lmp" == "y" ];      # Langmuir mixing parameterization
       then
+        echo ' ' >> matrix.body
         echo "$rtst -s PR3_UQ_MPI              -w work_PR3_UQ_MPI                  -f -p $mpi -n $np $ww3 ww3_tp2.22" >> matrix.body
+        echo "$rtst -s PR3_UQ_MPI -g sdtail    -w work_PR3_UQ_MPI_SDTAIL           -f -p $mpi -n $np $ww3 ww3_tp2.22" >> matrix.body
       fi
     fi
 
