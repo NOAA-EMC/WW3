@@ -1079,6 +1079,7 @@ CONTAINS
     integer, intent(inout) :: ncerr
     integer :: fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen    
+    integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len    
 
     IOTST = 0
     
@@ -1087,8 +1088,12 @@ CONTAINS
     if (ncerr .ne. 0) return
 
     ! Read the dimension information.
-!    ncerr = nc90_inq_dir(
-
+    ncerr = nc90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
+    if (ncerr .ne. 0) return
+    ncerr = nc90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
+    if (ncerr .ne. 0) return
+    print *, 'd_nopts_len = ', d_nopts_len
+    
     ! Close the file.
     ncerr = nf90_close(fh)
     if (ncerr .ne. 0) return
