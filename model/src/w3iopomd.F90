@@ -118,6 +118,27 @@ MODULE W3IOPOMD
   CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROPT = '2021-04-06'
   CHARACTER(LEN=31), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
+
+  !> Dimension name for the netCDF point output file, for NOPTS, the
+  !> Number of Output Points.
+  character(*), parameter, private :: DNAME_NOPTS = 'NOPTS'
+  
+  !> Dimension name for the netCDF point output file, for NSPEC.
+  character(*), parameter, private :: DNAME_NSPEC = 'NSPEC'
+  
+  !> Dimension name for the netCDF point output file, for VSIZE. This
+  !> is for the vector size for points, which is 2.
+  character(*), parameter, private :: DNAME_VSIZE = 'VSIZE'
+  
+  !> Dimension name for the netCDF point output file, for
+  !> NAMELEN. This is the length of the PTNME strings, which contains
+  !> the names of the points.
+  character(*), parameter, private :: DNAME_NAMELEN = 'NAMELEN'
+  
+  !> Dimension name for the netCDF point output file, for GRDIDLEN,
+  !> this is the length of the GRDID character array.
+  character(*), parameter, private :: DNAME_GRDIDLEN = 'GRDIDLEN'
+  
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -1056,9 +1077,23 @@ CONTAINS
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
+    integer :: fh
+    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen    
 
-    ncerr = 0
     IOTST = 0
+    
+    ! Open the netCDF file.
+    ncerr = nf90_open(filename, NF90_NOWRITE, fh)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information.
+!    ncerr = nc90_inq_dir(
+
+    ! Close the file.
+    ncerr = nf90_close(fh)
+    if (ncerr .ne. 0) return
+
+    
   END SUBROUTINE W3IOPON_READ
 
   !/ ------------------------------------------------------------------- /
@@ -1103,20 +1138,20 @@ CONTAINS
     CHARACTER(LEN=31), PARAMETER :: IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
     CHARACTER(LEN=10), PARAMETER :: VEROPT = '2021-04-06'    
 
-    ! ! Create the netCDF file.
+    ! Create the netCDF file.
     ncerr = nf90_create(filename, NF90_NETCDF4, fh)
     if (ncerr .ne. 0) return
 
     ! Define dimensions.
-    ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, d_nopts)
+    ncerr = nf90_def_dim(fh, DNAME_NOPTS, NOPTS, d_nopts)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'NSPEC', NSPEC, d_nspec)
+    ncerr = nf90_def_dim(fh, DNAME_NSPEC, NSPEC, d_nspec)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'VSIZE', 2, d_vsize)
+    ncerr = nf90_def_dim(fh, DNAME_VSIZE, 2, d_vsize)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'NAMELEN', 40, d_namelen)
+    ncerr = nf90_def_dim(fh, DNAME_NAMELEN, 40, d_namelen)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'GRDIDLEN', 13, d_grdidlen)
+    ncerr = nf90_def_dim(fh, DNAME_GRDIDLEN, 13, d_grdidlen)
     if (ncerr .ne. 0) return
 
     ! Define global attributes.
