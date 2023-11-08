@@ -1079,7 +1079,7 @@ CONTAINS
     !/ Local Parameters
     !/
     INTEGER       :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,    &
-         IY, ISWLL, ICAP, IBED, IFREQ, IK, INRST
+         IY, ISWLL, IFREQ, IK, INRST
     INTEGER       :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,       &
          NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,           &
          LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,           &
@@ -1283,7 +1283,9 @@ CONTAINS
     ABD      = UNDEF
     UBA      = UNDEF
     UBD      = UNDEF
-    BEDFORMS = UNDEF
+    BEDROUGH = UNDEF
+    BEDRIPX  = UNDEF
+    BEDRIPY  = UNDEF
     PHIBBL   = UNDEF
     TAUBBLX  = UNDEF
     TAUBBLY  = UNDEF
@@ -2504,18 +2506,36 @@ CONTAINS
               END IF
               !
               IF ( FLOGRD(7,3) .AND. ACTIVE ) THEN
-                DO IBED = 1, 3
-                  IF ( WADATS(IGRID)%BEDFORMS(GSEA,IBED) .NE. UNDEF ) THEN
-                    SUMWTB(IBED) = SUMWTB(IBED) + WT
-                    IF ( BEDFORMSAUX(IBED) .EQ. UNDEF ) THEN
-                      BEDFORMSAUX(IBED) = WADATS(IGRID)%BEDFORMS(GSEA,IBED)&
-                           *WT
-                    ELSE
-                      BEDFORMSAUX(IBED) = BEDFORMSAUX(IBED) +              &
-                           WADATS(IGRID)%BEDFORMS(GSEA,IBED)*WT
-                    END IF
+                IF ( WADATS(IGRID)%BEDROUGH(GSEA) .NE. UNDEF ) THEN
+                  SUMWTB(1) = SUMWTB(1) + WT
+                  IF ( BEDFORMSAUX(1) .EQ. UNDEF ) THEN
+                    BEDFORMSAUX(1) = WADATS(IGRID)%BEDROUGH(GSEA) * WT
+                   ELSE
+                     BEDFORMSAUX(1) = BEDFORMSAUX(1) +              &
+                        WADATS(IGRID)%BEDROUGH(GSEA)*WT
                   END IF
-                END DO
+                END IF
+
+                IF ( WADATS(IGRID)%BEDRIPX(GSEA) .NE. UNDEF ) THEN
+                  SUMWTB(2) = SUMWTB(2) + WT
+                  IF ( BEDFORMSAUX(2) .EQ. UNDEF ) THEN
+                    BEDFORMSAUX(2) = WADATS(IGRID)%BEDRIPX(GSEA) * WT
+                   ELSE
+                     BEDFORMSAUX(2) = BEDFORMSAUX(2) +              &
+                        WADATS(IGRID)%BEDRIPX(GSEA)*WT
+                  END IF
+                END IF
+
+                IF ( WADATS(IGRID)%BEDRIPY(GSEA) .NE. UNDEF ) THEN
+                  SUMWTB(3) = SUMWTB(1) + WT
+                  IF ( BEDFORMSAUX(3) .EQ. UNDEF ) THEN
+                    BEDFORMSAUX(3) = WADATS(IGRID)%BEDRIPY(GSEA) * WT
+                   ELSE
+                     BEDFORMSAUX(3) = BEDFORMSAUX(3) +              &
+                        WADATS(IGRID)%BEDRIPY(GSEA)*WT
+                  END IF
+                END IF
+
               END IF
               !
               IF ( FLOGRD(7,4) .AND. ACTIVE ) THEN
@@ -3427,17 +3447,35 @@ CONTAINS
               END IF
             END IF
             !
-            DO IBED = 1,3
-              IF ( BEDFORMSAUX(IBED) .NE. UNDEF ) THEN
-                BEDFORMSAUX(IBED) = BEDFORMSAUX(IBED) / SUMWTB(IBED)
-                IF ( BEDFORMS(ISEA,IBED) .EQ. UNDEF )  THEN
-                  BEDFORMS(ISEA,IBED) = BEDFORMSAUX(IBED) / REAL( SUMGRD )
-                ELSE
-                  BEDFORMS(ISEA,IBED) = BEDFORMS(ISEA,IBED) +              &
-                       BEDFORMSAUX(IBED) / REAL( SUMGRD )
-                END IF
+            IF ( BEDFORMSAUX(1) .NE. UNDEF ) THEN
+              BEDFORMSAUX(1) = BEDFORMSAUX(1) / SUMWTB(1)
+              IF ( BEDROUGH(ISEA) .EQ. UNDEF )  THEN
+                BEDROUGH(ISEA) = BEDFORMSAUX(1) / REAL( SUMGRD )
+              ELSE
+                BEDROUGH(ISEA) = BEDROUGH(ISEA) +              &
+                     BEDFORMSAUX(1) / REAL( SUMGRD )
               END IF
-            END DO
+            END IF
+
+            IF ( BEDFORMSAUX(2) .NE. UNDEF ) THEN
+              BEDFORMSAUX(2) = BEDFORMSAUX(2) / SUMWTB(2)
+              IF ( BEDRIPX(ISEA) .EQ. UNDEF )  THEN
+                BEDRIPX(ISEA) = BEDFORMSAUX(2) / REAL( SUMGRD )
+              ELSE
+                BEDRIPX(ISEA) = BEDRIPX(ISEA) +              &
+                     BEDFORMSAUX(2) / REAL( SUMGRD )
+              END IF
+            END IF
+
+            IF ( BEDFORMSAUX(3) .NE. UNDEF ) THEN
+              BEDFORMSAUX(3) = BEDFORMSAUX(3) / SUMWTB(3)
+              IF ( BEDRIPY(ISEA) .EQ. UNDEF )  THEN
+                BEDRIPY(ISEA) = BEDFORMSAUX(3) / REAL( SUMGRD )
+              ELSE
+                BEDRIPY(ISEA) = BEDRIPY(ISEA) +              &
+                     BEDFORMSAUX(3) / REAL( SUMGRD )
+              END IF
+            END IF
             !
             IF ( PHIBBLAUX .NE. UNDEF ) THEN
               PHIBBLAUX = PHIBBLAUX / SUMWT7(4)

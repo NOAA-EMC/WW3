@@ -2512,8 +2512,9 @@ CONTAINS
          PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,         &
          USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,     &
          MSCD, QP, TAUWNX, TAUWNY, CHARN, TWS, BHD,    &
-         PHIBBL, TAUBBLX, TAUBBLY, WCAP_COV, WCAP_THK, &
-         WCAP_BHS, WCAP_MNT, BEDFORMS, CGE, EF,        &
+         PHIBBL, TAUBBLX, TAUBBLY,                     &
+         WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,       &
+         BEDROUGH, BEDRIPX, BEDRIPY, CGE, EF,          &
          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,     &
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE,        &
          TAUICEX, TAUICEY, STMAXE, STMAXD, HMAXE,      &
@@ -2914,7 +2915,11 @@ CONTAINS
             UBA   (ISEA) = UNDEF
             UBD   (ISEA) = UNDEF
           END IF
-          IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
+          IF ( FLOGRD( 7, 3) ) THEN
+           BEDROUGH(ISEA) = UNDEF
+           BEDRIPY(ISEA) = UNDEF
+           BEDRIPY(ISEA) = UNDEF
+          END IF
           IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
           IF ( FLOGRD( 7, 5) ) THEN
             TAUBBLX(ISEA) = UNDEF
@@ -2964,7 +2969,11 @@ CONTAINS
           END IF
           IF ( FLOGRD( 6, 4) ) PHIOC (ISEA) = UNDEF
           !
-          IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
+          IF ( FLOGRD( 7, 3) ) THEN
+            BEDROUGH(ISEA) = UNDEF
+            BEDRIPX(ISEA) = UNDEF
+            BEDRIPY(ISEA) = UNDEF
+          END IF
           IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
           IF ( FLOGRD( 7, 5) ) THEN
             TAUBBLX(ISEA) = UNDEF
@@ -3561,17 +3570,17 @@ CONTAINS
               !                    WRITE ( NDSOG ) UBA(1:NSEA)
               !                    WRITE ( NDSOG ) UBD(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
-              WRITE ( NDSOG ) BEDFORMS(1:NSEA,1)
+              WRITE ( NDSOG ) BEDROUGH(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'BEDFORMS(1):', BEDFORMS(1:NSEA,1)
+              WRITE ( NDSOA,* ) 'BEDROUGH:', BEDROUGH(1:NSEA)
 #endif
-              WRITE ( NDSOG ) BEDFORMS(1:NSEA,2)
+              WRITE ( NDSOG ) BEDRIPX(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'BEDFORMS(2):', BEDFORMS(1:NSEA,2)
+              WRITE ( NDSOA,* ) 'BEDRIPX:', BEDRIPX(1:NSEA)
 #endif
-              WRITE ( NDSOG ) BEDFORMS(1:NSEA,3)
+              WRITE ( NDSOG ) BEDRIPY(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'BEDFORMS(3):', BEDFORMS(1:NSEA,3)
+              WRITE ( NDSOA,* ) 'BEDRIPY:', BEDRIPY(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) PHIBBL(1:NSEA)
@@ -3944,11 +3953,11 @@ CONTAINS
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UBD(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   BEDFORMS(1:NSEA,1)
+                   BEDROUGH(1:NSEA)
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   BEDFORMS(1:NSEA,2)
+                   BEDRIPX(1:NSEA)
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   BEDFORMS(1:NSEA,3)
+                   BEDRIPY(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                    PHIBBL(1:NSEA)

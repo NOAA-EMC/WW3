@@ -2148,7 +2148,8 @@ CONTAINS
          TWS, TAUWNX, TAUWNY, BHD, CGE,            &
          CFLXYMAX, CFLTHMAX, CFLKMAX,              &
          WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,   &
-         BEDFORMS, PHIBBL, TAUBBLX, TAUBBLY, T01,  &
+         BEDROUGH, BEDRIPX, BEDRIPY, PHIBBL,       &
+         TAUBBLX, TAUBBLY, T01,                     &
          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,      &
          STH2M, HSIG, PHICE, TAUICEX, TAUICEY, USSP, &
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD,     &
@@ -3263,7 +3264,7 @@ CONTAINS
         IF ( FLGRDALL( 7, 3) ) THEN
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (BEDFORMS(1,1),NSEALM , MPI_REAL,      &
+          CALL MPI_SEND_INIT (BEDROUGH(1), NSEALM, MPI_REAL,      &
                IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
@@ -3272,7 +3273,7 @@ CONTAINS
 #ifdef W3_MPI
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (BEDFORMS(1,2),NSEALM , MPI_REAL,      &
+          CALL MPI_SEND_INIT (BEDRIPX(1), NSEALM, MPI_REAL,      &
                IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
@@ -3281,7 +3282,7 @@ CONTAINS
 #ifdef W3_MPI
           IH     = IH + 1
           IT     = IT + 1
-          CALL MPI_SEND_INIT (BEDFORMS(1,3),NSEALM , MPI_REAL,      &
+          CALL MPI_SEND_INIT (BEDRIPY(1), NSEALM, MPI_REAL,      &
                IROOT, IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
 #endif
 #ifdef W3_MPIT
@@ -4510,7 +4511,7 @@ CONTAINS
           IF ( FLGRDALL( 7, 3) ) THEN
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (BEDFORMS(I0,1),1,WW3_FIELD_VEC, IFROM,  &
+            CALL MPI_RECV_INIT (BEDROUGH(I0), 1, WW3_FIELD_VEC, IFROM,  &
                  IT, MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
@@ -4519,7 +4520,7 @@ CONTAINS
 #ifdef W3_MPI
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (BEDFORMS(I0,2),1,WW3_FIELD_VEC, IFROM,  &
+            CALL MPI_RECV_INIT (BEDRIPX(I0), 1, WW3_FIELD_VEC, IFROM,  &
                  IT, MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT
@@ -4528,7 +4529,7 @@ CONTAINS
 #ifdef W3_MPI
             IH     = IH + 1
             IT     = IT + 1
-            CALL MPI_RECV_INIT (BEDFORMS(I0,3),1,WW3_FIELD_VEC, IFROM,  &
+            CALL MPI_RECV_INIT (BEDRIPY(I0), 1, WW3_FIELD_VEC, IFROM,  &
                  IT, MPI_COMM_WAVE, IRQGO2(IH), IERR )
 #endif
 #ifdef W3_MPIT

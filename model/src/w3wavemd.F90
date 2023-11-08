@@ -1536,13 +1536,15 @@ CONTAINS
               TWS(1:NSEAL),                      &
               PHIOC(1:NSEAL),                    &
               WCAP_COV(1:NSEAL),                 & ! |
-              WCAP_THK(1:NSEAL),                 & ! | - WCAP_* was WHITECAP and formerly TMP1
+              WCAP_THK(1:NSEAL),                 & ! |-- WCAP_* was WHITECAP and formerly TMP1
               WCAP_BHS(1:NSEAL),                 & ! |
               WCAP_MNT(1:NSEAL),                 & ! |
 #ifdef W3_BT4
               SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
               SED_PSIC(1:NSEA),                  & !   "   "
-              BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
+              BEDROUGH(1:NSEAL),                 & ! |
+              BEDRIPX(1:NSEAL),                  & ! |-- BED* was BEDFORM(:,1:3) and formerly TMP2  
+              BEDRIPY(1:NSEAL),                  & ! |
 #endif                       
               PHIBBL(1:NSEAL),                   &
               TAUBBLX(1:NSEAL),                  & ! WAS TMP3
@@ -2209,13 +2211,16 @@ CONTAINS
                        TWS(1:NSEAL),                      &
                        PHIOC(1:NSEAL),                    &
                        WCAP_COV(1:NSEAL),                 & ! |
-                       WCAP_THK(1:NSEAL),                 & ! | - WCAP_* was WHITECAP and formerly TMP1
+                       WCAP_THK(1:NSEAL),                 & ! |-- WCAP_* was WHITECAP and formerly TMP1
                        WCAP_BHS(1:NSEAL),                 & ! |
                        WCAP_MNT(1:NSEAL),                 & ! |
 #ifdef W3_BT4
                        SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
                        SED_PSIC(1:NSEA),                  & !  "  "
-                       BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
+                       BEDROUGH(1:NSEAL),                 & ! |
+                       BEDRIPX(1:NSEAL),                  & ! |-- BED* was BEDFORM(:,1:3) and formerly TMP2  
+                       BEDRIPY(1:NSEAL),                  & ! |
+         
 #endif                       
                        PHIBBL(1:NSEAL),                   &
                        TAUBBLX(1:NSEAL),                  & ! WAS TMP3
@@ -2269,13 +2274,16 @@ CONTAINS
                        TWS(1:NSEAL),                      &
                        PHIOC(1:NSEAL),                    &
                        WCAP_COV(1:NSEAL),                 & ! |
-                       WCAP_THK(1:NSEAL),                 & ! | - WCAP_* was WHITECAP and formerly TMP1
+                       WCAP_THK(1:NSEAL),                 & ! |-- WCAP_* was WHITECAP and formerly TMP1
                        WCAP_BHS(1:NSEAL),                 & ! |
                        WCAP_MNT(1:NSEAL),                 & ! |
 #ifdef W3_BT4
                        SED_D50(1:NSEA),                   & ! Now passing full arrays, not local scalar
                        SED_PSIC(1:NSEA),                  & ! "   "
-                       BEDFORMS(1:NSEAL,1:3),             & ! WAS TMP2; TODO: Makes temp array ;switch dims
+                       BEDROUGH(1:NSEAL),                 & ! |
+                       BEDRIPX(1:NSEAL),                  & ! |-- BED* was BEDFORM(:,1:3) and formerly TMP2  
+                       BEDRIPY(1:NSEAL),                  & ! |
+         
 #endif                       
                        PHIBBL(1:NSEAL),                   &
                        TAUBBLX(1:NSEAL),                  & ! WAS TMP3

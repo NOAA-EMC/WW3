@@ -206,7 +206,9 @@ CONTAINS
   !> @param[inout] WCAP_MNT   Whitecap moment
   !> @param[in]    D50        Sand grain size.
   !> @param[in]    PSIC       Critical shields.
-  !> @param[inout] BEDFORM    Bedform parameters.
+  !> @param[inout] BEDROUGH   Bedform roughness
+  !> @param[inout] BEDRIPX    Bedform ripple wavelength (x)
+  !> @param[inout] BEDRIPY    Bedform ripple wavelength (y)
   !> @param[inout] PHIBBL     Energy flux to BBL.
   !> @param[inout] TAUBBLX    X-momentum flux to BBL.
   !> @param[inout] TAUBBLY    Y-momentum flux to BBL.
@@ -243,7 +245,7 @@ CONTAINS
        TAUWNY, PHIAW, CHARN, TWS, PHIOC,           &
        WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,     &
 #ifdef W3_BT4       
-       D50, PSIC, BEDFORM,                         &  
+       D50, PSIC, BEDROUGH, BEDRIPX, BEDRIPY,      &  
 #endif       
        PHIBBL, TAUBBLX, TAUBBLY,                   &
        TAUICEX, TAUICEY,                           &
@@ -409,7 +411,9 @@ CONTAINS
     !       FCUT    Real   O   Cut-off frequency for tail.
     !       DTG     Real   I   Global time step.
     !       D50     Real   I   Sand grain size                ( !/BT4 )
-    !       BEDFORM R.A.  I/O  Bedform parameters             ( !/BT4 )
+    !      BEDROUGH R.A.  I/O  Bedform roughness              ( !/BT4 )
+    !       BEDRIPX R.A.  I/O  Bedform ripple wavelength (x)  ( !/BT4 )
+    !       BEDRIPY R.A.  I/O  Bedform ripple wavelength (y)  ( !/BT4 )       
     !       PSIC    Real   I   Critical Shields               ( !/BT4 )
     !       PHIBBL  Real   O   Energy flux to BBL             ( !/BTx )
     !     TAUBBL[XY]R.A.   O   Momentum flux to BBL           ( !/BTx )
@@ -807,7 +811,9 @@ CONTAINS
         D50(1:NSEA),           &
         PSIC(1:NSEA)
     REAL, INTENT(INOUT) ::     &
-        BEDFORM(1:NSEAL,3)
+        BEDROUGH(1:NSEAL),     &
+        BEDRIPX(1:NSEAL),      &
+        BEDRIPY(1:NSEAL)
 #endif
 
     ! GPU Refactor: optional inputs
@@ -1725,7 +1731,7 @@ CONTAINS
 ! IX,IY not used
           CALL W3SBT4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), &
               DEPTH(CSEA), D50_CHUNK(CSEA), PSIC_CHUNK(CSEA), TAUBBLX(JSEA), TAUBBLY(JSEA), &
-              BEDFORM(JSEA,:), VSBT(:,CSEA), VDBT(:,CSEA), IX(CSEA), IY(CSEA) )
+              BEDROUGH(JSEA), BEDRIPX(JSEA), BEDRIPY(JSEA), VSBT(:,CSEA), VDBT(:,CSEA), IX(CSEA), IY(CSEA) )
 #endif
 #ifdef W3_BT8
           CALL W3SBT8 ( SPEC(:,JSEA), DEPTH(CSEA), VSBT(:,CSEA), VDBT(:,CSEA), IX(CSEA), IY(CSEA) )

@@ -826,7 +826,8 @@ CONTAINS
          TAUWNX, TAUWNY, BHD, CGE,              &
          CFLXYMAX, CFLTHMAX, CFLKMAX,           &
          WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,&
-         BEDFORMS, PHIBBL, TAUBBLX, TAUBBLY, T01,&
+         BEDROUGH, REDRIPX, BEDRIPY, PHIBBL,    &
+         TAUBBLX, TAUBBLY, T01,                 &
          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
          STH2M, HSIG, TAUICEX, TAUICEY, PHICE,  &
          PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2, PEP,   &
@@ -1233,11 +1234,11 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 7, 3) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=BEDFORMS(JSEA,1)
+            Arrexch(IH,JSEA)=BEDROUGH(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=BEDFORMS(JSEA,2)
+            Arrexch(IH,JSEA)=BEDRIPX(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=BEDFORMS(JSEA,3)
+            Arrexch(IH,JSEA)=BEDRIPY(JSEA)
           END IF
           IF ( FLGRDALL( 7, 4) ) THEN
             IH = IH + 1
@@ -1676,11 +1677,11 @@ CONTAINS
         END IF
         IF ( FLGRDALL( 7, 3) ) THEN
           IH = IH + 1
-          BEDFORMS(1:NSEA,1) = ARRtotal(IH,:)
+          BEDROUGH(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          BEDFORMS(1:NSEA,2) = ARRtotal(IH,:)
+          BEDRIPX(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          BEDFORMS(1:NSEA,3) = ARRtotal(IH,:)
+          BEDRIPY(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 7, 4) ) THEN
           IH = IH + 1

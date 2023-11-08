@@ -163,8 +163,9 @@ PROGRAM W3OUTF
        TAUOX, TAUOY, TAUWIX,BHD,                   &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-       TAUWNX, TAUWNY, TAUBBLX, TAUBBLY, PHIBBL, CFLXYMAX,   &
-       CFLTHMAX, CFLKMAX, BEDFORMS,                &
+       TAUWNX, TAUWNY, TAUBBLX, TAUBBLY, PHIBBL,   &
+       CFLXYMAX, CFLTHMAX, CFLKMAX,                &
+       BEDROUGH, BEDRIPX, BEDRIPY,                 &
        WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,     &
        T02, CGE, T01, HSIG, STMAXE, STMAXD, HMAXE, &
        HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
@@ -2037,19 +2038,19 @@ CONTAINS
             ENAME  = '.bed'
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDFORMS(1:NSEA,2), &
-                 BEDFORMS(1:NSEA,3), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDRIPX(1:NSEA), &
+                 BEDRIPY(1:NSEA), AnglD)
 #endif
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = BEDFORMS(1:NSEA,1)
-              XS2    = BEDFORMS(1:NSEA,2)
-              XS3    = BEDFORMS(1:NSEA,3)
+              XS1    = BEDROUGH(1:NSEA)
+              XS2    = BEDRIPX(1:NSEA)
+              XS3    = BEDRIPY(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,1) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDROUGH(1:NSEA) &
                    , MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,2) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDRIPX(1:NSEA) &
                    , MAPSF, X2 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDRIPY(1:NSEA) &
                    , MAPSF, XY )
             ENDIF
             !

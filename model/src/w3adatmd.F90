@@ -180,7 +180,9 @@ MODULE W3ADATMD
   !      ABD       R.A.  Public   Corresponding direction.
   !      UBA       R.A.  Public   Near-bottom rms wave velocity.
   !      UBD       R.A.  Public   Corresponding direction.
-  !      BEDFORMS  R.A.  Public   Bed for parameters
+  !      BEDROUGH  R.A.  Public   Bedform roughness
+  !      BEDRIPX   R.A.  Public   Bedform ripple wavelength (x)
+  !      BEDRIPY   R.A.  Public   Bedform ripple wavelength (y)
   !      PHIBBL    R.A.  Public   Energy loss in WBBL.
   !      TAUBBLX/Y R.A.  Public   Momentum loss in WBBL.
   !
@@ -470,10 +472,10 @@ MODULE W3ADATMD
     ! Output fields group 7)
     !
     REAL, POINTER         ::  ABA(:),  ABD(:),  UBA(:),  UBD(:),  &
-         BEDFORMS(:,:),  PHIBBL(:),          &
+         BEDROUGH(:), BEDRIPX(:), BEDRIPY(:), PHIBBL(:),          &
          TAUBBLX(:), TAUBBLY(:)
     REAL, POINTER         :: XABA(:), XABD(:), XUBA(:), XUBD(:),  &
-         XBEDFORMS(:,:), XPHIBBL(:),          &
+         XBEDROUGH(:), XBEDRIPX(:), XBEDRIPY(:), XPHIBBL(:),      &
          XTAUBBLX(:), XTAUBBLY(:)
     !
     ! Output fields group 8)
@@ -615,7 +617,8 @@ MODULE W3ADATMD
   REAL, POINTER           :: P2SMS(:,:), US3D(:,:), USSP(:,:)
   !
   REAL, POINTER           :: ABA(:), ABD(:), UBA(:), UBD(:),      &
-       BEDFORMS(:,:), PHIBBL(:), TAUBBLX(:), TAUBBLY(:)
+       BEDROUGH(:), BEDRIPX(:), BEDRIPY(:), PHIBBL(:),            &
+       TAUBBLX(:), TAUBBLY(:)
   !
   REAL, POINTER           :: MSSX(:), MSSY(:), MSSD(:),           &
        MSCX(:), MSCY(:), MSCD(:), QKK(:)
@@ -1258,7 +1261,9 @@ CONTAINS
     !
     ALLOCATE ( WADATS(IMOD)%ABA(NSEALM) , WADATS(IMOD)%ABD(NSEALM) , &
          WADATS(IMOD)%UBA(NSEALM) , WADATS(IMOD)%UBD(NSEALM) ,       &
-         WADATS(IMOD)%BEDFORMS(NSEALM,3),                            &
+         WADATS(IMOD)%BEDROUGH(NSEALM),                              &
+         WADATS(IMOD)%BEDRIPX(NSEALM),                               &
+         WADATS(IMOD)%BEDRIPY(NSEALM),                               &
          WADATS(IMOD)%PHIBBL  (NSEALM)  ,                            &
          WADATS(IMOD)%TAUBBLX (NSEALM),                              &
          WADATS(IMOD)%TAUBBLY (NSEALM),                              &
@@ -1269,7 +1274,9 @@ CONTAINS
     WADATS(IMOD)%ABD    = UNDEF
     WADATS(IMOD)%UBA    = UNDEF
     WADATS(IMOD)%UBD    = UNDEF
-    WADATS(IMOD)%BEDFORMS = UNDEF
+    WADATS(IMOD)%BEDROUGH = UNDEF
+    WADATS(IMOD)%BEDRIPX = UNDEF
+    WADATS(IMOD)%BEDRIPY = UNDEF
     WADATS(IMOD)%PHIBBL = UNDEF
     WADATS(IMOD)%TAUBBLX = UNDEF
     WADATS(IMOD)%TAUBBLY = UNDEF
@@ -2234,10 +2241,18 @@ CONTAINS
     END IF
     !
     IF ( OUTFLAGS( 7, 3) ) THEN
-      ALLOCATE ( WADATS(IMOD)%XBEDFORMS(NXXX,3), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDROUGH(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPX(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPY(NXXX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     ELSE
-      ALLOCATE ( WADATS(IMOD)%XBEDFORMS(1,3), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDROUGH(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPX(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPY(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
@@ -2265,7 +2280,9 @@ CONTAINS
     WADATS(IMOD)%XABD    = UNDEF
     WADATS(IMOD)%XUBA    = UNDEF
     WADATS(IMOD)%XUBD    = UNDEF
-    WADATS(IMOD)%XBEDFORMS = UNDEF
+    WADATS(IMOD)%XBEDROUGH = UNDEF
+    WADATS(IMOD)%XBEDRIPX = UNDEF
+    WADATS(IMOD)%XBEDRIPY = UNDEF
     WADATS(IMOD)%XPHIBBL = UNDEF
     WADATS(IMOD)%XTAUBBLX = UNDEF
     WADATS(IMOD)%XTAUBBLY = UNDEF
@@ -2937,7 +2954,9 @@ CONTAINS
       ABD    => WADATS(IMOD)%ABD
       UBA    => WADATS(IMOD)%UBA
       UBD    => WADATS(IMOD)%UBD
-      BEDFORMS=> WADATS(IMOD)%BEDFORMS
+      BEDROUGH=> WADATS(IMOD)%BEDROUGH
+      BEDRIPX=> WADATS(IMOD)%BEDRIPX
+      BEDRIPY=> WADATS(IMOD)%BEDRIPY
       PHIBBL => WADATS(IMOD)%PHIBBL
       TAUBBLX=> WADATS(IMOD)%TAUBBLX
       TAUBBLY=> WADATS(IMOD)%TAUBBLY
@@ -3281,7 +3300,9 @@ CONTAINS
       ABD    => WADATS(IMOD)%XABD
       UBA    => WADATS(IMOD)%XUBA
       UBD    => WADATS(IMOD)%XUBD
-      BEDFORMS=> WADATS(IMOD)%XBEDFORMS
+      BEDROUGH=> WADATS(IMOD)%XBEDROUGH
+      BEDRIPX=> WADATS(IMOD)%XBEDRIPX
+      BEDRIPY=> WADATS(IMOD)%XBEDRIPY
       PHIBBL => WADATS(IMOD)%XPHIBBL
       TAUBBLX=> WADATS(IMOD)%XTAUBBLX
       TAUBBLY=> WADATS(IMOD)%XTAUBBLY
