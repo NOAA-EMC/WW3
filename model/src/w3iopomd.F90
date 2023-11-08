@@ -1062,6 +1062,13 @@ CONTAINS
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
          ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
          GRDID, ICEO, ICEHO, ICEFO
+#ifdef W3_FLX5
+    USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
+#ifdef W3_SETUP
+    USE W3ODATMD, ONLY: ZET_SETO
+#endif
+    
     IMPLICIT NONE
     
     INTEGER, INTENT(IN) :: NDSOP    
@@ -1069,12 +1076,14 @@ CONTAINS
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
     integer :: fh, ndim, nvar, fmt
-    integer :: d_nopts, d_nspec, d_vsize, d_namelen
+    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen
     integer :: v_idtst, v_vertst, v_nk, v_mth, v_ptloc, v_ptnme
     integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
     character (len = *), parameter :: FILE_NAME = "f90tst_nc4.nc"
+    CHARACTER(LEN=31), PARAMETER :: IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
+    CHARACTER(LEN=10), PARAMETER :: VEROPT = '2021-04-06'    
 
     ! ! Create the netCDF file.
     ncerr = nf90_create(filename, NF90_NETCDF4, fh)
@@ -1087,14 +1096,18 @@ CONTAINS
     if (ncerr .ne. 0) return
     ncerr = nf90_def_dim(fh, 'VSIZE', 2, d_vsize)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_dim(fh, 'NAMELEN', 7, d_namelen)
+    ncerr = nf90_def_dim(fh, 'NAMELEN', 40, d_namelen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, 'GRDIDLEN', 13, d_grdidlen)
     if (ncerr .ne. 0) return
 
-    ! Define variables.
-    ncerr = nf90_def_var(fh, 'IDTST', NF90_INT, v_idtst)
+    ! Define global attributes.
+    ncerr = nf90_put_att(fh, NF90_GLOBAL, 'title', IDSTR)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'VERTST', NF90_INT, v_vertst)
+    ncerr = nf90_put_att(fh, NF90_GLOBAL, 'version', VEROPT)
     if (ncerr .ne. 0) return
+    
+    ! Define scalar variables.
     ncerr = nf90_def_var(fh, 'NK', NF90_INT, v_nk)
     if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'MTH', NF90_INT, v_mth)
@@ -1117,14 +1130,18 @@ CONTAINS
     if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'WDO', NF90_INT, (/d_nopts/), v_wdo)
     if (ncerr .ne. 0) return
+#ifdef W3_FLX5
     ncerr = nf90_def_var(fh, 'TAUAO', NF90_INT, (/d_nopts/), v_tauao)
     if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'TAIDO', NF90_INT, (/d_nopts/), v_taido)
     if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'DAIRO', NF90_INT, (/d_nopts/), v_dairo)
     if (ncerr .ne. 0) return
+#endif    
+#ifdef W3_SETUP
     ncerr = nf90_def_var(fh, 'ZET_SETO', NF90_INT, (/d_nopts/), v_zet_seto)
     if (ncerr .ne. 0) return
+#endif    
     ncerr = nf90_def_var(fh, 'ASO', NF90_INT, (/d_nopts/), v_aso)
     if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'CAO', NF90_INT, (/d_nopts/), v_cao)
@@ -1137,10 +1154,60 @@ CONTAINS
     if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'ICEFO', NF90_INT, (/d_nopts/), v_icefo)
     if (ncerr .ne. 0) return
-    ncerr = nf90_def_var(fh, 'GRDID', NF90_INT, (/d_nopts/), v_grdid)
+    ncerr = nf90_def_var(fh, 'GRDID', NF90_CHAR, (/d_grdidlen, d_nopts/), v_grdid)
     if (ncerr .ne. 0) return
     ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/d_nspec, d_nopts/), v_spco)
     if (ncerr .ne. 0) return
+
+    ! Write the scalar data.
+    ncerr = nf90_put_var(fh, v_nk, NK)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_mth, NTH)
+    if (ncerr .ne. 0) return
+
+    ! Write the data with NOPTS as a dimension.
+    ncerr = nf90_put_var(fh, v_ptloc, PTLOC)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_ptnme, PTNME)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_iw, IW)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_ii, II)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_il, IL)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_dpo, DPO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_wao, WAO)
+    if (ncerr .ne. 0) return
+#ifdef W3_FLX5
+    ncerr = nf90_put_var(fh, v_tauao, TAUAO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_taido, TAIDO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_dairo, DAIRO)
+    if (ncerr .ne. 0) return
+#endif
+#ifdef W3_SETUP
+    ncerr = nf90_put_var(fh, v_zet_seto, ZET_SETO)
+    if (ncerr .ne. 0) return
+#endif
+    ncerr = nf90_put_var(fh, v_aso, ASO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_cao, CAO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_iceo, ICEO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_iceho, ICEHO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_icefo, ICEFO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_grdid, GRDID)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_spco, SPCO)
+    if (ncerr .ne. 0) return
+
+    ! Close the file.
     ncerr = nf90_close(fh)
     if (ncerr .ne. 0) return
 
@@ -1185,6 +1252,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+    use netcdf
     IMPLICIT NONE
     
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
@@ -1224,6 +1292,10 @@ CONTAINS
    ELSE
       CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)      
    ENDIF
+   if (ncerr .ne. 0) then
+      print *, nf90_strerror(ncerr)
+      CALL EXTCDE(21)      
+   endif
    
     !/
     !/ End of W3IOPON ----------------------------------------------------- /
