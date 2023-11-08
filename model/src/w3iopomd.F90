@@ -1087,12 +1087,36 @@ CONTAINS
     ncerr = nf90_open(filename, NF90_NOWRITE, fh)
     if (ncerr .ne. 0) return
 
-    ! Read the dimension information.
-    ncerr = nc90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
+    ! Read the dimension information for NOPTS.
+    ncerr = nf90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
     if (ncerr .ne. 0) return
-    ncerr = nc90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
+    ncerr = nf90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
     if (ncerr .ne. 0) return
-    print *, 'd_nopts_len = ', d_nopts_len
+
+    ! Read the dimension information for NSPEC.
+    ncerr = nf90_inq_dimid(fh, DNAME_NSPEC, d_nspec)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_nspec, len = d_nspec_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for VSIZE.
+    ncerr = nf90_inq_dimid(fh, DNAME_VSIZE, d_vsize)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_vsize, len = d_vsize_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for NAMELEN.
+    ncerr = nf90_inq_dimid(fh, DNAME_NAMELEN, d_namelen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_namelen, len = d_namelen_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for GRDIDLEN.
+    ncerr = nf90_inq_dimid(fh, DNAME_GRDIDLEN, d_grdidlen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_grdidlen, len = d_grdidlen_len)
+    if (ncerr .ne. 0) return
+
     
     ! Close the file.
     ncerr = nf90_close(fh)
