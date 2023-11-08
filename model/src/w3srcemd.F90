@@ -770,11 +770,9 @@ CONTAINS
         TAUOY(1:NSEAL),        &
         TAUOCX(1:NSEAL),       &
         TAUOCY(1:NSEAL),       &
-        !TAUBBL(1:NSEAL,2),     &    ! TODO: Swap dims
         TAUBBLX(1:NSEAL),      &
         TAUBBLY(1:NSEAL),      &
         TWS(1:NSEAL),          &
-        !TAUICE(1:NSEAL,2),     &    ! TODO: Swap dims?
         TAUICEX(1:NSEAL),      &
         TAUICEY(1:NSEAL),      &
         WCAP_COV(1:NSEAL),     &    ! -|
@@ -830,25 +828,28 @@ CONTAINS
     REAL :: WN_R(NK), CG_ICE(NK), ALPHA_LIU(NK), ICECOEF2, R(NK)
     DOUBLE PRECISION :: ATT, ISO
     REAL :: EBAND, DIFF, EFINISH, HSTOT, &
-!         PHINL,       &    ! TODO: Computed but not actually used anywhere. REMOVE?
+!         PHINL,       &    ! GPU Refactor: Computed but not actually used anywhere - removed
          FACTOR, FACTOR2, &
          MWXFINISH, MWYFINISH, A1BAND, B1BAND,     &
          COSI(2)
     REAL :: SPEC2(NSPEC), FRLOCAL, JAC2
     REAL :: DAM2(NSPEC)
-    !REAL :: EB(NK)       ! TODO - not used?
+    !REAL :: EB(NK)       ! GPU Refactor: removed - not used.
     LOGICAL :: SHAVE
     LOGICAL :: LBREAK     ! TODO - returned from W3SDB1 but never used. Make dummy?
-    !LOGICAL, SAVE :: FIRST = .TRUE.  ! TODO - not used?
+    !LOGICAL, SAVE :: FIRST = .TRUE.  ! GPU Refactor: removed - not used.
     LOGICAL :: PrintDeltaSmDA
     REAL :: eInc1, eInc2, eVS, eVD, JAC
-    REAL :: DeltaSRC(NSPEC)  ! TODO - only used if PrintDeltaSmDA==True, hide behind #ifdef?
     REAL, SAVE :: TAUNUX, TAUNUY    ! TODO - returned from W3_FLD[12], but never used...
     LOGICAL, SAVE :: FLTEST = .FALSE., FLAGNN = .TRUE.
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters dependent on compile switch
     !/
+#ifdef W3_PDLIB
+    REAL :: DeltaSRC(NSPEC)
+#endif
+
 #ifdef W3_S
     INTEGER, SAVE :: IENT = 0
 #endif
@@ -896,20 +897,12 @@ CONTAINS
     REAL :: SCAT, SMOOTH_ICEDISP
 #endif
 
-#ifdef W3_ST1
-    REAL :: FH1, FH2  ! TODO- MERGE WITH ST2 and ST3 entries below
+#if defined (W3_ST1) || defined(W3_ST3) || defined(W3_ST4)
+    REAL :: FH1, FH2
 #endif
 
 #ifdef W3_ST2
     REAL :: FHTRAN, DFH, FACDIA, FACPAR
-#endif
-
-#ifdef W3_ST3
-    REAL :: FH1, FH2
-#endif
-
-#ifdef W3_ST4
-    REAL :: FH1, FH2
 #endif
 
 #ifdef W3_PDLIB
@@ -1144,7 +1137,7 @@ CONTAINS
 #endif
 
 #if defined(W3_ST0) || defined(W3_ST3) || defined(W3_ST4)
-      VSIN(:,:) = 0.  ! TODO - these initisations will need moving to chunk loop
+      VSIN(:,:) = 0.
       VDIN(:,:) = 0.
 #endif
 
@@ -1207,8 +1200,8 @@ CONTAINS
 
 #ifdef W3_T
       ! TODO - move this (depth not calculated yet)
-      WRITE (NDST,9000)
-      WRITE (NDST,9001) DEPTH, U10ABS, U10D_CHUNK(CSEA)*RADE
+      !WRITE (NDST,9000)
+      !WRITE (NDST,9001) DEPTH, U10ABS, U10D_CHUNK(CSEA)*RADE
 #endif
       !
       ! 1.  Preparations --------------------------------------------------- *
@@ -1223,7 +1216,6 @@ CONTAINS
       !
       ! Not technically required when running SHRD mode
       ! TODO: Look into workaround for this, use pointers instead?
-      !
       ! TODO - rewrite to loop over I for GPU, to avoid loop dependency.
 
       I = 1
@@ -2458,11 +2450,11 @@ CONTAINS
           EXIT
         ENDIF
 
+! Note: Leaving these ACC statements here for now - will be useful for GPU port.
 !$ACC DATA COPYOUT(COMPLETE)
 !$ACC PARALLEL
         ! GPU refactor: Update source mask with seapoints that have completed
         ! timestepping:
-
         !!WHERE(DTTOT(:NSEAC) .GE. 0.9999*DTG) SRC_MASK(:NSEAC) = .TRUE.
         DO CSEA=1,NSEAC
           IF(DTTOT(CSEA) .GE. 0.9999*DTG .AND. .NOT. SRC_MASK(CSEA)) THEN
@@ -2477,6 +2469,7 @@ CONTAINS
 !$ACC END PARALLEL
 !$ACC END DATA
 
+        ! Complete is true if all _active_ points have finished integration loop
         IF(COMPLETE) THEN
           EXIT
         ENDIF
@@ -2485,7 +2478,6 @@ CONTAINS
 
       ! Refactor - if implicit (pre), then we are all done - cycle chunk loop
       IF(srce_call .eq. srce_imp_pre) THEN
-        !CYCLE !! Need to update full grid variables first??
         GOTO 7777
       ENDIF
 
@@ -2501,16 +2493,11 @@ CONTAINS
       !
       ! 8.  Save integration data ------------------------------------------ *
       !
-
-      ! TODO: Need to reset the SRC_MASK array
       ! TODO: Need a better solution than recalculating.
       !       Integer source mask? 0 = active, 1=masked(or complete), 2=masked+complete
       I = 1
       DO JSEA=CHUNK0,CHUNKN
-        ! GPU refactor - INIT_GET_ISEA as been inlined for efficiency
-        ! but we can't assume this in full code.
         ! TODO - THIS BLOCK TEMPORARY - NEED BETTER SOLUTION
-
         CALL INIT_GET_ISEA(ISEA, JSEA)  !!! SLOW!
         SRC_MASK(I) = .NOT. (MAPSTA(IY(I),IX(I)) .EQ. 1 .AND. FLAGST(ISEA))
         I = I + 1
@@ -2592,7 +2579,7 @@ CONTAINS
         PHIOC(JSEA) = DWAT * GRAV * (EFINISH + PHIAW(JSEA) - PHIBBL(JSEA)) / DTG
         PHIAW(JSEA) = DWAT * GRAV * PHIAW(JSEA) / DTG
         ! PHINL is calculated but never used; I have commented out (Chris Bunney):
-        !PHINL = DWAT * GRAV * PHINL / DTG  ! TODO: NOT USED ANYWHERE. REMOVE?
+        !PHINL = DWAT * GRAV * PHINL / DTG  ! GPU Refactor: NOT USED ANYWHERE. REMOVE?
         PHIBBL(JSEA) = DWAT * GRAV * PHIBBL(JSEA) / DTG
       END DO ! CSEA/JSEA
       !
@@ -2677,9 +2664,9 @@ CONTAINS
 #endif
           SPEC2 = SPEC(:,JSEA)
           !
-          !!TAUICEX(JSEA) = 0.   ! ChrisB: GPU Refactor: Zeroed in outer seapoint loop for B4B reproducibility
-          !!TAUICEY(JSEA) = 0.   ! ChrisB: GPU Refactor: Zeroed in outer seapoint loop for B4B reproducibility
-          !!PHICE(JSEA) = 0.      ! DITTO
+          !!TAUICEX(JSEA) = 0.   ! ChrisB: GPU Refactor: Now zeroed in outer seapoint loop for B4B reproducibility
+          !!TAUICEY(JSEA) = 0.   !  Ditto...
+          !!PHICE(JSEA) = 0.     !  Ditto...
           DO IK=1,NK
             IS = 1+(IK-1)*NTH
             !
@@ -2749,7 +2736,7 @@ CONTAINS
       ELSE ! INPARS(4)
 #ifdef W3_IS2
         IF (IS2PARS(10).LT.0.5) THEN
-          ICEF_CHUNK(CSEA) = 0.  !! TODO - setting chunk here - not return value from function
+          ICEF_CHUNK(CSEA) = 0.
         ENDIF
 #endif
       ENDIF ! INPARS(4)
@@ -2775,7 +2762,7 @@ CONTAINS
           ! FLD1/2 requires the calculation of FPI:
 #if defined (W3_FLD1) || defined(W3_FLD2)
         CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
-        CALL CALC_FPI(SPEC(:,JSEA), CG1_CHUNK(:,CSEA), FPI(ISEA), VSIN(:,CSEA) )
+        CALL CALC_FPI(SPEC(:,JSEA), CG1_CHUNK(:,CSEA), FPI(ISEA), VSIN(:,CSEA) ) ! TODO - probably want to pass array of spec in future
 #endif      
       !
 #ifdef W3_FLD1
@@ -2855,9 +2842,8 @@ CONTAINS
 #endif
       END DO ! CSEA
 
-      !FIRST  = .FALSE.  ! Refactor: Not used.
+      !FIRST  = .FALSE.  ! Refactor: Never used.
 
-      !IF(IT.EQ.0) SPEC = SPECINIT
       IF(IT.EQ.0) SPEC(:,CHUNK0:CHUNKN) = SPECINIT(:,:NSEAC)
 
       SPEC(:,CHUNK0:CHUNKN) = MAX(0., SPEC(:,CHUNK0:CHUNKN))
@@ -2880,8 +2866,6 @@ CONTAINS
           ICEF(ISEA) = ICEF_CHUNK(CSEA)
         ENDIF
 #endif
-
-        ! TODO - ARE MORE NEEDED NERE?
 
         ! This moved from W3WAVE (after W3SRCE call)
         ! TODO - check this is ok for implicit calls too...
