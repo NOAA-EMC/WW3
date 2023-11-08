@@ -1266,7 +1266,7 @@ CONTAINS
 
 #ifdef W3_BT4
           CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL(1),   &
-               TAUBBL(2), BEDFORM(1), BEDFORM(2), BEFORM(3),      &
+               TAUBBL(2), BEDFORM(1), BEDFORM(2), BEDFORM(3),     &
                XBT, DIA, IX, IY )
 #endif
           !
