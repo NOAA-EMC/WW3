@@ -2040,7 +2040,7 @@ CONTAINS
 
 #ifdef W3_BT4
             CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL(1), TAUBBL(2),  &
-                 BEDFORM, XBT, DIA, IX, IY )
+                 BEDFORM(1), BEDFORM(2), BEDFORM(3), XBT, DIA, IX, IY )
 #endif
 
             BT8MSG='ww3_outp: ITYPE=3 with BT8 or BT9: Sbot out'//&

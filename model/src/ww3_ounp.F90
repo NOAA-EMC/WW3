@@ -2483,7 +2483,7 @@ CONTAINS
               D50 = SED_D50(ISEA)
               PSIC= SED_PSIC(ISEA)
               CALL W3SBT4 ( A, CG, WN, DEPTH, D50, PSIC, TAUBBL(1), TAUBBL(2),   &
-                   BEDFORM, XBT, DIA, IX, IY )
+                   BEDFORM(1), BEDFORM(2) ,BEDFORM(3), XBT, DIA, IX, IY )
 #endif
 
               ! see remarks about BT8 and BT9 in ww3_outp.ftn
