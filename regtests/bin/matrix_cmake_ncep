@@ -41,9 +41,7 @@ EOF
 # Convert main_dir to absolute path
   main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
-# Module Versions from HPC-Stack that are common for all platforms
-
-###MTM !! Reminder:  now, netcdf-c netcdf-f !!!
+# Module Versions from spack-stack that are common for all platforms
   modnetcdfc='netcdf-c/4.9.2'
   modnetcdff='netcdf-fortran/4.6.0'
   modjasper='jasper/2.0.32'
@@ -80,7 +78,7 @@ EOF
     modcomp='stack-intel/2022.0.2'
     modmpi='stack-intel-oneapi-mpi/2021.5.1'
     ##metispath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
-    modcmake='cmake/3.22.1'
+    modcmake='cmake/3.23.1'
   else
     batchq=
   fi
