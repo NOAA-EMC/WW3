@@ -76,12 +76,10 @@ EOF
     batchq='slurm'
     basemodcomp='intel/2022.1.2'
     basemodmpi='impi/2022.1.2'
-    spackstackpath='/work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
-    spackstackversion='hpc/1.2.0'
-    modcomp='hpc-intel/2022.1.2'
-    modmpi='hpc-impi/2022.1.2'
-    scotchpath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/scotch-v7.0.3/install'
-    metispath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
+    spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
+    modcomp='stack-intel/2022.0.2'
+    modmpi='stack-intel-oneapi-mpi/2021.5.1'
+    ##metispath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
     modcmake='cmake/3.22.1'
   else
     batchq=
