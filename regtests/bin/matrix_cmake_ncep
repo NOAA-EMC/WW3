@@ -159,6 +159,7 @@ EOF
   echo "  module load $modg2"                               >> matrix.head
   echo "  module load $modw3emc"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
+  echo "  module load $modscotch"                           >> matrix.head
 
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
   echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
