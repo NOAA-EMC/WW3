@@ -826,7 +826,7 @@ CONTAINS
          TAUWNX, TAUWNY, BHD, CGE,              &
          CFLXYMAX, CFLTHMAX, CFLKMAX,           &
          WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,&
-         BEDROUGH, REDRIPX, BEDRIPY, PHIBBL,    &
+         BEDROUGH, BEDRIPX, BEDRIPY, PHIBBL,    &
          TAUBBLX, TAUBBLY, T01,                 &
          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
          STH2M, HSIG, TAUICEX, TAUICEY, PHICE,  &
