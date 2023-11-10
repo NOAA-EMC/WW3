@@ -28,7 +28,7 @@ MODULE W3SRCEMD
   !/                  |           H. L. Tolman            |
   !/                  |            F. Ardhuin             |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         22-Mar-2021 |
+  !/                  | Last update :         03-Nov-2023 |
   !/                  +-----------------------------------+
   !/
   !/    For updates see subroutine.
@@ -179,9 +179,6 @@ CONTAINS
   !> @param[in]    ICEDMAX    Sea ice maximum floe diameter
   !> @param[in]    REFLEC     Reflection coefficients.
   !> @param[in]    REFLED     Reflection direction.
-  !> @param[in]    DELX       Grid cell size in X direction.   !! REMOVED - not used
-  !> @param[in]    DELY       Grid cell size in Y direction.   !! REMOVED - not used
-  !> @param[in]    DELA       Grid cell area.                  !! REMOVED - not used
   !> @param[in]    TRNX       Grid transparency in X.
   !> @param[in]    TRNY       Grid transparency in Y.
   !> @param[in]    BERG       Iceberg damping coefficient.
@@ -399,9 +396,6 @@ CONTAINS
     !       REFLEC  R.A.   I   reflection coefficients        ( !/BS1 )
     !       REFLED  I.A.   I   reflection direction           ( !/BS1 )
     !       TRNX-Y  Real   I   Grid transparency in X and Y   ( !/BS1 )
-    !       DELX    Real.  I   grid cell size in X direction  ( !/BS1 )    !! REMOVED! Not used...
-    !       DELY    Real.  I   grid cell size in Y direction  ( !/BS1 )    !! REMOVED! Not used...
-    !       DELA    Real.  I   grid cell area                 ( !/BS1 )    !! REMOVED! Not used...
     !       FPI     Real  I/O  Peak-input frequency.          ( !/ST2 )
     !      WCAP_COV R.A.  I/O  Whitecap coverage              ( !/ST4 )
     !      WCAP_THK R.A.  I/O  Whitecap foam thickness        ( !/ST4 )
@@ -2503,7 +2497,7 @@ CONTAINS
       !       Integer source mask? 0 = active, 1=masked(or complete), 2=masked+complete
       I = 1
       DO JSEA=CHUNK0,CHUNKN
-        ! TODO - THIS BLOCK TEMPORARY - NEED BETTER SOLUTION
+        ! TODO - THIS BLOCK TEMPORARY - NEED BETTER SOLUTION THAN RECALCULATING SRC_MASK
         CALL INIT_GET_ISEA(ISEA, JSEA)  !!! SLOW!
         SRC_MASK(I) = .NOT. (MAPSTA(IY(I),IX(I)) .EQ. 1 .AND. FLAGST(ISEA))
         I = I + 1
