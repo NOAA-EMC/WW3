@@ -2077,10 +2077,7 @@ CONTAINS
     SDSNTH  = MTH/2-1 !MIN(NINT(SSDSDTH/(DTH*RADE)),MTH/2-1)
     ALLOCATE( MPARS(IMOD)%SRCPS%SATINDICES(2*SDSNTH+1,MTH), &
          MPARS(IMOD)%SRCPS%SATWEIGHTS(2*SDSNTH+1,MTH), &
-         STAT=ISTAT                                   )
-    CHECK_ALLOC_STATUS ( ISTAT )
-    !      IF (SSDSC(3).LT.0.)  &
-    ALLOCATE (MPARS(IMOD)%SRCPS%CUMULW(MSPEC,MSPEC),  &
+         MPARS(IMOD)%SRCPS%CUMULW(MSPEC,MSPEC),        &
          STAT=ISTAT                                   )
     CHECK_ALLOC_STATUS ( ISTAT )
 #endif
