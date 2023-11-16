@@ -1159,8 +1159,8 @@ CONTAINS
     USE W3ODATMD, ONLY: ZET_SETO
 #endif
     IMPLICIT NONE
-    
-    INTEGER, INTENT(IN)           :: NDSOP    
+
+    INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
     character(*), intent(in) :: filename
@@ -1338,8 +1338,8 @@ CONTAINS
 #endif
     
     IMPLICIT NONE
-    
-    INTEGER, INTENT(IN) :: NDSOP    
+
+    INTEGER, INTENT(IN) :: NDSOP
     INTEGER, INTENT(IN) :: IMOD
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
@@ -1522,9 +1522,9 @@ CONTAINS
 #endif
     use netcdf
     IMPLICIT NONE
-    
+
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
-    INTEGER, INTENT(IN)           :: NDSOP    
+    INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
 #ifdef W3_ASCII
@@ -1536,7 +1536,7 @@ CONTAINS
 
     ! Optimistically assume success.
     IOTST = 0
-    
+
     ! Has a model number been specified?
     IF (PRESENT(IMOD)) THEN
       IGRD = IMOD
@@ -1558,7 +1558,7 @@ CONTAINS
    IF (INXOUT .EQ. 'READ') THEN
       CALL W3IOPON_READ(NDSOP, IOTST, IMOD, 'ww3_out_pnt.nc', ncerr)
    ELSE
-      CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)      
+      CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)
    ENDIF
    if (ncerr .ne. 0) then
       print *, nf90_strerror(ncerr)
@@ -1568,7 +1568,7 @@ CONTAINS
     !/
     !/ End of W3IOPON ----------------------------------------------------- /
     !/
-    
+
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
          '     ILEGAL INXOUT VALUE: ',A/)
   END SUBROUTINE W3IOPON
@@ -1595,24 +1595,24 @@ CONTAINS
   !> Each record contains:
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
-  !> 4 | integer | IW | ???
-  !> 4 | integer | II | ???
-  !> 4 | integer | IL | ???
-  !> 4 | integer | DPO | ???
-  !> 4 | integer | WAO | ???
-  !> 4 | integer | WDO | ???
-  !> 4 | integer | TAUAO | (W3_FLX5 only) ???
-  !> 4 | integer | TAIDO | (W3_FLX5 only) ???
-  !> 4 | integer | DAIRO | (W3_FLX5 only) ???
-  !> 4 | integer | ZET_SETO | (W3_SETUP only) ???
-  !> 4 | integer | ASO | ???
-  !> 4 | integer | CAO | ???
-  !> 4 | integer | CDO | ???
-  !> 4 | integer | ICEO | ???
-  !> 4 | integer | ICEHO  | ???
-  !> 4 | integer | ICEFO | ???
-  !> 4 | integer | GRDID | ???
-  !> 4 | integer | SPCO(J,I),J=1,NSPEC | ???
+  !> 4 | integer | IW | Number of water points in interpolation box for output point.
+  !> 4 | integer | II | Number of ice points in interpolation box for output point.
+  !> 4 | integer | IL | Number of land points in interpolation box for output point.
+  !> 4 | real | DPO | Interpolated depths.
+  !> 4 | real | WAO | Interpolated wind speeds.
+  !> 4 | real | WDO | Interpolated wind directions.
+  !> 4 | real | TAUAO | (W3_FLX5 only) Interpolated atmospheric stresses.
+  !> 4 | real | TAUDO | (W3_FLX5 only) Interpolated atmospheric stress directions.
+  !> 4 | real | DAIRO | (W3_FLX5 only) Interpolated rho atmosphere.
+  !> 4 | real | ZET_SETO | (W3_SETUP only) ???
+  !> 4 | real | ASO | Interpolated air-sea temperature difference
+  !> 4 | real | CAO | Interpolated current speeds.
+  !> 4 | real | CDO | Interpolated current directions.
+  !> 4 | real | ICEO | Interpolated ice concentration.
+  !> 4 | real | ICEHO | Interpolated ice thickness.
+  !> 4 | real | ICEFO | Interpolated ice floe.
+  !> 13 | char | GRDID | Originating grid ID
+  !> 4 | real | SPCO(J,I),J=1,NSPEC | Output spectra
   !>
   !> In the event of error, EXTCDE() will be called with the following exit codes:
   !> - 1 INXOUT must be 'READ' or 'WRITE'.
@@ -2035,7 +2035,7 @@ CONTAINS
 #endif
              'ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I):',        &
              ASO(I), CAO(I), CDO(I), ICEO(I), ICEHO(I),        &
-             'ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC):',       & 
+             'ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC):',       &
              ICEFO(I), GRDID(I), (SPCO(J,I),J=1,NSPEC)
 #endif
       ELSE
