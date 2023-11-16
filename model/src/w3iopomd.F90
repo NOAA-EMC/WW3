@@ -1173,6 +1173,7 @@ CONTAINS
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
 
+    print *,filename
     IOTST = 0
     
     ! Open the netCDF file.
