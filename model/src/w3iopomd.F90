@@ -1559,7 +1559,7 @@ CONTAINS
    I = LEN_TRIM(FILEXT)
    J = LEN_TRIM(FNMPRE)
    print *, FNMPRE(:J)//'out_pnt.'//FILEXT(:I)
-   filename = FNMPRE(:J)//'out_pnt_nc.'//FILEXT(:I)
+   filename = transfer(FNMPRE(:J)//'out_pnt_nc.'//FILEXT(:I), filename)
    print *, filename
    
    ! Do a read or a write of the point file.
