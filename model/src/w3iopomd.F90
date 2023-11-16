@@ -118,6 +118,115 @@ MODULE W3IOPOMD
   CHARACTER(LEN=10), PARAMETER, PRIVATE :: VEROPT = '2021-04-06'
   CHARACTER(LEN=31), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
+
+  !> Dimension name for the netCDF point output file, for NOPTS, the
+  !> Number of Output Points.
+  character(*), parameter, private :: DNAME_NOPTS = 'NOPTS'
+  
+  !> Dimension name for the netCDF point output file, for NSPEC.
+  character(*), parameter, private :: DNAME_NSPEC = 'NSPEC'
+  
+  !> Dimension name for the netCDF point output file, for VSIZE. This
+  !> is for the vector size for points, which is 2.
+  character(*), parameter, private :: DNAME_VSIZE = 'VSIZE'
+  
+  !> Dimension name for the netCDF point output file, for
+  !> NAMELEN. This is the length of the PTNME strings, which contains
+  !> the names of the points.
+  character(*), parameter, private :: DNAME_NAMELEN = 'NAMELEN'
+  
+  !> Dimension name for the netCDF point output file, for GRDIDLEN,
+  !> this is the length of the GRDID character array.
+  character(*), parameter, private :: DNAME_GRDIDLEN = 'GRDIDLEN'
+
+  !> Variable name for the netCDF point output file, for NK.
+  character(*), parameter, private :: VNAME_NK = 'NK'
+
+  !> Variable name for the netCDF point output file, for MTH.
+  character(*), parameter, private :: VNAME_MTH = 'MTH'
+
+  !> Variable name for the netCDF point output file, for PTLOC.
+  character(*), parameter, private :: VNAME_PTLOC = 'PTLOC'
+
+  !> Variable name for the netCDF point output file, for PTNME.
+  character(*), parameter, private :: VNAME_PTNME = 'PTNME'
+
+  !> Variable name for the netCDF point output file, for IW.
+  character(*), parameter, private :: VNAME_IW = 'IW'
+
+  !> Variable name for the netCDF point output file, for II.
+  character(*), parameter, private :: VNAME_II = 'II'
+
+  !> Variable name for the netCDF point output file, for IL.
+  character(*), parameter, private :: VNAME_IL = 'IL'
+
+  !> Variable name for the netCDF point output file, for DPO.
+  character(*), parameter, private :: VNAME_DPO = 'DPO'
+
+  !> Variable name for the netCDF point output file, for WAO.
+  character(*), parameter, private :: VNAME_WAO = 'WAO'
+
+  !> Variable name for the netCDF point output file, for WDO.
+  character(*), parameter, private :: VNAME_WDO = 'WDO'
+
+  !> Variable name for the netCDF point output file, for TAUAO.
+  character(*), parameter, private :: VNAME_TAUAO = 'TAUAO'
+
+  !> Variable name for the netCDF point output file, for TAIDO.
+  character(*), parameter, private :: VNAME_TAIDO = 'TAIDO'
+
+  !> Variable name for the netCDF point output file, for DAIRO.
+  character(*), parameter, private :: VNAME_DAIRO = 'DAIRO'
+
+  !> Variable name for the netCDF point output file, for ZET_SETO.
+  character(*), parameter, private :: VNAME_ZET_SETO = 'ZET_SETO'
+
+  !> Variable name for the netCDF point output file, for ASO.
+  character(*), parameter, private :: VNAME_ASO = 'ASO'
+
+  !> Variable name for the netCDF point output file, for CAO.
+  character(*), parameter, private :: VNAME_CAO = 'CAO'
+
+  !> Variable name for the netCDF point output file, for CDO.
+  character(*), parameter, private :: VNAME_CDO = 'CDO'
+
+  !> Variable name for the netCDF point output file, for ICEO.
+  character(*), parameter, private :: VNAME_ICEO = 'ICEO'
+
+  !> Variable name for the netCDF point output file, for ICEHO.
+  character(*), parameter, private :: VNAME_ICEHO = 'ICEHO'
+
+  !> Variable name for the netCDF point output file, for ICEFO.
+  character(*), parameter, private :: VNAME_ICEFO = 'ICEFO'
+
+  !> Variable name for the netCDF point output file, for GRDID.
+  character(*), parameter, private :: VNAME_GRDID = 'GRDID'
+
+  !> Variable name for the netCDF point output file, for SPCO.
+  character(*), parameter, private :: VNAME_SPCO = 'SPCO'
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
@@ -1030,17 +1139,176 @@ CONTAINS
   !> @param[in]  NDSOP   File unit number.
   !> @param[out] IOTST   Test indictor for reading.
   !> @param[in]  IMOD    Model number for W3GDAT etc.
+  !> @param[in]  filename Name of file to read.
+  !> @param[inout] ncerr Error code, 0 for success, netCDF error code
+  !> otherwise.
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_READ (NDSOP, IOTST, IMOD)
+  SUBROUTINE W3IOPON_READ (NDSOP, IOTST, IMOD, filename, ncerr)
+    use netcdf
+    USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
+         IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         GRDID, ICEO, ICEHO, ICEFO
+#ifdef W3_FLX5
+    USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
+#ifdef W3_SETUP
+    USE W3ODATMD, ONLY: ZET_SETO
+#endif
     IMPLICIT NONE
 
     INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
+    character(*), intent(in) :: filename
+    integer, intent(inout) :: ncerr
+    integer :: fh
+    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen    
+    integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len    
+    integer :: v_idtst, v_vertst, v_nk, v_mth, v_ptloc, v_ptnme
+    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
+    integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
+    integer :: v_iceho, v_icefo, v_grdid, v_spco
 
     IOTST = 0
+    
+    ! Open the netCDF file.
+    ncerr = nf90_open(filename, NF90_NOWRITE, fh)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for NOPTS.
+    ncerr = nf90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for NSPEC.
+    ncerr = nf90_inq_dimid(fh, DNAME_NSPEC, d_nspec)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_nspec, len = d_nspec_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for VSIZE.
+    ncerr = nf90_inq_dimid(fh, DNAME_VSIZE, d_vsize)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_vsize, len = d_vsize_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for NAMELEN.
+    ncerr = nf90_inq_dimid(fh, DNAME_NAMELEN, d_namelen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_namelen, len = d_namelen_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for GRDIDLEN.
+    ncerr = nf90_inq_dimid(fh, DNAME_GRDIDLEN, d_grdidlen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_grdidlen, len = d_grdidlen_len)
+    if (ncerr .ne. 0) return
+
+    ! Read scalar variables.
+    ncerr = nf90_inq_varid(fh, VNAME_NK, v_nk)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_nk, NK)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_MTH, v_mth)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_mth, NTH)
+    if (ncerr .ne. 0) return
+
+    ! Read vars with nopts as a dimension.
+    ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_ptloc, PTLOC)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_ptnme, PTNME)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_iw, IW)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_ii, II)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_IL, v_il)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_il, IL)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_dpo, DPO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_wao, WAO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_WDO, v_wdo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_wdo, WDO)
+    if (ncerr .ne. 0) return
+#ifdef W3_FLX5
+    ncerr = nf90_inq_varid(fh, VNAME_TAUAO, v_tauao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_tauao, TAUAO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_TAIDO, v_taido)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_taido, TAIDO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_DAIRO, v_dairo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_dairo, DAIRO)
+    if (ncerr .ne. 0) return
+#endif    
+#ifdef W3_SETUP
+    ncerr = nf90_inq_varid(fh, ZET_SETO, v_zet_seto)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_zet_seto, ZET_SETO)
+    if (ncerr .ne. 0) return
+#endif    
+    ncerr = nf90_inq_varid(fh, VNAME_ASO, v_aso)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_aso, ASO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_CAO, v_cao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_cao, CAO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_CDO, v_cdo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_cdo, CDO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_iceo, ICEO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_ICEHO, v_iceho)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_iceho, ICEHO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_ICEFO, v_icefo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_icefo, ICEFO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_grdid, GRDID)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_get_var(fh, v_spco, SPCO)
+    if (ncerr .ne. 0) return
+    
+    ! Close the file.
+    ncerr = nf90_close(fh)
+    if (ncerr .ne. 0) return
+    
   END SUBROUTINE W3IOPON_READ
 
   !/ ------------------------------------------------------------------- /
@@ -1062,6 +1330,13 @@ CONTAINS
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
          ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
          GRDID, ICEO, ICEHO, ICEFO
+#ifdef W3_FLX5
+    USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
+#endif
+#ifdef W3_SETUP
+    USE W3ODATMD, ONLY: ZET_SETO
+#endif
+    
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: NDSOP
@@ -1069,77 +1344,138 @@ CONTAINS
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
     integer :: fh, ndim, nvar, fmt
-    integer :: d_nopts, d_nspec, d_vsize, d_namelen
+    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen
     integer :: v_idtst, v_vertst, v_nk, v_mth, v_ptloc, v_ptnme
     integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
+    character (len = *), parameter :: FILE_NAME = "f90tst_nc4.nc"
+    CHARACTER(LEN=31), PARAMETER :: IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
+    CHARACTER(LEN=10), PARAMETER :: VEROPT = '2021-04-06'    
 
-    ! ! Create the netCDF file.
-    ncerr = nf90_create("filename ", NF90_NETCDF4, fh)
+    ! Create the netCDF file.
+    ncerr = nf90_create(filename, NF90_NETCDF4, fh)
     if (ncerr .ne. 0) return
 
-    ! ! Define dimensions.
-    ! ncerr = nf90_def_dim(fh, 'NOPTS', NOPTS, d_nopts)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_dim(fh, 'NSPEC', NSPEC, d_nspec)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_dim(fh, 'VSIZE', 2, d_vsize)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_dim(fh, 'NAMELEN', 7, d_namelen)
-    ! if (ncerr .ne. 0) return
+    ! Define dimensions.
+    ncerr = nf90_def_dim(fh, DNAME_NOPTS, NOPTS, d_nopts)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, DNAME_NSPEC, NSPEC, d_nspec)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, DNAME_VSIZE, 2, d_vsize)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, DNAME_NAMELEN, 40, d_namelen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_dim(fh, DNAME_GRDIDLEN, 13, d_grdidlen)
+    if (ncerr .ne. 0) return
 
-    ! ! Define variables.
-    ! ncerr = nf90_def_var(fh, 'IDTST', NF90_INT, v_idtst)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'VERTST', NF90_INT, v_vertst)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'NK', NF90_INT, v_nk)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'MTH', NF90_INT, v_mth)
-    ! if (ncerr .ne. 0) return
+    ! Define global attributes.
+    ncerr = nf90_put_att(fh, NF90_GLOBAL, 'title', IDSTR)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_att(fh, NF90_GLOBAL, 'version', VEROPT)
+    if (ncerr .ne. 0) return
+    
+    ! Define scalar variables.
+    ncerr = nf90_def_var(fh, VNAME_NK, NF90_INT, v_nk)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_MTH, NF90_INT, v_mth)
+    if (ncerr .ne. 0) return
 
-    ! ! Define vars with nopts as a dimension.
-    ! ncerr = nf90_def_var(fh, 'PTLOC', NF90_INT, (/d_vsize, d_nopts/), v_ptloc)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'PTNME', NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'IW', NF90_INT, (/d_nopts/), v_iw)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'II', NF90_INT, (/d_nopts/), v_ii)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'IL', NF90_INT, (/d_nopts/), v_il)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'DPO', NF90_INT, (/d_nopts/), v_dpo)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'WAO', NF90_INT, (/d_nopts/), v_wao)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'WDO', NF90_INT, (/d_nopts/), v_wdo)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'TAUAO', NF90_INT, (/d_nopts/), v_tauao)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'TAIDO', NF90_INT, (/d_nopts/), v_taido)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'DAIRO', NF90_INT, (/d_nopts/), v_dairo)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'ZET_SETO', NF90_INT, (/d_nopts/), v_zet_seto)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'ASO', NF90_INT, (/d_nopts/), v_aso)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'CAO', NF90_INT, (/d_nopts/), v_cao)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'CDO', NF90_INT, (/d_nopts/), v_cdo)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'ICEO', NF90_INT, (/d_nopts/), v_iceo)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'ICEHO', NF90_INT, (/d_nopts/), v_iceho)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'ICEFO', NF90_INT, (/d_nopts/), v_icefo)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'GRDID', NF90_INT, (/d_nopts/), v_grdid)
-    ! if (ncerr .ne. 0) return
-    ! ncerr = nf90_def_var(fh, 'SPCO', NF90_INT, (/d_nspec, d_nopts/), v_spco)
-    ! if (ncerr .ne. 0) return
+    ! Define vars with nopts as a dimension.
+    ncerr = nf90_def_var(fh, VNAME_PTLOC, NF90_INT, (/d_vsize, d_nopts/), v_ptloc)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_PTNME, NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_IW, NF90_INT, (/d_nopts/), v_iw)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_II, NF90_INT, (/d_nopts/), v_ii)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_IL, NF90_INT, (/d_nopts/), v_il)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_DPO, NF90_INT, (/d_nopts/), v_dpo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_WAO, NF90_INT, (/d_nopts/), v_wao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_WDO, NF90_INT, (/d_nopts/), v_wdo)
+    if (ncerr .ne. 0) return
+#ifdef W3_FLX5
+    ncerr = nf90_def_var(fh, VNAME_TAUAO, NF90_INT, (/d_nopts/), v_tauao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_TAIDO, NF90_INT, (/d_nopts/), v_taido)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_DAIRO, NF90_INT, (/d_nopts/), v_dairo)
+    if (ncerr .ne. 0) return
+#endif    
+#ifdef W3_SETUP
+    ncerr = nf90_def_var(fh, VNAME_ZET_SETO, NF90_INT, (/d_nopts/), v_zet_seto)
+    if (ncerr .ne. 0) return
+#endif    
+    ncerr = nf90_def_var(fh, VNAME_ASO, NF90_INT, (/d_nopts/), v_aso)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_CAO, NF90_INT, (/d_nopts/), v_cao)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_CDO, NF90_INT, (/d_nopts/), v_cdo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_ICEO, NF90_INT, (/d_nopts/), v_iceo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_ICEHO, NF90_INT, (/d_nopts/), v_iceho)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_ICEFO, NF90_INT, (/d_nopts/), v_icefo)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_GRDID, NF90_CHAR, (/d_grdidlen, d_nopts/), v_grdid)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_def_var(fh, VNAME_SPCO, NF90_INT, (/d_nspec, d_nopts/), v_spco)
+    if (ncerr .ne. 0) return
+
+    ! Write the scalar data.
+    ncerr = nf90_put_var(fh, v_nk, NK)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_mth, NTH)
+    if (ncerr .ne. 0) return
+
+    ! Write the data with NOPTS as a dimension.
+    ncerr = nf90_put_var(fh, v_ptloc, PTLOC)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_ptnme, PTNME)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_iw, IW)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_ii, II)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_il, IL)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_dpo, DPO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_wao, WAO)
+    if (ncerr .ne. 0) return
+#ifdef W3_FLX5
+    ncerr = nf90_put_var(fh, v_tauao, TAUAO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_taido, TAIDO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_dairo, DAIRO)
+    if (ncerr .ne. 0) return
+#endif
+#ifdef W3_SETUP
+    ncerr = nf90_put_var(fh, v_zet_seto, ZET_SETO)
+    if (ncerr .ne. 0) return
+#endif
+    ncerr = nf90_put_var(fh, v_aso, ASO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_cao, CAO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_iceo, ICEO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_iceho, ICEHO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_icefo, ICEFO)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_grdid, GRDID)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_put_var(fh, v_spco, SPCO)
+    if (ncerr .ne. 0) return
+
+    ! Close the file.
     ncerr = nf90_close(fh)
     if (ncerr .ne. 0) return
 
@@ -1184,6 +1520,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+    use netcdf
     IMPLICIT NONE
 
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
@@ -1219,11 +1556,15 @@ CONTAINS
 
    ! Do a read or a write of the point file.
    IF (INXOUT .EQ. 'READ') THEN
-      CALL W3IOPON_READ(NDSOP, IOTST, IMOD)
+      CALL W3IOPON_READ(NDSOP, IOTST, IMOD, 'ww3_out_pnt.nc', ncerr)
    ELSE
       CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)
    ENDIF
-
+   if (ncerr .ne. 0) then
+      print *, nf90_strerror(ncerr)
+      CALL EXTCDE(21)      
+   endif
+   
     !/
     !/ End of W3IOPON ----------------------------------------------------- /
     !/
@@ -1235,13 +1576,16 @@ CONTAINS
   !>
   !> @brief Read/write point output.
   !>
+  !> This can write per timestep or the whole model run. This is an
+  !> option in the input file.
+  !>
   !> The format of the point output file is:
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
   !> 40 | character*40 | IDTST | ID string
-  !> 10 | character*10 | VERTST | version of test??
-  !> 4 | integer | NK | Number of discrete wavenumbers.
-  !> 4 | integer | NTH | Number of discrete directions.
+  !> 4 | integer | VERTST | version of test?
+  !> 4 | integer | NK | Dimension of frequency
+  !> 4 | integer | MTH | Directionality of the frequency
   !> 4 | integer | NOPTS | Number of output points.
   !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
   !> 7*NOPTS | character*7 | PTNME | Point names

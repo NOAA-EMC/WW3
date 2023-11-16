@@ -73,6 +73,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: install-dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install doxygen gcovr valgrind
+
       - name: checkout-ww3
         uses: actions/checkout@v3
         with:
@@ -92,6 +97,7 @@ jobs:
         run: |
           source spack/share/spack/setup-env.sh
           spack env activate ww3-gnu
+          set -x
           cd ww3
           export CC=mpicc
           export FC=mpif90
@@ -99,6 +105,19 @@ jobs:
           mkdir build && cd build
           pwd
           echo "${GITHUB_WORKSPACE}"
-          cmake .. -DSWITCH=${GITHUB_WORKSPACE}/ww3/model/tests/data/switch.io
+          export LD_LIBRARY_PATH="/home/runner/work/WW3/WW3/spack/var/spack/environments/ww3-gnu/.spack-env/view/:$LD_LIBRARY_PATH"
+          which ncdump
+          cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/model/tests/data/switch.io -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" -DCMAKE_C_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" ..
           make -j2 VERBOSE=1
           ctest --verbose --output-on-failure --rerun-failed
+          gcovr --root .. -v  --html-details --exclude ../model/tests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
+        
+      - name: upload-test-coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: ww3-test-coverage
+          path: |
+            ww3/build/*.html
+            ww3/build/*.css
+
+          
