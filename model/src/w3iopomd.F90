@@ -1532,6 +1532,7 @@ CONTAINS
 #endif
 
     INTEGER :: IGRD, IERR, MK, MTH, I, J
+    character(len = 124) :: filename
     integer :: ncerr
 
     ! Optimistically assume success.
@@ -1554,11 +1555,18 @@ CONTAINS
       CALL EXTCDE(1)
    END IF
 
+   ! Determine filename.
+   I = LEN_TRIM(FILEXT)
+   J = LEN_TRIM(FNMPRE)
+   print *, FNMPRE(:J)//'out_pnt.'//FILEXT(:I)
+   filename = FNMPRE(:J)//'out_pnt_nc.'//FILEXT(:I)
+   print *, filename
+   
    ! Do a read or a write of the point file.
    IF (INXOUT .EQ. 'READ') THEN
-      CALL W3IOPON_READ(NDSOP, IOTST, IMOD, 'ww3_out_pnt.nc', ncerr)
+      CALL W3IOPON_READ(NDSOP, IOTST, IMOD, filename, ncerr)
    ELSE
-      CALL W3IOPON_WRITE(NDSOP, IMOD, 'ww3_out_pnt.nc', ncerr)
+      CALL W3IOPON_WRITE(NDSOP, IMOD, filename, ncerr)
    ENDIF
    if (ncerr .ne. 0) then
       print *, nf90_strerror(ncerr)
