@@ -1354,7 +1354,7 @@ CONTAINS
     CHARACTER(LEN=31), PARAMETER :: IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
     CHARACTER(LEN=10), PARAMETER :: VEROPT = '2021-04-06'
 
-    print *, 'WRITE ',filename
+    print *, 'WRITE ',filename, len(filename)
 
     ! Create the netCDF file.
     ncerr = nf90_create(filename, NF90_NETCDF4, fh)
