@@ -1352,7 +1352,9 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
     character (len = *), parameter :: FILE_NAME = "f90tst_nc4.nc"
     CHARACTER(LEN=31), PARAMETER :: IDSTR = 'WAVEWATCH III POINT OUTPUT FILE'
-    CHARACTER(LEN=10), PARAMETER :: VEROPT = '2021-04-06'    
+    CHARACTER(LEN=10), PARAMETER :: VEROPT = '2021-04-06'
+
+    print *, 'WRITE ',filename
 
     ! Create the netCDF file.
     ncerr = nf90_create(filename, NF90_NETCDF4, fh)
