@@ -1077,14 +1077,14 @@ CONTAINS
   !>
   !> In the event of error, EXTCDE() will be called with the following exit codes:
   !> - 1 INXOUT must be 'READ' or 'WRITE'.
-  !> - 2 Changed from WRITE to READ in subsequent call???
-  !> - 10 Unexpected IDSTR ???
-  !> - 11 Unexpected VEROPT ???
-  !> - 12 Unexpected MK or MTH ???
+  !> - 2 Unexpectedly changed from WRITE to READ in subsequent call.
+  !> - 10 Unexpected IDSTR
+  !> - 11 Unexpected VEROPT
+  !> - 12 Unexpected MK or MTH
   !> - 20 Error opening file.
-  !> - 21 Unexpected end of file during read ???.
+  !> - 21 Unexpected end of file during read.
   !> - 22 Error reading file.
-  !> - 23 Unexpected end of file during read ???.
+  !> - 23 Unexpected end of file during read.
   !>
   !> @param[in] INXOUT String indicating read/write. Must be 'READ' or
   !> 'WRITE'.
