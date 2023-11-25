@@ -1586,8 +1586,16 @@ CONTAINS
   !>
   !> @brief Read/write point output.
   !>
-  !> This can write per timestep or the whole model run. This is an
-  !> option in the input file.
+  !> When reading, the entire file is read with one call to this
+  !> subroutine.
+  !>
+  !> When writing, this subroutine can either write one timestep or
+  !> the whole model run. This is an option in the input file. If the
+  !> entire model run is to be written, then OFILES(2) is 0. If only
+  !> one timestep is to be written, then OFILES(2) is 1.
+  !>
+  !> If OFILES(2) is 0, the output file is names out_pnt.ww3. If
+  !> OFILES(2) is 1, the output file is named TIMETAG.out_pnt.ww3.
   !>
   !> The format of the point output file is:
   !> Size (bytes) | Type | Variable | Meaning
