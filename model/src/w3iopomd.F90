@@ -1583,8 +1583,10 @@ CONTAINS
          '     ILEGAL INXOUT VALUE: ',A/)
   END SUBROUTINE W3IOPON
   !/ ------------------------------------------------------------------- /
+  !> Read or write point output.
   !>
-  !> @brief Read/write point output.
+  !> This subroutine can either read or write the point output file,
+  !> depending on the value of the first parameter.
   !>
   !> When reading, the entire file is read with one call to this
   !> subroutine.
@@ -1634,28 +1636,27 @@ CONTAINS
   !>
   !> In the event of error, EXTCDE() will be called with the following exit codes:
   !> - 1 INXOUT must be 'READ' or 'WRITE'.
-  !> - 2 Changed from WRITE to READ in subsequent call???
-  !> - 10 Unexpected IDSTR ???
-  !> - 11 Unexpected VEROPT ???
-  !> - 12 Unexpected MK or MTH ???
+  !> - 2 Unexpectedly changed from WRITE to READ in subsequent call.
+  !> - 10 Unexpected IDSTR
+  !> - 11 Unexpected VEROPT
+  !> - 12 Unexpected MK or MTH
   !> - 20 Error opening file.
-  !> - 21 Unexpected end of file during read ???.
+  !> - 21 Unexpected end of file during read.
   !> - 22 Error reading file.
-  !> - 23 Unexpected end of file during read ???.
+  !> - 23 Unexpected end of file during read.
   !>
   !> @param[in] INXOUT String indicating read/write. Must be 'READ' or
   !> 'WRITE'.
-  !> @param[in]  NDSOP   File unit number.
-  !> @param[out] IOTST   Error code:
+  !> @param[in] NDSOP File unit number.
+  !> @param[out] IOTST Error code:
   !> - 0 No error.
   !> - -1 Unexpected end of file when reading.
-  !> @param[in]  IMOD    Model number for W3GDAT etc.
+  !> @param[in] IMOD Model number for W3GDAT etc.
 #ifdef W3_ASCII
-  !> @param[in]  NDSOA File unit number for ASCII output.
+  !> @param[in] NDSOA File unit number for ASCII output.
 #endif
   !>
   !> @author H. L. Tolman  @date 25-Jul-2006
-  !>
   SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD &
 #ifdef W3_ASCII
       ,NDSOA &
