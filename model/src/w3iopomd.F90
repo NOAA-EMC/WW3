@@ -1559,6 +1559,7 @@ CONTAINS
    END IF
 
    ! Determine filename.
+   filename = ''
    filename = transfer(FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt_nc.'//FILEXT(:LEN_TRIM(FILEXT)), filename)
    !print *, filename
    
