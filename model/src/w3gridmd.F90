@@ -853,7 +853,7 @@ MODULE W3GRIDMD
        SDSBR, SDSP, SDSBT, SDS4A, SDKOF,    &
        SDSCOS, SDSDTH, SDSBCK, SDSABK,      &
        SDSPBK, SDSBINT, SDSHCK,             &
-       SDSBRF1, VISCSTRESS,                 &
+       SDSBRF1,                             &
        SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
        SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
        SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF, SINTAIL1, SINTAIL2, &
