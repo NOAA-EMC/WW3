@@ -628,6 +628,7 @@ CONTAINS
         ! Original non-server version writing of spectra
         !
         IF ( .NOT.IOSFLG .OR. (NAPROC.EQ.1.AND.NAPRST.EQ.1) ) THEN
+#ifdef W3_MPI
           DO JSEA=1, NSEAL
             CALL INIT_GET_ISEA(ISEA, JSEA)
             NREC   = ISEA + 2
@@ -636,13 +637,23 @@ CONTAINS
             WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
           END DO
+#else
+          DO JSEA=1, NSEA
+            ISEA = JSEA
+            NREC   = ISEA + 2
+            RPOS  = 1_8 + LRECL*(NREC-1_8)
+            WRITEBUFF(:) = 0.
+            WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
+            WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
+          END DO
+#endif
           !
           ! I/O server version writing of spectra ( !/MPI )
           !
 #ifdef W3_MPI
         ELSE
           !
-          IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
+          IF (LPDLIB) THEN
 #endif
 #ifdef W3_TIMINGS
             CALL PRINT_MY_TIME("Before UNST_PDLIB_WRITE_TO_FILE")
@@ -724,7 +735,7 @@ CONTAINS
         WRITE (NDST,9020) TYPE
 #endif
       ELSE
-        IF (LPDLIB .and. (GTYPE.eq.UNGTYPE)) THEN
+        IF (LPDLIB) THEN
 #ifdef W3_TIMINGS
           CALL PRINT_MY_TIME("Before UNST_PDLIB_READ_FROM_FILE")
 #endif
@@ -769,7 +780,6 @@ CONTAINS
               !              Include remainder values (switch to record format) ---- *
               JSEA = NSEAL_MIN + 1
               IF ( JSEA.EQ.NSEAL ) THEN
-                !ISEA = IAPROC + (JSEA - 1) * NAPROC
                 CALL INIT_GET_ISEA(ISEA, JSEA)
                 NREC = ISEA + 2
                 RPOS = 1_8 + LRECL*(NREC-1_8)
@@ -786,7 +796,7 @@ CONTAINS
           ELSE
 #endif
             VA = 0.
-            DO JSEA=1, NSEAL
+            DO JSEA=1, NSEA
               CALL INIT_GET_ISEA(ISEA, JSEA)
               NREC   = ISEA + 2
               RPOS   = 1_8 + LRECL*(NREC-1_8)
@@ -823,10 +833,12 @@ CONTAINS
         IF ( IAPROC .EQ. NAPRST ) THEN
           !
 #ifdef W3_MPI
-          ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
-          CALL MPI_WAITALL                               &
-               ( NRQRS, IRQRS , STAT2, IERR_MPI )
-          DEALLOCATE ( STAT2 )
+          if (associated(irqrs)) then
+            ALLOCATE ( STAT2(MPI_STATUS_SIZE,NRQRS) )
+            CALL MPI_WAITALL                               &
+                 ( NRQRS, IRQRS , STAT2, IERR_MPI )
+            DEALLOCATE ( STAT2 )
+          end if
 #endif
           !
           RPOS  = 1_8 + LRECL*(NREC-1_8)

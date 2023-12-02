@@ -666,8 +666,16 @@ CONTAINS
     ! I got it from, maybe just made up from drag law ...
     !
 #ifdef W3_STAB3
-    Usigma=MAX(0.,-0.025*AS)
+    IF ( ISNAN(AS) ) THEN
+      ! AS is typically NaN on land and can propagate into the domain by interpolation
+      Usigma = 0.
+    ELSE
+      Usigma = MAX(0.,-0.025*AS)
+    END IF
     USTARsigma=(1.0+U/(10.+U))*Usigma
+#endif
+#ifdef W3_T
+    WRITE (NDST,9003) AS, Usigma, USTARsigma, U
 #endif
     UST=USTAR
     ISTAB=3
@@ -678,6 +686,9 @@ CONTAINS
 #endif
       TAUX = UST**2* COS(USDIR)
       TAUY = UST**2* SIN(USDIR)
+#ifdef W3_T
+      WRITE (NDST,9001) ISTAB, TAUX, TAUY, UST
+#endif
       !
       ! Loop over the resolved part of the spectrum
       !
@@ -789,6 +800,9 @@ CONTAINS
     TAUWNX=0.5*(STRESSSTABN(1,1)+STRESSSTABN(2,1))
     TAUWNY=0.5*(STRESSSTABN(1,2)+STRESSSTABN(2,2))
 #endif
+#ifdef W3_T
+    WRITE (NDST,9002) SUM(D), SUM(A), XSTRESS, YSTRESS, TAUWNX, TAUWNY
+#endif
     S = D * A
     !
     ! ... Test output of arrays
@@ -868,6 +882,21 @@ CONTAINS
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3SIN4 : COMMON FACT.: ',3E10.3)
+9001 FORMAT (' TEST W3SIN4 : ISTAB      :',I2/                    &
+             '               TAUX       :',E12.3/                 &
+             '               TAUY       :',E12.3/                 &
+             '               UST        :',E12.3)
+9002 FORMAT (' TEST W3SIN4 : SUM(D)     :',E12.3/                 &
+             '               SUM(A)     :',E12.3/                 &
+             '               STRESSX    :',E12.3/                 &
+             '               STRESSY    :',E12.3/                 &
+             '               TAUWNX     :',E12.3/                 &
+             '               TAUWNY     :',E12.3)
+9003 FORMAT (' TEST W3SIN4 : AS         :',F8.4/                  &
+             '               Usigma     :',E12.3/                 &
+             '               USTARsigma :',E12.3/                 &
+             '               U          :',E12.3)
+
 #endif
     !/
     !/ End of W3SIN4 ----------------------------------------------------- /

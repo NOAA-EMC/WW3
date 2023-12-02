@@ -681,7 +681,7 @@ CONTAINS
         IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) THEN
           U(IP) = AC(IP) ! restores reflected boundary values
         ENDIF
-#endif^
+#endif
       END DO
       ! update spectrum
       AC = U

@@ -1,6 +1,6 @@
 $ BAJ (adjusted)
 $
-$&SDB1 BJGAM = 0.64, BJALFA = 0.8, DBFLAG=1 /
+&SDB1 BJGAM = 0.64, BJALFA = 0.8 /
 $
 &UNST
 UGOBCAUTO = F

@@ -125,7 +125,7 @@ MODULE PDLIB_W3PROFSMD
   INTEGER               :: FreqShiftMethod = 2
   LOGICAL               :: FSGEOADVECT
   LOGICAL, SAVE         :: LINIT_OUTPUT = .TRUE.
-  REAL, SAVE            :: RTIME = 0.d0 
+  REAL, SAVE            :: RTIME = 0.d0
   INTEGER               :: POS_TRICK(3,2)
 
 #ifdef W3_DEBUGSRC
@@ -245,7 +245,7 @@ CONTAINS
     WRITE(740+IAPROC,*) 'NTPROC=', NTPROC
     FLUSH(740+IAPROC)
 #endif
- 
+
     PDLIB_NSEAL = 0
 
     IF (IAPROC .le. NAPROC) THEN
@@ -263,7 +263,7 @@ CONTAINS
         CALL initFromGridDim(NX,NTRI,TRIGP,NTH,MPI_COMM_WCMP)
       ELSE
         CALL initFromGridDim(NX,NTRI,TRIGP,NSPEC,MPI_COMM_WCMP)
-      ENDIF 
+      ENDIF
       !
 #ifdef W3_DEBUGSOLVER
       WRITE(740+IAPROC,*) 'After initFromGridDim'
@@ -936,20 +936,20 @@ CONTAINS
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
 
-    INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
-    ! actual Wave Direction
-    REAL,    INTENT(IN)    :: DT   ! Time intervall for which the
-    ! advection should be computed
-    ! for the given velocity field
-    REAL,    INTENT(IN)    :: C(npa,2)  ! Velocity field in it's
-    ! X- and Y- Components,
-    REAL,    INTENT(INOUT) :: AC(npa)   ! Wave Action before and
-    ! after advection
-    REAL,    INTENT(IN)    :: RD10, RD20  ! Time interpolation
-    ! coefficients for boundary
-    ! conditions
-    LOGICAL, INTENT(IN)    :: LCALC  ! Switch for the calculation of
-    ! the max. Global Time step
+    INTEGER, INTENT(IN)    :: ISP        ! Actual Frequency/Wavenumber,
+                                         ! actual Wave Direction
+    REAL,    INTENT(IN)    :: DT         ! Time intervall for which the
+                                         ! advection should be computed
+                                         ! for the given velocity field
+    REAL,    INTENT(IN)    :: C(npa,2)   ! Velocity field in it's
+                                         ! X- and Y- Components,
+    REAL,    INTENT(INOUT) :: AC(npa)    ! Wave Action before and
+                                         ! after advection
+    REAL,    INTENT(IN)    :: RD10, RD20 ! Time interpolation
+                                         ! coefficients for boundary
+                                         ! conditions
+    LOGICAL, INTENT(IN)    :: LCALC      ! Switch for the calculation of
+                                         ! the max. Global Time step
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1068,7 +1068,6 @@ CONTAINS
         ITER(IK,ITH) = ABS(NINT(CFLXY))
       END IF
     END IF ! LCALC
-  
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'PDLIB_W3XYPFSN2, step 4'
     FLUSH(740+IAPROC)
@@ -1088,8 +1087,6 @@ CONTAINS
     WRITE(740+IAPROC,*) 'ITER=', ITER(IK,ITH)
     FLUSH(740+IAPROC)
 #endif
-
-    
     DO IT = 1, ITER(IK,ITH)
 #ifdef W3_DEBUGSOLVER
       WRITE(740+IAPROC,*) 'IK=', IK, ' ITH=', ITH
@@ -1264,20 +1261,20 @@ CONTAINS
     USE W3PARALL, only : ONESIXTH, ZERO, THR
     USE yowRankModule, only : IPGL_npa
     IMPLICIT NONE
-    INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
-    ! actual Wave Direction
-    REAL,    INTENT(IN)    :: DT   ! Time intervall for which the
-    ! advection should be computed
-    ! for the given velocity field
-    REAL,    INTENT(IN)    :: C(npa,2)  ! Velocity field in it's
-    ! X- and Y- Components,
-    REAL,    INTENT(INOUT) :: AC(npa)   ! Wave Action before and
-    ! after advection
-    REAL,    INTENT(IN)    :: RD10, RD20  ! Time interpolation
-    ! coefficients for boundary
-    ! conditions
-    LOGICAL, INTENT(IN)    :: LCALC   ! Switch for the calculation of
-    ! the max. Global Time step
+    INTEGER, INTENT(IN)    :: ISP        ! Actual Frequency/Wavenumber,
+                                         ! actual Wave Direction
+    REAL,    INTENT(IN)    :: DT         ! Time intervall for which the
+                                         ! advection should be computed
+                                         ! for the given velocity field
+    REAL,    INTENT(IN)    :: C(npa,2)   ! Velocity field in it's
+                                         ! X- and Y- Components,
+    REAL,    INTENT(INOUT) :: AC(npa)    ! Wave Action before and
+                                         ! after advection
+    REAL,    INTENT(IN)    :: RD10, RD20 ! Time interpolation
+                                         ! coefficients for boundary
+                                         ! conditions
+    LOGICAL, INTENT(IN)    :: LCALC      ! Switch for the calculation of
+                                         ! the max. Global Time step
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1561,20 +1558,20 @@ CONTAINS
     USE yowRankModule, only : IPGL_npa
 
     IMPLICIT NONE
-    INTEGER, INTENT(IN)    :: ISP  ! Actual Frequency/Wavenumber,
-    ! actual Wave Direction
-    REAL,    INTENT(IN)    :: DT   ! Time intervall for which the
-    ! advection should be computed
-    ! for the given velocity field
-    REAL,    INTENT(IN)    :: C(npa,2)  ! Velocity field in it's
-    ! X- and Y- Components,
-    REAL,    INTENT(INOUT) :: AC(npa)   ! Wave Action before and
-    ! after advection
-    REAL,    INTENT(IN)    :: RD10, RD20  ! Time interpolation
-    ! coefficients for boundary
-    ! conditions
-    LOGICAL, INTENT(IN)    :: LCALC  ! Switch for the calculation of
-    ! the max. Global Time step
+    INTEGER, INTENT(IN)    :: ISP        ! Actual Frequency/Wavenumber,
+                                         ! actual Wave Direction
+    REAL,    INTENT(IN)    :: DT         ! Time intervall for which the
+                                         ! advection should be computed
+                                         ! for the given velocity field
+    REAL,    INTENT(IN)    :: C(npa,2)   ! Velocity field in it's
+                                         ! X- and Y- Components,
+    REAL,    INTENT(INOUT) :: AC(npa)    ! Wave Action before and
+                                         ! after advection
+    REAL,    INTENT(IN)    :: RD10, RD20 ! Time interpolation
+                                         ! coefficients for boundary
+                                         ! conditions
+    LOGICAL, INTENT(IN)    :: LCALC      ! Switch for the calculation of
+                                         ! the max. Global Time step
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
 #endif
@@ -1595,7 +1592,7 @@ CONTAINS
     REAL*8  :: FT, UTILDE
     REAL*8  :: FL11, FL12, FL21, FL22, FL31, FL32
     REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
-    REAL  :: DTSI(npa), U(npa), UL(npa) 
+    REAL  :: DTSI(npa), U(npa), UL(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
     REAL*8  :: LAMBDA(2), KTMP(3)
     REAL*8  :: KELEM(3,NE), FLALL(3,NE)
@@ -1724,7 +1721,7 @@ CONTAINS
         END IF
         ST(NI) = ST(NI) + THETA_L(:,IE) ! the 2nd term are the theta values of each node ...
         THETA_H         = (1./3.+DT/(2.*PDLIB_TRIA(IE)) * KELEM(:,IE) ) * FT ! LAX
-!        THETA_H = (1./3.+2./3.*KELEM(:,IE)/SUM(MAX(ZERO,KELEM(:,IE))))*FT  ! CENTRAL ... can be tested as well a bit more dispersive then LAX
+        !        THETA_H = (1./3.+2./3.*KELEM(:,IE)/SUM(MAX(ZERO,KELEM(:,IE))))*FT  ! CENTRAL ... can be tested as well a bit more dispersive then LAX
         THETA_ACE(:,IE) = THETA_H-THETA_L(:,IE)
         PP(NI) =  PP(NI) + MAX(ZERO, -THETA_ACE(:,IE)) * DTSI(NI)
         PM(NI) =  PM(NI) + MIN(ZERO, -THETA_ACE(:,IE)) * DTSI(NI)
@@ -1745,7 +1742,7 @@ CONTAINS
 #endif
 
       USTARI(1,:) = MAX(UL,U)
-      USTARI(2,:) = MIN(UL,U) 
+      USTARI(2,:) = MIN(UL,U)
 
       UIP = 0.
       UIM = 0.
@@ -1861,7 +1858,7 @@ CONTAINS
 #endif
 
   END SUBROUTINE PDLIB_W3XYPFSFCT2
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE TEST_MPI_STATUS(string)
     !/
@@ -1939,7 +1936,7 @@ CONTAINS
     WRITE(740+IAPROC,*) 'Leaving the TEST_MPI_STATUS'
     FLUSH(740+IAPROC)
   END SUBROUTINE TEST_MPI_STATUS
-!/ ------------------------------------------------------------------- /
+  !/ ------------------------------------------------------------------- /
 
   SUBROUTINE SCAL_INTEGRAL_PRINT_GENERAL(V, string, maxidx, CheckUncovered, PrintFullValue)
     !/
@@ -1955,7 +1952,7 @@ CONTAINS
     !/
     !/    01-June-2018 : Origination.                        ( version 6.04 )
     !/
-    !  1. Purpose : Source code for parallel debugging 
+    !  1. Purpose : Source code for parallel debugging
     !  2. Method : maxidx = npa or np for arrays that have been synchronized or not
     !              CheckUncovered is because some the triangulation may not cover all nodes
     !  3. Parameters :
@@ -2785,7 +2782,7 @@ CONTAINS
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
 
-    LOGICAL, INTENT(IN) :: LCALC 
+    LOGICAL, INTENT(IN) :: LCALC
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
 #ifdef W3_DEBUGSOLVER
@@ -2855,7 +2852,7 @@ CONTAINS
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
 
-    LOGICAL, INTENT(IN) :: LCALC 
+    LOGICAL, INTENT(IN) :: LCALC
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
 
@@ -3642,8 +3639,8 @@ CONTAINS
     DTK    = 0
     TMP3   = 0
 
-    CCOSA = FACX * ECOS
-    CSINA = FACX * ESIN
+    CCOSA = FACX * ECOS(1:NTH)
+    CSINA = FACX * ESIN(1:NTH)
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
     DO ISP = 1, NSPEC
@@ -3664,7 +3661,7 @@ CONTAINS
         CXY(1,IP) = CCOS * CG1/CLATS(IP_GLOB)
         CXY(2,IP) = CSIN * CG1
         IF (FLCUR) THEN
-          CXY(1,IP) = CXY(1,IP) + FACX * CX(IP_GLOB)/CLATS(IP_GLOB)*IOBDP_LOC(IP) 
+          CXY(1,IP) = CXY(1,IP) + FACX * CX(IP_GLOB)/CLATS(IP_GLOB)*IOBDP_LOC(IP)
           CXY(2,IP) = CXY(2,IP) + FACY * CY(IP_GLOB)*IOBDP_LOC(IP)
         ENDIF
 #ifdef W3_MGP
@@ -3700,7 +3697,7 @@ CONTAINS
         IB1 = (1-IOBPA_LOC(IP)) * IOBPD_LOC(ITH,IP)
         IB2 = IOBPD_LOC(ITH,IP)
 #ifdef W3_REF1
-        IBR = (1-IOBP_LOC(IP)) * (1-IOBPD_LOC(ITH,IP)) * (1-IOBPA_LOC(IP)) 
+        IBR = (1-IOBP_LOC(IP)) * (1-IOBPD_LOC(ITH,IP)) * (1-IOBPA_LOC(IP))
 #endif
         IF (IOBDP_LOC(IP) .eq. 1) THEN
           DO I = 1, PDLIB_CCON(IP)
@@ -3710,11 +3707,11 @@ CONTAINS
 #ifdef W3_DEBUGSRC
             WRITE(740+IAPROC,*) 'I1=', I1, ' PDLIB_I_DIAG=', PDLIB_I_DIAG(IP)
 #endif
-      
-#ifdef W3_REF1 
+
+#ifdef W3_REF1
             IF (IBR == 1) THEN
-              DTK               = KP(POS,IE) * DTG 
-              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) 
+              DTK               = KP(POS,IE) * DTG
+              B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP)
             ELSE
               DTK               = KP(POS,IE) * DTG * IB1
               B_JAC(ISP,IP)     = B_JAC(ISP,IP) + PDLIB_TRIA03(IE) * VA(ISP,IP) * IB2
@@ -4467,7 +4464,7 @@ CONTAINS
     INTEGER :: ITH0
 
     LOGICAL :: LSIG = .FALSE.
-    !AR: TODO: check&report if needed ... 
+    !AR: TODO: check&report if needed ...
     LSIG = FLCUR .OR. FLLEV
 
     DO IP = 1, np
@@ -4495,8 +4492,8 @@ CONTAINS
           END IF
           CAS_SIG(:,IP) = CAS
         ELSE IF (FreqShiftMethod .eq. 2) THEN
-            IF (IOBP_LOC(IP).eq.1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-              CALL PROP_FREQ_SHIFT_M2(IP, ISEA, CWNB_M2, DWNI_M2, DTG)
+          IF (IOBP_LOC(IP).eq.1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
+            CALL PROP_FREQ_SHIFT_M2(IP, ISEA, CWNB_M2, DWNI_M2, DTG)
 #ifdef W3_DEBUGFREQSHIFT
             WRITE(740+IAPROC,*) 'sum(CWNB_M2)=', sum(CWNB_M2)
 #endif
@@ -5534,13 +5531,10 @@ CONTAINS
     USE W3SRC4MD, only: W3SPR4
 #endif
 #ifdef W3_REF1
-      USE W3GDATMD, only: REFPARS
-#endif
-#ifdef W3_MEMCHECK
-    USE MallocInfo_m
+    USE W3GDATMD, only: REFPARS
 #endif
     implicit none
-    LOGICAL, INTENT(IN) :: LCALC 
+    LOGICAL, INTENT(IN) :: LCALC
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
     !
@@ -5712,7 +5706,7 @@ CONTAINS
     !
     !     geographical advection
     !
-    IF (IMEM == 1) THEN 
+    IF (IMEM == 1) THEN
       call calcARRAY_JACOBI_VEC(DTG,FACX,FACY,VGX,VGY)
     ENDIF
 
@@ -5977,10 +5971,10 @@ CONTAINS
             DO IK=1,NK
               DO ITH=1,NTH
                 ISP  = ITH + (IK-1)*NTH
-                IF (REFPARS(3) .LT. 0.5 .AND. IOBPD_LOC(ITH,IP) .EQ. 0 .AND. IOBPA_LOC(IP) .EQ. 0) THEN       
+                IF (REFPARS(3) .LT. 0.5 .AND. IOBPD_LOC(ITH,IP) .EQ. 0 .AND. IOBPA_LOC(IP) .EQ. 0) THEN
                   VA(ISP,IP) = VAOLD(ISP,IP) * IOBDP_LOC(IP) ! Restores reflected action spectra ...
                 ENDIF
-              ENDDO 
+              ENDDO
             ENDDO
 #endif
           ELSE
@@ -6048,7 +6042,7 @@ CONTAINS
       !
       ! Terminate via differences
       !
-      IF (B_JGS_TERMINATE_DIFFERENCE .and. INT(MOD(NBITER,10)) == 0) THEN ! Every 10th step check conv. 
+      IF (B_JGS_TERMINATE_DIFFERENCE .and. INT(MOD(NBITER,10)) == 0) THEN ! Every 10th step check conv.
         CALL MPI_ALLREDUCE(is_converged, itmp, 1, MPI_INT, MPI_SUM, MPI_COMM_WCMP, ierr)
         is_converged = itmp
         prop_conv = (DBLE(NX) - DBLE(is_converged))/DBLE(NX) * 100.
@@ -6163,7 +6157,7 @@ CONTAINS
         VA(ISP,IP)=MAX(ZERO, VA(ISP,IP))*IOBDP_LOC(IP)*DBLE(IOBPD_LOC(ITH,IP))
 #ifdef W3_REF1
         IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) THEN
-           VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values 
+          VA(ISP,IP) = VAOLD(ISP,IP) ! restores reflected boundary values
         ENDIF
 #endif
       END DO
@@ -6241,56 +6235,56 @@ CONTAINS
 #endif
 
       IF (FLSOU) THEN
-       IF (B_JGS_LIMITER) THEN
+        IF (B_JGS_LIMITER) THEN
 
-         DO ISP=1,NSPEC
-           IK   = 1 + (ISP-1)/NTH
-           SPEC(ISP) = VAOLD(ISP,JSEA)
-         ENDDO
+          DO ISP=1,NSPEC
+            IK   = 1 + (ISP-1)/NTH
+            SPEC(ISP) = VAOLD(ISP,JSEA)
+          ENDDO
 #ifdef W3_ST4
-         CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
-                   AMAX, U10(ISEA), U10D(ISEA),                           &
+          CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
+               AMAX, U10(ISEA), U10D(ISEA),                           &
 #ifdef W3_FLX5
-                  TAUA, TAUADIR, DAIR,                             &
+               TAUA, TAUADIR, DAIR,                             &
 #endif
-                  USTAR, USTDIR,                                  &
-                  TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+               USTAR, USTDIR,                                  &
+               TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 
-         DAM = 0.
-         DO IK=1, NK
-           DAM(1+(IK-1)*NTH) = 0.0081*0.1 / ( 2 * SIG(IK) * WN(IK,ISEA)**3 * CG(IK,ISEA)) * CG1(IK) / CLATS(ISEA)
-         END DO
-!
-         DO IK=1, NK
-           IS0    = (IK-1)*NTH
-           DO ITH=2, NTH
-             DAM(ITH+IS0) = DAM(1+IS0)
-           END DO
-         END DO
+          DAM = 0.
+          DO IK=1, NK
+            DAM(1+(IK-1)*NTH) = 0.0081*0.1 / ( 2 * SIG(IK) * WN(IK,ISEA)**3 * CG(IK,ISEA)) * CG1(IK) / CLATS(ISEA)
+          END DO
+          !
+          DO IK=1, NK
+            IS0    = (IK-1)*NTH
+            DO ITH=2, NTH
+              DAM(ITH+IS0) = DAM(1+IS0)
+            END DO
+          END DO
 
-         DAM2 = 0.
-         DO IK=1, NK
-           JAC2     = 1./TPI/SIG(IK)
-           FRLOCAL  = SIG(IK)*TPIINV
-           DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
-         END DO
-         DO IK=1, NK
-           IS0  = (IK-1)*NTH
-           DO ITH=2, NTH
-             DAM2(ITH+IS0) = DAM2(1+IS0)
-           END DO
-         END DO
+          DAM2 = 0.
+          DO IK=1, NK
+            JAC2     = 1./TPI/SIG(IK)
+            FRLOCAL  = SIG(IK)*TPIINV
+            DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
+          END DO
+          DO IK=1, NK
+            IS0  = (IK-1)*NTH
+            DO ITH=2, NTH
+              DAM2(ITH+IS0) = DAM2(1+IS0)
+            END DO
+          END DO
 
-         DO IK = 1, NK
-           DO ITH = 1, NTH
-             ISP = ITH + (IK-1)*NTH
-             newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
-             maxdac     = max(DAM(ISP),DAM2(ISP))
-             NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
-             VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
-           ENDDO 
-         ENDDO
+          DO IK = 1, NK
+            DO ITH = 1, NTH
+              ISP = ITH + (IK-1)*NTH
+              newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
+              maxdac     = max(DAM(ISP),DAM2(ISP))
+              NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
+              VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
+            ENDDO
+          ENDDO
         ENDIF ! B_JGS_LIMITER
       ENDIF  ! FLSOU
     END DO ! JSEA
@@ -6346,9 +6340,9 @@ CONTAINS
     !/    01-June-2018 : Origination.                        ( version 6.04 )
     !/
     !  1. Purpose : Explicit block solver
-    !  2. Method : It uses the n-scheme and the idea is to reduce latency due 
-    !              to DD communication and increase vectorization level on the 
-    !              single core 
+    !  2. Method : It uses the n-scheme and the idea is to reduce latency due
+    !              to DD communication and increase vectorization level on the
+    !              single core
     !  3. Parameters :
     !
     !     Parameter list
@@ -6396,14 +6390,14 @@ CONTAINS
     USE MPI, only : MPI_MIN
 #endif
 #ifdef W3_REF1
-      USE W3GDATMD, only: REFPARS
+    USE W3GDATMD, only: REFPARS
 #endif
 
-    IMPLICIT NONE 
-  
-    LOGICAL, INTENT(IN) :: LCALC 
+    IMPLICIT NONE
 
-    INTEGER, INTENT(IN) :: IMOD 
+    LOGICAL, INTENT(IN) :: LCALC
+
+    INTEGER, INTENT(IN) :: IMOD
 
     REAL, INTENT(IN)    :: FACX, FACY, DTG, VGX, VGY
 
@@ -6415,11 +6409,11 @@ CONTAINS
     REAL              :: LAMBDAX(NTH), LAMBDAY(NTH)
     REAL              :: DTMAX(NTH), DTMAXEXP(NTH), DTMAXOUT, DTMAXGL
     REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2, RD10, RD20
-    REAL              :: UOLD(NTH,NPA), U(NTH,NPA) 
+    REAL              :: UOLD(NTH,NPA), U(NTH,NPA)
 
     REAL, PARAMETER   :: ONESIXTH = 1.0/6.0
     REAL, PARAMETER   :: ZERO = 0.0
-    REAL, PARAMETER   :: THR = 1E-12
+    REAL, PARAMETER   :: THR = 1.0E-12
 
     INTEGER           :: IK, ISP, ITH, IE, IP, IT, IBI, NI(3), I1, I2, I3, JX, IERR, IP_GLOB, ISEA
     !
@@ -6428,32 +6422,32 @@ CONTAINS
     ! 2.  Calculate velocities ---------------- *
     !
     !   2a. Vectorized for all points looping over each wave number (maybe do a dirty save will be nice!)
-    !       
+    !
 
     DO IK = 1, NK
 
       IF (LCALC) THEN
 
-        DO IP = 1, NPA 
-          CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG(IP)) 
-        ENDDO 
+        DO IP = 1, NPA
+          CALL WAVNU3 (SIG(IK), DW(iplg(IP)), KSIG(IP), CGSIG(IP))
+        ENDDO
 
-        DO ITH = 1, NTH
-          DO IP = 1, NPA
+        DO IP = 1, NPA
+          DO ITH = 1, NTH
             ISEA = IPLG(IP)
             CXX(ITH,IP) = CGSIG(IP) * FACX * ECOS(ITH) / CLATS(ISEA)
             CYY(ITH,IP) = CGSIG(IP) * FACY * ESIN(ITH)
-          ENDDO 
+          ENDDO ! ith
           IF (FLCUR) THEN
-            DO IP = 1, NPA 
+            DO ITH = 1, NTH
               ISEA = IPLG(IP)
               IF (IOBP_LOC(IP) .GT. 0) THEN
                 CXX(ITH,IP) = CXX(ITH,IP) + FACX * CX(ISEA)/CLATS(ISEA)
                 CYY(ITH,IP) = CYY(ITH,IP) + FACY * CY(ISEA)
               ENDIF
-            ENDDO 
+            ENDDO !ith
           ENDIF
-        ENDDO 
+        ENDDO
 
         DO IE = 1, NE
 
@@ -6469,14 +6463,14 @@ CONTAINS
             KELEM1(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(1,IE) + LAMBDAY(ITH) * PDLIB_IEN(2,IE) ! K-Values - so called Flux Jacobians
             KELEM2(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(3,IE) + LAMBDAY(ITH) * PDLIB_IEN(4,IE)
             KELEM3(ITH,IE,IK) = LAMBDAX(ITH) * PDLIB_IEN(5,IE) + LAMBDAY(ITH) * PDLIB_IEN(6,IE)
-            KTMP(1)           = KELEM1(ITH,IE,IK) ! Extract 
+            KTMP(1)           = KELEM1(ITH,IE,IK) ! Extract
             KTMP(2)           = KELEM2(ITH,IE,IK)
             KTMP(3)           = KELEM3(ITH,IE,IK)
             NM(ITH,IE,IK)     = - 1.D0/MIN(-THR,SUM(MIN(ZERO,KTMP))) ! N-Values
             KELEM1(ITH,IE,IK) = MAX(ZERO,KTMP(1))
             KELEM2(ITH,IE,IK) = MAX(ZERO,KTMP(2))
             KELEM3(ITH,IE,IK) = MAX(ZERO,KTMP(3))
-          ENDDO 
+          ENDDO
 
           FL11  = CXX(:,I2) * PDLIB_IEN(1,IE) + CYY(:,I2) * PDLIB_IEN(2,IE) ! Weights for Simpson Integration
           FL12  = CXX(:,I3) * PDLIB_IEN(1,IE) + CYY(:,I3) * PDLIB_IEN(2,IE)
@@ -6501,16 +6495,16 @@ CONTAINS
         KKSUM = ZERO
         DO IE = 1, NE
           NI = INE(:,IE)
-          DO ITH = 1, NTH 
+          DO ITH = 1, NTH
             KKSUM(ITH,NI(1)) = KKSUM(ITH,NI(1)) + KELEM1(ITH,IE,IK)
             KKSUM(ITH,NI(2)) = KKSUM(ITH,NI(2)) + KELEM2(ITH,IE,IK)
             KKSUM(ITH,NI(3)) = KKSUM(ITH,NI(3)) + KELEM3(ITH,IE,IK)
           ENDDO
         END DO
 
-        DTMAXEXP = 1.E10 
+        DTMAXEXP = 1.E10
         DTMAX    = 1.E10
-        DO IP = 1, np
+        DO IP = 1, npa
           IF (IOBP_LOC(IP) .EQ. 1 .OR. FSBCCFL) THEN
             DO ITH = 1, NTH
               DTMAXEXP(ITH) = PDLIB_SI(IP)/MAX(THR,KKSUM(ITH,IP)*IOBDP_LOC(IP))
@@ -6534,41 +6528,41 @@ CONTAINS
           ITER(IK) = ABS(NINT(CFLXY))
         END IF
 
-        DO IP = 1, np
+        DO IP = 1, npa
           DTSI(IP) = DBLE(DTMAXGL)/DBLE(ITER(IK))/PDLIB_SI(IP) ! Some precalculations for the time integration.
         END DO
 
       END IF ! LCALC
 
-! Exact and convert Wave Action - should be some subroutine function or whatever 
-      DO ITH = 1, NTH
-        ISP = ITH + (IK-1) * NTH
-        DO IP = 1, NPA
-          U(ITH,IP)  = VA(ISP,IP) / CGSIG(IP) * CLATS(IPLG(IP))
-        ENDDO 
-      ENDDO 
-      UOLD = U
+      ! Exact and convert Wave Action - should be some subroutine function or whatever
+      do ip = 1,npa
+        isp = 0
+        do ith = 1,nth
+          isp = ith + (ik-1)*nth
+          u(ith,ip) = va(isp,ip) / cgsig(ip) * clats(iplg(ip))
+        enddo
+      enddo
+      CALL PDLIB_exchange2DREAL(U)
 
       DO IT = 1, ITER(IK)
         ST = ZERO
         DO IE = 1, NE
           NI  = INE(:,IE)
-          DO ITH = 1, NTH 
+          DO ITH = 1, NTH
             UTILDE(ITH)   = NM(ITH,IE,IK) * (FLALL1(ITH,IE,IK)*U(ITH,NI(1)) + FLALL2(ITH,IE,IK)*U(ITH,NI(2)) + FLALL3(ITH,IE,IK)*U(ITH,NI(3)))
             ST(ITH,NI(1)) = ST(ITH,NI(1)) + KELEM1(ITH,IE,IK) * (U(ITH,NI(1)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
             ST(ITH,NI(2)) = ST(ITH,NI(2)) + KELEM2(ITH,IE,IK) * (U(ITH,NI(2)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
             ST(ITH,NI(3)) = ST(ITH,NI(3)) + KELEM3(ITH,IE,IK) * (U(ITH,NI(3)) - UTILDE(ITH)) ! the 2nd term are the theta values of each node ...
-          ENDDO 
+          ENDDO
         END DO ! IE
-        DO IP = 1, NP
+        DO IP = 1, NPA
           DO ITH = 1, NTH
-            ISP = ITH + (IK-1) * NTH
             U(ITH,IP) = MAX(ZERO,U(ITH,IP)-DTSI(IP)*ST(ITH,IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
 #ifdef W3_REF1
             IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(ITH,IP) = UOLD(ITH,IP) ! restores reflected boundary values
 #endif
-          ENDDO 
-        ENDDO ! IE
+          ENDDO
+        ENDDO ! IP
 
         IF ( FLBPI ) THEN
           DO ITH = 1, NTH
@@ -6589,20 +6583,21 @@ CONTAINS
                 U(ITH,JX) = ( RD1*BBPI0(ISP,IBI) + RD2*BBPIN(ISP,IBI) ) / CGSIG(ISBPI(IBI)) * CLATS(ISBPI(IBI))
               END IF
             END DO
-          ENDDO 
+          ENDDO
         ENDIF ! FLBPI
 
         CALL PDLIB_exchange2DREAL(U)
 
       ENDDO ! IT
 
-! Exact and convert Wave Action 
-      DO ITH = 1, NTH
-        ISP = ITH + (IK-1) * NTH
-        DO IP = 1, NP
-          VA(ISP,IP)  = U(ITH,IP) * CGSIG(IP) / CLATS(IPLG(IP))
-        ENDDO
-      ENDDO
+      ! Exact and convert Wave Action
+      do ip = 1,npa
+        isp = 0
+        do ith = 1,nth
+          isp = ith + (ik-1)*nth
+          va(isp,ip) = u(ith,ip) * cgsig(ip) / clats(iplg(ip))
+        end do
+      end do
 
     ENDDO ! IK
 
@@ -6658,7 +6653,7 @@ CONTAINS
 #endif
     USE W3GDATMD, only:  NTH, NK
 #ifdef W3_PDLIB
-    USE YOWNODEPOOL, only: np
+    USE YOWNODEPOOL, only: np, npa
     USE YOWELEMENTPOOL, only: ne
 #endif
     IMPLICIT NONE
@@ -6666,9 +6661,9 @@ CONTAINS
 
     ALLOCATE(FLALL1(NTH,NE,NK), FLALL2(NTH,NE,NK), FLALL3(NTH,NE,NK))
     ALLOCATE(KELEM1(NTH,NE,NK), KELEM2(NTH,NE,NK), KELEM3(NTH,NE,NK))
-    ALLOCATE(NM(NTH,NE,NK), DTSI(NP)) 
+    ALLOCATE(NM(NTH,NE,NK), DTSI(NPA))
     ALLOCATE(ITER(NK))
-    
+
     !/ ------------------------------------------------------------------- /
     !/
   END SUBROUTINE BLOCK_SOLVER_EXPLICIT_INIT
@@ -7349,7 +7344,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: IMOD
 
     DEALLOCATE (                 &
-         ! GRIDS(IMOD)%TRIGP,    &
+                                ! GRIDS(IMOD)%TRIGP,    &
          GRIDS(IMOD)%SI,         &
          GRIDS(IMOD)%TRIA,       &
          GRIDS(IMOD)%CROSSDIFF,  &
@@ -7367,8 +7362,8 @@ CONTAINS
          GRIDS(IMOD)%POSI,       &
          GRIDS(IMOD)%I_DIAG,     &
          GRIDS(IMOD)%JA_IE,      &
-         !GRIDS(IMOD)%IOBP,      &
-         !GRIDS(IMOD)%IOBPD,     &
+                                !GRIDS(IMOD)%IOBP,      &
+                                !GRIDS(IMOD)%IOBPD,     &
          GRIDS(IMOD)%IOBDP,      &
          GRIDS(IMOD)%IOBPA  )
     !/
@@ -7426,27 +7421,27 @@ CONTAINS
     USE W3GDATMD, only: NSPEC, NTH, NK, NSEAL
     USE W3WDATMD, only: VA, VAOLD
     IMPLICIT NONE
-  
-    INTEGER, INTENT(IN)           :: FHNDL  
+
+    INTEGER, INTENT(IN)           :: FHNDL
     CHARACTER(LEN=*), INTENT(IN) :: ERGNAME
     REAL    :: SUMVA(NSEAL)
-    INTEGER :: JSEA 
+    INTEGER :: JSEA
 
     IF (LINIT_OUTPUT) THEN
       OPEN(FHNDL, FILE  = TRIM(ERGNAME), FORM = 'UNFORMATTED')
-      LINIT_OUTPUT = .false. 
-    ENDIF 
+      LINIT_OUTPUT = .false.
+    ENDIF
 
     RTIME = RTIME + 1.
 
-    DO JSEA = 1, NSEAL 
+    DO JSEA = 1, NSEAL
       SUMVA(JSEA) = SUM(VA(:,JSEA))
-    ENDDO 
+    ENDDO
 
-    WRITE(FHNDL)  RTIME  
+    WRITE(FHNDL)  RTIME
     WRITE(FHNDL) (SUMVA(JSEA), SUMVA(JSEA), SUMVA(JSEA), JSEA = 1, NSEAL)
-    
-  END SUBROUTINE
+
+  END SUBROUTINE ERGOUT
   !/ ------------------------------------------------------------------- /
   SUBROUTINE JACOBI_INIT(IMOD)
     !/

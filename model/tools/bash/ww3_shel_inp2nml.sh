@@ -878,7 +878,7 @@ cat >> $nmlfile << EOF
 !  T  T  2     1   HS         HS    Wave height.
 !  T  T  2     2   WLM        LM    Mean wave length.
 !  T  T  2     3   T02        T02   Mean wave period (Tm0,2).
-!  T  T  2     4   TM10       TM10  Mean wave period (Tm-1,0).
+!  T  T  2     4   TM10       T0M1  Mean wave period (Tm-1,0).
 !  T  T  2     5   T01        T01   Mean wave period (Tm0,1).
 !  T  T  2     6   FP0        FP    Peak frequency.
 !  T  T  2     7   THM        DIR   Mean wave direction.
@@ -893,6 +893,7 @@ cat >> $nmlfile << EOF
 !  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 !  F  T  2    17   WBT        WBT   Domiant wave breaking probability bT
 !  F  F  2    18   FP0        TP    Peak period (from peak freq)
+!  F  F  2    19   WNMEAN     WNM   Mean wavenumber
 !   -------------------------------------------------
 !        3                          Spectral Parameters (first 5)
 !   -------------------------------------------------
@@ -912,7 +913,7 @@ cat >> $nmlfile << EOF
 !  T  T  4     5   PSI        PSPR  Partitioned mean directional spread.
 !  T  T  4     6   PWS        PWS   Partitioned wind sea fraction.
 !  T  T  4     7   PTHP0      PDP   Peak wave direction of partition.
-!  T  T  4     8   PQP        PQP   Goda peakdedness parameter of partition.
+!  T  T  4     8   PQP        PQP   Goda peakedness parameter of partition.
 !  T  T  4     9   PPE        PPE   JONSWAP peak enhancement factor of partition.
 !  T  T  4    10   PGW        PGW   Gaussian frequency width of partition.
 !  T  T  4    11   PSW        PSW   Spectral width of partition.
@@ -965,10 +966,10 @@ cat >> $nmlfile << EOF
 !   -------------------------------------------------
 !  F  F  8     1   MSS[X,Y]   MSS   Mean square slopes
 !  F  F  8     2   MSC[X,Y]   MSC   Spectral level at high frequency tail
-!  F  F  8     3   WL02[X,Y]  WL02  East/X North/Y mean wavelength compon
-!  F  F  8     4   ALPXT      AXT   Correl sea surface gradients (x,t)
-!  F  F  8     5   ALPYT      AYT   Correl sea surface gradients (y,t)
-!  F  F  8     6   ALPXY      AXY   Correl sea surface gradients (x,y)
+!  F  F  8     3   MSSD       MSD   Slope direction
+!  F  F  8     4   MSCD       MCD   Tail slope direction
+!  F  F  8     5   QP         QP    Goda peakedness parameter
+!  F  F  8     6   QKK        QKK   Wavenumber peakedness
 !   -------------------------------------------------
 !        9                          Numerical diagnostics
 !   -------------------------------------------------

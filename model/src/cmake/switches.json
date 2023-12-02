@@ -264,7 +264,7 @@
             },
             {
                 "name": "STAB3",
-                "requires": ["ST3", "ST4"]
+                "requires_any": ["ST3", "ST4"]
             }
         ]
     },
@@ -756,16 +756,16 @@
        	    }
         ]
     },
-    {   
-        "name": "ddlib", 
+    {
+        "name": "ddlib",
         "num_switches": "upto1",
         "description": "domain decomposition library",
         "valid-options": [
-            {   
+            {
                 "name": "METIS",
                 "requires": ["PDLIB"]
-            },  
-            {   
+            },
+            {
                 "name": "SCOTCH",
                 "requires": ["PDLIB"]
             }
@@ -811,6 +811,16 @@
         "valid-options": [
             {
                 "name": "B4B"
+            }
+        ]
+    },
+    {
+        "name": "ascii",
+        "num_switches": "upto1",
+        "description": "ASCII output for binary .ww3 file",
+        "valid-options": [
+            {
+                "name": "ASCII"
             }
         ]
     }
