@@ -232,12 +232,12 @@ CONTAINS
     !
     ! 0.  Initialzations ------------------------------------------------- /
     !     Never touch this 4 lines below ... otherwise my exceptionhandling will not work.
+    S = 0.
+    D = 0.
 
     THR = DBLE(1.E-15)
     IF (SUM(A) .LT. THR) RETURN
 
-    S = 0.
-    D = 0.
     IWB = 1
     !
 #ifdef W3_T

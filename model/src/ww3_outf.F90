@@ -159,7 +159,7 @@ PROGRAM W3OUTF
        ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
        PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
        PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &
-       PTHP0, PQP, PSW, PPE, PGW, QP,              &
+       PTHP0, PQP, PSW, PPE, PGW, QP, QKK,         &
        TAUOX, TAUOY, TAUWIX,BHD,                   &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
@@ -2196,13 +2196,24 @@ CONTAINS
             !
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.01
+            FSC    = 0.001
             UNITS  = '1'
             ENAME  = '.qp'
             IF ( ITYPE .EQ. 4 ) THEN
               XS1    = QP
             ELSE
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QP, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.05
+            UNITS  = '1'
+            ENAME  = '.qkk'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = QKK
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
             ENDIF
             !
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN

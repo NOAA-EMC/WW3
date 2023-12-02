@@ -187,6 +187,7 @@ MODULE W3ADATMD
   !      MSSD      R.A.  Public   Direction of MSSX
   !      MSCD      R.A.  Public   Direction of MSCX
   !      QP        R.A.  Public   Goda peakedness parameter.
+  !      QKK       R.A.  Public   Spectral bandwidth (De Carlo et al. 2023)
   !
   !      DTDYN     R.A.  Public   Mean dynamic time step (raw).
   !      FCUT      R.A.  Public   Cut-off frequency for tail.
@@ -474,9 +475,9 @@ MODULE W3ADATMD
     ! Output fields group 8)
     !
     REAL, POINTER         ::  MSSX(:),  MSSY(:),  MSSD(:),        &
-         MSCX(:),  MSCY(:),  MSCD(:)
+         MSCX(:),  MSCY(:),  MSCD(:), QKK(:)
     REAL, POINTER         ::  XMSSX(:), XMSSY(:), XMSSD(:),       &
-         XMSCX(:), XMSCY(:), XMSCD(:)
+         XMSCX(:), XMSCY(:), XMSCD(:), XQKK(:)
     !
     ! Output fields group 9)
     !
@@ -612,7 +613,7 @@ MODULE W3ADATMD
        BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
   !
   REAL, POINTER           :: MSSX(:), MSSY(:), MSSD(:),           &
-       MSCX(:), MSCY(:), MSCD(:)
+       MSCX(:), MSCY(:), MSCD(:), QKK(:)
   !
   REAL, POINTER           :: DTDYN(:), FCUT(:), CFLXYMAX(:),      &
        CFLTHMAX(:), CFLKMAX(:)
@@ -1264,7 +1265,7 @@ CONTAINS
     ALLOCATE ( WADATS(IMOD)%MSSX(NSEALM), WADATS(IMOD)%MSSY(NSEALM), &
          WADATS(IMOD)%MSCX(NSEALM), WADATS(IMOD)%MSCY(NSEALM), &
          WADATS(IMOD)%MSSD(NSEALM), WADATS(IMOD)%MSCD(NSEALM), &
-         STAT=ISTAT )
+         WADATS(IMOD)%QKK(NSEALM), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
     WADATS(IMOD)%MSSX   = UNDEF
@@ -1273,6 +1274,7 @@ CONTAINS
     WADATS(IMOD)%MSCX   = UNDEF
     WADATS(IMOD)%MSCY   = UNDEF
     WADATS(IMOD)%MSCD   = UNDEF
+    WADATS(IMOD)%QKK    = UNDEF
     call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 8')
     !
     ! 9) Numerical diagnostics
@@ -2273,6 +2275,12 @@ CONTAINS
       ALLOCATE ( WADATS(IMOD)%XQP(1) )
     END IF
     !
+    IF ( OUTFLAGS( 8,  6) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XQKK(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XQKK(1) )
+    END IF
+    !
     WADATS(IMOD)%XMSSX   = UNDEF
     WADATS(IMOD)%XMSSY   = UNDEF
     WADATS(IMOD)%XMSSD   = UNDEF
@@ -2280,6 +2288,7 @@ CONTAINS
     WADATS(IMOD)%XMSCY   = UNDEF
     WADATS(IMOD)%XMSCD   = UNDEF
     WADATS(IMOD)%XQP(1)  = UNDEF
+    WADATS(IMOD)%XQKK    = UNDEF
     !
     IF ( OUTFLAGS( 9, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XDTDYN(NXXX), STAT=ISTAT )
@@ -2893,6 +2902,7 @@ CONTAINS
       MSCX   => WADATS(IMOD)%MSCX
       MSCY   => WADATS(IMOD)%MSCY
       MSCD   => WADATS(IMOD)%MSCD
+      QKK    => WADATS(IMOD)%QKK
       !
       DTDYN    => WADATS(IMOD)%DTDYN
       FCUT     => WADATS(IMOD)%FCUT
@@ -3231,6 +3241,7 @@ CONTAINS
       MSCX   => WADATS(IMOD)%XMSCX
       MSCY   => WADATS(IMOD)%XMSCY
       MSCD   => WADATS(IMOD)%XMSCD
+      QKK    => WADATS(IMOD)%XQKK
       !
       DTDYN    => WADATS(IMOD)%XDTDYN
       FCUT     => WADATS(IMOD)%XFCUT

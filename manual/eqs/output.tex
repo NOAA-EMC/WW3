@@ -12,9 +12,9 @@ with definitions may be found in the sample {\code ww3\_shel.inp} file,
 in \para\ref{sec:ww3shel}. That input file also provides a list of flags  
 indicating if output parameters are available in different field
 output file types (ASCII, grib, igrads, NetCDF). 
-For any details on how these parameters are computed, the user may read the code of the  {\code w3iogo} routine, in the {\code w3iogomd.ftn} module. 
+For any details on how these parameters are computed, the user may read the code of the  {\code w3iogo} routine, in the {\code w3iogomd.F90} module. 
 
-Selection of field outputs in  {\code ww3\_shel.inp} is most easily performed by providing a list of the 
+Selection of field outputs in {\code ww3\_shel.nml} or {\code ww3\_shel.inp} is most easily performed by providing a list of the 
 requested parameters, for example, {\textbf HS DIR SPR}  will request the calculation of significant wave height, mean direction and directional spread. These will thus be stored in the {\code out\_grd.XX} file and can be post-processed, for example in NetCDF using   {\code ww3\_ouf}. Examples are given in \para\ref{sec:ww3multi} and
 \para\ref{sec:ww3ounf}. The names for these namelists are the bold names below, for 
 example \textbf{HS}. 
@@ -25,6 +25,9 @@ in the first two columns in the field output parameter table within the example 
 the internal WAVEWATCH III code tags, the output tags (names used is ASCII 
 file extensions, NetCDF variable names and namelist-based selection (see 
 also \para\ref{sec:ww3ounf}), and the long parameter name/definition.
+
+When the result is not overly sensitive to the contribution of the unresolved part of the spectrum (for $f<f_{NK}$), the contribution of the tail is parameterized assuming a power law decay of the spectrum, by default $E(f,\theta) = E(f_{NK},\theta) (f_{NK}/f)^{-5}$, for some parameters this is either unnecessary or misleading, and the integrals are computed only up to $f_{NK}$. 
+
 
 Finally we note that in all definitions the frequency is the \emph{relative} frequency. Thus, in the presence of currents, these can only be compared to drifting measurement data or data obtained in wavenumber and converted to frequency. Comparison to fixed instrument data requires the use of the full spectrum and proper conversion to the fixed reference frame.
 
@@ -300,8 +303,12 @@ The number $n$ and the central wavenumbers for the partitions $k_n$ are `run-tim
 \item \textbf{MSD} Direction of the maximum slope variance mss$_u$
 \item \textbf{MCD} Spectral tail direction
 \item \textbf{QP}  Peakedness parameter \citep{art:G70}
-      \begin{equation} Q_p = \frac{2}{E^2} \int_0^{2\pi} \int_0^\infty
-      \sigma\:F(\sigma,\theta)^2\:d\sigma\:d\theta \: \label{eq:qp}
+      \begin{equation} Q_p = \frac{2}{E^2} \int_0^{f_{NK}} f \left( \int_0^{2\pi} 
+      F(f,\theta) \:\rd \theta \right)^2 \: \rd  f \: \label{eq:qp}
+      \end{equation}
+\item \textbf{QKK}  wavenumber peakedness \citep{art:DC23}
+      \begin{equation} Q_{kk} = \frac{1}{E^2} \int_0^{f_{NK}} \int_0^{2\pi} 
+      0.5 \left[ A(k,\theta)+ A(k,\theta+\pi)\right]^2 \frac{\sigma^2}{k C_g} \:\rd \theta  \: \rd  \sigma \: \label{eq:qkk}
       \end{equation}
 \end{list}
 
