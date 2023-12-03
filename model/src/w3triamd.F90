@@ -387,7 +387,7 @@ CONTAINS
   !> @author A. Roland
   !> @date   06-Jun-2018
   !>
-  SUBROUTINE READGR3(NDS,FNAME)
+  SUBROUTINE READ2DM(NDS,FNAME)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -401,7 +401,7 @@ CONTAINS
     !
     !  1. Purpose :
     !
-    !      Reads triangle and unstructured grid information from GR3 files
+    !      Reads triangle and unstructured grid information from 2DM files
     !      Calls the subroutines needed to compute grid connectivity
     !
     !  2. Method :
@@ -493,20 +493,34 @@ CONTAINS
     ! read number of nodes and nodes from Gmsh files
     !
     READ(NDS,*)
-    READ(NDS,*, IOSTAT = ISTAT) NELTS, NODES
-    ALLOCATE(XYBTMP1(3,NODES))
-    DO I= 1, NODES
-      READ(NDS,*) j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
-    END DO
-    !
-    ! read number of elements and elements from Gmsh files
-    !
+    NODES = 0 
+    NELTS = 0 
+    DO 
+      READ(NDS,*, IOSTAT = ISTAT) CHTMP
+      IF (CHTMP(1:3) .EQ. 'E3T') THEN
+        NELTS = NELTS + 1
+      ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
+        NODES = NODES + 1
+      ENDIF 
+      WRITE(*,*) ISTAT, CHTMP
+      IF (ISTAT .NE. 0) EXIT 
+    ENDDO 
+    REWIND(NDS) 
+
+    !WRITE(*,*) NODES, NELTS 
+ 
+    READ(NDS,*)
     ALLOCATE(TRIGPTMP1(3,NELTS))
     DO I= 1, NELTS
-      READ(NDS,*) j, j, TRIGPTMP1(:,I)
+      READ(NDS,*) LINE, j, TRIGPTMP1(:,I)
+    END DO
+
+    ALLOCATE(XYBTMP1(3,NODES))
+    DO I= 1, NODES
+      READ(NDS,*) LINE, j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
     END DO
     !
-    ! organizes the grid data structure
+    ! read number of elements and elements from 2DM files
     !
     NTRI = NELTS
 
@@ -591,7 +605,7 @@ CONTAINS
 #endif
     !
     CLOSE(NDS)
-  END SUBROUTINE READGR3
+  END SUBROUTINE READ2DM
   !/--------------------------------------------------------------------/
 
   !>
@@ -733,7 +747,7 @@ CONTAINS
   !> @date
   !>
 
-  SUBROUTINE READGR3_IOBP(NDS,FNAME)
+  SUBROUTINE READ2DM_IOBP(NDS,FNAME)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -821,7 +835,7 @@ CONTAINS
     !/
     INTEGER                            :: i,j,k, NODES, istat, nelts
     LOGICAL                            :: lfile_exists
-    CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
+    CHARACTER(30)                      :: chtmp, line
     DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:)
 
     INQUIRE(FILE=FNAME, EXIST=lfile_exists)
@@ -831,17 +845,33 @@ CONTAINS
     ! read number of nodes and nodes from Gmsh files
     !
     READ(NDS,*)
-    READ(NDS,*, IOSTAT = ISTAT) NELTS, NODES    
+    NODES = 0
+    NELTS = 0
+    DO
+      READ(NDS,*, IOSTAT = ISTAT) CHTMP
+      IF (CHTMP(1:3) .EQ. 'E3T') THEN
+        NELTS = NELTS + 1
+      ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
+        NODES = NODES + 1
+      ENDIF
+      WRITE(*,*) ISTAT, CHTMP
+      IF (ISTAT .NE. 0) EXIT
+    ENDDO
+    REWIND(NDS)
+
     ALLOCATE(XYBTMP1(3,NODES))
+    READ(NDS,*)
+    DO I= 1, NELTS
+      READ(NDS,*) LINE
+    ENDDO 
     DO I= 1, NODES
-      READ(NDS,*) j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
+      READ(NDS,*) LINE, j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
       IF (INT(XYBTMP1(3,I)) .EQ. 2) IOBP(I) = 2
       IF (INT(XYBTMP1(3,I)) .EQ. 3) IOBP(I) = 3
-      write(*,*) I, IOBP(I)
     END DO
     !
     CLOSE(NDS)
-  END SUBROUTINE READGR3_IOBP
+  END SUBROUTINE READ2DM_IOBP
   !/--------------------------------------------------------------------/
 
   !>
@@ -3220,7 +3250,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPFS,                        &
          NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
          ECOS, ESIN, IEN, NTRI, TRIGP,               &
-         IOBP,IOBPD, IOBPA, LGR3,                    &
+         IOBP,IOBPD, IOBPA, L2DM,                    &
 #ifdef W3_REF1
          REFPARS, REFLC, REFLD,                      &
 #endif
@@ -3270,10 +3300,10 @@ CONTAINS
 
     CALL SET_IOBP(ITMP, IOBP)
 
-    IF (LGR3) THEN
+    IF (L2DM) THEN
 !AR: 2do - error handling ...
-      FNAME = 'meshbnd.gr3'
-      CALL READGR3_IOBP(23456,FNAME)
+      FNAME = 'meshbnd.2dm'
+      CALL READ2DM_IOBP(23456,FNAME)
     ELSE
       FNAME = 'meshbnd.msh'
       CALL READMSH_IOBP(23456,FNAME)

@@ -35,7 +35,7 @@
 ! -------------------------------------------------------------------- !
 &GRID_NML
   GRID%NAME         =  'LIMON'
-  GRID%NML          =  '../input/namelists_LIMON.nml'
+  GRID%NML          =  'namelists_pdlib.nml'
   GRID%TYPE         =  'UNST'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
@@ -48,7 +48,7 @@
 ! -------------------------------------------------------------------- !
 &UNST_NML
   UNST%SF          =  -1.
-  UNST%FILENAME    =  './../input/limon_ll.msh'
+  UNST%FILENAME    =  'limon_ll.2dm'
   UNST%IDLA      =  4
   UNST%FORMAT    =  '(20f10.2)'
 /
