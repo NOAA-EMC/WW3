@@ -1132,8 +1132,10 @@ CONTAINS
     !/ End of W3IOPE ----------------------------------------------------- /
     !/
   END SUBROUTINE W3IOPE
-  !/ ------------------------------------------------------------------- /
+
+  !> Read or write point output.
   !>
+<<<<<<< HEAD
   !> Read point output in netCDF format.
   !>
   !> @param[out] IOTST Test indictor for reading.
@@ -1587,6 +1589,11 @@ CONTAINS
   !> This subroutine can either read or write the point output file,
   !> depending on the value of the first parameter.
   !>
+=======
+  !> This subroutine can either read or write the point output file,
+  !> depending on the value of the first parameter.
+  !>
+>>>>>>> develop
   !> When reading, the entire file is read with one call to this
   !> subroutine.
   !>
@@ -1602,7 +1609,7 @@ CONTAINS
   !> Size (bytes) | Type | Variable | Meaning
   !> -------------|------|----------|--------
   !> 40 | character*40 | IDTST | ID string
-  !> 4 | integer | VERTST | version of test?
+  !> 4 | integer | VERTST | Model definition file version number
   !> 4 | integer | NK | Dimension of frequency
   !> 4 | integer | MTH | Directionality of the frequency
   !> 4 | integer | NOPTS | Number of output points.
@@ -1623,7 +1630,7 @@ CONTAINS
   !> 4 | real | TAUAO | (W3_FLX5 only) Interpolated atmospheric stresses.
   !> 4 | real | TAUDO | (W3_FLX5 only) Interpolated atmospheric stress directions.
   !> 4 | real | DAIRO | (W3_FLX5 only) Interpolated rho atmosphere.
-  !> 4 | real | ZET_SETO | (W3_SETUP only) ???
+  !> 4 | real | ZET_SETO | (W3_SETUP only) Used for wave setup.
   !> 4 | real | ASO | Interpolated air-sea temperature difference
   !> 4 | real | CAO | Interpolated current speeds.
   !> 4 | real | CDO | Interpolated current directions.

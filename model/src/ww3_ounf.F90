@@ -1815,9 +1815,6 @@ CONTAINS
             ! Wave to sea ice energy flux
           ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
             IF (NCVARTYPEI.EQ.3) NCVARTYPE=4
-            DO ISEA=1, NSEA
-              PHIOC(ISEA)=MIN(3000.,PHIOC(ISEA))
-            END DO
             CALL S2GRID(PHICE(1:NSEA), X1)
             !
             ! Partitioned surface stokes drift
