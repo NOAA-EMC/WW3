@@ -1133,9 +1133,6 @@ CONTAINS
     !/
   END SUBROUTINE W3IOPE
 
-  !> Read or write point output.
-  !>
-<<<<<<< HEAD
   !> Read point output in netCDF format.
   !>
   !> @param[out] IOTST Test indictor for reading.
@@ -1589,11 +1586,6 @@ CONTAINS
   !> This subroutine can either read or write the point output file,
   !> depending on the value of the first parameter.
   !>
-=======
-  !> This subroutine can either read or write the point output file,
-  !> depending on the value of the first parameter.
-  !>
->>>>>>> develop
   !> When reading, the entire file is read with one call to this
   !> subroutine.
   !>
