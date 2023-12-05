@@ -825,6 +825,8 @@ CONTAINS
     USE CONSTANTS, ONLY: TPI
     USE W3GDATMD,  ONLY: SIG, NK ,  NTH , DTH, XFR, FR1, GQTHRSAT, GQAMP
 
+    IMPLICIT NONE
+
     REAL, intent(in) :: A(NTH,NK), CG(NK), WN(NK)
     REAL, intent(in) :: DEPTH
     REAL, intent(out) :: TSTOTn(NTH,NK), TSDERn(NTH,NK)
@@ -883,8 +885,8 @@ CONTAINS
     !     Gamma_max=1.3 (JFMAX>NF) TO OBTAIN IMPROVED RESULTS
     !     Note by Fabrice Ardhuin: this appears to give the difference in tail benaviour with Gerbrant's WRT
     !=======================================================================
-    JFMIN= 1-INT(LOG(1.0D0)/LOG(RAISF))
-    JFMAX=NF+INT(LOG(1.3D0)/LOG(RAISF))
+    JFMIN=MAX(1-INT(LOG(1.0D0)/LOG(RAISF)),1)
+    JFMAX=MIN(NF+INT(LOG(1.3D0)/LOG(RAISF)),NK)
     !
     !=======================================================================
     !     COMPUTES THE SPECTRUM THRESHOLD VALUES (BELOW WHICH QNL4 IS NOT
@@ -1065,7 +1067,7 @@ CONTAINS
             TEMP=(TB_TPM(IQ_OM2,JT1,JF1)*(( F(JT1P2P,JFM2)*CF2 *F(JT1P3M,JFM3)*CF3)* &
                  (F(JT,JFM0    )*CF0*TB_V14(JF1)+F(JT1P  ,JFM1)*CF1) &
                  -SP0*SP1P*(SP1P2P*V3_4+SP1P3M*V2_4))+T_2M3P*(AUX05*AUX01-AUX02*AUX06)) *CP0
-            WRITE(995,'(5I3,3E12.3)') ICONF,JF,JT, F(JT,JFM0)
+            WRITE(995,'(3I3,3E12.3)') ICONF,JF,JT, F(JT,JFM0)
             TEMP=(Q_2P3M+Q_2M3P) *CP1
             WRITE(995,'(5I3,3E12.3)') ICONF,JF,JT,JT1P,  JFM1,AUX00 *CP1, F(JT1P,JFM1),TSTOT(JT1P,JFM1)
             WRITE(995,'(5I3,3E12.3)') ICONF,JF,JT,JT1P2P,JFM2,-Q_2P3M*CP2,F(JT1P2P,JFM2),TSTOT(JT1P2P,JFM2)
@@ -1219,6 +1221,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: GRAV
     !
+    IMPLICIT NONE
+    
     DOUBLE PRECISION, INTENT(IN)    :: XK1   , YK1   , XK2   , YK2
     DOUBLE PRECISION, INTENT(IN)    :: XK3   , YK3
     DOUBLE PRECISION, INTENT(IN)    :: XK4   , YK4
@@ -1305,6 +1309,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !.....VARIABLES IN ARGUMENT
     !     """"""""""""""""""""
+    IMPLICIT NONE
     INTEGER ,         INTENT(IN)    :: NPOIN
     DOUBLE PRECISION ,INTENT(INOUT) :: W_LEG(NPOIN) , X_LEG(NPOIN)
     !
@@ -1552,6 +1557,7 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'INSNLGQM')
 #endif
+    IMPLICIT NONE
     !.....LOCAL VARIABLES
     INTEGER           JF    , JT    , JF1   , JT1   , NF1P1 , IAUX , NT , NF , IK
     INTEGER           IQ_TE1 , IQ_OM2 , LBUF , DIMBUF , IQ_OM1 , NQ_TE1 , NCONFM
@@ -2084,10 +2090,7 @@ CONTAINS
       AUX=0.0D0
       DO JT1=1,GQNT1
         DO IQ_OM2=1,GQNQ_OM2
-          AAA=TB_FAC(IQ_OM2,JT1,JF1)*TB_TPM(IQ_OM2,JT1,JF1)
-          IF (AAA.GT.AUX) AUX=AAA
-          CCC=TB_FAC(IQ_OM2,JT1,JF1)*TB_TMP(IQ_OM2,JT1,JF1)
-          IF (CCC.GT.AUX) AUX=CCC
+          AUX=MAX(AUX,TB_FAC(IQ_OM2,JT1,JF1)*TB_TPM(IQ_OM2,JT1,JF1),TB_FAC(IQ_OM2,JT1,JF1)*TB_TMP(IQ_OM2,JT1,JF1))
         ENDDO
       ENDDO
       MAXCLA(JF1)=AUX
@@ -2099,6 +2102,7 @@ CONTAINS
     DO JF1=1,GQNF1
       IF (MAXCLA(JF1).GT.AUX) AUX=MAXCLA(JF1)
     ENDDO
+
     TEST1=SEUIL1*AUX
     !
     !.....Set to zero the coupling coefficients not used
@@ -2128,7 +2132,9 @@ CONTAINS
     !
     !..... counts the fraction of the eliminated configurations
     ELIM=(1.D0-DBLE(NCONF)/DBLE(NCONFM))*100.D0
-    !      WRITE(994,*) 'NCONF:',NCONF,ELIM
+#ifdef W3_TGQM
+    WRITE(994,*) 'NCONF, ELIM FRACTION:',NCONF,ELIM
+#endif
   END SUBROUTINE INSNLGQM
   !/
   !/ End of module W3SNL1MD -------------------------------------------- /
