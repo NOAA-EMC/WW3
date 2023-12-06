@@ -111,7 +111,8 @@ jobs:
           make -j2 VERBOSE=1
           ls -l
           pwd
-          ./ww3_grid
+          ./bin/ww3_grid
+          ls -l
           ctest --verbose --output-on-failure --rerun-failed
           gcovr --root .. -v  --html-details --exclude ../model/tests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
         
