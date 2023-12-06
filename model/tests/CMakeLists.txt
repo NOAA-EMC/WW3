@@ -31,9 +31,8 @@ endfunction()
 
 # Copy test data files that are in the repo to the build directory.
 copy_test_data(out_pnt.ww3)
-copy_test_data_2(io_mod_def.ww3 mod_def.ww3)
 copy_test_data(switch.io)
-copy_test_data(ww3_outp.inp)
+copy_test_data_2(ww3_grid.inp ../ww3_grid.inp)
 
 # Build and run the tests.
 unit_test(test_io_points_bin)
