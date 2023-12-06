@@ -6,6 +6,7 @@
 # Some very small test files may be committed to the repo. This
 # function copies such a data file to the build directory.
 function(copy_test_data name)
+  message(STATUS "Copying ${name} to ${CMAKE_CURRENT_BINARY_DIR}")
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/data/${name}"
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
@@ -14,6 +15,7 @@ endfunction()
 # Some very small test files may be committed to the repo. This
 # function copies such a data file to the build directory.
 function(copy_test_data_2 srcname destname)
+  message(STATUS "Copying ${srcname} to ${CMAKE_CURRENT_BINARY_DIR}/${destname}")
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/data/${srcname}"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)

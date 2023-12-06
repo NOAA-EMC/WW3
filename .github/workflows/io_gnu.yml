@@ -109,10 +109,10 @@ jobs:
           which ncdump
           cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/model/tests/data/switch.io -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" -DCMAKE_C_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" ..
           make -j2 VERBOSE=1
-          ls -l
           pwd
           ./bin/ww3_grid
           ls -l
+          ls -l model/test/data
           ctest --verbose --output-on-failure --rerun-failed
           gcovr --root .. -v  --html-details --exclude ../model/tests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
         
