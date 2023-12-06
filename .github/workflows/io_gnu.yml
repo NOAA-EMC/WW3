@@ -113,6 +113,8 @@ jobs:
           ls -l
           ls -l model/tests
           ./bin/ww3_grid
+          ls -l
+          mv mod_def.ww3 model/tests
           ctest --verbose --output-on-failure --rerun-failed
           gcovr --root .. -v  --html-details --exclude ../model/tests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
         
