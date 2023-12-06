@@ -17,9 +17,9 @@ endfunction()
 function(copy_test_data_2 srcname destname)
   message(STATUS "Copying ${srcname} to ${CMAKE_CURRENT_BINARY_DIR}/${destname}")
   file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/data/${srcname}"
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+    DESTINATION "${CMAKE_BINARY_DIR}"
     FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ)
-  file(RENAME "${CMAKE_CURRENT_BINARY_DIR}/${srcname}" "${CMAKE_CURRENT_BINARY_DIR}/${destname}")
+  file(RENAME "${CMAKE_BINARY_DIR}/${srcname}" "${CMAKE_BINARY_DIR}/${destname}")
 endfunction()
 
 # Function to build and run a test.
@@ -32,7 +32,7 @@ endfunction()
 # Copy test data files that are in the repo to the build directory.
 copy_test_data(out_pnt.ww3)
 copy_test_data(switch.io)
-copy_test_data_2(ww3_grid.inp ../ww3_grid.inp)
+copy_test_data_2(ww3_grid.inp ww3_grid.inp)
 
 # Build and run the tests.
 unit_test(test_io_points_bin)
