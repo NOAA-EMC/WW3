@@ -62,8 +62,6 @@ EOF
   then
     # If no other h, assuming Hera
     batchq='slurm'
-    basemodcomp='intel/2022.1.2'
-    basemodmpi='impi/2022.1.2'
     spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-noavx512/install/modulefiles/Core'
     modcomp='stack-intel/2021.5.0'
     modmpi='stack-intel-oneapi-mpi/2021.5.1'
@@ -72,8 +70,6 @@ EOF
   elif [ $isorion ]
   then
     batchq='slurm'
-    basemodcomp='intel/2022.1.2'
-    basemodmpi='impi/2022.1.2'
     spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
     modcomp='stack-intel/2022.0.2'
     modmpi='stack-intel-oneapi-mpi/2021.5.1'
@@ -94,7 +90,7 @@ EOF
 
 # 1.a Computer/ user dependent set up
 
-  echo '#!/bin/sh --login'                                   > matrix.head
+  echo '#!/bin/sh'                                           > matrix.head
   echo ' '                                                  >> matrix.head
   if [ $batchq = "slurm" ] && [ $isorion ]
   then
