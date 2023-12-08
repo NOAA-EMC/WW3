@@ -22,21 +22,30 @@ usage ()
 {
   cat 2>&1 << EOF
 
-  Usage: $myname model_dir
+  Usage: $myname model_dir compiler 
   Required:
     model_dir : path to model dir of WW3 source
+  Optional: 
+    compiler : intel (default) or gnu 
 EOF
 }
-
 
 # Get required arguments
   if [ ! $# = 0 ]
   then
     main_dir="$1" ; shift
+    if [ ! $# = 0 ]
+    then
+      compiler="$1"; shift 
+    else 
+      compiler='intel'
+    fi 
   else
     usage
     exit 1
   fi
+ 
+  
 
 # Convert main_dir to absolute path
   main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
@@ -58,23 +67,68 @@ EOF
 # to define headers etc (default to original version if empty)
   ishera=`hostname | grep hfe`
   isorion=`hostname | grep Orion`
+  ishercules=`hostname | grep hercules`
   if [ $ishera ]
   then
-    # If no other h, assuming Hera
     batchq='slurm'
-    spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-noavx512/install/modulefiles/Core'
-    modcomp='stack-intel/2021.5.0'
-    modmpi='stack-intel-oneapi-mpi/2021.5.1'
-    metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
-    modcmake='cmake/3.23.1'
+    if [ $compiler = "intel" ]
+    then 
+      spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-noavx512/install/modulefiles/Core'
+      modcomp='stack-intel/2021.5.0'
+      modmpi='stack-intel-oneapi-mpi/2021.5.1'
+      metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+      modcmake='cmake/3.23.1'
+    elif [ $compiler = "gnu" ]
+    then 
+      spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-noavx512/install/modulefiles/Core'
+      modcomp='stack-gcc/9.2.0'
+      spackstackpath2='/scratch1/NCEPDEV/jcsda/jedipara/spack-stack/modulefiles'
+      modmpi='stack-openmpi/4.1.5'
+      #TODO Need Metis GNU on hera 
+      metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+      modcmake='cmake/3.23.1'
+    else 
+      echo "Compiler $compiler not supported on hera" 
+      exit 1 
+    fi 
   elif [ $isorion ]
   then
+    if [ $compiler = "intel" ]
+    then
+      batchq='slurm'
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
+      modcomp='stack-intel/2022.0.2'
+      modmpi='stack-intel-oneapi-mpi/2021.5.1'
+      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+      modcmake='cmake/3.23.1'
+    else
+      echo "Compiler $compiler not supported on orion" 
+      exit 1
+    fi  
+  elif [ $ishercules ] 
+  then 
     batchq='slurm'
-    spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
-    modcomp='stack-intel/2022.0.2'
-    modmpi='stack-intel-oneapi-mpi/2021.5.1'
-    metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
-    modcmake='cmake/3.23.1'
+    if [ $compiler = "intel" ]
+    then
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
+      modcomp='stack-intel/2021.9.0'
+      modmpi='stack-intel-oneapi-mpi/2021.9.0'
+      #TO DO: Need METIS PATH
+      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+      modcmake='cmake/3.23.1'
+    elif [ $compiler = "gnu" ]
+    then 
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env-mvap2/install/modulefiles/Core'
+      spackstackpath2='/work/noaa/epic/role-epic/spack-stack/hercules/modulefiles'
+      modcomp='stack-gcc/11.3.1'
+      modmpi='stack-mvapich2/2.3.7'
+      #TO DO: Need METIS PATH
+      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+      modcmake='cmake/2021.9.0'
+    else
+      echo "Compiler $compiler not supported on hercules" 
+      exit 1
+    fi
   else
     batchq=
   fi
@@ -133,13 +187,10 @@ EOF
 
 # Netcdf, Parmetis and SCOTCH modules & variables
   echo "  module purge"                                     >> matrix.head
-  if [ ! -z $basemodcomp ]; then
-    echo "  module load $basemodcomp"                       >> matrix.head
-  fi
-  if [ ! -z $basemodmpi ]; then
-    echo "  module load $basemodmpi"                        >> matrix.head
-  fi
-  echo "  module use  $spackstackpath"                      >> matrix.head
+  echo "  module use $spackstackpath"                       >> matrix.head
+  if [ ! -z $spackstackpath2 ]; then
+    echo "  module use $spackstackpath2"                    >> matrix.head
+  fi 
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
   echo "  module load $modcmake"                            >> matrix.head
