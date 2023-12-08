@@ -163,6 +163,19 @@ EOF
     echo 'export KMP_STACKSIZE=2G'                          >> matrix.head
     echo 'export FI_OFI_RXM_BUFFER_SIZE=128000'             >> matrix.head
     echo 'export FI_OFI_RXM_RX_SIZE=64000'                  >> matrix.head
+  elif [ $batchq = "slurm" ] && [ $ishercules ]
+  then
+    echo "#SBATCH -n ${np}"                                 >> matrix.head
+    echo "##SBATCH --cpus-per-task=${nth}"                  >> matrix.head
+    echo '#SBATCH -q batch'                                 >> matrix.head
+    echo '#SBATCH -t 08:00:00'                              >> matrix.head
+    echo '#SBATCH -A marine-cpu'                            >> matrix.head
+    echo '#SBATCH -J ww3_regtest'                           >> matrix.head
+    echo '#SBATCH -o matrix.out'                            >> matrix.head
+    echo '#SBATCH -p hercules'                              >> matrix.head
+    echo '#SBATCH --exclusive'                              >> matrix.head
+    echo ' '                                                >> matrix.head
+    echo 'ulimit -s unlimited'                              >> matrix.head
   elif [ $batchq = "slurm" ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
