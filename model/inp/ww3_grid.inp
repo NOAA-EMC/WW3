@@ -431,7 +431,7 @@ $   The LMPENABLED flag turns on the parameterization computations.
 $   The SDTAIL flag enables the spectral tail contribution. HSLMODE
 $   parameter determines the surface layer depth (HSL).
 $
-$   Langmuir parameters : Namelist LMPN
+$   Input parameters  : Namelist LMPN
 $                       LMPENABLED : Logical controlling Langmuir
 $                                    related computations.
 $                                     T : Activates calculations
@@ -445,6 +445,12 @@ $                       HSLMODE    : Integer indicating surface layer
 $                                    depth (HSL) type.
 $                                     0 : Uniform HSL=10m (default)
 $                                     1 : HSL from coupler
+$
+$   Output parameters :
+$                       USS        : surface Stokes drift
+$                                     USSX/Y  (netCDF: uuss/vuss)
+$                       USSH       : surface layer averaged Stokes drift
+$                                     USSHX/Y (netCDF: uussh/vussh)
 $
 $   For more info on the Langmuir parameterization, see:
 $       Li, Qing, et al. "Langmuir mixing effects on global climate:

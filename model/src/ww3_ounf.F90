@@ -186,7 +186,7 @@ PROGRAM W3OUNF
        TAUOX, TAUOY, TAUWIX,                        &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
-       MSCD, CHARN, TWS, TAUA, TAUADIR,             &
+       MSCD, CHARN, TWS, TAUA, TAUADIR,USSHX,USSHY, &
        TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
        T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
        CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
@@ -1854,6 +1854,23 @@ CONTAINS
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUOCY(1:NSEA)     &
                    , MAPSF, XY )
             ENDIF ! SMCGRD
+            !
+            NFIELD=2
+
+            !
+            ! Surface averaged stokes drift
+          ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 14 ) THEN
+            DO ISEA=1, NSEA
+              USSHX(ISEA)=MAX(-0.9998,MIN(0.9998,USSHX(ISEA)))
+              USSHY(ISEA)=MAX(-0.9998,MIN(0.9998,USSHY(ISEA)))
+            END DO
+#ifdef W3_RTD
+            ! Rotate x,y vector back to standard pole
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, USSHX(1:NSEA), USSHY(1:NSEA), AnglD)
+#endif
+            CALL S2GRID(USSHX(1:NSEA), XX)
+            CALL S2GRID(USSHY(1:NSEA), XY)
+            !
             NFIELD=2
             !
             ! RMS of bottom displacement amplitude
