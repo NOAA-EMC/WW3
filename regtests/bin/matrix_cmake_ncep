@@ -112,8 +112,7 @@ EOF
       spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
       modcomp='stack-intel/2021.9.0'
       modmpi='stack-intel-oneapi-mpi/2021.9.0'
-      #TO DO: Need METIS PATH
-      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/hercules/intel/spack-stack/1.5.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     elif [ $compiler = "gnu" ]
     then 
@@ -121,8 +120,7 @@ EOF
       spackstackpath2='/work/noaa/epic/role-epic/spack-stack/hercules/modulefiles'
       modcomp='stack-gcc/11.3.1'
       modmpi='stack-mvapich2/2.3.7'
-      #TO DO: Need METIS PATH
-      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/hercules/gnu/spack-stack/1.5.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     else
       echo "Compiler $compiler not supported on hercules" 
