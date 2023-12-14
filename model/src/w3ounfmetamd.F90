@@ -2638,8 +2638,8 @@ CONTAINS
     !META(1)%VARNS='air_sea_temperature_difference'
     META(1)%VARNS=''
     META(1)%VARNG='air_sea_temperature_difference'
-    META(1)%VMIN = 0
-    META(1)%VMAX = 400
+    META(1)%VMIN = -200.0
+    META(1)%VMAX = 200.0
     ! IFI=1, IFJ=5, WLV
     META => GROUP(1)%FIELD(5)%META
     META(1)%FSC    = 0.01

@@ -3642,8 +3642,8 @@ CONTAINS
     DTK    = 0
     TMP3   = 0
 
-    CCOSA = FACX * ECOS
-    CSINA = FACX * ESIN
+    CCOSA = FACX * ECOS(1:NTH)
+    CSINA = FACX * ESIN(1:NTH)
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
     DO ISP = 1, NSPEC
