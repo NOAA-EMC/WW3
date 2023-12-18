@@ -1680,6 +1680,13 @@ CONTAINS
     REAL(8) :: DXENG(NPA), DYENG(NPA), DXXEN(NPA), DYYEN(NPA), DXYEN(NPA)
     REAL(8) :: DXCGK(NPA), DYCGK(NPA)
 
+    if (.not. allocated(difrm) ) then
+      allocate(difrm(np),difrx(np),difry(np))
+      difrm = 0.
+      difrx = 0.
+      difry = 0. 
+    endif 
+
     EWK = 0.d0
     ECG = 0.d0
     ENG = 0.d0
@@ -1695,7 +1702,7 @@ CONTAINS
         DO IS = 1, NK
           DO ID = 1, NTH
             ISP = ID + (IS-1) * NTH
-            EAD = EAD + VA(ISP,IP) * DDEN(IK) / CG(IS,ISEA)!VA(ISP,IP)/CG(IS,ISEA)*CLATS(ISEA)*DTH*SIG(IS)**2
+            EAD = EAD + VA(ISP,IP) * DDEN(IS) / CG(IS,ISEA)!VA(ISP,IP)/CG(IS,ISEA)*CLATS(ISEA)*DTH*SIG(IS)**2
           ENDDO
           ETOT   = ETOT + EAD
           EWKTOT = EWKTOT + WN(IS,ISEA) * EAD
@@ -1756,7 +1763,7 @@ CONTAINS
        ELSE
          DIFRM(IP) = 1.d0
        END IF
-       WRITE(*,*) 'DIFRM', IP, DIFRM(IP)
+       !WRITE(*,*) 'DIFRM', IP, DIFRM(IP)
     END DO
 
     CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
