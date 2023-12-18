@@ -735,7 +735,7 @@ CONTAINS
   !/--------------------------------------------------------------------/
 
   !>
-  !> @brief Reads triangle and unstructured grid information from GMSH files.
+  !> @brief Reads Neumann boundary condition information from 2dm files.
   !>
   !> @details Calls the subroutines needed to compute grid connectivity.
   !>  Look for namelist with name NAME in unit NDS and read if found.
@@ -752,9 +752,8 @@ CONTAINS
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
     !/                  |           A. Roland               |
-    !/                  |           F. Ardhuin              |
     !/                  |                        FORTRAN 90 |
-    !/                  | Last update :          06-Jun-2018|
+    !/                  | Last update :          12-Dez-2023|
     !/                  +-----------------------------------+
     !/
     !/    15-Feb-2008 : Origination.                        ( version 3.13 )
@@ -765,7 +764,7 @@ CONTAINS
     !
     !  1. Purpose :
     !
-    !      Reads triangle and unstructured grid information from GMSH files
+    !      Reads triangle and unstructured grid information from 2DM files
     !      Calls the subroutines needed to compute grid connectivity
     !
     !  2. Method :
@@ -866,13 +865,147 @@ CONTAINS
     ENDDO 
     DO I= 1, NODES
       READ(NDS,*) LINE, j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
-      IF (INT(XYBTMP1(3,I)) .EQ. 2) IOBP(I) = 2
+      !IF (INT(XYBTMP1(3,I)) .EQ. 2) IOBP(I) = 2
       IF (INT(XYBTMP1(3,I)) .EQ. 3) IOBP(I) = 3
     END DO
     !
     CLOSE(NDS)
   END SUBROUTINE READ2DM_IOBP
-  !/--------------------------------------------------------------------/
+
+  !>
+  !> @brief Reads active boundary points 
+  !>
+  !> @param[inout] TMPSTA
+  !>
+  !> @author Aron Roland
+  !> @date   12-December-2023
+  !>
+
+  SUBROUTINE READ2DM_TMPSTA(NDS,FNAME,TMPSTA)
+    !/ -------------------------------------------------------------------
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           A. Roland               |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :          12-Dez-2023|
+    !/                  +-----------------------------------+
+    !/
+    !/    15-Feb-2008 : Origination.                        ( version 3.13 )
+    !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
+    !/    06-Jun-2018 : Add DEBUGINIT/PDLIB/DEBUGSTP/DEBUGSETIOBP
+    !/                                                      ( version 6.04 )
+    !/ 
+    !
+    !  1. Purpose :
+    !
+    !      Reads triangle and unstructured grid information from 2DM files
+    !      Calls the subroutines needed to compute grid connectivity
+    !
+    !  2. Method :
+    !
+    !     Look for namelist with name NAME in unit NDS and read if found.
+    ! 
+    !  3. Parameters :
+    ! 
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDS     Int.   I   Data set number used for search.
+    !       NAME    C*4    I   Name of namelist.
+    !       STATUS  C*20   O   Status at end of routine,
+    !                            '(default values)  ' if no namelist found.
+    !                            '(user def. values)' if namelist read.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    ! 
+    !      Name               Type  Module   Description
+    !     ------------------------------------------------------------------------------------
+    !      NEXTLN             Subr.
+    !      COUNT              Subr. Internal Count connection.
+    !      SPATIAL_GRID       Subr.   Id.    Calculate surfaces.
+    !      NVECTRI            Subr.   Id.    Define cell normals and angles and edge length
+    !      COORDMAX           Subr.   Id.    Calculate  useful grid elements
+    !      AREA_SI            Subr.   Id.    Define Connections
+    !     ----------------------------------------------------------------
+    !
+    !
+    !
+    !  5. Called by :
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3GRID    Prog.          Model configuration program
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !  7. Remarks :
+    !     The only point index which is needed is IX and NX stands for the total number of grid point.
+    !     IY and NY are not needed anymore, they are set to 1 in the unstructured case
+    !     Some noticeable arrays are:
+    !                     TRIGP  : give the vertices of each triangle
+    !     GMSH file gives too much information that is not necessarily required so data processing is needed (data sort and nesting).
+    !  8. Structure :
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+    USE W3GDATMD
+    USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+    USE CONSTANTS, only: LPDLIB
+    USE W3ODATMD, ONLY: IAPROC
+    !
+    IMPLICIT NONE
+    !/
+    !/ Parameter list
+    !/
+    INTEGER, INTENT(IN)                :: NDS
+    CHARACTER(60), INTENT(IN)          :: FNAME
+    INTEGER, INTENT(INOUT)             :: TMPSTA(NY,NX)
+    !/
+    !/ local parameters
+    !/
+    INTEGER                            :: i,j,k, NODES, istat, nelts
+    LOGICAL                            :: lfile_exists
+    CHARACTER(30)                      :: chtmp, line
+    DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:)
+    
+    INQUIRE(FILE=FNAME, EXIST=lfile_exists)
+    IF (.NOT. lfile_exists) RETURN
+    OPEN(NDS,FILE = FNAME,STATUS='old')
+    !
+    ! read number of nodes and nodes from Gmsh files
+    !
+    READ(NDS,*)
+    NODES = 0
+    NELTS = 0
+    DO
+      READ(NDS,*, IOSTAT = ISTAT) CHTMP
+      IF (CHTMP(1:3) .EQ. 'E3T') THEN
+        NELTS = NELTS + 1
+      ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
+        NODES = NODES + 1
+      ENDIF
+      WRITE(*,*) ISTAT, CHTMP
+      IF (ISTAT .NE. 0) EXIT
+    ENDDO
+    REWIND(NDS)
+    
+    ALLOCATE(XYBTMP1(3,NODES))
+    READ(NDS,*)
+    DO I= 1, NELTS
+      READ(NDS,*) LINE
+    ENDDO
+    DO I= 1, NODES
+      READ(NDS,*) LINE, j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
+      IF (INT(XYBTMP1(3,I)) .EQ. 2) TMPSTA(1,I) = 2
+      !IF (INT(XYBTMP1(3,I)) .EQ. 3) IOBP(I) = 3
+    END DO
+    !
+    CLOSE(NDS)
+  END SUBROUTINE READ2DM_TMPSTA
 
   !>
   !> @brief Boundary status (code duplication).
