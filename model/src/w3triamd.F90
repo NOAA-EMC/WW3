@@ -502,7 +502,7 @@ CONTAINS
       ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
         NODES = NODES + 1
       ENDIF 
-      WRITE(*,*) ISTAT, CHTMP
+      !WRITE(*,*) ISTAT, CHTMP
       IF (ISTAT .NE. 0) EXIT 
     ENDDO 
     REWIND(NDS) 
@@ -853,7 +853,7 @@ CONTAINS
       ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
         NODES = NODES + 1
       ENDIF
-      WRITE(*,*) ISTAT, CHTMP
+      !WRITE(*,*) ISTAT, CHTMP
       IF (ISTAT .NE. 0) EXIT
     ENDDO
     REWIND(NDS)
@@ -962,7 +962,7 @@ CONTAINS
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)                :: NDS
-    CHARACTER(60), INTENT(IN)          :: FNAME
+    CHARACTER(*), INTENT(IN)          :: FNAME
     INTEGER, INTENT(INOUT)             :: TMPSTA(NY,NX)
     !/
     !/ local parameters
@@ -988,7 +988,7 @@ CONTAINS
       ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
         NODES = NODES + 1
       ENDIF
-      WRITE(*,*) ISTAT, CHTMP
+      !WRITE(*,*) ISTAT, CHTMP
       IF (ISTAT .NE. 0) EXIT
     ENDDO
     REWIND(NDS)
