@@ -118,7 +118,7 @@ JGS_LIMITER = F,
 JGS_BLOCK_GAUSS_SEIDEL = T
 JGS_NORM_THR = 1.E-6
 JGS_LDIFR = T 
-JGS_IDIFR = 2 
+JGS_IDIFR = 1 
 /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
