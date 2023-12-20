@@ -865,6 +865,117 @@ CONTAINS
     !/ End of W3SPR4 ----------------------------------------------------- /
     !/
   END SUBROUTINE PDLIB_W3XYPUG
+
+  SUBROUTINE PDLIB_W3XYPUG_DRIVER ( FACX, FACY, DTG, VGX, VGY, LCALC )
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                                   |
+    !/                  | Aron Roland (BGS IT&E GmbH)       |
+    !/                  | Mathieu Dutour-Sikiric (IRB)      |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         10-Jan-2011 |
+    !/                  +-----------------------------------+
+    !/
+    !/    10-Jan-2008 : Origination.                        ( version 3.13 )
+    !/    10-Jan-2011 : Addition of implicit scheme         ( version 3.14.4 )
+    !/    06-Feb-2014 : PDLIB parallelization
+    !/
+    !  1. Purpose : Explicit advection schemes driver
+    !
+    !     Propagation in physical space for a given spectral component.
+    !     Gives the choice of scheme on unstructured grid
+    !     Use the geographical parall algorithms for further speed.
+    !
+    !  2. Method :
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !     Local variables.
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !  5. Called by :
+    !
+    !       W3WAVE   Wave model routine.
+    !
+    !  6. Error messages :
+    !
+    !       None.
+    !
+    !  7. Remarks :
+    !              make the interface between the WAVEWATCH and the WWM code.
+    !
+    !  8. Structure :
+    !
+    !
+    !  9. Switches :
+    !
+    !       !/S     Enable subroutine tracing.
+    !
+    !
+    ! 10. Source code :
+    !/ ------------------------------------------------------------------- /
+    !/
+    !
+    USE CONSTANTS
+    !
+    USE W3TIMEMD, only: DSEC21
+    !
+    USE W3GDATMD, only: NX, NY, NSPEC, MAPFS, CLATS,        &
+         FLCX, FLCY, NK, NTH, DTH, XFR,              &
+         ECOS, ESIN, SIG,  PFMOVE,                   &
+         IOBP, IOBPD,                                &
+         FSN, FSPSI, FSFCT, FSNIMP,                  &
+         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP
+    USE YOWNODEPOOL, only: PDLIB_IEN, PDLIB_TRIA
+    USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+    USE YOWNODEPOOL, only: iplg, npa
+    USE W3WDATMD, only: TIME, VA
+    USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
+    USE W3ADATMD, only: CG, CX, CY, ITIME, DW
+    USE W3IDATMD, only: FLCUR, FLLEV
+    USE W3GDATMD, only: NSEAL
+    USE W3ODATMD, only: IAPROC
+    USE W3DISPMD, only : WAVNU_LOCAL
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
+    LOGICAL, INTENT(IN)     :: LCALC 
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local PARAMETERs
+    INTEGER                 :: ISP
+    !/
+    !/ ------------------------------------------------------------------- /
+    !
+    ! 1.  Preparations --------------------------------------------------- *
+    ! 1.a Set constants
+    !
+#ifdef W3_S
+    CALL STRACE (IENT, 'W3XYPUG')
+#endif
+#ifdef W3_DEBUGSOLVER
+    WRITE(740+IAPROC,*) 'Begin of PDLIB_W3XYPUG_DRIVER'
+    FLUSH(740+IAPROC)
+#endif
+
+    DO ISP=1,NSPEC
+       CALL PDLIB_W3XYPUG ( ISP, FACX, FACX, DTG, VGX, VGY, LCALC )
+    END DO
+
+    !/
+    !/ End of PDLIB_W3XYPUG ----------------------------------------------------- /
+    !/
+  END SUBROUTINE PDLIB_W3XYPUG_DRIVER
   !/ ------------------------------------------------------------------- /
   SUBROUTINE PDLIB_W3XYPFSN2(ISP, C, LCALC, RD10, RD20, DT, AC)
     !/
