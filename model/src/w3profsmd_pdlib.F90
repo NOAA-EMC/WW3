@@ -968,6 +968,9 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
 
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (ISP)
+#endif
     DO ISP=1,NSPEC
        CALL PDLIB_W3XYPUG ( ISP, FACX, FACX, DTG, VGX, VGY, LCALC )
     END DO
@@ -3753,10 +3756,21 @@ CONTAINS
     DTK    = 0
     TMP3   = 0
 
+#ifdef W3_OMPH
+    !$OMP WORKSHARE
     CCOSA = FACX * ECOS(1:NTH)
     CSINA = FACX * ESIN(1:NTH)
+    !$OMP END WORKSHARE
+#endif
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
+
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (ISP, ITH, IK, CCOS, CSIN, IP, IP_GLOB, CG1, &
+    !$OMP&                     CXY, CXYY, FL11, FL12, FL21, FL22, FL31, FL32, &
+    !$OMP&                     CRFS, LAMBDA, K, KP, DELTAL, IB1, IB2, IBR, &
+    !$OMP&                     I, J, IE, POS, DTK, I1, I2, I3)
+#endif
     DO ISP = 1, NSPEC
 
       ITH    = 1 + MOD(ISP-1,NTH)
@@ -4581,6 +4595,11 @@ CONTAINS
     !AR: TODO: check&report if needed ...
     LSIG = FLCUR .OR. FLLEV
 
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (IP, ITH, IK, ISP, IP_GLOB, ISEA, eSI, CP_SIG, CM_SIG, B_SIG, &
+    !$OMP&                     CAS, DMM, CWNB_M2, CWNB_SIG_M2, DWNI_M2, ITH0, eVal, &  
+    !$OMP&                     CAD, CP_THE, CM_THE) 
+#endif
     DO IP = 1, np
       IP_glob=iplg(IP)
       ISEA=MAPFS(1,IP_glob)
@@ -5917,7 +5936,7 @@ CONTAINS
           IF (IMEM == 2) THEN
             CALL calcARRAY_JACOBI4(IP,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
             ASPAR_DIAG(1:NSPEC) = ASPAR_DIAG_LOCAL(1:NSPEC) + ASPAR_DIAG_ALL(1:NSPEC,IP)
-            esum       = B_JAC_LOCAL - ASPAR_OFF_DIAG_LOCAL + B_JAC(1:NSPEC,IP)
+            esum(1:NSPEC) = B_JAC_LOCAL - ASPAR_OFF_DIAG_LOCAL + B_JAC(1:NSPEC,IP)
           ELSEIF (IMEM == 1) THEN
             eSum(1:NSPEC)       = B_JAC(1:NSPEC,IP)
             ASPAR_DIAG(1:NSPEC) = ASPAR_JAC(1:NSPEC,PDLIB_I_DIAG(IP))
