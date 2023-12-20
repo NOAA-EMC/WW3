@@ -194,7 +194,7 @@ $ Define grid -------------------------------------------------------- $
 $
   'UNST' T 'NONE'
 $    
-    1.0 0.10  20  -1. 4 1 '(20f10.2)'  'NAME' './../input/limon_ll.msh'
+    1.0 0.10  20  -1. 4 1 '(20f10.2)'  'NAME' 'limon_ll.2dm'
 $
 $ If the above unit number equals 10, the bottom data is read from 
 $ this file and follows below (no intermediate comment lines allowed).
