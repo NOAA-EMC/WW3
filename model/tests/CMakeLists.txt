@@ -30,7 +30,6 @@ function(unit_test name)
 endfunction()
 
 # Copy test data files that are in the repo to the build directory.
-copy_test_data(out_pnt.ww3)
 copy_test_data(switch.io)
 copy_test_data_2(ww3_grid.inp ww3_grid.inp)
 

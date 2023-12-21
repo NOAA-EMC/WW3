@@ -12,12 +12,14 @@ program test_io_points_bin
   implicit none
   
   integer, target :: i, j, k, l
-  integer :: ndsop, iotest, imod, ndstst, ierr, ndsbul, ndsm
+  integer :: ndsop, iotest, imod, ndstst, ndsbul, ndsm
   integer :: ndstrc, ntrace
   real :: m2km
   character*7 expected_ptnme
   character*6 my_fmt
   real :: expected_loc_1
+  integer :: write_test_file
+  integer :: ierr
 
   print *, 'Testing WW3 binary point file code.'
 
@@ -35,14 +37,14 @@ program test_io_points_bin
   ndsbul = 0
   ndstrc =  6
   ntrace = 10
+  
+  ! Create a point output file needed for this test.
+  if (write_test_file() .ne. 0) stop 1
+  
 
   write (ndso,900)
 900 FORMAT (/15X,'    *** WAVEWATCH III Point output post.***    '/ &
        15X,'==============================================='/)
-
-  ! Open the file with the output settings for WW3. It is not needed actually.
-  ! open(ndsi, file = 'ww3_outp.inp', status='old', iostat = ierr)
-  ! if (ierr .ne. 0) stop 10
 
   ! 2.  Read model definition file.
   CALL W3IOGR('READ', NDSM)
@@ -80,4 +82,16 @@ program test_io_points_bin
   print *, 'OK!'
   print *, 'SUCCESS!'
 end program test_io_points_bin
+
+integer function write_test_file()
+  implicit none
+  integer :: ntlu, ierr
+
+  ntlu = 21
+  open(ntlu, file="out_pnt.ww3", form="unformatted", status="replace", action="write", iostat=ierr)
+  if (ierr .ne. 0) stop 111
+  !  write (ntlu) idstr, veropt, nk, nth, nopts
+  close(ntlu)
+  write_test_file = 0
+end function write_test_file
   
