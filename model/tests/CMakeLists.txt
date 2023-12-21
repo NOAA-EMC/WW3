@@ -29,6 +29,18 @@ function(unit_test name)
   add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
+# add_custom_command(
+#   OUTPUT mod_def.ww3
+#   COMMAND ./bin/ww3_grid
+#   COMMENT "Generating the mod_def.ww3 file"
+#   VERBATIM
+# )
+
+# add_custom_target(
+#   BuildModDef ALL
+#   DEPENDS mod_def.ww3
+#   )
+
 # Copy test data files that are in the repo to the build directory.
 copy_test_data(switch.io)
 copy_test_data_2(ww3_grid.inp ww3_grid.inp)
