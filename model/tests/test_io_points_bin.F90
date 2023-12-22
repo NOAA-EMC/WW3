@@ -87,7 +87,7 @@ integer function write_test_file()
 
   integer :: ntlu, nk, nth, nopts
   character(len=10), parameter :: veropt = '2021-04-06'
-  character(len=31), parameter :: idstr = 'wavewatch iii point output file'
+  character(len=31), parameter :: idstr = 'WAVEWATCH III POINT OUTPUT FILE'
   real, pointer :: ptloc(:,:)
   character*7 ptnme(11)
   integer :: time(2)
@@ -99,10 +99,11 @@ integer function write_test_file()
   integer :: ierr
 
   ntlu = 21
-  nk = 1
-  nth = 1
+  nk = 3
+  nth = 24
   nopts = 11
-  open(ntlu, file="out_pnt.ww3", form="unformatted", status="replace", action="write", iostat=ierr)
+  open(ntlu, file="out_pnt.ww3", form="unformatted", status="replace", &
+       action="write", convert="big_endian", iostat=ierr)
   if (ierr .ne. 0) stop 111
   write (ntlu) idstr, veropt, nk, nth, nopts
   allocate(ptloc(2, nopts))
