@@ -88,8 +88,10 @@ integer function write_test_file()
   integer :: ntlu, nk, nth, nopts
   character(len=10), parameter :: veropt = '2021-04-06'
   character(len=31), parameter :: idstr = 'WAVEWATCH III POINT OUTPUT FILE'
-  real, pointer :: ptloc(:,:)
-  character*7 ptnme(11)
+  real :: ptloc(2,11) = reshape((/ 0., 0., 5000., 0., 10000., 0., 15000., 0., &
+       20000., 0., 25000., 0., 30000., 0., 35000., 0., 40000., 0., 45000., 0., 50000., 0. /), &
+       (/ 2, 11 /))
+  character*40 ptnme(11)
   integer :: time(2)
   integer :: nspec = 2
   integer :: iw(11), ii(11), il(11), iceo(11), iceho(11), icefo(11)
@@ -102,17 +104,29 @@ integer function write_test_file()
   nk = 3
   nth = 24
   nopts = 11
+  do i = 1, nopts
+     if (i .le. 9) then
+        write(ptnme(i), '(a,i1)') 'Point', i
+     else
+        write(ptnme(i), '(a,i2)') 'Point', i
+     endif
+     print *, ptnme(i)
+  end do
+  print *, ptloc
   open(ntlu, file="out_pnt.ww3", form="unformatted", status="replace", &
        action="write", convert="big_endian", iostat=ierr)
   if (ierr .ne. 0) stop 111
-  write (ntlu) idstr, veropt, nk, nth, nopts
-  allocate(ptloc(2, nopts))
-  write (ntlu) ((ptloc(j,i),j=1,2),i=1,nopts), (ptnme(i),i=1,nopts)
-  write (ntlu) time
+  write (ntlu, iostat=ierr) idstr, veropt, nk, nth, nopts
+  if (ierr .ne. 0) stop 112
+  write (ntlu, iostat=ierr) ((ptloc(j,i),j=1,2),i=1,nopts), (ptnme(i),i=1,nopts)
+  if (ierr .ne. 0) stop 113
+  write (ntlu, iostat=ierr) time
+  if (ierr .ne. 0) stop 114
   do i=1, nopts
-     write (ntlu) iw(i), ii(i), il(i), dpo(i), wao(i), wdo(i),      &
+     write (ntlu, iostat=ierr) iw(i), ii(i), il(i), dpo(i), wao(i), wdo(i),      &
           aso(i), cao(i), cdo(i), iceo(i), iceho(i),        &
           icefo(i), grdid(i), (spco(j,i),j=1,nspec)
+     if (ierr .ne. 0) stop 115
   enddo
   close(ntlu)
   write_test_file = 0
