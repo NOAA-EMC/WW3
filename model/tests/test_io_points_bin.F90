@@ -40,7 +40,6 @@ program test_io_points_bin
   
   ! Create a point output file needed for this test.
   if (write_test_file() .ne. 0) stop 1
-  
 
   write (ndso,900)
 900 FORMAT (/15X,'    *** WAVEWATCH III Point output post.***    '/ &
@@ -85,12 +84,35 @@ end program test_io_points_bin
 
 integer function write_test_file()
   implicit none
-  integer :: ntlu, ierr
+
+  integer :: ntlu, nk, nth, nopts
+  character(len=10), parameter :: veropt = '2021-04-06'
+  character(len=31), parameter :: idstr = 'wavewatch iii point output file'
+  real, pointer :: ptloc(:,:)
+  character*7 ptnme(11)
+  integer :: time(2)
+  integer :: nspec = 2
+  integer :: iw(11), ii(11), il(11), iceo(11), iceho(11), icefo(11)
+  real :: dpo(11), wao(11), wdo(11), aso(11), cao(11), cdo(11), grdid(11)
+  real :: spco(2, 11)
+  integer :: i, j
+  integer :: ierr
 
   ntlu = 21
+  nk = 1
+  nth = 1
+  nopts = 11
   open(ntlu, file="out_pnt.ww3", form="unformatted", status="replace", action="write", iostat=ierr)
   if (ierr .ne. 0) stop 111
-  !  write (ntlu) idstr, veropt, nk, nth, nopts
+  write (ntlu) idstr, veropt, nk, nth, nopts
+  allocate(ptloc(2, nopts))
+  write (ntlu) ((ptloc(j,i),j=1,2),i=1,nopts), (ptnme(i),i=1,nopts)
+  write (ntlu) time
+  do i=1, nopts
+     write (ntlu) iw(i), ii(i), il(i), dpo(i), wao(i), wdo(i),      &
+          aso(i), cao(i), cdo(i), iceo(i), iceho(i),        &
+          icefo(i), grdid(i), (spco(j,i),j=1,nspec)
+  enddo
   close(ntlu)
   write_test_file = 0
 end function write_test_file
