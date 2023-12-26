@@ -1,3 +1,8 @@
+# This is a GitHub actions workflow for WW3.
+#
+# This workflow builds with the Intel compilers.
+#
+# Matt Masarik, Alex Richert, Ed Hartnett
 name: Intel Linux Build
 on: [push, pull_request, workflow_dispatch]
 
@@ -8,7 +13,7 @@ concurrency:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel11
+  cache_key: intel10-3
   CC: icc
   FC: ifort
   CXX: icpc
@@ -51,7 +56,7 @@ jobs:
           sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
           echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt-get update
-          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-openmp intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
+          sudo apt-get install intel-oneapi-dev-utilities intel-oneapi-mpi-devel intel-oneapi-compiler-fortran-2023.2.1 intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic-2023.2.1 intel-oneapi-openmp
 
       # Build WW3 spack environment
       - name: install-dependencies-with-spack
