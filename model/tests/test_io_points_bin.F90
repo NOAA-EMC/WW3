@@ -92,14 +92,21 @@ integer function write_test_file()
        20000., 0., 25000., 0., 30000., 0., 35000., 0., 40000., 0., 45000., 0., 50000., 0. /), &
        (/ 2, 11 /))
   character*40 ptnme(11)
-  integer :: time(2)
+  integer :: time(2) = (/ 19680606, 0 /)
   integer :: nspec = 2
-  integer :: iw(11), ii(11), il(11), iceo(11), iceho(11), icefo(11)
+  integer :: iw(11) = (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /)
+  integer :: ii(11) = (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /)
+  integer :: il(11) = (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /)
+  real :: iceo(11) = (/ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. /)
+  real :: iceho(11) = (/ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. /)    
+  real :: icefo(11) = (/ 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000. /)    
+  real :: dpo(11) = (/ 50., 50., 45., 40., 35., 30., 25., 20., 15., 10., 5. /)
   real :: dpo(11), wao(11), wdo(11), aso(11), cao(11), cdo(11), grdid(11)
   real :: spco(2, 11)
   integer :: i, j
   integer :: ierr
 
+  ! Initialize some values.
   ntlu = 21
   nk = 3
   nth = 24
@@ -112,10 +119,15 @@ integer function write_test_file()
      endif
      print *, ptnme(i)
   end do
+
   print *, ptloc
+
+  ! Open the file.
   open(ntlu, file="out_pnt.ww3", form="unformatted", status="replace", &
        action="write", convert="big_endian", iostat=ierr)
   if (ierr .ne. 0) stop 111
+
+  ! Write our values.
   write (ntlu, iostat=ierr) idstr, veropt, nk, nth, nopts
   if (ierr .ne. 0) stop 112
   write (ntlu, iostat=ierr) ((ptloc(j,i),j=1,2),i=1,nopts), (ptnme(i),i=1,nopts)
@@ -128,7 +140,11 @@ integer function write_test_file()
           icefo(i), grdid(i), (spco(j,i),j=1,nspec)
      if (ierr .ne. 0) stop 115
   enddo
+
+  ! Close the file.
   close(ntlu)
+
+  ! We're done!
   write_test_file = 0
 end function write_test_file
   
