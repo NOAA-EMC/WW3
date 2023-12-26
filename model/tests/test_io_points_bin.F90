@@ -11,15 +11,13 @@ program test_io_points_bin
   use w3adatmd  
   implicit none
   
-  integer, target :: i, j, k, l
-  integer :: ndsop, iotest, imod, ndstst, ndsbul, ndsm
+  integer, target :: i
+  integer :: ndsop, iotest, ndsbul, ndsm
   integer :: ndstrc, ntrace
-  real :: m2km
   character*7 expected_ptnme
   character*6 my_fmt
   real :: expected_loc_1
   integer :: write_test_file
-  integer :: ierr
 
   print *, 'Testing WW3 binary point file code.'
 
@@ -93,7 +91,7 @@ integer function write_test_file()
        (/ 2, 11 /))
   character*40 ptnme(11)
   integer :: time(2) = (/ 19680606, 0 /)
-  integer :: nspec = 2
+  integer :: nspec = 72
   integer :: iw(11) = (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /)
   integer :: ii(11) = (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /)
   integer :: il(11) = (/ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 /)
@@ -101,8 +99,14 @@ integer function write_test_file()
   real :: iceho(11) = (/ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. /)    
   real :: icefo(11) = (/ 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000., 1000. /)    
   real :: dpo(11) = (/ 50., 50., 45., 40., 35., 30., 25., 20., 15., 10., 5. /)
-  real :: dpo(11), wao(11), wdo(11), aso(11), cao(11), cdo(11), grdid(11)
-  real :: spco(2, 11)
+  real :: wao(11) = (/ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. /)      
+  real :: wdo(11) = (/ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. /)
+  real :: aso(11) = (/ -999.900024, -999.900024, -999.900024, -999.900024, -999.900024, &
+       -999.900024, -999.900024, -999.900024, -999.900024, -999.900024, -999.900024 /)    
+  real :: cao(11) = (/ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. /)
+  real :: cdo(11) = (/ 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. /)
+  character*13 :: grdid(11)
+  real :: spco(72, 11)
   integer :: i, j
   integer :: ierr
 
@@ -117,10 +121,8 @@ integer function write_test_file()
      else
         write(ptnme(i), '(a,i2)') 'Point', i
      endif
-     print *, ptnme(i)
+     grdid(i) = 'ww3          '
   end do
-
-  print *, ptloc
 
   ! Open the file.
   open(ntlu, file="out_pnt.ww3", form="unformatted", status="replace", &
