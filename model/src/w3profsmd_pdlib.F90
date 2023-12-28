@@ -968,7 +968,7 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
 
-#ifdef W3_OMPH
+#ifdef W3_O MPH
     !$OMP PARALLEL DO PRIVATE (ISP)
 #endif
     DO ISP=1,NSPEC
@@ -3756,14 +3756,10 @@ CONTAINS
     DTK    = 0
     TMP3   = 0
 
-#ifdef W3_OMPH
-    !$OMP WORKSHARE
     CCOSA = FACX * ECOS(1:NTH)
     CSINA = FACX * ESIN(1:NTH)
-    !$OMP END WORKSHARE
-#endif
-    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
+    call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
 #ifdef W3_OMPH
     !$OMP PARALLEL DO PRIVATE (ISP, ITH, IK, CCOS, CSIN, IP, IP_GLOB, CG1, &
@@ -3871,6 +3867,10 @@ CONTAINS
         ENDIF
       END DO
     END DO ! ISP
+
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
 
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 1')
 #ifdef W3_DEBUGSOLVER
@@ -4598,30 +4598,30 @@ CONTAINS
 #ifdef W3_OMPH
     !$OMP PARALLEL DO PRIVATE (IP, ITH, IK, ISP, IP_GLOB, ISEA, eSI, CP_SIG, CM_SIG, B_SIG, &
     !$OMP&                     CAS, DMM, CWNB_M2, CWNB_SIG_M2, DWNI_M2, ITH0, eVal, &  
-    !$OMP&                     CAD, CP_THE, CM_THE) 
+    !$OMP&                     CAD, B_THE, CP_THE, CM_THE) 
 #endif
     DO IP = 1, np
-      IP_glob=iplg(IP)
-      ISEA=MAPFS(1,IP_glob)
-      eSI=PDLIB_SI(IP)
+      IP_glob = iplg(IP)
+      ISEA    = MAPFS(1,IP_glob)
+      eSI     = PDLIB_SI(IP)
       IF (FSFREQSHIFT .AND. LSIG) THEN
         IF (FreqShiftMethod .eq. 1) THEN
           IF (IOBP_LOC(IP).eq.1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
             CALL PROP_FREQ_SHIFT(IP, ISEA, CAS, DMM, DTG)
             CP_SIG = MAX(ZERO,CAS)
             CM_SIG = MIN(ZERO,CAS)
-            B_SIG=0
+            B_SIG = 0
             DO ITH=1,NTH
               DO IK=1,NK
-                ISP=ITH + (IK-1)*NTH
+                ISP = ITH + (IK-1)*NTH
                 B_SIG(ISP)= CP_SIG(ISP)/DMM(IK-1) - CM_SIG(ISP)/DMM(IK)
               END DO
-              ISP  = ITH + (NK-1)*NTH
-              B_SIG(ISP)= B_SIG(ISP) + CM_SIG(ISP)/DMM(NK) * FACHFA
+              ISP  = ITH + (NK-1)*NTH ! AR: hmm ...
+              B_SIG(ISP) = B_SIG(ISP) + CM_SIG(ISP)/DMM(NK) * FACHFA
             END DO
-            ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_SIG(:)*eSI
+            ASPAR_JAC(:,PDLIB_I_DIAG(IP)) = ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_SIG(:) * eSI
           ELSE
-            CAS=0
+            CAS = 0
           END IF
           CAS_SIG(:,IP) = CAS
         ELSE IF (FreqShiftMethod .eq. 2) THEN
@@ -4643,7 +4643,7 @@ CONTAINS
           ELSE
             CWNB_M2 = 0
           END IF
-          CWNB_SIG_M2(:,IP)=CWNB_M2
+          CWNB_SIG_M2(:,IP) = CWNB_M2
         END IF
       END IF
       !
@@ -4655,7 +4655,7 @@ CONTAINS
           !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
           CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
-          CAD=ZERO
+          CAD = ZERO
         END IF
 #ifdef W3_DEBUGREFRACTION
         WRITE(740+IAPROC,*) 'refraction IP=', IP, ' ISEA=', ISEA
@@ -4668,6 +4668,11 @@ CONTAINS
         ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_THE(:)*eSI
       END IF
     END DO
+
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
+
   END SUBROUTINE calcARRAY_JACOBI_SPECTRAL_1
   !/ ------------------------------------------------------------------- /
   SUBROUTINE calcARRAY_JACOBI_SPECTRAL_2(DTG,ASPAR_DIAG_LOCAL)
@@ -5771,6 +5776,10 @@ CONTAINS
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) before transform", 0)
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) before transform", 1)
 #endif
+
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (JSEA, IP, IP_GLOB, ISEA, ISP, ITH, IK, WN1, CG1) 
+#endif
     DO JSEA=1,NSEAL
       IP      = JSEA
       IP_glob = iplg(IP)
@@ -5786,6 +5795,10 @@ CONTAINS
         VA(ISP,JSEA) = VA(ISP,JSEA) / CG1(IK) * CLATS(ISEA)
       END DO
     END DO
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
+
     VAOLD = VA(1:NSPEC,1:NSEAL)
 
 #ifdef W3_DEBUGSRC
@@ -5884,6 +5897,13 @@ CONTAINS
       is_converged = 0
 
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 1')
+
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (IP, ISP, IP_GLOB, ISEA, IK, ITH, CG1, WN1, JSEA, eSI, ACLOC, ESUM, &
+    !$OMP&                     ASPAR_DIAG, JP, EPROD, ISPprevDir, ISPnextDir, eA_THE, eC_THE, &
+    !$OMP&                     ISPm1, ISPp1, eFactM1, eFactP1, eA_SIG, eC_SIG, CAS, CAD, CP_SIG, DMM, & 
+    !$OMP&                     CWNB_M2, DWNI_M2, p_is_converged, sum_prev, sum_new, diffnew), REDUCTION(+:is_converged)
+#endif
 
       DO IP = 1, np
 
@@ -6143,6 +6163,10 @@ CONTAINS
 #endif
       END DO ! IP
 
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
+
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 2')
 
 #ifdef W3_DEBUGSOLVERCOH
@@ -6269,7 +6293,7 @@ CONTAINS
 #endif
           EXIT
         END IF
-      END IF
+      END IF ! TERMINATE NORM
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 6')
 
       nbiter = nbiter + 1
