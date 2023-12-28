@@ -4596,9 +4596,9 @@ CONTAINS
     LSIG = FLCUR .OR. FLLEV
 
 #ifdef W3_OMPH
-    !$OMP PARALLEL DO PRIVATE (IP, ITH, IK, ISP, IP_GLOB, ISEA, eSI, CP_SIG, CM_SIG, B_SIG, &
-    !$OMP&                     CAS, DMM, CWNB_M2, CWNB_SIG_M2, DWNI_M2, ITH0, eVal, &  
-    !$OMP&                     CAD, B_THE, CP_THE, CM_THE) 
+    !$OMP PARALLEL DO PRIVATE (IP, IP_GLOB, ISEA, eSI, CAS, DMM, CP_SIG, CM_SIG, B_SIG, &
+    !$OMP&                     ISP, ITH, IK, CWNB_M2, DWNI_M2, eVal, ITH0, & 
+    !$OMP&                     CAD, CP_THE, CM_THE, B_THE)
 #endif
     DO IP = 1, np
       IP_glob = iplg(IP)
@@ -4646,13 +4646,10 @@ CONTAINS
           CWNB_SIG_M2(:,IP) = CWNB_M2
         END IF
       END IF
-      !
-      ! The refraction
-      !
+
       IF (FSREFRACTION) THEN
         IF (IOBP_LOC(IP) .eq. 1 .and. IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-          !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Check statuts ...
-          !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
+          !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) 
           CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
           CAD = ZERO
@@ -4667,8 +4664,7 @@ CONTAINS
         B_THE(:) = CP_THE(:) - CM_THE(:)
         ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_THE(:)*eSI
       END IF
-    END DO
-
+    END DO ! IP
 #ifdef W3_OMPH
     !$OMP END PARALLEL DO
 #endif
@@ -4814,8 +4810,7 @@ CONTAINS
       IF (FSREFRACTION) THEN
         IF (IOBP_LOC(IP) .eq. 1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
           !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
-          !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
-          CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
+          !    CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
           CAD=ZERO
         END IF
