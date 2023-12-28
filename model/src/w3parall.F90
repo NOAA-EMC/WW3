@@ -1954,9 +1954,9 @@ CONTAINS
         SINH3KH = DSINH(MIN(KDMAX,3*KH))
 
         SECH = 1.d0 / MAX(TINY(1.),COSHKH)
-        WRITE(*,*) '1st part', KH, COSHKH, COSH2KH
-        WRITE(*,*) '2nd part', SINHKH, SINH2KH, SINH3KH
-        WRITE(*,*) '3rd part', SECH**2, MAX(TINY(1.), (6.d0*(2*KH + SINH2KH)**3))
+        !WRITE(*,*) '1st part', KH, COSHKH, COSH2KH
+        !WRITE(*,*) '2nd part', SINHKH, SINH2KH, SINH3KH
+        !WRITE(*,*) '3rd part', SECH**2, MAX(TINY(1.), (6.d0*(2*KH + SINH2KH)**3))
         AUX = SECH**2 / MAX(TINY(1.), (6.d0*(2*KH + SINH2KH)**3))
         IF (AUX .GT. TINY(1.)) THEN
           AUX1 = 8.d0*(KH**4.d0) + 16.d0*(KH**3)*SINH2KH - 9.d0*(SINH2KH)**2*COSH2KH + 12.d0*KH*(1.d0 + 2*SINHKH**4)*(KH + SINH2KH)
@@ -2020,7 +2020,7 @@ CONTAINS
 
         DO IP = 1, NP
           KH = EWK(IP)*DW(IP)
-          WRITE(*,*) 'DEPTH', IP, DW(IP), EWK(IP)
+          !WRITE(*,*) 'DEPTH', IP, DW(IP), EWK(IP)
           CALL CALC_BOTFS2(KH,BOTFS2)
           CALL CALC_BOTFC2(KH,BOTFC2)
           DFBOT(IP) = (BOTFC2*CURH(IP)+BOTFS2*EWK(IP)*SLPH(IP))*GRAV
@@ -2035,7 +2035,7 @@ CONTAINS
 !*                                                                    *
 !**********************************************************************
       SUBROUTINE DIFFRA_EXTENDED(VA)
-         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, CLATS, DTH, DSII
+         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, CLATS, DTH, DSII, DDEN
          USE W3ADATMD, only: CG, CX, CY, DW
          !USE W3WDATMD, only: VA
          USE W3DISPMD, ONLY : WAVNU3
@@ -2062,6 +2062,13 @@ CONTAINS
          REAL(8) :: NAUX
          REAL:: DEPTH 
 
+         if (.not. allocated(difrm) ) then
+           allocate(difrm(np),difrx(np),difry(np))
+           difrm = 0.
+           difrx = 0.
+           difry = 0.
+         endif
+
          DFBOT(:) = 0.d0 
          DFCUR(:) = 0.d0 
 
@@ -2071,14 +2078,14 @@ CONTAINS
            EWKTOT = 0.d0
            EWCTOT = 0.d0
            ECGTOT = 0.d0
-           DEPTH = DW(JSEA)
+           DEPTH = DW(ISEA)
            IF (DEPTH .GT. DMIN) THEN
              DO IS = 1, NK
                CALL WAVNU3(SIG(IS),DEPTH,WVK,WVCG,WVC)
                EAD = 0.d0 
                DO ID = 1, NTH 
                  ISP = ID + (IS-1) * NTH
-                 EAD = EAD + VA(ISP,JSEA)/CG(IS,JSEA)*CLATS(ISEA)*DTH*SIG(IS)**2
+                 EAD = EAD + VA(ISP,JSEA) * DDEN(IS) / CG(IS,ISEA)
                ENDDO 
                ETOT   = ETOT   + EAD
                EWKTOT = EWKTOT + WVK  * EAD
@@ -2117,6 +2124,7 @@ CONTAINS
          IF (FLCUR) CALL CUREFCT2( NP, DXENG, DYENG, DBLE(CX), DBLE(CY), DFCUR )
 
          DO JSEA = 1, NP  
+            CALL INIT_GET_ISEA(ISEA, JSEA)
             AUX = CCG(JSEA)*EWK(JSEA)*EWK(JSEA)
             IF ( AUX*ENG(JSEA) .GT. TINY(1.)) THEN
                DFWAV = ( DXCCG(JSEA) * DXENG(JSEA) + DYCCG(JSEA) * DYENG(JSEA) + CCG(JSEA) * (DXXEN(JSEA) + DYYEN(JSEA)) ) / MAX(TINY(1.),ENG(JSEA))
@@ -2128,7 +2136,7 @@ CONTAINS
                    EAD = 0.d0 
                    DO IK = 1, NK 
                      ISP = ID + (ISP-1) * NTH
-                     EAD = EAD + VA(ISP,JSEA)/CG(ISP,JSEA)*CLATS(ISEA)*SIG(IK)*DSII(IK)*DTH
+                     EAD = EAD + VA(ISP,IP) * DDEN(IS) / CG(IS,ISEA)
                    ENDDO 
                    ETOTC = ETOTC + EAD * ECOS(ITH)
                    ETOTS = ETOTS + EAD * ESIN(ITH) 
