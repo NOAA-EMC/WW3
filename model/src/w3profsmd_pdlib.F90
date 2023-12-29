@@ -207,7 +207,7 @@ CONTAINS
     USE yowpdlibMain, only: initFromGridDim
     USE YOWNODEPOOL, only: npa, np, iplg
     USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
-    USE W3PARALL, only : JX_TO_JSEA, ISEA_TO_JSEA
+    USE W3PARALL, only : JX_TO_JSEA, ISEA_TO_JSEA, INIT_GET_ISEA
     USE yowfunction, only : ComputeListNP_ListNPA_ListIPLG, pdlib_abort
     USE W3GDATMD, only: FSTOTALIMP, FSTOTALEXP, FSNIMP, FSN, FSPSI, FSFCT
     USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE
@@ -332,6 +332,7 @@ CONTAINS
       FLUSH(740+IAPROC)
 #endif
     END IF
+
     FSGEOADVECT = .FALSE.
     IF ((FLCX .eqv. .TRUE.).and.(FLCY .eqv. .TRUE.)) THEN
       FSGEOADVECT =.TRUE.
@@ -396,6 +397,7 @@ CONTAINS
         CALL PDLIB_ABORT(20)
       ENDIF
     ENDDO
+
     !
     !
     !/
