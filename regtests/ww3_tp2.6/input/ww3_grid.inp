@@ -117,7 +117,7 @@ JGS_PMIN = 3.0
 JGS_LIMITER = F,
 JGS_NORM_THR = 1.E-6
 JGS_LDIFR = T 
-JGS_IDIFR = 1 
+JGS_IDIFR = 2
 /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
