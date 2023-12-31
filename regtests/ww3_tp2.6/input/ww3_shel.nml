@@ -8,14 +8,14 @@
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
   DOMAIN%START   = '20100801 000000'
-  DOMAIN%STOP    = '20100801 001000'
+  DOMAIN%STOP    = '20100801 003000'
 /
 
 ! -------------------------------------------------------------------- !
 ! Define each forcing via the INPUT_NML namelist
 ! -------------------------------------------------------------------- !
 &INPUT_NML
-  INPUT%FORCING%WINDS         = 'H'
+!  INPUT%FORCING%WINDS         = 'H'
 /
 
 ! -------------------------------------------------------------------- !
@@ -30,7 +30,7 @@
 ! Define output dates via OUTPUT_DATE_NML namelist
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD          = '20071101 000000' '10' '20121231 233000'
+  DATE%FIELD          = '20100801 000000' '10' '20100801 003000'
   DATE%POINT          = '20071101 000000' '60' '20121231 233000'
   DATE%TRACK          = '20040101 000000' '1' '20040101 000000'
   DATE%RESTART        = '20100101 000000' '1728000' '20120603 000000'
@@ -40,15 +40,15 @@
 ! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
-  HOMOG_COUNT%N_WND                =  1
+!  HOMOG_COUNT%N_WND = 0 
 /
 
 &HOMOG_INPUT_NML
-  HOMOG_INPUT(1)%NAME        = 'WND'
-  HOMOG_INPUT(1)%DATE        = '20020905 000000'
-  HOMOG_INPUT(1)%VALUE1      = 30.
-  HOMOG_INPUT(1)%VALUE2      = 180.
-  HOMOG_INPUT(1)%VALUE3      = 0.0
+!  HOMOG_INPUT(1)%NAME        = 'WND'
+!  HOMOG_INPUT(1)%DATE        = '20230905 000000'
+!  HOMOG_INPUT(1)%VALUE1      = 30.
+!  HOMOG_INPUT(1)%VALUE2      = 180.
+!  HOMOG_INPUT(1)%VALUE3      = 0.0
 /
 
 ! -------------------------------------------------------------------- !

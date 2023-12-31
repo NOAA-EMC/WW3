@@ -12,7 +12,7 @@ $ In versions 1.18 and 2.22 of the model this value was by definiton 0,
 $ it is added to mitigate the GSE for a first order scheme. Note that
 $ this factor is IGNORED in the print plots in ww3_outp.
 $
-1.1 0.05 36 36 0.
+1.1 0.05 36 72 0.
 $
 $ Set model flags ---------------------------------------------------- $
 $  - FLDRY         Dry run (input/output only, no calculation).
@@ -28,7 +28,7 @@ $     maximum global time step, maximum CFL time step for x-y and
 $     k-theta, minimum source term time step (all in seconds).
 $
 $
-  10 10 10 10 
+  1 1 1 1 
 $
 $ Start of namelist input section ------------------------------------ $
 $   Starting with WAVEWATCH III version 2.00, the tunable parameters
@@ -92,15 +92,15 @@ $
 &UNST
 UGOBCAUTO = F
 UGOBCDEPTH= -10.
-EXPFSN   = F,
+EXPFSN   = T,
 EXPFSPSI = F,
 EXPFSFCT = F,
 IMPFSN   = F,
-IMPTOTAL = T,
+IMPTOTAL = F,
 EXPTOTAL  = F,
-IMPREFRACTION = T,
-IMPFREQSHIFT  = T,
-IMPSOURCE     = T,
+IMPREFRACTION = F,
+IMPFREQSHIFT  = F,
+IMPSOURCE     = F,
 SETUP_APPLY_WLV = F
 SOLVERTHR_SETUP=1E-14
 CRIT_DEP_SETUP=0.1
@@ -117,7 +117,7 @@ JGS_PMIN = 3.0
 JGS_LIMITER = F,
 JGS_NORM_THR = 1.E-6
 JGS_LDIFR = T 
-JGS_IDIFR = 2
+JGS_IDIFR = 1 
 /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -

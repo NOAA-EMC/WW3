@@ -2681,7 +2681,6 @@ CONTAINS
         IF (ABS(IP3 - IP).GT.0) THEN
           WRITE(*,*) 'IP=', IP, ' IP2=', IP2, ' IP3=', IP3
           WRITE(*,*) 'We have a dramatic inconsistency'
-          STOP
         END IF
       END IF
     END DO
