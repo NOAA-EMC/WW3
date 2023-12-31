@@ -251,6 +251,7 @@ CONTAINS
     IGBCOVERWRITE =(MOD( NINT(IGPARS(4)),2).EQ.1)
     IGSWELLMAX =( NINT(IGPARS(4)).GE.2)
     ! This following line is a quick fix before the bug is understood ....
+    ! AR: which bug? 
     IF (GTYPE.EQ.UNGTYPE) IGSWELLMAX =.FALSE.
     IGFAC1 = 0.25
     IGFAC2 = 0.25
@@ -321,8 +322,8 @@ CONTAINS
 #endif
     HS=4.*SQRT(EMEANA)
 #ifdef W3_IG1
-    ATMP(:)=A(:)      ! the IG energy will be added to this ATMP
-    ATMP2(:)=A(:)     ! this is really to keep in memory the original spectrum
+    ATMP(:) = A(:)      ! the IG energy will be added to this ATMP
+    ATMP2(:) = A(:)     ! this is really to keep in memory the original spectrum
     IF (IGBCOVERWRITE.AND.REFLC(1).GT.0) THEN
       IGFAC1 = 1.
       ATMP2(1:NSPECIGSTART) = 0.
@@ -349,12 +350,11 @@ CONTAINS
         ENDIF
         FREQIG=SIG(NINT(IGPARS(5)))*TPIINV
         !
-        NSPECIG=NKIG*NTH
-        ATMP(1:NSPECIGSTART)=0.               ! flat bottom approximation (Hasselmann 1962)
-        !                 is not valid for long waves
+        NSPECIG = NKIG * NTH
+        ATMP(1:NSPECIGSTART) = 0.             ! flat bottom approximation (Hasselmann 1962), is not valid for long waves (long?)
         IF (NINT(IGPARS(3)).EQ.1) THEN        ! IGPARS(3) = IGSOURCE
           IF (NINT(IGPARS(8)).EQ.1) THEN      ! in this case, uses depth at break point
-            DEPTHIG=MAX(1.,HS/0.3)            ! to be modified later with a proper gamma
+            DEPTHIG=MAX(1.,HS/0.3)            ! to be modified later with a proper gamma. AR: Strange stuff ...  0.3? 
           ELSE
             DEPTHIG=DEPTH
           END IF

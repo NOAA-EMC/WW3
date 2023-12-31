@@ -922,6 +922,7 @@ MODULE W3GRIDMD
   LOGICAL :: IMPREFRACTION
   LOGICAL :: IMPFREQSHIFT
   LOGICAL :: IMPSOURCE
+  LOGICAL :: LREAD2DM
   LOGICAL :: SETUP_APPLY_WLV
   INTEGER :: JGS_MAXITER
   INTEGER :: nbSel
@@ -1084,7 +1085,7 @@ MODULE W3GRIDMD
        UGBCCFL, EXPFSN, EXPFSPSI, EXPFSFCT,       &
        IMPFSN, IMPTOTAL, EXPTOTAL,                &
        IMPREFRACTION, IMPFREQSHIFT,               &
-       IMPSOURCE,                                 &
+       IMPSOURCE, LREAD2DM,                       &
        JGS_TERMINATE_MAXITER,                     &
        JGS_TERMINATE_DIFFERENCE,                  &
        JGS_TERMINATE_NORM,                        &
@@ -2427,6 +2428,7 @@ CONTAINS
     IMPREFRACTION = .FALSE.
     IMPFREQSHIFT = .FALSE.
     IMPSOURCE = .FALSE.
+    LREAD2DM   = .FALSE. 
     SETUP_APPLY_WLV = .TRUE.
     SOLVERTHR_SETUP=1E-6
     CRIT_DEP_SETUP=0.1
@@ -2448,6 +2450,7 @@ CONTAINS
     ! read data from the unstructured devoted namelist
     CALL READNL ( NDSS, 'UNST', STATUS )
 
+    L2DM             = LREAD2DM
     B_JGS_USE_JACOBI = JGS_USE_JACOBI
     B_JGS_TERMINATE_MAXITER = JGS_TERMINATE_MAXITER
     B_JGS_TERMINATE_DIFFERENCE = JGS_TERMINATE_DIFFERENCE
@@ -3304,10 +3307,10 @@ CONTAINS
       WRITE (NDSO,2953) CFLTM, WDTHCG, WDTHTH
 #endif
       !
-      WRITE (NDSO,2956) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
+      WRITE (NDSO,*) UGBCCFL, UGOBCAUTO, UGOBCDEPTH,TRIM(UGOBCFILE), &
            EXPFSN, EXPFSPSI, EXPFSFCT, IMPFSN, EXPTOTAL,&
            IMPTOTAL, IMPREFRACTION, IMPFREQSHIFT,      &
-           IMPSOURCE, SETUP_APPLY_WLV,                 &
+           IMPSOURCE, LREAD2DM, SETUP_APPLY_WLV,        &
            JGS_TERMINATE_MAXITER,                      &
            JGS_TERMINATE_DIFFERENCE,                   &
            JGS_TERMINATE_NORM,                         &
@@ -3986,7 +3989,11 @@ CONTAINS
       !
       ! Reading depths on unstructured grid (this also sets number of mesh points, NX)
       !
-      CALL READMSH(NDSG,FNAME)
+      IF (L2DM) THEN
+        CALL READ2DM(NDSG,FNAME)
+      ELSE
+        CALL READMSH(NDSG,FNAME)
+      ENDIF
       ALLOCATE(ZBIN(NX, NY),OBSX(NX,NY),OBSY(NX,NY))
       ZBIN(:,1) = VSC * ZB(:)
       !
@@ -4426,6 +4433,9 @@ CONTAINS
          CALL READMSHOBC(NDSG,UGOBCFILE,TMPSTA,UGOBCOK)
     IF ((GTYPE.EQ.UNGTYPE).AND.UGOBCAUTO.AND.(.NOT.UGOBCOK))  &
          CALL UG_GETOPENBOUNDARY(TMPSTA,ZBIN,UGOBCDEPTH)
+    IF ((GTYPE.EQ.UNGTYPE).AND.L2DM.AND.(.NOT.UGOBCOK))  &
+         CALL READ2DM_TMPSTA(23956,trim("meshbnd.2dm"),TMPSTA)     
+
     !
     ! 8.b Determine where to get the data
     !
