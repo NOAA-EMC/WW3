@@ -62,5 +62,5 @@ add_subdirectory(model)
 # Turn on unit testing.
 include(CTest)
 if(BUILD_TESTING)
-  add_subdirectory(model/tests)
+  add_subdirectory(regtests/unittests)
 endif()
