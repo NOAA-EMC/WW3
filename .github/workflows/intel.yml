@@ -26,7 +26,7 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -72,8 +72,8 @@ jobs:
           spack compiler find
           sudo apt install cmake
           spack external find
-          spack add intel-oneapi-mpi
           spack config add "packages:all:require:['%intel']"
+          spack config add "packages:mpi:require:'intel-oneapi-mpi'"
           spack concretize
           spack install --dirty -v --fail-fast
           spack clean --all
