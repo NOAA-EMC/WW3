@@ -850,9 +850,12 @@ CONTAINS
       TEMP=TEMP+A(IS)*(MAX(COSWIND,0.))**3
     END DO
     !
-    LEVTAIL0= CONST0*TEMP  ! LEVTAIL is sum of A(k,theta)*cos^3(theta-wind)*DTH*SIG^5/(g^2*2pi)*2*pi*SIG/CG
-    !                            ! which is the same as sum of E(f,theta)*cos^3(theta-wind)*DTH*SIG^5/(g^2*2pi)
-    ! reminder:  sum of E(f,theta)*DTH*SIG^5/(g^2*2pi) is 2*k^3*E(k)
+    LEVTAIL0= CONST0*TEMP  ! LEVTAIL is sum over theta of A(k,theta)*cos^3(theta-wind)*DTH*SIG^5/(g^2*2pi)*2*pi*SIG/CG
+                           !  which is the same as sum of E(f,theta)*cos^3(theta-wind)*DTH*SIG^5/(g^2*2pi)
+                           ! reminder:  sum of E(f,theta)*DTH*SIG^5/(g^2*2pi) is 2*k^3*E(k)
+!
+! Computation of stress supported by tail: uses table if SINTAILPAR(1)=1 , correspoding to SINTABLE = 1
+!
     IF (SINTAILPAR(1).LT.0.5) THEN
       ALLOCATE(W(JTOT))
       W(2:JTOT-1)=1.
@@ -896,7 +899,7 @@ CONTAINS
         ZLOG     = MIN(ALOG(ZMU),0.)
         ZBETA        = CONST1*ZMU*ZLOG**4
         !
-        ! Optional addition of capillary wave peak
+        ! Optional addition of capillary wave peak if SINTAIL2=1 
         !
         IF (SINTAILPAR(3).GT.0) THEN
           IF (USTR.LT.CM) THEN
@@ -939,7 +942,7 @@ CONTAINS
       DELJ1= MAX(0.,MIN (1.      , XJ-FLOAT(J)))
       DELJ2=1. - DELJ1
       IF (TTAUWSHELTER.GT.0) THEN
-        XK = LEVTAIL / DELTAIL
+        XK = LEVTAIL0/ DELTAIL
         I = MIN (ILEVTAIL-1, INT(XK))
         DELK1= MIN (1. ,XK-FLOAT(I))
         DELK2=1. - DELK1
