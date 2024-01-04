@@ -72,8 +72,8 @@ jobs:
           spack compiler find
           sudo apt install cmake
           spack external find
-          spack config add "packages:all:require:['%intel']"
           spack config add "packages:mpi:require:'intel-oneapi-mpi'"
+          spack config add "packages:all:require:['%intel']"
           spack concretize
           spack install --dirty -v --fail-fast
           spack clean --all
