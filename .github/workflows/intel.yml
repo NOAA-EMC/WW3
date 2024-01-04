@@ -62,6 +62,7 @@ jobs:
       - name: install-dependencies-with-spack
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
+          sudo mv /usr/local /usr/local_mv
           # Install NetCDF, ESMF, g2, etc using Spack
           . /opt/intel/oneapi/setvars.sh
           git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
