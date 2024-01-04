@@ -1536,12 +1536,14 @@ CONTAINS
 #endif
       IF (SINTAILPAR(1).GT.0.5) THEN
         WRITE (NDSM) DELUST, DELTAIL, DELTAUW, DELU, DELALP, &
-                     TAUT, TAUHFT, TAUHFT2
+                     TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) WRITE (NDSM) TAUHFT2
 #ifdef W3_ASCII
-      WRITE (NDSA,*) 'DELUST, DELTAIL, DELTAUW, DELU, DELALP,&
-                     TAUT, TAUHFT, TAUHFT2:',                &
+        WRITE (NDSA,*) 'DELUST, DELTAIL, DELTAUW, DELU, DELALP,&
+                     TAUT, TAUHFT:',                         &
                      DELUST, DELTAIL, DELTAUW, DELU, DELALP, &
-                     TAUT, TAUHFT, TAUHFT2 
+                     TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) WRITE (NDSA,*) 'TAUHFT2:', TAUHFT2 
 #endif
       END IF
     ELSE
@@ -1561,7 +1563,8 @@ CONTAINS
         CALL INSIN4(.FALSE.)
         READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
              DELUST, DELTAIL, DELTAUW, DELU, DELALP,  &
-             TAUT, TAUHFT, TAUHFT2
+             TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) READ(NDSM,END=801,ERR=802,IOSTAT=IERR) TAUHFT2
       END IF
     END IF
 #endif
