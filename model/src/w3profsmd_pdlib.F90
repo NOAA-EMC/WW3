@@ -1080,6 +1080,8 @@ CONTAINS
       END IF
     END IF ! LCALC
 
+    !WRITE(*,*) MAXVAL(ITER), 'MAX ITER NUMBER'
+
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'PDLIB_W3XYPFSN2, step 4'
     FLUSH(740+IAPROC)
@@ -1400,6 +1402,7 @@ CONTAINS
     DO IP = 1, npa
       DTSI(IP) = DBLE(DT)/DBLE(ITER(IK,ITH))/PDLIB_SI(IP) ! Some precalculations for the time integration.
     END DO
+
 
     DO IT = 1, ITER(IK,ITH)
 
@@ -7975,6 +7978,8 @@ CONTAINS
         DO ITH = 1, NTH
           ISP = ITH + (IK-1)*NTH
           CAD(ISP) = DIFRM(IP)*CAD(ISP)-CG(IK,IP)*(DIFRX(IP)*ESIN(ITH)-DIFRY(IP)*ECOS(ITH))
+          !CAD(ISP) = CAD(ISP)-CG(IK,IP)*(ESIN(ITH)-ECOS(ITH))
+          stop
         END DO
       END DO
     END IF
@@ -8305,7 +8310,7 @@ CONTAINS
   END SUBROUTINE PROP_FREQ_SHIFT_M2
 
   SUBROUTINE DIFFRA_SIMPLE
-    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH, NSEAL, DDEN
+    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH, NSEAL, DDEN, IOBP_LOC
     USE W3ADATMD, only: CG, CX, CY, DW, WN, CG
     USE W3WDATMD, only: VA
     USE CONSTANTS, ONLY: RADIUS
@@ -8322,9 +8327,9 @@ CONTAINS
 
     if (.not. allocated(difrm) ) then
       allocate(difrm(npa),difrx(npa),difry(npa))
-      difrm = 0.
-      difrx = 0.
-      difry = 0.
+      difrm = 1.
+      difrx = 1.
+      difry = 1.
     endif
 
     EWK = 0.d0
@@ -8370,10 +8375,11 @@ CONTAINS
       END IF
     END DO
 
-    CALL DIFFERENTIATE_XYDIR(ENG  , DXENG, DYENG)
-    CALL DIFFERENTIATE_XYDIR(DXENG, DXXEN, DXYEN)
-    CALL DIFFERENTIATE_XYDIR(DYENG, DXYEN, DYYEN)
-    CALL DIFFERENTIATE_XYDIR(CGK  , DXCGK, DYCGK)
+    CALL DIFFERENTIATE_XYDIR_LIM(ENG  , DXENG, DYENG)
+    CALL DIFFERENTIATE_XYDIR_LIM(CGK  , DXCGK, DYCGK)
+
+    CALL DIFFERENTIATE_XYDIR_LIM(DXENG, DXXEN, DXYEN)
+    CALL DIFFERENTIATE_XYDIR_LIM(DYENG, DXYEN, DYYEN)
 
     IF (FLAGLL) THEN
       DO IP = 1, NPA
@@ -8392,11 +8398,9 @@ CONTAINS
 
     DO IP = 1, NPA
        CALL INIT_GET_ISEA(ISEA, IP)
-       IF (DW(ISEA) .GT. DMIN .AND. ENG(IP) .GT. 0.d0) THEN
-
+       IF (DW(ISEA) .GT. DMIN .and. ENG(IP) .GT. 1.E-6 .and. IOBP_LOC(IP) .EQ. 1) THEN
          ECGWK = ECG(IP)*EWK(IP)*ENG(IP)
-
-         IF (ECGWK > 0.d0) THEN
+         IF (ECGWK > 1.E-6) THEN
             AUX = DXCGK(IP)*DXENG(IP)+DYCGK(IP)*DYENG(IP)+CGK(IP)*(DXXEN(IP)+DYYEN(IP))
             TMP = AUX/ECGWK
          ELSE
@@ -8413,13 +8417,23 @@ CONTAINS
          DIFRM(IP) = 1.d0
        END IF
 
+       !IF (DIFRM(IP) .gt. 1.5) DIFRM(IP) = 1.5
+       !IF (DIFRM(IP) .lt. 0.5) DIFRM(IP) = 0.5
+
        !IF (IP == 1076) THEN
        !  WRITE(32423,*) DIFRM(IP), ECGWK, AUX, TMP, DXENG(IP), DYENG(IP), DXXEN(IP), DYYEN(IP), 'TEST TEST'
        !ENDIF
 
     END DO
 
-    CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
+    !CALL DIFFERENTIATE_XYDIR_LIM(DIFRM, DIFRX, DIFRY)
+
+    DO IP = 1, NPA
+      IF (IOBP_LOC(IP) .NE. 1) THEN
+        DIFRX(IP) = 0.d0
+        DIFRY(IP) = 0.d0
+      ENDIF
+    ENDDO 
 
     IF (FLAGLL) THEN
       DO IP = 1, NPA
@@ -8777,9 +8791,9 @@ CONTAINS
 
          if (.not. allocated(difrm) ) then
            allocate(difrm(npa),difrx(npa),difry(npa))
-           difrm = 0.
-           difrx = 0.
-           difry = 0.
+           difrm = 1.
+           difrx = 1.
+           difry = 1.
          endif
 
          DFBOT(:) = 0.d0
@@ -8920,10 +8934,10 @@ CONTAINS
 !*                                                                    *
 !**********************************************************************
       SUBROUTINE DIFFERENTIATE_XYDIR(VAR, DVDX, DVDY)
-         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK
+         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, IOBP_LOC
          USE W3ADATMD, only: CG, CX, CY, DW
          USE yowExchangeModule, only : PDLIB_exchange1DREAL
-         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP, NPA
+         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP, NPA, X, Y
          USE yowElementpool, only : NE, INE
          IMPLICIT NONE
          REAL*8, INTENT(IN)    :: VAR(NPA)
@@ -8932,7 +8946,7 @@ CONTAINS
          REAL*8                :: DVDXIE, DVDYIE
          REAL*8                :: WEI(NPA)
          INTEGER               :: NI(3)
-         INTEGER               :: IE, JSEA
+         INTEGER               :: IE, JSEA, IP, I1, I2, I3
 
          WEI(:)  = 0.d0
          DVDX(:) = 0.d0
@@ -8959,9 +8973,41 @@ CONTAINS
             DVDX(NI) = DVDX(NI) + DVDXIE
             DVDY(NI) = DVDY(NI) + DVDYIE
          END DO
+ 
+         DO IP = 1, NPA
+           IF (IOBP_LOC(IP) .EQ. 1) THEN
+             DVDX(IP) = DVDX(IP)/WEI(IP)
+             DVDY(IP) = DVDY(IP)/WEI(IP)
+           ELSE
+             DVDX(IP) = 0.d0
+             DVDY(IP) = 0.d0 
+           ENDIF
+         ENDDO
 
-         DVDX = DVDX/WEI
-         DVDY = DVDY/WEI
+         WEI(:) = 0
+         DVDX(:) = 0.0
+         DVDY(:) = 0.0
+
+         DO IE = 1, NE
+            NI(:) = INE(:,IE)
+            I1 = INE(1,IE)
+            I2 = INE(2,IE)
+            I3 = INE(3,IE)
+            WEI(NI(:)) = WEI(NI(:)) + 1
+            DEDX(1) = REAL(DBLE(Y(I2)) - DBLE(Y(I3))) / (PDLIB_TRIA(IE)*2)
+            DEDX(2) = REAL(DBLE(Y(I3)) - DBLE(Y(I1))) / (PDLIB_TRIA(IE)*2)
+            DEDX(3) = REAL(DBLE(Y(I1)) - DBLE(Y(I2))) / (PDLIB_TRIA(IE)*2)
+            DEDY(1) = REAL(DBLE(X(I3)) - DBLE(X(I2))) / (PDLIB_TRIA(IE)*2)
+            DEDY(2) = REAL(DBLE(X(I1)) - DBLE(X(I3))) / (PDLIB_TRIA(IE)*2)
+            DEDY(3) = REAL(DBLE(X(I2)) - DBLE(X(I1))) / (PDLIB_TRIA(IE)*2)
+            DVDXIE = DOT_PRODUCT( VAR(NI(:)) , DEDX(:) )
+            DVDYIE = DOT_PRODUCT( VAR(NI(:)) , DEDY(:) )
+            DVDX(NI(:)) = DVDX(NI(:)) + DVDXIE
+            DVDY(NI(:)) = DVDY(NI(:)) + DVDYIE
+         END DO
+
+         DVDX(:) = DVDX(:)/REAL(WEI(:))
+         DVDY(:) = DVDY(:)/REAL(WEI(:))
 
 #ifdef DEBUG
          WRITE(STAT%FHNDL,*) 'sum(DVDX) = ', sum(DVDX)
@@ -8971,7 +9017,112 @@ CONTAINS
          IF (.true.) THEN
            OPEN(2305, FILE  = 'erggrad.bin'  , FORM = 'UNFORMATTED')
            WRITE(2305) 1.
-           WRITE(2305) (DVDX(JSEA), DVDY(JSEA), SQRT(DVDY(JSEA)**2+DVDY(JSEA)**2), JSEA = 1, NP)
+           WRITE(2305) (SNGL(DVDX(JSEA)), SNGL(DVDY(JSEA)), SNGL(SQRT(DVDY(JSEA)**2+DVDY(JSEA)**2)), JSEA = 1, NP)
          ENDIF
       END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
+      SUBROUTINE DIFFERENTIATE_XYDIR_LIM(VAR, DVDX, DVDY)
+         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, IOBP_LOC
+         USE W3ADATMD, only: CG, CX, CY, DW
+         USE yowExchangeModule, only : PDLIB_exchange1DREAL
+         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP, NPA, PDLIB_IE_CELL2, PDLIB_CCON
+         USE yowElementpool, only : NE, INE
+         IMPLICIT NONE
+         REAL*8, INTENT(IN)    :: VAR(NPA)
+         REAL*8, INTENT(INOUT) :: DVDX(NPA), DVDY(NPA)
+         REAL*8                :: DEDY(3),DEDX(3)
+         REAL*8                :: DVDXIE(NE), DVDYIE(NE)
+         REAL*8                :: WEI(NPA)
+         INTEGER               :: NI(3)
+         INTEGER               :: IE, JSEA, IP, J
+ 
+         REAL*8                :: GRAD_X_IP, GRAD_Y_IP, phi_x_sum, phi_y_sum, GRAD_X, GRAD_Y, r_x, r_y, phi_x, phi_y
+
+         WEI(:)  = 0.d0
+         DVDX(:) = 0.d0
+         DVDY(:) = 0.d0
+
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'DIFFERENTIATE_XYDIR'
+         WRITE(STAT%FHNDL,*) 'sum(VAR ) = ', sum(VAR)
+         WRITE(STAT%FHNDL,*) 'sum(IEN ) = ', sum(IEN)
+         WRITE(STAT%FHNDL,*) 'sum(TRIA) = ', sum(TRIA)
+#endif
+
+         DO IE = 1, NE
+           NI = INE(:,IE)
+           WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
+           DEDX(1) = PDLIB_IEN(1,IE)
+           DEDX(2) = PDLIB_IEN(3,IE)
+           DEDX(3) = PDLIB_IEN(5,IE)
+           DEDY(1) = PDLIB_IEN(2,IE)
+           DEDY(2) = PDLIB_IEN(4,IE)
+           DEDY(3) = PDLIB_IEN(6,IE)
+           DVDXIE(IE)  = DOT_PRODUCT( VAR(NI),DEDX)
+           DVDYIE(IE)  = DOT_PRODUCT( VAR(NI),DEDY)
+           !IF (ANY(ABS(VAR(NI)) .LT. 1E-8) .or. ANY(IOBP_LOC(NI) .NE. 1)) THEN
+           !  DVDXIE(IE) = 0.d0 
+           !  DVDYIE(IE) = 0.d0 
+           !ENDIF
+           DVDX(NI) = DVDX(NI) + DVDXIE(IE)
+           DVDY(NI) = DVDY(NI) + DVDYIE(IE)
+         END DO
+
+         DO IP = 1, NPA
+           IF (IOBP_LOC(IP) .EQ. 1) THEN
+             DVDX(IP) = DVDX(IP)/WEI(IP)
+             DVDY(IP) = DVDY(IP)/WEI(IP)
+           ELSE
+             DVDX(IP) = 0.d0
+             DVDY(IP) = 0.d0
+           ENDIF
+         ENDDO
+
+         DO IP = 1, NPA
+           GRAD_X_IP = DVDX(IP)
+           GRAD_Y_IP = DVDY(IP)
+           phi_x_sum = 0.
+           phi_y_sum = 0.
+           DO J = 1, PDLIB_CCON(IP)
+             IE = PDLIB_IE_CELL2(J,IP)
+             GRAD_X = DVDXIE(IE)
+             GRAD_Y = DVDYIE(IE)
+             IF (ABS(GRAD_X) .gt. 0.d0 .and. ABS(GRAD_X_IP) .gt. 0.d0) THEN
+               r_x = GRAD_X_IP/GRAD_X
+               phi_x = 1.d0!(r_x + ABS(r_x)) / (1.0 + ABS(r_x))
+             ELSE
+               phi_x = 1.d0 
+             ENDIF
+             IF (ABS(GRAD_Y) .gt. 0.d0 .and. ABS(GRAD_Y_IP) .gt. 0.d0) THEN
+               r_y = GRAD_Y_IP/GRAD_Y
+               phi_y = 1.d0!(r_y + ABS(r_y)) / (1.0 + ABS(r_y))
+             ELSE
+               phi_y = 1.d0 
+             ENDIF
+             phi_x_sum = phi_x_sum + phi_x
+             phi_y_sum = phi_y_sum + phi_Y
+           ENDDO 
+           phi_x_sum = phi_x_sum / PDLIB_CCON(IP)
+           phi_y_sum = phi_y_sum / PDLIB_CCON(IP)
+           !DVDX(IP) = DVDX(IP) * phi_x_sum
+           !DVDY(IP) = DVDY(IP) * phi_y_sum
+           !write(*,*) phi_x_sum, phi_y_sum
+         ENDDO 
+ 
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'sum(DVDX) = ', sum(DVDX)
+         WRITE(STAT%FHNDL,*) 'sum(DVDY) = ', sum(DVDY)
+#endif
+
+         IF (.true.) THEN
+           OPEN(2305, FILE  = 'erggrad.bin'  , FORM = 'UNFORMATTED')
+           WRITE(2305) 1.
+           WRITE(2305) (SNGL(DVDX(JSEA)), SNGL(DVDY(JSEA)), SNGL(SQRT(DVDY(JSEA)**2+DVDY(JSEA)**2)), JSEA = 1, NPA)
+         ENDIF
+      END SUBROUTINE
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
 END MODULE PDLIB_W3PROFSMD

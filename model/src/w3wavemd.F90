@@ -1453,11 +1453,6 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
         !
 #ifdef W3_PDLIB
-        !WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR
-        IF (B_JGS_LDIFR) THEN
-          !WRITE(*,*) 'COMPUTING DIFFRACTION' 
-          CALL COMPUTE_DIFFRACTION
-        ENDIF 
 
         IF (LPDLIB .and. .not. FLSOU .and. .not. FSSOURCE) THEN
           B_JAC     = 0.
@@ -1712,6 +1707,7 @@ CONTAINS
           TTEST(2) = 0
           DTTEST = DSEC21(TTEST,TIME)
           ITLOCH = ( NTLOC + 1 - MOD(NINT(DTTEST/DTG),2) ) / 2
+
           !
           ! 3.6.2 Intra-spectral part 1
           !
@@ -2305,6 +2301,17 @@ CONTAINS
           !
           ! End of interations for DTMAX < 1s
           !
+          !WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR
+          IF (B_JGS_LDIFR) THEN
+            DO IP = 1, NPA
+              IF (ANY(VA(:,IP) .lt. 0.)) THEN
+                WRITE(*,*) IP, VA(:,IP), 'NEGATIVE VALUE DETECTED'
+                STOP 
+              ENDIF 
+            ENDDO 
+           !WRITE(*,*) 'COMPUTING DIFFRACTION' 
+            CALL COMPUTE_DIFFRACTION
+          ENDIF
 #ifdef W3_SEC1
           IF (IT.EQ.0) EXIT
         END DO
