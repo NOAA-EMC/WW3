@@ -120,6 +120,7 @@ jobs:
       - name: build-ww3
         run: |
           sudo mv /usr/local /usr/local_mv
+          sudo apt install cmake
           . /opt/intel/oneapi/setvars.sh
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
