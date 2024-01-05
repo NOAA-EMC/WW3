@@ -156,10 +156,6 @@ EOF
     echo '#SBATCH --exclusive'                              >> matrix.head
     echo ' '                                                >> matrix.head
     echo 'ulimit -s unlimited'                              >> matrix.head
-    echo 'ulimit -c 0'                                      >> matrix.head
-    echo 'export KMP_STACKSIZE=2G'                          >> matrix.head
-    echo 'export FI_OFI_RXM_BUFFER_SIZE=128000'             >> matrix.head
-    echo 'export FI_OFI_RXM_RX_SIZE=64000'                  >> matrix.head
   elif [ $batchq = "slurm" ] && [ $ishercules ]
   then
     echo "#SBATCH -n ${np}"                                 >> matrix.head
