@@ -98,7 +98,7 @@ jobs:
     strategy:
       matrix:
         switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout-ww3
@@ -119,6 +119,7 @@ jobs:
 
       - name: build-ww3
         run: |
+          sudo mv /usr/local /usr/local_mv
           . /opt/intel/oneapi/setvars.sh
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel
