@@ -20,7 +20,7 @@
   RUN%FLCY         =  T
   RUN%FLCK         =  T
   RUN%FLCTH        =  T
-  RUN%FLSOU       =  T
+  RUN%FLSOU        =  T
 /
 
 ! -------------------------------------------------------------------- !

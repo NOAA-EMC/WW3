@@ -1624,7 +1624,7 @@ CONTAINS
     USE CONSTANTS
     USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-         CTMAX, DMIN
+         CTMAX, DMIN, DIFRM, DIFRX, DIFRY
     USE W3ADATMD, ONLY: MAPTH2, MAPWN2, ITIME
     USE W3IDATMD, ONLY: FLCUR
     USE W3ODATMD, ONLY: NDSE, NDST
@@ -1776,6 +1776,10 @@ CONTAINS
         VELNOFILT = VCFLT(MAPTH2(ISP))       &
              + FRG(MAPWN(ISP)) * ECOS(ISP)              &
              + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
+ 
+        VELNOFILT = DIFRM(ISEA)*VELNOFILT-CG(1+(ISP-1)/NTH) & 
+             * (DIFRX(ISEA)*ESIN(ISP)-DIFRY(ISEA)*ECOS(ISP))
+
         !
 #ifdef W3_REFRX
         ! 3.d @C/@x refraction and great-circle propagation
@@ -1790,7 +1794,7 @@ CONTAINS
         ! the filtering limits VCFLT to be less than CTMAX
         ! this modification was proposed by F. Ardhuin 2011/03/06
         !
-        VCFLT(MAPTH2(ISP))=SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
+        VCFLT(MAPTH2(ISP))=VELNOFILT!SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
       END DO
     END IF
     !

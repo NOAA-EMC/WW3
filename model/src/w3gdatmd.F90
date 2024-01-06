@@ -752,6 +752,9 @@ MODULE W3GDATMD
     INTEGER*2, POINTER   :: IOBP_LOC(:)
     INTEGER*1, POINTER   :: IOBDP_LOC(:)
     INTEGER*1, POINTER   :: IOBPA_LOC(:)
+    REAL, POINTER        :: DIFRM(:)
+    REAL, POINTER        :: DIFRX(:)
+    REAL, POINTER        :: DIFRY(:)
 #endif
 
     REAL(8), POINTER      :: LEN(:,:),SI(:), IEN(:,:)
@@ -1113,6 +1116,9 @@ MODULE W3GDATMD
   INTEGER*2, POINTER   :: IOBP_LOC(:)
   INTEGER*1, POINTER   :: IOBDP_LOC(:)
   INTEGER*1, POINTER   :: IOBPA_LOC(:)
+  REAL, POINTER        :: DIFRM(:)
+  REAL, POINTER        :: DIFRX(:)
+  REAL, POINTER        :: DIFRY(:)
 #endif
 
   REAL(8), POINTER        :: IEN(:,:), LEN(:,:), SI(:)

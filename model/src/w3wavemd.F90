@@ -1823,6 +1823,12 @@ CONTAINS
             END IF
           END IF
 
+          !WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR 
+          IF (B_JGS_LDIFR) THEN
+           !WRITE(*,*) 'COMPUTING DIFFRACTION' 
+            CALL COMPUTE_DIFFRACTION
+          ENDIF
+
           IF (LPDLIB) THEN
             !
 #ifdef W3_PDLIB
@@ -2301,17 +2307,6 @@ CONTAINS
           !
           ! End of interations for DTMAX < 1s
           !
-          !WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR
-          IF (B_JGS_LDIFR) THEN
-            DO IP = 1, NPA
-              IF (ANY(VA(:,IP) .lt. 0.)) THEN
-                WRITE(*,*) IP, VA(:,IP), 'NEGATIVE VALUE DETECTED'
-                STOP 
-              ENDIF 
-            ENDDO 
-           !WRITE(*,*) 'COMPUTING DIFFRACTION' 
-            CALL COMPUTE_DIFFRACTION
-          ENDIF
 #ifdef W3_SEC1
           IF (IT.EQ.0) EXIT
         END DO
