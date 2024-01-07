@@ -1777,8 +1777,8 @@ CONTAINS
              + FRG(MAPWN(ISP)) * ECOS(ISP)              &
              + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
  
-        VELNOFILT = DIFRM(ISEA)*VELNOFILT-CG(1+(ISP-1)/NTH) & 
-             * (DIFRX(ISEA)*ESIN(ISP)-DIFRY(ISEA)*ECOS(ISP))
+        !VELNOFILT = DIFRM(ISEA)*VELNOFILT-CG(1+(ISP-1)/NTH) & 
+        !     * (DIFRX(ISEA)*ESIN(ISP)-DIFRY(ISEA)*ECOS(ISP))
 
         !
 #ifdef W3_REFRX
