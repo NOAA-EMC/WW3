@@ -8316,7 +8316,7 @@ CONTAINS
   END SUBROUTINE PROP_FREQ_SHIFT_M2
 
   SUBROUTINE DIFFRA_SIMPLE
-    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH, NSEAL, DDEN, IOBP_LOC, DIFRM, DIFRX, DIFRY
+    USE W3GDATMD, only: ECOS, ESIN, DMIN, FLAGLL, NTH, SIG, NK, CLATS, DTH, NSEAL, DDEN, IOBP_LOC, DIFRM, DIFRX, DIFRY, FSTOTALIMP
     USE W3ADATMD, only: CG, CX, CY, DW, WN, CG
     USE W3WDATMD, only: VA
     USE CONSTANTS, ONLY: RADIUS
@@ -8331,6 +8331,7 @@ CONTAINS
     REAL :: CGK(NPA), EB(NK), ECGWK
     REAL :: DXENG(NPA), DYENG(NPA), DXXEN(NPA), DYYEN(NPA), DXYEN(NPA)
     REAL :: DXCGK(NPA), DYCGK(NPA)
+    INTEGER, PARAMETER :: NSMOOTH = 6
 
     EWK = 0.d0
     ECG = 0.d0
@@ -8375,23 +8376,21 @@ CONTAINS
       END IF
     END DO
 
-    !CALL SMOOTHGLOBAL( -1.1, NPA, X, Y, ENG )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, ENG ) 
-    CALL smooth_median_dual( -1.1, NPA, X, Y, ENG )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, ENG )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, ENG )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, ENG )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, ENG )
+    IF (.NOT. FSTOTALIMP) THEN
+      DO IS = 1, NSMOOTH 
+        CALL smooth_median_dual( -1.1, NPA, X, Y, ENG ) 
+      ENDDO
+    ENDIF
     CALL DIFFERENTIATE_XYDIR(ENG , DXENG, DYENG)
-    CALL smooth_median_dual( -1.1, NPA, X, Y, CGK ) 
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, CGK ) 
     CALL DIFFERENTIATE_XYDIR(CGK  , DXCGK, DYCGK)  
-    CALL smooth_median_dual( -1.1, NPA, X, Y, DXCGK )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, DYCGK )
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXCGK )
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYCGK )
     CALL DIFFERENTIATE_XYDIR(DXENG, DXXEN, DXYEN)
     CALL DIFFERENTIATE_XYDIR(DYENG, DXYEN, DYYEN)
-    CALL smooth_median_dual( -1.1, NPA, X, Y, DXXEN )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, DYYEN )
-
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXXEN )
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYYEN )
+ 
     IF (FLAGLL) THEN
       DO IP = 1, NPA
         IP_GLOB = IPLG(IP)
@@ -8437,10 +8436,10 @@ CONTAINS
 
     END DO
 
-    CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRM ) 
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRM ) 
     CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
-    CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRX )
-    CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRY )
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRX )
+    IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRY )
 
     !CALL differentiate_linear_shape_functions(X, Y, DIFRM, INE, NE, NPA, DIFRX, DIFRY)
 
@@ -8468,70 +8467,6 @@ CONTAINS
       WRITE(555) (SNGL(DIFRX(IP)), SNGL(DIFRY(IP)),SNGL(DIFRM(IP)), IP = 1, NP)
     END IF
 
-    END SUBROUTINE
-!**********************************************************************
-!*                                                                    *
-!**********************************************************************
-    SUBROUTINE BOTEFCT( EWK, DFBOT )
-      USE W3ADATMD, only: DW
-      USE CONSTANTS, only: GRAV, RADIUS
-      USE YOWNODEPOOL, only: NP, IPLG, NPA
-      USE W3GDATMD, only: FLAGLL, CLATS
-
-      IMPLICIT NONE
-
-      REAL, INTENT(IN)    :: EWK(NP)
-      REAL, INTENT(OUT)   :: DFBOT(NP)
-
-      REAL :: SLPH(NPA), CURH(NPA)
-      REAL :: DXDEP(NPA) , DYDEP(NPA), DEP_LOC(NPA)
-      REAL :: DXXDEP(NPA), DXYDEP(NPA), DYYDEP(NPA)
-
-      REAL :: KH, BOTFC, BOTFS, TRANS_X, TRANS_Y
-
-      INTEGER :: IP, IP_GLOB
-
-      LOGICAL :: MY_ISNAN, MY_ISINF
-
-!      CALL SMOOTH( -1.1, NP, XP, YP, DEP ) ! Add smoothing
-
-      DO IP = 1, NPA
-        IP_GLOB = IPLG(IP)
-        DEP_LOC(IP) = DW(IP_GLOB)
-      ENDDO
-
-      CALL DIFFERENTIATE_XYDIR(DEP_LOC, DXDEP ,  DYDEP)
-      CALL DIFFERENTIATE_XYDIR(DXDEP , DXXDEP, DXYDEP)
-      CALL DIFFERENTIATE_XYDIR(DYDEP , DXYDEP, DYYDEP)
-
-      IF (FLAGLL) THEN
-        DO IP = 1, NPA
-          IP_GLOB = IPLG(IP)
-          TRANS_X = 1.d0/(DEGRAD*RADIUS*CLATS(IP_GLOB))
-          TRANS_Y = 1.d0/(DEGRAD*RADIUS)
-          DXDEP(IP) = DXDEP(IP) * TRANS_X
-          DYDEP(IP) = DYDEP(IP) * TRANS_Y
-          DXXDEP(IP) = DXXDEP(IP) * TRANS_X**2
-          DYYDEP(IP) = DYYDEP(IP) * TRANS_Y**2
-        ENDDO
-      END IF
-
-      SLPH = DXDEP**2 + DYDEP**2
-      CURH = DXXDEP   + DYYDEP
-
-      DO IP = 1, NPA
-        IF (EWK(IP) < TINY(1.)) CYCLE
-        KH = EWK(IP)*DW(IP)
-        IF (KH > PI) CYCLE
-        CALL CALC_BOTFC(KH,BOTFC)
-        CALL CALC_BOTFS(KH,BOTFS)
-        DFBOT(IP) = (BOTFC*CURH(IP)+BOTFS*EWK(IP)*SLPH(IP))*GRAV
-        WRITE(*,*)'DFBOT', IP,KH, CURH(IP), BOTFS, BOTFC, EWK(IP), SLPH(IP)
-        IF (DFBOT(IP) .NE. DFBOT(IP)) THEN
-          WRITE(*,*)'DFBOT is NaN', IP,KH, CURH(IP), BOTFS, BOTFC, EWK(IP), SLPH(IP)
-          STOP
-        END IF
-      END DO
     END SUBROUTINE
 !**********************************************************************
 !*                                                                    *
@@ -8585,32 +8520,6 @@ CONTAINS
           WRITE(*,*)'BOTFS is NaN', BOTFS, AUX, AUX1
           STOP
         ENDIF
-      END SUBROUTINE
-!**********************************************************************
-!*                                                                    *
-!**********************************************************************
-      SUBROUTINE CUREFCT( DXENG, DYENG, CURT, DFCUR )
-         USE W3ADATMD, only: DW
-         USE CONSTANTS, only: GRAV
-         USE YOWNODEPOOL, only: NP, IPLG, NPA
-         USE W3GDATMD, only: FLAGLL, CLATS
-
-         IMPLICIT NONE
-
-         REAL, INTENT(IN)    :: DXENG(NPA), DYENG(NPA), CURT(NPA,2)
-         REAL, INTENT(INOUT) :: DFCUR(NPA)
-
-         REAL                :: AUX(NPA), AUXX(NPA), AUXY(NPA)
-         REAL                :: DXAUXX(NPA), DYAUXY(NPA)
-
-         AUX(:)  = CURT(:,1) * DXENG(:) + CURT(:,2) * DYENG(:)
-         AUXX(:) = AUX(:) * CURT(:,1)
-         AUXY(:) = AUX(:) * CURT(:,2)
-
-         CALL DIFFERENTIATE_XYDIR(AUXX, DXAUXX, AUX)
-         CALL DIFFERENTIATE_XYDIR(AUXY, DYAUXY, AUX)
-
-         DFCUR(:) = DXAUXX(:) + DYAUXY(:)
       END SUBROUTINE
 !**********************************************************************
 !*                                                                    *
@@ -8690,7 +8599,7 @@ CONTAINS
 !**********************************************************************
       SUBROUTINE CUREFCT2( DXENG, DYENG, CX, CY, DFCUR )
          USE CONSTANTS, only: GRAV, RADIUS
-         USE YOWNODEPOOL, only: NP, IPLG, NPA
+         USE yowNodepool, ONLY: np, npa, iplg, x, y, pdlib_tria
          USE W3GDATMD, only: FLAGLL, CLATS
 
          IMPLICIT NONE
@@ -8706,8 +8615,13 @@ CONTAINS
          AUXX = AUX * CX
          AUXY = AUX * CY
 
+         CALL smooth_median_dual( -1.1, NPA, X, Y, AUXX)
          CALL DIFFERENTIATE_XYDIR(AUXX, DXAUXX, AUX)
+         CALL smooth_median_dual( -1.1, NPA, X, Y, DXAUXX)
+
+         CALL smooth_median_dual( -1.1, NPA, X, Y, AUXY)
          CALL DIFFERENTIATE_XYDIR(AUXY, DYAUXY, AUX)
+         CALL smooth_median_dual( -1.1, NPA, X, Y, DYAUXY)
 
          IF (FLAGLL) THEN
            DO IP = 1, NPA
@@ -8725,26 +8639,37 @@ CONTAINS
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
-      SUBROUTINE BOTEFCT2(DEP_LOC, EWK, DFBOT)
+      SUBROUTINE BOTEFCT2(EWK, DFBOT)
         USE CONSTANTS, only: GRAV, RADIUS
-        USE YOWNODEPOOL, only: NP, IPLG, NPA
+        USE yowNodepool, ONLY: np, npa, iplg, x, y, pdlib_tria
         USE W3GDATMD, only: FLAGLL, CLATS
+        USE W3ADATMD, only: DW
         IMPLICIT NONE
 
         REAL, INTENT(INOUT) :: DFBOT(NPA)
-        REAL, INTENT(INOUT)    :: EWK(NPA), DEP_LOC(NPA)
+        REAL, INTENT(INOUT) :: EWK(NPA)
 
         REAL                :: SLPH(NPA), CURH(NPA)
         REAL                :: DXDEP(NPA), DYDEP(NPA)
         REAL                :: DXXDEP(NPA), DXYDEP(NPA), DYYDEP(NPA)
-        REAL                :: KH
+        REAL                :: KH, DEP_LOC(NPA) 
         REAL                :: BOTFC2, BOTFS2, TRANS_X, TRANS_Y
 
-        INTEGER                :: IP, IP_GLOB
+        INTEGER             :: IP, IP_GLOB
 
+        DO IP = 1, NPA
+          IP_GLOB = IPLG(IP)
+          DEP_LOC(IP) = DW(IP_GLOB)
+        ENDDO
+
+        CALL smooth_median_dual( -1.1, NPA, X, Y, DEP_LOC)
         CALL DIFFERENTIATE_XYDIR(DEP_LOC, DXDEP,  DYDEP)
+        CALL smooth_median_dual( -1.1, NPA, X, Y, DXDEP)
+        CALL smooth_median_dual( -1.1, NPA, X, Y, DYDEP)
         CALL DIFFERENTIATE_XYDIR(DXDEP, DXXDEP, DXYDEP)
         CALL DIFFERENTIATE_XYDIR(DYDEP, DXYDEP, DYYDEP)
+        CALL smooth_median_dual( -1.1, NPA, X, Y, DXXDEP)
+        CALL smooth_median_dual( -1.1, NPA, X, Y, DYYDEP)
 
         IF (FLAGLL) THEN
           DO IP = 1, NPA
@@ -8779,12 +8704,12 @@ CONTAINS
 !**********************************************************************
       SUBROUTINE DIFFRA_EXTENDED
          USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, CLATS, DTH, DSII, DDEN
-         USE W3GDATMD, only: FLAGLL, DIFRM, DIFRX, DIFRY
+         USE W3GDATMD, only: FLAGLL, DIFRM, DIFRX, DIFRY, FSTOTALIMP
          USE W3ADATMD, only: CG, CX, CY, DW
          USE W3WDATMD, only: VA
          USE W3DISPMD, ONLY : WAVNU3
          USE W3IDATMD, ONLY: FLCUR
-         USE YOWNODEPOOL, ONLY: NP, NPA, IPLG
+         USE yowNodepool, ONLY: np, npa, iplg, x, y, pdlib_tria
          USE CONSTANTS, ONLY: GRAV, RADIUS
          USE W3PARALL, only: INIT_GET_ISEA
          IMPLICIT NONE
@@ -8806,6 +8731,7 @@ CONTAINS
          REAL :: CAUX, CAUX2
          REAL :: NAUX, TRANS_X, TRANS_Y
          REAL :: DEPTH
+         INTEGER, PARAMETER :: NSMOOTH = 6
 
          DFBOT(:) = 0.d0
          DFCUR(:) = 0.d0
@@ -8855,10 +8781,25 @@ CONTAINS
            END IF
          END DO
 
-         CALL DIFFERENTIATE_XYDIR(ENG, DXENG, DYENG)
+         IF (.NOT. FSTOTALIMP) THEN
+           DO IS = 1, NSMOOTH
+             CALL smooth_median_dual( -1.1, NPA, X, Y, ENG )
+           ENDDO
+         ENDIF
+         CALL DIFFERENTIATE_XYDIR(ENG , DXENG, DYENG)
+         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXENG )
+         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYENG )
+
          CALL DIFFERENTIATE_XYDIR(DXENG, DXXEN, DXYEN)
          CALL DIFFERENTIATE_XYDIR(DYENG, DXYEN, DYYEN)
-         CALL DIFFERENTIATE_XYDIR(CCG, DXCCG, DYCCG)
+         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXXEN )
+         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYYEN )
+
+
+         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, CCG )
+         CALL DIFFERENTIATE_XYDIR(CCG  , DXCCG, DYCCG)
+         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXCCG )
+         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYCCG )
 
          IF (FLAGLL) THEN
            DO IP = 1, NPA
@@ -8874,7 +8815,7 @@ CONTAINS
            ENDDO
          END IF
 
-         CALL BOTEFCT2(DEP_LOC, EWK, DFBOT )
+         CALL BOTEFCT2(EWK, DFBOT )
 
          IF (FLCUR) THEN
            CALL CUREFCT2(DXENG, DYENG, CX_LOC, CY_LOC, DFCUR )
@@ -8917,10 +8858,13 @@ CONTAINS
             ELSE
                DIFRM(JSEA) = 1.d0
             END IF
-            WRITE(*,*) JSEA, DIFRM(JSEA), 'DIFRM'
+            !WRITE(*,*) JSEA, DIFRM(JSEA), 'DIFRM'
          END DO
 
+         CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRM)
          CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
+         CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRX)
+         CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRY)
 
          IF (FLAGLL) THEN
            DO IP = 1, NPA
@@ -8981,11 +8925,15 @@ CONTAINS
             DVDX(NI) = DVDX(NI) + DVDXIE
             DVDY(NI) = DVDY(NI) + DVDYIE
             !WRITE(*,*) IE, DVDX(NI), DVDY(NI), VAR(NI), 2.*PDLIB_TRIA(IE)
+            IF (ANY(NI .EQ. 1228)) THEN
+              WRITE(*,*) IE, DVDX(NI), DVDY(NI), 2*PDLIB_TRIA(IE)
+            ENDIF
          END DO
  
          DO IP = 1, NPA
            DVDX(IP) = DVDX(IP)/WEI(IP)
            DVDY(IP) = DVDY(IP)/WEI(IP)
+           IF (IP == 1228) WRITE(*,'(I10,10F20.10)') IP, 4*VAR(IP), DVDX(IP), DVDY(IP), SQRT(DVDX(IP)**2+DVDY(IP)**2), WEI(IP)
          ENDDO
 
 #ifdef DEBUG
@@ -8999,7 +8947,7 @@ CONTAINS
            WRITE(2304) 1.
            WRITE(2305) 1.
            WRITE(2304) (1.,1., SNGL(VAR(JSEA)), JSEA = 1, NP)
-           WRITE(2305) (SNGL(DVDX(JSEA)), SNGL(DVDY(JSEA)), SNGL(SQRT(DVDY(JSEA)**2+DVDY(JSEA)**2)), JSEA = 1, NP)
+           WRITE(2305) (SNGL(DVDX(JSEA)), SNGL(DVDY(JSEA)), SNGL(SQRT(DVDX(JSEA)**2+DVDY(JSEA)**2)), JSEA = 1, NP)
          ENDIF
 
       END SUBROUTINE
