@@ -127,7 +127,7 @@ MODULE PDLIB_W3PROFSMD
   LOGICAL, SAVE         :: LINIT_OUTPUT = .TRUE.
   REAL, SAVE            :: RTIME = 0.d0
   INTEGER               :: POS_TRICK(3,2)
-  REAL*8, PARAMETER     :: KDMAX     = 30.d0
+  REAL*8, PARAMETER     :: KDMAX     = 20.d0
   REAL*8, PARAMETER     :: PI = 3.14159265358979323846D0
   REAL*8, PARAMETER     :: DEGRAD    = PI/180.d0
   REAL*8, PARAMETER     :: RADDEG    = 180.d0/PI
@@ -1760,7 +1760,7 @@ CONTAINS
 #endif
 
       DO IP = 1, npa
-        UL(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
+        UL(IP) = MAX(ZERO,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*IOBPD_LOC(ITH,IP)*IOBDP_LOC(IP)
       END DO
 
 #ifdef MPI_PARALL_GRID
@@ -8615,13 +8615,13 @@ CONTAINS
          AUXX = AUX * CX
          AUXY = AUX * CY
 
-         CALL smooth_median_dual( -1.1, NPA, X, Y, AUXX)
+         !CALL smooth_median_dual( -1.1, NPA, X, Y, AUXX)
          CALL DIFFERENTIATE_XYDIR(AUXX, DXAUXX, AUX)
-         CALL smooth_median_dual( -1.1, NPA, X, Y, DXAUXX)
+         !CALL smooth_median_dual( -1.1, NPA, X, Y, DXAUXX)
 
-         CALL smooth_median_dual( -1.1, NPA, X, Y, AUXY)
+         !CALL smooth_median_dual( -1.1, NPA, X, Y, AUXY)
          CALL DIFFERENTIATE_XYDIR(AUXY, DYAUXY, AUX)
-         CALL smooth_median_dual( -1.1, NPA, X, Y, DYAUXY)
+         !CALL smooth_median_dual( -1.1, NPA, X, Y, DYAUXY)
 
          IF (FLAGLL) THEN
            DO IP = 1, NPA
@@ -8662,14 +8662,14 @@ CONTAINS
           DEP_LOC(IP) = DW(IP_GLOB)
         ENDDO
 
-        CALL smooth_median_dual( -1.1, NPA, X, Y, DEP_LOC)
+        !CALL smooth_median_dual( -1.1, NPA, X, Y, DEP_LOC)
         CALL DIFFERENTIATE_XYDIR(DEP_LOC, DXDEP,  DYDEP)
-        CALL smooth_median_dual( -1.1, NPA, X, Y, DXDEP)
-        CALL smooth_median_dual( -1.1, NPA, X, Y, DYDEP)
+        !CALL smooth_median_dual( -1.1, NPA, X, Y, DXDEP)
+        !CALL smooth_median_dual( -1.1, NPA, X, Y, DYDEP)
         CALL DIFFERENTIATE_XYDIR(DXDEP, DXXDEP, DXYDEP)
         CALL DIFFERENTIATE_XYDIR(DYDEP, DXYDEP, DYYDEP)
-        CALL smooth_median_dual( -1.1, NPA, X, Y, DXXDEP)
-        CALL smooth_median_dual( -1.1, NPA, X, Y, DYYDEP)
+        !CALL smooth_median_dual( -1.1, NPA, X, Y, DXXDEP)
+        !CALL smooth_median_dual( -1.1, NPA, X, Y, DYYDEP)
 
         IF (FLAGLL) THEN
           DO IP = 1, NPA
@@ -8704,7 +8704,7 @@ CONTAINS
 !**********************************************************************
       SUBROUTINE DIFFRA_EXTENDED
          USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK, CLATS, DTH, DSII, DDEN
-         USE W3GDATMD, only: FLAGLL, DIFRM, DIFRX, DIFRY, FSTOTALIMP
+         USE W3GDATMD, only: FLAGLL, DIFRM, DIFRX, DIFRY, FSTOTALIMP, IOBP_LOC
          USE W3ADATMD, only: CG, CX, CY, DW
          USE W3WDATMD, only: VA
          USE W3DISPMD, ONLY : WAVNU3
@@ -8792,14 +8792,14 @@ CONTAINS
 
          CALL DIFFERENTIATE_XYDIR(DXENG, DXXEN, DXYEN)
          CALL DIFFERENTIATE_XYDIR(DYENG, DXYEN, DYYEN)
-         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXXEN )
-         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYYEN )
+         !IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXXEN )
+         !IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYYEN )
 
 
-         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, CCG )
+         !IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, CCG )
          CALL DIFFERENTIATE_XYDIR(CCG  , DXCCG, DYCCG)
-         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXCCG )
-         IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYCCG )
+         !IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DXCCG )
+         !IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DYCCG )
 
          IF (FLAGLL) THEN
            DO IP = 1, NPA
@@ -8824,7 +8824,7 @@ CONTAINS
          DO JSEA = 1, NPA
             CALL INIT_GET_ISEA(ISEA, JSEA)
             AUX = CCG(JSEA)*EWK(JSEA)*EWK(JSEA)
-            IF ( ENG(JSEA) .GT. 0.d0) THEN
+            IF ( AUX .GT. 1.E-6 .AND. DW(ISEA) .GT. DMIN .AND. EWC(JSEA) .GT. 1.E-6) THEN
                DFWAV = ( DXCCG(JSEA) * DXENG(JSEA) + DYCCG(JSEA) * DYENG(JSEA) + CCG(JSEA) * (DXXEN(JSEA) + DYYEN(JSEA)) ) / ENG(JSEA)
                NAUX = ECG(JSEA) / EWC(JSEA)
                IF (FLCUR) THEN
@@ -8854,17 +8854,25 @@ CONTAINS
                ELSE
                  DIFRM(JSEA) = 1.d0/(CAUX2-NAUX)*(CAUX*(1.d0+CAUX)-SQRT(DELTA))
                END IF
-               !WRITE(*,*) 'TERMS DIFFRACTION', DIFRM(JSEA), DELTA, NAUX, DFWAV, AUX, DFBOT(JSEA)
+               !WRITE(*,*) 'TERMS DIFFRACTION', 'JSEA = ', JSEA, DIFRM(JSEA), DELTA, NAUX, DFWAV, AUX, DFBOT(JSEA)
             ELSE
                DIFRM(JSEA) = 1.d0
             END IF
             !WRITE(*,*) JSEA, DIFRM(JSEA), 'DIFRM'
          END DO
 
-         CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRM)
+         !CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRM)
          CALL DIFFERENTIATE_XYDIR(DIFRM, DIFRX, DIFRY)
-         CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRX)
-         CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRY)
+         !CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRX)
+         !CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRY)
+
+         DO IP = 1, NPA
+           IF (IOBP_LOC(IP) .NE. 1) THEN
+             DIFRM(IP) = 1.d0
+             DIFRX(IP) = 1.d0
+             DIFRY(IP) = 1.d0
+           ENDIF
+         ENDDO
 
          IF (FLAGLL) THEN
            DO IP = 1, NPA
@@ -8925,15 +8933,15 @@ CONTAINS
             DVDX(NI) = DVDX(NI) + DVDXIE
             DVDY(NI) = DVDY(NI) + DVDYIE
             !WRITE(*,*) IE, DVDX(NI), DVDY(NI), VAR(NI), 2.*PDLIB_TRIA(IE)
-            IF (ANY(NI .EQ. 1228)) THEN
-              WRITE(*,*) IE, DVDX(NI), DVDY(NI), 2*PDLIB_TRIA(IE)
-            ENDIF
+            !IF (ANY(NI .EQ. 1228)) THEN
+            !  WRITE(*,*) IE, DVDX(NI), DVDY(NI), 2*PDLIB_TRIA(IE)
+            !ENDIF
          END DO
  
          DO IP = 1, NPA
            DVDX(IP) = DVDX(IP)/WEI(IP)
            DVDY(IP) = DVDY(IP)/WEI(IP)
-           IF (IP == 1228) WRITE(*,'(I10,10F20.10)') IP, 4*VAR(IP), DVDX(IP), DVDY(IP), SQRT(DVDX(IP)**2+DVDY(IP)**2), WEI(IP)
+         !  IF (IP == 1228) WRITE(*,'(I10,10F20.10)') IP, 4*VAR(IP), DVDX(IP), DVDY(IP), SQRT(DVDX(IP)**2+DVDY(IP)**2), WEI(IP)
          ENDDO
 
 #ifdef DEBUG
