@@ -9,15 +9,14 @@
 !> @date 01-08-2024
 module wav_wrapper_mod
 
-#ifdef CESMCOUPLED
-  use perf_mod      , only : t_startf, t_stopf, t_barrierf
-  use shr_file_mod  , only : shr_file_getlogunit, shr_file_setlogunit
   use wav_kind_mod  , only : r8 => shr_kind_r8, r4 => shr_kind_r4, i4 => shr_kind_i4
   use wav_kind_mod  , only : CL => shr_kind_cl, CS => shr_kind_cs
 
   implicit none
 
   real(r8) :: wtime = 0.0
+
+#ifdef CESMCOUPLED
 contains
   ! Define stub routines that do nothing - they are just here to avoid
   ! having cppdefs in the main program
@@ -41,13 +40,6 @@ contains
     real(r8),          intent(in)  :: hour
   end subroutine ufs_logfhour
 #else
-
-  use wav_kind_mod , only : r8 => shr_kind_r8, r4 => shr_kind_r4, i4 => shr_kind_i4
-  use wav_kind_mod , only : CL => shr_kind_cl, CS => shr_kind_cs
-
-  implicit none
-
-  real(r8) :: wtime = 0.0
 contains
   subroutine ufs_settimer(timevalue)
     !> Set a time value
@@ -122,25 +114,6 @@ contains
     write(nunit,'(a)')'valid time: '//trim(msg)
     close(nunit)
   end subroutine ufs_logfhour
-
-  ! Define stub routines that do nothing - they are just here to avoid
-  ! having cppdefs in the main program
-  subroutine shr_file_setLogUnit(nunit)
-    integer, intent(in) :: nunit
-  end subroutine shr_file_setLogUnit
-  subroutine shr_file_getLogUnit(nunit)
-    integer, intent(in) :: nunit
-  end subroutine shr_file_getLogUnit
-  subroutine t_startf(string)
-    character(len=*) :: string
-  end subroutine t_startf
-  subroutine t_stopf(string)
-    character(len=*) :: string
-  end subroutine t_stopf
-  subroutine t_barrierf(string, comm)
-    character(len=*) :: string
-    integer:: comm
-  end subroutine t_barrierf
 #endif
 
 end module wav_wrapper_mod
