@@ -2854,12 +2854,24 @@ CONTAINS
     !
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
+    USE W3TIMEMD, only: DSEC21
+    USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
+    USE W3WDATMD, only: TIME
 
     LOGICAL, INTENT(IN) :: LCALC
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
+    REAL             :: RD1, RD2
 
-    CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
+    IF ( FLBPI ) THEN
+      RD1  = DSEC21 ( TBPI0, TIME )
+      RD2  = DSEC21 ( TBPI0, TBPIN )
+    ELSE
+      RD1=1.
+      RD2=0.
+    END IF
+
+    CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, RD1, RD2, DTG, VGX, VGY, LCALC)
     !/
     !/ End of W3XYPFSN ----------------------------------------------------- /
     !/
@@ -6328,7 +6340,7 @@ CONTAINS
 #endif
   END SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
+  SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, RD10, RD20, DTG, VGX, VGY, LCALC)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -6402,7 +6414,7 @@ CONTAINS
 
     INTEGER, INTENT(IN) :: IMOD
 
-    REAL, INTENT(IN)    :: FACX, FACY, DTG, VGX, VGY
+    REAL, INTENT(IN)    :: FACX, FACY, DTG, VGX, VGY, RD10, RD20
 
     REAL              :: KTMP(3), UTILDE(NTH), ST(NTH,NPA)
     REAL              :: FL11(NTH), FL12(NTH), FL21(NTH), FL22(NTH), FL31(NTH), FL32(NTH), KKSUM(NTH,NPA)
@@ -6411,7 +6423,7 @@ CONTAINS
     REAL              :: KSIG(NPA), CGSIG(NPA), CXX(NTH,NPA), CYY(NTH,NPA)
     REAL              :: LAMBDAX(NTH), LAMBDAY(NTH)
     REAL              :: DTMAX(NTH), DTMAXEXP(NTH), DTMAXOUT, DTMAXGL
-    REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2, RD10, RD20
+    REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2
     REAL              :: UOLD(NTH,NPA), U(NTH,NPA)
 
     REAL, PARAMETER   :: ONESIXTH = 1.0/6.0
@@ -6570,8 +6582,8 @@ CONTAINS
         IF ( FLBPI ) THEN
           DO ITH = 1, NTH
             ISP = ITH + (IK-1) * NTH
-            RD1 = RD10 - DTG * REAL(ITER(IK)-IT)/REAL(ITER(IK))
-            RD2 = RD20
+            RD1=RD10 - DTMAXGL * REAL(ITER(IK)-IT)/REAL(ITER(IK))
+            RD2=RD20
             IF ( RD2 .GT. 0.001 ) THEN
               RD2    = MIN(1.,MAX(0.,RD1/RD2))
               RD1    = 1. - RD2

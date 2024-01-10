@@ -180,7 +180,7 @@ CONTAINS
   !>
   !> @author A. J. van der Westhuysen  @date 13-Jan-2013
   !>
-  SUBROUTINE W3STR1 (A, AOLD, CG, WN, DEPTH, IX, S, D)
+  SUBROUTINE W3STR1 (A, AOLD, CG, WN, DEPTH, IX, EMEAN, S, D)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -320,7 +320,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), AOLD(NSPEC) 
+    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), AOLD(NSPEC), EMEAN
     INTEGER, INTENT(IN)     :: IX
     REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
     !/
@@ -396,6 +396,12 @@ CONTAINS
 !
 ! 1.  Integral over directions
 !
+    IF (EMEAN .LT. TINY(1.)) THEN
+      S = 0 
+      D = 0 
+      RETURN 
+    ENDIF 
+
     SIGM01 = 0.
     EMEAN  = 0.
     JACEPS = 1E-12

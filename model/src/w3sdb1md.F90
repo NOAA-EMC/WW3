@@ -235,8 +235,11 @@ CONTAINS
     S = 0.
     D = 0.
 
-    THR = DBLE(1.E-15)
-    IF (SUM(A) .LT. THR) RETURN
+    IF (EMEAN .LT. TINY(1.d0)) THEN
+      S = 0 
+      D = 0 
+      RETURN
+    ENDIF
 
     IWB = 1
     !
