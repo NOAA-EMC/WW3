@@ -204,28 +204,6 @@ MODULE W3IOPOMD
 
   !> Variable name for the netCDF point output file, for SPCO.
   character(*), parameter, private :: VNAME_SPCO = 'SPCO'
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   
   !/
 CONTAINS
@@ -1580,6 +1558,7 @@ CONTAINS
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
          '     ILEGAL INXOUT VALUE: ',A/)
   END SUBROUTINE W3IOPON
+ 
   !/ ------------------------------------------------------------------- /
   !> Read or write point output.
   !>
