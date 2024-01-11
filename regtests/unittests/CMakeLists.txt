@@ -21,8 +21,8 @@ endfunction()
 
 # The binary file mod_def.ww3 is needed for testing. It's created by
 # the ww3_grid utility.
-add_custom_target(create_mod_def TEST ../../bin/ww3_grid
-  COMMENT "Creating mod_def.ww3 file for testing")
+#add_custom_target(create_mod_def TEST ../../bin/ww3_grid
+#  COMMENT "Creating mod_def.ww3 file for testing")
 
 # Copy test data files that are in the repo to the build directory.
 copy_test_data(switch.io)
