@@ -1419,6 +1419,17 @@ MODULE W3GDATMD
 
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !> Set up the number of grids to be used.
+  !>
+  !> Store in NGRIDS and allocate GRIDS.
+  !>
+  !> Switches: !/S    Enable subroutine tracing.
+  !>
+  !> @param[in] number Number of grids to be used.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !> @param[in] naux Number of auxiliary grids to be used.
+  !>
   SUBROUTINE W3NMOD ( NUMBER, NDSE, NDST, NAUX )
     !/
     !/                  +-----------------------------------+
