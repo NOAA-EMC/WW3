@@ -1,12 +1,12 @@
 !> @file
 !> @brief Read/write restart files.
 !>
-!> Copyright 2009-2013 National Weather Service (NWS), National
-!> Oceanic and Atmospheric Administration. All rights reserved.
-!> WAVEWATCH III is a trademark of the NWS. No unauthorized use
-!> without permission.
-!>
 !> @author H. L. Tolman  @date 22-Mar-2021
+!>
+! Copyright 2009-2013 National Weather Service (NWS), National
+! Oceanic and Atmospheric Administration. All rights reserved.
+! WAVEWATCH III is a trademark of the NWS. No unauthorized use
+! without permission.
 
 #include "w3macros.h"
 

@@ -1,89 +1,66 @@
+!> @file
+!> @brief Read/write restart files.
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
+! Copyright 2009-2013 National Weather Service (NWS), National
+! Oceanic and Atmospheric Administration. All rights reserved.
+! WAVEWATCH III is a trademark of the NWS. No unauthorized use
+! without permission.
+
 #include "w3macros.h"
-!/ ------------------------------------------------------------------- /
+
+!> @brief Read/write restart files.
+!>
+!> Define data structures to set up wave model grids and aliases to
+!> use individual grids transparently. Also includes subroutines to
+!> manage data structure and pointing to individual models. This
+!> module considers the parameters required for model output.
+!>
+!> ## Module History
+!> Date | Modification | Version
+!> -----|--------------|--------
+!> 13-Dec-2004 | Origination.                        | 3.06
+!> 20-Jul-2005 | Adding output fields.               | 3.07
+!> 29-Sep-2005 | Second storage for input bound. sp. | 3.08
+!>               Add FILED for the dump of data.
+!> 26-Jun-2006 | Add output type 6, wave field sep.  | 3.09
+!>               Wiring of code only.
+!> 27-Jun-2006 | Adding file name preamble.          | 3.09
+!> 24-Jul-2006 | Adding unified point output storage.| 3.10
+!> 25-Jul-2006 | Originating grid ID for points.     | 3.10
+!> 04-Oct-2006 | Add filter to array pointers.       | 3.10
+!> 30-Oct-2006 | Add pars for partitioning.          | 3.10
+!> 26-Mar-2007 | Add pars for partitioning.          | 3.11
+!> 17-May-2007 | Adding NTPROC/NAPROC separation.    | 3.11
+!> 21-Jun-2007 | Dedicated output processes.         | 3.11
+!> 29-May-2009 | Preparing distribution version.     | 3.14
+!> 30-Oct-2009 | Implement curvilinear grid type.  (W. E. Rogers & T. J. Campbell, NRL) | 3.14
+!> 14-Jul-2010 | Fix VAAUX declaration bug.        | 3.14.2
+!> 27-Jul-2010 | Add NKI, NTHI, XFRI, FR1I, TH1I.  | 3.14.3
+!> 08-Nov-2010 | Implementing unstructured grids (A. Roland and F. Ardhuin) | 3.14.4
+!> 18-Dec-2012 | New 2D field output structure, reducing memory footprint for fields. | 4.11
+!> 19-Dec-2012 | Move NOSWLL to data structure.      | 4.11
+!> 10-Dec-2014 | Add checks for allocate status      | 5.04
+!> 27-Aug-2015 | Adding interpolated ICEF (mean ice floe diameter), ICEH (ice thickness) and ICE (ice concentration). | 5.10
+!> 01-Mar-2018 | Include UNDEF from constants.ftn to avoid circular referencing in w3servmd| 6.02
+!> 05-Jun-2018 | Add SETUP                           | 6.04
+!> 27-Jul-2018 | Added PTMETH and PTFCUT variables for alternative partition methods. (C. Bunney, UKMO)  | 6.05
+!> 25-Sep-2020 | Flags for coupling restart          | 7.10
+!> 15-Jan-2020 | Added TP based on existing FP internal fields. (C. Bunney, UKMO) | 7.12
+!> 22-Mar-2021 | Add extra coupling variables        | 7.13
+!> 07-Jun-2021 | S_{nl} GKE NL5 (Q. Liu)             | 7.13
+!> 19-Jul-2021 | Momentum and air density support    | 7.14
+!>
+!> @author H. L. Tolman  @date 22-Mar-2021
+!>
 MODULE W3ODATMD
-  !/
-  !/                  +-----------------------------------+
-  !/                  | WAVEWATCH III           NOAA/NCEP |
-  !/                  |           H. L. Tolman            |
-  !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         22-Mar-2021 |
-  !/                  +-----------------------------------+
-  !/
-  !/    13-Dec-2004 : Origination.                        ( version 3.06 )
-  !/    20-Jul-2005 : Adding output fields.               ( version 3.07 )
-  !/    29-Sep-2005 : Second storage for input bound. sp. ( version 3.08 )
-  !/                  Add FILED for the dump of data.
-  !/    26-Jun-2006 : Add output type 6, wave field sep.  ( version 3.09 )
-  !/                  Wiring of code only.
-  !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
-  !/    24-Jul-2006 : Adding unified point output storage.( version 3.10 )
-  !/    25-Jul-2006 : Originating grid ID for points.     ( version 3.10 )
-  !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-  !/    30-Oct-2006 : Add pars for partitioning.          ( version 3.10 )
-  !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
-  !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-  !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
-  !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
-  !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
-  !/                  (W. E. Rogers & T. J. Campbell, NRL)
-  !/    14-Jul-2010 : Fix VAAUX declaration bug.        ( version 3.14.2 )
-  !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.  ( version 3.14.3 )
-  !/    08-Nov-2010 : Implementing unstructured grids     ( version 3.14.4 )
-  !/                  (A. Roland and F. Ardhuin)
-  !/    18-Dec-2012 : New 2D field output structure,      ( version 4.11 )
-  !/                  reducing memory footprint for fields.
-  !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
-  !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-  !/    27-Aug-2015 : Adding interpolated ICEF (mean ice  ( version 5.10 )
-  !/                  floe diameter), ICEH (ice thickness)
-  !/                  and ICE (ice concentration).
-  !/    01-Mar-2018 : Include UNDEF from constants.ftn to ( version 6.02 )
-  !/                  avoid circular referencing in w3servmd
-  !/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
-  !/    27-Jul-2018 : Added PTMETH and PTFCUT variables   ( version 6.05 )
-  !/                  for alternative partition methods.
-  !/                  (C. Bunney, UKMO)
-  !/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
-  !/    15-Jan-2020 : Added TP based on existing FP       ( version 7.12 )
-  !/                  internal fields. (C. Bunney, UKMO)
-  !/    22-Mar-2021 : Add extra coupling variables        ( version 7.13 )
-  !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
-  !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
-  !/
-  !/    Copyright 2009-2012 National Weather Service (NWS),
-  !/       National Oceanic and Atmospheric Administration.  All rights
-  !/       reserved.  WAVEWATCH III is a trademark of the NWS.
-  !/       No unauthorized use without permission.
-  !/
+
   !  1. Purpose :
   !
-  !     Define data structures to set up wave model grids and aliases
-  !     to use individual grids transparently. Also includes subroutines
-  !     to manage data structure and pointing to individual models.
-  !     This module considers the parameters required for model output.
   !
   !  2. Variables and types :
   !
-  !      Name      Type  Scope    Description
-  !     ----------------------------------------------------------------
-  !      NOUTP     Int.  Public   Number of models in array dim.
-  !      IOUTP     Int.  Public   Selected model for output, init. at -1.
-  !      IOSTYP    Int.  Public   Output data server type.
-  !      NOGRP     I.P.  Public   Number of output field groups
-  !      NGRPP     I.P.  Public   Max numb of parameters per output group
-  !      NOGE      I.P.  Public   Number of output group elements
-  !      NOTYPE    I.P.  Public   Number of output types
-  !      NOEXTR    I.P.  Public   Number of extra (user available)
-  !                               output fields.
-  !      DIMP      I.P.  Public   Number of parameters in partition
-  !                               output group
-  !      IDOUT     C.A.  Public   ID strings for output fields.
-  !      FNMPRE    Char  Public   File name preamble.
-  !      UNDEF     Real  Public   Value for undefined parameters in
-  !                               gridded output fields.
-  !      UNIPTS    Log.  Public   Flag for unified point output (output
-  !                               to single file).
-  !      UPPROC    Log.  Public   FLag for dedicated point output proc.
   !      OUTPUT    TYPE  Public   Data structure defining output.
   !      OUTPTS    GRID  Public   Array of output for models.
   !     ----------------------------------------------------------------
@@ -318,19 +295,23 @@ MODULE W3ODATMD
   !/
   !/ Conventional declarations
   !/
-  INTEGER                 :: NOUTP = -1, IOUTP = -1, IOSTYP = 1
+  INTEGER                 :: NOUTP = -1 !< Number of models in array dim.
+  INTEGER                 :: IOUTP = -1 !< Selected model for output, init. at -1.
+  INTEGER                 :: IOSTYP = 1 !< Output data server type.
   !
-  INTEGER, PARAMETER      :: NOGRP = 10
-  INTEGER, PARAMETER      :: NGRPP = 20
-  INTEGER, PARAMETER      :: DIMP = 15
-  INTEGER                 :: NOGE(NOGRP)
-  INTEGER                 :: NOTYPE
-  INTEGER, PARAMETER      :: NOEXTR=  2
-  CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP)
-  CHARACTER(LEN=80)       :: FNMPRE = './'
+  INTEGER, PARAMETER      :: NOGRP = 10 !< Number of output field groups
+  INTEGER, PARAMETER      :: NGRPP = 20 !< Max numb of parameters per output group
+  INTEGER, PARAMETER      :: DIMP = 15 !< Number of parameters in partition output group
+  INTEGER                 :: NOGE(NOGRP) !< Number of output group elements
+  INTEGER                 :: NOTYPE !< Number of output types
+  INTEGER, PARAMETER      :: NOEXTR=  2 !< Number of extra (user available) output fields.
+  CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP) !< ID strings for output fields.
+  CHARACTER(LEN=80)       :: FNMPRE = './' !< File name preamble.
   !Moved UNDEF to constants and included above
   !REAL                    :: UNDEF = -999.9
-  LOGICAL                 :: UNIPTS = .FALSE., UPPROC = .FALSE.
+  LOGICAL                 :: UNIPTS = .FALSE. !< Flag for unified point output (output to single file).
+  LOGICAL                 :: UPPROC = .FALSE. !< FLag for dedicated point output proc.
+
   !/
   !/ Set NOGE and IDOUT identifiers in W3NOUT
   !/
