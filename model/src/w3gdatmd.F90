@@ -1418,7 +1418,7 @@ MODULE W3GDATMD
   !/
 
 CONTAINS
-  !/ ------------------------------------------------------------------- /
+
   !> Set up the number of grids to be used.
   !>
   !> Store in NGRIDS and allocate GRIDS.
@@ -1428,64 +1428,10 @@ CONTAINS
   !> @param[in] number Number of grids to be used.
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
-  !> @param[in] naux Number of auxiliary grids to be used.
+  !> @param[in] naux Optional: Number of auxiliary grids to be used. Grids
+  !> -NAUX:NUBMER are defined, optional parameters.
   !>
   SUBROUTINE W3NMOD ( NUMBER, NDSE, NDST, NAUX )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Dec-2014 !
-    !/                  +-----------------------------------+
-    !/
-    !/    24-Feb-2004 : Origination.                        ( version 3.06 )
-    !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/
-    !  1. Purpose :
-    !
-    !     Set up the number of grids to be used.
-    !
-    !  2. Method :
-    !
-    !     Store in NGRIDS and allocate GRIDS.
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       NUMBER  Int.   I   Number of grids to be used.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !       NAUX    Int.   I   Number of auxiliary grids to be used.
-    !                          Grids -NAUX:NUBMER are defined, optional
-    !                          parameters.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation.
-    !
-    !  5. Called by :
-    !
-    !     Any program that uses this grid structure.
-    !
-    !  6. Error messages :
-    !
-    !     - Error checks on previous setting of variable.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !  9. Switches :
-    !
-    !     !/S    Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
