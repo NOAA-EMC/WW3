@@ -1,4 +1,6 @@
-! This is a test for model IO for WW3. This tests the w3nmod() subroutine.
+! This is a test for model IO for WW3.
+!
+! This tests the initialization subroutines of WW3.
 !
 ! Ed Hartnett 1/12/24
 program test_w3nmod
