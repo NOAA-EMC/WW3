@@ -18,7 +18,7 @@ env:
 # the environment is cached so each build of WW3 can share the dependencies.
 
 jobs:
-  setup:
+  io_setup:
     runs-on: ubuntu-latest
 
     steps:
