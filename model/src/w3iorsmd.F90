@@ -64,12 +64,14 @@ MODULE W3IORSMD
   !/ ------------------------------------------------------------------- /
   PUBLIC
   !/
-  ! Add fields needed for OASIS coupling in restart
+  !> Add fields needed for OASIS coupling in restart
   LOGICAL :: OARST
   !/
   !/ Private parameter statements (ID strings)
   !/
+  !> Restart file version number.
   CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2021-05-28'
+  !> Restart file UD string.
   CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III RESTART FILE'
   !/
@@ -78,30 +80,90 @@ CONTAINS
   !>
   !> @brief Reads/writes restart files.
   !>
-  !> @details
+  !> The file is opened within the routine, the name is pre-defined
+  !> and the unit number is given in the parameter list. The restart
+  !> file is written using UNFORMATTED write statements. The routine
+  !> generates new names when called more than once. File names are:
+  !> 1. restart000.FILEXT
+  !> 2. restart001.FILEXT
+  !> 3. restart002.FILEXT etc.
+  !>
+  !> Optionally, a second stream of restart files is generated given
+  !> a secondary stride definad by an additional start/end time line
+  !> triggered by an optional argument added to the end of the stan-
+  !> dard restart request line (a sixth argument flag set to T). File
+  !> names include a time-tag prefix: YYYYMMDD.HHMMSS.restart.FILEXT
+  !>
+  !> The file to be read thus always is unnumbered, whereas all
+  !> written files are automatically numbered.
+  !>
+  !> @note
+  !> - MAPSTA is dumped as it contains information on inactive points.
+  !>   Note that the original MAPSTA is dumped in the model def. file
+  !>   for use in the initial conditions (and output) programs.
+  !> - Note that MAPSTA and MAPST2 data is combinded in the file.
+  !> - The depth is recalculated in a write to avoid floating point
+  !>   errors in W3STRT.
+  !> - Fields and field info read by all, written by las processor
+  !>   only.
+  !> - The MPP version of the model will perform a gather here to
+  !>   maximize hiding of communication with IO.
+  !>
+  !> ## File Structure
   !> @verbatim
-  !>     The file is opened within the routine, the name is pre-defined
-  !>     and the unit number is given in the parameter list. The restart
-  !>     file is written using UNFORMATTED write statements. The routine
-  !>     generates new names when called more than once. File names are :
-  !>
-  !>                                 restart000.FILEXT
-  !>                                 restart001.FILEXT
-  !>                                 restart002.FILEXT etc.
-  !>
-  !>     Optionally, a second stream of restart files is generated given
-  !>     a secondary stride definad by an additional start/end time line
-  !>     triggered by an optional argument added to the end of the stan-
-  !>     dard restart request line (a sixth argument flag set to T). File
-  !>     names include a time-tag prefix:
-  !>
-  !>                                YYYYMMDD.HHMMSS.restart.FILEXT
-  !>
-  !>     The file to be read thus always is unnumbered, whereas all
-  !>     written files are automatically numbered.
+  !>     +---------------------------------------------------------------+
+  !>     | initialisations                                               |
+  !>     | test INXOUT                                                   |
+  !>     | open file                                                     |
+  !>     +---------------------------------------------------------------|
+  !>     |                             WRITE ?                           |
+  !>     | Y                                                           N |
+  !>     |-------------------------------|-------------------------------|
+  !>     | Write identifiers and         | Write identifiers and         |
+  !>     |   dimensions.                 |   dimensions.                 |
+  !>     |                               | Check ident. and dimensions.  |
+  !>     +-------------------------------+-------------------------------|
+  !>     |                       Full restart ?                          |
+  !>     | Y                                                           N |
+  !>     |-------------------------------|-------------------------------|
+  !>     | read/write/test time          |                               |
+  !>     +-------------------------------+-------------------------------|
+  !>     |                             WRITE ?                           |
+  !>     | Y                                                           N |
+  !>     |-------------------------------|-------------------------------|
+  !>     |          TYPE = 'WIND' ?      |          TYPE = 'WIND' ?      |
+  !>     | Y                           N | Y                           N |
+  !>     |---------------|---------------|---------------|---------------|
+  !>     | close file    | write spectra | gen. fetch-l. | read spectra  |
+  !>     | RETURN        |               |   spectra.    |               |
+  !>     |---------------+---------------+---------------+---------------|
+  !>     |                             WRITE ?                           |
+  !>     | Y                                                           N |
+  !>     |-------------------------------|-------------------------------|
+  !>     |          TYPE = 'FULL' ?      |          TYPE = 'FULL' ?      |
+  !>     | Y                           N | Y                           N |
+  !>     |---------------|---------------|---------------|---------------|
+  !>     | write level & | ( prep. level | read level &  | initalize l.& |
+  !>     |   (ice) map & |   for test    |   (ice) map.& |   times       |
+  !>     |   times       |   output )    |   times       | ( no ice )    |
+  !>     +---------------+---------------+---------------+-------------- +
   !> @endverbatim
   !>
-  !> @param[in]    INXOUT   Test string for read/write.
+  !> Switches:
+  !> - !/SEED  Linear input / seeding option.
+  !> - !/LNx
+  !> - !/SHRD  Switch for shared / distributed memory architecture.
+  !> - !/DIST  Id.
+  !> - !/MPI   Id.
+  !> - !/S     Enable subroutine tracing.
+  !> - !/T     Enable test output
+
+  !> @param[in]    INXOUT   Test string for read/write. Valid values are:
+  !> - 'READ' Reading of a restart file.
+  !> - 'HOT'  Writing a full restart from the model.
+  !> - 'COLD' Writing a cold start file.
+  !> - 'WIND' Initialize fields using first wind field.
+  !> - 'CALM' Starting from calm conditions.
   !> @param[inout] NDSR     File unit number.
   !> @param[in]    DUMFPI   Dummy values for FPIS for cold start.
   !> @param[in]    IMOD     Optional grid number, defaults to 1.
