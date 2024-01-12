@@ -1,83 +1,63 @@
 !> @file
 !> @brief Read/write restart files.
 !>
-!> @author H. L. Tolman  @date 22-Mar-2021
+!> Copyright 2009-2013 National Weather Service (NWS), National
+!> Oceanic and Atmospheric Administration. All rights reserved.
+!> WAVEWATCH III is a trademark of the NWS. No unauthorized use
+!> without permission.
 !>
+!> @author H. L. Tolman  @date 22-Mar-2021
 
 #include "w3macros.h"
-!/ ------------------------------------------------------------------- /
-!>
+
 !> @brief Read/write restart files.
+!>
+!>
+!> ## Module History
+!> Date | Modification | Version
+!> -----|--------------|--------
+!> 12-Jan-1999 | Final FORTRAN 77                    | 1.18
+!> 27-Dec-1999 | Upgrade to FORTRAN 90               | 2.00
+!> 30-Apr-2002 | Add ice for transparencies.         | 2.20
+!> 13-Nov-2002 | Add stress as vector.               | 3.00
+!> 19-Aug-2003 | Output server options added.        | 3.04
+!> 09-Dec-2004 | Multiple grid version.              | 3.06
+!> 24-Jun-2005 | Adding MAPST2.                      | 3.07
+!> 27-Jun-2006 | Adding file name preamble.          | 3.09
+!> 05-Jul-2006 | Consolidate stress arrays.          | 3.09
+!> 08-May-2007 | Starting from calm as an option.    | 3.11
+!> 17-May-2007 | Adding NTPROC/NAPROC separation.    | 3.11
+!> 22-Jun-2007 | Dedicated output processes.         | 3.11
+!> 15-Apr-2008 | Clean up for distribution.          | 3.14
+!> 21-Apr-2008 | Remove PGI bug internal files.      | 3.14
+!> 29-May-2009 | Preparing distribution version.     | 3.14
+!> 30-Oct-2009 | Output file name with 3 digit id.(W. E. Rogers, NRL) | 3.14 
+!> 14-Nov-2013 | Remove cold start init. UST(DIR).   | 4.13
+!> 31-May-2016 | Optimize restart file size for unstructured grid and restart read. (M. Ward, NCI, S. Zieger, BOM) | 5.10
+!> 10-Mar-2017 | File access mode changed to 'STREAM' (S. Zieger, BOM)| 6.02
+!> 09-Aug-2017 | Bug fix for MPI restart read issue (T. Campbell, NRL) | 6.02
+!> 05-Jun-2018 | Add PDLIB/TIMINGS/DEBUGIO DEBUGINIT/MPI | 6.04
+!> 19-Dec-2019 | Optional second stream of restart files (Roberto Padilla-Hernandez & J.H. Alves) | 7.00
+!> 25-Sep-2020 | Extra fields for coupled restart    | 7.10
+!> 22-Mar-2021 | Add new coupling fields in restart  | 7.13
+!> 18-May-2021 | Read by default all extra restart   | 7.13
 !>
 !> @author H. L. Tolman  @date 22-Mar-2021
 !>
 MODULE W3IORSMD
-  !/
-  !/                  +-----------------------------------+
-  !/                  | WAVEWATCH III           NOAA/NCEP |
-  !/                  |           H. L. Tolman            |
-  !/                  |                      FORTRAN 2003 |
-  !/                  | Last update :         22-Mar-2021 |
-  !/                  +-----------------------------------+
-  !/
-  !/    See subroutine for update log.
-  !/
-  !  1. Purpose :
-  !
-  !     Read/write restart files.
-  !
-  !  2. Variables and types :
-  !
-  !      Name      Type  Scope    Description
-  !     ----------------------------------------------------------------
-  !      VERINI    C*10  Private  Restart file version number.
-  !      IDSTR     C*26  Private  Restart file UD string.
-  !     ----------------------------------------------------------------
-  !
-  !  3. Subroutines and functions :
-  !
-  !      Name      Type  Scope    Description
-  !     ----------------------------------------------------------------
-  !      W3IORS    Subr. Public   Read/write restart files.
-  !     ----------------------------------------------------------------
-  !
-  !  4. Subroutines and functions used :
-  !
-  !      Name      Type  Module   Description
-  !     ----------------------------------------------------------------
-  !      W3SETO, W3SETG, W3SETW, W3DIMW
-  !                Subr. W3xDATMD Manage data structures.
-  !      STRACE    Subr. W3SERVMD Subroutine tracing.            (!/S)
-  !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
-  !      MPI_STARTALL, MPI_WAITALL                              (!/MPI)
-  !                Subr.          MPI persistent communication routines
-  !     ----------------------------------------------------------------
-  !
-  !  5. Remarks :
-  !
-  !  6. Switches :
-  !
-  !     See also routine.
-  !
-  !  7. Source code :
-  !
-  !/ ------------------------------------------------------------------- /
   PUBLIC
-  !/
+
   !> Add fields needed for OASIS coupling in restart
   LOGICAL :: OARST
-  !/
-  !/ Private parameter statements (ID strings)
-  !/
+
   !> Restart file version number.
   CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2021-05-28'
+
   !> Restart file UD string.
   CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III RESTART FILE'
-  !/
 CONTAINS
-  !/ ------------------------------------------------------------------- /
-  !>
+
   !> @brief Reads/writes restart files.
   !>
   !> The file is opened within the routine, the name is pre-defined
@@ -157,7 +137,14 @@ CONTAINS
   !> - !/MPI   Id.
   !> - !/S     Enable subroutine tracing.
   !> - !/T     Enable test output
-
+  !>
+  !> RSTYPE - Type of input field:
+  !> - 0 cold start,
+  !> - 1 cold start with fetch-limited spectra,
+  !> - 2 full restart,
+  !> - 3 for writing file.
+  !> - 4 starting from calm.
+  !>
   !> @param[in]    INXOUT   Test string for read/write. Valid values are:
   !> - 'READ' Reading of a restart file.
   !> - 'HOT'  Writing a full restart from the model.
@@ -170,188 +157,7 @@ CONTAINS
   !> @param[in]    FLRSTRT  A second request for restart files (optional TRUE).
   !>
   !> @author H. L. Tolman  @date 22-Mar-2021
-  !>
   SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         22-Mar-2021 |
-    !/                  +-----------------------------------+
-    !/
-    !/    12-Jan-1999 : Final FORTRAN 77                    ( version 1.18 )
-    !/    27-Dec-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
-    !/    30-Apr-2002 : Add ice for transparencies.         ( version 2.20 )
-    !/    13-Nov-2002 : Add stress as vector.               ( version 3.00 )
-    !/    19-Aug-2003 : Output server options added.        ( version 3.04 )
-    !/    09-Dec-2004 : Multiple grid version.              ( version 3.06 )
-    !/    24-Jun-2005 : Adding MAPST2.                      ( version 3.07 )
-    !/    27-Jun-2006 : Adding file name preamble.          ( version 3.09 )
-    !/    05-Jul-2006 : Consolidate stress arrays.          ( version 3.09 )
-    !/    08-May-2007 : Starting from calm as an option.    ( version 3.11 )
-    !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-    !/    22-Jun-2007 : Dedicated output processes.         ( version 3.11 )
-    !/    15-Apr-2008 : Clean up for distribution.          ( version 3.14 )
-    !/    21-Apr-2008 : Remove PGI bug internal files.      ( version 3.14 )
-    !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
-    !/    30-Oct-2009 : Output file name with 3 digit id.   ( version 3.14 )
-    !/                  (W. E. Rogers, NRL)
-    !/    14-Nov-2013 : Remove cold start init. UST(DIR).   ( version 4.13 )
-    !/    31-May-2016 : Optimize restart file size for un-  ( version 5.10 )
-    !/                  structured grid and restart read.
-    !/                  (M. Ward, NCI, S. Zieger, BOM)
-    !/    10-Mar-2017 : File access mode changed to 'STREAM'( version 6.02 )
-    !/                  (S. Zieger, BOM)
-    !/    09-Aug-2017 : Bug fix for MPI restart read issue  ( version 6.02 )
-    !/                  (T. Campbell, NRL)
-    !/    05-Jun-2018 : Add PDLIB/TIMINGS/DEBUGIO           ( version 6.04 )
-    !/                  DEBUGINIT/MPI
-    !/    19-Dec-2019 : Optional second stream of           ( version 7.00 )
-    !/                  restart files
-    !/                  (Roberto Padilla-Hernandez & J.H. Alves)
-    !/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.10 )
-    !/    22-Mar-2021 : Add new coupling fields in restart  ( version 7.13 )
-    !/    18-May-2021 : Read by default all extra restart   ( version 7.13 )
-    !/
-    !/    Copyright 2009-2013 National Weather Service (NWS),
-    !/       National Oceanic and Atmospheric Administration.  All rights
-    !/       reserved.  WAVEWATCH III is a trademark of the NWS.
-    !/       No unauthorized use without permission.
-    !/
-    !  1. Purpose :
-    !
-    !     Reads/writes restart files.
-    !
-    !  2. Method :
-    !
-    !     The file is opened within the routine, the name is pre-defined
-    !     and the unit number is given in the parameter list. The restart
-    !     file is written using UNFORMATTED write statements. The routine
-    !     generates new names when called more than once. File names are :
-    !
-    !                                 restart000.FILEXT
-    !                                 restart001.FILEXT
-    !                                 restart002.FILEXT etc.
-    !
-    !     Optionally, a second stream of restart files is generated given
-    !     a secondary stride definad by an additional start/end time line
-    !     triggered by an optional argument added to the end of the stan-
-    !     dard restart request line (a sixth argument flag set to T). File
-    !     names include a time-tag prefix:
-    !
-    !                                 YYYYMMDD.HHMMSS.restart.FILEXT
-    !
-    !     The file to be read thus always is unnumbered, whereas all
-    !     written files are automatically numbered.
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       INXOUT  C*(*)  I   Test string for read/write, valid are:
-    !                          'READ' Reading of a restart file.
-    !                          'HOT'  Writing a full restart from the model.
-    !                          'COLD' Writing a cold start file.
-    !                          'WIND' Initialize fields using first wind
-    !                                 field.
-    !                          'CALM' Starting from calm conditions.
-    !       NDSR    Int.  I/O  File unit number.
-    !       DUMFPI  Real   I   Dummy values for FPIS for cold start.
-    !       RSTYPE  Int.   O   Type of input field,
-    !                           0 : cold start,
-    !                           1 : cold start with fetch-limited spectra,
-    !                           2 : full restart,
-    !                           3 : for writing file.
-    !                           4 : starting from calm.
-    !       IMOD    Int.   I   Optional grid number, defaults to 1.
-    !       FLRSTRT LOGIC  I    OTIONAL TRUE: A second request for restart files
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      W3INIT    Subr. W3INITMD Wave model initialization routine.
-    !      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
-    !      WW3_STRT  Prog.   N/A    Initial conditions program.
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !       Tests on INXOUT, file status and on array dimensions.
-    !
-    !  7. Remarks :
-    !
-    !     - MAPSTA is dumped as it contains information on inactive points.
-    !       Note that the original MAPSTA is dumped in the model def. file
-    !       for use in the initial conditions (and output) programs.
-    !     - Note that MAPSTA and MAPST2 data is combinded in the file.
-    !     - The depth is recalculated in a write to avoid floating point
-    !       errors in W3STRT.
-    !     - Fields and field info read by all, written by las processor
-    !       only.
-    !     - The MPP version of the model will perform a gather here to
-    !       maximize hiding of communication with IO.
-    !
-    !  8. Structure :
-    !
-    !     +---------------------------------------------------------------+
-    !     | initialisations                                               |
-    !     | test INXOUT                                                   |
-    !     | open file                                                     |
-    !     +---------------------------------------------------------------|
-    !     |                             WRITE ?                           |
-    !     | Y                                                           N |
-    !     |-------------------------------|-------------------------------|
-    !     | Write identifiers and         | Write identifiers and         |
-    !     |   dimensions.                 |   dimensions.                 |
-    !     |                               | Check ident. and dimensions.  |
-    !     +-------------------------------+-------------------------------|
-    !     |                       Full restart ?                          |
-    !     | Y                                                           N |
-    !     |-------------------------------|-------------------------------|
-    !     | read/write/test time          |                               |
-    !     +-------------------------------+-------------------------------|
-    !     |                             WRITE ?                           |
-    !     | Y                                                           N |
-    !     |-------------------------------|-------------------------------|
-    !     |          TYPE = 'WIND' ?      |          TYPE = 'WIND' ?      |
-    !     | Y                           N | Y                           N |
-    !     |---------------|---------------|---------------|---------------|
-    !     | close file    | write spectra | gen. fetch-l. | read spectra  |
-    !     | RETURN        |               |   spectra.    |               |
-    !     |---------------+---------------+---------------+---------------|
-    !     |                             WRITE ?                           |
-    !     | Y                                                           N |
-    !     |-------------------------------|-------------------------------|
-    !     |          TYPE = 'FULL' ?      |          TYPE = 'FULL' ?      |
-    !     | Y                           N | Y                           N |
-    !     |---------------|---------------|---------------|---------------|
-    !     | write level & | ( prep. level | read level &  | initalize l.& |
-    !     |   (ice) map & |   for test    |   (ice) map.& |   times       |
-    !     |   times       |   output )    |   times       | ( no ice )    |
-    !     +---------------+---------------+---------------+-------------- +
-    !
-    !  9. Switches :
-    !
-    !     !/SEED  Linear input / seeding option.
-    !     !/LNx
-    !
-    !     !/SHRD  Switch for shared / distributed memory architecture.
-    !     !/DIST  Id.
-    !     !/MPI   Id.
-    !
-    !     !/S     Enable subroutine tracing.
-    !     !/T     Enable test output
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
     USE W3ODATMD, ONLY: W3SETO
     USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
