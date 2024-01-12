@@ -69,7 +69,7 @@ jobs:
           cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/work_oasis3-mct ${GITHUB_WORKSPACE}
 
   io_gnu:
-    needs: setup
+    needs: io_setup
     runs-on: ubuntu-latest
 
     steps:
