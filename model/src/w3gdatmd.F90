@@ -1418,63 +1418,20 @@ MODULE W3GDATMD
   !/
 
 CONTAINS
-  !/ ------------------------------------------------------------------- /
+
+  !> Set up the number of grids to be used.
+  !>
+  !> Store in NGRIDS and allocate GRIDS.
+  !>
+  !> Switches: !/S    Enable subroutine tracing.
+  !>
+  !> @param[in] number Number of grids to be used.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !> @param[in] naux Optional: Number of auxiliary grids to be used. Grids
+  !> -NAUX:NUBMER are defined, optional parameters.
+  !>
   SUBROUTINE W3NMOD ( NUMBER, NDSE, NDST, NAUX )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Dec-2014 !
-    !/                  +-----------------------------------+
-    !/
-    !/    24-Feb-2004 : Origination.                        ( version 3.06 )
-    !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/
-    !  1. Purpose :
-    !
-    !     Set up the number of grids to be used.
-    !
-    !  2. Method :
-    !
-    !     Store in NGRIDS and allocate GRIDS.
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       NUMBER  Int.   I   Number of grids to be used.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !       NAUX    Int.   I   Number of auxiliary grids to be used.
-    !                          Grids -NAUX:NUBMER are defined, optional
-    !                          parameters.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation.
-    !
-    !  5. Called by :
-    !
-    !     Any program that uses this grid structure.
-    !
-    !  6. Error messages :
-    !
-    !     - Error checks on previous setting of variable.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !  9. Switches :
-    !
-    !     !/S    Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -2129,89 +2086,26 @@ CONTAINS
     !/ End of W3DIMS ----------------------------------------------------- /
     !/
   END SUBROUTINE W3DIMS
+
   !/ ------------------------------------------------------------------- /
+  !>
+  !> Select one of the WAVEWATCH III grids / models.
+  !>
+  !> Point pointers to the proper variables in the proper element of
+  !> the GRIDS array.
+  !>
+  !> Switches:
+  !> - !/PRn  Select propagation scheme
+  !> - !/STn  Select source terms
+  !> - !/NLn
+  !> - !/BTn
+  !> - !/S    Enable subroutine tracing.
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !>
   SUBROUTINE W3SETG ( IMOD, NDSE, NDST )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  !           J. H. Alves             !
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         03-Sep-2012 |
-    !/                  +-----------------------------------+
-    !/
-    !/    24-Jun-2005 : Origination.                        ( version 3.07 )
-    !/    09-Nov-2005 : Remove soft boundary options.       ( version 3.08 )
-    !/    23-Jun-2006 : Add data for W3SLN1.                ( version 3.09 )
-    !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
-    !/    05-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-    !/    02-Feb-2007 : Add FLAGST.                         ( version 3.10 )
-    !/    14-Apr-2007 : Add Miche style limiter.            ( version 3.11 )
-    !/                  ( J. H. Alves )
-    !/    25-Apr-2007 : Adding Battjes-Janssen Sdb.         ( version 3.11 )
-    !/                  ( J. H. Alves )
-    !/    18-Sep-2007 : Adding WAM4 source terms.           ( version 3.13 )
-    !/                  ( F. Ardhuin )
-    !/    27-Jun-2008 : Expand WAM4 variants namelist       ( version 3.14 )
-    !/                  ( F. Ardhuin )
-    !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
-    !/                  (W. E. Rogers & T. J. Campbell, NRL)
-    !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
-    !/                  (W. E. Rogers & T. J. Campbell, NRL)
-    !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
-    !/                  specify index closure for a grid.   ( version 3.14 )
-    !/                  (T. J. Campbell, NRL)
-    !/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
-    !/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
-    !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
-    !/
-    !  1. Purpose :
-    !
-    !     Select one of the WAVEWATCH III grids / models.
-    !
-    !  2. Method :
-    !
-    !     Point pointers to the proper variables in the proper element of
-    !     the GRIDS array.
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation.
-    !
-    !  5. Called by :
-    !
-    !     Many subroutines in eth WAVEWATCH system.
-    !
-    !  6. Error messages :
-    !
-    !     Checks on parameter list IMOD.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !  9. Switches :
-    !
-    !     !/PRn  Select propagation scheme
-    !
-    !     !/STn  Select source terms
-    !     !/NLn
-    !     !/BTn
-    !
-    !     !/S    Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
