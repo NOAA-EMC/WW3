@@ -557,6 +557,17 @@ MODULE W3ODATMD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !> Set up the number of grids to be used.
+  !>
+  !> Use data stored in NGRIDS in W3GDATMD.
+  !>
+  !> Switches:
+  !> - !/S    Enable subroutine tracing.
+  !> - !/T    Enable test output
+  !>
+  !> @param[in] ndserr Error output unit number.
+  !> @param[in] ndstst Test output unit number.
+  !>
   SUBROUTINE W3NOUT ( NDSERR, NDSTST )
     !/
     !/                  +-----------------------------------+
@@ -1516,6 +1527,20 @@ CONTAINS
     !/
   END SUBROUTINE W3DMO5
   !/ ------------------------------------------------------------------- /
+  !> Select one of the WAVEWATCH III grids / models.
+  !>
+  !> Point pointers to the proper variables in the proper element of
+  !> the GRIDS array.
+  !>
+  !> Switches:
+  !> - !/MPI MPI specific calls.
+  !> - !/S Enable subroutine tracing.
+  !> - !/T Enable test output
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] ndserr Error output unit number.
+  !> @param[in] ndstst Test output unit number.
+  !>
   SUBROUTINE W3SETO ( IMOD, NDSERR, NDSTST )
     !/
     !/                  +-----------------------------------+
