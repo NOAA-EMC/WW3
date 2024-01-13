@@ -1543,6 +1543,8 @@ CONTAINS
   !> @param[in] mspec ???
 #endif
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
+  !>
   SUBROUTINE W3DIMX  ( IMOD, MX, MY, MSEA, NDSE, NDST   &
 #ifdef W3_SMC
        , MCel, MUFc, MVFc, MRLv, MBSMC    &
@@ -1840,6 +1842,7 @@ CONTAINS
   !> @param[in] ndst Test output unit number.
   !>
   !> @author H. L. Tolman  @date 10-Dec-2014
+  !>
   SUBROUTINE W3DIMS  ( IMOD, MK, MTH, NDSE, NDST )
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_ST4
@@ -2010,6 +2013,8 @@ CONTAINS
   !> @param[in] imod Model number to point to.
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
+  !>
+  !> @author H. L. Tolman, J. H. Alves  @date 03-Sep-2012
   !>
   SUBROUTINE W3SETG ( IMOD, NDSE, NDST )
     USE W3SERVMD, ONLY: EXTCDE
@@ -2836,74 +2841,38 @@ CONTAINS
     !/ End of W3GNTX ----------------------------------------------------- /
     !/
   END SUBROUTINE W3GNTX
-  !/ ------------------------------------------------------------------- /
+
+  !> Initialize an individual spatial grid at the proper dimensions.
+  !>
+  !> Allocate directly into the structure array GRIDS. Note that
+  !> this cannot be done through the pointer alias!
+  !>
+  !> @note
+  !> - Grid dimensions apre passed through parameter list and then
+  !> locally stored to assure consistency between allocation and
+  !> data in structure.
+  !> - W3SETG() needs to be called after allocation to point to
+  !> proper allocated arrays.
+  !>
+  !> Switches: !/S    Enable subroutine tracing.
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 15-Mar-2007 | Origination. | 3.14
+  !> 11-May-2015 | Updates to 2-ways nestings for UG | 5.08
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] mtri Like NTRI in data structure.
+  !> @param[in] mx Like NX in data structure.
+  !> @param[in] countota ???
+  !> @param[in] nnz ???
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !>
+  !> @author F.ardhuin  @date 15-Mar-2007
+  !>
   SUBROUTINE W3DIMUG  ( IMOD, MTRI, MX, COUNTOTA, NNZ, NDSE, NDST )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH-III           NOAA/NCEP |
-    !/                  |             F.ardhuin             |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         15-Mar-2007 !
-    !/                  +-----------------------------------+
-    !/
-    !/    15-Mar-2007 : Origination.                        ( version 3.14 )
-    !/    11-May-2015 : Updates to 2-ways nestings for UG   ( version 5.08 )
-    !/
-    !  1. Purpose :
-    !
-    !     Initialize an individual spatial grid at the proper dimensions.
-    !
-    !  2. Method :
-    !
-    !     Allocate directly into the structure array GRIDS. Note that
-    !     this cannot be done through the pointer alias!
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !       MX, MTRI, MSEA       Like NX, NTRI, NSEA in data structure.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !       See module documentation.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      W3IOGR    Subr. W3IOGRMD Model definition file IO program.
-    !      WW3_GRID  Prog.   N/A    Model set up program.
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !     - Check on input parameters.
-    !     - Check on previous allocation.
-    !
-    !  7. Remarks :
-    !
-    !     - Grid dimensions apre passed through parameter list and then
-    !       locally stored to assure consistency between allocation and
-    !       data in structure.
-    !     - W3SETG needs to be called after allocation to point to
-    !       proper allocated arrays.
-    !
-    !  8. Structure :
-    !
-    !     See source code.
-    !
-    !  9. Switches :
-    !
-    !     !/S    Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -3024,61 +2993,19 @@ CONTAINS
     !/ End of W3DIMUG ----------------------------------------------------- /
     !/
   END SUBROUTINE W3DIMUG
-  !/ ------------------------------------------------------------------- /
+
+  !> Update reflection directions at shoreline.
+  !>
+  !> Switches: !/S    Enable subroutine tracing.
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 13-Nov-2013 | Origination. |  4.13
+  !>
+  !> @author F.ardhuin  @date 13-Nov-2013
+  !>
   SUBROUTINE W3SETREF
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           F. Ardhuin              |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         13-Nov-2013 |
-    !/                  +-----------------------------------+
-    !/
-    !/    13-Nov-2013 : Origination.                        ( version 4.13 )
-    !/
-    !  1. Purpose :
-    !
-    !     Update reflection directions at shoreline.
-    !
-    !  2. Method :
-    !
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       None
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      WW3_GRID  Prog. WW3_GRID Grid preprocessor
-    !      W3ULEV    Subr. W3UPDTMD Water level update
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !     None.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !     See source code.
-    !
-    !  9. Switches :
-    !
-    !       !/S      Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE CONSTANTS
 #ifdef W3_S
     USE W3SERVMD, ONLY : STRACE
