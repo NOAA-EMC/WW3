@@ -83,6 +83,9 @@
 !> 15-Apr-2020 | Adds optional opt-out for CFL on BC | 7.08
 !> 06-May-2021 | Add SMCTYPE, ARCTC options.   JGLi  | 7.12
 !> 07-Jun-2021 | the GKE module (NL5, Q. Liu)        | 7.12
+!>
+!> @author H. L. Tolman, J. H. Alves, F. Ardhuin  @date 15-Apr-2020
+!>
 MODULE W3GDATMD
   !      Name      Type  Scope    Description
   !     ----------------------------------------------------------------
