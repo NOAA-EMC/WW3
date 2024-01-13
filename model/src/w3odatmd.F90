@@ -52,13 +52,15 @@
 !> 07-Jun-2021 | S_{nl} GKE NL5 (Q. Liu)             | 7.13
 !> 19-Jul-2021 | Momentum and air density support    | 7.14
 !>
+!> Switches :
+!> - !/MPI    MPI specific calls.
+!> - !/S      Enable subroutine tracing.
+!> - !/T      Enable test output
+!>
 !> @author H. L. Tolman  @date 22-Mar-2021
 !>
 MODULE W3ODATMD
 
-  !  1. Purpose :
-  !
-  !
   !  2. Variables and types :
   !
   !      OUTPUT    TYPE  Public   Data structure defining output.
@@ -261,30 +263,6 @@ MODULE W3ODATMD
   !      W3DMO3    Subr. Public   Allocate arrays output type 3.
   !      W3DMO5    Subr. Public   Allocate arrays output type 5.
   !      W3SETO    Subr. Public   Point to selected grid / model.
-  !     ----------------------------------------------------------------
-  !
-  !  4. Subroutines and functions used :
-  !
-  !      Name      Type  Module   Description
-  !     ----------------------------------------------------------------
-  !      W3SETG    Subr. W3GDATMD Point to proper model grid.
-  !      STRACE    Subr. W3SERVMD Subroutine tracing.
-  !      EXTCDE    Subr. W3SERVMD Abort program with exit code.
-  !     ----------------------------------------------------------------
-  !
-  !  5. Remarks :
-  !
-  !     - The number of grids is taken from W3GDATMD, and needs to be
-  !       set first with W3DIMG.
-  !
-  !  6. Switches :
-  !
-  !     !/MPI    MPI specific calls.
-  !     !/S      Enable subroutine tracing.
-  !     !/T      Enable test output
-  !
-  !  7. Source code :
-  !
   !/ ------------------------------------------------------------------- /
   USE CONSTANTS, ONLY : UNDEF
   PUBLIC
@@ -546,70 +524,25 @@ CONTAINS
   !> - !/S    Enable subroutine tracing.
   !> - !/T    Enable test output
   !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 13-Dec-2004 | Origination.                        | 3.06
+  !> 27-Jun-2006 | Adding file name preamble           | 3.09
+  !> 24-Jul-2006 | Adding unified point output storage.| 3.10
+  !> 04-Oct-2006 | Add filter to array pointers.       | 3.10
+  !> 30-Oct-2006 | Add pars for partitioning.          | 3.10
+  !> 26-Mar-2007 | Add pars for partitioning.          | 3.11
+  !> 17-May-2007 | Adding NTPROC/NAPROC separation.    | 3.11
+  !> 18-Dec-2012 | Moving IDOUT initialization here.   | 4.11
+  !> 19-Dec-2012 | Move NOSWLL to data structure.      | 4.11
+  !> 10-Dec-2014 | Add checks for allocate status      | 5.04
+  !> 22-Mar-2021 | Add extra coupling variables        | 7.13
+  !>
   !> @param[in] ndserr Error output unit number.
   !> @param[in] ndstst Test output unit number.
   !>
   SUBROUTINE W3NOUT ( NDSERR, NDSTST )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         22-Mar-2021 |
-    !/                  +-----------------------------------+
-    !/
-    !/    13-Dec-2004 : Origination.                        ( version 3.06 )
-    !/    27-Jun-2006 : Adding file name preamble           ( version 3.09 )
-    !/    24-Jul-2006 : Adding unified point output storage.( version 3.10 )
-    !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-    !/    30-Oct-2006 : Add pars for partitioning.          ( version 3.10 )
-    !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
-    !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-    !/    18-Dec-2012 : Moving IDOUT initialization here.   ( version 4.11 )
-    !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/    22-Mar-2021 : Add extra coupling variables        ( version 7.13 )
-    !/
-    !  1. Purpose :
-    !
-    !     Set up the number of grids to be used.
-    !
-    !  2. Method :
-    !
-    !     Use data stored in NGRIDS in W3GDATMD.
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       NDSERR  Int.   I   Error output unit number.
-    !       NDSTST  Int.   I   Test output unit number.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation below.
-    !
-    !  5. Called by :
-    !
-    !     Any main program that uses this grid structure.
-    !
-    !  6. Error messages :
-    !
-    !     - Error checks on previous setting of variable NGRIDS.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !  9. Switches :
-    !
-    !     !/S    Enable subroutine tracing.
-    !     !/T    Enable test output
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NGRIDS, NAUXGR
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -937,76 +870,36 @@ CONTAINS
     !/
   END SUBROUTINE W3NOUT
   !/ ------------------------------------------------------------------- /
+  !> Initialize an individual data storage for point output.
+  !>
+  !> Allocate directly into the structure array. Note that
+  !> this cannot be done through the pointer alias!
+  !>
+  !> @notes
+  !> - W3SETO needs to be called after allocation to point to
+  !> proper allocated arrays.
+  !> - Note that NOPTS is overwritten in W3IOPP.
+  !>
+  !> Switches:
+  !> - !/S    Enable subroutine tracing.
+  !> - !/T    Enable test output
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 10-Nov-2004 | Origination.                        | 3.06
+  !> 24-Jul-2006 | Adding unified point output storage.| 3.10
+  !> 25-Jul-2006 | Originating grid ID for points.     | 3.10
+  !> 04-Oct-2006 | Add filter to array pointers.       | 3.10
+  !> 30-Oct-2009 | Implement curvilinear grid type.(W. E. Rogers & T. J. Campbell, NRL) | 3.14
+  !> 10-Dec-2014 | Add checks for allocate status      | 5.04
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !> @param[in] npt Array size.
+  !>
   SUBROUTINE W3DMO2 ( IMOD, NDSE, NDST, NPT )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Dec-2014 |
-    !/                  +-----------------------------------+
-    !/
-    !/    10-Nov-2004 : Origination.                        ( version 3.06 )
-    !/    24-Jul-2006 : Adding unified point output storage.( version 3.10 )
-    !/    25-Jul-2006 : Originating grid ID for points.     ( version 3.10 )
-    !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-    !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
-    !/                  (W. E. Rogers & T. J. Campbell, NRL)
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/
-    !  1. Purpose :
-    !
-    !     Initialize an individual data storage for point output.
-    !
-    !  2. Method :
-    !
-    !     Allocate directly into the structure array. Note that
-    !     this cannot be done through the pointer alias!
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !       NPT     Int.   I   Array size.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation below.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      W3IOPO    Subr. W3IOPOMD Point output module.
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !     - Check on input parameters.
-    !     - Check on previous allocation.
-    !
-    !  7. Remarks :
-    !
-    !     - W3SETO needs to be called after allocation to point to
-    !       proper allocated arrays.
-    !     - Note that NOPTS is overwritten in W3IOPP.
-    !
-    !  8. Structure :
-    !
-    !     See source code.
-    !
-    !  9. Switches :
-    !
-    !     !/S      Enable subroutine tracing.
-    !     !/T    Enable test output
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, NAUXGR, IGRID, NSPEC
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1135,73 +1028,32 @@ CONTAINS
     !/ End of W3DMO2 ----------------------------------------------------- /
     !/
   END SUBROUTINE W3DMO2
-  !/ ------------------------------------------------------------------- /
+
+  !> Initialize an individual data storage for track output.
+  !>
+  !> Allocate directly into the structure array. Note that
+  !> this cannot be done through the pointer alias!
+  !>
+  !> @notes
+  !> - W3SETO needs to be called after allocation to point to
+  !> proper allocated arrays.
+  !>
+  !> Switches:
+  !> - !/SHRD, !/DIST, !/MPI Shared / distributed memory model
+  !> - !/S      Enable subroutine tracing.
+  !> - !/T    Enable test output
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 24-Nov-2004 | Origination.  | 3.06
+  !> 10-Dec-2014 | Add checks for allocate status | 5.04
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !>
   SUBROUTINE W3DMO3 ( IMOD, NDSE, NDST )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Dec-2014 !
-    !/                  +-----------------------------------+
-    !/
-    !/    24-Nov-2004 : Origination.                        ( version 3.06 )
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/
-    !  1. Purpose :
-    !
-    !     Initialize an individual data storage for track output.
-    !
-    !  2. Method :
-    !
-    !     Allocate directly into the structure array. Note that
-    !     this cannot be done through the pointer alias!
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation below.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      W3IOTR    Subr. W3IOTRMD Track output module.
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !     - Check on input parameters.
-    !     - Check on previous allocation.
-    !
-    !  7. Remarks :
-    !
-    !     - W3SETO needs to be called after allocation to point to
-    !       proper allocated arrays.
-    !
-    !  8. Structure :
-    !
-    !     See source code.
-    !
-    !  9. Switches :
-    !
-    !     !/SHRD, !/DIST, !/MPI
-    !              Shared / distributed memory model
-    !
-    !     !/S      Enable subroutine tracing.
-    !     !/T    Enable test output
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, IGRID, NX, NY
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1305,72 +1157,29 @@ CONTAINS
     !/ End of W3DMO3 ----------------------------------------------------- /
     !/
   END SUBROUTINE W3DMO3
-  !/ ------------------------------------------------------------------- /
+
+  !> Initialize an individual data storage for boundary data.
+  !>
+  !> Allocate directly into the structure array. Note that
+  !> this cannot be done through the pointer alias!
+  !>
+  !> Switches:
+  !> - !/S Enable subroutine tracing.
+  !> - !/T Enable test output
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 13-Dec-2004 | Origination. | 3.06
+  !> 06-Sep-2005 | Second storage for input bound. sp. | 3.08
+  !> 10-Dec-2014 | Add checks for allocate status | 5.04
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !> @param[in] iblock Select block to allocate.
+  !>
   SUBROUTINE W3DMO5 ( IMOD, NDSE, NDST, IBLOCK )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Dec-2014 !
-    !/                  +-----------------------------------+
-    !/
-    !/    13-Dec-2004 : Origination.                        ( version 3.06 )
-    !/    06-Sep-2005 : Second storage for input bound. sp. ( version 3.08 )
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/
-    !  1. Purpose :
-    !
-    !     Initialize an individual data storage for boundary data.
-    !
-    !  2. Method :
-    !
-    !     Allocate directly into the structure array. Note that
-    !     this cannot be done through the pointer alias!
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !       IBLOCK  Int.   I   Select block to allocate.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation below.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      W3IOBC    Subr. W3IOBCMD Boundary data output module.
-    !      W3IOGR    Subr. W3IOGRMD Grid data output module.
-    !      W3WAVE    Subr. W3WAVEMD Actual wave model routine.
-    !      WW3_GRID  Prog.   N/A    Grid preprocessing program.
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !     - Check on input parameters.
-    !     - Check on previous allocation.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !     See source code.
-    !
-    !  9. Switches :
-    !
-    !     !/S      Enable subroutine tracing.
-    !     !/T    Enable test output
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, IGRID, NX, NY, NSPEC
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1507,7 +1316,7 @@ CONTAINS
     !/ End of W3DMO5 ----------------------------------------------------- /
     !/
   END SUBROUTINE W3DMO5
-  !/ ------------------------------------------------------------------- /
+
   !> Select one of the WAVEWATCH III grids / models.
   !>
   !> Point pointers to the proper variables in the proper element of
@@ -1518,75 +1327,27 @@ CONTAINS
   !> - !/S Enable subroutine tracing.
   !> - !/T Enable test output
   !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 13-Dec-2004 | Origination.                        | 3.06
+  !> 06-Sep-2005 | Second storage for input bound. sp. | 3.08
+  !> 24-Jul-2006 | Adding unified point output storage.| 3.10
+  !> 25-Jul-2006 | Originating grid ID for points.     | 3.10
+  !> 04-Oct-2006 | Add filter to array pointers.       | 3.10
+  !> 30-Oct-2006 | Add pars for partitioning.          | 3.10
+  !> 26-Mar-2007 | Add pars for partitioning.          | 3.11
+  !> 17-May-2007 | Adding NTPROC/NAPROC separation.    | 3.11
+  !> 27-Jul-2010 | Add NKI, NTHI, XFRI, FR1I, TH1I.    | 3.14.3
+  !> 19-Dec-2012 | Move NOSWLL to data structure.      | 4.11
+  !> 12-Dec-2014 | Modify instanciation of NRQTR       | 5.04
+  !> 25-Sep-2020 | Flags for coupling restart          | 7.10
+  !>
   !> @param[in] imod Model number to point to.
   !> @param[in] ndserr Error output unit number.
   !> @param[in] ndstst Test output unit number.
   !>
   SUBROUTINE W3SETO ( IMOD, NDSERR, NDSTST )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         25-Sep-2020 |
-    !/                  +-----------------------------------+
-    !/
-    !/    13-Dec-2004 : Origination.                        ( version 3.06 )
-    !/    06-Sep-2005 : Second storage for input bound. sp. ( version 3.08 )
-    !/    24-Jul-2006 : Adding unified point output storage.( version 3.10 )
-    !/    25-Jul-2006 : Originating grid ID for points.     ( version 3.10 )
-    !/    04-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-    !/    30-Oct-2006 : Add pars for partitioning.          ( version 3.10 )
-    !/    26-Mar-2007 : Add pars for partitioning.          ( version 3.11 )
-    !/    17-May-2007 : Adding NTPROC/NAPROC separation.    ( version 3.11 )
-    !/    27-Jul-2010 : Add NKI, NTHI, XFRI, FR1I, TH1I.    ( version 3.14.3 )
-    !/    19-Dec-2012 : Move NOSWLL to data structure.      ( version 4.11 )
-    !/    12-Dec-2014 : Modify instanciation of NRQTR       ( version 5.04 )
-    !/    25-Sep-2020 : Flags for coupling restart          ( version 7.10 )
-    !/
-    !  1. Purpose :
-    !
-    !     Select one of the WAVEWATCH III grids / models.
-    !
-    !  2. Method :
-    !
-    !     Point pointers to the proper variables in the proper element of
-    !     the GRIDS array.
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSERR  Int.   I   Error output unit number.
-    !       NDSTST  Int.   I   Test output unit number.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation below.
-    !
-    !  5. Called by :
-    !
-    !     Many subroutines in the WAVEWATCH system.
-    !
-    !  6. Error messages :
-    !
-    !     Checks on parameter list IMOD.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !  9. Switches :
-    !
-    !     !/MPI  MPI specific calls.
-    !     !/S    Enable subroutine tracing.
-    !     !/T    Enable test output
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NAUXGR
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
