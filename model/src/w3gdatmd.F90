@@ -1,3 +1,14 @@
+!> @file
+!> @brief Define data structures to set up wave model grids and
+!> aliases to use individual grids transparently.
+!>
+!> @author H. L. Tolman, J. H. Alves, F. Ardhuin  @date 15-Apr-2020
+!>
+! Copyright 2009-2013 National Weather Service (NWS), National
+! Oceanic and Atmospheric Administration. All rights reserved.
+! WAVEWATCH III is a trademark of the NWS. No unauthorized use
+! without permission.
+
 #include "w3macros.h"
 !/
 !/ ------------------------------------------------------------------- /
@@ -11,106 +22,68 @@
 #define TEST_W3GDATMD_W3GNTX___disabled
 #define TEST_W3GDATMD_W3DIMUG___disabled
 #define TEST_W3GDATMD_W3SETREF___disabled
-!/
-!/ ------------------------------------------------------------------- /
+
+!> @brief Read/write restart files.
+!>
+!> Define data structures to set up wave model grids and aliases to
+!> use individual grids transparently. Also includes subroutines to
+!> manage data structure and pointing to individual models.
+!> Definition of grids and model set up.
+!>
+!> ## Module History
+!> Date | Modification | Version
+!> -----|--------------|--------
+!> 24-Jun-2005 | Origination.                        | 3.07
+!> 09-Nov-2005 | Remove soft boundary options.       | 3.08
+!> 23-Jun-2006 | Add data for W3SLN1.                | 3.09
+!> 18-Jul-2006 | Add input grids.                    | 3.10
+!> 05-Oct-2006 | Add filter to array pointers.       | 3.10
+!> 02-Feb-2007 | Add FLAGST.                         | 3.10
+!> 14-Apr-2007 | Add Miche style limiter. ( J. H. Alves | 3.11
+!> 25-Apr-2007 | Adding Battjes-Janssen Sdb. ( J. H. Alves | 3.11
+!> 06-Aug-2007 | Fixing SLNP !/SEED bug.             | 3.13
+!> 18-Sep-2007 | Adding WAM4 source terms. ( F. Ardhuin | 3.13
+!> 15-Apr-2008 | Clean up for distribution.          | 3.14
+!> 27-Jun-2008 | Expand WAM4 variants namelist ( F. Ardhuin | 3.14
+!> 29-May-2009 | Preparing distribution version.     | 3.14
+!> 30-Oct-2009 | Implement run-time grid selection. (W. E. Rogers & T. J. Campbell, NRL) | 3.14
+!> 30-Oct-2009 | Implement curvilinear grid type. (W. E. Rogers & T. J. Campbell, NRL)   | 3.14
+!> 29-Oct-2010 | Implement unstructured grids (A. Roland and F. Ardhuin) | 3.14.1
+!> 06-Dec-2010 | Change from GLOBAL (logical) to ICLOSE (integer) to specify index closure for a grid. (T. J. Campbell, NRL)  | 3.14 
+!> 23-Dec-2010 | Fix HPFAC and HQFAC by including the COS(YGRD) factor with DXDP and DXDQ terms. (T. J. Campbell, NRL)   | 3.14
+!> 05-Apr-2011 | Implement interations for DTMAX < 1s (F. Ardhuin) | 3.14.1
+!> 01-Jul-2011 | Movable bed bottom friction BT4     | 4.01
+!> 03-Nov-2011 | Bug fix| GUGINIT initialization     | 4.04
+!> 29-Nov-2011 | Adding ST6 source term option. (S. Zieger) | 4.04
+!> 14-Mar-2012 | Add PSIC for BT4                    | 4.04
+!> 12-Jun-2012 | Add /RTD option or rotated grid variables. (Jian-Guo Li) | 4.06
+!> 13-Jul-2012 | Move data structures GMD (SNL3) and nonlinear filter (SNLS) from 3.15 (HLT).      | 4.08
+!> 03-Sep-2012 | Clean up of UG grids                | 4.08
+!> 12-Dec-2012 | Adding SMC grid.  JG_Li             | 4.09
+!> 16-Sep-2013 | Add Arctic part SMC grid.           | 4.11
+!> 11-Nov-2013 | SMC and rotated grid incorporated in the main trunk | 4.13
+!> 16-Nov-2013 | Allows reflection on curvi grids    | 4.14
+!> 26-Jul-2013 | Adding IG waves                     | 4.16
+!> 18-Dec-2013 | Moving FLAGLL into GRID TYPE        | 4.16
+!> 11-Jun-2014 | Changed reflection for subgrid      | 5.01
+!> 10-Dec-2014 | Add checks for allocate status      | 5.04
+!> 21-Aug-2015 | Add SMC FUNO3, FVERG options. JGLi  | 5.09
+!> 04-May-2016 | Add IICEDISP                  GB&FA | 5.10
+!> 20-Jan-2017 | Update to new W3GSRUMD APIs         | 6.02
+!> 20-Jan-2017 | Change to preprocessor macros to enable test output. (T.J. Campbell, NRL) | 6.02
+!> 20-Jan-2017 | Change calculation of curvilinear grid metric and derivatives calculations to use W3GSRUMD|W3CGDM. (T.J. Campbell, NRL) | 6.02
+!> 07-Jan-2018 | Generalizes ICE100WIND to ICESCALES | 6.04
+!> 26-Mar-2018 | Add FSWND optional variable.  JGLi  | 6.02
+!> 05-Jun-2018 | Add PDLIB/DEBUGINIT and implcit scheme parameters for unstructured grids | 6.04
+!> 18-Aug-2018 | S_{ice} IC5 (Q. Liu)                | 6.06
+!> 20-Aug-2018|  Extra namelist variables for ST6 (Q. Liu, UoM) | 6.06)
+!> 26-Aug-2018 | UOST (Mentaschi et al. 2015, 2018)  | 6.06
+!> 27-Aug-2018 | Add BTBETA parameter                | 6.06
+!> 22-Feb-2020 | Add AIRGB and AIRCMIN               | 7.06
+!> 15-Apr-2020 | Adds optional opt-out for CFL on BC | 7.08
+!> 06-May-2021 | Add SMCTYPE, ARCTC options.   JGLi  | 7.12
+!> 07-Jun-2021 | the GKE module (NL5, Q. Liu)        | 7.12
 MODULE W3GDATMD
-  !/
-  !/                  +-----------------------------------+
-  !/                  | WAVEWATCH III           NOAA/NCEP |
-  !/                  |           H. L. Tolman            |
-  !/                  !           J. H. Alves             !
-  !/                  |            F. Ardhuin             |
-  !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         15-Apr-2020 |
-  !/                  +-----------------------------------+
-  !/
-  !/    24-Jun-2005 : Origination.                        ( version 3.07 )
-  !/    09-Nov-2005 : Remove soft boundary options.       ( version 3.08 )
-  !/    23-Jun-2006 : Add data for W3SLN1.                ( version 3.09 )
-  !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
-  !/    05-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-  !/    02-Feb-2007 : Add FLAGST.                         ( version 3.10 )
-  !/    14-Apr-2007 : Add Miche style limiter.            ( version 3.11 )
-  !/                  ( J. H. Alves )
-  !/    25-Apr-2007 : Adding Battjes-Janssen Sdb.         ( version 3.11 )
-  !/                  ( J. H. Alves )
-  !/    06-Aug-2007 : Fixing SLNP !/SEED bug.             ( version 3.13 )
-  !/    18-Sep-2007 : Adding WAM4 source terms.           ( version 3.13 )
-  !/                  ( F. Ardhuin )
-  !/    15-Apr-2008 : Clean up for distribution.          ( version 3.14 )
-  !/    27-Jun-2008 : Expand WAM4 variants namelist       ( version 3.14 )
-  !/                  ( F. Ardhuin )
-  !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
-  !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
-  !/                  (W. E. Rogers & T. J. Campbell, NRL)
-  !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
-  !/                  (W. E. Rogers & T. J. Campbell, NRL)
-  !/    29-Oct-2010 : Implement unstructured grids        ( version 3.14.1 )
-  !/                  (A. Roland and F. Ardhuin)
-  !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
-  !/                  specify index closure for a grid.   ( version 3.14 )
-  !/                  (T. J. Campbell, NRL)
-  !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
-  !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
-  !/                  (T. J. Campbell, NRL)
-  !/    05-Apr-2011 : Implement interations for DTMAX < 1s( version 3.14.1 )
-  !/                  (F. Ardhuin)
-  !/    01-Jul-2011 : Movable bed bottom friction BT4     ( version 4.01 )
-  !/    03-Nov-2011 : Bug fix: GUGINIT initialization     ( version 4.04 )
-  !/    29-Nov-2011 : Adding ST6 source term option.      ( version 4.04 )
-  !/                  (S. Zieger)
-  !/    14-Mar-2012 : Add PSIC for BT4                    ( version 4.04 )
-  !/    12-Jun-2012 : Add /RTD option or rotated grid variables.
-  !/                  (Jian-Guo Li)                       ( version 4.06 )
-  !/    13-Jul-2012 : Move data structures GMD (SNL3) and nonlinear
-  !/                  filter (SNLS) from 3.15 (HLT).      ( version 4.08 )
-  !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
-  !/    12-Dec-2012 : Adding SMC grid.  JG_Li             ( version 4.09 )
-  !/    16-Sep-2013 : Add Arctic part SMC grid.           ( version 4.11 )
-  !/    11-Nov-2013 : SMC and rotated grid incorporated in the main
-  !/                  trunk                               ( version 4.13 )
-  !/    16-Nov-2013 : Allows reflection on curvi grids    ( version 4.14 )
-  !/    26-Jul-2013 : Adding IG waves                     ( version 4.16 )
-  !/    18-Dec-2013 : Moving FLAGLL into GRID TYPE        ( version 4.16 )
-  !/    11-Jun-2014 : Changed reflection for subgrid      ( version 5.01 )
-  !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-  !/    21-Aug-2015 : Add SMC FUNO3, FVERG options. JGLi  ( version 5.09 )
-  !/    04-May-2016 : Add IICEDISP                  GB&FA ( version 5.10 )
-  !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
-  !/    20-Jan-2017 : Change to preprocessor macros to enable test output.
-  !/                  (T.J. Campbell, NRL)                ( version 6.02 )
-  !/    20-Jan-2017 : Change calculation of curvilinear grid metric and
-  !/                  derivatives calculations to use W3GSRUMD:W3CGDM.
-  !/                  (T.J. Campbell, NRL)                ( version 6.02 )
-  !/    07-Jan-2018 : Generalizes ICE100WIND to ICESCALES ( version 6.04 )
-  !/    26-Mar-2018 : Add FSWND optional variable.  JGLi  ( version 6.02 )
-  !/    05-Jun-2018 : Add PDLIB/DEBUGINIT and implcit scheme parameters
-  !/                  for unstructured grids              ( version 6.04 )
-  !/    18-Aug-2018 : S_{ice} IC5 (Q. Liu)                ( version 6.06 )
-  !/    20-Aug-2018:  Extra namelist variables for ST6    ( version 6.06)
-  !/                  (Q. Liu, UoM)
-  !/    26-Aug-2018 : UOST (Mentaschi et al. 2015, 2018)  ( version 6.06 )
-  !/    27-Aug-2018 : Add BTBETA parameter                ( version 6.06 )
-  !/    22-Feb-2020 : Add AIRGB and AIRCMIN               ( version 7.06 )
-  !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
-  !/    06-May-2021 : Add SMCTYPE, ARCTC options.   JGLi  ( version 7.12 )
-  !/    07-Jun-2021 : the GKE module (NL5, Q. Liu)        ( version 7.12 )
-  !/
-  !/
-  !/    Copyright 2009-2013 National Weather Service (NWS),
-  !/       National Oceanic and Atmospheric Administration.  All rights
-  !/       reserved.  WAVEWATCH III is a trademark of the NWS.
-  !/       No unauthorized use without permission.
-  !/
-  !  1. Purpose :
-  !
-  !     Define data structures to set up wave model grids and aliases
-  !     to use individual grids transparently. Also includes subroutines
-  !     to manage data structure and pointing to individual models.
-  !     Definition of grids and model set up.
-  !
-  !  2. Variables and types :
-  !
   !      Name      Type  Scope    Description
   !     ----------------------------------------------------------------
   !      NGRIDS    Int.  Public   Number of grids, initialized at -1
@@ -1431,6 +1404,8 @@ CONTAINS
   !> @param[in] naux Optional: Number of auxiliary grids to be used. Grids
   !> -NAUX:NUBMER are defined, optional parameters.
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
+  !>
   SUBROUTINE W3NMOD ( NUMBER, NDSE, NDST, NAUX )
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1523,88 +1498,57 @@ CONTAINS
     !/ End of W3NMOD ----------------------------------------------------- /
     !/
   END SUBROUTINE W3NMOD
-  !/ ------------------------------------------------------------------- /
+
+  !> Initialize an individual spatial grid at the proper dimensions.
+  !>
+  !> Allocate directly into the structure array GRIDS. Note that
+  !> this cannot be done through the pointer alias!
+  !>
+  !> @note
+  !> - Grid dimensions apre passed through parameter list and then
+  !>   locally stored to assure consistency between allocation and
+  !>   data in structure.
+  !> - W3SETG needs to be called after allocation to point to
+  !>   proper allocated arrays.
+  !>
+  !> Switches: !/S    Enable subroutine tracing.
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 24-Jun-2005 | Origination.                        | 3.07
+  !> 18-Jul-2006 | Add input grids.                    | 3.10
+  !> 05-Oct-2006 | Add filter to array pointers.       | 3.10
+  !> 02-Feb-2007 | Add FLAGST.                         | 3.10
+  !> 30-Oct-2009 | Implement run-time grid selection. (W. E. Rogers & T. J. Campbell, NRL) | 3.14
+  !> 30-Oct-2009 | Implement curvilinear grid type. (W. E. Rogers & T. J. Campbell, NRL)    | 3.14
+  !> 30-Oct-2009 | Implement unstructured grids        | 3.14.1
+  !> 03-Sep-2012 | Clean up of UG grids                | 4.08
+  !> 10-Dec-2014 | Add checks for allocate status      | 5.04
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] mx Like NX in data structure.
+  !> @param[in] my Like NY in data structure.
+  !> @param[in] msea Like NSEA in data structure.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+#ifdef W3_SMC
+  !> @param[in] mcel ???
+  !> @param[in] mufc ???
+  !> @param[in] mvfc ???
+  !> @param[in] mrlv ???
+  !> @param[in] mbsmc ???
+  !> @param[in] marc ???
+  !> @param[in] mbac ???
+  !> @param[in] mspec ???
+#endif
+  !>
   SUBROUTINE W3DIMX  ( IMOD, MX, MY, MSEA, NDSE, NDST   &
 #ifdef W3_SMC
        , MCel, MUFc, MVFc, MRLv, MBSMC    &
        , MARC, MBAC, MSPEC                &
 #endif
        )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Dec-2014 |
-    !/                  +-----------------------------------+
-    !/
-    !/    24-Jun-2005 : Origination.                        ( version 3.07 )
-    !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
-    !/    05-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-    !/    02-Feb-2007 : Add FLAGST.                         ( version 3.10 )
-    !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
-    !/                  (W. E. Rogers & T. J. Campbell, NRL)
-    !/    30-Oct-2009 : Implement curvilinear grid type.    ( version 3.14 )
-    !/                  (W. E. Rogers & T. J. Campbell, NRL)
-    !/    30-Oct-2009 : Implement unstructured grids        ( version 3.14.1)
-    !/    03-Sep-2012 : Clean up of UG grids                ( version 4.08 )
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/
-    !  1. Purpose :
-    !
-    !     Initialize an individual spatial grid at the proper dimensions.
-    !
-    !  2. Method :
-    !
-    !     Allocate directly into the structure array GRIDS. Note that
-    !     this cannot be done through the pointer alias!
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !       NDST    Int.   I   Test output unit number.
-    !       MX, MY, MSEA       Like NX, NY, NSEA in data structure.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !       See module documentation.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      W3IOGR    Subr. W3IOGRMD Model definition file IO program.
-    !      WW3_GRID  Prog.   N/A    Model set up program.
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !     - Check on input parameters.
-    !     - Check on previous allocation.
-    !
-    !  7. Remarks :
-    !
-    !     - Grid dimensions apre passed through parameter list and then
-    !       locally stored to assure consistency between allocation and
-    !       data in structure.
-    !     - W3SETG needs to be called after allocation to point to
-    !       proper allocated arrays.
-    !
-    !  8. Structure :
-    !
-    !     See source code.
-    !
-    !  9. Switches :
-    !
-    !     !/S    Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -1865,76 +1809,38 @@ CONTAINS
     !/ End of W3DIMX ----------------------------------------------------- /
     !/
   END SUBROUTINE W3DIMX
-  !/ ------------------------------------------------------------------- /
+
+  !> Initialize an individual spatial grid at the proper dimensions.
+  !>
+  !> Allocate directly into the structure array GRIDS. Note that
+  !> this cannot be done through the pointer alias!
+  !>
+  !> @notes
+  !> - Grid dimensions apre passed through parameter list and then
+  !> locally stored to assure consistency between allocation and
+  !> data in structure.
+  !> - W3SETG needs to be called after allocation to point to
+  !> proper allocated arrays.
+  !>
+  !> Switches:
+  !> - !/S    Enable subroutine tracing.
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 19-Feb-2004 | Origination.                        | 3.06
+  !> 18-Jul-2006 | Add input grids.                    | 3.10
+  !> 05-Oct-2006 | Add filter to array pointers.       | 3.10
+  !> 10-Dec-2014 | Add checks for allocate status      | 5.04
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] mk Spectral dimension.
+  !> @param[in] mth Spectral dimension.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   SUBROUTINE W3DIMS  ( IMOD, MK, MTH, NDSE, NDST )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH III           NOAA/NCEP |
-    !/                  |           H. L. Tolman            |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Dec-2014 !
-    !/                  +-----------------------------------+
-    !/
-    !/    19-Feb-2004 : Origination.                        ( version 3.06 )
-    !/    18-Jul-2006 : Add input grids.                    ( version 3.10 )
-    !/    05-Oct-2006 : Add filter to array pointers.       ( version 3.10 )
-    !/    10-Dec-2014 : Add checks for allocate status      ( version 5.04 )
-    !/
-    !  1. Purpose :
-    !
-    !     Initialize an individual spatial grid at the proper dimensions.
-    !
-    !  2. Method :
-    !
-    !     Allocate directly into the structure array GRIDS. Note that
-    !     this cannot be done through the pointer alias!
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !       MK,MTH  Int.   I   Spectral dimensions.
-    !       NDST    Int.   I   Test output unit number.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation.
-    !
-    !  5. Called by :
-    !
-    !      Name      Type  Module   Description
-    !     ----------------------------------------------------------------
-    !      W3IOGR    Subr. W3IOGRMD Model definition file IO program.
-    !      WW3_GRID  Prog.   N/A    Model set up program.
-    !     ----------------------------------------------------------------
-    !
-    !  6. Error messages :
-    !
-    !     - Check on input parameters.
-    !     - Check on previous allocation.
-    !
-    !  7. Remarks :
-    !
-    !     - Grid dimensions apre passed through parameter list and then
-    !       locally stored to assure consistency between allocation and
-    !       data in structure.
-    !     - W3SETG needs to be called after allocation to point to
-    !       proper allocated arrays.
-    !
-    !  8. Structure :
-    !
-    !     See source code.
-    !
-    !  9. Switches :
-    !
-    !     !/S    Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_ST4
     USE CONSTANTS, ONLY: RADE
@@ -2747,70 +2653,28 @@ CONTAINS
     !/ End of W3SETG ----------------------------------------------------- /
     !/
   END SUBROUTINE W3SETG
-  !/ ------------------------------------------------------------------- /
+
+  !> Construct required spatial grid quantities for curvilinear grids.
+  !>
+  !> Switches:
+  !> - !/S    Enable subroutine tracing.
+  !>
+  !> ## Subroutine History
+  !> Date | Modification | Version
+  !> -----|--------------|--------
+  !> 30-Oct-2009 | Origination. | 3.13
+  !> 06-Dec-2010 | Change from GLOBAL (logical) to ICLOSE (integer) to specify index closure for a grid. (T. J. Campbell, NRL)  | 3.14
+  !> 23-Dec-2010 | Fix HPFAC and HQFAC by including the COS(YGRD) factor with DXDP and DXDQ terms. (T. J. Campbell, NRL) | 3.14
+  !> 20-Jul-2011 | HPFAC and HQFAC are now calculated using W3DIST. Result should be very similar except near pole. Due to precision issues, HPFAC and HQFAC revert to SX and SY in case of regular grids. (W. E. Rogers, NRL) | 3.14
+  !> 20-Jan-2017 | Update to new W3GSRUMD APIs         | 6.02
+  !> 20-Jan-2017 | Change calculation of curvilinear grid metric and derivatives calculations to use W3GSRUMD:W3CGDM. (T.J. Campbell, NRL) | 6.02
+  !>
+  !> @param[in] imod Model number to point to.
+  !> @param[in] ndse Error output unit number.
+  !> @param[in] ndst Test output unit number.
+  !>
+  !> @author T. J. Campbell  @date 20-Jul-2011
   SUBROUTINE W3GNTX ( IMOD, NDSE, NDST )
-    !/
-    !/                  +-----------------------------------+
-    !/                  | WAVEWATCH-III           NOAA/NCEP |
-    !/                  |           T. J. Campbell          |
-    !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         20-Jul-2011 |
-    !/                  +-----------------------------------+
-    !/
-    !/    30-Oct-2009 : Origination.                        ( version 3.13 )
-    !/    06-Dec-2010 : Change from GLOBAL (logical) to ICLOSE (integer) to
-    !/                  specify index closure for a grid.   ( version 3.14 )
-    !/                  (T. J. Campbell, NRL)
-    !/    23-Dec-2010 : Fix HPFAC and HQFAC by including the COS(YGRD)
-    !/                  factor with DXDP and DXDQ terms.    ( version 3.14 )
-    !/                  (T. J. Campbell, NRL)
-    !/    20-Jul-2011 : HPFAC and HQFAC are now calculated using W3DIST.
-    !/                  Result should be very similar except near pole.
-    !/                  Due to precision issues, HPFAC and HQFAC revert
-    !/                  to SX and SY in case of regular grids.
-    !/                  (W. E. Rogers, NRL)                 ( version 3.14 )
-    !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
-    !/    20-Jan-2017 : Change calculation of curvilinear grid metric and
-    !/                  derivatives calculations to use W3GSRUMD:W3CGDM.
-    !/                  (T.J. Campbell, NRL)                ( version 6.02 )
-    !/
-    !  1. Purpose :
-    !
-    !     Construct required spatial grid quantities for curvilinear grids.
-    !
-    !  2. Method :
-    !
-    !  3. Parameters :
-    !
-    !     Parameter list
-    !     ----------------------------------------------------------------
-    !       IMOD    Int.   I   Model number to point to.
-    !       NDSE    Int.   I   Error output unit number.
-    !     ----------------------------------------------------------------
-    !
-    !  4. Subroutines used :
-    !
-    !     See module documentation.
-    !
-    !  5. Called by :
-    !
-    !     Any program that uses this grid structure.
-    !
-    !  6. Error messages :
-    !
-    !     - Check on previous initialization of grids.
-    !
-    !  7. Remarks :
-    !
-    !  8. Structure :
-    !
-    !  9. Switches :
-    !
-    !     !/S    Enable subroutine tracing.
-    !
-    ! 10. Source code :
-    !
-    !/ ------------------------------------------------------------------- /
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE

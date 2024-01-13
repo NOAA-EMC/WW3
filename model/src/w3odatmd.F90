@@ -515,7 +515,7 @@ MODULE W3ODATMD
   REAL, POINTER           :: PTFCUT   ! C. Bunney; Part. 5 freq cut
   !/
 CONTAINS
-  !/ ------------------------------------------------------------------- /
+
   !> Set up the number of grids to be used.
   !>
   !> Use data stored in NGRIDS in W3GDATMD.
@@ -541,6 +541,8 @@ CONTAINS
   !>
   !> @param[in] ndserr Error output unit number.
   !> @param[in] ndstst Test output unit number.
+  !>
+  !> @author H. L. Tolman  @date 22-Mar-2021
   !>
   SUBROUTINE W3NOUT ( NDSERR, NDSTST )
     USE W3GDATMD, ONLY: NGRIDS, NAUXGR
@@ -869,7 +871,7 @@ CONTAINS
     !/ End of W3NOUT ----------------------------------------------------- /
     !/
   END SUBROUTINE W3NOUT
-  !/ ------------------------------------------------------------------- /
+
   !> Initialize an individual data storage for point output.
   !>
   !> Allocate directly into the structure array. Note that
@@ -898,6 +900,8 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
   !> @param[in] npt Array size.
+  !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   !>
   SUBROUTINE W3DMO2 ( IMOD, NDSE, NDST, NPT )
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, NAUXGR, IGRID, NSPEC
@@ -1053,6 +1057,8 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
+  !>
   SUBROUTINE W3DMO3 ( IMOD, NDSE, NDST )
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, IGRID, NX, NY
     USE W3SERVMD, ONLY: EXTCDE
@@ -1178,6 +1184,8 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
   !> @param[in] iblock Select block to allocate.
+  !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   !>
   SUBROUTINE W3DMO5 ( IMOD, NDSE, NDST, IBLOCK )
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, IGRID, NX, NY, NSPEC
@@ -1346,6 +1354,8 @@ CONTAINS
   !> @param[in] imod Model number to point to.
   !> @param[in] ndserr Error output unit number.
   !> @param[in] ndstst Test output unit number.
+  !>
+  !> @author H. L. Tolman  @date 25-Sep-2020
   !>
   SUBROUTINE W3SETO ( IMOD, NDSERR, NDSTST )
     USE W3GDATMD, ONLY: NAUXGR
