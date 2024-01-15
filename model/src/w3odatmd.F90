@@ -10,12 +10,12 @@
 
 #include "w3macros.h"
 
-!> @brief Read/write restart files.
+!> @brief Define data structures to set up wave model grids and
+!> aliases to use individual grids transparently.
 !>
-!> Define data structures to set up wave model grids and aliases to
-!> use individual grids transparently. Also includes subroutines to
-!> manage data structure and pointing to individual models. This
-!> module considers the parameters required for model output.
+!> This module also includes subroutines to manage data structure and
+!> pointing to individual models. This module considers the parameters
+!> required for model output.
 !>
 !> ## Module History
 !> Date | Modification | Version
