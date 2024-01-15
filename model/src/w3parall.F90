@@ -89,9 +89,11 @@ MODULE W3PARALL
   LOGICAL, PARAMETER   :: LSLOC = .true.
   INTEGER, PARAMETER   :: IMEM = 1
 
-  REAL,  PARAMETER     :: ONESIXTH  = 1.0d0/6.0d0
-  REAL,  PARAMETER     :: ONETHIRD  = 1.0d0/3.0d0
-  REAL,  PARAMETER     :: ZERO      = 0.0d0
+  
+  REAL*8,  PARAMETER     :: ONESIXTH  = 1.0d0/6.0d0
+  REAL*8,  PARAMETER     :: ONETHIRD  = 1.0d0/3.0d0
+  REAL*8,  PARAMETER     :: ZERO      = 0.0d0
+  REAL*8,  PARAMETER     :: ONE       = 1.d0 
 
   REAL*8,  PARAMETER    :: THR8 = TINY(1.d0)
   REAL,  PARAMETER      :: THR  = TINY(1.0)

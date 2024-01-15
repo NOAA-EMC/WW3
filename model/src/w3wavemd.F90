@@ -1035,6 +1035,7 @@ CONTAINS
 
       !
       DO IT = IT0, NT
+
 #ifdef W3_TIMINGS
         CALL PRINT_MY_TIME("Begin of IT loop")
 #endif
@@ -1060,6 +1061,7 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 0')
         !
         ITIME  = ITIME + 1
+ 
         !
         DTG    = REAL(NINT(DTGA+DTRES+0.0001))
         DTRES  = DTRES + DTGA - DTG
@@ -1781,7 +1783,7 @@ CONTAINS
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
 #ifdef W3_PR3
-                    CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                    CALL W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0S(ISEA),       &
                          CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                          CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
@@ -1835,7 +1837,7 @@ CONTAINS
             IF (FLCX .or. FLCY) THEN
               IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
                 DO ISPEC=1,NSPEC
-                  CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+                  CALL PDLIB_W3XYPUG ( ISPEC, ISEC1*ITIME, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
                 END DO
               END IF
             END IF
@@ -2110,7 +2112,7 @@ CONTAINS
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
 #ifdef W3_PR3
-                    CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+                    CALL W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0S(ISEA),       &
                          CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                          CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &

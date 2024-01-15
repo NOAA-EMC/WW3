@@ -1506,7 +1506,7 @@ CONTAINS
 !> @author H. L. Tolman
 !> @date   01-Jul-2013
 !>
-  SUBROUTINE W3KTP3 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DW,       &
+  SUBROUTINE W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0, CG, WN, DW,       &
        DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
        DCYDX, DCYDY, DCDX, DCDY, VA, CFLTHMAX, CFLKMAX )
     !/
@@ -1643,7 +1643,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)     :: ISEA
+    INTEGER, INTENT(IN)     :: ISEA, JSEA
     REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
          WN(0:NK+1), DW, DDDX, DDDY,       &
          CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
@@ -1778,8 +1778,8 @@ CONTAINS
              + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
 
         IF (B_JGS_LDIFR) THEN 
-          VELNOFILT = DIFRM(ISEA)*VELNOFILT-CG(1+(ISP-1)/NTH) & 
-             * (DIFRX(ISEA)*ESIN(ISP)-DIFRY(ISEA)*ECOS(ISP))
+          VELNOFILT = DIFRM(JSEA)*VELNOFILT-CG(1+(ISP-1)/NTH) & 
+           * (DIFRX(JSEA)*ESIN(ISP)-DIFRY(JSEA)*ECOS(ISP))
         ENDIF
 
         !
@@ -1796,7 +1796,7 @@ CONTAINS
         ! the filtering limits VCFLT to be less than CTMAX
         ! this modification was proposed by F. Ardhuin 2011/03/06
         !
-        VCFLT(MAPTH2(ISP))=VELNOFILT!SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
+        VCFLT(MAPTH2(ISP))=SIGN(MIN(ABS(VELNOFILT),CTMAX),VELNOFILT)
       END DO
     END IF
     !
