@@ -318,6 +318,8 @@ $                           JGS_DIFF_THR  : implicit solver threshold for JGS_TE
 $                           JGS_NORM_THR  : terminate based on the norm of the solution
 $                           JGS_LIMITER  : use total (quasi-steady: limits whole equation) instead of local limiter (un-steady: limits only source terms)
 $                           JGS_LIMITER_FUNC  : 1 - old limiter; 2 - alternatnive limiter 
+$                           JGS_LGSE : T/F - turn on/off GSE correction on unstructured grids 
+$                           JGS_GSE_TS : Time constant of the diffusion tensor, see Manual, same as for PR2
 $                           SETUP_APPLY_WLV  : Compute wave setup (experimental)
 $                           SOLVERTHR_SETUP  : Solver threshold for setup computations
 $                           CRIT_DEP_SETUP  : Critical depths for setup computations
