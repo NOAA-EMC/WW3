@@ -18,19 +18,16 @@
 &RUN_NML
   RUN%FLCX         =  T
   RUN%FLCY         =  T
-  RUN%FLCK         =  T
-  RUN%FLCTH        =  T
-  RUN%FLSOU       =  T
 /
 
 ! -------------------------------------------------------------------- !
 ! Define the timesteps parameterization via TIMESTEPS_NML namelist
 ! -------------------------------------------------------------------- !
 &TIMESTEPS_NML
-  TIMESTEPS%DTMAX        =  10
-  TIMESTEPS%DTXY         =  10
-  TIMESTEPS%DTKTH        =  10
-  TIMESTEPS%DTMIN        =  10
+  TIMESTEPS%DTMAX        =  1
+  TIMESTEPS%DTXY         =  1
+  TIMESTEPS%DTKTH        =  1
+  TIMESTEPS%DTMIN        =  1
 /
 
 ! -------------------------------------------------------------------- !
@@ -38,7 +35,7 @@
 ! -------------------------------------------------------------------- !
 &GRID_NML
   GRID%NAME         =  'LIMON'
-  GRID%NML          =  'namelists_pdlib.nml'
+  GRID%NML          =  '../input/namelists_LIMON.nml'
   GRID%TYPE         =  'UNST'
   GRID%COORD        =  'SPHE'
   GRID%CLOS         =  'NONE'
@@ -51,7 +48,7 @@
 ! -------------------------------------------------------------------- !
 &UNST_NML
   UNST%SF          =  -1.
-  UNST%FILENAME    =  'limon_ll.msh'
+  UNST%FILENAME    =  './../input/limon_ll.msh'
   UNST%IDLA      =  4
   UNST%FORMAT    =  '(20f10.2)'
 /
