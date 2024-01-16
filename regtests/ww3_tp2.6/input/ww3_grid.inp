@@ -20,7 +20,7 @@ $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
 $
-   F T T T T T 
+   F T T F F F 
 $
 $ Set time steps ----------------------------------------------------- $
 $ - Time step information (this information is always read)
@@ -28,7 +28,7 @@ $     maximum global time step, maximum CFL time step for x-y and
 $     k-theta, minimum source term time step (all in seconds).
 $
 $
-  10 10 10 10 
+  1 1 1 1                               
 $
 $ Start of namelist input section ------------------------------------ $
 $   Starting with WAVEWATCH III version 2.00, the tunable parameters
@@ -104,15 +104,15 @@ $
 &UNST
 UGOBCAUTO = F
 UGOBCDEPTH= -10.
-EXPFSN   = F,
+EXPFSN   = T,
 EXPFSPSI = F,
 EXPFSFCT = F,
 IMPFSN   = F,
-IMPTOTAL = T,
+IMPTOTAL = F,
 EXPTOTAL  = F,
-IMPREFRACTION = T,
-IMPFREQSHIFT  = T,
-IMPSOURCE     = T,
+IMPREFRACTION = F,
+IMPFREQSHIFT  = F,
+IMPSOURCE     = F,
 SETUP_APPLY_WLV = F
 SOLVERTHR_SETUP=1E-14
 CRIT_DEP_SETUP=0.1
