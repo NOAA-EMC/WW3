@@ -773,13 +773,13 @@ CONTAINS
     VLCFLY = 0.
     AC     = 0.
 
-    !IF (IT == 1) THEN
-    !  DO JSEA = 1, NSEAL
-    !    IF (IOBP_LOC(JSEA) == 1 .OR. IOBP_LOC(JSEA) == 3 .OR. IOBP_LOC(JSEA) == 0) THEN
-    !      VA(ISP,JSEA) = 0.
-    !    ENDIF
-    !  ENDDO 
-    !ENDIF
+    IF (IT == 1) THEN
+      DO JSEA = 1, NSEAL
+        IF (IOBP_LOC(JSEA) == 1 .OR. IOBP_LOC(JSEA) == 3 .OR. IOBP_LOC(JSEA) == 0) THEN
+          VA(ISP,JSEA) = 0.
+        ENDIF
+      ENDDO 
+    ENDIF
        
     !
     ! 2.  Calculate velocities ---------------- *
@@ -2779,7 +2779,7 @@ CONTAINS
   END SUBROUTINE CHECK_ARRAY_INTEGRAL_NX_R8
   !/ ------------------------------------------------------------------- /
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC )
+  SUBROUTINE PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, IT, FACX, FACY, DTG, VGX, VGY, LCALC )
     !/ ------------------------------------------------------------------- /
     !/
     !/                  +-----------------------------------+
@@ -2830,16 +2830,26 @@ CONTAINS
 #endif
     !
     USE W3ODATMD, only: IAPROC
-    USE W3GDATMD, only: B_JGS_USE_JACOBI
+    USE W3GDATMD, only: B_JGS_USE_JACOBI, NSEAL, IOBP_LOC
+    USE W3WDATMD, only: VA
 
     LOGICAL, INTENT(IN) :: LCALC
-    INTEGER, INTENT(IN) :: IMOD
-    REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
+    INTEGER, INTENT(IN) :: IMOD, IT
+    REAL, INTENT(IN)    :: FACX, FACY, DTG, VGX, VGY
+
+    INTEGER             :: JSEA
 #ifdef W3_DEBUGSOLVER
     WRITE(740+IAPROC,*) 'B_JGS_USE_JACOBI=', B_JGS_USE_JACOBI
     FLUSH(740+IAPROC)
 #endif
     IF (B_JGS_USE_JACOBI) THEN
+      IF (IT == 1) THEN
+        DO JSEA = 1, NSEAL
+          IF (IOBP_LOC(JSEA) == 1 .OR. IOBP_LOC(JSEA) == 3 .OR. IOBP_LOC(JSEA) == 0) THEN
+            VA(:,JSEA) = 0.
+          ENDIF
+        ENDDO 
+      ENDIF
       CALL PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
       RETURN
     END IF
@@ -5638,7 +5648,6 @@ CONTAINS
     INTEGER ierr, i
     INTEGER JP_glob
     INTEGER is_converged, itmp
-
     INTEGER :: TESTNODE = 923
 
     LOGICAL :: LSIG = .FALSE.
@@ -8457,9 +8466,9 @@ CONTAINS
       ELSE
         DIFRM(IP) = ONE
       END IF
-      IF (DIFRM(IP) .GT. 1.4) THEN
+      !IF (DIFRM(IP) .GT. 1.4) THEN
         WRITE(1200+IAPROC,*) IP, DIFRM(IP), DXCGK(IP), DXENG(IP), DYCGK(IP), DYENG(IP), DXXEN(IP), DYYEN(IP)
-      ENDIF
+      !ENDIF
     END DO
 
     IF (.NOT. FSTOTALIMP) CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRM ) 
@@ -8995,7 +9004,7 @@ CONTAINS
          WRITE(STAT%FHNDL,*) 'sum(DVDY) = ', sum(DVDY)
 #endif
 
-         IF (.true.) THEN
+         IF (.false.) THEN
            OPEN(2304, FILE  = 'ergvar.bin'  , FORM = 'UNFORMATTED')
            OPEN(2305, FILE  = 'erggrad.bin'  , FORM = 'UNFORMATTED')
            WRITE(2304) 1.
@@ -9103,24 +9112,26 @@ END SUBROUTINE
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
-     SUBROUTINE PROPTHETA(IP,DEP_LOC,CAD)
+     SUBROUTINE PROPTHETA(IP,DEPTH_LOC,CAD)
        USE W3GDATMD, only: DMIN, NTH, SIG, NK, ESIN, ECOS, ES2, EC2, CLATS
        USE W3GDATMD, only: DIFRM, DIFRX, DIFRY, IOBP_LOC, B_JGS_LDIFR, FLAGLL
        USE W3ADATMD, only: CG, WN, DW, DDDX, DDDY
        USE CONSTANTS, only: RADIUS
+       USE W3WDATMD, only: VA
        USE YOWNODEPOOL, only: X, Y, IPLG
        IMPLICIT NONE
        INTEGER, INTENT(IN) :: IP 
-       REAL*8, INTENT(OUT) :: CAD(MSC,MDC)
+       REAL, INTENT(IN)    :: DEPTH_LOC
+       REAL*8, INTENT(OUT) :: CAD(NK,NTH)
 
        INTEGER        :: IS, ID
        REAL*8    :: WKDEP, DWDH, CFL
 
        CAD = 0.
 
-       IF (DW(IP) .GT. DMIN) THEN
+       IF (DEPTH_LOC .GT. DMIN) THEN
          DO IS = 1, NK
-           WKDEP = WN(IS,IP) * DW(IP)
+           WKDEP = WN(IS,IP) * DEPTH_LOC
            IF (WKDEP .LT. 13.) THEN
              DWDH = SIG(IS)/SINH(MIN(KDMAX,2.*WKDEP))
              DO ID = 1, NTH
@@ -9158,19 +9169,28 @@ END SUBROUTINE
 !**********************************************************************
 !*                                                                    *
 !**********************************************************************
-      SUBROUTINE COMPUTE_DIRECTION_WENO_A(MNP) 
+      SUBROUTINE COMPUTE_DIRECTION_WENO_A(DT)
+        USE W3GDATMD, only: DMIN, NTH, SIG, NK, ESIN, ECOS, ES2, EC2, CLATS, DTH
+        USE W3GDATMD, only: DIFRM, DIFRX, DIFRY, IOBP_LOC, B_JGS_LDIFR, FLAGLL
+        USE W3ADATMD, only: CG, WN, DW, DDDX, DDDY
+        USE CONSTANTS, only: RADIUS
+        USE W3PARALL, only: ZERO, ONE
+        USE W3WDATMD, only: VA
+        USE YOWNODEPOOL, only: np, npa, iplg
 
          IMPLICIT NONE
 
+         REAL, INTENT(IN) :: DT
+
          INTEGER :: ISTEP
-         INTEGER :: IP, IS, ID, IT
+         INTEGER :: IP, IS, ID, IT, ISP
          INTEGER :: ID1, ID11, ID2, ID22, ID23
 
-         REAL*8    :: L(MDC), FLP(MDC)
-         REAL*8    :: FLM(MDC), NFLP(MDC), NFLM(MDC)
-         REAL*8    :: CP(MDC), CM(MDC)
+         REAL*8    :: L(NTH), FLP(NTH)
+         REAL*8    :: FLM(NTH), NFLP(NTH), NFLM(NTH)
+         REAL*8    :: CP(NTH), CM(NTH)
 
-         REAL*8    :: CAD(MSC,MDC)
+         REAL*8    :: CAD(NK,NTH)
 
          REAL*8    :: WP1, WP2, WP3, WM1, WM2, WM3
          REAL*8    :: WI_P1, WI_P2, WI_P3, WI_M1, WI_M2, WI_M3
@@ -9178,337 +9198,354 @@ END SUBROUTINE
          REAL*8    :: TMP, TMP1, TMP2, TMP3
          REAL*8    :: BETAM1, BETAM2,BETAM3, BETAP1, BETAP2,BETAP3
 
-         REAL*8    :: U0(MDC), U1(MDC), U2(MDC), U3(MDC)
+         REAL*8    :: U0(NTH), U1(NTH), U2(NTH), U3(NTH)
 
          REAL*8    :: FLPID, FLPID1, FLPID11, FLPID2, FLPID22
          REAL*8    :: FLMID, FLMID1, FLMID2, FLMID22, FLMID23
          REAL*8    :: AP11, AP12, AP13, AP21, AP22, AP23, AP31, AP32, AP33
          REAL*8    :: BP1, BP2, GAMMA1, GAMMA2, GAMMA3, CFLCAD, DT4DI
+         REAL      :: DEPTH_LOC
 
-         EPS = 10E-10_rkind
+         EPS = 10E-10
 
-         GAMMA1 = 0.1_rkind
-         GAMMA2 = 0.6_rkind
-         GAMMA3 = 0.3_rkind
+         GAMMA1 = 0.1d0
+         GAMMA2 = 0.6d0
+         GAMMA3 = 0.3d0
 
-         AP11 =  (2.0_rkind)/(6.0_rkind)
-         AP12 = -(7.0_rkind)/(6.0_rkind)
-         AP13 = (11.0_rkind)/(6.0_rkind)
-         AP21 = -(1.0_rkind)/(6.0_rkind)
-         AP22 =  (5.0_rkind)/(6.0_rkind)
-         AP23 =  (2.0_rkind)/(6.0_rkind)
-         AP31 =  (2.0_rkind)/(6.0_rkind)
-         AP32 =  (5.0_rkind)/(6.0_rkind)
-         AP33 = -(1.0_rkind)/(6.0_rkind)
+         AP11 =  (2.0d0)/(6.0d0)
+         AP12 = -(7.0d0)/(6.0d0)
+         AP13 = (11.0d0)/(6.0d0)
+         AP21 = -(1.0d0)/(6.0d0)
+         AP22 =  (5.0d0)/(6.0d0)
+         AP23 =  (2.0d0)/(6.0d0)
+         AP31 =  (2.0d0)/(6.0d0)
+         AP32 =  (5.0d0)/(6.0d0)
+         AP33 = -(1.0d0)/(6.0d0)
 
-         BP1  = (13.0_rkind)/(12.0_rkind)
-         BP2  =  (1.0_rkind)/(4.0_rkind)
+         BP1  = (13.0d0)/(12.0d0)
+         BP2  =  (1.0d0)/(4.0d0)
 
-         DO IP = 1, MNP
-           IF ((ABS(IOBP(IP)) .EQ. 1 .OR. ABS(IOBP(IP)) .EQ. 3) .AND. .NOT. LTHBOUND) CYCLE
-           IF (DEP(IP) .LT. DMIN) CYCLE
-           IF (IOBP(IP) .EQ. 2) CYCLE
-           CALL PROPTHETA(IP,CAD)
+         DO IP = 1, NP
 
-           DO IS = 1, MSC
+           DEPTH_LOC = DW(IPLG(IP))
 
-             U0(:) = AC2(IS,:,IP)
+           IF ((ABS(IOBP_LOC(IP)) .EQ. 0 .OR. ABS(IOBP_LOC(IP)) .EQ. 3)) CYCLE
+           IF (DEPTH_LOC .LT. DMIN) CYCLE
+           IF (IOBP_LOC(IP) .EQ. 2) CYCLE
+
+           CALL PROPTHETA(IP,DEPTH_LOC,CAD)
+
+           DO IS = 1, NK
+
+             DO ID = 1, NTH
+               ISP = ID + (IS-1)*NTH 
+               U0(ID) = VA(ISP,IP) / CG(IS,IP) * CLATS(IPLG(IP))
+             ENDDO 
+
              CP(:) = MAX(ZERO,CAD(IS,:))
              CM(:) = MIN(ZERO,CAD(IS,:))
 
-             CFLCAD = MAXVAL(ABS(CAD(IS,:)))*DT4D/DDIR
+             CFLCAD = MAXVAL(ABS(CAD(IS,:)))*DT/DTH
              REST   = ABS(MOD(CFLCAD,ONE))
 
              ISTEP = ABS(NINT(CFLCAD)) + 1
 
-             DT4DI = DT4D / MyREAL(ISTEP)
+             DT4DI = DT / REAL(ISTEP)
 
-               DO IT = 1, ISTEP
+             DO IT = 1, ISTEP
 
-                 FLP(:) = CP(:) * U0(:)
-                 FLM(:) = CM(:) * U0(:)
+               FLP(:) = CP(:) * U0(:)
+               FLM(:) = CM(:) * U0(:)
 
-                 DO ID = 1, MDC
+               DO ID = 1, NTH
 
-                   ID1   = ID - 1
-                   ID11  = ID - 2
-                   ID2   = ID + 1
-                   ID22  = ID + 2
-                   ID23  = ID + 3
+                 ID1   = ID - 1
+                 ID11  = ID - 2
+                 ID2   = ID + 1
+                 ID22  = ID + 2
+                 ID23  = ID + 3
 
-                   IF (ID .EQ. 1) THEN
-                     ID1  = MDC
-                     ID11 = MDC - 1
-                   ELSE IF (ID .EQ. 2) THEN
-                     ID11 = MDC 
-                   ELSE IF (ID .EQ. MDC - 2) THEN
-                      ID23 = 1
-                   ELSE IF (ID .EQ. MDC - 1) THEN
-                     ID22 = 1 
-                     ID23 = 2
-                   ELSE IF (ID .EQ. MDC) THEN
-                     ID2  = 1
-                     ID22 = 2 
-                     ID23 = 3
-                   END IF
-
-                   FLPID    = FLP(ID)
-                   FLPID1   = FLP(ID1)
-                   FLPID11  = FLP(ID11)
-                   FLPID2   = FLP(ID2)
-                   FLPID22  = FLP(ID22)
-                   FLMID    = FLM(ID)
-                   FLMID1   = FLM(ID1)
-                   FLMID2   = FLM(ID2)
-                   FLMID22  = FLM(ID22)
-                   FLMID23  = FLM(ID23)
-
-                   FO_FLP1   = AP11 * FLPID11 + AP12 * FLPID1  + AP13 * FLPID  
-                   FO_FLP2   = AP21 * FLPID1  + AP22 * FLPID   + AP23 * FLPID2 
-                   FO_FLP3   = AP31 * FLPID   + AP32 * FLPID2  + AP33 * FLPID22
-
-                   FO_FLM1   = AP33 * FLMID1 + AP32 * FLMID   + AP31 * FLMID2 
-                   FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
-                   FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
-
-                   BETAP1= BP1 * (FLPID11-2.*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
-                   BETAP2= BP1 * (FLPID1 -2.*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
-                   BETAP3= BP1 * (FLPID  -2.*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
-
-                   BETAM1= BP1 * (FLMID2-2.*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
-                   BETAM2= BP1 * (FLMID -2.*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
-                   BETAM3= BP1 * (FLMID1-2.*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
-
-                   TMP         = 1./(EPS + BETAP1)
-                   WP1         = GAMMA1 * TMP * TMP
-                   TMP         = 1./(EPS + BETAP2)
-                   WP2         = GAMMA2 * TMP * TMP
-                   TMP         = 1./(EPS + BETAP3)
-                   WP3         = GAMMA3 * TMP * TMP
-                   TMP         = 1./(EPS + BETAM1)
-                   WM1         = GAMMA1 * TMP * TMP
-                   TMP         = 1./(EPS + BETAM2)
-                   WM2         = GAMMA2 * TMP * TMP
-                   TMP         = 1./(EPS + BETAM3)
-                   WM3         = GAMMA3 * TMP * TMP
-
-                   TMP         = 1./(WP1+WP2+WP3)
-                   WI_P1       = WP1*TMP
-                   WI_P2       = WP2*TMP
-                   WI_P3       = WP3*TMP
-
-                   TMP         = 1./(WM1+WM2+WM3)
-                   WI_M1       = WM1*TMP
-                   WI_M2       = WM2*TMP
-                   WI_M3       = WM3*TMP
-
-                   NFLP(ID)    = WI_P1 * FO_FLP1 + WI_P2 * FO_FLP2 + WI_P3 * FO_FLP3
-                   NFLM(ID)    = WI_M3 * FO_FLM1 + WI_M2 * FO_FLM2 + WI_M1 * FO_FLM3
-
-                 END DO
-
-                 DO ID = 1, MDC
-                   ID1 = ID - 1
-                   IF (ID .EQ. 1) ID1 = MDC
-                   L(ID)   = 1./DDIR * ( (NFLP(ID)-NFLP(ID1)) + (NFLM(ID)-NFLM(ID1)) ) 
-                 END DO
-
-                 DO ID = 1, MDC
-                   U1(ID) = U0(ID) -  DT4DI * L(ID)
-                 END DO
-
-                 FLP(:) = CP(:) * U1(:)
-                 FLM(:) = CM(:) * U1(:)
-
-                 DO ID = 1, MDC
-
-                   ID1   = ID - 1
-                   ID11  = ID - 2
-                   ID2   = ID + 1
-                   ID22  = ID + 2
-                   ID23  = ID + 3
-
-                   IF (ID .EQ. 1) THEN
-                     ID1  = MDC
-                     ID11 = MDC - 1
-                   ELSE IF (ID .EQ. 2) THEN
-                     ID11 = MDC
-                   ELSE IF (ID .EQ. MDC - 2) THEN
+                 IF (ID .EQ. 1) THEN
+                   ID1  = NTH
+                   ID11 = NTH - 1
+                 ELSE IF (ID .EQ. 2) THEN
+                   ID11 = NTH 
+                 ELSE IF (ID .EQ. NTH - 2) THEN
                     ID23 = 1
-                   ELSE IF (ID .EQ. MDC - 1) THEN
-                     ID22 = 1
-                     ID23 = 2
-                   ELSE IF (ID .EQ. MDC) THEN
-                     ID2  = 1
-                     ID22 = 2
-                     ID23 = 3
-                   END IF
+                 ELSE IF (ID .EQ. NTH - 1) THEN
+                   ID22 = 1 
+                   ID23 = 2
+                 ELSE IF (ID .EQ. NTH) THEN
+                   ID2  = 1
+                   ID22 = 2 
+                   ID23 = 3
+                 END IF
 
-                   FLPID    = FLP(ID)
-                   FLPID1   = FLP(ID1)
-                   FLPID11  = FLP(ID11)
-                   FLPID2   = FLP(ID2)
-                   FLPID22  = FLP(ID22)
-                   FLMID    = FLM(ID)
-                   FLMID1   = FLM(ID1)
-                   FLMID2   = FLM(ID2)
-                   FLMID22  = FLM(ID22)
-                   FLMID23  = FLM(ID23)
+                 FLPID    = FLP(ID)
+                 FLPID1   = FLP(ID1)
+                 FLPID11  = FLP(ID11)
+                 FLPID2   = FLP(ID2)
+                 FLPID22  = FLP(ID22)
+                 FLMID    = FLM(ID)
+                 FLMID1   = FLM(ID1)
+                 FLMID2   = FLM(ID2)
+                 FLMID22  = FLM(ID22)
+                 FLMID23  = FLM(ID23)
 
-                   FO_FLP1   = AP11 * FLPID11 + AP12 * FLPID1  + AP13 * FLPID  
-                   FO_FLP2   = AP21 * FLPID1  + AP22 * FLPID   + AP23 * FLPID2 
-                   FO_FLP3   = AP31 * FLPID   + AP32 * FLPID2  + AP33 * FLPID22
+                 FO_FLP1   = AP11 * FLPID11 + AP12 * FLPID1  + AP13 * FLPID  
+                 FO_FLP2   = AP21 * FLPID1  + AP22 * FLPID   + AP23 * FLPID2 
+                 FO_FLP3   = AP31 * FLPID   + AP32 * FLPID2  + AP33 * FLPID22
 
-                   FO_FLM1   = AP33 * FLMID1 + AP32 * FLMID   + AP31 * FLMID2 
-                   FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
-                   FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
+                 FO_FLM1   = AP33 * FLMID1 + AP32 * FLMID   + AP31 * FLMID2 
+                 FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
+                 FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
 
-                   BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
-                   BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
-                   BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
+                 BETAP1= BP1 * (FLPID11-2.*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
+                 BETAP2= BP1 * (FLPID1 -2.*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
+                 BETAP3= BP1 * (FLPID  -2.*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
 
-                   BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
-                   BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
-                   BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
+                 BETAM1= BP1 * (FLMID2-2.*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
+                 BETAM2= BP1 * (FLMID -2.*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
+                 BETAM3= BP1 * (FLMID1-2.*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
 
-                   TMP1         = 1./(EPS + BETAP1)
-                   WP1         = GAMMA1 * TMP1 * TMP1
+                 TMP         = 1./(EPS + BETAP1)
+                 WP1         = GAMMA1 * TMP * TMP
+                 TMP         = 1./(EPS + BETAP2)
+                 WP2         = GAMMA2 * TMP * TMP
+                 TMP         = 1./(EPS + BETAP3)
+                 WP3         = GAMMA3 * TMP * TMP
+                 TMP         = 1./(EPS + BETAM1)
+                 WM1         = GAMMA1 * TMP * TMP
+                 TMP         = 1./(EPS + BETAM2)
+                 WM2         = GAMMA2 * TMP * TMP
+                 TMP         = 1./(EPS + BETAM3)
+                 WM3         = GAMMA3 * TMP * TMP
 
-                   TMP2         = 1./(EPS + BETAP2)
-                   WP2         = GAMMA2 * TMP2 * TMP2
+                 TMP         = 1./(WP1+WP2+WP3)
+                 WI_P1       = WP1*TMP
+                 WI_P2       = WP2*TMP
+                 WI_P3       = WP3*TMP
 
-                   TMP3         = 1./(EPS + BETAP3)
-                   WP3         = GAMMA3 * TMP3 * TMP3
+                 TMP         = 1./(WM1+WM2+WM3)
+                 WI_M1       = WM1*TMP
+                 WI_M2       = WM2*TMP
+                 WI_M3       = WM3*TMP
 
-                   TMP1         = 1./(EPS + BETAM1)
-                   WM1         = GAMMA1 * TMP1 * TMP1
+                 NFLP(ID)    = WI_P1 * FO_FLP1 + WI_P2 * FO_FLP2 + WI_P3 * FO_FLP3
+                 NFLM(ID)    = WI_M3 * FO_FLM1 + WI_M2 * FO_FLM2 + WI_M1 * FO_FLM3
 
-                   TMP2         = 1./(EPS + BETAM2)
-                   WM2         = GAMMA2 * TMP2 * TMP2
+               END DO
 
-                   TMP3         = 1./(EPS + BETAM3)
-                   WM3         = GAMMA3 * TMP3 * TMP3
-
-                   TMP         = 1./(WP1+WP2+WP3)
-                   WI_P1       = WP1*TMP
-                   WI_P2       = WP2*TMP
-                   WI_P3       = WP3*TMP
-
-                   TMP         = 1./(WM1+WM2+WM3)
-                   WI_M1       = WM1*TMP
-                   WI_M2       = WM2*TMP
-                   WI_M3       = WM3*TMP
-
-                   NFLP(ID)    = WI_P1 * FO_FLP1 + WI_P2 * FO_FLP2 + WI_P3 * FO_FLP3
-                   NFLM(ID)    = WI_M3 * FO_FLM1 + WI_M2 * FO_FLM2 + WI_M1 * FO_FLM3
-
-                 END DO
-
-                 DO ID = 1, MDC
-                   ID1 = ID - 1
-                   IF (ID .EQ. 1) ID1 = MDC
-                   L(ID)   = 1./DDIR * ( (NFLP(ID)-NFLP(ID1)) + (NFLM(ID)-NFLM(ID1)) )
-                 END DO
-
-                 DO ID = 1, MDC
-                   U2(ID)      = 3./4. * U0(ID) + 1./4. * U1(ID) - 1./4. * DT4DI * L(ID)
-                 END DO
-
-                 FLP(:) = CP(:) * U2(:)
-                 FLM(:) = CM(:) * U2(:)
-
-                 DO ID = 1, MDC
-
-                   ID1   = ID - 1
-                   ID11  = ID - 2
-                   ID2   = ID + 1
-                   ID22  = ID + 2
-                   ID23  = ID + 3
-
-                   IF (ID .EQ. 1) THEN
-                     ID1  = MDC
-                     ID11 = MDC - 1
-                   ELSE IF (ID .EQ. 2) THEN
-                     ID11 = MDC
-                   ELSE IF (ID .EQ. MDC - 2) THEN
-                    ID23 = 1
-                   ELSE IF (ID .EQ. MDC - 1) THEN
-                     ID22 = 1
-                     ID23 = 2
-                   ELSE IF (ID .EQ. MDC) THEN
-                     ID2  = 1
-                     ID22 = 2
-                     ID23 = 3
-                   END IF
-
-                   FLPID    = FLP(ID)
-                   FLPID1   = FLP(ID1)
-                   FLPID11  = FLP(ID11)
-                   FLPID2   = FLP(ID2)
-                   FLPID22  = FLP(ID22)
-                   FLMID    = FLM(ID)
-                   FLMID1   = FLM(ID1)
-                   FLMID2   = FLM(ID2)
-                   FLMID22  = FLM(ID22)
-                   FLMID23  = FLM(ID23)
-
-                   FO_FLP1   = AP11 * FLPID11 + AP12 * FLPID1  + AP13 * FLPID  
-                   FO_FLP2   = AP21 * FLPID1  + AP22 * FLPID   + AP23 * FLPID2 
-                   FO_FLP3   = AP31 * FLPID   + AP32 * FLPID2  + AP33 * FLPID22
-
-                   FO_FLM1   = AP33 * FLMID1 + AP32 * FLMID   + AP31 * FLMID2 
-                   FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
-                   FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
-
-                   BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
-                   BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
-                   BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
-
-                   BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
-                   BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
-                   BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
-
-                   TMP         = 1./(EPS + BETAP1)
-                   WP1         = GAMMA1 * TMP * TMP
-                   TMP         = 1./(EPS + BETAP2)
-                   WP2         = GAMMA2 * TMP * TMP
-                   TMP         = 1./(EPS + BETAP3)
-                   WP3         = GAMMA3 * TMP * TMP
-                   TMP         = 1./(EPS + BETAM1)
-                   WM1         = GAMMA1 * TMP * TMP
-                   TMP         = 1./(EPS + BETAM2)
-                   WM2         = GAMMA2 * TMP * TMP
-                   TMP         = 1./(EPS + BETAM3)
-                   WM3         = GAMMA3 * TMP * TMP
-
-                   TMP         = 1./(WP1+WP2+WP3)
-                   WI_P1       = WP1*TMP
-                   WI_P2       = WP2*TMP
-                   WI_P3       = WP3*TMP
-
-                   TMP         = 1./(WM1+WM2+WM3)
-                   WI_M1       = WM1*TMP
-                   WI_M2       = WM2*TMP
-                   WI_M3       = WM3*TMP
-
-                   NFLP(ID)    = WI_P1 * FO_FLP1 + WI_P2 * FO_FLP2 + WI_P3 * FO_FLP3
-                   NFLM(ID)    = WI_M3 * FO_FLM1 + WI_M2 * FO_FLM2 + WI_M1 * FO_FLM3
-
-                 END DO
-
-              DO ID = 1, MDC
+               DO ID = 1, NTH
                  ID1 = ID - 1
-                 IF (ID .EQ. 1) ID1 = MDC
-                 L(ID)   = 1./DDIR * ( (NFLP(ID)-NFLP(ID1)) + (NFLM(ID)-NFLM(ID1)) )
-              END DO
+                 IF (ID .EQ. 1) ID1 = NTH
+                 L(ID)   = 1./DTH * ( (NFLP(ID)-NFLP(ID1)) + (NFLM(ID)-NFLM(ID1)) ) 
+               END DO
+
+               DO ID = 1, NTH
+                 U1(ID) = U0(ID) -  DT4DI * L(ID)
+               END DO
+
+               FLP(:) = CP(:) * U1(:)
+               FLM(:) = CM(:) * U1(:)
+
+               DO ID = 1, NTH
+
+                 ID1   = ID - 1
+                 ID11  = ID - 2
+                 ID2   = ID + 1
+                 ID22  = ID + 2
+                 ID23  = ID + 3
+
+                 IF (ID .EQ. 1) THEN
+                   ID1  = NTH
+                   ID11 = NTH - 1
+                 ELSE IF (ID .EQ. 2) THEN
+                   ID11 = NTH
+                 ELSE IF (ID .EQ. NTH - 2) THEN
+                  ID23 = 1
+                 ELSE IF (ID .EQ. NTH - 1) THEN
+                   ID22 = 1
+                   ID23 = 2
+                 ELSE IF (ID .EQ. NTH) THEN
+                   ID2  = 1
+                   ID22 = 2
+                   ID23 = 3
+                 END IF
+
+                 FLPID    = FLP(ID)
+                 FLPID1   = FLP(ID1)
+                 FLPID11  = FLP(ID11)
+                 FLPID2   = FLP(ID2)
+                 FLPID22  = FLP(ID22)
+                 FLMID    = FLM(ID)
+                 FLMID1   = FLM(ID1)
+                 FLMID2   = FLM(ID2)
+                 FLMID22  = FLM(ID22)
+                 FLMID23  = FLM(ID23)
+
+                 FO_FLP1   = AP11 * FLPID11 + AP12 * FLPID1  + AP13 * FLPID  
+                 FO_FLP2   = AP21 * FLPID1  + AP22 * FLPID   + AP23 * FLPID2 
+                 FO_FLP3   = AP31 * FLPID   + AP32 * FLPID2  + AP33 * FLPID22
+
+                 FO_FLM1   = AP33 * FLMID1 + AP32 * FLMID   + AP31 * FLMID2 
+                 FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
+                 FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
+
+                 BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
+                 BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
+                 BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
+
+                 BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
+                 BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
+                 BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
+
+                 TMP1         = 1./(EPS + BETAP1)
+                 WP1         = GAMMA1 * TMP1 * TMP1
+
+                 TMP2         = 1./(EPS + BETAP2)
+                 WP2         = GAMMA2 * TMP2 * TMP2
+
+                 TMP3         = 1./(EPS + BETAP3)
+                 WP3         = GAMMA3 * TMP3 * TMP3
+
+                 TMP1         = 1./(EPS + BETAM1)
+                 WM1         = GAMMA1 * TMP1 * TMP1
+
+                 TMP2         = 1./(EPS + BETAM2)
+                 WM2         = GAMMA2 * TMP2 * TMP2
+
+                 TMP3         = 1./(EPS + BETAM3)
+                 WM3         = GAMMA3 * TMP3 * TMP3
+
+                 TMP         = 1./(WP1+WP2+WP3)
+                 WI_P1       = WP1*TMP
+                 WI_P2       = WP2*TMP
+                 WI_P3       = WP3*TMP
+
+                 TMP         = 1./(WM1+WM2+WM3)
+                 WI_M1       = WM1*TMP
+                 WI_M2       = WM2*TMP
+                 WI_M3       = WM3*TMP
+
+                 NFLP(ID)    = WI_P1 * FO_FLP1 + WI_P2 * FO_FLP2 + WI_P3 * FO_FLP3
+                 NFLM(ID)    = WI_M3 * FO_FLM1 + WI_M2 * FO_FLM2 + WI_M1 * FO_FLM3
+
+               END DO
+
+               DO ID = 1, NTH
+                 ID1 = ID - 1
+                 IF (ID .EQ. 1) ID1 = NTH
+                 L(ID)   = 1./DTH * ( (NFLP(ID)-NFLP(ID1)) + (NFLM(ID)-NFLM(ID1)) )
+               END DO
+
+               DO ID = 1, NTH
+                 U2(ID)      = 3./4. * U0(ID) + 1./4. * U1(ID) - 1./4. * DT4DI * L(ID)
+               END DO
+
+               FLP(:) = CP(:) * U2(:)
+               FLM(:) = CM(:) * U2(:)
+
+               DO ID = 1, NTH
+
+                 ID1   = ID - 1
+                 ID11  = ID - 2
+                 ID2   = ID + 1
+                 ID22  = ID + 2
+                 ID23  = ID + 3
+
+                 IF (ID .EQ. 1) THEN
+                   ID1  = NTH
+                   ID11 = NTH - 1
+                 ELSE IF (ID .EQ. 2) THEN
+                   ID11 = NTH
+                 ELSE IF (ID .EQ. NTH - 2) THEN
+                  ID23 = 1
+                 ELSE IF (ID .EQ. NTH - 1) THEN
+                   ID22 = 1
+                   ID23 = 2
+                 ELSE IF (ID .EQ. NTH) THEN
+                   ID2  = 1
+                   ID22 = 2
+                   ID23 = 3
+                 END IF
+
+                 FLPID    = FLP(ID)
+                 FLPID1   = FLP(ID1)
+                 FLPID11  = FLP(ID11)
+                 FLPID2   = FLP(ID2)
+                 FLPID22  = FLP(ID22)
+                 FLMID    = FLM(ID)
+                 FLMID1   = FLM(ID1)
+                 FLMID2   = FLM(ID2)
+                 FLMID22  = FLM(ID22)
+                 FLMID23  = FLM(ID23)
+
+                 FO_FLP1   = AP11 * FLPID11 + AP12 * FLPID1  + AP13 * FLPID  
+                 FO_FLP2   = AP21 * FLPID1  + AP22 * FLPID   + AP23 * FLPID2 
+                 FO_FLP3   = AP31 * FLPID   + AP32 * FLPID2  + AP33 * FLPID22
+
+                 FO_FLM1   = AP33 * FLMID1 + AP32 * FLMID   + AP31 * FLMID2 
+                 FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
+                 FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
+
+                 BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
+                 BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
+                 BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
+
+                 BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
+                 BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
+                 BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
+
+                 TMP         = 1./(EPS + BETAP1)
+                 WP1         = GAMMA1 * TMP * TMP
+                 TMP         = 1./(EPS + BETAP2)
+                 WP2         = GAMMA2 * TMP * TMP
+                 TMP         = 1./(EPS + BETAP3)
+                 WP3         = GAMMA3 * TMP * TMP
+                 TMP         = 1./(EPS + BETAM1)
+                 WM1         = GAMMA1 * TMP * TMP
+                 TMP         = 1./(EPS + BETAM2)
+                 WM2         = GAMMA2 * TMP * TMP
+                 TMP         = 1./(EPS + BETAM3)
+                 WM3         = GAMMA3 * TMP * TMP
+
+                 TMP         = 1./(WP1+WP2+WP3)
+                 WI_P1       = WP1*TMP
+                 WI_P2       = WP2*TMP
+                 WI_P3       = WP3*TMP
+
+                 TMP         = 1./(WM1+WM2+WM3)
+                 WI_M1       = WM1*TMP
+                 WI_M2       = WM2*TMP
+                 WI_M3       = WM3*TMP
+
+                 NFLP(ID)    = WI_P1 * FO_FLP1 + WI_P2 * FO_FLP2 + WI_P3 * FO_FLP3
+                 NFLM(ID)    = WI_M3 * FO_FLM1 + WI_M2 * FO_FLM2 + WI_M1 * FO_FLM3
+
+               END DO
+
+               DO ID = 1, NTH
+                  ID1 = ID - 1
+                  IF (ID .EQ. 1) ID1 = NTH
+                  L(ID)   = 1./DTH * ( (NFLP(ID)-NFLP(ID1)) + (NFLM(ID)-NFLM(ID1)) )
+               END DO
  
-              DO ID = 1, MDC
-                U3(ID) = 1./3. * U0(ID) + 2./3. * U2(ID) - 2./3. * DT4DI * L(ID)
-              END DO
-              U0(:) = U3(:)
-            END DO
-            AC2(IS,:,IP) = MAX(ZERO,MyREAL(U3(:)))
+               DO ID = 1, NTH
+                 U3(ID) = 1./3. * U0(ID) + 2./3. * U2(ID) - 2./3. * DT4DI * L(ID)
+               END DO
+
+               U0(:) = U3(:)
+
+             END DO ! ITER 
+
+             DO ID = 1, NTH
+               ISP = ID + (IS-1)*NTH
+               VA(ISP,IP) = MAX(ZERO,REAL(U1(ID))) * CG(IS,IP) / CLATS(IPLG(IP))
+             ENDDO
+
            END DO
+
          END DO
       END SUBROUTINE
 !**********************************************************************

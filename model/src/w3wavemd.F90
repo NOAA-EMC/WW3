@@ -448,7 +448,7 @@ CONTAINS
     USE W3IOSFMD
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA, COMPUTE_DIFFRACTION
-    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
+    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT, COMPUTE_DIRECTION_WENO_A
     USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
     USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
     USE yowNodepool, only: npa, iplg, np
@@ -1782,7 +1782,7 @@ CONTAINS
                          DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
-#ifdef W3_PR3
+#ifdef W3_PR33
                     CALL W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0S(ISEA),       &
                          CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
@@ -1836,8 +1836,9 @@ CONTAINS
 #ifdef W3_PDLIB
             IF (FLCX .or. FLCY) THEN
               IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
+                CALL COMPUTE_DIRECTION_WENO_A(DTG)
                 DO ISPEC=1,NSPEC
-                  CALL PDLIB_W3XYPUG ( ISPEC, ISEC1*ITIME, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+                  CALL PDLIB_W3XYPUG ( ISPEC, ISEC1*ITIME, FACX, FACX, DTG, VGX, VGY, .true. )
                 END DO
               END IF
             END IF
@@ -1850,7 +1851,7 @@ CONTAINS
               CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before Block implicit", 1)
 #endif
 #ifdef W3_PDLIB
-              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, ISEC1*ITIME, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
 #endif
 #ifdef W3_PDLIB
             ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
@@ -2111,7 +2112,7 @@ CONTAINS
                          DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
-#ifdef W3_PR3
+#ifdef W3_PR33
                     CALL W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0S(ISEA),       &
                          CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
