@@ -180,7 +180,7 @@ CONTAINS
   !>
   !> @author A. J. van der Westhuysen  @date 13-Jan-2013
   !>
-  SUBROUTINE W3STR1 (A, AOLD, CG, WN, DEPTH, IX, EMEAN, S, D)
+  SUBROUTINE W3STR1 (A, CG, WN, DEPTH, IX, S, D)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -320,7 +320,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), AOLD(NSPEC), EMEAN
+    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), EMEAN
     INTEGER, INTENT(IN)     :: IX
     REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
     !/
@@ -391,12 +391,10 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'W3STR1')
 #endif
-
-!AR: todo: check all PRX routines for differences, check original thesis of elderberky. 
 !
 ! 1.  Integral over directions
 !
-    IF (EMEAN .LT. TINY(1.)) THEN
+    IF (MAXVAL(A) .LT. TINY(1.)) THEN
       S = 0 
       D = 0 
       RETURN 
