@@ -259,7 +259,6 @@ CONTAINS
     !       CG      R.A.  I   Group velocities.
     !       WN      R.A.  I   Wavenumbers.
     !       DEPTH   Real  I   Mean water depth.
-    !       EMEAN   Real  I   Mean wave energy.
     !       FMEAN   Real  I   Mean wave frequency.
     !       S       R.A.  O   Source term (1-D version).
     !       D       R.A.  O   Diagonal term of derivative (1-D version).
@@ -320,7 +319,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), EMEAN
+    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC)
     INTEGER, INTENT(IN)     :: IX
     REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
     !/
