@@ -872,21 +872,17 @@ CONTAINS
     !/                  | WAVEWATCH III           NOAA/NCEP |
     !/                  |                                   |
     !/                  | Aron Roland (BGS IT&E GmbH)       |
-    !/                  | Mathieu Dutour-Sikiric (IRB)      |
     !/                  |                                   |
     !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         10-Jan-2011 |
+    !/                  | Last update :         10-Jan-2024 |
     !/                  +-----------------------------------+
     !/
-    !/    10-Jan-2008 : Origination.                        ( version 3.13 )
-    !/    10-Jan-2011 : Addition of implicit scheme         ( version 3.14.4 )
-    !/    06-Feb-2014 : PDLIB parallelization
+    !/    16-Jan-2024 : Origination.                        ( version 7.xx )
     !/
     !  1. Purpose : Explicit advection schemes driver
     !
-    !     Propagation in physical space for a given spectral component.
-    !     Gives the choice of scheme on unstructured grid
-    !     Use the geographical parall algorithms for further speed.
+    !     Propagation in physical space for all spectral components.
+    !     Used for OMPH
     !
     !  2. Method :
     !
@@ -911,7 +907,7 @@ CONTAINS
     !       None.
     !
     !  7. Remarks :
-    !              make the interface between the WAVEWATCH and the WWM code.
+    !              make the interface for OMPH implementation 
     !
     !  8. Structure :
     !
@@ -968,13 +964,15 @@ CONTAINS
     FLUSH(740+IAPROC)
 #endif
 
-#ifdef W3_O MPH
+#ifdef W3_OMPH
     !$OMP PARALLEL DO PRIVATE (ISP)
 #endif
     DO ISP=1,NSPEC
        CALL PDLIB_W3XYPUG ( ISP, FACX, FACX, DTG, VGX, VGY, LCALC )
     END DO
-
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
     !/
     !/ End of PDLIB_W3XYPUG ----------------------------------------------------- /
     !/
