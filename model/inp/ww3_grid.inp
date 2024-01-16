@@ -352,6 +352,8 @@ $                           JGS_LIMITER  : TRUE: Use total (quasi-steady: limits
 $                                          FALSE: default 
 $                           JGS_LIMITER_FUNC  : 1 - old limiter (default)
 $                                               2 - alternatnive limiter
+$                           JGS_LGSE : T/F - turn on/off GSE correction on unstructured grids
+$                           JGS_GSE_TS : Time constant of the diffusion tensor, see Manual, same as for PR2
 $                           SETUP_APPLY_WLV  : Compute wave setup (TRUE/FALSE, default TRUE) 
 $                           SOLVERTHR_SETUP  : Solver threshold for setup computations (default 1E-6)
 $                           CRIT_DEP_SETUP  : Critical depth for setup computations (default 0.1) 
