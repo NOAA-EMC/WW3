@@ -51,6 +51,9 @@
 #            IC4METHOD = 5 - Simple ki step function                        #
 #            IC4METHOD = 6 - Simple ki step function via namelist           #
 #            IC4METHOD = 7 - Doble et al. (GRL 2015)                        #
+#            IC4METHOD = 8 - Meylan et al. (2018) ; Liu et al. (2020)       #
+#                            (NB: redundant with IC5+IC5VEMOD=3)            #
+#            IC4METHOD = 9 - Rogers et al. (2021b) ; Yu et al. (2022)       #
 #          IC5 = Choose from three different effective medium models        #
 #            IC5VEMOD  = 1 - Extended Fox and Squire model (EFS)            #
 #            IC5VEMOD  = 2 - Robinson and Palmer model (RP)                 #
