@@ -841,7 +841,8 @@ MODULE W3GRIDMD
 #endif
   !
 #ifdef W3_ST4
-  INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF
+  INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF, SINTABLE,&
+                             TAUWBUG
   REAL 		   :: SDSBCHOICE
   REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
        ZALP, Z0RAT, TAUWSHELTER, SWELLF,    &
@@ -857,7 +858,8 @@ MODULE W3GRIDMD
        SDSBRF1,                             &
        SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
        SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
-       SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF
+       SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF, SINTAIL1, SINTAIL2, &
+       CUMSIGP, VISCSTRESS
 #endif
   !
 #ifdef W3_ST6
@@ -1000,7 +1002,7 @@ MODULE W3GRIDMD
   NAMELIST /SIN4/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
        TAUWSHELTER, SWELLFPAR, SWELLF,                 &
        SWELLF2, SWELLF3, SWELLF4, SWELLF5, SWELLF6,    &
-       SWELLF7, Z0RAT, SINBR
+       SWELLF7, Z0RAT, SINBR, SINTABLE, SINTAIL1, SINTAIL2, TAUWBUG, VISCSTRESS
 #endif
 #ifdef W3_NL1
   NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
@@ -1042,7 +1044,7 @@ MODULE W3GRIDMD
        SDSC5, SDSC6, SDSBR, SDSBT, SDSP, SDSISO,       &
        SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
        SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,  SDSNUW,     &
-       SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
+       SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, CUMSIGP,&
        WHITECAPWIDTH, WHITECAPDUR, SDSMWD, SDSMWPOW, SDKOF
 #endif
 
@@ -1721,6 +1723,12 @@ CONTAINS
     TAUWSHELTER = 0.3
     ZALP   = 0.006
     SINBR   = 0.
+    SINTABLE = 1
+    SINTAIL1 = 0. !  TAUWSHELTER FOR TAIL (no table)
+    SINTAIL2 = 0. !  additional peak in capillary range
+    TAUWBUG  = 1  !  TAUWBUG is 1 is the bug is kept:
+    !  initializes TAUWX/Y to zero in W3SRCE
+    VISCSTRESS =0
 #endif
     !
 #ifdef W3_ST6
@@ -1804,6 +1812,11 @@ CONTAINS
     SSWELLF(6) = SWELLF6
     SSWELLF(7) = SWELLF7
     SSWELLFPAR = SWELLFPAR
+    SINTAILPAR(1) = FLOAT(SINTABLE)
+    SINTAILPAR(2) = SINTAIL1
+    SINTAILPAR(3) = SINTAIL2
+    SINTAILPAR(4) = FLOAT(TAUWBUG)
+    SINTAILPAR(5) = VISCSTRESS
 #endif
     !
 #ifdef W3_ST6
@@ -2109,8 +2122,8 @@ CONTAINS
     SDSDTH    = 80.
     SDSCOS    = 2.
     SDSISO    = 2
-    SDSBM0    = 1.
-    SDSBM1    = 0.
+    SDSBM0    = 1.          ! All these parameters are related to finite depth
+    SDSBM1    = 0.          ! scaling of breaking
     SDSBM2    = 0.
     SDSBM3    = 0.
     SDSBM4    = 0.
@@ -2120,8 +2133,9 @@ CONTAINS
     SDSBINT   = 0.3
     SDSHCK    = 1.5
     WHITECAPWIDTH = 0.3
-    SDSSTRAIN = 0.
     SDSFACMTF =  400    ! MTF factor for Lambda , Romero (2019)
+    CUMSIGP   = 0.
+    SDSSTRAIN = 0.
     SDSSTRAINA = 15.
     SDSSTRAIN2 = 0.
     WHITECAPDUR   = 0.56 ! breaking duration factor
@@ -2132,7 +2146,7 @@ CONTAINS
     ! MTF
     SPMSS     = 0.5    ! cmss^SPMSS
     SDSNMTF   = 1.5    ! MTF power
-    SDSCUMP   = 2.
+    SDSCUMP   = 2.     ! 2 for cumulative mss, 1 for cumulative orb. vel.
     ! MW
     SDSMWD    = .9  ! new AFo
     SDSMWPOW  = 1.  ! (k )^pow
@@ -2214,9 +2228,9 @@ CONTAINS
     SSDSC(7)   = WHITECAPWIDTH
     SSDSC(8)   = SDSSTRAIN   ! Straining constant ...
     SSDSC(9)   = SDSL
-    SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle Aor enhanced straining
+    SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle for enhanced straining
     SSDSC(11)  = SDSSTRAIN2  ! straining constant for directional part
-    SSDSC(12)  = SDSBT
+    SSDSC(12)  = CUMSIGP
     SSDSC(13)  = SDSMWD
     SSDSC(14)  = SPMSS
     SSDSC(15)  = SDSMWPOW
@@ -3203,7 +3217,7 @@ CONTAINS
 #ifdef W3_ST4
       WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
+           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR, SINTABLE, TAUWBUG, VISCSTRESS, SINTAIL1, SINTAIL2
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2920) SINA0, SINWS, SINFC
@@ -3268,7 +3282,7 @@ CONTAINS
            SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
            SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
            SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
-           SDSCUMP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
+           SDSCUMP, CUMSIGP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
@@ -3311,7 +3325,7 @@ CONTAINS
            JGS_TERMINATE_DIFFERENCE,                   &
            JGS_TERMINATE_NORM,                         &
            JGS_LIMITER,                                &
-           JGS_LIMITER_FUNC,                           & 
+           JGS_LIMITER_FUNC,                           &
            JGS_USE_JACOBI,                             &
            JGS_BLOCK_GAUSS_SEIDEL,                     &
            JGS_MAXITER,                                &
@@ -3648,7 +3662,7 @@ CONTAINS
       END SELECT
 
       IF (FSTOTALIMP .or. FSTOTALEXP) THEN
-        LPDLIB = .TRUE. 
+        LPDLIB = .TRUE.
       ENDIF
       !
       IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)
@@ -6243,7 +6257,9 @@ CONTAINS
          '        SWELLF =',F8.5,', SWELLF2 =',F8.5,             &
          ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
          '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
-         ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,'  /')
+         ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,','/              &
+         '        SINTABLE =',I2,', TAUWBUG =',I2,               &
+         ', VISCSTRESS =',F8.5,', SINTAIL1 =',F8.5,', SINTAIL2 =',F8.5,'  /')
 #endif
     !
 #ifdef W3_ST6
@@ -6416,7 +6432,7 @@ CONTAINS
          '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
          ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', '/      &
          '        SDSMWPOW =',F3.1,', SDSNMTF =', F5.2,    &
-         ', SDSCUMP =', F3.1,', SDSNUW =', E8.3,', '/,     &
+         ', SDSCUMP =', F3.1,', CUMSIGP =', F3.1,', SDSNUW =', E10.3,', '/,     &
          '        WHITECAPWIDTH =',F5.2, ' WHITECAPDUR =',F5.2,' /')
 #endif
     !
@@ -6528,12 +6544,12 @@ CONTAINS
 947 FORMAT  (/'  Ice scattering ',A,/ &
          ' --------------------------------------------------')
 948 FORMAT  ('  IS2 Scattering ... '/&
-         '        scattering coefficient       : ',E9.3/ &
-         '        0: no back-scattering        : ',E9.3/ &
+         '        scattering coefficient       : ',E10.3/ &
+         '        0: no back-scattering        : ',E10.3/ &
          '     TRUE: istropic back-scattering  : ',L3/   &
          '     TRUE: update of ICEDMAX         : ',L3/   &
          '     TRUE: keeps updated ICEDMAX     : ',L3/   &
-         '        flexural strength            : ',E9.3/ &
+         '        flexural strength            : ',E10.3/ &
          '     TRUE: uses Robinson-Palmer disp.: ',L3/   &
          '        attenuation                  : ',F5.2/ &
          '        fragility                    : ',F5.2/ &
@@ -6541,7 +6557,7 @@ CONTAINS
          '        pack scattering coef 1       : ',F5.2/ &
          '        pack scattering coef 2       : ',F5.2/ &
          '        scaling by concentration     : ',F5.2/ &
-         '        creep B coefficient          : ',E9.3/ &
+         '        creep B coefficient          : ',E10.3/ &
          '        creep C coefficient          : ',F5.2/ &
          '        creep D coefficient          : ',F5.2/ &
          '        creep N power                : ',F5.2/ &
@@ -6552,7 +6568,7 @@ CONTAINS
          '        energy of activation         : ',F5.2/ &
          '        anelastic coefficient        : ',E11.3/ &
          '        anelastic exponent           : ',F5.2)
-2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', IS2BACKSCAT =',E9.3,   &
+2948 FORMAT ( '  &SIS2 ISC1 =',E10.3,', IS2BACKSCAT =',E10.3,   &
          ', IS2ISOSCAT =',L3,', IS2BREAK =',L3,          &
          ', IS2DUPDATE =',L3,','/                        &
          '       IS2FLEXSTR =',E11.3,', IS2DISP =',L3,   &

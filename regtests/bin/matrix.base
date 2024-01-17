@@ -906,12 +906,16 @@
     echo "$rtst -s ST2      -w work_ST2                     $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST3      -w work_ST3                     $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4      -w work_ST4                     $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -s ST4      -w work_ST4_T500 -g ST4_T500 -N $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4      -w work_ST4_T700 -g ST4_T700 -N $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4_WRT  -w work_ST4_WRT                 $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4_GMD  -w work_ST4_GMD                 $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST4_TSA  -w work_ST4_TSA                 $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -s ST6      -w work_ST6                     $ww3 ww3_ts1" >> matrix.body
     echo "$rtst             -w work_NL5 -i input_nl5_matrix $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -g Romero   -w work_Romero  -i input_10ms -N   $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -g ST4_T701 -w work_T701    -i input_10ms -N   $ww3 ww3_ts1" >> matrix.body
+    echo "$rtst -g ST4_T702 -w work_T702    -i input_10ms -N   $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -g ST4_T707 -w work_T707GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
     echo "$rtst -g ST4_T713 -w work_T713GQM -i input_10ms -N  $ww3 ww3_ts1" >> matrix.body
   fi

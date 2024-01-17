@@ -1065,12 +1065,12 @@ CONTAINS
 
       READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 #ifdef W3_SEC1
-      READ (NDSM) NITERSEC1
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITERSEC1
 #endif
       !
 #ifdef W3_RTD
       !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
-      READ (NDSM) PoLat, PoLon, AnglD, FLAGUNR
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) PoLat, PoLon, AnglD, FLAGUNR
 
 #endif
       !
@@ -1313,35 +1313,35 @@ CONTAINS
            FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
            FFACBERG, DELAB, FWTABLE
 #ifdef W3_RWND
-      READ  (NDSM)                                               &
+      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
            RWINDC
 #endif
 #ifdef W3_WCOR
-      READ  (NDSM)                                               &
+      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
            WWCOR
 #endif
 #ifdef W3_REF1
-      READ  (NDSM)                                               &
+      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
            RREF, REFPARS, REFLC, REFLD
 #endif
 #ifdef W3_IG1
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IGPARS(1:12)
 #endif
 #ifdef W3_IC2
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IC2PARS(1:8)
 #endif
 #ifdef W3_IC3
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IC3PARS
 #endif
 #ifdef W3_IC4
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
 #endif
 #ifdef W3_IC5
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IC5PARS
 #endif
     END IF
@@ -1506,10 +1506,9 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW
+           DIKCUMUL, CUMULW, SINTAILPAR
 #ifdef W3_ASCII
       WRITE (NDSA,*)                                         &
            'ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
@@ -1520,10 +1519,9 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW:',                               &
+           DIKCUMUL, CUMULW, SINTAILPAR:',                   &
            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,     &
            TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,        &
            ZZ0RAT, SSDSC,                                    &
@@ -1532,11 +1530,22 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW
+           DIKCUMUL, CUMULW, SINTAILPAR
 #endif
+      IF (SINTAILPAR(1).GT.0.5) THEN
+        WRITE (NDSM) DELUST, DELTAIL, DELTAUW, DELU, DELALP, &
+                     TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) WRITE (NDSM) TAUHFT2
+#ifdef W3_ASCII
+        WRITE (NDSA,*) 'DELUST, DELTAIL, DELTAUW, DELU, DELALP,&
+                     TAUT, TAUHFT:',                         &
+                     DELUST, DELTAIL, DELTAUW, DELU, DELALP, &
+                     TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) WRITE (NDSA,*) 'TAUHFT2:', TAUHFT2 
+#endif
+      END IF
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,     &
@@ -1547,10 +1556,16 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW
+           DIKCUMUL, CUMULW, SINTAILPAR
+      IF (SINTAILPAR(1).GT.0.5) THEN
+        CALL INSIN4(.FALSE.)
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
+             DELUST, DELTAIL, DELTAUW, DELU, DELALP,  &
+             TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) READ(NDSM,END=801,ERR=802,IOSTAT=IERR) TAUHFT2
+      END IF
     END IF
 #endif
     !
