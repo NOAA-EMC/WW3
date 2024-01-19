@@ -8,10 +8,10 @@
 This family of parameterizations uses a positive part of the wind input taken
 from WAM cycle 4 with an ad hoc reduction of $u_\star$, implemented in
 order to allow a balance with a saturation-based dissipation that uses different options for 
-a cumulative term. There are three main options for defining the saturation and the cumulative term. Chosing one or the other is done with the  {\F SDSBCHOICE} parameter, with  {\F SDSBCHOICE=1} for \cite{art:Aea10},  {\F SDSBCHOICE=2} for \cite{Filipot&Ardhuin2012}, and {\F SDSBCHOICE=3} for \cite{Romero2019}. That last options uses a saturation that is defined from the local spectral density, and thus gives zero dissipation for directions where the threshold is not reached, leading to much broader directional spectra. Also the stronger bimodality is achieved by having a strong modulation effect as a cumulative term. 
+a cumulative term. There are three main options for defining the saturation and the cumulative term. Chosing one or the other is done with the  {\F SDSBCHOICE} parameter, with  {\F SDSBCHOICE=1} for \cite{art:Aea10},  {\F SDSBCHOICE=2} for \cite{Filipot&Ardhuin2012}, and {\F SDSBCHOICE=3} for \cite{Romero2019} and later adjustments including \cite{art:AA23}. That last option uses a saturation that is defined from the local spectral density, and thus gives zero dissipation for directions where the threshold is not reached, leading to much broader directional spectra. Also the stronger bimodality is achieved by having a strong modulation effect as a cumulative term. 
 
 Many other adjustments can be made by changing the namelist parameters. A few successful combinations 
-are given by tables \ref{tab:ST4_parSIN} and \ref{tab:ST4_parSDS}, with results described by \citep{art:RA13,art:SAG16}. 
+are given by tables \ref{tab:ST4_parSIN} and \ref{tab:ST4_parSDS}, with results described by \citep{art:RA13,art:SAG16,art:AA23}. 
 Further calibration to any particular wind field should be done for best performance. Guidance for this is given by \cite{Stopa2018}. 
 %We also note that the particular 
 %set of parameters T400 corresponds to setting IPHYS=1 in the ECWAM code cycle 45R2, with a few differences 
@@ -216,27 +216,15 @@ As a result, a sea state with two systems of same energy but opposite
 direction will typically produce less dissipation than a sea state with all
 the energy radiated in the same direction.
 
-Based on recent analysis by \cite{Guimaraes2018} and \cite{Peureux&al.2019}, this saturation is enhanced by a factor $M_L$ that represents 
-the effect of long waves on short waves 
-\begin{equation}
-M_l(k,\theta)=1+M_\theta \sqrt{\mathrm{mss}(k,\theta)} + N_\theta \sqrt{\mathrm{nss}(k,\theta)} \label{defFACSAT}.
-\end{equation}
-where $M_\theta$ is twice the modulation transfer function for short wave steepness, with 
-$M_\theta=8$ when following the simplified theory by \cite{art:LHS60} and using the root mean square enhancement of $B$ over a 
-long wave cycle. $N_\theta$ is an additional straining factor due to the instability of the wave action envelope of short waves 
-propagating in the direction close to that of the long wave \citep{Peureux&al.2019}. The squared slopes $\mathrm{mss}(k,\theta)$ is 
-the mean square slope in direction $\theta$, wheras $\mathrm{nss}(k,\theta)$ is a slope of long waves propagating in a narrow window $\pm \delta_\theta$, 
-around the short wave direction $\theta$.
-
 We finally define our dissipation term as the sum of the saturation-based term
 and a cumulative breaking term $S_{\mathrm{bk,cu}}$,
 \begin{eqnarray}
 \cS_{ds}(k,\theta)& =&  \sigma
  \frac{C_{\mathrm{ds}}^{\mathrm{sat}}}{B^2_r} \left[ \delta_d
-\max\left\{ M_l(k,\theta) B\left(k\right) -
+\max\left\{  B\left(k\right) -
 B_r,0\right\}^2 \right.
 \nonumber \\
-  & & +  \left(1-\delta_d \right) \left. \max\left\{ M_L(k,\theta) B'\left(k,\theta \right)- B_r
+  & & +  \left(1-\delta_d \right) \left. \max\left\{B'\left(k,\theta \right)- B_r
  ,0\right\}^2\right]N(k,\theta)  \nonumber \\
  & & + \cS_{\mathrm{bk,cu}}(k,\theta) + \cS_{\mathrm{turb}}(k,\theta) \label{Sds_all}.
 \end{eqnarray}

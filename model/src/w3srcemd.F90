@@ -609,7 +609,7 @@ CONTAINS
 #endif
 #ifdef W3_ST4
     USE W3SRC4MD, ONLY : W3SPR4, W3SIN4, W3SDS4
-    USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA
+    USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA, SINTAILPAR
 #endif
 #ifdef W3_ST6
     USE W3SRC6MD
@@ -1383,10 +1383,14 @@ CONTAINS
         TWS(JSEA) = 1./FMEANWS(CSEA)
 #endif
 #ifdef W3_ST4
-        TAUWX(JSEA)=0.
-        TAUWY(JSEA)=0.
-        IF ( IT .eq. 0 ) THEN
+        IF (SINTAILPAR(4).GT.0.5) THEN ! this is designed to keep the bug as an option
+              TAUWX(JSEA)=0.
+              TAUWY(JSEA)=0.
+        END IF
+        IF ( IT .EQ. 0 ) THEN
           LLWS(:,CSEA) = .TRUE.
+          TAUWX(JSEA)=0.
+          TAUWY(JSEA)=0.
           UST_CHUNK(CSEA)=0.
           USTD_CHUNK(CSEA)=0.
         ELSE
@@ -1410,9 +1414,11 @@ CONTAINS
 #endif
 
 #ifdef W3_ST4
-          CALL W3SIN4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),       &
-             U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA),       &
-             VSIN(:,CSEA), VDIN(:,CSEA), LLWS(:,CSEA), IX(CSEA), IY(CSEA), BRLAMBDA(:,CSEA) )
+          IF (SINTAILPAR(4).GT.0.5) THEN
+            CALL W3SIN4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN2(:,CSEA), U10_CHUNK(CSEA), UST_CHUNK(CSEA), DRAT(CSEA), AS_CHUNK(CSEA),       &
+              U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA),       &
+              VSIN(:,CSEA), VDIN(:,CSEA), LLWS(:,CSEA), IX(CSEA), IY(CSEA), BRLAMBDA(:,CSEA) )
+          END IF
         END IF  ! IT==0
 #endif
 #if defined(W3_DEBUGSRC) && defined(W3_ST4)
@@ -2433,6 +2439,16 @@ CONTAINS
              U10D_CHUNK(CSEA), Z0(CSEA), CD(CSEA), TAUWX(JSEA), TAUWY(JSEA), &
              TAUWAX(CSEA), TAUWAY(CSEA), &
              VSIN(:,CSEA), VDIN(:,CSEA), LLWS(:,CSEA), IX(CSEA), IY(CSEA), BRLAMBDA(:,CSEA) )
+        IF (SINTAILPAR(4).LT.0.5) THEN 
+          CALL W3SPR4 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), &
+              FMEAN(CSEA), FMEAN1(CSEA), WNMEAN(JSEA), AMAX(CSEA), U10_CHUNK(CSEA), U10D_CHUNK(CSEA), &
+#ifdef W3_FLX5
+              TAUA_CHUNK(CSEA), TAUADIR_CHUNK(CSEA), DAIR_CHUNK(CSEA), &
+#endif
+              UST_CHUNK(CSEA), USTD_CHUNK(CSEA), &
+              TAUWX(JSEA), TAUWY(JSEA), CD(CSEA), Z0(CSEA), CHARN(JSEA), &
+              LLWS(:,CSEA), FMEANWS(CSEA), DLWMEAN(CSEA))
+        ENDIF
 #endif
 
         END DO ! CSEA; W3SINx
