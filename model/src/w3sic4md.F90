@@ -85,8 +85,8 @@ MODULE W3SIC4MD
   !        *** Meylan et al. JGR 2018
   !        *** Yu et al. JGR 2019
   !        *** Liu et al. JPO 2020
-  !        *** Rogers et al. CRST 2021a (R21A)
-  !        *** Rogers et al. tech. rep. 2021b (R21B)
+  !        *** Rogers et al. CRST 2021 (RMK2021)
+  !        *** Rogers et al. tech. rep. 2021 (RYW2021)
   !        *** Yu et al. CRST 2022
   !        *** Yu JMSE 2022
   !
@@ -136,7 +136,8 @@ CONTAINS
     !/    24-Feb-2017 : Corrections to Methods 1,2,3,4        (E. Rogers)
     !/    13-Apr-2017 : Method 7 added (Doble et al. 2015)    (E. Rogers)
     !/    11-Jan-2024 : Method 8 added (Meylan et al. 2018)   (E. Rogers)
-    !/    11-Jan-2024 : Method 9 added (Rogers et al. 2021b)  (E. Rogers)
+    !/    11-Jan-2024 : Method 9 added (Rogers et al., 2021)
+    !/                                      denoted "RYW2021" (E. Rogers)
     !/
     !/        FIXME   : Move field input to W3SRCE and provide
     !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
@@ -182,7 +183,7 @@ CONTAINS
     !             an encounter interval length scale from an a_ice and d_ice
     !             provided by the user...or a length scale provided by the 
     !             user.
-    !             See also: page 3 of Rogers et al. (2021b).
+    !             See also: page 3 of Rogers et al. (RYW2021).
     !     4) Eq. 1 from Kohout et al. 2014
     !
     !     5) Simple step function for ki as a function of frequency
@@ -275,32 +276,36 @@ CONTAINS
     !        ChfM2 has units of s3/m2
     !        It is equation 53 in Meylan et al. (2018) and equation 16 in
     !        Liu et al. (2020).
-    !        This method is functionally the same as IC5M2 in WW3 and is
-    !        redundantly included here as IC4M8 because it is in the same
-    !        "family" as IC4M7 and IC4M9, being in the form of
+    !        This method is functionally the same as the "M2" model in IC5
+    !        in WW3 (IC5 w/IC5VEMOD=3) and is redundantly included here as
+    !        IC4M8 because it is in the same "family" as IC4M7 and IC4M9,
+    !        being in the form of:
     !        ki=Chf * h_ice^m * freq^n .
     !        Calibrations:
     !        * Liu et al. has ChfM2=eta*(2*pi)^3/(1025*9.81^2)
     !        ** eta=14.0 for "Sikuliaq" case of Liu et al., so ChfM2=0.035
     !        ** eta=3.0 for "SIPEX" case of Liu et al., so ChfM2=0.0075
-    !        * Rogers et al. (tech rep. 2021b, "R21B") :
-    !        ** Fit to Rogers et al. (CRST 2021a "R21A") ChfM2=0.059 (*SD*)
+    !        * Rogers et al. (tech rep. 2021, "RYW2021") :
+    !        ** Fit to Rogers et al. (CRST 2021 "RMK2021") ChfM2=0.059 (*SD*)
     !        suggested default is marked with "(*SD*)", for consistency
-    !          with SWAN v41.31AB
+    !          with SWAN (v41.31AB or later)
     !
-    !     9) Rogers et al. (tech. rep. 2021b). The "monomial power fit"
-    !        described in section 2.2.3. It is the general form above,
-    !        ki=Chf * h_ice^m * freq^n
-    !        but is constrained such that m=n/2-1.
+    !     9) Rogers et al. (tech. rep. 2021, "RYW2021"): the "monomial power
+    !        fit" described in section 2.2.3. It is the general form above,
+    !        ki=Chf * h_ice^m * freq^n but is constrained such that m=n/2-1.
+    !        This constraint is derived by RYW2021 by invoking the scaling from
+    !        Yu et al. (2019), which is based on Reynolds number with ice
+    !        thickness as the relevant length scale.
     !        This is also given as equation 2 in Yu et al. (CRST 2022).
-    !        * R21B, calibration to R21A: Chf=2.9 and n=4.5  (*SD*)
-    !        * Yu et al. (2022) calibration to R21A : Chf=2.4 and n=4.46
+    !        Some calibrations are as follows:
+    !        * RYW2021, calibration to RMK2021: Chf=2.9 and n=4.5  (*SD*)
+    !        * Yu et al. (2022) calibration to RMK2021 : Chf=2.4 and n=4.46
     !          (noting that c_n=0.108 and Chf=c_n*(2*pi/sqrt(g))^n)
     !        * Yu (2022) adjusted the prior calibration to get better fit
     !          to higher frequency lab measurements and got:
     !          Chf=7.89 and n=4.8
     !        suggested default is marked with "(*SD*)", for consistency
-    !          with SWAN v41.31AB
+    !          with SWAN (v41.31AB or later)
     !
     !     ------------------------------------------------------------------
     !
@@ -670,7 +675,7 @@ CONTAINS
         WN_I(IK)  = Chf*hice*(FREQ(IK)**3)
       END DO
 
-    CASE (9) ! Rogers et al. (2021b) (R21B), Yu et al. (JGR 2022)
+    CASE (9) ! Rogers et al. (2021) (RYW2021), Yu et al. (JGR 2022)
 
       NML_INPUT=.TRUE.
       IF (INFLAGS2(-6).OR.INFLAGS2(-5)) NML_INPUT=.FALSE.

@@ -53,7 +53,7 @@
 #            IC4METHOD = 7 - Doble et al. (GRL 2015)                        #
 #            IC4METHOD = 8 - Meylan et al. (2018) ; Liu et al. (2020)       #
 #                            (NB: redundant with IC5+IC5VEMOD=3)            #
-#            IC4METHOD = 9 - Rogers et al. (2021b) ; Yu et al. (2022)       #
+#            IC4METHOD = 9 - RYW (2021) ; Yu et al. (2022)                  #
 #          IC5 = Choose from three different effective medium models        #
 #            IC5VEMOD  = 1 - Extended Fox and Squire model (EFS)            #
 #            IC5VEMOD  = 2 - Robinson and Palmer model (RP)                 #
@@ -173,7 +173,8 @@
 #                                     updated: Erick Rogers, Apr 2016       #
 #                                     updated: Jessica Meixner, May 2016    #
 #                                     updated: Qingxiang Liu, Jul 2018      #
-#                                last updated: Qingxiang Liu, May 2021      #
+#                                     updated: Qingxiang Liu, May 2021      #
+#                                last updated: Erick Rogers, Jan 2024       #
 #    Copyright 2009-2014 National Weather Service (NWS),                    #
 #       National Oceanic and Atmospheric Administration.  All rights        #
 #       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
