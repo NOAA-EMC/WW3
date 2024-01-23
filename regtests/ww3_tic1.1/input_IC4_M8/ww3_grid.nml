@@ -1,0 +1,81 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.0418
+  SPECTRUM%NK        =  31
+  SPECTRUM%NTH       =  36
+  SPECTRUM%THOFF     =  5.0
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLSOU        =  T
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  60.
+  TIMESTEPS%DTXY         =  60.
+  TIMESTEPS%DTKTH        =  60.
+  TIMESTEPS%DTMIN        =  60.
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  '1-D parameterized ice test'
+  GRID%NML          =  '../input_IC4_M8/namelists_1-D.nml'
+  GRID%TYPE         =  'RECT'
+  GRID%COORD        =  'CART'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  -0.1
+  GRID%DMIN         =  0.1
+/
+
+! -------------------------------------------------------------------- !
+! Define the rectilinear grid type via RECT_NML namelist
+! -------------------------------------------------------------------- !
+&RECT_NML
+  RECT%NX           =  156
+  RECT%NY           =  3
+  RECT%SX           =  1.0E3
+  RECT%SY           =  1.0E3
+  RECT%X0           =  -1.0E3
+  RECT%Y0           =  -1.0E3
+/
+
+! -------------------------------------------------------------------- !
+! Define the depth to preprocess via DEPTH_NML namelist
+! -------------------------------------------------------------------- !
+&DEPTH_NML
+  DEPTH%SF        =  -1.0
+  DEPTH%FILENAME  =  '../input_IC1/depth1d.flat'
+/
+
+! -------------------------------------------------------------------- !
+! Define the input boundary points via INBND_COUNT_NML and
+!                                      INBND_POINT_NML namelist
+! -------------------------------------------------------------------- !
+&INBND_COUNT_NML
+  INBND_COUNT%N_POINT    =  1
+/
+
+&INBND_POINT_NML
+  INBND_POINT(1)         =  2 2 F
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

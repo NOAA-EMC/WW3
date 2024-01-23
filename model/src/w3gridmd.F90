@@ -114,6 +114,7 @@ MODULE W3GRIDMD
   !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
   !/    28-Feb-2023 : GQM as an alternative for NL1       ( version 7.15 )
+  !/    11-Jan-2024 : New namelist parameters for IC4     ( version 7.15 )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -764,9 +765,10 @@ MODULE W3GRIDMD
 
 #ifdef W3_IC4
   INTEGER                 :: IC4METHOD
-  REAL                    :: IC4KI(NIC4), IC4FC(NIC4)
+  REAL                    :: IC4KI(NIC4), IC4FC(NIC4),            &
+                             IC4CN(NIC42), IC4FMIN, IC4KIBK
 #endif
-  !
+
 #ifdef W3_IC5
   REAL                    :: IC5MINIG, IC5MINWT,                  &
        IC5MAXKRATIO, IC5MAXKI, IC5MINHW,    &
@@ -970,7 +972,8 @@ MODULE W3GRIDMD
        IC3VISC, IC3ELAS, IC3DENS, IC3HICE
 #endif
 #ifdef W3_IC4
-  NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC
+  NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC, IC4CN, IC4FMIN,  &
+                   IC4KIBK
 #endif
 #ifdef W3_IC5
   NAMELIST /SIC5/  IC5MINIG, IC5MINWT, IC5MAXKRATIO,        &
@@ -2891,6 +2894,9 @@ CONTAINS
     IC4METHOD = 1 !switch for methods within IC4
     IC4KI=0.0
     IC4FC=0.0
+    IC4CN=0.0
+    IC4FMIN=0.0
+    IC4KIBK=0.0
 #endif
     !
 #ifdef W3_IC5
@@ -5313,6 +5319,9 @@ CONTAINS
     IC4PARS(1)=IC4METHOD
     IC4_KI=IC4KI
     IC4_FC=IC4FC
+    IC4_CN=IC4CN
+    IC4_FMIN=IC4FMIN
+    IC4_KIBK=IC4KIBK
 #endif
     !
 #ifdef W3_IC5

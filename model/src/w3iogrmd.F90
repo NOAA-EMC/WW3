@@ -1292,11 +1292,11 @@ CONTAINS
 #endif
 #ifdef W3_IC4
       WRITE   (NDSM)                                             &
-           IC4PARS,IC4_KI,IC4_FC
+           IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
 #ifdef W3_ASCII
       WRITE   (NDSA,*)                                           &
-           'IC4PARS,IC4_KI,IC4_FC:',                             &
-           IC4PARS,IC4_KI,IC4_FC
+           'IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK:',    &
+           IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
 #endif
 #endif
 #ifdef W3_IC5
@@ -1338,7 +1338,7 @@ CONTAINS
 #endif
 #ifdef W3_IC4
       READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
-           IC4PARS,IC4_KI,IC4_FC
+           IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
 #endif
 #ifdef W3_IC5
       READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
