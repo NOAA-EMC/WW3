@@ -1536,14 +1536,14 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
 #ifdef W3_SMC
-  !> @param[in] mcel number of SMC cells.
-  !> @param[in] mufc number of SMC U-face connections.
-  !> @param[in] mvfc number of SMC V-face connections.
-  !> @param[in] mrlv number of SMC levels.
-  !> @param[in] mbsmc number of SMC boundary points.
-  !> @param[in] marc number of SMC Arctic cells.
-  !> @param[in] mbac number of SMC Arctic boundary cells.
-  !> @param[in] mspec Number of discrete spectral bins (not SMC specific).
+  !> @param[in] mcel number of SMC cells. (SMC switch only.)
+  !> @param[in] mufc number of SMC U-face connections. (SMC switch only.)
+  !> @param[in] mvfc number of SMC V-face connections. (SMC switch only.)
+  !> @param[in] mrlv number of SMC levels. (SMC switch only.)
+  !> @param[in] mbsmc number of SMC boundary points. (SMC switch only.)
+  !> @param[in] marc number of SMC Arctic cells. (SMC switch only.)
+  !> @param[in] mbac number of SMC Arctic boundary cells. (SMC switch only.)
+  !> @param[in] mspec Number of discrete spectral bins (not SMC specific). (SMC switch only.)
 #endif
   !>
   !> @author H. L. Tolman  @date 10-Dec-2014
