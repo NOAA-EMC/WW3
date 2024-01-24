@@ -915,7 +915,7 @@ CONTAINS
     USE W3SERVMD, only: STRACE
 #endif
     !
-    USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF
+    USE W3GDATMD, only: NK, NTH, NX,  IEN, CLATS, MAPSF, DTH
     USE W3GDATMD, only: IOBPD_LOC, IOBP_LOC, IOBDP_LOC, IOBPA_LOC, FSBCCFL
     USE W3WDATMD, only: TIME
     USE W3ADATMD, only: CG, ITER, DW , CFLXYMAX, NSEALM
@@ -926,7 +926,7 @@ CONTAINS
 #ifdef W3_REF1
     USE W3GDATMD, only: REFPARS
 #endif
-    USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, ipgl, iplg, npa, np
+    USE YOWNODEPOOL,    only: PDLIB_SI, PDLIB_IEN, PDLIB_IEND, PDLIB_TRIA, ipgl, iplg, npa, np
     use yowElementpool, only: ne, INE
     use yowDatapool, only: rtype
     use yowExchangeModule, only : PDLIB_exchange1DREAL
@@ -973,7 +973,7 @@ CONTAINS
     REAL  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL  :: DTSI(npa), U(npa)
     REAL  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL  :: LAMBDA(2), KTMP(3)
+    REAL  :: LAMBDA(2), KTMP(3), DFAK(NE)
     REAL  :: KELEM(3,NE), FLALL(3,NE)
     REAL  :: KKSUM(npa), ST(npa)
     REAL  :: NM(NE)
@@ -1105,7 +1105,7 @@ CONTAINS
       DO IE = 1, NE
         NI     = INE(:,IE)
         UTILDE = NM(IE) * (DOT_PRODUCT(FLALL(:,IE),U(NI)))
-        ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE) ! the 2nd term are the theta values of each node ...
+        ST(NI) = ST(NI) + KELEM(:,IE) * (U(NI) - UTILDE)
       END DO ! IE
 #ifdef W3_DEBUGSOLVER
       IF (testWrite) THEN
@@ -5495,7 +5495,7 @@ CONTAINS
     USE CONSTANTS, only : TPI, TPIINV, GRAV
     USE W3GDATMD, only: MAPSTA
     USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE, NX, DSIP
-    USE W3GDATMD, only: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN
+    USE W3GDATMD, only: B_JGS_NORM_THR, B_JGS_TERMINATE_NORM, B_JGS_PMIN, B_JGS_LIMITER_FUNC
     USE W3GDATMD, only: B_JGS_TERMINATE_DIFFERENCE, B_JGS_MAXITER, B_JGS_LIMITER
     USE W3GDATMD, only: B_JGS_TERMINATE_MAXITER, B_JGS_BLOCK_GAUSS_SEIDEL, B_JGS_DIFF_THR
     USE W3GDATMD, only: MAPWN
@@ -6239,21 +6239,6 @@ CONTAINS
 
       IF (FLSOU) THEN
         IF (B_JGS_LIMITER) THEN
-
-          DO ISP=1,NSPEC
-            IK   = 1 + (ISP-1)/NTH
-            SPEC(ISP) = VAOLD(ISP,JSEA)
-          ENDDO
-#ifdef W3_ST4
-          CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
-               AMAX, U10(ISEA), U10D(ISEA),                           &
-#ifdef W3_FLX5
-               TAUA, TAUADIR, DAIR,                             &
-#endif
-               USTAR, USTDIR,                                  &
-               TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
-#endif
-
           DAM = 0.
           DO IK=1, NK
             DAM(1+(IK-1)*NTH) = 0.0081*0.1 / ( 2 * SIG(IK) * WN(IK,ISEA)**3 * CG(IK,ISEA)) * CG1(IK) / CLATS(ISEA)
@@ -6266,28 +6251,52 @@ CONTAINS
             END DO
           END DO
 
-          DAM2 = 0.
-          DO IK=1, NK
-            JAC2     = 1./TPI/SIG(IK)
-            FRLOCAL  = SIG(IK)*TPIINV
-            DAM2(1+(IK-1)*NTH) = 1E-06 * GRAV/FRLOCAL**4 * USTAR * MAX(FMEANWS,FMEAN) * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
-          END DO
-          DO IK=1, NK
-            IS0  = (IK-1)*NTH
-            DO ITH=2, NTH
-              DAM2(ITH+IS0) = DAM2(1+IS0)
-            END DO
-          END DO
-
-          DO IK = 1, NK
-            DO ITH = 1, NTH
-              ISP = ITH + (IK-1)*NTH
-              newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
-              maxdac     = max(DAM(ISP),DAM2(ISP))
-              NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
-              VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
+          IF (B_JGS_LIMITER_FUNC == 2) THEN
+            DO ISP=1,NSPEC
+              IK   = 1 + (ISP-1)/NTH
+              SPEC(ISP) = VAOLD(ISP,JSEA)
             ENDDO
-          ENDDO
+#ifdef W3_ST4
+            CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN, &
+               AMAX, U10(ISEA), U10D(ISEA),                           &
+#ifdef W3_FLX5
+               TAUA, TAUADIR, DAIR,                             &
+#endif
+               USTAR, USTDIR,                                  &
+               TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
+#endif
+            DAM2 = 0.
+            DO IK=1, NK
+              JAC2     = 1./TPI/SIG(IK)
+              FRLOCAL  = SIG(IK)*TPIINV
+              DAM2(1+(IK-1)*NTH) = 5E-07 * GRAV/FRLOCAL**4 * UST(ISEA) * FMEAN * DTG * JAC2 * CG1(IK) / CLATS(ISEA)
+            END DO
+            DO IK=1, NK
+              IS0  = (IK-1)*NTH
+              DO ITH=2, NTH
+                DAM2(ITH+IS0) = DAM2(1+IS0)
+              END DO
+            END DO
+            DO IK = 1, NK
+              DO ITH = 1, NTH
+                ISP = ITH + (IK-1)*NTH
+                newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
+                maxdac     = max(DAM(ISP),DAM2(ISP))
+                NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
+                VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
+              ENDDO
+            ENDDO
+          ELSE
+            DO IK = 1, NK
+              DO ITH = 1, NTH
+                ISP = ITH + (IK-1)*NTH
+                newdac     = VA(ISP,IP) - VAOLD(ISP,JSEA)
+                maxdac     = DAM(ISP)
+                NEWDAC     = SIGN(MIN(MAXDAC,ABS(NEWDAC)), NEWDAC)
+                VA(ISP,IP) = max(0., VAOLD(ISP,IP) + NEWDAC)
+              ENDDO
+            ENDDO
+          ENDIF
         ENDIF ! B_JGS_LIMITER
       ENDIF  ! FLSOU
     END DO ! JSEA
@@ -7630,4 +7639,295 @@ CONTAINS
     !/
   END SUBROUTINE JACOBI_FINALIZE
   !/ ------------------------------------------------------------------- /
-END MODULE PDLIB_W3PROFSMD
+  SUBROUTINE BLOCK_SOLVER_DIFFUSION(DTG)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                                   |
+    !/                  | Aron Roland (Roland & Partner,    |
+    !/                  |              BGS IT&E GmbH)       |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :        01-June-2023 |
+    !/                  +-----------------------------------+
+    !/
+    !/    01-June-2018 : Origination.                        ( version 6.04 )
+    !/
+    !  1. Purpose : Solves the anisotropic diffusion equation 
+    !  2. Method :i Galerkin 
+    !  3. Parameters : a lot 
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD Subroutine tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !  7. Remarks
+    !  8. Structure :
+    !  9. Switches :
+    !
+    !     !/S  Enable subroutine tracing.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+#ifdef W3_S
+    USE W3SERVMD, only: STRACE
+#endif
+    !
+    USE CONSTANTS, only : LPDLIB, TPI, TPIINV, GRAV, DERA, RADIUS
+    USE W3GDATMD, only: MAPSF, NSEAL, DMIN, IOBDP, MAPSTA, IOBP, MAPFS, NX, CLATS, CLATMN, SIG
+    USE W3GDATMD, only: ESIN, ECOS, XFR, DTH, NSPEC, B_JGS_GSE_TS, XGRD, YGRD
+    USE W3ADATMD, only: DW, MPI_COMM_WCMP, U10, WN, CG
+    USE W3WDATMD, ONLY: VA
+    USE W3PARALL, only: INIT_GET_ISEA
+    USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+    USE YOWNODEPOOL, only: iplg, np, pdlib_tria, pdlib_ien, pdlib_si
+    USE yowfunction, only: pdlib_abort
+    use YOWNODEPOOL, only: npa
+    use yowElementpool, only : INE, NE
+    use yowDatapool, only: rtype
+    use yowExchangeModule, only : PDLIB_exchange1DREAL
+    USE W3GDATMD, only: B_JGS_USE_JACOBI, FLAGLL
+    USE W3GDATMD, only: NSPEC, NTH, NK
+    USE W3GDATMD, only: FSTOTALIMP
+    USE W3ODATMD, only: IAPROC
+    USE MPI, only : MPI_MIN
+    !/
+    REAL, INTENT(IN)    :: DTG
+    !
+    !/ ------------------------------------------------------------------- /
+    !/
+    INTEGER ITH, IK, IE, IS, IERR, MYRANK
+    INTEGER NewISP, JTH, istati, JSEA, ISEA
+    REAL*8    TFAC, DNN, DSS, DSSD, DNND, CGD, DFRR, DTME
+    REAL PHI_V(NPA)
+    REAL*8 eDet, DEDX(3), DEDY(3), DIFFV(2)
+    INTEGER NI(3), ITR, IDX, IP, ISP, IT
+    REAL*8 XSEL(3), DVDXIE, DVDYIE, FACX
+    REAL*8 GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(3,NPA)
+    INTEGER NB_ITER, iIter, ip_global
+    REAL*8 DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
+    REAL*8 eNorm, DTquot, diffc, dcell, XWIND, DIFFTOT
+    REAL*8 DVDX(NPA), DVDY(NPA), DV2DXX(NPA), DV2DXY(NPA), KH, SWFAC
+    REAL eRealA(1), eRealB(1)
+
+
+    DVDX = 0.d0
+    DVDY = 0.d0
+    DV2DXX = 0.d0 
+    DV2DXY = 0.d0 
+
+    DTME = B_JGS_GSE_TS
+    FACX = 1./(DERA * RADIUS)
+    !WRITE(*,*) 'START BLOCK SOLVER' 
+    CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
+
+    !WRITE (3000+myrank,*) 'Entering Diffusion' 
+    !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
+
+    IF ( FLAGLL ) THEN
+      RFAC = DERA * RADIUS
+      DFAC = 1. / RFAC**2
+    ELSE
+      RFAC = 1.
+      DFAC = 1.
+    END IF
+    CLATMN = COS ( 70 * DERA )
+
+    DO ITH = 1, NTH
+      DO IK = 1, NK
+        ISP    = ITH + (IK-1)*NTH
+        DO JSEA = 1, NPA
+          CALL INIT_GET_ISEA(ISEA, JSEA)
+          TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
+          CGD   = 0.5 * GRAV / SIG(IK) * IOBDP_LOC(JSEA)
+          DSS   = ( CGD * (XFR-1.))**2 * DTME / 12.! * TFAC
+          DNN   = ( CGD * DTH )**2 * DTME / 12.! * TFAC 
+          DCELL = CGD / 10.0 ! -> CELLP needs probably redifinition ...
+          KH    = WN(IK,ISEA)*DW(JSEA) 
+          IF (DW(JSEA) .gt. 1000.) THEN
+            SWFAC = 1.
+          ELSE
+            SWFAC = 0.!(1.-0.5*(1+(2*KH/SINH(MIN(20.d0,2*KH)))))**8
+          ENDIF
+          XWIND = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
+          XWIND = MAX ( 0. , MIN ( 1. , XWIND ) )
+#ifdef W3_XW0
+          XWIND = 0.
+#endif
+#ifdef W3_XW1
+          XWIND = 1.
+#endif
+          TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
+          DSS   = SWFAC * (XWIND * DCELL + (1.-XWIND) * DSS * TFAC) 
+#ifdef W3_DSS0
+          DSS   = 0.
+#endif
+          DNN   = SWFAC * (XWIND * DCELL + (1.-XWIND) * DNN * TFAC)
+
+          DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
+          DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
+          DIFFVEC(3,JSEA) = ((DSS-DNN) * ESIN(ITH)*ECOS(ITH)) / CLATS(ISEA)
+          !write(3000+myrank,'(I10,20F20.10)') IK, SIG(IK), CGD, CLATS(ISEA), DSS, DNN, DIFFVEC(1,JSEA), DIFFVEC(2,JSEA)
+        END DO
+
+        CALL DIFFERENTIATE_XYDIR(DBLE(VA(ISP,:)),DVDX,DVDY) ! AR: this two lines can be optimized, however seems fast enough by now. 
+        CALL DIFFERENTIATE_XYDIR(DVDX,DV2DXX,DV2DXY)
+
+        DeltaTmax = 1./TINY(1.)
+        DO IE=1,NE
+          NI = INE(:,IE)
+          eDet = 2. * PDLIB_TRIA(IE)
+          DO IDX=1,3
+            V(1) = PDLIB_IEN(2*IDX-1,IE)
+            V(2) = PDLIB_IEN(2*IDX  ,IE)
+            eNorm = DOT_PRODUCT(V,V)
+            IP = INE(IDX,IE)
+            eDiffNorm = HYPOT(DIFFVEC(1,IP), DIFFVEC(2,IP))
+            if (eDiffNorm .gt. tiny(1.)) then
+              eDeltaT = min(DTG, PDLIB_SI(IP) / (eDiffNorm * dfac * eNorm /(4. * eDet))) ! modified for diffusion vector
+            else
+              eDeltaT = DTG
+            endif
+            !write(4000+myrank,*) IE, iplg(IP), eDeltaT, eDiffNorm, eNorm, 4 * eDet
+            IF (eDeltaT .lt. DeltaTmax) THEN
+              DeltaTmax = eDeltaT
+            END IF
+          END DO
+        END DO
+
+        eRealA(1)=DeltaTmax
+        CALL MPI_ALLREDUCE(eRealA, eRealB, 1, rtype, MPI_MIN, MPI_COMM_WCMP, ierr)
+        DeltaTmax=eRealB(1)
+ 
+        DTquot = DTG / DeltaTmax
+        NB_ITER = NINT(DTquot) + 1
+        DT_DIFF = DTG/NB_ITER
+        PHI_V = 0.
+ 
+        !WRITE(5000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF, DeltaTmax
+        !CALL FLUSH(5000+myrank)
+
+        DO IT = 1, NB_ITER
+          DO IE = 1, NE
+             NI = INE(:,IE)
+             eDet = 2. * PDLIB_TRIA(IE)
+             DEDX(1) = PDLIB_IEN(1,IE)
+             DEDX(2) = PDLIB_IEN(3,IE)
+             DEDX(3) = PDLIB_IEN(5,IE)
+             DEDY(1) = PDLIB_IEN(2,IE)
+             DEDY(2) = PDLIB_IEN(4,IE)
+             DEDY(3) = PDLIB_IEN(6,IE)
+             XSEL    = VA(ISP,NI)
+             DVDXIE  = DOT_PRODUCT(XSEL,DEDX)
+             DVDYIE  = DOT_PRODUCT(XSEL,DEDY)
+             GRAD(1) = DVDXIE / eDet * 1./3. * SUM(DIFFVEC(1,NI))
+             GRAD(2) = DVDYIE / eDet * 1./3. * SUM(DIFFVEC(2,NI)) 
+             DO IDX=1,3
+                V(1) = 0.5 * PDLIB_IEN(2*IDX-1,IE)
+                V(2) = 0.5 * PDLIB_IEN(2*IDX  ,IE)
+                eScal = DOT_PRODUCT(V, GRAD(1:2))
+                IP = INE(IDX,IE)
+                PHI_V(IP) = PHI_V(IP) + eScal
+             END DO
+          END DO
+          CALL PDLIB_exchange1DREAL(PHI_V)
+          DO JSEA =1, NSEAL
+            VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) - (DT_DIFF * PHI_V(JSEA) / PDLIB_SI(JSEA) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA)) * DFAC * IOBDP_LOC(JSEA))
+          END DO       
+        END DO 
+      END DO 
+    END DO 
+
+    !WRITE(3000+myrank,*) 'FINISHED DIFFUSION' 
+    !CALL FLUSH(3000+myrank)
+    !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
+
+    END SUBROUTINE BLOCK_SOLVER_DIFFUSION
+
+     SUBROUTINE DIFFERENTIATE_XYDIR(VAR, DVDX, DVDY)
+         USE W3GDATMD, only: ECOS, ESIN, DMIN, NTH, SIG, NK
+         USE W3ADATMD, only: CG, CX, CY, DW
+         USE yowExchangeModule, only : PDLIB_exchange1DREAL
+         USE yowNodepool, only : PDLIB_IEN, PDLIB_TRIA, NP, NPA
+         USE yowElementpool, only : NE, INE
+         IMPLICIT NONE
+         REAL*8, INTENT(IN)    :: VAR(NPA)
+         REAL*8, INTENT(INOUT) :: DVDX(NPA), DVDY(NPA)
+         REAL*4                :: DVDX4(NPA), DVDY4(NPA)
+         REAL*8                :: DEDY(3),DEDX(3)
+         REAL*8                :: DVDXIE, DVDYIE
+         REAL*8                :: WEI(NPA)
+         INTEGER               :: NI(3)
+         INTEGER               :: IE, JSEA
+
+         WEI(:)  = 0.d0
+         DVDX(:) = 0.d0
+         DVDY(:) = 0.d0
+
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'DIFFERENTIATE_XYDIR'
+         WRITE(STAT%FHNDL,*) 'sum(VAR ) = ', sum(VAR)
+         WRITE(STAT%FHNDL,*) 'sum(IEN ) = ', sum(IEN)
+         WRITE(STAT%FHNDL,*) 'sum(TRIA) = ', sum(TRIA)
+#endif
+
+         DO IE = 1, NE
+            NI = INE(:,IE)
+            WEI(NI) = WEI(NI) + 2.*PDLIB_TRIA(IE)
+            DEDX(1) = PDLIB_IEN(1,IE)
+            DEDX(2) = PDLIB_IEN(3,IE)
+            DEDX(3) = PDLIB_IEN(5,IE)
+            DEDY(1) = PDLIB_IEN(2,IE)
+            DEDY(2) = PDLIB_IEN(4,IE)
+            DEDY(3) = PDLIB_IEN(6,IE)
+            DVDXIE  = DOT_PRODUCT( VAR(NI),DEDX)
+            DVDYIE  = DOT_PRODUCT( VAR(NI),DEDY)
+            DVDX(NI) = DVDX(NI) + DVDXIE
+            DVDY(NI) = DVDY(NI) + DVDYIE
+         END DO
+
+         DVDX = DVDX/WEI
+         DVDY = DVDY/WEI
+
+         DO JSEA = 1, NP
+           IF (DW(JSEA) .LT. DMIN) THEN
+             DVDX(JSEA) = 0.
+             DVDY(JSEA) = 0.
+           END IF
+         END DO
+
+         DVDX4 = DVDX
+         DVDY4 = DVDY
+         CALL PDLIB_exchange1DREAL(DVDX4) ! AR: todo, checck pipes.
+         CALL PDLIB_exchange1DREAL(DVDY4)
+         DVDX = DVDX4
+         DVDY = DVDY4
+
+#ifdef DEBUG
+         WRITE(STAT%FHNDL,*) 'sum(DVDX) = ', sum(DVDX)
+         WRITE(STAT%FHNDL,*) 'sum(DVDY) = ', sum(DVDY)
+#endif
+
+         IF (.FALSE.) THEN
+           OPEN(2305, FILE  = 'erggrad.bin'  , FORM = 'UNFORMATTED')
+           WRITE(2305) 1.
+           WRITE(2305) (DVDX(JSEA), DVDY(JSEA), SQRT(DVDY(JSEA)**2+DVDY(JSEA)**2), JSEA = 1, NP)
+         ENDIF
+      END SUBROUTINE
+      
+      END MODULE PDLIB_W3PROFSMD

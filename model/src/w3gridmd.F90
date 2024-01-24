@@ -928,6 +928,9 @@ MODULE W3GRIDMD
   LOGICAL :: IMPSOURCE
   LOGICAL :: SETUP_APPLY_WLV
   INTEGER :: JGS_MAXITER
+  LOGICAL :: JGS_LGSE 
+  INTEGER :: JGS_GSE_METHOD 
+  REAL(8) :: JGS_GSE_TS 
   INTEGER :: nbSel
   INTEGER :: UNSTSCHEMES(6)
   INTEGER :: UNSTSCHEME
@@ -1094,6 +1097,9 @@ MODULE W3GRIDMD
        JGS_LIMITER,                               &
        JGS_LIMITER_FUNC,                          &
        JGS_USE_JACOBI,                            &
+       JGS_LGSE,                                  &
+       JGS_GSE_METHOD,                            & 
+       JGS_GSE_TS,                                &
        JGS_BLOCK_GAUSS_SEIDEL,                    &
        JGS_MAXITER,                               &
        JGS_PMIN,                                  &
@@ -2449,8 +2455,11 @@ CONTAINS
     JGS_TERMINATE_NORM = .FALSE.
     JGS_LIMITER = .FALSE.
     JGS_LIMITER_FUNC = 1
+    JGS_GSE_TS = 350000
     JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
     JGS_USE_JACOBI = .TRUE.
+    JGS_LGSE = .FALSE. 
+    JGS_GSE_METHOD = 1
     JGS_MAXITER=100
     JGS_PMIN = 1
     JGS_DIFF_THR = 1.E-10
@@ -2473,6 +2482,9 @@ CONTAINS
     B_JGS_NORM_THR = JGS_NORM_THR
     B_JGS_NLEVEL = JGS_NLEVEL
     B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
+    B_JGS_LGSE = JGS_LGSE
+    B_JGS_GSE_TS = JGS_GSE_TS
+    B_JGS_GSE_METHOD = JGS_GSE_METHOD 
 
     nbSel=0
 
