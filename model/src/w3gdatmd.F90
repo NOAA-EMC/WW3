@@ -14,14 +14,14 @@
 !/ ------------------------------------------------------------------- /
 !/ Macros for enabling test output
 !/
-#define TEST_W3GDATMD___disabled
-#define TEST_W3GDATMD_W3NMOD___disabled
-#define TEST_W3GDATMD_W3DIMX___disabled
-#define TEST_W3GDATMD_W3DIMS___disabled
-#define TEST_W3GDATMD_W3SETG___disabled
-#define TEST_W3GDATMD_W3GNTX___disabled
-#define TEST_W3GDATMD_W3DIMUG___disabled
-#define TEST_W3GDATMD_W3SETREF___disabled
+#define TEST_W3GDATMD___disabled !< Test macro.
+#define TEST_W3GDATMD_W3NMOD___disabled !< Test macro.
+#define TEST_W3GDATMD_W3DIMX___disabled !< Test macro.
+#define TEST_W3GDATMD_W3DIMS___disabled !< Test macro.
+#define TEST_W3GDATMD_W3SETG___disabled !< Test macro.
+#define TEST_W3GDATMD_W3GNTX___disabled !< Test macro.
+#define TEST_W3GDATMD_W3DIMUG___disabled !< Test macro.
+#define TEST_W3GDATMD_W3SETREF___disabled !< Test macro.
 
 !> @brief Read/write restart files.
 !>
@@ -1407,8 +1407,10 @@ CONTAINS
   !> @param[in] naux Optional: Number of auxiliary grids to be used. Grids
   !> -NAUX:NUBMER are defined, optional parameters.
   !>
-  !> @author H. L. Tolman  @date 10-Dec-2014
+  !> Error messages:
+  !> - Error checks on previous setting of variable.
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   SUBROUTINE W3NMOD ( NUMBER, NDSE, NDST, NAUX )
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1546,8 +1548,11 @@ CONTAINS
   !> @param[in] mspec Number of discrete spectral bins (not SMC specific). (SMC switch only.)
 #endif
   !>
-  !> @author H. L. Tolman  @date 10-Dec-2014
+  !> Error messages:
+  !> - Check on input parameters.
+  !> - Check on previous allocation.
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   SUBROUTINE W3DIMX  ( IMOD, MX, MY, MSEA, NDSE, NDST   &
 #ifdef W3_SMC
        , MCel, MUFc, MVFc, MRLv, MBSMC    &
@@ -2017,8 +2022,10 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
   !>
-  !> @author H. L. Tolman, J. H. Alves  @date 03-Sep-2012
+  !> Error messages:
+  !> - Checks on parameter list IMOD.
   !>
+  !> @author H. L. Tolman, J. H. Alves  @date 03-Sep-2012
   SUBROUTINE W3SETG ( IMOD, NDSE, NDST )
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -2681,6 +2688,9 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
   !>
+  !> Error messages:
+  !> - Check on previous initialization of grids.
+  !>
   !> @author T. J. Campbell  @date 20-Jul-2011
   SUBROUTINE W3GNTX ( IMOD, NDSE, NDST )
     USE W3SERVMD, ONLY: EXTCDE
@@ -2873,8 +2883,11 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
   !>
-  !> @author F.ardhuin  @date 15-Mar-2007
+  !> Error messages:
+  !> - Check on input parameters.
+  !> - Check on previous allocation.
   !>
+  !> @author F.ardhuin  @date 15-Mar-2007
   SUBROUTINE W3DIMUG  ( IMOD, MTRI, MX, COUNTOTA, NNZ, NDSE, NDST )
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S

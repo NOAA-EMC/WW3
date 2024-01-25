@@ -542,8 +542,10 @@ CONTAINS
   !> @param[in] ndserr Error output unit number.
   !> @param[in] ndstst Test output unit number.
   !>
-  !> @author H. L. Tolman  @date 22-Mar-2021
+  !> Error messages:
+  !> - Error checks on previous setting of variable NGRIDS.
   !>
+  !> @author H. L. Tolman  @date 22-Mar-2021
   SUBROUTINE W3NOUT ( NDSERR, NDSTST )
     USE W3GDATMD, ONLY: NGRIDS, NAUXGR
     USE W3SERVMD, ONLY: EXTCDE
@@ -901,8 +903,11 @@ CONTAINS
   !> @param[in] ndst Test output unit number.
   !> @param[in] npt Array size.
   !>
-  !> @author H. L. Tolman  @date 10-Dec-2014
+  !> Error messages:
+  !> - Check on input parameters.
+  !> - Check on previous allocation.
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   SUBROUTINE W3DMO2 ( IMOD, NDSE, NDST, NPT )
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, NAUXGR, IGRID, NSPEC
     USE W3SERVMD, ONLY: EXTCDE
@@ -1057,8 +1062,11 @@ CONTAINS
   !> @param[in] ndse Error output unit number.
   !> @param[in] ndst Test output unit number.
   !>
-  !> @author H. L. Tolman  @date 10-Dec-2014
+  !> Error messages:
+  !> - Check on input parameters.
+  !> - Check on previous allocation.
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   SUBROUTINE W3DMO3 ( IMOD, NDSE, NDST )
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, IGRID, NX, NY
     USE W3SERVMD, ONLY: EXTCDE
@@ -1185,8 +1193,11 @@ CONTAINS
   !> @param[in] ndst Test output unit number.
   !> @param[in] iblock Select block to allocate.
   !>
-  !> @author H. L. Tolman  @date 10-Dec-2014
+  !> Error messages:
+  !> - Check on input parameters.
+  !> - Check on previous allocation.
   !>
+  !> @author H. L. Tolman  @date 10-Dec-2014
   SUBROUTINE W3DMO5 ( IMOD, NDSE, NDST, IBLOCK )
     USE W3GDATMD, ONLY: W3SETG, NGRIDS, IGRID, NX, NY, NSPEC
     USE W3SERVMD, ONLY: EXTCDE
@@ -1355,8 +1366,10 @@ CONTAINS
   !> @param[in] ndserr Error output unit number.
   !> @param[in] ndstst Test output unit number.
   !>
-  !> @author H. L. Tolman  @date 25-Sep-2020
+  !> Error messages :
+  !> - Checks on parameter list IMOD.
   !>
+  !> @author H. L. Tolman  @date 25-Sep-2020
   SUBROUTINE W3SETO ( IMOD, NDSERR, NDSTST )
     USE W3GDATMD, ONLY: NAUXGR
     USE W3SERVMD, ONLY: EXTCDE

@@ -156,6 +156,9 @@ CONTAINS
   !> @param[in]    IMOD     Optional grid number, defaults to 1.
   !> @param[in]    FLRSTRT  A second request for restart files (optional TRUE).
   !>
+  !> Error messages:
+  !> - Tests on INXOUT, file status and on array dimensions.
+  !>
   !> @author H. L. Tolman  @date 22-Mar-2021
   SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
     USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
