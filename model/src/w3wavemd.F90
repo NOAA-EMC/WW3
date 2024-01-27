@@ -1491,8 +1491,6 @@ CONTAINS
             CALL INIT_GET_ISEA(ISEA, JSEA)
 
             IF ((IOBP_LOC(JSEA).eq.1..or.IOBP_LOC(JSEA).eq. 3).and.IOBDP_LOC(JSEA).eq.1.and.IOBPA_LOC(JSEA).eq.0) THEN
-            
-
 
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
@@ -2169,6 +2167,7 @@ CONTAINS
             !
             DO JSEA=1, NSEAL
               CALL INIT_GET_ISEA(ISEA, JSEA)
+
               IX     = MAPSF(ISEA,1)
               IY     = MAPSF(ISEA,2)
               DELA=1.
