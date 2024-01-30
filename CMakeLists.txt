@@ -1,4 +1,6 @@
-# CMake build written by Kyle Gerheiser
+# This is the root CMake configuration for WW3
+#
+# Kyle Gerheiser, Alex Richert
 
 # Requires CMake 3.19 for JSON strings
 cmake_minimum_required(VERSION 3.19)
@@ -13,7 +15,7 @@ project(
 
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
-  # Unset flags that come from Parent (ie UFS or other coupled build) 
+  # Unset flags that come from Parent (ie UFS or other coupled build)
   # for potential (-r8/-r4) conflict
   set(CMAKE_Fortran_FLAGS "")
   set(CMAKE_C_FLAGS "")
@@ -22,8 +24,15 @@ endif()
 
 set(MULTI_ESMF OFF CACHE BOOL "Build ww3_multi_esmf library")
 set(NETCDF ON CACHE BOOL "Build NetCDF programs (requires NetCDF)")
-set(ENDIAN "BIG" CACHE STRING "Endianness of unformatted output files. Valid values are 'BIG', 'LITTLE', 'NATIVE'.") 
+set(ENDIAN "BIG" CACHE STRING "Endianness of unformatted output files. Valid values are 'BIG', 'LITTLE', 'NATIVE'.")
 set(EXCLUDE_FIND "" CACHE STRING "Don't try and search for these libraries (assumd to be handled by the compiler/wrapper)")
+option(ENABLE_DOCS "Enable generation of doxygen-based documentation." OFF)
+
+# Determine whether or not to generate documentation.
+if(ENABLE_DOCS)
+  find_package(Doxygen REQUIRED)
+  add_subdirectory(docs)
+endif()
 
 # make sure all "exclude_find" entries are lower case
 list(TRANSFORM EXCLUDE_FIND TOLOWER)

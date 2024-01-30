@@ -72,7 +72,7 @@ jobs:
     needs: setup
     strategy:
       matrix:
-        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
+        switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF, doxygen]
     runs-on: ubuntu-latest
 
     steps:
@@ -102,7 +102,17 @@ jobs:
           mkdir build && cd build
           if [[ ${{ matrix.switch }} == "MULTI_ESMF" ]]; then
             cmake .. -DMULTI_ESMF=ON -DSWITCH=multi_esmf
+          elif [[ ${{ matrix.switch }} == "doxygen" ]]; then
+            sudo apt install doxygen
+            cmake .. -DENABLE_DOCS=ON -DSWITCH=OASACM
           else
             cmake .. -DSWITCH=${{ matrix.switch }}
           fi
           make -j2 VERBOSE=1
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ matrix.switch == 'doxygen' }}
+        with:
+          name: docs
+          path: |
+            ww3/build/docs/docs/html
