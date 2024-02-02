@@ -48,6 +48,7 @@ module wav_comp_nuopc
   use w3odatmd              , only : user_netcdf_grdout
   use w3odatmd              , only : time_origin, calendar_name, elapsed_secs
   use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index, unstr_mesh
+  use wav_wrapper_mod       , only : ufs_settimer, ufs_logtimer, ufs_file_setlogunit, wtime
 #ifndef W3_CESMCOUPLED
   use wmwavemd              , only : wmwave
   use wmupdtmd              , only : wmupd2
@@ -99,9 +100,12 @@ module wav_comp_nuopc
                                                            !! using ESMF. If restart_option is present as config
                                                            !! option, user_restalarm will be true and will be
                                                            !! set using restart_option, restart_n and restart_ymd
-  integer :: time0(2)
-  integer :: timen(2)
-
+  integer :: ymd                                           !< current year-month-day
+  integer :: tod                                           !< current time of day (sec)
+  integer :: time0(2)                                      !< start time stored as yyyymmdd,hhmmss
+  integer :: timen(2)                                      !< end time stored as yyyymmdd,hhmmss
+  integer :: nu_timer                                      !< simple timer log, unused except by UFS
+  logical :: runtimelog = .false.                          !< logical flag for writing runtime log files
   character(*), parameter :: modName =  "(wav_comp_nuopc)" !< the name of this module
   character(*), parameter :: u_FILE_u = &                  !< a character string for an ESMF log message
        __FILE__
@@ -238,6 +242,7 @@ contains
     character(len=*), parameter :: subname=trim(modName)//':(InitializeAdvertise) '
     !-------------------------------------------------------------------------------
 
+    call ufs_settimer(wtime)
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
@@ -369,6 +374,15 @@ contains
     write(logmsg,'(A,l)') trim(subname)//': Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
 
+    ! Determine Runtime logging
+    call NUOPC_CompAttributeGet(gcomp, name="RunTimeLog", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) runtimelog=(trim(cvalue)=="true")
+    write(logmsg,*) runtimelog
+    call ESMF_LogWrite('WW3_cap:RunTimeLog = '//trim(logmsg), ESMF_LOGMSG_INFO)
+    if (runtimelog) then
+      call ufs_file_setLogUnit('./log.ww3.timer',nu_timer,runtimelog)
+    end if
     call advertise_fields(importState, exportState, flds_scalar_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -475,6 +489,7 @@ contains
     rc = ESMF_SUCCESS
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
+    call ufs_settimer(wtime)
     !--------------------------------------------------------------------
     ! Set up data structures
     !--------------------------------------------------------------------
@@ -871,6 +886,7 @@ contains
       enddo
     end if
 #endif
+    if (root_task) call ufs_logtimer(nu_timer,time,start_tod,'InitializeRealize time: ',runtimelog,wtime)
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
@@ -1000,8 +1016,6 @@ contains
     type(ESMF_Time)         :: currTime, nextTime, startTime, stopTime
     integer                 :: yy,mm,dd,hh,ss
     integer                 :: imod
-    integer                 :: ymd        ! current year-month-day
-    integer                 :: tod        ! current time of day (sec)
     integer                 :: shrlogunit ! original log unit and level
     character(ESMF_MAXSTR)  :: msgString
     character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '
@@ -1041,6 +1055,8 @@ contains
     if ( root_task ) then
       write(nds(1),'(a,3i4,i10)') 'ymd2date currTime wav_comp_nuopc hh,mm,ss,ymd', hh,mm,ss,ymd
     end if
+    if (root_task) call ufs_logtimer(nu_timer,time,tod,'ModelAdvance time since last step: ',runtimelog,wtime)
+    call ufs_settimer(wtime)
 
     ! use next time; the NUOPC clock is not updated
     ! until the end of the time interval
@@ -1138,6 +1154,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+    if (root_task) call ufs_logtimer(nu_timer,time,tod,'ModelAdvance time: ',runtimelog,wtime)
+    call ufs_settimer(wtime)
 
   end subroutine ModelAdvance
 
@@ -1357,6 +1375,7 @@ contains
     end if
 
     call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
+    if(root_task) call ufs_logtimer(nu_timer,timen,tod,'ModelFinalize time: ',runtimelog,wtime)
 
   end subroutine ModelFinalize
 
@@ -1575,6 +1594,7 @@ contains
     ! Initialize ww3 for ufs (called from InitializeRealize)
 
     use w3odatmd     , only : fnmpre
+    use w3gdatmd     , only : dtcfl, dtcfli, dtmax, dtmin
     use w3initmd     , only : w3init
     use wav_shel_inp , only : read_shel_config
     use wav_shel_inp , only : npts, odat, iprt, x, y, pnames, prtfrm
@@ -1591,6 +1611,7 @@ contains
     character(len=CL) :: logmsg
     logical           :: isPresent, isSet
     character(len=CL) :: cvalue
+    integer           :: dt_in(4)
     character(len=*), parameter :: subname = '(wav_comp_nuopc:wavinit_ufs)'
     ! -------------------------------------------------------------------
 
@@ -1638,6 +1659,21 @@ contains
     call w3init ( 1, .false., 'ww3', mds, ntrace, odat, flgrd, flgr2, flgd, flg2, &
          npts, x, y, pnames, iprt, prtfrm, mpi_comm )
 
+    write(logmsg,'(A,4f10.2)') trim(subname)//': mod_def timesteps file  ',dtmax,dtcfl,dtcfli,dtmin
+    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+    call NUOPC_CompAttributeGet(gcomp, name='dt_in', isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+      call NUOPC_CompAttributeGet(gcomp, name='dt_in', value=cvalue, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      read(cvalue,*)dt_in
+      dtmax  = real(dt_in(1),4)
+      dtcfl  = real(dt_in(2),4)
+      dtcfli = real(dt_in(3),4)
+      dtmin  = real(dt_in(4),4)
+      write(logmsg,'(A,4f10.2)') trim(subname)//': mod_def timesteps reset ',dtmax,dtcfl,dtcfli,dtmin
+      call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
+    end if
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_ufs
 
