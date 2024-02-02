@@ -8479,8 +8479,8 @@ CONTAINS
     DO IP = 1, NPA
       IF (IOBP_LOC(IP) .NE. 1) THEN
         DIFRM(IP) = ONE 
-        DIFRX(IP) = ONE 
-        DIFRY(IP) = ONE
+        DIFRX(IP) = ZERO 
+        DIFRY(IP) = ZERO
       ENDIF
     ENDDO 
 
@@ -8916,8 +8916,8 @@ CONTAINS
          DO IP = 1, NPA
            IF (IOBP_LOC(IP) .NE. 1) THEN
              DIFRM(IP) = ONE
-             DIFRX(IP) = ONE
-             DIFRY(IP) = ONE
+             DIFRX(IP) = ZERO 
+             DIFRY(IP) = ZERO 
            ENDIF
          ENDDO
 
