@@ -1838,7 +1838,11 @@ CONTAINS
               IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
                 CALL COMPUTE_DIRECTION_WENO_A(DTG)
                 DO ISPEC=1,NSPEC
-                  CALL PDLIB_W3XYPUG ( ISPEC, ISEC1*ITIME, FACX, FACX, DTG, VGX, VGY, .true. )
+#ifdef W3_SEC1
+                  CALL PDLIB_W3XYPUG ( ISPEC, ITIME*ISEC1, FACX, FACX, DTG, VGX, VGY, .true. )
+#else
+                  CALL PDLIB_W3XYPUG ( ISPEC, ITIME, FACX, FACX, DTG, VGX, VGY, .true. )
+#endif 
                 END DO
               END IF
             END IF
@@ -1846,20 +1850,16 @@ CONTAINS
             !
 #ifdef W3_PDLIB
             IF (FSTOTALIMP .and. (IT .ne. 0)) THEN
-#endif
 #ifdef W3_DEBUGCOH
               CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before Block implicit", 1)
 #endif
-#ifdef W3_PDLIB
-              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, ISEC1*ITIME, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+#ifdef W3_SEC1
+              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, ITIME*ISEC1, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+#else
+              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, ITIME, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
 #endif
-#ifdef W3_PDLIB
             ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
-#endif
-#ifdef W3_PDLIB
               CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-#endif
-#ifdef W3_PDLIB
             ENDIF
 #endif
           ELSE

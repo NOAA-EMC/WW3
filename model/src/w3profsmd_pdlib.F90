@@ -8360,7 +8360,7 @@ CONTAINS
     USE CONSTANTS, ONLY: RADIUS
     USE yowNodepool, ONLY: np, npa, iplg, x, y, pdlib_tria
     USE yowElementpool, ONLY: ne, ine
-    USE W3PARALL, only: INIT_GET_ISEA, ONE
+    USE W3PARALL, only: INIT_GET_ISEA, ONE, ZERO
     IMPLICIT NONE
     INTEGER :: IP, IK, ITH, IS, ID, ISP, ISEA, JSEA, IP_GLOB, IT
     REAL*8 :: ETOT, EWKTOT, ECGTOT, EAD
@@ -8456,7 +8456,7 @@ CONTAINS
           AUX = DXCGK(IP)*DXENG(IP)+DYCGK(IP)*DYENG(IP)+CGK(IP)*(DXXEN(IP)+DYYEN(IP))
           TMP = AUX/ECGWK
         ELSE
-          TMP = 0.d0
+          TMP = ZERO 
         END IF
         IF (TMP < -ONE) THEN
           DIFRM(IP) = ONE
@@ -8465,9 +8465,12 @@ CONTAINS
         END IF
       ELSE
         DIFRM(IP) = ONE
+        DIFRX(IP) = ZERO
+        DIFRY(IP) = ZERO
       END IF
+ 
       !IF (DIFRM(IP) .GT. 1.4) THEN
-        WRITE(1200+IAPROC,*) IP, DIFRM(IP), DXCGK(IP), DXENG(IP), DYCGK(IP), DYENG(IP), DXXEN(IP), DYYEN(IP)
+      !  WRITE(1200+IAPROC,*) IP, DIFRM(IP), DXCGK(IP), DXENG(IP), DYCGK(IP), DYENG(IP), DXXEN(IP), DYYEN(IP)
       !ENDIF
     END DO
 
@@ -8868,43 +8871,45 @@ CONTAINS
          ENDIF
 
          DO JSEA = 1, NPA
-            CALL INIT_GET_ISEA(ISEA, JSEA)
-            AUX = CCG(JSEA)*EWK(JSEA)*EWK(JSEA)
-            IF ( AUX .GT. 1.E-6 .AND. DW(ISEA) .GT. DMIN .AND. EWC(JSEA) .GT. 1.E-6) THEN
-               DFWAV = ( DXCCG(JSEA) * DXENG(JSEA) + DYCCG(JSEA) * DYENG(JSEA) + CCG(JSEA) * (DXXEN(JSEA) + DYYEN(JSEA)) ) / ENG(JSEA)
-               NAUX = ECG(JSEA) / EWC(JSEA)
-               IF (FLCUR) THEN
-                 ETOTC = 0.d0
-                 ETOTS = 0.d0
-                 DO ID = 1, NTH
-                   EAD = 0.d0
-                   DO IK = 1, NK
-                     ISP = ID + (ISP-1) * NTH
-                     EAD = EAD + VA(ISP,JSEA) * DDEN(IS) / CG(IS,ISEA)
-                   ENDDO
-                   ETOTC = ETOTC + EAD * ECOS(ITH)
-                   ETOTS = ETOTS + EAD * ESIN(ITH)
-                 END DO
-                 DM    = ATAN2(ETOTS,ETOTC)
-                 US    = CX(ISEA)*COS(DM)+CY(ISEA)*SIN(DM)
-                 CAUX  = US / EWC(JSEA)
-                 DFCUT = (2.d0/NAUX+NAUX*CAUX)*CAUX
-               ELSE
-                 DFCUT = 0.d0
-                 CAUX  = 0.d0
-               END IF
-               CAUX2 = CAUX * CAUX
-               DELTA = CAUX2*(ONE+CAUX)**2-NAUX*(CAUX2-NAUX)*(1.d0+(DFWAV+DFBOT(JSEA)+DFCUR(JSEA))/AUX+DFCUT)
-               IF (DELTA <= 0.d0) THEN
-                 DIFRM(JSEA) = ONE
-               ELSE
-                 DIFRM(JSEA) = ONE/(CAUX2-NAUX)*(CAUX*(1.d0+CAUX)-SQRT(DELTA))
-               END IF
-               !WRITE(*,*) 'TERMS DIFFRACTION', 'JSEA = ', JSEA, DIFRM(JSEA), DELTA, NAUX, DFWAV, AUX, DFBOT(JSEA)
-            ELSE
+           CALL INIT_GET_ISEA(ISEA, JSEA)
+           AUX = CCG(JSEA)*EWK(JSEA)*EWK(JSEA)
+           IF ( DW(ISEA) .GT. DMIN .AND. EWC(JSEA) .GT. 1.E-6 .AND. AUX .GT. 1.E-6) THEN
+             DFWAV = ( DXCCG(JSEA) * DXENG(JSEA) + DYCCG(JSEA) * DYENG(JSEA) + CCG(JSEA) * (DXXEN(JSEA) + DYYEN(JSEA)) ) / ENG(JSEA)
+             NAUX = ECG(JSEA) / EWC(JSEA)
+             IF (FLCUR) THEN
+               ETOTC = 0.d0
+               ETOTS = 0.d0
+               DO ID = 1, NTH
+                 EAD = 0.d0
+                 DO IK = 1, NK
+                   ISP = ID + (ISP-1) * NTH
+                   EAD = EAD + VA(ISP,JSEA) * DDEN(IS) / CG(IS,ISEA)
+                 ENDDO
+                 ETOTC = ETOTC + EAD * ECOS(ITH)
+                 ETOTS = ETOTS + EAD * ESIN(ITH)
+               END DO
+               DM    = ATAN2(ETOTS,ETOTC)
+               US    = CX(ISEA)*COS(DM)+CY(ISEA)*SIN(DM)
+               CAUX  = US / EWC(JSEA)
+               DFCUT = (2.d0/NAUX+NAUX*CAUX)*CAUX
+             ELSE
+               DFCUT = 0.d0
+               CAUX  = 0.d0
+             END IF
+             CAUX2 = CAUX * CAUX
+             DELTA = CAUX2*(ONE+CAUX)**2-NAUX*(CAUX2-NAUX)*(1.d0+(DFWAV+DFBOT(JSEA)+DFCUR(JSEA))/AUX+DFCUT)
+             IF (DELTA <= 0.d0) THEN
                DIFRM(JSEA) = ONE
-            END IF
-            !WRITE(*,*) JSEA, DIFRM(JSEA), 'DIFRM'
+             ELSE
+               DIFRM(JSEA) = ONE/(CAUX2-NAUX)*(CAUX*(1.d0+CAUX)-SQRT(DELTA))
+             END IF
+             !WRITE(*,*) 'TERMS DIFFRACTION', 'JSEA = ', JSEA, DIFRM(JSEA), DELTA, NAUX, DFWAV, AUX, DFBOT(JSEA)
+           ELSE
+             DIFRM(JSEA) = ONE
+             DIFRX(JSEA) = ZERO
+             DIFRY(JSEA) = ZERO
+           END IF
+           !WRITE(*,*) JSEA, DIFRM(JSEA), 'DIFRM'
          END DO
  
          !CALL PDLIB_exchange1DREAL(DIFRM)
@@ -8914,7 +8919,7 @@ CONTAINS
          CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRY)
 
          DO IP = 1, NPA
-           IF (IOBP_LOC(IP) .NE. 1) THEN
+           IF (IOBP_LOC(IP) .NE. 1 .OR. .NOT. DW(ISEA) .GT. DMIN) THEN
              DIFRM(IP) = ONE
              DIFRX(IP) = ZERO 
              DIFRY(IP) = ZERO 
@@ -9077,7 +9082,9 @@ subroutine smooth_median_dual(BETA, MNP, XP, YP, VAR)
     VAR(:) = VART(:)
 
 end subroutine smooth_median_dual
-
+!**********************************************************************
+!*                                                                    *
+!**********************************************************************
 SUBROUTINE SMOOTHGLOBAL( BETA, MNP, XP, YP, VAR )
    IMPLICIT NONE
    INTEGER :: MNP
@@ -9139,7 +9146,7 @@ END SUBROUTINE
              END DO
            ENDIF
          END DO
-         !IF (LSTCU .OR. LSECU) THEN
+         !IF (FLCUR) THEN
          !  DO IS = 1, NK
          !    DO ID = 1, NTH
          !      CAD(IS,ID) = CAD(IS,ID) + ESIN(ID)**2*DCUY(IP,1)-ECOS(ID)**2*DCUX(IP,2)+ECOS(ID)*ESIN(ID)*( DCUX(IP,1)-DCUY(IP,2) )
@@ -9228,10 +9235,9 @@ END SUBROUTINE
          DO IP = 1, NP
 
            DEPTH_LOC = DW(IPLG(IP))
-
-           IF ((ABS(IOBP_LOC(IP)) .EQ. 0 .OR. ABS(IOBP_LOC(IP)) .EQ. 3)) CYCLE
            IF (DEPTH_LOC .LT. DMIN) CYCLE
-           IF (IOBP_LOC(IP) .EQ. 2) CYCLE
+
+           IF (IOBP_LOC(IP) .NE. 1) CYCLE
 
            CALL PROPTHETA(IP,DEPTH_LOC,CAD)
 
@@ -9392,13 +9398,13 @@ END SUBROUTINE
                  FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
                  FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
 
-                 BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
-                 BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
-                 BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
+                 BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4*FLPID1+3* FLPID  )**2
+                 BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -            FLPID2 )**2
+                 BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3 * FLPID  -4*FLPID2+   FLPID22)**2
 
-                 BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
-                 BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
-                 BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
+                 BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4*FLMID22+3* FLMID23)**2
+                 BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -             FLMID22)**2
+                 BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3 * FLMID1-4*FLMID  +   FLMID2 )**2
 
                  TMP1         = 1./(EPS + BETAP1)
                  WP1         = GAMMA1 * TMP1 * TMP1
