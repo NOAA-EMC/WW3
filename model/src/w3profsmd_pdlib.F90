@@ -1629,7 +1629,7 @@ CONTAINS
     REAL*8  :: FL111, FL112, FL211, FL212, FL311, FL312
     REAL*8  :: DTSI(npa), U(npa), UL(npa)
     REAL*8  :: DTMAX_GL, DTMAX, DTMAXEXP, REST
-    REAL*8  :: LAMBDA(2), KTMP(3)
+    REAL*8  :: LAMBDA(2), KTMP(3), BETA
     REAL*8  :: KELEM(3,NE), FLALL(3,NE)
     REAL*8  :: KKSUM(npa), ST(npa)
     REAL*8  :: NM(NE), BET1(3), BETAHAT(3), TMP(3), TMP1
@@ -1780,55 +1780,34 @@ CONTAINS
       USTARI(1,:) = MAX(UL,U)! * IOBPD_LOC(ITH,:)
       USTARI(2,:) = MIN(UL,U)! * IOBPD_LOC(ITH,:)
 
-      UIP = 0.
-      UIM = 0.
+      UIP = -THR
+      UIM =  THR
+      PP  = 0.d0
+      PM  = 0.d0
       DO IE = 1, NE
         NI = INE(:,IE)
-        UIP(IE) = MAXVAL(USTARI(1,NI))
-        UIM(IE) = MINVAL(USTARI(2,NI))
+        PP(NI)  = PP(NI) + MAX(  THR, -THETA_ACE(:,IE))
+        PM(NI)  = PM(NI) + MIN( -THR, -THETA_ACE(:,IE))
+        UIP(NI) = MAX (UIP(NI), MAXVAL( USTARI(1,NI) ))
+        UIM(NI) = MIN (UIM(NI), MINVAL( USTARI(2,NI) ))
       END DO
 
-      UIPIP = 0.
-      UIMIP = 0.
-      DO IP = 1, npa
-        DO I = 1, PDLIB_CCON(IP)
-         IE    =  PDLIB_IE_CELL2(I,IP)
-         UIPIP(IP) = MAX(UIPIP(IP),UIP(IE))
-         UIMIP(IP) = MIN(UIMIP(IP),UIM(IE))
-        ENDDO
-      END DO !I: loop over connected elemen
+      WII(1,:) = MIN(1.0d0,(UIP-UL)/MAX( THR,PP))
+      WII(2,:) = MIN(1.0d0,(UIM-UL)/MIN(-THR,PM))
 
-      DO IP = 1, npa 
-        WII(1,IP) = MIN(ONE,(UIPIP(IP)-UL(IP))/MAX( THR,PP(IP)))
-        WII(2,IP) = MIN(ONE,(UIMIP(IP)-UL(IP))/MIN(-THR,PM(IP)))
-        IF (ABS(PP(IP)) .LT. THR) WII(1,IP) = 0.d0 
-        IF (ABS(PM(IP)) .LT. THR) WII(2,IP) = 0.d0 
-      END DO
-
-      ST = ZERO
+      ST = 0.d0
       DO IE = 1, NE
-        I1 = INE(1,IE)
-        I2 = INE(2,IE)
-        I3 = INE(3,IE)
-        IF (THETA_ACE(1,IE) .LT. ZERO) THEN
-          TMP(1) = WII(1,I1)
-        ELSE
-          TMP(1) = WII(2,I1)
-        END IF
-        IF (THETA_ACE(2,IE) .LT. ZERO) THEN
-          TMP(2) = WII(1,I2)
-        ELSE
-          TMP(2) = WII(2,I2)
-        END IF
-        IF (THETA_ACE(3,IE) .LT. ZERO) THEN
-          TMP(3) = WII(1,I3)
-        ELSE
-          TMP(3) = WII(2,I3)
-        END IF
-        TMP1 = MINVAL(TMP)
-        ST(I1) = ST(I1) + THETA_ACE(1,IE) * TMP1! * (ONE - BL) + BL * THETA_L(1,IE)
-        ST(I2) = ST(I2) + THETA_ACE(2,IE) * TMP1! * (ONE - BL) + BL * THETA_L(2,IE)
-        ST(I3) = ST(I3) + THETA_ACE(3,IE) * TMP1! * (ONE - BL) + BL * THETA_L(3,IE)
+        DO I = 1, 3
+          IP = INE(I,IE)
+          IF (-THETA_ACE(I,IE) .GE. 0.) THEN
+            TMP(I) = WII(1,IP)
+          ELSE
+            TMP(I) = WII(2,IP)
+          END IF
+        END DO
+        NI = INE(:,IE)
+        BETA = MINVAL(TMP)
+        ST(NI) = ST(NI) + BETA * THETA_ACE(:,IE)
       END DO
 
       DO IP = 1, npa
@@ -8482,8 +8461,8 @@ CONTAINS
     DO IP = 1, NPA
       IF (IOBP_LOC(IP) .NE. 1) THEN
         DIFRM(IP) = ONE 
-        DIFRX(IP) = ZERO 
-        DIFRY(IP) = ZERO
+        DIFRX(IP) = 0.d0
+        DIFRY(IP) = 0.d0
       ENDIF
     ENDDO 
 
@@ -8873,7 +8852,7 @@ CONTAINS
          DO JSEA = 1, NPA
            CALL INIT_GET_ISEA(ISEA, JSEA)
            AUX = CCG(JSEA)*EWK(JSEA)*EWK(JSEA)
-           IF ( DW(ISEA) .GT. DMIN .AND. EWC(JSEA) .GT. 1.E-6 .AND. AUX .GT. 1.E-6) THEN
+           IF ( AUX .GT. 1.E-6 .AND. DW(ISEA) .GT. DMIN .AND. EWC(JSEA) .GT. 1.E-6) THEN
              DFWAV = ( DXCCG(JSEA) * DXENG(JSEA) + DYCCG(JSEA) * DYENG(JSEA) + CCG(JSEA) * (DXXEN(JSEA) + DYYEN(JSEA)) ) / ENG(JSEA)
              NAUX = ECG(JSEA) / EWC(JSEA)
              IF (FLCUR) THEN
@@ -8919,7 +8898,7 @@ CONTAINS
          CALL smooth_median_dual( -1.1, NPA, X, Y, DIFRY)
 
          DO IP = 1, NPA
-           IF (IOBP_LOC(IP) .NE. 1 .OR. .NOT. DW(ISEA) .GT. DMIN) THEN
+           IF (IOBP_LOC(IP) .NE. 1) THEN
              DIFRM(IP) = ONE
              DIFRX(IP) = ZERO 
              DIFRY(IP) = ZERO 
@@ -9235,9 +9214,10 @@ END SUBROUTINE
          DO IP = 1, NP
 
            DEPTH_LOC = DW(IPLG(IP))
-           IF (DEPTH_LOC .LT. DMIN) CYCLE
 
-           IF (IOBP_LOC(IP) .NE. 1) CYCLE
+           IF ((ABS(IOBP_LOC(IP)) .EQ. 0 .OR. ABS(IOBP_LOC(IP)) .EQ. 3)) CYCLE
+           IF (DEPTH_LOC .LT. DMIN) CYCLE
+           IF (IOBP_LOC(IP) .EQ. 2) CYCLE
 
            CALL PROPTHETA(IP,DEPTH_LOC,CAD)
 
@@ -9398,13 +9378,13 @@ END SUBROUTINE
                  FO_FLM2   = AP23 * FLMID  + AP22 * FLMID2  + AP21 * FLMID22
                  FO_FLM3   = AP13 * FLMID2 + AP12 * FLMID22 + AP11 * FLMID23 
 
-                 BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4*FLPID1+3* FLPID  )**2
-                 BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -            FLPID2 )**2
-                 BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3 * FLPID  -4*FLPID2+   FLPID22)**2
+                 BETAP1= BP1 * (FLPID11-2*FLPID1+FLPID  )**2+BP2*(    FLPID11-4.*FLPID1+3.* FLPID  )**2
+                 BETAP2= BP1 * (FLPID1 -2*FLPID+FLPID2  )**2+BP2*(    FLPID1 -              FLPID2 )**2
+                 BETAP3= BP1 * (FLPID  -2*FLPID2+FLPID22)**2+BP2*(3.* FLPID  -4.*FLPID2+    FLPID22)**2
 
-                 BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4*FLMID22+3* FLMID23)**2
-                 BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -             FLMID22)**2
-                 BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3 * FLMID1-4*FLMID  +   FLMID2 )**2
+                 BETAM1= BP1 * (FLMID2-2*FLMID22+FLMID23)**2+BP2*(    FLMID2-4.*FLMID22+3.* FLMID23)**2
+                 BETAM2= BP1 * (FLMID -2*FLMID2 +FLMID22)**2+BP2*(    FLMID -               FLMID22)**2
+                 BETAM3= BP1 * (FLMID1-2*FLMID  +FLMID2 )**2+BP2*(3.* FLMID1-4.*FLMID  +    FLMID2 )**2
 
                  TMP1         = 1./(EPS + BETAP1)
                  WP1         = GAMMA1 * TMP1 * TMP1

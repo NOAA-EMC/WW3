@@ -1836,7 +1836,7 @@ CONTAINS
 #ifdef W3_PDLIB
             IF (FLCX .or. FLCY) THEN
               IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
-                CALL COMPUTE_DIRECTION_WENO_A(DTG)
+                CALL COMPUTE_DIRECTION_WENO_A(0.5*DTG)
                 DO ISPEC=1,NSPEC
 #ifdef W3_SEC1
                   CALL PDLIB_W3XYPUG ( ISPEC, ITIME*ISEC1, FACX, FACX, DTG, VGX, VGY, .true. )
@@ -1844,6 +1844,7 @@ CONTAINS
                   CALL PDLIB_W3XYPUG ( ISPEC, ITIME, FACX, FACX, DTG, VGX, VGY, .true. )
 #endif 
                 END DO
+                CALL COMPUTE_DIRECTION_WENO_A(0.5*DTG)
               END IF
             END IF
 #endif
