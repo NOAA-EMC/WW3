@@ -199,10 +199,14 @@ MODULE W3GDATMD
   !                               Default is 1.0, meaning that 100% ice
   !                               concentration result in zero source term
   !                               If set to 0.0, then ice has no direct impact on Sln / Sin / Snl / Sds
-  !      IC3PARS   R.A.  Public   various parameters for use in IC4, handled as
+  !      IC3PARS   R.A.  Public   various parameters for use in IC3, handled as
   !                               an array for simplicity
-  !      IC4_KI    R.A.  Public   KI (dissipation rate) values for use in IC4
-  !      IC4_FC    R.A.  Public   FC (frequency bin separators) for use in IC4
+  !      IC4_KI    R.A.  Public   KI (dissipation rate) values for use in IC4M6
+  !      IC4_FC    R.A.  Public   FC (frequency bin separators) for use in IC4M6
+  !      IC4_CN    R.A.  Public   Coefficients for use in IC4M2
+  !      IC4_FMIN  Real  Public   Minimum frequency below which ki is set to 
+  !                               some background level dissipation (for S_ice)
+  !      IC4_KIBK  Real  Public   Low, background level dissipation (for S_ice)
   !      PFMOVE    Real  Public   Tunable parameter in GSE correction
   !                               for moving grids.
   !      GRIDSHIFT Real  Public   Grid offset for multi-grid w/SCRIP
@@ -615,7 +619,7 @@ MODULE W3GDATMD
        IPARS = -1, NAUXGR
   !
 #ifdef W3_IC4
-  INTEGER, PARAMETER      :: NIC4=10
+  INTEGER, PARAMETER      :: NIC4=16 ,  NIC42=5
 #endif
   INTEGER, PARAMETER      :: RLGTYPE = 1
   INTEGER, PARAMETER      :: CLGTYPE = 2
@@ -732,6 +736,8 @@ MODULE W3GDATMD
     INTEGER, POINTER      :: IC4PARS(:)
     REAL, POINTER         :: IC4_KI(:)
     REAL, POINTER         :: IC4_FC(:)
+    REAL, POINTER         :: IC4_CN(:)
+    REAL                  :: IC4_FMIN, IC4_KIBK
 #endif
 #ifdef W3_IC5
     REAL,    POINTER      :: IC5PARS(:)
@@ -897,7 +903,7 @@ MODULE W3GDATMD
     REAL,     POINTER     :: DCKI(:,:), SATWEIGHTS(:,:),CUMULW(:,:),QBI(:,:)
     REAL                  :: AALPHA, BBETA, ZZ0MAX, ZZ0RAT, ZZALP,&
          SSINTHP, TTAUWSHELTER, SSWELLF(1:7), &
-         SSDSC(1:21), SSDSBR,                 &
+         SSDSC(1:21), SSDSBR, SINTAILPAR(1:5),&
          SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
          FFXPM, FFXFM, FFXFA,   &
          SSDSBRF1, SSDSBRF2, SSDSBINT,SSDSBCK,&
@@ -1145,6 +1151,8 @@ MODULE W3GDATMD
   INTEGER, POINTER        :: IC4PARS(:)
   REAL, POINTER           :: IC4_KI(:)
   REAL, POINTER           :: IC4_FC(:)
+  REAL, POINTER           :: IC4_CN(:)
+  REAL, POINTER           :: IC4_FMIN, IC4_KIBK
 #endif
 #ifdef W3_IC5
   REAL,    POINTER        :: IC5PARS(:)
@@ -1318,7 +1326,7 @@ MODULE W3GDATMD
        FFXFM, FFXPM, SSDSBRF1, SSDSBRF2,    &
        SSDSBINT, SSDSBCK, SSDSHCK, SSDSABK, &
        SSDSPBK, SSINBR,SSINTHP,TTAUWSHELTER,&
-       SSWELLF(:), SSDSC(:), SSDSBR,        &
+       SINTAILPAR(:), SSWELLF(:), SSDSC(:), SSDSBR,        &
        SSDSP, WWNMEANP, SSTXFTF, SSTXFTWN,  &
        SSDSBT, SSDSCOS, SSDSDTH, SSDSBM(:)
 #endif
@@ -1842,6 +1850,8 @@ CONTAINS
     CHECK_ALLOC_STATUS ( ISTAT )
     ALLOCATE ( GRIDS(IMOD)%IC4_FC(NIC4), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
+    ALLOCATE ( GRIDS(IMOD)%IC4_CN(NIC42), STAT=ISTAT )
+    CHECK_ALLOC_STATUS ( ISTAT )
 #endif
 #ifdef W3_IC5
     ALLOCATE ( GRIDS(IMOD)%IC5PARS(9), STAT=ISTAT )
@@ -2076,12 +2086,18 @@ CONTAINS
          MPARS(IMOD)%SRCPS%QBI(NKHS,NKD),   &
          STAT=ISTAT                         )
     CHECK_ALLOC_STATUS ( ISTAT )
+    MPARS(IMOD)%SRCPS%IKTAB(:,:)=0.
+    MPARS(IMOD)%SRCPS%DCKI(:,:)=0.
+    MPARS(IMOD)%SRCPS%QBI(:,:)=0.
     SDSNTH  = MTH/2-1 !MIN(NINT(SSDSDTH/(DTH*RADE)),MTH/2-1)
     ALLOCATE( MPARS(IMOD)%SRCPS%SATINDICES(2*SDSNTH+1,MTH), &
          MPARS(IMOD)%SRCPS%SATWEIGHTS(2*SDSNTH+1,MTH), &
          MPARS(IMOD)%SRCPS%CUMULW(MSPEC,MSPEC),        &
          STAT=ISTAT                                   )
     CHECK_ALLOC_STATUS ( ISTAT )
+    MPARS(IMOD)%SRCPS%SATINDICES(:,:)=0.
+    MPARS(IMOD)%SRCPS%SATWEIGHTS(:,:)=0.
+    MPARS(IMOD)%SRCPS%CUMULW(:,:)=0.
 #endif
     !
     SGRDS(IMOD)%SINIT  = .TRUE.
@@ -2310,6 +2326,9 @@ CONTAINS
     IC4PARS => GRIDS(IMOD)%IC4PARS
     IC4_KI => GRIDS(IMOD)%IC4_KI
     IC4_FC => GRIDS(IMOD)%IC4_FC
+    IC4_CN => GRIDS(IMOD)%IC4_CN
+    IC4_FMIN => GRIDS(IMOD)%IC4_FMIN
+    IC4_KIBK => GRIDS(IMOD)%IC4_KIBK
 #endif
 #ifdef W3_IC5
     IC5PARS => GRIDS(IMOD)%IC5PARS
@@ -2650,6 +2669,7 @@ CONTAINS
     ZZ0RAT   => MPARS(IMOD)%SRCPS%ZZ0RAT
     ZZALP    => MPARS(IMOD)%SRCPS%ZZALP
     TTAUWSHELTER  => MPARS(IMOD)%SRCPS%TTAUWSHELTER
+    SINTAILPAR  => MPARS(IMOD)%SRCPS%SINTAILPAR
     SSWELLFPAR  => MPARS(IMOD)%SRCPS%SSWELLFPAR
     SSWELLF  => MPARS(IMOD)%SRCPS%SSWELLF
     SSDSC    => MPARS(IMOD)%SRCPS%SSDSC

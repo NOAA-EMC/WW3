@@ -524,7 +524,7 @@ year = {2015}
   INSTITUTION = "{N}aval {R}esearch {L}aboratory, {S}tennis {S}pace {C}enter, {MS}",
   TYPE        = "NRL Memorandum Report",
   NUMBER      = "NRL/MR/7320--17-9726",
-  NOTE       = "25 pp., www7320.nrlssc.navy.mil/pubs.php" }
+  NOTE       = "25 pp., www7320.nrlssc.navy.mil/pubs" }
 
 % item art:CRT17
 
@@ -1764,7 +1764,7 @@ year={2019},
   TITLE        = "New wave-ice interaction physics in {WAVEWATCH III}",
   BOOKTITLE    = Ice14,
   PUBLISHER    = "IAHR",
-  NOTE        = "8 pp., www7320.nrlssc.navy.mil/pubs.php" }
+  NOTE        = "8 pp., www7320.nrlssc.navy.mil/pubs" }
 
 % item rep:RPLA18
 
@@ -1775,7 +1775,18 @@ year={2019},
   INSTITUTION = "{N}aval {R}esearch {L}aboratory, {S}tennis {S}pace {C}enter, {MS}",
   TYPE        = "NRL Memorandum Report",
   NUMBER      = "NRL/MR/7320--18-9786",
-  NOTE       = "179 pp., www7320.nrlssc.navy.mil/pubs.php" }
+  NOTE       = "179 pp., www7320.nrlssc.navy.mil/pubs" }
+
+% item rep:RYW2021
+
+@TECHREPORT{rep:RYW2021,
+  AUTHOR      = "W. E. Rogers and J. Yu and D. W. Wang",
+  YEAR        = "2021",
+  TITLE       = "Incorporating dependencies on ice thickness in empirical parameterizations of wave dissipation by sea ice",
+  INSTITUTION = "{N}aval {R}esearch {L}aboratory, {S}tennis {S}pace {C}enter, {MS}",
+  TYPE        = "NRL Technical Report",
+  NUMBER      = "NRL/OT/7320-21-5145",
+  NOTE       = "35 pp., https://arxiv.org/abs/2104.01246" }
 
 % item rep:RMK18
 
@@ -1786,7 +1797,7 @@ year={2019},
   INSTITUTION = "{N}aval {R}esearch {L}aboratory, {S}tennis {S}pace {C}enter, {MS}",
   TYPE        = "NRL Memorandum Report",
   NUMBER      = "NRL/MR/7320--18-9801",
-  NOTE       = "25 pp., www7320.nrlssc.navy.mil/pubs.php" }
+  NOTE       = "25 pp., www7320.nrlssc.navy.mil/pubs" }
 
 % item art:RH09
 
@@ -1810,6 +1821,33 @@ year={2019},
   PAGES  = "7991--8007" ,
   doi = "doi:10.1002/2016JC012251"
   }
+
+% item art:YRW2019
+
+@ARTICLE{art:YRW2019,
+  AUTHOR = "J. Yu and W. E. Rogers and D. W. Wang",
+  YEAR   = 2019,
+  TITLE  = "A Scaling for Wave Dispersion Relationships in Ice-Covered Waters",
+  JOURNAL = JGR,
+  VOLUME = "124",
+  PAGES  = "8429--8438" ,
+  doi = "doi:10.1029/2018JC014870"
+  }
+
+% item art:Yu2022
+
+@Article{art:Yu2022,
+AUTHOR = {Yu, Jie},
+TITLE = {Wave Boundary Layer at the Ice-Water Interface},
+JOURNAL = {Journal of Marine Science and Engineering},
+VOLUME = {10},
+YEAR = {2022},
+NUMBER = {10},
+ARTICLE-NUMBER = {1472},
+URL = {https://www.mdpi.com/2077-1312/10/10/1472},
+ISSN = {2077-1312},
+DOI = {10.3390/jmse10101472}
+}
 
 % item art:CFSRR10
 
@@ -2346,7 +2384,7 @@ KEYWORDS={stereo;stereo video},
   INSTITUTION = "{N}aval {R}esearch {L}aboratory, {S}tennis {S}pace {C}enter, {MS}",
   TYPE        = "NRL Memorandum Report",
   NUMBER      = "NRL/MR/7320--09-9193",
-  NOTE       = "42 pp., www7320.nrlssc.navy.mil/pubs.php" }
+  NOTE       = "42 pp., www7320.nrlssc.navy.mil/pubs" }
 
 % item rep:RO13
 
@@ -2357,7 +2395,7 @@ KEYWORDS={stereo;stereo video},
   INSTITUTION = "{N}aval {R}esearch {L}aboratory, {S}tennis {S}pace {C}enter, {MS}",
   TYPE        = "NRL Memorandum Report",
   NUMBER      = "NRL/MR/7320--13-9462",
-  NOTE       = "31 pp., www7320.nrlssc.navy.mil/pubs.php" }
+  NOTE       = "31 pp., www7320.nrlssc.navy.mil/pubs" }
 
 % item rep:Roland2008
 
@@ -2605,6 +2643,17 @@ KEYWORDS={stereo;stereo video},
                   Department of Civil Engineering",
   ADDRESS     = "P.O. Box 5048, 2600 GA Delft, The Netherlands",
   NOTE        = "see http://swan.ct.tudelft.nl" }
+
+% item man:SWAN4145A
+
+@MANUAL{man:SWAN4145A,
+  AUTHOR      = "{SWAN team}",
+  YEAR        = "2023",
+  TITLE       = "{SWAN Cycle III} version 41.45A User Manual",
+  ORGANIZATION = "Delft University of Technology,
+                  Faculty of Civil Engineering and Geosciences",
+  ADDRESS     = "P.O. Box 5048, 2600 GA Delft, The Netherlands",
+  NOTE        = "see https://swanmodel.sourceforge.io/" }
 
 % item man:Jones98
 
@@ -3485,10 +3534,14 @@ title = {alphaBetaLab: automatic estimation of subscale transparencies for the U
 	title={{Global Wave Hindcasts Using the Observation-based Source Terms: Description and Validation}},
 	author={Liu, Qingxiang and Babanin, Alexander and Rogers, W Erick and Zieger, Stefan and Young, Ian and Bidlot, Jean-Raymond and Durrant, Tom and Ewans, Kevin and Guan, Changlong and Kirezci, Cagil and Lemos, Gil and MacHutchon, Keith and Moon, Il-Ju and Rapizo, Henrique and Ribal, Agustinus and Semedo, Alvaro and Wang, Juanjuan},
 	journal={Journal of Advances in Modeling Earth Systems (JAMES)},
-	year={submitted}
+	year = {2021},
+	volume = {13},
+	number = {8},
+	pages = {e2021MS002493},
+	doi = {https://doi.org/10.1029/2021MS002493},
 }
 
-@article{Rogers2021,
+@article{art:RMK2021,
 	title = {Estimates of spectral wave attenuation in Antarctic sea ice, using model/data inversion},
 	journal = {Cold Regions Science and Technology},
 	volume = {182},
@@ -3497,6 +3550,18 @@ title = {alphaBetaLab: automatic estimation of subscale transparencies for the U
 	issn = {0165-232X},
 	doi = {https://doi.org/10.1016/j.coldregions.2020.103198},
 	author = {W. Erick Rogers and Michael H. Meylan and Alison L. Kohout}
+}
+
+@article{art:YRW2022,
+	title = {A new method for parameterization of wave dissipation by sea ice},
+	journal = {Cold Regions Science and Technology},
+	volume = {199},
+	pages = {103582},
+	year = {2022},
+	issn = {0165-232X},
+	doi = {https://doi.org/10.1016/j.coldregions.2022.103582},
+	url = {https://www.sciencedirect.com/science/article/pii/S0165232X2200101X},
+	author = {Jie Yu and W. Erick Rogers and David W. Wang},
 }
 
 @article{Forristall1981,
@@ -3664,6 +3729,17 @@ keywords={measurement technique; waves and sea ice},
 	volume = {},
 	year = {2023}
 }
+
+@ARTICLE{Webb1978,
+   author = "D. J. Webb",
+   title = "Nonlinear transfer between sea waves",
+   journal = DSR,
+   volume = 25,
+   pages = "279--298",
+   year = 1978,
+   where="paper",
+}
+
 
 @ARTICLE{Lavrenov2001,
    author = "Igor V. Lavrenov",

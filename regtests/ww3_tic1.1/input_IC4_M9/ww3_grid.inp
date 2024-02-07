@@ -1,0 +1,42 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D parameterized ice test    '
+$
+$  1.1 0.04118 25 24 0.0
+   1.1 0.0418  31 36 5.0
+$
+   F T F F F T
+  60. 60. 60. 60.
+$
+$ IC4METHOD determines calculation
+$ IC4METHOD = 1 - Wadhams et al. (1988)
+$ IC4METHOD = 2 - Meylan et al. (2014)
+$ IC4METHOD = 3 - Kohout & Meylan (2008) in Horvat & Tziperman (2015)
+$ IC4METHOD = 4 - Kohout et al. (2014)
+$ IC4METHOD = 5 - Simple ki step function
+$ IC4METHOD = 6 - Simple ki step function via namelist
+$ IC4METHOD = 7 - Doble et al. (GRL 2015)
+$ IC4METHOD = 8 - Meylan et al. (2018) ; Liu et al. (2020)
+$ IC4METHOD = 9 - RYW (2021) ; Yu et al. (2022)
+$ IC4M9 Fit to R21A Chf=2.9 and n=4.5
+  &SIC4 IC4METHOD = 9 ,  IC4CN =   2.9, 4.5/
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   156  3
+    1.0E3   1.0E3  1.
+   -1.0E3  -1.0E3  1.
+$ dlim dmin file# scale layout# format# formatdescrip filetype# filenm
+ -0.1 0.1 401  -1.0 1 1 '(....)'  'NAME' '../input_IC1/depth1d.flat'
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$ First grid
+$
+   2  2  F
+$
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0
