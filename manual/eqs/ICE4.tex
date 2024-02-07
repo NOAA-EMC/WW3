@@ -52,6 +52,20 @@ The values given in \cite{art:Ko14} are ${C_{ice,1...2}}=[5.35\times 10^{-6}, 16
 
 {\code IC4M7}: This is a formula for dissipation from \cite{art:Dob15}, developed for a mixture of pancake and frazil ice, using data collected in the Weddell Sea (Antarctica). The formula depends on wave frequency and ice thickness:
 \begin{equation}\label{eq:ice7}
-  {\alpha=0.2T^{-2.13}h} \:\:\: .
+  {\alpha=2k_i=0.2h^1f^{2.13}} \:\:\: .
 \end{equation}
 This method is described in \cite{rep:RPLA18}.
+
+{\code IC4M8}: Like {\code IC4M7}, this method is in the general form of 
+\begin{equation}\label{eq:ice8}
+  {k_i=C_{hf}h^mf^n} \:\:\: .
+\end{equation}
+The formula is taken from \cite{Meylan2018}, where it is described as a ``Model with Order 3 Power Law''. It is applied by \cite{Liu2020}, where it is referred to as the ``M2'' model. The model specifies $m=1$ and $n=3$, and $C_{hf}$ is a user-specified calibration coefficient. \cite{Liu2020} provide calibration to two field cases and \cite{rep:RYW2021} provides a calibration to a third field case, \cite{art:RMK2021}. The third calibration is set as the default for {\code IC4M8}, $C_{hf}=0.059$, but can be changed in using the namelist parameter (constant and uniform) {\code IC4CN}, or using the spatially and/or temporally variable parameter  ${C_{ice,2}}$ . Further details on the calibrations are available in the inline documentation in {\file w3sic4md.F90}.  This method is functionally the same as the ``{\code M2}'' model in {\code IC5} (i.e., {\code IC5} with {\code IC5VEMOD=3}) and is redundantly included here as {\code IC4M8} because it is in the same ``family'' as {\code IC4M7} and {\code IC4M9}, being in the form of Eq. (\ref{eq:ice8}). 
+
+For an example of setting the namelist parameter, see {\file /regtests/ww3\_tic1.1/input\_IC4\_M8}.
+
+{\code IC4M9}: This formula is taken from the ``monomial power fit'' given in section 2.2.3 of \cite{rep:RYW2021}. Like {\code IC4M7} and {\code IC4M8}, it is a specific case of the general form of Eq. (\ref{eq:ice8}). The specificity is the constraint that $m=n/2-1$. This constraint is derived by \cite{rep:RYW2021} by invoking the scaling from \cite{art:YRW2019}, which is based on Reynolds number with ice thickness as the relevant length scale. This is also given as equation 2 in \cite{art:YRW2022}. The default namelist settings are $C_{hf}=2.9$ and $n=4.5$, from calibration by \cite{rep:RYW2021} to  \cite{art:RMK2021}. Further details, including alternative calibrations such as \cite{art:Yu2022}, are available in the inline documentation in {\file w3sic4md.F90}. Constant values can be set using namelist parameters, where $C_{hf}$ and $n$ are {\code IC4CN(1)} and {\code IC4CN(2)}, respectively. Spatially and/or temporally versions of the same can be specified as ${C_{ice,2}}$ and ${C_{ice,3}}$, respectively.
+
+The namelist default $C_{hf}$ values in {\code IC4M8} and {\code IC4M9} are consistent with those of identical formulae implemented in \cite{man:SWAN4145A}.
+
+  

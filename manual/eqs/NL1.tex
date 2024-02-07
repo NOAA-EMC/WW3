@@ -55,37 +55,38 @@ the interacting wavenumbers along the "figure of 8", namely
 \sin(\delta_{\theta,3})&=&\sin(\delta_{\theta,2}) (1-\lambda)^2/(1+\lambda)^2.
 \end{eqnarray}
 
- For these quadruplets, each source term value
-$S_{nl}(\bk)$ corresponding to each discrete $(f_r,\theta)$
-we compute the three contributions that correspond to the situation in which $\bk$ takes the role of $\bk$,$\bk_{2,+}$, $\bk_{2,-}$, $\bk_{3,+}$  and $\bk_{3,-}$ in the quadruplet, namely the full source term is 
+Hence for any $\bk$ one quadruplet selects $\bk_{2,+}$ and $\bk_{3,+}$, and the other quadruplet selects its mirror image 
+$\bk_{2,-}$, $\bk_{2,-}$. Because there are 3 different components interacting in the two DIA-selected quadruplets, any discrete spectral component $(f_r,\theta)$ is actually involved in 6 quadruplets and directly exchanges energy with 12 other components $(f_r',\theta')$. Because the values of $f'_r$ and $\theta'$ do not fall exacly on other discrete components, the spectral density is interpolated using a bilinear interpolation, so that each source term value
+$S_{nl}(\bk)$ contains the direct exchange of energy with 48 other discrete components. 
+we compute the three contributions that correspond to the situation in which $\bk$ takes the role of $\bk$,$\bk_{2,+}$, $\bk_{2,-}$, $\bk_{3,+}$  and $\bk_{3,-}$ in the quadruplet, namely the full source term is, without making explicit that bilinear interpolation, 
 \begin{eqnarray} 
-S_{\mathrm{nl}}(\bk) &=& -2  \left[\delta S_{\mathrm{nl}}(\bk,\bk_2,\bk_3,+)+\delta S_{\mathrm{nl}}(\bk,\bk_2,\bk_3,-)\right] \nonumber  \\
- & & + \delta  S_{\mathrm{nl}}(\bk_4,\bk,\bk_5,+) + \delta  S_{\mathrm{nl}}(\bk_6,\bk,\bk_7,-)  \\
-     & &        +   \delta S_{\mathrm{nl}}(\bk_8,\bk_9,\bk, +) + \delta S_{\mathrm{nl}}(\bk_{10},\bk_{11},\bk, -) . \label{eq:diasum}
+S_{\mathrm{nl}}(\bk) &=& -2  \left[\delta S_{\mathrm{nl}}(\bk,\bk_{2,+},\bk_{3,+})+\delta S_{\mathrm{nl}}(\bk,\bk_{2,-},\bk_{3,-})\right] \nonumber  \\
+ & & + \delta  S_{\mathrm{nl}}(\bk_4,\bk,\bk_5) + \delta  S_{\mathrm{nl}}(\bk_6,\bk,\bk_7)  \\
+     & &        +   \delta S_{\mathrm{nl}}(\bk_8,\bk_9,\bk) + \delta S_{\mathrm{nl}}(\bk_{10},\bk_{11},\bk) . \label{eq:diasum}
 \end{eqnarray}
-with elementary contributions given by  
+where the geometry of the quadruplet $(\bk_4,\bk_4,\bk,\bk_5)$ is obtained from that of $(\bk,\bk,\bk_{2,+},\bk_{3,+})$ by a dilation by a factor $(1+\lambda)^2$ and rotation by the angle $\delta_{\theta,2}$;  $(\bk_6,\bk_6,\bk,\bk_7)$ has the same dilation but the opposite rotation; $(\bk_8,\bk_8,\bk_9,\bk)$ is dilated by a factor  $(1-\lambda)^2$ and rotated by the angle $-\delta_{\theta,3}$: and $(\bk_{10},\bk_{10},\bk_{11},\bk)$ is dilated by the same factor and rotated by the opposite angle. 
+
+
+The elementary contributions $\delta  S_{\mathrm{nl}}(\bk_l,\bk_m,\bk_n)$   are given by  
 %----------------------------%
 % Nonlinear interactions DIA %
 %----------------------------%
 % eq:snl_dia
 
 \begin{equation}
-\delta S_{\mathrm{nl}}(\bk,\bk_2,\bk_3,s) =  \frac{C}{g^4} f_{r,1}^{11} \left [ F^2 \left ( \frac{F_{2,s}}{(1+\lambda_{nl})^4} +
-        \frac{F_{3,s}}{(1-\lambda_{nl})^4} \right ) - \frac{2 F F_{2,s} F_{3,s}}{(1-\lambda_{nl}^2)^4} \right] ,
+\delta S_{\mathrm{nl}}(\bk_l,\bk_m,\bk_n) =  \frac{C}{g^4} f_{r,l}^{11} \left [ F_l^2 \left ( \frac{F_m}{(1+\lambda)^4} +
+        \frac{F_n}{(1-\lambda)^4} \right ) - \frac{2 F_l F_m F_n}{(1-\lambda^2)^4} \right] ,
       \label{eq:snl_dia}
 \end{equation}
-where $s=+$ or $s=-$ is a sign index, and the spectral densities are  $F = F(f_{r} ,\theta)$, $F_{2,+} = F(f_{r,2} ,\theta + \delta_{\theta,2})$, $F_{2,-} = F(f_{r,2} ,\theta - \delta_{\theta,2})$,  etc.
+where the spectral densities are  $F_l = F(f_{r,l} ,\theta_l)$, etc. 
  $C$ is a proportionality constant that was tuned to reproduce the inverse energy cascade.  Default values for different source term packages are presented in Table~\ref{tab:snl_par}.
-As a result, when accounting for the two quadruplet configurations, the source term at $\bk$ includes the interactions with 
-10 other spectral components. Besides, because $f_{r,2}$ and $f_{r,3}$ nor $\theta_{2,\pm} $ and $\theta_{3,\pm} $ fall on discretized frequencies and directions, the spectral densities are bilinearly interpolated, which involves 4 discrete spectral components for each of these 10 components. 
-
 
 
 % tab:snl_par
 
 \begin{table} \begin{center}
  \begin{tabular}{|l|c|c|} \hline
-                    & $\lambda_{nl}$ &     $C$      \\ \hline
+                    & $\lambda$ &     $C$      \\ \hline
 ST6                 &      0.25      & $3.00 \; 10^7$  \\ \hline
 \wam-3              &      0.25      & $2.78 \; 10^7$  \\ \hline
 ST4 (Ardhuin et al.)&      0.25      & $2.50 \; 10^7$  \\ \hline
