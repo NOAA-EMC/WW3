@@ -12,7 +12,7 @@ $ In versions 1.18 and 2.22 of the model this value was by definiton 0,
 $ it is added to mitigate the GSE for a first order scheme. Note that
 $ this factor is IGNORED in the print plots in ww3_outp.
 $
-1.1 0.05 36 36 0.
+1.1 0.05 25 24 0.
 $
 $ Set model flags ---------------------------------------------------- $
 $  - FLDRY         Dry run (input/output only, no calculation).
@@ -20,7 +20,7 @@ $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
 $
-   F T T F F F 
+   F T T T T T
 $
 $ Set time steps ----------------------------------------------------- $
 $ - Time step information (this information is always read)
@@ -28,7 +28,7 @@ $     maximum global time step, maximum CFL time step for x-y and
 $     k-theta, minimum source term time step (all in seconds).
 $
 $
-  1 1 1 1                               
+   10. 10. 10. 10. 
 $
 $ Start of namelist input section ------------------------------------ $
 $   Starting with WAVEWATCH III version 2.00, the tunable parameters
@@ -41,95 +41,32 @@ $   automatically, and the order of the namelists is immaterial.
 $   As an example, namelist input to change SWELLF and ZWND in the
 $   Tolman and Chalikov input would be
 $
-$   &SIN2 SWELLF = 0.1, ZWND = 15. /
+&SLN1 CLIN =  80.0, RFPM =  1.00, RFHF =  0.50 /
 $
-$ Define constants in source terms ----------------------------------- $
-$
-$ Input  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-$   WAM-3               : Namelist SIN1
-$                           CINP   : Proportionality constant.
-$   &SIN1  CINP=  0.25 /
-$
-$   Tolman and Chalikov : Namelist SIN2
-$                           ZWND   : Height of wind (m).
-$                           SWELLF : swell factor in (2.48).
-$                           STABSH, STABOF, CNEG, CPOS, FNEG :
-$                                    c0, ST0, c1, c2 and f1 in . (2.63)
-$                                    through (2.65) for definition of
-$                                    effective wind speed (!/STAB2).
-$
-$ Nonlinear interactions - - - - - - - - - - - - - - - - - - - - - - -
-$   Discrete I.A.       : Namelist SNL1
-$                           LAMBDA : Lambda in source term.
-$                           NLPROP : C in sourc term. NOTE : default
-$                                    value depends on other source
-$                                    terms selected.
-$                           KDCONV : Factor before kd in Eq. (2.24).
-$                           KDMIN, SNLCS1, SNLCS2, SNLCS3 :
-$                                    Minimum kd, and constants c1-3
-$                                    in depth scaling function.
-$   Exact interactions  : Namelist SNL2
-$                           IQTYPE : Type of depth treatment
-$                                     1 : Deep water
-$                                     2 : Deep water / WAM scaling
-$                                     3 : Shallow water
-$                           TAILNL : Parametric tail power.
-$                           NDEPTH : Number of depths in for which 
-$                                    integration space is established.
-$                                    Used for IQTYPE = 3 only
-$                         Namelist ANL2
-$                           DEPTHS : Array with depths for NDEPTH = 3
-$
-$ Dissipation  - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-$   WAM-3               : Namelist SDS1
-$                           CDIS, APM : As in source term.
-$
-$   Tolman and Chalikov : Namelist SDS2
-$                           SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN :
-$                                    Constants a0, a1, a2, b0, b1 and
-$                                    PHImin.
-$
-$ BAJ (adjusted) 
-$
-&SIN4 BETAMAX = 1.52, Z0MAX = 1.002 /
-$&SDS4 SDSC1 = 1.0, SDSC2 = 0.0 , SDSBCK = 0.100, SDSHCK = 1.0, SDSDTH = 0 /
-$&SDB1 BJGAM = 1.0, BJALFA = 0.001 /
-&SNL1 NLPROP = 3.1E7 /
-$
-$ TEST451
-$
-$ &SNL1 NLPROP=2.5E7 /
-$
-$
-&UNST
-UGOBCAUTO = F
-UGOBCDEPTH= -10.
-EXPFSN   = T,
-EXPFSPSI = F,
-EXPFSFCT = F,
-IMPFSN   = F,
-IMPTOTAL = F,
-EXPTOTAL  = F,
-IMPREFRACTION = F,
-IMPFREQSHIFT  = F,
-IMPSOURCE     = F,
-SETUP_APPLY_WLV = F
-SOLVERTHR_SETUP=1E-14
-CRIT_DEP_SETUP=0.1
-JGS_USE_JACOBI = T,
-JGS_NLEVEL = 0
-JGS_SOURCE_NONLINEAR = F,
-JGS_BLOCK_GAUSS_SEIDEL = T,
-JGS_TERMINATE_MAXITER = T,
-JGS_MAXITER = 100000,
-JGS_TERMINATE_NORM = F,
-JGS_TERMINATE_DIFFERENCE = T,
-JGS_DIFF_THR = 1.E-4,
-JGS_PMIN = 3.0
-JGS_LIMITER = F,
-JGS_BLOCK_GAUSS_SEIDEL = T
-JGS_NORM_THR = 1.E-6
-/
+&UNST UGOBCAUTO = F,
+  UGOBCDEPTH= -10., 
+  EXPFSN = F,
+  EXPFSPSI = F,
+  EXPFSFCT = F,
+  IMPFSN = F,
+  EXPTOTAL = F,
+  IMPTOTAL = T,
+  IMPREFRACTION = T,
+  IMPFREQSHIFT = T,
+  IMPSOURCE = T,
+  SETUP_APPLY_WLV = F,
+  SOLVERTHR_SETUP=1E-14,
+  CRIT_DEP_SETUP=0.1,
+  JGS_USE_JACOBI = T,
+  JGS_BLOCK_GAUSS_SEIDEL = T,
+  JGS_TERMINATE_MAXITER = T,
+  JGS_MAXITER = 1000,
+  JGS_TERMINATE_NORM = F,
+  JGS_TERMINATE_DIFFERENCE = T,
+  JGS_DIFF_THR = 1.E-8,
+  JGS_PMIN = 3.0,
+  JGS_LIMITER = F,
+  JGS_NORM_THR = 1.E-20 /
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1
@@ -194,7 +131,7 @@ $ Define grid -------------------------------------------------------- $
 $
   'UNST' T 'NONE'
 $    
-    1.0 0.10  20  -1. 4 1 '(20f10.2)'  'NAME' './../input/limon_ll.msh'
+    5.0 0.30  20  -1. 4 1 '(20f10.2)'  'NAME' './../input/limon_ll.msh'
 $
 $ If the above unit number equals 10, the bottom data is read from 
 $ this file and follows below (no intermediate comment lines allowed).
