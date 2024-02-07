@@ -1,0 +1,132 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.6
+  SPECTRUM%NK        =  5
+  SPECTRUM%NTH       =  72
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T 
+  RUN%FLCK         =  T  
+  RUN%FLSOU        =  F  
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  0.1
+  TIMESTEPS%DTXY         =  0.1
+  TIMESTEPS%DTKTH        =  0.1
+  TIMESTEPS%DTMIN        =  0.1
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'LIMON'
+  GRID%NML          =  'namelists_pdlib.nml'
+  GRID%TYPE         =  'UNST'
+  GRID%COORD        =  'CART'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  0.01
+  GRID%DMIN         =  0.0001
+/
+
+! -------------------------------------------------------------------- !
+! Define the unstructured grid type via UNST_NML namelist
+! -------------------------------------------------------------------- !
+&UNST_NML
+  UNST%SF          =  -1.
+  UNST%FILENAME    =  'mesh.msh'
+  UNST%IDLA      =  4
+  UNST%FORMAT    =  '(20f10.2)'
+/
+
+! -------------------------------------------------------------------- !
+! Define the input boundary points via INBND_COUNT_NML and
+!                                      INBND_POINT_NML namelist
+! -------------------------------------------------------------------- !
+&INBND_COUNT_NML
+  INBND_COUNT%N_POINT    =  60
+/
+
+&INBND_POINT_NML
+INBND_POINT(    1)    =         3    1    F
+INBND_POINT(    2)    =         8    1    F
+INBND_POINT(    3)    =        17    1    F
+INBND_POINT(    4)    =        26    1    F
+INBND_POINT(    5)    =        36    1    F
+INBND_POINT(    6)    =        47    1    F
+INBND_POINT(    7)    =        62    1    F
+INBND_POINT(    8)    =        82    1    F
+INBND_POINT(    9)    =       101    1    F
+INBND_POINT(   10)    =       127    1    F
+INBND_POINT(   11)    =       151    1    F
+INBND_POINT(   12)    =       180    1    F
+INBND_POINT(   13)    =       211    1    F
+INBND_POINT(   14)    =       245    1    F
+INBND_POINT(   15)    =       281    1    F
+INBND_POINT(   16)    =       317    1    F
+INBND_POINT(   17)    =       358    1    F
+INBND_POINT(   18)    =       359    1    F
+INBND_POINT(   19)    =       365    1    F
+INBND_POINT(   20)    =       369    1    F
+INBND_POINT(   21)    =       403    1    F
+INBND_POINT(   22)    =       404    1    F
+INBND_POINT(   23)    =       455    1    F
+INBND_POINT(   24)    =       510    1    F
+INBND_POINT(   25)    =       566    1    F
+INBND_POINT(   26)    =       621    1    F
+INBND_POINT(   27)    =       681    1    F
+INBND_POINT(   28)    =       745    1    F
+INBND_POINT(   29)    =       809    1    F
+INBND_POINT(   30)    =       810    1    F
+INBND_POINT(   31)    =       876    1    F
+INBND_POINT(   32)    =       877    1    F
+INBND_POINT(   33)    =       879    1    F
+INBND_POINT(   34)    =       944    1    F
+INBND_POINT(   35)    =      1017    1    F
+INBND_POINT(   36)    =      1099    1    F
+INBND_POINT(   37)    =      1180    1    F
+INBND_POINT(   38)    =      1264    1    F
+INBND_POINT(   39)    =      1354    1    F
+INBND_POINT(   40)    =      1444    1    F
+INBND_POINT(   41)    =      1445    1    F
+INBND_POINT(   42)    =      1539    1    F
+INBND_POINT(   43)    =      1644    1    F
+INBND_POINT(   44)    =      1744    1    F
+INBND_POINT(   45)    =      1745    1    F
+INBND_POINT(   46)    =      1848    1    F
+INBND_POINT(   47)    =      1849    1    F
+INBND_POINT(   48)    =      1955    1    F
+INBND_POINT(   49)    =      1957    1    F
+INBND_POINT(   50)    =      2066    1    F
+INBND_POINT(   51)    =      2166    1    F
+INBND_POINT(   52)    =      2278    1    F
+INBND_POINT(   53)    =      2396    1    F
+INBND_POINT(   54)    =      2397    1    F
+INBND_POINT(   55)    =      2516    1    F
+INBND_POINT(   56)    =      2641    1    F
+INBND_POINT(   57)    =      2763    1    F
+INBND_POINT(   58)    =      2895    1    F
+INBND_POINT(   59)    =      3024    1    F
+INBND_POINT(   60)    =      1   1    F
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !
