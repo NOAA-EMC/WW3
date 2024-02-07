@@ -41,16 +41,18 @@ EOF
 # Convert main_dir to absolute path
   main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
 
-# Module Versions from HPC-Stack that are common for all platforms
-  modnetcdf='netcdf/4.7.4'
-  modjasper='jasper/2.0.25'
-  modzlib='zlib/1.2.11'
+# Module Versions from spack-stack that are common for all platforms
+  modnetcdfc='netcdf-c/4.9.2'
+  modnetcdff='netcdf-fortran/4.6.0'
+  modjasper='jasper/2.0.32'
+  modzlib='zlib/1.2.13'
   modpng='libpng/1.6.37'
-  modhdf5='hdf5/1.10.6'
+  modhdf5='hdf5/1.14.0'
   modbacio='bacio/2.4.1'
   modg2='g2/3.4.5'
-  modw3emc='w3emc/2.9.2'
-  modesmf='esmf/8.3.0b09'
+  modw3emc='w3emc/2.10.0'
+  modesmf='esmf/8.4.2'
+  modscotch='scotch/7.0.4'
 
 # Set batchq queue, choose modules and other custom variables to fit system and
 # to define headers etc (default to original version if empty)
@@ -60,27 +62,19 @@ EOF
   then
     # If no other h, assuming Hera
     batchq='slurm'
-    basemodcomp='intel/2022.1.2'
-    basemodmpi='impi/2022.1.2'
-    hpcstackpath='/scratch1/NCEPDEV/nems/role.epic/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
-    hpcstackversion='hpc/1.2.0'
-    modcomp='hpc-intel/2022.1.2'
-    modmpi='hpc-impi/2022.1.2'
-    scotchpath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hpc-stack/scotch-v7.0.3/install'
-    metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
-    modcmake='cmake/3.20.1'
+    spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-noavx512/install/modulefiles/Core'
+    modcomp='stack-intel/2021.5.0'
+    modmpi='stack-intel-oneapi-mpi/2021.5.1'
+    metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+    modcmake='cmake/3.23.1'
   elif [ $isorion ]
   then
     batchq='slurm'
-    basemodcomp='intel/2022.1.2'
-    basemodmpi='impi/2022.1.2'
-    hpcstackpath='/work/noaa/epic-ps/role-epic-ps/hpc-stack/libs/intel-2022.1.2/modulefiles/stack'
-    hpcstackversion='hpc/1.2.0'
-    modcomp='hpc-intel/2022.1.2'
-    modmpi='hpc-impi/2022.1.2'
-    scotchpath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/scotch-v7.0.3/install'
-    metispath='/work2/noaa/marine/mmasarik/waves/opt/hpc-stack/parmetis-4.0.3/install'
-    modcmake='cmake/3.22.1'
+    spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
+    modcomp='stack-intel/2022.0.2'
+    modmpi='stack-intel-oneapi-mpi/2021.5.1'
+    metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/spack-stack/1.5.0/parmetis-4.0.3/install'
+    modcmake='cmake/3.23.1'
   else
     batchq=
   fi
@@ -96,7 +90,7 @@ EOF
 
 # 1.a Computer/ user dependent set up
 
-  echo '#!/bin/sh --login'                                   > matrix.head
+  echo '#!/bin/sh'                                           > matrix.head
   echo ' '                                                  >> matrix.head
   if [ $batchq = "slurm" ] && [ $isorion ]
   then
@@ -139,29 +133,28 @@ EOF
 
 # Netcdf, Parmetis and SCOTCH modules & variables
   echo "  module purge"                                     >> matrix.head
-  echo "  module load $modcmake"                            >> matrix.head
   if [ ! -z $basemodcomp ]; then
     echo "  module load $basemodcomp"                       >> matrix.head
   fi
   if [ ! -z $basemodmpi ]; then
     echo "  module load $basemodmpi"                        >> matrix.head
   fi
-  echo "  module use  $hpcstackpath"                        >> matrix.head
-  echo "  module load $hpcstackversion"                     >> matrix.head
+  echo "  module use  $spackstackpath"                      >> matrix.head
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
+  echo "  module load $modcmake"                            >> matrix.head
   echo "  module load $modpng"                              >> matrix.head
   echo "  module load $modzlib"                             >> matrix.head
   echo "  module load $modjasper"                           >> matrix.head
   echo "  module load $modhdf5"                             >> matrix.head
-  echo "  module load $modnetcdf"                           >> matrix.head
+  echo "  module load $modnetcdfc"                          >> matrix.head
+  echo "  module load $modnetcdff"                          >> matrix.head
   echo "  module load $modbacio"                            >> matrix.head
   echo "  module load $modg2"                               >> matrix.head
   echo "  module load $modw3emc"                            >> matrix.head
   echo "  module load $modesmf"                             >> matrix.head
-
+  echo "  module load $modscotch"                           >> matrix.head
   echo "  export METIS_PATH=${metispath}"                   >> matrix.head
-  echo "  export SCOTCH_PATH=${scotchpath}"                 >> matrix.head
   echo "  export path_build_root=$(dirname $main_dir)/regtests/buildmatrix" >> matrix.head
   echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}'         >> matrix.head
   echo ' '

@@ -58,3 +58,9 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
 endif()
 
 add_subdirectory(model)
+
+# Turn on unit testing.
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(regtests/unittests)
+endif()
