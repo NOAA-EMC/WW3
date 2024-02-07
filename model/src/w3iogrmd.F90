@@ -704,6 +704,7 @@ CONTAINS
         IF ( IAPROC .EQ. NAPERR )                               &
              WRITE (NDSE,905) 4, FILEXT(:IEXT), FNAME4, TNAME4, &
              MESSAGE
+        WRITE(*,*) 'TEST TEST TEST IOGR'
         CALL EXTCDE ( 18 )
       END IF
       IF ( FNAME5 .NE. TNAME5 ) THEN
