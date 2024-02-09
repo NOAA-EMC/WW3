@@ -859,7 +859,8 @@ MODULE W3GRIDMD
        SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
        SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
        SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF, SINTAIL1, SINTAIL2, &
-       CUMSIGP, VISCSTRESS
+       CUMSIGP, VISCSTRESS,                 &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
   !
 #ifdef W3_ST6
@@ -1002,7 +1003,8 @@ MODULE W3GRIDMD
   NAMELIST /SIN4/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
        TAUWSHELTER, SWELLFPAR, SWELLF,                 &
        SWELLF2, SWELLF3, SWELLF4, SWELLF5, SWELLF6,    &
-       SWELLF7, Z0RAT, SINBR, SINTABLE, SINTAIL1, SINTAIL2, TAUWBUG, VISCSTRESS
+       SWELLF7, Z0RAT, SINBR, SINTABLE, SINTAIL1, SINTAIL2, TAUWBUG, VISCSTRESS, &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_NL1
   NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
@@ -1729,6 +1731,11 @@ CONTAINS
     TAUWBUG  = 1  !  TAUWBUG is 1 is the bug is kept:
     !  initializes TAUWX/Y to zero in W3SRCE
     VISCSTRESS =0
+    CAPCHA   = 0.     ! =1 indicates capping of drag is active
+    CHAMIN   = 0.0001 ! 
+    CHA0     = ALPHA0 ! initial value for charnock
+    UCAP     = 30.    ! U10 threshold from which drag capping is applied
+    SIGMAUCAP = 10.   ! Width for reduction of drag beyond UCAP
 #endif
     !
 #ifdef W3_ST6
@@ -1817,6 +1824,11 @@ CONTAINS
     SINTAILPAR(3) = SINTAIL2
     SINTAILPAR(4) = FLOAT(TAUWBUG)
     SINTAILPAR(5) = VISCSTRESS
+    CAPCHNK(1) = CAPCHA
+    CAPCHNK(2) = CHAMIN
+    CAPCHNK(3) = CHA0
+    CAPCHNK(4) = UCAP
+    CAPCHNK(5) = SIGMAUCAP
 #endif
     !
 #ifdef W3_ST6
@@ -3218,7 +3230,8 @@ CONTAINS
 #ifdef W3_ST4
       WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR, SINTABLE, TAUWBUG, VISCSTRESS, SINTAIL1, SINTAIL2
+           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR, SINTABLE, TAUWBUG, VISCSTRESS, SINTAIL1, SINTAIL2, &
+           CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2920) SINA0, SINWS, SINFC
@@ -6260,7 +6273,9 @@ CONTAINS
          '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
          ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,','/              &
          '        SINTABLE =',I2,', TAUWBUG =',I2,               &
-         ', VISCSTRESS =',F8.5,', SINTAIL1 =',F8.5,', SINTAIL2 =',F8.5,'  /')
+         ', VISCSTRESS =',F8.5,', SINTAIL1 =',F8.5,', SINTAIL2 =',F8.5,',' / &
+         ', CAPCHA =',F8.5,', CHAMIN =',F8.5,', CHA0 =',F8.5,', UCAP =',F5.1,', SIGMAUCAP =', &
+         F5.1,'  /')
 #endif
     !
 #ifdef W3_ST6
