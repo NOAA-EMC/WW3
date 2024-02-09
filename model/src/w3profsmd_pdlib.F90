@@ -7990,15 +7990,14 @@ CONTAINS
       END IF
     END DO
     DO ISP=1,NSPEC
-      CAD(ISP)=DBLE(VCFLT(ISP))
+      CAD(ISP)=VCFLT(ISP)
     END DO
 
     IF (B_JGS_LDIFR) THEN
       DO IK = 1, NK
         DO ITH = 1, NTH
           ISP = ITH + (IK-1)*NTH
-          CAD(ISP) = DIFRM(IP)*CAD(ISP)-CG(IK,IP)*(DIFRX(IP)*ESIN(ITH)-DIFRY(IP)*ECOS(ITH))
-          !CAD(ISP) = CAD(ISP)-CG(IK,IP)*(ESIN(ITH)-ECOS(ITH))
+          CAD(ISP) = DIFRM(IP)*CAD(ISP)-CG(IK,IP)*(DIFRX(IP)*ESIN(ISP)-DIFRY(IP)*ECOS(ISP))
         END DO
       END DO
     END IF
@@ -8473,7 +8472,7 @@ CONTAINS
       ENDDO
     END IF
 
-    IF (.FALSE.) THEN
+    IF (.false.) THEN
       OPEN(555, FILE  = 'ergdiffr.bin'  , FORM = 'UNFORMATTED')
       WRITE(555) 1.
       WRITE(555) (SNGL(DIFRX(IP)), SNGL(DIFRY(IP)),SNGL(DIFRM(IP)), IP = 1, NP)
