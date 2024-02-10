@@ -2245,7 +2245,6 @@ CONTAINS
       WRITE (NDSE,'(A,/A)') &
            'ERROR: READ_EXCL_POINT_NML: namelist read error', &
            'ERROR: '//TRIM(MSG)
-      WRITE(*,*) 'TEST TEST TEST' 
       CALL EXTCDE (18)
     END IF
 
