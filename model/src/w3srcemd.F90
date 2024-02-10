@@ -1244,7 +1244,7 @@ CONTAINS
       IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
-        CALL W3STR1 ( SPEC, SPECOLD, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
+        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX, VSTR, VDTR )
 #endif
 #ifdef W3_PDLIB
       ENDIF
