@@ -1023,17 +1023,81 @@ CONTAINS
     !/ End of W3IOPE ----------------------------------------------------- /
     !/
   END SUBROUTINE W3IOPE
-  !/ ------------------------------------------------------------------- /
+
+  !> Read or write point output.
   !>
-  !> @brief Read/write point output.
+  !> This subroutine can either read or write the point output file,
+  !> depending on the value of the first parameter.
   !>
-  !> @param[in]  INXOUT  Test string for read/write.
-  !> @param[in]  NDSOP   File unit number.
-  !> @param[out] IOTST   Test indictor for reading.
-  !> @param[in]  IMOD    Model number for W3GDAT etc.
+  !> When reading, the entire file is read with one call to this
+  !> subroutine.
+  !>
+  !> When writing, this subroutine can either write one timestep or
+  !> the whole model run. This is an option in the input file. If the
+  !> entire model run is to be written, then OFILES(2) is 0. If only
+  !> one timestep is to be written, then OFILES(2) is 1.
+  !>
+  !> If OFILES(2) is 0, the output file is names out_pnt.ww3. If
+  !> OFILES(2) is 1, the output file is named TIMETAG.out_pnt.ww3.
+  !>
+  !> The format of the point output file is:
+  !> Size (bytes) | Type | Variable | Meaning
+  !> -------------|------|----------|--------
+  !> 40 | character*40 | IDTST | ID string
+  !> 4 | integer | VERTST | Model definition file version number
+  !> 4 | integer | NK | Dimension of frequency
+  !> 4 | integer | MTH | Directionality of the frequency
+  !> 4 | integer | NOPTS | Number of output points.
+  !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
+  !> 7*NOPTS | character*7 | PTNME | Point names
+  !> 8 | integer(2) | TIME | Time
+  !> reclen*NOPTS | * | * | records
+  !>
+  !> Each record contains:
+  !> Size (bytes) | Type | Variable | Meaning
+  !> -------------|------|----------|--------
+  !> 4 | integer | IW | Number of water points in interpolation box for output point.
+  !> 4 | integer | II | Number of ice points in interpolation box for output point.
+  !> 4 | integer | IL | Number of land points in interpolation box for output point.
+  !> 4 | real | DPO | Interpolated depths.
+  !> 4 | real | WAO | Interpolated wind speeds.
+  !> 4 | real | WDO | Interpolated wind directions.
+  !> 4 | real | TAUAO | (W3_FLX5 only) Interpolated atmospheric stresses.
+  !> 4 | real | TAUDO | (W3_FLX5 only) Interpolated atmospheric stress directions.
+  !> 4 | real | DAIRO | (W3_FLX5 only) Interpolated rho atmosphere.
+  !> 4 | real | ZET_SETO | (W3_SETUP only) Used for wave setup.
+  !> 4 | real | ASO | Interpolated air-sea temperature difference
+  !> 4 | real | CAO | Interpolated current speeds.
+  !> 4 | real | CDO | Interpolated current directions.
+  !> 4 | real | ICEO | Interpolated ice concentration.
+  !> 4 | real | ICEHO | Interpolated ice thickness.
+  !> 4 | real | ICEFO | Interpolated ice floe.
+  !> 13 | char | GRDID | Originating grid ID
+  !> 4 | real | SPCO(J,I),J=1,NSPEC | Output spectra
+  !>
+  !> In the event of error, EXTCDE() will be called with the following exit codes:
+  !> - 1 INXOUT must be 'READ' or 'WRITE'.
+  !> - 2 Unexpectedly changed from WRITE to READ in subsequent call.
+  !> - 10 Unexpected IDSTR
+  !> - 11 Unexpected VEROPT
+  !> - 12 Unexpected MK or MTH
+  !> - 20 Error opening file.
+  !> - 21 Unexpected end of file during read.
+  !> - 22 Error reading file.
+  !> - 23 Unexpected end of file during read.
+  !>
+  !> @param[in] INXOUT String indicating read/write. Must be 'READ' or
+  !> 'WRITE'.
+  !> @param[in] NDSOP File unit number.
+  !> @param[out] IOTST Error code:
+  !> - 0 No error.
+  !> - -1 Unexpected end of file when reading.
+  !> @param[in] IMOD Model number for W3GDAT etc.
+#ifdef W3_ASCII
+  !> @param[in] NDSOA File unit number for ASCII output.
+#endif
   !>
   !> @author H. L. Tolman  @date 25-Jul-2006
-  !>
   SUBROUTINE W3IOPO ( INXOUT, NDSOP, IOTST, IMOD &
 #ifdef W3_ASCII
       ,NDSOA &
