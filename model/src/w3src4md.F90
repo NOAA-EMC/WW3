@@ -1987,8 +1987,12 @@ CONTAINS
       CHARN = CHATH
     END IF
     ! Problem with large values of CHARN for low winds
-    CHARN = MIN( 0.09 , CHARN )
-    IF(CHARN.LT.CHATH) CHARN = CHATH
+    ! ChrisB: Do we want to put this inside a CAPCHNK conditonal to
+    ! keep behaviour the same when CAPCHNK(1) .NE. 1?
+    IF(CAPCHNK(1) .EQ. 1) THEN
+      CHARN = MIN( 0.09 , CHARN )
+      IF(CHARN.LT.CHATH) CHARN = CHATH
+    ENDIF
 
     !  WRITE(6,*) 'CALC_USTAR:',WINDSPEED,TAUW,AALPHA,CHARN,Z0,USTAR
     !
