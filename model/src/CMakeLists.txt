@@ -158,6 +158,7 @@ endif()
 # Handle PDLIB, SCRIP, SCRIPNC build files directly instead of through configuration file
 if("PDLIB" IN_LIST switches)
   if("SCOTCH" IN_LIST switches)
+  set(USE_SHARED_SCOTCH OFF CACHE BOOL "Use shared SCOTCH")
   find_package(SCOTCH REQUIRED)
   target_sources(ww3_lib PRIVATE ${pdlib_src})
   target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis)
