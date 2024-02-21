@@ -5074,7 +5074,7 @@ CONTAINS
 
         !Li Allow land cell to be defined by ZLIM value and only reset
         !Li MAPST* land values for sea points.   JGLi03Nov2023
-        ZB(ISEA) = DVSMC * FLOAT( IJKCel(5, ISEA) )
+        ZB(ISEA) = DVSMC * FLOAT(IJKDep(ISEA))
         IF( ZB(ISEA) .LT. ZLIM ) THEN
           MAPSTA(IY:IY+JS-1,IX:IX+IK-1) = 1
           MAPST2(IY:IY+JS-1,IX:IX+IK-1) = 0
