@@ -678,6 +678,7 @@ MODULE W3GRIDMD
 #endif
   !
 #ifdef W3_SMC
+  REAL                    :: DVSMC
   REAL                    :: TRNMX, TRNMY
   INTEGER, ALLOCATABLE    :: NLvCelsk(:),  NLvUFcsk(:),  NLvVFcsk(:)
   INTEGER, ALLOCATABLE    :: IJKCelin(:,:),IJKUFcin(:,:),IJKVFcin(:,:)
@@ -3944,6 +3945,12 @@ CONTAINS
     IF (IDFM.EQ.2) WRITE (NDSO,973) TRIM(RFORM)
     IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
          WRITE (NDSO,974) TRIM(FNAME)
+
+#ifdef W3_SMC
+    !Li  Save the depth conversion factor for SMC grid use.  JGLi03Nov2023
+    DVSMC = VSC
+#endif
+
     !
     ! 7.e Read bottom depths
     !
@@ -5065,14 +5072,17 @@ CONTAINS
           CALL EXTCDE(65)
         END IF
 
-        !Li  Minimum DMIN depth is used as well for SMC.
-        ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
-        MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
-        MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
-        MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
-        MAPSF(ISEA,1)  = IX
-        MAPSF(ISEA,2)  = IY
-        MAPSF(ISEA,3)  = IY + (IX    -1)*NY
+        !Li Allow land cell to be defined by ZLIM value and only reset
+        !Li MAPST* land values for sea points.   JGLi03Nov2023
+        ZB(ISEA) = DVSMC * FLOAT( IJKCel(5, ISEA) )
+        IF( ZB(ISEA) .LT. ZLIM ) THEN
+          MAPSTA(IY:IY+JS-1,IX:IX+IK-1) = 1
+          MAPST2(IY:IY+JS-1,IX:IX+IK-1) = 0
+        ENDIF
+        MAPFS(IY:IY+JS-1,IX:IX+IK-1) = ISEA
+        MAPSF(ISEA,1) = IX
+        MAPSF(ISEA,2) = IY
+        MAPSF(ISEA,3) = IY + (IX-1) * NY
 
         !Li   New variable CLATS to hold cosine latitude at cell centre.
         !Li   Also added CLATIS and CTHG0S for version 4.08.
