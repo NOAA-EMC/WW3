@@ -245,7 +245,7 @@ PROGRAM W3PRNC
        NDSLL, IDLALL, IDFMLL, NCID, IRET,   &
        MXM, MYM, DATTYP, RECLDT, IDAT,      &
        NDIMSGRID, NDIMSVAR, VARIDTMP,       &
-       NUMDIMS, I, ITIME
+       NUMDIMS, I, ITIME, SECS
   INTEGER                 :: ILAND = -999
   INTEGER                 :: GTYPEDUM = 0
 
@@ -594,10 +594,19 @@ PROGRAM W3PRNC
     ! Check time start and stop
     READ(NML_FORCING%TIMESTART,*) TIMESTART
     CALL T2D(TIMESTART,STARTDATE,IERR)
-    CALL D2J(STARTDATE,STARTJULDAY,IERR)
     READ(NML_FORCING%TIMESTOP,*) TIMESTOP
     CALL T2D(TIMESTOP,STPDATE,IERR)
-    CALL D2J(STPDATE,STPJULDAY,IERR)
+
+    IF(TRIM(CALTYPE) .EQ. "standard") THEN
+      CALL D2J(STARTDATE,STARTJULDAY,IERR)
+      CALL D2J(STPDATE,STPJULDAY,IERR)
+    ELSE IF(TRIM(CALTYPE) .EQ. "360_day") THEN
+      CALL D2J_360(STARTDATE,STARTJULDAY,IERR)
+      CALL D2J_360(STPDATE,STPJULDAY,IERR)
+    ELSE
+      PRINT*,'INTERNAL ERROR - UKNOWN CALENDAR TYPE: ', CALTYPE
+      CALL EXTCDE(99)
+    ENDIF
 
     ! Check time shift
     FLHDR = .TRUE.
@@ -766,6 +775,9 @@ PROGRAM W3PRNC
       CALL STME21 ( TIMESTOP , IDTIME )
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2931) IDTIME
     END IF
+    IF(CALTYPE .NE. 'standard') THEN
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2932) CALTYPE
+    ENDIF
   END IF
   IF (.NOT. FLTIME) THEN
     CALL STME21 ( TIMESHIFT , IDTIME )
@@ -798,14 +810,34 @@ PROGRAM W3PRNC
   IRET=NF90_GET_ATT(NCID,VARIDTMP,"calendar",CALENDAR)
   IF ( IRET/=NF90_NOERR ) THEN
     WRITE(NDSE,1028)
-  ELSE IF ((INDEX(CALENDAR, "standard").EQ.0) .AND. &
-       (INDEX(CALENDAR, "gregorian").EQ.0)) THEN
-    WRITE(NDSE,1029)
+  ELSE IF ((INDEX(CALENDAR, "standard") .GT. 0) .OR. &
+        (INDEX(CALENDAR, "gregorian") .GT. 0)) THEN
+    CALENDAR = "standard"
+  ELSE IF (INDEX(CALENDAR, "360_day") .GT. 0) THEN
+    CALENDAR = "360_day"
+  ELSE
+    WRITE(NDSE,1029) CALENDAR
+    CALENDAR = "standard" ! Default to standard calendar. Better to maybe fail?
   END IF
+
+  ! Check input calendar compatible with expected calendar
+  IF(CALENDAR .NE. CALTYPE) THEN
+    WRITE(NDSE,1027) CALTYPE, CALENDAR
+    CALL EXTCDE( 26 )
+  ENDIF
+
   IRET=NF90_GET_ATT(NCID,VARIDTMP,"units",TIMEUNITS)
   CALL CHECK_ERR(IRET)
   CALL U2D(TIMEUNITS,REFDATE,IERR)
-  CALL D2J(REFDATE,REFJULDAY,IERR)
+
+  IF(CALENDAR .EQ. "standard") THEN
+    CALL D2J(REFDATE,REFJULDAY,IERR)
+  ELSE IF(CALENDAR .EQ.  "360_day") THEN
+    CALL D2J_360(REFDATE, REFJULDAY, IERR)
+  ELSE
+    PRINT*,'INTERNAL ERROR, CALENDAR=',CALENDAR
+    CALL EXTCDE( 99 )
+  ENDIF
 
   ! gets variables ids, dimensions and fillvalue
   DO I=1,NFIELDS
@@ -821,7 +853,7 @@ PROGRAM W3PRNC
     END DO
     IRET=NF90_GET_ATT(NCID,VARIDF(I),"_FillValue", FILLVALUE)
     IF ( IRET/=NF90_NOERR ) THEN
-      WRITE(NDSE,1027) TRIM(FIELDSNAME(I))
+      WRITE(NDSE,1026) TRIM(FIELDSNAME(I))
       CALL EXTCDE ( 27 )
     END IF
   END DO
@@ -1796,6 +1828,7 @@ PROGRAM W3PRNC
   !
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972)
   TIMEDELAY = 0
+  print*,'[CB] NTI',NTI
   DO ITIME=1,NTI
     !
     ! 8.a Read new time and fields
@@ -1805,6 +1838,7 @@ PROGRAM W3PRNC
     CALL CHECK_ERR(IRET)
     IRET=NF90_GET_VAR(NCID,VARIDTMP,CURJULDAY,start=(/ITIME/))
     call CHECK_ERR(IRET)
+    print*,'Got time',itime,curjulday
     IF (INDEX(TIMEUNITS, "seconds").NE.0)   CURJULDAY=CURJULDAY/86400.
     IF (INDEX(TIMEUNITS, "minutes").NE.0)   CURJULDAY=CURJULDAY/1440.
     IF (INDEX(TIMEUNITS, "hours").NE.0)     CURJULDAY=CURJULDAY/24.
@@ -1817,7 +1851,17 @@ PROGRAM W3PRNC
     IF (STPJULDAY.LT.CURJULDAY) EXIT
 
     ! convert julday to date and time
-    CALL J2D(CURJULDAY,CURDATE,IERR)
+    IF(CALTYPE .EQ. 'standard') THEN
+      CALL J2D(CURJULDAY,CURDATE,IERR)
+    ELSE IF(CALTYPE .EQ. '360_day') THEN
+      CURDATE(1) = INT(CURJULDAY / 360) + 1800 ! (base year is 1800)
+      CURDATE(2) = MOD(INT(CURJULDAY / 30), 12) + 1
+      CURDATE(3) = MOD(INT(CURJULDAY), 30) + 1
+      SECS = (CURJULDAY - IDINT(CURJULDAY)) * 86400
+      CURDATE(5) = SECS / 3600
+      CURDATE(6) = MOD(SECS, 3600) / 60
+      CURDATE(7) = MOD(SECS, 60)
+    ENDIF
     CALL D2T(CURDATE,TIME,IERR)
     CALL STME21 (TIME,IDTIME)
 
@@ -2317,6 +2361,7 @@ PROGRAM W3PRNC
 2930 FORMAT ( '          Field corrected for energy conservation.')
 1931 FORMAT ( '       Start time        : ',A)
 2931 FORMAT ( '       Stop time         : ',A)
+2932 FORMAT ( '       Calendar          : ',A)
 3931 FORMAT ( '       Shifted time      : ',A)
 932 FORMAT (/'       Input grid dim.   :',I9,3X,I5)
 1933 FORMAT ( '       Longitude range   :',2F8.2,' (deg)'/           &
@@ -2404,15 +2449,21 @@ PROGRAM W3PRNC
 1011 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     NO GRID SELECTED'/)
   !
-1027 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+1026 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     _FillValue ATTRIBUTE NOT DEFINED FOR : ',A/)
-  !
+ !
+1027 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+       '     INCOMPATIBLE CALENDARS:' /                        &
+       '       MODEL CALENDAR      : ', A /                    &
+       '       INPUT FILE CALENDAR : ', A /)
 1028 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
        '     calendar ATTRIBUTE NOT DEFINED'/                 &
-       '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
+       '     DEFAULTING TO "standard" CALENDAR'/              &
+       '     INPUT FILE MUST RESPECT STANDARD/GREGORIAN CALENDAR')
 1029 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
-       '     CALENDAR ATTRIBUTE NOT MATCH'/                   &
-       '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
+       '     UNKNOWN CALENDAR TYPE: ', A  /                   &
+       '     DEFAULTING TO "standard" CALENDAR'/              &
+       '     INPUT FILE MUST RESPECT STANDARD/GREGORIAN CALENDAR')
 1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     ILLEGAL FIELD ID -->',A,'<--'/)
 1031 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
@@ -2711,5 +2762,28 @@ SUBROUTINE CHECK_ERROR(IRET, ILINE)
   RETURN
 
 END SUBROUTINE CHECK_ERROR
+
+!> @brief Convert a "360 day" calendar date to a pseudo-Julian date
+!> @details Convert a date based on a "360 day" climate calendar (30 days
+!>          per month) to a pseudo-Julian date (number of days since 
+!>          1800-01-01 00:00:00)
+!> @param DAT(8) Date/Time components, as returned from DATE_AND_TIME(3f).
+!> @param JUL360 Pseudo-Julian day based on 360 day calendar
+!> @author Chris Bunney  @date 22 Feb 2022
+SUBROUTINE D2J_360(DAT, JUL360, IERR)
+  INTEGER,INTENT(IN)            :: DAT(8)
+  DOUBLE PRECISION,INTENT(OUT)  :: JUL360
+  INTEGER, INTENT(OUT)          :: IERR
+
+
+  JUL360 = (DAT(1) - 1800) * 360.0 +     &  ! Years (since 1800)
+           (DAT(2) - 1   ) * 30.0  +     &  ! Month
+           (DAT(3) - 1)            +     &  ! Day
+            DAT(5)/24.0_8          +     &  ! Hour
+            DAT(6)/1440.0_8        +     &  ! Minute
+            DAT(7)/86400.0_8                ! Second
+
+  IERR = 0 ! TODO!
+END SUBROUTINE D2J_360
 
 !==============================================================================
