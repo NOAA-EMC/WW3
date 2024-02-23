@@ -1330,7 +1330,7 @@ CONTAINS
       RETURN
     ENDIF
 
-    ! Standard/Gregorian calenday - return standrd Julian day calculation:
+    ! Standard/Gregorian calendar - return standard Julian day calculation:
     IF(YEAR==0 .or. YEAR .lt. -4713) THEN
       IERR=-1
       RETURN
@@ -1476,7 +1476,7 @@ CONTAINS
     MINUTE=MINUTE-HOUR*60                        ! Integral minutes from beginning of hour
 
     IF(CALTYPE .EQ. '360_day') THEN
-      ! Calcalate date parts for 360 day climate calendar
+      ! Calculate date parts for 360 day climate calendar
       YEAR = INT(JULIAN / 360) + 1800 ! (base year is 1800)
       MONTH = MOD(INT(JULIAN / 30), 12) + 1
       DAY = MOD(INT(JULIAN), 30) + 1
