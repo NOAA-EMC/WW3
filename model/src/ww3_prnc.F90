@@ -594,19 +594,10 @@ PROGRAM W3PRNC
     ! Check time start and stop
     READ(NML_FORCING%TIMESTART,*) TIMESTART
     CALL T2D(TIMESTART,STARTDATE,IERR)
+    CALL D2J(STARTDATE,STARTJULDAY,IERR)
     READ(NML_FORCING%TIMESTOP,*) TIMESTOP
     CALL T2D(TIMESTOP,STPDATE,IERR)
-
-    IF(TRIM(CALTYPE) .EQ. "standard") THEN
-      CALL D2J(STARTDATE,STARTJULDAY,IERR)
-      CALL D2J(STPDATE,STPJULDAY,IERR)
-    ELSE IF(TRIM(CALTYPE) .EQ. "360_day") THEN
-      CALL D2J_360(STARTDATE,STARTJULDAY,IERR)
-      CALL D2J_360(STPDATE,STPJULDAY,IERR)
-    ELSE
-      PRINT*,'INTERNAL ERROR - UKNOWN CALENDAR TYPE: ', CALTYPE
-      CALL EXTCDE(99)
-    ENDIF
+    CALL D2J(STPDATE,STPJULDAY,IERR)
 
     ! Check time shift
     FLHDR = .TRUE.
@@ -829,15 +820,7 @@ PROGRAM W3PRNC
   IRET=NF90_GET_ATT(NCID,VARIDTMP,"units",TIMEUNITS)
   CALL CHECK_ERR(IRET)
   CALL U2D(TIMEUNITS,REFDATE,IERR)
-
-  IF(CALENDAR .EQ. "standard") THEN
-    CALL D2J(REFDATE,REFJULDAY,IERR)
-  ELSE IF(CALENDAR .EQ.  "360_day") THEN
-    CALL D2J_360(REFDATE, REFJULDAY, IERR)
-  ELSE
-    PRINT*,'INTERNAL ERROR, CALENDAR=',CALENDAR
-    CALL EXTCDE( 99 )
-  ENDIF
+  CALL D2J(REFDATE,REFJULDAY,IERR)
 
   ! gets variables ids, dimensions and fillvalue
   DO I=1,NFIELDS
@@ -1828,7 +1811,6 @@ PROGRAM W3PRNC
   !
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972)
   TIMEDELAY = 0
-  print*,'[CB] NTI',NTI
   DO ITIME=1,NTI
     !
     ! 8.a Read new time and fields
@@ -1838,7 +1820,6 @@ PROGRAM W3PRNC
     CALL CHECK_ERR(IRET)
     IRET=NF90_GET_VAR(NCID,VARIDTMP,CURJULDAY,start=(/ITIME/))
     call CHECK_ERR(IRET)
-    print*,'Got time',itime,curjulday
     IF (INDEX(TIMEUNITS, "seconds").NE.0)   CURJULDAY=CURJULDAY/86400.
     IF (INDEX(TIMEUNITS, "minutes").NE.0)   CURJULDAY=CURJULDAY/1440.
     IF (INDEX(TIMEUNITS, "hours").NE.0)     CURJULDAY=CURJULDAY/24.
@@ -1851,17 +1832,17 @@ PROGRAM W3PRNC
     IF (STPJULDAY.LT.CURJULDAY) EXIT
 
     ! convert julday to date and time
-    IF(CALTYPE .EQ. 'standard') THEN
+!    IF(CALTYPE .EQ. 'standard') THEN
       CALL J2D(CURJULDAY,CURDATE,IERR)
-    ELSE IF(CALTYPE .EQ. '360_day') THEN
-      CURDATE(1) = INT(CURJULDAY / 360) + 1800 ! (base year is 1800)
-      CURDATE(2) = MOD(INT(CURJULDAY / 30), 12) + 1
-      CURDATE(3) = MOD(INT(CURJULDAY), 30) + 1
-      SECS = (CURJULDAY - IDINT(CURJULDAY)) * 86400
-      CURDATE(5) = SECS / 3600
-      CURDATE(6) = MOD(SECS, 3600) / 60
-      CURDATE(7) = MOD(SECS, 60)
-    ENDIF
+!    ELSE IF(CALTYPE .EQ. '360_day') THEN
+!      CURDATE(1) = INT(CURJULDAY / 360) + 1800 ! (base year is 1800)
+!      CURDATE(2) = MOD(INT(CURJULDAY / 30), 12) + 1
+!      CURDATE(3) = MOD(INT(CURJULDAY), 30) + 1
+!      SECS = (CURJULDAY - IDINT(CURJULDAY)) * 86400
+!      CURDATE(5) = SECS / 3600
+!      CURDATE(6) = MOD(SECS, 3600) / 60
+!      CURDATE(7) = MOD(SECS, 60)
+!    ENDIF
     CALL D2T(CURDATE,TIME,IERR)
     CALL STME21 (TIME,IDTIME)
 
@@ -2762,28 +2743,5 @@ SUBROUTINE CHECK_ERROR(IRET, ILINE)
   RETURN
 
 END SUBROUTINE CHECK_ERROR
-
-!> @brief Convert a "360 day" calendar date to a pseudo-Julian date
-!> @details Convert a date based on a "360 day" climate calendar (30 days
-!>          per month) to a pseudo-Julian date (number of days since 
-!>          1800-01-01 00:00:00)
-!> @param DAT(8) Date/Time components, as returned from DATE_AND_TIME(3f).
-!> @param JUL360 Pseudo-Julian day based on 360 day calendar
-!> @author Chris Bunney  @date 22 Feb 2022
-SUBROUTINE D2J_360(DAT, JUL360, IERR)
-  INTEGER,INTENT(IN)            :: DAT(8)
-  DOUBLE PRECISION,INTENT(OUT)  :: JUL360
-  INTEGER, INTENT(OUT)          :: IERR
-
-
-  JUL360 = (DAT(1) - 1800) * 360.0 +     &  ! Years (since 1800)
-           (DAT(2) - 1   ) * 30.0  +     &  ! Month
-           (DAT(3) - 1)            +     &  ! Day
-            DAT(5)/24.0_8          +     &  ! Hour
-            DAT(6)/1440.0_8        +     &  ! Minute
-            DAT(7)/86400.0_8                ! Second
-
-  IERR = 0 ! TODO!
-END SUBROUTINE D2J_360
 
 !==============================================================================
