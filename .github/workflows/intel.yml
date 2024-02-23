@@ -13,7 +13,7 @@ concurrency:
 
 # Set I_MPI_CC/F90 so Intel MPI wrapper uses icc/ifort instead of gcc/gfortran
 env:
-  cache_key: intel10-3
+  cache_key: intel12
   CC: icc
   FC: ifort
   CXX: icpc
