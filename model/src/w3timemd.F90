@@ -1456,11 +1456,13 @@ CONTAINS
     SECOND=SNGL((JULIAN-DBLE(IJUL))*SECDAY)      ! Seconds from beginning of Jul. Day
     SECOND=SECOND+(tz*60)
 
-    IF(SECOND.GE.(SECDAY/2.0d0)) THEN            ! In next calendar day
-      IJUL=IJUL+1
-      SECOND=SECOND-(SECDAY/2.0d0)               ! Adjust from noon to midnight
-    ELSE                                         ! In same calendar day
-      SECOND=SECOND+(SECDAY/2.0d0)               ! Adjust from noon to midnight
+    IF(CALTYPE .EQ. "standard") THEN
+      IF(SECOND.GE.(SECDAY/2.0d0)) THEN          ! In next calendar day
+        IJUL=IJUL+1
+        SECOND=SECOND-(SECDAY/2.0d0)             ! Adjust from noon to midnight
+      ELSE                                       ! In same calendar day
+        SECOND=SECOND+(SECDAY/2.0d0)             ! Adjust from noon to midnight
+      END IF
     END IF
 
     IF(SECOND.GE.SECDAY) THEN                    ! Final check to prevent time 24:00:00
