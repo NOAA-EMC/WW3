@@ -800,13 +800,16 @@ PROGRAM W3PRNC
   CALL CHECK_ERR(IRET)
   IRET=NF90_GET_ATT(NCID,VARIDTMP,"calendar",CALENDAR)
   IF ( IRET/=NF90_NOERR ) THEN
+    ! No calendar attribute - default to "standard"
     WRITE(NDSE,1028)
+    CALENDAR = "standard"
   ELSE IF ((INDEX(CALENDAR, "standard") .GT. 0) .OR. &
         (INDEX(CALENDAR, "gregorian") .GT. 0)) THEN
     CALENDAR = "standard"
   ELSE IF (INDEX(CALENDAR, "360_day") .GT. 0) THEN
     CALENDAR = "360_day"
   ELSE
+    ! Calendar attribute set, but not a recognised calendar.
     WRITE(NDSE,1029) CALENDAR
     CALENDAR = "standard" ! Default to standard calendar. Better to maybe fail?
   END IF
