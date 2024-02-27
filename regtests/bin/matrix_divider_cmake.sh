@@ -73,6 +73,7 @@ count=0
   cat before >> matrix${countf}
   cat list_mpi_$i >> matrix${countf}
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'matrix.err'/'matrix${countf}.err'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
   echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}*'                    >> matrix${countf}
@@ -94,6 +95,7 @@ count=0
   cat before >> matrix${countf}
   cat list_omp_$i >> matrix${countf}
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'matrix.err'/'matrix${countf}.err'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
   echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}*'                    >> matrix${countf}
@@ -115,6 +117,7 @@ count=0
   cat before >> matrix${countf}
   cat list_serial_$i >> matrix${countf}
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'matrix.err'/'matrix${countf}.err'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
   echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}*'                    >> matrix${countf}
@@ -136,6 +139,7 @@ count=0
   cat before >> matrix${countf}
   cat list_heavy >> matrix${countf}
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'matrix.err'/'matrix${countf}.err'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}
   echo '  [[ -d ${path_build_root} ]] && rm -rf ${path_build_root}*'                    >> matrix${countf}
@@ -156,6 +160,7 @@ count=0
   sed -i 's/'n\ 24'/'n\ 140'/gI' matrix${countf}
   cat list_ufs >> matrix${countf}
   sed -i 's/'matrix.out'/'matrix${countf}.out'/gI' matrix${countf}
+  sed -i 's/'matrix.err'/'matrix${countf}.err'/gI' matrix${countf}
   sed -i 's/'##SBATCH'/'#SBATCH'/gI' matrix${countf}
   sed -i 's/'buildmatrix'/'buildmatrix${countf}'/gI' matrix${countf}
   sed -i 's/'ww3_regtest'/'ww3_regtest_${countf}'/gI' matrix${countf}

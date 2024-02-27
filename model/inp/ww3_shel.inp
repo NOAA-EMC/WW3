@@ -178,10 +178,10 @@ $  F  T  5     3   CGE        CGE   Energy flux
 $  F  T  5     4   PHIAW      FAW   Air-sea energy flux
 $  F  T  5     5   TAUWI[X,Y] TAW   Net wave-supported stress
 $  F  T  5     6   TAUWN[X,Y] TWA   Negative part of the wave-supported stress
-$  F  F  5     7   WHITECAP   WCC   Whitecap coverage
-$  F  F  5     8   WHITECAP   WCF   Whitecap thickness
-$  F  F  5     9   WHITECAP   WCH   Mean breaking height
-$  F  F  5    10   WHITECAP   WCM   Whitecap moment
+$  F  F  5     7   WCAP_COV   WCC   Whitecap coverage
+$  F  F  5     8   WCAP_THK   WCF   Whitecap thickness
+$  F  F  5     9   WCAP_BHS   WCH   Mean breaking height
+$  F  F  5    10   WCAP_MNT   WCM   Whitecap moment
 $  F  F  5    11   FWS        FWS   Wind sea mean period
 $   -------------------------------------------------
 $        6                          Wave-ocean layer

@@ -283,6 +283,7 @@ PROGRAM W3SHEL
   USE W3IOPOMD
   USE W3SERVMD, ONLY : NEXTLN, EXTCDE
   USE W3TIMEMD
+  USE W3SRCEMD, ONLY: W3SRCE_INIT
 
 #ifdef W3_OASIS
   USE W3OACPMD, ONLY: CPL_OASIS_INIT, CPL_OASIS_GRID,            &
@@ -631,6 +632,10 @@ PROGRAM W3SHEL
   WRITE (NDST,9000) (NDS(I),I=1,12)
   WRITE (NDST,9001) (NTRACE(I),I=1,2)
 #endif
+
+  ! Source term refactor - init some stuff in W3SRCE
+  CALL W3SRCE_INIT()
+
   !
   ! 1.c Local parameters
   !

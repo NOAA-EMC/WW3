@@ -40,6 +40,9 @@ MODULE W3SRC4MD
   !/    04-Sep-2011 : Estimation of whitecap stats.       ( version 4.04 )
   !/    13-Nov-2013 : Reduced frequency range with IG     ( version 4.13 )
   !/    01-Mar-2023 : Clean up of SDS4                    ( version 7.14 )
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !/
   !  1. Purpose :
   !
@@ -2000,7 +2003,9 @@ CONTAINS
   !> @param[in]  IX         Grid Index.
   !> @param[in]  IY         Grid Index.
   !> @param[out] BRLAMBDA   Phillips' Lambdas.
-  !> @param[out] WHITECAP
+  !> @param[out] WCAP_COV   Whitecap coverage.
+  !> @param[out] WCAP_THK   Whitecap thickness.
+  !> @param[out] WCAP_MNT   Whitecap moment.
   !> @param[in]  DLWMEAN
   !>
   !> @author F. Ardhuin
@@ -2009,7 +2014,7 @@ CONTAINS
   !> @date   13-Aug-2021
   !>
   SUBROUTINE W3SDS4 (A, K, CG, USTAR, USDIR, DEPTH, DAIR, SRHS,    &
-       DDIAG, IX, IY, BRLAMBDA, WHITECAP, DLWMEAN )
+       DDIAG, IX, IY, BRLAMBDA, WCAP_COV, WCAP_THK, WCAP_MNT, DLWMEAN )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -2120,7 +2125,7 @@ CONTAINS
     REAL, INTENT(IN)        :: A(NSPEC), K(NK), CG(NK),            &
          DEPTH, DAIR, USTAR, USDIR, DLWMEAN
     REAL, INTENT(OUT)       :: SRHS(NSPEC), DDIAG(NSPEC), BRLAMBDA(NSPEC)
-    REAL, INTENT(OUT)       :: WHITECAP(1:4)
+    REAL, INTENT(OUT)       :: WCAP_COV, WCAP_THK, WCAP_MNT
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -2557,7 +2562,9 @@ CONTAINS
       RETURN
     END IF
     !
-    WHITECAP(1:4) = 0.
+    WCAP_COV = 0.
+    WCAP_THK = 0.
+    WCAP_MNT = 0.
     !
     ! precomputes integration of Lambda over direction
     ! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
@@ -2586,8 +2593,8 @@ CONTAINS
       ! Computes the Total WhiteCap Coverage (a=5. ; Reul and Chapron, 2003)
       !
       DO IK=IK1,MIN(FLOOR(AAIRCMIN),NK)
-        WHITECAP(1) = WHITECAP(1) + COEF4(IK) * (1-WHITECAP(1))
-        WHITECAP(4) = WHITECAP(4) + COEF5(IK)
+        WCAP_COV = WCAP_COV + COEF4(IK) * (1-WCAP_COV)
+        WCAP_MNT = WCAP_MNT + COEF5(IK)
       END DO
     END IF
     !/
@@ -2617,7 +2624,7 @@ CONTAINS
         !
         ! Computes foam-layer thickness (Reul and Chapron, 2003)
         !
-        WHITECAP(2) = WHITECAP(2) + COEF4(IK) * MFT
+        WCAP_THK = WCAP_THK + COEF4(IK) * MFT
       END DO
     END IF
     !

@@ -163,9 +163,11 @@ PROGRAM W3OUTF
        TAUOX, TAUOY, TAUWIX,BHD,                   &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
-       TAUWNX, TAUWNY, TAUBBL, PHIBBL, CFLXYMAX,   &
-       CFLTHMAX, CFLKMAX, BEDFORMS, WHITECAP, T02, &
-       CGE, T01, HSIG, STMAXE, STMAXD, HMAXE,      &
+       TAUWNX, TAUWNY, TAUBBLX, TAUBBLY, PHIBBL,   &
+       CFLXYMAX, CFLTHMAX, CFLKMAX,                &
+       BEDROUGH, BEDRIPX, BEDRIPY,                 &
+       WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,     &
+       T02, CGE, T01, HSIG, STMAXE, STMAXD, HMAXE, &
        HCMAXE, HMAXD, HCMAXD, MSSD, MSCD, WBT,     &
        WNMEAN, TAUA, TAUADIR
   USE W3ODATMD, ONLY: NDSO, NDSE, NDST, NOGRP, NGRPP, IDOUT,      &
@@ -1654,9 +1656,9 @@ CONTAINS
             UNITS  = '1'
             ENAME  = '.wcc'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,1)
+              XS1    = WCAP_COV(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,1) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_COV(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
@@ -1666,9 +1668,9 @@ CONTAINS
             UNITS  = 'm'
             ENAME  = '.wcf'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,2)
+              XS1    = WCAP_THK(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,2) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_THK(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
@@ -1678,9 +1680,9 @@ CONTAINS
             UNITS  = 'm'
             ENAME  = '.wch'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,3)
+              XS1    = WCAP_BHS(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,3) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_BHS(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
@@ -1690,9 +1692,9 @@ CONTAINS
             UNITS  = '1'
             ENAME  = '.wcm'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = WHITECAP(1:NSEA,4)
+              XS1    = WCAP_MNT(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WHITECAP(1:NSEA,4) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, WCAP_MNT(1:NSEA) &
                    , MAPSF, X1 )
             ENDIF
             !
@@ -2036,19 +2038,19 @@ CONTAINS
             ENAME  = '.bed'
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDFORMS(1:NSEA,2), &
-                 BEDFORMS(1:NSEA,3), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDRIPX(1:NSEA), &
+                 BEDRIPY(1:NSEA), AnglD)
 #endif
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = BEDFORMS(1:NSEA,1)
-              XS2    = BEDFORMS(1:NSEA,2)
-              XS3    = BEDFORMS(1:NSEA,3)
+              XS1    = BEDROUGH(1:NSEA)
+              XS2    = BEDRIPX(1:NSEA)
+              XS3    = BEDRIPY(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,1) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDROUGH(1:NSEA) &
                    , MAPSF, X1 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,2) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDRIPX(1:NSEA) &
                    , MAPSF, X2 )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDFORMS(1:NSEA,3) &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, BEDRIPY(1:NSEA) &
                    , MAPSF, XY )
             ENDIF
             !
@@ -2071,16 +2073,16 @@ CONTAINS
             ENAME  = '.tbb'
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
-                 TAUBBL(1:NSEA,2), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBLX(1:NSEA), &
+                 TAUBBLY(1:NSEA), AnglD)
 #endif
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = TAUBBL(1:NSEA,1)
-              XS2    = TAUBBL(1:NSEA,2)
+              XS1    = TAUBBLX(1:NSEA)
+              XS2    = TAUBBLY(1:NSEA)
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,1)  &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBLX(1:NSEA)  &
                    , MAPSF, XX )
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBL(1:NSEA,2)  &
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, TAUBBLY(1:NSEA)  &
                    , MAPSF, XY )
             ENDIF
             !

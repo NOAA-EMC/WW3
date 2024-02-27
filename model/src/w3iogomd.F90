@@ -74,6 +74,9 @@ MODULE W3IOGOMD
   !/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
   !/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
   !/                  min/max freq band (B. Pouliot, CMC)
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2503,17 +2506,19 @@ CONTAINS
     USE W3ADATMD, ONLY: HS, WLM, T02, T0M1, T01, FP0, THM, THS, THP0,&
          WBT, WNMEAN
     USE W3ADATMD, ONLY: DTDYN, FCUT, ABA, ABD, UBA, UBD, SXX, SYY, SXY,&
-         PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,    &
-         PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2,  &
-         PEP, USERO, TAUOX, TAUOY, TAUWIX, TAUWIY,    &
-         PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,        &
-         USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
-         MSCD, QP, TAUWNX, TAUWNY, CHARN, TWS, BHD,   &
-         PHIBBL, TAUBBL, WHITECAP, BEDFORMS, CGE, EF, &
-         CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
-         TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
-         STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-         USSP, TAUOCX, TAUOCY, QKK
+         PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,     &
+         PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2,    &
+         PEP, USERO, TAUOX, TAUOY, TAUWIX, TAUWIY,     &
+         PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,         &
+         USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,     &
+         MSCD, QP, TAUWNX, TAUWNY, CHARN, TWS, BHD,    &
+         PHIBBL, TAUBBLX, TAUBBLY,                     &
+         WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,       &
+         BEDROUGH, BEDRIPX, BEDRIPY, CGE, EF,          &
+         CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,     &
+         TH1M, STH1M, TH2M, STH2M, HSIG, PHICE,        &
+         TAUICEX, TAUICEY, STMAXE, STMAXD, HMAXE,      &
+         HCMAXE, HMAXD, HCMAXD, USSP, TAUOCX, TAUOCY, QKK
     !/
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2861,10 +2866,10 @@ CONTAINS
             TAUWNX(ISEA) = UNDEF
             TAUWNY(ISEA) = UNDEF
           END IF
-          IF ( FLOGRD( 5, 7) ) WHITECAP(ISEA,1) = UNDEF
-          IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
-          IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
-          IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
+          IF ( FLOGRD( 5, 7) ) WCAP_COV(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 8) ) WCAP_THK(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 9) ) WCAP_BHS(ISEA) = UNDEF
+          IF ( FLOGRD( 5,10) ) WCAP_MNT(ISEA) = UNDEF
           !
           IF ( FLOGRD( 6, 1) ) THEN
             SXX   (ISEA) = UNDEF
@@ -2891,7 +2896,10 @@ CONTAINS
           END IF
           IF ( FLOGRD( 6, 8) ) US3D(ISEA,:) = UNDEF
           IF ( FLOGRD( 6, 9) ) P2SMS(ISEA,:) = UNDEF
-          IF ( FLOGRD( 6, 10) ) TAUICE(ISEA,:) = UNDEF
+          IF ( FLOGRD( 6, 10) ) THEN
+            TAUICEX(ISEA) = UNDEF
+            TAUICEY(ISEA) = UNDEF
+          END IF
           IF ( FLOGRD( 6, 11) ) PHICE(ISEA) = UNDEF
           IF ( FLOGRD( 6, 12) ) USSP(ISEA,:) = UNDEF
           IF ( FLOGRD( 6, 13) ) THEN
@@ -2907,9 +2915,16 @@ CONTAINS
             UBA   (ISEA) = UNDEF
             UBD   (ISEA) = UNDEF
           END IF
-          IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
+          IF ( FLOGRD( 7, 3) ) THEN
+           BEDROUGH(ISEA) = UNDEF
+           BEDRIPY(ISEA) = UNDEF
+           BEDRIPY(ISEA) = UNDEF
+          END IF
           IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
-          IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
+          IF ( FLOGRD( 7, 5) ) THEN
+            TAUBBLX(ISEA) = UNDEF
+            TAUBBLY(ISEA) = UNDEF
+          END IF
           !
           IF ( FLOGRD( 8, 1) ) THEN
             MSSX  (ISEA) = UNDEF
@@ -2943,10 +2958,10 @@ CONTAINS
             TAUWNX(ISEA) = UNDEF
             TAUWNY(ISEA) = UNDEF
           END IF
-          IF ( FLOGRD( 5, 7) ) WHITECAP(ISEA,1) = UNDEF
-          IF ( FLOGRD( 5, 8) ) WHITECAP(ISEA,2) = UNDEF
-          IF ( FLOGRD( 5, 9) ) WHITECAP(ISEA,3) = UNDEF
-          IF ( FLOGRD( 5,10) ) WHITECAP(ISEA,4) = UNDEF
+          IF ( FLOGRD( 5, 7) ) WCAP_COV(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 8) ) WCAP_THK(ISEA) = UNDEF
+          IF ( FLOGRD( 5, 9) ) WCAP_BHS(ISEA) = UNDEF
+          IF ( FLOGRD( 5,10) ) WCAP_MNT(ISEA) = UNDEF
           !
           IF ( FLOGRD( 6, 2) )THEN
             TAUOX (ISEA) = UNDEF
@@ -2954,9 +2969,16 @@ CONTAINS
           END IF
           IF ( FLOGRD( 6, 4) ) PHIOC (ISEA) = UNDEF
           !
-          IF ( FLOGRD( 7, 3) ) BEDFORMS(ISEA,:) = UNDEF
+          IF ( FLOGRD( 7, 3) ) THEN
+            BEDROUGH(ISEA) = UNDEF
+            BEDRIPX(ISEA) = UNDEF
+            BEDRIPY(ISEA) = UNDEF
+          END IF
           IF ( FLOGRD( 7, 4) ) PHIBBL(ISEA) = UNDEF
-          IF ( FLOGRD( 7, 5) ) TAUBBL(ISEA,:) = UNDEF
+          IF ( FLOGRD( 7, 5) ) THEN
+            TAUBBLX(ISEA) = UNDEF
+            TAUBBLY(ISEA) = UNDEF
+          END IF
           !
         END IF
         !
@@ -3372,24 +3394,24 @@ CONTAINS
               WRITE ( NDSOA,* ) 'TAUWNY:', TAUWNY(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,1)
+              WRITE ( NDSOG ) WCAP_COV(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(1):', WHITECAP(1:NSEA,1)
+              WRITE ( NDSOA,* ) 'WCAP_COV:', WCAP_COV(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,2)
+              WRITE ( NDSOG ) WCAP_THK(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(2):', WHITECAP(1:NSEA,2)
+              WRITE ( NDSOA,* ) 'WCAP_THK:', WCAP_THK(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,3)
+              WRITE ( NDSOG ) WCAP_BHS(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(3):', WHITECAP(1:NSEA,3)
+              WRITE ( NDSOA,* ) 'WCAP_BHS:', WCAP_BHS(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
-              WRITE ( NDSOG ) WHITECAP(1:NSEA,4)
+              WRITE ( NDSOG ) WCAP_MNT(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'WHITECAP(4):', WHITECAP(1:NSEA,4)
+              WRITE ( NDSOA,* ) 'WCAP_MNT:', WCAP_MNT(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               WRITE ( NDSOG ) TWS(1:NSEA)
@@ -3473,13 +3495,13 @@ CONTAINS
               WRITE ( NDSOA,* ) 'P2SMS:', P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
 #endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
-              WRITE ( NDSOG ) TAUICE(1:NSEA,1)
+              WRITE ( NDSOG ) TAUICEX(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'TAUICE(1):', TAUICE(1:NSEA,1)
+              WRITE ( NDSOA,* ) 'TAUICEX:', TAUICEX(1:NSEA)
 #endif
-              WRITE ( NDSOG ) TAUICE(1:NSEA,2)
+              WRITE ( NDSOG ) TAUICEY(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'TAUICE(2):', TAUICE(1:NSEA,2)
+              WRITE ( NDSOA,* ) 'TAUICEY:', TAUICEY(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
               WRITE ( NDSOG ) PHICE(1:NSEA)
@@ -3548,17 +3570,17 @@ CONTAINS
               !                    WRITE ( NDSOG ) UBA(1:NSEA)
               !                    WRITE ( NDSOG ) UBD(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
-              WRITE ( NDSOG ) BEDFORMS(1:NSEA,1)
+              WRITE ( NDSOG ) BEDROUGH(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'BEDFORMS(1):', BEDFORMS(1:NSEA,1)
+              WRITE ( NDSOA,* ) 'BEDROUGH:', BEDROUGH(1:NSEA)
 #endif
-              WRITE ( NDSOG ) BEDFORMS(1:NSEA,2)
+              WRITE ( NDSOG ) BEDRIPX(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'BEDFORMS(2):', BEDFORMS(1:NSEA,2)
+              WRITE ( NDSOA,* ) 'BEDRIPX:', BEDRIPX(1:NSEA)
 #endif
-              WRITE ( NDSOG ) BEDFORMS(1:NSEA,3)
+              WRITE ( NDSOG ) BEDRIPY(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'BEDFORMS(3):', BEDFORMS(1:NSEA,3)
+              WRITE ( NDSOA,* ) 'BEDRIPY:', BEDRIPY(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               WRITE ( NDSOG ) PHIBBL(1:NSEA)
@@ -3566,13 +3588,13 @@ CONTAINS
               WRITE ( NDSOA,* ) 'PHIBBL:', PHIBBL(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
-              WRITE ( NDSOG ) TAUBBL(1:NSEA,1)
+              WRITE ( NDSOG ) TAUBBLX(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'TAUBBL(1):', TAUBBL(1:NSEA,1)
+              WRITE ( NDSOA,* ) 'TAUBBLX:', TAUBBLX(1:NSEA)
 #endif
-              WRITE ( NDSOG ) TAUBBL(1:NSEA,2)
+              WRITE ( NDSOG ) TAUBBLY(1:NSEA)
 #ifdef W3_ASCII
-              WRITE ( NDSOA,* ) 'TAUBBL(2):', TAUBBL(1:NSEA,2)
+              WRITE ( NDSOA,* ) 'TAUBBLY:', TAUBBLY(1:NSEA)
 #endif
               !
               !     Section 8)
@@ -3847,16 +3869,16 @@ CONTAINS
                    TAUWNY(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,1)
+                   WCAP_COV(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,2)
+                   WCAP_THK(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,3)
+                   WCAP_BHS(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   WHITECAP(1:NSEA,4)
+                   WCAP_MNT(1:NSEA)
             ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                    TWS(1:NSEA)
@@ -3903,9 +3925,9 @@ CONTAINS
                    P2SMS(1:NSEA,P2MSF(2):P2MSF(3))
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   TAUICE(1:NSEA,1)
+                   TAUICEX(1:NSEA)
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   TAUICE(1:NSEA,2)
+                   TAUICEY(1:NSEA)
             ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 11 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                    PHICE(1:NSEA)
@@ -3931,19 +3953,19 @@ CONTAINS
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) UBD(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   BEDFORMS(1:NSEA,1)
+                   BEDROUGH(1:NSEA)
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   BEDFORMS(1:NSEA,2)
+                   BEDRIPX(1:NSEA)
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   BEDFORMS(1:NSEA,3)
+                   BEDRIPY(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 4 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
                    PHIBBL(1:NSEA)
             ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   TAUBBL(1:NSEA,1)
+                   TAUBBLX(1:NSEA)
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR)         &
-                   TAUBBL(1:NSEA,2)
+                   TAUBBLY(1:NSEA)
               !
               !     Section 8)
               !

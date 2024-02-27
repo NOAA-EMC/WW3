@@ -62,6 +62,9 @@ MODULE W3ADATMD
   !/    21-Aug-2018 : Add WBT parameter                   ( version 6.06 )
   !/    22-Mar-2021 : Adds TAUA, WNMEAN, TAUOC parameters ( version 7.13 )
   !/    06-May-2021 : SMC shares variables with PR2/3.    ( version 7.13 )
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
@@ -156,11 +159,10 @@ MODULE W3ADATMD
   !      PHIAW     R.A.  Public   Wind to wave energy flux.
   !      TAUWIX/Y  R.A.  Public   Wind to wave energy flux.
   !      TAUWNX/Y  R.A.  Public   Wind to wave energy flux.
-  !      WHITECAP  R.A.  Public    1 : Whitecap coverage
-  !                                2 : Whitecap thickness
-  !                                3 : Mean breaking height
-  !                                4 : Mean breaking height
-  !
+  !      WCAP_COV  R.A.  Public   Whitecap coverage
+  !      WCAP_THK  R.A.  Public   Whitecap thickness
+  !      WCAP_BHS  R.A.  Public   Mean breaking height
+  !      WCAP_MNT  R.A.  Public   Whitecap moment
   !      Sxx       R.A.  Public   Radiation stresses.
   !      TAUOX/Y   R.A.  Public   Wave-ocean momentum flux.
   !      BHD       R.A.  Public   Wave-induced pressure (J term, Smith JPO 2006)
@@ -168,7 +170,7 @@ MODULE W3ADATMD
   !      TUSX/Y    R.A.  Public   Volume transport associated to Stokes drift.
   !      USSX/Y    R.A.  Public   Surface Stokes drift.
   !      TAUOCX/Y  R.A.  Public   Total ocean momentum flux
-  !      TAUICE    R.A.  Public   Wave-ice momentum flux.
+  !      TAUICEX/Y R.A.  Public   Wave-ice momentum flux.
   !      PHICE     R.A.  Public   Waves to ice energy flux.
   !
   !      US3D      R.A.  Public   3D Stokes drift.
@@ -178,9 +180,11 @@ MODULE W3ADATMD
   !      ABD       R.A.  Public   Corresponding direction.
   !      UBA       R.A.  Public   Near-bottom rms wave velocity.
   !      UBD       R.A.  Public   Corresponding direction.
-  !      BEDFORMS  R.A.  Public   Bed for parameters
+  !      BEDROUGH  R.A.  Public   Bedform roughness
+  !      BEDRIPX   R.A.  Public   Bedform ripple wavelength (x)
+  !      BEDRIPY   R.A.  Public   Bedform ripple wavelength (y)
   !      PHIBBL    R.A.  Public   Energy loss in WBBL.
-  !      TAUBBL    R.A.  Public   Momentum loss in WBBL.
+  !      TAUBBLX/Y R.A.  Public   Momentum loss in WBBL.
   !
   !      MSSX/Y    R.A.  Public   Surface mean square slopes in X and Y direction.
   !      MSCX/Y    R.A.  Public   Phillips constant.
@@ -440,11 +444,13 @@ MODULE W3ADATMD
     ! Output fields group 5)
     !
     REAL, POINTER         ::  CHARN(:),  CGE(:),  PHIAW(:),       &
-         TAUWIX(:),  TAUWIY(:),  TAUWNX(:),  &
-         TAUWNY(:),  WHITECAP(:,:), TWS(:)
+         TAUWIX(:),  TAUWIY(:),  TAUWNX(:), TAUWNY(:),            &
+         WCAP_COV(:), WCAP_THK(:), WCAP_BHS(:), WCAP_MNT(:),      &
+         TWS(:)
     REAL, POINTER         :: XCHARN(:), XCGE(:), XPHIAW(:),       &
-         XTAUWIX(:), XTAUWIY(:), XTAUWNX(:),  &
-         XTAUWNY(:), XWHITECAP(:,:), XTWS(:)
+         XTAUWIX(:), XTAUWIY(:), XTAUWNX(:), XTAUWNY(:),          &
+         XWCAP_COV(:), XWCAP_THK(:), XWCAP_BHS(:), XWCAP_MNT(:),  &
+         XTWS(:)
     !
     ! Output fields group 6)
     !
@@ -453,24 +459,24 @@ MODULE W3ADATMD
          TUSX(:),  TUSY(:),  USSX(:),        &
          USSY(:), TAUOCX(:), TAUOCY(:),      &
          PRMS(:),  TPMS(:), PHICE(:),        &
-         TAUICE(:,:)
+         TAUICEX(:), TAUICEY(:)
     REAL, POINTER         ::  P2SMS(:,:),  US3D(:,:), USSP(:,:)
     REAL, POINTER         :: XSXX(:), XSYY(:), XSXY(:), XTAUOX(:),&
          XTAUOY(:), XBHD(:), XPHIOC(:),       &
          XTUSX(:), XTUSY(:), XUSSX(:),        &
          XUSSY(:), XTAUOCX(:), XTAUOCY(:),    &
          XPRMS(:), XTPMS(:), XPHICE(:),       &
-         XTAUICE(:,:)
+         XTAUICEX(:), XTAUICEY(:)
     REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:), XUSSP(:,:)
     !
     ! Output fields group 7)
     !
     REAL, POINTER         ::  ABA(:),  ABD(:),  UBA(:),  UBD(:),  &
-         BEDFORMS(:,:),  PHIBBL(:),          &
-         TAUBBL(:,:)
+         BEDROUGH(:), BEDRIPX(:), BEDRIPY(:), PHIBBL(:),          &
+         TAUBBLX(:), TAUBBLY(:)
     REAL, POINTER         :: XABA(:), XABD(:), XUBA(:), XUBD(:),  &
-         XBEDFORMS(:,:), XPHIBBL(:),          &
-         XTAUBBL(:,:)
+         XBEDROUGH(:), XBEDRIPX(:), XBEDRIPY(:), XPHIBBL(:),      &
+         XTAUBBLX(:), XTAUBBLY(:)
     !
     ! Output fields group 8)
     !
@@ -599,18 +605,20 @@ MODULE W3ADATMD
        PTM1(:,:), PT1(:,:), PT2(:,:),PEP(:,:)
   !
   REAL, POINTER           :: CHARN(:), CGE(:), PHIAW(:),          &
-       TAUWIX(:), TAUWIY(:), TAUWNX(:),     &
-       TAUWNY(:), WHITECAP(:,:), TWS(:)
+       TAUWIX(:), TAUWIY(:), TAUWNX(:), TAUWNY(:),                &
+       WCAP_COV(:), WCAP_THK(:), WCAP_BHS(:), WCAP_MNT(:),        &
+       TWS(:)
   !
   REAL, POINTER           :: SXX(:), SYY(:), SXY(:), TAUOX(:),    &
        TAUOY(:), BHD(:), PHIOC(:),          &
        TUSX(:), TUSY(:), USSX(:), USSY(:),  &
        TAUOCX(:), TAUOCY(:), PRMS(:),       &
-       TPMS(:), PHICE(:), TAUICE(:,:)
+       TPMS(:), PHICE(:), TAUICEX(:), TAUICEY(:)
   REAL, POINTER           :: P2SMS(:,:), US3D(:,:), USSP(:,:)
   !
   REAL, POINTER           :: ABA(:), ABD(:), UBA(:), UBD(:),      &
-       BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
+       BEDROUGH(:), BEDRIPX(:), BEDRIPY(:), PHIBBL(:),            &
+       TAUBBLX(:), TAUBBLY(:)
   !
   REAL, POINTER           :: MSSX(:), MSSY(:), MSSD(:),           &
        MSCX(:), MSCY(:), MSCD(:), QKK(:)
@@ -1156,7 +1164,7 @@ CONTAINS
     !
     !    Friction velocity UST and USTDIR in W3WDATMD
     !
-    ALLOCATE ( WADATS(IMOD)%CHARN   (NSEALM),                       &
+    ALLOCATE ( WADATS(IMOD)%CHARN   (NSEALM),                 &
          WADATS(IMOD)%TWS     (NSEALM),                       &
          WADATS(IMOD)%CGE     (NSEALM),                       &
          WADATS(IMOD)%PHIAW   (NSEALM),                       &
@@ -1164,7 +1172,10 @@ CONTAINS
          WADATS(IMOD)%TAUWIY  (NSEALM),                       &
          WADATS(IMOD)%TAUWNX  (NSEALM),                       &
          WADATS(IMOD)%TAUWNY  (NSEALM),                       &
-         WADATS(IMOD)%WHITECAP(NSEALM,4),                     &
+         WADATS(IMOD)%WCAP_COV(NSEALM),                       &
+         WADATS(IMOD)%WCAP_THK(NSEALM),                       &
+         WADATS(IMOD)%WCAP_BHS(NSEALM),                       &
+         WADATS(IMOD)%WCAP_MNT(NSEALM),                       &
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1176,7 +1187,10 @@ CONTAINS
     WADATS(IMOD)%TAUWIY   = UNDEF
     WADATS(IMOD)%TAUWNX   = UNDEF
     WADATS(IMOD)%TAUWNY   = UNDEF
-    WADATS(IMOD)%WHITECAP = UNDEF
+    WADATS(IMOD)%WCAP_COV = UNDEF
+    WADATS(IMOD)%WCAP_THK = UNDEF
+    WADATS(IMOD)%WCAP_BHS = UNDEF
+    WADATS(IMOD)%WCAP_MNT = UNDEF
 
     call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 5')
     !
@@ -1198,7 +1212,8 @@ CONTAINS
          WADATS(IMOD)%PRMS  (NSEALM) ,                        &
          WADATS(IMOD)%TPMS  (NSEALM) ,                        &
          WADATS(IMOD)%PHICE (NSEALM) ,                        &
-         WADATS(IMOD)%TAUICE(NSEALM,2),                       &
+         WADATS(IMOD)%TAUICEX(NSEALM),                        &
+         WADATS(IMOD)%TAUICEY(NSEALM),                        &
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1234,7 +1249,8 @@ CONTAINS
     WADATS(IMOD)%PRMS   = UNDEF
     WADATS(IMOD)%TPMS   = UNDEF
     WADATS(IMOD)%PHICE  = UNDEF
-    WADATS(IMOD)%TAUICE = UNDEF
+    WADATS(IMOD)%TAUICEX = UNDEF
+    WADATS(IMOD)%TAUICEY = UNDEF
     IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
     IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
     IF (  USSPF(1).GT.0 ) WADATS(IMOD)%USSP   = UNDEF
@@ -1245,18 +1261,25 @@ CONTAINS
     !
     ALLOCATE ( WADATS(IMOD)%ABA(NSEALM) , WADATS(IMOD)%ABD(NSEALM) , &
          WADATS(IMOD)%UBA(NSEALM) , WADATS(IMOD)%UBD(NSEALM) ,       &
-         WADATS(IMOD)%BEDFORMS(NSEALM,3),                            &
+         WADATS(IMOD)%BEDROUGH(NSEALM),                              &
+         WADATS(IMOD)%BEDRIPX(NSEALM),                               &
+         WADATS(IMOD)%BEDRIPY(NSEALM),                               &
          WADATS(IMOD)%PHIBBL  (NSEALM)  ,                            &
-         WADATS(IMOD)%TAUBBL  (NSEALM,2), STAT=ISTAT           )
+         WADATS(IMOD)%TAUBBLX (NSEALM),                              &
+         WADATS(IMOD)%TAUBBLY (NSEALM),                              &
+         STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
     WADATS(IMOD)%ABA    = UNDEF
     WADATS(IMOD)%ABD    = UNDEF
     WADATS(IMOD)%UBA    = UNDEF
     WADATS(IMOD)%UBD    = UNDEF
-    WADATS(IMOD)%BEDFORMS = UNDEF
+    WADATS(IMOD)%BEDROUGH = UNDEF
+    WADATS(IMOD)%BEDRIPX = UNDEF
+    WADATS(IMOD)%BEDRIPY = UNDEF
     WADATS(IMOD)%PHIBBL = UNDEF
-    WADATS(IMOD)%TAUBBL = UNDEF
+    WADATS(IMOD)%TAUBBLX = UNDEF
+    WADATS(IMOD)%TAUBBLY = UNDEF
 
     call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 7')
     !
@@ -1995,10 +2018,22 @@ CONTAINS
     !
     IF ( OUTFLAGS( 5, 7) .OR. OUTFLAGS( 5, 8) .OR.           &
          OUTFLAGS( 5, 9) .OR. OUTFLAGS( 5,10)) THEN
-      ALLOCATE ( WADATS(IMOD)%XWHITECAP(NXXX,4), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_COV(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_THK(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_BHS(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_MNT(NXXX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     ELSE
-      ALLOCATE ( WADATS(IMOD)%XWHITECAP(1,4), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_COV(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_THK(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_BHS(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XWCAP_MNT(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
@@ -2018,7 +2053,10 @@ CONTAINS
     WADATS(IMOD)%XTAUWIY   = UNDEF
     WADATS(IMOD)%XTAUWNX   = UNDEF
     WADATS(IMOD)%XTAUWNY   = UNDEF
-    WADATS(IMOD)%XWHITECAP = UNDEF
+    WADATS(IMOD)%WCAP_COV  = UNDEF
+    WADATS(IMOD)%WCAP_THK  = UNDEF
+    WADATS(IMOD)%WCAP_BHS  = UNDEF
+    WADATS(IMOD)%WCAP_MNT  = UNDEF
     !
     IF ( OUTFLAGS( 6, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XSXX(NXXX), STAT=ISTAT )
@@ -2117,10 +2155,14 @@ CONTAINS
     END IF
     !
     IF ( OUTFLAGS( 6,10) ) THEN
-      ALLOCATE ( WADATS(IMOD)%XTAUICE(NXXX,2), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUICEX(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUICEY(NXXX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     ELSE
-      ALLOCATE ( WADATS(IMOD)%XTAUICE(1,2), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUICEX(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUICEY(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
@@ -2168,7 +2210,8 @@ CONTAINS
     WADATS(IMOD)%XUS3D   = UNDEF
     WADATS(IMOD)%XP2SMS  = UNDEF
     WADATS(IMOD)%XPHICE  = UNDEF
-    WADATS(IMOD)%XTAUICE = UNDEF
+    WADATS(IMOD)%XTAUICEX = UNDEF
+    WADATS(IMOD)%XTAUICEY = UNDEF
     WADATS(IMOD)%XUSSP   = UNDEF
     WADATS(IMOD)%XTAUOCX = UNDEF
     WADATS(IMOD)%XTAUOCY = UNDEF
@@ -2198,10 +2241,18 @@ CONTAINS
     END IF
     !
     IF ( OUTFLAGS( 7, 3) ) THEN
-      ALLOCATE ( WADATS(IMOD)%XBEDFORMS(NXXX,3), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDROUGH(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPX(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPY(NXXX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     ELSE
-      ALLOCATE ( WADATS(IMOD)%XBEDFORMS(1,3), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDROUGH(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPX(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XBEDRIPY(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
@@ -2214,10 +2265,14 @@ CONTAINS
     END IF
     !
     IF ( OUTFLAGS( 7, 5) ) THEN
-      ALLOCATE ( WADATS(IMOD)%XTAUBBL(NXXX,2), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUBBLX(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUBBLY(NXXX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     ELSE
-      ALLOCATE ( WADATS(IMOD)%XTAUBBL(1,2), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUBBLX(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XTAUBBLY(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
     !
@@ -2225,9 +2280,12 @@ CONTAINS
     WADATS(IMOD)%XABD    = UNDEF
     WADATS(IMOD)%XUBA    = UNDEF
     WADATS(IMOD)%XUBD    = UNDEF
-    WADATS(IMOD)%XBEDFORMS = UNDEF
+    WADATS(IMOD)%XBEDROUGH = UNDEF
+    WADATS(IMOD)%XBEDRIPX = UNDEF
+    WADATS(IMOD)%XBEDRIPY = UNDEF
     WADATS(IMOD)%XPHIBBL = UNDEF
-    WADATS(IMOD)%XTAUBBL = UNDEF
+    WADATS(IMOD)%XTAUBBLX = UNDEF
+    WADATS(IMOD)%XTAUBBLY = UNDEF
     !
     IF ( OUTFLAGS( 8, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XMSSX(NXXX), STAT=ISTAT )
@@ -2865,7 +2923,10 @@ CONTAINS
       TAUWIY   => WADATS(IMOD)%TAUWIY
       TAUWNX   => WADATS(IMOD)%TAUWNX
       TAUWNY   => WADATS(IMOD)%TAUWNY
-      WHITECAP => WADATS(IMOD)%WHITECAP
+      WCAP_COV => WADATS(IMOD)%WCAP_COV
+      WCAP_THK => WADATS(IMOD)%WCAP_THK
+      WCAP_BHS => WADATS(IMOD)%WCAP_BHS
+      WCAP_MNT => WADATS(IMOD)%WCAP_MNT
       !
       SXX    => WADATS(IMOD)%SXX
       SYY    => WADATS(IMOD)%SYY
@@ -2883,7 +2944,8 @@ CONTAINS
       P2SMS  => WADATS(IMOD)%P2SMS
       US3D   => WADATS(IMOD)%US3D
       PHICE  => WADATS(IMOD)%PHICE
-      TAUICE => WADATS(IMOD)%TAUICE
+      TAUICEX=> WADATS(IMOD)%TAUICEX
+      TAUICEY=> WADATS(IMOD)%TAUICEY
       USSP   => WADATS(IMOD)%USSP
       TAUOCX => WADATS(IMOD)%TAUOCX
       TAUOCY => WADATS(IMOD)%TAUOCY
@@ -2892,9 +2954,12 @@ CONTAINS
       ABD    => WADATS(IMOD)%ABD
       UBA    => WADATS(IMOD)%UBA
       UBD    => WADATS(IMOD)%UBD
-      BEDFORMS=> WADATS(IMOD)%BEDFORMS
+      BEDROUGH=> WADATS(IMOD)%BEDROUGH
+      BEDRIPX=> WADATS(IMOD)%BEDRIPX
+      BEDRIPY=> WADATS(IMOD)%BEDRIPY
       PHIBBL => WADATS(IMOD)%PHIBBL
-      TAUBBL => WADATS(IMOD)%TAUBBL
+      TAUBBLX=> WADATS(IMOD)%TAUBBLX
+      TAUBBLY=> WADATS(IMOD)%TAUBBLY
       !
       MSSX   => WADATS(IMOD)%MSSX
       MSSY   => WADATS(IMOD)%MSSY
@@ -3205,7 +3270,10 @@ CONTAINS
       TAUWIY   => WADATS(IMOD)%XTAUWIY
       TAUWNX   => WADATS(IMOD)%XTAUWNX
       TAUWNY   => WADATS(IMOD)%XTAUWNY
-      WHITECAP => WADATS(IMOD)%XWHITECAP
+      WCAP_COV => WADATS(IMOD)%XWCAP_COV
+      WCAP_THK => WADATS(IMOD)%XWCAP_THK
+      WCAP_BHS => WADATS(IMOD)%XWCAP_BHS
+      WCAP_MNT => WADATS(IMOD)%XWCAP_MNT
       !
       SXX    => WADATS(IMOD)%XSXX
       SYY    => WADATS(IMOD)%XSYY
@@ -3223,7 +3291,8 @@ CONTAINS
       P2SMS  => WADATS(IMOD)%XP2SMS
       US3D   => WADATS(IMOD)%XUS3D
       PHICE  => WADATS(IMOD)%XPHICE
-      TAUICE => WADATS(IMOD)%XTAUICE
+      TAUICEX=> WADATS(IMOD)%XTAUICEX
+      TAUICEY=> WADATS(IMOD)%XTAUICEY
       USSP   => WADATS(IMOD)%XUSSP
       TAUOCX => WADATS(IMOD)%XTAUOCX
       TAUOCY => WADATS(IMOD)%XTAUOCY
@@ -3231,9 +3300,12 @@ CONTAINS
       ABD    => WADATS(IMOD)%XABD
       UBA    => WADATS(IMOD)%XUBA
       UBD    => WADATS(IMOD)%XUBD
-      BEDFORMS=> WADATS(IMOD)%XBEDFORMS
+      BEDROUGH=> WADATS(IMOD)%XBEDROUGH
+      BEDRIPX=> WADATS(IMOD)%XBEDRIPX
+      BEDRIPY=> WADATS(IMOD)%XBEDRIPY
       PHIBBL => WADATS(IMOD)%XPHIBBL
-      TAUBBL => WADATS(IMOD)%XTAUBBL
+      TAUBBLX=> WADATS(IMOD)%XTAUBBLX
+      TAUBBLY=> WADATS(IMOD)%XTAUBBLY
       !
       MSSX   => WADATS(IMOD)%XMSSX
       MSSY   => WADATS(IMOD)%XMSSY

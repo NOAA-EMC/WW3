@@ -189,8 +189,10 @@ PROGRAM W3OUNF
        USSX, USSY, MSSX, MSSY, MSSD, MSCX, MSCY,    &
        MSCD, CHARN, TWS, TAUA, TAUADIR,             &
        TAUWNX, TAUWNY, BHD, T02, HSIG, CGE,         &
-       T01, BEDFORMS, WHITECAP, TAUBBL, PHIBBL,     &
-       CFLTHMAX, CFLXYMAX, CFLKMAX, TAUICE, PHICE,  &
+       T01, BEDROUGH, BEDRIPX, BEDRIPY,             &
+       WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,      &
+       TAUBBLX, TAUBBLY, PHIBBL, CFLTHMAX,          &
+       CFLXYMAX, CFLKMAX, TAUICEX, TAUICEY, PHICE,  &
        STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
        P2SMS, EF, US3D, TH1M, STH1M, TH2M, STH2M,   &
        WN, USSP, WBT, WNMEAN, QKK
@@ -1646,19 +1648,19 @@ CONTAINS
             !
             ! Whitecap coverage
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 7 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,1), X1)
+            CALL S2GRID(WCAP_COV(1:NSEA), X1)
             !
             ! Whitecap foam thickness
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 8 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,2), X1)
+            CALL S2GRID(WCAP_THK(1:NSEA), X1)
             !
             ! Significant breaking wave height
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 9 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,3), X1)
+            CALL S2GRID(WCAP_BHS(1:NSEA), X1)
             !
             ! Whitecap moment
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 10 ) THEN
-            CALL S2GRID(WHITECAP(1:NSEA,4), X1)
+            CALL S2GRID(WCAP_MNT(1:NSEA), X1)
             !
             ! Wind sea mean period T0M1
           ELSE IF ( IFI .EQ. 5 .AND. IFJ .EQ. 11 ) THEN
@@ -1806,10 +1808,10 @@ CONTAINS
           ELSE IF ( IFI .EQ. 6 .AND. IFJ .EQ. 10 ) THEN
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUICE(1:NSEA,1), TAUICE(1:NSEA,2), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUICEX(1:NSEA), TAUICEY(1:NSEA), AnglD)
 #endif
-            CALL S2GRID(TAUICE(1:NSEA,1), XX)
-            CALL S2GRID(TAUICE(1:NSEA,2), XY)
+            CALL S2GRID(TAUICEX(1:NSEA), XX)
+            CALL S2GRID(TAUICEY(1:NSEA), XY)
             NFIELD=2
             !
             ! Wave to sea ice energy flux
@@ -1883,12 +1885,12 @@ CONTAINS
           ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 3 ) THEN
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDFORMS(1:NSEA,2), &
-                 BEDFORMS(1:NSEA,3), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, BEDRIPX(1:NSEA), &
+                 BEDRIPY(1:NSEA), AnglD)
 #endif
-            CALL S2GRID(BEDFORMS(1:NSEA,1), X1)
-            CALL S2GRID(BEDFORMS(1:NSEA,2), X2)
-            CALL S2GRID(BEDFORMS(1:NSEA,3), XY)
+            CALL S2GRID(BEDROUGH(1:NSEA), X1)
+            CALL S2GRID(BEDRIPX(1:NSEA), X2)
+            CALL S2GRID(BEDRIPY(1:NSEA), XY)
             NFIELD=3
             !
             ! Wave dissipation in bottom boundary layer
@@ -1899,11 +1901,11 @@ CONTAINS
           ELSE IF ( IFI .EQ. 7 .AND. IFJ .EQ. 5 ) THEN
 #ifdef W3_RTD
             ! Rotate x,y vector back to standard pole
-            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBL(1:NSEA,1), &
-                 TAUBBL(1:NSEA,2), AnglD)
+            IF ( FLAGUNR ) CALL W3XYRTN(NSEA, TAUBBLX(1:NSEA), &
+                 TAUBBLY(1:NSEA), AnglD)
 #endif
-            CALL S2GRID(TAUBBL(1:NSEA,1), XX)
-            CALL S2GRID(TAUBBL(1:NSEA,2), XY)
+            CALL S2GRID(TAUBBLX(1:NSEA), XX)
+            CALL S2GRID(TAUBBLY(1:NSEA), XY)
             NFIELD=2
             !
             ! Mean square slope

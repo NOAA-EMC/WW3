@@ -295,8 +295,8 @@ CONTAINS
     USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
     USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, T01, FP0, THM, CHARN,&
          TAUWIX, TAUWIY, TWS, TAUOX, TAUOY, BHD,     &
-         PHIOC, TUSX, TUSY, USSX, USSY, TAUICE,      &
-         UBA, UBD, PHIBBL, TAUBBL, TAUOCX, TAUOCY,   &
+         PHIOC, TUSX, TUSY, USSX, USSY, TAUICEX, TAUICEY,      &
+         UBA, UBD, PHIBBL, TAUBBLX, TAUBBLY, TAUOCX, TAUOCY,   &
          WNMEAN
     !/
     USE W3GDATMD, ONLY: NX, NY, NSEA, NSEAL, NSPEC, MAPSTA, MAPST2, &
@@ -989,8 +989,8 @@ CONTAINS
               WRITE(NDSR,ERR=803,IOSTAT=IERR) USSY(1:NSEA)
             ENDIF
             IF ( FLOGRR(6,10) ) THEN
-              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICE(1:NSEA,1)
-              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICE(1:NSEA,2)
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICEX(1:NSEA)
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUICEY(1:NSEA)
             ENDIF
             IF ( FLOGRR(6,13) ) THEN
               WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOCX(1:NSEA)
@@ -1003,8 +1003,8 @@ CONTAINS
             IF ( FLOGRR(7,4) )                                  &
                  WRITE(NDSR,ERR=803,IOSTAT=IERR) PHIBBL(1:NSEA)
             IF ( FLOGRR(7,5) ) THEN
-              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUBBL(1:NSEA,1)
-              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUBBL(1:NSEA,2)
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUBBLX(1:NSEA)
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUBBLY(1:NSEA)
             ENDIF
             !
 #ifdef W3_MPI
@@ -1248,8 +1248,8 @@ CONTAINS
             DO I=1, NSEALM
               J = IAPROC + (I-1)*NAPROC
               IF (J .LE. NSEA) THEN
-                TAUICE(I,1) = TMP(J)
-                TAUICE(I,2) = TMP2(J)
+                TAUICEX(I) = TMP(J)
+                TAUICEY(I) = TMP2(J)
               ENDIF
             ENDDO
           ENDIF
@@ -1288,8 +1288,8 @@ CONTAINS
             DO I=1, NSEALM
               J = IAPROC + (I-1)*NAPROC
               IF (J .LE. NSEA) THEN
-                TAUBBL(I,1) = TMP(J)
-                TAUBBL(I,2) = TMP2(J)
+                TAUBBLX(I) = TMP(J)
+                TAUBBLY(I) = TMP2(J)
               ENDIF
             ENDDO
           ENDIF
@@ -1342,11 +1342,13 @@ CONTAINS
           USSY    = 0.
           TAUOCX  = 0.
           TAUOCY  = 0.
-          TAUICE  = 0.
+          TAUICEX = 0.
+          TAUICEY = 0.
           UBA     = 0.
           UBD     = 0.
           PHIBBL  = 0.
-          TAUBBL  = 0.
+          TAUBBLX = 0.
+          TAUBBLY = 0.
         ENDIF
 #ifdef W3_T
         WRITE (NDST,9008)
