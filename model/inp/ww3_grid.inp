@@ -102,6 +102,18 @@ $                           KDCONV : Factor before kd in Eq. (n.nn).
 $                           KDMIN, SNLCS1, SNLCS2, SNLCS3 :
 $                                    Minimum kd, and constants c1-3
 $                                    in depth scaling function.
+$                           IQTYPE : Type of depth treatment
+$                                    -2 : Deep water GQM with scaling
+$                                     1 : Deep water DIA
+$                                     2 : Deep water DIA with scaling
+$                                     3 : Shallow water DIA
+$                           TAILNL : Parametric tail power.
+$                           GQMNF1 : number of points along the locus
+$                           GQMNT1 : idem
+$                           GQMNQ_OM2 : idem
+$                           GQMTHRSAT : threshold on saturation for SNL calculation
+$                           GQMTHRCOU : threshold for filter on coupling coefficient
+$                           GQAMP1, GQAMP2, GQAMP3, GQAMP4 : amplification factor
 $   Exact interactions  : Namelist SNL2
 $                           IQTYPE : Type of depth treatment
 $                                     1 : Deep water

@@ -74,6 +74,8 @@ MODULE WMMDATMD
   !                               only.
   !      MDSP      Int.  Public   Unit number for profiling.
   !      MDSUP     Int.  Public   Unit number for unified point output.
+  !      MDSUPA    Int.  Public   Unit number for unified point output.
+  !                               ASCII
   !      MDSF      I.A.  Public   Unit numbers for input files.
   !
   !      NMPROC    Int.  Public   Number of processors (for total multi-
@@ -313,6 +315,9 @@ MODULE WMMDATMD
   INTEGER                 :: MDST = 6   !< MDST
   INTEGER                 :: MDSE = 6   !< MDSE
   INTEGER                 :: MDSUP      !< MDSUP
+#ifdef W3_ASCII
+  INTEGER                 :: MDSUPA     !< MDSUPA
+#endif
   INTEGER                 :: NMPROC = 1   !< NMPROC
   INTEGER                 :: IMPROC = 1   !< IMPROC
   INTEGER                 :: NMPLOG = 1   !< NMPLOG

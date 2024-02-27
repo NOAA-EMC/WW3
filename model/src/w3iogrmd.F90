@@ -112,7 +112,11 @@ CONTAINS
   !> @author F. Ardhuin
   !> @date   19-Oct-2020
 
-  SUBROUTINE W3IOGR ( INXOUT, NDSM, IMOD, FEXT )
+  SUBROUTINE W3IOGR ( INXOUT, NDSM, IMOD, FEXT &
+#ifdef W3_ASCII
+                      ,NDSA                    &
+#endif          
+          )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -209,6 +213,7 @@ CONTAINS
     !       INXOUT  C*(*)  I   Test string for read/write, valid are:
     !                         'READ',  'WRITE' and 'GRID'.
     !       NDSM    Int.   I   File unit number.
+    !       NDSA    Int.   I   File unit number. ascii
     !       IMOD    Int.   I   Model number for W3GDAT etc.
     !       FEXT    C*(*)  I   File extension to be used.
     !     ----------------------------------------------------------------
@@ -279,7 +284,7 @@ CONTAINS
          DIKCUMUL
 #endif
 #ifdef W3_NL1
-    USE W3SNL1MD, ONLY: INSNL1
+    USE W3SNL1MD, ONLY: INSNL1, INSNLGQM
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD, ONLY: INSNL2
@@ -317,6 +322,9 @@ CONTAINS
     INTEGER, INTENT(IN), OPTIONAL   :: IMOD
     CHARACTER, INTENT(IN)           :: INXOUT*(*)
     CHARACTER, INTENT(IN), OPTIONAL :: FEXT*(*)
+#ifdef W3_ASCII
+    INTEGER, INTENT(IN), OPTIONAL   :: NDSA
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -563,6 +571,10 @@ CONTAINS
     IF ( WRITE ) THEN
       OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
            form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+#ifdef W3_ASCII
+      OPEN (NDSA,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT)//'.txt',   &
+           form='FORMATTED',ERR=800,IOSTAT=IERR)
+#endif
     ELSE
       OPEN (NDSM,FILE=FNMPRE(:IPRE)//'mod_def.'//FILEXT(:IEXT),   &
            form='UNFORMATTED', convert=file_endian,STATUS='OLD',ERR=800,IOSTAT=IERR)
@@ -578,14 +590,38 @@ CONTAINS
            NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
            FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
            FNAMEF, FNAMEI
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                             &
+           'IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,                &
+           NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
+           FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
+           FNAMEF, FNAMEI:',                                     &
+           IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,                 &
+           NBI, NFBPO, GNAME, FNAME0, FNAME1, FNAME2, FNAME3,    &
+           FNAME4, FNAME5, FNAME6, FNAMEP, FNAMEG,               &
+           FNAMEF, FNAMEI
+#endif
       !
 #ifdef W3_SMC
       WRITE (NDSM) NCel, NUFc, NVFc, NRLv, MRFct
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'NCel, NUFc, NVFc, NRLv, MRFct:',           &
+                     NCel, NUFc, NVFc, NRLv, MRFct
+#endif
       WRITE (NDSM) NGLO, NARC, NBGL, NBAC, NBSMC
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'NGLO, NARC, NBGL, NBAC, NBSMC:',             &
+                   NGLO, NARC, NBGL, NBAC, NBSMC
+#endif
 #endif
       !
       WRITE (NDSM)                                               &
            (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                             &
+           '(NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO):',           &
+           (NBO(I),I=0,NFBPO), (NBO2(I),I=0,NFBPO)
+#endif
 #ifdef W3_T
       WRITE (NDST,9001) IDSTR, VERGRD, NX, NY, NSEA, NTH, NK,    &
            NBI, NFBPO, 9, GNAME, FNAME0, FNAME1, FNAME2, FNAME3, &
@@ -717,6 +753,11 @@ CONTAINS
       MAPTMP = MAPSTA + 8*MAPST2
       WRITE (NDSM)                                            &
            GTYPE, FLAGLL, ICLOSE
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                          &
+           'GTYPE, FLAGLL, ICLOSE:',                          &
+           GTYPE, FLAGLL, ICLOSE
+#endif
       !
       ! Writes different kind of information depending on grid type
       !
@@ -725,9 +766,19 @@ CONTAINS
       CASE ( RLGTYPE, SMCTYPE )
         WRITE (NDSM)                                          &
              SX, SY, X0, Y0
+#ifdef W3_ASCII
+        WRITE (NDSA,*)                                        &
+             'SX, SY, X0, Y0:',                               &
+             SX, SY, X0, Y0
+#endif
       CASE ( CLGTYPE )
         WRITE (NDSM)                                          &
              REAL(XGRD), REAL(YGRD)
+#ifdef W3_ASCII
+        WRITE (NDSA,*)                                        &
+             'REAL(XGRD), REAL(YGRD):',                       &
+             REAL(XGRD), REAL(YGRD)
+#endif
       CASE (UNGTYPE)
         WRITE (NDSM)                                          &
              FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,   &
@@ -746,6 +797,41 @@ CONTAINS
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
              B_JGS_SOURCE_NONLINEAR
+#ifdef W3_ASCII
+        WRITE (NDSA,*)                                        &
+             'FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,   &
+             FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,    &
+             DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,      &
+             NTRI,COUNTOT, COUNTRI, NNZ,                      &
+             B_JGS_TERMINATE_MAXITER,                         &
+             B_JGS_TERMINATE_DIFFERENCE,                      &
+             B_JGS_TERMINATE_NORM,                            &
+             B_JGS_LIMITER,                                   &
+             B_JGS_BLOCK_GAUSS_SEIDEL,                        &
+             B_JGS_USE_JACOBI,                                &
+             B_JGS_MAXITER,                                   &
+             B_JGS_PMIN,                                      &
+             B_JGS_DIFF_THR,                                  &
+             B_JGS_NORM_THR,                                  &
+             B_JGS_NLEVEL,                                    &
+             B_JGS_SOURCE_NONLINEAR:',                        &
+             FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,   &
+             FSBCCFL, FSREFRACTION, FSFREQSHIFT, FSSOURCE,    &
+             DO_CHANGE_WLV, SOLVERTHR_STP, CRIT_DEP_STP,      &
+             NTRI,COUNTOT, COUNTRI, NNZ,                      &
+             B_JGS_TERMINATE_MAXITER,                         &
+             B_JGS_TERMINATE_DIFFERENCE,                      &
+             B_JGS_TERMINATE_NORM,                            &
+             B_JGS_LIMITER,                                   &
+             B_JGS_BLOCK_GAUSS_SEIDEL,                        &
+             B_JGS_USE_JACOBI,                                &
+             B_JGS_MAXITER,                                   &
+             B_JGS_PMIN,                                      &
+             B_JGS_DIFF_THR,                                  &
+             B_JGS_NORM_THR,                                  &
+             B_JGS_NLEVEL,                                    &
+             B_JGS_SOURCE_NONLINEAR
+#endif
         !Init COUNTCON and IOBDP to zero, it needs to be set somewhere or
         !removed
         COUNTCON=0
@@ -755,10 +841,26 @@ CONTAINS
              LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
              DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,     &
              POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+#ifdef W3_ASCII
+        WRITE (NDSA,*)                                          &
+             'X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
+             LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
+             DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,     &
+             POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI:', &
+             X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
+             LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
+             DXYMAX, INDEX_CELL, CCON, COUNTCON, IE_CELL,     &
+             POS_CELL, IOBP, IOBPA, IOBDP, IOBPD, IAA, JAA, POSI
+#endif
       END SELECT !GTYPE
       !
       WRITE (NDSM)                                            &
            ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                          &
+           'ZB, MAPTMP, MAPFS, MAPSF, TRFLAG:',               &
+           ZB, MAPTMP, MAPFS, MAPSF, TRFLAG
+#endif
       !
 #ifdef W3_SMC
       IF( GTYPE .EQ. SMCTYPE ) THEN
@@ -767,6 +869,18 @@ CONTAINS
         WRITE (NDSM)  ICLBAC
         WRITE (NDSM)  ANGARC
         WRITE (NDSM)  CTRNX,  CTRNY,  CLATF
+#ifdef W3_ASCII
+        WRITE (NDSA,*)  'NLvCel, NLvUFc, NLvVFc:',            &
+                        NLvCel, NLvUFc, NLvVFc
+        WRITE (NDSA,*)  'IJKCel, IJKUFc, IJKVFc, ISMCBP:',    &
+                        IJKCel, IJKUFc, IJKVFc, ISMCBP
+        WRITE (NDSA,*)  'ICLBAC:',                            &
+                        ICLBAC
+        WRITE (NDSA,*)  'ANGARC:',                            &
+                        ANGARC
+        WRITE (NDSA,*)  'CTRNX,  CTRNY,  CLATF:',             &
+                        CTRNX,  CTRNY,  CLATF
+#endif
         IF ( FLTEST ) THEN
           WRITE (NDSE,"('  NRLv, MRFct and NBSMC values are',3I9)") NRLv, MRFct, NBSMC
           WRITE (NDSE,"('  IJKCel, IJKUFc, IJKVFc Write for',3I9)") NCel, NUFc, NVFc
@@ -776,6 +890,9 @@ CONTAINS
 #endif
       !
       IF ( TRFLAG .NE. 0 ) WRITE (NDSM) TRNX, TRNY
+#ifdef W3_ASCII
+      IF ( TRFLAG .NE. 0 ) WRITE (NDSA,*) 'TRNX, TRNY:', TRNX, TRNY
+#endif
       WRITE (NDSM)                     &
            DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
            FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
@@ -784,14 +901,43 @@ CONTAINS
            ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
            IICEDDISP, IICEFDISP, BTBETA,                          &
            AAIRCMIN, AAIRGB
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                   &
+           'DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,             &
+           FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
+           FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
+           STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
+           ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
+           IICEDDISP, IICEFDISP, BTBETA,                          &
+           AAIRCMIN, AAIRGB:',                                    &
+           DTCFL, DTCFLI, DTMAX, DTMIN, DMIN, CTMAX,              &
+           FICE0, FICEN, FICEL, PFMOVE, FLDRY, FLCX, FLCY, FLCTH, &
+           FLCK, FLSOU, FLBPI, FLBPO, CLATS, CLATIS, CTHG0S,      &
+           STEXU, STEYU, STEDU, IICEHMIN, IICEHINIT, IICEDISP,    &
+           ICESCALES(1:4), CALTYPE, CMPRTRCK, IICEHFAC, IICEHDISP,&
+           IICEDDISP, IICEFDISP, BTBETA,                          &
+           AAIRCMIN, AAIRGB
+#endif
 
       WRITE(NDSM)GRIDSHIFT
+#ifdef W3_ASCII
+      WRITE(NDSA,*)'GRIDSHIFT:',                                  &
+                 GRIDSHIFT
+#endif
 #ifdef W3_SEC1
       WRITE (NDSM) NITERSEC1
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'NITERSEC1:',                                &
+                   NITERSEC1
+#endif
 #endif
 #ifdef W3_RTD
       !!  Add rotated Polat/lon and AnglD to mod_def   JGLi12Jun2012
       WRITE (NDSM) PoLat, PoLon, AnglD, FLAGUNR
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'PoLat, PoLon, AnglD, FLAGUNR:',             &
+                   PoLat, PoLon, AnglD, FLAGUNR
+#endif
 
 #endif
       !!        WRITE(NDSM)                                                 &
@@ -919,12 +1065,12 @@ CONTAINS
 
       READ(NDSM,END=801,ERR=802,IOSTAT=IERR)GRIDSHIFT
 #ifdef W3_SEC1
-      READ (NDSM) NITERSEC1
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITERSEC1
 #endif
       !
 #ifdef W3_RTD
       !!  Read rotated Polat/lon and AnglD from mod_def   JGLi12Jun2012
-      READ (NDSM) PoLat, PoLon, AnglD, FLAGUNR
+      READ (NDSM,END=801,ERR=802,IOSTAT=IERR) PoLat, PoLon, AnglD, FLAGUNR
 
 #endif
       !
@@ -977,6 +1123,15 @@ CONTAINS
            MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,        &
            XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,       &
            FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                                &
+           'MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,       &
+           XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,       &
+           FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE:', &
+           MAPWN, MAPTH, DTH, TH, ESIN, ECOS, ES2, ESC, EC2,        &
+           XFR, FR1, SIG, SIG2, DSIP, DSII, DDEN, DDEN2, FTE,       &
+           FTF, FTWN, FTTR, FTWL, FACTI1, FACTI2, FACHFA, FACHFE
+#endif
     ELSE
       IF (.NOT.SINIT) CALL W3DIMS ( IGRD, NK, NTH, NDSE, NDST )
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                       &
@@ -999,6 +1154,11 @@ CONTAINS
     IF ( WRITE ) THEN
       WRITE (NDSM)                                                &
            E3DF, P2MSF, US3DF,USSPF, USSP_WN
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                              &
+           'E3DF, P2MSF, US3DF,USSPF, USSP_WN:',                  &
+           E3DF, P2MSF, US3DF,USSPF, USSP_WN
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
            E3DF, P2MSF, US3DF,USSPF, USSP_WN
@@ -1015,6 +1175,11 @@ CONTAINS
     IF ( WRITE ) THEN
       WRITE (NDSM)                                               &
            XBPO, YBPO, RDBPO, IPBPO, ISBPO
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                              &
+           'XBPO, YBPO, RDBPO, IPBPO, ISBPO:',                   &
+           XBPO, YBPO, RDBPO, IPBPO, ISBPO
+#endif
     ELSE
       CALL W3DMO5 ( IGRD, NDSE, NDST, 2 )
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
@@ -1040,6 +1205,13 @@ CONTAINS
       WRITE (NDSM)                                               &
            IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
            PTMETH, PTFCUT
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                             &
+           'IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,        &
+           PTMETH, PTFCUT:',                                     &
+           IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
+           PTMETH, PTFCUT
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
            IHMAX, HSPMIN, WSMULT, WSCUT, FLCOMB, NOSWLL,         &
@@ -1057,72 +1229,119 @@ CONTAINS
       WRITE (NDSM)                                               &
            FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
            FFACBERG, DELAB, FWTABLE
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                              &
+           'FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
+           FFACBERG, DELAB, FWTABLE:',                           &
+           FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
+           FFACBERG, DELAB, FWTABLE
+#endif
 #ifdef W3_RWND
       WRITE (NDSM)                                               &
            RWINDC
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                             &
+           'RWINDC:',                                            &
+           RWINDC
+#endif
 #endif
 #ifdef W3_WCOR
       WRITE (NDSM)                                               &
            WWCOR
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                             &
+           'WWCOR:',                                             &  
+           WWCOR
+#endif
 #endif
 #ifdef W3_REF1
       WRITE (NDSM)                                               &
            RREF, REFPARS, REFLC, REFLD
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                             &
+           'RREF, REFPARS, REFLC, REFLD:',                       &
+           RREF, REFPARS, REFLC, REFLD
+#endif
 #endif
 #ifdef W3_IG1
       WRITE   (NDSM)                                             &
            IGPARS(1:12)
+#ifdef W3_ASCII
+      WRITE   (NDSA,*)                                           &
+           'IGPARS(1:12):',                                      &
+           IGPARS(1:12)
+#endif
 #endif
 #ifdef W3_IC2
       WRITE   (NDSM)                                             &
            IC2PARS(1:8)
+#ifdef W3_ASCII
+      WRITE   (NDSA,*)                                           &
+           'IC2PARS(1:8):',                                      &
+           IC2PARS(1:8)
+#endif
 #endif
 #ifdef W3_IC3
       WRITE   (NDSM)                                             &
            IC3PARS
+#ifdef W3_ASCII
+      WRITE   (NDSA,*)                                           &
+           'IC3PARS:',                                           &
+           IC3PARS
+#endif
 #endif
 #ifdef W3_IC4
       WRITE   (NDSM)                                             &
-           IC4PARS,IC4_KI,IC4_FC
+           IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
+#ifdef W3_ASCII
+      WRITE   (NDSA,*)                                           &
+           'IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK:',    &
+           IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
+#endif
 #endif
 #ifdef W3_IC5
       WRITE   (NDSM)                                             &
            IC5PARS
+#ifdef W3_ASCII
+      WRITE   (NDSA,*)                                           &
+           'IC5PARS:',                                           &
+           IC5PARS
+#endif
 #endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                    &
            FACP, XREL, XFLT, FXFM, FXPM, XFT, XFC, FACSD, FHMAX, &
            FFACBERG, DELAB, FWTABLE
 #ifdef W3_RWND
-      READ  (NDSM)                                               &
+      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
            RWINDC
 #endif
 #ifdef W3_WCOR
-      READ  (NDSM)                                               &
+      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
            WWCOR
 #endif
 #ifdef W3_REF1
-      READ  (NDSM)                                               &
+      READ  (NDSM,END=801,ERR=802,IOSTAT=IERR)                                               &
            RREF, REFPARS, REFLC, REFLD
 #endif
 #ifdef W3_IG1
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IGPARS(1:12)
 #endif
 #ifdef W3_IC2
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IC2PARS(1:8)
 #endif
 #ifdef W3_IC3
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IC3PARS
 #endif
 #ifdef W3_IC4
-      READ   (NDSM)                                              &
-           IC4PARS,IC4_KI,IC4_FC
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
+           IC4PARS,IC4_KI,IC4_FC,IC4_CN,IC4_FMIN,IC4_KIBK
 #endif
 #ifdef W3_IC5
-      READ   (NDSM)                                              &
+      READ   (NDSM,END=801,ERR=802,IOSTAT=IERR)                                              &
            IC5PARS
 #endif
     END IF
@@ -1142,6 +1361,10 @@ CONTAINS
 #ifdef W3_FLX2
     IF ( WRITE ) THEN
       WRITE (NDSM)                            NITTIN, CINXSI
+#ifdef W3_ASCII
+      WRITE (NDSA,*)'                            NITTIN, CINXSI:', &
+                                              NITTIN, CINXSI
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) NITTIN, CINXSI
     END IF
@@ -1152,6 +1375,11 @@ CONTAINS
     IF ( WRITE ) THEN
       WRITE (NDSM)                                          &
            NITTIN, CINXSI, CD_MAX, CAP_ID
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                          &
+           'NITTIN, CINXSI, CD_MAX, CAP_ID:',                &
+           NITTIN, CINXSI, CD_MAX, CAP_ID
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
            NITTIN, CINXSI, CD_MAX, CAP_ID
@@ -1162,6 +1390,10 @@ CONTAINS
 #ifdef W3_FLX4
     IF ( WRITE ) THEN
       WRITE (NDSM)                            FLX4A0
+#ifdef W3_ASCII
+      WRITE (NDSA,*)'                            FLX4A0:',   &
+                                              FLX4A0
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) FLX4A0
     END IF
@@ -1171,6 +1403,10 @@ CONTAINS
 #ifdef W3_LN1
     IF ( WRITE ) THEN
       WRITE (NDSM)                            SLNC1, FSPM, FSHF
+#ifdef W3_ASCII
+      WRITE (NDSA,*)'                            SLNC1, FSPM, FSHF:', &
+                                              SLNC1, FSPM, FSHF
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SLNC1, FSPM, FSHF
     END IF
@@ -1180,6 +1416,10 @@ CONTAINS
 #ifdef W3_ST1
     IF ( WRITE ) THEN
       WRITE (NDSM)                            SINC1, SDSC1
+#ifdef W3_ASCII
+      WRITE (NDSA,*)'                            SINC1, SDSC1:', &
+                                              SINC1, SDSC1
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SINC1, SDSC1
     END IF
@@ -1193,6 +1433,17 @@ CONTAINS
            SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,             &
            CDSA0, CDSA1, CDSA2, SDSALN,                        &
            CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                           &
+           'ZWIND, FSWELL,                                    &
+           SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,             &
+           CDSA0, CDSA1, CDSA2, SDSALN,                        &
+           CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2:',&
+           ZWIND, FSWELL,                                      &
+           SHSTAB, OFSTAB, CCNG, CCPS, FFNG, FFPS,             &
+           CDSA0, CDSA1, CDSA2, SDSALN,                        &
+           CDSB0, CDSB1, CDSB2, CDSB3, FPIMIN, XFH, XF1, XF2
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                  &
            ZWIND, FSWELL,                                      &
@@ -1216,6 +1467,19 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN,                              &
            DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,                &
            FFXPM, FFXFM
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                           &
+           'ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,      &
+           SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,   &
+           SSTXFTFTAIL, SSTXFTWN,                              &
+           DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,                &
+           FFXPM, FFXFM:',                                     &
+           ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,       &
+           SSWELLF, SSDSC1, WWNMEANP, WWNMEANPTAIL, SSTXFTF,   &
+           SSTXFTFTAIL, SSTXFTWN,                              &
+           DDELTA1, DDELTA2, SSTXFTF, SSTXFTWN,                &
+           FFXPM, FFXFM
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                  &
            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,       &
@@ -1242,10 +1506,46 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW
+           DIKCUMUL, CUMULW, SINTAILPAR
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                         &
+           'ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,    &
+           TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,        &
+           ZZ0RAT, SSDSC,                                    &
+           SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,           &
+           SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF, &
+           SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
+           SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
+           SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
+           SSDSHCK,                                          &
+           IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
+           DIKCUMUL, CUMULW, SINTAILPAR:',                   &
+           ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,     &
+           TTAUWSHELTER, SSWELLFPAR, SSWELLF, SSINBR,        &
+           ZZ0RAT, SSDSC,                                    &
+           SSDSISO, SSDSBR, SSDSBT, SSDSBM, SSDSP,           &
+           SSDSCOS, SSDSDTH, WWNMEANP, WWNMEANPTAIL,SSTXFTF, &
+           SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
+           SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
+           SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
+           SSDSHCK,                                          &
+           IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
+           DIKCUMUL, CUMULW, SINTAILPAR
+#endif
+      IF (SINTAILPAR(1).GT.0.5) THEN
+        WRITE (NDSM) DELUST, DELTAIL, DELTAUW, DELU, DELALP, &
+                     TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) WRITE (NDSM) TAUHFT2
+#ifdef W3_ASCII
+        WRITE (NDSA,*) 'DELUST, DELTAIL, DELTAUW, DELU, DELALP,&
+                     TAUT, TAUHFT:',                         &
+                     DELUST, DELTAIL, DELTAUW, DELU, DELALP, &
+                     TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) WRITE (NDSA,*) 'TAUHFT2:', TAUHFT2 
+#endif
+      END IF
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            ZZWND, AALPHA, ZZ0MAX, BBETA, SSINTHP, ZZALP,     &
@@ -1256,10 +1556,16 @@ CONTAINS
            SSTXFTFTAIL, SSTXFTWN, SSTXFTF, SSTXFTWN,         &
            SSDSBRF1, SSDSBRF2, SSDSBRFDF,SSDSBCK, SSDSABK,   &
            SSDSPBK, SSDSBINT, FFXPM, FFXFM, FFXFA,           &
-           SSDSHCK, DELUST, DELTAIL, DELTAUW,                &
-           DELU, DELALP, TAUT, TAUHFT, TAUHFT2,              &
+           SSDSHCK,                                          &
            IKTAB, DCKI, QBI, SATINDICES, SATWEIGHTS,         &
-           DIKCUMUL, CUMULW
+           DIKCUMUL, CUMULW, SINTAILPAR
+      IF (SINTAILPAR(1).GT.0.5) THEN
+        CALL INSIN4(.FALSE.)
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
+             DELUST, DELTAIL, DELTAUW, DELU, DELALP,  &
+             TAUT, TAUHFT
+        IF (TTAUWSHELTER.GT.0) READ(NDSM,END=801,ERR=802,IOSTAT=IERR) TAUHFT2
+      END IF
     END IF
 #endif
     !
@@ -1268,6 +1574,14 @@ CONTAINS
       WRITE (NDSM) SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
            SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,        &
            SIN6WS, SIN6FC
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'SIN6A0, SDS6ET, SDS6A1, SDS6A2,        &
+           SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,        &
+           SIN6WS, SIN6FC:',                                 &
+                   SIN6A0, SDS6ET, SDS6A1, SDS6A2,           &
+           SDS6P1, SDS6P2, SWL6S6, SWL6B1, SWL6CSTB1,        &
+           SIN6WS, SIN6FC
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            SIN6A0, SDS6ET, SDS6A1, SDS6A2,                   &
@@ -1281,19 +1595,40 @@ CONTAINS
 #ifdef W3_NL1
     IF ( WRITE ) THEN
       WRITE (NDSM)                                         &
-           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                       &
+           'SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,  &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP:',          &
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
-           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3
+           SNLC1, LAM, KDCON, KDMN, SNLS1, SNLS2, SNLS3,   &
+           IQTPE, NLTAIL, GQNF1, GQNT1,                    &
+           GQNQ_OM2, GQTHRSAT, GQTHRCOU, GQAMP
     END IF
     IF ( FLTEST ) WRITE (NDST,9051) SNLC1, LAM,            &
-         KDCON, KDMN, SNLS1, SNLS2, SNLS3
+         KDCON, KDMN, SNLS1, SNLS2, SNLS3,                 &
+         IQTPE, NLTAIL, GQNF1, GQNT1, GQNQ_OM2,            &
+         GQTHRSAT, GQTHRCOU, GQAMP
 #endif
     !
 #ifdef W3_NL2
     IF ( WRITE ) THEN
       WRITE (NDSM) IQTPE, NLTAIL, NDPTHS
       WRITE (NDSM) DPTHNL
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'IQTPE, NLTAIL, NDPTHS:',             &
+                   IQTPE, NLTAIL, NDPTHS
+      WRITE (NDSA,*) 'DPTHNL:',                            &
+                   DPTHNL
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
            IQTPE, NLTAIL, NDPTHS
@@ -1312,6 +1647,16 @@ CONTAINS
       WRITE (NDSM) SNLL(1:SNLNQ), SNLM(1:SNLNQ),           &
            SNLT(1:SNLNQ), SNLCD(1:SNLNQ),                  &
            SNLCS(1:SNLNQ)
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS:',&
+                   SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
+      WRITE (NDSA,*) 'SNLL(1:SNLNQ), SNLM(1:SNLNQ),           &
+           SNLT(1:SNLNQ), SNLCD(1:SNLNQ),                  &
+           SNLCS(1:SNLNQ):',                               &
+                   SNLL(1:SNLNQ), SNLM(1:SNLNQ),           &
+           SNLT(1:SNLNQ), SNLCD(1:SNLNQ),                  &
+           SNLCS(1:SNLNQ)
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
            SNLNQ, SNLMSC, SNLNSC, SNLSFD, SNLSFS
@@ -1342,6 +1687,10 @@ CONTAINS
 #ifdef W3_NL4
     IF ( WRITE ) THEN
       WRITE (NDSM) ITSA, IALT
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'ITSA, IALT:',                        &
+                   ITSA, IALT
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)              &
            ITSA, IALT
@@ -1355,6 +1704,12 @@ CONTAINS
       CALL INSNL5
       WRITE (NDSM) QR5DPT, QR5OML, QI5DIS, QI5KEV,          &
            QI5NNZ, QI5IPL, QI5PMX
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'QR5DPT, QR5OML, QI5DIS, QI5KEV,       &
+           QI5NNZ, QI5IPL, QI5PMX:',                        &
+                   QR5DPT, QR5OML, QI5DIS, QI5KEV,          &
+           QI5NNZ, QI5IPL, QI5PMX
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
            QR5DPT, QR5OML, QI5DIS, QI5KEV,                  &
@@ -1369,6 +1724,11 @@ CONTAINS
     IF ( WRITE ) THEN
       WRITE (NDSM)                                          &
            CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                        &
+           'CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3:', &
+           CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
            CNLSA, CNLSC, CNLSFM, CNLSC1, CNLSC2, CNLSC3
@@ -1378,7 +1738,13 @@ CONTAINS
 #endif
     !
 #ifdef W3_NL1
-    IF ( .NOT. WRITE ) CALL INSNL1 ( IGRD )
+    IF ( .NOT. WRITE ) THEN
+      IF (IQTPE.GT.0) THEN
+        CALL INSNL1 ( IGRD )
+      ELSE
+        CALL INSNLGQM
+      END IF
+    END IF
 #endif
 #ifdef W3_NL3
     IF ( .NOT. WRITE ) CALL INSNL3
@@ -1412,6 +1778,9 @@ CONTAINS
 #ifdef W3_BT1
     IF ( WRITE ) THEN
       WRITE (NDSM)                            SBTC1
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'SBTC1:',                SBTC1
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) SBTC1
     END IF
@@ -1423,6 +1792,11 @@ CONTAINS
     IF ( WRITE ) THEN
       WRITE (NDSM)                                          &
            SBTCX, SED_D50, SED_PSIC
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                        &
+           'SBTCX, SED_D50, SED_PSIC:',                     &
+           SBTCX, SED_D50, SED_PSIC
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)               &
            SBTCX, SED_D50, SED_PSIC
@@ -1436,6 +1810,11 @@ CONTAINS
     IF ( WRITE ) THEN
       WRITE (NDSM)                                            &
            SDBC1, SDBC2, FDONLY
+#ifdef W3_ASCII
+      WRITE (NDSA,*)                                          &
+           'SDBC1, SDBC2, FDONLY:',                           &
+           SDBC1, SDBC2, FDONLY
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
            SDBC1, SDBC2, FDONLY
@@ -1448,6 +1827,12 @@ CONTAINS
     IF ( WRITE ) THEN
       WRITE (NDSM) UOSTFILELOCAL, UOSTFILESHADOW,             &
            UOSTFACTORLOCAL, UOSTFACTORSHADOW
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'UOSTFILELOCAL, UOSTFILESHADOW,          &
+           UOSTFACTORLOCAL, UOSTFACTORSHADOW:',               &
+                     UOSTFILELOCAL, UOSTFILESHADOW,           &
+           UOSTFACTORLOCAL, UOSTFACTORSHADOW
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                 &
            UOSTFILELOCAL, UOSTFILESHADOW,                     &
@@ -1464,6 +1849,9 @@ CONTAINS
 #ifdef W3_IS1
     IF ( WRITE ) THEN
       WRITE (NDSM)                            IS1C1, IS1C2
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'IS1C1, IS1C2:',         IS1C1, IS1C2
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS1C1, IS1C2
     END IF
@@ -1472,6 +1860,9 @@ CONTAINS
 #ifdef W3_IS2
     IF ( WRITE ) THEN
       WRITE (NDSM)                            IS2PARS
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'IS3PARS:',              IS2PARS
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) IS2PARS
       IF ( .NOT. FLIS ) THEN
@@ -1487,6 +1878,9 @@ CONTAINS
 #ifdef W3_PR2
     IF ( WRITE ) THEN
       WRITE (NDSM) DTME, CLATMN
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'DTME, CLATMN:', DTME, CLATMN
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            DTME, CLATMN
@@ -1498,6 +1892,9 @@ CONTAINS
 #ifdef W3_PR3
     IF ( WRITE ) THEN
       WRITE (NDSM) WDCG, WDTH
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'WDCG, WDTH:', WDCG, WDTH
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            WDCG, WDTH
@@ -1509,6 +1906,10 @@ CONTAINS
 #ifdef W3_SMC
     IF ( WRITE ) THEN
       WRITE(NDSM) DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
+#ifdef W3_ASCII
+      WRITE(NDSA,*) 'DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC:', &
+                  DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                &
            DTMS, Refran, FUNO3, FVERG, FSWND, ARCTC
@@ -1520,6 +1921,10 @@ CONTAINS
 #ifdef W3_FLD1
     IF ( WRITE ) THEN
       WRITE (NDSM)  TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+#ifdef W3_ASCII
+      WRITE (NDSA,*)  'TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2:', &
+                    TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
            TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
@@ -1528,6 +1933,10 @@ CONTAINS
 #ifdef W3_FLD2
     IF ( WRITE ) THEN
       WRITE (NDSM) TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+#ifdef W3_ASCII
+      WRITE (NDSA,*) 'TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2:', &
+                   TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
+#endif
     ELSE
       READ (NDSM,END=801,ERR=802,IOSTAT=IERR) &
            TAIL_ID, TAIL_LEV, TAIL_TRAN1, TAIL_TRAN2
@@ -1546,6 +1955,11 @@ CONTAINS
     END IF
     !
     CLOSE ( NDSM )
+#ifdef W3_ASCII
+    IF ( WRITE ) THEN
+      CLOSE ( NDSA )
+    END IF
+#endif
     call print_memcheck(memunit, 'memcheck_____:'//' WIOGR SECTION 9')
     !
     RETURN

@@ -129,7 +129,7 @@ main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
   export mpi='$MPI_LAUNCH'
 
 # Compile option
-  opt="-f -N -S -T"
+  opt="-f -N -S -T -o both"
 
 # Base run_test command line
   export rtst="./bin/run_cmake_test $opt"

@@ -1547,6 +1547,7 @@ CONTAINS
 #endif
 #ifdef W3_NL1
     USE W3SNL1MD
+    USE W3GDATMD, ONLY: IQTPE
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD
@@ -2157,7 +2158,7 @@ CONTAINS
                  RHOAIR, USTAR, USTD, Z0, CD, CHARN )
 #endif
             !
-            DO ITT=1, 3
+            DO ITT=1, 4
 #ifdef W3_ST2
               CALL W3SIN2 (A, CG, WN2, UABS, UDIRR, CD, Z0,    &
                    FPI, XIN, DIA )
@@ -2421,7 +2422,11 @@ CONTAINS
             END IF
             IF ( FLSRCE(3) ) THEN
 #ifdef W3_NL1
-              CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
+              IF (IQTPE.GT.0) THEN
+                CALL W3SNL1 ( A, CG, WNMEAN*DEPTH,  XNL, DIA )
+              ELSE
+                CALL W3SNLGQM ( A, CG, WN, DEPTH,  XNL, DIA )
+              END IF
 #endif
 #ifdef W3_NL2
               CALL W3SNL2 ( A, CG, DEPTH,         XNL, DIA )
@@ -3203,7 +3208,7 @@ CONTAINS
       IRET=NF90_PUT_ATT(NCID,VARID(4),'long_name','x')
       IRET=NF90_PUT_ATT(NCID,VARID(4),'standard_name','x')
       IRET=NF90_PUT_ATT(NCID,VARID(4),'globwave_name','x')
-      IRET=NF90_PUT_ATT(NCID,VARID(4),'units','m')
+      IRET=NF90_PUT_ATT(NCID,VARID(4),'units','km')
       IRET=NF90_PUT_ATT(NCID,VARID(4),'scale_factor',1.)
       IRET=NF90_PUT_ATT(NCID,VARID(4),'add_offset',0.)
       IRET=NF90_PUT_ATT(NCID,VARID(4),'valid_min',0.)
@@ -3220,7 +3225,7 @@ CONTAINS
       IRET=NF90_PUT_ATT(NCID,VARID(5),'long_name','y')
       IRET=NF90_PUT_ATT(NCID,VARID(5),'standard_name','y')
       IRET=NF90_PUT_ATT(NCID,VARID(5),'globwave_name','y')
-      IRET=NF90_PUT_ATT(NCID,VARID(5),'units','m')
+      IRET=NF90_PUT_ATT(NCID,VARID(5),'units','km')
       IRET=NF90_PUT_ATT(NCID,VARID(5),'scale_factor',1.)
       IRET=NF90_PUT_ATT(NCID,VARID(5),'add_offset',0.)
       IRET=NF90_PUT_ATT(NCID,VARID(5),'valid_min',0.)

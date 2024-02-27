@@ -723,6 +723,9 @@ CONTAINS
          ICEO,ICEHO,ICEFO
     USE WMMDATMD, ONLY: MDST, MDSE, IMPROC, NMPROC, NMPUPT, NRGRD,  &
          RESPEC, UPTMAP, MDSUP
+#ifdef W3_ASCII
+    USE WMMDATMD, ONLY: MDSUPA
+#endif
 #ifdef W3_MPI
     USE WMMDATMD, ONLY: MPI_COMM_MWAVE, MPI_COMM_GRD, ALLPRC,  &
          MTAG0
@@ -1173,7 +1176,11 @@ CONTAINS
     !
     TIME   = TOUT
     !
-    CALL W3IOPO ( 'WRITE', MDSUP, II, 0 )
+    CALL W3IOPO ( 'WRITE', MDSUP, II, 0 &
+#ifdef W3_ASCII
+            ,MDSUPA                     &                  
+#endif
+            )
     !
     RETURN
     !

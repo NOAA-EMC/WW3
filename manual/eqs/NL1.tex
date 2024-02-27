@@ -1,65 +1,92 @@
-\vsssub
-\subsubsection{~$S_{nl}$: Discrete Interaction Approximation (\dia)} \label{sec:NL1}
-\vsssub
-
-\opthead{NL1}{\wam\ model}{H. L. Tolman}
 
 \noindent
-Nonlinear wave-wave interactions can be modeled using the discrete interaction
-approximation \citep[\dia,][]{art:Hea85b}. This parameterization was
+
+
+Resonant nonlinear interactions occur between four wave components
+(quadruplets) with wavenumber vector $\bk$, $\bk_1$, $\bk_2$ and $\bk_3$ are such that 
+% eq:resonance
+\begin{equation} \left .
+\begin{array}{ccc}
+  \bk + \bk_1 & = & \bk_2 + \bk_3     \\
+  f_r + f_{r,1}& =& f_{r,2} +  f_{r,3} 
+\end{array} \:\:\: \right \rbrace \:\:\: , \label{eq:resonance}
+\end{equation}
+
+Nonlinear 4-wave interaction theories were 
 originally developed for the spectrum $F(f_r ,\theta)$. To assure the
 conservative nature of $S_{nl}$ for this spectrum (which can be considered as
 the "final product" of the model), this source term is calculated for
 $F(f_r,\theta)$ instead of $N(k,\theta)$, using the conversion
 (\ref{eq:jac_fr}).
 
-Resonant nonlinear interactions occur between four wave components
-(quadruplets) with wavenumber vector $\bk_1$ through $\bk_4$. In the \dia, it
-is assumed that $\bk_1 = \bk_2$. Resonance conditions then require that
-%--------------------------%
-% Resonance conditions DIA %
-%--------------------------%
+\vsssub
+\subsubsection{~$S_{nl}$: Discrete Interaction Approximation (\dia)} \label{sec:NL1}
+\vsssub
+
+\opthead{NL1}{\wam\ model}{H. L. Tolman}
+
+
+
+ In the \dia, for each component $\bk$, only 2 quadruplets configuration are 
+used, while there should be thousands for the full integral, and the interaction caused by these 2 quadruplets 
+is scaled so that it gives the right order of magnitude for the flux of energy towards low frequencies. 
+
+Both quadruplets used the DIA use 
 % eq:resonance
 \begin{equation} \left .
 \begin{array}{ccc}
-  \bk_1 + \bk_2 & = & \bk_3 + \bk_4          \\
-  \sigma_2  & = & \sigma_1                   \\
-  \sigma_3  & = & (1+\lambda_{nl})\sigma_1   \\
-  \sigma_4  & = & (1-\lambda_{nl})\sigma_1
-\end{array} \:\:\: \right \rbrace \:\:\: , \label{eq:resonance}
+  \bk_1 & = & \bk\\
+  f_{r,2}  & = & (1+\lambda)f_{r}    \\
+  f_{r,3}  & = & (1-\lambda)f_{r} 
+\end{array} \:\:\: \right \rbrace \:\:\: , \label{eq:DIAchoice}
 \end{equation}
-where $\lambda_{nl}$ is a constant. For these quadruplets, the contribution
-$\delta S_{nl}$ to the interaction for each discrete $(f_r,\theta)$
-combination of the spectrum corresponding to $\bk_1$ is calculated as
+where $\lambda$ is a constant, usually 0.25, and they only differ by the choice of the interacting angles 
+taking either a plus sign or a minus sign in the following 
+\begin{equation} \left .
+\begin{array}{ccc}
+  \theta_{2,\pm}  & = & \theta \pm \delta_{\theta,2}   \\
+ \theta_{3,\pm}  & = & \theta \mp  \delta_{\theta,3}   \\
+ \end{array} \:\:\: \right \rbrace \:\:\: , \label{eq:DIAangles}
+\end{equation}
+where $\delta_{\theta,2}$ and $\delta_{\theta,3}$ are only a function of $\lambda$ given by the geometry of
+the interacting wavenumbers along the "figure of 8", namely  
+\begin{eqnarray}
+\cos(\delta_{\theta,2})&=&(1-\lambda)^4+4-(1+\lambda)^4)/[4(1-\lambda)^2], \\
+\sin(\delta_{\theta,3})&=&\sin(\delta_{\theta,2}) (1-\lambda)^2/(1+\lambda)^2.
+\end{eqnarray}
+
+Hence for any $\bk$ one quadruplet selects $\bk_{2,+}$ and $\bk_{3,+}$, and the other quadruplet selects its mirror image 
+$\bk_{2,-}$, $\bk_{2,-}$. Because there are 3 different components interacting in the two DIA-selected quadruplets, any discrete spectral component $(f_r,\theta)$ is actually involved in 6 quadruplets and directly exchanges energy with 12 other components $(f_r',\theta')$. Because the values of $f'_r$ and $\theta'$ do not fall exacly on other discrete components, the spectral density is interpolated using a bilinear interpolation, so that each source term value
+$S_{nl}(\bk)$ contains the direct exchange of energy with 48 other discrete components. 
+we compute the three contributions that correspond to the situation in which $\bk$ takes the role of $\bk$,$\bk_{2,+}$, $\bk_{2,-}$, $\bk_{3,+}$  and $\bk_{3,-}$ in the quadruplet, namely the full source term is, without making explicit that bilinear interpolation, 
+\begin{eqnarray} 
+S_{\mathrm{nl}}(\bk) &=& -2  \left[\delta S_{\mathrm{nl}}(\bk,\bk_{2,+},\bk_{3,+})+\delta S_{\mathrm{nl}}(\bk,\bk_{2,-},\bk_{3,-})\right] \nonumber  \\
+ & & + \delta  S_{\mathrm{nl}}(\bk_4,\bk,\bk_5) + \delta  S_{\mathrm{nl}}(\bk_6,\bk,\bk_7)  \\
+     & &        +   \delta S_{\mathrm{nl}}(\bk_8,\bk_9,\bk) + \delta S_{\mathrm{nl}}(\bk_{10},\bk_{11},\bk) . \label{eq:diasum}
+\end{eqnarray}
+where the geometry of the quadruplet $(\bk_4,\bk_4,\bk,\bk_5)$ is obtained from that of $(\bk,\bk,\bk_{2,+},\bk_{3,+})$ by a dilation by a factor $(1+\lambda)^2$ and rotation by the angle $\delta_{\theta,2}$;  $(\bk_6,\bk_6,\bk,\bk_7)$ has the same dilation but the opposite rotation; $(\bk_8,\bk_8,\bk_9,\bk)$ is dilated by a factor  $(1-\lambda)^2$ and rotated by the angle $-\delta_{\theta,3}$: and $(\bk_{10},\bk_{10},\bk_{11},\bk)$ is dilated by the same factor and rotated by the opposite angle. 
+
+
+The elementary contributions $\delta  S_{\mathrm{nl}}(\bk_l,\bk_m,\bk_n)$   are given by  
 %----------------------------%
 % Nonlinear interactions DIA %
 %----------------------------%
 % eq:snl_dia
-\begin{eqnarray}
-\left ( \begin{array}{c}
-  \delta S_{nl,1} \\ \delta S_{nl,3} \\ \delta S_{nl,4}
-\end{array} \right ) & = & D
-\left ( \begin{array}{r} -2 \\ 1 \\ 1 \end{array} \right )
-C g^{-4} f_{r,1}^{11} \times \nonumber \\
-& & \left [ F_1^2
-\left ( \frac{F_3}{(1+\lambda_{nl})^4} +
-        \frac{F_4}{(1-\lambda_{nl})^4} \right ) -
-\frac{2 F_1 F_3 F_4}{(1-\lambda_{nl}^2)^4}
-\right ] \: , \label{eq:snl_dia}
-\end{eqnarray}
-where $F_1 = F(f_{r,1} ,\theta_1 )$ etc. and $\delta S_{nl,1} = \delta
-S_{nl}(f_{r,1} ,\theta_1 )$ etc., $C$ is a proportionality constant. The
-nonlinear interactions are calculated by considering a limited number of
-combinations $(\lambda_{nl},C)$. In practice, only one combination is
-used. Default values for different source term packages are presented in
-Table~\ref{tab:snl_par}.
+
+\begin{equation}
+\delta S_{\mathrm{nl}}(\bk_l,\bk_m,\bk_n) =  \frac{C}{g^4} f_{r,l}^{11} \left [ F_l^2 \left ( \frac{F_m}{(1+\lambda)^4} +
+        \frac{F_n}{(1-\lambda)^4} \right ) - \frac{2 F_l F_m F_n}{(1-\lambda^2)^4} \right] ,
+      \label{eq:snl_dia}
+\end{equation}
+where the spectral densities are  $F_l = F(f_{r,l} ,\theta_l)$, etc. 
+ $C$ is a proportionality constant that was tuned to reproduce the inverse energy cascade.  Default values for different source term packages are presented in Table~\ref{tab:snl_par}.
 
 
 % tab:snl_par
 
 \begin{table} \begin{center}
  \begin{tabular}{|l|c|c|} \hline
-                    & $\lambda_{nl}$ &     $C$      \\ \hline
+                    & $\lambda$ &     $C$      \\ \hline
 ST6                 &      0.25      & $3.00 \; 10^7$  \\ \hline
 \wam-3              &      0.25      & $2.78 \; 10^7$  \\ \hline
 ST4 (Ardhuin et al.)&      0.25      & $2.50 \; 10^7$  \\ \hline
@@ -68,7 +95,7 @@ Tolman and Chalikov &      0.25      & $1.00 \; 10^7$  \\ \hline
 \caption{Default constants in \dia\ for input-dissipation packages.}
 \label{tab:snl_par} \botline \end{table}
 
-This source term is developed for deep water, using the appropriate dispersion
+This parameterization was developed for deep water, using the appropriate dispersion
 relation in the resonance conditions. For shallow water the expression is
 scaled by the factor $D$ (still using the deep-water dispersion relation,
 however)
@@ -131,4 +158,38 @@ intermediate depths only. For this reason the mean relative depth
 $\bar{k}d$ is not allowed to become smaller than 0.5 (as in \wam). All
 above constants can be reset by the user in the input files of the
 model (see \para\ref{sub:ww3grid}).
+
+\vsssub
+\subsubsection{~$S_{nl}$: Gaussian Quadrature Method  (\dia)} \label{sec:GQM}
+\vsssub
+
+\opthead{NL1 , but with a negative IQTYPE}{TOMAWAC model, M. Benoit}{adaptation to WW3 by S. Siadatmousavi \& F. Ardhuin}
+
+\noindent
+Changing the namelist parameter IQTYPE to a negative value replaces the
+DIA parameterization with the possibility to perform an exact but fast cal-
+culation of $S_{\mathrm{nl}}$ using the Gaussian Quadrature Method of \cite{Lavrenov2001}.
+More details can be found in \cite{Gagnaire-Renou2009}.
+
+
+The quadruplet configurations that are used correspond to the three integrals over $f_1$, $f_2$ and $\theta_1$, with all other frequencies and directions given by the resonance conditions (\ref{eq:resonance}) with only one ambiguity on the angle $\theta_2$ which can be defined by a sign index $s$, as in the DIA.  Starting from eq. (A4) in \cite{Lavrenov2001} as writen in (2.25) of \cite{Gagnaire-Renou2009}, the source term is 
+\begin{equation}
+S_{\mathrm{nl}}(\sigma,\theta) =  8 \sum_s \int_{\sigma_1=0}^\infty \int_{\theta_1=0}^{2 \pi} \int_{\sigma_2=0}^{(\sigma+\sigma_1)/2}  T  \frac{F_2 F_3 (F \sigma_1^4 + F_1 \sigma^4) - F F_1 (F_2 \sigma_3^4 + F_3 \sigma_2^4)}{\sqrt{B}\sqrt{((\left| \bk+\bk_1 \right|/g- \sigma_3^2)^2-\sigma_2^4} } {\mathrm d}\sigma_1 {\mathrm d}\theta_1 {\mathrm d}\sigma_2 ,
+      \label{eq:snl_gqm}
+\end{equation}
+where $B$ is given by eq. (A5) of Lavrenov (2001) and  
+\begin{equation}
+T(\bk,\bk_1,\bk_2,\bk_3) = \frac{\pi g^2 D^2(\bk,\bk_1,\bk_2,\bk_3) }{4 \sigma \sigma_1 \sigma_2 \sigma_3}
+\end{equation}
+where $ D(\bk,\bk_1,\bk_2,\bk_3)$ is given by \cite{Webb1978} in his eq. (A1). 
+
+This triple integral is performed using quadrature functions to best resolve the effect of the singularities in the denominator. It is thus replaced with weighted sums over the 3 dimensions. 
+
+Compared to the DIA, there is no bilinear interpolation and the nearest neighbor is used in frequency and direction. Also, 
+the source term is computed by a loop over the quadruplet configuration, which allows for filtering based on 
+both the value of the coupling coefficient and the energy level at the frequency corresponding to $\bk$. Within 
+that loop, the source term contribution is computed for all 4 interacting components, so that any filtering still 
+conserves energy, action, momentum ... (One may argue that this multiplies by 4 the number of calculations, but it may have the benefit of properly dealing with the high frequency boundary... this is to be verified. The same question arises for the DIA: why have the wavenumber $\bk$ play the role of the other members of the quadruplets when this will also be computed as we loop on the spectral components?). 
+
+If a very aggressive filtering is performed, the source may need to be rescaled.
 

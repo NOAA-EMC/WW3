@@ -109,7 +109,7 @@ EOF
 # --------------------------------------------------------------------------- #
 
 echo ' '
-echo " Running now options: run_test $*"
+echo " Running now options: run_cmake_test $*"
 echo ' '
 
 # 2.a Setup array of command-line arguments
@@ -377,7 +377,7 @@ fi
 
 if [ $time_count ]
 then # Add time counter if -T
-  echo " REGTESTS Time counter: run_test $ARGS" >> time_count.txt
+  echo " REGTESTS Time counter: run_cmake_test $ARGS" >> time_count.txt
   Tstart=`date +"%s.%2N"`
 fi
 
@@ -654,6 +654,10 @@ then
       if [ $multi -eq 2 ]
       then
         mv mod_def.ww3 mod_def.$g
+        if [ -e mod_def.ww3.txt ]
+        then
+          mv mod_def.ww3.txt mod_def.${g}.txt
+        fi
         if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           mv $prog.nml.log ${prog}_$g.nml.log
@@ -2027,7 +2031,7 @@ done # end of loop on progs
 case $outopt in
   native) out_progs="ww3_trck" ;;
   netcdf) out_progs="ww3_trnc" ;;
-  both)   out_progs="ww3_trck ww3_trnc" ;;
+  both|all) out_progs="ww3_trck ww3_trnc" ;;
   *)      out_progs="" ;;
 esac
 
@@ -2070,6 +2074,9 @@ do
           then
             continue
           fi
+
+          \ln -s mod_def.$g mod_def.ww3
+
           gu="_$g"
           fileconf="$prog${gu}"
         else
@@ -2124,6 +2131,7 @@ do
           \rm -f $prog.nml
           if [ $multi -eq 2 ]
           then
+            \rm -f mod_def.ww3
             \rm -f track_o.ww3
             if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then

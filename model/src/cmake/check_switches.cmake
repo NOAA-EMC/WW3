@@ -52,7 +52,7 @@ function(check_switches switches switch_files)
                 message(FATAL_ERROR "Switch '${valid_opt}' requires '${required_switch}' to be set")
               endif()
             elseif(json_type STREQUAL "ARRAY")
-              string(JSON n_requires_any LENGTH ${vategory} valid-options ${j_options} requries ${i_requires})
+              string(JSON n_requires_any LENGTH ${category} valid-options ${j_options} requires ${i_requires})
               math(EXPR n_requires_any "${n_requires_any} - 1")
 
               # Loop over array and check that one of the switches is present
@@ -70,7 +70,7 @@ function(check_switches switches switch_files)
               if(NOT found)
                 message(FATAL_ERROR "Switch ${valid_opt} requires one of ${possible_values} to be set")
               endif()
-              
+
             endif()
           endforeach()
         endif()
@@ -98,7 +98,7 @@ function(check_switches switches switch_files)
     elseif(num_switches STREQUAL "upto2" AND n_switches_in_category GREATER 2)
       message(FATAL_ERROR "Too many ${category_name} switches found (max 2)")
     endif()
-    
+
   endforeach()
 
   set(${switch_files} ${files} PARENT_SCOPE)

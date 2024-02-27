@@ -71,6 +71,9 @@ PROGRAM W3TRNC
   !/ ------------------------------------------------------------------- /
   USE CONSTANTS
 
+#ifdef W3_NL1
+    USE W3ADATMD, ONLY : W3NAUX, W3SETA
+#endif
   USE W3GDATMD, ONLY : W3NMOD, W3SETG, FLAGLL, XFR, GNAME
   USE W3ODATMD, ONLY : W3NOUT, W3SETO, FNMPRE
   USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
@@ -131,6 +134,10 @@ PROGRAM W3TRNC
   !
   CALL W3NMOD ( 1, 6, 6 )
   CALL W3SETG ( 1, 6, 6 )
+#ifdef W3_NL1
+  CALL W3NAUX (    6, 6 )
+  CALL W3SETA ( 1, 6, 6 )
+#endif
   CALL W3NOUT (    6, 6 )
   CALL W3SETO ( 1, 6, 6 )
   !

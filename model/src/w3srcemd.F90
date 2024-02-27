@@ -555,7 +555,7 @@ CONTAINS
 #endif
 #ifdef W3_ST4
     USE W3SRC4MD, ONLY : W3SPR4, W3SIN4, W3SDS4
-    USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA
+    USE W3GDATMD, ONLY : ZZWND, FFXFM, FFXPM, FFXFA, SINTAILPAR
 #endif
 #ifdef W3_ST6
     USE W3SRC6MD
@@ -564,6 +564,7 @@ CONTAINS
 #endif
 #ifdef W3_NL1
     USE W3SNL1MD
+    USE W3GDATMD, ONLY: IQTPE
 #endif
 #ifdef W3_NL2
     USE W3SNL2MD
@@ -1033,10 +1034,14 @@ CONTAINS
     TWS = 1./FMEANWS
 #endif
 #ifdef W3_ST4
-    TAUWX=0.
-    TAUWY=0.
-    IF ( IT .eq. 0 ) THEN
+    IF (SINTAILPAR(4).GT.0.5) THEN ! this is designed to keep the bug as an option
+      TAUWX=0.
+      TAUWY=0.
+    END IF
+    IF ( IT .EQ. 0 ) THEN
       LLWS(:) = .TRUE.
+      TAUWX=0.
+      TAUWY=0.
       USTAR=0.
       USTDIR=0.
     ELSE
@@ -1060,7 +1065,7 @@ CONTAINS
 #endif
 
 #ifdef W3_ST4
-      CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
+      IF (SINTAILPAR(4).GT.0.5) CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,       &
            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY,       &
            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
     END IF
@@ -1215,7 +1220,11 @@ CONTAINS
       ! 2.b Nonlinear interactions.
       !
 #ifdef W3_NL1
-      CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH, VSNL, VDNL )
+      IF (IQTPE.GT.0) THEN
+        CALL W3SNL1 ( SPEC, CG1, WNMEAN*DEPTH, VSNL, VDNL )
+      ELSE
+        CALL W3SNLGQM ( SPEC, CG1, WN1, DEPTH, VSNL, VDNL )
+      END IF
 #endif
 #ifdef W3_NL2
       CALL W3SNL2 ( SPEC, CG1, DEPTH, VSNL, VDNL )
@@ -1902,6 +1911,13 @@ CONTAINS
       CALL W3SIN4 ( SPEC, CG1, WN2, U10ABS, USTAR, DRAT, AS,      &
            U10DIR, Z0, CD, TAUWX, TAUWY, TAUWAX, TAUWAY, &
            VSIN, VDIN, LLWS, IX, IY, BRLAMBDA )
+      IF (SINTAILPAR(4).LT.0.5) CALL W3SPR4 (SPEC, CG1, WN1, EMEAN, FMEAN, FMEAN1, WNMEAN,&
+           AMAX, U10ABS, U10DIR,                          &
+#ifdef W3_FLX5
+           TAUA, TAUADIR, DAIR,                     &
+#endif
+           USTAR, USTDIR,                                 &
+           TAUWX, TAUWY, CD, Z0, CHARN, LLWS, FMEANWS, DLWMEAN)
 #endif
 
       !
