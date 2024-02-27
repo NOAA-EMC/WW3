@@ -811,7 +811,7 @@ PROGRAM W3PRNC
   ELSE
     ! Calendar attribute set, but not a recognised calendar.
     WRITE(NDSE,1029) CALENDAR
-    CALENDAR = "standard" ! Default to standard calendar. Better to maybe fail?
+    CALL EXTCDE( 25 )
   END IF
 
   ! Check input calendar compatible with expected calendar
@@ -2434,10 +2434,12 @@ PROGRAM W3PRNC
        '     calendar ATTRIBUTE NOT DEFINED'/                 &
        '     DEFAULTING TO "standard" CALENDAR'/              &
        '     INPUT FILE MUST RESPECT STANDARD/GREGORIAN CALENDAR')
-1029 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
+1029 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     UNKNOWN CALENDAR TYPE: ', A  /                   &
-       '     DEFAULTING TO "standard" CALENDAR'/              &
-       '     INPUT FILE MUST RESPECT STANDARD/GREGORIAN CALENDAR')
+       '     "calendar" ATTRIBUTE MUST BE ONE OF: '/          &
+       '       - standard'/                                   &
+       '       - gregorian'/                                  &
+       '       - 360_day'/ )
 1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     ILLEGAL FIELD ID -->',A,'<--'/)
 1031 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
