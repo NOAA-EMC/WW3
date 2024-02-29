@@ -435,21 +435,21 @@ then
 
   echo "Switch file is $path_build/switch with switches:" >> $ofile
   cat $path_build/switch >> $ofile
-  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1
+  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile 2>&1
   rc=$?
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in cmake."
     echo "The build log is in $ofile"
     exit
   fi
-  make -j 8 > $ofile 2>&1
+  make -j 8 VERBOSE=1 >> $ofile 2>&1
   rc=$?
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in make."
     echo "The build log is in $ofile"
     exit
   fi
-  make install > $ofile 2>&1
+  make install >> $ofile 2>&1
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in make install."
     echo "The build log is in $ofile"
@@ -468,20 +468,20 @@ then
     \cp -f $file_c $path_build/switch
     echo "Switch file is $path_build/switch with switches:" >> $ofile
     cat $path_build/switch >> $ofile
-    cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1
+    cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile  2>&1
     rc=$?
     if [[ $rc -ne 0 ]] ; then
       echo "Fatal error in cmake."
       echo "The build log is in $ofile"
       exit
     fi
-    make -j 8 > $ofile 2>&1
+    make -j 8 VERBOSE=1 >> $ofile 2>&1
     if [[ $rc -ne 0 ]] ; then
       echo "Fatal error in make."
       echo "The build log is in $ofile"
       exit
     fi
-    make install > $ofile 2>&1
+    make install >> $ofile 2>&1
     if [[ $rc -ne 0 ]] ; then
       echo "Fatal error in make install."
       echo "The build log is in $ofile"
@@ -507,20 +507,20 @@ else
   fi
   echo "Switch file is $path_build/switch with switches:" >> $ofile
   cat $path_build/switch >> $ofile
-  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1
+  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile 2>&1
   rc=$?
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in cmake."
     echo "The build log is in $ofile"
     exit
   fi
-  make -j 8 > $ofile 2>&1
+  make -j 8 VERBOSE=1 >> $ofile 2>&1
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in make."
     echo "The build log is in $ofile"
     exit
   fi
-  make install > $ofile 2>&1
+  make install >> $ofile 2>&1
   if [[ $rc -ne 0 ]] ; then
     echo "Fatal error in make install."
     echo "The build log is in $ofile"
