@@ -160,6 +160,7 @@ PROGRAM W3OUTF
        PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
        PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &
        PTHP0, PQP, PSW, PPE, PGW, QP, QKK,         &
+       SKEW, EMBIA1, EMBIA2,                       &
        TAUOX, TAUOY, TAUWIX,BHD,                   &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
@@ -2210,6 +2211,39 @@ CONTAINS
             FSC    = 0.05
             UNITS  = '1'
             ENAME  = '.qkk'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = QKK
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.01
+            UNITS  = '1'
+            ENAME  = '.ske'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = QKK
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.01
+            UNITS  = '1'
+            ENAME  = '.emb'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = QKK
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.01
+            UNITS  = '1'
+            ENAME  = '.emc'
             IF ( ITYPE .EQ. 4 ) THEN
               XS1    = QKK
             ELSE
