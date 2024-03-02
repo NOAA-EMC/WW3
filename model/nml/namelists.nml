@@ -70,6 +70,28 @@ $                          SINA0    : factor for negative input
 $                          SINWS    : wind speed scaling option
 $                          SINFC    : high-frequency extent of the
 $                                     prognostic frequency region
+$   Janssen / Ardhuin   : Namelist SIN4
+$                             ZWND : Height of wind (m).
+$                           ALPHA0 : minimum value of Charnock coefficient
+$                            Z0MAX : maximum value of air-side roughness z0
+$                          BETAMAX : maximum value of wind-wave coupling
+$                           SINTHP : power of cosine in wind input
+$                             ZALP : wave age shift to account for gustiness
+$                           SWELLF : swell attenuation factor
+$                      TAUWSHELTER : sheltering of short waves to reduce u_star
+$                        SWELLFPAR : choice of swell attenuation formulation
+$                                    (1: TC 1996, 3: ACC 2008)
+$    Extra parameters for SWELLFPAR=3 only
+$                 SWELLF2, SWELLF3 : swell attenuation factors
+$                          SWELLF4 : Threshold Reynolds number for ACC2008
+$                          SWELLF5 : Relative viscous decay below threshold
+$                            Z0RAT : roughness for oscil. flow / mean flow
+$                            SINBR : effect of wave breaking on wind input
+$                         SINTABLE : flag to enable or the table computation
+$                         SINTAIL1 : tauwshelter for tail (no table)
+$                         SINTAIL2 : additional peak in capillary range
+$                          TAUWBUG : Set to 1 to keep bug on TAUW
+$                       VISCSTRESS : coefficient for viscous  part of wind stress
 $
 $ Nonlinear interactions - - - - - - - - - - - - - - - - - - - - - - -
 $   Discrete I.A.       : Namelist SNL1
@@ -173,6 +195,51 @@ $                             WAM4 dissipation in saturated and non-saturated
 $                           SDSC5 : coefficient for turbulence dissipation
 $                           SDSC6 : Weight for the istropic part of Sds_SAT
 $                           SDSDTH: Angular half-width for integration of B
+$
+$   Ardhuin             : Namelist SDS4
+$                       SDSBCHOICE : 1: Ardhuin et al., 2: Filipot & Ardhuin, 3: Romero
+$             WNMEANP, WNMEANPTAIL : power of wavenumber
+$                                    for mean definitions in Sds and tail
+$                            FXPM3 : Coefficient defining the diagnostic tail 
+$                            FXFM3 : Coefficient defining the diagnostic tail 
+$                          FXFMAGE : This does not do anything as FHIGI is not used in W3SRCE
+$                            SDSC2 : coefficient in front of dissipation term
+$                           SDSCUM : coefficient for cumulative breaking term
+$                        SDSSTRAIN : Straining coeficcient 
+$                       SDSSTRAINA : Not used anymore
+$                       SDSSTRAIN2 : If non-zero, uses a directionally-enhanced straining
+$                            SDSC4 : Not used anymore
+$                        SDSFACMTF : MTF factor for Lambda , Romero (2019)
+$                          SDSNMTF : MTF power
+$                          SDSCUMP : 2 for cumulative mss, 1 for cumulative orb. vel.
+$                            SDSC5 : coefficient for wave-turbulence interaction (Ardhuin & Jenkins
+$                            SDSC6 : delta_d  in eq. (13) of Ardhuin et al. (2010)
+$                            SDSBR : saturation threshold
+$                            SDSBT : Saturation threshold for dissipation rate b
+$                             SDSP : power of saturation in diagonal term 
+$                           SDSISO : Not used anymore
+$                           SDSBCK : Coefficient for Filipot & Ardhuin
+$                           SDSABK : Coefficient for Filipot & Ardhuin
+$                           SDSPBK : Coefficient for Filipot & Ardhuin
+$                          SDSBINT : frequency integration factor for Filipot & Ardhuin
+$                           SDSHCK : power of tanh(KD) in  Filipot & Ardhuin
+$                           SDSDTH : half-widht of directional integration for Ardhuin saturation 
+$                           SDSCOS : power of coside for saturation 
+$                          SDSBRF1 : ratio of f_high / f for which cumulative term at f has an impact on f_high
+$                         SDSBRFDF : not used anymore
+$                           SDSNUW : viscous dissipation term (water side only) : DVISC = - 4 SDSNUW*k**2 
+$                           SDSBM0 : activates depth correction to Ardhuin et al. , with X = tanhs (kD)
+$                           SDSBM1 :     coefficients of polynomial function to enhance saturation 
+$                           SDSBM2 :     based on Fig. 2 in Filipot et et al. (JGR 2010)
+$                           SDSBM3 :     the code is  MICHE=(X*(SSDSBM(1)+X*(SSDSBM(2)+X*(SSDSBM(3)   +X*SSDSBM(4)))))**2
+$                           SDSBM4 :     it should be MICHE=(X*(SSDSBM(1)+X*(SSDSBM(2)+X**2*(SSDSBM(3)+X**3*SSDSBM(4)))))**2
+$                          CUMSIGP : power of frequency for defining the direction of mean direction used in Romero (default is 0 but not optimal) 
+$                                    see Alday and Ardhuin (2023) with CUMSIGP=2 in T701-GQM
+$                    WHITECAPWIDTH :
+$                      WHITECAPDUR : breaking duration factor
+$                           SDSMWD : new AFo
+$                         SDSMWPOW : (k)^pow
+$                            SDKOF : ko factor such that ko= g (SDKOF/(28 us))^2
 $
 $   BYDRZ               : Namelist SDS6
 $                          SDSET    : Select threshold normalization spectra
@@ -367,7 +434,7 @@ $
 $   Compile switch /RTD required.
 $
 $   In ww3_grid.nml the output boundary points are defined via OUTBND_COUNT_NML
-$   and OUTBND_LINE_NML namelist as a number of straight lines in the reference
+$   and OUTBND_LINE_NMsinL namelist as a number of straight lines in the reference
 $   system of each destination grid. The index J of BPLAT(J),BPLON(J) is
 $   incremented by one where a new output file is started by specifying a
 $   negative value for the number of points OUTBND_LINE(I)%NP.
