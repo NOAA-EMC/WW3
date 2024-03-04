@@ -13,7 +13,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
  N
- HS EF T01 DIR SPR USS USSH
+ HS T01 DIR SPR USS USSH
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]
