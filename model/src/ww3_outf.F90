@@ -2221,7 +2221,7 @@ CONTAINS
             FLONE  = .TRUE.
             FSC    = 0.01
             UNITS  = '1'
-            ENAME  = '.ske'
+            ENAME  = '.skw'
             IF ( ITYPE .EQ. 4 ) THEN
               XS1    = QKK
             ELSE

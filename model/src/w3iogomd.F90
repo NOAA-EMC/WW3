@@ -1127,6 +1127,15 @@ CONTAINS
     CASE('QKK')
       I = 8
       J = 6
+    CASE('SKW')
+      I = 8
+      J = 7
+    CASE('EMB')
+      I = 8
+      J = 8
+    CASE('EMC')
+      I = 8
+      J = 9
       !
       ! Group 9
       !
@@ -2342,6 +2351,11 @@ CONTAINS
       CALL CALC_U3STOKES(A,2)
     ENDIF
     !
+    IF (FLOLOC( 8, 7).OR.FLOLOC( 8, 8).OR.FLOLOC( 8, 9)) THEN
+      CALL SKEWNESS(A)
+    ENDIF
+    
+    !
     ! Dominant wave breaking probability
     !
     IF (FLOLOC(2, 17)) CALL CALC_WBT(A)
@@ -2418,6 +2432,7 @@ CONTAINS
     !/                  processing code)
     !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
     !/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
+    !/    07-Mar-2024 : Add Skewness parameters             ( version 7.13 )
     !/
     !  1. Purpose :
     !
@@ -2514,7 +2529,7 @@ CONTAINS
          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-         USSP, TAUOCX, TAUOCY, QKK
+         USSP, TAUOCX, TAUOCY, QKK, SKEW, EMBIA1? EMBIA2
     !/
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2924,6 +2939,9 @@ CONTAINS
           IF ( FLOGRD( 8, 4) ) MSCD (ISEA) = UNDEF
           IF ( FLOGRD( 8, 5) ) QP   (ISEA) = UNDEF
           IF ( FLOGRD( 8, 6) ) QKK  (ISEA) = UNDEF
+          IF ( FLOGRD( 8, 7) ) SKEW (ISEA) = UNDEF
+          IF ( FLOGRD( 8, 8) ) EMBIA1(ISEA) = UNDEF
+          IF ( FLOGRD( 8, 9) ) EMBIA3(ISEA) = UNDEF
           !
           IF ( FLOGRD( 9, 1) ) DTDYN (ISEA) = UNDEF
           IF ( FLOGRD( 9, 2) ) FCUT  (ISEA) = UNDEF
@@ -3577,7 +3595,7 @@ CONTAINS
 #endif
               !
               !     Section 8)
-              !
+              !Skewness
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) MSSX(1:NSEA)
 #ifdef W3_ASCII
@@ -3615,6 +3633,21 @@ CONTAINS
               WRITE ( NDSOG ) QKK(1:NSEA)
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'QKK:', QKK(1:NSEA)
+#endif
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
+              WRITE ( NDSOG ) QKK(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'SKW:', SKEW(1:NSEA)
+#endif
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
+              WRITE ( NDSOG ) QKK(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'EMB:', EMBIA1(1:NSEA)
+#endif
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+              WRITE ( NDSOG ) QKK(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'EMC:', EMBIA2(1:NSEA)
 #endif
               !
               !     Section 9)
@@ -3968,6 +4001,12 @@ CONTAINS
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) QP(1:NSEA)
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) QKK(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SKEW(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) EMBIA2(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) EMBIA1(1:NSEA)
               !
               !     Section 9)
               !
@@ -4612,7 +4651,7 @@ CONTAINS
   END SUBROUTINE CALC_WBT
   !/ ------------------------------------------------------------------- /
 
-      SUBROUTINE SECONDHH(NFRE,NANG,NFREHF,FR,DELTH,TH,FAC0,FAC1,FAC2,FAC3)
+      SUBROUTINE SECONDHH(NKHF,FAC0,FAC1,FAC2,FAC3)
 !----------------------------------------------------------------
 
 !**** *SECONDHH* - COMPUTATION OF SECOND ORDER HARMONICS AND
@@ -4649,21 +4688,15 @@ CONTAINS
 !-------------------------------------------------------------------
 
 !-------------------------------------------------------------------
-
+USE CONSTANTS, ONLY: GRAV, TPI
+USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
       IMPLICIT NONE
  !     REAL(KIND=4) :: VMIN_D,VPLUS_D
 
 
 
-      REAL(KIND=4) :: G = 9.806
-      REAL(KIND=4) :: ZPI = 6.2831854
-
-
-      INTEGER, INTENT(IN) :: NANG,NFRE,NFREHF
-      REAL(KIND=4),   INTENT(IN)      :: TH(NANG) 
-      REAL(KIND=4), DIMENSION(NFRE), INTENT(IN)      :: FR
-      REAL(KIND=4),                  INTENT(IN)      :: DELTH
-      REAL(KIND=4), DIMENSION(NANG,NANG,NFREHF,NFREHF), INTENT(OUT)  :: FAC0, FAC1, FAC2, FAC3
+      INTEGER, INTENT(IN) :: NKHF
+      REAL(KIND=4), DIMENSION(NTH,NTH,NKHF,NKHF), INTENT(OUT)  :: FAC0, FAC1, FAC2, FAC3
       REAL(KIND=4), PARAMETER   :: FRATIO = 1.1
 
 
@@ -4682,9 +4715,8 @@ CONTAINS
       REAL(KIND=4) :: DELOM321, DELOM312
       REAL(KIND=4) :: C22, S22
 
-      REAL(KIND=4), DIMENSION(NANG) :: COSTH,SINTH
-      REAL(KIND=4), DIMENSION(NANG,NANG,NFREHF,NFREHF) :: B
-      REAL(KIND=4), DIMENSION(:), ALLOCATABLE:: FAK, FRHF, DFIMHF
+      REAL(KIND=4), DIMENSION(NTH,NTH,NKHF,NKHF) :: B
+      REAL(KIND=4), DIMENSION(:), ALLOCATABLE:: FAK, SIGHF, DFIMHF
 
 
 
@@ -4696,37 +4728,34 @@ CONTAINS
 
 !*    1. INITIALISE RELEVANT QUANTITIES.
 
-      COSTH(:) = COS(TH(:))
-      SINTH(:) = SIN(TH(:))
+      ALLOCATE(FAK(NKHF))
+      ALLOCATE(SIGHF(NKHF))
+      ALLOCATE(DFIMHF(NKHF))
 
-      ALLOCATE(FAK(NFREHF))
-      ALLOCATE(FRHF(NFREHF))
-      ALLOCATE(DFIMHF(NFREHF))
-
-      FRHF(1)  = FR(1)
-      DO M=2,NFREHF
-        FRHF(M) = FRATIO*FRHF(M-1)
+      SIGHF(1)  = SIG(1)
+      DO M=2,NKHF
+        SIGHF(M) = XFR*SIGHF(M-1)
       ENDDO
 
-      DO M=1,NFREHF
-         FAK(M) = (ZPI*FRHF(M))**2/G
+      DO M=1,NKHF
+         FAK(M) = (SIGHF(M))**2/GRAV
       ENDDO
 
-      CO1 = 0.5*(FRATIO-1.)*DELTH
-      DFIMHF(1) = CO1*FRHF(1)
-      DO M=2,NFREHF-1
-         DFIMHF(M)=CO1*(FRHF(M)+FRHF(M-1))
+      CO1 = 0.5*(XFR-1.)*DTH
+      DFIMHF(1) = CO1*SIGHF(1)
+      DO M=2,NKHF-1
+         DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
       ENDDO
-      DFIMHF(NFREHF)=CO1*FRHF(NFREHF-1)
+      DFIMHF(NSIGEHF)=CO1*SIGHF(NKHF-1)
 
-      DO M2=1,NFREHF
+      DO M2=1,NKHF
         XK2 = FAK(M2)
         XK2SQ = FAK(M2)**2
-        DO  M1=1,NFREHF
+        DO  M1=1,NKHF
           XK1 = FAK(M1)
           XK1SQ = FAK(M1)**2
-          DO K1=1,NANG
-            DO K2=1,NANG
+          DO K1=1,NTH
+            DO K2=1,NTH
               COSDIFF = COS(TH(K1)-TH(K2))
               X12 = XK1*XK2*COSDIFF
               XK3 = XK1SQ + XK2SQ +2.0*X12 +DEL1
@@ -4739,8 +4768,8 @@ CONTAINS
               F1 = SQRT(XK1/(2.0*OM1))
               F2 = SQRT(XK2/(2.0*OM2))
               F3 = SQRT(XK3/(2.0*OM3))
-              VM = ZPI*VMIN_D(XK3,XK1,XK2,X13,X32,X12,OM3,OM1,OM2)
-              VP = ZPI*VPLUS_D(-XK3,XK1,XK2,-X13,-X32,X12,OM3,OM1,OM2)
+              VM = TPI*VMIN_D(XK3,XK1,XK2,X13,X32,X12,OM3,OM1,OM2)
+              VP = TPI*VPLUS_D(-XK3,XK1,XK2,-X13,-X32,X12,OM3,OM1,OM2)
               DELOM1 = OM3-OM1-OM2+DEL1
               DELOM2 = OM3+OM1+OM2+DEL1
               FAC0(K1,K2,M1,M2) = -F3/(F1*F2)*(VM/(DELOM1)+             &
@@ -4750,14 +4779,14 @@ CONTAINS
         ENDDO
       ENDDO
 
-      DO M2=1,NFREHF
+      DO M2=1,NKHF
         XK2 = FAK(M2)
         XK2SQ = FAK(M2)**2
-        DO  M1=1,NFREHF
+        DO  M1=1,NKHF
           XK1 = FAK(M1)
           XK1SQ = FAK(M1)**2
-          DO K1=1,NANG
-            DO K2=1,NANG
+          DO K1=1,NTH
+            DO K2=1,NTH
               COSDIFF = COS(TH(K1)-TH(K2))
               X12 = XK1*XK2*COSDIFF
               XK3 = XK1SQ + XK2SQ - 2.*X12 + DEL1
@@ -4770,8 +4799,8 @@ CONTAINS
               F1 = SQRT(XK1/(2.0*OM1))
               F2 = SQRT(XK2/(2.0*OM2))
               F3 = SQRT(ABS(XK3)/(2.0*OM3))
-              VM = ZPI*VMIN_D(XK1,XK3,XK2,X13,X12,X32,OM1,OM3,OM2)
-              VP = ZPI*VMIN_D(XK2,-XK3,XK1,-X32,X12,-X13,OM2,OM3,OM1)
+              VM = TPI*VMIN_D(XK1,XK3,XK2,X13,X12,X32,OM1,OM3,OM2)
+              VP = TPI*VMIN_D(XK2,-XK3,XK1,-X32,X12,-X13,OM2,OM3,OM1)
               DELOM321 = OM3+OM2-OM1+DEL1
               DELOM312 = OM3+OM1-OM2+DEL1
               B(K1,K2,M1,M2) = -F3/(F1*F2)*(VM/(DELOM321)+              &
@@ -4781,24 +4810,24 @@ CONTAINS
         ENDDO
       ENDDO
 
-      DO M2=1,NFREHF
+      DO M2=1,NKHF
         XK2SQ = FAK(M2)**2
-        DO M1=1,NFREHF
+        DO M1=1,NKHF
           XK1SQ = FAK(M1)**2
-          DO K2=1,NANG
-            DO K1=1,NANG
+          DO K2=1,NTH
+            DO K1=1,NTH
               C22 = FAC0(K1,K2,M1,M2)+B(K1,K2,M1,M2)
               S22 = B(K1,K2,M1,M2)-FAC0(K1,K2,M1,M2)
               FAC1(K1,K2,M1,M2) =                                       &
-     &             (XK1SQ*COSTH(K1)**2 + XK2SQ*COSTH(K2)**2)*C22        &
-     &             -FAK(M1)*FAK(M2)*COSTH(K1)*COSTH(K2)*S22
+     &             (XK1SQ*ECOS(K1)**2 + XK2SQ*ECOS(K2)**2)*C22        &
+     &             -FAK(M1)*FAK(M2)*ECOS(K1)*ECOS(K2)*S22
               FAC2(K1,K2,M1,M2) =                                       &
-     &             (XK1SQ*SINTH(K1)**2 + XK2SQ*SINTH(K2)**2)*C22        &
-     &             -FAK(M1)*FAK(M2)*SINTH(K1)*SINTH(K2)*S22
+     &             (XK1SQ*ESIN(K1)**2 + XK2SQ*ESIN(K2)**2)*C22        &
+     &             -FAK(M1)*FAK(M2)*ESIN(K1)*ESIN(K2)*S22
               FAC3(K1,K2,M1,M2) =                                       &
-     &             (XK1SQ*SINTH(K1)*COSTH(K1) +                         &
-     &              XK2SQ*SINTH(K2)*COSTH(K2))*C22                      &
-     &             -FAK(M1)*FAK(M2)*COSTH(K1)*SINTH(K2)*S22
+     &             (XK1SQ*ESIN(K1)*ECOS(K1) +                         &
+     &              XK2SQ*ESIN(K2)*ECOS(K2))*C22                      &
+     &             -FAK(M1)*FAK(M2)*ECOS(K1)*ESIN(K2)*S22
               FAC0(K1,K2,M1,M2) = C22
             ENDDO
           ENDDO
@@ -4864,7 +4893,7 @@ CONTAINS
 
 !--------------------------------------------------------------------
 
-      SUBROUTINE SKEWNESS(NFRE,NANG,NFREHF,FR,DELTH,TH,F1,FAC0, FAC1, FAC2, FAC3, XKAPPA1,DELH_ALT,LAMBDA3,MU2,DELTA)
+      SUBROUTINE SKEWNESS(A)
 
 !--------------------------------------------------------------------
 
@@ -4887,7 +4916,6 @@ CONTAINS
 !     ---------   ----      -------
 !
 !       F1        REAL      TWO DIMENSIONAL SPECTRUM
-!       NCOLL     INTEGER   NUMBER OF COLLOCATED SPECTRA
 !       XKAPPA1   REAL      CORRECTED KAPPA1 FROM ALTIMETER WAVE HEIGHT
 !                           ALGORITHM
 !       DELH_ALT  REAL      RELATIVE ALTIMETER RANGE CORRECTION,
@@ -4909,99 +4937,97 @@ CONTAINS
 !     ----------
 !             M.A. SROKOSZ, J.G.R.,91,995-1006(1986)
 !             V.E. ZAKHAROV, HAMILTONIAN APPROACH(1967)
-
 !--------------------------------------------------------------------
 
 
 
 !--------------------------------------------------------------------
 !      *TH*        REAL      DIRECTIONS IN RADIANS.
-
-      IMPLICIT NONE
-
-!      INTEGER, PARAMETER :: NANG = 36
-!      INTEGER, PARAMETER :: NFRE = 36
-!      INTEGER, PARAMETER :: NFREHF=49 
-      REAL(KIND=4), PARAMETER   :: FRATIO = 1.1
-
-      REAL(KIND=4) :: G = 9.806
-      REAL(KIND=4) :: ZPI = 6.2831854
-
-!      REAL(KIND=4), ALLOCATABLE :: COSTH(:)
-!      REAL(KIND=4), ALLOCATABLE :: SINTH(:)
-      REAL(KIND=4), DIMENSION(NANG) :: COSTH,SINTH
+USE CONSTANTS, ONLY: GRAV, TPI, TPIINV
+USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, DTH, ECOS, ESIN
+USE W3PARALL,  ONLY: INIT_GET_ISEA
+USE W3ADATMD,  ONLY: SKEW, EMBIA1, EMBIA2
 
 
-      INTEGER, INTENT(IN) :: NFRE,NANG,NFREHF
-      REAL, DIMENSION(NFRE), INTENT(IN) :: FR
+    IMPLICIT NONE
 
-      REAL(KIND=4), INTENT(OUT) :: XKAPPA1, DELH_ALT,LAMBDA3,MU2,DELTA
-      REAL(KIND=4), DIMENSION(NANG,NFRE), INTENT(IN) :: F1
-      REAL(KIND=4), DIMENSION(NANG), INTENT(IN)      :: TH
-      REAL,                          INTENT(IN) :: DELTH
-      REAL(KIND=4), DIMENSION(NANG,NANG,NFREHF,NFREHF), INTENT(IN) :: FAC0,FAC1,FAC2,FAC3
+    REAL, INTENT(IN)        :: A(NTH,NK,0:NSEAL)
 
+    INTEGER :: NKHF
+    REAL(KIND=4), ALLOCATABLE(:,:,:,:) :: FAC0,FAC1,FAC2,FAC3
 
-      INTEGER :: M, K, M1, K1, M2, K2, I, J
-      INTEGER :: MSTART
+    INTEGER :: M, K, M1, K1, M2, K2, I, J
+    INTEGER :: MSTART
    
-      REAL(KIND=4) :: FH, DELF, XK1
-      REAL(KIND=4) :: XPI, XPJ, XPK, XN, XFAC, CO1
-      REAL(KIND=4), DIMENSION(NANG,NFREHF) :: F2
-      REAL(KIND=4), DIMENSION(0:3,0:2,0:2) :: XMU, XLAMBDA
-      REAL(KIND=4), DIMENSION(NFREHF) ::  FRHF, DFIMHF, FAK
+    REAL(KIND=4) :: CONX
+    REAL(KIND=4) :: FH, DELF, XK1
+    REAL(KIND=4) :: XPI, XPJ, XPK, XN, XFAC, CO1
+    REAL(KIND=4), ALLOCATABLE(:,:) :: F2
+    REAL(KIND=4), DIMENSION(0:3,0:2,0:2) :: XMU, XLAMBDA
+    REAL(KIND=4), ALLOCATABLE(:) ::  SIGHF, DFIMHF, FAK
 
 ! ----------------------------------------------------------------------
+
+    NKHF=NK+13 ! same offset as in ECWAM 
+
+    ALLOCATE(FAC0(NTH,NTH,NKHF,NKHF))
+    ALLOCATE(FAC1(NTH,NTH,NKHF,NKHF))
+    ALLOCATE(FAC2(NTH,NTH,NKHF,NKHF))
+    ALLOCATE(FAC3(NTH,NTH,NKHF,NKHF))
+      
+    CALL SECONDHH(NKHF,FAC0,FAC1,FAC2,FAC3)
+
+    ALLOCATE(F2(NTH,NKHF))
+    ALLOCATE(SIGHF(NKHF), DFIMHF(NKHF), FAK(NKHF)) 
 
 !     1. COMPUTATION OF FREQUENCY-DIRECTION INCREMENT
 !     -----------------------------------------------
 
-      MSTART = 1
+    MSTART = 1
+    XMU(:,:,:) = 0.0
 
-      XMU(:,:,:) = 0.0
+#ifdef W3_OMPG
+        !$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
+    DO JSEA=1, NSEAL
+      DO K=1,NTH
+        DO M=1,NK
+          CONX = TPIINV / SIG(M) * CG(M,ISEA)
+          F2(K,M)=A(K,M,JSEA)/ CONX
+          END DO
+        END DO
 
-      !ALLOCATE(COSTH(NANG),SINTH(NANG))
-      COSTH(:) = COS(TH(:))
-      SINTH(:) = SIN(TH(:))
-
-      DO K=1,NANG
-        DO M=1,NFRE
-            F2(K,M)=F1(K,M)
-        ENDDO
+      SIGHF(1)  = SIG(1)
+      DO M=2,NKHF
+        SIGHF(M) = XFR*SIGHF(M-1)
       ENDDO
 
-      !ALLOCATE(FRHF(NFREHF),DFIMHF(NFREHF),FAK(NFREHF))
-      FRHF(1)  = FR(1)
-      DO M=2,NFREHF
-        FRHF(M) = FRATIO*FRHF(M-1)
+      CO1 = 0.5*(XFR-1.)*DTH
+      DFIMHF(1) = CO1*SIGHF(1)
+      DO M=2,NKHF-1
+         DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
       ENDDO
+      DFIMHF(NKHF)=CO1*SIGHF(NKHF-1)
 
-      CO1 = 0.5*(FRATIO-1.)*DELTH
-      DFIMHF(1) = CO1*FRHF(1)
-      DO M=2,NFREHF-1
-         DFIMHF(M)=CO1*(FRHF(M)+FRHF(M-1))
-      ENDDO
-      DFIMHF(NFREHF)=CO1*FRHF(NFREHF-1)
-
-      DO M=1,NFREHF
-         FAK(M) = (ZPI*FRHF(M))**2/G
+      DO M=1,NKHF
+         FAK(M) = (SIGHF(M))**2/G
       ENDDO
 
 ! Deals with the tail ... 
-      DO M=NFRE+1,NFREHF
-        FH=(FRHF(NFRE)/FRHF(M))**5
-        DO K=1,NANG
-            F2(K,M)=F1(K,NFRE)*FH
+      DO M=NK+1,NKHF
+        FH=(SIGHF(NK)/SIGHF(M))**5
+        DO K=1,NTH
+            F2(K,M)=A(K,NK,JSEA)*FH
         ENDDO
       ENDDO
 
 !     2. COMPUTATION OF THE SKEWNESS COEFFICIENTS
 !     --------------------------------------------
 
-      DO M1=MSTART,NFREHF
-        DO M2=MSTART,NFREHF
-          DO K1=1,NANG
-            DO K2=1,NANG
+      DO M1=MSTART,NKHF
+        DO M2=MSTART,NKHF
+          DO K1=1,NTH
+            DO K2=1,NTH
                 DELF = DFIMHF(M1)*DFIMHF(M2)*F2( K1,M1)*F2(K2,M2)
                 XMU(3,0,0) = XMU(3,0,0)+3.0*FAC0(K1,K2,M1,M2)*DELF
                 XMU(1,2,0) = XMU(1,2,0)+FAC1(K1,K2,M1,M2)*DELF
@@ -5012,14 +5038,14 @@ CONTAINS
         ENDDO
       ENDDO
 
-      DO K1=1,NANG
-        DO M1=MSTART,NFREHF
+      DO K1=1,NTH
+        DO M1=MSTART,NKHF
           XK1 = FAK(M1)**2
             DELF = DFIMHF(M1)*F2(K1,M1)
             XMU(2,0,0) = XMU(2,0,0) + DELF
-            XMU(0,2,0) = XMU(0,2,0) + XK1*COSTH(K1)**2*DELF
-            XMU(0,0,2) = XMU(0,0,2) + XK1*SINTH(K1)**2*DELF
-            XMU(0,1,1) = XMU(0,1,1) + XK1*COSTH(K1)*SINTH(K1)*DELF
+            XMU(0,2,0) = XMU(0,2,0) + XK1*ECOS(K1)**2*DELF
+            XMU(0,0,2) = XMU(0,0,2) + XK1*ESIN(K1)**2*DELF
+            XMU(0,1,1) = XMU(0,1,1) + XK1*ECOS(K1)*ESIN(K1)*DELF
         ENDDO
       ENDDO
 
@@ -5052,6 +5078,13 @@ CONTAINS
      &         (5.0*XLAMBDA(3,0,0)/24.0 + 0.125*DELTA)
          XKAPPA1 = 1.0 + XFAC
          DELH_ALT = -0.125*(XLAMBDA(3,0,0)/3.0+DELTA)               ! see eq. 26 : sum of e-m bias and tracker bias
+
+        END DO
+        !
+#ifdef W3_OMPG
+        !$OMP END PARALLEL DO
+#endif
+
 
       END SUBROUTINE SKEWNESS
 
