@@ -2529,7 +2529,7 @@ CONTAINS
          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-         USSP, TAUOCX, TAUOCY, QKK, SKEW, EMBIA1? EMBIA2
+         USSP, TAUOCX, TAUOCY, QKK, SKEW, EMBIA1, EMBIA2
     !/
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2941,7 +2941,7 @@ CONTAINS
           IF ( FLOGRD( 8, 6) ) QKK  (ISEA) = UNDEF
           IF ( FLOGRD( 8, 7) ) SKEW (ISEA) = UNDEF
           IF ( FLOGRD( 8, 8) ) EMBIA1(ISEA) = UNDEF
-          IF ( FLOGRD( 8, 9) ) EMBIA3(ISEA) = UNDEF
+          IF ( FLOGRD( 8, 9) ) EMBIA2(ISEA) = UNDEF
           !
           IF ( FLOGRD( 9, 1) ) DTDYN (ISEA) = UNDEF
           IF ( FLOGRD( 9, 2) ) FCUT  (ISEA) = UNDEF
@@ -4746,7 +4746,7 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
       DO M=2,NKHF-1
          DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
       ENDDO
-      DFIMHF(NSIGEHF)=CO1*SIGHF(NKHF-1)
+      DFIMHF(NKHF)=CO1*SIGHF(NKHF-1)
 
       DO M2=1,NKHF
         XK2 = FAK(M2)
@@ -4762,9 +4762,9 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
               XK3 = SQRT(XK3)
               X13 = XK1SQ+X12
               X32 = X12+XK2SQ
-              OM1 = SQRT(G*XK1)
-              OM2 = SQRT(G*XK2)
-              OM3 = SQRT(G*XK3)
+              OM1 = SQRT(GRAV*XK1)
+              OM2 = SQRT(GRAV*XK2)
+              OM3 = SQRT(GRAV*XK3)
               F1 = SQRT(XK1/(2.0*OM1))
               F2 = SQRT(XK2/(2.0*OM2))
               F3 = SQRT(XK3/(2.0*OM3))
@@ -4793,9 +4793,9 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
               XK3 = SQRT(XK3)
               X13 = XK1SQ-X12
               X32 = X12-XK2SQ
-              OM1 = SQRT(G*XK1)
-              OM2 = SQRT(G*XK2)
-              OM3 = SQRT(G*XK3)+DEL1
+              OM1 = SQRT(GRAV*XK1)
+              OM2 = SQRT(GRAV*XK2)
+              OM3 = SQRT(GRAV*XK3)+DEL1
               F1 = SQRT(XK1/(2.0*OM1))
               F2 = SQRT(XK2/(2.0*OM2))
               F3 = SQRT(ABS(XK3)/(2.0*OM3))
@@ -4912,15 +4912,6 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
 !             *CALL* *SKEWNESS(IU06,F1,NCOLL,XKAPPA1,DELH_ALT)*
 
 
-!     PARAMETER   TYPE      PURPOSE.
-!     ---------   ----      -------
-!
-!       F1        REAL      TWO DIMENSIONAL SPECTRUM
-!       XKAPPA1   REAL      CORRECTED KAPPA1 FROM ALTIMETER WAVE HEIGHT
-!                           ALGORITHM
-!       DELH_ALT  REAL      RELATIVE ALTIMETER RANGE CORRECTION,
-!                           I.E. DELH_ALT*HS GIVES ACTUAL RANGE
-!                           CORRECTION
 
 !     METHOD
 !     ------
@@ -4944,9 +4935,9 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
 !--------------------------------------------------------------------
 !      *TH*        REAL      DIRECTIONS IN RADIANS.
 USE CONSTANTS, ONLY: GRAV, TPI, TPIINV
-USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, DTH, ECOS, ESIN
+USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, DTH, ECOS, ESIN, NSEAL
 USE W3PARALL,  ONLY: INIT_GET_ISEA
-USE W3ADATMD,  ONLY: SKEW, EMBIA1, EMBIA2
+USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
 
 
     IMPLICIT NONE
@@ -4954,17 +4945,17 @@ USE W3ADATMD,  ONLY: SKEW, EMBIA1, EMBIA2
     REAL, INTENT(IN)        :: A(NTH,NK,0:NSEAL)
 
     INTEGER :: NKHF
-    REAL(KIND=4), ALLOCATABLE(:,:,:,:) :: FAC0,FAC1,FAC2,FAC3
+    REAL(KIND=4), DIMENSION(:,:,:,:) , ALLOCATABLE:: FAC0,FAC1,FAC2,FAC3
 
     INTEGER :: M, K, M1, K1, M2, K2, I, J
-    INTEGER :: MSTART
+    INTEGER :: MSTART, JSEA
    
-    REAL(KIND=4) :: CONX
+    REAL(KIND=4) :: CONX, DELTA
     REAL(KIND=4) :: FH, DELF, XK1
     REAL(KIND=4) :: XPI, XPJ, XPK, XN, XFAC, CO1
-    REAL(KIND=4), ALLOCATABLE(:,:) :: F2
+    REAL(KIND=4), DIMENSION(:,:), ALLOCATABLE :: F2
     REAL(KIND=4), DIMENSION(0:3,0:2,0:2) :: XMU, XLAMBDA
-    REAL(KIND=4), ALLOCATABLE(:) ::  SIGHF, DFIMHF, FAK
+    REAL(KIND=4), DIMENSION(:) , ALLOCATABLE::  SIGHF, DFIMHF, FAK
 
 ! ----------------------------------------------------------------------
 
@@ -4992,7 +4983,7 @@ USE W3ADATMD,  ONLY: SKEW, EMBIA1, EMBIA2
     DO JSEA=1, NSEAL
       DO K=1,NTH
         DO M=1,NK
-          CONX = TPIINV / SIG(M) * CG(M,ISEA)
+          CONX = TPIINV / SIG(M) * CG(M,JSEA)
           F2(K,M)=A(K,M,JSEA)/ CONX
           END DO
         END DO
@@ -5010,7 +5001,7 @@ USE W3ADATMD,  ONLY: SKEW, EMBIA1, EMBIA2
       DFIMHF(NKHF)=CO1*SIGHF(NKHF-1)
 
       DO M=1,NKHF
-         FAK(M) = (SIGHF(M))**2/G
+         FAK(M) = (SIGHF(M))**2/GRAV
       ENDDO
 
 ! Deals with the tail ... 
@@ -5065,21 +5056,18 @@ USE W3ADATMD,  ONLY: SKEW, EMBIA1, EMBIA2
         ENDDO
       ENDDO
 
-      LAMBDA3=XLAMBDA(3,0,0)
-      MU2=XMU(2,0,0)
+      SKEW(JSEA)=XLAMBDA(3,0,0)
 
 !     4. CORRECTION TO KAPPA1
 !     -----------------------
 
          DELTA = ( XLAMBDA(1,2,0) + XLAMBDA(1,0,2)                &
      &             - 2.0*XLAMBDA(0,1,1)*XLAMBDA(1,1,1) )/    &
-     &             (1.0 - XLAMBDA(0,1,1)**2)                        ! this is called gamma eq. 20 
-         XFAC = 2.0*(XLAMBDA(3,0,0)/3.0 + DELTA)*          &
-     &         (5.0*XLAMBDA(3,0,0)/24.0 + 0.125*DELTA)
-         XKAPPA1 = 1.0 + XFAC
-         DELH_ALT = -0.125*(XLAMBDA(3,0,0)/3.0+DELTA)               ! see eq. 26 : sum of e-m bias and tracker bias
+     &             (1.0 - XLAMBDA(0,1,1)**2)             ! this is called gamma eq. 20 
+         EMBIA1(JSEA)=-0.125*DELTA                             ! EM Bias coefficient 
+         EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0		 ! tracker bias (least squares only) 	
 
-        END DO
+        END DO  ! end of loop on JSEA
         !
 #ifdef W3_OMPG
         !$OMP END PARALLEL DO

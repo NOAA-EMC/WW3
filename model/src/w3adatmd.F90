@@ -476,10 +476,10 @@ MODULE W3ADATMD
     ! Output fields group 8)
     !
     REAL, POINTER         ::  MSSX(:),  MSSY(:),  MSSD(:),        &
-         MSCX(:),  MSCY(:),  MSCD(:), QKK(:), SKEW(:), EMBIA1(:), , EMBIA2(:)
+         MSCX(:),  MSCY(:),  MSCD(:), QKK(:), SKEW(:), EMBIA1(:), EMBIA2(:)
     REAL, POINTER         ::  XMSSX(:), XMSSY(:), XMSSD(:),       &
-         XMSCX(:), XMSCY(:), XMSCD(:), XQKK(:)                    &g
-         XSKEW(:), XEMBIA1(:), , XEMBIA2(:)    
+         XMSCX(:), XMSCY(:), XMSCD(:), XQKK(:),                   &
+         XSKEW(:), XEMBIA1(:), XEMBIA2(:)    
     !
     ! Output fields group 9)
     !
@@ -615,7 +615,7 @@ MODULE W3ADATMD
        BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
   !
   REAL, POINTER           :: MSSX(:), MSSY(:), MSSD(:),           &
-       MSCX(:), MSCY(:), MSCD(:), QKK(:), SKEW(:), EMBIA1(:), , EMBIA2(:)
+       MSCX(:), MSCY(:), MSCD(:), QKK(:), SKEW(:), EMBIA1(:), EMBIA2(:)
   !
   REAL, POINTER           :: DTDYN(:), FCUT(:), CFLXYMAX(:),      &
        CFLTHMAX(:), CFLKMAX(:)
