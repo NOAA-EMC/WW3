@@ -2223,31 +2223,31 @@ CONTAINS
             UNITS  = '1'
             ENAME  = '.skw'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = QKK
+              XS1    = SKEW
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SKEW, MAPSF, X1 )
             ENDIF
             !
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.01
+            FSC    = 0.0001
             UNITS  = '1'
             ENAME  = '.emb'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = QKK
+              XS1    = EMBIA1
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, EMBIA1, MAPSF, X1 )
             ENDIF
             !
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.01
+            FSC    = 0.0001
             UNITS  = '1'
             ENAME  = '.emc'
             IF ( ITYPE .EQ. 4 ) THEN
-              XS1    = QKK
+              XS1    = EMBIA2
             ELSE
-              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, EMBIA2, MAPSF, X1 )
             ENDIF
             !
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN

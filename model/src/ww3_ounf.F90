@@ -1963,15 +1963,15 @@ CONTAINS
             !
             ! surface elevation skewness lambda_3,0,0
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
-            CALL S2GRID(QKK, X1)
+            CALL S2GRID(SKEW, X1)
             !
             ! em bias param 1
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
-            CALL S2GRID(QKK, X1)
+            CALL S2GRID(EMBIA1, X1)
             !
             ! em bias param 2
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
-            CALL S2GRID(QKK, X1)
+            CALL S2GRID(EMBIA2, X1)
             !
             ! Dynamic time step
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN

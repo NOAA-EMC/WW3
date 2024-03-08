@@ -2353,7 +2353,7 @@ CONTAINS
     !
     IF (FLOLOC( 8, 7).OR.FLOLOC( 8, 8).OR.FLOLOC( 8, 9)) THEN
       CALL SKEWNESS(A)
-    ENDIF
+    END IF
     
     !
     ! Dominant wave breaking probability
@@ -3635,17 +3635,17 @@ CONTAINS
               WRITE ( NDSOA,* ) 'QKK:', QKK(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
-              WRITE ( NDSOG ) QKK(1:NSEA)
+              WRITE ( NDSOG ) SKEW(1:NSEA)
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'SKW:', SKEW(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
-              WRITE ( NDSOG ) QKK(1:NSEA)
+              WRITE ( NDSOG ) EMBIA1(1:NSEA)
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'EMB:', EMBIA1(1:NSEA)
 #endif
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
-              WRITE ( NDSOG ) QKK(1:NSEA)
+              WRITE ( NDSOG ) EMBIA2(1:NSEA)
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'EMC:', EMBIA2(1:NSEA)
 #endif
@@ -4004,9 +4004,9 @@ CONTAINS
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SKEW(1:NSEA)
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
-              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) EMBIA2(1:NSEA)
-            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) EMBIA1(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) EMBIA2(1:NSEA)
               !
               !     Section 9)
               !
@@ -4993,8 +4993,8 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
         SIGHF(M) = XFR*SIGHF(M-1)
       ENDDO
 
-      CO1 = 0.5*(XFR-1.)*DTH
-      DFIMHF(1) = CO1*SIGHF(1)
+      CO1 = 0.5*(XFR-1.)*DTH*TPIINV 
+      DFIMHF(1) = CO1*SIGHF(1)        ! this is DF*DTH
       DO M=2,NKHF-1
          DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
       ENDDO
@@ -5008,7 +5008,7 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
       DO M=NK+1,NKHF
         FH=(SIGHF(NK)/SIGHF(M))**5
         DO K=1,NTH
-            F2(K,M)=A(K,NK,JSEA)*FH
+            F2(K,M)=F2(K,NK)*FH
         ENDDO
       ENDDO
 
@@ -5052,26 +5052,25 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
             XPK = 0.5*FLOAT(K)
               XN = XMU(2,0,0)**XPI*XMU(0,2,0)**XPJ*XMU(0,0,2)**XPK  ! denom in Srokosz eq. 11
               XLAMBDA(I,J,K) = XMU(I,J,K)/XN
-          ENDDO
-        ENDDO
-      ENDDO
-
-      SKEW(JSEA)=XLAMBDA(3,0,0)
-
-!     4. CORRECTION TO KAPPA1
-!     -----------------------
-
-         DELTA = ( XLAMBDA(1,2,0) + XLAMBDA(1,0,2)                &
-     &             - 2.0*XLAMBDA(0,1,1)*XLAMBDA(1,1,1) )/    &
-     &             (1.0 - XLAMBDA(0,1,1)**2)             ! this is called gamma eq. 20 
-         EMBIA1(JSEA)=-0.125*DELTA                             ! EM Bias coefficient 
-         EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0		 ! tracker bias (least squares only) 	
-
-        END DO  ! end of loop on JSEA
+            END DO
+          END DO
+        END DO
+      IF ( XMU(2,0,0) .GT. 1.E-7 ) THEN
+        SKEW(JSEA)=XLAMBDA(3,0,0)
+        DELTA = ( XLAMBDA(1,2,0) + XLAMBDA(1,0,2)           &
+                  - 2.0*XLAMBDA(0,1,1)*XLAMBDA(1,1,1) )/    &
+                   (1.0 - XLAMBDA(0,1,1)**2)             ! this is called gamma eq. 20 
+        EMBIA1(JSEA)=-0.125*DELTA                             ! EM Bias coefficient 
+        EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0		 ! tracker bias (least squares only) 	
+        END IF
+      END DO  ! end of loop on JSEA
         !
 #ifdef W3_OMPG
         !$OMP END PARALLEL DO
 #endif
+
+    DEALLOCATE(FAC0,FAC1,FAC2,FAC3)
+    DEALLOCATE(F2,SIGHF,DFIMHF,FAK) 
 
 
       END SUBROUTINE SKEWNESS
