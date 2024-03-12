@@ -437,23 +437,24 @@ then
   cat $path_build/switch >> $ofile
   cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile 2>&1
   rc=$?
-  if [[ $rc -ne 0 ]] ; then
+  if (( rc != 0 )); then
     echo "Fatal error in cmake."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
   make -j 8 VERBOSE=1 >> $ofile 2>&1
   rc=$?
-  if [[ $rc -ne 0 ]] ; then
+  if (( rc != 0 )); then 
     echo "Fatal error in make."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
   make install >> $ofile 2>&1
-  if [[ $rc -ne 0 ]] ; then
+  rc=$?
+  if (( rc != 0 )); then 
     echo "Fatal error in make install."
     echo "The build log is in $ofile"
-    exit
+    exit ${rc}
   fi
 
   cp $path_build/install/bin/* $path_e/
@@ -470,22 +471,24 @@ then
     cat $path_build/switch >> $ofile
     cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile  2>&1
     rc=$?
-    if [[ $rc -ne 0 ]] ; then
+    if (( rc != 0 )); then
       echo "Fatal error in cmake."
-      echo "The build log is in $ofile"
-      exit
+      echo "The build log is in ${ofile}"
+      exit ${rc}
     fi
     make -j 8 VERBOSE=1 >> $ofile 2>&1
-    if [[ $rc -ne 0 ]] ; then
+    rc=$?
+    if (( rc != 0 )); then
       echo "Fatal error in make."
-      echo "The build log is in $ofile"
-      exit
+      echo "The build log is in ${ofile}"
+      exit ${rc}
     fi
     make install >> $ofile 2>&1
-    if [[ $rc -ne 0 ]] ; then
+    rc=$?
+    if (( rc != 0 )); then
       echo "Fatal error in make install."
       echo "The build log is in $ofile"
-      exit
+      exit ${rc}
     fi
     path_e=$path_w/exe
     cp $path_build/install/bin/ww3_shel $path_e/
@@ -509,22 +512,24 @@ else
   cat $path_build/switch >> $ofile
   cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile 2>&1
   rc=$?
-  if [[ $rc -ne 0 ]] ; then
+  if (( rc != 0 )); then
     echo "Fatal error in cmake."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
   make -j 8 VERBOSE=1 >> $ofile 2>&1
-  if [[ $rc -ne 0 ]] ; then
+  rc=$?
+  if (( rc != 0 )); then 
     echo "Fatal error in make."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
   make install >> $ofile 2>&1
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in make install."
-    echo "The build log is in $ofile"
-    exit
+  rc=$?
+  if (( rc != 0 )); then  
+    echo "Fatal error in make."
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
 
   cp $path_build/install/bin/* $path_e/
