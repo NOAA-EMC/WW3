@@ -322,9 +322,9 @@
 ! * the number of each homogeneous input is defined by HOMOG_COUNT
 ! * the total number of homogeneous input is automatically calculated
 ! * the homogeneous input must start from index 1 to N
-! * if VALUE1 is equal 0, then the homogeneous input is desactivated
+! * if VALUE1 is equal 0, then the homogeneous input is deactivated
 ! * NAME can be IC1, IC2, IC3, IC4, IC5, MDN, MTH, MVS, LEV, CUR, WND, ICE, MOV
-! * each homogeneous input is defined over a maximum of 3 values detailled below :
+! * each homogeneous input is defined over a maximum of 3 values detailed below :
 !     - IC1 is defined by thickness
 !     - IC2 is defined by viscosity
 !     - IC3 is defined by density

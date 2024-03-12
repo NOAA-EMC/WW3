@@ -91,6 +91,9 @@ PROGRAM W3MLTI
   !/
   USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, &
        NMPROC, IMPROC, NMPSCR, NRGRD, ETIME
+#ifdef W3_OMPG
+  USE OMP_LIB
+#endif
   !/
   IMPLICIT NONE
   !
@@ -144,6 +147,12 @@ PROGRAM W3MLTI
 #ifdef W3_OMPH
   IF ( IMPROC .EQ. NMPSCR ) WRITE (*,905) &
        MPI_THREAD_FUNNELED, THRLEV
+#endif
+  !
+#ifdef W3_OMPG
+  IF( IMPROC .EQ. NMPSCR ) THEN
+      WRITE(*,906) omp_get_max_threads()
+    ENDIF
 #endif
   !
   !/ ------------------------------------------------------------------- /
@@ -210,6 +219,10 @@ PROGRAM W3MLTI
 905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
        '     Requested: ', I2/                          &
        '      Provided: ', I2/ )
+#endif
+  !
+#ifdef W3_OMPG
+906 FORMAT ( '  OMP threading enabled. Number of threads: ', I3 / )
 #endif
   !
 999 FORMAT(//'  End of program '/                                   &

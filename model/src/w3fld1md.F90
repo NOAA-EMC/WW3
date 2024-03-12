@@ -550,9 +550,13 @@ CONTAINS
           TAUDIR=atan2(TAUY, TAUX)
           ! Note: add another criterion (stress direction) for iteration.
           CRIT1=(ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1
-          CRIT2=(ABS(TAUDIR-TAUDIRB)*100.0/(TAUDIR+TAUDIRB)*0.5) .GT. 0.1
+          IF ((TAUDIR+TAUDIRB).NE.0.) THEN
+              CRIT2=(ABS(TAUDIR-TAUDIRB)*100.0/(TAUDIR+TAUDIRB)*0.5) .GT. 0.1
+          ELSE
+              CRIT2=.TRUE.
+          ENDIF
           IF (CRIT1 .OR. CRIT2) THEN
-            !            IF ((ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1) THEN
+            !    IF ((ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1) THEN
             USTRB=USTAR
             TAUDIRB=TAUDIR
             CTR=CTR+1
@@ -1116,7 +1120,11 @@ CONTAINS
     DO K=KA1, KA2-1
       AVG=SUM(INSPC(K,:))/MAX(REAL(NTH),1.)
       DO T=1,NTH
-        INSPC(K,T)=BT(K)*INSPC(K,T)/TPI/(WN2(K)**3.0)/AVG
+        if (avg /= 0.0) then
+          INSPC(K,T)=BT(K)*INSPC(K,T)/TPI/(WN2(K)**3.0)/AVG
+        else
+          inspc(k,t) = 0.0
+        end if
       ENDDO
     ENDDO
     !-----------------------------------------------------------
@@ -1134,7 +1142,11 @@ CONTAINS
       ENDDO
       AVG=SUM(NORMSPC)/MAX(REAL(NTH),1.)
       DO T=1, NTH
-        INSPC(K,T) = SAT * NORMSPC(T)/TPI/(WN2(K)**3.0)/AVG
+        if (avg /= 0.0) then
+          INSPC(K,T) = SAT * NORMSPC(T)/TPI/(WN2(K)**3.0)/AVG
+        else
+          inspc(k,t) = 0.0
+        end if
       ENDDO
     ENDDO
     DO T=1, NTH
@@ -1148,7 +1160,11 @@ CONTAINS
     AVG=SUM(NORMSPC)/MAX(REAL(NTH),1.)!1./4.
     DO K=KA3+1, NKT
       DO T=1, NTH
-        INSPC(K,T)=NORMSPC(T)*(SAT)/TPI/(WN2(K)**3.0)/AVG
+        if (avg /= 0.0) then
+          INSPC(K,T)=NORMSPC(T)*(SAT)/TPI/(WN2(K)**3.0)/AVG
+        else
+          inspc(k,t) = 0.0
+        end if
       ENDDO
     ENDDO
     DEALLOCATE(ANGLE1)
