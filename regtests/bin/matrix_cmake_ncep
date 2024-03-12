@@ -52,7 +52,7 @@ EOF
 
 # Module Versions from spack-stack that are common for all platforms
   modnetcdfc='netcdf-c/4.9.2'
-  modnetcdff='netcdf-fortran/4.6.0'
+  modnetcdff='netcdf-fortran/4.6.1'
   modjasper='jasper/2.0.32'
   modzlib='zlib/1.2.13'
   modpng='libpng/1.6.37'
@@ -73,19 +73,19 @@ EOF
     batchq='slurm'
     if [ $compiler = "intel" ]
     then 
-      spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-noavx512/install/modulefiles/Core'
+      spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/modulefiles/Core'
       modcomp='stack-intel/2021.5.0'
       modmpi='stack-intel-oneapi-mpi/2021.5.1'
       metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/intel/spack-stack/1.5.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     elif [ $compiler = "gnu" ]
     then 
-      spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.5.0/envs/unified-env-noavx512/install/modulefiles/Core'
+      spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/modulefiles/Core'
       modcomp='stack-gcc/9.2.0'
       spackstackpath2='/scratch1/NCEPDEV/jcsda/jedipara/spack-stack/modulefiles'
       modmpi='stack-openmpi/4.1.5'
       metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/gnu/spack-stack/1.5.0/parmetis-4.0.3/install'
-      modcmake='cmake/3.23.1'
+      modcmake='3.23.1'
     else 
       echo "Compiler $compiler not supported on hera" 
       exit 1 
@@ -95,7 +95,7 @@ EOF
     if [ $compiler = "intel" ]
     then
       batchq='slurm'
-      spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core'
       modcomp='stack-intel/2022.0.2'
       modmpi='stack-intel-oneapi-mpi/2021.5.1'
       metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/orion/intel/spack-stack/1.5.0/parmetis-4.0.3/install'
@@ -109,16 +109,16 @@ EOF
     batchq='slurm'
     if [ $compiler = "intel" ]
     then
-      spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env/install/modulefiles/Core'
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core'
       modcomp='stack-intel/2021.9.0'
       modmpi='stack-intel-oneapi-mpi/2021.9.0'
       metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/hercules/intel/spack-stack/1.5.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     elif [ $compiler = "gnu" ]
     then 
-      spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.5.0/envs/unified-env-mvap2/install/modulefiles/Core'
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core'
       spackstackpath2='/work/noaa/epic/role-epic/spack-stack/hercules/modulefiles'
-      modcomp='stack-gcc/11.3.1'
+      modcomp='stack-gcc/12.2.0'
       modmpi='stack-mvapich2/2.3.7'
       metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/hercules/gnu/spack-stack/1.5.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
