@@ -26,7 +26,7 @@ env:
 
 jobs:
   setup:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -62,6 +62,7 @@ jobs:
       - name: install-dependencies-with-spack
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
+          sudo mv /usr/local /usr/local_mv
           # Install NetCDF, ESMF, g2, etc using Spack
           . /opt/intel/oneapi/setvars.sh
           git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
@@ -72,7 +73,7 @@ jobs:
           spack compiler find
           sudo apt install cmake
           spack external find
-          spack add intel-oneapi-mpi
+          spack config add "packages:mpi:require:'intel-oneapi-mpi'"
           spack config add "packages:all:require:['%intel']"
           spack concretize
           spack install --dirty -v --fail-fast
@@ -97,7 +98,7 @@ jobs:
     strategy:
       matrix:
         switch: [Ifremer1, NCEP_st2, NCEP_st4, ite_pdlib, NCEP_st4sbs, NCEP_glwu, OASACM, UKMO, MULTI_ESMF]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: checkout-ww3
@@ -118,6 +119,8 @@ jobs:
 
       - name: build-ww3
         run: |
+          sudo mv /usr/local /usr/local_mv
+          sudo apt install cmake
           . /opt/intel/oneapi/setvars.sh
           source spack/share/spack/setup-env.sh
           spack env activate ww3-intel

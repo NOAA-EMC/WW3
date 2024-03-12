@@ -25,51 +25,68 @@ $ Define constants in source terms ----------------------------------- $
 $
 $ Stresses - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   TC 1996 with cap    : Namelist FLX3
-$                           CDMAX  : Maximum allowed CD (cap)
-$                           CTYPE  : Cap type :
+$                            CDMAX : Maximum allowed CD (cap)
+$                            CTYPE : Cap type :
 $                                     0: Discontinuous (default).
 $                                     1: Hyperbolic tangent.
+$
 $   Hwang 2011          : Namelist FLX4
-$                           CDFAC  : re-scaling of drag
+$                            CDFAC : re-scaling of drag
 $
 $ Linear input - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   Cavaleri and M-R    : Namelist SLN1
-$                           CLIN   : Proportionality constant.
-$                           RFPM   : Factor for fPM in filter.
-$                           RFHF   : Factor for fh in filter.
+$                             CLIN : Proportionality constant.
+$                             RFPM : Factor for fPM in filter.
+$                             RFHF : Factor for fh in filter.
 $
 $ Exponential input  - - - - - - - - - - - - - - - - - - - - - - - - -
 $   WAM-3               : Namelist SIN1
-$                           CINP   : Proportionality constant.
+$                             CINP : Proportionality constant.
 $
 $   Tolman and Chalikov : Namelist SIN2
-$                           ZWND   : Height of wind (m).
+$                             ZWND : Height of wind (m).
 $                           SWELLF : swell factor in (n.nn).
-$                           STABSH, STABOF, CNEG, CPOS, FNEG :
-$                                    c0, ST0, c1, c2 and f1 in . (n.nn)
+$ STABSH, STABOF, CNEG, CPOS, FNEG : c0, ST0, c1, c2 and f1 in . (n.nn)
 $                                    through (2.65) for definition of
 $                                    effective wind speed (!/STAB2).
-$   WAM4 and variants  : Namelist SIN3
-$                           ZWND    : Height of wind (m).
-$                           ALPHA0  : minimum value of Charnock coefficient
-$                           Z0MAX   : maximum value of air-side roughness z0
-$                           BETAMAX : maximum value of wind-wave coupling
-$                           SINTHP  : power of cosine in wind input
-$                           ZALP    : wave age shift to account for gustiness
-$                       TAUWSHELTER : sheltering of short waves to reduce u_star
-$                         SWELLFPAR : choice of swell attenuation formulation
+$
+$   WAM4 and variants   : Namelist SIN3
+$                             ZWND : Height of wind (m).
+$                           ALPHA0 : minimum value of Charnock coefficient
+$                            Z0MAX : maximum value of air-side roughness z0
+$                          BETAMAX : maximum value of wind-wave coupling
+$                           SINTHP : power of cosine in wind input
+$                             ZALP : wave age shift to account for gustiness
+$                           SWELLF : swell attenuation factor
+$
+$   Janssen / Ardhuin   : Namelist SIN4
+$                             ZWND : Height of wind (m).
+$                           ALPHA0 : minimum value of Charnock coefficient
+$                            Z0MAX : maximum value of air-side roughness z0
+$                          BETAMAX : maximum value of wind-wave coupling
+$                           SINTHP : power of cosine in wind input
+$                             ZALP : wave age shift to account for gustiness
+$                           SWELLF : swell attenuation factor
+$                      TAUWSHELTER : sheltering of short waves to reduce u_star
+$                        SWELLFPAR : choice of swell attenuation formulation
 $                                    (1: TC 1996, 3: ACC 2008)
-$                            SWELLF : swell attenuation factor
-$     Extra parameters for SWELLFPAR=3 only
-$                  SWELLF2, SWELLF3 : swell attenuation factors
-$                           SWELLF4 : Threshold Reynolds number for ACC2008
-$                           SWELLF5 : Relative viscous decay below threshold
-$                             Z0RAT : roughness for oscil. flow / mean flow
+$    Extra parameters for SWELLFPAR=3 only
+$                 SWELLF2, SWELLF3 : swell attenuation factors
+$                          SWELLF4 : Threshold Reynolds number for ACC2008
+$                          SWELLF5 : Relative viscous decay below threshold
+$                            Z0RAT : roughness for oscil. flow / mean flow
+$                            SINBR : effect of wave breaking on wind input
+$                         SINTABLE : flag to enable or the table computation
+$                         SINTAIL1 : tauwshelter for tail (no table)
+$                         SINTAIL2 : additional peak in capillary range
+$                          TAUWBUG : Set to 1 to keep bug on TAUW
+$                       VISCSTRESS : coefficient for viscous part of wind stress
+$
 $   BYDRZ input         : Namelist SIN6
-$                          SINA0    : factor for negative input
-$                          SINWS    : wind speed scaling option
-$                          SINFC    : high-frequency extent of the
-$                                     prognostic frequency region
+$                            SINA0 : factor for negative input
+$                            SINWS : wind speed scaling option
+$                            SINFC : high-frequency extent of the
+$                                    prognostic frequency region
 $
 $ Nonlinear interactions - - - - - - - - - - - - - - - - - - - - - - -
 $   Discrete I.A.       : Namelist SNL1
@@ -78,8 +95,7 @@ $                           NLPROP : C in sourc term. NOTE : default
 $                                    value depends on other source
 $                                    terms selected.
 $                           KDCONV : Factor before kd in Eq. (n.nn).
-$                           KDMIN, SNLCS1, SNLCS2, SNLCS3 :
-$                                    Minimum kd, and constants c1-3
+$    KDMIN, SNLCS1, SNLCS2, SNLCS3 : Minimum kd, and constants c1-3
 $                                    in depth scaling function.
 $                           IQTYPE : Type of depth treatment
 $                                    -2 : Deep water GQM with scaling
@@ -87,10 +103,11 @@ $                                     1 : Deep water DIA
 $                                     2 : Deep water DIA with scaling
 $                                     3 : Shallow water DIA
 $                           TAILNL : Parametric tail power.
-$                           GQMNF1, GQMNT1, GQMNQ_OM2 : Gaussian quadrature resolution
-$                           GQMTHRSAT : Threshold on saturation for SNL calculation
-$                           GQMTHRCOU : Threshold for filter on coupling coefficient
-$                           GQAMP1, GQAMP2, GQAMP3, GQAMP4 : Amplification factors
+$        GQMNF1, GQMNT1, GQMNQ_OM2 : Gaussian quadrature resolution
+$                        GQMTHRSAT : Threshold on saturation for SNL calculation
+$                        GQMTHRCOU : Threshold for filter on coupling coefficient
+$   GQAMP1, GQAMP2, GQAMP3, GQAMP4 : Amplification factors
+$
 $   Exact interactions  : Namelist SNL2
 $                           IQTYPE : Type of depth treatment
 $                                     1 : Deep water
@@ -100,22 +117,26 @@ $                           TAILNL : Parametric tail power.
 $                           NDEPTH : Number of depths in for which
 $                                    integration space is established.
 $                                    Used for IQTYPE = 3 only
+$
 $                         Namelist ANL2
 $                           DEPTHS : Array with depths for NDEPTH = 3
+$
 $   Gen. Multiple DIA   : Namelist SNL3
-$                           NQDEF  : Number of quadruplets.
-$                           MSC    : Scaling constant 'm'.
-$                           NSC    : Scaling constant 'N'.
-$                           KDFD   : Deep water relative filter depth,
-$                           KDFS   : Shallow water relative filter depth,
+$                            NQDEF : Number of quadruplets.
+$                              MSC : Scaling constant 'm'.
+$                              NSC : Scaling constant 'N'.
+$                             KDFD : Deep water relative filter depth,
+$                             KDFS : Shallow water relative filter depth,
+$
 $                         Namelist ANL3
 $                           QPARMS : 5 x NQDEF paramaters describing the
 $                                    quadruplets, repeating LAMBDA, MU, DT12.
 $                                    Cdeep and Cshal. See examples below.
+$
 $   Two Scale Approx.   : Namelist SNL4
 $                           INDTSA : Index for TSA/FBI computations
 $                                    (0 = FBI ; 1 = TSA)
-$                           ALTLP  : Index for alternate looping
+$                            ALTLP : Index for alternate looping
 $                                    (1 = no ; 2 = yes)
 $
 $ Traditional DIA setup (default):
@@ -141,141 +162,182 @@ $                0.369, 0.226,  11.5, 0.118E+08, 0.000E+00 /
 $
 $ Nonlinear filter based on DIA  - - - - - - - - - - - - - - - - - - -
 $                         Namelist SNLS
-$                           A34    : Relative offset in quadruplet
-$                           FHFC   : Proportionality constants.
-$                           DMN    : Maximum relative change.
-$                           FC1-3  : Constants in frequency filter.
+$                              A34 : Relative offset in quadruplet
+$                             FHFC : Proportionality constants.
+$                              DMN : Maximum relative change.
+$                            FC1-3 : Constants in frequency filter.
 $
 $ Whitecapping dissipation   - - - - - - - - - - - - - - - - - - - - -
 $   WAM-3               : Namelist SDS1
-$                           CDIS, APM : As in source term.
+$                        CDIS, APM : As in source term.
 $
 $   Tolman and Chalikov : Namelist SDS2
-$                           SDSA0, SDSA1, SDSA2, SDSB0, SDSB1, PHIMIN :
-$                                    Constants a0, a1, a2, b0, b1 and
-$                                    PHImin.
+$    SDSA0,SDSA1,SDSA2,SDSB0,SDSB1 : Constants a0, a1, a2, b0, b1 and
+$                           PKIMIN : Constants PHImin
 $
 $   WAM4 and variants   : Namelist SDS3
-$                           SDSC1    : WAM4 Cds coeffient
-$                           MNMEANP, WNMEANPTAIL : power of wavenumber
+$                            SDSC1 : WAM4 Cds coeffient
+$             MNMEANP, WNMEANPTAIL : power of wavenumber
 $                                    for mean definitions in Sds and tail
-$                           SDSDELTA1, SDSDELTA2 : relative weights
+$             SDSDELTA1, SDSDELTA2 : relative weights
 $                                    of k and k^2 parts of WAM4 dissipation
-$                           SDSLF, SDSHF : coefficient for activation of
-$                              WAM4 dissipation for unsaturated (SDSLF) and
-$                               saturated (SDSHF) parts of the spectrum
-$                           SDSC2    : Saturation dissipation coefficient
-$                           SDSC4    : Value of B0=B/Br for wich Sds is zero
-$                           SDSBR    : Threshold Br for saturation
-$                           SDSP     : power of (B/Br-B0) in Sds
-$                           SDSBR2   : Threshold Br2 for the separation of
-$                             WAM4 dissipation in saturated and non-saturated
-$                           SDSC5 : coefficient for turbulence dissipation
-$                           SDSC6 : Weight for the istropic part of Sds_SAT
-$                           SDSDTH: Angular half-width for integration of B
+$                     SDSLF, SDSHF : coefficient for activation of
+$                                    WAM4 dissipation for unsaturated (SDSLF) and
+$                                    saturated (SDSHF) parts of the spectrum
+$                            SDSC2 : Saturation dissipation coefficient
+$                            SDSC4 : Value of B0=B/Br for wich Sds is zero
+$                            SDSBR : Threshold Br for saturation
+$                             SDSP : power of (B/Br-B0) in Sds
+$                           SDSBR2 : Threshold Br2 for the separation of
+$                                    WAM4 dissipation in saturated and non-saturated
+$                            SDSC5 : coefficient for turbulence dissipation
+$                            SDSC6 : Weight for the istropic part of Sds_SAT
+$                           SDSDTH : Angular half-width for integration of B
+$
+$   Ardhuin             : Namelist SDS4
+$                       SDSBCHOICE : 1: Ardhuin et al., 2: Filipot & Ardhuin, 3: Romero
+$             WNMEANP, WNMEANPTAIL : power of wavenumber
+$                                    for mean definitions in Sds and tail
+$                            FXPM3 : Coefficient defining the diagnostic tail
+$                            FXFM3 : Coefficient defining the diagnostic tail
+$                          FXFMAGE : This does not do anything as FHIGI is not used in W3SRCE
+$                            SDSC2 : coefficient in front of dissipation term
+$                           SDSCUM : coefficient for cumulative breaking term
+$                        SDSSTRAIN : Straining coefficient
+$                       SDSSTRAINA : Not used anymore
+$                       SDSSTRAIN2 : If non-zero, uses a directionally-enhanced straining
+$                            SDSC4 : Not used anymore
+$                        SDSFACMTF : MTF factor for Lambda , Romero (2019)
+$                          SDSNMTF : MTF power
+$                          SDSCUMP : 2 for cumulative mss, 1 for cumulative orb. vel.
+$                            SDSC5 : coefficient for wave-turbulence interaction (Ardhuin & Jenkins
+$                            SDSC6 : delta_d  in eq. (13) of Ardhuin et al. (2010)
+$                            SDSBR : saturation threshold
+$                            SDSBT : Saturation threshold for dissipation rate b
+$                             SDSP : power of saturation in diagonal term
+$                           SDSISO : Not used anymore
+$                           SDSBCK : Coefficient for Filipot & Ardhuin
+$                           SDSABK : Coefficient for Filipot & Ardhuin
+$                           SDSPBK : Coefficient for Filipot & Ardhuin
+$                          SDSBINT : frequency integration factor for Filipot & Ardhuin
+$                           SDSHCK : power of tanh(KD) in  Filipot & Ardhuin
+$                           SDSDTH : half-widht of directional integration for Ardhuin saturation
+$                           SDSCOS : power of coside for saturation
+$                          SDSBRF1 : ratio of f_high / f for which cumulative term at f has an impact on f_high
+$                         SDSBRFDF : not used anymore
+$                           SDSNUW : viscous dissipation term (water side only) : DVISC = - 4 SDSNUW*k**2
+$                           SDSBM0 : activates depth correction to Ardhuin et al. , with X = tanhs (kD)
+$                           SDSBM1 :     coefficients of polynomial function to enhance saturation
+$                           SDSBM2 :     based on Fig. 2 in Filipot et et al. (JGR 2010)
+$                           SDSBM3 :     the code is MICHE=(X*(SSDSBM(1)+X*(SSDSBM(2)+X*(SSDSBM(3) +X*SSDSBM(4)))))**2
+$                           SDSBM4 :     it should be MICHE=(X*(SSDSBM(1)+X*(SSDSBM(2)+X**2*(SSDSBM(3)+X**3*SSDSBM(4)))))**2
+$                          CUMSIGP : power of frequency for defining the direction of mean direction used in Romero (default is 0 but not optimal)
+$                                    see Alday and Ardhuin (2023) with CUMSIGP=2 in T701-GQM
+$                    WHITECAPWIDTH : constant fraction of breaker wavelength
+$                      WHITECAPDUR : breaking duration factor
+$                           SDSMWD : new AFo
+$                         SDSMWPOW : (k)^pow
+$                            SDKOF : ko factor such that ko= g (SDKOF/(28 us))^2
 $
 $   BYDRZ               : Namelist SDS6
-$                          SDSET    : Select threshold normalization spectra
-$                          SDSA1, SDSA2, SDSP1, SDSP2  :
-$                               Coefficients for dissipation terms T1 and T2
+$                            SDSET : Select threshold normalization spectra
+$       SDSA1, SDSA2, SDSP1, SDSP2 : Coefficients for dissipation terms T1 and T2
 $                       : Namelist SWL6
-$                          SWLB1    : Coefficient for swell dissipation
+$                            SWLB1 : Coefficient for swell dissipation
 $
 $ Bottom friction  - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   JONSWAP             : Namelist SBT1
-$                           GAMMA   : Bottom friction emprical constant
+$                            GAMMA : Bottom friction emprical constant
 $
 $
 $ Surf breaking  - - - - - - - - - - - - - - - - - - - - - - - - - - -
 $   Battjes and Janssen : Namelist SDB1
-$                           BJALFA  : Dissipation constant (default = 1)
-$                           BJGAM   : Breaking threshold (default = 0.73)
-$                           BJFLAG  : TRUE  - Use Hmax/d ratio only (default)
-$                                     FALSE - Use Hmax/d in Miche formulation
+$                           BJALFA : Dissipation constant (default = 1)
+$                            BJGAM : Breaking threshold (default = 0.73)
+$                           BJFLAG : TRUE  - Use Hmax/d ratio only (default)
+$                                    FALSE - Use Hmax/d in Miche formulation
 $
 $ Dissipation in the ice   - - - - - - - - - - - - - - - - - - - - - -
 $   Generalization of Liu et al. : Namelist SIC2
-$                           IC2DISPER  : If true uses Liu formulation with eddy viscosity
-$                                        If false, uses the generalization with turbulent
-$                                        to laminar transition
-$                           IC2TURB    : empirical factor for the turbulent part
-$                           IC2ROUGH   : under-ice roughness length
-$                           IC2REYNOLDS: Re number for laminar to turbulent transition
-$                           IC2SMOOTH  : smoothing of transition reprensenting random waves
-$                           IC2VISC    : empirical factor for viscous part
+$                        IC2DISPER : If true uses Liu formulation with eddy viscosity
+$                                    If false, uses the generalization with turbulent
+$                                    to laminar transition
+$                          IC2TURB : empirical factor for the turbulent part
+$                         IC2ROUGH : under-ice roughness length
+$                      IC2REYNOLDS : Re number for laminar to turbulent transition
+$                        IC2SMOOTH : smoothing of transition reprensenting random waves
+$                          IC2VISC : empirical factor for viscous part
 $
 $
 $ Scattering in the ice  & creep dissipations- - - - - - - - - - - - -
 $   Generalization of Wiliams et al. : Namelist SIS2
-$                           ISC1          : scattering coefficient (default = 1)
-$                           IS2BACKSCAT   : fraction of energy back-scattered (default = 1 )
-$                           IS2BREAK      : TRUE  - changes floe max diameter
-$                                         : FALSE - does not change floe max diameter
-$                           IS2C1         : scattering in pack ice
-$                           IS2C2         : frequency dependance of scattering in pack ice
-$                           IS2C3         : frequency dependance of scattering in pack ice
-$                           ISBACKSCAT    : fraction of scattered energy actualy redistributed
-$                           IS2DISP       : use of ice-specific dispersion relation (T/F)
-$                           FRAGILITY     : parameter between 0 and 1 that gives the shape of FSD
-$                           IS2DMIN       : minimum floe diameter in meters
-$                           IS2DAMP       : multiplicative coefficient for dissipation term from RP
-$                           IS2UPDATE     : TRUE  - updates the max floe diameter with forcing only
-$                                         : FALSE - updates the max floe diameter at each time step
+$                             ISC1 : scattering coefficient (default = 1)
+$                      IS2BACKSCAT : fraction of energy back-scattered (default = 1 )
+$                         IS2BREAK : TRUE  - changes floe max diameter
+$                                    FALSE - does not change floe max diameter
+$                            IS2C1 : scattering in pack ice
+$                            IS2C2 : frequency dependance of scattering in pack ice
+$                            IS2C3 : frequency dependance of scattering in pack ice
+$                       ISBACKSCAT : fraction of scattered energy actualy redistributed
+$                          IS2DISP : use of ice-specific dispersion relation (T/F)
+$                        FRAGILITY : parameter between 0 and 1 that gives the shape of FSD
+$                          IS2DMIN : minimum floe diameter in meters
+$                          IS2DAMP : multiplicative coefficient for dissipation term from RP
+$                        IS2UPDATE : TRUE  - updates the max floe diameter with forcing only
+$                                    FALSE - updates the max floe diameter at each time step
 $
 $ Dissipation by sea ice
 $   Empirical/parametric representations : Namelist SIC4
-$                           IC4METHOD    : integer 1 to 7
-$                                        : In most cases, additional input
-$                                        :   is required.
-$                                        : See examples in /regtests/ww3_tic1.1/
-$                                        : See also: 1) description in manual
-$                                        :   and 2) inline documentation in
-$                                            w3sic4md.ftn
+$                        IC4METHOD : integer 1 to 7
+$                                    In most cases, additional input is required.
+$                                    See examples in /regtests/ww3_tic1.1/
+$                                    See also: 1) description in manual
+$                                    and 2) inline documentation in w3sic4md.ftn
 $
 $ Triad nonlinear interactions - - - - - - - - - - - - - - - - - - - -
 $   Lumped Triad Interaction (LTA) : Namelist STR1 (To be implemented)
-$                           PTRIAD1 : Proportionality coefficient (default 1.)
-$                           PTRIAD2 : Multiple of Tm01 up to which interaction
-$                                     is computed (2.5)
-$                           PTRIAD3 : Ursell upper limit for computing
-$                                     interactions (not used, default 10.)
-$                           PTRIAD4 : Shape parameter for biphase
-$                                     computation (0.2)
-$                           PTRIAD5 : Ursell number treshold for computing
-$                                     interactions (0.01)
+$                          PTRIAD1 : Proportionality coefficient (default 1.)
+$                          PTRIAD2 : Multiple of Tm01 up to which interaction
+$                                    is computed (2.5)
+$                          PTRIAD3 : Ursell upper limit for computing
+$                                    interactions (not used, default 10.)
+$                          PTRIAD4 : Shape parameter for biphase
+$                                    computation (0.2)
+$                          PTRIAD5 : Ursell number treshold for computing
+$                                    interactions (0.01)
 $
 $ Shoreline reflections - - - - - - - - - - - - - - - - - - - - - - - -
 $   ref. parameters       : Namelist REF1
-$                           REFCOAST  : Reflection coefficient at shoreline
-$                           REFFREQ   : Activation of freq-dependent ref.
-$                           REFMAP    : Scale factor for bottom slope map
-$                           REFRMAX   : maximum ref. coeffient (default 0.8)
-$                           REFFREQPOW: power of frequency
-$                           REFICEBERG: Reflection coefficient for icebergs
-$                           REFSUBGRID: Reflection coefficient for islands
-$                           REFCOSP_STRAIGHT: power of cosine used for
-$                                       straight shoreline
+$                         REFCOAST : Reflection coefficient at shoreline
+$                          REFFREQ : Activation of freq-dependent ref.
+$                           REFMAP : Scale factor for bottom slope map
+$                          REFRMAX : maximum ref. coeffient (default 0.8)
+$                       REFFREQPOW : power of frequency
+$                       REFICEBERG : Reflection coefficient for icebergs
+$                       REFSUBGRID : Reflection coefficient for islands
+$                 REFCOSP_STRAIGHT : power of cosine used for
+$                                    straight shoreline
 $
 $ Bound 2nd order spectrum and free IG - - - - - - - - - - - - - - - - -
 $   IG1 parameters       : Namelist SIG1
-$                           IGMETHOD  : 1: Hasselmann, 2: Krasitskii-Janssen
-$                           IGADDOUTP : activation of bound wave correction
-$                                       in ww3_outp / ww3_ounp
-$                           IGSOURCE  : 1: uses bound waves, 2: empirical
-$                           IGSTERMS  :  > 0 : no source term in IG band
-$                           IGMAXFREQ : maximum frequency of IG band
-$                           IGEMPIRICAL: constant in empirical free IG source
-$                           IGBCOVERWRITE: T: Replaces IG spectrum, does not add
-$                           IGSWELLMAX: T: activates free IG sources for all freq.
+$                         IGMETHOD : 1: Hasselmann, 2: Krasitskii-Janssen
+$                        IGADDOUTP : activation of bound wave correction
+$                                    in ww3_outp / ww3_ounp
+$                         IGSOURCE : 1: uses bound waves, 2: empirical
+$                         IGSTERMS :  > 0 : no source term in IG band
+$                        IGMAXFREQ : maximum frequency of IG band
+$                      IGEMPIRICAL : constant in empirical free IG source
+$                    IGBCOVERWRITE : T: Replaces IG spectrum, does not add
+$                       IGSWELLMAX : T: activates free IG sources for all freq.
 $
 $
 $ Propagation schemes ------------------------------------------------ $
 $   First order         : Namelist PRO1
-$                           CFLTM  : Maximum CFL number for refraction.
+$                            CFLTM : Maximum CFL number for refraction.
 $
 $   UQ/UNO with diffusion : Namelist PRO2
-$                           CFLTM  : Maximum CFL number for refraction.
-$                           DTIME  : Swell age (s) in garden sprinkler
+$                            CFLTM : Maximum CFL number for refraction.
+$                            DTIME : Swell age (s) in garden sprinkler
 $                                    correction. If 0., all diffusion
 $                                    switched off. If small non-zero
 $                                    (DEFAULT !!!) only wave growth
@@ -284,7 +346,7 @@ $                           LATMIN : Maximum latitude used in calc. of
 $                                    strength of diffusion for prop.
 $
 $   UQ/UNO with averaging : Namelist PRO3
-$                           CFLTM  : Maximum CFL number for refraction.
+$                            CFLTM : Maximum CFL number for refraction.
 $                           WDTHCG : Tuning factor propag. direction.
 $                           WDTHTH : Tuning factor normal direction.
 $
@@ -294,54 +356,55 @@ $   limitation and the GSE alleviation.
 $
 $ Unstructured grids ------------------------------------------------ $
 $   UNST parameters       : Namelist UNST
-$                           UGOBCAUTO  : TRUE: OBC points are taken from  type 15 elements
-$                                       FALSE: OBC points must be listed in ww3_grid.inp
-$                           UGOBCDEPTH : Threshold ( < 0) depth for OBC points if UGOBCAUTO is TRUE
-$                           UGOBCFILE : Reading boundary files from a file  
-$                           EXPFSN  : Activation of N scheme (only one of the below 4, True - Active, False - not active) 
-$                           EXPFSPSI  : Activation of PSI scheme
-$                           EXPFSFCT  : Activation of FCT scheme
-$                           IMPFSN  : Activation of N implicit scheme
-$                           EXPTOTAL  : Activation of the Block explicit N scheme solver 
-$                           IMPTOTAL  : Activation of fully implicit scheme | Non splitting
-$                           IMPREFRACTION : Turn on implicit freq. shift (only with imptotal)
-$                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (only with imptotal)
-$                           IMPSOURCE     : Turn on implicit source terms (only with imptotal)
-$                           JGS_TERMINATE_MAXITER  : max. Number of iterations
-$                           JGS_TERMINATE_DIFFERENCE  : Terminate based on the total change of the unweightet sum of wave action
-$                           JGS_TERMINATE_NORM  : Terminate based on the norm of the solution
-$                           JGS_USE_JACOBI  : Use Jacobi solver family 
-$                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal instead of the conservative jacobi iterator. 
-$                           JGS_MAXITER  : max. Number of solver iterations
-$                           JGS_PMIN  : % of grid points that do not need to converge during solver iteration.
-$                           JGS_DIFF_THR  : implicit solver threshold for JGS_TERMINATE_DIFFERENCE
-$                           JGS_NORM_THR  : terminate based on the norm of the solution
-$                           JGS_LIMITER  : use total (quasi-steady: limits whole equation) instead of local limiter (un-steady: limits only source terms)
-$                           JGS_LIMITER_FUNC  : 1 - old limiter; 2 - alternatnive limiter 
-$                           SETUP_APPLY_WLV  : Compute wave setup (experimental)
-$                           SOLVERTHR_SETUP  : Solver threshold for setup computations
-$                           CRIT_DEP_SETUP  : Critical depths for setup computations
+$                        UGOBCAUTO : TRUE: OBC points are taken from  type 15 elements
+$                                    FALSE: OBC points must be listed in ww3_grid.inp
+$                       UGOBCDEPTH : Threshold ( < 0) depth for OBC points if UGOBCAUTO is TRUE
+$                        UGOBCFILE : Reading boundary files from a file
+$                           EXPFSN : Activation of N scheme (only one of the below 4, True - Active, False - not active) 
+$                         EXPFSPSI : Activation of PSI scheme
+$                         EXPFSFCT : Activation of FCT scheme
+$                           IMPFSN : Activation of N implicit scheme
+$                         EXPTOTAL : Activation of the Block explicit N scheme solver
+$                         IMPTOTAL : Activation of fully implicit scheme | Non splitting
+$                    IMPREFRACTION : Turn on implicit freq. shift (only with imptotal)
+$                     IMPFREQSHIFT : Turn on implicit freq. shift terms (only with imptotal)
+$                        IMPSOURCE : Turn on implicit source terms (only with imptotal)
+$            JGS_TERMINATE_MAXITER : max. Number of iterations
+$         JGS_TERMINATE_DIFFERENCE : Terminate based on the total change of the unweightet sum of wave action
+$               JGS_TERMINATE_NORM : Terminate based on the norm of the solution
+$                   JGS_USE_JACOBI : Use Jacobi solver family
+$           JGS_BLOCK_GAUSS_SEIDEL : Use Block Gauss Seidel method for imptotal instead of the conservative jacobi iterator. 
+$                      JGS_MAXITER : max. Number of solver iterations
+$                         JGS_PMIN : % of grid points that do not need to converge during solver iteration.
+$                     JGS_DIFF_THR : implicit solver threshold for JGS_TERMINATE_DIFFERENCE
+$                     JGS_NORM_THR : terminate based on the norm of the solution
+$                      JGS_LIMITER : use total (quasi-steady: limits whole equation) instead of local limiter (un-steady: limits only source terms)
+$                 JGS_LIMITER_FUNC : 1 - old limiter; 2 - alternatnive limiter
+$                  SETUP_APPLY_WLV : Compute wave setup (experimental)
+$                  SOLVERTHR_SETUP : Solver threshold for setup computations
+$                   CRIT_DEP_SETUP : Critical depths for setup computations
 $
 $ SMC grid propagation    : Namelist PSMC and default values
-$                           CFLTM  : Maximum CFL no. for propagation, 0.7
-$                           DTIME  : Swell age for diffusion term (s), 0.0
+$                            CFLTM : Maximum CFL no. for propagation, 0.7
+$                            DTIME : Swell age for diffusion term (s), 0.0
 $                           LATMIN : Maximum latitude (deg) for GCT,   86.0
 $                           RFMAXD : Maximum refraction turning (deg), 80.0
-$                           LvSMC  : No. of refinement level, default 1
-$                           ISHFT  : Shift number of i-index, default 0
-$                           JEQT   : Shift number of j-index, default 0
+$                            LvSMC : No. of refinement level, default 1
+$                            ISHFT : Shift number of i-index, default 0
+$                             JEQT : Shift number of j-index, default 0
 $                           NBISMC : No. of input boundary points,    0
-$                           UNO3   : Use 3rd order advection scheme, .FALSE.
-$                           AVERG  : Add extra spatial averaging,    .FALSE.
+$                             UNO3 : Use 3rd order advection scheme, .FALSE.
+$                            AVERG : Add extra spatial averaging,    .FALSE.
 $                           SEAWND : Use sea-point only wind input.  .FALSE.
+$
 $ &PSMC DTIME = 39600.0, LATMIN=85.0, RFMAXD = 36.0, LvSMC=3, JEQT=1344  /
 $
 $ Rotated pole ------------------------------------------------------ $
 $   Pole  parameters   : Namelist ROTD
-$                        PLAT  : Rotated pole latitude
-$                        PLON  : Rotated pole longitude
-$                        UNROT : Logical, un-rotate directions to
-$                                true north
+$                             PLAT : Rotated pole latitude
+$                             PLON : Rotated pole longitude
+$                            UNROT : Logical, un-rotate directions to
+$                                    true north
 $
 $   Compile switch /RTD required.
 $
@@ -361,8 +424,8 @@ $
 $ Output boundary conditions to rotated pole grids ------------------ $
 $
 $   Pole parameters    : Namelist ROTB
-$                        BPLAT(1:9) : Pole latitude of each destination grid
-$                        BPLON(1:9) : Pole longitude of each destination grid
+$                       BPLAT(1:9) : Pole latitude of each destination grid
+$                       BPLON(1:9) : Pole longitude of each destination grid
 $
 $   Compile switch /RTD required.
 $
@@ -386,24 +449,24 @@ $  directional spectrum using, e.g. MEM (Lygre&Krogstad 1986).
 $
 $ Parameters (integers)   : Namelist OUTS
 $ For the frequency spectrum E(f)
-$                          E3D     : <=0: not declared, > 0: declared
-$                          I1E3D   : First frequency index of output (default is 1)
-$                          I2E3D   : Last frequency index of output  (default is NK)
+$                              E3D : <=0: not declared, > 0: declared
+$                            I1E3D : First frequency index of output (default is 1)
+$                            I2E3D : Last frequency index of output  (default is NK)
 $ For the mean direction th1m(f), and spread sth1m(f)
-$                   TH1MF, STH1MF  : <=0: not declared, > 0: declared
-$                 I1TH1MF, I1STH1MF: First frequency index of output (default is 1)
-$                 I2TH1MF, I2STH1MF: First frequency index of output (default is 1)
+$                    TH1MF, STH1MF : <=0: not declared, > 0: declared
+$                I1TH1MF, I1STH1MF : First frequency index of output (default is 1)
+$                I2TH1MF, I2STH1MF : First frequency index of output (default is 1)
 $ For the mean direction th2m(f), and spread sth2m(f)
-$                   TH2MF, STH2MF  : <=0: not declared, > 0: declared
-$                 I1TH2MF, I1STH2MF: First frequency index of output (default is 1)
-$                 I2TH2MF, I2STH2MF: First frequency index of output (default is 1)
+$                    TH2MF, STH2MF : <=0: not declared, > 0: declared
+$                I1TH2MF, I1STH2MF : First frequency index of output (default is 1)
+$                I2TH2MF, I2STH2MF : First frequency index of output (default is 1)
 $ For 2nd order pressure at K=0 (source of microseisms & microbaroms)
-$                           P2SF   : <=0: not declared, > 0: declared
+$                             P2SF : <=0: not declared, > 0: declared
 $                           I1P2SF : First frequency index of output (default is 1)
 $                           I2P2SF : Last frequency index of output  (default is NK)
 $ For the surface Stokes drift partitions (USP)
-$                           USSP : First index (default is 1, should always be 1)
-$                           IUSSP : Last index (must be <= than NK and should be
+$                             USSP : First index (default is 1, should always be 1)
+$                            IUSSP : Last index (must be <= than NK and should be
 $                                               between 3 and ~10 with the tradeoff
 $                                               between accuracy and resources)
 $                           STK_WN : List of wavenumbers (size of IUSSP)
@@ -414,11 +477,10 @@ $                                 a climate model.
 $
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
-$                           CICE0  : Ice concentration cut-off.
-$                           CICEN  : Ice concentration cut-off.
-$                           PMOVE  : Power p in GSE aleviation for
-$                                    moving grids in Eq. (D.4).
-$                           XSEED  : Xseed in seeding alg. (!/SEED).
+$                            CICE0 : Ice concentration cut-off.
+$                            CICEN : Ice concentration cut-off.
+$                             LICE : Length scale for sea ice damping
+$                            XSEED : Xseed in seeding alg. (!/SEED).
 $                           FLAGTR : Indicating presence and type of
 $                                    subgrid information :
 $                                     0 : No subgrid information.
@@ -427,67 +489,86 @@ $                                         daries between grid points.
 $                                     2 : Transp. at cell centers.
 $                                     3 : Like 1 with cont. ice.
 $                                     4 : Like 2 with cont. ice.
-$                           TRCKCMPR : Logical variable (T/F). Set to F to
-$                                      disable "compression" of track output.
-$                                      This simplifies post-processing.
-$                                      Default is T and will create track
-$                                      output in the traditional manner
-$                                      (WW3 v3, v4, v5).
-$                           XP, XR, XFILT
-$                                    Xp, Xr and Xf for the dynamic
+$                    XP, XR, XFILT : Xp, Xr and Xf for the dynamic
 $                                    integration scheme.
-$                           IHMAX  : Number of discrete levels in part.
-$                           HSPMIN : Minimum Hs in partitioning.
-$                           WSM    : Wind speed multiplier in part.
-$                           WSC    : Cut of wind sea fraction for
+$                            PMOVE : Power p in GSE aleviation for
+$                                    moving grids in Eq. (D.4).
+$                              IHM : Number of discrete levels in part.
+$                             HSPM : Minimum Hs in partitioning.
+$                              WSM : Wind speed multiplier in part.
+$                              WSC : Cut of wind sea fraction for
 $                                    identifying wind sea in part.
-$                           FLC    : Flag for combining wind seas in
+$                              FLC : Flag for combining wind seas in
 $                                    partitioning.
-$                           NOSW   : Number of partitioned swell fields
+$                           FMICHE : Constant in Miche limiter.
+$                            RWNDC : Coefficient for current in relative wind
+$                          FACBERG : Multiplicative factor for iceberg mask
+$                             NOSW : Number of partitioned swell fields
 $                                    in field output.
-$                           PTM    : Partioning method:
+$                           GSHIFT : grid offset for multi-grid boundaries
+$                            WCOR1 : wind correction threshold
+$                            WCOR2 : wind wind correction factor
+$                             STDX : Space-Time Extremes X-Length
+$                             STDY : Space-Time Extremes Y-Length
+$                             STDT : Space-Time Extremes Duration
+$                          ICEHMIN : Minimum thickness of sea ice
+$                         ICEHINIT : Initial value of ice thickness
+$                          ICEDISP : Flag for use of the ice covered dispertion relation
+$                           ICESLN :
+$                          ICEWIND : Scale factor for reduction of wind input by ice concentration
+$                           ICESNL :
+$                           ICESDS :
+$                          ICEHFAC : Scale factor for sea ice thickness
+$                         ICEHDISP : Minimum thickness of sea ice in the dispersion 
+$                                    relation before relaxing the conv. criterion
+$                         ICEDDISP :
+$                         ICEFDISP :
+$                          CALTYPE : Calendar type. The only accepted
+$                                    values are 'standard' (default),
+$                                    '365_day', or '360_day'.
+$                         TRCKCMPR : Logical variable (T/F). Set to F to
+$                                    disable "compression" of track output.
+$                                    This simplifies post-processing.
+$                                    Default is T and will create track
+$                                    output in the traditional manner
+$                                    (WW3 v3, v4, v5).
+$                              PTM : Partioning method:
 $                                     1 : Default WW3
 $                                     2 : Watershedding + wind cutoff
 $                                     3 : Watershedding only
 $                                     4 : Wind speed cutoff only
 $                                     5 : High/Low band cutoff (see PTFC)
-$                           PTFC   : Cutouf frequency for High/Low band
+$                             PTFC : Cutouf frequency for High/Low band
 $                                    partioning (PTM=5). Default = 0.1Hz
-$                           FMICHE : Constant in Miche limiter.
-$                           STDX   : Space-Time Extremes X-Length
-$                           STDY   : Space-Time Extremes Y-Length
-$                           STDT   : Space-Time Extremes Duration
-$                           P2SF   : ......
-$                           CALTYPE: Calendar type. The only accepted
-$                                    values are 'standard' (default),
-$                                    '365_day', or '360_day'.
+$                            BTBET : The constant used for separating wind sea
+$                                    and swell when we estimate WBT
 $
 $ Diagnostic Sea-state Dependent Stress- - - - - - - - - - - - - - - - -
 $   Reichl et al. 2014  : Namelist FLD1
-$                           TAILTYPE  : High Frequency Tail Method
-$                                       0: Constant value (prescribed)
-$                                       1: Wind speed dependent
-$                                          (Based on GFDL Hurricane
-$                                          Model Z0 relationship)
-$                           TAILLEV   : Level of high frequency tail
-$                                       (if TAILTYPE==0)
-$                                       Valid choices:
-$                                       Capped min: 0.001, max: 0.02
-$                           TAILT1    : Tail transition ratio 1
-$                                       TAILT1*peak input frequency
-$                                       is the first transition point of
-$                                       the saturation specturm
-$                                       Default is 1.25
-$                           TAILT1    : Tail transition ratio 2
-$                                       TAILT2*peak input frequency
-$                                       is the second transition point of
-$                                       the saturation specturm
-$                                       Default is 3.00
+$                         TAILTYPE : High Frequency Tail Method
+$                                    0: Constant value (prescribed)
+$                                    1: Wind speed dependent
+$                                       (Based on GFDL Hurricane
+$                                       Model Z0 relationship)
+$                          TAILLEV : Level of high frequency tail
+$                                    (if TAILTYPE==0)
+$                                    Valid choices:
+$                                    Capped min: 0.001, max: 0.02
+$                           TAILT1 : Tail transition ratio 1
+$                                    TAILT1*peak input frequency
+$                                    is the first transition point of
+$                                    the saturation specturm
+$                                    Default is 1.25
+$                           TAILT1 : Tail transition ratio 2
+$                                    TAILT2*peak input frequency
+$                                    is the second transition point of
+$                                    the saturation specturm
+$                                    Default is 3.00
 $   Donelan et al. 2012 : Namelist FLD2
-$                           TAILTYPE : See above (FLD1)
-$                           TAILLEV  : See above (FLD1)
-$                           TAILT1   : See above (FLD1)
-$                           TAILT2   : See above (FLD1)
+$                         TAILTYPE : See above (FLD1)
+$                          TAILLEV : See above (FLD1)
+$                           TAILT1 : See above (FLD1)
+$                           TAILT2 : See above (FLD1)
 $
 $ In the 'Out of the box' test setup we run with sub-grid obstacles
 $ and with continuous ice treatment.
