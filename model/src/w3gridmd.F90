@@ -6357,7 +6357,7 @@ CONTAINS
          '        SDSBRF1 = ',F5.2,', SDSBRFDF =',I2,', '/ &
          '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
          ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
-         F5.2,', '/,                                       &
+         F7.2,', '/,                                       &
          '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
          ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', '/      &
          '        SDSMWPOW =',F3.1,', SDSNMTF =', F5.2,    &
