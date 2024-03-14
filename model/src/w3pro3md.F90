@@ -1506,7 +1506,7 @@ CONTAINS
 !> @author H. L. Tolman
 !> @date   01-Jul-2013
 !>
-  SUBROUTINE W3KTP3 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DW,       &
+  SUBROUTINE W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0, CG, WN, DW,       &
        DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
        DCYDX, DCYDY, DCDX, DCDY, VA, CFLTHMAX, CFLKMAX )
     !/
@@ -1624,7 +1624,7 @@ CONTAINS
     USE CONSTANTS
     USE W3GDATMD, ONLY: NK, NK2, NTH, NSPEC, SIG, DSIP, ECOS, ESIN, &
          EC2, ESC, ES2, FACHFA, MAPWN, FLCTH, FLCK,  &
-         CTMAX, DMIN
+         CTMAX, DMIN, DIFRM, DIFRX, DIFRY, B_JGS_LDIFR
     USE W3ADATMD, ONLY: MAPTH2, MAPWN2, ITIME
     USE W3IDATMD, ONLY: FLCUR
     USE W3ODATMD, ONLY: NDSE, NDST
@@ -1643,7 +1643,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)     :: ISEA
+    INTEGER, INTENT(IN)     :: ISEA, JSEA
     REAL, INTENT(IN)        :: FACTH, FACK, CTHG0, CG(0:NK+1),      &
          WN(0:NK+1), DW, DDDX, DDDY,       &
          CX, CY, DCXDX, DCXDY, DCYDX, DCYDY
@@ -1776,6 +1776,12 @@ CONTAINS
         VELNOFILT = VCFLT(MAPTH2(ISP))       &
              + FRG(MAPWN(ISP)) * ECOS(ISP)              &
              + FRK(MAPWN(ISP)) * ( ESIN(ISP)*DDDX - ECOS(ISP)*DDDY )
+
+        IF (B_JGS_LDIFR) THEN 
+          VELNOFILT = DIFRM(JSEA)*VELNOFILT-CG(1+(ISP-1)/NTH) & 
+           * (DIFRX(JSEA)*ESIN(ISP)-DIFRY(JSEA)*ECOS(ISP))
+        ENDIF
+
         !
 #ifdef W3_REFRX
         ! 3.d @C/@x refraction and great-circle propagation

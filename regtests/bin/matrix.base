@@ -2158,16 +2158,6 @@
           echo "./bin/test.comp ww3_ufs1.1 work_a work_b"                                                  >> matrix.body
       fi
      fi
-
- # Global unstr case
- # Domain Decomposition Explicit
-  fi
-  if [ "$ufs" = 'y' ] && [ "$pdlib" = 'y' ] && [ "$dist" = 'y' ]; then
-     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_a -g a -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
- # Domain Decomposition Block Explicit
-     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_b -g b -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
- # Domain Decomposition Implicit
-     echo "$rtst -s MPI -s PDLIB -i input_unstr -w work_unstr_c -g c -f -p $mpi -n $np $ww3 ww3_ufs1.1"   >> matrix.body
   fi
 
  #Test of UFS applications with ww3_multi_esmf and grib2 output

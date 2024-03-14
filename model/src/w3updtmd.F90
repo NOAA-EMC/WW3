@@ -2151,6 +2151,7 @@ CONTAINS
 #endif
     LOGICAL                 :: LOCAL
     INTEGER                 :: IBELONG
+    REAL                    :: CTMP
     !
 #ifdef W3_TIDE
     INTEGER          :: J
@@ -2303,7 +2304,7 @@ CONTAINS
           !
           !   Calculate wavenumbers and group velocities.
 #ifdef W3_PDLIB
-              CALL WAVNU3(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA))
+              CALL WAVNU3(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA), CTMP)
 #else
               CALL WAVNU1(SIG(IK),DEPTH,WN(IK,ISEA),CG(IK,ISEA))
 #endif

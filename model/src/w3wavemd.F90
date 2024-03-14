@@ -447,8 +447,8 @@ CONTAINS
     USE W3IOBCMD
     USE W3IOSFMD
 #ifdef W3_PDLIB
-    USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA
-    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
+    USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA, COMPUTE_DIFFRACTION
+    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT, COMPUTE_DIRECTION_WENO_A
     USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
     USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
     USE yowNodepool, only: npa, iplg, np
@@ -1035,6 +1035,7 @@ CONTAINS
 
       !
       DO IT = IT0, NT
+
 #ifdef W3_TIMINGS
         CALL PRINT_MY_TIME("Begin of IT loop")
 #endif
@@ -1060,6 +1061,7 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 0')
         !
         ITIME  = ITIME + 1
+ 
         !
         DTG    = REAL(NINT(DTGA+DTRES+0.0001))
         DTRES  = DTRES + DTGA - DTG
@@ -1453,6 +1455,12 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
         !
 #ifdef W3_PDLIB
+
+        IF (LPDLIB .and. .not. FLSOU .and. .not. FSSOURCE) THEN
+          B_JAC     = 0.
+          ASPAR_JAC = 0.
+        ENDIF
+
         IF (LPDLIB .and. FLSOU .and. FSSOURCE) THEN
 #endif
 
@@ -1483,6 +1491,10 @@ CONTAINS
           DO JSEA = 1, NP
 
             CALL INIT_GET_ISEA(ISEA, JSEA)
+
+            IF ((IOBP_LOC(JSEA).eq.1..or.IOBP_LOC(JSEA).eq. 3).and.IOBDP_LOC(JSEA).eq.1.and.IOBPA_LOC(JSEA).eq.0) THEN
+            
+
 
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
@@ -1556,6 +1568,7 @@ CONTAINS
             WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
             FLUSH(740+IAPROC)
 #endif
+          ENDIF 
           END DO ! JSEA
         END IF ! PDLIB
 #endif
@@ -1696,6 +1709,7 @@ CONTAINS
           TTEST(2) = 0
           DTTEST = DSEC21(TTEST,TIME)
           ITLOCH = ( NTLOC + 1 - MOD(NINT(DTTEST/DTG),2) ) / 2
+
           !
           ! 3.6.2 Intra-spectral part 1
           !
@@ -1768,8 +1782,8 @@ CONTAINS
                          DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
-#ifdef W3_PR3
-                    CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+#ifdef W3_PR33
+                    CALL W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0S(ISEA),       &
                          CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                          CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &
@@ -1811,34 +1825,42 @@ CONTAINS
             END IF
           END IF
 
+          !WRITE(*,*) 'B_JGS_LDIFR', B_JGS_LDIFR 
+          IF (B_JGS_LDIFR) THEN
+           !WRITE(*,*) 'COMPUTING DIFFRACTION' 
+            CALL COMPUTE_DIFFRACTION
+          ENDIF
+
           IF (LPDLIB) THEN
             !
 #ifdef W3_PDLIB
             IF (FLCX .or. FLCY) THEN
               IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
+                CALL COMPUTE_DIRECTION_WENO_A(0.5*DTG)
                 DO ISPEC=1,NSPEC
-                  CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+#ifdef W3_SEC1
+                  CALL PDLIB_W3XYPUG ( ISPEC, ITIME*ISEC1, FACX, FACX, DTG, VGX, VGY, .true. )
+#else
+                  CALL PDLIB_W3XYPUG ( ISPEC, ITIME, FACX, FACX, DTG, VGX, VGY, .true. )
+#endif 
                 END DO
+                CALL COMPUTE_DIRECTION_WENO_A(0.5*DTG)
               END IF
             END IF
 #endif
             !
 #ifdef W3_PDLIB
             IF (FSTOTALIMP .and. (IT .ne. 0)) THEN
-#endif
 #ifdef W3_DEBUGCOH
               CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before Block implicit", 1)
 #endif
-#ifdef W3_PDLIB
-              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+#ifdef W3_SEC1
+              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, ITIME*ISEC1, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
+#else
+              CALL PDLIB_W3XYPUG_BLOCK_IMPLICIT(IMOD, ITIME, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
 #endif
-#ifdef W3_PDLIB
             ELSE IF(FSTOTALEXP .and. (IT .ne. 0)) THEN
-#endif
-#ifdef W3_PDLIB
               CALL PDLIB_W3XYPUG_BLOCK_EXPLICIT(IMOD, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-#endif
-#ifdef W3_PDLIB
             ENDIF
 #endif
           ELSE
@@ -2091,8 +2113,8 @@ CONTAINS
                          DCYDX(IY,IXrel), DCYDY(IY,IXrel),               &
                          DCDX(:,IY,IXrel), DCDY(:,IY,IXrel), VA(:,JSEA))
 #endif
-#ifdef W3_PR3
-                    CALL W3KTP3 ( ISEA, FACTH, FACK, CTHG0S(ISEA),       &
+#ifdef W3_PR33
+                    CALL W3KTP3 ( ISEA, JSEA, FACTH, FACK, CTHG0S(ISEA),       &
                          CG(:,ISEA), WN(:,ISEA), DEPTH,                  &
                          DDDX(IY,IXrel), DDDY(IY,IXrel), CX(ISEA),       &
                          CY(ISEA), DCXDX(IY,IXrel), DCXDY(IY,IXrel),     &

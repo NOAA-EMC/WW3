@@ -317,45 +317,30 @@ $   limitation and the GSE alleviation.
 $
 $ Unstructured grids ------------------------------------------------ $
 $   UNST parameters       : Namelist UNST
-$                           UGBCCFL    : Turns on/off (TRUE/FALSE) the computation of the CFL number on the physical domain boundary. 
-$                                        If FALSE the explicit scheme can be much faster though stability is not guaranteed
-$                                        (default TRUE)
-$                           UGOBCAUTO  : TRUE: OBC points are taken from  type 15 elements (default)
-$                                        FALSE: OBC points must be listed in ww3_grid.inp
-$                           UGOBCDEPTH : Threshold ( < 0) depth (default -10) for OBC points if UGOBCAUTO is TRUE
-$                           UGOBCFILE  : File name of file for reading boudary (default 'unset') 
-$
-$                           The following are TRUE/FALSE variables and only one can be TRUE. 
-$                           By default, EXPFSN is TRUE and must be set to false to activate another option  
-$                           EXPFSN    : Activation of N scheme (default option)
+$                           UGOBCAUTO : TRUE: OBC points are taken from  type 15 elements
+$                                       FALSE: OBC points must be listed in ww3_grid.inp
+$                           UGOBCDEPTH: Threshold ( < 0) depth for OBC points if UGOBCAUTO is TRUE
+$                           EXPFSN    : Activation of N scheme
 $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
 $                           IMPFSN    : Activation of N implicit scheme
-$                           EXPTOTAL  : Activation of Block explicit N scheme solver
-$                           IMPTOTAL  : Activation of fully implicit scheme, non splitting
-$                             
-$                           The following TRUE/FALSE variables are only for IMPTOTAL=TRUE
-$                           IMPREFRACTION : Turn on implicit freq. shift (default FALSE) 
-$                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (default FALSE)
-$                           IMPSOURCE     : Turn on implicit source terms (default FALSE)
-$
-$                           JGS_TERMINATE_MAXITER  : Terminate based on max number of iterations (TRUE/FALSE, default TRUE)
-$                           JGS_TERMINATE_DIFFERENCE  : Terminate based on the total change of the unweightet sum of wave action (TRUE/FALSE, default TRUE)
-$                           JGS_TERMINATE_NORM  : Terminate based on the norm of the solution (TRUE/FALSE, default FALSE)
-$                           JGS_USE_JACOBI  : Use Jacobi solver family (TRUE/FALSE, default TRUE)
-$                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal instead of the conservative jacobi iterator. (TRUE/FALSE, default TRUE)
-$                           JGS_MAXITER  : Max. Number of solver iterations for JGS_TERMINATE_MAXITER (integer, default 100) 
-$                           JGS_PMIN  : % of grid points that do not need to converge during solver iteration (real, default 1) 
-$                           JGS_DIFF_THR  : Implicit solver threshold for JGS_TERMINATE_DIFFERENCE (real, default 1.0e-10)
-$                           JGS_NORM_THR  : Norm of the solution for JGS_TERMINATE_NORM (real, default 1.0e-20)
-$                           JGS_LIMITER  : TRUE: Use total (quasi-steady: limits whole equation) instead of local limiter (un-steady: limits only source terms)
-$                                          FALSE: default 
-$                           JGS_LIMITER_FUNC  : 1 - old limiter (default)
-$                                               2 - alternatnive limiter
-$                           SETUP_APPLY_WLV  : Compute wave setup (TRUE/FALSE, default TRUE) 
-$                           SOLVERTHR_SETUP  : Solver threshold for setup computations (default 1E-6)
-$                           CRIT_DEP_SETUP  : Critical depth for setup computations (default 0.1) 
-
+$                           IMPTOTAL  : Activation of fully implicit scheme | Non splitting
+$                           EXPTOTAL  : Turn on implicit refraction (only with imptotal)
+$                           IMPREFRACTION  : Turn on implicit freq. shift (only with imptotal)
+$                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (only with imptotal)
+$                           IMPSOURCE  : Turn on implicit source terms (only with imptotal)
+$                           JGS_TERMINATE_MAXITER  : max. Number of iterations
+$                           JGS_TERMINATE_DIFFERENCE  : terminate based on the total change of wave action
+$                           JGS_TERMINATE_NORM  : terminate based on the norm of the solution
+$                           JGS_USE_JACOBI  : Use Jacobi solver for imptotal
+$                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal
+$                           JGS_MAXITER  : max. Number of solver iterations
+$                           JGS_PMIN  : % of grid points that do not need to converge during solver iteration.
+$                           JGS_DIFF_THR  : implicit solver threshold for JGS_TERMINATE_DIFFERENCE
+$                           JGS_NORM_THR  : terminate based on the norm of the solution
+$                           SETUP_APPLY_WLV  : Compute wave setup (experimental)
+$                           SOLVERTHR_SETUP  : Solver threshold for setup computations
+$                           CRIT_DEP_SETUP  : Critical depths for setup computations
 $
 $ SMC grid propagation    : Namelist PSMC and default values
 $                           CFLSM  : Maximum CFL no. for propagation, 0.7

@@ -20,7 +20,7 @@ $  - FLCX, FLCY    Activate X and Y component of propagation.
 $  - FLCTH, FLCK   Activate direction and wavenumber shifts.
 $  - FLSOU         Activate source terms.
 $
-   F T T F F F 
+   F T T T T T 
 $
 $ Set time steps ----------------------------------------------------- $
 $ - Time step information (this information is always read)
@@ -104,15 +104,15 @@ $
 &UNST
 UGOBCAUTO = F
 UGOBCDEPTH= -10.
-EXPFSN   = T,
+EXPFSN   = F,
 EXPFSPSI = F,
 EXPFSFCT = F,
 IMPFSN   = F,
-IMPTOTAL = F,
+IMPTOTAL = T,
 EXPTOTAL  = F,
-IMPREFRACTION = F,
-IMPFREQSHIFT  = F,
-IMPSOURCE     = F,
+IMPREFRACTION = T,
+IMPFREQSHIFT  = T,
+IMPSOURCE     = T,
 SETUP_APPLY_WLV = F
 SOLVERTHR_SETUP=1E-14
 CRIT_DEP_SETUP=0.1

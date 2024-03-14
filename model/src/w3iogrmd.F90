@@ -796,6 +796,8 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
+             B_JGS_LDIFR,                                     & 
+             B_JGS_IDIFR,                                     &
              B_JGS_SOURCE_NONLINEAR
 #ifdef W3_ASCII
         WRITE (NDSA,*)                                        &
@@ -995,6 +997,8 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
+             B_JGS_LDIFR,                                     &
+             B_JGS_IDIFR,                                     &
              B_JGS_SOURCE_NONLINEAR
         IF (.NOT. GUGINIT) THEN
           CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )

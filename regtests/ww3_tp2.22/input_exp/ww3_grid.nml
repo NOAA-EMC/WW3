@@ -1,0 +1,66 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - ww3_grid.nml - Grid pre-processing                   !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the spectrum parameterization via SPECTRUM_NML namelist
+! -------------------------------------------------------------------- !
+&SPECTRUM_NML
+  SPECTRUM%XFR       =  1.1
+  SPECTRUM%FREQ1     =  0.7
+  SPECTRUM%NK        =  3 
+  SPECTRUM%NTH       =  360
+/
+
+! -------------------------------------------------------------------- !
+! Define the run parameterization via RUN_NML namelist
+! -------------------------------------------------------------------- !
+&RUN_NML
+  RUN%FLCX         =  T
+  RUN%FLCY         =  T
+  RUN%FLCTH        =  T 
+  RUN%FLCK         =  T 
+  RUN%FLSOU        =  F 
+/
+
+! -------------------------------------------------------------------- !
+! Define the timesteps parameterization via TIMESTEPS_NML namelist
+! -------------------------------------------------------------------- !
+&TIMESTEPS_NML
+  TIMESTEPS%DTMAX        =  0.1
+  TIMESTEPS%DTXY         =  0.1
+  TIMESTEPS%DTKTH        =  0.1
+  TIMESTEPS%DTMIN        =  0.1
+/
+
+! -------------------------------------------------------------------- !
+! Define the grid to preprocess via GRID_NML namelist
+! -------------------------------------------------------------------- !
+&GRID_NML
+  GRID%NAME         =  'LIMON'
+  GRID%NML          =  'namelists.nml'
+  GRID%TYPE         =  'UNST'
+  GRID%COORD        =  'CART'
+  GRID%CLOS         =  'NONE'
+  GRID%ZLIM         =  0.001
+  GRID%DMIN         =  0.0001
+/
+
+! -------------------------------------------------------------------- !
+! Define the unstructured grid type via UNST_NML namelist
+! -------------------------------------------------------------------- !
+&UNST_NML
+  UNST%SF          =  -1.
+  UNST%FILENAME    =  'mesh.2dm'
+  UNST%IDLA      =  4
+  UNST%FORMAT    =  '(20f10.2)'
+/
+
+! -------------------------------------------------------------------- !
+! Define the input boundary points via INBND_COUNT_NML and
+!                                      INBND_POINT_NML namelist
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

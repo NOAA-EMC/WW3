@@ -439,6 +439,7 @@ CONTAINS
     PTRIAD(5) = 0.01
 
     HS = 4.*SQRT( MAX(0.,EMEAN) )
+
     URSELL = (GRAV*HS)/(2.*SQRT(2.)*SIGM01**2*DEPTH**2)
 !---------------------------------------------
 

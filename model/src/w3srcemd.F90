@@ -500,6 +500,11 @@ CONTAINS
          XFC, XFLT, XREL, XFT, FXFM, FXPM, DDEN,     &
          FTE, FTF, FHMAX, ECOS, ESIN, IICEDISP,      &
          ICESCALES, IICESMOOTH
+    USE W3GDATMD, ONLY: FSSOURCE, optionCall
+    USE W3GDATMD, ONLY: B_JGS_NLEVEL, B_JGS_SOURCE_NONLINEAR
+#ifdef W3_REF1
+    USE W3GDATMD, ONLY: IOBP, IOBPD, IOBDP, GTYPE, UNGTYPE, REFPARS
+#endif
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDSE, NDST, IAPROC
     USE W3IDATMD, ONLY: INFLAGS2
@@ -1534,8 +1539,13 @@ CONTAINS
                   DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
                 ENDIF
                 PreVS  = DVS / FAKS
-                eVS    = PreVS / CG1(IK) * CLATSL
-                eVD    = MIN(0.,VD(ISP))
+                IF (IOBP_LOC(JSEA) .EQ. 3) THEN
+                  eVS = 0
+                  eVD = 0
+                ELSE
+                  eVS    = PreVS / CG1(IK) * CLATSL
+                  eVD    = MIN(0.,VD(ISP))
+                ENDIF
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
@@ -1548,9 +1558,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
 
 #ifdef W3_TR1
                 eVS = VSTR(ISP) * JAC
@@ -1562,9 +1572,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
               END DO
             END DO
 
