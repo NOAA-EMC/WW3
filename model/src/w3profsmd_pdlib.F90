@@ -5546,26 +5546,26 @@ CONTAINS
     INTEGER :: nbIter, ISPnextDir, ISPprevDir
     INTEGER :: ISPp1, ISPm1, JP, ICOUNT1, ICOUNT2
     ! for the exchange
-    REAL*8  :: CCOS, CSIN, CCURX, CCURY
-    REAL*8  :: eSum(NSPEC), FRLOCAL
-    REAL*8  :: eA_THE, eC_THE, eA_SIG, eC_SIG, eSI
-    REAL*8  :: CAD(NSPEC), CAS(NSPEC), ACLOC(NSPEC)
-    REAL*8  :: CP_SIG(NSPEC), CM_SIG(NSPEC)
-    REAL*8  :: eFactM1, eFactP1
-    REAL*8  :: Sum_Prev, Sum_New, p_is_converged, DiffNew, prop_conv
-    REAL*8  :: Sum_L2, Sum_L2_GL
+    REAL  :: CCOS, CSIN, CCURX, CCURY
+    REAL  :: eSum(NSPEC), FRLOCAL
+    REAL  :: eA_THE, eC_THE, eA_SIG, eC_SIG, eSI
+    REAL  :: CAD(NSPEC), CAS(NSPEC), ACLOC(NSPEC)
+    REAL  :: CP_SIG(NSPEC), CM_SIG(NSPEC)
+    REAL  :: eFactM1, eFactP1
+    REAL  :: Sum_Prev, Sum_New, p_is_converged, DiffNew, prop_conv
+    REAL  :: Sum_L2, Sum_L2_GL
     REAL  :: DMM(0:NK2), DAM(NSPEC), DAM2(NSPEC), SPEC(NSPEC)
-    REAL*8  :: eDiff(NSPEC), eProd(NSPEC), eDiffB(NSPEC)
-    REAL*8  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
+    REAL  :: eDiff(NSPEC), eProd(NSPEC), eDiffB(NSPEC)
+    REAL  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
     REAL  :: VAnew(NSPEC), VFLWN(1-NTH:NSPEC), JAC, JAC2
     REAL  :: VAAnew(1-NTH:NSPEC+NTH), VAAacloc(1-NTH:NSPEC+NTH)
     REAL  :: VAinput(NSPEC), VAacloc(NSPEC), ASPAR_DIAG(NSPEC)
     REAL  :: aspar_diag_local(nspec), aspar_off_diag_local(nspec), b_jac_local(nspec)
-    REAL*8 :: eDiffSing, eSumPart
+    REAL  :: eDiffSing, eSumPart
     REAL  :: EMEAN, FMEAN, FMEAN1, WNMEAN, AMAX, U10ABS, U10DIR, TAUA, TAUADIR
     REAL  :: USTAR, USTDIR, TAUWX, TAUWY, CD, Z0, CHARN, FMEANWS, DLWMEAN
-    REAL*8  :: eVal1, eVal2
-    REAL*8  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
+    REAL  :: eVal1, eVal2
+    REAL  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
     REAL  :: CG1(0:NK+1), WN1(0:NK+1)
     LOGICAL :: LCONVERGED(NSEAL), lexist, LLWS(NSPEC)
 #ifdef WEIGHTS
