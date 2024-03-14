@@ -58,6 +58,13 @@ MODULE W3OACPMD
   !
   USE MOD_OASIS                                      ! OASIS3-MCT module
   !
+  USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
+  USE MPI, ONLY : MPI_SUM, MPI_INT
+  USE W3PARALL, ONLY : INIT_GET_ISEA
+#ifdef W3_PDLIB
+    USE YOWNODEPOOL, ONLY: NPA, NP, IPLG
+#endif
+
   IMPLICIT NONE
   PRIVATE
   !
@@ -331,7 +338,7 @@ CONTAINS
         !
         ! 1.3. Unstructured grids
         ! ----------------------------------
-        WRITE(*,*) 'TO BE IMPLEMENT FOR UNSTRUCTURED GRIDS'
+        WRITE(*,*) 'TO BE IMPLEMENT FOR UNSTRUCTURED GRIDS CPL_OASIS_GRID'
         STOP
       END IF
       !
@@ -367,8 +374,10 @@ CONTAINS
     !/                  |           A. Thevenin             |
     !/                  |           V. Garnier              |
     !/                  |           M. Accensi              |
+    !/                  !           A. Roland               |
+    !/                  !           H. Michaud              |
     !/                  |                        FORTRAN 90 |
-    !/                  | Last update :         08-Jun-2018 |
+    !/                  | Last update :         22-Feb-2023 |
     !/                  +-----------------------------------+
     !/
     !/      Jul-2013 : Origination.                         ( version 4.18 )
@@ -376,6 +385,8 @@ CONTAINS
     !/                   (R. Baraille & J. Pianezze)
     !/    April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
     !/    08-Jun-2018 : use INIT_GET_ISEA                   ( version 6.04 )
+    !/    22-Feb-2023 : Extend to domain decomposition      ( version 7.xx ) 
+    !/    01-Mar-2023 : Work on HYCOM part 
     !/
     !  1. Purpose :
     !
@@ -416,7 +427,12 @@ CONTAINS
     USE W3GDATMD, ONLY: NSEAL,NSEA, NX, NY, MAPSTA, MAPSF, GTYPE, &
          & UNGTYPE, RLGTYPE, CLGTYPE, SMCTYPE
     USE W3ODATMD, ONLY: NAPROC, IAPROC
-    USE W3PARALL, ONLY : INIT_GET_ISEA
+    USE W3ADATMD, ONLY: MPI_COMM_WAVE
+#ifdef W3_PDLIB
+    USE W3PARALL, ONLY : INIT_GET_ISEA 
+    USE YOWNODEPOOL, ONLY: NPA, NP, IPLG 
+#endif
+    IMPLICIT NONE
     !
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -427,7 +443,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IB_I,I
+    INTEGER                 :: IB_I,I,IPART,IERR_MPI
     INTEGER                 :: IL_PART_ID      ! PartitionID
     INTEGER, ALLOCATABLE, DIMENSION(:)   :: ILA_PARAL       ! Description of the local partition in the global index space
     INTEGER, DIMENSION(4)   :: ILA_SHAPE       ! Vector giving the min & max index for each dim of the fields
@@ -488,31 +504,81 @@ CONTAINS
       !
       ! 1.3. Unstructured grids
       ! ----------------------------------
-      WRITE(*,*) 'TO BE VERIFIED FOR UNSTRUCTURED GRIDS'
-      STOP
-      !
-      DO JSEA=1,NSEAL
-        ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
-        ILA_PARAL(JSEA*2+2) = 1
-      END DO
+#ifdef W3_PDLIB
+      IPART = 4 ! USING POINT PARTITION FOR UNSTRUCTURED DD 
+      IF (IPART == 3) THEN
+      ! * allocate : OASIS ORANGE partition
+        ALLOCATE(ILA_PARAL(2+NP*2))
+      ! * Define the partition : OASIS ORANGE partition
+        ILA_PARAL(1) = 3
+      ! * total number of segments of the global domain
+        ILA_PARAL(2) = NP
+        DO JSEA = 1, NP
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA*2+1),JSEA)
+          ILA_PARAL(JSEA*2+2) = 1
+        END DO
+      ELSE IF (IPART == 4) THEN
+      ! * allocate : OASIS POINT partition
+        ALLOCATE(ILA_PARAL(2+NP))
+      ! * Define the partition : OASIS POINTS partition
+        ILA_PARAL(1) = 4
+      ! * total number of segments of the global domain
+        ILA_PARAL(2) = NP
+        DO JSEA = 1, NP
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
+        ENDDO
+      ENDIF
+#else
+      IPART = 4 
+      IF (IPART == 3) THEN
+      ! * allocate : OASIS ORANGE partition
+        ALLOCATE(ILA_PARAL(2+NSEAL*2))
+      ! * Define the partition : OASIS ORANGE partition
+        ILA_PARAL(1) = 3
+      ! * total number of segments of the global domain
+        ILA_PARAL(2) = NSEAL
+        DO JSEA = 1, NSEAL
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA*2+1),JSEA)
+          ILA_PARAL(JSEA*2+2) = 1
+        END DO
+      ELSE IF (IPART == 4) THEN
+      ! * allocate : OASIS POINT partition
+        ALLOCATE(ILA_PARAL(2+NSEAL))
+      ! * Define the partition : OASIS POINTS partition
+        ILA_PARAL(1) = 4
+      ! * total number of segments of the global domain
+        ILA_PARAL(2) = NSEAL
+        DO JSEA = 1, NSEAL
+          CALL INIT_GET_ISEA(ILA_PARAL(JSEA+2),JSEA)
+        ENDDO
+      ENDIF
+#endif
       !
     ENDIF
+
     !
     ! 2. Partition definition
     ! ----------------------------------
-    CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NNODES)
+    CALL OASIS_DEF_PARTITION(IL_PART_ID, ILA_PARAL,IL_ERR,NSEA)
     IF(IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_partition')
     ENDIF
+
+
     !
     ! 3. Coupling fields declaration
     ! ----------------------------------
+#ifdef W3_PDLIB
+    ILA_SHAPE(:) = (/1, NP, 1, 1 /)
+#else
     ILA_SHAPE(:) = (/1, NSEAL, 1, 1 /)
+#endif
     !
     ILA_VAR_NODIMS(1) = 2    ! rank of fields array
     ILA_VAR_NODIMS(2) = 1    ! always 1 with OASIS3-MCT 2.0
     !
     CALL GET_LIST_EXCH_FIELD(NDSO, RCV_FLD, SND_FLD, IL_NB_RCV, IL_NB_SND, RCV_STR, SND_STR)
+
     !
     ! 3.1 Send coupling fields
     ! ----------------------------------
@@ -530,6 +596,8 @@ CONTAINS
         CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_var')
       ENDIF
     ENDDO
+
+
     !
     ! 3.2 Received coupling fields
     ! ----------------------------------
@@ -547,10 +615,13 @@ CONTAINS
         CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_var')
       ENDIF
     ENDDO
+
+
     !
     ! 4. End of definition phase
     ! ----------------------------------
     CALL OASIS_ENDDEF(IL_ERR)
+
 
     IF (IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_enddef')
@@ -676,6 +747,10 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
+    USE W3ADATMD, ONLY: MPI_COMM_WAVE
+    USE W3ODATMD,  ONLY: NAPROC, IAPROC, UNDEF
+    USE W3GDATMD, ONLY: NSEAL, NSEA, NX
+    IMPLICIT NONE
     INTEGER, INTENT(IN)   :: ID_NB                          ! Number of the field to be received
     INTEGER, INTENT(IN)   :: ID_TIME                        ! Ocean time-step in seconds
     REAL(KIND=8), DIMENSION(:,:), INTENT(OUT) :: RDA_FIELD    ! Coupling field array to be received
@@ -685,15 +760,18 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER :: IL_INFO                                      ! OASIS3-MCT info argument
+    INTEGER :: IERR_MPI, NPSUM
     !/
     !/ ------------------------------------------------------------------- /
     !/ Executable part
     !/
+
     CALL OASIS_GET ( RCV_fld(ID_NB)%IL_FIELD_ID &
          &              , ID_TIME                    &
          &              , RDA_FIELD                  &
          &              , IL_INFO                    &
          &                )
+
     !
     LD_ACTION = IL_INFO == OASIS_RECVD   .OR. IL_INFO == OASIS_FROMREST .OR.   &
          &           IL_INFO == OASIS_RECVOUT .OR. IL_INFO == OASIS_FROMRESTOUT
@@ -842,14 +920,6 @@ CONTAINS
         ID_NB_RCV=ID_NB_RCV+1
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDH'
         !
-        ! wet-drying at u-location
-        ID_NB_RCV=ID_NB_RCV+1
-        RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDU'
-        !
-        ! wet-drying at v-location
-        ID_NB_RCV=ID_NB_RCV+1
-        RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OWDV'
-        !
       CASE('SSH')
         ! ssh : sea surface height (m)
         ID_NB_RCV=ID_NB_RCV+1
@@ -865,7 +935,6 @@ CONTAINS
         RCV(ID_NB_RCV)%CL_FIELD_NAME='WW3_OSSV'
 #endif
         !
-
         !
         ! ATMOSPHERE MODEL VARIABLES
         !
@@ -1144,4 +1213,3 @@ CONTAINS
   !/
 END MODULE W3OACPMD
 !/
-!/ ------------------------------------------------------------------- /

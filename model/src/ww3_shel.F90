@@ -1958,7 +1958,6 @@ PROGRAM W3SHEL
   ENDIF
   ! Estimate the weights for the spatial interpolation
   IF (DTOUT(7).NE.0) THEN
-    CALL CPL_OASIS_GRID(L_MASTER,MPI_COMM)
     CALL CPL_OASIS_DEFINE(NDSO, FLDIN, FLDOUT)
   END IF
 #endif
