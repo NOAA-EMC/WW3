@@ -861,7 +861,6 @@ CONTAINS
 #endif
 
 #ifdef W3_NL5
-    INTEGER :: QI5TSTART(2)
     REAL :: QR5KURT
     INTEGER, PARAMETER :: NL5_SELECT = 1
     REAL, PARAMETER :: NL5_OFFSET = 0.  ! explicit dyn.
@@ -984,6 +983,9 @@ CONTAINS
 #if defined(W3_ST0) || defined(W3_ST1) || defined(W3_ST2) || \
     defined(W3_ST6) || defined(W3_FLX2) || defined(W3_FLX3)
     REAL :: FP(CHUNKSIZE)
+#endif
+#ifdef W3_NL5
+    INTEGER :: QI5TSTART(2,CHUNKSIZE)
 #endif
 
     ! New locals for chunking
@@ -1316,8 +1318,16 @@ CONTAINS
       ! TIME is updated in W3WAVEMD prior to the call of W3SCRE, we should
       ! move 'TIME' one time step backward (QL)
 #ifdef W3_NL5
-      QI5TSTART = TIME
-      CALL TICK21 (QI5TSTART, -1.0 * DTG)
+      !QI5TSTART = TIME
+      !CALL TICK21 (QI5TSTART, -1.0 * DTG)
+      QI5TSTART(:,1) = TIME
+      CALL TICK21 (QI5TSTART(:,1), -1.0 * DTG)
+      IF(NSEAC .GT. 1) THEN
+        DO CSEA=2,NSEAC
+          ! GPU Refactor - to avoid calling TICK21 unneccesarily in a loop:
+          QI5TSTART(1:2,CSEA) = QI5TSTART(1:2,1)
+        END DO
+      END IF
 #endif
       !
 #ifdef W3_DEBUGSRC
@@ -1630,7 +1640,7 @@ CONTAINS
           CALL W3SNL4 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), VSNL(:,CSEA), VDNL(:,CSEA) )
 #endif
 #ifdef W3_NL5
-          CALL W3SNL5 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), FMEAN(CSEA), QI5TSTART,          &
+          CALL W3SNL5 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), FMEAN(CSEA), QI5TSTART(:,CSEA),          &
              U10_CHUNK(CSEA), U10D_CHUNK(CSEA), JSEA, VSNL(:,CSEA), VDNL(:,CSEA), QR5KURT)
 #endif
         END DO ! CSEA; W3SNLx     
@@ -2458,7 +2468,10 @@ CONTAINS
         !
         ! Update QI5TSTART (Q. Liu)
 #ifdef W3_NL5
-        CALL TICK21(QI5TSTART, DT(CSEA))
+        DO CSEA=1,NSEAC
+          IF(SRC_MASK(CSEA)) CYCLE
+          CALL TICK21(QI5TSTART(:,CSEA), DT(CSEA))
+        END DO
 #endif
 
         IF (srce_call .eq. srce_imp_post) THEN
