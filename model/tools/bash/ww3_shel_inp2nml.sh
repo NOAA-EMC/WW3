@@ -970,6 +970,9 @@ cat >> $nmlfile << EOF
 !  F  F  8     4   MSCD       MCD   Tail slope direction
 !  F  F  8     5   QP         QP    Goda peakedness parameter
 !  F  F  8     6   QKK        QKK   Wavenumber peakedness
+!  F  F  8     7   SKEW       SKW   Skewness of elevation for zero slopes
+!  F  F  8     8   EMBIA1     EMB   Mean sea level at zero slopes / Hs
+!  F  F  8     9   EMBIA2     EMC   Tracker bias for LRM least square altimetry
 !   -------------------------------------------------
 !        9                          Numerical diagnostics
 !   -------------------------------------------------
