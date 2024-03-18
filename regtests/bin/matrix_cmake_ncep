@@ -60,7 +60,7 @@ EOF
   modbacio='bacio/2.4.1'
   modg2='g2/3.4.5'
   modw3emc='w3emc/2.10.0'
-  modesmf='esmf/8.4.2'
+  modesmf='esmf/8.5.0'
   modscotch='scotch/7.0.4'
 
 # Set batchq queue, choose modules and other custom variables to fit system and
@@ -82,7 +82,6 @@ EOF
     then 
       spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/modulefiles/Core'
       modcomp='stack-gcc/9.2.0'
-      spackstackpath2='/scratch1/NCEPDEV/jcsda/jedipara/spack-stack/modulefiles'
       modmpi='stack-openmpi/4.1.5'
       metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/gnu/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
