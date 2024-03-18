@@ -76,7 +76,7 @@ EOF
       spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/modulefiles/Core'
       modcomp='stack-intel/2021.5.0'
       modmpi='stack-intel-oneapi-mpi/2021.5.1'
-      metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/intel/spack-stack/1.5.0/parmetis-4.0.3/install'
+      metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/intel/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     elif [ $compiler = "gnu" ]
     then 
@@ -84,8 +84,8 @@ EOF
       modcomp='stack-gcc/9.2.0'
       spackstackpath2='/scratch1/NCEPDEV/jcsda/jedipara/spack-stack/modulefiles'
       modmpi='stack-openmpi/4.1.5'
-      metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/gnu/spack-stack/1.5.0/parmetis-4.0.3/install'
-      modcmake='3.23.1'
+      metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/gnu/spack-stack/1.6.0/parmetis-4.0.3/install'
+      modcmake='cmake/3.23.1'
     else 
       echo "Compiler $compiler not supported on hera" 
       exit 1 
