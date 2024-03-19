@@ -1602,7 +1602,7 @@ CONTAINS
           TPMS(JSEA) = TPI/SIG(IK)
         END IF
 
-         IF (LMPENABLED) then
+        IF (LMPENABLED) then
             IF (HSLMODE.EQ.0) then
               LHSL = 10.0 ! a constant value for testing purposes
             ELSE
@@ -1610,8 +1610,8 @@ CONTAINS
               IX    = MAPSF(ISEA,1)
               IY    = MAPSF(ISEA,2)
               LHSL  = HSL(IX,IY)      ! depth over which SD is averaged
-              END IF
             END IF
+        END IF
 
         !
         ! Directional moments in the last freq. band
@@ -1654,12 +1654,12 @@ CONTAINS
                GRAV*WN(IK,ISEA) * EBD(IK,JSEA) / (SINH(2.*KD))
           IF (LMPENABLED) THEN
             USSCOH=0.5*FKD*SIG(IK)*(1.-EXP(-2.*WN(IK,ISEA)*LHSL))/LHSL*COSH(2.*KD)
-            ENDIF
+          ENDIF
         ELSE
           USSCO=FACTOR*SIG(IK)*2.*WN(IK,ISEA)
           IF (LMPENABLED) THEN
             USSCOH=FACTOR*SIG(IK)*(1.-EXP(-2.*WN(IK,ISEA)*LHSL))/LHSL
-            ENDIF
+          ENDIF
         END IF
         !
         ABXX(JSEA)   = MAX ( 0. , ABXX(JSEA) ) * FACTOR
@@ -1678,7 +1678,7 @@ CONTAINS
         IF (LMPENABLED) THEN
           USSHX(JSEA) = USSHX(JSEA) + ABX(JSEA)*USSCOH
           USSHY(JSEA) = USSHY(JSEA) + ABY(JSEA)*USSCOH
-          ENDIF
+        ENDIF
         !
         ! Fills the 3D Stokes drift spectrum array
         !  ! The US3D Stokes drift specrum array is now calculated in a
@@ -1961,8 +1961,8 @@ CONTAINS
           IX    = MAPSF(ISEA,1)
           IY    = MAPSF(ISEA,2)
           LHSL  = HSL(IX,IY)      ! depth over which SD is averaged
-          END IF
         END IF
+      END IF
       !
       ! 3.a Directional mss parameters
       !     NB: the slope PDF is proportional to ell1=ETYY*EC2-2*ETXY*ECS+ETXX*ES2 = C*EC2-2*B*ECS+A*ES2
@@ -2008,7 +2008,7 @@ CONTAINS
         USSHY(JSEA)  = USSHY(JSEA) + 2*GRAV*ETUSCY(JSEA)/SIG(NK)    &
           *(1.-(1.-4.*LHSL*WN(NK,ISEA))*EXP(-2.*WN(NK,ISEA)*LHSL))    &
           /6./WN(NK,ISEA)/LHSL
-        END IF
+      END IF
       UBS(JSEA) = UBS(JSEA) + FTWL * EBAND/GRAV
     END DO
     !
