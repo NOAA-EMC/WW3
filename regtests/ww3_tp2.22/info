@@ -1,0 +1,58 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.22 Test script for WW-III demonstrating Langmuir Mixing           #
+#            Parmeterization for the case of two-dimensional propagation    #
+#            over half the globe. Based on regtest ww3_tp2.2 with           #
+#            switch_PR3_UQ_MPI used as a sample switch.                     #
+#                                                                           #
+#            Two test cases are run. Both have LMPENABLED, with one which   #
+#            includes the tail contribution, the other does not.            #
+#                                                                           #
+# Remarks :                                                                 #
+# - Test case input parameters:                                             #
+#   I. NO TAIL                                                              #
+#   ----------                                                              #
+#     + LMPENABLED = T:  Langmuir mixing parameterization enabled.          #
+#     + SDTAIL     = F:  tail contribution NOT enabled.                     #
+#     + HSLMODE    = 0:  uniform (10m) surface layer depth is assumed.      #
+#                                                                           #
+#   II. TAIL INCLUDED                                                       #
+#   -----------------                                                       #
+#     + LMPENABLED = T:  Langmuir mixing parameterization enabled.          #
+#     + SDTAIL     = T:  tail contribution enabled.                         #
+#     + HSLMODE    = 0:  uniform (10m) surface layer depth is assumed.      #
+#                                                                           #
+# - Test case output parameters:                                            #
+#     + USSX/USSY:   surface Stokes drift           (netCDF:   uuss/vuss)   #
+#     + USSHX/USSHY: surface averaged Stokes drift  (netCDF: uussh/vussh)   #
+#                                                                           #
+# Sample run_test commands :                                                #
+#   (Note: mpirun commands differ by local system)                          #
+# ./bin/run_cmake_test -n 4 -p mpirun -f           ../model ww3_tp2.22      #
+# ./bin/run_cmake_test -n 4 -p mpirun -f -g sdtail ../model ww3_tp2.22      #
+#                                                                           #
+# Notes on LMPN namelist and Langmuir Mixing Parameterization:              #
+#                                                                           #
+#    The LMPN namelist group configures the Langmuir Mixing                 #
+#    Parameterization used within the context of climate modeling and       #
+#    when WW3 is coupled with an active ocean model (.e.g., POP2, MOM6).    #
+#    The LMPENABLED flag turns on the parameterization computations.        #
+#    The SDTAIL flag enables the spectral tail contribution.                #
+#    HSLMODE parameter determines the surface layer depth (HSL).            #
+#    When HSLMODE == 0, a uniform 10m HSL is assumed for testing purposes.  #
+#    When HSLMODE == 1, the HSL field is to be received from the active     #
+#    ocean model via coupler.                                               #
+#                                                                           #
+#    For more info on the Langmuir parameterization, see:                   #
+#       Li, Qing, et al. "Langmuir mixing effects on global climate:        #
+#       WAVEWATCH III in CESM." Ocean Modelling 103 (2016): 145-160.        #
+#                                                                           #
+#                                              Hendrik Tolman, Jun 2002     #
+#                                   Last Mod : Li / Altuntas,  Nov 2023     #
+#                                                                           #
+#    Copyright 2009-2023 National Weather Service (NWS),                    #
+#       National Oceanic and Atmospheric Administration.  All rights        #
+#       reserved.  WAVEWATCH III is a trademark of the NWS.                 #
+#       No unauthorized use without permission.                             #
+#                                                                           #
+#############################################################################

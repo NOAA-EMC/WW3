@@ -203,6 +203,7 @@ EOF
   export      shwtr='y' # shallow water tests
   export      unstr='y' # unstructured grid tests
   export      pdlib='y' # unstr with pdlib for domain decomposition and implicit solver
+  export        lmp='y' # Langmuir mixing parameterization
   export      smcgr='y' # SMC grid test
   export        rtd='y' # Rotated pole test
   export     mudice='y' # Mud/Ice and wave interaction tests

@@ -3744,6 +3744,30 @@ CONTAINS
     META(2)%VARNS=''
     META(2)%VARNG=''
     META(2)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
+
+    ! IFI=6, IFJ=14, USSH
+    META => GROUP(6)%FIELD(14)%META
+    META(1)%FSC    = 0.0005
+    META(1)%UNITS  = 'm s-1'
+    META(1)%ENAME  = '.ussh'
+
+    ! First component
+    META(1)%VARNM='uussh'
+    META(1)%VARNL='eastward surface averaged stokes drift'
+    META(1)%VARNS='sea_surface_wave_averaged_stokes_drift_eastward_velocity'
+    META(1)%VARNG='eastward_surface_averaged_stokes_drift'
+    META(1)%VARND=DIRCOM
+    META(1)%VMIN = -4.95
+    META(1)%VMAX =  4.95
+
+    ! Second component
+    META(2) = META(1)
+    META(2)%VARNM='vussh'
+    META(2)%VARNL='northward surface averaged stokes drift'
+    META(2)%VARNS='sea_surface_wave_averaged_stokes_drift_northward_velocity'
+    META(2)%VARNG='northward_surface_averaged_stokes_drift'
+
+
     !
     !---------- GROUP 7 ----------------
     !
@@ -3956,6 +3980,7 @@ CONTAINS
     META(1)%VARNC='Goda wave peakedness parameter'
     META(1)%VMIN = 0
     META(1)%VMAX = 32
+
     !
     !---------- GROUP 9 ----------------
     !

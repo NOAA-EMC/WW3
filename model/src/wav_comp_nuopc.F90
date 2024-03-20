@@ -369,7 +369,7 @@ contains
          isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-      wav_coupling_to_cice=(trim(cvalue)=="true")
+       read(cvalue,*) wav_coupling_to_cice
     end if
     write(logmsg,'(A,l)') trim(subname)//': Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
@@ -567,6 +567,7 @@ contains
     if ( root_task ) then
       write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
       write(stdout,'(a)')'==============================================='
+      write(stdout,'(a,l)')' Wave wav_coupling_to_cice setting is ',wav_coupling_to_cice
     end if
 
     !--------------------------------------------------------------------
@@ -917,6 +918,7 @@ contains
     type(ESMF_State)  :: exportState
     real(r8), pointer :: z0rlen(:)
     real(r8), pointer :: sw_lamult(:)
+    real(r8), pointer :: sw_lasl(:)
     real(r8), pointer :: sw_ustokes(:)
     real(r8), pointer :: sw_vstokes(:)
     real(r8), pointer :: wave_elevation_spectrum(:,:)
@@ -938,6 +940,14 @@ contains
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_lamult (:) = 1.
     endif
+    if (state_fldchk(exportState, 'Sw_lasl')) then
+      call state_getfldptr(exportState, 'Sw_lasl', sw_lasl, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      ! note: the default value of this surface layer averaged Langmuir number
+      ! should be a large number to be consistent with lamult=1., ustokes=0.,
+      ! and vstokes=0.
+      sw_lasl (:) = 1.e6
+    endif
     if (state_fldchk(exportState, 'Sw_ustokes')) then
       call state_getfldptr(exportState, 'Sw_ustokes', sw_ustokes, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -954,7 +964,7 @@ contains
       call CalcRoughl(z0rlen)
     endif
     if (wav_coupling_to_cice) then
-      call state_getfldptr(exportState, 'wave_elevation_spectrum', wave_elevation_spectrum, rc=rc)
+      call state_getfldptr(exportState, 'Sw_elevation_spectrum', wave_elevation_spectrum, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       wave_elevation_spectrum(:,:) = 0.
     endif

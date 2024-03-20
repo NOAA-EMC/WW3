@@ -728,6 +728,9 @@ MODULE W3GDATMD
 #ifdef W3_IS2
     REAL,    POINTER      :: IS2PARS(:)
 #endif
+    LOGICAL               :: LMPENABLED ! flag to enable Li et al. Langmuir parameterization
+    LOGICAL               :: SDTAIL ! flag to enable high-freq tail in Li et al. Stokes Drift computations
+    INTEGER               :: HSLMODE ! 0 for test (HSL=10m everywhere, 1 for coupler-based HSL)
     !
     ! unstructured data
     !
@@ -1083,6 +1086,10 @@ MODULE W3GDATMD
 #endif
   INTEGER, POINTER        :: NBEDGE
   INTEGER, POINTER        :: EDGES(:,:), NEIGH(:,:)
+  !
+  LOGICAL, POINTER        :: LMPENABLED
+  LOGICAL, POINTER        :: SDTAIL
+  INTEGER, POINTER        :: HSLMODE
   !
   ! Variables for unstructured grids
   !
@@ -2274,6 +2281,10 @@ CONTAINS
     USSPF  => GRIDS(IMOD)%USSPF
     USSP_WN => GRIDS(IMOD)%USSP_WN
     FFACBERG => GRIDS(IMOD)%FFACBERG
+    !
+    LMPENABLED => GRIDS(IMOD)%LMPENABLED
+    SDTAIL => GRIDS(IMOD)%SDTAIL
+    HSLMODE => GRIDS(IMOD)%HSLMODE
 #ifdef W3_REF1
     REFLC  => GRIDS(IMOD)%REFLC
     REFLD  => GRIDS(IMOD)%REFLD

@@ -993,6 +993,16 @@ CONTAINS
          FTWL, FACTI1, FACTI2, FACHFA, FACHFE
 #endif
     !
+    ! Langmuir mixing parameterization --------------
+    IF ( WRITE ) THEN
+      WRITE (NDSM)                                                &
+        LMPENABLED, SDTAIL, HSLMODE
+      ELSE
+        READ (NDSM,END=801,ERR=802,IOSTAT=IERR)                     &
+             LMPENABLED, SDTAIL, HSLMODE
+    END IF
+
+    ! --------------
     !
     ! Output flags for 3D parameters ------------------------------------- *
     !                                                 Module W3GDATMD

@@ -328,6 +328,7 @@ CONTAINS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
     USE w3odatmd, ONLY : RUNTYPE, INITFILE
+    USE w3adatmd, ONLY : USSHX, USSHY
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
 #endif
@@ -1054,6 +1055,10 @@ CONTAINS
               WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOCX(1:NSEA)
               WRITE(NDSR,ERR=803,IOSTAT=IERR) TAUOCY(1:NSEA)
             ENDIF
+            IF ( FLOGRR(6,14) ) THEN
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) USSHX(1:NSEA)
+              WRITE(NDSR,ERR=803,IOSTAT=IERR) USSHY(1:NSEA)
+            ENDIF
             IF ( FLOGRR(7,2) ) THEN
               WRITE(NDSR,ERR=803,IOSTAT=IERR) UBA(1:NSEA)
               WRITE(NDSR,ERR=803,IOSTAT=IERR) UBD(1:NSEA)
@@ -1321,6 +1326,17 @@ CONTAINS
               ENDIF
             ENDDO
           ENDIF
+          IF ( FLOGOA(6,14) ) THEN
+            READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
+            READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
+            DO I=1, NSEALM
+              J = IAPROC + (I-1)*NAPROC
+              IF (J .LE. NSEA) THEN
+                USSHX(I) = TMP(J)
+                USSHY(I) = TMP2(J)
+              ENDIF
+            ENDDO
+          ENDIF
           IF ( FLOGOA(7,2) ) THEN
             READ (NDSR,ERR=802,IOSTAT=IERR) TMP(1:NSEA)
             READ (NDSR,ERR=802,IOSTAT=IERR) TMP2(1:NSEA)
@@ -1404,6 +1420,8 @@ CONTAINS
           UBD     = 0.
           PHIBBL  = 0.
           TAUBBL  = 0.
+          USSHX   = 0.
+          USSHY   = 0.
         ENDIF
 #ifdef W3_T
         WRITE (NDST,9008)

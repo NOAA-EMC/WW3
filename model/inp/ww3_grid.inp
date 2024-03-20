@@ -305,25 +305,25 @@ $   limitation and the GSE alleviation.
 $
 $ Unstructured grids ------------------------------------------------ $
 $   UNST parameters       : Namelist UNST
-$                           UGBCCFL    : Turns on/off (TRUE/FALSE) the computation of the CFL number on the physical domain boundary. 
+$                           UGBCCFL    : Turns on/off (TRUE/FALSE) the computation of the CFL number on the physical domain boundary.
 $                                        If FALSE the explicit scheme can be much faster though stability is not guaranteed
 $                                        (default TRUE)
 $                           UGOBCAUTO  : TRUE: OBC points are taken from  type 15 elements (default)
 $                                        FALSE: OBC points must be listed in ww3_grid.inp
 $                           UGOBCDEPTH : Threshold ( < 0) depth (default -10) for OBC points if UGOBCAUTO is TRUE
-$                           UGOBCFILE  : File name of file for reading boudary (default 'unset') 
+$                           UGOBCFILE  : File name of file for reading boudary (default 'unset')
 $
-$                           The following are TRUE/FALSE variables and only one can be TRUE. 
-$                           By default, EXPFSN is TRUE and must be set to false to activate another option  
+$                           The following are TRUE/FALSE variables and only one can be TRUE.
+$                           By default, EXPFSN is TRUE and must be set to false to activate another option
 $                           EXPFSN    : Activation of N scheme (default option)
 $                           EXPFSPSI  : Activation of PSI scheme
 $                           EXPFSFCT  : Activation of FCT scheme
 $                           IMPFSN    : Activation of N implicit scheme
 $                           EXPTOTAL  : Activation of Block explicit N scheme solver
 $                           IMPTOTAL  : Activation of fully implicit scheme, non splitting
-$                             
+$
 $                           The following TRUE/FALSE variables are only for IMPTOTAL=TRUE
-$                           IMPREFRACTION : Turn on implicit freq. shift (default FALSE) 
+$                           IMPREFRACTION : Turn on implicit freq. shift (default FALSE)
 $                           IMPFREQSHIFT  : Turn on implicit freq. shift terms (default FALSE)
 $                           IMPSOURCE     : Turn on implicit source terms (default FALSE)
 $
@@ -332,17 +332,17 @@ $                           JGS_TERMINATE_DIFFERENCE  : Terminate based on the t
 $                           JGS_TERMINATE_NORM  : Terminate based on the norm of the solution (TRUE/FALSE, default FALSE)
 $                           JGS_USE_JACOBI  : Use Jacobi solver family (TRUE/FALSE, default TRUE)
 $                           JGS_BLOCK_GAUSS_SEIDEL  : Use Block Gauss Seidel method for imptotal instead of the conservative jacobi iterator. (TRUE/FALSE, default TRUE)
-$                           JGS_MAXITER  : Max. Number of solver iterations for JGS_TERMINATE_MAXITER (integer, default 100) 
-$                           JGS_PMIN  : % of grid points that do not need to converge during solver iteration (real, default 1) 
+$                           JGS_MAXITER  : Max. Number of solver iterations for JGS_TERMINATE_MAXITER (integer, default 100)
+$                           JGS_PMIN  : % of grid points that do not need to converge during solver iteration (real, default 1)
 $                           JGS_DIFF_THR  : Implicit solver threshold for JGS_TERMINATE_DIFFERENCE (real, default 1.0e-10)
 $                           JGS_NORM_THR  : Norm of the solution for JGS_TERMINATE_NORM (real, default 1.0e-20)
 $                           JGS_LIMITER  : TRUE: Use total (quasi-steady: limits whole equation) instead of local limiter (un-steady: limits only source terms)
-$                                          FALSE: default 
+$                                          FALSE: default
 $                           JGS_LIMITER_FUNC  : 1 - old limiter (default)
 $                                               2 - alternatnive limiter
-$                           SETUP_APPLY_WLV  : Compute wave setup (TRUE/FALSE, default TRUE) 
+$                           SETUP_APPLY_WLV  : Compute wave setup (TRUE/FALSE, default TRUE)
 $                           SOLVERTHR_SETUP  : Solver threshold for setup computations (default 1E-6)
-$                           CRIT_DEP_SETUP  : Critical depth for setup computations (default 0.1) 
+$                           CRIT_DEP_SETUP  : Critical depth for setup computations (default 0.1)
 
 $
 $ SMC grid propagation    : Namelist PSMC and default values
@@ -433,6 +433,33 @@ $                           e.g.: USSP = 1, IUSSP=3, STK_WN = 0.04, 0.11, 0.33
 $                                 provides 3 partitions of both x & y component,
 $                                 with a reasonable accuracy for using in
 $                                 a climate model.
+$
+$ Langmuir turbulence parameterization ------------------------------- $
+$   The LMPN namelist group configures the Langmuir Mixing
+$   Parameterization used within the context of climate modeling and
+$   when WW3 is coupled to an active ocean model (.e.g., POP2, MOM6).
+$   The LMPENABLED flag turns on the parameterization computations.
+$   The SDTAIL flag enables the spectral tail contribution. HSLMODE
+$   parameter determines the surface layer depth (HSL).
+$
+$   Input parameters  : Namelist LMPN
+$                       LMPENABLED : Logical controlling Langmuir
+$                                    related computations.
+$                                     T : Activates calculations
+$                                     F : Calculations off (default)
+$                       SDTAIL     : Logical controlling addition of
+$                                    tail contribution.
+$                                     T : Tail added to Stokes
+$                                         drift (LMPENABLED=T also).
+$                                     F : No tail added (default)
+$                       HSLMODE    : Integer indicating surface layer
+$                                    depth (HSL) type.
+$                                     0 : Uniform HSL=10m (default)
+$                                     1 : HSL from coupler
+$
+$   For more info on the Langmuir parameterization, see:
+$       Li, Qing, et al. "Langmuir mixing effects on global climate:
+$       WAVEWATCH III in CESM." Ocean Modelling 103 (2016): 145-160.
 $
 $ Miscellaneous ------------------------------------------------------ $
 $   Misc. parameters    : Namelist MISC
