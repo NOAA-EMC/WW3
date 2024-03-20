@@ -97,7 +97,7 @@ EOF
       spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core'
       modcomp='stack-intel/2022.0.2'
       modmpi='stack-intel-oneapi-mpi/2021.5.1'
-      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/orion/intel/spack-stack/1.5.0/parmetis-4.0.3/install'
+      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/orion/intel/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     else
       echo "Compiler $compiler not supported on orion" 
