@@ -11,7 +11,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
   N
-  DPT WND ICE HS MSS MSD FAW WCC WCF WCH WCM FOC TAW CHA FWS WBT
+  DPT WND ICE HS MSS MSD FAW WCC WCF WCH WCM FOC TAW CHA FWS WBT SKW EMB EMC
 $
 $--------------------------------------------------------------------- $
 $ NetCDF version [3,4] and variable type 4 [2 = SHORT, 3 = it depends , 4 = REAL]   

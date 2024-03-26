@@ -887,7 +887,7 @@ CONTAINS
     !
     ! 8) Spectrum parameters
     !
-    NOGE(8) = 6
+    NOGE(8) = 9
     !
     IDOUT( 8, 1)  = 'Mean square slopes  '
     IDOUT( 8, 2)  = 'Phillips tail const'
@@ -895,6 +895,9 @@ CONTAINS
     IDOUT( 8, 4)  = 'Tail slope direction'
     IDOUT( 8, 5)  = 'Goda peakedness parm'
     IDOUT( 8, 6)  = 'kxky-peakdness      '
+    IDOUT( 8, 7)  = 'Skewness            '
+    IDOUT( 8, 8)  = 'EM bias(l120+l102)/8'
+    IDOUT( 8, 9)  = 'Tracker bias:-l300/8'            
     !      IDOUT( 8, 3)  = 'Lx-Ly mean wvlength'
     !      IDOUT( 8, 4)  = 'Surf grad correl XT'
     !      IDOUT( 8, 5)  = 'Surf grad correl YT'

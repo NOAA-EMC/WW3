@@ -18,7 +18,7 @@ MODULE W3IOGOMD
   !/                  | WAVEWATCH III           NOAA/NCEP |
   !/                  |           H. L. Tolman            |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         22-Mar-2021 |
+  !/                  | Last update :         02-Mar-2024 |
   !/                  +-----------------------------------+
   !/
   !/    04-Jan-2001 : Origination.                        ( version 2.00 )
@@ -74,8 +74,9 @@ MODULE W3IOGOMD
   !/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
   !/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
   !/                  min/max freq band (B. Pouliot, CMC)
+  !/    02-Mar-2024 : Add skweness and EM bias varaible   ( version 7.xx )
   !/
-  !/    Copyright 2009-2014 National Weather Service (NWS),
+  !/    Copyright 2009-2024 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
   !/       reserved.  WAVEWATCH III is a trademark of the NWS.
   !/       No unauthorized use without permission.
@@ -1126,6 +1127,15 @@ CONTAINS
     CASE('QKK')
       I = 8
       J = 6
+    CASE('SKW')
+      I = 8
+      J = 7
+    CASE('EMB')
+      I = 8
+      J = 8
+    CASE('EMC')
+      I = 8
+      J = 9
       !
       ! Group 9
       !
@@ -2341,6 +2351,11 @@ CONTAINS
       CALL CALC_U3STOKES(A,2)
     ENDIF
     !
+    IF (FLOLOC( 8, 7).OR.FLOLOC( 8, 8).OR.FLOLOC( 8, 9)) THEN
+      CALL SKEWNESS(A)
+    END IF
+    
+    !
     ! Dominant wave breaking probability
     !
     IF (FLOLOC(2, 17)) CALL CALC_WBT(A)
@@ -2417,6 +2432,7 @@ CONTAINS
     !/                  processing code)
     !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
     !/    22-Mar-2021 : Add extra coupling fields as output ( version 7.13 )
+    !/    07-Mar-2024 : Add Skewness parameters             ( version 7.13 )
     !/
     !  1. Purpose :
     !
@@ -2513,7 +2529,7 @@ CONTAINS
          CFLXYMAX, CFLTHMAX, CFLKMAX, P2SMS, US3D,    &
          TH1M, STH1M, TH2M, STH2M, HSIG, PHICE, TAUICE,&
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD, HCMAXD,&
-         USSP, TAUOCX, TAUOCY, QKK
+         USSP, TAUOCX, TAUOCY, QKK, SKEW, EMBIA1, EMBIA2
     !/
     USE W3ODATMD, ONLY: NOGRP, NGRPP, IDOUT, UNDEF, NDST, NDSE,     &
          FLOGRD, IPASS => IPASS1, WRITE => WRITE1,   &
@@ -2923,6 +2939,9 @@ CONTAINS
           IF ( FLOGRD( 8, 4) ) MSCD (ISEA) = UNDEF
           IF ( FLOGRD( 8, 5) ) QP   (ISEA) = UNDEF
           IF ( FLOGRD( 8, 6) ) QKK  (ISEA) = UNDEF
+          IF ( FLOGRD( 8, 7) ) SKEW (ISEA) = UNDEF
+          IF ( FLOGRD( 8, 8) ) EMBIA1(ISEA) = UNDEF
+          IF ( FLOGRD( 8, 9) ) EMBIA2(ISEA) = UNDEF
           !
           IF ( FLOGRD( 9, 1) ) DTDYN (ISEA) = UNDEF
           IF ( FLOGRD( 9, 2) ) FCUT  (ISEA) = UNDEF
@@ -3576,7 +3595,7 @@ CONTAINS
 #endif
               !
               !     Section 8)
-              !
+              !Skewness
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 1 ) THEN
               WRITE ( NDSOG ) MSSX(1:NSEA)
 #ifdef W3_ASCII
@@ -3614,6 +3633,21 @@ CONTAINS
               WRITE ( NDSOG ) QKK(1:NSEA)
 #ifdef W3_ASCII
               WRITE ( NDSOA,* ) 'QKK:', QKK(1:NSEA)
+#endif
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
+              WRITE ( NDSOG ) SKEW(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'SKW:', SKEW(1:NSEA)
+#endif
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
+              WRITE ( NDSOG ) EMBIA1(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'EMB:', EMBIA1(1:NSEA)
+#endif
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+              WRITE ( NDSOG ) EMBIA2(1:NSEA)
+#ifdef W3_ASCII
+              WRITE ( NDSOA,* ) 'EMC:', EMBIA2(1:NSEA)
 #endif
               !
               !     Section 9)
@@ -3967,6 +4001,12 @@ CONTAINS
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) QP(1:NSEA)
             ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
               READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) QKK(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) SKEW(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) EMBIA1(1:NSEA)
+            ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+              READ (NDSOG,END=801,ERR=802,IOSTAT=IERR) EMBIA2(1:NSEA)
               !
               !     Section 9)
               !
@@ -4610,4 +4650,429 @@ CONTAINS
     !/
   END SUBROUTINE CALC_WBT
   !/ ------------------------------------------------------------------- /
+
+      SUBROUTINE SECONDHH(NKHF,FAC0,FAC1,FAC2,FAC3)
+!----------------------------------------------------------------
+
+!**** *SECONDHH* - COMPUTATION OF SECOND ORDER HARMONICS AND
+!                  RELEVANT TABLES FOR THE ALTIMETER CORRECTIONS.
+
+!     P.A.E.M. JANSSEN
+
+!     PURPOSE.
+!     ---------
+
+!          COMPUTE SECOND HARMONICS
+
+!**   INTERFACE.
+!     ----------
+
+!          *CALL* *SECONDHH*
+
+!     METHOD.
+!     -------
+
+!          SEE REFERENCE.
+
+!     EXTERNALS.
+!     ----------
+
+!         VMIN_D
+!         VPLUS_D          
+
+!     REFERENCES.
+!     -----------
+
+!          V E ZAKHAROV(1967)
+
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+USE CONSTANTS, ONLY: GRAV, TPI
+USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
+      IMPLICIT NONE
+ !     REAL(KIND=4) :: VMIN_D,VPLUS_D
+
+
+
+      INTEGER, INTENT(IN) :: NKHF
+      REAL(KIND=4), DIMENSION(NTH,NTH,NKHF,NKHF), INTENT(OUT)  :: FAC0, FAC1, FAC2, FAC3
+      REAL(KIND=4), PARAMETER   :: FRATIO = 1.1
+
+
+      INTEGER :: M, K1, M1, K2, M2
+
+      REAL(KIND=4), PARAMETER :: DEL1=1.0E-8
+      REAL(KIND=4), PARAMETER :: ZCONST = 0.0281349
+
+      !REAL(KIND=4) :: VMIN_D, VPLUS_D
+      REAL(KIND=4) :: CO1
+      REAL(KIND=4) :: XK1, XK1SQ, XK2, XK2SQ, XK3
+      REAL(KIND=4) :: COSDIFF
+      REAL(KIND=4) :: X12, X13, X32, OM1, OM2, OM3, F1, F2, F3
+      REAL(KIND=4) :: VM, VP
+      REAL(KIND=4) :: DELOM1, DELOM2
+      REAL(KIND=4) :: DELOM321, DELOM312
+      REAL(KIND=4) :: C22, S22
+
+      REAL(KIND=4), DIMENSION(NTH,NTH,NKHF,NKHF) :: B
+      REAL(KIND=4), DIMENSION(:), ALLOCATABLE:: FAK, SIGHF, DFIMHF
+
+
+
+ 
+!-----------------------------------------------------------------------
+
+
+
+
+!*    1. INITIALISE RELEVANT QUANTITIES.
+
+      ALLOCATE(FAK(NKHF))
+      ALLOCATE(SIGHF(NKHF))
+      ALLOCATE(DFIMHF(NKHF))
+
+      SIGHF(1)  = SIG(1)
+      DO M=2,NKHF
+        SIGHF(M) = XFR*SIGHF(M-1)
+      ENDDO
+
+      DO M=1,NKHF
+         FAK(M) = (SIGHF(M))**2/GRAV
+      ENDDO
+
+      CO1 = 0.5*(XFR-1.)*DTH
+      DFIMHF(1) = CO1*SIGHF(1)
+      DO M=2,NKHF-1
+         DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
+      ENDDO
+      DFIMHF(NKHF)=CO1*SIGHF(NKHF-1)
+
+      DO M2=1,NKHF
+        XK2 = FAK(M2)
+        XK2SQ = FAK(M2)**2
+        DO  M1=1,NKHF
+          XK1 = FAK(M1)
+          XK1SQ = FAK(M1)**2
+          DO K1=1,NTH
+            DO K2=1,NTH
+              COSDIFF = COS(TH(K1)-TH(K2))
+              X12 = XK1*XK2*COSDIFF
+              XK3 = XK1SQ + XK2SQ +2.0*X12 +DEL1
+              XK3 = SQRT(XK3)
+              X13 = XK1SQ+X12
+              X32 = X12+XK2SQ
+              OM1 = SQRT(GRAV*XK1)
+              OM2 = SQRT(GRAV*XK2)
+              OM3 = SQRT(GRAV*XK3)
+              F1 = SQRT(XK1/(2.0*OM1))
+              F2 = SQRT(XK2/(2.0*OM2))
+              F3 = SQRT(XK3/(2.0*OM3))
+              VM = TPI*VMIN_D(XK3,XK1,XK2,X13,X32,X12,OM3,OM1,OM2)
+              VP = TPI*VPLUS_D(-XK3,XK1,XK2,-X13,-X32,X12,OM3,OM1,OM2)
+              DELOM1 = OM3-OM1-OM2+DEL1
+              DELOM2 = OM3+OM1+OM2+DEL1
+              FAC0(K1,K2,M1,M2) = -F3/(F1*F2)*(VM/(DELOM1)+             &
+     &                            VP/(DELOM2))
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+
+      DO M2=1,NKHF
+        XK2 = FAK(M2)
+        XK2SQ = FAK(M2)**2
+        DO  M1=1,NKHF
+          XK1 = FAK(M1)
+          XK1SQ = FAK(M1)**2
+          DO K1=1,NTH
+            DO K2=1,NTH
+              COSDIFF = COS(TH(K1)-TH(K2))
+              X12 = XK1*XK2*COSDIFF
+              XK3 = XK1SQ + XK2SQ - 2.*X12 + DEL1
+              XK3 = SQRT(XK3)
+              X13 = XK1SQ-X12
+              X32 = X12-XK2SQ
+              OM1 = SQRT(GRAV*XK1)
+              OM2 = SQRT(GRAV*XK2)
+              OM3 = SQRT(GRAV*XK3)+DEL1
+              F1 = SQRT(XK1/(2.0*OM1))
+              F2 = SQRT(XK2/(2.0*OM2))
+              F3 = SQRT(ABS(XK3)/(2.0*OM3))
+              VM = TPI*VMIN_D(XK1,XK3,XK2,X13,X12,X32,OM1,OM3,OM2)
+              VP = TPI*VMIN_D(XK2,-XK3,XK1,-X32,X12,-X13,OM2,OM3,OM1)
+              DELOM321 = OM3+OM2-OM1+DEL1
+              DELOM312 = OM3+OM1-OM2+DEL1
+              B(K1,K2,M1,M2) = -F3/(F1*F2)*(VM/(DELOM321)+              &
+     &                         VP/(DELOM312))
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+
+      DO M2=1,NKHF
+        XK2SQ = FAK(M2)**2
+        DO M1=1,NKHF
+          XK1SQ = FAK(M1)**2
+          DO K2=1,NTH
+            DO K1=1,NTH
+              C22 = FAC0(K1,K2,M1,M2)+B(K1,K2,M1,M2)
+              S22 = B(K1,K2,M1,M2)-FAC0(K1,K2,M1,M2)
+              FAC1(K1,K2,M1,M2) =                                       &
+     &             (XK1SQ*ECOS(K1)**2 + XK2SQ*ECOS(K2)**2)*C22        &
+     &             -FAK(M1)*FAK(M2)*ECOS(K1)*ECOS(K2)*S22
+              FAC2(K1,K2,M1,M2) =                                       &
+     &             (XK1SQ*ESIN(K1)**2 + XK2SQ*ESIN(K2)**2)*C22        &
+     &             -FAK(M1)*FAK(M2)*ESIN(K1)*ESIN(K2)*S22
+              FAC3(K1,K2,M1,M2) =                                       &
+     &             (XK1SQ*ESIN(K1)*ECOS(K1) +                         &
+     &              XK2SQ*ESIN(K2)*ECOS(K2))*C22                      &
+     &             -FAK(M1)*FAK(M2)*ECOS(K1)*ESIN(K2)*S22
+              FAC0(K1,K2,M1,M2) = C22
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+
+
+     CONTAINS
+     REAL(KIND=4) FUNCTION VMIN_D(XI,XJ,XK,XIJ,XIK,XJK,XOI,XOJ,XOK)
+     
+!***  *VMIN_D*  DETERMINES THE NONLINEAR TRANSFER COEFFICIENT FOR THREE
+!               WAVE INTERACTIONS OF DEEP WATER WAVES.
+
+!     PETER JANSSEN
+
+!***  1. DETERMINE NONLINEAR TRANSFER.
+!     --------------------------------
+      IMPLICIT NONE
+      REAL, INTENT(IN) :: XI, XJ, XK, XIJ, XIK, XJK, XOI, XOJ, XOK
+      REAL :: RI, RJ, RK, OI, OJ, OK, SQIJK, SQIKJ, SQJKI
+
+      RI=ABS(XI)+DEL1
+      RJ=ABS(XJ)+DEL1
+      RK=ABS(XK)+DEL1
+      OI=XOI+DEL1
+      OJ=XOJ+DEL1
+      OK=XOK+DEL1
+      SQIJK=SQRT(OI*OJ*RK/(OK*RI*RJ))
+      SQIKJ=SQRT(OI*OK*RJ/(OJ*RI*RK))
+      SQJKI=SQRT(OJ*OK*RI/(OI*RJ*RK))
+      VMIN_D=ZCONST*( (XIJ-RI*RJ)*SQIJK + (XIK-RI*RK)*SQIKJ             &
+     &                + (XJK+RJ*RK)*SQJKI )
+
+      END FUNCTION VMIN_D      
+
+      REAL(KIND=4) FUNCTION VPLUS_D(XI,XJ,XK,XIJ,XIK,XJK,XOI,XOJ,XOK)
+
+
+
+!***  1. DETERMINE NONLINEAR TRANSFER.
+!     --------------------------------
+
+      IMPLICIT NONE
+      REAL, INTENT(IN) :: XI, XJ, XK, XIJ, XIK, XJK, XOI, XOJ, XOK
+      REAL :: RI, RJ, RK, OI, OJ, OK, SQIJK, SQIKJ, SQJKI
+
+      RI=ABS(XI)+DEL1
+      RJ=ABS(XJ)+DEL1
+      RK=ABS(XK)+DEL1
+      OI=XOI+DEL1
+      OJ=XOJ+DEL1
+      OK=XOK+DEL1
+      SQIJK=SQRT(OI*OJ*RK/(OK*RI*RJ))
+      SQIKJ=SQRT(OI*OK*RJ/(OJ*RI*RK))
+      SQJKI=SQRT(OJ*OK*RI/(OI*RJ*RK))
+      VPLUS_D=ZCONST*( (XIJ+RI*RJ)*SQIJK + (XIK+RI*RK)*SQIKJ            &
+     &               + (XJK+RJ*RK)*SQJKI )
+
+      END FUNCTION VPLUS_D
+!     -----------------------------------------------------------------
+
+      END SUBROUTINE SECONDHH
+
+!--------------------------------------------------------------------
+
+      SUBROUTINE SKEWNESS(A)
+
+!--------------------------------------------------------------------
+
+!*****SKEWNESS** COMPUTES PARAMETERS OF THE NEARLY-GAUSSIAN
+!             DISTRIBUTION OF OCEAN WAVES AT A FIXED GRID POINT.
+
+!     P.JANSSEN JULY 1997
+
+!     PURPOSE
+!     -------
+!             DETERMINES SKEWNESS PARAMETERS IN ORDER TO OBTAIN
+!             CORRECTION ON ALTIMETER WAVE HEIGHT.
+
+!     INTERFACE
+!     ---------
+!             *CALL* *SKEWNESS(IU06,F1,NCOLL,XKAPPA1,DELH_ALT)*
+
+
+
+!     METHOD
+!     ------
+!             EVALUATE DEVIATIONS FROM GAUSSIANITY FOLLOWING THE WORK
+!             OF SROKOSZ AND LONGUET-HIGGINS. FOR SECOND ORDER
+!             CORRECTIONS TO SURFACE ELEVATION THE APPROACH OF
+!             ZAKHAROV HAS BEEN USED.
+
+!     EXTERNALS
+!     ---------
+!             NONE
+
+!     REFERENCES
+!     ----------
+!             M.A. SROKOSZ, J.G.R.,91,995-1006(1986)
+!             V.E. ZAKHAROV, HAMILTONIAN APPROACH(1967)
+!--------------------------------------------------------------------
+
+
+
+!--------------------------------------------------------------------
+!      *TH*        REAL      DIRECTIONS IN RADIANS.
+USE CONSTANTS, ONLY: GRAV, TPI, TPIINV
+USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, DTH, ECOS, ESIN, NSEAL
+USE W3PARALL,  ONLY: INIT_GET_ISEA
+USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
+
+
+    IMPLICIT NONE
+
+    REAL, INTENT(IN)        :: A(NTH,NK,0:NSEAL)
+
+    INTEGER :: NKHF
+    REAL(KIND=4), DIMENSION(:,:,:,:) , ALLOCATABLE:: FAC0,FAC1,FAC2,FAC3
+
+    INTEGER :: M, K, M1, K1, M2, K2, I, J
+    INTEGER :: MSTART, JSEA
+   
+    REAL(KIND=4) :: CONX, DELTA
+    REAL(KIND=4) :: FH, DELF, XK1
+    REAL(KIND=4) :: XPI, XPJ, XPK, XN, XFAC, CO1
+    REAL(KIND=4), DIMENSION(:,:), ALLOCATABLE :: F2
+    REAL(KIND=4), DIMENSION(0:3,0:2,0:2) :: XMU, XLAMBDA
+    REAL(KIND=4), DIMENSION(:) , ALLOCATABLE::  SIGHF, DFIMHF, FAK
+
+! ----------------------------------------------------------------------
+
+    NKHF=NK+13 ! same offset as in ECWAM 
+
+    ALLOCATE(FAC0(NTH,NTH,NKHF,NKHF))
+    ALLOCATE(FAC1(NTH,NTH,NKHF,NKHF))
+    ALLOCATE(FAC2(NTH,NTH,NKHF,NKHF))
+    ALLOCATE(FAC3(NTH,NTH,NKHF,NKHF))
+      
+    CALL SECONDHH(NKHF,FAC0,FAC1,FAC2,FAC3)
+
+    ALLOCATE(F2(NTH,NKHF))
+    ALLOCATE(SIGHF(NKHF), DFIMHF(NKHF), FAK(NKHF)) 
+
+!     1. COMPUTATION OF FREQUENCY-DIRECTION INCREMENT
+!     -----------------------------------------------
+
+    MSTART = 1
+    XMU(:,:,:) = 0.0
+
+#ifdef W3_OMPG
+        !$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
+    DO JSEA=1, NSEAL
+      DO K=1,NTH
+        DO M=1,NK
+          CONX = TPIINV / SIG(M) * CG(M,JSEA)
+          F2(K,M)=A(K,M,JSEA)/ CONX
+          END DO
+        END DO
+
+      SIGHF(1)  = SIG(1)
+      DO M=2,NKHF
+        SIGHF(M) = XFR*SIGHF(M-1)
+      ENDDO
+
+      CO1 = 0.5*(XFR-1.)*DTH*TPIINV 
+      DFIMHF(1) = CO1*SIGHF(1)        ! this is DF*DTH
+      DO M=2,NKHF-1
+         DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
+      ENDDO
+      DFIMHF(NKHF)=CO1*SIGHF(NKHF-1)
+
+      DO M=1,NKHF
+         FAK(M) = (SIGHF(M))**2/GRAV
+      ENDDO
+
+! Deals with the tail ... 
+      DO M=NK+1,NKHF
+        FH=(SIGHF(NK)/SIGHF(M))**5
+        DO K=1,NTH
+            F2(K,M)=F2(K,NK)*FH
+        ENDDO
+      ENDDO
+
+!     2. COMPUTATION OF THE SKEWNESS COEFFICIENTS
+!     --------------------------------------------
+
+      DO M1=MSTART,NKHF
+        DO M2=MSTART,NKHF
+          DO K1=1,NTH
+            DO K2=1,NTH
+                DELF = DFIMHF(M1)*DFIMHF(M2)*F2( K1,M1)*F2(K2,M2)
+                XMU(3,0,0) = XMU(3,0,0)+3.0*FAC0(K1,K2,M1,M2)*DELF
+                XMU(1,2,0) = XMU(1,2,0)+FAC1(K1,K2,M1,M2)*DELF
+                XMU(1,0,2) = XMU(1,0,2)+FAC2(K1,K2,M1,M2)*DELF
+                XMU(1,1,1) = XMU(1,1,1)+FAC3(K1,K2,M1,M2)*DELF
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDDO
+
+      DO K1=1,NTH
+        DO M1=MSTART,NKHF
+          XK1 = FAK(M1)**2
+            DELF = DFIMHF(M1)*F2(K1,M1)
+            XMU(2,0,0) = XMU(2,0,0) + DELF
+            XMU(0,2,0) = XMU(0,2,0) + XK1*ECOS(K1)**2*DELF
+            XMU(0,0,2) = XMU(0,0,2) + XK1*ESIN(K1)**2*DELF
+            XMU(0,1,1) = XMU(0,1,1) + XK1*ECOS(K1)*ESIN(K1)*DELF
+        ENDDO
+      ENDDO
+
+
+!     3. COMPUTATION OF THE NORMALISED SKEWNESS COEFFICIENTS
+!     ------------------------------------------------------
+
+      DO I=0,3
+        XPI = 0.5*FLOAT(I)
+        DO J=0,2
+          XPJ = 0.5*FLOAT(J)
+          DO K=0,2
+            XPK = 0.5*FLOAT(K)
+              XN = XMU(2,0,0)**XPI*XMU(0,2,0)**XPJ*XMU(0,0,2)**XPK  ! denom in Srokosz eq. 11
+              XLAMBDA(I,J,K) = XMU(I,J,K)/XN
+            END DO
+          END DO
+        END DO
+      IF ( XMU(2,0,0) .GT. 1.E-7 ) THEN
+        SKEW(JSEA)=XLAMBDA(3,0,0)
+        DELTA = ( XLAMBDA(1,2,0) + XLAMBDA(1,0,2)           &
+                  - 2.0*XLAMBDA(0,1,1)*XLAMBDA(1,1,1) )/    &
+                   (1.0 - XLAMBDA(0,1,1)**2)             ! this is called gamma eq. 20 
+        EMBIA1(JSEA)=-0.125*DELTA                             ! EM Bias coefficient 
+        EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0		 ! tracker bias (least squares only) 	
+        END IF
+      END DO  ! end of loop on JSEA
+        !
+#ifdef W3_OMPG
+        !$OMP END PARALLEL DO
+#endif
+
+    DEALLOCATE(FAC0,FAC1,FAC2,FAC3)
+    DEALLOCATE(F2,SIGHF,DFIMHF,FAK) 
+
+
+      END SUBROUTINE SKEWNESS
+
 END MODULE W3IOGOMD

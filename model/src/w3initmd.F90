@@ -2150,7 +2150,7 @@ CONTAINS
          STMAXE, STMAXD, HMAXE, HCMAXE, HMAXD,     &
          HCMAXD, QP, PTHP0, PQP, PPE, PGW, PSW,    &
          PTM1, PT1, PT2, PEP, WBT, CX, CY,         &
-         TAUOCX, TAUOCY, WNMEAN, QKK
+         TAUOCX, TAUOCY, WNMEAN, QKK, SKEW, EMBIA1, EMBIA2
 #endif
 
 #ifdef W3_MPI
@@ -3411,6 +3411,48 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
+        IF ( FLGRDALL( 8, 7) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (SKEW (1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 8/07', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+        END IF
+#endif
+        !
+#ifdef W3_MPI
+        IF ( FLGRDALL( 8, 8) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (EMBIA1  (1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 8/08', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+        END IF
+#endif
+        !
+#ifdef W3_MPI
+        IF ( FLGRDALL( 8, 9) ) THEN
+          IH     = IH + 1
+          IT     = IT + 1
+          CALL MPI_SEND_INIT (EMBIA2 (1),NSEALM , MPI_REAL, IROOT,   &
+               IT, MPI_COMM_WAVE, IRQGO(IH), IERR)
+#endif
+#ifdef W3_MPIT
+          WRITE (NDST,9011) IH, ' 8/09', IROOT, IT, IRQGO(IH), IERR
+#endif
+#ifdef W3_MPI
+        END IF
+#endif
+        !
+#ifdef W3_MPI
         IF ( FLGRDALL( 9, 1) ) THEN
           IH     = IH + 1
           IT     = IT + 1
@@ -4652,6 +4694,48 @@ CONTAINS
 #endif
 #ifdef W3_MPIT
             WRITE (NDST,9011) IH, ' 8/06', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+          END IF
+#endif
+          !
+#ifdef W3_MPI
+          IF ( FLGRDALL( 8, 7) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (SKEW  (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 8/07', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+          END IF
+#endif
+          !
+#ifdef W3_MPI
+          IF ( FLGRDALL( 8, 8) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (EMBIA1 (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 8/08', IFROM, IT, IRQGO2(IH), IERR
+#endif
+#ifdef W3_MPI
+          END IF
+#endif
+          !
+#ifdef W3_MPI
+          IF ( FLGRDALL( 8, 9) ) THEN
+            IH     = IH + 1
+            IT     = IT + 1
+            CALL MPI_RECV_INIT (EMBIA2  (I0),1,WW3_FIELD_VEC, IFROM, IT,  &
+                 MPI_COMM_WAVE, IRQGO2(IH), IERR )
+#endif
+#ifdef W3_MPIT
+            WRITE (NDST,9011) IH, ' 8/09', IFROM, IT, IRQGO2(IH), IERR
 #endif
 #ifdef W3_MPI
           END IF
