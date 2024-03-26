@@ -268,8 +268,8 @@ CONTAINS
     !
     CSVBLINE      = BLANK2
     !
+    IPG1 = 0
     IF (IOUT .EQ. 1) THEN
-      IPG1 = 0
       DO IP=1, NPTAB
         HST(IP,1) = -99.9
         TPT(IP,1) = -99.9
@@ -286,10 +286,12 @@ CONTAINS
     !
     HSTOT  = XPART(1,0)
     TP     = XPART(2,0)
-    HSP = XPART(1,1:NPART)
-    TPP = XPART(2,1:NPART)
-    WNP = TPI / XPART(3,1:NPART)
-    DMP = MOD( XPART(4,1:NPART) + 180., 360.)
+    DO IP=1, NPART
+      HSP(IP) = XPART(1,IP)
+      TPP(IP) = XPART(2,IP)
+      WNP(IP) = TPI / XPART(3,IP)
+      DMP(IP) = MOD( XPART(4,IP) + 180., 360.)
+    ENDDO
 
     NZERO = 0
     NZERO = COUNT( HSP <= BHSMIN .AND. HSP /= 0.  )
