@@ -2433,7 +2433,7 @@ CONTAINS
                 OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,ERR=800,     &
                      IOSTAT=IERR)
                 IF (FSC.LT.1E-4) THEN
-                  WRITE(FSCS,'(G7.1)') FSC
+                  WRITE(FSCS,'(G8.1)') FSC
                 ELSE
                   WRITE(FSCS,'(F7.4)') FSC
                 END IF
