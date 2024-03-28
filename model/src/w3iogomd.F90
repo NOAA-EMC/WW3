@@ -4996,19 +4996,19 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
       CO1 = 0.5*(XFR-1.)*DTH*TPIINV 
       DFIMHF(1) = CO1*SIGHF(1)        ! this is DF*DTH
       DO M=2,NKHF-1
-         DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
+        DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
       ENDDO
       DFIMHF(NKHF)=CO1*SIGHF(NKHF-1)
 
       DO M=1,NKHF
-         FAK(M) = (SIGHF(M))**2/GRAV
+        FAK(M) = (SIGHF(M))**2/GRAV
       ENDDO
 
 ! Deals with the tail ... 
       DO M=NK+1,NKHF
         FH=(SIGHF(NK)/SIGHF(M))**5
         DO K=1,NTH
-            F2(K,M)=F2(K,NK)*FH
+          F2(K,M)=F2(K,NK)*FH
         ENDDO
       ENDDO
 
@@ -5019,11 +5019,11 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
         DO M2=MSTART,NKHF
           DO K1=1,NTH
             DO K2=1,NTH
-                DELF = DFIMHF(M1)*DFIMHF(M2)*F2( K1,M1)*F2(K2,M2)
-                XMU(3,0,0) = XMU(3,0,0)+3.0*FAC0(K1,K2,M1,M2)*DELF
-                XMU(1,2,0) = XMU(1,2,0)+FAC1(K1,K2,M1,M2)*DELF
-                XMU(1,0,2) = XMU(1,0,2)+FAC2(K1,K2,M1,M2)*DELF
-                XMU(1,1,1) = XMU(1,1,1)+FAC3(K1,K2,M1,M2)*DELF
+              DELF = DFIMHF(M1)*DFIMHF(M2)*F2( K1,M1)*F2(K2,M2)
+              XMU(3,0,0) = XMU(3,0,0)+3.0*FAC0(K1,K2,M1,M2)*DELF
+              XMU(1,2,0) = XMU(1,2,0)+FAC1(K1,K2,M1,M2)*DELF
+              XMU(1,0,2) = XMU(1,0,2)+FAC2(K1,K2,M1,M2)*DELF
+              XMU(1,1,1) = XMU(1,1,1)+FAC3(K1,K2,M1,M2)*DELF
             ENDDO
           ENDDO
         ENDDO
@@ -5032,11 +5032,11 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
       DO K1=1,NTH
         DO M1=MSTART,NKHF
           XK1 = FAK(M1)**2
-            DELF = DFIMHF(M1)*F2(K1,M1)
-            XMU(2,0,0) = XMU(2,0,0) + DELF
-            XMU(0,2,0) = XMU(0,2,0) + XK1*ECOS(K1)**2*DELF
-            XMU(0,0,2) = XMU(0,0,2) + XK1*ESIN(K1)**2*DELF
-            XMU(0,1,1) = XMU(0,1,1) + XK1*ECOS(K1)*ESIN(K1)*DELF
+          DELF = DFIMHF(M1)*F2(K1,M1)
+          XMU(2,0,0) = XMU(2,0,0) + DELF
+          XMU(0,2,0) = XMU(0,2,0) + XK1*ECOS(K1)**2*DELF
+          XMU(0,0,2) = XMU(0,0,2) + XK1*ESIN(K1)**2*DELF
+          XMU(0,1,1) = XMU(0,1,1) + XK1*ECOS(K1)*ESIN(K1)*DELF
         ENDDO
       ENDDO
 
@@ -5050,20 +5050,24 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
           XPJ = 0.5*FLOAT(J)
           DO K=0,2
             XPK = 0.5*FLOAT(K)
-              XN = XMU(2,0,0)**XPI*XMU(0,2,0)**XPJ*XMU(0,0,2)**XPK  ! denom in Srokosz eq. 11
+            XN = XMU(2,0,0)**XPI*XMU(0,2,0)**XPJ*XMU(0,0,2)**XPK  ! denom in Srokosz eq. 11
+            IF (XN .NE. 0) THEN
               XLAMBDA(I,J,K) = XMU(I,J,K)/XN
-            END DO
+            ELSE
+              XLAMBDA(I,J,K) = 0
+            END IF
           END DO
         END DO
+      END DO
       IF ( XMU(2,0,0) .GT. 1.E-7 ) THEN
         SKEW(JSEA)=XLAMBDA(3,0,0)
         DELTA = ( XLAMBDA(1,2,0) + XLAMBDA(1,0,2)           &
                   - 2.0*XLAMBDA(0,1,1)*XLAMBDA(1,1,1) )/    &
                    (1.0 - XLAMBDA(0,1,1)**2)             ! this is called gamma eq. 20 
         EMBIA1(JSEA)=-0.125*DELTA                             ! EM Bias coefficient 
-        EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0		 ! tracker bias (least squares only) 	
-        END IF
-      END DO  ! end of loop on JSEA
+        EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0           ! tracker bias (least squares only) 	
+      END IF
+    END DO  ! end of loop on JSEA
         !
 #ifdef W3_OMPG
         !$OMP END PARALLEL DO
