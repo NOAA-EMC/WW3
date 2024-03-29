@@ -4650,7 +4650,19 @@ CONTAINS
     !/
   END SUBROUTINE CALC_WBT
   !/ ------------------------------------------------------------------- /
-
+  !/
+  !>
+  !> @brief  Computation of second order harmonics and
+  !>         relevant tables for the altimeter corrections
+  !>
+  !> @param[in]    NKHF   Extended number of frequencies.
+  !> @param[out]   FAC0   2nd order coef correction.
+  !> @param[out]   FAC1   2nd order coef correction.
+  !> @param[out]   FAC2   2nd order coef correction.
+  !> @param[out]   FAC3   2nd order coef correction.
+  !>
+  !> @author P. Janssen  @date 29-Mar-2024
+  !>
       SUBROUTINE SECONDHH(NKHF,FAC0,FAC1,FAC2,FAC3)
 !----------------------------------------------------------------
 
@@ -4890,9 +4902,25 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
 !     -----------------------------------------------------------------
 
       END SUBROUTINE SECONDHH
-
-!--------------------------------------------------------------------
-
+  !/ ------------------------------------------------------------------- /
+  !/
+  !>
+  !> @brief  Determines skewness paramters in order to obtain
+  !>         correction on altimeter wave height
+  !>
+  !> @details Evaluate deviations from gaussianity following the work 
+  !>          of Srokosz and Longuet-Higgins. For second order
+  !>          corrections to surface elevation, the approach of
+  !>          Zaharov has been used.
+  !>
+  !> @param[in]    NKHF   Extended number of frequencies.
+  !> @param[out]   FAC0   2nd order coef correction.
+  !> @param[out]   FAC1   2nd order coef correction.
+  !> @param[out]   FAC2   2nd order coef correction.
+  !> @param[out]   FAC3   2nd order coef correction.
+  !>
+  !> @author P. Janssen  @date 29-Mar-2024
+  !>
       SUBROUTINE SKEWNESS(A)
 
 !--------------------------------------------------------------------
