@@ -1486,72 +1486,141 @@ CONTAINS
      END IF
 
     write(*,*) 'JDM f 1'
-    ncerr = nf90_put_var(fh, v_iw, IW, start = (/ 1, IPASS/), &
-                      count = (/ d_nopts, 1 /))
+    IF ( itime > 1 ) THEN 
+       ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
+       if (ncerr .ne. 0) return
+    END IF
+
+    ! TO DO ADD TIME VARIABLE 
+    ncerr = nf90_put_var(fh, v_iw, IW, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 2'
-
-    ncerr = nf90_put_var(fh, v_ii, II)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_ii, II, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 3'
-
-    ncerr = nf90_put_var(fh, v_il, IL)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_IL, v_il)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_il, IL, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 4'
-
-    ncerr = nf90_put_var(fh, v_dpo, DPO)
+!HERE
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_dpo, DPO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 5'
-
-    ncerr = nf90_put_var(fh, v_wao, WAO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_wao, WAO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
 #ifdef W3_FLX5
     write(*,*) 'JDM f 6'
-
-    ncerr = nf90_put_var(fh, v_tauao, TAUAO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_TAUAO, v_tauao)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_tauao, TAUAO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 7'
-
-    ncerr = nf90_put_var(fh, v_taido, TAIDO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_TAIDO, v_taido)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_taido, TAIDO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 8'
-
-    ncerr = nf90_put_var(fh, v_dairo, DAIRO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_DAIRO, v_dairo)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_dairo, DAIRO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
 #endif
 #ifdef W3_SETUP
     write(*,*) 'JDM f 9'
-
-    ncerr = nf90_put_var(fh, v_zet_seto, ZET_SETO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_ZET_SETO, v_zet_seto)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_zet_seto, ZET_SETO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
 #endif
     write(*,*) 'JDM f 10'
-
-    ncerr = nf90_put_var(fh, v_aso, ASO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_ASO, v_aso)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_aso, ASO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 11'
-
-    ncerr = nf90_put_var(fh, v_cao, CAO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_CAO, v_cao)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_cao, CAO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 12'
-
-    ncerr = nf90_put_var(fh, v_iceo, ICEO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_iceo, ICEO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 13'
-
-    ncerr = nf90_put_var(fh, v_iceho, ICEHO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_ICEHO, v_iceho)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_iceho, ICEHO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 14'
-
-    ncerr = nf90_put_var(fh, v_icefo, ICEFO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_ICEFO, v_icefo)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_icefo, ICEFO, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 15'
 
-    ncerr = nf90_put_var(fh, v_grdid, GRDID)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
+       if (ncerr .ne. 0) return
+    END IF
+!!! TO DO ADD GRIDLENTH? 
+    ncerr = nf90_put_var(fh, v_grdid, GRDID, start = (/ 1, itime/), &
+       count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 16'
-
-    ncerr = nf90_put_var(fh, v_spco, SPCO)
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_spco, SPCO, start = (/ 1, 1, itime/), &
+       count = (/d_nspec, d_nopts, 1 /))
     if (ncerr .ne. 0) return
 
     write(*,*) 'JDM g'
