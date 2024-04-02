@@ -1273,6 +1273,12 @@ CONTAINS
         IF (WORDS(6) .EQ. 'T') THEN
           CALL NEXTLN ( COMSTR , MDSI , MDSE2 )
           READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(8-1)+1,5*8)
+        ELSE 
+          ODAT(5*(8-1)+1,1)=0
+          ODAT(5*(8-1)+2,1)=0
+          ODAT(5*(8-1)+3,1)=0
+          ODAT(5*(8-1)+4,1)=0
+          ODAT(5*8,1)=0
         END IF
       ELSE
         READ (MDSI,*,END=2001,ERR=2002)(ODAT(I,1),I=5*(J-1)+1,5*J)
