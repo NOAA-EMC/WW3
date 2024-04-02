@@ -1393,6 +1393,9 @@ CONTAINS
       ncerr = nf90_def_dim(fh, DNAME_TIME, NF90_UNLIMITED, d_time)
       if (ncerr .ne. 0) return
 
+      ncerr = nf90_enddef(fh)
+      if (ncerr .ne. 0) return
+
       write(*,*) 'JDM b'
       ! Define global attributes.
       ncerr = nf90_put_att(fh, NF90_GLOBAL, 'title', IDSTR)
