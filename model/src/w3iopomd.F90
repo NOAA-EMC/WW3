@@ -1393,9 +1393,6 @@ CONTAINS
       ncerr = nf90_def_dim(fh, DNAME_TIME, NF90_UNLIMITED, d_time)
       if (ncerr .ne. 0) return
 
-      ncerr = nf90_enddef(fh)
-      if (ncerr .ne. 0) return
-
       write(*,*) 'JDM b'
       ! Define global attributes.
       ncerr = nf90_put_att(fh, NF90_GLOBAL, 'title', IDSTR)
@@ -1457,6 +1454,11 @@ CONTAINS
       if (ncerr .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_SPCO, NF90_INT, (/d_nspec, d_nopts, d_time/), v_spco)
       if (ncerr .ne. 0) return
+  
+      write(*,*) 'JDM bb'
+      ncerr = nf90_enddef(fh)
+      if (ncerr .ne. 0) return
+
       write(*,*) 'JDM c'
       ! Write the scalar data.
       ncerr = nf90_put_var(fh, v_nk, NK)
