@@ -1610,9 +1610,8 @@ CONTAINS
        ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
        if (ncerr .ne. 0) return
     END IF
-!!! TO DO ADD GRIDLENTH? 
-    ncerr = nf90_put_var(fh, v_grdid, GRDID, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+    ncerr = nf90_put_var(fh, v_grdid, GRDID, start = (/ 1, 1, itime/), &
+       count = (/ d_grdidlen, d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 16'
     IF ( itime > 1 ) THEN
