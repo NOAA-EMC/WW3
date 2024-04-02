@@ -4848,12 +4848,34 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
 
 
      CONTAINS
+
+!-----------------------------------------------------------------------
+
      REAL(KIND=4) FUNCTION VMIN_D(XI,XJ,XK,XIJ,XIK,XJK,XOI,XOJ,XOK)
      
-!***  *VMIN_D*  DETERMINES THE NONLINEAR TRANSFER COEFFICIENT FOR THREE
-!               WAVE INTERACTIONS OF DEEP WATER WAVES.
-
 !     PETER JANSSEN
+
+!     PURPOSE.
+!     --------
+
+!              GIVES NONLINEAR TRANSFER COEFFICIENT FOR THREE
+!              WAVE INTERACTIONS OF DEEP-WATER WAVES IN THE
+!              IDEAL CASE OF NO CURRENT. (CF.ZAKHAROV)
+
+!     INTERFACE.
+!     ----------
+!              *VMIN_D(XI,XJ,XK)*
+!                      *XI*  - WAVE NUMBER
+!                      *XJ*  - WAVE NUMBER
+!                      *XK*  - WAVE NUMBER
+!     METHOD.
+!     -------
+!              NONE
+
+!     EXTERNALS.
+!     ----------
+!              NONE.
+
 
 !***  1. DETERMINE NONLINEAR TRANSFER.
 !     --------------------------------
@@ -4875,7 +4897,35 @@ USE W3GDATMD,  ONLY: NK, NTH, XFR, SIG, TH, DTH, ECOS, ESIN
 
       END FUNCTION VMIN_D      
 
+!-----------------------------------------------------------------------
+
       REAL(KIND=4) FUNCTION VPLUS_D(XI,XJ,XK,XIJ,XIK,XJK,XOI,XOJ,XOK)
+
+!***  *VPLUS_D*  DETERMINES THE NONLINEAR TRANSFER COEFFICIENT FOR THREE
+!                WAVE INTERACTIONS OF DEEP-WATER WAVES.
+
+!     PETER JANSSEN
+
+!     PURPOSE.
+!     --------
+
+!              GIVES NONLINEAR TRANSFER COEFFICIENT FOR THREE
+!              WAVE INTERACTIONS OF GRAVITY-CAPILLARY WAVES IN THE
+!              IDEAL CASE OF NO CURRENT. (CF.ZAKHAROV)
+
+!     INTERFACE.
+!     ----------
+!              *VPLUS_D(XI,XJ,XK)*
+!                        *XI*  - WAVE NUMBER
+!                        *XJ*  - WAVE NUMBER
+!                        *XK*  - WAVE NUMBER
+!     METHOD.
+!     -------
+!              NONE
+
+!     EXTERNALS.
+!     ----------
+!              NONE.
 
 
 
@@ -5003,12 +5053,13 @@ USE W3ADATMD,  ONLY: CG, SKEW, EMBIA1, EMBIA2
 !     -----------------------------------------------
 
     MSTART = 1
-    XMU(:,:,:) = 0.0
+
 
 #ifdef W3_OMPG
         !$OMP PARALLEL DO PRIVATE(JSEA)
 #endif
     DO JSEA=1, NSEAL
+      XMU(:,:,:) = 0.0
       DO K=1,NTH
         DO M=1,NK
           CONX = TPIINV / SIG(M) * CG(M,JSEA)
