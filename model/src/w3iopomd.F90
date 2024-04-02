@@ -1485,16 +1485,17 @@ CONTAINS
         itime=IPASS
      END IF
 
+    ! TO DO ADD TIME VARIABLE 
+
     write(*,*) 'JDM f 1'
     IF ( itime > 1 ) THEN 
        ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
        if (ncerr .ne. 0) return
     END IF
-
-    ! TO DO ADD TIME VARIABLE 
     ncerr = nf90_put_var(fh, v_iw, IW, start = (/ 1, itime/), &
        count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
+    write(*,*) 'IW:', IW 
     write(*,*) 'JDM f 2'
     IF ( itime > 1 ) THEN
        ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
@@ -1512,7 +1513,6 @@ CONTAINS
        count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 4'
-!HERE
     IF ( itime > 1 ) THEN
        ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
        if (ncerr .ne. 0) return
@@ -1605,7 +1605,7 @@ CONTAINS
        count = (/ d_nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 15'
-
+    write(*,*) 'GRDID:',GRDID
     IF ( itime > 1 ) THEN
        ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
        if (ncerr .ne. 0) return
