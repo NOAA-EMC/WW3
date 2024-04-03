@@ -1493,7 +1493,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_iw, IW, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ NOPTS, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'IW:', IW 
     write(*,*) 'JDM f 2'
@@ -1502,7 +1502,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_ii, II, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 3'
     IF ( itime > 1 ) THEN
@@ -1510,7 +1510,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_il, IL, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 4'
     IF ( itime > 1 ) THEN
@@ -1518,7 +1518,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_dpo, DPO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 5'
     IF ( itime > 1 ) THEN
@@ -1526,7 +1526,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_wao, WAO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
 #ifdef W3_FLX5
     write(*,*) 'JDM f 6'
@@ -1535,7 +1535,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_tauao, TAUAO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 7'
     IF ( itime > 1 ) THEN
@@ -1543,7 +1543,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_taido, TAIDO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 8'
     IF ( itime > 1 ) THEN
@@ -1551,7 +1551,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_dairo, DAIRO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
 #endif
 #ifdef W3_SETUP
@@ -1561,7 +1561,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_zet_seto, ZET_SETO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
 #endif
     write(*,*) 'JDM f 10'
@@ -1570,7 +1570,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_aso, ASO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 11'
     IF ( itime > 1 ) THEN
@@ -1578,7 +1578,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_cao, CAO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 12'
     IF ( itime > 1 ) THEN
@@ -1586,7 +1586,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_iceo, ICEO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 13'
     IF ( itime > 1 ) THEN
@@ -1594,7 +1594,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_iceho, ICEHO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 14'
     IF ( itime > 1 ) THEN
@@ -1602,7 +1602,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_icefo, ICEFO, start = (/ 1, itime/), &
-       count = (/ d_nopts, 1 /))
+       count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 15'
     write(*,*) 'GRDID:',GRDID
@@ -1611,7 +1611,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_grdid, GRDID, start = (/ 1, 1, itime/), &
-       count = (/ d_grdidlen, d_nopts, 1 /))
+       count = (/ 13, nopts, 1 /))
     if (ncerr .ne. 0) return
     write(*,*) 'JDM f 16'
     IF ( itime > 1 ) THEN
@@ -1619,7 +1619,7 @@ CONTAINS
        if (ncerr .ne. 0) return
     END IF
     ncerr = nf90_put_var(fh, v_spco, SPCO, start = (/ 1, 1, itime/), &
-       count = (/d_nspec, d_nopts, 1 /))
+       count = (/nspec, nopts, 1 /))
     if (ncerr .ne. 0) return
 
     write(*,*) 'JDM g'
