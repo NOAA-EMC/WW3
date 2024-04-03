@@ -1157,52 +1157,55 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
 
     IOTST = 0
-    IF ( IPASS.EQ.1 ) THEN 
-      ! Open the netCDF file.
-      ncerr = nf90_open(filename, NF90_NOWRITE, fh)
-      if (ncerr .ne. 0) return
 
-      ! Read and check the version: 
-      ! TO DO add reading of IDTST and VERTST and make checks: 
-      !  IF ( IDTST .NE. IDSTR ) THEN
-      !    WRITE (NDSE,902) IDTST, IDSTR
-      !    CALL EXTCDE ( 10 )
-      !  END IF
-      !  IF ( VERTST .NE. VEROPT ) THEN
-      !    WRITE (NDSE,903) VERTST, VEROPT
-      !    CALL EXTCDE ( 11 )
-      !  END IF
+    ! Open the netCDF file.
+    ncerr = nf90_open(filename, NF90_NOWRITE, fh)
+    if (ncerr .ne. 0) return
 
 
-      ! Read the dimension information for NOPTS.
-      ncerr = nf90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
-      if (ncerr .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
-      if (ncerr .ne. 0) return
+    ! Read and check the version: 
+    ! TO DO add reading of IDTST and VERTST and make checks: 
+    !  IF ( IDTST .NE. IDSTR ) THEN
+    !    WRITE (NDSE,902) IDTST, IDSTR
+    !    CALL EXTCDE ( 10 )
+    !  END IF
+    !  IF ( VERTST .NE. VEROPT ) THEN
+    !    WRITE (NDSE,903) VERTST, VEROPT
+    !    CALL EXTCDE ( 11 )
+    !  END IF
 
-      ! Read the dimension information for NSPEC.
-      ncerr = nf90_inq_dimid(fh, DNAME_NSPEC, d_nspec)
-      if (ncerr .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_nspec, len = d_nspec_len)
-      if (ncerr .ne. 0) return
 
-      ! Read the dimension information for VSIZE.
-      ncerr = nf90_inq_dimid(fh, DNAME_VSIZE, d_vsize)
-      if (ncerr .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_vsize, len = d_vsize_len)
-      if (ncerr .ne. 0) return
+    ! Read the dimension information for NOPTS.
+    ncerr = nf90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
+    if (ncerr .ne. 0) return
 
-      ! Read the dimension information for NAMELEN.
-      ncerr = nf90_inq_dimid(fh, DNAME_NAMELEN, d_namelen)
-      if (ncerr .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_namelen, len = d_namelen_len)
-      if (ncerr .ne. 0) return
+    ! Read the dimension information for NSPEC.
+    ncerr = nf90_inq_dimid(fh, DNAME_NSPEC, d_nspec)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_nspec, len = d_nspec_len)
+    if (ncerr .ne. 0) return
 
-      ! Read the dimension information for GRDIDLEN.
-      ncerr = nf90_inq_dimid(fh, DNAME_GRDIDLEN, d_grdidlen)
-      if (ncerr .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_grdidlen, len = d_grdidlen_len)
-      if (ncerr .ne. 0) return
+    ! Read the dimension information for VSIZE.
+    ncerr = nf90_inq_dimid(fh, DNAME_VSIZE, d_vsize)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_vsize, len = d_vsize_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for NAMELEN.
+    ncerr = nf90_inq_dimid(fh, DNAME_NAMELEN, d_namelen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_namelen, len = d_namelen_len)
+    if (ncerr .ne. 0) return
+
+    ! Read the dimension information for GRDIDLEN.
+    ncerr = nf90_inq_dimid(fh, DNAME_GRDIDLEN, d_grdidlen)
+    if (ncerr .ne. 0) return
+    ncerr = nf90_inquire_dimension(fh, d_grdidlen, len = d_grdidlen_len)
+    if (ncerr .ne. 0) return
+
+    IF ( IPASS.EQ.1 ) THEN
 
       ! Read scalar variables.
       ncerr = nf90_inq_varid(fh, VNAME_NK, v_nk)
@@ -1228,8 +1231,9 @@ CONTAINS
       if (ncerr .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
       if (ncerr .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ptnme, PTNME)
-      if (ncerr .ne. 0) return
+      !code segfaults reading this, skipping for now to see other issues
+      !ncerr = nf90_get_var(fh, v_ptnme, PTNME)
+      !if (ncerr .ne. 0) return
     END IF
 
     !missing variable TIME??? 
@@ -1306,8 +1310,9 @@ CONTAINS
     if (ncerr .ne. 0) return
     ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
     if (ncerr .ne. 0) return
-    ncerr = nf90_get_var(fh, v_grdid, GRDID)
-    if (ncerr .ne. 0) return
+    !skipping because we get a segfault
+    !ncerr = nf90_get_var(fh, v_grdid, GRDID)
+    !if (ncerr .ne. 0) return
     ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_spco, SPCO)
