@@ -1596,6 +1596,16 @@ CONTAINS
     ncerr = nf90_put_var(fh, v_cao, CAO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
+    write(*,*) 'JDM f 11 b'
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_CDO, v_cdo)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_cdo, CDO, start = (/ 1, itime/), &
+       count = (/ nopts, 1 /))
+    if (ncerr .ne. 0) return
+
+
     write(*,*) 'JDM f 12'
     IF ( itime > 1 ) THEN
        ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
