@@ -1346,6 +1346,7 @@ CONTAINS
   SUBROUTINE W3IOPON_WRITE(timestep_only, IMOD, filename, ncerr)
     use netcdf
     USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
+    USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
          ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
@@ -1364,7 +1365,7 @@ CONTAINS
     integer, intent(inout) :: ncerr
     integer :: fh, ndim, nvar, fmt, itime 
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
-    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme
+    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time
     integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
@@ -1412,6 +1413,8 @@ CONTAINS
       ncerr = nf90_def_var(fh, VNAME_PTLOC, NF90_FLOAT, (/d_vsize, d_nopts/), v_ptloc)
       if (ncerr .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_PTNME, NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
+      if (ncerr .ne. 0) return
+      ncerr = nf90_def_var(fh, VNAME_TIME, NF90_INT, (/d_vsize, d_time/),v_time)
       if (ncerr .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_IW, NF90_INT, (/d_nopts, d_time/), v_iw)
       if (ncerr .ne. 0) return
@@ -1485,7 +1488,19 @@ CONTAINS
         itime=IPASS
      END IF
 
+    
+
     ! TO DO ADD TIME VARIABLE 
+    write(*,*) 'JDM f 0', TIME
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_TIME, v_time)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_time, TIME, start = (/ 1, itime/), &
+       count = (/ 2, 1 /))
+    if (ncerr .ne. 0) return
+
+
     ! set IW, II and IL to 0 because it is not used and gives &
     ! outlier values in out_pnt.points - TODO: REMOVE???
     IW = 0
