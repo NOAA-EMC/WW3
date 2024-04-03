@@ -1224,11 +1224,18 @@ CONTAINS
         CALL EXTCDE ( 12 )
       END IF
 
+      !check reading: 
+      write(*,*) 'MK,MTH', MK, MTH
+      write(*,*) 'dimensions:', d_nopts_len,d_grdidlen_len, d_namelen_len,d_vsize_len,d_nspec_len
+
+
       ! Read vars with nopts as a dimension.
       ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
       if (ncerr .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ptloc, PTLOC)
+      ncerr = nf90_get_var(fh, v_ptloc, PTLOC, start = (/ 1, 1/), &
+       count = (/ d_vsize_len, d_nopts_len /)) 
       if (ncerr .ne. 0) return
+      write(*,*) 'PTLOC', PTLOC
       ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
       if (ncerr .ne. 0) return
       !code segfaults reading this, skipping for now to see other issues
