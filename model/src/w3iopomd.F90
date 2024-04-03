@@ -1409,7 +1409,7 @@ CONTAINS
 
       write(*,*) 'JDM d'
       ! Define vars with nopts as a dimension.
-      ncerr = nf90_def_var(fh, VNAME_PTLOC, NF90_INT, (/d_vsize, d_nopts/), v_ptloc)
+      ncerr = nf90_def_var(fh, VNAME_PTLOC, NF90_FLOAT, (/d_vsize, d_nopts/), v_ptloc)
       if (ncerr .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_PTNME, NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
       if (ncerr .ne. 0) return
@@ -1419,40 +1419,40 @@ CONTAINS
       if (ncerr .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_IL, NF90_INT, (/d_nopts, d_time/), v_il)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_DPO, NF90_INT, (/d_nopts, d_time/), v_dpo)
+      ncerr = nf90_def_var(fh, VNAME_DPO, NF90_FLOAT, (/d_nopts, d_time/), v_dpo)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_WAO, NF90_INT, (/d_nopts, d_time/), v_wao)
+      ncerr = nf90_def_var(fh, VNAME_WAO, NF90_FLOAT, (/d_nopts, d_time/), v_wao)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_WDO, NF90_INT, (/d_nopts, d_time/), v_wdo)
+      ncerr = nf90_def_var(fh, VNAME_WDO, NF90_FLOAT, (/d_nopts, d_time/), v_wdo)
       if (ncerr .ne. 0) return
 
 #ifdef W3_FLX5
-      ncerr = nf90_def_var(fh, VNAME_TAUAO, NF90_INT, (/d_nopts, d_time/), v_tauao)
+      ncerr = nf90_def_var(fh, VNAME_TAUAO, NF90_FLOAT, (/d_nopts, d_time/), v_tauao)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_TAIDO, NF90_INT, (/d_nopts, d_time/), v_taido)
+      ncerr = nf90_def_var(fh, VNAME_TAIDO, NF90_FLOAT, (/d_nopts, d_time/), v_taido)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_DAIRO, NF90_INT, (/d_nopts, d_time/), v_dairo)
+      ncerr = nf90_def_var(fh, VNAME_DAIRO, NF90_FLOAT, (/d_nopts, d_time/), v_dairo)
       if (ncerr .ne. 0) return
 #endif    
 #ifdef W3_SETUP
-      ncerr = nf90_def_var(fh, VNAME_ZET_SETO, NF90_INT, (/d_nopts, d_time/), v_zet_seto)
+      ncerr = nf90_def_var(fh, VNAME_ZET_SETO, NF90_FLOAT, (/d_nopts, d_time/), v_zet_seto)
       if (ncerr .ne. 0) return
 #endif    
-      ncerr = nf90_def_var(fh, VNAME_ASO, NF90_INT, (/d_nopts, d_time/), v_aso)
+      ncerr = nf90_def_var(fh, VNAME_ASO, NF90_FLOAT, (/d_nopts, d_time/), v_aso)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_CAO, NF90_INT, (/d_nopts, d_time/), v_cao)
+      ncerr = nf90_def_var(fh, VNAME_CAO, NF90_FLOAT, (/d_nopts, d_time/), v_cao)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_CDO, NF90_INT, (/d_nopts, d_time/), v_cdo)
+      ncerr = nf90_def_var(fh, VNAME_CDO, NF90_FLOAT, (/d_nopts, d_time/), v_cdo)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_ICEO, NF90_INT, (/d_nopts, d_time/), v_iceo)
+      ncerr = nf90_def_var(fh, VNAME_ICEO, NF90_FLOAT, (/d_nopts, d_time/), v_iceo)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_ICEHO, NF90_INT, (/d_nopts, d_time/), v_iceho)
+      ncerr = nf90_def_var(fh, VNAME_ICEHO, NF90_FLOAT, (/d_nopts, d_time/), v_iceho)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_ICEFO, NF90_INT, (/d_nopts, d_time/), v_icefo)
+      ncerr = nf90_def_var(fh, VNAME_ICEFO, NF90_FLOAT, (/d_nopts, d_time/), v_icefo)
       if (ncerr .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_GRDID, NF90_CHAR, (/d_grdidlen, d_nopts, d_time/), v_grdid)
       if (ncerr .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_SPCO, NF90_INT, (/d_nspec, d_nopts, d_time/), v_spco)
+      ncerr = nf90_def_var(fh, VNAME_SPCO, NF90_FLOAT, (/d_nspec, d_nopts, d_time/), v_spco)
       if (ncerr .ne. 0) return
   
       write(*,*) 'JDM bb'
