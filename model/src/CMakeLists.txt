@@ -66,6 +66,21 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES "^(Intel)$")
     set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
   endif()
 
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(IntelLLVM)$")
+  set(compile_flags -no-fma -g -traceback -i4 -real-size 32 -fp-model precise -assume byterecl -fno-alias)
+  set(compile_flags_release -O3)
+  # SHELL: prefix fixes CMake attempting to de-duplicate the repeated uses of 'all' in -warn, -debug, -check
+  # See https://cmake.org/cmake/help/latest/command/target_compile_options.html#option-de-duplication
+  set(compile_flags_debug -O0 "SHELL:-debug all" "SHELL:-warn all" "SHELL:-check all" -check noarg_temp_created -fp-stack-check -heap-arrays -traceback -fpe0)
+
+  if(APPLE)
+    # The linker on macOS does not include `common symbols` (usually module variables without a default value) by default
+    # Passing the -c flag includes them and fixes an error with undefined symbols
+    # Only ifort marks these symbols as common, compared to GCC
+    set(CMAKE_Fortran_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
+    set(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -c <TARGET>")
+  endif()
+
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
   set(compile_flags -g -fno-second-underscore -ffree-line-length-none)
   set(compile_flags_release -O3)
