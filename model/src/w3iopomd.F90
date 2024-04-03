@@ -1486,6 +1486,11 @@ CONTAINS
      END IF
 
     ! TO DO ADD TIME VARIABLE 
+    ! set IW, II and IL to 0 because it is not used and gives &
+    ! outlier values in out_pnt.points - TODO: REMOVE???
+    IW = 0
+    II = 0
+    IL = 0
 
     write(*,*) 'JDM f 1'
     IF ( itime > 1 ) THEN 
@@ -1528,6 +1533,17 @@ CONTAINS
     ncerr = nf90_put_var(fh, v_wao, WAO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (ncerr .ne. 0) return
+
+    write(*,*) 'JDM f 5b'
+    IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_WDO, v_wdo)
+       if (ncerr .ne. 0) return
+    END IF
+    ncerr = nf90_put_var(fh, v_wdo, WDO, start = (/ 1, itime/), &
+       count = (/ nopts, 1 /))
+    if (ncerr .ne. 0) return
+
+
 #ifdef W3_FLX5
     write(*,*) 'JDM f 6'
     IF ( itime > 1 ) THEN
