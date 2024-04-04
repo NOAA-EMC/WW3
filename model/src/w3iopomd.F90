@@ -1817,7 +1817,7 @@ CONTAINS
   !> 4 | integer | NK | Number of discrete wavenumbers  
   !> 4 | integer | NTH | Number of discrete directions. 
   !> 4 | integer | NOPTS | Number of output points.
-  !> 8*NOPTS | integer(2,NOPTS) | PTLOC | Point locations
+  !> 8*NOPTS | real(2,NOPTS) | PTLOC | Point locations
   !> 7*NOPTS | character*7 | PTNME | Point names
   !> 8 | integer(2) | TIME | Valid time
   !> reclen*NOPTS | * | * | records
