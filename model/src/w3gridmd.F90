@@ -6330,14 +6330,14 @@ CONTAINS
 2923 FORMAT ( '             ',2F8.3,F6.1,2E12.4)
 2922 FORMAT ( '  &SNL3 NQDEF =',I3,', MSC =',F6.2,',  NSC =',   &
          F6.2,',  KDFD =',F6.2,',  KDFS =',F6.2,' /')
-3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
-4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
+3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
+4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
 #endif
     !
 #ifdef W3_NL4
@@ -6453,18 +6453,18 @@ CONTAINS
 925 FORMAT ( '  normalise by threshold spectral density    :  ',A/&
          '  normalise by spectral density              :  ',A/&
          '  coefficient and exponent  for                 '/  &
-         '   inherent breaking term a1, L as in (21)   : ',E9.3,I3/ &
-         '   cumulative breaking term a2, M as in (22) : ',E9.3,I3/ &
+         '   inherent breaking term a1, L as in (21)   : ',E10.3,I3/ &
+         '   cumulative breaking term a2, M as in (22) : ',E10.3,I3/ &
          ' ')
-2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E9.3,              &
-         ', SDSA2 = ',E9.3,', SDSP1 = ',I2,', SDSP1 = ',      &
+2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E10.3,              &
+         ', SDSA2 = ',E10.3,', SDSP1 = ',I2,', SDSP1 = ',      &
          I2,' /'                                              )
 
 937 FORMAT (/'  Swell dissipation ',A/                            &
          ' --------------------------------------------------')
 940 FORMAT ( '  subroutine W3SWL6 activated           : ',A/      &
-         '   coefficient b1 ',A,                ' : ',E9.3/   )
-2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,', CSTB1 = ',L,' /')
+         '   coefficient b1 ',A,                ' : ',E10.3/   )
+2937 FORMAT ( '  &SWL6 SWLB1 = ',E10.3,', CSTB1 = ',L,' /')
 #endif
     !
 #ifdef W3_BT0
@@ -6549,7 +6549,7 @@ CONTAINS
 946 FORMAT  ('  Isotropic (linear function of ice concentration)'/&
          '        slope                      : ',E10.3/ &
          '        offset                     : ',E10.3)
-2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
+2946 FORMAT ( '  &SIS1 ISC1 =',E10.3,', ISC2 =',E10.3)
 #endif
 #ifdef W3_IS2
 947 FORMAT  (/'  Ice scattering ',A,/ &
