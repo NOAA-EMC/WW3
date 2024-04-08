@@ -310,6 +310,10 @@ The number $n$ and the central wavenumbers for the partitions $k_n$ are `run-tim
       \begin{equation} Q_{kk} = \frac{1}{E^2} \int_0^{f_{NK}} \int_0^{2\pi} 
       0.5 \left[ A(k,\theta)+ A(k,\theta+\pi)\right]^2 \frac{\sigma^2}{k C_g} \:\rd \theta  \: \rd  \sigma \: \label{eq:qkk}
       \end{equation}
+\item \textbf{SKW}  Skewness of surface elevation sampled at zero slope. This is the $\lambda_1$ parameter defined in \cite{Barrick&Lipa1985} or $\lambda_{3,0,0}$ in \cite{Srokosz1986}. It is computed from the second order correction to the surface elevation, using ECWAM code by P. Janssen.
+\item \textbf{EMB} this is  $-\gamma/8 = -(\lambda_{1,2,0}+\lambda_{1,0,2}-2 \lambda{0,1,1} \lambda{1,1,1})/8 (1-\lambda_{0,1,1]^2)$, such that the mean sea level of points with zero slope 
+is EMB$\times H_s$.
+\item \textbf{EMC} this is hte additional tracker bias coefficient equal to  $-\lambda_{3,0,0}/24$, which is specific to the choice of retracker, see the $J_z$ function in \cite{DeCarlo&Ardhuin2024}.
 \end{list}
 
 \item{Numerical diagnostics }
