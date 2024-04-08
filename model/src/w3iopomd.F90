@@ -1156,6 +1156,7 @@ CONTAINS
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
 
+
     IOTST = 0
 
     ! Open the netCDF file.
@@ -1250,27 +1251,33 @@ CONTAINS
     ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_iw, IW)
+    write(*,*) 'IW', IW 
     if (ncerr .ne. 0) return
     ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_ii, II)
     if (ncerr .ne. 0) return
+    !wite(*,*) 'JDM II:', II
     ncerr = nf90_inq_varid(fh, VNAME_IL, v_il)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_il, IL)
     if (ncerr .ne. 0) return
+    write(*,*) 'IL', IL
     ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_dpo, DPO)
     if (ncerr .ne. 0) return
+    write(*,*) 'DPO', DPO
     ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_wao, WAO)
+    write(*,*) 'WAO', WAO
     if (ncerr .ne. 0) return
     ncerr = nf90_inq_varid(fh, VNAME_WDO, v_wdo)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_wdo, WDO)
     if (ncerr .ne. 0) return
+    write(*,*) 'WDO', WDO 
 #ifdef W3_FLX5
     ncerr = nf90_inq_varid(fh, VNAME_TAUAO, v_tauao)
     if (ncerr .ne. 0) return
@@ -1295,22 +1302,27 @@ CONTAINS
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_aso, ASO)
     if (ncerr .ne. 0) return
+    write(*,*) 'ASO', ASO
     ncerr = nf90_inq_varid(fh, VNAME_CAO, v_cao)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_cao, CAO)
     if (ncerr .ne. 0) return
+    write(*,*) 'CAO', CAO
     ncerr = nf90_inq_varid(fh, VNAME_CDO, v_cdo)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_cdo, CDO)
     if (ncerr .ne. 0) return
+    write(*,*) 'CDO', CDO
     ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_iceo, ICEO)
     if (ncerr .ne. 0) return
+    write(*,*) 'ICEO', ICEO
     ncerr = nf90_inq_varid(fh, VNAME_ICEHO, v_iceho)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_iceho, ICEHO)
     if (ncerr .ne. 0) return
+    write(*,*) 'ICEHO', ICEHO
     ncerr = nf90_inq_varid(fh, VNAME_ICEFO, v_icefo)
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_icefo, ICEFO)
@@ -1324,6 +1336,7 @@ CONTAINS
     if (ncerr .ne. 0) return
     ncerr = nf90_get_var(fh, v_spco, SPCO)
     if (ncerr .ne. 0) return
+    write(*,*) 'SPCO', SPCO 
 
     ! Close the file.
     ncerr = nf90_close(fh)
