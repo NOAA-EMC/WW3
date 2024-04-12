@@ -6,7 +6,7 @@ MODULE W3TIMEMD
   !/                  | WAVEWATCH III           NOAA/NCEP |
   !/                  |           H. L. Tolman            |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         12-Jan-2021 |
+  !/                  | Last update :         23-Feb-2024 |
   !/                  +-----------------------------------+
   !/
   !/    Copyright 2009 National Weather Service (NWS),
@@ -1233,6 +1233,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    04-Jan-2018 : Origination from m_time library     ( version 6.04 )
+    !/    23-Feb-2024 : Updated to handle 360_day calendar  ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -1251,6 +1252,8 @@ CONTAINS
     ! * There is no year zero
     ! * Julian Day must be non-negative
     ! * Julian Day starts at noon; while Civil Calendar date starts at midnight
+    ! * If CALTYPE is "360_day" a simpler calculation is used (30 days in every
+    !   month) with a reference date of 1800-01-01.
     !
     !  3. Parameters :
     !
@@ -1313,6 +1316,21 @@ CONTAINS
 
     JULIAN = -HUGE(99999)                  ! this is the date if an error occurs and IERR is < 0
 
+    ! Special case for 360 day climate calendar; return a pseudo-Julian day
+    ! Assumes a reference date of 1800-01-01 00:00:00
+    IF( CALTYPE .EQ. "360_day" ) THEN
+      JULIAN = (YEAR - 1800) * 360.0 +     &  ! Years since 1800
+            (MONTH - 1) * 30.0  +          &  
+            (DAY - 1) +                    & 
+            HOUR / 24.0_8 +                &
+            MINUTE / 1440.0_8 +            &
+            SECOND / 86400.0_8
+
+      IERR = 0
+      RETURN
+    ENDIF
+
+    ! Standard/Gregorian calendar - return standard Julian day calculation:
     IF(YEAR==0 .or. YEAR .lt. -4713) THEN
       IERR=-1
       RETURN
@@ -1356,6 +1374,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    04-Jan-2018 : Origination from m_time library     ( version 6.04 )
+    !/    23-Feb-2024 : Upated to handle 360_day calendar   ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -1364,6 +1383,8 @@ CONTAINS
     ! * There is no year zero
     ! * Julian Day must be non-negative
     ! * Julian Day starts at noon; while Civil Calendar date starts at midnight
+    ! * If CALTYPE is "360_day" a simpler calculation is used (30 days in every
+    !   month) with a reference date of 1800-01-01.
     !
     !  3. Parameters :
     !
@@ -1397,7 +1418,7 @@ CONTAINS
     DOUBLE PRECISION,INTENT(IN)   :: JULIAN   ! Julian Day (non-negative, but may be non-integer)
     INTEGER,INTENT(OUT)           :: DAT(8)   ! array like returned by DATE_AND_TIME(3f)
     INTEGER,INTENT(OUT)           :: IERR     ! Error return, 0 for successful execution
-    ! Otherwise returnb 1
+    !                                         ! otherwise return 1
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -1417,27 +1438,31 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'J2D')
 #endif
+
     !
-    IF(JULIAN.LT.0.d0) THEN                      ! Negative Julian Day not allowed
+    IF(CALTYPE .EQ. 'standard' .AND. JULIAN .LT. 0.d0) THEN 
+      ! Negative Julian Day not allowed
       IERR=1
       RETURN
-    ELSE
-      IERR=0
     END IF
 
     !CALL DATE_AND_TIME(values=TIMEZONE)         ! Get the timezone
     !TZ=TIMEZONE(4)
     TZ=0                                         ! Force to UTC timezone
 
+    ! Calculation for time (hour,min,sec) same for Julian
+    ! and 360_day calendars:
     IJUL=IDINT(JULIAN)                           ! Integral Julian Day
     SECOND=SNGL((JULIAN-DBLE(IJUL))*SECDAY)      ! Seconds from beginning of Jul. Day
     SECOND=SECOND+(tz*60)
 
-    IF(SECOND.GE.(SECDAY/2.0d0)) THEN            ! In next calendar day
-      IJUL=IJUL+1
-      SECOND=SECOND-(SECDAY/2.0d0)              ! Adjust from noon to midnight
-    ELSE                                         ! In same calendar day
-      SECOND=SECOND+(SECDAY/2.0d0)              ! Adjust from noon to midnight
+    IF(CALTYPE .EQ. "standard") THEN
+      IF(SECOND.GE.(SECDAY/2.0d0)) THEN          ! In next calendar day
+        IJUL=IJUL+1
+        SECOND=SECOND-(SECDAY/2.0d0)             ! Adjust from noon to midnight
+      ELSE                                       ! In same calendar day
+        SECOND=SECOND+(SECDAY/2.0d0)             ! Adjust from noon to midnight
+      END IF
     END IF
 
     IF(SECOND.GE.SECDAY) THEN                    ! Final check to prevent time 24:00:00
@@ -1450,31 +1475,38 @@ CONTAINS
     HOUR=MINUTE/60                               ! Integral hours from beginning of day
     MINUTE=MINUTE-HOUR*60                        ! Integral minutes from beginning of hour
 
-    !---------------------------------------------
-    JALPHA=IDINT((DBLE(IJUL-1867216)-0.25d0)/36524.25d0) ! Correction for Gregorian Calendar
-    JA=IJUL+1+JALPHA-IDINT(0.25d0*DBLE(JALPHA))
-    !---------------------------------------------
+    IF(CALTYPE .EQ. '360_day') THEN
+      ! Calculate date parts for 360 day climate calendar
+      YEAR = INT(JULIAN / 360) + 1800 ! (base year is 1800)
+      MONTH = MOD(INT(JULIAN / 30), 12) + 1
+      DAY = MOD(INT(JULIAN), 30) + 1
+    ELSE ! Stardard Julian day calculation
+      !---------------------------------------------
+      JALPHA=IDINT((DBLE(IJUL-1867216)-0.25d0)/36524.25d0) ! Correction for Gregorian Calendar
+      JA=IJUL+1+JALPHA-IDINT(0.25d0*DBLE(JALPHA))
+      !---------------------------------------------
 
-    JB=JA+1524
-    JC=IDINT(6680.d0+(DBLE(JB-2439870)-122.1d0)/365.25d0)
-    JD=365*JC+IDINT(0.25d0*DBLE(JC))
-    JE=IDINT(DBLE(JB-JD)/30.6001d0)
-    DAY=JB-JD-IDINT(30.6001d0*DBLE(JE))
-    MONTH=JE-1
+      JB=JA+1524
+      JC=IDINT(6680.d0+(DBLE(JB-2439870)-122.1d0)/365.25d0)
+      JD=365*JC+IDINT(0.25d0*DBLE(JC))
+      JE=IDINT(DBLE(JB-JD)/30.6001d0)
+      DAY=JB-JD-IDINT(30.6001d0*DBLE(JE))
+      MONTH=JE-1
 
-    IF(MONTH.GT.12) THEN
-      MONTH=MONTH-12
-    END IF
+      IF(MONTH.GT.12) THEN
+        MONTH=MONTH-12
+      END IF
 
-    YEAR=jc-4715
-    IF(MONTH.GT.2) THEN
-      YEAR=YEAR-1
-    END IF
-
-    IF(YEAR.LE.0) THEN
-      YEAR=YEAR-1
-    END IF
-
+      YEAR=jc-4715
+      IF(MONTH.GT.2) THEN
+        YEAR=YEAR-1
+      END IF
+  
+      IF(YEAR.LE.0) THEN
+        YEAR=YEAR-1
+      END IF
+    ENDIF
+  
     DAT(1)=YEAR
     DAT(2)=MONTH
     DAT(3)=DAY
@@ -1487,7 +1519,6 @@ CONTAINS
     !
     RETURN
     !/
-    !/ End of J2D ----------------------------------------------------- /
     !/
   END SUBROUTINE J2D
 

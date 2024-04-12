@@ -766,6 +766,9 @@ PROGRAM W3PRNC
       CALL STME21 ( TIMESTOP , IDTIME )
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2931) IDTIME
     END IF
+    IF(CALTYPE .NE. 'standard') THEN
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2932) CALTYPE
+    ENDIF
   END IF
   IF (.NOT. FLTIME) THEN
     CALL STME21 ( TIMESHIFT , IDTIME )
@@ -797,11 +800,26 @@ PROGRAM W3PRNC
   CALL CHECK_ERR(IRET)
   IRET=NF90_GET_ATT(NCID,VARIDTMP,"calendar",CALENDAR)
   IF ( IRET/=NF90_NOERR ) THEN
+    ! No calendar attribute - default to "standard"
     WRITE(NDSE,1028)
-  ELSE IF ((INDEX(CALENDAR, "standard").EQ.0) .AND. &
-       (INDEX(CALENDAR, "gregorian").EQ.0)) THEN
-    WRITE(NDSE,1029)
+    CALENDAR = "standard"
+  ELSE IF ((INDEX(CALENDAR, "standard") .GT. 0) .OR. &
+        (INDEX(CALENDAR, "gregorian") .GT. 0)) THEN
+    CALENDAR = "standard"
+  ELSE IF (INDEX(CALENDAR, "360_day") .GT. 0) THEN
+    CALENDAR = "360_day"
+  ELSE
+    ! Calendar attribute set, but not a recognised calendar.
+    WRITE(NDSE,1029) CALENDAR
+    CALL EXTCDE( 25 )
   END IF
+
+  ! Check input calendar compatible with expected calendar
+  IF(CALENDAR .NE. CALTYPE) THEN
+    WRITE(NDSE,1027) CALTYPE, CALENDAR
+    CALL EXTCDE( 26 )
+  ENDIF
+
   IRET=NF90_GET_ATT(NCID,VARIDTMP,"units",TIMEUNITS)
   CALL CHECK_ERR(IRET)
   CALL U2D(TIMEUNITS,REFDATE,IERR)
@@ -821,7 +839,7 @@ PROGRAM W3PRNC
     END DO
     IRET=NF90_GET_ATT(NCID,VARIDF(I),"_FillValue", FILLVALUE)
     IF ( IRET/=NF90_NOERR ) THEN
-      WRITE(NDSE,1027) TRIM(FIELDSNAME(I))
+      WRITE(NDSE,1026) TRIM(FIELDSNAME(I))
       CALL EXTCDE ( 27 )
     END IF
   END DO
@@ -2317,6 +2335,7 @@ PROGRAM W3PRNC
 2930 FORMAT ( '          Field corrected for energy conservation.')
 1931 FORMAT ( '       Start time        : ',A)
 2931 FORMAT ( '       Stop time         : ',A)
+2932 FORMAT ( '       Calendar          : ',A)
 3931 FORMAT ( '       Shifted time      : ',A)
 932 FORMAT (/'       Input grid dim.   :',I9,3X,I5)
 1933 FORMAT ( '       Longitude range   :',2F8.2,' (deg)'/           &
@@ -2404,15 +2423,23 @@ PROGRAM W3PRNC
 1011 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     NO GRID SELECTED'/)
   !
-1027 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+1026 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     _FillValue ATTRIBUTE NOT DEFINED FOR : ',A/)
-  !
+ !
+1027 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+       '     INCOMPATIBLE CALENDARS:' /                        &
+       '       MODEL CALENDAR      : ', A /                    &
+       '       INPUT FILE CALENDAR : ', A /)
 1028 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
        '     calendar ATTRIBUTE NOT DEFINED'/                 &
-       '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
-1029 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
-       '     CALENDAR ATTRIBUTE NOT MATCH'/                   &
-       '     IT MUST RESPECT STANDARD OR GREGORIAN CALENDAR')
+       '     DEFAULTING TO "standard" CALENDAR'/              &
+       '     INPUT FILE MUST RESPECT STANDARD/GREGORIAN CALENDAR')
+1029 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
+       '     UNKNOWN CALENDAR TYPE: ', A  /                   &
+       '     "calendar" ATTRIBUTE MUST BE ONE OF: '/          &
+       '       - standard'/                                   &
+       '       - gregorian'/                                  &
+       '       - 360_day'/ )
 1030 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     ILLEGAL FIELD ID -->',A,'<--'/)
 1031 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &

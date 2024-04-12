@@ -305,6 +305,10 @@ PROGRAM W3SHEL
 #endif
   !
   USE W3NMLSHELMD
+
+#ifdef W3_OMPG
+  USE OMP_LIB
+#endif
   IMPLICIT NONE
   !
 #ifdef W3_MPI
@@ -482,6 +486,7 @@ PROGRAM W3SHEL
 #ifdef W3_OMPH
     ENDIF
 #endif
+
 #ifdef W3_MPI
     MPI_COMM = MPI_COMM_WORLD
 #endif
@@ -584,6 +589,11 @@ PROGRAM W3SHEL
        MPI_THREAD_FUNNELED, THRLEV
 #endif
   !
+#ifdef W3_OMPG
+    IF(IAPROC .EQ. NAPOUT) THEN
+      WRITE(NDSO, 906) omp_get_max_threads()
+    ENDIF
+#endif
 
   !
   ! 1.b For WAVEWATCH III (See W3INIT)
@@ -2742,6 +2752,10 @@ PROGRAM W3SHEL
 905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
        '     Requested: ', I2/                          &
        '      Provided: ', I2/ )
+#endif
+  !
+#ifdef W3_OMPG
+906 FORMAT ( '  OMP threading enabled. Number of threads: ', I3 / )
 #endif
 920 FORMAT (/'  Input fields : '/                                   &
        ' --------------------------------------------------')
