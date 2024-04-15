@@ -1129,6 +1129,7 @@ CONTAINS
   !>
   SUBROUTINE W3IOPON_READ(IOTST, IMOD, filename, ncerr)
     USE NetCDF
+    USE W3ODATMD, ONLY: W3DMO2
     USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
@@ -1147,7 +1148,7 @@ CONTAINS
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
-    INTEGER :: MK,MTH
+    INTEGER :: IGRD,MK,MTH
     integer :: fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen
     integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len
@@ -1158,6 +1159,13 @@ CONTAINS
 
 
     IOTST = 0
+
+    IF (PRESENT(IMOD)) THEN
+      IGRD = IMOD
+    ELSE
+      IGRD = 1
+    END IF
+
 
     ! Open the netCDF file.
     ncerr = nf90_open(filename, NF90_NOWRITE, fh)
@@ -1181,6 +1189,7 @@ CONTAINS
     if (ncerr .ne. 0) return
     ncerr = nf90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
     if (ncerr .ne. 0) return
+    NOPTS=d_nopts_len
 
     ! Read the dimension information for NSPEC.
     ncerr = nf90_inq_dimid(fh, DNAME_NSPEC, d_nspec)
@@ -1225,10 +1234,15 @@ CONTAINS
         CALL EXTCDE ( 12 )
       END IF
 
+      !JDM TO DO: Missing check and reading of IDSTR, VEROPT 
+
       !check reading: 
       write(*,*) 'MK,MTH', MK, MTH
       write(*,*) 'dimensions:', d_nopts_len,d_grdidlen_len, d_namelen_len,d_vsize_len,d_nspec_len
 
+      ! Allocate variables: 
+      IF ( .NOT. O2INIT )                                     &
+             CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
 
       ! Read vars with nopts as a dimension.
       ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
@@ -1240,11 +1254,11 @@ CONTAINS
       ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
       if (ncerr .ne. 0) return
       !code segfaults reading this, skipping for now to see other issues
-      !ncerr = nf90_get_var(fh, v_ptnme, PTNME)
-      !if (ncerr .ne. 0) return
+      ncerr = nf90_get_var(fh, v_ptnme, PTNME)
+      if (ncerr .ne. 0) return
     END IF
 
-    !missing variable TIME??? 
+    !JDM TO DO missing variable TIME??? 
 
     ! All of the below variables are missing the "time" dimension... 
     ! the time dimension being read should be for "IPASS" 
