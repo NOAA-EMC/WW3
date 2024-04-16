@@ -1224,9 +1224,9 @@ CONTAINS
     ncerr = nf90_inquire_dimension(fh, d_time, len = d_time_len)
     if (ncerr .ne. 0) return
 
-    write(*,*) 'd_time_len', d_time_len
+    write(*,*) 'IPASS, d_time_len', IPASS, d_time_len
 
-    IF ( IPASS < d_time_len ) THEN 
+    IF ( IPASS .LE. d_time_len ) THEN 
 
       IF ( IPASS.EQ.1 ) THEN
 
@@ -1265,17 +1265,15 @@ CONTAINS
         ncerr = nf90_get_var(fh, v_ptnme, PTNME)
         if (ncerr .ne. 0) return
       END IF
-      write(*,*) 'IPASS=', IPASS
-      !JDM TO DO missing variable TIME??? 
+
+      !Variables read based on time (IPASS): 
+
       ncerr = nf90_inq_varid(fh, VNAME_TIME, v_time)
       if (ncerr .ne. 0) return
       ncerr = nf90_get_var(fh, v_time, TIME, start = (/ 1, IPASS/), &
           count = (/ d_vsize_len, 1 /))
       if (ncerr .ne. 0) return
 
-
-      ! All of the below variables are missing the "time" dimension... 
-      ! the time dimension being read should be for "IPASS" 
       ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
       if (ncerr .ne. 0) return
       ncerr = nf90_get_var(fh, v_iw, IW, start = (/ 1, IPASS/), &
