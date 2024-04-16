@@ -1217,14 +1217,10 @@ CONTAINS
     if (ncerr .ne. 0) return
 
     ! Read the dimention information from time
-
-
     ncerr = nf90_inq_dimid(fh, DNAME_TIME, d_time)
     if (ncerr .ne. 0) return
     ncerr = nf90_inquire_dimension(fh, d_time, len = d_time_len)
     if (ncerr .ne. 0) return
-
-    write(*,*) 'IPASS, d_time_len', IPASS, d_time_len
 
     IF ( IPASS .LE. d_time_len ) THEN 
 
@@ -1246,9 +1242,6 @@ CONTAINS
           WRITE (NDSE,904) MK, MTH, NK, NTH
           CALL EXTCDE ( 12 )
         END IF
-
-        !JDM TO DO: Missing check and reading of IDSTR, VEROPT 
-
 
         ! Allocate variables: 
         IF ( .NOT. O2INIT )                                     &
