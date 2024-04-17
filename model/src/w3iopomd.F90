@@ -1175,23 +1175,14 @@ CONTAINS
     integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
-    integer :: imod
-
-    if (present(IMOD_IN)) then
-       imod = imod_in
-    else
-       imod = 1
-    endif
-
 
     IOTST = 0
 
-    IF (PRESENT(IMOD)) THEN
-      IGRD = IMOD
+    IF (PRESENT(IMOD_IN)) THEN
+      IGRD = IMOD_IN
     ELSE
       IGRD = 1
     END IF
-
 
     ! Open the netCDF file.
     ncerr = nf90_open(filename, NF90_NOWRITE, fh)
