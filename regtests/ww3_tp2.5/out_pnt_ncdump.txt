@@ -1,0 +1,33 @@
+netcdf out_pnt.ww3 {
+dimensions:
+	NOPTS = 1 ;
+	NSPEC = 36 ;
+	VSIZE = 2 ;
+	NAMELEN = 40 ;
+	GRDIDLEN = 13 ;
+	TIME = UNLIMITED ; // (13 currently)
+variables:
+	int NK ;
+	int NTH ;
+	float PTLOC(NOPTS, VSIZE) ;
+	char PTNME(NOPTS, NAMELEN) ;
+	int TIME(TIME, VSIZE) ;
+	int IW(TIME, NOPTS) ;
+	int II(TIME, NOPTS) ;
+	int IL(TIME, NOPTS) ;
+	float DPO(TIME, NOPTS) ;
+	float WAO(TIME, NOPTS) ;
+	float WDO(TIME, NOPTS) ;
+	float ASO(TIME, NOPTS) ;
+	float CAO(TIME, NOPTS) ;
+	float CDO(TIME, NOPTS) ;
+	float ICEO(TIME, NOPTS) ;
+	float ICEHO(TIME, NOPTS) ;
+	float ICEFO(TIME, NOPTS) ;
+	char GRDID(TIME, NOPTS, GRDIDLEN) ;
+	float SPCO(TIME, NOPTS, NSPEC) ;
+
+// global attributes:
+		:title = "WAVEWATCH III POINT OUTPUT FILE" ;
+		:version = "2021-04-06" ;
+}

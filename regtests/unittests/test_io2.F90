@@ -1,7 +1,7 @@
 ! This is a test for model IO for WW3.
 !
 ! Ed Hartnett 10/14/23
-program test_io
+program test_io2
   use w3iopomd
   use w3gdatmd
   use w3wdatmd
@@ -19,7 +19,7 @@ program test_io
   real :: expected_loc_1
   integer :: write_test_file
   
-  print *, 'Testing WW3 netCDF point file code.'
+  print *, 'Testing WW3 netCDF point file code some more.'
 
   ! These are mysterious but have to be called or else the IPASS
   ! variable does not exist and w3iopo() crashes.
@@ -99,13 +99,19 @@ program test_io
   print *, 'testing writing the WW3 binary point file in netCDF...'
 
   ! Write in netCDF.
+  ofiles(2) = 1
+  call w3iopon('WRITE', ndsop, iotest, imod)
+  if (iotest .ne. 0) stop 100
+  print *, 'OK!'
+  
+  ! Another timestep in netCDF.
   call w3iopon('WRITE', ndsop, iotest, imod)
   if (iotest .ne. 0) stop 100
   print *, 'OK!'
   
   print *, 'testing reading the WW3 binary point file in netCDF...'
   ipass2 = 0
-  call w3iopon('READ', ndsop, iotest, imod)
+  call w3iopon('READ', ndsop, iotest)
   print *, iotest
   if (iotest .ne. 0) stop 100
   print *, 'OK!'
@@ -113,5 +119,5 @@ program test_io
   print *, 'OK!'
   
   print *, 'SUCCESS!'
-end program test_io
+end program test_io2
   
