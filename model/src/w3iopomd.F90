@@ -1586,149 +1586,121 @@ CONTAINS
     II = 0
     IL = 0
 
+    ! If itime > 1 need to inquire varid 
     IF ( itime > 1 ) THEN 
        ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
        if (nf90_err(ncerr) .ne. 0) return 
+       ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_IL, v_il)
+       if (ncerr .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_WDO, v_wdo)
+       if (nf90_err(ncerr) .ne. 0) return
+#ifdef W3_FLX5
+       ncerr = nf90_inq_varid(fh, VNAME_TAUAO, v_tauao)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_TAUDO, v_taudo)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_DAIRO, v_dairo)
+       if (nf90_err(ncerr) .ne. 0) return
+#endif
+#ifdef W3_SETUP
+       ncerr = nf90_inq_varid(fh, VNAME_ZET_SETO, v_zet_seto)
+       if (nf90_err(ncerr) .ne. 0) return
+#endif
+       ncerr = nf90_inq_varid(fh, VNAME_ASO, v_aso)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_CAO, v_cao)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_CDO, v_cdo)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_ICEHO, v_iceho)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_ICEFO, v_icefo)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
+       if (nf90_err(ncerr) .ne. 0) return
+       ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
+       if (nf90_err(ncerr) .ne. 0) return
     END IF
+
     ncerr = nf90_put_var(fh, v_iw, IW, start = (/ 1, itime/), &
        count = (/ NOPTS, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_ii, II, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_IL, v_il)
-       if (ncerr .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_il, IL, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_dpo, DPO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_wao, WAO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_WDO, v_wdo)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_wdo, WDO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
 #ifdef W3_FLX5
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_TAUAO, v_tauao)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_tauao, TAUAO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_TAUDO, v_taudo)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_taudo, TAUDO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_DAIRO, v_dairo)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_dairo, DAIRO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 #endif
 #ifdef W3_SETUP
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_ZET_SETO, v_zet_seto)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_zet_seto, ZET_SETO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 #endif
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_ASO, v_aso)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_aso, ASO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_CAO, v_cao)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_cao, CAO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_CDO, v_cdo)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_cdo, CDO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_iceo, ICEO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_ICEHO, v_iceho)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_iceho, ICEHO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_ICEFO, v_icefo)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_icefo, ICEFO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_grdid, GRDID, start = (/ 1, 1, itime/), &
        count = (/ 13, nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
     !write spectral output
-    IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
-       if (nf90_err(ncerr) .ne. 0) return
-    END IF
     ncerr = nf90_put_var(fh, v_spco, SPCO, start = (/ 1, 1, itime/), &
        count = (/nspec, nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
