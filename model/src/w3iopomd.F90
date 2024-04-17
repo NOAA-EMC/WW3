@@ -1175,6 +1175,12 @@ CONTAINS
     integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
+#ifdef W3_FLX5
+    integer :: v_tauao,v_taido, v_dairo 
+#endif
+#ifdef W3_SETUP
+    integer :: v_zet_seto
+#endif
 
     IOTST = 0
 
@@ -1439,6 +1445,12 @@ CONTAINS
     integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
     integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
+#ifdef W3_FLX5
+    integer :: v_tauao, v_taido, v_dairo
+#endif    
+#ifdef W3_SETUP
+    integer :: v_zet_seto
+#endif  
 
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
