@@ -178,8 +178,8 @@ MODULE W3IOPOMD
   !> Variable name for the netCDF point output file, for TAUAO.
   character(*), parameter, private :: VNAME_TAUAO = 'TAUAO'
 
-  !> Variable name for the netCDF point output file, for TAIDO.
-  character(*), parameter, private :: VNAME_TAIDO = 'TAIDO'
+  !> Variable name for the netCDF point output file, for TAUDO.
+  character(*), parameter, private :: VNAME_TAUDO = 'TAUDO'
 
   !> Variable name for the netCDF point output file, for DAIRO.
   character(*), parameter, private :: VNAME_DAIRO = 'DAIRO'
@@ -1172,15 +1172,15 @@ CONTAINS
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
     integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time
-    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
-    integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
-    integer :: v_iceho, v_icefo, v_grdid, v_spco
+    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
-    integer :: v_tauao,v_taido, v_dairo 
+    integer :: v_tauao,v_taudo, v_dairo
 #endif
 #ifdef W3_SETUP
     integer :: v_zet_seto
 #endif
+    integer :: v_aso, v_cao, v_cdo, v_iceo
+    integer :: v_iceho, v_icefo, v_grdid, v_spco
 
     IOTST = 0
 
@@ -1324,9 +1324,9 @@ CONTAINS
       ncerr = nf90_get_var(fh, v_tauao, TAUAO, start = (/ 1, IPASS/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_inq_varid(fh, VNAME_TAIDO, v_taido)
+      ncerr = nf90_inq_varid(fh, VNAME_TAUDO, v_taudo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_taido, TAIDO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_taudo, TAUDO, start = (/ 1, IPASS/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_DAIRO, v_dairo)
@@ -1442,15 +1442,15 @@ CONTAINS
     integer :: ndim, nvar, fmt, itime, fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time
-    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo, v_tauao
-    integer :: v_taido, v_dairo, v_zet_seto, v_aso, v_cao, v_cdo, v_iceo
-    integer :: v_iceho, v_icefo, v_grdid, v_spco
+    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
-    integer :: v_tauao, v_taido, v_dairo
+    integer :: v_tauao, v_taudo, v_dairo
 #endif    
 #ifdef W3_SETUP
     integer :: v_zet_seto
 #endif  
+    integer :: v_aso, v_cao, v_cdo, v_iceo
+    integer :: v_iceho, v_icefo, v_grdid, v_spco
 
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
@@ -1510,7 +1510,7 @@ CONTAINS
 #ifdef W3_FLX5
       ncerr = nf90_def_var(fh, VNAME_TAUAO, NF90_FLOAT, (/d_nopts, d_time/), v_tauao)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_TAIDO, NF90_FLOAT, (/d_nopts, d_time/), v_taido)
+      ncerr = nf90_def_var(fh, VNAME_TAUDO, NF90_FLOAT, (/d_nopts, d_time/), v_taudo)
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_DAIRO, NF90_FLOAT, (/d_nopts, d_time/), v_dairo)
       if (nf90_err(ncerr) .ne. 0) return
@@ -1644,10 +1644,10 @@ CONTAINS
     if (nf90_err(ncerr) .ne. 0) return
 
     IF ( itime > 1 ) THEN
-       ncerr = nf90_inq_varid(fh, VNAME_TAIDO, v_taido)
+       ncerr = nf90_inq_varid(fh, VNAME_TAUDO, v_taudo)
        if (nf90_err(ncerr) .ne. 0) return
     END IF
-    ncerr = nf90_put_var(fh, v_taido, TAIDO, start = (/ 1, itime/), &
+    ncerr = nf90_put_var(fh, v_taudo, TAUDO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
