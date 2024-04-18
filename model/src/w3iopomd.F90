@@ -5,8 +5,7 @@
 !>
 
 #include "w3macros.h"
-#define CHECK_ERR(I) CHECK_ERROR(I, __LINE__)
-#define nf90_err(errcode) nf90_err(errcode, __LINE__)
+#define nf90_err(ncerr) nf90_err_check(ncerr, __LINE__)
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Process point output.
@@ -1125,13 +1124,13 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  integer function nf90_err(errcode, ILINE)
+  integer function nf90_err_check(errcode, ILINE)
     use netcdf
     USE W3ODATMD, ONLY: NDSE
     implicit none
-    integer, intent(in) :: errcode
+    integer, intent(in) :: errcode, ILINE
     
-    nf90_err = errcode
+    nf90_err_check = errcode
     if(errcode /= nf90_noerr) then
       WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO :'
       WRITE(NDSE,*) ' LINE NUMBER ', ILINE
@@ -1139,7 +1138,7 @@ CONTAINS
       WRITE(NDSE,*) 'Error: ', trim(nf90_strerror(errcode))
       return 
     endif
-  end function nf90_err
+  end function nf90_err_check
 
 
   !> Read point output in netCDF format.
