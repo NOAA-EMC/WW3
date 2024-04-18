@@ -1542,11 +1542,11 @@ CONTAINS
 
       ! Write the data with NOPTS as a dimension. (no time dimension)
       if (associated(PTLOC)) then
-         ncerr = nf90_put_var(fh, v_ptloc, PTLOC)
+         ncerr = nf90_put_var(fh, v_ptloc, PTLOC(:,1:NOPTS))
          if (nf90_err(ncerr) .ne. 0) return
       endif
       if (associated(PTNME)) then
-         ncerr = nf90_put_var(fh, v_ptnme, PTNME)
+         ncerr = nf90_put_var(fh, v_ptnme, PTNME(1:NOPTS))
          if (nf90_err(ncerr) .ne. 0) return
       endif
       
