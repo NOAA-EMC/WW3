@@ -5,6 +5,8 @@
 !>
 
 #include "w3macros.h"
+#define CHECK_ERR(I) CHECK_ERROR(I, __LINE__)
+#define nf90_err(errcode) nf90_err(errcode, __LINE__)
 !/ ------------------------------------------------------------------- /
 !>
 !> @brief Process point output.
@@ -1123,17 +1125,22 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  integer function nf90_err(errcode)
+  integer function nf90_err(errcode, ILINE)
     use netcdf
+    USE W3ODATMD, ONLY: NDSE
     implicit none
     integer, intent(in) :: errcode
     
     nf90_err = errcode
     if(errcode /= nf90_noerr) then
-       print *, 'Error: ', trim(nf90_strerror(errcode))
-       return 
+      WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO :'
+      WRITE(NDSE,*) ' LINE NUMBER ', ILINE
+      WRITE(NDSE,*) ' NETCDF ERROR MESSAGE: '
+      WRITE(NDSE,*) 'Error: ', trim(nf90_strerror(errcode))
+      return 
     endif
   end function nf90_err
+
 
   !> Read point output in netCDF format.
   !>
@@ -1288,21 +1295,13 @@ CONTAINS
           count = (/ d_vsize_len, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 
-      ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_iw, IW, start = (/ 1, IPASS/), &
-          count = (/ NOPTS, 1 /))
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ii, II, start = (/ 1, IPASS/), &
-          count = (/ NOPTS, 1 /))
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_inq_varid(fh, VNAME_IL, v_il)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_il, IL, start = (/ 1, IPASS/), &
-          count = (/ NOPTS, 1 /))
-      if (nf90_err(ncerr) .ne. 0) return
+      ! set IW, II and IL to 0,
+      ! These values are set to 0 in binary file and have been removed 
+      ! from netcdf file.  Possible can be completely removed. 
+      IW = 0
+      II = 0
+      IL = 0
+
       ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_get_var(fh, v_dpo, DPO, start = (/ 1, IPASS/), &
@@ -1495,12 +1494,6 @@ CONTAINS
       if (nf90_err(ncerr) .ne. 0) return
 
       ! Define vars with nopts and time as dimensions 
-      ncerr = nf90_def_var(fh, VNAME_IW, NF90_INT, (/d_nopts, d_time/), v_iw)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_II, NF90_INT, (/d_nopts, d_time/), v_ii)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_IL, NF90_INT, (/d_nopts, d_time/), v_il)
-      if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_DPO, NF90_FLOAT, (/d_nopts, d_time/), v_dpo)
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_def_var(fh, VNAME_WAO, NF90_FLOAT, (/d_nopts, d_time/), v_wao)
@@ -1580,20 +1573,8 @@ CONTAINS
        count = (/ 2, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
 
-    ! set IW, II and IL to 0 because it is not used and gives &
-    ! outlier values in out_pnt.points - TODO: REMOVE???
-    IW = 0
-    II = 0
-    IL = 0
-
     ! If itime > 1 need to inquire varid 
     IF ( itime > 1 ) THEN 
-       ncerr = nf90_inq_varid(fh, VNAME_IW, v_iw)
-       if (nf90_err(ncerr) .ne. 0) return 
-       ncerr = nf90_inq_varid(fh, VNAME_II, v_ii)
-       if (nf90_err(ncerr) .ne. 0) return
-       ncerr = nf90_inq_varid(fh, VNAME_IL, v_il)
-       if (ncerr .ne. 0) return
        ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
        if (nf90_err(ncerr) .ne. 0) return
        ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
@@ -1629,18 +1610,6 @@ CONTAINS
        ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
        if (nf90_err(ncerr) .ne. 0) return
     END IF
-
-    ncerr = nf90_put_var(fh, v_iw, IW, start = (/ 1, itime/), &
-       count = (/ NOPTS, 1 /))
-    if (nf90_err(ncerr) .ne. 0) return
-
-    ncerr = nf90_put_var(fh, v_ii, II, start = (/ 1, itime/), &
-       count = (/ nopts, 1 /))
-    if (nf90_err(ncerr) .ne. 0) return
-
-    ncerr = nf90_put_var(fh, v_il, IL, start = (/ 1, itime/), &
-       count = (/ nopts, 1 /))
-    if (nf90_err(ncerr) .ne. 0) return
 
     ncerr = nf90_put_var(fh, v_dpo, DPO, start = (/ 1, itime/), &
        count = (/ nopts, 1 /))
@@ -1836,7 +1805,9 @@ CONTAINS
       CALL W3IOPON_WRITE(OFILES(2), IMOD, filename, ncerr)
     ENDIF
     if (nf90_err(ncerr) .ne. 0) then
-      print *, nf90_strerror(ncerr)
+      WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO :'
+      WRITE(NDSE,*) 'Nonzero return at end of W3IOPON'
+      WRITE(NDSE,*) 'Error: ', trim(nf90_strerror(ncerr))
       CALL EXTCDE(21)
     endif
 
