@@ -139,6 +139,7 @@ $  T  T  2    15   HMAXD      SDMH  St Dev of MXC (STE)
 $  T  T  2    16   HCMAXD     SDMHC St Dev of MXHC (STE)
 $  F  T  2    17   WBT        WBT   Dominant wave breaking probability bT
 $  F  F  2    18   FP0        TP    Peak period (from peak freq)
+$  F  F  2    19   WNMEAN     WNM   Mean wavenumber
 $   -------------------------------------------------
 $        3                          Spectral Parameters (first 5)
 $   -------------------------------------------------
@@ -211,10 +212,10 @@ $        8                          Spectrum parameters
 $   -------------------------------------------------
 $  F  F  8     1   MSS[X,Y]   MSS   Mean square slopes
 $  F  F  8     2   MSC[X,Y]   MSC   Spectral level at high frequency tail
-$  F  F  8     3   WL02[X,Y]  WL02  East/X North/Y mean wavelength compon
-$  F  F  8     4   ALPXT      AXT   Correl sea surface gradients (x,t)
-$  F  F  8     5   ALPYT      AYT   Correl sea surface gradients (y,t)
-$  F  F  8     6   ALPXY      AXY   Correl sea surface gradients (x,y)
+!  F  F  8     3   MSSD       MSD   Slope direction
+!  F  F  8     4   MSCD       MCD   Tail slope direction
+!  F  F  8     5   QP         QP    Goda peakedness parameter
+!  F  F  8     6   QKK        QKK   Wavenumber peakedness
 $   -------------------------------------------------
 $        9                          Numerical diagnostics
 $   -------------------------------------------------

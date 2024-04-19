@@ -6,7 +6,7 @@
 ! Define the output fields to postprocess via TRACK_NML namelist
 ! -------------------------------------------------------------------- !
 &TRACK_NML
-  TRACK%TIMESTART        =  '19680606 000000'
+  TRACK%TIMESTART        =  '20220606 000000'
   TRACK%TIMESTRIDE       =  '3600.'
 /
 

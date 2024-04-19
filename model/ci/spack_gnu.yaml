@@ -13,7 +13,8 @@ spack:
   - g2@3.4.5
   - bacio@2.4.1
   - w3emc@2.9.2
-  - esmf@8.1.1~pio~pnetcdf~xerces
+  - parallelio@2.5.9+fortran~pnetcdf
+  - esmf@8.4.2~debug~xerces+external-parallelio
   view: true
   concretizer:
     unify: when_possible

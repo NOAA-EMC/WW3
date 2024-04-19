@@ -1,0 +1,122 @@
+name: io_gnu
+on: [push, pull_request, workflow_dispatch]
+
+# Cancel in-progress workflows when pushing to a branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  cache_key: gnu11-1
+  CC: gcc-10
+  FC: gfortran-10
+  CXX: g++-10
+
+
+# Split into a steup step, and a WW3 build step which
+# builds multiple switches in a matrix. The setup is run once and
+# the environment is cached so each build of WW3 can share the dependencies.
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout-ww3
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        uses: actions/checkout@v3
+        with:
+            path: ww3
+      # Cache spack, OASIS, and compiler
+      # No way to flush Action cache, so key may have # appended
+      - name: cache-env
+        id: cache-env
+        uses: actions/cache@v3
+        with:
+          path: |
+            spack
+            ~/.spack
+            work_oasis3-mct
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_gnu.yaml') }}
+
+      # Build WW3 spack environment
+      - name: install-dependencies-with-spack
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        run: |
+          # Install NetCDF, ESMF, g2, etc using Spack
+          sudo apt install cmake
+          git clone -c feature.manyFiles=true https://github.com/JCSDA/spack.git
+          source spack/share/spack/setup-env.sh
+          spack env create ww3-gnu ww3/model/ci/spack_gnu.yaml
+          spack env activate ww3-gnu
+          spack compiler find
+          spack external find cmake
+          spack add mpich@3.4.2
+          spack concretize
+          spack install --dirty -v
+
+      - name: build-oasis
+        if: steps.cache-env.outputs.cache-hit != 'true'
+        run: |
+          source spack/share/spack/setup-env.sh
+          spack env activate ww3-gnu
+          export WWATCH3_DIR=${GITHUB_WORKSPACE}/ww3/model
+          export OASIS_INPUT_PATH=${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/oasis3-mct
+          export OASIS_WORK_PATH=${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/work_oasis3-mct
+          cd ww3/regtests/ww3_tp2.14/input/oasis3-mct/util/make_dir
+          cmake .
+          make VERBOSE=1
+          cp -r ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.14/input/work_oasis3-mct ${GITHUB_WORKSPACE}
+
+  io_gnu:
+    needs: setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: install-dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install doxygen gcovr valgrind
+
+      - name: checkout-ww3
+        uses: actions/checkout@v3
+        with:
+            path: ww3
+
+      - name: cache-env
+        id: cache-env
+        uses: actions/cache@v3
+        with:
+          path: |
+            spack
+            ~/.spack
+            work_oasis3-mct
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_gnu.yaml') }}
+
+      - name: build-ww3
+        run: |
+          source spack/share/spack/setup-env.sh
+          spack env activate ww3-gnu
+          set -x
+          cd ww3
+          export CC=mpicc
+          export FC=mpif90
+          export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
+          mkdir build && cd build
+          export LD_LIBRARY_PATH="/home/runner/work/WW3/WW3/spack/var/spack/environments/ww3-gnu/.spack-env/view/:$LD_LIBRARY_PATH"
+          cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/regtests/unittests/data/switch.io -DCMAKE_BUILD_TYPE=Debug -DCMAKE_Fortran_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" -DCMAKE_C_FLAGS="-g -fprofile-abs-path -fprofile-arcs -ftest-coverage -O0 -Wall -fno-omit-frame-pointer -fsanitize=address" ..
+          make -j2 VERBOSE=1
+          ./bin/ww3_grid
+          mv mod_def.ww3 regtests/unittests
+          ctest --verbose --output-on-failure --rerun-failed
+          gcovr --root .. -v  --html-details --exclude ../regtests/unittests --exclude CMakeFiles --print-summary -o test-coverage.html &> /dev/null
+        
+      - name: upload-test-coverage
+        uses: actions/upload-artifact@v3
+        with:
+          name: ww3-test-coverage
+          path: |
+            ww3/build/*.html
+            ww3/build/*.css
+
+          

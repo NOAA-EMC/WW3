@@ -304,6 +304,10 @@ PROGRAM W3SHEL
 #endif
   !
   USE W3NMLSHELMD
+
+#ifdef W3_OMPG
+  USE OMP_LIB
+#endif
   IMPLICIT NONE
   !
 #ifdef W3_MPI
@@ -329,7 +333,7 @@ PROGRAM W3SHEL
        NDSEN, IERR, J, I, ILOOP, IPTS, NPTS,     &
        NDTNEW, MPI_COMM = -99,                   &
        FLAGTIDE, COUPL_COMM, IH, N_TOT
-  INTEGER             :: NDSF(-7:9), NDS(13), NTRACE(2), NDT(7:9), &
+  INTEGER             :: NDSF(-7:9), NDS(15), NTRACE(2), NDT(7:9), &
        TIME0(2), TIMEN(2), TTIME(2), TTT(2),     &
        NH(-7:10), THO(2,-7:10,NHMAX), RCLD(7:9), &
        NODATA(7:9), ODAT(40), IPRT(6) = 0,       &
@@ -481,6 +485,7 @@ PROGRAM W3SHEL
 #ifdef W3_OMPH
     ENDIF
 #endif
+
 #ifdef W3_MPI
     MPI_COMM = MPI_COMM_WORLD
 #endif
@@ -583,6 +588,11 @@ PROGRAM W3SHEL
        MPI_THREAD_FUNNELED, THRLEV
 #endif
   !
+#ifdef W3_OMPG
+    IF(IAPROC .EQ. NAPOUT) THEN
+      WRITE(NDSO, 906) omp_get_max_threads()
+    ENDIF
+#endif
 
   !
   ! 1.b For WAVEWATCH III (See W3INIT)
@@ -600,6 +610,9 @@ PROGRAM W3SHEL
   NDS(11) = 22
   NDS(12) = 23
   NDS(13) = 34
+  NDS(14) = 36
+  NDS(15) = 37
+
   !
   NTRACE(1) =  NDS(3)
   NTRACE(2) =  10
@@ -2734,6 +2747,10 @@ PROGRAM W3SHEL
 905 FORMAT ( '  Hybrid MPI/OMP thread support level:'/        &
        '     Requested: ', I2/                          &
        '      Provided: ', I2/ )
+#endif
+  !
+#ifdef W3_OMPG
+906 FORMAT ( '  OMP threading enabled. Number of threads: ', I3 / )
 #endif
 920 FORMAT (/'  Input fields : '/                                   &
        ' --------------------------------------------------')

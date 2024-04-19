@@ -109,7 +109,7 @@ EOF
 # --------------------------------------------------------------------------- #
 
 echo ' '
-echo " Running now options: run_test $*"
+echo " Running now options: run_cmake_test $*"
 echo ' '
 
 # 2.a Setup array of command-line arguments
@@ -377,7 +377,7 @@ fi
 
 if [ $time_count ]
 then # Add time counter if -T
-  echo " REGTESTS Time counter: run_test $ARGS" >> time_count.txt
+  echo " REGTESTS Time counter: run_cmake_test $ARGS" >> time_count.txt
   Tstart=`date +"%s.%2N"`
 fi
 
@@ -435,25 +435,26 @@ then
 
   echo "Switch file is $path_build/switch with switches:" >> $ofile
   cat $path_build/switch >> $ofile
-  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1
+  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile 2>&1
   rc=$?
-  if [[ $rc -ne 0 ]] ; then
+  if (( rc != 0 )); then
     echo "Fatal error in cmake."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
-  make -j 8 > $ofile 2>&1
+  make -j 8 VERBOSE=1 >> $ofile 2>&1
   rc=$?
-  if [[ $rc -ne 0 ]] ; then
+  if (( rc != 0 )); then 
     echo "Fatal error in make."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
-  make install > $ofile 2>&1
-  if [[ $rc -ne 0 ]] ; then
+  make install >> $ofile 2>&1
+  rc=$?
+  if (( rc != 0 )); then 
     echo "Fatal error in make install."
     echo "The build log is in $ofile"
-    exit
+    exit ${rc}
   fi
 
   cp $path_build/install/bin/* $path_e/
@@ -468,30 +469,34 @@ then
     \cp -f $file_c $path_build/switch
     echo "Switch file is $path_build/switch with switches:" >> $ofile
     cat $path_build/switch >> $ofile
-    cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile  2>&1
+    cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile  2>&1
     rc=$?
-    if [[ $rc -ne 0 ]] ; then
+    if (( rc != 0 )); then
       echo "Fatal error in cmake."
-      echo "The build log is in $ofile"
-      exit
+      echo "The build log is in ${ofile}"
+      exit ${rc}
     fi
-    make -j 8 > $ofile 2>&1
-    if [[ $rc -ne 0 ]] ; then
+    make -j 8 VERBOSE=1 >> $ofile 2>&1
+    rc=$?
+    if (( rc != 0 )); then
       echo "Fatal error in make."
-      echo "The build log is in $ofile"
-      exit
+      echo "The build log is in ${ofile}"
+      exit ${rc}
     fi
-    make install > $ofile 2>&1
-    if [[ $rc -ne 0 ]] ; then
+    make install >> $ofile 2>&1
+    rc=$?
+    if (( rc != 0 )); then
       echo "Fatal error in make install."
       echo "The build log is in $ofile"
-      exit
+      exit ${rc}
     fi
     path_e=$path_w/exe
     cp $path_build/install/bin/ww3_shel $path_e/
     cp $path_build/install/bin/ww3_multi $path_e/
     cp $path_build/install/bin/ww3_systrk $path_e/
-    cp $path_build/install/bin/ww3_prtide $path_e/
+    if [ -e $path_build/install/bin/ww3_prtide ]; then
+      cp $path_build/install/bin/ww3_prtide $path_e/
+    fi
   fi
 else
   path_build=${path_build_root}
@@ -505,24 +510,26 @@ else
   fi
   echo "Switch file is $path_build/switch with switches:" >> $ofile
   cat $path_build/switch >> $ofile
-  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install > $ofile 2>&1
+  cmake $path_cmake ${CMAKE_OPTIONS} -DSWITCH=$path_build/switch -DCMAKE_INSTALL_PREFIX=install >> $ofile 2>&1
   rc=$?
-  if [[ $rc -ne 0 ]] ; then
+  if (( rc != 0 )); then
     echo "Fatal error in cmake."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
-  make -j 8 > $ofile 2>&1
-  if [[ $rc -ne 0 ]] ; then
+  make -j 8 VERBOSE=1 >> $ofile 2>&1
+  rc=$?
+  if (( rc != 0 )); then 
     echo "Fatal error in make."
-    echo "The build log is in $ofile"
-    exit
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
-  make install > $ofile 2>&1
-  if [[ $rc -ne 0 ]] ; then
-    echo "Fatal error in make install."
-    echo "The build log is in $ofile"
-    exit
+  make install >> $ofile 2>&1
+  rc=$?
+  if (( rc != 0 )); then  
+    echo "Fatal error in make."
+    echo "The build log is in ${ofile}"
+    exit ${rc}
   fi
 
   cp $path_build/install/bin/* $path_e/
@@ -626,7 +633,7 @@ then
     fi
 
     # link conf file
-    if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+    if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
     then
       \rm -f $prog.nml
       \ln -s $ifile $prog.nml
@@ -652,7 +659,11 @@ then
       if [ $multi -eq 2 ]
       then
         mv mod_def.ww3 mod_def.$g
-        if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+        if [ -e mod_def.ww3.txt ]
+        then
+          mv mod_def.ww3.txt mod_def.${g}.txt
+        fi
+        if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
         then
           mv $prog.nml.log ${prog}_$g.nml.log
         fi
@@ -750,7 +761,7 @@ then
         then
           mv restart.ww3 restart.$g
           \rm -f mod_def.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             mv $prog.nml.log ${prog}_$g.nml.log
           fi
@@ -849,7 +860,7 @@ then
         then
           mv nest.ww3 nest.$g
           \rm -f mod_def.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             mv $prog.nml.log ${prog}_$g.nml.log
           fi
@@ -948,7 +959,7 @@ then
         then
           mv nest.ww3 nest.$g
           \rm -f mod_def.ww3
-          if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+          if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
           then
             mv $prog.nml.log ${prog}_$g.nml.log
           fi
@@ -1052,7 +1063,7 @@ then
           then
             \rm -f mod_def.ww3
             mv $otype.ww3 $otype.$g
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi
@@ -1127,9 +1138,9 @@ then
 
         if [ $nml_input ] && [ ! -z "`ls ${path_i}/${prog}*.nml 2>/dev/null`" ]
           then
-          inputs_tmp=`( ls ${path_i}/${prog}${gu}*nml)`
+          inputs_tmp="`ls ${path_i}/${prog}${gu}*nml 2>/dev/null`"
          else
-          inputs_tmp=`( ls ${path_i}/${prog}${gu}*inp)`
+          inputs_tmp="`ls ${path_i}/${prog}${gu}*inp 2>/dev/null`"
         fi
 
         if [ ! -z "$inputs_tmp" ];then
@@ -1176,7 +1187,7 @@ then
           then
             \rm -f mod_def.ww3
             mv $otype.ww3 $otype.$g
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi
@@ -1299,7 +1310,7 @@ then
           then
             \rm -f mod_def.ww3
             mv $otype.ww3 $otype.$g
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi
@@ -1443,7 +1454,7 @@ then
       \rm -f PET*.ESMF_LogFile
       \rm -f ww3_esmf.rc
       \cp -f ${path_i}/ww3_esmf.rc ww3_esmf.rc
-      if [ ! -z "`echo ${ifile} | grep -o nml`" ]
+      if [ ! -z "`basename ${ifile} | grep -o nml`" ]
       then
         echo "WAV_input_file_name: $prog.nml" >> ww3_esmf.rc
       fi
@@ -1752,7 +1763,7 @@ do
             then
               \rm -f mod_def.ww3
               \rm -f out_grd.ww3
-              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
               then
                 mv $prog.nml.log ${prog}_$g.nml.log
               fi
@@ -1819,7 +1830,7 @@ do
             then
               \rm -f mod_def.ww3
               \rm -f out_grd.ww3
-              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
               then
                 mv $prog.nml.log ${prog}_$g.nml.log
               fi
@@ -1987,7 +1998,7 @@ do
             then
               \rm -f mod_def.ww3
               \rm -f out_pnt.ww3
-              if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+              if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
               then
                 mv $prog.nml.log ${prog}_$g.nml.log
               fi
@@ -2025,7 +2036,7 @@ done # end of loop on progs
 case $outopt in
   native) out_progs="ww3_trck" ;;
   netcdf) out_progs="ww3_trnc" ;;
-  both)   out_progs="ww3_trck ww3_trnc" ;;
+  both|all) out_progs="ww3_trck ww3_trnc" ;;
   *)      out_progs="" ;;
 esac
 
@@ -2068,6 +2079,9 @@ do
           then
             continue
           fi
+
+          \ln -s mod_def.$g mod_def.ww3
+
           gu="_$g"
           fileconf="$prog${gu}"
         else
@@ -2122,8 +2136,9 @@ do
           \rm -f $prog.nml
           if [ $multi -eq 2 ]
           then
+            \rm -f mod_def.ww3
             \rm -f track_o.ww3
-            if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
+            if [ $nml_input ] && [ ! -z "`basename ${ifile} | grep -o nml`" ]
             then
               mv $prog.nml.log ${prog}_$g.nml.log
             fi

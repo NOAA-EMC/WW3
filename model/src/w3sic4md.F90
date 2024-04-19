@@ -58,13 +58,6 @@ MODULE W3SIC4MD
   !
   !  5. Remarks :
   !
-  !     Source material :
-  !         1) Wadhams et al. JGR 1988
-  !         2) Meylan et al. GRL 2014
-  !         3) Kohout & Meylan JGR 2008 in Horvat & Tziperman Cryo. 2015
-  !         4) Kohout et al. Nature 2014
-  !         5) Doble et al. GRL 2015
-  !         6) Rogers et al. JGR 2016
   !     Documentation of IC4:
   !         1) Collins and Rogers, NRL Memorandum report 2017
   !         ---> "A Source Term for Wave Attenuation by Sea
@@ -81,6 +74,21 @@ MODULE W3SIC4MD
   !               the ONR “Sea State” Field Experiment"
   !         ---> New recommendations for IC4 Method 2 (polynomial fit)
   !              and IC4 Method 6 (step function via namelist)
+  !
+  !     Other source material :
+  !        *** Wadhams et al. JGR 1988
+  !        *** Meylan et al. GRL 2014
+  !        *** Kohout & Meylan JGR 2008 in Horvat & Tziperman Cryo. 2015
+  !        *** Kohout et al. Nature 2014
+  !        *** Doble et al. GRL 2015
+  !        *** Rogers et al. JGR 2016
+  !        *** Meylan et al. JGR 2018
+  !        *** Yu et al. JGR 2019
+  !        *** Liu et al. JPO 2020
+  !        *** Rogers et al. CRST 2021 (RMK2021)
+  !        *** Rogers et al. tech. rep. 2021 (RYW2021)
+  !        *** Yu et al. CRST 2022
+  !        *** Yu JMSE 2022
   !
   !  6. Switches :
   !
@@ -127,6 +135,9 @@ CONTAINS
     !/    08-Apr-2016 : Method 6 added (namelist step funct.) (E. Rogers)
     !/    24-Feb-2017 : Corrections to Methods 1,2,3,4        (E. Rogers)
     !/    13-Apr-2017 : Method 7 added (Doble et al. 2015)    (E. Rogers)
+    !/    11-Jan-2024 : Method 8 added (Meylan et al. 2018)   (E. Rogers)
+    !/    11-Jan-2024 : Method 9 added (Rogers et al., 2021)
+    !/                                      denoted "RYW2021" (E. Rogers)
     !/
     !/        FIXME   : Move field input to W3SRCE and provide
     !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
@@ -155,7 +166,24 @@ CONTAINS
     !     2) Polynomial fit, Eq. 3 from Meylan et al. 2014
     !     3) Quadratic fit to Kohout & Meylan'08 in Horvat & Tziperman'15
     !        Here, note that their eqn is given as ln(alpha)=blah, so we
-    !        have alpha=exp(blah)
+    !        have alpha=exp(blah).
+    !        Note from ER:
+    !        This implementation has two things to keep in mind:
+    !          1) This is a scattering model, applied as dissipation,
+    !             which is not correct.
+    !          2) This is not actually HT15! The alpha of HT15 has
+    !             different meaning from alpha of CR17, as follows:
+    !             HT15: decay is exp(-alpha*Lambda) where Lambda
+    !                   is the number of floes encountered.
+    !             CR17: decay is exp(-alpha*x)
+    !             Thus, CR17's implementation of HT15 is equivalent to
+    !             the actual HT15 only if one assumes one floe encountered
+    !             per meter. This is very strong attenuation, as shown in
+    !             Figure 3 of CR17! This problem might be fixed by computing
+    !             an encounter interval length scale from an a_ice and d_ice
+    !             provided by the user...or a length scale provided by the 
+    !             user.
+    !             See also: page 3 of Rogers et al. (RYW2021).
     !     4) Eq. 1 from Kohout et al. 2014
     !
     !     5) Simple step function for ki as a function of frequency
@@ -208,9 +236,10 @@ CONTAINS
     !                'MTH' 19680606 000000   0.16
     !
     !     6) Simple step function for ki as a function of frequency
-    !          with up to 10 "steps". Controlling parameters KIx and FCx are
+    !          with up to 16 "steps". Controlling parameters KIx and FCx are
     !          read in as namelist parameters, so they are stationary and
-    !          uniform.
+    !          uniform. (If 16 steps is not enough, the number of steps can be
+    !          increased at compile time by changing NIC4 in w3gdatmd.ftn.)
     !          The last non-zero FCx value should be a large number, e.g. 99 Hz
     !
     !                                          4444444444  <--- ki=ic4_ki(4)
@@ -236,6 +265,62 @@ CONTAINS
     !        thickness and wave period.
     !        ALPHA  = 0.2*(T^(-2.13)*HICE or
     !        ALPHA  = 0.2*(FREQ^2.13)*HICE
+    !
+    !     8) Meylan et al. (JGR 2018), eq. 48. "Model with Order 3 Power
+    !        Law". The is denoted as the "M2" model by Liu et al. (JPO 2020)
+    !        It is a function of ice thickness and wave period.
+    !        ki  = ChfM2*h_ice*freq^3
+    !        where ChfM2 is a coefficient of proportionality which formally
+    !        includes viscosity, density, and gravity parameters, see
+    !        Meylan et al. (JGR 2018) for details.
+    !        ChfM2 has units of s3/m2
+    !        It is equation 53 in Meylan et al. (2018) and equation 16 in
+    !        Liu et al. (2020).
+    !        This method is functionally the same as the "M2" model in IC5
+    !        in WW3 (IC5 w/IC5VEMOD=3) and is redundantly included here as
+    !        IC4M8 because it is in the same "family" as IC4M7 and IC4M9,
+    !        being in the form of:
+    !        ki=Chf * h_ice^m * freq^n .
+    !        Calibrations:
+    !        * Liu et al. has ChfM2=eta*(2*pi)^3/(1025*9.81^2)
+    !        ** eta=14.0 for "Sikuliaq" case of Liu et al., so ChfM2=0.035
+    !        ** eta=3.0 for "SIPEX" case of Liu et al., so ChfM2=0.0075
+    !        * Rogers et al. (tech rep. 2021, "RYW2021") :
+    !        ** Fit to Rogers et al. (CRST 2021 "RMK2021") ChfM2=0.059 (*SD*)
+    !        suggested default is marked with "(*SD*)", for consistency
+    !          with SWAN (v41.31AB or later)
+    !
+    !     9) Rogers et al. (tech. rep. 2021, "RYW2021"): the "monomial power
+    !        fit" described in section 2.2.3. It is the general form above,
+    !        ki=Chf * h_ice^m * freq^n but is constrained such that m=n/2-1.
+    !        This constraint is derived by RYW2021 by invoking the scaling from
+    !        Yu et al. (2019), which is based on Reynolds number with ice
+    !        thickness as the relevant length scale.
+    !        This is also given as equation 2 in Yu et al. (CRST 2022).
+    !        Some calibrations are as follows:
+    !        * RYW2021, calibration to RMK2021: Chf=2.9 and n=4.5  (*SD*)
+    !        * Yu et al. (2022) calibration to RMK2021 : Chf=2.4 and n=4.46
+    !          (noting that c_n=0.108 and Chf=c_n*(2*pi/sqrt(g))^n)
+    !        * Yu (2022) adjusted the prior calibration to get better fit
+    !          to higher frequency lab measurements and got:
+    !          Chf=7.89 and n=4.8
+    !        suggested default is marked with "(*SD*)", for consistency
+    !          with SWAN (v41.31AB or later)
+    !
+    !     ------------------------------------------------------------------
+    !
+    !     For all methods, the user can specify namelist
+    !     variables IC4FMIN and IC4KIBK such as:
+    !     &SIC4 IC4METHOD = [...], IC4FMIN=0.08, IC4KIBK=1.0e-7, [...]
+    !     This accomodates the situation where the empirically-derived
+    !     dissipation is uncertain for the lowest frequencies, which can be
+    !     the case if estimated dissipation rate is so small that it falls
+    !     in the noise level for the estimation method. (This is common,
+    !     since some ice types cause only very weak dissipation
+    !     to low frequencies.) In the example above, the amplitude
+    !     dissipation rate ki is set to some low background level
+    !     dissipation IC4KIBK=1.0e-7 1/m when model frequency is less than
+    !     0.08 Hz.
     !
     !     More verbose description of implementation of Sice in WW3:
     !      See documentation for IC1
@@ -315,9 +400,10 @@ CONTAINS
     USE W3ODATMD, ONLY: NDSE
     USE W3SERVMD, ONLY: EXTCDE
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, SIG, MAPWN, IC4PARS, DDEN, &
-         IC4_KI, IC4_FC, NIC4
+                        IC4_KI, IC4_FC, IC4_CN, NIC4, IC4_FMIN,    &
+                        IC4_KIBK
     USE W3IDATMD, ONLY: ICEP1, ICEP2, ICEP3, ICEP4, ICEP5, &
-         MUDT, MUDV, MUDD, INFLAGS2
+                        MUDT, MUDV, MUDD, INFLAGS2
 
 #ifdef W3_T
     USE W3ODATMD, ONLY: NDST
@@ -353,14 +439,18 @@ CONTAINS
     INTEGER                 :: IKTH, IK, ITH, IC4METHOD, IFC
     REAL                    :: D1D(NK), EB(NK)
     REAL                    :: ICECOEF1, ICECOEF2, ICECOEF3, &
-         ICECOEF4, ICECOEF5, ICECOEF6, &
-         ICECOEF7, ICECOEF8
-    REAL                    :: KI1,KI2,KI3,KI4,FC5,FC6,FC7,FREQ
+                               ICECOEF4, ICECOEF5, ICECOEF6, &
+                               ICECOEF7, ICECOEF8
+    REAL                    :: CICE1,CICE2,CICE3,CICE4,CICE5 ! temporary variables
+    REAL                    :: KI1,KI2,KI3,KI4,FC5,FC6,FC7
     REAL                    :: HS, EMEAN, HICE
+    REAL                    :: Chf,mpow,npow
     REAL, ALLOCATABLE       :: WN_I(:)  ! exponential decay rate for amplitude
     REAL, ALLOCATABLE       :: ALPHA(:) ! exponential decay rate for energy
+    REAL, ALLOCATABLE       :: FREQ(:) ! wave frequency
     REAL, ALLOCATABLE       :: MARG1(:), MARG2(:) ! Arguments for M2
     REAL, ALLOCATABLE       :: KARG1(:), KARG2(:), KARG3(:) !Arguments for M3
+    LOGICAL                 :: NML_INPUT ! if using namelist input for M2
 
     !/
     !/ ------------------------------------------------------------------- /
@@ -380,6 +470,7 @@ CONTAINS
     ALLOCATE(KARG1(0:NK+1))
     ALLOCATE(KARG2(0:NK+1))
     ALLOCATE(KARG3(0:NK+1))
+    ALLOCATE(FREQ(0:NK+1))
     MARG1    = 0.0
     MARG2    = 0.0
     KARG1    = 0.0
@@ -398,12 +489,12 @@ CONTAINS
     HS       = 0.0
     HICE     = 0.0
     EMEAN    = 0.0
+    FREQ=SIG/TPI
     !
     !     IF (.NOT.INFLAGS2(-7))THEN
     !        WRITE (NDSE,1001) 'ICE PARAMETER 1'
     !        CALL EXTCDE(201)
     !     ENDIF
-
     !
     !   We cannot remove the other use of INFLAGS below,
     !   because we would get 'array not allocated' error for the methods
@@ -430,20 +521,8 @@ CONTAINS
 
     IC4METHOD = IC4PARS(1)
     !
-    ! x.  No ice --------------------------------------------------------- /
-    !
-    !      IF ( ICECOEF1==0. ) THEN
-    !         D = 0.
-    !         WRITE(*,*) '!!!No Ice!!!'
-    !
-    ! x.  Ice ------------------------------------------------------------ /
-    !      ELSE
-    !
-    ! x.x Set constant(s) and write test output -------------------------- /
-    !
-    !         (none)
-    !
 #ifdef W3_T38
+    !     Write test output ---------------------------------------------- /
     WRITE (NDST,9000) DEPTH,ICECOEF1,ICECOEF2,ICECOEF3,ICECOEF4
 #endif
     !
@@ -461,8 +540,32 @@ CONTAINS
       !NB: Eq. 3 only includes T^2 and T^4 terms,
       !  which correspond to ICECOEF3, ICECOEF5, so in
       !  regtest: ICECOEF1=ICECOEF2=ICECOEF4=0
-      MARG1 = ICECOEF1 + ICECOEF2*(SIG/TPI) + ICECOEF3*(SIG/TPI)**2
-      MARG2 = ICECOEF4*(SIG/TPI)**3 + ICECOEF5*(SIG/TPI)**4
+
+      NML_INPUT=.TRUE.
+      IF (INFLAGS2(-7).OR.INFLAGS2(-6).OR.INFLAGS2(-5).OR. &
+          INFLAGS2(-4).OR.INFLAGS2(-3)) NML_INPUT=.FALSE.
+
+      IF(NML_INPUT)THEN ! get from namelist array
+
+         CICE1=IC4_CN(1)
+         CICE2=IC4_CN(2)
+         CICE3=IC4_CN(3)
+         CICE4=IC4_CN(4)
+         CICE5=IC4_CN(5)
+
+      ELSE ! get from input-field array (ICEP1 etc.)
+
+         CICE1=ICECOEF1
+         CICE2=ICECOEF2
+         CICE3=ICECOEF3
+         CICE4=ICECOEF4
+         CICE5=ICECOEF5
+
+      ENDIF
+
+      ! CICE1 is C_{ice,1} in Collins and Rogers (2017), for example.
+      MARG1 = CICE1 + CICE2*FREQ + CICE3*FREQ**2
+      MARG2 = CICE4*FREQ**3 + CICE5*FREQ**4
       ALPHA = MARG1 + MARG2
       WN_I = 0.5 * ALPHA
 
@@ -510,13 +613,12 @@ CONTAINS
         CALL EXTCDE(201)
       END IF
       DO IK=1, NK
-        FREQ=SIG(IK)/TPI
         ! select ki
-        IF(FREQ.LT.FC5)THEN
+        IF(FREQ(IK).LT.FC5)THEN
           WN_I(IK)=KI1
-        ELSEIF(FREQ.LT.FC6)THEN
+        ELSEIF(FREQ(IK).LT.FC6)THEN
           WN_I(IK)=KI2
-        ELSEIF(FREQ.LT.FC7)THEN
+        ELSEIF(FREQ(IK).LT.FC7)THEN
           WN_I(IK)=KI3
         ELSE
           WN_I(IK)=KI4
@@ -534,10 +636,9 @@ CONTAINS
       END IF
 
       DO IK=1, NK
-        FREQ=SIG(IK)/TPI
         ! select ki
         DO IFC=1,NIC4
-          IF(FREQ.LT.IC4_FC(IFC))THEN
+          IF(FREQ(IK).LT.IC4_FC(IFC))THEN
             WN_I(IK)=IC4_KI(IFC)
             EXIT
           END IF
@@ -548,10 +649,56 @@ CONTAINS
 
       HICE=ICECOEF1 ! For this method, ICECOEF1=ice thickness
       DO IK=1,NK
-        FREQ=SIG(IK)/TPI
-        ALPHA(IK)  = 0.2*(FREQ**2.13)*HICE
+        ALPHA(IK)  = 0.2*(FREQ(IK)**2.13)*HICE
       END DO
       WN_I= 0.5 * ALPHA
+
+    CASE (8) ! Meylan et al. (JGR 2018), Liu et al. (JPO 2020)
+
+      NML_INPUT=.TRUE.
+      IF (INFLAGS2(-6)) NML_INPUT=.FALSE.
+
+      IF(NML_INPUT)THEN ! get from namelist array
+
+        Chf=IC4_CN(1) ! Denoted "ChfM2" in documentation
+
+      ELSE ! get from input-field array (ICEP1 etc.)
+
+        Chf=ICECOEF2 ! Denoted "ChfM2" in documentation
+
+      ENDIF
+
+      ! Rename variable, for clarity
+      hice=ICECOEF1 ! For this method, ICECOEF1 is ice thickness
+
+      DO IK=1,NK
+        WN_I(IK)  = Chf*hice*(FREQ(IK)**3)
+      END DO
+
+    CASE (9) ! Rogers et al. (2021) (RYW2021), Yu et al. (JGR 2022)
+
+      NML_INPUT=.TRUE.
+      IF (INFLAGS2(-6).OR.INFLAGS2(-5)) NML_INPUT=.FALSE.
+
+      IF(NML_INPUT)THEN ! get from namelist array
+
+        Chf=IC4_CN(1) ! Denoted as same in documentation
+        npow=IC4_CN(2) ! Denoted "n" in documentation
+
+      ELSE ! get from input-field array (ICEP1 etc.)
+
+        Chf=ICECOEF2 ! Denoted as same in documentation
+        npow=ICECOEF3 ! Denoted "n" in documentation
+
+      ENDIF
+
+      ! Rename variable, for clarity
+      hice=ICECOEF1 ! For this method, ICECOEF1 is ice thickness
+      ! Compute
+      mpow=0.5*npow-1.0 ! Denoted "m" in documentation
+      DO IK=1,NK
+        WN_I(IK)  = Chf*(hice**mpow)*(FREQ(IK)**npow)
+      END DO
 
     CASE DEFAULT
       WN_I = ICECOEF1 !Default to IC1: Uniform in k
@@ -564,6 +711,8 @@ CONTAINS
     DO IK=1, NK
       !   SBT1 has: D1D(IK) = FACTOR *  MAX(0., (CG(IK)*WN(IK)/SIG(IK)-0.5) )
       !             recall that D=S/E=-2*Cg*k_i
+      IF(FREQ(IK).LT.IC4_FMIN)WN_I(IK)=IC4_KIBK
+      !           write(*,*)freq(ik),wn_i(ik),ICECOEF1,' % :: freq,ki,hice' ! temporary code: do not commit to repo uncommented
       D1D(IK) = -2. * CG(IK) * WN_I(IK)
 
     END DO
@@ -598,7 +747,7 @@ CONTAINS
     ! Formats
     !
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3SIC4 : '/               &
-         '     ',A,' REQUIRED BUT NOT SELECTED'/)
+        '     ',A,' REQUIRED BUT NOT SELECTED'/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3SIC4 : DEPTH,ICECOEF1  : ',2E10.3)
