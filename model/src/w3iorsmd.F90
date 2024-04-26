@@ -69,7 +69,7 @@ MODULE W3IORSMD
   !/
   !/ Private parameter statements (ID strings)
   !/
-  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2021-05-28'
+  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2024-04-26'
   CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III RESTART FILE'
   !/
