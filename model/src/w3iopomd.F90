@@ -158,15 +158,6 @@ MODULE W3IOPOMD
   !> Variable name for the netCDF point output file, for TIME. 
   character(*), parameter, private :: VNAME_TIME = 'TIME'
 
-  !> Variable name for the netCDF point output file, for IW.
-  character(*), parameter, private :: VNAME_IW = 'IW'
-
-  !> Variable name for the netCDF point output file, for II.
-  character(*), parameter, private :: VNAME_II = 'II'
-
-  !> Variable name for the netCDF point output file, for IL.
-  character(*), parameter, private :: VNAME_IL = 'IL'
-
   !> Variable name for the netCDF point output file, for DPO.
   character(*), parameter, private :: VNAME_DPO = 'DPO'
 
@@ -1144,7 +1135,7 @@ CONTAINS
   !> Read point output in netCDF format.
   !>
   !> @param[out] IOTST Test indictor for reading.
-  !> @param[in] IMOD Model number for W3GDAT etc.
+  !> @param[in] IMOD_IN Model number for W3GDAT etc.
   !> @param[in] filename Name of file to read.
   !> @param[inout] ncerr Error code, 0 for success, netCDF error code
   !> otherwise.
@@ -1178,7 +1169,7 @@ CONTAINS
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
     integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time
-    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo
+    integer :: v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
     integer :: v_tauao,v_taudo, v_dairo
 #endif
@@ -1408,7 +1399,6 @@ CONTAINS
   !>
   !> @brief Write point output in netCDF format.
   !>
-  !> @param[in] IMOD Model number for W3GDAT etc.
   !> @param[in] filename Name of file to write.
   !> @param[in] timestep_only Will be 0 if whole model run should be
   !> written, 1 if only one timestep should be written.
@@ -1417,12 +1407,12 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_WRITE(timestep_only, IMOD, filename, ncerr)
-    use netcdf
-    USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
+  SUBROUTINE W3IOPON_WRITE(timestep_only,filename, ncerr)
+    USE NETCDF 
+    USE W3GDATMD, ONLY: NTH, NK, NSPEC
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
-         IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
+         PTLOC, PTIFAC, DPO, WAO, WDO,   &
          ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
          GRDID, ICEO, ICEHO, ICEFO
 #ifdef W3_FLX5
@@ -1434,13 +1424,12 @@ CONTAINS
 
     IMPLICIT NONE
     integer, intent(in) :: timestep_only ! 1 if only timestep should be written.
-    INTEGER, INTENT(IN) :: IMOD
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
     integer :: ndim, nvar, fmt, itime, fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time
-    integer :: v_iw, v_ii, v_il, v_dpo, v_wao, v_wdo
+    integer :: v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
     integer :: v_tauao, v_taudo, v_dairo
 #endif    
@@ -1700,34 +1689,16 @@ CONTAINS
   !> - 0 No error.
   !> - -1 Unexpected end of file when reading.
   !> @param[in] IMOD Model number for W3GDAT etc.
-#ifdef W3_ASCII
-  !> @param[in] NDSOA File unit number for ASCII output.
-#endif
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
-  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD &
-#ifdef W3_ASCII
-      ,NDSOA &
-#endif
-      )
+  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD)
     USE W3GDATMD, ONLY: W3SETG
     USE W3WDATMD, ONLY: W3SETW
-    USE W3ODATMD, ONLY: W3SETO, W3DMO2
-    !/
-    USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
+    USE W3ODATMD, ONLY: W3SETO
+    USE W3GDATMD, ONLY: FILEXT
     USE W3WDATMD, ONLY: TIME
-    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
-         IW, PTLOC, PTIFAC, WAO, WDO,   &
-         SPCO, PTNME, O2INIT, FNMPRE
-#ifdef W3_FLX5
-    USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
-#endif
-    USE W3ODATMD, ONLY :  OFILES
-    !/
-#ifdef W3_SETUP
-    USE W3ODATMD, ONLY: ZET_SETO
-#endif
-    !/
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, FNMPRE 
+    USE W3ODATMD, ONLY: OFILES
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -1739,18 +1710,16 @@ CONTAINS
     INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
-#ifdef W3_ASCII
-    INTEGER, INTENT(IN), OPTIONAL :: NDSOA
-#endif
 
     CHARACTER(LEN=15) :: TIMETAG
-    INTEGER :: IGRD, MK, MTH
+    INTEGER :: IGRD
     character(len = 124) :: filename
     integer :: ncerr
 
 #ifdef W3_S
     CALL STRACE (IENT, 'W3IOPON')
 #endif
+
     ! IPASS essentially is the time variable dimension 
     IPASS  = IPASS + 1
 
@@ -1774,19 +1743,6 @@ CONTAINS
       CALL EXTCDE(1)
     END IF
 
-!JDM Not sure this next section is really needed in the necdf context,
-!commenting out but leaving it as a placeholder for now 
-
-!    ! Ensure read/write are not mixed 
-!    IF ( IPASS.EQ.1  .AND. OFILES(2) .EQ. 0 ) THEN
-!      WRITE  = INXOUT.EQ.'WRITE'
-!    ELSE
-!      IF ( WRITE .AND. INXOUT.EQ.'READ' ) THEN
-!        WRITE (NDSE,901) INXOUT
-!        CALL EXTCDE ( 2 )
-!      END IF
-!    END IF
-
     ! Determine filename.
     filename = ''
     IF ( OFILES(2) .EQ. 1 ) THEN 
@@ -1801,7 +1757,7 @@ CONTAINS
     IF (INXOUT .EQ. 'READ') THEN
       CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
     ELSE
-      CALL W3IOPON_WRITE(OFILES(2), IMOD, filename, ncerr)
+      CALL W3IOPON_WRITE(OFILES(2), filename, ncerr)
     ENDIF
     if (nf90_err(ncerr) .ne. 0) then
       WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO :'
@@ -1816,8 +1772,6 @@ CONTAINS
 
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
          '     ILEGAL INXOUT VALUE: ',A/)
-! 901 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
-!          '     MIXED READ/WRITE, LAST REQUEST: ',A/)
   END SUBROUTINE W3IOPON
 
   !/ ------------------------------------------------------------------- /

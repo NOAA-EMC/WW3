@@ -2604,9 +2604,9 @@ CONTAINS
                   !
                   CALL W3IOPE ( VA )
                   CALL W3IOPON ( 'WRITE', NDS(8), ITEST, IMOD &
-#ifdef W3_ASCII
-                          ,NDS(15)                           &
-#endif
+!#ifdef W3_ASCII
+!                          ,NDS(15)                           &
+!#endif
                           )
                 END IF
                 !
