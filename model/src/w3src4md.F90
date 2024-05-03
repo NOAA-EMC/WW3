@@ -1849,6 +1849,8 @@ CONTAINS
     !/    14-Aug-2006 : Modified following Bidlot           ( version 2.22-SHOM )
     !/    18-Aug-2006 : Ported to version 3.09
     !/    03-Apr-2010 : Adding output of Charnock parameter ( version 3.14-IFREMER )
+    !/    03-May-2024 : Optional functional form of         ( version 7.15 )
+    !/                  Charnock coefficient and surface drag (UK Met Office).
     !
     !  1. Purpose :
     !
