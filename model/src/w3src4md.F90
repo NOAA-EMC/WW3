@@ -1921,6 +1921,7 @@ CONTAINS
     !      *EPS1*      REAL      SMALL NUMBER TO MAKE SURE THAT A SOLUTION
     !                            IS OBTAINED IN ITERATION WITH TAU>TAUW.
 
+    CHATH = AALPHA
     !
     IF (SINTAILPAR(1).GT.0.5) THEN
       TAUW_LOCAL=MAX(MIN(TAUW,TAUWMAX),0.)
@@ -1943,7 +1944,6 @@ CONTAINS
                  - TANH((WINDSPEED-CAPCHNK(4))/CAPCHNK(5)))
         XMIN   = 0.15 * (CAPCHNK(3)-CHATH)
       ELSE
-        CHATH = AALPHA
         XMIN  = 0.
       END IF
 
