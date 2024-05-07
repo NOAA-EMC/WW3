@@ -1178,6 +1178,8 @@ CONTAINS
 #endif
     integer :: v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
+    CHARACTER(LEN=31)       :: IDTST
+    CHARACTER(LEN=10)       :: VERTST
 
     IOTST = 0
 
@@ -1192,16 +1194,19 @@ CONTAINS
     if (nf90_err(ncerr) .ne. 0) return
 
     ! Read and check the version: 
-    ! TO DO add reading of IDTST and VERTST and make checks: 
-    !  IF ( IDTST .NE. IDSTR ) THEN
-    !    WRITE (NDSE,902) IDTST, IDSTR
-    !    CALL EXTCDE ( 10 )
-    !  END IF
-    !  IF ( VERTST .NE. VEROPT ) THEN
-    !    WRITE (NDSE,903) VERTST, VEROPT
-    !    CALL EXTCDE ( 11 )
-    !  END IF
+    ncerr = nf90_get_att(fh, 'title', IDTST)
+    if (nf90_err(ncerr) .ne. 0) return
+    ncerr = nf90_put_att(fh, 'version', VERTST)
+    if (nf90_err(ncerr) .ne. 0) return
 
+    IF ( IDTST .NE. IDSTR ) THEN
+      WRITE (NDSE,902) IDTST, IDSTR
+      CALL EXTCDE ( 10 )
+    END IF
+    IF ( VERTST .NE. VEROPT ) THEN
+      WRITE (NDSE,903) VERTST, VEROPT
+      CALL EXTCDE ( 11 )
+    END IF
 
     ! Read the dimension information for NOPTS.
     ncerr = nf90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
@@ -1438,6 +1443,7 @@ CONTAINS
 #endif  
     integer :: v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
+
 
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
