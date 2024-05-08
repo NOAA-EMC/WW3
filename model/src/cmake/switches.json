@@ -815,6 +815,16 @@
         ]
     },
     {
+        "name": "bin2nc",
+        "num_switches": "upto1",
+        "description": "use netcdf instead of binary model output",
+        "valid-options": [
+            {
+                "name": "BIN2NC"
+            }
+        ]
+    },
+    {
         "name": "ascii",
         "num_switches": "upto1",
         "description": "ASCII output for binary .ww3 file",
