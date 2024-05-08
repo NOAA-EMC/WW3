@@ -1116,7 +1116,7 @@ CONTAINS
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
   integer function nf90_err_check(errcode, ILINE)
-    use netcdf
+    USE NetCDF
     USE W3ODATMD, ONLY: NDSE
     implicit none
     integer, intent(in) :: errcode, ILINE
@@ -1130,7 +1130,6 @@ CONTAINS
       return 
     endif
   end function nf90_err_check
-
 
   !> Read point output in netCDF format.
   !>
