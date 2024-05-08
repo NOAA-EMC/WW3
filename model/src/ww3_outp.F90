@@ -208,17 +208,17 @@ PROGRAM W3OUTP
 #endif
   USE W3ODATMD, ONLY: W3SETO, W3NOUT
   USE W3IOGRMD, ONLY: W3IOGR
-  !!!MTM
-  !!! USE W3IOPOMD, ONLY: W3IOPO
-  USE W3IOPOMD, ONLY: W3IOPO, W3IOPON, W3IOPON_READ, W3IOPON_WRITE
-  USE netcdf
-  !!!MTM
+#ifdef W3_BIN2NC
+  USE W3IOPOMD, ONLY: W3IOPON, W3IOPON_READ, W3IOPON_WRITE
+  USE NETCDF 
+#else 
+  USE W3IOPOMD, ONLY: W3IOPO
+#endif
   USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
   USE W3TIMEMD, ONLY: STME21, TICK21, DSEC21
-  !/
   USE W3GDATMD
   USE W3WDATMD, ONLY: TIME
   USE W3ODATMD, ONLY: NDSE, NDST, NDSO, NOPTS, PTLOC, PTNME,     &
@@ -363,9 +363,11 @@ PROGRAM W3OUTP
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read general data and first fields from file
   !
-  !!!MTM
-  !!!CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#if W3_BIN2NC
   CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
+  CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
   !
   WRITE (NDSO,930)
   DO I=1, NOPTS
@@ -463,9 +465,11 @@ PROGRAM W3OUTP
     DO
       CALL STME21 ( TIME , IDTIME )
       WRITE (NDSO,948) IDTIME
-      !!!MTM
-      !!! CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#ifdef W3_BIN2NC
       CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
+      CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,949)
         GOTO 888
@@ -785,9 +789,11 @@ PROGRAM W3OUTP
   DO
     DTEST  = DSEC21 ( TIME , TOUT )
     IF ( DTEST .GT. 0. ) THEN
-      !!!MTM
-      !!! CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#ifdef W3_BIN2NC
       CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else 
+      CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,949)
         EXIT

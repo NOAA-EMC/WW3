@@ -442,8 +442,9 @@ CONTAINS
     USE W3IOGRMD
     USE W3IOGOMD
     USE W3IOPOMD
-    USE netcdf
-    !!!MTM
+#ifdef W3_BIN2NC
+    USE NETCDF 
+#endif 
     USE W3IOTRMD
     USE W3IORSMD
     USE W3IOBCMD
@@ -2603,12 +2604,16 @@ CONTAINS
                   !   Gets the necessary spectral data
                   !
                   CALL W3IOPE ( VA )
-                  CALL W3IOPON ( 'WRITE', NDS(8), ITEST, IMOD &
-!#ifdef W3_ASCII
-!                          ,NDS(15)                           &
-!#endif
+#ifdef W3_BIN2NC
+                  CALL W3IOPON ( 'WRITE', NDS(8), ITEST, IMOD )
+#else
+                  CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD &                          
+#ifdef W3_ASCII
+                          ,NDS(15)                           &
+#endif
                           )
-                END IF
+#endif 
+                  END IF
                 !
               ELSE IF ( J .EQ. 3 ) THEN
                 !

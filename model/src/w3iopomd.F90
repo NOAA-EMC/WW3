@@ -1109,6 +1109,7 @@ CONTAINS
     !/
   END SUBROUTINE W3IOPE
 
+#ifdef W3_BIN2NC
   !> Handle netCDF return code.
   !>
   !> @param errcode NetCDF error code. 0 for no error.
@@ -1778,7 +1779,7 @@ CONTAINS
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
          '     ILEGAL INXOUT VALUE: ',A/)
   END SUBROUTINE W3IOPON
-
+#endif
   !/ ------------------------------------------------------------------- /
   !> Read or write point output.
   !>
