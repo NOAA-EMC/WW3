@@ -1178,6 +1178,7 @@ CONTAINS
 #endif
     integer :: v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
+    integer :: v_title_len, v_version_len 
     CHARACTER(LEN=31)       :: IDTST
     CHARACTER(LEN=10)       :: VERTST
 
@@ -1193,10 +1194,14 @@ CONTAINS
     ncerr = nf90_open(filename, NF90_NOWRITE, fh)
     if (nf90_err(ncerr) .ne. 0) return
 
-    ! Read and check the version: 
-    ncerr = nf90_get_att(fh, 'title', IDTST)
+    ! Read and check the version:
+    ncerr = nf90_inquire_attribute(fh, NF90_GLOBAL, 'title', len = v_title_len) 
     if (nf90_err(ncerr) .ne. 0) return
-    ncerr = nf90_put_att(fh, 'version', VERTST)
+    ncerr = nf90_get_att(fh, NF90_GLOBAL, 'title', IDTST)
+    if (nf90_err(ncerr) .ne. 0) return
+    ncerr = nf90_inquire_attribute(fh, NF90_GLOBAL, 'version', len = v_version_len)
+    if (nf90_err(ncerr) .ne. 0) return
+    ncerr = nf90_get_att(fh, NF90_GLOBAL, 'version', VERTST)
     if (nf90_err(ncerr) .ne. 0) return
 
     IF ( IDTST .NE. IDSTR ) THEN
