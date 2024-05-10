@@ -1849,6 +1849,8 @@ CONTAINS
     !/    14-Aug-2006 : Modified following Bidlot           ( version 2.22-SHOM )
     !/    18-Aug-2006 : Ported to version 3.09
     !/    03-Apr-2010 : Adding output of Charnock parameter ( version 3.14-IFREMER )
+    !/    03-May-2024 : Optional functional form of         ( version 7.15 )
+    !/                  Charnock coefficient and surface drag (UK Met Office).
     !
     !  1. Purpose :
     !
@@ -1895,7 +1897,7 @@ CONTAINS
     ! 10. Source code :
     !-----------------------------------------------------------------------------!
     USE CONSTANTS, ONLY: GRAV, KAPPA, NU_AIR
-    USE W3GDATMD,  ONLY: ZZWND, AALPHA, ZZ0MAX, SINTAILPAR
+    USE W3GDATMD,  ONLY: ZZWND, AALPHA, ZZ0MAX, SINTAILPAR, CAPCHNK
 #ifdef W3_T
     USE W3ODATMD, ONLY: NDST
 #endif
@@ -1908,6 +1910,7 @@ CONTAINS
     INTEGER          :: IND,J
     REAL             :: TAUW_LOCAL
     REAL             :: TAUOLD,CDRAG,WCD,USTOLD,X,UST,ZZ0,ZNU,ZZ00,F,DELF
+    REAL             :: CHATH, XMIN ! used for reduction of high winds
     INTEGER, PARAMETER      :: NITER=10
     REAL   , PARAMETER      :: XM=0.50, EPS1=0.00001
     INTEGER                 :: ITER
@@ -1918,6 +1921,7 @@ CONTAINS
     !      *EPS1*      REAL      SMALL NUMBER TO MAKE SURE THAT A SOLUTION
     !                            IS OBTAINED IN ITERATION WITH TAU>TAUW.
 
+    CHATH = AALPHA
     !
     IF (SINTAILPAR(1).GT.0.5) THEN
       TAUW_LOCAL=MAX(MIN(TAUW,TAUWMAX),0.)
@@ -1932,6 +1936,17 @@ CONTAINS
       USTAR=(TAUT(IND,J)*DELI2+TAUT(IND+1,J  )*DELI1)*DELJ2 &
            + (TAUT(IND,J+1)*DELI2+TAUT(IND+1,J+1)*DELI1)*DELJ1
     ELSE
+      IF (CAPCHNK(1).EQ.1.) THEN
+        ! Computation of sea surface roughness and charnock coefficient based
+        ! on Donelan (2018). Determines minimum charnock; reduction for winds
+        ! above a particular threshold
+        CHATH  = CAPCHNK(2) + 0.5 * (CAPCHNK(3) - CAPCHNK(2)) * (1 & 
+                 - TANH((WINDSPEED-CAPCHNK(4))/CAPCHNK(5)))
+        XMIN   = 0.15 * (CAPCHNK(3)-CHATH)
+      ELSE
+        XMIN  = 0.
+      END IF
+
       ! This max is for comparison ... to be removed later
       !        TAUW_LOCAL=MAX(MIN(TAUW,TAUWMAX),0.)
       TAUW_LOCAL=TAUW
@@ -1941,9 +1956,9 @@ CONTAINS
       TAUOLD  = MAX(USTOLD**2, TAUW_LOCAL+EPS1)
       ! Newton method to solve for ustar in U=ustar*log(Z/Z0)
       DO ITER=1,NITER
-        X   = TAUW_LOCAL/TAUOLD
+        X   = MAX(TAUW_LOCAL/TAUOLD, XMIN)
         UST = SQRT(TAUOLD)
-        ZZ00=AALPHA*TAUOLD/GRAV
+        ZZ00 = CHATH*TAUOLD/GRAV
         IF (ZZ0MAX.NE.0) ZZ00=MIN(ZZ00,ZZ0MAX)
         ! Corrects roughness ZZ00 for quasi-linear effect
         ZZ0 = ZZ00/(1.-X)**XM
@@ -1969,10 +1984,16 @@ CONTAINS
         SQRTCDM1  = MIN(WINDSPEED/USTAR,100.0)
         Z0  = ZZWND*EXP(-KAPPA*SQRTCDM1)
       ELSE
-        Z0 = AALPHA*0.001*0.001/GRAV
+        Z0 = CHATH*0.001*0.001/GRAV
       END IF
-      CHARN = AALPHA
+      CHARN = CHATH
     END IF
+    IF(CAPCHNK(1) .EQ. 1) THEN
+      ! Problem with large values of CHARN for low winds
+      CHARN = MIN( 0.09 , CHARN )
+      IF(CHARN.LT.CHATH) CHARN = CHATH
+    ENDIF
+
     !  WRITE(6,*) 'CALC_USTAR:',WINDSPEED,TAUW,AALPHA,CHARN,Z0,USTAR
     !
     RETURN

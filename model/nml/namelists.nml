@@ -62,6 +62,12 @@ $
 $   Janssen / Ardhuin   : Namelist SIN4
 $                             ZWND : Height of wind (m).
 $                           ALPHA0 : minimum value of Charnock coefficient
+$                           CAPCHA : enable functional form for Cd (1=enabled),
+$                                      only valid when SINTABLE=0.
+$                             UCAP : Wind speed threshold for cap (CAPCHA=1)
+$                        SIGMAUCAP : Width of functional form (CAPCHA=1)
+$                             CHA0 : Initial Charnock coefficient (CAPCHA=1)
+$                           CHAMIN : Minimum Charnock value (CAPCHA=1)
 $                            Z0MAX : maximum value of air-side roughness z0
 $                          BETAMAX : maximum value of wind-wave coupling
 $                           SINTHP : power of cosine in wind input
