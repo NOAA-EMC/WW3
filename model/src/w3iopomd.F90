@@ -1755,13 +1755,12 @@ CONTAINS
     END IF
 
     ! Determine filename.
-    filename = ''
     IF ( OFILES(2) .EQ. 1 ) THEN 
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
       WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
-      filename = transfer(FNMPRE(:LEN_TRIM(FNMPRE))//TIMETAG//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc', filename)
+      filename = FNMPRE(:LEN_TRIM(FNMPRE))//TIMETAG//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     ELSE 
-      filename = transfer(FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc', filename)
+      filename = FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF 
 
     ! Do a read or a write of the point file.
