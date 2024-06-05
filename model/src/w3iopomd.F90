@@ -140,8 +140,11 @@ MODULE W3IOPOMD
   !> this is the length of the GRDID character array.
   character(*), parameter, private :: DNAME_GRDIDLEN = 'GRDIDLEN'
 
-  !> Dimension name for the netCDF point output file, for TIME.
+  !> Dimension name for the netCDF point output file, for TIME
   character(*), parameter, private :: DNAME_TIME = 'TIME'
+
+  !> Dimension name for the netCDF point output file, for WW3TIME
+  character(*), parameter, private :: DNAME_WW3TIME = 'WW3TIME'
 
   !> Variable name for the netCDF point output file, for NK.
   character(*), parameter, private :: VNAME_NK = 'NK'
@@ -157,6 +160,9 @@ MODULE W3IOPOMD
 
   !> Variable name for the netCDF point output file, for TIME. 
   character(*), parameter, private :: VNAME_TIME = 'TIME'
+
+  !> Variable name for the netCDF point output file, for WW3TIME.
+  character(*), parameter, private :: VNAME_WW3TIME = 'WW3TIME'
 
   !> Variable name for the netCDF point output file, for DPO.
   character(*), parameter, private :: VNAME_DPO = 'DPO'
@@ -1166,9 +1172,9 @@ CONTAINS
     integer, intent(inout) :: ncerr
     INTEGER :: IGRD,MK,MTH
     integer :: fh
-    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
-    integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len
-    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time
+    integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time, d_ww3time
+    integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len, d_ww3time_len
+    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time 
     integer :: v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
     integer :: v_tauao,v_taudo, v_dairo
@@ -1289,9 +1295,9 @@ CONTAINS
 
       !Variables read based on time (IPASS): 
 
-      ncerr = nf90_inq_varid(fh, VNAME_TIME, v_time)
+      ncerr = nf90_inq_varid(fh, VNAME_WW3TIME, v_ww3time)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_time, TIME, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_ww3time, TIME, start = (/ 1, IPASS/), &
           count = (/ d_vsize_len, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 
@@ -1425,6 +1431,7 @@ CONTAINS
          PTLOC, PTIFAC, DPO, WAO, WDO,   &
          ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
          GRDID, ICEO, ICEHO, ICEFO
+  USE W3TIMEMD, ONLY: CALTYPE, T2D, U2D, TSUB
 #ifdef W3_FLX5
     USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
 #endif
@@ -1438,7 +1445,7 @@ CONTAINS
     integer, intent(inout) :: ncerr
     integer :: ndim, nvar, fmt, itime, fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
-    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time
+    integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time
     integer :: v_dpo, v_wao, v_wdo
 #ifdef W3_FLX5
     integer :: v_tauao, v_taudo, v_dairo
@@ -1448,7 +1455,8 @@ CONTAINS
 #endif  
     integer :: v_aso, v_cao, v_cdo, v_iceo
     integer :: v_iceho, v_icefo, v_grdid, v_spco
-
+    integer :: curdate(8), refdate(8),ierr
+    double precision :: outjulday
 
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
@@ -1489,7 +1497,30 @@ CONTAINS
       if (nf90_err(ncerr) .ne. 0) return
  
       ! Define time for each time step 
-      ncerr = nf90_def_var(fh, VNAME_TIME, NF90_INT, (/d_vsize, d_time/),v_time)
+      ncerr = nf90_def_var(fh, VNAME_WW3TIME, NF90_INT, (/d_vsize, d_time/),v_ww3time)
+      if (nf90_err(ncerr) .ne. 0) return
+      ncerr = nf90_def_var(fh, VNAME_TIME, NF90_DOUBLE, (/d_time/),v_time)
+      if (nf90_err(ncerr) .ne. 0) return
+      SELECT CASE (TRIM(CALTYPE))
+      CASE ('360_day')
+        ncerr = nf90_put_att(fh, v_time, 'long_name', 'time in 360 day calendar')
+        if (nf90_err(ncerr) .ne. 0) return
+      CASE ('365_day')
+        ncerr = nf90_put_att(fh, v_time, 'long_name', 'time in 365 day calendar') 
+        if (nf90_err(ncerr) .ne. 0) return
+      CASE ('standard')
+        ncerr = nf90_put_att(fh, V_TIME, 'long_name', 'Julian day (UT)') 
+        if (nf90_err(ncerr) .ne. 0) return
+      END SELECT
+      ncerr = nf90_put_att(fh, V_TIME, 'standard_name', 'time')
+      if (nf90_err(ncerr) .ne. 0) return 
+      ncerr = nf90_put_att(fh, V_TIME, 'units', 'days since 1990-01-01 00:00:00')
+      if (nf90_err(ncerr) .ne. 0) return
+      ncerr = nf90_put_att(fh, V_TIME, 'conventions','Relative Julian days with decimal part (as parts of the day)')
+      if (nf90_err(ncerr) .ne. 0) return
+      ncerr = nf90_put_att(fh, V_TIME, 'axis', 'T')
+      if (nf90_err(ncerr) .ne. 0) return
+      ncerr = nf90_put_att(fh, V_TIME, 'calendar', TRIM(CALTYPE))
       if (nf90_err(ncerr) .ne. 0) return
 
       ! Define vars with nopts and time as dimensions 
@@ -1565,12 +1596,17 @@ CONTAINS
 
     ! Write Time
     IF ( itime > 1 ) THEN
+       ncerr = nf90_inq_varid(fh, VNAME_WW3TIME, v_ww3time)
+       if (nf90_err(ncerr) .ne. 0) return
        ncerr = nf90_inq_varid(fh, VNAME_TIME, v_time)
-       if (nf90_err(ncerr) .ne. 0) return 
+       if (nf90_err(ncerr) .ne. 0) return
     END IF
-    ncerr = nf90_put_var(fh, v_time, TIME, start = (/ 1, itime/), &
+    ncerr = nf90_put_var(fh, v_ww3time, TIME, start = (/ 1, itime/), &
        count = (/ 2, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
+    ncerr = nf90_put_var(fh, v_time, outjulday, start = (/itime/))
+    if (nf90_err(ncerr) .ne. 0) return
+
 
     ! If itime > 1 need to inquire varid 
     IF ( itime > 1 ) THEN 
