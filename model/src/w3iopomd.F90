@@ -1604,6 +1604,11 @@ CONTAINS
     ncerr = nf90_put_var(fh, v_ww3time, TIME, start = (/ 1, itime/), &
        count = (/ 2, 1 /))
     if (nf90_err(ncerr) .ne. 0) return
+
+    CALL U2D('days since 1990-01-01 00:00:00',REFDATE,IERR)
+    CALL T2D(TIME,CURDATE,IERR)
+    outjulday=TSUB(REFDATE,CURDATE)
+
     ncerr = nf90_put_var(fh, v_time, outjulday, start = (/itime/))
     if (nf90_err(ncerr) .ne. 0) return
 
