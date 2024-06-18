@@ -91,7 +91,7 @@ jobs:
             spack
             ~/.spack
             work_oasis3-mct
-          key: spack2-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_gnu.yaml') }}
+          key: spack-${{ runner.os }}-${{ env.cache_key }}-${{ hashFiles('ww3/model/ci/spack_gnu.yaml') }}
 
       - name: build-ww3
         run: |
@@ -120,14 +120,11 @@ jobs:
           cat ncdump_out.txt
           pwd
           cat ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt
-          cmp ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt ncdump_out.txt          
-        
+          cmp ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt ncdump_out.txt
+
       - name: cache-data
         id: cache-data
         uses: actions/cache@v3
         with:
           path: ww3/ww3_from_ftp.v7.14.1.tar.gz
           key: ww3_from_ftp.v7.14.1
-
-
-      
