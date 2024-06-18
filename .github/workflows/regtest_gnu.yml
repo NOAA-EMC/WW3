@@ -102,10 +102,10 @@ jobs:
           export CC=mpicc
           export FC=mpif90
           export OASISDIR=${GITHUB_WORKSPACE}/work_oasis3-mct
-#          mkdir build && cd build
+          # mkdir build && cd build
           export LD_LIBRARY_PATH="/home/runner/work/WW3/WW3/spack/var/spack/environments/ww3-gnu/.spack-env/view/:$LD_LIBRARY_PATH"
-#          cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/regtests/unittests/data/switch.io -DCMAKE_BUILD_TYPE=Debug ..
-#          make -j2 VERBOSE=1
+          # cmake -DSWITCH=${GITHUB_WORKSPACE}/ww3/regtests/unittests/data/switch.io -DCMAKE_BUILD_TYPE=Debug ..
+          # make -j2 VERBOSE=1
           cd ${GITHUB_WORKSPACE}/ww3
           ls -l
           ${GITHUB_WORKSPACE}/ww3/model/bin/ww3_from_ftp.sh -k
