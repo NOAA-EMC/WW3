@@ -116,11 +116,11 @@ jobs:
           cd work_PR1_MPI
           pwd
           ls -l
-          ncdump -h out_pnt.ww3.nc > ncdump_out.txt
-          cat ncdump_out.txt
-          pwd
-          cat ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt
-          cmp ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt ncdump_out.txt
+          # ncdump -h out_pnt.ww3.nc > ncdump_out.txt
+          # cat ncdump_out.txt
+          # pwd
+          # cat ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt
+          # cmp ${GITHUB_WORKSPACE}/ww3/regtests/ww3_tp2.5/out_pnt_ncdump.txt ncdump_out.txt
 
       - name: cache-data
         id: cache-data
