@@ -60,7 +60,7 @@ EOF
   modbacio='bacio/2.4.1'
   modg2='g2/3.4.5'
   modw3emc='w3emc/2.10.0'
-  modesmf='esmf/8.5.0'
+  modesmf='esmf/8.6.0'
   modscotch='scotch/7.0.4'
 
 # Set batchq queue, choose modules and other custom variables to fit system and
@@ -94,10 +94,10 @@ EOF
     if [ $compiler = "intel" ]
     then
       batchq='slurm'
-      spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core'
-      modcomp='stack-intel/2022.0.2'
-      modmpi='stack-intel-oneapi-mpi/2021.5.1'
-      metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/orion/intel/spack-stack/1.6.0/parmetis-4.0.3/install'
+      spackstackpath='module use  /work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env-rocky9/install/modulefiles/Core'
+      modcomp='stack-intel/2021.9.0'
+      modmpi='stack-intel-oneapi-mpi/2021.9.0'
+      metispath=''
       modcmake='cmake/3.23.1'
     else
       echo "Compiler $compiler not supported on orion"
