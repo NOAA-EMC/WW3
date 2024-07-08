@@ -94,7 +94,7 @@ EOF
     if [ $compiler = "intel" ]
     then
       batchq='slurm'
-      spackstackpath='module use  /work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env-rocky9/install/modulefiles/Core'
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env-rocky9/install/modulefiles/Core'
       modcomp='stack-intel/2021.9.0'
       modmpi='stack-intel-oneapi-mpi/2021.9.0'
       metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/orion/intel/spack-stack/1.6.0/parmetis-4.0.3/install'
