@@ -174,10 +174,9 @@ if("SCRIP" IN_LIST switches)
   target_sources(ww3_lib PRIVATE ${scrip_src})
 endif()
 
-
-if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
+if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches OR "BIN2NC" IN_LIST switches)
   if(NOT NetCDF_Fortran_FOUND)
-    message(FATAL_ERROR "Cannot build SCRIPNC, OASIS, or TRKNC without NetCDF")
+	  message(FATAL_ERROR "Cannot build SCRIPNC, OASIS, TRKNC, or BIN2NC without NetCDF")
   endif()
 endif()
 
