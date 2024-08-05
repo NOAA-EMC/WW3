@@ -1244,7 +1244,7 @@ CONTAINS
       IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
-        CALL W3STR1 ( SPEC, SPECOLD, CG1, WN1, DEPTH, IX,        VSTR, VDTR )
+        CALL W3STR1 ( SPEC, CG1, WN1, DEPTH, IX, VSTR, VDTR )
 #endif
 #ifdef W3_PDLIB
       ENDIF
@@ -1534,8 +1534,13 @@ CONTAINS
                   DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
                 ENDIF
                 PreVS  = DVS / FAKS
-                eVS    = PreVS / CG1(IK) * CLATSL
-                eVD    = MIN(0.,VD(ISP))
+                IF (IOBP_LOC(JSEA) .EQ. 3) THEN
+                  eVS = 0
+                  eVD = 0
+                ELSE
+                  eVS    = PreVS / CG1(IK) * CLATSL
+                  eVD    = MIN(0.,VD(ISP))
+                ENDIF
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP)*JAC)
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
@@ -1548,9 +1553,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
 
 #ifdef W3_TR1
                 eVS = VSTR(ISP) * JAC
@@ -1562,9 +1567,9 @@ CONTAINS
                   evS = -evS
                   evD = 2*evD
                 ENDIF
-#endif
                 B_JAC(ISP,JSEA)                   = B_JAC(ISP,JSEA) + SIDT * eVS
                 ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
               END DO
             END DO
 

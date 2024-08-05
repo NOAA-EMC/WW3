@@ -180,7 +180,7 @@ CONTAINS
   !>
   !> @author A. J. van der Westhuysen  @date 13-Jan-2013
   !>
-  SUBROUTINE W3STR1 (A, AOLD, CG, WN, DEPTH, IX, S, D)
+  SUBROUTINE W3STR1 (A, CG, WN, DEPTH, IX, S, D)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -259,7 +259,6 @@ CONTAINS
     !       CG      R.A.  I   Group velocities.
     !       WN      R.A.  I   Wavenumbers.
     !       DEPTH   Real  I   Mean water depth.
-    !       EMEAN   Real  I   Mean wave energy.
     !       FMEAN   Real  I   Mean wave frequency.
     !       S       R.A.  O   Source term (1-D version).
     !       D       R.A.  O   Diagonal term of derivative (1-D version).
@@ -320,7 +319,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), AOLD(NSPEC) 
+    REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC)
     INTEGER, INTENT(IN)     :: IX
     REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC)
     !/
@@ -391,11 +390,15 @@ CONTAINS
 #ifdef W3_S
     CALL STRACE (IENT, 'W3STR1')
 #endif
-
-!AR: todo: check all PRX routines for differences, check original thesis of elderberky. 
 !
 ! 1.  Integral over directions
 !
+    IF (MAXVAL(A) .LT. TINY(1.)) THEN
+      S = 0 
+      D = 0 
+      RETURN 
+    ENDIF 
+
     SIGM01 = 0.
     EMEAN  = 0.
     JACEPS = 1E-12

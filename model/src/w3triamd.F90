@@ -371,6 +371,241 @@ CONTAINS
     !
     CLOSE(NDS)
   END SUBROUTINE READMSH
+
+   !/ -------------------------------------------------------------------/
+
+  !>
+  !> @brief Reads triangle and unstructured grid information from GMSH files.
+  !>
+  !> @details Calls the subroutines needed to compute grid connectivity.
+  !>  Look for namelist with name NAME in unit NDS and read if found.
+  !>
+  !> @param[in] NDS    Data set number used for search.
+  !> @param[in] FNAME  Name of namelist.
+  !>
+  !> @author F. Ardhuin
+  !> @author A. Roland
+  !> @date   06-Jun-2018
+  !>
+  SUBROUTINE READ2DM(NDS,FNAME)
+    !/ -------------------------------------------------------------------
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           A. Roland               |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :          06-Sep-2023|
+    !/                  +-----------------------------------+
+    !/
+    !/    06-Sep-2023 : Origination.                        ( version 7.xx )
+    !/
+    !
+    !  1. Purpose :
+    !
+    !      Reads triangle and unstructured grid information from 2DM files
+    !      Calls the subroutines needed to compute grid connectivity
+    !
+    !  2. Method :
+    !
+    !     Look for namelist with name NAME in unit NDS and read if found.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDS     Int.   I   Data set number used for search.
+    !       NAME    C*4    I   Name of namelist.
+    !       STATUS  C*20   O   Status at end of routine,
+    !                            '(default values)  ' if no namelist found.
+    !                            '(user def. values)' if namelist read.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name               Type  Module   Description
+    !     ------------------------------------------------------------------------------------
+    !      NEXTLN             Subr.
+    !      COUNT              Subr. Internal Count connection.
+    !      SPATIAL_GRID       Subr.   Id.    Calculate surfaces.
+    !      NVECTRI            Subr.   Id.    Define cell normals and angles and edge length
+    !      COORDMAX           Subr.   Id.    Calculate  useful grid elements
+    !      AREA_SI            Subr.   Id.    Define Connections
+    !     ----------------------------------------------------------------
+    !
+    !
+    !
+    !  5. Called by :
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3GRID    Prog.          Model configuration program
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !  7. Remarks :
+    !     The only point index which is needed is IX and NX stands for the total number of grid point.
+    !     IY and NY are not needed anymore, they are set to 1 in the unstructured case
+    !     Some noticeable arrays are:
+    !                     TRIGP  : give the vertices of each triangle
+    !     GMSH file gives too much information that is not necessarily required so data processing is needed (data sort and nesting).
+    !  8. Structure :
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+    USE W3GDATMD, ONLY: ZB, XGRD, YGRD, NTRI, NX, COUNTOT, TRIGP, NNZ, W3DIMUG
+    USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+    USE CONSTANTS, only: LPDLIB
+    USE W3ODATMD, ONLY: IAPROC
+    !
+    IMPLICIT NONE
+    !/
+    !/ Parameter list
+    !/
+    INTEGER, INTENT(IN)                :: NDS
+    CHARACTER(60), INTENT(IN)          :: FNAME
+    !/
+    !/ local parameters
+    !/
+    INTEGER                            :: i,j,k, NODES, NELTS, ID, KID
+    INTEGER                            :: ID1, ID2, KID1, ITMP(3)
+    INTEGER                            :: I1, I2, I3, ISTAT
+    INTEGER(KIND=4)                    :: Ind,eltype,ntag, INode
+    CHARACTER                          :: COMSTR*1, SPACE*1 = ' ', CELS*64
+    REAL, ALLOCATABLE                  :: TAGS(:)
+    CHARACTER(LEN=64), ALLOCATABLE     :: ELS(:)
+    CHARACTER(LEN=120)                 :: LINE
+    CHARACTER(LEN=50)                  :: CHTMP
+    CHARACTER(LEN=10)                  :: A, B, C
+    INTEGER,ALLOCATABLE                :: NELS(:), TRIGPTMP1(:,:), TRIGPTMP2(:,:)
+    INTEGER(KIND=4),ALLOCATABLE        :: IFOUND(:), VERTEX(:), BOUNDTMP(:)
+    DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:),XYBTMP2(:,:)
+    REAL                               :: z
+
+    OPEN(NDS,FILE = FNAME,STATUS='old')
+    LPDLIB = .FALSE.
+#ifdef W3_PDLIB
+    LPDLIB = .TRUE.
+#endif
+    !
+    ! read number of nodes and nodes from Gmsh files
+    !
+    READ(NDS,*)
+    NODES = 0 
+    NELTS = 0 
+    DO 
+      READ(NDS,*, IOSTAT = ISTAT) CHTMP
+      IF (CHTMP(1:3) .EQ. 'E3T') THEN
+        NELTS = NELTS + 1
+      ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
+        NODES = NODES + 1
+      ENDIF 
+      !WRITE(*,*) ISTAT, CHTMP
+      IF (ISTAT .NE. 0) EXIT 
+    ENDDO 
+    REWIND(NDS) 
+
+    !WRITE(*,*) NODES, NELTS 
+ 
+    READ(NDS,*)
+    ALLOCATE(TRIGPTMP1(3,NELTS))
+    DO I= 1, NELTS
+      READ(NDS,*) LINE, j, TRIGPTMP1(:,I)
+    END DO
+
+    ALLOCATE(XYBTMP1(3,NODES))
+    DO I= 1, NODES
+      READ(NDS,*) LINE, j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
+    END DO
+    !
+    ! read number of elements and elements from 2DM files
+    !
+    NTRI = NELTS
+
+    ALLOCATE(IFOUND(NODES))
+
+    IFOUND = 0
+    !
+    ! Verifies that the nodes are used in at least one triangle
+    !
+    DO K = 1, NTRI
+      I1 = TRIGPTMP1(1,K)
+      I2 = TRIGPTMP1(2,K)
+      I3 = TRIGPTMP1(3,K)
+
+      IFOUND(I1)= IFOUND(I1) + 1
+      IFOUND(I2)= IFOUND(I2) + 1
+      IFOUND(I3)= IFOUND(I3) + 1
+    END DO
+
+    J = 0
+
+    ALLOCATE(TRIGPTMP2(3,NTRI),VERTEX(NODES),XYBTMP2(3,NODES))
+    VERTEX(:)=0
+    XYBTMP2 = 0
+
+    DO I = 1, NODES
+      IF( IFOUND(I) .GT. 0) THEN
+        J = J+1
+        XYBTMP2(:,J) = XYBTMP1(:,I)
+        VERTEX(I) = J
+      END IF
+    END DO
+    !
+    ! Number of nodes after clean up
+    !
+    NX = J
+    !
+    DO I = 1, NTRI
+      I1 = TRIGPTMP1(1,I)
+      I2 = TRIGPTMP1(2,I)
+      I3 = TRIGPTMP1(3,I)
+      TRIGPTMP2(1,I) = VERTEX(I1)
+      TRIGPTMP2(2,I) = VERTEX(I2)
+      TRIGPTMP2(3,I) = VERTEX(I3)
+    END DO
+    !
+    DEALLOCATE(XYBTMP1,IFOUND,TRIGPTMP1)
+    DEALLOCATE(VERTEX)
+    !
+    !count points connections to allocate array in W3DIMUG
+    !
+    CALL COUNT(TRIGPTMP2)
+    CALL W3DIMUG ( 1, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
+    !
+    ! fills arrays
+    !
+    DO I = 1, NX
+      XGRD(1,I) = XYBTMP2(1,I)
+      YGRD(1,I) = XYBTMP2(2,I)
+      ZB(I)     = XYBTMP2(3,I)
+    END DO
+    !
+    DO I=1, NTRI
+      ITMP = TRIGPTMP2(:,I)
+      TRIGP(:,I) = ITMP
+    END DO
+    !
+    DEALLOCATE(TRIGPTMP2,XYBTMP2)
+    !
+    ! call the various routines which define the point spotting strategy
+    !
+    CALL SPATIAL_GRID
+    CALL NVECTRI
+    CALL COORDMAX
+
+#ifdef W3_PDLIB
+    IF(.false.) THEN
+#endif
+      CALL AREA_SI(1)
+#ifdef W3_PDLIB
+    ENDIF
+#endif
+    !
+    CLOSE(NDS)
+  END SUBROUTINE READ2DM
   !/--------------------------------------------------------------------/
 
   !>
@@ -385,6 +620,7 @@ CONTAINS
   !> @author
   !> @date
   !>
+
   SUBROUTINE READMSH_IOBP(NDS,FNAME)
     !/ -------------------------------------------------------------------
     !/                  +-----------------------------------+
@@ -497,6 +733,279 @@ CONTAINS
     CLOSE(NDS)
   END SUBROUTINE READMSH_IOBP
   !/--------------------------------------------------------------------/
+
+  !>
+  !> @brief Reads Neumann boundary condition information from 2dm files.
+  !>
+  !> @details Calls the subroutines needed to compute grid connectivity.
+  !>  Look for namelist with name NAME in unit NDS and read if found.
+  !>
+  !> @param[in] NDS    Data set number used for search.
+  !> @param[in] FNAME  Name of namelist.
+  !>
+  !> @author
+  !> @date
+  !>
+
+  SUBROUTINE READ2DM_IOBP(NDS,FNAME)
+    !/ -------------------------------------------------------------------
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           A. Roland               |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :          12-Dez-2023|
+    !/                  +-----------------------------------+
+    !/
+    !/    15-Feb-2008 : Origination.                        ( version 3.13 )
+    !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
+    !/    06-Jun-2018 : Add DEBUGINIT/PDLIB/DEBUGSTP/DEBUGSETIOBP
+    !/                                                      ( version 6.04 )
+    !/
+    !
+    !  1. Purpose :
+    !
+    !      Reads triangle and unstructured grid information from 2DM files
+    !      Calls the subroutines needed to compute grid connectivity
+    !
+    !  2. Method :
+    !
+    !     Look for namelist with name NAME in unit NDS and read if found.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDS     Int.   I   Data set number used for search.
+    !       NAME    C*4    I   Name of namelist.
+    !       STATUS  C*20   O   Status at end of routine,
+    !                            '(default values)  ' if no namelist found.
+    !                            '(user def. values)' if namelist read.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name               Type  Module   Description
+    !     ------------------------------------------------------------------------------------
+    !      NEXTLN             Subr.
+    !      COUNT              Subr. Internal Count connection.
+    !      SPATIAL_GRID       Subr.   Id.    Calculate surfaces.
+    !      NVECTRI            Subr.   Id.    Define cell normals and angles and edge length
+    !      COORDMAX           Subr.   Id.    Calculate  useful grid elements
+    !      AREA_SI            Subr.   Id.    Define Connections
+    !     ----------------------------------------------------------------
+    !
+    !
+    !
+    !  5. Called by :
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3GRID    Prog.          Model configuration program
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !  7. Remarks :
+    !     The only point index which is needed is IX and NX stands for the total number of grid point.
+    !     IY and NY are not needed anymore, they are set to 1 in the unstructured case
+    !     Some noticeable arrays are:
+    !                     TRIGP  : give the vertices of each triangle
+    !     GMSH file gives too much information that is not necessarily required so data processing is needed (data sort and nesting).
+    !  8. Structure :
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+    USE W3GDATMD
+    USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+    USE CONSTANTS, only: LPDLIB
+    USE W3ODATMD, ONLY: IAPROC
+    !
+    IMPLICIT NONE
+    !/
+    !/ Parameter list
+    !/
+    INTEGER, INTENT(IN)                :: NDS
+    CHARACTER(60), INTENT(IN)          :: FNAME
+    !/
+    !/ local parameters
+    !/
+    INTEGER                            :: i,j,k, NODES, istat, nelts
+    LOGICAL                            :: lfile_exists
+    CHARACTER(30)                      :: chtmp, line
+    DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:)
+
+    INQUIRE(FILE=FNAME, EXIST=lfile_exists)
+    IF (.NOT. lfile_exists) RETURN
+    OPEN(NDS,FILE = FNAME,STATUS='old')
+    !
+    ! read number of nodes and nodes from Gmsh files
+    !
+    READ(NDS,*)
+    NODES = 0
+    NELTS = 0
+    DO
+      READ(NDS,*, IOSTAT = ISTAT) CHTMP
+      IF (CHTMP(1:3) .EQ. 'E3T') THEN
+        NELTS = NELTS + 1
+      ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
+        NODES = NODES + 1
+      ENDIF
+      !WRITE(*,*) ISTAT, CHTMP
+      IF (ISTAT .NE. 0) EXIT
+    ENDDO
+    REWIND(NDS)
+
+    ALLOCATE(XYBTMP1(3,NODES))
+    READ(NDS,*)
+    DO I= 1, NELTS
+      READ(NDS,*) LINE
+    ENDDO 
+    DO I= 1, NODES
+      READ(NDS,*) LINE, j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
+      !IF (INT(XYBTMP1(3,I)) .EQ. 2) IOBP(I) = 2
+      IF (INT(XYBTMP1(3,I)) .EQ. 3) IOBP(I) = 3
+    END DO
+    !
+    CLOSE(NDS)
+  END SUBROUTINE READ2DM_IOBP
+
+  !>
+  !> @brief Reads active boundary points 
+  !>
+  !> @param[inout] TMPSTA
+  !>
+  !> @author Aron Roland
+  !> @date   12-December-2023
+  !>
+
+  SUBROUTINE READ2DM_TMPSTA(NDS,FNAME,TMPSTA)
+    !/ -------------------------------------------------------------------
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           A. Roland               |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :          12-Dez-2023|
+    !/                  +-----------------------------------+
+    !/
+    !/    15-Feb-2008 : Origination.                        ( version 3.13 )
+    !/    25-Aug-2011 : Change of method for IOBPD          ( version 4.04 )
+    !/    06-Jun-2018 : Add DEBUGINIT/PDLIB/DEBUGSTP/DEBUGSETIOBP
+    !/                                                      ( version 6.04 )
+    !/ 
+    !
+    !  1. Purpose :
+    !
+    !      Reads triangle and unstructured grid information from 2DM files
+    !      Calls the subroutines needed to compute grid connectivity
+    !
+    !  2. Method :
+    !
+    !     Look for namelist with name NAME in unit NDS and read if found.
+    ! 
+    !  3. Parameters :
+    ! 
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDS     Int.   I   Data set number used for search.
+    !       NAME    C*4    I   Name of namelist.
+    !       STATUS  C*20   O   Status at end of routine,
+    !                            '(default values)  ' if no namelist found.
+    !                            '(user def. values)' if namelist read.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    ! 
+    !      Name               Type  Module   Description
+    !     ------------------------------------------------------------------------------------
+    !      NEXTLN             Subr.
+    !      COUNT              Subr. Internal Count connection.
+    !      SPATIAL_GRID       Subr.   Id.    Calculate surfaces.
+    !      NVECTRI            Subr.   Id.    Define cell normals and angles and edge length
+    !      COORDMAX           Subr.   Id.    Calculate  useful grid elements
+    !      AREA_SI            Subr.   Id.    Define Connections
+    !     ----------------------------------------------------------------
+    !
+    !
+    !
+    !  5. Called by :
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3GRID    Prog.          Model configuration program
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !  7. Remarks :
+    !     The only point index which is needed is IX and NX stands for the total number of grid point.
+    !     IY and NY are not needed anymore, they are set to 1 in the unstructured case
+    !     Some noticeable arrays are:
+    !                     TRIGP  : give the vertices of each triangle
+    !     GMSH file gives too much information that is not necessarily required so data processing is needed (data sort and nesting).
+    !  8. Structure :
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    USE W3ODATMD, ONLY: NDSE, NDST, NDSO
+    USE W3GDATMD
+    USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+    USE CONSTANTS, only: LPDLIB
+    USE W3ODATMD, ONLY: IAPROC
+    !
+    IMPLICIT NONE
+    !/
+    !/ Parameter list
+    !/
+    INTEGER, INTENT(IN)                :: NDS
+    CHARACTER(*), INTENT(IN)          :: FNAME
+    INTEGER, INTENT(INOUT)             :: TMPSTA(NY,NX)
+    !/
+    !/ local parameters
+    !/
+    INTEGER                            :: i,j,k, NODES, istat, nelts
+    LOGICAL                            :: lfile_exists
+    CHARACTER(30)                      :: chtmp, line
+    DOUBLE PRECISION, ALLOCATABLE      :: XYBTMP1(:,:)
+    
+    INQUIRE(FILE=FNAME, EXIST=lfile_exists)
+    IF (.NOT. lfile_exists) RETURN
+    OPEN(NDS,FILE = FNAME,STATUS='old')
+    !
+    ! read number of nodes and nodes from Gmsh files
+    !
+    READ(NDS,*)
+    NODES = 0
+    NELTS = 0
+    DO
+      READ(NDS,*, IOSTAT = ISTAT) CHTMP
+      IF (CHTMP(1:3) .EQ. 'E3T') THEN
+        NELTS = NELTS + 1
+      ELSE IF (CHTMP(1:2) .EQ. 'ND') THEN
+        NODES = NODES + 1
+      ENDIF
+      !WRITE(*,*) ISTAT, CHTMP
+      IF (ISTAT .NE. 0) EXIT
+    ENDDO
+    REWIND(NDS)
+    
+    ALLOCATE(XYBTMP1(3,NODES))
+    READ(NDS,*)
+    DO I= 1, NELTS
+      READ(NDS,*) LINE
+    ENDDO
+    DO I= 1, NODES
+      READ(NDS,*) LINE, j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
+      IF (INT(XYBTMP1(3,I)) .EQ. 2) TMPSTA(1,I) = 2
+      !IF (INT(XYBTMP1(3,I)) .EQ. 3) IOBP(I) = 3
+    END DO
+    !
+    CLOSE(NDS)
+  END SUBROUTINE READ2DM_TMPSTA
 
   !>
   !> @brief Boundary status (code duplication).
@@ -2874,7 +3383,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NX, NY, NSEA, MAPFS,                        &
          NK, NTH, DTH, XFR, MAPSTA, COUNTRI,         &
          ECOS, ESIN, IEN, NTRI, TRIGP,               &
-         IOBP,IOBPD, IOBPA,                          &
+         IOBP,IOBPD, IOBPA, L2DM,                    &
 #ifdef W3_REF1
          REFPARS, REFLC, REFLD,                      &
 #endif
@@ -2921,9 +3430,17 @@ CONTAINS
     ! 2.  Searches for boundary points
     !
     ITMP = MAPSTA(1,:)
+
     CALL SET_IOBP(ITMP, IOBP)
-    FNAME = 'meshbnd.msh'
-    CALL READMSH_IOBP(23456,FNAME)
+
+    IF (L2DM) THEN
+!AR: 2do - error handling ...
+      FNAME = 'meshbnd.2dm'
+      CALL READ2DM_IOBP(23456,FNAME)
+    ELSE
+      FNAME = 'meshbnd.msh'
+      CALL READMSH_IOBP(23456,FNAME)
+    ENDIF
     !
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 3. Defines directions pointing into land or sea

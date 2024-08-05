@@ -1,6 +1,6 @@
 #############################################################################
 #                                                                           #
-# ww3_tp2.6 Test script for WW-III, unstructured grid.                      #
+# ww3_tp2.6 Test script for WW-III, unstructured grid in msh and 2dm format.#
 #           Example of Limon harbour, Costa Rica                            #
 #                                                                           #
 # Model should be compiled with the switches :                              #
