@@ -70,7 +70,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^(GNU)$")
   set(compile_flags -g -fno-second-underscore -ffree-line-length-none)
   set(compile_flags_release -O3)
   set(compile_flags_debug -Wall -fcheck=all -ffpe-trap=invalid,zero,overflow -frecursive -fbacktrace)
-  
+
   if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10)
     target_compile_options(ww3_lib PUBLIC -fallow-argument-mismatch)
   endif()
@@ -79,7 +79,7 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "PGI")
   set(compile_flags -g -i4 -r4 -Kieee)
   set(compile_flags_release -O3)
   set(compile_flags_debug -O0 -Mbounds -Mchkfpstk -Mchkstk -Mdalign -Mdclchk -Mdepchk -Miomutex -Ktrap=fp -Mrecursive -traceback)
-  
+
   if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 10)
     target_compile_options(ww3_lib PUBLIC -fallow-argument-mismatch -fallow-invalid-boz)
   endif()
@@ -128,7 +128,7 @@ endif()
 
 if(UFS_CAP)
   # Don't search for ESMF if target already exists (when build WW3 as UFS submodule)
-  if (NOT TARGET esmf)
+  if (NOT TARGET ESMF::ESMF)
     find_package(ESMF MODULE REQUIRED)
   endif()
 
@@ -137,9 +137,9 @@ if(UFS_CAP)
   elseif(UFS_CAP STREQUAL "NUOPC_MESH")
     set(cap_src ${nuopc_mesh_cap_src})
   endif()
-  
+
   target_sources(ww3_lib PRIVATE ${cap_src})
-  target_link_libraries(ww3_lib PUBLIC esmf)
+  target_link_libraries(ww3_lib PUBLIC ESMF::ESMF)
   # Don't build executables when building WW3 ESMF library
   set(programs "")
 endif()
@@ -216,7 +216,7 @@ install(
 
 install(FILES ${CMAKE_BINARY_DIR}/switch DESTINATION ${CMAKE_INSTALL_PREFIX})
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod DESTINATION ${CMAKE_INSTALL_PREFIX})
-  
+
 
 export(EXPORT WW3Exports
   NAMESPACE WW3::
