@@ -944,6 +944,7 @@ contains
       ! local variables
       type(ESMF_Distgrid) :: distgrid
       type(ESMF_Grid)     :: grid
+      real(ESMF_KIND_R8), pointer :: fldptr2d(:,:)
       character(len=*), parameter :: subname='(wav_import_export:SetScalarField)'
       ! ----------------------------------------------
 
@@ -959,6 +960,11 @@ contains
       field = ESMF_FieldCreate(name=trim(flds_scalar_name), grid=grid, typekind=ESMF_TYPEKIND_R8, &
            ungriddedLBound=(/1/), ungriddedUBound=(/flds_scalar_num/), gridToFieldMap=(/2/), rc=rc) ! num of scalar values
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=u_FILE_u)) return
+
+      ! initialize fldptr to zero
+      call ESMF_FieldGet(field, farrayPtr=fldptr2d, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      fldptr2d(:,:) = 0.0
 
     end subroutine SetScalarField
 
