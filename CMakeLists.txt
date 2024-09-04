@@ -13,7 +13,7 @@ project(
 
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
-  # Unset flags that come from Parent (ie UFS or other coupled build) 
+  # Unset flags that come from Parent (ie UFS or other coupled build)
   # for potential (-r8/-r4) conflict
   set(CMAKE_Fortran_FLAGS "")
   set(CMAKE_C_FLAGS "")
@@ -22,8 +22,9 @@ endif()
 
 set(MULTI_ESMF OFF CACHE BOOL "Build ww3_multi_esmf library")
 set(NETCDF ON CACHE BOOL "Build NetCDF programs (requires NetCDF)")
-set(ENDIAN "BIG" CACHE STRING "Endianness of unformatted output files. Valid values are 'BIG', 'LITTLE', 'NATIVE'.") 
+set(ENDIAN "BIG" CACHE STRING "Endianness of unformatted output files. Valid values are 'BIG', 'LITTLE', 'NATIVE'.")
 set(EXCLUDE_FIND "" CACHE STRING "Don't try and search for these libraries (assumd to be handled by the compiler/wrapper)")
+set(ENABLE_DOCS OFF CACHE BOOL "Enable building of doxygen generated documentation")
 
 # make sure all "exclude_find" entries are lower case
 list(TRANSFORM EXCLUDE_FIND TOLOWER)
@@ -58,6 +59,13 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "^(Debug|Release|RelWithDebInfo|MinSizeRel)$")
 endif()
 
 add_subdirectory(model)
+
+# Turn on doxygen documentation
+if (ENABLE_DOCS)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/docs/cmake")
+  include(EnableDoxygen)
+  add_subdirectory(docs)
+endif()
 
 # Turn on unit testing.
 #include(CTest)
