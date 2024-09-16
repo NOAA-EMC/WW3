@@ -421,7 +421,7 @@ CONTAINS
     use yowNodepool, only: npa
     use yowRankModule, only : rank
 #endif
-    USE W3GDATMD, ONLY: GTYPE, UNGTYPE
+    USE W3GDATMD, ONLY: GTYPE, UNGTYPE, IOBDP_LOC
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, ONLY : PDLIB_MAPSTA_INIT, SET_IOBDP_PDLIB, PDLIB_IOBP_INIT, SET_IOBPA_PDLIB
     USE PDLIB_W3PROFSMD, ONLY : BLOCK_SOLVER_INIT, BLOCK_SOLVER_EXPLICIT_INIT, PDLIB_INIT, DEALLOCATE_PDLIB_GLOBAL
@@ -499,7 +499,7 @@ CONTAINS
 #endif
     REAL                    :: DTTST, DEPTH, FRACOS
     REAL                    :: FACTOR
-    REAL                    :: WLVeff
+    REAL                    :: WLVeff, CTMP
 #ifdef W3_T
     REAL, ALLOCATABLE      :: XOUT(:,:)
 #endif
@@ -1336,6 +1336,7 @@ CONTAINS
 #ifdef W3_PDLIB
     IF ( IAPROC .LE. NAPROC ) THEN
       CALL SET_IOBDP_PDLIB
+      WRITE(*,*) MAXVAL(IOBDP_LOC), MINVAL(IOBDP_LOC) 
     ENDIF
 #endif
 
@@ -1386,7 +1387,7 @@ CONTAINS
         !
         !         Calculate wavenumbers and group velocities.
 #ifdef W3_PDLIB
-        CALL WAVNU3(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
+        CALL WAVNU3(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS), CTMP)
 #else
         CALL WAVNU1(SIG(IK),DEPTH,WN(IK,IS),CG(IK,IS))
 #endif

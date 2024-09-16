@@ -360,7 +360,7 @@ CONTAINS
 #endif
     INTEGER            :: LQST1(16), LQST4(16)
     REAL               :: XSITLN, SIT, FPROP, FQ1, FQ2, FQ3, FQ4,   &
-         AUX1, AUX2
+         AUX1, AUX2, CTMP
     REAL               :: XWN(NFRMAX), XCG(NFRMAX), SCALE1(NFRCUT), &
          SCALE2(NFRCUT), LQST2(16), FACT(6),       &
          LQST5(16), LQST6(16)
@@ -394,7 +394,7 @@ CONTAINS
     !
     DO IFR = NFR+1, NFRMAX
 #ifdef W3_PDLIB
-      CALL WAVNU3(XSI(IFR), DEPTH, XWN(IFR), XCG(IFR))
+      CALL WAVNU3(XSI(IFR), DEPTH, XWN(IFR), XCG(IFR), CTMP)
 #else
       CALL WAVNU1(XSI(IFR), DEPTH, XWN(IFR), XCG(IFR))
 #endif

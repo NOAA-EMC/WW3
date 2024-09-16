@@ -1,0 +1,25 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.22 Wave diffraction test case based on HISWA wave tank            #
+#            In this case we mimic a semi-infite breakwater                 # 
+#            Here we test the explicit and implicit schemes                 # 
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   PR3 LN0 ST0 NL1 BT1 DB1 MLIM TR0 BS0 WNX1 WNT1 CRX1 CRT1                #
+#   O0 O1 O2 O3 O4 O5 O6 O7 NOGRB SHRD FLX0                                 #
+#                                                                           #
+#   The choice of propagation schemes for unstructured grids is done via    #
+#   namelists.                                                              #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - the given switch file must be used                                      #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test                        -s ST0   ../model ww3_tp2.22       #
+#                                                                           #
+#                                                 Aron Roland  Dez 2023     #
+#                                                   Last Mod : Jan 2024     #
+#                                                                           #
+#############################################################################

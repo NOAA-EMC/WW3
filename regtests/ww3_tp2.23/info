@@ -1,0 +1,29 @@
+#############################################################################
+#                                                                           #
+# ww3_tp2.6 Test script for WW-III, unstructured grid.                      #
+#           Example of Limon harbour, Costa Rica                            #
+#                                                                           #
+# Model should be compiled with the switches :                              #
+#                                                                           #
+#   PR3 LN0 ST0 NL1 BT1 DB1 MLIM TR0 BS0 WNX1 WNT1 CRX1 CRT1                #
+#   O0 O1 O2 O3 O4 O5 O6 O7 NOGRB SHRD FLX0                                 #
+#                                                                           #
+#   The choice of propagation schemes for unstructured grids is done via    #
+#   namelists.                                                              #
+#                                                                           #
+# Remarks :                                                                 #
+#                                                                           #
+# - No other optional switches should be used.                              #
+#                                                                           #
+#  Sample run_test commands :                                               #
+#  ./bin/run_test                        -s ST0   ../model ww3_tp2.6        #
+#  ./bin/run_test                        -s ST4   ../model ww3_tp2.6        #
+#  Domain Decomposition Implicit needs PDLIB  and either of METIS or        #
+#                                                      SCOTCH switch        #
+#  ./bin/run_test                        -s PDLIB ../model ww3_tp2.6        #
+#                                                                           #
+#                             Aron Roland and Fabrice Ardhuin, Jan 2011     #
+#                             Ali Abdolali                     Oct 2018     #
+#                                                   Last Mod : Oct 2018     #
+#                                                                           #
+#############################################################################
