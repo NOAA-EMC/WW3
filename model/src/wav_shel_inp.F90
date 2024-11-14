@@ -52,6 +52,9 @@ contains
     integer , intent(in)   :: stdout
     integer , intent(out)  :: mds(13), ntrace(2)
 
+    ! local variables
+    integer :: i
+
     ! Note that nds is set to mds in w3initmd.F90 - mds is a local array
     ! The following units are referenced in module w3initmd
     ! NDS(1) ! OUTPUT LOG: General output unit number ("log file")
@@ -80,17 +83,13 @@ contains
     ! By default, unit numbers between 50 and 99 are scanned to find an
     ! unopened unit number
 
-    call ESMF_UtilIOUnitGet(mds(5)) ; open(unit=mds(5)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(6)) ; open(unit=mds(6)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(7)) ; open(unit=mds(7)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(8)) ; open(unit=mds(8)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(9)) ; open(unit=mds(9)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(10)); open(unit=mds(10) , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(11)); open(unit=mds(11) , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(12)); open(unit=mds(12) , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(13)); open(unit=mds(13) , status='scratch')
-    close(mds(5)); close(mds(6)); close(mds(7)); close(mds(8)); close(mds(9)); close(mds(10))
-    close(mds(11)); close(mds(12)); close(mds(13))
+    do i = 5,size(mds)
+      call ESMF_UtilIOUnitGet(mds(i))
+      open(unit=mds(i), status='scratch')
+    end do
+    do i = 5,size(mds)
+      close(mds(i))
+    end do
 
     ntrace(1) = mds(3)
     ntrace(2) = 10
@@ -101,10 +100,14 @@ contains
   !> Read ww3_shel.inp Or ww3_shel.nml
   !!
   !! @param[in]  mpi_comm           mpi communicator
+  !! @param[in]  mds                an array of unit numbers
+  !! @param[in]  time0_overwrite    the initial time for overwriting the nml file, optional
+  !! @param[in]  timen_overwrite    the endding time for overwriting the nml file, optional
+  !! @param[out] rstfldlist         a list of additional restart fields, optional
   !!
   !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
   !> @date 01-05-2022
-  subroutine read_shel_config(mpi_comm, mds, time0_overwrite, timen_overwrite)
+  subroutine read_shel_config(mpi_comm, mds, time0_overwrite, timen_overwrite, rstfldlist)
 
     use wav_shr_flags
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
@@ -128,12 +131,14 @@ contains
 #ifdef W3_NL5
     use w3wdatmd       , only : qi5tbeg
 #endif
+    use wav_kind_mod  , only : CL => shr_kind_cl
 
     ! input/output parameters
-    integer, intent(in) :: mpi_comm
-    integer, intent(in) :: mds(:)
-    integer, intent(in), optional :: time0_overwrite(2)
-    integer, intent(in), optional :: timen_overwrite(2)
+    integer,           intent(in) :: mpi_comm
+    integer,           intent(in) :: mds(:)
+    integer,           intent(in),  optional :: time0_overwrite(2)
+    integer,           intent(in),  optional :: timen_overwrite(2)
+    character(len=CL), intent(out), optional :: rstfldlist
 
     ! local parameters
     integer, parameter  :: nhmax =    200
@@ -204,8 +209,9 @@ contains
     memunit = 740+IAPROC
     call print_logmsg(740+IAPROC, 'read_shel_config, step 1', w3_debuginit_flag)
 
-    ! ndso, ndse, ndst are set in w3initmd using mds;  w3initmd is called by either
-    ! cesm_init or uwm_int after calling the read_shel_config routine
+    ! module variables ndso, ndse, ndst are set in w3initmd using mds;  w3initmd is
+    ! called by either cesm_init or uwm_int after calling the read_shel_config routine.
+    ! these nd units are local variables here
     ndso =  mds(1)
     ndse =  mds(1)
     ndst =  mds(1)
@@ -639,6 +645,13 @@ contains
       ! Extra fields to be written in the restart
       fldrst = nml_output_type%restart%extra
       call w3flgrdflag ( ndso, ndso, ndse, fldrst, flogr, flogrr, iaproc, napout, ierr )
+      if (present(rstfldlist)) then
+        if (trim(fldrst) .ne. 'unset')then
+          rstfldlist = trim(fldrst)
+        else
+          rstfldlist = ' '
+        end if
+      end if
       if ( ierr .ne. 0 ) goto 2222
 
       ! force minimal allocation to avoid memory seg fault

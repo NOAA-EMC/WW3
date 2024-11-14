@@ -111,7 +111,7 @@ CONTAINS
   !>
   !> @author H. L. Tolman  @date 22-Mar-2021
   !>
-  SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT )
+  SUBROUTINE W3IORS ( INXOUT, NDSR, DUMFPI, IMOD, FLRSTRT , filename)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -327,7 +327,7 @@ CONTAINS
 #ifdef W3_TIMINGS
     USE W3PARALL, ONLY: PRINT_MY_TIME
 #endif
-    USE w3odatmd, ONLY : RUNTYPE, INITFILE
+    USE w3odatmd, ONLY : RUNTYPE
     USE w3adatmd, ONLY : USSHX, USSHY
 #ifdef W3_PDLIB
     USE PDLIB_FIELD_VEC
@@ -335,9 +335,6 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    !
-    use w3timemd, only: set_user_timestring
-    use w3odatmd, only: use_user_restname, user_restfname, ndso
     !
 #ifdef W3_MPI
     INCLUDE "mpif.h"
@@ -352,6 +349,7 @@ CONTAINS
     REAL, INTENT(INOUT)           :: DUMFPI
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
     LOGICAL, INTENT(IN),OPTIONAL  :: FLRSTRT
+    character(len=*), intent(in), optional :: filename
     !/
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
@@ -382,12 +380,10 @@ CONTAINS
     LOGICAL                 :: NDSROPN
     CHARACTER(LEN=4)        :: TYPE
     CHARACTER(LEN=10)       :: VERTST
-    CHARACTER(LEN=512)      :: FNAME
+    CHARACTER(LEN=40)       :: FNAME
     CHARACTER(LEN=26)       :: IDTST
     CHARACTER(LEN=30)       :: TNAME
     CHARACTER(LEN=15)       :: TIMETAG
-    character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
-    logical                 :: exists
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -465,46 +461,9 @@ CONTAINS
     !
     ! open file ---------------------------------------------------------- *
     !
-    if (use_user_restname) then
-      ierr = -99
-      if (.not. write) then
-        if (runtype == 'initial') then
-          if (len_trim(initfile) == 0) then
-            ! no IC file, use startup option
-            goto 800
-          else
-            ! IC file exists - use it
-            fname = trim(initfile)
-          end if
-        else
-          call set_user_timestring(time,user_timestring)
-          fname = trim(user_restfname)//trim(user_timestring)
-          inquire( file=trim(fname), exist=exists)
-          if (.not. exists) then
-            call extcde (60, msg="required initial/restart file " // trim(fname) // " does not exist")
-          end if
-        end if
-      else
-        call set_user_timestring(time,user_timestring)
-        fname = trim(user_restfname)//trim(user_timestring)
-      end if
-      ! write out filename
-      if (iaproc == naprst) then
-        IF ( WRITE ) THEN
-          write (ndso,'(a)') 'WW3: writing restart file '//trim(fname)
-        else
-          write (ndso,'(a)') 'WW3: reading initial/restart file '//trim(fname)
-        end if
-      end if
-      if ( write ) then
-        IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )        &
-             open (ndsr,file=trim(fname), form='unformatted', convert=file_endian,       &
-             ACCESS='STREAM',ERR=800,IOSTAT=IERR)
-      ELSE  ! READ
-        open (ndsr, file=trim(fname), form='unformatted', convert=file_endian,       &
-             ACCESS='STREAM',ERR=800,IOSTAT=IERR,           &
-             STATUS='OLD',ACTION='READ')
-      END IF
+    if (present(filename)) then ! only when restart_nc and restart_from_binary=true
+      open (ndsr,file=trim(filename),form='unformatted', convert=file_endian, &
+           access='stream',err=800,iostat=ierr, status='old',action='read')
     else
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
@@ -530,10 +489,9 @@ CONTAINS
       IFILE  = IFILE + 1
       !
 #ifdef W3_T
-      WRITE (NDST,9001) trim(FNAME), LRECL
+      WRITE (NDST,9001) FNAME, LRECL
 #endif
       !
-
       IF(NDST.EQ.NDSR)THEN
         IF ( IAPROC .EQ. NAPERR )                                    &
              WRITE(NDSE,'(A,I8)')'UNIT NUMBERS OF RESTART FILE AND '&
@@ -543,14 +501,14 @@ CONTAINS
 
       IF ( WRITE ) THEN
         IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
-             OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),form='UNFORMATTED', convert=file_endian,       &
+             OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
              ACCESS='STREAM',ERR=800,IOSTAT=IERR)
       ELSE
-        OPEN (NDSR,FILE=FNMPRE(:J)//trim(FNAME),form='UNFORMATTED', convert=file_endian,       &
+        OPEN (NDSR,FILE=FNMPRE(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
              ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
              STATUS='OLD',ACTION='READ')
       END IF
-    end if
+    end if ! if (present(filename))
     !
     ! test info ---------------------------------------------------------- *
     !
@@ -638,21 +596,11 @@ CONTAINS
         END IF
       ELSE
         READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR) TTIME
-#ifdef W3_CESMCOUPLED
-        if (runtype == 'branch' .or. runtype == 'continue') then
-          IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
-            IF ( IAPROC .EQ. NAPERR )                           &
-                 WRITE (NDSE,906) TTIME, TIME
-            CALL EXTCDE ( 20 )
-          END IF
-        end if
-#else
         IF (TIME(1).NE.TTIME(1) .OR. TIME(2).NE.TTIME(2)) THEN
           IF ( IAPROC .EQ. NAPERR )                           &
                WRITE (NDSE,906) TTIME, TIME
           CALL EXTCDE ( 20 )
         END IF
-#endif
       END IF
       !
 #ifdef W3_T
@@ -687,7 +635,7 @@ CONTAINS
         ! Original non-server version writing of spectra
         !
         IF ( .NOT.IOSFLG .OR. (NAPROC.EQ.1.AND.NAPRST.EQ.1) ) THEN
-#ifdef W3_MPI 
+#ifdef W3_MPI
           DO JSEA=1, NSEAL
             CALL INIT_GET_ISEA(ISEA, JSEA)
             NREC   = ISEA + 2
@@ -696,7 +644,7 @@ CONTAINS
             WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
           END DO
-#else 
+#else
           DO JSEA=1, NSEA
             ISEA = JSEA
             NREC   = ISEA + 2
@@ -705,7 +653,7 @@ CONTAINS
             WRITEBUFF(1:NSPEC) = VA(1:NSPEC,JSEA)
             WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
           END DO
-#endif          
+#endif
           !
           ! I/O server version writing of spectra ( !/MPI )
           !

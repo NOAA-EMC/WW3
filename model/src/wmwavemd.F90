@@ -267,7 +267,7 @@ CONTAINS
     !/
     INTEGER                 :: J, JJ, I, JO, TPRNT(2), TAUX(2),     &
          II, JJJ, IX, IY, UPNEXT(2), UPLAST(2)
-    INTEGER                 :: DUMMY2(35)=0
+    INTEGER                 :: DUMMY2(40)=0
 #ifdef W3_T
     INTEGER                 :: ILOOP
 #endif
