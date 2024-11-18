@@ -836,7 +836,7 @@ MODULE W3GRIDMD
   !
 #ifdef W3_ST4
   INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF
-  REAL 		   :: SDSBCHOICE
+  REAL                    :: SDSBCHOICE
   REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
        ZALP, Z0RAT, TAUWSHELTER, SWELLF,    &
        SWELLF2,SWELLF3,SWELLF4, SWELLF5,    &
@@ -3280,7 +3280,7 @@ CONTAINS
            JGS_TERMINATE_DIFFERENCE,                   &
            JGS_TERMINATE_NORM,                         &
            JGS_LIMITER,                                &
-           JGS_LIMITER_FUNC,                           & 
+           JGS_LIMITER_FUNC,                           &
            JGS_USE_JACOBI,                             &
            JGS_BLOCK_GAUSS_SEIDEL,                     &
            JGS_MAXITER,                                &
@@ -3617,7 +3617,7 @@ CONTAINS
       END SELECT
 
       IF (FSTOTALIMP .or. FSTOTALEXP) THEN
-        LPDLIB = .TRUE. 
+        LPDLIB = .TRUE.
       ENDIF
       !
       IF (SUM(UNSTSCHEMES).GT.1) WRITE(NDSO,1035)

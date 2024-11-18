@@ -2570,8 +2570,6 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    use w3timemd   , only: set_user_timestring
-    use w3odatmd   , only: use_user_histname, user_histfname
     !
     !/
     !/ ------------------------------------------------------------------- /
@@ -2600,8 +2598,6 @@ CONTAINS
 #endif
     CHARACTER(LEN=30)       :: IDTST, TNAME
     CHARACTER(LEN=10)       :: VERTST
-    CHARACTER(len=512)      :: FNAME
-    character(len=16)       :: user_timestring    !YYYY-MM-DD-SSSSS
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -2653,25 +2649,15 @@ CONTAINS
     IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
-      if (use_user_histname) then
-        if (len_trim(user_histfname) == 0 ) then
-          call extcde (60, MSG="user history filename requested"// &
-               " but not provided")
-        end if
-        call set_user_timestring(time,user_timestring)
-        fname = trim(user_histfname)//trim(user_timestring)
-      else
-        fname = 'out_grd.'//FILEXT(:I)
-      end if
       !
 #ifdef W3_T
-      WRITE (NDST,9001) FNMPRE(:J)//trim(fname)
+      WRITE (NDST,9001) FNMPRE(:J)//'out_grd.'//FILEXT(:I)
 #endif
       IF ( WRITE ) THEN
-        OPEN (NDSOG,FILE=FNMPRE(:J)//trim(fname),     &
+        OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
       ELSE
-        OPEN (NDSOG,FILE=FNMPRE(:J)//trim(fname),     &
+        OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
       END IF
       !
@@ -2730,30 +2716,19 @@ CONTAINS
         CALL EXTCDE ( 2 )
       END IF
     END IF
-
     !
     IF ( IPASS.GE.1 .AND. OFILES(1) .EQ. 1) THEN
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE)
-      if (use_user_histname) then
-        if (len_trim(user_histfname) == 0 ) then
-          call extcde (60, MSG="user history filename requested"// &
-               " but not provided")
-        end if
-        call set_user_timestring(time,user_timestring)
-        fname = trim(user_histfname)//trim(user_timestring)
-      else
-        !
-        ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
-        WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+      !
+      ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
+      WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
 #ifdef W3_T
-        WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)
+      WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)
 #endif
-        fname = TIMETAG//'.out_grd.'//FILEXT(:I)
-      end if
       IF ( WRITE ) THEN
-        OPEN (NDSOG,FILE=FNMPRE(:J)//trim(fname),  &
-             form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
+        OPEN (NDSOG,FILE=FNMPRE(:J)//TIMETAG//'.out_grd.'  &
+             //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
       ELSE
         OPEN (NDSOG,FILE=FNMPRE(:J)//'out_grd.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')

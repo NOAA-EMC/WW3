@@ -1,4 +1,3 @@
-
 # Open switch file
 file(STRINGS ${CMAKE_BINARY_DIR}/switch switch_strings)
 separate_arguments(switches UNIX_COMMAND ${switch_strings})
