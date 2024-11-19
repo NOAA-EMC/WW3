@@ -22,11 +22,11 @@ usage ()
 {
   cat 2>&1 << EOF
 
-  Usage: $myname model_dir compiler 
+  Usage: $myname model_dir compiler
   Required:
     model_dir : path to model dir of WW3 source
-  Optional: 
-    compiler : intel (default) or gnu 
+  Optional:
+    compiler : intel (default) or gnu
 EOF
 }
 
@@ -36,16 +36,16 @@ EOF
     main_dir="$1" ; shift
     if [ ! $# = 0 ]
     then
-      compiler="$1"; shift 
-    else 
+      compiler="$1"; shift
+    else
       compiler='intel'
-    fi 
+    fi
   else
     usage
     exit 1
   fi
- 
-  
+
+
 
 # Convert main_dir to absolute path
   main_dir="`cd $main_dir 1>/dev/null 2>&1 && pwd`"
@@ -60,51 +60,51 @@ EOF
   modbacio='bacio/2.4.1'
   modg2='g2/3.4.5'
   modw3emc='w3emc/2.10.0'
-  modesmf='esmf/8.5.0'
+  modesmf='esmf/8.6.0'
   modscotch='scotch/7.0.4'
 
 # Set batchq queue, choose modules and other custom variables to fit system and
 # to define headers etc (default to original version if empty)
   ishera=`hostname | grep hfe`
-  isorion=`hostname | grep Orion`
+  isorion=`hostname | grep orion`
   ishercules=`hostname | grep hercules`
   if [ $ishera ]
   then
     batchq='slurm'
     if [ $compiler = "intel" ]
-    then 
+    then
       spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/modulefiles/Core'
       modcomp='stack-intel/2021.5.0'
       modmpi='stack-intel-oneapi-mpi/2021.5.1'
       metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/intel/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     elif [ $compiler = "gnu" ]
-    then 
+    then
       spackstackpath='/scratch1/NCEPDEV/nems/role.epic/spack-stack/spack-stack-1.6.0/envs/unified-env-rocky8/install/modulefiles/Core'
       modcomp='stack-gcc/9.2.0'
       modmpi='stack-openmpi/4.1.5'
       metispath='/scratch1/NCEPDEV/climate/Matthew.Masarik/waves/opt/hera/gnu/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
-    else 
-      echo "Compiler $compiler not supported on hera" 
-      exit 1 
-    fi 
+    else
+      echo "Compiler $compiler not supported on hera"
+      exit 1
+    fi
   elif [ $isorion ]
   then
     if [ $compiler = "intel" ]
     then
       batchq='slurm'
-      spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core'
-      modcomp='stack-intel/2022.0.2'
-      modmpi='stack-intel-oneapi-mpi/2021.5.1'
+      spackstackpath='/work/noaa/epic/role-epic/spack-stack/orion/spack-stack-1.6.0/envs/unified-env-rocky9/install/modulefiles/Core'
+      modcomp='stack-intel/2021.9.0'
+      modmpi='stack-intel-oneapi-mpi/2021.9.0'
       metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/orion/intel/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     else
-      echo "Compiler $compiler not supported on orion" 
+      echo "Compiler $compiler not supported on orion"
       exit 1
-    fi  
-  elif [ $ishercules ] 
-  then 
+    fi
+  elif [ $ishercules ]
+  then
     batchq='slurm'
     if [ $compiler = "intel" ]
     then
@@ -114,7 +114,7 @@ EOF
       metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/hercules/intel/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     elif [ $compiler = "gnu" ]
-    then 
+    then
       spackstackpath='/work/noaa/epic/role-epic/spack-stack/hercules/spack-stack-1.6.0/envs/unified-env/install/modulefiles/Core'
       spackstackpath2='/work/noaa/epic/role-epic/spack-stack/hercules/modulefiles'
       modcomp='stack-gcc/12.2.0'
@@ -122,7 +122,7 @@ EOF
       metispath='/work/noaa/marine/Matthew.Masarik/waves/opt/hercules/gnu/spack-stack/1.6.0/parmetis-4.0.3/install'
       modcmake='cmake/3.23.1'
     else
-      echo "Compiler $compiler not supported on hercules" 
+      echo "Compiler $compiler not supported on hercules"
       exit 1
     fi
   else
@@ -195,7 +195,7 @@ EOF
   echo "  module use $spackstackpath"                       >> matrix.head
   if [ ! -z $spackstackpath2 ]; then
     echo "  module use $spackstackpath2"                    >> matrix.head
-  fi 
+  fi
   echo "  module load $modcomp"                             >> matrix.head
   echo "  module load $modmpi"                              >> matrix.head
   echo "  module load $modcmake"                            >> matrix.head
