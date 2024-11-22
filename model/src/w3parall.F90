@@ -532,6 +532,7 @@ CONTAINS
     eDDDY=DDDY(1,IP)
     eCTHG0 = CTHG0S(ISEA)
     FACTH  = 1.0 / DTH
+    CAD = 0. 
     !
     FDG    = FACTH * eCTHG0
     DEPTH  = MAX ( DMIN , DW(ISEA) )

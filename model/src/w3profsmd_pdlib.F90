@@ -865,6 +865,118 @@ CONTAINS
     !/ End of W3SPR4 ----------------------------------------------------- /
     !/
   END SUBROUTINE PDLIB_W3XYPUG
+
+  SUBROUTINE PDLIB_W3XYPUG_DRIVER ( FACX, FACY, DTG, VGX, VGY, LCALC )
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |                                   |
+    !/                  | Aron Roland (BGS IT&E GmbH)       |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         10-Jan-2024 |
+    !/                  +-----------------------------------+
+    !/
+    !/    16-Jan-2024 : Origination.                        ( version 7.xx )
+    !/
+    !  1. Purpose : Explicit advection schemes driver
+    !
+    !     Propagation in physical space for all spectral components.
+    !     Used for OMPH
+    !
+    !  2. Method :
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !     Local variables.
+    !     ----------------------------------------------------------------
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !  5. Called by :
+    !
+    !       W3WAVE   Wave model routine.
+    !
+    !  6. Error messages :
+    !
+    !       None.
+    !
+    !  7. Remarks :
+    !              make the interface for OMPH implementation 
+    !
+    !  8. Structure :
+    !
+    !
+    !  9. Switches :
+    !
+    !       !/S     Enable subroutine tracing.
+    !
+    !
+    ! 10. Source code :
+    !/ ------------------------------------------------------------------- /
+    !/
+    !
+    USE CONSTANTS
+    !
+    USE W3TIMEMD, only: DSEC21
+    !
+    USE W3GDATMD, only: NX, NY, NSPEC, MAPFS, CLATS,        &
+         FLCX, FLCY, NK, NTH, DTH, XFR,              &
+         ECOS, ESIN, SIG,  PFMOVE,                   &
+         IOBP, IOBPD,                                &
+         FSN, FSPSI, FSFCT, FSNIMP,                  &
+         GTYPE, UNGTYPE, NBND_MAP, INDEX_MAP
+    USE YOWNODEPOOL, only: PDLIB_IEN, PDLIB_TRIA
+    USE W3GDATMD, only: IOBP_LOC, IOBPD_LOC, IOBPA_LOC, IOBDP_LOC
+    USE YOWNODEPOOL, only: iplg, npa
+    USE W3WDATMD, only: TIME, VA
+    USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
+    USE W3ADATMD, only: CG, CX, CY, ITIME, DW
+    USE W3IDATMD, only: FLCUR, FLLEV
+    USE W3GDATMD, only: NSEAL
+    USE W3ODATMD, only: IAPROC
+    USE W3DISPMD, only : WAVNU_LOCAL
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    REAL, INTENT(IN)        :: FACX, FACY, DTG, VGX, VGY
+    LOGICAL, INTENT(IN)     :: LCALC 
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local PARAMETERs
+    INTEGER                 :: ISP
+    !/
+    !/ ------------------------------------------------------------------- /
+    !
+    ! 1.  Preparations --------------------------------------------------- *
+    ! 1.a Set constants
+    !
+#ifdef W3_S
+    CALL STRACE (IENT, 'W3XYPUG')
+#endif
+#ifdef W3_DEBUGSOLVER
+    WRITE(740+IAPROC,*) 'Begin of PDLIB_W3XYPUG_DRIVER'
+    FLUSH(740+IAPROC)
+#endif
+
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (ISP)
+#endif
+    DO ISP=1,NSPEC
+       CALL PDLIB_W3XYPUG ( ISP, FACX, FACX, DTG, VGX, VGY, LCALC )
+    END DO
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
+    !/
+    !/ End of PDLIB_W3XYPUG ----------------------------------------------------- /
+    !/
+  END SUBROUTINE PDLIB_W3XYPUG_DRIVER
   !/ ------------------------------------------------------------------- /
   SUBROUTINE PDLIB_W3XYPFSN2(ISP, C, LCALC, RD10, RD20, DT, AC)
     !/
@@ -2854,12 +2966,24 @@ CONTAINS
     !
     USE W3ODATMD, only: IAPROC
     USE W3GDATMD, only: B_JGS_USE_JACOBI
+    USE W3TIMEMD, only: DSEC21
+    USE W3ODATMD, only: TBPI0, TBPIN, FLBPI
+    USE W3WDATMD, only: TIME
 
     LOGICAL, INTENT(IN) :: LCALC
     INTEGER, INTENT(IN) :: IMOD
     REAL, INTENT(IN) :: FACX, FACY, DTG, VGX, VGY
+    REAL             :: RD1, RD2
 
-    CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
+    IF ( FLBPI ) THEN
+      RD1  = DSEC21 ( TBPI0, TIME )
+      RD2  = DSEC21 ( TBPI0, TBPIN )
+    ELSE
+      RD1=1.
+      RD2=0.
+    END IF
+
+    CALL PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, RD1, RD2, DTG, VGX, VGY, LCALC)
     !/
     !/ End of W3XYPFSN ----------------------------------------------------- /
     !/
@@ -3644,8 +3768,15 @@ CONTAINS
 
     CCOSA = FACX * ECOS(1:NTH)
     CSINA = FACX * ESIN(1:NTH)
+
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 0')
 
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (ISP, ITH, IK, CCOS, CSIN, IP, IP_GLOB, CG1, &
+    !$OMP&                     CXY, CXYY, FL11, FL12, FL21, FL22, FL31, FL32, &
+    !$OMP&                     CRFS, LAMBDA, K, KP, DELTAL, IB1, IB2, IBR, &
+    !$OMP&                     I, J, IE, POS, DTK, I1, I2, I3)
+#endif
     DO ISP = 1, NSPEC
 
       ITH    = 1 + MOD(ISP-1,NTH)
@@ -3746,6 +3877,10 @@ CONTAINS
         ENDIF
       END DO
     END DO ! ISP
+
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
 
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_JACOBI SECTION 1')
 #ifdef W3_DEBUGSOLVER
@@ -4470,28 +4605,33 @@ CONTAINS
     !AR: TODO: check&report if needed ...
     LSIG = FLCUR .OR. FLLEV
 
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (IP, IP_GLOB, ISEA, eSI, CAS, DMM, CP_SIG, CM_SIG, B_SIG, &
+    !$OMP&                     ISP, ITH, IK, CWNB_M2, DWNI_M2, eVal, ITH0, & 
+    !$OMP&                     CAD, CP_THE, CM_THE, B_THE)
+#endif
     DO IP = 1, np
-      IP_glob=iplg(IP)
-      ISEA=MAPFS(1,IP_glob)
-      eSI=PDLIB_SI(IP)
+      IP_glob = iplg(IP)
+      ISEA    = MAPFS(1,IP_glob)
+      eSI     = PDLIB_SI(IP)
       IF (FSFREQSHIFT .AND. LSIG) THEN
         IF (FreqShiftMethod .eq. 1) THEN
           IF (IOBP_LOC(IP).eq.1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
             CALL PROP_FREQ_SHIFT(IP, ISEA, CAS, DMM, DTG)
             CP_SIG = MAX(ZERO,CAS)
             CM_SIG = MIN(ZERO,CAS)
-            B_SIG=0
+            B_SIG = 0
             DO ITH=1,NTH
               DO IK=1,NK
-                ISP=ITH + (IK-1)*NTH
+                ISP = ITH + (IK-1)*NTH
                 B_SIG(ISP)= CP_SIG(ISP)/DMM(IK-1) - CM_SIG(ISP)/DMM(IK)
               END DO
-              ISP  = ITH + (NK-1)*NTH
-              B_SIG(ISP)= B_SIG(ISP) + CM_SIG(ISP)/DMM(NK) * FACHFA
+              ISP  = ITH + (NK-1)*NTH ! AR: hmm ...
+              B_SIG(ISP) = B_SIG(ISP) + CM_SIG(ISP)/DMM(NK) * FACHFA
             END DO
-            ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_SIG(:)*eSI
+            ASPAR_JAC(:,PDLIB_I_DIAG(IP)) = ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_SIG(:) * eSI
           ELSE
-            CAS=0
+            CAS = 0
           END IF
           CAS_SIG(:,IP) = CAS
         ELSE IF (FreqShiftMethod .eq. 2) THEN
@@ -4513,19 +4653,15 @@ CONTAINS
           ELSE
             CWNB_M2 = 0
           END IF
-          CWNB_SIG_M2(:,IP)=CWNB_M2
+          CWNB_SIG_M2(:,IP) = CWNB_M2
         END IF
       END IF
-      !
-      ! The refraction
-      !
+
       IF (FSREFRACTION) THEN
         IF (IOBP_LOC(IP) .eq. 1 .and. IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-          !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Check statuts ...
-          !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
           CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
-          CAD=ZERO
+          CAD = ZERO
         END IF
 #ifdef W3_DEBUGREFRACTION
         WRITE(740+IAPROC,*) 'refraction IP=', IP, ' ISEA=', ISEA
@@ -4537,7 +4673,11 @@ CONTAINS
         B_THE(:) = CP_THE(:) - CM_THE(:)
         ASPAR_JAC(:,PDLIB_I_DIAG(IP))=ASPAR_JAC(:,PDLIB_I_DIAG(IP)) + B_THE(:)*eSI
       END IF
-    END DO
+    END DO ! IP
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
+
   END SUBROUTINE calcARRAY_JACOBI_SPECTRAL_1
   !/ ------------------------------------------------------------------- /
   SUBROUTINE calcARRAY_JACOBI_SPECTRAL_2(DTG,ASPAR_DIAG_LOCAL)
@@ -4678,8 +4818,6 @@ CONTAINS
       !
       IF (FSREFRACTION) THEN
         IF (IOBP_LOC(IP) .eq. 1.and.IOBDP_LOC(IP).eq.1.and.IOBPA_LOC(IP).eq.0) THEN
-          !    CALL PROP_REFRACTION_PR1(ISEA,DTG,CAD) !AR: Is this working?
-          !    CALL PROP_REFRACTION_PR3(ISEA,DTG,CAD, DoLimiterRefraction)
           CALL PROP_REFRACTION_PR3(IP,ISEA,DTG,CAD,DoLimiterRefraction)
         ELSE
           CAD=ZERO
@@ -5546,26 +5684,26 @@ CONTAINS
     INTEGER :: nbIter, ISPnextDir, ISPprevDir
     INTEGER :: ISPp1, ISPm1, JP, ICOUNT1, ICOUNT2
     ! for the exchange
-    REAL*8  :: CCOS, CSIN, CCURX, CCURY
-    REAL*8  :: eSum(NSPEC), FRLOCAL
-    REAL*8  :: eA_THE, eC_THE, eA_SIG, eC_SIG, eSI
-    REAL*8  :: CAD(NSPEC), CAS(NSPEC), ACLOC(NSPEC)
-    REAL*8  :: CP_SIG(NSPEC), CM_SIG(NSPEC)
-    REAL*8  :: eFactM1, eFactP1
-    REAL*8  :: Sum_Prev, Sum_New, p_is_converged, DiffNew, prop_conv
-    REAL*8  :: Sum_L2, Sum_L2_GL
+    REAL  :: CCOS, CSIN, CCURX, CCURY
+    REAL  :: eSum(NSPEC), FRLOCAL
+    REAL  :: eA_THE, eC_THE, eA_SIG, eC_SIG, eSI
+    REAL  :: CAD(NSPEC), CAS(NSPEC), ACLOC(NSPEC)
+    REAL  :: CP_SIG(NSPEC), CM_SIG(NSPEC)
+    REAL  :: eFactM1, eFactP1
+    REAL  :: Sum_Prev, Sum_New, p_is_converged, DiffNew, prop_conv
+    REAL  :: Sum_L2, Sum_L2_GL
     REAL  :: DMM(0:NK2), DAM(NSPEC), DAM2(NSPEC), SPEC(NSPEC)
-    REAL*8  :: eDiff(NSPEC), eProd(NSPEC), eDiffB(NSPEC)
-    REAL*8  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
+    REAL  :: eDiff(NSPEC), eProd(NSPEC), eDiffB(NSPEC)
+    REAL  :: DWNI_M2(NK), CWNB_M2(1-NTH:NSPEC)
     REAL  :: VAnew(NSPEC), VFLWN(1-NTH:NSPEC), JAC, JAC2
     REAL  :: VAAnew(1-NTH:NSPEC+NTH), VAAacloc(1-NTH:NSPEC+NTH)
     REAL  :: VAinput(NSPEC), VAacloc(NSPEC), ASPAR_DIAG(NSPEC)
     REAL  :: aspar_diag_local(nspec), aspar_off_diag_local(nspec), b_jac_local(nspec)
-    REAL*8 :: eDiffSing, eSumPart
+    REAL  :: eDiffSing, eSumPart
     REAL  :: EMEAN, FMEAN, FMEAN1, WNMEAN, AMAX, U10ABS, U10DIR, TAUA, TAUADIR
     REAL  :: USTAR, USTDIR, TAUWX, TAUWY, CD, Z0, CHARN, FMEANWS, DLWMEAN
-    REAL*8  :: eVal1, eVal2
-    REAL*8  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
+    REAL  :: eVal1, eVal2
+    REAL  :: eVA, eVO, CG2, NEWDAC, NEWAC, OLDAC, MAXDAC
     REAL  :: CG1(0:NK+1), WN1(0:NK+1)
     LOGICAL :: LCONVERGED(NSEAL), lexist, LLWS(NSPEC)
 #ifdef WEIGHTS
@@ -5641,6 +5779,10 @@ CONTAINS
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(np) before transform", 0)
     CALL ALL_VA_INTEGRAL_PRINT(IMOD, "VA(npa) before transform", 1)
 #endif
+
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (JSEA, IP, IP_GLOB, ISEA, ISP, ITH, IK, WN1, CG1) 
+#endif
     DO JSEA=1,NSEAL
       IP      = JSEA
       IP_glob = iplg(IP)
@@ -5656,6 +5798,10 @@ CONTAINS
         VA(ISP,JSEA) = VA(ISP,JSEA) / CG1(IK) * CLATS(ISEA)
       END DO
     END DO
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
+
     VAOLD = VA(1:NSPEC,1:NSEAL)
 
 #ifdef W3_DEBUGSRC
@@ -5755,6 +5901,13 @@ CONTAINS
 
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 1')
 
+#ifdef W3_OMPH
+    !$OMP PARALLEL DO PRIVATE (IP, ISP, IP_GLOB, ISEA, IK, ITH, CG1, WN1, JSEA, eSI, ACLOC, ESUM, &
+    !$OMP&                     ASPAR_DIAG, JP, EPROD, ISPprevDir, ISPnextDir, eA_THE, eC_THE, &
+    !$OMP&                     ISPm1, ISPp1, eFactM1, eFactP1, eA_SIG, eC_SIG, CAS, CAD, CP_SIG, DMM, & 
+    !$OMP&                     CWNB_M2, DWNI_M2, p_is_converged, sum_prev, sum_new, diffnew), REDUCTION(+:is_converged)
+#endif
+
       DO IP = 1, np
 
         IP_glob = iplg(IP)
@@ -5806,7 +5959,7 @@ CONTAINS
           IF (IMEM == 2) THEN
             CALL calcARRAY_JACOBI4(IP,DTG,FACX,FACY,VGX,VGY,ASPAR_DIAG_LOCAL,ASPAR_OFF_DIAG_LOCAL,B_JAC_LOCAL)
             ASPAR_DIAG(1:NSPEC) = ASPAR_DIAG_LOCAL(1:NSPEC) + ASPAR_DIAG_ALL(1:NSPEC,IP)
-            esum       = B_JAC_LOCAL - ASPAR_OFF_DIAG_LOCAL + B_JAC(1:NSPEC,IP)
+            esum(1:NSPEC) = B_JAC_LOCAL - ASPAR_OFF_DIAG_LOCAL + B_JAC(1:NSPEC,IP)
           ELSEIF (IMEM == 1) THEN
             eSum(1:NSPEC)       = B_JAC(1:NSPEC,IP)
             ASPAR_DIAG(1:NSPEC) = ASPAR_JAC(1:NSPEC,PDLIB_I_DIAG(IP))
@@ -6013,6 +6166,10 @@ CONTAINS
 #endif
       END DO ! IP
 
+#ifdef W3_OMPH
+    !$OMP END PARALLEL DO
+#endif
+
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 2')
 
 #ifdef W3_DEBUGSOLVERCOH
@@ -6139,7 +6296,7 @@ CONTAINS
 #endif
           EXIT
         END IF
-      END IF
+      END IF ! TERMINATE NORM
       call print_memcheck(memunit, 'memcheck_____:'//' WW3_PROP SECTION SOLVER LOOP 6')
 
       nbiter = nbiter + 1
@@ -6328,7 +6485,7 @@ CONTAINS
 #endif
   END SUBROUTINE PDLIB_JACOBI_GAUSS_SEIDEL_BLOCK
   !/ ------------------------------------------------------------------- /
-  SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, DTG, VGX, VGY, LCALC)
+  SUBROUTINE PDLIB_EXPLICIT_BLOCK(IMOD, FACX, FACY, RD10, RD20, DTG, VGX, VGY, LCALC)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -6402,7 +6559,7 @@ CONTAINS
 
     INTEGER, INTENT(IN) :: IMOD
 
-    REAL, INTENT(IN)    :: FACX, FACY, DTG, VGX, VGY
+    REAL, INTENT(IN)    :: FACX, FACY, DTG, VGX, VGY, RD10, RD20
 
     REAL              :: KTMP(3), UTILDE(NTH), ST(NTH,NPA)
     REAL              :: FL11(NTH), FL12(NTH), FL21(NTH), FL22(NTH), FL31(NTH), FL32(NTH), KKSUM(NTH,NPA)
@@ -6411,7 +6568,7 @@ CONTAINS
     REAL              :: KSIG(NPA), CGSIG(NPA), CXX(NTH,NPA), CYY(NTH,NPA)
     REAL              :: LAMBDAX(NTH), LAMBDAY(NTH)
     REAL              :: DTMAX(NTH), DTMAXEXP(NTH), DTMAXOUT, DTMAXGL
-    REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2, RD10, RD20
+    REAL              :: FIN(1), FOUT(1), REST, CFLXY, RD1, RD2
     REAL              :: UOLD(NTH,NPA), U(NTH,NPA)
 
     REAL, PARAMETER   :: ONESIXTH = 1.0/6.0
@@ -6570,8 +6727,8 @@ CONTAINS
         IF ( FLBPI ) THEN
           DO ITH = 1, NTH
             ISP = ITH + (IK-1) * NTH
-            RD1 = RD10 - DTG * REAL(ITER(IK)-IT)/REAL(ITER(IK))
-            RD2 = RD20
+            RD1=RD10 - DTMAXGL * REAL(ITER(IK)-IT)/REAL(ITER(IK))
+            RD2=RD20
             IF ( RD2 .GT. 0.001 ) THEN
               RD2    = MIN(1.,MAX(0.,RD1/RD2))
               RD1    = 1. - RD2

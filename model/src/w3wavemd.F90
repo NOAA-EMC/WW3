@@ -448,7 +448,7 @@ CONTAINS
     USE W3IOSFMD
 #ifdef W3_PDLIB
     USE PDLIB_W3PROFSMD, only : APPLY_BOUNDARY_CONDITION_VA
-    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
+    USE PDLIB_W3PROFSMD, only : PDLIB_W3XYPUG_DRIVER, PDLIB_W3XYPUG_BLOCK_IMPLICIT, PDLIB_W3XYPUG_BLOCK_EXPLICIT
     USE PDLIB_W3PROFSMD, only : ALL_VA_INTEGRAL_PRINT, ALL_VAOLD_INTEGRAL_PRINT, ALL_FIELD_INTEGRAL_PRINT
     USE W3PARALL, only : PDLIB_NSEAL, PDLIB_NSEALM
     USE yowNodepool, only: npa, iplg, np
@@ -1453,6 +1453,12 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
         !
 #ifdef W3_PDLIB
+
+        IF (LPDLIB .and. .not. FLSOU .and. .not. FSSOURCE) THEN
+          B_JAC     = 0.
+          ASPAR_JAC = 0.
+        ENDIF
+
         IF (LPDLIB .and. FLSOU .and. FSSOURCE) THEN
 #endif
 
@@ -1483,6 +1489,8 @@ CONTAINS
           DO JSEA = 1, NP
 
             CALL INIT_GET_ISEA(ISEA, JSEA)
+
+            IF ((IOBP_LOC(JSEA).eq.1..or.IOBP_LOC(JSEA).eq. 3).and.IOBDP_LOC(JSEA).eq.1.and.IOBPA_LOC(JSEA).eq.0) THEN
 
             IX     = MAPSF(ISEA,1)
             IY     = MAPSF(ISEA,2)
@@ -1556,6 +1564,7 @@ CONTAINS
             WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
             FLUSH(740+IAPROC)
 #endif
+          ENDIF 
           END DO ! JSEA
         END IF ! PDLIB
 #endif
@@ -1816,9 +1825,7 @@ CONTAINS
 #ifdef W3_PDLIB
             IF (FLCX .or. FLCY) THEN
               IF (.NOT. FSTOTALIMP .AND. .NOT. FSTOTALEXP) THEN
-                DO ISPEC=1,NSPEC
-                  CALL PDLIB_W3XYPUG ( ISPEC, FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
-                END DO
+                CALL PDLIB_W3XYPUG_DRIVER ( FACX, FACX, DTG, VGX, VGY, UGDTUPDATE )
               END IF
             END IF
 #endif
@@ -2158,6 +2165,7 @@ CONTAINS
             !
             DO JSEA=1, NSEAL
               CALL INIT_GET_ISEA(ISEA, JSEA)
+
               IX     = MAPSF(ISEA,1)
               IY     = MAPSF(ISEA,2)
               DELA=1.
