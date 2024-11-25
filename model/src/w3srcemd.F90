@@ -1,4 +1,4 @@
-!> @file
+
 !> @brief Source term integration routine.
 !>
 !> @author H. L. Tolman

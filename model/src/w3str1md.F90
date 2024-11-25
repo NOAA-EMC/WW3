@@ -394,8 +394,6 @@ CONTAINS
 ! 1.  Integral over directions
 !
     IF (MAXVAL(A) .LT. TINY(1.)) THEN
-      S = 0 
-      D = 0 
       RETURN 
     ENDIF 
 
