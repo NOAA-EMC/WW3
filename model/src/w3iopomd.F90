@@ -536,13 +536,6 @@ CONTAINS
       !
     END DO ! End loop over output points (IPT).
     ELSE 
-      !READ from file
-      !open file 
-      ! read NOPTS 
-      ! READ PTLOC 
-      ! READ IPTINT(2, 4, NOPTS) 
-      ! READ PTIFAC(4, NOPOTS) 
-      ! READ PTNME(NOPTS) 
 
       ! Open the netCDF file.
       ncerr = nf90_open(filename, NF90_NOWRITE, fh)
@@ -600,50 +593,51 @@ CONTAINS
 
     ENDIF         
     IF ( pnt_wght_write .AND. (NOPTS > 0) ) THEN 
+      IF ( IAPROC .EQ. 1 ) THEN
+        ! Create the netCDF file.
+        ncerr = nf90_create(filename, NF90_NETCDF4, fh)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Create the netCDF file.
-      ncerr = nf90_create(filename, NF90_NETCDF4, fh)
-      if (nf90_err(ncerr) .ne. 0) return
+        ! Define dimensions.
+        ncerr = nf90_def_dim(fh, DNAME_NOPTS, NOPTS, d_nopts)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_def_dim(fh, DNAME_NAMELEN, 40, d_namelen)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_def_dim(fh, DNAME_VSIZE, 2, d_vsize)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_def_dim(fh, DNAME_WGHTLEN, 4, d_wghtlen)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Define dimensions.
-      ncerr = nf90_def_dim(fh, DNAME_NOPTS, NOPTS, d_nopts)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_dim(fh, DNAME_NAMELEN, 40, d_namelen)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_dim(fh, DNAME_VSIZE, 2, d_vsize)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_dim(fh, DNAME_WGHTLEN, 4, d_wghtlen)
-      if (nf90_err(ncerr) .ne. 0) return
+        ! Define vars with nopts as a dimension. Point location and name
+        ncerr = nf90_def_var(fh, VNAME_PTLOC, NF90_FLOAT, (/d_vsize, d_nopts/), v_ptloc)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_def_var(fh, VNAME_PTNME, NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_def_var(fh, VNAME_IPTINT, NF90_FLOAT, (/d_vsize, d_wghtlen, d_nopts/), v_iptint)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_def_var(fh, VNAME_PTIFAC, NF90_FLOAT, (/d_wghtlen, d_nopts/), v_ptifac)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Define vars with nopts as a dimension. Point location and name
-      ncerr = nf90_def_var(fh, VNAME_PTLOC, NF90_FLOAT, (/d_vsize, d_nopts/), v_ptloc)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_PTNME, NF90_CHAR, (/d_namelen, d_nopts/), v_ptnme)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_IPTINT, NF90_FLOAT, (/d_vsize, d_wghtlen, d_nopts/), v_iptint)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_def_var(fh, VNAME_PTIFAC, NF90_FLOAT, (/d_wghtlen, d_nopts/), v_ptifac)
-      if (nf90_err(ncerr) .ne. 0) return
+        ! End of all variable definitions 
+        ncerr = nf90_enddef(fh)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! End of all variable definitions 
-      ncerr = nf90_enddef(fh)
-      if (nf90_err(ncerr) .ne. 0) return
+        !write variables to file
+        ncerr = nf90_put_var(fh, v_ptloc, PTLOC(:,1:NOPTS))
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_put_var(fh, v_ptnme, PTNME(1:NOPTS))
+        if (nf90_err(ncerr) .ne. 0) return
 
-      !write variables to file
-      ncerr = nf90_put_var(fh, v_ptloc, PTLOC(:,1:NOPTS))
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_put_var(fh, v_ptnme, PTNME(1:NOPTS))
-      if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_put_var(fh, v_iptint, IPTINT(:,:,1:NOPTS))
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_put_var(fh, v_ptifac, PTIFAC(:,1:NOPTS))
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ncerr = nf90_put_var(fh, v_iptint, IPTINT(:,:,1:NOPTS))
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_put_var(fh, v_ptifac, PTIFAC(:,1:NOPTS))
-      if (nf90_err(ncerr) .ne. 0) return
+        ! Close the file.
+        ncerr = nf90_close(fh)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Close the file.
-      ncerr = nf90_close(fh)
-      if (nf90_err(ncerr) .ne. 0) return
-
+      END IF   
     ENDIF 
     !
 #ifdef W3_RTD
@@ -1257,7 +1251,6 @@ CONTAINS
     !/
   END SUBROUTINE W3IOPE
 
-#ifdef W3_BIN2NC
   !> Handle netCDF return code.
   !>
   !> @param errcode NetCDF error code. 0 for no error.
@@ -1279,6 +1272,7 @@ CONTAINS
       return 
     endif
   end function nf90_err_check
+#ifdef W3_BIN2NC
 
   !> Read point output in netCDF format.
   !>
