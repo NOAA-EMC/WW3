@@ -236,7 +236,7 @@ CONTAINS
   !>
   !> @author H. L. Tolman  @date 02-Sep-2012
   !>
-  SUBROUTINE W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD )
+  SUBROUTINE W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD, MPI_COMM_IOPP )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -362,11 +362,14 @@ CONTAINS
     USE W3GDATMD, ONLY: FILEXT 
     !
     IMPLICIT NONE
+#ifdef W3_MPI
+    INCLUDE "mpif.h"
+#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)          :: NPT, IMOD
+    INTEGER, INTENT(IN)          :: NPT, IMOD, MPI_COMM_IOPP
     REAL, INTENT(INOUT)          :: XPT(NPT), YPT(NPT)
     CHARACTER(LEN=40),INTENT(IN) :: PNAMES(NPT)
     !/
@@ -408,7 +411,9 @@ CONTAINS
     integer :: d_nopts, d_namelen, d_vsize, d_wghtlen
     integer :: d_nopts_len, d_vsize_len,d_namelen_len,d_wghtlen_len
     integer :: v_ptloc, v_ptnme, v_iptint, v_ptifac
-
+#ifdef W3_MPI
+    integer :: IERR_MPI
+#endif 
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -537,64 +542,75 @@ CONTAINS
       END DO ! End loop over output points (IPT).
     ELSE 
       ! Saved weight file exists, read weights from file 
+      IF ( IAPROC .EQ. 1 ) THEN 
+        ! Open the netCDF file.
+        ncerr = nf90_open(filename, NF90_NOWRITE, fh)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Open the netCDF file.
-      ncerr = nf90_open(filename, NF90_NOWRITE, fh)
-      if (nf90_err(ncerr) .ne. 0) return
+        ! Read the dimension information for NOPTS.
+        ncerr = nf90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
+        if (nf90_err(ncerr) .ne. 0) return
+        NOPTS=d_nopts_len
 
-      ! Read the dimension information for NOPTS.
-      ncerr = nf90_inq_dimid(fh, DNAME_NOPTS, d_nopts)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_nopts, len = d_nopts_len)
-      if (nf90_err(ncerr) .ne. 0) return
-      NOPTS=d_nopts_len
+        ! Read the dimension information for VSIZE.
+        ncerr = nf90_inq_dimid(fh, DNAME_VSIZE, d_vsize)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inquire_dimension(fh, d_vsize, len = d_vsize_len)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Read the dimension information for VSIZE.
-      ncerr = nf90_inq_dimid(fh, DNAME_VSIZE, d_vsize)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_vsize, len = d_vsize_len)
-      if (nf90_err(ncerr) .ne. 0) return
+        ! Read the dimension information for NAMELEN.
+        ncerr = nf90_inq_dimid(fh, DNAME_NAMELEN, d_namelen)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inquire_dimension(fh, d_namelen, len = d_namelen_len)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Read the dimension information for NAMELEN.
-      ncerr = nf90_inq_dimid(fh, DNAME_NAMELEN, d_namelen)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_namelen, len = d_namelen_len)
-      if (nf90_err(ncerr) .ne. 0) return
+        ! Read the dimension information for WGHTLEN.
+        ncerr = nf90_inq_dimid(fh, DNAME_WGHTLEN, d_wghtlen)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inquire_dimension(fh, d_wghtlen, len = d_wghtlen_len)
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Read the dimension information for WGHTLEN.
-      ncerr = nf90_inq_dimid(fh, DNAME_WGHTLEN, d_wghtlen)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_inquire_dimension(fh, d_wghtlen, len = d_wghtlen_len)
-      if (nf90_err(ncerr) .ne. 0) return
+        ! Read vars 
+        ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_ptloc, PTLOC, start = (/ 1, 1/), &
+          count = (/ d_vsize_len, d_nopts_len /))
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ! Read vars 
-      ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ptloc, PTLOC, start = (/ 1, 1/), &
-        count = (/ d_vsize_len, d_nopts_len /))
-      if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_ptnme, PTNME, start = (/ 1, 1/), &
+          count = (/ d_namelen_len, d_nopts_len /))
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ptnme, PTNME, start = (/ 1, 1/), &
-        count = (/ d_namelen_len, d_nopts_len /))
-      if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inq_varid(fh, VNAME_IPTINT, v_iptint)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_iptint, IPTINT, start = (/ 1, 1/), &
+          count = (/ d_vsize_len, d_wghtlen_len, d_nopts_len /))
+        if (nf90_err(ncerr) .ne. 0) return
 
-      ncerr = nf90_inq_varid(fh, VNAME_IPTINT, v_iptint)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_iptint, IPTINT, start = (/ 1, 1/), &
-        count = (/ d_vsize_len, d_wghtlen_len, d_nopts_len /))
-      if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inq_varid(fh, VNAME_PTIFAC, v_ptifac)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_ptifac, PTIFAC, start = (/ 1, 1/), &
+          count = (/ d_wghtlen_len, d_nopts_len /))
+        if (nf90_err(ncerr) .ne. 0) return
+      END IF 
 
-      ncerr = nf90_inq_varid(fh, VNAME_PTIFAC, v_ptifac)
-      if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ptifac, PTIFAC, start = (/ 1, 1/), &
-        count = (/ d_wghtlen_len, d_nopts_len /))
-      if (nf90_err(ncerr) .ne. 0) return
+#ifdef W3_MPI
+      ! Broadcast weight info to all MPI tasks: 
+      CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTNME,80,MPI_CHARACTER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTLOC,40*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(IPTINT,2*4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
+#endif
+    ENDIF  !end if point weight file exists       
 
-    ENDIF         
+    !Create a weights file if there are output points:
     IF ( pnt_wght_write .AND. (NOPTS > 0) ) THEN 
-      !Create a weights file if there are output points 
       IF ( IAPROC .EQ. 1 ) THEN
         ! Create the netCDF file.
         ncerr = nf90_create(filename, NF90_NETCDF4, fh)
