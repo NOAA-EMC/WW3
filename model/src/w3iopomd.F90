@@ -459,83 +459,84 @@ CONTAINS
     ! Loop over output points if saved weights do not exist 
     !
     IF (.NOT. pnt_wght_exists) THEN        
-    DO IPT=1, NPT
-      !
+      DO IPT=1, NPT
+        !
 #ifdef W3_T
-      WRITE (NDST,9010) IPT, XPT(IPT), YPT(IPT), PNAMES(IPT)
+        WRITE (NDST,9010) IPT, XPT(IPT), YPT(IPT), PNAMES(IPT)
 #endif
-      !
+        !
 #ifdef W3_RTD
-      !!   Need to wrap rotated Elon values greater than X0.  JGLi12Jun2012
-      XPT(IPT) = MOD( EquLon(IPT)+360.0, 360.0 )
-      IF( XPT(IPT) .LT. X0 )  XPT(IPT) = XPT(IPT) + 360.0
+        !!   Need to wrap rotated Elon values greater than X0.  JGLi12Jun2012
+        XPT(IPT) = MOD( EquLon(IPT)+360.0, 360.0 )
+        IF( XPT(IPT) .LT. X0 )  XPT(IPT) = XPT(IPT) + 360.0
 #endif
-      !
-      !     Check if point within grid and compute interpolation weights
-      !
-      IF (GTYPE .NE. UNGTYPE) THEN
-        INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
-      ELSE
-        CALL IS_IN_UNGRID(IMOD, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD)
-        INGRID = (ITOUT.GT.0)
-      END IF
-      !
-      IF ( .NOT.INGRID ) THEN
-        IF ( IAPROC .EQ. NAPERR ) THEN
-          IF ( FLAGLL ) THEN
-            WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
-          ELSE
-            WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
-          END IF
+        !
+        !     Check if point within grid and compute interpolation weights
+        !
+        IF (GTYPE .NE. UNGTYPE) THEN
+          INGRID = W3GRMP( GSU, XPT(IPT), YPT(IPT), IX, IY, RD )
+        ELSE
+          CALL IS_IN_UNGRID(IMOD, DBLE(XPT(IPT)), DBLE(YPT(IPT)), itout, IX, IY, RD)
+          INGRID = (ITOUT.GT.0)
         END IF
-        CYCLE
-      END IF
-      !
+        !
+        IF ( .NOT.INGRID ) THEN
+          IF ( IAPROC .EQ. NAPERR ) THEN
+            IF ( FLAGLL ) THEN
+              WRITE (NDSE,1000) XPT(IPT), YPT(IPT), PNAMES(IPT)
+            ELSE
+              WRITE (NDSE,1001) XPT(IPT), YPT(IPT), PNAMES(IPT)
+            END IF
+          END IF
+          CYCLE
+        END IF
+        !
 #ifdef W3_T
-      DO K = 1,4
-        WRITE (NDST,9012) IX(K), IY(K), RD(K)
-      END DO
+        DO K = 1,4
+          WRITE (NDST,9012) IX(K), IY(K), RD(K)
+        END DO
 #endif
-      !
-      !     Check if point not on land
-      !
-      IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
-           MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
-           MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
-           MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
-        IF ( IAPROC .EQ. NAPERR ) THEN
-          IF ( FLAGLL ) THEN
-            WRITE (NDSE,1002) XPT(IPT), YPT(IPT), PNAMES(IPT)
-          ELSE
-            WRITE (NDSE,1003) XPT(IPT), YPT(IPT), PNAMES(IPT)
+        !
+        !     Check if point not on land
+        !
+        IF ( MAPSTA(IY(1),IX(1)) .EQ. 0 .AND. &
+             MAPSTA(IY(2),IX(2)) .EQ. 0 .AND. &
+             MAPSTA(IY(3),IX(3)) .EQ. 0 .AND. &
+             MAPSTA(IY(4),IX(4)) .EQ. 0 ) THEN
+          IF ( IAPROC .EQ. NAPERR ) THEN
+            IF ( FLAGLL ) THEN
+              WRITE (NDSE,1002) XPT(IPT), YPT(IPT), PNAMES(IPT)
+            ELSE
+              WRITE (NDSE,1003) XPT(IPT), YPT(IPT), PNAMES(IPT)
+            END IF
           END IF
+          CYCLE
         END IF
-        CYCLE
-      END IF
-      !
-      !     Store interpolation data
-      !
-      NOPTS  = NOPTS + 1
-      !
-      PTLOC (1,NOPTS) = XPT(IPT)
-      PTLOC (2,NOPTS) = YPT(IPT)
+        !
+        !     Store interpolation data
+        !
+        NOPTS  = NOPTS + 1
+        !
+        PTLOC (1,NOPTS) = XPT(IPT)
+        PTLOC (2,NOPTS) = YPT(IPT)
 #ifdef W3_RTD
-      !!   Store the standard lon/lat in PTLOC for output purpose, assuming
-      !!   they are not used for any inside calculation.  JGLi12Jun2012
-      PTLOC (1,NOPTS) = StdLon(IPT)
-      PTLOC (2,NOPTS) = StdLat(IPT)
+        !!   Store the standard lon/lat in PTLOC for output purpose, assuming
+        !!   they are not used for any inside calculation.  JGLi12Jun2012
+        PTLOC (1,NOPTS) = StdLon(IPT)
+        PTLOC (2,NOPTS) = StdLat(IPT)
 #endif
-      !
-      DO K = 1,4
-        IPTINT(1,K,NOPTS) = IX(K)
-        IPTINT(2,K,NOPTS) = IY(K)
-        PTIFAC(K,NOPTS) = RD(K)
-      END DO
+        !
+        DO K = 1,4
+          IPTINT(1,K,NOPTS) = IX(K)
+          IPTINT(2,K,NOPTS) = IY(K)
+          PTIFAC(K,NOPTS) = RD(K)
+        END DO
 
-      PTNME(NOPTS) = PNAMES(IPT)
-      !
-    END DO ! End loop over output points (IPT).
+        PTNME(NOPTS) = PNAMES(IPT)
+        !
+      END DO ! End loop over output points (IPT).
     ELSE 
+      ! Saved weight file exists, read weights from file 
 
       ! Open the netCDF file.
       ncerr = nf90_open(filename, NF90_NOWRITE, fh)
@@ -593,6 +594,7 @@ CONTAINS
 
     ENDIF         
     IF ( pnt_wght_write .AND. (NOPTS > 0) ) THEN 
+      !Create a weights file if there are output points 
       IF ( IAPROC .EQ. 1 ) THEN
         ! Create the netCDF file.
         ncerr = nf90_create(filename, NF90_NETCDF4, fh)
