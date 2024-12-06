@@ -541,6 +541,7 @@ CONTAINS
         !
       END DO ! End loop over output points (IPT).
     ELSE 
+      write(*,*) 'read points weight JDM'
       ! Saved weight file exists, read weights from file 
       IF ( IAPROC .EQ. 1 ) THEN 
         ! Open the netCDF file.
@@ -597,12 +598,11 @@ CONTAINS
           count = (/ d_wghtlen_len, d_nopts_len /))
         if (nf90_err(ncerr) .ne. 0) return
       END IF 
-
 #ifdef W3_MPI
       ! Broadcast weight info to all MPI tasks: 
       CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(PTNME,80,MPI_CHARACTER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(PTLOC,40*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTNME,40*NPT,MPI_CHARACTER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTLOC,2*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
       CALL MPI_BCAST(IPTINT,2*4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
       CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
       CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
