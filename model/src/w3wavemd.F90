@@ -491,8 +491,10 @@ CONTAINS
 #ifdef W3_TIMINGS
     USE W3PARALL, only : PRINT_MY_TIME
 #endif
+#ifdef W3_PIO
     use wav_restart_mod , only : write_restart
     use wav_history_mod , only : write_history
+#endif    
     use w3odatmd        , only : histwr, rstwr, use_historync, use_restartnc, user_restfname
     use w3odatmd        , only : verboselog
     use w3timemd        , only : set_user_timestring
@@ -2354,7 +2356,9 @@ CONTAINS
       !     Delay if data assimilation time.
       !
       !
+#ifdef W3_PIO      
       if (dsec21(time,tend) == 0.0) then    ! req'd in case waves are running in slow loop
+
         if (use_historync) then
           floutg = .false.
           floutg2 = .false.
@@ -2372,7 +2376,10 @@ CONTAINS
             call write_restart(trim(fname), va, mapsta+8*mapst2)
           end if
         end if
+
       end if
+#endif
+
 
       IF ( TOFRST(1)  .EQ. -1 ) THEN
         DTTST  = 1.
@@ -2524,8 +2531,8 @@ CONTAINS
 #ifdef W3_MPI
             END IF
           END IF
-#endif
         end if ! if (.not. use_restartnc)
+#endif
         !
 #ifdef W3_MPI
         IF ( FLOUT(5) .AND. NRQBP.NE.0 ) THEN

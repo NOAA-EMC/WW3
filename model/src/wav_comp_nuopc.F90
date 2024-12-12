@@ -56,6 +56,7 @@ module wav_comp_nuopc
   use wmmdatmd              , only : nmpscr
   use w3updtmd              , only : w3uini
   use w3adatmd              , only : flcold, fliwnd
+  use shr_is_restart_fh_mod , only : init_is_restart_fh, is_restart_fh, is_restart_fh_type
 #endif
   use constants             , only : is_esmf_component
 
@@ -89,6 +90,7 @@ module wav_comp_nuopc
   logical :: cesmcoupled = .true.                          !< logical to indicate CESM use case
 #else
   logical :: cesmcoupled = .false.                         !< logical to indicate non-CESM use case
+  type(is_restart_fh_type)     :: restartfh_info           ! For flexible restarts in UFS
 #endif
   integer, allocatable :: tend(:,:)                        !< the ending time of ModelAdvance when
                                                            !! run with multigrid=true
@@ -1126,6 +1128,7 @@ contains
     type(ESMF_Time)         :: currTime, nextTime, startTime, stopTime
     integer                 :: yy,mm,dd,hh,ss
     integer                 :: imod
+    logical                 :: write_restartfh
     !integer                 :: shrlogunit ! original log unit and level
     character(ESMF_MAXSTR)  :: msgString
     character(len=*),parameter :: subname = '(wav_comp_nuopc:ModelAdvance) '
@@ -1219,6 +1222,10 @@ contains
     else
       rstwr = .false.
     endif
+#ifndef W3_CESMCOUPLED
+    call is_restart_fh(clock, restartfh_info, write_restartfh)
+    if (write_restartfh) rstwr = .true.
+#endif
 
     ! Determine if time to write ww3 history files
     call ESMF_ClockGetAlarm(clock, alarmname='alarm_history', alarm=alarm, rc=rc)
@@ -1295,7 +1302,7 @@ contains
     integer                  :: history_ymd    ! History date (YYYYMMDD)
     type(ESMF_ALARM)         :: history_alarm
     character(len=128)       :: name
-    integer                  :: alarmcount
+    integer                  :: alarmcount, dt_cpl
     character(len=*),parameter :: subname=trim(modName)//':(ModelSetRunClock) '
 
     !-------------------------------------------------------------------------------
@@ -1363,6 +1370,12 @@ contains
 
         call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+#ifndef W3_CESMCOUPLED
+        call ESMF_TimeIntervalGet( dtimestep, s=dt_cpl, rc=rc )
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        call init_is_restart_fh(mcurrTime, dt_cpl, root_task, restartfh_info)
+#endif
+
       end if
 
       !----------------
