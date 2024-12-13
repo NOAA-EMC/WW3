@@ -115,6 +115,7 @@ MODULE W3GRIDMD
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
   !/    28-Feb-2023 : GQM as an alternative for NL1       ( version 7.15 )
   !/    11-Jan-2024 : New namelist parameters for IC4     ( version 7.15 )
+  !/    03-May-2024 : New CAPCHNK parameters for SIN4     ( version 7.15 )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -678,6 +679,7 @@ MODULE W3GRIDMD
 #endif
   !
 #ifdef W3_SMC
+  REAL                    :: DVSMC
   REAL                    :: TRNMX, TRNMY
   INTEGER, ALLOCATABLE    :: NLvCelsk(:),  NLvUFcsk(:),  NLvVFcsk(:)
   INTEGER, ALLOCATABLE    :: IJKCelin(:,:),IJKUFcin(:,:),IJKVFcin(:,:)
@@ -859,7 +861,8 @@ MODULE W3GRIDMD
        SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
        SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
        SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF, SINTAIL1, SINTAIL2, &
-       CUMSIGP, VISCSTRESS
+       CUMSIGP, VISCSTRESS,                 &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
   !
 #ifdef W3_ST6
@@ -1005,7 +1008,8 @@ MODULE W3GRIDMD
   NAMELIST /SIN4/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
        TAUWSHELTER, SWELLFPAR, SWELLF,                 &
        SWELLF2, SWELLF3, SWELLF4, SWELLF5, SWELLF6,    &
-       SWELLF7, Z0RAT, SINBR, SINTABLE, SINTAIL1, SINTAIL2, TAUWBUG, VISCSTRESS
+       SWELLF7, Z0RAT, SINBR, SINTABLE, SINTAIL1, SINTAIL2, TAUWBUG, VISCSTRESS, &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_NL1
   NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
@@ -1735,6 +1739,11 @@ CONTAINS
     TAUWBUG  = 1  !  TAUWBUG is 1 is the bug is kept:
     !  initializes TAUWX/Y to zero in W3SRCE
     VISCSTRESS =0
+    CAPCHA   = 0.     ! =1 indicates capping of drag is active
+    CHAMIN   = 0.0001 ! 
+    CHA0     = ALPHA0 ! initial value for charnock
+    UCAP     = 30.    ! U10 threshold from which drag capping is applied
+    SIGMAUCAP = 10.   ! Width for reduction of drag beyond UCAP
 #endif
     !
 #ifdef W3_ST6
@@ -1823,6 +1832,11 @@ CONTAINS
     SINTAILPAR(3) = SINTAIL2
     SINTAILPAR(4) = FLOAT(TAUWBUG)
     SINTAILPAR(5) = VISCSTRESS
+    CAPCHNK(1) = CAPCHA
+    CAPCHNK(2) = CHAMIN
+    CAPCHNK(3) = CHA0
+    CAPCHNK(4) = UCAP
+    CAPCHNK(5) = SIGMAUCAP
 #endif
     !
 #ifdef W3_ST6
@@ -3231,7 +3245,8 @@ CONTAINS
 #ifdef W3_ST4
       WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR, SINTABLE, TAUWBUG, VISCSTRESS, SINTAIL1, SINTAIL2
+           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR, SINTABLE, TAUWBUG, VISCSTRESS, SINTAIL1, SINTAIL2, &
+           CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2920) SINA0, SINWS, SINFC
@@ -3960,6 +3975,12 @@ CONTAINS
     IF (IDFM.EQ.2) WRITE (NDSO,973) TRIM(RFORM)
     IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
          WRITE (NDSO,974) TRIM(FNAME)
+
+#ifdef W3_SMC
+    !Li  Save the depth conversion factor for SMC grid use.  JGLi03Nov2023
+    DVSMC = VSC
+#endif
+
     !
     ! 7.e Read bottom depths
     !
@@ -5081,14 +5102,17 @@ CONTAINS
           CALL EXTCDE(65)
         END IF
 
-        !Li  Minimum DMIN depth is used as well for SMC.
-        ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
-        MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
-        MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
-        MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
-        MAPSF(ISEA,1)  = IX
-        MAPSF(ISEA,2)  = IY
-        MAPSF(ISEA,3)  = IY + (IX    -1)*NY
+        !Li Allow land cell to be defined by ZLIM value and only reset
+        !Li MAPST* land values for sea points.   JGLi03Nov2023
+        ZB(ISEA) = DVSMC * FLOAT(IJKDep(ISEA))
+        IF( ZB(ISEA) .LT. ZLIM ) THEN
+          MAPSTA(IY:IY+JS-1,IX:IX+IK-1) = 1
+          MAPST2(IY:IY+JS-1,IX:IX+IK-1) = 0
+        ENDIF
+        MAPFS(IY:IY+JS-1,IX:IX+IK-1) = ISEA
+        MAPSF(ISEA,1) = IX
+        MAPSF(ISEA,2) = IY
+        MAPSF(ISEA,3) = IY + (IX-1) * NY
 
         !Li   New variable CLATS to hold cosine latitude at cell centre.
         !Li   Also added CLATIS and CTHG0S for version 4.08.
@@ -6276,7 +6300,9 @@ CONTAINS
          '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
          ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,','/              &
          '        SINTABLE =',I2,', TAUWBUG =',I2,               &
-         ', VISCSTRESS =',F8.5,', SINTAIL1 =',F8.5,', SINTAIL2 =',F8.5,'  /')
+         ', VISCSTRESS =',F8.5,', SINTAIL1 =',F8.5,', SINTAIL2 =',F8.5,',' / &
+         ', CAPCHA =',F8.5,', CHAMIN =',F8.5,', CHA0 =',F8.5,', UCAP =',F5.1,', SIGMAUCAP =', &
+         F5.1,'  /')
 #endif
     !
 #ifdef W3_ST6
@@ -6336,14 +6362,14 @@ CONTAINS
 2923 FORMAT ( '             ',2F8.3,F6.1,2E12.4)
 2922 FORMAT ( '  &SNL3 NQDEF =',I3,', MSC =',F6.2,',  NSC =',   &
          F6.2,',  KDFD =',F6.2,',  KDFS =',F6.2,' /')
-3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
-4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
+3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
+4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
 #endif
     !
 #ifdef W3_NL4
@@ -6445,7 +6471,7 @@ CONTAINS
          '        SDSBRF1 = ',F5.2,', SDSBRFDF =',I2,', '/ &
          '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
          ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
-         F5.2,', '/,                                       &
+         F7.2,', '/,                                       &
          '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
          ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', '/      &
          '        SDSMWPOW =',F3.1,', SDSNMTF =', F5.2,    &
@@ -6459,18 +6485,18 @@ CONTAINS
 925 FORMAT ( '  normalise by threshold spectral density    :  ',A/&
          '  normalise by spectral density              :  ',A/&
          '  coefficient and exponent  for                 '/  &
-         '   inherent breaking term a1, L as in (21)   : ',E9.3,I3/ &
-         '   cumulative breaking term a2, M as in (22) : ',E9.3,I3/ &
+         '   inherent breaking term a1, L as in (21)   : ',E10.3,I3/ &
+         '   cumulative breaking term a2, M as in (22) : ',E10.3,I3/ &
          ' ')
-2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E9.3,              &
-         ', SDSA2 = ',E9.3,', SDSP1 = ',I2,', SDSP1 = ',      &
+2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E10.3,              &
+         ', SDSA2 = ',E10.3,', SDSP1 = ',I2,', SDSP1 = ',      &
          I2,' /'                                              )
 
 937 FORMAT (/'  Swell dissipation ',A/                            &
          ' --------------------------------------------------')
 940 FORMAT ( '  subroutine W3SWL6 activated           : ',A/      &
-         '   coefficient b1 ',A,                ' : ',E9.3/   )
-2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,', CSTB1 = ',L,' /')
+         '   coefficient b1 ',A,                ' : ',E10.3/   )
+2937 FORMAT ( '  &SWL6 SWLB1 = ',E10.3,', CSTB1 = ',L,' /')
 #endif
     !
 #ifdef W3_BT0
@@ -6555,7 +6581,7 @@ CONTAINS
 946 FORMAT  ('  Isotropic (linear function of ice concentration)'/&
          '        slope                      : ',E10.3/ &
          '        offset                     : ',E10.3)
-2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
+2946 FORMAT ( '  &SIS1 ISC1 =',E10.3,', ISC2 =',E10.3)
 #endif
 #ifdef W3_IS2
 947 FORMAT  (/'  Ice scattering ',A,/ &

@@ -69,7 +69,7 @@ MODULE W3IORSMD
   !/
   !/ Private parameter statements (ID strings)
   !/
-  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2021-05-28'
+  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2024-04-26'
   CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III RESTART FILE'
   !/
@@ -845,7 +845,7 @@ CONTAINS
           WRITEBUFF(:) = 0.
           WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
           WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)           &
-               TLEV, TICE, TRHO
+               TLEV, TICE, TRHO, TIC1, TIC5
           DO IPART=1,NPART
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -1026,7 +1026,7 @@ CONTAINS
       IF (TYPE.EQ.'FULL') THEN
         RPOS = 1_8 + LRECL*(NREC-1_8)
         READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)                &
-             TLEV, TICE, TRHO
+             TLEV, TICE, TRHO, TIC1, TIC5
         DO IPART=1,NPART
           NREC  = NREC + 1
           RPOS = 1_8 + LRECL*(NREC-1_8)

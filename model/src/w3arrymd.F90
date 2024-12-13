@@ -2250,10 +2250,10 @@ CONTAINS
     !
 900 FORMAT (/'  Location : ',A/                               &
          '  Spectrum : ',A,' (Normalized) ',              &
-         '  Maximum value : ',E8.3,1X,A/)
+         '  Maximum value : ',E10.3,1X,A/)
 901 FORMAT (/'  Location : ',A/                               &
-         '  Spectrum : ',A,'  Units : ',E8.3,1X,A,        &
-         '  Maximum value : ',E8.3,1X,A/)
+         '  Spectrum : ',A,'  Units : ',E10.3,1X,A,        &
+         '  Maximum value : ',E10.3,1X,A/)
     !
 910 FORMAT (5X,'  ang.|  frequencies (Hz) '/                  &
          5X,'  deg.|',F6.3,15F8.3)

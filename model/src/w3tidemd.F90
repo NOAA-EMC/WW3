@@ -823,11 +823,11 @@ CONTAINS
     !      read in inference information now as it will be used in the lsq matrix
     !
     DO K=1,10
-      READ(KR1,'(4X,A5,E16.10,i5)')TIDE_KONAN(K),TIDE_SIGAN(K),TIDE_NINF(k)
+      READ(KR1,'(4X,A5,E17.10,i5)')TIDE_KONAN(K),TIDE_SIGAN(K),TIDE_NINF(k)
       !      write(6,1010)TIDE_KONAN(K),TIDE_SIGAN(K),TIDE_NINF(k)
       IF (TIDE_KONAN(K).EQ.KBLANK) EXIT
       do k2=1,TIDE_NINF(k)
-        read(kr1,'(4X,A5,E16.10,2F10.3)') TIDE_KONIN(K,k2),TIDE_SIGIN(K,k2),TIDE_R(K,k2),TIDE_ZETA(K,k2)
+        read(kr1,'(4X,A5,E17.10,2F10.3)') TIDE_KONIN(K,k2),TIDE_SIGIN(K,k2),TIDE_R(K,k2),TIDE_ZETA(K,k2)
       END DO
     END DO
     TIDE_NIN=K-1

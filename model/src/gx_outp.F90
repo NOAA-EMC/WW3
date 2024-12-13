@@ -165,7 +165,11 @@ PROGRAM GXOUTP
 #endif
   USE W3ODATMD, ONLY: W3SETO, W3NOUT
   USE W3IOGRMD, ONLY: W3IOGR
+#ifdef W3_BIN2NC
+  USE W3IOPOMD, ONLY: W3IOPON
+#else 
   USE W3IOPOMD, ONLY: W3IOPO
+#endif
   USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
@@ -277,7 +281,11 @@ PROGRAM GXOUTP
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read general data and first fields from file
   !
+#ifdef W3_BIN2NC
+  CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
   CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
   ALLOCATE ( FLREQ(NOPTS) )
   !
   WRITE (NDSO,930)
@@ -369,7 +377,11 @@ PROGRAM GXOUTP
   DO
     DTEST  = DSEC21 ( TIME , TOUT )
     IF ( DTEST .GT. 0. ) THEN
+#ifdef W3_BIN2NC
+      CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else 
       CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,998)
         EXIT

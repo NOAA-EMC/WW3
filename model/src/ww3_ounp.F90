@@ -184,7 +184,7 @@ PROGRAM W3OUNP
   USE W3ODATMD, ONLY: W3SETO, W3NOUT
   USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT, DIMP
   USE W3IOGRMD, ONLY: W3IOGR
-  USE W3IOPOMD, ONLY: W3IOPO
+  USE W3IOPOMD
   USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
@@ -387,7 +387,11 @@ PROGRAM W3OUNP
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read general data and first fields from file
   !
+#if W3_BIN2NC
+  CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
   CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
   !
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,930)
   DO I=1, NOPTS
@@ -604,7 +608,11 @@ PROGRAM W3OUNP
   DO WHILE (DTEST.NE.0)
     DTEST  = DSEC21 ( TIME , TOUT )
     IF ( DTEST .GT. 0. ) THEN
+#ifdef W3_BIN2NC
+      CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else 
       CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
       IF ( IOTEST .EQ. -1 ) THEN
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
         GOTO 888
@@ -1070,7 +1078,11 @@ PROGRAM W3OUNP
       DTEST = DSEC21 ( TIME , TOUT )
       IF ( DTEST .GT. 0. ) THEN
         ! reads TIME from out_pnt.ww3
+#ifdef W3_BIN2NC
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
         CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
         IF ( IOTEST .EQ. -1 ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
           GOTO 700
@@ -1215,7 +1227,11 @@ PROGRAM W3OUNP
     ! 7.3 Reinitiazes TIME (close open out_pnt.ww3) and TOUT to process a new bunch of stations
     CLOSE(NDSOP) ! closes binary file out_pnt*
     IPASS = 0   ! resets time counter for binary file out_pnt*
+#ifdef W3_BIN2NC
+    CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
     CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
 #ifdef W3_T
     WRITE(NDSE,*) 'out_pnt* closed and reopened'
 #endif
@@ -1228,7 +1244,11 @@ PROGRAM W3OUNP
     DO WHILE (DTEST.NE.0)
       DTEST  = DSEC21 ( TIME , TOUT )
       IF ( DTEST .GT. 0. ) THEN
+#ifdef W3_BIN2NC
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+#else
         CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+#endif
         IF ( IOTEST .EQ. -1 ) THEN
           IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
           GOTO 700
