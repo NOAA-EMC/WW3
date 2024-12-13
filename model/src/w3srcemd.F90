@@ -1294,18 +1294,24 @@ CONTAINS
           END DO
         END DO
 
-        ! Set mask for computation of source terms based on MAPSTA
-        ! and FLAGST. This originally is done in w3wavemd as a
-        ! conditional statement around the W3SRCE call
-        SRC_MASK(I) = .NOT. (MAPSTA(IY(I),IX(I)) .EQ. 1 .AND. FLAGST(ISEA))
 
+        ! Set SRC_MASK depednind on type of call:
+        IF(srce_call .EQ. srce_imp_pre) THEN
 #ifdef W3_PDLIB
-       ! This was originally in w3wavemd
-       IF( (IOBP_LOC(JSEA) .EQ. 1 .OR. IOBP_LOC(JSEA) .EQ. 3)         &
-           .AND. IOBDP_LOC(JSEA) .EQ. 1 .AND. IOBPA_LOC(JSEA) .EQ. 0) THEN
-         SRC_MASK(I) = .TRUE.
-       ENDIF
+          ! This was originally in w3wavemd
+          IF( (IOBP_LOC(JSEA) .EQ. 1 .OR. IOBP_LOC(JSEA) .EQ. 3)         &
+              .AND. IOBDP_LOC(JSEA) .EQ. 1 .AND. IOBPA_LOC(JSEA) .EQ. 0) THEN
+            SRC_MASK(I) = .FALSE.
+          ELSE
+            SRC_MASK(I) = .TRUE.
+          ENDIF
 #endif
+        ELSE ! srce_call = scre_imp_post or scre_direct
+          ! Set mask for computation of source terms based on MAPSTA
+          ! and FLAGST. This originally is done in w3wavemd as a
+          ! conditional statement around the W3SRCE call
+          SRC_MASK(I) = .NOT. (MAPSTA(IY(I),IX(I)) .EQ. 1 .AND. FLAGST(ISEA))
+        ENDIF
 
         I = I + 1
       ENDDO ! Gather to local grid loop
