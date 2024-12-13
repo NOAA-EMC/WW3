@@ -55,19 +55,23 @@ set(ftn_src
   wmupdtmd.F90
   wmwavemd.F90
   w3tidemd.F90
-  wav_history_mod.F90
   wav_shr_flags.F90
   )
 
-set(nuopc_mesh_cap_src
-  wav_kind_mod.F90
-  wav_shr_mod.F90
-  wav_shel_inp.F90
-  wav_comp_nuopc.F90
-  wav_import_export.F90
-  wav_wrapper_mod.F90
+set(pio_src
+  wav_history_mod.F90
   wav_pio_mod.F90
   wav_restart_mod.F90
+  ${PROJECT_SOURCE_DIR}/../CDEPS-interface/ufs/cdeps_share/shr_is_restart_fh_mod.F90
+  wav_shr_mod.F90
+  wav_kind_mod.F90
+  wav_import_export.F90
+  )
+
+set(nuopc_mesh_cap_src
+  wav_shel_inp.F90
+  wav_comp_nuopc.F90
+  wav_wrapper_mod.F90
   )
 
 set(esmf_multi_cap_src

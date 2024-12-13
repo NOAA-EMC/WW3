@@ -448,7 +448,9 @@ CONTAINS
     use w3timemd,        only : set_user_timestring
     use w3odatmd,        only : runtype, restart_from_binary, use_restartnc, user_restfname
     use w3odatmd,        only : logfile_is_assigned
+#ifdef W3_PIO
     use wav_restart_mod, only : read_restart
+#endif
     !/
 #ifdef W3_MPI
     INCLUDE "mpif.h"
@@ -959,6 +961,7 @@ CONTAINS
     ! 3.a Read restart file
     !
     VA(:,:) = 0.
+#ifdef W3_PIO
     if (use_restartnc) then
       if (runtype == 'continue' )then
         call set_user_timestring(time,user_timestring)
@@ -983,6 +986,8 @@ CONTAINS
         flcold = .true.
       end if
     else
+#endif
+
 #ifdef W3_DEBUGCOH
       CALL ALL_VA_INTEGRAL_PRINT(IMOD, "Before W3IORS call", 1)
 #endif
@@ -1016,7 +1021,9 @@ CONTAINS
 #ifdef W3_TIMINGS
       CALL PRINT_MY_TIME("After restart inits")
 #endif
+#ifdef W3_PIO
     end if ! if (use_restartnc)
+#endif
     !
     ! 3.b Compare MAPSTA from grid and restart
     !
