@@ -1,4 +1,4 @@
-!> @file
+
 !> @brief Source term integration routine.
 !>
 !> @author H. L. Tolman
@@ -1298,6 +1298,14 @@ CONTAINS
         ! conditional statement around the W3SRCE call
         SRC_MASK(I) = .NOT. (MAPSTA(IY(I),IX(I)) .EQ. 1 .AND. FLAGST(ISEA))
 
+#ifdef W3_PDLIB
+       ! This was originally in w3wavemd
+       IF( (IOBP_LOC(JSEA) .EQ. 1 .OR. IOBP_LOC(JSEA) .EQ. 3)         &
+           .AND. IOBDP_LOC(JSEA) .EQ. 1 .AND. IOBPA_LOC(JSEA) .EQ. 0) THEN
+         SRC_MASK(I) = .TRUE.
+       ENDIF
+#endif
+
         I = I + 1
       ENDDO ! Gather to local grid loop
 #if MANM
@@ -2003,8 +2011,13 @@ CONTAINS
                       DVS  = SIGN(MIN(MAXDAC,ABS(DVS)),DVS)
                     ENDIF
                     PreVS  = DVS / FAKS
-                    eVS    = PreVS / CG1_CHUNK(IK,CSEA) * CLATSL_CHUNK(CSEA)
-                    eVD    = MIN(0.,VD(ISP,CSEA))
+                    IF (IOBP_LOC(JSEA) .EQ. 3) THEN
+                      eVS = 0
+                      eVD = 0
+                    ELSE
+                      eVS    = PreVS / CG1_CHUNK(IK,CSEA) * CLATSL_CHUNK(CSEA)
+                      eVD    = MIN(0.,VD(ISP,CSEA))
+                    ENDIF
                     B_JAC(ISP,JSEA) = B_JAC(ISP,JSEA) + SIDT * (eVS - eVD*SPEC(ISP,JSEA)*JAC)
                     ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
 #ifdef W3_DB1
@@ -2017,9 +2030,9 @@ CONTAINS
                       evS = -evS
                       evD = 2*evD
                     ENDIF
-#endif
                     B_JAC(ISP,JSEA) = B_JAC(ISP,JSEA) + SIDT * eVS
                     ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
 
 #ifdef W3_TR1
                     eVS = VSTR(ISP,CSEA) * JAC
@@ -2031,9 +2044,9 @@ CONTAINS
                       evS = -evS
                       evD = 2*evD
                     ENDIF
-#endif
                     B_JAC(ISP,JSEA) = B_JAC(ISP,JSEA) + SIDT * eVS
                     ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) = ASPAR_JAC(ISP,PDLIB_I_DIAG(JSEA)) - SIDT * eVD
+#endif
                   END DO
                 END DO
 

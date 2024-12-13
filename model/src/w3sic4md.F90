@@ -89,6 +89,7 @@ MODULE W3SIC4MD
   !        *** Rogers et al. tech. rep. 2021 (RYW2021)
   !        *** Yu et al. CRST 2022
   !        *** Yu JMSE 2022
+  !        *** Meylan et al. Ocean Modeling 2021
   !
   !  6. Switches :
   !
@@ -138,6 +139,7 @@ CONTAINS
     !/    11-Jan-2024 : Method 8 added (Meylan et al. 2018)   (E. Rogers)
     !/    11-Jan-2024 : Method 9 added (Rogers et al., 2021)
     !/                                      denoted "RYW2021" (E. Rogers)
+    !/    14-Aug-2024 : Method 10 added (Meylan et al. 2021)  (E. Thomas)
     !/
     !/        FIXME   : Move field input to W3SRCE and provide
     !/     (S.Zieger)   input parameter to W3SIC1 to make the subroutine
@@ -307,6 +309,8 @@ CONTAINS
     !        suggested default is marked with "(*SD*)", for consistency
     !          with SWAN (v41.31AB or later)
     !
+    !     10) Meylan et al. 2021 (Ocean Modeling): ocean-wave attenuation 
+    !         due to scattering by sea ice floes. 
     !     ------------------------------------------------------------------
     !
     !     For all methods, the user can specify namelist
@@ -450,6 +454,8 @@ CONTAINS
     REAL, ALLOCATABLE       :: FREQ(:) ! wave frequency
     REAL, ALLOCATABLE       :: MARG1(:), MARG2(:) ! Arguments for M2
     REAL, ALLOCATABLE       :: KARG1(:), KARG2(:), KARG3(:) !Arguments for M3
+    REAL                    :: x1,x2,x3,x1sqr,x2sqr,x3sqr   !Arguments for M10
+    REAL                    :: perfour,amhb,bmhb            !Arguments for M10
     LOGICAL                 :: NML_INPUT ! if using namelist input for M2
 
     !/
@@ -699,6 +705,43 @@ CONTAINS
       DO IK=1,NK
         WN_I(IK)  = Chf*(hice**mpow)*(FREQ(IK)**npow)
       END DO
+    
+    CASE (10)
+      ! Cubic fit to Meylan, Horvat & Bitz 2021
+      ! ICECOEF1 is thickness
+      ! ICECOEF5 is floe size
+      ! TPI/SIG is period
+      x3=min(ICECOEF1,3.5)        ! limit thickness to 3.5 m
+      x3=max(x3,0.1)        ! limit thickness >0.1 m since I make fit below
+      x2=min(ICECOEF5*0.5,100.0)  ! convert dia to radius, limit to 100m
+      x2=max(2.5,x2)
+      x2sqr=x2*x2
+      x3sqr=x3*x3
+      amhb = 2.12e-3
+      bmhb = 4.59e-2
+
+      DO IK=1, NK
+        x1=TPI/SIG(IK)   ! period
+        x1sqr=x1*x1
+        KARG1(ik)=-0.26982 + 1.5043*x3 - 0.70112*x3sqr + 0.011037*x2 +  &
+                  (-0.0073178)*x2*x3 + 0.00036604*x2*x3sqr + &
+                  (-0.00045789)*x2sqr + 1.8034e-05*x2sqr*x3 + &
+                  (-0.7246)*x1 + 0.12068*x1*x3 + &
+                  (-0.0051311)*x1*x3sqr + 0.0059241*x1*x2 + &
+                  0.00010771*x1*x2*x3 - 1.0171e-05*x1*x2sqr + &
+                  0.0035412*x1sqr - 0.0031893*x1sqr*x3 + &
+                  (-0.00010791)*x1sqr*x2 + &
+                  0.00031073*x1**3 + 1.5996e-06*x2**3 + 0.090994*x3**3
+        KARG1(IK)=min(KARG1(IK),0.0)
+        ALPHA(IK) = 10.0**KARG1(IK)  
+        perfour=x1sqr*x1sqr
+        if ((x1.gt.5.0) .and. (x1.lt.20.0)) then
+          ALPHA(IK) = ALPHA(IK) + amhb/x1sqr+bmhb/perfour
+        else if (x1.gt.20.0) then
+          ALPHA(IK) = amhb/x1sqr+bmhb/perfour
+        endif
+          WN_I(IK) = ALPHA(IK) * 0.5
+        end do
 
     CASE DEFAULT
       WN_I = ICECOEF1 !Default to IC1: Uniform in k

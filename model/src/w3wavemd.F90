@@ -1460,6 +1460,12 @@ CONTAINS
         call print_memcheck(memunit, 'memcheck_____:'//' WW3_WAVE TIME LOOP 13')
         !
 #ifdef W3_PDLIB
+
+        IF (LPDLIB .and. .not. FLSOU .and. .not. FSSOURCE) THEN
+          B_JAC     = 0.
+          ASPAR_JAC = 0.
+        ENDIF
+
         IF (LPDLIB .and. FLSOU .and. FSSOURCE) THEN
 #endif
 
@@ -2220,8 +2226,7 @@ CONTAINS
                        BEDROUGH(1:NSEAL),                 & ! |
                        BEDRIPX(1:NSEAL),                  & ! |-- BED* was BEDFORM(:,1:3) and formerly TMP2  
                        BEDRIPY(1:NSEAL),                  & ! |
-         
-#endif                       
+#endif
                        PHIBBL(1:NSEAL),                   &
                        TAUBBLX(1:NSEAL),                  & ! WAS TMP3
                        TAUBBLY(1:NSEAL),                  & ! WAS TMP3
