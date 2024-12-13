@@ -541,7 +541,6 @@ CONTAINS
         !
       END DO ! End loop over output points (IPT).
     ELSE 
-      write(*,*) 'read points weight JDM'
       ! Saved weight file exists, read weights from file 
       IF ( IAPROC .EQ. 1 ) THEN 
         ! Open the netCDF file.
