@@ -658,7 +658,6 @@ CONTAINS
       STOP
     ENDIF
 #endif
-
     !
     ! 1.c Open files without unpacking MDS ,,,
     !
