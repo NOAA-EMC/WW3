@@ -967,22 +967,6 @@ CONTAINS
 #endif
           DNN       = XWIND * DCELL + (1.-XWIND) * DNND * TFAC
 
-
-          CGD   = 0.5 * GRAV / SIG(IK) * IOBDP_LOC(JSEA)
-          DSS   = ( CGD * (XFR-1.))**2 * DTME / 12.
-          DNN   = ( CGD * DTH )**2 * DTME / 12.
-          DCELL = CGD / 10.0 ! -> CELLP needs probably redifinition ...
-          KH    = WN(IK,ISEA)*DW(ISEA)
-          XWIND = 3.3 * U10(ISEA)*WN(IK,ISEA)/SIG(IK) - 2.3
-          XWIND = MAX ( 0. , MIN ( 1. , XWIND ) )
-          TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
-          DSS   = SWFAC(JSEA) * (XWIND * DCELL + (1.-XWIND) * DSS * TFAC)
-          DNN   = SWFAC(JSEA) * (XWIND * DCELL + (1.-XWIND) * DNN * TFAC)
-          DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
-          DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
-          DIFFVEC(3,JSEA) = ((DSS-DNN) * ESIN(ITH)*ECOS(ITH)) / CLATS(ISEA)
-
-
           VDXX(IXY) = DTLOC * (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2)
           VDYY(IXY) = DTLOC * (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) &
                / CLATS(ISEA)**2
