@@ -89,19 +89,38 @@ CONTAINS
   !> @author C. Bunney
   !> @date   12-Oct-2023
   SUBROUTINE W3SRCE_INIT()
-    USE W3ODATMD, ONLY: NDSE, NDSO
+    USE W3ODATMD, ONLY: NDSE, NDSO, NAPOUT, NAPERR, IAPROC
+#ifdef W3_OMPG
+    USE OMP_LIB
+#endif
 
     IMPLICIT NONE
+
     CHARACTER(LEN=16) :: VAL
     INTEGER :: STAT
+
+    ! Default tile size will be 1 or 4 * number of OMP threads
+#ifdef W3_OMPG
+    CHUNKSIZE = 4 * omp_get_max_threads()
+    IF(IAPROC .EQ. NAPOUT) THEN
+      WRITE(NDSO,*) "Default source term tile size set to 4 * OMP_NUM_THREADS: ", CHUNKSIZE 
+    ENDIF
+#endif
+
+    ! Get user defined tile size from environment variable if set:
     CALL get_environment_variable("WW3_SRC_TILE_SIZE", VALUE=VAL, STATUS=STAT)
     IF(STAT .EQ. 0) THEN
       READ(VAL,*,IOSTAT=STAT) CHUNKSIZE
       IF(STAT .NE. 0) THEN
-        WRITE(NDSE,*) "Error ",STAT, " parsing value for WW3_SRC_TILE_SIZE: ", TRIM(VAL)
-        WRITE(NDSE,*) "Will default to size of 1"
+        IF(IAPROC .EQ. NAPERR) THEN
+          WRITE(NDSE,*) "Error ",STAT, " parsing value for WW3_SRC_TILE_SIZE: ", TRIM(VAL)
+          WRITE(NDSE,*) "Will default to size of 1"
+        ENDIF
+        CHUNKSIZE = 1
       ELSE
-        WRITE(NDSO,*) "Source term tile size set to: ", CHUNKSIZE 
+        IF(IAPROC .EQ. NAPOUT) THEN
+          WRITE(NDSO,*) "Source term tile size set to: ", CHUNKSIZE 
+        ENDIF
       ENDIF
     ENDIF
   END SUBROUTINE W3SRCE_INIT
@@ -1221,8 +1240,12 @@ CONTAINS
       ! TODO: Look into workaround for this, use pointers instead?
       ! TODO - rewrite to loop over I for GPU, to avoid loop dependency.
 
-      I = 1
+      !I = 1
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(I, ISEA, JSEA, IK, ITH, IS0)
+#endif
       DO JSEA=CHUNK0,CHUNKN
+        I = JSEA - CHUNK0 + 1
         CALL INIT_GET_ISEA(ISEA, JSEA)  !!! TODO: Potentially slow! Precalculate?
 
         IX(I) = MAPSF(ISEA,1)
@@ -1313,8 +1336,12 @@ CONTAINS
           SRC_MASK(I) = .NOT. (MAPSTA(IY(I),IX(I)) .EQ. 1 .AND. FLAGST(ISEA))
         ENDIF
 
-        I = I + 1
+        !I = I + 1
       ENDDO ! Gather to local grid loop
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
 #if MANM
 !$ACC END KERNELS
 #endif
@@ -1364,6 +1391,9 @@ CONTAINS
       !
       ! 1.c Set mean parameters
       !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
       DO CSEA=1,NSEAC
         IF(SRC_MASK(CSEA)) CYCLE
         JSEA = CHUNK0 + CSEA - 1
@@ -1477,6 +1507,9 @@ CONTAINS
 #endif
 
       END DO ! CSEA
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
       !
       ! 1.c2 Stores the initial data
       !
@@ -1484,6 +1517,9 @@ CONTAINS
       !
       ! 1.d Stresses
       !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
       DO CSEA = 1,NSEAC
         IF(SRC_MASK(CSEA)) CYCLE
         JSEA = CHUNK0 + CSEA - 1
@@ -1506,6 +1542,9 @@ CONTAINS
            UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(CSEA), CD(CSEA), CHARN(JSEA) )
 #endif
       END DO !CSEA
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 
       !
       ! 1.e Prepare cut-off beyond which the tail is imposed with a power law
@@ -1515,34 +1554,52 @@ CONTAINS
 #endif
 #ifdef W3_ST1
       ! TODO: This is mostly same for ST1, ST3, ST4, ST6
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
       DO CSEA=1,NSEAC
         FH1 = FXFM * FMEAN(CSEA)
         FH2 = FXPM / UST_CHUNK(CSEA)
         FHIGH(CSEA)  = MAX ( FH1 , FH2 )
         IF (FLTEST) WRITE (NDST,9004) FH1*TPIINV, FH2*TPIINV, FHIGH(CSEA)*TPIINV
       END DO
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
 #endif
 #ifdef W3_ST2
+
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
       DO CSEA=1,NSEAC
         JSEA = CHUNK0 + CSEA - 1
         CALL INIT_GET_ISEA(ISEA, JSEA)  !! TODO - to keep FPI working
         FHIGH(CSEA) = XFC * FPI(ISEA)
       ENDDO
       !!FHIGH(1:NSEAC) = XFC * FPI(CSEA)  ! Have to do this explicitly above as FPI is NSEA and I/O
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
 #endif
 #ifdef W3_ST3
+      ! TODO - explicit loops so we can OMP parallelise?
       FHIGH(1:NSEAC) = MAX(FFXFM * MAX(FMEAN(1:NSEAC),FMEANWS(1:NSEAC)), &
                    FFXPM / UST_CHUNK(1:NSEAC))
 #endif
 #ifdef W3_ST4
       ! Introduces a Long & Resio (JGR2007) type dependance on wave age
       ! !/ST4      FAGE   = FFXFA*TANH(0.3*U10ABS*FMEANWS*TPI/GRAV)
+      ! TODO - explicit loops so we can OMP parallelise?
       FAGE(1:NSEAC) = 0.
       FHIGH(1:NSEAC) = MAX( (FFXFM + FAGE(1:NSEAC) ) * &
           MAX(FMEAN1(1:NSEAC),FMEANWS(1:NSEAC)), FFXPM / UST_CHUNK(1:NSEAC))
       !!FHIGI(1:NSEAC) = FFXFA * FMEAN1(1:NSEAC) ! Not used
 #endif
 #ifdef W3_ST6
+      ! TODO - explicit loops so we can OMP parallelise?
       IF (FXFM .LE. 0) THEN
         FHIGH(1:NSEAC) = SIG(NK)
       ELSE
@@ -1579,6 +1636,9 @@ CONTAINS
         !
         ! 2.a Input.
         !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -1587,7 +1647,13 @@ CONTAINS
              VSLN(:,CSEA) )
 #endif
         ENDDO ! CSEA loop - W3LNx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
         !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -1630,9 +1696,15 @@ CONTAINS
              TAUWX(JSEA), TAUWY(JSEA), TAUWAX(CSEA), TAUWAY(CSEA), VSIN(:,CSEA), VDIN(:,CSEA) )
 #endif
         END DO ! CSEA; W3SINx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
         !
         ! 2.b Nonlinear interactions.
         !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -1659,11 +1731,18 @@ CONTAINS
              U10_CHUNK(CSEA), U10D_CHUNK(CSEA), JSEA, VSNL(:,CSEA), VDNL(:,CSEA), QR5KURT)
 #endif
         END DO ! CSEA; W3SNLx     
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
         !
 #ifdef W3_PDLIB
         IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_TR1
+
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
           DO CSEA=1,NSEAC
             IF(SRC_MASK(CSEA)) CYCLE
             JSEA = CHUNK0 + CSEA - 1
@@ -1672,6 +1751,10 @@ CONTAINS
             CALL W3STR1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA),  &
               WN1_CHUNK(:,CSEA), DEPTH(CSEA), VSTR(:,CSEA), VDTR(:,CSEA) )
           END DO ! CSEA; W3STR1
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
 #endif
 #ifdef W3_PDLIB
         ENDIF
@@ -1680,6 +1763,14 @@ CONTAINS
         ! 2.c Dissipation... except for ST4
         ! 2.c1   as in source term package
         !
+
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA  &
+#ifdef W3_ST2
+!$OMP                    ,ISEA  &
+#endif
+!$OMP )
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -1712,11 +1803,20 @@ CONTAINS
           CALL W3SDS6 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA),  VSDS(:,CSEA), VDDS(:,CSEA) )
 #endif
         END DO ! CSEA; W3SDSx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
+
         !     
 #ifdef W3_PDLIB
         IF (.NOT. FSSOURCE .or. LSLOC) THEN
 #endif
 #ifdef W3_DB1
+
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA, LBREAK)
+#endif
           DO CSEA=1,NSEAC
             IF(SRC_MASK(CSEA)) CYCLE
             JSEA = CHUNK0 + CSEA - 1
@@ -1726,6 +1826,10 @@ CONTAINS
             CALL W3SDB1 ( IX(CSEA), SPEC(:,JSEA), DEPTH(CSEA), EMEAN(CSEA), FMEAN(CSEA), &
                 WNMEAN(JSEA), CG1_CHUNK(:,CSEA), LBREAK, VSDB(:,CSEA), VDDB(:,CSEA) )
           END DO ! CSEA; W3SDBx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
 #endif
 #ifdef W3_PDLIB
         ENDIF
@@ -1735,16 +1839,25 @@ CONTAINS
         !
 #ifdef W3_ST6
         IF (SWL6S6) THEN
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
           DO CSEA=1,NSEAC
             IF(SRC_MASK(CSEA)) CYCLE
             JSEA = CHUNK0 + CSEA - 1
             CALL W3SWL6 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), VSWL(:,CSEA), VDWL(:,CSEA) )
           ENDDO ! CSEA; W3SWL6
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
         END IF
 #endif
         !
         ! 2.d Bottom interactions.
         !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -1765,8 +1878,15 @@ CONTAINS
           CALL W3SBT9 ( SPEC(:,JSEA), DEPTH(CSEA), VSBT(:,CSEA), VDBT(:,CSEA), IX(CSEA), IY(CSEA) )
 #endif
         END DO ! CSEA; W3SBTx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 !
 #ifdef W3_BS1
+
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA, TAUSCX, TAUSCY)
+#endif
           DO CSEA=1,NSEAC
             IF(SRC_MASK(CSEA)) CYCLE
             JSEA = CHUNK0 + CSEA - 1
@@ -1774,21 +1894,33 @@ CONTAINS
             CALL W3SBS1 ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), & 
                 DEPTH(CSEA), CX_CHUNK(CSEA), CY_CHUNK(CSEA), TAUSCX, TAUSCY, VSBS(:,CSEA), VDBS(:,CSEA) ) ! TODO - TAUSC[XY] not used.
           END DO ! CSEA; W3SBSx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
 #endif
         !
         ! 2.e Unresolved Obstacles Source Term
         !
 #ifdef W3_UOST
         ! UNRESOLVED OBSTACLES
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
           CALL UOST_SRCTRMCOMPUTE(IX(CSEA), IY(CSEA), SPEC(:,JSEA), CG1_CHUNK(:,CSEA), DT(CSEA),            &
              U10_CHUNK(CSEA), U10D_CHUNK(CSEA), VSUO(:,CSEA), VDUO(:,CSEA))
         END DO ! CSEA; UOST
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+
 #endif
         !
         ! 2.g Dump training data if necessary
+        !     TODO: Only works with CHUNKSIZE=1
         !
 #ifdef W3_NNT
         DO CSEA=1,NSEAC
@@ -1823,6 +1955,9 @@ CONTAINS
         ! 3.  Set frequency cut-off ------------------------------------------ *
         !
         ! GPU Refactor - loop over seapoints in chunk:
+        !
+        ! TODO: OMP: Not acclerated over CSEA loop, rather over inner spectral
+        !       loops. Is that more efficient? Or should we OMP here?
         DO CSEA = 1,NSEAC
           ! GPU Refactor - don't integrate if timestep for this spectum
           ! is complete, or point is not active.
@@ -1892,6 +2027,9 @@ CONTAINS
           ENDIF
 #endif
           !
+#ifdef W3_OMPG
+!!CB!$OMP PARALLEL DO PRIVATE(IS, DAMAX, AFAC)
+#endif
           DO IS=IS1, NSPECH
             VS(IS,CSEA) = VSLN(IS,CSEA) + VSIN(IS,CSEA) + VSNL(IS,CSEA)  &
                  + VSDS(IS,CSEA) + VSBT(IS,CSEA)
@@ -1935,6 +2073,9 @@ CONTAINS
             ENDIF
 #endif
           END DO  ! end of loop on IS
+#ifdef W3_OMPG
+!!CB!$OMP END PARALLEL DO
+#endif
 
           !
           DT(CSEA) = MAX ( 0.5, DT(CSEA) ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
@@ -2169,30 +2310,58 @@ CONTAINS
           !
           IF (srce_call .eq. srce_direct) THEN
             IF ( SHAVE ) THEN
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(eInc1, eInc2)
+#endif
               DO IS=IS1, NSPECH
                 eInc1 = VS(IS,CSEA) * DT(CSEA) / MAX ( 1. , (1.-HDT*VD(IS,CSEA)))
                 eInc2 = SIGN ( MIN (DAM(IS,CSEA),ABS(eInc1)) , eInc1 )
                 SPEC(IS,JSEA) = MAX ( 0. , SPEC(IS,JSEA)+eInc2 )
               END DO
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
             ELSE
               !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(eInc1)
+#endif
               DO IS=IS1, NSPECH
                 eInc1 = VS(IS,CSEA) * DT(CSEA) / MAX ( 1. , (1.-HDT*VD(IS,CSEA)))
                 SPEC(IS,JSEA) = MAX ( 0. , SPEC(IS,JSEA)+eInc1 )
               END DO
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
             END IF
             !
 #ifdef W3_DB1
+!
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(eInc1)
+#endif
             DO IS=IS1, NSPECH
               eInc1 = VSDB(IS,CSEA) * DT(CSEA) / MAX ( 1. , (1.-HDT*VDDB(IS,CSEA)))
               SPEC(IS,JSEA) = MAX ( 0. , SPEC(IS,JSEA)+eInc1 )
             END DO
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+!
 #endif
 #ifdef W3_TR1
+!
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(eInc1)
+#endif
             DO IS=IS1, NSPECH
               eInc1 = VDTR(IS,CSEA) * DT(CSEA) / MAX ( 1. , (1.-HDT*VDTR(IS,CSEA)))
               SPEC(IS,JSEA) = MAX ( 0. , SPEC(IS,JSEA)+eInc1 )
             END DO
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+!
 #endif
 
 #ifdef W3_DEBUGSRC
@@ -2229,6 +2398,9 @@ CONTAINS
         !
 
         !! GPU Refactor - loop over chunk
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA, HDT, HSTOT, IK, ITH, IS, FACTOR, FACTOR2)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -2278,19 +2450,37 @@ CONTAINS
           ! MISSING: TAIL TO BE ADDED ?
           !
         ENDDO ! CSEA
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 
 #ifdef W3_NLS
+!
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
           CALL W3SNLS ( SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), DEPTH(CSEA), U10_CHUNK(CSEA), DT(CSEA), AA=SPEC(:,JSEA) )
         END DO ! CSEA; W3SNLS
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
+!
 #endif
         !
         ! 6.  Add tail ------------------------------------------------------- *
         !   a Mean parameters
         !
         !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA  &
+#ifdef W3_ST2
+!$OMP                   ,ISEA  &
+#endif
+!$OMP )
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -2324,7 +2514,13 @@ CONTAINS
           CALL W3SPR6 (SPEC(:,JSEA), CG1_CHUNK(:,CSEA), WN1_CHUNK(:,CSEA), EMEAN(CSEA), FMEAN(CSEA), WNMEAN(JSEA), AMAX(CSEA), FP(CSEA))
 #endif
         END DO ! CSEA; W3SPRx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -2337,8 +2533,24 @@ CONTAINS
              UST_CHUNK(CSEA), USTD_CHUNK(CSEA), Z0(CSEA), CD(CSEA) )
 #endif
         END DO ! CSEA; W3FLXx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 !        
 !        
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA, FH1, FH2, IK, ITH  &
+#ifdef W3_ST2
+!$OMP                    ,ISEA, FHTRAN, DFH, FACDIA, FACPAR  &
+#endif
+#ifdef W3_MLIM
+!$OMP                    ,ISEA, HM, EM  &
+#endif
+#if W3_SEED
+!$OMP                    ,UC, SLEV &
+#endif
+!$OMP )
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -2449,9 +2661,15 @@ CONTAINS
             END DO
           END DO
         END DO ! CSEA/JSEA (section 6.a)
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
         !
         ! 6.e  Update wave-supported stress----------------------------------- *
         !
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           JSEA = CHUNK0 + CSEA - 1
@@ -2482,16 +2700,25 @@ CONTAINS
 #endif
 
         END DO ! CSEA; W3SINx
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 
         !
         ! 7.  Check if integration complete ---------------------------------- *
         !
         ! Update QI5TSTART (Q. Liu)
 #ifdef W3_NL5
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(SRC_MASK(CSEA)) CYCLE
           CALL TICK21(QI5TSTART(:,CSEA), DT(CSEA))
         END DO
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 #endif
 
         IF (srce_call .eq. srce_imp_post) THEN
@@ -2505,6 +2732,9 @@ CONTAINS
         ! GPU refactor: Update source mask with seapoints that have completed
         ! timestepping:
         !!WHERE(DTTOT(:NSEAC) .GE. 0.9999*DTG) SRC_MASK(:NSEAC) = .TRUE.
+#ifdef W3_OMPG
+!$OMP PARALLEL DO PRIVATE(JSEA)
+#endif
         DO CSEA=1,NSEAC
           IF(DTTOT(CSEA) .GE. 0.9999*DTG .AND. .NOT. SRC_MASK(CSEA)) THEN
             ! Time stepping complete. Set mask to true and calculate DTDYN
@@ -2513,6 +2743,9 @@ CONTAINS
             DTDYN(JSEA) = DTDYN(JSEA) / REAL(MAX(1,NSTEPS))
           END IF
         END DO
+#ifdef W3_OMPG
+!$OMP END PARALLEL DO
+#endif
 
         COMPLETE = ALL(SRC_MASK(:NSEAC)) ! GPU Refactor - store in scalar and return
 !$ACC END PARALLEL
