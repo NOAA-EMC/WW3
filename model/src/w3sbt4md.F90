@@ -36,6 +36,7 @@ MODULE W3SBT4MD
   !/                  inclusion in WAVEWATCH III.
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    14-Mar-2012 : Preparing distribution version.     ( version 4.05 )
+  !/    03-Nov-2023 : Split TAUBBL into two separate vars ( version 7.13 )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -320,24 +321,26 @@ CONTAINS
   !>  the contribution of rippled and non-rippled fractions based on the
   !>  bayesian approach of Tolman (1995).
   !>
-  !> @param[in]    A        Action density spectrum.
-  !> @param[in]    CG       Group velocities.
-  !> @param[in]    WN       Wavenumbers.
-  !> @param[in]    DEPTH    Water depth.
-  !> @param[in]    D50      Median grain size.
-  !> @param[in]    PSIC     Critical Shields parameter.
-  !> @param[out]   TAUBBL   Components of stress leaking to the bottom.
-  !> @param[inout] BEDFORM  Ripple parameters (roughness and wavelength).
-  !> @param[out]   S        Source term (1-D version).
-  !> @param[out]   D        Diagonal term of derivative.
-  !> @param[in]    IX       Spatial grid index.
-  !> @param[in]    IY       Spatial grid index.
+  !> @param[in]    A           Action density spectrum.
+  !> @param[in]    CG          Group velocities.
+  !> @param[in]    WN          Wavenumbers.
+  !> @param[in]    DEPTH       Water depth.
+  !> @param[in]    D50         Median grain size.
+  !> @param[in]    PSIC        Critical Shields parameter.
+  !> @param[out]   TAUBBL[XY]  Components of stress leaking to the bottom.
+  !> @param[inout] BEDROUGH    Bed roughness
+  !> @param[inout] BEDRIP[XY]  Bed ripple wavelength
+  !> @param[out]   S           Source term (1-D version).
+  !> @param[out]   D           Diagonal term of derivative.
+  !> @param[in]    IX          Spatial grid index.
+  !> @param[in]    IY          Spatial grid index.
   !>
   !> @author F. Ardhuin
   !> @author J. Lepesqueur
   !> @date   15-Mar-2012
   !>
-  SUBROUTINE W3SBT4 (A, CG, WN, DEPTH, D50, PSIC, TAUBBL, BEDFORM, S, D, IX, IY )
+  SUBROUTINE W3SBT4 (A, CG, WN, DEPTH, D50, PSIC, TAUBBLX, TAUBBLY,  &
+                     BEDROUGH, BEDRIPX, BEDRIPY, S, D, IX, IY )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -350,6 +353,7 @@ CONTAINS
     !/    23-Jun-2011 : Origination.                        ( version 4.04 )
     !/    04-Jul-2011 : Adding momentum flux TAUBBL         ( version 4.05 )
     !/    15-Mar-2012 : Adding subgrid treatment for depth  ( version 4.05 )
+    !/    03-Nov-2023 : Split TAUBBL into TUABBL[X,Y]       ( version 7.14 )
     !/
     !  1. Purpose :
     !
@@ -371,7 +375,7 @@ CONTAINS
     !       D50     Real  I   Median grain size.
     !       PSIC    Real  I   Critical Shields parameter
     !       BEFORMS Real I/O  Ripple parameters (roughness and wavelength).
-    !       TAUBBL  Real  O   Components of stress leaking to the bottom.
+    !    TAUBBL[XY] Real  O   Components of stress leaking to the bottom.
     !       S       R.A.  O   Source term (1-D version).
     !       D       R.A.  O   Diagonal term of derivative.             *)
     !       IX,IY   Int. I   Spatial grid indices
@@ -437,8 +441,8 @@ CONTAINS
     REAL, INTENT(IN)        :: CG(NK), WN(NK), DEPTH, A(NSPEC), D50
     REAL, INTENT(IN)        :: PSIC
     INTEGER, INTENT(IN)     :: IX, IY
-    REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUBBL(2)
-    REAL, INTENT(INOUT)     :: BEDFORM(3)
+    REAL, INTENT(OUT)       :: S(NSPEC), D(NSPEC), TAUBBLX, TAUBBLY
+    REAL, INTENT(INOUT)     :: BEDROUGH, BEDRIPX, BEDRIPY
     REAL                    :: CBETA(NK)
     REAL :: UORB2,UORB,AORB, EBX, EBY, AX, AY, LX, LY
     REAL :: CONST2, TEMP2
@@ -481,7 +485,8 @@ CONTAINS
     ! 2. Subgrid loop
     !
     DSUM(:)=0.
-    TAUBBL(:)=0.
+    TAUBBLX=0.
+    TAUBBLY=0.
     !
     DO ISUB=1,3
       !
@@ -564,16 +569,16 @@ CONTAINS
         !  Sheet flow roughness, see Wilson (1989)
         KSUBS=AORB*0.0655*(UORB2/((SED_SG-1)*GRAV*AORB))**1.4
         KSUBN = KSUBR + KSUBS
-        BEDFORM(2)=LX
-        BEDFORM(3)=LY
+        BEDRIPX=LX
+        BEDRIPY=LY
       ELSE
         !  relict roughness, see Ardhuin et al. (2003)
         KSUBN=MAX(BACKGROUND,AORB*SBTCX(4))
-        BEDFORM(2)=-LX
-        BEDFORM(3)=-LY
+        BEDRIPX=-LX
+        BEDRIPY=-LY
       END IF
 
-      BEDFORM(1)=KSUBN
+      BEDROUGH=KSUBN
 
     ELSE
       !
@@ -595,15 +600,15 @@ CONTAINS
            0.0655*(UORB2/((SED_SG-1)*GRAV*AORB))**1.4)
       !
       IF (PROBA2.GT.0.5) THEN
-        BEDFORM(2)=LX
-        BEDFORM(3)=LY
+        BEDRIPX=LX
+        BEDRIPY=LY
       ELSE
-        BEDFORM(2)=-LX
-        BEDFORM(3)=-LY
+        BEDRIPX=-LX
+        BEDRIPY=-LY
       END IF
       !
     END IF
-    BEDFORM(1)=KSUBN
+    BEDROUGH=KSUBN
 
     !
     ! 2.c second use of FWTABLE to get FW from the full roughness
@@ -624,8 +629,8 @@ CONTAINS
         IS=ITH+(IK-1)*NTH
         D(IS)=DSUM(IK)
         TEMP2=CONST2*D(IS)*A(IS)
-        TAUBBL(1) = TAUBBL(1) - TEMP2*ECOS(IS)
-        TAUBBL(2) = TAUBBL(2) - TEMP2*ESIN(IS)
+        TAUBBLX = TAUBBLX - TEMP2 * ECOS(IS)
+        TAUBBLY = TAUBBLY - TEMP2 * ESIN(IS)
         S(IS)=D(IS)*A(IS)
       END DO
     END DO

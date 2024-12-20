@@ -824,11 +824,13 @@ CONTAINS
          TAUOY, USSX, USSY, MSSX, MSSY,         &
          MSCX, MSCY, PRMS, TPMS, CHARN,         &
          TAUWNX, TAUWNY, BHD, CGE,              &
-         CFLXYMAX, CFLTHMAX, CFLKMAX, WHITECAP, &
-         BEDFORMS, PHIBBL, TAUBBL, T01,         &
+         CFLXYMAX, CFLTHMAX, CFLKMAX,           &
+         WCAP_COV, WCAP_THK, WCAP_BHS, WCAP_MNT,&
+         BEDROUGH, BEDRIPX, BEDRIPY, PHIBBL,    &
+         TAUBBLX, TAUBBLY, T01,                 &
          P2SMS, US3D, EF,  TH1M, STH1M, TH2M,   &
-         STH2M, HSIG, TAUICE, PHICE, PTHP0, PQP,&
-         PPE, PGW, PSW, PTM1, PT1, PT2, PEP,   &
+         STH2M, HSIG, TAUICEX, TAUICEY, PHICE,  &
+         PTHP0, PQP, PPE, PGW, PSW, PTM1, PT1, PT2, PEP,   &
          QP, MSSD, MSCD, STMAXE, STMAXD, HMAXE, &
          HCMAXE, HMAXD, HCMAXD, WBT, USSP
     USE W3GDATMD, ONLY: NK, NSEAL
@@ -1130,19 +1132,19 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 5, 7) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,1)
+            Arrexch(IH,JSEA)=WCAP_COV(JSEA)
           END IF
           IF ( FLGRDALL( 5, 8) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,2)
+            Arrexch(IH,JSEA)=WCAP_THK(JSEA)
           END IF
           IF ( FLGRDALL( 5, 9) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,3)
+            Arrexch(IH,JSEA)=WCAP_BHS(JSEA)
           END IF
           IF ( FLGRDALL( 5,10) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=WHITECAP(JSEA,4)
+            Arrexch(IH,JSEA)=WCAP_MNT(JSEA)
           END IF
           IF ( FLGRDALL( 6, 1) ) THEN
             IH = IH + 1
@@ -1198,9 +1200,9 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 6, 10) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUICE(JSEA,1)
+            Arrexch(IH,JSEA)=TAUICEX(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUICE(JSEA,2)
+            Arrexch(IH,JSEA)=TAUICEY(JSEA)
           END IF
           IF ( FLGRDALL( 6, 11) ) THEN
             IH = IH + 1
@@ -1232,11 +1234,11 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 7, 3) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=BEDFORMS(JSEA,1)
+            Arrexch(IH,JSEA)=BEDROUGH(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=BEDFORMS(JSEA,2)
+            Arrexch(IH,JSEA)=BEDRIPX(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=BEDFORMS(JSEA,3)
+            Arrexch(IH,JSEA)=BEDRIPY(JSEA)
           END IF
           IF ( FLGRDALL( 7, 4) ) THEN
             IH = IH + 1
@@ -1244,9 +1246,9 @@ CONTAINS
           END IF
           IF ( FLGRDALL( 7, 5) ) THEN
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUBBL(JSEA,1)
+            Arrexch(IH,JSEA)=TAUBBLX(JSEA)
             IH = IH + 1
-            Arrexch(IH,JSEA)=TAUBBL(JSEA,2)
+            Arrexch(IH,JSEA)=TAUBBLY(JSEA)
           END IF
           IF ( FLGRDALL( 8, 1) ) THEN
             IH = IH + 1
@@ -1573,19 +1575,19 @@ CONTAINS
         END IF
         IF ( FLGRDALL( 5, 7) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,1) = ARRtotal(IH,:)
+          WCAP_COV(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 5, 8) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,2) = ARRtotal(IH,:)
+          WCAP_THK(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 5, 9) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,3) = ARRtotal(IH,:)
+          WCAP_BHS(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 5,10) ) THEN
           IH = IH + 1
-          WHITECAP(1:NSEA,4) = ARRtotal(IH,:)
+          WCAP_MNT(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 6, 1) ) THEN
           IH = IH + 1
@@ -1641,9 +1643,9 @@ CONTAINS
         END IF
         IF (  FLGRDALL( 6, 10) ) THEN
           IH = IH + 1
-          TAUICE(1:NSEA,1) = ARRtotal(IH,:)
+          TAUICEX(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          TAUICE(1:NSEA,2) = ARRtotal(IH,:)
+          TAUICEY(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF (  FLGRDALL( 6, 11) ) THEN
           IH = IH + 1
@@ -1675,11 +1677,11 @@ CONTAINS
         END IF
         IF ( FLGRDALL( 7, 3) ) THEN
           IH = IH + 1
-          BEDFORMS(1:NSEA,1) = ARRtotal(IH,:)
+          BEDROUGH(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          BEDFORMS(1:NSEA,2) = ARRtotal(IH,:)
+          BEDRIPX(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          BEDFORMS(1:NSEA,3) = ARRtotal(IH,:)
+          BEDRIPY(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 7, 4) ) THEN
           IH = IH + 1
@@ -1687,9 +1689,9 @@ CONTAINS
         END IF
         IF ( FLGRDALL( 7, 5) ) THEN
           IH = IH + 1
-          TAUBBL(1:NSEA,1) = ARRtotal(IH,:)
+          TAUBBLX(1:NSEA) = ARRtotal(IH,:)
           IH = IH + 1
-          TAUBBL(1:NSEA,2) = ARRtotal(IH,:)
+          TAUBBLY(1:NSEA) = ARRtotal(IH,:)
         END IF
         IF ( FLGRDALL( 8, 1) ) THEN
           IH = IH + 1

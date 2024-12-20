@@ -42,6 +42,9 @@ PROGRAM W3GRID_INTERP
   !/    26-Jan-2021 : Added TP field (derived from FP)    ( version 7.12 )
   !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
   !/    02-Jun-2021 : Bug fix (*SUMGRD; Q. Liu)           ( version 7.13 )
+  !/    03-Nov-2023 : Split WHITECAP into 4 separate      ( version 7.14 )
+  !/                  variables and TAUBBL/TAUICE into
+  !/                  X and Y components. C Bunney
   !/
   !   1. Purpose :
   !
@@ -1076,7 +1079,7 @@ CONTAINS
     !/ Local Parameters
     !/
     INTEGER       :: ISEA, GSEA, IG, IGRID, IPTS, IGX, IGY, IX,    &
-         IY, ISWLL, ICAP, IBED, IFREQ, IK, INRST
+         IY, ISWLL, IFREQ, IK, INRST
     INTEGER       :: MAPINT, MAPICE, MAPDRY, MAPMSK, MAPLND,       &
          NMAPICE, NMAPDRY, NMAPMSK, NMAPLND,           &
          LMAPICE, LMAPDRY, LMAPMSK, LMAPLND,           &
@@ -1239,7 +1242,10 @@ CONTAINS
     TAUWIY   = UNDEF
     TAUWNX   = UNDEF
     TAUWNY   = UNDEF
-    WHITECAP = UNDEF
+    WCAP_COV = UNDEF
+    WCAP_THK = UNDEF
+    WCAP_BHS = UNDEF
+    WCAP_MNT = UNDEF
     !
     ! Group 6 variables
     !
@@ -1264,7 +1270,8 @@ CONTAINS
     IF ( P2MSF(1).GT.0) THEN
       P2SMS    = UNDEF
     ENDIF
-    TAUICE   = UNDEF
+    TAUICEX  = UNDEF
+    TAUICEY  = UNDEF
     PHICE    = UNDEF
     IF ( USSPF(1).GT.0 ) THEN
       USSP     = UNDEF
@@ -1276,9 +1283,12 @@ CONTAINS
     ABD      = UNDEF
     UBA      = UNDEF
     UBD      = UNDEF
-    BEDFORMS = UNDEF
+    BEDROUGH = UNDEF
+    BEDRIPX  = UNDEF
+    BEDRIPY  = UNDEF
     PHIBBL   = UNDEF
-    TAUBBL   = UNDEF
+    TAUBBLX  = UNDEF
+    TAUBBLY  = UNDEF
     !
     ! Group 8 variables
     !
@@ -2224,22 +2234,77 @@ CONTAINS
                 END IF
               END IF
               !
-              DO ICAP = 1,4
-                !
-                IF ( FLOGRD(5,ICAP+6) .AND. ACTIVE ) THEN
-                  IF ( WADATS(IGRID)%WHITECAP(GSEA,ICAP) .NE. UNDEF ) THEN
-                    SUMWTC(ICAP) = SUMWTC(ICAP) + WT
-                    IF ( WHITECAPAUX(ICAP) .EQ. UNDEF ) THEN
-                      WHITECAPAUX(ICAP) = WADATS(IGRID)%WHITECAP(GSEA,ICAP)&
-                           *WT
-                    ELSE
-                      WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) +              &
-                           WADATS(IGRID)%WHITECAP(GSEA,ICAP)*WT
-                    END IF
+           
+! CB Refactor: Whitecap now split into 4 separate variables:
+!              DO ICAP = 1,4
+!                !
+!                IF ( FLOGRD(5,ICAP+6) .AND. ACTIVE ) THEN
+!                  IF ( WADATS(IGRID)%WHITECAP(GSEA,ICAP) .NE. UNDEF ) THEN
+!                    SUMWTC(ICAP) = SUMWTC(ICAP) + WT
+!                    IF ( WHITECAPAUX(ICAP) .EQ. UNDEF ) THEN
+!                      WHITECAPAUX(ICAP) = WADATS(IGRID)%WHITECAP(GSEA,ICAP)&
+!                           *WT
+!                    ELSE
+!                      WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) +              &
+!                           WADATS(IGRID)%WHITECAP(GSEA,ICAP)*WT
+!                    END IF
+!                  END IF
+!                END IF
+!                !
+!              END DO            
+!
+              ! Whitecap coverage
+              IF ( FLOGRD(5,7) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_COV(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(1) = SUMWTC(1) + WT
+                  IF ( WHITECAPAUX(1) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(1) = WADATS(IGRID)%WCAP_COV(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(1) = WHITECAPAUX(1) +                 &
+                        WADATS(IGRID)%WCAP_COV(GSEA) * WT
                   END IF
                 END IF
-                !
-              END DO
+              END IF
+
+              ! Whitecap Thickness
+              IF ( FLOGRD(5,8) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_THK(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(2) = SUMWTC(2) + WT
+                  IF ( WHITECAPAUX(2) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(2) = WADATS(IGRID)%WCAP_THK(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(2) = WHITECAPAUX(2) +                 &
+                        WADATS(IGRID)%WCAP_THK(GSEA) * WT
+                  END IF
+                END IF
+              END IF
+
+              ! Whitecap breaker height
+              IF ( FLOGRD(5,9) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_BHS(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(3) = SUMWTC(3) + WT
+                  IF ( WHITECAPAUX(3) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(3) = WADATS(IGRID)%WCAP_BHS(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(3) = WHITECAPAUX(3) +                 &
+                        WADATS(IGRID)%WCAP_BHS(GSEA) * WT
+                  END IF
+                END IF
+              END IF
+
+              ! Whitecap moment
+              IF ( FLOGRD(5,10) .AND. ACTIVE ) THEN
+                IF ( WADATS(IGRID)%WCAP_MNT(GSEA) .NE. UNDEF ) THEN
+                  SUMWTC(4) = SUMWTC(4) + WT
+                  IF ( WHITECAPAUX(4) .EQ. UNDEF ) THEN
+                    WHITECAPAUX(4) = WADATS(IGRID)%WCAP_MNT(GSEA) * WT
+                  ELSE
+                    WHITECAPAUX(4) = WHITECAPAUX(4) +                 &
+                        WADATS(IGRID)%WCAP_MNT(GSEA) * WT
+                  END IF
+                END IF
+              END IF
+
               !
               ! Group 6 variables
               !
@@ -2362,14 +2427,14 @@ CONTAINS
               END IF
               !
               IF ( FLOGRD(6,10) .AND. ACTIVE ) THEN
-                IF ( WADATS(IGRID)%TAUICE(GSEA,1) .NE. UNDEF ) THEN
+                IF ( WADATS(IGRID)%TAUICEX(GSEA) .NE. UNDEF ) THEN
                   SUMWT6(10) = SUMWT6(10) + WT
                   IF ( TAUICEAUX(1) .EQ. UNDEF ) TAUICEAUX(1) = 0.
                   IF ( TAUICEAUX(2) .EQ. UNDEF ) TAUICEAUX(2) = 0.
                   TAUICEAUX(1) = TAUICEAUX(1) +                    &
-                       WADATS(IGRID)%TAUICE(GSEA,1)*WT
+                       WADATS(IGRID)%TAUICEX(GSEA)*WT
                   TAUICEAUX(2) = TAUICEAUX(2) +                    &
-                       WADATS(IGRID)%TAUICE(GSEA,2)*WT
+                       WADATS(IGRID)%TAUICEY(GSEA)*WT
                 END IF
               END IF
               !
@@ -2441,18 +2506,36 @@ CONTAINS
               END IF
               !
               IF ( FLOGRD(7,3) .AND. ACTIVE ) THEN
-                DO IBED = 1, 3
-                  IF ( WADATS(IGRID)%BEDFORMS(GSEA,IBED) .NE. UNDEF ) THEN
-                    SUMWTB(IBED) = SUMWTB(IBED) + WT
-                    IF ( BEDFORMSAUX(IBED) .EQ. UNDEF ) THEN
-                      BEDFORMSAUX(IBED) = WADATS(IGRID)%BEDFORMS(GSEA,IBED)&
-                           *WT
-                    ELSE
-                      BEDFORMSAUX(IBED) = BEDFORMSAUX(IBED) +              &
-                           WADATS(IGRID)%BEDFORMS(GSEA,IBED)*WT
-                    END IF
+                IF ( WADATS(IGRID)%BEDROUGH(GSEA) .NE. UNDEF ) THEN
+                  SUMWTB(1) = SUMWTB(1) + WT
+                  IF ( BEDFORMSAUX(1) .EQ. UNDEF ) THEN
+                    BEDFORMSAUX(1) = WADATS(IGRID)%BEDROUGH(GSEA) * WT
+                   ELSE
+                     BEDFORMSAUX(1) = BEDFORMSAUX(1) +              &
+                        WADATS(IGRID)%BEDROUGH(GSEA)*WT
                   END IF
-                END DO
+                END IF
+
+                IF ( WADATS(IGRID)%BEDRIPX(GSEA) .NE. UNDEF ) THEN
+                  SUMWTB(2) = SUMWTB(2) + WT
+                  IF ( BEDFORMSAUX(2) .EQ. UNDEF ) THEN
+                    BEDFORMSAUX(2) = WADATS(IGRID)%BEDRIPX(GSEA) * WT
+                   ELSE
+                     BEDFORMSAUX(2) = BEDFORMSAUX(2) +              &
+                        WADATS(IGRID)%BEDRIPX(GSEA)*WT
+                  END IF
+                END IF
+
+                IF ( WADATS(IGRID)%BEDRIPY(GSEA) .NE. UNDEF ) THEN
+                  SUMWTB(3) = SUMWTB(1) + WT
+                  IF ( BEDFORMSAUX(3) .EQ. UNDEF ) THEN
+                    BEDFORMSAUX(3) = WADATS(IGRID)%BEDRIPY(GSEA) * WT
+                   ELSE
+                     BEDFORMSAUX(3) = BEDFORMSAUX(3) +              &
+                        WADATS(IGRID)%BEDRIPY(GSEA)*WT
+                  END IF
+                END IF
+
               END IF
               !
               IF ( FLOGRD(7,4) .AND. ACTIVE ) THEN
@@ -2467,16 +2550,16 @@ CONTAINS
               END IF
               !
               IF ( FLOGRD(7,5) .AND. ACTIVE ) THEN
-                IF ( WADATS(IGRID)%TAUBBL(GSEA,1) .NE. UNDEF ) THEN
+                IF ( WADATS(IGRID)%TAUBBLX(GSEA) .NE. UNDEF ) THEN
                   SUMWT7(5) = SUMWT7(5) + WT
                   IF ( TAUBBLAUX(1) .EQ. UNDEF ) THEN
-                    TAUBBLAUX(1) = WADATS(IGRID)%TAUBBL(GSEA,1)*WT
-                    TAUBBLAUX(2) = WADATS(IGRID)%TAUBBL(GSEA,2)*WT
+                    TAUBBLAUX(1) = WADATS(IGRID)%TAUBBLX(GSEA)*WT
+                    TAUBBLAUX(2) = WADATS(IGRID)%TAUBBLY(GSEA)*WT
                   ELSE
                     TAUBBLAUX(1) = TAUBBLAUX(1) +                          &
-                         WADATS(IGRID)%TAUBBL(GSEA,1)*WT
+                         WADATS(IGRID)%TAUBBLX(GSEA)*WT
                     TAUBBLAUX(2) = TAUBBLAUX(2) +                          &
-                         WADATS(IGRID)%TAUBBL(GSEA,2)*WT
+                         WADATS(IGRID)%TAUBBLY(GSEA)*WT
                   END IF
                 END IF
               END IF
@@ -3131,17 +3214,60 @@ CONTAINS
               END IF
             END IF
             !
-            DO ICAP = 1,4
-              IF ( WHITECAPAUX(ICAP) .NE. UNDEF ) THEN
-                WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) / SUMWTC(ICAP)
-                IF ( WHITECAP(ISEA,ICAP) .EQ. UNDEF )  THEN
-                  WHITECAP(ISEA,ICAP) = WHITECAPAUX(ICAP) / REAL( SUMGRD )
-                ELSE
-                  WHITECAP(ISEA,ICAP) = WHITECAP(ISEA,ICAP) +              &
-                       WHITECAPAUX(ICAP) / REAL( SUMGRD )
-                END IF
+
+! WHITECAP now split into 4 separate variables:
+!            DO ICAP = 1,4
+!              IF ( WHITECAPAUX(ICAP) .NE. UNDEF ) THEN
+!                WHITECAPAUX(ICAP) = WHITECAPAUX(ICAP) / SUMWTC(ICAP)
+!                IF ( WHITECAP(ISEA,ICAP) .EQ. UNDEF )  THEN
+!                  WHITECAP(ISEA,ICAP) = WHITECAPAUX(ICAP) / REAL( SUMGRD )
+!                ELSE
+!                  WHITECAP(ISEA,ICAP) = WHITECAP(ISEA,ICAP) +              &
+!                       WHITECAPAUX(ICAP) / REAL( SUMGRD )
+!                END IF
+!              END IF
+!            END DO
+! 
+            ! Whitecap coverage:
+            IF ( WHITECAPAUX(1) .NE. UNDEF ) THEN
+              WHITECAPAUX(1) = WHITECAPAUX(1) / SUMWTC(1)
+              IF ( WCAP_COV(ISEA) .EQ. UNDEF )  THEN
+                WCAP_COV(ISEA) = WHITECAPAUX(1) / REAL( SUMGRD )
+              ELSE
+                WCAP_COV(ISEA) = WCAP_COV(ISEA) + WHITECAPAUX(1) / REAL( SUMGRD )
               END IF
-            END DO
+            END IF
+
+            ! Whitecap thickness:
+            IF ( WHITECAPAUX(2) .NE. UNDEF ) THEN
+              WHITECAPAUX(2) = WHITECAPAUX(2) / SUMWTC(2)
+              IF ( WCAP_THK(ISEA) .EQ. UNDEF )  THEN
+                WCAP_THK(ISEA) = WHITECAPAUX(2) / REAL( SUMGRD )
+              ELSE
+                WCAP_THK(ISEA) = WCAP_THK(ISEA) + WHITECAPAUX(2) / REAL( SUMGRD )
+              END IF
+            END IF
+
+            ! Whitecap breaker height:
+            IF ( WHITECAPAUX(3) .NE. UNDEF ) THEN
+              WHITECAPAUX(3) = WHITECAPAUX(3) / SUMWTC(3)
+              IF ( WCAP_BHS(ISEA) .EQ. UNDEF )  THEN
+                WCAP_BHS(ISEA) = WHITECAPAUX(3) / REAL( SUMGRD )
+              ELSE
+                WCAP_BHS(ISEA) = WCAP_BHS(ISEA) + WHITECAPAUX(3) / REAL( SUMGRD )
+              END IF
+            END IF
+
+            ! Whitecap moment:
+            IF ( WHITECAPAUX(4) .NE. UNDEF ) THEN
+              WHITECAPAUX(4) = WHITECAPAUX(4) / SUMWTC(4)
+              IF ( WCAP_MNT(ISEA) .EQ. UNDEF )  THEN
+                WCAP_MNT(ISEA) = WHITECAPAUX(4) / REAL( SUMGRD )
+              ELSE
+                WCAP_MNT(ISEA) = WCAP_MNT(ISEA) + WHITECAPAUX(4) / REAL( SUMGRD )
+              END IF
+            END IF
+!
             !
             ! Group 6 variables
             !
@@ -3253,11 +3379,11 @@ CONTAINS
             END IF
             !
             IF ( TAUICEAUX(1) .NE. UNDEF ) THEN
-              IF ( TAUICE(ISEA,1) .EQ. UNDEF )   TAUICE(ISEA,1) = 0.
-              IF ( TAUICE(ISEA,2) .EQ. UNDEF )   TAUICE(ISEA,2) = 0.
-              TAUICE(ISEA,1) = TAUICE(ISEA,1) +                    &
+              IF ( TAUICEX(ISEA) .EQ. UNDEF )   TAUICEX(ISEA) = 0.
+              IF ( TAUICEY(ISEA) .EQ. UNDEF )   TAUICEY(ISEA) = 0.
+              TAUICEX(ISEA) = TAUICEX(ISEA) +                    &
                    TAUICEAUX(1) / REAL( SUMWT6(10) * SUMGRD )
-              TAUICE(ISEA,2) = TAUICE(ISEA,2) +                    &
+              TAUICEY(ISEA) = TAUICEY(ISEA) +                    &
                    TAUICEAUX(2) / REAL( SUMWT6(10) * SUMGRD )
             END IF
             !
@@ -3321,17 +3447,35 @@ CONTAINS
               END IF
             END IF
             !
-            DO IBED = 1,3
-              IF ( BEDFORMSAUX(IBED) .NE. UNDEF ) THEN
-                BEDFORMSAUX(IBED) = BEDFORMSAUX(IBED) / SUMWTB(IBED)
-                IF ( BEDFORMS(ISEA,IBED) .EQ. UNDEF )  THEN
-                  BEDFORMS(ISEA,IBED) = BEDFORMSAUX(IBED) / REAL( SUMGRD )
-                ELSE
-                  BEDFORMS(ISEA,IBED) = BEDFORMS(ISEA,IBED) +              &
-                       BEDFORMSAUX(IBED) / REAL( SUMGRD )
-                END IF
+            IF ( BEDFORMSAUX(1) .NE. UNDEF ) THEN
+              BEDFORMSAUX(1) = BEDFORMSAUX(1) / SUMWTB(1)
+              IF ( BEDROUGH(ISEA) .EQ. UNDEF )  THEN
+                BEDROUGH(ISEA) = BEDFORMSAUX(1) / REAL( SUMGRD )
+              ELSE
+                BEDROUGH(ISEA) = BEDROUGH(ISEA) +              &
+                     BEDFORMSAUX(1) / REAL( SUMGRD )
               END IF
-            END DO
+            END IF
+
+            IF ( BEDFORMSAUX(2) .NE. UNDEF ) THEN
+              BEDFORMSAUX(2) = BEDFORMSAUX(2) / SUMWTB(2)
+              IF ( BEDRIPX(ISEA) .EQ. UNDEF )  THEN
+                BEDRIPX(ISEA) = BEDFORMSAUX(2) / REAL( SUMGRD )
+              ELSE
+                BEDRIPX(ISEA) = BEDRIPX(ISEA) +              &
+                     BEDFORMSAUX(2) / REAL( SUMGRD )
+              END IF
+            END IF
+
+            IF ( BEDFORMSAUX(3) .NE. UNDEF ) THEN
+              BEDFORMSAUX(3) = BEDFORMSAUX(3) / SUMWTB(3)
+              IF ( BEDRIPY(ISEA) .EQ. UNDEF )  THEN
+                BEDRIPY(ISEA) = BEDFORMSAUX(3) / REAL( SUMGRD )
+              ELSE
+                BEDRIPY(ISEA) = BEDRIPY(ISEA) +              &
+                     BEDFORMSAUX(3) / REAL( SUMGRD )
+              END IF
+            END IF
             !
             IF ( PHIBBLAUX .NE. UNDEF ) THEN
               PHIBBLAUX = PHIBBLAUX / SUMWT7(4)
@@ -3345,13 +3489,13 @@ CONTAINS
             IF ( TAUBBLAUX(1) .NE. UNDEF ) THEN
               TAUBBLAUX(1) = TAUBBLAUX(1) / SUMWT7(5)
               TAUBBLAUX(2) = TAUBBLAUX(2) / SUMWT7(5)
-              IF ( TAUBBL(ISEA,1) .EQ. UNDEF )  THEN
-                TAUBBL(ISEA,1) = TAUBBLAUX(1) / REAL( SUMGRD )
-                TAUBBL(ISEA,2) = TAUBBLAUX(2) / REAL( SUMGRD )
+              IF ( TAUBBLX(ISEA) .EQ. UNDEF )  THEN
+                TAUBBLX(ISEA) = TAUBBLAUX(1) / REAL( SUMGRD )
+                TAUBBLY(ISEA) = TAUBBLAUX(2) / REAL( SUMGRD )
               ELSE
-                TAUBBL(ISEA,1) = TAUBBL(ISEA,1) +                  &
+                TAUBBLX(ISEA) = TAUBBLX(ISEA) +                  &
                      TAUBBLAUX(1) / REAL( SUMGRD )
-                TAUBBL(ISEA,2) = TAUBBL(ISEA,2) +                  &
+                TAUBBLY(ISEA) = TAUBBLY(ISEA) +                  &
                      TAUBBLAUX(2) / REAL( SUMGRD )
               END IF
             END IF

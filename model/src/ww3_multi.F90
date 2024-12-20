@@ -91,6 +91,7 @@ PROGRAM W3MLTI
   !/
   USE WMMDATMD, ONLY: MDSI, MDSO, MDSS, MDST, MDSE, &
        NMPROC, IMPROC, NMPSCR, NRGRD, ETIME
+  USE W3SRCEMD, ONLY: W3SRCE_INIT
 #ifdef W3_OMPG
   USE OMP_LIB
 #endif
@@ -181,6 +182,9 @@ PROGRAM W3MLTI
     CALL WMINIT ( MDSI, MDSO, MDSS, 10, MDSE, 'ww3_multi.inp', MPI_COMM )
   END IF
   !
+
+  ! Source term refactor - init some stuff in W3SRCE
+  CALL W3SRCE_INIT()
 
   !
   !/ ------------------------------------------------------------------- /
