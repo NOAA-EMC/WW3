@@ -113,6 +113,9 @@ MODULE W3GRIDMD
   !/    27-May-2021 : Moved to a subroutine               ( version 7.13 )
   !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
   !/    19-Jul-2021 : Momentum and air density support    ( version 7.14 )
+  !/    28-Feb-2023 : GQM as an alternative for NL1       ( version 7.15 )
+  !/    11-Jan-2024 : New namelist parameters for IC4     ( version 7.15 )
+  !/    03-May-2024 : New CAPCHNK parameters for SIN4     ( version 7.15 )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -439,7 +442,7 @@ MODULE W3GRIDMD
   !             (2006) input and Babanin et al. (2001,2010) dissipation.
   !
   !     !/NL0   No nonlinear interactions.
-  !     !/NL1   Discrete interaction approximation (DIA).
+  !     !/NL1   Discrete interaction approximation (DIA or GQM).
   !     !/NL2   Exact interactions (WRT).
   !     !/NL3   Generalized Multiple DIA (GMD).
   !     !/NL4   Two Scale Approximation
@@ -586,6 +589,9 @@ MODULE W3GRIDMD
        IY2, J, JJ, IXR(4), IYR(4), ISEAI(4),&
        IST, NKI, NTHI, NRIC, NRIS, I, IDFT, &
        NSTAT, NBT, NLAND, NOSW, NMAPB, IMAPB
+#ifdef W3_ASCII
+  INTEGER                  :: NDSMA
+#endif
 #ifdef W3_NL2
   INTEGER            :: IDEPTH
 #endif
@@ -673,6 +679,7 @@ MODULE W3GRIDMD
 #endif
   !
 #ifdef W3_SMC
+  REAL                    :: DVSMC
   REAL                    :: TRNMX, TRNMY
   INTEGER, ALLOCATABLE    :: NLvCelsk(:),  NLvUFcsk(:),  NLvVFcsk(:)
   INTEGER, ALLOCATABLE    :: IJKCelin(:,:),IJKUFcin(:,:),IJKVFcin(:,:)
@@ -760,9 +767,10 @@ MODULE W3GRIDMD
 
 #ifdef W3_IC4
   INTEGER                 :: IC4METHOD
-  REAL                    :: IC4KI(NIC4), IC4FC(NIC4)
+  REAL                    :: IC4KI(NIC4), IC4FC(NIC4),            &
+                             IC4CN(NIC42), IC4FMIN, IC4KIBK
 #endif
-  !
+
 #ifdef W3_IC5
   REAL                    :: IC5MINIG, IC5MINWT,                  &
        IC5MAXKRATIO, IC5MAXKI, IC5MINHW,    &
@@ -835,8 +843,9 @@ MODULE W3GRIDMD
 #endif
   !
 #ifdef W3_ST4
-  INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF
-  REAL                    :: SDSBCHOICE
+  INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF, SINTABLE,&
+                             TAUWBUG
+  REAL                    :: SDSBCHOICE                     
   REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
        ZALP, Z0RAT, TAUWSHELTER, SWELLF,    &
        SWELLF2,SWELLF3,SWELLF4, SWELLF5,    &
@@ -851,7 +860,9 @@ MODULE W3GRIDMD
        SDSBRF1,                             &
        SDSBM0, SDSBM1, SDSBM2, SDSBM3,      &
        SDSBM4, SDSFACMTF, SDSCUMP,  SDSNUW, &
-       SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF
+       SDSL, SDSMWD, SDSMWPOW, SPMSS, SDSNMTF, SINTAIL1, SINTAIL2, &
+       CUMSIGP, VISCSTRESS,                 &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
   !
 #ifdef W3_ST6
@@ -864,6 +875,8 @@ MODULE W3GRIDMD
 #ifdef W3_NL1
   REAL                    :: LAMBDA, KDCONV, KDMIN,               &
        SNLCS1, SNLCS2, SNLCS3
+  INTEGER                 :: IQTYPE, GQMNF1, GQMNT1, GQMNQ_OM2
+  REAL                    :: TAILNL, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
   INTEGER                 :: IQTYPE, NDEPTH
@@ -962,7 +975,8 @@ MODULE W3GRIDMD
        IC3VISC, IC3ELAS, IC3DENS, IC3HICE
 #endif
 #ifdef W3_IC4
-  NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC
+  NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC, IC4CN, IC4FMIN,  &
+                   IC4KIBK
 #endif
 #ifdef W3_IC5
   NAMELIST /SIC5/  IC5MINIG, IC5MINWT, IC5MAXKRATIO,        &
@@ -991,11 +1005,14 @@ MODULE W3GRIDMD
   NAMELIST /SIN4/ ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP, &
        TAUWSHELTER, SWELLFPAR, SWELLF,                 &
        SWELLF2, SWELLF3, SWELLF4, SWELLF5, SWELLF6,    &
-       SWELLF7, Z0RAT, SINBR
+       SWELLF7, Z0RAT, SINBR, SINTABLE, SINTAIL1, SINTAIL2, TAUWBUG, VISCSTRESS, &
+       CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_NL1
   NAMELIST /SNL1/ LAMBDA, NLPROP, KDCONV, KDMIN,                  &
-       SNLCS1, SNLCS2, SNLCS3
+       SNLCS1, SNLCS2, SNLCS3,                         &
+       IQTYPE, TAILNL, GQMNF1, GQMNT1,                 &
+       GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU, GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
   NAMELIST /SNL2/ IQTYPE, TAILNL, NDEPTH
@@ -1031,7 +1048,7 @@ MODULE W3GRIDMD
        SDSC5, SDSC6, SDSBR, SDSBT, SDSP, SDSISO,       &
        SDSBCK, SDSABK, SDSPBK, SDSBINT, SDSHCK,        &
        SDSDTH, SDSCOS, SDSBRF1, SDSBRFDF,  SDSNUW,     &
-       SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4,         &
+       SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, CUMSIGP,&
        WHITECAPWIDTH, WHITECAPDUR, SDSMWD, SDSMWPOW, SDKOF
 #endif
 
@@ -1711,6 +1728,17 @@ CONTAINS
     TAUWSHELTER = 0.3
     ZALP   = 0.006
     SINBR   = 0.
+    SINTABLE = 1
+    SINTAIL1 = 0. !  TAUWSHELTER FOR TAIL (no table)
+    SINTAIL2 = 0. !  additional peak in capillary range
+    TAUWBUG  = 1  !  TAUWBUG is 1 is the bug is kept:
+    !  initializes TAUWX/Y to zero in W3SRCE
+    VISCSTRESS =0
+    CAPCHA   = 0.     ! =1 indicates capping of drag is active
+    CHAMIN   = 0.0001 ! 
+    CHA0     = ALPHA0 ! initial value for charnock
+    UCAP     = 30.    ! U10 threshold from which drag capping is applied
+    SIGMAUCAP = 10.   ! Width for reduction of drag beyond UCAP
 #endif
     !
 #ifdef W3_ST6
@@ -1794,6 +1822,16 @@ CONTAINS
     SSWELLF(6) = SWELLF6
     SSWELLF(7) = SWELLF7
     SSWELLFPAR = SWELLFPAR
+    SINTAILPAR(1) = FLOAT(SINTABLE)
+    SINTAILPAR(2) = SINTAIL1
+    SINTAILPAR(3) = SINTAIL2
+    SINTAILPAR(4) = FLOAT(TAUWBUG)
+    SINTAILPAR(5) = VISCSTRESS
+    CAPCHNK(1) = CAPCHA
+    CAPCHNK(2) = CHAMIN
+    CAPCHNK(3) = CHA0
+    CAPCHNK(4) = UCAP
+    CAPCHNK(5) = SIGMAUCAP
 #endif
     !
 #ifdef W3_ST6
@@ -1829,6 +1867,18 @@ CONTAINS
     SNLCS1 =  5.5
     SNLCS2 =  0.833
     SNLCS3 = -1.25
+    ! Additional parameters for GQM
+    IQTYPE =  1
+    TAILNL = -FACHF
+    GQMNF1 = 14
+    GQMNT1 = 8
+    GQMNQ_OM2=8
+    GQMTHRSAT=0.
+    GQMTHRCOU=0.015
+    GQAMP1=1.
+    GQAMP2=0.002
+    GQAMP3=1.
+    GQAMP4=1.
     CALL READNL ( NDSS, 'SNL1', STATUS )
     WRITE (NDSO,922) STATUS
     WRITE (NDSO,923) LAMBDA, NLPROP, KDCONV, KDMIN,            &
@@ -1840,6 +1890,18 @@ CONTAINS
     SNLS1  = SNLCS1
     SNLS2  = SNLCS2
     SNLS3  = SNLCS3
+    ! Additional parameters for GQM
+    IQTPE  = IQTYPE
+    GQNF1  = GQMNF1
+    GQNT1  = GQMNT1
+    GQNQ_OM2  = GQMNQ_OM2
+    GQTHRSAT  = GQMTHRSAT
+    GQTHRCOU  = GQMTHRCOU
+    GQAMP(1)  = GQAMP1
+    GQAMP(2)  = GQAMP2
+    GQAMP(3)  = GQAMP3
+    GQAMP(4)  = GQAMP4
+    NLTAIL = TAILNL
 #endif
     !
 #ifdef W3_ST0
@@ -2075,8 +2137,8 @@ CONTAINS
     SDSDTH    = 80.
     SDSCOS    = 2.
     SDSISO    = 2
-    SDSBM0    = 1.
-    SDSBM1    = 0.
+    SDSBM0    = 1.          ! All these parameters are related to finite depth
+    SDSBM1    = 0.          ! scaling of breaking
     SDSBM2    = 0.
     SDSBM3    = 0.
     SDSBM4    = 0.
@@ -2086,8 +2148,9 @@ CONTAINS
     SDSBINT   = 0.3
     SDSHCK    = 1.5
     WHITECAPWIDTH = 0.3
-    SDSSTRAIN = 0.
     SDSFACMTF =  400    ! MTF factor for Lambda , Romero (2019)
+    CUMSIGP   = 0.
+    SDSSTRAIN = 0.
     SDSSTRAINA = 15.
     SDSSTRAIN2 = 0.
     WHITECAPDUR   = 0.56 ! breaking duration factor
@@ -2098,7 +2161,7 @@ CONTAINS
     ! MTF
     SPMSS     = 0.5    ! cmss^SPMSS
     SDSNMTF   = 1.5    ! MTF power
-    SDSCUMP   = 2.
+    SDSCUMP   = 2.     ! 2 for cumulative mss, 1 for cumulative orb. vel.
     ! MW
     SDSMWD    = .9  ! new AFo
     SDSMWPOW  = 1.  ! (k )^pow
@@ -2180,9 +2243,9 @@ CONTAINS
     SSDSC(7)   = WHITECAPWIDTH
     SSDSC(8)   = SDSSTRAIN   ! Straining constant ...
     SSDSC(9)   = SDSL
-    SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle Aor enhanced straining
+    SSDSC(10)  = SDSSTRAINA*NTH/360. ! angle for enhanced straining
     SSDSC(11)  = SDSSTRAIN2  ! straining constant for directional part
-    SSDSC(12)  = SDSBT
+    SSDSC(12)  = CUMSIGP
     SSDSC(13)  = SDSMWD
     SSDSC(14)  = SPMSS
     SSDSC(15)  = SDSMWPOW
@@ -2851,6 +2914,9 @@ CONTAINS
     IC4METHOD = 1 !switch for methods within IC4
     IC4KI=0.0
     IC4FC=0.0
+    IC4CN=0.0
+    IC4FMIN=0.0
+    IC4KIBK=0.0
 #endif
     !
 #ifdef W3_IC5
@@ -2940,6 +3006,7 @@ CONTAINS
       CALL EXTCDE( 31)
     ENDIF
 
+    USSP_WN = 0.0 ! initialize to 0s
     DO J=1,USSPF(2)
       USSP_WN(j) = STK_WN(J)
     ENDDO
@@ -3175,14 +3242,18 @@ CONTAINS
 #ifdef W3_ST4
       WRITE (NDSO,2920) ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP, ZALP,   &
            TAUWSHELTER, SWELLFPAR, SWELLF, SWELLF2, SWELLF3, SWELLF4, &
-           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR
+           SWELLF5, SWELLF6, SWELLF7, Z0RAT, SINBR, SINTABLE, TAUWBUG, VISCSTRESS, SINTAIL1, SINTAIL2, &
+           CAPCHA, CHAMIN, CHA0, UCAP, SIGMAUCAP
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2920) SINA0, SINWS, SINFC
 #endif
 #ifdef W3_NL1
       WRITE (NDSO,2922) LAMBDA, NLPROP, KDCONV, KDMIN,       &
-           SNLCS1, SNLCS2, SNLCS3
+           SNLCS1, SNLCS2, SNLCS3,              &
+           IQTYPE, TAILNL, GQMNF1,              &
+           GQMNT1, GQMNQ_OM2, GQMTHRSAT, GQMTHRCOU,&
+           GQAMP1, GQAMP2, GQAMP3, GQAMP4
 #endif
 #ifdef W3_NL2
       WRITE (NDSO,2922) IQTYPE, TAILNL, NDEPTH
@@ -3237,7 +3308,7 @@ CONTAINS
            SDSBT, SDSP, SDSISO, SDSCOS, SDSDTH, SDSBRF1,     &
            SDSBRFDF, SDSBM0, SDSBM1, SDSBM2, SDSBM3, SDSBM4, &
            SPMSS, SDKOF, SDSMWD, SDSFACMTF, SDSNMTF,SDSMWPOW,&
-           SDSCUMP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
+           SDSCUMP, CUMSIGP, SDSNUW, WHITECAPWIDTH, WHITECAPDUR
 #endif
 #ifdef W3_ST6
       WRITE (NDSO,2924) SDSET, SDSA1, SDSA2, SDSP1, SDSP2
@@ -3898,6 +3969,12 @@ CONTAINS
     IF (IDFM.EQ.2) WRITE (NDSO,973) TRIM(RFORM)
     IF (FROM.EQ.'NAME' .AND. NDSG.NE.NDSI) &
          WRITE (NDSO,974) TRIM(FNAME)
+
+#ifdef W3_SMC
+    !Li  Save the depth conversion factor for SMC grid use.  JGLi03Nov2023
+    DVSMC = VSC
+#endif
+
     !
     ! 7.e Read bottom depths
     !
@@ -5019,14 +5096,17 @@ CONTAINS
           CALL EXTCDE(65)
         END IF
 
-        !Li  Minimum DMIN depth is used as well for SMC.
-        ZB(ISEA)= - MAX( DMIN, FLOAT( IJKDep(ISEA) ) )
-        MAPFS(IY:IY+JS-1,IX:IX+IK-1)  = ISEA
-        MAPSTA(IY:IY+JS-1,IX:IX+IK-1)  = 1
-        MAPST2(IY:IY+JS-1,IX:IX+IK-1)  = 0
-        MAPSF(ISEA,1)  = IX
-        MAPSF(ISEA,2)  = IY
-        MAPSF(ISEA,3)  = IY + (IX    -1)*NY
+        !Li Allow land cell to be defined by ZLIM value and only reset
+        !Li MAPST* land values for sea points.   JGLi03Nov2023
+        ZB(ISEA) = DVSMC * FLOAT(IJKDep(ISEA))
+        IF( ZB(ISEA) .LT. ZLIM ) THEN
+          MAPSTA(IY:IY+JS-1,IX:IX+IK-1) = 1
+          MAPST2(IY:IY+JS-1,IX:IX+IK-1) = 0
+        ENDIF
+        MAPFS(IY:IY+JS-1,IX:IX+IK-1) = ISEA
+        MAPSF(ISEA,1) = IX
+        MAPSF(ISEA,2) = IY
+        MAPSF(ISEA,3) = IY + (IX-1) * NY
 
         !Li   New variable CLATS to hold cosine latitude at cell centre.
         !Li   Also added CLATIS and CTHG0S for version 4.08.
@@ -5273,6 +5353,9 @@ CONTAINS
     IC4PARS(1)=IC4METHOD
     IC4_KI=IC4KI
     IC4_FC=IC4FC
+    IC4_CN=IC4CN
+    IC4_FMIN=IC4FMIN
+    IC4_KIBK=IC4KIBK
 #endif
     !
 #ifdef W3_IC5
@@ -5917,9 +6000,16 @@ CONTAINS
     !10.  Write model definition file.
     !
     WRITE (NDSO,999)
-    CALL W3IOGR ( 'WRITE', NDSM )
+    CALL W3IOGR ( 'WRITE', NDSM &
+#ifdef W3_ASCII
+                  ,NDSA=NDSMA        &
+#endif
+            )
     !
     CLOSE (NDSM)
+#ifdef W3_ASCII
+    CLOSE (NDSMA)
+#endif
     !
     GOTO 2222
     !
@@ -6202,7 +6292,11 @@ CONTAINS
          '        SWELLF =',F8.5,', SWELLF2 =',F8.5,             &
          ', SWELLF3 =',F8.5,', SWELLF4 =',F9.1,','/              &
          '        SWELLF5 =',F8.5,', SWELLF6 =',F8.5,            &
-         ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,'  /')
+         ', SWELLF7 =',F12.2,', Z0RAT =',F8.5,', SINBR =',F8.5,','/              &
+         '        SINTABLE =',I2,', TAUWBUG =',I2,               &
+         ', VISCSTRESS =',F8.5,', SINTAIL1 =',F8.5,', SINTAIL2 =',F8.5,',' / &
+         ', CAPCHA =',F8.5,', CHAMIN =',F8.5,', CHA0 =',F8.5,', UCAP =',F5.1,', SIGMAUCAP =', &
+         F5.1,'  /')
 #endif
     !
 #ifdef W3_ST6
@@ -6230,7 +6324,11 @@ CONTAINS
 2922 FORMAT ( '  &SNL1 LAMBDA =',F7.3,', NLPROP =',E10.3,       &
          ', KDCONV =',F7.3,', KDMIN =',F7.3,','/           &
          '        SNLCS1 =',F7.3,', SNLCS2 =',F7.3,        &
-         ', SNLCS3 = ',F7.3,' /')
+         ', SNLCS3 = ',F7.3','/                            &
+         '        IQTYPE =',I2,', TAILNL =',F5.1,','/      &
+         '        GQMNF1 =',I2,', GQMNT1 =',I2,',',        &
+         ' GQMNQ_OM2 =',I2,', GQMTHRSAT =',E11.4,', GQMTHRCOU =',F4.3,','/ &
+         '        GQAMP1 =',F5.3,', GQAMP2 =',F5.3,', GQAMP3 =',F5.3,', GQAMP4 =',F5.3,' /')
 #endif
     !
 #ifdef W3_NL2
@@ -6258,14 +6356,14 @@ CONTAINS
 2923 FORMAT ( '             ',2F8.3,F6.1,2E12.4)
 2922 FORMAT ( '  &SNL3 NQDEF =',I3,', MSC =',F6.2,',  NSC =',   &
          F6.2,',  KDFD =',F6.2,',  KDFS =',F6.2,' /')
-3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
-4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' ,')
-6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E10.4, &
-         ', ',E10.4,' /')
+3923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
+4923 FORMAT ( '  &ANL3 QPARMS = ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+5923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' ,')
+6923 FORMAT ( '                 ',2(F5.3,', '),F5.1,', ',E11.4, &
+         ', ',E11.4,' /')
 #endif
     !
 #ifdef W3_NL4
@@ -6367,11 +6465,11 @@ CONTAINS
          '        SDSBRF1 = ',F5.2,', SDSBRFDF =',I2,', '/ &
          '        SDSBM0 = ',F5.2, ', SDSBM1 =',F5.2,      &
          ', SDSBM2 =',F5.2,', SDSBM3 =',F5.2,', SDSBM4 =', &
-         F5.2,', '/,                                       &
+         F7.2,', '/,                                       &
          '        SPMSS = ',F5.2, ', SDKOF =',F5.2,        &
          ', SDSMWD =',F5.2,', SDSFACMTF =',F5.1,', '/      &
          '        SDSMWPOW =',F3.1,', SDSNMTF =', F5.2,    &
-         ', SDSCUMP =', F3.1,', SDSNUW =', E8.3,', '/,     &
+         ', SDSCUMP =', F3.1,', CUMSIGP =', F3.1,', SDSNUW =', E10.3,', '/,     &
          '        WHITECAPWIDTH =',F5.2, ' WHITECAPDUR =',F5.2,' /')
 #endif
     !
@@ -6381,18 +6479,18 @@ CONTAINS
 925 FORMAT ( '  normalise by threshold spectral density    :  ',A/&
          '  normalise by spectral density              :  ',A/&
          '  coefficient and exponent  for                 '/  &
-         '   inherent breaking term a1, L as in (21)   : ',E9.3,I3/ &
-         '   cumulative breaking term a2, M as in (22) : ',E9.3,I3/ &
+         '   inherent breaking term a1, L as in (21)   : ',E10.3,I3/ &
+         '   cumulative breaking term a2, M as in (22) : ',E10.3,I3/ &
          ' ')
-2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E9.3,              &
-         ', SDSA2 = ',E9.3,', SDSP1 = ',I2,', SDSP1 = ',      &
+2924 FORMAT ( '  &SDS6 SDSET = ',L,', SDSA1 = ',E10.3,              &
+         ', SDSA2 = ',E10.3,', SDSP1 = ',I2,', SDSP1 = ',      &
          I2,' /'                                              )
 
 937 FORMAT (/'  Swell dissipation ',A/                            &
          ' --------------------------------------------------')
 940 FORMAT ( '  subroutine W3SWL6 activated           : ',A/      &
-         '   coefficient b1 ',A,                ' : ',E9.3/   )
-2937 FORMAT ( '  &SWL6 SWLB1 = ',E9.3,', CSTB1 = ',L,' /')
+         '   coefficient b1 ',A,                ' : ',E10.3/   )
+2937 FORMAT ( '  &SWL6 SWLB1 = ',E10.3,', CSTB1 = ',L,' /')
 #endif
     !
 #ifdef W3_BT0
@@ -6477,18 +6575,18 @@ CONTAINS
 946 FORMAT  ('  Isotropic (linear function of ice concentration)'/&
          '        slope                      : ',E10.3/ &
          '        offset                     : ',E10.3)
-2946 FORMAT ( '  &SIS1 ISC1 =',E9.3,', ISC2 =',E9.3)
+2946 FORMAT ( '  &SIS1 ISC1 =',E10.3,', ISC2 =',E10.3)
 #endif
 #ifdef W3_IS2
 947 FORMAT  (/'  Ice scattering ',A,/ &
          ' --------------------------------------------------')
 948 FORMAT  ('  IS2 Scattering ... '/&
-         '        scattering coefficient       : ',E9.3/ &
-         '        0: no back-scattering        : ',E9.3/ &
+         '        scattering coefficient       : ',E10.3/ &
+         '        0: no back-scattering        : ',E10.3/ &
          '     TRUE: istropic back-scattering  : ',L3/   &
          '     TRUE: update of ICEDMAX         : ',L3/   &
          '     TRUE: keeps updated ICEDMAX     : ',L3/   &
-         '        flexural strength            : ',E9.3/ &
+         '        flexural strength            : ',E10.3/ &
          '     TRUE: uses Robinson-Palmer disp.: ',L3/   &
          '        attenuation                  : ',F5.2/ &
          '        fragility                    : ',F5.2/ &
@@ -6496,7 +6594,7 @@ CONTAINS
          '        pack scattering coef 1       : ',F5.2/ &
          '        pack scattering coef 2       : ',F5.2/ &
          '        scaling by concentration     : ',F5.2/ &
-         '        creep B coefficient          : ',E9.3/ &
+         '        creep B coefficient          : ',E10.3/ &
          '        creep C coefficient          : ',F5.2/ &
          '        creep D coefficient          : ',F5.2/ &
          '        creep N power                : ',F5.2/ &
@@ -6507,7 +6605,7 @@ CONTAINS
          '        energy of activation         : ',F5.2/ &
          '        anelastic coefficient        : ',E11.3/ &
          '        anelastic exponent           : ',F5.2)
-2948 FORMAT ( '  &SIS2 ISC1 =',E9.3,', IS2BACKSCAT =',E9.3,   &
+2948 FORMAT ( '  &SIS2 ISC1 =',E10.3,', IS2BACKSCAT =',E10.3,   &
          ', IS2ISOSCAT =',L3,', IS2BREAK =',L3,          &
          ', IS2DUPDATE =',L3,','/                        &
          '       IS2FLEXSTR =',E11.3,', IS2DISP =',L3,   &

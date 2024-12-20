@@ -1,0 +1,48 @@
+$ WAVEWATCH III Grid preprocessor input file
+$ ------------------------------------------
+  '1-D REFRACTION X              '
+$
+   1.25 0.08  3  24  0.
+$
+   F T F T F F
+  300. 300. 150. 300.
+$
+  &PRO1 CFLTM = 0.75 /
+  &PRO2 CFLTM = 0.75 /
+  &PRO3 CFLTM = 0.75, WDTHCG = 0., WDTHTH = 0. /
+  &PRO4 CFLTM = 0.75, RNFAC = 0., RSFAC = 0. /
+END OF NAMELISTS
+$
+  'RECT' F 'NONE'
+   13  3
+    5.E3   5.E3  1.
+   -5.E3  -5.E3  1.
+$
+  -1. 1. 10  -1. 2 1 '(....)' 'UNIT' 'input'
+$
+$ First grid
+$
+  50 50 50 45 40 35 30 25 20 15 10  5  0
+  50 50 50 45 40 35 30 25 20 15 10  5  0
+  50 50 50 45 40 35 30 25 20 15 10  5  0
+$
+$ Second grid
+$
+$  0  5 10 15 20 25 30 35 40 45 50 50 50
+$  0  5 10 15 20 25 30 35 40 45 50 50 50
+$  0  5 10 15 20 25 30 35 40 45 50 50 50
+$
+  10  1 1 '(....)' 'PART' 'input'
+$
+$ First grid
+$
+   2  2  F
+$
+$ Second grid
+$
+$ 12  2  F
+   0  0  F
+   0  0  F
+   0  0
+$
+   0. 0. 0. 0.  0

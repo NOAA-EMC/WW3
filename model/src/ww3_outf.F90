@@ -159,7 +159,8 @@ PROGRAM W3OUTF
        ABA, ABD, UBA, UBD, SXX, SYY, SXY, USERO,   &
        PHS, PTP, PLP, PDIR, PSI, PWS, PWST, PNR,   &
        PTM1, PT1, PT2, PEP, TAUOCX, TAUOCY,        &
-       PTHP0, PQP, PSW, PPE, PGW, QP,              &
+       PTHP0, PQP, PSW, PPE, PGW, QP, QKK,         &
+       SKEW, EMBIA1, EMBIA2,                       &
        TAUOX, TAUOY, TAUWIX,BHD,                   &
        TAUWIY, PHIAW, PHIOC, TUSX, TUSY, PRMS, TPMS,&
        USSX, USSY, MSSX, MSSY, MSCX, MSCY, CHARN,  &
@@ -2247,13 +2248,57 @@ CONTAINS
             !
           ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 5 ) THEN
             FLONE  = .TRUE.
-            FSC    = 0.01
+            FSC    = 0.001
             UNITS  = '1'
             ENAME  = '.qp'
             IF ( ITYPE .EQ. 4 ) THEN
               XS1    = QP
             ELSE
               CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QP, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 6 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.05
+            UNITS  = '1'
+            ENAME  = '.qkk'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = QKK
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, QKK, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 7 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.01
+            UNITS  = '1'
+            ENAME  = '.skw'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = SKEW
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, SKEW, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 8 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.0001
+            UNITS  = '1'
+            ENAME  = '.emb'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = EMBIA1
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, EMBIA1, MAPSF, X1 )
+            ENDIF
+            !
+          ELSE IF ( IFI .EQ. 8 .AND. IFJ .EQ. 9 ) THEN
+            FLONE  = .TRUE.
+            FSC    = 0.0001
+            UNITS  = '1'
+            ENAME  = '.emc'
+            IF ( ITYPE .EQ. 4 ) THEN
+              XS1    = EMBIA2
+            ELSE
+              CALL W3S2XY ( NSEA, NSEA, NX+1, NY, EMBIA2, MAPSF, X1 )
             ENDIF
             !
           ELSE IF ( IFI .EQ. 9 .AND. IFJ .EQ. 1 ) THEN
@@ -2416,8 +2461,7 @@ CONTAINS
             !
             DO IX=IX1, IXN
               DO IY=IY1, IYN
-                IF ( MAPSTA(IY,IX) .GT. 0 .AND.                   &
-                     X1(IX,IY) .NE. UNDEF ) THEN
+                IF ( X1(IX,IY) .NE. UNDEF ) THEN
                   NINGRD = NINGRD + 1
                   XMIN   = MIN ( XMIN , X1(IX,IY) )
                   XMAX   = MAX ( XMAX , X1(IX,IY) )
@@ -2474,7 +2518,7 @@ CONTAINS
                 OPEN (NDSDAT,FILE=FNMPRE(:JJ)//FNAME,ERR=800,     &
                      IOSTAT=IERR)
                 IF (FSC.LT.1E-4) THEN
-                  WRITE(FSCS,'(G7.1)') FSC
+                  WRITE(FSCS,'(G8.1)') FSC
                 ELSE
                   WRITE(FSCS,'(F7.4)') FSC
                 END IF
@@ -2506,8 +2550,7 @@ CONTAINS
             IF ( FLTRI ) THEN
               DO IX=IX1, IXN
                 DO IY=IY1, IYN
-                  IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                       XX(IX,IY) .EQ. UNDEF ) THEN
+                  IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                     MXX(IX,IY) = MFILL
                     MYY(IX,IY) = MFILL
                     MXY(IX,IY) = MFILL
@@ -2546,8 +2589,7 @@ CONTAINS
               IF ( FLTWO .OR. FLDIR ) THEN
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                         XX(IX,IY) .EQ. UNDEF ) THEN
+                    IF ( XX(IX,IY) .EQ. UNDEF ) THEN
                       MXX(IX,IY) = MFILL
                       MYY(IX,IY) = MFILL
                     ELSE
@@ -2586,8 +2628,7 @@ CONTAINS
               ELSE
                 DO IX=IX1, IXN
                   DO IY=IY1, IYN
-                    IF ( MAPSTA(IY,IX) .LE. 0 .OR.                &
-                         X1(IX,IY) .EQ. UNDEF ) THEN
+                    IF ( X1(IX,IY) .EQ. UNDEF ) THEN
                       MX1(IX,IY) = MFILL
                     ELSE
                       MX1(IX,IY) = NINT(X1(IX,IY)/FSC)

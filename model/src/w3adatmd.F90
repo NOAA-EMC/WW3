@@ -189,6 +189,8 @@ MODULE W3ADATMD
   !      MSSD      R.A.  Public   Direction of MSSX
   !      MSCD      R.A.  Public   Direction of MSCX
   !      QP        R.A.  Public   Goda peakedness parameter.
+  !      QKK       R.A.  Public   Spectral bandwidth (De Carlo et al. 2023)
+  !      SKEW      R.A.  Public   skewness lambda_3,0,0 (Srokosz 1986)
   !
   !      DTDYN     R.A.  Public   Mean dynamic time step (raw).
   !      FCUT      R.A.  Public   Cut-off frequency for tail.
@@ -477,9 +479,10 @@ MODULE W3ADATMD
     ! Output fields group 8)
     !
     REAL, POINTER         ::  MSSX(:),  MSSY(:),  MSSD(:),        &
-         MSCX(:),  MSCY(:),  MSCD(:)
+         MSCX(:),  MSCY(:),  MSCD(:), QKK(:), SKEW(:), EMBIA1(:), EMBIA2(:)
     REAL, POINTER         ::  XMSSX(:), XMSSY(:), XMSSD(:),       &
-         XMSCX(:), XMSCY(:), XMSCD(:)
+         XMSCX(:), XMSCY(:), XMSCD(:), XQKK(:),                   &
+         XSKEW(:), XEMBIA1(:), XEMBIA2(:)    
     !
     ! Output fields group 9)
     !
@@ -619,7 +622,7 @@ MODULE W3ADATMD
        BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
   !
   REAL, POINTER           :: MSSX(:), MSSY(:), MSSD(:),           &
-       MSCX(:), MSCY(:), MSCD(:)
+       MSCX(:), MSCY(:), MSCD(:), QKK(:), SKEW(:), EMBIA1(:), EMBIA2(:)
   !
   REAL, POINTER           :: DTDYN(:), FCUT(:), CFLXYMAX(:),      &
        CFLTHMAX(:), CFLKMAX(:)
@@ -1276,7 +1279,9 @@ CONTAINS
     ALLOCATE ( WADATS(IMOD)%MSSX(NSEALM), WADATS(IMOD)%MSSY(NSEALM), &
          WADATS(IMOD)%MSCX(NSEALM), WADATS(IMOD)%MSCY(NSEALM), &
          WADATS(IMOD)%MSSD(NSEALM), WADATS(IMOD)%MSCD(NSEALM), &
-         STAT=ISTAT )
+         WADATS(IMOD)%QKK(NSEALM), WADATS(IMOD)%SKEW(NSEALM),  &
+         WADATS(IMOD)%EMBIA1(NSEALM), WADATS(IMOD)%EMBIA2(NSEALM),  &
+              STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
     WADATS(IMOD)%MSSX   = UNDEF
@@ -1285,6 +1290,10 @@ CONTAINS
     WADATS(IMOD)%MSCX   = UNDEF
     WADATS(IMOD)%MSCY   = UNDEF
     WADATS(IMOD)%MSCD   = UNDEF
+    WADATS(IMOD)%QKK    = UNDEF
+    WADATS(IMOD)%SKEW   = UNDEF
+    WADATS(IMOD)%EMBIA1 = UNDEF
+    WADATS(IMOD)%EMBIA2 = UNDEF
     call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 8')
     !
     ! 9) Numerical diagnostics
@@ -2298,6 +2307,30 @@ CONTAINS
       ALLOCATE ( WADATS(IMOD)%XQP(1) )
     END IF
     !
+    IF ( OUTFLAGS( 8,  6) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XQKK(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XQKK(1) )
+    END IF
+    !
+    IF ( OUTFLAGS( 8,  7) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XSKEW(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XSKEW(1) )
+    END IF
+    !
+    IF ( OUTFLAGS( 8,  8) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XEMBIA1(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XEMBIA1(1) )
+    END IF
+    !
+    IF ( OUTFLAGS( 8,  9) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XEMBIA2(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XEMBIA2(1) )
+    END IF
+    !
     WADATS(IMOD)%XMSSX   = UNDEF
     WADATS(IMOD)%XMSSY   = UNDEF
     WADATS(IMOD)%XMSSD   = UNDEF
@@ -2305,6 +2338,10 @@ CONTAINS
     WADATS(IMOD)%XMSCY   = UNDEF
     WADATS(IMOD)%XMSCD   = UNDEF
     WADATS(IMOD)%XQP(1)  = UNDEF
+    WADATS(IMOD)%XQKK    = UNDEF
+    WADATS(IMOD)%XSKEW   = UNDEF
+    WADATS(IMOD)%XEMBIA1 = UNDEF
+    WADATS(IMOD)%XEMBIA2 = UNDEF
     !
     IF ( OUTFLAGS( 9, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XDTDYN(NXXX), STAT=ISTAT )
@@ -2918,6 +2955,10 @@ CONTAINS
       MSCX   => WADATS(IMOD)%MSCX
       MSCY   => WADATS(IMOD)%MSCY
       MSCD   => WADATS(IMOD)%MSCD
+      QKK    => WADATS(IMOD)%QKK
+      SKEW   => WADATS(IMOD)%SKEW
+      EMBIA1  => WADATS(IMOD)%EMBIA1
+      EMBIA2  => WADATS(IMOD)%EMBIA2
       !
       DTDYN    => WADATS(IMOD)%DTDYN
       FCUT     => WADATS(IMOD)%FCUT
@@ -3258,6 +3299,10 @@ CONTAINS
       MSCX   => WADATS(IMOD)%XMSCX
       MSCY   => WADATS(IMOD)%XMSCY
       MSCD   => WADATS(IMOD)%XMSCD
+      QKK    => WADATS(IMOD)%XQKK
+      SKEW   => WADATS(IMOD)%XSKEW
+      EMBIA1 => WADATS(IMOD)%XEMBIA1
+      EMBIA2 => WADATS(IMOD)%XEMBIA2
       !
       DTDYN    => WADATS(IMOD)%XDTDYN
       FCUT     => WADATS(IMOD)%XFCUT
