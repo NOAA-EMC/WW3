@@ -707,7 +707,6 @@ CONTAINS
     
     CASE (10)
       ! Cubic fit to Meylan, Horvat & Bitz 2021
->>>>>>> develop
       ! ICECOEF1 is thickness
       ! ICECOEF5 is floe size
       ! TPI/SIG is period
