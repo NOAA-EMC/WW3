@@ -658,7 +658,6 @@ CONTAINS
       STOP
     ENDIF
 #endif
-
     !
     ! 1.c Open files without unpacking MDS ,,,
     !
@@ -1240,7 +1239,11 @@ CONTAINS
     !
     ! 4.d Preprocessing for point output.
     !
-    IF ( FLOUT(2) ) CALL W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD )
+#ifdef W3_MPI    
+    IF ( FLOUT(2) ) CALL W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD, MPI_COMM_WAVE )
+#else 
+    IF ( FLOUT(2) ) CALL W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD, 1 )
+#endif 
 #ifdef W3_PDLIB
     CALL DEALLOCATE_PDLIB_GLOBAL(IMOD)
 #endif
