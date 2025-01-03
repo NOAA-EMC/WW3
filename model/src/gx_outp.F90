@@ -1,5 +1,27 @@
+!> @file
+!> @brief Post-processing of point output for GrADS post-processing.
+!>
+!> @author H. L. Tolman
+!> @author J.H. Alves
+!> @author F. Ardhuin
+!> @date   27-Aug-2015
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief Post-processing of point output for GrADS post-processing.
+!>
+!> @author H. L. Tolman
+!> @author J.H. Alves
+!> @author F. Ardhuin
+!> @date   27-Aug-2015
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 PROGRAM GXOUTP
   !/
   !/                  +-----------------------------------+
@@ -539,6 +561,12 @@ PROGRAM GXOUTP
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Perform actual point output.
+  !>
+  !> @author H. L. Tolman
+  !> @date   16-Jul-2012
+  !>
   SUBROUTINE GXEXPO
     !/
     !/                  +-----------------------------------+
