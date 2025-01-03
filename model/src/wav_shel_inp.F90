@@ -50,7 +50,7 @@ contains
 
     ! Input parameter
     integer , intent(in)   :: stdout
-    integer , intent(out)  :: mds(13), ntrace(2)
+    integer , intent(out)  :: mds(15), ntrace(2)
 
     ! local variables
     integer :: i
