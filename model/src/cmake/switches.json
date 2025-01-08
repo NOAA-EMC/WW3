@@ -746,6 +746,17 @@
         ]
     },
     {
+        "name": "pio",
+        "num_switches": "upto1",
+        "description": "use pio library",
+        "valid-options":[
+            {
+                "name": "PIO",
+                "requires": ["MPI"]
+            }
+        ]
+    },
+    {
         "name": "pdlib",
         "num_switches": "upto1",
         "description": "use pdlib",

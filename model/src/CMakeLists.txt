@@ -174,6 +174,10 @@ if("MPI" IN_LIST switches)
   target_link_libraries(ww3_lib PUBLIC MPI::MPI_Fortran)
 endif()
 
+if("PIO" IN_LIST switches)
+  target_sources(ww3_lib PRIVATE ${pio_src})
+endif()
+
 # Handle PDLIB, SCRIP, SCRIPNC build files directly instead of through configuration file
 if("PDLIB" IN_LIST switches)
   if("SCOTCH" IN_LIST switches)
