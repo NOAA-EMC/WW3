@@ -293,6 +293,8 @@ contains
     character(len=10)       :: vwnd
     integer                 :: imod, j, jmod
     integer                 :: mpi_comm_null = -1
+    integer                 :: isea
+    real(r4), parameter     :: fillv = 9.99e20
     real(r4), allocatable   :: wxdata(:)      ! only needed if merge_import
     real(r4), allocatable   :: wydata(:)      ! only needed if merge_import
     character(len=CL)       :: msgString
@@ -357,6 +359,10 @@ contains
       if (state_fldchk(importState, 'So_u')) then
         call SetGlobalInput(importState, 'So_u', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        do isea = 1,nsea 
+        if(abs(global_data(isea)-fillv).lt.0.01) then
+          global_data(isea)=0.0
+        enddo
         call FillGlobalInput(global_data, CX0)
         call FillGlobalInput(global_data, CXN)
       end if
@@ -366,6 +372,10 @@ contains
       if (state_fldchk(importState, 'So_v')) then
         call SetGlobalInput(importState, 'So_v', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        do isea = 1,nsea 
+        if(abs(global_data(isea)-fillv).lt.0.01) then
+          global_data(isea)=0.0
+        enddo
         call FillGlobalInput(global_data, CY0)
         call FillGlobalInput(global_data, CYN)
       end if
