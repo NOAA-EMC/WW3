@@ -7812,6 +7812,7 @@ CONTAINS
           IF (DW(ISEA) .gt. 1000.) THEN
             SWFAC(JSEA) = 1.
           ELSE
+           stop
             SWFAC(JSEA) = 0.!(1.-0.5*(1+(2*KH/SINH(MIN(20.d0,2*KH)))))**8
           ENDIF
           IF (SWFAC(JSEA) .LT. TINY(1.)) THEN
@@ -7832,11 +7833,11 @@ CONTAINS
           XWIND = 1.
 #endif
           TFAC  = MIN ( 1. , (CLATS(ISEA)/CLATMN)**2 )
-          DSS   = SWFAC(JSEA) * (XWIND * DCELL + (1.-XWIND) * DSS * TFAC) 
+          !DSS   = SWFAC(JSEA) * (XWIND * DCELL + (1.-XWIND) * DSS * TFAC) 
 #ifdef W3_DSS0
-          DSS   = 0.
+          !DSS   = 0.
 #endif
-          DNN   = SWFAC(JSEA) * (XWIND * DCELL + (1.-XWIND) * DNN * TFAC)
+          !DNN   = SWFAC(JSEA) * (XWIND * DCELL + (1.-XWIND) * DNN * TFAC)
 
           DIFFVEC(1,JSEA) = (DSS*ECOS(ITH)**2+DNN*ESIN(ITH)**2) 
           DIFFVEC(2,JSEA) = (DSS*ESIN(ITH)**2+DNN*ECOS(ITH)**2) / CLATS(ISEA)**2
@@ -7907,19 +7908,19 @@ CONTAINS
                 V(2) = 0.5 * PDLIB_IEN(2*IDX  ,IE)
                 eScal = DOT_PRODUCT(V, GRAD(1:2))
                 IP = INE(IDX,IE)
-                PHI_V(IP) = PHI_V(IP) + eScal !+ 1./3. * 2 * DV2DXY(IP) * DIFFVEC(3,IP)
+                PHI_V(IP) = PHI_V(IP) + eScal! + 2./3. * DV2DXY(JSEA) * DIFFVEC(3,JSEA) * PDLIB_TRIA(IE)
              END DO
           END DO
           CALL PDLIB_exchange1DREAL(PHI_V)
           DO JSEA =1, NSEAL
-            IF (IOBP_LOC(JSEA) .EQ. 1) THEN
-              DIFFTOT      = - DT_DIFF * DFAC * ( PHI_V(JSEA) / PDLIB_SI(JSEA) + 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA) ) 
-            ELSE
-              DIFFTOT      = 0
-            ENDIF
+            !IF (IOBP_LOC(JSEA) .EQ. 1) THEN
+              DIFFTOT = - DT_DIFF * DFAC *  ( PHI_V(JSEA) / PDLIB_SI(JSEA) ) !+ 2 * DV2DXY(JSEA) * DIFFVEC(3,JSEA) ) 
+            !ELSE
+            !  DIFFTOT = 0
+            !ENDIF
             VA(ISP,JSEA) = MAX(0.,VA(ISP,JSEA) + DIFFTOT )
             !IF (ABS(DIFFTOT) .GT. 0.) THEN
-            !  WRITE(50000+myrank,'(2I10,10F20.10)') JSEA, ISP, VA(ISP,JSEA), DT_DIFF, PHI_V(JSEA), PDLIB_SI(JSEA), DV2DXY(JSEA), DIFFVEC(3,JSEA), DFAC, IOBDP_LOC(JSEA)
+              !WRITE(50000+myrank,'(3I10,10F20.10)') JSEA, ISP, IOBDP_LOC(JSEA), VA(ISP,JSEA), DIFFTOT
             !ENDIF 
           END DO       
         END DO 
