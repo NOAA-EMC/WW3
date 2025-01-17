@@ -1,4 +1,24 @@
+!> @file
+!> @brief This module computes shoreline reflection, and
+!>  unresolved islands and iceberg reflections.
+!>
+!> @author F. Ardhuin
+!> @date   27-Jun-2014
+!>
+
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief This module computes shoreline reflection, and
+!>  unresolved islands and iceberg reflections.
+!>
+!> @author F. Ardhuin
+!> @date   27-Jun-2014
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3REF1MD
   !/
   !/                  +-----------------------------------+
@@ -64,6 +84,30 @@ MODULE W3REF1MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Computes coastal and iceberg/island reflections and adds free IG energy.
+  !>
+  !> @param[inout] A      Action density spectrum (1-D).
+  !> @param[in]    CG     Group velocities.
+  !> @param[in]    WN     Wavenumbers.
+  !> @param[in]    EMEAN
+  !> @param[in]    FMEAN
+  !> @param[in]    DEPTH  Mean water depth.
+  !> @param[in]    CX1
+  !> @param[in]    CY1
+  !> @param[in]    REFLC
+  !> @param[in]    REFLD
+  !> @param[in]    TRNX
+  !> @param[in]    TRNY
+  !> @param[in]    BERG
+  !> @param[in]    DT
+  !> @param[in]    IX
+  !> @param[in]    IY
+  !> @param[out]   S      Source term (1-D version).
+  !>
+  !> @author F. Ardhuin
+  !> @date   11-Jun-2014
+  !>
   SUBROUTINE W3SREF(A, CG, WN, EMEAN, FMEAN, DEPTH, CX1, CY1, REFLC, REFLD,     &
        TRNX, TRNY, BERG, DT, IX, IY, JSEA, S)
     !/
@@ -104,7 +148,7 @@ CONTAINS
     !
     !     Parameter list
     !     ----------------------------------------------------------------
-    !  A         R.A.  I   Action density spectrum (1-D)
+    !       A         R.A.  I   Action density spectrum (1-D)
     !       CG        R.A.  I   Group velocities.
     !       WN        R.A.  I   Wavenumbers.
     !       DEPTH     Real  I   Mean water depth.

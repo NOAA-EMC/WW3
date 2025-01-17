@@ -482,7 +482,7 @@ contains
     character(CL)                  :: logfile
     logical                        :: local
     integer                        :: imod, idsi, idso, idss, idst, idse
-    integer                        :: mds(13) ! Note that nds is set to this in w3initmod
+    integer                        :: mds(15) ! Note that nds is set to this in w3initmod
     integer                        :: stdout
     integer                        :: petcount
     real(r8)                       :: toff

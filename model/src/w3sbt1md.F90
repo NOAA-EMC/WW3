@@ -1,5 +1,23 @@
+!> @file
+!> @brief JONSWAP bottom friction routine.
+!>
+!> @author H. L. Tolman
+!> @date   29-May-2009
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief JONSWAP bottom friction routine.
+!>
+!> @author H. L. Tolman
+!> @date   29-May-2009
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SBT1MD
   !/
   !/                  +-----------------------------------+
@@ -42,6 +60,31 @@ MODULE W3SBT1MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Bottom friction source term according to the empirical JONSWAP
+  !>  formulation.
+  !>
+  !> @verbatim
+  !>              2 GAMMA   /    CG         \      SBTC1 /     \       .
+  !>       Sbt = ---------- | ------- - 0.5 | E  = ----- | ... | E    (1)
+  !>             GRAV DEPTH \  SI/WN        /      DEPTH \     /
+  !>
+  !>     Where GAMMA = -0.038 m2/s3 (JONSWAP)
+  !>                 = -0.067 m2/s3 (Bouws and Komen 1983)
+  !>
+  !>     In the routine, the constant 2 GAMMA / GRAV = SBTC1.
+  !> @endverbatim
+  !>
+  !> @param[in]  A      Action density spectrum (1-D).
+  !> @param[in]  CG     Group velocities.
+  !> @param[in]  WN     Wavenumbers.
+  !> @param[in]  DEPTH  Mean water depth.
+  !> @param[out] S      Source term (1-D version).
+  !> @param[out] D      Diagonal term of derivative (1-D version).
+  !>
+  !> @author H. L. Tolman
+  !> @date   29-May-2009
+  !>
   SUBROUTINE W3SBT1 (A, CG, WN, DEPTH, S, D)
     !/
     !/                  +-----------------------------------+
