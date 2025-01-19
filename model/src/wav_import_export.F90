@@ -362,7 +362,8 @@ contains
         do isea = 1,nsea 
         if(abs(global_data(isea)-fillv).lt.0.01) then
           global_data(isea)=0.0
-        enddo
+        end if
+        end do
         call FillGlobalInput(global_data, CX0)
         call FillGlobalInput(global_data, CXN)
       end if
@@ -375,7 +376,8 @@ contains
         do isea = 1,nsea 
         if(abs(global_data(isea)-fillv).lt.0.01) then
           global_data(isea)=0.0
-        enddo
+        end if
+        end do
         call FillGlobalInput(global_data, CY0)
         call FillGlobalInput(global_data, CYN)
       end if
