@@ -24,7 +24,7 @@
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'HS WND RHO TAU T02 DP DIR FP MXE MXES MXH MXHC SDMH SDMHC'
+  TYPE%FIELD%LIST          = 'HS WND RHO TAU T02 DP DIR FP MXE MXES MXH MXHC SDMH SDMHC QP QKK'
   TYPE%POINT%FILE          = '../input_rho/points.list'
 /
 

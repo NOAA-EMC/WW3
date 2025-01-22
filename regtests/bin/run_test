@@ -2368,7 +2368,7 @@ done # end of loop on progs
 case $outopt in
   native) out_progs="ww3_trck" ;;
   netcdf) out_progs="ww3_trnc" ;;
-  both)   out_progs="ww3_trck ww3_trnc" ;;
+  both|all) out_progs="ww3_trck ww3_trnc" ;;
   *)      out_progs="" ;;
 esac
 
@@ -2448,6 +2448,9 @@ do
           then
             continue
           fi
+
+          \ln -s mod_def.$g mod_def.ww3
+
           gu="_$g"
           fileconf="$prog${gu}"
         else
@@ -2502,6 +2505,7 @@ do
           \rm -f $prog.nml
           if [ $multi -eq 2 ]
           then
+            \rm -f mod_def.ww3
             \rm -f track_o.ww3
             if [ $nml_input ] && [ ! -z "`echo ${ifile} | grep -o nml`" ]
             then

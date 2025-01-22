@@ -13,7 +13,7 @@ $ file for a full documentation of field output options. Namelist type
 $ selection is used here (for alternative F/T flags, see ww3_shel.inp).
 $
  N
- HS LM T02 T01 T0M1 UST CHA CGE DTD FC CFX CFD
+ HS LM T02 T01 T0M1 UST CHA CGE DTD FC CFX CFD QP QKK
 $
 $--------------------------------------------------------------------- $
 $ netCDF version [3,4]
