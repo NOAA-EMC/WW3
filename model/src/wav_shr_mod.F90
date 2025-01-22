@@ -229,7 +229,7 @@ contains
   !!
   !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
   !> @date 09-12-2022
-  subroutine write_meshdecomp(EMeshIn, mesh_name, rc)
+  subroutine write_meshdecomp(EMeshIn, mesh_name, nseal_cpl, rc)
 
     use ESMF          , only : ESMF_Mesh, ESMF_DistGrid, ESMF_Field, ESMF_FieldBundle, ESMF_FieldBundleAdd
     use ESMF          , only : ESMF_DistGridGet, ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_FieldBundleGet
@@ -237,22 +237,27 @@ contains
     use ESMF          , only : ESMF_FieldBundleWrite, ESMF_FieldBundleDestroy
 
     use w3odatmd      , only : iaproc
+    use w3gdatmd      , only : ntri, trigp
+    use w3parall      , only : init_get_isea
 
     ! input/output variables
     type(ESMF_Mesh) , intent(in)  :: EMeshIn
     character(len=*), intent(in)  :: mesh_name
+    integer         , intent(in)  :: nseal_cpl
     integer         , intent(out) :: rc
 
     ! local variables
     type(ESMF_FieldBundle)         :: FBTemp
     type(ESMF_Field)               :: lfield
     type(ESMF_DistGrid)            :: distgrid
-    type(ESMF_Field)               :: doffield
+    type(ESMF_Field)               :: doffield, trifield
     character(len=6), dimension(4) :: lfieldlist
     integer                        :: i,ndims,nelements
+    integer                        :: isea,jsea
     real(r8), pointer              :: fldptr1d(:)
     integer(i4), allocatable       :: dof(:)
     integer(i4), pointer           :: dofptr(:)
+    integer(i4), pointer           :: itri(:,:)
     real(r8), pointer              :: ownedElemCoords(:), ownedElemCoords_x(:), ownedElemCoords_y(:)
     character(len=*),parameter     :: subname = '(wav_shr_mod:write_meshdecomp) '
     !-------------------------------------------------------
@@ -266,6 +271,20 @@ contains
 
     call ESMF_MeshGet(EMeshIn, spatialDim=ndims, numOwnedElements=nelements, elementDistgrid=distgrid, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+    if (unstr_mesh) then
+      trifield = ESMF_FieldCreate(EMeshIn, ESMF_TYPEKIND_I4, name='nconn', meshloc=ESMF_MESHLOC_ELEMENT, &
+           ungriddedLBound=(/1/), ungriddedUBound=(/size(trigp,1)/), gridToFieldMap=(/2/), rc=rc)
+      call ESMF_FieldGet(trifield, farrayPtr=itri, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      ! retrieve DE local trigp array
+      itri = 0
+      do jsea = 1,nseal_cpl
+        call init_get_isea(isea, jsea)
+        itri(:,jsea) = trigp(:,isea)
+      end do
+      call ESMF_FieldBundleAdd(FBTemp, (/trifield/), rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     lfieldlist = (/'dof   ', 'coordx', 'coordy', 'decomp'/)
     ! index array

@@ -114,6 +114,7 @@ contains
     logical :: s_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
 
     integer :: lmap(nseal_cpl)
+    integer :: ltrigp(3,nseal_cpl)
 
     ! -------------------------------------------------------------
     ! create the netcdf file
@@ -256,14 +257,25 @@ contains
     call handle_err(ierr, 'put time')
 
     if (gtype .eq. ungtype) then
+      ! trigp is global
+      ltrigp(:,:) = 0
+      !call init_get_isea(isea, jsea)
+      !if (lglobal) then
+      !  varloc = var(isea)
+      !else
+      !varout(jsea) = varloc*dir(isea)
+      do jsea = 1,nseal_cpl
+        call init_get_isea(isea, jsea)
+        ltrigp(:,jsea) = trigp(:,isea)
+        print *,'YYY ',jsea,isea,trigp(:,isea)
+      end do
+      print *,'XXX ',iaproc,size(trigp,1),size(trigp,2)
       ierr = pio_inq_varid(pioid,  'nconn', varid)
       call handle_err(ierr, 'inquire variable nconn ')
-      ierr = pio_put_var(pioid, varid, trigp)
+      ierr = pio_put_var(pioid, varid, ltrigp)
       call handle_err(ierr, 'put trigp')
     end if
 
-    ! TODO: tried init decomp w/ use_int=.true. but getting garbage
-    ! land values....sea values OK
     ! mapsta is global
     lmap(:) = 0
     do jsea = 1,nseal_cpl
