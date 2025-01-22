@@ -222,7 +222,6 @@ contains
   !> @date 01-05-2022
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
 
-    use w3odatmd     , only : use_cmeps
     use wav_shr_flags, only : w3_pdlib_flag
 
     ! input/output arguments
@@ -241,9 +240,6 @@ contains
     call ufs_settimer(wtime)
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    ! if we're here, then cmeps is active
-    use_cmeps = .true.
 
     !----------------------------------------------------------------------------
     ! advertise fields
@@ -486,7 +482,7 @@ contains
     character(CL)                  :: logfile
     logical                        :: local
     integer                        :: imod, idsi, idso, idss, idst, idse
-    integer                        :: mds(13) ! Note that nds is set to this in w3initmod
+    integer                        :: mds(15) ! Note that nds is set to this in w3initmod
     integer                        :: stdout
     integer                        :: petcount
     real(r8)                       :: toff
