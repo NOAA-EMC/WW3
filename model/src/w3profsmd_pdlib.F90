@@ -1767,7 +1767,7 @@ CONTAINS
           END IF
         END IF
         ST(NI) = ST(NI) + THETA_L(:,IE) ! the 2nd term are the theta values of each node ...
-        THETA_H         = (1./3.+DT/(2.*PDLIB_TRIA(IE)) * KELEM(:,IE) ) * FT ! LAX
+        THETA_H         = (1./3.+DT/ITER(IK,ITH)/(2*PDLIB_TRIA(IE)) * KELEM(:,IE) ) * FT ! LAX
         !        THETA_H = (1./3.+2./3.*KELEM(:,IE)/SUM(MAX(ZERO,KELEM(:,IE))))*FT  ! CENTRAL ... can be tested as well a bit more dispersive then LAX
         THETA_ACE(:,IE) = THETA_H-THETA_L(:,IE)
         PP(NI) =  PP(NI) + MAX(ZERO, -THETA_ACE(:,IE)) * DTSI(NI)
