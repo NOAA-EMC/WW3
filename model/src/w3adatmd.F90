@@ -938,7 +938,6 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    use w3odatmd, only : use_cmeps
     !
     !/
     !/ ------------------------------------------------------------------- /
@@ -951,12 +950,11 @@ CONTAINS
     !/ Local parameters
     !/
     INTEGER                 :: JGRID, NXXX, NSEAL_tmp
-    integer                 :: memunit
-    integer                 :: allocsize
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
     CALL STRACE (IENT, 'W3DIMA')
 #endif
+    integer :: memunit
     !
     ! -------------------------------------------------------------------- /
     ! 1.  Test input and module status
@@ -1336,44 +1334,40 @@ CONTAINS
       ALLOCATE (WADATS(IMOD)%IC3CG(0:NK+1,0:300), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
 #endif
-      if (use_cmeps) then
-         allocsize = 1
-      else
-         allocsize = nsea
-      end if
+
       !
       IF ( FLCUR  ) THEN
-        ALLOCATE ( WADATS(IMOD)%CA0(allocsize) , &
-             WADATS(IMOD)%CAI(allocsize) ,       &
-             WADATS(IMOD)%CD0(allocsize) ,       &
-             WADATS(IMOD)%CDI(allocsize) ,       &
+        ALLOCATE ( WADATS(IMOD)%CA0(NSEA) , &
+             WADATS(IMOD)%CAI(NSEA) ,       &
+             WADATS(IMOD)%CD0(NSEA) ,       &
+             WADATS(IMOD)%CDI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF
       !
       IF ( FLWIND ) THEN
-        ALLOCATE ( WADATS(IMOD)%UA0(allocsize) , &
-             WADATS(IMOD)%UAI(allocsize) ,       &
-             WADATS(IMOD)%UD0(allocsize) ,       &
-             WADATS(IMOD)%UDI(allocsize) ,       &
-             WADATS(IMOD)%AS0(allocsize) ,       &
-             WADATS(IMOD)%ASI(allocsize) ,       &
+        ALLOCATE ( WADATS(IMOD)%UA0(NSEA) , &
+             WADATS(IMOD)%UAI(NSEA) ,       &
+             WADATS(IMOD)%UD0(NSEA) ,       &
+             WADATS(IMOD)%UDI(NSEA) ,       &
+             WADATS(IMOD)%AS0(NSEA) ,       &
+             WADATS(IMOD)%ASI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF
       !
       IF ( FLTAUA  ) THEN
-        ALLOCATE ( WADATS(IMOD)%MA0(allocsize) , &
-             WADATS(IMOD)%MAI(allocsize) ,       &
-             WADATS(IMOD)%MD0(allocsize) ,       &
-             WADATS(IMOD)%MDI(allocsize) ,       &
+        ALLOCATE ( WADATS(IMOD)%MA0(NSEA) , &
+             WADATS(IMOD)%MAI(NSEA) ,       &
+             WADATS(IMOD)%MD0(NSEA) ,       &
+             WADATS(IMOD)%MDI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF
       !
       IF ( FLRHOA  ) THEN
-        ALLOCATE ( WADATS(IMOD)%RA0(allocsize) , &
-             WADATS(IMOD)%RAI(allocsize) ,       &
+        ALLOCATE ( WADATS(IMOD)%RA0(NSEA) , &
+             WADATS(IMOD)%RAI(NSEA) ,       &
              STAT=ISTAT )
         CHECK_ALLOC_STATUS ( ISTAT )
       END IF

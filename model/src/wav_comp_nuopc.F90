@@ -222,7 +222,6 @@ contains
   !> @date 01-05-2022
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
 
-    use w3odatmd     , only : use_cmeps
     use wav_shr_flags, only : w3_pdlib_flag
 
     ! input/output arguments
@@ -241,9 +240,6 @@ contains
     call ufs_settimer(wtime)
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
-
-    ! if we're here, then cmeps is active
-    use_cmeps = .true.
 
     !----------------------------------------------------------------------------
     ! advertise fields
