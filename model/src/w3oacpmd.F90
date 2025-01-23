@@ -314,8 +314,8 @@ CONTAINS
           CORLAT(I,1,4) = CORLAT(I,1,3)
           ! areas
           AREA(I,1) = 0.25 * IJKCEL(3,I)*DLON * IJKCEL(4,I)*DLAT
-          ! Model grid mask
-          MASK(I,1) = 1
+          ! Model grid mask: 0 - sea  / 1 - open boundary cells (the land is already excluded)
+          MASK(I,1) = 0
         ENDDO
 #endif
         !
