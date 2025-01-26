@@ -405,7 +405,7 @@ CONTAINS
     REAL, ALLOCATABLE :: EquLon(:),EquLat(:),StdLon(:),StdLat(:),AnglPT(:)
 #endif
     ! Variables for NetCDF weights file for points
-    character(len = 124) :: filename
+    character(len = 124) :: filename, filenameout
     logical :: pnt_wght_exists, pnt_wght_write
     integer :: ncerr, fh
     integer :: d_nopts, d_namelen, d_vsize, d_wghtlen
@@ -544,7 +544,8 @@ CONTAINS
       ! Saved weight file exists, read weights from file 
       IF ( IAPROC .EQ. 1 ) THEN 
         ! Open the netCDF file.
-        ncerr = nf90_open(filename, NF90_NOWRITE, fh)
+        filenameout = 'out.pnt_wght.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+        ncerr = nf90_open(filenameout, NF90_NOWRITE, fh)
         if (nf90_err(ncerr) .ne. 0) return
 
         ! Read the dimension information for NOPTS.
