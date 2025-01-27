@@ -272,6 +272,7 @@ contains
     use wmupdtmd    , only: wmupd2
     use wmmdatmd    , only: wmsetm
     use wmmdatmd    , only: mdse, mdst, nrgrd, inpmap
+    use wav_shr_mod , only : casename
 #ifdef W3_MPI
     use wmmdatmd    , only: mpi_comm_grd
 #endif
@@ -360,7 +361,7 @@ contains
         call SetGlobalInput(importState, 'So_u', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         do isea = 1,nsea 
-        if(abs(global_data(isea)-fillv).lt.0.01) then
+        if(casename == "ufs.hafs" .and. abs(global_data(isea)-fillv).lt.0.01) then
           global_data(isea)=0.0
         end if
         end do
@@ -374,7 +375,7 @@ contains
         call SetGlobalInput(importState, 'So_v', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         do isea = 1,nsea 
-        if(abs(global_data(isea)-fillv).lt.0.01) then
+        if(casename == "ufs.hafs" .and. abs(global_data(isea)-fillv).lt.0.01) then
           global_data(isea)=0.0
         end if
         end do
