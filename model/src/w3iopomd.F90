@@ -544,8 +544,7 @@ CONTAINS
       ! Saved weight file exists, read weights from file 
       IF ( IAPROC .EQ. 1 ) THEN 
         ! Open the netCDF file.
-        filenameout = 'out.pnt_wght.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
-        ncerr = nf90_open(filenameout, NF90_NOWRITE, fh)
+        ncerr = nf90_open(filename, NF90_NOWRITE, fh)
         if (nf90_err(ncerr) .ne. 0) return
 
         ! Read the dimension information for NOPTS.
@@ -613,7 +612,8 @@ CONTAINS
     IF ( pnt_wght_write .AND. (NOPTS > 0) ) THEN 
       IF ( IAPROC .EQ. 1 ) THEN
         ! Create the netCDF file.
-        ncerr = nf90_create(filename, NF90_NETCDF4, fh)
+        filenameout = 'out.pnt_wght.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+        ncerr = nf90_create(filenameout, NF90_NETCDF4, fh)
         if (nf90_err(ncerr) .ne. 0) return
 
         ! Define dimensions.
