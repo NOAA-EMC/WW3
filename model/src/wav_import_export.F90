@@ -360,11 +360,14 @@ contains
       if (state_fldchk(importState, 'So_u')) then
         call SetGlobalInput(importState, 'So_u', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        do isea = 1,nsea 
-        if(casename == "ufs.hafs" .and. abs(global_data(isea)-fillv).lt.0.01) then
-          global_data(isea)=0.0
+
+        if(casename == "ufs.hafs") then
+          do isea = 1,nsea
+            if(abs(global_data(isea)-fillv).lt.0.01) then
+              global_data(isea)=0.0
+            end if
+          end do
         end if
-        end do
         call FillGlobalInput(global_data, CX0)
         call FillGlobalInput(global_data, CXN)
       end if
@@ -374,15 +377,16 @@ contains
       if (state_fldchk(importState, 'So_v')) then
         call SetGlobalInput(importState, 'So_v', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        do isea = 1,nsea 
-        if(casename == "ufs.hafs" .and. abs(global_data(isea)-fillv).lt.0.01) then
-          global_data(isea)=0.0
+        if(casename == "ufs.hafs") then
+          do isea = 1,nsea
+            if(abs(global_data(isea)-fillv).lt.0.01) then
+              global_data(isea)=0.0
+            end if
+          end do
         end if
-        end do
         call FillGlobalInput(global_data, CY0)
         call FillGlobalInput(global_data, CYN)
       end if
-    end if
 
     ! ---------------
     ! INFLAGS1(3) - atm wind/temp fields
