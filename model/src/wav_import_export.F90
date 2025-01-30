@@ -401,6 +401,7 @@ contains
         call FillGlobalInput(global_data, CY0)
         call FillGlobalInput(global_data, CYN)
       end if
+    end if
 
     ! ---------------
     ! INFLAGS1(3) - atm wind/temp fields
