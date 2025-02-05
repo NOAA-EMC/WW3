@@ -418,6 +418,7 @@ PROGRAM W3OUTP
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 4.  Read requests from input file.
   !
+#if W3_BIN2NC
   IF (dynpnt == 1) THEN
     CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT)
     WRITE (NDSO,930)
@@ -429,7 +430,7 @@ PROGRAM W3OUTP
       END IF
     END DO
   END IF
-
+#endif
   !
   CALL STME21 ( TOUT , IDTIME )
   WRITE (NDSO,940) IDTIME
