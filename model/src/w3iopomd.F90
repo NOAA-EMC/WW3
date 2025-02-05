@@ -1325,7 +1325,7 @@ CONTAINS
     integer, intent(inout) :: ncerr
     INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
     CHARACTER(LEN=15) :: TIMETAG
-    LOGICAL :: use_per_time_step
+    LOGICAL :: per_time_step
     INTEGER :: IGRD,MK,MTH
     integer :: fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time, d_ww3time
@@ -1353,13 +1353,9 @@ CONTAINS
     END IF
 
     ! Determine if we are reading a per-time-step file
-    use_per_time_step = PRESENT(TOUT)
-    IF (use_per_time_step) THEN
-       IF (TOUT(2) == 0) THEN
-           WRITE(TIMETAG, '(I8.8, ".0", I6.6)') TOUT(1), TOUT(2)
-       ELSE
-           WRITE(TIMETAG, '(I8.8, ".", I6.6)') TOUT(1), TOUT(2)
-       END IF
+    per_time_step = PRESENT(TOUT)
+    IF (per_time_step) THEN
+       WRITE(TIMETAG, '(I8.8, ".", I6.6)') TOUT(1), TOUT(2)
        filename = TRIM(FNMPRE) // TRIM(TIMETAG) // '.out_pnt.' // TRIM(FILEXT) // '.nc'
     ELSE
        filename = FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
@@ -1428,7 +1424,7 @@ CONTAINS
     ncerr = nf90_inquire_dimension(fh, d_time, len = d_time_len)
     if (nf90_err(ncerr) .ne. 0) return
     
-    IF (use_per_time_step) THEN
+    IF (per_time_step) THEN
            
       ! Read scalar variables.
       ncerr = nf90_inq_varid(fh, VNAME_NK, v_nk)
@@ -2059,9 +2055,8 @@ CONTAINS
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
     INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
-    INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)  !Ali Salimi
+    INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
-
     CHARACTER(LEN=15) :: TIMETAG
     INTEGER :: IGRD
     character(len = 124) :: filename
