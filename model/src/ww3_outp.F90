@@ -373,7 +373,6 @@ PROGRAM W3OUTP
   ! 3.  Read general data and first fields from file
   !     Output time, time step, number of steps, optional dynpnt and prefix
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        !READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT, dynpnt, prefix
   WORDS = ''
   READ (NDSI, '(A)', IOSTAT=IERR, END=801, ERR=802) LINEIN
   READ(LINEIN,*,IOSTAT=IERR) WORDS
@@ -393,9 +392,6 @@ PROGRAM W3OUTP
   IF (LEN_TRIM(prefix) > 0) THEN
     prefix = TRIM(prefix) // '.'
   END IF
-
-  WRITE(NDSO, *) 'prefix = ', TRIM(prefix)
-  WRITE(NDSO, *) 'dynpnt:', dynpnt
 
   IF (dynpnt == 0) THEN
 #if W3_BIN2NC
@@ -418,8 +414,8 @@ PROGRAM W3OUTP
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 4.  Read requests from input file.
   !
-#if W3_BIN2NC
   IF (dynpnt == 1) THEN
+#if W3_BIN2NC
     CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT)
     WRITE (NDSO,930)
     DO I=1, NOPTS
@@ -429,8 +425,12 @@ PROGRAM W3OUTP
         WRITE (NDSO,932) PTNME(I), M2KM*PTLOC(1,I), M2KM*PTLOC(2,I)
       END IF
     END DO
-  END IF
+#else
+    WRITE (NDSE,1013) dynpnt
+    CALL EXTCDE ( 45 )
 #endif
+  END IF
+
   !
   CALL STME21 ( TOUT , IDTIME )
   WRITE (NDSO,940) IDTIME
@@ -1143,6 +1143,10 @@ PROGRAM W3OUTP
 1012 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
        '     MULTIPLE OUTPUT POINTS DEFINED, ITYPE =',I4,/    &
        '     ONLY SINGLE POINT ALLOWED IN THIS VERSION'/)
+  !
+1013 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUTP : '/               &
+       '     PER TIME STEP OUTPUT IS DEFINED, dynpnt =',I4,/    &
+       '     ONLY SINGLE OUTPUT ALLOWED IN THIS VERSION'/)
 #ifdef W3_IC1
 3960 FORMAT (/' *** WAVEWATCH-III WARNING IN W3OUTP :'/         &
        '     Ice source terms !/IC1 skipped'/            &
