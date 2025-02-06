@@ -391,7 +391,7 @@ contains
       if (state_fldchk(importState, 'So_v')) then
         call SetGlobalInput(importState, 'So_v', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        if(casename == "ufs.hafs") then
+        if(trim(casename) == 'ufs.hafs') then
           do isea = 1,nsea
             if(abs(global_data(isea)-fillv).lt.0.01) then
               global_data(isea)=0.0
