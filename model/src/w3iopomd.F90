@@ -1155,7 +1155,7 @@ CONTAINS
     USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT, &
          GRDID, ICEO, ICEHO, ICEFO, W3DMO2
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_FLX5
@@ -1429,7 +1429,7 @@ CONTAINS
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT, &
          GRDID, ICEO, ICEHO, ICEFO
   USE W3TIMEMD, ONLY: CALTYPE, T2D, U2D, TSUB
 #ifdef W3_FLX5
@@ -1749,7 +1749,7 @@ CONTAINS
     USE W3ODATMD, ONLY: W3SETO
     USE W3GDATMD, ONLY: FILEXT
     USE W3WDATMD, ONLY: TIME
-    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, FNMPRE 
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, FNMPRE, FNMPNT 
     USE W3ODATMD, ONLY: OFILES
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1767,6 +1767,9 @@ CONTAINS
     INTEGER :: IGRD
     character(len = 124) :: filename
     integer :: ncerr
+
+    ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
+    CHARACTER(LEN=80)       :: FNMPRE_LOCAL
 
 #ifdef W3_S
     CALL STRACE (IENT, 'W3IOPON')
@@ -1796,12 +1799,23 @@ CONTAINS
     END IF
 
     ! Determine filename.
+    IF (FNMPNT .EQ. 'UNSET' .OR. LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      ! WRITE THE ERROR MESSAGE
+      WRITE (NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPON : '
+      WRITE (NDSE,*) '     ERROR IN FILE PATH'
+	  WRITE (NDSE, '(A, A)') '     PATH = ', TRIM(FNMPNT)
+	  CALL EXTCDE(42)
+    END IF
+
+    FNMPRE_LOCAL = FNMPNT
+    !
+    
     IF ( OFILES(2) .EQ. 1 ) THEN 
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
       WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
-      filename = FNMPRE(:LEN_TRIM(FNMPRE))//TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+      filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     ELSE 
-      filename = FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+      filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF 
 
     ! Do a read or a write of the point file.
@@ -1989,7 +2003,7 @@ CONTAINS
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT,   &
          GRDID, ICEO, ICEHO, ICEFO
 #ifdef W3_FLX5
     USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
@@ -2032,6 +2046,10 @@ CONTAINS
     CHARACTER(LEN=10)       :: VERTST
     !/
     CHARACTER(LEN=15) :: TIMETAG
+
+    ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
+    CHARACTER(LEN=80)       :: FNMPRE_LOCAL
+	
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -2070,23 +2088,34 @@ CONTAINS
     !
     ! open file ---------------------------------------------------------- *
     !
+    IF (FNMPNT .EQ. 'UNSET' .OR. LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      ! WRITE THE ERROR MESSAGE
+      WRITE (NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO : '
+      WRITE (NDSE,*) '     ERROR IN FILE PATH'
+	  WRITE (NDSE, '(A, A)') '     PATH = ', TRIM(FNMPNT)
+	  CALL EXTCDE(42)
+    END IF
+
+    FNMPRE_LOCAL = FNMPNT
+    !
+
     IF ( IPASS.EQ.1 .AND. OFILES(2) .EQ. 0 ) THEN
 
       I      = LEN_TRIM(FILEXT)
-      J      = LEN_TRIM(FNMPRE)
+      J      = LEN_TRIM(FNMPRE_LOCAL)
 
 #ifdef W3_T
-      WRITE (NDST,9001) FNMPRE(:J)//'out_pnt.'//FILEXT(:I)
+      WRITE (NDST,9001) FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I)
 #endif
       IF ( WRITE ) THEN
-        OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
+        OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
 #ifdef W3_ASCII
-        OPEN (NDSOA,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I)//'.txt',    &
+        OPEN (NDSOA,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I)//'.txt',    &
              form='FORMATTED', ERR=800,IOSTAT=IERR)
 #endif
       ELSE
-        OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
+        OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
       END IF
       !
@@ -2167,20 +2196,20 @@ CONTAINS
     IF ( IPASS.GE.1 .AND. OFILES(2) .EQ. 1) THEN
       !
       I      = LEN_TRIM(FILEXT)
-      J      = LEN_TRIM(FNMPRE)
+      J      = LEN_TRIM(FNMPRE_LOCAL)
 
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
       WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
       !
 #ifdef W3_T
-      WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_pnt.'// &
+      WRITE (NDST,9001) FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'// &
            FILEXT(:I)
 #endif
       IF ( WRITE ) THEN
-        OPEN (NDSOP,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
+        OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'   &
              //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
 #ifdef W3_ASCII
-        OPEN (NDSOA,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
+        OPEN (NDSOA,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'   &
              //FILEXT(:I)//'.txt',form='FORMATTED', ERR=800,IOSTAT=IERR)
 #endif
       END IF
