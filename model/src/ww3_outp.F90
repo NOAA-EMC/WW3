@@ -270,8 +270,7 @@ PROGRAM W3OUTP
   CHARACTER(LEN=25)       :: IDSRCE(7)
   CHARACTER               :: HSTR*6, HTYPE*3
   CHARACTER(LEN=256)      :: LINEIN
-  CHARACTER(LEN=32)       :: WORDS(6)
-  CHARACTER(LEN=32)       :: prefix
+  CHARACTER(LEN=32)       :: WORDS(5)
   INTEGER                 :: dynpnt
   LOGICAL                 :: PROCESS_POINT_ONLY          
   INTEGER                 :: ACTIVE_POINT, J_START, J_END
@@ -288,7 +287,6 @@ PROGRAM W3OUTP
   FLSRCE = .FALSE.
   
   ! Default values
-  prefix = ""   ! Default to empty for point output prefix
   dynpnt = 0    ! Default value for point output nameing
   !
 #ifdef W3_NCO
@@ -371,7 +369,7 @@ PROGRAM W3OUTP
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read general data and first fields from file
-  !     Output time, time step, number of steps, optional dynpnt and prefix
+  !     Output time, time step, number of steps, optional dynpnt
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSE )
   WORDS = ''
@@ -382,15 +380,9 @@ PROGRAM W3OUTP
   READ(WORDS(3), *, IOSTAT=IERR) DTREQ
   READ(WORDS(4), *, IOSTAT=IERR) NOUT
   IF (WORDS(5) /= '') READ(WORDS(5), *, IOSTAT=IERR) dynpnt
-  IF (WORDS(6) /= '') prefix = TRIM(WORDS(6))
   DTREQ  = MAX ( 0. , DTREQ )
   IF ( DTREQ.EQ.0 ) NOUT = 1
   NOUT   = MAX ( 1 , NOUT )
-  prefix = TRIM(ADJUSTL(prefix))
-  ! Ensure prefix ends with a dot
-  IF (LEN_TRIM(prefix) > 0) THEN
-    prefix = TRIM(prefix) // '.'
-  END IF
   !
   IF (dynpnt == 0) THEN
 #if W3_BIN2NC
@@ -414,7 +406,7 @@ PROGRAM W3OUTP
   !
   IF (dynpnt == 1) THEN
 #if W3_BIN2NC
-    CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT, prefix )
+    CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT )
     WRITE (NDSO,930)
     DO I=1, NOPTS
       IF ( FLAGLL ) THEN
@@ -557,7 +549,7 @@ PROGRAM W3OUTP
         WRITE (NDSO,943) 'Transfer file for each point'
         DO IJ = 1, NOPTS
           IF (FLREQ(IJ)) THEN
-            TFNAME = TRIM(prefix)// TRIM(PTNME(IJ))//'.spec'
+            TFNAME = TRIM(PTNME(IJ))//'.spec'
             WRITE (NDSO,1943) TRIM(TFNAME), 'Transfer File'
             J = LEN_TRIM(FNMPRE)
             IF (FLFORM) THEN
@@ -769,11 +761,11 @@ PROGRAM W3OUTP
           DO IJ = 1,NOPTS
             IF (FLREQ(IJ)) THEN
               NDSBUL = NDSTAB + (IJ - 1)
-              OPEN(NDSBUL,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
+              OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
               WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
 #ifdef W3_NCO
               NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
-              OPEN(NDSCBUL,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
+              OPEN(NDSCBUL,FILE=TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
               WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
 #endif
             ENDIF
@@ -812,7 +804,7 @@ PROGRAM W3OUTP
               NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
 #endif
               NDSCSV = NDSTAB + (IJ - 1) + 2*NOPTS
-              OPEN(NDSCSV,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//&
+              OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//&
                              '.csv',ERR=803,IOSTAT=IERR)
               WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
             ENDIF
@@ -900,7 +892,7 @@ PROGRAM W3OUTP
     IF ( DTEST .GT. 0. ) THEN
 #ifdef W3_BIN2NC
       IF (dynpnt .EQ. 1) THEN
-        CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT, prefix )
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT )
       ELSE
         CALL W3IOPON ( 'READ', NDSOP, IOTEST )
       END IF
@@ -927,7 +919,7 @@ PROGRAM W3OUTP
     IF (ITYPE .EQ. 1 .AND. OTYPE .EQ. 3 .AND. dynpnt .EQ. 1) THEN
       DO IJ = 1, NOPTS
         IF (FLREQ(IJ)) THEN
-          TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
+          TFNAME = TRIM(PTNME(IJ))//'.spec'
           J = LEN_TRIM(FNMPRE)
           IF (FLFORM) THEN
             OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
