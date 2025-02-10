@@ -405,7 +405,7 @@ CONTAINS
     REAL, ALLOCATABLE :: EquLon(:),EquLat(:),StdLon(:),StdLat(:),AnglPT(:)
 #endif
     ! Variables for NetCDF weights file for points
-    character(len = 124) :: filename
+    character(len = 124) :: filename, filenameout
     logical :: pnt_wght_exists, pnt_wght_write
     integer :: ncerr, fh
     integer :: d_nopts, d_namelen, d_vsize, d_wghtlen
@@ -542,7 +542,7 @@ CONTAINS
       END DO ! End loop over output points (IPT).
     ELSE 
       ! Saved weight file exists, read weights from file 
-      IF ( IAPROC .EQ. 1 ) THEN 
+      IF ( IAPROC .EQ. 1 ) THEN
         ! Open the netCDF file.
         ncerr = nf90_open(filename, NF90_NOWRITE, fh)
         if (nf90_err(ncerr) .ne. 0) return
@@ -596,15 +596,29 @@ CONTAINS
         ncerr = nf90_get_var(fh, v_ptifac, PTIFAC, start = (/ 1, 1/), &
           count = (/ d_wghtlen_len, d_nopts_len /))
         if (nf90_err(ncerr) .ne. 0) return
-      END IF
+
+        ! Close the file.
+        ncerr = nf90_close(fh)
+        if (nf90_err(ncerr) .ne. 0) return
+
+      END IF 
 
 #ifdef W3_MPI
       ! Broadcast weight info to all MPI tasks:
+
+      !First broadcast NOPTS, used in the next calls:
       CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(PTNME,40*NPT,MPI_CHARACTER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(PTLOC,2*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(IPTINT,2*4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
+
+      CALL MPI_BCAST(PTLOC,2*NPT,MPI_REAL,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(IPTINT(:,:,1:NOPTS),2*4*NOPTS,MPI_INTEGER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+
+      !Send point names individually
+      DO IPT=1, NOPTS
+        CALL MPI_BCAST(PTNME(IPT),40,MPI_CHARACTER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      ENDDO
+
       CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
 #endif
     ENDIF  !end if point weight file exists       
@@ -613,7 +627,8 @@ CONTAINS
     IF ( pnt_wght_write .AND. (NOPTS > 0) ) THEN 
       IF ( IAPROC .EQ. 1 ) THEN
         ! Create the netCDF file.
-        ncerr = nf90_create(filename, NF90_NETCDF4, fh)
+        filenameout = 'out.pnt_wght.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+        ncerr = nf90_create(filenameout, NF90_NETCDF4, fh)
         if (nf90_err(ncerr) .ne. 0) return
 
         ! Define dimensions.
