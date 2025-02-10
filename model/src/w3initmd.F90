@@ -985,9 +985,20 @@ CONTAINS
           call extcde (60, msg="required restart file " // trim(fname) // " does not exist")
         end if
       else
-        call read_restart('none')
-        ! mapst2 is module variable defined in read of mod_def; maptst is from 2.b above
-        flcold = .true.
+        if (restart_from_binary) then
+          call set_user_timestring(time,user_timestring)
+          fname = trim(user_restfname)//trim(user_timestring)
+          inquire(file=trim(fname), exist=exists)
+          if (exists) then
+            call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))
+          else
+            call extcde (60, msg="required restart file " // trim(fname) // " does not exist") 
+          end if
+        else
+          call read_restart('none')
+          ! mapst2 is module variable defined in read of mod_def; maptst is from 2.b above
+          flcold = .true.
+        end if
       end if
     else
 #endif
