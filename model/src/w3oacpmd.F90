@@ -162,13 +162,16 @@ CONTAINS
     !/                  | Last update :          April-2016 |
     !/                  +-----------------------------------+
     !/
-    !/    Jul-2013 : Origination.                    ( version 4.18 )
-    !/    April-2016 : Add comments (J. Pianezze)    ( version 5.07 )
-    !/    Sept-2016 : Correct bug MPI (J. Pianezze)  ( version 5.12 )
+    !/    Jul-2013 : Origination.                     ( version 4.18 )
+    !/    April-2016 : Add comments (J. Pianezze)     ( version 5.07 )
+    !/    Sept-2016 : Correct bug MPI (J. Pianezze)   ( version 5.12 )
+    !/    Jan-2025 : Use scrip format (J.M. Castillo) ( version x.xx )
     !/
     !  1. Purpose :
     !
-    !     Grid data file definition
+    !     Grid data file definition in the scrip format.
+    !     In this format, grid corners are specified in counterclockwise
+    !     order, being the first corner the one at the bottom left.
     !
     !  2. Method :
     !  3. Parameters :
@@ -250,41 +253,30 @@ CONTAINS
         NYS=1
         NYN=NY
         !
-        ! lat/lon
         ALLOCATE ( LON(NNODES,1), LAT(NNODES,1) )
-        I = 0
-        DO IY = NYS, NYN
-          DO IX = NXW, NXE
-            I = I+1
-            LON(I,1)=XGRD(IY,IX)*FACTOR
-            LAT(I,1)=YGRD(IY,IX)*FACTOR
-          END DO
-        END DO
-        !
-        ! areas, corners
         ALLOCATE ( AREA(NNODES,1), CORLON(NNODES,1,4), CORLAT(NNODES,1,4) )
-        I = 0
-        DO IY = NYS, NYN
-          DO IX = NXW, NXE
-            I = I+1
-            CORLON(I,1,1)=LON(I,1)+HPFAC(IY,IX)/2.*FACTOR
-            CORLON(I,1,2)=LON(I,1)-HPFAC(IY,IX)/2.*FACTOR
-            CORLON(I,1,3)=LON(I,1)-HPFAC(IY,IX)/2.*FACTOR
-            CORLON(I,1,4)=LON(I,1)+HPFAC(IY,IX)/2.*FACTOR
-            CORLAT(I,1,1)=LAT(I,1)+HQFAC(IY,IX)/2.*FACTOR
-            CORLAT(I,1,2)=LAT(I,1)+HQFAC(IY,IX)/2.*FACTOR
-            CORLAT(I,1,3)=LAT(I,1)-HQFAC(IY,IX)/2.*FACTOR
-            CORLAT(I,1,4)=LAT(I,1)-HQFAC(IY,IX)/2.*FACTOR
-            AREA(I,1)=HPFAC(IY,IX)*HQFAC(IY,IX)
-          END DO
-        END DO
-        !
-        ! Model grid mask
         ALLOCATE ( MASK(NNODES,1) )
+        !
         I = 0
         DO IY = NYS, NYN
           DO IX = NXW, NXE
             I = I+1
+            ! lat/lon
+            LON(I,1) = XGRD(IY,IX)*FACTOR
+            LAT(I,1) = YGRD(IY,IX)*FACTOR
+            !
+            ! areas, corners
+            CORLON(I,1,1) = LON(I,1)-HPFAC(IY,IX)/2.*FACTOR
+            CORLON(I,1,2) = LON(I,1)+HPFAC(IY,IX)/2.*FACTOR
+            CORLON(I,1,3) = CORLON(I,1,2)
+            CORLON(I,1,4) = CORLON(I,1,1)
+            CORLAT(I,1,1) = LAT(I,1)-HQFAC(IY,IX)/2.*FACTOR
+            CORLAT(I,1,2) = CORLAT(I,1,1)
+            CORLAT(I,1,3) = LAT(I,1)+HQFAC(IY,IX)/2.*FACTOR
+            CORLAT(I,1,4) = CORLAT(I,1,3)
+            AREA(I,1) = HPFAC(IY,IX)*HQFAC(IY,IX)
+            !
+            ! Model grid mask
             ! Get the mask : 0 - sea  / 1 - open boundary cells (the land is already excluded)
             IF ((MAPSTA(IY,IX) .EQ. 1)) THEN
               MASK(I,1) = 0
@@ -317,13 +309,13 @@ CONTAINS
           CORLON(I,1,3) = CORLON(I,1,2)
           CORLON(I,1,4) = CORLON(I,1,1)
           CORLAT(I,1,1) = Y0 + IJKCel(2,I)*DLAT
-          CORLAT(I,1,2)=CORLAT(I,1,1)
+          CORLAT(I,1,2) = CORLAT(I,1,1)
           CORLAT(I,1,3) = Y0 + (IJKCel(2,I) + IJKCel(4,I))*DLAT
-          CORLAT(I,1,4)=CORLAT(I,1,3)
+          CORLAT(I,1,4) = CORLAT(I,1,3)
           ! areas
           AREA(I,1) = 0.25 * IJKCEL(3,I)*DLON * IJKCEL(4,I)*DLAT
-          ! Model grid mask
-          MASK(I,1) = 1
+          ! Model grid mask: 0 - sea  / 1 - open boundary cells (the land is already excluded)
+          MASK(I,1) = 0
         ENDDO
 #endif
         !

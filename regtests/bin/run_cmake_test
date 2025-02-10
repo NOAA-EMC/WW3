@@ -1358,6 +1358,16 @@ fi
     done
   fi
 
+# copy pnt weight files from input to work directory 
+  pntwghtfile=`\ls $path_i/pnt_wght.*.nc 2>/dev/null`
+  if [ ! -z "$pntwghtfile" ]; then
+    for pntwghtnc in $pntwghtfile
+    do
+      cp $pntwghtnc .
+      echo "copying $pntwghtnc to $path_w"
+    done
+  fi
+
 if [ $multi -ge 1 ]
 then
   prog=ww3_multi
