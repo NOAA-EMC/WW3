@@ -1302,7 +1302,7 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_READ(IOTST, IMOD_IN, filename, ncerr, TOUT)
+  SUBROUTINE W3IOPON_READ(IOTST, IMOD_IN, filename, ncerr, TOUT, prefix )
     USE NetCDF
     USE W3ODATMD, ONLY: W3DMO2
     USE W3WDATMD, ONLY: TIME
@@ -1326,6 +1326,7 @@ CONTAINS
     integer, intent(inout) :: ncerr
     INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
     CHARACTER(LEN=15) :: TIMETAG
+    CHARACTER(LEN=32), INTENT(IN), OPTIONAL :: prefix
     LOGICAL :: per_time_step
     INTEGER :: IGRD,MK,MTH
     integer :: fh, itime
@@ -1357,7 +1358,7 @@ CONTAINS
     per_time_step = PRESENT(TOUT)
     IF (per_time_step) THEN
       WRITE(TIMETAG, '(I8.8, ".", I6.6)') TOUT(1), TOUT(2)
-      filename = TRIM(FNMPRE) // TRIM(TIMETAG) // '.out_pnt.' // TRIM(FILEXT) // '.nc'
+      filename = TRIM(prefix) // TRIM(TIMETAG) // '.out_pnt.' // TRIM(FILEXT) // '.nc'
     ELSE
       filename = FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF
@@ -1422,39 +1423,6 @@ CONTAINS
     ncerr = nf90_inquire_dimension(fh, d_time, len = d_time_len)
     if (nf90_err(ncerr) .ne. 0) return
     
-    ! Read scalar variables.
-    ncerr = nf90_inq_varid(fh, VNAME_NK, v_nk)
-    if (nf90_err(ncerr) .ne. 0) return
-    ncerr = nf90_get_var(fh, v_nk, MK)
-    if (nf90_err(ncerr) .ne. 0) return
-    ncerr = nf90_inq_varid(fh, VNAME_NTH, v_nth)
-    if (nf90_err(ncerr) .ne. 0) return
-    ncerr = nf90_get_var(fh, v_nth, MTH)
-    if (nf90_err(ncerr) .ne. 0) return
-
-    !read in written variables NK, NTH as MK and MTH
-    !and ensure they match 
-    IF (NK.NE.MK .OR. NTH.NE.MTH) THEN
-      WRITE (NDSE,904) MK, MTH, NK, NTH
-      CALL EXTCDE ( 12 )
-    END IF
-
-    ! Allocate variables: 
-    IF ( .NOT. O2INIT )                                     &
-      CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
-
-    ! Read vars with nopts as a dimension.
-    ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
-    if (nf90_err(ncerr) .ne. 0) return
-    ncerr = nf90_get_var(fh, v_ptloc, PTLOC, start = (/ 1, 1/), &
-        count = (/ d_vsize_len, d_nopts_len /)) 
-    if (nf90_err(ncerr) .ne. 0) return
-    ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
-    if (nf90_err(ncerr) .ne. 0) return
-    ncerr = nf90_get_var(fh, v_ptnme, PTNME)
-    if (nf90_err(ncerr) .ne. 0) return
-      
-   
     !Determine the start for the time dimension
     IF ( per_time_step ) THEN
       itime=1
@@ -1463,6 +1431,40 @@ CONTAINS
     END IF
 
     IF ( itime .LE. d_time_len ) THEN
+      IF ( itime.EQ.1 ) THEN
+        ! Read scalar variables.
+        ncerr = nf90_inq_varid(fh, VNAME_NK, v_nk)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_nk, MK)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inq_varid(fh, VNAME_NTH, v_nth)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_nth, MTH)
+        if (nf90_err(ncerr) .ne. 0) return
+
+        !read in written variables NK, NTH as MK and MTH
+        !and ensure they match
+        IF (NK.NE.MK .OR. NTH.NE.MTH) THEN
+          WRITE (NDSE,904) MK, MTH, NK, NTH
+          CALL EXTCDE ( 12 )
+        END IF
+
+        ! Allocate variables:
+        IF ( .NOT. O2INIT )                                     &
+          CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
+
+        ! Read vars with nopts as a dimension.
+        ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_ptloc, PTLOC, start = (/ 1, 1/), &
+            count = (/ d_vsize_len, d_nopts_len /))
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
+        if (nf90_err(ncerr) .ne. 0) return
+        ncerr = nf90_get_var(fh, v_ptnme, PTNME)
+        if (nf90_err(ncerr) .ne. 0) return
+      END IF      
+        
       !Variables read based on time (IPASS):      
       ncerr = nf90_inq_varid(fh, VNAME_WW3TIME, v_ww3time)
       if (nf90_err(ncerr) .ne. 0) return
@@ -1911,7 +1913,7 @@ CONTAINS
   !> @param[in] IMOD Model number for W3GDAT etc.
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
-  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD, TOUT)
+  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD, TOUT, prefix )
     USE W3GDATMD, ONLY: W3SETG
     USE W3WDATMD, ONLY: W3SETW
     USE W3ODATMD, ONLY: W3SETO
@@ -1932,6 +1934,7 @@ CONTAINS
     INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
     CHARACTER(LEN=15) :: TIMETAG
+    CHARACTER(LEN=32), INTENT(IN), OPTIONAL :: prefix
     INTEGER :: IGRD
     character(len = 124) :: filename
     integer :: ncerr
@@ -1975,7 +1978,7 @@ CONTAINS
     ! Do a read or a write of the point file.
     IF (INXOUT .EQ. 'READ') THEN
       IF (PRESENT(TOUT)) THEN
-        CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr, TOUT)
+        CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr, TOUT, prefix)
       ELSE
         CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
       END IF

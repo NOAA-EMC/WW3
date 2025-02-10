@@ -414,7 +414,7 @@ PROGRAM W3OUTP
   !
   IF (dynpnt == 1) THEN
 #if W3_BIN2NC
-    CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT)
+    CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT, prefix )
     WRITE (NDSO,930)
     DO I=1, NOPTS
       IF ( FLAGLL ) THEN
@@ -557,7 +557,7 @@ PROGRAM W3OUTP
         WRITE (NDSO,943) 'Transfer file for each point'
         DO IJ = 1, NOPTS
           IF (FLREQ(IJ)) THEN
-            TFNAME = TRIM(PTNME(IJ))//'.spec'
+            TFNAME = TRIM(prefix)// TRIM(PTNME(IJ))//'.spec'
             WRITE (NDSO,1943) TRIM(TFNAME), 'Transfer File'
             J = LEN_TRIM(FNMPRE)
             IF (FLFORM) THEN
@@ -585,7 +585,7 @@ PROGRAM W3OUTP
              MOD(TOUT(1),1000000), TOUT(2)/10000
         WRITE (NDSO,943) 'Transfer file'
         IF ( FLFORM ) THEN
-          WRITE (NDSO,1943) TFNAME, 'UNFORMATTED'
+          WRITE (NDSO,1943) TRIM(TFNAME), 'UNFORMATTED'
           J      = LEN_TRIM(FNMPRE)
           OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
                IOSTAT=IERR,form='UNFORMATTED', convert=file_endian)
@@ -597,7 +597,7 @@ PROGRAM W3OUTP
           !
           WRITE (NDSTAB) (MOD(2.5*PI-TH(ITH),TPI),ITH=1,NTH)
         ELSE
-          WRITE (NDSO,1943) TFNAME, 'FORMATTED'
+          WRITE (NDSO,1943) TRIM(TFNAME), 'FORMATTED'
           J      = LEN_TRIM(FNMPRE)
           OPEN  (NDSTAB,FILE=FNMPRE(:J)//TFNAME,ERR=804,      &
                IOSTAT=IERR,FORM='FORMATTED')
@@ -769,11 +769,11 @@ PROGRAM W3OUTP
           DO IJ = 1,NOPTS
             IF (FLREQ(IJ)) THEN
               NDSBUL = NDSTAB + (IJ - 1)
-              OPEN(NDSBUL,FILE=TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
+              OPEN(NDSBUL,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//'.bull',ERR=803,IOSTAT=IERR)
               WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.bull'
 #ifdef W3_NCO
               NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
-              OPEN(NDSCBUL,FILE=TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
+              OPEN(NDSCBUL,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//'.cbull',ERR=803,IOSTAT=IERR)
               WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.cbull'
 #endif
             ENDIF
@@ -812,7 +812,7 @@ PROGRAM W3OUTP
               NDSCBUL = NDSTAB + (IJ - 1) + NOPTS
 #endif
               NDSCSV = NDSTAB + (IJ - 1) + 2*NOPTS
-              OPEN(NDSCSV,FILE=TRIM(PTNME(IJ))//&
+              OPEN(NDSCSV,FILE=TRIM(prefix)//TRIM(PTNME(IJ))//&
                              '.csv',ERR=803,IOSTAT=IERR)
               WRITE (NDSO,1947) TRIM(PTNME(IJ))//'.csv'
             ENDIF
@@ -900,7 +900,7 @@ PROGRAM W3OUTP
     IF ( DTEST .GT. 0. ) THEN
 #ifdef W3_BIN2NC
       IF (dynpnt .EQ. 1) THEN
-        CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT )
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST, 1, TOUT, prefix )
       ELSE
         CALL W3IOPON ( 'READ', NDSOP, IOTEST )
       END IF
@@ -927,7 +927,7 @@ PROGRAM W3OUTP
     IF (ITYPE .EQ. 1 .AND. OTYPE .EQ. 3 .AND. dynpnt .EQ. 1) THEN
       DO IJ = 1, NOPTS
         IF (FLREQ(IJ)) THEN
-          TFNAME = TRIM(PTNME(IJ))//'.spec'
+          TFNAME = TRIM(prefix)//TRIM(PTNME(IJ))//'.spec'
           J = LEN_TRIM(FNMPRE)
           IF (FLFORM) THEN
             OPEN(NDSTAB, FILE=TRIM(TFNAME), STATUS='OLD', &
@@ -2839,7 +2839,7 @@ CONTAINS
          '    Hs   Tp  dir |'/              &
          ' |  hour |  (m)  - - |    (m)  (s) (d) |',              &
          '    (m)  (s) (d) |',              &
-         '    (m)  (s) (d) |',              &    
+         '    (m)  (s) (d) |',              &
          '    (m)  (s) (d) |',              &
          '    (m)  (s) (d) |',              &
          '    (m)  (s) (d) |')
