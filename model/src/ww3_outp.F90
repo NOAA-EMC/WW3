@@ -494,20 +494,22 @@ PROGRAM W3OUTP
     CLOSE(NDBO)
 #endif
     !
-    WRITE (NDSO,942) ITYPE, 'Checking contents of file'
-    DO
-      CALL STME21 ( TIME , IDTIME )
-      WRITE (NDSO,948) IDTIME
+    IF (dynpnt == 0) THEN
+      WRITE (NDSO,942) ITYPE, 'Checking contents of file'
+      DO
+        CALL STME21 ( TIME , IDTIME )
+        WRITE (NDSO,948) IDTIME
 #ifdef W3_BIN2NC
-      CALL W3IOPON ( 'READ', NDSOP, IOTEST )
+        CALL W3IOPON ( 'READ', NDSOP, IOTEST )
 #else
-      CALL W3IOPO ( 'READ', NDSOP, IOTEST )
+        CALL W3IOPO ( 'READ', NDSOP, IOTEST )
 #endif
-      IF ( IOTEST .EQ. -1 ) THEN
-        WRITE (NDSO,949)
-        GOTO 888
-      END IF
-    END DO
+        IF ( IOTEST .EQ. -1 ) THEN
+          WRITE (NDSO,949)
+          GOTO 888
+        END IF
+      END DO
+    END IF
 
     !
     ! ... ITYPE = 1
