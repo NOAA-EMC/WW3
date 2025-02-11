@@ -1968,15 +1968,11 @@ CONTAINS
     END IF
 
     ! Determine filename.
-    IF (FNMPNT .EQ. 'UNSET' .OR. LEN_TRIM(FNMPNT) .EQ. 0) THEN
-      ! WRITE THE ERROR MESSAGE
-      WRITE (NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPON : '
-      WRITE (NDSE,*) '     ERROR IN FILE PATH'
-	  WRITE (NDSE, '(A, A)') '     PATH = ', TRIM(FNMPNT)
-	  CALL EXTCDE(42)
+    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      FNMPRE_LOCAL = FNMPRE
+	ELSE
+	  FNMPRE_LOCAL = FNMPNT
     END IF
-
-    FNMPRE_LOCAL = FNMPNT
     !
     
     IF ( OFILES(2) .EQ. 1 ) THEN 
@@ -2257,15 +2253,11 @@ CONTAINS
     !
     ! open file ---------------------------------------------------------- *
     !
-    IF (FNMPNT .EQ. 'UNSET' .OR. LEN_TRIM(FNMPNT) .EQ. 0) THEN
-      ! WRITE THE ERROR MESSAGE
-      WRITE (NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO : '
-      WRITE (NDSE,*) '     ERROR IN FILE PATH'
-	  WRITE (NDSE, '(A, A)') '     PATH = ', TRIM(FNMPNT)
-	  CALL EXTCDE(42)
+    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      FNMPRE_LOCAL = FNMPRE
+	ELSE
+	  FNMPRE_LOCAL = FNMPNT
     END IF
-
-    FNMPRE_LOCAL = FNMPNT
     !
 
     IF ( IPASS.EQ.1 .AND. OFILES(2) .EQ. 0 ) THEN

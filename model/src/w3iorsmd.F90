@@ -461,15 +461,11 @@ CONTAINS
     !
     ! open file ---------------------------------------------------------- *
     !
-    IF (FNMRST .EQ. 'UNSET' .OR. LEN_TRIM(FNMRST) .EQ. 0) THEN
-      ! WRITE THE ERROR MESSAGE
-      WRITE (NDSE,*) ' *** WAVEWATCH III ERROR IN W3IORS : '
-      WRITE (NDSE,*) '     ERROR IN FILE PATH'
-	  WRITE (NDSE, '(A, A)') '     PATH = ', TRIM(FNMRST)
-	  CALL EXTCDE(42)
+    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      FNMPRE_LOCAL = FNMPRE
+	ELSE
+	  FNMPRE_LOCAL = FNMPNT
     END IF
-
-    FNMPRE_LOCAL = FNMRST
     !
 
     I      = LEN_TRIM(FILEXT)

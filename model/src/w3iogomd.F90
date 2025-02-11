@@ -2628,15 +2628,11 @@ CONTAINS
     ! open file ---------------------------------------------------------- *
     ! ( IPASS = 1 )
     !
-    IF (FNMGRD .EQ. 'UNSET' .OR. LEN_TRIM(FNMGRD) .EQ. 0) THEN
-      ! WRITE THE ERROR MESSAGE
-      WRITE (NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOGO : '
-      WRITE (NDSE,*) '     ERROR IN FILE PATH'
-	  WRITE (NDSE, '(A, A)') '     PATH = ', TRIM(FNMGRD)
-	  CALL EXTCDE(42)
+    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      FNMPRE_LOCAL = FNMPRE
+	ELSE
+	  FNMPRE_LOCAL = FNMPNT
     END IF
-
-    FNMPRE_LOCAL = FNMGRD
 
     IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
       I      = LEN_TRIM(FILEXT)
