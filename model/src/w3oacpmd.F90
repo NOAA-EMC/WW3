@@ -368,6 +368,7 @@ CONTAINS
     !/                   (R. Baraille & J. Pianezze)
     !/    April-2016 : Add comments (J. Pianezze)           ( version 5.07 )
     !/    08-Jun-2018 : use INIT_GET_ISEA                   ( version 6.04 )
+    !/    Feb-2025 : OASIS points partition (J.M. Castillo) ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -419,58 +420,41 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: IB_I,I
+    INTEGER                 :: IB_I
     INTEGER                 :: IL_PART_ID      ! PartitionID
     INTEGER, ALLOCATABLE, DIMENSION(:)   :: ILA_PARAL       ! Description of the local partition in the global index space
     INTEGER, DIMENSION(4)   :: ILA_SHAPE       ! Vector giving the min & max index for each dim of the fields
     INTEGER, DIMENSION(2)   :: ILA_VAR_NODIMS  ! rank of fields & number of bundles (1 with OASIS3-MCT)
     INTEGER                 :: ISEA, JSEA, IX, IY
-    INTEGER                 :: NHXW, NHXE, NHYS, NHYN  ! size of the halo at the western, eastern, southern, northern boundaries
-    LOGICAL                 :: LL_MPI_FILE     ! to check if there an mpi.txt file for domain decompasition
     !/
     !/ ------------------------------------------------------------------- /
     !/ Executable part
     !/
     !
+    ALLOCATE(ILA_PARAL(2+NSEAL))
+    !
+    ! * Define the partition : OASIS POINTS partition
+    ILA_PARAL(1) = 4
+    !
+    ! * total number of segments of the global domain
+    ILA_PARAL(2) = NSEAL
+    !
     IF (GTYPE .EQ. RLGTYPE .OR. GTYPE .EQ. CLGTYPE) THEN
       !
       ! 1.1. regular and curvilinear grids
       ! ----------------------------------
-      NHXW = 1 ; NHXE = NX ; NHYS = 1 ; NHYN = NY
-      NHXW = NHXW - 1
-      NHXE = NX - NHXE
-      NHYS = NHYS - 1
-      NHYN = NY - NHYN
-      !
-      ALLOCATE(ILA_PARAL(2+NSEAL*2))
-      !
-      ! * Define the partition : OASIS ORANGE partition
-      ILA_PARAL(1) = 3
-      !
-      ! * total number of segments of the global domain
-      ILA_PARAL(2) = NSEAL
-      !
       DO JSEA=1, NSEAL
         CALL INIT_GET_ISEA(ISEA,JSEA)
 
         IX = MAPSF(ISEA,1)
         IY = MAPSF(ISEA,2)
-        ILA_PARAL(JSEA*2+1) = (IY - NHYN -1)*(NX - NHXE - NHXW) + (IX - NHXW - 1)
-        ILA_PARAL(JSEA*2+2) = 1
+        ILA_PARAL(JSEA+2) = (IY - 1)*NX + IX
       END DO
 #ifdef W3_SMC
     ELSE IF( GTYPE .EQ. SMCTYPE ) THEN
       !
       ! 1.2. SMC grids
       ! ----------------------------------
-      ALLOCATE(ILA_PARAL(2+NSEAL))
-      !
-      ! * Define the partition : OASIS POINTS partition
-      ILA_PARAL(1) = 4
-      !
-      ! * total number of segments of the global domain
-      ILA_PARAL(2) = NSEAL
-      !
       DO JSEA=1, NSEAL
         ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
       ENDDO
@@ -484,8 +468,7 @@ CONTAINS
       STOP
       !
       DO JSEA=1,NSEAL
-        ILA_PARAL(JSEA*2+1) = (IAPROC-1) + (JSEA-1)*NAPROC
-        ILA_PARAL(JSEA*2+2) = 1
+        ILA_PARAL(JSEA+2) = IAPROC + (JSEA-1)*NAPROC
       END DO
       !
     ENDIF
@@ -496,6 +479,8 @@ CONTAINS
     IF(IL_ERR /= 0) THEN
       CALL OASIS_ABORT(IL_COMPID, 'CPL_OASIS_DEFINE', 'Problem during oasis_def_partition')
     ENDIF
+    !
+    DEALLOCATE(ILA_PARAL)
     !
     ! 3. Coupling fields declaration
     ! ----------------------------------
