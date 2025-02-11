@@ -1479,7 +1479,7 @@ CONTAINS
         if (nf90_err(ncerr) .ne. 0) return
       END IF      
         
-      !Variables read based on time (IPASS):      
+      !Variables read based on time (itime):      
       ncerr = nf90_inq_varid(fh, VNAME_WW3TIME, v_ww3time)
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_get_var(fh, v_ww3time, TIME, start = (/ 1, itime/), &
@@ -1577,7 +1577,7 @@ CONTAINS
       ! and are at the end of the
       IOTST  = -1
     END IF
-    
+
     ! Close the file.
     ncerr = nf90_close(fh)
     if (nf90_err(ncerr) .ne. 0) return
