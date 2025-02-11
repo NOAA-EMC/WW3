@@ -2628,10 +2628,10 @@ CONTAINS
     ! open file ---------------------------------------------------------- *
     ! ( IPASS = 1 )
     !
-    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+    IF (LEN_TRIM(FNMGRD) .EQ. 0) THEN
       FNMPRE_LOCAL = FNMPRE
 	ELSE
-	  FNMPRE_LOCAL = FNMPNT
+	  FNMPRE_LOCAL = FNMGRD
     END IF
 
     IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN

@@ -39,8 +39,6 @@
 &OUTPUT_PATH_NML
   PATH%GRD_OUT = '/work2/noaa/marine/ming.chen/user_def_path/regtests/ww3_tp1.1/grd_out/'
   PATH%PNT_OUT = '/work2/noaa/marine/ming.chen/user_def_path/regtests/ww3_tp1.1/pnt_out/'
-  PATH%RST_OUT = '/work2/noaa/marine/ming.chen/user_def_path/regtests/ww3_tp1.1/rst_out/'
-!  PATH%RST_OUT = './'
 /
 
 

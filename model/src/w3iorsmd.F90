@@ -461,10 +461,10 @@ CONTAINS
     !
     ! open file ---------------------------------------------------------- *
     !
-    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+    IF (LEN_TRIM(FNMRST) .EQ. 0) THEN
       FNMPRE_LOCAL = FNMPRE
 	ELSE
-	  FNMPRE_LOCAL = FNMPNT
+	  FNMPRE_LOCAL = FNMRST
     END IF
     !
 
