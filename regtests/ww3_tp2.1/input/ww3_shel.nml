@@ -31,15 +31,6 @@
 /
 
 ! -------------------------------------------------------------------- !
-! Define output user path via OUTPUT_PATH_NML namelist
-! -------------------------------------------------------------------- !
-&OUTPUT_PATH_NML
-!  PATH%GRD_OUT = '/work2/noaa/marine/ming.chen/ww3_tp2.1/grd_out/'
-  PATH%GRD_OUT = '/work2/noaa/marine/ming.chen/user_def_path/regtests/ww3_tp2.1/grd_out/'
-  PATH%PNT_OUT = '/work2/noaa/marine/ming.chen/user_def_path/regtests/ww3_tp2.1/pnt_out/'
-/
-
-! -------------------------------------------------------------------- !
 ! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
 ! -------------------------------------------------------------------- !
 &HOMOG_COUNT_NML
