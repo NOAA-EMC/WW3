@@ -769,6 +769,7 @@ MODULE W3GRIDMD
   INTEGER                 :: IC4METHOD
   REAL                    :: IC4KI(NIC4), IC4FC(NIC4),            &
                              IC4CN(NIC42), IC4FMIN, IC4KIBK
+  LOGICAL                 :: IC4NUMERICS                   
 #endif
 
 #ifdef W3_IC5
@@ -976,7 +977,7 @@ MODULE W3GRIDMD
 #endif
 #ifdef W3_IC4
   NAMELIST /SIC4/  IC4METHOD, IC4KI, IC4FC, IC4CN, IC4FMIN,  &
-                   IC4KIBK
+                   IC4KIBK, IC4NUMERICS
 #endif
 #ifdef W3_IC5
   NAMELIST /SIC5/  IC5MINIG, IC5MINWT, IC5MAXKRATIO,        &
@@ -2911,6 +2912,7 @@ CONTAINS
     IC4CN=0.0
     IC4FMIN=0.0
     IC4KIBK=0.0
+    IC4NUMERICS=.FALSE.
 #endif
     !
 #ifdef W3_IC5
@@ -5346,6 +5348,7 @@ CONTAINS
     IC4_CN=IC4CN
     IC4_FMIN=IC4FMIN
     IC4_KIBK=IC4KIBK
+    IC4_NUMERICS=IC4NUMERICS
 #endif
     !
 #ifdef W3_IC5
