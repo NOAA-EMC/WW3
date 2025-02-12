@@ -207,7 +207,6 @@ MODULE W3GDATMD
   !      IC4_FMIN  Real  Public   Minimum frequency below which ki is set to 
   !                               some background level dissipation (for S_ice)
   !      IC4_KIBK  Real  Public   Low, background level dissipation (for S_ice)
-  !      IC4_NUMERICS Log. Public  Turn on/off IC4 numerics fix
   !      PFMOVE    Real  Public   Tunable parameter in GSE correction
   !                               for moving grids.
   !      GRIDSHIFT Real  Public   Grid offset for multi-grid w/SCRIP
@@ -241,6 +240,7 @@ MODULE W3GDATMD
   !                               for individual grid points.
   !      IICEDISP   Log.  Public   Flag for use of the ice covered dispertion relation.
   !      IICESMOOTH Log.  Public   Flag to smooth the ice covered dispertion relation in broken ice.
+  !      IC_NUMERICS Log. Public  Turn on/off IC numerics fix
   !
   !
   !      GNAME     C*30  Public   Grid name.
@@ -701,6 +701,7 @@ MODULE W3GDATMD
 
     LOGICAL          :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
          IICESMOOTH
+    LOGICAL, POINTER :: IC_NUMERICS
     LOGICAL          :: FLAGLL
     LOGICAL          :: CMPRTRCK
     LOGICAL, POINTER :: FLAGST(:)
@@ -739,7 +740,6 @@ MODULE W3GDATMD
     REAL, POINTER         :: IC4_FC(:)
     REAL, POINTER         :: IC4_CN(:)
     REAL                  :: IC4_FMIN, IC4_KIBK
-    LOGICAL, POINTER      :: IC4_NUMERICS
 #endif
 #ifdef W3_IC5
     REAL,    POINTER      :: IC5PARS(:)
@@ -1155,7 +1155,6 @@ MODULE W3GDATMD
   REAL, POINTER           :: IC4_FC(:)
   REAL, POINTER           :: IC4_CN(:)
   REAL, POINTER           :: IC4_FMIN, IC4_KIBK
-  LOGICAL, POINTER        :: IC4_NUMERICS
 #endif
 #ifdef W3_IC5
   REAL,    POINTER        :: IC5PARS(:)
@@ -1219,6 +1218,7 @@ MODULE W3GDATMD
 
   LOGICAL, POINTER :: GINIT, FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU, IICEDISP,&
        IICESMOOTH
+  LOGICAL, POINTER :: IC_NUMERICS
   LOGICAL, POINTER :: FLAGLL
   LOGICAL, POINTER :: CMPRTRCK
   LOGICAL, POINTER :: FLAGST(:)
@@ -1855,8 +1855,6 @@ CONTAINS
     CHECK_ALLOC_STATUS ( ISTAT )
     ALLOCATE ( GRIDS(IMOD)%IC4_CN(NIC42), STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
-    ALLOCATE ( GRIDS(IMOD)%IC4_NUMERICS, STAT=ISTAT )
-    CHECK_ALLOC_STATUS ( ISTAT )
 #endif
 #ifdef W3_IC5
     ALLOCATE ( GRIDS(IMOD)%IC5PARS(9), STAT=ISTAT )
@@ -2334,7 +2332,6 @@ CONTAINS
     IC4_CN => GRIDS(IMOD)%IC4_CN
     IC4_FMIN => GRIDS(IMOD)%IC4_FMIN
     IC4_KIBK => GRIDS(IMOD)%IC4_KIBK
-    IC4_NUMERICS => GRIDS(IMOD)%IC4_NUMERICS
 #endif
 #ifdef W3_IC5
     IC5PARS => GRIDS(IMOD)%IC5PARS
@@ -2391,6 +2388,7 @@ CONTAINS
     FLSOU  => GRIDS(IMOD)%FLSOU
     IICEDISP => GRIDS(IMOD)%IICEDISP
     IICESMOOTH => GRIDS(IMOD)%IICESMOOTH
+    IC_NUMERICS => GRIDS(IMOD)%IC_NUMERICS
     !
     GNAME  => GRIDS(IMOD)%GNAME
     FILEXT => GRIDS(IMOD)%FILEXT
