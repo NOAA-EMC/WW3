@@ -1326,10 +1326,31 @@ CONTAINS
       CALL UOST_SRCTRMCOMPUTE(IX, IY, SPEC, CG1, DT,            &
            U10ABS, U10DIR, VSUO, VDUO)
 #endif
-      ! New location for IC4 Sea Ice Dissipation if IC_NUMERICS namelist flag = True
+      ! Sea Ice Source Terms if IC_NUMERICS namelist flag = True
       IF (IC_NUMERICS) THEN
+#ifdef W3_IC1
+        IF (ICE .GT. 0) CALL W3SIC1 ( SPEC,DEPTH, CG1, IX, IY, VSIC, VDIC )
+#endif
+#ifdef W3_IS2
+        IF (ICE .GT. 0) CALL W3SIS2 ( SPEC, DEPTH, ICE, ICEH, ICEF, ICEDMAX, IX, IY, &
+           VSIR, VDIR, VDIR2, WN1, CG1, WN_R, CG_ICE, R )
+#endif
+#ifdef W3_IC2
+        IF (ICE .GT. 0) CALL W3SIC2 ( SPEC, DEPTH, ICEH, ICEF, CG1, WN1,&
+           IX, IY, VSIC, VDIC, WN_R, CG_ICE, ALPHA_LIU, R)
+#endif
+#ifdef W3_IC3
+        IF (ICE .GT. 0) CALL W3SIC3 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+#endif
 #ifdef W3_IC4
         IF (ICE .GT. 0) CALL W3SIC4 ( SPEC,DEPTH, CG1, IX, IY, VSIC, VDIC )
+#endif
+#ifdef W3_IC5
+        IF (ICE .GT. 0) CALL W3SIC5 ( SPEC,DEPTH, CG1,  WN1, IX, IY, VSIC, VDIC )
+#endif
+      !
+#ifdef W3_IS1
+        IF (ICE .GT. 0) CALL W3SIS1 ( SPEC, ICE, VSIR )
 #endif
       ENDIF
       !
@@ -1392,7 +1413,7 @@ CONTAINS
         VSDS(1:NSPECH) = ICESCALEDS * VSDS(1:NSPECH)
         VDDS(1:NSPECH) = ICESCALEDS * VDDS(1:NSPECH)
         IF(IC_NUMERICS) THEN
-#ifdef W3_IC4
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
            VSIC(1:NSPECH) = ICE * VSIC(1:NSPECH) ! (see Rogers et al 2016) 
            VDIC(1:NSPECH) = ICE * VDIC(1:NSPECH)
 #endif
@@ -1437,7 +1458,7 @@ CONTAINS
         VS(IS) = VS(IS) + VSUO(IS)
 #endif
         IF ( IC_NUMERICS .AND. ICE.GT.0. ) THEN
-#ifdef W3_IC4
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
           VS(IS) = VS(IS) + VSIC(IS)
 #endif
         ENDIF
@@ -1456,7 +1477,7 @@ CONTAINS
         VD(IS) = VD(IS) + VDUO(IS)
 #endif
         IF ( IC_NUMERICS .AND. ICE.GT.0. ) THEN
-#ifdef W3_IC4
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
           VD(IS) = VD(IS) + VDIC(IS)
 #endif
         ENDIF
@@ -1478,7 +1499,7 @@ CONTAINS
       !
       DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
       IF ( IC_NUMERICS .AND. ICE .GT. 0.01 .and. ICE .LT. 0.95) THEN
-#ifdef W3_IC4
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
          DT=DTMIN ! always use a small timestep in ice 
 #endif
       ENDIF
@@ -1777,7 +1798,7 @@ CONTAINS
           PHINL = PHINL + VSNL(IS)* DT * FACTOR                      &
                / MAX ( 1. , (1.-HDT*VDNL(IS))) ! semi-implict integration scheme
           IF ( IC_NUMERICS .AND. ICE.GT.0 ) THEN
-#ifdef W3_IC4
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
              PHICE = PHICE + VSIC(IS) * DT * FACTOR             &
                     / MAX ( 1. , (1.-HDT*VDIC(IS))) ! semi-implicit integration
              TAUICE(:) = TAUICE(:) - FACTOR2*COSI(:)*VSIC(IS) * DT &
@@ -2046,7 +2067,7 @@ CONTAINS
     TAUOX=(GRAV*MWXFINISH+TAUWIX-TAUBBL(1))/DTG
     TAUOY=(GRAV*MWYFINISH+TAUWIY-TAUBBL(2))/DTG
     IF (IC_NUMERICS) THEN
-#ifdef W3_IC4
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
         TAUICE(:)=TAUICE(:)/DTG
         TAUOX = TAUOX - TAUICE(1)
         TAUOY = TAUOY - TAUICE(2)
@@ -2067,7 +2088,7 @@ CONTAINS
     PHINL =DWAT*GRAV*PHINL /DTG
     PHIBBL=DWAT*GRAV*PHIBBL/DTG
     IF (IC_NUMERICS) THEN
-#ifdef W3_IC4
+#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
        PHICE =-1.*DWAT*GRAV*PHICE/DTG
 #endif
     ENDIF
