@@ -852,7 +852,63 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 
   SUBROUTINE READ_OUTPUT_PATH_NML (NDSI, NML_OUTPUT_PATH)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Chen                 |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         13-Jan-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/
+    !  1. Purpose :
     !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI              Int.
+    !      NML_OUTPUT_PATH   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLSHEL Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+
     USE WMMDATMD, ONLY: MDSE
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1495,7 +1551,61 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 
   SUBROUTINE REPORT_OUTPUT_PATH_NML (NML_OUTPUT_PATH)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Chen                 |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         13-Jan-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/
+    !  1. Purpose :
     !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NML_OUTPUT_PATH   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLSHEL Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
 
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
