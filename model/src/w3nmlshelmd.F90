@@ -131,9 +131,9 @@ MODULE W3NMLSHELMD
 
   ! NEW TYPE FOR USER DEFINED PATH
   TYPE NML_OUTPUT_PATH_T
-    CHARACTER(LEN=80)           :: GRD_OUT
-    CHARACTER(LEN=80)           :: PNT_OUT
-    CHARACTER(LEN=80)           :: RST_OUT
+    CHARACTER(LEN=256)           :: GRD_OUT
+    CHARACTER(LEN=256)           :: PNT_OUT
+    CHARACTER(LEN=256)           :: RST_OUT
   END TYPE NML_OUTPUT_PATH_T
 
   ! homogeneous input structure

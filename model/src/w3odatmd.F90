@@ -330,9 +330,9 @@ MODULE W3ODATMD
   CHARACTER(LEN=80)       :: FNMPRE = './'
 
   ! SET GLOBAL PATH FOR USER DEFINED OUTPUT, DEFAULT CURRENT PATH
-  CHARACTER(LEN=80)       :: FNMGRD = './'
-  CHARACTER(LEN=80)       :: FNMPNT = './'
-  CHARACTER(LEN=80)       :: FNMRST = './'
+  CHARACTER(LEN=256)       :: FNMGRD = './'
+  CHARACTER(LEN=256)       :: FNMPNT = './'
+  CHARACTER(LEN=256)       :: FNMRST = './'
 
   !Moved UNDEF to constants and included above
   !REAL                    :: UNDEF = -999.9

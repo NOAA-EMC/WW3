@@ -1938,7 +1938,7 @@ CONTAINS
     integer :: ncerr
 
     ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
-    CHARACTER(LEN=80)       :: FNMPRE_LOCAL
+    CHARACTER(LEN=256)       :: FNMPRE_LOCAL
 
 #ifdef W3_S
     CALL STRACE (IENT, 'W3IOPON')
@@ -2213,7 +2213,7 @@ CONTAINS
     CHARACTER(LEN=15) :: TIMETAG
 
     ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
-    CHARACTER(LEN=80)       :: FNMPRE_LOCAL
+    CHARACTER(LEN=256)       :: FNMPRE_LOCAL
 	
     !/
     !/ ------------------------------------------------------------------- /
