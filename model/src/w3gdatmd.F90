@@ -2095,7 +2095,7 @@ CONTAINS
          MPARS(IMOD)%SRCPS%CUMULW(MSPEC,MSPEC),        &
          STAT=ISTAT                                   )
     CHECK_ALLOC_STATUS ( ISTAT )
-    MPARS(IMOD)%SRCPS%SATINDICES(:,:)=0.
+    MPARS(IMOD)%SRCPS%SATINDICES(:,:)=1.
     MPARS(IMOD)%SRCPS%SATWEIGHTS(:,:)=0.
     MPARS(IMOD)%SRCPS%CUMULW(:,:)=0.
 #endif
