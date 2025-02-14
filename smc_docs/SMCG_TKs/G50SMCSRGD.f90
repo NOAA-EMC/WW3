@@ -28,7 +28,7 @@
 !!                    J G Li   14 Oct 2010
 !! New AngleD program for SMC grid only. 
 !!                    J G Li   21 Apr 2010
-!! Test Gulf of Mexico area for high coastal waves. 
+!! Test Gulf of America area for high coastal waves. 
 !!                    J G Li    4 May 2010
 !! Adapted for SMC50 grid global + Arctic test. 
 !!                    J G Li   26 Oct 2011
@@ -1178,7 +1178,7 @@
       CNST2 = 1.0/(0.5 + 5.0/DLat)
       CNST1 = CNST2*DLon/DLat
 
-! Gulf of Mexico patch to test coastal high waves.  JGLi 04May2011
+! Gulf of America patch to test coastal high waves.  JGLi 04May2011
       ii=NINT(270.0/DLon)
       jj=NINT( 25.0/DLat)
 
@@ -1194,7 +1194,7 @@
              C(i)=SWH0
          ENDIF
 
-!! A round patch in Gulf of Mexico same as Arctic one
+!! A round patch in Gulf of America same as Arctic one
          CNST5 = Real( ICE(1,i) - ii )*CNST1*CCLat(kk)
          CNST6 = Real( kk       - jj )*CNST2
          CNST4 = CNST5*CNST5 + CNST6*CNST6
