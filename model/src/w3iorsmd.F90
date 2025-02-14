@@ -1385,7 +1385,7 @@ CONTAINS
     ! LOG FOR FINISHED
     IF (WRITE) THEN
       NDSRLOG = NDSR
-      OPEN (NDSRLOG,FILE=FNMPRE_LOCAL(:J)//'log.'//TRIM(FNAME)//'.txt', &
+      OPEN (NDSRLOG,FILE=FNMPRE_LOCAL(:J)//TRIM(FNAME)//'.log.txt', &
                form ='FORMATTED',ERR=800,IOSTAT=IERR)
       WRITE (NDSRLOG,*) 'The '//TRIM(FNAME)//' file has been successfully written!'
       CALL FLUSH (NDSRLOG)
