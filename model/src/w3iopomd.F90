@@ -1592,7 +1592,7 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_WRITE(timestep_only,filename, ncerr)
+  SUBROUTINE W3IOPON_WRITE(timestep_only,filename, ncerr, NDSOP)
     USE NETCDF 
     USE W3GDATMD, ONLY: NTH, NK, NSPEC
     USE W3WDATMD, ONLY: TIME
@@ -1612,6 +1612,9 @@ CONTAINS
     integer, intent(in) :: timestep_only ! 1 if only timestep should be written.
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
+    !
+    INTEGER, INTENT(IN), OPTIONAL :: NDSOP
+    !
     integer :: ndim, nvar, fmt, itime, fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time
@@ -1629,7 +1632,7 @@ CONTAINS
 
 
     ! INDICATOR LOG
-    INTEGER :: FHLOG
+    INTEGER :: NDSOPLOG
 
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
@@ -1892,14 +1895,14 @@ CONTAINS
     if (nf90_err(ncerr) .ne. 0) return
 
     ! WRITE INDICATOR LOG AT THE END OF NETCDF OUTPUT
-    ! RE-USE FH FOR FHLOG
+    ! RE-USE NDSOP FOR NDSOPLOG
     IF (timestep_only .EQ. 1) THEN
-      FHLOG = fh
-      OPEN(FHLOG,FILE=TRIM(filename)//'.log.txt', &
+      NDSOPLOG = NDSOP
+      OPEN(NDSOPLOG,FILE=TRIM(filename)//'.log.txt', &
                form ='FORMATTED')
-      WRITE (FHLOG,*) 'The '//TRIM(filename)//' file has been successfully written!'
-      CALL FLUSH (FHLOG)
-      CLOSE (FHLOG)
+      WRITE (NDSOPLOG,*) 'The '//TRIM(filename)//' file has been successfully written!'
+      CALL FLUSH (NDSOPLOG)
+      CLOSE (NDSOPLOG)
     ENDIF
 
   END SUBROUTINE W3IOPON_WRITE
@@ -2002,7 +2005,7 @@ CONTAINS
     IF (INXOUT .EQ. 'READ') THEN
       CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
     ELSE
-      CALL W3IOPON_WRITE(OFILES(2), filename, ncerr)
+      CALL W3IOPON_WRITE(OFILES(2), filename, ncerr, NDSOP=NDSOP)
     ENDIF
     if (nf90_err(ncerr) .ne. 0) then
       WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO :'
