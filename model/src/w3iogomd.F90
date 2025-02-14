@@ -2579,7 +2579,8 @@ CONTAINS
 
     ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
     CHARACTER(LEN=256)       :: FNMPRE_LOCAL
-
+    !
+    INTEGER                 :: NDSOGLOG
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -4066,6 +4067,17 @@ CONTAINS
     CALL W3SETA ( IGRD, NDSE, NDST )
 #endif
     !
+    ! ADD INDICATOR LOG AFTER THE GRIDDED OUTPUT HAS BEEN FULLY WRITTEN
+    IF ( WRITE .AND. (OFILES(1).EQ.1) ) THEN
+      NDSOGLOG = NDSOG
+      OPEN (NDSOGLOG,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)//'.log.txt', &
+           form ='FORMATTED',ERR=800,IOSTAT=IERR)
+      WRITE (NDSOGLOG,*) 'The '//TRIM(TIMETAG)//'.out_grd.'//TRIM(FILEXT(:I))// &
+	       ' file has been successfully written!'
+      CALL FLUSH (NDSOGLOG)
+      CLOSE (NDSOGLOG)
+    ENDIF
+
     RETURN
     !
     ! Escape locations read errors
