@@ -384,6 +384,9 @@ CONTAINS
     ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
     CHARACTER(LEN=256)       :: FNMPRE_LOCAL
 
+    ! LOG INDICATOR
+    INTEGER                  :: NDSRLOG
+
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -1378,6 +1381,16 @@ CONTAINS
     IF (ALLOCATED(WRITEBUFF)) DEALLOCATE(WRITEBUFF)
     IF (ALLOCATED(TMP))  DEALLOCATE(TMP)
     IF (ALLOCATED(TMP2)) DEALLOCATE(TMP2)
+    !
+    ! LOG FOR FINISHED
+    IF (WRITE) THEN
+      NDSRLOG = NDSR
+      OPEN (NDSRLOG,FILE=FNMPRE_LOCAL(:J)//'log.'//TRIM(FNAME)//'.txt', &
+               form ='FORMATTED',ERR=800,IOSTAT=IERR)
+      WRITE (NDSRLOG,*) 'The '//TRIM(FNAME)//' file has been successfully written!'
+      CALL FLUSH (NDSRLOG)
+      CLOSE (NDSRLOG)
+    ENDIF
     !
     RETURN
     !

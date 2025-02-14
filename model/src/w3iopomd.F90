@@ -1627,6 +1627,10 @@ CONTAINS
     integer :: curdate(8), refdate(8),ierr
     double precision :: outjulday
 
+
+    ! INDICATOR LOG
+    INTEGER :: FHLOG
+
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
       ! Create the netCDF file.
@@ -1887,6 +1891,17 @@ CONTAINS
     ncerr = nf90_close(fh)
     if (nf90_err(ncerr) .ne. 0) return
 
+    ! WRITE INDICATOR LOG AT THE END OF NETCDF OUTPUT
+    ! RE-USE FH FOR FHLOG
+    IF (timestep_only .EQ. 1) THEN
+      FHLOG = fh
+      OPEN(FHLOG,FILE=TRIM(filename)//'.log.txt', &
+               form ='FORMATTED')
+      WRITE (FHLOG,*) 'The '//TRIM(filename)//' file has been successfully written!'
+      CALL FLUSH (FHLOG)
+      CLOSE (FHLOG)
+    ENDIF
+
   END SUBROUTINE W3IOPON_WRITE
 
   !> Read or write the netCDF point output file,
@@ -2002,6 +2017,7 @@ CONTAINS
 
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
          '     ILEGAL INXOUT VALUE: ',A/)
+
   END SUBROUTINE W3IOPON
 #endif
   !/ ------------------------------------------------------------------- /
