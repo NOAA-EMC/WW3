@@ -317,6 +317,27 @@
 
 
 ! -------------------------------------------------------------------- !
+! Define user-defined output paths via OUTPUT_PATH_NML namelist
+!
+! * user-defined paths include: raw output out_grd, out_pnt, and restart
+! * default path for these are set as './'
+! * NOTE: using user-defined path may cause post-processing fail
+!         user-defined directroy must exist before execution
+!
+! * namelist must be terminated with /
+! * definitions & defaults:
+!      PATH%GRD_OUT = './'
+!      PATH%PNT_OUT = './'
+!      PATH%RST_OUT = './'
+! -------------------------------------------------------------------- !
+&OUTPUT_PATH_NML
+  PATH%GRD_OUT = './'
+/
+
+
+
+
+! -------------------------------------------------------------------- !
 ! Define homogeneous input via HOMOG_COUNT_NML and HOMOG_INPUT_NML namelist
 !
 ! * the number of each homogeneous input is defined by HOMOG_COUNT

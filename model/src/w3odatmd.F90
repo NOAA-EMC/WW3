@@ -328,6 +328,12 @@ MODULE W3ODATMD
   INTEGER, PARAMETER      :: NOEXTR=  2
   CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP)
   CHARACTER(LEN=80)       :: FNMPRE = './'
+
+  ! SET GLOBAL PATH FOR USER DEFINED OUTPUT, DEFAULT CURRENT PATH
+  CHARACTER(LEN=256)       :: FNMGRD = './'
+  CHARACTER(LEN=256)       :: FNMPNT = './'
+  CHARACTER(LEN=256)       :: FNMRST = './'
+
   !Moved UNDEF to constants and included above
   !REAL                    :: UNDEF = -999.9
   LOGICAL                 :: UNIPTS = .FALSE., UPPROC = .FALSE.
