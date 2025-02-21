@@ -2631,8 +2631,8 @@ CONTAINS
     !
     IF (LEN_TRIM(FNMGRD) .EQ. 0) THEN
       FNMPRE_LOCAL = FNMPRE
-	ELSE
-	  FNMPRE_LOCAL = FNMGRD
+    ELSE
+      FNMPRE_LOCAL = FNMGRD
     END IF
 
     IF ( IPASS.EQ.1 .AND. OFILES(1) .EQ. 0) THEN
@@ -4073,7 +4073,7 @@ CONTAINS
       OPEN (NDSOGLOG,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)//'.log.txt', &
            form ='FORMATTED',ERR=800,IOSTAT=IERR)
       WRITE (NDSOGLOG,*) 'The '//TRIM(TIMETAG)//'.out_grd.'//TRIM(FILEXT(:I))// &
-	       ' file has been successfully written!'
+           ' file has been successfully written!'
       CALL FLUSH (NDSOGLOG)
       CLOSE (NDSOGLOG)
     ENDIF

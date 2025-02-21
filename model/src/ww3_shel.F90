@@ -401,7 +401,7 @@ PROGRAM W3SHEL
   integer             :: memunit
 
   LOGICAL                 :: DIR_EXISTS
-  INTEGER                 :: DIR_STATUS  
+  INTEGER                 :: DIR_STATUS
   !
   !/
   !/ ------------------------------------------------------------------- /

@@ -2020,7 +2020,6 @@ CONTAINS
 
 900 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOPO :'/                &
          '     ILEGAL INXOUT VALUE: ',A/)
-
   END SUBROUTINE W3IOPON
 #endif
   !/ ------------------------------------------------------------------- /
