@@ -4070,7 +4070,7 @@ CONTAINS
     ! ADD INDICATOR LOG AFTER THE GRIDDED OUTPUT HAS BEEN FULLY WRITTEN
     IF ( WRITE .AND. (OFILES(1).EQ.1) ) THEN
       NDSOGLOG = NDSOG
-      OPEN (NDSOGLOG,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_grd.'//FILEXT(:I)//'.log.txt', &
+      OPEN (NDSOGLOG,FILE=FNMPRE_LOCAL(:J)//'log.'//TIMETAG//'.out_grd.'//FILEXT(:I)//'.txt', &
            form ='FORMATTED',ERR=800,IOSTAT=IERR)
       WRITE (NDSOGLOG,*) 'The '//TRIM(TIMETAG)//'.out_grd.'//TRIM(FILEXT(:I))// &
            ' file has been successfully written!'
