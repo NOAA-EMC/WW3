@@ -109,7 +109,7 @@ EOF
 # --------------------------------------------------------------------------- #
 
 echo ' '
-echo " Running now options: run_test $*"
+echo " Running now options: run_cmake_test $*"
 echo ' '
 
 # 2.a Setup array of command-line arguments
@@ -377,7 +377,7 @@ fi
 
 if [ $time_count ]
 then # Add time counter if -T
-  echo " REGTESTS Time counter: run_test $ARGS" >> time_count.txt
+  echo " REGTESTS Time counter: run_cmake_test $ARGS" >> time_count.txt
   Tstart=`date +"%s.%2N"`
 fi
 
