@@ -129,6 +129,12 @@ MODULE W3NMLSHELMD
     TYPE(NML_OUTPUT_TIME_T)         :: COUPLING
   END TYPE NML_OUTPUT_DATE_T
 
+  ! NEW TYPE FOR USER DEFINED PATH
+  TYPE NML_OUTPUT_PATH_T
+    CHARACTER(LEN=256)           :: GRD_OUT
+    CHARACTER(LEN=256)           :: PNT_OUT
+    CHARACTER(LEN=256)           :: RST_OUT
+  END TYPE NML_OUTPUT_PATH_T
 
   ! homogeneous input structure
   TYPE NML_HOMOG_COUNT_T
@@ -169,7 +175,7 @@ CONTAINS
 
   !/ ------------------------------------------------------------------- /
   SUBROUTINE W3NMLSHEL (MPI_COMM, NDSI, INFILE, NML_DOMAIN,            &
-       NML_INPUT, NML_OUTPUT_TYPE, NML_OUTPUT_DATE,   &
+       NML_INPUT, NML_OUTPUT_TYPE, NML_OUTPUT_DATE, NML_OUTPUT_PATH,   &
        NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
     !/
     !/                  +-----------------------------------+
@@ -263,6 +269,7 @@ CONTAINS
     TYPE(NML_INPUT_T), INTENT(INOUT)          :: NML_INPUT
     TYPE(NML_OUTPUT_TYPE_T), INTENT(INOUT)    :: NML_OUTPUT_TYPE
     TYPE(NML_OUTPUT_DATE_T), INTENT(INOUT)    :: NML_OUTPUT_DATE
+    TYPE(NML_OUTPUT_PATH_T), INTENT(INOUT)    :: NML_OUTPUT_PATH       ! USER DEFINED PATH
     TYPE(NML_HOMOG_COUNT_T), INTENT(INOUT)   :: NML_HOMOG_COUNT
     TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE, INTENT(INOUT)    :: NML_HOMOG_INPUT(:)
     INTEGER, INTENT(OUT)                      :: IERR
@@ -318,7 +325,11 @@ CONTAINS
     ! read output date namelist
     CALL READ_OUTPUT_DATE_NML (NDSI, NML_OUTPUT_DATE)
     IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_OUTPUT_DATE_NML (NML_OUTPUT_DATE)
-
+    
+	! READ OUTPUT USER DEFINED PATH NAMELIST
+    CALL READ_OUTPUT_PATH_NML (NDSI, NML_OUTPUT_PATH)
+    IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_OUTPUT_PATH_NML (NML_OUTPUT_PATH)
+	
     ! read homogeneous namelist
     CALL READ_HOMOGENEOUS_NML (NDSI, NML_HOMOG_COUNT, NML_HOMOG_INPUT)
     IF ( IMPROC .EQ. NMPLOG ) CALL REPORT_HOMOGENEOUS_NML (NML_HOMOG_COUNT, NML_HOMOG_INPUT)
@@ -840,6 +851,117 @@ CONTAINS
 
   !/ ------------------------------------------------------------------- /
 
+  SUBROUTINE READ_OUTPUT_PATH_NML (NDSI, NML_OUTPUT_PATH)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Chen                 |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         13-Jan-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NDSI              Int.
+    !      NML_OUTPUT_PATH   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLSHEL Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+
+    USE WMMDATMD, ONLY: MDSE
+    USE W3SERVMD, ONLY: EXTCDE
+#ifdef W3_S
+    USE W3SERVMD, ONLY: STRACE
+#endif
+
+    IMPLICIT NONE
+
+    INTEGER, INTENT(IN)                    :: NDSI
+    TYPE(NML_OUTPUT_PATH_T), INTENT(INOUT) :: NML_OUTPUT_PATH
+
+    ! LOCALS
+    INTEGER                                :: IERR
+    TYPE(NML_OUTPUT_PATH_T) :: PATH
+    NAMELIST /OUTPUT_PATH_NML/ PATH
+#ifdef W3_S
+    INTEGER, SAVE                          :: IENT = 0
+#endif
+
+    IERR = 0
+#ifdef W3_S
+    CALL STRACE (IENT, 'READ_OUTPUT_PATH_NML')
+#endif
+
+    ! SET DEFAULT VALUES FOR OUTPUT USER DEFINED PATH
+    PATH%GRD_OUT = './'
+    PATH%PNT_OUT = './'
+    PATH%RST_OUT = './'
+
+    ! READ OUTPUT USER DEFINED PATH NAMELIST
+    REWIND (NDSI)
+    READ (NDSI, nml=OUTPUT_PATH_NML, iostat=IERR, iomsg=MSG)
+    IF (IERR.GT.0) THEN
+      WRITE (MDSE,'(A,/A)') &
+           'ERROR: READ_OUTPUT_PATH_NML: namelist read error', &
+           'ERROR: '//TRIM(MSG)
+      CALL EXTCDE (8)
+    END IF    
+
+    ! SAVE NAMELIST
+    NML_OUTPUT_PATH = PATH
+
+  END SUBROUTINE READ_OUTPUT_PATH_NML
+
+  !/ ------------------------------------------------------------------- /
+
+
+
+
+
+
+  !/ ------------------------------------------------------------------- /
+
   SUBROUTINE READ_HOMOGENEOUS_NML (NDSI, NML_HOMOG_COUNT, NML_HOMOG_INPUT)
     !/
     !/                  +-----------------------------------+
@@ -1184,9 +1306,9 @@ CONTAINS
     WRITE (NDSN,10) TRIM(MSG),'FORCING % MUD_DENSITY    = ', NML_INPUT%FORCING%MUD_DENSITY
     WRITE (NDSN,10) TRIM(MSG),'FORCING % MUD_THICKNESS  = ', NML_INPUT%FORCING%MUD_THICKNESS
     WRITE (NDSN,10) TRIM(MSG),'FORCING % MUD_VISCOSITY  = ', NML_INPUT%FORCING%MUD_VISCOSITY
-    WRITE (NDSN,10) TRIM(MSG),'ASSIM % MEAN             = ', NML_INPUT%ASSIM%MEAN
-    WRITE (NDSN,10) TRIM(MSG),'ASSIM % SPEC1D           = ', NML_INPUT%ASSIM%SPEC1D
-    WRITE (NDSN,10) TRIM(MSG),'ASSIM % SPEC2D           = ', NML_INPUT%ASSIM%SPEC2D
+    WRITE (NDSN,10) TRIM(MSG),'ASSIM   % MEAN           = ', NML_INPUT%ASSIM%MEAN
+    WRITE (NDSN,10) TRIM(MSG),'ASSIM   % SPEC1D         = ', NML_INPUT%ASSIM%SPEC1D
+    WRITE (NDSN,10) TRIM(MSG),'ASSIM   % SPEC2D         = ', NML_INPUT%ASSIM%SPEC2D
 
 
 10  FORMAT (A,2X,A,A)
@@ -1279,9 +1401,9 @@ CONTAINS
 
     WRITE (MSG,'(A)') 'OUTPUT TYPE % '
     WRITE (NDSN,'(A)')
-    WRITE (NDSN,10) TRIM(MSG),'FIELD % LIST         = ', TRIM(NML_OUTPUT_TYPE%FIELD%LIST)
-    WRITE (NDSN,10) TRIM(MSG),'POINT % FILE         = ', TRIM(NML_OUTPUT_TYPE%POINT%FILE)
-    WRITE (NDSN,13) TRIM(MSG),'TRACK % FORMAT       = ', NML_OUTPUT_TYPE%TRACK%FORMAT
+    WRITE (NDSN,10) TRIM(MSG),'FIELD     % LIST     = ', TRIM(NML_OUTPUT_TYPE%FIELD%LIST)
+    WRITE (NDSN,10) TRIM(MSG),'POINT     % FILE     = ', TRIM(NML_OUTPUT_TYPE%POINT%FILE)
+    WRITE (NDSN,13) TRIM(MSG),'TRACK     % FORMAT   = ', NML_OUTPUT_TYPE%TRACK%FORMAT
     WRITE (NDSN,11) TRIM(MSG),'PARTITION % X0       = ', NML_OUTPUT_TYPE%PARTITION%X0
     WRITE (NDSN,11) TRIM(MSG),'PARTITION % XN       = ', NML_OUTPUT_TYPE%PARTITION%XN
     WRITE (NDSN,11) TRIM(MSG),'PARTITION % NX       = ', NML_OUTPUT_TYPE%PARTITION%NX
@@ -1290,11 +1412,11 @@ CONTAINS
     WRITE (NDSN,11) TRIM(MSG),'PARTITION % NY       = ', NML_OUTPUT_TYPE%PARTITION%NY
     WRITE (NDSN,13) TRIM(MSG),'PARTITION % FORMAT   = ', NML_OUTPUT_TYPE%PARTITION%FORMAT
 #ifdef W3_COU
-    WRITE (NDSN,10) TRIM(MSG),'COUPLING % SENT         = ', TRIM(NML_OUTPUT_TYPE%COUPLING%SENT)
-    WRITE (NDSN,10) TRIM(MSG),'COUPLING % RECEIVED     = ', TRIM(NML_OUTPUT_TYPE%COUPLING%RECEIVED)
-    WRITE (NDSN,13) TRIM(MSG),'COUPLING % COUPLET0     = ', NML_OUTPUT_TYPE%COUPLING%COUPLET0
+    WRITE (NDSN,10) TRIM(MSG),'COUPLING  % SENT     = ', TRIM(NML_OUTPUT_TYPE%COUPLING%SENT)
+    WRITE (NDSN,10) TRIM(MSG),'COUPLING  % RECEIVED = ', TRIM(NML_OUTPUT_TYPE%COUPLING%RECEIVED)
+    WRITE (NDSN,13) TRIM(MSG),'COUPLING  % COUPLET0 = ', NML_OUTPUT_TYPE%COUPLING%COUPLET0
 #endif
-    WRITE (NDSN,10) TRIM(MSG),'RESTART % EXTRA      = ', TRIM(NML_OUTPUT_TYPE%RESTART%EXTRA)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART   % EXTRA    = ', TRIM(NML_OUTPUT_TYPE%RESTART%EXTRA)
 
 10  FORMAT (A,2X,A,A)
 11  FORMAT (A,2X,A,I8)
@@ -1387,37 +1509,130 @@ CONTAINS
 
     WRITE (MSG,'(A)') 'OUTPUT DATE MODEL GRID % '
     WRITE (NDSN,'(A)')
-    WRITE (NDSN,10) TRIM(MSG),'FIELD % START        = ', TRIM(NML_OUTPUT_DATE%FIELD%START)
-    WRITE (NDSN,10) TRIM(MSG),'FIELD % STRIDE       = ', TRIM(NML_OUTPUT_DATE%FIELD%STRIDE)
-    WRITE (NDSN,10) TRIM(MSG),'FIELD % STOP         = ', TRIM(NML_OUTPUT_DATE%FIELD%STOP)
-    WRITE (NDSN,10) TRIM(MSG),'POINT % START        = ', TRIM(NML_OUTPUT_DATE%POINT%START)
-    WRITE (NDSN,10) TRIM(MSG),'POINT % STRIDE       = ', TRIM(NML_OUTPUT_DATE%POINT%STRIDE)
-    WRITE (NDSN,10) TRIM(MSG),'POINT % STOP         = ', TRIM(NML_OUTPUT_DATE%POINT%STOP)
-    WRITE (NDSN,10) TRIM(MSG),'TRACK % START        = ', TRIM(NML_OUTPUT_DATE%TRACK%START)
-    WRITE (NDSN,10) TRIM(MSG),'TRACK % STRIDE       = ', TRIM(NML_OUTPUT_DATE%TRACK%STRIDE)
-    WRITE (NDSN,10) TRIM(MSG),'TRACK % STOP         = ', TRIM(NML_OUTPUT_DATE%TRACK%STOP)
-    WRITE (NDSN,10) TRIM(MSG),'RESTART % START      = ', TRIM(NML_OUTPUT_DATE%RESTART%START)
-    WRITE (NDSN,10) TRIM(MSG),'RESTART % STRIDE     = ', TRIM(NML_OUTPUT_DATE%RESTART%STRIDE)
-    WRITE (NDSN,10) TRIM(MSG),'RESTART % STOP       = ', TRIM(NML_OUTPUT_DATE%RESTART%STOP)
-    WRITE (NDSN,10) TRIM(MSG),'RESTART2 % START      = ', TRIM(NML_OUTPUT_DATE%RESTART2%START)
-    WRITE (NDSN,10) TRIM(MSG),'RESTART2 % STRIDE     = ', TRIM(NML_OUTPUT_DATE%RESTART2%STRIDE)
-    WRITE (NDSN,10) TRIM(MSG),'RESTART2 % STOP       = ', TRIM(NML_OUTPUT_DATE%RESTART2%STOP)
-    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY % START     = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%START)
-    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY % STRIDE    = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STRIDE)
-    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY % STOP      = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'FIELD     % START    = ', TRIM(NML_OUTPUT_DATE%FIELD%START)
+    WRITE (NDSN,10) TRIM(MSG),'FIELD     % STRIDE   = ', TRIM(NML_OUTPUT_DATE%FIELD%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'FIELD     % STOP     = ', TRIM(NML_OUTPUT_DATE%FIELD%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'POINT     % START    = ', TRIM(NML_OUTPUT_DATE%POINT%START)
+    WRITE (NDSN,10) TRIM(MSG),'POINT     % STRIDE   = ', TRIM(NML_OUTPUT_DATE%POINT%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'POINT     % STOP     = ', TRIM(NML_OUTPUT_DATE%POINT%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'TRACK     % START    = ', TRIM(NML_OUTPUT_DATE%TRACK%START)
+    WRITE (NDSN,10) TRIM(MSG),'TRACK     % STRIDE   = ', TRIM(NML_OUTPUT_DATE%TRACK%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'TRACK     % STOP     = ', TRIM(NML_OUTPUT_DATE%TRACK%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART   % START    = ', TRIM(NML_OUTPUT_DATE%RESTART%START)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART   % STRIDE   = ', TRIM(NML_OUTPUT_DATE%RESTART%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART   % STOP     = ', TRIM(NML_OUTPUT_DATE%RESTART%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART2  % START    = ', TRIM(NML_OUTPUT_DATE%RESTART2%START)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART2  % STRIDE   = ', TRIM(NML_OUTPUT_DATE%RESTART2%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'RESTART2  % STOP     = ', TRIM(NML_OUTPUT_DATE%RESTART2%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY  % START    = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%START)
+    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY  % STRIDE   = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'BOUNDARY  % STOP     = ', TRIM(NML_OUTPUT_DATE%BOUNDARY%STOP)
     WRITE (NDSN,10) TRIM(MSG),'PARTITION % START    = ', TRIM(NML_OUTPUT_DATE%PARTITION%START)
     WRITE (NDSN,10) TRIM(MSG),'PARTITION % STRIDE   = ', TRIM(NML_OUTPUT_DATE%PARTITION%STRIDE)
     WRITE (NDSN,10) TRIM(MSG),'PARTITION % STOP     = ', TRIM(NML_OUTPUT_DATE%PARTITION%STOP)
 #ifdef W3_COU
-    WRITE (NDSN,10) TRIM(MSG),'COUPLING % START    = ', TRIM(NML_OUTPUT_DATE%COUPLING%START)
-    WRITE (NDSN,10) TRIM(MSG),'COUPLING % STRIDE   = ', TRIM(NML_OUTPUT_DATE%COUPLING%STRIDE)
-    WRITE (NDSN,10) TRIM(MSG),'COUPLING % STOP     = ', TRIM(NML_OUTPUT_DATE%COUPLING%STOP)
+    WRITE (NDSN,10) TRIM(MSG),'COUPLING  % START    = ', TRIM(NML_OUTPUT_DATE%COUPLING%START)
+    WRITE (NDSN,10) TRIM(MSG),'COUPLING  % STRIDE   = ', TRIM(NML_OUTPUT_DATE%COUPLING%STRIDE)
+    WRITE (NDSN,10) TRIM(MSG),'COUPLING  % STOP     = ', TRIM(NML_OUTPUT_DATE%COUPLING%STOP)
 #endif
 
 
 10  FORMAT (A,2X,A,A)
 
   END SUBROUTINE REPORT_OUTPUT_DATE_NML
+
+  !/ ------------------------------------------------------------------- /
+
+
+
+
+
+
+  !/ ------------------------------------------------------------------- /
+
+  SUBROUTINE REPORT_OUTPUT_PATH_NML (NML_OUTPUT_PATH)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           M. Chen                 |
+    !/                  |                                   |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         13-Jan-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/
+    !  1. Purpose :
+    !
+    !
+    !  2. Method :
+    !
+    !     See source term routines.
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !      NML_OUTPUT_PATH   Type.
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      STRACE    Subr. W3SERVMD SUBROUTINE tracing.
+    !     ----------------------------------------------------------------
+    !
+    !  5. Called by :
+    !
+    !      Name      Type  Module   Description
+    !     ----------------------------------------------------------------
+    !      W3NMLSHEL Subr.   N/A    Namelist configuration routine.
+    !     ----------------------------------------------------------------
+    !
+    !  6. Error messages :
+    !
+    !     None.
+    !
+    !  7. Remarks :
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     !/MPI  Uses MPI communications
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+
+#ifdef W3_S
+    USE W3SERVMD, ONLY: STRACE
+#endif
+
+    IMPLICIT NONE
+
+    TYPE(NML_OUTPUT_PATH_T), INTENT(IN) :: NML_OUTPUT_PATH
+
+    ! LOCALS
+#ifdef W3_S
+    INTEGER, SAVE                           :: IENT = 0
+#endif
+
+#ifdef W3_S
+    CALL STRACE (IENT, 'REPORT_OUTPUT_PATH_NML')
+#endif
+
+    WRITE (MSG,'(A)') 'OUTPUT PATH % '
+    WRITE (NDSN,'(A)')
+    WRITE (NDSN,10) TRIM(MSG),'GRD_OUT         = ', TRIM(NML_OUTPUT_PATH%GRD_OUT)
+    WRITE (NDSN,10) TRIM(MSG),'PNT_OUT         = ', TRIM(NML_OUTPUT_PATH%PNT_OUT)
+    WRITE (NDSN,10) TRIM(MSG),'RST_OUT         = ', TRIM(NML_OUTPUT_PATH%RST_OUT)
+
+10  FORMAT (A,2X,A,A)
+
+  END SUBROUTINE REPORT_OUTPUT_PATH_NML	
 
   !/ ------------------------------------------------------------------- /
 

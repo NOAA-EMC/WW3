@@ -269,7 +269,7 @@ PROGRAM W3SHEL
 #endif
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
   USE W3ODATMD, ONLY: NAPROC, IAPROC, NAPOUT, NAPERR, NOGRP,      &
-       NGRPP, IDOUT, FNMPRE, IOSTYP, NOTYPE
+       NGRPP, IDOUT, FNMPRE, FNMGRD, FNMPNT, FNMRST, IOSTYP, NOTYPE
   USE W3ODATMD, ONLY: FLOGRR, FLOGR, OFILES
   !/
   USE W3FLDSMD
@@ -326,6 +326,7 @@ PROGRAM W3SHEL
   TYPE(NML_INPUT_T)        :: NML_INPUT
   TYPE(NML_OUTPUT_TYPE_T)  :: NML_OUTPUT_TYPE
   TYPE(NML_OUTPUT_DATE_T)  :: NML_OUTPUT_DATE
+  TYPE(NML_OUTPUT_PATH_T)  :: NML_OUTPUT_PATH
   TYPE(NML_HOMOG_COUNT_T)  :: NML_HOMOG_COUNT
   TYPE(NML_HOMOG_INPUT_T), ALLOCATABLE  :: NML_HOMOG_INPUT(:)
   !
@@ -398,6 +399,9 @@ PROGRAM W3SHEL
 #endif
   character(len=10)   :: jchar
   integer             :: memunit
+
+  LOGICAL                 :: DIR_EXISTS
+  INTEGER                 :: DIR_STATUS  
   !
   !/
   !/ ------------------------------------------------------------------- /
@@ -695,8 +699,8 @@ PROGRAM W3SHEL
   IF (FLGNML) THEN
     ! Read namelist
     CALL W3NMLSHEL (MPI_COMM, NDSI, TRIM(FNMPRE)//'ww3_shel.nml',  &
-         NML_DOMAIN, NML_INPUT, NML_OUTPUT_TYPE,        &
-         NML_OUTPUT_DATE, NML_HOMOG_COUNT,             &
+         NML_DOMAIN, NML_INPUT, NML_OUTPUT_TYPE,                   &
+         NML_OUTPUT_DATE, NML_OUTPUT_PATH, NML_HOMOG_COUNT,        &
          NML_HOMOG_INPUT, IERR)
 
     ! 2.1 forcing flags
@@ -1192,6 +1196,10 @@ PROGRAM W3SHEL
       !
     END IF ! FLHOM
 
+    ! USER DEFINED OUTPUT PATH FROM NAMELIST
+    FNMGRD = NML_OUTPUT_PATH%GRD_OUT
+    FNMPNT = NML_OUTPUT_PATH%PNT_OUT
+    FNMRST = NML_OUTPUT_PATH%RST_OUT
 
   END IF ! FLGNML
 
@@ -1986,7 +1994,7 @@ PROGRAM W3SHEL
 #ifdef W3_OASIS
          , .TRUE., .FALSE., MPI_COMM, TIMEN     &
 #endif
-         )
+        )
     !
     GOTO 2222
     !
