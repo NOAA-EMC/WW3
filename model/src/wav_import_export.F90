@@ -467,7 +467,6 @@ contains
       end if
     end if
 
-
     ! ---------------
     ! INFLAGS1(4) - ice fraction field
     ! ---------------
