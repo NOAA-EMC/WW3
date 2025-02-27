@@ -356,8 +356,8 @@ CONTAINS
          ICECOEF4, ICECOEF5, ICECOEF6, &
          ICECOEF7, ICECOEF8
 
-    REAL                    :: x1,x2,x3,x1sqr,x2sqr,x3sqr   !case 8
-    REAL                    :: perfour,amhb,bmhb            !case 8
+    REAL                    :: x1,x2,x3,x1sqr,x2sqr,x3sqr   !case 10
+    REAL                    :: perfour,amhb,bmhb            !case 10
 
     REAL                    :: KI1,KI2,KI3,KI4,FC5,FC6,FC7,FREQ
     REAL                    :: HS, EMEAN, HICE
@@ -556,7 +556,7 @@ CONTAINS
       END DO
       WN_I= 0.5 * ALPHA
 
-    CASE (8)
+    CASE (10)
       !CMB added option of cubic fit to Meylan, Horvat & Bitz in prep
       ! ICECOEF1 is thickness
       ! ICECOEF5 is floe size
