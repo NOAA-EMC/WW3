@@ -1698,7 +1698,7 @@ CONTAINS
 #endif
 #ifdef W3_TR1
         DO IS=IS1, NSPECH
-          eInc1 = VDTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
+          eInc1 = VSTR(IS) * DT / MAX ( 1. , (1.-HDT*VDTR(IS)))
           SPEC(IS) = MAX ( 0. , SPEC(IS)+eInc1 )
         END DO
 #endif
