@@ -54,6 +54,7 @@
 #            IC4METHOD = 8 - Meylan et al. (2018) ; Liu et al. (2020)       #
 #                            (NB: redundant with IC5+IC5VEMOD=3)            #
 #            IC4METHOD = 9 - RYW (2021) ; Yu et al. (2022)                  #
+#            IC4METHOD = 10 - Meylan et al. (2021)                          #
 #          IC5 = Choose from three different effective medium models        #
 #            IC5VEMOD  = 1 - Extended Fox and Squire model (EFS)            #
 #            IC5VEMOD  = 2 - Robinson and Palmer model (RP)                 #
@@ -100,6 +101,14 @@
 #            ...                                                            #
 #               'IC1' 19680606 000000   5.35E-6                             #
 #               'IC2' 19680606 000000   16.05E-6                            #
+#                                                                           #
+#      ------------> &SIC4 IC4METHOD = 10 /                                 #
+#            ...ICECOEF1, ICECOEF5 are required:                            #
+#               T T     Ice parameter 1                                     #
+#               T T     Ice parameter 5                                     #
+#            ...                                                            #
+#               'IC1' 19680606 000000   0.2                                 #
+#               'IC5' 19680606 000000   0.459                               #
 #                                                                           #
 #  Reference (w/plots): Rogers and Orzech, NRL Memorandum Report (2013)     #
 #  available from http://www7320.nrlssc.navy.mil/pubs.php                   #
