@@ -1697,7 +1697,7 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD
+    USE W3GDATMD, ONLY: GRIDS
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
@@ -1716,7 +1716,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !local parameters
 
-    DOUBLE PRECISION             :: x1, x2, x3
+    DOUBLE PRECISION             :: x1, x2, x3, XTINmod, xavg
     DOUBLE PRECISION             :: y1, y2, y3
     DOUBLE PRECISION             :: s1, s2, s3, sg1, sg2, sg3
     REAL*8                       :: PT(3,2)
@@ -1748,19 +1748,26 @@ CONTAINS
       !coordinates of the 3rd vertex C
       x3 = PT(3,1)
       y3 = PT(3,2)
-      !with M = (XTIN,YTIN) the target point ...
+      !ensure XTIN is defined with same coordinates as element 
+      xavg=(x1+x2+x3)/3 
+      IF (ABS(XTIN-xavg).GT.180) THEN 
+        XTINmod=XTIN-SIGN(360.0d0,(XTIN-xavg))
+      ELSE 
+        XTINmod=XTIN
+      END IF       
+      !with M = (XTINmod,YTIN) the target point ...
       !vector product of AB and AC
       sg3=(y3-y1)*(x2-x1)-(x3-x1)*(y2-y1)
       !vector product of AB and AM
-      s3=(YTIN-y1)*(x2-x1)-(XTIN-x1)*(y2-y1)
+      s3=(YTIN-y1)*(x2-x1)-(XTINmod-x1)*(y2-y1)
       !vector product of BC and BA
       sg1=(y1-y2)*(x3-x2)-(x1-x2)*(y3-y2)
       !vector product of BC and BM
-      s1=(YTIN-y2)*(x3-x2)-(XTIN-x2)*(y3-y2)
+      s1=(YTIN-y2)*(x3-x2)-(XTINmod-x2)*(y3-y2)
       !vector product of CA and CB
       sg2=(y2-y3)*(x1-x3)-(x2-x3)*(y1-y3)
       !vector product of CA and CM
-      s2=(YTIN-y3)*(x1-x3)-(XTIN-x3)*(y1-y3)
+      s2=(YTIN-y3)*(x1-x3)-(XTINmod-x3)*(y1-y3)
       IF ((s1*sg1.GE.0).AND.(s2*sg2.GE.0).AND.(s3*sg3.GE.0)) THEN
         itout=ITRI
         nbFound=nbFound+1
