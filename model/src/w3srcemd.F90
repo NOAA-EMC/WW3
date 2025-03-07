@@ -2124,6 +2124,12 @@ CONTAINS
         !
         ! Second part of ice term integration: scattering including re-distribution in directions
         !
+
+#ifdef W3_IS1
+        ! IS1 doesn't dissipate wave energy, it just redistribute the scattered energy to other directions
+        SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) + VSIR(IS)*DTMIN
+#endif
+
 #ifdef W3_IS2
         IF (IS2PARS(2).GE.0) THEN
           IF (IS2PARS(20).GT.0.5) THEN
