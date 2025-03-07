@@ -2127,7 +2127,7 @@ CONTAINS
 
 #ifdef W3_IS1
         ! IS1 doesn't dissipate wave energy, it just redistribute the scattered energy to other directions
-        SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) + VSIR(IS)*DTMIN
+        SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) = SPEC(1+(IK-1)*NTH:NTH+(IK-1)*NTH) + VSIR(IS)*DTG
 #endif
 
 #ifdef W3_IS2
