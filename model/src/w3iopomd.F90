@@ -1607,7 +1607,7 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_WRITE(timestep_only,filename, ncerr)
+  SUBROUTINE W3IOPON_WRITE(timestep_only,filename, ncerr, NDSOP, fname, path)
     USE NETCDF 
     USE W3GDATMD, ONLY: NTH, NK, NSPEC
     USE W3WDATMD, ONLY: TIME
@@ -1627,6 +1627,11 @@ CONTAINS
     integer, intent(in) :: timestep_only ! 1 if only timestep should be written.
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
+    !
+    INTEGER, INTENT(IN), OPTIONAL :: NDSOP
+    CHARACTER(LEN=124), INTENT(IN), OPTIONAL :: fname
+    CHARACTER(LEN=256), INTENT(IN), OPTIONAL :: path
+    !
     integer :: ndim, nvar, fmt, itime, fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time
@@ -1641,6 +1646,10 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
     integer :: curdate(8), refdate(8),ierr
     double precision :: outjulday
+
+
+    ! INDICATOR LOG
+    INTEGER :: NDSOPLOG
 
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
@@ -1902,6 +1911,17 @@ CONTAINS
     ncerr = nf90_close(fh)
     if (nf90_err(ncerr) .ne. 0) return
 
+    ! WRITE INDICATOR LOG AT THE END OF NETCDF OUTPUT
+    ! RE-USE NDSOP FOR NDSOPLOG
+    IF (timestep_only .EQ. 1) THEN
+      NDSOPLOG = NDSOP
+      OPEN(NDSOPLOG,FILE=path(:LEN_TRIM(path))//'log.'//TRIM(fname)//'.txt', &
+               form ='FORMATTED')
+      WRITE (NDSOPLOG,*) 'The '//TRIM(fname)//' file has been successfully written!'
+      CALL FLUSH (NDSOPLOG)
+      CLOSE (NDSOPLOG)
+    ENDIF
+
   END SUBROUTINE W3IOPON_WRITE
 
   !> Read or write the netCDF point output file,
@@ -1949,12 +1969,12 @@ CONTAINS
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
     CHARACTER(LEN=15) :: TIMETAG
     INTEGER :: IGRD
-    character(len = 124) :: filename
+    character(len = 256) :: filename
     integer :: ncerr
 
     ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
     CHARACTER(LEN=256)       :: FNMPRE_LOCAL
-
+    CHARACTER(LEN=124)       :: FNAME
 #ifdef W3_S
     CALL STRACE (IENT, 'W3IOPON')
 #endif
@@ -1985,8 +2005,8 @@ CONTAINS
     ! Determine filename.
     IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
       FNMPRE_LOCAL = FNMPRE
-	ELSE
-	  FNMPRE_LOCAL = FNMPNT
+    ELSE
+      FNMPRE_LOCAL = FNMPNT
     END IF
     !
     
@@ -1994,6 +2014,7 @@ CONTAINS
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
       WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
       filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+      FNAME = TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))
     ELSE 
       filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF 
@@ -2006,7 +2027,7 @@ CONTAINS
         CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
       END IF
     ELSE
-      CALL W3IOPON_WRITE(OFILES(2), filename, ncerr)
+      CALL W3IOPON_WRITE(OFILES(2), filename, ncerr, NDSOP=NDSOP, fname=FNAME, path=FNMPRE_LOCAL)
     ENDIF
     if (nf90_err(ncerr) .ne. 0) then
       WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO :'
@@ -2233,7 +2254,7 @@ CONTAINS
 
     ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
     CHARACTER(LEN=256)       :: FNMPRE_LOCAL
-	
+
     !/
     !/ ------------------------------------------------------------------- /
     !/
