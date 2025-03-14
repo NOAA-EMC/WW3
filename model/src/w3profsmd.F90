@@ -677,7 +677,7 @@ CONTAINS
         U(IP) = MAX(0.d0,U(IP)-DTSI(IP)*ST(IP)*(1-IOBPA(IP)))*DBLE(IOBPD(ITH,IP))
 
 #ifdef W3_REF1
-        WRITE(10111,*) REFPARS(3), IOBPD(ITH,IP), IOBPA(IP), U(IP),  AC(IP)
+        ! WRITE(10111,*) REFPARS(3), IOBPD(ITH,IP), IOBPA(IP), U(IP),  AC(IP)
         IF (REFPARS(3).LT.0.5.AND.IOBPD(ITH,IP).EQ.0.AND.IOBPA(IP).EQ.0) THEN
           U(IP) = AC(IP) ! restores reflected boundary values
         ENDIF
