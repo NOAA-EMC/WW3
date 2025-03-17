@@ -1498,11 +1498,6 @@ CONTAINS
 
       !
       DT     = MAX ( 0.5, DT ) ! The hardcoded min. dt is a problem for certain cases e.g. laborotary scale problems.
-      IF ( IC_NUMERICS .AND. ICE .GT. 0.01 .and. ICE .LT. 0.95) THEN
-#if defined(W3_IC1) || defined(W3_IC2) || defined(W3_IC3) || defined(W3_IC4) || defined(W3_IC5)
-         DT=DTMIN ! always use a small timestep in ice 
-#endif
-      ENDIF
       !
       DTDYN  = DTDYN + DT
 #ifdef W3_T
