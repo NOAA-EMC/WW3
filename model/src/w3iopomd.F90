@@ -1317,7 +1317,7 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_READ(IOTST, IMOD_IN, filename, ncerr)
+  SUBROUTINE W3IOPON_READ(IOTST, IMOD_IN, filename, ncerr, TOUT )
     USE NetCDF
     USE W3ODATMD, ONLY: W3DMO2
     USE W3WDATMD, ONLY: TIME
@@ -1337,10 +1337,13 @@ CONTAINS
 
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD_IN
-    character(*), intent(in) :: filename
+    character(*), intent(out) :: filename
     integer, intent(inout) :: ncerr
+    INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
+    CHARACTER(LEN=15) :: TIMETAG
+    LOGICAL :: per_time_step
     INTEGER :: IGRD,MK,MTH
-    integer :: fh
+    integer :: fh, itime
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time, d_ww3time
     integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len, d_ww3time_len
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time 
@@ -1363,6 +1366,15 @@ CONTAINS
       IGRD = IMOD_IN
     ELSE
       IGRD = 1
+    END IF
+
+    ! Determine if we are reading a per-time-step file
+    per_time_step = PRESENT(TOUT)
+    IF (per_time_step) THEN
+      WRITE(TIMETAG, '(I8.8, ".", I6.6)') TOUT(1), TOUT(2)
+      filename = TRIM(FNMPRE) // TRIM(TIMETAG) // '.out_pnt.' // TRIM(FILEXT) // '.nc'
+    ELSE
+      filename = FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF
 
     ! Open the netCDF file.
@@ -1424,11 +1436,16 @@ CONTAINS
     if (nf90_err(ncerr) .ne. 0) return
     ncerr = nf90_inquire_dimension(fh, d_time, len = d_time_len)
     if (nf90_err(ncerr) .ne. 0) return
+    
+    !Determine the start for the time dimension
+    IF ( per_time_step ) THEN
+      itime=1
+    ELSE
+      itime=IPASS
+    END IF
 
-    IF ( IPASS .LE. d_time_len ) THEN 
-
-      IF ( IPASS.EQ.1 ) THEN
-
+    IF ( itime .LE. d_time_len ) THEN
+      IF ( itime.EQ.1 ) THEN
         ! Read scalar variables.
         ncerr = nf90_inq_varid(fh, VNAME_NK, v_nk)
         if (nf90_err(ncerr) .ne. 0) return
@@ -1440,33 +1457,32 @@ CONTAINS
         if (nf90_err(ncerr) .ne. 0) return
 
         !read in written variables NK, NTH as MK and MTH
-        !and ensure they match 
+        !and ensure they match
         IF (NK.NE.MK .OR. NTH.NE.MTH) THEN
           WRITE (NDSE,904) MK, MTH, NK, NTH
           CALL EXTCDE ( 12 )
         END IF
 
-        ! Allocate variables: 
+        ! Allocate variables:
         IF ( .NOT. O2INIT )                                     &
-           CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
+          CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
 
         ! Read vars with nopts as a dimension.
         ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
         if (nf90_err(ncerr) .ne. 0) return
         ncerr = nf90_get_var(fh, v_ptloc, PTLOC, start = (/ 1, 1/), &
-          count = (/ d_vsize_len, d_nopts_len /)) 
+            count = (/ d_vsize_len, d_nopts_len /))
         if (nf90_err(ncerr) .ne. 0) return
         ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
         if (nf90_err(ncerr) .ne. 0) return
         ncerr = nf90_get_var(fh, v_ptnme, PTNME)
         if (nf90_err(ncerr) .ne. 0) return
-      END IF
-
-      !Variables read based on time (IPASS): 
-
+      END IF      
+        
+      !Variables read based on time (itime):      
       ncerr = nf90_inq_varid(fh, VNAME_WW3TIME, v_ww3time)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ww3time, TIME, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_ww3time, TIME, start = (/ 1, itime/), &
           count = (/ d_vsize_len, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 
@@ -1479,89 +1495,88 @@ CONTAINS
 
       ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_dpo, DPO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_dpo, DPO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_wao, WAO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_wao, WAO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_WDO, v_wdo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_wdo, WDO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_wdo, WDO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 #ifdef W3_FLX5
       ncerr = nf90_inq_varid(fh, VNAME_TAUAO, v_tauao)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_tauao, TAUAO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_tauao, TAUAO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_TAUDO, v_taudo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_taudo, TAUDO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_taudo, TAUDO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_DAIRO, v_dairo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_dairo, DAIRO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_dairo, DAIRO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 #endif
 #ifdef W3_SETUP
       ncerr = nf90_inq_varid(fh, ZET_SETO, v_zet_seto)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_zet_seto, ZET_SETO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_zet_seto, ZET_SETO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 #endif
       ncerr = nf90_inq_varid(fh, VNAME_ASO, v_aso)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_aso, ASO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_aso, ASO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_CAO, v_cao)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_cao, CAO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_cao, CAO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_CDO, v_cdo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_cdo, CDO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_cdo, CDO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_iceo, ICEO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_iceo, ICEO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_ICEHO, v_iceho)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_iceho, ICEHO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_iceho, ICEHO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_ICEFO, v_icefo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_icefo, ICEFO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_icefo, ICEFO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_grdid, GRDID, start = (/ 1, 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_grdid, GRDID, start = (/ 1, 1, itime/), &
           count = (/ 13, nopts, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_spco, SPCO, start = (/ 1, 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_spco, SPCO, start = (/ 1, 1, itime/), &
           count = (/nspec, nopts, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
-
     ELSE 
       ! Set flag to indicate IPASS > d_time_len 
       ! and are at the end of the
       IOTST  = -1
-    END IF 
+    END IF
 
     ! Close the file.
     ncerr = nf90_close(fh)
@@ -1932,7 +1947,7 @@ CONTAINS
   !> @param[in] IMOD Model number for W3GDAT etc.
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
-  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD)
+  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD, TOUT )
     USE W3GDATMD, ONLY: W3SETG
     USE W3WDATMD, ONLY: W3SETW
     USE W3ODATMD, ONLY: W3SETO
@@ -1950,8 +1965,8 @@ CONTAINS
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
     INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
+    INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
-
     CHARACTER(LEN=15) :: TIMETAG
     INTEGER :: IGRD
     character(len = 256) :: filename
@@ -2006,7 +2021,11 @@ CONTAINS
 
     ! Do a read or a write of the point file.
     IF (INXOUT .EQ. 'READ') THEN
-      CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
+      IF (PRESENT(TOUT)) THEN
+        CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr, TOUT)
+      ELSE
+        CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
+      END IF
     ELSE
       CALL W3IOPON_WRITE(OFILES(2), filename, ncerr, NDSOP=NDSOP, fname=FNAME, path=FNMPRE_LOCAL)
     ENDIF
