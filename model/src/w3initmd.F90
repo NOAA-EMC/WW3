@@ -374,7 +374,7 @@ CONTAINS
     USE W3WDATMD, ONLY: W3SETW, W3DIMW
     USE W3ADATMD, ONLY: W3SETA, W3DIMA
     USE W3IDATMD, ONLY: W3SETI, W3DIMI
-    USE W3ODATMD, ONLY: W3SETO, W3DMO5
+    USE W3ODATMD, ONLY: W3SETO, W3DMO5, FNMRST
     USE W3IOGOMD, ONLY: W3FLGRDUPDT
     USE W3IOGRMD, ONLY: W3IOGR
     USE W3IORSMD, ONLY: W3IORS
@@ -969,9 +969,9 @@ CONTAINS
       if (runtype == 'continue' )then
         call set_user_timestring(time,user_timestring)
         if (restart_from_binary) then
-          fname = trim(user_restfname)//trim(user_timestring)
+          fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)
         else
-          fname = trim(user_restfname)//trim(user_timestring)//'.nc'
+          fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)//'.nc'
         endif
         inquire(file=trim(fname), exist=exists)
         if (exists) then
@@ -986,7 +986,7 @@ CONTAINS
       else
         if (restart_from_binary) then
           call set_user_timestring(time,user_timestring)
-          fname = trim(user_restfname)//trim(user_timestring)
+          fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)
           inquire(file=trim(fname), exist=exists)
           if (exists) then
             call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))

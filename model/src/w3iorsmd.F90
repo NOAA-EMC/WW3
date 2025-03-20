@@ -474,7 +474,8 @@ CONTAINS
       ELSE
         FNMPRE_LOCAL = FNMRST
       END IF
-      
+
+
       I      = LEN_TRIM(FILEXT)
       J      = LEN_TRIM(FNMPRE_LOCAL)
       !

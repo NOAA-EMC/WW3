@@ -2382,7 +2382,7 @@ CONTAINS
         if (use_restartnc) then
           if (rstwr) then
             call set_user_timestring(tend,user_timestring)
-            fname = trim(user_restfname)//trim(user_timestring)//'.nc'
+            fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)//'.nc'
             call write_restart(trim(fname), va, mapsta+8*mapst2)
           end if
         end if

@@ -1646,6 +1646,8 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
     integer :: curdate(8), refdate(8),ierr
     double precision :: outjulday
+    ! unit number for log file
+    INTEGER :: NDSOPLOG
 
 
     ! INDICATOR LOG
@@ -1975,6 +1977,8 @@ CONTAINS
     ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
     CHARACTER(LEN=256)       :: FNMPRE_LOCAL
     CHARACTER(LEN=124)       :: FNAME
+
+
 #ifdef W3_S
     CALL STRACE (IENT, 'W3IOPON')
 #endif
