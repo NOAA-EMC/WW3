@@ -312,7 +312,7 @@ CONTAINS
     USE W3IDATMD, ONLY: WXNwrst, WYNwrst
 #endif
     USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
-         IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP,    &
+         IFILE => IFILE4, FNMPRE, FNMRST, NTPROC, IOSTYP,    &
          FLOGRR, NOGRP, NGRPP, SCREEN
 #ifdef W3_MPI
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
@@ -384,6 +384,10 @@ CONTAINS
     CHARACTER(LEN=26)       :: IDTST
     CHARACTER(LEN=30)       :: TNAME
     CHARACTER(LEN=15)       :: TIMETAG
+
+    ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
+    CHARACTER(LEN=256)       :: FNMPRE_LOCAL
+
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -465,8 +469,14 @@ CONTAINS
       open (ndsr,file=trim(filename),form='unformatted', convert=file_endian, &
            access='stream',err=800,iostat=ierr, status='old',action='read')
     else
+      IF (LEN_TRIM(FNMRST) .EQ. 0) THEN
+        FNMPRE_LOCAL = FNMPRE
+      ELSE
+        FNMPRE_LOCAL = FNMRST
+      END IF
+      
       I      = LEN_TRIM(FILEXT)
-      J      = LEN_TRIM(FNMPRE)
+      J      = LEN_TRIM(FNMPRE_LOCAL)
       !
       !CHECKPOINT RESTART FILE
       ITMP=0
