@@ -80,7 +80,7 @@
 #     + switch_PR3_UQ_MPI_SCRIPNC                                           #
 #     + switch_PR3_UNO_MPI_SCRIP_T38                                        #
 #     + switch_PR3_UQ_MPI_SCRIP_T38                                         #
-#     + switch_PR3_UNO_MPI_SCRIP_SCRIPMPI                                   #
+#     + switch_PR3_UNO_SCRIPMPI : Using SCRIP parallelized with MPI         #
 #                                                                           #
 #  Example run_test commands:                                               #
 #  (some details will vary by local system and configuration)               #
