@@ -574,7 +574,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS
     ! DERA: Degrees to Radians (PI/180)
-    ! RADE: Radius of the Earth
+    ! RADE: Radians to Degrees (180/PI)
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
