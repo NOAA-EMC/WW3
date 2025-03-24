@@ -27,7 +27,7 @@ PROGRAM W3BOUNC
   !/                  |           M. Accensi              |
   !/                  |           D. A. Honegger          |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :          02-Jan-2025|
+  !/                  | Last update :         02-Jan-2025 |
   !/                  +-----------------------------------+
   !/
   !/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
