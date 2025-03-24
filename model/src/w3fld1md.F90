@@ -550,9 +550,13 @@ CONTAINS
           TAUDIR=atan2(TAUY, TAUX)
           ! Note: add another criterion (stress direction) for iteration.
           CRIT1=(ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1
-          CRIT2=(ABS(TAUDIR-TAUDIRB)*100.0/(TAUDIR+TAUDIRB)*0.5) .GT. 0.1
+          IF ((TAUDIR+TAUDIRB).NE.0.) THEN
+              CRIT2=(ABS(TAUDIR-TAUDIRB)*100.0/(TAUDIR+TAUDIRB)*0.5) .GT. 0.1
+          ELSE
+              CRIT2=.TRUE.
+          ENDIF
           IF (CRIT1 .OR. CRIT2) THEN
-            !            IF ((ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1) THEN
+            !    IF ((ABS(USTAR-USTRB)*100.0)/((USTAR+USTRB)*0.5) .GT. 0.1) THEN
             USTRB=USTAR
             TAUDIRB=TAUDIR
             CTR=CTR+1
