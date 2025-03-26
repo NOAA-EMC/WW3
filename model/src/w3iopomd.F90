@@ -1646,9 +1646,6 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
     integer :: curdate(8), refdate(8),ierr
     double precision :: outjulday
-    ! unit number for log file
-    INTEGER :: NDSOPLOG
-
 
     ! INDICATOR LOG
     INTEGER :: NDSOPLOG
