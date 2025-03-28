@@ -9,7 +9,7 @@
 !> @date 01-05-2022
 module wav_shel_inp
 
-  use w3odatmd, only: nogrp, ngrpp
+  use w3odatmd, only: nogrp, ngrpp, FNMGRD, FNMPNT, FNMRST
 
   implicit none
   private ! except
@@ -110,7 +110,7 @@ contains
   subroutine read_shel_config(mpi_comm, mds, time0_overwrite, timen_overwrite, rstfldlist)
 
     use wav_shr_flags
-    use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
+    use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t, nml_output_path_t
     use w3nmlshelmd    , only : nml_output_date_t, nml_homog_count_t, nml_homog_input_t
     use w3nmlshelmd    , only : w3nmlshel
     use w3gdatmd       , only : flagll, dtmax, nx, ny, gtype
@@ -147,6 +147,7 @@ contains
     type(nml_input_t)        :: nml_input
     type(nml_output_type_t)  :: nml_output_type
     type(nml_output_date_t)  :: nml_output_date
+    type(nml_output_path_t)  :: nml_output_path
     type(nml_homog_count_t)  :: nml_homog_count
     type(nml_homog_input_t), allocatable  :: nml_homog_input(:)
 
@@ -274,7 +275,7 @@ contains
       !--------------------
 
       call w3nmlshel (mpi_comm, ndsi, trim(fnmpre)//'ww3_shel.nml', nml_domain, nml_input, &
-           nml_output_type, nml_output_date, nml_homog_count, nml_homog_input, ierr)
+           nml_output_type, nml_output_date, nml_output_path, nml_homog_count, nml_homog_input, ierr)
 
       !--------------------
       ! 2.1 forcing flags
@@ -768,6 +769,25 @@ contains
              ( flh(10) .and. (nh(10).eq.0) ) ) goto 2007
 
       end if ! flhom
+
+      !--------------------
+      ! 2.7 User-defined directory
+      !--------------------
+
+      FNMGRD = trim(nml_output_path%grd_out)
+      if (FNMGRD(len_trim(FNMGRD):len_trim(FNMGRD)) /= '/') then
+        FNMGRD = trim(FNMGRD) // '/'
+      end if
+
+      FNMPNT = trim(nml_output_path%pnt_out)
+      if (FNMPNT(len_trim(FNMPNT):len_trim(FNMPNT)) /= '/') then
+        FNMPNT = trim(FNMPNT) // '/'
+      end if
+
+      FNMRST = trim(nml_output_path%rst_out)
+      if (FNMRST(len_trim(FNMRST):len_trim(FNMRST)) /= '/') then
+        FNMRST = trim(FNMRST) // '/'
+      end if
 
     end if ! flgnml
 
