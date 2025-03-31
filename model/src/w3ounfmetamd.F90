@@ -3639,14 +3639,14 @@ CONTAINS
     ! IFI=6, IFJ=9, P2L
     META => GROUP(6)%FIELD(9)%META
     ! Information for spectral microseismic generation data (2nd file)
-    META(1)%FSC = 0.0004
     META(1)%VARNM='p2l'
     META(1)%VARNL='base ten logarithm of power spectral density of equivalent surface pressure'
     !META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
     META(1)%VARNS=''
     META(1)%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
-    IF (NCVARTYPE.EQ.2) THEN
+    IF (NCVARTYPE.LE.3) THEN
       META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
+      META(1)%FSC = 0.0004
       META(1)%VMIN = -12.
       META(1)%VMAX = 12.
     ELSE
