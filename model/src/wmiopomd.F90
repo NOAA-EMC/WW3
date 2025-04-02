@@ -500,7 +500,7 @@ CONTAINS
 #endif
       !
 #ifdef W3_SHRD
-      CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
+      CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J, 1)
 #endif
       !
       ! 3.d.2 Distributed memory version
@@ -535,7 +535,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-        CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
+        CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J, MPI_COMM_MWAVE)
 #endif
         !
 #ifdef W3_MPI
