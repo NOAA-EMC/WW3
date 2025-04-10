@@ -110,7 +110,7 @@ contains
     character(len=16)   :: user_timestring    !YYYY-MM-DD-SSSSS
     ! indicator logfile
     character(len=256)  :: log_fname          ! log file name
-    integer             :: log_unit = 28888   ! unit number for log file
+    integer             :: log_unit           ! unit number for log file
 
     integer :: n, xtid, ytid, xeid, ztid, stid, mtid, ptid, ktid, timid, nmode
     integer :: len_s, len_m, len_p, len_k
@@ -455,7 +455,7 @@ contains
     ! create indicator log file after NetCDF file is written
     if (iaproc == 1) then   ! only root processor writes the log file
       ! open the log file and write the complete message
-      open(unit=log_unit, file=trim(log_fname), form='FORMATTED')
+      open(newunit=log_unit, file=trim(log_fname), form='FORMATTED')
       write(log_unit, *) 'The '//trim(fname)//' file has been successfully written!'
       call flush(log_unit)
       close(log_unit)
