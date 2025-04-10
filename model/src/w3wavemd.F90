@@ -610,6 +610,7 @@ CONTAINS
     integer            :: memunit
     character(len=16)  :: user_timestring    !YYYY-MM-DD-SSSSS
     character(len=256) :: fname
+    character(len=256) :: log_fname
     !/ ------------------------------------------------------------------- /
     ! 0.  Initializations
     !
@@ -2383,7 +2384,8 @@ CONTAINS
           if (rstwr) then
             call set_user_timestring(tend,user_timestring)
             fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)//'.nc'
-            call write_restart(trim(fname), va, mapsta+8*mapst2)
+            log_fname = trim(FNMRST)//'log.'//trim(user_restfname)//trim(user_timestring)//'.nc.txt'
+            call write_restart(trim(fname), va, mapsta+8*mapst2, trim(log_fname))
           end if
         end if
 
