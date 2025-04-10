@@ -2015,7 +2015,7 @@ CONTAINS
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
       WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
       filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
-      FNAME = TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+      FNAME = TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))
     ELSE 
       filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF 
