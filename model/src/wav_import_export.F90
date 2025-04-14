@@ -680,7 +680,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) /= 0 .and. HS(jsea) > zero .and. &
+        if (mapsta(iy,ix) == 1 .and. HS(jsea) > zero .and. &
             sqrt(USSX(jsea)**2+USSY(jsea)**2)>zero .and. sqrt(USSHX(jsea)**2+USSHY(jsea)**2)>zero ) then
            sww = atan2(USSHY(jsea),USSHX(jsea)) - UD(isea)
            alphal = atan( sin(sww) / (                                       &
@@ -708,7 +708,7 @@ contains
          isea = iaproc + (jsea-1)*naproc
          ix  = mapsf(isea,1)
          iy  = mapsf(isea,2)
-         if (mapsta(iy,ix) /= 0) then
+         if (mapsta(iy,ix) == 1) then
             ! note: an arbitrary minimum value of 0.2 is set to avoid zero
             !       Langmuir number which may result from zero surface friction
             !       velocity but may cause unphysically strong Langmuir mixing
@@ -729,7 +729,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) /= 0) then
+        if (mapsta(iy,ix) == 1) then
           sw_ustokes(jsea) = USSX(jsea)
         else
           sw_ustokes(jsea) = 0.
@@ -744,7 +744,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)
         iy  = mapsf(isea,2)
-        if (mapsta(iy,ix) /= 0) then
+        if (mapsta(iy,ix) == 1) then
           sw_vstokes(jsea) = USSY(jsea)
         else
           sw_vstokes(jsea) = 0.
