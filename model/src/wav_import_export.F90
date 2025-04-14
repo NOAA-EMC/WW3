@@ -1183,8 +1183,8 @@ contains
       ix = mapsf(isea,1)
       iy = mapsf(isea,2)
       if ( firstCall ) then
-        if(( runtype == 'initial'  .and.     mapsta(iy,ix)  /= 0 ) .or. &
-             ( runtype == 'continue' .and. abs(mapsta(iy,ix)) /= 0 )) then
+        if(( runtype == 'initial'  .and.     mapsta(iy,ix)  == 1 ) .or. &
+             ( runtype == 'continue' .and. abs(mapsta(iy,ix)) == 1 )) then
           charn(jsea) = zero
           llws(:) = .true.
           ustar = zero
@@ -1323,7 +1323,7 @@ contains
         call init_get_isea(isea, jsea)
         ix  = mapsf(isea,1)                   ! global ix
         iy  = mapsf(isea,2)                   ! global iy
-        if (mapsta(iy,ix) /= 0) then          ! active sea point
+        if (mapsta(iy,ix) == 1) then          ! active sea point
           factor = dden(ik) / cg(ik,isea)
           ebd = ab(jsea) * factor
           ebd = ebd / dsii(ik)
