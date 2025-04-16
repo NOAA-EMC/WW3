@@ -494,7 +494,7 @@ CONTAINS
 #ifdef W3_PIO
     use wav_restart_mod , only : write_restart
     use wav_history_mod , only : write_history
-#endif    
+#endif
     use w3odatmd        , only : histwr, rstwr, use_historync, use_restartnc, user_restfname
     use w3odatmd        , only : verboselog
     use w3timemd        , only : set_user_timestring
@@ -2366,7 +2366,7 @@ CONTAINS
       !     Delay if data assimilation time.
       !
       !
-#ifdef W3_PIO      
+#ifdef W3_PIO
       if (dsec21(time,tend) == 0.0) then    ! req'd in case waves are running in slow loop
 
         if (use_historync) then

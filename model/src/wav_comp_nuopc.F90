@@ -47,15 +47,9 @@ module wav_comp_nuopc
   use w3odatmd              , only : runtype, user_histfname, user_restfname, verboselog
   use w3odatmd              , only : use_historync, use_restartnc, restart_from_binary, logfile_is_assigned
   use w3odatmd              , only : time_origin, calendar_name, elapsed_secs
-  use wav_shr_mod           , only : casename, multigrid, inst_suffix, inst_index, unstr_mesh
+  use wav_shr_mod           , only : casename, inst_suffix, inst_index, unstr_mesh
   use wav_wrapper_mod       , only : ufs_settimer, ufs_logtimer, ufs_file_setlogunit, wtime
 #ifndef W3_CESMCOUPLED
-  use wmwavemd              , only : wmwave
-  use wmupdtmd              , only : wmupd2
-  use wmmdatmd              , only : mdse, mdst, nrgrd, improc, nmproc, wmsetm, stime, etime
-  use wmmdatmd              , only : nmpscr
-  use w3updtmd              , only : w3uini
-  use w3adatmd              , only : flcold, fliwnd
   use shr_is_restart_fh_mod , only : init_is_restart_fh, is_restart_fh, is_restart_fh_type
 #endif
   use constants             , only : is_esmf_component
@@ -92,8 +86,6 @@ module wav_comp_nuopc
   logical :: cesmcoupled = .false.                         !< logical to indicate non-CESM use case
   type(is_restart_fh_type)     :: restartfh_info           ! For flexible restarts in UFS
 #endif
-  integer, allocatable :: tend(:,:)                        !< the ending time of ModelAdvance when
-                                                           !! run with multigrid=true
   integer :: ymd                                           !< current year-month-day
   integer :: tod                                           !< current time of day (sec)
   integer :: time0(2)                                      !< start time stored as yyyymmdd,hhmmss
@@ -201,8 +193,8 @@ contains
 
   !> @details Called by NUOPC to read configuration attributes and to advertise the
   !! import and export fields. The configuration attributes are used to control run
-  !! time settings, such as ESMF memory profiling, additional debug logging, multigrid
-  !! mode and character strings for specific use cases. A set of configuration attributes
+  !! time settings, such as ESMF memory profiling, additional debug logging
+  !! and character strings for specific use cases. A set of configuration attributes
   !! is also read to describe any scalar fields to be added to a state. For coupling
   !! with the wave model, only a scalar field for the dimensions of the wave model
   !! is required. The scalar field is added to the export state to communicate to the
@@ -348,16 +340,6 @@ contains
       inst_index=1
     endif
 
-    ! Get Multigrid setting
-    multigrid = .false.
-    call NUOPC_CompAttributeGet(gcomp, name='multigrid', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (isPresent .and. isSet) then
-      multigrid=(trim(cvalue)=="true")
-    end if
-    write(logmsg,'(A,l)') trim(subname)//': Wave multigrid setting is ',multigrid
-    call ESMF_LogWrite(trim(logmsg), ESMF_LOGMSG_INFO)
-
     ! Determine wave-ice coupling
     wav_coupling_to_cice = .false.
     call NUOPC_CompAttributeGet(gcomp, name='wav_coupling_to_cice', value=cvalue, isPresent=isPresent, &
@@ -426,10 +408,6 @@ contains
     use w3gdatmd        , only : rlgtype, ungtype, gtype
     use w3wdatmd        , only : va, time, w3ndat, w3dimw, w3setw
     use w3parall        , only : init_get_isea
-#ifndef W3_CESMCOUPLED
-    use wminitmd        , only : wminit, wminitnml
-    use wmunitmd        , only : wmuget, wmuset
-#endif
     use wav_shel_inp    , only : set_shel_io
     use wav_history_mod , only : wav_history_init
     use wav_pio_mod     , only : wav_pio_init
@@ -500,19 +478,17 @@ contains
     ! Set up data structures
     !--------------------------------------------------------------------
 
-    if (.not. multigrid) then
-      call w3nmod ( 1, 6, 6 )
-      call w3ndat (    6, 6 )
-      call w3naux (    6, 6 )
-      call w3nout (    6, 6 )
-      call w3ninp (    6, 6 )
+    call w3nmod ( 1, 6, 6 )
+    call w3ndat (    6, 6 )
+    call w3naux (    6, 6 )
+    call w3nout (    6, 6 )
+    call w3ninp (    6, 6 )
 
-      call w3setg ( 1, 6, 6 )
-      call w3setw ( 1, 6, 6 )
-      call w3seta ( 1, 6, 6 )
-      call w3seto ( 1, 6, 6 )
-      call w3seti ( 1, 6, 6 )
-    end if
+    call w3setg ( 1, 6, 6 )
+    call w3setw ( 1, 6, 6 )
+    call w3seta ( 1, 6, 6 )
+    call w3seto ( 1, 6, 6 )
+    call w3seti ( 1, 6, 6 )
 
     !----------------------------------------------------------------------------
     ! Generate local mpi comm
@@ -529,31 +505,11 @@ contains
     call ESMF_InfoGet(info, key="/NUOPC/Hint/PePerPet/MaxCount", value=num_threads, default=1, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifndef W3_CESMCOUPLED
-    nmproc = petcount
-#else
     naproc = petcount
-#endif
-
-    ! naproc,iproc, napout, naperr are not available until after wminit
-#ifndef W3_CESMCOUPLED
-    improc = iam + 1
-    if (multigrid) then
-      nmpscr = 1
-      is_esmf_component = .true.
-    else
-      iaproc = iam + 1
-      naproc = nmproc
-      napout = 1
-      naperr = 1
-    end if
-    if (improc == 1) root_task = .true.
-#else
     iaproc = iam + 1
     napout = 1
     naperr = 1
     if (iaproc == napout) root_task = .true.
-#endif
 
     !--------------------------------------------------------------------
     ! IO set-up
@@ -580,7 +536,7 @@ contains
       end if
     end if
 
-    if (.not. multigrid) call set_shel_io(stdout,mds,ntrace)
+    call set_shel_io(stdout,mds,ntrace)
 
     if ( root_task ) then
       write(stdout,'(a)')'      *** WAVEWATCH III Program shell ***      '
@@ -680,10 +636,6 @@ contains
       write (stdout,'(a)')' Starting time : '//trim(dtme21)
       write (stdout,'(a,i8,2x,i8)') ' start_ymd, stop_ymd = ',start_ymd, stop_ymd
     end if
-#ifndef W3_CESMCOUPLED
-    stime = time0
-    etime = timen
-#endif
 
     !--------------------------------------------------------------------
     ! Initialize PIO. This needs to be done prior to the call to w3init
@@ -759,32 +711,8 @@ contains
     !--------------------------------------------------------------------
 
 #ifndef W3_CESMCOUPLED
-    if (multigrid) then
-      call ESMF_UtilIOUnitGet(idsi); open(unit=idsi, status='scratch')
-      call ESMF_UtilIOUnitGet(idso); open(unit=idso, status='scratch')
-      call ESMF_UtilIOUnitGet(idss); open(unit=idss, status='scratch')
-      call ESMF_UtilIOUnitGet(idst); open(unit=idst, status='scratch')
-      call ESMF_UtilIOUnitGet(idse); open(unit=idse, status='scratch')
-      close(idsi); close(idso); close(idss); close(idst); close(idse)
-
-      if ( trim(ifname) == 'ww3_multi.nml' ) then
-        call wminitnml ( idsi, idso, idss, idst, idse, trim(ifname), &
-             mpi_comm, preamb=preamb )
-      else
-        call wminit ( idsi, idso, idss, idst, idse, trim(ifname), &
-             mpi_comm, preamb=preamb )
-      endif
-
-      allocate(tend(2,nrgrd))
-      do imod = 1,nrgrd
-        tend(1,imod) = etime(1)
-        tend(2,imod) = etime(2)
-      end do
-      call ESMF_LogWrite(trim(subname)//' done = wminit', ESMF_LOGMSG_INFO)
-    else
-      call waveinit_ufs(gcomp, stdout, ntrace, mpi_comm, mds, rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
+    call waveinit_ufs(gcomp, stdout, ntrace, mpi_comm, mds, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 #else
     time = time0
     call ESMF_ClockGet( clock, timeStep=timeStep, rc=rc)
@@ -956,21 +884,6 @@ contains
          flds_scalar_num=flds_scalar_num, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifndef W3_CESMCOUPLED
-    !TODO: when is this required?
-    if (multigrid) then
-      do imod = 1,nrgrd
-        call w3setg ( imod, mdse, mdst )
-        call w3setw ( imod, mdse, mdst )
-        call w3seta ( imod, mdse, mdst )
-        call w3seti ( imod, mdse, mdst )
-        call w3seto ( imod, mdse, mdst )
-        call wmsetm ( imod, mdse, mdst )
-        local = iaproc .gt. 0 .and. iaproc .le. naproc
-        if ( local .and. flcold .and. fliwnd ) call w3uini( va )
-      enddo
-    end if
-#endif
     !--------------------------------------------------------------------
     ! Intialize the list of requested output variables for netCDF output.
     ! This needs to occur after mod_def has been read in w3init since
@@ -1191,14 +1104,6 @@ contains
     timen(2) = hh*10000 + mm*100 + ss
 
     time = time0
-#ifndef W3_CESMCOUPLED
-    if (multigrid) then
-      do imod = 1,nrgrd
-        tend(1,imod) = timen(1)
-        tend(2,imod) = timen(2)
-      end do
-    end if
-#endif
 
     !------------
     ! Obtain import data from import state
@@ -1240,15 +1145,7 @@ contains
     endif
 
     ! Advance the wave model
-#ifndef W3_CESMCOUPLED
-    if (multigrid) then
-      call wmwave ( tend )
-    else
-      call w3wave ( 1, odat, timen )
-    end if
-#else
     call w3wave ( 1, odat, timen )
-#endif
     if(profile_memory) call ESMF_VMLogMemInfo("Exiting  WW3 Run : ")
 
     !------------
@@ -1375,7 +1272,6 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         call init_is_restart_fh(mcurrTime, dt_cpl, root_task, restartfh_info)
 #endif
-
       end if
 
       !----------------
