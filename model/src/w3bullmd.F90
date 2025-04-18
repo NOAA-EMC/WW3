@@ -268,28 +268,36 @@ CONTAINS
     !
     CSVBLINE      = BLANK2
     !
-    IF (IOUT .EQ. 1) THEN
-      IPG1 = 0
-      DO IP=1, NPTAB
-        HST(IP,1) = -99.9
-        TPT(IP,1) = -99.9
-        DMT(IP,1) = -99.9
-      ENDDO
-      DO IP=1, NPMAX
-        IYY(IP) = .FALSE.
-        IPI(IP)=1
-        ILEN(IP)=0
-      ENDDO
-    ENDIF
+    IPG1 = 0
+    DO IP=1, NPTAB
+      HST(IP,1) = -99.9
+      TPT(IP,1) = -99.9
+      DMT(IP,1) = -99.9
+    ENDDO
+    DO IP=1, NPMAX
+      IYY(IP) = .FALSE.
+      IPI(IP)=1
+      ILEN(IP)=0
+    ENDDO
     !
     ! 3.  Get overall wave height ---------------------------------------- *
     !
     HSTOT  = XPART(1,0)
     TP     = XPART(2,0)
-    HSP = XPART(1,1:NPART)
-    TPP = XPART(2,1:NPART)
-    WNP = TPI / XPART(3,1:NPART)
-    DMP = MOD( XPART(4,1:NPART) + 180., 360.)
+    
+    ! Ensure all values are initialized before using them
+    DO IP=1, NPMAX
+      HSP(IP) = 0.00
+      TPP(IP) = -999.99
+      DMP(IP) = -999.99
+    END DO
+
+    DO IP=1, NPART
+      HSP(IP) = XPART(1,IP)
+      TPP(IP) = XPART(2,IP)
+      WNP(IP) = TPI / XPART(3,IP)
+      DMP(IP) = MOD( XPART(4,IP) + 180., 360.)
+    ENDDO
 
     NZERO = 0
     NZERO = COUNT( HSP <= BHSMIN .AND. HSP /= 0.  )

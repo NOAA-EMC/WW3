@@ -332,6 +332,12 @@ MODULE W3ODATMD
   INTEGER, PARAMETER      :: NOEXTR=  2
   CHARACTER(LEN=20)       :: IDOUT(NOGRP,NGRPP)
   CHARACTER(LEN=80)       :: FNMPRE = './'
+
+  ! SET GLOBAL PATH FOR USER DEFINED OUTPUT, DEFAULT CURRENT PATH
+  CHARACTER(LEN=256)       :: FNMGRD = './'
+  CHARACTER(LEN=256)       :: FNMPNT = './'
+  CHARACTER(LEN=256)       :: FNMRST = './'
+
   !Moved UNDEF to constants and included above
   !REAL                    :: UNDEF = -999.9
   LOGICAL                 :: UNIPTS = .FALSE., UPPROC = .FALSE.
@@ -440,7 +446,7 @@ MODULE W3ODATMD
     INTEGER               :: TOSNL5(2)
 #endif
     INTEGER               :: TOFRST(2), TONEXT(2,8), TOLAST(2,8), &
-         TBPI0(2), TBPIN(2), NDS(15), OFILES(7)
+         TBPI0(2), TBPIN(2), NDS(15), OFILES(8)
     REAL                  :: DTOUT(8)
     LOGICAL               :: FLOUT(8)
     TYPE(OTYPE1)          :: OUT1
@@ -922,7 +928,7 @@ CONTAINS
     !
     ! 8) Spectrum parameters
     !
-    NOGE(8) = 6
+    NOGE(8) = 9
     !
     IDOUT( 8, 1)  = 'Mean square slopes  '
     IDOUT( 8, 2)  = 'Phillips tail const'
@@ -930,6 +936,9 @@ CONTAINS
     IDOUT( 8, 4)  = 'Tail slope direction'
     IDOUT( 8, 5)  = 'Goda peakedness parm'
     IDOUT( 8, 6)  = 'kxky-peakdness      '
+    IDOUT( 8, 7)  = 'Skewness            '
+    IDOUT( 8, 8)  = 'EM bias(l120+l102)/8'
+    IDOUT( 8, 9)  = 'Tracker bias:-l300/8'            
     !      IDOUT( 8, 3)  = 'Lx-Ly mean wvlength'
     !      IDOUT( 8, 4)  = 'Surf grad correl XT'
     !      IDOUT( 8, 5)  = 'Surf grad correl YT'
@@ -1127,6 +1136,11 @@ CONTAINS
     CHECK_ALLOC_STATUS ( ISTAT )
     !
     OUTPTS(IMOD)%OUT2%O2INIT = .TRUE.
+    !Initialize: 
+    OUTPTS(IMOD)%OUT2%IPTINT=0 
+    OUTPTS(IMOD)%OUT2%PTNME='' 
+    OUTPTS(IMOD)%OUT2%PTLOC=0.
+    OUTPTS(IMOD)%OUT2%PTIFAC=0.
     !
 #ifdef W3_T
     WRITE (NDST,9001)

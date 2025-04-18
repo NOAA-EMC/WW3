@@ -71,7 +71,7 @@ MODULE W3IORSMD
   !/
   !/ Private parameter statements (ID strings)
   !/
-  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2021-05-28'
+  CHARACTER(LEN=10), PARAMETER, PRIVATE :: VERINI = '2024-04-26'
   CHARACTER(LEN=26), PARAMETER, PRIVATE ::                        &
        IDSTR = 'WAVEWATCH III RESTART FILE'
   !/
@@ -312,7 +312,7 @@ CONTAINS
     USE W3IDATMD, ONLY: WXNwrst, WYNwrst
 #endif
     USE W3ODATMD, ONLY: NDSE, NDST, IAPROC, NAPROC, NAPERR, NAPRST, &
-         IFILE => IFILE4, FNMPRE, NTPROC, IOSTYP,    &
+         IFILE => IFILE4, FNMPRE, FNMRST, NTPROC, IOSTYP,    &
          FLOGRR, NOGRP, NGRPP, SCREEN
 #ifdef W3_MPI
     USE W3ODATMD, ONLY: NRQRS, NBLKRS, RSBLKS, IRQRS, IRQRSS,  &
@@ -384,6 +384,10 @@ CONTAINS
     CHARACTER(LEN=26)       :: IDTST
     CHARACTER(LEN=30)       :: TNAME
     CHARACTER(LEN=15)       :: TIMETAG
+
+    ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
+    CHARACTER(LEN=256)       :: FNMPRE_LOCAL
+
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -465,8 +469,15 @@ CONTAINS
       open (ndsr,file=trim(filename),form='unformatted', convert=file_endian, &
            access='stream',err=800,iostat=ierr, status='old',action='read')
     else
+      IF (LEN_TRIM(FNMRST) .EQ. 0) THEN
+        FNMPRE_LOCAL = FNMPRE
+      ELSE
+        FNMPRE_LOCAL = FNMRST
+      END IF
+
+
       I      = LEN_TRIM(FILEXT)
-      J      = LEN_TRIM(FNMPRE)
+      J      = LEN_TRIM(FNMPRE_LOCAL)
       !
       !CHECKPOINT RESTART FILE
       ITMP=0
@@ -852,7 +863,7 @@ CONTAINS
           WRITEBUFF(:) = 0.
           WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) WRITEBUFF
           WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR)           &
-               TLEV, TICE, TRHO
+               TLEV, TICE, TRHO, TIC1, TIC5
           DO IPART=1,NPART
             NREC  = NREC + 1
             RPOS  = 1_8 + LRECL*(NREC-1_8)
@@ -1037,7 +1048,7 @@ CONTAINS
       IF (TYPE.EQ.'FULL') THEN
         RPOS = 1_8 + LRECL*(NREC-1_8)
         READ (NDSR,POS=RPOS,ERR=802,IOSTAT=IERR)                &
-             TLEV, TICE, TRHO
+             TLEV, TICE, TRHO, TIC1, TIC5
         DO IPART=1,NPART
           NREC  = NREC + 1
           RPOS = 1_8 + LRECL*(NREC-1_8)

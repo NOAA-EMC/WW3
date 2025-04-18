@@ -500,7 +500,7 @@ CONTAINS
 #endif
       !
 #ifdef W3_SHRD
-      CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
+      CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J, 1)
 #endif
       !
       ! 3.d.2 Distributed memory version
@@ -535,7 +535,7 @@ CONTAINS
 #endif
         !
 #ifdef W3_MPI
-        CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J )
+        CALL W3IOPP ( MDATAS(J)%NRUPTS, XP, YP, PN, J, MPI_COMM_MWAVE)
 #endif
         !
 #ifdef W3_MPI
@@ -714,8 +714,7 @@ CONTAINS
     USE W3ODATMD, ONLY: W3SETO
     USE WMMDATMD, ONLY: WMSETM
     USE W3CSPCMD, ONLY: W3CSPC
-    USE W3IOPOMD, ONLY: W3IOPO
-    !
+    USE W3IOPOMD
     USE W3GDATMD, ONLY: NK, NTH, NSPEC, XFR, FR1, TH, SGRDS
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPPNT, NOPTS, SPCO, DPO,   &
@@ -1176,11 +1175,15 @@ CONTAINS
     !
     TIME   = TOUT
     !
+#ifdef W3_BIN2NC
+    CALL W3IOPON ( 'WRITE', MDSUP, II, 0)
+#else
     CALL W3IOPO ( 'WRITE', MDSUP, II, 0 &
 #ifdef W3_ASCII
-            ,MDSUPA                     &                  
+            ,MDSUPA                     &
 #endif
             )
+#endif 
     !
     RETURN
     !

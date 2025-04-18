@@ -21,7 +21,7 @@
 ! Define the output types point parameters via OUTPUT_TYPE_NML namelist
 ! -------------------------------------------------------------------- !
 &OUTPUT_TYPE_NML
-  TYPE%FIELD%LIST          = 'DPT WND MSS MSD ICE HS MSS FAW WCC WCF WCH WCM FOC TAW CHA FWS WBT'
+  TYPE%FIELD%LIST          = 'DPT WND MSS MSD ICE HS MSS FAW WCC WCF WCH WCM FOC TAW CHA FWS WBT SKW EMB EMC'
   TYPE%POINT%FILE          = '../input/points.list'
 /
 
