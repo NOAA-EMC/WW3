@@ -7791,8 +7791,8 @@ CONTAINS
     !WRITE(*,*) 'START BLOCK SOLVER' 
     CALL MPI_COMM_RANK(MPI_COMM_WCMP, myrank, ierr)
 
-    !WRITE (3000+myrank,*) 'Entering Diffusion' 
-    !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
+    WRITE (3000+myrank,*) 'Entering Diffusion' 
+    CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
 
     IF ( FLAGLL ) THEN
       RFAC = DERA * RADIUS
@@ -7881,8 +7881,8 @@ CONTAINS
         DT_DIFF = DTG/NB_ITER
         PHI_V = 0.
  
-        !WRITE(5000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF, DeltaTmax
-        !CALL FLUSH(5000+myrank)
+        WRITE(5000+myrank,*) 'NUMBER OF SUB ITERATIONS', ITH, IK, NB_ITER, DT_DIFF, DeltaTmax
+        CALL FLUSH(5000+myrank)
 
         DO IT = 1, NB_ITER
           DO IE = 1, NE
@@ -7926,9 +7926,10 @@ CONTAINS
       END DO 
     END DO 
 
-    !WRITE(3000+myrank,*) 'FINISHED DIFFUSION' 
-    !CALL FLUSH(3000+myrank)
-    !CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
+    WRITE(3000+myrank,*) 'FINISHED DIFFUSION' 
+    CALL FLUSH(3000+myrank)
+    CALL MPI_BARRIER (MPI_COMM_WCMP,IERR)
+    CALL MPI_ABORT()
 
     END SUBROUTINE BLOCK_SOLVER_DIFFUSION
 
