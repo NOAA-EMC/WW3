@@ -7769,18 +7769,17 @@ CONTAINS
     !/
     INTEGER ITH, IK, IE, IS, IERR, MYRANK
     INTEGER NewISP, JTH, istati, JSEA, ISEA
-    REAL*8    TFAC, DNN, DSS, DSSD, DNND, CGD, DFRR, DTME
+    REAL    TFAC, DNN, DSS, DSSD, DNND, CGD, DFRR, DTME
     REAL PHI_V(NPA)
-    REAL*8 eDet, DEDX(3), DEDY(3), DIFFV(2)
+    REAL eDet, DEDX(3), DEDY(3), DIFFV(2)
     INTEGER NI(3), ITR, IDX, IP, ISP, IT
-    REAL*8 XSEL(3), DVDXIE, DVDYIE, FACX
-    REAL*8 GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(3,NPA)
+    REAL XSEL(3), DVDXIE, DVDYIE, FACX
+    REAL GRAD(2), V(2), eScal, DT_DIFF, DIFFVEC(3,NPA)
     INTEGER NB_ITER, iIter, ip_global
-    REAL*8 DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
-    REAL*8 eNorm, DTquot, diffc, dcell, XWIND, DIFFTOT
-    REAL*8 DVDX(NPA), DVDY(NPA), DV2DXX(NPA), DV2DXY(NPA), KH, SWFAC(NPA)
+    REAL DeltaTmax, eDeltaT, CLATSMN, DFAC, RFAC, eDiffNorm
+    REAL eNorm, DTquot, diffc, dcell, XWIND, DIFFTOT
+    REAL DVDX(NPA), DVDY(NPA), DV2DXX(NPA), DV2DXY(NPA), KH, SWFAC(NPA)
     REAL eRealA(1), eRealB(1)
-
 
     DVDX = 0.d0
     DVDY = 0.d0
@@ -7845,7 +7844,7 @@ CONTAINS
           !IF (DW(ISEA) .gt. 1000.) write(3000+myrank,'(I10,20F20.10)') IK, SIG(IK), CGD, CLATS(ISEA), DSS, DNN, DIFFVEC(1,JSEA), DIFFVEC(2,JSEA), DCELL, XWIND
         END DO
 
-        CALL DIFFERENTIATE_XYDIR(DBLE(VA(ISP,:)),DVDX,DVDY) ! AR: this two lines can be optimized, however seems fast enough by now. 
+        CALL DIFFERENTIATE_XYDIR(VA(ISP,1:NSEAL),DVDX,DVDY) ! AR: this two lines can be optimized, however seems fast enough by now. 
         CALL DIFFERENTIATE_XYDIR(DVDX,DV2DXX,DV2DXY)
 
         DeltaTmax = 1./TINY(1.)
@@ -7941,14 +7940,14 @@ CONTAINS
          USE yowElementpool, only : NE, INE
          USE W3PARALL, only: INIT_GET_ISEA
          IMPLICIT NONE
-         REAL*8, INTENT(IN)    :: VAR(NPA)
-         REAL*8, INTENT(INOUT) :: DVDX(NPA), DVDY(NPA)
-         REAL*4                :: DVDX4(NPA), DVDY4(NPA)
-         REAL*8                :: DEDY(3),DEDX(3)
-         REAL*8                :: DVDXIE, DVDYIE
-         REAL*8                :: WEI(NPA)
-         INTEGER               :: NI(3)
-         INTEGER               :: IE, JSEA, ISEA
+         REAL, INTENT(IN)    :: VAR(NPA)
+         REAL, INTENT(INOUT) :: DVDX(NPA), DVDY(NPA)
+         REAL                :: DVDX4(NPA), DVDY4(NPA)
+         REAL                :: DEDY(3),DEDX(3)
+         REAL                :: DVDXIE, DVDYIE
+         REAL                :: WEI(NPA)
+         INTEGER             :: NI(3)
+         INTEGER             :: IE, JSEA, ISEA
 
          WEI(:)  = 0.d0
          DVDX(:) = 0.d0
