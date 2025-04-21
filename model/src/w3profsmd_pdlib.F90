@@ -1831,7 +1831,7 @@ CONTAINS
       DO IP = 1, npa
         U(IP) = MAX(ZERO,UL(IP)-DTSI(IP)*ST(IP)*(1-IOBPA_LOC(IP)))*DBLE(IOBPD_LOC(ITH,IP))*IOBDP_LOC(IP)
 #ifdef W3_REF1
-        IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = AC(IP) ! restores reflected boundary values
+        IF (REFPARS(3).LT.0.5.AND.IOBPD_LOC(ITH,IP).EQ.0.AND.IOBPA_LOC(IP).EQ.0) U(IP) = ACIN(IP) ! restores reflected boundary values
 #endif
       END DO
 
@@ -7942,7 +7942,6 @@ CONTAINS
          IMPLICIT NONE
          REAL, INTENT(IN)    :: VAR(NPA)
          REAL, INTENT(INOUT) :: DVDX(NPA), DVDY(NPA)
-         REAL                :: DVDX4(NPA), DVDY4(NPA)
          REAL                :: DEDY(3),DEDX(3)
          REAL                :: DVDXIE, DVDYIE
          REAL                :: WEI(NPA)
@@ -7986,12 +7985,8 @@ CONTAINS
            END IF
          END DO
 
-         DVDX4 = DVDX
-         DVDY4 = DVDY
-         CALL PDLIB_exchange1DREAL(DVDX4) ! AR: todo, checck pipes.
-         CALL PDLIB_exchange1DREAL(DVDY4)
-         DVDX = DVDX4
-         DVDY = DVDY4
+         CALL PDLIB_exchange1DREAL(DVDX) 
+         CALL PDLIB_exchange1DREAL(DVDY)
 
 #ifdef DEBUG
          WRITE(STAT%FHNDL,*) 'sum(DVDX) = ', sum(DVDX)
