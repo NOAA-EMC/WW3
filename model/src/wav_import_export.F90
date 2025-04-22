@@ -278,7 +278,7 @@ contains
     use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
-    use w3idatmd    , only: tfn, w3seti
+    use w3idatmd    , only: w3seti
     use w3odatmd    , only: w3seto
     use w3wdatmd    , only: w3setw
 #ifdef W3_CESMCOUPLED
@@ -299,8 +299,6 @@ contains
     real(r4)                :: def_value
     character(len=10)       :: uwnd
     character(len=10)       :: vwnd
-    integer                 :: imod, j, jmod
-    integer                 :: mpi_comm_null = -1
     real(r4), allocatable   :: wxdata(:)      ! only needed if merge_import
     real(r4), allocatable   :: wydata(:)      ! only needed if merge_import
     character(len=*), parameter :: subname='(wav_import_export:import_fields)'
@@ -947,7 +945,7 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     do n = 1, numflds
-      stdname = fldList(n)%stdname
+      stdname = trim(fldList(n)%stdname)
       if (NUOPC_IsConnected(state, fieldName=stdname)) then
         if (stdname == trim(flds_scalar_name)) then
           call ESMF_LogWrite(trim(subname)//trim(tag)//" Field = "//trim(stdname)//" is connected on root pe", &

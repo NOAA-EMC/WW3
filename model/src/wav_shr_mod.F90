@@ -360,7 +360,7 @@ contains
     integer,          intent(inout)  :: rc
 
     ! local variables
-    integer           :: mytask, ierr, len
+    integer           :: mytask
     type(ESMF_VM)     :: vm
     type(ESMF_Field)  :: field
     real(r8), pointer :: farrayptr(:,:)
@@ -480,7 +480,7 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    integer                             :: i,j,n
+    integer                             :: n
     type(ESMF_Field)                    :: lfield
     integer                             :: fieldCount
     integer                             :: lrank
@@ -661,7 +661,7 @@ contains
     integer         , intent(out) :: rc
 
     ! local variables
-    integer                         :: i,j,n
+    integer                         :: n
     type(ESMf_Field)                :: lfield
     integer                         :: fieldCount, lrank
     character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
@@ -882,7 +882,7 @@ contains
     integer                     , intent(inout) :: rc        ! Return code
 
     ! local variables
-    type(ESMF_Calendar)     :: cal                ! calendar
+    type(ESMF_Calendar)     :: cal              ! calendar
     integer                 :: lymd             ! local ymd
     integer                 :: ltod             ! local tod
     integer                 :: cyy,cmm,cdd,csec ! time info
@@ -891,7 +891,6 @@ contains
     type(ESMF_Time)         :: CurrTime         ! Current Time
     type(ESMF_Time)         :: NextAlarm        ! Next restart alarm time
     type(ESMF_TimeInterval) :: AlarmInterval    ! Alarm interval
-    integer                 :: sec
 
     character(len=*), parameter :: subname = ' (wav_shr_mod:set_alarmInit) '
     !-------------------------------------------------------------------------------
