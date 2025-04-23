@@ -145,13 +145,12 @@ MODULE W3UPDTMD
   !
   !/ ------------------------------------------------------------------- /
   USE CONSTANTS
-  USE W3ODATMD, ONLY: NDSE, NDST, NAPROC, IAPROC, NAPERR
+  USE W3ODATMD, ONLY : NDSE, NDST, NAPROC, IAPROC, NAPERR
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
-  USE W3TIMEMD, ONLY: DSEC21
+  USE W3TIMEMD, ONLY : DSEC21
   use w3odatmd, only : use_cmeps
-
   ! used/reused in module
   real :: mag, dir
   !/
@@ -325,6 +324,7 @@ CONTAINS
 #ifdef W3_SMC
           ENDIF
 #endif
+
           CA0(ISEA) = SQRT ( CX0(IX,IY)**2 + CY0(IX,IY)**2 )
           CAI(ISEA) = SQRT ( CXN(IX,IY)**2 + CYN(IX,IY)**2 )
           IF ( CA0(ISEA) .GT. 1.E-7) THEN
@@ -475,7 +475,7 @@ CONTAINS
 #endif
         !
       END DO
-    end if
+    end if ! use_cmeps
     !
     RETURN
     !
@@ -765,6 +765,7 @@ CONTAINS
 #ifdef W3_WCOR
     WHERE ( UA .GE. WWCOR(1) ) UA = UA+(UA-WWCOR(1))*WWCOR(2)
 #endif
+
     !
     ! 4.  Correct for currents and grid motion
     !
@@ -1065,7 +1066,7 @@ CONTAINS
 #endif
         !
       END DO
-    end if
+    end if !use_cmeps
     !
     RETURN
     !
@@ -2698,24 +2699,24 @@ CONTAINS
     ! 1.  Prepare auxiliary arrays
     !
     IF ( FLFRST ) THEN
-       DO ISEA=1, NSEA
+      DO ISEA=1, NSEA
 #ifdef W3_SMC
-          !!Li  For sea-point only SMC grid air density is stored on
-          !!Li  2-D RH0(NSEA, 1) variable.
-          IF( FSWND ) THEN
-             IX = ISEA
-             IY = 1
-          ELSE
+        !!Li  For sea-point only SMC grid air density is stored on
+        !!Li  2-D RH0(NSEA, 1) variable.
+        IF( FSWND ) THEN
+          IX = ISEA
+          IY = 1
+        ELSE
 #endif
-             IX        = MAPSF(ISEA,1)
-             IY        = MAPSF(ISEA,2)
+          IX        = MAPSF(ISEA,1)
+          IY        = MAPSF(ISEA,2)
 #ifdef W3_SMC
-          ENDIF
+        ENDIF
 #endif
 
-          RA0(ISEA) = RH0(IX,IY)
-          RAI(ISEA) = RHN(IX,IY) - RH0(IX,IY)
-       END DO
+        RA0(ISEA) = RH0(IX,IY)
+        RAI(ISEA) = RHN(IX,IY) - RH0(IX,IY)
+      END DO
     END IF
     !
     ! 2.  Calculate interpolation factor
@@ -2747,9 +2748,9 @@ CONTAINS
 #endif
     !
     DO ISEA=1, NSEA
-       !
-       RHOAIR(ISEA) = RA0(ISEA) + RD * RAI(ISEA)
-       !
+      !
+      RHOAIR(ISEA) = RA0(ISEA) + RD * RAI(ISEA)
+      !
     END DO
     !
     RETURN

@@ -482,7 +482,7 @@ MODULE W3ADATMD
          MSCX(:),  MSCY(:),  MSCD(:), QKK(:), SKEW(:), EMBIA1(:), EMBIA2(:)
     REAL, POINTER         ::  XMSSX(:), XMSSY(:), XMSSD(:),       &
          XMSCX(:), XMSCY(:), XMSCD(:), XQKK(:),                   &
-         XSKEW(:), XEMBIA1(:), XEMBIA2(:)    
+         XSKEW(:), XEMBIA1(:), XEMBIA2(:)
     !
     ! Output fields group 9)
     !
@@ -952,11 +952,11 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: JGRID, NXXX, NSEAL_tmp
-    integer                 :: memunit
-    integer                 :: allocsize
+    INTEGER       :: JGRID, NXXX, NSEAL_tmp
+    integer       :: memunit
+    integer       :: allocsize
 #ifdef W3_S
-    INTEGER, SAVE           :: IENT = 0
+    INTEGER, SAVE :: IENT = 0
     CALL STRACE (IENT, 'W3DIMA')
 #endif
     !
