@@ -563,6 +563,7 @@ contains
     use w3gdatmd      , only : mapsf, MAPSTA, USSPF, NK, w3setg
     use w3iogomd      , only : CALC_U3STOKES
 #ifdef W3_CESMCOUPLED
+    use w3odatmd      , only : naproc, iaproc
     use w3wdatmd      , only : ASF, UST
     use w3adatmd      , only : USSHX, USSHY, UD
     use w3idatmd      , only : HSL
@@ -653,7 +654,7 @@ contains
       call state_getfldptr(exportState, 'Sw_lasl', sw_lasl, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_lasl(:) = fillvalue
-      do jsea=1, nseal
+      do jsea=1, nseal_cpl
          isea = iaproc + (jsea-1)*naproc
          ix  = mapsf(isea,1)
          iy  = mapsf(isea,2)
