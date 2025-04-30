@@ -969,9 +969,9 @@ CONTAINS
       if (runtype == 'continue' )then
         call set_user_timestring(time,user_timestring)
         if (restart_from_binary) then
-          fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)
+          fname = trim(user_restfname)//trim(user_timestring)
         else
-          fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)//'.nc'
+          fname = trim(user_restfname)//trim(user_timestring)//'.nc'
         endif
         inquire(file=trim(fname), exist=exists)
         if (exists) then
