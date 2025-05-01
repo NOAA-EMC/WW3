@@ -986,7 +986,7 @@ CONTAINS
       else
         if (restart_from_binary) then
           call set_user_timestring(time,user_timestring)
-          fname = trim(FNMRST)//trim(user_restfname)//trim(user_timestring)
+          fname = trim(user_restfname)//trim(user_timestring)
           inquire(file=trim(fname), exist=exists)
           if (exists) then
             call w3iors('READ', nds(6), sig(nk), imod, filename=trim(fname))
