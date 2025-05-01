@@ -3291,7 +3291,7 @@ CONTAINS
     ! IFI=5, IFJ=1, UST
     META => GROUP(5)%FIELD(1)%META
     ! First component
-    META(1)%FSC    = 0.01
+    META(1)%FSC    = 0.001
     META(1)%ENAME  = '.ust'
     META(1)%UNITS  = 'm s-1'
     META(1)%VARNM='uust'
@@ -3639,14 +3639,14 @@ CONTAINS
     ! IFI=6, IFJ=9, P2L
     META => GROUP(6)%FIELD(9)%META
     ! Information for spectral microseismic generation data (2nd file)
-    META(1)%FSC = 0.0004
     META(1)%VARNM='p2l'
     META(1)%VARNL='base ten logarithm of power spectral density of equivalent surface pressure'
     !META(1)%VARNS='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
     META(1)%VARNS=''
     META(1)%VARNG='base_ten_logarithm_of_power_spectral_density_of_equivalent_surface_pressure'
-    IF (NCVARTYPE.EQ.2) THEN
+    IF (NCVARTYPE.LE.3) THEN
       META(1)%UNITS='log10(Pa2 m2 s+1E-12)'
+      META(1)%FSC = 0.0004
       META(1)%VMIN = -12.
       META(1)%VMAX = 12.
     ELSE
@@ -3744,6 +3744,30 @@ CONTAINS
     META(2)%VARNS=''
     META(2)%VARNG=''
     META(2)%VARNC='toc=sqrt(utoc**2+vtoc**2)'
+
+    ! IFI=6, IFJ=14, USSH
+    META => GROUP(6)%FIELD(14)%META
+    META(1)%FSC    = 0.0005
+    META(1)%UNITS  = 'm s-1'
+    META(1)%ENAME  = '.ussh'
+
+    ! First component
+    META(1)%VARNM='uussh'
+    META(1)%VARNL='eastward surface averaged stokes drift'
+    META(1)%VARNS='sea_surface_wave_averaged_stokes_drift_eastward_velocity'
+    META(1)%VARNG='eastward_surface_averaged_stokes_drift'
+    META(1)%VARND=DIRCOM
+    META(1)%VMIN = -4.95
+    META(1)%VMAX =  4.95
+
+    ! Second component
+    META(2) = META(1)
+    META(2)%VARNM='vussh'
+    META(2)%VARNL='northward surface averaged stokes drift'
+    META(2)%VARNS='sea_surface_wave_averaged_stokes_drift_northward_velocity'
+    META(2)%VARNG='northward_surface_averaged_stokes_drift'
+
+
     !
     !---------- GROUP 7 ----------------
     !
@@ -3956,6 +3980,58 @@ CONTAINS
     META(1)%VARNC='Goda wave peakedness parameter'
     META(1)%VMIN = 0
     META(1)%VMAX = 32
+    ! IFI=8, IFJ=6, QKK
+    META => GROUP(8)%FIELD(6)%META
+    META(1)%FSC    = 0.05
+    META(1)%UNITS  = 'm/rad'
+    META(1)%ENAME  = '.qkk'
+    META(1)%VARNM='qkk'
+    META(1)%VARNL='k-peakedness'
+    !META(1)%VARNS='sea_surface_wave_peakedness'
+    META(1)%VARNS=''
+    META(1)%VARNG='wavenumber_peakedness'
+    META(1)%VARNC='2D wavenumber peakedness'
+    META(1)%VMIN = 0
+    META(1)%VMAX = 1600
+    ! IFI=8, IFJ=7, SKW
+    META => GROUP(8)%FIELD(7)%META
+    META(1)%FSC    = 0.00001
+    META(1)%UNITS  = '1'
+    META(1)%ENAME  = '.skw'
+    META(1)%VARNM='skw'
+    META(1)%VARNL='skewness'
+    !META(1)%VARNS='sea_surface_wave_peakedness'
+    META(1)%VARNS=''
+    META(1)%VARNG='skewness of P(z,sx,sy=0)'
+    META(1)%VARNC='skewness of P(z,sx,sy=0)'
+    META(1)%VMIN = 0
+    META(1)%VMAX = 1
+    ! IFI=8, IFJ=8, EMB
+    META => GROUP(8)%FIELD(8)%META
+    META(1)%FSC    = 0.00001
+    META(1)%UNITS  = '1'
+    META(1)%ENAME  = '.emb'
+    META(1)%VARNM='emb'
+    META(1)%VARNL='EM-bias'
+    !META(1)%VARNS='sea_surface_wave_peakedness'
+    META(1)%VARNS=''
+    META(1)%VARNG='EM bias coefficient'
+    META(1)%VARNC='EM bias coefficient'
+    META(1)%VMIN = -1
+    META(1)%VMAX = 1    
+    ! IFI=8, IFJ=7, SKW
+    META => GROUP(8)%FIELD(9)%META
+    META(1)%FSC    = 0.00001
+    META(1)%UNITS  = '1'
+    META(1)%ENAME  = '.emc'
+    META(1)%VARNM='emc'
+    META(1)%VARNL='trackerbias'
+    !META(1)%VARNS='sea_surface_wave_peakedness'
+    META(1)%VARNS=''
+    META(1)%VARNG='tracker bias coefficient'
+    META(1)%VARNC='tracker bias coefficient'
+    META(1)%VMIN = -1
+    META(1)%VMAX = 1    !
     !
     !---------- GROUP 9 ----------------
     !

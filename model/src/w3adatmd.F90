@@ -174,6 +174,8 @@ MODULE W3ADATMD
   !      US3D      R.A.  Public   3D Stokes drift.
   !      USSP      R.A.  Public   Partitioned Surface Stokes drift
   !
+  !      USSHX/Y   R.A.  Public   Surface layer averaged Stokes drift.
+  !
   !      ABA       R.A.  Public   Near-bottom rms wave ex. amplitude.
   !      ABD       R.A.  Public   Corresponding direction.
   !      UBA       R.A.  Public   Near-bottom rms wave velocity.
@@ -187,6 +189,8 @@ MODULE W3ADATMD
   !      MSSD      R.A.  Public   Direction of MSSX
   !      MSCD      R.A.  Public   Direction of MSCX
   !      QP        R.A.  Public   Goda peakedness parameter.
+  !      QKK       R.A.  Public   Spectral bandwidth (De Carlo et al. 2023)
+  !      SKEW      R.A.  Public   skewness lambda_3,0,0 (Srokosz 1986)
   !
   !      DTDYN     R.A.  Public   Mean dynamic time step (raw).
   !      FCUT      R.A.  Public   Cut-off frequency for tail.
@@ -461,9 +465,7 @@ MODULE W3ADATMD
          XPRMS(:), XTPMS(:), XPHICE(:),       &
          XTAUICE(:,:)
     REAL, POINTER         :: XP2SMS(:,:), XUS3D(:,:), XUSSP(:,:)
-#ifdef W3_CESMCOUPLED
-    REAL, POINTER         ::  XLANGMT(:)
-#endif
+    REAL, POINTER         :: XUSSHX(:), XUSSHY(:)
     !
     ! Output fields group 7)
     !
@@ -477,9 +479,10 @@ MODULE W3ADATMD
     ! Output fields group 8)
     !
     REAL, POINTER         ::  MSSX(:),  MSSY(:),  MSSD(:),        &
-         MSCX(:),  MSCY(:),  MSCD(:)
+         MSCX(:),  MSCY(:),  MSCD(:), QKK(:), SKEW(:), EMBIA1(:), EMBIA2(:)
     REAL, POINTER         ::  XMSSX(:), XMSSY(:), XMSSD(:),       &
-         XMSCX(:), XMSCY(:), XMSCD(:)
+         XMSCX(:), XMSCY(:), XMSCD(:), XQKK(:),                   &
+         XSKEW(:), XEMBIA1(:), XEMBIA2(:)    
     !
     ! Output fields group 9)
     !
@@ -492,12 +495,8 @@ MODULE W3ADATMD
     !
     REAL, POINTER         ::  USERO(:,:)
     REAL, POINTER         :: XUSERO(:,:)
-#ifdef W3_CESMCOUPLED
-    ! Output fileds for Langmuir mixing in group
-    REAL, POINTER         :: LANGMT(:), LAPROJ(:), LASL(:),       &
-         LASLPJ(:), LAMULT(:), ALPHAL(:),     &
-         ALPHALS(:), USSXH(:), USSYH(:)
-#endif
+    ! Output fileds for Langmuir mixing parameterization
+    REAL, POINTER         :: USSHX(:), USSHY(:)
     !
     ! Spatial derivatives
     !
@@ -578,11 +577,8 @@ MODULE W3ADATMD
   !/
   !/ Data aliases for structure WADAT(S)
   !/
-#ifdef W3_CESMCOUPLED
-  REAL, POINTER           :: LANGMT(:), LAPROJ(:), ALPHAL(:),      &
-       ALPHALS(:), LAMULT(:), LASL(:),       &
-       LASLPJ(:), USSXH(:), USSYH(:)
-#endif
+  REAL, POINTER :: USSHX(:), USSHY(:)
+  !
   REAL, POINTER           :: CG(:,:), WN(:,:)
   REAL, POINTER           :: IC3WN_R(:,:), IC3WN_I(:,:), IC3CG(:,:)
   !
@@ -626,7 +622,7 @@ MODULE W3ADATMD
        BEDFORMS(:,:), PHIBBL(:), TAUBBL(:,:)
   !
   REAL, POINTER           :: MSSX(:), MSSY(:), MSSD(:),           &
-       MSCX(:), MSCY(:), MSCD(:)
+       MSCX(:), MSCY(:), MSCD(:), QKK(:), SKEW(:), EMBIA1(:), EMBIA2(:)
   !
   REAL, POINTER           :: DTDYN(:), FCUT(:), CFLXYMAX(:),      &
        CFLTHMAX(:), CFLKMAX(:)
@@ -1064,19 +1060,6 @@ CONTAINS
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
 
-#ifdef W3_CESMCOUPLED
-    ALLOCATE ( WADATS(IMOD)%USSXH(NSEALM)   , &
-         WADATS(IMOD)%USSYH(NSEALM)   , &
-         WADATS(IMOD)%LANGMT(NSEALM)  , &
-         WADATS(IMOD)%LAPROJ(NSEALM)  , &
-         WADATS(IMOD)%LASL(NSEALM)    , &
-         WADATS(IMOD)%LASLPJ(NSEALM)  , &
-         WADATS(IMOD)%ALPHAL(NSEALM)  , &
-         WADATS(IMOD)%ALPHALS(NSEALM) , &
-         WADATS(IMOD)%LAMULT(NSEALM)  , &
-         STAT=ISTAT )
-    CHECK_ALLOC_STATUS ( ISTAT )
-#endif
     !
     WADATS(IMOD)%HS     = UNDEF
     WADATS(IMOD)%WLM    = UNDEF
@@ -1226,6 +1209,8 @@ CONTAINS
          WADATS(IMOD)%TPMS  (NSEALM) ,                        &
          WADATS(IMOD)%PHICE (NSEALM) ,                        &
          WADATS(IMOD)%TAUICE(NSEALM,2),                       &
+         WADATS(IMOD)%USSHX(NSEALM),                          &
+         WADATS(IMOD)%USSHY(NSEALM),                          &
          STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
@@ -1262,9 +1247,8 @@ CONTAINS
     WADATS(IMOD)%TPMS   = UNDEF
     WADATS(IMOD)%PHICE  = UNDEF
     WADATS(IMOD)%TAUICE = UNDEF
-#ifdef W3_CESMCOUPLED
-    WADATS(IMOD)%LANGMT = UNDEF
-#endif
+    WADATS(IMOD)%USSHX  = UNDEF
+    WADATS(IMOD)%USSHY  = UNDEF
     IF (  P2MSF(1).GT.0 ) WADATS(IMOD)%P2SMS  = UNDEF
     IF (  US3DF(1).GT.0 ) WADATS(IMOD)%US3D   = UNDEF
     IF (  USSPF(1).GT.0 ) WADATS(IMOD)%USSP   = UNDEF
@@ -1295,7 +1279,9 @@ CONTAINS
     ALLOCATE ( WADATS(IMOD)%MSSX(NSEALM), WADATS(IMOD)%MSSY(NSEALM), &
          WADATS(IMOD)%MSCX(NSEALM), WADATS(IMOD)%MSCY(NSEALM), &
          WADATS(IMOD)%MSSD(NSEALM), WADATS(IMOD)%MSCD(NSEALM), &
-         STAT=ISTAT )
+         WADATS(IMOD)%QKK(NSEALM), WADATS(IMOD)%SKEW(NSEALM),  &
+         WADATS(IMOD)%EMBIA1(NSEALM), WADATS(IMOD)%EMBIA2(NSEALM),  &
+              STAT=ISTAT )
     CHECK_ALLOC_STATUS ( ISTAT )
     !
     WADATS(IMOD)%MSSX   = UNDEF
@@ -1304,6 +1290,10 @@ CONTAINS
     WADATS(IMOD)%MSCX   = UNDEF
     WADATS(IMOD)%MSCY   = UNDEF
     WADATS(IMOD)%MSCD   = UNDEF
+    WADATS(IMOD)%QKK    = UNDEF
+    WADATS(IMOD)%SKEW   = UNDEF
+    WADATS(IMOD)%EMBIA1 = UNDEF
+    WADATS(IMOD)%EMBIA2 = UNDEF
     call print_memcheck(memunit, 'memcheck_____:'//' W3DIMA 8')
     !
     ! 9) Numerical diagnostics
@@ -2180,15 +2170,17 @@ CONTAINS
       ALLOCATE ( WADATS(IMOD)%XTAUOCY(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
-#ifdef W3_CESMCOUPLED
     IF ( OUTFLAGS( 6, 14) ) THEN
-      ALLOCATE ( WADATS(IMOD)%XLANGMT(NXXX), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XUSSHX(NXXX), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XUSSHY(NXXX), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     ELSE
-      ALLOCATE ( WADATS(IMOD)%XLANGMT(1), STAT=ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XUSSHX(1), STAT=ISTAT )
+      CHECK_ALLOC_STATUS ( ISTAT )
+      ALLOCATE ( WADATS(IMOD)%XUSSHY(1), STAT=ISTAT )
       CHECK_ALLOC_STATUS ( ISTAT )
     END IF
-#endif
     !
     WADATS(IMOD)%XSXX    = UNDEF
     WADATS(IMOD)%XSYY    = UNDEF
@@ -2210,9 +2202,8 @@ CONTAINS
     WADATS(IMOD)%XUSSP   = UNDEF
     WADATS(IMOD)%XTAUOCX = UNDEF
     WADATS(IMOD)%XTAUOCY = UNDEF
-#ifdef W3_CESMCOUPLED
-    WADATS(IMOD)%XLANGMT = UNDEF
-#endif
+    WADATS(IMOD)%XUSSHX   = UNDEF
+    WADATS(IMOD)%XUSSHY   = UNDEF
     !
     IF ( OUTFLAGS( 7, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XABA(NXXX), STAT=ISTAT )
@@ -2316,6 +2307,30 @@ CONTAINS
       ALLOCATE ( WADATS(IMOD)%XQP(1) )
     END IF
     !
+    IF ( OUTFLAGS( 8,  6) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XQKK(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XQKK(1) )
+    END IF
+    !
+    IF ( OUTFLAGS( 8,  7) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XSKEW(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XSKEW(1) )
+    END IF
+    !
+    IF ( OUTFLAGS( 8,  8) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XEMBIA1(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XEMBIA1(1) )
+    END IF
+    !
+    IF ( OUTFLAGS( 8,  9) ) THEN
+      ALLOCATE ( WADATS(IMOD)%XEMBIA2(NXXX) )
+    ELSE
+      ALLOCATE ( WADATS(IMOD)%XEMBIA2(1) )
+    END IF
+    !
     WADATS(IMOD)%XMSSX   = UNDEF
     WADATS(IMOD)%XMSSY   = UNDEF
     WADATS(IMOD)%XMSSD   = UNDEF
@@ -2323,6 +2338,10 @@ CONTAINS
     WADATS(IMOD)%XMSCY   = UNDEF
     WADATS(IMOD)%XMSCD   = UNDEF
     WADATS(IMOD)%XQP(1)  = UNDEF
+    WADATS(IMOD)%XQKK    = UNDEF
+    WADATS(IMOD)%XSKEW   = UNDEF
+    WADATS(IMOD)%XEMBIA1 = UNDEF
+    WADATS(IMOD)%XEMBIA2 = UNDEF
     !
     IF ( OUTFLAGS( 9, 1) ) THEN
       ALLOCATE ( WADATS(IMOD)%XDTDYN(NXXX), STAT=ISTAT )
@@ -2936,6 +2955,10 @@ CONTAINS
       MSCX   => WADATS(IMOD)%MSCX
       MSCY   => WADATS(IMOD)%MSCY
       MSCD   => WADATS(IMOD)%MSCD
+      QKK    => WADATS(IMOD)%QKK
+      SKEW   => WADATS(IMOD)%SKEW
+      EMBIA1  => WADATS(IMOD)%EMBIA1
+      EMBIA2  => WADATS(IMOD)%EMBIA2
       !
       DTDYN    => WADATS(IMOD)%DTDYN
       FCUT     => WADATS(IMOD)%FCUT
@@ -2946,18 +2969,8 @@ CONTAINS
       USERO  => WADATS(IMOD)%USERO
       !
       WN     => WADATS(IMOD)%WN
-#ifdef W3_CESMCOUPLED
-      ! USSX and USSY are already set
-      LANGMT => WADATS(IMOD)%LANGMT
-      LAPROJ => WADATS(IMOD)%LAPROJ
-      LASL   => WADATS(IMOD)%LASL
-      LASLPJ => WADATS(IMOD)%LASLPJ
-      ALPHAL => WADATS(IMOD)%ALPHAL
-      ALPHALS=> WADATS(IMOD)%ALPHALS
-      USSXH  => WADATS(IMOD)%USSXH
-      USSYH  => WADATS(IMOD)%USSYH
-      LAMULT => WADATS(IMOD)%LAMULT
-#endif
+      USSHX  => WADATS(IMOD)%USSHX
+      USSHY  => WADATS(IMOD)%USSHY
 #ifdef W3_IC3
       IC3WN_R=> WADATS(IMOD)%IC3WN_R
       IC3WN_I=> WADATS(IMOD)%IC3WN_I
@@ -3279,9 +3292,6 @@ CONTAINS
       BEDFORMS=> WADATS(IMOD)%XBEDFORMS
       PHIBBL => WADATS(IMOD)%XPHIBBL
       TAUBBL => WADATS(IMOD)%XTAUBBL
-#ifdef W3_CESMCOUPLED
-      LANGMT => WADATS(IMOD)%XLANGMT
-#endif
       !
       MSSX   => WADATS(IMOD)%XMSSX
       MSSY   => WADATS(IMOD)%XMSSY
@@ -3289,6 +3299,10 @@ CONTAINS
       MSCX   => WADATS(IMOD)%XMSCX
       MSCY   => WADATS(IMOD)%XMSCY
       MSCD   => WADATS(IMOD)%XMSCD
+      QKK    => WADATS(IMOD)%XQKK
+      SKEW   => WADATS(IMOD)%XSKEW
+      EMBIA1 => WADATS(IMOD)%XEMBIA1
+      EMBIA2 => WADATS(IMOD)%XEMBIA2
       !
       DTDYN    => WADATS(IMOD)%XDTDYN
       FCUT     => WADATS(IMOD)%XFCUT
@@ -3297,6 +3311,9 @@ CONTAINS
       CFLKMAX =>  WADATS(IMOD)%XCFLKMAX
       !
       USERO  => WADATS(IMOD)%XUSERO
+      !
+      USSHX   => WADATS(IMOD)%XUSSHX
+      USSHY   => WADATS(IMOD)%XUSSHY
       !
     END IF
     !

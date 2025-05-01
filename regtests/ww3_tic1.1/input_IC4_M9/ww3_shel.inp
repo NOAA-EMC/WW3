@@ -1,0 +1,68 @@
+$ WAVEWATCH III shell input file
+$ ------------------------------
+   T T     Ice parameter 1
+   F F     Ice parameter 2
+   F F     Ice parameter 3
+   F F     Ice parameter 4
+   F F     Ice parameter 5
+   F F     Mud parameter 1
+   F F     Mud parameter 2
+   F F     Mud parameter 3
+   F F     Water levels
+   F F     Currents
+   F F     Winds
+   T F     Ice concentrations
+   F F     Atmospheric momentum
+   F F     Air density
+   F       Assimilation data : Mean parameters
+   F       Assimilation data : 1-D spectra
+   F       Assimilation data : 2-D spectra.
+$
+   19680606 000000
+   19680606 120000
+$
+   1
+$
+   19680606 000000    900  19680606 120000
+N
+$ Options: DPT CUR WND DT  WLV ICE HS  L T02 T01 TM1 FP  DIR SPR DP EF 
+$          TH1M STH1M PHS PTP PLP PDIR PSP WSF TWS PNR UST CHA CGE FAW 
+$          TAW TWA WCC WCF WCH WCM SXY TWO BHD FOC TUS USS P2S WN USF 
+$          P2L ABR UBR BED FBB TBB MSS MSC DTD FCT CFX CFT CFK US1 US2
+DPT HS ICE DIR EF
+   19680606 000000    900  19680606 120000
+      0.00    0.  'Point   1 '
+      1.00E3  0.  'Point   2 '
+      2.00E3  0.  'Point   3 '
+      3.00E3  0.  'Point   4 '
+      4.00E3  0.  'Point   5 '
+      5.00E3  0.  'Point   6 '
+      6.00E3  0.  'Point   7 '
+      7.00E3  0.  'Point   8 '
+      8.00E3  0.  'Point   9 '
+      9.00E3  0.  'Point  10 '
+     10.00E3  0.  'Point  11 '
+     11.00E3  0.  'Point  12 '
+     12.00E3  0.  'Point  13 '
+     13.00E3  0.  'Point  14 '
+     14.00E3  0.  'Point  15 '
+     15.00E3  0.  'Point  16 '
+      0.    0.  'STOPSTRING'
+   19680606 000000      0  19680606 120000
+   19680606 000000      0  19680606 120000
+   19680606 000000      0  19680606 120000
+   19680606 000000      0  19680606 120000
+$
+$ Testing of output through parameter list (C/TPAR) ------------------ $
+$    Time for output and field flags as in above output type 1.
+$
+$  19680606 014500
+$    T T T T T  T T T T T  T T T T T  T
+$
+$ Homogeneous field data --------------------------------------------- $
+$ constant case:
+   'IC1' 19680606 000000   0.2
+$  'IC1' 19680606 000000   2.00
+  'STP'
+$
+$ -------------------------------------------------------------------- $

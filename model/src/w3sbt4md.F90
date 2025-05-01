@@ -1,5 +1,27 @@
+!> @file
+!> @brief SHOWEX bottom friction source term (Ardhuin et al 2003).
+!>
+!> @author F. Ardhuin
+!> @author J. Lepesqueur
+!> @date   14-Mar-2012
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+!>
+!> @brief SHOWEX bottom friction source term (Ardhuin et al. 2003).
+!>
+!> @details Using a subgrid depth parameterization based on Tolman (CE 1995).
+!>
+!> @author F. Ardhuin
+!> @author J. Lepesqueur
+!> @date   14-Mar-2012
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3SBT4MD
   !/
   !/                  +-----------------------------------+
@@ -114,6 +136,12 @@ CONTAINS
 
 
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Initialization for bottom friction source term routine.
+  !>
+  !> @author F. Ardhuin
+  !> @date   14-Mar-2012
+  !>
   SUBROUTINE INSBT4
     !/
     !/                  +-----------------------------------+
@@ -202,6 +230,15 @@ CONTAINS
     !/
   END SUBROUTINE INSBT4
   ! ----------------------------------------------------------------------
+
+  !>
+  !> @brief Tabulation of ERF function, which is used in bottom friction subgrid modeling.
+  !>
+  !> @details Initialization for source term routine.
+  !>
+  !> @author J. Lepesqueur
+  !> @date   14-Mar-2012
+  !>
   SUBROUTINE TABU_ERF
     !/
     !/                  +-----------------------------------+
@@ -276,6 +313,30 @@ CONTAINS
   !/ ------------------------------------------------------------------- /
 
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Computes the SHOWEX bottom friction with movable bed effects.
+  !>
+  !> @details Uses a Gaussian distribution for friction factors, and estimates
+  !>  the contribution of rippled and non-rippled fractions based on the
+  !>  bayesian approach of Tolman (1995).
+  !>
+  !> @param[in]    A        Action density spectrum.
+  !> @param[in]    CG       Group velocities.
+  !> @param[in]    WN       Wavenumbers.
+  !> @param[in]    DEPTH    Water depth.
+  !> @param[in]    D50      Median grain size.
+  !> @param[in]    PSIC     Critical Shields parameter.
+  !> @param[out]   TAUBBL   Components of stress leaking to the bottom.
+  !> @param[inout] BEDFORM  Ripple parameters (roughness and wavelength).
+  !> @param[out]   S        Source term (1-D version).
+  !> @param[out]   D        Diagonal term of derivative.
+  !> @param[in]    IX       Spatial grid index.
+  !> @param[in]    IY       Spatial grid index.
+  !>
+  !> @author F. Ardhuin
+  !> @author J. Lepesqueur
+  !> @date   15-Mar-2012
+  !>
   SUBROUTINE W3SBT4 (A, CG, WN, DEPTH, D50, PSIC, TAUBBL, BEDFORM, S, D, IX, IY )
     !/
     !/                  +-----------------------------------+

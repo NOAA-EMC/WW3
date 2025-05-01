@@ -6,7 +6,7 @@
 ! Define the output fields to postprocess via POINT_NML namelist
 ! -------------------------------------------------------------------- !
 &POINT_NML
-  POINT%TIMESTART        =  '19680606 000000'
+  POINT%TIMESTART        =  '20220606 000000'
   POINT%TIMESTRIDE       =  '21600.'
   POINT%TIMECOUNT        =  '1000'
   POINT%LIST             =  '1 2 3'

@@ -7,7 +7,8 @@
 ! Define top-level model parameters via DOMAIN_NML namelist
 ! -------------------------------------------------------------------- !
 &DOMAIN_NML
-  DOMAIN%STOP    = '19680606 120000'
+  DOMAIN%START   = '20220606 000000'
+  DOMAIN%STOP    = '20220606 120000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -30,9 +31,9 @@
 ! Define output dates via OUTPUT_DATE_NML namelist
 ! -------------------------------------------------------------------- !
 &OUTPUT_DATE_NML
-  DATE%FIELD          = '19680606 000000' '10800' '19680608 000000'
-  DATE%POINT          = '19680606 000000' '21600' '19680608 000000'
-  DATE%TRACK          = '19680606 000000' '14400' '19680608 000000'
+  DATE%FIELD          = '20220606 000000' '10800' '20220608 000000'
+  DATE%POINT          = '20220606 000000' '21600' '20220608 000000'
+  DATE%TRACK          = '20220606 000000' '14400' '20220608 000000'
 /
 
 ! -------------------------------------------------------------------- !
@@ -45,23 +46,24 @@
 
 &HOMOG_INPUT_NML
   HOMOG_INPUT(1)%NAME        = 'CUR'
-  HOMOG_INPUT(1)%DATE        = '19680606 030000'
+  HOMOG_INPUT(1)%DATE        = '20220606 030000'
   HOMOG_INPUT(1)%VALUE1      = 2.0
   HOMOG_INPUT(1)%VALUE2      = 45.
 
   HOMOG_INPUT(2)%NAME        = 'WND'
+  HOMOG_INPUT(2)%DATE        = '20220606 000000'
   HOMOG_INPUT(2)%VALUE1      = 20.0
   HOMOG_INPUT(2)%VALUE2      = 180.
   HOMOG_INPUT(2)%VALUE3      = 2.
 
   HOMOG_INPUT(3)%NAME        = 'WND'
-  HOMOG_INPUT(3)%DATE        = '19680606 040000'
+  HOMOG_INPUT(3)%DATE        = '20220606 040000'
   HOMOG_INPUT(3)%VALUE1      = 15.0
   HOMOG_INPUT(3)%VALUE2      = 130.
   HOMOG_INPUT(3)%VALUE3      = 1.
 
   HOMOG_INPUT(4)%NAME        = 'WND'
-  HOMOG_INPUT(4)%DATE        = '19680606 080000'
+  HOMOG_INPUT(4)%DATE        = '20220606 080000'
   HOMOG_INPUT(4)%VALUE1      = 25.0
   HOMOG_INPUT(4)%VALUE2      = 90.
   HOMOG_INPUT(4)%VALUE3      = 3.

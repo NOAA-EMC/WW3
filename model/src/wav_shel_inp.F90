@@ -9,7 +9,7 @@
 !> @date 01-05-2022
 module wav_shel_inp
 
-  use w3odatmd, only: nogrp, ngrpp
+  use w3odatmd, only: nogrp, ngrpp, FNMGRD, FNMPNT, FNMRST
 
   implicit none
   private ! except
@@ -50,7 +50,10 @@ contains
 
     ! Input parameter
     integer , intent(in)   :: stdout
-    integer , intent(out)  :: mds(13), ntrace(2)
+    integer , intent(out)  :: mds(15), ntrace(2)
+
+    ! local variables
+    integer :: i
 
     ! Note that nds is set to mds in w3initmd.F90 - mds is a local array
     ! The following units are referenced in module w3initmd
@@ -80,17 +83,13 @@ contains
     ! By default, unit numbers between 50 and 99 are scanned to find an
     ! unopened unit number
 
-    call ESMF_UtilIOUnitGet(mds(5)) ; open(unit=mds(5)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(6)) ; open(unit=mds(6)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(7)) ; open(unit=mds(7)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(8)) ; open(unit=mds(8)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(9)) ; open(unit=mds(9)  , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(10)); open(unit=mds(10) , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(11)); open(unit=mds(11) , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(12)); open(unit=mds(12) , status='scratch')
-    call ESMF_UtilIOUnitGet(mds(13)); open(unit=mds(13) , status='scratch')
-    close(mds(5)); close(mds(6)); close(mds(7)); close(mds(8)); close(mds(9)); close(mds(10))
-    close(mds(11)); close(mds(12)); close(mds(13))
+    do i = 5,size(mds)
+      call ESMF_UtilIOUnitGet(mds(i))
+      open(unit=mds(i), status='scratch')
+    end do
+    do i = 5,size(mds)
+      close(mds(i))
+    end do
 
     ntrace(1) = mds(3)
     ntrace(2) = 10
@@ -101,13 +100,17 @@ contains
   !> Read ww3_shel.inp Or ww3_shel.nml
   !!
   !! @param[in]  mpi_comm           mpi communicator
+  !! @param[in]  mds                an array of unit numbers
+  !! @param[in]  time0_overwrite    the initial time for overwriting the nml file, optional
+  !! @param[in]  timen_overwrite    the endding time for overwriting the nml file, optional
+  !! @param[out] rstfldlist         a list of additional restart fields, optional
   !!
   !> @author mvertens@ucar.edu, Denise.Worthen@noaa.gov
   !> @date 01-05-2022
-  subroutine read_shel_config(mpi_comm, mds, time0_overwrite, timen_overwrite)
+  subroutine read_shel_config(mpi_comm, mds, time0_overwrite, timen_overwrite, rstfldlist)
 
     use wav_shr_flags
-    use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t
+    use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t, nml_output_path_t
     use w3nmlshelmd    , only : nml_output_date_t, nml_homog_count_t, nml_homog_input_t
     use w3nmlshelmd    , only : w3nmlshel
     use w3gdatmd       , only : flagll, dtmax, nx, ny, gtype
@@ -128,12 +131,14 @@ contains
 #ifdef W3_NL5
     use w3wdatmd       , only : qi5tbeg
 #endif
+    use wav_kind_mod  , only : CL => shr_kind_cl
 
     ! input/output parameters
-    integer, intent(in) :: mpi_comm
-    integer, intent(in) :: mds(:)
-    integer, intent(in), optional :: time0_overwrite(2)
-    integer, intent(in), optional :: timen_overwrite(2)
+    integer,           intent(in) :: mpi_comm
+    integer,           intent(in) :: mds(:)
+    integer,           intent(in),  optional :: time0_overwrite(2)
+    integer,           intent(in),  optional :: timen_overwrite(2)
+    character(len=CL), intent(out), optional :: rstfldlist
 
     ! local parameters
     integer, parameter  :: nhmax =    200
@@ -142,6 +147,7 @@ contains
     type(nml_input_t)        :: nml_input
     type(nml_output_type_t)  :: nml_output_type
     type(nml_output_date_t)  :: nml_output_date
+    type(nml_output_path_t)  :: nml_output_path
     type(nml_homog_count_t)  :: nml_homog_count
     type(nml_homog_input_t), allocatable  :: nml_homog_input(:)
 
@@ -204,8 +210,9 @@ contains
     memunit = 740+IAPROC
     call print_logmsg(740+IAPROC, 'read_shel_config, step 1', w3_debuginit_flag)
 
-    ! ndso, ndse, ndst are set in w3initmd using mds;  w3initmd is called by either
-    ! cesm_init or uwm_int after calling the read_shel_config routine
+    ! module variables ndso, ndse, ndst are set in w3initmd using mds;  w3initmd is
+    ! called by either cesm_init or uwm_int after calling the read_shel_config routine.
+    ! these nd units are local variables here
     ndso =  mds(1)
     ndse =  mds(1)
     ndst =  mds(1)
@@ -268,7 +275,7 @@ contains
       !--------------------
 
       call w3nmlshel (mpi_comm, ndsi, trim(fnmpre)//'ww3_shel.nml', nml_domain, nml_input, &
-           nml_output_type, nml_output_date, nml_homog_count, nml_homog_input, ierr)
+           nml_output_type, nml_output_date, nml_output_path, nml_homog_count, nml_homog_input, ierr)
 
       !--------------------
       ! 2.1 forcing flags
@@ -639,6 +646,13 @@ contains
       ! Extra fields to be written in the restart
       fldrst = nml_output_type%restart%extra
       call w3flgrdflag ( ndso, ndso, ndse, fldrst, flogr, flogrr, iaproc, napout, ierr )
+      if (present(rstfldlist)) then
+        if (trim(fldrst) .ne. 'unset')then
+          rstfldlist = trim(fldrst)
+        else
+          rstfldlist = ' '
+        end if
+      end if
       if ( ierr .ne. 0 ) goto 2222
 
       ! force minimal allocation to avoid memory seg fault
@@ -755,6 +769,25 @@ contains
              ( flh(10) .and. (nh(10).eq.0) ) ) goto 2007
 
       end if ! flhom
+
+      !--------------------
+      ! 2.7 User-defined directory
+      !--------------------
+
+      FNMGRD = trim(nml_output_path%grd_out)
+      if (FNMGRD(len_trim(FNMGRD):len_trim(FNMGRD)) /= '/') then
+        FNMGRD = trim(FNMGRD) // '/'
+      end if
+
+      FNMPNT = trim(nml_output_path%pnt_out)
+      if (FNMPNT(len_trim(FNMPNT):len_trim(FNMPNT)) /= '/') then
+        FNMPNT = trim(FNMPNT) // '/'
+      end if
+
+      FNMRST = trim(nml_output_path%rst_out)
+      if (FNMRST(len_trim(FNMRST):len_trim(FNMRST)) /= '/') then
+        FNMRST = trim(FNMRST) // '/'
+      end if
 
     end if ! flgnml
 
