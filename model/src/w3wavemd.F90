@@ -496,7 +496,7 @@ CONTAINS
     use wav_history_mod , only : write_history
 #endif
     use w3odatmd        , only : histwr, rstwr, use_historync, use_restartnc, user_restfname
-    use w3odatmd        , only : verboselog
+    use w3odatmd        , only : logfile_is_assigned, verboselog
     use w3timemd        , only : set_user_timestring
     !
 #ifdef W3_MPI
@@ -676,7 +676,9 @@ CONTAINS
       FLPFLD = FLPFLD .OR. FLOGRD(4,J) .OR. FLOGR2(4,J)
     END DO
     !
-    IF ( IAPROC .EQ. NAPLOG ) BACKSPACE ( NDSO )
+    if (.not. logfile_is_assigned) then
+      IF ( IAPROC .EQ. NAPLOG ) BACKSPACE ( NDSO )
+    end if
     !
     IF ( FLCOLD ) THEN
       DTDYN = 0.

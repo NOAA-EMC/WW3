@@ -38,7 +38,7 @@ contains
   !===============================================================================
   !> Set IO unit numbers
   !!
-  !! @param[in]    stdout           unit number for stdout
+  !! @param[in]    stdout           logfile unit on the root task, otherwise 6
   !! @param[out]   mds              an array of 13 unit numbers
   !! @param[out]   ntrace           an array of 2 unit numbers used for trace output
   !!
@@ -113,13 +113,13 @@ contains
     use w3nmlshelmd    , only : nml_domain_t, nml_input_t, nml_output_type_t, nml_output_path_t
     use w3nmlshelmd    , only : nml_output_date_t, nml_homog_count_t, nml_homog_input_t
     use w3nmlshelmd    , only : w3nmlshel
-    use w3gdatmd       , only : flagll, dtmax, nx, ny, gtype
+    use w3gdatmd       , only : flagll, dtmax
     use w3wdatmd       , only : time, w3ndat, w3dimw, w3setw
     use w3adatmd       , only : w3naux, w3dima, w3seta
     use w3idatmd       , only : inflags1, inflags2, flagsc
     use w3odatmd       , only : w3nout, w3seto, nds
     use w3odatmd       , only : naproc, iaproc, napout, naperr
-    use w3odatmd       , only : idout, fnmpre, iostyp, notype
+    use w3odatmd       , only : fnmpre, iostyp, notype
     use w3odatmd       , only : flogrr, flogr, ofiles
     use w3iogrmd       , only : w3iogr
     use w3iogomd       , only : w3readflgrd, fldout, w3flgrdflag
@@ -153,9 +153,9 @@ contains
 
     integer             :: ndsi, ndsi2, ndss, ndso, ndse, ndst, ndsl
     integer             :: ndsm, ndsen, ierr, j, i, iloop, ipts
-    integer             :: nh(-7:10), tho(2,-7:10,nhmax), rcld(7:9)
-    integer             :: nodata(7:9), startdate(8), stopdate(8), ihh(-7:10)
-    integer             :: jfirst, ierr_mpi, flagtide, ih, n_tot
+    integer             :: nh(-7:10), tho(2,-7:10,nhmax)
+    integer             :: startdate(8), stopdate(8), ihh(-7:10)
+    integer             :: jfirst, ierr_mpi, ih, n_tot
     real                :: factor, dttst, xx, yy, ha(nhmax,-7:10)
     real                :: hd(nhmax,-7:10), hs(nhmax,-7:10)
     double precision    :: startjulday, stopjulday

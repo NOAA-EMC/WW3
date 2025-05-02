@@ -19,7 +19,7 @@ module wav_import_export
   use wav_shr_mod  , only : ymd2date
   use wav_shr_mod  , only : chkerr
   use wav_shr_mod  , only : state_diagnose, state_reset, state_getfldptr, state_fldchk
-  use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, multigrid, unstr_mesh
+  use wav_shr_mod  , only : wav_coupling_to_cice, nwav_elev_spectrum, merge_import, dbug_flag, unstr_mesh
   use constants    , only : grav, tpi, dwat, dair
   use w3parall     , only : init_get_isea
 
@@ -278,18 +278,11 @@ contains
     use w3idatmd    , only: CX0, CY0, CXN, CYN, DT0, DTN, ICEI, WLEV, INFLAGS1, ICEP1, ICEP5
     use w3idatmd    , only: TC0, TCN, TLN, TIN, TI1, TI5, TW0, TWN, WX0, WY0, WXN, WYN
     use w3idatmd    , only: UX0, UY0, UXN, UYN, TU0, TUN
-    use w3idatmd    , only: tfn, w3seti
+    use w3idatmd    , only: w3seti
     use w3odatmd    , only: w3seto
     use w3wdatmd    , only: w3setw
 #ifdef W3_CESMCOUPLED
     use w3idatmd    , only: HSL
-#else
-    use wmupdtmd    , only: wmupd2
-    use wmmdatmd    , only: wmsetm
-    use wmmdatmd    , only: mdse, mdst, nrgrd, inpmap
-#ifdef W3_MPI
-    use wmmdatmd    , only: mpi_comm_grd
-#endif
 #endif
 
     ! input/output variables
@@ -306,8 +299,6 @@ contains
     real(r4)                :: def_value
     character(len=10)       :: uwnd
     character(len=10)       :: vwnd
-    integer                 :: imod, j, jmod
-    integer                 :: mpi_comm_null = -1
     real(r4), allocatable   :: wxdata(:)      ! only needed if merge_import
     real(r4), allocatable   :: wydata(:)      ! only needed if merge_import
     character(len=*), parameter :: subname='(wav_import_export:import_fields)'
@@ -339,11 +330,6 @@ contains
     ! set time for input data to time0 and timen (shouldn't matter)
 
     def_value = 0.0_r4
-
-#ifndef W3_CESMCOUPLED
-    call w3setg ( 1, mdse, mdst )
-    call w3seti ( 1, mdse, mdst )
-#endif
 
     ! ---------------
     ! INFLAGS1(1)
@@ -539,31 +525,6 @@ contains
       end if
     end if
 
-#ifndef W3_CESMCOUPLED
-    if (multigrid) then
-      do j = lbound(inflags1,1),ubound(inflags1,1)
-        if (inflags1(j)) then
-          do imod = 1,nrgrd
-            tfn(:,j) = timen(:)
-            call w3setg ( imod, mdse, mdst )
-            call w3setw ( imod, mdse, mdst )
-            call w3seti ( imod, mdse, mdst )
-            call w3seto ( imod, mdse, mdst )
-            call wmsetm ( imod, mdse, mdst )
-#ifdef W3_MPI
-            if ( mpi_comm_grd .eq. mpi_comm_null ) cycle
-#endif
-            !TODO: when is this active? jmod = -999
-            jmod = inpmap(imod,j)
-            if ( jmod.lt.0 .and. jmod.ne.-999 ) then
-              call wmupd2( imod, j, jmod, rc )
-              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            endif
-          end do
-        end if
-      end do
-    end if
-#endif
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
 
   end subroutine import_fields
@@ -593,11 +554,10 @@ contains
     use w3gdatmd      , only : mapsf, MAPSTA, USSPF, NK, w3setg
     use w3iogomd      , only : CALC_U3STOKES
 #ifdef W3_CESMCOUPLED
+    use w3odatmd      , only : naproc, iaproc
     use w3wdatmd      , only : ASF, UST
     use w3adatmd      , only : USSHX, USSHY, UD
     use w3idatmd      , only : HSL
-#else
-    use wmmdatmd      , only : mdse, mdst, wmsetm
 #endif
 
     ! input/output/variables
@@ -652,16 +612,6 @@ contains
     call NUOPC_ModelGet(gcomp, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-#ifndef W3_CESMCOUPLED
-    call w3setg ( 1, mdse, mdst )
-    call w3setw ( 1, mdse, mdst )
-    call w3seta ( 1, mdse, mdst )
-    call w3seti ( 1, mdse, mdst )
-    call w3seto ( 1, mdse, mdst )
-    if (multigrid) then
-      call wmsetm ( 1, mdse, mdst )
-    end if
-#endif
 #ifdef W3_CESMCOUPLED
     if (state_fldchk(exportState, 'Sw_lamult')) then
       call state_getfldptr(exportState, 'Sw_lamult', sw_lamult, rc=rc)
@@ -695,7 +645,7 @@ contains
       call state_getfldptr(exportState, 'Sw_lasl', sw_lasl, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       sw_lasl(:) = fillvalue
-      do jsea=1, nseal
+      do jsea=1, nseal_cpl
          isea = iaproc + (jsea-1)*naproc
          ix  = mapsf(isea,1)
          iy  = mapsf(isea,2)
@@ -987,7 +937,7 @@ contains
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' called', ESMF_LOGMSG_INFO)
 
     do n = 1, numflds
-      stdname = fldList(n)%stdname
+      stdname = trim(fldList(n)%stdname)
       if (NUOPC_IsConnected(state, fieldName=stdname)) then
         if (stdname == trim(flds_scalar_name)) then
           call ESMF_LogWrite(trim(subname)//trim(tag)//" Field = "//trim(stdname)//" is connected on root pe", &
