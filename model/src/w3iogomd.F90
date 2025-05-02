@@ -2413,7 +2413,7 @@ CONTAINS
     IF (FLOLOC( 8, 7).OR.FLOLOC( 8, 8).OR.FLOLOC( 8, 9)) THEN
       CALL SKEWNESS(A)
     END IF
-    
+
     !
     ! Dominant wave breaking probability
     !
@@ -4774,7 +4774,7 @@ CONTAINS
     !     EXTERNALS.
     !     ----------
     !         VMIN_D
-    !         VPLUS_D          
+    !         VPLUS_D
     !     REFERENCES.
     !     -----------
     !          V E ZAKHAROV(1967)
@@ -4893,7 +4893,7 @@ CONTAINS
         XK1SQ = FAK(M1)**2
         DO K2=1,NTH
           DO K1=1,NTH
-            C22 = FAC0(K1,K2,M1,M2)+B(K1,K2,M1,M2) 
+            C22 = FAC0(K1,K2,M1,M2)+B(K1,K2,M1,M2)
             S22 = B(K1,K2,M1,M2)-FAC0(K1,K2,M1,M2)
             FAC1(K1,K2,M1,M2) = (XK1SQ*ECOS(K1)**2 + XK2SQ*ECOS(K2)**2)*C22    &
                                 -FAK(M1)*FAK(M2)*ECOS(K1)*ECOS(K2)*S22
@@ -4913,7 +4913,7 @@ CONTAINS
       !-----------------------------------------------------------------------
 
       REAL(KIND=4) FUNCTION VMIN_D(XI,XJ,XK,XIJ,XIK,XJK,XOI,XOJ,XOK)
-     
+
         !     PETER JANSSEN
         !     PURPOSE.
         !     --------
@@ -4951,7 +4951,7 @@ CONTAINS
         SQJKI=SQRT(OJ*OK*RI/(OI*RJ*RK))
         VMIN_D=ZCONST*( (XIJ-RI*RJ)*SQIJK + (XIK-RI*RK)*SQIKJ+ (XJK+RJ*RK)*SQJKI )
 
-      END FUNCTION VMIN_D      
+      END FUNCTION VMIN_D
 
       !-----------------------------------------------------------------------
 
@@ -5005,7 +5005,7 @@ CONTAINS
   !> @brief  Determines skewness paramters in order to obtain
   !>         correction on altimeter wave height
   !>
-  !> @details Evaluate deviations from gaussianity following the work 
+  !> @details Evaluate deviations from gaussianity following the work
   !>          of Srokosz and Longuet-Higgins. For second order
   !>          corrections to surface elevation, the approach of
   !>          Zaharov has been used.
@@ -5062,7 +5062,7 @@ CONTAINS
 
     INTEGER :: M, K, M1, K1, M2, K2, I, J
     INTEGER :: MSTART, JSEA
-   
+
     REAL(KIND=4) :: CONX, DELTA
     REAL(KIND=4) :: FH, DELF, XK1
     REAL(KIND=4) :: XPI, XPJ, XPK, XN, XFAC, CO1
@@ -5072,17 +5072,17 @@ CONTAINS
 
     ! ----------------------------------------------------------------------
 
-    NKHF=NK+13 ! same offset as in ECWAM 
+    NKHF=NK+13 ! same offset as in ECWAM
 
     ALLOCATE(FAC0(NTH,NTH,NKHF,NKHF))
     ALLOCATE(FAC1(NTH,NTH,NKHF,NKHF))
     ALLOCATE(FAC2(NTH,NTH,NKHF,NKHF))
     ALLOCATE(FAC3(NTH,NTH,NKHF,NKHF))
-      
+
     CALL SECONDHH(NKHF,FAC0,FAC1,FAC2,FAC3)
 
     ALLOCATE(F2(NTH,NKHF))
-    ALLOCATE(SIGHF(NKHF), DFIMHF(NKHF), FAK(NKHF)) 
+    ALLOCATE(SIGHF(NKHF), DFIMHF(NKHF), FAK(NKHF))
 
     !     1. COMPUTATION OF FREQUENCY-DIRECTION INCREMENT
     !     -----------------------------------------------
@@ -5106,7 +5106,7 @@ CONTAINS
         SIGHF(M) = XFR*SIGHF(M-1)
       ENDDO
 
-      CO1 = 0.5*(XFR-1.)*DTH*TPIINV 
+      CO1 = 0.5*(XFR-1.)*DTH*TPIINV
       DFIMHF(1) = CO1*SIGHF(1)        ! this is DF*DTH
       DO M=2,NKHF-1
         DFIMHF(M)=CO1*(SIGHF(M)+SIGHF(M-1))
@@ -5117,7 +5117,7 @@ CONTAINS
         FAK(M) = (SIGHF(M))**2/GRAV
       ENDDO
 
-      ! Deals with the tail ... 
+      ! Deals with the tail ...
       DO M=NK+1,NKHF
         FH=(SIGHF(NK)/SIGHF(M))**5
         DO K=1,NTH
@@ -5176,9 +5176,9 @@ CONTAINS
         SKEW(JSEA)=XLAMBDA(3,0,0)
         DELTA = ( XLAMBDA(1,2,0) + XLAMBDA(1,0,2)           &
                   - 2.0*XLAMBDA(0,1,1)*XLAMBDA(1,1,1) )/    &
-                   (1.0 - XLAMBDA(0,1,1)**2)             ! this is called gamma eq. 20 
-        EMBIA1(JSEA)=-0.125*DELTA                             ! EM Bias coefficient 
-        EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0           ! tracker bias (least squares only) 	
+                   (1.0 - XLAMBDA(0,1,1)**2)             ! this is called gamma eq. 20
+        EMBIA1(JSEA)=-0.125*DELTA                             ! EM Bias coefficient
+        EMBIA2(JSEA)=-0.125*XLAMBDA(3,0,0)/3.0           ! tracker bias (least squares only)
       END IF
     END DO  ! end of loop on JSEA
         !
@@ -5187,7 +5187,7 @@ CONTAINS
 #endif
 
     DEALLOCATE(FAC0,FAC1,FAC2,FAC3)
-    DEALLOCATE(F2,SIGHF,DFIMHF,FAK) 
+    DEALLOCATE(F2,SIGHF,DFIMHF,FAK)
 
   END SUBROUTINE SKEWNESS
 
