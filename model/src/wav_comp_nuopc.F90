@@ -1675,21 +1675,6 @@ contains
       end if
     end if
 
-    ! log info
-    if (root_task) then
-      write(stdout,'(a)') trim(logmsg)
-      write(cvalue,'(4f10.1)')dtmax,dtcfl,dtcfli,dtmin
-      write(stdout,'(a)') trim(subname)//': WW3 timesteps '//trim(cvalue)
-
-      if (addrstflds) then
-        do i = 1,rstfldcnt
-          write(stdout,'(a,i3,a)') trim(subname)//': WW3 additional restart field : ',i,'  '//trim(rstfldlist(i))
-        end do
-      else
-        write(stdout,'(/,a)') trim(subname)//': WW3 NO additional restart fields will be written '
-      end if
-    end if
-
     if (dbug_flag > 5) call ESMF_LogWrite(trim(subname)//' done', ESMF_LOGMSG_INFO)
   end subroutine waveinit_ufs
 
