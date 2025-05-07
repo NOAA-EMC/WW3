@@ -55,8 +55,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
     REQUIRED_VARS scotch_lib
-    scotch_inc
-    VERSION_VAR scotch_version)
+    scotch_inc)
 
 find_package_handle_standard_args(
     ${CMAKE_FIND_PACKAGE_NAME}
