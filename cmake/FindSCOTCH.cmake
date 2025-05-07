@@ -113,8 +113,6 @@ if( EXISTS "${scotch_inc}/scotch.h" )
   set(SCOTCH_VERSION "${SCOTCH_VERSION_MAJOR}.${SCOTCH_RELEASE}.${SCOTCH_PATCHLEVEL}")
 endif()
 
-
-
 message(STATUS "Found SCOTCH: ${scotch_lib}")
 message(STATUS "Found PTSCOTCH: ${ptscotch_lib}")
 message(STATUS "Found SCOTCHerr: ${scotcherr_lib}")
@@ -122,10 +120,4 @@ message(STATUS "Found PTSCOTCHerr: ${ptscotcherr_lib}")
 message(STATUS "Found PTSCOTCHparmetis: ${ptscotchparmetis_lib}")
 message(STATUS "SCOTCH version: ${SCOTCH_VERSION}")
 
-
-
-#if(SCOTCH_VERSION VERSION_GREATER "7.0.6")
-#    add_definitions(-DSCOTCH_7.0.7)
-#    message(STATUS "SOCTCH version 7.0.7 or higher")
-#endif
 
