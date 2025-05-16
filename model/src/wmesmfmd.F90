@@ -260,14 +260,14 @@ module WMESMFMD
   logical                       :: noActiveImpFields         !< noActiveImpFields
   integer                       :: numImpFields         !< numImpFields
   character(64), allocatable    :: impFieldName(:)         !< impFieldName
-  character(128), allocatable   :: impFieldStdName(:)         !< impFieldStdName
+  character(80), allocatable    :: impFieldStdName(:)         !< impFieldStdName
   logical, allocatable          :: impFieldInitRqrd(:)         !< impFieldInitRqrd
   logical, allocatable          :: impFieldActive(:)         !< impFieldActive
   type(ESMF_Field), allocatable :: impField(:)         !< impField
   !
   ! --- Background import fields
   character(10), allocatable    :: mbgFieldName(:)     !< mbgFieldName
-  character(128), allocatable   :: mbgFieldStdName(:)  !< mbgFieldStdName
+  character(80), allocatable    :: mbgFieldStdName(:)  !< mbgFieldStdName
   logical, allocatable          :: mbgFieldActive(:)         !< mbgFieldActive
   type(ESMF_Field), allocatable :: mbgField(:)         !< mbgField
   type(ESMF_Field), allocatable :: bmskField(:)         !< bmskField
@@ -293,7 +293,7 @@ module WMESMFMD
   logical                       :: noActiveExpFields         !< noActiveExpFields
   integer                       :: numExpFields         !< numExpFields
   character(64), allocatable    :: expFieldName(:)         !< expFieldName
-  character(128), allocatable   :: expFieldStdName(:)         !< expFieldStdName
+  character(80), allocatable    :: expFieldStdName(:)         !< expFieldStdName
   integer, allocatable          :: expFieldDim(:)         !< expFieldDim
   logical, allocatable          :: expFieldActive(:)         !< expFieldActive
   type(ESMF_Field), allocatable :: expField(:)         !< expField
