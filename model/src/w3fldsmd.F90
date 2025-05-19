@@ -2325,6 +2325,15 @@ CONTAINS
 #ifdef W3_T
           WRITE (NDST,9020)
 #endif
+        ELSE IF ( J .EQ. 6 ) THEN
+          DO IX=1, NX
+            DO IY=1, NY
+              FS0(IX,IY) = FSN(IX,IY)
+            END DO
+          END DO
+#ifdef W3_T
+          WRITE (NDST,9020)
+#endif
         END IF
 #ifdef W3_T
       ELSE
