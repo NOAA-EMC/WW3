@@ -44,6 +44,17 @@
         ]
     },
     {
+        "name": "scripmpi",
+        "num_switches": "upto1",
+        "description": "use MPI parallelism for SCRIP regridding",
+        "valid-options": [
+            {
+                "name": "SCRIPMPI",
+                "requires": ["SCRIP", "MPI"]
+            }
+        ]
+    },
+    {
         "name": "shared",
         "num_switches": "one",
         "description": "'shared / distributed memory",

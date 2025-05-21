@@ -25,8 +25,9 @@ PROGRAM W3BOUNC
   !/                  | WAVEWATCH III           NOAA/NCEP |
   !/                  |           F. Ardhuin              |
   !/                  |           M. Accensi              |
+  !/                  |           D. A. Honegger          |
   !/                  |                        FORTRAN 90 |
-  !/                  | Last update :         21-Jul-2020 |
+  !/                  | Last update :         02-Jan-2025 |
   !/                  +-----------------------------------+
   !/
   !/    24-May-2013 : Adaptation from ww3_bound.ftn       ( version 4.08 )
@@ -38,6 +39,8 @@ PROGRAM W3BOUNC
   !/    15-May-2018 : Add namelist feature                ( version 6.05 )
   !/    04-May-2020 : Update spectral conversion          ( version 7.11 )
   !/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
+  !/    02-Jan-2025 : Change geographic distance method   ( version 7.xx )
+  !/    02-Jan-2025 : Add verbose=2 display output        ( version 7.xx )
   !/
   !/
   !/    Copyright 2012-2013 National Weather Service (NWS),
@@ -138,7 +141,7 @@ PROGRAM W3BOUNC
   USE W3IOBCMD, ONLY: VERBPTBC, IDSTRBC
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3TIMEMD
-  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, DIST_SPHERE
+  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, DIST_HAVERSINE
 #ifdef W3_RTD
   USE W3SERVMD, ONLY: W3EQTOLL
 #endif
@@ -534,6 +537,9 @@ PROGRAM W3BOUNC
         CALL CHECK_ERR(IRET)
       END IF
 
+      ! Display the location of the ingested NetCDF file
+      IF (VERBOSE.GE.2) WRITE(NDSO,*) 'FILEID:',IP,'LON:',LONS(IP),'LAT:',LATS(IP)
+
       ! freq and dir variables
       IRET=NF90_INQ_VARID(NCID(IP),"frequency",VARID(4))
       CALL CHECK_ERR(IRET)
@@ -649,7 +655,7 @@ PROGRAM W3BOUNC
       DO IP=1,NBO2
         !           Searches for the nearest 2 points where spectra are available
         IF (FLAGLL)  THEN
-          DIST=DIST_SPHERE ( LONS(IP),LATS(IP),XBPO(IP1),YBPO(IP1) )
+          DIST=DIST_HAVERSINE( LONS(IP),LATS(IP),XBPO(IP1),YBPO(IP1) )
         ELSE
           DIST=SQRT((LONS(IP)-XBPO(IP1))**2+(LATS(IP)-YBPO(IP1))**2)
         END IF
@@ -671,6 +677,12 @@ PROGRAM W3BOUNC
             END IF
           END IF
         END IF
+        ! Display iteration to find distance minima
+        IF (VERBOSE.GE.2) WRITE(NDSO,*) &
+            'BOUNDID:',IP1,'FILEID:',IP, &
+            'DX:',LONS(IP)-XBPO(IP1),'DY:',LATS(IP)-YBPO(IP1), &
+            'DIST:',DIST,'DMIN:',DMIN,'DMIN2:',DMIN2
+
       END DO ! IP1=1,NBO2
       IF (VERBOSE.GE.1) WRITE(NDSO,*) 'DIST:',DMIN,DMIN2,IP1,IPBPO(IP1,1),IPBPO(IP1,2), &
            LONS(IPBPO(IP1,1)),LONS(IPBPO(IP1,2)),XBPO(IP1), &

@@ -81,7 +81,7 @@ set(scrip_src
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_interface.F90
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_iounitsmod.f90
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_kindsmod.f90
-  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_conservative.f
+  ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_conservative.F
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_remap_vars.f
   ${CMAKE_CURRENT_SOURCE_DIR}/SCRIP/scrip_timers.f
   )

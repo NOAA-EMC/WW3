@@ -405,7 +405,7 @@ CONTAINS
     REAL, ALLOCATABLE :: EquLon(:),EquLat(:),StdLon(:),StdLat(:),AnglPT(:)
 #endif
     ! Variables for NetCDF weights file for points
-    character(len = 124) :: filename
+    character(len = 124) :: filename, filenameout
     logical :: pnt_wght_exists, pnt_wght_write
     integer :: ncerr, fh
     integer :: d_nopts, d_namelen, d_vsize, d_wghtlen
@@ -542,7 +542,7 @@ CONTAINS
       END DO ! End loop over output points (IPT).
     ELSE 
       ! Saved weight file exists, read weights from file 
-      IF ( IAPROC .EQ. 1 ) THEN 
+      IF ( IAPROC .EQ. 1 ) THEN
         ! Open the netCDF file.
         ncerr = nf90_open(filename, NF90_NOWRITE, fh)
         if (nf90_err(ncerr) .ne. 0) return
@@ -596,14 +596,29 @@ CONTAINS
         ncerr = nf90_get_var(fh, v_ptifac, PTIFAC, start = (/ 1, 1/), &
           count = (/ d_wghtlen_len, d_nopts_len /))
         if (nf90_err(ncerr) .ne. 0) return
+
+        ! Close the file.
+        ncerr = nf90_close(fh)
+        if (nf90_err(ncerr) .ne. 0) return
+
       END IF 
+
 #ifdef W3_MPI
-      ! Broadcast weight info to all MPI tasks: 
-      CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(PTNME,40*NPT,MPI_CHARACTER,IAPROC-1,MPI_COMM_IOPP,IERR_MPI)
+      ! Broadcast weight info to all MPI tasks:
+
+      !First broadcast NOPTS, used in the next calls:
+      CALL MPI_BCAST(NOPTS,1,MPI_INTEGER,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
+
       CALL MPI_BCAST(PTLOC,2*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
-      CALL MPI_BCAST(IPTINT,2*4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
       CALL MPI_BCAST(PTIFAC,4*NPT,MPI_REAL,0,MPI_COMM_IOPP,IERR_MPI)
+      CALL MPI_BCAST(IPTINT(:,:,1:NOPTS),2*4*NOPTS,MPI_INTEGER,0,MPI_COMM_IOPP,IERR_MPI)
+
+      !Send point names individually
+      DO IPT=1, NOPTS
+        CALL MPI_BCAST(PTNME(IPT),40,MPI_CHARACTER,0,MPI_COMM_IOPP,IERR_MPI)
+      ENDDO
+
       CALL MPI_Barrier(MPI_COMM_IOPP,IERR_MPI)
 #endif
     ENDIF  !end if point weight file exists       
@@ -612,7 +627,8 @@ CONTAINS
     IF ( pnt_wght_write .AND. (NOPTS > 0) ) THEN 
       IF ( IAPROC .EQ. 1 ) THEN
         ! Create the netCDF file.
-        ncerr = nf90_create(filename, NF90_NETCDF4, fh)
+        filenameout = 'out.pnt_wght.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+        ncerr = nf90_create(filenameout, NF90_NETCDF4, fh)
         if (nf90_err(ncerr) .ne. 0) return
 
         ! Define dimensions.
@@ -1301,14 +1317,14 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_READ(IOTST, IMOD_IN, filename, ncerr)
+  SUBROUTINE W3IOPON_READ(IOTST, IMOD_IN, filename, ncerr, TOUT )
     USE NetCDF
     USE W3ODATMD, ONLY: W3DMO2
     USE W3WDATMD, ONLY: TIME
     USE W3GDATMD, ONLY: NTH, NK, NSPEC, FILEXT
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT, &
          GRDID, ICEO, ICEHO, ICEFO, W3DMO2
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_FLX5
@@ -1321,10 +1337,13 @@ CONTAINS
 
     INTEGER, INTENT(OUT)          :: IOTST
     INTEGER, INTENT(IN), OPTIONAL :: IMOD_IN
-    character(*), intent(in) :: filename
+    character(*), intent(out) :: filename
     integer, intent(inout) :: ncerr
+    INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
+    CHARACTER(LEN=15) :: TIMETAG
+    LOGICAL :: per_time_step
     INTEGER :: IGRD,MK,MTH
-    integer :: fh
+    integer :: fh, itime
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time, d_ww3time
     integer :: d_nopts_len, d_nspec_len, d_vsize_len, d_namelen_len, d_grdidlen_len, d_time_len, d_ww3time_len
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time 
@@ -1347,6 +1366,15 @@ CONTAINS
       IGRD = IMOD_IN
     ELSE
       IGRD = 1
+    END IF
+
+    ! Determine if we are reading a per-time-step file
+    per_time_step = PRESENT(TOUT)
+    IF (per_time_step) THEN
+      WRITE(TIMETAG, '(I8.8, ".", I6.6)') TOUT(1), TOUT(2)
+      filename = TRIM(FNMPRE) // TRIM(TIMETAG) // '.out_pnt.' // TRIM(FILEXT) // '.nc'
+    ELSE
+      filename = FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF
 
     ! Open the netCDF file.
@@ -1408,11 +1436,16 @@ CONTAINS
     if (nf90_err(ncerr) .ne. 0) return
     ncerr = nf90_inquire_dimension(fh, d_time, len = d_time_len)
     if (nf90_err(ncerr) .ne. 0) return
+    
+    !Determine the start for the time dimension
+    IF ( per_time_step ) THEN
+      itime=1
+    ELSE
+      itime=IPASS
+    END IF
 
-    IF ( IPASS .LE. d_time_len ) THEN 
-
-      IF ( IPASS.EQ.1 ) THEN
-
+    IF ( itime .LE. d_time_len ) THEN
+      IF ( itime.EQ.1 ) THEN
         ! Read scalar variables.
         ncerr = nf90_inq_varid(fh, VNAME_NK, v_nk)
         if (nf90_err(ncerr) .ne. 0) return
@@ -1424,33 +1457,32 @@ CONTAINS
         if (nf90_err(ncerr) .ne. 0) return
 
         !read in written variables NK, NTH as MK and MTH
-        !and ensure they match 
+        !and ensure they match
         IF (NK.NE.MK .OR. NTH.NE.MTH) THEN
           WRITE (NDSE,904) MK, MTH, NK, NTH
           CALL EXTCDE ( 12 )
         END IF
 
-        ! Allocate variables: 
+        ! Allocate variables:
         IF ( .NOT. O2INIT )                                     &
-           CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
+          CALL W3DMO2 ( IGRD, NDSE, NDST, NOPTS )
 
         ! Read vars with nopts as a dimension.
         ncerr = nf90_inq_varid(fh, VNAME_PTLOC, v_ptloc)
         if (nf90_err(ncerr) .ne. 0) return
         ncerr = nf90_get_var(fh, v_ptloc, PTLOC, start = (/ 1, 1/), &
-          count = (/ d_vsize_len, d_nopts_len /)) 
+            count = (/ d_vsize_len, d_nopts_len /))
         if (nf90_err(ncerr) .ne. 0) return
         ncerr = nf90_inq_varid(fh, VNAME_PTNME, v_ptnme)
         if (nf90_err(ncerr) .ne. 0) return
         ncerr = nf90_get_var(fh, v_ptnme, PTNME)
         if (nf90_err(ncerr) .ne. 0) return
-      END IF
-
-      !Variables read based on time (IPASS): 
-
+      END IF      
+        
+      !Variables read based on time (itime):      
       ncerr = nf90_inq_varid(fh, VNAME_WW3TIME, v_ww3time)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_ww3time, TIME, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_ww3time, TIME, start = (/ 1, itime/), &
           count = (/ d_vsize_len, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 
@@ -1463,89 +1495,88 @@ CONTAINS
 
       ncerr = nf90_inq_varid(fh, VNAME_DPO, v_dpo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_dpo, DPO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_dpo, DPO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_WAO, v_wao)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_wao, WAO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_wao, WAO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_WDO, v_wdo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_wdo, WDO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_wdo, WDO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 #ifdef W3_FLX5
       ncerr = nf90_inq_varid(fh, VNAME_TAUAO, v_tauao)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_tauao, TAUAO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_tauao, TAUAO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_TAUDO, v_taudo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_taudo, TAUDO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_taudo, TAUDO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_DAIRO, v_dairo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_dairo, DAIRO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_dairo, DAIRO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 #endif
 #ifdef W3_SETUP
       ncerr = nf90_inq_varid(fh, ZET_SETO, v_zet_seto)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_zet_seto, ZET_SETO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_zet_seto, ZET_SETO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
 #endif
       ncerr = nf90_inq_varid(fh, VNAME_ASO, v_aso)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_aso, ASO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_aso, ASO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_CAO, v_cao)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_cao, CAO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_cao, CAO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_CDO, v_cdo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_cdo, CDO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_cdo, CDO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_ICEO, v_iceo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_iceo, ICEO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_iceo, ICEO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_ICEHO, v_iceho)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_iceho, ICEHO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_iceho, ICEHO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_ICEFO, v_icefo)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_icefo, ICEFO, start = (/ 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_icefo, ICEFO, start = (/ 1, itime/), &
           count = (/ NOPTS, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_GRDID, v_grdid)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_grdid, GRDID, start = (/ 1, 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_grdid, GRDID, start = (/ 1, 1, itime/), &
           count = (/ 13, nopts, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
       ncerr = nf90_inq_varid(fh, VNAME_SPCO, v_spco)
       if (nf90_err(ncerr) .ne. 0) return
-      ncerr = nf90_get_var(fh, v_spco, SPCO, start = (/ 1, 1, IPASS/), &
+      ncerr = nf90_get_var(fh, v_spco, SPCO, start = (/ 1, 1, itime/), &
           count = (/nspec, nopts, 1 /))
       if (nf90_err(ncerr) .ne. 0) return
-
     ELSE 
       ! Set flag to indicate IPASS > d_time_len 
       ! and are at the end of the
       IOTST  = -1
-    END IF 
+    END IF
 
     ! Close the file.
     ncerr = nf90_close(fh)
@@ -1576,13 +1607,13 @@ CONTAINS
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
   !>
-  SUBROUTINE W3IOPON_WRITE(timestep_only,filename, ncerr)
+  SUBROUTINE W3IOPON_WRITE(timestep_only,filename, ncerr, NDSOP, fname, path)
     USE NETCDF 
     USE W3GDATMD, ONLY: NTH, NK, NSPEC
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT, &
          GRDID, ICEO, ICEHO, ICEFO
   USE W3TIMEMD, ONLY: CALTYPE, T2D, U2D, TSUB
 #ifdef W3_FLX5
@@ -1596,6 +1627,11 @@ CONTAINS
     integer, intent(in) :: timestep_only ! 1 if only timestep should be written.
     character(*), intent(in) :: filename
     integer, intent(inout) :: ncerr
+    !
+    INTEGER, INTENT(IN), OPTIONAL :: NDSOP
+    CHARACTER(LEN=124), INTENT(IN), OPTIONAL :: fname
+    CHARACTER(LEN=256), INTENT(IN), OPTIONAL :: path
+    !
     integer :: ndim, nvar, fmt, itime, fh
     integer :: d_nopts, d_nspec, d_vsize, d_namelen, d_grdidlen, d_time
     integer :: v_idtst, v_vertst, v_nk, v_nth, v_ptloc, v_ptnme, v_time, v_ww3time
@@ -1610,6 +1646,10 @@ CONTAINS
     integer :: v_iceho, v_icefo, v_grdid, v_spco
     integer :: curdate(8), refdate(8),ierr
     double precision :: outjulday
+
+
+    ! INDICATOR LOG
+    INTEGER :: NDSOPLOG
 
     !If first pass, or if you are writting a file for every time-step: 
     IF ( IPASS.EQ.1  .OR. timestep_only.EQ.1 ) THEN 
@@ -1871,6 +1911,17 @@ CONTAINS
     ncerr = nf90_close(fh)
     if (nf90_err(ncerr) .ne. 0) return
 
+    ! WRITE INDICATOR LOG AT THE END OF NETCDF OUTPUT
+    ! RE-USE NDSOP FOR NDSOPLOG
+    IF (timestep_only .EQ. 1) THEN
+      NDSOPLOG = NDSOP
+      OPEN(NDSOPLOG,FILE=path(:LEN_TRIM(path))//'log.'//TRIM(fname)//'.txt', &
+               form ='FORMATTED')
+      WRITE (NDSOPLOG,*) 'The '//TRIM(fname)//' file has been successfully written!'
+      CALL FLUSH (NDSOPLOG)
+      CLOSE (NDSOPLOG)
+    ENDIF
+
   END SUBROUTINE W3IOPON_WRITE
 
   !> Read or write the netCDF point output file,
@@ -1896,13 +1947,13 @@ CONTAINS
   !> @param[in] IMOD Model number for W3GDAT etc.
   !>
   !> @author Edward Hartnett  @date 1-Nov-2023
-  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD)
+  SUBROUTINE W3IOPON ( INXOUT, NDSOP, IOTST, IMOD, TOUT )
     USE W3GDATMD, ONLY: W3SETG
     USE W3WDATMD, ONLY: W3SETW
     USE W3ODATMD, ONLY: W3SETO
     USE W3GDATMD, ONLY: FILEXT
     USE W3WDATMD, ONLY: TIME
-    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, FNMPRE 
+    USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, FNMPRE, FNMPNT 
     USE W3ODATMD, ONLY: OFILES
     USE W3SERVMD, ONLY: EXTCDE
 #ifdef W3_S
@@ -1914,13 +1965,16 @@ CONTAINS
     CHARACTER, INTENT(IN)         :: INXOUT*(*)
     INTEGER, INTENT(IN)           :: NDSOP
     INTEGER, INTENT(OUT)          :: IOTST
+    INTEGER, INTENT(IN), OPTIONAL :: TOUT(2)
     INTEGER, INTENT(IN), OPTIONAL :: IMOD
-
     CHARACTER(LEN=15) :: TIMETAG
     INTEGER :: IGRD
-    character(len = 124) :: filename
+    character(len = 256) :: filename
     integer :: ncerr
 
+    ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
+    CHARACTER(LEN=256)       :: FNMPRE_LOCAL
+    CHARACTER(LEN=124)       :: FNAME
 #ifdef W3_S
     CALL STRACE (IENT, 'W3IOPON')
 #endif
@@ -1949,19 +2003,31 @@ CONTAINS
     END IF
 
     ! Determine filename.
+    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      FNMPRE_LOCAL = FNMPRE
+    ELSE
+      FNMPRE_LOCAL = FNMPNT
+    END IF
+    !
+    
     IF ( OFILES(2) .EQ. 1 ) THEN 
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
       WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
-      filename = FNMPRE(:LEN_TRIM(FNMPRE))//TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+      filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+      FNAME = TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))
     ELSE 
-      filename = FNMPRE(:LEN_TRIM(FNMPRE))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
+      filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//'out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
     END IF 
 
     ! Do a read or a write of the point file.
     IF (INXOUT .EQ. 'READ') THEN
-      CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
+      IF (PRESENT(TOUT)) THEN
+        CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr, TOUT)
+      ELSE
+        CALL W3IOPON_READ(IOTST, IMOD, filename, ncerr)
+      END IF
     ELSE
-      CALL W3IOPON_WRITE(OFILES(2), filename, ncerr)
+      CALL W3IOPON_WRITE(OFILES(2), filename, ncerr, NDSOP=NDSOP, fname=FNAME, path=FNMPRE_LOCAL)
     ENDIF
     if (nf90_err(ncerr) .ne. 0) then
       WRITE(NDSE,*) ' *** WAVEWATCH III ERROR IN W3IOPO :'
@@ -2142,7 +2208,7 @@ CONTAINS
     USE W3WDATMD, ONLY: TIME
     USE W3ODATMD, ONLY: NDST, NDSE, IPASS => IPASS2, NOPTS, IPTINT, &
          IL, IW, II, PTLOC, PTIFAC, DPO, WAO, WDO,   &
-         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, &
+         ASO, CAO, CDO, SPCO, PTNME, O2INIT, FNMPRE, FNMPNT,   &
          GRDID, ICEO, ICEHO, ICEFO
 #ifdef W3_FLX5
     USE W3ODATMD, ONLY: TAUAO, TAUDO, DAIRO
@@ -2185,6 +2251,10 @@ CONTAINS
     CHARACTER(LEN=10)       :: VERTST
     !/
     CHARACTER(LEN=15) :: TIMETAG
+
+    ! DEFINED A LOCAL FNMPRE TO AVOID CHANGE THE GLOBAL VALUE
+    CHARACTER(LEN=256)       :: FNMPRE_LOCAL
+
     !/
     !/ ------------------------------------------------------------------- /
     !/
@@ -2223,23 +2293,30 @@ CONTAINS
     !
     ! open file ---------------------------------------------------------- *
     !
+    IF (LEN_TRIM(FNMPNT) .EQ. 0) THEN
+      FNMPRE_LOCAL = FNMPRE
+    ELSE
+      FNMPRE_LOCAL = FNMPNT
+    END IF
+    !
+
     IF ( IPASS.EQ.1 .AND. OFILES(2) .EQ. 0 ) THEN
 
       I      = LEN_TRIM(FILEXT)
-      J      = LEN_TRIM(FNMPRE)
+      J      = LEN_TRIM(FNMPRE_LOCAL)
 
 #ifdef W3_T
-      WRITE (NDST,9001) FNMPRE(:J)//'out_pnt.'//FILEXT(:I)
+      WRITE (NDST,9001) FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I)
 #endif
       IF ( WRITE ) THEN
-        OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
+        OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
 #ifdef W3_ASCII
-        OPEN (NDSOA,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I)//'.txt',    &
+        OPEN (NDSOA,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I)//'.txt',    &
              form='FORMATTED', ERR=800,IOSTAT=IERR)
 #endif
       ELSE
-        OPEN (NDSOP,FILE=FNMPRE(:J)//'out_pnt.'//FILEXT(:I),    &
+        OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//'out_pnt.'//FILEXT(:I),    &
              form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR,STATUS='OLD')
       END IF
       !
@@ -2320,20 +2397,20 @@ CONTAINS
     IF ( IPASS.GE.1 .AND. OFILES(2) .EQ. 1) THEN
       !
       I      = LEN_TRIM(FILEXT)
-      J      = LEN_TRIM(FNMPRE)
+      J      = LEN_TRIM(FNMPRE_LOCAL)
 
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
       WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
       !
 #ifdef W3_T
-      WRITE (NDST,9001) FNMPRE(:J)//TIMETAG//'.out_pnt.'// &
+      WRITE (NDST,9001) FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'// &
            FILEXT(:I)
 #endif
       IF ( WRITE ) THEN
-        OPEN (NDSOP,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
+        OPEN (NDSOP,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'   &
              //FILEXT(:I),form='UNFORMATTED', convert=file_endian,ERR=800,IOSTAT=IERR)
 #ifdef W3_ASCII
-        OPEN (NDSOA,FILE=FNMPRE(:J)//TIMETAG//'.out_pnt.'   &
+        OPEN (NDSOA,FILE=FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'   &
              //FILEXT(:I)//'.txt',form='FORMATTED', ERR=800,IOSTAT=IERR)
 #endif
       END IF

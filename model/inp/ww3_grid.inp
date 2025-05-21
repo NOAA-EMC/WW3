@@ -501,6 +501,10 @@ $                           P2SF   : ......
 $                           CALTYPE: Calendar type. The only accepted
 $                                    values are 'standard' (default),
 $                                    '365_day', or '360_day'.
+$                           IC_NUMERICS: Logical variable (T/F). Set to T to
+$                                      allow the user to place the 'sea ice'
+$                                      source terms with other source terms
+$                                      Default is F (PR_1294)
 $
 $ Diagnostic Sea-state Dependent Stress- - - - - - - - - - - - - - - - -
 $   Reichl et al. 2014  : Namelist FLD1

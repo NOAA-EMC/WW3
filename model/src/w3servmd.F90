@@ -18,6 +18,7 @@ MODULE W3SERVMD
   !/    01-Mar-2016 : Added W3THRTN and W3XYRTN for post  ( version 6.02 )
   !/                  processing rotated grid data
   !/    15-Jan-2021 : Added UV_TO_MAG_DIR routine         ( version 7.12 )
+  !/    02-Jan-2025 : Added DIST_HAVERSINE routine        ( version 7.xx )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -511,6 +512,100 @@ CONTAINS
     !/ End of NEXTLN ----------------------------------------------------- /
     !/
   END FUNCTION EJ5P
+  !/ ------------------------------------------------------------------- /
+
+  REAL FUNCTION DIST_HAVERSINE ( LON1, LAT1, LON2, LAT2 )
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III          USACE/ERDC |
+    !/                  |          D. A. Honegger           |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         02-Jan-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/    02-Jan-2025 :  Creation                          ( version 7.xx )
+    !/
+    !  1. Purpose :
+    !
+    !     Computes the haversine distance between two points on a sphere
+    !
+    !  2. Method
+    !
+    !     Haversine Formula: R.W. Sinnott, "Virtues of the Haversine", 
+    !                        Sky and Telescope, vol. 68, no. 2, 1984, p. 159
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !
+    !     ----------------------------------------------------------------
+    !       LON1     Real   I    Longitude of 1st point
+    !       LAT1     Real   I    Latitude of 1st point
+    !       LON2     Real   I    Longitude of 2nd point
+    !       LAT2     Real   I    Latitude of 2nd point
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !     None.
+    !
+    !  5. Called by :
+    !
+    !     WW3_BOUNC
+    !
+    !  6. Error messages :
+    !
+    !  7. Remarks :
+    !
+    !     This function uses the haversine formula, which is robust to 
+    !     rounding errors when calculating short distances 
+    !     (less than 1 km).
+    !
+    !  8. Structure :
+    !
+    !     See source code.
+    !
+    !  9. Switches :
+    !
+    !     None.
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    USE CONSTANTS
+    ! DERA: Degrees to Radians (PI/180)
+    ! RADE: Radians to Degrees (180/PI)
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    REAL, INTENT(IN)        :: LON1, LAT1, LON2, LAT2
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local parameters
+    !/
+    REAL                    :: DLON, DLAT, A, C 
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/
+    
+    ! Compute differences in latitude and longitude
+    DLAT = (LAT2 - LAT1) * DERA
+    DLON = (LON2 - LON1) * DERA
+
+    ! Compute the haversine of the central angle
+    A = SIN(DLAT / 2.0)**2 + COS(LAT1 * DERA) * COS(LAT2 * DERA) * SIN(DLON / 2.0)**2
+
+    ! Compute the angular distance (c), ensuring no precision issues
+    C = 2.0 * ATAN2(SQRT(A), SQRT(MAX(0.0, 1.0 - A)))
+
+    ! Compute the spherical distance
+    DIST_HAVERSINE = RADE * C
+
+    RETURN
+  END FUNCTION DIST_HAVERSINE
+  !/ ------------------------------------------------------------------- /
+
   !/ ------------------------------------------------------------------- /
   REAL FUNCTION DIST_SPHERE ( lo1,la1,lo2,la2 )
     !/
