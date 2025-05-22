@@ -2013,7 +2013,7 @@ CONTAINS
 
     IF ( OFILES(2) .EQ. 1 ) THEN
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
-      WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+      WRITE(TIMETAG, '(i8.8, ".", i6.6)') TIME(1), TIME(2) 
       filename = FNMPRE_LOCAL(:LEN_TRIM(FNMPRE_LOCAL))//TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))//'.nc'
       FNAME = TIMETAG//'.out_pnt.'//FILEXT(:LEN_TRIM(FILEXT))
     ELSE
@@ -2401,7 +2401,7 @@ CONTAINS
       J      = LEN_TRIM(FNMPRE_LOCAL)
 
       ! Create TIMETAG for file name using YYYYMMDD.HHMMS prefix
-      WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+      WRITE(TIMETAG, '(i8.8, ".", i6.6)') TIME(1), TIME(2)
       !
 #ifdef W3_T
       WRITE (NDST,9001) FNMPRE_LOCAL(:J)//TIMETAG//'.out_pnt.'// &
