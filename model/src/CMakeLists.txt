@@ -105,6 +105,8 @@ set(netcdf_programs ww3_ounf ww3_ounp ww3_bounc ww3_trnc ww3_prnc)
 if("OASIS" IN_LIST switches)
   find_package(OASIS REQUIRED)
   target_link_libraries(ww3_lib PUBLIC OASIS::OASIS)
+  find_package(MPI REQUIRED COMPONENTS Fortran)
+  target_link_libraries(ww3_lib PUBLIC MPI::MPI_Fortran)
 endif()
 
 if(NETCDF)
