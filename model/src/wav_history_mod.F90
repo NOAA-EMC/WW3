@@ -130,8 +130,6 @@ contains
 
     integer :: lmap(nseal_cpl)
 
-!KWS freq
-!    integer :: nfreq
     double precision, allocatable  :: freq_wn(:),freq_ef(:)
 
     ! -------------------------------------------------------------
@@ -184,10 +182,6 @@ contains
     if (k_axis) allocate(var3dk(1:nseal_cpl,len_k))
     if (nk_axis) allocate(var3dnk(1:nseal_cpl,len_nk))
 
-!    if ( nk_axis.or.k_axis ) allocate(freq(1:nk))
-!    if ( k_axis  ) nfreq=len_k
-!    if ( nk_axis ) nfreq=len_nk
-!    if ( nk_axis.or.k_axis ) allocate(freq(1:nfreq))
     if ( k_axis ) allocate(freq_ef(1:len_k))
     if ( nk_axis ) allocate(freq_wn(1:len_nk))
 
@@ -198,9 +192,6 @@ contains
     if (s_axis) ierr = pio_def_dim(pioid, 'noswll', len_s, stid)
     if (m_axis) ierr = pio_def_dim(pioid, 'nm'    , len_m, mtid)
     if (p_axis) ierr = pio_def_dim(pioid, 'np'    , len_p, ptid)
-!    if (k_axis) ierr = pio_def_dim(pioid, 'freq'  , len_k, ktid)
-!    if (k_axis) ierr = pio_def_dim(pioid, 'nf'  , len_k, ktid)
-!    if (nk_axis) ierr = pio_def_dim(pioid, 'freqnk'  , len_nk, nktid)
 
     if (k_axis) ierr = pio_def_dim(pioid, 'nf_ef'  , len_k, ktid)
     if (nk_axis) ierr = pio_def_dim(pioid, 'nf_wn'  , len_nk, nktid)
@@ -389,41 +380,12 @@ contains
 
       else if (trim(outvars(n)%dims) == 'nk') then                           ! freq + 1 axis for wavenumber
         var3d => var3dnk
-         if(vname .eq.       'WN') then
-            call write_var3d_transpose(iodesc3dnk, vname, wn (1:len_nk  ,1:nseal_cpl)   )
-
-!           ! define the frequency  axis variables for wavenumber
-!            ierr = pio_def_var(pioid, 'freq_wn', PIO_DOUBLE, (/nktid,timid/), varid)
-!            call handle_err(ierr,'def_freq_wn')
-!            ierr = pio_put_att(pioid, varid, 'units', '1/s')
-
-!            nfreq=nk    
-!            FREQ(1:nk)=SIG(1:nk)*TPIINV
-!            ierr = pio_inq_varid(pioid,  'freq_wn', varid)
-!            call handle_err(ierr, 'inquire variable freq_wn ')
-!            ierr = pio_put_var(pioid, varid, freq )
-!            call handle_err(ierr, 'put freq_wn')
-
-         end if
+         if(vname .eq.       'WN') call write_var3d_transpose(iodesc3dnk, vname, wn (1:len_nk  ,1:nseal_cpl)   )
 
       else if (trim(outvars(n)%dims) == 'k') then                           ! freq axis
         var3d => var3dk
         ! Group 3
-        if(vname .eq.       'EF') then
-            call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,1):e3df(3,1)) )
-
-!            ierr = pio_def_var(pioid, 'freq', PIO_DOUBLE, (/ktid,timid/), varid)
-!            call handle_err(ierr,'def_freq')
-!            ierr = pio_put_att(pioid, varid, 'units', '1/s')
- 
-!            nfreq=e3df(3,1)-e3df(2,1)+1
-!            FREQ(1:nfreq)=SIG(1:nfreq)*TPIINV
-!            ierr = pio_inq_varid(pioid,  'freq', varid)
-!            call handle_err(ierr, 'inquire variable freq ')
-!            ierr = pio_put_var(pioid, varid, freq )
-!            call handle_err(ierr, 'put freq')
-
-        end if
+        if(vname .eq.       'EF')  call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,1):e3df(3,1)) )
 
 
         if(vname .eq.     'TH1M') call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,2):e3df(3,2)) )
@@ -478,8 +440,6 @@ contains
         if(vname .eq.      'PNR') call write_var2d(vname, pnr      (1:nseal_cpl) )
 
         ! Group 5
-!KWS        if (vname .eq.    'USTX') call write_var2d(vname, ust      (1:nseal_cpl)*asf(1:nseal_cpl), dir=cos(ustdir(1:nseal_cpl)), usemask='true')
-!KWS        if (vname .eq.    'USTY') call write_var2d(vname, ust      (1:nseal_cpl)*asf(1:nseal_cpl), dir=sin(ustdir(1:nseal_cpl)), usemask='true')
         if (vname .eq.    'USTX') call write_var2d(vname, ust      (1:nsea)*asf(1:nsea), dir=cos(ustdir(1:nsea)), init0='false', global='true')
         if (vname .eq.    'USTY') call write_var2d(vname, ust      (1:nsea)*asf(1:nsea), dir=sin(ustdir(1:nsea)), init0='false', global='true')
 
@@ -553,7 +513,6 @@ contains
     if (k_axis) deallocate(var3dk)
     if (nk_axis) deallocate(var3dnk)
  
-!    if(k_axis.or.nk_axis) deallocate(freq)
     if (k_axis ) deallocate(freq_ef)
     if (nk_axis) deallocate(freq_wn)
 
