@@ -649,10 +649,10 @@ CONTAINS
              INPUTS(IMOD)%CYN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,              &
-             INPUTS(IMOD)%CY0(NX,NY) ,              &
-             INPUTS(IMOD)%CXN(ALLOCSIZEX,ALLOCSIZEY) , &
-             INPUTS(IMOD)%CYN(ALLOCSIZEX,ALLOCSIZEY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%CX0(NX,NY) ,           &
+             INPUTS(IMOD)%CY0(NX,NY) ,                 &
+             INPUTS(IMOD)%CXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%CYN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -692,12 +692,12 @@ CONTAINS
              INPUTS(IMOD)%DTN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,              &
-             INPUTS(IMOD)%WY0(NX,NY) ,              &
-             INPUTS(IMOD)%DT0(NX,NY) ,              &
-             INPUTS(IMOD)%WXN(ALLOCSIZEX,ALLOCSIZEY) , &
-             INPUTS(IMOD)%WYN(ALLOCSIZEX,ALLOCSIZEY) , &
-             INPUTS(IMOD)%DTN(ALLOCSIZEX,ALLOCSIZEY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%WX0(NX,NY) ,           &
+             INPUTS(IMOD)%WY0(NX,NY) ,                 &
+             INPUTS(IMOD)%DT0(NX,NY) ,                 &
+             INPUTS(IMOD)%WXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%WYN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%DTN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -722,10 +722,10 @@ CONTAINS
              INPUTS(IMOD)%UYN(NSEA,1) , STAT=ISTAT )
       ELSE
 #endif
-        ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,              &
-             INPUTS(IMOD)%UY0(NX,NY) ,              &
-             INPUTS(IMOD)%UXN(ALLOCSIZEX,ALLOCSIZEY) , &
-             INPUTS(IMOD)%UYN(ALLOCSIZEX,ALLOCSIZEY) , STAT=ISTAT )
+        ALLOCATE ( INPUTS(IMOD)%UX0(NX,NY) ,           &
+             INPUTS(IMOD)%UY0(NX,NY) ,                 &
+             INPUTS(IMOD)%UXN(allocsizex,allocsizey) , &
+             INPUTS(IMOD)%UYN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
@@ -740,7 +740,7 @@ CONTAINS
       ELSE
 #endif
         ALLOCATE ( INPUTS(IMOD)%RH0(NX,NY) ,              &
-             INPUTS(IMOD)%RHN(ALLOCSIZEX,ALLOCSIZEY) , STAT=ISTAT )
+             INPUTS(IMOD)%RHN(allocsizex,allocsizey) , STAT=ISTAT )
 #ifdef W3_SMC
       ENDIF
 #endif
