@@ -267,7 +267,7 @@ PROGRAM W3STRT
        CHSIP, FRREL, ETOT, E1I, FACTOR, X,  &
        Y, RDSQR, ALFA, GAMMA, SIGA, SIGB,   &
        YLN, FR, BETA, FRR, S, SUMD, ANG,    &
-       ARG, FACS, DEPTH, WN, CG, HPQMAX
+       ARG, FACS, DEPTH, WN, CG, HPQMAX, FETCH
   REAL, ALLOCATABLE       :: E1(:), DD(:), E2(:,:), E21(:), FINP(:,:)
 #ifdef W3_O5
   REAL, ALLOCATABLE       :: E2OUT(:,:)
@@ -767,7 +767,11 @@ PROGRAM W3STRT
     !
   ELSE IF ( ITYPE .EQ. 3 ) THEN
     INXOUT = 'WIND'
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,960)
+    CALL NEXTLN ( COMSTR , NDSI , NDSEN )
+    READ (NDSI,*,END=801,ERR=802) FETCH
+    
+    IF ( IAPROC .EQ. NAPOUT .AND. FETCH<=0 ) WRITE (NDSO,960)
+    IF ( IAPROC .EQ. NAPOUT .AND. FETCH>0 ) WRITE (NDSO,961) FETCH
     !
     !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ! 7.  ITYPE = 4, User defined.
@@ -987,6 +991,8 @@ PROGRAM W3STRT
   !
 960 FORMAT ( '       Fetch-limited JONSWAP spectra based on local '/ &
        '       wind speed (fetch related to grid increment).')
+961 FORMAT ( '       Fetch-limited JONSWAP spectra based on local '/ &
+       '       wind speed (manually set fetch / m): ',F11.4/)
   !
 970 FORMAT ( '       User-defined energy spectrum F(f,theta).'//    &
        '       Scale factor             (-) : ',E12.4/)
