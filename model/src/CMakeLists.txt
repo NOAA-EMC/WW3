@@ -105,10 +105,6 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Cray")
   set(compile_flags_debug -O0 -Rbcps -Ktrap=fp)
 endif()
 
-#target_compile_options(ww3_lib PUBLIC "$<$<COMPILE_LANGUAGE:Fortran>:${compile_flags}>")
-#target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_debug}>")
-#target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_release}>")
-
 # Executables to always build
 set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
   ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl ww3_multi ww3_systrk)
@@ -185,8 +181,6 @@ if("PDLIB" IN_LIST switches)
     target_sources(ww3_lib PRIVATE ${pdlib_src})
     target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis)
     if(SCOTCH_VERSION VERSION_GREATER "7.0.6")
-      message(STATUS "JDM SOCTCH version 7.0.7 or higher")
-      #add_compile_options(-DSCOTCH_7.0.7)
       list(APPEND compile_flags -DSCOTCH_707)
       list(APPEND compile_flags_release -DSCOTCH_707)
       list(APPEND compile_flags_debug -DSCOTCH_707)
