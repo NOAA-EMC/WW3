@@ -1186,9 +1186,10 @@ CONTAINS
         IY     = MAPSF(ISEA,2)
         XGR    = 0.5 * SQRT(HPFAC(IY,IX)**2+HQFAC(IY,IX)**2)
       END IF
-      IF ( FLAGLL ) THEN
+      IF ( FLAGLL .AND. FETCH==0.0 ) THEN
         XGR    = XGR * RADIUS * DERA
       END IF
+      
       !
       U10C   = MAX ( MIN(U10(ISEA),U10MAX) , U10MIN )
       !
