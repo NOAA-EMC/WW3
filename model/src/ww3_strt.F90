@@ -267,7 +267,7 @@ PROGRAM W3STRT
        CHSIP, FRREL, ETOT, E1I, FACTOR, X,  &
        Y, RDSQR, ALFA, GAMMA, SIGA, SIGB,   &
        YLN, FR, BETA, FRR, S, SUMD, ANG,    &
-       ARG, FACS, DEPTH, WN, CG, HPQMAX, FETCH
+       ARG, FACS, DEPTH, WN, CG, HPQMAX
   REAL, ALLOCATABLE       :: E1(:), DD(:), E2(:,:), E21(:), FINP(:,:)
 #ifdef W3_O5
   REAL, ALLOCATABLE       :: E2OUT(:,:)

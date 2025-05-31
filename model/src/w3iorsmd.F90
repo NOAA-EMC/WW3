@@ -290,7 +290,7 @@ CONTAINS
     ! 10. Source code :
     !
     !/ ------------------------------------------------------------------- /
-    USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE
+    USE W3GDATMD, ONLY: W3SETG, W3SETREF, RSTYPE, FETCH
     USE W3ODATMD, ONLY: W3SETO
     USE W3ADATMD, ONLY: W3SETA, W3XETA, NSEALM
     USE W3ADATMD, ONLY: CX, CY, HS, WLM, T0M1, T01, FP0, THM, CHARN,&
@@ -620,6 +620,8 @@ CONTAINS
     !
     IF ( WRITE ) THEN
       IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+        RPOS  = 1_8 + LRECL*(3-1_8)
+        WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) 100.0
         IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
           CLOSE ( NDSR )
         END IF
@@ -742,6 +744,8 @@ CONTAINS
       ! Reading spectra
       !
       IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+        RPOS  = 1_8 + LRECL*(3-1_8)
+        READ(NDSR, POS=RPOS,ERR=802,IOSTAT=IERR) FETCH
 #ifdef W3_T
         WRITE (NDST,9020) TYPE
 #endif
