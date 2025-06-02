@@ -494,9 +494,9 @@ CONTAINS
 #ifdef W3_PIO
     use wav_restart_mod , only : write_restart
     use wav_history_mod , only : write_history
-#endif    
+#endif
     use w3odatmd        , only : histwr, rstwr, use_historync, use_restartnc, user_restfname
-    use w3odatmd        , only : verboselog
+    use w3odatmd        , only : logfile_is_assigned, verboselog
     use w3timemd        , only : set_user_timestring
     !
 #ifdef W3_MPI
@@ -676,7 +676,9 @@ CONTAINS
       FLPFLD = FLPFLD .OR. FLOGRD(4,J) .OR. FLOGR2(4,J)
     END DO
     !
-    IF ( IAPROC .EQ. NAPLOG ) BACKSPACE ( NDSO )
+    if (.not. logfile_is_assigned) then
+      IF ( IAPROC .EQ. NAPLOG ) BACKSPACE ( NDSO )
+    end if
     !
     IF ( FLCOLD ) THEN
       DTDYN = 0.
@@ -1573,7 +1575,7 @@ CONTAINS
               WRITE(740+IAPROC,*) '     SHAVETOT=', SHAVETOT(JSEA)
               FLUSH(740+IAPROC)
 #endif
-            ENDIF 
+            ENDIF
           END DO ! JSEA
         END IF ! PDLIB
 #endif
@@ -2366,7 +2368,7 @@ CONTAINS
       !     Delay if data assimilation time.
       !
       !
-#ifdef W3_PIO      
+#ifdef W3_PIO
       if (dsec21(time,tend) == 0.0) then    ! req'd in case waves are running in slow loop
 
         if (use_historync) then
@@ -2648,12 +2650,12 @@ CONTAINS
 #ifdef W3_BIN2NC
                   CALL W3IOPON ( 'WRITE', NDS(8), ITEST, IMOD )
 #else
-                  CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD &                          
+                  CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD &
 #ifdef W3_ASCII
                           ,NDS(15)                           &
 #endif
                           )
-#endif 
+#endif
                   END IF
                 !
               ELSE IF ( J .EQ. 3 ) THEN

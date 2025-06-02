@@ -70,8 +70,8 @@ contains
   !> @date 08-26-2024
   subroutine write_history ( timen )
 
-    use w3odatmd   , only : fnmpre, FNMGRD
-    use w3gdatmd   , only : filext, trigp, ntri, ungtype, gtype
+    use w3odatmd   , only : FNMGRD
+    use w3gdatmd   , only : trigp, ntri, ungtype, gtype
     use w3servmd   , only : extcde
     use w3wdatmd   , only : wlv, ice, icef, iceh, berg, ust, ustdir, asf, rhoair
     use w3gdatmd   , only : e3df, p2msf, us3df, usspf
