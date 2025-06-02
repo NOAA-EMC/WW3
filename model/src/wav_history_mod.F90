@@ -34,7 +34,7 @@ module wav_history_mod
   real, allocatable, target :: var3dm(:,:)
   real, allocatable, target :: var3dp(:,:)
   real, allocatable, target :: var3dk(:,:)
-  real, allocatable, target :: var3dnk(:,:) ! KWS WN dimensioning 
+  real, allocatable, target :: var3dnk(:,:) ! WN : node vs frequency dimensions reversed 
 
   ! output variable for (nx,ny,nz) fields
   real, pointer :: var3d(:,:)
@@ -99,10 +99,9 @@ contains
     use w3odatmd   , only : time_origin, calendar_name, elapsed_secs
     use w3odatmd   , only : user_histfname
 
-    !KWS add WN for output
     use w3adatmd   , only : wn
    
-    !KWS needed for freq calculation
+    !needed for frequency calculation
     use constants  , only : TPIINV
     USE W3GDATMD   , ONLY : SIG
 
@@ -130,7 +129,7 @@ contains
 
     integer :: lmap(nseal_cpl)
 
-    double precision, allocatable  :: freq_wn(:),freq_ef(:)
+    double precision, allocatable  :: freq_wn(:), freq_ef(:)
 
     ! -------------------------------------------------------------
     ! create the netcdf file
@@ -354,7 +353,6 @@ contains
         if(vname .eq.      'PTP') call write_var3d(iodesc3ds, vname, ptp      (1:nseal_cpl,0:noswll) )
         if(vname .eq.      'PLP') call write_var3d(iodesc3ds, vname, plp      (1:nseal_cpl,0:noswll) )
         if(vname .eq.     'PDIR') call write_var3d(iodesc3ds, vname, pdir     (1:nseal_cpl,0:noswll), fldir='true' )
-!KWS        if(vname .eq.      'PSI') call write_var3d(iodesc3ds, vname, psi      (1:nseal_cpl,0:noswll), fldir='true' )
         if(vname .eq.      'PSI') call write_var3d(iodesc3ds, vname, psi      (1:nseal_cpl,0:noswll) )
         if(vname .eq.      'PWS') call write_var3d(iodesc3ds, vname, pws      (1:nseal_cpl,0:noswll) )
         if(vname .eq.      'PDP') call write_var3d(iodesc3ds, vname, pthp0    (1:nseal_cpl,0:noswll), fldir='true' )
@@ -422,7 +420,6 @@ contains
         if (vname .eq.     'T01') call write_var2d(vname, t01      (1:nseal_cpl) )
         if (vname .eq.     'FP0') call write_var2d(vname, fp0      (1:nseal_cpl) )
         if (vname .eq.     'THM') call write_var2d(vname, thm      (1:nseal_cpl), fldir='true' )
-!KWS        if (vname .eq.     'THS') call write_var2d(vname, ths      (1:nseal_cpl), fldir='true' )
         if (vname .eq.     'THS') call write_var2d(vname, ths      (1:nseal_cpl) )
         if (vname .eq.    'THP0') call write_var2d(vname, thp0     (1:nseal_cpl), fldir='true' )
         if (vname .eq.    'HSIG') call write_var2d(vname, hsig     (1:nseal_cpl) )
@@ -934,8 +931,6 @@ contains
          varatts( "STH1M", "STH1M     ", "Directional spreading from a1,b2                ", "deg       ", "k ", .false.) , &
          varatts( "TH2M ", "TH2M      ", "Mean wave direction from a2,b2                  ", "deg       ", "k ", .false.) , &
          varatts( "STH2M", "STH2M     ", "Directional spreading from a2,b2                ", "deg       ", "k ", .false.) , &
-         !TODO: has reverse indices (nk,nsea)
-!KWS         varatts( "WN   ", "WN        ", "Wavenumber array                                ", "m-1       ", "k ", .false.)   &
          varatts( "WN   ", "WN        ", "Wavenumber array                                ", "m-1       ", "nk", .false.)   &
          ]
 
