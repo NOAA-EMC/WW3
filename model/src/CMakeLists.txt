@@ -152,11 +152,6 @@ if("OMPG" IN_LIST switches)
   target_link_libraries(ww3_lib PUBLIC OpenMP::OpenMP_Fortran)
 endif()
 
-if("MPI" IN_LIST switches)
-  find_package(MPI REQUIRED COMPONENTS Fortran)
-  target_link_libraries(ww3_lib PUBLIC MPI::MPI_Fortran)
-endif()
-
 # Handle PDLIB, SCRIP, SCRIPNC build files directly instead of through configuration file
 if("PDLIB" IN_LIST switches)
   if("SCOTCH" IN_LIST switches)
@@ -170,6 +165,11 @@ elseif("METIS"  IN_LIST switches)
   else()
     message(FATAL_ERROR "PDLIB requires METIS or SCOTCH library for domain decomposition")
  endif()
+endif()
+
+if("MPI" IN_LIST switches)
+  find_package(MPI REQUIRED COMPONENTS Fortran)
+  target_link_libraries(ww3_lib PUBLIC MPI::MPI_Fortran)
 endif()
 
 if("SCRIP" IN_LIST switches)

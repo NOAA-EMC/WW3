@@ -720,6 +720,7 @@
       echo "$rtst -s PR3_UQ              -w work_PR3_UQ                 $ww3 ww3_tp2.13" >> matrix.body
       echo "$rtst                        -w work_PR3_UQ                 $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst                        -w work_5km -g 5km             $ww3 ww3_tp2.15" >> matrix.body
+      echo "$rtst         -i input_const -w work_PR3_UQ_CONST           $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst           -i input_rho -w work_PR3_UQ_RHO             $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s ST4    -i input_rho -w work_ST4FLX5                $ww3 ww3_tp2.15" >> matrix.body
       echo "$rtst -s ST6    -i input_rho -w work_ST6FLX5                $ww3 ww3_tp2.15" >> matrix.body
