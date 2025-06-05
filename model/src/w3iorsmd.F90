@@ -619,9 +619,11 @@ CONTAINS
     !          ( Bail out if write for TYPE.EQ.'WIND' )
     !
     IF ( WRITE ) THEN
-      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+      IF ( TYPE.EQ.'WIND' ) THEN
         RPOS  = 1_8 + LRECL*(3-1_8)
         WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) FETCH
+      ENDIF
+      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
         IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
           CLOSE ( NDSR )
         END IF
@@ -743,9 +745,14 @@ CONTAINS
       !
       ! Reading spectra
       !
-      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+      IF ( TYPE.EQ.'WIND' ) THEN
         RPOS  = 1_8 + LRECL*(3-1_8)
         READ(NDSR, POS=RPOS,ERR=802,IOSTAT=IERR) FETCH
+      ENDIF
+      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+#ifdef W3_T
+        WRITE (NDST,9020) TYPE
+#endif
 #ifdef W3_T
         WRITE (NDST,9020) TYPE
 #endif
