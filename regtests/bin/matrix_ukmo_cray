@@ -68,7 +68,8 @@ if [[ $cmplr == "ukmo_cray" ]] || [[ $cmplr == "ukmo_cray_debug" ]]; then
     echo "module switch cce cce/15.0.0"                   >> matrix.head
     echo "module load cray-hdf5-parallel/1.12.2.1"        >> matrix.head
     echo "module load cray-netcdf-hdf5parallel/4.9.0.1"   >> matrix.head
-    echo "export METIS_PATH=/data/users/juan.m.castillo/REGTESTS/ParMETIS_CCE"  >> matrix.head
+    echo "export METIS_PATH=/data/users/juan.m.castillo/REGTESTS/parmetis-4.0.3_cce"  >> matrix.head
+    echo "export SCOTCH_PATH=/data/users/juan.m.castillo/REGTESTS/scotch_cce" >> matrix.head
 
 elif [[ $cmplr == ukmo_cray_gnu* ]]; then
     # ParMETIS library not currently working with Cray compiler.
@@ -77,14 +78,19 @@ elif [[ $cmplr == ukmo_cray_gnu* ]]; then
     echo "module load cpe/23.05"                          >> matrix.head
     echo "module load cray-hdf5-parallel/1.12.2.1"        >> matrix.head
     echo "module load cray-netcdf-hdf5parallel/4.9.0.1"   >> matrix.head
-    echo "export METIS_PATH=data/users/juan.m.castillo/REGTESTS/ParMETIS_GNU" >> matrix.head
+    echo "export METIS_PATH=/data/users/juan.m.castillo/REGTESTS/parmetis-4.0.3_gnu"  >> matrix.head
+    echo "export SCOTCH_PATH=/data/users/juan.m.castillo/REGTESTS/scotch_gnu" >> matrix.head
 
 else
     echo "Unknown compiler for UKMO regression tests: $cmplr"
     exit 1
 fi
 
-  echo "  export NETCDF_CONFIG=\$(which nc-config)"         >> matrix.head
+  echo "  export NETCDF_CONFIG=\$(which nc-config)"       >> matrix.head
+
+# For CMAKE
+  echo "export CC=cc"                                     >> matrix.head
+  echo "export FTN=ftn"                                   >> matrix.head
 
 # Compiler option. Set cmplOption to
 # y if using for the first time or using a different compiler
