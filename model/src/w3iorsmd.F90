@@ -745,7 +745,7 @@ CONTAINS
       !
       ! Reading spectra
       !
-      IF ( TYPE.EQ.'WIND' ) THEN
+      IF ( TYPE.EQ.'WIND' .AND. .NOT.IAPROC.EQ.NAPERR) THEN
         RPOS  = 1_8 + LRECL*(3-1_8)
         READ(NDSR, POS=RPOS,ERR=802,IOSTAT=IERR) FETCH
       ENDIF
