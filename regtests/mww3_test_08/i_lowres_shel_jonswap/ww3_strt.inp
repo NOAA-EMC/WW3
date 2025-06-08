@@ -14,7 +14,7 @@ $   fetch (m): either 0 for fetch based on grid resolution, or larger 0
 $   for setting the fetch to this value.
 $
 3
-1000
+100000
 $ ITYPE = 5 ---------------------------------------------------------- $
 $ Starting from calm conditions.
 $ - No additional data.
