@@ -745,9 +745,11 @@ CONTAINS
       !
       ! Reading spectra
       !
-      IF ( TYPE.EQ.'WIND' .AND. .NOT.IAPROC.EQ.NAPERR) THEN
+      IF ( TYPE.EQ.'WIND' .AND.FETCH/=-1) THEN
         RPOS  = 1_8 + LRECL*(3-1_8)
         READ(NDSR, POS=RPOS,ERR=802,IOSTAT=IERR) FETCH
+      ELSEIF ( TYPE.EQ.'WIND' .AND.FETCH==-1) THEN
+        FETCH = 0
       ENDIF
       IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
 #ifdef W3_T
@@ -1395,6 +1397,7 @@ CONTAINS
 #ifdef W3_LN0
     TYPE   = 'WIND'
     RSTYPE = 1
+    FETCH = -1
 #endif
 #ifdef W3_SEED
     TYPE   = 'CALM'
