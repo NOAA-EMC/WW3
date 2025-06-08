@@ -1,0 +1,24 @@
+$ -------------------------------------------------------------------- $
+$ WAVEWATCH III Initial conditions input file                          $
+$--------------------------------------------------------------------- $
+$ type of initial field ITYPE .
+$
+$
+$
+$ ITYPE = 3 ---------------------------------------------------------- $
+$ Fetch-limited JONSWAP
+$ - The local spectrum is calculated using the local wind speed and
+$   direction, assuring that the spectrum is within the discrete
+$   frequency range.
+$   fetch (m): either 0 for fetch based on grid resolution, or larger 0
+$   for setting the fetch to this value.
+$
+3
+1000
+$ ITYPE = 5 ---------------------------------------------------------- $
+$ Starting from calm conditions.
+$ - No additional data.
+$
+$ -------------------------------------------------------------------- $
+$ End of input file                                                    $
+$ -------------------------------------------------------------------- $
