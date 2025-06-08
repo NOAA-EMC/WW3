@@ -4,6 +4,7 @@ $--------------------------------------------------------------------- $
 $ type of initial field ITYPE .
 $
     3
+    0
 $
 $ ITYPE = 1 ---------------------------------------------------------- $
 $ Gaussian in frequency and space, cos type in direction.
