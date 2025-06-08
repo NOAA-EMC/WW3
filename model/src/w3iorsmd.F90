@@ -753,9 +753,6 @@ CONTAINS
 #ifdef W3_T
         WRITE (NDST,9020) TYPE
 #endif
-#ifdef W3_T
-        WRITE (NDST,9020) TYPE
-#endif
       ELSE
         IF (LPDLIB) THEN
 #ifdef W3_TIMINGS
