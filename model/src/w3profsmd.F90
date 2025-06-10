@@ -4615,25 +4615,24 @@ double precision function ddot(n,dx,dy)
   !     uses unrolled loops for increments equal to one.
   !     jack dongarra, linpack, 3/11/78.
   !
-  double precision dx(*),dy(*),dtemp
+  double precision dx(*),dy(*)
   integer i,m,mp1,n
   !
   ddot = 0.0d0
-  dtemp = 0.0d0
   if(n.le.0)return
 
-20 m = mod(n,5)
-  if( m .eq. 0 ) go to 40
-  do i = 1,m
-    dtemp = dtemp + dx(i)*dy(i)
-  end do
-  if( n .lt. 5 ) go to 60
-40 mp1 = m + 1
+  m = mod(n,5)
+  if( m .ne. 0 ) then
+    do i = 1,m
+      ddot = ddot + dx(i)*dy(i)
+    end do
+    if( n .lt. 5 ) return
+  end if
+  mp1 = m + 1
   do i = mp1,n,5
-    dtemp = dtemp + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) + &
+    ddot = ddot + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) + &
          &   dx(i + 2)*dy(i + 2) + dx(i + 3)*dy(i + 3) + dx(i + 4)*dy(i + 4)
   end do
-60 ddot = dtemp
   return
 end function ddot
 !----------------------------------------------------------------------
@@ -4648,34 +4647,36 @@ subroutine daxpy(n,da,dx,incx,dy,incy)
   !
   if(n.le.0)return
   if (abs(da) .lt. tiny(1.d0)) return
-  if(incx.eq.1.and.incy.eq.1)go to 20
-  !
-  !        code for unequal increments or equal increments
-  !          not equal to 1
-  !
-  ix = 1
-  iy = 1
-  if(incx.lt.0)ix = (-n+1)*incx + 1
-  if(incy.lt.0)iy = (-n+1)*incy + 1
-  do  i = 1,n
-    dy(iy) = dy(iy) + da*dx(ix)
-    ix = ix + incx
-    iy = iy + incy
-  end do
-  return
-  !
-  !        code for both increments equal to 1
-  !
-  !
-  !        clean-up loop
-  !
-20 m = mod(n,4)
-  if( m .eq. 0 ) go to 40
-  do i = 1,m
-    dy(i) = dy(i) + da*dx(i)
-  end do
-  if( n .lt. 4 ) return
-40 mp1 = m + 1
+  if(incx.ne.1.or.incy.ne.1) then
+    !
+    !        code for unequal increments or equal increments
+    !          not equal to 1
+    !
+    ix = 1
+    iy = 1
+    if(incx.lt.0)ix = (-n+1)*incx + 1
+    if(incy.lt.0)iy = (-n+1)*incy + 1
+    do  i = 1,n
+      dy(iy) = dy(iy) + da*dx(ix)
+      ix = ix + incx
+      iy = iy + incy
+    end do
+    return
+    !
+    !        code for both increments equal to 1
+    !
+    !
+    !        clean-up loop
+    !
+  end if
+  m = mod(n,4)
+  if( m .ne. 0 ) then
+    do i = 1,m
+      dy(i) = dy(i) + da*dx(i)
+    end do
+    if( n .lt. 4 ) return
+  end if
+  mp1 = m + 1
   do i = mp1,n,4
     dy(i) = dy(i) + da*dx(i)
     dy(i + 1) = dy(i + 1) + da*dx(i + 1)

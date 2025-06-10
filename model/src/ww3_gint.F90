@@ -819,8 +819,10 @@ PROGRAM W3GRID_INTERP
       CALL W3SETO( IG, 6, 6)
       CALL W3IOGO('READ',FIDOUT(IG),IOTST,IG)
       IF ( IOTST .NE. 0 ) THEN
-        GO TO 2111
-       ENDIF
+        WRITE(NDSO,950)
+        WRITE(NDSO,999)
+        STOP
+      END IF
     END DO
     !
     ! 5.c Setup the output flag options for the target grid
@@ -869,7 +871,9 @@ PROGRAM W3GRID_INTERP
         DO IG = 1,NG-1
           CALL W3IOGO('READ',FIDOUT(IG),IOTST,IG)
           IF ( IOTST .NE. 0 ) THEN
-            GO TO 2111
+            WRITE(NDSO,950)
+            WRITE(NDSO,999)
+            STOP
           ENDIF
         END DO
         CYCLE
@@ -894,7 +898,7 @@ PROGRAM W3GRID_INTERP
       CALL TICK21 ( TOUT , DTREQ )
       IF ( IOUT .GE. NOUT ) EXIT
     END DO
-    GOTO 2222
+    WRITE(NDSO,999)
   ! --- if Restart file --------
   ELSE !OUTorREST=.FALSE. 
    !
@@ -929,9 +933,10 @@ PROGRAM W3GRID_INTERP
 
     CALL W3EXGI ( NG-1, NSEA, NOSWLL_MIN, INTMETHOD, OUTorREST,MAPSTA_NG,MAPST2_NG )
 
-    GOTO 2222
+    WRITE(NDSO,999)
 
   END IF !OUTorREST
+  STOP
   !
   !---------------------------------------------------------------------------
   ! Escape locations read errors :
@@ -945,10 +950,6 @@ PROGRAM W3GRID_INTERP
 2002 CONTINUE
   WRITE(NDSE,1002) IERR
   CALL EXTCDE ( 3 )
-2111 CONTINUE
-  WRITE(NDSO,950)
-2222 CONTINUE
-  WRITE(NDSO,999)
   !
   !---------------------------------------------------------------------------
   ! Formats

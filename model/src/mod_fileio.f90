@@ -209,7 +209,8 @@ if(iufind==1) iunit  = -1
 if(iufind/=0 .and. iufind/=1) then
   if(i_print >0) write(i_out,*) 'Z_FILEIO: Incorrect value for IUFIND:',iufind
   iostat = -5
-  goto 9999
+  if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
+  return
 end if
 !
 !
@@ -254,12 +255,14 @@ else
         end if 
         if(iostat/=0) then
           iostat = -4
-          goto 9999
+          if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
+          return
         end if
       end if
     end if
     close(junit,status=cstat)
-    goto 9999
+    if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
+    return
   end if
 !
 !  if the file exists, check if it is opened
@@ -343,8 +346,6 @@ else
     end if
   end if
 end if
-!
-9999 continue
 !
 if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
 !

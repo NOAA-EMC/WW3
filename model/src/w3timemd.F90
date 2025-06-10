@@ -169,19 +169,15 @@ CONTAINS
     !
     ! Check change of date :
     !
-100 CONTINUE
-    IF (NSEC.GE.86400)  THEN
+    DO WHILE (NSEC.GE.86400)
       NSEC = NSEC - 86400
       NYMD = IYMD21 (NYMD,1)
-      GOTO 100
-    END IF
+    END DO
     !
-200 CONTINUE
-    IF (NSEC.LT.00000)  THEN
+    DO WHILE (NSEC.LT.00000)
       NSEC = 86400 + NSEC
       NYMD = IYMD21 (NYMD,-1)
-      GOTO 200
-    END IF
+    END DO
     !
     NHMS = NSEC/3600*10000 + MOD(NSEC,3600)/60*100 + MOD(NSEC,60)
     !
@@ -303,20 +299,20 @@ CONTAINS
       !
       ! M = 1, leap year
       !
-      IF (ND.EQ.29 .AND. NM.EQ.2 .AND. LEAP)  GO TO 20
-      !
-      !        next month
-      !
-      IF (ND.GT.NDPM(NM)) THEN
-        ND = 1
-        NM = NM + 1
-        IF (NM.GT.12) THEN
-          NM = 1
-          NY = NY + 1
-        ENDIF
+      IF (.NOT. (ND.EQ.29 .AND. NM.EQ.2 .AND. LEAP) ) THEN
+        !
+        !        next month
+        !
+        IF (ND.GT.NDPM(NM)) THEN
+          ND = 1
+          NM = NM + 1
+          IF (NM.GT.12) THEN
+            NM = 1
+            NY = NY + 1
+          ENDIF
+        END IF
+        !
       END IF
-      !
-20    CONTINUE
       IYMD21 = NY*10000 + NM*100 + ND
       !
       RETURN
@@ -423,25 +419,23 @@ CONTAINS
     !
     IF ( NY1 .NE. NY2 ) THEN
       NST    = SIGN ( 1 , NY2-NY1 )
-100   CONTINUE
-      IF (NY1.EQ.NY2) GOTO 200
-      IF (NST.GT.0) THEN
-        NY2    = NY2 - 1
-        IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-          ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
+      DO WHILE (NY1.NE.NY2)
+        IF (NST.GT.0) THEN
+          NY2    = NY2 - 1
+          IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+            ND     = ND  + MYMD21 ( NY2*10000 + 1230 )
+          ELSE
+            ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
+          END IF
         ELSE
-          ND     = ND  + MYMD21 ( NY2*10000 + 1231 )
-        END IF
-      ELSE
-        IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
-          ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
-        ELSE
-          ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
-        END IF
-        NY2    = NY2 + 1
-      ENDIF
-      GOTO 100
-200   CONTINUE
+          IF (TRIM(CALTYPE) .EQ. '360_day' ) THEN
+            ND     = ND  - MYMD21 ( NY2*10000 + 1230 )
+          ELSE
+            ND     = ND  - MYMD21 ( NY2*10000 + 1231 )
+          END IF
+          NY2    = NY2 + 1
+        ENDIF
+      END DO
     END IF
     !
     NS     = NS2 - NS1
@@ -553,13 +547,10 @@ CONTAINS
       !
       IF (NM.GT.2 .AND. LEAP)  ND = ND + 1
       !
-40    CONTINUE
-      IF (NM.LE.1)  GO TO 60
-      NM = NM - 1
-      ND = ND + NDPM(NM)
-      GO TO 40
-      !
-60    CONTINUE
+      DO WHILE (NM.GT.1)
+        NM = NM - 1
+        ND = ND + NDPM(NM)
+      END DO
       MYMD21 = ND
       !
       RETURN

@@ -430,7 +430,10 @@ PROGRAM GXOUTP
   IF ( DTREQ .GT. 3599. ) THEN
     CINC   = 'HR'
     IINC   = NINT(DTREQ/3600.)
-    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) GOTO 820
+    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) THEN 
+      WRITE (NDSE,1020) DTREQ
+      CALL EXTCDE ( 20 )
+    END IF
   ELSE
     CINC   = 'MN'
     IINC   = NINT(DTREQ/60.)
@@ -459,7 +462,8 @@ PROGRAM GXOUTP
   !
   WRITE (NDSCGR,974)
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  RETURN
   !
   ! Escape locations read errors :
   !
@@ -474,18 +478,6 @@ PROGRAM GXOUTP
 802 CONTINUE
   WRITE (NDSE,1002) IERR
   CALL EXTCDE ( 12 )
-  !
-820 CONTINUE
-  WRITE (NDSE,1020) DTREQ
-  CALL EXTCDE ( 20 )
-  !
-821 CONTINUE
-  WRITE (NDSE,1021)
-  CALL EXTCDE ( 21 )
-  !
-888 CONTINUE
-  !
-  WRITE (NDSO,999)
   !
   ! Formats
   !
@@ -566,8 +558,6 @@ PROGRAM GXOUTP
 1020 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
        '     FIELD INCREMENT > 1HR BUT NOT MULTIPLE',F10.0/)
   !
-1021 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     UPDATE PARS IN LOOP 610 !!!'/)
   !/
   !/ Internal subroutine GXEXPO ---------------------------------------- /
   !/

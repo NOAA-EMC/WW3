@@ -297,7 +297,10 @@ PROGRAM GXOUTF
   IDTIME(21:23) = '   '
   WRITE (NDSO,941) IDTIME, NOUT
   !
-  IF ( MOD(NINT(DTREQ),60) .NE. 0 ) GOTO 810
+  IF ( MOD(NINT(DTREQ),60) .NE. 0 ) THEN 
+    WRITE (NDSE,1010)
+    CALL EXTCDE ( 10 )
+  END IF
   !
   ! ... Output fields
   !
@@ -434,7 +437,7 @@ PROGRAM GXOUTF
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,942)
-        GOTO 600
+        EXIT
       END IF
       CYCLE
     END IF
@@ -459,7 +462,6 @@ PROGRAM GXOUTF
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 6.  Close data file and write control file
   !
-600 CONTINUE
   WRITE (NDSO,980)
   !
   WRITE (NDSO,981)
@@ -478,7 +480,10 @@ PROGRAM GXOUTF
   IF ( DTREQ .GT. 3599. ) THEN
     CINC   = 'HR'
     IINC   = NINT(DTREQ/3600.)
-    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) GOTO 820
+    IF ( MOD(NINT(DTREQ),3600) .NE. 0 ) THEN
+      WRITE (NDSE,1020) DTREQ
+      CALL EXTCDE ( 20 )
+    END IF
   ELSE
     CINC   = 'MN'
     IINC   = NINT(DTREQ/60.)
@@ -631,7 +636,8 @@ PROGRAM GXOUTF
   !
   WRITE (NDSCTL,992)
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  RETURN
   !
   ! Escape locations read errors :
   !
@@ -647,10 +653,6 @@ PROGRAM GXOUTF
   WRITE (NDSE,1002) IERR
   CALL EXTCDE ( 3 )
   !
-810 CONTINUE
-  WRITE (NDSE,1010)
-  CALL EXTCDE ( 10 )
-  !
 811 CONTINUE
   WRITE (NDSE,1011)
   CALL EXTCDE ( 11 )
@@ -658,17 +660,6 @@ PROGRAM GXOUTF
 812 CONTINUE
   WRITE (NDSE,1012)
   CALL EXTCDE ( 12 )
-  !
-820 CONTINUE
-  WRITE (NDSE,1020) DTREQ
-  CALL EXTCDE ( 20 )
-  !
-821 CONTINUE
-  WRITE (NDSE,1021)
-  CALL EXTCDE ( 21 )
-  !
-888 CONTINUE
-  WRITE (NDSO,999)
   !
   ! Formats
   !
@@ -765,8 +756,6 @@ PROGRAM GXOUTF
 1020 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
        '     FIELD INCREMENT > 1HR BUT NOT MULTIPLE',F10.0/)
   !
-1021 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
-       '     UPDATE PARS IN LOOP 610 !!!'/)
   !/
   !/ Internal subroutine GXEXGO ---------------------------------------- /
   !/

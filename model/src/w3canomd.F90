@@ -2807,26 +2807,25 @@ CONTAINS
     !---------------------------------------------------------------------
     !
     IMPLICIT NONE
-    REAL OM,BETA,G,EBS,AKM1,AKM2,AO,AKP,BO,TH,STH
+    REAL OM,BETA,G,EBS,AKM1,AKM2,AKP,BO,TH,STH
 
     G =9.806
     EBS=0.0001
     AKM1=OM**2/(4.*G )
     AKM2=OM/(2.*SQRT(G*BETA))
-    AO=MAX(AKM1,AKM2)
-10  CONTINUE
-    AKP=AO
-    BO=BETA*AO
-    !     IF (BO.GT.10) GO TO 20
-    IF (BO.GT.20.) GO TO 20
-    TH=G*AO*TANH(BO)
-    STH=SQRT(TH)
-    AO=AO+(OM-STH)*STH*2./(TH/AO+G*BO/COSH(BO)**2)
-    IF (ABS(AKP-AO).GT.EBS*AO) GO TO 10
-    AKI=AO
-    RETURN
-20  CONTINUE
-    AKI=OM**2/G
+    AKI=MAX(AKM1,AKM2)
+    AKP=2.*AKI
+    DO WHILE (ABS(AKP-AKI).GT.EBS*AKI)
+      AKP=AKI
+      BO=BETA*AKI
+      IF (BO.GT.20.) THEN
+        AKI=OM**2/G
+        EXIT
+      END IF
+      TH=G*AKI*TANH(BO)
+      STH=SQRT(TH)
+      AKI=AKI+(OM-STH)*STH*2./(TH/AKI+G*BO/COSH(BO)**2)
+    END DO
     RETURN
   END FUNCTION AKI
   !

@@ -262,8 +262,10 @@ PROGRAM W3SBS1
     END IF
   END DO
   !
-  IF ( NXW .EQ. -1 ) GOTO 825
-  IF ( NDST2 .EQ. -1 ) GOTO 825
+  IF ( (NXW .EQ. -1) .OR. (NDST2 .EQ. -1) ) THEN
+    WRITE (MDSS,1025) NDST2
+    CALL EXTCDE ( 25 )
+  END IF
   !
 #ifdef W3_T
   WRITE (MDST,9021)
@@ -347,17 +349,11 @@ PROGRAM W3SBS1
   CALL MPI_FINALIZE  ( IERR_MPI )
 #endif
   !
-  GO TO 888
+  STOP 
   !
 820 CONTINUE
   WRITE (MDSS,1020) IERR
   CALL EXTCDE ( 20 )
-  !
-825 CONTINUE
-  WRITE (MDSS,1025) NDST2
-  CALL EXTCDE ( 25 )
-  !
-888 CONTINUE
   !
   ! Formats
   !
@@ -609,7 +605,8 @@ CONTAINS
       ELSE IF ( DTTST .EQ. 0. ) THEN
         EXIT
       ELSE
-        GOTO 800
+        WRITE (MDSS,1010)
+        CALL EXTCDE ( 10 )
       END IF
       !
     END DO
@@ -629,12 +626,6 @@ CONTAINS
     END IF
     !
     RETURN
-    !
-    ! Escape locations read errors --------------------------------------- *
-    !
-800 CONTINUE
-    WRITE (MDSS,1010)
-    CALL EXTCDE ( 10 )
     !
     ! Formats
     !
