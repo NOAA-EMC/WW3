@@ -797,9 +797,15 @@ CONTAINS
     NSEALM = NSEALMout
     call print_memcheck(memunit, 'memcheck_____:'//' WW3_INIT SECTION 2f')
 #ifdef W3_DIST
-    IF ( NSEA .LT. NAPROC ) GOTO 820
+    IF ( NSEA .LT. NAPROC ) THEN
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8020) NSEA, NAPROC
+      CALL EXTCDE ( 820 )
+    END IF
     IF (LPDLIB .eqv. .FALSE.) THEN
-      IF ( NSPEC .LT. NAPROC ) GOTO 821
+      IF ( NSPEC .LT. NAPROC ) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8021) NSPEC, NAPROC
+        CALL EXTCDE ( 821 )
+      END IF
     END IF
 #endif
 
@@ -942,7 +948,10 @@ CONTAINS
 #ifdef W3_DIST
     IF (LPDLIB .eqv. .FALSE.) THEN
       DO ISP=1, NSPEC
-        IF ( IAPPRO(ISP) .EQ. -1. ) GOTO 829
+        IF ( IAPPRO(ISP) .EQ. -1. ) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8029)
+          CALL EXTCDE ( 829 )
+        END IF
       END DO
     END IF
 #endif
@@ -1536,10 +1545,6 @@ CONTAINS
     ! Escape locations read errors :
     !
 #ifdef W3_DIST
-820 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8020) NSEA, NAPROC
-    CALL EXTCDE ( 820 )
-    !
 821 CONTINUE
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8021) NSPEC, NAPROC
     CALL EXTCDE ( 821 )

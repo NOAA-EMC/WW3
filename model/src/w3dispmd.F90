@@ -308,7 +308,7 @@ CONTAINS
       END IF
       IF (DIF .LT. EPS .AND. RDIF .LT. EPS) THEN
         ICON = 1
-        GOTO 100
+        EXIT
       ELSE
         KOLD = K
         F    = GRAV*KOLD*TANH(KOLD*H)-W0**2
@@ -321,10 +321,11 @@ CONTAINS
       END IF
     END DO
     !
-    DIF   = ABS(K-KOLD)
-    RDIF  = DIF/K
-    IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1
-100 CONTINUE
+    IF (DIF .GE. EPS .OR. RDIF .GT. EPS) THEN
+      DIF   = ABS(K-KOLD)
+      RDIF  = DIF/K
+      IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1
+    END IF
     IF (2*K*H.GT.25) THEN
       CG = W0/K * 0.5
     ELSE

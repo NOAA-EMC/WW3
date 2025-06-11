@@ -266,7 +266,10 @@ PROGRAM W3TRNC
     M2KM  = 1.E-3
   END IF
   !
-  IF ( IDSTR .NE. IDTST ) GOTO 810
+  IF ( IDSTR .NE. IDTST ) THEN
+    WRITE (NDSE,1010) IDSTR, IDTST
+    CALL EXTCDE ( 20 )
+  END IF
 
   WRITE (NDSO,902) MK, MTH
   NSPEC  = MK * MTH
@@ -357,7 +360,8 @@ PROGRAM W3TRNC
   END IF
 
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  RETURN
   !
   ! Escape locations read errors :
   !
@@ -382,13 +386,6 @@ PROGRAM W3TRNC
   CALL EXTCDE ( 16 )
   !
 
-810 CONTINUE
-  WRITE (NDSE,1010) IDSTR, IDTST
-  CALL EXTCDE ( 20 )
-  !
-888 CONTINUE
-  WRITE (NDSO,999)
-  !
   ! Formats
   !
 900 FORMAT (/15X,'   *** WAVEWATCH III Track output postp. ***   '/ &
@@ -702,8 +699,7 @@ CONTAINS
     !
     ! 1.6 Exit from W3EXNC if not sea point
     !
-    IF ( TSTSTR .NE. 'SEA' ) GOTO 888
-
+    IF ( TSTSTR .NE. 'SEA' ) RETURN
 
     !
     ! 1.6.1 Process speed and direction components
@@ -776,9 +772,6 @@ CONTAINS
     IRET=NF90_PUT_VAR(NCID,VARID(18),TRCKID,start=(/1,IT/),count=(/LEN_TRIM(TRCKID),1/))
     CALL CHECK_ERR(IRET)
 
-
-    !
-888 CONTINUE
     !
     RETURN
 
@@ -786,7 +779,6 @@ CONTAINS
     ! Formats
     !
 973 FORMAT ( 'NEW NetCDF file was created ',A)
-
 
     !/ End of W3EXNC ----------------------------------------------------- /
     !/

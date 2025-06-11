@@ -454,7 +454,8 @@ CONTAINS
         EXIT
       ELSE
         IERR=1
-        GOTO 2005
+        IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1005) AFLG
+        RETURN
       END IF
       IF ( FLG1D (IFI) ) THEN ! Skip if group not requested
         CALL NEXTLN ( COMSTR , NDSI , NDSEN )
@@ -529,10 +530,6 @@ CONTAINS
     RETURN
 2003 CONTINUE
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1003) IERR
-    RETURN
-    !2004 CONTINUE ! replaced by warning in code ....
-2005 CONTINUE
-    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1005) AFLG
     RETURN
 2006 CONTINUE
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSEN, 1006) IFI,IERR

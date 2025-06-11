@@ -3159,7 +3159,10 @@ CONTAINS
     !
     IF (TRIM(CALTYPE) .NE. 'standard' .AND.                           &
          TRIM(CALTYPE) .NE. '360_day'  .AND.                           &
-         TRIM(CALTYPE) .NE. '365_day' ) GOTO 2003
+         TRIM(CALTYPE) .NE. '365_day' ) THEN
+      WRITE (NDSE,1003)
+      CALL EXTCDE ( 64 )
+    END IF
     WRITE (NDST,1973) CALTYPE
     WRITE (NDSO,*)
     !
@@ -6004,27 +6007,6 @@ CONTAINS
     CLOSE (NDSMA)
 #endif
     !
-    GOTO 2222
-    !
-    ! Escape locations read errors :
-    !
-2000 CONTINUE
-    WRITE (NDSE,1000) IERR
-    CALL EXTCDE ( 60 )
-    !
-2001 CONTINUE
-    WRITE (NDSE,1001)
-    CALL EXTCDE ( 61 )
-    !
-2002 CONTINUE
-    WRITE (NDSE,1002) IERR
-    CALL EXTCDE ( 62 )
-    !
-2003 CONTINUE
-    WRITE (NDSE,1003)
-    CALL EXTCDE ( 64 )
-    !
-2222 CONTINUE
     IF ( GTYPE .NE. UNGTYPE) THEN
       IF ( NX*NY .NE. NSEA ) THEN
         WRITE (NDSO,9997) NX, NY, NX*NY, NSEA,                       &
@@ -6128,8 +6110,22 @@ CONTAINS
     IERR = NF90_PUT_VAR(NCID,grid_dims_varid,GRID1_DIMS)
     IERR = NF90_CLOSE(NCID)
 #endif
-
-
+    !
+    STOP
+    !
+    ! Escape locations read errors :
+    !
+2000 CONTINUE
+    WRITE (NDSE,1000) IERR
+    CALL EXTCDE ( 60 )
+    !
+2001 CONTINUE
+    WRITE (NDSE,1001)
+    CALL EXTCDE ( 61 )
+    !
+2002 CONTINUE
+    WRITE (NDSE,1002) IERR
+    CALL EXTCDE ( 62 )
     !
     ! Formats
     !
@@ -7325,7 +7321,11 @@ CONTAINS
               CASE('SNL2')
                 READ (NDS,NML=SNL2,END=801,ERR=802,IOSTAT=J)
               CASE('ANL2')
-                IF ( NDEPTH .GT. 100 ) GOTO 804
+                IF ( NDEPTH .GT. 100 ) THEN
+                  WRITE (NDSE,1004) NDEPTH
+                  CALL EXTCDE(4)
+                  RETURN
+                END IF
                 DEPTHS(1:NDEPTH) = DPTHNL
                 READ (NDS,NML=ANL2,END=801,ERR=802,IOSTAT=J)
                 DPTHNL = DEPTHS(1:NDEPTH)
@@ -7334,7 +7334,11 @@ CONTAINS
               CASE('SNL3')
                 READ (NDS,NML=SNL3,END=801,ERR=802,IOSTAT=J)
               CASE('ANL3')
-                IF ( NQDEF .GT. 100 ) GOTO 804
+                IF ( NQDEF .GT. 100 ) THEN
+                  WRITE (NDSE,1004) NQDEF
+                  CALL EXTCDE(4)
+                  RETURN
+                END IF
                 READ (NDS,NML=ANL3,END=801,ERR=802,IOSTAT=J)
 #endif
 #ifdef W3_NL4
@@ -7448,7 +7452,9 @@ CONTAINS
               CASE('MISC')
                 READ (NDS,NML=MISC,END=801,ERR=802,IOSTAT=J)
               CASE DEFAULT
-                GOTO 803
+                WRITE (NDSE,1003) NAME
+                CALL EXTCDE(3)
+                RETURN
               END SELECT
               STATUS  = '(user def. values) :'
               RETURN
@@ -7473,24 +7479,6 @@ CONTAINS
     CALL EXTCDE(2)
     RETURN
     !
-803 CONTINUE
-    WRITE (NDSE,1003) NAME
-    CALL EXTCDE(3)
-    RETURN
-    !
-#ifdef W3_NL2
-804 CONTINUE
-    WRITE (NDSE,1004) NDEPTH
-    CALL EXTCDE(4)
-    RETURN
-#endif
-    !
-#ifdef W3_NL3
-804 CONTINUE
-    WRITE (NDSE,1004) NQDEF
-    CALL EXTCDE(4)
-    RETURN
-#endif
     !
     ! Formats
     !

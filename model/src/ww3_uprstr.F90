@@ -1127,7 +1127,8 @@ PROGRAM W3UPRSTR
   !/ ------------------------------------------------------------------- /
   ! Escape locations read errors 08k:
   !/
-  GOTO 888
+  WRITE (NDSO,999)
+  STOP
   !
 800 CONTINUE
   WRITE (NDSE,1000) IERR
@@ -1141,23 +1142,18 @@ PROGRAM W3UPRSTR
   WRITE (NDSE,1002) IERR
   CALL EXTCDE ( 12 )
   !
-888 CONTINUE
-  WRITE (NDSO,999)
   !/
   !/ ------------------------------------------------------------------- /
   ! Escape locations read errors 2k:
   !/
-  GOTO 2222
-  !
 2001 CONTINUE
   IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
-  GOTO 2222
+  STOP
   !
 2002 CONTINUE
   IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
-  GOTO 2222
+  STOP
   !
-2222 CONTINUE
   !/
   !/ ------------------------------------------------------------------- /
   !  Formats

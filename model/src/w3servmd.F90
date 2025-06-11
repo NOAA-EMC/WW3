@@ -290,19 +290,20 @@ CONTAINS
     CALL STRACE (IENT, 'NEXTLN')
 #endif
     !
-100 CONTINUE
-    ! read line
-    READ ( NDSI, 900, END=800, ERR=801, IOSTAT=IERR, IOMSG=MSG ) LINE
-    ! leading blanks removed and placed on the right
-    TEST = ADJUSTL ( LINE )
-    IF ( TEST(1:1).EQ.CHCKC .OR. LEN_TRIM(TEST).EQ.0 ) THEN
-      ! if comment or blank line, then skip
-      GOTO 100
-    ELSE
-      ! otherwise, backup to beginning of line
-      BACKSPACE ( NDSI, ERR=802, IOSTAT=IERR, IOMSG=MSG )
-    ENDIF
-    RETURN
+    DO
+      ! read line
+      READ ( NDSI, 900, END=800, ERR=801, IOSTAT=IERR, IOMSG=MSG ) LINE
+      ! leading blanks removed and placed on the right
+      TEST = ADJUSTL ( LINE )
+      IF ( TEST(1:1).EQ.CHCKC .OR. LEN_TRIM(TEST).EQ.0 ) THEN
+        ! if comment or blank line, then skip
+        CYCLE
+      ELSE
+        ! otherwise, backup to beginning of line and exit
+        BACKSPACE ( NDSI, ERR=802, IOSTAT=IERR, IOMSG=MSG )
+        RETURN
+      ENDIF
+    END DO
     !
 800 CONTINUE
     IF ( NDSE .GE. 0 ) WRITE (NDSE,910)
@@ -1690,158 +1691,31 @@ CONTAINS
       end do
     ENDIF
     !
-    IF (KK .EQ. 2) GO TO 100
-    !
-    !     Sort X only
-    !
-    M = 1
-    I = 1
-    J = NN
-    R = 0.375E0
-    !
-20  IF (I .EQ. J) GO TO 60
-    IF (R .LE. 0.5898437E0) THEN
-      R = R+3.90625E-2
-    ELSE
-      R = R-0.21875E0
-    ENDIF
-    !
-30  K = I
-    !
-    !     Select a central element of the array and save it in location T
-    !
-    IJ = I + INT((J-I)*R)
-    T = X(IJ)
-    !
-    !     If first element of array is greater than T, interchange with T
-    !
-    IF (X(I) .GT. T) THEN
-      X(IJ) = X(I)
-      X(I) = T
-      T = X(IJ)
-    ENDIF
-    L = J
-    !
-    !     If last element of array is less than than T, interchange with T
-    !
-    IF (X(J) .LT. T) THEN
-      X(IJ) = X(J)
-      X(J) = T
-      T = X(IJ)
+    IF (KK .EQ. 2) THEN
       !
-      !        If first element of array is greater than T, interchange with T
+      !     Sort X and carry Y along
       !
-      IF (X(I) .GT. T) THEN
-        X(IJ) = X(I)
-        X(I) = T
-        T = X(IJ)
+100   M = 1
+      I = 1
+      J = NN
+      R = 0.375E0
+      !
+110   IF (I .EQ. J) GO TO 150
+      IF (R .LE. 0.5898437E0) THEN
+        R = R+3.90625E-2
+      ELSE
+        R = R-0.21875E0
       ENDIF
-    ENDIF
-    !
-    !     Find an element in the second half of the array which is smaller
-    !     than T
-    !
-40  L = L-1
-    IF (X(L) .GT. T) GO TO 40
-    !
-    !     Find an element in the first half of the array which is greater
-    !     than T
-    !
-50  K = K+1
-    IF (X(K) .LT. T) GO TO 50
-    !
-    !     Interchange these elements
-    !
-    IF (K .LE. L) THEN
-      TT = X(L)
-      X(L) = X(K)
-      X(K) = TT
-      GO TO 40
-    ENDIF
-    !
-    !     Save upper and lower subscripts of the array yet to be sorted
-    !
-    IF (L-I .GT. J-K) THEN
-      IL(M) = I
-      IU(M) = L
-      I = K
-      M = M+1
-    ELSE
-      IL(M) = K
-      IU(M) = J
-      J = L
-      M = M+1
-    ENDIF
-    GO TO 70
-    !
-    !     Begin again on another portion of the unsorted array
-    !
-60  M = M-1
-    IF (M .EQ. 0) GO TO 190
-    I = IL(M)
-    J = IU(M)
-    !
-70  IF (J-I .GE. 1) GO TO 30
-    IF (I .EQ. 1) GO TO 20
-    I = I-1
-    !
-80  I = I+1
-    IF (I .EQ. J) GO TO 60
-    T = X(I+1)
-    IF (X(I) .LE. T) GO TO 80
-    K = I
-    !
-90  X(K+1) = X(K)
-    K = K-1
-    IF (T .LT. X(K)) GO TO 90
-    X(K+1) = T
-    GO TO 80
-    !
-    !     Sort X and carry Y along
-    !
-100 M = 1
-    I = 1
-    J = NN
-    R = 0.375E0
-    !
-110 IF (I .EQ. J) GO TO 150
-    IF (R .LE. 0.5898437E0) THEN
-      R = R+3.90625E-2
-    ELSE
-      R = R-0.21875E0
-    ENDIF
-    !
-120 K = I
-    !
-    !     Select a central element of the array and save it in location T
-    !
-    IJ = I + INT((J-I)*R)
-    T = X(IJ)
-    TY = Y(IJ)
-    !
-    !     If first element of array is greater than T, interchange with T
-    !
-    IF (X(I) .GT. T) THEN
-      X(IJ) = X(I)
-      X(I) = T
+      !
+120   K = I
+      !
+      !     Select a central element of the array and save it in location T
+      !
+      IJ = I + INT((J-I)*R)
       T = X(IJ)
-      Y(IJ) = Y(I)
-      Y(I) = TY
-      TY = Y(IJ)
-    ENDIF
-    L = J
-    !
-    !     If last element of array is less than T, interchange with T
-    !
-    IF (X(J) .LT. T) THEN
-      X(IJ) = X(J)
-      X(J) = T
-      T = X(IJ)
-      Y(IJ) = Y(J)
-      Y(J) = TY
       TY = Y(IJ)
       !
-      !        If first element of array is greater than T, interchange with T
+      !     If first element of array is greater than T, interchange with T
       !
       IF (X(I) .GT. T) THEN
         X(IJ) = X(I)
@@ -1851,72 +1725,201 @@ CONTAINS
         Y(I) = TY
         TY = Y(IJ)
       ENDIF
-    ENDIF
-    !
-    !     Find an element in the second half of the array which is smaller
-    !     than T
-    !
-130 L = L-1
-    IF (X(L) .GT. T) GO TO 130
-    !
-    !     Find an element in the first half of the array which is greater
-    !     than T
-    !
-140 K = K+1
-    IF (X(K) .LT. T) GO TO 140
-    !
-    !     Interchange these elements
-    !
-    IF (K .LE. L) THEN
-      TT = X(L)
-      X(L) = X(K)
-      X(K) = TT
-      TTY = Y(L)
-      Y(L) = Y(K)
-      Y(K) = TTY
-      GO TO 130
-    ENDIF
-    !
-    !     Save upper and lower subscripts of the array yet to be sorted
-    !
-    IF (L-I .GT. J-K) THEN
-      IL(M) = I
-      IU(M) = L
-      I = K
-      M = M+1
+      L = J
+      !
+      !     If last element of array is less than T, interchange with T
+      !
+      IF (X(J) .LT. T) THEN
+        X(IJ) = X(J)
+        X(J) = T
+        T = X(IJ)
+        Y(IJ) = Y(J)
+        Y(J) = TY
+        TY = Y(IJ)
+        !
+        !        If first element of array is greater than T, interchange with T
+        !
+        IF (X(I) .GT. T) THEN
+          X(IJ) = X(I)
+          X(I) = T
+          T = X(IJ)
+          Y(IJ) = Y(I)
+          Y(I) = TY
+          TY = Y(IJ)
+        ENDIF
+      ENDIF
+      !
+      !     Find an element in the second half of the array which is smaller
+      !     than T
+      !
+130   L = L-1
+      IF (X(L) .GT. T) GO TO 130
+      !
+      !     Find an element in the first half of the array which is greater
+      !     than T
+      !
+140   K = K+1
+      IF (X(K) .LT. T) GO TO 140
+      !
+      !     Interchange these elements
+      !
+      IF (K .LE. L) THEN
+        TT = X(L)
+        X(L) = X(K)
+        X(K) = TT
+        TTY = Y(L)
+        Y(L) = Y(K)
+        Y(K) = TTY
+        GO TO 130
+      ENDIF
+      !
+      !     Save upper and lower subscripts of the array yet to be sorted
+      !
+      IF (L-I .GT. J-K) THEN
+        IL(M) = I
+        IU(M) = L
+        I = K
+        M = M+1
+      ELSE
+        IL(M) = K
+        IU(M) = J
+        J = L
+        M = M+1
+      ENDIF
+      GO TO 160
+      !
+      !     Begin again on another portion of the unsorted array
+      !
+150   M = M-1
+      IF (M .EQ. 0) GO TO 190
+      I = IL(M)
+      J = IU(M)
+      !
+160   IF (J-I .GE. 1) GO TO 120
+      IF (I .EQ. 1) GO TO 110
+      I = I-1
+      !
+170   I = I+1
+      IF (I .EQ. J) GO TO 150
+      T = X(I+1)
+      TY = Y(I+1)
+      IF (X(I) .LE. T) GO TO 170
+      K = I
+      !
+180   X(K+1) = X(K)
+      Y(K+1) = Y(K)
+      K = K-1
+      IF (T .LT. X(K)) GO TO 180
+      X(K+1) = T
+      Y(K+1) = TY
+      GO TO 170
     ELSE
-      IL(M) = K
-      IU(M) = J
-      J = L
-      M = M+1
-    ENDIF
-    GO TO 160
-    !
-    !     Begin again on another portion of the unsorted array
-    !
-150 M = M-1
-    IF (M .EQ. 0) GO TO 190
-    I = IL(M)
-    J = IU(M)
-    !
-160 IF (J-I .GE. 1) GO TO 120
-    IF (I .EQ. 1) GO TO 110
-    I = I-1
-    !
-170 I = I+1
-    IF (I .EQ. J) GO TO 150
-    T = X(I+1)
-    TY = Y(I+1)
-    IF (X(I) .LE. T) GO TO 170
-    K = I
-    !
-180 X(K+1) = X(K)
-    Y(K+1) = Y(K)
-    K = K-1
-    IF (T .LT. X(K)) GO TO 180
-    X(K+1) = T
-    Y(K+1) = TY
-    GO TO 170
+      !
+      !     Sort X only
+      !
+      M = 1
+      I = 1
+      J = NN
+      R = 0.375E0
+      !
+20    IF (I .EQ. J) GO TO 60
+      IF (R .LE. 0.5898437E0) THEN
+        R = R+3.90625E-2
+      ELSE
+        R = R-0.21875E0
+      ENDIF
+      !
+30    K = I
+      !
+      !     Select a central element of the array and save it in location T
+      !
+      IJ = I + INT((J-I)*R)
+      T = X(IJ)
+      !
+      !     If first element of array is greater than T, interchange with T
+      !
+      IF (X(I) .GT. T) THEN
+        X(IJ) = X(I)
+        X(I) = T
+        T = X(IJ)
+      ENDIF
+      L = J
+      !
+      !     If last element of array is less than than T, interchange with T
+      !
+      IF (X(J) .LT. T) THEN
+        X(IJ) = X(J)
+        X(J) = T
+        T = X(IJ)
+        !
+        !        If first element of array is greater than T, interchange with T
+        !
+        IF (X(I) .GT. T) THEN
+          X(IJ) = X(I)
+          X(I) = T
+          T = X(IJ)
+        ENDIF
+      ENDIF
+      !
+      !     Find an element in the second half of the array which is smaller
+      !     than T
+      !
+40    L = L-1
+      IF (X(L) .GT. T) GO TO 40
+      !
+      !     Find an element in the first half of the array which is greater
+      !     than T
+      !
+50    K = K+1
+      IF (X(K) .LT. T) GO TO 50
+      !
+      !     Interchange these elements
+      !
+      IF (K .LE. L) THEN
+        TT = X(L)
+        X(L) = X(K)
+        X(K) = TT
+        GO TO 40
+      ENDIF
+      !
+      !     Save upper and lower subscripts of the array yet to be sorted
+      !
+      IF (L-I .GT. J-K) THEN
+        IL(M) = I
+        IU(M) = L
+        I = K
+        M = M+1
+      ELSE
+        IL(M) = K
+        IU(M) = J
+        J = L
+        M = M+1
+      ENDIF
+      GO TO 70
+      !
+      !     Begin again on another portion of the unsorted array
+      !
+60    M = M-1
+      IF (M .EQ. 0) GO TO 190
+      I = IL(M)
+      J = IU(M)
+      !
+70    IF (J-I .GE. 1) GO TO 30
+      IF (I .EQ. 1) GO TO 20
+      I = I-1
+      !
+80    I = I+1
+      IF (I .EQ. J) GO TO 60
+      T = X(I+1)
+      IF (X(I) .LE. T) GO TO 80
+      K = I
+      !
+90    X(K+1) = X(K)
+      K = K-1
+      IF (T .LT. X(K)) GO TO 90
+      X(K+1) = T
+      GO TO 80
+    END IF
     !
     !     Clean up
     !

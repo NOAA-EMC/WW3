@@ -349,11 +349,10 @@ contains
         exit
       end if
     end do
-88  close(unit=1000)
-    if (vmsize == 0) goto 99
-    return
+    close(unit=1000)
+    if (vmsize /= 0) return
     !
-99  print *, 'ERROR: procfs not mounted or not compatible'
+    print *, 'ERROR: procfs not mounted or not compatible'
     vmsize = -1
   end function getVmSize
 
@@ -434,11 +433,10 @@ contains
         exit
       end if
     end do
-88  close(unit=1000)
-    if (vmRSS == 0) goto 99
-    return
+    close(unit=1000)
+    if (vmRSS /= 0) return
     !
-99  print *, 'ERROR: procfs not mounted or not compatible'
+    print *, 'ERROR: procfs not mounted or not compatible'
     vmRSS = -1
   end function getVmRSS
 

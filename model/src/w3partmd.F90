@@ -1412,7 +1412,10 @@ CONTAINS
         CYCLE
       ENDIF
       !
-      IF ( NPO .GE. DIMXP ) GOTO 2000
+      IF ( NPO .GE. DIMXP ) THEN
+        IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) NPO+1
+        RETURN
+      END IF
       NPO = NPO + 1
       IF (IP.GT.0)THEN
         IF(NPO.LT.1)CYCLE
@@ -1527,7 +1530,6 @@ CONTAINS
     !
     ! Escape locations read errors --------------------------------------- *
     !
-2000 CONTINUE
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) NPO+1
     RETURN
     !
