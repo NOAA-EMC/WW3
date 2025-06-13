@@ -756,7 +756,8 @@ CONTAINS
           TMPSTA(1,INODE)=2
           DEALLOCATE(TAGS)
         ELSE
-          GOTO 2001
+          WRITE (NDSE,1001)
+          CALL EXTCDE ( 61 )
         END IF
       END IF
     END DO

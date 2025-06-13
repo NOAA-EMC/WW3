@@ -618,12 +618,12 @@ iq_screen = 0             ! enable output to screen
 !------------------------------------------------------------------------------
 if(iq_type<1 .or. iq_type>3) then
   ierr = 1
-  goto 9999
+  return
 end if
 !
 if(iq_grid<1 .or. iq_grid>3) then
   ierr = 2
-  goto 9999
+  return
 end if
 !
 !  Retrieve size of spectral grid from input
@@ -649,14 +649,14 @@ if(iq_grid==1 .or. iq_grid==2) then
 !
   if(abs(dstep-dgap) < 0.001) then
     ierr = 31
-    goto 9999
+    return
   end if
 !
 !  check if sector is symmetric around zero in the case of sector grid
 !
   if(abs(dird(1)+dird(ndir)) > 0.01) then
     ierr = 32
-    goto 9999
+    return
   end if
 end if
 !
@@ -690,7 +690,7 @@ call z_fileio(trim(qbase)//'.err','DF',iufind,luq_err,iuerr)
 if(iuerr/=0) then
   call q_error('e','FILEIO','Problem in deleting error file *.ERR')
   ierr = 4
-  goto 9999
+  return
 end if
 !
 ! create new files, first create logging file
@@ -720,7 +720,7 @@ if(iproc >=0) write(luq_prt,'(a,i5)') '(MPI) processor number:',iproc
 call q_setconfig(iquad)
 if (iq_err /=0) then
   ierr = 5
-  goto 9999
+  return
 end if
 !---------------------------------------------------------------------------------
 !  check settings for inconsistencies
@@ -728,7 +728,7 @@ end if
 call q_chkconfig
 if (iq_err /=0) then
   ierr = 6
-  goto 9999
+  return
 end if
 !---------------------------------------------------------------------------------
 ! determine minimum size of number of points on locus as stored in database
@@ -761,7 +761,7 @@ do idepth=1,ndepth
     call q_ctrgrid(2,igrid)
     if(iq_err /= 0) then
       ierr = 7
-      goto 9999
+      return
     end if
   end if
 !
@@ -770,16 +770,6 @@ do idepth=1,ndepth
     exit
   end if
 end do
-!
-!
-!  Create or open triplet output data file if iq_triq > 0
-!
-!
-9999 continue
-!
-!! if (iq_log ==0) call z_fileio(trim(qbase)//'.log','DF',iufind,luq_log,iuerr)
-!! if (iq_prt ==0) call z_fileio(trim(qbase)//'.prt','DF',iufind,luq_prt,iuerr)
-!
 !
 return
 end subroutine xnl_init
@@ -1833,7 +1823,10 @@ else
 !------------------------------------------------------------------------------
 !
   call q_locpos(ka,kb,km,kw,loclen)
-  if(iq_err/=0) goto 9999
+  if(iq_err/=0) then
+    call q_stack('-q_cmplocus')
+    return
+  end if
 !
 !  compute position of start and end point for tracing
 !  the locus
@@ -1860,7 +1853,8 @@ else
     call q_error('e','LOCUS','Severe problem in POLAR2')
     write(luq_err,'(a)') 'Q_CMPLOCUS: ratio > 1.5'
 !
-    goto 9999
+    call q_stack('-q_cmplocus')
+    return
   end if
 !
 !  01/10/2001
@@ -1922,8 +1916,6 @@ do iloc=1,nlocus1
 !
 end do
 !
-!
-9999 continue
 !
 call q_stack('-q_cmplocus')
 !
@@ -2142,7 +2134,9 @@ elseif(iq_disp==2) then
 else
   call q_error('e','DISPER','Incorrect value for IQ_DISP')
   write(luq_err,'(a,i4)') 'IQ_DISP=',iq_disp
-  goto 9999
+  if (allocated(z_ad)) deallocate(z_ad,z_sig)
+  call q_stack('-q_ctrgrid')
+  return
 end if
 !
 !
@@ -2154,7 +2148,9 @@ end if
 if(lastquadfile==bqname) then
   if(iq_screen>0) write(iscreen,'(2a)')   'Q_CTRGRID: Rereading of bqfile skipped: ',lastquadfile
   igrid = 0
-  goto 9999
+  if (allocated(z_ad)) deallocate(z_ad,z_sig)
+  call q_stack('-q_ctrgrid')
+  return
 end if
 !-------------------------------------------------------------------------------------------
 if(iq_prt >= 2) then
@@ -2288,7 +2284,9 @@ end if
 !------------------------------------------------------------------------------
 if(itask==1) then
   if(luq_bqf>0) call z_fclose(luq_bqf)
-  goto 9999
+  if (allocated(z_ad)) deallocate(z_ad,z_sig)
+  call q_stack('-q_ctrgrid')
+  return
 end if
 !-----------------------------------------------------------------------------
 !  if lq_grid==true  a new grid has to be generated
@@ -2316,8 +2314,10 @@ if(lq_grid .or. iq_make==2 .or. iq_make==3) then
   q_depth = q_depth_saved
 !
   if(iq_err /=0) then
-     lastquadfile = 'quad_err_.bqf'
-     goto 9999
+    lastquadfile = 'quad_err_.bqf'
+    if (allocated(z_ad)) deallocate(z_ad,z_sig)
+    call q_stack('-q_ctrgrid')
+    return
   end if
 !
   igrid = 0
@@ -2362,10 +2362,7 @@ else
 
 end if
 !
-9999 continue
-!
 if (allocated(z_ad)) deallocate(z_ad,z_sig)
-!
 !
 call q_stack('-q_ctrgrid')
 !
@@ -2923,7 +2920,8 @@ end if
 if (amem > iamax) then
   ifnd = 0
   call q_error('e','MEMORY','Incorrect addres')
-  goto 9999
+  call q_stack('-q_getlocus')
+  return
 end if
 !
 !-----------------------------------------------------------------------------
@@ -2937,7 +2935,10 @@ nlocusx = nloc
 !
 !  short-cut when number of NON-ZERO points on locus is ZERO [27/8/2003]
 !
-if(nlocusx==0) goto 9999
+if(nlocusx==0) then
+  call q_stack('-q_getlocus')
+  return
+end if
 !
 r_ik2(1:nloc)  = quad_ik2(kmem,amem,1:nloc)
 r_ia2(1:nloc)  = quad_ia2(kmem,amem,1:nloc)
@@ -3090,8 +3091,6 @@ t_zz(1:nloc)   = lambda*c_lambda/j_lambda * r_zz(1:nloc)
 ifnd = 1
 !
 !------------------------------------------------------------------------------
-!
-9999 continue
 !
 call q_stack('-q_getlocus')
 !
@@ -3595,7 +3594,8 @@ else
 !
     if(iter>=maxiter) then
       call q_error('e','Start kb','Too many iterations needed')
-      goto 9999
+      call q_stack('-q_locpos')
+      return
     end if
 !
 !   search root by Ridders method
@@ -3626,7 +3626,8 @@ else
 !
     if(iter>=maxiter) then
       call q_error('e','Start ka','Too many iterations needed')
-      goto 9999
+      call q_stack('-q_locpos')
+      return
     end if
 !
 !   search root by Ridder's method
@@ -3652,7 +3653,8 @@ else
 !
     if(iter>=maxiter) then
       call q_error('e','Start kb','Too many iterations needed')
-      goto 9999
+      call q_stack('-q_locpos')
+      return
     end if
 !
 !   search root by Ridders method
@@ -3741,9 +3743,6 @@ if (mm1==0) then
 else
   loclen = 4.*max(aa,bb)*((1. + a1*mm1 + a2*mm1**2) + (b1*mm1 + b2*mm1**2)*log(1/mm1))
 end if
-!
-!
-9999 continue
 !
 call q_stack('-q_locpos')
 !
@@ -4466,7 +4465,9 @@ else
     if(jerr > 0) then
       iq_err = iq_err + 1
       call q_error('e','INTER','Problem in interpolation process')
-      goto 9999
+      if(allocated(sold)) deallocate(sold,snew)
+      call q_stack('-q_modify')
+      return
     end if
   end if
 !
@@ -4502,9 +4503,6 @@ do iloc=1,nlocus
 !
 !
 end do
-!
-!
-9999 continue
 !
 if(allocated(sold)) deallocate(sold,snew)
 !
@@ -4945,7 +4943,8 @@ else
   if(iq_screen>0) write(iscreen,'(a,i4)') 'Q_SETCONFIG: iquad=',iquad
   call q_error('e','IQUAD','No valid value of iquad has been given, default settings')
   write(luq_err,'(a,i4)') 'Q_SETCONFIG: Value of IQUAD:',iquad
-  goto 9999
+  call q_stack('-q_setconfig')
+  return
 end if
 !-------------------------------------------------------------------------------------------------
 !
@@ -5027,8 +5026,6 @@ else
     write(luq_log,'(a)') 'Q_SETCONFIG: Configuration file '//trim(qbase)//'.CFG has not been found'
   end if
 end if
-!
-9999 continue
 !
 call q_stack('-q_setconfig')
 !
@@ -5144,7 +5141,11 @@ if(igrid==0) then
   if(iq_screen>=1) write(iscreen,'(a)') 'Q_SEARCHGRID: grid accepted, read whole database'
 !
   call q_ctrgrid(2,igrid)
-  goto 9999
+  !
+  !  restore water depth
+  q_depth = s_depth
+  call q_stack('-q_searchgrid')
+  return
 end if
 !
 ! save depth for which nearest grid file is to be found
@@ -5231,7 +5232,11 @@ elseif(r_lower < 0 .and. r_upper > 0) then
   q_depth = d_upper
 else
   call q_error('e','SEARCHGRID','No valid nearest grid could be found')
-  goto 9999
+  !
+  !  restore water depth
+  q_depth = s_depth
+  call q_stack('-q_searchgrid')
+  return
 end if
 !
 !-----------------------------------------------------------------------------------------------
@@ -5255,8 +5260,6 @@ if(iq_prt>=2) then
   write(luq_prt,'(a,f12.2)') 'Q_SEARCHGRID: Q_CTRGRID called with depth:',q_depth
   write(luq_prt,'(a,i4)') 'Q_SEARCHGRID: igrid of nearest grid operation:',igrid
 end if
-!
-9999 continue
 !
 !  restore water depth
 !
@@ -5389,7 +5392,7 @@ if(mod_task(1:1) == '+') then
 !
   if(iq_stack > mq_stack) then
     call q_error('e','STACKMAX',' ')
-    goto 9999
+    return
   else
     cstack(iq_stack) = mod_name(2:mod_len)
   end if
@@ -5403,16 +5406,11 @@ elseif(mod_task(1:1) == '-') then
   else
     write(luq_err,'(a)') 'Module name:',mod_name
     call q_error('e','STACKNAME',' ')
-    goto 9999
+    return
   end if
 else
   call q_error('e','STACKCALL',' ')
-  goto 9999
 end if
-!
-!!\Z
-!
-9999 continue
 !
 return
 end subroutine
@@ -5859,7 +5857,10 @@ diagk1 = 0.
 diagk3 = 0.
 !
 !
-if(ik1==ik3 .and. ia1==ia3) goto 9999  ! skip routine if k1=k3
+if(ik1==ik3 .and. ia1==ia3) then  ! skip routine if k1=k3
+  call q_stack('-q_t13v4')
+  return
+end if
 !
 !  obtain information requested locus based on a information
 !  about a precomputed locus, as stored in the database file
@@ -5868,7 +5869,8 @@ call q_getlocus(ik1,ia1,ik3,ia3,ifnd)
 !
 if(ifnd==0 .or. nlocusx==0) then
   t13 = 0.
-  goto 9999
+  call q_stack('-q_t13v4')
+  return
 end if
 !---------------------------------------------------------------------------------------
 qn1 = nspec(ik1,ia1)
@@ -5977,8 +5979,6 @@ end do
 !!T end if
 !!if(iq_integ==3) write(luq_int,'(4i3,i5,1000e13.5)') ik1,ia1,ik3,ia3,nloc, &
 !!& t_s(nloc),t13,(dt13(iloc),iloc=1,nloc)
-!
-9999 continue
 !
 call q_stack('-q_t13v4')
 !
@@ -6535,16 +6535,21 @@ if(iq_screen >= 1) write(iscreen,'(a)') 'Q_XNL4V4: Checking interaction grid '
 if(iq_search==0 .or. iq_type/=3) then
   call q_init
   call q_ctrgrid(2,igrid)
-  if(iq_err /= 0) goto 9999
+  if(iq_err /= 0) then
+    call q_stack('-q_xnl4v4')
+    return
+  end if
 !
   if(igrid/=0) then
     call q_error('e','NOGRID','No proper grid exists')
-    goto 9999
+    call q_stack('-q_xnl4v4')
+    return
   end if
 !
   if(iq_make ==3) then
     call q_error('e','MAKEGRID','Only computation of grid')
-    goto 9999
+    call q_stack('-q_xnl4v4')
+    return
   end if
 !------------------------------------------------------------------------------
 !  set overall scale factor resulting from optional SEARCH for nearest grid
@@ -6562,10 +6567,14 @@ else
 
   if(igrid/=0) then
     call q_error('e','NOGRID','No proper grid exists')
-    goto 9999
+    call q_stack('-q_xnl4v4')
+    return
   end if
 !
-  if(iq_err /=0) goto 9999
+  if(iq_err /=0) then
+    call q_stack('-q_xnl4v4')
+    return
+  end if
 end if
 !
 !------------------------------------------------------------------------------
@@ -6643,7 +6652,10 @@ do ik1 = 1,nkq
           call q_t13v4(ik1,ia1,ik3,ia3,t13,diagk1,diagk3)
 !
 !
-          if(iq_err /= 0) goto 9999
+          if(iq_err /= 0) then
+            call q_stack('-q_xnl4v4')
+            return
+          end if
 !
 !  check contribution T13 with the computed with triplet method
 !
@@ -6730,8 +6742,6 @@ do ikq=1,nkq
   end do
 end do
 !                                                   !
-9999 continue
-!
 call q_stack('-q_xnl4v4')
 !
 return
@@ -6923,7 +6933,7 @@ real, intent(in) ::       grav    !  Gravitational acceleration
 !------------------------------------------------------------------------------
 if (iq_cple < 1 .or. iq_cple > 4) then
   x_cple = 0.
-  goto 9999
+  return
 end if
 !
 select case(iq_cple)
@@ -6942,8 +6952,6 @@ case(2)
 ! x_cple = xc_hh2(k1x,k1y,k2x,k2y,k3x,k3y,depth,grav)
 !
 end select
-!
-9999 continue
 !
 return
 end function

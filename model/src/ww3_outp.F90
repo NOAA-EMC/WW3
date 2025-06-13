@@ -517,7 +517,8 @@ PROGRAM W3OUTP
 #endif
         IF ( IOTEST .EQ. -1 ) THEN
           WRITE (NDSO,949)
-          GOTO 888
+          WRITE (NDSO,999)
+          STOP
         END IF
       END DO
     END IF
@@ -982,7 +983,8 @@ PROGRAM W3OUTP
     ENDDO
   ENDIF
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  STOP
   !
   ! Escape locations read errors :
   !
@@ -1012,13 +1014,6 @@ PROGRAM W3OUTP
   CALL EXTCDE ( 45 )
 #endif
   !
-888 CONTINUE
-  !
-  WRITE (NDSO,999)
-  !
-#ifdef W3_NCO
-  !     CALL W3TAGE('WAVESPEC')
-#endif
   !
   ! Formats
   !

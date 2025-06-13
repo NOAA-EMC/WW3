@@ -327,7 +327,10 @@ PROGRAM W3PRTIDE
        NDSE, NX, NY, GTYPE,               &
        IERR, FILENAMEXT, '', TIDEFLAGIN=FLAGTIDE )
   !
-  IF (FLAGTIDE.NE.1) GOTO 803
+  IF (FLAGTIDE.NE.1) THEN
+    WRITE (NDSE,1003)
+    CALL EXTCDE ( 43 )
+  END IF
   !
   CALL VUF_SET_PARAMETERS
 
@@ -506,7 +509,13 @@ PROGRAM W3PRTIDE
   !==========================================================
 
   DTTST  = DSEC21 ( TIDE_START , TIDE_END )
-  IF ( DTTST .LE. 0. .OR. PRTIDE_DT .LT. 1 ) GOTO 888
+  IF ( DTTST .LE. 0. .OR. PRTIDE_DT .LT. 1 ) THEN
+    IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
+#ifdef W3_MPI
+    CALL MPI_FINALIZE  ( IERR_MPI )
+#endif
+    STOP
+  END IF
   TIME = TIDE_START
   TIDE_KD0= 2415020
   !
@@ -514,7 +523,13 @@ PROGRAM W3PRTIDE
   !
   DO
     DTTST  = DSEC21 ( TIME, TIDE_END )
-    IF ( DTTST .LT. 0. ) GOTO 888
+    IF ( DTTST .LT. 0. ) THEN
+      IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
+#ifdef W3_MPI
+      CALL MPI_FINALIZE  ( IERR_MPI )
+#endif
+      STOP
+    END IF
     !
     CALL STME21 ( TIME , IDTIME )
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,973) IDTIME
@@ -827,7 +842,11 @@ PROGRAM W3PRTIDE
 
   END DO
   !
-  GOTO 888
+  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
+#ifdef W3_MPI
+  CALL MPI_FINALIZE  ( IERR_MPI )
+#endif
+  STOP
   !
   ! Error escape locations
   !
@@ -842,17 +861,6 @@ PROGRAM W3PRTIDE
 802 CONTINUE
   WRITE (NDSE,1002) IERR
   CALL EXTCDE ( 42 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003)
-  CALL EXTCDE ( 43 )
-  !
-888 CONTINUE
-  IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
-#ifdef W3_MPI
-  CALL MPI_FINALIZE  ( IERR_MPI )
-#endif
-
   !
   ! Formats
   !

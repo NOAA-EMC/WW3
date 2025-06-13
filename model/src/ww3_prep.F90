@@ -1082,7 +1082,10 @@ PROGRAM W3PREP
         ELSE
           READ (NDSF(J),         END=888,ERR=860,IOSTAT=IERR) TIME2
         END IF
-        IF (TIME2(1).NE.TIME(1) .OR. TIME2(2).NE.TIME(2)) GOTO 861
+        IF (TIME2(1).NE.TIME(1) .OR. TIME2(2).NE.TIME(2)) THEN
+          WRITE (NDSE,1061) TIME, TIME2
+          CALL EXTCDE ( 51 )
+        END IF
       END IF
       ! <---
     END IF
@@ -1489,7 +1492,8 @@ PROGRAM W3PREP
   !     End loop over input fields
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  STOP
   !
   ! Error escape locations
   !
@@ -1522,8 +1526,6 @@ PROGRAM W3PREP
   CALL EXTCDE ( 50 )
   !
 861 CONTINUE
-  WRITE (NDSE,1061) TIME, TIME2
-  CALL EXTCDE ( 51 )
   !
 862 CONTINUE
   WRITE (NDSE,1062) IERR

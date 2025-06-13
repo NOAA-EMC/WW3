@@ -2095,7 +2095,7 @@ CONTAINS
       !        No non-empty systems found
       IF (ts1.GT.SIZE(sysA)) THEN
         maxGroup = 0
-        GOTO 2000
+        RETURN
       END IF
     END DO
     WRITE(20,*) 'TS = ',ts1
@@ -2667,7 +2667,6 @@ CONTAINS
     END DO
     CLOSE(27)
 
-2000 CONTINUE
     RETURN
   END SUBROUTINE timeTrackingV2
   !/ End of timeTrackingV2 --------------------------------------------- /
@@ -3978,13 +3977,13 @@ CONTAINS
                         deltaPerB = (m2*1. + 3)*1.
                         !Remove dHs limitation from criteria
                         deltaHsB = 9999.
-                        GOTO 500
+                        EXIT
                       END IF
                     END IF
                   END DO
+                  IF (DIST.LT.3.) EXIT
                 END DO
               END IF
-500           CONTINUE
               !051612               --- Land mask addition
 
               absHs = ABS( SUM(sys(ss)%hs(indSys1))/lsys - &

@@ -273,8 +273,10 @@ PROGRAM W3OUTF
   !
   CALL W3READFLGRD ( NDSI, NDSO, 9, NDSE, COMSTR, FLOG,      &
        FLREQ, 1, 1, IERR )
-  IF (IERR.NE.0) GOTO 800
-
+  IF (IERR.NE.0) THEN
+    WRITE (NDSE,1000) IERR
+    CALL EXTCDE ( 10 )
+  END IF
   !
   ! ... Output type
   !
@@ -298,7 +300,8 @@ PROGRAM W3OUTF
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,944)
-        GOTO 888
+        WRITE (NDSO,999)
+        STOP
       END IF
     END DO
     !
@@ -410,7 +413,8 @@ PROGRAM W3OUTF
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,944)
-        GOTO 888
+        WRITE (NDSO,999)
+        STOP
       END IF
       CYCLE
     END IF
@@ -435,7 +439,8 @@ PROGRAM W3OUTF
   !
   IF (ITYPE.EQ.3) WRITE (NDSO,972)
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  STOP
   !
   ! Escape locations read errors :
   !
@@ -450,9 +455,6 @@ PROGRAM W3OUTF
 802 CONTINUE
   WRITE (NDSE,1002) IERR
   CALL EXTCDE ( 12 )
-  !
-888 CONTINUE
-  WRITE (NDSO,999)
   !
   ! Formats
   !
