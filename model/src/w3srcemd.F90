@@ -2011,22 +2011,6 @@ CONTAINS
     DTDYN  = DTDYN / REAL(MAX(1,NSTEPS))
     FCUT   = FHIGH * TPIINV
     !
-    GOTO 888
-    !
-    ! Error escape locations
-    !
-#ifdef W3_NNT
-800 CONTINUE
-    WRITE (NDSE,8000) FNAME, IERR
-    CALL EXTCDE (1)
-    !
-801 CONTINUE
-    WRITE (NDSE,8001) IERR
-    CALL EXTCDE (2)
-#endif
-    !
-888 CONTINUE
-    !
     ! 9.a  Computes PHIOC------------------------------------------ *
     !     The wave to ocean flux is the difference between initial energy
     !     and final energy, plus wind input plus the SNL flux to high freq.,
@@ -2330,6 +2314,18 @@ CONTAINS
     SPEC = MAX(0., SPEC)
     !
     RETURN
+    !
+    ! Error escape locations
+    !
+#ifdef W3_NNT
+800 CONTINUE
+    WRITE (NDSE,8000) FNAME, IERR
+    CALL EXTCDE (1)
+    !
+801 CONTINUE
+    WRITE (NDSE,8001) IERR
+    CALL EXTCDE (2)
+#endif
     !
     ! Formats
     !

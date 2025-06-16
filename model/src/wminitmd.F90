@@ -728,8 +728,16 @@ CONTAINS
       END IF
     END IF
     !
-    IF ( NRGRD .LT. 1 ) GOTO 2020
-    IF ( NRINP .LT. 0 ) GOTO 2021
+    IF ( NRGRD .LT. 1 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
+      CALL EXTCDE ( 2020 )
+      RETURN
+    END IF
+    IF ( NRINP .LT. 0 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
+      CALL EXTCDE ( 2021 )
+      RETURN
+    END IF
     IF ( NRINP.EQ.0 .AND. .NOT.UNIPTS ) NRINP = -1
     !
     ! 2.b Set up data structures
@@ -917,8 +925,16 @@ CONTAINS
                   EXIT
                 END IF
               END DO
-              IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+              IF ( INPMAP(I,J) .EQ. 0 ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+                CALL EXTCDE ( 2030 )
+                RETURN
+              END IF
+              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+                CALL EXTCDE ( 2030 )
+                RETURN
+              END IF
               USEINP(-INPMAP(I,J)) = .TRUE.
               CPLINP(-INPMAP(I,J)) = .TRUE.
             END IF
@@ -931,8 +947,16 @@ CONTAINS
                 EXIT
               END IF
             END DO
-            IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+            IF ( INPMAP(I,J) .EQ. 0 ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+              CALL EXTCDE ( 2030 )
+              RETURN
+            END IF
+            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
+              CALL EXTCDE ( 2031 )
+              RETURN
+            END IF
             USEINP(INPMAP(I,J)) = .TRUE.
           END IF
         END IF
@@ -1351,7 +1375,9 @@ CONTAINS
               IF (NPTS.GT.0) THEN
                 ALLOCATE ( X(NPTS), Y(NPTS), PNAMES(NPTS) )
               ELSE
-                GOTO 2054
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
+                CALL EXTCDE ( 2054 )
+                RETURN
               END IF
             END IF
             !
@@ -1552,14 +1578,26 @@ CONTAINS
         IF ( MN(:II) .EQ. MNAMES(I)(1:II) ) EXIT
       END DO
       !
-      IF ( I .GT. NRGRD ) GOTO 2051
+      IF ( I .GT. NRGRD ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1051) MN(:II)
+        CALL EXTCDE ( 2051 )
+        RETURN
+      END IF
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
            WRITE (MDSS,962) MN(1:II), I
       !
       ! 5.j.3 Check the output type
       !
-      IF ( J.LT.0 .OR. J.GT. NOTYPE ) GOTO 2052
-      IF ( J.EQ.2 .AND. UNIPTS ) GOTO 2053
+      IF ( J.LT.0 .OR. J.GT. NOTYPE ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1052) J
+        CALL EXTCDE ( 2052 )
+        RETURN
+      END IF
+      IF ( J.EQ.2 .AND. UNIPTS ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
+        CALL EXTCDE ( 2053 )
+        RETURN
+      END IF
       IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )                    &
            WRITE (MDSS,951) J, IDOTYP(J)
       !
@@ -1850,7 +1888,11 @@ CONTAINS
       END DO
 #endif
       !
-      IF ( NMOVE .EQ. 0 ) GOTO 2060
+      IF ( NMOVE .EQ. 0 ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
+        CALL EXTCDE ( 2060 )
+        RETURN
+      END IF
       !
       NMVMAX = NMOVE
       DO I=1, NRGRD
@@ -2484,7 +2526,10 @@ CONTAINS
                !!Li     NX, NY, GTYPE, IERR, MNAMES(I),           &
                NX, NY,   JJJ, IERR, MNAMES(I),           &
                TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           !
           !!Li   Print a warning message when GTYPE not matching forcing field one.
           IF ( (JJJ .NE. GTYPE) .AND. (IMPROC .EQ. NMPSC2) )       &
@@ -2748,7 +2793,11 @@ CONTAINS
     ! 8.a.6 Check for coordinate system
     !
     DO I=1, NRGRD-1
-      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) GOTO 2070
+      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
+        CALL EXTCDE ( 2070 )
+        RETURN
+      END IF
     END DO
     !
     ! 8.b Input files
@@ -2780,7 +2829,10 @@ CONTAINS
           CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
                MDSE2, NX, NY, GTYPE, IERR,               &
                MNAMES(-I), TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                WRITE (MDSS,985) IDFLDS(J)
         ELSE
@@ -3172,63 +3224,14 @@ CONTAINS
     CALL EXTCDE ( 2011 )
     RETURN
     !
-2020 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
-    CALL EXTCDE ( 2020 )
-    RETURN
-    !
-2021 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
-    CALL EXTCDE ( 2021 )
-    RETURN
-    !
 2030 CONTINUE
     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
     CALL EXTCDE ( 2030 )
     RETURN
     !
-2031 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
-    CALL EXTCDE ( 2031 )
-    RETURN
-    !
-    !2050 CONTINUE
-    !     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1040)
-    !     CALL EXTCDE ( 2050 )
-    !     RETURN
-    !
 2051 CONTINUE
     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1051) MN(:II)
     CALL EXTCDE ( 2051 )
-    RETURN
-    !
-2052 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1052) J
-    CALL EXTCDE ( 2052 )
-    RETURN
-    !
-2053 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
-    CALL EXTCDE ( 2053 )
-    RETURN
-    !
-2054 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
-    CALL EXTCDE ( 2054 )
-    RETURN
-    !
-2060 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
-    CALL EXTCDE ( 2060 )
-    RETURN
-    !
-2070 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
-    CALL EXTCDE ( 2070 )
-    RETURN
-    !
-2080 CONTINUE
-    CALL EXTCDE ( 2080 )
     RETURN
     !
     ! Formats
@@ -4133,8 +4136,16 @@ CONTAINS
       END IF
     END IF
     !
-    IF ( NRGRD .LT. 1 ) GOTO 2020
-    IF ( NRINP .LT. 0 ) GOTO 2021
+    IF ( NRGRD .LT. 1 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
+      CALL EXTCDE ( 2020 )
+      RETURN
+    END IF
+    IF ( NRINP .LT. 0 ) THEN
+      IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
+      CALL EXTCDE ( 2021 )
+      RETURN
+    END IF
     IF ( NRINP.EQ.0 .AND. .NOT.UNIPTS ) NRINP = -1
     !
     ! 2.b Set up data structures
@@ -4356,8 +4367,16 @@ CONTAINS
                   EXIT
                 END IF
               END DO
-              IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+              IF ( INPMAP(I,J) .EQ. 0 ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+                CALL EXTCDE ( 2030 )
+                RETURN
+              END IF
+              IF ( .NOT. INPUTS(INPMAP(I,J))%INFLAGS1(J) ) THEN
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
+                CALL EXTCDE ( 2031 )
+                RETURN
+              END IF
               USEINP(-INPMAP(I,J)) = .TRUE.
               CPLINP(-INPMAP(I,J)) = .TRUE.
             END IF
@@ -4370,8 +4389,16 @@ CONTAINS
                 EXIT
               END IF
             END DO
-            IF ( INPMAP(I,J) .EQ. 0 ) GOTO 2030
-            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) GOTO 2031
+            IF ( INPMAP(I,J) .EQ. 0 ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
+              CALL EXTCDE ( 2030 )
+              RETURN
+            END IF
+            IF ( .NOT. INPUTS(-INPMAP(I,J))%INFLAGS1(J) ) THEN
+              IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
+              CALL EXTCDE ( 2031 )
+              RETURN
+            END IF
             USEINP(INPMAP(I,J)) = .TRUE.
           END IF
         END IF
@@ -4787,7 +4814,9 @@ CONTAINS
                 CYCLE
                 ! and if output still enabled, stop
               ELSE
-                GOTO 2055
+                IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1055)
+                CALL EXTCDE ( 2055 )
+                RETURN
               END IF
             END IF
 
@@ -4796,7 +4825,11 @@ CONTAINS
             !
             IF ( UNIPTS .AND. I.GE.2 ) THEN
               DO K=1,I-1
-                IF ( NML_OUTPUT_TYPE(K)%POINT%FILE.NE.NML_OUTPUT_TYPE(I)%POINT%FILE ) GOTO 2053
+                IF ( NML_OUTPUT_TYPE(K)%POINT%FILE.NE.NML_OUTPUT_TYPE(I)%POINT%FILE ) THEN
+                  IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
+                  CALL EXTCDE ( 2053 )
+                  RETURN
+                END IF
               END DO
             END IF
             OPEN (MDSI, file=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE(I)%POINT%FILE), &
@@ -4815,8 +4848,9 @@ CONTAINS
                        OT2(I)%PNAMES(OT2(I)%NPTS) )
                   OT2(I)%NPTS = 0  ! reset it to use it as a counter for loop 2
                 ELSE
-                  ALLOCATE ( OT2(I)%X(1), OT2(I)%Y(1), OT2(I)%PNAMES(1) )
-                  GOTO 2054
+                  IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
+                  CALL EXTCDE ( 2054 )
+                  RETURN
                 END IF
               END IF
               !
@@ -4956,8 +4990,16 @@ CONTAINS
       N_MOV  = NML_HOMOG_COUNT%N_MOV
       N_TOT = NML_HOMOG_COUNT%N_TOT
 
-      IF ( N_MOV .EQ. 0 ) GOTO 2060
-      IF ( N_MOV .GT. 99 ) GOTO 2061
+      IF ( N_MOV .EQ. 0 ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
+        CALL EXTCDE ( 2060 )
+        RETURN
+      END IF
+      IF ( N_MOV .GT. 99 ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1061) IDTST, N_MOV
+        CALL EXTCDE ( 2061 )
+        RETURN
+      END IF
 
       ALLOCATE ( TMOVE(2,N_MOV), AMOVE(N_MOV), DMOVE(N_MOV) )
       !
@@ -4971,7 +5013,9 @@ CONTAINS
           IF ( MDSS.NE.MDSO .AND. NMPSCR.EQ.IMPROC )             &
                WRITE (MDSS,968) I, TMOVE(:,I), AMOVE(I), DMOVE(I)
         CASE DEFAULT
-          GOTO 2062
+          IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1062) IDTST
+          CALL EXTCDE ( 2062 )
+          RETURN
         END SELECT
       END DO
       !
@@ -5615,7 +5659,10 @@ CONTAINS
                !!Li     NX, NY, GTYPE, IERR, MNAMES(I),           &
                NX, NY,   JJJ, IERR, MNAMES(I),           &
                TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           !
           !!Li   Print a warning message when GTYPE not matching forcing field one.
           IF ( (JJJ .NE. GTYPE) .AND. (IMPROC .EQ. NMPSC2) )       &
@@ -5867,7 +5914,11 @@ CONTAINS
     ! 8.a.6 Check for coordinate system
     !
     DO I=1, NRGRD-1
-      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) GOTO 2070
+      IF ( GRIDS(I)%FLAGLL .NEQV. GRIDS(I+1)%FLAGLL ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
+        CALL EXTCDE ( 2070 )
+        RETURN
+      END IF
     END DO
     !
     ! 8.b Input files
@@ -5899,7 +5950,10 @@ CONTAINS
           CALL W3FLDO ('READ', IDINP(-I,J), MDSF(-I,J), MDST,     &
                MDSE2, NX, NY, GTYPE, IERR,               &
                MNAMES(-I), TRIM(FNMPRE) )
-          IF ( IERR .NE. 0 ) GOTO 2080
+          IF ( IERR .NE. 0 ) THEN
+            CALL EXTCDE ( 2080 )
+            RETURN
+          END IF
           IF ( MDSS.NE.MDSO .AND. NMPSC2.EQ.IMPROC )              &
                WRITE (MDSS,985) IDFLDS(J)
         ELSE
@@ -6289,31 +6343,6 @@ CONTAINS
     CALL EXTCDE ( 2011 )
     RETURN
     !
-2020 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1020)
-    CALL EXTCDE ( 2020 )
-    RETURN
-    !
-2021 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1021)
-    CALL EXTCDE ( 2021 )
-    RETURN
-    !
-2030 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1030) MNAMES(I), INAMES(I,J)
-    CALL EXTCDE ( 2030 )
-    RETURN
-    !
-2031 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1031) INAMES(I,J), J
-    CALL EXTCDE ( 2031 )
-    RETURN
-    !
-    !2050 CONTINUE
-    !     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1040)
-    !     CALL EXTCDE ( 2050 )
-    !     RETURN
-    !
 2051 CONTINUE
     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1051) MN(:II)
     CALL EXTCDE ( 2051 )
@@ -6322,45 +6351,6 @@ CONTAINS
 2052 CONTINUE
     IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1052) J
     CALL EXTCDE ( 2052 )
-    RETURN
-    !
-2053 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1053)
-    CALL EXTCDE ( 2053 )
-    RETURN
-    !
-2054 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1054)
-    CALL EXTCDE ( 2054 )
-    RETURN
-    !
-2055 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1055)
-    CALL EXTCDE ( 2055 )
-    RETURN
-    !
-2060 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1060)
-    CALL EXTCDE ( 2060 )
-    RETURN
-    !
-2061 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1061) IDTST, N_MOV
-    CALL EXTCDE ( 2061 )
-    RETURN
-    !
-2062 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1062) IDTST
-    CALL EXTCDE ( 2062 )
-    RETURN
-    !
-2070 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1070)
-    CALL EXTCDE ( 2070 )
-    RETURN
-    !
-2080 CONTINUE
-    CALL EXTCDE ( 2080 )
     RETURN
     !
     ! Formats

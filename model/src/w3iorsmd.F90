@@ -504,6 +504,7 @@ CONTAINS
       CALL EXTCDE ( 15 )
     ENDIF
 
+    IERR = 0
     IF ( WRITE ) THEN
       IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
            OPEN (NDSR,FILE=FNMPRE_LOCAL(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
@@ -514,74 +515,91 @@ CONTAINS
            STATUS='OLD',ACTION='READ')
     END IF
     !
-    ! test info ---------------------------------------------------------- *
-    !
-    IF ( WRITE ) THEN
+    ! In/Out file is successfully opened
+    IF (IERR .EQ. 0) THEN
       !
-      IF ( IAPROC .EQ. NAPRST ) THEN
-        !           Because data has mixed data types we do not know how many
-        !           bytes remain to fill up to LRECL. ---
-        !           --- Make the entire record zero ---
-        WRITEBUFF(:) = 0.
-        WRITE (NDSR,POS=1) WRITEBUFF
-        !           --- Replace zeros with data ---
-        WRITE (NDSR,POS=1) IDSTR, VERINI, GNAME, TYPE, NSEA,      &
-             NSPEC, FLOGRR
-      END IF
-      RSTYPE = 3
+      ! test info ---------------------------------------------------------- *
       !
-    ELSE
-      READ (NDSR,POS=1,ERR=802,IOSTAT=IERR)                       &
-           IDTST, VERTST, TNAME, TYPE, NSEAT, MSPEC, FLOGOA
-      !
-      IF ( IDTST .NE. IDSTR ) THEN
-        IF ( IAPROC .EQ. NAPERR )                               &
-             WRITE (NDSE,901) IDTST, IDSTR
-        CALL EXTCDE ( 10 )
-      END IF
-      IF ( VERTST .NE. VERINI ) THEN
-        IF ( IAPROC .EQ. NAPERR )                               &
-             WRITE (NDSE,902) VERTST, VERINI
-        CALL EXTCDE ( 11 )
-      END IF
-      IF ( TNAME .NE. GNAME ) THEN
-        IF ( IAPROC .EQ. NAPERR )                               &
-             WRITE (NDSE,903) TNAME, GNAME
-      END IF
-      IF (TYPE.NE.'FULL' .AND. TYPE.NE.'COLD' .AND.               &
-           TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' ) THEN
-        IF ( IAPROC .EQ. NAPERR )                               &
-             WRITE (NDSE,904) TYPE
-        CALL EXTCDE ( 12 )
-      END IF
-      IF (NSEAT.NE.NSEA .OR. NSPEC.NE.MSPEC) THEN
-        IF ( IAPROC .EQ. NAPERR )                               &
-             WRITE (NDSE,905) MSPEC, NSEAT, NSPEC, NSEA
-        CALL EXTCDE ( 13 )
-      END IF
-      IF (TYPE.EQ.'FULL') THEN
-        RSTYPE = 2
-      ELSE IF (TYPE.EQ.'WIND') THEN
-        RSTYPE = 1
-      ELSE IF (TYPE.EQ.'CALM') THEN
-        RSTYPE = 4
+      IF ( WRITE ) THEN
+        !
+        IF ( IAPROC .EQ. NAPRST ) THEN
+          !           Because data has mixed data types we do not know how many
+          !           bytes remain to fill up to LRECL. ---
+          !           --- Make the entire record zero ---
+          WRITEBUFF(:) = 0.
+          WRITE (NDSR,POS=1) WRITEBUFF
+          !           --- Replace zeros with data ---
+          WRITE (NDSR,POS=1) IDSTR, VERINI, GNAME, TYPE, NSEA,      &
+               NSPEC, FLOGRR
+        END IF
+        RSTYPE = 3
+        !
       ELSE
-        RSTYPE = 0
-      END IF
+        READ (NDSR,POS=1,ERR=802,IOSTAT=IERR)                       &
+             IDTST, VERTST, TNAME, TYPE, NSEAT, MSPEC, FLOGOA
+        !
+        IF ( IDTST .NE. IDSTR ) THEN
+          IF ( IAPROC .EQ. NAPERR )                               &
+               WRITE (NDSE,901) IDTST, IDSTR
+          CALL EXTCDE ( 10 )
+        END IF
+        IF ( VERTST .NE. VERINI ) THEN
+          IF ( IAPROC .EQ. NAPERR )                               &
+               WRITE (NDSE,902) VERTST, VERINI
+          CALL EXTCDE ( 11 )
+        END IF
+        IF ( TNAME .NE. GNAME ) THEN
+          IF ( IAPROC .EQ. NAPERR )                               &
+               WRITE (NDSE,903) TNAME, GNAME
+        END IF
+        IF (TYPE.NE.'FULL' .AND. TYPE.NE.'COLD' .AND.               &
+             TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' ) THEN
+          IF ( IAPROC .EQ. NAPERR )                               &
+               WRITE (NDSE,904) TYPE
+          CALL EXTCDE ( 12 )
+        END IF
+        IF (NSEAT.NE.NSEA .OR. NSPEC.NE.MSPEC) THEN
+          IF ( IAPROC .EQ. NAPERR )                               &
+               WRITE (NDSE,905) MSPEC, NSEAT, NSPEC, NSEA
+          CALL EXTCDE ( 13 )
+        END IF
+        IF (TYPE.EQ.'FULL') THEN
+          RSTYPE = 2
+        ELSE IF (TYPE.EQ.'WIND') THEN
+          RSTYPE = 1
+        ELSE IF (TYPE.EQ.'CALM') THEN
+          RSTYPE = 4
+        ELSE
+          RSTYPE = 0
+        END IF
 
-      IF (.NOT. WRITE .AND. OARST .AND. IAPROC .EQ. NAPROC) THEN
-        DO I=1, NOGRP
-          DO J=1, NGRPP
-            IF (FLOGRR(I,J) .AND. .NOT. FLOGOA(I,J)) THEN
-              WRITE(SCREEN,1000) I, J
-            ENDIF
+        IF (.NOT. WRITE .AND. OARST .AND. IAPROC .EQ. NAPROC) THEN
+          DO I=1, NOGRP
+            DO J=1, NGRPP
+              IF (FLOGRR(I,J) .AND. .NOT. FLOGOA(I,J)) THEN
+                WRITE(SCREEN,1000) I, J
+              ENDIF
+            ENDDO
           ENDDO
-        ENDDO
-      ENDIF
+        ENDIF
+        !
+      END IF
+    ELSE
+#ifdef W3_LN0
+      TYPE   = 'WIND'
+      RSTYPE = 1
+#endif
+#ifdef W3_SEED
+      TYPE   = 'CALM'
+      RSTYPE = 4
+#endif
+#ifdef W3_LN1
+      TYPE   = 'CALM'
+      RSTYPE = 4
+#endif
+      IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,990) TYPE, IERR
       !
     END IF
-    !
-100 CONTINUE
     !
 #ifdef W3_T
     WRITE (NDST,9002) IDSTR, VERINI, GNAME, TYPE,                &
@@ -1382,26 +1400,6 @@ CONTAINS
     RETURN
     !
     ! Escape locations read errors :
-    !
-800 CONTINUE
-#ifdef W3_LN0
-    TYPE   = 'WIND'
-    RSTYPE = 1
-#endif
-#ifdef W3_SEED
-    TYPE   = 'CALM'
-    RSTYPE = 4
-#endif
-#ifdef W3_LN1
-    TYPE   = 'CALM'
-    RSTYPE = 4
-#endif
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,990) TYPE, IERR
-    GOTO 100
-    !
-801 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,991)
-    CALL EXTCDE ( 30 )
     !
 802 CONTINUE
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,992) IERR
