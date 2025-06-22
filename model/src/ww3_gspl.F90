@@ -310,10 +310,12 @@ PROGRAM W3GSPL
   CASE (UNGTYPE)
     WRITE ( NDSO,903) 'unstructured'
     IDGRID = 'UNST'
-    GOTO 820
+    WRITE (NDSE,1020) GTYPE
+    CALL EXTCDE ( 20 )
   CASE DEFAULT
     WRITE ( NDSO,903) 'not recognized'
-    GOTO 821
+    WRITE (NDSE,1021) GTYPE
+    CALL EXTCDE ( 21 )
   END SELECT
   !
   SELECT CASE (ICLOSE)
@@ -329,14 +331,20 @@ PROGRAM W3GSPL
     WRITE ( NDSO,904) 'global (tripolar)'
     IDCLSE = 'TRPL'
     GLOBAL = .TRUE.
-    GOTO 822
+    WRITE (NDSE,1022) ICLOSE
+    CALL EXTCDE ( 22 )
   CASE DEFAULT
     WRITE ( NDSO,904) 'not recognized'
-    GOTO 823
+    WRITE (NDSE,1023) ICLOSE
+    CALL EXTCDE ( 23 )
   END SELECT
   !
   WRITE (NDSO,905) NX, NY, NSEA
-  IF ( NSEA .EQ. 0 ) GOTO 824
+  IF ( NSEA .EQ. 0 ) THEN
+    WRITE (NDSE,1024)
+    CALL EXTCDE ( 24 )
+  END IF
+  !
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read options from input file.
@@ -383,7 +391,11 @@ PROGRAM W3GSPL
   FRACL = MAX ( 0. , FRACL )
   FRACH = MIN ( 1. , FRACH )
   WRITE (NDSO,935) FRACL, FRACH
-  IF ( FRACL .GT. FRACH ) GOTO 830
+  IF ( FRACL .GT. FRACH ) THEN
+    WRITE (NDSE,1030)
+    CALL EXTCDE ( 30 )
+  END IF
+  !
   IF ( .NOT. FRFLAG ) WRITE (NDSO,936)
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -516,7 +528,10 @@ PROGRAM W3GSPL
   DO J=1, IG
     MINGRD = MINGRD + INGRD(J)
   END DO
-  IF ( MINGRD .NE. NSEA ) GOTO 825
+  IF ( MINGRD .NE. NSEA ) THEN
+    WRITE (NDSE,1025) MINGRD, NSEA
+    CALL EXTCDE ( 25 )
+  END IF
   !
 #ifdef W3_T
   WRITE (NDST,9043) IG, NG
@@ -660,7 +675,10 @@ PROGRAM W3GSPL
   WRITE (NDSO,951) 0, MSTATS%NMIN, MSTATS%NMAX,                   &
        100.*MSTATS%RSTD/XMEAN
   G0ID   = '5.a'
-  IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+  IF ( MSTATS%NMIN .EQ. 0 ) THEN
+    WRITE (NDSE,1050) G0ID
+    CALL EXTCDE ( 50 )
+  END IF
   INGMIN = MSTATS%NMIN
   INGMAX = MSTATS%NMAX
   INGMNC = 0
@@ -691,7 +709,10 @@ PROGRAM W3GSPL
       IF ( MSTOLD%NMIN .NE. MSTATS%NMIN ) THEN
         WRITE (NDSO,951) IIT, MSTATS%NMIN, MSTATS%NMAX,       &
              100.*MSTATS%RSTD/XMEAN
-        IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+        IF ( MSTATS%NMIN .EQ. 0 ) THEN
+          WRITE (NDSE,1050) G0ID
+          CALL EXTCDE ( 50 )
+        END IF
 #ifdef W3_O16
         WRITE ( NDSG ) ((REAL(MSPLIT(IY,IX)),IX=1,NX),IY=1,NY)
         NTGRDS = NTGRDS + 1
@@ -701,7 +722,10 @@ PROGRAM W3GSPL
       ELSE
         WRITE (NDSO,952)      MSTATS%NMIN, MSTATS%NMAX,       &
              100.*MSTATS%RSTD/XMEAN
-        IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+        IF ( MSTATS%NMIN .EQ. 0 ) THEN
+          WRITE (NDSE,1050) G0ID
+          CALL EXTCDE ( 50 )
+        END IF
       END IF
       !
     END IF
@@ -748,7 +772,10 @@ PROGRAM W3GSPL
 #endif
     !
     G0ID   = '5.g'
-    IF ( MSTATS%NMIN .EQ. 0 ) GOTO 850
+    IF ( MSTATS%NMIN .EQ. 0 ) THEN
+      WRITE (NDSE,1050) G0ID
+      CALL EXTCDE ( 50 )
+    END IF
     !
     ! 5.h Optional GrADS output
     !
@@ -1073,7 +1100,8 @@ PROGRAM W3GSPL
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 9.  End of program
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  STOP
   !
   ! Error escape locations
   !
@@ -1089,38 +1117,6 @@ PROGRAM W3GSPL
   WRITE (NDSE,1002) IERR
   CALL EXTCDE ( 42 )
   !
-820 CONTINUE
-  WRITE (NDSE,1020) GTYPE
-  CALL EXTCDE ( 20 )
-  !
-821 CONTINUE
-  WRITE (NDSE,1021) GTYPE
-  CALL EXTCDE ( 21 )
-  !
-822 CONTINUE
-  WRITE (NDSE,1022) ICLOSE
-  CALL EXTCDE ( 22 )
-  !
-823 CONTINUE
-  WRITE (NDSE,1023) ICLOSE
-  CALL EXTCDE ( 23 )
-  !
-824 CONTINUE
-  WRITE (NDSE,1024)
-  CALL EXTCDE ( 24 )
-  !
-825 CONTINUE
-  WRITE (NDSE,1025) MINGRD, NSEA
-  CALL EXTCDE ( 25 )
-  !
-830 CONTINUE
-  WRITE (NDSE,1030)
-  CALL EXTCDE ( 30 )
-  !
-850 CONTINUE
-  WRITE (NDSE,1050) G0ID
-  CALL EXTCDE ( 50 )
-  !
 860 CONTINUE
   WRITE (NDSE,1060) FNMPRE(:J)//FNAME(:J5), IERR
   CALL EXTCDE ( 60 )
@@ -1128,9 +1124,6 @@ PROGRAM W3GSPL
 870 CONTINUE
   WRITE (NDSE,1070) FNMPRE(:J)//INAME(:J5), IERR
   CALL EXTCDE ( 70 )
-  !
-888 CONTINUE
-  WRITE (NDSO,999)
   !
   ! Formats
   !

@@ -513,7 +513,10 @@ PROGRAM W3BOUNC
 
       ELSE
         IF (NKI.NE.NK1.OR.NTHI.NE.NTH1.OR.NT1.NE.NTI &
-             ) GOTO 805
+             ) THEN
+          WRITE (NDSE,1005) TRIM(SPECFILES(IP)), NKI, NK1, NTHI, NTH1, NTI, NT1
+          CALL EXTCDE ( 65 )
+        END IF
       END IF
 
       ! position variables : lon/lat or x/y

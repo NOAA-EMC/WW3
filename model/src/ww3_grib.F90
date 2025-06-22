@@ -258,7 +258,12 @@ PROGRAM W3GRIB
   CALL W3IOGR ( 'READ', NDSM )
   WRITE (NDSO,920) GNAME
   !
-  IF ( .NOT. FLAGLL ) GOTO 810
+  IF ( .NOT. FLAGLL ) THEN
+    IF ( .NOT. FLAGLL ) THEN
+      WRITE (NDSE,1010)
+      CALL EXTCDE ( 10 )
+    END IF
+  END IF
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Read requests from input file.
@@ -762,7 +767,7 @@ PROGRAM W3GRIB
       CALL W3IOGO ( 'READ', NDSOG, IOTEST )
       IF ( IOTEST .EQ. -1 ) THEN
         WRITE (NDSO,942)
-        GOTO 888
+        EXIT
       END IF
       CYCLE
     END IF
@@ -800,7 +805,8 @@ PROGRAM W3GRIB
     IF ( IOUT .GE. NOUT ) EXIT
   END DO
   !
-  GOTO 888
+  WRITE (NDSO,999)
+  STOP
   !
   ! Escape locations read errors :
   !
@@ -815,19 +821,6 @@ PROGRAM W3GRIB
 802 CONTINUE
   WRITE (NDSE,1002) IERR
   CALL EXTCDE ( 5 )
-  !
-810 CONTINUE
-  IF ( .NOT. FLAGLL ) THEN
-    WRITE (NDSE,1010)
-    CALL EXTCDE ( 10 )
-  END IF
-  !
-888 CONTINUE
-  WRITE (NDSO,999)
-  !
-#ifdef W3_NCO
-  !     CALL W3TAGE('WAVEGRIB')
-#endif
   !
   ! Formats
   !

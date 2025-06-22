@@ -430,6 +430,7 @@ CONTAINS
     REAL       :: dx
     INTEGER    :: latind1, latind2, lonind1, lonind2
     REAL       :: lonext, latext
+    LOGICAL    :: endloop
 
 #ifdef W3_MPI
     INTEGER    :: rank, irank, nproc, EXTENT, DOMSIZE, tag1, tag2
@@ -1002,6 +1003,7 @@ CONTAINS
         l = 1
 
         DO WHILE (l.LE.line)
+          endloop = .false.
           DO j = 1,maxJ
             DO i = 1,maxI
               !>042916                  IF ( (llat(l).EQ.mlat(i,j)).AND. &
@@ -1042,11 +1044,12 @@ CONTAINS
                 !                   --- Account for increment at the end of loop (400 CONTINUE)
                 !                       and go one element back in list because of increment. ---
                 l = iline-1
-                GOTO 400
+                endloop = .true.
+                exit
               END IF
             END DO
+            if (endloop) exit
           END DO
-400       CONTINUE
           IF (l+1.le.line) THEN
             IF (ts(l).LT.ts(l+1)) THEN
               K = line-l

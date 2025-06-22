@@ -924,44 +924,46 @@ if(iquad==1 .or. iquad==2) q_depth=1000.
 !     !
 !  check water depth to be used in computation
 !
+ierr = 1
 if(q_depth < q_mindepth) then
   xnl = 0.
   call q_error('w','DEPTH','Zero transfer returned')
-  goto 9999
-end if
-!
-!  check if iquad has changed since last call, this is no more allowed
-!
-!!if (iquad /= i_qlast .and. i_qmain/=1) then
-!!  call q_error('e','IQUAD','Value of IQUAD differs from initial value')
-!!  ierr = 1
-!!  goto 9999
-!!end if
-!-----------------------------------------------------------------------------+
-!  main choice between various options                                        |
-!-----------------------------------------------------------------------------+
-!
-if(iquad>=1 .and. iquad <=3) then
-!
-  a = aspec
-  call q_xnl4v4(aspec,sigma,angle,nsig,ndir,depth,xnl,diag,ierr)
-!
-  if(ierr/=0) then
-    call q_error('e','wrtvv','Problem in Q_XNL4V4')
-    goto 9999
+else
+  !
+  !  check if iquad has changed since last call, this is no more allowed
+  !
+  !!if (iquad /= i_qlast .and. i_qmain/=1) then
+  !!  call q_error('e','IQUAD','Value of IQUAD differs from initial value')
+  !!  ierr = 1
+  !!end if
+  !-----------------------------------------------------------------------------+
+  !  main choice between various options                                        |
+  !-----------------------------------------------------------------------------+
+  !
+  if(iquad>=1 .and. iquad <=3) then
+  !
+    a = aspec
+    call q_xnl4v4(aspec,sigma,angle,nsig,ndir,depth,xnl,diag,ierr)
+  !
+    if(ierr/=0) then
+      call q_error('e','wrtvv','Problem in Q_XNL4V4')
+    else
+    !------------------------------------------------------------------------------
+    ! compute scale factor to include WAM depth scaling
+    !------------------------------------------------------------------------------
+    !
+      if(iq_dscale ==1) then
+        call q_dscale(aspec,sigma,angle,nsig,ndir,depth,q_grav,q_dfac)
+    !
+        xnl = xnl*q_dfac
+    !
+        if(iq_prt >=1) write(luq_prt,'(a,f7.4)') 'XNL_MAIN depth scale factor:',q_dfac
+      end if
+    end if
   end if
-!------------------------------------------------------------------------------
-! compute scale factor to include WAM depth scaling
-!------------------------------------------------------------------------------
-!
-  if(iq_dscale ==1) then
-    call q_dscale(aspec,sigma,angle,nsig,ndir,depth,q_grav,q_dfac)
-!
-    xnl = xnl*q_dfac
-!
-    if(iq_prt >=1) write(luq_prt,'(a,f7.4)') 'XNL_MAIN depth scale factor:',q_dfac
-  end if
 end if
+
+if(ierr==0) then
 !
 !  check conservation laws
 !
@@ -971,8 +973,7 @@ end if
     write(luq_prt,'(a)')        'XNL_MAIN: Conservation checks'
     write(luq_prt,'(a,4e13.5)') 'XNL_MAIN: E/A/MOMX/MOMY:',sum_e,sum_a,sum_mx,sum_my
   end if
-!
-9999 continue
+end if
 !
 ierr = iq_err
 !
@@ -3861,6 +3862,7 @@ real tfac        ! combined tail factor
 !
 logical lwrite   ! indicator if binary interaction grid has been written successfully
 real smax        ! maximum s-value
+logical failed   ! indicates if the calculation failed
 !
 real, allocatable :: xloc(:),yloc(:)
 real qq
@@ -3894,78 +3896,87 @@ jaq1 = 1               ! index of direction of k1 in grid matrix
 !  compute components of reference wave number,
 !  for setting up interaction grid
 !-------------------------------------------------------------------------------------
-k1: do ikq1=1,nkq1
-!
+failed = .false.
+do ikq1=1,nkq1
+  !
   if(iq_screen==2) write(iscreen,*) 'k1-ring:',ikq1
-!
+  !
   aa1   = q_ad(iaref)
   kk1   = q_k(ikq1)
   krefx = kk1*cos(q_ad(iaref)*dera)
   krefy = kk1*sin(q_ad(iaref)*dera)
-!
+  !
   k1x  = krefx
   k1y  = krefy
-!
-
-k3: do ikq3 = ikq1,nkq   !
-   if(iq_screen==2) write(iscreen,*) 'k1-k3 indices:',ikq1,ikq3
-!
+  !
+  do ikq3 = ikq1,nkq   !
+    if(iq_screen==2) write(iscreen,*) 'k1-k3 indices:',ikq1,ikq3
+    !
     kk3 = q_k(ikq3)
-!
-!
-a3: do iaq3 = iag1,iag2
-!
+    !
+    !
+    do iaq3 = iag1,iag2
+      !
       if(iaq3 == iag1 .and. ikq3 == ikq1) cycle
-!
+      !
       aa3 = q_ad(iaq3)
       k3x = kk3*cos(aa3*dera)
       k3y = kk3*sin(aa3*dera)
-!------------------------------------------------------------------------------
-!   compute locus for a specified combination of k1 and k3
-!
-!-----------------------------------------------------------------------------
+      !------------------------------------------------------------------------------
+      !   compute locus for a specified combination of k1 and k3
+      !
+      !-----------------------------------------------------------------------------
       ia_k1 = iaq1; ik_k1 = ikq1
       ia_k3 = iaq3; ik_k3 = ikq3
       call q_cmplocus(ka,kb,km,kw,crf1)
-!
-      if(iq_err/=0) goto 9999
-!------------------------------------------------------------------------------
-!     redistibute or filter data points along locus
-!
+      !
+      if(iq_err/=0) then
+        failed = .true.
+        exit
+      end if
+      !------------------------------------------------------------------------------
+      !     redistibute or filter data points along locus
+      !
       call q_modify
-      if(iq_err > 0) goto 9999
-!------------------------------------------------------------------------------
-!     compute weights for interpolation in computational grid
-!
+      if(iq_err > 0) then
+        failed = .true.
+        exit
+      end if
+      !------------------------------------------------------------------------------
+      !     compute weights for interpolation in computational grid
+      !
       call q_weight
-      if(iq_err > 0) goto 9999
-!------------------------------------------------------------------------------
-!    special storing mechanism for interactions per combination of k1 and k3
-!
+      if(iq_err > 0) then
+        failed = .true.
+        exit
+      end if
+      !------------------------------------------------------------------------------
+      !    special storing mechanism for interactions per combination of k1 and k3
+      !
       kmem  = (ikq3-ikq1+1) - (ikq1-2*nkq-2)*(ikq1-1)/2;
       jaq3  = iaq3-iaref+1        ! ensure that data stored in matrix start at index (1,1)
       amem  = jaq3                ! index of direction
-!
-!
-!-------------------------------------------------------------------------------
-!     Convert real indices to integer indexing and real weights
-!
-!    3-----------4 ja2p         w1 = (1-wk)*(1-wa)
-!    |    .      |              w2 = wk*(1-wa)
-!    |. . + . . .| wa2   A      w3 = (1-wk)*wa
-!    |    .      |       |      w4 = wk*wa
-!    |    .      |       wa
-!    |    .      |       |
-!    1-----------2 ja2   V
-!   jk2  wk2  jk2p
-!
-!    <-wk->
-!
-!-------------------------------------------------------------------------------
+      !
+      !
+      !-------------------------------------------------------------------------------
+      !     Convert real indices to integer indexing and real weights
+      !
+      !    3-----------4 ja2p         w1 = (1-wk)*(1-wa)
+      !    |    .      |              w2 = wk*(1-wa)
+      !    |. . + . . .| wa2   A      w3 = (1-wk)*wa
+      !    |    .      |       |      w4 = wk*wa
+      !    |    .      |       wa
+      !    |    .      |       |
+      !    1-----------2 ja2   V
+      !   jk2  wk2  jk2p
+      !
+      !    <-wk->
+      !
+      !-------------------------------------------------------------------------------
       nzloc = 0
-!
-loc:  do iloc = 1,nlocus
-!
+      !
+      do iloc = 1,nlocus
+        !
         ik2  = floor(wk_k2(iloc))
         ia2  = floor(wa_k2(iloc))
         wk   = wk_k2(iloc)-real(ik2)
@@ -3974,7 +3985,7 @@ loc:  do iloc = 1,nlocus
         w2k2 = wk*(1.-wa)
         w3k2 = (1.-wk)*wa
         w4k2 = wk*wa
-!
+        !
         ik4  = floor(wk_k4(iloc))
         ia4  = floor(wa_k4(iloc))
         wk   = wk_k4(iloc)-real(ik4)
@@ -3983,11 +3994,11 @@ loc:  do iloc = 1,nlocus
         w2k4 = wk*(1.-wa)
         w3k4 = (1.-wk)*wa
         w4k4 = wk*wa
-!
-!  Take care of points that lie below lowest wave number
-!  when no geometric scaling is applied, then modify weights
-!  such that directional position is retained
-!
+        !
+        !  Take care of points that lie below lowest wave number
+        !  when no geometric scaling is applied, then modify weights
+        !  such that directional position is retained
+        !
         if(iq_geom==0) then
           if(ik2 ==0) then
             ik2  = 1
@@ -4004,17 +4015,17 @@ loc:  do iloc = 1,nlocus
             w4k4 = 0.
           end if
         end if
-!
-!  compute combined tail factor and product of coupling coefficient, step size,
-!  symmetry factor, and tail factor divided by jacobian
-!
+        !
+        !  compute combined tail factor and product of coupling coefficient, step size,
+        !  symmetry factor, and tail factor divided by jacobian
+        !
         tfac = wt_k2(iloc)*wt_k4(iloc)
         quad_zz(kmem,amem,iloc)   = cple_mod(iloc)*ds_mod(iloc)*sym_mod(iloc)/jac_mod(iloc)*tfac
-!
-!----------------------------------------------------------------------------------------
-!  compact data by elimating zero-contribution on locus
-!----------------------------------------------------------------------------------------
-!
+        !
+        !----------------------------------------------------------------------------------------
+        !  compact data by elimating zero-contribution on locus
+        !----------------------------------------------------------------------------------------
+        !
         if(iq_compact==1 .and. abs(quad_zz(kmem,amem,iloc)) > 1.e-15) then
           nzloc = nzloc + 1
           jloc  = nzloc
@@ -4023,83 +4034,86 @@ loc:  do iloc = 1,nlocus
           jloc = iloc
         end if
         nztot2 = nztot2 + 1
-!
-!  shift data
-!
+        !
+        !  shift data
+        !
         quad_zz(kmem,amem,jloc)  = quad_zz(kmem,amem,iloc)
-!
+        !
         quad_ik2(kmem,amem,jloc) = ik2           ! lower wave number index of k2
         quad_ia2(kmem,amem,jloc) = ia2           ! lower direction index of k2
         quad_ik4(kmem,amem,jloc) = ik4           ! lower wave number index of k4
         quad_ia4(kmem,amem,jloc) = ia4           ! lower direction index of k4
-!
+        !
         quad_w1k2(kmem,amem,jloc) = w1k2         ! weight 1 of k2
         quad_w2k2(kmem,amem,jloc) = w2k2         ! weight 2 of k2
         quad_w3k2(kmem,amem,jloc) = w3k2         ! weight 3 of k2
         quad_w4k2(kmem,amem,jloc) = w4k2         ! weight 4 of k2
-!
+        !
         quad_w1k4(kmem,amem,jloc) = w1k4         ! weight 1 of k4
         quad_w2k4(kmem,amem,jloc) = w2k4         ! weight 2 of k4
         quad_w3k4(kmem,amem,jloc) = w3k4         ! weight 3 of k4
         quad_w4k4(kmem,amem,jloc) = w4k4         ! weight 4 of k4
-!
-!
-      end do loc
-!
+        !
+        !
+      end do
+      !
       if(iq_compact==1) then
         quad_nloc(kmem,amem) = nzloc                ! store compacted number of points on locus
       else
         quad_nloc(kmem,amem) = nlocus               ! store number of points on locus
         nzloc = nlocus
       end if
+      !
+      !     write(luq_prt,'(a,4i5)') 'Q_MAKEGRID kmem amem nlocus:',kmem,amem,nlocus,nzloc
+      !
+    end do
+    if (failed) exit
+  end do
+  if (failed) exit
+end do
 !
-!     write(luq_prt,'(a,4i5)') 'Q_MAKEGRID kmem amem nlocus:',kmem,amem,nlocus,nzloc
-!
-    end do a3
-  end do k3
-end do k1
-!------------------------------------------------------------------------------
-!  Write locus information to binary file
-!------------------------------------------------------------------------------
-!
-write(luq_bqf) q_header
-!
-!------------------------------------------------------------------------------
-! spectral interaction grid
-!------------------------------------------------------------------------------
-!
-write(luq_bqf) naq,nkq
-write(luq_bqf) q_sig
-write(luq_bqf) q_ad
-write(luq_bqf) iq_geom,iq_disp,iq_geom
-write(luq_bqf) q_depth
-!
-!------------------------------------------------------------------------------
-! interaction grid
-!------------------------------------------------------------------------------
-!
-write(luq_bqf) quad_nloc
-write(luq_bqf) quad_ik2
-write(luq_bqf) quad_ia2
-write(luq_bqf) quad_ik4
-write(luq_bqf) quad_ia4
-write(luq_bqf) quad_w1k2
-write(luq_bqf) quad_w2k2
-write(luq_bqf) quad_w3k2
-write(luq_bqf) quad_w4k2
-write(luq_bqf) quad_w1k4
-write(luq_bqf) quad_w2k4
-write(luq_bqf) quad_w3k4
-write(luq_bqf) quad_w4k4
-write(luq_bqf) quad_zz
-!
-!
-lwrite = .true.
-lastquadfile = bqname
-!
-if(iq_screen >= 1 .and. iq_test>=1) write(iscreen,'(2a)') 'q_makegrid: LASTQUADFILE: ',lastquadfile
-!
-9999 continue
+if (.not. failed) then
+  !------------------------------------------------------------------------------
+  !  Write locus information to binary file
+  !------------------------------------------------------------------------------
+  !
+  write(luq_bqf) q_header
+  !
+  !------------------------------------------------------------------------------
+  ! spectral interaction grid
+  !------------------------------------------------------------------------------
+  !
+  write(luq_bqf) naq,nkq
+  write(luq_bqf) q_sig
+  write(luq_bqf) q_ad
+  write(luq_bqf) iq_geom,iq_disp,iq_geom
+  write(luq_bqf) q_depth
+  !
+  !------------------------------------------------------------------------------
+  ! interaction grid
+  !------------------------------------------------------------------------------
+  !
+  write(luq_bqf) quad_nloc
+  write(luq_bqf) quad_ik2
+  write(luq_bqf) quad_ia2
+  write(luq_bqf) quad_ik4
+  write(luq_bqf) quad_ia4
+  write(luq_bqf) quad_w1k2
+  write(luq_bqf) quad_w2k2
+  write(luq_bqf) quad_w3k2
+  write(luq_bqf) quad_w4k2
+  write(luq_bqf) quad_w1k4
+  write(luq_bqf) quad_w2k4
+  write(luq_bqf) quad_w3k4
+  write(luq_bqf) quad_w4k4
+  write(luq_bqf) quad_zz
+  !
+  !
+  lwrite = .true.
+  lastquadfile = bqname
+  !
+  if(iq_screen >= 1 .and. iq_test>=1) write(iscreen,'(2a)') 'q_makegrid: LASTQUADFILE: ',lastquadfile
+end if
 !
 if(allocated(xloc)) deallocate(xloc,yloc)
 !

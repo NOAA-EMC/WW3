@@ -1100,7 +1100,7 @@ CONTAINS
 #endif
     REAL                    :: DTTST
     LOGICAL                 :: WRITE, FL2D, FLFRST, FLBE, FLST,    &
-         FLINTERP, FLCOUPL
+                               FLINTERP, FLCOUPL
     LOGICAL, PARAMETER      :: FLAGSC_DEFAULT = .FALSE.
     !/
     !/ ------------------------------------------------------------------- /
@@ -1264,7 +1264,27 @@ CONTAINS
           END IF
         ELSE
 #endif
-          READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TFN
+          READ (NDS,IOSTAT=ISTAT) TFN
+          !
+          IF (ISTAT .GT. 0) THEN
+            ! Error reading the file
+            IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) ISTAT
+            IERR   = 5
+            RETURN
+          ELSE IF (ISTAT .LT. 0) THEN
+            ! Reached end of file
+            IERR   = -1
+            !
+            IF ( FLINTERP ) THEN
+              TFN(1) = TN(1)
+              TFN(2) = TN(2)
+              CALL TICK21 ( TFN , 1. )
+            END IF
+#ifdef W3_T
+            WRITE (NDST,9032) TFN, IERR
+#endif
+            EXIT
+          END IF
 #ifdef W3_T
           WRITE (NDST,9031) TFN
 #endif
@@ -1314,11 +1334,8 @@ CONTAINS
     !
     ! Branch point for EOF and interpolated fields (forcing current, wind or winds)
     !
-300 CONTINUE
-
     ! If the field is interpolated in time and the start time of interpolation is not set
     ! save the time and field values at the start time and field of interpolation
-
     IF ( .NOT.WRITE .AND. FLINTERP .AND. TF0(1) .EQ. -1 ) THEN
       !
 #ifdef W3_T
@@ -1343,8 +1360,6 @@ CONTAINS
     !
     ! Branch point for EOF and not interpolated fields (coupled fields, ice, lev, ...)
     !
-500 CONTINUE
-    !
 #ifdef W3_T
     IF ( FLINTERP ) THEN
       WRITE (NDST,9041) TF0, TFN
@@ -1359,23 +1374,6 @@ CONTAINS
     !
     ! EOF escape location (have read to end of file)
     !
-800 CONTINUE
-    IERR   = -1
-    !
-    IF ( FLINTERP ) THEN
-      TFN(1) = TN(1)
-      TFN(2) = TN(2)
-      CALL TICK21 ( TFN , 1. )
-    END IF
-#ifdef W3_T
-    WRITE (NDST,9032) TFN, IERR
-#endif
-    !
-    IF ( FLINTERP ) THEN
-      GOTO 300
-    ELSE
-      GOTO 500
-    END IF
     !
     !
     ! Error escape locations
@@ -1391,9 +1389,6 @@ CONTAINS
     RETURN
     !
 805 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) ISTAT
-    IERR   = 5
-    RETURN
     !
 806 CONTINUE
     IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
@@ -1625,7 +1620,19 @@ CONTAINS
     ELSE IF ( SIZE ) THEN
       !
       DO
-        READ (NDS,END=800,ERR=805,IOSTAT=ISTAT) TD, NDOUT
+        READ (NDS,IOSTAT=ISTAT) TD, NDOUT
+        !
+        IF (ISTAT .GT. 0) THEN
+          ! Error reading the file
+          IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) ISTAT
+          IERR   = 5
+          RETURN
+        ELSE IF (ISTAT .LT. 0) THEN
+          ! Reached end of file
+          IERR   = -1
+          RETURN
+        END IF
+        
 #ifdef W3_T
         WRITE (NDST,9021) TD, NDOUT
 #endif
@@ -1654,12 +1661,6 @@ CONTAINS
     !
     RETURN
     !
-    ! EOF escape location
-    !
-800 CONTINUE
-    IERR   = -1
-    RETURN
-    !
     ! Error escape locations
     !
 803 CONTINUE
@@ -1670,11 +1671,6 @@ CONTAINS
 804 CONTINUE
     IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) ISTAT
     IERR   = 4
-    RETURN
-    !
-805 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) ISTAT
-    IERR   = 5
     RETURN
     !
 806 CONTINUE

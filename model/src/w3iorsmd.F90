@@ -508,11 +508,10 @@ CONTAINS
     IF ( WRITE ) THEN
       IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
            OPEN (NDSR,FILE=FNMPRE_LOCAL(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
-           ACCESS='STREAM',ERR=800,IOSTAT=IERR)
+           ACCESS='STREAM',IOSTAT=IERR)
     ELSE
       OPEN (NDSR,FILE=FNMPRE_LOCAL(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
-           ACCESS='STREAM',ERR=800,IOSTAT=IERR,                  &
-           STATUS='OLD',ACTION='READ')
+           ACCESS='STREAM',IOSTAT=IERR,STATUS='OLD',ACTION='READ')
     END IF
     !
     ! In/Out file is successfully opened

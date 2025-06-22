@@ -3991,110 +3991,110 @@ subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
     !
     !     eliminate previous rows
     !
-150 jj = jj+1
-    if (jj .gt. lenl) goto 160
-    !-----------------------------------------------------------------------
-    !     in order to do the elimination in the correct order we must select
-    !     the smallest column index among jw(k), k=jj+1, ..., lenl.
-    !-----------------------------------------------------------------------
-    jrow = jw(jj)
-    k = jj
-    !
-    !     determine smallest column index
-    !
-    do j=jj+1,lenl
-      if (jw(j) .lt. jrow) then
-        jrow = jw(j)
-        k = j
+    do
+      jj = jj+1
+      if (jj .gt. lenl) exit
+      !-----------------------------------------------------------------------
+      !     in order to do the elimination in the correct order we must select
+      !     the smallest column index among jw(k), k=jj+1, ..., lenl.
+      !-----------------------------------------------------------------------
+      jrow = jw(jj)
+      k = jj
+      !
+      !     determine smallest column index
+      !
+      do j=jj+1,lenl
+        if (jw(j) .lt. jrow) then
+          jrow = jw(j)
+          k = j
+        endif
+      end do
+      !
+      if (k .ne. jj) then
+        !     exchange in jw
+        j = jw(jj)
+        jw(jj) = jw(k)
+        jw(k) = j
+        !     exchange in jr
+        jw(n+jrow) = jj
+        jw(n+j) = k
+        !     exchange in w
+        s = w(jj)
+        w(jj) = w(k)
+        w(k) = s
       endif
-    end do
-    !
-    if (k .ne. jj) then
-      !     exchange in jw
-      j = jw(jj)
-      jw(jj) = jw(k)
-      jw(k) = j
-      !     exchange in jr
-      jw(n+jrow) = jj
-      jw(n+j) = k
-      !     exchange in w
-      s = w(jj)
-      w(jj) = w(k)
-      w(k) = s
-    endif
-    !
-    !     zero out element in row by setting jw(n+jrow) to zero.
-    !
-    jw(n+jrow) = 0
-    !
-    !     get the multiplier for row to be eliminated (jrow).
-    !
-    fact = w(jj)*alu(jrow)
-    if (abs(fact) .le. droptol) goto 150
-    !
-    !     combine current row and row jrow
-    !
-    do  k = ju(jrow), jlu(jrow+1)-1
-      s = fact*alu(k)
-      j = jlu(k)
-      jpos = jw(n+j)
-      if (j .ge. ii) then
-        !
-        !     dealing with upper part.
-        !
-        if (jpos .eq. 0) then
+      !
+      !     zero out element in row by setting jw(n+jrow) to zero.
+      !
+      jw(n+jrow) = 0
+      !
+      !     get the multiplier for row to be eliminated (jrow).
+      !
+      fact = w(jj)*alu(jrow)
+      if (abs(fact) .le. droptol) cycle
+      !
+      !     combine current row and row jrow
+      !
+      do  k = ju(jrow), jlu(jrow+1)-1
+        s = fact*alu(k)
+        j = jlu(k)
+        jpos = jw(n+j)
+        if (j .ge. ii) then
           !
-          !     this is a fill-in element
+          !     dealing with upper part.
           !
-          lenu = lenu+1
-          if (lenu .gt. n) then  !     incomprehensible error. Matrix must be wrong.
-            ierr = -1
-            return
-          end if
-          i = ii+lenu-1
-          jw(i) = j
-          jw(n+j) = i
-          w(i) = - s
-        else
-          !
-          !     this is not a fill-in element
-          !
-          w(jpos) = w(jpos) - s
+          if (jpos .eq. 0) then
+            !
+            !     this is a fill-in element
+            !
+            lenu = lenu+1
+            if (lenu .gt. n) then  !     incomprehensible error. Matrix must be wrong.
+              ierr = -1
+              return
+            end if
+            i = ii+lenu-1
+            jw(i) = j
+            jw(n+j) = i
+            w(i) = - s
+          else
+            !
+            !     this is not a fill-in element
+            !
+            w(jpos) = w(jpos) - s
 
-        endif
-      else
-        !
-        !     dealing  with lower part.
-        !
-        if (jpos .eq. 0) then
-          !
-          !     this is a fill-in element
-          !
-          lenl = lenl+1
-          if (lenl .gt. n) then  !     incomprehensible error. Matrix must be wrong.
-            ierr = -1
-            return
-          end if
-          jw(lenl) = j
-          jw(n+j) = lenl
-          w(lenl) = - s
+          endif
         else
           !
-          !     this is not a fill-in element
+          !     dealing  with lower part.
           !
-          w(jpos) = w(jpos) - s
+          if (jpos .eq. 0) then
+            !
+            !     this is a fill-in element
+            !
+            lenl = lenl+1
+            if (lenl .gt. n) then  !     incomprehensible error. Matrix must be wrong.
+              ierr = -1
+              return
+            end if
+            jw(lenl) = j
+            jw(n+j) = lenl
+            w(lenl) = - s
+          else
+            !
+            !     this is not a fill-in element
+            !
+            w(jpos) = w(jpos) - s
+          endif
         endif
-      endif
+      end do
+      !
+      !     store this pivot element -- (from left to right -- no danger of
+      !     overlap with the working elements in L (pivots).
+      !
+      lenn = lenn+1
+      w(lenn) = fact
+      jw(lenn)  = jrow
     end do
-    !
-    !     store this pivot element -- (from left to right -- no danger of
-    !     overlap with the working elements in L (pivots).
-    !
-    lenn = lenn+1
-    w(lenn) = fact
-    jw(lenn)  = jrow
-    goto 150
-160 continue
     !
     !     reset double-pointer to zero (U-part)
     !
