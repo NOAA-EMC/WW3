@@ -2098,240 +2098,271 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
   !
   integer i
   real*8 alpha,beta,rho,omega
-  logical lp, rp
+  logical lp, rp, matvec, iterated
   save lp, rp
   !
   !     where to go
   !
+  matvec = .true.
   if (ipar(1).gt.0) then
-    !!goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
-    SELECT CASE (ipar(10))
-    CASE (1)
-      GOTO 10
-    CASE (2)
-      GOTO 20
-    CASE (3)
-      GOTO 40
-    CASE (4)
-      GOTO 50
-    CASE (5)
-      GOTO 60
-    CASE (6)
-      GOTO 70
-    CASE (7)
-      GOTO 80
-    CASE (8)
-      GOTO 90
-    CASE (9)
-      GOTO 100
-    CASE (10)
-      GOTO 110
-    END SELECT
+    if(ipar(10) .eq. 1) then
+      ipar(7) = ipar(7) + 1
+      ipar(13) = ipar(13) + 1
+      do i = 1, n
+        w(i,1) = rhs(i) - w(i,2)
+      enddo
+      fpar(11) = fpar(11) + n
+      if (lp) then
+        ipar(1) = 3
+        ipar(10) = 2
+        return
+      endif
+    endif
+    !
+    if(ipar(10) .le. 2) then
+      if (lp) then
+        do i = 1, n
+          w(i,1) = w(i,2)
+          w(i,6) = w(i,2)
+        enddo
+      else
+        do i = 1, n
+          w(i,2) = w(i,1)
+          w(i,6) = w(i,1)
+        enddo
+      endif
+      !
+      fpar(7) = ddot(n,w,w)
+      fpar(11) = fpar(11) + 2 * n
+      fpar(5) = sqrt(fpar(7))
+      fpar(3) = fpar(5)
+      if (abs(ipar(3)).eq.2) then
+        fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
+        fpar(11) = fpar(11) + 2 * n
+      else if (ipar(3).ne.999) then
+        fpar(4) = fpar(1) * fpar(3) + fpar(2)
+      endif
+      if (ipar(3).ge.0) fpar(6) = fpar(5)
+      if (ipar(3).ge.0 .and. fpar(5).le.fpar(4) .and. ipar(3).ne.999) then
+        matvec = .false.
+      endif
+    endif
+    !
+    !     beginning of the iterations
+    !
+    if (matvec) then
+      iterated = .false.
+      do
+        !     Step (1), v = A p
+        if (ipar(10) .le. 2 .or. iterated) then
+          if (rp) then
+            ipar(1) = 5
+            ipar(8) = 5*n+1
+            if (lp) then
+              ipar(9) = 4*n + 1
+            else
+              ipar(9) = 6*n + 1
+            endif
+            ipar(10) = 3
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 3 .or. iterated) then
+          ipar(1) = 1
+          if (rp) then
+            ipar(8) = ipar(9)
+          else
+            ipar(8) = 5*n+1
+          endif
+          if (lp) then
+            ipar(9) = 6*n + 1
+          else
+            ipar(9) = 4*n + 1
+          endif
+          ipar(10) = 4
+          return
+        endif
+        !
+        if (ipar(10) .le. 4 .or. iterated) then
+          if (lp) then
+            ipar(1) = 3
+            ipar(8) = ipar(9)
+            ipar(9) = 4*n + 1
+            ipar(10) = 5
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 5 .or. iterated) then
+          ipar(7) = ipar(7) + 1
+          !
+          !     step (2)
+          alpha = ddot(n,w(1,1),w(1,5))
+          fpar(11) = fpar(11) + 2 * n
+          if (brkdn(alpha, ipar)) then
+            matvec = .false.
+            exit
+          end if
+          alpha = fpar(7) / alpha
+          fpar(8) = alpha
+          !
+          !     step (3)
+          do i = 1, n
+            w(i,3) = w(i,2) - alpha * w(i,5)
+          enddo
+          fpar(11) = fpar(11) + 2 * n
+          !
+          !     Step (4): the second matvec -- t = A s
+          !
+          if (rp) then
+            ipar(1) = 5
+            ipar(8) = n+n+1
+            if (lp) then
+              ipar(9) = ipar(8)+n
+            else
+              ipar(9) = 6*n + 1
+            endif
+            ipar(10) = 6
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 6 .or. iterated) then
+          ipar(1) = 1
+          if (rp) then
+            ipar(8) = ipar(9)
+          else
+            ipar(8) = n+n+1
+          endif
+          if (lp) then
+            ipar(9) = 6*n + 1
+          else
+            ipar(9) = 3*n + 1
+          endif
+          ipar(10) = 7
+          return
+        endif
+        !
+        if (ipar(10) .le. 7 .or. iterated) then
+          if (lp) then
+            ipar(1) = 3
+            ipar(8) = ipar(9)
+            ipar(9) = 3*n + 1
+            ipar(10) = 8
+            return
+          endif
+        endif
+        !
+        if (ipar(10) .le. 8 .or. iterated) then
+          ipar(7) = ipar(7) + 1
+          !
+          !     step (5)
+          omega = ddot(n,w(1,4),w(1,4))
+          fpar(11) = fpar(11) + n + n
+          if (brkdn(omega,ipar)) then
+            matvec = .false.
+            exit
+          endif
+          omega = ddot(n,w(1,4),w(1,3)) / omega
+          fpar(11) = fpar(11) + n + n
+          if (brkdn(omega,ipar)) then
+            matvec = .false.
+            exit
+          endif
+          fpar(9) = omega
+          alpha = fpar(8)
+          !
+          !     step (6) and (7)
+          do i = 1, n
+            w(i,7) = alpha * w(i,6) + omega * w(i,3)
+            w(i,8) = w(i,8) + w(i,7)
+            w(i,2) = w(i,3) - omega * w(i,4)
+          enddo
+          fpar(11) = fpar(11) + 6 * n + 1
+          !
+          !     convergence test
+          if (ipar(3).eq.999) then
+            ipar(1) = 10
+            ipar(8) = 7*n + 1
+            ipar(9) = 6*n + 1
+            ipar(10) = 9
+            return
+          endif
+          if (stopbis(n,ipar,2,fpar,w(1,2),w(1,7),one)) then
+            matvec = .false.
+            exit
+          endif
+        endif
+        !
+        if (ipar(10) .le. 9 .or. iterated) then
+          if (ipar(3).eq.999.and.ipar(11).eq.1) then
+            matvec = .false.
+            exit
+          end if 
+          !
+          !     step (8): computing new p and rho
+          !
+          rho = fpar(7)
+          fpar(7) = ddot(n,w(1,2),w(1,1))
+          omega = fpar(9)
+          beta = fpar(7) * fpar(8) / (fpar(9) * rho)
+          do i = 1, n
+            w(i,6) = w(i,2) + beta * (w(i,6) - omega * w(i,5))
+          enddo
+          fpar(11) = fpar(11) + 6 * n + 3
+          if (brkdn(fpar(7),ipar)) then
+            matvec = .false.
+            exit
+          end if
+          !
+          !     end of an iteration
+          !
+        end if
+        iterated = .true.
+      enddo
+    endif
   else if (ipar(1).lt.0) then
-    goto 900
+    matvec = .false.
   endif
   !
-  !     call the initialization routine
-  !
-  call bisinit(ipar,fpar,8*n,1,lp,rp,w)
-  if (ipar(1).lt.0) return
-  !
-  !     perform a matvec to compute the initial residual
-  !
-  ipar(1) = 1
-  ipar(8) = 1
-  ipar(9) = 1 + n
-  do i = 1, n
-    w(i,1) = sol(i)
-  enddo
-  ipar(10) = 1
-  return
-10 ipar(7) = ipar(7) + 1
-  ipar(13) = ipar(13) + 1
-  do i = 1, n
-    w(i,1) = rhs(i) - w(i,2)
-  enddo
-  fpar(11) = fpar(11) + n
-  if (lp) then
-    ipar(1) = 3
-    ipar(10) = 2
-    return
-  endif
-  !
-20 if (lp) then
+  if (matvec) then
+    !
+    !     call the initialization routine
+    !
+    call bisinit(ipar,fpar,8*n,1,lp,rp,w)
+    if (ipar(1).lt.0) return
+    !
+    !     perform a matvec to compute the initial residual
+    !
+    ipar(1) = 1
+    ipar(8) = 1
+    ipar(9) = 1 + n
     do i = 1, n
-      w(i,1) = w(i,2)
-      w(i,6) = w(i,2)
+      w(i,1) = sol(i)
     enddo
+    ipar(10) = 1
+    return
   else
-    do i = 1, n
-      w(i,2) = w(i,1)
-      w(i,6) = w(i,1)
-    enddo
-  endif
-  !
-  fpar(7) = ddot(n,w,w)
-  fpar(11) = fpar(11) + 2 * n
-  fpar(5) = sqrt(fpar(7))
-  fpar(3) = fpar(5)
-  if (abs(ipar(3)).eq.2) then
-    fpar(4) = fpar(1) * sqrt(ddot(n,rhs,rhs)) + fpar(2)
-    fpar(11) = fpar(11) + 2 * n
-  else if (ipar(3).ne.999) then
-    fpar(4) = fpar(1) * fpar(3) + fpar(2)
-  endif
-  if (ipar(3).ge.0) fpar(6) = fpar(5)
-  if (ipar(3).ge.0 .and. fpar(5).le.fpar(4) .and. ipar(3).ne.999) then
-    goto 900
-  endif
-  !
-  !     beginning of the iterations
-  !
-  !     Step (1), v = A p
-30 if (rp) then
-    ipar(1) = 5
-    ipar(8) = 5*n+1
-    if (lp) then
-      ipar(9) = 4*n + 1
-    else
-      ipar(9) = 6*n + 1
+    !
+    !     some clean up job to do
+    !
+    if (rp) then
+      if (ipar(1).lt.0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 7*n + 1
+      ipar(9) = ipar(8) - n
+      ipar(10) = 10
+      return
     endif
-    ipar(10) = 3
-    return
-  endif
-  !
-40 ipar(1) = 1
-  if (rp) then
-    ipar(8) = ipar(9)
-  else
-    ipar(8) = 5*n+1
-  endif
-  if (lp) then
-    ipar(9) = 6*n + 1
-  else
-    ipar(9) = 4*n + 1
-  endif
-  ipar(10) = 4
-  return
-50 if (lp) then
-    ipar(1) = 3
-    ipar(8) = ipar(9)
-    ipar(9) = 4*n + 1
-    ipar(10) = 5
-    return
-  endif
-  !
-60 ipar(7) = ipar(7) + 1
-  !
-  !     step (2)
-  alpha = ddot(n,w(1,1),w(1,5))
-  fpar(11) = fpar(11) + 2 * n
-  if (brkdn(alpha, ipar)) goto 900
-  alpha = fpar(7) / alpha
-  fpar(8) = alpha
-  !
-  !     step (3)
-  do i = 1, n
-    w(i,3) = w(i,2) - alpha * w(i,5)
-  enddo
-  fpar(11) = fpar(11) + 2 * n
-  !
-  !     Step (4): the second matvec -- t = A s
-  !
-  if (rp) then
-    ipar(1) = 5
-    ipar(8) = n+n+1
-    if (lp) then
-      ipar(9) = ipar(8)+n
-    else
-      ipar(9) = 6*n + 1
-    endif
-    ipar(10) = 6
-    return
-  endif
-  !
-70 ipar(1) = 1
-  if (rp) then
-    ipar(8) = ipar(9)
-  else
-    ipar(8) = n+n+1
-  endif
-  if (lp) then
-    ipar(9) = 6*n + 1
-  else
-    ipar(9) = 3*n + 1
-  endif
-  ipar(10) = 7
-  return
-80 if (lp) then
-    ipar(1) = 3
-    ipar(8) = ipar(9)
-    ipar(9) = 3*n + 1
-    ipar(10) = 8
-    return
-  endif
-90 ipar(7) = ipar(7) + 1
-  !
-  !     step (5)
-  omega = ddot(n,w(1,4),w(1,4))
-  fpar(11) = fpar(11) + n + n
-  if (brkdn(omega,ipar)) goto 900
-  omega = ddot(n,w(1,4),w(1,3)) / omega
-  fpar(11) = fpar(11) + n + n
-  if (brkdn(omega,ipar)) goto 900
-  fpar(9) = omega
-  alpha = fpar(8)
-  !
-  !     step (6) and (7)
-  do i = 1, n
-    w(i,7) = alpha * w(i,6) + omega * w(i,3)
-    w(i,8) = w(i,8) + w(i,7)
-    w(i,2) = w(i,3) - omega * w(i,4)
-  enddo
-  fpar(11) = fpar(11) + 6 * n + 1
-  !
-  !     convergence test
-  if (ipar(3).eq.999) then
-    ipar(1) = 10
-    ipar(8) = 7*n + 1
-    ipar(9) = 6*n + 1
-    ipar(10) = 9
-    return
-  endif
-  if (stopbis(n,ipar,2,fpar,w(1,2),w(1,7),one))  goto 900
-100 if (ipar(3).eq.999.and.ipar(11).eq.1) goto 900
-  !
-  !     step (8): computing new p and rho
-  !
-  rho = fpar(7)
-  fpar(7) = ddot(n,w(1,2),w(1,1))
-  omega = fpar(9)
-  beta = fpar(7) * fpar(8) / (fpar(9) * rho)
-  do i = 1, n
-    w(i,6) = w(i,2) + beta * (w(i,6) - omega * w(i,5))
-  enddo
-  fpar(11) = fpar(11) + 6 * n + 3
-  if (brkdn(fpar(7),ipar)) goto 900
-  !
-  !     end of an iteration
-  !
-  goto 30
-  !
-  !     some clean up job to do
-  !
-900 if (rp) then
-    if (ipar(1).lt.0) ipar(12) = ipar(1)
-    ipar(1) = 5
-    ipar(8) = 7*n + 1
-    ipar(9) = ipar(8) - n
-    ipar(10) = 10
-    return
   endif
 
-110 if (rp) then
-    call tidycg(n,ipar,fpar,sol,w(1,7))
-  else
-    call tidycg(n,ipar,fpar,sol,w(1,8))
+  if (ipar(10) .eq. 10 .or. .not. matvec) then
+    if (rp) then
+      call tidycg(n,ipar,fpar,sol,w(1,7))
+    else
+      call tidycg(n,ipar,fpar,sol,w(1,8))
+    endif
   endif
   !
   return
