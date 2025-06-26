@@ -483,7 +483,7 @@ CONTAINS
       ITMP=0
       IF ( PRESENT(FLRSTRT) ) THEN
         IF (FLRSTRT) THEN
-          WRITE(TIMETAG,"(i8.8,'.'i6.6)")TIME(1),TIME(2)
+          WRITE(TIMETAG, '(i8.8, ".", i6.6)') TIME(1), TIME(2)
           FNAME=TIMETAG//'.restart.'//FILEXT(:I)
           ITMP=1
         END IF
