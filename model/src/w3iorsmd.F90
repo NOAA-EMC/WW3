@@ -417,7 +417,7 @@ CONTAINS
     !
     IF (INXOUT.NE.'READ' .AND. INXOUT.NE.'HOT'  .AND.               &
          INXOUT.NE.'COLD' .AND. INXOUT.NE.'WIND' .AND.               &
-         INXOUT.NE.'CALM' ) THEN
+         INXOUT.NE.'CALM' .AND. INXOUT.NE.'FTCH') THEN
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,900) INXOUT
       CALL EXTCDE ( 1 )
     END IF
@@ -549,7 +549,7 @@ CONTAINS
              WRITE (NDSE,903) TNAME, GNAME
       END IF
       IF (TYPE.NE.'FULL' .AND. TYPE.NE.'COLD' .AND.               &
-           TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' ) THEN
+           TYPE.NE.'WIND' .AND. TYPE.NE.'CALM' .AND. TYPE.NE.'FTCH' ) THEN
         IF ( IAPROC .EQ. NAPERR )                               &
              WRITE (NDSE,904) TYPE
         CALL EXTCDE ( 12 )
@@ -562,6 +562,8 @@ CONTAINS
       IF (TYPE.EQ.'FULL') THEN
         RSTYPE = 2
       ELSE IF (TYPE.EQ.'WIND') THEN
+        RSTYPE = 1
+      ELSE IF (TYPE.EQ.'FTCH') THEN
         RSTYPE = 1
       ELSE IF (TYPE.EQ.'CALM') THEN
         RSTYPE = 4
@@ -619,7 +621,7 @@ CONTAINS
     !          ( Bail out if write for TYPE.EQ.'WIND' )
     !
     IF ( WRITE ) THEN
-      IF ( TYPE.EQ.'WIND' ) THEN
+      IF ( TYPE.EQ.'FTCH' ) THEN
         RPOS  = 1_8 + LRECL*(3-1_8)
         WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) FETCH
       ENDIF
@@ -745,10 +747,10 @@ CONTAINS
       !
       ! Reading spectra
       !
-      IF ( TYPE.EQ.'WIND' .AND.FETCH/=-1) THEN
+      IF ( TYPE.EQ.'FTCH') THEN
         RPOS  = 1_8 + LRECL*(3-1_8)
         READ(NDSR, POS=RPOS,ERR=802,IOSTAT=IERR) FETCH
-      ELSEIF ( TYPE.EQ.'WIND' .AND.FETCH==-1) THEN
+      ELSEIF ( TYPE.EQ.'WIND') THEN
         FETCH = 0
       ENDIF
       IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN

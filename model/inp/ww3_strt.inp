@@ -27,13 +27,10 @@ $   0.0081  0.1  270.  1.0 0. 0. 1. 100. 1. 100.
 $
 $ ITYPE = 3 ---------------------------------------------------------- $
 $ Fetch-limited JONSWAP
-$ - The local spectrum is calculated using the local wind speed and
-$   direction, assuring that the spectrum is within the discrete
+$ - No additional data, the local spectrum is calculated using the
+$   local wind speed and direction, using the spatial grid size as
+$   fetch, and assuring that the spectrum is within the discrete
 $   frequency range.
-$   fetch (m): either 0 for fetch based on grid resolution, or larger 0
-$   for setting the fetch to this value. Example for grid-size based
-$   fetch:
-$   0
 $
 $ ITYPE = 4 ---------------------------------------------------------- $
 $ User-defined spectrum
@@ -70,6 +67,12 @@ $ ITYPE = 5 ---------------------------------------------------------- $
 $ Starting from calm conditions.
 $ - No additional data.
 $
+$ ITYPE = 6 ---------------------------------------------------------- $
+$ Similar to ITYPE = 3, but with manually specified fetch.
+$ - assumed fetch (m):
+$ 
+$ 5000
+$ 
 $ -------------------------------------------------------------------- $
 $ End of input file                                                    $
 $ -------------------------------------------------------------------- $
