@@ -625,7 +625,7 @@ CONTAINS
         RPOS  = 1_8 + LRECL*(3-1_8)
         WRITE (NDSR,POS=RPOS,ERR=803,IOSTAT=IERR) FETCH
       ENDIF
-      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' .OR. TYPE.EQ.'FTCH' ) THEN
         IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST ) THEN
           CLOSE ( NDSR )
         END IF
@@ -753,7 +753,7 @@ CONTAINS
       ELSEIF ( TYPE.EQ.'WIND') THEN
         FETCH = 0
       ENDIF
-      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' ) THEN
+      IF ( TYPE.EQ.'WIND' .OR. TYPE.EQ.'CALM' .OR. TYPE.EQ.'FTCH' ) THEN
 #ifdef W3_T
         WRITE (NDST,9020) TYPE
 #endif
