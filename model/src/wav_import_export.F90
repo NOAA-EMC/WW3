@@ -373,7 +373,6 @@ contains
           end do
         end if
         call FillGlobalInput(global_data, CX0)
-        call FillGlobalInput(global_data, CXN)
       end if
 
       CY0(:,:) = def_value   ! ocn v current
@@ -389,7 +388,6 @@ contains
           end do
         end if
         call FillGlobalInput(global_data, CY0)
-        call FillGlobalInput(global_data, CYN)
       end if
     end if
 
@@ -428,14 +426,12 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         if (merge_import) then
           call FillGlobalInput(global_data, import_mask, wxdata, WX0)
-          call FillGlobalInput(global_data, import_mask, wxdata, WXN)
           if (dbug_flag > 10) then
             call check_globaldata(gcomp, 'wx0', wx0, nx*ny, rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
         else
           call FillGlobalInput(global_data, WX0)
-          call FillGlobalInput(global_data, WXN)
         end if
       end if
 
@@ -448,14 +444,12 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         if (merge_import) then
           call FillGlobalInput(global_data, import_mask, wydata, WY0)
-          call FillGlobalInput(global_data, import_mask, wydata, WYN)
           if (dbug_flag > 10) then
             call check_globaldata(gcomp, 'wy0', wy0, nx*ny, rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
         else
           call FillGlobalInput(global_data, WY0)
-          call FillGlobalInput(global_data, WYN)
         end if
       end if
 
@@ -472,7 +466,6 @@ contains
         ! So_tbot - So_t
         global_data = global_data - global_data2
         call FillGlobalInput(global_data, DT0)
-        call FillGlobalInput(global_data, DTN)
         deallocate(global_data2)
       end if
       ! Deallocate memory for merge_import
@@ -518,7 +511,6 @@ contains
         call SetGlobalInput(importState, 'Faxa_taux', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         call FillGlobalInput(global_data, UX0)
-        call FillGlobalInput(global_data, UXN)
       end if
 
       UY0(:,:) = def_value   ! atm v momentum
@@ -528,7 +520,6 @@ contains
         call SetGlobalInput(importState, 'Faxa_tauy', vm, global_data, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         call FillGlobalInput(global_data, UY0)
-        call FillGlobalInput(global_data, UYN)
       end if
     end if
     ! ---------------
