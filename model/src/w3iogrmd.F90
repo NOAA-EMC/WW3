@@ -115,7 +115,7 @@ CONTAINS
   SUBROUTINE W3IOGR ( INXOUT, NDSM, IMOD, FEXT &
 #ifdef W3_ASCII
                       ,NDSA                    &
-#endif          
+#endif
           )
     !/
     !/                  +-----------------------------------+
@@ -835,7 +835,7 @@ CONTAINS
         !Init COUNTCON and IOBDP to zero, it needs to be set somewhere or
         !removed
         COUNTCON=0
-        IOBDP=0  
+        IOBDP=0
         WRITE (NDSM)                                          &
              X0, Y0, SX, SY, DXYMAX, XGRD, YGRD, TRIGP, TRIA, &
              LEN, IEN, ANGLE0, ANGLE, SI, MAXX, MAXY,         &
@@ -1260,7 +1260,7 @@ CONTAINS
            WWCOR
 #ifdef W3_ASCII
       WRITE (NDSA,*)                                             &
-           'WWCOR:',                                             &  
+           'WWCOR:',                                             &
            WWCOR
 #endif
 #endif
@@ -1553,7 +1553,7 @@ CONTAINS
                      TAUT, TAUHFT:',                         &
                      DELUST, DELTAIL, DELTAUW, DELU, DELALP, &
                      TAUT, TAUHFT
-        IF (TTAUWSHELTER.GT.0) WRITE (NDSA,*) 'TAUHFT2:', TAUHFT2 
+        IF (TTAUWSHELTER.GT.0) WRITE (NDSA,*) 'TAUHFT2:', TAUHFT2
 #endif
       END IF
     ELSE

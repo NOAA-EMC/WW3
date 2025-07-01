@@ -1282,11 +1282,11 @@ CONTAINS
     !
     ! 4.d Preprocessing for point output.
     !
-#ifdef W3_MPI    
+#ifdef W3_MPI
     IF ( FLOUT(2) ) CALL W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD, MPI_COMM_WAVE )
-#else 
+#else
     IF ( FLOUT(2) ) CALL W3IOPP ( NPT, XPT, YPT, PNAMES, IMOD, 1 )
-#endif 
+#endif
 #ifdef W3_PDLIB
     CALL DEALLOCATE_PDLIB_GLOBAL(IMOD)
 #endif
