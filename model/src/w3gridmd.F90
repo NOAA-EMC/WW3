@@ -845,7 +845,7 @@ MODULE W3GRIDMD
 #ifdef W3_ST4
   INTEGER                 :: SWELLFPAR, SDSISO, SDSBRFDF, SINTABLE,&
                              TAUWBUG
-  REAL                    :: SDSBCHOICE                     
+  REAL                    :: SDSBCHOICE
   REAL                    :: ZWND, ALPHA0, Z0MAX, BETAMAX, SINTHP,&
        ZALP, Z0RAT, TAUWSHELTER, SWELLF,    &
        SWELLF2,SWELLF3,SWELLF4, SWELLF5,    &
@@ -1735,7 +1735,7 @@ CONTAINS
     !  initializes TAUWX/Y to zero in W3SRCE
     VISCSTRESS =0
     CAPCHA   = 0.     ! =1 indicates capping of drag is active
-    CHAMIN   = 0.0001 ! 
+    CHAMIN   = 0.0001 !
     CHA0     = ALPHA0 ! initial value for charnock
     UCAP     = 30.    ! U10 threshold from which drag capping is applied
     SIGMAUCAP = 10.   ! Width for reduction of drag beyond UCAP

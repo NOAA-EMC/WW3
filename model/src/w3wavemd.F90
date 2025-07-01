@@ -2614,7 +2614,7 @@ CONTAINS
 #endif
                     CALL W3IOGO( 'WRITE', NDS(7), ITEST, IMOD &
 #ifdef W3_ASCII
-                            ,NDS(14)                          &
+                         ,NDS(14)                             &
 #endif
                             )
 #ifdef W3_SBS
@@ -2652,7 +2652,7 @@ CONTAINS
 #else
                   CALL W3IOPO ( 'WRITE', NDS(8), ITEST, IMOD &
 #ifdef W3_ASCII
-                          ,NDS(15)                           &
+                       ,NDS(15)                              &
 #endif
                           )
 #endif
