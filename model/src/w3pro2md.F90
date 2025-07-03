@@ -1,5 +1,26 @@
+!> @file
+!> @brief Bundles routines for third order porpagation scheme in single
+!>  module.
+!>
+!> @author H. L. Tolman
+!> @date   29-May-2014
+!>
+
 #include "w3macros.h"
 !/ ------------------------------------------------------------------- /
+
+!>
+!> @brief Bundles routines for third order porpagation scheme in single
+!>  module.
+!>
+!> @author H. L. Tolman
+!> @date   29-May-2014
+!>
+!> @copyright Copyright 2009-2022 National Weather Service (NWS),
+!>       National Oceanic and Atmospheric Administration.  All rights
+!>       reserved.  WAVEWATCH III is a trademark of the NWS.
+!>       No unauthorized use without permission.
+!>
 MODULE W3PRO2MD
   !/
   !/                  +-----------------------------------+
@@ -105,6 +126,12 @@ MODULE W3PRO2MD
   !/
 CONTAINS
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Generate 'map' arrays for the ULTIMATE QUICKEST scheme.
+  !>
+  !> @author H. L. Tolman
+  !> @date   09-Nov-2005
+  !>
   SUBROUTINE W3MAP2
     !/
     !/
@@ -464,6 +491,20 @@ CONTAINS
     !/
   END SUBROUTINE W3MAP2
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Propagation in physical space for a given spectral component.
+  !>
+  !> @param[in]    ISP     Number of spectral bin (IK-1)*NTH+ITH.
+  !> @param[in]    DTG     Total time step.
+  !> @param[in]    MAPSTA  Grid point status map.
+  !> @param[in]    MAPFS   Storage map.
+  !> @param[inout] VQ      Field to propagate.
+  !> @param[in]    VGX
+  !> @param[in]    VGY
+  !>
+  !> @author H. L. Tolman
+  !> @date   29-May-2014
+  !>
   SUBROUTINE W3XYP2 ( ISP, DTG, MAPSTA, MAPFS, VQ, VGX, VGY )
     !/
     !/                  +-----------------------------------+
@@ -1219,6 +1260,45 @@ CONTAINS
   END SUBROUTINE W3XYP2
   !/
   !/ ------------------------------------------------------------------- /
+  !>
+  !> @brief Propagation in spectral space.
+  !>
+  !> @details Third order QUICKEST scheme with ULTIMATE limiter.
+  !>
+  !>
+  !>  As with the spatial propagation, the two spaces are considered
+  !>  independently, but the propagation is performed in a 2-D space.
+  !>  Compared to the propagation in physical space, the directions
+  !>  represent a closed space and are therefore comparable to the
+  !>  longitudinal or 'X' propagation. The wavenumber space has to be
+  !>  extended to allow for boundary treatment. Using a simple first
+  !>  order boundary treatment at both sided, two points need to
+  !>  be added. This implies that the spectrum needs to be extended,
+  !>  shifted and rotated, as is performed using MAPTH2 as set
+  !>  in W3MAP3.
+  !>
+  !> @param[in]    ISEA   Number of sea point.
+  !> @param[in]    FACTH  Factor in propagation velocity.
+  !> @param[in]    FACK   Factor in propagation velocity.
+  !> @param[in]    CTHG0  Factor in great circle refracftion term.
+  !> @param[in]    CG     Local group velocities.
+  !> @param[in]    WN     Local wavenumbers.
+  !> @param[in]    DEPTH  Depth.
+  !> @param[in]    DDDX   Depth gradient.
+  !> @param[in]    DDDY   Depth gradient.
+  !> @param[in]    CX     Current component.
+  !> @param[in]    CY     Current component.
+  !> @param[in]    DCXDX  Current gradients.
+  !> @param[in]    DCXDY  Current gradients.
+  !> @param[in]    DCYDX  Current gradients.
+  !> @param[in]    DCYDY  Current gradients.
+  !> @param[in]    DCDX   Phase speed gradient.
+  !> @param[in]    DCDY   Phase speed gradient.
+  !> @param[inout] VA     Spectrum.
+  !>
+  !> @author H. L. Tolman
+  !> @date   01-Jul-2013
+  !>
   SUBROUTINE W3KTP2 ( ISEA, FACTH, FACK, CTHG0, CG, WN, DEPTH,    &
        DDDX, DDDY, CX, CY, DCXDX, DCXDY,           &
        DCYDX, DCYDY, DCDX, DCDY, VA )

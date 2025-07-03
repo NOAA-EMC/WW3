@@ -1,0 +1,29 @@
+! -------------------------------------------------------------------- !
+! WAVEWATCH III ww3_ounf.nml - Grid output post-processing             !
+! -------------------------------------------------------------------- !
+
+! -------------------------------------------------------------------- !
+! Define the output fields to postprocess via FIELD_NML namelist
+! -------------------------------------------------------------------- !
+&FIELD_NML
+  FIELD%TIMESTART        =  '19680101 120000'
+  FIELD%TIMESTRIDE       =  '10'
+  FIELD%TIMECOUNT        =  '8000'
+  FIELD%LIST             =  'DPT WND ICE HS MSS MSD FAW WCC WCF WCH WCM FOC TAW CHA FWS WBT'
+  FIELD%PARTITION        =  '0 1 2'
+  FIELD%TYPE             =  4
+/
+
+! -------------------------------------------------------------------- !
+! Define the content of the output file via FILE_NML namelist
+! -------------------------------------------------------------------- !
+&FILE_NML
+  FILE%IX0           = 2
+  FILE%IXN           = 2
+  FILE%IY0           = 2
+  FILE%IYN           = 2
+/
+
+! -------------------------------------------------------------------- !
+! WAVEWATCH III - end of namelist                                      !
+! -------------------------------------------------------------------- !

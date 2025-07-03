@@ -105,10 +105,6 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Cray")
   set(compile_flags_debug -O0 -Rbcps -Ktrap=fp)
 endif()
 
-target_compile_options(ww3_lib PUBLIC "$<$<COMPILE_LANGUAGE:Fortran>:${compile_flags}>")
-target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_debug}>")
-target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_release}>")
-
 # Executables to always build
 set(programs ww3_strt ww3_grid ww3_bound ww3_outf ww3_outp ww3_trck ww3_grib
   ww3_gint gx_outf gx_outp ww3_uprstr ww3_shel ww3_prep ww3_gspl ww3_multi ww3_systrk)
@@ -181,26 +177,32 @@ endif()
 # Handle PDLIB, SCRIP, SCRIPNC build files directly instead of through configuration file
 if("PDLIB" IN_LIST switches)
   if("SCOTCH" IN_LIST switches)
-  find_package(SCOTCH REQUIRED)
-  target_sources(ww3_lib PRIVATE ${pdlib_src})
-  target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis)
-elseif("METIS"  IN_LIST switches)
-  find_package(ParMETIS REQUIRED)
-  target_sources(ww3_lib PRIVATE ${pdlib_src})
-  target_link_libraries(ww3_lib PUBLIC ParMETIS::ParMETIS)
+    find_package(SCOTCH REQUIRED)
+    target_sources(ww3_lib PRIVATE ${pdlib_src})
+    target_link_libraries(ww3_lib PUBLIC PTSCOTCHparmetis::PTSCOTCHparmetis)
+    if(SCOTCH_VERSION VERSION_GREATER "7.0.6")
+      list(APPEND compile_flags -DSCOTCH_707)
+      list(APPEND compile_flags_release -DSCOTCH_707)
+      list(APPEND compile_flags_debug -DSCOTCH_707)
+    else()
+      message(STATUS "SOCTCH version 7.06 or lower")
+    endif()
+  elseif("METIS"  IN_LIST switches)
+    find_package(ParMETIS REQUIRED)
+    target_sources(ww3_lib PRIVATE ${pdlib_src})
+    target_link_libraries(ww3_lib PUBLIC ParMETIS::ParMETIS)
   else()
     message(FATAL_ERROR "PDLIB requires METIS or SCOTCH library for domain decomposition")
- endif()
+  endif()
 endif()
 
 if("SCRIP" IN_LIST switches)
   target_sources(ww3_lib PRIVATE ${scrip_src})
 endif()
 
-
-if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches)
+if("SCRIPNC" IN_LIST switches OR "OASIS" IN_LIST switches OR "TRKNC" IN_LIST switches OR "BIN2NC" IN_LIST switches)
   if(NOT NetCDF_Fortran_FOUND)
-    message(FATAL_ERROR "Cannot build SCRIPNC, OASIS, or TRKNC without NetCDF")
+	  message(FATAL_ERROR "Cannot build SCRIPNC, OASIS, TRKNC, or BIN2NC without NetCDF")
   endif()
 endif()
 
@@ -224,6 +226,10 @@ foreach(program ${programs})
   add_executable(${program} ${program}.F90)
   target_link_libraries(${program} PRIVATE ww3_lib)
 endforeach()
+
+target_compile_options(ww3_lib PUBLIC "$<$<COMPILE_LANGUAGE:Fortran>:${compile_flags}>")
+target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_debug}>")
+target_compile_options(ww3_lib PUBLIC "$<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:Fortran>>:${compile_flags_release}>")
 
 install(
   TARGETS ${programs} ww3_lib
