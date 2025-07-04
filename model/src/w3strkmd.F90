@@ -314,6 +314,8 @@ CONTAINS
     !/       reserved.  WAVEWATCH III is a trademark of the NWS.
     !/       No unauthorized use without permission.
     !/
+    USE W3SERVMD, ONLY: EXTIOF
+
     IMPLICIT NONE
 #ifdef W3_MPI
 
@@ -512,15 +514,16 @@ CONTAINS
           OPEN(unit=11,file=filename,status='old')
           line = 1
           DO WHILE (.TRUE.)
-            READ (11, *, END=113) dummyc,llat(line),llon(line),   &
+            READ (11, *, IOSTAT=IOERR) dummyc,llat(line),llon(line),   &
                  ts(line),hs0(line),tp0(line),dir0(line), &
                  wndSpd0(line),wndDir0(line),invar7
+            IF (IOERR.NE.0) EXIT
             !partRes file does not contain the dspr variable
             dspr0(line) = 9999.
             !               wf0(line) = 9999.
             line = line+1
           ENDDO
-113       IERR = -1
+          IERR = -1
           CLOSE(11)
           line = line-1
           WRITE(6,*) '... finished'
@@ -544,7 +547,8 @@ CONTAINS
           !/          Test unformatted read
           !/       -------------------------------------------------
           OPEN(UNIT=11,FILE=FILENAME,form='UNFORMATTED', convert=file_endian,STATUS='OLD',ACCESS='STREAM')
-          READ(11,ERR=802,IOSTAT=IOERR) I
+          READ(11,IOSTAT=IOERR) I
+          IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
           CLOSE(11)
           !/          --- First four-byte integer could possibly be byte-swapped,
           !               if ww3_shel was compiled on a different architecture. ---
@@ -577,9 +581,12 @@ CONTAINS
                    status='OLD')
             ENDIF
             REWIND(11)
-            READ(11,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
-            READ(11,ERR=802,IOSTAT=IOERR) headln1
-            READ(11,ERR=802,IOSTAT=IOERR) headln2
+            READ(11,IOSTAT=IOERR) IDSTR,VERPRT
+            IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+            READ(11,IOSTAT=IOERR) headln1
+            IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+            READ(11,IOSTAT=IOERR) headln2
+            IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
           END IF
           !/
           IF (IDSTR(1:9).ne.'WAVEWATCH') THEN
@@ -593,18 +600,28 @@ CONTAINS
           !/       -------------------------------------------------
           skipln = 3
           ttest = 0
-          DO WHILE (ttest.LT.tstart)
+          loop = .true.
+          endloop = .false.
+          DO WHILE (ttest.LT.tstart .AND.loop)
             IF (FLFORM) THEN
-              READ (11,1000,ERR=802,END=112) date1,date2,x,y, &
+              READ (11,1000,IOSTAT=IOERR) date1,date2,x,y, &
                    numpart,wnd,wnddir,invar6,invar7
+              IF (IOERR.LT.0) THEN
+                loop = .false.
+                endloop = .true.
+                EXIT
+              ELSE IF (IOERR.GT.0) THEN
+                CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+              END IF
 #ifdef W3_del
               write(*,*) '0:',x,y,numpart
 #endif
               skipln = skipln+1
             ELSE
-              READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y, &
+              READ (11,IOSTAT=IOERR) DATETIME,x,y, &
                    dummy,numpart,invar1,wnd,wnddir, &
                    invar5,invar6
+              IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
               ! write(*,*) '0:',DATETIME,numpart
               date1=dble(DATETIME(1))
               date2=dble(DATETIME(2))
@@ -612,223 +629,306 @@ CONTAINS
             ttest = date1 + date2*1.0E-6
             IF (FLFORM) THEN
               DO line = 1,numpart+1
-                READ(11,1010,END=111,ERR=802,IOSTAT=IOERR) &
+                READ(11,1010,IOSTAT=IOERR) &
                      invar1,invar2,invar3,invar4
+                IF (IOERR.LT.0) THEN
+                  loop = .false.
+                  EXIT
+                ELSE IF (IOERR.GT.0) THEN
+                  CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                END IF
                 ! write(*,*) '0+:',line,numpart+1,invar1,invar2,invar3,invar4
                 skipln = skipln+1
               END DO
             ELSE
               DO line = 1,numpart+1
-                READ (11,ERR=802,IOSTAT=IOERR) iline,invar1, &
+                READ (11,IOSTAT=IOERR) iline,invar1, &
                      invar2,invar3,invar4,invar5,invar6
+                IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
                 ! write(*,*) '0+:',line,iline,invar1,invar2,invar3,invar4,invar5,invar6
               END DO
             END IF
           END DO
-          skipln = skipln-numpart-1-1
-          !/       -------------------------------------------------
-          !           Read file for ntint time levels
-          !/       -------------------------------------------------
-          readln = numpart
-          tstep = 1
-          ttemp = tstart
-          maxPart = numpart
-          DO WHILE (tstep.LE.ntint)
-            IF (readln.GT.0) THEN
+          IF (loop) THEN
+            skipln = skipln-numpart-1-1
+            !/       -------------------------------------------------
+            !           Read file for ntint time levels
+            !/       -------------------------------------------------
+            readln = numpart
+            tstep = 1
+            ttemp = tstart
+            maxPart = numpart
+            DO WHILE (tstep.LE.ntint)
+              IF (readln.GT.0) THEN
+                IF (FLFORM) THEN
+                  READ (11,1000,IOSTAT=IOERR) date1,date2,x,y, &
+                       numpart,wnd,wnddir,invar6,invar7
+                ELSE
+                  READ (11,IOSTAT=IOERR) DATETIME,  &
+                       x,y,dummy,numpart,wnd,wnddir,invar5,invar6,invar7
+                END IF
+                IF (IOERR.LT.0) EXIT
+                IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                IF (.NOT.FLFORM) THEN
+                  ! write(*,*) '1:',numpart,x,y
+                  date1=dble(DATETIME(1))
+                  date2=dble(DATETIME(2))
+                END IF
+                maxPart = MAX(maxPart,numpart)
+              END IF
+
+              ttest = date1 + date2*1.E-6
+              IF (ttest.GT.ttemp) THEN
+                tstep = tstep+1
+                ttemp = ttest
+                IF (tstep.GT.ntint) EXIT
+              END IF
               IF (FLFORM) THEN
-                READ (11,1000,ERR=802,END=111) date1,date2,x,y, &
-                     numpart,wnd,wnddir,invar6,invar7
+                DO line = 1,numpart+1
+                  READ (11,1010,IOSTAT=IOERR) invar1,invar2,invar3,invar4
+                  IF (IOERR.LT.0) THEN
+                    loop = .false.
+                    EXIT
+                  ELSE IF (IOERR.GT.0) THEN
+                    CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                  END IF
+#ifdef W3_del
+                  write(*,'(A,2I6,4F7.2)') '1+:',line,numpart+1,invar1, &
+                                                  invar2,invar3,invar4
+#endif
+                  readln = readln+1
+                END DO
               ELSE
-                READ (11,END=111,ERR=802,IOSTAT=IOERR) DATETIME,  &
-                     x,y,dummy,numpart,wnd,wnddir,invar5,invar6,invar7
-                ! write(*,*) '1:',numpart,x,y
+                DO line = 1,numpart+1
+                  READ (11,IOSTAT=IOERR) iline,invar1,&
+                       invar2,invar3,invar4,invar5,invar6
+                  IF (IOERR.LT.0) THEN
+                    loop = .false.
+                    EXIT
+                  ELSE IF (IOERR.GT.0) THEN
+                    CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                  END IF
+                  readln = readln+1
+                END DO
+              END IF
+              IF (.NOT.loop) EXIT
+            ENDDO
+          END IF ! loop
+          !
+          IF (.NOT.endloop) THEN
+            CLOSE(11)
+            !        ===== END COUNT LOOP =====
+            !        ===== START READ LOOP =====
+            ALLOCATE(ts(readln))
+            ALLOCATE(llat(readln))
+            ALLOCATE(llon(readln))
+            ALLOCATE(hs0(readln))
+            ALLOCATE(tp0(readln))
+            ALLOCATE(dir0(readln))
+            ALLOCATE(dspr0(readln))
+            !            ALLOCATE(wf0(readln))
+            ALLOCATE(wndSpd0(readln))
+            ALLOCATE(wndDir0(readln))
+            ALLOCATE(date0(readln))
+            ts(1:readln)   = -1
+            llat(1:readln) = 9999.
+            llon(1:readln) = 9999.
+            hs0(1:readln)  = 9999.
+            tp0(1:readln)  = 9999.
+            dir0(1:readln)  = 9999.
+            dspr0(1:readln)  = 9999.
+
+
+            IF (FLFORM) THEN
+              OPEN(unit=11,file=filename,status='old')
+            ELSE
+              OPEN(unit=11,file=filename,status='old', &
+                   form='unformatted', convert=file_endian)
+            END IF
+            line = 1
+            tstep = 1
+            !/       -------------------------------------------------
+            !/          Skip to start time
+            !/       -------------------------------------------------
+            IF (FLFORM) THEN
+              DO i = 1,skipln
+                READ (11, *)
+              END DO
+            ELSE
+              ! --- Repeat from above since access='DIRECT'
+              !     does not support fseek and ftell. ---
+              READ(11,IOSTAT=IOERR) IDSTR,VERPRT
+              IF (IOERR.NE.0) endloop = .true.
+              IF (.not.endloop) THEN
+                READ(11,IOSTAT=IOERR) headln1
+                IF (IOERR.NE.0) endloop = .true.
+              END IF
+              IF (.not.endloop) THEN
+                READ(11,IOSTAT=IOERR) headln2
+                IF (IOERR.LT.0) endloop = .true.
+              END IF
+              IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+              IF (.NOT.endloop) THEN
+                !/ --- allocate buffer for all partition parameters
+                !/     for a single grid point  ---
+                IF (.NOT.ALLOCATED(PHS)) ALLOCATE(PHS(maxPart))
+                IF (.NOT.ALLOCATED(PTP)) ALLOCATE(PTP(maxPart))
+                IF (.NOT.ALLOCATED(PDIR)) ALLOCATE(PDIR(maxPart))
+                IF (.NOT.ALLOCATED(PSPR)) ALLOCATE(PSPR(maxPart))
+                IF (.NOT.ALLOCATED(PWF)) ALLOCATE(PWF(maxPart))
+
+                ttest = 0
+              END IF
+
+              DO WHILE (ttest.LT.tstart .AND. .NOT.endloop)
+                READ (11,IOSTAT=IOERR) DATETIME, &
+                     invar1,invar2,dummy,numpart,invar3,   &
+                     invar4,invar5,invar6,invar7
+                IF (IOERR.LT.0) THEN
+                  endloop = .true.
+                  EXIT
+                ELSE IF (IOERR.GT.0) THEN
+                  CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                END IF
+                date1=dble(DATETIME(1))
+                date2=dble(DATETIME(2))
+                ttest = date1 + date2*1.0E-6
+                !/ --- reset buffer ---
+                PHS(:) = 0.
+                PTP(:) = 0.
+                PDIR(:) = 0.
+                PSPR(:) = 0.
+                PWF(:) = 0.
+
+                !/ --- fill buffer with partition data ---
+                READ (11,IOSTAT=IOERR) iline,invar1, &
+                     invar2,invar3,invar4,invar5,invar6
+                IF (IOERR.LT.0) THEN
+                  endloop = .true.
+                  EXIT
+                ELSE IF (IOERR.GT.0) THEN
+                  CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                ELSE
+                  DO i = 1,numpart
+                    READ (11,IOSTAT=IOERR) iline,      &
+                         phs(i),ptp(i),invar3,pdir(i),pspr(i),pwf(i)
+                    IF (IOERR.LT.0) THEN
+                      endloop = .true.
+                      EXIT
+                    ELSE IF (IOERR.GT.0) THEN
+                      CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                    END IF
+                  END DO
+                END IF
+              END DO
+              !/ --- move buffer content to data array ---
+              IF (.NOT.endloop) THEN
+                DO i=1,numpart
+                  hs0(line)   = phs(i)
+                  tp0(line)   = ptp(i)
+                  dir0(line)  = pdir(i)
+                  dspr0(line) = pspr(i)
+                  date0(line) = date1 + date2*1.0E-6
+                  ts(line) = tstep
+                  llat(line) = x
+                  llon(line) = y
+                  wndSpd0(line) = wnd
+                  wndDir0(line) = wnddir
+
+                  line = line + 1
+                END DO
+              END IF
+
+            END IF
+          END IF ! endloop
+          IF (.NOT.endloop) THEN
+            !/       -------------------------------------------------
+            !           Read file for ntint time levels
+            !/       -------------------------------------------------
+            ttemp = tstart
+            DO WHILE (line.LE.readln .AND. .NOT. endloop)
+              IF (FLFORM) THEN
+                READ (11,1000,IOSTAT=IOERR) date1,date2,x,y,numpart, &
+                     wnd,wnddir,invar6,invar7
+                IF (IOERR.LT.0) THEN
+                  endloop = .true.
+                  EXIT
+                END IF
+              ELSE
+                READ (11,IOSTAT=IOERR) DATETIME,x,y,    &
+                     dummy,numpart,wnd,wnddir,invar5,invar6,invar7
+                IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
                 date1=dble(DATETIME(1))
                 date2=dble(DATETIME(2))
               END IF
-              maxPart = MAX(maxPart,numpart)
-            END IF
 
-            ttest = date1 + date2*1.E-6
-            IF (ttest.GT.ttemp) THEN
-              tstep = tstep+1
-              ttemp = ttest
-              IF (tstep.GT.ntint) EXIT
-            END IF
-            IF (FLFORM) THEN
-              DO line = 1,numpart+1
-                READ (11,1010,END=111,ERR=802,IOSTAT=IOERR)      &
-                     invar1,invar2,invar3,invar4
-#ifdef W3_del
-                write(*,'(A,2I6,4F7.2)') '1+:',line,numpart+1,invar1,invar2,invar3,invar4
-#endif
-                readln = readln+1
-              END DO
-            ELSE
-              DO line = 1,numpart+1
-                READ (11,END=111,ERR=802,IOSTAT=IOERR) iline,invar1,&
-                     invar2,invar3,invar4,invar5,invar6
-                readln = readln+1
-              END DO
-            END IF
-          ENDDO
-111       CONTINUE
-          CLOSE(11)
-          !        ===== END COUNT LOOP =====
-          !        ===== START READ LOOP =====
-          ALLOCATE(ts(readln))
-          ALLOCATE(llat(readln))
-          ALLOCATE(llon(readln))
-          ALLOCATE(hs0(readln))
-          ALLOCATE(tp0(readln))
-          ALLOCATE(dir0(readln))
-          ALLOCATE(dspr0(readln))
-          !            ALLOCATE(wf0(readln))
-          ALLOCATE(wndSpd0(readln))
-          ALLOCATE(wndDir0(readln))
-          ALLOCATE(date0(readln))
-          ts(1:readln)   = -1
-          llat(1:readln) = 9999.
-          llon(1:readln) = 9999.
-          hs0(1:readln)  = 9999.
-          tp0(1:readln)  = 9999.
-          dir0(1:readln)  = 9999.
-          dspr0(1:readln)  = 9999.
-
-
-          IF (FLFORM) THEN
-            OPEN(unit=11,file=filename,status='old')
-          ELSE
-            OPEN(unit=11,file=filename,status='old', &
-                 form='unformatted', convert=file_endian)
-          END IF
-          line = 1
-          tstep = 1
-          !/       -------------------------------------------------
-          !/          Skip to start time
-          !/       -------------------------------------------------
-          IF (FLFORM) THEN
-            DO i = 1,skipln
-              READ (11, *)
-            END DO
-          ELSE
-            ! --- Repeat from above since access='DIRECT'
-            !     does not support fseek and ftell. ---
-            READ(11,END=112,ERR=802,IOSTAT=IOERR) IDSTR,VERPRT
-            READ(11,END=112,ERR=802,IOSTAT=IOERR) headln1
-            READ(11,END=112,ERR=802,IOSTAT=IOERR) headln2
-            !/ --- allocate buffer for all partition parameters
-            !/     for a single grid point  ---
-            IF (.NOT.ALLOCATED(PHS)) ALLOCATE(PHS(maxPart))
-            IF (.NOT.ALLOCATED(PTP)) ALLOCATE(PTP(maxPart))
-            IF (.NOT.ALLOCATED(PDIR)) ALLOCATE(PDIR(maxPart))
-            IF (.NOT.ALLOCATED(PSPR)) ALLOCATE(PSPR(maxPart))
-            IF (.NOT.ALLOCATED(PWF)) ALLOCATE(PWF(maxPart))
-
-            ttest = 0
-
-            DO WHILE (ttest.LT.tstart)
-              READ (11,END=112,ERR=802,IOSTAT=IOERR) DATETIME, &
-                   invar1,invar2,dummy,numpart,invar3,   &
-                   invar4,invar5,invar6,invar7
-              date1=dble(DATETIME(1))
-              date2=dble(DATETIME(2))
               ttest = date1 + date2*1.0E-6
-              !/ --- reset buffer ---
-              PHS(:) = 0.
-              PTP(:) = 0.
-              PDIR(:) = 0.
-              PSPR(:) = 0.
-              PWF(:) = 0.
+              IF (ttest.GT.ttemp) THEN
+                tstep = tstep+1
+                ttemp = ttest
+                IF (tstep.GT.ntint) EXIT
+              END IF
 
-              !/ --- fill buffer with partition data ---
-              READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,invar1, &
-                   invar2,invar3,invar4,invar5,invar6
-              DO i = 1,numpart
-                READ (11,END=112,ERR=802,IOSTAT=IOERR) iline,      &
-                     phs(i),ptp(i),invar3,pdir(i),pspr(i),pwf(i)
-              END DO
-            END DO
-            !/ --- move buffer content to data array ---
-            DO i=1,numpart
-              hs0(line)   = phs(i)
-              tp0(line)   = ptp(i)
-              dir0(line)  = pdir(i)
-              dspr0(line) = pspr(i)
-              date0(line) = date1 + date2*1.0E-6
-              ts(line) = tstep
-              llat(line) = x
-              llon(line) = y
-              wndSpd0(line) = wnd
-              wndDir0(line) = wnddir
-
-              line = line + 1
-            END DO
-
-          END IF
-          !/       -------------------------------------------------
-          !           Read file for ntint time levels
-          !/       -------------------------------------------------
-          ttemp = tstart
-          DO WHILE (line.LE.readln)
-            IF (FLFORM) THEN
-              READ (11,1000,END=112) date1,date2,x,y,numpart, &
-                   wnd,wnddir,invar6,invar7
-            ELSE
-              READ (11,ERR=802,IOSTAT=IOERR) DATETIME,x,y,    &
-                   dummy,numpart,wnd,wnddir,invar5,invar6,invar7
-              date1=dble(DATETIME(1))
-              date2=dble(DATETIME(2))
-            END IF
-
-            ttest = date1 + date2*1.0E-6
-            IF (ttest.GT.ttemp) THEN
-              tstep = tstep+1
-              ttemp = ttest
-              IF (tstep.GT.ntint) EXIT
-            END IF
-
-            IF (FLFORM) THEN
-              READ (11,1010,END=112) invar1,invar2,invar3,invar4 ! Skip total integral parameters
-              DO i = 1,numpart
-                IF (line.LE.readln) THEN
-                  READ (11,1010,END=112) hs0(line),tp0(line), &
-                       dir0(line),dspr0(line)
-                  date0(line) = ttest
-
-                  ts(line) = tstep
-                  llat(line) = x
-                  llon(line) = y
-                  wndSpd0(line) = wnd
-                  wndDir0(line) = wnddir
-
-                  line = line+1
+              IF (FLFORM) THEN
+                READ (11,1010,IOSTAT=IOERR) invar1,invar2,invar3,invar4 ! Skip total integral parameters
+                IF (IOERR.LT.0) THEN
+                  endloop = .true.
+                  EXIT
                 END IF
-              END DO
-            ELSE
-              READ (11,ERR=802,IOSTAT=IOERR) k,invar1,invar2,  &
-                   invar3,invar4,invar5
-              DO i = 1,numpart
-                IF (line.LE.readln) THEN
-                  READ (11,END=112,ERR=802,IOSTAT=IOERR) k,         &
-                       hs0(line),tp0(line),invar3,dir0(line),       &
-                       dspr0(line)
-                  date0(line) = ttest
+                DO i = 1,numpart
+                  IF (line.LE.readln) THEN
+                    READ (11,1010,IOSTAT=IOERR) hs0(line),tp0(line), &
+                         dir0(line),dspr0(line)
+                    IF (IOERR.LT.0) THEN
+                      endloop = .true.
+                      EXIT
+                    END IF
+                    date0(line) = ttest
 
-                  ts(line) = tstep
-                  llat(line) = x
-                  llon(line) = y
-                  wndSpd0(line) = wnd
-                  wndDir0(line) = wnddir
+                    ts(line) = tstep
+                    llat(line) = x
+                    llon(line) = y
+                    wndSpd0(line) = wnd
+                    wndDir0(line) = wnddir
 
-                  line = line+1
-                END IF
-              END DO
+                    line = line+1
+                  END IF
+                END DO
+              ELSE
+                READ (11,IOSTAT=IOERR) k,invar1,invar2,  &
+                     invar3,invar4,invar5
+                IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+                DO i = 1,numpart
+                  IF (line.LE.readln) THEN
+                    READ (11,IOSTAT=IOERR) k,         &
+                         hs0(line),tp0(line),invar3,dir0(line),       &
+                         dspr0(line)
+                    IF (IOERR.LT.0) THEN
+                      endloop = .true.
+                      EXIT
+                    ELSE IF (IOERR.GT.0) THEN
+                      CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',IOERR)
+                    END IF
+                    date0(line) = ttest
+
+                    ts(line) = tstep
+                    llat(line) = x
+                    llon(line) = y
+                    wndSpd0(line) = wnd
+                    wndDir0(line) = wnddir
+
+                    line = line+1
+                  END IF
+                END DO
+              END IF
+            END DO
+            IF (.not.endloop) THEN
+              IERR = -1
+              CLOSE(11)
             END IF
-          END DO
-110       IERR = -1
-          CLOSE(11)
-
-112       CONTINUE
+            !
+          END IF ! endloop
+          !
           IF (line.EQ.1) THEN
             WRITE(20,2002)
             WRITE(6,2002)
@@ -1041,7 +1141,7 @@ CONTAINS
                   iline = iline + 1
                   if (iline.GT.line) EXIT
                 END DO
-                !                   --- Account for increment at the end of loop (400 CONTINUE)
+                !                   --- Account for increment at the end of loop
                 !                       and go one element back in list because of increment. ---
                 l = iline-1
                 endloop = .true.
@@ -1714,13 +1814,6 @@ CONTAINS
     !
     RETURN
     !
-802 CONTINUE
-    WRITE (6,990) IOERR
-    STOP 1
-
-990 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRKMD : '/            &
-         '     ERROR IN READING FROM PARTITION FILE'/          &
-         '     IOSTAT =',I5/)
 1000 FORMAT (F9.0,F7.0,F8.3,F8.3,14X,I3,7X,F5.1,F6.1,F5.1,F6.1)
 1010 FORMAT (3X,F8.2,F8.2,8X,F9.2,F9.2)
 1200 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRKMD : '/            &

@@ -112,6 +112,8 @@ PROGRAM W3OUNP
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      TICK21    Subr.   Id.    Advance time.
@@ -185,7 +187,7 @@ PROGRAM W3OUNP
   USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT, DIMP
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3IOPOMD
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF, STRSPLIT
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -492,16 +494,19 @@ PROGRAM W3OUNP
   ! process old ww3_ounp.inp format
   !
   IF (.NOT. FLGNML) THEN
-    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_ounp.inp',STATUS='OLD',ERR=800,IOSTAT=IERR)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_ounp.inp',STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUNP','INPUT',40)
     REWIND (NDSI)
 
-    READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+    READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     IF (COMSTR.EQ.' ') COMSTR = '$'
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
 
     ! 4.1 Time setup IDTIME, DTREQ, NOUT
-    READ (NDSI,*,END=801,ERR=802) TOUT, DTREQ, NOUT
+    READ (NDSI,*,IOSTAT=IERR) TOUT, DTREQ, NOUT
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
 
     ! 4.2 Output points NOPTS
     ALLOCATE ( FLREQ(NOPTS) )
@@ -515,7 +520,8 @@ PROGRAM W3OUNP
     DO I=1, NOPTS
       ! reads point index
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802) IPOINT
+      READ (NDSI,*,IOSTAT=IERR) IPOINT
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
       ! last index
       IF (IPOINT .LT. 0) THEN
         IF (I.EQ.1) THEN
@@ -536,7 +542,8 @@ PROGRAM W3OUNP
       ! read the 'end of list' if nopts reached before it
       IF ( (IPOINT .GT. 0) .AND. (NREQ .EQ. NOPTS) ) THEN
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802) IPOINT
+        READ (NDSI,*,IOSTAT=IERR) IPOINT
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
       END IF
     END DO
     ! check if last point index is -1
@@ -548,26 +555,35 @@ PROGRAM W3OUNP
     ! 4.3 Output type
     FILEPREFIX= 'ww3.'
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) FILEPREFIX
+    READ (NDSI,*,IOSTAT=IERR) FILEPREFIX
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) S3
+    READ (NDSI,*,IOSTAT=IERR) S3
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) NCTYPE
+    READ (NDSI,*,IOSTAT=IERR) NCTYPE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) TOGETHER, MFL
+    READ (NDSI,*,IOSTAT=IERR) TOGETHER, MFL
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) ITYPE
+    READ (NDSI,*,IOSTAT=IERR) ITYPE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) FLWW3
+    READ (NDSI,*,IOSTAT=IERR) FLWW3
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802) ORDER
+    READ (NDSI,*,IOSTAT=IERR) ORDER
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
     !
-    IF (ITYPE .EQ. 1) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, NCVARTYPE
-    IF (ITYPE .EQ. 2) READ (NDSI,*,END=801,ERR=802) OTYPE
-    IF (ITYPE .EQ. 3) READ (NDSI,*,END=801,ERR=802) OTYPE, SCALE1, SCALE2, FLSRCE, ISCALE
+    IF (ITYPE .EQ. 1) READ (NDSI,*,IOSTAT=IERR) OTYPE, SCALE1, SCALE2, NCVARTYPE
+    IF (ITYPE .EQ. 2) READ (NDSI,*,IOSTAT=IERR) OTYPE
+    IF (ITYPE .EQ. 3) READ (NDSI,*,IOSTAT=IERR) OTYPE, SCALE1, SCALE2, FLSRCE, ISCALE
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3OUNP','INPUT',41)
 
-    CLOSE(NDSI,ERR=800,IOSTAT=IERR)
+    CLOSE(NDSI,IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3OUNP','INPUT',40)
 
   END IF ! .NOT. FLGNML
 
@@ -761,7 +777,6 @@ PROGRAM W3OUNP
     DO IFL=IAPROC,NFL,NAPROC
       !
       ! new file, so the time counter is initialized
-560   CONTINUE
       DO
         IOUT=0
 
@@ -1291,29 +1306,6 @@ PROGRAM W3OUNP
   !     CALL W3TAGE('WAVESPEC')
 #endif
   !
-  STOP
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 40 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 41 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 42 )
-  !
-#ifdef W3_O14
-805 CONTINUE
-  WRITE (NDSE,1005) IERR
-  CALL EXTCDE ( 45 )
-#endif
-  !
-  !
   ! Formats
   !
 900 FORMAT (/15X,'    *** WAVEWATCH III Point output post.***    '/ &
@@ -1366,17 +1358,6 @@ PROGRAM W3OUNP
        ' ========================================='/          &
        '         WAVEWATCH III Point output '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
        '     NCTYPE=3 IS INCOMPATIBLE WITH'/                  &
        '     THE OPTIMIZED DIMENSION ORDER'/)
@@ -1384,12 +1365,6 @@ PROGRAM W3OUNP
 1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/               &
        '     NCTYPE=4 IS INCOMPATIBLE WITH'/                  &
        '     NETCDF LIBRARY USED :',A/)
-  !
-#ifdef W3_O14
-1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/          &
-       '     ERROR IN OPENING BUOY LOG FILE'/            &
-       '     IOSTAT =',I5/)
-#endif
   !
 1006 FORMAT (/' *** WAVEWATCH III ERROR IN W3OUNP : '/              &
        '     ITYPE AND OTYPE COMBINATION NOT RECOGNIZED'/)

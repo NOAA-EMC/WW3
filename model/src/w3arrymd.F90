@@ -147,7 +147,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTIOF
     !
     IMPLICIT NONE
     !/
@@ -195,20 +195,24 @@ CONTAINS
     IF (IIDFM.EQ.1) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+          READ (NDS,*,IOSTAT=ISTAT)     &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+        READ (NDS,*,IOSTAT=ISTAT)     &
              ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+          READ (NDS,*,IOSTAT=ISTAT)     &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
-        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+        READ (NDS,*,IOSTAT=ISTAT)     &
              ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       END IF
       !
       ! Fixed format read :
@@ -216,20 +220,24 @@ CONTAINS
     ELSE IF (IIDFM.EQ.2) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+          READ (NDS,RFORM,IOSTAT=ISTAT) &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+        READ (NDS,RFORM,IOSTAT=ISTAT) &
              ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+          READ (NDS,RFORM,IOSTAT=ISTAT) &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
-        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+        READ (NDS,RFORM,IOSTAT=ISTAT) &
              ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       END IF
       !
       ! Unformat read :
@@ -237,20 +245,24 @@ CONTAINS
     ELSE
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+          READ (NDS,IOSTAT=ISTAT)       &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+        READ (NDS,IOSTAT=ISTAT)       &
              ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+          READ (NDS,IOSTAT=ISTAT)       &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
-        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+        READ (NDS,IOSTAT=ISTAT)       &
              ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       END IF
     END IF
     !
@@ -264,23 +276,7 @@ CONTAINS
     !
     RETURN
     !
-    ! Escape locations read errors :
-    !
-800 CONTINUE
-    WRITE (NDSE,900)
-    CALL EXTCDE ( ISTAT )
-    !
-801 CONTINUE
-    WRITE (NDSE,901) ISTAT
-    CALL EXTCDE ( ISTAT )
-    !
     ! Formats
-    !
-900 FORMAT (/' *** ERROR INA2R : '/                           &
-         '     PREMATURE END OF FILE'/)
-901 FORMAT (/' *** ERROR INA2R : '/                           &
-         '     ERROR IN READING FROM FILE'/               &
-         '     IOSTAT =',I5/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST INA2R  : INPUT :'/6X,8I4,2I3,1X,A,I3,2E12.4)
@@ -318,7 +314,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTIOF
     !
     IMPLICIT NONE
     !/
@@ -365,20 +361,24 @@ CONTAINS
     IF (IIDFM.EQ.1) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+          READ (NDS,*,IOSTAT=ISTAT)     &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+        READ (NDS,*,IOSTAT=ISTAT)     &
              ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+          READ (NDS,*,IOSTAT=ISTAT)     &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE
-        READ (NDS,*,END=800,ERR=801,IOSTAT=ISTAT)     &
+        READ (NDS,*,IOSTAT=ISTAT)     &
              ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       END IF
       !
       ! Fixed format read :
@@ -386,20 +386,24 @@ CONTAINS
     ELSE IF (IIDFM.EQ.2) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+          READ (NDS,RFORM,IOSTAT=ISTAT) &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+        READ (NDS,RFORM,IOSTAT=ISTAT) &
              ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+          READ (NDS,RFORM,IOSTAT=ISTAT) &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE
-        READ (NDS,RFORM,END=800,ERR=801,IOSTAT=ISTAT) &
+        READ (NDS,RFORM,IOSTAT=ISTAT) &
              ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       END IF
       !
       ! Unformat read :
@@ -407,20 +411,24 @@ CONTAINS
     ELSE
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+          READ (NDS,IOSTAT=ISTAT)       &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+        READ (NDS,IOSTAT=ISTAT)       &
              ((ARRAY(IX,IY),IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+          READ (NDS,IOSTAT=ISTAT)       &
                (ARRAY(IX,IY),IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE
-        READ (NDS,END=800,ERR=801,IOSTAT=ISTAT)       &
+        READ (NDS,IOSTAT=ISTAT)       &
              ((ARRAY(IX,IY),IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       END IF
     END IF
     !
@@ -434,23 +442,7 @@ CONTAINS
     !
     RETURN
     !
-    ! Escape locations read errors :
-    !
-800 CONTINUE
-    WRITE (NDSE,900)
-    CALL EXTCDE ( ISTAT )
-    !
-801 CONTINUE
-    WRITE (NDSE,901) ISTAT
-    CALL EXTCDE ( ISTAT )
-    !
     ! Formats
-    !
-900 FORMAT (/' *** ERROR INA2I : '/                           &
-         '     PREMATURE END OF FILE'/)
-901 FORMAT (/' *** ERROR INA2I : '/                           &
-         '     ERROR IN READING FROM FILE'/               &
-         '     IOSTAT =',I5/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST INA2I  : INPUT :'/6X,8I4,2I3,1X,A,I3,2I5)
@@ -494,7 +486,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTIOF
     !
     IMPLICIT NONE
     !/
@@ -541,20 +533,22 @@ CONTAINS
     IF (IIDFM.EQ.1) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,*,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+        WRITE (NDS,*,IOSTAT=ISTAT)                &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,INT(HX/VSC)),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,*,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
         END DO
       ELSE
-        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+        WRITE (NDS,*,IOSTAT=ISTAT)                &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
       END IF
       !
       ! Fixed format write :
@@ -562,20 +556,22 @@ CONTAINS
     ELSE IF (IIDFM.EQ.2) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,RFORM,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+        WRITE (NDS,RFORM,IOSTAT=ISTAT)            &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,RFORM,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
         END DO
       ELSE
-        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+        WRITE (NDS,RFORM,IOSTAT=ISTAT)            &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
       END IF
       !
       ! Unformat write :
@@ -583,36 +579,27 @@ CONTAINS
     ELSE
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
-             (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+        WRITE (NDS,IOSTAT=ISTAT) (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
         END DO
       ELSE
-        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
+        WRITE (NDS,IOSTAT=ISTAT)                  &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'OUTA2R','',ISTAT,ISWRITE=.TRUE.)
       END IF
     END IF
     !
     RETURN
     !
-    ! Escape locations write errors :
-    !
-800 CONTINUE
-    WRITE (NDSE,900) ISTAT
-    CALL EXTCDE ( ISTAT )
-    !
     ! Formats
-    !
-900 FORMAT (/' *** ERROR OUTA2R : '/                          &
-         '     ERROR IN WRITING TO FILE'/                 &
-         '     IOSTAT =',I5/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST OUTA2R : INPUT :'/6X,8I4,2I3,1X,A,I3,2E12.4)
@@ -649,7 +636,7 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
-    USE W3SERVMD, ONLY: EXTCDE
+    USE W3SERVMD, ONLY: EXTIOF
     !
     IMPLICIT NONE
     !/
@@ -696,20 +683,22 @@ CONTAINS
     IF (IIDFM.EQ.1) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,*,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+        WRITE (NDS,*,IOSTAT=ISTAT)                &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)              &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,*,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
-        WRITE (NDS,*,ERR=800,IOSTAT=ISTAT)                &
+        WRITE (NDS,*,IOSTAT=ISTAT)                &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       END IF
       !
       ! Fixed format write :
@@ -717,20 +706,22 @@ CONTAINS
     ELSE IF (IIDFM.EQ.2) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,RFORM,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+        WRITE (NDS,RFORM,IOSTAT=ISTAT)            &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)          &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,RFORM,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
-        WRITE (NDS,RFORM,ERR=800,IOSTAT=ISTAT)            &
+        WRITE (NDS,RFORM,IOSTAT=ISTAT)            &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       END IF
       !
       ! Unformat write :
@@ -738,36 +729,28 @@ CONTAINS
     ELSE
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
-        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
+        WRITE (NDS,IOSTAT=ISTAT)                  &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=LY,HY)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          WRITE (NDS,ERR=800,IOSTAT=ISTAT)                &
-               ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          WRITE (NDS,IOSTAT=ISTAT) ((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX)
+          IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
-        WRITE (NDS,ERR=800,IOSTAT=ISTAT)                  &
+        WRITE (NDS,IOSTAT=ISTAT)                  &
              (((ARRAY(IX,IY)-VOF)/VSC,IX=LX,HX),IY=HY,LY,-1)
+        IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       END IF
     END IF
     !
     RETURN
     !
-    ! Escape locations write errors :
-    !
-800 CONTINUE
-    WRITE (NDSE,900) ISTAT
-    CALL EXTCDE ( ISTAT )
-    !
     ! Formats
-    !
-900 FORMAT (/' *** ERROR OUTA2I : '/                          &
-         '     ERROR IN WRITING TO FILE'/                 &
-         '     IOSTAT =',I5/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST OUTA2I : INPUT :'/6X,8I4,2I3,1X,A,I3,2I5)

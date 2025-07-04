@@ -4779,9 +4779,6 @@ do ipol=1,nlocus1
   y2_loc(ipol) = k_pol(ipol)*sin(a_pol(ipol))
 end do
 !
-!
-9999 continue
-!
 call q_stack('-q_polar2')
 !
 return
@@ -5633,8 +5630,6 @@ if (iq_prt > 0) then
   write(luq_prt,'(a)')   '----------------------------------------------'
 end if
 !
-9999 continue
-!
 call q_stack('-q_summary')
 !
 return
@@ -6204,8 +6199,6 @@ do iloc=1,nlocus
 !
 !
 end do
-!
-9999 continue
 !
 call q_stack('-q_weight')
 !

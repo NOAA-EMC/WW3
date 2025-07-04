@@ -111,6 +111,8 @@ PROGRAM W3PRNC
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      STME21    Subr. W3TIMEMD Convert time to string.
   !      INAR2R    Subr. W3ARRYMD Read in an REAL array.
@@ -201,7 +203,7 @@ PROGRAM W3PRNC
 #endif
   USE W3ODATMD, ONLY: W3NOUT, W3SETO
   USE W3ODATMD, ONLY: IAPROC, NAPROC, NAPERR, NAPOUT
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, STRSPLIT
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF, STRSPLIT
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -613,14 +615,17 @@ PROGRAM W3PRNC
   ! process old ww3_prnc.inp format
   !
   IF (.NOT. FLGNML) THEN
-    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_prnc.inp',STATUS='OLD',ERR=800,IOSTAT=IERR)
+    OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_prnc.inp',STATUS='OLD',IOSTAT=IERR)
+    IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3PRNC','INPUT',40)
     REWIND (NDSI)
 
-    READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) COMSTR
+    READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
     IF (COMSTR.EQ.' ') COMSTR = '$'
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) IDFLD, IDTYPE, FLTIME, FLHDR
+    READ (NDSI,*,IOSTAT=IERR) IDFLD, IDTYPE, FLTIME, FLHDR
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
 
     ! Check field
     FLSTAB = IDFLD .EQ. 'WNS'
@@ -671,7 +676,14 @@ PROGRAM W3PRNC
       ITYPE   = 6
       TIDEFLAG= 1
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,'(A)',END=801,ERR=803,IOSTAT=IERR) TIDECONSTNAMES
+      READ (NDSI,'(A)',IOSTAT=IERR) TIDECONSTNAMES
+      IF (IERR.LT.0) THEN
+        WRITE (NDSE,1001)
+        CALL EXTCDE ( 41 )
+      ELSE IF (IERR.GT.0) THEN
+        WRITE (NDSE,1003) IERR
+        CALL EXTCDE ( 43 )
+      END IF
       LIST(:)=''
       CALL STRSPLIT(TIDECONSTNAMES,LIST)
     ELSE IF (IDTYPE.EQ.'LL') THEN
@@ -687,7 +699,8 @@ PROGRAM W3PRNC
     END IF
     !
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) STRDIMSNAME
+    READ (NDSI,'(A)',IOSTAT=IERR) STRDIMSNAME
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
     !
     FIELDSNAME(:)=''
     DIMSNAME(:)=''
@@ -699,7 +712,8 @@ PROGRAM W3PRNC
     END DO
     !
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,'(A)',END=801,ERR=802,IOSTAT=IERR) STRFIELDSNAME
+    READ (NDSI,'(A)',IOSTAT=IERR) STRFIELDSNAME
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
     !
     FIELDSNAME(:)=''
     CALL STRSPLIT(STRFIELDSNAME,FIELDSNAME)
@@ -711,7 +725,8 @@ PROGRAM W3PRNC
     ! time flag and start date
     IF (.NOT. FLTIME) THEN
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) TIMESHIFT
+      READ (NDSI,*,IOSTAT=IERR) TIMESHIFT
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
       IF (TIMESHIFT(1).LT.10000000) THEN
         WRITE (NDSE,1035) TIME
         CALL EXTCDE ( 35 )
@@ -719,7 +734,8 @@ PROGRAM W3PRNC
     END IF
     ! Read netcdf filename
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NAMEF
+    READ (NDSI,*,IOSTAT=IERR) NAMEF
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
 
     ! initialize timestart and timestop
     STARTJULDAY=0
@@ -985,8 +1001,9 @@ PROGRAM W3PRNC
     !
   ELSE IF (ITYPE.EQ.5) THEN
     CALL NEXTLN ( COMSTR , NDSI , NDSE )
-    READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)                   &
+    READ (NDSI,*,IOSTAT=IERR)                   &
          DATTYP, RECLDT, NODATA
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
     IF (DATTYP.LT.0 .OR. DATTYP.GT.2) THEN
       WRITE (NDSE,1033) DATTYP
       CALL EXTCDE ( 33 )
@@ -1178,8 +1195,9 @@ PROGRAM W3PRNC
         ! ... file info lat-long file
         !
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
+        READ (NDSI,*,IOSTAT=IERR)             &
              NXJ(J), NYJ(J), CLO(J)
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
         IF (NXJ(J).LT.2 .OR. NYJ(J).LT.2) THEN
           WRITE (NDSE,1036) NXJ(J), NYJ(J)
           CALL EXTCDE ( 36 )
@@ -1190,15 +1208,17 @@ PROGRAM W3PRNC
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,944) NXJ(J), NYJ(J), CLO(J)
         !
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
+        READ (NDSI,*,IOSTAT=IERR)             &
              FROMLL, IDLALL, IDFMLL, FORMLL
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
         IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
         IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,945) IDLALL, IDFMLL
         IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
         !
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
+        READ (NDSI,*,IOSTAT=IERR) NDSLL, NAMELL
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
 #ifdef W3_NCO
         NDSLL  = 20 + NFCOMP
 #endif
@@ -1216,21 +1236,22 @@ PROGRAM W3PRNC
               JJ = LEN_TRIM(FNMPRE)
               OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
                    form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
-                   ERR=845,IOSTAT=IERR)
+                   IOSTAT=IERR)
             ELSE
               OPEN (NDSLL, form='UNFORMATTED', convert=file_endian,          &
-                   STATUS='OLD',ERR=845,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           ELSE
             IF (FROMLL.EQ.'NAME') THEN
               JJ = LEN_TRIM(FNMPRE)
               OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                   STATUS='OLD',ERR=845,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             ELSE
               OPEN (NDSLL,                              &
-                   STATUS='OLD',ERR=845,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           END IF
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3PRNC','LAT-LONG DATA', 49)
           !
         END IF
         !
@@ -1253,15 +1274,17 @@ PROGRAM W3PRNC
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,949)
         !
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR)             &
+        READ (NDSI,*,IOSTAT=IERR)             &
              FROMLL, IDLALL, IDFMLL, FORMLL
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
         IF (IDLALL.LT.1 .OR. IDLALL.GT.4) IDLALL   = 1
         IF (IDFMLL.LT.1 .OR. IDFMLL.GT.3) IDFMLL   = 1
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,945) IDLALL, IDFMLL
         IF (IDFMLL.EQ.2) WRITE (NDSO,946) FORMLL
         !
         CALL NEXTLN ( COMSTR , NDSI , NDSE )
-        READ (NDSI,*,END=801,ERR=802,IOSTAT=IERR) NDSLL, NAMELL
+        READ (NDSI,*,IOSTAT=IERR) NDSLL, NAMELL
+        IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3PRNC','INPUT',41)
 #ifdef W3_NCO
         NDSLL  = 22 + NFCOMP
 #endif
@@ -1280,21 +1303,22 @@ PROGRAM W3PRNC
               JJ = LEN_TRIM(FNMPRE)
               OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
                    form='UNFORMATTED', convert=file_endian,STATUS='OLD',    &
-                   ERR=846,IOSTAT=IERR)
+                   IOSTAT=IERR)
             ELSE
               OPEN (NDSLL,form='UNFORMATTED', convert=file_endian,           &
-                   STATUS='OLD',ERR=846,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           ELSE
             IF (FROMLL.EQ.'NAME') THEN
               JJ = LEN_TRIM(FNMPRE)
               OPEN (NDSLL,FILE=FNMPRE(:JJ)//NAMELL,     &
-                   STATUS='OLD',ERR=846,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             ELSE
               OPEN (NDSLL,                              &
-                   STATUS='OLD',ERR=846,IOSTAT=IERR)
+                   STATUS='OLD',IOSTAT=IERR)
             END IF
           END IF
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3PRNC','MASK',50)
           !
         END IF
         !
@@ -1811,8 +1835,11 @@ PROGRAM W3PRNC
     !
 #ifdef W3_O15
     J      = LEN_TRIM(FNMPRE)
-    OPEN (NDSTIME,FILE=FNMPRE(:J)//'times.'//IDFLD,      &
-         ERR=870,IOSTAT=IERR )
+    OPEN (NDSTIME,FILE=FNMPRE(:J)//'times.'//IDFLD,IOSTAT=IERR )
+    IF (IERR.NE.0) THEN
+      WRITE (NDSE,1070) IDFLD, IERR
+      CALL EXTCDE ( 57 )
+    END IF
 #endif
     !
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,972)
@@ -1856,7 +1883,11 @@ PROGRAM W3PRNC
         IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,2973) IDTIME
       END IF
 #ifdef W3_O15
-      WRITE (NDSTIME, 979, ERR=871,IOSTAT=IERR) TIME
+      WRITE (NDSTIME, 979, IOSTAT=IERR) TIME
+      IF (IERR.NE.0) THEN
+        WRITE (NDSE,1071) IDTIME, IERR
+        CALL EXTCDE ( 58 )
+      END IF
 #endif
 #ifdef W3_O3
       IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,974)
@@ -1968,9 +1999,13 @@ PROGRAM W3PRNC
         !
         IF ( IAPROC .EQ. NAPOUT ) WRITE(NDSO,*) "ITYPE5 TO DO"
         IF (IDFMF(1).EQ.3) THEN
-          READ (NDSF(1),  END=862,ERR=862,IOSTAT=IERR) NDAT
+          READ (NDSF(1), IOSTAT=IERR) NDAT
         ELSE
-          READ (NDSF(1),*,END=862,ERR=862,IOSTAT=IERR) NDAT
+          READ (NDSF(1),*,IOSTAT=IERR) NDAT
+        END IF
+        IF (IERR.NE.0) THEN
+          WRITE (NDSE,1062) IERR
+          CALL EXTCDE ( 54 )
         END IF
 #ifdef W3_O3
         IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,975) NDAT
@@ -1979,14 +2014,15 @@ PROGRAM W3PRNC
           ALLOCATE ( DATA(RECLDT,NDAT) )
           DO IDAT=1, NDAT
             IF (IDFMF(1).EQ.1) THEN
-              READ (NDSF(1),    *   ,END=863,ERR=863,         &
-                   IOSTAT=IERR) DATA(:,IDAT)
+              READ (NDSF(1), *, IOSTAT=IERR) DATA(:,IDAT)
             ELSE IF (IDFMF(1).EQ.2) THEN
-              READ (NDSF(1),FORMT(1),END=863,ERR=863,         &
-                   IOSTAT=IERR) DATA(:,IDAT)
+              READ (NDSF(1),FORMT(1), IOSTAT=IERR) DATA(:,IDAT)
             ELSE
-              READ (NDSF(1),         END=863,ERR=863,         &
-                   IOSTAT=IERR) DATA(:,IDAT)
+              READ (NDSF(1), IOSTAT=IERR) DATA(:,IDAT)
+            END IF
+            IF (IERR.NE.0) THEN
+              WRITE (NDSE,1063) IDAT, IERR
+              CALL EXTCDE ( 55 )
             END IF
           END DO
         END IF
@@ -2255,53 +2291,6 @@ PROGRAM W3PRNC
 #ifdef W3_MPI
   CALL MPI_FINALIZE  ( IERR_MPI )
 #endif
-  STOP
-  !
-  ! Error escape locations
-  !
-800 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 40 )
-  !
-801 CONTINUE
-  WRITE (NDSE,1001)
-  CALL EXTCDE ( 41 )
-  !
-802 CONTINUE
-  WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 42 )
-  !
-803 CONTINUE
-  WRITE (NDSE,1003) IERR
-  CALL EXTCDE ( 43 )
-  !
-845 CONTINUE
-  WRITE (NDSE,1045) IERR
-  CALL EXTCDE ( 49 )
-  !
-846 CONTINUE
-  WRITE (NDSE,1046) IERR
-  CALL EXTCDE ( 50 )
-  !
-862 CONTINUE
-  WRITE (NDSE,1062) IERR
-  CALL EXTCDE ( 54 )
-  !
-863 CONTINUE
-  WRITE (NDSE,1063) IDAT, IERR
-  CALL EXTCDE ( 55 )
-  !
-#ifdef W3_O15
-870 CONTINUE
-  WRITE (NDSE,1070) IDFLD, IERR
-  CALL EXTCDE ( 57 )
-#endif
-  !
-#ifdef W3_O15
-871 CONTINUE
-  WRITE (NDSE,1071) IDTIME, IERR
-  CALL EXTCDE ( 58 )
-#endif
   !
   ! Formats
   !
@@ -2385,16 +2374,8 @@ PROGRAM W3PRNC
        ' ========================================='/          &
        '         WAVEWATCH III Input preprocessing '/)
   !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
   !
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
        '     ERROR IN READING FROM INPUT FILE'/               &
@@ -2458,16 +2439,6 @@ PROGRAM W3PRNC
        '     X = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
 1044 FORMAT (/' *** WAVEWATCH III WARNING W3PRNC : '/                &
        '     Y = ',F10.1,' NOT COVERED BY INPUT GRID.'/)
-  !
-
-  !
-1045 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-       '     ERROR IN OPENING LAT-LONG DATA FILE'/            &
-       '     IOSTAT =',I5/)
-  !
-1046 FORMAT (/' *** WAVEWATCH III ERROR IN W3PRNC : '/               &
-       '     ERROR IN OPENING MASK FILE'/                     &
-       '     IOSTAT =',I5/)
   !
 1047 FORMAT (/' *** WAVEWATCH III WARNING IN W3PRNC : '/             &
        '     NO TIDAL COMPUTATION AT NODE [',I8,',',I8,']'/)

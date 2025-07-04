@@ -843,12 +843,6 @@ CONTAINS
     !
     RETURN
     !
-    ! Error escape locations
-    !
-801 CONTINUE
-    WRITE (NDSE,1001) A34, B3, B4
-    CALL EXTCDE (1001)
-    !
     ! Formats
     !
 1001 FORMAT (/' *** WAVEWATCH-III ERROR IN INSNLS :'/                &

@@ -2003,33 +2003,30 @@ END MODULE W3PROFSMD
 !     solver, say BCG. Here is a piece of pseudo-code showing how it can
 !     be done,
 !
-! 10   call bcg(n,rhs,sol,ipar,fpar,w)
+!     do
+!      call bcg(n,rhs,sol,ipar,fpar,w)
 !      if (ipar(1).eq.1) then
 !         call amux(n,w(ipar(8)),w(ipar(9)),a,ja,ia)
-!         goto 10
 !      else if (ipar(1).eq.2) then
 !         call atmux(n,w(ipar(8)),w(ipar(9)),a,ja,ia)
-!         goto 10
 !      else if (ipar(1).eq.3) then
 !         left preconditioner solver
-!         goto 10
 !      else if (ipar(1).eq.4) then
 !         left preconditioner transposed solve
-!         goto 10
 !      else if (ipar(1).eq.5) then
 !         right preconditioner solve
-!         goto 10
 !      else if (ipar(1).eq.6) then
 !         right preconditioner transposed solve
-!         goto 10
 !      else if (ipar(1).eq.10) then
 !         call my own stopping test routine
-!         goto 10
 !      else if (ipar(1).gt.0) then
 !         ipar(1) is an unspecified code
+!         exit
 !      else
 !         the iterative solver terminated with code = ipar(1)
+!         exit
 !      endif
+!     end do
 !
 !     This segment of pseudo-code assumes the matrix is in CSR format,
 !     AMUX and ATMUX are two routines from the SPARSKIT MATVEC module.

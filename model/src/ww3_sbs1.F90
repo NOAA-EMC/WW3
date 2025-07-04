@@ -106,6 +106,7 @@ PROGRAM W3SBS1
   !      WMINIT    Subr. WMINITMD Multi-grid model initialization.
   !      WMWAVE    Subr. WMWAVEMD Multi-grid model subroutine.
   !      WMFINL    Subr. WMFINLMD Multi-grid model finalization.
+  !      EXTOPN    Subr. W3SERVMD Abort when opening a file if errors.
   !      EXTCDE    Subr. W3SERVMD Abort program as graceful as possible.
   !      W3SETG    Subr. W3GDATMD Point to Grid data data structure.
   !      W3SETI    Subr. W3IDATMD Point to input fields data structure.
@@ -165,7 +166,7 @@ PROGRAM W3SBS1
   USE WMINITMD, ONLY: WMINIT
   USE WMWAVEMD, ONLY: WMWAVE
   USE WMFINLMD, ONLY: WMFINL
-  USE W3SERVMD, ONLY: EXTCDE
+  USE W3SERVMD, ONLY: EXTCDE, EXTOPN
   USE W3GDATMD, ONLY: W3SETG
   USE W3GDATMD, ONLY: NGRIDS, NAUXGR, NX, NY, GNAME, FILEXT
   USE W3IDATMD, ONLY: W3SETI
@@ -245,7 +246,8 @@ PROGRAM W3SBS1
   CALL WMUSET ( MDSE, MDST, NDST1, .TRUE., 'I/O',                 &
        NAME='times.inp',                                 &
        DESC='times file for sbs driver' )
-  OPEN (NDST1,FILE='times.inp',STATUS='OLD',ERR=820,IOSTAT=IERR)
+  OPEN (NDST1,FILE='times.inp',STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3SBS1','TIMES',20)
 #ifdef W3_T
   WRITE (MDST,9020)
 #endif
@@ -351,10 +353,6 @@ PROGRAM W3SBS1
   !
   STOP 
   !
-820 CONTINUE
-  WRITE (MDSS,1020) IERR
-  CALL EXTCDE ( 20 )
-  !
   ! Formats
   !
 900 FORMAT (/15X,'     *** WAVEWATCH III Multi-grid shell ***    '/ &
@@ -368,10 +366,6 @@ PROGRAM W3SBS1
 999 FORMAT (//'  End of program '/                                  &
        ' ========================================'/           &
        '          WAVEWATCH III Multi-grid shell '/)
-  !
-1020 FORMAT (/' *** WAVEWATCH-III ERROR IN W3SBS1 : '/               &
-       '     ERROR IN OPENING TIMES FILE'/                    &
-       '     IOSTAT =',I5/)
   !
 1025 FORMAT (/' *** WAVEWATCH-III ERROR IN W3SBS1 : '/               &
        '     WIND FILE NOT FOUND, NDST2 =  ',I8/)
@@ -441,27 +435,24 @@ CONTAINS
     !
     DO
       !
-      READ (NDS,910,END=110,ERR=810,IOSTAT=IERR) TIME
-      EXIT
-      !
-110   CONTINUE
-      IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS, 911 )
-      BACKSPACE NDS
-      !
+      READ (NDS,910,IOSTAT=IERR) TIME
+      IF (IERR.LT.0) THEN        ! End of file reached
+        IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS, 911 )
+        BACKSPACE NDS
+        !
 #ifdef W3_SBS
-      WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP1
-      CALL SYSTEM ( COMMAND )
+        WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP1
+        CALL SYSTEM ( COMMAND )
 #endif
+      ELSE IF (IERR.GT.0) THEN   ! Error reading file
+        WRITE (MDSS,1010) IERR
+        CALL EXTCDE ( 10 )
+      END IF
       !
+      EXIT
     END DO
     !
     RETURN
-    !
-    ! Escape locations read errors --------------------------------------- *
-    !
-810 CONTINUE
-    WRITE (MDSS,1010) IERR
-    CALL EXTCDE ( 10 )
     !
     ! Formats
     !
@@ -530,7 +521,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Local parameters
     !/
-    INTEGER                 :: TTIME(2), IX, IY
+    INTEGER                 :: TTIME(2), IX, IY, IERR
     INTEGER, SAVE           :: NREW  = 0
     REAL                    :: DTTST, XXX(NX,NY)
 #ifdef W3_SBS
@@ -546,53 +537,75 @@ CONTAINS
       !
       DO
         !
+        READ (NDS,END=140,ERR=140,IOSTAT=IERR) TTIME
+        IF (IERR.NE.0) THEN
+          BACKSPACE NDS
+          IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
+#ifdef W3_SBS
+          WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
+          CALL SYSTEM ( COMMAND )
+#endif
+          CYCLE
+        END IF
         NREW   = NREW + 1
-        READ (NDS,END=140,ERR=140) TTIME
 #ifdef W3_T
         WRITE (MDST,9000) TTIME
 #endif
         !
+        READ (NDS,IOSTAT=IERR) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
+        IF (IERR.NE.0) THEN
+          BACKSPACE NDS
+          BACKSPACE NDS
+          IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
+#ifdef W3_SBS
+          WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
+          CALL SYSTEM ( COMMAND )
+#endif
+          CYCLE
+        END IF
         NREW   = NREW + 1
-        READ (NDS,END=130,ERR=130) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
 #ifdef W3_T
         WRITE (MDST,9001) 'U'
 #endif
         !
+        READ (NDS,IOSTAT=IERR) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
+        IF (IERR.NE.0) THEN
+          BACKSPACE NDS
+          BACKSPACE NDS
+          BACKSPACE NDS
+          IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
+#ifdef W3_SBS
+          WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
+          CALL SYSTEM ( COMMAND )
+#endif
+          CYCLE
+        END IF
         NREW   = NREW + 1
-        READ (NDS,END=120,ERR=120) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
 #ifdef W3_T
         WRITE (MDST,9001) 'V'
 #endif
         !
         IF ( TYPE .EQ. 'WNS' ) THEN
+          READ (NDS,IOSTAT=IERR) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
+          IF (IERR.NE.0) THEN
+            BACKSPACE NDS
+            BACKSPACE NDS
+            BACKSPACE NDS
+            BACKSPACE NDS
+            IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
+#ifdef W3_SBS
+            WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
+            CALL SYSTEM ( COMMAND )
+#endif
+            CYCLE
+          END IF
           NREW   = NREW + 1
-          READ (NDS,END=110,ERR=110) ((XXX(IX,IY),IX=1,NX),IY=1,NY)
 #ifdef W3_T
           WRITE (MDST,9001) 'DT'
 #endif
         END IF
         !
         EXIT
-        !
-110     CONTINUE
-        BACKSPACE NDS
-        NREW   = NREW - 1
-120     CONTINUE
-        BACKSPACE NDS
-        NREW   = NREW - 1
-130     CONTINUE
-        BACKSPACE NDS
-        NREW   = NREW - 1
-140     CONTINUE
-        BACKSPACE NDS
-        NREW   = NREW - 1
-        !
-        IF ( IMPROC .EQ. NMPSCR ) WRITE (MDSS,900)
-        !
-#ifdef W3_SBS
-        WRITE (COMMAND,'(A5,1X,I4)') 'sleep ', SLEEP2
-        CALL SYSTEM ( COMMAND )
-#endif
         !
       END DO
       !

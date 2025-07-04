@@ -717,7 +717,7 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE W3GDATMD, ONLY: NX, NY, CCON , COUNTCON
     USE W3ODATMD, ONLY: NDSE, NDST, NDSO
-    USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE
+    USE W3SERVMD, ONLY: ITRACE, NEXTLN, EXTCDE, EXTIOF
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -747,7 +747,8 @@ CONTAINS
     CALL NEXTLN(COMSTR, NDS, NDSE)
     IERR = 0
     DO WHILE (IERR.EQ.0)
-      READ (NDS,'(A100)',END=2001,ERR=2002,IOSTAT=IERR) LINE
+      READ (NDS,'(A100)',IOSTAT=IERR) LINE
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'READMSHOBC',FNAME,61)
       READ(LINE,*,IOSTAT=IERR) Ind,ntag
       IF (IERR.EQ.0) THEN
         ALLOCATE(TAGS(ntag))
@@ -765,17 +766,8 @@ CONTAINS
     UGOBCOK=.TRUE.
     RETURN
     !
-2001 CONTINUE
-    WRITE (NDSE,1001)
-    CALL EXTCDE ( 61 )
-    !
-2002 CONTINUE
-    WRITE (NDSE,1002) IERR
-    CALL EXTCDE ( 62 )
 1001 FORMAT (/' *** WAVEWATCH III ERROR IN READMSHOBC : '/          &
          '     PREMATURE END OF FILE IN READING ',A/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN READMSHOBC : '/          &
-         '     ERROR IN READING ',A,'  IOSTAT =',I8/)
 
   END SUBROUTINE READMSHOBC
   !/ ------------------------------------------------------------------- /

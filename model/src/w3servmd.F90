@@ -52,6 +52,8 @@ MODULE W3SERVMD
   !      EJ5P      R.F.  Public   Five parameter JONSWAP spectrum.
   !      WWDATE    Subr. Public   Get system date.
   !      WWTIME    Subr. Public   Get system time.
+  !      EXTOPN    Subr. Public   Abort program with exit code when opening file.
+  !      EXTIOF    Subr. Public   Abort program with exit code when I/O file.
   !      EXTCDE    Subr. Public   Abort program with exit code.
   !     Four subs for rotated grid are appended to this module.  As they
   !     are shared with SMC grid, they are not quoted by option /RTD but
@@ -292,7 +294,8 @@ CONTAINS
     !
     DO
       ! read line
-      READ ( NDSI, 900, END=800, ERR=801, IOSTAT=IERR, IOMSG=MSG ) LINE
+      READ ( NDSI, '(A)', IOSTAT=IERR, IOMSG=MSG ) LINE
+      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'NEXTLN','INPUT',1,MSG)
       ! leading blanks removed and placed on the right
       TEST = ADJUSTL ( LINE )
       IF ( TEST(1:1).EQ.CHCKC .OR. LEN_TRIM(TEST).EQ.0 ) THEN
@@ -300,32 +303,17 @@ CONTAINS
         CYCLE
       ELSE
         ! otherwise, backup to beginning of line and exit
-        BACKSPACE ( NDSI, ERR=802, IOSTAT=IERR, IOMSG=MSG )
+        BACKSPACE ( NDSI, IOSTAT=IERR, IOMSG=MSG )
+        IF (IERR.GT.0) THEN
+          IF ( NDSE .GE. 0 ) WRITE (NDSE,912) IERR, TRIM(MSG)
+          CALL EXTCDE ( 3 )
+        END IF
         RETURN
       ENDIF
     END DO
     !
-800 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,910)
-    CALL EXTCDE ( 1 )
-    !
-801 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,911) IERR, TRIM(MSG)
-    CALL EXTCDE ( 2 )
-    !
-802 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,912) IERR, TRIM(MSG)
-    CALL EXTCDE ( 3 )
-    !
     ! Formats
     !
-900 FORMAT (A)
-910 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
-         '     PREMATURE END OF INPUT FILE'/)
-911 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
-         '     ERROR IN READING FROM FILE'/           &
-         '     IOSTAT =',I5,/                         &
-         '     IOMSG = ',A/)
 912 FORMAT (/' *** WAVEWATCH III ERROR IN NEXTLN : '/ &
          '     ERROR ON BACKSPACE'/                   &
          '     IOSTAT =',I5,/                         &
@@ -827,6 +815,248 @@ CONTAINS
     !/ End of WWTIME ----------------------------------------------------- /
     !/
   END SUBROUTINE WWTIME
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE EXTIOF (NDSE, IERR, PNAME, FNAME, ERRCODE, MESSAGE, &
+                                            ISWRITE, POS, FIELD)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           H. L. Tolman            |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         27-Jun-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/    27-Jun-2025 : First implementation                ( version x.xx )
+    !/
+    !  1. Purpose :
+    !
+    !     Perform a program stop with an exit code when there are errors
+    !     reading or writing a file
+    !
+    !  2. Method :
+    !
+    !     Check IOSTAT and call EXTCDE if it shows an error
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDSE    Int.   I   File unit where to write error messages
+    !       IERR    Int.   I   Error code thrown by the OPEN statement
+    !       PNAME   Str.   I   Name of the calling subroutine
+    !       FNAME   Str.   I   Type of file that was opened
+    !       ERRCODE Int.   I   Exit code to be used.
+    !       MESSAGE Str.   I   (optional) error message 
+    !       ISWRITE Log.   I   (optional) output writing version
+    !       POS     Int.   I   (optional) writing position 
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !     EXTCDE
+    !
+    !  5. Called by :
+    !
+    !     Any routine.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    INTEGER,          INTENT(IN)           :: NDSE, IERR, ERRCODE
+    CHARACTER(len=*), INTENT(IN)           :: PNAME, FNAME
+    CHARACTER(len=*), INTENT(IN), OPTIONAL :: MESSAGE
+    LOGICAL,          INTENT(IN), OPTIONAL :: ISWRITE
+    INTEGER(KIND=8),  INTENT(IN), OPTIONAL :: POS
+    CHARACTER(len=*), INTENT(IN), OPTIONAL :: FIELD
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local parameters
+    !/
+    LOGICAL  :: TOWRITE
+    !/ ------------------------------------------------------------------- /
+    !/
+    !
+    IF (PRESENT(ISWRITE)) THEN
+      TOWRITE = ISWRITE
+    ELSE
+      TOWRITE = .FALSE.
+    END IF
+    !
+    IF (TOWRITE) THEN
+      IF (PRESENT(POS)) THEN
+        WRITE (NDSE,900) TRIM(PNAME), TRIM(FNAME), IERR, POS
+        CALL EXTCDE ( ERRCODE )
+      ELSE
+        WRITE (NDSE,900) TRIM(PNAME), TRIM(FNAME), IERR
+        CALL EXTCDE ( ERRCODE )
+      END IF
+    ELSE
+      IF (TRIM(PNAME).EQ.'W3TIMEMD') THEN
+        IF (IERR.LT.0) THEN
+          WRITE (NDSE,1004) TRIM(PNAME), TRIM(FNAME)
+        ELSE
+          WRITE (NDSE,1005) TRIM(PNAME), TRIM(FNAME), IERR
+        END IF
+      ELSE
+        IF (IERR.GT.0) THEN
+          IF (PRESENT(MESSAGE)) THEN
+            WRITE (NDSE,1003) TRIM(PNAME), TRIM(FNAME), IERR, TRIM(MESSAGE)
+          ELSE IF (PRESENT(FIELD)) THEN
+            WRITE (NDSE,1006) TRIM(PNAME), TRIM(FIELD), TRIM(FNAME), IERR
+          ELSE
+            WRITE (NDSE,1002) TRIM(PNAME), TRIM(FNAME), IERR
+          END IF
+          CALL EXTCDE ( ERRCODE+1 )
+        END IF
+        IF (IERR.LT.0) THEN
+          WRITE (NDSE,1001) TRIM(PNAME), TRIM(FNAME)
+          CALL EXTCDE ( ERRCODE )
+        END IF
+      END IF
+    END IF
+    !
+900 FORMAT (/' *** ERROR ', A, ' : '/                         &
+         '     ERROR IN WRITING TO ', A, ' FILE'/             &
+         '     IOSTAT =',I5/)
+    !
+993 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/        &
+         '     ERROR IN WRITING TO ', A, ' FILE'/             &
+         '     IOSTAT =',I5,', POS =',I11 /)
+    !
+1001 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+       '     PREMATURE END OF ', A, ' FILE'/)
+    !
+1002 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+       '     ERROR IN READING FROM ', A, ' FILE'/             &
+       '     IOSTAT =',I5/)
+    !
+1003 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+         '     ERROR IN READING FROM ', A, ' FILE'/           &
+         '     IOSTAT =',I5,/                                 &
+         '     IOMSG = ',A/)
+    !
+1006 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+       '     ERROR IN READING ',A,' FROM ', A, ' FILE'/       &
+       '     IOSTAT =',I5/)
+    !
+1004 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+         '     PREMATURE END OF TIME ATTRIBUTE '/             &
+         '     ',A/                                           &
+         '     DIFFERS FROM CONVENTIONS ISO8601 '/            &
+         '     XXX since YYYY-MM-DD hh:mm:ss'/                &
+         '     XXX since YYYY-M-D h:m:s'/                     &
+         '     XXX since YYYY-M-D hh:mm:ss'/)
+    !
+1005 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/       &
+         '     ERROR IN READING OF TIME ATTRIBUTE '/          &
+         '     ',A/                                           &
+         '     DIFFERS FROM CONVENTIONS ISO8601 '/            &
+         '     XXX since YYYY-MM-DD hh:mm:ss'/                &
+         '     XXX since YYYY-M-D h:m:s'/                     &
+         '     XXX since YYYY-M-D hh:mm:ss'/                  &
+         '     IOSTAT =',I5/)
+
+    RETURN
+    !/
+    !/ End of EXTIOF ----------------------------------------------------- /
+    !/
+  END SUBROUTINE EXTIOF
+  !/ ------------------------------------------------------------------- /
+  SUBROUTINE EXTOPN (NDSE, IERR, PNAME, FNAME, ERRCODE, NDSF, NAMEF)
+    !/
+    !/                  +-----------------------------------+
+    !/                  | WAVEWATCH III           NOAA/NCEP |
+    !/                  |           H. L. Tolman            |
+    !/                  |                        FORTRAN 90 |
+    !/                  | Last update :         27-Jun-2025 |
+    !/                  +-----------------------------------+
+    !/
+    !/    27-Jun-2025 : First implementation                ( version x.xx )
+    !/
+    !  1. Purpose :
+    !
+    !     Perform a program stop with an exit code when there are errors
+    !     opening a file
+    !
+    !  2. Method :
+    !
+    !     Check IOSTAT and call EXTCDE if it shows an error
+    !
+    !  3. Parameters :
+    !
+    !     Parameter list
+    !     ----------------------------------------------------------------
+    !       NDSE    Int.   I   File unit where to write error messages
+    !       IERR    Int.   I   Error code thrown by the OPEN statement
+    !       PNAME   Str.   I   Name of the calling subroutine
+    !       FNAME   Str.   I   Type of file that was opened
+    !       ERRCODE Int.   I   Exit code to be used.
+    !       NDSF    Int.   I   (optional) file unit
+    !       NAMEF   Str.   I   (optional) name of the file that was opened
+    !     ----------------------------------------------------------------
+    !
+    !  4. Subroutines used :
+    !
+    !     EXTCDE
+    !
+    !  5. Called by :
+    !
+    !     Any routine.
+    !
+    !  9. Switches :
+    !
+    ! 10. Source code :
+    !
+    !/ ------------------------------------------------------------------- /
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Parameter list
+    !/
+    INTEGER,          INTENT(IN)           :: NDSE, IERR, ERRCODE
+    CHARACTER(len=*), INTENT(IN)           :: PNAME, FNAME
+    INTEGER,          INTENT(IN), OPTIONAL :: NDSF
+    CHARACTER(len=*), INTENT(IN), OPTIONAL :: NAMEF
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/ Local parameters
+    !/
+    !/ ------------------------------------------------------------------- /
+    !/
+    !
+    IF (PRESENT(NDSF) .AND. PRESENT(NAMEF)) THEN
+      WRITE (NDSE,1050) TRIM(PNAME), TRIM(FNAME), IERR, NDSF, TRIM(NAMEF)
+    ELSE IF (PRESENT(NAMEF)) THEN
+      WRITE (NDSE,1009) TRIM(PNAME), TRIM(FNAME), IERR, TRIM(NAMEF)
+    ELSE
+      WRITE (NDSE,1000) TRIM(PNAME), TRIM(FNAME), IERR
+    END IF
+    CALL EXTCDE ( ERRCODE )
+
+1000 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/     &
+       '     ERROR IN OPENING ', A, ' FILE'/                &
+       '     IOSTAT =',I5/)
+!
+1009 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/     &
+       '     ERROR IN OPENING ', A, ' FILE: ', A/           &
+       '     IOSTAT =',I5/)
+!
+1050 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/     &
+       '     ERROR IN OPENING ', A, ' FILE'/                &
+       '     IOSTAT =',I5/                                  &
+       '     NDSF   =',I5/                                  &
+       '     NAMEF  = ',A/)
+    !
+    RETURN
+    !/
+    !/ End of EXTOPN ----------------------------------------------------- /
+    !/
+  END SUBROUTINE EXTOPN
   !/ ------------------------------------------------------------------- /
   SUBROUTINE EXTCDE ( IEXIT, UNIT, MSG, FILE, LINE, COMM )
     !/

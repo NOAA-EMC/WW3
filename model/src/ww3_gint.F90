@@ -69,6 +69,8 @@ PROGRAM W3GRID_INTERP
   !      W3SETG    Subr.   Id.    Point to selected model.
   !      W3IOGR    Subr. W3IOGRMD Reading/writing model definition file.
   !      NEXTLN    Subr. W3SERVMD Get next line from input file
+  !      EXTIOF    Subr.   Id.    Abort when I/O file if error.
+  !      EXTOPN    Subr.   Id.    Abort when opening file if error.
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      ITRACE    Subr.   Id.    Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
@@ -119,7 +121,7 @@ PROGRAM W3GRID_INTERP
   USE W3WDATMD, ONLY : W3NDAT, W3DIMW, W3SETW
   USE W3WDATMD, ONLY : WDATAS, TIME, WLV, ICE, ICEH, ICEF,               &
        UST, USTDIR, ASF, RHOAIR
-  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : ITRACE, NEXTLN, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -196,8 +198,8 @@ PROGRAM W3GRID_INTERP
   !
   !
   J      = LEN_TRIM(FNMPRE)
-  OPEN(NDSI,FILE=FNMPRE(:J)//'ww3_gint.inp',STATUS='OLD', ERR=2000, &
-       IOSTAT=IERR)
+  OPEN(NDSI,FILE=FNMPRE(:J)//'ww3_gint.inp',STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'INTERP','INPUT',1)
   WRITE (NDSO,900)
   !
   CALL ITRACE ( NDSTRC, NTRACE )
@@ -209,7 +211,8 @@ PROGRAM W3GRID_INTERP
   ! 3.a Get comment character
   !
   REWIND (NDSI)
-  READ (NDSI,'(A)',END=2001,ERR=2002) COMSTR
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
   IF ( COMSTR .EQ. ' ' ) COMSTR = '$'
   WRITE (NDSO,901) COMSTR
   !
@@ -243,7 +246,8 @@ PROGRAM W3GRID_INTERP
   ! 3.c Read number of grids and allocate memory
   !
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
-  READ (NDSI,*,END=2001,ERR=2002) NG
+  READ (NDSI,*,IOSTAT=IERR) NG
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
   WRITE (NDSO,903) NG
   !
   CALL W3NMOD (NG, 6, 6)
@@ -259,7 +263,8 @@ PROGRAM W3GRID_INTERP
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
   !
   DO IG = 1,NG
-    READ (NDSI,*,END=2001,ERR=2002) GRIDS(IG)%FILEXT
+    READ (NDSI,*,IOSTAT=IERR) GRIDS(IG)%FILEXT
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
     WRITE (NDSO,904) IG,GRIDS(IG)%FILEXT
     !
     CALL W3SETO( IG, 6, 6)
@@ -288,7 +293,8 @@ PROGRAM W3GRID_INTERP
     NOSWLL_MIN = MIN (NOSWLL_MIN,OUTPTS(NG)%NOSWLL)
   END IF
   CALL NEXTLN ( COMSTR, NDSI, NDSE )
-  READ (NDSI,'(I1)',END=2001,ERR=2002) INTMETHOD
+  READ (NDSI,'(I1)',IOSTAT=IERR) INTMETHOD
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'INTERP','INPUT',2)
   WRITE (NDSO,917) INTMETHOD
   CLOSE(NDSI)
  
@@ -936,20 +942,6 @@ PROGRAM W3GRID_INTERP
     WRITE(NDSO,999)
 
   END IF !OUTorREST
-  STOP
-  !
-  !---------------------------------------------------------------------------
-  ! Escape locations read errors :
-  !
-2000 CONTINUE
-  WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 1 )
-2001 CONTINUE
-  WRITE(NDSE,1001)
-  CALL EXTCDE ( 2 )
-2002 CONTINUE
-  WRITE(NDSE,1002) IERR
-  CALL EXTCDE ( 3 )
   !
   !---------------------------------------------------------------------------
   ! Formats
@@ -991,15 +983,6 @@ PROGRAM W3GRID_INTERP
 950 FORMAT (/'  End of file reached'/)
 999 FORMAT (/15X,'    *** End of Grid interpolation Routine ***    '/      &
        15X,'==============================================='/)
-  !
-1000 FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                           &
-       '     ERROR IN OPENING INPUT FILE'/                           &
-       '     IOSTAT =',I5/)
-1001 FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                           &
-       '     PREMATURE END IN INPUT FILE'/)
-1002 FORMAT (/' *** ERROR IN WAVEGRID_INTERP : '/                           &
-       '     ERROR IN READING FROM INPUT FILE'/                      &
-       '     IOSTAT =',I5/)
   !
   !/
   !/ Internal Subroutine

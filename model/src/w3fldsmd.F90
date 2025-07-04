@@ -359,19 +359,24 @@ CONTAINS
     IF ( WRITE ) THEN
       IF ( PRESENT(FPRE) ) THEN
         OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM, convert=file_endian, &
-             ERR=803, IOSTAT=IERR)
+              IOSTAT=IERR)
       ELSE
         OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian, &
-             ERR=803,IOSTAT=IERR)
+              IOSTAT=IERR)
       END IF
     ELSE
       IF ( PRESENT(FPRE) ) THEN
         OPEN (NDS,FILE=FPRE//FNAME(:I),FORM=FORM,convert=file_endian, &
-             STATUS='OLD',ERR=803,IOSTAT=IERR)
+             STATUS='OLD',IOSTAT=IERR)
       ELSE
         OPEN (NDS,FILE=FNAME(:I),FORM=FORM,convert=file_endian,       &
-             STATUS='OLD',ERR=803,IOSTAT=IERR)
+             STATUS='OLD',IOSTAT=IERR)
       END IF
+    END IF
+    IF (IERR.NE.0) THEN
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1003) IDFLD, IERR
+      IERR   = 3
+      RETURN
     END IF
     !
     ! Process test data -------------------------------------------------- *
@@ -383,20 +388,34 @@ CONTAINS
           ! The "filler" was added for compatibility with old binary forcing files
           ! It is now also used for tidal info ...
           !
-          WRITE (NDS,ERR=804,IOSTAT=IERR)                      &
+          WRITE (NDS,IOSTAT=IERR)                      &
                IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
         ELSE
-          WRITE (NDS,900,ERR=804,IOSTAT=IERR)                  &
+          WRITE (NDS,900,IOSTAT=IERR)                  &
                IDSTR, IDFLD, NX, NY, GTYPE, FILLER(1:2), TIDEFLAG
+        END IF
+        IF (IERR.NE.0) THEN
+          IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
+          IERR   = 4
+          RETURN
         END IF
       END IF
     ELSE
       IF ( FORM .EQ. 'UNFORMATTED' ) THEN
-        READ (NDS,END=806,ERR=805,IOSTAT=IERR)                  &
+        READ (NDS,IOSTAT=IERR)                  &
              TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
       ELSE
-        READ (NDS,900,END=806,ERR=805,IOSTAT=IERR)              &
+        READ (NDS,900,IOSTAT=IERR)              &
              TSSTR, TSFLD, NXT, NYT, GTYPET, FILLER(1:2), TIDEFLAG
+      END IF
+      IF (IERR.LT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
+        IERR   = 6
+        RETURN
+      ELSE IF (IERR.GT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
+        IERR   = 5
+        RETURN
       END IF
       IF ((FILLER(1).NE.0.OR.FILLER(2).NE.0).AND.TIDEFLAG.GE.0) TIDEFLAG=0
       IF (TIDEFLAG.NE.0.AND.(.NOT.TIDEOK)) THEN
@@ -444,28 +463,6 @@ CONTAINS
       TIDEFLAGIN = TIDEFLAG
     END IF
 
-    RETURN
-    !
-    ! Error escape locations
-    !
-803 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1003) IDFLD, IERR
-    IERR   = 3
-    RETURN
-    !
-804 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
-    IERR   = 4
-    RETURN
-    !
-805 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
-    IERR   = 5
-    RETURN
-    !
-806 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
-    IERR   = 6
     RETURN
     !
     ! Formats
@@ -654,11 +651,23 @@ CONTAINS
 
 #ifdef W3_TIDE
     IF ( WRITE ) THEN
-      WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
-           TIDE_MF
+      WRITE (NDS,IOSTAT=IERR) TIDE_MF
+      IF (IERR.NE.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
+        IERR   = 4
+        RETURN
+      END IF
     ELSE
-      READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
-           TIDE_MF
+      READ (NDS,IOSTAT=IERR) TIDE_MF
+      IF (IERR.LT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
+        IERR   = 6
+        RETURN
+      ELSE IF (IERR.GT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
+        IERR   = 5
+        RETURN
+      END IF
       NTIDE = TIDE_MF
     END IF
 #endif
@@ -667,23 +676,6 @@ CONTAINS
     ! File OK ------------------------------------------------------------ *
     !
     IERR   = 0
-    RETURN
-    !
-    ! Error escape locations
-    !
-804 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
-    IERR   = 4
-    RETURN
-    !
-805 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
-    IERR   = 5
-    RETURN
-    !
-806 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
-    IERR   = 6
     RETURN
     !
     ! Formats
@@ -844,14 +836,28 @@ CONTAINS
 
 #ifdef W3_TIDE
     IF ( WRITE ) THEN
-      WRITE (NDS,ERR=804,IOSTAT=IERR)                        &
+      WRITE (NDS,IOSTAT=IERR)                        &
            TIDE_FREQC(:),TIDECON_NAME(:),TIDAL_CONST(:,:,:,:,:)
+    IF (IERR.NE.0) THEN
+      IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
+      IERR   = 4
+      RETURN
+    END IF
     ELSE
       IF (.NOT. ALLOCATED(TIDAL_CONST)) ALLOCATE(TIDAL_CONST(NX,NY,TIDE_MF,2,2))
       IF (.NOT. ALLOCATED(TIDE_FREQC)) ALLOCATE(TIDE_FREQC(TIDE_MF))
       IF (.NOT. ALLOCATED(TIDECON_NAMEI)) ALLOCATE(TIDECON_NAMEI(TIDE_MF))
-      READ (NDS,END=806,ERR=805,IOSTAT=IERR)              &
+      READ (NDS,IOSTAT=IERR)              &
            TIDE_FREQC,TIDECON_NAMEI(:),TIDAL_CONST(:,:,:,:,:)
+      IF (IERR.LT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
+        IERR   = 6
+        RETURN
+      ELSE IF (IERR.GT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
+        IERR   = 5
+        RETURN
+      END IF
       LIST(:)=''
       TIDE_MF1=TIDE_MF
       DO I=1,TIDE_MF
@@ -895,23 +901,6 @@ CONTAINS
     ! File OK ------------------------------------------------------------ *
     !
     IERR   = 0
-    RETURN
-    !
-    ! Error escape locations
-    !
-804 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) IDFLD, IERR
-    IERR   = 4
-    RETURN
-    !
-805 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1005) IDFLD, IERR
-    IERR   = 5
-    RETURN
-    !
-806 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) IDFLD
-    IERR   = 6
     RETURN
     !
     ! Formats
@@ -1209,21 +1198,44 @@ CONTAINS
 #ifdef W3_T
         WRITE (NDST,9030) TF0
 #endif
-        WRITE (NDS,ERR=803,IOSTAT=ISTAT) TF0
+        WRITE (NDS,IOSTAT=ISTAT) TF0
+        IF (IERR.NE.0) THEN
+          IF ( NDSE .GE. 0 ) WRITE (NDSE,1003) ISTAT
+          IERR   = 3
+          RETURN
+        END IF
         IF ( .NOT. FL2D ) THEN
           J      = 1
-          WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
-               ((FA0(IX,IY),IX=1,NX),IY=1,NY)
+          WRITE (NDS,IOSTAT=ISTAT) ((FA0(IX,IY),IX=1,NX),IY=1,NY)
+          IF (IERR.NE.0) THEN
+            IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) J, ISTAT
+            IERR   = 4
+            RETURN
+          END IF
         ELSE
           J      = 1
-          WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
-               ((FX0(IX,IY),IX=1,NX),IY=1,NY)
+          WRITE (NDS,IOSTAT=ISTAT) ((FX0(IX,IY),IX=1,NX),IY=1,NY)
+          IF (IERR.NE.0) THEN
+            IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) J, ISTAT
+            IERR   = 4
+            RETURN
+          END IF
           J      = 2
-          WRITE (NDS,ERR=804,IOSTAT=ISTAT)                      &
-               ((FY0(IX,IY),IX=1,NX),IY=1,NY)
+          WRITE (NDS,IOSTAT=ISTAT) ((FY0(IX,IY),IX=1,NX),IY=1,NY)
+          IF (IERR.NE.0) THEN
+            IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) J, ISTAT
+            IERR   = 4
+            RETURN
+          END IF
           J      = 3
-          IF ( FLST ) WRITE (NDS,ERR=804,IOSTAT=ISTAT)          &
-               ((FA0(IX,IY),IX=1,NX),IY=1,NY)
+          IF ( FLST ) THEN
+            WRITE (NDS,IOSTAT=ISTAT) ((FA0(IX,IY),IX=1,NX),IY=1,NY)
+            IF (IERR.NE.0) THEN
+              IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) J, ISTAT
+              IERR   = 4
+              RETURN
+            END IF
+          END IF
         END IF
         !
         EXIT
@@ -1292,15 +1304,39 @@ CONTAINS
             ! note: "J" here does *not* refer to data type, wlev etc.
             !       It refers to the dimension.
             J      = 1
-            READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
-                 ((FAN(IX,IY),IX=1,NX),IY=1,NY)
+            READ (NDS,IOSTAT=ISTAT) ((FAN(IX,IY),IX=1,NX),IY=1,NY)
+            IF (ISTAT.LT.0) THEN
+              IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
+              IERR   = 6
+              RETURN
+            ELSE IF (ISTAT.GT.0) THEN
+              IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) J, ISTAT
+              IERR   = 7
+              RETURN
+            END IF
           ELSE
             J      = 1
-            READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
-                 ((FXN(IX,IY),IX=1,NX),IY=1,NY)
+            READ (NDS,IOSTAT=ISTAT) ((FXN(IX,IY),IX=1,NX),IY=1,NY)
+            IF (ISTAT.LT.0) THEN
+              IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
+              IERR   = 6
+              RETURN
+            ELSE IF (ISTAT.GT.0) THEN
+              IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) J, ISTAT
+              IERR   = 7
+              RETURN
+            END IF
             J      = 2
-            READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)               &
-                 ((FYN(IX,IY),IX=1,NX),IY=1,NY)
+            READ (NDS,IOSTAT=ISTAT) ((FYN(IX,IY),IX=1,NX),IY=1,NY)
+            IF (ISTAT.LT.0) THEN
+              IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
+              IERR   = 6
+              RETURN
+            ELSE IF (ISTAT.GT.0) THEN
+              IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) J, ISTAT
+              IERR   = 7
+              RETURN
+            END IF
 
             ! this was added for ISI files to store ICE in FAN and BERG in FYN
 
@@ -1309,8 +1345,18 @@ CONTAINS
             ! this was added for WNS files to store WND in FXN & FYN and AST in FAN
 
             J      = 3
-            IF ( FLST ) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)   &
-                 ((FAN(IX,IY),IX=1,NX),IY=1,NY)
+            IF ( FLST ) THEN
+              READ (NDS,IOSTAT=ISTAT) ((FAN(IX,IY),IX=1,NX),IY=1,NY)
+              IF (ISTAT.LT.0) THEN
+                IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
+                IERR   = 6
+                RETURN
+              ELSE IF (ISTAT.GT.0) THEN
+                IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) J, ISTAT
+                IERR   = 7
+                RETURN
+              END IF
+            END IF
           END IF
 #ifdef W3_OASIS
         END IF
@@ -1370,34 +1416,6 @@ CONTAINS
     !
     ! Process fields, end ----------------------------------------------- *
     !
-    RETURN
-    !
-    ! EOF escape location (have read to end of file)
-    !
-    !
-    !
-    ! Error escape locations
-    !
-803 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1003) ISTAT
-    IERR   = 3
-    RETURN
-    !
-804 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) J, ISTAT
-    IERR   = 4
-    RETURN
-    !
-805 CONTINUE
-    !
-806 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) J, ISTAT
-    IERR   = 6
-    RETURN
-    !
-807 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) J, ISTAT
-    IERR   = 7
     RETURN
     !
     ! Formats
@@ -1612,8 +1630,18 @@ CONTAINS
 #ifdef W3_T
       WRITE (NDST,9020) TD, ND
 #endif
-      WRITE (NDS,ERR=803,IOSTAT=ISTAT) TD, ND
-      WRITE (NDS,ERR=804,IOSTAT=ISTAT) DATA
+      WRITE (NDS,IOSTAT=ISTAT) TD, ND
+      IF (ISTAT.NE.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1003) ISTAT
+        IERR   = 3
+        RETURN
+      END IF
+      WRITE (NDS,IOSTAT=ISTAT) DATA
+      IF (ISTAT.NE.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) ISTAT
+        IERR   = 4
+        RETURN
+      END IF
       !
       ! Process fields, read size ----------------------------------------- *
       !
@@ -1641,7 +1669,16 @@ CONTAINS
         !
         DTTST  = DSEC21 ( TIME , TD )
         IF ( DTTST.LT.0. .OR. NDOUT.EQ.0 ) THEN
-          IF (NDOUT.GT.0) READ (NDS,END=806,ERR=807,IOSTAT=ISTAT)
+          IF (NDOUT.GT.0) READ (NDS,IOSTAT=ISTAT)
+          IF (ISTAT.LT.0) THEN
+            IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) ISTAT
+            IERR   = 6
+            RETURN
+          ELSE IF (ISTAT.GT.0) THEN
+            IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) ISTAT
+            IERR   = 7
+            RETURN
+          END IF
         ELSE
           EXIT
         END IF
@@ -1651,7 +1688,16 @@ CONTAINS
       !
     ELSE
       !
-      READ (NDS,END=806,ERR=807,IOSTAT=ISTAT) DATA
+      READ (NDS,IOSTAT=ISTAT) DATA
+      IF (ISTAT.LT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) ISTAT
+        IERR   = 6
+        RETURN
+      ELSE IF (ISTAT.GT.0) THEN
+        IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) ISTAT
+        IERR   = 7
+        RETURN
+      END IF
 #ifdef W3_T
       WRITE (NDST,9030) TD
 #endif
@@ -1659,28 +1705,6 @@ CONTAINS
     !
     ! Process fields, end ----------------------------------------------- *
     !
-    RETURN
-    !
-    ! Error escape locations
-    !
-803 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1003) ISTAT
-    IERR   = 3
-    RETURN
-    !
-804 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1004) ISTAT
-    IERR   = 4
-    RETURN
-    !
-806 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1006) ISTAT
-    IERR   = 6
-    RETURN
-    !
-807 CONTINUE
-    IF ( NDSE .GE. 0 ) WRITE (NDSE,1007) ISTAT
-    IERR   = 7
     RETURN
     !
     ! Formats

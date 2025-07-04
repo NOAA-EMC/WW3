@@ -369,16 +369,54 @@ CONTAINS
              'FORMATTED'
 #endif
         OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-             STATUS='OLD',ERR=800,FORM='FORMATTED',IOSTAT=IERR)
-        READ (NDSTI,'(A)',ERR=801,END=802,IOSTAT=IERR) IDTST
+             STATUS='OLD',FORM='FORMATTED',IOSTAT=IERR)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        READ (NDSTI,'(A)',IOSTAT=IERR) IDTST
+        IF (IERR.NE.0) THEN
+          IF (IERR.GT.0 .AND. IAPROC .EQ. NAPERR )    &
+            WRITE (NDSE,1001) FILEXT(:I), IERR
+          IF (IERR.LT.0 .AND. IAPROC .EQ. NAPERR )    &
+            WRITE (NDSE,1002) FILEXT(:I)
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
       ELSE
 #ifdef W3_T
         WRITE (NDST,9011) FNMPRE(:J)//'track_i.'//FILEXT(:I), &
              'UNFORMATTED'
 #endif
         OPEN (NDSTI,FILE=FNMPRE(:J)//'track_i.'//FILEXT(:I),     &
-             STATUS='OLD',ERR=800,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
-        READ (NDSTI,ERR=801,END=802,IOSTAT=IERR) IDTST
+             STATUS='OLD',form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        READ (NDSTI,IOSTAT=IERR) IDTST
+        IF (IERR.NE.0) THEN
+          IF (IERR.GT.0 .AND. IAPROC .EQ. NAPERR ) &
+            WRITE (NDSE,1001) FILEXT(:I), IERR
+          IF (IERR.LT.0 .AND. IAPROC .EQ. NAPERR ) &
+            WRITE (NDSE,1002) FILEXT(:I)
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
       END IF
       !
       IF ( IDTST .NE. IDSTRI ) THEN
@@ -398,12 +436,36 @@ CONTAINS
              'UNFORMATTED'
 #endif
         OPEN (NDSTO,FILE=FNMPRE(:J)//'track_o.'//FILEXT(:I),     &
-             form='UNFORMATTED', convert=file_endian,ERR=810,IOSTAT=IERR)
-        WRITE (NDSTO,ERR=811,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
+             form='UNFORMATTED', convert=file_endian,IOSTAT=IERR)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        WRITE (NDSTO,IOSTAT=IERR) IDSTRO, FLAGLL, NK,    &
              NTH, XFR
-        WRITE (NDSTO,ERR=811,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
+        WRITE (NDSTO,IOSTAT=IERR) 0.5*PI-TH(1), -DTH,    &
              (SIG(IK)*TPIINV,IK=1,NK),                          &
              (DSIP(IK)*TPIINV,IK=1,NK)
+        IF (IERR.NE.0) THEN
+          IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+          ATOLAST(:,3) = TIME
+#ifdef W3_T
+          WRITE (NDST,9080)
+#endif
+          RETURN
+        END IF
       END IF
       !
       ! 1.c Initialize maps
@@ -779,17 +841,41 @@ CONTAINS
               !
               ! 4.e Sea point, write general data + spectrum
               !
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+              WRITE (NDSTO,IOSTAT=IERR)               &
                    TIME, X, Y, TSTSTR, TRCKID(IY,IX)
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+              IF (IERR.NE.0) THEN
+                IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+                ATOLAST(:,3) = TIME
+#ifdef W3_T
+                WRITE (NDST,9080)
+#endif
+                RETURN
+              END IF
+              WRITE (NDSTO,IOSTAT=IERR)               &
                    DW(ISEA), CX(ISEA), CY(ISEA), WX, WY,        &
                    UST(ISEA), AS(ISEA), SPEC
+              IF (IERR.NE.0) THEN
+                IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+                ATOLAST(:,3) = TIME
+#ifdef W3_T
+                WRITE (NDST,9080)
+#endif
+                RETURN
+              END IF
               !
               ! 4.f Non-sea point, write
               !
             ELSE
-              WRITE (NDSTO,ERR=811,IOSTAT=IERR)               &
+              WRITE (NDSTO,IOSTAT=IERR)               &
                    TIME, X, Y, TSTSTR, TRCKID(IY,IX)
+              IF (IERR.NE.0) THEN
+                IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
+                ATOLAST(:,3) = TIME
+#ifdef W3_T
+                WRITE (NDST,9080)
+#endif
+                RETURN
+              END IF
               !
               ! ..... Sea and non-sea points processed
               !
@@ -818,39 +904,6 @@ CONTAINS
 #ifdef W3_T
     WRITE (NDST,9090) NTRACK, NREAD, NSPECO, NLOCO
 #endif
-    !
-    RETURN
-    !
-    !     Error Escape Locations
-    !
-800 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) FILEXT(:I), IERR
-    GOTO 880
-    !
-801 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001) FILEXT(:I), IERR
-    GOTO 880
-    !
-802 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) FILEXT(:I)
-    GOTO 880
-    !
-810 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) FILEXT(:I), IERR
-    GOTO 880
-    !
-811 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1011) FILEXT(:I), IERR
-    !
-    !     Disabeling output
-    !
-880 CONTINUE
-    ATOLAST(:,3) = TIME
-#ifdef W3_T
-    WRITE (NDST,9080)
-#endif
-    !
-888 CONTINUE
     !
     RETURN
     !

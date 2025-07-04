@@ -283,6 +283,7 @@ CONTAINS
     !      W3DMO5    Subr.   Id.    Set array sizes in data structure.
     !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
     !      STRACE    Subr.   Id.    Subroutine tracing.
+    !      EXTOPN    Subr.   Id.    Program abort if open file fails.
     !      EXTCDE    Subr.   Id.    Program abort.
     !      WWDATE    Subr.   Id.    System date.
     !      WWTIME    Subr.   Id.    System time.
@@ -379,7 +380,7 @@ CONTAINS
     USE W3IOGRMD, ONLY: W3IOGR
     USE W3IORSMD, ONLY: W3IORS
     USE W3IOPOMD, ONLY: W3IOPP
-    USE W3SERVMD, ONLY: ITRACE, EXTCDE, WWDATE, WWTIME
+    USE W3SERVMD, ONLY: ITRACE, EXTCDE, EXTOPN, WWDATE, WWTIME
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
@@ -678,13 +679,17 @@ CONTAINS
     IFT    = LEN_TRIM(TFILE)
     J      = LEN_TRIM(FNMPRE)
     !
-    IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG ) &
-         OPEN (MDS(1), FILE=FNMPRE(:J)//LFILE(:IFL),ERR=888,IOSTAT=IERR)
+    IF ( OUTPTS(IMOD)%IAPROC .EQ. OUTPTS(IMOD)%NAPLOG ) THEN
+      OPEN (MDS(1), FILE=FNMPRE(:J)//LFILE(:IFL),IOSTAT=IERR)
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3INIT','LOG',1)
+    END IF
     !
     IF ( MDS(3).NE.MDS(1) .AND. MDS(3).NE.MDS(4) .AND. TSTOUT ) THEN
       INQUIRE (MDS(3),OPENED=OPENED)
-      IF ( .NOT. OPENED ) OPEN (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT), ERR=889, &
-           IOSTAT=IERR)
+      IF ( .NOT. OPENED ) THEN
+        OPEN (MDS(3),FILE=FNMPRE(:J)//TFILE(:IFT),IOSTAT=IERR)
+        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3INIT','TEST',2)
+      END IF
     END IF
     !
     ! 1.d Dataset unit numbers
@@ -1542,28 +1547,6 @@ CONTAINS
 #endif
     RETURN
     !
-    ! Escape locations read errors :
-    !
-#ifdef W3_DIST
-821 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8021) NSPEC, NAPROC
-    CALL EXTCDE ( 821 )
-    !
-829 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8029)
-    CALL EXTCDE ( 829 )
-#endif
-
-    !
-888 CONTINUE
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,8000) IERR
-    CALL EXTCDE ( 1 )
-    !
-889 CONTINUE
-    ! === no process number filtering for test file !!! ===
-    WRITE (NDSE,8001) IERR
-    CALL EXTCDE ( 2 )
-    !
     ! Formats
     !
 900 FORMAT ( ' WAVEWATCH III log file            ',             &
@@ -1623,12 +1606,6 @@ CONTAINS
 987 FORMAT (/' Coupling output fields : '/                           &
          '--------------------------------------------------')
     !
-8000 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
-         '     ERROR IN OPENING LOG FILE'/                           &
-         '     IOSTAT =',I5/)
-8001 FORMAT (/' *** WAVEWATCH III ERROR IN W3INIT : '/               &
-         '     ERROR IN OPENING TEST FILE'/                          &
-         '     IOSTAT =',I5/)
 8002 FORMAT (/' *** WAVEWATCH III WARNING IN W3INIT : '/             &
          '     SIGNIFICANT PART OF RESOURCES RESERVED FOR',          &
          ' OUTPUT :',F6.1,'%'/)

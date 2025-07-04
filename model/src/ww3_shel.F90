@@ -280,7 +280,7 @@ PROGRAM W3SHEL
   USE W3IOGRMD, ONLY: W3IOGR
   USE W3IOGOMD, ONLY: W3READFLGRD, FLDOUT, W3FLGRDFLAG
   USE W3IORSMD, ONLY: OARST
-  USE W3SERVMD, ONLY : NEXTLN, EXTCDE
+  USE W3SERVMD, ONLY : NEXTLN, EXTCDE, EXTOPN, EXTIOF
   USE W3TIMEMD
 
 #ifdef W3_OASIS
@@ -564,8 +564,10 @@ PROGRAM W3SHEL
   OFILE  = 'output.ww3'
   OFL    = LEN_TRIM(OFILE)
   J      = LEN_TRIM(FNMPRE)
+  IERR = 0
   IF ( IAPROC .EQ. NAPOUT )             &
-       OPEN (333,FILE=FNMPRE(:J)//OFILE(:OFL),ERR=2008,IOSTAT=IERR)
+       OPEN (333,FILE=FNMPRE(:J)//OFILE(:OFL),IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR, 'W3SHEL', 'OUTPUT', 1008)
 #endif
 
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
@@ -952,7 +954,8 @@ PROGRAM W3SHEL
           ! Type 2: point output
         ELSE IF ( J .EQ. 2 ) THEN
           OPEN (NDSL, FILE=TRIM(FNMPRE)//TRIM(NML_OUTPUT_TYPE%POINT%FILE), &
-               FORM='FORMATTED', STATUS='OLD', ERR=2104, IOSTAT=IERR)
+               FORM='FORMATTED', STATUS='OLD', IOSTAT=IERR)
+          IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
 
           ! first loop to count the number of points
           ! second loop to allocate the array and store the points
@@ -972,7 +975,8 @@ PROGRAM W3SHEL
             END IF
             !
             DO
-              READ (NDSL,*,ERR=2004,IOSTAT=IERR) TMPLINE
+              READ (NDSL,*,IOSTAT=IERR) TMPLINE
+              IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
               ! if end of file or stopstring, then exit
               IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
               ! leading blanks removed and placed on the right
@@ -982,8 +986,10 @@ PROGRAM W3SHEL
                 CYCLE
               ELSE
                 ! otherwise, backup to beginning of line
-                BACKSPACE ( NDSL, ERR=2004, IOSTAT=IERR)
-                READ (NDSL,*,ERR=2004,IOSTAT=IERR) XX, YY, PN
+                BACKSPACE ( NDSL,IOSTAT=IERR)
+                IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
+                READ (NDSL,*,IOSTAT=IERR) XX, YY, PN
+                IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR, 'W3SHEL', 'POINT', 1104)
               END IF
               IPTS = IPTS + 1
               IF ( ILOOP .EQ. 1 ) CYCLE
@@ -1368,12 +1374,14 @@ PROGRAM W3SHEL
         READ(WORDS( 5 ), * ) ODAT(20)
         IF (WORDS(6) .EQ. 'T') THEN
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(8-1)+1,5*8)
+          READ (NDSI,*,IOSTAT=IERR)(ODAT(I),I=5*(8-1)+1,5*8)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
           WRITE(*,*)(ODAT(I),I=5*(8-1)+1,5*8)
         END IF
         IF (WORDS(7) .EQ. 'T') THEN
           CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-          READ (NDSI,'(A)',END=2001,ERR=2002) FLDRST
+          READ (NDSI,'(A)',IOSTAT=IERR) FLDRST
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
         END IF
         CALL W3FLGRDFLAG ( NDSO, NDSO, NDSE, FLDRST, FLOGR,  &
              FLOGRR, IAPROC, NAPOUT, IERR )
@@ -1386,7 +1394,8 @@ PROGRAM W3SHEL
         !          READ (NDSI,*,IOSTAT=IERR) (ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
         IF(J .LE. 2) THEN
           WORDS(1:6)=''
-          !          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+          !          READ (NDSI,*,IOSTAT=IERR)(ODAT(I),I=5*(J-1)+1,5*J),OFILES(J)
+          !          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
           READ (NDSI,'(A)') LINEIN
           READ(LINEIN,*,iostat=ierr) WORDS
           !
@@ -1430,7 +1439,8 @@ PROGRAM W3SHEL
 #endif
         ELSE
           OFILES(J)=0
-          READ (NDSI,*,END=2001,ERR=2002)(ODAT(I),I=5*(J-1)+1,5*J)
+          READ (NDSI,*,IOSTAT=IERR)(ODAT(I),I=5*(J-1)+1,5*J)
+          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
         END IF
         !          WRITE(*,*) 'OFILES(J)= ', OFILES(J),J
         !
@@ -1565,7 +1575,8 @@ PROGRAM W3SHEL
             IF ( IERR .NE. 0 ) &
               CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
             CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-            READ (NDSI,'(A)',END=2001,ERR=2002,IOSTAT=IERR) FLDIN
+            READ (NDSI,'(A)',IOSTAT=IERR) FLDIN
+            IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3SHEL','INPUT',1001)
 #endif
 
           END IF ! J
@@ -1878,13 +1889,11 @@ PROGRAM W3SHEL
     IF ( DTTST .LT. 0 ) THEN
       ODAT(5*(J-1)+3) = 0
       IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-      CONTINUE
     END IF
     DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
     IF ( DTTST .LT. 0 ) THEN
       ODAT(5*(J-1)+3) = 0
       IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-      CONTINUE
     END IF
   END DO
   !
@@ -1894,13 +1903,11 @@ PROGRAM W3SHEL
   IF ( DTTST .LT. 0 ) THEN
     ODAT(5*(J-1)+3) = 0
     IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-    CONTINUE
   END IF
   DTTST  = DSEC21 ( ODAT(5*(J-1)+1:5*(J-1)+2), TIMEN )
   IF ( DTTST .LT. 0 ) THEN
     ODAT(5*(J-1)+3) = 0
     IF ( IAPROC .EQ. NAPOUT )  WRITE (NDSO,8945) TRIM(IDOTYP(J))
-    CONTINUE
   END IF
   !
   call print_memcheck(memunit, 'memcheck_____:'//' WW3_SHEL SECTION 5')
@@ -2658,28 +2665,6 @@ PROGRAM W3SHEL
   !
   CALL FINALISE(MPI_COMM, IERR_MPI, NDSO, NDS(1), CLKDT1, CLKDT2)
   !
-  ! Error escape locations
-  !
-2001 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
-  CALL EXTCDE ( 1001 )
-  !
-2002 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 1002 )
-  !
-2104 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1104) IERR
-  CALL EXTCDE ( 1104 )
-  !
-2004 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1004) IERR
-  CALL EXTCDE ( 1004 )
-  !
-2008 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1008) IERR
-  CALL EXTCDE ( 1008 )
-  !
   ! Formats
   !
 900 FORMAT (/15X,'      *** WAVEWATCH III Program shell ***      '/ &
@@ -2766,14 +2751,6 @@ PROGRAM W3SHEL
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
        '     ILLEGAL TIME INTERVAL'/)
   !
-1104 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-       '     ERROR IN OPENING POINT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1004 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-       '     ERROR IN READING FROM POINT FILE'/               &
-       '     IOSTAT =',I5/)
-  !
 1005 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
        '     ILLEGAL ID STRING HOMOGENEOUS FIELD : ',A/)
   !
@@ -2785,10 +2762,6 @@ PROGRAM W3SHEL
   !
 1007 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
        '     INSUFFICIENT DATA FOR HOMOGENEOUS FIELDS'/)
-  !
-1008 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
-       '     ERROR IN OPENING OUTPUT FILE'/                   &
-       '     IOSTAT =',I5/)
   !
 #ifdef W3_COU
 1009 FORMAT (/' *** WAVEWATCH III ERROR IN W3SHEL : *** '/           &
@@ -2920,7 +2893,7 @@ CONTAINS
     !
     !  9. Switches :
     !
-    !     !/MPI  MPI finalize interface if active
+    !     !/MPI  MPI finalise interface if active
     !
     ! 10. Source code :
     !
