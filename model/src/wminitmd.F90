@@ -59,6 +59,7 @@ MODULE WMINITMD
   !/                  (T. J. Campbell, NRL)
   !/    15-May-2018 : Update namelist                     ( version 6.05 )
   !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -177,6 +178,7 @@ CONTAINS
     !/                  (T. J. Campbell, NRL)
     !/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.13 )
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -3523,6 +3525,7 @@ CONTAINS
     !/    15-May-2018 : Update namelist                     ( version 6.05 )
     !/    28-Oct-2020 : Add SMCTYPE for SMC sub-grid.  JGLi ( version 7.13 )
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -4830,7 +4833,7 @@ CONTAINS
               !
               DO
                 READ (MDSI,*,IOSTAT=IERR) TMPLINE
-                IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
+                IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
                 ! if end of file or stopstring, then exit
                 IF ( IERR.NE.0 .OR. INDEX(TMPLINE,"STOPSTRING").NE.0 ) EXIT
                 ! leading blanks removed and placed on the right
@@ -4841,9 +4844,9 @@ CONTAINS
                 ELSE
                   ! otherwise, backup to beginning of line
                   BACKSPACE ( MDSI, IOSTAT=IERR)
-                  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
+                  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
                   READ (MDSI,*,IOSTAT=IERR) XX, YY, PN
-                  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
+                  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'WMINITNML','POINT',2003)
                 ENDIF
                 OT2(I)%NPTS = OT2(I)%NPTS + 1
                 IF ( ILOOP .EQ. 1 ) CYCLE

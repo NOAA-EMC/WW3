@@ -67,6 +67,7 @@ PROGRAM W3OUNF
   !/    02-Sep-2021 : Added coordinates attribute         ( version 7.12 )
   !/    14-Feb-2023 : Added QKK output                    ( version 7.12 )
   !/    03-Mar-2024 : Added SKEW & EMBIAS  output         ( version 7.xx )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -870,6 +871,7 @@ CONTAINS
     !/                  and alternative dir/mag output.
     !/    02-Feb-2021 : Make default global meta optional   ( version 7.12 )
     !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

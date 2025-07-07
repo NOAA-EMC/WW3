@@ -229,6 +229,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!
     !!    it returns: 11 look-up tables arrays dim=(npts,nang,nzz,ndep)
@@ -1488,6 +1489,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -2309,6 +2311,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -3760,6 +3763,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -4387,6 +4391,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!    ------------------------------------------------------------------
     !!
@@ -5009,6 +5014,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    01-Mar-2016 : Origination.                        ( version 5.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !!
     !! 1. Purpose :

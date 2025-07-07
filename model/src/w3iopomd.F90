@@ -51,6 +51,7 @@ MODULE W3IOPOMD
   !/    05-Jun-2018 : Add SETUP                           ( version 6.04 )
   !/    04-Oct-2019 : Optional one file per output stride ( version 7.00 )
   !/                  (R. Padilla-Hernandez & J.H. Alves)
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2505,8 +2506,7 @@ CONTAINS
 #endif
         RETURN
       ELSE IF (IERR.GT.0) THEN
-        WRITE (NDSE,1002) IERR
-        CALL EXTCDE ( 22 )
+        CALL EXTIOF(NDSE,IERR,'W3IOPO','',21)
       END IF
     END IF
     !

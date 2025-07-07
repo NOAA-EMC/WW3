@@ -32,6 +32,7 @@ MODULE W3CANOMD
   !/    XX-Jul-2010 : Origination by  PAEM JANSSEN
   !/    18-Oct-2012 : Adapted to WAVEWATCH III: F. Ardhuin( version 4.07 )
   !/    21-Aug-2014 : Bug corrected: only first call wasOK( version 5.01 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !  0. Note by F. Ardhuin:
   !     In adapting the orginal program to be a WAVEWATCH module, I
@@ -2814,8 +2815,7 @@ CONTAINS
     AKM1=OM**2/(4.*G )
     AKM2=OM/(2.*SQRT(G*BETA))
     AKI=MAX(AKM1,AKM2)
-    AKP=2.*AKI
-    DO WHILE (ABS(AKP-AKI).GT.EBS*AKI)
+    DO
       AKP=AKI
       BO=BETA*AKI
       IF (BO.GT.20.) THEN
@@ -2825,6 +2825,7 @@ CONTAINS
       TH=G*AKI*TANH(BO)
       STH=SQRT(TH)
       AKI=AKI+(OM-STH)*STH*2./(TH/AKI+G*BO/COSH(BO)**2)
+      IF (ABS(AKP-AKI).LE.EBS*AKI) EXIT
     END DO
     RETURN
   END FUNCTION AKI

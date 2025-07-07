@@ -47,6 +47,7 @@ PROGRAM W3SBS1
   !/    11-Aug-2010 : Upgrade for operations and inclusion in svn.
   !/                                                    ( version 3.14.4 )
   !/    05-Dec-2012 : Making sleep a system call.       ( version 4.11   )
+  !/    04-Jul-2025 : Remove labelled statements        ( version X.XX )
   !/
   !/    Copyright 2010 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -351,8 +352,6 @@ PROGRAM W3SBS1
   CALL MPI_FINALIZE  ( IERR_MPI )
 #endif
   !
-  STOP 
-  !
   ! Formats
   !
 900 FORMAT (/15X,'     *** WAVEWATCH III Multi-grid shell ***    '/ &
@@ -401,6 +400,7 @@ CONTAINS
     !/
     !/    10-Aug-2010 : Origination.                      ( version 3.14.4 )
     !/    05-Dec-2012 : Making sleep a system call.       ( version 4.11   )
+    !/    04-Jul-2025 : Remove labelled statements        ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -494,6 +494,7 @@ CONTAINS
     !/
     !/    10-Aug-2010 : Origination.                      ( version 3.14.4 )
     !/    05-Dec-2012 : Making sleep a system call.       ( version 4.11   )
+    !/    04-Jul-2025 : Remove labelled statements        ( version X.XX )
     !/
     !  1. Purpose :
     !

@@ -38,6 +38,7 @@ MODULE W3SNL3MD
   !/    01-Dec-2009 : Bug fix frequency filtering.        ( version 3.13 )
   !/    13-Aug-2010 : Move to NL3.                        ( version 3.15 )
   !/    13-Jul-2012 : Moved from version 3.15 to 4.08.    ( version 4.08 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2008-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

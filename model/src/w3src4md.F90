@@ -1065,7 +1065,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: TPIINV, RADE, GRAV
     USE W3ODATMD,  ONLY: NDSE
-    USE W3SERVMD,  ONLY: EXTCDE
     USE W3DISPMD,  ONLY: WAVNU2
     USE W3GDATMD,  ONLY: SIG, DSIP, NK, NTH, TTAUWSHELTER,             &
          SSDSDTH, SSDSCOS, TH, DTH, XFR, ECOS, ESIN,   &
@@ -1604,6 +1603,7 @@ CONTAINS
     !/
     !/    15-May-2007 : Origination in WW3                  ( version 3.10.SHOM )
     !/    24-Jan-2013 : Allows to read in table             ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !
     !  1. Purpose :
     !
@@ -1805,12 +1805,12 @@ CONTAINS
       ELSE
         WRITE(NDSE,*) 'Reading 3D look-up table for SIN4 from file.'
         READ(993,IOSTAT=IERR ) TAUHFT(0:IUSTAR,0:IALPHA)
-        IF (IERR /= 0) THEN
+        IF (IERR .GT. 0) THEN
           NOFILE=.TRUE.
           CYCLE
         END IF
         READ(993,IOSTAT=IERR ) TAUHFT2
-        IF (IERR /= 0) THEN
+        IF (IERR .GT. 0) THEN
           NOFILE=.TRUE.
           CYCLE
         END IF

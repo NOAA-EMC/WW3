@@ -152,6 +152,7 @@ CONTAINS
     !/    25-Sep-2020 : Extra fields for coupled restart    ( version 7.10 )
     !/    22-Mar-2021 : Add new coupling fields in restart  ( version 7.13 )
     !/    18-May-2021 : Read by default all extra restart   ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -505,8 +506,8 @@ CONTAINS
       CALL EXTCDE ( 15 )
     ENDIF
 
-    IERR = 0
     IF ( WRITE ) THEN
+      IERR = 0
       IF ( .NOT.IOSFLG .OR. IAPROC.EQ.NAPRST )                    &
            OPEN (NDSR,FILE=FNMPRE_LOCAL(:J)//FNAME,form='UNFORMATTED', convert=file_endian,       &
            ACCESS='STREAM',IOSTAT=IERR)
@@ -600,7 +601,7 @@ CONTAINS
 #endif
       IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,990) TYPE, IERR
       !
-    END IF
+    END IF  ! In/Out file is successfully opened
     !
 #ifdef W3_T
     WRITE (NDST,9002) IDSTR, VERINI, GNAME, TYPE,                &

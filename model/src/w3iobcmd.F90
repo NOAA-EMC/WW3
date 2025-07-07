@@ -134,6 +134,7 @@ CONTAINS
     !/                  of input spectra for rotated grids  ( version 6.02 )
     !/    07-Oct-2019 : RTD option with standard lat-lon
     !/                  grid when nesting to rotated grid   ( version 7.11 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -433,7 +434,7 @@ CONTAINS
       !
       READ (NDSB,IOSTAT=IERR)                             &
            IDTST, VERTST, NKI, NTHI, XFRI, FR1I, TH1I, NBI
-      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
+      IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
       !
 #ifdef W3_T
       WRITE (NDST,9002) 1, NDSB, IDTST, VERTST, NBI
@@ -463,7 +464,7 @@ CONTAINS
            (XBPI(I),I=1,NBI), (YBPI(I),I=1,NBI),              &
            ((IPBPI(I,J),I=1,NBI),J=1,4),                      &
            ((RDBPI(I,J),I=1,NBI),J=1,4)
-      IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
+      IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
       !
 #ifdef W3_RTD
       ! All boundary conditions position arrays XBPI, YBPI are defined
@@ -719,7 +720,7 @@ CONTAINS
       IF ( .NOT. SPCONV ) THEN
         DO IP=1, NBI2
           READ (NDSB,IOSTAT=IERR) ABPIN(:,IP)
-          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
+          IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
         END DO
       ELSE
         !
@@ -730,7 +731,7 @@ CONTAINS
         ALLOCATE ( TMPSPC(NKI*NTHI,NBI2) )
         DO IP=1, NBI2
           READ (NDSB,IOSTAT=IERR) TMPSPC(:,IP)
-          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
+          IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3IOBC','',41)
         END DO
         CALL W3CSPC ( TMPSPC     ,    NKI, NTHI, XFRI, FR1I, TH1I, &
              ABPIN(:,1:NBI2),NK,  NTH,  XFR,  FR1,  TH(1),&

@@ -110,6 +110,7 @@ implicit none
 !     17/06/2002  Initialisation of IUNIT=-1 included
 !     24/08/2002  Bug fixed when routine called with IUFIND=0
 !     08/02/2003  Bug fixed when file could not be created due to invalid path 
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose
 !

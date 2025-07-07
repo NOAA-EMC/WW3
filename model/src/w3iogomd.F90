@@ -75,6 +75,7 @@ MODULE W3IOGOMD
   !/    21-Jul-2022 : Correct FP0 calc for peak energy in ( version 7.14 )
   !/                  min/max freq band (B. Pouliot, CMC)
   !/    02-Mar-2024 : Add skweness and EM bias varaible   ( version 7.xx )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2024 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -2819,8 +2820,7 @@ CONTAINS
 #endif
         RETURN
       ELSE IF (IERR.GT.0) THEN
-        WRITE (NDSE,1002) IERR
-        CALL EXTCDE ( 43 )
+        CALL EXTIOF(NDSE,IERR,'W3IOGO','',42)
       END IF
     END IF
     !
@@ -4071,10 +4071,6 @@ CONTAINS
     !
     !  999 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGO :'/                &
     !               '     PLEASE UPDATE FIELDS !!! '/)
-    !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3IOGO : '/               &
-         '     ERROR IN READING FROM FILE'/                     &
-         '     IOSTAT =',I5/)
     !
 #ifdef W3_T
 9000 FORMAT (' TEST W3IOGO : IPASS =',I4,' INXOUT = ',A,          &

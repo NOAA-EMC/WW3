@@ -68,6 +68,7 @@ PROGRAM W3OUTF
   !/    12-Sep-2018 : Added new partitioned output fields ( version 6.06 )
   !/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
   !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -556,6 +557,7 @@ CONTAINS
     !/    25-Jun-2013 : Add type 4 sea point text output.   ( version 4.11 )
     !/    26-Jan-2021 : Added TP field (derived from FP0)   ( version 7.12 )
     !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

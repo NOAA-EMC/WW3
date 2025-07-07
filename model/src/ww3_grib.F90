@@ -61,6 +61,7 @@ PROGRAM W3GRIB
   !/                  (J.H. Alves)
   !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
   !/    09-Jun-2021 : remove grib1 support (NCEP1)        ( version 7.14 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -901,6 +902,7 @@ CONTAINS
     !/    16-Jul-2007 : Adding GRIB2 capability             ( version 3.11 )
     !/                  (A. Chawla)
     !/    22-Mar-2021 : New coupling fields output          ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

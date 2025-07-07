@@ -89,6 +89,7 @@ CONTAINS
     !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
     !/                  (W. E. Rogers & T. J. Campbell, NRL)
     !/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -195,8 +196,7 @@ CONTAINS
     IF (IIDFM.EQ.1) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,*,IOSTAT=ISTAT)     &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,*,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
@@ -205,8 +205,7 @@ CONTAINS
         IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,*,IOSTAT=ISTAT)     &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,*,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
@@ -220,8 +219,7 @@ CONTAINS
     ELSE IF (IIDFM.EQ.2) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,RFORM,IOSTAT=ISTAT) &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,RFORM,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
@@ -230,8 +228,7 @@ CONTAINS
         IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,RFORM,IOSTAT=ISTAT) &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,RFORM,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
@@ -245,8 +242,7 @@ CONTAINS
     ELSE
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,IOSTAT=ISTAT)       &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
@@ -255,8 +251,7 @@ CONTAINS
         IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,IOSTAT=ISTAT)       &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2R','',ISTAT)
         END DO
       ELSE
@@ -302,6 +297,7 @@ CONTAINS
     !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
     !/                  (W. E. Rogers & T. J. Campbell, NRL)
     !/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -361,8 +357,7 @@ CONTAINS
     IF (IIDFM.EQ.1) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,*,IOSTAT=ISTAT)     &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,*,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
@@ -371,8 +366,7 @@ CONTAINS
         IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,*,IOSTAT=ISTAT)     &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,*,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE
@@ -386,8 +380,7 @@ CONTAINS
     ELSE IF (IIDFM.EQ.2) THEN
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,RFORM,IOSTAT=ISTAT) &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,RFORM,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
@@ -396,8 +389,7 @@ CONTAINS
         IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,RFORM,IOSTAT=ISTAT) &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,RFORM,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE
@@ -411,8 +403,7 @@ CONTAINS
     ELSE
       IF (IIDLA.EQ.1) THEN
         DO IY=LY, HY
-          READ (NDS,IOSTAT=ISTAT)       &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE IF (IIDLA.EQ.2) THEN
@@ -421,8 +412,7 @@ CONTAINS
         IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
       ELSE IF (IIDLA.EQ.3) THEN
         DO IY=HY, LY, -1
-          READ (NDS,IOSTAT=ISTAT)       &
-               (ARRAY(IX,IY),IX=LX,HX)
+          READ (NDS,IOSTAT=ISTAT) (ARRAY(IX,IY),IX=LX,HX)
           IF (ISTAT.NE.0) CALL EXTIOF(NDSE,ISTAT,'INA2I','',ISTAT)
         END DO
       ELSE
@@ -470,6 +460,7 @@ CONTAINS
     !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
     !/                  (W. E. Rogers & T. J. Campbell, NRL)
     !/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -624,6 +615,7 @@ CONTAINS
     !/    30-Oct-2009 : Implement add offset argument.      ( version 3.14 )
     !/                  (W. E. Rogers & T. J. Campbell, NRL)
     !/    20-Jan-2017 : Add error exit using EXTCDE.        ( version 6.02 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

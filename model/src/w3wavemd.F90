@@ -98,6 +98,7 @@ MODULE W3WAVEMD
   !/    11-Nov-2021 : Remove XYB since it is obsolete     ( version 7.xx )
   !/    13-Sep-2022 : Add OMP for W3NMIN loops. Hide
   !/                  W3NMIN in W3_DEBUGRUN for scaling.  ( version 7.xx )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

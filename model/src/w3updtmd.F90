@@ -2029,6 +2029,7 @@ CONTAINS
     !/                  activation of grid point.
     !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
     !/    26-Sep-2012 : Adding update from tidal analysis   ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

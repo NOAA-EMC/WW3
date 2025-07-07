@@ -37,6 +37,7 @@ MODULE W3SNL1MD
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    03-Sep-2012 : Clean up of test output T0, T1      ( version 4.07 )
   !/    28-Feb-2023 : Adds GQM separate routines          ( version 7.07 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

@@ -46,6 +46,7 @@ PROGRAM W3UPRSTR
   !/                   or from restart under WRST switch (Andy Saulter)
   !/    06-Oct-2020 :  Added namelist input options        ( version 7.11 )
   !/    06-May-2021 :  Use SMCTYPE and FSWND for SMC grid. ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements           ( version X.XX )
   !/
   !/    Copyright 2010 National Weather Service (NWS),
   !/    National Oceanic and Atmospheric Administration.  All rights

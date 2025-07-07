@@ -25,6 +25,7 @@ PROGRAM W3TRNC
   !/    11-Apr-2016 : Adapted to use more options         ( version 5.11 )
   !/    15-May-2018 : Add namelist feature                ( version 6.05 )
   !/    18-Jun-2020 : Support for 360-day calendar.       ( version 7.08 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -266,7 +267,7 @@ PROGRAM W3TRNC
        STATUS='OLD',IOSTAT=IERR)
   IF (IERR .NE. 0) CALL EXTOPN(NDSE,IERR, 'W3TRNC', 'INPUT', 10)
   READ (NDSINP,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
-  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
   !
   IF ( FLAGLL ) THEN
     M2KM  = 1.
@@ -285,7 +286,7 @@ PROGRAM W3TRNC
        SPEC(MK,MTH), E(MK,MTH), THD(MTH), DIR(MTH) )
   !
   READ (NDSINP,IOSTAT=IERR) TH1, DTH, FREQ, DSIP
-  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
 
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -324,9 +325,9 @@ PROGRAM W3TRNC
         IF ( TSTSTR .EQ. 'SEA' ) THEN
           READ (NDSINP,IOSTAT=IERR) DW, CX, CY, WX, WY, UST, &
                AS, SPEC
-          IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
+          IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRNC','INPUT',11)
         END IF
-        IF ( IERR .EQ. -1 ) THEN
+        IF ( IERR .LT.0 ) THEN
           WRITE (NDSO,944)
           EXIT
         END IF
@@ -444,6 +445,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/     8-apr-2016 : Creation                            ( version 5.11 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

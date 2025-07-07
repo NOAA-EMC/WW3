@@ -119,6 +119,7 @@ implicit none
 !     18/01/2001 Check include if n1==1
 !     24/01/2001 Check for equality of y2 data loosened if n2==1
 !     13/09/2001 Documentation updated
+!     04/07/2025 Remove labelled statements
 !
 !  1. Purpose
 !
@@ -445,6 +446,7 @@ real function z_root2(func,x1,x2,xacc,iprint,ierr)
 !     0.02    07/11/1999 Test added to check boundaries, and reverse if necessary
 !                        Bug fixed in assigning answer
 !     0.03    02/09/2002 Maximum number of iterations set to 20, instead of 10
+!     X.XX    04/07/2025 Remove labelled statements
 !
 !  1. Purpose
 !

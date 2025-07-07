@@ -27,6 +27,7 @@ PROGRAM W3BOUND
   !/    21-Jul-2020 : Support rotated pole grid           ( version 7.11 )
   !/                                  Chris Bunney, UKMO.
   !/    27-May-2021 : Add namelist feature                ( version 7.XX )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2012-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

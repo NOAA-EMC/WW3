@@ -34,6 +34,7 @@ MODULE W3FLDSMD
   !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
   !/    05-Jun-2018 : adds DEBUGFLS                       ( version 6.04 )
   !/    22-Mar-2021 : adds momentum and density input     ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

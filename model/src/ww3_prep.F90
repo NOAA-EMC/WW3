@@ -54,6 +54,7 @@ PROGRAM W3PREP
   !/                  type (i.e. accounts for the header) ( version 4.13 )
   !/    20-Jan-2017 : Update to new W3GSRUMD APIs         ( version 6.02 )
   !/    22-Mar-2021 : Add momentum and air density        ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1006,7 +1007,7 @@ PROGRAM W3PREP
                  NXI, NYI
             CALL EXTCDE ( 21 )
           END IF
-        ELSE IF (IERR.NE.0) THEN
+        ELSE IF (IERR.LT.0) THEN
           EXIT
         ELSE
           REWIND(NDSF(J))
@@ -1128,7 +1129,7 @@ PROGRAM W3PREP
     WRITE (NDSO,973) IDTIME
 #ifdef W3_O15
     WRITE (NDSTIME, 979,IOSTAT=IERR) TIME
-    IF (IERR.NE.0) THEN
+    IF (IERR.GT.0) THEN
       WRITE (NDSE,1071) IDTIME, IERR
       CALL EXTCDE ( 54 )
     END IF

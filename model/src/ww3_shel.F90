@@ -71,6 +71,7 @@ PROGRAM W3SHEL
   !/    22-Mar-2021 : Add new coupling fields             ( version 7.13 )
   !/    07-Jun-2021 : S_{nl} GKE NL5 (Q. Liu)             ( version 7.13 )
   !/    02-Feb-2022 : Scalability local                   ( version 7.14 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1963,7 +1964,6 @@ PROGRAM W3SHEL
 #endif
   !
   ALLOCATE ( XXX(NX,NY) )
-  !
   !
 #ifdef W3_MPI
   CALL MPI_BARRIER ( MPI_COMM, IERR_MPI )

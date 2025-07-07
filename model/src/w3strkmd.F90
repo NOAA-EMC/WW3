@@ -308,6 +308,7 @@ CONTAINS
     !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
     !/                  by Jeff Hanson & Eve-Marie Devaliere
     !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -517,7 +518,7 @@ CONTAINS
             READ (11, *, IOSTAT=IOERR) dummyc,llat(line),llon(line),   &
                  ts(line),hs0(line),tp0(line),dir0(line), &
                  wndSpd0(line),wndDir0(line),invar7
-            IF (IOERR.NE.0) EXIT
+            IF (IOERR.LT.0) EXIT
             !partRes file does not contain the dspr variable
             dspr0(line) = 9999.
             !               wf0(line) = 9999.
@@ -548,7 +549,7 @@ CONTAINS
           !/       -------------------------------------------------
           OPEN(UNIT=11,FILE=FILENAME,form='UNFORMATTED', convert=file_endian,STATUS='OLD',ACCESS='STREAM')
           READ(11,IOSTAT=IOERR) I
-          IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+          IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
           CLOSE(11)
           !/          --- First four-byte integer could possibly be byte-swapped,
           !               if ww3_shel was compiled on a different architecture. ---
@@ -582,11 +583,11 @@ CONTAINS
             ENDIF
             REWIND(11)
             READ(11,IOSTAT=IOERR) IDSTR,VERPRT
-            IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+            IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
             READ(11,IOSTAT=IOERR) headln1
-            IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+            IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
             READ(11,IOSTAT=IOERR) headln2
-            IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+            IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
           END IF
           !/
           IF (IDSTR(1:9).ne.'WAVEWATCH') THEN
@@ -621,7 +622,7 @@ CONTAINS
               READ (11,IOSTAT=IOERR) DATETIME,x,y, &
                    dummy,numpart,invar1,wnd,wnddir, &
                    invar5,invar6
-              IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+              IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
               ! write(*,*) '0:',DATETIME,numpart
               date1=dble(DATETIME(1))
               date2=dble(DATETIME(2))
@@ -644,7 +645,7 @@ CONTAINS
               DO line = 1,numpart+1
                 READ (11,IOSTAT=IOERR) iline,invar1, &
                      invar2,invar3,invar4,invar5,invar6
-                IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+                IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
                 ! write(*,*) '0+:',line,iline,invar1,invar2,invar3,invar4,invar5,invar6
               END DO
             END IF
@@ -897,7 +898,7 @@ CONTAINS
               ELSE
                 READ (11,IOSTAT=IOERR) k,invar1,invar2,  &
                      invar3,invar4,invar5
-                IF (IOERR.NE.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
+                IF (IOERR.GT.0) CALL EXTIOF(6,IOERR,'W3STRKMD','PARTITION',1)
                 DO i = 1,numpart
                   IF (line.LE.readln) THEN
                     READ (11,IOSTAT=IOERR) k,         &
@@ -2074,6 +2075,7 @@ CONTAINS
     !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
     !/                  by Jeff Hanson & Eve-Marie Devaliere
     !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights
@@ -3788,6 +3790,7 @@ CONTAINS
     !/    03-Feb-2012 : Origination, based on Matlab code   ( version 4.05 )
     !/                  by Jeff Hanson & Eve-Marie Devaliere
     !/    04-Jan-2013 : Inclusion in trunk                  ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/    Copyright 2009-2013 National Weather Service (NWS),
     !/       National Oceanic and Atmospheric Administration.  All rights

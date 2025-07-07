@@ -92,6 +92,7 @@ CONTAINS
     !/
     !/    23-Mar-1993 : Final FORTRAN 77                    ( version 1.18 )
     !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -204,6 +205,7 @@ CONTAINS
       !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
       !/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.00 )
       !/    18-Jun-2020 : Add 360-day calendar option         ( version 7.08 )
+      !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
       !/
       !  1. Purpose :
       !
@@ -338,6 +340,7 @@ CONTAINS
     !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
     !/    05-Jan-2001 : Y2K leap year error correction.     ( version 2.05 )
     !/    18-Jun-2020 : Add 360-day calendar support        ( version 7.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !/
     !  1. Purpose :
@@ -464,6 +467,7 @@ CONTAINS
       !/    29-Nov-1999 : Upgrade to FORTRAN 90               ( version 2.00 )
       !/    10-Jan-2017 : Add NOLEAP option, 365 day calendar ( version 6.01 )
       !/    18-Jun-2020 : Add 360-day calendar support        ( version 7.08 )
+      !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
       !/
       !  1. Purpose :
       !
@@ -1725,6 +1729,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    15-May-2018 : Origination                         ( version 6.05 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

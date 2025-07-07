@@ -62,6 +62,7 @@ PROGRAM W3STRT
   !/    05-Jul-2011 : Revert to X-Y gaussian shape        ( version 4.01 )
   !/    06-Mar-2012 : Hardening output.                   ( version 4.07 )
   !/    06-Jun-2018 : Add DEBUGINIT/EXPORTWWM             ( version 6.04 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),

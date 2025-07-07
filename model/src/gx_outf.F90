@@ -70,6 +70,7 @@ PROGRAM GXOUTF
   !/    27-Aug-2015 : ICEH and ICEF added as output       ( version 5.10 )
   !/    25-Aug-2018 : Add WBT parameter                   ( version 6.06 )
   !/    22-Mar-2021 : RHOA and TAUA added as output       ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/
   !/    Copyright 2009 National Weather Service (NWS),
@@ -675,7 +676,6 @@ PROGRAM GXOUTF
 948 FORMAT ( '      Longitudes         : ',2I6/                     &
        '      lattidutes         : ',2I6/                     &
        '      Opening file ww3.grads')
-949 FORMAT ( '      Alternative definition is used ')
 950 FORMAT ( '      Sea points in mask :      ',A)
 951 FORMAT ( '      Bound. pts. in mask:      ',A)
   !
@@ -708,14 +708,6 @@ PROGRAM GXOUTF
 999 FORMAT (/'  End of program '/                                   &
        ' ========================================='/          &
        '         WAVEWATCH III GrADS field output '/)
-  !
-#ifdef W3_T
-9050 FORMAT ( ' TEST GXOUTF : KPDS : ',13I4/                      &
-       '                      ',12I4)
-9051 FORMAT ( ' TEST GXOUTF : KGDS : ',8I6/                       &
-       '                      ',8I6/                       &
-       '                      ',6I6)
-#endif
   !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN GXOUTF : '/               &
        '     SMALLEST OUTPUT INCREMENT IS 60 SEC.'/)
@@ -1402,11 +1394,6 @@ CONTAINS
     ! Error escape locations
     !
     ! Formats
-    !
-940 FORMAT (1X,I8,3I3.2,2X,4E12.4)
-950 FORMAT (1X,A13,I9.8,I7.6,2(2F8.2,I4),                           &
-         1X,A4,F8.4,1X,A10,2I2,1X,A11,I4)
-951 FORMAT (1X,2F10.5,2I8)
     !
 990 FORMAT (/' *** WAVEWATCH III ERROR IN W3EXGO :'/           &
          '     GROUP',I2,' PARAMETER',I3,' NOT LISTED '    )

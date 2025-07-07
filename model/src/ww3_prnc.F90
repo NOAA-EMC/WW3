@@ -46,6 +46,7 @@ PROGRAM W3PRNC
   !/    21-Apr-2020 : Correction in MPI for tide          ( version 7.13 )
   !/    21-Apr-2020 : Correction in scale factor          ( version 7.13 )
   !/    22-Mar-2021 : Add momentum and air density        ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

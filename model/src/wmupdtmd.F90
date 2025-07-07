@@ -36,6 +36,7 @@ MODULE WMUPDTMD
   !/                  (R. Padilla-Hernandez, J.H. Alves, EMC/NOAA)
   !/    08-Feb-2021 : Add FSWND option for SMC grid. JGLi ( version 7.13 )
   !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -114,6 +115,7 @@ CONTAINS
     !/    20-Jan-2017 : Enable using input from coupler     ( version 6.02 )
     !/                  (T. J. Campbell, NRL)
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -875,6 +877,7 @@ CONTAINS
     !/    14-Oct-2006 : Origination.                        ( version 3.10 )
     !/    10-Dec-2006 : Bug fix WMUPD2 initial fields.      ( version 3.10 )
     !/    22-Mar-2021 : Add momentum and air density input  ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

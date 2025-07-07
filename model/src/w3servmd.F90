@@ -19,6 +19,8 @@ MODULE W3SERVMD
   !/                  processing rotated grid data
   !/    15-Jan-2021 : Added UV_TO_MAG_DIR routine         ( version 7.12 )
   !/    02-Jan-2025 : Added DIST_HAVERSINE routine        ( version 7.xx )
+  !/    04-Jul-2025 : Remove labelled statements, add EXTIOF and 
+  !/                  EXTOPN routines                     ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

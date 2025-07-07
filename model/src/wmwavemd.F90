@@ -36,6 +36,7 @@ MODULE WMWAVEMD
   !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
   !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
   !/    22-Mar-2021 : Support for air density input       ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -111,6 +112,7 @@ CONTAINS
     !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
     !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
     !/    22-Mar-2021 : Support for air density input       ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

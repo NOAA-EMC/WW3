@@ -12,6 +12,7 @@ MODULE W3TIDEMD
   !/    01-Sep-2012 : Origination.                        ( version 4.07 )
   !/    04-Mar-2013 : Correction of FAST and new VFAST    ( version 4.08 )
   !/    21-Apr-2020 : Correction of time and implicit none( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !  1. Purpose :
   !
@@ -1784,7 +1785,7 @@ CONTAINS
       !WRITE(995,'(I4,A5,1X,6I3,F5.2,I4)') K,TIDECON_ALLNAMES(K),II(K),JJ(K),KK(K),LL(K),MM(K),NN(K),SEMI(K), &
       !           NJ(K)
       IF (TIDECON_ALLNAMES(K).eq.KBLANK) exit
-70    J1=JBASE+1
+      J1=JBASE+1
       IF (NJ(K).LT.1) THEN
         NJ(K)=1
         JL=J1

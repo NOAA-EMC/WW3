@@ -101,6 +101,7 @@ CONTAINS
     !/    26-Dec-2012 : Modified obsolete declarations.     ( version 4.11 )
     !/    15-Aug-2011 : Adjustments to version 4.05         ( version 4.05 )
     !/    11-Mar-2013 : Minor cleanup                       ( version 4.09 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !

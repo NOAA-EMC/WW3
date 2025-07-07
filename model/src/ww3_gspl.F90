@@ -51,6 +51,7 @@ PROGRAM W3GSPL
   !/    04-Mar-2013 : Adding GrADS output.                ( version 4.10 )
   !/    05-Aug-2013 : Add UQ/UNO for distances.           ( version 4.12 )
   !/    18-Nov-2013 : Add user-defined halo extension.    ( version 4.14 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2012-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

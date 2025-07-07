@@ -482,6 +482,7 @@ CONTAINS
     !/                  +-----------------------------------+
     !/
     !/    09-Nov-2020 : Creation                            ( version 7.12 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !
     !  1. Purpose :

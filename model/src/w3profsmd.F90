@@ -18,6 +18,7 @@ MODULE W3PROFSMD
   !/    15-Dec-2013 : Bug fix for implicit scheme         ( version 4.16 )
   !/    18-Aug-2016 : Corrected boundary treatment        ( version 4.16 )
   !/    15-Apr-2020 : Adds optional opt-out for CFL on BC ( version 7.08 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !
   !  1. Purpose :
   !

@@ -116,6 +116,7 @@ MODULE W3GRIDMD
   !/    28-Feb-2023 : GQM as an alternative for NL1       ( version 7.15 )
   !/    11-Jan-2024 : New namelist parameters for IC4     ( version 7.15 )
   !/    03-May-2024 : New CAPCHNK parameters for SIN4     ( version 7.15 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2013 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -1190,8 +1191,7 @@ CONTAINS
            NML_EXCL_POINT, NML_EXCL_BODY,                 &
            NML_OUTBND_COUNT, NML_OUTBND_LINE, IERR)
     ELSE
-      OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_grid.inp',STATUS='OLD',        &
-            IOSTAT=IERR)
+      OPEN (NDSI,FILE=TRIM(FNMPRE)//'ww3_grid.inp',STATUS='OLD', IOSTAT=IERR)
       IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3GRID','INPUT',60)
     END IF
     !
@@ -1344,8 +1344,7 @@ CONTAINS
       FLSOU=NML_RUN%FLSOU
     ELSE
       CALL NEXTLN ( COMSTR , NDSI , NDSE )
-      READ (NDSI,*,IOSTAT=IERR)                                 &
-           FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
+      READ (NDSI,*,IOSTAT=IERR) FLDRY, FLCX, FLCY, FLCTH, FLCK, FLSOU
       IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3GRID','INPUT',61)
     END IF
     !
@@ -7344,7 +7343,6 @@ CONTAINS
                 IF ( NDEPTH .GT. 100 ) THEN
                   WRITE (NDSE,1004) NDEPTH
                   CALL EXTCDE(4)
-                  RETURN
                 END IF
                 DEPTHS(1:NDEPTH) = DPTHNL
                 READ (NDS,NML=ANL2,IOSTAT=J)
@@ -7357,7 +7355,6 @@ CONTAINS
                 IF ( NQDEF .GT. 100 ) THEN
                   WRITE (NDSE,1004) NQDEF
                   CALL EXTCDE(4)
-                  RETURN
                 END IF
                 READ (NDS,NML=ANL3,IOSTAT=J)
 #endif
@@ -7474,18 +7471,9 @@ CONTAINS
               CASE DEFAULT
                 WRITE (NDSE,1003) NAME
                 CALL EXTCDE(3)
-                RETURN
               END SELECT
               !
-              IF (J.LT.0) THEN
-                WRITE (NDSE,1001) NAME
-                CALL EXTCDE(1)
-                RETURN
-              ELSE IF (J.GT.0) THEN
-                WRITE (NDSE,1002) NAME, J
-                CALL EXTCDE(2)
-                RETURN
-              END IF
+              IF (J.NE.0) CALL EXTIOF(NDSE,J,'READNL','',1,FIELD=NAME)
               !
               STATUS  = '(user def. values) :'
               RETURN
@@ -7499,10 +7487,6 @@ CONTAINS
     !
     ! Formats
     !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
-         '     PREMATURE END OF FILE IN READING ',A/)
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
-         '     ERROR IN READING ',A,'  IOSTAT =',I8/)
 1003 FORMAT (/' *** WAVEWATCH III ERROR IN READNL : '/          &
          '     NAMELIST NAME ',A,' NOT RECOGNIZED'/)
 #ifdef W3_NL2

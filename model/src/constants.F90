@@ -34,6 +34,7 @@ MODULE CONSTANTS
   !/    20-Jan-2017 : Add parameters for ESMF             ( version 6.02 )
   !/    01-Mar-2018 : Add UNDEF parameter                 ( version 6.02 )
   !/    05-Jun-2018 : Add PDLIB parameters                ( version 6.04 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights

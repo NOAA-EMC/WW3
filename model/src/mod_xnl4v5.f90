@@ -500,6 +500,7 @@ implicit none
 !                  Compute size of points on locus, stored in KLOCUS
 !     13/06/2003   Test parameters moved to Q_SETCONFIG
 !     04/09/2003   Routine Q_SETVERSION added
+!     04/07/2025   Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -833,6 +834,7 @@ implicit none
 !     09/09/2002 Upgrade to release 5
 !     16/09/2002 Parameter IPROC included to take care of MPI processors
 !     27/09/2002 Description of input argument SIGMA corrected
+!     04/07/2025 Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -924,10 +926,10 @@ if(iquad==1 .or. iquad==2) q_depth=1000.
 !     !
 !  check water depth to be used in computation
 !
-ierr = 1
 if(q_depth < q_mindepth) then
   xnl = 0.
   call q_error('w','DEPTH','Zero transfer returned')
+  ierr = 1
 else
   !
   !  check if iquad has changed since last call, this is no more allowed
@@ -1693,6 +1695,7 @@ implicit none
 !     12/06/2003  Call to Z_POYAREA added to check POLAR2
 !     08/08/2003  Check on areas only for loci with k3m/k1m < 100
 !                 Otherwise machine accuracy plays a role
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -2004,6 +2007,7 @@ implicit none
 !     09/09/2003  Bug fixed in assigning IGRID=0 when BQF still in memory
 !     13/09/2003  When BFQ incorrupt, it is deleted and a new one is created
 !                 Bug fixed in setting of s_depth  when iq_disp==1
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -2135,7 +2139,6 @@ elseif(iq_disp==2) then
 else
   call q_error('e','DISPER','Incorrect value for IQ_DISP')
   write(luq_err,'(a,i4)') 'IQ_DISP=',iq_disp
-  if (allocated(z_ad)) deallocate(z_ad,z_sig)
   call q_stack('-q_ctrgrid')
   return
 end if
@@ -2149,7 +2152,6 @@ end if
 if(lastquadfile==bqname) then
   if(iq_screen>0) write(iscreen,'(2a)')   'Q_CTRGRID: Rereading of bqfile skipped: ',lastquadfile
   igrid = 0
-  if (allocated(z_ad)) deallocate(z_ad,z_sig)
   call q_stack('-q_ctrgrid')
   return
 end if
@@ -2237,7 +2239,7 @@ if(luq_bqf > 0 .and. iuerr ==0) then
 ! check spectral interaction grid and depth for consistency
 !---------------------------------------------------------------------------------------
   if(.not. lq_grid) then
-az: do iaz = 1,naz
+    do iaz = 1,naz
       if(abs(q_ad(iaz)-z_ad(iaz)) > 0.01) then
         write(luq_prt,'(a)') 'Q_CTRGRID: Directions do not agree'
         do jaz=1,naz
@@ -2245,13 +2247,13 @@ az: do iaz = 1,naz
         end do
         lq_grid = .true.
         igrid = 2
-        exit az
+        exit
       end if
-    end do az
+    end do
   end if
 !
   if(.not. lq_grid) then
-ak: do ikz = 1,nkz
+    do ikz = 1,nkz
       if(abs(q_sig(ikz)-z_sig(ikz)) > 0.01) then
         write(luq_prt,'(a)') 'Q_CTRGRID: Wave numbers do not agree'
         do jkz=1,nkz
@@ -2259,9 +2261,9 @@ ak: do ikz = 1,nkz
         end do
         lq_grid = .true.
         igrid = 2
-        exit ak
+        exit
       end if
-    end do ak
+    end do
   end if
 !
 !  compare water depths
@@ -2779,6 +2781,7 @@ implicit none
 !    13/06/2003  Parameter t_cple, t_jac and t_sym assigned
 !                Bug fixed in nearest bin approach, symmetry regained
 !    27/08/2003  Short-cut when number of points on locus is ZERO
+!    04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -3434,6 +3437,7 @@ implicit none
 !     09/08/2002  Upgrade to release 4.0
 !     29/08/2002  Error handling z_root2 relaxed and some write statements modified
 !     07/10/2002  Initialisation of QSQ replaced
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -3798,6 +3802,7 @@ use serv_xnl4v5
 !     10/09/2002  Upgrade to release 5
 !                 Value of LASTQUADFILE set
 !     10/06/2003  Output to GRD file always without compacting
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -4191,6 +4196,7 @@ implicit none
 !       6/06/2003  Activate output to XDIA configuration file
 !      10/06/2003  Conversion to new indexing and lumping debugged
 !      11/06/2003  Call to subroutine Q_SYMMETRY added
+!      04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -4570,6 +4576,7 @@ implicit none
 !     08/08/2003  Check included for maximum number of IPOL by using MPOL
 !                    MPOL=MLOCUS/2+1-1  (-1 added regarding IPOL=IPOL+1 in Q_MODIFY)
 !                 Check included on ARG=0 for IQ_LOCUS=2 and parameter dke added
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -4841,6 +4848,7 @@ implicit none
 !     13/06/2003  Set test output, from XNL_INIT
 !     16/06/2003  Switch IQ_SYM added
 !     09/09/2003  Variable ID_FACMAX added
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5077,6 +5085,7 @@ implicit none
 !      5/09/2003  Search algorithm improved
 !     09/09/2003  factor ID_FACMAX introduced and extra test output created
 !                 Input water depth saved for output
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5341,6 +5350,7 @@ implicit none
 !     13/10/1999  Error handling improved
 !     08/08/2002  Upgrade to release 4
 !     11/06/2003  Extra check on output to print or test file
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5459,6 +5469,7 @@ implicit none
 !     11/06/2003  Initial version
 !                 Parameter iq_space removed
 !     16/06/2003  Switch IQ_SYM added
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -5783,6 +5794,7 @@ implicit none
 !                 diagonal term
 !     27/08/2003  Short-cut when number of non-zero points on locus is ZERO
 !     05/09/2003  Switches for test output in nearest bin approach modified
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -6026,6 +6038,7 @@ implicit none
 !     09/08/2002  Modification of weights
 !     13/08/2002  storage of log-spacing replace by linear spacing
 !     20/08/2002  Bug fixed when geometric scaling is assumed
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -6409,6 +6422,7 @@ implicit none
 !                Allocation of dynamic data array's moved to Q_ALLOCATE
 !     24/06/2003 Range of loop for IK3 made dependent on value of IQ_SYM
 !     25/06/2003 Bug fixed in assigment of contribution of diagonal term
+!     04/07/2025 Remove labelled statements
 !
 !  1. Purpose:
 !
@@ -6887,6 +6901,7 @@ implicit none
 !                 type and depth via interface
 !     09/08/2002  Upgrade to release 4.0
 !     10/09/2002  g included in interface
+!     04/07/2025  Remove labelled statements
 !
 !  1. Purpose:
 !

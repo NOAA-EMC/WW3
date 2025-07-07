@@ -38,6 +38,7 @@ MODULE W3IOSFMD
   !/                            INIT_GET_JSEA_ISPROC      ( version 6.04 )
   !/    25-Jul-2018 : Changed DIMXP size for partitioning ( version 6.05 )
   !/                  methods 4 and 5. (C Bunney, UKMO)
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -518,12 +519,11 @@ CONTAINS
       IF ( FLFORM ) THEN
         OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
               IOSTAT=IERR)
-        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOSF','',1)
       ELSE
         OPEN (NDSPT,FILE=FNMPRE(:J)//'partition.'//FILEXT(:I),   &
              form='UNFORMATTED',convert=file_endian,IOSTAT=IERR)
-        IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOSF','',1)
       END IF
+      IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3IOSF','',1)
       !
       REWIND (NDSPT)
       !

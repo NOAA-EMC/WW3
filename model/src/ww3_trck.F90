@@ -30,6 +30,7 @@ PROGRAM W3TRCK
   !/    30-Oct-2009 : Implement run-time grid selection.  ( version 3.14 )
   !/                  (W. E. Rogers & T. J. Campbell, NRL)
   !/    05-Mar-2014 : Now calls W3SETG for pointer def.   ( version 4.18 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -164,7 +165,7 @@ PROGRAM W3TRCK
        STATUS='OLD',IOSTAT=IERR)
   IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR,'W3TRCK','INPUT DATA',1)
   READ (NDSINP,IOSTAT=IERR) IDSTR, FLAGLL, MK, MTH, XFR
-  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
   !
   IF ( FLAGLL ) THEN
     FACTOR  = 1.
@@ -184,7 +185,7 @@ PROGRAM W3TRCK
   ALLOCATE ( SIG(MK), DSIP(MK), SPEC(MK,MTH) )
   !
   READ (NDSINP,IOSTAT=IERR) TH1, DTH, SIG, DSIP
-  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
+  IF (IERR.GT.0) CALL EXTIOF(NDSE,IERR,'W3TRCK','INPUT DATA',2)
   !
   !--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ! 3.  Open output file and prepare

@@ -13,6 +13,7 @@ MODULE W3DISPMD
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    10-Mar-2016 : Added Liu & Mollo-Christensen
   !/                  dispersion with ice (E. Rogers)     ( version 5.10 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -321,7 +322,7 @@ CONTAINS
       END IF
     END DO
     !
-    IF (DIF .GE. EPS .OR. RDIF .GT. EPS) THEN
+    IF (ICON==0) THEN
       DIF   = ABS(K-KOLD)
       RDIF  = DIF/K
       IF (DIF .LT. EPS .AND. RDIF .LT. EPS) ICON = 1

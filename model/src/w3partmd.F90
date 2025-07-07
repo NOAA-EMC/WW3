@@ -1190,6 +1190,7 @@ CONTAINS
     !/    02-Dec-2010 : Adding a mapping PMAP between      ( version 3.14 )
     !/                  original and combined partitions
     !/                  ( M. Szyszka )
+    !/    04-Jul-2025 : Remove labelled statements         ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -1526,11 +1527,6 @@ CONTAINS
       !
     END DO
     !
-    RETURN
-    !
-    ! Escape locations read errors --------------------------------------- *
-    !
-    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) NPO+1
     RETURN
     !
     ! Formats

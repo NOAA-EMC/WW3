@@ -11,6 +11,7 @@ module MallocInfo_m
   !/                  +-----------------------------------+
   !/
   !/    01-June-2018 : Origination.                        ( version 6.04 )
+  !/    04-July-2025 : Remove labelled statements          ( version X.XX )
   !/
   !  1. Purpose : Init pdlib part
   !  2. Method :
@@ -350,10 +351,12 @@ contains
       end if
     end do
     close(unit=1000)
-    if (vmsize /= 0) return
+    if (vmsize == 0) then
+      print *, 'ERROR: procfs not mounted or not compatible'
+      vmsize = -1
+    end if
     !
-    print *, 'ERROR: procfs not mounted or not compatible'
-    vmsize = -1
+    return
   end function getVmSize
 
   function getVmRSS() result(vmRSS)
@@ -434,10 +437,12 @@ contains
       end if
     end do
     close(unit=1000)
-    if (vmRSS /= 0) return
+    if (vmRSS == 0) then
+      print *, 'ERROR: procfs not mounted or not compatible'
+      vmRSS = -1
+    end if
     !
-    print *, 'ERROR: procfs not mounted or not compatible'
-    vmRSS = -1
+    return
   end function getVmRSS
 
 end module MallocInfo_m
