@@ -178,12 +178,12 @@ PROGRAM W3SBS1
   !/
   USE WMMDATMD, ONLY: MDSE, MDST, MDSS, NMPROC, IMPROC, NMPSCR,   &
        NRGRD, STIME, ETIME
-  !/
-  IMPLICIT NONE
   !
 #ifdef W3_MPI
-  INCLUDE "mpif.h"
+  use mpi
 #endif
+  !/
+  IMPLICIT NONE
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters

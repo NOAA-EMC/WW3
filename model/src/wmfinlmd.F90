@@ -154,12 +154,12 @@ CONTAINS
 #ifdef W3_MPRF
     USE W3TIMEMD, ONLY: PRTIME
 #endif
-    !/
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !/
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

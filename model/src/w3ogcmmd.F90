@@ -47,9 +47,9 @@ MODULE W3OGCMMD
   !
   !/ ------------------------------------------------------------------- /
   !
-  IMPLICIT NONE
+  use mpi
   !
-  INCLUDE "mpif.h"
+  IMPLICIT NONE
   !
   PRIVATE
   !

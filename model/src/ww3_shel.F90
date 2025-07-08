@@ -308,11 +308,11 @@ PROGRAM W3SHEL
 #ifdef W3_OMPG
   USE OMP_LIB
 #endif
-  IMPLICIT NONE
-  !
 #ifdef W3_MPI
-  INCLUDE "mpif.h"
+  use mpi
 #endif
+  !
+  IMPLICIT NONE
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local PARAMETER statements

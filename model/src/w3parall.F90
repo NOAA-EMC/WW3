@@ -972,10 +972,10 @@ CONTAINS
     USE yowRankModule, only : IPGL_TO_PROC, IPGL_tot
     USE WMMDATMD, ONLY: MDATAS
 #endif
-    IMPLICIT NONE
 #ifdef W3_PDLIB
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    IMPLICIT NONE
     INTEGER, intent(in) :: IMOD
     logical, intent(in) :: IsMulti
 #ifdef W3_S
@@ -1578,6 +1578,9 @@ CONTAINS
     use yowNodepool, only: iplg
     use yowDatapool, only: rkind
 #endif
+#ifdef W3_MPI
+    use mpi
+#endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1591,9 +1594,6 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
     INTEGER ISEA, JSEA, Status(NX), rStatus(NX)
     INTEGER IPROC, I, ierr, IP, IX, IP_glob
 #ifdef W3_PDLIB

@@ -194,11 +194,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -596,11 +596,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1283,11 +1283,12 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
+#ifdef W3_MPI
+    use mpi
+#endif
+    !
     IMPLICIT NONE
     !
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1465,11 +1466,11 @@ CONTAINS
     USE W3TIMEMD, ONLY: DSEC21
     USE W3PARALL, ONLY: INIT_GET_ISEA
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1813,11 +1814,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -2391,11 +2392,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -2574,11 +2575,11 @@ CONTAINS
 #endif
     USE W3TIMEMD, ONLY: DSEC21
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -2909,11 +2910,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -3465,11 +3466,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

@@ -128,7 +128,7 @@ CONTAINS
   !> @author H. L. Tolman @date 22-Mar-2021
   !>
   SUBROUTINE WMINIT ( IDSI, IDSO, IDSS, IDST, IDSE, IFNAME,       &
-       MPI_COMM, PREAMB )
+       MPI_COMM_IN, PREAMB )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -437,18 +437,18 @@ CONTAINS
     USE W3INITMD, ONLY: WWVER
     USE W3ODATMD, ONLY:  OFILES
     !
+#ifdef W3_MPI
+    use mpi
+#endif
     !/
     IMPLICIT NONE
     !
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE,     &
-         MPI_COMM
+         MPI_COMM_IN
     CHARACTER*(*), INTENT(IN)  :: IFNAME
     CHARACTER*(*), INTENT(IN), OPTIONAL :: PREAMB
     !/
@@ -561,9 +561,9 @@ CONTAINS
     !
     CALL DATE_AND_TIME ( VALUES=CLKDT1 )
     !
-    MPI_COMM_LOC   = MPI_COMM
+    MPI_COMM_LOC   = MPI_COMM_IN
 #ifdef W3_MPI
-    MPI_COMM_MWAVE = MPI_COMM
+    MPI_COMM_MWAVE = MPI_COMM_IN
     CALL MPI_COMM_SIZE ( MPI_COMM_MWAVE, NMPROC, IERR_MPI )
     CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
     IMPROC = IMPROC + 1
@@ -3473,7 +3473,7 @@ CONTAINS
   !> @author H. L. Tolman @date 22-Mar-2021
   !>
   SUBROUTINE WMINITNML ( IDSI, IDSO, IDSS, IDST, IDSE, IFNAME,       &
-       MPI_COMM, PREAMB )
+       MPI_COMM_IN, PREAMB )
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -3781,18 +3781,18 @@ CONTAINS
 #endif
     USE W3INITMD, ONLY: WWVER
     USE W3NMLMULTIMD
+#ifdef W3_MPI
+    use mpi
+#endif
     !/
     IMPLICIT NONE
     !
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
     INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE,     &
-         MPI_COMM
+         MPI_COMM_IN
     CHARACTER*(*), INTENT(IN)  :: IFNAME
     CHARACTER*(*), INTENT(IN), OPTIONAL :: PREAMB
     !/
@@ -3923,9 +3923,9 @@ CONTAINS
     !
     CALL DATE_AND_TIME ( VALUES=CLKDT1 )
     !
-    MPI_COMM_LOC   = MPI_COMM
+    MPI_COMM_LOC   = MPI_COMM_IN
 #ifdef W3_MPI
-    MPI_COMM_MWAVE = MPI_COMM
+    MPI_COMM_MWAVE = MPI_COMM_IN
     CALL MPI_COMM_SIZE ( MPI_COMM_MWAVE, NMPROC, IERR_MPI )
     CALL MPI_COMM_RANK ( MPI_COMM_MWAVE, IMPROC, IERR_MPI )
     IMPROC = IMPROC + 1
@@ -3992,13 +3992,13 @@ CONTAINS
          WRITE (MDSS,910)  IFNAME, MDSI
     !
     ! process ww3_multi namelist input
-    CALL W3NMLMULTIDEF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, NML_DOMAIN, IERR)
+    CALL W3NMLMULTIDEF (MPI_COMM_IN, MDSI, TRIM(FNMPRE)//IFNAME, NML_DOMAIN, IERR)
     ALLOCATE(NML_INPUT_GRID(NML_DOMAIN%NRINP))
     ALLOCATE(NML_MODEL_GRID(NML_DOMAIN%NRGRD))
     ALLOCATE(NML_OUTPUT_TYPE(NML_DOMAIN%NRGRD))
     ALLOCATE(NML_OUTPUT_DATE(NML_DOMAIN%NRGRD))
     !
-    CALL W3NMLMULTICONF (MPI_COMM, MDSI, TRIM(FNMPRE)//IFNAME, &
+    CALL W3NMLMULTICONF (MPI_COMM_IN, MDSI, TRIM(FNMPRE)//IFNAME, &
          NML_DOMAIN, NML_INPUT_GRID, NML_MODEL_GRID, NML_OUTPUT_TYPE, &
          NML_OUTPUT_DATE, NML_HOMOG_COUNT, NML_HOMOG_INPUT, IERR)
     IF (IERR.NE.0) THEN

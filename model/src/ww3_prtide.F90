@@ -141,11 +141,11 @@ PROGRAM W3PRTIDE
   USE W3TIDEMD
   USE W3IDATMD
   !
-  IMPLICIT NONE
-  !
 #ifdef W3_MPI
-  INCLUDE "mpif.h"
+  use mpi
 #endif
+  !
+  IMPLICIT NONE
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters

@@ -67,9 +67,9 @@ MODULE W3AGCMMD
   !
   !/ ------------------------------------------------------------------- /
   !
-  IMPLICIT NONE
+  use mpi
   !
-  INCLUDE "mpif.h"
+  IMPLICIT NONE
   !
   PRIVATE
   !

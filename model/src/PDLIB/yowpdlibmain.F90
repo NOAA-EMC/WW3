@@ -176,7 +176,7 @@ contains
 
   SUBROUTINE REAL_MPI_BARRIER_PDLIB(TheComm, string)
 
-    INCLUDE "mpif.h"
+    use mpi
     integer, intent(in) :: TheComm
     character(*), intent(in) :: string
     integer NbProc, eRank

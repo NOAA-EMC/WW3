@@ -244,11 +244,11 @@ CONTAINS
     USE WMMDATMD
     USE W3PARALL, ONLY : INIT_GET_JSEA_ISPROC
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -1243,12 +1243,12 @@ CONTAINS
     USE WMSCRPMD
     USE SCRIP_INTERFACE
 #endif
-    !/
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !/
+    IMPLICIT NONE
     !
     !/
     !/ ------------------------------------------------------------------- /
@@ -5364,11 +5364,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

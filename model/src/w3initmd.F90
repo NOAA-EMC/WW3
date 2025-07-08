@@ -155,13 +155,13 @@ CONTAINS
   !> @param[in] PNAMES        Output point names.
   !> @param[in] IPRT          Partitioning grid info.
   !> @param[inout] PRTFRM     Partitioning format flag.
-  !> @param[in] MPI_COMM      MPI communicator to be used for model.
+  !> @param[in] MPI_COMM_IN   MPI communicator to be used for model.
   !> @param[in] FLAGSTIDEIN
   !>
   !> @author H. L. Tolman  @date 03-Sep-2012
   !>
   SUBROUTINE W3INIT ( IMOD, IsMulti, FEXT, MDS, MTRACE, ODAT, FLGRD,  FLGR2, FLGD, &
-       FLG2, NPT, XPT, YPT, PNAMES, IPRT, PRTFRM, MPI_COMM, FLAGSTIDEIN)
+       FLG2, NPT, XPT, YPT, PNAMES, IPRT, PRTFRM, MPI_COMM_IN, FLAGSTIDEIN)
     !/
     !/                  +-----------------------------------+
     !/                  | WAVEWATCH III           NOAA/NCEP |
@@ -452,7 +452,7 @@ CONTAINS
 #endif
     !/
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -460,7 +460,7 @@ CONTAINS
     !/
     INTEGER, INTENT(IN)           :: IMOD, MDS(15), MTRACE(2),      &
          ODAT(40),NPT, IPRT(6),&
-         MPI_COMM
+         MPI_COMM_IN
     LOGICAL, INTENT(IN)           :: IsMulti
     REAL, INTENT(INOUT)           :: XPT(NPT), YPT(NPT)
     LOGICAL, INTENT(INOUT)        :: FLGRD(NOGRP,NGRPP), FLGD(NOGRP),&
@@ -564,7 +564,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    MPI_COMM_WAVE = MPI_COMM
+    MPI_COMM_WAVE = MPI_COMM_IN
     CALL MPI_COMM_SIZE ( MPI_COMM_WAVE, NTPROC, IERR_MPI )
     NAPROC = NTPROC
     CALL MPI_COMM_RANK ( MPI_COMM_WAVE, IAPROC, IERR_MPI )
@@ -1782,7 +1782,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NDST, NAPROC, IAPROC
     !/
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -2158,7 +2158,7 @@ CONTAINS
     USE CONSTANTS, ONLY: LPDLIB
     !/
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -5451,7 +5451,7 @@ CONTAINS
 #endif
     !/
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
     !/
     !/ ------------------------------------------------------------------- /

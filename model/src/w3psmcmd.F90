@@ -3276,12 +3276,12 @@ CONTAINS
          NSPLOC, NRQSG2, IRQSG2, GSTORE
     USE W3ODATMD, ONLY: NDST, IAPROC, NAPROC
 #endif
-    !/
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !/
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -3507,12 +3507,12 @@ CONTAINS
     USE W3ODATMD, ONLY: IAPROC, NAPROC
 #endif
     USE W3ODATMD, ONLY: NDST
-    !/
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !/
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

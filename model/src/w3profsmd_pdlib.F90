@@ -209,7 +209,7 @@ CONTAINS
     USE W3GDATMD, only: FSREFRACTION, FSFREQSHIFT, FSSOURCE
 
     !/
-    INCLUDE "mpif.h"
+    use mpi
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -223,7 +223,7 @@ CONTAINS
     !/
     !/ ------------------------------------------------------------------- /
     !/
-    !!      INCLUDE "mpif.h"
+    !!      use mpi
     INTEGER :: istat
     INTEGER :: I, J, IBND_MAP, ISEA, IP, IX, JSEA, nb
     INTEGER :: IP_glob
@@ -1914,7 +1914,7 @@ CONTAINS
     USE W3ODATMD, only : IAPROC, NAPROC, NTPROC
     use yowDatapool, only: rtype, istatus
 
-    INCLUDE "mpif.h"
+    use mpi
     CHARACTER(*), INTENT(in) :: string
     REAL VcollExp(1)
     REAL rVect(1)
@@ -1997,7 +1997,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi
     !
     REAL*8, INTENT(in) :: V(NSEAL)
     CHARACTER(*), INTENT(in) :: string
@@ -2501,7 +2501,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi
     CHARACTER(*), INTENT(in) :: string
     INTEGER, INTENT(in) :: maxidx
     REAL, INTENT(in) :: TheARR(NSPEC, npa)
@@ -3017,7 +3017,7 @@ CONTAINS
     USE YOWNODEPOOL, only: npa, iplg, np
     USE W3PARALL, only: INIT_GET_ISEA
 
-    INCLUDE "mpif.h"
+    use mpi
     CHARACTER(*), INTENT(in) :: eFile
     REAL, INTENT(in) :: TheARR(NSPEC, npa)
     !

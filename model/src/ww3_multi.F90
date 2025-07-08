@@ -95,11 +95,11 @@ PROGRAM W3MLTI
   USE OMP_LIB
 #endif
   !/
-  IMPLICIT NONE
-  !
 #ifdef W3_MPI
-  INCLUDE "mpif.h"
+  USE MPI
 #endif
+  !/
+  IMPLICIT NONE
   !/
   !/ ------------------------------------------------------------------- /
   !/ Local parameters

@@ -252,12 +252,12 @@ CONTAINS
 #ifdef W3_MPRF
     USE WMMDATMD, ONLY: MDSP
 #endif
-    !/
-    IMPLICIT NONE
     !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !/
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -2013,11 +2013,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -2200,11 +2200,11 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

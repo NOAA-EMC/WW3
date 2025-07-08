@@ -452,11 +452,11 @@ CONTAINS
     USE W3ODATMD, ONLY: NDST
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

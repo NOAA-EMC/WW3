@@ -233,11 +233,11 @@ CONTAINS
     USE WMMDATMD, ONLY: MPI_COMM_GRD, MPI_COMM_MWAVE
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    !
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -732,12 +732,12 @@ CONTAINS
 #ifdef W3_S
     USE W3SERVMD, ONLY: STRACE
 #endif
+#ifdef W3_MPI
+    use mpi
+#endif
     !
     IMPLICIT NONE
     !
-#ifdef W3_MPI
-    INCLUDE "mpif.h"
-#endif
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list

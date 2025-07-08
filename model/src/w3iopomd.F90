@@ -364,10 +364,10 @@ CONTAINS
     USE W3TRIAMD, ONLY: IS_IN_UNGRID 
     USE W3GDATMD, ONLY: FILEXT 
     !
-    IMPLICIT NONE
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
@@ -985,11 +985,10 @@ CONTAINS
     USE W3ARRYMD, ONLY: PRT2DS
 #endif
     !
-    IMPLICIT NONE
-    !
 #ifdef W3_MPI
-    INCLUDE "mpif.h"
+    use mpi
 #endif
+    IMPLICIT NONE
     !/
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
