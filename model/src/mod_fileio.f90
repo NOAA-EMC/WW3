@@ -254,11 +254,7 @@ else
         else  
           open(file=filename,unit=junit,form=cform,iostat=iostat)
         end if 
-        if(iostat/=0) then
-          iostat = -4
-          if(i_print>=1) write(i_out,*) 'Z_FILEIO/Z:',trim(filename),' ',qual,iunit,iostat
-          return
-        end if
+        if(iostat/=0) iostat = -4
       end if
     end if
     close(junit,status=cstat)
