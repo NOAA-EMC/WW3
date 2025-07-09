@@ -927,7 +927,7 @@ CONTAINS
          '     ERROR IN WRITING TO ', A, ' FILE'/             &
          '     IOSTAT =',I5/)
     !
-993 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/        &
+903 FORMAT (/' *** WAVEWATCH III ERROR IN ', A, ' : '/        &
          '     ERROR IN WRITING TO ', A, ' FILE'/             &
          '     IOSTAT =',I5,', POS =',I11 /)
     !
