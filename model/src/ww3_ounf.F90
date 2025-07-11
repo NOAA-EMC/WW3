@@ -3228,10 +3228,6 @@ CONTAINS
     !
     RETURN
     !
-    ! Error escape locations
-    !
-
-    !
     ! Formats
     !
 973 FORMAT ( 'NEW NETCDF FILE WAS CREATED ',A)

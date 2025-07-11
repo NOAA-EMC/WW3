@@ -380,8 +380,6 @@ PROGRAM W3TRNC
 
   !
   WRITE (NDSO,999)
-  RETURN
-  !
 
   ! Formats
   !
