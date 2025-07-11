@@ -723,11 +723,11 @@ CONTAINS
                 !
                 IH     = 1 + NRQ * (IB-1)
                 CALL MPI_WAITALL                         &
-                     ( NRQ, IRQRSS(IH), STAT1, IERR_MPI )
+                     ( NRQ, IRQRSS(IH:IH+NRQ-1), STAT1, IERR_MPI )
                 IF ( IB .LT. NBLKRS ) THEN
                   IH     = 1 + NRQ * IB
                   CALL MPI_STARTALL                    &
-                       ( NRQ, IRQRSS(IH), IERR_MPI )
+                       ( NRQ, IRQRSS(IH:IH+NRQ-1), IERR_MPI )
                 END IF
                 !
                 DO ISEA=ISEA0, ISEAN
@@ -749,9 +749,9 @@ CONTAINS
               ELSE
                 !
                 CALL MPI_STARTALL                        &
-                     ( 1, IRQRSS(IB), IERR_MPI )
+                     ( 1, IRQRSS(IB:IB), IERR_MPI )
                 CALL MPI_WAITALL                         &
-                     ( 1, IRQRSS(IB), STAT1, IERR_MPI )
+                     ( 1, IRQRSS(IB:IB), STAT1(:,1:1), IERR_MPI )
                 !
               END IF
             END DO

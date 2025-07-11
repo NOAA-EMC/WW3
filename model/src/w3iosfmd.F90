@@ -470,7 +470,7 @@ CONTAINS
          IX, IY, IP, IOFF, DTSIZ=0
 #ifdef W3_MPI
     INTEGER                 :: ICSIZ, IERR_MPI, IT,            &
-         STATUS(MPI_STATUS_SIZE,1), JSLM
+         STATUS(MPI_STATUS_SIZE), JSLM
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0

@@ -829,7 +829,7 @@ CONTAINS
 #ifdef W3_MPI
                 CALL MPI_RECV (ASPTRK, NSPEC, MPI_REAL,&
                      IFROM, IT, MPI_COMM_WAVE,   &
-                     STATUS, IERR_MPI )
+                     STATUS(:,1), IERR_MPI )
 #endif
                 !
                 DO IK=1, NK

@@ -1214,8 +1214,8 @@ CONTAINS
       !
 #ifdef W3_MPI
       IOFF   = 1 + 4*(I-1)
-      CALL MPI_STARTALL ( 4, IRQPO2(IOFF), IERR_MPI )
-      CALL MPI_WAITALL  ( 4, IRQPO2(IOFF), STAT, IERR_MPI )
+      CALL MPI_STARTALL ( 4, IRQPO2(IOFF:IOFF+3), IERR_MPI )
+      CALL MPI_WAITALL  ( 4, IRQPO2(IOFF:IOFF+3), STAT(:,IOFF:IOFF+3), IERR_MPI )
 #endif
       !
       ! Interpolate spectrum
