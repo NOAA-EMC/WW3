@@ -471,6 +471,7 @@ PROGRAM GXOUTP
   WRITE (NDSCGR,974)
   !
   WRITE (NDSO,999)
+  STOP
   !
   ! Formats
   !

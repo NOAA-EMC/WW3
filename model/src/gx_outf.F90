@@ -646,6 +646,7 @@ PROGRAM GXOUTF
   WRITE (NDSCTL,992)
   !
   WRITE (NDSO,999)
+  STOP
   !
   ! Formats
   !

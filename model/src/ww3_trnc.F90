@@ -380,7 +380,8 @@ PROGRAM W3TRNC
 
   !
   WRITE (NDSO,999)
-
+  STOP
+  !
   ! Formats
   !
 900 FORMAT (/15X,'   *** WAVEWATCH III Track output postp. ***   '/ &
