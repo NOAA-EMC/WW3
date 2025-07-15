@@ -68,6 +68,7 @@ EOF
   ishera=`hostname | grep hfe`
   isorion=`hostname | grep orion`
   ishercules=`hostname | grep hercules`
+  isursa=`hostname | grep ufe`
   if [ $ishera ]
   then
     batchq='slurm'
@@ -130,6 +131,28 @@ EOF
       modcmake='cmake/3.27.9'
     else
       echo "Compiler $compiler not supported on hercules"
+      exit 1
+    fi
+  elif [ $isursa ]
+  then
+    batchq='slurm'
+    if [ $compiler = "intel" ]
+    then
+      spackstackpath='/contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.2.1/install/modulefiles/Core'
+      spackstackpath2='/contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.2.1/install/modulefiles/intel-oneapi-mpi/2021.13-haww6b3/gcc/12.4.0'
+      modcomp='stack-oneapi/2024.2.1'
+      modmpi='stack-intel-oneapi-mpi/2021.13'
+      metispath='/scratch4/NCEPDEV/marine/Ming.Chen/apps/parmetis/parmetis_intel/ursa/parmetis-4.0.3/install'
+      modcmake='cmake/3.27.9'
+    elif [ $compiler = "gnu" ]
+    then
+      spackstackpath='/contrib/spack-stack/spack-stack-1.9.2/envs/ue-gcc-12.4.0/install/modulefiles/Core'
+      modcomp='stack-gcc/12.4.0'
+      modmpi='stack-openmpi/4.1.6'
+      metispath='/scratch4/NCEPDEV/marine/Ming.Chen/apps/parmetis/parmetis_gnu/ursa/parmetis-4.0.3/install'
+      modcmake='cmake/3.27.9'
+    else
+      echo "Compiler $compiler not supported on ursa"
       exit 1
     fi
   else
