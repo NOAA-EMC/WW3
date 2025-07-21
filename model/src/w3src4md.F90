@@ -2229,19 +2229,17 @@ CONTAINS
         DO ITH=1,NTH
           IS=ITH+(IK-1)*NTH
           MSSLONG  = K(IK)**SSDSC(20) * A(IS) * DDEN(IK) / CG(IK) ! contribution to MSS
-          MSSPC2 = MSSPC2 +MSSLONG*EC2(ITH)
-          MSSPS2 = MSSPS2 +MSSLONG*ES2(ITH)
-          MSSPCS = MSSPCS +MSSLONG*ESC(ITH)
+          MSSPC2 = MSSPC2 +MSSLONG*ECOS(ITH)
+          MSSPS2 = MSSPS2 +MSSLONG*ESIN(ITH)
           MSSP   = MSSP   +MSSLONG
         END DO
         MSSSUM  (IK:NK,1) = MSSSUM (IK:NK,1) +MSSP
         MSSSUM  (IK:NK,3) = MSSSUM (IK:NK,3) +MSSPC2
         MSSSUM  (IK:NK,4) = MSSSUM (IK:NK,4) +MSSPS2
-        MSSSUM  (IK:NK,5) = MSSSUM (IK:NK,5) +MSSPCS
         !
         ! Direction of long wave mss summed up to IK
         !
-        MSSD=0.5*(ATAN2(2*MSSSUM(IK,5),MSSSUM(IK,3)-MSSSUM(IK,4)))
+        MSSD=ATAN2(MSSSUM(IK,4),MSSSUM(IK,3))
         IF (MSSD.LT.0) MSSD = MSSD + PI
         MSSSUM  (IK,2)  =  MSSD
       END DO
@@ -2476,7 +2474,7 @@ CONTAINS
       !
       ! directional saturation I
       ! integrate in azimuth
-      KO=(GRAV/(1E-6+USTAR**2))/(28./SSDSC(16))**2
+      KO=(GRAV/(USTAR**2))/(28./SSDSC(16))**2
       DO IK=1,NK
         IS0=(IK-1)*NTH
         KLOC=K(IK)**(2-SSDSC(20)) ! local wavenumber factor, if mss not used.
@@ -2503,16 +2501,14 @@ CONTAINS
              /(SSDSC(13)+1)*LMODULATION(1:NTH)
         ! Breaking strength : generalisation of Duncan's b parameter
         BTOVER = SQRT(BTH0(IK))-SQRT(SSDSBT)
-        BRM12(IK)=SSDSC(2)*(MAX(0.,BTOVER))**(2.5)/SIG(IK)  ! not function of direction
+        BRM12(IK)=SSDSC(2)*(MAX(0.,BTOVER))**(2.5) ! not function of direction
         !  For consistency set BRLAMBDA set to zero if b is zero
         BRLAMBDA(IS0+1:IS0+NTH)= MAX(0.,SIGN(BRLAMBDA(IS0+1:IS0+NTH),BTOVER))
         !  Source term / sig2  (action dissipation)
-        SRHS(IS0+1:IS0+NTH)= BRM12(IK)/GRAV**2*BRLAMBDA(IS0+1:IS0+NTH)*C**5
+        SRHS(IS0+1:IS0+NTH)= BRM12(IK)/GRAV**2*BRLAMBDA(IS0+1:IS0+NTH)*C**5/SIG(IK)
         ! diagonal
         DDIAG(IS0+1:IS0+NTH) = SRHS(IS0+1:IS0+NTH)*SSDSBR/MAX(1.e-20,BTH(1:NTH))/MAX(1e-20,A(IS0+1:IS0+NTH))  !
       END DO
-      !   Breaking probability (Is actually the breaking rate)
-      PB = BRLAMBDA *C
       !
     END SELECT
     !############################################################################################"
@@ -2582,21 +2578,22 @@ CONTAINS
     !
     ! precomputes integration of Lambda over direction
     ! times wavelength times a (a=5 in Reul&Chapron JGR 2003) times dk
-    !
+    ! Romero 2019 - whitecap coverate (COEF4), and air entrainment rate Va (output as wcm) (COEF5) 
     DO IK=1,MIN(FLOOR(AAIRCMIN),NK)
       C=SIG(IK)/K(IK)
       IS0=(IK-1)*NTH
       COEF4(IK) = C*C*SUM(BRLAMBDA(IS0+1:IS0+NTH))                          &
            *2.*PI/GRAV*SSDSC(7) * DDEN(IK)/(SIG(IK)*CG(IK))
+      ! BRM12 for dissipation needs to be reformulated ( and positive) to the power of 3/2 (Deike et. al 2017; GRL)
       COEF5(IK) = C**3*SUM(BRLAMBDA(IS0+1:IS0+NTH)                           &
-           *BRM12(IK))                       	       &
+           *(-1.*SSDSC(2))*(BRM12(IK)/SSDSC(2))**(3./5.))                               &
            *AAIRGB/GRAV * DDEN(IK)/(SIG(IK)*CG(IK))
       !        COEF4(IK) = SUM(BRLAMBDA((IK-1)*NTH+1:IK*NTH) * DTH) *(2*PI/K(IK)) *  &
       !                    SSDSC(7) * DDEN(IK)/(DTH*SIG(IK)*CG(IK))
       !                   NB: SSDSC(7) is WHITECAPWIDTH
     END DO
     ! Need to extrapolate above NK if necessary ... to be added later.
-    DO IK=MIN(FLOOR(AAIRCMIN),NK),NK
+    DO IK=MIN(FLOOR(AAIRCMIN),NK)+1,NK ! +1 otherwise affects the resolved values.
       COEF4(IK)=0.
       COEF5(IK)=0.
     END DO

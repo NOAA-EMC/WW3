@@ -55,8 +55,11 @@
 #                 -o netcdf -N ../model ww3_tp2.15                          #
 #                                                                           #
 #  Run using FLX5                                                           #
-#  ./bin/run_test -i input_rho -s ST6 -w work_ST6FLX5 ../model ww3_tp2.15  #
-#  ./bin/run_test -i input_rho -s ST4 -w work_ST4FLX5 ../model ww3_tp2.15  #
+#  ./bin/run_test -i input_rho -s ST6 -w work_ST6FLX5 ../model ww3_tp2.15   #
+#  ./bin/run_test -i input_rho -s ST4 -w work_ST4FLX5 ../model ww3_tp2.15   #
+#                                                                           #
+# Run using homogeneous RHO and TAU input fields                            #
+#  ./bin/run_test -i input_const -w work_CONST ../model ww3_tp2.15          #
 #                                                                           #
 # A matlab script is provided in the input directory: extract_AA_STE.m      #
 #   which computes STE parameters at the location of the Acqua Alta         #

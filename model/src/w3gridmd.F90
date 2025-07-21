@@ -5620,7 +5620,7 @@ CONTAINS
         ! Threshold of sed. motion in coastal environments, Proc. Pacific Coasts and
         ! ports, 1997 conference, Christchurch, p149-154, University of Cantebury, NZ
         SED_DSTAR=(GRAV*(SED_SG-1)/nu_water**2)**(0.333333)*SED_D50(ISEA)
-        SED_PSIC(ISEA)=0.3/(1+1.2*SED_DSTAR)+0.55*(1-exp(-0.02*SED_DSTAR))
+        SED_PSIC(ISEA)=0.3/(1+1.2*SED_DSTAR)+0.055*(1-exp(-0.02*SED_DSTAR))
 #endif
 
 
