@@ -301,8 +301,8 @@ CONTAINS
         ALLOCATE ( MASK(NNODES,1) )
         DO I=1, NNODES
           ! lat/lon
-          LON(I,1) = X0 + (IJKCel(1,I) + IJKCel(3,I)*0.5)*DLON
-          LAT(I,1) = Y0 + (IJKCel(2,I) + IJKCel(4,I)*0.5)*DLAT
+          LON(I,1) = X0 + (IJKCel(1,I) + IJKCel(3,I)*0.5 - 1.0)*DLON
+          LAT(I,1) = Y0 + (IJKCel(2,I) + IJKCel(4,I)*0.5 - 1.0)*DLAT
           ! corners
           CORLON(I,1,1) = X0 + IJKCel(1,I)*DLON
           CORLON(I,1,2) = X0 + (IJKCel(1,I) + IJKCel(3,I))*DLON
