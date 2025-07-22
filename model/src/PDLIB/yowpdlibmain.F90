@@ -1306,13 +1306,13 @@ contains
     use yowerr,       only: parallel_abort
     use yowDatapool,    only: myrank
     use yowNodepool,    only: np_global, np, iplg, t_Node, ghostlg, ng, npa
-    use yowNodepool,    only: x, y, z, PDLIB_SI, PDLIB_IEN, PDLIB_TRIA, PDLIB_CCON, PDLIB_TRIA03
+    use yowNodepool,    only: x, y, z, PDLIB_SI, PDLIB_IEN, PDLIB_IEND, PDLIB_TRIA, PDLIB_CCON, PDLIB_TRIA03
 
     integer I1, I2, I3, stat, IE, NI(3)
     real  :: DXP1, DXP2, DXP3, DYP1, DYP2, DYP3, DBLTMP, TRIA03
     logical :: CROSSES_DATELINE
 
-    allocate(PDLIB_SI(npa), PDLIB_CCON(npa), PDLIB_IEN(6,ne), PDLIB_TRIA(ne), PDLIB_TRIA03(ne), stat=stat)
+    allocate(PDLIB_SI(npa), PDLIB_CCON(npa), PDLIB_IEN(6,ne), PDLIB_IEND(3,3,ne), PDLIB_TRIA(ne), PDLIB_TRIA03(ne), stat=stat)
     if(stat/=0) call parallel_abort('SI allocation failure')
 
     PDLIB_SI(:)   = 0.0d0 ! Median Dual Patch Area of each Node
@@ -1350,6 +1350,16 @@ contains
         WRITE(*,*) 'AREA SMALLER ZERO IN PDLIB', IE, NE, PDLIB_TRIA(IE)
         STOP
       ENDIF
+      PDLIB_IEND(1,1,IE) = DOT_PRODUCT(PDLIB_IEN(1:2,IE),PDLIB_IEN(1:2,IE)) ! Tomaich. eq. 3.19 n1 * n1 etc.
+      PDLIB_IEND(1,2,IE) = DOT_PRODUCT(PDLIB_IEN(1:2,IE),PDLIB_IEN(3:4,IE))
+      PDLIB_IEND(1,3,IE) = DOT_PRODUCT(PDLIB_IEN(1:2,IE),PDLIB_IEN(5:6,IE))
+      PDLIB_IEND(2,1,IE) = DOT_PRODUCT(PDLIB_IEN(3:4,IE),PDLIB_IEN(1:2,IE))
+      PDLIB_IEND(2,2,IE) = DOT_PRODUCT(PDLIB_IEN(3:4,IE),PDLIB_IEN(3:4,IE))
+      PDLIB_IEND(2,3,IE) = DOT_PRODUCT(PDLIB_IEN(3:4,IE),PDLIB_IEN(5:6,IE))
+      PDLIB_IEND(3,1,IE) = DOT_PRODUCT(PDLIB_IEN(5:6,IE),PDLIB_IEN(1:2,IE))
+      PDLIB_IEND(3,2,IE) = DOT_PRODUCT(PDLIB_IEN(5:6,IE),PDLIB_IEN(3:4,IE))
+      PDLIB_IEND(3,3,IE) = DOT_PRODUCT(PDLIB_IEN(5:6,IE),PDLIB_IEN(5:6,IE))
+
 
       PDLIB_CCON(I1) = PDLIB_CCON(I1) + 1
       PDLIB_CCON(I2) = PDLIB_CCON(I2) + 1

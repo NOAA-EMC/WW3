@@ -796,7 +796,8 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-             B_JGS_SOURCE_NONLINEAR
+             B_JGS_SOURCE_NONLINEAR,                          & 
+             B_JGS_LGSE, B_JGS_GSE_TS, B_JGS_GSE_METHOD 
 #ifdef W3_ASCII
         WRITE (NDSA,*)                                        &
              'FSN, FSPSI,FSFCT,FSNIMP,FSTOTALIMP,FSTOTALEXP,   &
@@ -830,7 +831,8 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-             B_JGS_SOURCE_NONLINEAR
+             B_JGS_SOURCE_NONLINEAR,                          & 
+             B_JGS_LGSE, B_JGS_GSE_TS, B_JGS_GSE_METHOD
 #endif
         !Init COUNTCON and IOBDP to zero, it needs to be set somewhere or
         !removed
@@ -995,7 +997,8 @@ CONTAINS
              B_JGS_DIFF_THR,                                  &
              B_JGS_NORM_THR,                                  &
              B_JGS_NLEVEL,                                    &
-             B_JGS_SOURCE_NONLINEAR
+             B_JGS_SOURCE_NONLINEAR,                          & 
+             B_JGS_LGSE, B_JGS_GSE_TS, B_JGS_GSE_METHOD
         IF (.NOT. GUGINIT) THEN
           CALL W3DIMUG ( IGRD, NTRI, NX, COUNTOT, NNZ, NDSE, NDST )
         END IF

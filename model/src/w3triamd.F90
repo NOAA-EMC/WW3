@@ -249,6 +249,7 @@ CONTAINS
     DO I= 1, NODES
       READ(NDS,*) j, XYBTMP1(1,I), XYBTMP1(2,I), XYBTMP1(3,I)
     END DO
+    WRITE(*,*) 'TEST NUMBER OF NODES', NODES
     !
     ! read number of elements and elements from Gmsh files
     !
@@ -321,6 +322,8 @@ CONTAINS
     !
     ! Number of nodes after clean up
     !
+    WRITE(*,*) 'TEST NUMBER OF NODES AFTER CLEAN UP', J
+ 
     NX = J
     !
     DO I = 1, NTRI

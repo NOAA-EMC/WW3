@@ -932,6 +932,9 @@ MODULE W3GRIDMD
   LOGICAL :: IMPSOURCE
   LOGICAL :: SETUP_APPLY_WLV
   INTEGER :: JGS_MAXITER
+  LOGICAL :: JGS_LGSE 
+  INTEGER :: JGS_GSE_METHOD 
+  REAL(8) :: JGS_GSE_TS 
   INTEGER :: nbSel
   INTEGER :: UNSTSCHEMES(6)
   INTEGER :: UNSTSCHEME
@@ -1099,6 +1102,9 @@ MODULE W3GRIDMD
        JGS_LIMITER,                               &
        JGS_LIMITER_FUNC,                          &
        JGS_USE_JACOBI,                            &
+       JGS_LGSE,                                  &
+       JGS_GSE_METHOD,                            & 
+       JGS_GSE_TS,                                &
        JGS_BLOCK_GAUSS_SEIDEL,                    &
        JGS_MAXITER,                               &
        JGS_PMIN,                                  &
@@ -2464,8 +2470,11 @@ CONTAINS
     JGS_TERMINATE_NORM = .FALSE.
     JGS_LIMITER = .FALSE.
     JGS_LIMITER_FUNC = 1
+    JGS_GSE_TS = 350000
     JGS_BLOCK_GAUSS_SEIDEL = .TRUE.
     JGS_USE_JACOBI = .TRUE.
+    JGS_LGSE = .FALSE. 
+    JGS_GSE_METHOD = 1
     JGS_MAXITER=100
     JGS_PMIN = 1
     JGS_DIFF_THR = 1.E-10
@@ -2473,8 +2482,9 @@ CONTAINS
     JGS_NLEVEL = 0
     JGS_SOURCE_NONLINEAR = .FALSE.
     ! read data from the unstructured devoted namelist
-    CALL READNL ( NDSS, 'UNST', STATUS )
 
+    CALL READNL ( NDSS, 'UNST', STATUS )
+     
     B_JGS_USE_JACOBI = JGS_USE_JACOBI
     B_JGS_TERMINATE_MAXITER = JGS_TERMINATE_MAXITER
     B_JGS_TERMINATE_DIFFERENCE = JGS_TERMINATE_DIFFERENCE
@@ -2488,6 +2498,9 @@ CONTAINS
     B_JGS_NORM_THR = JGS_NORM_THR
     B_JGS_NLEVEL = JGS_NLEVEL
     B_JGS_SOURCE_NONLINEAR = JGS_SOURCE_NONLINEAR
+    B_JGS_LGSE = JGS_LGSE
+    B_JGS_GSE_TS = JGS_GSE_TS
+    B_JGS_GSE_METHOD = JGS_GSE_METHOD 
 
     nbSel=0
 
@@ -3352,7 +3365,10 @@ CONTAINS
            JGS_DIFF_THR,                               &
            JGS_NORM_THR,                               &
            JGS_NLEVEL,                                 &
-           JGS_SOURCE_NONLINEAR
+           JGS_SOURCE_NONLINEAR,                       & 
+           JGS_LGSE,                                   & 
+           JGS_GSE_METHOD,                             & 
+           JGS_GSE_TS                        
       !
       WRITE (NDSO,2976)    P2SF, I1P2SF, I2P2SF,                    &
            US3D, I1US3D, I2US3D,                    &
@@ -6689,7 +6705,10 @@ CONTAINS
          ',  JGS_DIFF_THR=', F8.3,                              &
          ',  JGS_NORM_THR=', F8.3,                              &
          ',  JGS_NLEVEL=', I3,                                  &
-         ',  JGS_SOURCE_NONLINEAR=', L3 / )
+         ',  JGS_SOURCE_NONLINEAR=', L3,                        &  
+         ',  JGS_LGSE=', L3,                                    &
+         ',  JGS_GSE_METHOD=', I3,                              &
+         ',  JGS_GSE_TS=', F15.3/)
     !
 960 FORMAT (/'  Miscellaneous ',A/                                   &
          ' --------------------------------------------------')
@@ -7163,7 +7182,7 @@ CONTAINS
          '       Number of longitudes      :',I10/              &
          '       Number of latitudes       :',I10/              &
          '       Number of grid points     :',I10/              &
-         '       Number of sea points      :',I10,' (',F4.1,'%)'/&
+         '       Number of sea points      :',I10,' (',F15.4,'%)'/&
          '       Number of input b. points :',I10/              &
          '       Number of land points     :',I10/              &
          '       Number of excluded points :',I10/)
@@ -7172,7 +7191,7 @@ CONTAINS
          '       Number of longitudes      :',I10/              &
          '       Number of latitudes       :',I10/              &
          '       Number of grid points     :',I10/              &
-         '       Number of sea points      :',I10,' (100%)'/    &
+         '       Number of sea points      :',I10,' (test)'/    &
          '       Number of input b. points :',I10/              &
          '       Number of land points     :',I10/              &
          '       Number of excluded points :',I10/)
