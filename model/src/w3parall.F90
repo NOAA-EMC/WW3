@@ -973,7 +973,7 @@ CONTAINS
     USE WMMDATMD, ONLY: MDATAS
 #endif
 #ifdef W3_PDLIB
-    use mpi
+    use mpi_f08
 #endif
     IMPLICIT NONE
     INTEGER, intent(in) :: IMOD
@@ -1579,7 +1579,7 @@ CONTAINS
     use yowDatapool, only: rkind
 #endif
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     IMPLICIT NONE
     !/ ------------------------------------------------------------------- /

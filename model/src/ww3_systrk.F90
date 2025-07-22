@@ -59,7 +59,7 @@ PROGRAM WW3_SYSTRK
   USE W3STRKMD
   USE W3TIMEMD, ONLY: TDIFF
 #ifdef W3_MPI
-  use mpi
+  use mpi_f08
 #endif
   IMPLICIT NONE
   !

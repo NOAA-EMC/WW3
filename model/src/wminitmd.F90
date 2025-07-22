@@ -38,7 +38,7 @@ MODULE WMINITMD
   !/    07-Mar-2012 : Adding TNAMES to avoid read warn.   ( version 4.07 )
   !/                  Adjust allocation INPMAP and IDINP.
   !/    12-Mar-2012 : Fixing format 9061.                 ( version 3.14 )
-  !/                  Use MPI_COMM_NULL for checks instead of fixed '-1'.
+  !/                  use mpi_f08_COMM_NULL for checks instead of fixed '-1'.
   !/    28-Jul-2012 : Initialize FLGR2 properly.          ( version 4.08 )
   !/                  Tom Durrant's fix, but moved to allocation.
   !/    28-Nov-2012 : Bug fix: Distribute to idle processors the grid data
@@ -438,7 +438,7 @@ CONTAINS
     USE W3ODATMD, ONLY:  OFILES
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     IMPLICIT NONE
@@ -447,8 +447,8 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     !/ Parameter list
     !/
-    INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE,     &
-         MPI_COMM_IN
+    INTEGER, INTENT(IN)        :: IDSI, IDSO, IDSS, IDST, IDSE
+    type(MPI_COMM)             :: MPI_COMM_IN
     CHARACTER*(*), INTENT(IN)  :: IFNAME
     CHARACTER*(*), INTENT(IN), OPTIONAL :: PREAMB
     !/
@@ -459,10 +459,11 @@ CONTAINS
          ILOOP, MDSI2, SCRATCH, RNKMIN,       &
          RNKMAX, RNKTMP, GRPMIN, GRPMAX, II,  &
          NDSREC, NDSFND, NPTS, JJ, IP1, IPN,  &
-         MPI_COMM_LOC, NMPSC2, JJJ, TOUT(2),  &
+         NMPSC2, JJJ, TOUT(2),  &
          TLST(2), NCPROC, NPOUTT, NAPLOC,     &
          NAPRES, NAPADD, NAPBCT, IFI, IFJ, IW,&
          IFT
+    type(MPI_COMM) :: MPI_COMM_LOC
     INTEGER                 :: STMPT(2), ETMPT(2)
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, BGROUP, LGROUP, IROOT
@@ -3782,7 +3783,7 @@ CONTAINS
     USE W3INITMD, ONLY: WWVER
     USE W3NMLMULTIMD
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     IMPLICIT NONE

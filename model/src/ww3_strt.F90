@@ -244,7 +244,7 @@ PROGRAM W3STRT
   USE W3IDATMD, ONLY: W3NINP
 #endif
 #ifdef W3_MPI
-  use mpi
+  use mpi_f08
 #endif
   !/
   IMPLICIT NONE

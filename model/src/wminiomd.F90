@@ -195,7 +195,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -597,7 +597,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -624,8 +624,9 @@ CONTAINS
 #endif
     INTEGER, POINTER        :: VTIME(:)
 #ifdef W3_MPI
-    INTEGER, POINTER        :: NRQ, IRQ(:)
-    INTEGER, ALLOCATABLE    :: STATUS(:,:)
+    INTEGER                 :: NRQ
+    type(MPI_REQUEST), POINTER :: IRQ(:)
+    type(MPI_STATUS), ALLOCATABLE   :: STATUS(:,:)
 #endif
     REAL                    :: DTTST, DT1, DT2, W1, W2
     REAL, POINTER           :: SBPI(:,:)
@@ -1284,7 +1285,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -1300,9 +1301,9 @@ CONTAINS
     !/
     INTEGER                 :: J
 #ifdef W3_MPI
-    INTEGER                 :: IERR_MPI
-    INTEGER, POINTER        :: NRQ, IRQ(:)
-    INTEGER, ALLOCATABLE    :: STATUS(:,:)
+    INTEGER                 :: IERR_MPI, NRQ
+    type(MPI_REQUEST), POINTER       :: NRQ, IRQ(:)
+    type(MPI_STATUS), ALLOCATABLE    :: STATUS(:,:)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -1467,7 +1468,7 @@ CONTAINS
     USE W3PARALL, ONLY: INIT_GET_ISEA
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -1815,7 +1816,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -2393,7 +2394,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -2576,7 +2577,7 @@ CONTAINS
     USE W3TIMEMD, ONLY: DSEC21
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -2911,7 +2912,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -3467,7 +3468,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE

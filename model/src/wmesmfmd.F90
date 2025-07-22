@@ -202,7 +202,7 @@ module WMESMFMD
   !/ Include MPI definitions
   !/
 #ifdef W3_MPI
-  use mpi
+  use mpi_f08
 #endif
   !/
   implicit none

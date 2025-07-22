@@ -1,4 +1,4 @@
-!> @file
+g> @file
 !> @brief Generate track output.
 !>
 !> @author H. L. Tolman  @date 26-Dec-2012
@@ -250,7 +250,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -282,7 +282,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IT, IROOT, IFROM, IERR_MPI
-    INTEGER, ALLOCATABLE    :: STATUS(:,:)
+    type(MPI_STATUS), ALLOCATABLE    :: STATUS(:,:)
 #endif
     REAL                    :: XN, YN, XT, YT, RD, X, Y, WX, WY,    &
          SPEC(NK,NTH), FACTOR, ASPTRK(NTH,NK),&

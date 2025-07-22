@@ -341,7 +341,7 @@ MODULE WMMDATMD
   INTEGER                 :: MDSP   !< MDSP
 #endif
 #ifdef W3_MPI
-  INTEGER                 :: MPI_COMM_MWAVE    !< MPI_COMM_MWAVE
+  type(MPI_COMM)          :: MPI_COMM_MWAVE    !< MPI_COMM_MWAVE
   INTEGER, PARAMETER      :: MTAGB = 0   !< MTAGB
   INTEGER, PARAMETER      :: MTAG0 = 1000   !< MTAG0
   INTEGER, PARAMETER      :: MTAG1 = 40000    !< MTAG1
@@ -394,8 +394,8 @@ MODULE WMMDATMD
     INTEGER               :: NRUPTS   !< NRUPTS
 
 #ifdef W3_MPI
-    INTEGER               :: MPI_COMM_GRD   !< MPI_COMM_GRD
-    INTEGER               :: MPI_COMM_BCT   !< MPI_COMM_BCT
+    type(MPI_COMM)        :: MPI_COMM_GRD   !< MPI_COMM_GRD
+    type(MPI_COMM)        :: MPI_COMM_BCT   !< MPI_COMM_BCT
     INTEGER               :: CROOT   !< CROOT
     INTEGER               :: NRQBPG   !< NRQBPG
     INTEGER               :: NRQHGG   !< NRQHGG
@@ -540,8 +540,8 @@ MODULE WMMDATMD
   INTEGER, POINTER           :: MAPMSK(:,:)   !< MAPMSK
   INTEGER, POINTER           :: UPTMAP(:)   !< UPTMAP
 #ifdef W3_MPI
-  INTEGER, POINTER           :: MPI_COMM_GRD   !< MPI_COMM_GRD
-  INTEGER, POINTER           :: MPI_COMM_BCT   !< MPI_COMM_BCT
+  type(MPI_COMM), POINTER    :: MPI_COMM_GRD   !< MPI_COMM_GRD
+  type(MPI_COMM), POINTER    :: MPI_COMM_BCT   !< MPI_COMM_BCT
   INTEGER, POINTER           :: CROOT   !< CROOT
 #endif
   REAL, POINTER              :: DATA0(:,:)   !< DATA0
@@ -707,8 +707,8 @@ CONTAINS
       MDATAS(I)%FLDAT1 = .FALSE.
       MDATAS(I)%FLDAT2 = .FALSE.
 #ifdef W3_MPI
-      MDATAS(I)%MPI_COMM_GRD = -99
-      MDATAS(I)%MPI_COMM_BCT = -99
+      MDATAS(I)%MPI_COMM_GRD%mpi_val = -99
+      MDATAS(I)%MPI_COMM_BCT%mpi_val = -99
 #endif
       DO J=1, NGRIDS
         BPSTGE(I,J)%VTIME(1) = -1

@@ -206,7 +206,7 @@ CONTAINS
     USE W3GDATMD,  ONLY: NSEA, X0, Y0, MRFct, SX, SY, IJKCel
 #endif
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     !/ ------------------------------------------------------------------- /

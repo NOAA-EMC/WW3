@@ -494,7 +494,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -536,7 +536,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, NRQMAX
-    INTEGER, ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
+    type(MPI_STATUS), ALLOCATABLE    :: STATCO(:,:), STATIO(:,:)
 #endif
     INTEGER                 :: IXrel
     REAL                    :: DTTST, DTTST1, DTTST2, DTTST3,       &
@@ -3034,7 +3034,7 @@ CONTAINS
     !/
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     !/ ------------------------------------------------------------------- /
@@ -3350,7 +3350,7 @@ CONTAINS
     !/
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     !/ ------------------------------------------------------------------- /

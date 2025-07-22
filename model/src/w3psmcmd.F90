@@ -3278,7 +3278,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     IMPLICIT NONE
@@ -3296,9 +3296,9 @@ CONTAINS
     INTEGER                 :: ISEA, IXY
 #endif
 #ifdef W3_MPI
-    INTEGER                 :: STATUS(MPI_STATUS_SIZE,NSPEC),  &
-         IOFF, IERR_MPI, JSEA, ISEA,     &
-         IXY, IS0, IB0, NPST, J
+    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE,NSPEC)
+    INTEGER                 :: IOFF, IERR_MPI, JSEA, ISEA,     &
+                               IXY, IS0, IB0, NPST, J
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT
@@ -3509,7 +3509,7 @@ CONTAINS
     USE W3ODATMD, ONLY: NDST
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     IMPLICIT NONE
@@ -3527,9 +3527,8 @@ CONTAINS
     INTEGER                 :: ISEA, IXY
 #endif
 #ifdef W3_MPI
-    INTEGER                 :: ISEA, IXY, IOFF, IERR_MPI, J,   &
-         STATUS(MPI_STATUS_SIZE,NSPEC),  &
-         JSEA, IB0
+    INTEGER                 :: ISEA, IXY, IOFF, IERR_MPI, J, JSEA, IB0
+    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE,NSPEC)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT

@@ -234,7 +234,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -733,7 +733,7 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -754,7 +754,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, NMPPNT
-    INTEGER, ALLOCATABLE    :: STATUS(:)
+    type(MPI_STATUS), ALLOCATABLE    :: STATUS(:)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0

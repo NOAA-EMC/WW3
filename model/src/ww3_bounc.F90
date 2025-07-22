@@ -155,7 +155,7 @@ PROGRAM W3BOUNC
   USE W3SERVMD, ONLY : STRACE
 #endif
 #ifdef W3_MPI
-  use mpi
+  use mpi_f08
 #endif
   !/
   IMPLICIT NONE

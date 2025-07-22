@@ -333,6 +333,9 @@ CONTAINS
     USE W3SERVMD, ONLY: STRACE
 #endif
     !
+#ifdef W3_MPI
+    use mpi_f08
+#endif
     IMPLICIT NONE
     !
     !/

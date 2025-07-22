@@ -59,7 +59,7 @@ CONTAINS
     USE yowDatapool, only: rtype, istatus
     USE yowNodepool, only: npa, np, iplg
     USE yowNodepool, only: ListNP, ListNPA, ListIPLG
-    use mpi
+    use mpi_f08
     IMPLICIT NONE
     integer IPROC, idx, IP, len, istat, sumNP, ierr
     integer, allocatable :: iVect(:)
@@ -197,7 +197,7 @@ CONTAINS
     USE yowDatapool, only: rtype, istatus
     USE yowNodepool, only: npa, np, iplg
     USE yowNodepool, only: ListNP, ListNPA, ListIPLG
-    use mpi
+    use mpi_f08
     IMPLICIT NONE
     INTEGER sumNP, iProc, ierr, istat
 #ifdef W3_DEBUGINIT

@@ -41,7 +41,7 @@ module yowerr
 contains
   subroutine parallel_abort(string, error)
     use yowDatapool, only: comm
-    use MPI
+    use mpi_f08
     implicit none
 
     character(*),optional,intent(in) :: string !string to print
@@ -91,7 +91,7 @@ contains
       !> \param[in] errno The MPI error number which is translated into an error string
       subroutine abort(string, line, file, errno)
         use yowDatapool, only: comm
-        use MPI
+        use mpi_f08
         implicit none
         ! Errorstring to print
         character(*), optional, intent(in) :: string
@@ -167,7 +167,7 @@ contains
       !> \param[in] file Filename
       subroutine warn(string, line, file)
         use yowDatapool, only: comm
-        use MPI
+        use mpi_f08
         implicit none
         ! Errorstring to print
         character(*), optional, intent(in) :: string

@@ -33,7 +33,7 @@ MODULE WMWAVEMD
   !/    20-Sep-2007 : Fix reset of GRSTAT in 0.b          ( version 3.13 )
   !/    29-May-2009 : Preparing distribution version.     ( version 3.14 )
   !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug.            ( version 3.14.6 )
-  !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
+  !/    12-Mar-2012 : use mpi_f08_COMM_NULL for checks.       ( version 3.14 )
   !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
   !/    22-Mar-2021 : Support for air density input       ( version 7.13 )
   !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
@@ -109,7 +109,7 @@ CONTAINS
     !/    21-Jun-2007 : Dedicated output processes.         ( version 3.11 )
     !/    20-Sep-2007 : Fix reset of GRSTAT in 0.b          ( version 3.13 )
     !/    20-Aug-2010 : Fix MAPSTA/MAPST2 bug sec. 9.a.   ( version 3.14.6 )
-    !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
+    !/    12-Mar-2012 : use mpi_f08_COMM_NULL for checks.       ( version 3.14 )
     !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
     !/    22-Mar-2021 : Support for air density input       ( version 7.13 )
     !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
@@ -254,7 +254,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !/
     IMPLICIT NONE
@@ -278,7 +278,7 @@ CONTAINS
 #endif
 #ifdef W3_MPI
     INTEGER                 :: IERR_MPI, NMPSCS
-    INTEGER, ALLOCATABLE    :: STATUS(:,:)
+    MPI_STATUS, ALLOCATABLE :: STATUS(:,:)
 #endif
     REAL                    :: DTTST, DTMAXI
 #ifdef W3_MPRF
@@ -2014,7 +2014,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -2029,8 +2029,8 @@ CONTAINS
     !/ Local parameters
     !/
 #ifdef W3_MPI
-    INTEGER                 :: ITAG, IP, IERR_MPI,             &
-         STATUS(MPI_STATUS_SIZE)
+    INTEGER                 :: ITAG, IP, IERR_MPI
+    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0
@@ -2201,7 +2201,7 @@ CONTAINS
 #endif
     !
 #ifdef W3_MPI
-    use mpi
+    use mpi_f08
 #endif
     !
     IMPLICIT NONE
@@ -2215,8 +2215,8 @@ CONTAINS
     !/ Local parameters
     !/
 #ifdef W3_MPI
-    INTEGER                 :: ITAG, IP, IERR_MPI,             &
-         STATUS(MPI_STATUS_SIZE)
+    INTEGER                 :: ITAG, IP, IERR_MPI
+    type(MPI_STATUS)        :: STATUS(MPI_STATUS_SIZE)
 #endif
 #ifdef W3_S
     INTEGER, SAVE           :: IENT = 0

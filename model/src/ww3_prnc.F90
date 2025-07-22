@@ -228,7 +228,7 @@ PROGRAM W3PRNC
   USE W3NMLPRNCMD
   USE NETCDF
 #ifdef W3_MPI
-  use mpi
+  use mpi_f08
 #endif
   !
   IMPLICIT NONE

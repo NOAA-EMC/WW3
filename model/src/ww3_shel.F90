@@ -309,7 +309,7 @@ PROGRAM W3SHEL
   USE OMP_LIB
 #endif
 #ifdef W3_MPI
-  use mpi
+  use mpi_f08
 #endif
   !
   IMPLICIT NONE
@@ -332,8 +332,7 @@ PROGRAM W3SHEL
   !
   INTEGER             :: NDSI, NDSI2, NDSS, NDSO, NDSE, NDST, NDSL,&
        NDSEN, IERR, J, I, ILOOP, IPTS, NPTS,     &
-       NDTNEW, MPICOMM = -99,                   &
-       FLAGTIDE, COUPL_COMM, IH, N_TOT
+       NDTNEW, FLAGTIDE, IH, N_TOT
   INTEGER             :: NDSF(-7:9), NDS(15), NTRACE(2), NDT(7:9), &
        TIME0(2), TIMEN(2), TTIME(2), TTT(2),     &
        NH(-7:10), THO(2,-7:10,NHMAX), RCLD(7:9), &
@@ -1529,7 +1528,7 @@ PROGRAM W3SHEL
                  WRITE (NDSO,2947)
             IF ( IAPROC .EQ. 1 ) THEN
 #ifdef W3_MPI
-              CALL MPI_BARRIER ( MPICOMM, IERR_MPI )
+              CALL MPI_BARRIER ( mpicomm, IERR_MPI )
 #endif
               CLOSE (NDSS,STATUS='DELETE')
             ELSE

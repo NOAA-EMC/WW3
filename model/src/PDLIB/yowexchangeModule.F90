@@ -38,7 +38,7 @@
 !> Has only the ghost nodes assign to a neighbor domain
 module yowExchangeModule
   use yowDatapool, only: rkind
-  use MPI, only: MPI_DATATYPE_NULL
+  use mpi_f08, only: MPI_DATATYPE_NULL
   implicit none
   private
   public :: initNbrDomains, createMPITypes, setDimSize
@@ -116,7 +116,7 @@ contains
 
   subroutine finalize(this)
     use yowerr
-    use MPI
+    use mpi_f08
     implicit none
     class(t_neighborDomain), intent(inout) :: this
     integer :: ierr
@@ -149,7 +149,7 @@ contains
   ! create MPI indexed datatype for this neighborDomain
   subroutine createMPIType(this)
     use yowerr
-    use MPI
+    use mpi_f08
     use yowNodepool, only: ghostgl, np, ipgl
     use yowDatapool, only: rtype, itype
     implicit none
@@ -251,13 +251,13 @@ contains
     use yowDatapool, only: comm, myrank, rkind
     use yowNodepool, only: t_Node, nodes_global, np, ng, ghosts, npa
     use yowerr
-    use MPI
+    use mpi_f08
     implicit none
     real(kind=rkind), intent(inout) :: U(:)
 
     integer :: i, ierr, tag
-    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
+    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
     character(len=140) :: errmsg
 
     if(size(U) /= npa) then
@@ -303,14 +303,14 @@ contains
     use yowDatapool, only: comm, myrank, rkind
     use yowNodepool, only: t_Node, nodes_global, np, ng, ghosts, npa
     use yowerr
-    use MPI
+    use mpi_f08
     USE W3ODATMD, only : IAPROC
     implicit none
     real(kind=rkind), intent(inout) :: U(:,:)
 
     integer :: i, ierr, tag
-    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
+    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
 
 
 #ifdef W3_DEBUGEXCH
@@ -398,13 +398,13 @@ contains
     use yowDatapool, only: comm, myrank, rkind
     use yowNodepool, only: npa
     use yowErr
-    use Mpi
+    use mpi_f08
     implicit none
     real(kind=rkind), intent(inout) :: U(0:npa)
 
     integer :: i, ierr, tag
-    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
+    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
     character(len=200) errstr
 
     ! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa
@@ -468,13 +468,13 @@ contains
     use yowDatapool, only: comm, myrank, rkind
     use yowNodepool, only: npa
     use yowErr
-    use Mpi
+    use mpi_f08
     implicit none
     real(kind=rkind), intent(inout) :: U(n2ndDim,0:npa)
 
     integer :: i, ierr, tag
-    integer :: sendRqst(nConnDomains), recvRqst(nConnDomains)
-    integer :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
+    type(MPI_REQUEST) :: sendRqst(nConnDomains), recvRqst(nConnDomains)
+    type(MPI_STATUS)  :: recvStat(MPI_STATUS_SIZE, nConnDomains), sendStat(MPI_STATUS_SIZE, nConnDomains)
     character(len=200) errstr
 
     ! It is impossible to add these range checks because assumed shape array start vom 1:npa+1 even if you allocate it from 0:npa
