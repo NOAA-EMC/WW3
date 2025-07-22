@@ -34,6 +34,7 @@ module wav_history_mod
   real, allocatable, target :: var3dm(:,:)
   real, allocatable, target :: var3dp(:,:)
   real, allocatable, target :: var3dk(:,:)
+  real, allocatable, target :: var3dnk(:,:) ! WN : node vs frequency dimensions reversed 
 
   ! output variable for (nx,ny,nz) fields
   real, pointer :: var3d(:,:)
@@ -46,6 +47,7 @@ module wav_history_mod
   type(io_desc_t)   :: iodesc3dm   !m-axis variables
   type(io_desc_t)   :: iodesc3dp   !p-axis variables
   type(io_desc_t)   :: iodesc3dk   !k-axis variables
+  type(io_desc_t)   :: iodesc3dnk  !nk-axis variables for wavenumber (nk.ne.k-axis) 
 
   ! variable attributes
   type :: varatts
@@ -70,6 +72,8 @@ contains
   !> @date 08-26-2024
   subroutine write_history ( timen )
 
+!KWS    use w3odatmd   , only : fnmpre, FNMGRD
+!KWS    use w3gdatmd   , only : filext, trigp, ntri, ungtype, gtype
     use w3odatmd   , only : FNMGRD
     use w3gdatmd   , only : trigp, ntri, ungtype, gtype
     use w3servmd   , only : extcde
@@ -96,6 +100,13 @@ contains
     use w3timemd   , only : set_user_timestring
     use w3odatmd   , only : time_origin, calendar_name, elapsed_secs
     use w3odatmd   , only : user_histfname
+
+    use w3adatmd   , only : wn
+   
+    !needed for frequency calculation
+    use constants  , only : TPIINV
+    USE W3GDATMD   , ONLY : SIG
+
     !TODO: use unstr_mesh from wav_shr_mod; currently fails due to CI
     !use wav_shr_mod      , only : unstr_mesh
 
@@ -111,12 +122,16 @@ contains
     ! indicator logfile
     character(len=256)  :: log_fname          ! log file name
     integer             :: log_unit = 28888   ! unit number for log file
+ 
 
-    integer :: n, xtid, ytid, xeid, ztid, stid, mtid, ptid, ktid, timid, nmode
-    integer :: len_s, len_m, len_p, len_k
-    logical :: s_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false.
+    integer :: n, xtid, ytid, xeid, ztid, stid, mtid, ptid, ktid, timid, nmode, nktid,k
+
+    integer :: len_s, len_m, len_p, len_k, len_nk
+    logical :: s_axis = .false., m_axis = .false., p_axis = .false., k_axis = .false., nk_axis=.false.
 
     integer :: lmap(nseal_cpl)
+
+    double precision, allocatable  :: freq_wn(:), freq_ef(:)
 
     ! -------------------------------------------------------------
     ! create the netcdf file
@@ -125,6 +140,7 @@ contains
     ! native WW3 file naming
     ! using user-defined directory (nml_output_path%grd_out)
     if (len_trim(user_histfname) == 0) then
+ !KWS     write(fname,'(a,i8.8,a1,i6.6,a)')trim(fnmpre),timen(1),'.',timen(2),'.out_grd.ww3.nc'
       write(fname,'(a,i8.8,a1,i6.6,a)')trim(FNMGRD),timen(1),'.',timen(2),'.out_grd.ww3.nc'
       write(log_fname,'(a,a,i8.8,a1,i6.6,a)')trim(FNMGRD),'log.',timen(1),'.',timen(2),'.out_grd.ww3.nc.txt'
     else
@@ -132,7 +148,7 @@ contains
       fname = trim(FNMGRD)//trim(user_histfname)//trim(user_timestring)//'.nc'
       log_fname = trim(FNMGRD)//'log.'//trim(user_histfname)//trim(user_timestring)//'.nc.txt'
     end if
-
+    
     pioid%fh = -1
     nmode = pio_clobber
     ! only applies to classic NETCDF files.
@@ -147,6 +163,8 @@ contains
     len_m = p2msf(3)-p2msf(2) + 1       ! ?
     len_p = usspf(2)                    ! partitions
     len_k = e3df(3,1) - e3df(2,1) + 1   ! frequencies
+    len_nk = nk                         ! frequencies for wavenumber
+    
 
     ! define the dimensions required for the requested gridded fields
     do n = 1,size(outvars)
@@ -155,7 +173,8 @@ contains
         if(trim(outvars(n)%dims) == 'm')m_axis = .true.
         if(trim(outvars(n)%dims) == 'p')p_axis = .true.
         if(trim(outvars(n)%dims) == 'k')k_axis = .true.
-      end if
+        if(trim(outvars(n)%dims) == 'nk')nk_axis = .true.
+     end if
     end do
 
     ! allocate arrays if needed
@@ -163,6 +182,10 @@ contains
     if (m_axis) allocate(var3dm(1:nseal_cpl,len_m))
     if (p_axis) allocate(var3dp(1:nseal_cpl,len_p))
     if (k_axis) allocate(var3dk(1:nseal_cpl,len_k))
+    if (nk_axis) allocate(var3dnk(1:nseal_cpl,len_nk))
+
+    if ( k_axis ) allocate(freq_ef(1:len_k))
+    if ( nk_axis ) allocate(freq_wn(1:len_nk))
 
     ierr = pio_def_dim(pioid, 'nx', nx, xtid)
     ierr = pio_def_dim(pioid, 'ny', ny, ytid)
@@ -171,7 +194,10 @@ contains
     if (s_axis) ierr = pio_def_dim(pioid, 'noswll', len_s, stid)
     if (m_axis) ierr = pio_def_dim(pioid, 'nm'    , len_m, mtid)
     if (p_axis) ierr = pio_def_dim(pioid, 'np'    , len_p, ptid)
-    if (k_axis) ierr = pio_def_dim(pioid, 'freq'  , len_k, ktid)
+
+    if (k_axis) ierr = pio_def_dim(pioid, 'nf_ef'  , len_k, ktid)
+    if (nk_axis) ierr = pio_def_dim(pioid, 'nf_wn'  , len_nk, nktid)
+
     if (gtype .eq. ungtype) then
       ierr = pio_def_dim(pioid, 'ne'  , ntri, xeid)
       ierr = pio_def_dim(pioid, 'nn'  ,    3, ztid)
@@ -207,6 +233,18 @@ contains
       ierr = pio_put_att(pioid, varid, 'long_name', 'node connectivity')
     end if
 
+    ! define the frequency  axis variables for wavenumber(wn) and spectra(ef)
+     if (k_axis) then
+	     ierr = pio_def_var(pioid, 'freq_ef', PIO_DOUBLE, (/ktid/), varid)
+	     call handle_err(ierr,'def_freq')
+	     ierr = pio_put_att(pioid, varid, 'units', 's-1')
+      end if
+      if (nk_axis) then
+	     ierr = pio_def_var(pioid, 'freq_wn', PIO_DOUBLE, (/nktid/), varid)
+	     call handle_err(ierr,'def_freq')
+	     ierr = pio_put_att(pioid, varid, 'units', 's-1')
+      end if
+
     ! define the variables
     dimid3(1:2) = (/xtid, ytid/)
     dimid4(1:2) = (/xtid, ytid/)
@@ -222,6 +260,9 @@ contains
         dimid => dimid4
       else if (trim(outvars(n)%dims) == 'k') then
         dimid4(3:4) = (/ktid, timid/)
+        dimid => dimid4
+      else if (trim(outvars(n)%dims) == 'nk') then ! wavenumber
+        dimid4(3:4) = (/nktid, timid/) 
         dimid => dimid4
       else
         dimid3(3) = timid
@@ -244,6 +285,7 @@ contains
     if (m_axis)call wav_pio_initdecomp(len_m, iodesc3dm)
     if (p_axis)call wav_pio_initdecomp(len_p, iodesc3dp)
     if (k_axis)call wav_pio_initdecomp(len_k, iodesc3dk)
+    if (nk_axis)call wav_pio_initdecomp(len_nk, iodesc3dnk)
 
     ! write the time and spatial axis values (lat,lon,time)
     ierr = pio_inq_varid(pioid,  'lat', varid)
@@ -260,8 +302,28 @@ contains
     call handle_err(ierr, 'inquire variable time ')
     ierr = pio_put_var(pioid, varid, (/1/), real(elapsed_secs,8))
     call handle_err(ierr, 'put time')
+     
+     if (k_axis) then
+      do k=1,len_k
+       freq_ef(k)=SIG( e3df(2,1) + k -1 ) * TPIINV
+      enddo
+      ierr = pio_inq_varid(pioid,  'freq_ef', varid)
+      call handle_err(ierr, 'inquire variable freq EF')
+      ierr = pio_put_var(pioid, varid, freq_ef(1:len_k)  )
+      call handle_err(ierr, 'put freq EF')  
+     end if
 
-    if (gtype .eq. ungtype) then
+     if (nk_axis) then
+      do k=1,len_nk
+       freq_wn(k)=SIG( e3df(2,1) + k -1 ) * TPIINV
+      enddo
+      ierr = pio_inq_varid(pioid,  'freq_wn', varid)
+      call handle_err(ierr, 'inquire variable freq WN')
+      ierr = pio_put_var(pioid, varid, freq_wn(1:len_nk)  )
+      call handle_err(ierr, 'put freq WN')  
+     end if
+ 
+   if (gtype .eq. ungtype) then
       ierr = pio_inq_varid(pioid,  'nconn', varid)
       call handle_err(ierr, 'inquire variable nconn ')
       ierr = pio_put_var(pioid, varid, trigp)
@@ -294,7 +356,7 @@ contains
         if(vname .eq.      'PTP') call write_var3d(iodesc3ds, vname, ptp      (1:nseal_cpl,0:noswll) )
         if(vname .eq.      'PLP') call write_var3d(iodesc3ds, vname, plp      (1:nseal_cpl,0:noswll) )
         if(vname .eq.     'PDIR') call write_var3d(iodesc3ds, vname, pdir     (1:nseal_cpl,0:noswll), fldir='true' )
-        if(vname .eq.      'PSI') call write_var3d(iodesc3ds, vname, psi      (1:nseal_cpl,0:noswll), fldir='true' )
+        if(vname .eq.      'PSI') call write_var3d(iodesc3ds, vname, psi      (1:nseal_cpl,0:noswll) )
         if(vname .eq.      'PWS') call write_var3d(iodesc3ds, vname, pws      (1:nseal_cpl,0:noswll) )
         if(vname .eq.      'PDP') call write_var3d(iodesc3ds, vname, pthp0    (1:nseal_cpl,0:noswll), fldir='true' )
         if(vname .eq.      'PQP') call write_var3d(iodesc3ds, vname, pqp      (1:nseal_cpl,0:noswll) )
@@ -317,10 +379,16 @@ contains
         if (vname .eq.   'USSPX') call write_var3d(iodesc3dp, vname, ussp     (1:nseal_cpl,   1:usspf(2)) )
         if (vname .eq.   'USSPY') call write_var3d(iodesc3dp, vname, ussp     (1:nseal_cpl,nk+1:nk+usspf(2)) )
 
+      else if (trim(outvars(n)%dims) == 'nk') then                           ! freq + 1 axis for wavenumber
+        var3d => var3dnk
+         if(vname .eq.       'WN') call write_var3d_transpose(iodesc3dnk, vname, wn (1:len_nk  ,1:nseal_cpl)   )
+
       else if (trim(outvars(n)%dims) == 'k') then                           ! freq axis
         var3d => var3dk
         ! Group 3
-        if(vname .eq.       'EF') call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,1):e3df(3,1)) )
+        if(vname .eq.       'EF')  call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,1):e3df(3,1)) )
+
+
         if(vname .eq.     'TH1M') call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,2):e3df(3,2)) )
         if(vname .eq.    'STH1M') call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,3):e3df(3,3)) )
         if(vname .eq.     'TH2M') call write_var3d(iodesc3dk, vname, ef       (1:nseal_cpl,e3df(2,4):e3df(3,4)) )
@@ -355,7 +423,7 @@ contains
         if (vname .eq.     'T01') call write_var2d(vname, t01      (1:nseal_cpl) )
         if (vname .eq.     'FP0') call write_var2d(vname, fp0      (1:nseal_cpl) )
         if (vname .eq.     'THM') call write_var2d(vname, thm      (1:nseal_cpl), fldir='true' )
-        if (vname .eq.     'THS') call write_var2d(vname, ths      (1:nseal_cpl), fldir='true' )
+        if (vname .eq.     'THS') call write_var2d(vname, ths      (1:nseal_cpl) )
         if (vname .eq.    'THP0') call write_var2d(vname, thp0     (1:nseal_cpl), fldir='true' )
         if (vname .eq.    'HSIG') call write_var2d(vname, hsig     (1:nseal_cpl) )
         if (vname .eq.  'STMAXE') call write_var2d(vname, stmaxe   (1:nseal_cpl) )
@@ -372,8 +440,9 @@ contains
         if(vname .eq.      'PNR') call write_var2d(vname, pnr      (1:nseal_cpl) )
 
         ! Group 5
-        if (vname .eq.    'USTX') call write_var2d(vname, ust      (1:nseal_cpl)*asf(1:nseal_cpl), dir=cos(ustdir(1:nseal_cpl)), usemask='true')
-        if (vname .eq.    'USTY') call write_var2d(vname, ust      (1:nseal_cpl)*asf(1:nseal_cpl), dir=sin(ustdir(1:nseal_cpl)), usemask='true')
+        if (vname .eq.    'USTX') call write_var2d(vname, ust      (1:nsea)*asf(1:nsea), dir=cos(ustdir(1:nsea)), init0='false', global='true')
+        if (vname .eq.    'USTY') call write_var2d(vname, ust      (1:nsea)*asf(1:nsea), dir=sin(ustdir(1:nsea)), init0='false', global='true')
+
         if (vname .eq.   'CHARN') call write_var2d(vname, charn    (1:nseal_cpl) )
         if (vname .eq.     'CGE') call write_var2d(vname, cge      (1:nseal_cpl) )
         if (vname .eq.   'PHIAW') call write_var2d(vname, phiaw    (1:nseal_cpl),   init2='true')
@@ -442,6 +511,10 @@ contains
     if (m_axis) deallocate(var3dm)
     if (p_axis) deallocate(var3dp)
     if (k_axis) deallocate(var3dk)
+    if (nk_axis) deallocate(var3dnk)
+ 
+    if (k_axis ) deallocate(freq_ef)
+    if (nk_axis) deallocate(freq_wn)
 
     call pio_freedecomp(pioid,iodesc2d)
     call pio_freedecomp(pioid,iodesc2dint)
@@ -449,6 +522,7 @@ contains
     if (m_axis) call pio_freedecomp(pioid, iodesc3dm)
     if (p_axis) call pio_freedecomp(pioid, iodesc3dp)
     if (k_axis) call pio_freedecomp(pioid, iodesc3dk)
+    if (nk_axis) call pio_freedecomp(pioid, iodesc3dnk)
 
     call pio_closefile(pioid)
 
@@ -462,6 +536,51 @@ contains
     end if
 
   end subroutine write_history
+
+
+  !===============================================================================
+  !>  Write an array of (:, nseal) points as (nx,ny,:)
+  !!
+  !!
+  !! @param[in]   iodesc      the PIO decomposition handle
+  !! @param[in]   vname       the variable name
+  !! @param[in]   var         the variable array with position in second index
+  !!                          and frequency in the first index
+  !!
+  !> author keston.smith@noaa.gov
+  !> @date 03-15-2025
+  !! write_var3d_transpose is equivalent to write_var for wavenumber (WN) whose 
+  !! indicies are transposed relative to other frequency dependent variables.  
+ subroutine write_var3d_transpose(iodesc, vname, var)
+
+    type(io_desc_t),            intent(inout) :: iodesc
+    character(len=*),           intent(in) :: vname
+    real            ,           intent(in) :: var(:,:)
+
+    ! local variables
+    real, allocatable, dimension(:) :: varloc
+    integer                         :: lb, ub, k
+
+    lb = lbound(var,1)
+    ub = ubound(var,1)
+    allocate(varloc(lb:ub))
+
+    var3d = undef
+    do jsea = 1,nseal_cpl
+      call init_get_isea(isea, jsea)
+      ! initialization
+      varloc(:) = var(:,isea)
+      var3d(jsea,:) = varloc(:)
+    end do
+
+    ierr = pio_inq_varid(pioid,  trim(vname), varid)
+    call handle_err(ierr, 'inquire variable '//trim(vname))
+    call pio_setframe(pioid, varid, int(1,kind=PIO_OFFSET_KIND))
+    call pio_write_darray(pioid, varid, iodesc, var3d, ierr)
+
+    deallocate(varloc)
+  end subroutine write_var3d_transpose
+
 
   !===============================================================================
   !>  Write an array of (nseal) points as (nx,ny)
@@ -600,7 +719,7 @@ contains
     ! local variables
     real, allocatable, dimension(:) :: varloc
     logical                         :: linit2, lfldir
-    integer                         :: lb, ub
+    integer                         :: lb, ub, k
 
     linit2 = .false.
     if (present(init2)) then
@@ -626,7 +745,10 @@ contains
       end if
       if (lfldir) then
         if (mapsta(mapsf(isea,2),mapsf(isea,1)) > 0 )  then
-          varloc(:) = mod(630. - rade*varloc(:), 360.)
+! returns numeric values for undef varloc(:) = mod(630. - rade*varloc(:), 360.)
+         do k=1,size(varloc,1)
+          if (varloc(k).NE.UNDEF) varloc(k)=mod( 630.-rade*varloc(k), 360.)
+         enddo
         end if
       end if
       var3d(jsea,:) = varloc(:)
@@ -812,8 +934,7 @@ contains
          varatts( "STH1M", "STH1M     ", "Directional spreading from a1,b2                ", "deg       ", "k ", .false.) , &
          varatts( "TH2M ", "TH2M      ", "Mean wave direction from a2,b2                  ", "deg       ", "k ", .false.) , &
          varatts( "STH2M", "STH2M     ", "Directional spreading from a2,b2                ", "deg       ", "k ", .false.) , &
-         !TODO: has reverse indices (nk,nsea)
-         varatts( "WN   ", "WN        ", "Wavenumber array                                ", "m-1       ", "k ", .false.)   &
+         varatts( "WN   ", "WN        ", "Wavenumber array                                ", "m-1       ", "nk", .false.)   &
          ]
 
     !  4   Spectral Partition Parameters
@@ -842,7 +963,7 @@ contains
          varatts( "UST  ", "USTX      ", "Friction velocity x                             ", "m s-1     ", "  ", .false.) , &
          varatts( "UST  ", "USTY      ", "Friction velocity y                             ", "m s-1     ", "  ", .false.) , &
          varatts( "CHA  ", "CHARN     ", "Charnock parameter                              ", "nd        ", "  ", .false.) , &
-         varatts( "CGE  ", "CGE       ", "Energy flux                                     ", "kW m-1    ", "  ", .false.) , &
+         varatts( "CGE  ", "CGE       ", "Energy flux                                     ", "W m-1     ", "  ", .false.) , &
          varatts( "FAW  ", "PHIAW     ", "Air-sea energy flux                             ", "W m-2     ", "  ", .false.) , &
          varatts( "TAW  ", "TAUWIX    ", "Net wave-supported stress x                     ", "m2 s-2    ", "  ", .false.) , &
          varatts( "TAW  ", "TAUWIY    ", "Net wave-supported stress y                     ", "m2 s-2    ", "  ", .false.) , &
@@ -913,7 +1034,7 @@ contains
 
     !  9   Numerical diagnostics
     gridoutdefs(9,1:5) = [ &
-         varatts( "DTD  ", "DTDYN     ", "Average time step in integration                ", "min       ", "  ", .false.) , &
+         varatts( "DTD  ", "DTDYN     ", "Average time step in integration                ", "s         ", "  ", .false.) , &
          varatts( "FC   ", "FCUT      ", "Cut-off frequency                               ", "s-1       ", "  ", .false.) , &
          varatts( "CFX  ", "CFLXYMAX  ", "Max. CFL number for spatial advection           ", "nd        ", "  ", .false.) , &
          varatts( "CFD  ", "CFLTHMAX  ", "Max. CFL number for theta-advection             ", "nd        ", "  ", .false.) , &
