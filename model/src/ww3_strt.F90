@@ -62,6 +62,7 @@ PROGRAM W3STRT
   !/    05-Jul-2011 : Revert to X-Y gaussian shape        ( version 4.01 )
   !/    06-Mar-2012 : Hardening output.                   ( version 4.07 )
   !/    06-Jun-2018 : Add DEBUGINIT/EXPORTWWM             ( version 6.04 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/
   !/    Copyright 2009-2012 National Weather Service (NWS),
@@ -129,6 +130,8 @@ PROGRAM W3STRT
   !      ITRACE    Subr. W3SERVMD Subroutine tracing initialization.
   !      STRACE    Subr.   Id.    Subroutine tracing.
   !      NEXTLN    Subr.   Id.    Get next line from input filw
+  !      EXTIOF    Subr.   Id.    Abort if error when I/O file
+  !      EXTOPN    Subr.   Id.    Abort if error when opening file
   !      EXTCDE    Subr.   Id.    Abort program as graceful as possible.
   !      EJ5P      Func.   Id.    Five parameter JONSWAP spectrum.
   !      PRT1DS    Subr. W3ARRYMD Print plot of 1-D spectrum.
@@ -215,7 +218,7 @@ PROGRAM W3STRT
   USE W3ADATMD, ONLY: W3NAUX, W3SETA
 #endif
   USE W3ODATMD, ONLY: W3NOUT, W3SETO, FLOGRR
-  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EJ5P, EXTCDE
+  USE W3SERVMD, ONLY: ITRACE, NEXTLN, EJ5P, EXTCDE, EXTOPN, EXTIOF
 #ifdef W3_S
   USE W3SERVMD, ONLY : STRACE
 #endif
@@ -338,10 +341,11 @@ PROGRAM W3STRT
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,900)
   !
   J      = LEN_TRIM(FNMPRE)
-  OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_strt.inp',STATUS='OLD',        &
-       ERR=800,IOSTAT=IERR)
+  OPEN (NDSI,FILE=FNMPRE(:J)//'ww3_strt.inp',STATUS='OLD',IOSTAT=IERR)
+  IF (IERR.NE.0) CALL EXTOPN(NDSE,IERR, 'W3STRT', 'INPUT', 10)
   REWIND (NDSI)
-  READ (NDSI,'(A)',END=801,ERR=802) COMSTR
+  READ (NDSI,'(A)',IOSTAT=IERR) COMSTR
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
   IF (COMSTR.EQ.' ') COMSTR = '$'
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,901) COMSTR
   !
@@ -361,7 +365,10 @@ PROGRAM W3STRT
   !
 #ifdef W3_DIST
   NSEAL  = 1 + (NSEA-IAPROC)/NAPROC
-  IF ( NSEA .LT. NAPROC ) GOTO 803
+  IF ( NSEA .LT. NAPROC ) THEN
+    IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) NSEA, NAPROC
+    CALL EXTCDE ( 13 )
+  END IF
 #endif
   !
   CALL W3DIMW ( 1, NDSE, NDST )
@@ -372,7 +379,8 @@ PROGRAM W3STRT
   ! 3.  Read type from input file.
   !
   CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-  READ (NDSI,*,END=801,ERR=802) ITYPE
+  READ (NDSI,*,IOSTAT=IERR) ITYPE
+  IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
   IF ( ITYPE.LT.1 .OR. ITYPE.GT.5 ) THEN
     IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1010) ITYPE
     CALL EXTCDE ( 1 )
@@ -388,8 +396,9 @@ PROGRAM W3STRT
     ! 4.a Read parameters.
     !
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*,END=801,ERR=802)                            &
+    READ (NDSI,*,IOSTAT=IERR)                            &
          FP, SIP, THM, NCOS, XM, SIX, YM, SIY, HMAX
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
     FP     = MAX ( 0.5 * TPIINV * SIG(1) , FP )
     SIP    = MAX ( 0. , SIP )
     DO
@@ -592,8 +601,9 @@ PROGRAM W3STRT
     ! 5.a Read parameters.
     !
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*,END=801,ERR=802)                               &
+    READ (NDSI,*,IOSTAT=IERR)                               &
          ALFA, FP, THM, GAMMA, SIGA, SIGB, XM, SIX, YM, SIY
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
     !
     IF (ALFA.LE.0.) ALFA = 0.0081
     IF (FP  .LE.0.) FP   = 0.10
@@ -778,15 +788,17 @@ PROGRAM W3STRT
     ! 7.a Read parameters.
     !
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*,END=801,ERR=802) FACS
+    READ (NDSI,*,IOSTAT=IERR) FACS
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
     IF ( FACS .LE. 0. ) FACS = 1.
     IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,970) FACS
     !
     ! 7.b Read and rescale spectrum.
     !
     CALL NEXTLN ( COMSTR , NDSI , NDSEN )
-    READ (NDSI,*,END=801,ERR=802)                               &
+    READ (NDSI,*,IOSTAT=IERR)                               &
          ((FINP(IK,ITH),IK=1,NK),ITH=1,NTH)
+    IF (IERR.NE.0) CALL EXTIOF(NDSE,IERR,'W3STRT','INPUT',11)
     !
     FINP = FINP * FACS / TPI
     !
@@ -909,29 +921,6 @@ PROGRAM W3STRT
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,995)
   CALL W3IORS ( INXOUT, NDSR, SIG(NK) )
   !
-  GOTO 888
-  !
-  ! Escape locations read errors :
-  !
-800 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1000) IERR
-  CALL EXTCDE ( 10 )
-  !
-801 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1001)
-  CALL EXTCDE ( 11 )
-  !
-802 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1002) IERR
-  CALL EXTCDE ( 12 )
-  !
-#ifdef W3_DIST
-803 CONTINUE
-  IF ( IAPROC .EQ. NAPERR ) WRITE (NDSE,1003) NSEA, NAPROC
-  CALL EXTCDE ( 13 )
-#endif
-  !
-888 CONTINUE
   IF ( IAPROC .EQ. NAPOUT ) WRITE (NDSO,999)
 #ifdef W3_MPI
   CALL MPI_FINALIZE  ( IERR_MPI )
@@ -999,17 +988,6 @@ PROGRAM W3STRT
 999 FORMAT (/'  End of program '/                                   &
        ' ========================================='/          &
        '         WAVEWATCH III Initial conditions '/)
-  !
-1000 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRT : '/               &
-       '     ERROR IN OPENING INPUT FILE'/                    &
-       '     IOSTAT =',I5/)
-  !
-1001 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRT : '/               &
-       '     PREMATURE END OF INPUT FILE'/)
-  !
-1002 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRT : '/               &
-       '     ERROR IN READING FROM INPUT FILE'/               &
-       '     IOSTAT =',I5/)
   !
 1010 FORMAT (/' *** WAVEWATCH III ERROR IN W3STRT : '/               &
        '     ILLEGAL TYPE, ITYPE =',I4/)

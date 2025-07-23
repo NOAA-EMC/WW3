@@ -2029,6 +2029,7 @@ CONTAINS
     !/                  activation of grid point.
     !/    06-Jun-2012 : Porting bugfixes from 3.14 to 4.07  ( version 4.07 )
     !/    26-Sep-2012 : Adding update from tidal analysis   ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -2149,7 +2150,7 @@ CONTAINS
 #ifdef W3_T3
     REAL                    :: OUT(NK,NTH)
 #endif
-    LOGICAL                 :: LOCAL
+    LOGICAL                 :: LOCAL, COND
     INTEGER                 :: IBELONG
     !
 #ifdef W3_TIDE
@@ -2404,58 +2405,61 @@ CONTAINS
         !
         ! 2.e Redistribute discrete action density
         !
+        COND = .TRUE.
         IF ( WNO(1) .LT. WN(1,ISEA) ) THEN
           IK0    = 1
           I1     = 0
           I2     = 1
-220       CONTINUE
-          IK0    = IK0 + 1
-          IF ( IK0 .GT. NK+1 ) GOTO 251
-          IF ( WNO(IK0) .GE. WN(1,ISEA) ) THEN
-            IK0    = IK0 - 1
-          ELSE
-            GOTO 220
-          END IF
+          DO
+            IK0    = IK0 + 1
+            IF ( IK0 .GT. NK+1 ) THEN
+              COND = .FALSE.
+              EXIT
+            END IF
+            IF ( WNO(IK0) .GE. WN(1,ISEA) ) THEN
+              IK0    = IK0 - 1
+              EXIT
+            END IF
+          END DO
         ELSE
           IK0    = 1
           I1     = 1
           I2     = 2
         END IF
         !
-        DO IK=IK0, NK
-          !
-230       CONTINUE
-          IF ( WNO(IK) .GT. WN(I2,ISEA) ) THEN
-            I1     = I1 + 1
-            IF ( I1 .GT. NK ) GOTO 250
-            I2     = I1 + 1
-            GOTO 230
-          END IF
-          !
-          IF ( I1 .EQ. 0 ) THEN
-            RD1    = ( WN(1,ISEA) - WNO(IK) ) / DWN(1)
-            RD2    = 1. - RD1
-          ELSE
-            RD1    = ( WN(I2,ISEA) - WNO(IK) ) /                &
-                 ( WN(I2,ISEA) - WN(I1,ISEA) )
-            RD2    = 1. - RD1
-          END IF
-          !
-          IF ( I1 .GE. 1 ) THEN
-            DO ITH=1, NTH
-              A(ITH,I1,JSEA) = A(ITH,I1,JSEA) + RD1*TA(ITH,IK)
+        IF (COND) THEN
+          DO IK=IK0, NK
+            !
+            DO WHILE ( WNO(IK) .GT. WN(I2,ISEA) )
+              I1     = I1 + 1
+              IF ( I1 .GT. NK ) EXIT
+              I2     = I1 + 1
             END DO
-          END IF
-          !
-          IF ( I2 .LE. NK ) THEN
-            DO ITH=1, NTH
-              A(ITH,I2,JSEA) = A(ITH,I2,JSEA) + RD2*TA(ITH,IK)
-            END DO
-          END IF
-          !
-250       CONTINUE
-        END DO
-251     CONTINUE
+            IF ( I1 .GT. NK ) CYCLE
+            !
+            IF ( I1 .EQ. 0 ) THEN
+              RD1    = ( WN(1,ISEA) - WNO(IK) ) / DWN(1)
+              RD2    = 1. - RD1
+            ELSE
+              RD1    = ( WN(I2,ISEA) - WNO(IK) ) /                &
+                   ( WN(I2,ISEA) - WN(I1,ISEA) )
+              RD2    = 1. - RD1
+            END IF
+            !
+            IF ( I1 .GE. 1 ) THEN
+              DO ITH=1, NTH
+                A(ITH,I1,JSEA) = A(ITH,I1,JSEA) + RD1*TA(ITH,IK)
+              END DO
+            END IF
+            !
+            IF ( I2 .LE. NK ) THEN
+              DO ITH=1, NTH
+                A(ITH,I2,JSEA) = A(ITH,I2,JSEA) + RD2*TA(ITH,IK)
+              END DO
+            END IF
+            !
+          END DO
+        END IF
         !
         ! 2.f Convert discrete action densities to spectrum
         !

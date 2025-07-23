@@ -36,6 +36,7 @@ MODULE WMWAVEMD
   !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
   !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
   !/    22-Mar-2021 : Support for air density input       ( version 7.13 )
+  !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
   !/
   !/    Copyright 2009-2014 National Weather Service (NWS),
   !/       National Oceanic and Atmospheric Administration.  All rights
@@ -111,6 +112,7 @@ CONTAINS
     !/    12-Mar-2012 : Use MPI_COMM_NULL for checks.       ( version 3.14 )
     !/    28-Jan-2014 : Add memory hwm to profiling.        ( version 5.00 )
     !/    22-Mar-2021 : Support for air density input       ( version 7.13 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !/
     !  1. Purpose :
     !
@@ -316,13 +318,22 @@ CONTAINS
     !
     DO I=1, NRGRD
       IF ( ( GRSTAT(I).LT.0 .OR. GRSTAT(I).GT.7 ) .AND.             &
-           GRSTAT(I).NE.99 ) GOTO 2000
+           GRSTAT(I).NE.99 ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1000) I, GRSTAT(I)
+        CALL EXTCDE ( 2000 )
+        RETURN
+      END IF
       !
       !     Consistency of times for grids
       !
       IF ( TSYNC(1,I) .NE. -1 ) THEN
         DTTST  = DSEC21 ( TSYNC(:,I), TEND(:,I) )
-        IF ( DTTST .LT. 0. ) GOTO 2001
+        IF ( DTTST .LT. 0. ) THEN
+          IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1001) I, TSYNC(:,I),      &
+               TEND(:,I)
+          CALL EXTCDE ( 2001 )
+          RETURN
+        END IF
       END IF
     END DO
     !
@@ -331,8 +342,13 @@ CONTAINS
     DO J=1, NRGRP
       DO JJ=2, INGRP(J,0)
         IF ( DSEC21(TSYNC(:,INGRP(J,1)),TSYNC(:,INGRP(J,JJ))).NE.0. &
-             .OR. DSEC21(TEND(:,INGRP(J,1)),TEND(:,INGRP(J,JJ))).NE.0. ) &
-             GOTO 2002
+             .OR. DSEC21(TEND(:,INGRP(J,1)),TEND(:,INGRP(J,JJ))).NE.0. ) THEN
+          IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1002) J, INGRP(J,1),      &
+               INGRP(J,JJ), TSYNC(:,INGRP(J,1)), TSYNC(:,INGRP(J,JJ)),    &
+               TEND(:,INGRP(J,1)), TEND(:,INGRP(J,JJ))
+          CALL EXTCDE ( 2002 )
+          RETURN
+        END IF
       END DO
       IF ( GRANK(INGRP(J,1)).EQ.1 .AND. TSYNC(1,0).EQ.-1 )          &
            TSYNC(:,0) = TSYNC(:,INGRP(J,1))
@@ -830,7 +846,7 @@ CONTAINS
 #ifdef W3_T
                 IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
 #endif
-                IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
+                IF ( INGRP(J,0) .GT. 1 ) EXIT
                 !
               END IF ! IF ( FLAGOK )
               !
@@ -909,7 +925,7 @@ CONTAINS
 #ifdef W3_T
                 IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
 #endif
-                IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
+                IF ( INGRP(J,0) .GT. 1 ) EXIT
                 !
               END IF ! IF ( FLAGOK )
               !
@@ -1032,7 +1048,7 @@ CONTAINS
 #ifdef W3_T
                 IF ( INGRP(J,0) .GT. 1 ) WRITE (MDST,9006)
 #endif
-                IF ( INGRP(J,0) .GT. 1 ) GOTO 1111
+                IF ( INGRP(J,0) .GT. 1 ) EXIT
               END IF ! IF ( FLAGOK )
               !
             END IF !  IF ( .NOT. FLEQOK(I) )
@@ -1583,8 +1599,6 @@ CONTAINS
           !
         END DO LOOP_JJ
         !
-1111    CONTINUE
-        !
       END DO LOOP_J
       !
 #ifdef W3_MPI
@@ -1597,7 +1611,11 @@ CONTAINS
         IF ( GRSTAT(I) .EQ. 9 ) GRSTAT(I) = 0
       END DO
       !
-      IF ( .NOT. DONE ) GOTO 2099
+      IF ( .NOT. DONE ) THEN
+        IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1099)
+        CALL EXTCDE ( 2099 )
+        RETURN
+      END IF
       IF ( MINVAL(GRSTAT) .EQ. 99 ) EXIT LOOP_OUTER
     END DO LOOP_OUTER
     !
@@ -1627,31 +1645,6 @@ CONTAINS
     WRITE (MDST,9100)
 #endif
     !
-    RETURN
-    !
-    ! Escape locations
-    !
-2000 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1000) I, GRSTAT(I)
-    CALL EXTCDE ( 2000 )
-    RETURN
-    !
-2001 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1001) I, TSYNC(:,I),      &
-         TEND(:,I)
-    CALL EXTCDE ( 2001 )
-    RETURN
-    !
-2002 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1002) J, INGRP(J,1),      &
-         INGRP(J,JJ), TSYNC(:,INGRP(J,1)), TSYNC(:,INGRP(J,JJ)),    &
-         TEND(:,INGRP(J,1)), TEND(:,INGRP(J,JJ))
-    CALL EXTCDE ( 2002 )
-    RETURN
-    !
-2099 CONTINUE
-    IF ( IMPROC .EQ. NMPERR ) WRITE (MDSE,1099)
-    CALL EXTCDE ( 2099 )
     RETURN
     !
     ! Formats

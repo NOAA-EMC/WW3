@@ -1065,7 +1065,6 @@ CONTAINS
     !/ ------------------------------------------------------------------- /
     USE CONSTANTS, ONLY: TPIINV, RADE, GRAV
     USE W3ODATMD,  ONLY: NDSE
-    USE W3SERVMD,  ONLY: EXTCDE
     USE W3DISPMD,  ONLY: WAVNU2
     USE W3GDATMD,  ONLY: SIG, DSIP, NK, NTH, TTAUWSHELTER,             &
          SSDSDTH, SSDSCOS, TH, DTH, XFR, ECOS, ESIN,   &
@@ -1604,6 +1603,7 @@ CONTAINS
     !/
     !/    15-May-2007 : Origination in WW3                  ( version 3.10.SHOM )
     !/    24-Jan-2013 : Allows to read in table             ( version 4.08 )
+    !/    04-Jul-2025 : Remove labelled statements          ( version X.XX )
     !
     !  1. Purpose :
     !
@@ -1728,91 +1728,98 @@ CONTAINS
     DELTAIL = ALPHAM/REAL(ILEVTAIL)
     CONST1  = BBETA/KAPPA**2
     OMEGAC  = SIGMAX
-800 CONTINUE
-    IF ( NOFILE ) THEN
-      WRITE(NDSE,*) 'Filling 3D look-up table for SIN4. please wait'
-      WRITE(NDSE,*)  IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA,  &
-           ILEVTAIL, ZZALP, KAPPA, GRAV
-      !
-      TAUHFT(0:IUSTAR,0:IALPHA)=0.  !table initialization
-      !
-      ALLOCATE(W(JTOT))
-      W(2:JTOT-1)=1.
-      W(1)=0.5
-      W(JTOT)=0.5
-      X0 = 0.05
-      !
-      DO K=0,IUSTAR
-        UST0      = MAX(REAL(K)*DELUST,0.000001)
-        DO L=0,IALPHA
-          UST=UST0
-          ZZ0       = UST0**2*(AALPHA+FLOAT(L)*DELALP)/GRAV
-          OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
-          YC       = OMEGACC*SQRT(ZZ0/GRAV)
-          DELY     = MAX((1.-YC)/REAL(JTOT),0.)
-          ! For a given value of UST and ALPHA,
-          ! the wave-supported stress is integrated all the way
-          ! to 0.05*g/UST
-          DO I=0,ILEVTAIL
-            LEVTAIL=REAL(I)*DELTAIL
-            TAUHFT(K,L)=0.
-            TAUHFT2(K,L,I)=0.
-            TAUW0=UST0**2
-            TAUW=TAUW0
-            DO J=1,JTOT
-              Y        = YC+REAL(J-1)*DELY
-              OMEGA    = Y*SQRT(GRAV/ZZ0)
-              ! This is the deep water phase speed
-              CM       = GRAV/OMEGA
-              !this is the inverse wave age, shifted by ZZALP (tuning)
-              ZX       = UST0/CM +ZZALP
-              ZARG     = MIN(KAPPA/ZX,20.)
-              ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
-              ZLOG     = MIN(ALOG(ZMU),0.)
-              ZBETA        = CONST1*ZMU*ZLOG**4
-              ! Power of Y in denominator should be FACHFE-4
-              TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
-              ZX       = UST/CM +ZZALP
-              ZARG     = MIN(KAPPA/ZX,20.)
-              ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
-              ZLOG     = MIN(ALOG(ZMU),0.)
-              ZBETA        = CONST1*ZMU*ZLOG**4
-              ! Power of Y in denominator should be FACHFE-4
-              TAUHFT2(K,L,I)  = TAUHFT2(K,L,I)+W(J)*ZBETA*(UST/UST0)**2/Y*DELY
-              TAUW=TAUW-W(J)*UST**2*ZBETA*LEVTAIL/Y*DELY
-              UST=SQRT(MAX(TAUW,0.))
-            END DO
+    DO
+      IF ( NOFILE ) THEN
+        WRITE(NDSE,*) 'Filling 3D look-up table for SIN4. please wait'
+        WRITE(NDSE,*)  IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA,  &
+             ILEVTAIL, ZZALP, KAPPA, GRAV
+        !
+        TAUHFT(0:IUSTAR,0:IALPHA)=0.  !table initialization
+        !
+        ALLOCATE(W(JTOT))
+        W(2:JTOT-1)=1.
+        W(1)=0.5
+        W(JTOT)=0.5
+        X0 = 0.05
+        !
+        DO K=0,IUSTAR
+          UST0      = MAX(REAL(K)*DELUST,0.000001)
+          DO L=0,IALPHA
+            UST=UST0
+            ZZ0       = UST0**2*(AALPHA+FLOAT(L)*DELALP)/GRAV
+            OMEGACC  = MAX(OMEGAC,X0*GRAV/UST)
+            YC       = OMEGACC*SQRT(ZZ0/GRAV)
+            DELY     = MAX((1.-YC)/REAL(JTOT),0.)
+            ! For a given value of UST and ALPHA,
+            ! the wave-supported stress is integrated all the way
+            ! to 0.05*g/UST
+            DO I=0,ILEVTAIL
+              LEVTAIL=REAL(I)*DELTAIL
+              TAUHFT(K,L)=0.
+              TAUHFT2(K,L,I)=0.
+              TAUW0=UST0**2
+              TAUW=TAUW0
+              DO J=1,JTOT
+                Y        = YC+REAL(J-1)*DELY
+                OMEGA    = Y*SQRT(GRAV/ZZ0)
+                ! This is the deep water phase speed
+                CM       = GRAV/OMEGA
+                !this is the inverse wave age, shifted by ZZALP (tuning)
+                ZX       = UST0/CM +ZZALP
+                ZARG     = MIN(KAPPA/ZX,20.)
+                ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+                ZLOG     = MIN(ALOG(ZMU),0.)
+                ZBETA        = CONST1*ZMU*ZLOG**4
+                ! Power of Y in denominator should be FACHFE-4
+                TAUHFT(K,L)  = TAUHFT(K,L)+W(J)*ZBETA/Y*DELY
+                ZX       = UST/CM +ZZALP
+                ZARG     = MIN(KAPPA/ZX,20.)
+                ZMU      = MIN(GRAV*ZZ0/CM**2*EXP(ZARG),1.)
+                ZLOG     = MIN(ALOG(ZMU),0.)
+                ZBETA        = CONST1*ZMU*ZLOG**4
+                ! Power of Y in denominator should be FACHFE-4
+                TAUHFT2(K,L,I)  = TAUHFT2(K,L,I)+W(J)*ZBETA*(UST/UST0)**2/Y*DELY
+                TAUW=TAUW-W(J)*UST**2*ZBETA*LEVTAIL/Y*DELY
+                UST=SQRT(MAX(TAUW,0.))
+              END DO
 #ifdef W3_T
-            WRITE (NDST,9000) K,L,I,UST0,AALPHA+FLOAT(L)*DELALP,LEVTAIL,TAUHFT2(K,L,I)
+              WRITE (NDST,9000) K,L,I,UST0,AALPHA+FLOAT(L)*DELALP,LEVTAIL,TAUHFT2(K,L,I)
 #endif
+            END DO
           END DO
         END DO
-      END DO
-      DEALLOCATE(W)
-      OPEN (993,FILE=FNAMETAB,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR,STATUS='UNKNOWN')
-      WRITE(993) IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
-      WRITE(993) TAUHFT(0:IUSTAR,0:IALPHA)
-      WRITE(993) TAUHFT2
-      CLOSE(993)
-      !DO K=0,IUSTAR
-      !  DO L=0,IALPHA
-      !    DO I=0,ILEVTAIL
-      !      WRITE(995,*) K,L,I,MAX(REAL(K)*DELUST,0.000001),AALPHA+FLOAT(L)*DELALP,REAL(I)*DELTAIL,TAUHFT(K,L),TAUHFT2(K,L,I)
-      !      END DO
-      !    END DO
-      !  END DO
+        DEALLOCATE(W)
+        OPEN (993,FILE=FNAMETAB,form='UNFORMATTED', convert=file_endian,IOSTAT=IERR,STATUS='UNKNOWN')
+        WRITE(993) IDSTR, VERGRD, SIGMAX, AALPHA, BBETA, IUSTAR, IALPHA, ILEVTAIL, ZZALP, KAPPA, GRAV
+        WRITE(993) TAUHFT(0:IUSTAR,0:IALPHA)
+        WRITE(993) TAUHFT2
+        CLOSE(993)
+        !DO K=0,IUSTAR
+        !  DO L=0,IALPHA
+        !    DO I=0,ILEVTAIL
+        !      WRITE(995,*) K,L,I,MAX(REAL(K)*DELUST,0.000001),AALPHA+FLOAT(L)*DELALP,REAL(I)*DELTAIL,TAUHFT(K,L),TAUHFT2(K,L,I)
+        !      END DO
+        !    END DO
+        !  END DO
+        !
+      ELSE
+        WRITE(NDSE,*) 'Reading 3D look-up table for SIN4 from file.'
+        READ(993,IOSTAT=IERR ) TAUHFT(0:IUSTAR,0:IALPHA)
+        IF (IERR .GT. 0) THEN
+          NOFILE=.TRUE.
+          CYCLE
+        END IF
+        READ(993,IOSTAT=IERR ) TAUHFT2
+        IF (IERR .GT. 0) THEN
+          NOFILE=.TRUE.
+          CYCLE
+        END IF
+        CLOSE(993)
+      END IF
       !
-    ELSE
-      WRITE(NDSE,*) 'Reading 3D look-up table for SIN4 from file.'
-      READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT(0:IUSTAR,0:IALPHA)
-      READ(993,ERR=2000,IOSTAT=IERR ) TAUHFT2
-      CLOSE(993)
-    END IF
+      EXIT
+    END DO
     !
-    GOTO 2001
-2000 NOFILE=.TRUE.
-    GOTO 800
-2001 CONTINUE
     RETURN
 #ifdef W3_T
 9000 FORMAT (' TEST TABU_HFT2, K, L, I, UST, ALPHA, LEVTAIL, TAUHFT2(K,L,I) :',(3I4,4F10.5))
